@@ -13,14 +13,16 @@ Examples:
 import argparse
 import contextlib
 import difflib
+import hashlib
 import io
 import json
 import os
 import re
 import shutil
+import sqlite3
 import sys
 import tempfile
-from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
+from typing import Any, Dict, Iterable, List, Optional, Sequence, Set, Tuple
 
 from _common import ROOT_DIR, ToolError, find_objdiff_unit, load_objdiff_config, make_abs
 from dwarf1_gcc_line_info import process_file as export_debug_lines
@@ -31,6 +33,7 @@ from lookup import (
     read_text,
     split_functions,
 )
+from split_dwarf_info import apply_umath_fixups
 
 
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -137,11 +140,16 @@ def dtk_dwarf_dump(obj_path: str) -> str:
     return output_path
 
 
-def load_function_blocks(path: str, folder_mode: bool) -> List[FunctionBlock]:
+def load_function_blocks(
+    path: str, folder_mode: bool, apply_split_fixups_in_ram: bool = False
+) -> List[FunctionBlock]:
     if folder_mode:
         text = read_text(os.path.join(path, "functions.nothpp"))
     else:
         text = read_text(path)
+    if apply_split_fixups_in_ram:
+        # Keep fixups in-memory only (do not rewrite dump files on disk).
+        text = apply_umath_fixups(text)
     return split_functions(text)
 
 
@@ -255,30 +263,139 @@ def normalize_source_location(path: str, line_number: int) -> str:
     return f"{normalized}:{line_number}"
 
 
-def parse_debug_lines_file(path: str) -> Dict[int, List[Dict[str, Any]]]:
-    entries: Dict[int, List[Dict[str, Any]]] = {}
-    with open(path) as f:
-        for raw_line in f:
-            line = raw_line.rstrip("\n")
-            match = DEBUG_LINE_RE.match(line)
-            if match is None:
-                continue
-            address = int(match.group(1), 16)
-            debug_path = match.group(2)
-            line_number = int(match.group(3))
-            display_path = canonical_debug_path(debug_path)
-            entries.setdefault(address, []).append(
-                {
-                    "address": address,
-                    "debug_path": debug_path,
-                    "display_path": display_path,
-                    "line_number": line_number,
-                    "normalized_file": os.path.normpath(display_path.replace("\\", "/"))
-                    .replace("\\", "/")
-                    .lower(),
-                    "normalized": normalize_source_location(display_path, line_number),
-                }
+def debug_lines_cache_dir() -> str:
+    cache_dir = os.path.join(tempfile.gettempdir(), "nfsmw_dwarf_compare")
+    os.makedirs(cache_dir, exist_ok=True)
+    return cache_dir
+
+
+def debug_lines_cache_db_path(path: str) -> str:
+    hasher = hashlib.sha1()
+    with open(path, "rb") as f:
+        while True:
+            chunk = f.read(1024 * 1024)
+            if not chunk:
+                break
+            hasher.update(chunk)
+    digest = hasher.hexdigest()
+    return os.path.join(debug_lines_cache_dir(), f"debug_lines_{digest}.sqlite3")
+
+
+def ensure_debug_lines_cache_db(path: str) -> str:
+    db_path = debug_lines_cache_db_path(path)
+    conn = sqlite3.connect(db_path)
+    try:
+        conn.execute("PRAGMA journal_mode=OFF")
+        conn.execute("PRAGMA synchronous=OFF")
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS entries (
+                ordinal INTEGER PRIMARY KEY,
+                address INTEGER NOT NULL,
+                display_path TEXT NOT NULL,
+                line_number INTEGER NOT NULL,
+                normalized_file TEXT NOT NULL,
+                normalized TEXT NOT NULL
             )
+            """
+        )
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_entries_address ON entries(address)")
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS metadata (
+                key TEXT PRIMARY KEY,
+                value TEXT NOT NULL
+            )
+            """
+        )
+        ready = conn.execute(
+            "SELECT value FROM metadata WHERE key = 'ready'"
+        ).fetchone()
+        if ready is not None and ready[0] == "1":
+            return db_path
+
+        conn.execute("DELETE FROM entries")
+        conn.execute("DELETE FROM metadata")
+
+        rows: List[Tuple[int, int, str, int, str, str]] = []
+        ordinal = 0
+        with open(path) as f:
+            for raw_line in f:
+                line = raw_line.rstrip("\n")
+                match = DEBUG_LINE_RE.match(line)
+                if match is None:
+                    continue
+                ordinal += 1
+                address = int(match.group(1), 16)
+                debug_path = match.group(2)
+                line_number = int(match.group(3))
+                display_path = canonical_debug_path(debug_path)
+                normalized_file = (
+                    os.path.normpath(display_path.replace("\\", "/"))
+                    .replace("\\", "/")
+                    .lower()
+                )
+                rows.append(
+                    (
+                        ordinal,
+                        address,
+                        display_path,
+                        line_number,
+                        normalized_file,
+                        normalize_source_location(display_path, line_number),
+                    )
+                )
+
+        conn.executemany(
+            """
+            INSERT INTO entries(
+                ordinal, address, display_path, line_number, normalized_file, normalized
+            ) VALUES (?, ?, ?, ?, ?, ?)
+            """,
+            rows,
+        )
+        conn.execute(
+            "INSERT INTO metadata(key, value) VALUES('source_path', ?)",
+            (os.path.abspath(path),),
+        )
+        conn.execute("INSERT INTO metadata(key, value) VALUES('ready', '1')")
+        conn.commit()
+    finally:
+        conn.close()
+    return db_path
+
+
+def load_debug_line_entries(path: str, addresses: Set[int]) -> Dict[int, List[Dict[str, Any]]]:
+    entries: Dict[int, List[Dict[str, Any]]] = {}
+    if not addresses:
+        return entries
+
+    db_path = ensure_debug_lines_cache_db(path)
+    conn = sqlite3.connect(db_path)
+    conn.row_factory = sqlite3.Row
+    try:
+        sorted_addresses = sorted(addresses)
+        chunk_size = 900
+        for start in range(0, len(sorted_addresses), chunk_size):
+            chunk = sorted_addresses[start : start + chunk_size]
+            placeholders = ",".join("?" for _ in chunk)
+            query = (
+                "SELECT address, display_path, line_number, normalized_file, normalized "
+                f"FROM entries WHERE address IN ({placeholders}) ORDER BY address, ordinal"
+            )
+            for row in conn.execute(query, chunk):
+                address = int(row["address"])
+                entries.setdefault(address, []).append(
+                    {
+                        "address": address,
+                        "display_path": row["display_path"],
+                        "line_number": int(row["line_number"]),
+                        "normalized_file": row["normalized_file"],
+                        "normalized": row["normalized"],
+                    }
+                )
+    finally:
+        conn.close()
     return entries
 
 
@@ -403,8 +520,10 @@ def build_range_source_summary(
     original_entries = collect_range_entries(original_block[3])
     rebuilt_entries = collect_range_entries(rebuilt_block[3])
     aligned_entries = align_range_entries(original_entries, rebuilt_entries)
-    original_debug_lines = parse_debug_lines_file(original_debug_lines_path)
-    rebuilt_debug_lines = parse_debug_lines_file(rebuilt_debug_lines_path)
+    original_addresses = {int(entry["start_address"]) for entry in original_entries}
+    rebuilt_addresses = {int(entry["start_address"]) for entry in rebuilt_entries}
+    original_debug_lines = load_debug_line_entries(original_debug_lines_path, original_addresses)
+    rebuilt_debug_lines = load_debug_line_entries(rebuilt_debug_lines_path, rebuilt_addresses)
 
     rows: List[Dict[str, Any]] = []
     file_match_count = 0
@@ -828,7 +947,11 @@ def main() -> None:
                 rebuilt_debug_lines_path = None
 
         original_funcs = load_function_blocks(GC_DWARF, folder_mode=True)
-        rebuilt_funcs = load_function_blocks(rebuilt_dwarf_path, folder_mode=False)
+        rebuilt_funcs = load_function_blocks(
+            rebuilt_dwarf_path,
+            folder_mode=False,
+            apply_split_fixups_in_ram=True,
+        )
 
         original_block = choose_function_block(original_funcs, args.function, "original DWARF")
         rebuilt_block = choose_function_block(rebuilt_funcs, args.function, "rebuilt DWARF")
