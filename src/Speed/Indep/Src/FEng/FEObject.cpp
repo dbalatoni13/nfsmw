@@ -150,7 +150,7 @@ void FEObject::SetupMoveToTracks() {
     for (unsigned long i = 0; i < NumTracks; i++) {
         pTrack[i].InterpAction &= 0x7F;
 
-        if (pTrack[i].InterpType - 3 < 2) {
+        if (static_cast<unsigned long>(pTrack[i].InterpType - 3) < 2) {
             float* pfData = reinterpret_cast<float*>(pData + pTrack[i].LongOffset * 4);
             FEKeyNode* pBase = pTrack[i].GetBaseKey();
             FEKeyNode* pKey = pTrack[i].GetFirstDeltaKey();

@@ -151,39 +151,47 @@ FEPackage* FEPackageReader::Load(const void* pDataPtr, FEGameInterface* pInt, FE
 FEObject* FEPackageReader::CreateObject(unsigned long ObjectType) {
     FEObject* pObject;
     switch (ObjectType) {
-    case FE_None:
-        return nullptr;
-    case FE_Image:
-        pObject = FENG_NEW FEImage();
-        break;
     case FE_String:
         pObject = FENG_NEW FEString();
+        pObject->Type = static_cast<FEObjType>(ObjectType);
         break;
     case FE_List:
         pObject = FENG_NEW FEListBox();
-        break;
-    case FE_Group:
-        pObject = FENG_NEW FEGroup();
         break;
     case FE_CodeList:
         pObject = FENG_NEW FECodeListBox();
         static_cast<FECodeListBox*>(pObject)->mpobRenderer = pInterface;
         break;
+    case FE_Group:
+        pObject = FENG_NEW FEGroup();
+        pObject->Type = static_cast<FEObjType>(ObjectType);
+        break;
+    case FE_Image:
+        pObject = FENG_NEW FEImage();
+        pObject->Type = static_cast<FEObjType>(ObjectType);
+        break;
     case FE_Movie:
         pObject = FENG_NEW FEMovie();
+        pObject->Type = static_cast<FEObjType>(ObjectType);
         break;
     case FE_ColoredImage:
         pObject = FENG_NEW FEColoredImage();
+        pObject->Type = static_cast<FEObjType>(ObjectType);
         break;
     case FE_AnimImage:
         pObject = FENG_NEW FEAnimImage();
+        pObject->Type = static_cast<FEObjType>(ObjectType);
         break;
     case FE_SimpleImage:
         pObject = FENG_NEW FESimpleImage();
+        pObject->Type = static_cast<FEObjType>(ObjectType);
         break;
     case FE_MultiImage:
         pObject = FENG_NEW FEMultiImage();
+        pObject->Type = static_cast<FEObjType>(ObjectType);
         break;
+    case FE_None:
+        return nullptr;
     default:
         pObject = FENG_NEW FEObject();
         break;

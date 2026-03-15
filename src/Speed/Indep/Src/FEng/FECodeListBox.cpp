@@ -125,33 +125,29 @@ void FECodeListBox::Initialize(unsigned long ulNumVisCols, unsigned long ulNumVi
     unsigned long ulOldNumVisibleRows = mulNumVisibleRows;
     mulNumVisibleColumns = ulNumVisCols;
     mulNumVisibleRows = ulNumVisRows;
-    long ulNumCells = ulNumVisCols * ulNumVisRows;
+    long ulNumCells = ulNumVisRows * ulNumVisCols;
     mpstCells = FENG_NEW FEListBoxCell[ulNumCells];
     FEListBox::InitializeCell(mpstCells, mulNumVisibleRows * mulNumVisibleColumns);
     SetTotalNumColumns(mulNumVisibleColumns);
     SetTotalNumRows(mulNumVisibleRows);
     if (mulFlags & 1) {
         unsigned long ulNumColumns = ulOldNumVisibleColumns;
-        if (mulNumVisibleColumns < ulOldNumVisibleColumns) {
+        if (ulOldNumVisibleColumns > mulNumVisibleColumns) {
             ulNumColumns = mulNumVisibleColumns;
         }
         unsigned long ulNumRows = ulOldNumVisibleRows;
-        if (mulNumVisibleRows < ulOldNumVisibleRows) {
+        if (ulOldNumVisibleRows > mulNumVisibleRows) {
             ulNumRows = mulNumVisibleRows;
         }
         if (pstOldCells) {
-            unsigned long i = 0;
-            if (ulNumRows != 0) {
-                do {
-                    FEngMemCpy(mpstCells + i * mulNumVisibleColumns, pstOldCells + i * ulOldNumVisibleColumns, mulNumVisibleColumns * sizeof(FEListBoxCell));
-                    for (unsigned long j = ulNumColumns; j < ulOldNumVisibleColumns; j++) {
-                        FEListBoxCell* pOldCell = &pstOldCells[i * ulOldNumVisibleColumns + j];
-                        if (pOldCell->ulType == 2) {
-                            DeallocateString(pOldCell->u.string.pStr);
-                        }
+            for (unsigned long i = 0; i < ulNumRows; i++) {
+                FEngMemCpy(mpstCells + i * mulNumVisibleColumns, pstOldCells + i * ulOldNumVisibleColumns, mulNumVisibleColumns * sizeof(FEListBoxCell));
+                for (unsigned long j = ulNumColumns; j < ulOldNumVisibleColumns; j++) {
+                    FEListBoxCell* pOldCell = &pstOldCells[i * ulOldNumVisibleColumns + j];
+                    if (pOldCell->ulType == 2) {
+                        DeallocateString(pOldCell->u.string.pStr);
                     }
-                    i++;
-                } while (i < ulNumRows);
+                }
             }
             while (ulNumRows < ulOldNumVisibleRows) {
                 unsigned long j = 0;
@@ -231,11 +227,11 @@ void FECodeListBox::FillAllCells() {
 void FECodeListBox::AllocateStrings(unsigned long ulNumStrings, unsigned long ulStringSize) {
     short* psOldStrings = mpsStrings;
     short** ppsOldStringData = mppsStringData;
-    mulNumStrings = 0;
     mulCurrentString = 0;
     mulStringSize = 0;
-    mppsStringData = nullptr;
     mpsStrings = nullptr;
+    mppsStringData = nullptr;
+    mulNumStrings = 0;
     if (ulNumStrings == 0 || ulStringSize == 0) {
         unsigned long i = 0;
         if (mulNumVisibleRows != 0) {

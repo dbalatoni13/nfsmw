@@ -23,12 +23,12 @@ public:
     inline FEString()
         : FEObject() //
         , pLabelName(nullptr) //
+        , LabelHash(0xFFFFFFFF) //
         , string() //
         , Format(0) //
         , Leading(0) //
         , MaxWidth(0)
     {
-        SetLabelHash(0xFFFFFFFF);
     }
     FEString(const FEString& String, bool bReference);
     ~FEString() override;
