@@ -265,37 +265,26 @@ void FEPackage::UpdateObjectTracks(FEObject* pObj, FEScript* pScript) {
 
 void FEPackage::IssueScriptMessages(FEngine* pEngine, FEObject* pObj,
                                     FEScript* pScript, long tOldTime, long tNewTime) {
-    int Count = pScript->Events.Count;
-    if (Count == 0) {
-        return;
-    }
-
     FEEvent* pEvents = pScript->Events.pEvent;
-    int i = 0;
+    int Count = pScript->Events.Count;
 
-    if (tOldTime < tNewTime) {
-        while (i < Count) {
-            if (pEvents[i].tTime >= static_cast<unsigned long>(tNewTime)) {
-                break;
-            }
-            if (pEvents[i].tTime >= static_cast<unsigned long>(tOldTime)) {
-                goto dispatch;
-            }
-            i++;
-        }
+    if (tNewTime < tOldTime) {
         return;
     }
 
+    if (tNewTime == pScript->Length) {
+        tNewTime++;
+    }
+
+    int i = 0;
     while (i < Count) {
-        if (pEvents[i].tTime < static_cast<unsigned long>(tOldTime)) {
-            i++;
-        } else {
+        if (pEvents[i].tTime >= static_cast<unsigned long>(tOldTime)) {
             break;
         }
+        i++;
     }
 
     if (i < Count && pEvents[i].tTime < static_cast<unsigned long>(tNewTime)) {
-    dispatch:
         for (;;) {
             switch (pEvents[i].Target) {
             case 0:
@@ -574,16 +563,16 @@ void ResourceConnector::ConnectListBoxResources(FEListBox* pList) {
                 unsigned long resIdx = pList->mpstCells[pList->mulCurrentRow * pList->mulNumColumns + pList->mulCurrentColumn].stResource.ResourceIndex;
                 if (resIdx != 0xFFFFFFFF) {
                     FEResourceRequest* pReq = &(*pReqList)[resIdx];
-                    unsigned long userParam = pReq->UserParam;
                     unsigned long handle = pReq->Handle;
+                    unsigned long userParam = pReq->UserParam;
                     FEListBoxCell* pCell = pList->GetPCellData(pList->mulCurrentColumn, pList->mulCurrentRow);
-                    pCell->stResource.UserParam = userParam;
                     pCell->stResource.Handle = handle;
+                    pCell->stResource.UserParam = userParam;
                     pCell->stResource.ResourceIndex = resIdx;
                 } else {
                     FEListBoxCell* pCell = pList->GetPCellData(pList->mulCurrentColumn, pList->mulCurrentRow);
-                    pCell->stResource.UserParam = 0;
                     pCell->stResource.Handle = 0;
+                    pCell->stResource.UserParam = 0;
                     pCell->stResource.ResourceIndex = 0xFFFFFFFF;
                 }
                 col++;
