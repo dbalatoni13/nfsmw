@@ -8,24 +8,19 @@ FEListBox::FEListBox()
     : mulFlags(4) //
     , mulNumColumns(0) //
     , mulNumRows(0) //
+    , mstViewDimensions(0.0f, 0.0f) //
+    , mstCurrentLocation(0.0f, 0.0f) //
     , mpstColumnData(nullptr) //
     , mpstRowData(nullptr) //
+    , mstSelectionSpeed(1.0f, 1.0f) //
     , mulCurrentColumn(0) //
     , mulCurrentRow(0) //
     , mpstCells(nullptr) //
+    , mstTargetLocation(0.0f, 0.0f) //
+    , mstDirection(0.0f, 0.0f) //
     , mfCurrentAlpha(1.0f) //
     , mfAlphaDelta(-1.0f / 720.0f) {
     Type = FE_List;
-    mstViewDimensions.h = 0.0f;
-    mstViewDimensions.v = 0.0f;
-    mstCurrentLocation.h = 0.0f;
-    mstCurrentLocation.v = 0.0f;
-    mstSelectionSpeed.h = 1.0f;
-    mstSelectionSpeed.v = 1.0f;
-    mstTargetLocation.h = 0.0f;
-    mstTargetLocation.v = 0.0f;
-    mstDirection.h = 0.0f;
-    mstDirection.v = 0.0f;
 }
 
 FEListBox::~FEListBox() {

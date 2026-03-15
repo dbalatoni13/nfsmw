@@ -20,8 +20,7 @@ struct FEKeyNode : public FEMinNode {
         next = reinterpret_cast<FEMinNode*>(0xABADCAFE);
         prev = reinterpret_cast<FEMinNode*>(0xABADCAFE);
     }
-    inline FEKeyNode() { Init(); }
-    ~FEKeyNode() override {}
+    inline FEKeyNode() {}
 
     static void* operator new(unsigned int);
     static void operator delete(void* pNode);
