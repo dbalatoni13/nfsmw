@@ -8,6 +8,12 @@
 #include "FEObject.h"
 #include "FETypes.h"
 
+inline unsigned long ClampIndex(unsigned long val, unsigned long range) {
+    if (range == 0) return 0;
+    if (val < range) return val;
+    return range - 1;
+}
+
 // total size: 0xC
 struct FEListEntryData {
     float fValue;            // offset 0x0, size 0x4

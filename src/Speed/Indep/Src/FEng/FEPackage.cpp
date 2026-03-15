@@ -1,6 +1,7 @@
 #include "Speed/Indep/Src/FEng/FEPackage.h"
 #include "Speed/Indep/Src/FEng/FEGroup.h"
 #include "Speed/Indep/Src/FEng/fengine.h"
+#include "Speed/Indep/Src/FEng/FEResourceRequest.h"
 #include "Speed/Indep/Src/FEng/FETypes.h"
 #include "Speed/Indep/Src/FEng/FEngStandard.h"
 #include "Speed/Indep/Src/FEng/FEListBox.h"
@@ -27,16 +28,6 @@ struct FEObjectComment : public FEMinNode {
 };
 
 // FEMsgTargetList defined in FEPackage.h
-
-// total size: 0x18
-struct FEResourceRequest {
-    unsigned long ID;             // offset 0x0, size 0x4
-    const char* pFilename;        // offset 0x4, size 0x4
-    unsigned long Type;           // offset 0x8, size 0x4
-    unsigned long Flags;          // offset 0xC, size 0x4
-    unsigned long Handle;         // offset 0x10, size 0x4
-    unsigned long UserParam;      // offset 0x14, size 0x4
-};
 
 unsigned long FEPackage::uHoldDirtyFlags;
 
@@ -552,8 +543,8 @@ bool ResourceConnector::Callback(FEObject* pObj) {
 }
 
 void ResourceConnector::ConnectListBoxResources(FEListBox* pList) {
-    pList->mulCurrentColumn = 0;
-    pList->mulCurrentRow = 0;
+    pList->mulCurrentColumn = ClampIndex(0, pList->mulNumColumns);
+    pList->mulCurrentRow = ClampIndex(0, pList->mulNumRows);
     unsigned long ulRows = pList->mulNumRows;
     unsigned long ulCols = pList->mulNumColumns;
     unsigned long row = 0;
@@ -561,27 +552,24 @@ void ResourceConnector::ConnectListBoxResources(FEListBox* pList) {
         do {
             unsigned long col = 0;
             row++;
-            if (ulCols != 0) {
-                do {
+            while (col < ulCols) {
+                unsigned long resIdx = pList->mpstCells[pList->mulCurrentRow * pList->mulNumColumns + pList->mulCurrentColumn].stResource.ResourceIndex;
+                if (resIdx != 0xFFFFFFFF) {
+                    FEResourceRequest* pReq = &(*pReqList)[resIdx];
+                    unsigned long userParam = pReq->UserParam;
+                    unsigned long handle = pReq->Handle;
                     FEListBoxCell* pCell = pList->GetPCellData(pList->mulCurrentColumn, pList->mulCurrentRow);
-                    if (pCell->stResource.ResourceIndex == 0xFFFFFFFF) {
-                        pCell = pList->GetPCellData(pList->mulCurrentColumn, pList->mulCurrentRow);
-                        pCell->stResource.ResourceIndex = 0xFFFFFFFF;
-                        pCell->stResource.Handle = 0;
-                        pCell->stResource.UserParam = 0;
-                    } else {
-                        unsigned long resIdx = pCell->stResource.ResourceIndex;
-                        FEResourceRequest* pReq = &(*pReqList)[resIdx];
-                        unsigned long userParam = pReq->UserParam;
-                        unsigned long handle = pReq->Handle;
-                        pCell = pList->GetPCellData(pList->mulCurrentColumn, pList->mulCurrentRow);
-                        pCell->stResource.ResourceIndex = resIdx;
-                        pCell->stResource.Handle = handle;
-                        pCell->stResource.UserParam = userParam;
-                    }
-                    col++;
-                    pList->IncrementCellByColumn();
-                } while (col < ulCols);
+                    pCell->stResource.UserParam = userParam;
+                    pCell->stResource.Handle = handle;
+                    pCell->stResource.ResourceIndex = resIdx;
+                } else {
+                    FEListBoxCell* pCell = pList->GetPCellData(pList->mulCurrentColumn, pList->mulCurrentRow);
+                    pCell->stResource.UserParam = 0;
+                    pCell->stResource.Handle = 0;
+                    pCell->stResource.ResourceIndex = 0xFFFFFFFF;
+                }
+                col++;
+                pList->IncrementCellByColumn();
             }
         } while (row < ulRows);
     }

@@ -92,17 +92,19 @@ void FECodeListBox::CopyProperties(const FECodeListBox& Object) {
         delete[] mppsStringData;
         mppsStringData = nullptr;
     }
-    mulNumStrings = 0;
     mulStringSize = 0;
     mulCurrentString = 0;
+    mulNumStrings = 0;
     AllocateStrings(Object.mulNumStrings, Object.mulStringSize);
     ulNumCells = mulNumVisibleColumns * mulNumVisibleRows;
     for (unsigned long i = 0; i < ulNumCells; i++) {
         mpstCells[i].ulColor = Object.mpstCells[i].ulColor;
-        mpstCells[i].ulJustification = Object.mpstCells[i].ulJustification;
-        mpstCells[i].stScale = Object.mpstCells[i].stScale;
-        mpstCells[i].stResource = Object.mpstCells[i].stResource;
         mpstCells[i].ulType = Object.mpstCells[i].ulType;
+        mpstCells[i].stScale = Object.mpstCells[i].stScale;
+        mpstCells[i].stResource.Handle = Object.mpstCells[i].stResource.Handle;
+        mpstCells[i].stResource.ResourceIndex = Object.mpstCells[i].stResource.ResourceIndex;
+        mpstCells[i].stResource.UserParam = Object.mpstCells[i].stResource.UserParam;
+        mpstCells[i].ulJustification = Object.mpstCells[i].ulJustification;
         if (mpstCells[i].ulType == 2) {
             short* psString = Object.mpstCells[i].u.string.pStr;
             if (!psString) {
@@ -112,7 +114,10 @@ void FECodeListBox::CopyProperties(const FECodeListBox& Object) {
             CopyString(mpstCells[i].u.string.pStr, psString);
         }
         if (mpstCells[i].ulType == 1) {
-            mpstCells[i].SetUV() = Object.mpstCells[i].GetUV();
+            mpstCells[i].u.rect.uv_left = Object.mpstCells[i].u.rect.uv_left;
+            mpstCells[i].u.rect.uv_top = Object.mpstCells[i].u.rect.uv_top;
+            mpstCells[i].u.rect.uv_right = Object.mpstCells[i].u.rect.uv_right;
+            mpstCells[i].u.rect.uv_bottom = Object.mpstCells[i].u.rect.uv_bottom;
         }
     }
 }
@@ -125,18 +130,18 @@ void FECodeListBox::Initialize(unsigned long ulNumVisCols, unsigned long ulNumVi
     mulNumVisibleRows = ulNumVisRows;
     long ulNumCells = ulNumVisCols * ulNumVisRows;
     mpstCells = static_cast<FEListBoxCell*>(FEngMalloc(ulNumCells * sizeof(FEListBoxCell), 0, 0));
-    unsigned long* puVar3 = reinterpret_cast<unsigned long*>(mpstCells);
+    FEListBoxCell* pCell = mpstCells;
     for (long n = ulNumCells; n != 0; n--) {
-        puVar3[0] = 0;
-        puVar3[1] = 0x3F800000;
-        puVar3[2] = 0x3F800000;
-        puVar3[3] = 0;
-        puVar3[4] = 0;
-        puVar3[5] = 0;
-        puVar3[6] = 0;
-        puVar3[8] = 0;
-        puVar3[9] = 0xFFFFFFFF;
-        puVar3 += 12;
+        pCell->ulColor = 0;
+        pCell->stScale.h = 1.0f;
+        pCell->stScale.v = 1.0f;
+        pCell->stResource.Handle = 0;
+        pCell->stResource.UserParam = 0;
+        pCell->stResource.ResourceIndex = 0;
+        pCell->ulType = 0;
+        pCell->u.string.pStr = nullptr;
+        pCell->ulJustification = 0xFFFFFFFF;
+        pCell++;
     }
     FEListBox::InitializeCell(mpstCells, mulNumVisibleRows * mulNumVisibleColumns);
     SetTotalNumColumns(mulNumVisibleColumns);

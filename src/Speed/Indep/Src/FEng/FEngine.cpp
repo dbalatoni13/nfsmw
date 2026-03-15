@@ -357,16 +357,18 @@ bool FEngine::UnloadPackage(FEPackage* pPackage) {
         }
         pCmd = pNext;
     }
-    if (!pPack->bIsLibrary) {
+    if (pPack->bUseIdleList) {
+        AddToIdleList(pPackage);
+    } else {
         FENode* pLibNode = static_cast<FENode*>(pPack->LibrariesUsed.GetHead());
         while (pLibNode) {
             FEPackage* pLib = FindLibraryPackage(pLibNode->GetNameHash());
             if (pLib) {
-                int RefCount = pLib->NumLibRefs - 1;
+                int RefCount = pLib->Priority - 1;
                 if (RefCount < 1) {
                     UnloadLibraryPackage(pLib);
                 } else {
-                    pLib->NumLibRefs = RefCount;
+                    pLib->Priority = RefCount;
                 }
             }
             pLibNode = pLibNode->GetNext();
@@ -375,8 +377,6 @@ bool FEngine::UnloadPackage(FEPackage* pPackage) {
         if (bOwnsMemory && pPack) {
             delete pPack;
         }
-    } else {
-        AddToIdleList(pPackage);
     }
     return true;
 }
