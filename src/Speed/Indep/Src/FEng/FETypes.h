@@ -81,7 +81,7 @@ struct FEQuaternion {
     float z; // offset 0x8, size 0x4
     float w; // offset 0xC, size 0x4
 
-    inline FEQuaternion() : x(0.0f), y(0.0f), z(0.0f), w(0.0f) {}
+    inline FEQuaternion() : x(0.0f), y(0.0f), z(0.0f), w(1.0f) {}
     inline FEQuaternion(float X, float Y, float Z, float W) : x(X), y(Y), z(Z), w(W) {}
     inline FEQuaternion& operator=(const FEQuaternion& q) { x = q.x; y = q.y; z = q.z; w = q.w; return *this; }
     inline void Conjugate() { x = -x; y = -y; z = -z; }
