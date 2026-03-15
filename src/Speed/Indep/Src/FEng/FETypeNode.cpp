@@ -28,7 +28,7 @@ void FEFieldNode::GetDefault(void* pDest) {
 
 void FETypeNode::AddField(const char* pName, long iType) {
     FEFieldNode* pField;
-    pField = new (static_cast<FEFieldNode*>(FEngMalloc(sizeof(FEFieldNode), nullptr, 0))) FEFieldNode();
+    pField = FENG_NEW FEFieldNode();
     pField->SetName(pName);
     pField->SetType(iType);
     pField->SetSize(FEKeyTypeSize[iType]);

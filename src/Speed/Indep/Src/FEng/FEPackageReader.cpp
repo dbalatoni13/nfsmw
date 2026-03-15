@@ -149,49 +149,38 @@ FEObject* FEPackageReader::CreateObject(unsigned long ObjectType) {
     case FE_None:
         return nullptr;
     case FE_Image:
-        pObject = static_cast<FEObject*>(FEngMalloc(sizeof(FEImage), 0, 0));
-        new (static_cast<FEImage*>(pObject)) FEImage();
+        pObject = FENG_NEW FEImage();
         break;
     case FE_String:
-        pObject = static_cast<FEObject*>(FEngMalloc(sizeof(FEString), 0, 0));
-        new (static_cast<FEString*>(pObject)) FEString();
+        pObject = FENG_NEW FEString();
         break;
     case FE_List:
-        pObject = static_cast<FEObject*>(FEngMalloc(sizeof(FEListBox), 0, 0));
-        new (static_cast<FEListBox*>(pObject)) FEListBox();
+        pObject = FENG_NEW FEListBox();
         break;
     case FE_Group:
-        pObject = static_cast<FEObject*>(FEngMalloc(sizeof(FEGroup), 0, 0));
-        new (static_cast<FEGroup*>(pObject)) FEGroup();
+        pObject = FENG_NEW FEGroup();
         break;
     case FE_CodeList:
-        pObject = static_cast<FEObject*>(FEngMalloc(sizeof(FECodeListBox), 0, 0));
-        new (static_cast<FECodeListBox*>(pObject)) FECodeListBox();
+        pObject = FENG_NEW FECodeListBox();
         static_cast<FECodeListBox*>(pObject)->mpobRenderer = pInterface;
         break;
     case FE_Movie:
-        pObject = static_cast<FEObject*>(FEngMalloc(sizeof(FEMovie), 0, 0));
-        new (static_cast<FEMovie*>(pObject)) FEMovie();
+        pObject = FENG_NEW FEMovie();
         break;
     case FE_ColoredImage:
-        pObject = static_cast<FEObject*>(FEngMalloc(sizeof(FEColoredImage), 0, 0));
-        new (static_cast<FEColoredImage*>(pObject)) FEColoredImage();
+        pObject = FENG_NEW FEColoredImage();
         break;
     case FE_AnimImage:
-        pObject = static_cast<FEObject*>(FEngMalloc(sizeof(FEAnimImage), 0, 0));
-        new (static_cast<FEAnimImage*>(pObject)) FEAnimImage();
+        pObject = FENG_NEW FEAnimImage();
         break;
     case FE_SimpleImage:
-        pObject = static_cast<FEObject*>(FEngMalloc(sizeof(FESimpleImage), 0, 0));
-        new (static_cast<FESimpleImage*>(pObject)) FESimpleImage();
+        pObject = FENG_NEW FESimpleImage();
         break;
     case FE_MultiImage:
-        pObject = static_cast<FEObject*>(FEngMalloc(sizeof(FEMultiImage), 0, 0));
-        new (static_cast<FEMultiImage*>(pObject)) FEMultiImage();
+        pObject = FENG_NEW FEMultiImage();
         break;
     default:
-        pObject = static_cast<FEObject*>(FEngMalloc(sizeof(FEObject), 0, 0));
-        new (pObject) FEObject();
+        pObject = FENG_NEW FEObject();
         break;
     }
     pObject->Type = static_cast<FEObjType>(ObjectType);

@@ -624,8 +624,7 @@ void FEngine::RenderObject(FEObject* pObj, FEMatrix4& mParent, unsigned short Re
 
 void FEngine::QueuePackageCommand(long command, unsigned long ControlMask, const char* pPackageName) {
     FEPackage* pPackageWithControl = FindPackageWithControl();
-    FEPackageCommand* Node = static_cast<FEPackageCommand*>(
-        static_cast<FENode*>(new (FEngMalloc(sizeof(FEPackageCommand), nullptr, 0)) FENode()));
+    FEPackageCommand* Node = FENG_NEW FEPackageCommand();
     Node->iCommand = 0;
     Node->uControlMask = 0;
     Node->pPackage = pPackageWithControl;

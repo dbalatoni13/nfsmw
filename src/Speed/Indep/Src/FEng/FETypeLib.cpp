@@ -17,7 +17,7 @@ FETypeNode* FETypeLib::CreateBaseObjectType(const char* pName) {
     FEQuaternion ZeroQuat;
     FEColor White;
 
-    FETypeNode* pType = new (static_cast<FETypeNode*>(FEngMalloc(sizeof(FETypeNode), nullptr, 0))) FETypeNode();
+    FETypeNode* pType = FENG_NEW FETypeNode();
     pType->SetName(pName);
 
     pType->AddField("Color", 6);
