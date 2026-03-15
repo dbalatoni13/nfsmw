@@ -302,17 +302,31 @@ void uiRepSheetMain::UpdateInfo() {
 }
 
 void uiRepSheetMain::ScrollRival(eScrollDir dir) {
-    if (dir == eSD_PREV) {
-        if (iCurrentViewBin > 1) {
-            iCurrentViewBin--;
+    unsigned int oldViewBin = iCurrentViewBin;
+    unsigned int currentBin = FEDatabase->GetCareerSettings()->GetCurrentBin();
+    if (currentBin == 15) {
+        return;
+    }
+    if (dir == static_cast<eScrollDir>(1)) {
+        iCurrentViewBin--;
+        if (static_cast<int>(iCurrentViewBin) < 0 || iCurrentViewBin < currentBin) {
+            iCurrentViewBin = 15;
         }
-    } else {
-        if (iCurrentViewBin < 15) {
-            iCurrentViewBin++;
+    } else if (dir == static_cast<eScrollDir>(-1)) {
+        iCurrentViewBin++;
+        if (static_cast<int>(iCurrentViewBin) > 15) {
+            iCurrentViewBin = currentBin;
         }
     }
-    RivalStreamer.Init(iCurrentViewBin, pRivalImg, pTagImg, nullptr);
-    UpdateInfo();
+    if (oldViewBin != iCurrentViewBin) {
+        if (dir == static_cast<eScrollDir>(1)) {
+            FEngSetScript(GetPackageName(), 0xc1f62308, 0xaf9d73f2, true);
+        } else if (dir == static_cast<eScrollDir>(-1)) {
+            FEngSetScript(GetPackageName(), 0xc1f62308, 0x9e5e6b5f, true);
+        }
+        RivalStreamer.Init(iCurrentViewBin, pRivalImg, pTagImg, nullptr);
+        UpdateInfo();
+    }
 }
 
 void uiRepSheetMain::TextureLoadedCallback(unsigned int tex) {
