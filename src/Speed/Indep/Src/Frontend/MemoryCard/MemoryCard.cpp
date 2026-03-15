@@ -629,14 +629,17 @@ void MemoryCard::HideAutoSaveIcon() {
 }
 
 bool MemoryCard::IsAutoSaveIconVisible() {
-    if (m_bAutoSaveIconShowing) return true;
-    const char* pkg = "AutoSaveIcon.fng";
-    const char* iconName = "AUTOSAVE_ICON";
-    unsigned int obj = FEHashUpper(iconName);
-    unsigned int script1 = FEHashUpper("FadeIn");
-    if (FEngIsScriptSet(pkg, obj, script1)) return true;
-    obj = FEHashUpper(iconName);
-    unsigned int script2 = FEHashUpper("Idle");
-    if (FEngIsScriptSet(pkg, obj, script2)) return true;
-    return false;
+    if (!m_bAutoSaveIconShowing) {
+        const char *pkg = "AutoSaveIcon.fng";
+        const char *iconName = "AUTOSAVE_ICON";
+        unsigned int obj = FEHashUpper(iconName);
+        unsigned int script1 = FEHashUpper("FadeIn");
+        if (!FEngIsScriptSet(pkg, obj, script1)) {
+            obj = FEHashUpper(iconName);
+            unsigned int script2 = FEHashUpper("Idle");
+            if (!FEngIsScriptSet(pkg, obj, script2))
+                return false;
+        }
+    }
+    return true;
 }
