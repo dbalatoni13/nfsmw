@@ -269,7 +269,7 @@ template <typename T, typename Tag> class Container {
         for (typename Elements::iterator first = _mElements.begin(); first != last; first++) {
             if (*first == &el) {
                 _mElements.erase(first);
-                delete &el;
+                T::Destroy(&el);
                 return true;
             }
         }

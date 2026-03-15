@@ -433,8 +433,7 @@ int LoaderBounds(bChunk *chunk) {
     if (chunk->GetID() != 0x8003b900) {
         return 0;
     }
-    CollisionGeometry::BoundsPack *pack = new CollisionGeometry::BoundsPack(chunk);
-    CollisionGeometry::TheCollections.AddHead(pack);
+    CollisionGeometry::TheCollections.AddHead(new CollisionGeometry::BoundsPack(chunk));
     return 1;
 }
 

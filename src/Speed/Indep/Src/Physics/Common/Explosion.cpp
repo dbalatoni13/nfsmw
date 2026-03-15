@@ -29,22 +29,23 @@ Explosion::Explosion(const ExplosionParams &params, Sim::Param sp)
     , mTargets(params.fTargets)
 {
     mIRBSimple = nullptr;
-    mEffectSource = params.fEffectSource;
     mCausality = nullptr;
     mCauseTime = 0.0f;
+    mEffectSource = params.fEffectSource;
 
     float start_radius = UMath::Max(0.0f, params.fStartRadius);
-
-    RBSimpleParams rbp(
-        params.fPosition, //
-        UMath::Vector3::kZero, //
-        UMath::Vector3::kZero, //
-        UMath::Matrix4::kIdentity, //
-        start_radius, //
-        1.0f
+    LoadBehavior(
+        UCrc32(BEHAVIOR_MECHANIC_RIGIDBODY), //
+        UCrc32("SimpleRigidBody"), //
+        RBSimpleParams(
+            params.fPosition, //
+            UMath::Vector3::kZero, //
+            UMath::Vector3::kZero, //
+            UMath::Matrix4::kIdentity, //
+            start_radius, //
+            1.0f
+        )
     );
-
-    LoadBehavior(UCrc32(BEHAVIOR_MECHANIC_RIGIDBODY), UCrc32("SimpleRigidBody"), rbp);
 
     IModel *model = IModel::FindInstance(mSource);
     if (model) {
@@ -74,6 +75,7 @@ void Explosion::OnCollide(IRigidBody *other, float dT, float radius,
     float total_radius = radius + other->GetRadius();
     if (UMath::DistanceSquare(other->GetPosition(), explosion_sphere.GetPosition()) <
         total_radius * total_radius) {
+        float targetspeed;
         UMath::Vector3 dim;
         UMath::Matrix4 matrix;
         other->GetDimension(dim);

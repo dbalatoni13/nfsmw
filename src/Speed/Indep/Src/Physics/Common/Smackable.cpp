@@ -660,7 +660,7 @@ bool Smackable::Manager::OnTask(HSIMTASK htask, float dT) {
 }
 
 Behavior *RBSmackable::Construct(const BehaviorParams &parms) {
-    RBComplexParams rp = parms.fparams.Fetch< RBComplexParams >(UCrc32(0xa6b47fac));
+    const RBComplexParams rp = parms.fparams.Fetch< RBComplexParams >(UCrc32(0xa6b47fac));
     return new RBSmackable(parms, rp);
 }
 

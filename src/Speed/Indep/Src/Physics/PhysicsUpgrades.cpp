@@ -58,7 +58,7 @@ static Physics::Upgrades::tPartMap put_maps[] = {
     {(Physics::Upgrades::Type)0, nullptr, 0, 0, 0, 0, 0},
 };
 
-static const Physics::Upgrades::tPartMap *FindPartMap(Physics::Upgrades::Type type) {
+const Physics::Upgrades::tPartMap *FindPartMap(Physics::Upgrades::Type type) {
     const Physics::Upgrades::tPartMap *type_map = put_maps;
     if (type_map->key == 0) {
         goto not_found;

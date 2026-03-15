@@ -103,55 +103,7 @@ const ISimable *PVehicle::GetSimable() const { return static_cast<const ISimable
 
 ISimable *PVehicle::GetSimable() { return static_cast<ISimable *>(this); }
 
-Attrib::Gen::pvehicle &PVehicle::GetVehicleAttributes() const {
-    return const_cast<Attrib::Gen::pvehicle &>(mAttributes);
-}
-
-const UCrc32 &PVehicle::GetVehicleClass() const { return mClass; }
-
-const char *PVehicle::GetVehicleName() const { return mAttributes.CollectionName(); }
-
-DriverClass PVehicle::GetDriverClass() const { return mDriverClass; }
-
-DriverStyle PVehicle::GetDriverStyle() const { return mDriverStyle; }
-
-float PVehicle::GetAbsoluteSpeed() const { return mAbsSpeed; }
-
-float PVehicle::GetSpeedometer() const { return mSpeedometer; }
-
 float PVehicle::GetSpeed() const { return mSpeed; }
-
-bool PVehicle::IsOffWorld() const { return mOffWorld; }
-
-bool PVehicle::IsStaging() const { return mStaging; }
-
-float PVehicle::GetOffscreenTime() const { return mOffScreenTime; }
-
-float PVehicle::GetOnScreenTime() const { return mOnScreenTime; }
-
-bool PVehicle::IsCollidingWithSoftBarrier() { return false; }
-
-bool PVehicle::IsAnimating() const { return mAnimating; }
-
-PhysicsMode PVehicle::GetPhysicsMode() const { return mPhysicsMode; }
-
-const char *PVehicle::GetCacheName() const { return mCacheName; }
-
-IVehicleAI *PVehicle::GetAIVehiclePtr() const { return mAI; }
-
-float PVehicle::GetSlipAngle() const { return mSlipAngle; }
-
-const UMath::Vector3 &PVehicle::GetLocalVelocity() const { return mLocalVel; }
-
-const FECustomizationRecord *PVehicle::GetCustomizations() const { return mCustomization; }
-
-EventSequencer::IEngine *PVehicle::GetEventSequencer() { return mSequencer; }
-
-char PVehicle::GetForceStop() { return mForceStop; }
-
-bool PVehicle::IsGlareOn(VehicleFX::ID glare) { return (mGlareState & glare) != 0; }
-
-bool PVehicle::IsActive() const { return mPhysicsMode != PHYSICS_MODE_INACTIVE; }
 
 void PVehicle::GlareOn(VehicleFX::ID glare) { mGlareState |= glare; }
 
@@ -231,18 +183,6 @@ void PVehicle::OnDisableModeling() {
     }
 }
 
-bool PVehicle::GetPerformance(Physics::Info::Performance &performance) const {
-    performance = mPerformance;
-    return mPerformanceValid;
-}
-
-unsigned int PVehicle::GetVehicleKey() const { return mAttributes.GetCollection(); }
-
-CarType PVehicle::GetModelType() const { return mResources.Type; }
-
-bool PVehicle::IsSpooled() const { return mResources.IsSpooled(); }
-
-
 IModel *PVehicle::GetModel() {
     if (mRenderable != nullptr) {
         return mRenderable->GetModel();
@@ -256,21 +196,6 @@ const IModel *PVehicle::GetModel() const {
         return nullptr;
     }
     return mRenderable->GetModel();
-}
-
-bool PVehicle::InShock() const {
-    if (mDamage == nullptr) {
-        return false;
-    }
-    return mDamage->InShock() > 0.0f;
-}
-
-bool PVehicle::IsDestroyed() const {
-    if (mDamage != nullptr) {
-        return mDamage->IsDestroyed();
-    } else {
-        return false;
-    }
 }
 
 void PVehicle::SetPhysicsMode(PhysicsMode mode) {
@@ -393,9 +318,9 @@ void PVehicle::SetBehaviorOverride(UCrc32 mechanic, UCrc32 behavior) {
 }
 
 void PVehicle::RemoveBehaviorOverride(UCrc32 mechanic) {
-    UTL::Std::map<UCrc32, UCrc32, _type_ID_PVehicleChangeReq>::iterator it = mBehaviorOverrides.find(mechanic);
-    if (it != mBehaviorOverrides.end()) {
-        mBehaviorOverrides.erase(it);
+    UTL::Std::map<UCrc32, UCrc32, _type_ID_PVehicleChangeReq>::iterator iter = mBehaviorOverrides.find(mechanic);
+    if (iter != mBehaviorOverrides.end()) {
+        mBehaviorOverrides.erase(iter);
         mOverrideDirty = true;
     }
 }
@@ -688,7 +613,7 @@ const Physics::Tunings *PVehicle::GetTunings() const {
         return &tunings;
     }
     if (mCustomization != nullptr) {
-        return mCustomization->GetTunings();
+        return static_cast<const FECustomizationRecord *>(mCustomization)->GetTunings();
     }
     return nullptr;
 }

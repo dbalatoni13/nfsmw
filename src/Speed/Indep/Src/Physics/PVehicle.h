@@ -11,6 +11,7 @@
 #include "Speed/Indep/Src/Interfaces/IAttributeable.h"
 #include "Speed/Indep/Src/Interfaces/SimActivities/IVehicleCache.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IExplodeable.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IDamageable.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
 #include "Speed/Indep/Src/Main/EventSequencer.h"
 #include "Speed/Indep/Src/Physics/PhysicsObject.h"
@@ -170,7 +171,9 @@ class PVehicle : public PhysicsObject,
     virtual bool OnTask(HSIMTASK htask, float dT) override;
     virtual void OnTaskSimulate(float dT) override;
     virtual void OnBehaviorChange(const UCrc32 &mechanic) override;
-    virtual EventSequencer::IEngine *GetEventSequencer() override;
+    virtual EventSequencer::IEngine *GetEventSequencer() override {
+        return mSequencer;
+    }
     virtual IModel *GetModel() override;
     virtual const IModel *GetModel() const override;
     virtual const UMath::Vector3 &GetPosition() const override {
@@ -182,57 +185,121 @@ class PVehicle : public PhysicsObject,
     virtual void OnDebugDraw();
     virtual const ISimable *GetSimable() const override;
     virtual ISimable *GetSimable() override;
-    virtual Attrib::Gen::pvehicle &GetVehicleAttributes() const override;
-    virtual const UCrc32 &GetVehicleClass() const override;
-    virtual const char *GetVehicleName() const override;
-    virtual unsigned int GetVehicleKey() const override;
+    virtual Attrib::Gen::pvehicle &GetVehicleAttributes() const override {
+        return const_cast<Attrib::Gen::pvehicle &>(mAttributes);
+    }
+    virtual const UCrc32 &GetVehicleClass() const override {
+        return mClass;
+    }
+    virtual const char *GetVehicleName() const override {
+        return mAttributes.CollectionName();
+    }
+    virtual unsigned int GetVehicleKey() const override {
+        return mAttributes.GetCollection();
+    }
     virtual void SetDriverClass(DriverClass dc) override;
-    virtual DriverClass GetDriverClass() const override;
+    virtual DriverClass GetDriverClass() const override {
+        return mDriverClass;
+    }
     virtual void SetDriverStyle(DriverStyle style) override;
-    virtual DriverStyle GetDriverStyle() const override;
+    virtual DriverStyle GetDriverStyle() const override {
+        return mDriverStyle;
+    }
     virtual void SetBehaviorOverride(UCrc32 mechanic, UCrc32 behavior) override;
     virtual void RemoveBehaviorOverride(UCrc32 mechanic) override;
     virtual void CommitBehaviorOverrides() override;
     virtual bool SetVehicleOnGround(const UMath::Vector3 &resetPos, const UMath::Vector3 &initialVec) override;
-    virtual char GetForceStop() override;
+    virtual char GetForceStop() override {
+        return mForceStop;
+    }
     virtual void ForceStopOn(char forceStopBits) override;
     virtual void ForceStopOff(char forceStopBits) override;
-    virtual bool IsOffWorld() const override;
-    virtual CarType GetModelType() const override;
-    virtual bool IsSpooled() const override;
+    virtual bool IsOffWorld() const override {
+        return mOffWorld;
+    }
+    virtual CarType GetModelType() const override {
+        return mResources.Type;
+    }
+    virtual bool IsSpooled() const override {
+        return mResources.IsSpooled();
+    }
     virtual void SetStaging(bool staging) override;
-    virtual bool IsStaging() const override;
+    virtual bool IsStaging() const override {
+        return mStaging;
+    }
     virtual void Launch() override;
     virtual float GetPerfectLaunch() const override;
     virtual bool IsLoading() const override;
-    virtual float GetOffscreenTime() const override;
-    virtual float GetOnScreenTime() const override;
-    virtual bool InShock() const override;
-    virtual bool IsDestroyed() const override;
-    virtual float GetAbsoluteSpeed() const override;
-    virtual float GetSpeedometer() const override;
+    virtual float GetOffscreenTime() const override {
+        return mOffScreenTime;
+    }
+    virtual float GetOnScreenTime() const override {
+        return mOnScreenTime;
+    }
+    virtual bool InShock() const override {
+        if (mDamage == nullptr) {
+            return false;
+        }
+        return mDamage->InShock() > 0.0f;
+    }
+    virtual bool IsDestroyed() const override {
+        if (mDamage != nullptr) {
+            return mDamage->IsDestroyed();
+        } else {
+            return false;
+        }
+    }
+    virtual float GetAbsoluteSpeed() const override {
+        return mAbsSpeed;
+    }
+    virtual float GetSpeedometer() const override {
+        return mSpeedometer;
+    }
     virtual float GetSpeed() const override;
     virtual void SetSpeed(float speed) override;
     virtual void GlareOn(VehicleFX::ID glare) override;
     virtual void GlareOff(VehicleFX::ID glare) override;
-    virtual bool IsGlareOn(VehicleFX::ID glare) override;
-    virtual bool IsCollidingWithSoftBarrier() override;
-    virtual bool IsAnimating() const override;
+    virtual bool IsGlareOn(VehicleFX::ID glare) override {
+        return (mGlareState & glare) != 0;
+    }
+    virtual bool IsCollidingWithSoftBarrier() override {
+        return false;
+    }
+    virtual bool IsAnimating() const override {
+        return mAnimating;
+    }
     virtual void SetAnimating(bool animate) override;
     virtual void Activate() override;
     virtual void Deactivate() override;
-    virtual bool IsActive() const override;
+    virtual bool IsActive() const override {
+        return mPhysicsMode != PHYSICS_MODE_INACTIVE;
+    }
     virtual void SetPhysicsMode(PhysicsMode mode) override;
-    virtual PhysicsMode GetPhysicsMode() const override;
-    virtual IVehicleAI *GetAIVehiclePtr() const override;
-    virtual float GetSlipAngle() const override;
-    virtual const UMath::Vector3 &GetLocalVelocity() const override;
-    virtual const FECustomizationRecord *GetCustomizations() const override;
+    virtual PhysicsMode GetPhysicsMode() const override {
+        return mPhysicsMode;
+    }
+    virtual IVehicleAI *GetAIVehiclePtr() const override {
+        return mAI;
+    }
+    virtual float GetSlipAngle() const override {
+        return mSlipAngle;
+    }
+    virtual const UMath::Vector3 &GetLocalVelocity() const override {
+        return mLocalVel;
+    }
+    virtual const FECustomizationRecord *GetCustomizations() const override {
+        return mCustomization;
+    }
     virtual const Physics::Tunings *GetTunings() const override;
     virtual void SetTunings(const Physics::Tunings &tunings) override;
     virtual void ComputeHeading(UMath::Vector3 *v) override;
-    virtual bool GetPerformance(Physics::Info::Performance &performance) const override;
-    virtual const char *GetCacheName() const override;
+    virtual bool GetPerformance(Physics::Info::Performance &performance) const override {
+        performance = mPerformance;
+        return mPerformanceValid;
+    }
+    virtual const char *GetCacheName() const override {
+        return mCacheName;
+    }
     virtual bool OnExplosion(const UMath::Vector3 &normal, const UMath::Vector3 &position, float dT, IExplosion *explosion) override;
     virtual bool SetDynamicData(const EventSequencer::System *system, EventDynamicData *data) override;
     virtual void OnAttributeChange(const Attrib::Collection *collection, unsigned int attribkey) override;

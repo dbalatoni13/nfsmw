@@ -709,7 +709,7 @@ class Attribute {
         return mInternal;
     }
 
-    bool Get(unsigned int index, RefSpec &result) {
+    bool Get(unsigned int index, RefSpec &result) const {
         const RefSpec *resultptr = reinterpret_cast<const RefSpec *>(GetElementPointer(index));
 
         if (resultptr) {
@@ -809,9 +809,9 @@ class Instance {
         return mCollection;
     }
 
-    void SetDefaultLayout(unsigned int bytes) {
+    void SetDefaultLayout(unsigned int bytes) const {
         if (mLayoutPtr == nullptr) {
-            mLayoutPtr = const_cast<void *>(DefaultDataArea(bytes));
+            const_cast<Instance *>(this)->mLayoutPtr = const_cast<void *>(DefaultDataArea(bytes));
         }
     }
 

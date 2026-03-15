@@ -60,6 +60,10 @@ class Behavior : public Sim::Object, public UTL::COM::Factory<const BehaviorPara
 
     void Pause(bool pause);
 
+    static void Destroy(Behavior *b) {
+        delete b;
+    }
+
     int IsPaused() const {
         return mPaused;
     }

@@ -316,6 +316,7 @@ void SmokeableSpawner::OnUnload() {
 }
 
 const ModelHeirarchy *SmokeableSpawner::GetRenderHeirarchy() const {
+    ModelHeirarchy *heirarchy;
     SceneryOverrideInfo *info = GetSceneryOverrideInfo(mSceneryOverrideInfoNumber);
     if (info != nullptr) {
         ScenerySectionHeader *section_header = GetScenerySectionHeader(static_cast<int>(info->SectionNumber));
@@ -324,7 +325,8 @@ const ModelHeirarchy *SmokeableSpawner::GetRenderHeirarchy() const {
             if (scenery_instance != nullptr) {
                 SceneryInfo *sinfo = section_header->GetSceneryInfo(scenery_instance);
                 if (sinfo != nullptr) {
-                    return sinfo->mHeirarchy;
+                    heirarchy = sinfo->mHeirarchy;
+                    return heirarchy;
                 }
             }
         }

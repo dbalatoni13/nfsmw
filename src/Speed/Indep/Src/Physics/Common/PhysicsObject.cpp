@@ -106,17 +106,17 @@ void PhysicsObject::GetTransform(UMath::Matrix4 &matrix) const {
 
 void PhysicsObject::GetLinearVelocity(UMath::Vector3 &velocity) const {
     if (mRigidBody != nullptr) {
-        velocity = mRigidBody->GetLinearVelocity();
+        UMath::Copy(mRigidBody->GetLinearVelocity(), velocity);
     } else {
-        velocity = UMath::Vector3::kZero;
+        UMath::Copy(UMath::Vector3::kZero, velocity);
     }
 }
 
 void PhysicsObject::GetAngularVelocity(UMath::Vector3 &velocity) const {
     if (mRigidBody != nullptr) {
-        velocity = mRigidBody->GetAngularVelocity();
+        UMath::Copy(mRigidBody->GetAngularVelocity(), velocity);
     } else {
-        velocity = UMath::Vector3::kZero;
+        UMath::Copy(UMath::Vector3::kZero, velocity);
     }
 }
 
@@ -124,7 +124,7 @@ void PhysicsObject::GetDimension(UMath::Vector3 &dim) const {
     if (mRigidBody != nullptr) {
         mRigidBody->GetDimension(dim);
     } else {
-        dim = UMath::Vector3::kZero;
+        UMath::Copy(UMath::Vector3::kZero, dim);
     }
 }
 
@@ -159,8 +159,8 @@ void PhysicsObject::OnDetached(IAttachable *pOther) {
     mBehaviors.OnDetach(pOther);
 }
 
-bool PhysicsObject::OnService(HSIMSERVICE hCon, Sim::Packet *pkt) {
-    if (hCon == mBodyService) {
+bool PhysicsObject::OnService(HSIMSERVICE hConn, Sim::Packet *pkt) {
+    if (hConn == mBodyService) {
         WorldConn::Pkt_Body_Service *pbs = static_cast<WorldConn::Pkt_Body_Service *>(pkt);
         UMath::Matrix4 mat;
         mRigidBody->GetMatrix4(mat);
@@ -169,7 +169,7 @@ bool PhysicsObject::OnService(HSIMSERVICE hCon, Sim::Packet *pkt) {
         pbs->SetVelocity(mRigidBody->GetLinearVelocity());
         return true;
     }
-    return Sim::Object::OnService(hCon, pkt);
+    return Sim::Object::OnService(hConn, pkt);
 }
 
 bool PhysicsObject::OnTask(HSIMTASK htask, float dT) {
@@ -212,11 +212,11 @@ bool PhysicsObject::IsOwnedByPlayer() const {
             if (owner->GetOwnerHandle() == owner->GetInstanceHandle()) {
                 return false;
             }
-            ISimable *newOwner = ISimable::FindInstance(owner->GetOwnerHandle());
-            if (owner == newOwner) {
+            ISimable *next = ISimable::FindInstance(owner->GetOwnerHandle());
+            if (owner == next) {
                 return false;
             }
-            owner = newOwner;
+            owner = next;
         } while (owner != nullptr);
     }
     return false;
@@ -269,10 +269,10 @@ void PhysicsObject::OnBehaviorChange(const UCrc32 &mechanic) {
 bool PhysicsObject::IsBehaviorActive(const UCrc32 &mechanic) const {
     unsigned int key = mechanic.GetValue();
     Mechanics::const_iterator iter = mMechanics.find(key);
-    if (iter._M_node == mMechanics.end()._M_node) {
+    if (iter == mMechanics.end()) {
         return false;
     }
-    Behavior *beh = iter->second;
+    Behavior *beh = (*iter).second;
     if (beh == nullptr) {
         return false;
     }
@@ -281,8 +281,7 @@ bool PhysicsObject::IsBehaviorActive(const UCrc32 &mechanic) const {
 
 void PhysicsObject::PauseBehavior(const UCrc32 &mechanic, bool pause) {
     unsigned int key = mechanic.GetValue();
-    Mechanics::iterator iter = mMechanics.find(key);
-    if (iter._M_node == mMechanics.end()._M_node) {
+    if (mMechanics.find(key) == mMechanics.end()) {
         return;
     }
     Behavior *beh = mMechanics[key];
@@ -310,12 +309,12 @@ ret_false:
 
 void PhysicsObject::ReleaseBehaviors() {
     for (Mechanics::iterator iter = mMechanics.begin(); iter != mMechanics.end(); iter++) {
-        Behavior *beh = iter->second;
+        Behavior *beh = (*iter).second;
         if (beh != nullptr) {
-            UCrc32 mechanic(iter->first);
+            UCrc32 mechanic((*iter).first);
             mBehaviors.Remove(beh);
             DestroyElement(*beh);
-            iter->second = nullptr;
+            (*iter).second = nullptr;
             OnBehaviorChange(mechanic);
         }
     }
@@ -440,41 +439,6 @@ void PhysicsObject::Reset() {
     mBehaviors.Reset();
 }
 
-EventSequencer::IEngine *PhysicsObject::GetEventSequencer() {
-    return nullptr;
-}
-
-Sim::IEntity *PhysicsObject::GetEntity() const {
-    return mEntity;
-}
-
-bool PhysicsObject::IsPlayer() const {
-    return mPlayer != nullptr;
-}
-
-IPlayer *PhysicsObject::GetPlayer() const {
-    return mPlayer;
-}
-
-SimableType PhysicsObject::GetSimableType() const {
-    return mObjType;
-}
-
-const Attrib::Instance &PhysicsObject::GetAttributes() const {
-    return mAttributes;
-}
-
-bool PhysicsObject::IsRigidBodySimple() const {
-    if (mRigidBody) {
-        return mRigidBody->IsSimple();
-    }
-    return false;
-}
-
-bool PhysicsObject::IsRigidBodyComplex() const {
-    return !IsRigidBodySimple();
-}
-
 WWorldPos &PhysicsObject::GetWPos() {
     return *mWPos;
 }
@@ -483,29 +447,10 @@ const WWorldPos &PhysicsObject::GetWPos() const {
     return *mWPos;
 }
 
-HSIMABLE PhysicsObject::GetOwnerHandle() const {
-    return mOwner;
-}
-
-ISimable *PhysicsObject::GetOwner() const {
-    return ISimable::FindInstance(mOwner);
-}
-
 IRigidBody *PhysicsObject::GetRigidBody() {
     return mRigidBody;
 }
 
-
-unsigned int PhysicsObject::GetWorldID() const {
-    return mWorldID;
-}
-
-bool PhysicsObject::IsAttached(const UTL::COM::IUnknown *pOther) const {
-    if (mAttachments) {
-        return mAttachments->IsAttached(pOther);
-    }
-    return false;
-}
 
 const UTL::Std::list<IAttachable *, _type_IAttachableList> *PhysicsObject::GetAttachments() const {
     if (mAttachments == nullptr) {

@@ -71,29 +71,50 @@ class PhysicsObject : public Sim::Object,
     virtual ~PhysicsObject();
 
     // ISimable overrides
-    virtual SimableType GetSimableType() const override;
+    virtual SimableType GetSimableType() const override {
+        return mObjType;
+    }
     virtual void Kill() override;
     virtual bool Attach(UTL::COM::IUnknown *object) override;
     virtual bool Detach(UTL::COM::IUnknown *object) override;
     virtual const UTL::Std::list<IAttachable *, _type_IAttachableList> *GetAttachments() const override;
     virtual void AttachEntity(Sim::IEntity *e) override;
     virtual void DetachEntity() override;
-    virtual struct IPlayer *GetPlayer() const override;
-    virtual bool IsPlayer() const override;
+    virtual struct IPlayer *GetPlayer() const override {
+        return mPlayer;
+    }
+    virtual bool IsPlayer() const override {
+        return mPlayer != nullptr;
+    }
     virtual bool IsOwnedByPlayer() const override;
-    virtual Sim::IEntity *GetEntity() const override;
+    virtual Sim::IEntity *GetEntity() const override {
+        return mEntity;
+    }
     virtual void DebugObject() override;
-    virtual HSIMABLE GetOwnerHandle() const override;
-    virtual ISimable *GetOwner() const override;
+    virtual HSIMABLE GetOwnerHandle() const override {
+        return mOwner;
+    }
+    virtual ISimable *GetOwner() const override {
+        return ISimable::FindInstance(mOwner);
+    }
     virtual bool IsOwnedBy(ISimable *queriedOwner) const override;
     virtual void SetOwnerObject(ISimable *pOwner) override;
-    virtual const Attrib::Instance &GetAttributes() const override;
+    virtual const Attrib::Instance &GetAttributes() const override {
+        return mAttributes;
+    }
     virtual WWorldPos &GetWPos() override;
     virtual const WWorldPos &GetWPos() const override;
     virtual class IRigidBody *GetRigidBody() override;
     virtual const class IRigidBody *GetRigidBody() const override { return mRigidBody; }
-    virtual bool IsRigidBodySimple() const override;
-    virtual bool IsRigidBodyComplex() const override;
+    virtual bool IsRigidBodySimple() const override {
+        if (mRigidBody) {
+            return mRigidBody->IsSimple();
+        }
+        return false;
+    }
+    virtual bool IsRigidBodyComplex() const override {
+        return !IsRigidBodySimple();
+    }
     virtual const UMath::Vector3 &GetPosition() const override {
         if (mRigidBody == nullptr) {
             return UMath::Vector3::kZero;
@@ -103,8 +124,12 @@ class PhysicsObject : public Sim::Object,
     virtual void GetTransform(UMath::Matrix4 &matrix) const override;
     virtual void GetLinearVelocity(UMath::Vector3 &velocity) const override;
     virtual void GetAngularVelocity(UMath::Vector3 &velocity) const override;
-    virtual unsigned int GetWorldID() const override;
-    virtual EventSequencer::IEngine *GetEventSequencer() override;
+    virtual unsigned int GetWorldID() const override {
+        return mWorldID;
+    }
+    virtual EventSequencer::IEngine *GetEventSequencer() override {
+        return nullptr;
+    }
     virtual void ProcessStimulus(unsigned int stimulus) override;
     virtual IModel *GetModel() override;
     virtual const IModel *GetModel() const override;
@@ -115,7 +140,12 @@ class PhysicsObject : public Sim::Object,
     // IAttachable overrides
     virtual void OnAttached(IAttachable *pOther) override;
     virtual void OnDetached(IAttachable *pOther) override;
-    virtual bool IsAttached(const UTL::COM::IUnknown *pOther) const override;
+    virtual bool IsAttached(const UTL::COM::IUnknown *pOther) const override {
+        if (mAttachments) {
+            return mAttachments->IsAttached(pOther);
+        }
+        return false;
+    }
 
     // IBody overrides
     virtual void GetDimension(UMath::Vector3 &dim) const override;

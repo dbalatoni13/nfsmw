@@ -92,7 +92,7 @@ namespace Info {
 void Init();
 
 float AerodynamicDownforce(const Attrib::Gen::chassis &chassis, const float speed);
-float EngineInertia(const Attrib::Gen::engine &engine, const bool loaded);
+float EngineInertia(const Attrib::Gen::engine &engine, bool loaded);
 eInductionType InductionType(const Attrib::Gen::induction &induction);
 bool HasNos(const Attrib::Gen::pvehicle &pvehicle);
 bool HasRunflatTires(const Attrib::Gen::pvehicle &pvehicle);

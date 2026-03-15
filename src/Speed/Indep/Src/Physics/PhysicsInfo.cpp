@@ -26,7 +26,7 @@ float Physics::Info::AerodynamicDownforce(const Attrib::Gen::chassis &chassis, c
     return speed * 2 * chassis.AERO_COEFFICIENT() * 1000.0f;
 }
 
-float Physics::Info::EngineInertia(const Attrib::Gen::engine &engine, const bool loaded) {
+float Physics::Info::EngineInertia(const Attrib::Gen::engine &engine, bool loaded) {
     float scale;
     if (loaded)
         scale = 1.f;
@@ -155,7 +155,9 @@ float Physics::Info::Torque(const Attrib::Gen::engine &engine, float rpm) {
         unsigned int index = UTIL_InterprolateIndex(numpts - 1, rpm, rpm_min, rpm_max, ratio);
         float power = engine.TORQUE(index);
         unsigned int secondIndex = UMath::Min(numpts - 1, index + 1);
-        return UMath::Lerp(power, engine.TORQUE(secondIndex), ratio);
+        float step = engine.TORQUE(secondIndex) - power;
+        float torque = power + step * ratio;
+        return torque;
     }
 
     return 0.0f;
@@ -255,19 +257,20 @@ Mps Physics::Info::Speedometer(const Attrib::Gen::transmission &transmission, co
 }
 
 float Physics::Info::MaxInductedPower(const Attrib::Gen::pvehicle &pvehicle, const Tunings *tunings) {
-    Attrib::Gen::engine eng(pvehicle.engine(0), 0, nullptr);
-    Attrib::Gen::induction ind(pvehicle.induction(0), 0, nullptr);
+    Attrib::Gen::engine engine(pvehicle.engine(0), 0, nullptr);
+    Attrib::Gen::induction induction(pvehicle.induction(0), 0, nullptr);
+    unsigned int num_torque = engine.Num_TORQUE();
 
-    if (eng.Num_TORQUE() < 2) {
+    if (num_torque < 2) {
         return 0.0f;
     }
 
     float result = 0.0f;
-    float rpm = eng.IDLE();
-    float delta_rpm = (eng.MAX_RPM() - eng.IDLE()) / static_cast<float>(eng.Num_TORQUE() - 1);
+    float rpm = engine.IDLE();
+    float delta_rpm = (engine.MAX_RPM() - engine.IDLE()) / static_cast<float>(engine.Num_TORQUE() - 1);
 
-    for (unsigned int i = 0; i < eng.Num_TORQUE(); i++) {
-        float pt_torque = eng.TORQUE(i) * (InductionBoost(eng, ind, rpm, 1.0f, tunings, nullptr) + 1.0f);
+    for (unsigned int i = 0; i < engine.Num_TORQUE(); i++) {
+        float pt_torque = engine.TORQUE(i) * (InductionBoost(engine, induction, rpm, 1.0f, tunings, nullptr) + 1.0f);
         float hp = FTLB2HP(pt_torque, rpm);
         if (hp > result) {
             result = hp;
@@ -551,10 +554,7 @@ void PerfLevel::Print(const char *) {
 
 void PerfLevel::Rate() {
     Stock.Handling = UMath::Ramp(Stats.HandlingRating, bottom_stats.HandlingRating, top_stats.HandlingRating);
-
-    float accel_ratio = UMath::Ramp(Stats.Time0To100, bottom_stats.Time0To100, top_stats.Time0To100);
-    Stock.Acceleration = 1.0f - accel_ratio;
-
+    Stock.Acceleration = 1.0f - UMath::Ramp(Stats.Time0To100, bottom_stats.Time0To100, top_stats.Time0To100);
     Stock.TopSpeed = UMath::Ramp(Stats.TopSpeed, bottom_stats.TopSpeed, top_stats.TopSpeed);
 }
 
@@ -859,14 +859,14 @@ bool Physics::Info::ComputePerformance(const Attrib::Gen::pvehicle &vehicle, Per
     return true;
 }
 
-bool Physics::Info::GetStockPerformance(const Attrib::Gen::pvehicle &vehicle, Performance &perf) {
-    if (!HasPerformanceRatings(vehicle)) {
+bool Physics::Info::GetStockPerformance(const Attrib::Gen::pvehicle &pvehicle, Performance &perf) {
+    if (!HasPerformanceRatings(pvehicle)) {
         return false;
     }
 
-    unsigned int key = vehicle.GetCollection();
-    if (vehicle.IsDynamic()) {
-        key = vehicle.GetParent();
+    unsigned int key = pvehicle.GetCollection();
+    if (pvehicle.IsDynamic()) {
+        key = pvehicle.GetParent();
     }
 
     for (PerformanceMaps::const_iterator iter = TheStockCars.begin(); iter != TheStockCars.end(); iter++) {
@@ -880,14 +880,14 @@ bool Physics::Info::GetStockPerformance(const Attrib::Gen::pvehicle &vehicle, Pe
     return false;
 }
 
-bool Physics::Info::GetMaximumPerformance(const Attrib::Gen::pvehicle &vehicle, Performance &perf) {
-    if (!HasPerformanceRatings(vehicle)) {
+bool Physics::Info::GetMaximumPerformance(const Attrib::Gen::pvehicle &pvehicle, Performance &perf) {
+    if (!HasPerformanceRatings(pvehicle)) {
         return false;
     }
 
-    unsigned int key = vehicle.GetCollection();
-    if (vehicle.IsDynamic()) {
-        key = vehicle.GetParent();
+    unsigned int key = pvehicle.GetCollection();
+    if (pvehicle.IsDynamic()) {
+        key = pvehicle.GetParent();
     }
 
     for (PerformanceMaps::const_iterator iter = TheStockCars.begin(); iter != TheStockCars.end(); iter++) {
@@ -917,4 +917,3 @@ void Physics::Info::FindPerformanceCandidates(const Performance &minimum_perf, c
         }
     }
 }
-
