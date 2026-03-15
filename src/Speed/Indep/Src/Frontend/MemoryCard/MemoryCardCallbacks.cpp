@@ -603,15 +603,15 @@ void MemcardCallbacks::SetAutosaveDone(RealmcIface::TaskResult res,
         if (gMemcardSetup.mPreviousCommand == 0x20) {
             msg = 0xa4bb7ae1;
         }
-        if (!GetMemcard()->IsAutoSaving()) {
-            cFEng::Get()->QueueGameMessage(msg, nullptr, 0xff);
-        } else {
+        if (GetMemcard()->IsAutoSaving()) {
             if (flag != RealmcIface::AUTOSAVE_ENABLE &&
                 FEDatabase->GetGameplaySettings()->AutoSaveOn) {
                 FEDatabase->GetGameplaySettings()->AutoSaveOn = false;
                 GetMemcard()->m_bCardRemoved = true;
             }
             GetMemcard()->EndAutoSave();
+        } else {
+            cFEng::Get()->QueueGameMessage(msg, nullptr, 0xff);
         }
         if (flag == RealmcIface::AUTOSAVE_ENABLE) {
             if (gMemcardSetup.GetMethod() == 0xa0 &&
