@@ -687,6 +687,8 @@ void GarageMainScreen::HandleJoyEvents() {
 float GarageMainScreen::GetCarRotationX() {
     eGarageType type = FEManager::Get()->GetGarageType();
     switch (type) {
+        case GARAGETYPE_CAR_LOT:
+            return -0.3796229958534241f;
         case GARAGETYPE_NONE:
         case GARAGETYPE_MAIN_FE:
         default:
@@ -695,14 +697,14 @@ float GarageMainScreen::GetCarRotationX() {
             return 0.0f;
         case GARAGETYPE_CUSTOMIZATION_SHOP:
             return 0.0f;
-        case GARAGETYPE_CAR_LOT:
-            return -0.3796229958534241f;
     }
 }
 
 float GarageMainScreen::GetCarRotationY() {
     eGarageType type = FEManager::Get()->GetGarageType();
     switch (type) {
+        case GARAGETYPE_CAR_LOT:
+            return -0.00019299999985378236f;
         case GARAGETYPE_NONE:
         case GARAGETYPE_MAIN_FE:
         default:
@@ -711,14 +713,14 @@ float GarageMainScreen::GetCarRotationY() {
             return 0.0f;
         case GARAGETYPE_CUSTOMIZATION_SHOP:
             return 0.0f;
-        case GARAGETYPE_CAR_LOT:
-            return -0.00019299999985378236f;
     }
 }
 
 float GarageMainScreen::GetCarRotationZ() {
     eGarageType type = FEManager::Get()->GetGarageType();
     switch (type) {
+        case GARAGETYPE_CAR_LOT:
+            return 340.0f;
         case GARAGETYPE_NONE:
         case GARAGETYPE_MAIN_FE:
         default:
@@ -727,8 +729,6 @@ float GarageMainScreen::GetCarRotationZ() {
             return 304.96978759765625f;
         case GARAGETYPE_CUSTOMIZATION_SHOP:
             return 304.96978759765625f;
-        case GARAGETYPE_CAR_LOT:
-            return 340.0f;
     }
 }
 
@@ -766,6 +766,8 @@ float GarageMainScreen::GetGeometryXPos() {
 float GarageMainScreen::GetGeometryYPos() {
     eGarageType type = FEManager::Get()->GetGarageType();
     switch (type) {
+        case GARAGETYPE_CAR_LOT:
+            return 0.07500000298023224f;
         case GARAGETYPE_NONE:
         case GARAGETYPE_MAIN_FE:
         default:
@@ -774,8 +776,6 @@ float GarageMainScreen::GetGeometryYPos() {
             return 0.0f;
         case GARAGETYPE_CUSTOMIZATION_SHOP:
             return 0.0f;
-        case GARAGETYPE_CAR_LOT:
-            return 0.07500000298023224f;
     }
 }
 
@@ -1001,10 +1001,10 @@ GarageCarLoader *GetGarageCarLoader() {
 }
 
 void GarageCarLoader::Init() {
-    IsLoadingRide = false;
+    IsCurrentRide = false;
     LoadingCar = 0;
     CurrentCar = 0;
-    IsCurrentRide = false;
+    IsLoadingRide = false;
 }
 
 void GarageCarLoader::Switch() {
@@ -1031,9 +1031,9 @@ void GarageCarLoader::CleanUp() {
     if (IsCurrentRide && CurrentCar) {
         TheCarLoader.Unload(CurrentCar);
     }
-    IsLoadingRide = false;
-    CurrentCar = 0;
     LoadingCar = 0;
+    CurrentCar = 0;
+    IsLoadingRide = false;
     IsCurrentRide = false;
 }
 

@@ -91,21 +91,16 @@ void CustomizePaint::SetupBasePaint() {
 // --- CustomizeSub Setup functions ---
 
 void CustomizeSub::Setup() {
-    unsigned int cat = Category;
-    if (cat == 0x103) {
-        SetupRimBrands();
-    } else if (cat == 0x302) {
-        SetupVinylGroups();
-    } else if (cat == 0x305) {
-        SetupDecalLocations();
-    } else if (cat >= 0x501 && cat < 0x507) {
-        SetupDecalPositions();
-    } else if (cat == 0x801) {
-        SetupParts();
-    } else if (cat == 0x802) {
-        SetupPerformance();
-    } else if (cat == 0x803) {
-        SetupVisual();
+    switch (Category) {
+        case 0x801: SetupParts(); break;
+        case 0x802: SetupPerformance(); break;
+        case 0x803: SetupVisual(); break;
+        case 0x302: SetupVinylGroups(); break;
+        case 0x305: SetupDecalLocations(); break;
+        case 0x103: SetupRimBrands(); break;
+        case 0x501: case 0x502: case 0x503:
+        case 0x504: case 0x505: case 0x506:
+            SetupDecalPositions(); break;
     }
     RefreshHeader();
 }

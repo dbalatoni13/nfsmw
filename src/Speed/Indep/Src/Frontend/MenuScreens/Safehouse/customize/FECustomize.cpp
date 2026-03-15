@@ -1787,9 +1787,9 @@ CustomizePerformance::CustomizePerformance(ScreenConstructorData *sd) : Customiz
 
 CustomizeRims::CustomizeRims(ScreenConstructorData *sd)
     : CustomizationScreen(sd) //
-    , InnerRadius(0) //
-    , MinRadius(0) //
-    , MaxRadius(0)
+    , InnerRadius(0xf) //
+    , MinRadius(0xf) //
+    , MaxRadius(0xf)
 {
     Setup();
 }

@@ -64,8 +64,8 @@ struct TrackDirection : public FEToggleWidget {
 };
 
 UIQRTrackOptions::UIQRTrackOptions(ScreenConstructorData *sd) : UIWidgetMenu(sd) {
-    msgHandle = 0;
     m_code = 0;
+    msgHandle = 0;
     m_boDisconnectPercAvail = false;
     race = GRaceDatabase_mObj->GetRaceFromHash(FEDatabase->GetQuickRaceSettings(FEDatabase->RaceMode)->EventHash);
     iMaxWidgetsOnScreen = 9;
@@ -245,7 +245,16 @@ void UIQRTrackOptions::SetupDrag() {
 }
 
 void UIQRTrackOptions::SetupKnockout() {
-    if (!(FEDatabase->IsOnlineMode()) && !(FEDatabase->IsLANMode())) {
+    if ((FEDatabase->GetGameMode() & 8) != 0 || (FEDatabase->GetGameMode() & 0x40) != 0) {
+        bool boAddLaps = false;
+        BoilerPlateOnline(boAddLaps);
+        if (race->GetCanBeReversed()) {
+            TrackDirection *td = new TrackDirection(true);
+            AddToggleOption(td, true);
+        }
+        NumLaps *nl = new NumLaps(true);
+        AddToggleOption(nl, true);
+    } else {
         if (race->GetCanBeReversed()) {
             TrackDirection *td = new TrackDirection(true);
             AddToggleOption(td, true);
@@ -270,15 +279,6 @@ void UIQRTrackOptions::SetupKnockout() {
         AddToggleOption(ai, true);
         CatchUp *cu = new CatchUp(true);
         AddToggleOption(cu, true);
-    } else {
-        bool boAddLaps = false;
-        BoilerPlateOnline(boAddLaps);
-        if (race->GetCanBeReversed()) {
-            TrackDirection *td = new TrackDirection(true);
-            AddToggleOption(td, true);
-        }
-        NumLaps *nl = new NumLaps(true);
-        AddToggleOption(nl, true);
     }
 }
 
