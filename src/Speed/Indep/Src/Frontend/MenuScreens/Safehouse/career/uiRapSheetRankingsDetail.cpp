@@ -192,11 +192,11 @@ void uiRapSheetRankingsDetail::Setup() {
                 if (i == player_rank - 1) {
                     unsigned int car_hash = 0;
                     int player_value;
-                    if (!career_view) {
+                    if (career_view) {
+                        player_value = scores->CareerPursuitDetails.GetValue(rank_type);
+                    } else {
                         car_hash = GetFECarNameHashFromFEKey(scores->BestPursuitRankings[rank_type].CarFEKey);
                         player_value = scores->BestPursuitRankings[rank_type].Value;
-                    } else {
-                        player_value = scores->CareerPursuitDetails.GetValue(rank_type);
                     }
 
                     float value = static_cast<float>(player_value);
@@ -213,8 +213,10 @@ void uiRapSheetRankingsDetail::Setup() {
                         rival_id = reinterpret_cast<const char*>(Attrib::DefaultDataArea(sizeof(char)));
                     }
                     unsigned int name_hash = FEngHashString("BLACKLIST_RIVAL_%.2d_AKA", static_cast<int>(*rival_id));
-                    unsigned int car_hash = 0;
-                    if (!career_view) {
+                    unsigned int car_hash;
+                    if (career_view) {
+                        car_hash = 0;
+                    } else {
                         const char* rival_car = reinterpret_cast<const char*>(rankingsData.GetAttributePointer(0x2C3C7FEB, rank_index));
                         if (!rival_car) {
                             rival_car = reinterpret_cast<const char*>(Attrib::DefaultDataArea(sizeof(char)));
