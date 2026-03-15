@@ -1325,14 +1325,16 @@ Pending:
 }
 
 void EAXAemsManager::CompleteAsyncLoad() {
-    stSndDataLoadParams *m_pCurrentlyLoading = gAEMSMgr.m_pAsyncLoadSDLP;
-    if (m_pCurrentlyLoading == nullptr) {
+    register stSndDataLoadParams *m_pCurrentlyLoading;
+    int Result;
+    float delta;
+    if ((m_pCurrentlyLoading = gAEMSMgr.m_pAsyncLoadSDLP) == nullptr) {
         m_pCurrentlyLoading = gAEMSMgr.m_pCurLoadSDLP;
     }
     *reinterpret_cast<int *>(reinterpret_cast<char *>(m_pCurrentlyLoading) + 0x38) = 1;
     SNDmemlimits(-1, gAEMSMgr.m_SPUMainAllocsEnd);
-    *reinterpret_cast<int *>(reinterpret_cast<char *>(m_pCurrentlyLoading) + 0x64) =
-        *reinterpret_cast<int *>(&WorldTimer);
+    *reinterpret_cast<Timer *>(reinterpret_cast<char *>(m_pCurrentlyLoading) + 0x64) = WorldTimer;
+    delta = (WorldTimer - *reinterpret_cast<Timer *>(&StartBankLoadTicks)).GetSeconds();
 }
 
 void EAXAemsManager::ResetBankLoadParams() {

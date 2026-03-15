@@ -47,6 +47,10 @@ class Timer {
 
     Timer operator+(const Timer &t) const {}
 
+    Timer operator-(const Timer &t) const {
+        return Timer(this->PackedTime - t.PackedTime);
+    }
+
     Timer operator*(const Timer &t) const {}
 
     Timer &operator+=(const Timer &t) {}
