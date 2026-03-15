@@ -425,7 +425,8 @@ void CarCustomizeManager::ResetPreview() {
     stable->BuildRideForPlayer(TuningCar->Handle, 0, &ride);
     PreviewRecord.WriteRecordIntoRide(&ride);
     CarViewer::SetRideInfo(&ride, SET_RIDE_INFO_REASON_LOAD_CAR, eCARVIEWER_PLAYER1_CAR);
-    for (ShoppingCartItem *item = GetFirstCartItem(); item != reinterpret_cast<ShoppingCartItem *>(&ShoppingCart); item = item->GetNext()) {
+    ShoppingCartItem *end = reinterpret_cast<ShoppingCartItem *>(&ShoppingCart);
+    for (ShoppingCartItem *item = GetFirstCartItem(); item != end; item = item->GetNext()) {
         SelectablePart *buy = item->GetBuyingPart();
         if (buy->IsPerformancePkg()) {
             PreviewPerfPkg(static_cast<Physics::Upgrades::Type>(static_cast<int>(buy->GetPhysicsType())), buy->GetUpgradeLevel());

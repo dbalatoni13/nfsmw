@@ -1003,8 +1003,7 @@ void UIQRCarSelect::UpdateSliders() {
 }
 
 int UIQRCarSelect::GetFilterType() {
-    unsigned short f = static_cast<unsigned short>(filter);
-    switch (f) {
+    switch (static_cast<unsigned short>(filter)) {
     case 1: return 0;
     case 2: return 1;
     case 4: return 2;
@@ -1447,18 +1446,20 @@ void UIQRCarSelect::ClearCarList() {
 }
 
 void UIQRCarSelect::ScrollCars(eScrollDir dir) {
-    if (pSelectedCar == nullptr) return;
-    SelectableCar *newCar = static_cast<SelectableCar *>(pSelectedCar->GetPrev());
+    SelectableCar *cur = pSelectedCar;
+    if (!cur) return;
+    SelectableCar *newCar = static_cast<SelectableCar *>(cur->GetPrev());
     if (newCar == FilteredCarsList.EndOfList()) {
         newCar = FilteredCarsList.GetTail();
     }
-    if (dir == eSD_NEXT) {
-        newCar = static_cast<SelectableCar *>(pSelectedCar->GetNext());
+    if (dir == eSD_PREV) {
+    } else if (dir == eSD_NEXT) {
+        newCar = static_cast<SelectableCar *>(cur->GetNext());
         if (newCar == FilteredCarsList.EndOfList()) {
             newCar = FilteredCarsList.GetHead();
         }
     }
-    if (newCar != pSelectedCar) {
+    if (newCar != cur) {
         SetSelectedCar(newCar, iPlayerNum);
         RefreshHeader();
     }
