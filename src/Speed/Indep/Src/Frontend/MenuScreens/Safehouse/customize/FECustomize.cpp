@@ -2773,26 +2773,19 @@ void CustomizeMeter::Draw() {
 // --- CustomizeSub ---
 
 int CustomizeSub::GetRimBrandIndex(unsigned int brand) {
-    if (brand == 0x1e6a3b) return 10;
-    if (brand < 0x1e6a3c) {
-        if (brand == 0x9136) return 3;
-        if (brand < 0x9137) {
-            if (brand == 0x648) return 9;
-        } else {
-            if (brand == 0x9536) return 4;
-            if (brand == 0x1c386b) return 0xb;
-        }
-    } else {
-        if (brand == 0x352d08d1) return 2;
-        if (brand < 0x352d08d2) {
-            if (brand == 0x2b77feb) return 5;
-            if (brand == 0x324ac97) return 6;
-        } else {
-            if (brand == 0x48e25793) return 7;
-            if (brand == 0xdd544a02) return 8;
-        }
+    switch (brand) {
+    case 0x352d08d1: return 2;
+    case 0x9136: return 3;
+    case 0x9536: return 4;
+    case 0x2b77feb: return 5;
+    case 0x324ac97: return 6;
+    case 0x48e25793: return 7;
+    case 0xdd544a02: return 8;
+    case 0x648: return 9;
+    case 0x1e6a3b: return 10;
+    case 0x1c386b: return 0xb;
+    default: return 1;
     }
-    return 1;
 }
 
 void CustomizeSub::SetupRimBrands() {
@@ -3789,25 +3782,22 @@ void CustomizeNumbers::NotificationMessage(unsigned long msg, FEObject *pobj, un
 // --- CustomizeDecals ---
 
 unsigned int CustomizeDecals::GetSlotIDFromCategory() {
-    if (CurrentDecalLocation == 0x503) {
+    switch (CurrentDecalLocation) {
+    case 0x501:
+        return 0x53;
+    case 0x502:
+        return 0x5b;
+    case 0x503:
         switch (Category) {
-        case 0x601: return 99;
-        case 0x602: return 100;
+        case 0x601: return 0x63;
+        case 0x602: return 0x64;
         case 0x603: return 0x65;
         case 0x604: return 0x66;
         case 0x605: return 0x67;
         case 0x606: return 0x68;
-        default: break;
         }
-    } else if (CurrentDecalLocation == 0x501) {
-        return 0x53;
-    } else if (CurrentDecalLocation == 0x502) {
-        return 0x5b;
-    } else if (CurrentDecalLocation == 0x505) {
-        return 0x73;
-    } else if (CurrentDecalLocation == 0x506) {
-        return 0x7b;
-    } else if (CurrentDecalLocation == 0x504) {
+        // fall through
+    case 0x504:
         switch (Category) {
         case 0x601: return 0x6b;
         case 0x602: return 0x6c;
@@ -3815,12 +3805,15 @@ unsigned int CustomizeDecals::GetSlotIDFromCategory() {
         case 0x604: return 0x6e;
         case 0x605: return 0x6f;
         case 0x606: return 0x70;
-        default: break;
+        default: return 0x73;
         }
-    } else {
+    case 0x505:
+        return 0x73;
+    case 0x506:
+        return 0x7b;
+    default:
         return 0x53;
     }
-    return 0x73;
 }
 
 void CustomizeDecals::Setup() {
@@ -3974,13 +3967,17 @@ void CustomizeDecals::RefreshHeader() {
 // --- CustomizePaint helpers ---
 
 unsigned int CustomizePaint::CalcBrandHash(CarPart *part) {
-    if (!part) {
-        if (Category == 0x301 || Category == 0x303) {
-            return 0;
+    if (Category == 0x301) {
+        switch (TheFilter) {
+        case 0: return 0x02daab07;
+        case 1: return 0x03437a52;
+        case 2: return 0x03797533;
+        default: return part->GetAppliedAttributeUParam(0xebb03e66, 0);
         }
-        return 0;
+    } else if (Category == 0x303) {
+        return 0xda27;
     }
-    return part->GetAppliedAttributeUParam(0xebb03e66, 0);
+    return 0x3e871f1;
 }
 
 CustomizePaint::CustomizePaint(ScreenConstructorData *sd)
