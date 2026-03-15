@@ -19,9 +19,9 @@ FEPackageRenderInfo* HACK_FEPkgMgr_GetPackageRenderInfo(FEPackage* pkg);
 extern int g_discErrorOccured;
 extern char* FEngPleaseRenderSinglePackage;
 
-static FEColor gNormal;
-static FEColor gTint;
-static FEColor gRapsheet;
+static FEColor gNormal(0xFFE6E6C8u);
+static FEColor gTint(0xFFFFAF41u);
+static FEColor gRapsheet(0xFFAAE646u);
 
 cFEngGameInterface* cFEngGameInterface::pInstance;
 

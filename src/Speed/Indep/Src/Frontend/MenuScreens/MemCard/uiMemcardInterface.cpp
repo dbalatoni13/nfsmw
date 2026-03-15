@@ -1,5 +1,7 @@
 #include "Speed/Indep/Src/Frontend/MenuScreens/MemCard/uiMemcardInterface.hpp"
 
+MemoryCardSetup gMemcardSetup;
+
 void MemoryCardSetup::Clear() {
     mPreviousPrompt = 0;
     mOp = 0;
