@@ -108,7 +108,7 @@ private:
 public:
     IconOption(unsigned int tex_hash, unsigned int name_hash, unsigned int desc_hash);
     virtual ~IconOption() {}
-    virtual void React(const char* pkg_name, unsigned int data, FEObject* obj, unsigned int param1, unsigned int param2);
+    virtual void React(const char* pkg_name, unsigned int data, FEObject* obj, unsigned int param1, unsigned int param2) = 0;
 
     unsigned int GetName();
     unsigned int GetDesc();
