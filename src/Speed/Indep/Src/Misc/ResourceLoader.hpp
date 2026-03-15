@@ -83,7 +83,9 @@ class ResourceFile : public bTNode<ResourceFile> {
                      reinterpret_cast<void *>(callback_param));
     }
 
-    // void BeginLoading() {}
+    void BeginLoading() {
+        BeginLoading(static_cast<void (*)(void *)>(nullptr), nullptr);
+    }
 
     int IsFinishedLoading() {
         return LoadingFinishedFlag;

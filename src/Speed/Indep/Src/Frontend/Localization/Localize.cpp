@@ -312,6 +312,13 @@ extern void bInitMemoryPool(int pool, void *mem, int size, const char *name);
 extern void eLoadStreamingTexturePack(const char *filename, void (*callback)(void *), void *param, int flags);
 extern void eWaitForStreamingTexturePackLoading(const char *name);
 
+struct VMFile;
+extern ResourceFile *pLanguageResourceFile;
+extern VMFile *pLanguageResourceFile_VM;
+extern void UnloadFileFromVirtualMemory(VMFile *vm_file);
+extern VMFile *LoadFileIntoVirtualMemory(const char *filename, bool compressed, bool use_trackstreampool_as_temp);
+extern void WaitForResourceLoadingComplete();
+
 void InitLocalization() {
     LanguageInfo *info;
     if (IsKorea()) {
@@ -344,4 +351,58 @@ void InitLocalization() {
     }
     eLoadStreamingTexturePack("LANGUAGES\\LANGUAGETEXTURES.BIN", nullptr, nullptr, 0);
     eWaitForStreamingTexturePackLoading("LANGUAGES\\LANGUAGETEXTURES.BIN");
+}
+
+void LoadLanguageResources(bool load_global, bool load_frontend, bool load_ingame, bool blocking) {
+    LanguageInfo *info = GetLanguageInfo(CurrentLanguage);
+    if (!load_global) {
+        UnloadResourceFile(pLanguageResourceFile);
+        pLanguageResourceFile = nullptr;
+        UnloadFileFromVirtualMemory(pLanguageResourceFile_VM);
+        pLanguageResourceFile_VM = nullptr;
+        if (info->pFontNameInfo->GlobalFontsLoaded) {
+            eUnloadStreamingTexture(info->pFontNameInfo->GlobalFonts, 8);
+            info->pFontNameInfo->GlobalFontsLoaded = 0;
+        }
+    }
+    if (!load_frontend && info->pFontNameInfo->FrontendFontsLoaded) {
+        eUnloadStreamingTexture(info->pFontNameInfo->FrontendFonts, 8);
+        info->pFontNameInfo->FrontendFontsLoaded = 0;
+    }
+    if (!load_ingame && info->pFontNameInfo->InGameFontsLoaded) {
+        eUnloadStreamingTexture(info->pFontNameInfo->InGameFonts, 8);
+        info->pFontNameInfo->InGameFontsLoaded = 0;
+    }
+    if (load_global) {
+        if (!pLanguageResourceFile) {
+            pLanguageResourceFile_VM = LoadFileIntoVirtualMemory(info->FilenameTextOnly, false, false);
+            {} // empty anonymous block (DWARF)
+            int pool = 0;
+            pLanguageResourceFile = CreateResourceFile(info->Filename, static_cast<ResourceFileType>(7), 0, 0, 0);
+            int file_size = bFileSize(info->Filename);
+            if (bLargestMalloc(LanguageMemoryPoolNumber) >= file_size + 0x80) {
+                pool = LanguageMemoryPoolNumber;
+            }
+            pLanguageResourceFile->SetAllocationParams((pool & 0xF) | 0x2000, info->Filename);
+            pLanguageResourceFile->BeginLoading();
+            if (blocking) {
+                WaitForResourceLoadingComplete();
+            }
+        }
+        if (load_global && !info->pFontNameInfo->GlobalFontsLoaded) {
+            eLoadStreamingTexture(info->pFontNameInfo->GlobalFonts, 8, static_cast<void (*)(void*)>(nullptr), static_cast<void*>(nullptr), LanguageMemoryPoolNumber);
+            info->pFontNameInfo->GlobalFontsLoaded = 1;
+        }
+    }
+    if (load_frontend && !info->pFontNameInfo->FrontendFontsLoaded) {
+        eLoadStreamingTexture(info->pFontNameInfo->FrontendFonts, 8, static_cast<void (*)(void*)>(nullptr), static_cast<void*>(nullptr), LanguageMemoryPoolNumber);
+        info->pFontNameInfo->FrontendFontsLoaded = 1;
+    }
+    if (load_ingame && !info->pFontNameInfo->InGameFontsLoaded) {
+        eLoadStreamingTexture(info->pFontNameInfo->InGameFonts, 8, static_cast<void (*)(void*)>(nullptr), static_cast<void*>(nullptr), LanguageMemoryPoolNumber);
+        info->pFontNameInfo->InGameFontsLoaded = 1;
+    }
+    if (blocking) {
+        eWaitForStreamingTexturePackLoading("LANGUAGES\\LANGUAGETEXTURES.BIN");
+    }
 }
