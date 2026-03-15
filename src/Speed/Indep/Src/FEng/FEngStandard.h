@@ -17,4 +17,12 @@ float FEngSqrt(float x);
 float FEngSin(float x);
 float FEngACos(float x);
 
+struct DummyFEngNewType {};
+
+inline void* operator new(unsigned int size, const char* file, int line, DummyFEngNewType*) {
+    return FEngMalloc(size, file, line);
+}
+
+#define FENG_NEW new(nullptr, 0, static_cast<DummyFEngNewType*>(nullptr))
+
 #endif

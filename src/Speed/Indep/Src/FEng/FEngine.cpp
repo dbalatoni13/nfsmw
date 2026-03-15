@@ -10,6 +10,8 @@
 
 void FEngGetCenter(FEObject* pObj, float& cx, float& cy);
 
+extern "C" int printf(const char*, ...);
+
 // Callback structs used by both FEngine and FEPackage.
 // Defined here because FEngine.cpp comes before FEPackage.cpp in the jumbo build.
 
@@ -425,19 +427,18 @@ FEPackage* FEngine::PushPackage(const char* pPackageName, const unsigned char Le
 }
 
 void FEngine::QueuePackageUserTransfer(FEPackage* pPack, bool bPush, unsigned long ControlMask) {
-    FEPackageCommand* pCmd = static_cast<FEPackageCommand*>(FEngMalloc(sizeof(FEPackageCommand), nullptr, 0));
-    pCmd->prev = reinterpret_cast<FEMinNode*>(0xABADCAFE);
-    pCmd->next = reinterpret_cast<FEMinNode*>(0xABADCAFE);
+    printf("If you get this, come see Gary or Lolley!\n");
+    FEPackageCommand* pCmd = FENG_NEW FEPackageCommand();
     pCmd->uControlMask = 0;
     pCmd->iCommand = 0;
     pCmd->pPackage = pPack;
-    pCmd->uControlMask = pPack->Controllers & ControlMask;
+    pCmd->uControlMask = pPack->GetControlMask() & ControlMask;
     int cmd = 4;
     if (bPush) {
         cmd = 8;
     }
     pCmd->iCommand = cmd;
-    PackageCommands.AddNode(PackageCommands.GetTail(), pCmd);
+    PackageCommands.AddTail(pCmd);
 }
 
 int FEngine::GetNumPackagesBelowPriority(unsigned char priority) {
