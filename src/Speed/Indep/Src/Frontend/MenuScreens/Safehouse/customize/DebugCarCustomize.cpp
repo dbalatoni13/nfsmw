@@ -53,12 +53,6 @@ DebugCarCustomizeScreen::DebugCarCustomizeScreen(ScreenConstructorData *sd)
 
 DebugCarCustomizeScreen::~DebugCarCustomizeScreen() {
     custom->Handle = 0xFF;
-    InstallableParts.DeleteAllElements();
-    InstallCarPartIDs.DeleteAllElements();
-    CarPartNameHashes.DeleteAllElements();
-    LookupCarSlotIDs.DeleteAllElements();
-    CarTypeNameHashes.DeleteAllElements();
-    FilteredCarsList.DeleteAllElements();
 }
 
 DebugCarCustomizeScreen::DebugCarOption *DebugCarCustomizeScreen::FindElement(bTList<DebugCarOption> &list, int id) {

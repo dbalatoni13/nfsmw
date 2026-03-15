@@ -461,5 +461,3 @@ void UIWidgetMenu::ScrollWrapped(eScrollDir dir) {
     }
 }
 
-UIWidgetMenu::~UIWidgetMenu() {
-}

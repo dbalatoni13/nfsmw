@@ -943,12 +943,12 @@ static unsigned int FindGarageFinalCameraInfo() {
 GarageCarLoader::GarageCarLoader() {
     reinterpret_cast<RideInfo *>(_pad_ride0)->Init(CARTYPE_NONE, CarRenderUsage_Player, 0, 0);
     reinterpret_cast<RideInfo *>(_pad_ride1)->Init(CARTYPE_NONE, CarRenderUsage_Player, 0, 0);
-    IsDifferent = false;
-    UseFirstDummyTexturesForNextLoad = true;
     IsLoadingRide = false;
     IsCurrentRide = false;
     LoadingCar = 0;
     CurrentCar = 0;
+    IsDifferent = false;
+    UseFirstDummyTexturesForNextLoad = true;
 }
 
 GarageCarLoader::~GarageCarLoader() {
@@ -1000,9 +1000,9 @@ GarageCarLoader *GetGarageCarLoader() {
 
 void GarageCarLoader::Init() {
     IsCurrentRide = false;
-    IsLoadingRide = false;
-    CurrentCar = 0;
     LoadingCar = 0;
+    CurrentCar = 0;
+    IsLoadingRide = false;
 }
 
 void GarageCarLoader::Switch() {
@@ -1029,10 +1029,10 @@ void GarageCarLoader::CleanUp() {
     if (IsCurrentRide && CurrentCar) {
         TheCarLoader.Unload(CurrentCar);
     }
-    IsCurrentRide = false;
     IsLoadingRide = false;
     CurrentCar = 0;
     LoadingCar = 0;
+    IsCurrentRide = false;
 }
 
 void InitGarageCarLoaders() {

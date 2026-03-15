@@ -241,7 +241,9 @@ struct CustomizePartOption : public IconOption {
         , ThePart(part) //
         , UnlockBlurb(unlock_blurb) {}
 
-    ~CustomizePartOption() override {}
+    ~CustomizePartOption() override {
+        delete ThePart;
+    }
 
     void React(const char *pkg_name, unsigned int data, FEObject *obj, unsigned int param1, unsigned int param2) override {}
 
@@ -284,7 +286,9 @@ struct SetStockPartOption : public CustomizeMainOption {
         SetReactImmediately(true);
     }
 
-    ~SetStockPartOption() override {}
+    ~SetStockPartOption() override {
+        delete ThePart;
+    }
 
     void React(const char *pkg_name, unsigned int data, FEObject *obj, unsigned int param1, unsigned int param2) override;
     bool IsStockOption() override { return true; }

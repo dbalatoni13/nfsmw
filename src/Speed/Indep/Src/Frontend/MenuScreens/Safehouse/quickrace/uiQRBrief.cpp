@@ -34,8 +34,6 @@ UIQRBrief::UIQRBrief(ScreenConstructorData *sd)
 }
 
 UIQRBrief::~UIQRBrief() {
-    FilteredTracksList.DeleteAllElements();
-    FilteredCarsList.DeleteAllElements();
 }
 
 SelectableCar *UIQRBrief::GetRandomCar() {
