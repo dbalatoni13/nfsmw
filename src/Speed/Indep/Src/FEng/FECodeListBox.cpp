@@ -92,8 +92,8 @@ void FECodeListBox::CopyProperties(const FECodeListBox& Object) {
         delete[] mppsStringData;
         mppsStringData = nullptr;
     }
-    mulCurrentString = 0;
     mulNumStrings = 0;
+    mulCurrentString = 0;
     mulStringSize = 0;
     AllocateStrings(Object.mulNumStrings, Object.mulStringSize);
     ulNumCells = mulNumVisibleColumns * mulNumVisibleRows;
@@ -114,10 +114,7 @@ void FECodeListBox::CopyProperties(const FECodeListBox& Object) {
             CopyString(mpstCells[i].u.string.pStr, psString);
         }
         if (mpstCells[i].ulType == 1) {
-            mpstCells[i].u.rect.uv_left = Object.mpstCells[i].u.rect.uv_left;
-            mpstCells[i].u.rect.uv_top = Object.mpstCells[i].u.rect.uv_top;
-            mpstCells[i].u.rect.uv_right = Object.mpstCells[i].u.rect.uv_right;
-            mpstCells[i].u.rect.uv_bottom = Object.mpstCells[i].u.rect.uv_bottom;
+            mpstCells[i].SetUV() = Object.mpstCells[i].GetUV();
         }
     }
 }
