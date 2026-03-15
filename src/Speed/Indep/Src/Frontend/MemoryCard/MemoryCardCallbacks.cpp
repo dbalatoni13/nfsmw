@@ -88,10 +88,12 @@ void MemcardCallbacks::ClearMessage() {
     if (!GetMemcard()->IsAutoSaving()) {
         JLog(MJ_ClearMessage);
         int op = GetMemcard()->GetOp();
-        if (op != MemoryCard::MO_FakeLoad && op != MemoryCard::MO_LoadYNCF) {
-            UIMemcardBase* pScreen = GetScreen();
-            if (pScreen != nullptr) {
-                GetMemcard();
+        if (op != MemoryCard::MO_FakeLoad) {
+            if (op != MemoryCard::MO_LoadYNCF) {
+                UIMemcardBase* pScreen = GetScreen();
+                if (pScreen != nullptr) {
+                    GetMemcard();
+                }
             }
         }
     }
