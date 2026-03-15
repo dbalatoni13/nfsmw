@@ -540,17 +540,17 @@ extern float GetHeat(Attrib::Gen::pvehicle pvehicle, Type type, int level);
 
 bool CarCustomizeManager::IsPartInstalled(SelectablePart *part) {
     if (part) {
-        if (!part->IsPerformancePkg()) {
-            CarPart *installed = GetInstalledCarPart(part->GetSlotID());
-            if (installed == part->GetPart()) {
-                return true;
-            }
-        } else {
+        if (part->IsPerformancePkg()) {
             if (part->IsJunkmanPart()) {
                 return IsJunkmanInstalled(static_cast<Physics::Upgrades::Type>(static_cast<int>(part->GetPhysicsType())));
             }
             int lvl = GetInstalledPerfPkg(static_cast<Physics::Upgrades::Type>(static_cast<int>(part->GetPhysicsType())));
             if (static_cast<int>(part->GetUpgradeLevel()) == lvl) {
+                return true;
+            }
+        } else {
+            CarPart *installed = GetInstalledCarPart(part->GetSlotID());
+            if (installed == part->GetPart()) {
                 return true;
             }
         }
