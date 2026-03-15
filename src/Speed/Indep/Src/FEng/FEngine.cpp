@@ -1416,88 +1416,87 @@ void FEngine::ProcessResponses(FEMessageResponse* pRespList, FEObject* pObj, FEP
 }
 
 void FEngine::ProcessPackageCommands() {
-    FEPackage* savedPack = nullptr;
-    FEPackage* savedParent = nullptr;
+    FEPackage* pFixParentLink = nullptr;
+    FEPackage* pNewParentLink = nullptr;
 
     do {
-        FEPackageCommand* pCmd = static_cast<FEPackageCommand*>(PackageCommands.RemHead());
-        if (!pCmd) {
+        FEPackageCommand* pNode = static_cast<FEPackageCommand*>(PackageCommands.RemHead());
+        if (!pNode) {
             return;
         }
 
-        int priority;
-        if (pCmd->pPackage) {
-            priority = pCmd->pPackage->Priority;
+        int Level;
+        if (pNode->pPackage) {
+            Level = pNode->pPackage->Priority;
         } else {
             FEPackage* pPack = FindPackageWithControl();
-            pCmd->pPackage = pPack;
-            if (!pPack) {
-                priority = -1;
-            } else {
-                priority = pPack->Priority;
+            pNode->pPackage = pPack;
+            if (pPack) {
+                Level = pPack->Priority;
                 pPack->OldControllers = pPack->Controllers;
-                pCmd->pPackage->Controllers = 0;
+                pNode->pPackage->Controllers = 0;
+            } else {
+                Level = -1;
             }
         }
 
-        if (pCmd->iCommand & 1) {
-            if (priority >= 0) {
-                if (!(pCmd->iCommand & 2)) {
-                    PackList.ReplaceParentLinks(pCmd->pPackage, pCmd->pPackage->pParentPackage);
+        if (pNode->iCommand & 1) {
+            if (Level >= 0) {
+                if (!(pNode->iCommand & 2)) {
+                    PackList.ReplaceParentLinks(pNode->pPackage, pNode->pPackage->pParentPackage);
                 } else {
-                    savedPack = pCmd->pPackage;
-                    savedParent = pCmd->pPackage->pParentPackage;
+                    pFixParentLink = pNode->pPackage;
+                    pNewParentLink = pNode->pPackage->pParentPackage;
                 }
-                FEPackage* pParent = pCmd->pPackage->pParentPackage;
+                FEPackage* pParent = pNode->pPackage->pParentPackage;
                 if (pParent) {
                     pParent->Controllers = pParent->OldControllers;
                 }
-                priority--;
-                UnloadPackage(pCmd->pPackage);
+                UnloadPackage(pNode->pPackage);
+                Level--;
             }
         }
 
-        if (pCmd->iCommand & 2) {
-            FEPackage* pNewPack = PushPackage(pCmd->GetName(),
-                static_cast<unsigned char>(priority + 1), pCmd->uControlMask);
-            if (pNewPack && !(pCmd->iCommand & 1) && priority >= 0) {
-                pNewPack->pParentPackage = pCmd->pPackage;
-            } else if (pCmd->iCommand & 1) {
-                pNewPack->pParentPackage = savedParent;
-                PackList.ReplaceParentLinks(savedPack, pNewPack);
+        if (pNode->iCommand & 2) {
+            FEPackage* pPushed = PushPackage(pNode->GetName(),
+                static_cast<unsigned char>(Level + 1), pNode->uControlMask);
+            if (pPushed && !(pNode->iCommand & 1) && Level >= 0) {
+                pPushed->pParentPackage = pNode->pPackage;
+            } else if (pNode->iCommand & 1) {
+                pPushed->pParentPackage = pNewParentLink;
+                PackList.ReplaceParentLinks(pFixParentLink, pPushed);
             }
         }
 
-        if (pCmd->iCommand & 4) {
-            FEPackage* pPack = pCmd->pPackage;
+        if (pNode->iCommand & 4) {
+            FEPackage* pPack = pNode->pPackage;
             FEPackage* pParent = pPack->pParentPackage;
             if (pParent) {
-                unsigned long mask = pPack->Controllers & pCmd->uControlMask;
-                pPack->Controllers &= ~mask;
-                pParent->Controllers |= mask;
+                unsigned long PassedMask = pPack->Controllers & pNode->uControlMask;
+                pPack->Controllers &= ~PassedMask;
+                pParent->Controllers |= PassedMask;
                 QueueMessage(0x334c5493u, nullptr, pParent,
-                    reinterpret_cast<FEObject*>(0xFFFFFFFCu), pCmd->uControlMask);
+                    reinterpret_cast<FEObject*>(0xFFFFFFFCu), pNode->uControlMask);
             }
         }
 
-        if (pCmd->iCommand & 8) {
-            FEPackage* pListPack = PackList.GetFirstPackage();
-            while (pListPack) {
-                FEPackage* pPack = pCmd->pPackage;
-                if (pListPack->pParentPackage == pPack) {
-                    if (pListPack) {
-                        unsigned long mask = pPack->Controllers & pCmd->uControlMask;
-                        pPack->Controllers &= ~mask;
-                        pListPack->Controllers |= mask;
-                        QueueMessage(0x334c5493u, nullptr, pListPack,
-                            reinterpret_cast<FEObject*>(0xFFFFFFFCu), pCmd->uControlMask);
+        if (pNode->iCommand & 8) {
+            FEPackage* pChild = PackList.GetFirstPackage();
+            while (pChild) {
+                if (pChild->pParentPackage == pNode->pPackage) {
+                    if (pChild) {
+                        unsigned long PassedMask = pNode->pPackage->Controllers & pNode->uControlMask;
+                        pNode->pPackage->Controllers &= ~PassedMask;
+                        pChild->Controllers |= PassedMask;
+                        QueueMessage(0x334c5493u, nullptr, pChild,
+                            reinterpret_cast<FEObject*>(0xFFFFFFFCu), pNode->uControlMask);
                     }
                     break;
                 }
-                pListPack = pListPack->GetNext();
+                pChild = pChild->GetNext();
             }
         }
 
-        delete pCmd;
+        delete pNode;
     } while (true);
 }
