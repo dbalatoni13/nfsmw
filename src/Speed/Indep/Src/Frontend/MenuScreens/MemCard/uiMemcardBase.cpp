@@ -299,7 +299,7 @@ void UIMemcardBase::SetScreenVisible(bool bVisible, int nButtons) {
             unsigned long resetMsg = FEHashUpper("INITIALIZE_SCREEN");
             pFeng->QueuePackageMessage(resetMsg, GetPackageName(), nullptr);
         }
-        MemoryCard::GetInstance()->m_bHUDLoaded = m_bVisible;
+        MemoryCard::GetInstance()->m_bInitialized = m_bVisible;
     }
     if (bVisible) {
         char buf[36];
