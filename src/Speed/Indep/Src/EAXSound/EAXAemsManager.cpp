@@ -2,10 +2,13 @@
 #include "Speed/Indep/Libs/Support/Utility/UStandard.h"
 #include "Speed/Indep/Src/EAXSound/AudioMemoryManager.hpp"
 #include "Speed/Indep/Src/Misc/Joylog.hpp"
+#include "Speed/Indep/Src/Misc/QueuedFile.hpp"
 #include "Speed/Indep/Src/World/TrackStreamer.hpp"
 
 extern void SNDAEMS_removemodulebank(int handle);
 extern int SNDAEMS_addmodulebank(void *pmem, char *chunk, int offset, void *(*cb)(void *, int, int));
+extern int SNDAEMS_asyncloadmodulebank(char *filename, int unk0, char *chunk, int offset, void *pmem, int size,
+                                       void *(*cb)(int));
 extern int SNDAEMS_asyncloadmodulebankdone();
 extern int SNDAEMS_asyncloadmodulebankmemdone();
 void SubscribeEventSys();
@@ -19,9 +22,7 @@ extern int bFileSize(const char *filename);
 extern char *bStrCat(char *destString, const char *s1, const char *s2);
 extern void bFree(void *ptr);
 extern void SNDSYS_service();
-struct QueuedFileParams;
-extern void AddQueuedFile(void *buf, const char *filename, int file_pos, int num_bytes, void (*callback)(int, int), int callback_param,
-                          QueuedFileParams *params);
+extern int QueuedFileDefaultPriority;
 extern stSndDataLoadParams g_SndAssetList[];
 extern Timer WorldTimer;
 
@@ -117,8 +118,9 @@ extern InterfaceId AEMS_StichStaticId;
 
 struct stAssetDescription {
     int eDataType;
-    int DataPath;
+    int _pad4;
     Attrib::StringKey FileName;
+    int DataPath;
     bool bLoadToTop;
     char _pad[3];
 
@@ -179,10 +181,13 @@ enum eTEMPALLOCLOCATION {
 };
 
 enum eSndDataType {
-    SDT_INVALID = 0,
+    SDT_NONE = -1,
+    SDT_AEMS_AUDIOMEM = 0,
     SDT_AEMS_MAINMEM = 1,
-    SDT_GENERIC_DATA = 2,
+    SDT_AEMS_SYNCSPU = 2,
     SDT_AEMS_ASYNCSPU = 3,
+    SDT_AEMS_ASYNCSPUMEM = 4,
+    SDT_GENERIC_DATA = 5,
 };
 
 DECLARE_CONTAINER_TYPE(ResAllocList);
@@ -268,15 +273,12 @@ template <typename T> static void RawVectorPushBack(RawVector<T> &vec, const T &
     vec.finish++;
 }
 
-static stSndDataLoadParamsView &GetSndAssetParams(int index) {
-    return *reinterpret_cast<stSndDataLoadParamsView *>(&g_SndAssetList[index]);
-}
-
 static void ResetSndAssetParams(stSndDataLoadParamsView &params) {
     params.AssetDescription.eDataType = -1;
+    params.AssetDescription._pad4 = 0;
     params.AssetDescription.FileName = Attrib::StringKey("");
-    params.Handle = -1;
     params.AssetDescription.DataPath = static_cast<eSNDDATAPATH>(0);
+    params.Handle = -1;
     params.MemLocation = static_cast<eTEMPALLOCLOCATION>(0);
     params.mBankSlot = nullptr;
     params.pmem = nullptr;
@@ -306,6 +308,10 @@ static char *&GetAsyncBuffer(EAXAemsManager *mgr) {
     return *reinterpret_cast<char **>(reinterpret_cast<char *>(mgr) + 0x94);
 }
 
+static int &GetAsyncBufferSize(EAXAemsManager *mgr) {
+    return *reinterpret_cast<int *>(reinterpret_cast<char *>(mgr) + 0x90);
+}
+
 static eTEMPALLOCLOCATION &GetAsyncBufferLocation(EAXAemsManager *mgr) {
     return *reinterpret_cast<eTEMPALLOCLOCATION *>(reinterpret_cast<char *>(mgr) + 0x98);
 }
@@ -317,8 +323,9 @@ static int &GetBulkLoadFlag(EAXAemsManager *mgr) {
 
 void stAssetDescription::Clear() {
     eDataType = -1;
-    DataPath = 0;
+    _pad4 = 0;
     FileName = Attrib::StringKey("");
+    DataPath = 0;
     bLoadToTop = false;
     _pad[0] = 0;
     _pad[1] = 0;
@@ -592,54 +599,87 @@ int EAXAemsManager::InitiateLoad() {
         return -1;
     }
 
-    char *curLoad = reinterpret_cast<char *>(m_pCurLoadSDLP);
-    char tempPath[256];
-    char *filename = *reinterpret_cast<char **>(curLoad + 0x14);
+    stSndDataLoadParamsView &curLoad =
+        *reinterpret_cast<stSndDataLoadParamsView *>(m_pCurLoadSDLP);
+    char *tempPath = reinterpret_cast<char *>(this) + 0x10;
+    const char *filename =
+        *reinterpret_cast<const char *const *>(reinterpret_cast<const char *>(&curLoad.AssetDescription.FileName) + 0xC);
     if (filename == nullptr) {
-        filename = const_cast<char *>("");
+        filename = "";
     }
 
-    int dataPath = *reinterpret_cast<int *>(curLoad + 0x4);
-    bStrCat(tempPath, g_DataPaths[dataPath], filename);
+    bStrCat(tempPath, g_DataPaths[curLoad.AssetDescription.DataPath], filename);
     int fileSize = bFileSize(tempPath);
-    *reinterpret_cast<int *>(curLoad + 0x20) = fileSize;
+    curLoad.nSize = fileSize;
     if (fileSize < 1) {
         return -1;
     }
 
-    int eDataType = *reinterpret_cast<int *>(curLoad + 0x0);
-    if (eDataType < SDT_GENERIC_DATA) {
-        *reinterpret_cast<int *>(curLoad + 0x30) = TMP_ALLOC_AUDIO;
-        *reinterpret_cast<int *>(curLoad + 0x0) = SDT_AEMS_ASYNCSPU;
+    if (curLoad.AssetDescription.eDataType < SDT_GENERIC_DATA) {
+        curLoad.MemLocation = TMP_ALLOC_AUDIO;
     } else {
-        *reinterpret_cast<int *>(curLoad + 0x30) = TMP_ALLOC_MAIN;
+        curLoad.MemLocation = TMP_ALLOC_MAIN;
+        curLoad.AssetDescription.eDataType = SDT_AEMS_ASYNCSPUMEM;
     }
 
-    int memLocation = *reinterpret_cast<int *>(curLoad + 0x30);
-    if (memLocation == TMP_ALLOC_MAIN) {
+    QueuedFileParams queuedFileParams;
+    queuedFileParams.Priority = QueuedFileDefaultPriority - 2;
+    queuedFileParams.BlockSize = 0x7FFFFFF;
+    queuedFileParams.Compressed = false;
+    queuedFileParams.UncompressedSize = 0;
+
+    eSndDataType eDataType = static_cast<eSndDataType>(curLoad.AssetDescription.eDataType);
+
+    if (curLoad.MemLocation == TMP_ALLOC_MAIN) {
         if (bLargestMalloc(0) < fileSize) {
             return -2;
         }
-        void *pmem = bMalloc(fileSize, filename, 0, 0x1040);
-        *reinterpret_cast<void **>(curLoad + 0x28) = pmem;
-        AddQueuedFile(pmem, tempPath, 0, fileSize, DataLoadCB, reinterpret_cast<int>(m_pCurLoadSDLP), nullptr);
+        curLoad.pmem = bMalloc(fileSize, filename, 0, 0x1040);
+        AddQueuedFile(curLoad.pmem, tempPath, 0, fileSize, DataLoadCB,
+                      reinterpret_cast<int>(m_pCurLoadSDLP), &queuedFileParams);
         m_IsWaitingForFileCB = 1;
-    } else if (memLocation == TMP_ALLOC_AUDIO) {
-        void *pmem = gAudioMemoryManager.AllocateMemory(fileSize, filename, false);
-        *reinterpret_cast<void **>(curLoad + 0x28) = pmem;
-        AddQueuedFile(pmem, tempPath, 0, fileSize, DataLoadCB, reinterpret_cast<int>(m_pCurLoadSDLP), nullptr);
+    } else if (curLoad.MemLocation == TMP_ALLOC_TRACKSTREAMER) {
+        curLoad.pmem = TheTrackStreamer.AllocateUserMemory(fileSize, filename, 0);
+        if (curLoad.pmem == nullptr) {
+            return -3;
+        }
+        AddQueuedFile(curLoad.pmem, tempPath, 0, fileSize, DataLoadCB,
+                      reinterpret_cast<int>(m_pCurLoadSDLP), &queuedFileParams);
         m_IsWaitingForFileCB = 1;
+    } else if (curLoad.MemLocation == TMP_ALLOC_AUDIO) {
+        if (eDataType != SDT_GENERIC_DATA || curLoad.mBankSlot == nullptr) {
+            if (bLargestMalloc(AudioMemoryPool) < fileSize) {
+                return -4;
+            }
+            curLoad.pmem = gAudioMemoryManager.AllocateMemory(fileSize, filename, curLoad.AssetDescription.bLoadToTop);
+            AddQueuedFile(curLoad.pmem, tempPath, 0, fileSize, DataLoadCB,
+                          reinterpret_cast<int>(m_pCurLoadSDLP), &queuedFileParams);
+            m_IsWaitingForFileCB = 1;
+        } else {
+            if (curLoad.mBankSlot->MAINmemSize < fileSize) {
+                return -4;
+            }
+            curLoad.pmem = curLoad.mBankSlot->MAINmemLocation;
+            AddQueuedFile(curLoad.pmem, tempPath, 0, fileSize, DataLoadCB,
+                          reinterpret_cast<int>(m_pCurLoadSDLP), &queuedFileParams);
+            m_IsWaitingForFileCB = 1;
+        }
     } else {
         m_IsWaitingForFileCB = 0;
     }
 
-    if (*reinterpret_cast<int *>(curLoad + 0x0) == SDT_AEMS_ASYNCSPU) {
-        stBankSlot *pBankSlot = *reinterpret_cast<stBankSlot **>(curLoad + 0x24);
+    eDataType = static_cast<eSndDataType>(curLoad.AssetDescription.eDataType);
+    if (eDataType == SDT_AEMS_ASYNCSPU) {
+        stBankSlot *pBankSlot = curLoad.mBankSlot;
         if (pBankSlot == nullptr) {
             SNDmemlimits(-1, gAEMSMgr.m_SPUMainAllocsEnd);
         } else {
             SNDmemlimits(pBankSlot->BANKmemLocation, pBankSlot->BANKmemLocation + pBankSlot->BANKMemSize);
         }
+
+        curLoad.Handle = SNDAEMS_asyncloadmodulebank(tempPath, 0, nullptr, 0,
+                                                     GetAsyncBuffer(this), GetAsyncBufferSize(this),
+                                                     AsyncResidentAllocCB);
     }
 
     return 0;
@@ -867,48 +907,20 @@ ReprocessQueue:
 }
 
 void EAXAemsManager::RemoveBankListing(int index) {
-    if (index < 0 || index >= m_nEndOfList) {
-        return;
-    }
+    ResetSndAssetParams(*reinterpret_cast<stSndDataLoadParamsView *>(&g_SndAssetList[index]));
+    for (int n = index; n < 0x2F; n++) {
+        stSndDataLoadParams *currentParams = g_SndAssetList + n;
+        stSndDataLoadParams *futureParams = currentParams + 1;
+        stSndDataLoadParamsView &current =
+            *reinterpret_cast<stSndDataLoadParamsView *>(currentParams);
+        stSndDataLoadParamsView &future =
+            *reinterpret_cast<stSndDataLoadParamsView *>(futureParams);
 
-    stSndDataLoadParamsView *entry = reinterpret_cast<stSndDataLoadParamsView *>(&g_SndAssetList[index]);
-    entry->AssetDescription.eDataType = -1;
-    entry->AssetDescription.FileName = Attrib::StringKey("");
-    entry->Handle = -1;
-    entry->AssetDescription.DataPath = static_cast<eSNDDATAPATH>(0);
-    entry->MemLocation = static_cast<eTEMPALLOCLOCATION>(0);
-    entry->mBankSlot = nullptr;
-    entry->pmem = nullptr;
-    entry->plocmem = nullptr;
-    entry->nSize = 0;
-    *reinterpret_cast<unsigned int *>(&entry->bResolvedAsync) = 0;
-    *reinterpret_cast<unsigned int *>(&entry->bResolvedSync) = 0;
-    {
-        RawVector<unsigned int> &resallocs = *reinterpret_cast<RawVector<unsigned int> *>(&entry->resallocs);
-        resallocs.finish = resallocs.start;
-    }
-    {
-        RawVector<EAX_CarState *> &refCount = *reinterpret_cast<RawVector<EAX_CarState *> *>(&entry->RefCount);
-        refCount.finish = refCount.start;
-    }
-    entry->t_load = 0;
-    entry->t_req = 0;
-
-    while (index < 0x2F) {
-        const int next = index + 1;
-        stSndDataLoadParamsView &current = *reinterpret_cast<stSndDataLoadParamsView *>(&g_SndAssetList[index]);
-        stSndDataLoadParamsView &future = *reinterpret_cast<stSndDataLoadParamsView *>(&g_SndAssetList[next]);
-
-        current.AssetDescription.eDataType = future.AssetDescription.eDataType;
-        memmove(&current.AssetDescription.FileName, &future.AssetDescription.FileName, sizeof(Attrib::StringKey));
-        current.AssetDescription.DataPath = future.AssetDescription.DataPath;
-        *reinterpret_cast<unsigned int *>(&current.AssetDescription.bLoadToTop) =
-            *reinterpret_cast<unsigned int *>(&future.AssetDescription.bLoadToTop);
-
+        current.AssetDescription = future.AssetDescription;
         current.MemLocation = future.MemLocation;
         current.mBankSlot = future.mBankSlot;
-        if (current.mBankSlot != nullptr && current.mBankSlot->pAssetParams == &g_SndAssetList[next]) {
-            current.mBankSlot->pAssetParams = &g_SndAssetList[index];
+        if (current.mBankSlot != nullptr && current.mBankSlot->pAssetParams == futureParams) {
+            current.mBankSlot->pAssetParams = currentParams;
         }
 
         current.pmem = future.pmem;
@@ -920,124 +932,22 @@ void EAXAemsManager::RemoveBankListing(int index) {
         *reinterpret_cast<unsigned int *>(&current.bResolvedSync) =
             *reinterpret_cast<unsigned int *>(&future.bResolvedSync);
 
-        RawVector<unsigned int> &currentResallocs = *reinterpret_cast<RawVector<unsigned int> *>(&current.resallocs);
-        RawVector<unsigned int> &futureResallocs = *reinterpret_cast<RawVector<unsigned int> *>(&future.resallocs);
-        currentResallocs.finish = currentResallocs.start;
-        {
-            int reserveSize = static_cast<int>(futureResallocs.finish - futureResallocs.start);
-            int currentCapacity = static_cast<int>(currentResallocs.end_of_storage - currentResallocs.start);
-            if (currentCapacity < reserveSize) {
-                int currentSize = static_cast<int>(currentResallocs.finish - currentResallocs.start);
-                unsigned int *newStart =
-                    reserveSize != 0 ? reinterpret_cast<unsigned int *>(gFastMem.Alloc(reserveSize * 4, nullptr)) : nullptr;
-                if (currentSize != 0) {
-                    memmove(newStart, currentResallocs.start, static_cast<size_t>(currentSize * 4));
-                }
-                if (currentResallocs.start != nullptr) {
-                    gFastMem.Free(currentResallocs.start, static_cast<unsigned int>(currentCapacity * 4), nullptr);
-                }
-                currentResallocs.start = newStart;
-                currentResallocs.finish = newStart + currentSize;
-                currentResallocs.end_of_storage = newStart + reserveSize;
-            }
+        current.resallocs.clear();
+        for (ResAllocList::const_iterator i = future.resallocs.begin(); i != future.resallocs.end(); ++i) {
+            current.resallocs.push_back(*i);
         }
-        for (unsigned int *it = futureResallocs.start; it != futureResallocs.finish; ++it) {
-            if (currentResallocs.finish == currentResallocs.end_of_storage) {
-                int currentSize = static_cast<int>(currentResallocs.finish - currentResallocs.start);
-                int growSize = currentSize == 0 ? 1 : currentSize;
-                int newCapacity = currentSize + growSize;
-                unsigned int *newStart = reinterpret_cast<unsigned int *>(gFastMem.Alloc(newCapacity * 4, nullptr));
-                if (currentSize != 0) {
-                    memmove(newStart, currentResallocs.start, static_cast<size_t>(currentSize * 4));
-                }
-                if (currentResallocs.start != nullptr) {
-                    int oldCapacity = static_cast<int>(currentResallocs.end_of_storage - currentResallocs.start);
-                    gFastMem.Free(currentResallocs.start, static_cast<unsigned int>(oldCapacity * 4), nullptr);
-                }
-                currentResallocs.start = newStart;
-                currentResallocs.finish = newStart + currentSize;
-                currentResallocs.end_of_storage = newStart + newCapacity;
-            }
-            if (currentResallocs.finish != nullptr) {
-                *currentResallocs.finish = *it;
-            }
-            currentResallocs.finish++;
-        }
-        futureResallocs.finish = futureResallocs.start;
+        future.resallocs.clear();
 
-        RawVector<EAX_CarState *> &currentRefCount =
-            *reinterpret_cast<RawVector<EAX_CarState *> *>(&current.RefCount);
-        RawVector<EAX_CarState *> &futureRefCount =
-            *reinterpret_cast<RawVector<EAX_CarState *> *>(&future.RefCount);
-        currentRefCount.finish = currentRefCount.start;
-        {
-            int reserveSize = static_cast<int>(futureRefCount.finish - futureRefCount.start);
-            int currentCapacity = static_cast<int>(currentRefCount.end_of_storage - currentRefCount.start);
-            if (currentCapacity < reserveSize) {
-                int currentSize = static_cast<int>(currentRefCount.finish - currentRefCount.start);
-                EAX_CarState **newStart =
-                    reserveSize != 0 ? reinterpret_cast<EAX_CarState **>(gFastMem.Alloc(reserveSize * 4, nullptr)) : nullptr;
-                if (currentSize != 0) {
-                    memmove(newStart, currentRefCount.start, static_cast<size_t>(currentSize * 4));
-                }
-                if (currentRefCount.start != nullptr) {
-                    gFastMem.Free(currentRefCount.start, static_cast<unsigned int>(currentCapacity * 4), nullptr);
-                }
-                currentRefCount.start = newStart;
-                currentRefCount.finish = newStart + currentSize;
-                currentRefCount.end_of_storage = newStart + reserveSize;
-            }
+        current.RefCount.clear();
+        for (RefCountList::const_iterator i = future.RefCount.begin(); i != future.RefCount.end(); ++i) {
+            current.RefCount.push_back(*i);
         }
-        for (EAX_CarState **it = futureRefCount.start; it != futureRefCount.finish; ++it) {
-            if (currentRefCount.finish == currentRefCount.end_of_storage) {
-                int currentSize = static_cast<int>(currentRefCount.finish - currentRefCount.start);
-                int growSize = currentSize == 0 ? 1 : currentSize;
-                int newCapacity = currentSize + growSize;
-                EAX_CarState **newStart =
-                    reinterpret_cast<EAX_CarState **>(gFastMem.Alloc(newCapacity * 4, nullptr));
-                if (currentSize != 0) {
-                    memmove(newStart, currentRefCount.start, static_cast<size_t>(currentSize * 4));
-                }
-                if (currentRefCount.start != nullptr) {
-                    int oldCapacity = static_cast<int>(currentRefCount.end_of_storage - currentRefCount.start);
-                    gFastMem.Free(currentRefCount.start, static_cast<unsigned int>(oldCapacity * 4), nullptr);
-                }
-                currentRefCount.start = newStart;
-                currentRefCount.finish = newStart + currentSize;
-                currentRefCount.end_of_storage = newStart + newCapacity;
-            }
-            if (currentRefCount.finish != nullptr) {
-                *currentRefCount.finish = *it;
-            }
-            currentRefCount.finish++;
-        }
-        futureRefCount.finish = futureRefCount.start;
+        future.RefCount.clear();
 
         current.t_req = future.t_req;
         current.t_load = future.t_load;
 
-        future.AssetDescription.eDataType = -1;
-        future.AssetDescription.FileName = Attrib::StringKey("");
-        future.Handle = -1;
-        future.AssetDescription.DataPath = static_cast<eSNDDATAPATH>(0);
-        future.MemLocation = static_cast<eTEMPALLOCLOCATION>(0);
-        future.mBankSlot = nullptr;
-        future.pmem = nullptr;
-        future.plocmem = nullptr;
-        future.nSize = 0;
-        *reinterpret_cast<unsigned int *>(&future.bResolvedAsync) = 0;
-        *reinterpret_cast<unsigned int *>(&future.bResolvedSync) = 0;
-        {
-            RawVector<unsigned int> &resallocs = *reinterpret_cast<RawVector<unsigned int> *>(&future.resallocs);
-            resallocs.finish = resallocs.start;
-        }
-        {
-            RawVector<EAX_CarState *> &refCount = *reinterpret_cast<RawVector<EAX_CarState *> *>(&future.RefCount);
-            refCount.finish = refCount.start;
-        }
-        future.t_load = 0;
-        future.t_req = 0;
-        index = next;
+        ResetSndAssetParams(future);
     }
 
     m_nCurLoadedBankIndex--;

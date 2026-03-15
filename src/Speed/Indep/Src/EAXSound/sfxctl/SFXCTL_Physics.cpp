@@ -2,6 +2,8 @@
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Shifting.hpp"
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_NISReving.hpp"
 #include "Speed/Indep/Src/EAXSound/OldSoundTemplates.hpp"
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/engineaudio.h"
+#include "Speed/Indep/Src/Interfaces/SimActivities/INIS.h"
 #include "Speed/Indep/Src/Misc/Hermes.h"
 
 namespace {
@@ -13,7 +15,66 @@ extern EngRevDataPoint RevPat9[];
 extern EngRevDataPoint RevPat10[];
 extern EngRevDataPoint RevPat11[];
 extern EngRevDataPoint RevPat12[];
+
+enum ControlSource {
+    CONTROL_NONE = 0,
+    CONTROL_HUMAN = 1,
+    CONTROL_AI = 2,
+    CONTROL_NIS = 3,
+    CONTROL_ONLINE = 4,
+};
+
+struct EAX_CarState_Engine_Physics {
+    int mBoostFlag;
+    int mNOSFlag;
+    float mNOS;
+    float mRPMPct;
+    float mThrottle;
+    float mBoost;
+    int mBlownFlag;
+};
+
+struct EAX_CarState_Driveline_Physics {
+    int mGearShiftFlag;
+    int mGear;
+};
+
+// total size: 0x248
+struct EAX_CarState_PhysicsView {
+    unsigned int _listable;
+    char _pad0[0x1B8];
+    EAX_CarState_Engine_Physics mEngine;       // offset 0x1BC
+    EAX_CarState_Driveline_Physics mDriveline; // offset 0x1D8
+    char _pad1[0x60];
+    float mDesiredSpeed;                       // offset 0x240
+    int mControlSource;                        // offset 0x244
+};
+
+// total size: 0xD8
+struct EAXCar_PhysicsView {
+    void *vptr;
+    char _pad0[0x30];
+    EAX_CarState_PhysicsView *m_pCar; // offset 0x34
+    char _pad1[0x4];
+    float t_CurTime;           // offset 0x3C
+    char _pad2[0x20];
+    float PhysTRQ;             // offset 0x60
+    float PhysRPM;             // offset 0x64
+    int bIsAccelerating;       // offset 0x68
+    int CurGear;               // offset 0x6C
+    float fTrottle;            // offset 0x70
+    char _pad3[0x50];
+    char mEngineInfo[0x14];    // offset 0xC4
+};
+
+typedef char EAX_CarState_PhysicsViewSizeCheck[(sizeof(EAX_CarState_PhysicsView) == 0x248) ? 1 : -1];
+typedef char EAXCar_PhysicsViewSizeCheck[(sizeof(EAXCar_PhysicsView) == 0xD8) ? 1 : -1];
 } // namespace
+
+extern int GameFlowSndState[];
+extern "C" void Average_Record(Average *avg, float value) asm("Record__7Averagef");
+extern "C" void AverageBase_Recalculate(AverageBase *avg) asm("Recalculate__11AverageBase");
+extern "C" float GetValueFromSpline(float value, bMatrix4 *curve);
 
 SFXCTL_Physics::SFXCTL_Physics()
     : m_bBlownEngineStreamQueued(false) //
@@ -92,12 +153,76 @@ void SFXCTL_Physics::InitSFX() {
 
 void SFXCTL_Physics::UpdateParams(float t) {
     SFXCTL::UpdateParams(t);
+
     m_LastGear = m_CurGear;
+    EAXCar_PhysicsView *carOwner = reinterpret_cast<EAXCar_PhysicsView *>(m_pEAXCar);
+    EAX_CarState_PhysicsView *car = carOwner->m_pCar;
+
+    m_CurGear = static_cast< Gear >(car->mDriveline.mGear);
     m_OldThrottle = m_fThrottle;
-    m_fThrottle = smooth(m_fThrottle, 1.0f, 10.0f);
-    PhysicsTRQ = smooth(PhysicsTRQ, m_fThrottle, 10.0f);
-    PhysicsRPM = smooth(PhysicsRPM, m_fThrottle, 10.0f);
-    UpdateNIS(t, SndBase::m_fDeltaTime);
+
+    if (car->mControlSource == CONTROL_AI) {
+        Average_Record(&m_fDeltaDesiredSpeed, car->mDesiredSpeed - m_OldDesiredSpeed);
+        m_OldDesiredSpeed = car->mDesiredSpeed;
+        AverageBase_Recalculate(&m_fDeltaDesiredSpeed);
+
+        if (m_fDeltaDesiredSpeed.GetValue() > -1.0f && m_tHoldDecel < 0.0f) {
+            m_fThrottle = smooth(m_fThrottle, 100.0f, 50.0f);
+        } else {
+            if (m_fDeltaDesiredSpeed.GetValue() < 0.0f) {
+                m_tHoldDecel = 0.5f;
+            }
+            m_tHoldDecel -= t;
+            m_fThrottle = smooth(m_fThrottle, 0.0f, 50.0f);
+        }
+    } else {
+        m_fThrottle = car->mEngine.mThrottle * 100.0f;
+    }
+
+    if (m_fThrottle > 30.0f) {
+        if (!IsAccelerating) {
+            IsAccelerating = true;
+            t_Last_Accel = carOwner->t_CurTime;
+        }
+    } else if (IsAccelerating) {
+        IsAccelerating = false;
+        t_Last_Deccel = carOwner->t_CurTime;
+    }
+
+    PhysicsTRQ = smooth(PhysicsTRQ, m_fThrottle, 100.0f);
+
+    float rpm = car->mEngine.mRPMPct;
+    if (m_pStateBase->m_eStateType == eMM_PLAYERCAR) {
+        const Attrib::Gen::engineaudio *engineInfo = reinterpret_cast<const Attrib::Gen::engineaudio *>(carOwner->mEngineInfo);
+        const bMatrix4 *curve = reinterpret_cast<const bMatrix4 *>(engineInfo->GetAttributePointer(0x07E3C833, 0));
+        if (curve == nullptr) {
+            curve = reinterpret_cast<const bMatrix4 *>(Attrib::DefaultDataArea(sizeof(bMatrix4)));
+        }
+        mRPMCurve = const_cast<bMatrix4 *>(curve);
+        if (curve != nullptr) {
+            rpm = GetValueFromSpline(rpm, mRPMCurve);
+        }
+    }
+
+    PhysicsRPM = rpm * 9000.0f + 1000.0f;
+
+    INIS *nis = INIS::Get();
+    if (nis != nullptr && nis->IsPlaying()) {
+        if (nis->GetAnimScene() != nullptr) {
+            float sceneTime = nis->GetAnimScene()->GetTimeElapsed();
+            UpdateNIS(sceneTime, 0.0f);
+            return;
+        }
+    } else if (GameFlowSndState[3] != 0 && m_pStateBase->m_eStateType == eMM_AIRACECAR) {
+        UpdateNIS(0.0f, t);
+        return;
+    }
+
+    carOwner->PhysTRQ = PhysicsTRQ;
+    carOwner->PhysRPM = PhysicsRPM;
+    carOwner->fTrottle = m_fThrottle;
+    carOwner->bIsAccelerating = static_cast< int >(static_cast< float >(*reinterpret_cast<int *>(&IsAccelerating)) != 0.0f);
+    carOwner->CurGear = static_cast< int >(m_CurGear);
 }
 
 void SFXCTL_Physics::UpdateMixerOutputs() {

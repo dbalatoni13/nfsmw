@@ -57,6 +57,51 @@ struct CarDrivelineState {
     int mGear;
 };
 
+// total size: 0x248
+struct CarStateView {
+    int _listNode;
+    float mMaxTorque;
+    float mMaxRPM;
+    float mMinRPM;
+    float mRedline;
+    bMatrix4 mMatrix;
+    bVector3 mVel0;
+    int mRacePos;
+    bVector3 mVel1;
+    float mBrake;
+    bVector3 mAccel;
+    float mEBrake;
+    float mFWSpeed;
+    int mIsShocked;
+    float mHealth;
+    int mNosEmptyFlag;
+    int mMovementMode;
+    int mPlayerZone;
+    CarWheelState mWheel[4];
+    unsigned short mSteering;
+    unsigned short mAngle;
+    CarEngineState mEngine;
+    CarDrivelineState mDriveline;
+    int mSirenState;
+    int mHotPursuit;
+    char mAttributes[0x14];
+    char mEngineInfo[0x14];
+    Sound::Context mContext;
+    int mSimUpdating;
+    int mAssetsLoaded;
+    unsigned int mWorldID;
+    HSIMABLE__ *mHandle;
+    unsigned int mTrailerID;
+    float mOversteer;
+    float mUndersteer;
+    float mSlipAngle;
+    float mVisualRPM;
+    float mTimeSinceSeen;
+    int mNISCarID;
+    float mDesiredSpeed;
+    int mControlSource;
+};
+
 struct WorldRefView {
     unsigned int mWorldID;
     const bMatrix4 *mMatrix;
@@ -67,14 +112,7 @@ struct WorldRefView {
 typedef char CarWheelStateSizeCheck[(sizeof(CarWheelState) == 0x44) ? 1 : -1];
 typedef char CarEngineStateSizeCheck[(sizeof(CarEngineState) == 0x1C) ? 1 : -1];
 typedef char CarDrivelineStateSizeCheck[(sizeof(CarDrivelineState) == 0x8) ? 1 : -1];
-
-template <typename T> inline T &CarStateField(EAX_CarState *state, int offset) {
-    return *reinterpret_cast<T *>(reinterpret_cast<unsigned char *>(state) + offset);
-}
-
-template <typename T> inline const T &CarStateField(const EAX_CarState *state, int offset) {
-    return *reinterpret_cast<const T *>(reinterpret_cast<const unsigned char *>(state) + offset);
-}
+typedef char CarStateViewSizeCheck[(sizeof(CarStateView) == 0x248) ? 1 : -1];
 
 inline const bVector3 *GetWorldVelocity(const WorldConn::Reference &ref) {
     return reinterpret_cast<const WorldRefView *>(&ref)->mVelocity;
@@ -275,40 +313,44 @@ void CarSoundConn::SetAssetsLoaded(CarSoundConn *conn) {
 }
 
 void CarSoundConn::UpdateState(float dT) {
-    if (g_pEAXSound == nullptr || mTarget.GetMatrix() == nullptr || !mConnected || mState == nullptr ||
-        !CarStateField<bool>(mState, 0x218)) {
+    if (g_pEAXSound == nullptr || mTarget.GetMatrix() == nullptr || !mConnected || mState == nullptr) {
         return;
     }
 
-    bMatrix4 &matrix = CarStateField<bMatrix4>(mState, 0x14);
-    bVector3 &vel0 = CarStateField<bVector3>(mState, 0x54);
-    bVector3 &vel1 = CarStateField<bVector3>(mState, 0x68);
-    bVector3 &accel = CarStateField<bVector3>(mState, 0x7C);
-    float &brake = CarStateField<float>(mState, 0x78);
-    float &eBrake = CarStateField<float>(mState, 0x8C);
-    float &fwSpeedState = CarStateField<float>(mState, 0x90);
-    float &health = CarStateField<float>(mState, 0x98);
-    CarWheelState *const wheels = reinterpret_cast<CarWheelState *>(reinterpret_cast<unsigned char *>(mState) + 0xA8);
-    unsigned short &steering = CarStateField<unsigned short>(mState, 0x1B8);
-    CarEngineState &engine = CarStateField<CarEngineState>(mState, 0x1BC);
-    CarDrivelineState &driveline = CarStateField<CarDrivelineState>(mState, 0x1D8);
-    int &siren = CarStateField<int>(mState, 0x1E0);
-    unsigned int &hotPursuitWord = CarStateField<unsigned int>(mState, 0x1E4);
-    bool &simUpdating = CarStateField<bool>(mState, 0x214);
-    unsigned int &trailerID = CarStateField<unsigned int>(mState, 0x224);
-    float &oversteer = CarStateField<float>(mState, 0x228);
-    float &understeer = CarStateField<float>(mState, 0x22C);
-    float &slipAngle = CarStateField<float>(mState, 0x230);
-    float &visualRPM = CarStateField<float>(mState, 0x234);
-    float &timeSinceSeen = CarStateField<float>(mState, 0x238);
-    float &desiredSpeed = CarStateField<float>(mState, 0x240);
-    int &controlSource = CarStateField<int>(mState, 0x244);
+    CarStateView &state = *reinterpret_cast<CarStateView *>(mState);
+    if (state.mAssetsLoaded == 0) {
+        return;
+    }
+
+    bMatrix4 &matrix = state.mMatrix;
+    bVector3 &vel0 = state.mVel0;
+    bVector3 &vel1 = state.mVel1;
+    bVector3 &accel = state.mAccel;
+    float &brake = state.mBrake;
+    float &eBrake = state.mEBrake;
+    float &fwSpeedState = state.mFWSpeed;
+    float &health = state.mHealth;
+    CarWheelState *const wheels = state.mWheel;
+    unsigned short &steering = state.mSteering;
+    CarEngineState &engine = state.mEngine;
+    CarDrivelineState &driveline = state.mDriveline;
+    int &siren = state.mSirenState;
+    int &hotPursuitWord = state.mHotPursuit;
+    int &simUpdating = state.mSimUpdating;
+    unsigned int &trailerID = state.mTrailerID;
+    float &oversteer = state.mOversteer;
+    float &understeer = state.mUndersteer;
+    float &slipAngle = state.mSlipAngle;
+    float &visualRPM = state.mVisualRPM;
+    float &timeSinceSeen = state.mTimeSinceSeen;
+    float &desiredSpeed = state.mDesiredSpeed;
+    int &controlSource = state.mControlSource;
 
     SoundConn::Pkt_Car_Service data(visualRPM);
     PSMTX44Copy((Mtx44)mTarget.GetMatrix(), (Mtx44)&matrix);
 
     if (!Service(&data)) {
-        simUpdating = false;
+        simUpdating = 0;
         accel.x = 0.0f;
         accel.y = 0.0f;
         accel.z = 0.0f;
@@ -342,7 +384,7 @@ void CarSoundConn::UpdateState(float dT) {
         return;
     }
 
-    simUpdating = true;
+    simUpdating = 1;
     vel1 = vel0;
     vel0 = *GetWorldVelocity(mTarget);
 
@@ -360,7 +402,7 @@ void CarSoundConn::UpdateState(float dT) {
     eBrake = data.mEBrakePercent;
     steering = static_cast<unsigned short>(static_cast<int>(data.mSteering * 10430.378f));
     siren = data.mSirenState;
-    hotPursuitWord = *reinterpret_cast<const unsigned int *>(&data.mHotPursuit);
+    hotPursuitWord = *reinterpret_cast<const int *>(&data.mHotPursuit);
     oversteer = data.mOversteer;
     understeer = data.mUndersteer;
     slipAngle = -data.mSlipAngle;

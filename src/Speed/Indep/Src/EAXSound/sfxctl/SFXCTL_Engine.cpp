@@ -2,9 +2,170 @@
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Shifting.hpp"
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_AccelTrans.hpp"
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Physics.hpp"
-#include "Speed/Indep/Src/Misc/Hermes.h"
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_3DCarPos.hpp"
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/engineaudio.h"
+#include "Speed/Indep/Src/Generated/Messages/MGamePlayMoment.h"
 #include "Speed/Indep/Src/Generated/Messages/MNotifyVehicleDestroyed.h"
+#include "Speed/Indep/Src/Misc/Hermes.h"
+#include "Speed/Indep/bWare/Inc/bMath.hpp"
+
+extern float lbl_803D726C;
+
+struct HSIMABLE__;
+
+namespace {
+struct Vec2F {
+    float x;
+    float y;
+};
+
+struct Vec3F {
+    float x;
+    float y;
+    float z;
+    float pad;
+};
+
+struct Vec4F {
+    float x;
+    float y;
+    float z;
+    float w;
+};
+
+struct Matrix4F {
+    Vec4F v0;
+    Vec4F v1;
+    Vec4F v2;
+    Vec4F v3;
+};
+
+struct EAX_CarState_Wheel {
+    Vec2F mWheelSlip;
+    float mWheelForceZ;
+    float mPercentFsFkTransfer;
+    int mWheelOnGround;
+    char mTerrainType[0x14];
+    char mPrevTerrainType[0x14];
+    float mLoad;
+    unsigned char mBlownState;
+    unsigned char mPrevBlownState;
+    unsigned short _pad;
+};
+
+struct EAX_CarState_Engine {
+    int mBoostFlag;
+    int mNOSFlag;
+    float mNOS;
+    float mRPMPct;
+    float mThrottle;
+    float mBoost;
+    int mBlownFlag;
+};
+
+struct EAX_CarState_Driveline {
+    int mGearShiftFlag;
+    int mGear;
+};
+
+struct EAX_CarState_View {
+    unsigned int _listable;
+    float mMaxTorque;
+    float mMaxRPM;
+    float mMinRPM;
+    float mRedline;
+    Matrix4F mMatrix;
+    Vec3F mVel0;
+    int mRacePos;
+    Vec3F mVel1;
+    float mBrake;
+    Vec3F mAccel;
+    float mEBrake;
+    float mFWSpeed;
+    bool mIsShocked;
+    char _padIsShocked[3];
+    float mHealth;
+    bool mNosEmptyFlag;
+    char _padNosEmpty[3];
+    int mMovementMode;
+    int mPlayerZone;
+    EAX_CarState_Wheel mWheel[4];
+    unsigned short mSteering;
+    unsigned short mAngle;
+    EAX_CarState_Engine mEngine;
+    EAX_CarState_Driveline mDriveline;
+    int mSirenState;
+    bool mHotPursuit;
+    char _padHotPursuit[3];
+    char mAttributes[0x14];
+    char mEngineInfo[0x14];
+    int mContext;
+    bool mSimUpdating;
+    char _padSimUpdating[3];
+    bool mAssetsLoaded;
+    char _padAssetsLoaded[3];
+    unsigned int mWorldID;
+    HSIMABLE__ *mHandle;
+    unsigned int mTrailerID;
+    float mOversteer;
+    float mUndersteer;
+    float mSlipAngle;
+    float mVisualRPM;
+    float mTimeSinceSeen;
+    int mNISCarID;
+    float mDesiredSpeed;
+    int mControlSource;
+};
+
+struct EAXCar_View {
+    void *vptr;
+    CSTATE_Base *m_pNextState;
+    CSTATE_Base *m_pPreviousState;
+    CSTATEMGR_Base *m_pStateMgr;
+    int m_InstNum;
+    int m_eStateType;
+    int m_StateInstType;
+    void *m_pAttachment;
+    SndBase *m_pHeadSFXCTL;
+    SndBase *m_pHeadSFXObj;
+    int m_SFXFlags;
+    int m_NumLoadedSFXObj;
+    int m_NumLoadedSFXCTL;
+    EAX_CarState_View *m_pCar;
+    bool bIsAttached;
+    char _padAttached[3];
+    float t_CurTime;
+    float t_DeltaTime;
+    int m_nHornState;
+    char m_FEEngineAttribs[0x14];
+    void *m_pPhysicsCTL;
+    float PhysTRQ;
+    float PhysRPM;
+    bool bIsAccelerating;
+    char _padAccelerating[3];
+    int CurGear;
+    float fTrottle;
+    float m_fAudioRPM;
+    float m_CurTime2;
+    float m_DeltaTime2;
+    bool m_bIsInSoundSphere;
+    char _padSoundSphere[3];
+    Vec3F m_v3CurSpherePos;
+    float m_fSphereRadius;
+    void *m_pDriverInfo;
+    int m_EngineType;
+    int m_nTrueEngineUpgradeLevel;
+    int m_EngUGL;
+    int m_TurboUGL;
+    int m_NOSUGL;
+    int m_TireUGL;
+    int m_TransmissionUGL;
+    int m_PovType;
+    int m_IsDriveCamera;
+    int m_Rotation;
+    char mEngineInfo[0x14];
+};
+} // namespace
 
 SFXCTL_Engine::SFXCTL_Engine()
     : m_pShiftCtl(nullptr) //
@@ -24,6 +185,12 @@ SFXCTL_Engine::SFXCTL_Engine()
     , m_bIsEngineBlown(false) //
     , m_DistanceFltr(0) //
     , bClutchStateOn(false) //
+    , m_VOL_LFO(0.0f) //
+    , m_RPM_LFO(0.0f) //
+    , m_TRQ_LFO(0.0f) //
+    , m_aglRPM_LFO(0x4097) //
+    , m_aglTRQ_LFO(0x4097) //
+    , m_aglVOL_LFO(0x4097) //
     , mmsgMVehicleDestroyed(nullptr) //
     , mmsgMVehicleDestroyed2(nullptr) {}
 
@@ -58,14 +225,54 @@ void SFXCTL_Engine::InitSFX() {
 
 void SFXCTL_Engine::UpdateParams(float t) {
     SFXCTL::UpdateParams(t);
-    UpdateRPM(t);
+
+    EAXCar_View *carOwner = reinterpret_cast<EAXCar_View *>(m_pEAXCar);
+    EAX_CarState_View *car = carOwner->m_pCar;
+
+    const Attrib::Gen::engineaudio &attributes =
+        *reinterpret_cast<const Attrib::Gen::engineaudio *>(carOwner->mEngineInfo);
+    SetDMIX_Input(2, static_cast<int>(attributes.Master_Vol()));
+    const bVector3 *forward = reinterpret_cast<const bVector3 *>(&car->mMatrix.v0);
+    m_p3DCarPosCtl->AssignDirectionVector(forward);
+
+    bVector3 &vCarPos = *reinterpret_cast<bVector3 *>(_pad_eng_vec);
+    const bVector3 *cur3dPos = reinterpret_cast<const bVector3 *>(&car->mMatrix.v3);
+    const bVector2 *cur2dPos = reinterpret_cast<const bVector2 *>(cur3dPos);
+    (void)cur2dPos;
+    vCarPos = *cur3dPos;
+
+    bVector3 vOffset = bNormalize(*forward);
+    if (carOwner->m_PovType == 1) {
+        vOffset = bScale(vOffset, 2.0f);
+    } else {
+        vOffset = bScale(vOffset, lbl_803D726C);
+    }
+    vCarPos = bAdd(vCarPos, vOffset);
+
+    UpdateClutchState();
     UpdateTorque(t);
     UpdateCompression(t);
+    UpdateRPM(t);
     UpdateRedlining(t);
     UpdateVolume(t);
     UpdateFilterFX();
     UpdateEngineLFO_FX(t);
-    UpdateClutchState();
+
+    car->mVisualRPM = carOwner->m_fAudioRPM;
+
+    int blownState = car->mEngine.mBlownFlag;
+    if ((blownState == 1 || blownState == 2) && !m_bIsEngineBlown) {
+        m_bIsEngineBlown = true;
+        unsigned int key = 0;
+        if (blownState == 1) {
+            key = 0xbc2dfa2f;
+        }
+        if (blownState == 2) {
+            key = 0xbae41d1b;
+        }
+        MGamePlayMoment moment(UMath::Vector4::kZero, UMath::Vector4::kZero, UMath::Vector4::kZero, 0, key);
+        moment.Send(UCrc32("MomentStrm"));
+    }
 }
 
 void SFXCTL_Engine::MessageVehicleDestroyed(const MNotifyVehicleDestroyed &message) {
@@ -135,7 +342,94 @@ void SFXCTL_Engine::UpdateTorque(float t) {
 }
 
 void SFXCTL_Engine::UpdateEngineLFO_FX(float t) {
-    (void)t;
+    SFXCTL_Shifting *shiftCtl = m_pShiftCtl;
+    int volLfoAmp = 0;
+    int volLfoFreq = 0;
+    int trqLfoAmp = 0;
+    int trqLfoFreq = 0;
+    int rpmLfoAmp = 0;
+    int rpmLfoFreq = 0;
+    float updateTime = t;
+
+    if (shiftCtl != nullptr) {
+        int hasShiftData = 1;
+        if (shiftCtl->eShiftState == SHFT_NONE) {
+            hasShiftData = 0;
+        }
+        if (hasShiftData != 0) {
+            rpmLfoFreq = shiftCtl->m_RPM_LFO_FRQ;
+            volLfoAmp = shiftCtl->m_VOL_LFO_AMP;
+            volLfoFreq = shiftCtl->m_VOL_LFO_FRQ;
+            trqLfoAmp = shiftCtl->m_TRQ_LFO_AMP;
+            trqLfoFreq = shiftCtl->m_TRQ_LFO_FRQ;
+            rpmLfoAmp = shiftCtl->m_RPM_LFO_AMP;
+        } else {
+            m_aglTRQ_LFO = 0x4097;
+            m_TRQ_LFO = 0.0f;
+            m_VOL_LFO = 0.0f;
+            m_aglVOL_LFO = 0x4097;
+            m_RPM_LFO = 0.0f;
+            m_aglRPM_LFO = 0x4097;
+        }
+    } else {
+        m_aglTRQ_LFO = 0x4097;
+        m_TRQ_LFO = 0.0f;
+        m_VOL_LFO = 0.0f;
+        m_aglVOL_LFO = 0x4097;
+        m_RPM_LFO = 0.0f;
+        m_aglRPM_LFO = 0x4097;
+    }
+
+    int rpmFreq = 1;
+    if (rpmLfoFreq > 1) {
+        rpmFreq = rpmLfoFreq;
+    }
+    if (rpmFreq > 10000) {
+        rpmFreq = 10000;
+    }
+
+    int trqFreq = 1;
+    if (trqLfoFreq > 1) {
+        trqFreq = trqLfoFreq;
+    }
+    if (trqFreq > 10000) {
+        trqFreq = 10000;
+    }
+
+    int volFreq = 1;
+    if (volLfoFreq > 1) {
+        volFreq = volLfoFreq;
+    }
+    if (volFreq > 10000) {
+        volFreq = 10000;
+    }
+
+    if (rpmLfoAmp != 0) {
+        unsigned int angle = static_cast<unsigned int>(m_aglRPM_LFO) +
+                             static_cast<unsigned int>((updateTime / (static_cast<float>(rpmFreq) * 0.001f)) * 65535.0f);
+        angle = static_cast<unsigned short>(angle);
+        angle = angle % 0xFFFF;
+        m_aglRPM_LFO = static_cast<unsigned short>(angle);
+        m_RPM_LFO = static_cast<float>(rpmLfoAmp) * bSin(m_aglRPM_LFO);
+    }
+
+    if (trqLfoAmp != 0) {
+        unsigned int angle = static_cast<unsigned int>(m_aglTRQ_LFO) +
+                             static_cast<unsigned int>((updateTime / (static_cast<float>(trqFreq) * 0.001f)) * 65535.0f);
+        angle = static_cast<unsigned short>(angle);
+        angle = angle % 0xFFFF;
+        m_aglTRQ_LFO = static_cast<unsigned short>(angle);
+        m_TRQ_LFO = static_cast<float>(trqLfoAmp) * bSin(m_aglTRQ_LFO);
+    }
+
+    if (volLfoAmp != 0) {
+        unsigned int angle = static_cast<unsigned int>(m_aglVOL_LFO) +
+                             static_cast<unsigned int>((updateTime / (static_cast<float>(volFreq) * 0.001f)) * 65535.0f);
+        angle = static_cast<unsigned short>(angle);
+        angle = angle % 0xFFFF;
+        m_aglVOL_LFO = static_cast<unsigned short>(angle);
+        m_VOL_LFO = static_cast<float>(volLfoAmp) * bSin(m_aglVOL_LFO);
+    }
 }
 
 void SFXCTL_Engine::SetupSFX(CSTATE_Base *_StateBase) {

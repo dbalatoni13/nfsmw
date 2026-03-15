@@ -1,8 +1,9 @@
 #include "Speed/Indep/Src/EAXSound/STICH_Playback.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
+#include "Speed/Indep/Src/Misc/Timer.hpp"
+#include "Speed/Indep/Src/World/WorldConn.h"
 
 struct CSTATE_Base;
-struct bVector3;
 struct EAX_CarState;
 struct EAXSound;
 
@@ -19,11 +20,39 @@ struct audioimpact;
 namespace Sound {
 
 struct AudioEventParams {
-    int _pad;
+    bVector3 position;
+    bVector3 normal;
+    bVector3 velocity;
+    float magnitude;
+    Attrib::RefSpec attributes;
+    unsigned int object;
+    unsigned int other_object;
 };
 
 struct CollisionDescription {
     int _pad;
+};
+
+struct AudioEvent {
+    unsigned int mFactoryPad;
+    AudioEventParams mParams;
+    Attrib::Instance mAttributes;
+    void *mVTableAudioEvent;
+
+    AudioEvent(const AudioEventParams &params)
+        : mFactoryPad(0) //
+        , mParams(params) //
+        , mAttributes(params.attributes, 0, nullptr) //
+        , mVTableAudioEvent(nullptr)
+    {}
+
+    const AudioEventParams &GetParameters() const {
+        return mParams;
+    }
+
+    const Attrib::Instance &GetAttributes() const {
+        return mAttributes;
+    }
 };
 
 float DistanceToView(const bVector3 *vPosition) {
@@ -36,14 +65,30 @@ bool IsPrimaryTarget(unsigned int target) {
     return false;
 }
 
-CollisionDescription *GetCollisionDescription(const Attrib::StringKey &key) {
+unsigned int GetCollisionDescription(const Attrib::StringKey &key) {
     (void)key;
-    return nullptr;
+    return 0;
 }
 
-struct CollisionEvent {
-    char _pad[0xC8];
+struct CollisionEvent : public AudioEvent {
+    Timer CollisionTime;
+    bVector3 InitialContactPoint;
+    bVector3 CurrentContactPoint;
+    bVector3 CurrentVelocity;
+    bVector3 ImpulseNormal;
+    int mVolume;
+    int Intensity;
+    SND_Stich *ImpactStich;
+    WorldConn::Reference mTarget;
+    unsigned int Description;
     CSTATE_Base *Owner;
+    int mRefCount;
+    const char *mCSISEffect;
+    bool mActive;
+    char _padActive[3];
+    unsigned int mAudioFX;
+    unsigned int mActor;
+    unsigned int mActee;
 
     CollisionEvent(const AudioEventParams &params, bool isScrape);
     ~CollisionEvent();
@@ -57,10 +102,63 @@ struct CollisionEvent {
     void Release();
 };
 
-CollisionEvent::CollisionEvent(const AudioEventParams &params, bool isScrape)
-    : Owner(nullptr) {
-    (void)params;
-    (void)isScrape;
+CollisionEvent::CollisionEvent(const AudioEventParams &aep, bool impact)
+    : AudioEvent(aep) //
+    , CollisionTime(WorldTimer.GetPackedTime()) //
+    , InitialContactPoint(aep.position) //
+    , CurrentContactPoint(aep.position) //
+    , ImpulseNormal(aep.normal) //
+    , mVolume(0x7FFF) //
+    , Intensity(0) //
+    , ImpactStich(nullptr) //
+    , mTarget(0) //
+    , Description(0) //
+    , Owner(nullptr) //
+    , mRefCount(1) //
+    , mCSISEffect(nullptr) //
+    , mActive(false) //
+    , mAudioFX(0) //
+    , mActor(mParams.object) //
+    , mActee(mParams.other_object) {
+    if (mActor != 0) {
+        mTarget.Set(mActor);
+    }
+
+    if (mTarget.GetMatrix() != nullptr && mAttributes.IsValid()) {
+        Attrib::Attribute descriptionList = mAttributes.Get(0x9925106);
+        const unsigned int numDescriptions = descriptionList.GetLength();
+
+        for (unsigned int d = 0; d < numDescriptions; d++) {
+            const Attrib::StringKey *hash =
+                static_cast<const Attrib::StringKey *>(mAttributes.GetAttributePointer(0x9925106, d));
+            if (hash == nullptr) {
+                hash = static_cast<const Attrib::StringKey *>(Attrib::DefaultDataArea(0x10));
+            }
+            Description |= GetCollisionDescription(*hash);
+        }
+
+        if (IsPrimaryTarget(mActor) || IsPrimaryTarget(mActee)) {
+            Description |= 1;
+        }
+
+        float magnitude = mParams.magnitude;
+        if (magnitude > 1.0f) {
+            magnitude = 1.0f;
+        }
+        if (magnitude < 0.0f) {
+            magnitude = 0.0f;
+        }
+        Intensity = static_cast<int>(magnitude * 10.0f);
+
+        if (((Description & 6) != 6) || Intensity > 9) {
+            Attrib::Instance attributes(mAttributes);
+            if (impact) {
+                InitAsImpact(*reinterpret_cast<const Attrib::Gen::audioimpact *>(&attributes));
+            } else {
+                InitAsScrape(*reinterpret_cast<const Attrib::Gen::audioscrape *>(&attributes));
+            }
+        }
+    }
 }
 
 CollisionEvent::~CollisionEvent() {}

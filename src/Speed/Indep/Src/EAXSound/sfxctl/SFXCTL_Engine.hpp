@@ -45,7 +45,13 @@ struct SFXCTL_Engine : public SFXCTL {
     /* 0x12c */ bool m_bIsEngineBlown;
     /* 0x130 */ int m_DistanceFltr;
     /* 0x134 */ bool bClutchStateOn;
-    /* 0x138 */ char _pad_eng3[0x150 - 0x138];
+    /* 0x138 */ float m_VOL_LFO;
+    /* 0x13c */ float m_RPM_LFO;
+    /* 0x140 */ float m_TRQ_LFO;
+    /* 0x144 */ unsigned short m_aglRPM_LFO;
+    /* 0x146 */ unsigned short m_aglTRQ_LFO;
+    /* 0x148 */ unsigned short m_aglVOL_LFO;
+    /* 0x14a */ char _pad_eng3[0x150 - 0x14a];
     /* 0x150 */ cPathLine m_ComppressionRPM;
     /* 0x1dc */ HHANDLER mmsgMVehicleDestroyed;
     /* 0x1e0 */ HHANDLER mmsgMVehicleDestroyed2;
