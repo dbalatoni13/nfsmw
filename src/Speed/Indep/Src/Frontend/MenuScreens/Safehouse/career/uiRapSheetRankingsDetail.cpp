@@ -77,29 +77,111 @@ void uiRapSheetRankingsDetail::NotificationMessage(unsigned long msg, FEObject* 
 }
 void uiRapSheetRankingsDetail::Setup() {
     ClearData();
-    UserProfile* prof = FEDatabase->GetUserProfile(0);
-    HighScoresDatabase* scores = prof->GetHighScores();
-    int rank = scores->CalcPursuitRank(rank_type, career_view);
-    player_rank = rank;
+    HighScoresDatabase* scores = FEDatabase->GetUserProfile(0)->GetHighScores();
+    player_rank = scores->CalcPursuitRank(rank_type, career_view);
     const char* attrib_name = nullptr;
+    Attrib::Key key = 0;
     unsigned int value_label = 0;
     switch (static_cast<int>(rank_type)) {
-    case 0: attrib_name = career_view ? "pursuit_length" : "pursuit_length_in_pursuit"; value_label = 0xD70811D1; break;
-    case 1: attrib_name = career_view ? "cops_involved" : "cops_involved_in_pursuit"; value_label = 0xC6113FCF; break;
-    case 2: attrib_name = career_view ? "cops_damaged" : "cops_damaged_in_pursuit"; value_label = 0x2A1815D9; break;
-    case 3: attrib_name = career_view ? "cops_destroyed" : "cops_destroyed_in_pursuit"; value_label = 0x189EAF7B; break;
-    case 4: attrib_name = career_view ? "tire_spikes_dodged" : "tire_spikes_dodged_in_pursuit"; value_label = 0xDCD6B9BA; break;
-    case 5: attrib_name = career_view ? "roadblocks_dodged" : "roadblocks_dodged_in_pursuit"; value_label = 0x9EF589BE; break;
-    case 6: attrib_name = career_view ? "helis_involved" : "helis_involved_in_pursuit"; value_label = 0x39A1413C; break;
-    case 7: attrib_name = career_view ? "cost_to_state" : "cost_to_state_in_pursuit"; value_label = 0xE34B2E6F; break;
-    case 8: attrib_name = career_view ? "total_infractions" : "total_infractions_in_pursuit"; value_label = 0xB3F963F8; break;
-    case 9: attrib_name = career_view ? "bounty" : "bounty_in_pursuit"; value_label = 0x48B4B99C; break;
+    case 0:
+        if (!career_view) {
+            attrib_name = "pursuit_length_in_pursuit";
+        } else {
+            attrib_name = "pursuit_length";
+        }
+        key = Attrib::StringToKey(attrib_name);
+        value_label = 0xD70811D1;
+        break;
+    case 1:
+        if (!career_view) {
+            attrib_name = "cops_involved_in_pursuit";
+        } else {
+            attrib_name = "cops_involved";
+        }
+        key = Attrib::StringToKey(attrib_name);
+        value_label = 0xC6113FCF;
+        break;
+    case 2:
+        if (!career_view) {
+            attrib_name = "cops_damaged_in_pursuit";
+        } else {
+            attrib_name = "cops_damaged";
+        }
+        key = Attrib::StringToKey(attrib_name);
+        value_label = 0x2A1815D9;
+        break;
+    case 3:
+        if (!career_view) {
+            attrib_name = "cops_destroyed_in_pursuit";
+        } else {
+            attrib_name = "cops_destroyed";
+        }
+        key = Attrib::StringToKey(attrib_name);
+        value_label = 0x189EAF7B;
+        break;
+    case 4:
+        if (!career_view) {
+            attrib_name = "tire_spikes_dodged_in_pursuit";
+        } else {
+            attrib_name = "tire_spikes_dodged";
+        }
+        key = Attrib::StringToKey(attrib_name);
+        value_label = 0xDCD6B9BA;
+        break;
+    case 5:
+        if (!career_view) {
+            attrib_name = "roadblocks_dodged_in_pursuit";
+        } else {
+            attrib_name = "roadblocks_dodged";
+        }
+        key = Attrib::StringToKey(attrib_name);
+        value_label = 0x9EF589BE;
+        break;
+    case 6:
+        if (!career_view) {
+            attrib_name = "helis_involved_in_pursuit";
+        } else {
+            attrib_name = "helis_involved";
+        }
+        key = Attrib::StringToKey(attrib_name);
+        value_label = 0x39A1413C;
+        break;
+    case 7:
+        if (!career_view) {
+            attrib_name = "cost_to_state_in_pursuit";
+        } else {
+            attrib_name = "cost_to_state";
+        }
+        key = Attrib::StringToKey(attrib_name);
+        value_label = 0xE34B2E6F;
+        break;
+    case 8:
+        if (!career_view) {
+            attrib_name = "total_infractions_in_pursuit";
+        } else {
+            attrib_name = "total_infractions";
+        }
+        key = Attrib::StringToKey(attrib_name);
+        value_label = 0xB3F963F8;
+        break;
+    case 9:
+        if (!career_view) {
+            attrib_name = "bounty_in_pursuit";
+        } else {
+            attrib_name = "bounty";
+        }
+        key = Attrib::StringToKey(attrib_name);
+        value_label = 0x48B4B99C;
+        break;
     default: break;
     }
-    Attrib::Key key = attrib_name ? Attrib::StringToKey(attrib_name) : 0;
     Attrib::Gen::frontend rankingsData(Attrib::FindCollection(Attrib::Gen::frontend::ClassKey(), key), 0, nullptr);
     if (rankingsData.IsValid()) {
-        unsigned int numRanks = rankingsData.Num_RapSheetRanks();
+        unsigned int numRanks;
+        {
+            Attrib::Attribute ranks = rankingsData.Get(0xF9A7D5F7);
+            numRanks = ranks.GetLength();
+        }
         if (numRanks == 15) {
             int num_rows = 15;
             int rank_shift = 0;
@@ -110,12 +192,11 @@ void uiRapSheetRankingsDetail::Setup() {
                 if (i == player_rank - 1) {
                     unsigned int car_hash = 0;
                     int player_value;
-                    if (career_view) {
-                        player_value = scores->GetCareerPursuitScore(rank_type);
+                    if (!career_view) {
+                        car_hash = GetFECarNameHashFromFEKey(scores->BestPursuitRankings[rank_type].CarFEKey);
+                        player_value = scores->BestPursuitRankings[rank_type].Value;
                     } else {
-                        const PursuitScore& best_score = scores->GetBestPursuitScore(rank_type);
-                        car_hash = GetFECarNameHashFromFEKey(best_score.CarFEKey);
-                        player_value = best_score.Value;
+                        player_value = scores->CareerPursuitDetails.GetValue(rank_type);
                     }
 
                     float value = static_cast<float>(player_value);
@@ -123,20 +204,28 @@ void uiRapSheetRankingsDetail::Setup() {
                         value = Timer(player_value).GetSeconds();
                     }
 
-                    AddDatum(new(__FILE__, __LINE__) RapSheetRankingsDatum(i + 1, 1, car_hash, value));
+                    AddDatum(new(__FILE__, __LINE__) RapSheetRankingsDatum(player_rank, 1, car_hash, value));
                     rank_shift--;
                 } else {
                     int rank_index = i + rank_shift;
-                    unsigned int name_hash = 0;
-                    unsigned int car_hash = 0;
-                    if (rankingsData.Num_NameId() > static_cast<unsigned int>(rank_index)) {
-                        int rival_id = rankingsData.NameId(static_cast<unsigned int>(rank_index));
-                        name_hash = FEngHashString("BLACKLIST_RIVAL_%.2d_AKA", rival_id);
-                        if (!career_view) {
-                            car_hash = FEngHashString("BLACKLIST_RIVAL_%.2d_CAR", rival_id);
-                        }
+                    const char* rival_id = reinterpret_cast<const char*>(rankingsData.GetAttributePointer(0x2C3C7FEB, rank_index));
+                    if (!rival_id) {
+                        rival_id = reinterpret_cast<const char*>(Attrib::DefaultDataArea(sizeof(char)));
                     }
-                    float value = rankingsData.RapSheetRanks(static_cast<unsigned int>(rank_index));
+                    unsigned int name_hash = FEngHashString("BLACKLIST_RIVAL_%.2d_AKA", static_cast<int>(*rival_id));
+                    unsigned int car_hash = 0;
+                    if (!career_view) {
+                        const char* rival_car = reinterpret_cast<const char*>(rankingsData.GetAttributePointer(0x2C3C7FEB, rank_index));
+                        if (!rival_car) {
+                            rival_car = reinterpret_cast<const char*>(Attrib::DefaultDataArea(sizeof(char)));
+                        }
+                        car_hash = FEngHashString("BLACKLIST_RIVAL_%.2d_CAR", static_cast<int>(*rival_car));
+                    }
+                    const float* value_ptr = reinterpret_cast<const float*>(rankingsData.GetAttributePointer(0xF9A7D5F7, rank_index));
+                    if (!value_ptr) {
+                        value_ptr = reinterpret_cast<const float*>(Attrib::DefaultDataArea(sizeof(float)));
+                    }
+                    float value = *value_ptr;
                     AddDatum(new(__FILE__, __LINE__) RapSheetRankingsDatum(i + 1, name_hash, car_hash, value));
                 }
             }
