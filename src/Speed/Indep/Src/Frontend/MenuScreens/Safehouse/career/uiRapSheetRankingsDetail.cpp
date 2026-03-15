@@ -187,9 +187,11 @@ void uiRapSheetRankingsDetail::Setup() {
                         player_value = scores->BestPursuitRankings[rank_type].Value;
                     }
 
-                    float value = static_cast<float>(player_value);
+                    float value;
                     if (rank_type == ePDT_CostToState) {
-                        value *= 0.00025f;
+                        value = static_cast<float>(player_value) * 0.00025f;
+                    } else {
+                        value = static_cast<float>(player_value);
                     }
 
                     AddDatum(new(__FILE__, __LINE__) RapSheetRankingsDatum(player_rank, 1, car_hash, value));
