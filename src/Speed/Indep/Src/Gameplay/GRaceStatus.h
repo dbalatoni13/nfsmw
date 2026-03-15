@@ -29,7 +29,9 @@ struct GRacerInfo {
         return mPctRaceComplete;
     }
 
-    ISimable *GetSimable() const;
+    ISimable *GetSimable() const {
+        return ISimable::FindInstance(mhSimable);
+    }
     float GetFinishingSpeed() const { return mFinishingSpeed; }
     float GetPointTotal() const { return mPointTotal; }
     const GTimer &GetRaceTimer() const { return mRaceTimer; }
