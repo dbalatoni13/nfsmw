@@ -259,11 +259,7 @@ void CustomizeSub::RefreshHeader() {
     }
     FEPrintf(GetPackageName(), 0xb71b576d, "%s", buf);
     if (Category == 0x103 || Category == 0x302) {
-        int sel = 0;
-        IconOption *cur = Options.GetCurrentOption();
-        if (cur) {
-            sel = Options.GetOptionIndex(cur);
-        }
+        int sel = Options.GetCurrentIndex();
         if (sel == InCartPartOptionIndex) {
             FEngSetVisible(FEngFindObject(GetPackageName(), 0xd0582feb));
             FEngSetTextureHash(FEngFindImage(GetPackageName(), 0xd0582feb), 0x1a777e25);
@@ -286,12 +282,12 @@ void CustomizeSub::RefreshHeader() {
 // --- Free functions ---
 
 int TranslateCustomizeCatToMarker(eCustomizeCategory cat) {
-    switch (cat) {
+    switch (static_cast<unsigned int>(cat)) {
     case CC_BODY_KIT:      return FEMarkerManager::MARKER_BODY;
     case CC_SPOILERS:      return FEMarkerManager::MARKER_SPOILER;
-    case CC_RIM_BRANDS:    return FEMarkerManager::MARKER_RIMS;
     case CC_HOODS:         return FEMarkerManager::MARKER_HOOD;
     case CC_ROOF_SCOOPS:   return FEMarkerManager::MARKER_ROOF_SCOOP;
+    case CC_CUSTOM_HUD:    return FEMarkerManager::MARKER_CUSTOM_HUD;
     case CC_ENGINE:        return FEMarkerManager::MARKER_ENGINE;
     case CC_TRANSMISSION:  return FEMarkerManager::MARKER_TRANSMISSION;
     case CC_SUSPENSION:    return FEMarkerManager::MARKER_CHASSIS;
@@ -299,35 +295,71 @@ int TranslateCustomizeCatToMarker(eCustomizeCategory cat) {
     case CC_TIRES:         return FEMarkerManager::MARKER_TIRES;
     case CC_BRAKES:        return FEMarkerManager::MARKER_BRAKES;
     case CC_FORCED_INDUCTION: return FEMarkerManager::MARKER_INDUCTION;
-    case CC_PAINT:         return FEMarkerManager::MARKER_PAINT;
-    case CC_VINYL_TYPES:   return FEMarkerManager::MARKER_VINYL;
+    case CC_PAINT:
     case CC_RIM_PAINT:     return FEMarkerManager::MARKER_PAINT;
-    case CC_DECAL_LOCATION: return FEMarkerManager::MARKER_DECAL;
-    case CC_CUSTOM_HUD:    return FEMarkerManager::MARKER_CUSTOM_HUD;
+    case CC_VINYL_TYPES:
+    case CC_VINYL_GROUP_FLAME:
+    case CC_VINYL_GROUP_TRIBAL:
+    case CC_VINYL_GROUP_STRIPE:
+    case CC_VINYL_GROUP_RACING_FLAG:
+    case CC_VINYL_GROUP_NATIONAL_FLAG:
+    case CC_VINYL_GROUP_BODY:
+    case CC_VINYL_GROUP_UNIQUE:
+    case CC_VINYL_GROUP_CONTEST:
+        return FEMarkerManager::MARKER_VINYL;
+    case CC_RIM_BRANDS:
+    case CC_RIM_BRAND_5_ZIGEN:
+    case CC_RIM_BRAND_ADR:
+    case CC_RIM_BRAND_BBS:
+    case CC_RIM_BRAND_ENKEI:
+    case CC_RIM_BRAND_KONIG:
+    case CC_RIM_BRAND_LOWENHART:
+    case CC_RIM_BRAND_RACING_HART:
+    case CC_RIM_BRAND_OZ:
+    case CC_RIM_BRAND_VOLK:
+    case CC_RIM_BRAND_ROJA:
+        return FEMarkerManager::MARKER_RIMS;
+    case CC_DECAL_LOCATION:
+    case CC_DECAL_WINDSHIELD:
+    case CC_DECAL_REAR_WINDOW:
+    case CC_DECAL_LEFT_DOOR:
+    case CC_DECAL_RIGHT_DOOR:
+    case CC_DECAL_LEFT_QP:
+    case CC_DECAL_RIGHT_QP:
+    case CC_DECAL_SLOT_1:
+    case CC_DECAL_SLOT_2:
+    case CC_DECAL_SLOT_3:
+    case CC_DECAL_SLOT_4:
+    case CC_DECAL_SLOT_5:
+    case CC_DECAL_SLOT_6:
+        return FEMarkerManager::MARKER_DECAL;
     default:
-        if (static_cast<unsigned int>(cat) > 0x401 && static_cast<unsigned int>(cat) < 0x40a) {
-            return FEMarkerManager::MARKER_VINYL;
-        }
-        if (static_cast<unsigned int>(cat) > 0x500 && static_cast<unsigned int>(cat) < 0x507) {
-            return FEMarkerManager::MARKER_DECAL;
-        }
-        if (static_cast<unsigned int>(cat) > 0x600 && static_cast<unsigned int>(cat) < 0x607) {
-            return FEMarkerManager::MARKER_DECAL;
-        }
-        if (static_cast<unsigned int>(cat) > 0x701 && static_cast<unsigned int>(cat) < 0x70c) {
-            return FEMarkerManager::MARKER_RIMS;
-        }
         return 0;
     }
 }
 
 unsigned int GetMarkerNameFromCategory(eCustomizeCategory cat) {
-    switch (cat) {
+    switch (static_cast<unsigned int>(cat)) {
+    case CC_PARTS:         return 0xd3a2fbe1;
+    case CC_PERFORMANCE:   return 0x3c27a989;
+    case CC_VISUAL:        return 0x5692be6b;
     case CC_BODY_KIT:      return 0x7c50498c;
     case CC_SPOILERS:      return 0x52012995;
-    case CC_RIM_BRANDS:    return 0x8a4bfbf2;
+    case CC_RIM_BRANDS:
+    case CC_RIM_BRAND_5_ZIGEN:
+    case CC_RIM_BRAND_ADR:
+    case CC_RIM_BRAND_BBS:
+    case CC_RIM_BRAND_ENKEI:
+    case CC_RIM_BRAND_KONIG:
+    case CC_RIM_BRAND_LOWENHART:
+    case CC_RIM_BRAND_RACING_HART:
+    case CC_RIM_BRAND_OZ:
+    case CC_RIM_BRAND_VOLK:
+    case CC_RIM_BRAND_ROJA:
+        return 0x8a4bfbf2;
     case CC_HOODS:         return 0x8a4699e1;
     case CC_ROOF_SCOOPS:   return 0x830100f0;
+    case CC_CUSTOM_HUD:    return 0xc253ec92;
     case CC_ENGINE:        return 0x2f3ec04d;
     case CC_TRANSMISSION:  return 0xd1e77ca1;
     case CC_SUSPENSION:    return 0xb7cbfcce;
@@ -340,62 +372,63 @@ unsigned int GetMarkerNameFromCategory(eCustomizeCategory cat) {
         }
         return 0x63a51aa2;
     case CC_PAINT:         return 0xd3a2d4d3;
-    case CC_VINYL_TYPES:   return 0xd413e189;
-    case CC_RIM_PAINT:     return 0xd3a2d4d3;
-    case CC_DECAL_LOCATION: return 0xd2cbc510;
-    case CC_CUSTOM_HUD:    return 0xc253ec92;
+    case CC_VINYL_TYPES:
+    case CC_VINYL_GROUP_FLAME:
+    case CC_VINYL_GROUP_TRIBAL:
+    case CC_VINYL_GROUP_STRIPE:
+    case CC_VINYL_GROUP_RACING_FLAG:
+    case CC_VINYL_GROUP_NATIONAL_FLAG:
+    case CC_VINYL_GROUP_BODY:
+    case CC_VINYL_GROUP_UNIQUE:
+    case CC_VINYL_GROUP_CONTEST:
+        return 0xd413e189;
+    case CC_DECAL_LOCATION:
+    case CC_DECAL_WINDSHIELD:
+    case CC_DECAL_REAR_WINDOW:
+    case CC_DECAL_LEFT_DOOR:
+    case CC_DECAL_RIGHT_DOOR:
+    case CC_DECAL_LEFT_QP:
+    case CC_DECAL_RIGHT_QP:
+    case CC_DECAL_SLOT_1:
+    case CC_DECAL_SLOT_2:
+    case CC_DECAL_SLOT_3:
+    case CC_DECAL_SLOT_4:
+    case CC_DECAL_SLOT_5:
+    case CC_DECAL_SLOT_6:
+        return 0xd2cbc510;
     default:
-        if (static_cast<unsigned int>(cat) > 0x401 && static_cast<unsigned int>(cat) < 0x40a) {
-            return 0xd413e189;
-        }
-        if (static_cast<unsigned int>(cat) > 0x500 && static_cast<unsigned int>(cat) < 0x507) {
-            return 0xd2cbc510;
-        }
-        if (static_cast<unsigned int>(cat) > 0x600 && static_cast<unsigned int>(cat) < 0x607) {
-            return 0xd2cbc510;
-        }
-        if (static_cast<unsigned int>(cat) > 0x701 && static_cast<unsigned int>(cat) < 0x70c) {
-            return 0x8a4bfbf2;
-        }
-        if (static_cast<unsigned int>(cat) == 0x801) {
-            return 0xd3a2fbe1;
-        }
-        if (static_cast<unsigned int>(cat) == 0x802) {
-            return 0x3c27a989;
-        }
-        if (static_cast<unsigned int>(cat) == 0x803) {
-            return 0x5692be6b;
-        }
         return 0;
     }
 }
 
 unsigned int GetNumMarkersFromCategory(eCustomizeCategory cat) {
-    unsigned int ucat = static_cast<unsigned int>(cat);
-    if (ucat == 0x802) {
-        int total = GetNumMarkersFromCategory(static_cast<eCustomizeCategory>(0x201))
-            + GetNumMarkersFromCategory(static_cast<eCustomizeCategory>(0x202))
-            + GetNumMarkersFromCategory(static_cast<eCustomizeCategory>(0x203))
-            + GetNumMarkersFromCategory(static_cast<eCustomizeCategory>(0x204))
-            + GetNumMarkersFromCategory(static_cast<eCustomizeCategory>(0x205))
-            + GetNumMarkersFromCategory(static_cast<eCustomizeCategory>(0x206));
-        return total + GetNumMarkersFromCategory(static_cast<eCustomizeCategory>(0x207));
+    switch (static_cast<unsigned int>(cat)) {
+    case CC_PARTS: {
+        int total = GetNumMarkersFromCategory(CC_BODY_KIT);
+        total += GetNumMarkersFromCategory(CC_SPOILERS);
+        total += GetNumMarkersFromCategory(CC_RIM_BRANDS);
+        total += GetNumMarkersFromCategory(CC_HOODS);
+        total += GetNumMarkersFromCategory(CC_ROOF_SCOOPS);
+        return total + GetNumMarkersFromCategory(CC_CUSTOM_HUD);
     }
-    if (ucat == 0x801) {
-        int total = GetNumMarkersFromCategory(static_cast<eCustomizeCategory>(0x101))
-            + GetNumMarkersFromCategory(static_cast<eCustomizeCategory>(0x102))
-            + GetNumMarkersFromCategory(static_cast<eCustomizeCategory>(0x103))
-            + GetNumMarkersFromCategory(static_cast<eCustomizeCategory>(0x104))
-            + GetNumMarkersFromCategory(static_cast<eCustomizeCategory>(0x105));
-        return total + GetNumMarkersFromCategory(static_cast<eCustomizeCategory>(0x307));
+    case CC_PERFORMANCE: {
+        int total = GetNumMarkersFromCategory(CC_ENGINE);
+        total += GetNumMarkersFromCategory(CC_TRANSMISSION);
+        total += GetNumMarkersFromCategory(CC_SUSPENSION);
+        total += GetNumMarkersFromCategory(CC_NITROUS);
+        total += GetNumMarkersFromCategory(CC_TIRES);
+        total += GetNumMarkersFromCategory(CC_BRAKES);
+        return total + GetNumMarkersFromCategory(CC_FORCED_INDUCTION);
     }
-    if (ucat == 0x803) {
-        int total = GetNumMarkersFromCategory(static_cast<eCustomizeCategory>(0x301))
-            + GetNumMarkersFromCategory(static_cast<eCustomizeCategory>(0x302));
-        return total + GetNumMarkersFromCategory(static_cast<eCustomizeCategory>(0x305));
+    case CC_VISUAL: {
+        int total = GetNumMarkersFromCategory(CC_PAINT);
+        total += GetNumMarkersFromCategory(CC_VINYL_TYPES);
+        return total + GetNumMarkersFromCategory(CC_DECAL_LOCATION);
     }
-    return TheFEMarkerManager.GetNumMarkers(
-        static_cast<FEMarkerManager::ePossibleMarker>(TranslateCustomizeCatToMarker(cat)), 0);
+    default:
+        return TheFEMarkerManager.GetNumMarkers(
+            static_cast<FEMarkerManager::ePossibleMarker>(TranslateCustomizeCatToMarker(cat)), 0);
+    }
 }
 
 void CustomizeSub::NotificationMessage(unsigned long msg, FEObject *pobj, unsigned long param1, unsigned long param2) {
