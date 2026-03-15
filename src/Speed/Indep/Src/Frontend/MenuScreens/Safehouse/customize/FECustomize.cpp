@@ -329,7 +329,7 @@ void FEShoppingCartItem::UnsetFocus() {
 }
 
 void FEShoppingCartItem::SetCheckScripts() {
-    if (!TheItem->IsActive()) {
+    if (TheItem->IsActive()) {
         FEngSetScript(pCheckIcon, 0xe6361f46, true);
     } else {
         FEngSetScript(pCheckIcon, 0x77cdc4e9, true);
@@ -1077,7 +1077,7 @@ void CustomizationScreenHelper::SetPartStatus(SelectablePart *part, unsigned int
 void CustomizationScreen::RefreshHeader() {
     IconScrollerMenu::RefreshHeader();
     DisplayHelper.DrawTitle();
-    int count = Options.CountElements();
+    int count = Options.Options.CountElements();
     if (count != Options.iNumBookEnds) {
         int tradeInValue = 0;
         if (gCarCustomizeManager.IsCareerMode()) {
@@ -1099,13 +1099,8 @@ void CustomizationScreen::RefreshHeader() {
         DisplayHelper.SetCareerStuff(selPart, Category, tradeInValue);
         SelectablePart *selPart2 = GetSelectedPart();
         unsigned int unlockBlurb = static_cast<CustomizePartOption *>(Options.GetCurrentOption())->UnlockBlurb;
-        int partNum;
-        if (!Options.pCurrentNode) {
-            partNum = 0;
-        } else {
-            partNum = Options.GetOptionIndex(Options.pCurrentNode);
-        }
-        int numParts = Options.CountElements();
+        int partNum = Options.GetCurrentIndex();
+        int numParts = Options.Options.CountElements();
         DisplayHelper.SetPartStatus(selPart2, unlockBlurb, partNum, numParts - Options.iNumBookEnds);
     }
 }
@@ -1976,29 +1971,27 @@ void CustomizeSpoiler::Setup() {
 void CustomizeSpoiler::RefreshHeader() {
     CustomizationScreen::RefreshHeader();
     int filter = TheFilter;
-    if (filter == 1) {
-        FEngSetLanguageHash(GetPackageName(), 0x78008599, 0x205b328);
-    } else if (filter == 0) {
-        FEngSetLanguageHash(GetPackageName(), 0x78008599, 0x1f0e2b2);
-    } else if (filter == 2) {
-        FEngSetLanguageHash(GetPackageName(), 0x78008599, 0x9912746);
-    } else if (filter == 3) {
-        FEngSetLanguageHash(GetPackageName(), 0x78008599, 0xe7416fc);
+    switch (filter) {
+        case 0: FEngSetLanguageHash(GetPackageName(), 0x78008599, 0x1f0e2b2); break;
+        case 1: FEngSetLanguageHash(GetPackageName(), 0x78008599, 0x205b328); break;
+        case 2: FEngSetLanguageHash(GetPackageName(), 0x78008599, 0x9912746); break;
+        case 3: FEngSetLanguageHash(GetPackageName(), 0x78008599, 0xe7416fc); break;
+        default: break;
     }
-    CustomizePartOption *opt = GetSelectedOption();
+    SelectablePart *sel = GetSelectedPart();
+    int elapsed = RealTimer.GetPackedTime() - ScrollTime.GetPackedTime();
     Timer scrollDelay;
-    scrollDelay.SetTime(0.25f);
-    if (scrollDelay.GetPackedTime() < RealTimer.GetPackedTime() - ScrollTime.GetPackedTime()) {
-        gCarCustomizeManager.PreviewPart(opt->GetPart()->GetSlotID(), opt->GetPart()->GetPart());
+    scrollDelay.SetTime(0.3f);
+    if (elapsed > scrollDelay.GetPackedTime()) {
+        gCarCustomizeManager.PreviewPart(sel->GetSlotID(), sel->GetPart());
     } else {
         bNeedsRefresh = true;
     }
-    CarPart *part = opt->GetPart()->GetPart();
-    if (!part->HasAppliedAttribute(bStringHash("LANGUAGEHASH"))) {
-        FEPrintf(GetPackageName(), 0x5e7b09c9, "%s", part->GetName());
-    } else {
-        unsigned int langHash = part->GetAppliedAttributeUParam(bStringHash("LANGUAGEHASH"), 0);
+    if (sel->GetPart()->HasAppliedAttribute(bStringHash("LANGUAGEHASH"))) {
+        unsigned int langHash = sel->GetPart()->GetAppliedAttributeUParam(bStringHash("LANGUAGEHASH"), 0);
         FEngSetLanguageHash(GetPackageName(), 0x5e7b09c9, langHash);
+    } else {
+        FEPrintf(GetPackageName(), 0x5e7b09c9, "%s", sel->GetPart()->GetName());
     }
 }
 
@@ -2600,32 +2593,30 @@ void CustomizeParts::RefreshHeader() {
     CustomizationScreen::RefreshHeader();
     int numOpts = Options.Options.TraversebList(nullptr);
     if (numOpts != Options.iNumBookEnds) {
-        CustomizePartOption *opt = GetSelectedOption();
-        CarPart *part = opt->GetPart()->GetPart();
-        if (part->HasAppliedAttribute(0x6212682b)) {
-            unsigned int tunable = part->GetAppliedAttributeUParam(0x6212682b, 0);
-            if (tunable == 0) {
-                FEngSetLanguageHash(GetPackageName(), 0xb94139f4, 0x649f4a65);
-            } else {
+        SelectablePart *sel = GetSelectedPart();
+        if (sel->GetPart()->HasAppliedAttribute(0x6212682b)) {
+            unsigned int tunable = sel->GetPart()->GetAppliedAttributeUParam(0x6212682b, 0);
+            if (tunable) {
                 FEngSetLanguageHash(GetPackageName(), 0xb94139f4, 0x8098a54c);
+            } else {
+                FEngSetLanguageHash(GetPackageName(), 0xb94139f4, 0x649f4a65);
             }
         }
         if (Category == 0x307) {
             SetHUDTextures();
             SetHUDColors();
         } else {
-            int timeDiff = RealTimer.GetPackedTime() - ScrollTime.GetPackedTime();
-            if (static_cast<float>(static_cast<double>(timeDiff ^ 0x80000000 | 0x4330000000000000ULL) - 4503599627370496.0) * 0.001f <= 0.25f) {
-                bNeedsRefresh = true;
+            if ((RealTimer - ScrollTime).GetSeconds() > 0.3f) {
+                gCarCustomizeManager.PreviewPart(sel->GetSlotID(), sel->GetPart());
             } else {
-                gCarCustomizeManager.PreviewPart(opt->GetPart()->GetSlotID(), opt->GetPart()->GetPart());
+                bNeedsRefresh = true;
             }
         }
-        if (!part->HasAppliedAttribute(bStringHash("LANGUAGEHASH"))) {
-            FEPrintf(GetPackageName(), 0x5e7b09c9, "%s", part->GetName());
-        } else {
-            unsigned int langHash = part->GetAppliedAttributeUParam(bStringHash("LANGUAGEHASH"), 0);
+        if (sel->GetPart()->HasAppliedAttribute(bStringHash("LANGUAGEHASH"))) {
+            unsigned int langHash = sel->GetPart()->GetAppliedAttributeUParam(bStringHash("LANGUAGEHASH"), 0);
             FEngSetLanguageHash(GetPackageName(), 0x5e7b09c9, langHash);
+        } else {
+            FEPrintf(GetPackageName(), 0x5e7b09c9, "%s", sel->GetPart()->GetName());
         }
     }
 }
