@@ -67,8 +67,8 @@ inline FEFieldNode* FETypeNode::GetField(int Index) {
 
 // total size: 0x8
 struct SFERadixKey {
-    FEObject* pObject; // offset 0x0
-    float fZValue;     // offset 0x4
+    FEObject* pobObject; // offset 0x0
+    unsigned long ulKey;  // offset 0x4
 };
 
 // total size: 0x4004
@@ -83,8 +83,8 @@ struct FEObjectSorter {
     inline SFERadixKey* GetListPtr() { return mastFinalList; }
     inline unsigned long GetNumObjects() { return mulNumObjects; }
     inline void AddObject(FEObject* pobObject, float fZValue) {
-        mastFinalList[mulNumObjects].pObject = pobObject;
-        mastFinalList[mulNumObjects].fZValue = fZValue;
+        mastFinalList[mulNumObjects].pobObject = pobObject;
+        *reinterpret_cast<float*>(&mastFinalList[mulNumObjects].ulKey) = fZValue;
         mulNumObjects++;
     }
     void SortObjects();

@@ -9,40 +9,40 @@
 
 template <int N>
 void FEObjectSorter<N>::SortObjects() {
-    int pass = 3;
-    int count = mulNumObjects;
-    SFERadixKey* pSrc = mastFinalList;
-    SFERadixKey* pDst = mastScratchList;
+    int lNumBytes = mulNumObjects << 3;
+    SFERadixKey* pstSrcList = mastFinalList;
+    SFERadixKey* pstDestList = mastScratchList;
+    int b = 3;
     do {
-        SFERadixKey* pDstCur = pDst;
-        unsigned long histogram[256];
-        FEngMemSet(histogram, 0, sizeof(histogram));
-        int byteOffset = pass + 4;
-        pass--;
+        long alElemCount[256];
+        FEngMemSet(alElemCount, 0, sizeof(alElemCount));
+        int byteOffset = b + 4;
+        b--;
+        unsigned char* pucByte = reinterpret_cast<unsigned char*>(pstSrcList) + byteOffset;
         int i = 0;
-        if (count * 8 > 0) {
+        if (i < lNumBytes) {
             do {
-                unsigned char b = reinterpret_cast<unsigned char*>(pSrc)[i + byteOffset];
+                unsigned char ucIndex = pucByte[i];
                 i += 8;
-                histogram[b]++;
-            } while (i < count * 8);
+                alElemCount[ucIndex]++;
+            } while (i < lNumBytes);
         }
-        unsigned long offsets[256];
-        offsets[0] = 0;
+        long alElemIndex[256];
+        alElemIndex[0] = 0;
         for (int j = 0; j < 255; j++) {
-            offsets[j + 1] = offsets[j] + histogram[j];
+            alElemIndex[j + 1] = alElemIndex[j] + alElemCount[j];
         }
-        int numObj = mulNumObjects;
-        for (int k = 0; k < numObj; k++) {
-            unsigned char b = reinterpret_cast<unsigned char*>(pSrc)[k * 8 + byteOffset];
-            SFERadixKey* pOut = pDstCur + offsets[b];
-            pOut->pObject = pSrc[k].pObject;
-            pOut->fZValue = pSrc[k].fZValue;
-            offsets[b]++;
+        for (int k = 0; k < static_cast<int>(mulNumObjects); k++) {
+            unsigned char ucIndex = pucByte[k * 8];
+            SFERadixKey* pOut = pstDestList + alElemIndex[ucIndex];
+            pOut->pobObject = pstSrcList[k].pobObject;
+            pOut->ulKey = pstSrcList[k].ulKey;
+            alElemIndex[ucIndex]++;
         }
-        pDst = pSrc;
-        pSrc = pDstCur;
-    } while (pass > -1);
+        SFERadixKey* pstTemp = pstSrcList;
+        pstSrcList = pstDestList;
+        pstDestList = pstTemp;
+    } while (b >= 0);
 }
 
 #endif
