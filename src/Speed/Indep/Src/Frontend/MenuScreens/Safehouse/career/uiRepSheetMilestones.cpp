@@ -53,12 +53,20 @@ uiRepSheetMilestones::uiRepSheetMilestones(ScreenConstructorData* sd)
     : ArrayScrollerMenu(sd, 3, 3, true) {
     bIsInGame = sd->Arg != 0;
     TrackMapStreamer = nullptr;
-    TrackMap = nullptr;
-    TrackMapStreamer = new UITrackMapStreamer();
-    if (!bIsInGame) {
-        FEngSetLanguageHash(GetPackageName(), 0xbde82fcc, 0x216f1b81);
-    } else {
+    theMilestone = nullptr;
+    TrackMapStreamer = new (__FILE__, __LINE__) UITrackMapStreamer();
+    for (int i = 0; i < GetWidth() * GetHeight(); i++) {
+        FEImage* img = FEngFindImage(GetPackageName(), FEngHashString("EVENT_ICON_%d", i + 1));
+        if (img) {
+            AddSlot(new (__FILE__, __LINE__) ImageArraySlot(img));
+        }
+    }
+    TrackMap = reinterpret_cast< FEMultiImage* >(
+        FEngFindObject(GetPackageName(), FEngHashString("TRACK_MAP")));
+    if (bIsInGame) {
         FEngSetLanguageHash(GetPackageName(), 0xbde82fcc, 0x578b767b);
+    } else {
+        FEngSetLanguageHash(GetPackageName(), 0xbde82fcc, 0x216f1b81);
     }
     Setup();
 }
