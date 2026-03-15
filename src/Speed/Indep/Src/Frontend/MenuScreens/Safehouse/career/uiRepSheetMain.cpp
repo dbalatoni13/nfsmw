@@ -225,12 +225,12 @@ unsigned int uiRepSheetMain::GetDefeatedTexture() {
     case 5: return 0x87b79bd;
     case 6: return 0x87bb9bf;
     case 7: return 0x87b7723;
+    case 12: return 0x87babfb;
+    case 13: return 0x87b80ad;
     case 8: return 0x87b96bc;
     case 9: return 0x87b73c4;
     case 10: return 0x87b90ab;
     case 11: return 0x87bbc0d;
-    case 12: return 0x87babfb;
-    case 13: return 0x87b80ad;
     default: return 0x87b7d0a;
     }
 }
