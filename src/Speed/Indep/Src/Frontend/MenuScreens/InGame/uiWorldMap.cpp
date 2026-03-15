@@ -822,16 +822,17 @@ void WorldMap::PanToCursor(float to_zoom) {
     float zoom = MapStreamer->GetZoomFactor();
     FEngGetCenter(static_cast< FEObject* >(TrackMap), map_c.x, map_c.y);
     bVector2 offset;
-    offset.x = (cursor.x - map_c.x) / MapSize.x;
-    offset.y = (cursor.y - map_c.y) / MapSize.y;
+    offset = cursor - map_c;
+    offset.x = offset.x / MapSize.x;
+    offset.y = offset.y / MapSize.y;
     float max_pan = 1.0f / to_zoom * 0.5f;
-    offset.y = offset.y * (1.0f / zoom);
-    offset.x = offset.x * (1.0f / zoom);
-    CursorMoveFrom.y = (pan.y + offset.y) * MapSize.y + MapTopLeft.y;
-    CursorMoveFrom.x = (pan.x + offset.x) * MapSize.x + MapTopLeft.x;
+    offset = offset * (1.0f / zoom);
     bVector2 pan_to;
-    pan_to.x = bClamp(pan.x + offset.x, max_pan, 1.0f - max_pan);
-    pan_to.y = bClamp(pan.y + offset.y, max_pan, 1.0f - max_pan);
+    pan_to = pan + offset;
+    CursorMoveFrom.y = pan_to.y * MapSize.y + MapTopLeft.y;
+    CursorMoveFrom.x = pan_to.x * MapSize.x + MapTopLeft.x;
+    pan_to.x = bClamp(pan_to.x, max_pan, 1.0f - max_pan);
+    pan_to.y = bClamp(pan_to.y, max_pan, 1.0f - max_pan);
     MapStreamer->PanTo(pan_to);
 }
 
