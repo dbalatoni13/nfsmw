@@ -23,6 +23,10 @@ inline void* operator new(unsigned int size, const char* file, int line, DummyFE
     return FEngMalloc(size, file, line);
 }
 
+inline void* operator new[](unsigned int size, const char* file, int line, DummyFEngNewType*) {
+    return FEngMalloc(size, file, line);
+}
+
 #define FENG_NEW new(nullptr, 0, static_cast<DummyFEngNewType*>(nullptr))
 
 #endif

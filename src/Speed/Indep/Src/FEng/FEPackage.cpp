@@ -594,7 +594,7 @@ void FEPackage::SetNumLibraryRefs(unsigned long NewCount) {
         }
         pLibRefs = nullptr;
     } else {
-        FELibraryRef* pNewList = new FELibraryRef[NewCount];
+        FELibraryRef* pNewList = FENG_NEW FELibraryRef[NewCount];
         unsigned long CopyCount = NewCount;
         if (NewCount > NumLibRefs) {
             CopyCount = NumLibRefs;

@@ -82,8 +82,7 @@ void FEMessageResponse::SetCount(unsigned long NewCount) {
 }
 
 unsigned long FEMessageResponse::FindResponse(unsigned long ResponseID) const {
-    unsigned long count = Count;
-    for (unsigned long i = 0; i < count; i++) {
+    for (unsigned long i = 0; i < Count; i++) {
         if (pResponseList[i].ResponseID == ResponseID) {
             return i;
         }

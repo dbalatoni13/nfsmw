@@ -215,9 +215,7 @@ FEPackage* FEngine::FindLibraryPackage(unsigned long NameHash) const {
 }
 
 void FEngine::QueueMessage(unsigned long MsgID, FEObject* pFrom, FEPackage* pFromPackage, FEObject* pTo, unsigned long ControlMask) {
-    FEMessageNode* pNode = static_cast<FEMessageNode*>(FEngMalloc(sizeof(FEMessageNode), nullptr, 0));
-    pNode->next = reinterpret_cast<FEMinNode*>(0xABADCAFE);
-    pNode->prev = reinterpret_cast<FEMinNode*>(0xABADCAFE);
+    FEMessageNode* pNode = FENG_NEW FEMessageNode();
     pNode->MsgID = MsgID;
     pNode->pMsgFrom = pFrom;
     pNode->pFromPackage = pFromPackage;
@@ -230,7 +228,7 @@ void FEngine::QueueMessage(unsigned long MsgID, FEObject* pFrom, FEPackage* pFro
         void* adjusted = reinterpret_cast<void*>(reinterpret_cast<char*>(pInterface) + *reinterpret_cast<short*>(iVar2 + 0xB0));
         fn(adjusted, MsgID, pFromPackage, pTo, pFrom, ControlMask);
     }
-    MsgQ.AddNode(MsgQ.GetTail(), pNode);
+    MsgQ.AddTail(pNode);
 }
 
 void FEngine::SendMessageToGame(unsigned long MsgID, FEObject* pFrom, FEPackage* pFromPackage, unsigned long uControlMask) {
@@ -443,24 +441,23 @@ void FEngine::QueuePackageUserTransfer(FEPackage* pPack, bool bPush, unsigned lo
 
 int FEngine::GetNumPackagesBelowPriority(unsigned char priority) {
     int count = 0;
-    FEPackage* pPack = PackList.GetFirstPackage();
-    while (pPack) {
-        if (pPack->Priority < priority) {
+    FEPackage* package = PackList.GetFirstPackage();
+    while (package) {
+        if (package->GetPriority() < priority) {
             count++;
         }
-        pPack = pPack->GetNext();
+        package = package->GetNext();
     }
-    FEPackageCommand* pCmd = static_cast<FEPackageCommand*>(PackageCommands.GetHead());
-    while (pCmd) {
-        unsigned long cmd = pCmd->iCommand;
-        if (count == 0 && (cmd & 3)) {
+    FEPackageCommand* pNode = static_cast<FEPackageCommand*>(PackageCommands.GetHead());
+    while (pNode) {
+        if (count == 0 && (pNode->iCommand & 3)) {
             count = 1;
-        } else if (cmd & 2) {
+        } else if (pNode->iCommand & 2) {
             count++;
-        } else if (cmd & 1) {
+        } else if (pNode->iCommand & 1) {
             count--;
         }
-        pCmd = static_cast<FEPackageCommand*>(pCmd->GetNext());
+        pNode = static_cast<FEPackageCommand*>(pNode->GetNext());
     }
     return count;
 }
