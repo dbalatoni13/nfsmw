@@ -234,21 +234,22 @@ void CustomizeCategoryScreen::RefreshHeader() {
     }
     FEngSetScript(GetPackageName(), 0xcffb7033, 0x5079c8f8, true);
 after_icon:
-    if (!gCarCustomizeManager.IsCareerMode()) {
-        HeatMeter.SetVisibility(false);
-        FEngSetInvisible(FEngFindObject(GetPackageName(), 0x8d1559a4));
-    } else {
-        HeatMeter.SetCurrent(gCarCustomizeManager.GetActualHeat());
-        HeatMeter.SetPreview(gCarCustomizeManager.GetCartHeat());
+    CarCustomizeManager &mgr = gCarCustomizeManager;
+    if (mgr.IsCareerMode()) {
+        HeatMeter.SetCurrent(mgr.GetActualHeat());
+        HeatMeter.SetPreview(mgr.GetCartHeat());
         HeatMeter.Draw();
-        if (!CustomizeIsInBackRoom()) {
-            FEPrintf(GetPackageName(), 0x7a6d2f71, "%d", gCarCustomizeManager.GetCartTotal(CCT_TOTAL));
-            FEPrintf(GetPackageName(), 0xc60adcfd, "%d", FEDatabase->GetCareerSettings()->GetCash());
-        } else {
+        if (CustomizeIsInBackRoom()) {
             FEngSetLanguageHash(GetPackageName(), 0x63ca8308, GetMarkerNameFromCategory(static_cast<eCustomizeCategory>(Category)));
             FEPrintf(GetPackageName(), 0x83e3cd39, "%d", GetNumMarkersFromCategory(static_cast<eCustomizeCategory>(Category)));
             FEPrintf(GetPackageName(), 0x23d918fe, "%d", TheFEMarkerManager.GetNumCustomizeMarkers());
+        } else {
+            FEPrintf(GetPackageName(), 0x7a6d2f71, "%d", mgr.GetCartTotal(CCT_TOTAL));
+            FEPrintf(GetPackageName(), 0xc60adcfd, "%d", FEDatabase->GetCareerSettings()->GetCash());
         }
+    } else {
+        HeatMeter.SetVisibility(false);
+        FEngSetInvisible(FEngFindObject(GetPackageName(), 0x8d1559a4));
     }
 }
 
@@ -1663,18 +1664,18 @@ void CustomizeMain::SetTitle(bool isInBackroom) {
 void CustomizeMain::RefreshHeader() {
     CustomizeCategoryScreen::RefreshHeader();
     int isCareer = gCarCustomizeManager.IsCareerMode();
-    if (!isCareer || gCarCustomizeManager.IsHeroCar()) {
-        FEngSetInvisible(FEngFindObject(GetPackageName(), 0xdc6ee739));
-    } else {
+    if (isCareer && !gCarCustomizeManager.IsHeroCar()) {
         int inBackRoom = CustomizeIsInBackRoom();
         if (!inBackRoom && gCarCustomizeManager.GetNumCustomizeMarkers() > 0) {
             FEngSetVisible(FEngFindObject(GetPackageName(), 0xdc6ee739));
         } else {
             FEngSetInvisible(FEngFindObject(GetPackageName(), 0xdc6ee739));
         }
+    } else {
+        FEngSetInvisible(FEngFindObject(GetPackageName(), 0xdc6ee739));
     }
     if (Options.GetCurrentOption()) {
-        gCarCustomizeManager.IsCategoryNew(static_cast<CustomizeMainOption *>(Options.GetCurrentOption())->Category);
+        gCarCustomizeManager.IsCategoryNew(static_cast<unsigned short>(static_cast<CustomizeMainOption *>(Options.GetCurrentOption())->Category));
     }
 }
 
