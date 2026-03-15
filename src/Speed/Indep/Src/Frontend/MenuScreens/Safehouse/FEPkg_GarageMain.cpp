@@ -137,10 +137,13 @@ static const char *GetCurrentGarageName() {
         default:
             break;
     }
-    if (!(FEDatabase->GetGameMode() & 0x100)) {
-        return "main_fe";
+    const char *name;
+    if (FEDatabase->IsCareerManagerMode()) {
+        name = "career_manager";
+    } else {
+        name = "main_fe";
     }
-    return "career_manager";
+    return name;
 }
 
 // --- FEGeometryModels ---

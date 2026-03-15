@@ -820,18 +820,18 @@ void CustomizeShoppingCart::ToggleChecked() {
 }
 
 void CustomizeShoppingCart::UncheckAllItems() {
-    int count = gCarCustomizeManager.ShoppingCart.TraversebList(nullptr);
-    for (int i = 0; i < count; i++) {
-        ShoppingCartItem *item = static_cast<ShoppingCartItem *>(gCarCustomizeManager.ShoppingCart.GetNode(i));
-        if (item->IsActive()) {
-            item->ToggleActive();
+    ShoppingCartItem *cart_item = gCarCustomizeManager.GetFirstCartItem();
+    while (cart_item != gCarCustomizeManager.GetLastCartItem()->GetNext()) {
+        if (cart_item->bActive) {
+            cart_item->ToggleActive();
         }
+        cart_item = cart_item->GetNext();
     }
-    int wcount = Options.TraversebList(nullptr);
-    for (int j = 0; j < wcount; j++) {
-        FEShoppingCartItem *w = static_cast<FEShoppingCartItem *>(Options.GetNode(j));
+    FEShoppingCartItem *w = static_cast<FEShoppingCartItem *>(Options.GetHead());
+    while (w != Options.EndOfList()) {
         w->SetCheckScripts();
         w->Draw();
+        w = static_cast<FEShoppingCartItem *>(w->GetNext());
     }
 }
 
