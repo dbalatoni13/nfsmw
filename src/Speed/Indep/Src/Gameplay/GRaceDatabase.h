@@ -149,6 +149,12 @@ class GRaceDatabase {
         return CheckRaceScoreFlags(eventHash, kCompleted_ContextCareer);
     }
 
+    bool IsQuickRaceComplete(unsigned int eventHash) {
+        return CheckRaceScoreFlags(eventHash, kCompleted_ContextQuickRace);
+    }
+
+    const char *GetBurgerKingRace() const { return "19.8.31"; }
+
     const char *GetDDayStartRace() const {
         return sDDayRaces[0];
     }

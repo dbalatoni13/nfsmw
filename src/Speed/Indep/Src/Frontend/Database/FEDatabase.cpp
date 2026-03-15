@@ -2,6 +2,9 @@
 #include "Speed/Indep/Src/Frontend/FEJoyInput.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
 #include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
+#include "Speed/Indep/Src/Gameplay/GRaceDatabase.h"
+#include "Speed/Indep/Src/Gameplay/GManager.h"
+#include "Speed/Indep/Src/Gameplay/GMilestone.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/frontend.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/pvehicle.h"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
@@ -430,6 +433,75 @@ bool cFrontendDatabase::IsMilestoneTimeFormat(int typeKey) const {
 
 GameCompletionStats::GameCompletionStats() {
     bMemSet(this, 0, sizeof(GameCompletionStats));
+}
+
+GameCompletionStats cFrontendDatabase::GetGameCompletionStats() {
+    GameCompletionStats stats;
+    float nTotalCareerRaces = 0.0f;
+    float nCompletedCareerRaces = 0.0f;
+    float nTotalMilestones = static_cast<float>(GManager::Get().GetNumMilestones());
+    float nMilestonesAwarded = 0.0f;
+    float nTotalRapSheetRankings = 140.0f;
+    float nRapSheetRankings = 0.0f;
+
+    for (unsigned int i = 1; i < 17; i++) {
+        GRaceBin *pBin = GRaceDatabase::Get().GetBinNumber(i);
+        unsigned int nBossRaces = pBin->GetBossRaceCount();
+        for (unsigned int j = 0; j < nBossRaces; j++) {
+            if (GRaceDatabase::Get().IsCareerRaceComplete(pBin->GetBossRaceHash(j))) {
+                nCompletedCareerRaces += 1.0f;
+            }
+        }
+        unsigned int nWorldRaces = pBin->GetWorldRaceCount();
+        for (unsigned int j = 0; j < nWorldRaces; j++) {
+            if (GRaceDatabase::Get().IsCareerRaceComplete(pBin->GetWorldRaceHash(j))) {
+                nCompletedCareerRaces += 1.0f;
+            }
+        }
+        nTotalCareerRaces += static_cast<float>(nBossRaces + nWorldRaces);
+    }
+
+    for (unsigned int i = 0; i < GRaceDatabase::Get().GetRaceCount(); i++) {
+        GRaceParameters *pParams = GRaceDatabase::Get().GetRaceParameters(i);
+        if (bStrCmp(pParams->GetEventID(), GRaceDatabase::Get().GetBurgerKingRace()) != 0) {
+            if (GetIsCollectorsEdition() || !pParams->GetIsCollectorsEditionRace()) {
+                if (pParams->GetIsChallengeSeriesRace()) {
+                    stats.m_nTotalChallengeRaces++;
+                    if (GRaceDatabase::Get().IsQuickRaceComplete(pParams->GetEventHash())) {
+                        stats.m_nCompletedChallengeRaces++;
+                    }
+                }
+            }
+        }
+    }
+
+    for (unsigned int i = 0; static_cast<float>(i) < nTotalMilestones; i++) {
+        if (GManager::Get().GetMilestone(i)->GetIsAwarded()) {
+            nMilestonesAwarded += 1.0f;
+        }
+    }
+
+    for (unsigned int i = 0; i < 10; i++) {
+        int rankMovement = FEDatabase->GetMultiplayerProfile(0)->GetHighScores()->CalcPursuitRank(
+            static_cast<ePursuitDetailTypes>(i), true);
+        if (15 - rankMovement >= 0) {
+            nRapSheetRankings += static_cast<float>(15 - rankMovement);
+        }
+    }
+
+    stats.m_nRapSheetRankings = static_cast<unsigned char>(
+        nRapSheetRankings / nTotalRapSheetRankings * 100.0f);
+    stats.m_nCareer = static_cast<unsigned char>(
+        (nCompletedCareerRaces + nMilestonesAwarded) / (nTotalCareerRaces + nTotalMilestones) * 100.0f);
+    stats.m_nChallenge = static_cast<unsigned char>(
+        static_cast<float>(stats.m_nCompletedChallengeRaces) /
+        static_cast<float>(stats.m_nTotalChallengeRaces) * 100.0f);
+    stats.m_nOverall = static_cast<unsigned char>(
+        static_cast<float>(static_cast<int>(stats.m_nCareer)) * 0.7f +
+        static_cast<float>(static_cast<int>(stats.m_nChallenge)) * 0.2f +
+        static_cast<float>(static_cast<int>(stats.m_nRapSheetRankings)) * 0.1f);
+
+    return stats;
 }
 
 void cFrontendDatabase::NotifyExitRaceToFrontend(eExitRacePlaces from_where) {
