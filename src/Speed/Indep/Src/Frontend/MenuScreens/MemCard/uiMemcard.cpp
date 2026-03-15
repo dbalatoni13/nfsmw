@@ -240,7 +240,7 @@ void UIMemcardMain::ListDone() {
 }
 
 void UIMemcardMain::NotificationMessage(unsigned long msg, FEObject* obj, unsigned long param1,
-                                         unsigned long param2) {
+                                        unsigned long param2) {
     UIMemcardBase::NotificationMessage(msg, obj, param1, param2);
     switch (msg) {
     case 0x5a051729: {
@@ -316,9 +316,10 @@ void UIMemcardMain::NotificationMessage(unsigned long msg, FEObject* obj, unsign
             return;
         }
         {
+            const char* packageName = GetPackageName();
             unsigned long handlerHash = FEHashUpper("LOADER");
             unsigned long appearHash = FEHashUpper("APPEAR");
-            if (!FEngIsScriptSet(GetPackageName(), handlerHash, appearHash)) {
+            if (!FEngIsScriptSet(packageName, handlerHash, appearHash)) {
                 return;
             }
             goto hide_loader;
