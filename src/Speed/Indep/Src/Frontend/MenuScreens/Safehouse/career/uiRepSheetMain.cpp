@@ -85,30 +85,45 @@ eMenuSoundTriggers uiRepSheetMain::NotifySoundMessage(unsigned long msg, eMenuSo
 
 void uiRepSheetMain::NotificationMessage(unsigned long msg, FEObject* pobj, unsigned long param1, unsigned long param2) {
     IconScrollerMenu::NotificationMessage(msg, pobj, param1, param2);
-    if (msg == 0x911c0a4b) {
+
+    switch (msg) {
+    case 0x911c0a4b:
         ScrollRival(static_cast<eScrollDir>(1));
         return;
-    }
-    if (msg == 0x72619778) {
+    case 0x72619778:
         ScrollRival(static_cast<eScrollDir>(-1));
         return;
-    }
-    if (msg == 0xc519bfc3) {
-        if (bBossBeaten || !bBossAvailable) {
+    case 0xe1fde1d1:
+        if (PrevButtonMessage == 0xc407210) {
+            if (selection == 0) {
+                if (!bIsInGame) {
+                    cFEng::Get()->QueuePackageSwitch("SafeHouseRaceSheet.fng", 0, 0, false);
+                } else {
+                    cFEng::Get()->QueuePackageSwitch("InGameRaceSheet.fng", 1, 0, false);
+                }
+            } else if (selection == 1) {
+                if (!bIsInGame) {
+                    cFEng::Get()->QueuePackageSwitch("SafeHouseMilestones.fng", 0, 0, false);
+                } else {
+                    cFEng::Get()->QueuePackageSwitch("InGameMilestones.fng", 1, 0, false);
+                }
+            } else if (selection == 2) {
+                if (!bIsInGame) {
+                    cFEng::Get()->QueuePackageSwitch("SafeHouseBounty.fng", 0, 0, false);
+                } else {
+                    cFEng::Get()->QueuePackageSwitch("InGameBounty.fng", 1, 0, false);
+                }
+            } else if (selection == 4) {
+                if (!bIsInGame) {
+                    cFEng::Get()->QueuePackageSwitch("SafeHouseRivalBio.fng", 0, 0, false);
+                } else {
+                    cFEng::Get()->QueuePackageSwitch("InGameRivalBio.fng", 1, 0, false);
+                }
+            } else {
+                return;
+            }
             return;
-        }
-        if (bIsInGame) {
-            cFEng::Get()->QueuePackageSwitch("InGameRivalChallenge.fng", 1, 0, false);
-        } else {
-            cFEng::Get()->QueuePackageSwitch("SafeHouseRivalChallenge.fng", 0, 0, false);
-        }
-        return;
-    }
-    if (msg != 0xe1fde1d1) {
-        return;
-    }
-    if (PrevButtonMessage != 0xc407210) {
-        if (PrevButtonMessage != 0x911ab364) {
+        } else if (PrevButtonMessage != 0x911ab364) {
             return;
         }
         if (bIsInGame) {
@@ -117,32 +132,20 @@ void uiRepSheetMain::NotificationMessage(unsigned long msg, FEObject* pobj, unsi
         }
         cFEng::Get()->QueuePackageSwitch("MainMenu_Sub.fng", 0, 0, false);
         return;
-    }
-    if (selection == 0) {
-        if (bIsInGame) {
-            cFEng::Get()->QueuePackageSwitch("InGameRaceSheet.fng", 1, 0, false);
-        } else {
-            cFEng::Get()->QueuePackageSwitch("SafeHouseRaceSheet.fng", 0, 0, false);
+    case 0xc519bfc3:
+        if (bBossBeaten) {
+            return;
         }
-    } else if (selection == 1) {
-        if (bIsInGame) {
-            cFEng::Get()->QueuePackageSwitch("InGameMilestones.fng", 1, 0, false);
-        } else {
-            cFEng::Get()->QueuePackageSwitch("SafeHouseMilestones.fng", 0, 0, false);
+        if (!bBossAvailable) {
+            return;
         }
-    } else if (selection == 2) {
-        if (bIsInGame) {
-            cFEng::Get()->QueuePackageSwitch("InGameBounty.fng", 1, 0, false);
+        if (!bIsInGame) {
+            cFEng::Get()->QueuePackageSwitch("SafeHouseRivalChallenge.fng", 0, 0, false);
         } else {
-            cFEng::Get()->QueuePackageSwitch("SafeHouseBounty.fng", 0, 0, false);
+            cFEng::Get()->QueuePackageSwitch("InGameRivalChallenge.fng", 1, 0, false);
         }
-    } else if (selection == 4) {
-        if (bIsInGame) {
-            cFEng::Get()->QueuePackageSwitch("InGameRivalBio.fng", 1, 0, false);
-        } else {
-            cFEng::Get()->QueuePackageSwitch("SafeHouseRivalBio.fng", 0, 0, false);
-        }
-    } else {
+        return;
+    default:
         return;
     }
 }
