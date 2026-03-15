@@ -332,8 +332,19 @@ WorldMap::WorldMap(ScreenConstructorData* sd)
 }
 
 WorldMap::~WorldMap() {
+    delete mActionQ;
+    mActionQ = nullptr;
     ClearItems();
     delete MapStreamer;
+    MapStreamer = nullptr;
+
+    IPlayer* player = IPlayer::First(PLAYER_LOCAL);
+    if (player != nullptr) {
+        IFeedback* ffb = player->GetFFB();
+        if (ffb != nullptr) {
+            ffb->ResetEffects();
+        }
+    }
 }
 
 void WorldMap::NotificationMessage(unsigned long msg, FEObject* obj, unsigned long param1,
