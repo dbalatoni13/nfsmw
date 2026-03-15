@@ -134,8 +134,7 @@ void uiCareerCrib::Setup() {
     unsigned int hash2 = FEHashUpper("CAREER_CRIB");
     FEngSetScript(GetPackageName(), hash, hash2, true);
 
-    GameCompletionStats stats;
-    FEDatabase->GetGameCompletionStats(&stats);
+    GameCompletionStats stats = FEDatabase->GetGameCompletionStats();
     FEPrintf(GetPackageName(), static_cast<int>(FEHashUpper("GAME_COMPLETE")), "%d%s", stats.m_nCareer, szPercentUnit);
 
     FEPrintf(GetPackageName(), static_cast<int>(FEHashUpper("TOTAL_BOUNTY")), "%d",

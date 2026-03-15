@@ -617,7 +617,7 @@ class cFrontendDatabase {
         return &CurrentUserProfiles[0]->GetOptions()->TheGameplaySettings;
     }
 
-    void GetGameCompletionStats(GameCompletionStats* stats);
+    GameCompletionStats GetGameCompletionStats();
 
     unsigned int GetChallengeHeaderHash(unsigned int index);
     unsigned int GetChallengeDescHash(unsigned int index);

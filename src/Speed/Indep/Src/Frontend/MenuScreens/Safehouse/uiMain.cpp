@@ -217,10 +217,9 @@ void UIMain::Setup() {
 
 void UIMain::UpdateProfileData() {
     if (FEDatabase->bProfileLoaded) {
-        GameCompletionStats stats;
+        GameCompletionStats stats = FEDatabase->GetGameCompletionStats();
         const unsigned long FEObj_PLAYERNAMEGROUP = 0xb514e2d8;
 
-        FEDatabase->GetGameCompletionStats(&stats);
         const char* szPercentUnit = "%";
         eLanguages currLang = static_cast<eLanguages>(GetCurrentLanguage());
         if (currLang == eLANGUAGE_DANISH || currLang == eLANGUAGE_FINNISH ||
