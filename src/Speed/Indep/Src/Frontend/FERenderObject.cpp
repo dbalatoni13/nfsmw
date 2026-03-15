@@ -350,6 +350,84 @@ unsigned int FERenderObject::ClipAligned(FEClipInfo *pClipInfo, bVector3 *v, bVe
     return num_verts;
 }
 
+unsigned int FERenderObject::ClipGeneral(FEClipInfo *pClipInfo, bVector3 *v, bVector2 *uv,
+                                         bVector4 *colors, bVector3 *nv, bVector2 *nuv,
+                                         bVector4 *ncolors) {
+    bVector3 *pSrc = v;
+    bVector2 *pSrcUVs = uv;
+    bVector4 *pSrcColors = colors;
+    bVector3 *pDst = nv;
+    bVector2 *pDstUVs = nuv;
+    bVector4 *pDstColors = ncolors;
+    unsigned long num_verts = 4;
+
+    for (int i = 0; i < 4; i++) {
+        bVector3 normal(pClipInfo->normals[i]);
+        float constant = pClipInfo->constants[i];
+        bool bFlag;
+        unsigned long last_vert;
+        unsigned long new_num_verts;
+
+        last_vert = num_verts - 1;
+
+        if (bDot(&normal, &pSrc[last_vert]) + constant > -0.5f) {
+            pDst[0] = pSrc[last_vert];
+            pDstUVs[0] = pSrcUVs[last_vert];
+            pDstColors[0] = pSrcColors[last_vert];
+            new_num_verts = 1;
+            bFlag = true;
+        } else {
+            new_num_verts = 0;
+            bFlag = false;
+        }
+
+        if (num_verts != 0) {
+            for (unsigned long k = 0; k < num_verts; k++) {
+                if (bDot(&normal, &pSrc[k]) + constant > -0.5f) {
+                    if (!bFlag) {
+                        bVector3 diff = pSrc[k] - pSrc[last_vert];
+                        pDst[new_num_verts] = diff;
+                        float t = -(bDot(&normal, &pSrc[last_vert]) + constant) / bDot(&normal, &diff);
+                        pDst[new_num_verts] *= t;
+                        pDst[new_num_verts] += pSrc[last_vert];
+                        pDstUVs[new_num_verts] = (pSrcUVs[k] - pSrcUVs[last_vert]) * t + pSrcUVs[last_vert];
+                        pDstColors[new_num_verts] = V4Mult(pSrcColors[k] - pSrcColors[last_vert], t) + pSrcColors[last_vert];
+                        new_num_verts++;
+                        bFlag = true;
+                    }
+                    pDst[new_num_verts] = pSrc[k];
+                    pDstUVs[new_num_verts] = pSrcUVs[k];
+                    pDstColors[new_num_verts] = pSrcColors[k];
+                    new_num_verts++;
+                } else {
+                    if (bFlag) {
+                        bVector3 diff = pSrc[k] - pSrc[last_vert];
+                        pDst[new_num_verts] = diff;
+                        float t = -(bDot(&normal, &pSrc[last_vert]) + constant) / bDot(&normal, &diff);
+                        pDst[new_num_verts] *= t;
+                        pDst[new_num_verts] += pSrc[last_vert];
+                        pDstUVs[new_num_verts] = (pSrcUVs[k] - pSrcUVs[last_vert]) * t + pSrcUVs[last_vert];
+                        pDstColors[new_num_verts] = V4Mult(pSrcColors[k] - pSrcColors[last_vert], t) + pSrcColors[last_vert];
+                        new_num_verts++;
+                        bFlag = false;
+                    }
+                }
+                last_vert = k;
+            }
+        }
+
+        void *pTmp;
+        pTmp = pSrc; pSrc = pDst; pDst = static_cast<bVector3 *>(pTmp);
+        pTmp = pSrcUVs; pSrcUVs = pDstUVs; pDstUVs = static_cast<bVector2 *>(pTmp);
+        pTmp = pSrcColors; pSrcColors = pDstColors; pDstColors = static_cast<bVector4 *>(pTmp);
+
+        num_verts = new_num_verts;
+        if (!num_verts) return 0;
+    }
+
+    return num_verts;
+}
+
 FERenderEPoly *FERenderObject::AddPoly(float x0, float y0, float x1, float y1, float z,
                                        float s0, float t0, float s1, float t1,
                                        unsigned int *colors, FEPackageRenderInfo *pkg_render_info) {
