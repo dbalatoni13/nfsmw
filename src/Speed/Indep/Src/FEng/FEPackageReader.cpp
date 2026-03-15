@@ -76,11 +76,12 @@ unsigned long FEPackageReader::GetTypeSize(unsigned long TypeID) {
 
 bool FEPackageReader::ReadTypeSizes() {
     FEChunk* pChild = FindChild(pChunk, 0x53707954);
-    if (pChild) {
-        unsigned long Size = pChild->GetSize();
-        TypeSizeList = reinterpret_cast<FETypeSize*>(pChild->GetData());
-        TypeSizeCount = BSwap32(Size) >> 3;
+    if (!pChild) {
+        return true;
     }
+    unsigned long Size = pChild->GetSize();
+    TypeSizeList = reinterpret_cast<FETypeSize*>(pChild->GetData());
+    TypeSizeCount = BSwap32(Size) >> 3;
     return true;
 }
 
