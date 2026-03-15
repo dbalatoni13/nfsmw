@@ -27,7 +27,8 @@ bool FEAnyTutorialScreen::PackageSet;
 static const char* FEAnyTutorialScreenName = "FEAnyTutorialScreen.fng";
 
 FEAnyTutorialScreen::FEAnyTutorialScreen(ScreenConstructorData* sd)
-    : MenuScreen(sd)
+    : MenuScreen(sd), //
+      mTimer(0)
 {
     unsigned int str_hash = 0;
     bool mSkipable = true;
