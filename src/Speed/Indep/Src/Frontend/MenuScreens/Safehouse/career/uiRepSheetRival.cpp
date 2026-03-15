@@ -11,6 +11,7 @@
 #include "Speed/Indep/Src/Generated/Events/EFadeScreenOff.hpp"
 #include "Speed/Indep/Src/Generated/Events/ERaceSheetOff.hpp"
 #include "Speed/Indep/Src/Generated/Events/EUnPause.hpp"
+#include "Speed/Indep/Src/Generated/Messages/MFlowReadyForOutro.h"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
 #include "Speed/Indep/bWare/Inc/bPrintf.hpp"
 
@@ -67,31 +68,36 @@ void uiRepSheetRival::NotificationMessage(unsigned long msg, FEObject* obj, unsi
     switch (msg) {
     case 0x406415e3:
         if (bMidRivalFlow) {
-            uiRepSheetRivalFlow::Get()->Next();
+            new ERaceSheetOff();
+            UCrc32 kind;
+            kind.SetValue(0x20d60dbf);
+            MFlowReadyForOutro msg;
+            msg.Post(kind);
         } else if ((FEDatabase->GetGameMode() & 0x20000) != 0) {
             new EEnterBin(FEDatabase->GetCareerSettings()->GetCurrentBin() - 1);
             uiRepSheetRivalFlow::Get()->StartFlow(1);
         } else if (launch_race != nullptr) {
-            if (!bIsInGame) {
-                StartRace();
-            } else {
+            if (bIsInGame) {
                 new ERaceSheetOff();
                 GManager::Get().StartRaceFromInGame(launch_race->GetEventHash());
+            } else {
+                GRaceCustom* race = GRaceDatabase::Get().AllocCustomRace(launch_race);
+                GRaceDatabase::Get().SetStartupRace(race, kRaceContext_Career);
+                GRaceDatabase::Get().FreeCustomRace(race);
+                StartRace();
             }
         }
         break;
     case 0x911ab364:
         if (!bMidRivalFlow) {
-            if (!bOneOff) {
-                if ((FEDatabase->GetGameMode() & 0x20000) == 0) {
-                    if (!bIsInGame) {
-                        cFEng::Get()->QueuePackageSwitch("BL_MAIN", 0, 0, false);
-                    } else {
-                        cFEng::Get()->QueuePackageSwitch("IG_BL_MAIN", 1, 0, false);
-                    }
-                }
-            } else {
+            if (bOneOff) {
                 new EUnPause();
+            } else if ((FEDatabase->GetGameMode() & 0x20000) == 0) {
+                if (bIsInGame) {
+                    cFEng::Get()->QueuePackageSwitch("InGameReputationOverview.fng", 1, 0, false);
+                } else {
+                    cFEng::Get()->QueuePackageSwitch("SafeHouseReputationOverview.fng", 0, 0, false);
+                }
             }
         }
         break;
