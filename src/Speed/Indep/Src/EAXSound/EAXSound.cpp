@@ -10,6 +10,9 @@
 #include "Speed/Indep/Src/Gameplay/GRaceDatabase.h"
 #include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
 #include "Speed/Indep/Src/Generated/Messages/MControlPathfinder.h"
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/engine.h"
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/engineaudio.h"
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/pvehicle.h"
 #include "Speed/Indep/Src/Main/Scheduler.h"
 #include "Speed/Indep/Src/Misc/Config.h"
 #include "Speed/Indep/Src/Misc/QueuedFile.hpp"
@@ -17,6 +20,7 @@
 #include "Speed/Indep/Src/World/WorldConn.h"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 #include "Speed/Indep/bWare/Inc/bDebug.hpp"
+#include <new>
 
 enum SpeechModuleIndex {
     NISSFX_MODULE = 0,
@@ -60,10 +64,64 @@ extern Speech::Cache gSpeechCache;
 
 namespace Sound {
 enum Context {
-    kRaceContext_QuickRace = GRace::kRaceContext_QuickRace,
-    kRaceContext_TimeTrial = GRace::kRaceContext_TimeTrial,
-    kRaceContext_Career = GRace::kRaceContext_Career,
-    kRaceContext_Count = GRace::kRaceContext_Count,
+    CONTEXT_PLAYER = 0,
+    CONTEXT_AIRACER = 1,
+    CONTEXT_COP = 2,
+    CONTEXT_TRAFFIC = 3,
+    CONTEXT_ONLINE = 4,
+    CONTEXT_TRACTOR = 5,
+    CONTEXT_TRAILER = 6,
+    CONTEXT_MAX = 7,
+
+    kRaceContext_QuickRace = CONTEXT_PLAYER,
+    kRaceContext_TimeTrial = CONTEXT_AIRACER,
+    kRaceContext_Career = CONTEXT_COP,
+    kRaceContext_Count = CONTEXT_TRAFFIC,
+};
+
+enum MovementMode {
+    NO_MOVEMENT = 0,
+    PHYSICS_MOVEMENT = 1,
+    TRAFFIC_MOVEMENT = 2,
+    MELLOW_MOVEMENT = 3,
+    ONLINE_MOVEMENT = 4,
+    BELT_MOVEMENT = 5,
+    NIS_MOVEMENT = 6,
+    NUM_MOVEMENT_MODES = 7,
+};
+
+enum PlayerZones {
+    PLAYER_ZONE_NONE = 0,
+    PLAYER_ZONE_FREEZE = 1,
+    PLAYER_ZONE_PREVIEW = 2,
+    PLAYER_ZONE_SLOMO = 3,
+    PLAYER_ZONE_SLOMO2 = 4,
+    PLAYER_ZONE_WARP = 5,
+    PLAYER_ZONE_JUMPVIEW = 6,
+    PLAYER_ZONE_JUMPVIEW2 = 7,
+    PLAYER_ZONE_COUNT = 8,
+};
+
+enum Gear {
+    SPORT_SHIFT = -2,
+    AUTOMATIC = -1,
+    REVERSE = 0,
+    NEUTRAL = 1,
+    FIRST_GEAR = 2,
+    SECOND_GEAR = 3,
+    THIRD_GEAR = 4,
+    FOURTH_GEAR = 5,
+    FIFTH_GEAR = 6,
+    SIXTH_GEAR = 7,
+    SEVENTH_GEAR = 8,
+};
+
+enum ControlSource {
+    CONTROL_NONE = 0,
+    CONTROL_HUMAN = 1,
+    CONTROL_AI = 2,
+    CONTROL_NIS = 3,
+    CONTROL_ONLINE = 4,
 };
 }
 
@@ -328,6 +386,41 @@ struct NFSMixMaster {
     void AssignSFXCallbacks(int *(*GetPointerCB)(int), void (*SetSFXOutCB)(int, int *), bool (*SetSFXInputCB)(int, int *),
                             int (*GetStateRefCountCB)(int), void (*MixReadyCB)());
 };
+
+namespace Sound {
+
+struct Wheel {
+    bVector2 mWheelSlip;          // offset 0x0
+    float mWheelForceZ;           // offset 0x8
+    float mPercentFsFkTransfer;   // offset 0xC
+    int mWheelOnGround;           // offset 0x10
+    SimSurface mTerrainType;      // offset 0x14
+    SimSurface mPrevTerrainType;  // offset 0x28
+    float mLoad;                  // offset 0x3C
+    unsigned char mBlownState;    // offset 0x40
+    unsigned char mPrevBlownState; // offset 0x41
+
+    void Reset();
+};
+
+struct Engine {
+    int mBoostFlag; // offset 0x0
+    int mNOSFlag;   // offset 0x4
+    float mNOS;     // offset 0x8
+    float mRPMPct;  // offset 0xC
+    float mThrottle; // offset 0x10
+    float mBoost;   // offset 0x14
+    int mBlownFlag; // offset 0x18
+
+    void Reset();
+};
+
+struct Driveline {
+    int mGearShiftFlag; // offset 0x0
+    Gear mGear;         // offset 0x4
+};
+
+} // namespace Sound
 
 struct EAX_CarState : public UTL::Collections::Listable<EAX_CarState, 10> {
     char _pad_context[0x20C];
@@ -1087,6 +1180,86 @@ void EAXSound::PlayFEMusic(int nIndex) {
     msg.Send(UCrc32("Pathfinder5"));
 }
 
+namespace {
+
+struct EAX_CarStateCtorView {
+    int _listNode; // offset 0x0
+    float mMaxTorque; // offset 0x4
+    float mMaxRPM; // offset 0x8
+    float mMinRPM; // offset 0xC
+    float mRedline; // offset 0x10
+    bMatrix4 mMatrix; // offset 0x14
+    bVector3 mVel0; // offset 0x54
+    int mRacePos; // offset 0x64
+    bVector3 mVel1; // offset 0x68
+    float mBrake; // offset 0x78
+    bVector3 mAccel; // offset 0x7C
+    float mEBrake; // offset 0x8C
+    float mFWSpeed; // offset 0x90
+    int mIsShocked; // offset 0x94
+    float mHealth; // offset 0x98
+    int mNosEmptyFlag; // offset 0x9C
+    int mMovementMode; // offset 0xA0
+    int mPlayerZone; // offset 0xA4
+    Sound::Wheel mWheel[4]; // offset 0xA8
+    unsigned short mSteering; // offset 0x1B8
+    unsigned short mAngle; // offset 0x1BA
+    Sound::Engine mEngine; // offset 0x1BC
+    Sound::Driveline mDriveline; // offset 0x1D8
+    int mSirenState; // offset 0x1E0
+    int mHotPursuit; // offset 0x1E4
+    Attrib::Instance mAttributes; // offset 0x1E8
+    Attrib::Instance mEngineInfo; // offset 0x1FC
+    Sound::Context mContext; // offset 0x210
+    int mSimUpdating; // offset 0x214
+    int mAssetsLoaded; // offset 0x218
+    unsigned int mWorldID; // offset 0x21C
+    HSIMABLE__ *mHandle; // offset 0x220
+    unsigned int mTrailerID; // offset 0x224
+    float mOversteer; // offset 0x228
+    float mUndersteer; // offset 0x22C
+    float mSlipAngle; // offset 0x230
+    float mVisualRPM; // offset 0x234
+    float mTimeSinceSeen; // offset 0x238
+    int mNISCarID; // offset 0x23C
+    float mDesiredSpeed; // offset 0x240
+    int mControlSource; // offset 0x244
+};
+
+typedef char EAX_CarStateCtorViewSizeCheck[(sizeof(EAX_CarStateCtorView) == 0x248) ? 1 : -1];
+
+} // namespace
+
+unsigned int GenerateUpgradedEngine(EAX_CarState *pCar, int playerUpgrade);
+
+namespace Physics {
+namespace Info {
+
+float MaxTorque(const Attrib::Gen::engine &engine, float &atrpm);
+
+} // namespace Info
+} // namespace Physics
+
+void Sound::Wheel::Reset() {
+    mWheelSlip = bVector2(0.0f, 0.0f);
+    mWheelForceZ = 0.0f;
+    mPercentFsFkTransfer = 0.0f;
+    mWheelOnGround = 1;
+    mLoad = 0.0f;
+    mBlownState = 0;
+    mPrevBlownState = 0;
+}
+
+void Sound::Engine::Reset() {
+    mBoostFlag = 0;
+    mNOSFlag = 0;
+    mNOS = 0.0f;
+    mRPMPct = 0.0f;
+    mThrottle = 0.0f;
+    mBoost = 0.0f;
+    mBlownFlag = 0;
+}
+
 EAX_HeliState::EAX_HeliState(const Attrib::Collection *atr, unsigned int wuid)
     : mFWSpeed(0.0f) //
     , mMovementMode(1) //
@@ -1102,24 +1275,129 @@ EAX_HeliState::EAX_HeliState(const Attrib::Collection *atr, unsigned int wuid)
 }
 
 EAX_CarState::EAX_CarState(const Attrib::Collection *atr, Sound::Context context, unsigned int wuid, HSIMABLE__ *handle)
-    : mContext(context) //
-    , mSimUpdating(true) //
-    , mAssetsLoaded(false) //
-    , mWorldID(wuid) //
-    , mHandle(handle) //
-    , mTrailerID(0) //
-    , mOversteer(0.0f) //
-    , mUndersteer(0.0f) //
-    , mSlipAngle(0.0f) //
-    , mVisualRPM(0.0f) //
-    , mTimeSinceSeen(0.0f) //
-    , mNISCarID(-1) //
-    , mDesiredSpeed(0.0f) //
-    , mControlSource(0) {
-    (void)atr;
+{
+    EAX_CarStateCtorView &state = *reinterpret_cast<EAX_CarStateCtorView *>(this);
+    static int PlayerUpgrade;
 
-    bMemSet(_pad_context, '\0', sizeof(_pad_context));
-    PSMTX44Identity((Mtx44)(_pad_context + 0x14));
+    state.mEBrake = 0.0f;
+    state.mMovementMode = Sound::PHYSICS_MOVEMENT;
+    state.mPlayerZone = Sound::PLAYER_ZONE_NONE;
+    state.mVel0.x = 0.0f;
+    state.mVel0.y = 0.0f;
+    state.mVel0.z = 0.0f;
+    state.mRacePos = 0;
+    state.mBrake = 0.0f;
+    state.mNosEmptyFlag = 0;
+
+    Sound::Wheel *wheel = state.mWheel;
+    int i = 3;
+    do {
+        new (&wheel->mTerrainType) Attrib::Instance(static_cast<const Attrib::Collection *>(nullptr), 0, nullptr);
+        wheel->mTerrainType.SetDefaultLayout(0xFC);
+        const Attrib::Collection *nullSpec = SimSurface::kNull.GetConstCollection();
+        if (nullSpec) {
+            wheel->mTerrainType.Change(nullSpec);
+        }
+
+        new (&wheel->mPrevTerrainType) Attrib::Instance(static_cast<const Attrib::Collection *>(nullptr), 0, nullptr);
+        wheel->mPrevTerrainType.SetDefaultLayout(0xFC);
+        if (nullSpec) {
+            wheel->mPrevTerrainType.Change(nullSpec);
+        }
+
+        wheel->Reset();
+        ++wheel;
+    } while (i-- != 0);
+
+    state.mAngle = 0;
+    state.mSteering = 0;
+    state.mEngine.Reset();
+    state.mDriveline.mGearShiftFlag = 0;
+    state.mDriveline.mGear = Sound::NEUTRAL;
+    state.mHotPursuit = 0;
+    state.mSirenState = -1;
+
+    new (&state.mAttributes) Attrib::Instance(atr, 0, nullptr);
+    state.mAttributes.SetDefaultLayout(0x50);
+
+    new (&state.mEngineInfo) Attrib::Instance(static_cast<const Attrib::Collection *>(nullptr), 0, nullptr);
+    state.mEngineInfo.SetDefaultLayout(0xB0);
+
+    state.mWorldID = wuid;
+    state.mContext = context;
+    state.mSimUpdating = 1;
+    state.mHandle = handle;
+    state.mTrailerID = 0;
+    state.mNISCarID = -1;
+    state.mAssetsLoaded = 0;
+    state.mControlSource = Sound::CONTROL_AI;
+    state.mDesiredSpeed = 0.0f;
+    state.mVel1 = state.mVel0;
+    state.mOversteer = 0.0f;
+    state.mUndersteer = 0.0f;
+    state.mSlipAngle = 0.0f;
+    state.mVisualRPM = 0.0f;
+    PSMTX44Identity((Mtx44)&state.mMatrix);
+
+    Attrib::Gen::pvehicle &attributes = reinterpret_cast<Attrib::Gen::pvehicle &>(state.mAttributes);
+    Attrib::Gen::engineaudio &engineInfo = reinterpret_cast<Attrib::Gen::engineaudio &>(state.mEngineInfo);
+    Attrib::Gen::pvehicle vehicleinfo(attributes);
+    vehicleinfo.SetDefaultLayout(0x50);
+
+    const Attrib::RefSpec *engineRef =
+        reinterpret_cast<const Attrib::RefSpec *>(vehicleinfo.GetAttributePointer(0xF1F5FBC7, 0));
+    if (!engineRef) {
+        engineRef = reinterpret_cast<const Attrib::RefSpec *>(Attrib::DefaultDataArea(0xC));
+    }
+
+    Attrib::Gen::engine engine(engineRef->GetCollectionWithDefault(), 0, nullptr);
+
+    if (state.mContext == Sound::kRaceContext_QuickRace) {
+        const int *physCurUpgrade = reinterpret_cast<const int *>(attributes.GetAttributePointer(0xB12CCB69, 0));
+        if (!physCurUpgrade) {
+            physCurUpgrade = reinterpret_cast<const int *>(Attrib::DefaultDataArea(4));
+        }
+
+        int baseUpgrade = 4 - attributes.engine_upgrades();
+        if (baseUpgrade < 0) {
+            baseUpgrade = 0;
+        }
+        if (baseUpgrade > 4) {
+            baseUpgrade = 4;
+        }
+
+        int curupgade_offset = *physCurUpgrade;
+        if (curupgade_offset < 0) {
+            curupgade_offset = 0;
+        }
+        if (curupgade_offset > 4) {
+            curupgade_offset = 4;
+        }
+
+        PlayerUpgrade = 0;
+        if (baseUpgrade + curupgade_offset > 0) {
+            PlayerUpgrade = baseUpgrade + curupgade_offset;
+        }
+        if (PlayerUpgrade > 4) {
+            PlayerUpgrade = 4;
+        }
+    }
+
+    unsigned int upgradedEngine = GenerateUpgradedEngine(this, PlayerUpgrade);
+    unsigned int (*engineAudioClassKey)() = Attrib::Gen::engineaudio::ClassKey;
+    const Attrib::Collection *engineCollection =
+        Attrib::FindCollectionWithDefault(engineAudioClassKey(), upgradedEngine);
+    engineInfo.Change(engineCollection);
+
+    float max_torque_rpm;
+    state.mMaxTorque = Physics::Info::MaxTorque(engine, max_torque_rpm);
+    state.mMaxRPM = engine.MAX_RPM();
+    state.mMinRPM = engine.IDLE();
+    state.mRedline = engine.RED_LINE();
+
+    if (state.mContext == Sound::kRaceContext_Count || (state.mContext > 2 && state.mContext < 7 && state.mContext > 4)) {
+        state.mAssetsLoaded = 1;
+    }
 }
 
 template class UTL::Collections::Listable<EAX_CarState, 10>::List;

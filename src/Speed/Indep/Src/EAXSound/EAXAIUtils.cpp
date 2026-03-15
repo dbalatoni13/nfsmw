@@ -1,9 +1,28 @@
 #include "Speed/Indep/Src/EAXSound/EAXAIUtils.hpp"
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Physics.hpp"
+#include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include <types.h>
 
 extern "C" void Average_Record(Average *avg, float value) asm("Record__7Averagef");
 extern "C" void AverageBase_Recalculate(AverageBase *avg) asm("Recalculate__11AverageBase");
+
+namespace {
+struct EAX_CarState_AIView {
+    unsigned int _listable;
+    char _pad0[0x50];
+    bVector3 mVel0;            // offset 0x54
+    int mRacePos;              // offset 0x64
+    bVector3 mVel1;            // offset 0x68
+    char _pad1[0x148];
+    unsigned short mSteering;  // offset 0x1B8
+};
+
+struct CSTATE_Base_AIView {
+    void *vptr;
+    char _pad0[0x30];
+    EAX_CarState_AIView *m_pCar; // offset 0x34
+};
+} // namespace
 
 void SndAITrigger::BeginTrigger() {
     bTrigger = true;
@@ -184,15 +203,26 @@ void SndAIStateManager::Update(float t) {
         return;
     }
 
-    float throttle = m_pPhysicsCTL->m_fThrottle;
-    float oldThrottle = m_pPhysicsCTL->m_OldThrottle;
-    float desiredSpeedDelta = m_pPhysicsCTL->m_OldDesiredSpeed;
+    CSTATE_Base_AIView *stateBase = reinterpret_cast< CSTATE_Base_AIView * >(m_pPhysicsCTL->GetStateBase());
+    EAX_CarState_AIView *car = stateBase->m_pCar;
 
-    SteeringMonitorLeft.Update(-desiredSpeedDelta, t);
-    SteeringMonitorRight.Update(desiredSpeedDelta, t);
-    AccelMonitor.Update(throttle, t);
-    DeccelMonitor.Update(-throttle, t);
-    ThrottleMonitor.Update(oldThrottle, t);
+    float steering = static_cast< float >(car->mSteering) * 0.005493248f;
+    if (180.0f < steering) {
+        steering -= 360.0f;
+    }
+
+    SteeringMonitorLeft.Update(steering, t);
+    SteeringMonitorRight.Update(steering, t);
+
+    float vel0Length = bSqrt(car->mVel0.x * car->mVel0.x + car->mVel0.y * car->mVel0.y + car->mVel0.z * car->mVel0.z);
+    float vel1Length = bSqrt(car->mVel1.x * car->mVel1.x + car->mVel1.y * car->mVel1.y + car->mVel1.z * car->mVel1.z);
+    AccelMonitor.Update(vel0Length - vel1Length, t);
+
+    vel0Length = bSqrt(car->mVel0.x * car->mVel0.x + car->mVel0.y * car->mVel0.y + car->mVel0.z * car->mVel0.z);
+    vel1Length = bSqrt(car->mVel1.x * car->mVel1.x + car->mVel1.y * car->mVel1.y + car->mVel1.z * car->mVel1.z);
+    DeccelMonitor.Update(vel0Length - vel1Length, t);
+
+    ThrottleMonitor.Update(m_pPhysicsCTL->m_fThrottle, t);
 
     UpdateState(t);
 }

@@ -10,6 +10,26 @@
 
 struct Attrib__Class;
 
+namespace Csis {
+struct InterfaceId;
+struct ClassHandle;
+struct Class {
+    static int CreateInstance(ClassHandle *handle, void *memberData, Class **outClass);
+    void SetMemberData(void *data);
+    void GetRefCount(int *refcount);
+};
+namespace System {
+void *Alloc(int bytes);
+}
+
+extern ClassHandle gAEMS_StichCollisionHandle;
+extern InterfaceId AEMS_StichCollisionId;
+extern ClassHandle gAEMS_StichWooshHandle;
+extern InterfaceId AEMS_StichWooshId;
+extern ClassHandle gAEMS_StichStaticHandle;
+extern InterfaceId AEMS_StichStaticId;
+} // namespace Csis
+
 struct AEMS_StichData {
     int type;
     int iD;
@@ -272,38 +292,160 @@ void cSampleWarpper::Destroy() {
 void cSampleWarpper::Update(const SND_Params *Params) {
     int TempPitch = m_nLocalPitch;
     int TempVol = m_nLocalVolume * Params->Vol >> 0xF;
+    int refCountWsh;
+    int refCountCol;
+    int refCountStatic;
 
     if (AEMS_ActiveSampleWsh != nullptr) {
-        AEMS_ActiveSampleWsh->SetAz(NormalizeStichAzimuth(Params->Az + GetData().Az + 0x10000));
-        AEMS_ActiveSampleWsh->SetVol(ClampStichValue(TempVol, 0, 0x7FFF));
-        AEMS_ActiveSampleWsh->SetPitch(ClampStichValue(TempPitch, 0, 0x2000));
-        AEMS_ActiveSampleWsh->SetFilter_WetFX(ClampStichValue(Params->RVerb, 0, 0x7FFF));
-        AEMS_ActiveSampleWsh->CommitMemberData();
-        if (AEMS_ActiveSampleWsh->GetRefCount() < 2) {
+        int az = static_cast<unsigned short>(SampleRefData->Az) + 0x10000 + Params->Az;
+        int azWrap = az;
+        if (az < 0) {
+            azWrap = az + 0xFFFF;
+        }
+        az += (azWrap >> 16) * -0x10000;
+        if (az < 0) {
+            az = 0;
+        } else if (az > 0x10000) {
+            az = 0x10000;
+        }
+        AEMS_ActiveSampleWsh->mData.az = az;
+
+        int vol = TempVol;
+        if (TempVol < 0) {
+            vol = 0;
+        } else if (TempVol > 0x7FFF) {
+            vol = 0x7FFF;
+        }
+        AEMS_ActiveSampleWsh->mData.vol = vol;
+
+        int pitch = TempPitch;
+        if (TempPitch < 0) {
+            pitch = 0;
+        } else if (TempPitch > 0x2000) {
+            pitch = 0x2000;
+        }
+        AEMS_ActiveSampleWsh->mData.pitch = pitch;
+
+        int wetFX = Params->RVerb;
+        if (wetFX < 0) {
+            wetFX = 0;
+        } else if (wetFX > 0x7FFF) {
+            wetFX = 0x7FFF;
+        }
+        AEMS_ActiveSampleWsh->mData.filter_WetFX = wetFX;
+
+        Csis::Class *cls = reinterpret_cast<Csis::Class *>(AEMS_ActiveSampleWsh->mpClass);
+        if (cls != nullptr) {
+            cls->SetMemberData(&AEMS_ActiveSampleWsh->mData);
+        }
+        refCountWsh = 0;
+        cls = reinterpret_cast<Csis::Class *>(AEMS_ActiveSampleWsh->mpClass);
+        if (cls != nullptr) {
+            cls->GetRefCount(&refCountWsh);
+        }
+        if (refCountWsh < 2) {
             Destroy();
         }
     }
 
     if (AEMS_ActiveSampleCol != nullptr) {
-        AEMS_ActiveSampleCol->SetAz(NormalizeStichAzimuth(Params->Az + GetData().Az + 0x10000));
-        AEMS_ActiveSampleCol->SetVol(ClampStichValue(TempVol, 0, 0x7FFF));
-        AEMS_ActiveSampleCol->SetPitch(ClampStichValue(TempPitch, 0, 0x2000));
-        AEMS_ActiveSampleCol->SetFilter_WetFX(ClampStichValue(Params->RVerb, 0, 0x7FFF));
-        AEMS_ActiveSampleCol->CommitMemberData();
-        if (AEMS_ActiveSampleCol->GetRefCount() < 2) {
+        int az = static_cast<unsigned short>(SampleRefData->Az) + 0x10000 + Params->Az;
+        int azWrap = az;
+        if (az < 0) {
+            azWrap = az + 0xFFFF;
+        }
+        az += (azWrap >> 16) * -0x10000;
+        if (az < 0) {
+            az = 0;
+        } else if (az > 0x10000) {
+            az = 0x10000;
+        }
+        AEMS_ActiveSampleCol->mData.az = az;
+
+        int vol = TempVol;
+        if (TempVol < 0) {
+            vol = 0;
+        } else if (TempVol > 0x7FFF) {
+            vol = 0x7FFF;
+        }
+        AEMS_ActiveSampleCol->mData.vol = vol;
+
+        int pitch = TempPitch;
+        if (TempPitch < 0) {
+            pitch = 0;
+        } else if (TempPitch > 0x2000) {
+            pitch = 0x2000;
+        }
+        AEMS_ActiveSampleCol->mData.pitch = pitch;
+
+        int wetFX = Params->RVerb;
+        if (wetFX < 0) {
+            wetFX = 0;
+        } else if (wetFX > 0x7FFF) {
+            wetFX = 0x7FFF;
+        }
+        AEMS_ActiveSampleCol->mData.filter_WetFX = wetFX;
+
+        Csis::Class *cls = reinterpret_cast<Csis::Class *>(AEMS_ActiveSampleCol->mpClass);
+        if (cls != nullptr) {
+            cls->SetMemberData(&AEMS_ActiveSampleCol->mData);
+        }
+        refCountCol = 0;
+        cls = reinterpret_cast<Csis::Class *>(AEMS_ActiveSampleCol->mpClass);
+        if (cls != nullptr) {
+            cls->GetRefCount(&refCountCol);
+        }
+        if (refCountCol < 2) {
             Destroy();
         }
     }
 
     if (AEMS_ActiveSampleStatic != nullptr) {
-        int clampedVol = ClampStichValue(TempVol, 0, 0x7FFF);
-        int clampedPitch = ClampStichValue(TempPitch, 0, 0x2000);
-        AEMS_ActiveSampleStatic->SetAz(NormalizeStichAzimuth(Params->Az + GetData().Az + 0x10000));
-        AEMS_ActiveSampleStatic->SetVol(clampedVol);
-        AEMS_ActiveSampleStatic->SetPitch(clampedPitch);
-        AEMS_ActiveSampleStatic->SetFilter_WetFX(ClampStichValue(Params->RVerb, 0, 0x7FFF));
-        AEMS_ActiveSampleStatic->CommitMemberData();
-        if (AEMS_ActiveSampleStatic->GetRefCount() < 2) {
+        int az = static_cast<unsigned short>(SampleRefData->Az) + 0x10000 + Params->Az;
+        int azWrap = az;
+        if (az < 0) {
+            azWrap = az + 0xFFFF;
+        }
+        az += (azWrap >> 16) * -0x10000;
+        if (az < 0) {
+            az = 0;
+        } else if (az > 0x10000) {
+            az = 0x10000;
+        }
+        AEMS_ActiveSampleStatic->mData.az = az;
+
+        if (TempVol < 0) {
+            TempVol = 0;
+        } else if (TempVol > 0x7FFF) {
+            TempVol = 0x7FFF;
+        }
+        AEMS_ActiveSampleStatic->mData.vol = TempVol;
+
+        if (TempPitch < 0) {
+            TempPitch = 0;
+        } else if (TempPitch > 0x2000) {
+            TempPitch = 0x2000;
+        }
+        AEMS_ActiveSampleStatic->mData.pitch = TempPitch;
+
+        int wetFX = Params->RVerb;
+        if (wetFX < 0) {
+            wetFX = 0;
+        } else if (wetFX > 0x7FFF) {
+            wetFX = 0x7FFF;
+        }
+        AEMS_ActiveSampleStatic->mData.filter_WetFX = wetFX;
+
+        Csis::Class *cls = reinterpret_cast<Csis::Class *>(AEMS_ActiveSampleStatic->mpClass);
+        if (cls != nullptr) {
+            cls->SetMemberData(&AEMS_ActiveSampleStatic->mData);
+        }
+        refCountStatic = 0;
+        cls = reinterpret_cast<Csis::Class *>(AEMS_ActiveSampleStatic->mpClass);
+        if (cls != nullptr) {
+            cls->GetRefCount(&refCountStatic);
+        }
+        if (refCountStatic < 2) {
             Destroy();
         }
     }
@@ -314,24 +456,25 @@ void cSampleWarpper::Play(const SND_Params *Params) {
         return;
     }
 
-    SND_SampleRef *sampleData = SampleRefData;
-    AddToSampleList(this, static_cast<STICH_TYPE>(sampleData->eStichType));
+    STICH_TYPE stichType = static_cast<STICH_TYPE>(SampleRefData->eStichType);
+    cSampleListSet::List &samplelist = const_cast<cSampleListSet::List &>(cSampleListSet::GetList(stichType));
+    samplelist.push_back(this);
 
-    if (sampleData->RND_Vol == 0) {
-        m_nLocalVolume = sampleData->Volume;
+    if (SampleRefData->RND_Vol != 0) {
+        m_nLocalVolume = static_cast<int>(SampleRefData->Volume - g_pEAXSound->Random(SampleRefData->RND_Vol));
     } else {
-        m_nLocalVolume = static_cast<int>(sampleData->Volume - g_pEAXSound->Random(sampleData->RND_Vol));
+        m_nLocalVolume = SampleRefData->Volume;
     }
 
     int TempVol = m_nLocalVolume * Params->Vol >> 0xF;
-    int randomPitchRange = sampleData->RND_Pitch;
-    if (randomPitchRange == 0) {
-        m_nLocalPitch = sampleData->Pitch;
-    } else {
+    int randomPitchRange = SampleRefData->RND_Pitch;
+    if (randomPitchRange != 0) {
         if (randomPitchRange < 0) {
             randomPitchRange = -randomPitchRange;
         }
-        m_nLocalPitch = static_cast<int>(sampleData->Pitch - g_pEAXSound->Random(randomPitchRange));
+        m_nLocalPitch = static_cast<int>(SampleRefData->Pitch - g_pEAXSound->Random(randomPitchRange));
+    } else {
+        m_nLocalPitch = SampleRefData->Pitch;
     }
 
     float PitchScale = static_cast<float>(0x1000 - Params->Pitch) * (1.0f / 4096.0f);
@@ -339,88 +482,267 @@ void cSampleWarpper::Play(const SND_Params *Params) {
     int TempAz = Params->Az;
     m_eIsPlaying = eSTITCH_PLAY_STATUS_OFF;
 
-    int stichDataType = static_cast<int>(sampleData->eStichType);
-    if (stichDataType < 0) {
-        stichDataType = 0;
-    } else if (stichDataType > 0x10) {
-        stichDataType = 0x10;
-    }
-
-    int sampleIndex = static_cast<int>(sampleData->SampleIndex);
-    if (sampleIndex < 0) {
-        sampleIndex = 0;
-    } else if (sampleIndex > 0x3FF) {
-        sampleIndex = 0x3FF;
-    }
-
-    int sampleVol = TempVol;
-    if (sampleVol < 0) {
-        sampleVol = 0;
-    } else if (sampleVol > 0x7FFF) {
-        sampleVol = 0x7FFF;
-    }
-
-    int samplePitch = TempPitch;
-    if (samplePitch < 0) {
-        samplePitch = 0;
-    } else if (samplePitch > 0x2000) {
-        samplePitch = 0x2000;
-    }
-
-    int sampleAzValue = TempAz + sampleData->Az + 0x10000;
-    int sampleAzWrap = sampleAzValue;
-    if (sampleAzValue < 0) {
-        sampleAzWrap = sampleAzValue + 0xFFFF;
-    }
-    int sampleAz = sampleAzValue + ((sampleAzWrap >> 16) * -0x10000);
-    if (sampleAz < 0) {
-        sampleAz = 0;
-    } else if (sampleAz > 0x10000) {
-        sampleAz = 0x10000;
-    }
-
-    int sampleOffset = static_cast<int>(sampleData->Offset);
-    if (sampleOffset > 4000) {
-        sampleOffset = 4000;
-    }
-
-    int wetFX = Params->RVerb;
-    if (wetFX < 0) {
-        wetFX = 0;
-    } else if (wetFX > 0x7FFF) {
-        wetFX = 0x7FFF;
-    }
-
-    if (sampleData->eStichType == STICH_TYPE_COLLISION) {
+    if (SampleRefData->eStichType == STICH_TYPE_COLLISION) {
         g_pEAXSound->SetCsisName(GetStichTypeName(STICH_TYPE_COLLISION));
-        AEMS_ActiveSampleCol =
-            new AEMS_StichCollision(stichDataType, sampleIndex, sampleVol, samplePitch, sampleAz, sampleOffset, 0x7FFF, wetFX,
-                                    25000, 0);
+        AEMS_StichCollision *sample = static_cast<AEMS_StichCollision *>(Csis::System::Alloc(0x2C));
+
+        SND_SampleRef *ref = SampleRefData;
+        unsigned int sampleIndex = static_cast<unsigned int>(ref->SampleIndex);
+        int sampleType = static_cast<int>(ref->eStichType);
+        unsigned int sampleOffset = static_cast<unsigned int>(ref->Offset);
+        int sampleAz = (TempAz + static_cast<unsigned short>(ref->Az) + 0x10000) % 0x10000;
+        int wetFX = Params->RVerb;
+
+        if (sampleType < 0) {
+            sampleType = 0;
+        } else if (sampleType > 0x10) {
+            sampleType = 0x10;
+        }
+        sample->mData.type = sampleType;
+
+        if (sampleIndex > 0x3FF) {
+            sampleIndex = 0x3FF;
+        }
+        sample->mData.iD = sampleIndex;
+
+        if (TempVol < 0) {
+            sampleType = 0;
+        } else {
+            sampleType = TempVol;
+            if (TempVol > 0x7FFF) {
+                sampleType = 0x7FFF;
+            }
+        }
+        sample->mData.vol = sampleType;
+
+        if (TempPitch < 0) {
+            sampleType = 0;
+        } else {
+            sampleType = TempPitch;
+            if (TempPitch > 0x2000) {
+                sampleType = 0x2000;
+            }
+        }
+        sample->mData.pitch = sampleType;
+
+        if (sampleAz < 0) {
+            sampleAz = 0;
+        } else if (sampleAz > 0x10000) {
+            sampleAz = 0x10000;
+        }
+        sample->mData.az = sampleAz;
+
+        if (sampleOffset > 4000) {
+            sampleOffset = 4000;
+        }
+        sample->mData.offset = sampleOffset;
+
+        sample->mData.filter_DryFX = 0x7FFF;
+
+        if (wetFX < 0) {
+            wetFX = 0;
+        } else if (wetFX > 0x7FFF) {
+            wetFX = 0x7FFF;
+        }
+
+        sample->mData.filter_WetFX = wetFX;
+        sample->mData.filter_LoPass = 25000;
+        sample->mData.filter_HiPass = 0;
+
+        int createResult = Csis::Class::CreateInstance(
+            &Csis::gAEMS_StichCollisionHandle, &sample->mData, reinterpret_cast<Csis::Class **>(sample));
+        if (createResult < 0) {
+            Csis::gAEMS_StichCollisionHandle.Set(&Csis::AEMS_StichCollisionId);
+            Csis::Class::CreateInstance(
+                &Csis::gAEMS_StichCollisionHandle, &sample->mData, reinterpret_cast<Csis::Class **>(sample));
+        }
+
+        AEMS_ActiveSampleCol = sample;
         if (AEMS_ActiveSampleCol != nullptr) {
-            int RefCount = AEMS_ActiveSampleCol->GetRefCount();
-            m_eIsPlaying = (RefCount < 3) ? eSTITCH_PLAY_STATUS_OFF : eSTITCH_PLAY_STATUS_PLAYING;
+            int refCount0 = 0;
+            Csis::Class *cls = reinterpret_cast<Csis::Class *>(AEMS_ActiveSampleCol->mpClass);
+            if (cls != nullptr) {
+                cls->GetRefCount(&refCount0);
+            }
+            if (refCount0 < 3) {
+                m_eIsPlaying = eSTITCH_PLAY_STATUS_OFF;
+            } else {
+                m_eIsPlaying = eSTITCH_PLAY_STATUS_PLAYING;
+            }
         }
     }
 
-    if (sampleData->eStichType == STICH_TYPE_WOOSH) {
+    if (SampleRefData->eStichType == STICH_TYPE_WOOSH) {
         g_pEAXSound->SetCsisName(GetStichTypeName(STICH_TYPE_WOOSH));
-        AEMS_ActiveSampleWsh =
-            new AEMS_StichWoosh(stichDataType, sampleIndex, sampleVol, samplePitch, sampleAz, sampleOffset, 0x7FFF, wetFX,
-                                25000, 0);
+        AEMS_StichWoosh *sample = static_cast<AEMS_StichWoosh *>(Csis::System::Alloc(0x2C));
+
+        SND_SampleRef *ref = SampleRefData;
+        unsigned int sampleIndex = static_cast<unsigned int>(ref->SampleIndex);
+        int sampleType = static_cast<int>(ref->eStichType);
+        unsigned int sampleOffset = static_cast<unsigned int>(ref->Offset);
+        int sampleAz = (TempAz + static_cast<unsigned short>(ref->Az) + 0x10000) % 0x10000;
+        int wetFX = Params->RVerb;
+
+        if (sampleType < 0) {
+            sampleType = 0;
+        } else if (sampleType > 0x10) {
+            sampleType = 0x10;
+        }
+        sample->mData.type = sampleType;
+
+        if (sampleIndex > 0x3FF) {
+            sampleIndex = 0x3FF;
+        }
+        sample->mData.iD = sampleIndex;
+
+        if (TempVol < 0) {
+            sampleType = 0;
+        } else {
+            sampleType = TempVol;
+            if (TempVol > 0x7FFF) {
+                sampleType = 0x7FFF;
+            }
+        }
+        sample->mData.vol = sampleType;
+
+        if (TempPitch < 0) {
+            sampleType = 0;
+        } else {
+            sampleType = TempPitch;
+            if (TempPitch > 0x2000) {
+                sampleType = 0x2000;
+            }
+        }
+        sample->mData.pitch = sampleType;
+
+        if (sampleAz < 0) {
+            sampleAz = 0;
+        } else if (sampleAz > 0x10000) {
+            sampleAz = 0x10000;
+        }
+        sample->mData.az = sampleAz;
+
+        if (sampleOffset > 4000) {
+            sampleOffset = 4000;
+        }
+        sample->mData.offset = sampleOffset;
+
+        sample->mData.filter_DryFX = 0x7FFF;
+
+        if (wetFX < 0) {
+            wetFX = 0;
+        } else if (wetFX > 0x7FFF) {
+            wetFX = 0x7FFF;
+        }
+
+        sample->mData.filter_WetFX = wetFX;
+        sample->mData.filter_LoPass = 25000;
+        sample->mData.filter_HiPass = 0;
+
+        int createResult = Csis::Class::CreateInstance(
+            &Csis::gAEMS_StichWooshHandle, &sample->mData, reinterpret_cast<Csis::Class **>(sample));
+        if (createResult < 0) {
+            Csis::gAEMS_StichWooshHandle.Set(&Csis::AEMS_StichWooshId);
+            Csis::Class::CreateInstance(
+                &Csis::gAEMS_StichWooshHandle, &sample->mData, reinterpret_cast<Csis::Class **>(sample));
+        }
+
+        AEMS_ActiveSampleWsh = sample;
         if (AEMS_ActiveSampleWsh != nullptr) {
-            int RefCount = AEMS_ActiveSampleWsh->GetRefCount();
-            m_eIsPlaying = (RefCount < 3) ? eSTITCH_PLAY_STATUS_OFF : eSTITCH_PLAY_STATUS_PLAYING;
+            int refCount1 = 0;
+            Csis::Class *cls = reinterpret_cast<Csis::Class *>(AEMS_ActiveSampleWsh->mpClass);
+            if (cls != nullptr) {
+                cls->GetRefCount(&refCount1);
+            }
+            if (refCount1 < 3) {
+                m_eIsPlaying = eSTITCH_PLAY_STATUS_OFF;
+            } else {
+                m_eIsPlaying = eSTITCH_PLAY_STATUS_PLAYING;
+            }
         }
     }
 
-    if (sampleData->eStichType == STICH_TYPE_STATIC) {
+    if (SampleRefData->eStichType == STICH_TYPE_STATIC) {
         g_pEAXSound->SetCsisName(GetStichTypeName(STICH_TYPE_STATIC));
-        AEMS_ActiveSampleStatic =
-            new AEMS_StichStatic(stichDataType, sampleIndex, sampleVol, samplePitch, sampleAz, sampleOffset, 0x7FFF, wetFX,
-                                 25000, 0);
+        AEMS_StichStatic *sample = static_cast<AEMS_StichStatic *>(Csis::System::Alloc(0x2C));
+
+        SND_SampleRef *ref = SampleRefData;
+        unsigned int sampleIndex = static_cast<unsigned int>(ref->SampleIndex);
+        int sampleType = static_cast<int>(ref->eStichType);
+        unsigned int sampleOffset = static_cast<unsigned int>(ref->Offset);
+        int sampleAz = (TempAz + static_cast<unsigned short>(ref->Az) + 0x10000) % 0x10000;
+        int wetFX = Params->RVerb;
+
+        if (sampleType < 0) {
+            sampleType = 0;
+        } else if (sampleType > 0x10) {
+            sampleType = 0x10;
+        }
+        sample->mData.type = sampleType;
+
+        if (sampleIndex > 0x3FF) {
+            sampleIndex = 0x3FF;
+        }
+        sample->mData.iD = sampleIndex;
+
+        if (TempVol < 0) {
+            TempVol = 0;
+        } else if (TempVol > 0x7FFF) {
+            TempVol = 0x7FFF;
+        }
+        sample->mData.vol = TempVol;
+
+        if (TempPitch < 0) {
+            TempPitch = 0;
+        } else if (TempPitch > 0x2000) {
+            TempPitch = 0x2000;
+        }
+        sample->mData.pitch = TempPitch;
+
+        if (sampleAz < 0) {
+            sampleAz = 0;
+        } else if (sampleAz > 0x10000) {
+            sampleAz = 0x10000;
+        }
+        sample->mData.az = sampleAz;
+
+        if (sampleOffset > 4000) {
+            sampleOffset = 4000;
+        }
+        sample->mData.offset = sampleOffset;
+
+        sample->mData.filter_DryFX = 0x7FFF;
+
+        if (wetFX < 0) {
+            wetFX = 0;
+        } else if (wetFX > 0x7FFF) {
+            wetFX = 0x7FFF;
+        }
+
+        sample->mData.filter_WetFX = wetFX;
+        sample->mData.filter_LoPass = 25000;
+        sample->mData.filter_HiPass = 0;
+
+        int createResult = Csis::Class::CreateInstance(
+            &Csis::gAEMS_StichStaticHandle, &sample->mData, reinterpret_cast<Csis::Class **>(sample));
+        if (createResult < 0) {
+            Csis::gAEMS_StichStaticHandle.Set(&Csis::AEMS_StichStaticId);
+            Csis::Class::CreateInstance(
+                &Csis::gAEMS_StichStaticHandle, &sample->mData, reinterpret_cast<Csis::Class **>(sample));
+        }
+
+        AEMS_ActiveSampleStatic = sample;
         if (AEMS_ActiveSampleStatic != nullptr) {
-            int RefCount = AEMS_ActiveSampleStatic->GetRefCount();
-            m_eIsPlaying = (RefCount < 3) ? eSTITCH_PLAY_STATUS_OFF : eSTITCH_PLAY_STATUS_PLAYING;
+            int refCount2 = 0;
+            Csis::Class *cls = reinterpret_cast<Csis::Class *>(AEMS_ActiveSampleStatic->mpClass);
+            if (cls != nullptr) {
+                cls->GetRefCount(&refCount2);
+            }
+            if (refCount2 < 3) {
+                m_eIsPlaying = eSTITCH_PLAY_STATUS_OFF;
+            } else {
+                m_eIsPlaying = eSTITCH_PLAY_STATUS_PLAYING;
+            }
         }
     }
 }

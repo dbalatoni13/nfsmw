@@ -29,6 +29,8 @@ struct SPCHType_SampleRequestData {
 
 struct EAXCop;
 
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/speech.h"
+
 namespace Speech {
 
 struct History {
@@ -216,7 +218,22 @@ unsigned int SpeechHashIDMap::GetHash(SPCHType_1_EventID id) {
 }
 
 void EventHistory::Init() {
-    clear();
+    Attrib::Class *speechClass = Attrib::Database::Get().GetClass(0xC593DD47);
+    unsigned int collectionKey = speechClass->GetFirstCollection();
+    while (collectionKey != 0) {
+        HistoryPair pair;
+        pair.id = kSPCH1_EventID_MaxEventID;
+        pair.history.time = Timer(0);
+        pair.history.count = 0;
+        pair.history.speakers = 0;
+
+        const Attrib::Collection *collection = Attrib::FindCollection(Attrib::Gen::speech::ClassKey(), collectionKey);
+        Attrib::Gen::speech event_collection(collection, 0, nullptr);
+        pair.id = event_collection.SpeechID();
+        insert(std::upper_bound(begin(), end(), pair), pair);
+        collectionKey = speechClass->GetNextCollection(collectionKey);
+    }
+
     Reset();
 }
 
