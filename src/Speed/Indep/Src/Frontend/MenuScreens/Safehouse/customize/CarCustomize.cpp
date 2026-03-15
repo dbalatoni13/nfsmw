@@ -70,9 +70,10 @@ void FEShoppingCartItem::Hide() {
 // --- CustomizeSub ---
 
 CustomizeMainOption *CustomizeSub::FindInCartOption() {
-    if (!InCartPartOptionIndex)
-        return nullptr;
-    return static_cast<CustomizeMainOption *>(Options.GetOption(InCartPartOptionIndex));
+    if (InCartPartOptionIndex) {
+        return static_cast<CustomizeMainOption *>(Options.GetOption(InCartPartOptionIndex));
+    }
+    return nullptr;
 }
 
 // --- CustomizeParts ---

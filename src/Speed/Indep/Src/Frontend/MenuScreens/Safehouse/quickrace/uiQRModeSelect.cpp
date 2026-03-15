@@ -111,16 +111,14 @@ void UIQRModeSelect::NotificationMessage(unsigned long msg, FEObject *pobj, unsi
         case 0xc407210:
             cFEng::Get()->QueuePackageSwitch("Track_Select.fng", 0, 0, false);
             break;
-        case 0x911ab364: {
-            unsigned int gm = FEDatabase->GetGameMode();
-            FEDatabase->SetGameMode(static_cast<eFEGameModes>(gm & ~0x400));
-            if (gm & 0x48) {
+        case 0x911ab364:
+            FEDatabase->ClearGameMode(static_cast<eFEGameModes>(0x400));
+            if (FEDatabase->IsOnlineMode() || FEDatabase->IsLANMode()) {
                 cFEng::Get()->QueuePackageSwitch(gOnlineMainMenu, 0, 0, false);
             } else {
                 cFEng::Get()->QueuePackageSwitch("MainMenu_Sub.fng", 0, 0, false);
             }
             break;
-        }
         }
         break;
     }
