@@ -3400,12 +3400,12 @@ CustomizeNumbers::CustomizeNumbers(ScreenConstructorData *sd)
     , RightNumberList() //
     , TheLeftNumber(nullptr) //
     , TheRightNumber(nullptr) //
-    , Category(sd->Arg & 0xFFFF) //
-    , FromCategory(static_cast<int>(static_cast<short>(sd->Arg >> 16))) //
     , LeftDisplayValue(-1) //
     , RightDisplayValue(-1) //
     , bLeft(1) //
     , DisplayHelper(sd->PackageFilename) {
+    Category = sd->Arg & 0xFFFF;
+    FromCategory = static_cast<int>(static_cast<short>(sd->Arg >> 16));
     Setup();
 }
 
@@ -3978,11 +3978,13 @@ CustomizePaint::CustomizePaint(ScreenConstructorData *sd)
     : CustomizationScreen(sd) //
     , TheFilter(-1) //
     , MatchingPaint(nullptr, 0, 0, 0, 0) //
-    , ThePaints(GetPackageName(), 5, 16, false) {
-    VinylColors[0] = nullptr;
-    VinylColors[1] = nullptr;
-    VinylColors[2] = nullptr;
+    , ThePaints(sd->PackageFilename, 20, 4, true) {
     NumRemapColors = 0;
+    for (int i = 0; i <= 2; i++) {
+        VinylColors[i] = nullptr;
+    }
+    ThePaints.SetMouseDownMsg(0x406415e3);
+    Setup();
 }
 
 void CustomizePaint::Setup() {
