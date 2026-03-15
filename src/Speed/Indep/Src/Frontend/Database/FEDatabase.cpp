@@ -789,6 +789,67 @@ void cFrontendDatabase::Default() {
     }
 }
 
+unsigned int cFrontendDatabase::GetMilestoneIconHash(unsigned int type, bool isMilestone) {
+    unsigned int hash = 0;
+    switch (type) {
+    case 0x850A64BC:
+        hash = 0x88E8DE9E;
+        break;
+    case 0x3FD1884D:
+    case 0x4FC942CA:
+        hash = 0x0FE608E6;
+        break;
+    case 0xFD989A3A:
+        hash = 0x87807869;
+        break;
+    case 0x7457EED4:
+    case 0x23B1BF0E:
+    case 0x15E88693:
+    case 0x20F1AEF3:
+    case 0x411B084E:
+    case 0x2CB7CAF4:
+    case 0x755F7845:
+    case 0x8ED622AD:
+    case 0xC8993341:
+        return 0;
+    case 0x1334DAE6:
+    case 0x1BF724E1:
+    case 0x254230F5:
+    case 0x4D9777F1:
+    case 0x9201E1F4:
+    case 0x9F8E56CE:
+    case 0xABDF316E:
+    case 0xCA9AFDF0:
+    case 0xE9A4423C:
+        return 0;
+    case 0x5392E4FD:
+        hash = 0x831B7EBE;
+        break;
+    case 0x033FA23A:
+        hash = 0x8C76CD0F;
+        if (isMilestone) {
+            hash = 0x950FCEBC;
+        }
+        break;
+    case 0xEB45F99D:
+        hash = 0xC43959D2;
+        break;
+    case 0x9E3EBB78:
+        hash = 0x3FFE9EC9;
+        break;
+    case 0xCDF36FC2:
+        hash = 0xE621B2EF;
+        break;
+    case 0xA61CAC24:
+        hash = 0x6784A80E;
+        break;
+    case 0x2377E50D:
+        hash = 0xB4E6456B;
+        break;
+    }
+    return hash;
+}
+
 unsigned int cFrontendDatabase::GetDefaultCar() {
     Attrib::Gen::frontend TheFrontend(Attrib::FindCollection(Attrib::Gen::frontend::ClassKey(), 0xeec2271a), 0, nullptr);
     Attrib::RefSpec refSpec;
