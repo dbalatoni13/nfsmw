@@ -37,19 +37,7 @@ struct GRaceSaveInfo {
 };
 #endif
 
-struct CarPart {
-    unsigned short PartNameHashBot;
-    unsigned short PartNameHashTop;
-    char PartID;
-    unsigned char GroupNumber_UpgradeLevel;
-    char BaseModelNameHashSelector;
-    unsigned char CarTypeNameHashIndex;
-    unsigned short NameOffset;
-    unsigned short AttributeTableOffset;
-    unsigned short ModelNameHashTableOffset;
-
-    char GetUpgradeLevel() { return GroupNumber_UpgradeLevel >> 5; }
-};
+#include "Speed/Indep/Src/World/CarPart.hpp"
 
 bool GetIsCollectorsEdition();
 eUnlockableEntity MapCarPartToUnlockable(int carslot, CarPart *part);

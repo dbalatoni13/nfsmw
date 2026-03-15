@@ -62,6 +62,11 @@ struct FadeScreen : MenuScreen {
 extern bool bIsRestartingRace;
 
 extern FEString *FEngFindString(const char *, int);
+extern unsigned int bStringHash(const char *str);
+extern unsigned int FEngHashString(const char *, ...);
+extern int bSPrintf(char *, const char *, ...);
+
+int HudResourceManager::mCustIndex;
 
 extern const char *HudSingleRaceTexturePackFilename;
 extern const char *HudDragTexturePackFilename;
@@ -110,6 +115,61 @@ bool HudResourceManager::AreResourcesLoaded(ePlayerHudType ht) {
             return true;
         }
     }
+    return false;
+}
+
+CarPart *HudResourceManager::GetCarPart(ePlayerHudType ht, CAR_SLOT_ID carSlotId) {
+    FECarRecord *car = nullptr;
+    FEPlayerCarDB *stable = FEDatabase->GetPlayerCarStable(0);
+
+    if (GRaceStatus::Get().GetRaceContext() == GRace::kRaceContext_Career) {
+        car = stable->GetCarRecordByHandle(FEDatabase->GetCareerSettings()->GetCurrentCar());
+    } else {
+        GRaceParameters *raceParams = GRaceStatus::Get().GetRaceParameters();
+        if (raceParams && !raceParams->GetIsPursuitRace()) {
+            car = stable->GetCarRecordByHandle(
+                FEDatabase->GetQuickRaceSettings(GRace::kRaceType_NumTypes)->GetSelectedCar(0));
+        }
+    }
+
+    if (car) {
+        FECustomizationRecord *record = stable->GetCustomizationRecordByHandle(car->Customization);
+        if (record) {
+            return record->GetInstalledPart(car->GetType(), carSlotId);
+        }
+    }
+    return nullptr;
+}
+
+int HudResourceManager::GetCustomHudColour(ePlayerHudType ht, CAR_SLOT_ID carSlotId) {
+    int colour = 0;
+
+    if (ht == PHT_STANDARD) {
+        CarPart *part = GetCarPart(PHT_STANDARD, carSlotId);
+        if (part) {
+            unsigned char r = part->GetAppliedAttributeIParam(bStringHash("RED"), 0);
+            unsigned char g = part->GetAppliedAttributeIParam(bStringHash("GREEN"), 0);
+            unsigned char b = part->GetAppliedAttributeIParam(bStringHash("BLUE"), 0);
+            colour = 0xFF000000 | (r << 16) | (g << 8) | b;
+        }
+    }
+
+    return colour;
+}
+
+bool HudResourceManager::GetCustomHudTexPackFilename(ePlayerHudType ht, char *hudTexturePackName) {
+    mCustIndex = 0;
+
+    if (ht == PHT_STANDARD) {
+        CarPart *part = GetCarPart(PHT_STANDARD, static_cast<CAR_SLOT_ID>(0x84));
+        if (part) {
+            mCustIndex = part->GetAppliedAttributeIParam(FEngHashString("HUDINDEX"), 0);
+        }
+        bSPrintf(hudTexturePackName, "GLOBAL\\HUDS_Custom_%2.2d.bin", mCustIndex);
+        return true;
+    }
+
+    bSPrintf(hudTexturePackName, "");
     return false;
 }
 

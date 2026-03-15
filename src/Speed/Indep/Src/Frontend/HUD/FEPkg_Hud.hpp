@@ -21,6 +21,12 @@ enum ePlayerHudType {
     PHT_DRAG_SPLIT2 = 6,
 };
 
+enum CAR_SLOT_ID {
+    CARSLOTID_BASE = 0,
+};
+
+#include "Speed/Indep/Src/World/CarPart.hpp"
+
 class Minimap;
 class OnlineHUDSupport;
 class AutoSaveIcon;
@@ -123,7 +129,13 @@ class HudResourceManager {
     static void LoadedCustomHudTexturePackCallbackBridge(unsigned int param);
     static void LoadedCustomHudTexturesCallbackBridge(unsigned int param);
 
+    static CarPart *GetCarPart(ePlayerHudType ht, CAR_SLOT_ID carSlotId);
+    static int GetCustomHudColour(ePlayerHudType ht, CAR_SLOT_ID carSlotId);
+    static bool GetCustomHudTexPackFilename(ePlayerHudType ht, char *hudTexturePackName);
+    static bool ChooseMinimapTextureName(char *name, unsigned int size);
+
     static ePlayerHudType LoadingResourcesForHudType;
+    static int mCustIndex;
 
   private:
     HudResourceLoadStates mHudResourcesState; // offset 0x0, size 0x4
