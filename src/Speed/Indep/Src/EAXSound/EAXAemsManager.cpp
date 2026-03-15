@@ -198,9 +198,11 @@ enum eSndDataType {
 
 DECLARE_CONTAINER_TYPE(ResAllocList);
 DECLARE_CONTAINER_TYPE(RefCountList);
+DECLARE_CONTAINER_TYPE(SndAssetQueue);
 
 typedef UTL::Std::vector<unsigned int, _type_ResAllocList> ResAllocList;
 typedef UTL::Std::vector<EAX_CarState *, _type_RefCountList> RefCountList;
+typedef UTL::Std::list<stSndAssetQueue, _type_SndAssetQueue> SndAssetQueue;
 typedef void (*ExternalLoadCallbackFn)(int);
 
 template <typename T> struct RawVector {
@@ -1336,7 +1338,7 @@ void EAXAemsManager::CompleteAsyncLoad() {
 void EAXAemsManager::ResetBankLoadParams() {
     m_nCurLoadedBankIndex = -1;
     m_nEndOfList = 0;
-    ClearSndAssetQueue(static_cast<ListNodeQueue *>(m_pQueuedFileHead));
+    reinterpret_cast<SndAssetQueue *>(&m_pQueuedFileHead)->clear();
     DestroySlots(true);
 }
 
