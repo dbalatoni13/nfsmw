@@ -1538,11 +1538,42 @@ void CustomizeShoppingCart::SetMarkerImages() {
 }
 
 void CustomizeShoppingCart::Setup() {
-    int count = gCarCustomizeManager.ShoppingCart.TraversebList(nullptr);
-    for (int i = 0; i < count; i++) {
-        ShoppingCartItem *item = static_cast<ShoppingCartItem *>(gCarCustomizeManager.ShoppingCart.GetNode(i));
-        AddItem(item);
+    const char *pkg = GetPackageName();
+    CustomizeMeter *meter = &HeatMeter;
+    const char *meter_name = "HEAT_METER";
+    float actual = gCarCustomizeManager.GetActualHeat();
+    float cart = gCarCustomizeManager.GetCartHeat();
+    meter->Init(pkg, meter_name, 1.0f, 5.0f, actual, cart);
+
+    ShoppingCartItem *item = gCarCustomizeManager.GetFirstCartItem();
+    while (item != gCarCustomizeManager.GetLastCartItem()->GetNext()) {
+        switch (item->GetBuyingPart()->GetSlotID()) {
+            case 0x4f: case 0x50: case 0x51: case 0x52:
+            case 0x69: case 0x6a:
+            case 0x72:
+            case 0x85: case 0x86: case 0x87:
+                break;
+            default:
+                AddItem(item);
+                break;
+        }
+        item = item->GetNext();
     }
+
+    if (CustomizeIsInBackRoom()) {
+        SetMarkerImages();
+    }
+
+    SetInitialOption(0);
+
+    FEShoppingCartItem *widget = static_cast<FEShoppingCartItem *>(Options.GetHead());
+    while (widget != static_cast<FEShoppingCartItem *>(Options.EndOfList())) {
+        widget->SetCheckScripts();
+        widget->SetActiveScripts();
+        widget = static_cast<FEShoppingCartItem *>(widget->GetNext());
+    }
+
+    RefreshHeader();
 }
 
 void CustomizeShoppingCart::AddItem(ShoppingCartItem *item) {
@@ -1799,11 +1830,18 @@ CustomizeRims::CustomizeRims(ScreenConstructorData *sd)
     Setup();
 }
 
-CustomizeDecals::CustomizeDecals(ScreenConstructorData *sd) : CustomizationScreen(sd) {
+CustomizeDecals::CustomizeDecals(ScreenConstructorData *sd) : CustomizationScreen(sd) //
+    , bIsBlack(true)
+{
     Setup();
 }
 
-CustomizeHUDColor::CustomizeHUDColor(ScreenConstructorData *sd) : CustomizationScreen(sd) {
+CustomizeHUDColor::CustomizeHUDColor(ScreenConstructorData *sd) : CustomizationScreen(sd) //
+    , SelectedColor(nullptr) //
+    , Cursor(nullptr) //
+    , bTexturesNeedUnload(false)
+{
+    Cursor = FEngFindObject(GetPackageName(), 0xB893252A);
     Setup();
 }
 

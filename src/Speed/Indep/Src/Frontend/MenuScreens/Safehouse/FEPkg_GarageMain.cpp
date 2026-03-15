@@ -1004,10 +1004,10 @@ GarageCarLoader *GetGarageCarLoader() {
 }
 
 void GarageCarLoader::Init() {
-    IsCurrentRide = false;
     LoadingCar = 0;
     CurrentCar = 0;
     IsLoadingRide = false;
+    IsCurrentRide = false;
 }
 
 void GarageCarLoader::Switch() {

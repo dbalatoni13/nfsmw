@@ -54,9 +54,9 @@ bool QRCarSelectBustedManager::bPlayerJustGotBusted;
 QRCarSelectBustedManager::QRCarSelectBustedManager(const char *pkg_name, int flags) {
     Flags = static_cast<eBustedAnimationTypes>(flags);
     ParentPkg = pkg_name;
-    bWantsImpound = false;
-    ImpoundStampHash = 0;
     WorkingCarRecord = nullptr;
+    ImpoundStampHash = 0;
+    bWantsImpound = false;
     WorkingCareerRecord = nullptr;
 }
 
