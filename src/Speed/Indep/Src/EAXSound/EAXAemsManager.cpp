@@ -262,7 +262,7 @@ template <typename T> static void RawVectorReserve(RawVector<T> &vec, int newCap
 
     const int oldSize = RawVectorSize(vec);
     const unsigned int byteCount = static_cast<unsigned int>(newCapacity * static_cast<int>(sizeof(T)));
-    T *newStart = byteCount > 0 ? reinterpret_cast<T *>(gFastMem.Alloc(byteCount, nullptr)) : nullptr;
+    T *newStart = byteCount > 0 ? static_cast<T *>(gFastMem.Alloc(byteCount, nullptr)) : nullptr;
 
     if (oldSize > 0) {
         memmove(newStart, vec.start, static_cast<size_t>(oldSize * static_cast<int>(sizeof(T))));
@@ -317,15 +317,15 @@ static int &GetAsyncBufferSize(EAXAemsManager *mgr) {
 }
 
 static eTEMPALLOCLOCATION &GetAsyncBufferLocation(EAXAemsManager *mgr) {
-    return *reinterpret_cast<eTEMPALLOCLOCATION *>(&mgr->m_AsyncBufferLocation);
+    return *static_cast<eTEMPALLOCLOCATION *>(static_cast<void *>(&mgr->m_AsyncBufferLocation));
 }
 
 static stSndDataLoadParamsView &AsLoadParamsView(stSndDataLoadParams *params) {
-    return *reinterpret_cast<stSndDataLoadParamsView *>(params);
+    return *static_cast<stSndDataLoadParamsView *>(static_cast<void *>(params));
 }
 
 static const stSndDataLoadParamsView &AsLoadParamsView(const stSndDataLoadParams *params) {
-    return *reinterpret_cast<const stSndDataLoadParamsView *>(params);
+    return *static_cast<const stSndDataLoadParamsView *>(static_cast<const void *>(params));
 }
 
 static const char *GetStringKeyChars(const Attrib::StringKey &key) {
@@ -398,7 +398,8 @@ void BankSlotSystem::DestroySlots() {
     while (node != head) {
         BankSlotNode *next = node->next;
         if (node->data.LoadFailed == 0 && node->data.pAssetParams != nullptr) {
-            stAssetDescription *asset = reinterpret_cast<stAssetDescription *>(node->data.pAssetParams);
+            stAssetDescription *asset =
+                static_cast<stAssetDescription *>(static_cast<void *>(node->data.pAssetParams));
             gAEMSMgr.UnloadSndData(asset->FileName);
         }
         if (node->data.MAINmemLocation != nullptr) {
@@ -413,21 +414,21 @@ void BankSlotSystem::DestroySlots() {
 }
 
 EAXAemsManager::EAXAemsManager() {
-    ListNodeBankSlot *bankSlots = reinterpret_cast<ListNodeBankSlot *>(gFastMem.Alloc(0x2C, nullptr));
+    ListNodeBankSlot *bankSlots = static_cast<ListNodeBankSlot *>(gFastMem.Alloc(0x2C, nullptr));
     if (bankSlots != nullptr) {
         bankSlots->next = bankSlots;
         bankSlots->prev = bankSlots;
     }
     m_pMainSlotHead = bankSlots;
 
-    ListNodeBankSlot *pfSlots = reinterpret_cast<ListNodeBankSlot *>(gFastMem.Alloc(0x2C, nullptr));
+    ListNodeBankSlot *pfSlots = static_cast<ListNodeBankSlot *>(gFastMem.Alloc(0x2C, nullptr));
     if (pfSlots != nullptr) {
         pfSlots->next = pfSlots;
         pfSlots->prev = pfSlots;
     }
     m_pPfSlotHead = pfSlots;
 
-    ListNodeQueue *waitSlots = reinterpret_cast<ListNodeQueue *>(gFastMem.Alloc(0x30, nullptr));
+    ListNodeQueue *waitSlots = static_cast<ListNodeQueue *>(gFastMem.Alloc(0x30, nullptr));
     if (waitSlots != nullptr) {
         waitSlots->next = waitSlots;
         waitSlots->prev = waitSlots;
@@ -458,8 +459,9 @@ EAXAemsManager::~EAXAemsManager() {
     }
 
     if (m_pEvtSystems_start != nullptr) {
-        int byteCount = static_cast<int>(reinterpret_cast<char *>(m_pEvtSystems_end_of_storage) -
-                                         reinterpret_cast<char *>(m_pEvtSystems_start));
+        int byteCount = static_cast<int>(
+            static_cast<char *>(static_cast<void *>(m_pEvtSystems_end_of_storage)) -
+            static_cast<char *>(static_cast<void *>(m_pEvtSystems_start)));
         gFastMem.Free(m_pEvtSystems_start, byteCount, nullptr);
     }
     m_pEvtSystems_start = nullptr;
@@ -472,13 +474,13 @@ EAXAemsManager::~EAXAemsManager() {
         gFastMem.Free(waitSlotHead, 0x30, nullptr);
     }
 
-    reinterpret_cast<BankSlotSystem *>(&m_pPfSlotHead)->DestroySlots();
+    static_cast<BankSlotSystem *>(static_cast<void *>(&m_pPfSlotHead))->DestroySlots();
     ListNodeBankSlot *pfSlotHead = static_cast<ListNodeBankSlot *>(m_pPfSlotHead);
     if (pfSlotHead != nullptr) {
         gFastMem.Free(pfSlotHead, 0x2C, nullptr);
     }
 
-    reinterpret_cast<BankSlotSystem *>(&m_pMainSlotHead)->DestroySlots();
+    static_cast<BankSlotSystem *>(static_cast<void *>(&m_pMainSlotHead))->DestroySlots();
     ListNodeBankSlot *slotHead = static_cast<ListNodeBankSlot *>(m_pMainSlotHead);
     if (slotHead != nullptr) {
         gFastMem.Free(slotHead, 0x2C, nullptr);
@@ -493,12 +495,13 @@ void EAXAemsManager::Init() {
     m_nEvtSysQueued = 0;
     if (static_cast<int>(numEvtSys) > 0) {
         if (m_pEvtSystems_start != nullptr) {
-            int oldByteCount = static_cast<int>(reinterpret_cast<char *>(m_pEvtSystems_end_of_storage) -
-                                                reinterpret_cast<char *>(m_pEvtSystems_start));
+            int oldByteCount = static_cast<int>(
+                static_cast<char *>(static_cast<void *>(m_pEvtSystems_end_of_storage)) -
+                static_cast<char *>(static_cast<void *>(m_pEvtSystems_start)));
             gFastMem.Free(m_pEvtSystems_start, oldByteCount, nullptr);
         }
 
-        m_pEvtSystems_start = reinterpret_cast<void **>(
+        m_pEvtSystems_start = static_cast<void **>(
             gFastMem.Alloc(static_cast<unsigned int>(numEvtSys * sizeof(void *)), nullptr));
         m_pEvtSystems_end = m_pEvtSystems_start;
         m_pEvtSystems_end_of_storage = m_pEvtSystems_start + numEvtSys;
@@ -535,9 +538,9 @@ int EAXAemsManager::AddEventSystem(eEVTSYS eESIndex, eSNDDATAPATH eSDP) {
 void EAXAemsManager::InitializeSlots(bool bDoPFSlot) {
     if (DISABLE_SLOT_LOADING == 0) {
         if (bDoPFSlot) {
-            reinterpret_cast<BankSlotSystem *>(&m_pPfSlotHead)->DestroySlots();
+            static_cast<BankSlotSystem *>(static_cast<void *>(&m_pPfSlotHead))->DestroySlots();
         }
-        reinterpret_cast<BankSlotSystem *>(&m_pMainSlotHead)->DestroySlots();
+        static_cast<BankSlotSystem *>(static_cast<void *>(&m_pMainSlotHead))->DestroySlots();
         m_SPUMainAllocsEnd = m_SPU_UpperAddress;
         for (int n = 0; n < 4; n++) {
             RegisterSlots(static_cast<eBANK_SLOT_TYPE>(n), m_RequiredSlots[n], m_SlotSizes[n][0], m_SlotSizes[n][1], bDoPFSlot);
@@ -554,7 +557,7 @@ void EAXAemsManager::RegisterSlots(eBANK_SLOT_TYPE Type, int NumSlots, int SizeP
         DebugString[0] = '\0';
         NewSlot.Index = static_cast<unsigned char>(n);
         NewSlot.Type = Type;
-        NewSlot.MAINmemLocation = reinterpret_cast<char *>(
+        NewSlot.MAINmemLocation = static_cast<char *>(
             gAudioMemoryManager.AllocateMemory(SizePerSlotMainMem, DebugString, false));
         NewSlot.BANKmemLocation = m_SPUMainAllocsEnd - SizePerSlotSPU;
         m_SPUMainAllocsEnd = NewSlot.BANKmemLocation;
@@ -563,9 +566,9 @@ void EAXAemsManager::RegisterSlots(eBANK_SLOT_TYPE Type, int NumSlots, int SizeP
         NewSlot.MAINmemSize = SizePerSlotMainMem;
         NewSlot.BANKMemSize = SizePerSlotSPU;
 
-        ListNodeBankSlot *head = *reinterpret_cast<ListNodeBankSlot **>(
-            reinterpret_cast<char *>(this) + ((Type == eBANK_SLOT_PATHFINDER && bDoPFSlot) ? 0xAC : 0xA4));
-        ListNodeBankSlot *node = reinterpret_cast<ListNodeBankSlot *>(gFastMem.Alloc(0x2C, nullptr));
+        ListNodeBankSlot *head = *static_cast<ListNodeBankSlot **>(
+            static_cast<void *>(static_cast<char *>(static_cast<void *>(this)) + ((Type == eBANK_SLOT_PATHFINDER && bDoPFSlot) ? 0xAC : 0xA4)));
+        ListNodeBankSlot *node = static_cast<ListNodeBankSlot *>(gFastMem.Alloc(0x2C, nullptr));
         if (node != nullptr && head != nullptr) {
             node->data = NewSlot;
             node->next = head;
@@ -635,11 +638,11 @@ int EAXAemsManager::InitiateLoad() {
         result = bLargestMalloc(0);
         if (result > 0x20000) {
             GetAsyncBufferLocation(this) = TMP_ALLOC_MAIN;
-            fileString = reinterpret_cast<char *>(bMalloc(0x10000, 0));
+            fileString = static_cast<char *>(bMalloc(0x10000, 0));
             GetAsyncBuffer(this) = fileString;
             goto HaveAsyncBuffer;
         }
-        fileString = reinterpret_cast<char *>(TheTrackStreamer.AllocateUserMemory(0x10000, "EAXAemsManager::m_pAsyncBuff", 0));
+        fileString = static_cast<char *>(TheTrackStreamer.AllocateUserMemory(0x10000, "EAXAemsManager::m_pAsyncBuff", 0));
         GetAsyncBufferLocation(this) = TMP_ALLOC_TRACKSTREAMER;
         GetAsyncBuffer(this) = fileString;
         if (fileString != nullptr) {
@@ -655,10 +658,10 @@ int EAXAemsManager::InitiateLoad() {
 HaveQueueParams:
         queuedFileParams.BlockSize = 0x7FFFFFF;
         queuedFileParams.Compressed = false;
-        *reinterpret_cast<unsigned int *>(&queuedFileParams.Compressed) = 0;
+        *static_cast<unsigned int *>(static_cast<void *>(&queuedFileParams.Compressed)) = 0;
         queuedFileParams.Priority = QueuedFileDefaultPriority - 2;
         queuedFileParams.UncompressedSize = 0;
-        currentLoad = reinterpret_cast<stSndDataLoadParamsView *>(m_pCurLoadSDLP);
+        currentLoad = static_cast<stSndDataLoadParamsView *>(static_cast<void *>(m_pCurLoadSDLP));
         memLocation = currentLoad->MemLocation;
         if (memLocation == TMP_ALLOC_MAIN) {
             result = bLargestMalloc(0);
@@ -902,7 +905,7 @@ ReprocessQueue:
             m_AsyncBuffer = nullptr;
         }
 
-        ExternalLoadCallbackFn callback = reinterpret_cast<ExternalLoadCallbackFn>(m_ExternalLoadCallback);
+        ExternalLoadCallbackFn callback = m_ExternalLoadCallback;
         if (callback == nullptr) {
             return;
         }
@@ -978,14 +981,14 @@ ReprocessQueue:
 }
 
 void EAXAemsManager::RemoveBankListing(int index) {
-    ResetSndAssetParams(*reinterpret_cast<stSndDataLoadParamsView *>(&g_SndAssetList[index]));
+    ResetSndAssetParams(*static_cast<stSndDataLoadParamsView *>(static_cast<void *>(&g_SndAssetList[index])));
     for (int n = index; n < 0x2F; n++) {
         stSndDataLoadParams *currentParams = g_SndAssetList + n;
         stSndDataLoadParams *futureParams = currentParams + 1;
         stSndDataLoadParamsView &current =
-            *reinterpret_cast<stSndDataLoadParamsView *>(currentParams);
+            *static_cast<stSndDataLoadParamsView *>(static_cast<void *>(currentParams));
         stSndDataLoadParamsView &future =
-            *reinterpret_cast<stSndDataLoadParamsView *>(futureParams);
+            *static_cast<stSndDataLoadParamsView *>(static_cast<void *>(futureParams));
 
         current.AssetDescription = future.AssetDescription;
         current.MemLocation = future.MemLocation;
@@ -998,10 +1001,10 @@ void EAXAemsManager::RemoveBankListing(int index) {
         current.plocmem = future.plocmem;
         current.nSize = future.nSize;
         current.Handle = future.Handle;
-        *reinterpret_cast<unsigned int *>(&current.bResolvedAsync) =
-            *reinterpret_cast<unsigned int *>(&future.bResolvedAsync);
-        *reinterpret_cast<unsigned int *>(&current.bResolvedSync) =
-            *reinterpret_cast<unsigned int *>(&future.bResolvedSync);
+        *static_cast<unsigned int *>(static_cast<void *>(&current.bResolvedAsync)) =
+            *static_cast<unsigned int *>(static_cast<void *>(&future.bResolvedAsync));
+        *static_cast<unsigned int *>(static_cast<void *>(&current.bResolvedSync)) =
+            *static_cast<unsigned int *>(static_cast<void *>(&future.bResolvedSync));
 
         current.resallocs.clear();
         for (ResAllocList::const_iterator i = future.resallocs.begin(); i != future.resallocs.end(); ++i) {
@@ -1031,48 +1034,48 @@ void EAXAemsManager::UnloadSndData(int Index) {
     }
 
     m_pCurUNLOADSDLP = g_SndAssetList + Index;
-    char *entry = reinterpret_cast<char *>(m_pCurUNLOADSDLP);
-    if (*reinterpret_cast<int *>(entry + 0x3C) == 0) {
+    char *entry = static_cast<char *>(static_cast<void *>(m_pCurUNLOADSDLP));
+    if (*static_cast<int *>(static_cast<void *>(entry + 0x3C)) == 0) {
         return;
     }
 
-    *reinterpret_cast<int *>(entry + 0x38) = 0;
-    *reinterpret_cast<int *>(entry + 0x3C) = 0;
-    int eDataType = *reinterpret_cast<int *>(entry + 0x0);
+    *static_cast<int *>(static_cast<void *>(entry + 0x38)) = 0;
+    *static_cast<int *>(static_cast<void *>(entry + 0x3C)) = 0;
+    int eDataType = *static_cast<int *>(static_cast<void *>(entry + 0x0));
     if (eDataType < SDT_GENERIC_DATA) {
         RemoveAEMSBank();
     }
 
-    void *plocmem = *reinterpret_cast<void **>(entry + 0x2C);
+    void *plocmem = *static_cast<void **>(static_cast<void *>(entry + 0x2C));
     if (plocmem != nullptr) {
         if (eDataType == SDT_AEMS_MAINMEM) {
             bFree(plocmem);
         } else {
             gAudioMemoryManager.FreeMemory(plocmem);
         }
-        *reinterpret_cast<void **>(entry + 0x2C) = nullptr;
+        *static_cast<void **>(static_cast<void *>(entry + 0x2C)) = nullptr;
     }
 
-    void *pmem = *reinterpret_cast<void **>(entry + 0x28);
+    void *pmem = *static_cast<void **>(static_cast<void *>(entry + 0x28));
     if (pmem != nullptr) {
         if (eDataType == SDT_AEMS_MAINMEM) {
             bFree(pmem);
         } else {
             gAudioMemoryManager.FreeMemory(pmem);
         }
-        *reinterpret_cast<void **>(entry + 0x28) = nullptr;
+        *static_cast<void **>(static_cast<void *>(entry + 0x28)) = nullptr;
     }
 
-    stBankSlot *bankSlot = *reinterpret_cast<stBankSlot **>(entry + 0x24);
+    stBankSlot *bankSlot = *static_cast<stBankSlot **>(static_cast<void *>(entry + 0x24));
     if (bankSlot != nullptr) {
         bankSlot->pAssetParams = nullptr;
         bankSlot->pLastAlloc = bankSlot->MAINmemLocation;
         bMemSet(bankSlot->MAINmemLocation, '\0', bankSlot->MAINmemSize);
-        *reinterpret_cast<stBankSlot **>(entry + 0x24) = nullptr;
+        *static_cast<stBankSlot **>(static_cast<void *>(entry + 0x24)) = nullptr;
     }
 
-    unsigned int **resStart = reinterpret_cast<unsigned int **>(entry + 0x40);
-    unsigned int **resFinish = reinterpret_cast<unsigned int **>(entry + 0x44);
+    unsigned int **resStart = static_cast<unsigned int **>(static_cast<void *>(entry + 0x40));
+    unsigned int **resFinish = static_cast<unsigned int **>(static_cast<void *>(entry + 0x44));
     while (*resStart != *resFinish) {
         unsigned int *cur = *resFinish - 1;
         *resFinish = cur;
@@ -1093,13 +1096,13 @@ void *EAXAemsManager::AsyncResidentAllocCB(int size) {
         m_pCurrentlyLoading = tmpLoading;
     }
 
-    char *currentLoad = reinterpret_cast<char *>(m_pCurrentlyLoading);
-    stBankSlot *pBankSlot = *reinterpret_cast<stBankSlot **>(currentLoad + 0x24);
+    char *currentLoad = static_cast<char *>(static_cast<void *>(m_pCurrentlyLoading));
+    stBankSlot *pBankSlot = *static_cast<stBankSlot **>(static_cast<void *>(currentLoad + 0x24));
     if (pBankSlot != nullptr) {
         newresalloc = pBankSlot->pLastAlloc;
         pBankSlot->pLastAlloc += size;
     } else {
-        char *filename = *reinterpret_cast<char **>(currentLoad + 0x14);
+        char *filename = *static_cast<char **>(static_cast<void *>(currentLoad + 0x14));
         if (filename == nullptr) {
             filename = const_cast<char *>("");
         }
@@ -1107,7 +1110,7 @@ void *EAXAemsManager::AsyncResidentAllocCB(int size) {
         bStrCat(dbgstring, filename, ": resident allocation");
         newresalloc = gAudioMemoryManager.AllocateMemory(size, dbgstring, true);
         unsigned int newresallocaddr = reinterpret_cast<unsigned int>(newresalloc);
-        reinterpret_cast<ResAllocList *>(currentLoad + 0x40)->push_back(newresallocaddr);
+        static_cast<ResAllocList *>(static_cast<void *>(currentLoad + 0x40))->push_back(newresallocaddr);
     }
     return newresalloc;
 }
@@ -1115,48 +1118,48 @@ void *EAXAemsManager::AsyncResidentAllocCB(int size) {
 void *EAXAemsManager::ResidentAllocCB(void *pbank, int residentsize, int totalsize) {
     (void)pbank;
     if (residentsize != totalsize) {
-        char *mgr = reinterpret_cast<char *>(&gAEMSMgr);
-        char *currentLoad = reinterpret_cast<char *>(*reinterpret_cast<stSndDataLoadParams **>(mgr + 0x118));
+        stSndDataLoadParams *currentLoadRaw = gAEMSMgr.m_pCurLoadSDLP;
+        stSndDataLoadParamsView &currentLoad = AsLoadParamsView(currentLoadRaw);
         void *resmem;
-        if (*reinterpret_cast<int *>(currentLoad + 0x0) == SDT_AEMS_MAINMEM) {
+        if (currentLoad.AssetDescription.eDataType == SDT_AEMS_MAINMEM) {
             resmem = bMalloc(residentsize, 0x1040);
         } else {
-            stBankSlot *pBankSlot = *reinterpret_cast<stBankSlot **>(currentLoad + 0x24);
+            stBankSlot *pBankSlot = currentLoad.mBankSlot;
             if (pBankSlot != nullptr) {
                 pBankSlot->pLastAlloc += residentsize;
-                currentLoad = reinterpret_cast<char *>(*reinterpret_cast<stSndDataLoadParams **>(mgr + 0x118));
-                pBankSlot = *reinterpret_cast<stBankSlot **>(currentLoad + 0x24);
+                currentLoadRaw = gAEMSMgr.m_pCurLoadSDLP;
+                pBankSlot = AsLoadParamsView(currentLoadRaw).mBankSlot;
                 return pBankSlot->MAINmemLocation;
             }
 
-            char *filename = *reinterpret_cast<char **>(currentLoad + 0x14);
+            char *filename = const_cast<char *>(GetStringKeyChars(currentLoad.AssetDescription.FileName));
             if (filename == nullptr) {
                 filename = const_cast<char *>("");
             }
             resmem = gAudioMemoryManager.AllocateMemory(residentsize, filename, false);
         }
 
-        currentLoad = static_cast<char *>(static_cast<void *>(*static_cast<stSndDataLoadParams **>(static_cast<void *>(mgr + 0x118))));
-        *static_cast<void **>(static_cast<void *>(currentLoad + 0x2C)) = resmem;
-        (*reinterpret_cast<int *>(mgr + 0x104))++;
-        currentLoad = static_cast<char *>(static_cast<void *>(*static_cast<stSndDataLoadParams **>(static_cast<void *>(mgr + 0x118))));
-        return *static_cast<void **>(static_cast<void *>(currentLoad + 0x2C));
+        currentLoadRaw = gAEMSMgr.m_pCurLoadSDLP;
+        AsLoadParamsView(currentLoadRaw).plocmem = resmem;
+        gAEMSMgr.m_nResidentAllocs++;
+        currentLoadRaw = gAEMSMgr.m_pCurLoadSDLP;
+        return AsLoadParamsView(currentLoadRaw).plocmem;
     }
 
-    return *static_cast<void **>(
-        static_cast<void *>(static_cast<char *>(static_cast<void *>(gAEMSMgr.m_pCurLoadSDLP)) + 0x28));
+    return AsLoadParamsView(gAEMSMgr.m_pCurLoadSDLP).pmem;
 }
 
 void EAXAemsManager::DataLoadCB(int param, int error_status) {
     (void)error_status;
     unsigned int ticker = bGetTicker();
-    char *mgr = reinterpret_cast<char *>(&gAEMSMgr);
-    int worldTime = *reinterpret_cast<int *>(&WorldTimer);
+    char *mgr = static_cast<char *>(static_cast<void *>(&gAEMSMgr));
+    int worldTime = *static_cast<int *>(static_cast<void *>(&WorldTimer));
     StartBankLoadTicks = ticker;
-    *reinterpret_cast<stSndDataLoadParams **>(mgr + 0x118) = reinterpret_cast<stSndDataLoadParams *>(param);
-    char *currentLoad = reinterpret_cast<char *>(*reinterpret_cast<stSndDataLoadParams **>(mgr + 0x118));
-    *reinterpret_cast<int *>(currentLoad + 0x64) = worldTime;
-    int eDataType = *reinterpret_cast<int *>(currentLoad + 0x0);
+    *static_cast<stSndDataLoadParams **>(static_cast<void *>(mgr + 0x118)) = reinterpret_cast<stSndDataLoadParams *>(param);
+    char *currentLoad = static_cast<char *>(
+        static_cast<void *>(*static_cast<stSndDataLoadParams **>(static_cast<void *>(mgr + 0x118))));
+    *static_cast<int *>(static_cast<void *>(currentLoad + 0x64)) = worldTime;
+    int eDataType = *static_cast<int *>(static_cast<void *>(currentLoad + 0x0));
 
     if (eDataType == SDT_AEMS_ASYNCSPU) {
         goto LoadDone;
@@ -1166,88 +1169,96 @@ void EAXAemsManager::DataLoadCB(int param, int error_status) {
         if (eDataType >= SDT_AEMS_AUDIOMEM) {
             AddAemsBank();
             gAEMSMgr.ResolveCurrentDataMemory();
-            *reinterpret_cast<unsigned int *>(currentLoad + 0x38) = 1;
-            *reinterpret_cast<unsigned int *>(currentLoad + 0x3C) = 1;
+            *static_cast<unsigned int *>(static_cast<void *>(currentLoad + 0x38)) = 1;
+            *static_cast<unsigned int *>(static_cast<void *>(currentLoad + 0x3C)) = 1;
         }
     } else if (eDataType == SDT_AEMS_ASYNCSPUMEM) {
-        *reinterpret_cast<unsigned int *>(mgr + 0x12C) = 0;
-        if (*reinterpret_cast<int *>(mgr + 0x128) != 0) {
-            *reinterpret_cast<stSndDataLoadParams **>(mgr + 0x118) = nullptr;
-            (*reinterpret_cast<int *>(mgr + 0x124))++;
+        *static_cast<unsigned int *>(static_cast<void *>(mgr + 0x12C)) = 0;
+        if (*static_cast<int *>(static_cast<void *>(mgr + 0x128)) != 0) {
+            *static_cast<stSndDataLoadParams **>(static_cast<void *>(mgr + 0x118)) = nullptr;
+            (*static_cast<int *>(static_cast<void *>(mgr + 0x124)))++;
             goto LoadDone;
         }
 
-        stBankSlot *pBankSlot = *reinterpret_cast<stBankSlot **>(currentLoad + 0x24);
+        stBankSlot *pBankSlot = *static_cast<stBankSlot **>(static_cast<void *>(currentLoad + 0x24));
         if (pBankSlot == nullptr) {
             SNDmemlimits(-1, gAEMSMgr.m_SPUMainAllocsEnd);
         } else {
             SNDmemlimits(pBankSlot->BANKmemLocation, pBankSlot->BANKmemLocation + pBankSlot->BANKMemSize);
         }
 
-        *reinterpret_cast<int *>(currentLoad + 0x34) =
-            SNDAEMS_asyncloadmodulebankmem(*reinterpret_cast<void **>(currentLoad + 0x28), nullptr, 0, AsyncResidentAllocCB);
+        *static_cast<int *>(static_cast<void *>(currentLoad + 0x34)) =
+            SNDAEMS_asyncloadmodulebankmem(*static_cast<void **>(static_cast<void *>(currentLoad + 0x28)), nullptr, 0,
+                                           AsyncResidentAllocCB);
     } else if (eDataType == SDT_GENERIC_DATA) {
-        *reinterpret_cast<unsigned int *>(currentLoad + 0x38) = 1;
-        *reinterpret_cast<unsigned int *>(currentLoad + 0x3C) = 1;
+        *static_cast<unsigned int *>(static_cast<void *>(currentLoad + 0x38)) = 1;
+        *static_cast<unsigned int *>(static_cast<void *>(currentLoad + 0x3C)) = 1;
     }
 
 LoadDone:
-    *reinterpret_cast<unsigned int *>(mgr + 0x12C) = 0;
+    *static_cast<unsigned int *>(static_cast<void *>(mgr + 0x12C)) = 0;
 }
 
 int EAXAemsManager::AddBankListing(stAssetDescription &asset) {
     int index = m_nEndOfList;
-    char *entry = reinterpret_cast<char *>(&g_SndAssetList[index]);
+    char *entry = static_cast<char *>(static_cast<void *>(&g_SndAssetList[index]));
     unsigned long long hash64 = Attrib::StringHash64("");
     unsigned int hash32 = Attrib::StringHash32("");
-    *reinterpret_cast<int *>(entry + 0x34) = -1;
-    *reinterpret_cast<int *>(entry + 0x0) = SDT_NONE;
-    *reinterpret_cast<unsigned int *>(entry + 0x8) = static_cast<unsigned int>(hash64 >> 32);
-    *reinterpret_cast<unsigned int *>(entry + 0xC) = static_cast<unsigned int>(hash64);
-    *reinterpret_cast<unsigned int *>(entry + 0x10) = hash32;
-    *reinterpret_cast<const char **>(entry + 0x14) = "";
-    *reinterpret_cast<int *>(entry + 0x18) = SNDPATH_ROUTE;
-    *reinterpret_cast<int *>(entry + 0x20) = TMP_ALLOC_NONE;
-    *reinterpret_cast<stBankSlot **>(entry + 0x24) = nullptr;
-    *reinterpret_cast<void **>(entry + 0x28) = nullptr;
-    *reinterpret_cast<void **>(entry + 0x2C) = nullptr;
-    *reinterpret_cast<int *>(entry + 0x30) = 0;
-    *reinterpret_cast<unsigned int *>(entry + 0x38) = 0;
-    *reinterpret_cast<unsigned int *>(entry + 0x3C) = 0;
+    *static_cast<int *>(static_cast<void *>(entry + 0x34)) = -1;
+    *static_cast<int *>(static_cast<void *>(entry + 0x0)) = SDT_NONE;
+    *static_cast<unsigned int *>(static_cast<void *>(entry + 0x8)) = static_cast<unsigned int>(hash64 >> 32);
+    *static_cast<unsigned int *>(static_cast<void *>(entry + 0xC)) = static_cast<unsigned int>(hash64);
+    *static_cast<unsigned int *>(static_cast<void *>(entry + 0x10)) = hash32;
+    *static_cast<const char **>(static_cast<void *>(entry + 0x14)) = "";
+    *static_cast<int *>(static_cast<void *>(entry + 0x18)) = SNDPATH_ROUTE;
+    *static_cast<int *>(static_cast<void *>(entry + 0x20)) = TMP_ALLOC_NONE;
+    *static_cast<stBankSlot **>(static_cast<void *>(entry + 0x24)) = nullptr;
+    *static_cast<void **>(static_cast<void *>(entry + 0x28)) = nullptr;
+    *static_cast<void **>(static_cast<void *>(entry + 0x2C)) = nullptr;
+    *static_cast<int *>(static_cast<void *>(entry + 0x30)) = 0;
+    *static_cast<unsigned int *>(static_cast<void *>(entry + 0x38)) = 0;
+    *static_cast<unsigned int *>(static_cast<void *>(entry + 0x3C)) = 0;
 
-    RawVector<unsigned int> &resallocs = AsRawVector(*reinterpret_cast<ResAllocList *>(entry + 0x40));
+    RawVector<unsigned int> &resallocs = AsRawVector(*static_cast<ResAllocList *>(static_cast<void *>(entry + 0x40)));
     unsigned int *resallocsEnd = resallocs.finish;
     unsigned int *resallocsSrc = resallocs.finish;
     unsigned int *resallocsDst = resallocs.start;
     if (resallocsEnd != resallocsSrc) {
-        size_t bytes = reinterpret_cast<char *>(resallocsEnd) - reinterpret_cast<char *>(resallocsSrc);
+        size_t bytes = static_cast<char *>(static_cast<void *>(resallocsEnd)) -
+                       static_cast<char *>(static_cast<void *>(resallocsSrc));
         void *copied = memmove(resallocsDst, resallocsSrc, bytes);
-        resallocsDst = reinterpret_cast<unsigned int *>(reinterpret_cast<char *>(copied) + bytes);
+        resallocsDst = static_cast<unsigned int *>(static_cast<void *>(static_cast<char *>(copied) + bytes));
     }
     resallocs.finish = resallocsDst;
 
-    RawVector<EAX_CarState *> &refCount = AsRawVector(*reinterpret_cast<RefCountList *>(entry + 0x50));
+    RawVector<EAX_CarState *> &refCount = AsRawVector(*static_cast<RefCountList *>(static_cast<void *>(entry + 0x50)));
     EAX_CarState **refCountEnd = refCount.finish;
     EAX_CarState **refCountSrc = refCount.finish;
     EAX_CarState **refCountDst = refCount.start;
     if (refCountEnd != refCountSrc) {
-        size_t bytes = reinterpret_cast<char *>(refCountEnd) - reinterpret_cast<char *>(refCountSrc);
+        size_t bytes = static_cast<char *>(static_cast<void *>(refCountEnd)) -
+                       static_cast<char *>(static_cast<void *>(refCountSrc));
         void *copied = memmove(refCountDst, refCountSrc, bytes);
-        refCountDst = reinterpret_cast<EAX_CarState **>(reinterpret_cast<char *>(copied) + bytes);
+        refCountDst = static_cast<EAX_CarState **>(static_cast<void *>(static_cast<char *>(copied) + bytes));
     }
     refCount.finish = refCountDst;
 
-    *reinterpret_cast<int *>(entry + 0x64) = 0;
-    *reinterpret_cast<int *>(entry + 0x60) = 0;
+    *static_cast<int *>(static_cast<void *>(entry + 0x64)) = 0;
+    *static_cast<int *>(static_cast<void *>(entry + 0x60)) = 0;
 
-    char *assetBytes = reinterpret_cast<char *>(&asset);
-    *reinterpret_cast<int *>(entry + 0x0) = *reinterpret_cast<int *>(assetBytes + 0x0);
-    *reinterpret_cast<unsigned int *>(entry + 0x8) = *reinterpret_cast<unsigned int *>(assetBytes + 0x8);
-    *reinterpret_cast<unsigned int *>(entry + 0xC) = *reinterpret_cast<unsigned int *>(assetBytes + 0xC);
-    *reinterpret_cast<unsigned int *>(entry + 0x10) = *reinterpret_cast<unsigned int *>(assetBytes + 0x10);
-    *reinterpret_cast<const char **>(entry + 0x14) = *reinterpret_cast<const char **>(assetBytes + 0x14);
-    *reinterpret_cast<int *>(entry + 0x18) = *reinterpret_cast<int *>(assetBytes + 0x18);
-    *reinterpret_cast<unsigned int *>(entry + 0x1C) = *reinterpret_cast<unsigned int *>(assetBytes + 0x1C);
+    char *assetBytes = static_cast<char *>(static_cast<void *>(&asset));
+    *static_cast<int *>(static_cast<void *>(entry + 0x0)) = *static_cast<int *>(static_cast<void *>(assetBytes + 0x0));
+    *static_cast<unsigned int *>(static_cast<void *>(entry + 0x8)) =
+        *static_cast<unsigned int *>(static_cast<void *>(assetBytes + 0x8));
+    *static_cast<unsigned int *>(static_cast<void *>(entry + 0xC)) =
+        *static_cast<unsigned int *>(static_cast<void *>(assetBytes + 0xC));
+    *static_cast<unsigned int *>(static_cast<void *>(entry + 0x10)) =
+        *static_cast<unsigned int *>(static_cast<void *>(assetBytes + 0x10));
+    *static_cast<const char **>(static_cast<void *>(entry + 0x14)) =
+        *static_cast<const char **>(static_cast<void *>(assetBytes + 0x14));
+    *static_cast<int *>(static_cast<void *>(entry + 0x18)) = *static_cast<int *>(static_cast<void *>(assetBytes + 0x18));
+    *static_cast<unsigned int *>(static_cast<void *>(entry + 0x1C)) =
+        *static_cast<unsigned int *>(static_cast<void *>(assetBytes + 0x1C));
 
     m_nEndOfList = index + 1;
     return index;
@@ -1264,19 +1275,20 @@ void EAXAemsManager::QueueFileLoad(stSndAssetQueue &queueitem, eBANK_SLOT_TYPE S
         if (SlotType != eBANK_SLOT_NONE) {
             stBankSlot *slot = nullptr;
             if (SlotType == eBANK_SLOT_PATHFINDER) {
-                slot = reinterpret_cast<BankSlotSystem *>(&m_pPfSlotHead)->GetFreeSlot(SlotType);
+                slot = static_cast<BankSlotSystem *>(static_cast<void *>(&m_pPfSlotHead))->GetFreeSlot(SlotType);
             } else {
-                slot = reinterpret_cast<BankSlotSystem *>(&m_pMainSlotHead)->GetFreeSlot(SlotType);
+                slot = static_cast<BankSlotSystem *>(static_cast<void *>(&m_pMainSlotHead))->GetFreeSlot(SlotType);
             }
             if (slot != nullptr) {
                 slot->pAssetParams = &g_SndAssetList[bankIndex];
-                *reinterpret_cast<stBankSlot **>(reinterpret_cast<char *>(&g_SndAssetList[bankIndex]) + 0x24) = slot;
+                *static_cast<stBankSlot **>(
+                    static_cast<void *>(static_cast<char *>(static_cast<void *>(&g_SndAssetList[bankIndex])) + 0x24)) = slot;
             }
         }
     }
 
     ListNodeQueue *head = static_cast<ListNodeQueue *>(m_pQueuedFileHead);
-    ListNodeQueue *node = reinterpret_cast<ListNodeQueue *>(gFastMem.Alloc(0x30, nullptr));
+    ListNodeQueue *node = static_cast<ListNodeQueue *>(gFastMem.Alloc(0x30, nullptr));
     if (node == nullptr || head == nullptr) {
         return;
     }
@@ -1291,7 +1303,8 @@ void EAXAemsManager::ResolvePendingAsyncLoads() {}
 
 void *EAXAemsManager::GetCallbackEventSys() {
     int offset = m_nCallbackEvtSys << 2;
-    return *reinterpret_cast<void **>(reinterpret_cast<char *>(m_pEvtSystems_start) + offset);
+    return *static_cast<void **>(
+        static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pEvtSystems_start)) + offset));
 }
 
 void SubscribeEventSys() {
@@ -1346,24 +1359,25 @@ void EAXAemsManager::CompleteAsyncLoad() {
     if ((m_pCurrentlyLoading = gAEMSMgr.m_pAsyncLoadSDLP) == nullptr) {
         m_pCurrentlyLoading = gAEMSMgr.m_pCurLoadSDLP;
     }
-    *reinterpret_cast<int *>(reinterpret_cast<char *>(m_pCurrentlyLoading) + 0x38) = 1;
+    *static_cast<int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pCurrentlyLoading)) + 0x38)) = 1;
     SNDmemlimits(-1, gAEMSMgr.m_SPUMainAllocsEnd);
-    *reinterpret_cast<Timer *>(reinterpret_cast<char *>(m_pCurrentlyLoading) + 0x64) = WorldTimer;
+    *static_cast<Timer *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pCurrentlyLoading)) + 0x64)) =
+        WorldTimer;
     delta = (WorldTimer - *reinterpret_cast<Timer *>(&StartBankLoadTicks)).GetSeconds();
 }
 
 void EAXAemsManager::ResetBankLoadParams() {
     m_nCurLoadedBankIndex = -1;
     m_nEndOfList = 0;
-    reinterpret_cast<SndAssetQueue *>(&m_pQueuedFileHead)->clear();
+    static_cast<SndAssetQueue *>(static_cast<void *>(&m_pQueuedFileHead))->clear();
     DestroySlots(true);
 }
 
 void EAXAemsManager::DestroySlots(bool bDoPFSlot) {
     if (bDoPFSlot == true) {
-        reinterpret_cast<BankSlotSystem *>(&m_pPfSlotHead)->DestroySlots();
+        static_cast<BankSlotSystem *>(static_cast<void *>(&m_pPfSlotHead))->DestroySlots();
     }
-    reinterpret_cast<BankSlotSystem *>(&m_pMainSlotHead)->DestroySlots();
+    static_cast<BankSlotSystem *>(static_cast<void *>(&m_pMainSlotHead))->DestroySlots();
     m_SPUMainAllocsEnd = m_SPU_UpperAddress;
     SNDmemlimits(-1, m_SPU_UpperAddress);
     bMemSet(EAXAemsManager::m_RequiredSlots, 0, 0x10);
@@ -1375,10 +1389,10 @@ int EAXAemsManager::IsAssetInList(Attrib::StringKey filename) {
     if (n < nEndOfList) {
         do {
             bool bAssetMatch = false;
-            if (*reinterpret_cast<unsigned int *>(&filename) ==
-                *reinterpret_cast<unsigned int *>(reinterpret_cast<char *>(&g_SndAssetList[n]) + 0x8)) {
-                bAssetMatch = *reinterpret_cast<unsigned int *>(reinterpret_cast<char *>(&filename) + 0x4) ==
-                              *reinterpret_cast<unsigned int *>(reinterpret_cast<char *>(&g_SndAssetList[n]) + 0xC);
+            if (*static_cast<unsigned int *>(static_cast<void *>(&filename)) ==
+                *static_cast<unsigned int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(&g_SndAssetList[n])) + 0x8))) {
+                bAssetMatch = *static_cast<unsigned int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(&filename)) + 0x4)) ==
+                              *static_cast<unsigned int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(&g_SndAssetList[n])) + 0xC));
             }
             if (bAssetMatch) {
                 return n;
@@ -1393,7 +1407,7 @@ int EAXAemsManager::IsAssetLoaded(Attrib::StringKey filename) {
     int n = IsAssetInList(filename);
     int nLoadedAsset = -1;
     if (n != -1) {
-        if (*reinterpret_cast<int *>(reinterpret_cast<char *>(&g_SndAssetList[n]) + 0x3C) != 0) {
+        if (*static_cast<int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(&g_SndAssetList[n])) + 0x3C)) != 0) {
             nLoadedAsset = n;
         }
     }
@@ -1410,7 +1424,8 @@ void EAXAemsManager::UnloadSndData(Attrib::StringKey filename) {
 
 void EAXAemsManager::AddAemsBank() {
     stSndDataLoadParams *pCurLoad = gAEMSMgr.m_pCurLoadSDLP;
-    stBankSlot *pBankSlot = *reinterpret_cast<stBankSlot **>(reinterpret_cast<char *>(pCurLoad) + 0x24);
+    stBankSlot *pBankSlot =
+        *static_cast<stBankSlot **>(static_cast<void *>(static_cast<char *>(static_cast<void *>(pCurLoad)) + 0x24));
     if (pBankSlot == nullptr) {
         SNDmemlimits(-1, gAEMSMgr.m_SPUMainAllocsEnd);
     } else {

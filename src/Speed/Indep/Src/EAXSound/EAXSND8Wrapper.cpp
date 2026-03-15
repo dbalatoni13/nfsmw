@@ -98,7 +98,7 @@ bool EAXSND8Wrapper::Initialize() {
     }
 
     pCsisSlotPools[0] = static_cast<SlotPool *>(bNewSlotPool(nCsisSlotPoolSizes[0], 0x100, "AUD:Csis SlotPools", AudioMemoryPool));
-    Csis::System::SetAllocator(reinterpret_cast<EA::Allocator::ICoreAllocator *>(&g_CSISCoreAllocator));
+    Csis::System::SetAllocator(static_cast<EA::Allocator::ICoreAllocator *>(static_cast<void *>(&g_CSISCoreAllocator)));
     Csis::System::Init();
     Snd::System::VectorToCsisMutex();
     Snd::System::VectorToReal6();

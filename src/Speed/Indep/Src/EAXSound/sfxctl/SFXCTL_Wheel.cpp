@@ -39,26 +39,32 @@ void SFXCTL_Wheel::UpdateParams(float t) {
 bVector3 *SFXCTL_Wheel::GetWheelPos(int wheelID, int numtires) {
     if (numtires == 2) {
         if (wheelID == 0) {
-            return reinterpret_cast< bVector3 * >(reinterpret_cast< char * >(this) + 0x28);
+            return static_cast<bVector3 *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(this)) + 0x28));
         }
-        return reinterpret_cast< bVector3 * >(reinterpret_cast< char * >(this) + 0x34);
+        return static_cast<bVector3 *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(this)) + 0x34));
     }
     if (numtires == 1) {
-        return reinterpret_cast< bVector3 * >(reinterpret_cast< char * >(this) + 0x28);
+        return static_cast<bVector3 *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(this)) + 0x28));
     }
-    return reinterpret_cast< bVector3 * >(reinterpret_cast< char * >(this) + 0x28);
+    return static_cast<bVector3 *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(this)) + 0x28));
 }
 
 void SFXCTL_Wheel::GenerateWheelPosition() {}
 
 void SFXCTL_Wheel::GenerateTerrainTypes() {
     EAX_CarState *car =
-        m_pStateBase != nullptr ? *reinterpret_cast<EAX_CarState **>(reinterpret_cast<char *>(m_pStateBase) + 0x34) : nullptr;
+        m_pStateBase != nullptr
+            ? *static_cast<EAX_CarState **>(static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pStateBase)) + 0x34))
+            : nullptr;
 
-    const Attrib::Collection *col0 = *reinterpret_cast<Attrib::Collection **>(reinterpret_cast<char *>(car) + 0xC0);
-    const Attrib::Collection *col1 = *reinterpret_cast<Attrib::Collection **>(reinterpret_cast<char *>(car) + 0x104);
-    const Attrib::Collection *col2 = *reinterpret_cast<Attrib::Collection **>(reinterpret_cast<char *>(car) + 0x148);
-    const Attrib::Collection *col3 = *reinterpret_cast<Attrib::Collection **>(reinterpret_cast<char *>(car) + 0x18C);
+    const Attrib::Collection *col0 =
+        *static_cast<Attrib::Collection **>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0xC0));
+    const Attrib::Collection *col1 =
+        *static_cast<Attrib::Collection **>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0x104));
+    const Attrib::Collection *col2 =
+        *static_cast<Attrib::Collection **>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0x148));
+    const Attrib::Collection *col3 =
+        *static_cast<Attrib::Collection **>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0x18C));
 
     Attrib::Instance FLTerrainType(col0, 0, nullptr);
     FLTerrainType.SetDefaultLayout(0xFC);
@@ -88,8 +94,8 @@ void SFXCTL_Wheel::GenerateTerrainTypes() {
     PrevRightSideTerrain.Attrib::Instance::operator=(RightSideTerrain);
     PrevLeftSideTerrain.Attrib::Instance::operator=(LeftSideTerrain);
 
-    if (*reinterpret_cast<unsigned char *>(reinterpret_cast<char *>(car) + 0x12C) == 2 ||
-        *reinterpret_cast<unsigned char *>(reinterpret_cast<char *>(car) + 0x170) == 2) {
+    if (*static_cast<unsigned char *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0x12C)) == 2 ||
+        *static_cast<unsigned char *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0x170)) == 2) {
         const Attrib::Collection *blownTerrain =
             Attrib::FindCollection(Attrib::Gen::simsurface::ClassKey(), 0x8EE645B3);
         Attrib::Instance blown(blownTerrain, 0, nullptr);
@@ -99,8 +105,8 @@ void SFXCTL_Wheel::GenerateTerrainTypes() {
         RightSideTerrain.Attrib::Instance::operator=(CurRight);
     }
 
-    if (*reinterpret_cast<unsigned char *>(reinterpret_cast<char *>(car) + 0xE8) == 2 ||
-        *reinterpret_cast<unsigned char *>(reinterpret_cast<char *>(car) + 0x1B4) == 2) {
+    if (*static_cast<unsigned char *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0xE8)) == 2 ||
+        *static_cast<unsigned char *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0x1B4)) == 2) {
         const Attrib::Collection *blownTerrain =
             Attrib::FindCollection(Attrib::Gen::simsurface::ClassKey(), 0x8EE645B3);
         Attrib::Instance blown(blownTerrain, 0, nullptr);
@@ -115,28 +121,29 @@ void SFXCTL_Wheel::UpdateTireParams() {
     GenerateWheelPosition();
     GenerateTerrainTypes();
 
-    EAX_CarState *car = *reinterpret_cast<EAX_CarState **>(reinterpret_cast<char *>(m_pStateBase) + 0x34);
+    EAX_CarState *car =
+        *static_cast<EAX_CarState **>(static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pStateBase)) + 0x34));
 
-    int *leftSideTouchingGround = reinterpret_cast<int *>(reinterpret_cast<char *>(this) + 0xe8);
-    int *rightSideTouchingGround = reinterpret_cast<int *>(reinterpret_cast<char *>(this) + 0xec);
+    int *leftSideTouchingGround = static_cast<int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(this)) + 0xe8));
+    int *rightSideTouchingGround = static_cast<int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(this)) + 0xec));
 
     *leftSideTouchingGround = 1;
-    if (*reinterpret_cast<int *>(reinterpret_cast<char *>(car) + 0xb8) == 0 &&
-        *reinterpret_cast<int *>(reinterpret_cast<char *>(car) + 0xb8 + 3 * 0x44) == 0) {
+    if (*static_cast<int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0xb8)) == 0 &&
+        *static_cast<int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0xb8 + 3 * 0x44)) == 0) {
         *leftSideTouchingGround = 0;
     }
 
     *rightSideTouchingGround = 1;
-    if (*reinterpret_cast<int *>(reinterpret_cast<char *>(car) + 0xb8 + 0x44) == 0 &&
-        *reinterpret_cast<int *>(reinterpret_cast<char *>(car) + 0xb8 + 2 * 0x44) == 0) {
+    if (*static_cast<int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0xb8 + 0x44)) == 0 &&
+        *static_cast<int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0xb8 + 2 * 0x44)) == 0) {
         *rightSideTouchingGround = 0;
     }
 
-    bVector2 *normWheelSlip = reinterpret_cast<bVector2 *>(reinterpret_cast<char *>(this) + 0x28);
-    bVector2 *totalRight = reinterpret_cast<bVector2 *>(reinterpret_cast<char *>(this) + 0x48);
-    bVector2 *totalLeft = reinterpret_cast<bVector2 *>(reinterpret_cast<char *>(this) + 0x50);
-    float *wheelTractionMag = reinterpret_cast<float *>(reinterpret_cast<char *>(this) + 0x58);
-    float *wheelLoad = reinterpret_cast<float *>(reinterpret_cast<char *>(this) + 0x68);
+    bVector2 *normWheelSlip = static_cast<bVector2 *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(this)) + 0x28));
+    bVector2 *totalRight = static_cast<bVector2 *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(this)) + 0x48));
+    bVector2 *totalLeft = static_cast<bVector2 *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(this)) + 0x50));
+    float *wheelTractionMag = static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(this)) + 0x58));
+    float *wheelLoad = static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(this)) + 0x68));
     bVector2 wheelslip[4];
 
     totalRight->x = 0.0f;
@@ -146,18 +153,20 @@ void SFXCTL_Wheel::UpdateTireParams() {
 
     for (int i = 0; i <= 3; i++) {
         const int wheelOffset = i * 0x44;
-        wheelTractionMag[i] = bAbs(*reinterpret_cast<float *>(reinterpret_cast<char *>(car) + 0xb4 + wheelOffset));
+        wheelTractionMag[i] = bAbs(*static_cast<float *>(
+            static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0xb4 + wheelOffset)));
 
-        wheelslip[i].x = *reinterpret_cast<float *>(reinterpret_cast<char *>(car) + 0xa8 + wheelOffset);
-        wheelslip[i].y = *reinterpret_cast<float *>(reinterpret_cast<char *>(car) + 0xac + wheelOffset);
-        wheelLoad[i] = g_WheelLoadSlope.GetValue(*reinterpret_cast<float *>(reinterpret_cast<char *>(car) + 0xe4 + wheelOffset));
+        wheelslip[i].x = *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0xa8 + wheelOffset));
+        wheelslip[i].y = *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0xac + wheelOffset));
+        wheelLoad[i] = g_WheelLoadSlope.GetValue(
+            *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0xe4 + wheelOffset)));
 
         if (static_cast<unsigned int>(i - 1) < 2U) {
-            if (*reinterpret_cast<int *>(reinterpret_cast<char *>(car) + 0xb8 + wheelOffset) != 0) {
+            if (*static_cast<int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0xb8 + wheelOffset)) != 0) {
                 totalRight->x += wheelslip[i].x;
                 totalRight->y += wheelslip[i].y;
             }
-        } else if (*reinterpret_cast<int *>(reinterpret_cast<char *>(car) + 0xb8 + wheelOffset) != 0) {
+        } else if (*static_cast<int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0xb8 + wheelOffset)) != 0) {
             totalLeft->x += wheelslip[i].x;
             totalLeft->y += wheelslip[i].y;
         }
@@ -180,7 +189,8 @@ void SFXCTL_Wheel::UpdateTireParams() {
         }
         normWheelSlip[i].y = slipY;
 
-        if (PRINT_SKID_FX_DEBUG != 0 && *reinterpret_cast<int *>(reinterpret_cast<char *>(car) + 0x210) == 0) {
+        if (PRINT_SKID_FX_DEBUG != 0 &&
+            *static_cast<int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0x210)) == 0) {
             int x = 0;
             int y = 0;
 

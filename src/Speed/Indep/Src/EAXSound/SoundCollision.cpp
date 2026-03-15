@@ -153,9 +153,9 @@ CollisionEvent::CollisionEvent(const AudioEventParams &aep, bool impact)
         if (((Description & 6) != 6) || Intensity > 9) {
             Attrib::Instance attributes(mAttributes);
             if (impact) {
-                InitAsImpact(*reinterpret_cast<const Attrib::Gen::audioimpact *>(&attributes));
+                InitAsImpact(*static_cast<const Attrib::Gen::audioimpact *>(static_cast<const void *>(&attributes)));
             } else {
-                InitAsScrape(*reinterpret_cast<const Attrib::Gen::audioscrape *>(&attributes));
+                InitAsScrape(*static_cast<const Attrib::Gen::audioscrape *>(static_cast<const void *>(&attributes)));
             }
         }
     }

@@ -552,11 +552,11 @@ bool g_EAXIsPaused() {
 
 void g_LoadSndAsset(Attrib::StringKey filename, eSNDDATAPATH path, eSNDDATATYPE type) {
     char assetBytes[0x1C];
-    *reinterpret_cast<int *>(assetBytes + 0x0) = static_cast<int>(type);
-    *reinterpret_cast<int *>(assetBytes + 0x4) = static_cast<int>(path);
-    *reinterpret_cast<Attrib::StringKey *>(assetBytes + 0x8) = filename;
-    *reinterpret_cast<bool *>(assetBytes + 0x18) = false;
-    gAEMSMgr.AddBankListing(*reinterpret_cast<stAssetDescription *>(assetBytes));
+    *static_cast<int *>(static_cast<void *>(assetBytes + 0x0)) = static_cast<int>(type);
+    *static_cast<int *>(static_cast<void *>(assetBytes + 0x4)) = static_cast<int>(path);
+    *static_cast<Attrib::StringKey *>(static_cast<void *>(assetBytes + 0x8)) = filename;
+    *static_cast<bool *>(static_cast<void *>(assetBytes + 0x18)) = false;
+    gAEMSMgr.AddBankListing(*static_cast<stAssetDescription *>(static_cast<void *>(assetBytes)));
 }
 
 void EAXSound::START_321Countdown() {

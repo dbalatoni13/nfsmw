@@ -107,7 +107,8 @@ void SFXCTL_HybridMotor::UpdateDualMixEng(float t) {
     float trqWeight = TrqThreshold.GetValue(m_pEngineCtl->Trq.GetValue());
 
     Attrib::Gen::engineaudio *engineInfo =
-        reinterpret_cast<Attrib::Gen::engineaudio *>(reinterpret_cast<char *>(m_pEAXCar) + 0xC4);
+        static_cast<Attrib::Gen::engineaudio *>(
+            static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pEAXCar)) + 0xC4));
 
     float deltaRPM = bAbs(m_AvgDeltaRPM.GetValue() + 10.0f);
     float accelThresholdRange = engineInfo->AccelDeltaRPMThreshold();
@@ -131,12 +132,16 @@ void SFXCTL_HybridMotor::UpdateDualMixEng(float t) {
     }
 
     SFXCTL_Physics *physicsCtl =
-        *reinterpret_cast<SFXCTL_Physics **>(reinterpret_cast<char *>(m_pEAXCar) + 0x5C);
-    if (*reinterpret_cast<int *>(reinterpret_cast<char *>(physicsCtl) + 0xB4) == 0) {
+        *static_cast<SFXCTL_Physics **>(static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pEAXCar)) + 0x5C));
+    if (*static_cast<int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(physicsCtl)) + 0xB4)) == 0) {
         bool bDisableSmooth = false;
         EAX_CarState *stateCar =
-            m_pStateBase != nullptr ? *reinterpret_cast<EAX_CarState **>(reinterpret_cast<char *>(m_pStateBase) + 0x34) : nullptr;
-        int gearShiftFlag = stateCar != nullptr ? *reinterpret_cast<int *>(reinterpret_cast<char *>(stateCar) + 0x1D8) : 0;
+            m_pStateBase != nullptr
+                ? *static_cast<EAX_CarState **>(static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pStateBase)) + 0x34))
+                : nullptr;
+        int gearShiftFlag = stateCar != nullptr
+                                ? *static_cast<int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(stateCar)) + 0x1D8))
+                                : 0;
         if (gearShiftFlag == 0 && m_pShiftingCtl->eShiftState == SHFT_NONE) {
             int accelState = m_pAccelTranCtl->eAccelTransFxState;
             if (accelState != 0) {
@@ -169,7 +174,7 @@ void SFXCTL_HybridMotor::UpdateDualMixEng(float t) {
         lowPassCutoff = engineInfo->GINSU_LowPassCutoff();
     }
 
-    *reinterpret_cast<int *>(&m_bAEMSLPF) = 0;
+    *static_cast<int *>(static_cast<void *>(&m_bAEMSLPF)) = 0;
     int targetCutoff = static_cast<int>((static_cast<float>(25000 - lowPassCutoff)) * trqWeight + static_cast<float>(lowPassCutoff));
     float targetAems = (accelAemsMix - decelAemsMix) * trqWeight + decelAemsMix;
     float targetDecelGinsu = (0.0f - decelGinsuMix) * trqWeight + decelGinsuMix;
@@ -223,7 +228,8 @@ void SFXCTL_HybridMotor::UpdateSingleMixEng(float t) {
     float trqWeight = TrqThreshold.GetValue(trqValue);
 
     Attrib::Gen::engineaudio *engineInfo =
-        reinterpret_cast<Attrib::Gen::engineaudio *>(reinterpret_cast<char *>(m_pEAXCar) + 0xC4);
+        static_cast<Attrib::Gen::engineaudio *>(
+            static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pEAXCar)) + 0xC4));
 
     float deltaRPM = m_AvgDeltaRPM.GetValue() + 10.0f;
     float accelThresholdRange = engineInfo->AccelDeltaRPMThreshold();
@@ -247,8 +253,12 @@ void SFXCTL_HybridMotor::UpdateSingleMixEng(float t) {
     PercentOfDecelThreshold = decelPct;
 
     EAX_CarState *stateCar =
-        m_pStateBase != nullptr ? *reinterpret_cast<EAX_CarState **>(reinterpret_cast<char *>(m_pStateBase) + 0x34) : nullptr;
-    int gearShiftFlag = stateCar != nullptr ? *reinterpret_cast<int *>(reinterpret_cast<char *>(stateCar) + 0x1D8) : 0;
+        m_pStateBase != nullptr
+            ? *static_cast<EAX_CarState **>(static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pStateBase)) + 0x34))
+            : nullptr;
+    int gearShiftFlag = stateCar != nullptr
+                            ? *static_cast<int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(stateCar)) + 0x1D8))
+                            : 0;
     SHIFT_STAGE shiftState = m_pShiftingCtl->eShiftState;
 
     if (gearShiftFlag == 0 && shiftState == SHFT_NONE) {
@@ -263,7 +273,7 @@ void SFXCTL_HybridMotor::UpdateSingleMixEng(float t) {
                     bDoSmooth = false;
                 }
             } else if (shiftState != SHFT_DOWN_ENGAGING_RISE && shiftState == SHFT_DOWN_ENGAGING_REATTACH &&
-                       *reinterpret_cast<bool *>(reinterpret_cast<char *>(m_pEAXCar) + 0x68)) {
+                       *static_cast<bool *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pEAXCar)) + 0x68))) {
                 bDoSmooth = false;
             }
         }
@@ -343,11 +353,15 @@ void SFXCTL_HybridMotor::UpdateMixerOutputs() {
     float PercentOfThreshold;
     int output;
 
-    char *physCar = reinterpret_cast< char * >(*reinterpret_cast< void ** >(reinterpret_cast< char * >(m_pStateBase) + 0x34));
+    char *physCar = static_cast<char *>(static_cast<void *>(
+        *static_cast<void **>(static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pStateBase)) + 0x34))));
     float speedMph =
-        bSqrt(*reinterpret_cast< float * >(physCar + 0x54) * *reinterpret_cast< float * >(physCar + 0x54) +
-              *reinterpret_cast< float * >(physCar + 0x58) * *reinterpret_cast< float * >(physCar + 0x58) +
-              *reinterpret_cast< float * >(physCar + 0x5C) * *reinterpret_cast< float * >(physCar + 0x5C)) *
+        bSqrt(*static_cast<float *>(static_cast<void *>(physCar + 0x54)) *
+                  *static_cast<float *>(static_cast<void *>(physCar + 0x54)) +
+              *static_cast<float *>(static_cast<void *>(physCar + 0x58)) *
+                  *static_cast<float *>(static_cast<void *>(physCar + 0x58)) +
+              *static_cast<float *>(static_cast<void *>(physCar + 0x5C)) *
+                  *static_cast<float *>(static_cast<void *>(physCar + 0x5C))) *
         2.23699f;
 
     if (speedMph <= 30.0f || 30.0f <= bAbs(m_AvgDeltaRPM.GetValue())) {
@@ -359,7 +373,7 @@ void SFXCTL_HybridMotor::UpdateMixerOutputs() {
     if (bOutputOn) {
         if (SteadyFrameCnt == 0) {
             SteadyFrameCnt = static_cast< unsigned short >(g_pEAXSound->Random(0x96) + 0x3C);
-            *reinterpret_cast< int * >(reinterpret_cast< char * >(m_pEngineCtl) + 0x14C) = 1;
+            *static_cast<int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pEngineCtl)) + 0x14C)) = 1;
         }
         SteadyFrameCnt = static_cast< unsigned short >(SteadyFrameCnt - 1);
     } else {
@@ -372,13 +386,14 @@ void SFXCTL_HybridMotor::UpdateMixerOutputs() {
 
     AvgDeltaRPM = m_AvgDeltaRPM.GetLastRecordedValue();
     float accelThreshold =
-        *reinterpret_cast< float * >(*reinterpret_cast< char ** >(reinterpret_cast< char * >(m_pEAXCar) + 0xCC) + 0x78);
+        *static_cast<float *>(static_cast<void *>(
+            *static_cast<char **>(static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pEAXCar)) + 0xCC)) + 0x78));
     PercentOfThreshold = 1.0f - (accelThreshold - bAbs(AvgDeltaRPM)) / accelThreshold;
     PercentOfThreshold = bClamp(PercentOfThreshold, 0.0f, 1.0f);
     output = smooth(outputs[1], static_cast< int >(PercentOfThreshold * 32767.0f), 3000);
 
-    if (*reinterpret_cast< int * >(reinterpret_cast< char * >(m_pEngineCtl) + 0xD0) == 0 &&
-        *reinterpret_cast< int * >(reinterpret_cast< char * >(m_pEngineCtl) + 0xCC) != 0) {
+    if (*static_cast<int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pEngineCtl)) + 0xD0)) == 0 &&
+        *static_cast<int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pEngineCtl)) + 0xCC)) != 0) {
         mPrevDeltaRPM = output / 2;
     }
 
@@ -389,7 +404,7 @@ void SFXCTL_HybridMotor::UpdateMixerOutputs() {
     if (shiftActive == 0) {
         int wheelsOnGround = 0;
         for (int i = 0; i < 4; i++) {
-            if (*reinterpret_cast< int * >(physCar + 0xB8 + i * 0x44) != 0) {
+            if (*static_cast<int *>(static_cast<void *>(physCar + 0xB8 + i * 0x44)) != 0) {
                 wheelsOnGround++;
             }
         }
@@ -399,7 +414,7 @@ void SFXCTL_HybridMotor::UpdateMixerOutputs() {
         }
     }
 
-    if (*reinterpret_cast< int * >(reinterpret_cast< char * >(m_pEngineCtl) + 0xCC) != 0) {
+    if (*static_cast<int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pEngineCtl)) + 0xCC)) != 0) {
         outputs[1] = mPrevDeltaRPM;
     }
 }

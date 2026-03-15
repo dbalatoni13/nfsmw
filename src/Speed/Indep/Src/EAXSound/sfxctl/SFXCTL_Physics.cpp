@@ -155,7 +155,7 @@ void SFXCTL_Physics::UpdateParams(float t) {
     SFXCTL::UpdateParams(t);
 
     m_LastGear = m_CurGear;
-    EAXCar_PhysicsView *carOwner = reinterpret_cast<EAXCar_PhysicsView *>(m_pEAXCar);
+    EAXCar_PhysicsView *carOwner = static_cast<EAXCar_PhysicsView *>(static_cast<void *>(m_pEAXCar));
     EAX_CarState_PhysicsView *car = carOwner->m_pCar;
 
     m_CurGear = static_cast< Gear >(car->mDriveline.mGear);
@@ -193,10 +193,12 @@ void SFXCTL_Physics::UpdateParams(float t) {
 
     float rpm = car->mEngine.mRPMPct;
     if (m_pStateBase->m_eStateType == eMM_PLAYERCAR) {
-        const Attrib::Gen::engineaudio *engineInfo = reinterpret_cast<const Attrib::Gen::engineaudio *>(carOwner->mEngineInfo);
-        const bMatrix4 *curve = reinterpret_cast<const bMatrix4 *>(engineInfo->GetAttributePointer(0x07E3C833, 0));
+        const Attrib::Gen::engineaudio *engineInfo =
+            static_cast<const Attrib::Gen::engineaudio *>(static_cast<const void *>(carOwner->mEngineInfo));
+        const bMatrix4 *curve = static_cast<const bMatrix4 *>(
+            static_cast<const void *>(engineInfo->GetAttributePointer(0x07E3C833, 0)));
         if (curve == nullptr) {
-            curve = reinterpret_cast<const bMatrix4 *>(Attrib::DefaultDataArea(sizeof(bMatrix4)));
+            curve = static_cast<const bMatrix4 *>(static_cast<const void *>(Attrib::DefaultDataArea(sizeof(bMatrix4))));
         }
         mRPMCurve = const_cast<bMatrix4 *>(curve);
         if (curve != nullptr) {
@@ -221,18 +223,20 @@ void SFXCTL_Physics::UpdateParams(float t) {
     carOwner->PhysTRQ = PhysicsTRQ;
     carOwner->PhysRPM = PhysicsRPM;
     carOwner->fTrottle = m_fThrottle;
-    carOwner->bIsAccelerating = static_cast< int >(static_cast< float >(*reinterpret_cast<int *>(&IsAccelerating)) != 0.0f);
+    carOwner->bIsAccelerating = static_cast<int>(static_cast<float>(*static_cast<int *>(static_cast<void *>(&IsAccelerating))) != 0.0f);
     carOwner->CurGear = static_cast< int >(m_CurGear);
 }
 
 void SFXCTL_Physics::UpdateMixerOutputs() {
     int *outputs = GetOutputBlockPtr();
     EAX_CarState *pCar =
-        m_pEAXCar != nullptr ? *reinterpret_cast<EAX_CarState **>(reinterpret_cast<char *>(m_pEAXCar) + 0x34) : nullptr;
+        m_pEAXCar != nullptr
+            ? *static_cast<EAX_CarState **>(static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pEAXCar)) + 0x34))
+            : nullptr;
 
-    float fVelY = *reinterpret_cast<float *>(reinterpret_cast<char *>(pCar) + 0x58);
-    float fVelX = *reinterpret_cast<float *>(reinterpret_cast<char *>(pCar) + 0x54);
-    float fVelZ = *reinterpret_cast<float *>(reinterpret_cast<char *>(pCar) + 0x5C);
+    float fVelY = *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(pCar)) + 0x58));
+    float fVelX = *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(pCar)) + 0x54));
+    float fVelZ = *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(pCar)) + 0x5C));
     float fVelLenSq = fVelZ * fVelZ + fVelX * fVelX + fVelY * fVelY;
     float fVelLen = 0.0f;
     if (fVelLenSq > 0.0f) {
@@ -249,10 +253,12 @@ void SFXCTL_Physics::UpdateMixerOutputs() {
     }
     outputs[0] = iClamp;
 
-    pCar = m_pEAXCar != nullptr ? *reinterpret_cast<EAX_CarState **>(reinterpret_cast<char *>(m_pEAXCar) + 0x34) : nullptr;
-    fVelY = *reinterpret_cast<float *>(reinterpret_cast<char *>(pCar) + 0x58);
-    fVelX = *reinterpret_cast<float *>(reinterpret_cast<char *>(pCar) + 0x54);
-    fVelZ = *reinterpret_cast<float *>(reinterpret_cast<char *>(pCar) + 0x5C);
+    pCar = m_pEAXCar != nullptr
+               ? *static_cast<EAX_CarState **>(static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pEAXCar)) + 0x34))
+               : nullptr;
+    fVelY = *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(pCar)) + 0x58));
+    fVelX = *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(pCar)) + 0x54));
+    fVelZ = *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(pCar)) + 0x5C));
     fVelLenSq = fVelZ * fVelZ + fVelX * fVelX + fVelY * fVelY;
     fVelLen = 0.0f;
     if (fVelLenSq > 0.0f) {
@@ -269,10 +275,12 @@ void SFXCTL_Physics::UpdateMixerOutputs() {
     }
     outputs[1] = iClamp;
 
-    pCar = m_pEAXCar != nullptr ? *reinterpret_cast<EAX_CarState **>(reinterpret_cast<char *>(m_pEAXCar) + 0x34) : nullptr;
-    fVelY = *reinterpret_cast<float *>(reinterpret_cast<char *>(pCar) + 0x58);
-    fVelX = *reinterpret_cast<float *>(reinterpret_cast<char *>(pCar) + 0x54);
-    fVelZ = *reinterpret_cast<float *>(reinterpret_cast<char *>(pCar) + 0x5C);
+    pCar = m_pEAXCar != nullptr
+               ? *static_cast<EAX_CarState **>(static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pEAXCar)) + 0x34))
+               : nullptr;
+    fVelY = *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(pCar)) + 0x58));
+    fVelX = *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(pCar)) + 0x54));
+    fVelZ = *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(pCar)) + 0x5C));
     fVelLenSq = fVelZ * fVelZ + fVelX * fVelX + fVelY * fVelY;
     fVelLen = 0.0f;
     if (fVelLenSq > 0.0f) {
@@ -290,10 +298,12 @@ void SFXCTL_Physics::UpdateMixerOutputs() {
     outputs[2] = iClamp;
 
     float fMaxPhysRPM = 10000.0f;
-    pCar = m_pEAXCar != nullptr ? *reinterpret_cast<EAX_CarState **>(reinterpret_cast<char *>(m_pEAXCar) + 0x34) : nullptr;
-    fVelY = *reinterpret_cast<float *>(reinterpret_cast<char *>(pCar) + 0x58);
-    fVelX = *reinterpret_cast<float *>(reinterpret_cast<char *>(pCar) + 0x54);
-    fVelZ = *reinterpret_cast<float *>(reinterpret_cast<char *>(pCar) + 0x5C);
+    pCar = m_pEAXCar != nullptr
+               ? *static_cast<EAX_CarState **>(static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pEAXCar)) + 0x34))
+               : nullptr;
+    fVelY = *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(pCar)) + 0x58));
+    fVelX = *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(pCar)) + 0x54));
+    fVelZ = *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(pCar)) + 0x5C));
     fVelLenSq = fVelZ * fVelZ + fVelX * fVelX + fVelY * fVelY;
     fVelLen = 0.0f;
     if (fVelLenSq > 0.0f) {
@@ -310,7 +320,9 @@ void SFXCTL_Physics::UpdateMixerOutputs() {
     }
     outputs[3] = iClamp;
 
-    iOut = static_cast< int >((fMaxPhysRPM - *reinterpret_cast<float *>(reinterpret_cast<char *>(m_pEAXCar) + 0x64)) * 3.6407778f);
+    iOut = static_cast<int>(
+        (fMaxPhysRPM - *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pEAXCar)) + 0x64))) *
+        3.6407778f);
     iClamp = 0;
     if (iOut > 0) {
         iClamp = iOut;
@@ -321,7 +333,7 @@ void SFXCTL_Physics::UpdateMixerOutputs() {
     outputs[4] = iClamp;
 
     int iAccelOutput = 0;
-    if (*reinterpret_cast<int *>(&IsAccelerating) != 0) {
+    if (*static_cast<int *>(static_cast<void *>(&IsAccelerating)) != 0) {
         iAccelOutput = 0x7FFF;
     }
     outputs[10] = iAccelOutput;
@@ -329,14 +341,14 @@ void SFXCTL_Physics::UpdateMixerOutputs() {
     unsigned int wheelsOnGround = 0;
     int wheelIndex = 0;
     do {
-        if (*reinterpret_cast<int *>(reinterpret_cast<char *>(pCar) + 0xB8 + wheelIndex * 0x44) != 0) {
+        if (*static_cast<int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(pCar)) + 0xB8 + wheelIndex * 0x44)) != 0) {
             wheelsOnGround += 1;
         }
         wheelIndex += 1;
     } while (wheelIndex < 4);
     outputs[5] = static_cast< int >(static_cast<float>(wheelsOnGround) * 8191.75f);
 
-    int pov = *reinterpret_cast<int *>(reinterpret_cast<char *>(m_pEAXCar) + 0xB8);
+    int pov = *static_cast<int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pEAXCar)) + 0xB8));
     if (pov == 3) {
         pov = 0x7FFF;
     } else {
@@ -464,17 +476,20 @@ SndBase *SFXCTL_TruckPhysics::CreateObject(unsigned int allocator) {
 void SFXCTL_Physics::UpdateNIS(float TotalTime, float deltaTime) {
     NIS_ENGINE_REVING_STATE nisState = eCurNisRevingState;
     if (nisState == NIS_OFF) {
-        if (*reinterpret_cast<int *>(&PattternPlay) == 0) {
+        if (*static_cast<int *>(static_cast<void *>(&PattternPlay)) == 0) {
             eCurNisRevingState = NIS_OFF;
             TimeIntoRev = TotalTime;
             EAX_CarState *stateCar =
-                m_pStateBase != nullptr ? *reinterpret_cast<EAX_CarState **>(reinterpret_cast<char *>(m_pStateBase) + 0x34)
-                                        : nullptr;
-            CarID = stateCar != nullptr ? *reinterpret_cast<int *>(reinterpret_cast<char *>(stateCar) + 0x23C) : -1;
+                m_pStateBase != nullptr
+                    ? *static_cast<EAX_CarState **>(static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pStateBase)) + 0x34))
+                    : nullptr;
+            CarID = stateCar != nullptr
+                        ? *static_cast<int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(stateCar)) + 0x23C))
+                        : -1;
             if (CarID < 0) {
                 return;
             }
-            if (*reinterpret_cast<int *>(&g_pNISRevMgr->IsInitialized) == 0) {
+            if (*static_cast<int *>(static_cast<void *>(&g_pNISRevMgr->IsInitialized)) == 0) {
                 return;
             }
 
@@ -488,7 +503,7 @@ void SFXCTL_Physics::UpdateNIS(float TotalTime, float deltaTime) {
             nisState = NIS_PATTERN_ON;
             NumDataPoints = numPoints - 1;
         } else {
-            *reinterpret_cast<int *>(&PattternPlay) = 0;
+            *static_cast<int *>(static_cast<void *>(&PattternPlay)) = 0;
             pRevData = nullptr;
 
             EngRevDataPoint *patternData = RevPat5;
@@ -585,7 +600,8 @@ void SFXCTL_Physics::UpdateNIS(float TotalTime, float deltaTime) {
             eCurNisRevingState = NIS_MERGE_WITH_PHYSICS;
         }
     } else if (nisState == NIS_MERGE_WITH_PHYSICS) {
-        float carPhysRPM = *reinterpret_cast<float *>(reinterpret_cast<char *>(m_pEAXCar) + 0x64);
+        float carPhysRPM =
+            *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pEAXCar)) + 0x64));
         if (carPhysRPM < PhysicsRPM) {
             NISTRQ = 100.0f;
         } else {
@@ -618,11 +634,11 @@ void SFXCTL_Physics::UpdateNIS(float TotalTime, float deltaTime) {
     NISRPM = nisRpm;
     PhysicsTRQ = nisTrq;
     m_fThrottle = nisTrq;
-    *reinterpret_cast<float *>(reinterpret_cast<char *>(m_pEAXCar) + 0x60) = nisTrq;
-    *reinterpret_cast<int *>(&IsAccelerating) = (nisTrq > 30.0f);
-    *reinterpret_cast<float *>(reinterpret_cast<char *>(m_pEAXCar) + 0x64) = PhysicsRPM;
-    *reinterpret_cast<float *>(reinterpret_cast<char *>(m_pEAXCar) + 0x70) = m_fThrottle;
-    *reinterpret_cast<int *>(reinterpret_cast<char *>(m_pEAXCar) + 0x68) =
-        static_cast<int>(static_cast< float >(*reinterpret_cast<int *>(&IsAccelerating)) != 0.0f);
-    *reinterpret_cast<int *>(reinterpret_cast<char *>(m_pEAXCar) + 0x6C) = static_cast< int >(m_CurGear);
+    *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pEAXCar)) + 0x60)) = nisTrq;
+    *static_cast<int *>(static_cast<void *>(&IsAccelerating)) = (nisTrq > 30.0f);
+    *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pEAXCar)) + 0x64)) = PhysicsRPM;
+    *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pEAXCar)) + 0x70)) = m_fThrottle;
+    *static_cast<int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pEAXCar)) + 0x68)) =
+        static_cast<int>(static_cast<float>(*static_cast<int *>(static_cast<void *>(&IsAccelerating))) != 0.0f);
+    *static_cast<int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pEAXCar)) + 0x6C)) = static_cast<int>(m_CurGear);
 }

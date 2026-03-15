@@ -238,18 +238,18 @@ void SFXCTL_Engine::InitSFX() {
 void SFXCTL_Engine::UpdateParams(float t) {
     SFXCTL::UpdateParams(t);
 
-    EAXCar_View *carOwner = reinterpret_cast<EAXCar_View *>(m_pEAXCar);
+    EAXCar_View *carOwner = static_cast<EAXCar_View *>(static_cast<void *>(m_pEAXCar));
     EAX_CarState_View *car = carOwner->m_pCar;
 
     const Attrib::Gen::engineaudio &attributes =
-        *reinterpret_cast<const Attrib::Gen::engineaudio *>(carOwner->mEngineInfo);
+        *static_cast<const Attrib::Gen::engineaudio *>(static_cast<const void *>(carOwner->mEngineInfo));
     SetDMIX_Input(2, static_cast<int>(attributes.Master_Vol()));
-    const bVector3 *forward = reinterpret_cast<const bVector3 *>(&car->mMatrix.v0);
+    const bVector3 *forward = static_cast<const bVector3 *>(static_cast<const void *>(&car->mMatrix.v0));
     m_p3DCarPosCtl->AssignDirectionVector(forward);
 
-    bVector3 &vCarPos = *reinterpret_cast<bVector3 *>(_pad_eng_vec);
-    const bVector3 *cur3dPos = reinterpret_cast<const bVector3 *>(&car->mMatrix.v3);
-    const bVector2 *cur2dPos = reinterpret_cast<const bVector2 *>(cur3dPos);
+    bVector3 &vCarPos = *static_cast<bVector3 *>(static_cast<void *>(_pad_eng_vec));
+    const bVector3 *cur3dPos = static_cast<const bVector3 *>(static_cast<const void *>(&car->mMatrix.v3));
+    const bVector2 *cur2dPos = static_cast<const bVector2 *>(static_cast<const void *>(cur3dPos));
     (void)cur2dPos;
     vCarPos = *cur3dPos;
 
@@ -364,17 +364,19 @@ void SFXCTL_Engine::UpdateRPM(float t) {
         }
     }
 
-    VisualRPM = *reinterpret_cast< float * >(reinterpret_cast< char * >(m_pEAXCar) + 0x64);
+    VisualRPM = *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pEAXCar)) + 0x64));
 
 have_cur_rpm:
-    if (*reinterpret_cast< int * >(&bClutchStateOn) != 0) {
+    if (*static_cast<int *>(static_cast<void *>(&bClutchStateOn)) != 0) {
         int shiftActive = 1;
         if (m_pShiftCtl->eShiftState == SHFT_NONE) {
             shiftActive = 0;
         }
         if (shiftActive == 0) {
-            VisualRPM = smooth(GetEngRPM(), *reinterpret_cast< float * >(reinterpret_cast< char * >(m_pEAXCar) + 0x64), lbl_803D72D4,
-                               lbl_803D72D8);
+            VisualRPM =
+                smooth(GetEngRPM(),
+                       *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pEAXCar)) + 0x64)),
+                       lbl_803D72D4, lbl_803D72D8);
         }
     }
 
@@ -386,24 +388,24 @@ have_cur_rpm:
     if (static_cast< unsigned int >(m_pShiftCtl->eShiftState - SHFT_UP_DISENGAGE) < 2u) {
         VisualRPM = m_pShiftCtl->m_VisualRPM.GetValue();
     } else if (m_pAccelTransitionCtl->eAccelTransFxState == 1) {
-        VisualRPM = *reinterpret_cast< float * >(reinterpret_cast< char * >(m_pEAXCar) + 0x64);
+        VisualRPM = *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pEAXCar)) + 0x64));
     } else {
-        if (*reinterpret_cast< int * >(&bIsRedlining) != 0) {
+        if (*static_cast<int *>(static_cast<void *>(&bIsRedlining)) != 0) {
             float target = lbl_803D72E4;
-            if (*reinterpret_cast< int * >(&_pad_eng2[0]) != 0) {
-                float offset = smooth(*reinterpret_cast< float * >(&_pad_eng2[4]), target, lbl_803D72E8);
-                *reinterpret_cast< float * >(&_pad_eng2[4]) = offset;
+            if (*static_cast<int *>(static_cast<void *>(&_pad_eng2[0])) != 0) {
+                float offset = smooth(*static_cast<float *>(static_cast<void *>(&_pad_eng2[4])), target, lbl_803D72E8);
+                *static_cast<float *>(static_cast<void *>(&_pad_eng2[4])) = offset;
                 if (offset == target) {
-                    *reinterpret_cast< int * >(&_pad_eng2[0]) = 0;
+                    *static_cast<int *>(static_cast<void *>(&_pad_eng2[0])) = 0;
                 }
             } else {
-                float offset = smooth(*reinterpret_cast< float * >(&_pad_eng2[4]), lbl_803D72D0, lbl_803D72E8);
-                *reinterpret_cast< float * >(&_pad_eng2[4]) = offset;
+                float offset = smooth(*static_cast<float *>(static_cast<void *>(&_pad_eng2[4])), lbl_803D72D0, lbl_803D72E8);
+                *static_cast<float *>(static_cast<void *>(&_pad_eng2[4])) = offset;
                 if (offset == lbl_803D72D0) {
-                    *reinterpret_cast< int * >(&_pad_eng2[0]) = 1;
+                    *static_cast<int *>(static_cast<void *>(&_pad_eng2[0])) = 1;
                 }
             }
-            VisualRPM = VisualRPM - *reinterpret_cast< float * >(&_pad_eng2[4]);
+            VisualRPM = VisualRPM - *static_cast<float *>(static_cast<void *>(&_pad_eng2[4]));
         }
     }
 
@@ -411,10 +413,12 @@ have_cur_rpm:
     VisRpmAvg.Recalculate();
 
     PhysicsNewAudioRPM = (VisRpmAvg.GetValue() - lbl_803D72EC) * lbl_803D72F0;
-    char *car = reinterpret_cast< char * >(*reinterpret_cast< EAX_CarState_View ** >(reinterpret_cast< char * >(m_pStateBase) + 0x34));
-    if (*reinterpret_cast< int * >(car + 0x210) == 0) {
+    char *car = static_cast<char *>(static_cast<void *>(
+        *static_cast<EAX_CarState_View **>(
+            static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pStateBase)) + 0x34))));
+    if (*static_cast<int *>(static_cast<void *>(car + 0x210)) == 0) {
         if (bPreRace != 0) {
-            PhysicsNewAudioRPM = *reinterpret_cast< float * >(car + 0x1C8);
+            PhysicsNewAudioRPM = *static_cast<float *>(static_cast<void *>(car + 0x1C8));
         } else if (tMergeWithPhysicsOffStart > lbl_803D72D0) {
             tMergeWithPhysicsOffStart -= t;
             if (tMergeWithPhysicsOffStart < lbl_803D72D0) {
@@ -422,11 +426,12 @@ have_cur_rpm:
             }
             float PercentInterp = (lbl_803D72F4 - tMergeWithPhysicsOffStart) * lbl_803D72F8;
             PhysicsNewAudioRPM =
-                (PhysicsNewAudioRPM - *reinterpret_cast< float * >(car + 0x1C8)) * PercentInterp + *reinterpret_cast< float * >(car + 0x1C8);
+                (PhysicsNewAudioRPM - *static_cast<float *>(static_cast<void *>(car + 0x1C8))) * PercentInterp +
+                *static_cast<float *>(static_cast<void *>(car + 0x1C8));
         }
     }
 
-    *reinterpret_cast< float * >(reinterpret_cast< char * >(m_pEAXCar) + 0x74) = PhysicsNewAudioRPM;
+    *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pEAXCar)) + 0x74)) = PhysicsNewAudioRPM;
 }
 
 void SFXCTL_Engine::UpdateTorque(float t) {
