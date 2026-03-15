@@ -1851,8 +1851,8 @@ void CustomizePaint::SetupRimPaint() {
 // --- CustomizeParts helpers ---
 
 void CustomizeParts::ShowHudObjects() {
-    FEngSetVisible(FEngFindObject(GetPackageName(), 0x85e907a3));
-    FEngSetVisible(FEngFindObject(GetPackageName(), 0x2a413997));
+    FEngSetScript(GetPackageName(), 0xDEE8632B, 0x5079C8F8, true);
+    FEngSetVisible(FEngFindObject(GetPackageName(), 0xDEE8632B));
 }
 
 // --- CustomizeNumbers helpers ---
