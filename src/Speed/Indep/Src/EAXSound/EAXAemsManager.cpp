@@ -230,6 +230,14 @@ struct stSndDataLoadParamsView {
     Timer t_load;
 };
 
+struct stSndDataLoadParamsAllocView {
+    char _assetDescription[0x20];
+    eTEMPALLOCLOCATION MemLocation;
+    stBankSlot *mBankSlot;
+    void *pmem;
+    void *plocmem;
+};
+
 template <typename T, typename Tag> static RawVector<T> &AsRawVector(UTL::Std::vector<T, Tag> &vec) {
     return *reinterpret_cast<RawVector<T> *>(&vec);
 }
@@ -477,8 +485,7 @@ EAXAemsManager::~EAXAemsManager() {
 }
 
 void EAXAemsManager::Init() {
-    Attrib::Gen::audiosystem *attrs =
-        *reinterpret_cast<Attrib::Gen::audiosystem **>(reinterpret_cast<char *>(g_pEAXSound) + 0xA8);
+    Attrib::Gen::audiosystem *attrs = g_pEAXSound->GetAttributes();
     unsigned int numEvtSys = attrs->Num_EvtSys();
     m_nEvtSysCount = static_cast<int>(numEvtSys);
     m_nResidentAllocs = 0;
@@ -507,8 +514,7 @@ void EAXAemsManager::Init() {
 
 int EAXAemsManager::AddEventSystem(eEVTSYS eESIndex, eSNDDATAPATH eSDP) {
     char tempPath[256];
-    Attrib::Gen::audiosystem *attrs =
-        *reinterpret_cast<Attrib::Gen::audiosystem **>(reinterpret_cast<char *>(g_pEAXSound) + 0xA8);
+    Attrib::Gen::audiosystem *attrs = g_pEAXSound->GetAttributes();
     const Attrib::StringKey &evtStringKey = attrs->EvtSys(eESIndex);
     const char *evtName = *reinterpret_cast<const char *const *>(reinterpret_cast<const char *>(&evtStringKey) + 0xC);
     if (evtName == nullptr) {
@@ -571,32 +577,27 @@ void EAXAemsManager::RegisterSlots(eBANK_SLOT_TYPE Type, int NumSlots, int SizeP
 }
 
 void EAXAemsManager::ResolveCurrentDataMemory() {
-    if (gAEMSMgr.m_pCurLoadSDLP == nullptr) {
-        return;
-    }
-
-    char *curLoad = reinterpret_cast<char *>(gAEMSMgr.m_pCurLoadSDLP);
-    eTEMPALLOCLOCATION MemLocation = static_cast<eTEMPALLOCLOCATION>(*reinterpret_cast<int *>(curLoad + 0x30));
-    void *pmem = *reinterpret_cast<void **>(curLoad + 0x28);
+    EAXAemsManager *mgr = &gAEMSMgr;
+    stSndDataLoadParamsAllocView *curLoad = reinterpret_cast<stSndDataLoadParamsAllocView *>(mgr->m_pCurLoadSDLP);
+    eTEMPALLOCLOCATION MemLocation = curLoad->MemLocation;
 
     if (MemLocation == TMP_ALLOC_MAIN) {
-        bFree(pmem);
-    } else {
-        if (MemLocation == TMP_ALLOC_TRACKSTREAMER) {
-            TheTrackStreamer.FreeUserMemory(pmem);
-        } else if (MemLocation == TMP_ALLOC_AUDIO) {
-            void *plocmem = *reinterpret_cast<void **>(curLoad + 0x2C);
-            stBankSlot *mBankSlot = *reinterpret_cast<stBankSlot **>(curLoad + 0x24);
-            if (plocmem == nullptr && mBankSlot == nullptr) {
+        bFree(curLoad->pmem);
+    } else if (MemLocation <= TMP_ALLOC_MAIN) {
+        return;
+    } else if (MemLocation == TMP_ALLOC_TRACKSTREAMER) {
+        TheTrackStreamer.FreeUserMemory(curLoad->pmem);
+    } else if (MemLocation == TMP_ALLOC_AUDIO) {
+        if (curLoad->plocmem == nullptr) {
+            if (curLoad->mBankSlot == nullptr) {
                 return;
             }
-            gAudioMemoryManager.FreeMemory(pmem);
-        } else {
-            return;
         }
+        gAudioMemoryManager.FreeMemory(curLoad->pmem);
+    } else {
+        return;
     }
-
-    *reinterpret_cast<void **>(curLoad + 0x28) = nullptr;
+    reinterpret_cast<stSndDataLoadParamsAllocView *>(mgr->m_pCurLoadSDLP)->pmem = nullptr;
 }
 
 int EAXAemsManager::InitiateLoad() {
@@ -668,7 +669,7 @@ HaveQueueParams:
             AddQueuedFile(currentLoad->pmem, m_LoadFilename, 0, currentLoad->nSize, DataLoadCB,
                           reinterpret_cast<int>(currentLoad), &queuedFileParams);
 SetWaitingState:
-            *reinterpret_cast<eTEMPALLOCLOCATION *>(&m_IsWaitingForFileCB) = memLocation;
+            m_IsWaitingForFileCB = memLocation;
         } else if (static_cast<int>(memLocation) < 2) {
             if (memLocation == TMP_ALLOC_NONE) {
                 goto SetWaitingState;
@@ -722,7 +723,7 @@ SetWaitingState:
             }
             AddQueuedFile(fileString, m_LoadFilename, 0, result, DataLoadCB,
                           reinterpret_cast<int>(currentLoad), &queuedFileParams);
-            *reinterpret_cast<unsigned int *>(&m_IsWaitingForFileCB) = 1;
+            m_IsWaitingForFileCB = 1;
         }
 CheckAsyncSpuLoad:
         currentLoad = reinterpret_cast<stSndDataLoadParamsView *>(m_pCurLoadSDLP);
@@ -759,8 +760,8 @@ void EAXAemsManager::SetupNextLoad() {
         m_nCurLoadedBankIndex++;
         m_pCurLoadSDLP = g_SndAssetList + m_nCurLoadedBankIndex;
         if (InitiateLoad() < 0) {
-            Attrib::StringKey failedFile =
-                reinterpret_cast<stSndDataLoadParamsView *>(m_pCurLoadSDLP)->AssetDescription.FileName;
+            stSndDataLoadParamsView *currentLoad = reinterpret_cast<stSndDataLoadParamsView *>(m_pCurLoadSDLP);
+            Attrib::StringKey failedFile = currentLoad->AssetDescription.FileName;
 
             SndBase *sfxToDelete[32];
             bMemSet(sfxToDelete, '\0', sizeof(sfxToDelete));

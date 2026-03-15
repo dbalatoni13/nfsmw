@@ -181,6 +181,7 @@ class EAXSound : public AudioMemBase {
     static struct SndBase *GetSndBase_Object(int nID);
     cSTICH_PlayBack *GetSTICHPlayback() const { return m_pSTICH_Playback; }
     struct AudioSettings *GetCurrentAudioSettings() const { return m_pCurAudioSettings; }
+    Attrib::Gen::audiosystem *GetAttributes() const { return mAttributes; }
 
     static CSTATEMGR_Base *m_pStateMgr[13];
 
