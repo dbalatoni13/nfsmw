@@ -422,6 +422,7 @@ class UserProfile {
 
 // total size: 0x24
 struct RaceSettings {
+    RaceSettings() { EventHash = 0; Default(); }
     void Default();
 
     unsigned int GetSelectedCar(int player_num) {
@@ -657,6 +658,7 @@ class cFrontendDatabase {
         return bMalloc(size, alloc_params);
     }
 
+    cFrontendDatabase();
     void Default();
     void GetRandomRaceOptions(RaceSettings *race, GRace::Type type);
     unsigned int GetSafehouseIconHash(const char *name);

@@ -119,7 +119,7 @@ PostPursuitInfractionsScreen::PostPursuitInfractionsScreen(ScreenConstructorData
 
     FEDatabase->GetCareerSettings()->SetBeenBustedOnce();
 
-    const unsigned long FEObj_BustedStamp = 0x2347122A;
+    const int FEObj_BustedStamp = 0x2347122A;
     FEngSetInvisible(GetPackageName(), FEObj_BustedStamp);
 
     BustedTexture = CalcBustedTexture();
@@ -133,19 +133,19 @@ PostPursuitInfractionsScreen::PostPursuitInfractionsScreen(ScreenConstructorData
     FEInfractionsData scott_says_i_should_call_this_previous_infractions_and_phil_needs_to_have_it_spelled_correctly(GInfractionManager::Get().GetInfractions());
 
     int this_pursuit_cost = scott_says_i_should_call_this_previous_infractions_and_phil_needs_to_have_it_spelled_correctly.GetFineValue();
-    const unsigned long FEObj_THISPURSUITCOST = 0xBD66334A;
+    const int FEObj_THISPURSUITCOST = 0xBD66334A;
     FEPrintf(GetPackageName(), FEObj_THISPURSUITCOST, "%$d", this_pursuit_cost);
 
     int num_infractions_pursuit = scott_says_i_should_call_this_previous_infractions_and_phil_needs_to_have_it_spelled_correctly.NumInfractions();
-    const unsigned long FEObj_NUMBEROFINFRACTIONSTHISPURSUIT = 0xB967F64D;
+    const int FEObj_NUMBEROFINFRACTIONSTHISPURSUIT = 0xB967F64D;
     FEPrintf(GetPackageName(), FEObj_NUMBEROFINFRACTIONSTHISPURSUIT, "%d", num_infractions_pursuit);
 
     int infraction_total_cost = WorkingCareerRecord->GetInfractions(true).GetFineValue();
-    const unsigned long FEObj_UNSERVEDINFRACTIONSCOST = 0xA4C79522;
+    const int FEObj_UNSERVEDINFRACTIONSCOST = 0xA4C79522;
     FEPrintf(GetPackageName(), FEObj_UNSERVEDINFRACTIONSCOST, "%$d", infraction_total_cost - this_pursuit_cost);
 
     int total_unserved_number = WorkingCareerRecord->GetInfractions(true).NumInfractions();
-    const unsigned long FEObj_NUMBEROFINFRACTIONSUNSERVED = 0x5344F2A6;
+    const int FEObj_NUMBEROFINFRACTIONSUNSERVED = 0x5344F2A6;
     FEPrintf(GetPackageName(), FEObj_NUMBEROFINFRACTIONSUNSERVED, "%d", total_unserved_number - num_infractions_pursuit);
 
     bHasMarker = TheFEMarkerManager.GetNumMarkers(FEMarkerManager::MARKER_GET_OUT_OF_JAIL, 0) > 0;
@@ -154,33 +154,33 @@ PostPursuitInfractionsScreen::PostPursuitInfractionsScreen(ScreenConstructorData
     FEPrintf(GetPackageName(), 0xEA8AECD9, "%d", TheFEMarkerManager.GetNumMarkers(FEMarkerManager::MARKER_GET_OUT_OF_JAIL, 0));
 
     if (!bHasMarker) {
-        const unsigned long FEObj_Button1Text = 0xF9363F30;
-        const unsigned long GREY = 0x163C76;
-        const unsigned long FEObj_MARKER = 0x6B6973C1;
-        const unsigned long FEObj_Button1 = 0xB8A7C6CC;
+        const int FEObj_Button1Text = 0xF9363F30;
+        const int GREY = 0x163C76;
+        const int FEObj_MARKER = 0x6B6973C1;
+        const int FEObj_Button1 = 0xB8A7C6CC;
         FEngSetScript(GetPackageName(), FEObj_Button1Text, GREY, true);
         FEngSetScript(GetPackageName(), FEObj_MARKER, GREY, true);
         FEngSetScript(GetPackageName(), 0x39F11E5C, GREY, true);
         FEngDisableButton(GetPackageName(), FEObj_Button1);
     } else {
-        const unsigned long FEObj_NORMAL = 0x6EBBFB68;
+        const int FEObj_NORMAL = 0x6EBBFB68;
         FEngSetScript(GetPackageName(), 0x39F11E5C, FEObj_NORMAL, true);
     }
 
     AmountToPay = WorkingCareerRecord->GetInfractions(true).GetFineValue();
-    const unsigned long FEObj_TOTALCOSTDATA = 0x854AF1F4;
+    const int FEObj_TOTALCOSTDATA = 0x854AF1F4;
     FEPrintf(GetPackageName(), FEObj_TOTALCOSTDATA, "%$d", AmountToPay);
 
     AmountPlayerHas = FEDatabase->GetCareerSettings()->GetCash();
-    const unsigned long FEObj_CASHDATA = 0x1930B057;
+    const int FEObj_CASHDATA = 0x1930B057;
     FEPrintf(GetPackageName(), FEObj_CASHDATA, "%$d", AmountPlayerHas);
 }
 
 void PostPursuitInfractionsScreen::NotificationMessage(unsigned long msg, FEObject *pobj, unsigned long param1, unsigned long param2) {
     switch (msg) {
     case 0x35f8620b: {
-        const unsigned long FEObj_Button2 = 0xB8A7C6CC;
-        const unsigned long FEObj_Button1 = 0xB8A7C6CD;
+        const int FEObj_Button2 = 0xB8A7C6CC;
+        const int FEObj_Button1 = 0xB8A7C6CD;
         if (bFirstTimeBusted) {
             FEngSetCurrentButton(GetPackageName(), FEObj_Button2);
             DialogInterface::ShowOneButton(GetPackageName(), "", static_cast<eDialogTitle>(1), 0x417b2601, 0xb4edeb6d, 0x9c14b5f1);
@@ -206,8 +206,8 @@ void PostPursuitInfractionsScreen::NotificationMessage(unsigned long msg, FEObje
             FEPrintf(GetPackageName(), 0x5b875870, "%d", num_markers);
             FEPrintf(GetPackageName(), 0xea8aecd9, "%d", num_markers);
             if (num_markers <= 0) {
-                const unsigned long GREY = 0x163c76;
-                const unsigned long FEObj_MARKER = 0x6b6973c1;
+                const int GREY = 0x163c76;
+                const int FEObj_MARKER = 0x6b6973c1;
                 FEngSetScript(GetPackageName(), FEObj_MARKER, GREY, true);
                 FEngSetScript(GetPackageName(), 0x39f11e5c, GREY, true);
             }

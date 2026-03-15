@@ -627,6 +627,18 @@ extern int FEngSNPrintf(char *, int, const char *, ...);
 extern unsigned long FEHashUpper(const char *);
 extern void FixDot(char *str, int len);
 
+cFrontendDatabase::cFrontendDatabase()
+    : iDefaultStableHash(0) //
+    , m_pCarStableBackup(nullptr) //
+    , m_pDBBackup(nullptr) //
+    , SplitScreenCustomization(nullptr)
+{
+    for (int i = 0; i < 2; i++) {
+        CurrentUserProfiles[i] = nullptr;
+    }
+    CurrentUserProfiles[0] = new UserProfile();
+}
+
 unsigned int CalcLanguageHash(const char *prefix, GRaceParameters *pRaceParams) {
     char buffer[64];
     FEngSNPrintf(buffer, 0x40, "%s%s", prefix, pRaceParams->GetEventID());

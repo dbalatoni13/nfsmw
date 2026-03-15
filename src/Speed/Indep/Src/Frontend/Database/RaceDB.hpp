@@ -104,6 +104,19 @@ class HighScoresDatabase {
 
 // total size: 0xC0
 struct FinishedRaceStatsEntry {
+    FinishedRaceStatsEntry() {
+        RaceTime.ResetLow();
+        BestLapTime.ResetLow();
+        for (int i = 0; i < 11; i++) {
+            LapTimes[i].ResetLow();
+        }
+        for (int i = 0; i < 11; i++) {
+            LapRunningTimes[i].ResetLow();
+        }
+        ZeroToSixtyTime.ResetLow();
+        QuarterMileTime.ResetLow();
+    }
+
     int FinishPosition;          // offset 0x0, size 0x4
     int DriverNumber;            // offset 0x4, size 0x4
     int FinishReason;            // offset 0x8, size 0x4
@@ -129,6 +142,8 @@ struct FinishedRaceStatsEntry {
 
 // total size: 0x604
 struct cFinishedRaceStats {
+    inline cFinishedRaceStats() {}
+
     FinishedRaceStatsEntry RaceStats[8]; // offset 0x0, size 0x600
     int NumStats;                        // offset 0x600, size 0x4
 };
