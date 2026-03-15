@@ -233,15 +233,12 @@ bool FEPackageReader::ReadReferencedPackagesChunk() {
         unsigned long* pData = reinterpret_cast<unsigned long*>(pStrings);
         unsigned long NumRefs = BSwap32(pData[0]);
         FEList& LibList = pPack->LibrariesUsed;
-        unsigned long i = 0;
-        if (NumRefs != 0) {
-            do {
-                FENode* pNode = new FENode();
-                unsigned long Offset = BSwap32(pData[1 + i]);
-                i++;
-                pNode->SetName(pStrings + Offset);
-                LibList.AddNode(LibList.GetTail(), pNode);
-            } while (i < NumRefs);
+        unsigned long* pRefs = pData + 1;
+        for (unsigned long i = 0; i < NumRefs; i++) {
+            FENode* pNode = new FENode();
+            unsigned long Offset = BSwap32(pRefs[i]);
+            pNode->SetName(pStrings + Offset);
+            LibList.AddNode(LibList.GetTail(), pNode);
         }
         FENode* pLibNode = static_cast<FENode*>(LibList.GetHead());
         while (pLibNode) {
