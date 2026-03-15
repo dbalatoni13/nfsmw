@@ -171,7 +171,6 @@ void uiRapSheetRankingsDetail::Setup() {
     if (rankingsData.IsValid()) {
         int last = rankingsData.Num_RapSheetRanks();
         if (last == 15) {
-            bool is_time = rank_type == ePDT_CostToState;
             int player_rank_index = player_rank - 1;
             int num_rankings_to_show = last;
             int rival_offset = 0;
@@ -191,7 +190,7 @@ void uiRapSheetRankingsDetail::Setup() {
                     }
 
                     float value;
-                    if (is_time) {
+                    if (rank_type == ePDT_CostToState) {
                         value = static_cast<float>(player_value) * 0.00025f;
                     } else {
                             value = static_cast<float>(player_value);
