@@ -89,10 +89,10 @@ bool Smackable::Simplify() {
 }
 
 bool Smackable::TrySimplify() {
-    typedef UTL::Collections::Listable< Smackable, 160 > SmackList;
-    for (Smackable *const *iter = SmackList::GetList().begin();
-         iter != SmackList::GetList().end(); ++iter) {
-        if ((*iter)->Simplify()) {
+    for (Smackable *const *iter = UTL::Collections::Listable< Smackable, 160 >::GetList().begin();
+         iter != UTL::Collections::Listable< Smackable, 160 >::GetList().end(); ++iter) {
+        Smackable *smack = *iter;
+        if (smack->Simplify()) {
             return true;
         }
     }
@@ -490,8 +490,7 @@ bool Smackable::CanRetrigger() const {
     if (mCollisionBody == nullptr) {
         return false;
     }
-    const WWorldPos &wpos = GetWPos();
-    if (!wpos.OnValidFace()) {
+    if (!GetWPos().OnValidFace()) {
         return false;
     }
     if (mCollisionBody->IsSleeping()) {
@@ -620,7 +619,7 @@ void Smackable::OnTaskSimulate(float dT) {
     IRigidBody *irb = GetRigidBody();
     if (mSimpleBody != nullptr) {
         UMath::Vector3 gravity = UMath::Vector3Make(0.0f, mRBSpecs.GRAVITY(), 0.0f);
-        UMath::Scale(gravity, irb->GetMass(), gravity);
+        UMath::Scale(gravity, irb->GetMass());
         irb->ResolveForce(gravity);
     }
 }
@@ -1096,7 +1095,7 @@ bool SmackableAvoidable::OnUpdateAvoidable(UMath::Vector3 &pos, float &sweep) {
     return mModel->OnUpdateAvoidable(pos, sweep);
 }
 
-bool Smackable::SimplifySort(const Smackable *lhs, const Smackable *rhs) {
+inline bool Smackable::SimplifySort(const Smackable *lhs, const Smackable *rhs) {
     if (lhs->mSimplifyWeight > rhs->mSimplifyWeight) {
         return true;
     }
@@ -1106,21 +1105,8 @@ bool Smackable::SimplifySort(const Smackable *lhs, const Smackable *rhs) {
     return lhs->GetInstanceHandle() < rhs->GetInstanceHandle();
 }
 
-void Smackable::HidePart(const UCrc32 &name) {}
-void Smackable::ShowPart(const UCrc32 &name) {}
-bool Smackable::IsPartVisible(const UCrc32 &name) const { return true; }
-
 IPlaceableScenery *IPlaceableScenery::CreateInstance(const char *name, unsigned int attributes) {
     return PlaceableScenery::Construct(name, attributes);
 }
 
 PlaceableScenery::~PlaceableScenery() {}
-
-void HeirarchyModel::GetDimension(UMath::Vector3 &dim) const {
-    GetCollisionGeometry()->GetHalfDimensions(dim);
-}
-
-const Attrib::Instance &HeirarchyModel::GetAttributes() const {
-    return *static_cast<const Attrib::Instance *>(
-        static_cast<const Attrib::Gen::smackable *>(this));
-}

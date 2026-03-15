@@ -266,7 +266,8 @@ void PVehicle::Launch() {
 }
 
 float PVehicle::GetPerfectLaunch() const {
-    if (!IsStaging() && mPerfectLaunch.IsSet()) {
+    if (mPerfectLaunch.IsSet()) {}
+    if (!IsStaging() && 0.5f < mPerfectLaunch.Time) {
         return mPerfectLaunch.Amount;
     }
     return 0.5f;
@@ -375,8 +376,7 @@ void PVehicle::SetSpeed(float speed) {
     mPerfectLaunch.Clear();
     if (mCollisionBody != nullptr) {
         UMath::Vector3 vel;
-        const UMath::Vector3 &fwd = mCollisionBody->GetForwardVector();
-        UMath::Scale(fwd, speed, vel);
+        UMath::Scale(mCollisionBody->GetForwardVector(), speed, vel);
         static_cast<ISimable *>(this)->GetRigidBody()->SetLinearVelocity(vel);
         if (mSuspension != nullptr) {
             mSuspension->MatchSpeed(speed);
@@ -619,25 +619,27 @@ const Physics::Tunings *PVehicle::GetTunings() const {
 }
 
 unsigned int PVehicle::CountResources() {
-    unsigned int count = 0;
+    unsigned int total_resources = 0;
     UTL::Std::list<Resource, _type_list> resource_list;
-    for (PVehicle *pv = mInstances.GetHead(); pv != mInstances.EndOfList(); pv = pv->GetNext()) {
+    for (PVehicle *vehicle = mInstances.GetHead(); vehicle != mInstances.EndOfList();
+         vehicle = vehicle->GetNext()) {
         bool found = false;
         for (UTL::Std::list<Resource, _type_list>::const_iterator iter = resource_list.begin();
-             iter != resource_list.end(); ++iter) {
-            if ((*iter).Type == pv->mResources.Type) {
+             iter != resource_list.end(); iter++) {
+            const Resource &resource = *iter;
+            if (resource.Type == vehicle->mResources.Type) {
                 found = true;
                 break;
             }
         }
-        unsigned int cost = 0;
-        if (!(found && CanInstancesShareResourceCost(pv->mResources.Type))) {
-            resource_list.push_back(pv->mResources);
-            cost = pv->mResources.Cost;
+        int cost = 0;
+        if (!(found && CanInstancesShareResourceCost(vehicle->mResources.Type))) {
+            resource_list.push_back(vehicle->mResources);
+            cost = vehicle->mResources.Cost;
         }
-        count += cost;
+        total_resources += static_cast<unsigned int>(cost);
     }
-    return count;
+    return total_resources;
 }
 
 void PVehicle::OnTaskFX(float dT) {

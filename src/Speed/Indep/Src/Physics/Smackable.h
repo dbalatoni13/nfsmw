@@ -120,9 +120,9 @@ class Smackable : public PhysicsObject,
         return nullptr;
     }
 
-    virtual void HidePart(const UCrc32 &name);
-    virtual void ShowPart(const UCrc32 &name);
-    virtual bool IsPartVisible(const UCrc32 &name) const;
+    virtual void HidePart(const UCrc32 &name) {}
+    virtual void ShowPart(const UCrc32 &name) {}
+    virtual bool IsPartVisible(const UCrc32 &name) const { return true; }
 
   protected:
     bool Simplify();

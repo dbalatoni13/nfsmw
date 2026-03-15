@@ -92,6 +92,14 @@ struct smackable : Instance {
         return 0xce70d7db;
     }
 
+    Instance &GetBase() {
+        return *this;
+    }
+
+    const Instance &GetBase() const {
+        return *this;
+    }
+
     const EffectLinkageRecord &OnHitObject(unsigned int index) const {
         const EffectLinkageRecord *resultptr = reinterpret_cast<const EffectLinkageRecord *>(GetAttributePointer(0x18915735, index));
         if (!resultptr) {

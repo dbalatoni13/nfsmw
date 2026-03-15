@@ -385,12 +385,12 @@ void SmokeableSpawner::OnMoved() {
     }
 }
 
-void SmokeableSpawner::OnLoad(unsigned int exclude_flags, bool ignore) {
+void SmokeableSpawner::OnLoad(unsigned int exclude_flags, bool hidden) {
     if ((exclude_flags & mExcludeFlags) == 0) {
         ShowInstance();
         const Attrib::Collection *collection = FindAttributes(UCrc32(mAttributes));
         if (collection != nullptr) {
-            mSimModel = SceneryModel::Construct(this, collection, ignore);
+            mSimModel = SceneryModel::Construct(this, collection, hidden);
         } else {
             mSimModel = nullptr;
         }

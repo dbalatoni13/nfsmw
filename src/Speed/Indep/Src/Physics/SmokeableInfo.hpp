@@ -66,7 +66,7 @@ class SmokeableSpawner {
     bool IsInstanceVisible() const;
     void HideInstance() const;
     void OnMoved();
-    void OnLoad(unsigned int exclude_flags, bool ignore);
+    void OnLoad(unsigned int exclude_flags, bool hidden);
 
     UCrc32 GetModelName() const {
         return mModel;

@@ -39,8 +39,12 @@ class HeirarchyModel : public Sim::Model, public IBody, public ITriggerableModel
         Sim::Model::GetLinearVelocity(velocity);
     }
     void GetAngularVelocity(UMath::Vector3 &velocity) const override;
-    void GetDimension(UMath::Vector3 &dim) const override;
-    const Attrib::Instance &GetAttributes() const override;
+    void GetDimension(UMath::Vector3 &dim) const override {
+        GetCollisionGeometry()->GetHalfDimensions(dim);
+    }
+    const Attrib::Instance &GetAttributes() const override {
+        return static_cast<const Attrib::Gen::smackable *>(this)->GetBase();
+    }
     unsigned int GetWorldID() const override {
         return Sim::Model::GetWorldID();
     }
