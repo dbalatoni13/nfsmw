@@ -403,28 +403,23 @@ void FEListBox::ScrollSelection(long lColumnNum, long lRowNum) {
     }
 
 compute_direction:
-    FEVector2 obDirection;
+    FEVector2& obDirection = reinterpret_cast<FEVector2&>(mstDirection);
     obDirection = reinterpret_cast<FEVector2&>(mstTargetLocation) - reinterpret_cast<FEVector2&>(mstCurrentLocation);
     mulFlags = mulFlags | 2;
-    reinterpret_cast<FEVector2&>(mstDirection) = obDirection;
     float fLength = obDirection.Length();
     if (fLength < 0.1f) {
         CompleteScroll();
     } else {
-        FEVector2 dir;
-        dir = reinterpret_cast<FEVector2&>(mstDirection);
-        dir.Normalize();
-        reinterpret_cast<FEVector2&>(mstDirection) = dir;
+        obDirection.Normalize();
     }
 }
 
 void FEListBox::Update(float fNumTicks) {
-    float alpha = mfCurrentAlpha + mfAlphaDelta * fNumTicks;
-    mfCurrentAlpha = alpha;
-    if (alpha < 0.0f) {
+    mfCurrentAlpha = mfCurrentAlpha + mfAlphaDelta * fNumTicks;
+    if (mfCurrentAlpha < 0.0f) {
         mfCurrentAlpha = 0.0f;
         mfAlphaDelta = -mfAlphaDelta;
-    } else if (alpha > 1.0f) {
+    } else if (mfCurrentAlpha > 1.0f) {
         mfCurrentAlpha = 1.0f;
         mfAlphaDelta = -mfAlphaDelta;
     }

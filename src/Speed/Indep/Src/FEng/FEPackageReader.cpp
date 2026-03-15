@@ -605,10 +605,11 @@ void FEPackageReader::ProcessListBoxTag(FETag* pTag) {
             return;
         }
         case 0x7243: {
+            unsigned long rawVal = pTag->Getu32(0);
             FEListBoxCell* pCell = pList->GetPCellData(pList->mulCurrentColumn, pList->mulCurrentRow);
-            pCell->stResource.ResourceIndex = BSwap32(pTag->Getu32(0));
-            pCell->stResource.Handle = 0;
             pCell->stResource.UserParam = 0;
+            pCell->stResource.Handle = 0;
+            pCell->stResource.ResourceIndex = BSwap32(rawVal);
             return;
         }
         case 0x5443:
@@ -981,13 +982,13 @@ bool FEPackageReader::ReadScriptTags(FETag* pTag, unsigned long Length) {
             }
             case 0x7454: {
                 if (pScript) {
-                    pTrack->InterpType = pTag->Data()[0];
+                    pTrack->InterpType = static_cast<unsigned char>(pTag->Getu16(0) >> 8);
                 }
                 break;
             }
             case 0x6154: {
                 if (pScript) {
-                    pTrack->InterpAction = pTag->Data()[0];
+                    pTrack->InterpAction = static_cast<unsigned char>(pTag->Getu16(0) >> 8);
                 }
                 break;
             }
@@ -1023,15 +1024,15 @@ bool FEPackageReader::ReadScriptTags(FETag* pTag, unsigned long Length) {
                     }
 
                     do {
-                        if (CurKey == 0) {
-                            pKey = &pTrack->BaseKey;
-                        } else {
+                        if (CurKey != 0) {
                             pKey = new FEKeyNode();
+                        } else {
+                            pKey = &pTrack->BaseKey;
                         }
                         pSrc = reinterpret_cast<unsigned long*>(pKeyData);
-                        Index = 0;
                         pKey->tTime = static_cast<int>(BSwap32(*pSrc));
                         Count = (KeySize >> 2) - 1;
+                        Index = 0;
                         if (Count != 0) {
                             do {
                                 reinterpret_cast<unsigned long*>(&pKey->Val)[Index] = BSwap32(pSrc[Index + 1]);
