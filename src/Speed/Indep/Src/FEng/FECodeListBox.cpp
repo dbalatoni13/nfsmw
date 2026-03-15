@@ -42,7 +42,7 @@ FECodeListBox::FECodeListBox(const FECodeListBox& Object, bool bReference)
     , mpobRenderer(Object.mpobRenderer) //
     , mulNumVisibleColumns(0) //
     , mulNumVisibleRows(0) //
-    , mulFlags(Object.mulFlags) //
+    , mulFlags(0) //
     , mulNumTotalColumns(Object.mulNumTotalColumns) //
     , mulNumTotalRows(Object.mulNumTotalRows) //
     , mulCurrentVirtualColumn(0) //
