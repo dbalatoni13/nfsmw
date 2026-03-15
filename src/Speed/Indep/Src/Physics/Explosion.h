@@ -30,6 +30,11 @@ struct ExplosionParams : public Sim::Param {
 class Explosion : public PhysicsObject, public IExplosion {
   public:
     static ISimable *Construct(Sim::Param params);
+    void operator delete(void *mem, std::size_t size) {
+        if (mem) {
+            gFastMem.Free(mem, size, nullptr);
+        }
+    }
 
     virtual const UMath::Vector3 &GetOrigin() const override {
         if (mRigidBody == nullptr) {
