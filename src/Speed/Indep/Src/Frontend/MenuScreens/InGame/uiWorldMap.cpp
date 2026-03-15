@@ -103,10 +103,17 @@ inline void FEngSetSizeX(FEObject* obj, float x) {
 }
 
 inline MapItem::MapItem(eWorldMapItemType type, FEObject* iconObj, bVector2& map_pos, bVector2& world_pos,
-                 float rot, GIcon* icon) {
+                  float rot, GIcon* icon) {
+    unsigned int* initial_pos_words = reinterpret_cast< unsigned int* >(&InitialPos);
+    unsigned int* world_pos_words = reinterpret_cast< unsigned int* >(&WorldPos);
+    const unsigned int* map_pos_words = reinterpret_cast< const unsigned int* >(&map_pos);
+    const unsigned int* source_world_pos_words = reinterpret_cast< const unsigned int* >(&world_pos);
+
     pIcon = iconObj;
-    InitialPos = map_pos;
-    WorldPos = world_pos;
+    initial_pos_words[0] = map_pos_words[0];
+    initial_pos_words[1] = map_pos_words[1];
+    world_pos_words[0] = source_world_pos_words[0];
+    world_pos_words[1] = source_world_pos_words[1];
     Rot = rot;
     TheType = type;
     TheIcon = icon;
