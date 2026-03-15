@@ -1,4 +1,7 @@
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/UIWidgetMenu.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEInputWidget.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/IconPanel.hpp"
+#include "Speed/Indep/Src/Misc/Timer.hpp"
 
 extern void FEngSetVisible(FEObject *obj);
 extern void FEngSetInvisible(FEObject *obj);
@@ -17,6 +20,10 @@ extern unsigned int FEngHashString(const char *, ...);
 extern void FEngSetCurrentButton(const char *pkg_name, unsigned int hash);
 
 extern char *bStrNCpy(char *dest, const char *src, int n);
+
+extern Timer RealTimer;
+extern Timer KBCreationTimer;
+extern float g_KBDelaySeconds;
 
 UIWidgetMenu::UIWidgetMenu(ScreenConstructorData *sd)
     : MenuScreen(sd) //
@@ -66,6 +73,74 @@ UIWidgetMenu::UIWidgetMenu(ScreenConstructorData *sd)
 }
 
 void UIWidgetMenu::Setup() {
+}
+
+void UIWidgetMenu::NotificationMessage(unsigned long msg, FEObject *pobj, unsigned long param1, unsigned long param2) {
+    switch (msg) {
+    case 0x35f8620b:
+        if (!pCurrentOption) return;
+        if (!pCurrentOption->IsEnabled()) return;
+        SetOption(pCurrentOption);
+        return;
+    case 0xc407210:
+    case 0x911ab364:
+        StorePrevNotification(msg, pobj, param1, param2);
+    case 0x9120409e:
+    case 0xb5971bf1:
+        if (!bAllowScroll) return;
+        if (!pCurrentOption) return;
+        if (!pCurrentOption->IsEnabled()) return;
+        pCurrentOption->Act(GetPackageName(), msg);
+        return;
+    case 0x72619778:
+        if (!bAllowScroll) return;
+        if (bScrollWrapped) {
+            ScrollWrapped(eSD_PREV);
+            return;
+        }
+        Scroll(eSD_PREV);
+        return;
+    case 0x911c0a4b:
+        if (!bAllowScroll) return;
+        if (bScrollWrapped) {
+            ScrollWrapped(eSD_NEXT);
+            return;
+        }
+        Scroll(eSD_NEXT);
+        return;
+    case 0x92b703b5:
+        RefreshWidgets();
+        return;
+    case 0xaf0bbd92:
+        ClearWidgets();
+        Setup();
+        return;
+    case 0x81017864: {
+        if ((RealTimer - KBCreationTimer).GetSeconds() < g_KBDelaySeconds) return;
+        FEInputWidget *widge = static_cast<FEInputWidget *>(pCurrentOption);
+        widge->SetInputText("");
+        FEngBeginTextInput(widge->GetDataObject()->NameHash, widge->GetEditMode(), widge->GetInputText(), widge->GetTitle(), widge->GetMaxInputLength());
+        bAllowScroll = false;
+        return;
+    }
+    case 0xda5b8712: {
+        KBCreationTimer = RealTimer;
+        FEInputWidget *widge = static_cast<FEInputWidget *>(pCurrentOption);
+        widge->SetInputText(FEngGetEditedString());
+        if (pCurrentOption && pCurrentOption->IsEnabled()) {
+            pCurrentOption->Act(GetPackageName(), 0xda5b8712);
+        }
+        widge->Draw();
+        bAllowScroll = true;
+        return;
+    }
+    case 0xc9d30688:
+        bAllowScroll = true;
+        return;
+    case 0x84378bef:
+    default:
+        return;
+    }
 }
 
 eMenuSoundTriggers UIWidgetMenu::NotifySoundMessage(unsigned long msg, eMenuSoundTriggers maybe) {
