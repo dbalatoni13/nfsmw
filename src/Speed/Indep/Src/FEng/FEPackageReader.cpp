@@ -85,22 +85,28 @@ bool FEPackageReader::ReadTypeSizes() {
 }
 
 bool FEPackageReader::ReadHeaderChunk() {
-    unsigned long* pData = reinterpret_cast<unsigned long*>(pChunk);
-    if (BSwap32(pData[0]) == 0xE76E4546 && BSwap32(pData[2]) == 0x64486B50) {
-        if (BSwap32(pData[4]) > 0x1FFFF) {
-            FEPackage* pNewPack = FENG_NEW FEPackage();
-            pPack = pNewPack;
-            pNewPack->pCurrentButton = nullptr;
-            const char* pStrings = reinterpret_cast<const char*>(pData + 10);
-            ResourceCount = BSwap32(pData[6]);
-            ObjectCount = BSwap32(pData[7]);
-            unsigned long nameLen = BSwap32(pData[8]);
-            pPack->SetName(pStrings);
-            pPack->SetFilename(pStrings + nameLen);
-            return true;
-        }
+    if (BSwap32(pChunk->GetID()) != 0xE76E4546) {
+        return false;
     }
-    return false;
+    FEChunk* pHeadChunk = pChunk->GetFirstChunk();
+    if (BSwap32(pHeadChunk->GetID()) != 0x64486B50) {
+        return false;
+    }
+    unsigned long* pData = reinterpret_cast<unsigned long*>(pHeadChunk->GetData());
+    if (BSwap32(pData[0]) <= 0x1FFFF) {
+        return false;
+    }
+    FEPackage* pNewPack = FENG_NEW FEPackage();
+    pPack = pNewPack;
+    pNewPack->pCurrentButton = nullptr;
+    char* pShortName = reinterpret_cast<char*>(pChunk) + 0x28;
+    ResourceCount = BSwap32(pData[2]);
+    ObjectCount = BSwap32(pData[3]);
+    unsigned long NameLen = BSwap32(pData[4]);
+    pPack->SetName(pShortName);
+    char* pFileName = pShortName + NameLen;
+    pPack->SetFilename(pFileName);
+    return true;
 }
 
 bool FEPackageReader::ReadPackageResponseChunk() {

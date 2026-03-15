@@ -423,27 +423,26 @@ compute_direction:
     }
 }
 
-void FEListBox::Update(float dt) {
-    float alpha = mfCurrentAlpha + mfAlphaDelta * dt;
+void FEListBox::Update(float fNumTicks) {
+    float alpha = mfCurrentAlpha + mfAlphaDelta * fNumTicks;
     mfCurrentAlpha = alpha;
-    if (alpha < 0.0f || alpha > 1.0f) {
-        mfCurrentAlpha = alpha < 0.0f ? 0.0f : 1.0f;
+    if (alpha < 0.0f) {
+        mfCurrentAlpha = 0.0f;
+        mfAlphaDelta = -mfAlphaDelta;
+    } else if (alpha > 1.0f) {
+        mfCurrentAlpha = 1.0f;
         mfAlphaDelta = -mfAlphaDelta;
     }
     if (mulFlags & 2) {
-        FEVector2 dir;
-        dir = reinterpret_cast<FEVector2&>(mstDirection);
-        FEVector2 vel;
-        vel = dir;
-        float speed = FEngAbs(dir.x * mstSelectionSpeed.h + dir.y * mstSelectionSpeed.v);
-        vel.x *= speed * dt;
-        vel.y *= speed * dt;
-        FEVector2 delta;
-        delta = vel;
-        mstCurrentLocation.h = mstCurrentLocation.h + delta.x;
-        mstCurrentLocation.v = mstCurrentLocation.v + delta.y;
-        if ((dir.x * mstTargetLocation.h + dir.y * mstTargetLocation.v)
-            - (dir.x * mstCurrentLocation.h + dir.y * mstCurrentLocation.v) < 0.0f) {
+        FEVector2 obDirection(reinterpret_cast<FEVector2&>(mstDirection));
+        FEVector2 obVelocity(obDirection);
+        FEVector2& obSpeed = reinterpret_cast<FEVector2&>(mstSelectionSpeed);
+        float fDot = obDirection.Dot(obSpeed);
+        obVelocity *= FEngAbs(fDot) * fNumTicks;
+        FEVector2& obCurrentLocation = reinterpret_cast<FEVector2&>(mstCurrentLocation);
+        obCurrentLocation += obVelocity;
+        FEVector2& obTargetLocation = reinterpret_cast<FEVector2&>(mstTargetLocation);
+        if (obDirection.Dot(obTargetLocation) - obDirection.Dot(obCurrentLocation) < 0.0f) {
             CompleteScroll();
         }
     }

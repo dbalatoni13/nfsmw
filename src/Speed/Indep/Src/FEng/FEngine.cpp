@@ -276,13 +276,11 @@ void FEngine::RecordLastPackageButton(unsigned long PackHash, unsigned long Butt
 }
 
 unsigned long FEngine::RecallLastPackageButton(unsigned long PackHash) {
-    int i = 0;
-    do {
+    for (int i = 0; i < 32; i++) {
         if (RecordedPackageButtons[i].PackageHash == PackHash) {
             return RecordedPackageButtons[i].ButtonGUID;
         }
-        i++;
-    } while (i < 32);
+    }
     return 0;
 }
 

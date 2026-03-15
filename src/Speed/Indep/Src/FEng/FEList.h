@@ -39,7 +39,11 @@ protected:
     FEMinNode* tail; // offset 0x8, size 0x4
 
 public:
-    inline FEMinList() : numElements(0), head(nullptr), tail(nullptr) {}
+    inline FEMinList() {
+        head = nullptr;
+        tail = nullptr;
+        numElements = 0;
+    }
     virtual ~FEMinList() { Purge(); }
 
     inline FEMinNode* GetHead() const { return head; }
