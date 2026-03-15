@@ -107,11 +107,6 @@ void uiRepSheetMilestones::NotificationMessage(unsigned long msg, FEObject* obj,
         FEngSetScript(GetPackageName(), 0x99344537, 0x16a259, true);
         FEAnyTutorialScreen::LaunchMovie(gTUTORIAL_MOVIE_PURSUIT, GetPackageName());
         return;
-    case 0xc98356ba:
-        if (TrackMapStreamer != nullptr) {
-            TrackMapStreamer->UpdateAnimation();
-        }
-        return;
     case 0x911c0a4b:
     case 0xb5971bf1:
         break;
@@ -146,6 +141,11 @@ void uiRepSheetMilestones::NotificationMessage(unsigned long msg, FEObject* obj,
         RaceStarterStartCareerFreeRoam();
         return;
     }
+    case 0xc98356ba:
+        if (TrackMapStreamer != nullptr) {
+            TrackMapStreamer->UpdateAnimation();
+        }
+        return;
     case 0xd05fc3a3: {
         CareerSettings* career = FEDatabase->GetCareerSettings();
         if (((career->SpecialFlags >> 9) & 1) == 0) {
