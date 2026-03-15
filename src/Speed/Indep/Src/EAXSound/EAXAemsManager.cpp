@@ -1109,17 +1109,18 @@ void *EAXAemsManager::AsyncResidentAllocCB(int size) {
 
 void *EAXAemsManager::ResidentAllocCB(void *pbank, int residentsize, int totalsize) {
     (void)pbank;
-    void *resmem;
-    if (residentsize == totalsize) {
-        resmem = *reinterpret_cast<void **>(reinterpret_cast<char *>(gAEMSMgr.m_pCurLoadSDLP) + 0x28);
-    } else {
-        char *currentLoad = reinterpret_cast<char *>(gAEMSMgr.m_pCurLoadSDLP);
+    if (residentsize != totalsize) {
+        char *mgr = reinterpret_cast<char *>(&gAEMSMgr);
+        char *currentLoad = reinterpret_cast<char *>(*reinterpret_cast<stSndDataLoadParams **>(mgr + 0x118));
+        void *resmem;
         if (*reinterpret_cast<int *>(currentLoad + 0x0) == SDT_AEMS_MAINMEM) {
             resmem = bMalloc(residentsize, 0x1040);
         } else {
             stBankSlot *pBankSlot = *reinterpret_cast<stBankSlot **>(currentLoad + 0x24);
             if (pBankSlot != nullptr) {
                 pBankSlot->pLastAlloc += residentsize;
+                currentLoad = reinterpret_cast<char *>(*reinterpret_cast<stSndDataLoadParams **>(mgr + 0x118));
+                pBankSlot = *reinterpret_cast<stBankSlot **>(currentLoad + 0x24);
                 return pBankSlot->MAINmemLocation;
             }
 
@@ -1130,11 +1131,14 @@ void *EAXAemsManager::ResidentAllocCB(void *pbank, int residentsize, int totalsi
             resmem = gAudioMemoryManager.AllocateMemory(residentsize, filename, false);
         }
 
+        currentLoad = reinterpret_cast<char *>(*reinterpret_cast<stSndDataLoadParams **>(mgr + 0x118));
         *reinterpret_cast<void **>(currentLoad + 0x2C) = resmem;
-        (*reinterpret_cast<int *>(reinterpret_cast<char *>(&gAEMSMgr) + 0x104))++;
-        resmem = *reinterpret_cast<void **>(currentLoad + 0x2C);
+        (*reinterpret_cast<int *>(mgr + 0x104))++;
+        currentLoad = reinterpret_cast<char *>(*reinterpret_cast<stSndDataLoadParams **>(mgr + 0x118));
+        return *reinterpret_cast<void **>(currentLoad + 0x2C);
     }
-    return resmem;
+
+    return *reinterpret_cast<void **>(reinterpret_cast<char *>(gAEMSMgr.m_pCurLoadSDLP) + 0x28);
 }
 
 void EAXAemsManager::DataLoadCB(int param, int error_status) {
