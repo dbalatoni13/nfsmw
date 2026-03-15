@@ -138,6 +138,14 @@ inline HeliItem::HeliItem(FEImage* view, FEObject* icon, bVector2& pos, bVector2
     FEngSetRotationZ(static_cast< FEObject* >(pViewCone), rot);
 }
 
+void MapItem::Show() {
+    FEngSetVisible(pIcon);
+}
+
+void MapItem::Hide() {
+    FEngSetInvisible(pIcon);
+}
+
 inline ItemTypeToggle::ItemTypeToggle(unsigned int name_hash, eWorldMapItemType type, bool vis)
     : FEButtonWidget(true) {
     ItemType = type;
@@ -985,8 +993,8 @@ void WorldMap::AddCops() {
             const UCrc32& vehicleClass = (*iter)->GetVehicleClass();
             if (vehicleClass == VehicleClass::CHOPPER) {
                 AddMapItemOption(0xead9bd85, WMIT_COP_HELI);
-                FEImage* view = FEngFindImage(GetPackageName(), 0x21390e47);
                 FEObject* icon = FEngFindObject(GetPackageName(), 0xe26be422);
+                FEImage* view = FEngFindImage(GetPackageName(), 0x21390e47);
                 HeliItem* item = new HeliItem(view, icon, target_pos, world_pos, rot);
                 TheMapItems.AddTail(item);
             } else {

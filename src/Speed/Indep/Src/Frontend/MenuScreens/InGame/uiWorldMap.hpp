@@ -107,12 +107,8 @@ struct MapItem : public bTNode<MapItem> {
         FEngSetSize(pIcon, InitialSize.x * scale, InitialSize.y * scale);
     }
     virtual void Draw() {}
-    virtual void Show() {
-        FEngSetVisible(pIcon);
-    }
-    virtual void Hide() {
-        FEngSetInvisible(pIcon);
-    }
+    virtual void Show();
+    virtual void Hide();
     virtual void ResetSize() {
         FEngSetSize(pIcon, InitialSize.x, InitialSize.y);
     }
