@@ -10,6 +10,7 @@ static bool gInGameMoviePlaying;
 #include "Speed/Indep/Src/Generated/Events/EFadeScreenOn.hpp"
 #include "Speed/Indep/Src/Frontend/MoviePlayer/MoviePlayer.hpp"
 
+struct FEMovie;
 struct MenuScreen;
 struct ScreenConstructorData;
 
@@ -17,7 +18,12 @@ extern int SkipMovies;
 extern const char *GetLoadingScreenPackageName();
 extern void MiniMainLoop();
 extern void DismissChyron();
-extern void FEngSetMovieName(const char *pkg_name, unsigned int obj_hash, const char *name);
+extern FEObject *FEngFindObject(const char *pkg_name, unsigned int obj_hash);
+extern void FEngSetMovieName(FEMovie *movie, const char *name);
+
+inline void FEngSetMovieName(const char *pkg_name, unsigned int obj_hash, const char *name) {
+    FEngSetMovieName(reinterpret_cast<FEMovie *>(FEngFindObject(pkg_name, obj_hash)), name);
+}
 extern bool TrackStreamerIsLoadingInProgress() asm("IsLoadingInProgress__13TrackStreamer");
 
 struct CarLoader {

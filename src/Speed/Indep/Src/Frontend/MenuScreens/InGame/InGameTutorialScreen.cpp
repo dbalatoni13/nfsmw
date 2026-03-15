@@ -4,6 +4,9 @@
 #include "Speed/Indep/Src/Generated/Messages/MNotifyMovieFinished.h"
 #include "Speed/Indep/Src/Generated/Events/EFadeScreenOn.hpp"
 
+extern unsigned int FEngHashString(const char *, ...);
+extern unsigned int bStringHash(const char *, int);
+
 extern bool gInGameMoviePlaying;
 
 struct MenuScreen;
@@ -42,6 +45,71 @@ void InGameAnyTutorialScreen::SetPackageName(const char *packageName) {
 
 MenuScreen *InGameAnyTutorialScreen::Create(ScreenConstructorData *sd) {
     return new ("", 0) InGameAnyTutorialScreen(sd);
+}
+
+InGameAnyTutorialScreen::InGameAnyTutorialScreen(ScreenConstructorData *sd) : MenuScreen(sd) {
+    bool mSkipable = true;
+    unsigned int str_hash = 0;
+    const char *label;
+
+    DismissChyron();
+    FEngSetMovieName(GetPackageName(), 0x348ff9f, MovieFilename);
+
+    if (eIsWidescreen()) {
+        cFEng::Get()->QueuePackageMessage(0x70d2183b, GetPackageName(), 0);
+    }
+
+    CareerSettings *career = FEDatabase->GetCareerSettings();
+
+    if (bStrCmp(MovieFilename, "drag_tutorial") == 0) {
+        if (career && !career->HasDoneDragTutorial()) {
+            mSkipable = false;
+            career->SetHasDoneDragTutorial();
+        }
+        label = "TUTORIAL_DRAG";
+    } else if (bStrCmp(MovieFilename, "speedtrap_tutorial") == 0) {
+        if (career && !career->HasDoneSpeedTrapTutorial()) {
+            mSkipable = false;
+            career->SetHasDoneSpeedTrapTutorial();
+        }
+        label = "TUTORIAL_SPEEDTRAPRACE";
+    } else if (bStrCmp(MovieFilename, "tollbooth_tutorial") == 0) {
+        if (career && !career->HasDoneTollBoothTutorial()) {
+            mSkipable = false;
+            career->SetHasDoneTollBoothTutorial();
+        }
+        label = "TUTORIAL_TOLLBOOTH";
+    } else if (bStrCmp(MovieFilename, "bounty_tutorial") == 0) {
+        if (career && !career->HasDoneBountyTutorial()) {
+            mSkipable = false;
+            career->SetHasDoneBountyTutorial();
+        }
+        label = "TUTORIAL_BOUNTY";
+    } else if (bStrCmp(MovieFilename, "pursuit_tutorial") == 0) {
+        if (career && !career->HasDonePursuitTutorial()) {
+            mSkipable = false;
+            career->SetHasDonePursuitTutorial();
+        }
+        label = "TUTORIAL_PURSUIT";
+    } else {
+        goto skip_hash;
+    }
+
+    str_hash = FEngHashString(label);
+
+skip_hash:
+    if (mSkipable) {
+        cFEng::Get()->QueuePackageMessage(0x59291f95, GetPackageName(), 0);
+    }
+
+    unsigned int label_hash = bStringHash("_LABEL", str_hash);
+    FEngSetLanguageHash(GetPackageName(), 0x5a0ee0d9, label_hash);
+    FEngSetLanguageHash(GetPackageName(), 0xf414bf3e, label_hash);
+    FEngSetLanguageHash(GetPackageName(), 0x5a0ee0d8, label_hash);
+    FEngSetLanguageHash(GetPackageName(), 0x07d2ea5d, label_hash);
+
+    mSubtitler.BeginningMovie(MovieFilename, GetPackageName());
+    new EFadeScreenOff(0x14035fb);
 }
 
 InGameAnyTutorialScreen::~InGameAnyTutorialScreen() {

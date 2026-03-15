@@ -283,6 +283,36 @@ class CareerSettings {
     bool HasDoneCareerIntro() {
         return SpecialFlags & 0x20;
     }
+    bool HasDoneDragTutorial() {
+        return SpecialFlags & 0x40;
+    }
+    void SetHasDoneDragTutorial() {
+        SpecialFlags |= 0x40;
+    }
+    bool HasDoneSpeedTrapTutorial() {
+        return SpecialFlags & 0x80;
+    }
+    void SetHasDoneSpeedTrapTutorial() {
+        SpecialFlags |= 0x80;
+    }
+    bool HasDoneTollBoothTutorial() {
+        return SpecialFlags & 0x100;
+    }
+    void SetHasDoneTollBoothTutorial() {
+        SpecialFlags |= 0x100;
+    }
+    bool HasDonePursuitTutorial() {
+        return SpecialFlags & 0x200;
+    }
+    void SetHasDonePursuitTutorial() {
+        SpecialFlags |= 0x200;
+    }
+    bool HasDoneBountyTutorial() {
+        return SpecialFlags & 0x400;
+    }
+    void SetHasDoneBountyTutorial() {
+        SpecialFlags |= 0x400;
+    }
     bool HasDoneMapLoadigTip() {
         return SpecialFlags & 0x80000;
     }
