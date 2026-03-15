@@ -417,19 +417,15 @@ FEPackage* FEngine::PushPackage(const char* pPackageName, const unsigned char Le
     return pPack;
 }
 
-void FEngine::QueuePackageUserTransfer(FEPackage* pPack, bool bPush, unsigned long ControlMask) {
+void FEngine::QueuePackageUserTransfer(FEPackage* pFrom, bool bToChild, unsigned long ControlMask) {
     printf("If you get this, come see Gary or Lolley!\n");
-    FEPackageCommand* pCmd = FENG_NEW FEPackageCommand();
-    pCmd->uControlMask = 0;
-    pCmd->iCommand = 0;
-    pCmd->pPackage = pPack;
-    pCmd->uControlMask = pPack->GetControlMask() & ControlMask;
-    int cmd = 4;
-    if (bPush) {
-        cmd = 8;
-    }
-    pCmd->iCommand = cmd;
-    PackageCommands.AddTail(pCmd);
+    FEPackageCommand* pCom = FENG_NEW FEPackageCommand();
+    pCom->iCommand = 0;
+    pCom->uControlMask = 0;
+    pCom->pPackage = pFrom;
+    pCom->uControlMask = pFrom->GetControlMask() & ControlMask;
+    pCom->iCommand = bToChild ? 8 : 4;
+    PackageCommands.AddTail(pCom);
 }
 
 int FEngine::GetNumPackagesBelowPriority(unsigned char priority) {
