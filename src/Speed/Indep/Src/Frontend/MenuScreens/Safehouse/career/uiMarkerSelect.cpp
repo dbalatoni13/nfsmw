@@ -162,16 +162,55 @@ void FEMarkerSelection::SetUnlockIcon(eUnlockableEntity ent, unsigned int messag
 }
 
 void FEMarkerSelection::NotificationMessage(unsigned long msg, FEObject *pobj, unsigned long param1, unsigned long param2) {
-    if (msg == 0xabc08912) {
+    switch (msg) {
+    case 0xe1fde1d1:
+        TheFEMarkerManager.ClearMarkersForLaterSelection();
+        uiRepSheetRivalFlow::Get()->Next();
+        break;
+    case 0x35f8620b:
+        FEngSetCurrentButton(GetPackageName(), 0xcda0a66b);
+        break;
+    case 0x0c407210: {
+        if (GetNumSelected() < 2) {
+            int idx = GetSelectedButtonIndex();
+            if (TheMarkers[idx].Selected) break;
+            FEngSetScript(pobj, 0x15970a, true);
+            TheMarkers[idx].Selected = true;
+            switch (static_cast<int>(TheMarkers[idx].Marker)) {
+            case 0x12:
+                FEDatabase->GetPlayerCarStable(0)->AwardRivalCar(TheMarkers[idx].Param);
+                break;
+            case 0x13:
+                FEDatabase->GetCareerSettings()->AddCash(TheMarkers[idx].Param);
+                break;
+            default:
+                TheFEMarkerManager.AddMarkerToInventory(TheMarkers[idx].Marker, TheMarkers[idx].Param);
+                break;
+            }
+            if (GetNumSelected() >= 2) {
+                FEngSetLanguageHash(GetPackageName(), 0xbdb541b3, 0x8098a54c);
+                FEngSetLanguageHash(GetPackageName(), 0x7603f3d5, 0x8098a54c);
+            }
+        } else {
+            cFEng::Get()->QueuePackageMessage(0x587c018b, GetPackageName(), nullptr);
+        }
+        break;
+    }
+    case 0xabc08912: {
         FEPackage *pkg = cFEng::Get()->FindPackage(GetPackageName());
         if (!pkg->bInputEnabled) return;
         int idx = GetButtonIndex(pobj->NameHash);
-        if (!TheMarkers[idx].Selected) {
-            FEngSetScript(pobj, 0x249db7b7, true);
-        } else {
+        if (TheMarkers[idx].Selected) {
             FEngSetScript(pobj, 0x6b718fa1, true);
+        } else {
+            FEngSetScript(pobj, 0x249db7b7, true);
         }
-    } else if (msg == 0x55d1e635) {
+    }
+    case 0xbb3e313d:
+    case 0xf0966d46:
+        Redraw();
+        break;
+    case 0x55d1e635: {
         FEPackage *pkg = cFEng::Get()->FindPackage(GetPackageName());
         if (!pkg->bInputEnabled) return;
         int idx = GetButtonIndex(pobj->NameHash);
@@ -180,34 +219,8 @@ void FEMarkerSelection::NotificationMessage(unsigned long msg, FEObject *pobj, u
         } else {
             FEngSetScript(pobj, 0x7ab5521a, true);
         }
-    } else if (msg == 0x35f8620b) {
-        FEngSetCurrentButton(GetPackageName(), 0xcda0a66b);
-    } else if (msg == 0xc407210) {
-        if (GetNumSelected() >= 2) {
-            cFEng::Get()->QueuePackageMessage(0x587c018b, GetPackageName(), nullptr);
-            return;
-        }
-        int idx = GetSelectedButtonIndex();
-        if (TheMarkers[idx].Selected) return;
-        FEngSetScript(pobj, 0x15970a, true);
-        TheMarkers[idx].Selected = true;
-        FEMarkerManager::ePossibleMarker marker = TheMarkers[idx].Marker;
-        if (marker == static_cast<FEMarkerManager::ePossibleMarker>(0x12)) {
-            FEDatabase->GetPlayerCarStable(0)->AwardRivalCar(TheMarkers[idx].Param);
-        } else if (marker == static_cast<FEMarkerManager::ePossibleMarker>(0x13)) {
-            FEDatabase->GetCareerSettings()->AddCash(TheMarkers[idx].Param);
-        } else {
-            TheFEMarkerManager.AddMarkerToInventory(TheMarkers[idx].Marker, TheMarkers[idx].Param);
-        }
-        if (GetNumSelected() >= 2) {
-            FEngSetLanguageHash(GetPackageName(), 0xbdb541b3, 0x8098a54c);
-            FEngSetLanguageHash(GetPackageName(), 0x7603f3d5, 0x8098a54c);
-        }
-    } else if (msg == 0xe1fde1d1) {
-        TheFEMarkerManager.ClearMarkersForLaterSelection();
-        uiRepSheetRivalFlow::Get()->Next();
-    } else if (msg == 0xbb3e313d || msg == 0xf0966d46) {
-        Redraw();
+        break;
+    }
     }
 }
 

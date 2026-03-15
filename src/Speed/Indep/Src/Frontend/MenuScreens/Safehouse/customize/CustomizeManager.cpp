@@ -166,20 +166,27 @@ void CarCustomizeManager::RelinquishControl() {
 bool CarCustomizeManager::CanTradeIn(SelectablePart *part) {
     if (!part->IsPerformancePkg()) {
         int slot = part->GetSlotID();
-        if (slot < 0x74) {
-            if (slot < 99 && (slot < 0x4c || (slot > 0x53 && slot != 0x5b))) {
+        if (slot <= 0x73) {
+            if (slot >= 0x63) {
+                return false;
+            }
+            if (slot < 0x4c) {
                 return true;
             }
-        } else if (slot != 0x7b) {
-            if (slot < 0x7b) {
-                return true;
+            if (slot <= 0x53) {
+                return false;
             }
-            if (slot > 0x87) {
-                return true;
+            if (slot == 0x5b) {
+                return false;
             }
-            if (slot < 0x83) {
-                return true;
-            }
+        } else if (slot == 0x7b) {
+            return false;
+        } else if (slot < 0x7b) {
+            return true;
+        } else if (slot > 0x87) {
+            return true;
+        } else if (slot < 0x83) {
+            return true;
         }
     }
     return false;
@@ -218,8 +225,9 @@ bool CarCustomizeManager::RemoveFromCart(ShoppingCartItem *item) {
         item->Remove();
         delete item;
         NumPartsInCart--;
+        return true;
     }
-    return item != nullptr;
+    return false;
 }
 
 ShoppingCartItem *CarCustomizeManager::IsPartTypeInCart(SelectablePart *to_find) {
@@ -252,11 +260,21 @@ ShoppingCartItem *CarCustomizeManager::IsPartTypeInCart(Physics::Upgrades::Type 
 }
 
 ShoppingCartItem *CarCustomizeManager::IsPartInCart(SelectablePart *to_find) {
-    for (ShoppingCartItem *item = GetFirstCartItem(); item != reinterpret_cast<ShoppingCartItem *>(&ShoppingCart); item = item->GetNext()) {
-        if (item->GetBuyingPart()->GetPart() == to_find->GetPart() &&
-            item->GetBuyingPart()->GetSlotID() == to_find->GetSlotID()) {
-            return item;
+    ShoppingCartItem *item = GetFirstCartItem();
+    while (item != reinterpret_cast<ShoppingCartItem *>(&ShoppingCart)) {
+        SelectablePart *buyPart = item->GetBuyingPart();
+        if (to_find->IsPerformancePkg()) {
+            if (buyPart->GetPhysicsType() == to_find->GetPhysicsType() &&
+                buyPart->GetUpgradeLevel() == to_find->GetUpgradeLevel()) {
+                return item;
+            }
+        } else {
+            if (buyPart->GetPart() == to_find->GetPart() &&
+                buyPart->GetSlotID() == to_find->GetSlotID()) {
+                return item;
+            }
         }
+        item = item->GetNext();
     }
     return nullptr;
 }
@@ -351,20 +369,23 @@ bool CarCustomizeManager::DoesCartHaveActiveParts() {
 }
 
 int CarCustomizeManager::GetPartPrice(SelectablePart *part) {
-    if (!part || CustomizeIsInBackRoom()) return 0;
-    if (!part->IsPerformancePkg()) {
-        int slot = part->GetSlotID();
-        if ((slot >= 0x4f && slot <= 0x52) || (slot >= 0x85 && slot <= 0x87)) return 0;
-        eUnlockFilters filter = GetUnlockFilter();
-        return UnlockSystem::GetCarPartCost(filter, slot, part->GetPart(), 0);
-    } else {
-        Physics::Upgrades::Type ptype = static_cast<Physics::Upgrades::Type>(static_cast<int>(part->GetPhysicsType()));
-        int max_pkgs = GetMaxPackages(ptype);
-        int num_pkgs = GetNumPackages(ptype);
-        int level = part->GetUpgradeLevel();
-        eUnlockFilters filter = GetUnlockFilter();
-        return UnlockSystem::GetPerfPackageCost(filter, ptype, max_pkgs - (num_pkgs - level), 0);
+    int price = 0;
+    if (part && !CustomizeIsInBackRoom()) {
+        if (part->IsPerformancePkg()) {
+            price = GetMaxPackages(static_cast<Physics::Upgrades::Type>(static_cast<int>(part->GetPhysicsType())));
+            price -= GetNumPackages(static_cast<Physics::Upgrades::Type>(static_cast<int>(part->GetPhysicsType()))) - part->GetUpgradeLevel();
+            eUnlockFilters filter = GetUnlockFilter();
+            price = UnlockSystem::GetPerfPackageCost(filter, static_cast<Physics::Upgrades::Type>(static_cast<int>(part->GetPhysicsType())), price, 0);
+        } else {
+            if (part->GetSlotID() < 0x4f || part->GetSlotID() > 0x52) {
+                if (part->GetSlotID() > 0x87 || part->GetSlotID() < 0x85) {
+                    eUnlockFilters filter = GetUnlockFilter();
+                    price = UnlockSystem::GetCarPartCost(filter, part->GetSlotID(), part->GetPart(), 0);
+                }
+            }
+        }
     }
+    return price;
 }
 
 void CarCustomizeManager::SetTempColoredPart(SelectablePart *part) {
