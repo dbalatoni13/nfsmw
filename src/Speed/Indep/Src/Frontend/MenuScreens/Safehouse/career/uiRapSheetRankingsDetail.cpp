@@ -77,101 +77,101 @@ void uiRapSheetRankingsDetail::NotificationMessage(unsigned long msg, FEObject* 
 }
 void uiRapSheetRankingsDetail::Setup() {
     ClearData();
-    HighScoresDatabase* scores = FEDatabase->GetUserProfile(0)->GetHighScores();
+    HighScoresDatabase* const scores = FEDatabase->GetUserProfile(0)->GetHighScores();
     player_rank = scores->CalcPursuitRank(rank_type, career_view);
-    const char* attrib_name = nullptr;
-    Attrib::Key key = 0;
-    unsigned int value_label = 0;
+    const char* attrib_name;
+    Attrib::Key key;
+    unsigned int value_label;
     switch (static_cast<int>(rank_type)) {
     case 0:
+        value_label = 0xD70811D1;
         if (career_view) {
             attrib_name = "pursuit_length_in_pursuit";
         } else {
             attrib_name = "pursuit_length";
         }
         key = Attrib::StringToKey(attrib_name);
-        value_label = 0xD70811D1;
         break;
     case 1:
+        value_label = 0xC6113FCF;
         if (career_view) {
             attrib_name = "cops_involved_in_pursuit";
         } else {
             attrib_name = "cops_involved";
         }
         key = Attrib::StringToKey(attrib_name);
-        value_label = 0xC6113FCF;
         break;
     case 2:
+        value_label = 0x2A1815D9;
         if (career_view) {
             attrib_name = "cops_damaged_in_pursuit";
         } else {
             attrib_name = "cops_damaged";
         }
         key = Attrib::StringToKey(attrib_name);
-        value_label = 0x2A1815D9;
         break;
     case 3:
+        value_label = 0x189EAF7B;
         if (career_view) {
             attrib_name = "cops_destroyed_in_pursuit";
         } else {
             attrib_name = "cops_destroyed";
         }
         key = Attrib::StringToKey(attrib_name);
-        value_label = 0x189EAF7B;
         break;
     case 4:
+        value_label = 0xDCD6B9BA;
         if (career_view) {
             attrib_name = "tire_spikes_dodged_in_pursuit";
         } else {
             attrib_name = "tire_spikes_dodged";
         }
         key = Attrib::StringToKey(attrib_name);
-        value_label = 0xDCD6B9BA;
         break;
     case 5:
+        value_label = 0x9EF589BE;
         if (career_view) {
             attrib_name = "roadblocks_dodged_in_pursuit";
         } else {
             attrib_name = "roadblocks_dodged";
         }
         key = Attrib::StringToKey(attrib_name);
-        value_label = 0x9EF589BE;
         break;
     case 6:
+        value_label = 0x39A1413C;
         if (career_view) {
             attrib_name = "helis_involved_in_pursuit";
         } else {
             attrib_name = "helis_involved";
         }
         key = Attrib::StringToKey(attrib_name);
-        value_label = 0x39A1413C;
         break;
     case 7:
+        value_label = 0xB3F963F8;
         if (career_view) {
             attrib_name = "cost_to_state_in_pursuit";
         } else {
             attrib_name = "cost_to_state";
         }
         key = Attrib::StringToKey(attrib_name);
-        value_label = 0xB3F963F8;
         break;
     case 8:
+        value_label = 0xE34B2E6F;
         if (career_view) {
             attrib_name = "total_infractions_in_pursuit";
         } else {
             attrib_name = "total_infractions";
         }
         key = Attrib::StringToKey(attrib_name);
-        value_label = 0xE34B2E6F;
         break;
     case 9:
+        value_label = 0x48B4B99C;
         if (career_view) {
             attrib_name = "bounty_in_pursuit";
         } else {
             attrib_name = "bounty";
         }
         key = Attrib::StringToKey(attrib_name);
-        value_label = 0x48B4B99C;
         break;
     default: break;
     }
@@ -190,9 +190,10 @@ void uiRapSheetRankingsDetail::Setup() {
             }
             for (int i = 0; i < num_rows; i++) {
                 if (i == player_rank - 1) {
-                    unsigned int car_hash = 0;
+                    unsigned int car_hash;
                     int player_value;
                     if (career_view) {
+                        car_hash = 0;
                         player_value = scores->CareerPursuitDetails.GetValue(rank_type);
                     } else {
                         car_hash = GetFECarNameHashFromFEKey(scores->BestPursuitRankings[rank_type].CarFEKey);

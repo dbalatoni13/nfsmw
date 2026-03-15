@@ -84,12 +84,12 @@ void uiRepSheetMilestones::NotificationMessage(unsigned long msg, FEObject* obj,
             return;
         }
         if (!bIsInGame) {
-            int joyPort = FEngMapJoyParamToJoyport(param2);
-            FEDatabase->SetPlayersJoystickPort(0, static_cast<signed char>(joyPort));
+            signed char joyPort = static_cast< signed char >(FEngMapJoyParamToJoyport(param1));
+            FEDatabase->SetPlayersJoystickPort(0, joyPort);
         }
-        const char* dialog = "DIALOG.fng";
+        const char* dialog = "";
         if (bIsInGame) {
-            dialog = "IG_DIALOG.fng";
+            dialog = "InGameDialog.fng";
         }
         unsigned int messageHash = 0xa5a8409a;
         if (theMilestone->GetType() != 0) {
@@ -117,7 +117,7 @@ void uiRepSheetMilestones::NotificationMessage(unsigned long msg, FEObject* obj,
         break;
     case 0xc3960eb9: {
         if (bIsInGame) {
-            FEngSetVisible("IG_BL_TRACKMAP.fng", 0x2716cdbf);
+            FEngSetVisible(FEngFindObject("InGameBackground.fng", 0x2716cdbf));
         }
         FEngSetScript(GetPackageName(), 0x99344537, 0x1744b3, true);
         if (theMilestone == nullptr) {
@@ -157,10 +157,10 @@ void uiRepSheetMilestones::NotificationMessage(unsigned long msg, FEObject* obj,
                 }
                 TrackMapStreamer = nullptr;
                 InGameAnyTutorialScreenLaunchMovie(gTUTORIAL_MOVIE_PURSUIT, GetPackageName());
-                FEngSetInvisible("IG_BL_TRACKMAP.fng", 0x2716cdbf);
+                FEngSetInvisible(FEngFindObject("InGameBackground.fng", 0x2716cdbf));
             }
             FEngSetScript(GetPackageName(), 0x99344537, 0x16a259, true);
-            FEngSetInvisible(GetPackageName(), FEngHashString("MASTERBLASTER"));
+            FEngSetInvisible(FEngFindObject(GetPackageName(), FEngHashString("TRACK_MAP")));
             career->SpecialFlags |= 0x200;
             return;
         }
@@ -169,9 +169,9 @@ void uiRepSheetMilestones::NotificationMessage(unsigned long msg, FEObject* obj,
     }
     case 0x911ab364:
         if (bIsInGame) {
-            cFEng::Get()->QueuePackageSwitch("IG_BL_MAIN", 1, 0, false);
+            cFEng::Get()->QueuePackageSwitch("InGameReputationOverview.fng", 1, 0, false);
         } else {
-            cFEng::Get()->QueuePackageSwitch("BL_MAIN", 0, 0, false);
+            cFEng::Get()->QueuePackageSwitch("SafeHouseReputationOverview.fng", 0, 0, false);
         }
         return;
     case 0x72619778:
