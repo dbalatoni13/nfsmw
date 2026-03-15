@@ -190,7 +190,7 @@ void FEListBox::SetNumColumns(unsigned long ulNumColumns) {
         FEListEntryData* pstNewColumns = static_cast<FEListEntryData*>(FEngMalloc(ulNumColumns * sizeof(FEListEntryData), 0, 0));
         if (mulNumColumns != 0) {
             ulNumCopy = ulNumColumns;
-            if (mulNumColumns < ulNumColumns) {
+            if (ulNumColumns > mulNumColumns) {
                 ulNumCopy = mulNumColumns;
             }
             FEngMemCpy(pstNewColumns, mpstColumnData, ulNumCopy * sizeof(FEListEntryData));
@@ -205,7 +205,8 @@ void FEListBox::SetNumColumns(unsigned long ulNumColumns) {
         if (ulNumCells != 0) {
             pstCells = static_cast<FEListBoxCell*>(FEngMalloc(ulNumCells * sizeof(FEListBoxCell), 0, 0));
             FEListBoxCell* pCell = pstCells;
-            for (unsigned long i = ulNumCells; i != 0; i--) {
+            unsigned long i = ulNumCells;
+            do {
                 pCell->ulColor = 0;
                 pCell->stScale.h = 1.0f;
                 pCell->stScale.v = 1.0f;
@@ -216,10 +217,8 @@ void FEListBox::SetNumColumns(unsigned long ulNumColumns) {
                 pCell->u.string.pStr = nullptr;
                 pCell->u.string.Label = 0xFFFFFFFF;
                 pCell = pCell + 1;
-            }
-            if (mpstCells == nullptr) {
-                InitializeCell(pstCells, ulNumCells);
-            } else {
+            } while (--i);
+            if (mpstCells) {
                 unsigned long c = 0;
                 if (mulNumRows != 0) {
                     do {
@@ -233,6 +232,8 @@ void FEListBox::SetNumColumns(unsigned long ulNumColumns) {
                 if (mpstCells) {
                     delete[] mpstCells;
                 }
+            } else {
+                InitializeCell(pstCells, ulNumCells);
             }
         }
         mpstCells = pstCells;
@@ -250,7 +251,7 @@ void FEListBox::SetNumRows(unsigned long ulNumRows) {
         FEListEntryData* pstNewRows = static_cast<FEListEntryData*>(FEngMalloc(ulNumRows * sizeof(FEListEntryData), 0, 0));
         if (mulNumRows != 0) {
             ulNumCopy = ulNumRows;
-            if (mulNumRows < ulNumRows) {
+            if (ulNumRows > mulNumRows) {
                 ulNumCopy = mulNumRows;
             }
             FEngMemCpy(pstNewRows, mpstRowData, ulNumCopy * sizeof(FEListEntryData));
@@ -265,7 +266,8 @@ void FEListBox::SetNumRows(unsigned long ulNumRows) {
         if (ulNumCells != 0) {
             pstCells = static_cast<FEListBoxCell*>(FEngMalloc(ulNumCells * sizeof(FEListBoxCell), 0, 0));
             FEListBoxCell* pCell = pstCells;
-            for (unsigned long i = ulNumCells; i != 0; i--) {
+            unsigned long i = ulNumCells;
+            do {
                 pCell->ulColor = 0;
                 pCell->stScale.h = 1.0f;
                 pCell->stScale.v = 1.0f;
@@ -276,15 +278,15 @@ void FEListBox::SetNumRows(unsigned long ulNumRows) {
                 pCell->u.string.pStr = nullptr;
                 pCell->u.string.Label = 0xFFFFFFFF;
                 pCell = pCell + 1;
-            }
-            if (mpstCells == nullptr) {
-                InitializeCell(pstCells, ulNumCells);
-            } else {
+            } while (--i);
+            if (mpstCells) {
                 FEngMemCpy(pstCells, mpstCells, ulNumCopy * mulNumColumns * sizeof(FEListBoxCell));
                 InitializeCell(pstCells + ulNumCopy * mulNumColumns, (ulNumRows - ulNumCopy) * mulNumColumns);
                 if (mpstCells) {
                     delete[] mpstCells;
                 }
+            } else {
+                InitializeCell(pstCells, ulNumCells);
             }
         }
         mpstCells = pstCells;

@@ -666,13 +666,9 @@ void FEngine::Update(const long tDeltaTicks, unsigned int lock) {
             pInterface->GetMouseInfo(Info);
             Mouse.Update(Info, tDeltaTicks);
         }
-        unsigned char PadIndex = 0;
-        if (NumJoyPads != 0) {
-            do {
-                unsigned long mask = pInterface->GetJoyPadMask(PadIndex);
-                pJoyPad[PadIndex].Update(mask, tDeltaTicks);
-                PadIndex = PadIndex + 1;
-            } while (PadIndex < NumJoyPads);
+        for (unsigned char PadIndex = 0; PadIndex < NumJoyPads; PadIndex++) {
+            unsigned long mask = pInterface->GetJoyPadMask(PadIndex);
+            pJoyPad[PadIndex].Update(mask, tDeltaTicks);
         }
         for (pPackage = PackList.GetFirstPackage(); pPackage; pPackage = pPackage->GetNext()) {
             if (pPackage->IsInputEnabled() &&
@@ -687,12 +683,8 @@ void FEngine::Update(const long tDeltaTicks, unsigned int lock) {
         unsigned long MaskBit = 1;
         do {
             if ((PadHoldRegistered & MaskBit) != 0) {
-                unsigned char PadIdx = 0;
-                if (NumJoyPads != 0) {
-                    do {
-                        pJoyPad[PadIdx].DecrementHold(MaskBit, HoldDecrement[i]);
-                        PadIdx = PadIdx + 1;
-                    } while (PadIdx < NumJoyPads);
+                for (unsigned char PadIdx = 0; PadIdx < NumJoyPads; PadIdx++) {
+                    pJoyPad[PadIdx].DecrementHold(MaskBit, HoldDecrement[i]);
                 }
             }
             HoldDecrement[i] = 0;
