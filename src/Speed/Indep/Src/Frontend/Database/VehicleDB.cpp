@@ -5,6 +5,7 @@
 #include "Speed/Indep/Src/Misc/EasterEggs.hpp"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/fecooling.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/frontend.h"
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/infractions.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/presetride.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/pvehicle.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/pursuitlevels.h"
@@ -1296,4 +1297,44 @@ void AdjustStableImpound_EvadePursuit(int playerNum) {
             fe_career->TheImpoundData.NotifyEvade();
         }
     }
+}
+
+unsigned int FEInfractionsData::GetFineValue() const {
+    if (NumInfractions() == 0) {
+        return 0;
+    }
+    unsigned int fines = 0;
+    Attrib::Gen::infractions AssaultFine(Attrib::StringToKey("assault"), 0, nullptr);
+    if (AssaultFine.IsValid()) {
+        fines = static_cast<unsigned int>(Assault) * AssaultFine.amount();
+    }
+    Attrib::Gen::infractions DamageFine(Attrib::StringToKey("damage"), 0, nullptr);
+    if (DamageFine.IsValid()) {
+        fines += static_cast<unsigned int>(Damage) * DamageFine.amount();
+    }
+    Attrib::Gen::infractions HitAndRunFine(Attrib::StringToKey("hit_and_run"), 0, nullptr);
+    if (HitAndRunFine.IsValid()) {
+        fines += static_cast<unsigned int>(HitAndRun) * HitAndRunFine.amount();
+    }
+    Attrib::Gen::infractions OffRoadFine(Attrib::StringToKey("off_road"), 0, nullptr);
+    if (OffRoadFine.IsValid()) {
+        fines += static_cast<unsigned int>(OffRoad) * OffRoadFine.amount();
+    }
+    Attrib::Gen::infractions RacingFine(Attrib::StringToKey("racing"), 0, nullptr);
+    if (RacingFine.IsValid()) {
+        fines += static_cast<unsigned int>(Racing) * RacingFine.amount();
+    }
+    Attrib::Gen::infractions RecklessFine(Attrib::StringToKey("reckless_driving"), 0, nullptr);
+    if (RecklessFine.IsValid()) {
+        fines += static_cast<unsigned int>(Reckless) * RecklessFine.amount();
+    }
+    Attrib::Gen::infractions ResistFine(Attrib::StringToKey("resisting_arrest"), 0, nullptr);
+    if (ResistFine.IsValid()) {
+        fines += static_cast<unsigned int>(Resist) * ResistFine.amount();
+    }
+    Attrib::Gen::infractions SpeedingFine(Attrib::StringToKey("speeding"), 0, nullptr);
+    if (SpeedingFine.IsValid()) {
+        fines += static_cast<unsigned int>(Speeding) * SpeedingFine.amount();
+    }
+    return fines;
 }
