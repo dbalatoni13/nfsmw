@@ -679,11 +679,10 @@ bool FEPackageReader::ReadObjectChunk() {
         }
         do {
 
-            pObj = nullptr;
-            pParent = nullptr;
-
             FEChunk* pLastSub = pObjChunk->GetLastChunk();
             FEChunk* pSubChunk = pObjChunk->GetFirstChunk();
+            pObj = nullptr;
+            pParent = nullptr;
 
             while (pSubChunk < pLastSub) {
                 unsigned long subID = BSwap32(pSubChunk->GetID());
@@ -693,11 +692,11 @@ bool FEPackageReader::ReadObjectChunk() {
                             return false;
                         }
                         break;
-                    case 0x5267734d:
-                        ReadMessageResponseTags(reinterpret_cast<FETag*>(pSubChunk->GetData()), BSwap32(pSubChunk->GetSize()), false);
-                        break;
                     case 0x70726353:
                         ReadScriptTags(reinterpret_cast<FETag*>(pSubChunk->GetData()), BSwap32(pSubChunk->GetSize()));
+                        break;
+                    case 0x5267734d:
+                        ReadMessageResponseTags(reinterpret_cast<FETag*>(pSubChunk->GetData()), BSwap32(pSubChunk->GetSize()), false);
                         break;
                 }
                 pSubChunk = pSubChunk->GetNext();
@@ -723,12 +722,8 @@ bool FEPackageReader::ReadObjectChunk() {
                 pDefaultScript->CurTime = 0;
 
                 if (!bIsLibrary) {
-                    unsigned char i = 0;
-                    if (pDefaultScript->TrackCount != 0) {
-                        do {
-                            FEKeyInterp(pDefaultScript, i, 0, pObj);
-                            i++;
-                        } while (i < pDefaultScript->TrackCount);
+                    for (unsigned char i = 0; i < pDefaultScript->TrackCount; i++) {
+                        FEKeyInterp(pDefaultScript, i, 0, pObj);
                     }
                 }
 
