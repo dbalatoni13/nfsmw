@@ -49,11 +49,12 @@ void uiRapSheetRankings::NotificationMessage(unsigned long msg, FEObject* pobj, 
 void uiRapSheetRankings::RefreshHeader() {
     UserProfile* prof = FEDatabase->GetUserProfile(0);
     FEPrintf(GetPackageName(), 0x1232703A, GetLocalizedString(0xE21D083C), prof->GetCareer()->GetCaseFileName());
+    FEPrintf(GetPackageName(), static_cast<int>(0xEB406FEC), GetLocalizedString(0x6031106E), prof->GetProfileName());
+    const char* pkg = GetPackageName();
     unsigned int best_hash = career_view ? 0x96DDF504 : 0x56E940F4;
-    FEngSetLanguageHash(GetPackageName(), 0x1E4FDA, best_hash);
-    unsigned int toggle_hash = career_view ? 0x554BBDB5 : 0xA88B3FC5;
-    FEngSetLanguageHash(GetPackageName(), 0xDD2F4FB, toggle_hash);
-    FEngSetLanguageHash(GetPackageName(), 0x9AE9B5CD, toggle_hash);
+    FEngSetLanguageHash(pkg, 0x1E4FDA, best_hash);
+    FEngSetLanguageHash(GetPackageName(), 0xDD2F4FB, career_view ? 0x554BBDB5 : 0xA88B3FC5);
+    FEngSetLanguageHash(GetPackageName(), 0x9AE9B5CD, career_view ? 0x554BBDB5 : 0xA88B3FC5);
 }
 void uiRapSheetRankings::Setup() {
     PrintRanking(0x7711109B, 0xCDA0A66B, ePDT_CostToState);
