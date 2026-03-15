@@ -318,7 +318,7 @@ GarageMainScreen::GarageMainScreen(ScreenConstructorData *sd, int eview_id, Ride
     mGeometryModels.Init("BACKDROP");
 
     char sztemp[32];
-    FEngSNPrintf(sztemp, 0x20, "CAR_NAME_%s", CarTypeInfoArray + start_ride->Type * sizeof(CarTypeInfo));
+    FEngSNPrintf(sztemp, 0x20, "CAR_NAME_%s", GetCarTypeInfo(start_ride->Type)->CarTypeName);
     FEngSetLanguageHash(pCarName, FEHashUpper(sztemp));
     SetSelectCarLighting(ViewID, 1.0f, 0);
     HandleTick(0);

@@ -641,6 +641,24 @@ bool CarCustomizeManager::IsCategoryNew(unsigned int cat) {
     eUnlockableEntity titty;
 
     switch (cat) {
+    case 0x801: {
+        for (unsigned int i = 0x101; i <= 0x105; i++) {
+            if (IsCategoryNew(i)) return true;
+        }
+        return false;
+    }
+    case 0x802: {
+        for (unsigned int i = 0x201; i <= 0x207; i++) {
+            if (IsCategoryNew(i)) return true;
+        }
+        return false;
+    }
+    case 0x803: {
+        for (unsigned int i = 0x301; i <= 0x307; i++) {
+            if (IsCategoryNew(i)) return true;
+        }
+        return false;
+    }
     case 0x101:
         titty = static_cast<eUnlockableEntity>(0xb);
         break;
@@ -648,7 +666,7 @@ bool CarCustomizeManager::IsCategoryNew(unsigned int cat) {
         titty = static_cast<eUnlockableEntity>(0xc);
         break;
     case 0x103: {
-        for (unsigned int i = 0x702; i < 0x70c; i++) {
+        for (unsigned int i = 0x702; i <= 0x70b; i++) {
             if (IsCategoryNew(i)) return true;
         }
         return false;
@@ -658,6 +676,9 @@ bool CarCustomizeManager::IsCategoryNew(unsigned int cat) {
         break;
     case 0x105:
         titty = static_cast<eUnlockableEntity>(0xf);
+        break;
+    case 0x307:
+        titty = static_cast<eUnlockableEntity>(0x11);
         break;
     case 0x201:
         titty = static_cast<eUnlockableEntity>(8);
@@ -687,7 +708,7 @@ bool CarCustomizeManager::IsCategoryNew(unsigned int cat) {
         for (unsigned int i = 0x402; i <= 0x409; i++) {
             if (IsCategoryNew(i)) return true;
         }
-        return true;
+        return false;
     }
     case 0x303:
         titty = static_cast<eUnlockableEntity>(0x18);
@@ -702,9 +723,6 @@ bool CarCustomizeManager::IsCategoryNew(unsigned int cat) {
         return false;
     case 0x306:
         titty = static_cast<eUnlockableEntity>(0x2b);
-        break;
-    case 0x307:
-        titty = static_cast<eUnlockableEntity>(0x11);
         break;
     case 0x402:
         titty = static_cast<eUnlockableEntity>(0x23);
@@ -729,26 +747,6 @@ bool CarCustomizeManager::IsCategoryNew(unsigned int cat) {
         break;
     case 0x409:
         titty = static_cast<eUnlockableEntity>(0x2a);
-        break;
-    case 0x501:
-    case 0x502:
-        titty = static_cast<eUnlockableEntity>(0x2c);
-        break;
-    case 0x503:
-    case 0x504:
-        titty = static_cast<eUnlockableEntity>(0x2e);
-        break;
-    case 0x505:
-    case 0x506:
-        titty = static_cast<eUnlockableEntity>(0x30);
-        break;
-    case 0x601:
-    case 0x602:
-    case 0x603:
-    case 0x604:
-    case 0x605:
-    case 0x606:
-        titty = static_cast<eUnlockableEntity>(0x2e);
         break;
     case 0x702:
         titty = static_cast<eUnlockableEntity>(0x19);
@@ -780,24 +778,24 @@ bool CarCustomizeManager::IsCategoryNew(unsigned int cat) {
     case 0x70b:
         titty = static_cast<eUnlockableEntity>(0x22);
         break;
-    case 0x801: {
-        for (unsigned int i = 0x101; i < 0x106; i++) {
-            if (IsCategoryNew(i)) return true;
-        }
-        return false;
-    }
-    case 0x802: {
-        for (unsigned int i = 0x201; i < 0x208; i++) {
-            if (IsCategoryNew(i)) return true;
-        }
-        return false;
-    }
-    case 0x803: {
-        for (unsigned int i = 0x301; i < 0x308; i++) {
-            if (IsCategoryNew(i)) return true;
-        }
-        return false;
-    }
+    case 0x501:
+    case 0x502:
+        titty = static_cast<eUnlockableEntity>(0x2c);
+        break;
+    case 0x503:
+    case 0x504:
+    case 0x601:
+    case 0x602:
+    case 0x603:
+    case 0x604:
+    case 0x605:
+    case 0x606:
+        titty = static_cast<eUnlockableEntity>(0x2e);
+        break;
+    case 0x505:
+    case 0x506:
+        titty = static_cast<eUnlockableEntity>(0x30);
+        break;
     default:
         return true;
     }
@@ -811,6 +809,24 @@ bool CarCustomizeManager::IsCategoryLocked(unsigned int cat, bool backroom) {
     int level = 0;
 
     switch (cat) {
+    case 0x801: {
+        for (unsigned int i = 0x101; i <= 0x105; i++) {
+            if (!IsCategoryLocked(i, backroom)) return false;
+        }
+        return true;
+    }
+    case 0x802: {
+        for (unsigned int i = 0x201; i <= 0x207; i++) {
+            if (!IsCategoryLocked(i, backroom)) return false;
+        }
+        return true;
+    }
+    case 0x803: {
+        for (unsigned int i = 0x301; i <= 0x307; i++) {
+            if (!IsCategoryLocked(i, backroom)) return false;
+        }
+        return true;
+    }
     case 0x101:
         titty = static_cast<eUnlockableEntity>(0xb);
         break;
@@ -818,7 +834,7 @@ bool CarCustomizeManager::IsCategoryLocked(unsigned int cat, bool backroom) {
         titty = static_cast<eUnlockableEntity>(0xc);
         break;
     case 0x103: {
-        for (unsigned int i = 0x702; i < 0x70c; i++) {
+        for (unsigned int i = 0x702; i <= 0x70b; i++) {
             if (!IsRimCategoryLocked(i, backroom)) return false;
         }
         return true;
@@ -828,6 +844,9 @@ bool CarCustomizeManager::IsCategoryLocked(unsigned int cat, bool backroom) {
         break;
     case 0x105:
         titty = static_cast<eUnlockableEntity>(0xf);
+        break;
+    case 0x307:
+        titty = static_cast<eUnlockableEntity>(0x11);
         break;
     case 0x201:
         if (backroom && !CanInstallJunkman(static_cast<Physics::Upgrades::Type>(4))) return true;
@@ -861,7 +880,7 @@ bool CarCustomizeManager::IsCategoryLocked(unsigned int cat, bool backroom) {
         titty = static_cast<eUnlockableEntity>(0x17);
         break;
     case 0x302: {
-        for (unsigned int i = 0x402; i < 0x40a; i++) {
+        for (unsigned int i = 0x402; i <= 0x409; i++) {
             if (!IsVinylCategoryLocked(i, backroom)) return false;
         }
         return true;
@@ -880,9 +899,6 @@ bool CarCustomizeManager::IsCategoryLocked(unsigned int cat, bool backroom) {
     case 0x306:
         titty = static_cast<eUnlockableEntity>(0x2b);
         break;
-    case 0x307:
-        titty = static_cast<eUnlockableEntity>(0x11);
-        break;
     case 0x402:
     case 0x403:
     case 0x404:
@@ -892,30 +908,6 @@ bool CarCustomizeManager::IsCategoryLocked(unsigned int cat, bool backroom) {
     case 0x408:
     case 0x409:
         return IsVinylCategoryLocked(cat, backroom);
-    case 0x501:
-    case 0x502:
-        level = 1;
-        titty = static_cast<eUnlockableEntity>(0x2c);
-        break;
-    case 0x503:
-    case 0x504:
-        level = 2;
-        titty = static_cast<eUnlockableEntity>(0x2e);
-        break;
-    case 0x505:
-    case 0x506:
-        level = 3;
-        titty = static_cast<eUnlockableEntity>(0x30);
-        break;
-    case 0x601:
-    case 0x602:
-    case 0x603:
-    case 0x604:
-    case 0x605:
-    case 0x606:
-        level = 2;
-        titty = static_cast<eUnlockableEntity>(0x2e);
-        break;
     case 0x702:
     case 0x703:
     case 0x704:
@@ -927,24 +919,27 @@ bool CarCustomizeManager::IsCategoryLocked(unsigned int cat, bool backroom) {
     case 0x70a:
     case 0x70b:
         return IsRimCategoryLocked(cat, backroom);
-    case 0x801: {
-        for (unsigned int i = 0x101; i < 0x106; i++) {
-            if (!IsCategoryLocked(i, backroom)) return false;
-        }
-        return true;
-    }
-    case 0x802: {
-        for (unsigned int i = 0x201; i < 0x208; i++) {
-            if (!IsCategoryLocked(i, backroom)) return false;
-        }
-        return true;
-    }
-    case 0x803: {
-        for (unsigned int i = 0x301; i < 0x308; i++) {
-            if (!IsCategoryLocked(i, backroom)) return false;
-        }
-        return true;
-    }
+    case 0x501:
+    case 0x502:
+        level = 1;
+        titty = static_cast<eUnlockableEntity>(0x2c);
+        break;
+    case 0x503:
+    case 0x504:
+    case 0x601:
+    case 0x602:
+    case 0x603:
+    case 0x604:
+    case 0x605:
+    case 0x606:
+        level = 2;
+        titty = static_cast<eUnlockableEntity>(0x2e);
+        break;
+    case 0x505:
+    case 0x506:
+        level = 3;
+        titty = static_cast<eUnlockableEntity>(0x30);
+        break;
     default:
         return true;
     }
