@@ -263,10 +263,10 @@ void FEManager::WantControllerError(int port) {
         IPlayer *player = IPlayer::First(PLAYER_LOCAL);
         ISimable *simable = player->GetSimable();
         GRacerInfo *racerInfo;
-        if (!simable) {
-            racerInfo = nullptr;
-        } else {
+        if (simable) {
             racerInfo = GRaceStatus::Get().GetRacerInfo(simable);
+        } else {
+            racerInfo = nullptr;
         }
         if (racerInfo) {
             ISimable *playerSimable = racerInfo->GetSimable();
