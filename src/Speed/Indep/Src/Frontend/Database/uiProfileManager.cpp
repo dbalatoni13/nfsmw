@@ -26,15 +26,18 @@ UIProfileManager::UIProfileManager(ScreenConstructorData* sd)
 UIProfileManager::~UIProfileManager() {}
 
 void UIProfileManager::Refresh() {
-    bool noProfile = !FEDatabase->bProfileLoaded;
-    mpSave->IsGreyOut = noProfile;
-
-    if (!FEDatabase->bProfileLoaded) {
-        FEngSetInvisible(FEngFindObject(GetPackageName(), FEHashUpper("PROFILE_NAME_GROUP")));
+    if (FEDatabase->bProfileLoaded) {
+        mpSave->IsGreyOut = false;
     } else {
+        mpSave->IsGreyOut = true;
+    }
+
+    if (FEDatabase->bProfileLoaded) {
         FEngSetVisible(FEngFindObject(GetPackageName(), FEHashUpper("PROFILE_NAME_GROUP")));
         FEPrintf(GetPackageName(), 0xEB406FEC,
                  FEDatabase->GetUserProfile(0)->GetProfileName());
+    } else {
+        FEngSetInvisible(FEngFindObject(GetPackageName(), FEHashUpper("PROFILE_NAME_GROUP")));
     }
 
     FEngSetColor(mpSave->FEngObject, mpSave->OriginalColor);
@@ -118,12 +121,12 @@ void UIDeleteProfile::Setup() {
 }
 
 void UIDeleteProfile::Refresh() {
-    if (!FEDatabase->bProfileLoaded) {
-        FEngSetInvisible(FEngFindObject(GetPackageName(), FEHashUpper("PROFILE_NAME_GROUP")));
-    } else {
+    if (FEDatabase->bProfileLoaded) {
         FEngSetVisible(FEngFindObject(GetPackageName(), FEHashUpper("PROFILE_NAME_GROUP")));
         FEPrintf(GetPackageName(), 0xEB406FEC,
                  FEDatabase->GetUserProfile(0)->GetProfileName());
+    } else {
+        FEngSetInvisible(FEngFindObject(GetPackageName(), FEHashUpper("PROFILE_NAME_GROUP")));
     }
 
     RefreshHeader();
