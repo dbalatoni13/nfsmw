@@ -648,7 +648,7 @@ void FEngine::QueuePackageCommand(long command, unsigned long ControlMask, const
     }
     Node->iCommand = command;
     Node->SetName(pPackageName);
-    PackageCommands.AddNode(static_cast<FEMinNode*>(PackageCommands.GetTail()), static_cast<FEMinNode*>(static_cast<FENode*>(Node)));
+    PackageCommands.AddTail(Node);
 }
 
 void FEngine::Update(const long tDeltaTicks, unsigned int lock) {

@@ -88,9 +88,9 @@ struct FEQuaternion {
     inline FEQuaternion& operator*=(const FEQuaternion& q) { *this = *this * q; return *this; }
     inline FEQuaternion operator*(const FEQuaternion& q1) {
         FEQuaternion qRet;
-        qRet.x = (y * q1.z - z * q1.y) + (q1.x * w + x * q1.w);
-        qRet.y = (z * q1.x - x * q1.z) + (q1.y * w + y * q1.w);
-        qRet.z = (x * q1.y - y * q1.x) + (q1.z * w + z * q1.w);
+        qRet.x = (y * q1.z - z * q1.y) + (x * q1.w + q1.x * w);
+        qRet.y = (z * q1.x - x * q1.z) + (y * q1.w + q1.y * w);
+        qRet.z = (x * q1.y - y * q1.x) + (z * q1.w + q1.z * w);
         qRet.w = q1.w * w - (q1.y * y + q1.x * x + q1.z * z);
         return qRet;
     }

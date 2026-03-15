@@ -19,11 +19,11 @@ float FEngACos(float x);
 
 struct DummyFEngNewType {};
 
-inline void* operator new(unsigned int size, const char* file, int line, DummyFEngNewType*) {
+inline void* operator new(unsigned int size, const char* file, int line, DummyFEngNewType* dummy) {
     return FEngMalloc(size, file, line);
 }
 
-inline void* operator new[](unsigned int size, const char* file, int line, DummyFEngNewType*) {
+inline void* operator new[](unsigned int size, const char* file, int line, DummyFEngNewType* dummy) {
     return FEngMalloc(size, file, line);
 }
 
