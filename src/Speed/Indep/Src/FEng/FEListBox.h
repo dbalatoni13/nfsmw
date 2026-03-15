@@ -123,8 +123,8 @@ struct FEListBox : public FEObject {
     inline void SetViewDimensions(const FEPoint& stViewDimensions) { mstViewDimensions = stViewDimensions; }
     inline void SetCurrentLocation(const FEPoint& stCurrentLocation) { mstCurrentLocation = stCurrentLocation; }
     inline void SetSelectionSpeed(const FEPoint& stSelectionSpeed) { mstSelectionSpeed = stSelectionSpeed; }
-    inline void SetCurrentColumn(unsigned long ulCurrentColumn) { mulCurrentColumn = ulCurrentColumn; }
-    inline void SetCurrentRow(unsigned long ulCurrentRow) { mulCurrentRow = ulCurrentRow; }
+    inline void SetCurrentColumn(unsigned long ulCurrentColumn) { mulCurrentColumn = ClampIndex(ulCurrentColumn, mulNumColumns); }
+    inline void SetCurrentRow(unsigned long ulCurrentRow) { mulCurrentRow = ClampIndex(ulCurrentRow, mulNumRows); }
     inline void SetColumnJustification(unsigned long ulJustification) { mpstColumnData[mulCurrentColumn].ulJustification = ulJustification; }
     inline void SetRowJustification(unsigned long ulJustification) { mpstRowData[mulCurrentRow].ulJustification = ulJustification; }
     inline void SetCellColor(const FEColor& stColor) { mpstCells[mulCurrentRow * mulNumColumns + mulCurrentColumn].ulColor = static_cast<unsigned long>(stColor); }

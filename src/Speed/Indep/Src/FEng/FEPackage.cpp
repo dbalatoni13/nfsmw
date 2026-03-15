@@ -560,17 +560,18 @@ done:
 }
 
 void ResourceConnector::ConnectListBoxResources(FEListBox* pList) {
-    pList->mulCurrentColumn = ClampIndex(0, pList->mulNumColumns);
-    pList->mulCurrentRow = ClampIndex(0, pList->mulNumRows);
-    unsigned long ulRows = pList->mulNumRows;
-    unsigned long ulCols = pList->mulNumColumns;
-    unsigned long row = 0;
-    if (ulRows != 0) {
+    pList->SetCurrentColumn(0);
+    pList->SetCurrentRow(0);
+    unsigned long j = 0;
+    unsigned long Rows = pList->GetNumRows();
+    unsigned long Cols = pList->GetNumColumns();
+    if (j < Rows) {
         do {
-            unsigned long col = 0;
-            row++;
-            while (col < ulCols) {
-                unsigned long resIdx = pList->mpstCells[pList->mulCurrentRow * pList->mulNumColumns + pList->mulCurrentColumn].stResource.ResourceIndex;
+            unsigned long i = 0;
+            j++;
+            while (i < Cols) {
+                const FEListBoxCell* pCellData = pList->GetCurrentCellData();
+                unsigned long resIdx = pCellData->stResource.ResourceIndex;
                 if (resIdx != 0xFFFFFFFF) {
                     FEResourceRequest* pReq = &(*pReqList)[resIdx];
                     unsigned long handle = pReq->Handle;
@@ -585,10 +586,10 @@ void ResourceConnector::ConnectListBoxResources(FEListBox* pList) {
                     pCell->stResource.UserParam = 0;
                     pCell->stResource.ResourceIndex = 0xFFFFFFFF;
                 }
-                col++;
+                i++;
                 pList->IncrementCellByColumn();
             }
-        } while (row < ulRows);
+        } while (j < Rows);
     }
 }
 

@@ -97,15 +97,15 @@ bool FEPackageReader::ReadHeaderChunk() {
     if (BSwap32(pData[0]) <= 0x1FFFF) {
         return false;
     }
+    char* pShortName = reinterpret_cast<char*>(pChunk) + 0x28;
     FEPackage* pNewPack = FENG_NEW FEPackage();
     pPack = pNewPack;
     pNewPack->pCurrentButton = nullptr;
-    char* pShortName = reinterpret_cast<char*>(pChunk) + 0x28;
     ResourceCount = BSwap32(pData[2]);
     ObjectCount = BSwap32(pData[3]);
     unsigned long NameLen = BSwap32(pData[4]);
-    pPack->SetName(pShortName);
     char* pFileName = pShortName + NameLen;
+    pPack->SetName(pShortName);
     pPack->SetFilename(pFileName);
     return true;
 }
