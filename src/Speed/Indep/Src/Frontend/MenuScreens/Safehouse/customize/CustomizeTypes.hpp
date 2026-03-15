@@ -259,9 +259,10 @@ struct CustomizePartOption : public IconOption {
 struct CustomizeMainOption : public IconOption {
     CustomizeMainOption(const char *to_pkg, unsigned int tex_hash, unsigned int name_hash, unsigned int to_cat, unsigned int from_cat)
         : IconOption(tex_hash, name_hash, 0) //
-        , ToPkg(to_pkg) //
-        , Category(to_cat | (from_cat << 16)) //
-        , UnlockStatus(CPS_AVAILABLE) {}
+        , ToPkg(to_pkg) {
+        UnlockStatus = CPS_AVAILABLE;
+        Category = to_cat | (from_cat << 16);
+    }
 
     ~CustomizeMainOption() override {}
 

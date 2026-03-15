@@ -1578,14 +1578,21 @@ CustomizeCategoryScreen::CustomizeCategoryScreen(ScreenConstructorData *sd) : Ic
 }
 
 int CustomizeCategoryScreen::AddCustomOption(const char *to_pkg, unsigned int tex_hash, unsigned int name_hash, unsigned int to_cat) {
+    if (gCarCustomizeManager.IsCareerMode()) {
+        if (CustomizeIsInBackRoom()) {
+            if (gCarCustomizeManager.IsCategoryLocked(to_cat, true)) {
+                return -1;
+            }
+        }
+    }
     CustomizeMainOption *opt = new CustomizeMainOption(to_pkg, tex_hash, name_hash, to_cat, Category);
-    if (gCarCustomizeManager.IsCategoryLocked(to_cat, CustomizeIsInBackRoom())) {
+    AddOption(opt);
+    if (gCarCustomizeManager.IsCategoryLocked(to_cat, false)) {
         opt->UnlockStatus = CPS_LOCKED;
     } else if (gCarCustomizeManager.IsCategoryNew(to_cat)) {
         opt->UnlockStatus = CPS_NEW;
     }
-    AddOption(opt);
-    return opt->UnlockStatus;
+    return Options.GetIndexToAdd() - 3;
 }
 
 void CustomizeCategoryScreen::NotificationMessage(unsigned long msg, FEObject *pobj, unsigned long param1, unsigned long param2) {
@@ -2657,7 +2664,6 @@ CustomizeMeter::CustomizeMeter()
     , pMultiplier(nullptr) //
     , pMeterGroup(nullptr) //
 {
-    pMultiplierZoom = nullptr;
     for (int i = 0; i < 10; i++) {
         pBases[i] = nullptr;
     }

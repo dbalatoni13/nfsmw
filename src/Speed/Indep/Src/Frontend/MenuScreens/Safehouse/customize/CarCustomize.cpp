@@ -135,7 +135,7 @@ void CustomizeSub::SetupParts() {
         Options.bFadingIn = true;
         Options.bFadingOut = false;
         Options.bDelayUpdate = false;
-        Options.fMaxFadeTime = 0.0f;
+        Options.fCurFadeTime = 0.0f;
     }
     SetInitialOption(FromCategory & 0xFF);
 }
@@ -177,7 +177,7 @@ void CustomizeSub::SetupPerformance() {
         Options.bFadingIn = true;
         Options.bFadingOut = false;
         Options.bDelayUpdate = false;
-        Options.fMaxFadeTime = 0.0f;
+        Options.fCurFadeTime = 0.0f;
     }
     SetInitialOption(FromCategory & 0xFF);
 }
@@ -209,7 +209,7 @@ void CustomizeSub::SetupVisual() {
         Options.bFadingIn = true;
         Options.bFadingOut = false;
         Options.bDelayUpdate = false;
-        Options.fMaxFadeTime = 0.0f;
+        Options.fCurFadeTime = 0.0f;
     }
     SetInitialOption(FromCategory & 0xFF);
 }
@@ -228,7 +228,7 @@ void CustomizeSub::SetupDecalLocations() {
             Options.bFadingIn = true;
             Options.bFadingOut = false;
             Options.bDelayUpdate = false;
-            Options.fMaxFadeTime = 0.0f;
+            Options.fCurFadeTime = 0.0f;
         }
         SetInitialOption(1);
     } else {
@@ -236,7 +236,7 @@ void CustomizeSub::SetupDecalLocations() {
             Options.bFadingIn = true;
             Options.bFadingOut = false;
             Options.bDelayUpdate = false;
-            Options.fMaxFadeTime = 0.0f;
+            Options.fCurFadeTime = 0.0f;
         }
         SetInitialOption(FromCategory & 0xFF);
     }
@@ -268,7 +268,7 @@ void CustomizeSub::SetupDecalPositions() {
             Options.bFadingIn = true;
             Options.bFadingOut = false;
             Options.bDelayUpdate = false;
-            Options.fMaxFadeTime = 0.0f;
+            Options.fCurFadeTime = 0.0f;
         }
         SetInitialOption(1);
     } else {
@@ -276,7 +276,7 @@ void CustomizeSub::SetupDecalPositions() {
             Options.bFadingIn = true;
             Options.bFadingOut = false;
             Options.bDelayUpdate = false;
-            Options.fMaxFadeTime = 0.0f;
+            Options.fCurFadeTime = 0.0f;
         }
         SetInitialOption(FromCategory & 0xFF);
         FromCategory = 0x305;

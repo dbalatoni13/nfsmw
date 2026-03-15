@@ -39,7 +39,6 @@ public:
 
     void SetInitialOption(int index) {
         Options.SetInitialPos(index);
-        Options.StartFadeIn();
     }
 
     void StartInput() {
