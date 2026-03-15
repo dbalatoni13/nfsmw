@@ -2052,9 +2052,12 @@ void CustomizeSpoiler::RefreshHeader() {
     } else {
         bNeedsRefresh = true;
     }
-    if (sel->GetPart()->HasAppliedAttribute(bStringHash("LANGUAGEHASH"))) {
-        unsigned int langHash = sel->GetPart()->GetAppliedAttributeUParam(bStringHash("LANGUAGEHASH"), 0);
-        FEngSetLanguageHash(GetPackageName(), 0x5e7b09c9, langHash);
+    const char *lang_str = "LANGUAGEHASH";
+    CarPart *part = sel->GetPart();
+    if (part->HasAppliedAttribute(bStringHash(lang_str))) {
+        const char *pkg = GetPackageName();
+        unsigned int langHash = sel->GetPart()->GetAppliedAttributeUParam(bStringHash(lang_str), 0);
+        FEngSetLanguageHash(pkg, 0x5e7b09c9, langHash);
     } else {
         FEPrintf(GetPackageName(), 0x5e7b09c9, "%s", sel->GetPart()->GetName());
     }
@@ -2818,16 +2821,15 @@ void CustomizeSub::SetupRimBrands() {
         int pos = InCartPartOptionIndex;
         if (pos == 0) {
             pos = InstalledPartOptionIndex;
-            if (pos == 0) {
-                SetInitialOption(1);
-                goto done_rims;
-            }
         }
-        SetInitialOption(pos);
+        if (pos != 0) {
+            SetInitialOption(pos);
+        } else {
+            SetInitialOption(1);
+        }
     } else {
         SetInitialOption(FromCategory & 0xFFFF00FF);
     }
-done_rims:
     if (FromCategory - 0x701u < 0xbu) {
         FromCategory = 0x801;
     }

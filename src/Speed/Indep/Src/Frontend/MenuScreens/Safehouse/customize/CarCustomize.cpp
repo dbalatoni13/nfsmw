@@ -214,20 +214,23 @@ void CustomizeSub::SetupDecalLocations() {
 void CustomizeSub::SetupDecalPositions() {
     TitleHash = 0x74d1887d;
     BackToPkg = g_pCustomizeSubTopPkg;
-    if (Category == 0x503) {
+    switch (Category) {
+    case 0x503:
         AddCustomOption(g_pCustomizeDecalsPkg, 0xfe957f48, 0x7d212cfa, 0x601);
         AddCustomOption(g_pCustomizeDecalsPkg, 0xfe957f49, 0x7d212cfb, 0x602);
         AddCustomOption(g_pCustomizeDecalsPkg, 0xfe957f4a, 0x7d212cfc, 0x603);
         AddCustomOption(g_pCustomizeDecalsPkg, 0xfe957f4b, 0x7d212cfd, 0x604);
         AddCustomOption(g_pCustomizeDecalsPkg, 0xfe957f4c, 0x7d212cfe, 0x605);
         AddCustomOption(g_pCustomizeDecalsPkg, 0xfe957f4d, 0x7d212cff, 0x606);
-    } else if (Category == 0x504) {
+        break;
+    case 0x504:
         AddCustomOption(g_pCustomizeDecalsPkg, 0x2e40eadb, 0x7d212cfa, 0x601);
         AddCustomOption(g_pCustomizeDecalsPkg, 0x2e40eadc, 0x7d212cfb, 0x602);
         AddCustomOption(g_pCustomizeDecalsPkg, 0x2e40eadd, 0x7d212cfc, 0x603);
         AddCustomOption(g_pCustomizeDecalsPkg, 0x2e40eade, 0x7d212cfd, 0x604);
         AddCustomOption(g_pCustomizeDecalsPkg, 0x2e40eadf, 0x7d212cfe, 0x605);
         AddCustomOption(g_pCustomizeDecalsPkg, 0x2e40eae0, 0x7d212cff, 0x606);
+        break;
     }
     if (FromCategory == 0x305) {
         SetInitialOption(1);
