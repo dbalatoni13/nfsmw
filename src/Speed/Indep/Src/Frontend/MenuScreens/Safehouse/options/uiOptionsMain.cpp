@@ -39,7 +39,8 @@ void UIOptionsMain::NotificationMessage(unsigned long msg, FEObject* pobj, unsig
     switch (msg) {
     case 0xB5AF2461:
         FEDatabase->ClearGameMode(eFE_GAME_MODE_OPTIONS);
-        break;
+        StorePrevNotification(0xB5AF2461, pobj, param1, param2);
+        goto SetScript;
     case 0x911AB364:
         FEDatabase->ClearGameMode(eFE_GAME_MODE_OPTIONS);
         StorePrevNotification(msg, pobj, param1, param2);
@@ -49,13 +50,15 @@ void UIOptionsMain::NotificationMessage(unsigned long msg, FEObject* pobj, unsig
             }
             return;
         }
-        FEngSetScript(GetPackageName(), 0x47FF4E7C, 0xDE6EFF34, true);
-        return;
+        goto SetScript;
     case 0x0C407210:
         if (FEngIsScriptRunning(GetPackageName(), 0x47FF4E7C, 0xDE6EFF34)) {
             return;
         }
-        break;
+        StorePrevNotification(0x0C407210, pobj, param1, param2);
+SetScript:
+        FEngSetScript(GetPackageName(), 0x47FF4E7C, 0xDE6EFF34, true);
+        return;
     case 0xE1FDE1D1:
         if (PrevButtonMessage == 0xB5AF2461) {
             new EUnPause();
@@ -114,8 +117,6 @@ void UIOptionsMain::NotificationMessage(unsigned long msg, FEObject* pobj, unsig
     default:
         return;
     }
-    StorePrevNotification(msg, pobj, param1, param2);
-    FEngSetScript(GetPackageName(), 0x47FF4E7C, 0xDE6EFF34, true);
 }
 
 void UIOptionsMain::Setup() {
