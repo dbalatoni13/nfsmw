@@ -80,14 +80,13 @@ unsigned char* FEMultiPool::Alloc(unsigned long Size) {
         return nullptr;
     }
     FESlotPool* pPool = static_cast<FESlotPool*>(Pools.GetHead());
-    while (pPool) {
-        if (pPool->SlotSize == Size) {
-            return pPool->Alloc();
-        }
+    while (pPool && pPool->SlotSize != Size) {
         pPool = pPool->GetNext();
     }
-    pPool = new (static_cast<FESlotPool*>(FEngMalloc(sizeof(FESlotPool), nullptr, 0))) FESlotPool(Size);
-    Pools.AddNode(nullptr, pPool);
+    if (!pPool) {
+        pPool = new (static_cast<FESlotPool*>(FEngMalloc(sizeof(FESlotPool), nullptr, 0))) FESlotPool(Size);
+        Pools.AddNode(nullptr, pPool);
+    }
     return pPool->Alloc();
 }
 
