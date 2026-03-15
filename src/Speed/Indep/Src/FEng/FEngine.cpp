@@ -1322,10 +1322,10 @@ void FEngine::ProcessResponses(FEMessageResponse* pRespList, FEObject* pObj, FEP
             SetProcessInput(pPack, pAction->ResponseParam == 1);
             break;
         case 0x102:
-            if (!pPack->pCurrentButton) {
-                RecordLastPackageButton(pPack->nameHash, 0);
-            } else {
+            if (pPack->pCurrentButton) {
                 RecordLastPackageButton(pPack->nameHash, pPack->pCurrentButton->GUID);
+            } else {
+                RecordLastPackageButton(pPack->nameHash, 0);
             }
             break;
         case 0x103: {
