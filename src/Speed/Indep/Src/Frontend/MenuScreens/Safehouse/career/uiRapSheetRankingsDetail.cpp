@@ -191,7 +191,7 @@ void uiRapSheetRankingsDetail::Setup() {
                     }
 
                     float value;
-                    if (rank_type == ePDT_CostToState) {
+                    if (is_time) {
                         value = static_cast<float>(player_value) * 0.00025f;
                     } else {
                             value = static_cast<float>(player_value);
