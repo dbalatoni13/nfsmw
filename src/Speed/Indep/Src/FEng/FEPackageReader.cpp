@@ -543,9 +543,9 @@ void FEPackageReader::ProcessListBoxTag(FETag* pTag) {
         case 0x644c:
             pList->SetNumColumns(BSwap32(pTag->Getu32(0)));
             pList->SetNumRows(BSwap32(pTag->Getu32(1)));
+            CurListCell = 0xFFFFFFFF;
             CurListRow = 0xFFFFFFFF;
             CurListCol = 0xFFFFFFFF;
-            CurListCell = 0xFFFFFFFF;
             {
                 unsigned long col = 0;
                 if (pList->mulNumColumns == 0) {
@@ -784,10 +784,10 @@ bool FEPackageReader::ReadObjectTags(FETag* pTag, unsigned long Length) {
                     }
 
                     FEObject* pClone;
-                    if (pRefObj->Type == FE_Group) {
-                        pClone = new FEGroup(static_cast<const FEGroup&>(*pRefObj), false, true);
-                    } else {
+                    if (pRefObj->Type != FE_Group) {
                         pClone = pRefObj->Clone(true);
+                    } else {
+                        pClone = new FEGroup(static_cast<const FEGroup&>(*pRefObj), false, true);
                     }
 
                     pClone->GUID = pObj->GUID;

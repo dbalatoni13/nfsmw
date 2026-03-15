@@ -214,7 +214,7 @@ void FEListBox::SetNumColumns(unsigned long ulNumColumns) {
                 pCell->stResource.ResourceIndex = 0;
                 pCell->ulType = 0;
                 pCell->u.string.pStr = nullptr;
-                pCell->ulJustification = 0xFFFFFFFF;
+                pCell->u.string.Label = 0xFFFFFFFF;
                 pCell = pCell + 1;
             }
             if (mpstCells == nullptr) {
@@ -274,7 +274,7 @@ void FEListBox::SetNumRows(unsigned long ulNumRows) {
                 pCell->stResource.ResourceIndex = 0;
                 pCell->ulType = 0;
                 pCell->u.string.pStr = nullptr;
-                pCell->ulJustification = 0xFFFFFFFF;
+                pCell->u.string.Label = 0xFFFFFFFF;
                 pCell = pCell + 1;
             }
             if (mpstCells == nullptr) {
