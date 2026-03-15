@@ -1593,3 +1593,48 @@ void PostRacePursuitScreen::SetupPursuit() {
     AddDatum(new PursuitResultsDatum(PursuitResultsDatum::PursuitResultsDatumType_Number, 0xd9bb7d2d, static_cast<float>(mPursuitData.mCostToStateAchieved), 0.0f, PursuitResultsDatum::PursuitResultsDatumCheckType_Off));
     AddDatum(new PursuitResultsDatum(PursuitResultsDatum::PursuitResultsDatumType_Number, 0xb7dfff96, static_cast<float>(GInfractionManager::Get().GetNumInfractions()), 0.0f, PursuitResultsDatum::PursuitResultsDatumCheckType_Off));
 }
+
+void PostRacePursuitScreen::SetupMilestones() {
+    if (GRaceStatus::Exists()) {
+        GRaceParameters *raceParams = GRaceStatus::Get().GetRaceParameters();
+        if (raceParams && raceParams->GetIsPursuitRace() && !FEDatabase->IsFinalEpicChase()) {
+            PursuitResultsDatum::PursuitResultsDatumType type = PursuitResultsDatum::PursuitResultsDatumType_Milestone_Number;
+            if (FEDatabase->IsMilestoneTimeFormat(raceParams->GetChallengeType())) {
+                type = PursuitResultsDatum::PursuitResultsDatumType_Milestone_Time;
+            }
+            float bestVal = GManager::Get().GetBestValue(raceParams->GetChallengeType());
+            float goalVal = raceParams->GetChallengeGoal();
+            if (raceParams->GetChallengeType() == 0x5392e4fd) {
+                type = PursuitResultsDatum::PursuitResultsDatumType_Milestone_Time_PursuitRemaining;
+            }
+            PursuitResultsDatum::PursuitResultsDatumCheckType checkType =
+                static_cast<PursuitResultsDatum::PursuitResultsDatumCheckType>(static_cast<int>(bestVal >= goalVal));
+            AddDatum(new PursuitResultsDatum(type,
+                FEDatabase->GetChallengeHeaderHash(raceParams->GetLocalizationTag()),
+                bestVal, goalVal, checkType));
+        } else {
+            unsigned int binNumber = FEDatabase->GetCareerSettings()->GetCurrentBin();
+            GMilestone *milestone = GManager::Get().GetFirstMilestone(false, binNumber);
+            while (milestone) {
+                PursuitResultsDatum::PursuitResultsDatumType type = PursuitResultsDatum::PursuitResultsDatumType_Milestone_Number;
+                if (FEDatabase->IsMilestoneTimeFormat(milestone->GetTypeKey())) {
+                    type = PursuitResultsDatum::PursuitResultsDatumType_Milestone_Time;
+                }
+                if (milestone->GetTypeKey() == 0x5392e4fd) {
+                    type = PursuitResultsDatum::PursuitResultsDatumType_Milestone_Time_PursuitRemaining;
+                }
+                PursuitResultsDatum::PursuitResultsDatumCheckType checkType;
+                if (milestone->GetIsDonePendingEscape()) {
+                    checkType = PursuitResultsDatum::PursuitResultsDatumCheckType_On;
+                } else {
+                    checkType = static_cast<PursuitResultsDatum::PursuitResultsDatumCheckType>(
+                        milestone->GetIsAwarded() ? 2 : 0);
+                }
+                AddDatum(new PursuitResultsDatum(type,
+                    FEDatabase->GetMilestoneHeaderHash(milestone->GetLocalizationTag()),
+                    milestone->GetCurrentValue(), milestone->GetRequiredValue(), checkType));
+                milestone = GManager::Get().GetNextMilestone(milestone, false, binNumber);
+            }
+        }
+    }
+}
