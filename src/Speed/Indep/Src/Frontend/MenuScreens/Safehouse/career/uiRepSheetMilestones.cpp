@@ -320,14 +320,16 @@ void uiRepSheetMilestones::RefreshHeader() {
             ArrayDatum* datum = GetDatumAt(i + GetStartDatumNum());
             unsigned int check_hash = FEngHashString("MEDAL_THUMB_%d", i + 1);
             FEngSetInvisible(GetPackageName(), check_hash);
-            if (datum == nullptr) {
-                FEngSetInvisible(GetPackageName(), check_hash);
-            } else if (datum->IsLocked()) {
-                FEngSetVisible(GetPackageName(), check_hash);
-                FEngSetTextureHash(GetPackageName(), check_hash, 0x18ed48);
-            } else if (datum->IsChecked()) {
-                FEngSetVisible(GetPackageName(), check_hash);
-                FEngSetTextureHash(GetPackageName(), check_hash, 0x28feadd);
+            if (datum) {
+                if (datum->IsLocked()) {
+                    FEngSetVisible(GetPackageName(), check_hash);
+                    FEngSetTextureHash(GetPackageName(), check_hash, 0x18ed48);
+                } else if (datum->IsChecked()) {
+                    FEngSetVisible(GetPackageName(), check_hash);
+                    FEngSetTextureHash(GetPackageName(), check_hash, 0x28feadd);
+                } else {
+                    FEngSetInvisible(GetPackageName(), check_hash);
+                }
             } else {
                 FEngSetInvisible(GetPackageName(), check_hash);
             }
