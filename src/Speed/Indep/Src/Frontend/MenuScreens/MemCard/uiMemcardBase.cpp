@@ -6,6 +6,7 @@
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Frontend/MemoryCard/MemoryCard.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Loading/FEBootFlowManager.hpp"
+#include "Speed/Indep/Src/Generated/Events/EQuitToFE.hpp"
 #include "Speed/Indep/Src/Misc/GameFlow.hpp"
 
 void FEngSetScript(const char* pkg_name, unsigned int obj_hash, unsigned int script_hash,
@@ -705,61 +706,66 @@ void UIMemcardBase::ExitComplete() {
         }
         cFEng::Get()->QueueGameMessage(gameMsg, gMemcardSetup.mToScreen, 0xff);
     }
-    if (FEDatabase->MatchesGameMode(0x100) &&
+    if ((FEDatabase->GetGameMode() & 0x100) &&
         TheGameFlowManager.GetState() == GAMEFLOW_STATE_IN_FRONTEND) {
         FEDatabase->ResetGameMode();
-        if (!FEDatabase->bProfileLoaded ||
-            ((gMemcardSetup.mOp & 0xf0) == 0x10 &&
-             static_cast< unsigned int >(lastMsg) == 0x8867412d) ||
-            gMemcardSetup.mPreviousPrompt == 0x1000000 ||
-            gMemcardSetup.mPreviousPrompt == 0x3000000 ||
-            gMemcardSetup.mPreviousPrompt == 0x5000000) {
+        if (FEDatabase->bProfileLoaded &&
+            !(((gMemcardSetup.mOp & 0xf0) == 0x10 &&
+               static_cast< unsigned int >(lastMsg) == 0x8867412d) ||
+              gMemcardSetup.mPreviousPrompt == 0x1000000 ||
+              gMemcardSetup.mPreviousPrompt == 0x3000000 ||
+              gMemcardSetup.mPreviousPrompt == 0x5000000)) {
+            CareerSettings* career = FEDatabase->CurrentUserProfiles[0]->GetCareer();
+            if (career->SpecialFlags & 1) {
+                ResumeCareer__14CareerSettings(career);
+            } else {
+                StartNewCareer__14CareerSettingsb(career, 1);
+            }
+        } else {
             gMemcardSetup.mOp = (gMemcardSetup.mOp & ~0xf) | 1;
             FEDatabase->RestoreFromBackupDB();
             FEDatabase->SetGameMode(static_cast< eFEGameModes >(0x100));
-        } else if (!(FEDatabase->CurrentUserProfiles[0]->GetCareer()->SpecialFlags & 1)) {
-            StartNewCareer__14CareerSettingsb(FEDatabase->CurrentUserProfiles[0]->GetCareer(), 1);
-        } else {
-            ResumeCareer__14CareerSettings(FEDatabase->CurrentUserProfiles[0]->GetCareer());
         }
     }
 
-    if ((gMemcardSetup.mOp & 0x400000) == 0) {
-        if ((gMemcardSetup.mOp & 0x10000) == 0) {
-            unsigned int cmd = gMemcardSetup.mOp & 0xf;
-            switch (cmd) {
-            case 2:
-                cFEng::Get()->QueuePackageSwitch(gMemcardSetup.mToScreen,
-                    MemoryCard::GetInstance()->GetPlayerNum(), 0, false);
-                break;
-            case 1: {
-                bool popExtra;
-                if (!m_SimPausedForMemcard) {
-                    popExtra = true;
-                } else {
-                    m_SimPausedForMemcard = false;
-                    popExtra = cFEng::Get()->IsPackagePushed("SMS_Mailboxes.fng");
-                }
-                cFEng::Get()->QueuePackagePop(popExtra ? 1 : 0);
-                break;
-            }
-            case 3:
-                cFEng::Get()->QueuePackagePop(1);
-                cFEng::Get()->QueuePackageSwitch(gMemcardSetup.mToScreen,
-                    MemoryCard::GetInstance()->GetPlayerNum(), 0, false);
-                break;
-            }
-        } else if (TheGameFlowManager.GetState() == GAMEFLOW_STATE_IN_FRONTEND) {
+    if ((gMemcardSetup.mOp & 0x400000) != 0) {
+        void* rivalFlow = Get__19uiRepSheetRivalFlow();
+        Next__19uiRepSheetRivalFlow(rivalFlow);
+    } else if ((gMemcardSetup.mOp & 0x10000) != 0) {
+        if (TheGameFlowManager.GetState() == GAMEFLOW_STATE_IN_FRONTEND) {
             cFEng::Get()->QueuePackagePop(1);
             if (FEDatabase->bProfileLoaded) {
                 FEDatabase->ResetGameMode();
                 FEDatabase->SetGameMode(static_cast< eFEGameModes >(2));
                 cFEng::Get()->QueuePackageSwitch(gMemcardSetup.mToScreen, 0, 0, false);
             }
+        } else {
+            new EQuitToFE(static_cast< eGarageType >(1), static_cast< const char* >(0));
         }
     } else {
-        void* rivalFlow = Get__19uiRepSheetRivalFlow();
-        Next__19uiRepSheetRivalFlow(rivalFlow);
+        unsigned int cmd = gMemcardSetup.mOp & 0xf;
+        switch (cmd) {
+        case 2:
+            cFEng::Get()->QueuePackageSwitch(gMemcardSetup.mToScreen,
+                MemoryCard::GetInstance()->GetPlayerNum(), 0, false);
+            break;
+        case 1: {
+            bool popExtra;
+            if (!m_SimPausedForMemcard) {
+                popExtra = true;
+            } else {
+                m_SimPausedForMemcard = false;
+                popExtra = cFEng::Get()->IsPackagePushed("SMS_Mailboxes.fng");
+            }
+            cFEng::Get()->QueuePackagePop(popExtra ? 1 : 0);
+            break;
+        }
+        case 3:
+            cFEng::Get()->QueuePackagePop(1);
+            cFEng::Get()->QueuePackageSwitch(gMemcardSetup.mToScreen,
+                MemoryCard::GetInstance()->GetPlayerNum(), 0, false);
+            break;
+        }
     }
     if (m_SimPausedForMemcard) {
         m_SimPausedForMemcard = false;
@@ -777,10 +783,10 @@ void UIMemcardBase::ExitComplete() {
         pkg->pParentPackage->bInputEnabled = true;
     }
 
+    int savedMsg = gMemcardSetup.mLastMessage;
     if (gMemcardSetup.mTermFunc != nullptr) {
         gMemcardSetup.mTermFunc(gMemcardSetup.mTermFuncParam);
     }
-    int savedMsg = gMemcardSetup.mLastMessage;
     gMemcardSetup.mOp = 0;
     gMemcardSetup.mMemScreen = nullptr;
     gMemcardSetup.mToScreen = nullptr;
@@ -799,8 +805,8 @@ void UIMemcardBase::ExitComplete() {
         MemoryCard::GetInstance()->EndBootSequence();
     }
     cFEng::Get()->QueueGameMessage(0x7e998e5e, nullptr, 0xff);
-    MemoryCard::GetInstance()->SetMemcardScreenExiting(false);
     MemoryCard::GetInstance()->SetMemcardScreenShowing(false);
+    MemoryCard::GetInstance()->SetMemcardScreenExiting(false);
     if (MemoryCard::GetInstance()->IsMonitorOn()) {
         MemoryCard::GetInstance()->SetMonitor(false);
     }
