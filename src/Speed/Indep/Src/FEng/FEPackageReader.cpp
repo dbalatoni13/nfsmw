@@ -460,17 +460,17 @@ bool FEPackageReader::ReadMessageResponseTags(FETag* pTag, unsigned long Length,
                 pResp = pMsgResp->GetResponse(CurResponse);
                 pResp->SetID(BSwap32(pTag->Getu32(0)));
                 break;
+            case 0x7552:
+                pResp->ResponseTarget = BSwap32(pTag->Getu32(0));
+                break;
             case 0x7352:
                 pResp->SetParam(reinterpret_cast<const char*>(pTag->Data()));
                 break;
             case 0x7452:
                 pResp->ResponseParam = BSwap32(pTag->Getu32(0));
                 break;
-            case 0x7552:
-                pResp->ResponseTarget = BSwap32(pTag->Getu32(0));
-                break;
         }
-        pTag = reinterpret_cast<FETag*>(reinterpret_cast<char*>(pTag) + BSwap16(pTag->GetSize()) + 4);
+        pTag = reinterpret_cast<FETag*>(reinterpret_cast<char*>(pTag) + 4 + BSwap16(pTag->GetSize()));
     }
     return true;
 }
