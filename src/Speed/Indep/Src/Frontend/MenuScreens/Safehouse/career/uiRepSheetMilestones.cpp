@@ -148,16 +148,16 @@ void uiRepSheetMilestones::NotificationMessage(unsigned long msg, FEObject* obj,
     }
     case 0xd05fc3a3: {
         CareerSettings* career = FEDatabase->GetCareerSettings();
-        if ((career->SpecialFlags & 0x200) == 0) {
-            if (!bIsInGame) {
-                FEAnyTutorialScreen::LaunchMovie(gTUTORIAL_MOVIE_PURSUIT, GetPackageName());
-            } else {
+        if (((career->SpecialFlags >> 9) & 1) == 0) {
+            if (bIsInGame) {
                 if (TrackMapStreamer != nullptr) {
                     delete TrackMapStreamer;
                 }
                 TrackMapStreamer = nullptr;
                 InGameAnyTutorialScreenLaunchMovie(gTUTORIAL_MOVIE_PURSUIT, GetPackageName());
                 FEngSetInvisible(FEngFindObject("InGameBackground.fng", 0x2716cdbf));
+            } else {
+                FEAnyTutorialScreen::LaunchMovie(gTUTORIAL_MOVIE_PURSUIT, GetPackageName());
             }
             FEngSetScript(GetPackageName(), 0x99344537, 0x16a259, true);
             FEngSetInvisible(FEngFindObject(GetPackageName(), FEngHashString("TRACK_MAP")));
