@@ -68,6 +68,9 @@ struct ResourceConnector : public FEObjectCallback {
 
 unsigned long FEngine::SysGUID;
 
+FEMultiPool ObjDataPool;
+FEColoredImageData MaximumObjData;
+
 FEngine::FEngine()
 {
     bExecuting = true;

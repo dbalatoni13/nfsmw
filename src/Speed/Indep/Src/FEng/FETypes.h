@@ -184,6 +184,11 @@ struct FEImageData : public FEObjData {
     FEImageData();
 };
 
+// total size: 0x94
+struct FEColoredImageData : public FEImageData {
+    FEColor VertexColors[4]; // offset 0x54, size 0x40
+};
+
 // total size: 0x90
 struct FEMultiImageData : public FEImageData {
     FEVector2 TopLeftUV[3];     // offset 0x54, size 0x18
@@ -234,5 +239,12 @@ struct FEMatrix4 {
 
 void FEMultMatrix(FEMatrix4* dest, const FEMatrix4* a, const FEMatrix4* b);
 void FEMultMatrix(FEVector3* dest, const FEMatrix4* m, const FEVector3* v);
+
+inline float IntAsFloat(const int& i) {
+    return *reinterpret_cast<const float*>(&i);
+}
+
+static const float kFloatScaleUp = IntAsFloat(0x00800000);
+static const float kFloatScaleDown = 1.0f / kFloatScaleUp;
 
 #endif
