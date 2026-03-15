@@ -352,28 +352,26 @@ void FEPackage::UpdateObject(FEObject* pObj, long tDeltaTicks) {
     pObj->Flags = Flags;
 
     FEScript* pScript = pObj->pCurrentScript;
-    int OldCurTime = pScript->CurTime;
-    int Length = pScript->Length;
-    int NewCurTime = OldCurTime + iTickIncrement;
-    pScript->CurTime = NewCurTime;
-    if (NewCurTime < 0) {
+    int tPrevTime = pScript->CurTime;
+    int ScrLength = pScript->Length;
+    pScript->CurTime = tPrevTime + iTickIncrement;
+    if (pScript->CurTime < 0) {
         pScript->CurTime = 0;
     }
 
-    NewCurTime = pScript->CurTime;
     unsigned long PlayAction;
-    if (NewCurTime >= Length) {
+    if (pScript->CurTime >= ScrLength) {
         if (bExecuting) {
             if (pScript->pChainTo) {
                 UpdateObjectTracks(pObj, pScript);
-                NewCurTime = pScript->CurTime - Length;
+                int tOverTime = pScript->CurTime - ScrLength;
                 pScript->CurTime = 0;
                 if (pScript->Events.Count) {
-                    IssueScriptMessages(pEnginePtr, pObj, pScript, OldCurTime, Length);
+                    IssueScriptMessages(pEnginePtr, pObj, pScript, tPrevTime, ScrLength);
                 }
                 pScript = pScript->pChainTo;
                 pObj->SetCurrentScript(pScript);
-                pScript->CurTime = NewCurTime;
+                pScript->CurTime = tOverTime;
                 if (pScript->Events.Count) {
                     goto issueFrom0;
                 }
@@ -382,14 +380,14 @@ void FEPackage::UpdateObject(FEObject* pObj, long tDeltaTicks) {
                 switch (PlayAction) {
                 case 0:
                     if (pScript->Events.Count) {
-                        IssueScriptMessages(pEnginePtr, pObj, pScript, OldCurTime, Length);
+                        IssueScriptMessages(pEnginePtr, pObj, pScript, tPrevTime, ScrLength);
                     }
                     pScript->CurTime = pScript->Length + 1;
                     break;
                 case 1:
                     if (pScript->Length > 0) {
                         if (pScript->Events.Count) {
-                            IssueScriptMessages(pEnginePtr, pObj, pScript, OldCurTime, Length);
+                            IssueScriptMessages(pEnginePtr, pObj, pScript, tPrevTime, ScrLength);
                         }
                         pScript->CurTime = pScript->CurTime -
                             (pScript->CurTime / pScript->Length) * pScript->Length;
@@ -404,15 +402,15 @@ void FEPackage::UpdateObject(FEObject* pObj, long tDeltaTicks) {
                 case 2:
                     if (pScript->Length > 0) {
                         int doubleLen = pScript->Length * 2;
-                        pScript->CurTime = NewCurTime - (NewCurTime / doubleLen) * doubleLen;
+                        pScript->CurTime = pScript->CurTime - (pScript->CurTime / doubleLen) * doubleLen;
                     } else {
                         pScript->CurTime = 0;
                     }
                     break;
                 }
             }
-            if (bExecuting && OldCurTime == pScript->CurTime &&
-                OldCurTime == pScript->Length + 1 && !(pObj->Flags & 0x400000)) {
+            if (bExecuting && tPrevTime == pScript->CurTime &&
+                tPrevTime == pScript->Length + 1 && !(pObj->Flags & 0x400000)) {
                 goto finalize;
             }
         }
@@ -422,30 +420,29 @@ void FEPackage::UpdateObject(FEObject* pObj, long tDeltaTicks) {
                 PlayAction = pScript->Flags & 3;
                 switch (PlayAction) {
                 case 0:
-                    IssueScriptMessages(pEnginePtr, pObj, pScript, OldCurTime, NewCurTime);
+                    IssueScriptMessages(pEnginePtr, pObj, pScript, tPrevTime, pScript->CurTime);
                     break;
                 case 1:
-                    if (NewCurTime < OldCurTime) {
-                        IssueScriptMessages(pEnginePtr, pObj, pScript, OldCurTime, Length);
-                        NewCurTime = pScript->CurTime;
+                    if (pScript->CurTime < tPrevTime) {
+                        IssueScriptMessages(pEnginePtr, pObj, pScript, tPrevTime, ScrLength);
                     issueFrom0:
-                        IssueScriptMessages(pEnginePtr, pObj, pScript, 0, NewCurTime);
+                        IssueScriptMessages(pEnginePtr, pObj, pScript, 0, pScript->CurTime);
                         break;
                     }
-                    IssueScriptMessages(pEnginePtr, pObj, pScript, OldCurTime, NewCurTime);
+                    IssueScriptMessages(pEnginePtr, pObj, pScript, tPrevTime, pScript->CurTime);
                     break;
                 case 2:
-                    if (OldCurTime < Length) {
-                        IssueScriptMessages(pEnginePtr, pObj, pScript, OldCurTime, NewCurTime);
+                    if (tPrevTime < ScrLength) {
+                        IssueScriptMessages(pEnginePtr, pObj, pScript, tPrevTime, pScript->CurTime);
                     } else {
-                        IssueScriptMessages(pEnginePtr, pObj, pScript, OldCurTime - Length, 0);
+                        IssueScriptMessages(pEnginePtr, pObj, pScript, tPrevTime - ScrLength, 0);
                         IssueScriptMessages(pEnginePtr, pObj, pScript, 0, pScript->CurTime);
                     }
                     break;
                 }
             }
-            if (bExecuting && OldCurTime == pScript->CurTime &&
-                OldCurTime == pScript->Length + 1 && !(pObj->Flags & 0x400000)) {
+            if (bExecuting && tPrevTime == pScript->CurTime &&
+                tPrevTime == pScript->Length + 1 && !(pObj->Flags & 0x400000)) {
                 goto finalize;
             }
         }
@@ -471,8 +468,8 @@ finalize:
         break;
     }
 
-    if (bExecuting == true && OldCurTime == pScript->CurTime &&
-        OldCurTime == pScript->Length + 1 && !(pObj->Flags & 0x400000)) {
+    if (bExecuting == true && tPrevTime == pScript->CurTime &&
+        tPrevTime == pScript->Length + 1 && !(pObj->Flags & 0x400000)) {
         pObj->Flags &= FEPackage::uHoldDirtyFlags | 0xFE7FFFFF;
     }
 

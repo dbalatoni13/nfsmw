@@ -172,6 +172,12 @@ struct FEMessageNode : public FEMinNode {
 
 // total size: 0x20
 struct FEPackageCommand : public FENode {
+    FEPackageCommand()
+        : iCommand(0) //
+        , uControlMask(0)
+    {}
+    ~FEPackageCommand() override {}
+
     int iCommand;               // offset 0x14, size 0x4
     unsigned long uControlMask; // offset 0x18, size 0x4
     FEPackage* pPackage;        // offset 0x1C, size 0x4
@@ -379,9 +385,8 @@ FEPackage* FEngine::PushPackage(const char* pPackageName, const unsigned char Le
         const char* pBaseName = pPackageName + len - 1;
         char c = *pBaseName;
         while (c != '/' && c != '\\' && len > 0) {
+            c = *--pBaseName;
             len--;
-            pBaseName--;
-            c = *pBaseName;
         }
         if (len != 0) {
             pBaseName++;
@@ -561,24 +566,23 @@ void FEngine::Render() {
 
 void FEngine::RenderGroup(FEGroup* pGroup, FEMatrix4& mParent, FEMatrix4& mAccum, unsigned short RenderContext) {
     FEObjData* pData = pGroup->GetObjData();
-    FEVector3 pivot(0.0f);
-    FEVector3 neg(0.0f);
+    FEVector3 stOffset(0.0f);
+    FEVector3 stPivot(0.0f);
     if (pData->Col.a != 0) {
-        if (bExecuting || static_cast<int>(pGroup->Flags) > -1) {
-            FEMatrix4 mRot;
-            pData->Rot.GetMatrix(&mRot);
-            neg.x = -pData->Pivot.x;
-            neg.y = -pData->Pivot.y;
-            neg.z = -pData->Pivot.z;
-            FEMultMatrix(&pivot, &mRot, &neg);
-            FEMatrix4 mLocal;
-            mLocal.m41 = pivot.x + pData->Pivot.x + pData->Pos.x;
-            mLocal.m42 = pivot.y + pData->Pivot.y + pData->Pos.y;
-            mLocal.m43 = pivot.z + pData->Pivot.z + pData->Pos.z;
-            FEMatrix4 mCombined;
-            FEMultMatrix(&mCombined, &mRot, &mParent);
-            FEMatrix4 mFinal;
-            FEMultMatrix(&mFinal, &mCombined, &mAccum);
+        if (bExecuting || static_cast<int>(pGroup->Flags) >= 0) {
+            FEMatrix4 stTemp;
+            pData->Rot.GetMatrix(&stTemp);
+            stPivot.x = -pData->Pivot.x;
+            stPivot.y = -pData->Pivot.y;
+            stPivot.z = -pData->Pivot.z;
+            FEMultMatrix(&stOffset, &stTemp, &stPivot);
+            stTemp.m41 = stOffset.x + pData->Pivot.x + pData->Pos.x;
+            stTemp.m42 = stOffset.y + pData->Pivot.y + pData->Pos.y;
+            stTemp.m43 = stOffset.z + pData->Pivot.z + pData->Pos.z;
+            FEMatrix4 stContext;
+            FEMultMatrix(&stContext, &stTemp, &mParent);
+            FEMatrix4 stContextView;
+            FEMultMatrix(&stContextView, &stContext, &mAccum);
             unsigned short ctx = uGroupContext + 1;
             uGroupContext = ctx;
             pGroup->RenderContext = RenderContext;
@@ -586,9 +590,9 @@ void FEngine::RenderGroup(FEGroup* pGroup, FEMatrix4& mParent, FEMatrix4& mAccum
             FEObject* pObj = pGroup->GetFirstChild();
             while (pObj) {
                 if (pObj->Type == FE_Group) {
-                    RenderGroup(static_cast<FEGroup*>(pObj), mCombined, mAccum, ctx);
+                    RenderGroup(static_cast<FEGroup*>(pObj), stContext, mAccum, ctx);
                 } else {
-                    RenderObject(pObj, mFinal, ctx);
+                    RenderObject(pObj, stContextView, ctx);
                 }
                 pObj = pObj->GetNext();
             }
@@ -614,10 +618,9 @@ void FEngine::RenderObject(FEObject* pObj, FEMatrix4& mParent, unsigned short Re
 }
 
 void FEngine::QueuePackageCommand(long command, unsigned long ControlMask, const char* pPackageName) {
+    FEPackageCommand* pCom = nullptr;
     FEPackage* pPackageWithControl = FindPackageWithControl();
     FEPackageCommand* Node = FENG_NEW FEPackageCommand();
-    Node->iCommand = 0;
-    Node->uControlMask = 0;
     Node->pPackage = pPackageWithControl;
     if (pPackageWithControl) {
         if (ControlMask == 0) {
@@ -628,18 +631,19 @@ void FEngine::QueuePackageCommand(long command, unsigned long ControlMask, const
         pPackageWithControl->SetOldControlMask(pPackageWithControl->GetControlMask());
         pPackageWithControl->SetControlMask(0);
     } else {
-        FEPackageCommand* pCom = FindQueuedNodeWithControl();
+        pCom = FindQueuedNodeWithControl();
         if (pCom) {
             if (ControlMask == 0) {
                 Node->uControlMask = pCom->uControlMask;
+            } else {
+                Node->uControlMask = ControlMask;
             }
         } else {
             if (ControlMask == 0) {
                 Node->uControlMask = 0xFF;
+            } else {
+                Node->uControlMask = ControlMask;
             }
-        }
-        if (ControlMask != 0) {
-            Node->uControlMask = ControlMask;
         }
     }
     Node->iCommand = command;
