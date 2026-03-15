@@ -365,25 +365,8 @@ void WorldMap::NotificationMessage(unsigned long msg, FEObject* obj, unsigned lo
     if ((bInToggleMode || (msg != 0x72619778 && msg != 0x911c0a4b)) && msg != 0xc407210) {
         UIWidgetMenu::NotificationMessage(msg, obj, param1, param2);
     }
-    if (msg == 0xa16ca7bd) {
-        if (GPS_IsEngaged()) {
-            GPS_Disengage();
-            ClearGPSing();
-        }
-        if (SelectedItem != nullptr && SelectedItem->GetIcon() != nullptr) {
-            UMath::Vector3 pos;
-            eUnSwizzleWorldVector(SelectedItem->GetIcon()->GetPosition(),
-                                  reinterpret_cast< bVector3& >(pos));
-            if (GPS_Engage(pos, 0.0f) == 0) {
-                DialogInterface::ShowOneButton(GetPackageName(), "", static_cast< eDialogTitle >(1),
-                                               0x417b2601, 0x34dc1bec, 0x7afdf4cc);
-            } else {
-                SetGPSing(SelectedItem->GetIcon());
-                FEngSetLastButton(GetPackageName(), 0);
-                cFEng::Get()->QueuePackageMessage(0x911ab364, GetPackageName(), nullptr);
-            }
-        }
-    } else if (msg < 0xa16ca7be) {
+    if (msg != 0xa16ca7bd) {
+        if (msg < 0xa16ca7be) {
         if (msg != 0x72619778) {
             if (msg < 0x72619779) {
                 if (msg == 0x35f8620b) {
@@ -447,7 +430,7 @@ void WorldMap::NotificationMessage(unsigned long msg, FEObject* obj, unsigned lo
                 goto view_switch;
             }
         }
-    } else {
+        } else {
         if (msg == 0xc519bfc4) {
             return;
         }
@@ -526,6 +509,31 @@ void WorldMap::NotificationMessage(unsigned long msg, FEObject* obj, unsigned lo
         bInToggleMode = false;
         cFEng::Get()->QueuePackageMessage(0x947e6205, GetPackageName(), nullptr);
         goto finish_toggle;
+    }
+        return;
+    }
+
+    if (GPS_IsEngaged()) {
+        GPS_Disengage();
+        ClearGPSing();
+    }
+    if (SelectedItem == nullptr) {
+        return;
+    }
+    if (SelectedItem->GetIcon() == nullptr) {
+        return;
+    }
+
+    UMath::Vector3 pos;
+    eUnSwizzleWorldVector(SelectedItem->GetIcon()->GetPosition(),
+                          reinterpret_cast< bVector3& >(pos));
+    if (GPS_Engage(pos, 0.0f) == 0) {
+        DialogInterface::ShowOneButton(GetPackageName(), "", static_cast< eDialogTitle >(1),
+                                       0x417b2601, 0x34dc1bec, 0x7afdf4cc);
+    } else {
+        SetGPSing(SelectedItem->GetIcon());
+        FEngSetLastButton(GetPackageName(), 0);
+        cFEng::Get()->QueuePackageMessage(0x911ab364, GetPackageName(), nullptr);
     }
     return;
 
