@@ -150,16 +150,12 @@ void FECodeListBox::Initialize(unsigned long ulNumVisCols, unsigned long ulNumVi
                 }
             }
             while (ulNumRows < ulOldNumVisibleRows) {
-                unsigned long j = 0;
                 unsigned long ulNextRow = ulNumRows + 1;
-                if (ulOldNumVisibleColumns != 0) {
-                    do {
-                        FEListBoxCell* pOldCell = &pstOldCells[ulNumRows * ulOldNumVisibleColumns + j];
-                        if (pOldCell->ulType == 2) {
-                            DeallocateString(pOldCell->u.string.pStr);
-                        }
-                        j++;
-                    } while (j < ulOldNumVisibleColumns);
+                for (unsigned long j = 0; j < ulOldNumVisibleColumns; j++) {
+                    FEListBoxCell* pOldCell = &pstOldCells[ulNumRows * ulOldNumVisibleColumns + j];
+                    if (pOldCell->ulType == 2) {
+                        DeallocateString(pOldCell->u.string.pStr);
+                    }
                 }
                 ulNumRows = ulNextRow;
             }

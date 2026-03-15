@@ -204,7 +204,7 @@ struct FEngine {
     inline bool GetLoadScriptNames() const { return bLoadScriptNames; }
     inline void SetWrapMode(FEButtonWrapMode NewMode) { WrapMode = NewMode; }
     inline FEButtonWrapMode GetWrapMode() { return WrapMode; }
-    static inline unsigned long GetNextGUID() { return ++SysGUID; }
+    static inline unsigned long GetNextGUID() { return SysGUID++; }
     static inline unsigned long GetSysGUID() { return SysGUID; }
     static inline void SetSysGUID(unsigned long NewGUID) { SysGUID = NewGUID; }
     inline int GetNumPackageMarkers() const { return CurrentPackageRecordIndex; }

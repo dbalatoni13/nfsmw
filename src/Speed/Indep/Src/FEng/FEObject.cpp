@@ -39,7 +39,7 @@ FEObject::FEObject()
     , DataSize(0) //
     , Cached(nullptr) //
 {
-    GUID = FEngine::SysGUID++;
+    GUID = FEngine::GetNextGUID();
 }
 
 FEObject::FEObject(const FEObject& Object, bool bReference)
