@@ -348,6 +348,66 @@ unsigned int UIWidgetMenu::AddButtonOption(FEButtonWidget *option) {
     return iIndexToAdd - 1;
 }
 
+unsigned int UIWidgetMenu::AddToggleOption(FEToggleWidget *option, bool use_arrow) {
+    float img_left;
+    float img_right;
+
+    option->SetTitleObject(GetCurrentFEString(pTitleName));
+    option->SetDataObject(GetCurrentFEString(pDataName));
+    option->SetBacking(GetCurrentFEObject(pBackingName));
+    option->SetTopLeft(vLastWidgetPos);
+    option->SetMaxTitleSize(vMaxTitleSize);
+    option->SetMaxDataSize(vMaxDataSize);
+    option->SetDataPos(vDataPos);
+    option->SetLeftImage(GetCurrentFEImage(pLeftArrowName));
+    option->SetRightImage(GetCurrentFEImage(pRightArrowName));
+    Options.AddTail(option);
+    iIndexToAdd++;
+    IncrementStartPos();
+    if (!option->IsEnabled()) {
+        option->Disable();
+    }
+    option->Show();
+    option->Draw();
+    option->Position();
+    img_left = FEngGetTopLeftX(option->GetRightImage()) + bAbs(FEngGetSizeX(option->GetRightImage()));
+    option->SetWidth(bAbs(option->GetTopLeftX() - img_left));
+    img_right = bAbs(FEngGetSizeY(option->GetRightImage()));
+    option->SetHeight(img_right);
+    return iIndexToAdd - 1;
+}
+
+unsigned int UIWidgetMenu::AddSliderOption(FESliderWidget *option, bool use_arrow) {
+    char sztemp[64];
+    float img_left;
+    float img_right;
+
+    FEngSNPrintf(sztemp, 0x40, "%s%d", pSliderName, iIndexToAdd);
+    option->SetTitleObject(GetCurrentFEString(pTitleName));
+    option->InitSliderObjects(GetPackageName(), sztemp);
+    option->SetInitialValues();
+    option->SetTopLeft(vLastWidgetPos);
+    option->SetMaxTitleSize(vMaxTitleSize);
+    option->SetMaxDataSize(vMaxDataSize);
+    option->SetDataPos(vDataPos);
+    option->SetLeftImage(GetCurrentFEImage(pLeftArrowName));
+    option->SetRightImage(GetCurrentFEImage(pRightArrowName));
+    Options.AddTail(option);
+    iIndexToAdd++;
+    IncrementStartPos();
+    if (!option->IsEnabled()) {
+        option->Disable();
+    }
+    option->Show();
+    option->Draw();
+    option->Position();
+    img_left = FEngGetTopLeftX(option->GetRightImage()) + bAbs(FEngGetSizeX(option->GetRightImage()));
+    option->SetWidth(bAbs(option->GetTopLeftX() - img_left));
+    img_right = bAbs(FEngGetSizeY(option->GetTitleObject()));
+    option->SetHeight(img_right);
+    return iIndexToAdd - 1;
+}
+
 void UIWidgetMenu::SetInitialOption(int number) {
     if (Options.IsEmpty()) {
         if (bHasScrollBar) {

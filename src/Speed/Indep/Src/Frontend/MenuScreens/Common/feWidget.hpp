@@ -79,7 +79,7 @@ struct FEButtonWidget : public FEWidget {
     void GetMaxTitleSize(bVector2& size) { size = vMaxTitleSize; }
     float GetMaxTitleWidth() { return vMaxTitleSize.x; }
     float GetMaxTitleHeight() { return vMaxTitleSize.y; }
-    void SetMaxTitleSize(bVector2& size) { vMaxTitleSize = size; }
+    void SetMaxTitleSize(bVector2& size) { vMaxTitleSize.x = size.x; vMaxTitleSize.y = size.y; }
     void SetMaxTitleWidth(float width) { vMaxTitleSize.x = width; }
     void SetMaxTitleHeight(float height) { vMaxTitleSize.y = height; }
     void CheckMouse(const char* parent_pkg, float mouse_x, float mouse_y) override;
@@ -116,24 +116,24 @@ public:
 
     FEString* GetTitleObject() { return pTitle; }
     FEString* GetDataObject() { return pData; }
-    void SetTitleObject(FEString* string);
-    void SetDataObject(FEString* string);
+    void SetTitleObject(FEString* string) { pTitle = string; }
+    void SetDataObject(FEString* string) { pData = string; }
     void GetDataPos(bVector2& pos);
     float GetDataPosX();
     float GetDataPosY();
-    void SetDataPos(bVector2& pos);
-    void SetDataPosX(float x);
-    void SetDataPosY(float y);
+    void SetDataPos(bVector2& pos) { vDataPos.x = pos.x; vDataPos.y = pos.y; }
+    void SetDataPosX(float x) { vDataPos.x = x; }
+    void SetDataPosY(float y) { vDataPos.y = y; }
     void GetMaxTitleSize(bVector2& size);
     float GetMaxTitleWidth();
     float GetMaxTitleHeight();
     void GetMaxDataSize(bVector2& size);
     float GetMaxDataWidth();
     float GetMaxDataHeight();
-    void SetMaxTitleSize(bVector2& size);
+    void SetMaxTitleSize(bVector2& size) { vMaxTitleSize.x = size.x; vMaxTitleSize.y = size.y; }
     void SetMaxTitleWidth(float width);
     void SetMaxTitleHeight(float height);
-    void SetMaxDataSize(bVector2& size);
+    void SetMaxDataSize(bVector2& size) { vMaxDataSize.x = size.x; vMaxDataSize.y = size.y; }
     void SetMaxDataWidth(float x);
     void SetMaxDataHeight(float y);
 };
@@ -163,8 +163,8 @@ public:
 
     FEImage* GetLeftImage() { return pLeftImage; }
     FEImage* GetRightImage() { return pRightImage; }
-    void SetLeftImage(FEImage* img);
-    void SetRightImage(FEImage* img);
+    void SetLeftImage(FEImage* img) { pLeftImage = img; }
+    void SetRightImage(FEImage* img) { pRightImage = img; }
     bool Update(unsigned int msg) {
         bMovedLastUpdate = true;
         BlinkArrows(msg);
@@ -199,7 +199,7 @@ public:
     virtual void SetInitialValues();
 
     void SetDataObject(FEString* string);
-    void InitSliderObjects(const char* pkg_name, const char* name);
+    void InitSliderObjects(const char* pkg_name, const char* name) { Slider.InitObjects(pkg_name, name); }
     void SetSliderValues(float min, float max, float inc, float cur) {
         Slider.InitValues(min, max, inc, cur, 160.0f);
     }
