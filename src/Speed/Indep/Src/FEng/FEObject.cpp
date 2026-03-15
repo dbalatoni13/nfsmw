@@ -46,13 +46,9 @@ FEObject::FEObject(const FEObject& Object, bool bReference)
     : NameHash(0) //
     , pName(nullptr) //
     , Flags(0) //
-    , RenderContext(0) //
     , Handle(0) //
     , UserParam(0) //
     , pData(nullptr) //
-    , DataSize(0) //
-    , pCurrentScript(nullptr) //
-    , Cached(nullptr) //
 {
     GUID = FEngine::SysGUID++;
     SetDataSize(Object.DataSize);
@@ -67,9 +63,9 @@ FEObject::FEObject(const FEObject& Object, bool bReference)
     FEMessageResponse* pSrcResp = static_cast<FEMessageResponse*>(Object.Responses.GetHead());
     while (pSrcResp) {
         FEMessageResponse* pNewResp = new FEMessageResponse();
-        pNewResp->SetCount(pSrcResp->GetCount());
-        pNewResp->MsgID = pSrcResp->MsgID;
         unsigned long count = pSrcResp->GetCount();
+        pNewResp->SetCount(count);
+        pNewResp->MsgID = pSrcResp->MsgID;
         for (unsigned long i = 0; i < count; i++) {
             pNewResp->pResponseList[i] = pSrcResp->pResponseList[i];
         }
