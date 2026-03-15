@@ -15,22 +15,18 @@ uiRapSheetMain::uiRapSheetMain(ScreenConstructorData* sd)
 uiRapSheetMain::~uiRapSheetMain() {}
 void uiRapSheetMain::NotificationMessage(unsigned long msg, FEObject* pobj, unsigned long param1, unsigned long param2) {
     switch (msg) {
+    case 0x0C407210:
+        button_pressed = pobj->NameHash;
+        break;
     case 0x35F8620B: {
         unsigned char button = FEngGetLastButton(GetPackageName());
         if (button == 0) { button = 1; }
         FEngSetCurrentButton(GetPackageName(), FEngHashString("BL_%d", button));
         break;
     }
-    case 0x0C407210:
-        button_pressed = pobj->NameHash;
-        break;
     case 0xE1FDE1D1: {
         int button_num = 1;
         switch (button_pressed) {
-        case 0xCDA0A66D:
-            button_num = 3;
-            cFEng::Get()->QueuePackageSwitch("RapSheetCTS.fng", 0, 0, false);
-            break;
         case 0xCDA0A66B:
             cFEng::Get()->QueuePackageSwitch("RapSheetRS.fng", 0, 0, false);
             break;
@@ -38,13 +34,17 @@ void uiRapSheetMain::NotificationMessage(unsigned long msg, FEObject* pobj, unsi
             button_num = 2;
             cFEng::Get()->QueuePackageSwitch("RapSheetUS.fng", 0, 0, false);
             break;
-        case 0xCDA0A66F:
-            button_num = 5;
-            cFEng::Get()->QueuePackageSwitch("RapSheetRankings.fng", 0, 0, false);
+        case 0xCDA0A66D:
+            button_num = 3;
+            cFEng::Get()->QueuePackageSwitch("RapSheetCTS.fng", 0, 0, false);
             break;
         case 0xCDA0A66E:
             button_num = 4;
             cFEng::Get()->QueuePackageSwitch("RapSheetTEP.fng", 0, 0, false);
+            break;
+        case 0xCDA0A66F:
+            button_num = 5;
+            cFEng::Get()->QueuePackageSwitch("RapSheetRankings.fng", 0, 0, false);
             break;
         case 0xCDA0A670:
             button_num = 6;
