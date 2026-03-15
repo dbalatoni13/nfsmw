@@ -1622,49 +1622,53 @@ int CustomizeCategoryScreen::AddCustomOption(const char *to_pkg, unsigned int te
 void CustomizeCategoryScreen::NotificationMessage(unsigned long msg, FEObject *pobj, unsigned long param1, unsigned long param2) {
     IconScrollerMenu::NotificationMessage(msg, pobj, param1, param2);
     switch (msg) {
-    case 0xb4edeb6d:
-        Options.bReactToInput = true;
-        break;
-    case 0xc519bfbf:
-        Showcase::FromPackage = GetPackageName();
-        Showcase::FromArgs = Category | (Options.GetCurrentIndex() << 16);
-        cFEng_mInstance->QueuePackageSwitch(g_pCustomizeShowcasePkg, 0, 0, false);
-        break;
-    case 0xe1fde1d1:
-        if (!bBackingOut) {
-            return;
-        }
-        cFEng_mInstance->QueuePackageSwitch(BackToPkg, FromCategory | (Category << 16), 0, false);
-        break;
     case 0xb5af2461:
         CustomizeShoppingCart::ShowShoppingCart(GetPackageName());
         break;
-    case 0x1720b124:
-        CustomizeShoppingCart::ShowShoppingCart(GetPackageName());
+    case 0xe1fde1d1:
+        if (!bBackingOut) {
+            break;
+        }
+        cFEng_mInstance->QueuePackageSwitch(BackToPkg, FromCategory | (Category << 16), 0, false);
+        break;
+    case 0x911ab364: {
+        bool leave = true;
+        if (Category <= 0x803) {
+            if (Category >= 0x801) {
+                if (gCarCustomizeManager.DoesCartHaveActiveParts()) {
+                    cFEng_mInstance->QueueGameMessage(0x1720b124, GetPackageName(), 0xFF);
+                    leave = false;
+                    Options.bReactToInput = true;
+                } else {
+                    gCarCustomizeManager.EmptyCart();
+                    gCarCustomizeManager.ResetPreview();
+                }
+            }
+        }
+        if (leave) {
+            bBackingOut = true;
+            cFEng_mInstance->QueuePackageMessage(0x587c018b, GetPackageName(), nullptr);
+        }
+        break;
+    }
+    case 0xc519bfbf: {
+        CustomizeMainOption *opt = static_cast<CustomizeMainOption*>(Options.GetCurrentOption());
+        Showcase::FromPackage = GetPackageName();
+        Showcase::FromArgs = Category | (opt->Category << 16);
+        cFEng::Get()->QueuePackageSwitch(g_pCustomizeShowcasePkg, gCarCustomizeManager.EntryPoint, 0, false);
+        break;
+    }
+    case 0xb4edeb6d:
+        Options.bReactToInput = true;
         break;
     case 0x7a318ee0:
         gCarCustomizeManager.EmptyCart();
         gCarCustomizeManager.ResetPreview();
         cFEng_mInstance->QueuePackageMessage(0x587c018b, GetPackageName(), nullptr);
         break;
-    case 0x911ab364: {
-        bool shouldPop = true;
-        if (Category > 0x800 && Category < 0x804) {
-            if (!gCarCustomizeManager.DoesCartHaveActiveParts()) {
-                gCarCustomizeManager.EmptyCart();
-                gCarCustomizeManager.ResetPreview();
-            } else {
-                shouldPop = false;
-                cFEng_mInstance->QueueGameMessage(0x1720b124, GetPackageName(), 0xFF);
-                Options.bReactToInput = true;
-            }
-        }
-        if (shouldPop) {
-            bBackingOut = true;
-            cFEng_mInstance->QueuePackageMessage(0x587c018b, GetPackageName(), nullptr);
-        }
+    case 0x1720b124:
+        CustomizeShoppingCart::ShowShoppingCart(GetPackageName());
         break;
-    }
     }
 }
 
