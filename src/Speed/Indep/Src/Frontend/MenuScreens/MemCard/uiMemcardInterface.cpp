@@ -3,7 +3,6 @@
 MemoryCardSetup gMemcardSetup;
 
 void MemoryCardSetup::Clear() {
-    mPreviousPrompt = 0;
     mOp = 0;
     mMemScreen = nullptr;
     mToScreen = nullptr;
@@ -15,6 +14,7 @@ void MemoryCardSetup::Clear() {
     mFailedMsg = 0;
     mInBootFlow = false;
     mPreviousCommand = 0;
+    mPreviousPrompt = 0;
 }
 
 unsigned int MemcardGetCurrentUIOperation() {
