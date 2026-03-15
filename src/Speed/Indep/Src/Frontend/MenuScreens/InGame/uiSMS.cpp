@@ -143,18 +143,7 @@ void uiSMS::Setup() {
             }
         }
     }
-    if (!bVoiceMsg) {
-        if (new_voice) {
-            FEngSetScript(GetPackageName(), 0x19161CCC, 0x1CA7C0, true);
-        } else {
-            FEngSetScript(GetPackageName(), 0x19161CCC, 0x16A259, true);
-        }
-        if (!new_text) {
-            FEngSetScript(GetPackageName(), 0x0D6FD6F9, 0x16A259, true);
-        } else {
-            FEngSetScript(GetPackageName(), 0x0D6FD6F9, 0x249DB7B7, true);
-        }
-    } else {
+    if (bVoiceMsg) {
         if (new_voice) {
             FEngSetScript(GetPackageName(), 0x19161CCC, 0x249DB7B7, true);
         } else {
@@ -162,6 +151,17 @@ void uiSMS::Setup() {
         }
         if (new_text) {
             FEngSetScript(GetPackageName(), 0x0D6FD6F9, 0x1CA7C0, true);
+        } else {
+            FEngSetScript(GetPackageName(), 0x0D6FD6F9, 0x16A259, true);
+        }
+    } else {
+        if (new_voice) {
+            FEngSetScript(GetPackageName(), 0x19161CCC, 0x1CA7C0, true);
+        } else {
+            FEngSetScript(GetPackageName(), 0x19161CCC, 0x16A259, true);
+        }
+        if (new_text) {
+            FEngSetScript(GetPackageName(), 0x0D6FD6F9, 0x249DB7B7, true);
         } else {
             FEngSetScript(GetPackageName(), 0x0D6FD6F9, 0x16A259, true);
         }
@@ -179,10 +179,10 @@ void uiSMS::Setup() {
         }
     }
     SetInitialPosition(index);
-    if (GetCurrentDatum() == nullptr) {
-        the_sms_msg = nullptr;
-    } else {
+    if (GetCurrentDatum()) {
         the_sms_msg = static_cast<SMSDatum*>(GetCurrentDatum())->my_msg;
+    } else {
+        the_sms_msg = nullptr;
     }
     RefreshHeader();
 }

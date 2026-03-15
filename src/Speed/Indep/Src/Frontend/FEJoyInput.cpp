@@ -148,7 +148,9 @@ void cFEngJoyInput::SetRequiredJoy(JoystickPort port, bool required) {
 
 bool cFEngJoyInput::CheckUnplugged() {
     bool unplugged = false;
-    if (TheGameFlowManager.IsInGame() || FEManager::Get()->IsAllowingControllerError()) {
+    if (!TheGameFlowManager.IsInGame() && !FEManager::Get()->IsAllowingControllerError()) {
+        SetRequiredJoy(kJP_NumPorts, false);
+    } else {
         bool is_splitscreen = false;
         if (FEDatabase->IsSplitScreenMode()) {
             is_splitscreen = FEDatabase->iNumPlayers == 2;
@@ -161,9 +163,7 @@ bool cFEngJoyInput::CheckUnplugged() {
         }
         JoystickPort player_port2 = static_cast<JoystickPort>(-1);
         JoystickPort player_port1 = static_cast<JoystickPort>(FEDatabase->GetPlayersJoystickPort(0));
-        if (player_port1 == static_cast<JoystickPort>(-1)) {
-            unplugged = false;
-        } else {
+        if (player_port1 != static_cast<JoystickPort>(-1)) {
             if (bIsSplit) {
                 player_port2 = static_cast<JoystickPort>(FEDatabase->GetPlayersJoystickPort(1));
             }
@@ -183,8 +183,6 @@ bool cFEngJoyInput::CheckUnplugged() {
                 unplugged = true;
             }
         }
-    } else {
-        SetRequiredJoy(kJP_NumPorts, false);
     }
     return unplugged;
 }

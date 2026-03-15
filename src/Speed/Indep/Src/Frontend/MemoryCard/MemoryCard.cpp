@@ -455,8 +455,12 @@ void MemoryCard::SetAutoSaveEnabled(bool bEnabled) {
     const char* prefix = m_pImp->GetPrefix();
     bStrCat(m_Filename, prefix, entryname);
     bStrNCpy(MemoryCardImp::gContentName, entryname, 16);
-    if (m_pFEScreen == nullptr || gMemcardSetup.GetMethod() != 0xa0) ShowMessages(false);
-    else { m_pFEScreen->SetStringCheckingCard(); ShowMessages(true); }
+    if (m_pFEScreen && gMemcardSetup.GetMethod() == 0xa0) {
+        m_pFEScreen->SetStringCheckingCard();
+        ShowMessages(true);
+    } else {
+        ShowMessages(false);
+    }
     bool bDisabling = !bEnabled;
     m_pIMemcard->SetMessage(RealmcIface::MESSAGE_SHOW, 1);
     if (bDisabling) { m_bDisablingAutoSaveForSave = true; }
@@ -601,8 +605,8 @@ void MemoryCard::ShowAutoSaveIcon() {
     if (GRaceStatus::Exists() && GRaceStatus::Get().GetRaceParameters() != nullptr
         && GRaceStatus::Get().GetRaceParameters()->GetIsDDayRace()) {
         const char* script;
-        if (!bWidescreen) script = "SAVE_DDAY_4_3";
-        else script = "SAVE_DDAY_16_9";
+        if (bWidescreen) script = "SAVE_DDAY_16_9";
+        else script = "SAVE_DDAY_4_3";
         msg = FEHashUpper(script);
     } else {
         if (cFEng::Get()->IsPackagePushed("SMS_HUD.fng") || GManager::Get().GetHasPendingSMS()) {
@@ -611,8 +615,8 @@ void MemoryCard::ShowAutoSaveIcon() {
             goto queue;
         }
         const char* script;
-        if (!bWidescreen) script = "SAVE_REG_4_3";
-        else script = "SAVE_REG_16_9";
+        if (bWidescreen) script = "SAVE_REG_16_9";
+        else script = "SAVE_REG_4_3";
         msg = FEHashUpper(script);
     }
 queue:
