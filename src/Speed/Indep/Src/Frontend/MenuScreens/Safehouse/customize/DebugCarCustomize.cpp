@@ -167,19 +167,20 @@ void DebugCarCustomizeScreen::Redraw() {
     FEPrintf(GetPackageName(), 0x36db742, "CarName");
     FEPrintf(GetPackageName(), 0x36db743, "LookupSlotID");
     FECarRecord *car = FEDatabase->GetPlayerCarStable(0)->GetCarRecordByHandle(pDebugCar->mHandle);
-    if (!car) {
-        FEPrintf(GetPackageName(), 0x3e40712, "NULL");
-    } else {
+    if (car) {
         FEPrintf(GetPackageName(), 0x3e40712, car->GetDebugName());
+    } else {
+        FEPrintf(GetPackageName(), 0x3e40712, "NULL");
     }
     FEPrintf(GetPackageName(), 0x3e40713, CurrentLookupSlotID->GetString());
-    if (CurrentInstallablePart == reinterpret_cast<bPNode *>(&InstallableParts) || !car || car->Customization == 0xFF) {
-        FEPrintf(GetPackageName(), 0xd6d32016, "----");
-        FEPrintf(GetPackageName(), 0xeffe7224, "----");
-        FEPrintf(GetPackageName(), 0xb1027477, "----");
-        FEPrintf(GetPackageName(), 0x6a81554, "----");
-        FEPrintf(GetPackageName(), 0x36db746, "Part Info (NONE)");
-    } else {
+    if (CurrentInstallablePart == reinterpret_cast<bPNode *>(&InstallableParts) || !car) {
+        goto dash_section;
+    }
+    {
+        bool hasCustom = car->Customization != 0xFF;
+        if (!hasCustom) goto dash_section;
+    }
+    {
         CarPart *part = static_cast<CarPart *>(CurrentInstallablePart->GetpObject());
         unsigned int typeHash = part->GetCarTypeNameHash();
         CarTypeInfo *typeInfo = GetCarTypeInfoFromHash(typeHash);
@@ -192,7 +193,15 @@ void DebugCarCustomizeScreen::Redraw() {
         int idx = InstallableParts.TraversebList(CurrentInstallablePart);
         int total = InstallableParts.CountElements();
         FEPrintf(GetPackageName(), 0x36db746, "Part Info (%d/%d)", idx, total);
+        goto end;
     }
+dash_section:
+    FEPrintf(GetPackageName(), 0xd6d32016, "----");
+    FEPrintf(GetPackageName(), 0xeffe7224, "----");
+    FEPrintf(GetPackageName(), 0xb1027477, "----");
+    FEPrintf(GetPackageName(), 0x6a81554, "----");
+    FEPrintf(GetPackageName(), 0x36db746, "Part Info (NONE)");
+end:;
 }
 
 void DebugCarCustomizeScreen::NotificationMessage(unsigned long msg, FEObject *pobj, unsigned long param1, unsigned long param2) {
