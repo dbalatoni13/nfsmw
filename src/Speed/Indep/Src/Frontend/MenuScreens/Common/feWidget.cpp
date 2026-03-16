@@ -1,5 +1,6 @@
 #include "feWidget.hpp"
 #include "CTextScroller.hpp"
+#include "Speed/Indep/Src/Frontend/FEngFont.hpp"
 
 struct FEObject;
 void FEngSetVisible(FEObject* obj);
@@ -385,6 +386,82 @@ short *CTextScroller::FindCR(short *pText) {
 
 void CTextScroller::WordWrapCountLinesAndChars(short *pTextStart, short *pTextEnd, int &NumLines, int &NumChars) {
     NumChars = WordWrapAddLines(pTextStart, pTextEnd, true, nullptr);
+}
+
+int CTextScroller::WordWrapAddLines(short *pTextStart, short *pTextEnd, bool bCountOnly, int *pNumCharsOut) {
+    int NumLines = 0;
+
+    if (pNumCharsOut) {
+        *pNumCharsOut = 0;
+    }
+
+    while (pTextStart < pTextEnd) {
+        int StringLength = 0;
+        int StringSize = 0;
+        float TextWidth = 0.0f;
+        short *pChar = pTextStart;
+        short PrevChar = 0;
+        bool bStringSizeOverflow;
+
+        NumLines++;
+
+        while (TextWidth < static_cast<float>(m_ViewWidth - 16) && pChar < pTextEnd) {
+            bStringSizeOverflow = IsNewlineChar(*pChar);
+            if (bStringSizeOverflow) {
+                break;
+            }
+
+            if (!FEngFont::IsJoyEventTexture(pChar, 0)) {
+                StringLength++;
+                TextWidth += m_pFont->GetCharacterWidth(*pChar, PrevChar, 0);
+                pChar++;
+                PrevChar = *pChar;
+            } else {
+                const short *pNewChar;
+
+                PrevChar = 0;
+                TextWidth += m_pFont->GetJoyEventTextureWidth(pChar);
+                pNewChar = m_pFont->SkipJoyEventTexture(pChar, 0);
+                StringLength += static_cast<int>(pNewChar - pChar);
+                pChar = const_cast<short *>(pNewChar);
+            }
+        }
+
+        StringSize = StringLength;
+        if (StringLength < static_cast<int>(pTextEnd - pTextStart)) {
+            int WordBreak = StringSize - 1;
+
+            while (WordBreak > 0 && pTextStart[WordBreak] != ' ') {
+                WordBreak--;
+            }
+
+            if (WordBreak > 0) {
+                StringLength = WordBreak + 1;
+            }
+
+            if (!bCountOnly) {
+                AddLine(pTextStart, StringLength);
+            }
+
+            if (pNumCharsOut) {
+                *pNumCharsOut += 1 + StringLength;
+            }
+
+            pTextStart += StringLength;
+        } else {
+            if (!bCountOnly) {
+                AddLine(pTextStart, StringLength);
+            }
+
+            pTextStart = pTextEnd;
+
+            if (pNumCharsOut) {
+                *pNumCharsOut += 1 + StringLength;
+            }
+        }
+    }
+
+    return NumLines;
 }
 
 extern const char *GetTranslatedString(unsigned int hash);
