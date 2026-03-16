@@ -174,7 +174,14 @@ void FEObject::SetupMoveToTracks() {
                 case 5: {
                     FEQuaternion BaseQuat = *static_cast<FEQuaternion*>(pBase->Val);
                     BaseQuat.Conjugate();
-                    FEQuaternion qRet = *reinterpret_cast<FEQuaternion*>(pfData) * BaseQuat;
+                    FEQuaternion qRet;
+                    qRet.x = pfData[1] * BaseQuat.z - pfData[2] * BaseQuat.y;
+                    qRet.y = pfData[2] * BaseQuat.x - pfData[0] * BaseQuat.z;
+                    qRet.z = pfData[0] * BaseQuat.y - pfData[1] * BaseQuat.x;
+                    qRet.x += pfData[0] * BaseQuat.w + BaseQuat.x * pfData[3];
+                    qRet.y += pfData[1] * BaseQuat.w + BaseQuat.y * pfData[3];
+                    qRet.z += pfData[2] * BaseQuat.w + BaseQuat.z * pfData[3];
+                    qRet.w = pfData[3] * BaseQuat.w - (pfData[0] * BaseQuat.x + pfData[1] * BaseQuat.y + pfData[2] * BaseQuat.z);
                     pKey->Val = qRet;
                     break;
                 }
