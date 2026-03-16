@@ -22,11 +22,35 @@ void uiQRPressStart::Setup() {
 }
 
 void uiQRPressStart::NotificationMessage(unsigned long msg, FEObject *obj, unsigned long param1, unsigned long param2) {
-    switch (msg) {
-    case 0xe1fde1d1:
+    if (msg == 0xe1fde1d1) {
         cFEng::Get()->QueuePackageSwitch("Car_Select.fng", iPlayerNum, param, false);
-        break;
-    case 0x911ab364:
+        return;
+    }
+    if (msg > 0xe1fde1d1) {
+        if (msg != 0xebfcda65) return;
+        int joyport = FEngMapJoyParamToJoyport(param1);
+        if (iPlayerNum != 1 || joyport != FEDatabase->GetPlayersJoystickPort(0)) {
+            FEDatabase->SetPlayersJoystickPort(iPlayerNum, static_cast<char>(joyport));
+            this->param = param1;
+            if ((static_cast<unsigned int>(this->param) & 1) != 0) {
+                this->param = 1;
+            }
+            if ((static_cast<unsigned int>(this->param) & 2) != 0) {
+                this->param = 2;
+            }
+            if ((static_cast<unsigned int>(this->param) & 4) != 0) {
+                this->param = 4;
+            }
+            if ((static_cast<unsigned int>(this->param) & 8) != 0) {
+                this->param = 8;
+            }
+            FEManager::Get()->AllowControllerError(true);
+            cFEng::Get()->QueuePackageMessage(0x587c018b, PackageFilename, nullptr);
+        }
+        return;
+    }
+    if (msg != 0x911ab364) return;
+    {
         if (iPlayerNum == 1) {
             unsigned int joyParam = FEngMapJoyportToJoyParam(static_cast<int>(FEDatabase->GetPlayersJoystickPort(0)));
             cFEng::Get()->QueuePackageSwitch("Car_Select.fng", 0, joyParam, false);
@@ -43,28 +67,6 @@ void uiQRPressStart::NotificationMessage(unsigned long msg, FEObject *obj, unsig
             }
             cFEng::Get()->QueuePackageSwitch(pkg, 0, 0, false);
         }
-        break;
-    case 0xebfcda65: {
-        int joyport = FEngMapJoyParamToJoyport(param2);
-        if (iPlayerNum != 1 || joyport != FEDatabase->GetPlayersJoystickPort(0)) {
-            FEDatabase->SetPlayersJoystickPort(iPlayerNum, static_cast<char>(joyport));
-            this->param = param2;
-            if ((static_cast<unsigned int>(this->param) & 1) != 0) {
-                this->param = 1;
-            }
-            if ((static_cast<unsigned int>(this->param) & 2) != 0) {
-                this->param = 2;
-            }
-            if ((static_cast<unsigned int>(this->param) & 4) != 0) {
-                this->param = 4;
-            }
-            if ((static_cast<unsigned int>(this->param) & 8) != 0) {
-                this->param = 8;
-            }
-            FEManager::Get()->AllowControllerError(true);
-            cFEng::Get()->QueuePackageMessage(0x587c018b, PackageFilename, nullptr);
-        }
-        break;
-    }
+        return;
     }
 }
