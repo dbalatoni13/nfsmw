@@ -1402,18 +1402,20 @@ bool PostRaceMilestonesScreen::SetMilestoneAnimationScriptHash(bool isMilestone,
 bool PostRaceMilestonesScreen::StartMilestoneAnimations() {
     mCurrMilestoneIndex++;
     const GMilestone *milestone = PostRacePursuitScreen::GetPursuitData().GetMilestone(mCurrMilestoneIndex);
-    if (milestone) {
-        char descStr[32];
-        char outputStr[64];
-        unsigned int typeKey = milestone->GetTypeKey();
-        FEDatabase->SetMilestoneDescriptionString(descStr, 0, milestone->GetRequiredValue(), 0.0f, false);
-        const char *header = GetLocalizedString(FEDatabase->GetMilestoneHeaderHash(typeKey));
-        bSNPrintf(outputStr, 64, "%s: %s", header, descStr);
-        StartAnimations(true, typeKey, milestone->GetBounty(), outputStr);
-    } else {
+    if (!milestone) {
         StartMilestoneDoneAnimations();
+        return false;
     }
-    return milestone != nullptr;
+
+    char descStr[32];
+    char outputStr[64];
+    unsigned int typeKey = milestone->GetTypeKey();
+    FEDatabase->SetMilestoneDescriptionString(
+        descStr, typeKey, milestone->GetCurrentValue(), milestone->GetRequiredValue(), false);
+    const char *header = GetTranslatedString(FEDatabase->GetMilestoneHeaderHash(milestone->GetLocalizationTag()));
+    bSNPrintf(outputStr, 64, "%s: %s", header, descStr);
+    StartAnimations(true, typeKey, milestone->GetBounty(), outputStr);
+    return true;
 }
 
 bool PostRaceMilestonesScreen::StartChallengeAnimations() {
