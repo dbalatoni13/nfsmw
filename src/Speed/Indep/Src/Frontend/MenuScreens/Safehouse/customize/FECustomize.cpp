@@ -3879,20 +3879,20 @@ void CustomizeNumbers::NotificationMessage(unsigned long msg, FEObject *pobj, un
         ShoppingCartItem *rightInCart = gCarCustomizeManager.IsPartTypeInCart(0x6au);
         if (!leftInCart && !rightInCart) {
             SelectablePart *lnode = static_cast<SelectablePart *>(LeftNumberList.GetHead());
-            while (lnode != reinterpret_cast<SelectablePart *>(&LeftNumberList)) {
+            SelectablePart *lsentinel = reinterpret_cast<SelectablePart *>(&LeftNumberList);
+            for (; lnode != lsentinel; lnode = static_cast<SelectablePart *>(lnode->Next)) {
                 if ((lnode->PartState & CPS_PLAYER_STATE_MASK) == CPS_IN_CART) {
                     lnode->PartState = static_cast<eCustomizePartState>(lnode->PartState & CPS_GAME_STATE_MASK);
                     break;
                 }
-                lnode = static_cast<SelectablePart *>(lnode->Next);
             }
             SelectablePart *rnode = static_cast<SelectablePart *>(RightNumberList.GetHead());
-            while (rnode != reinterpret_cast<SelectablePart *>(&RightNumberList)) {
+            SelectablePart *rsentinel = reinterpret_cast<SelectablePart *>(&RightNumberList);
+            for (; rnode != rsentinel; rnode = static_cast<SelectablePart *>(rnode->Next)) {
                 if ((rnode->PartState & CPS_PLAYER_STATE_MASK) == CPS_IN_CART) {
                     rnode->PartState = static_cast<eCustomizePartState>(rnode->PartState & CPS_GAME_STATE_MASK);
                     break;
                 }
-                rnode = static_cast<SelectablePart *>(rnode->Next);
             }
         }
         RefreshHeader();
