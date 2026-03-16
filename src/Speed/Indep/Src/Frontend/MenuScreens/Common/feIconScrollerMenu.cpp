@@ -352,8 +352,6 @@ IconScroller::IconScroller(const char *pkg_name, const char *master, const char 
     iNumBookEnds = 0;
 }
 
-IconScroller::~IconScroller() {}
-
 void IconScroller::Update() {
     if (!Options.IsEmpty() && pCurrentNode && !bDelayUpdate) {
         if (bJustScrolled) {

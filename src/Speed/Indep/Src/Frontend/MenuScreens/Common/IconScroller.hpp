@@ -44,7 +44,7 @@ struct IconScroller : public IconPanel {
 
     IconScroller() {}
     IconScroller(const char* pkg_name, const char* master, const char* fe_button, const char* scroll_region, float width);
-    ~IconScroller() override;
+    ~IconScroller() override {}
 
     void Update() override;
     virtual void AddInitialBookEnds();

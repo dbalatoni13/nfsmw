@@ -82,8 +82,52 @@ eMenuSoundTriggers uiRepSheetMilestones::NotifySoundMessage(unsigned long msg, e
 void uiRepSheetMilestones::NotificationMessage(unsigned long msg, FEObject* obj, unsigned long param1, unsigned long param2) {
     int currentIndex = data.TraversebList(currentDatum) - 1;
     ArrayScrollerMenu::NotificationMessage(msg, obj, param1, param2);
-    switch (msg) {
-    case 0xc407210: {
+    if (msg == 0x911c0a4b) {
+        goto refresh;
+    }
+    if (msg <= 0x911c0a4b) {
+        if (msg == 0x34dc1bcf) {
+            return;
+        }
+        if (msg <= 0x34dc1bcf) {
+            if (msg == 0xc407210) {
+                goto handleActivate;
+            }
+            return;
+        }
+        if (msg == 0x72619778) {
+            goto refresh;
+        }
+        if (msg == 0x911ab364) {
+            goto handlePackageSwitch;
+        }
+        return;
+    }
+    if (msg == 0xc3960eb9) {
+        goto handleWarp;
+    }
+    if (msg <= 0xc3960eb9) {
+        if (msg == 0x9120409e || msg == 0xb5971bf1) {
+            goto refresh;
+        }
+        return;
+    }
+    if (msg == 0xc98356ba) {
+        goto handleUpdateAnimation;
+    }
+    if (msg <= 0xc98356ba) {
+        if (msg == 0xc519bfc3) {
+            goto handleTutorial;
+        }
+        return;
+    }
+    if (msg == 0xd05fc3a3) {
+        goto handleTutorialAccept;
+    }
+    return;
+
+handleActivate:
+    {
         if (theMilestone == nullptr) {
             return;
         }
@@ -108,17 +152,19 @@ void uiRepSheetMilestones::NotificationMessage(unsigned long msg, FEObject* obj,
                                         static_cast<eDialogFirstButtons>(1), messageHash);
         return;
     }
-    case 0xc519bfc3:
+
+handleTutorial:
+    {
         if (bIsInGame) {
             return;
         }
         FEngSetScript(GetPackageName(), 0x99344537, 0x16a259, true);
         FEAnyTutorialScreen::LaunchMovie(gTUTORIAL_MOVIE_PURSUIT, GetPackageName());
         return;
-    case 0x911c0a4b:
-    case 0xb5971bf1:
-        break;
-    case 0xc3960eb9: {
+    }
+
+handleWarp:
+    {
         if (bIsInGame) {
             FEngSetVisible(FEngFindObject("InGameBackground.fng", 0x2716cdbf));
         }
@@ -149,12 +195,24 @@ void uiRepSheetMilestones::NotificationMessage(unsigned long msg, FEObject* obj,
         RaceStarterStartCareerFreeRoam();
         return;
     }
-    case 0xc98356ba:
-        if (TrackMapStreamer != nullptr) {
-            TrackMapStreamer->UpdateAnimation();
+
+handleUpdateAnimation:
+    if (TrackMapStreamer != nullptr) {
+        TrackMapStreamer->UpdateAnimation();
+    }
+    return;
+
+refresh:
+    {
+        int newIndex = data.TraversebList(currentDatum) - 1;
+        if (currentIndex != newIndex && currentDatum != nullptr) {
+            RefreshTrack();
         }
         return;
-    case 0xd05fc3a3: {
+    }
+
+handleTutorialAccept:
+    {
         CareerSettings* career = FEDatabase->GetCareerSettings();
         if (((career->SpecialFlags >> 9) & 1) == 0) {
             if (bIsInGame) {
@@ -175,24 +233,14 @@ void uiRepSheetMilestones::NotificationMessage(unsigned long msg, FEObject* obj,
         cFEng::Get()->QueueGameMessage(0xc3960eb9, GetPackageName(), 0xff);
         return;
     }
-    case 0x911ab364:
-        if (bIsInGame) {
-            cFEng::Get()->QueuePackageSwitch("InGameReputationOverview.fng", 1, 0, false);
-        } else {
-            cFEng::Get()->QueuePackageSwitch("SafeHouseReputationOverview.fng", 0, 0, false);
-        }
-        break;
-    case 0x72619778:
-    case 0x9120409e:
-    case 0x34dc1bcf:
-        break;
-    default:
-        return;
+
+handlePackageSwitch:
+    if (bIsInGame) {
+        cFEng::Get()->QueuePackageSwitch("InGameReputationOverview.fng", 1, 0, false);
+    } else {
+        cFEng::Get()->QueuePackageSwitch("SafeHouseReputationOverview.fng", 0, 0, false);
     }
-    int newIndex = data.TraversebList(currentDatum) - 1;
-    if (currentIndex != newIndex && currentDatum != nullptr) {
-        RefreshTrack();
-    }
+    return;
 }
 
 void uiRepSheetMilestones::Setup() {

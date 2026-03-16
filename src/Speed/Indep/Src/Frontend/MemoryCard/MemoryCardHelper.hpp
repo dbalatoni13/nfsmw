@@ -180,6 +180,18 @@ struct IJoyHelper {
         if (Joylog::IsCapturing())
             Joylog::AddData(static_cast< int >(op), 8, JOYLOG_CHANNEL_MEMORY_CARD);
     }
+
+    inline void JLog(RealmcIface::CardStatus &status) {
+        status = static_cast<RealmcIface::CardStatus>(
+            Joylog::AddOrGetData(static_cast<unsigned int>(status), 0x10,
+                                 JOYLOG_CHANNEL_MEMORY_CARD));
+    }
+
+    inline void JLog(RealmcIface::TaskResult &res) {
+        res = static_cast<RealmcIface::TaskResult>(
+            Joylog::AddOrGetData(static_cast<unsigned int>(res), 8,
+                                 JOYLOG_CHANNEL_MEMORY_CARD));
+    }
 };
 
 struct MemcardCallbacks : public IGameInterface, public IJoyHelper {

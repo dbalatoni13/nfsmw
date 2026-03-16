@@ -375,185 +375,243 @@ WorldMap::~WorldMap() {
 
 void WorldMap::NotificationMessage(unsigned long msg, FEObject* obj, unsigned long param1,
                                    unsigned long param2) {
-    if ((bInToggleMode || (msg != 0x72619778 && msg != 0x911c0a4b)) && msg != 0xc407210) {
+    UMath::Vector3 pos;
+
+    if (!bInToggleMode) {
+        if (msg == 0x72619778) {
+            goto after_base_message;
+        }
+        if (msg == 0x911c0a4b) {
+            goto after_base_message;
+        }
+    }
+    if (msg != 0xc407210) {
         UIWidgetMenu::NotificationMessage(msg, obj, param1, param2);
     }
-    if (msg != 0xa16ca7bd) {
-        if (msg < 0xa16ca7be) {
-        if (msg != 0x72619778) {
-            if (msg < 0x72619779) {
-                if (msg == 0x35f8620b) {
-                    FEWidget* w = pCurrentOption;
-                    if (w != nullptr) {
-                        w->UnsetFocus();
-                    }
-                    return;
-                }
-                if (msg <= 0x35f8620b) {
-                    if (msg != 0xc407210) {
-                        return;
-                    }
-                    if (!bInToggleMode) {
-                        IPlayer* iplayer = IPlayer::First(PLAYER_LOCAL);
-                        if (iplayer != nullptr) {
-                            ISimable* isimable = iplayer->GetSimable();
-                            if (isimable != nullptr) {
-                                unsigned int title_hash;
-                                unsigned int message_hash;
-                                unsigned int button_hash;
-                                if (SelectedItem == nullptr || SelectedItem->GetIcon() == nullptr) {
-                                    if (mGPSingIcon == nullptr) {
-                                        return;
-                                    }
-                                    title_hash = 0x417b2601;
-                                    message_hash = 0x1a294dad;
-                                    button_hash = 0xa6be2ebb;
-                                } else {
-                                    title_hash = 0x70e01038;
-                                    message_hash = 0x417b25e4;
-                                    button_hash = 0x96ac0a32;
-                                }
-                                DialogInterface::ShowTwoButtons(
-                                    GetPackageName(), "InGameDialog.fng",
-                                    static_cast< eDialogTitle >(3), title_hash, message_hash,
-                                    0xa16ca7bd, 0xb4edeb6d, 0xb4edeb6d,
-                                    static_cast< eDialogFirstButtons >(1), button_hash);
-                            }
-                        }
-                        return;
-                    }
-                    FEWidget* w = pCurrentOption;
-                    if (w == nullptr) {
-                        return;
-                    }
-                    static_cast< ItemTypeToggle* >(w)->Act(GetPackageName(), 0xc407210);
-                    UpdateIconVisibility(static_cast< ItemTypeToggle* >(pCurrentOption)->GetType(),
-                                         static_cast< ItemTypeToggle* >(pCurrentOption)->GetVisibility());
-                } else {
-                    if (msg == 0x5073ef13 && !bInToggleMode) {
-                        ScrollZoom(eSD_PREV);
-                    }
-                    return;
-                }
-            } else if (msg != 0x911c0a4b) {
-                if (msg < 0x911c0a4c) {
-                    if (msg != 0x911ab364) {
-                        return;
-                    }
-                    goto leave_screen;
-                }
-                if (msg != 0x9120409e || bInToggleMode || CurrentView == 3) {
-                    return;
-                }
-                goto view_switch;
-            }
-        }
-        } else {
-        if (msg == 0xc519bfc4) {
-            return;
-        }
-        if (msg > 0xc519bfc4) {
-            if (msg == 0xd9feec59) {
-                if (!bInToggleMode) {
-                    ScrollZoom(eSD_NEXT);
-                }
-            } else if (msg < 0xd9feec5a) {
-                if (msg == 0xc98356ba &&
-                    cFEng::Get()->IsPackageInControl(GetPackageName())) {
-                    UpdateCursor(false);
-                    MapStreamer->UpdateAnimation();
-                    UpdateCursor(true);
-                    float zoom = MapStreamer->GetZoomFactor();
-                    float max_zoom = GetZoomFactor(WMZ_LEVEL_4);
-                    bVector2 pan(0.0f, 0.0f);
-                    MapStreamer->GetPan(pan);
-                    bVector2 map_center;
-                    FEngGetCenter(static_cast< FEObject* >(TrackMap), map_center.x, map_center.y);
-                    bVector2 map_br;
-                    FEngGetBottomRight(static_cast< FEObject* >(TrackMap), map_br.x, map_br.y);
-                    for (MapItem* item = TheMapItems.GetHead(); item != TheMapItems.EndOfList();
-                         item = item->GetNext()) {
-                        bVector2 pos(0.0f, 0.0f);
-                        item->GetInitialPos(pos);
-                        bVector2 delta = pos - map_center;
-                        delta *= zoom;
-                        pos = delta + map_center;
-                        bVector2 dpan(pan.x * MapSize.x, pan.y * MapSize.y);
-                        dpan = dpan * zoom;
-                        pos -= dpan;
-                        item->UpdatePos(pos);
-                        float icon_scale =
-                            ((zoom - 1.0f) / (max_zoom - 1.0f)) * 0.5f + 1.0f;
-                        item->UpdateScale(icon_scale);
-                        item->GetCurrentPos(pos);
-                        if (!ClampToMapBounds(pos.x, pos.y)) {
-                            if (!item->IsHidden()) {
-                                item->Show();
-                            }
-                        } else {
-                            item->Hide();
-                        }
-                        item->Draw();
-                    }
-                }
-            } else if (msg == 0xe1fde1d1) {
-                new EWorldMapOff();
-            }
-            return;
-        }
-        if (msg == 0xb5af2461) {
-            FEngSetLastButton(GetPackageName(), 0);
-            goto leave_screen;
-        } else {
-            if (msg < 0xb5af2462) {
-                if (msg != 0xb5971bf1 || bInToggleMode || CurrentView == 3) {
-                    return;
-                }
-                goto view_switch;
-            }
-            if (msg != 0xc519bfc3) {
-                return;
-            }
-            if (!bInToggleMode) {
-                bInToggleMode = true;
-                cFEng::Get()->QueuePackageMessage(0x5c28136d, GetPackageName(), nullptr);
-                FEWidget* w = pCurrentOption;
-                if (w != nullptr) {
-                    w->SetFocus(GetPackageName());
-                }
-                goto refresh_and_end;
-            }
-        }
-        bInToggleMode = false;
-        cFEng::Get()->QueuePackageMessage(0x947e6205, GetPackageName(), nullptr);
-        goto finish_toggle;
+after_base_message:
+    if (msg == 0xa16ca7bd) {
+        goto handle_gps;
     }
+    if (msg > 0xa16ca7bd) {
+        goto msg_gt_a16ca7bd;
+    }
+    if (msg == 0x72619778) {
+        goto refresh_and_end;
+    }
+    if (msg > 0x72619778) {
+        goto msg_gt_72619778;
+    }
+    if (msg == 0x35f8620b) {
+        goto clear_focus;
+    }
+    if (msg > 0x35f8620b) {
+        goto msg_gt_35f8620b;
+    }
+    if (msg == 0xc407210) {
+        goto handle_toggle_or_dialog;
+    }
+    return;
+
+msg_gt_35f8620b:
+    if (msg == 0x5073ef13) {
+        goto zoom_prev;
+    }
+    return;
+
+msg_gt_72619778:
+    if (msg == 0x911c0a4b) {
+        goto refresh_and_end;
+    }
+    if (msg > 0x911c0a4b) {
+        goto msg_gt_911c0a4b;
+    }
+    if (msg == 0x911ab364) {
+        goto leave_screen;
+    }
+    return;
+
+msg_gt_911c0a4b:
+    if (msg == 0x9120409e) {
+        goto maybe_view_switch;
+    }
+    return;
+
+msg_gt_a16ca7bd:
+    if (msg == 0xc519bfc4) {
         return;
     }
+    if (msg > 0xc519bfc4) {
+        goto msg_gt_c519bfc4;
+    }
+    if (msg == 0xb5af2461) {
+        goto set_last_button_and_leave;
+    }
+    if (msg > 0xb5af2461) {
+        goto msg_gt_b5af2461;
+    }
+    if (msg == 0xb5971bf1) {
+        goto maybe_view_switch;
+    }
+    return;
 
+msg_gt_b5af2461:
+    if (msg == 0xc519bfc3) {
+        goto handle_toggle;
+    }
+    return;
+
+set_last_button_and_leave:
+    FEngSetLastButton(GetPackageName(), 0);
+    goto leave_screen;
+
+msg_gt_c519bfc4:
+    if (msg == 0xd9feec59) {
+        goto zoom_next;
+    }
+    if (msg > 0xd9feec59) {
+        goto msg_gt_d9feec59;
+    }
+    if (msg == 0xc98356ba) {
+        goto update_map;
+    }
+    return;
+
+msg_gt_d9feec59:
+    if (msg == 0xe1fde1d1) {
+        new EWorldMapOff();
+    }
+    return;
+
+clear_focus : {
+    FEWidget* w = pCurrentOption;
+    if (w != nullptr) {
+        w->UnsetFocus();
+    }
+}
+    return;
+
+handle_toggle_or_dialog:
+    if (bInToggleMode) {
+        FEWidget* w = pCurrentOption;
+        if (w == nullptr) {
+            return;
+        }
+        ItemTypeToggle* tog = static_cast< ItemTypeToggle* >(w);
+        tog->Act(GetPackageName(), 0xc407210);
+        UpdateIconVisibility(tog->GetType(), tog->GetVisibility());
+        goto refresh_and_end;
+    } else {
+        IPlayer* iplayer = IPlayer::First(PLAYER_LOCAL);
+        if (iplayer == nullptr) {
+            return;
+        }
+        ISimable* isimable = iplayer->GetSimable();
+        if (isimable == nullptr) {
+            return;
+        }
+
+        unsigned int title_hash;
+        unsigned int message_hash;
+        unsigned int button_hash;
+        if (SelectedItem != nullptr && SelectedItem->GetIcon() != nullptr) {
+            title_hash = 0x70e01038;
+            message_hash = 0x417b25e4;
+            button_hash = 0x96ac0a32;
+        } else {
+            if (mGPSingIcon == nullptr) {
+                return;
+            }
+            title_hash = 0x417b2601;
+            message_hash = 0x1a294dad;
+            button_hash = 0xa6be2ebb;
+        }
+        DialogInterface::ShowTwoButtons(GetPackageName(), "InGameDialog.fng",
+                                        static_cast< eDialogTitle >(3), title_hash, message_hash,
+                                        0xa16ca7bd, 0xb4edeb6d, 0xb4edeb6d,
+                                        static_cast< eDialogFirstButtons >(1), button_hash);
+    }
+    return;
+
+update_map:
+    if (!cFEng::Get()->IsPackageInControl(GetPackageName())) {
+        return;
+    } else {
+        float zoom;
+        float max_zoom;
+        bVector2 pan(0.0f, 0.0f);
+
+        UpdateCursor(false);
+        MapStreamer->UpdateAnimation();
+        UpdateCursor(true);
+        zoom = MapStreamer->GetZoomFactor();
+        max_zoom = GetZoomFactor(WMZ_LEVEL_4);
+        MapStreamer->GetPan(pan);
+
+        bVector2 map_center;
+        FEngGetCenter(static_cast< FEObject* >(TrackMap), map_center.x, map_center.y);
+
+        bVector2 map_br;
+        FEngGetBottomRight(static_cast< FEObject* >(TrackMap), map_br.x, map_br.y);
+
+        for (MapItem* item = TheMapItems.GetHead(); item != TheMapItems.EndOfList();
+             item = item->GetNext()) {
+            bVector2 pos(0.0f, 0.0f);
+            item->GetInitialPos(pos);
+
+            bVector2 delta = pos - map_center;
+            delta *= zoom;
+            pos = delta + map_center;
+
+            bVector2 dpan = pan;
+            dpan.x *= MapSize.x;
+            dpan.y *= MapSize.y;
+            dpan = dpan * zoom;
+            pos -= dpan;
+
+            item->UpdatePos(pos);
+
+            float icon_scale = ((zoom - 1.0f) / (max_zoom - 1.0f)) * 0.5f + 1.0f;
+            item->UpdateScale(icon_scale);
+
+            item->GetCurrentPos(pos);
+            if (ClampToMapBounds(pos.x, pos.y)) {
+                item->Hide();
+            } else if (!item->IsHidden()) {
+                item->Show();
+            }
+            item->Draw();
+        }
+    }
+    return;
+
+handle_gps:
     if (GPS_IsEngaged()) {
         GPS_Disengage();
         ClearGPSing();
     }
     if (SelectedItem == nullptr) {
-        return;
+        goto refresh_and_end;
     }
     if (SelectedItem->GetIcon() == nullptr) {
-        return;
+        goto refresh_and_end;
     }
 
-    UMath::Vector3 pos;
     eUnSwizzleWorldVector(SelectedItem->GetIcon()->GetPosition(),
                           reinterpret_cast< bVector3& >(pos));
     if (GPS_Engage(pos, 0.0f) == 0) {
         DialogInterface::ShowOneButton(GetPackageName(), "", static_cast< eDialogTitle >(1),
                                        0x417b2601, 0x34dc1bec, 0x7afdf4cc);
-    } else {
-        SetGPSing(SelectedItem->GetIcon());
-        FEngSetLastButton(GetPackageName(), 0);
-        cFEng::Get()->QueuePackageMessage(0x911ab364, GetPackageName(), nullptr);
+        goto refresh_and_end;
     }
-    return;
+    SetGPSing(SelectedItem->GetIcon());
+    FEngSetLastButton(GetPackageName(), 0);
+    cFEng::Get()->QueuePackageMessage(0x911ab364, GetPackageName(), nullptr);
+    goto refresh_and_end;
+
+maybe_view_switch:
+    if (bInToggleMode || CurrentView == 3) {
+        return;
+    }
 
 view_switch : {
     const unsigned int _UNSNAP = 0x7efe8ff4;
@@ -571,7 +629,22 @@ view_switch : {
         SetInitialOption(0);
     }
     FEDatabase->GetGameplaySettings()->LastMapView = static_cast< unsigned char >(CurrentView);
+    goto refresh_and_end;
 }
+
+handle_toggle:
+    if (!bInToggleMode) {
+        bInToggleMode = true;
+        cFEng::Get()->QueuePackageMessage(0x5c28136d, GetPackageName(), nullptr);
+        FEWidget* w = pCurrentOption;
+        if (w != nullptr) {
+            w->SetFocus(GetPackageName());
+        }
+        goto refresh_and_end;
+    }
+    bInToggleMode = false;
+    cFEng::Get()->QueuePackageMessage(0x947e6205, GetPackageName(), nullptr);
+    goto finish_toggle;
 
 finish_toggle : {
     FEWidget* w = pCurrentOption;
@@ -592,6 +665,18 @@ leave_screen:
     bInToggleMode = false;
     cFEng::Get()->QueuePackageMessage(0x947e6205, GetPackageName(), nullptr);
     goto finish_toggle;
+
+zoom_prev:
+    if (!bInToggleMode) {
+        ScrollZoom(eSD_PREV);
+    }
+    return;
+
+zoom_next:
+    if (!bInToggleMode) {
+        ScrollZoom(eSD_NEXT);
+    }
+    return;
 }
 
 void WorldMap::ScrollZoom(eScrollDir dir) {
@@ -742,13 +827,14 @@ void WorldMap::UpdateCursor(bool zoom_thing) {
         FEngGetCenter(static_cast< FEObject* >(TrackMap), map_center.x, map_center.y);
         FEngGetTopLeft(static_cast< FEObject* >(TrackMap), MapTopLeft.x, MapTopLeft.y);
         bVector2 pos;
-        bVector2 delta(CursorMoveFrom.x - map_center.x, CursorMoveFrom.y - map_center.y);
+        pos = CursorMoveFrom;
+        bVector2 delta = pos - map_center;
         delta *= zoom;
         bVector2 map_br = delta + map_center;
         pos = map_br;
-        bVector2 dpan;
-        dpan.x = pan.x * MapSize.x;
-        dpan.y = pan.y * MapSize.y;
+        bVector2 dpan = pan;
+        dpan.x *= MapSize.x;
+        dpan.y *= MapSize.y;
         dpan = dpan * zoom;
         pos = pos - dpan;
         ClampToMapBounds(pos.x, pos.y);

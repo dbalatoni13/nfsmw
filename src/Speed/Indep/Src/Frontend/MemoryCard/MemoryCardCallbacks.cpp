@@ -358,12 +358,8 @@ void MemcardCallbacks::Retry(RealmcIface::CardStatus status) {
 void MemcardCallbacks::Failed(RealmcIface::TaskResult result,
                               RealmcIface::CardStatus status) {
     JLog(MJ_Failed);
-    status = static_cast<RealmcIface::CardStatus>(
-        Joylog::AddOrGetData(static_cast<unsigned int>(status), 0x10,
-                             JOYLOG_CHANNEL_MEMORY_CARD));
-    result = static_cast<RealmcIface::TaskResult>(
-        Joylog::AddOrGetData(static_cast<unsigned int>(result), 8,
-                             JOYLOG_CHANNEL_MEMORY_CARD));
+    JLog(status);
+    JLog(result);
     if (GetMemcard()->IsWaitingForResponse() &&
         (GetMemcard()->GetOp() == MemoryCard::MO_Delete ||
          GetMemcard()->GetOp() == MemoryCard::MO_Load)) {
@@ -398,8 +394,8 @@ void MemcardCallbacks::Failed(RealmcIface::TaskResult result,
         GetMemcard()->EndListingOldSaveFiles();
         return;
     }
-    if (GetMemcard()->m_bRetryAutoSave) {
-        GetMemcard()->m_bRetryAutoSave = false;
+    if (GetMemcard()->IsRetryingAutoSave()) {
+        GetMemcard()->SetRetryAutoSave(false);
         FEDatabase->GetGameplaySettings()->AutoSaveOn = false;
         if (result == RealmcIface::RESULT_CANCELLED ||
             status == RealmcIface::STATUS_CARD_DAMAGED) {
@@ -408,31 +404,30 @@ void MemcardCallbacks::Failed(RealmcIface::TaskResult result,
     }
     if (gMemcardSetup.GetMethod() == 0x60 &&
         GetMemcard()->GetOp() == MemoryCard::MO_List) {
-        GetMemcard()->m_bListingForCreate = false;
+        GetMemcard()->SetListingForCreate(false);
         GetMemcard()->m_MemOp = MemoryCard::MO_NONE;
         cFEng::Get()->QueueGameMessage(0x5a051729,
                                        GetScreen()->GetPackageName(), 0xff);
         return;
     }
     int op = GetMemcard()->GetOp();
-    unsigned short short_status = static_cast<unsigned short>(status);
     switch (op) {
         case MemoryCard::MO_AutoSave:
-            break;
-
-        case MemoryCard::MO_BootUp:
-            GetMemcard()->m_pImp->DestructSaveInfo();
             break;
 
         case MemoryCard::MO_Save:
             if (status == RealmcIface::STATUS_NO_CARD)
                 goto failed_check_autosave;
-            if (static_cast<unsigned int>(status) < 1)
-                goto failed_skip_autosave;
-            if (static_cast<unsigned int>(status) > 6)
-                goto failed_skip_autosave;
-            if (static_cast<unsigned int>(status) < 5)
-                goto failed_skip_autosave;
+            if (static_cast<unsigned int>(status) >=
+                static_cast<unsigned int>(RealmcIface::STATUS_NO_CARD)) {
+                if (static_cast<unsigned int>(status) <=
+                    static_cast<unsigned int>(RealmcIface::STATUS_CARD_FULL)) {
+                    if (static_cast<unsigned int>(status) >=
+                        static_cast<unsigned int>(RealmcIface::STATUS_WRONG_DEVICE))
+                        goto failed_check_autosave;
+                }
+            }
+            goto failed_skip_autosave;
         failed_check_autosave:
             if (gMemcardSetup.GetMethod() == 0x60) {
                 FEDatabase->GetGameplaySettings()->AutoSaveOn = false;
@@ -446,7 +441,11 @@ void MemcardCallbacks::Failed(RealmcIface::TaskResult result,
                 bFree(GetMemcard()->m_pBuffer);
             }
             GetMemcard()->m_pBuffer = nullptr;
-            GetMemcard()->m_SpecialError = short_status;
+            GetMemcard()->m_SpecialError = static_cast<unsigned short>(status);
+            break;
+
+        case MemoryCard::MO_BootUp:
+            GetMemcard()->m_pImp->DestructSaveInfo();
             break;
 
         case MemoryCard::MO_List:
@@ -455,7 +454,7 @@ void MemcardCallbacks::Failed(RealmcIface::TaskResult result,
             }
             break;
     }
-    GetMemcard()->m_LastError = short_status;
+    GetMemcard()->m_LastError = static_cast<unsigned short>(status);
     GetMemcard()->m_MemOp = MemoryCard::MO_NONE;
     DisplayStatus(static_cast<int>(status));
     if (status == RealmcIface::STATUS_FILE_CORRUPTED) {

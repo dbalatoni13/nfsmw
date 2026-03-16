@@ -71,8 +71,7 @@ uiRepSheetMain::uiRepSheetMain(ScreenConstructorData* sd)
 }
 
 uiRepSheetMain::~uiRepSheetMain() {
-    unsigned int tex = DefeatedTextureHash;
-    eUnloadStreamingTexture(&tex, 1);
+    eUnloadStreamingTexture(DefeatedTextureHash);
     WaitForResourceLoadingComplete();
 }
 
