@@ -1461,17 +1461,16 @@ void FEngine::ProcessPackageCommands() {
         if (pNode->iCommand & 8) {
             FEPackage* pChild = PackList.GetFirstPackage();
             while (pChild) {
-                if (pChild->pParentPackage == pNode->pPackage) {
-                    if (pChild) {
-                        unsigned long PassedMask = pNode->pPackage->Controllers & pNode->uControlMask;
-                        pNode->pPackage->Controllers &= ~PassedMask;
-                        pChild->Controllers |= PassedMask;
-                        QueueMessage(0x334c5493u, nullptr, pChild,
-                            reinterpret_cast<FEObject*>(0xFFFFFFFCu), pNode->uControlMask);
-                    }
+                if (pChild->pParentPackage == pNode->pPackage)
                     break;
-                }
                 pChild = pChild->GetNext();
+            }
+            if (pChild) {
+                unsigned long PassedMask = pNode->pPackage->Controllers & pNode->uControlMask;
+                pNode->pPackage->Controllers &= ~PassedMask;
+                pChild->Controllers |= PassedMask;
+                QueueMessage(0x334c5493u, nullptr, pChild,
+                    reinterpret_cast<FEObject*>(0xFFFFFFFCu), pNode->uControlMask);
             }
         }
 
