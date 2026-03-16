@@ -152,24 +152,33 @@ write_base:
             }
             case 3: {
                 long* pSrc = reinterpret_cast<long*>(pBaseKey->GetKeyData());
-                reinterpret_cast<long*>(pOutDataPtr)[0] = pSrc[0];
-                reinterpret_cast<long*>(pOutDataPtr)[1] = pSrc[1];
+                long val0 = pSrc[0];
+                long val1 = pSrc[1];
+                reinterpret_cast<long*>(pOutDataPtr)[0] = val0;
+                reinterpret_cast<long*>(pOutDataPtr)[1] = val1;
                 break;
             }
             case 4: {
                 long* pSrc = reinterpret_cast<long*>(pBaseKey->GetKeyData());
-                reinterpret_cast<long*>(pOutDataPtr)[0] = pSrc[0];
-                reinterpret_cast<long*>(pOutDataPtr)[1] = pSrc[1];
-                reinterpret_cast<long*>(pOutDataPtr)[2] = pSrc[2];
+                long val0 = pSrc[0];
+                long val1 = pSrc[1];
+                long val2 = pSrc[2];
+                reinterpret_cast<long*>(pOutDataPtr)[0] = val0;
+                reinterpret_cast<long*>(pOutDataPtr)[1] = val1;
+                reinterpret_cast<long*>(pOutDataPtr)[2] = val2;
                 break;
             }
             case 5:
             case 6: {
                 long* pSrc = reinterpret_cast<long*>(pBaseKey->GetKeyData());
-                reinterpret_cast<long*>(pOutDataPtr)[0] = pSrc[0];
-                reinterpret_cast<long*>(pOutDataPtr)[1] = pSrc[1];
-                reinterpret_cast<long*>(pOutDataPtr)[2] = pSrc[2];
-                reinterpret_cast<long*>(pOutDataPtr)[3] = pSrc[3];
+                long val0 = pSrc[0];
+                long val1 = pSrc[1];
+                long val2 = pSrc[2];
+                long val3 = pSrc[3];
+                reinterpret_cast<long*>(pOutDataPtr)[0] = val0;
+                reinterpret_cast<long*>(pOutDataPtr)[1] = val1;
+                reinterpret_cast<long*>(pOutDataPtr)[2] = val2;
+                reinterpret_cast<long*>(pOutDataPtr)[3] = val3;
                 break;
             }
         }
@@ -177,29 +186,29 @@ write_base:
     }
 
     if (t == 0.0f || t == 1.0f) {
+        FEKeyNode* pValKey = pKey;
         if (t == 0.0f) {
-            pKey = pPrevKey;
+            pValKey = pPrevKey;
         }
-        FEGenericVal* pValPtr = pKey->GetKeyData();
         switch (pTrack->ParamType) {
             case 1: {
-                long* pValLong = *pValPtr;
+                long* pValLong = pValKey->Val;
                 *reinterpret_cast<long*>(pOutDataPtr) = *reinterpret_cast<long*>(pBaseValue) + *pValLong;
                 break;
             }
             case 2: {
-                float* pValFloat = reinterpret_cast<float*>(static_cast<unsigned char*>(*pValPtr));
+                float* pValFloat = reinterpret_cast<float*>(static_cast<unsigned char*>(pValKey->Val));
                 *reinterpret_cast<float*>(pOutDataPtr) = *reinterpret_cast<float*>(pBaseValue) + *pValFloat;
                 break;
             }
             case 3: {
-                float* pValFloat = reinterpret_cast<float*>(static_cast<unsigned char*>(*pValPtr));
+                float* pValFloat = reinterpret_cast<float*>(static_cast<unsigned char*>(pValKey->Val));
                 reinterpret_cast<float*>(pOutDataPtr)[0] = reinterpret_cast<float*>(pBaseValue)[0] + pValFloat[0];
                 reinterpret_cast<float*>(pOutDataPtr)[1] = reinterpret_cast<float*>(pBaseValue)[1] + pValFloat[1];
                 break;
             }
             case 4: {
-                float* pValFloat = reinterpret_cast<float*>(static_cast<unsigned char*>(*pValPtr));
+                float* pValFloat = reinterpret_cast<float*>(static_cast<unsigned char*>(pValKey->Val));
                 reinterpret_cast<float*>(pOutDataPtr)[0] = reinterpret_cast<float*>(pBaseValue)[0] + pValFloat[0];
                 reinterpret_cast<float*>(pOutDataPtr)[1] = reinterpret_cast<float*>(pBaseValue)[1] + pValFloat[1];
                 reinterpret_cast<float*>(pOutDataPtr)[2] = reinterpret_cast<float*>(pBaseValue)[2] + pValFloat[2];
@@ -207,13 +216,13 @@ write_base:
             }
             case 5: {
                 FEQuaternion* pBaseQuat = reinterpret_cast<FEQuaternion*>(pBaseValue);
-                FEQuaternion* pKeyQuat = reinterpret_cast<FEQuaternion*>(static_cast<unsigned char*>(*pValPtr));
+                FEQuaternion* pKeyQuat = pValKey->Val;
                 FEQuaternion* pDestQuat = reinterpret_cast<FEQuaternion*>(pOutDataPtr);
                 *pDestQuat = *pBaseQuat * *pKeyQuat;
                 break;
             }
             case 6: {
-                long* pValLong = reinterpret_cast<long*>(static_cast<unsigned char*>(*pValPtr));
+                long* pValLong = pValKey->Val;
                 reinterpret_cast<long*>(pOutDataPtr)[2] = reinterpret_cast<long*>(pBaseValue)[2] + pValLong[2];
                 reinterpret_cast<long*>(pOutDataPtr)[1] = reinterpret_cast<long*>(pBaseValue)[1] + pValLong[1];
                 reinterpret_cast<long*>(pOutDataPtr)[0] = reinterpret_cast<long*>(pBaseValue)[0] + pValLong[0];

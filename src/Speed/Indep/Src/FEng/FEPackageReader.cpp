@@ -864,10 +864,10 @@ bool FEPackageReader::ReadScriptTags(FETag* pTag, unsigned long Length) {
             }
             case 0x6853: {
                 if (!pScript) {
-                    CurTrack = static_cast<unsigned long>(-1);
                     pScript = new FEScript();
-                    RunningTrackOffset = 0;
                     pScript->CurTime = 0;
+                    CurTrack = static_cast<unsigned long>(-1);
+                    RunningTrackOffset = 0;
                 }
                 pScript->ID = pTag->Getu32(0);
                 pScript->Length = static_cast<int>(pTag->Getu32(1));
