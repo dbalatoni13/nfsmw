@@ -1149,10 +1149,12 @@ void CustomizationScreen::RefreshHeader() {
 }
 
 SelectablePart *CustomizationScreen::FindInCartPart() {
-    IconOption *cur = Options.GetHead();
-    while (!Options.IsEndOfList(cur)) {
-        CustomizePartOption *opt = static_cast<CustomizePartOption *>(cur);
-        SelectablePart *part = opt->GetPart();
+    IconOption *tail = Options.TailBookEnd;
+    IconOption *cur = Options.HeadBookEnd->GetNext();
+    for (;;) {
+        bool atEnd = (cur == tail) || (cur == Options.HeadBookEnd);
+        if (atEnd) break;
+        SelectablePart *part = static_cast<CustomizePartOption *>(cur)->ThePart;
         if (part && (part->GetPartState() & 0xF0) == CPS_IN_CART) {
             return part;
         }
