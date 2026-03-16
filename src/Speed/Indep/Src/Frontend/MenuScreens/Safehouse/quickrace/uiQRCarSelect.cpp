@@ -185,29 +185,30 @@ void QRCarSelectBustedManager::RefreshHeader() {
     if (!IsImpoundInfoVisible()) return;
 
     bool bNotImpounded = false;
-    if (!ShowImpoundedTexture()) {
-        FEngSetLanguageHash(ParentPkg, 0xb94139f4, 0x2b65a216);
-        FEngSetScript(ParentPkg, 0x64f3a49c, 0x16a259, true);
-    } else {
+    if (ShowImpoundedTexture()) {
         TextureInfo *texInfo = GetTextureInfo(ImpoundStampHash, 0, 0);
         if (texInfo) {
+            unsigned int stampHash = ImpoundStampHash;
             FEngSetScript(ParentPkg, 0xbc7b91f, 0x6ebbfb68, true);
             FEngSetScript(ParentPkg, 0x64f3a49c, 0x5079c8f8, true);
             FEImage *img1 = FEngFindImage(ParentPkg, 0xce18427d);
-            FEngSetTextureHash(img1, ImpoundStampHash);
+            FEngSetTextureHash(img1, stampHash);
             FEImage *img2 = FEngFindImage(ParentPkg, 0x5b8f2a45);
-            FEngSetTextureHash(img2, ImpoundStampHash);
+            FEngSetTextureHash(img2, stampHash);
         }
         unsigned int cost = WorkingCarRecord->GetReleaseFromImpoundCost();
         int playerCash = *reinterpret_cast<int *>(reinterpret_cast<char *>(FEDatabase->GetPlayerCarStable(0)) + 0xf0);
-        int numMarkers = TheFEMarkerManager.GetNumMarkers(FEMarkerManager::MARKER_IMPOUND_RELEASE, 0);
+        bool hasMarkers = TheFEMarkerManager.GetNumMarkers(FEMarkerManager::MARKER_IMPOUND_RELEASE, 0) > 0;
         if (WorkingCareerRecord->TheImpoundData.ImpoundedState == 4 && static_cast<int>(cost) <= playerCash) {
             FEngSetLanguageHash(ParentPkg, 0xb94139f4, 0x281dee8a);
-        } else if (numMarkers < 1) {
-            FEngSetLanguageHash(ParentPkg, 0xb94139f4, 0x2b65a216);
-        } else {
+        } else if (hasMarkers) {
             FEngSetLanguageHash(ParentPkg, 0xb94139f4, 0xf9c73cc2);
+        } else {
+            FEngSetLanguageHash(ParentPkg, 0xb94139f4, 0x2b65a216);
         }
+    } else {
+        FEngSetLanguageHash(ParentPkg, 0xb94139f4, 0x2b65a216);
+        FEngSetScript(ParentPkg, 0x64f3a49c, 0x16a259, true);
     }
     if ((WorkingCareerRecord->TheImpoundData.TimesBusted & 0x80) == 0) {
         FEngSetVisible(FEngFindObject(ParentPkg, 0x75721326));
@@ -230,23 +231,17 @@ void QRCarSelectBustedManager::RefreshHeader() {
             FEngSetScript(ParentPkg, FEngHashString("IMPOUND_STATE_%d", static_cast<int>(WorkingCareerRecord->TheImpoundData.TimesBusted)), 0x5a8e4ebe, true);
             Flags = BUSTED_ANIM_NOTHING;
         }
-        int maxBusted = WorkingCareerRecord->TheImpoundData.MaxBusted;
-        int i = 1;
-        if (maxBusted != 0) {
-            do {
-                if (WorkingCareerRecord->TheImpoundData.TimesBusted < i) {
-                    FEngSetScript(ParentPkg, FEngHashString("IMPOUND_STATE_%d", i), 0x16a259, true);
-                } else {
-                    if (!FEngIsScriptSet(ParentPkg, FEngHashString("IMPOUND_STATE_%d", i), 0x5a8e4ebe)) {
-                        FEngSetScript(ParentPkg, FEngHashString("IMPOUND_STATE_%d", i), 0x1ca7c0, true);
-                    }
+        for (int i = 1; i <= static_cast<int>(static_cast<unsigned char>(WorkingCareerRecord->TheImpoundData.MaxBusted)); i++) {
+            if (WorkingCareerRecord->TheImpoundData.TimesBusted < i) {
+                FEngSetScript(ParentPkg, FEngHashString("IMPOUND_STATE_%d", i), 0x16a259, true);
+            } else {
+                if (!FEngIsScriptSet(ParentPkg, FEngHashString("IMPOUND_STATE_%d", i), 0x5a8e4ebe)) {
+                    FEngSetScript(ParentPkg, FEngHashString("IMPOUND_STATE_%d", i), 0x1ca7c0, true);
                 }
-                maxBusted = WorkingCareerRecord->TheImpoundData.MaxBusted;
-                i++;
-            } while (i <= static_cast<int>(static_cast<unsigned char>(maxBusted)));
+            }
         }
     } else {
-        char impState = WorkingCareerRecord->TheImpoundData.ImpoundedState;
+        signed char impState = WorkingCareerRecord->TheImpoundData.ImpoundedState;
         if (impState == 4 || impState != 0) {
             FEngSetInvisible(FEngFindObject(ParentPkg, 0x75721326));
         } else {
