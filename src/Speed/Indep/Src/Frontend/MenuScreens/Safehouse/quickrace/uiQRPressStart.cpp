@@ -23,10 +23,16 @@ void uiQRPressStart::Setup() {
 
 void uiQRPressStart::NotificationMessage(unsigned long msg, FEObject *obj, unsigned long param1, unsigned long param2) {
     if (msg == 0xe1fde1d1) {
-        cFEng::Get()->QueuePackageSwitch("Car_Select.fng", iPlayerNum, param, false);
-        return;
+        goto queue_car_select;
     }
     if (msg > 0xe1fde1d1) {
+        goto handle_controller_change;
+    }
+    if (msg == 0x911ab364) {
+        goto handle_back;
+    }
+    return;
+handle_controller_change: {
         if (msg != 0xebfcda65) return;
         int joyport = FEngMapJoyParamToJoyport(param1);
         if (iPlayerNum != 1 || joyport != FEDatabase->GetPlayersJoystickPort(0)) {
@@ -49,8 +55,7 @@ void uiQRPressStart::NotificationMessage(unsigned long msg, FEObject *obj, unsig
         }
         return;
     }
-    if (msg != 0x911ab364) return;
-    {
+handle_back: {
         if (iPlayerNum == 1) {
             unsigned int joyParam = FEngMapJoyportToJoyParam(static_cast<int>(FEDatabase->GetPlayersJoystickPort(0)));
             cFEng::Get()->QueuePackageSwitch("Car_Select.fng", 0, joyParam, false);
@@ -59,14 +64,14 @@ void uiQRPressStart::NotificationMessage(unsigned long msg, FEObject *obj, unsig
             if ((FEDatabase->GetGameMode() & 4) != 0) {
                 isSplitQR = FEDatabase->iNumPlayers == 2;
             }
-            const char *pkg;
             if (isSplitQR && (FEDatabase->RaceMode == GRace::kRaceType_Drag || FEDatabase->RaceMode == GRace::kRaceType_P2P || FEDatabase->RaceMode == GRace::kRaceType_SpeedTrap)) {
-                pkg = "Track_Select.fng";
+                cFEng::Get()->QueuePackageSwitch("Track_Select.fng", 0, 0, false);
             } else {
-                pkg = "Track_Options.fng";
+                cFEng::Get()->QueuePackageSwitch("Track_Options.fng", 0, 0, false);
             }
-            cFEng::Get()->QueuePackageSwitch(pkg, 0, 0, false);
         }
         return;
     }
+queue_car_select:
+    cFEng::Get()->QueuePackageSwitch("Car_Select.fng", iPlayerNum, param, false);
 }
