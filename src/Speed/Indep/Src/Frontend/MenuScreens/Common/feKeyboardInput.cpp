@@ -1,6 +1,11 @@
+#include "Speed/Indep/Src/Frontend/FEngFont.hpp"
+
 extern void WideStringToPackedString(char *dest, int destSize, const unsigned short *src);
 extern void PackedStringToWideString(unsigned short *wide_string, int wide_string_buffer_size, const char *packed_string);
 extern void FEngSNMakeHidden(char *dest, int destSize, unsigned short *src);
+extern void FESetString(FEString *text, const short *string);
+extern void bStrCpy(unsigned short *dst, const char *src);
+extern char *bStrCat(char *dest, const char *str1, const char *str2);
 
 KeyboardEditString::KeyboardEditString() {
     TextInputObject = nullptr;
@@ -73,5 +78,44 @@ void FEngTextInputObject::Notify(unsigned int msg) {
         RedrawString(true);
     } else if (msg == 0x0c407210) {
         ReturnPressed();
+    }
+}
+
+void FEngTextInputObject::RedrawString(bool pIncludeCursor) {
+    if (DisplayString) {
+        char buffer[156];
+        unsigned short widestring[156];
+        FEngFont *font;
+        int width;
+        int flags;
+        short *fitstring;
+
+        gKeyboardManager.GetStringForDisplay(buffer, 0x9C);
+        if (pIncludeCursor) {
+            int blink_time = mBlinkTime;
+            mBlinkTime = blink_time + 1;
+            if (blink_time + 1 > 0x59) {
+                mBlinkTime = 0;
+            }
+            if (mBlinkTime < 0x2D) {
+                bStrCat(buffer, buffer, "|");
+            } else {
+                bStrCat(buffer, buffer, " ");
+            }
+        }
+
+        bStrCpy(widestring, buffer);
+        font = FindFont(DisplayString->Handle);
+        width = DisplayString->MaxWidth;
+        flags = DisplayString->Flags;
+        fitstring = reinterpret_cast<short *>(widestring);
+
+        for (; *fitstring != 0; fitstring++) {
+            if (font->GetLineWidth(fitstring, flags, 0, false) <= static_cast<float>(width)) {
+                break;
+            }
+        }
+
+        FESetString(DisplayString, fitstring);
     }
 }
