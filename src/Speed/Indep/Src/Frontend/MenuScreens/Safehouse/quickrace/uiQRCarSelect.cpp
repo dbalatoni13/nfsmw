@@ -48,6 +48,7 @@ void MemcardEnter(const char *from, const char *to, unsigned int op, void (*pTer
                   void *pTermFuncParam, unsigned int msgSuccess, unsigned int msgFailed);
 
 void RaceStarterStartCareerFreeRoam() asm("StartCareerFreeRoam__11RaceStarter");
+void RaceStarterStartRace() asm("StartRace__11RaceStarter");
 
 unsigned int UIQRCarSelect::ForceCar;
 bool QRCarSelectBustedManager::bPlayerJustGotBusted;
@@ -384,11 +385,9 @@ bool UIQRCarSelect::IsCarImpounded(unsigned int handle) {
 }
 
 void UIQRCarSelect::CommitChangeStartRace(bool allowError) {
-    FECarRecord *car = GetSelectedCarRecord();
-    if (car) {
-        RaceSettings *settings = FEDatabase->GetQuickRaceSettings(FEDatabase->RaceMode);
-        settings->SetSelectedCar(car->Handle, iPlayerNum);
-    }
+    FEManager::Get()->AllowControllerError(allowError);
+    FEDatabase->DeleteMultiplayerProfile(1);
+    RaceStarterStartRace();
 }
 
 void UIQRCarSelect::NotificationMessage(unsigned long msg, FEObject *pobj, unsigned long param1, unsigned long param2) {
@@ -1286,8 +1285,9 @@ void UIQRCarSelect::ChooseTransmission() {
 }
 
 FECarRecord *UIQRCarSelect::GetSelectedCarRecord() {
-    if (!pSelectedCar) return nullptr;
-    return FEDatabase->GetPlayerCarStable(0)->GetCarRecordByHandle(pSelectedCar->mHandle);
+    FEPlayerCarDB *stable = FEDatabase->GetPlayerCarStable(iPlayerNum);
+    FECarRecord *selected_car = stable->GetCarRecordByHandle(pSelectedCar->mHandle);
+    return selected_car;
 }
 
 void UIQRCarSelect::SetSelectedCar(SelectableCar *newCar, int player_num) {
