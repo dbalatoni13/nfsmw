@@ -154,10 +154,6 @@ static FEString *GetPanelString(StatsPanel &panel, const char *label) {
     return FEngFindString(panel.ParentPkg, FEngHashString(lbl_803E5088, label, panel.RacerName));
 }
 
-static FEString *GetResultPanelString(StatsPanel &panel, const char *label) {
-    return FEngFindString(panel.ParentPkg, FEngHashString(lbl_803E5088, label, panel.iWidgetToAdd));
-}
-
 struct LapStat : public ResultStat {
     LapStat(FEString *lap, FEString *time, FEString *pos, int lap_num, float seconds, int pos_num)
         : ResultStat(lap, time, pos, nullptr) //
@@ -537,11 +533,15 @@ void PostRaceResultsScreen::SetupResults() {
                     ++i;
                 }
 
+                FEString *column2 = FEngFindString(
+                    RaceResults.ParentPkg, FEngHashString(lbl_803E5088, "COLUMN2_DATA", RaceResults.iWidgetToAdd));
+                FEString *column3 = FEngFindString(
+                    RaceResults.ParentPkg, FEngHashString(lbl_803E5088, "COLUMN3_DATA", RaceResults.iWidgetToAdd));
+                FEString *column1 = FEngFindString(
+                    RaceResults.ParentPkg, FEngHashString(lbl_803E5088, "COLUMN1_DATA", RaceResults.iWidgetToAdd));
+
                 RaceResults.AddStat(new ("", 0)
-                                        RaceResultStat(GetResultPanelString(RaceResults, "COLUMN2_DATA"),
-                                                       GetResultPanelString(RaceResults, "COLUMN3_DATA"),
-                                                       GetResultPanelString(RaceResults, "COLUMN1_DATA"),
-                                                       racer_info));
+                                        RaceResultStat(column2, column3, column1, racer_info));
             }
         } else if (mRaceType == GRace::kRaceType_SpeedTrap) {
             for (int place = 1; place <= mNumberOfRacers; ++place) {
@@ -557,11 +557,16 @@ void PostRaceResultsScreen::SetupResults() {
                     speed = (speed * lbl_803E5E4C) * lbl_803E5E50;
                 }
 
+                FEString *column2 = FEngFindString(
+                    RaceResults.ParentPkg, FEngHashString(lbl_803E5088, "COLUMN2_DATA", RaceResults.iWidgetToAdd));
+                FEString *column3 = FEngFindString(
+                    RaceResults.ParentPkg, FEngHashString(lbl_803E5088, "COLUMN3_DATA", RaceResults.iWidgetToAdd));
+                FEString *column1 = FEngFindString(
+                    RaceResults.ParentPkg, FEngHashString(lbl_803E5088, "COLUMN1_DATA", RaceResults.iWidgetToAdd));
+
                 RaceResults.AddStat(new ("", 0)
-                                        GenericResult(GetResultPanelString(RaceResults, "COLUMN2_DATA"),
-                                                      GetResultPanelString(RaceResults, "COLUMN3_DATA"),
-                                                      GetResultPanelString(RaceResults, "COLUMN1_DATA"),
-                                                      speed_units, speed, "%$0.0f", racer_info));
+                                        GenericResult(column2, column3, column1, speed_units, speed, "%$0.0f",
+                                                      racer_info));
             }
         }
     }
