@@ -352,15 +352,20 @@ void FEKeyboard::UpdateCursorPosition() {
 }
 
 void FEKeyboard::NotificationMessage(unsigned long msg, FEObject *pObject, unsigned long param1, unsigned long param2) {
-    unsigned long soundTrigger = 0;
     int nButton = -1;
     switch (msg) {
+    case 0x9120409E:
+        g_pEAXSound->PlayUISoundFX(static_cast<eMenuSoundTriggers>(2));
+        return;
     case 0xB5971BF1:
-        soundTrigger = 3;
-        goto play_sound;
+        g_pEAXSound->PlayUISoundFX(static_cast<eMenuSoundTriggers>(3));
+        return;
     case 0x72619778:
-        soundTrigger = 0;
-        goto play_sound;
+        g_pEAXSound->PlayUISoundFX(static_cast<eMenuSoundTriggers>(0));
+        return;
+    case 0x911C0A4B:
+        g_pEAXSound->PlayUISoundFX(static_cast<eMenuSoundTriggers>(1));
+        return;
     case 0xC407210:
         if (!pObject) {
             return;
@@ -371,73 +376,65 @@ void FEKeyboard::NotificationMessage(unsigned long msg, FEObject *pObject, unsig
             AppendLetter(nButton);
             return;
         }
-        soundTrigger = 7;
-        goto play_sound;
-    case 0x5073EF13:
-        MoveCursor(-1);
-        return;
-    case 0x911C0A4B:
-        soundTrigger = 1;
-        goto play_sound;
-    case 0x911AB364:
-        if (mnDeclineHash == -1U) {
-            return;
-        }
-        Dispose(true);
-        return;
-    case 0x9120409E:
-        soundTrigger = 2;
-        goto play_sound;
-    case 0xB5AF2461:
-        if (bStrLen(mString) == 0) {
-            cFEng::Get()->QueuePackageMessage(0x8CB81F09, GetPackageName(), nullptr);
-            return;
-        }
-        goto dispose_keyboard;
-    case 0xC1A6F000:
-        if (mnMode == MODE_PROFILE_ENTRY) {
-            soundTrigger = 7;
-        } else {
-            AppendSpace();
-            soundTrigger = 0x2E;
-        }
-        goto play_sound;
-    case 0xC519BFC4:
-        if (GetCurrentLanguage() == eLANGUAGE_KOREAN) {
-            return;
-        }
-        ToggleSpecialCharacters();
-        return;
-    case 0xD7AD0DD9:
-        if (mnMode == MODE_PROFILE_ENTRY && !(FEDatabase->GetGameMode() & 8) && !(FEDatabase->GetGameMode() & 0x40)) {
-            soundTrigger = 7;
-        } else {
-            ToggleCapsLock();
-            soundTrigger = 0x30;
-        }
-        goto play_sound;
-    case 0xD9FEEC59:
-        MoveCursor(1);
-        return;
-    case 0xDB3D597C:
-        g_pEAXSound->PlayUISoundFX(static_cast<eMenuSoundTriggers>(0x30));
-        AppendBackspace();
+        g_pEAXSound->PlayUISoundFX(static_cast<eMenuSoundTriggers>(7));
         return;
     case 0xE1FDE1D1:
         if (bStrLen(mString) == 0 && mnMode == MODE_FILENAME) {
             return;
         }
         goto dispose_keyboard;
+    case 0xC1A6F000:
+        if (mnMode == MODE_PROFILE_ENTRY) {
+            g_pEAXSound->PlayUISoundFX(static_cast<eMenuSoundTriggers>(7));
+            return;
+        }
+        AppendSpace();
+        g_pEAXSound->PlayUISoundFX(static_cast<eMenuSoundTriggers>(0x2E));
+        return;
+    case 0xDB3D597C:
+    play_backspace_sound:
+        g_pEAXSound->PlayUISoundFX(static_cast<eMenuSoundTriggers>(0x30));
+        AppendBackspace();
+        return;
+    case 0xD7AD0DD9:
+        if (mnMode == MODE_PROFILE_ENTRY && !(FEDatabase->GetGameMode() & 8) && !(FEDatabase->GetGameMode() & 0x40)) {
+            g_pEAXSound->PlayUISoundFX(static_cast<eMenuSoundTriggers>(7));
+            return;
+        }
+        ToggleCapsLock();
+        g_pEAXSound->PlayUISoundFX(static_cast<eMenuSoundTriggers>(0x30));
+        return;
+    case 0xB5AF2461:
+        if (bStrLen(mString) == 0) {
+            cFEng::Get()->QueuePackageMessage(0x8CB81F09, GetPackageName(), nullptr);
+            return;
+        }
+        goto dispose_keyboard;
+    dispose_keyboard:
+        g_pEAXSound->PlayUISoundFX(static_cast<eMenuSoundTriggers>(0x2F));
+        Dispose(false);
+        return;
+    case 0x5073EF13:
+        MoveCursor(-1);
+        return;
+    case 0xD9FEEC59:
+        MoveCursor(1);
+        return;
+    case 0xC519BFC4:
+        if (GetCurrentLanguage() == eLANGUAGE_KOREAN) {
+            return;
+        }
+        ToggleSpecialCharacters();
+        return;
+    case 0x911AB364:
+        if (mnDeclineHash == -1U) {
+            return;
+        }
+        Dispose(true);
+        return;
     default:
         return;
     }
-
-dispose_keyboard:
-    g_pEAXSound->PlayUISoundFX(static_cast<eMenuSoundTriggers>(0x2F));
-    Dispose(false);
-    return;
-play_sound:
-    g_pEAXSound->PlayUISoundFX(static_cast<eMenuSoundTriggers>(soundTrigger));
 }
 
 void FEKeyboard::ToggleCapsLock() {
