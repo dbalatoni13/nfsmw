@@ -308,7 +308,9 @@ struct CustomizeRims : public CustomizationScreen {
 
 // total size: 0x60
 struct FEShoppingCartItem : public FEStatWidget {
-    FEShoppingCartItem(ShoppingCartItem *item);
+    FEShoppingCartItem(ShoppingCartItem *item)
+        : FEStatWidget(true) //
+        , TheItem(item) {}
     ~FEShoppingCartItem() override {}
 
     void SetCheckIcon(FEImage *img) { pCheckIcon = img; }

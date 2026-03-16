@@ -143,15 +143,23 @@ void UIQRChallengeSeries::RefreshHeader() {
     if (MapHash == race->GetEventHash()) return;
 
     MapHash = race->GetEventHash();
-    int cashValue = static_cast<int>(race->GetCashValue());
-    FEPrintf(GetPackageName(), 0x13c45e, "%d", cashValue);
+    FEPrintf(GetPackageName(), 0x13c45e, "%.0f", race->GetCashValue());
 
     bool metric = FEDatabase->GetGameplaySettings()->SpeedoUnits == 1;
-    const char *unit = GetLocalizedString(metric ? 0x8569a26a : 0x867dcfd9);
+    unsigned int unitHash;
+    float conv;
+    if (metric) {
+        unitHash = 0x8569a26a;
+        conv = 0.001f;
+    } else {
+        unitHash = 0x867dcfd9;
+        conv = 0.000621371f;
+    }
+    const char *unit = GetLocalizedString(unitHash);
     float length = race->GetRaceLengthMeters();
-    float conv = metric ? 0.001f : 0.000621371f;
+    length *= conv;
     int laps = race->GetNumLaps();
-    FEPrintf(GetPackageName(), 0x80c9daa, "%s x%d %.1f", unit, laps, length * conv);
+    FEPrintf(GetPackageName(), 0x80c9daa, "%s x%d %.1f", unit, laps, length);
 
     FEngSetInvisible(FEngFindObject(GetPackageName(), 0xbbf970cd));
     int challengeType = race->GetChallengeType();
@@ -198,17 +206,18 @@ void UIQRChallengeSeries::RefreshHeader() {
     }
 
     int numSlots = GetNumSlots();
+    int currentDatumNum = GetCurrentDatumNum();
     for (int i = 0; i < numSlots; i++) {
-        ArrayDatum *datum = GetDatumAt(i + GetCurrentDatumNum());
+        ArrayDatum *datum = GetDatumAt(i + currentDatumNum);
         unsigned int slotHash = FEngHashString("TRACK_IMAGE_%d", i + 1);
         if (!datum) {
             FEngSetScript(GetPackageName(), slotHash, 0x16a259, true);
         } else if (datum->IsLocked()) {
             FEngSetScript(GetPackageName(), slotHash, 0x5079c8f8, true);
-            FEngSetTextureHash(FEngFindImage(GetPackageName(), slotHash), 0x28feadd);
+            FEngSetTextureHash(FEngFindImage(GetPackageName(), slotHash), 0x18ed48);
         } else if (datum->IsChecked()) {
             FEngSetScript(GetPackageName(), slotHash, 0x5079c8f8, true);
-            FEngSetTextureHash(FEngFindImage(GetPackageName(), slotHash), 0x18ed48);
+            FEngSetTextureHash(FEngFindImage(GetPackageName(), slotHash), 0x28feadd);
         }
     }
     TrackMapStreamer.Init(race, TrackMap, 0, 0);

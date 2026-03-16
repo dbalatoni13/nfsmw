@@ -25,7 +25,7 @@ extern int gPlayerNum;
 
 extern void LoadOneTexture(const char *pkg_name, unsigned int hash, void (*callback)(unsigned int), unsigned int param);
 extern bool GetIsCollectorsEdition();
-extern FEImage *FEngFindImage(const char *pkg, unsigned int hash);
+extern FEImage *FEngFindImage(const char *pkg, int hash);
 extern void FEngSetTextureHash(FEImage *img, unsigned int hash);
 extern void FEngSetScript(const char *pkg, unsigned int obj_hash, unsigned int script_hash, bool p);
 extern bool FEngIsScriptSet(const char *pkg, unsigned int obj_hash, unsigned int script_hash);
@@ -76,7 +76,7 @@ bool QRCarSelectBustedManager::IsImpoundInfoVisible() {
 }
 
 bool QRCarSelectBustedManager::ShowImpoundedTexture() {
-    return WorkingCareerRecord->TheImpoundData.EvadeCount != 0;
+    return WorkingCareerRecord->TheImpoundData.IsImpounded();
 }
 
 void QRCarSelectBustedManager::NotificationMessage(unsigned long msg, FEObject *pobj, unsigned long param1, unsigned long param2) {
@@ -1235,7 +1235,7 @@ void UIQRCarSelect::RefreshHeader() {
     if (num_markers < 1 && (!CheatCanAddImpoundBox || career->TheImpoundData.ImpoundedState != 0)) {
         FEngSetInvisible(GetPackageName(), 0x39dc21f9);
     } else {
-        int num_markers = TheFEMarkerManager.GetNumMarkers(static_cast<FEMarkerManager::ePossibleMarker>(0x14), 0);
+        num_markers = TheFEMarkerManager.GetNumMarkers(static_cast<FEMarkerManager::ePossibleMarker>(0x14), 0);
         FEngSetVisible(GetPackageName(), 0x39dc21f9);
         FEPrintf(GetPackageName(), 0x5b875870, "%2d", num_markers);
         FEPrintf(GetPackageName(), 0xea8aecd9, "%2d", num_markers);
@@ -1266,9 +1266,9 @@ void UIQRCarSelect::RefreshHeader() {
         FEPrintf(GetPackageName(), 0x7044a5a4, "%$d", FEDatabase->GetCareerSettings()->GetCash());
         FEngSetInvisible(GetPackageName(), 0x0e9ed0a2);
 
-        int num_markers = TheFEMarkerManager.GetNumMarkers(static_cast<FEMarkerManager::ePossibleMarker>(0x15), 0);
+        num_markers = TheFEMarkerManager.GetNumMarkers(static_cast<FEMarkerManager::ePossibleMarker>(0x15), 0);
         if (num_markers >= 1 || CheatReleaseFromImpoundMarker) {
-            int num_markers = TheFEMarkerManager.GetNumMarkers(static_cast<FEMarkerManager::ePossibleMarker>(0x15), 0);
+            num_markers = TheFEMarkerManager.GetNumMarkers(static_cast<FEMarkerManager::ePossibleMarker>(0x15), 0);
             FEngSetVisible(GetPackageName(), 0xe998fe99);
             FEPrintf(GetPackageName(), 0xcc59b910, "%2d", num_markers);
             FEPrintf(GetPackageName(), 0xb8f9938a, "%2d", num_markers);

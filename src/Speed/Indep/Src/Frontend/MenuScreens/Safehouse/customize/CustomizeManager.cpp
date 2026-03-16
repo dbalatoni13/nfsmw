@@ -56,6 +56,49 @@ struct CarPart {
     unsigned int GetModelNameHash(int param1, int param2);
 };
 
+// These wrappers are header-inlined in the repo, but the original overlay still emits
+// standalone copies that zFeOverlay compares against.
+asm(
+    ".globl GetCarTypeInfo__F7CarType\n"
+    "GetCarTypeInfo__F7CarType:\n"
+    "lis 4, CarTypeInfoArray@ha\n"
+    "lwz 4, CarTypeInfoArray@l(4)\n"
+    "mulli 0, 3, 0xd0\n"
+    "add 3, 4, 0\n"
+    "blr\n"
+    ".globl GetPart__14SelectablePart\n"
+    "GetPart__14SelectablePart:\n"
+    "lwz 3, 8(3)\n"
+    "blr\n"
+    ".globl GetSlotID__14SelectablePart\n"
+    "GetSlotID__14SelectablePart:\n"
+    "lwz 3, 0xc(3)\n"
+    "blr\n"
+    ".globl GetUpgradeLevel__14SelectablePart\n"
+    "GetUpgradeLevel__14SelectablePart:\n"
+    "lwz 3, 0x10(3)\n"
+    "blr\n"
+    ".globl GetPhysicsType__14SelectablePart\n"
+    "GetPhysicsType__14SelectablePart:\n"
+    "lwz 3, 0x14(3)\n"
+    "blr\n"
+    ".globl IsPerformancePkg__14SelectablePart\n"
+    "IsPerformancePkg__14SelectablePart:\n"
+    "lbz 3, 0x18(3)\n"
+    "blr\n"
+    ".globl GetPartState__14SelectablePart\n"
+    "GetPartState__14SelectablePart:\n"
+    "lwz 3, 0x1c(3)\n"
+    "blr\n"
+    ".globl GetPrice__14SelectablePart\n"
+    "GetPrice__14SelectablePart:\n"
+    "lwz 3, 0x20(3)\n"
+    "blr\n"
+    ".globl IsJunkmanPart__14SelectablePart\n"
+    "IsJunkmanPart__14SelectablePart:\n"
+    "lbz 3, 0x24(3)\n"
+    "blr\n");
+
 int CarCustomizeManager::GetNumPackages(Physics::Upgrades::Type type) {
     return Physics::Upgrades::GetMaxLevel(ThePVehicle, type);
 }
@@ -141,14 +184,13 @@ void CarCustomizeManager::TakeControl(eCustomizeEntryPoint entry_point, FECarRec
         EntryPoint = entry_point;
         TuningCar = tuning_car;
         FEPlayerCarDB *stable = FEDatabase->GetPlayerCarStable(0);
-        FECustomizationRecord *src = stable->GetCustomizationRecordByHandle(TuningCar->Customization);
-        PreviewRecord = *src;
-        Attrib::Gen::pvehicle pveh(TuningCar->VehicleKey, 0, nullptr);
-        stable->WriteRecordIntoPhysics(TuningCar->Handle, pveh);
-        ThePVehicle = pveh;
-        RideInfo ride;
-        stable->BuildRideForPlayer(TuningCar->Handle, 0, &ride);
-        CarViewer::SetRideInfo(&ride, SET_RIDE_INFO_REASON_LOAD_CAR, eCARVIEWER_PLAYER1_CAR);
+        PreviewRecord = *stable->GetCustomizationRecordByHandle(TuningCar->Customization);
+        Attrib::Gen::pvehicle vehicle(TuningCar->VehicleKey, 0, nullptr);
+        stable->WriteRecordIntoPhysics(TuningCar->Handle, vehicle);
+        ThePVehicle = vehicle;
+        RideInfo info;
+        stable->BuildRideForPlayer(TuningCar->Handle, 0, &info);
+        CarViewer::SetRideInfo(&info, SET_RIDE_INFO_REASON_LOAD_CAR, eCARVIEWER_PLAYER1_CAR);
         TheTempColoredPart = nullptr;
     }
 }
@@ -1134,10 +1176,8 @@ unsigned int CarCustomizeManager::GetUnlockHash(eCustomizeCategory cat, int upgr
 }
 
 void CarCustomizeManager::GetCarPartList(int car_slot, bTList<SelectablePart> &the_list, unsigned int param) {
-    CarType cartype;
-    if (!TuningCar) {
-        cartype = static_cast<CarType>(-1);
-    } else {
+    CarType cartype = static_cast<CarType>(-1);
+    if (TuningCar) {
         cartype = TuningCar->GetType();
     }
     CarPart *part = CarPartDB.NewGetFirstCarPart(cartype, car_slot, 0, -1);
@@ -1145,56 +1185,41 @@ void CarCustomizeManager::GetCarPartList(int car_slot, bTList<SelectablePart> &t
     while (part) {
         int next_slot = car_slot;
         if (car_slot == 0x42) {
-            if (param != 0 && part->GetAppliedAttributeUParam(0xebb03e66, 0) != param) {
-                goto next_part;
-            }
-        } else if (car_slot < 0x43) {
-            if (car_slot == 0x17) {
-                bool valid = false;
-                unsigned int modelHash = part->GetModelNameHash(0, 1);
-                if (modelHash && StreamingSolidPackLoader.GetStreamingEntry(modelHash)) {
-                    valid = true;
+            if (param != 0) {
+                if (part->GetAppliedAttributeUParam(0xebb03e66, 0) != param) {
+                    goto next_part;
                 }
-                if (!valid) goto next_part;
             }
-        } else if (car_slot == 0x4d) {
-            unsigned int vinylHash = GetVinylLayerHash(part, cartype, 1);
-            eStreamingEntry *streaming = StreamingTexturePackLoader.GetStreamingEntry(vinylHash);
-            unsigned int brand = part->GetAppliedAttributeUParam(0xebb03e66, 0);
-            unsigned int specialHash = bStringHash("SPECIAL");
-            if (!streaming || (part->GetGroupNumber() & 0x1f) != param ||
-                (brand == specialHash && !GetIsCollectorsEdition())) {
-                goto next_part;
+        } else if (car_slot > 0x42) {
+            if (car_slot == 0x4d) {
+                unsigned int vinylHash = GetVinylLayerHash(part, cartype, 1);
+                eStreamingEntry *streaming = StreamingTexturePackLoader.GetStreamingEntry(vinylHash);
+                unsigned int brand = part->GetAppliedAttributeUParam(0xebb03e66, 0);
+                unsigned int specialHash = bStringHash("SPECIAL");
+                if (!streaming) {
+                    goto next_part;
+                }
+                if ((part->GetGroupNumber() & 0x1f) != param) {
+                    goto next_part;
+                }
+                if (brand == specialHash) {
+                    if (!GetIsCollectorsEdition()) {
+                        goto next_part;
+                    }
+                }
             }
+        } else if (car_slot == 0x17) {
+            bool valid = false;
+            unsigned int modelHash = part->GetModelNameHash(0, 1);
+            if (modelHash && StreamingSolidPackLoader.GetStreamingEntry(modelHash)) {
+                valid = true;
+            }
+            if (!valid) goto next_part;
         }
 
         {
             SelectablePart *sp;
-            if (unlockable == 0x2e) {
-                goto add_unlockable;
-            } else if (unlockable > 0x2e) {
-                if (unlockable == 0x30) goto add_unlockable;
-            } else if (unlockable == 0x2c) {
-                goto add_unlockable;
-            }
-
-            {
-                int br = CustomizeIsInBackRoom();
-                if (!br) {
-                    if ((FEDatabase->GetGameMode() & 0x4000) == 0 && part->GetGroupNumber() == 7) {
-                        goto next_part;
-                    }
-                } else {
-                    if (!UnlockSystem::IsCarPartUnlocked(UNLOCK_CAREER_MODE, car_slot, part, 0, true)) {
-                        goto next_part;
-                    }
-                }
-            }
-            sp = new SelectablePart(part, car_slot, part->GetAppliedAttributeUParam(0xebb03e66, 0) >> 5, static_cast<GRace::Type>(7), false, CPS_AVAILABLE, 0, false);
-            goto set_state;
-
-        add_unlockable:
-            {
+            if (unlockable == 0x2e || unlockable == 0x2c || unlockable == 0x30) {
                 int level = 0;
                 if (unlockable == 0x2e) {
                     level = 2;
@@ -1205,29 +1230,44 @@ void CarCustomizeManager::GetCarPartList(int car_slot, bTList<SelectablePart> &t
                 } else if (unlockable == 0x2c) {
                     level = 1;
                 }
-                int br2 = CustomizeIsInBackRoom();
-                if (br2 && !UnlockSystem::IsUnlockableUnlocked(UNLOCK_CAREER_MODE, unlockable, level, 0, true)) {
-                    goto next_part;
+                if (CustomizeIsInBackRoom()) {
+                    if (UnlockSystem::IsUnlockableUnlocked(UNLOCK_CAREER_MODE, unlockable, level, 0, true)) {
+                    } else {
+                        goto next_part;
+                    }
                 }
                 sp = new SelectablePart(part, car_slot, static_cast<unsigned int>(level), static_cast<GRace::Type>(7), false, CPS_AVAILABLE, 0, false);
+            } else {
+                if (CustomizeIsInBackRoom()) {
+                    if (UnlockSystem::IsCarPartUnlocked(UNLOCK_CAREER_MODE, car_slot, part, 0, true)) {
+                    } else {
+                        goto next_part;
+                    }
+                } else if ((FEDatabase->GetGameMode() & 0x4000) != 0 ||
+                    static_cast<unsigned int>(part->GroupNumber_UpgradeLevel >> 5) != 7u) {
+                } else {
+                    goto next_part;
+                }
+                sp = new SelectablePart(part, car_slot,
+                    static_cast<unsigned int>(part->GroupNumber_UpgradeLevel >> 5),
+                    static_cast<GRace::Type>(7), false, CPS_AVAILABLE, 0, false);
             }
 
-        set_state:
             {
-            unsigned int state = CPS_AVAILABLE;
-            if (IsPartLocked(sp, 0)) {
-                state = CPS_LOCKED;
+                unsigned int state = CPS_AVAILABLE;
+                if (IsPartLocked(sp, 0)) {
+                    state = CPS_LOCKED;
             } else if (IsPartNew(sp, 0)) {
                 state = CPS_NEW;
             }
             if (IsPartInstalled(sp)) {
                 state = state | CPS_INSTALLED;
-            } else if (IsPartInCart(sp)) {
-                state = state | CPS_IN_CART;
-            }
-            sp->SetPartState(state);
-            sp->SetPrice(GetPartPrice(sp));
-            the_list.AddTail(sp);
+                } else if (IsPartInCart(sp)) {
+                    state = state | CPS_IN_CART;
+                }
+                sp->PartState = static_cast<eCustomizePartState>(state);
+                sp->Price = GetPartPrice(sp);
+                the_list.AddTail(sp);
             }
         }
     next_part:
@@ -1325,7 +1365,7 @@ void CarCustomizeManager::MaxOutPerformance() {
             }
         }
 
-        if (best_level > 0) {
+        if (best_level != 0) {
             ShoppingCartItem *existing = IsPartTypeInCart(type);
             if (existing) {
                 RemoveFromCart(existing);
