@@ -47,7 +47,9 @@ void FELerpQuaternion(FEQuaternion& q1, FEQuaternion& q2, float t, FEQuaternion*
         float SinA = FEngSin(Angle);
         float SinAT = FEngSin(Angle * t);
         float SinAInvT = FEngSin(Angle * (1.0f - t));
-        FEQuaternion r = operator+(operator*(q1, SinAInvT), operator*(q, SinAT));
+        FEQuaternion temp1 = operator*(q1, SinAInvT);
+        FEQuaternion temp2 = operator*(q, SinAT);
+        FEQuaternion r = operator+(temp1, temp2);
         q = operator*(r, 1.0f / SinA);
     } else {
         FEQuaternion r = operator+(q1, operator*(operator-(q, q1), t));
