@@ -56,9 +56,9 @@ bool MenuZoneTrigger::IsPlayerInsideTrigger() {
 }
 
 void MenuZoneTrigger::ExitTrigger() {
-    mZoneType = nullptr;
-    mbInsideTrigger = false;
     mpRaceActivity = nullptr;
+    mbInsideTrigger = false;
+    mZoneType = nullptr;
     HideDPadButton();
 }
 

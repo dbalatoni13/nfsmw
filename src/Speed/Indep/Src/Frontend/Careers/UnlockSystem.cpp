@@ -1218,11 +1218,13 @@ static MarkerUnlockTypeEntry markerUnlockType[21] = {
 };
 
 FEMarkerManager::ePossibleMarker FEMarkerManager::ConvertBigBangMarkerAward(const char *marker_name, const char *partid) {
+    const char *const *partName = reinterpret_cast<const char *const *>(&markerUnlockType[0].mPartName);
+    const ePossibleMarker *marker = reinterpret_cast<const ePossibleMarker *>(&markerUnlockType[0].mMarker);
+
     for (int onMarker = 0; onMarker < 21; onMarker++) {
         if (bStrICmp(marker_name, markerUnlockType[onMarker].mMarkerName) == 0
-            && (!markerUnlockType[onMarker].mPartName
-                || bStrICmp(partid, markerUnlockType[onMarker].mPartName) == 0)) {
-            return markerUnlockType[onMarker].mMarker;
+            && (!partName[onMarker * 3] || bStrICmp(partid, partName[onMarker * 3]) == 0)) {
+            return marker[onMarker * 3];
         }
     }
     return MARKER_NONE;
@@ -1232,20 +1234,22 @@ void FEMarkerManager::AwardMarker(Attrib::Gen::gameplay &inst, bool immediate_re
     ePossibleMarker marker = ConvertBigBangMarkerAward(inst.RewardMarkerType(0), inst.UpgradePartID(0));
     if (marker != MARKER_NONE) {
         int param = 0;
-        if (!immediate_reward) {
+        if (immediate_reward) {
+            if (marker == MARKER_PINK_SLIP) {
+                unsigned int hash = FEngHashString("BL%d", FEDatabase->GetCareerSettings()->GetCurrentBin());
+                FEDatabase->GetPlayerCarStable(0)->AwardRivalCar(hash);
+            } else if (marker == MARKER_CASH) {
+                FEDatabase->GetCareerSettings()->AddCash(static_cast<int>(inst.CashReward(0)));
+            } else {
+                AddMarkerToInventory(marker, 0);
+            }
+        } else {
             if (marker == MARKER_PINK_SLIP) {
                 param = FEngHashString("BL%d", FEDatabase->GetCareerSettings()->GetCurrentBin(), 0);
             } else if (marker == MARKER_CASH) {
                 param = static_cast<int>(inst.CashReward(0));
             }
             AddMarkerForLaterSelection(marker, param);
-        } else if (marker == MARKER_PINK_SLIP) {
-            unsigned int hash = FEngHashString("BL%d", FEDatabase->GetCareerSettings()->GetCurrentBin());
-            FEDatabase->GetPlayerCarStable(0)->AwardRivalCar(hash);
-        } else if (marker == MARKER_CASH) {
-            FEDatabase->GetCareerSettings()->AddCash(static_cast<int>(inst.CashReward(0)));
-        } else {
-            AddMarkerToInventory(marker, 0);
         }
     }
 }
