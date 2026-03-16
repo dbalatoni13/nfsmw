@@ -919,7 +919,6 @@ def format_suggested_commands(
     if left_sym is not None and right_sym is None:
         commands.extend(
             [
-                f"python tools/decomp-workflow.py function -u {unit_name} -f '{function_query}' --lookup-mode full",
                 f"python tools/decomp-workflow.py function -u {unit_name} -f '{function_query}' --ghidra-version gc",
                 f"python tools/decomp-workflow.py unit -u {unit_name} --search '{function_query}' --limit 20",
             ]
@@ -1253,15 +1252,15 @@ def main():
                 ),
             )
 
-            priority_guidance = format_priority_guidance(
-                args.unit,
-                unit,
-                diff_data,
-                mangled,
-                brief=args.brief,
-            )
-            if priority_guidance:
-                print_section("Higher-impact targets right now", priority_guidance)
+            # priority_guidance = format_priority_guidance(
+            #     args.unit,
+            #     unit,
+            #     diff_data,
+            #     mangled,
+            #     brief=args.brief,
+            # )
+            # if priority_guidance:
+            #     print_section("Higher-impact targets right now", priority_guidance)
 
             if not source_was_useful and args.no_source:
                 print_section(

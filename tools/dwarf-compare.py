@@ -30,6 +30,7 @@ from lookup import (
     _candidate_func_names,
     _normalise_func_name,
     _sig_contains_name,
+    load_cached_function_blocks,
     read_text,
     split_functions,
 )
@@ -143,10 +144,13 @@ def dtk_dwarf_dump(obj_path: str) -> str:
 def load_function_blocks(
     path: str, folder_mode: bool, apply_split_fixups_in_ram: bool = False
 ) -> List[FunctionBlock]:
-    if folder_mode:
-        text = read_text(os.path.join(path, "functions.nothpp"))
-    else:
-        text = read_text(path)
+    source_path = os.path.join(path, "functions.nothpp") if folder_mode else path
+
+    if not apply_split_fixups_in_ram:
+        # Use a persistent per-file SQLite cache for fast repeated lookups.
+        return load_cached_function_blocks(source_path)
+
+    text = read_text(source_path)
     if apply_split_fixups_in_ram:
         # Keep fixups in-memory only (do not rewrite dump files on disk).
         text = apply_umath_fixups(text)
@@ -157,14 +161,64 @@ def find_function_blocks(funcs: Iterable[FunctionBlock], query: str) -> List[Fun
     candidates = _candidate_func_names(query)
     matches: List[FunctionBlock] = []
     exact_substring_matches: List[FunctionBlock] = []
+    exact_signature_matches: List[FunctionBlock] = []
+
+    def normalize_signature_for_match(text: str) -> str:
+        # Strip DWARF register comments and normalize spacing/punctuation so
+        # queries like "EAXSound::Random(int)" can disambiguate overloads.
+        text = re.sub(r"/\*.*?\*/", "", text)
+        text = re.sub(r"\s+", " ", text).strip()
+        text = re.sub(r"\s*([(),*&])\s*", r"\1", text)
+        return text
+
+    def parse_signature_name_and_params(text: str) -> Optional[Tuple[str, List[str]]]:
+        normalized = normalize_signature_for_match(text)
+        open_paren = normalized.find("(")
+        close_paren = normalized.rfind(")")
+        if open_paren == -1 or close_paren == -1 or close_paren < open_paren:
+            return None
+
+        prefix = normalized[:open_paren].strip()
+        if not prefix:
+            return None
+        name = prefix.split(" ")[-1]
+        params_text = normalized[open_paren + 1 : close_paren].strip()
+        if params_text in ("", "void"):
+            return (name, [])
+
+        params: List[str] = []
+        for raw_param in params_text.split(","):
+            param = raw_param.strip()
+            # Strip trailing parameter names (e.g. "int range" -> "int").
+            if " " in param:
+                param = re.sub(r"\b[A-Za-z_]\w*$", "", param).strip()
+            param = re.sub(r"\s+", " ", param).strip()
+            params.append(param)
+        return (name, params)
+
+    normalized_query = normalize_signature_for_match(query)
+    query_has_params = "(" in normalized_query and ")" in normalized_query
+    query_signature = (
+        parse_signature_name_and_params(query) if query_has_params else None
+    )
 
     for func in funcs:
         sig_line = func[2]
+        if query_signature is not None:
+            sig_signature = parse_signature_name_and_params(sig_line)
+            if sig_signature is not None:
+                sig_name, sig_params = sig_signature
+                query_name, query_params = query_signature
+                if sig_name.endswith(query_name) and sig_params == query_params:
+                    exact_signature_matches.append(func)
+
         if query in sig_line:
             exact_substring_matches.append(func)
         if any(_sig_contains_name(sig_line, candidate) for candidate in candidates):
             matches.append(func)
 
+    if exact_signature_matches:
+        return exact_signature_matches
     if exact_substring_matches:
         return exact_substring_matches
     return matches

@@ -28,6 +28,9 @@ import re
 import sys
 import os
 import argparse
+import hashlib
+import sqlite3
+import tempfile
 
 # ---------------------------------------------------------------------------
 # Regex patterns
@@ -226,6 +229,148 @@ def split_functions(text: str) -> list[tuple[str, str, str, str]]:
             in_block = False
 
     return results
+
+
+FUNCTION_CACHE_SCHEMA_VERSION = "1"
+
+
+def _function_cache_db_path(file_path: str) -> str:
+    cache_root = os.path.join(tempfile.gettempdir(), "nfsmw_lookup")
+    os.makedirs(cache_root, exist_ok=True)
+    digest = hashlib.sha1(os.path.abspath(file_path).encode("utf-8")).hexdigest()
+    return os.path.join(cache_root, f"functions_{digest}.sqlite3")
+
+
+def _ensure_function_cache(file_path: str) -> sqlite3.Connection:
+    if not os.path.exists(file_path):
+        print(f"Error: '{file_path}' does not exist.")
+        sys.exit(1)
+
+    db_path = _function_cache_db_path(file_path)
+    conn = sqlite3.connect(db_path)
+    conn.execute("PRAGMA journal_mode=OFF")
+    conn.execute("PRAGMA synchronous=OFF")
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS metadata(
+            key TEXT PRIMARY KEY,
+            value TEXT NOT NULL
+        )
+        """
+    )
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS function_blocks(
+            id INTEGER PRIMARY KEY,
+            start_addr TEXT NOT NULL,
+            end_addr TEXT NOT NULL,
+            sig_line TEXT NOT NULL,
+            block TEXT NOT NULL
+        )
+        """
+    )
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS idx_function_blocks_start ON function_blocks(start_addr)"
+    )
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS idx_function_blocks_end ON function_blocks(end_addr)"
+    )
+
+    stat = os.stat(file_path)
+    expected = {
+        "schema_version": FUNCTION_CACHE_SCHEMA_VERSION,
+        "source_path": os.path.abspath(file_path),
+        "source_size": str(stat.st_size),
+        "source_mtime_ns": str(stat.st_mtime_ns),
+    }
+
+    current = {
+        key: row[0]
+        for key in expected.keys()
+        for row in [conn.execute("SELECT value FROM metadata WHERE key=?", (key,)).fetchone()]
+        if row is not None
+    }
+
+    if current != expected:
+        text = read_text(file_path)
+        blocks = split_functions(text)
+        conn.execute("DELETE FROM function_blocks")
+        if blocks:
+            conn.executemany(
+                """
+                INSERT INTO function_blocks(start_addr, end_addr, sig_line, block)
+                VALUES (?, ?, ?, ?)
+                """,
+                blocks,
+            )
+        conn.execute("DELETE FROM metadata")
+        conn.executemany(
+            "INSERT INTO metadata(key, value) VALUES(?, ?)",
+            list(expected.items()),
+        )
+        conn.commit()
+
+    return conn
+
+
+def load_cached_function_blocks(file_path: str) -> list[tuple[str, str, str, str]]:
+    conn = _ensure_function_cache(file_path)
+    try:
+        rows = conn.execute(
+            """
+            SELECT start_addr, end_addr, sig_line, block
+            FROM function_blocks
+            ORDER BY id
+            """
+        ).fetchall()
+    finally:
+        conn.close()
+    return [(row[0], row[1], row[2], row[3]) for row in rows]
+
+
+def find_function_by_address_cached(file_path: str, query: str) -> str | None:
+    q = query.upper()
+    conn = _ensure_function_cache(file_path)
+    try:
+        row = conn.execute(
+            """
+            SELECT block
+            FROM function_blocks
+            WHERE start_addr = ? OR end_addr = ?
+            LIMIT 1
+            """,
+            (q, q),
+        ).fetchone()
+    finally:
+        conn.close()
+    return row[0] if row else None
+
+
+def find_functions_by_name_cached(file_path: str, query: str) -> list[str]:
+    candidates = _candidate_func_names(query)
+    if not candidates:
+        return []
+
+    where = " OR ".join("instr(sig_line, ?) > 0" for _ in candidates)
+    conn = _ensure_function_cache(file_path)
+    try:
+        rows = conn.execute(
+            f"""
+            SELECT sig_line, block
+            FROM function_blocks
+            WHERE {where}
+            ORDER BY id
+            """,
+            candidates,
+        ).fetchall()
+    finally:
+        conn.close()
+
+    return [
+        block
+        for sig_line, block in rows
+        if any(_sig_contains_name(sig_line, candidate) for candidate in candidates)
+    ]
 
 
 # ---------------------------------------------------------------------------
@@ -447,7 +592,7 @@ def main():
 
     # Resolve the file to read
     if args.file:
-        text = read_text(args.file)
+        source_path = args.file
     else:
         if not args.source:
             print("Error: a folder path is required when --file is not used.")
@@ -458,10 +603,11 @@ def main():
                 f"Error: '{folder}' is not a directory. Use --file for a single file."
             )
             sys.exit(1)
-        text = read_text(os.path.join(folder, KIND_TO_FILE[kind]))
+        source_path = os.path.join(folder, KIND_TO_FILE[kind])
 
     # Dispatch
     if kind == "struct":
+        text = read_text(source_path)
         matches = find_all_by_name(split_structs(text), query)
         if not matches:
             print(f"Error: struct '{query}' not found.")
@@ -469,6 +615,7 @@ def main():
         print("\n\n".join(m.rstrip() for m in matches))
 
     elif kind == "enum":
+        text = read_text(source_path)
         matches = find_all_by_name(split_enums(text), query)
         if not matches:
             print(f"Error: enum '{query}' not found.")
@@ -476,21 +623,21 @@ def main():
         print("\n\n".join(m.rstrip() for m in matches))
 
     elif kind == "function":
-        funcs = split_functions(text)
         if _looks_like_address(query):
-            result = find_function_by_address(funcs, query)
+            result = find_function_by_address_cached(source_path, query)
             if result is None:
                 print(f"Error: function '{query}' not found.")
                 sys.exit(1)
             print(result.rstrip())
         else:
-            matches = find_functions_by_name(funcs, query)
+            matches = find_functions_by_name_cached(source_path, query)
             if not matches:
                 print(f"Error: function '{query}' not found.")
                 sys.exit(1)
             print("\n\n".join(m.rstrip() for m in matches))
 
     elif kind == "typedef":
+        text = read_text(source_path)
         matches = find_all_by_name(split_line_decls(text, re_typedef_name), query)
         if not matches:
             print(f"Error: typedef '{query}' not found.")
@@ -498,6 +645,7 @@ def main():
         print(matches[0].rstrip())
 
     elif kind == "global":
+        text = read_text(source_path)
         matches = find_all_by_name(split_line_decls(text, re_global_name), query)
         if not matches:
             print(f"Error: global '{query}' not found.")

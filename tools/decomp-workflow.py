@@ -966,8 +966,8 @@ def build_parser() -> argparse.ArgumentParser:
     function.add_argument(
         "--lookup-mode",
         choices=["signature", "full"],
-        default="signature",
-        help="Pass through to decomp-context.py (default: signature)",
+        default="full",
+        help="Pass through to decomp-context.py (default: full)",
     )
     function.add_argument(
         "--brief",
