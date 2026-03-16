@@ -61,18 +61,22 @@ struct ObjectPool {
         pNode->~T();
         FEPoolNode<T, N>* pPool = static_cast<FEPoolNode<T, N>*>(Pools.GetHead());
         while (pPool) {
-            if (pNode >= &pPool->Pool[0] && pNode < &pPool->Pool[N]) {
-                break;
+            bool bInPool = false;
+            if (pNode >= &pPool->Pool[0]) {
+                bInPool = pNode < &pPool->Pool[N];
+            }
+            if (bInPool) {
+                pPool->Free.AddNode(pPool->Free.GetTail(), pNode);
+                pPool->Used--;
+                if (pPool->Used == 0) {
+                    Pools.RemNode(pPool);
+                    if (pPool) {
+                        delete pPool;
+                    }
+                }
+                return;
             }
             pPool = pPool->GetNext();
-        }
-        if (pPool) {
-            pPool->Free.AddNode(pPool->Free.GetTail(), pNode);
-            pPool->Used--;
-            if (pPool->Used == 0) {
-                Pools.RemNode(pPool);
-                delete pPool;
-            }
         }
     }
 };

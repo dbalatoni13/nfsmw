@@ -88,7 +88,7 @@ void FEScript::SetTrackCount(long Count) {
     TrackCount = Count;
     pTracks = nullptr;
     if (Count != 0) {
-        pTracks = new FEKeyTrack[Count];
+        pTracks = FENG_NEW FEKeyTrack[Count];
     }
 }
 
