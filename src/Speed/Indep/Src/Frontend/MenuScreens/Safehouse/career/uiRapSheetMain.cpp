@@ -31,26 +31,27 @@ void uiRapSheetMain::NotificationMessage(unsigned long msg, FEObject* pobj, unsi
             cFEng::Get()->QueuePackageSwitch("RapSheetRS.fng", 0, 0, false);
             break;
         case 0xCDA0A66C:
-            button_num = 2;
             cFEng::Get()->QueuePackageSwitch("RapSheetUS.fng", 0, 0, false);
+            button_num = 2;
             break;
         case 0xCDA0A66D:
-            button_num = 3;
             cFEng::Get()->QueuePackageSwitch("RapSheetCTS.fng", 0, 0, false);
+            button_num = 3;
             break;
         case 0xCDA0A66E:
-            button_num = 4;
             cFEng::Get()->QueuePackageSwitch("RapSheetTEP.fng", 0, 0, false);
+            button_num = 4;
             break;
         case 0xCDA0A66F:
-            button_num = 5;
             cFEng::Get()->QueuePackageSwitch("RapSheetRankings.fng", 0, 0, false);
+            button_num = 5;
             break;
         case 0xCDA0A670:
-            button_num = 6;
             cFEng::Get()->QueuePackageSwitch("RapSheetVD.fng", 0, 0, false);
+            button_num = 6;
             break;
         default:
+            button_num = 1;
             cFEng::Get()->QueuePackageSwitch("MainMenu_Sub.fng", 0, 0, false);
             FEDatabase->ClearGameMode(eFE_GAME_MODE_RAP_SHEET);
             break;
