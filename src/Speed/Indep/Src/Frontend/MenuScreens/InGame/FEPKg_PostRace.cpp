@@ -1358,16 +1358,19 @@ void PostRaceMilestonesScreen::StartAnimations(bool isMilestone, int typeKey, fl
 }
 
 bool PostRaceMilestonesScreen::StartBountyAnimations(bool copDestruction) {
-    char buf[64];
+    unsigned int key;
+    float bountyEarned;
+    char outputStr[64];
     if (!copDestruction) {
-        const char *str = GetTranslatedString(0x4d64888d);
-        bSNPrintf(buf, 64, "%s", str);
-        StartAnimations(false, 0x33fa23a, static_cast<float>(PostRacePursuitScreen::mPursuitData.mRepAchievedNormal), buf);
+        key = 0x33fa23a;
+        bountyEarned = static_cast<float>(PostRacePursuitScreen::GetPursuitData().mRepAchievedNormal);
+        bSNPrintf(outputStr, 64, "%s", GetTranslatedString(0x4d64888d));
     } else {
-        const char *str = GetTranslatedString(0x23f6e732);
-        bSNPrintf(buf, 64, "%s: %$d", str, PostRacePursuitScreen::mPursuitData.mNumCopsDestroyed);
-        StartAnimations(false, 0x4fc942ca, static_cast<float>(PostRacePursuitScreen::mPursuitData.mRepAchievedCopDestruction), buf);
+        key = 0x4fc942ca;
+        bountyEarned = static_cast<float>(PostRacePursuitScreen::GetPursuitData().mRepAchievedCopDestruction);
+        bSNPrintf(outputStr, 64, "%s: %$d", GetTranslatedString(0x23f6e732), PostRacePursuitScreen::GetPursuitData().mNumCopsDestroyed);
     }
+    StartAnimations(false, key, bountyEarned, outputStr);
     return true;
 }
 
@@ -1401,21 +1404,21 @@ bool PostRaceMilestonesScreen::SetMilestoneAnimationScriptHash(bool isMilestone,
 
 bool PostRaceMilestonesScreen::StartMilestoneAnimations() {
     mCurrMilestoneIndex++;
-    const GMilestone *milestone = PostRacePursuitScreen::GetPursuitData().GetMilestone(mCurrMilestoneIndex);
-    if (!milestone) {
-        StartMilestoneDoneAnimations();
-        return false;
+    const GMilestone *const milestone = PostRacePursuitScreen::GetPursuitData().GetMilestone(mCurrMilestoneIndex);
+    if (milestone) {
+        char descStr[32];
+        char outputStr[64];
+        FEDatabase->SetMilestoneDescriptionString(
+            descStr, milestone->GetTypeKey(), milestone->GetCurrentValue(), milestone->GetRequiredValue(), false);
+        bSNPrintf(
+            outputStr, 64, "%s: %s", GetTranslatedString(FEDatabase->GetMilestoneHeaderHash(milestone->GetLocalizationTag())),
+            descStr);
+        StartAnimations(true, milestone->GetTypeKey(), milestone->GetBounty(), outputStr);
+        return true;
     }
 
-    char descStr[32];
-    char outputStr[64];
-    unsigned int typeKey = milestone->GetTypeKey();
-    FEDatabase->SetMilestoneDescriptionString(
-        descStr, typeKey, milestone->GetCurrentValue(), milestone->GetRequiredValue(), false);
-    const char *header = GetTranslatedString(FEDatabase->GetMilestoneHeaderHash(milestone->GetLocalizationTag()));
-    bSNPrintf(outputStr, 64, "%s: %s", header, descStr);
-    StartAnimations(true, typeKey, milestone->GetBounty(), outputStr);
-    return true;
+    StartMilestoneDoneAnimations();
+    return false;
 }
 
 bool PostRaceMilestonesScreen::StartChallengeAnimations() {
@@ -1427,10 +1430,12 @@ bool PostRaceMilestonesScreen::StartChallengeAnimations() {
             float goalVal = raceParams->GetChallengeGoal();
             char descStr[32];
             char outputStr[64];
-            FEDatabase->SetMilestoneDescriptionString(descStr, 0, currVal, goalVal, false);
-            const char *header = GetLocalizedString(FEDatabase->GetMilestoneHeaderHash(raceParams->GetChallengeType()));
-            bSNPrintf(outputStr, 64, "%s: %s", header, descStr);
-            StartAnimations(false, raceParams->GetChallengeType(), 0.0f, outputStr);
+            FEDatabase->SetMilestoneDescriptionString(descStr, raceParams->GetChallengeType(), currVal, goalVal, false);
+            bSNPrintf(
+                outputStr, 64, "%s: %s",
+                GetTranslatedString(FEDatabase->GetChallengeHeaderHash(raceParams->GetLocalizationTag())), descStr);
+            StartAnimations(
+                true, raceParams->GetChallengeType(), static_cast<float>(raceParams->GetReputation()), outputStr);
             return true;
         }
     }
