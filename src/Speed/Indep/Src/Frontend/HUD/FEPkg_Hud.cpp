@@ -567,7 +567,11 @@ bool FEngHud::ShouldRearViewMirrorBeVisible(EVIEW_ID viewId) {
         return false;
     }
 
-    return cFEng::Get()->IsPackagePushed("HUD_SingleRace.fng");
+    if (cFEng::Get()->IsPackagePushed("HUD_SingleRace.fng")) {
+        return true;
+    }
+
+    return false;
 }
 
 float FEngHud::ChooseMaxRpmTextureNumber(float rpm) {

@@ -25,8 +25,8 @@ LeaderBoard::LeaderBoard(UTL::COM::Object *pOutter, const char *pkg_name, int pl
     : HudElement(pkg_name, 0x18) //
     , ILeaderBoard(pOutter)
 {
-    mPlayerIndex = -1;
     mNumRacers = -1;
+    mPlayerIndex = -1;
     mSplitTimeQueued = false;
     mNumFramesBeforeTogglingPlayerTimes = 90;
     mShowingRacerTimes = false;
@@ -94,7 +94,7 @@ void LeaderBoard::Update(IPlayer *player) {
             }
         }
 
-        int numRacerNumToClearFrom;
+        int numRacerNumToClearFrom = mNumRacers;
         if (mNumRacers > 1) {
             for (int i = 0; i < mNumRacers && i < 4; i++) {
                 if (mShowingRacerTimes) {
@@ -121,11 +121,11 @@ void LeaderBoard::Update(IPlayer *player) {
                         }
                         if (mTopRacers[i].mPercentComplete >= mTopRacers[mPlayerIndex].mPercentComplete) {
                             float pctDiff = (mTopRacers[i].mPercentComplete - mTopRacers[mPlayerIndex].mPercentComplete) * 0.01f;
-                            pctDiff = totalRaceLenMetres * pctDiff;
+                            pctDiff = pctDiff * totalRaceLenMetres;
                             FEPrintf(mDataRacerText[i], lbl_803E500C, pctDiff, GetTranslatedString(unit));
                         } else {
                             float pctDiff = (mTopRacers[mPlayerIndex].mPercentComplete - mTopRacers[i].mPercentComplete) * 0.01f;
-                            pctDiff = totalRaceLenMetres * pctDiff;
+                            pctDiff = pctDiff * totalRaceLenMetres;
                             FEPrintf(mDataRacerText[i], lbl_803E5018, pctDiff, GetTranslatedString(unit));
                         }
                     }
@@ -134,7 +134,6 @@ void LeaderBoard::Update(IPlayer *player) {
                     FEPrintf(mDataRacerNum[i], lbl_803E48C8, mTopRacers[i].mRacerNum);
                 }
             }
-            numRacerNumToClearFrom = mNumRacers;
             if (numRacerNumToClearFrom <= 1) {
                 numRacerNumToClearFrom = 0;
             }
@@ -298,44 +297,54 @@ bool LeaderBoard::ShowSplitTime(IPlayer *player) {
         mSplitTimeQueued = false;
         return false;
     }
+
     IGenericMessage *igenericmessage;
     IHud *hud = player->GetHud();
-    if (hud && hud->QueryInterface(&igenericmessage) && !igenericmessage->IsGenericMessageShowing()) {
-        Timer timer;
-        int index;
-        int divisor = 50;
-        if (GRaceStatus::Get().GetRaceType() == GRace::kRaceType_P2P ||
-            GRaceStatus::Get().GetRaceType() == GRace::kRaceType_Tollbooth) {
-            divisor = 25;
-        }
-
-        if (mPlayerIndex == 0) {
-            int ipercent = static_cast<int>(mTopRacers[1].mPercentComplete * static_cast<float>(mNumLaps));
-            index = ipercent / divisor;
-            timer = Timer(mTopRacers[1].mRaceTimeOfSegment[index] - mTopRacers[0].mRaceTimeOfSegment[index]);
-        } else {
-            int ipercent = static_cast<int>(mTopRacers[mPlayerIndex].mPercentComplete * static_cast<float>(mNumLaps));
-            index = ipercent / divisor;
-            timer = Timer(mTopRacers[mPlayerIndex].mRaceTimeOfSegment[index] - mTopRacers[0].mRaceTimeOfSegment[index]);
-        }
-
-        char timeToPrint[16];
-        char messageString[32];
-        timer.PrintToString(timeToPrint, 4);
-
-        int hash;
-        if (mPlayerIndex == 0) {
-            bSNPrintf(messageString, 32, lbl_803E5048, GetTranslatedString(0x7771a159), timeToPrint);
-            hash = 0xa19bb14c;
-        } else {
-            bSNPrintf(messageString, 32, lbl_803E5050, GetTranslatedString(0x7771a159), timeToPrint);
-            hash = 0x5230faf6;
-        }
-
-        igenericmessage->RequestGenericMessage(messageString, false, hash, 0, 0, GenericMessage_Priority_3);
-        return true;
+    if (!hud) {
+        return false;
     }
-    return false;
+
+    if (!hud->QueryInterface(&igenericmessage)) {
+        return false;
+    }
+
+    if (igenericmessage->IsGenericMessageShowing()) {
+        return false;
+    }
+
+    Timer timer;
+    int index;
+    int divisor = 50;
+    if (GRaceStatus::Get().GetRaceType() == GRace::kRaceType_P2P ||
+        GRaceStatus::Get().GetRaceType() == GRace::kRaceType_Tollbooth) {
+        divisor = 25;
+    }
+
+    if (mPlayerIndex == 0) {
+        int ipercent = static_cast<int>(mTopRacers[1].mPercentComplete * static_cast<float>(mNumLaps));
+        index = ipercent / divisor;
+        timer = Timer(mTopRacers[1].mRaceTimeOfSegment[index] - mTopRacers[0].mRaceTimeOfSegment[index]);
+    } else {
+        int ipercent = static_cast<int>(mTopRacers[mPlayerIndex].mPercentComplete * static_cast<float>(mNumLaps));
+        index = ipercent / divisor;
+        timer = Timer(mTopRacers[mPlayerIndex].mRaceTimeOfSegment[index] - mTopRacers[0].mRaceTimeOfSegment[index]);
+    }
+
+    char timeToPrint[16];
+    char messageString[32];
+    timer.PrintToString(timeToPrint, 4);
+
+    int hash;
+    if (mPlayerIndex == 0) {
+        bSNPrintf(messageString, 32, lbl_803E5048, GetTranslatedString(0x7771a159), timeToPrint);
+        hash = 0xa19bb14c;
+    } else {
+        bSNPrintf(messageString, 32, lbl_803E5050, GetTranslatedString(0x7771a159), timeToPrint);
+        hash = 0x5230faf6;
+    }
+
+    igenericmessage->RequestGenericMessage(messageString, false, hash, 0, 0, GenericMessage_Priority_3);
+    return true;
 }
 
 HudResourceManager::HudResourceManager() {
