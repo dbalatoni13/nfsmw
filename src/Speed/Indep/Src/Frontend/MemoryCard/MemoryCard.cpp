@@ -544,12 +544,15 @@ void MemoryCard::Load(const char* filename) {
     }
     InitCommand(MO_Load);
     if (!Joylog::IsReplaying()) {
-        if (!InBootSequence()) {
+        if (InBootSequence()) {
+            m_bAutoLoading = true;
+            BootupCheck(filename);
+        } else {
             m_pIMemcard->Load(m_Filename, static_cast< char* >(nullptr), static_cast< char* >(nullptr),
                               MemoryCardImp::gContentName,
                               static_cast< const RealmcIface::TitleInfo* >(nullptr),
                               static_cast< const unsigned short* >(nullptr));
-        } else { m_bAutoLoading = true; BootupCheck(filename); }
+        }
     }
 }
 
