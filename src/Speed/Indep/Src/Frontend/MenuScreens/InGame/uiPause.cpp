@@ -30,8 +30,8 @@ PauseMenu::PauseMenu(ScreenConstructorData* sd)
     : IconScrollerMenu(sd) //
 {
     Options.SetIdleColor(0xFFFFAE40);
-    Options.SetFadeColor(0x00FFAE40);
     mCalledFromPostRace = (sd->Arg != 0);
+    Options.SetFadeColor(0x00FFAE40);
     FEDatabase->GetOptionsSettings()->CurrentCategory = static_cast<eOptionsCategory>(0);
     Setup();
 }
