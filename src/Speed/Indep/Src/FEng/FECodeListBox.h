@@ -14,15 +14,17 @@ struct FEPoint;
 
 inline int GetValidIndex(int lIndex, int lRange) {
     if (lIndex >= 0) {
-        return lIndex - (lIndex / lRange) * lRange;
+        int rem = lIndex - (lIndex / lRange) * lRange;
+        return rem;
     }
 
-    lIndex = -lIndex;
-    int rem = lIndex - (lIndex / lRange) * lRange;
-    if (lRange <= 1) {
-        return 0;
+    int posIndex = -lIndex;
+    int rem = posIndex - (posIndex / lRange) * lRange;
+    int ret = 0;
+    if (lRange > 1) {
+        ret = lRange - rem;
     }
-    return lRange - rem;
+    return ret;
 }
 
 inline int GetRealValue(int i, int lNumTotal, int lCurrentVirtual, int lNumVisible) {

@@ -530,22 +530,13 @@ void FEPackageReader::ProcessListBoxTag(FETag* pTag) {
             CurListRow = 0xFFFFFFFF;
             CurListCol = 0xFFFFFFFF;
             {
-                unsigned long col = 0;
-                if (pList->mulNumColumns == 0) {
-                    col = 0;
-                } else if (col >= pList->mulNumColumns) {
-                    col = pList->mulNumColumns - 1;
-                }
-                pList->mulCurrentColumn = col;
+                unsigned long* pCurrentColumn = &pList->mulCurrentColumn;
+                *pCurrentColumn = ClampIndex(0, pList->mulNumColumns);
             }
             {
-                unsigned long row = 0;
-                if (pList->mulNumRows == 0) {
-                    row = 0;
-                } else if (row >= pList->mulNumRows) {
-                    row = pList->mulNumRows - 1;
-                }
-                pList->mulCurrentRow = row;
+                unsigned long* pCurrentRow = &pList->mulCurrentRow;
+                unsigned long row = ClampIndex(0, pList->mulNumRows);
+                *pCurrentRow = row;
             }
             return;
         case 0x774c:
@@ -587,8 +578,9 @@ void FEPackageReader::ProcessListBoxTag(FETag* pTag) {
                 pList->IncrementCellByColumn();
             }
             FEColor color(pTag->Getu32(0));
+            FEColor* pColor = &color;
             FEListBoxCell* pCell = pList->GetPCellData(pList->mulCurrentColumn, pList->mulCurrentRow);
-            pCell->ulColor = static_cast<unsigned long>(color);
+            pCell->ulColor = static_cast<unsigned long>(*pColor);
             return;
         }
         case 0x7343: {
@@ -600,10 +592,11 @@ void FEPackageReader::ProcessListBoxTag(FETag* pTag) {
             return;
         }
         case 0x7243: {
+            unsigned long zero = 0;
             unsigned long rawVal = pTag->Getu32(0);
             FEListBoxCell* pCell = pList->GetPCellData(pList->mulCurrentColumn, pList->mulCurrentRow);
-            pCell->stResource.UserParam = 0;
-            pCell->stResource.Handle = 0;
+            pCell->stResource.Handle = zero;
+            pCell->stResource.UserParam = zero;
             pCell->stResource.ResourceIndex = rawVal;
             return;
         }
