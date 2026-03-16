@@ -55,11 +55,11 @@ void FEButtonMap::ComputeButtonLocation(FEObject* pButton, FEGameInterface* pInt
 }
 
 FEObject* FEButtonMap::GetButtonFrom(FEObject* pButton, long Direction, FEGameInterface* pInterface, FEButtonWrapMode WrapMode) {
-    float BestScore = 1e30f;
-    unsigned long BestIndex = 0;
     FEVector2 VectOrig;
     FEVector2 VectFrom;
     FEVector2 VectTo;
+    float BestScore = 1e30f;
+    unsigned long BestIndex = 0;
 
     ComputeButtonLocation(pButton, pInterface, VectOrig);
 
