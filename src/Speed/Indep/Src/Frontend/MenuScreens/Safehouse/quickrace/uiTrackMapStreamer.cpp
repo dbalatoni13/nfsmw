@@ -176,20 +176,24 @@ void UITrackMapStreamer::UpdateMap() {
         bVector2 mapBR(0.0f, 0.0f);
         bVector2 zoom;
         bVector2 pan;
+        bVector2* pMapTL = &mapTL;
+        bVector2* pMapBR = &mapBR;
+        bVector2* pZoom = &zoom;
+        bVector2* pPan = &pan;
 
-        ZoomCubic.GetVal(&zoom);
-        PanCubic.GetVal(&pan);
+        ZoomCubic.GetVal(pZoom);
+        PanCubic.GetVal(pPan);
 
-        mapTL.x = pan.x - zoom.x * 0.5f;
-        mapTL.y = pan.y - zoom.y * 0.5f;
-        mapBR.x = zoom.x * 0.5f + pan.x;
-        mapBR.y = zoom.y * 0.5f + pan.y;
+        pMapTL->x = pPan->x - pZoom->x * 0.5f;
+        pMapTL->y = pPan->y - pZoom->y * 0.5f;
+        pMapBR->x = pZoom->x * 0.5f + pPan->x;
+        pMapBR->y = pZoom->y * 0.5f + pPan->y;
 
-        float halfSizeX = (mapBR.x - mapTL.x) * 0.5f;
-        float halfSizeY = (mapBR.y - mapTL.y) * 0.5f;
+        float halfSizeX = (pMapBR->x - pMapTL->x) * 0.5f;
+        float halfSizeY = (pMapBR->y - pMapTL->y) * 0.5f;
         float halfSize = bMax(halfSizeX, halfSizeY);
 
-        FEVector2 mapCenter(mapTL.x + halfSizeX, mapTL.y + halfSizeY);
+        FEVector2 mapCenter(pMapTL->x + halfSizeX, pMapTL->y + halfSizeY);
         FEVector2 TL(mapCenter.x - halfSize, mapCenter.y - halfSize);
         FEVector2 BR(mapCenter.x + halfSize, mapCenter.y + halfSize);
 

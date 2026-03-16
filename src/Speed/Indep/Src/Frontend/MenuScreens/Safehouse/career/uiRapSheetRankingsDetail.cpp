@@ -16,7 +16,7 @@ void RapSheetRankingsArraySlot::Update(ArrayDatum* datum, bool isSelected) {
     if (datum != nullptr) {
         RapSheetRankingsDatum* d = static_cast<RapSheetRankingsDatum*>(datum);
         FEPrintf(pValue, "%.0f", d->getValue());
-        if (d->getItemNum() != 0x10) { FEPrintf(pItemNum, "%d"); }
+        if (d->getItemNum() != 0x10) { FEPrintf(pItemNum, "%d", d->getItemNum()); }
         else { FEngSetLanguageHash(pItemNum, 0xFC1BF40); }
         if (d->getCarName() != 0) { FEngSetLanguageHash(pCarName, d->getCarName()); }
         else { FEPrintf(pCarName, ""); }
