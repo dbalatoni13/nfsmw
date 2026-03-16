@@ -694,8 +694,6 @@ void FEPackage::AddMouseObjectState(FEObject* obj) {
         if (pObj->Type == FE_Group) {
             if (static_cast<FEGroup*>(pObj)->FindChildRecursive(mouseable) || mouseable == pObj->NameHash) {
                 FEPoint p;
-                p.h = 0.0f;
-                p.v = 0.0f;
                 if (OffsetCalculatron(mouseable, pObj, p)) {
                     MouseObjectStates[NumMouseObjects].Offset = p;
                     break;
@@ -703,8 +701,6 @@ void FEPackage::AddMouseObjectState(FEObject* obj) {
             }
         } else if (mouseable == pObj->NameHash) {
             FEPoint p;
-            p.h = 0.0f;
-            p.v = 0.0f;
             if (OffsetCalculatron(mouseable, pObj, p)) {
                 MouseObjectStates[NumMouseObjects].Offset = p;
                 break;

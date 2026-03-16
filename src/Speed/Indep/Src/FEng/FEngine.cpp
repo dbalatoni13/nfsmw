@@ -94,18 +94,21 @@ FEngine::FEngine()
 }
 
 void FEngine::SetNumJoyPads(unsigned char Count) {
-    if (pJoyPad) {
-        delete[] pJoyPad;
+    FEJoyPad** ppJoyPad = &pJoyPad;
+    if (*ppJoyPad) {
+        delete[] *ppJoyPad;
     }
     if (Count) {
         FEJoyPad* pPads = static_cast<FEJoyPad*>(FEngMalloc(Count * sizeof(FEJoyPad), nullptr, 0));
         long i = Count - 1;
-        FEJoyPad* pCur = pPads;
-        do {
-            new (pCur) FEJoyPad();
-            pCur++;
-        } while (i-- != 0);
-        pJoyPad = pPads;
+        if (Count != 0) {
+            FEJoyPad* pCur = pPads;
+            do {
+                new (pCur) FEJoyPad();
+                pCur++;
+            } while (i-- != 0);
+        }
+        *ppJoyPad = pPads;
     }
     NumJoyPads = Count;
     FEngMemSet(HoldDecrement, 0, sizeof(HoldDecrement));
@@ -593,10 +596,13 @@ void FEngine::RenderObject(FEObject* pObj, FEMatrix4& mParent, unsigned short Re
     FEObjData* pData = pObj->GetObjData();
     if (pData->Col.a != 0) {
         FEVector3 pos(pData->Pivot);
-        FEVector3 result(0.0f);
+        FEVector3 result;
+        result.z = 0.0f;
+        result.y = 0.0f;
+        result.x = 0.0f;
         pos.x = pos.x + pData->Pos.x;
         pos.y = pos.y + pData->Pos.y;
-        pos.z = pos.z + pData->Pos.z;
+        pos.z = pData->Pos.z + pos.z;
         FEMultMatrix(&result, &mParent, &pos);
         pObj->RenderContext = RenderContext;
         if (result.z > 0.0f) {
@@ -1435,7 +1441,7 @@ void FEngine::ProcessPackageCommands() {
         if (pNode->iCommand & 2) {
             FEPackage* pPushed = PushPackage(pNode->GetName(),
                 static_cast<unsigned char>(Level + 1), pNode->uControlMask);
-            if (pPushed && !(pNode->iCommand & 1) && Level >= 0) {
+            if (pPushed && (pNode->iCommand & 1) == 0 && Level >= 0) {
                 pPushed->pParentPackage = pNode->pPackage;
             } else if (pNode->iCommand & 1) {
                 pPushed->pParentPackage = pNewParentLink;
@@ -1457,7 +1463,10 @@ void FEngine::ProcessPackageCommands() {
 
         if (pNode->iCommand & 8) {
             FEPackage* pChild = PackList.GetFirstPackage();
-            while (pChild) {
+            while (true) {
+                if (!pChild) {
+                    break;
+                }
                 if (pChild->pParentPackage == pNode->pPackage)
                     break;
                 pChild = pChild->GetNext();

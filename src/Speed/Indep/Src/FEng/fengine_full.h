@@ -84,7 +84,7 @@ struct FEObjectSorter {
     inline unsigned long GetNumObjects() { return mulNumObjects; }
     inline void AddObject(FEObject* pobObject, float fZValue) {
         mastFinalList[mulNumObjects].pobObject = pobObject;
-        *reinterpret_cast<float*>(&mastFinalList[mulNumObjects].ulKey) = fZValue;
+        mastFinalList[mulNumObjects].ulKey = *reinterpret_cast<unsigned long*>(&fZValue);
         mulNumObjects++;
     }
     void SortObjects();

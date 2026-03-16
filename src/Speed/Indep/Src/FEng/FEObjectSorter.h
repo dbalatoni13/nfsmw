@@ -10,14 +10,14 @@
 template <int N>
 void FEObjectSorter<N>::SortObjects() {
     int lNumBytes = mulNumObjects << 3;
-    SFERadixKey* pstSrcList = mastFinalList;
     SFERadixKey* pstDestList = mastScratchList;
+    SFERadixKey* pstSrcList = mastFinalList;
     int b = 3;
     do {
         long alElemCount[256];
         FEngMemSet(alElemCount, 0, sizeof(alElemCount));
         int byteOffset = b + 4;
-        b--;
+        int nextB = b - 1;
         unsigned char* pucByte = reinterpret_cast<unsigned char*>(pstSrcList) + byteOffset;
         int i = 0;
         if (i < lNumBytes) {
@@ -42,6 +42,7 @@ void FEObjectSorter<N>::SortObjects() {
         SFERadixKey* pstTemp = pstSrcList;
         pstSrcList = pstDestList;
         pstDestList = pstTemp;
+        b = nextB;
     } while (b >= 0);
 }
 
