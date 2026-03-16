@@ -70,7 +70,7 @@ void uiRapSheetRankings::Setup() {
 void uiRapSheetRankings::PrintRanking(unsigned int fe_rank, unsigned int button_hash, ePursuitDetailTypes type) {
     UserProfile* prof = FEDatabase->GetUserProfile(0);
     int rank = prof->GetHighScores()->CalcPursuitRank(type, career_view);
-    if (rank != 0x10) { FEPrintf(GetPackageName(), fe_rank, "%d"); }
+    if (rank != 0x10) { FEPrintf(GetPackageName(), fe_rank, "%d", rank); }
     else { FEPrintf(GetPackageName(), fe_rank, "%s", GetLocalizedString(0xF3799455)); }
     unsigned char lastButton = FEngGetLastButton(GetPackageName());
     if (static_cast<unsigned char>(type) == lastButton) { init_button = button_hash; }

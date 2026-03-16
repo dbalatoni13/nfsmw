@@ -42,9 +42,10 @@ void uiSafehouseRegionUnlock::Setup() {
     pTagImg = FEngFindImage(PackageFilename, 0xf5a2a087);
     pBGImg = FEngFindImage(PackageFilename, 0x2cbe1dd0);
     unsigned char bin = FEDatabase->GetCareerSettings()->GetCurrentBin();
+    int next_bin = bin + 1;
     if (bin == 12) {
         FEngSetLanguageHash(PackageFilename, 0xd6c0e097, 0x29e4b193);
-    } else if (bin + 1 == 9) {
+    } else if (next_bin == 9) {
         FEngSetLanguageHash(PackageFilename, 0xd6c0e097, 0x2b0bca2d);
     }
     RivalStreamer.Init(static_cast<unsigned int>(FEDatabase->GetCareerSettings()->GetCurrentBin()) + 1, pRivalImg, pTagImg, pBGImg);
