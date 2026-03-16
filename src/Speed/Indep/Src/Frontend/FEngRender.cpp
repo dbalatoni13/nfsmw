@@ -3,7 +3,9 @@
 #include "Speed/Indep/Src/FEng/feimage.h"
 #include "Speed/Indep/Src/FEng/FEMultiImage.h"
 #include "Speed/Indep/Src/FEng/FEColoredImage.h"
+#include "Speed/Indep/Src/FEng/FEString.h"
 #include "Speed/Indep/Src/Frontend/FERenderObject.hpp"
+#include "Speed/Indep/Src/Frontend/FEngFont.hpp"
 #include "Speed/Indep/Src/Frontend/MoviePlayer/MoviePlayer.hpp"
 #include "Speed/Indep/Src/Ecstasy/Texture.hpp"
 #include "Speed/Indep/Src/FEng/FETypes.h"
@@ -15,6 +17,7 @@ extern void GCDrawMovie(FEObject *obj, FERenderObject *renderObj);
 extern void FinishedRenderingFEngLayer();
 extern FEPackageRenderInfo *HACK_FEPkgMgr_GetPackageRenderInfo(FEPackage *pkg);
 extern TextureInfo *GetTextureInfo(unsigned int hash, int, int);
+
 
 unsigned int FEngColorToEpolyColor(FEColor c) {
     return (c.a / 2) | ((c.b / 2) << 8) | ((c.g / 2) << 16) | ((c.r / 2) << 24);
@@ -312,6 +315,68 @@ void cFEngRender::RenderCBVImage(FEColoredImage *image, FERenderObject *cached, 
                     Colours, clip_info, pkg_render_info);
     cached->SetTexture(texture_info);
     cached->Render();
+}
+
+void cFEngRender::RenderString(FEString *string, FERenderObject *cached, FEPackageRenderInfo *pkg_render_info) {
+    FEngFont *font = FindFont(string->Handle);
+    if (!font || !font->pTextureInfo) {
+        return;
+    }
+
+    if (!cached) {
+        cached = CreateCachedRender(reinterpret_cast<FEObject *>(string), font->pTextureInfo);
+    } else {
+        cached->Clear(pkg_render_info);
+    }
+
+    float extra_scale = 1.0f;
+    int lang = GetCurrentLanguage();
+    if ((lang == 8 || GetCurrentLanguage() == 9) && string->Handle == 0x9583AA1A) {
+        extra_scale = 2.0f;
+    }
+
+    const short *characters = nullptr;
+    FEObjData *obj_data = reinterpret_cast<FEObjData *>(string->pData);
+    short localized_string_buffer[1024];
+    unsigned int labelHash = string->GetLabelHash();
+
+    if (!(string->Flags & 2)) {
+        if (GetLocalizedWideString(localized_string_buffer, 0x800, labelHash)) {
+            characters = localized_string_buffer;
+        }
+    }
+    if (!characters) {
+        characters = string->GetString();
+    }
+
+    bMatrix4 screen;
+    bIdentity(&screen);
+    screen.v3.x = 320.0f;
+    screen.v3.y = 240.0f;
+    screen.v3.z = 0.0f;
+
+    bMatrix4 trans;
+    FEColor fe_color;
+
+    MakeRenderMatrix(obj_data, &trans, fe_color, string->RenderContext, extra_scale);
+    bMulMatrix(&trans, &screen, &trans);
+
+    float fMaxWidth = static_cast<float>(string->MaxWidth);
+    if (fMaxWidth == 0.0f) {
+        fMaxWidth = 3.4028235e+38f;
+    }
+
+    float LineWidth = font->GetLineWidth(characters, 0, 0, false);
+
+    if (string->MaxWidth != 0 && LineWidth > fMaxWidth && !(string->Format & 0x10)) {
+        float fLineScale = fMaxWidth / LineWidth;
+        bMatrix4 scale;
+        bIdentity(&scale);
+        scale.v0.x = fLineScale;
+        bMulMatrix(&trans, &trans, &scale);
+    }
+
+    font->RenderString(fe_color, characters, string, &trans, cached, pkg_render_info);
 }
 
 void cFEngRender::AddToRenderList(FEObject *obj) {

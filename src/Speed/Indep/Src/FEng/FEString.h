@@ -61,4 +61,12 @@ inline void FEString::SetLabelHash(unsigned long Hash) {
     }
 }
 
+inline unsigned long FEString::GetLabelHash() {
+    return LabelHash;
+}
+
+inline short *FEString::GetString() {
+    return string.mpsString;
+}
+
 #endif
