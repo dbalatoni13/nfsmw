@@ -3,14 +3,19 @@
 #include "Speed/Indep/Src/Gameplay/GIcon.h"
 #include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
 #include "Speed/Indep/Src/Sim/Simulation.h"
+#include "Speed/Indep/Src/World/TrackInfo.hpp"
+#include "Speed/Indep/Src/World/RaceParameters.hpp"
 
 #include "Speed/Indep/Src/Interfaces/Simables/ICollisionBody.h"
 
 extern void FEngSetRotationZ(FEObject *obj, float rot);
 extern void FEngSetVisible(FEObject *obj);
 extern void FEngSetInvisible(FEObject *obj);
+extern void FEngSetTextureHash(FEImage *img, unsigned int hash);
 extern float MinimapPivotX;
+extern float MinimapPivotY;
 extern float MinimapDispX;
+extern RaceParameters TheRaceParameters;
 
 void GetVehicleVectors(bVector2 *pos, bVector2 *dir, ISimable *isimable) {
     UMath::Vector3 position = isimable->GetPosition();
@@ -111,6 +116,138 @@ Minimap::~Minimap() {
 }
 
 void Minimap::Update(IPlayer *player) {
+}
+
+void Minimap::SetupMinimap(IPlayer *player) {
+    const int num_chops = 8;
+    short chop_nums[4];
+    bVector2 map_pos;
+    bVector2 target_pos;
+    bVector2 target_dir;
+    char texture_name[128];
+    FEVector2 top_left;
+    FEVector2 bottom_right;
+
+    CurrentTrack = TrackInfo::GetTrackInfo(TheRaceParameters.TrackNumber);
+
+    ISimable *isimable = player->GetSimable();
+    GetVehicleVectors(&target_pos, &target_dir, isimable);
+    ConvertPos(target_pos, map_pos, CurrentTrack);
+
+    map_pos.x *= static_cast<float>(num_chops);
+    map_pos.y *= static_cast<float>(num_chops);
+
+    int XSection = static_cast<int>(map_pos.x);
+    int YSection = static_cast<int>(map_pos.y);
+    float XSection_decimal = map_pos.x - static_cast<float>(XSection);
+    float YSection_decimal = map_pos.y - static_cast<float>(YSection);
+
+    if (XSection_decimal >= 0.5f) {
+        if (YSection_decimal >= 0.5f) {
+            chop_nums[0] = YSection * 8 + XSection;
+            chop_nums[1] = YSection * 8 + XSection + 1;
+            chop_nums[2] = (YSection + 1) * 8 + XSection;
+            chop_nums[3] = (YSection + 1) * 8 + XSection + 1;
+            YSection_decimal -= 1.0f;
+            XSection_decimal -= 1.0f;
+        } else {
+            chop_nums[0] = (YSection - 1) * 8 + XSection;
+            chop_nums[1] = (YSection - 1) * 8 + XSection + 1;
+            chop_nums[2] = YSection * 8 + XSection;
+            chop_nums[3] = YSection * 8 + XSection + 1;
+            XSection_decimal -= 1.0f;
+        }
+    } else {
+        if (YSection_decimal >= 0.5f) {
+            chop_nums[0] = YSection * 8 + XSection - 1;
+            chop_nums[1] = YSection * 8 + XSection;
+            chop_nums[2] = (YSection + 1) * 8 + XSection - 1;
+            chop_nums[3] = (YSection + 1) * 8 + XSection;
+            YSection_decimal -= 1.0f;
+        } else {
+            chop_nums[0] = (YSection - 1) * 8 + XSection - 1;
+            chop_nums[1] = (YSection - 1) * 8 + XSection;
+            chop_nums[2] = YSection * 8 + XSection - 1;
+            chop_nums[3] = YSection * 8 + XSection;
+        }
+    }
+
+    gChoppedMiniMapManager->UncompressMaps(chop_nums, 4);
+
+    for (unsigned int i = 0; i < 4; i++) {
+        gChoppedMiniMapManager->GetTextureName(texture_name, 0x80, chop_nums[i]);
+        unsigned int hash = FEngHashString(texture_name);
+        FEngSetTextureHash(TrackmapArt[i], hash);
+    }
+
+    float SectionSize = mSpeedZoomScale;
+    float uvScale = SectionSize - 1.0f;
+
+    top_left.x = uvScale;
+    top_left.y = uvScale;
+    bottom_right.x = 1.0f;
+    bottom_right.y = 1.0f;
+    TrackmapArt[0]->SetTopLeft(top_left, false);
+    TrackmapArt[0]->SetBottomRight(bottom_right, false);
+
+    top_left.x = 0.0f;
+    top_left.y = uvScale;
+    bottom_right.x = 1.0f - uvScale;
+    bottom_right.y = 1.0f;
+    TrackmapArt[1]->SetTopLeft(top_left, false);
+    TrackmapArt[1]->SetBottomRight(bottom_right, false);
+
+    top_left.x = uvScale;
+    top_left.y = 0.0f;
+    bottom_right.x = 1.0f;
+    bottom_right.y = 1.0f - uvScale;
+    TrackmapArt[2]->SetTopLeft(top_left, false);
+    TrackmapArt[2]->SetBottomRight(bottom_right, false);
+
+    top_left.x = 0.0f;
+    top_left.y = 0.0f;
+    bottom_right.x = 1.0f - uvScale;
+    bottom_right.y = 1.0f - uvScale;
+    TrackmapArt[3]->SetTopLeft(top_left, false);
+    TrackmapArt[3]->SetBottomRight(bottom_right, false);
+
+    float xDisp = -(XSection_decimal * SectionSize);
+    float yDisp = -(YSection_decimal * SectionSize);
+
+    top_left.x = TrackmapArtUVs[0][0].x + xDisp;
+    top_left.y = TrackmapArtUVs[0][0].y + yDisp;
+    bottom_right.x = TrackmapArtUVs[0][1].x + xDisp;
+    bottom_right.y = TrackmapArtUVs[0][1].y + yDisp;
+    TrackmapArt[0]->SetUVs(0, top_left, bottom_right);
+
+    top_left.x = TrackmapArtUVs[1][0].x + xDisp;
+    top_left.y = TrackmapArtUVs[1][0].y + yDisp;
+    bottom_right.x = TrackmapArtUVs[1][1].x + xDisp;
+    bottom_right.y = TrackmapArtUVs[1][1].y + yDisp;
+    TrackmapArt[1]->SetUVs(0, top_left, bottom_right);
+
+    top_left.x = TrackmapArtUVs[2][0].x + xDisp;
+    top_left.y = TrackmapArtUVs[2][0].y + yDisp;
+    bottom_right.x = TrackmapArtUVs[2][1].x + xDisp;
+    bottom_right.y = TrackmapArtUVs[2][1].y + yDisp;
+    TrackmapArt[2]->SetUVs(0, top_left, bottom_right);
+
+    top_left.x = TrackmapArtUVs[3][0].x + xDisp;
+    top_left.y = TrackmapArtUVs[3][0].y + yDisp;
+    bottom_right.x = TrackmapArtUVs[3][1].x + xDisp;
+    bottom_right.y = TrackmapArtUVs[3][1].y + yDisp;
+    TrackmapArt[3]->SetUVs(0, top_left, bottom_right);
+
+    FEObjData *data = TrackmapLayout->GetObjData();
+    xDisp *= -128.0f;
+    yDisp *= -128.0f;
+    data->Pos.x = mMapDefaultPos.x - xDisp;
+    data->Pos.y = mMapDefaultPos.y - yDisp;
+    data->Pos.z = mMapDefaultPos.z;
+    data = TrackmapLayout->GetObjData();
+    data->Pivot.x = xDisp + MinimapPivotX;
+    data->Pivot.y = yDisp + MinimapPivotY;
+    data->Pivot.z = 0.0f;
 }
 
 void Minimap::ConvertPos(bVector2 &worldPos, bVector2 &minimapPos, TrackInfo *track) {
