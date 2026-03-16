@@ -3766,12 +3766,8 @@ void CustomizeNumbers::NotificationMessage(unsigned long msg, FEObject *pobj, un
         break;
     case 0x9120409e:
     case 0xb5971bf1: {
-        unsigned int hash = 0x1a88dc05;
-        bLeft ^= 1;
-        if (bLeft) {
-            hash = 0x2a08ba92;
-        }
-        FEngSetCurrentButton(GetPackageName(), hash);
+        bLeft = !bLeft;
+        FEngSetCurrentButton(GetPackageName(), bLeft ? 0x2a08ba92 : 0x1a88dc05);
         break;
     }
     case 0x72619778:
