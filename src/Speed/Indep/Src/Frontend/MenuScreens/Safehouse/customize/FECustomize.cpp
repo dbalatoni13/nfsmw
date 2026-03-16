@@ -490,16 +490,16 @@ void FEShoppingCartItem::DrawPartName() {
     switch (buyPart->CarSlotID) {
     case 0x4e: {
         if (GetCurrentLanguage() == 1) {
-            FEPrintf(GetTitleObject(), "%s : %s %s",
-                GetLocalizedString(GetCarPartCatHash(buyPart->CarSlotID)),
-                GetLocalizedString(0xb3100a3e),
-                GetLocalizedString(buyPart->ThePart->GetAppliedAttributeUParam(bStringHash("SPEECHCOLOUR"), 0)));
-        } else {
-            FEPrintf(GetTitleObject(), "%s: %s %s",
-                GetLocalizedString(GetCarPartCatHash(buyPart->CarSlotID)),
-                GetLocalizedString(0xb3100a3e),
-                GetLocalizedString(buyPart->ThePart->GetAppliedAttributeUParam(bStringHash("SPEECHCOLOUR"), 0)));
-        }
+                FEPrintf(GetTitleObject(), "%s : %s %s",
+                    GetLocalizedString(GetCarPartCatHash(buyPart->CarSlotID)),
+                    GetLocalizedString(0xb3100a3e),
+                    GetLocalizedString(buyPart->ThePart->GetAppliedAttributeUParam(bStringHash("SPEECHCOLOUR"), 0)));
+            } else {
+                FEPrintf(GetTitleObject(), "%s: %s %s",
+                    GetLocalizedString(GetCarPartCatHash(buyPart->CarSlotID)),
+                    GetLocalizedString(0xb3100a3e),
+                    GetLocalizedString(buyPart->ThePart->GetAppliedAttributeUParam(bStringHash("SPEECHCOLOUR"), 0)));
+            }
         return;
     }
 
@@ -508,24 +508,25 @@ void FEShoppingCartItem::DrawPartName() {
         unsigned int colorHash = 0x452b5481;
         if (paint_type == 0x2daab07) {
             colorHash = 0xb6763cde;
-        } else if (paint_type < 0x2daab08) {
-            if (paint_type == 0xda27) {
-                colorHash = 0xb3100a3e;
+        } else if (paint_type > 0x2daab07) {
+            if (paint_type != 0x3437a52) {
+                if (paint_type == 0x3797533) {
+                    colorHash = 0xb715070a;
+                }
             }
-        } else if (paint_type != 0x3437a52 && paint_type == 0x3797533) {
-            colorHash = 0xb715070a;
+        } else if (paint_type == 0xda27) {
+            colorHash = 0xb3100a3e;
         }
+        const char *fmt;
         if (GetCurrentLanguage() == 1) {
-            FEPrintf(GetTitleObject(), "%s : %s %s",
-                GetLocalizedString(GetCarPartCatHash(buyPart->CarSlotID)),
-                GetLocalizedString(colorHash),
-                GetLocalizedString(buyPart->ThePart->GetAppliedAttributeUParam(bStringHash("SPEECHCOLOUR"), 0)));
+            fmt = "%s : %s %s";
         } else {
-            FEPrintf(GetTitleObject(), "%s: %s %s",
-                GetLocalizedString(GetCarPartCatHash(buyPart->CarSlotID)),
-                GetLocalizedString(colorHash),
-                GetLocalizedString(buyPart->ThePart->GetAppliedAttributeUParam(bStringHash("SPEECHCOLOUR"), 0)));
+            fmt = "%s: %s %s";
         }
+        FEPrintf(GetTitleObject(), fmt,
+            GetLocalizedString(GetCarPartCatHash(buyPart->CarSlotID)),
+            GetLocalizedString(colorHash),
+            GetLocalizedString(buyPart->ThePart->GetAppliedAttributeUParam(bStringHash("SPEECHCOLOUR"), 0)));
         return;
     }
 
@@ -536,17 +537,11 @@ void FEShoppingCartItem::DrawPartName() {
         if (!rightItem) return;
         CarPart *left_part = leftItem->GetBuyingPart()->ThePart;
         CarPart *right_part = rightItem->GetBuyingPart()->ThePart;
-        if (!left_part || !right_part) {
-            if (GetCurrentLanguage() == 1) {
-                FEPrintf(GetTitleObject(), "%s : %s",
-                    GetLocalizedString(GetCarPartCatHash(buyPart->CarSlotID)),
-                    GetLocalizedString(0xbe434a38));
-            } else {
-                FEPrintf(GetTitleObject(), "%s: %s",
-                    GetLocalizedString(GetCarPartCatHash(buyPart->CarSlotID)),
-                    GetLocalizedString(0xbe434a38));
-            }
-            return;
+        if (!left_part) {
+            goto missing_parts;
+        }
+        if (!right_part) {
+            goto missing_parts;
         }
         const char *fmt;
         if (GetCurrentLanguage() == 1) {
@@ -559,6 +554,19 @@ void FEShoppingCartItem::DrawPartName() {
             left_part->GetName(),
             right_part->GetName());
         return;
+    missing_parts:
+        {
+            if (GetCurrentLanguage() == 1) {
+                FEPrintf(GetTitleObject(), "%s : %s",
+                    GetLocalizedString(GetCarPartCatHash(buyPart->CarSlotID)),
+                    GetLocalizedString(0xbe434a38));
+            } else {
+                FEPrintf(GetTitleObject(), "%s: %s",
+                    GetLocalizedString(GetCarPartCatHash(buyPart->CarSlotID)),
+                    GetLocalizedString(0xbe434a38));
+            }
+            return;
+        }
     }
 
     case 0x53: case 0x5b:
