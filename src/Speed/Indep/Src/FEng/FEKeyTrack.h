@@ -56,10 +56,6 @@ struct FEKeyTrack {
         , LongOffset(0) {
     }
 
-    static inline void* operator new[](unsigned int size) {
-        return FEngMalloc(size, nullptr, 0);
-    }
-
     FEKeyNode* GetKeyAt(long tTime);
     FEKeyNode* GetDeltaKeyAt(long tTime);
     void operator=(FEKeyTrack& Src);

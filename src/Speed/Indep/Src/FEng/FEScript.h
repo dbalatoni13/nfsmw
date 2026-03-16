@@ -29,7 +29,7 @@ class FEScript : public FEMinNode {
     inline FEScript* GetNext() const { return static_cast<FEScript*>(FEMinNode::GetNext()); }
     inline FEScript* GetPrev() const { return static_cast<FEScript*>(FEMinNode::GetPrev()); }
 
-    inline FEScript() {}
+    inline FEScript() { Init(); }
     static void* operator new(unsigned int);
     static void operator delete(void* pNode);
 

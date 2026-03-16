@@ -853,7 +853,6 @@ bool FEPackageReader::ReadScriptTags(FETag* pTag, unsigned long Length) {
         switch (tagID) {
             case 0x6e53: {
                 pScript = new FEScript();
-                pScript->Init();
                 pScript->CurTime = 0;
                 if (bLoadScriptNames) {
                     pScript->SetName(reinterpret_cast<const char*>(pTag->Data()));
@@ -867,7 +866,6 @@ bool FEPackageReader::ReadScriptTags(FETag* pTag, unsigned long Length) {
                     CurTrack = static_cast<unsigned long>(-1);
                     pScript = new FEScript();
                     RunningTrackOffset = 0;
-                    pScript->Init();
                     pScript->CurTime = 0;
                 }
                 pScript->ID = pTag->Getu32(0);
