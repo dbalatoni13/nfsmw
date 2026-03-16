@@ -467,8 +467,7 @@ void UIQRCarSelect::NotificationMessage(unsigned long msg, FEObject *pobj, unsig
         FECarRecord *car = GetSelectedCarRecord();
         FEPlayerCarDB *stable = FEDatabase->GetPlayerCarStable(0);
         unsigned int cost = car->GetCost();
-        FEDatabase->GetCareerSettings()->GetCash();
-        FEDatabase->GetCareerSettings()->SpendCash(-(static_cast<int>(cost >> 1)));
+        FEDatabase->GetCareerSettings()->AddCash(static_cast<int>(cost >> 1));
         FEPlayerCarDB *stable2 = FEDatabase->GetPlayerCarStable(iPlayerNum);
         stable2->DeleteCareerCar(pSelectedCar->mHandle, true);
         unsigned int old_handle = pSelectedCar->mHandle;
@@ -486,30 +485,32 @@ void UIQRCarSelect::NotificationMessage(unsigned long msg, FEObject *pobj, unsig
         if (FEDatabase->GetCareerSettings()->GetCurrentBin() > 15) return;
         if (!pSelectedCar) return;
         FECarRecord *car = GetSelectedCarRecord();
+        bool showImpoundedDialog = false;
         if (car->CareerHandle != 0xff) {
             FEPlayerCarDB *stable = FEDatabase->GetPlayerCarStable(iPlayerNum);
             FECareerRecord *career = stable->GetCareerRecordByHandle(car->CareerHandle);
-            if (career->TheImpoundData.IsImpounded()) {
-                DialogInterface::ShowOneButton(GetPackageName(), "", static_cast<eDialogTitle>(1),
-                    0x417b2601, 0x34dc1bcf, 0x80e4f27c);
-                return;
-            }
+            showImpoundedDialog = career->TheImpoundData.IsImpounded();
         }
-        FEPlayerCarDB *stable2 = FEDatabase->GetPlayerCarStable(iPlayerNum);
-        if (stable2->GetNumAvailableCareerCars() < 2) {
+        if (showImpoundedDialog) {
             DialogInterface::ShowOneButton(GetPackageName(), "", static_cast<eDialogTitle>(1),
-                0x417b2601, 0x34dc1bcf, 0x9a772bd6);
+                0x417b2601, 0x34dc1bcf, 0x80e4f27c);
             return;
         }
-        unsigned int cost = car->GetCost();
-        char cost_str[16];
-        bSNPrintf(cost_str, 0x10, "%d", cost >> 1);
-        const char *fmt = GetLocalizedString(0xb4a40135);
-        char buf[512];
-        bSNPrintf(buf, 0x200, fmt, cost_str);
-        DialogInterface::ShowTwoButtons(GetPackageName(), "", static_cast<eDialogTitle>(1),
-            0x70e01038, 0x417b25e4, 0xd05fc3a3, 0x34dc1bcf, 0x34dc1bcf,
-            static_cast<eDialogFirstButtons>(1), buf);
+        FEPlayerCarDB *stable2 = FEDatabase->GetPlayerCarStable(iPlayerNum);
+        if (stable2->GetNumAvailableCareerCars() > 1) {
+            unsigned int cost = car->GetCost();
+            char cost_str[16];
+            bSNPrintf(cost_str, 0x10, "%d", cost >> 1);
+            const char *fmt = GetLocalizedString(0xb4a40135);
+            char buf[512];
+            bSNPrintf(buf, 0x200, fmt, cost_str);
+            DialogInterface::ShowTwoButtons(GetPackageName(), "", static_cast<eDialogTitle>(1),
+                0x70e01038, 0x417b25e4, 0xd05fc3a3, 0x34dc1bcf, 0x34dc1bcf,
+                static_cast<eDialogFirstButtons>(1), buf);
+            return;
+        }
+        DialogInterface::ShowOneButton(GetPackageName(), "", static_cast<eDialogTitle>(1),
+            0x417b2601, 0x34dc1bcf, 0x9a772bd6);
         return;
     }
     case 0xc519bfc3: {
@@ -678,17 +679,16 @@ void UIQRCarSelect::NotificationMessage(unsigned long msg, FEObject *pobj, unsig
         if ((flags & 1) != 0) {
             if ((flags & 0x8000) != 0) {
                 if (MemoryCard::GetInstance()->m_bListingOldSaveFiles) return;
-                GetSelectedCarRecord();
                 unsigned int cost = GetSelectedCarRecord()->GetCost();
-                if (FEDatabase->GetCareerSettings()->GetCash() < static_cast<int>(cost)) {
+                if (cost > static_cast<unsigned int>(FEDatabase->GetCareerSettings()->GetCash())) {
                     DialogInterface::ShowOneButton(GetPackageName(), "", static_cast<eDialogTitle>(1),
-                        0x417b2601, 0x34dc1bcf, 0x80e4f27c);
+                        0x417b2601, 0x34dc1bcf, 0x40fa955d);
                     return;
                 }
                 FEPlayerCarDB *stable = FEDatabase->GetPlayerCarStable(iPlayerNum);
                 if (stable->GetNumPurchasedCars() > 9) {
                     DialogInterface::ShowOneButton(GetPackageName(), "", static_cast<eDialogTitle>(1),
-                        0x417b2601, 0x34dc1bcf, 0x9a772bd6);
+                        0x417b2601, 0x34dc1bcf, 0x41030a1b);
                     return;
                 }
                 if (FEDatabase->GetCareerSettings()->GetCurrentBin() > 15) {
@@ -1221,75 +1221,76 @@ void UIQRCarSelect::RefreshHeader() {
         TheHeatMeter.SetVisibility(false);
     }
 
-    if (!car->IsCareer()) {
-        TheHeatMeter.SetVisibility(false);
-        return;
-    }
-
-    FEngSetInvisible(GetPackageName(), 0x39dc21f9);
-    FEngSetInvisible(GetPackageName(), 0xe998fe99);
-
-    FECareerRecord *career = stable->GetCareerRecordByHandle(car->CareerHandle);
-
-    int num_markers = TheFEMarkerManager.GetNumMarkers(static_cast<FEMarkerManager::ePossibleMarker>(0x14), 0);
-    if (num_markers > 0 || (CheatCanAddImpoundBox && career->TheImpoundData.ImpoundedState == 0)) {
-        num_markers = TheFEMarkerManager.GetNumMarkers(static_cast<FEMarkerManager::ePossibleMarker>(0x14), 0);
-        FEngSetVisible(GetPackageName(), 0x39dc21f9);
-        FEPrintf(GetPackageName(), 0x5b875870, "%2d", num_markers);
-        FEPrintf(GetPackageName(), 0xea8aecd9, "%2d", num_markers);
-    } else {
+    if (car->IsCareer()) {
         FEngSetInvisible(GetPackageName(), 0x39dc21f9);
-    }
+        FEngSetInvisible(GetPackageName(), 0xe998fe99);
 
-    if (career->TheImpoundData.ImpoundedState == FEImpoundData::IMPOUND_RELEASED) {
-        FEngSetLanguageHash(GetPackageName(), 0x72e7ea88, 0x9db4df7d);
-        FEngSetLanguageHash(GetPackageName(), 0x9d974df3, 0x073b79e0);
-        unsigned int cost = car->GetReleaseFromImpoundCost();
-        FEPrintf(GetPackageName(), 0x322b18f9, "%$0.0f", static_cast<float>(cost));
-        FEPrintf(GetPackageName(), 0x7044a5a4, "%$d", FEDatabase->GetCareerSettings()->GetCash());
-        FEngSetInvisible(GetPackageName(), 0x0e9ed0a2);
-    } else if (career->TheImpoundData.ImpoundedState == FEImpoundData::IMPOUND_REASON_NONE) {
-        FEngSetLanguageHash(GetPackageName(), 0x72e7ea88, 0x17574b0e);
-        FEngSetLanguageHash(GetPackageName(), 0x9d974df3, 0x915f4d26);
-        if (!FEDatabase->IsOnlineMode() && !FEDatabase->IsLANMode()) {
-            FEngSetVisible(GetPackageName(), 0x0e9ed0a2);
-        }
-        FECareerRecord *record = stable->GetCareerRecordByHandle(car->CareerHandle);
-        if (record) {
-            FEPrintf(GetPackageName(), 0x322b18f9, "%$d", record->GetBounty());
-            FEPrintf(GetPackageName(), 0x7044a5a4, "%$d", record->GetInfractions(true).GetFineValue());
-        }
-    } else {
-        FEngSetLanguageHash(GetPackageName(), 0x72e7ea88, 0x9db4df7d);
-        FEngSetLanguageHash(GetPackageName(), 0x9d974df3, 0x073b79e0);
-        FEngSetLanguageHash(GetPackageName(), 0x322b18f9, 0xaefedad9);
-        FEPrintf(GetPackageName(), 0x7044a5a4, "%$d", FEDatabase->GetCareerSettings()->GetCash());
-        FEngSetInvisible(GetPackageName(), 0x0e9ed0a2);
+        FECareerRecord *career = stable->GetCareerRecordByHandle(car->CareerHandle);
 
-        num_markers = TheFEMarkerManager.GetNumMarkers(static_cast<FEMarkerManager::ePossibleMarker>(0x15), 0);
-        if (num_markers >= 1 || CheatReleaseFromImpoundMarker) {
-            num_markers = TheFEMarkerManager.GetNumMarkers(static_cast<FEMarkerManager::ePossibleMarker>(0x15), 0);
-            FEngSetVisible(GetPackageName(), 0xe998fe99);
-            FEPrintf(GetPackageName(), 0xcc59b910, "%2d", num_markers);
-            FEPrintf(GetPackageName(), 0xb8f9938a, "%2d", num_markers);
+        int num_markers = TheFEMarkerManager.GetNumMarkers(static_cast<FEMarkerManager::ePossibleMarker>(0x14), 0);
+        bool hasMarkers = num_markers > 0;
+        if (hasMarkers || (CheatCanAddImpoundBox && career->TheImpoundData.ImpoundedState == 0)) {
+            num_markers = TheFEMarkerManager.GetNumMarkers(static_cast<FEMarkerManager::ePossibleMarker>(0x14), 0);
+            FEngSetVisible(GetPackageName(), 0x39dc21f9);
+            FEPrintf(GetPackageName(), 0x5b875870, "%2d", num_markers);
+            FEPrintf(GetPackageName(), 0xea8aecd9, "%2d", num_markers);
+        } else {
             FEngSetInvisible(GetPackageName(), 0x39dc21f9);
         }
-    }
 
-    {
-        FECareerRecord *record = stable->GetCareerRecordByHandle(car->CareerHandle);
-        if (record) {
+        if (career->TheImpoundData.ImpoundedState == FEImpoundData::IMPOUND_RELEASED) {
+            FEngSetLanguageHash(GetPackageName(), 0x72e7ea88, 0x9db4df7d);
+            FEngSetLanguageHash(GetPackageName(), 0x9d974df3, 0x073b79e0);
+            unsigned int cost = car->GetReleaseFromImpoundCost();
+            FEPrintf(GetPackageName(), 0x322b18f9, "%$0.0f", static_cast<float>(cost));
+            FEPrintf(GetPackageName(), 0x7044a5a4, "%$d", FEDatabase->GetCareerSettings()->GetCash());
+            FEngSetInvisible(GetPackageName(), 0x0e9ed0a2);
+        } else if (career->TheImpoundData.ImpoundedState == FEImpoundData::IMPOUND_REASON_NONE) {
+            FEngSetLanguageHash(GetPackageName(), 0x72e7ea88, 0x17574b0e);
+            FEngSetLanguageHash(GetPackageName(), 0x9d974df3, 0x915f4d26);
             if (!FEDatabase->IsOnlineMode() && !FEDatabase->IsLANMode()) {
-                FEngSetVisible(GetPackageName(), 0x18a4384f);
+                FEngSetVisible(GetPackageName(), 0x0e9ed0a2);
             }
-            FEPrintf(GetPackageName(), 0xd6d32016, "%$d", record->GetBounty());
-            FEPrintf(GetPackageName(), 0x79d6e45c, "%$d", record->GetInfractions(true).GetFineValue());
-        }
-    }
+            FECareerRecord *record = stable->GetCareerRecordByHandle(car->CareerHandle);
+            if (record) {
+                FEPrintf(GetPackageName(), 0x322b18f9, "%$d", record->GetBounty());
+                FEPrintf(GetPackageName(), 0x7044a5a4, "%$d", record->GetInfractions(true).GetFineValue());
+            }
+        } else {
+            FEngSetLanguageHash(GetPackageName(), 0x72e7ea88, 0x9db4df7d);
+            FEngSetLanguageHash(GetPackageName(), 0x9d974df3, 0x073b79e0);
+            FEngSetLanguageHash(GetPackageName(), 0x322b18f9, 0xaefedad9);
+            FEPrintf(GetPackageName(), 0x7044a5a4, "%$d", FEDatabase->GetCareerSettings()->GetCash());
+            FEngSetInvisible(GetPackageName(), 0x0e9ed0a2);
 
-    TheHeatMeter.SetCurrent(career->GetVehicleHeat());
-    TheHeatMeter.SetPreview(career->GetVehicleHeat());
-    TheHeatMeter.Draw();
+            num_markers = TheFEMarkerManager.GetNumMarkers(static_cast<FEMarkerManager::ePossibleMarker>(0x15), 0);
+            bool hasReleaseMarkers = num_markers > 0;
+            if (hasReleaseMarkers || CheatReleaseFromImpoundMarker) {
+                num_markers = TheFEMarkerManager.GetNumMarkers(static_cast<FEMarkerManager::ePossibleMarker>(0x15), 0);
+                FEngSetVisible(GetPackageName(), 0xe998fe99);
+                FEPrintf(GetPackageName(), 0xcc59b910, "%2d", num_markers);
+                FEPrintf(GetPackageName(), 0xb8f9938a, "%2d", num_markers);
+                FEngSetInvisible(GetPackageName(), 0x39dc21f9);
+            }
+        }
+
+        {
+            FECareerRecord *record = stable->GetCareerRecordByHandle(car->CareerHandle);
+            if (record) {
+                if (!FEDatabase->IsOnlineMode() && !FEDatabase->IsLANMode()) {
+                    FEngSetVisible(GetPackageName(), 0x18a4384f);
+                }
+                FEPrintf(GetPackageName(), 0xd6d32016, "%$d", record->GetBounty());
+                FEPrintf(GetPackageName(), 0x79d6e45c, "%$d", record->GetInfractions(true).GetFineValue());
+            }
+        }
+
+        TheHeatMeter.SetCurrent(career->GetVehicleHeat());
+        TheHeatMeter.SetPreview(career->GetVehicleHeat());
+        TheHeatMeter.Draw();
+    } else {
+        TheHeatMeter.SetVisibility(false);
+    }
 }
 
 void UIQRCarSelect::ChooseTransmission() {
