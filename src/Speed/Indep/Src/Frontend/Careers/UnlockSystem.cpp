@@ -1236,18 +1236,32 @@ void FEMarkerManager::AwardMarker(Attrib::Gen::gameplay &inst, bool immediate_re
         int param = 0;
         if (immediate_reward) {
             if (marker == MARKER_PINK_SLIP) {
-                unsigned int hash = FEngHashString("BL%d", FEDatabase->GetCareerSettings()->GetCurrentBin());
-                FEDatabase->GetPlayerCarStable(0)->AwardRivalCar(hash);
-            } else if (marker == MARKER_CASH) {
-                FEDatabase->GetCareerSettings()->AddCash(static_cast<int>(inst.CashReward(0)));
-            } else {
-                AddMarkerToInventory(marker, 0);
+                goto award_pink_slip;
             }
+            if (marker != MARKER_CASH) {
+                goto add_inventory;
+            }
+            param = static_cast<int>(inst.CashReward(0));
+            FEDatabase->GetCareerSettings()->CurrentCash = FEDatabase->GetCareerSettings()->CurrentCash + param;
+            goto award_done;
+
+        award_pink_slip:
+            param = FEngHashString("BL%d", FEDatabase->GetCareerSettings()->GetCurrentBin());
+            FEDatabase->GetPlayerCarStable(0)->AwardRivalCar(param);
+            goto award_done;
+
+        add_inventory:
+            AddMarkerToInventory(marker, 0);
+
+        award_done:
+            ;
         } else {
-            if (marker == MARKER_PINK_SLIP) {
+            if (marker != MARKER_PINK_SLIP) {
+                if (marker == MARKER_CASH) {
+                    param = static_cast<int>(inst.CashReward(0));
+                }
+            } else {
                 param = FEngHashString("BL%d", FEDatabase->GetCareerSettings()->GetCurrentBin(), 0);
-            } else if (marker == MARKER_CASH) {
-                param = static_cast<int>(inst.CashReward(0));
             }
             AddMarkerForLaterSelection(marker, param);
         }
