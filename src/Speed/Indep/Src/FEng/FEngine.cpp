@@ -664,8 +664,7 @@ void FEngine::Update(const long tDeltaTicks, unsigned int lock) {
             Mouse.Update(Info, tDeltaTicks);
         }
         for (unsigned char PadIndex = 0; PadIndex < NumJoyPads; PadIndex++) {
-            unsigned long mask = pInterface->GetJoyPadMask(PadIndex);
-            pJoyPad[PadIndex].Update(mask, tDeltaTicks);
+            pJoyPad[PadIndex].Update(pInterface->GetJoyPadMask(PadIndex), tDeltaTicks);
         }
         for (pPackage = PackList.GetFirstPackage(); pPackage; pPackage = pPackage->GetNext()) {
             if (pPackage->IsInputEnabled() &&
@@ -700,6 +699,7 @@ void FEngine::Update(const long tDeltaTicks, unsigned int lock) {
                 FEPackage::uHoldDirtyFlags = 0;
             }
             pPackage = PackList.GetFirstPackage();
+            iIterationTicks = 0;
             while (pPackage) {
                 FEPackage* pCachedNext = pPackage->GetNext();
                 if (!bErrorScreenMode || pPackage->IsErrorScreen()) {
@@ -715,7 +715,7 @@ void FEngine::Update(const long tDeltaTicks, unsigned int lock) {
                 ProcessMessageQueue();
             }
             bRenderedRecently = false;
-            iTicksRemaining = 0;
+            iTicksRemaining = iIterationTicks;
         } while (iTicksRemaining);
     } else {
         for (pPackage = PackList.GetFirstPackage(); pPackage; pPackage = pPackage->GetNext()) {
@@ -861,14 +861,12 @@ void FEngine::ProcessPadsForPackage(FEPackage* pPackage) {
                 if ((Held & Mask) != 0) {
                     unsigned long PadMask = FromPadPressed[i];
                     unsigned long MsgID = PadButtonHeldHash[i - 7];
-                    if (pCurButton == nullptr || pCurButton->FindResponse(MsgID) == nullptr) {
-                        if (pPackage->FindResponse(MsgID) != nullptr) {
-                            QueueMessage(MsgID, nullptr, pPackage, reinterpret_cast<FEObject*>(0xFFFFFFFD), PadMask);
-                            QueueMessage(MsgID, nullptr, pPackage, reinterpret_cast<FEObject*>(0xFFFFFFFB), PadMask);
-                        }
-                    } else {
+                    if (pCurButton && pCurButton->FindResponse(MsgID) != nullptr) {
                         QueueMessage(MsgID, nullptr, pPackage, pCurButton, PadMask);
                         QueueMessage(MsgID, pCurButton, pPackage, reinterpret_cast<FEObject*>(0xFFFFFFFB), PadMask);
+                    } else if (pPackage->FindResponse(MsgID) != nullptr) {
+                        QueueMessage(MsgID, nullptr, pPackage, reinterpret_cast<FEObject*>(0xFFFFFFFD), PadMask);
+                        QueueMessage(MsgID, nullptr, pPackage, reinterpret_cast<FEObject*>(0xFFFFFFFB), PadMask);
                     }
                 }
                 goto check_released;
@@ -896,14 +894,12 @@ void FEngine::ProcessPadsForPackage(FEPackage* pPackage) {
                 unsigned long PadMask = FromPadPressed[i];
                 unsigned long MsgID = PadButtonHash[i];
                 HeldButtons[i] = pCurButton;
-                if (pCurButton == nullptr || pCurButton->FindResponse(MsgID) == nullptr) {
-                    if (pPackage->FindResponse(MsgID) != nullptr) {
-                        QueueMessage(MsgID, nullptr, pPackage, reinterpret_cast<FEObject*>(0xFFFFFFFD), PadMask);
-                        QueueMessage(MsgID, nullptr, pPackage, reinterpret_cast<FEObject*>(0xFFFFFFFB), PadMask);
-                    }
-                } else {
+                if (pCurButton && pCurButton->FindResponse(MsgID) != nullptr) {
                     QueueMessage(MsgID, nullptr, pPackage, pCurButton, PadMask);
                     QueueMessage(MsgID, pCurButton, pPackage, reinterpret_cast<FEObject*>(0xFFFFFFFB), PadMask);
+                } else if (pPackage->FindResponse(MsgID) != nullptr) {
+                    QueueMessage(MsgID, nullptr, pPackage, reinterpret_cast<FEObject*>(0xFFFFFFFD), PadMask);
+                    QueueMessage(MsgID, nullptr, pPackage, reinterpret_cast<FEObject*>(0xFFFFFFFB), PadMask);
                 }
             }
 
@@ -1037,28 +1033,22 @@ void FEngine::ProcessPadsForPackage(FEPackage* pPackage) {
         }
 
     fire_direction:
-        if (pCurButton == nullptr) {
-            unsigned long MsgID = FEDirection_Message[ImpulseDir[i].directionIndex];
-            if (pPackage->FindResponse(MsgID) != nullptr) {
-                QueueMessage(MsgID, nullptr, pPackage, reinterpret_cast<FEObject*>(0xFFFFFFFD), PadMask);
-                QueueMessage(MsgID, nullptr, pPackage, reinterpret_cast<FEObject*>(0xFFFFFFFB), PadMask);
-            }
-        } else {
+        if (pCurButton) {
             FEObject* pNewButton = nullptr;
             unsigned long MsgID = FEDirection_Message[ImpulseDir[i].directionIndex];
             FEMessageResponse* pResponse = pCurButton->FindResponse(MsgID);
-            if (pResponse == nullptr) {
-                if ((pCurButton->Flags & 0x80000) == 0) {
-                    pNewButton = pPackage->GetButtonMap()->GetButtonFrom(pCurButton, ImpulseDir[i].directionIndex, pInterface, WrapMode);
-                }
-                QueueMessage(MsgID, nullptr, pPackage, reinterpret_cast<FEObject*>(0xFFFFFFFD), PadMask);
-            } else {
+            if (pResponse) {
                 QueueMessage(MsgID, nullptr, pPackage, pCurButton, PadMask);
                 if ((pCurButton->Flags & 0x80000) == 0) {
                     if (pResponse->FindResponse(0x104) == -1) {
                         pNewButton = pPackage->GetButtonMap()->GetButtonFrom(pCurButton, ImpulseDir[i].directionIndex, pInterface, WrapMode);
                     }
                 }
+            } else {
+                if ((pCurButton->Flags & 0x80000) == 0) {
+                    pNewButton = pPackage->GetButtonMap()->GetButtonFrom(pCurButton, ImpulseDir[i].directionIndex, pInterface, WrapMode);
+                }
+                QueueMessage(MsgID, nullptr, pPackage, reinterpret_cast<FEObject*>(0xFFFFFFFD), PadMask);
             }
             QueueMessage(MsgID, pCurButton, pPackage, reinterpret_cast<FEObject*>(0xFFFFFFFB), PadMask);
             if (pNewButton != nullptr) {
@@ -1079,6 +1069,12 @@ void FEngine::ProcessPadsForPackage(FEPackage* pPackage) {
                     }
                 }
                 pPackage->SetCurrentButton(pNewButton, true);
+            }
+        } else {
+            unsigned long MsgID = FEDirection_Message[ImpulseDir[i].directionIndex];
+            if (pPackage->FindResponse(MsgID) != nullptr) {
+                QueueMessage(MsgID, nullptr, pPackage, reinterpret_cast<FEObject*>(0xFFFFFFFD), PadMask);
+                QueueMessage(MsgID, nullptr, pPackage, reinterpret_cast<FEObject*>(0xFFFFFFFB), PadMask);
             }
         }
     }

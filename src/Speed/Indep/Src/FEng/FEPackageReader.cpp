@@ -898,7 +898,7 @@ bool FEPackageReader::ReadScriptTags(FETag* pTag, unsigned long Length) {
                 pTrack->InterpAction = pTag->Data()[3];
                 pTrack->Length = static_cast<int>(pTag->Getu32(1));
                 pTrack->LongOffset = RunningTrackOffset;
-                RunningTrackOffset += pTrack->ParamSize >> 2;
+                RunningTrackOffset += paramSize >> 2;
                 break;
             }
             case 0x6f54: {
@@ -912,7 +912,7 @@ bool FEPackageReader::ReadScriptTags(FETag* pTag, unsigned long Length) {
                     if (!pTrack) {
                         unsigned long trackCount = pScript->TrackCount;
                         FEKeyTrack* pNewArray = new FEKeyTrack[trackCount + 1];
-                        FETypeNode* pTypeNode = pEngine->GetTypeLib().FindType(pObj->NameHash);
+                        FETypeNode* pTypeNode = pEngine->GetTypeLib().FindType(pObj->Type);
                         FEFieldNode* pField = pTypeNode->GetField(static_cast<int>(Index));
                         unsigned long SrcIndex = 0;
                         FEKeyTrack* pSrcTrack = pScript->pTracks;
@@ -925,7 +925,7 @@ bool FEPackageReader::ReadScriptTags(FETag* pTag, unsigned long Length) {
                                         if (fieldOffset < 0) {
                                             fieldOffset += 3;
                                         }
-                                        if ((fieldOffset >> 2) <= pSrcTrack[SrcIndex].LongOffset) {
+                                        if (pSrcTrack[SrcIndex].LongOffset >= (fieldOffset >> 2)) {
                                             goto insert_track;
                                         }
                                     }
@@ -934,10 +934,10 @@ bool FEPackageReader::ReadScriptTags(FETag* pTag, unsigned long Length) {
                                 } else {
                                 insert_track:
                                     pNewArray[DestIndex].ParamType = static_cast<unsigned char>(pField->GetType());
+                                    pNewArray[DestIndex].InterpType = 1;
+                                    pNewArray[DestIndex].InterpAction = 0;
+                                    pNewArray[DestIndex].ParamSize = static_cast<unsigned char>(pField->GetSize());
                                     pTrack = &pNewArray[DestIndex];
-                                    pTrack->InterpType = 1;
-                                    pTrack->ParamSize = static_cast<unsigned char>(pField->GetSize());
-                                    pTrack->InterpAction = 0;
                                     pTrack->Length = pScript->Length;
                                     pTrack->LongOffset = static_cast<int>(pField->GetOffset() >> 2);
                                     pField = nullptr;
@@ -1038,7 +1038,7 @@ bool FEPackageReader::ReadScriptTags(FETag* pTag, unsigned long Length) {
                 break;
             }
         }
-        pTag = reinterpret_cast<FETag*>(reinterpret_cast<unsigned char*>(pTag) + pTag->GetSize() + 4);
+        pTag = reinterpret_cast<FETag*>(reinterpret_cast<unsigned char*>(pTag) + (pTag->GetSize() + 4));
     }
 
     if (!bIsReference) {

@@ -55,7 +55,8 @@ void FELerpQuaternion(FEQuaternion& q1, FEQuaternion& q2, float t, FEQuaternion*
         q = r;
     }
 
-    *pDest = (*pOffset * q);
+    FEQuaternion qRet = *pOffset * q;
+    *pDest = qRet;
 }
 
 void FELerpColor(FEColor& c1, FEColor& c2, float t, FEColor* pOffset, FEColor* pDest) {
@@ -141,7 +142,7 @@ void FEInterpLinear(FEKeyTrack* pTrack, long tTime, void* pOutDataPtr) {
         }
     }
 
-write_base:
+    write_base:
     if (!pKey) {
         switch (pTrack->ParamType) {
             case 1:
@@ -170,7 +171,7 @@ write_base:
             }
             case 5:
             case 6: {
-                long* pSrc = reinterpret_cast<long*>(pBaseKey->GetKeyData());
+                long* pSrc = reinterpret_cast<long*>(pBaseValue);
                 long val0 = pSrc[0];
                 long val1 = pSrc[1];
                 long val2 = pSrc[2];
@@ -186,47 +187,42 @@ write_base:
     }
 
     if (t == 0.0f || t == 1.0f) {
-        FEKeyNode* pValKey = pKey;
+        void* pValPtr = pKey->GetKeyData();
         if (t == 0.0f) {
-            pValKey = pPrevKey;
+            pValPtr = pPrevKey->GetKeyData();
         }
         switch (pTrack->ParamType) {
             case 1: {
-                long* pValLong = pValKey->Val;
-                *reinterpret_cast<long*>(pOutDataPtr) = *reinterpret_cast<long*>(pBaseValue) + *pValLong;
+                *reinterpret_cast<long*>(pOutDataPtr) = *reinterpret_cast<long*>(pBaseValue) + *reinterpret_cast<long*>(pValPtr);
                 break;
             }
             case 2: {
-                float* pValFloat = reinterpret_cast<float*>(static_cast<unsigned char*>(pValKey->Val));
-                *reinterpret_cast<float*>(pOutDataPtr) = *reinterpret_cast<float*>(pBaseValue) + *pValFloat;
+                *reinterpret_cast<float*>(pOutDataPtr) = *reinterpret_cast<float*>(pBaseValue) + *reinterpret_cast<float*>(pValPtr);
                 break;
             }
             case 3: {
-                float* pValFloat = reinterpret_cast<float*>(static_cast<unsigned char*>(pValKey->Val));
-                reinterpret_cast<float*>(pOutDataPtr)[0] = reinterpret_cast<float*>(pBaseValue)[0] + pValFloat[0];
-                reinterpret_cast<float*>(pOutDataPtr)[1] = reinterpret_cast<float*>(pBaseValue)[1] + pValFloat[1];
+                reinterpret_cast<float*>(pOutDataPtr)[0] = reinterpret_cast<float*>(pBaseValue)[0] + reinterpret_cast<float*>(pValPtr)[0];
+                reinterpret_cast<float*>(pOutDataPtr)[1] = reinterpret_cast<float*>(pBaseValue)[1] + reinterpret_cast<float*>(pValPtr)[1];
                 break;
             }
             case 4: {
-                float* pValFloat = reinterpret_cast<float*>(static_cast<unsigned char*>(pValKey->Val));
-                reinterpret_cast<float*>(pOutDataPtr)[0] = reinterpret_cast<float*>(pBaseValue)[0] + pValFloat[0];
-                reinterpret_cast<float*>(pOutDataPtr)[1] = reinterpret_cast<float*>(pBaseValue)[1] + pValFloat[1];
-                reinterpret_cast<float*>(pOutDataPtr)[2] = reinterpret_cast<float*>(pBaseValue)[2] + pValFloat[2];
+                reinterpret_cast<float*>(pOutDataPtr)[0] = reinterpret_cast<float*>(pBaseValue)[0] + reinterpret_cast<float*>(pValPtr)[0];
+                reinterpret_cast<float*>(pOutDataPtr)[1] = reinterpret_cast<float*>(pBaseValue)[1] + reinterpret_cast<float*>(pValPtr)[1];
+                reinterpret_cast<float*>(pOutDataPtr)[2] = reinterpret_cast<float*>(pBaseValue)[2] + reinterpret_cast<float*>(pValPtr)[2];
                 break;
             }
             case 5: {
                 FEQuaternion* pBaseQuat = reinterpret_cast<FEQuaternion*>(pBaseValue);
-                FEQuaternion* pKeyQuat = pValKey->Val;
+                FEQuaternion* pKeyQuat = reinterpret_cast<FEQuaternion*>(pValPtr);
                 FEQuaternion* pDestQuat = reinterpret_cast<FEQuaternion*>(pOutDataPtr);
                 *pDestQuat = *pBaseQuat * *pKeyQuat;
                 break;
             }
             case 6: {
-                long* pValLong = pValKey->Val;
-                reinterpret_cast<long*>(pOutDataPtr)[2] = reinterpret_cast<long*>(pBaseValue)[2] + pValLong[2];
-                reinterpret_cast<long*>(pOutDataPtr)[1] = reinterpret_cast<long*>(pBaseValue)[1] + pValLong[1];
-                reinterpret_cast<long*>(pOutDataPtr)[0] = reinterpret_cast<long*>(pBaseValue)[0] + pValLong[0];
-                reinterpret_cast<long*>(pOutDataPtr)[3] = reinterpret_cast<long*>(pBaseValue)[3] + pValLong[3];
+                reinterpret_cast<long*>(pOutDataPtr)[2] = reinterpret_cast<long*>(pBaseValue)[2] + reinterpret_cast<long*>(pValPtr)[2];
+                reinterpret_cast<long*>(pOutDataPtr)[1] = reinterpret_cast<long*>(pBaseValue)[1] + reinterpret_cast<long*>(pValPtr)[1];
+                reinterpret_cast<long*>(pOutDataPtr)[0] = reinterpret_cast<long*>(pBaseValue)[0] + reinterpret_cast<long*>(pValPtr)[0];
+                reinterpret_cast<long*>(pOutDataPtr)[3] = reinterpret_cast<long*>(pBaseValue)[3] + reinterpret_cast<long*>(pValPtr)[3];
                 break;
             }
         }
