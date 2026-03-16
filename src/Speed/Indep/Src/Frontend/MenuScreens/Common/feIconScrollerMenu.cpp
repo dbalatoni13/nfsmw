@@ -74,7 +74,6 @@ void IconOption::StartScale(float scale_to, float duration) {
     fScaleStartSecs = RealTimer.GetSeconds();
 }
 
-unsigned int IconOption::GetName() { return NameHash; }
 unsigned int IconOption::GetDesc() { return DescHash; }
 float IconOption::GetScaleToPcnt() { return fScaleToPcnt; }
 float IconOption::GetScaleStartSecs() { return fScaleStartSecs; }
@@ -83,11 +82,8 @@ float IconOption::GetScaleAtStart() { return fScaleAtStart; }
 void IconOption::SetScaleAtStart(float scale) { fScaleAtStart = scale; }
 bool IconOption::IsAnimComplete() { return bAnimComplete; }
 void IconOption::SetAnimComplete(bool b) { bAnimComplete = b; }
-bool IconOption::ReactsImmediately() { return bReactImmediately; }
 bool IconOption::IsLocked() { return Locked; }
 void IconOption::SetLocked(bool b) { Locked = b; }
-bool IconOption::IsTutorialAvailable() { return bIsTutorialAvailable; }
-const char *IconOption::GetTutorialMovieName() { return pTutorialMovieName; }
 void IconOption::SetTutorialMovieName(const char *name) { pTutorialMovieName = name; }
 
 // ============================================================
@@ -597,117 +593,159 @@ IconScrollerMenu::IconScrollerMenu(ScreenConstructorData *sd)
 }
 
 void IconScrollerMenu::NotificationMessage(unsigned long msg, FEObject *pobj, unsigned long param1, unsigned long param2) {
-    switch (msg) {
-    case 0x911C0A4B:
-        if (!Options.IsHorizontal() || !Options.ReactsToInput()) {
-            return;
-        }
-        if (Options.bWrap) {
-            Options.ScrollWrapped(eSD_NEXT);
-        } else {
-            Options.Scroll(eSD_NEXT);
-        }
-        RefreshHeader();
-        return;
-    case 0xC3960EB9:
-        FEngSetScript(GetPackageName(), 0x99344537, 0x1744B3, true);
-        return;
+    unsigned long message = msg;
+    FEObject *object = pobj;
+    unsigned long previous_param1 = param1;
+    unsigned long previous_param2 = param2;
+
+    switch (message) {
     case 0xC98356BA:
         Options.Update();
         return;
-    case 0xE1FDE1D1:
-        Options.Act(PrevButtonMessage, PrevButtonObj, PrevParam1, PrevParam2);
-        return;
-    case 0xC519BFC3: {
-        IconOption *current = Options.GetCurrentOption();
-        if (!current || !current->IsTutorialAvailable()) {
-            return;
-        }
-        FEngSetScript(GetPackageName(), 0x99344537, 0x16A259, true);
-        g_pEAXSound->PlayUISoundFX(UISND_COMMON_SELECT);
-        FEAnyTutorialScreen::LaunchMovie(current->GetTutorialMovieName(), GetPackageName());
-
-        CareerSettings *career = FEDatabase->GetCareerSettings();
-        unsigned int name_hash = current->GetName();
-        if (name_hash == 0xA15E4505) {
-            career->SpecialFlags |= 0x100;
-        } else if (name_hash == 0xEE1EDC76) {
-            career->SpecialFlags |= 0x80;
-        } else if (name_hash == 0x6F547E4C) {
-            career->SpecialFlags |= 0x40;
-        }
-        return;
-    }
-    case 0x9120409E:
-        if (Options.IsHorizontal() || !Options.ReactsToInput()) {
-            return;
-        }
-        if (Options.bWrap) {
-            Options.ScrollWrapped(eSD_PREV);
-        } else {
-            Options.Scroll(eSD_PREV);
-        }
-        RefreshHeader();
-        return;
-    case 0xB5971BF1:
-        if (Options.IsHorizontal() || !Options.ReactsToInput()) {
-            return;
-        }
-        if (Options.bWrap) {
-            Options.ScrollWrapped(eSD_NEXT);
-        } else {
-            Options.Scroll(eSD_NEXT);
-        }
-        RefreshHeader();
-        return;
-    case 0x72619778: {
-        if (!Options.IsHorizontal() || !Options.ReactsToInput()) {
-            return;
-        }
-        IconOption *current = Options.GetCurrentOption();
-        if (current && !Options.IsHead(current)) {
-            if (Options.bWrap) {
-                Options.ScrollWrapped(eSD_PREV);
-            } else {
-                Options.Scroll(eSD_PREV);
-            }
-        }
-        RefreshHeader();
-        return;
-    }
     case 0x84378BEF:
         Options.bFadingIn = false;
         Options.fCurFadeTime = Options.fMaxFadeTime;
         Options.bFadingOut = true;
         return;
+    case 0x35F8620B:
+        Options.bAllowColorAnim = true;
+        return;
+    case 0xE1FDE1D1:
+        Options.IconPanel::Act(PrevButtonMessage, PrevButtonObj, PrevParam1, PrevParam2);
+        return;
     case 0x911AB364:
-        StorePrevNotification(0x911AB364, pobj, param1, param2);
-        Options.SetReactToInput(false);
+        StorePrevNotification(0x911AB364, object, previous_param1, previous_param2);
+        Options.bReactToInput = false;
         FEngSetLastButton(GetPackageName(), 0);
         return;
     case 0x0C407210: {
-        if (!Options.ReactsToInput()) {
+        if (!Options.bReactToInput) {
             return;
         }
 
-        IconOption *current = Options.GetCurrentOption();
-        if (!current || pobj != current->FEngObject) {
+        IconPanel *panel = &Options;
+        IconOption *cur_option = Options.pCurrentNode;
+        if (cur_option->IsGreyOut) {
+            return;
+        }
+        if (object != cur_option->FEngObject) {
             return;
         }
 
-        FEngSetLastButton(GetPackageName(), static_cast<unsigned char>(Options.GetCurrentIndex()));
-        if (current->ReactsImmediately()) {
-            Options.Act(0x0C407210, pobj, param1, param2);
+        const char *pkg_name = GetPackageName();
+        unsigned char current_index = 0;
+        if (cur_option) {
+            current_index = static_cast<unsigned char>(panel->GetOptionIndex(cur_option));
+        }
+        FEngSetLastButton(pkg_name, current_index);
+
+        bool reacts_immediately = false;
+        if (Options.pCurrentNode) {
+            reacts_immediately = cur_option->ReactsImmediately();
+        }
+        if (reacts_immediately) {
+            Options.IconPanel::Act(0x0C407210, object, previous_param1, previous_param2);
             return;
         }
 
-        StorePrevNotification(0x0C407210, pobj, param1, param2);
-        Options.SetReactToInput(false);
+        StorePrevNotification(0x0C407210, object, previous_param1, previous_param2);
+        Options.bReactToInput = false;
         cFEng::Get()->QueuePackageMessage(0x587C018B, GetPackageName(), nullptr);
         return;
     }
-    case 0x35F8620B:
-        Options.SetAllowFade(true);
+    case 0x9120409E:
+        if (!Options.bHorizontal) {
+            return;
+        }
+        if (!Options.bReactToInput) {
+            return;
+        }
+        {
+            IconPanel *panel = &Options;
+            if (Options.bWrap) {
+                panel->ScrollWrapped(eSD_PREV);
+            } else {
+                panel->Scroll(eSD_PREV);
+            }
+        }
+        RefreshHeader();
+        return;
+    case 0xB5971BF1:
+        if (!Options.bHorizontal) {
+            return;
+        }
+        if (!Options.bReactToInput) {
+            return;
+        }
+        {
+            IconPanel *panel = &Options;
+            if (Options.bWrap) {
+                panel->ScrollWrapped(eSD_NEXT);
+            } else {
+                panel->Scroll(eSD_NEXT);
+            }
+        }
+        RefreshHeader();
+        return;
+    case 0x72619778: {
+        if (Options.bHorizontal) {
+            return;
+        }
+        if (!Options.bReactToInput) {
+            return;
+        }
+        IconPanel *panel = &Options;
+        if (!panel->IsHead(Options.pCurrentNode)) {
+            if (Options.bWrap) {
+                panel->ScrollWrapped(eSD_PREV);
+            } else {
+                panel->Scroll(eSD_PREV);
+            }
+        }
+        RefreshHeader();
+        return;
+    }
+    case 0x911C0A4B: {
+        if (Options.bHorizontal) {
+            return;
+        }
+        if (!Options.bReactToInput) {
+            return;
+        }
+        IconPanel *panel = &Options;
+        if (Options.bWrap) {
+            panel->ScrollWrapped(eSD_NEXT);
+        } else {
+            panel->Scroll(eSD_NEXT);
+        }
+        RefreshHeader();
+        return;
+    }
+    case 0xC519BFC3: {
+        IconOption *cur_option = Options.pCurrentNode;
+        if (!cur_option->IsTutorialAvailable()) {
+            return;
+        }
+        FEngSetScript(GetPackageName(), 0x99344537, 0x16A259, true);
+        g_pEAXSound->PlayUISoundFX(UISND_COMMON_SELECT);
+        FEAnyTutorialScreen::LaunchMovie(cur_option->GetTutorialMovieName(), GetPackageName());
+
+        UserProfile *profile = FEDatabase->GetMultiplayerProfile(0);
+        CareerSettings *career = profile->GetCareer();
+        unsigned int name_hash = cur_option->GetName();
+        if (name_hash == 0xA15E4505) {
+            career->SetHasDoneTollBoothTutorial();
+        } else if (name_hash > 0xA15E4505) {
+            if (name_hash == 0xEE1EDC76) {
+                career->SetHasDoneSpeedTrapTutorial();
+            }
+        } else if (name_hash == 0x6F547E4C) {
+            career->SetHasDoneDragTutorial();
+        }
+        return;
+    }
+    case 0xC3960EB9:
+        FEngSetScript(GetPackageName(), 0x99344537, 0x1744B3, true);
         return;
     default:
         return;
@@ -780,5 +818,3 @@ bool IconPanel::IsTail(IconOption *option) {
 bool IconPanel::IsEndOfList(IconOption *opt) {
     return opt == Options.EndOfList();
 }
-
-

@@ -379,7 +379,7 @@ void FEKeyboard::NotificationMessage(unsigned long msg, FEObject *pObject, unsig
         g_pEAXSound->PlayUISoundFX(static_cast<eMenuSoundTriggers>(7));
         return;
     case 0xE1FDE1D1:
-        if (bStrLen(mString) == 0 && mnMode == MODE_FILENAME) {
+        if (bStrCmp(mString, "") == 0 && mnMode == MODE_FILENAME) {
             return;
         }
         goto dispose_keyboard;
@@ -405,7 +405,7 @@ void FEKeyboard::NotificationMessage(unsigned long msg, FEObject *pObject, unsig
         g_pEAXSound->PlayUISoundFX(static_cast<eMenuSoundTriggers>(0x30));
         return;
     case 0xB5AF2461:
-        if (bStrLen(mString) == 0) {
+        if (bStrCmp(mString, "") == 0) {
             cFEng::Get()->QueuePackageMessage(0x8CB81F09, GetPackageName(), nullptr);
             return;
         }
