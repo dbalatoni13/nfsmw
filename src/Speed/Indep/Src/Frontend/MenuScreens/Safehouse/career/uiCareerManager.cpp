@@ -75,19 +75,13 @@ void uiCareerManager::Setup() {
     if (FEDatabase->GetCareerSettings()->IsGameOver()) {
         int index = Options.GetOptionIndex(pLoadOption);
         if (bFadeInIconsImmediately) {
-            Options.bFadingIn = true;
-            Options.bDelayUpdate = false;
-            Options.bFadingOut = false;
-            Options.fCurFadeTime = 0.0f;
+            Options.StartFadeIn();
         }
         Options.SetInitialPos(index);
     } else {
         int lastButton = FEngGetLastButton(GetPackageName());
         if (bFadeInIconsImmediately) {
-            Options.bFadingIn = true;
-            Options.bDelayUpdate = false;
-            Options.bFadingOut = false;
-            Options.fCurFadeTime = 0.0f;
+            Options.StartFadeIn();
         }
         Options.SetInitialPos(lastButton);
     }
