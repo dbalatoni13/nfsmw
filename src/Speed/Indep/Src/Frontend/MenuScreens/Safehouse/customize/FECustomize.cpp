@@ -2430,18 +2430,6 @@ void CustomizeParts::NotificationMessage(unsigned long msg, FEObject *pobj, unsi
         CustomizationScreen::NotificationMessage(msg, pobj, param1, param2);
     }
     switch (msg) {
-    case 0x5a928018: {
-        SelectablePart *sel = GetSelectedPart();
-        if (!sel) {
-            return;
-        }
-        if (gCarCustomizeManager.IsPartInCart(sel)) {
-            return;
-        }
-        sel->SetPartState(sel->GetPartState() & CPS_GAME_STATE_MASK);
-        RefreshHeader();
-        break;
-    }
     case 0x406415e3:
         if (Category == 0x307) {
             if (!TexturePackLoaded) {
@@ -2477,6 +2465,27 @@ void CustomizeParts::NotificationMessage(unsigned long msg, FEObject *pobj, unsi
             return;
         }
         break;
+    case 0xcf91aacd:
+        if (Category != 0x307) {
+            return;
+        }
+        if (!TexturePackLoaded) {
+            return;
+        }
+        bTexturesNeedUnload = true;
+        break;
+    case 0x5a928018: {
+        SelectablePart *sel = GetSelectedPart();
+        if (!sel) {
+            return;
+        }
+        if (gCarCustomizeManager.IsPartInCart(sel)) {
+            return;
+        }
+        sel->SetPartState(sel->GetPartState() & CPS_GAME_STATE_MASK);
+        RefreshHeader();
+        break;
+    }
     case 0x911ab364:
         if (Category == 0x307) {
             if (!TexturePackLoaded) {
@@ -2490,15 +2499,6 @@ void CustomizeParts::NotificationMessage(unsigned long msg, FEObject *pobj, unsi
         } else {
             cFEng_mInstance->QueuePackageSwitch(g_pCustomizeSubPkg, FromCategory | (Category << 16), 0, false);
         }
-        break;
-    case 0xcf91aacd:
-        if (Category != 0x307) {
-            return;
-        }
-        if (!TexturePackLoaded) {
-            return;
-        }
-        bTexturesNeedUnload = true;
         break;
     }
 }
@@ -4088,22 +4088,35 @@ eMenuSoundTriggers CustomizePaint::NotifySoundMessage(unsigned long msg, eMenuSo
 }
 
 void CustomizePaint::NotificationMessage(unsigned long msg, FEObject *pobj, unsigned long param1, unsigned long param2) {
-    if (msg == 0x9120409e || msg == 0xb5971bf1) {
-        // left/right handled below
-    } else if (msg == 0x406415e3) {
+    switch (msg) {
+    case 0x406415e3:
         if (Category == 0x301 || Category == 0x303) {
             CustomizationScreen::NotificationMessage(0x406415e3, pobj, param1, param2);
         }
-    } else {
+        break;
+    default:
         CustomizationScreen::NotificationMessage(msg, pobj, param1, param2);
+        break;
+    case 0x9120409e:
+    case 0xb5971bf1:
+        break;
     }
 
     ThePaints.NotificationMessage(msg, pobj, param1, param2);
 
     switch (msg) {
-    case 0x9120409e:
-    case 0xb5971bf1:
-        RefreshHeader();
+    case 0xc519bfbf:
+        Showcase::FromFilter = TheFilter;
+        Showcase::FromIndex = ThePaints.GetCurrentDatumNum();
+        for (int i = 0; i < 3; i++) {
+            Showcase::FromColor[i] = VinylColors[i];
+        }
+        break;
+    case 0x5073ef13:
+        ScrollFilters(static_cast<eScrollDir>(-1));
+        break;
+    case 0xd9feec59:
+        ScrollFilters(static_cast<eScrollDir>(1));
         break;
     case 0x406415e3:
         if (Category == 0x301 || Category == 0x303) {
@@ -4139,42 +4152,6 @@ void CustomizePaint::NotificationMessage(unsigned long msg, FEObject *pobj, unsi
             cFEng::Get()->QueuePackageSwitch(g_pCustomizePartsPkg, cat, 0, false);
         }
         break;
-    case 0x911c0a4b:
-        RefreshHeader();
-        break;
-    case 0xc519bfbf:
-        Showcase::FromFilter = TheFilter;
-        Showcase::FromIndex = ThePaints.GetCurrentDatumNum();
-        for (int i = 0; i < 3; i++) {
-            Showcase::FromColor[i] = VinylColors[i];
-        }
-        break;
-    case 0xcf91aacd:
-        for (int i = 0; i < 3; i++) {
-            if (VinylColors[i]) {
-                delete VinylColors[i];
-            }
-            VinylColors[i] = nullptr;
-        }
-        break;
-    case 0xd9feec59:
-        ScrollFilters(static_cast<eScrollDir>(1));
-        break;
-    case 0x5073ef13:
-        ScrollFilters(static_cast<eScrollDir>(-1));
-        break;
-    case 0x5a928018: {
-        SelectablePart *part = GetSelectedPart();
-        if (part && !gCarCustomizeManager.IsPartInCart(part)) {
-            part->UnSetInCart();
-            RefreshHeader();
-        }
-        RefreshHeader();
-        break;
-    }
-    case 0x72619778:
-        RefreshHeader();
-        break;
     case 0x911ab364:
         if (Category == 0x301 || Category == 0x303) {
             unsigned int cat = Category | (FromCategory << 16);
@@ -4192,6 +4169,29 @@ void CustomizePaint::NotificationMessage(unsigned long msg, FEObject *pobj, unsi
         {
             unsigned int cat = Category | (FromCategory << 16);
             cFEng::Get()->QueuePackageSwitch(g_pCustomizePartsPkg, cat, 0, false);
+        }
+        break;
+    case 0x5a928018: {
+        SelectablePart *part = GetSelectedPart();
+        if (part && !gCarCustomizeManager.IsPartInCart(part)) {
+            part->UnSetInCart();
+            RefreshHeader();
+        }
+        RefreshHeader();
+        break;
+    }
+    case 0x9120409e:
+    case 0xb5971bf1:
+    case 0x911c0a4b:
+    case 0x72619778:
+        RefreshHeader();
+        break;
+    case 0xcf91aacd:
+        for (int i = 0; i < 3; i++) {
+            if (VinylColors[i]) {
+                delete VinylColors[i];
+            }
+            VinylColors[i] = nullptr;
         }
         break;
     }
