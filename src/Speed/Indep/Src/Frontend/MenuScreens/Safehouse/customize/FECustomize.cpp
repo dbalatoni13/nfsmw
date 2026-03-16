@@ -3000,18 +3000,27 @@ void CustomizeHUDColor::RefreshHeader() {
     CustomizationScreen::RefreshHeader();
     HUDColorOption *sel = SelectedColor;
     switch (sel->ThePart->CarSlotID) {
-    case 0x85:
-        FEngSetColor(FEngFindObject(GetPackageName(), 0x5d19f25), sel->color);
+    case 0x85: {
+        unsigned int color = sel->color;
+        FEngSetColor(FEngFindObject(GetPackageName(), 0x5d19f25), color);
         break;
-    case 0x86:
-        FEngSetColor(FEngFindObject(GetPackageName(), 0xd312f0cb), sel->color);
-        FEngSetColor(FEngFindObject(GetPackageName(), 0x8fe2a217), SelectedColor->color);
+    }
+    case 0x87: {
+        unsigned int color = sel->color;
+        FEngSetColor(FEngFindObject(GetPackageName(), 0xc0721eb9), color);
+        color = SelectedColor->color;
+        FEngSetColor(FEngFindObject(GetPackageName(), 0xc62ad685), color);
+        color = SelectedColor->color;
+        FEngSetColor(FEngFindObject(GetPackageName(), 0xb8f1f802), color);
         break;
-    case 0x87:
-        FEngSetColor(FEngFindObject(GetPackageName(), 0xc0721eb9), sel->color);
-        FEngSetColor(FEngFindObject(GetPackageName(), 0xc62ad685), SelectedColor->color);
-        FEngSetColor(FEngFindObject(GetPackageName(), 0xb8f1f802), SelectedColor->color);
+    }
+    case 0x86: {
+        unsigned int color = sel->color;
+        FEngSetColor(FEngFindObject(GetPackageName(), 0xd312f0cb), color);
+        color = SelectedColor->color;
+        FEngSetColor(FEngFindObject(GetPackageName(), 0x8fe2a217), color);
         break;
+    }
     }
 }
 
@@ -3093,22 +3102,25 @@ void CustomizeParts::SetHUDTextures() {
     CarPart *part = sel->ThePart;
     unsigned int hudStyleHash = FEngHashString("HUD_STYLE");
     int hudStyle = part->GetAppliedAttributeIParam(hudStyleHash, 0);
-    FEImage *gauge = FEngFindImage(GetPackageName(), 0xc0721eb9);
-    FEngSetTextureHash(gauge, FEngHashString("HUD_NEEDLE_%d_%02d", TachRPM, hudStyle));
-    FEImage *needle = FEngFindImage(GetPackageName(), 0x5d19f25);
-    FEngSetTextureHash(needle, FEngHashString("HUD_GAUGE_%02d", hudStyle));
-    FEImage *speedo = FEngFindImage(GetPackageName(), 0xd312f0cb);
-    FEngSetTextureHash(speedo, FEngHashString("HUD_SPEEDOMETER_%02d", hudStyle));
-    if (!gCarCustomizeManager.IsTurbo()) {
-        FEObject *turboGroup = FEngFindObject(GetPackageName(), 0xc5d551b7);
-        FEngSetInvisible(turboGroup);
+    const char *pkg = GetPackageName();
+    unsigned int hash = FEngHashString("HUD_NEEDLE_%d_%02d", TachRPM, hudStyle);
+    FEngSetTextureHash(FEngFindImage(pkg, 0xc0721eb9), hash);
+    pkg = GetPackageName();
+    hash = FEngHashString("HUD_GAUGE_%02d", hudStyle);
+    FEngSetTextureHash(FEngFindImage(pkg, 0x5d19f25), hash);
+    pkg = GetPackageName();
+    hash = FEngHashString("HUD_SPEEDOMETER_%02d", hudStyle);
+    FEngSetTextureHash(FEngFindImage(pkg, 0xd312f0cb), hash);
+    if (gCarCustomizeManager.IsTurbo()) {
+        pkg = GetPackageName();
+        hash = FEngHashString("HUD_NEEDLE_TURBO_%02d", hudStyle);
+        FEngSetTextureHash(FEngFindImage(pkg, 0xc62ad685), hash);
+        pkg = GetPackageName();
+        hash = FEngHashString("HUD_NOS_%02d", hudStyle);
+        FEngSetTextureHash(FEngFindImage(pkg, 0x8fe2a217), hash);
+        FEngSetVisible(FEngFindObject(GetPackageName(), 0xc5d551b7));
     } else {
-        FEImage *turboNeedle = FEngFindImage(GetPackageName(), 0xc62ad685);
-        FEngSetTextureHash(turboNeedle, FEngHashString("HUD_NEEDLE_TURBO_%02d", hudStyle));
-        FEImage *nos = FEngFindImage(GetPackageName(), 0x8fe2a217);
-        FEngSetTextureHash(nos, FEngHashString("HUD_NOS_%02d", hudStyle));
-        FEObject *turboGroup = FEngFindObject(GetPackageName(), 0xc5d551b7);
-        FEngSetVisible(turboGroup);
+        FEngSetInvisible(FEngFindObject(GetPackageName(), 0xc5d551b7));
     }
 }
 
@@ -3181,22 +3193,25 @@ void CustomizeHUDColor::SetHUDTextures() {
     CarPart *part = gCarCustomizeManager.GetTempColoredPart()->ThePart;
     unsigned int hudStyleHash = FEngHashString("HUD_STYLE");
     int hudStyle = part->GetAppliedAttributeIParam(hudStyleHash, 0);
-    FEImage *gauge = FEngFindImage(GetPackageName(), 0xc0721eb9);
-    FEngSetTextureHash(gauge, FEngHashString("HUD_NEEDLE_%d_%02d", tachRPM, hudStyle));
-    FEImage *needle = FEngFindImage(GetPackageName(), 0x5d19f25);
-    FEngSetTextureHash(needle, FEngHashString("HUD_GAUGE_%02d", hudStyle));
-    FEImage *speedo = FEngFindImage(GetPackageName(), 0xd312f0cb);
-    FEngSetTextureHash(speedo, FEngHashString("HUD_SPEEDOMETER_%02d", hudStyle));
-    if (!gCarCustomizeManager.IsTurbo()) {
-        FEObject *turboGroup = FEngFindObject(GetPackageName(), 0xc5d551b7);
-        FEngSetInvisible(turboGroup);
+    const char *pkg = GetPackageName();
+    unsigned int hash = FEngHashString("HUD_NEEDLE_%d_%02d", tachRPM, hudStyle);
+    FEngSetTextureHash(FEngFindImage(pkg, 0xc0721eb9), hash);
+    pkg = GetPackageName();
+    hash = FEngHashString("HUD_GAUGE_%02d", hudStyle);
+    FEngSetTextureHash(FEngFindImage(pkg, 0x5d19f25), hash);
+    pkg = GetPackageName();
+    hash = FEngHashString("HUD_SPEEDOMETER_%02d", hudStyle);
+    FEngSetTextureHash(FEngFindImage(pkg, 0xd312f0cb), hash);
+    if (gCarCustomizeManager.IsTurbo()) {
+        pkg = GetPackageName();
+        hash = FEngHashString("HUD_NEEDLE_TURBO_%02d", hudStyle);
+        FEngSetTextureHash(FEngFindImage(pkg, 0xc62ad685), hash);
+        pkg = GetPackageName();
+        hash = FEngHashString("HUD_NOS_%02d", hudStyle);
+        FEngSetTextureHash(FEngFindImage(pkg, 0x8fe2a217), hash);
+        FEngSetVisible(FEngFindObject(GetPackageName(), 0xc5d551b7));
     } else {
-        FEImage *turboNeedle = FEngFindImage(GetPackageName(), 0xc62ad685);
-        FEngSetTextureHash(turboNeedle, FEngHashString("HUD_NEEDLE_TURBO_%02d", hudStyle));
-        FEImage *nos = FEngFindImage(GetPackageName(), 0x8fe2a217);
-        FEngSetTextureHash(nos, FEngHashString("HUD_NOS_%02d", hudStyle));
-        FEObject *turboGroup = FEngFindObject(GetPackageName(), 0xc5d551b7);
-        FEngSetVisible(turboGroup);
+        FEngSetInvisible(FEngFindObject(GetPackageName(), 0xc5d551b7));
     }
 }
 
