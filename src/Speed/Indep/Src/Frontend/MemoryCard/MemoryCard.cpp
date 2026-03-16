@@ -45,6 +45,32 @@ int ReplayJoyOp() {
     return l_Op;
 }
 
+void Realmc::SystemInterface::Clear() {
+    mAllocator = nullptr;
+    mThread = nullptr;
+    mMutex = nullptr;
+    mGetStrCallback = nullptr;
+}
+
+#if !defined(_MSC_VER) || defined(_NATIVE_WCHAR_T_DEFINED)
+RealmcIface::GameInfo::GameInfo(const wchar_t* gameTitle, unsigned int titleId,
+                                bool multipleSaveTypesUsed, bool multitapSupported) {
+    GameInfo(reinterpret_cast< const unsigned short * >(gameTitle), titleId,
+             multipleSaveTypesUsed, multitapSupported);
+}
+
+void RealmcIface::MemcardInterface::Load(const char* entryName, char* header, char* body,
+                                         const wchar_t* contentName,
+                                         const RealmcIface::TitleInfo* titleInfo) {
+    Load(entryName, header, body, reinterpret_cast< const unsigned short * >(contentName),
+         titleInfo, reinterpret_cast< const unsigned short * >(contentName));
+}
+
+void RealmcIface::MemcardInterface::Delete(const char* entryName, const wchar_t* contentName) {
+    Delete(entryName, reinterpret_cast< const unsigned short * >(contentName));
+}
+#endif
+
 void IJoyHelper::EmulateMemoryCardLibrary(int aJoyOp) {
     char* pBuf = new char[0x400];
     char* pBuf1 = pBuf + 1;

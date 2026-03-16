@@ -109,12 +109,7 @@ struct SystemInterface {
     IMutex *mMutex;                      // offset 0x8, size 0x4
     const char *(*mGetStrCallback)(int); // offset 0xC, size 0x4
 
-    void Clear() {
-        mAllocator = nullptr;
-        mThread = nullptr;
-        mMutex = nullptr;
-        mGetStrCallback = nullptr;
-    }
+    void Clear();
 };
 
 } // namespace Realmc

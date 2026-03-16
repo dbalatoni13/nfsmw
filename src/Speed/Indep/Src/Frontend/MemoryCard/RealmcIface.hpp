@@ -226,10 +226,7 @@ struct GameInfo {
              bool multipleSaveTypesUsed, bool multitapSupported);
 #if !defined(_MSC_VER) || defined(_NATIVE_WCHAR_T_DEFINED)
     GameInfo(const wchar_t *gameTitle, unsigned int titleId,
-             bool multipleSaveTypesUsed, bool multitapSupported) {
-        GameInfo(reinterpret_cast< const unsigned short * >(gameTitle), titleId,
-                 multipleSaveTypesUsed, multitapSupported);
-    }
+             bool multipleSaveTypesUsed, bool multitapSupported);
 #endif
     void Clear();
 };
@@ -259,16 +256,10 @@ struct MemcardInterface {
               const unsigned short *contentName, const TitleInfo *titleInfo,
               const unsigned short *typeName);
     void Load(const char *entryName, char *header, char *body,
-              const wchar_t *contentName, const TitleInfo *titleInfo) {
-        Load(entryName, header, body,
-             reinterpret_cast< const unsigned short * >(contentName), titleInfo,
-             reinterpret_cast< const unsigned short * >(contentName));
-    }
+              const wchar_t *contentName, const TitleInfo *titleInfo);
     void Delete(const char *entryName, const unsigned short *contentName);
 #if !defined(_MSC_VER) || defined(_NATIVE_WCHAR_T_DEFINED)
-    void Delete(const char *entryName, const wchar_t *contentName) {
-        Delete(entryName, reinterpret_cast< const unsigned short * >(contentName));
-    }
+    void Delete(const char *entryName, const wchar_t *contentName);
 #endif
     void DeleteMultiple(unsigned int nEntryNames, const char **entryNames,
                         const unsigned short *contentName);

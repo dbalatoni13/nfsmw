@@ -317,29 +317,34 @@ void WorldMap::ClearGPSing() {
 
 WorldMap::WorldMap(ScreenConstructorData* sd)
     : UIWidgetMenu(sd) {
-    Cursor = nullptr;
-    mActionQ = nullptr;
+    MapSize.y = 0.0f;
+    TheMapItems.HeadNode.Prev = &TheMapItems.HeadNode;
+    CurrentRaceType = -1;
+    fSnapDist = 30.0f;
     CurrentVelocity.x = 0.0f;
     CurrentVelocity.y = 0.0f;
     CursorMoveFrom.x = 0.0f;
     CursorMoveFrom.y = 0.0f;
-    pCurrentTrack = nullptr;
-    TrackMap = nullptr;
     MapTopLeft.x = 0.0f;
     MapTopLeft.y = 0.0f;
     MapSize.x = 0.0f;
-    MapSize.y = 0.0f;
+    TheMapItems.HeadNode.Next = &TheMapItems.HeadNode;
+    bLeftHeldOnMap = false;
+    Cursor = nullptr;
+    mActionQ = nullptr;
+    TimeSinceLastMove.ResetLow();
+    pCurrentTrack = nullptr;
+    TrackMap = nullptr;
     SelectedItem = nullptr;
     MapStreamer = nullptr;
     CurrentView = 0;
     CurrentZoom = 0;
-    CurrentRaceType = -1;
     bInToggleMode = false;
     bCursorOn = false;
     bCursorMoving = false;
-    bLeftHeldOnMap = false;
-    fSnapDist = 30.0f;
-    mActionQ = new ActionQueue(FEDatabase->PlayerJoyports[0], 0x82d21520, "WorldMapMain", false);
+
+    signed char joyport = FEDatabase->PlayerJoyports[0];
+    mActionQ = new ActionQueue(joyport, 0x82d21520, "WorldMapMain", false);
     mActionQ->Enable(true);
     iMaxWidgetsOnScreen = 10;
     Setup();
