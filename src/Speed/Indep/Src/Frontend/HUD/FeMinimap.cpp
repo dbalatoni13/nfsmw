@@ -1,6 +1,7 @@
 #include "Speed/Indep/Src/Frontend/HUD/FeMinimap.hpp"
 #include "Speed/Indep/Src/Frontend/HUD/FeMinimapStreamer.hpp"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
+#include "Speed/Indep/bWare/Inc/bChunk.hpp"
 #include "Speed/Indep/Src/Gameplay/GIcon.h"
 #include "Speed/Indep/Src/Gameplay/GManager.h"
 #include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
@@ -48,13 +49,15 @@ void GetVehicleVectors(bVector2 *pos, bVector2 *dir, ISimable *isimable) {
     }
 }
 
-void LoaderMiniMap(bChunk *chunk) {
-    gChoppedMiniMapManager->Loader(chunk);
+int LoaderMiniMap(bChunk *chunk) {
+    return gChoppedMiniMapManager->Loader(chunk);
 }
 
-void UnloaderMiniMap(bChunk *chunk) {
-    gChoppedMiniMapManager->Unloader(chunk);
+int UnloaderMiniMap(bChunk *chunk) {
+    return gChoppedMiniMapManager->Unloader(chunk);
 }
+
+static bChunkLoader bChunkLoaderMiniMap(0x3A100, LoaderMiniMap, UnloaderMiniMap);
 
 extern unsigned int FEngHashString(const char *, ...);
 extern void FEngGetCenter(FEObject *obj, float &x, float &y);

@@ -6,7 +6,7 @@
 extern int FEPrintf(FEString *text, const char *fmt, ...);
 extern int FEPrintf(const char *pkg_name, FEObject *obj, const char *fmt, ...);
 extern Timer RealTimer;
-extern Timer KBCreationTimer;
+Timer KBCreationTimer;
 extern FEKeyboard *gFEKeyboard;
 extern bool KeyboardActive;
 extern char FEKeyboard_mLetterMap[720] asm("_10FEKeyboard.mLetterMap");
@@ -29,6 +29,11 @@ extern void FEngGetTopLeft(FEObject *obj, float &x, float &y);
 extern void FEngSetTopLeft(FEObject *obj, float x, float y);
 extern void FESetString(FEString *str, short *text);
 extern int bStrLen(const unsigned short *str) asm("bStrLen__FPCUs");
+
+FEColor FEKeyboard::ButtonHighlight(0xC8CFE9F2);
+FEColor FEKeyboard::LetterHighlight(0xFFFFFFFF);
+FEColor FEKeyboard::ButtonIdle(0x50549AC0);
+FEColor FEKeyboard::LetterIdle(0xFF323232);
 
 FEKeyboard::FEKeyboard(ScreenConstructorData *sd)
     : MenuScreen(sd)

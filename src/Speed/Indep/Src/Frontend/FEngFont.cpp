@@ -32,7 +32,7 @@ static ExtraFontData ExtraFontDataTable[] = {
     {0x71C777D7, 23.0f, 1.0f},
 };
 
-extern bTList<FEngFont> FEngFonts;
+bTList<FEngFont> FEngFonts;
 extern unsigned int FontReplacementTable[];
 extern int NumFontReplacements;
 

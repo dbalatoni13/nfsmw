@@ -66,6 +66,11 @@ struct FEKeyboard : public MenuScreen {
         MODE_PROFILE_ENTRY = 5,
     };
 
+    static FEColor ButtonHighlight;
+    static FEColor LetterHighlight;
+    static FEColor ButtonIdle;
+    static FEColor LetterIdle;
+
     FEKeyboard(ScreenConstructorData *sd);
     ~FEKeyboard() override {}
 

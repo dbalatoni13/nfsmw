@@ -1104,3 +1104,5 @@ unsigned int cFrontendDatabase::GetDefaultCar() {
     }
     return default_car;
 }
+
+cFrontendDatabase *FEDatabase;

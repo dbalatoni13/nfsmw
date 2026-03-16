@@ -94,6 +94,8 @@ extern const char lbl_803E5FA0[];
 extern const char lbl_803E52A0[];
 extern const char lbl_803E52D4[];
 
+PursuitData PostRacePursuitScreen::mPursuitData;
+
 template <typename T> static T ReadField(const void *base, int offset) {
     return *reinterpret_cast< const T * >(reinterpret_cast< const char * >(base) + offset);
 }

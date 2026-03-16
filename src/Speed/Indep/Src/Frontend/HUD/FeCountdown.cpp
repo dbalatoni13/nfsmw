@@ -1,4 +1,5 @@
 #include "Speed/Indep/Src/Frontend/HUD/FeCountdown.hpp"
+#include "Speed/Indep/Src/Animation/AnimWorldTypes.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
 #include "Speed/Indep/Src/Generated/Events/ENISWorldAnimTrigger.hpp"
 #include "Speed/Indep/Src/Generated/Messages/MCountdownDone.h"
