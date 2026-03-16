@@ -930,6 +930,9 @@ struct bQuaternion {
         this->w = _w;
     }
 
+    void GetMatrix(bMatrix4 &mat) const;
+    inline void GetMatrix(bMatrix4 *mat) const { GetMatrix(*mat); }
+
     bQuaternion &Slerp(bQuaternion &r, const bQuaternion &target, float t) const;
 };
 

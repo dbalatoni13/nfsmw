@@ -100,6 +100,96 @@ void cFEngRender::AddToRenderList(FEObject *obj) {
     }
 }
 
+FEClipInfo *cFEngRender::MakeRenderMatrix(FEObjData *pData, bMatrix4 *trans, FEColor &color,
+                                          int GroupIndex, float extra_scale) {
+    int do_pivot = 0;
+    if (pData->Pivot.x != 0.0f || pData->Pivot.y != 0.0f || pData->Pivot.z != 0.0f) {
+        do_pivot = 1;
+    }
+
+    int do_scale = 0;
+    if (pData->Size.x != 1.0f || pData->Size.y != 1.0f || pData->Size.z != 1.0f ||
+        extra_scale != 1.0f) {
+        do_scale = 1;
+    }
+
+    int do_rotate = 0;
+    if (pData->Rot.x != 0.0f || pData->Rot.y != 0.0f || pData->Rot.z != 0.0f ||
+        pData->Rot.w != 1.0f) {
+        do_rotate = 1;
+    }
+
+    bMatrix4 feng_to_epoly;
+    bIdentity(&feng_to_epoly);
+    feng_to_epoly.v3.x = pData->Pos.x;
+    feng_to_epoly.v3.y = pData->Pos.y;
+    feng_to_epoly.v3.z = pData->Pos.z;
+
+    bMatrix4 pivot;
+    bMatrix4 pivotm1;
+    if (do_pivot) {
+        bIdentity(&pivot);
+        bIdentity(&pivotm1);
+        pivotm1.v3.x = -pData->Pivot.x;
+        pivotm1.v3.y = -pData->Pivot.y;
+        pivotm1.v3.z = -pData->Pivot.z;
+        pivot.v3.x = pData->Pivot.x;
+        pivot.v3.y = pData->Pivot.y;
+        pivot.v3.z = pData->Pivot.z;
+    }
+
+    bMatrix4 scale;
+    if (do_scale) {
+        bIdentity(&scale);
+        scale.v0.x = pData->Size.x * extra_scale;
+        scale.v1.y = pData->Size.y * extra_scale;
+        scale.v2.z = pData->Size.z * extra_scale;
+    }
+
+    bMatrix4 rotate;
+    if (do_rotate) {
+        bIdentity(&rotate);
+        bQuaternion quat;
+        quat.x = pData->Rot.x;
+        quat.y = pData->Rot.y;
+        quat.z = pData->Rot.z;
+        quat.w = pData->Rot.w;
+        quat.GetMatrix(&rotate);
+    }
+
+    bIdentity(trans);
+    bMulMatrix(trans, trans, &feng_to_epoly);
+    if (do_pivot) {
+        bMulMatrix(trans, trans, &pivot);
+    }
+    if (do_rotate) {
+        bMulMatrix(trans, trans, &rotate);
+    }
+    if (do_pivot) {
+        bMulMatrix(trans, trans, &pivotm1);
+    }
+    if (do_scale) {
+        bMulMatrix(trans, trans, &scale);
+    }
+
+    FEClipInfo *clip_info = nullptr;
+    if (GroupIndex != 0) {
+        RenderContext &Con = RContexts[GroupIndex];
+        color.r = (static_cast<int>(Con.r) * pData->Col.r + 0x80) >> 8;
+        color.g = (static_cast<int>(Con.g) * pData->Col.g + 0x80) >> 8;
+        color.b = (static_cast<int>(Con.b) * pData->Col.b + 0x80) >> 8;
+        color.a = (static_cast<int>(Con.a) * pData->Col.a + 0x80) >> 8;
+        bMulMatrix(trans, &Con.matrix, trans);
+        if (Con.clipObject) {
+            clip_info = &Con.clipInfo;
+        }
+    } else {
+        color = pData->Col;
+    }
+
+    return clip_info;
+}
+
 void cFEngRender::GenerateRenderContext(unsigned short ctx, FEObject *obj) {
     if (Highwater < ctx) {
         Highwater = ctx;
