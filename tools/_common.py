@@ -7,6 +7,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+from difflib import SequenceMatcher
 from typing import Any, Dict, List, Optional, Sequence
 
 
@@ -21,6 +22,12 @@ OBJDIFF_DEFAULT_CONFIG_ARGS = [
     "ppc.calculatePoolRelocations=false",
 ]
 RELOC_DIFF_CHOICES = ("none", "function", "data", "all")
+PAIRING_NORMALIZE_RE = re.compile(
+    r"0x[0-9A-Fa-f]+|"
+    r"[A-Za-z0-9_:.~]+\+0x[0-9A-Fa-f]+|"
+    r"\[\.rodata\]\+[0-9A-Fa-fx]+|"
+    r"lbl_[0-9A-Fa-f_]+"
+)
 
 
 class ToolError(RuntimeError):
@@ -260,6 +267,134 @@ def build_objdiff_symbol_rows(diff_data: Dict[str, Any]) -> List[Dict[str, Any]]
                 "side": "right",
                 "left_symbol": None,
                 "right_symbol": sym,
+            }
+        )
+
+    return rows
+
+
+def normalize_instruction_for_pairing(text: str) -> str:
+    return PAIRING_NORMALIZE_RE.sub("ADDR", text)
+
+
+def normalized_instruction_sequence(sym: Dict[str, Any]) -> Optional[List[str]]:
+    instructions = sym.get("instructions")
+    if not isinstance(instructions, list):
+        return None
+
+    normalized: List[str] = []
+    for entry in instructions:
+        instruction = entry.get("instruction", {})
+        formatted = instruction.get("formatted")
+        if not isinstance(formatted, str):
+            continue
+        normalized.append(normalize_instruction_for_pairing(formatted))
+    return normalized
+
+
+def build_objdiff_name_size_fallback_rows(
+    diff_data: Dict[str, Any], *, unpaired_only: bool = False
+) -> List[Dict[str, Any]]:
+    """Build diagnostic rows for uniquely pairable unpaired functions.
+
+    This is intentionally diagnostic-only. It pairs left/right functions when objdiff
+    fails to assign a target symbol, but there is exactly one unpaired symbol on each
+    side with the same mangled name, size, type, and section. Match percentage is
+    derived from normalized instruction formatting, not from objdiff's official match
+    metric, so callers should label these rows clearly.
+    """
+    left_syms = diff_data.get("left", {}).get("symbols", [])
+    right_syms = diff_data.get("right", {}).get("symbols", [])
+    left_sections = diff_data.get("left", {}).get("sections", [])
+    right_sections = diff_data.get("right", {}).get("sections", [])
+
+    left_groups: Dict[Any, List[Dict[str, Any]]] = {}
+    right_groups: Dict[Any, List[Dict[str, Any]]] = {}
+
+    for sym in left_syms:
+        if unpaired_only and sym.get("target_symbol") is not None:
+            continue
+
+        sym_type = classify_objdiff_symbol(sym)
+        if sym_type != "function":
+            continue
+
+        size = int(sym.get("size", "0"))
+        if size == 0:
+            continue
+
+        key = (
+            sym.get("name", "?"),
+            size,
+            sym_type,
+            objdiff_symbol_section(sym, left_sections),
+        )
+        left_groups.setdefault(key, []).append(sym)
+
+    for sym in right_syms:
+        if unpaired_only and sym.get("target_symbol") is not None:
+            continue
+
+        sym_type = classify_objdiff_symbol(sym)
+        if sym_type != "function":
+            continue
+
+        size = int(sym.get("size", "0"))
+        if size == 0:
+            continue
+
+        key = (
+            sym.get("name", "?"),
+            size,
+            sym_type,
+            objdiff_symbol_section(sym, right_sections),
+        )
+        right_groups.setdefault(key, []).append(sym)
+
+    rows: List[Dict[str, Any]] = []
+    for key, left_matches in left_groups.items():
+        right_matches = right_groups.get(key)
+        if len(left_matches) != 1 or right_matches is None or len(right_matches) != 1:
+            continue
+
+        left_sym = left_matches[0]
+        right_sym = right_matches[0]
+        size = int(left_sym.get("size", "0"))
+        left_instr = normalized_instruction_sequence(left_sym)
+        right_instr = normalized_instruction_sequence(right_sym)
+        if left_instr is None or right_instr is None:
+            continue
+
+        if left_instr == right_instr:
+            match_percent = 100.0
+            status = "match"
+        else:
+            match_percent = SequenceMatcher(
+                a=left_instr,
+                b=right_instr,
+                autojunk=False,
+            ).ratio() * 100.0
+            status = "nonmatching"
+
+        rows.append(
+            {
+                "status": status,
+                "match_percent": match_percent,
+                "size": size,
+                "unmatched_bytes_est": estimate_unmatched_bytes(
+                    size, match_percent, status
+                ),
+                "section": objdiff_symbol_section(left_sym, left_sections),
+                "type": "function",
+                "name": left_sym.get("demangled_name", left_sym.get("name", "?")),
+                "symbol_name": left_sym.get("name", "?"),
+                "side": "left",
+                "left_symbol": left_sym,
+                "right_symbol": right_sym,
+                "pairing_mode": "name_size_unique_unpaired"
+                if unpaired_only
+                else "name_size_unique",
+                "diagnostic_only": True,
             }
         )
 
