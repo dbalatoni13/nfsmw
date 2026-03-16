@@ -1,10 +1,12 @@
 #include "Speed/Indep/Src/Frontend/cFEngRender.hpp"
 #include "Speed/Indep/Src/FEng/FEObject.h"
 #include "Speed/Indep/Src/FEng/feimage.h"
+#include "Speed/Indep/Src/FEng/FEMultiImage.h"
 #include "Speed/Indep/Src/Frontend/FERenderObject.hpp"
 #include "Speed/Indep/Src/Frontend/MoviePlayer/MoviePlayer.hpp"
 #include "Speed/Indep/Src/Ecstasy/Texture.hpp"
 #include "Speed/Indep/Src/FEng/FETypes.h"
+#include "Speed/Indep/bWare/Inc/bMath.hpp"
 
 extern float ObjectSortLastZ;
 extern FEPackage *ObjectSortRenderingPackage;
@@ -144,6 +146,113 @@ static void rotate_uvs(bVector2 *uvs, float angle_radians, float px, float py) {
     uvs[2].y = t4r * cos_angle - s4r * sin_angle + py + half_height;
     uvs[3].x = s5r * cos_angle + t5r * sin_angle + px + half_width;
     uvs[3].y = t5r * cos_angle - s5r * sin_angle + py + half_height;
+}
+
+void cFEngRender::RenderMultiImage(FEMultiImage *image, FERenderObject *cached, FEPackageRenderInfo *pkg_render_info) {
+    FEMultiImageData *image_data = reinterpret_cast<FEMultiImageData *>(image->pData);
+
+    bMatrix4 screen;
+    bIdentity(&screen);
+    screen.v3.x = 320.0f;
+    screen.v3.y = 240.0f;
+    screen.v3.z = 0.0f;
+
+    bMatrix4 trans;
+    FEColor fe_color;
+
+    FEClipInfo *clip_info = MakeRenderMatrix(
+        reinterpret_cast<FEObjData *>(image_data), &trans, fe_color,
+        image->RenderContext, 1.0f);
+
+    bMulMatrix(&trans, &screen, &trans);
+
+    TextureInfo *texture_info = GetTextureInfo(image->Handle, 1, 0);
+    TextureInfo *texture_info_mask = GetTextureInfo(image->GetTexture(0), 1, 0);
+
+    if (!cached) {
+        cached = CreateCachedRender(reinterpret_cast<FEObject *>(image), texture_info);
+    } else {
+        cached->Clear(pkg_render_info);
+    }
+
+    unsigned int tw = texture_info->Width;
+    unsigned int th = texture_info->Height;
+    float ftw = static_cast<float>(tw);
+    float fth = static_cast<float>(th);
+
+    unsigned int t2w = next_power_of_2(tw);
+    unsigned int t2h = next_power_of_2(th);
+    float ft2w = static_cast<float>(t2w);
+    float ft2h = static_cast<float>(t2h);
+
+    float convertu = ftw / ft2w;
+    float convertv = fth / ft2h;
+
+    unsigned int color = FEngColorToEpolyColor(fe_color);
+    unsigned int Colours[4];
+    Colours[0] = color;
+    Colours[1] = color;
+    Colours[2] = color;
+    Colours[3] = color;
+
+    float s0 = image_data->UpperLeft.x * convertu;
+    float t0 = image_data->UpperLeft.y * convertv;
+    float s1 = image_data->LowerRight.x * convertu;
+    float t1 = image_data->LowerRight.y * convertv;
+
+    unsigned int tw_m = texture_info->Width;
+    unsigned int th_m = texture_info->Height;
+    float ftw_m = static_cast<float>(tw_m);
+    float fth_m = static_cast<float>(th_m);
+
+    unsigned int t2w_m = next_power_of_2(tw_m);
+    unsigned int t2h_m = next_power_of_2(th_m);
+    float ft2w_m = static_cast<float>(t2w_m);
+    float ft2h_m = static_cast<float>(t2h_m);
+
+    float convertu_m = ftw_m / ft2w_m;
+    float convertv_m = fth_m / ft2h_m;
+
+    float ss2 = image_data->TopLeftUV[0].x * convertu_m;
+    float sst2 = image_data->TopLeftUV[0].y * convertv_m;
+    float ss3 = image_data->BottomRightUV[0].x * convertu_m;
+    float sst3 = image_data->BottomRightUV[0].y * convertv_m;
+
+    bVector2 uvs[4];
+    uvs[0].x = ss2 * ftw_m;
+    uvs[0].y = sst2 * fth_m;
+    uvs[1].x = ss3 * ftw_m;
+    uvs[1].y = sst2 * fth_m;
+    uvs[2].x = ss3 * ftw_m;
+    uvs[2].y = sst3 * fth_m;
+    uvs[3].x = ss2 * ftw_m;
+    uvs[3].y = sst3 * fth_m;
+
+    rotate_uvs(uvs,
+               bDegToRad(image_data->PivotRot.z),
+               image_data->PivotRot.x * ftw_m - ftw_m * 0.5f,
+               image_data->PivotRot.y * fth_m - fth_m * 0.5f);
+
+    uvs[0].x /= ftw_m;
+    uvs[0].y /= fth_m;
+    uvs[1].x /= ftw_m;
+    uvs[1].y /= fth_m;
+    uvs[2].x /= ftw_m;
+    uvs[2].y /= fth_m;
+    uvs[3].x /= ftw_m;
+    uvs[3].y /= fth_m;
+
+    cached->SetTransform(&trans);
+    cached->AddPolyWithRotatedMask(
+        -0.5f, -0.5f, 0.5f, 0.5f, 1.0f,
+        s0, t0, s1, t1,
+        uvs[0].x, uvs[0].y,
+        uvs[1].x, uvs[1].y,
+        uvs[2].x, uvs[2].y,
+        uvs[3].x, uvs[3].y,
+        Colours, texture_info, texture_info_mask);
+    cached->SetTexture(texture_info);
+    cached->Render();
 }
 
 void cFEngRender::AddToRenderList(FEObject *obj) {
