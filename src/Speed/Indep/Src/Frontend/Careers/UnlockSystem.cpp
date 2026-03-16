@@ -891,6 +891,7 @@ bool QuickRaceUnlocker::IsCarUnlocked(eUnlockFilters filter, unsigned int car, i
         return answer;
     }
 
+    unsigned char currentBin = FEDatabase->GetCareerSettings()->GetCurrentBin();
     unsigned int handle = fe_car->Handle;
     if (handle == 0x2D642B8) {
         return GetIsCollectorsEdition();
@@ -899,49 +900,49 @@ bool QuickRaceUnlocker::IsCarUnlocked(eUnlockFilters filter, unsigned int car, i
         if (handle != 0x9665) {
             if (handle > 0x9665) {
                 if (handle == 0x136250) {
-                    return FEDatabase->GetCareerSettings()->GetCurrentBin() < 0xC;
+                    return currentBin < 0xC;
                 }
                 if (handle < 0x136251) {
                     if (handle == 0x13624E) {
-                        return FEDatabase->GetCareerSettings()->GetCurrentBin() < 10;
+                        return currentBin < 10;
                     }
                     if (handle < 0x13624F) {
                         if (handle == 0x9666) {
-                            return FEDatabase->GetCareerSettings()->GetCurrentBin() < 9;
+                            return currentBin < 9;
                         }
                     } else {
-                        return FEDatabase->GetCareerSettings()->GetCurrentBin() < 0xB;
+                        return currentBin < 0xB;
                     }
                 } else if (handle == 0x136252) {
-                    return FEDatabase->GetCareerSettings()->GetCurrentBin() < 0xE;
+                    return currentBin < 0xE;
                 } else if (handle < 0x136252) {
-                    return FEDatabase->GetCareerSettings()->GetCurrentBin() < 0xD;
+                    return currentBin < 0xD;
                 } else if (handle == 0x136253) {
-                    return FEDatabase->GetCareerSettings()->GetCurrentBin() < 0xF;
+                    return currentBin < 0xF;
                 }
                 return false;
             }
             if (handle == 0x9661) {
-                return FEDatabase->GetCareerSettings()->GetCurrentBin() < 4;
+                return currentBin < 4;
             }
             if (handle > 0x9661) {
                 if (handle == 0x9663) {
-                    return FEDatabase->GetCareerSettings()->GetCurrentBin() < 6;
+                    return currentBin < 6;
                 }
                 if (handle < 0x9664) {
-                    return FEDatabase->GetCareerSettings()->GetCurrentBin() < 5;
+                    return currentBin < 5;
                 }
-                return FEDatabase->GetCareerSettings()->GetCurrentBin() < 7;
+                return currentBin < 7;
             }
             if (handle == 0x965F) {
-                return FEDatabase->GetCareerSettings()->GetCurrentBin() < 2;
+                return currentBin < 2;
             }
-            if (handle != 0x9660 || FEDatabase->GetCareerSettings()->GetCurrentBin() > 2) {
+            if (handle != 0x9660 || currentBin > 2) {
                 return false;
             }
             return true;
         }
-        return FEDatabase->GetCareerSettings()->GetCurrentBin() < 8;
+        return currentBin < 8;
     }
     if (handle == 0x363A1FEA) {
         return GetIsCollectorsEdition();
