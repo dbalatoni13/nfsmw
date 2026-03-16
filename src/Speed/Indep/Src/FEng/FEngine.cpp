@@ -837,18 +837,18 @@ void FEngine::ProcessPadsForPackage(FEPackage* pPackage) {
                 if ((JoyMask & (1 << PadIndex)) != 0) {
                     if (pJoyPad[PadIndex].WasPressed(0x40)) {
                         Pressed = Pressed | Mask;
-                        FromPadPressed[4] = FromPadPressed[4] | static_cast<unsigned char>(1 << PadIndex);
+                        FromPadPressed[i] = FromPadPressed[i] | static_cast<unsigned char>(1 << PadIndex);
                     }
                     if (pJoyPad[PadIndex].WasReleased(0x40)) {
                         Released = Released | Mask;
-                        FromPadReleased[4] = FromPadReleased[4] | static_cast<unsigned char>(1 << PadIndex);
+                        FromPadReleased[i] = FromPadReleased[i] | static_cast<unsigned char>(1 << PadIndex);
                     }
                     if (pJoyPad[PadIndex].WasHeld(0x40)) {
                         Held = Held | Mask;
-                        HeldFor[4] = HeldFor[4] > pJoyPad[PadIndex].HeldFor(0x40)
-                            ? HeldFor[4]
+                        HeldFor[i] = HeldFor[i] > pJoyPad[PadIndex].HeldFor(0x40)
+                            ? HeldFor[i]
                             : pJoyPad[PadIndex].HeldFor(0x40);
-                        FromPadHeld[4] = FromPadHeld[4] | static_cast<unsigned char>(1 << PadIndex);
+                        FromPadHeld[i] = FromPadHeld[i] | static_cast<unsigned char>(1 << PadIndex);
                     }
                 }
             }
