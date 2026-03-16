@@ -44,8 +44,9 @@ struct FEMessageResponse : public FEMinNode {
     FEResponse* pResponseList;       // offset 0x14, size 0x4
 
     inline void Init() {
-        next = reinterpret_cast<FEMinNode*>(0xABADCAFE);
-        prev = reinterpret_cast<FEMinNode*>(0xABADCAFE);
+        MsgID = 0;
+        Count = 0;
+        pResponseList = nullptr;
     }
     inline FEMessageResponse() : MsgID(0), Count(0), pResponseList(nullptr) {}
     ~FEMessageResponse() override;
