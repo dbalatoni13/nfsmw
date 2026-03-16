@@ -11,14 +11,35 @@
 extern void FEngSetTextureHash(FEImage *image, unsigned int hash);
 extern void FEngSetCurrentButton(const char *pkg_name, unsigned int hash);
 extern void FEngGetCenter(FEObject *object, float &x, float &y);
+extern void FEngSetCenter(FEObject *object, float x, float y);
 extern unsigned long FEHash(const char *str);
 extern FEColor FEngGetObjectColor(FEObject *object);
 extern void FEngSetColor(FEObject *obj, unsigned int color);
 extern void FEngSetLastButton(const char *pkg_name, unsigned char button_hash);
 extern void FEngSetScript(const char *pkg_name, unsigned int obj_hash, unsigned int script_hash, bool unk);
 extern Timer RealTimer;
+extern float RealTimeElapsed;
 extern char *bStrCat(char *dest, const char *str1, const char *str2);
 extern FEString *FEngFindString(const char *pkg_name, int hash);
+
+struct tCubic1D {
+    float Val;
+    float dVal;
+    float ValDesired;
+    float dValDesired;
+    float Coeff[4];
+    float time;
+    float duration;
+    short state;
+    short flags;
+
+    void Snap();
+    void SetValDesired(float v);
+};
+
+struct cPoint {
+    static void SplineSeek(tCubic1D *p, float time, float lower, float upper);
+};
 
 static const char *gTUTORIAL_MOVIE_DRAG = "TUT_DRAG";
 static const char *gTUTORIAL_MOVIE_SPEEDTRAP = "TUT_SPEEDTRAP";
@@ -330,6 +351,42 @@ IconScroller::IconScroller(const char *pkg_name, const char *master, const char 
     iNumBookEnds = 0;
 }
 
+IconScroller::~IconScroller() {}
+
+void IconScroller::Update() {
+    if (!Options.IsEmpty() && pCurrentNode && !bDelayUpdate) {
+        if (bJustScrolled) {
+            bJustScrolled = false;
+            ScrollBar.Update(1, iIndexToAdd - (iNumBookEnds + 1), iCurSelectedIndex - iNumBookEnds,
+                             iCurSelectedIndex - iNumBookEnds);
+            reinterpret_cast<tCubic1D *>(AnimateCubicData)->SetValDesired(-pCurrentNode->XPos);
+            if (-pCurrentNode->XPos != reinterpret_cast<tCubic1D *>(AnimateCubicData)->Val) {
+                reinterpret_cast<tCubic1D *>(AnimateCubicData)->state = 2;
+            }
+            UpdateArrows();
+        }
+
+        for (IconOption *opt = Options.GetHead(); opt != Options.EndOfList(); opt = opt->GetNext()) {
+            PositionOption(opt);
+        }
+
+        if (bFadingIn) {
+            fCurFadeTime += 1.0f;
+            if (fCurFadeTime >= fMaxFadeTime) {
+                fCurFadeTime = fMaxFadeTime;
+                bFadingIn = false;
+            }
+        } else if (bFadingOut) {
+            fCurFadeTime -= 1.0f;
+            if (fCurFadeTime <= 0.0f) {
+                fCurFadeTime = 0.0f;
+            }
+        }
+
+        cPoint::SplineSeek(reinterpret_cast<tCubic1D *>(AnimateCubicData), RealTimeElapsed, 0.0f, 0.0f);
+    }
+}
+
 void IconScroller::AddInitialBookEnds() {
     for (int i = 0; i < iNumBookEnds / 2; i++) {
         FEScrollyBookEnd *bookend = new FEScrollyBookEnd(0x43B6310F);
@@ -368,6 +425,47 @@ FEImage *IconScroller::AddOption(IconOption *option) {
         return obj;
     }
     return nullptr;
+}
+
+void IconScroller::SetInitialPos(int index) {
+    TailBookEnd = Options.GetTail();
+    for (int i = 0; i < iNumBookEnds / 2; i++) {
+        FEScrollyBookEnd *option = new(__FILE__, __LINE__) FEScrollyBookEnd(0x43B6310F);
+        FEImage *img = AddOption(option);
+        if (img) {
+            FEngSetTextureHash(img, option->Item);
+        }
+    }
+    TailBookEnd = TailBookEnd->GetNext();
+
+    if (index > 0) {
+        index += iNumBookEnds / 2;
+    }
+
+    IconOption *option = Options.GetNode(index - 1);
+    if (index == 0 || !option) {
+        SetSelection(static_cast<IconOption *>(HeadBookEnd->GetNext()));
+    } else {
+        if (option->Item == 0x43B6310F) {
+            option = static_cast<IconOption *>(TailBookEnd->GetPrev());
+        }
+        SetSelection(option);
+    }
+
+    if (!bHorizontal) {
+        reinterpret_cast<tCubic1D *>(AnimateCubicData)->SetValDesired(-pCurrentNode->YPos);
+    } else {
+        reinterpret_cast<tCubic1D *>(AnimateCubicData)->SetValDesired(-pCurrentNode->XPos);
+    }
+    reinterpret_cast<tCubic1D *>(AnimateCubicData)->Snap();
+
+    if (!bDelayUpdate) {
+        for (IconOption *opt = Options.GetHead(); opt != Options.EndOfList(); opt = opt->GetNext()) {
+            PositionOption(opt);
+        }
+    }
+
+    bInitialized = true;
 }
 
 bool IconScroller::SetSelection(IconOption *option) {
@@ -498,6 +596,45 @@ float IconScroller::Scale(float x, float center, float scroll_size, float thumb_
     return 1.0f;
 }
 
+void IconScroller::PositionOption(IconOption *option) {
+    if (option) {
+        float xpos = fXCenter + reinterpret_cast<tCubic1D *>(AnimateCubicData)->Val + option->XPos;
+        FEngSetSize(option->FEngObject, option->OrigWidth, option->OrigHeight);
+        float scale = Scale(xpos, fXCenter, fWidth, option->OrigWidth);
+
+        if (fXCenter <= xpos) {
+            float aligned_pos = 1.0f - scale;
+            xpos -= option->OrigWidth * aligned_pos * aligned_pos * aligned_pos;
+        } else {
+            float aligned_pos = 1.0f - scale;
+            xpos += option->OrigWidth * aligned_pos * aligned_pos * aligned_pos;
+        }
+
+        ClipEdges(option, xpos);
+        FEngSetCenter(option->FEngObject, xpos, fYCenter);
+
+        if (bFadingIn || bFadingOut) {
+            scale *= fCurFadeTime / fMaxFadeTime;
+        }
+
+        float aligned_pos = 0.0f;
+        if (AlignmentToSelected == eSA_MIDDLE) {
+            aligned_pos = (option->OrigHeight - option->OrigHeight * scale) * 0.5f + FEngGetTopLeftY(option->FEngObject);
+        } else if (AlignmentToSelected == eSA_TOP) {
+            aligned_pos = FEngGetTopLeftY(option->FEngObject);
+        } else if (AlignmentToSelected == eSA_BOTTOM) {
+            aligned_pos = FEngGetTopLeftY(option->FEngObject) + (option->OrigHeight - option->OrigHeight * scale);
+        }
+
+        FEngSetSize(option->FEngObject, option->OrigWidth * scale, option->OrigHeight * scale);
+        FEngSetTopLeftY(option->FEngObject, aligned_pos);
+
+        if (bAllowColorAnim) {
+            UpdateFade(option, scale);
+        }
+    }
+}
+
 void IconScroller::UpdateFade(IconOption *option, float scale) {
     if (option != nullptr && option->FEngObject != nullptr && option->FEngObject->pData != nullptr) {
         unsigned int idle_color = IdleColor;
@@ -568,6 +705,22 @@ void IconScroller::UpdateArrows() {
         ScrollBar.SetArrowVisibility(1, true);
         ScrollBar.SetArrowVisibility(2, true);
     }
+}
+
+IconOption *IconScroller::GetHead() {
+    return static_cast<IconOption *>(HeadBookEnd->GetNext());
+}
+
+bool IconScroller::IsHead(IconOption *option) {
+    return option == static_cast<IconOption *>(HeadBookEnd->GetNext());
+}
+
+bool IconScroller::IsTail(IconOption *option) {
+    return option == static_cast<IconOption *>(TailBookEnd->GetPrev());
+}
+
+bool IconScroller::IsEndOfList(IconOption *opt) {
+    return opt == TailBookEnd || opt == HeadBookEnd;
 }
 
 // ============================================================

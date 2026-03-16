@@ -247,7 +247,7 @@ void UIQRBrief::NotificationMessage(unsigned long msg, FEObject *pobj, unsigned 
     }
     case 0x406415e3: {
         cFrontendDatabase *db = FEDatabase;
-        char port = FEngMapJoyParamToJoyport(param2);
+        char port = FEngMapJoyParamToJoyport(param1);
         db->SetPlayersJoystickPort(0, port);
         break;
     }

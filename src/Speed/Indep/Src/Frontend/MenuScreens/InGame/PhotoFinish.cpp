@@ -323,9 +323,7 @@ void PhotoFinishScreen::NotificationMessage(unsigned long msg, FEObject *, unsig
                 new EUnPause();
                 new EAutoSave();
 
-                UCrc32 kind(0x20D60DBF);
-                MFlowReadyForOutro outro_message;
-                outro_message.Post(kind);
+                MFlowReadyForOutro().Post(UCrc32(0x20D60DBF));
                 SoundPause(false, static_cast< eSNDPAUSE_REASON >(0xA));
                 SetSoundControlState(false, static_cast< eSNDCTLSTATE >(0xC), lbl_803E60D4);
                 return;
@@ -363,9 +361,7 @@ void PhotoFinishScreen::NotificationMessage(unsigned long msg, FEObject *, unsig
                     } else if (remaining_races == 1) {
                         cFEng::Get()->QueuePackagePop(1);
 
-                        UCrc32 kind(0x20D60DBF);
-                        MFlowReadyForOutro outro_message;
-                        outro_message.Post(kind);
+                        MFlowReadyForOutro().Post(UCrc32(0x20D60DBF));
                         return;
                     }
 
@@ -376,9 +372,7 @@ void PhotoFinishScreen::NotificationMessage(unsigned long msg, FEObject *, unsig
 
                 new EUnPause();
 
-                UCrc32 kind(0x20D60DBF);
-                MFlowReadyForOutro outro_message;
-                outro_message.Post(kind);
+                MFlowReadyForOutro().Post(UCrc32(0x20D60DBF));
                 return;
             }
 
@@ -410,15 +404,10 @@ void PhotoFinishScreen::NotificationMessage(unsigned long msg, FEObject *, unsig
             new EUnPause();
             return;
         case 0xC98356BA: {
-            int active = 0;
-            int packed_time = mSlowdownTimer.GetPackedTime();
-            if (packed_time != 0 && packed_time != 0x7FFFFFFF) {
-                active = 1;
-            }
-
-            if (active != 0 &&
-                static_cast< float >(RealTimer.GetPackedTime() - packed_time) * lbl_803E61B8 >= lbl_803E61BC) {
-                mSlowdownTimer = Timer();
+            if (mSlowdownTimer.IsSet() &&
+                static_cast< float >(RealTimer.GetPackedTime() - mSlowdownTimer.GetPackedTime()) * lbl_803E61B8 >=
+                    lbl_803E61BC) {
+                mSlowdownTimer.UnSet();
                 mIceCamTimer = RealTimer;
 
                 HideEverySingleHud();
@@ -436,15 +425,10 @@ void PhotoFinishScreen::NotificationMessage(unsigned long msg, FEObject *, unsig
                 return;
             }
 
-            active = 0;
-            packed_time = mIceCamTimer.GetPackedTime();
-            if (packed_time != 0 && packed_time != 0x7FFFFFFF) {
-                active = 1;
-            }
-
-            if (active != 0 &&
-                static_cast< float >(RealTimer.GetPackedTime() - packed_time) * lbl_803E61B8 >= lbl_803E61BC) {
-                mIceCamTimer = Timer();
+            if (mIceCamTimer.IsSet() &&
+                static_cast< float >(RealTimer.GetPackedTime() - mIceCamTimer.GetPackedTime()) * lbl_803E61B8 >=
+                    lbl_803E61BC) {
+                mIceCamTimer.UnSet();
 
                 if (!FEngIsScriptSet(GetPackageName(), 0x47FF4E7C, 0x0013C37B)) {
                     FEngSetScript(GetPackageName(), 0x47FF4E7C, 0x0013C37B, true);

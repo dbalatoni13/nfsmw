@@ -56,7 +56,6 @@ FEColor::operator unsigned long() const {
 
     return (av << 24) | (rv << 16) | (gv << 8) | bv;
 }
-
 FEColor& FEColor::operator=(const FEColor& rhs) {
     a = rhs.a;
     r = rhs.r;
@@ -64,7 +63,6 @@ FEColor& FEColor::operator=(const FEColor& rhs) {
     b = rhs.b;
     return *this;
 }
-
 FEColor& FEColor::operator+=(const FEColor& rhs) {
     r += rhs.r;
     g += rhs.g;
@@ -110,4 +108,3 @@ void FEQuaternion::GetMatrix(FEMatrix4* pMatrix) {
     pMatrix->m43 = 0.0f;
     pMatrix->m44 = 1.0f;
 }
-

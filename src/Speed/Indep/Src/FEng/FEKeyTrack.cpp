@@ -5,7 +5,6 @@ ObjectPool<FEKeyNode, 256> FEKeyNode::NodePool;
 
 void* FEKeyNode::operator new(unsigned int) {
     FEKeyNode* pNode = NodePool.AllocSingle();
-    pNode->Init();
     return pNode;
 }
 

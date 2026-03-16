@@ -44,7 +44,7 @@ struct IconScroller : public IconPanel {
 
     IconScroller() {}
     IconScroller(const char* pkg_name, const char* master, const char* fe_button, const char* scroll_region, float width);
-    ~IconScroller() override {}
+    ~IconScroller() override;
 
     void Update() override;
     virtual void AddInitialBookEnds();
@@ -62,18 +62,10 @@ struct IconScroller : public IconPanel {
     void UpdateArrows();
     void PulseSelected();
 
-    IconOption* GetHead() override {
-        return static_cast< IconOption * >(HeadBookEnd->GetNext());
-    }
-    bool IsHead(IconOption* option) override {
-        return option == static_cast<IconOption *>(HeadBookEnd->GetNext());
-    }
-    bool IsTail(IconOption* option) override {
-        return option == static_cast<IconOption *>(TailBookEnd->GetPrev());
-    }
-    bool IsEndOfList(IconOption* opt) override {
-        return opt == TailBookEnd || opt == HeadBookEnd;
-    }
+    IconOption* GetHead() override;
+    bool IsHead(IconOption* option) override;
+    bool IsTail(IconOption* option) override;
+    bool IsEndOfList(IconOption* opt) override;
 
     void DelayUpdate() {
         bDelayUpdate = true;

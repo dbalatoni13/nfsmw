@@ -357,7 +357,7 @@ class CareerSettings {
     void SetAwardedDemoMarker();
 
     bool HasBeenAwardedBKReward() {
-        return GetCurrentBin() >= 16;
+        return SpecialFlags & 0x2000;
     }
 
   public:

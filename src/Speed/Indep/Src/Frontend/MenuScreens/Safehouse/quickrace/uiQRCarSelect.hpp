@@ -8,6 +8,8 @@
 
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/IconPanel.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/Slider.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/customize/CustomizeTypes.hpp"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 
@@ -16,9 +18,8 @@
 struct FEImage;
 struct FEString;
 struct FECarRecord;
+struct FECareerRecord;
 struct SelectableCar;
-#include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/customize/CustomizeTypes.hpp"
-struct TwoStageSlider;
 
 // total size: 0x1C
 class QRCarSelectBustedManager {

@@ -188,7 +188,7 @@ struct TollboothStat : public ResultStat {
 
 struct StatsPanel {
     StatsPanel();
-    virtual ~StatsPanel();
+    virtual ~StatsPanel() {}
 
     void SetParentPkg(const char *parent_pkg) {
         ParentPkg = parent_pkg;

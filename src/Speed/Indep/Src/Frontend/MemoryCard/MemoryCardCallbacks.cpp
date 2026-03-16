@@ -45,25 +45,24 @@ void MemcardCallbacks::ShowMessage(const wchar_t* msg, unsigned int nOptions,
         reinterpret_cast<unsigned short*>(const_cast<wchar_t*>(msg)),
         JOYLOG_CHANNEL_MEMORY_CARD);
     unsigned int loggedOptions = Joylog::AddOrGetData(nOptions, 0x20, JOYLOG_CHANNEL_MEMORY_CARD);
-    nOptions = loggedOptions;
-    for (unsigned int i = 0; i < nOptions; i++) {
+    for (unsigned int i = 0; i < loggedOptions; i++) {
         Joylog::AddOrGetData(
             reinterpret_cast<unsigned short*>(const_cast<wchar_t*>(options[i])),
             JOYLOG_CHANNEL_MEMORY_CARD);
     }
-    DisplayMessage(msg, nOptions, options);
+    DisplayMessage(msg, loggedOptions, options);
     GetMemcard()->SetWaitingForResponse(true);
     if (GetMemcard()->IsAutoSaving() && gMemcardSetup.GetMethod() != 0xb0) {
-        if (nOptions == 0) {
+        if (loggedOptions == 0) {
             GetMemcard()->SetWaitingForResponse(false);
         } else {
             GetMemcard()->m_PendingMessage =
-                new (__FILE__, __LINE__) MemoryCardMessage(msg, nOptions, options);
+                new (__FILE__, __LINE__) MemoryCardMessage(msg, loggedOptions, options);
             GetMemcard()->HandleAutoSaveError();
         }
     } else {
         int op = GetMemcard()->GetOp();
-        if (nOptions != 0 ||
+        if (loggedOptions != 0 ||
             op > MemoryCard::MO_LoadYNCF ||
             op < MemoryCard::MO_FakeLoad) {
             UIMemcardBase* pScreen = GetScreen();
@@ -74,9 +73,9 @@ void MemcardCallbacks::ShowMessage(const wchar_t* msg, unsigned int nOptions,
                     }
                     GetMemcard()->m_PendingMessage =
                         new (__FILE__, __LINE__)
-                            MemoryCardMessage(msg, nOptions, options);
+                            MemoryCardMessage(msg, loggedOptions, options);
                 } else {
-                    GetScreen()->ShowMessage(msg, nOptions, options[0],
+                    GetScreen()->ShowMessage(msg, loggedOptions, options[0],
                                              options[1], options[2]);
                 }
             }

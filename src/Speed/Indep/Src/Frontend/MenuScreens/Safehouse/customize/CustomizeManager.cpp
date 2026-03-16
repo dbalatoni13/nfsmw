@@ -1184,7 +1184,13 @@ void CarCustomizeManager::GetCarPartList(int car_slot, bTList<SelectablePart> &t
     eUnlockableEntity unlockable = MapCarPartToUnlockable(car_slot, nullptr);
     while (part) {
         int next_slot = car_slot;
-        if (car_slot > 0x42) {
+        if (car_slot == 0x42) {
+            if (param != 0) {
+                if (part->GetAppliedAttributeUParam(0xebb03e66, 0) != param) {
+                    goto next_part;
+                }
+            }
+        } else if (car_slot > 0x42) {
             if (car_slot == 0x4d) {
                 unsigned int vinylHash = GetVinylLayerHash(part, cartype, 1);
                 eStreamingEntry *streaming = StreamingTexturePackLoader.GetStreamingEntry(vinylHash);
@@ -1202,12 +1208,6 @@ void CarCustomizeManager::GetCarPartList(int car_slot, bTList<SelectablePart> &t
                     }
                 }
             }
-        } else if (car_slot == 0x42) {
-            if (param != 0) {
-                if (part->GetAppliedAttributeUParam(0xebb03e66, 0) != param) {
-                    goto next_part;
-                }
-            }
         } else if (car_slot == 0x17) {
             bool valid = false;
             unsigned int modelHash = part->GetModelNameHash(0, 1);
@@ -1223,11 +1223,9 @@ void CarCustomizeManager::GetCarPartList(int car_slot, bTList<SelectablePart> &t
                 int level = 0;
                 if (unlockable == 0x2e) {
                     level = 2;
-                } else if (unlockable > 0x2e) {
-                    if (unlockable == 0x30) {
-                        level = 3;
-                    }
-                } else if (unlockable == 0x2c) {
+                } else if (unlockable == 0x30) {
+                    level = 3;
+                } else {
                     level = 1;
                 }
                 if (CustomizeIsInBackRoom() &&
@@ -1240,7 +1238,7 @@ void CarCustomizeManager::GetCarPartList(int car_slot, bTList<SelectablePart> &t
                     if (!UnlockSystem::IsCarPartUnlocked(UNLOCK_CAREER_MODE, car_slot, part, 0, true)) {
                         goto next_part;
                     }
-                } else if ((FEDatabase->GetGameMode() & 0x4000) == 0 &&
+                } else if (!FEDatabase->GetCareerSettings()->HasBeatenCareer() &&
                     static_cast<unsigned int>(part->GroupNumber_UpgradeLevel >> 5) == 7u) {
                     goto next_part;
                 }

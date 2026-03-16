@@ -14,6 +14,12 @@
 struct FECarRecord;
 struct CarPart;
 
+bool CustomizeIsInBackRoom();
+void CustomizeSetInBackRoom(bool b);
+bool CustomizeIsInPerformance();
+void CustomizeSetInPerformance(bool b);
+bool CustomizeIsInParts();
+void CustomizeSetInParts(bool b);
 
 struct CarCustomizeManager {
     ShoppingCartItem *GetFirstCartItem() { return static_cast<ShoppingCartItem *>(ShoppingCart.GetHead()); }
@@ -22,12 +28,12 @@ struct CarCustomizeManager {
     ShoppingCartItem *GetCartItem(int index);
     void EmptyCart();
     SelectablePart *GetTempColoredPart() { return TheTempColoredPart; }
-    void SetInBackRoom(bool in_back);
-    bool IsInBackRoom();
-    void SetInPerformance(bool b);
-    bool IsInPerformance();
-    void SetInParts(bool b);
-    bool IsInParts();
+    void SetInBackRoom(bool in_back) { CustomizeSetInBackRoom(in_back); }
+    bool IsInBackRoom() { return CustomizeIsInBackRoom(); }
+    void SetInPerformance(bool b) { CustomizeSetInPerformance(b); }
+    bool IsInPerformance() { return CustomizeIsInPerformance(); }
+    void SetInParts(bool b) { CustomizeSetInParts(b); }
+    bool IsInParts() { return CustomizeIsInParts(); }
     const FECustomizationRecord *GetPreviewRecord() { return &PreviewRecord; }
     const FECarRecord *GetTuningCar() { return TuningCar; }
 

@@ -34,10 +34,13 @@ Showcase::Showcase(ScreenConstructorData *sd) : MenuScreen(sd) //
             pTagImg = FEngFindImage(GetPackageName(), 0xf5a2a087);
             RivalStreamer.Init(BlackListNumber, nullptr, pTagImg, nullptr);
         } else {
-            FEImage *manuLogo = FEngFindImage(GetPackageName(), 0x3e01ad1d);
-            FEngSetTextureHash(manuLogo, car->GetManuLogoHash());
-            FEImage *carBadge = FEngFindImage(GetPackageName(), 0xb05dd708);
-            FEngSetTextureHash(carBadge, car->GetLogoHash());
+            const char *pkg = GetPackageName();
+            unsigned int manuLogoHash = car->GetManuLogoHash();
+            FEImage *manuLogo = FEngFindImage(pkg, 0x3e01ad1d);
+            FEngSetTextureHash(manuLogo, manuLogoHash);
+            unsigned int logoHash = car->GetLogoHash();
+            FEImage *carBadge = FEngFindImage(pkg, 0xb05dd708);
+            FEngSetTextureHash(carBadge, logoHash);
             RivalStreamer.Init(1, nullptr, nullptr, nullptr);
         }
     }

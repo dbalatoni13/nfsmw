@@ -32,9 +32,9 @@ void ChallengeDatum::NotificationMessage(unsigned long msg, FEObject *pObj, unsi
 
 UIQRChallengeSeries::UIQRChallengeSeries(ScreenConstructorData *sd)
     : ArrayScrollerMenu(sd, 4, 3, true) //
-    , MapHash(0) //
+    , prev_race_hash(0) //
+    , pMovieName(0)
 {
-    tTimer.ResetLow();
     theChallengeRace = nullptr;
     int numSlots = GetWidth() * GetHeight();
     for (int i = 0; i < numSlots; i++) {
@@ -140,9 +140,9 @@ void UIQRChallengeSeries::RefreshHeader() {
     ChallengeDatum *cd = static_cast<ChallengeDatum *>(current);
     GRaceParameters *race = cd->race;
     if (!race) return;
-    if (MapHash == race->GetEventHash()) return;
+    if (prev_race_hash == race->GetEventHash()) return;
 
-    MapHash = race->GetEventHash();
+    prev_race_hash = race->GetEventHash();
     FEPrintf(GetPackageName(), 0x13c45e, "%.0f", race->GetCashValue());
 
     bool metric = FEDatabase->GetGameplaySettings()->SpeedoUnits == 1;

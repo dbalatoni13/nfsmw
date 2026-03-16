@@ -10,14 +10,14 @@
 extern void FEngSetVisible(FEObject *obj);
 extern void FEngSetInvisible(FEObject *obj);
 extern FEObject *FEngFindObject(const char *pkg, unsigned int hash);
-extern FEImage *FEngFindImage(const char *pkg, unsigned int hash);
+extern FEImage *FEngFindImage(const char *pkg, int hash);
 extern void FEngSetTextureHash(FEImage *img, unsigned int hash);
 extern bool CustomizeIsInBackRoom();
 extern void CustomizeSetInParts(bool b);
 extern void CustomizeSetInPerformance(bool b);
 extern int GetCurrentLanguage();
 extern const char *GetLocalizedString(unsigned int hash);
-extern void FEPrintf(const char *pkg, unsigned int hash, const char *fmt, ...);
+extern int FEPrintf(const char *pkg, int hash, const char *fmt, ...);
 extern int bSNPrintf(char *buf, int size, const char *fmt, ...);
 
 extern const char *g_pCustomizeMainPkg;

@@ -39,6 +39,7 @@ struct GRacerInfo {
     bool GetIsKnockedOut() const { return mKnockedOut; }
     bool GetIsTotalled() const { return mTotalled; }
     bool GetIsEngineBlown() const { return mEngineBlown; }
+    bool GetIsBusted() const { return mBusted; }
     bool IsFinishedRacing() const { return mFinishedRacing; }
     const char *GetName() const { return mName; }
     int GetRanking() const { return mRanking; }

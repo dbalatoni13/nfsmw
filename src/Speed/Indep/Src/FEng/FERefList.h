@@ -10,7 +10,11 @@
 // total size: 0x10
 class FERefList {
   public:
-    FERefList() : bIsReference(false), head(nullptr), tail(nullptr) {}
+    FERefList() {
+        head = nullptr;
+        tail = nullptr;
+        bIsReference = false;
+    }
     virtual ~FERefList() {
         if (!bIsReference) {
             Purge();

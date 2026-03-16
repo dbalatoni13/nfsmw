@@ -171,8 +171,8 @@ void FECodeListBox::FillAllCells() {
         return;
     }
     unsigned long ulNumVisRows = mulNumVisibleRows;
-    int lStartColumn = mulCurrentVirtualColumn;
-    int lRow = mulCurrentVirtualRow;
+    int lStartColumn = mulCurrentVirtualRow;
+    int lRow = mulCurrentVirtualColumn;
     if (ulNumVisRows > mulNumTotalRows) {
         ulNumVisRows = mulNumTotalRows;
     }
@@ -490,8 +490,8 @@ unsigned long FECodeListBox::CalculateCurrentFromTarget(unsigned long ulTarget, 
     }
     unsigned long result = ulTarget;
     if (mulFlags & 8) {
-        int lRet = static_cast<int>(result) - static_cast<int>(ulVisible >> 1);
-        result = static_cast<unsigned long>(GetValidIndex(lRet, static_cast<int>(ulTotal)));
+        result = static_cast<unsigned long>(GetValidIndex(static_cast<int>(result) - static_cast<int>(ulVisible >> 1),
+                                                          static_cast<int>(ulTotal)));
     }
     return result;
 }
@@ -586,7 +586,7 @@ bool FECodeListBox::MakeMove(long lNumMove, unsigned long& ulCurrentVirtual, uns
         ulTarget = lNewCurrent;
     } else {
         unsigned long ulOldTarget = ulTarget;
-        int lNewTarget = GetValidIndex(static_cast<int>(ulTarget) + lNumMove, ulNumTotal);
+        int lNewTarget = GetValidIndex(static_cast<int>(ulOldTarget) + lNumMove, ulNumTotal);
         ulTarget = lNewTarget;
         if (lNumMove < 0) {
             if (ulCurrentVirtual != ulOldTarget) {

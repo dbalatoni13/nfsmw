@@ -8,8 +8,6 @@
 
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/feArrayScrollerMenu.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/quickrace/uiTrackMapStreamer.hpp"
-#include "Speed/Indep/Src/Misc/Timer.hpp"
-
 #include <types.h>
 
 struct GRaceParameters;
@@ -33,20 +31,19 @@ struct UIQRChallengeSeries : public ArrayScrollerMenu {
     UIQRChallengeSeries(ScreenConstructorData *sd);
     ~UIQRChallengeSeries() override;
 
-    void NotificationMessage(unsigned long msg, FEObject *pobj, unsigned long param1, unsigned long param2) override;
     eMenuSoundTriggers NotifySoundMessage(unsigned long msg, eMenuSoundTriggers maybe) override;
+    void NotificationMessage(unsigned long msg, FEObject *pobj, unsigned long param1, unsigned long param2) override;
 
-    void Setup();
+    void ChooseTransmission();
     void RefreshHeader() override;
-    void BuildSeriesList();
     void AddRace(GRaceParameters *race);
     bool IsRaceValidForMike(GRaceParameters *parms);
-    void ChooseTransmission();
+    void Setup();
 
-    UITrackMapStreamer TrackMapStreamer;     // offset 0xE8, size 0xDC
-    FEMultiImage *TrackMap;                // offset 0x1C4, size 0x4
-    unsigned int MapHash;                  // offset 0x1C8, size 0x4
-    Timer tTimer;                          // offset 0x1CC, size 0x4
+    unsigned int prev_race_hash;          // offset 0xE8, size 0x4
+    FEMultiImage *TrackMap;               // offset 0xEC, size 0x4
+    UITrackMapStreamer TrackMapStreamer;  // offset 0xF0, size 0xDC
+    char *pMovieName;                     // offset 0x1CC, size 0x4
 };
 
 #endif

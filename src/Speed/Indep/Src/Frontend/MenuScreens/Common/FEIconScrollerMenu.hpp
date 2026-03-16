@@ -130,7 +130,11 @@ public:
     void SetFEngObject(FEObject* obj);
 };
 
+inline unsigned int IconOption::GetName() { return NameHash; }
 inline void IconOption::SetReactImmediately(bool b) { bReactImmediately = b; }
+inline bool IconOption::ReactsImmediately() { return bReactImmediately; }
+inline bool IconOption::IsTutorialAvailable() { return bIsTutorialAvailable; }
+inline const char* IconOption::GetTutorialMovieName() { return pTutorialMovieName; }
 
 struct FEScrollyBookEnd : public IconOption {
     FEScrollyBookEnd(unsigned int tex_hash) : IconOption(tex_hash, 0, 0) {}

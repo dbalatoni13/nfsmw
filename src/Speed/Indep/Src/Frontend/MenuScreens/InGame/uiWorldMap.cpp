@@ -734,13 +734,15 @@ void WorldMap::UpdateCursor(bool zoom_thing) {
     UpdateAnalogInput();
     if (MapStreamer->IsZooming()) {
         float zoom = MapStreamer->GetZoomFactor();
-        bVector2 pan(0.0f, 0.0f);
+        bVector2 pan;
+        pan.y = 0.0f;
+        pan.x = 0.0f;
         MapStreamer->GetPan(pan);
         bVector2 map_center;
         FEngGetCenter(static_cast< FEObject* >(TrackMap), map_center.x, map_center.y);
         FEngGetTopLeft(static_cast< FEObject* >(TrackMap), MapTopLeft.x, MapTopLeft.y);
-        bVector2 pos(CursorMoveFrom.x, CursorMoveFrom.y);
-        bVector2 delta = pos - map_center;
+        bVector2 pos;
+        bVector2 delta(CursorMoveFrom.x - map_center.x, CursorMoveFrom.y - map_center.y);
         delta *= zoom;
         bVector2 map_br = delta + map_center;
         pos = map_br;
@@ -820,7 +822,9 @@ void WorldMap::MoveCursor(float x, float y) {
             bVector2 prev_pan;
             MapStreamer->GetPan(prev_pan);
             bVector2 pan_to = cur_pan + prev_pan;
-            cur_pan = pan_to * 0.5f + bVector2(0.5f, 0.5f);
+            cur_pan = pan_to * 0.5f;
+            cur_pan.x += 0.5f;
+            cur_pan.y += 0.5f;
             MapStreamer->SetPan(cur_pan);
         }
     }

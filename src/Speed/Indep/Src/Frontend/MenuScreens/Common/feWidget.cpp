@@ -395,40 +395,39 @@ int CTextScroller::WordWrapAddLines(short *pTextStart, short *pTextEnd, bool bCo
         *pNumCharsOut = 0;
     }
 
-    while (pTextStart < pTextEnd) {
-        int StringLength = 0;
+    for (; pTextStart < pTextEnd; NumLines++) {
+        int StringLength = (reinterpret_cast<unsigned int>(pTextEnd) - reinterpret_cast<unsigned int>(pTextStart)) >> 1;
         int StringSize = 0;
         float TextWidth = 0.0f;
         short *pChar = pTextStart;
         short PrevChar = 0;
-        bool bStringSizeOverflow;
-
-        NumLines++;
+        bool bStringSizeOverflow = false;
 
         while (TextWidth < static_cast<float>(m_ViewWidth - 16) && pChar < pTextEnd) {
-            bStringSizeOverflow = IsNewlineChar(*pChar);
+            bStringSizeOverflow = false;
+            if (IsNewlineChar(*pChar)) {
+                bStringSizeOverflow = true;
+            }
             if (bStringSizeOverflow) {
                 break;
             }
 
-            if (!FEngFont::IsJoyEventTexture(pChar, 0)) {
-                StringLength++;
-                TextWidth += m_pFont->GetCharacterWidth(*pChar, PrevChar, 0);
-                pChar++;
-                PrevChar = *pChar;
-            } else {
+            if (FEngFont::IsJoyEventTexture(pChar, 0)) {
                 const short *pNewChar;
 
                 PrevChar = 0;
                 TextWidth += m_pFont->GetJoyEventTextureWidth(pChar);
                 pNewChar = m_pFont->SkipJoyEventTexture(pChar, 0);
-                StringLength += static_cast<int>(pNewChar - pChar);
+                StringSize += pNewChar - pChar;
                 pChar = const_cast<short *>(pNewChar);
+            } else {
+                TextWidth += m_pFont->GetCharacterWidth(*pChar, PrevChar, 0);
+                StringSize++;
+                PrevChar = *++pChar;
             }
         }
 
-        StringSize = StringLength;
-        if (StringLength < static_cast<int>(pTextEnd - pTextStart)) {
+        if (StringSize < StringLength) {
             int WordBreak = StringSize - 1;
 
             while (WordBreak > 0 && pTextStart[WordBreak] != ' ') {
@@ -436,27 +435,27 @@ int CTextScroller::WordWrapAddLines(short *pTextStart, short *pTextEnd, bool bCo
             }
 
             if (WordBreak > 0) {
-                StringLength = WordBreak + 1;
+                StringSize = WordBreak + 1;
             }
 
             if (!bCountOnly) {
-                AddLine(pTextStart, StringLength);
+                AddLine(pTextStart, StringSize);
             }
 
             if (pNumCharsOut) {
-                *pNumCharsOut += 1 + StringLength;
+                *pNumCharsOut += 1 + StringSize;
             }
 
-            pTextStart += StringLength;
+            pTextStart += StringSize;
         } else {
             if (!bCountOnly) {
-                AddLine(pTextStart, StringLength);
+                AddLine(pTextStart, StringSize);
             }
 
             pTextStart = pTextEnd;
 
             if (pNumCharsOut) {
-                *pNumCharsOut += 1 + StringLength;
+                *pNumCharsOut += 1 + StringSize;
             }
         }
     }
