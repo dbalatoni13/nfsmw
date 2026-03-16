@@ -2882,33 +2882,30 @@ void CustomizeSub::SetupVinylGroups() {
     ShoppingCartItem *inCart = gCarCustomizeManager.IsPartTypeInCart(static_cast<unsigned int>(0x4d));
     if (inCart && inCart->GetBuyingPart()) {
         CarPart *part = inCart->GetBuyingPart()->GetPart();
-        if (!part) {
-            InCartPartOptionIndex = 1;
-        } else {
+        if (part) {
             InCartPartOptionIndex = GetVinylGroupIndex(part->GetGroupNumber());
+        } else {
+            InCartPartOptionIndex = 1;
         }
     }
     CarPart *installed = gCarCustomizeManager.GetInstalledCarPart(0x4d);
-    if (!installed) {
-        InstalledPartOptionIndex = 1;
-    } else {
+    if (installed) {
         InstalledPartOptionIndex = GetVinylGroupIndex(installed->GetGroupNumber());
+    } else {
+        InstalledPartOptionIndex = 1;
     }
 
     if (FromCategory == 0x803) {
-        int pos = InCartPartOptionIndex;
-        if (pos == 0) {
-            pos = InstalledPartOptionIndex;
-            if (pos == 0) {
-                SetInitialOption(1);
-                goto done_vinyl;
-            }
+        if (InCartPartOptionIndex != 0) {
+            SetInitialOption(InCartPartOptionIndex);
+        } else if (InstalledPartOptionIndex != 0) {
+            SetInitialOption(InstalledPartOptionIndex);
+        } else {
+            SetInitialOption(1);
         }
-        SetInitialOption(pos);
     } else {
         SetInitialOption(FromCategory & 0xFFFF00FF);
     }
-done_vinyl:
     if (FromCategory - 0x401u < 9u) {
         FromCategory = 0x803;
     }
