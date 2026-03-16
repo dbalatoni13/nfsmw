@@ -113,9 +113,7 @@ void UIDeleteProfile::Setup() {
     AddOption(del);
 
     int lastButton = FEngGetLastButton(GetPackageName());
-    if (bFadeInIconsImmediately) {
-        SetInitialOption(lastButton);
-    }
+    SetInitialOption(lastButton);
 
     Refresh();
 }
