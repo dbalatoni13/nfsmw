@@ -234,7 +234,10 @@ void PauseMenu::SetupOptions() {
                 AddOption(new("", 0) pm_SwitchToOptions(0x520DE4E3, 0x2B5A03A8, 0));
             }
         } else {
-            GRaceParameters* pParams = GRaceStatus::Get().GetRaceParameters();
+            GRaceParameters* pParams = nullptr;
+            if (GRaceStatus::Exists()) {
+                pParams = GRaceStatus::Get().GetRaceParameters();
+            }
             bool isEpicPursuit = false;
             if (pParams != nullptr && pParams->GetIsEpicPursuitRace()) {
                 isEpicPursuit = true;

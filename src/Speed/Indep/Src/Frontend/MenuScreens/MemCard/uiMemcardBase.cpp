@@ -647,10 +647,6 @@ void UIMemcardBase::InitComplete() {
     case 0x80:
         MemoryCard::GetInstance()->CheckCard(0);
         break;
-    case 0x90:
-        m_SimPausedForMemcard = true;
-        HandleAutoSaveError();
-        break;
     case 0xa0:
         if ((gMemcardSetup.mOp & 0x8000) != 0) {
             MemoryCard::GetInstance()->SetAutoSaveEnabled(true);
@@ -659,10 +655,18 @@ void UIMemcardBase::InitComplete() {
         SetStringCheckingCard();
         ShowYesNo(0x750eb45c, 0xc000000);
         break;
+    case 0x90:
+        m_SimPausedForMemcard = true;
+        HandleAutoSaveError();
+        break;
+    case 0xd0:
+        m_SimPausedForMemcard = true;
+        HandleAutoSaveOverwriteMessage();
+        break;
     case 0xb0:
         if (FEDatabase->bProfileLoaded) {
-            char* dst = m_FileName;
             if (MemoryCard::GetInstance()->ShouldDoAutoSave(false)) {
+                char* dst = m_FileName;
                 SetScreenVisible(true, 0);
                 SetStringCheckingCard();
                 const char* profileName = FEDatabase->CurrentUserProfiles[0]->GetProfileName();
@@ -677,10 +681,6 @@ void UIMemcardBase::InitComplete() {
             gMemcardSetup.mOp = (gMemcardSetup.mOp & ~0xf0) | 0x60;
         }
         InitComplete();
-        break;
-    case 0xd0:
-        m_SimPausedForMemcard = true;
-        HandleAutoSaveOverwriteMessage();
         break;
     case 0xf0:
         if (MemoryCard::IsCardAvailable() && IsMemcardEnabled) {
