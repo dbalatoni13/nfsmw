@@ -894,7 +894,19 @@ after_queue:
 
     FEngSetInvisible(FEngFindObject(GetPackageName(), 0x64f6d21f));
 
-    if ((FEDatabase->GetGameMode() & 1) == 0) {
+    if ((FEDatabase->GetGameMode() & 1) != 0) {
+        originalCar = FEDatabase->GetCareerSettings()->GetCurrentCar();
+        if ((FEDatabase->GetGameMode() & 0x8000) != 0) {
+            filter = 0xf0001;
+            UserProfile *profile = FEDatabase->GetUserProfile(0);
+            if ((profile->GetCareer()->SpecialFlags & 2) == 0) {
+                cFEng::Get()->QueuePackageMessage(FEHashUpper("DISABLE_INPUTS"), GetPackageName(), nullptr);
+                MemoryCard::GetInstance()->StartListingOldSaveFiles();
+            }
+            goto init_list_handles;
+        }
+        filter = 0xf0002;
+    } else {
         RaceSettings *settings = FEDatabase->GetQuickRaceSettings(static_cast<GRace::Type>(0xb));
         originalCar = settings->GetSelectedCar(iPlayerNum);
         if ((FEDatabase->GetGameMode() & 0x20) == 0 && originalCar != 0x12345678) {
@@ -911,18 +923,6 @@ after_queue:
             }
         }
         filter = 0xf0001;
-    } else {
-        originalCar = FEDatabase->GetCareerSettings()->GetCurrentCar();
-        if ((FEDatabase->GetGameMode() & 0x8000) != 0) {
-            filter = 0xf0001;
-            UserProfile *profile = FEDatabase->GetUserProfile(0);
-            if ((profile->GetCareer()->SpecialFlags & 2) == 0) {
-                cFEng::Get()->QueuePackageMessage(FEHashUpper("DISABLE_INPUTS"), GetPackageName(), nullptr);
-                MemoryCard::GetInstance()->StartListingOldSaveFiles();
-            }
-            goto init_list_handles;
-        }
-        filter = 0xf0002;
     }
 
 init_list_handles:
