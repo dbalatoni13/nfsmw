@@ -100,6 +100,10 @@ struct CarCustomizeManager {
     bool IsHeroCar();
     float GetCartHeat();
 
+    CarCustomizeManager()
+        : ThePVehicle(static_cast<const Attrib::Collection *>(nullptr), 0, nullptr) //
+        , PreviewRecord() {}
+
     eCustomizeEntryPoint EntryPoint;              // offset 0x0, size 0x4
     FECarRecord *TuningCar;                       // offset 0x4, size 0x4
     Attrib::Gen::pvehicle ThePVehicle;              // offset 0x8, size 0x14

@@ -22,6 +22,7 @@
 #include "Speed/Indep/Src/World/CarInfo.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
 #include "Speed/Indep/Src/Camera/CameraMover.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/customize/CustomizeManager.hpp"
 #include "Speed/Indep/bWare/Inc/bPrintf.hpp"
 
 extern MenuScreen *FEngFindScreen(const char *name);
@@ -44,8 +45,9 @@ extern void eRemoveFEEnvMapPlat();
 extern void GameFlowLoadGarageScreen(void (*callback)(int), int param);
 extern void AddScreenEffect(ScreenEffectDB *db, ScreenEffectType type, float a, float b, float c, float d);
 
-extern RideInfo TopOrFullScreenRide;
-extern eSetRideInfoReasons TopOrFullScreenLoadingReason;
+RideInfo TopOrFullScreenRide;
+CarCustomizeManager gCarCustomizeManager;
+eSetRideInfoReasons TopOrFullScreenLoadingReason;
 
 extern CarLoader TheCarLoader;
 
@@ -54,9 +56,9 @@ extern float RealTimeElapsed;
 extern unsigned int FrameMallocFailed;
 extern unsigned int FrameMallocFailAmount;
 
-extern float carPosX;
-extern float carPosY;
-extern float CarSelectTireSteerAngle;
+float carPosX = 0.0f;
+float carPosY = 0.0f;
+float CarSelectTireSteerAngle = 21.6723f;
 extern int CarTypeInfoArrayUpdated;
 
 struct SelectCarCameraMover : CameraMover {
@@ -76,9 +78,9 @@ extern void SetFEDrivingCarState(EAXFrontEnd *fe_snd, bVector3 *pos, bVector3 *v
 
 extern bTList<eSolid> SolidList;
 
-extern float cam_blur;
+static float cam_blur = 0.0f;
 extern int CarGuysCamera;
-extern float CarRotateSpeed;
+static float CarRotateSpeed = 0.5f;
 
 extern unsigned char *CurrentBufferPos;
 extern unsigned char *CurrentBufferEnd;
@@ -99,12 +101,10 @@ extern int bStrNICmp(const char *, const char *, int);
 #define ABS(x) ((x) < 0 ? -(x) : (x))
 #endif
 
-static int sNumTicksSinceUserMovedCamera;
-static int sNumTicksBeforeCamMovesBackToScreenPosition;
-static int bAutoMovement;
-static int bPass1;
-static float zoomIn;
-static float zoomOut;
+static int sNumTicksSinceUserMovedCamera = 0;
+static int sNumTicksBeforeCamMovesBackToScreenPosition = 300;
+static int bAutoMovement = 0;
+static int bPass1 = 0;
 static bool RenderLookAtPoint = false;
 
 static const char lbl_GarageMain[] = "GarageMain.fng";
@@ -604,6 +604,8 @@ void GarageMainScreen::HandleShowPackage(unsigned int msg) {
 }
 
 void GarageMainScreen::HandleJoyEvents() {
+    static float zoomIn = 0.0f;
+    static float zoomOut = 0.0f;
     int startPort = 0;
     int endPort = 2;
     bool isQR = false;

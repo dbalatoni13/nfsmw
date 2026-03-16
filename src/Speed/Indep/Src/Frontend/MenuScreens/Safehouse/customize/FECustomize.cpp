@@ -300,9 +300,12 @@ void CustomizationScreen::AddPartOption(SelectablePart *part, unsigned int tex_h
 }
 
 CustomizePartOption *CustomizationScreen::FindMatchingOption(SelectablePart *to_find) {
-    IconOption *cur = Options.GetHead();
-    while (!Options.IsEndOfList(cur)) {
-        SelectablePart *part = static_cast<CustomizePartOption *>(cur)->GetPart();
+    IconOption *tail = Options.TailBookEnd;
+    IconOption *cur = Options.HeadBookEnd->GetNext();
+    for (;;) {
+        bool atEnd = (cur == tail) || (cur == Options.HeadBookEnd);
+        if (atEnd) break;
+        SelectablePart *part = static_cast<CustomizePartOption *>(cur)->ThePart;
         if (to_find->PerformancePkg) {
             if (part->PhysicsType == to_find->PhysicsType && part->UpgradeLevel == to_find->UpgradeLevel) {
                 return static_cast<CustomizePartOption *>(cur);
