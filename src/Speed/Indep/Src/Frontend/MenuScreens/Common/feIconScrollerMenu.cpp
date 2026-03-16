@@ -9,6 +9,7 @@ extern void FEngSetCurrentButton(const char *pkg_name, unsigned int hash);
 extern void FEngGetCenter(FEObject *object, float &x, float &y);
 extern unsigned long FEHash(const char *str);
 extern FEColor FEngGetObjectColor(FEObject *object);
+extern void FEngSetColor(FEObject *obj, unsigned int color);
 extern Timer RealTimer;
 extern char *bStrCat(char *dest, const char *str1, const char *str2);
 extern FEString *FEngFindString(const char *pkg_name, int hash);
@@ -489,6 +490,26 @@ float IconScroller::Scale(float x, float center, float scroll_size, float thumb_
         return (pos_far_clip - x) / (scroll_size * 0.5f);
     }
     return 1.0f;
+}
+
+void IconScroller::UpdateFade(IconOption *option, float scale) {
+    if (option != nullptr && option->FEngObject != nullptr && option->FEngObject->pData != nullptr) {
+        unsigned int idle_alpha = IdleColor >> 24;
+        unsigned int idle_red = IdleColor >> 16 & 0xFF;
+        unsigned int idle_green = IdleColor >> 8 & 0xFF;
+        unsigned int idle_blue = IdleColor & 0xFF;
+        unsigned int fade_alpha = FadeColor >> 24;
+        unsigned int fade_red = FadeColor >> 16 & 0xFF;
+        unsigned int fade_green = FadeColor >> 8 & 0xFF;
+        unsigned int fade_blue = FadeColor & 0xFF;
+
+        unsigned int alpha = option->IsGreyOut ? 0x96 : static_cast<unsigned int>(static_cast<int>(static_cast<float>(idle_alpha) * scale + static_cast<float>(fade_alpha) * (1.0f - scale))) & 0xFF;
+        unsigned int red = static_cast<unsigned int>(static_cast<int>(static_cast<float>(idle_red) * scale + static_cast<float>(fade_red) * (1.0f - scale))) & 0xFF;
+        unsigned int green = static_cast<unsigned int>(static_cast<int>(static_cast<float>(idle_green) * scale + static_cast<float>(fade_green) * (1.0f - scale))) & 0xFF;
+        unsigned int blue = static_cast<unsigned int>(static_cast<int>(static_cast<float>(idle_blue) * scale + static_cast<float>(fade_blue) * (1.0f - scale))) & 0xFF;
+
+        FEngSetColor(option->FEngObject, alpha << 24 | red << 16 | green << 8 | blue);
+    }
 }
 
 void IconScroller::UpdateArrows() {

@@ -1,4 +1,7 @@
 #include "Speed/Indep/Src/Frontend/FEngFont.hpp"
+#include "Speed/Indep/Src/FEng/FEString.h"
+#include "Speed/Indep/Src/FEng/FETypes.h"
+#include "Speed/Indep/Src/Frontend/FERenderObject.hpp"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 #include "Speed/Indep/bWare/Inc/bChunk.hpp"
 #include <new>
@@ -12,6 +15,7 @@ extern void bMemSet(void *dst, int val, unsigned int size);
 extern void WideToCharString(char *dst, unsigned int dstSize, const short *src);
 extern int bStrCmp(const char *s1, const char *s2);
 extern unsigned int bStringHashUpper(const char *str);
+extern unsigned int FEngColorToEpolyColor(FEColor c);
 
 TextureInfo *FixupTextureInfoNull(TextureInfo *info, unsigned int hash, TexturePack *pack, bool loading);
 
@@ -473,4 +477,118 @@ float FEngFont::GetTextHeight(const short *pcString, int ilLeading, unsigned lon
         height += Height;
     }
     return height;
+}
+
+void FEngFont::RenderString(const FEColor &Color, const short *pcString, FEString *obj, bMatrix4 *matrix, FERenderObject *cached, FEPackageRenderInfo *pkg_render_info) {
+    unsigned long flags = obj->Flags;
+    unsigned long format = obj->Format;
+    bool word_wrap = (format & 0x10) != 0;
+    int leading = static_cast<int>(static_cast<float>(obj->Leading) * fLeadingScale);
+    unsigned int render_color = FEngColorToEpolyColor(Color);
+    unsigned int render_colors[4];
+    render_colors[0] = render_color;
+    render_colors[1] = render_color;
+    render_colors[2] = render_color;
+    render_colors[3] = render_color;
+
+    float current_y = CalculateYOffset(format, GetTextHeight(pcString, leading, flags, obj->MaxWidth, word_wrap));
+    float current_x = CalculateXOffset(format, GetLineWidth(pcString, flags, obj->MaxWidth, word_wrap));
+
+    if (pTextureInfo) {
+        cached->SetTransform(matrix);
+
+        float line_start_x = current_x;
+        short current = *pcString;
+        const short *next = pcString + 1;
+        int character_index = 0;
+        bool allow_joy_event_texture = true;
+
+        while (current != 0) {
+            if (current != ' ' || current_x != line_start_x || !word_wrap) {
+                if ((flags & 0x20) == 0 && IsNewlineChar(current)) {
+                    if (*next == 0) {
+                        break;
+                    }
+
+                    current_x = CalculateXOffset(format, GetLineWidth(next, flags, obj->MaxWidth, word_wrap));
+                    current_y += Height + static_cast<float>(leading);
+                    line_start_x = current_x;
+                } else {
+                    if (obj->MaxWidth != 0 && current == ' ' && word_wrap) {
+                        float next_word_width = GetNextWordWidth(next - 1, flags);
+                        if (static_cast<float>(obj->MaxWidth) < (current_x - line_start_x) + next_word_width) {
+                            current_x = CalculateXOffset(format, GetLineWidth(next, flags, obj->MaxWidth, word_wrap));
+                            current_y += Height + static_cast<float>(leading);
+                            line_start_x = current_x;
+                        }
+                    }
+
+                    if ((flags & 0x820) == 0 && current == '$') {
+                        if (*next == '$') {
+                            current = *next;
+                            character_index++;
+                            allow_joy_event_texture = false;
+                            next++;
+                        } else if (allow_joy_event_texture) {
+                            float advance = 0.0f;
+                            next = HandleJoyEventTexture(next, current_x, current_y, render_colors, cached, advance, pkg_render_info);
+                            current_x += advance;
+                            goto next_character;
+                        }
+                    }
+
+                    unsigned short unicode = ConvertCharacter(static_cast<unsigned short>(current));
+                    int glyph_stride = (pFont->mFlags & 0x40000) ? 0x10 : 0x0C;
+                    const RealFontOld::Glyph *glyph = pFont->GetGlyph(static_cast<int>(unicode));
+                    if (!glyph) {
+                        glyph = RealFontOld::BSearch(static_cast<short>(unicode),
+                            reinterpret_cast<const RealFontOld::Glyph *>(reinterpret_cast<const char *>(pFont) + pFont->mGlyphTbl),
+                            pFont->mNum,
+                            glyph_stride);
+                    }
+
+                    if (glyph) {
+                        float kern = 0.0f;
+                        if (character_index != 0 && next[-2] != 0) {
+                            kern = static_cast<float>(pFont->GetKern(glyph, next[-2]));
+                        }
+
+                        float texture_width = static_cast<float>(pTextureInfo->Width);
+                        float texture_height = static_cast<float>(pTextureInfo->Height);
+                        float glyph_width = static_cast<float>(glyph->mWidth);
+                        if (glyph_width < 4.0f) {
+                            glyph_width = 4.0f;
+                        }
+
+                        float x0 = current_x + kern + static_cast<float>(glyph->mOffsetX);
+                        float y0 = current_y + static_cast<float>(glyph->mOffsetY) + fBaselineOffset;
+                        cached->AddPoly(x0,
+                                        y0,
+                                        x0 + glyph_width,
+                                        y0 + static_cast<float>(glyph->mHeight),
+                                        1.0f,
+                                        static_cast<float>(glyph->mU) / texture_width,
+                                        static_cast<float>(glyph->mV) / texture_height,
+                                        static_cast<float>(glyph->mU + glyph->mWidth + 1) / texture_width,
+                                        static_cast<float>(glyph->mV + glyph->mHeight) / texture_height,
+                                        render_colors,
+                                        pkg_render_info);
+
+                        short prev_char = 0;
+                        if (character_index != 0) {
+                            prev_char = next[-2];
+                        }
+                        current_x += GetCharacterWidth(static_cast<short>(unicode), prev_char, format);
+                    }
+                }
+            }
+
+        next_character:
+            current = *next;
+            character_index++;
+            next++;
+        }
+
+        cached->Render();
+    }
 }

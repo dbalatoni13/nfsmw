@@ -9,6 +9,12 @@
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/presetride.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/pvehicle.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/pursuitlevels.h"
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/ecar.h"
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/camerainfo.h"
+#include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
+#include "Speed/Indep/Src/Ecstasy/EcstasyE.hpp"
+#include "Speed/Indep/Src/Frontend/Careers/UnlockSystem.hpp"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include "Speed/Indep/Src/Gameplay/GManager.h"
@@ -44,6 +50,10 @@ class CarPartDatabase {
 
 extern CarPartDatabase CarPartDB;
 PresetCar *FindFEPresetCar(unsigned int key);
+int GetNumPresetCars();
+PresetCar *GetPresetCarAt(int index);
+extern bool ShowAllCarsInFE;
+extern bool ShowAllPresetsInFE;
 unsigned int bStringHashUpper(const char *text);
 
 namespace Physics {
@@ -52,6 +62,7 @@ namespace Upgrades {
 
 bool ApplyPreset(Attrib::Gen::pvehicle &vehicle, const Attrib::Gen::presetride &preset);
 void Clear(Attrib::Gen::pvehicle &vehicle);
+void Flush();
 bool SetPackage(Attrib::Gen::pvehicle &vehicle, const Package &package);
 void GetPackage(const Attrib::Gen::pvehicle &vehicle, Package &package);
 
@@ -968,6 +979,48 @@ void FEPlayerCarDB::Default() {
     DeleteAllCustomizations();
     DeleteAllCareerRecords();
 
+    FECarRecord *careerStart = CreateNewPresetCar("M3GTRCAREERSTART");
+    careerStart->Handle = 0x12345678;
+    careerStart->FilterBits = 0xF0020;
+
+    for (int i = 0; i < GetNumPresetCars(); i++) {
+        PresetCar *preset = GetPresetCarAt(i);
+        const char *preset_name = preset->PresetName;
+        unsigned int preset_hash = FEHashUpper(preset_name);
+
+        if (UnlockSystem::IsBonusCarCEOnly(preset_hash) || IsBonusCar(preset_name)) {
+            FECarRecord *bonusCar = CreateNewPresetCar(preset_name);
+            if (bonusCar) {
+                bonusCar->FilterBits = 0xF0008;
+            }
+        } else if (!bStrICmp(preset_name, "M3GTRCAREERSTART") || ShowAllPresetsInFE) {
+            CreateNewPresetCar(preset_name);
+        }
+        Physics::Upgrades::Flush();
+    }
+
+    const Attrib::Class *carClass = Attrib::Database::Get().GetClass(Attrib::Gen::pvehicle::ClassKey());
+    unsigned int key = carClass->GetFirstCollection();
+    while (key != 0) {
+        Attrib::Gen::pvehicle vehicle(key, 0, nullptr);
+        Attrib::Gen::frontend frontendData(vehicle.frontend(), 0, nullptr);
+        if (!frontendData.IsDynamic()) {
+            if (vehicle.PlayerUsable() || ShowAllCarsInFE) {
+                const char *collection_name = vehicle.CollectionName();
+                if (collection_name && *collection_name) {
+                    FECarRecord *fe_car = CreateNewCarRecord();
+                    if (fe_car) {
+                        fe_car->FEKey = frontendData.GetCollection();
+                        fe_car->VehicleKey = vehicle.GetCollection();
+                        fe_car->Default();
+                    }
+                }
+            }
+            Physics::Upgrades::Flush();
+        }
+        key = carClass->GetNextCollection(key);
+    }
+
     SoldHistoryBounty = 0;
     SoldHistoryNumEvadedPursuits = 0;
     SoldHistoryNumBustedPursuits = 0;
@@ -1238,6 +1291,57 @@ POVTypes GetPOVTypeFromPlayerCamera(ePlayerSettingsCameras cam) {
     case 6: return static_cast<POVTypes>(6);
     default: return static_cast<POVTypes>(2);
     }
+}
+
+bool IsPlayerCameraSelectable(POVTypes pov_type) {
+    unsigned int model_name_key = 0;
+    IPlayer *player = IPlayer::First(PLAYER_LOCAL);
+    if (player) {
+        ISimable *simable = player->GetSimable();
+        if (simable) {
+            IVehicle *vehicle = nullptr;
+            if (simable->QueryInterface(&vehicle)) {
+                const char *vehicle_name = vehicle->GetVehicleName();
+                if (vehicle_name) {
+                    model_name_key = Attrib::StringToLowerCaseKey(vehicle_name);
+                }
+            }
+        }
+    }
+
+    Attrib::Gen::ecar car_info(Attrib::FindCollectionWithDefault(Attrib::Gen::ecar::ClassKey(), model_name_key), 0, nullptr);
+    Attrib::Gen::camerainfo camera_info(Attrib::FindCollection(Attrib::Gen::camerainfo::ClassKey(), 0xeec2271a), 0, nullptr);
+
+    const Attrib::RefSpec *ref_spec = nullptr;
+    switch (pov_type) {
+    case 0:
+        ref_spec = &car_info.CameraInfo_Bumper(0);
+        break;
+    case 1:
+        ref_spec = &car_info.CameraInfo_Hood(0);
+        break;
+    case 2:
+        ref_spec = &car_info.CameraInfo_Close(0);
+        break;
+    case 3:
+        ref_spec = &car_info.CameraInfo_Far(0);
+        break;
+    case 4:
+        ref_spec = &car_info.CameraInfo_SuperFar(0);
+        break;
+    case 5:
+        ref_spec = &car_info.CameraInfo_Drift(0);
+        break;
+    case 6:
+        ref_spec = &car_info.CameraInfo_Pursuit(0);
+        break;
+    default:
+        camera_info.Change(0xeec2271a);
+        return camera_info.SELECTABLE(eGetCurrentViewMode() == EVIEWMODE_TWOH);
+    }
+
+    camera_info.Change(ref_spec->GetCollection());
+    return camera_info.SELECTABLE(eGetCurrentViewMode() == EVIEWMODE_TWOH);
 }
 
 ePlayerSettingsCameras GetPlayerCameraFromPOVType(POVTypes pov) {

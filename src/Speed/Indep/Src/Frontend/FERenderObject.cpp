@@ -491,6 +491,104 @@ void FERenderObject::AddPoly(float x0, float y0, float x1, float y1, float z,
     }
 }
 
+void FERenderObject::AddPoly(float x0, float y0, float x1, float y1, float z,
+                             float s0, float t0, float s1, float t1,
+                             unsigned int *in_colors, FEClipInfo *pClipInfo,
+                             FEPackageRenderInfo *pkg_render_info) {
+    if (!pClipInfo) {
+        AddPoly(x0, y0, x1, y1, z, s0, t0, s1, t1, in_colors, pkg_render_info);
+        return;
+    }
+
+    bVector3 v[8];
+    bVector2 uv[8];
+    bVector4 colors[8];
+    bVector3 nv[8];
+    bVector2 nuv[8];
+    bVector4 ncolors[8];
+    unsigned int packed_colors[8];
+    unsigned char *color_bytes = reinterpret_cast<unsigned char *>(in_colors);
+
+    v[0].x = x0;
+    v[0].y = y0;
+    v[0].z = z;
+    v[1].x = x1;
+    v[1].y = y0;
+    v[1].z = z;
+    v[2].x = x1;
+    v[2].y = y1;
+    v[2].z = z;
+    v[3].x = x0;
+    v[3].y = y1;
+    v[3].z = z;
+
+    uv[0].x = s0;
+    uv[0].y = t0;
+    uv[1].x = s1;
+    uv[1].y = t0;
+    uv[2].x = s1;
+    uv[2].y = t1;
+    uv[3].x = s0;
+    uv[3].y = t1;
+
+    for (unsigned int i = 0; i < 4; i++) {
+        colors[i].x = color_bytes[i * 4 + 0] * (1.0f / 255.0f);
+        colors[i].y = color_bytes[i * 4 + 1] * (1.0f / 255.0f);
+        colors[i].z = color_bytes[i * 4 + 2] * (1.0f / 255.0f);
+        colors[i].w = color_bytes[i * 4 + 3] * (1.0f / 255.0f);
+    }
+
+    bMulMatrix(&v[0], &mstTransform, &v[0]);
+    bMulMatrix(&v[1], &mstTransform, &v[1]);
+    bMulMatrix(&v[2], &mstTransform, &v[2]);
+    bMulMatrix(&v[3], &mstTransform, &v[3]);
+
+    unsigned int num_verts = (pClipInfo->flags & 1) ? ClipAligned(pClipInfo, v, uv, colors, nv, nuv, ncolors)
+                                                    : ClipGeneral(pClipInfo, v, uv, colors, nv, nuv, ncolors);
+    if (!num_verts || num_verts == 2) {
+        return;
+    }
+
+    for (unsigned int i = 0; i < num_verts; i++) {
+        unsigned char *packed_bytes = reinterpret_cast<unsigned char *>(&packed_colors[i]);
+        packed_bytes[0] = static_cast<unsigned char>(colors[i].x * 255.0f);
+        packed_bytes[1] = static_cast<unsigned char>(colors[i].y * 255.0f);
+        packed_bytes[2] = static_cast<unsigned char>(colors[i].z * 255.0f);
+        packed_bytes[3] = static_cast<unsigned char>(colors[i].w * 255.0f);
+    }
+
+    for (unsigned int i = 0; i < num_verts - 2; i++) {
+        FERenderEPoly *render = new FERenderEPoly();
+        ePoly *pPoly = &render->EPoly;
+        render->pTextureMask = nullptr;
+        render->pTexture = nullptr;
+        mobPolyList.AddTail(render);
+        mPolyCount++;
+
+        pPoly->Vertices[0] = v[0];
+        pPoly->Vertices[1] = v[i + 1];
+        pPoly->Vertices[2] = v[i + 2];
+        pPoly->Vertices[3] = v[i + 2];
+
+        pPoly->UVs[0][0] = uv[0].x;
+        pPoly->UVs[0][1] = uv[0].y;
+        pPoly->UVs[0][2] = uv[i + 1].x;
+        pPoly->UVs[0][3] = uv[i + 1].y;
+        pPoly->UVs[1][0] = uv[i + 2].x;
+        pPoly->UVs[1][1] = uv[i + 2].y;
+        pPoly->UVs[1][2] = uv[i + 2].x;
+        pPoly->UVs[1][3] = uv[i + 2].y;
+
+        reinterpret_cast<unsigned int *>(pPoly->Colours)[0] = packed_colors[0];
+        reinterpret_cast<unsigned int *>(pPoly->Colours)[1] = packed_colors[i + 1];
+        reinterpret_cast<unsigned int *>(pPoly->Colours)[2] = packed_colors[i + 2];
+        reinterpret_cast<unsigned int *>(pPoly->Colours)[3] = packed_colors[i + 2];
+
+        pPoly->SetFlailer(1);
+        pPoly->SetFlags(1);
+    }
+}
+
 void FERenderObject::AddPolyWithRotatedMask(float x0, float y0, float x1, float y1, float z,
                                              float s0, float t0, float s1, float t1,
                                              float ms0, float mt0, float ms1, float mt1,
