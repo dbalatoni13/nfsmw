@@ -181,8 +181,6 @@ FEToggleWidget::FEToggleWidget(bool enabled)
     , DisableScript(0x36819D93) //
 {}
 
-FEToggleWidget::~FEToggleWidget() {}
-
 void FEToggleWidget::CheckMouse(const char* parent_pkg, const float mouse_x, const float mouse_y) {}
 void FEToggleWidget::BlinkArrows(unsigned int data) {}
 
@@ -253,8 +251,6 @@ FESliderWidget::FESliderWidget(bool enabled)
     , Slider() //
     , fVertOffset(9.5f) //
 {}
-
-FESliderWidget::~FESliderWidget() {}
 
 void FESliderWidget::Position() {
     FEToggleWidget::Position();

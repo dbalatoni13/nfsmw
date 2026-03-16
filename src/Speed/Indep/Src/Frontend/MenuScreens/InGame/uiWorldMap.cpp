@@ -1095,8 +1095,8 @@ void WorldMap::AddPlayerCar() {
     FEImage* icon = FEngFindImage(GetPackageName(), FEObj_PlayerCarIndicator);
     IPlayer* player = *IPlayer::GetList(PLAYER_LOCAL).begin();
     ISimable* isimable = player->GetSimable();
-    bVector2 target_pos;
     bVector2 target_dir;
+    bVector2 target_pos;
     GetVehicleVectors(&target_pos, &target_dir, isimable);
     bVector2 world_pos;
     world_pos = target_pos;
