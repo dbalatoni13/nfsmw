@@ -7,7 +7,7 @@ extern bool FEngIsScriptSet(const char *pkg_name, unsigned int obj_hash, unsigne
 extern void FEngSetScript(const char *pkg_name, unsigned int obj_hash, unsigned int script_hash, bool start_at_beginning);
 extern char *bStrCpy(char *dst, const char *src);
 extern char *bSafeStrCpy(char *dst, const char *src, int maxlen);
-extern void FEPrintf(const char *pkg_name, unsigned int obj_hash, const char *fmt, ...);
+extern int FEPrintf(const char *pkg_name, int obj_hash, const char *fmt, ...);
 extern void FEngSetTextureHash(FEImage *img, unsigned int hash);
 
 GenericMessage::GenericMessage(UTL::COM::Object *pOutter, const char *pkg_name, int player_number)

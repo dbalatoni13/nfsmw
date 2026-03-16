@@ -54,16 +54,17 @@ void Speedometer::Update(IPlayer *player) {
 
     if (digit3 > 0) {
         FEngSetVisible(mpSpeedDigit3);
+        FEngSetVisible(mpSpeedDigit2);
+        FEngSetVisible(mpSpeedDigit1);
     } else if (digit2 > 0) {
         FEngSetInvisible(mpSpeedDigit3);
+        FEngSetVisible(mpSpeedDigit2);
+        FEngSetVisible(mpSpeedDigit1);
     } else {
         FEngSetInvisible(mpSpeedDigit3);
         FEngSetInvisible(mpSpeedDigit2);
         FEngSetVisible(mpSpeedDigit1);
-        return;
     }
-    FEngSetVisible(mpSpeedDigit2);
-    FEngSetVisible(mpSpeedDigit1);
 }
 
 void Speedometer::SetSpeed(float speed) {

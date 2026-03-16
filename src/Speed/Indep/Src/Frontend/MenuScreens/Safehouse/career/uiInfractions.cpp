@@ -12,20 +12,8 @@ extern void FEngSetButtonState(const char *pkg_name, unsigned int button_hash, b
 extern void eLoadStreamingTexture(unsigned int *textures, int count, void (*callback)(unsigned int), unsigned int param0, int priority);
 extern void FEngSetCurrentButton(const char *pkg_name, unsigned int button_hash);
 
-inline void eUnloadStreamingTexture(unsigned int name_hash) {
-    eUnloadStreamingTexture(&name_hash, 1);
-}
-
 inline void FEngSetInvisible(const char *pkg_name, unsigned int obj_hash) {
     FEngSetInvisible(FEngFindObject(pkg_name, obj_hash));
-}
-
-inline void FEngSetTextureHash(const char *pkg_name, unsigned int obj_hash, unsigned int texture_hash) {
-    FEngSetTextureHash(FEngFindImage(pkg_name, obj_hash), texture_hash);
-}
-
-inline void eLoadStreamingTexture(unsigned int name_hash, void (*callback)(unsigned int), unsigned int param0, int memory_pool_num) {
-    eLoadStreamingTexture(&name_hash, 1, callback, param0, memory_pool_num);
 }
 
 inline void FEngDisableButton(const char *pkg_name, unsigned int button_hash) {
