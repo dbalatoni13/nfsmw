@@ -12,6 +12,7 @@
 extern void eLoadStreamingTexture(unsigned int *textures, int count, void (*callback)(unsigned int), void *user, int priority);
 extern void eUnloadStreamingTexture(unsigned int *textures, int count);
 extern int GetCurrentLanguage();
+extern int GetMikeMannBuild();
 extern FEMarkerManager TheFEMarkerManager;
 extern int CheatImpounded;
 extern int CheatBustedCount;
@@ -1339,12 +1340,31 @@ int SortCarsByUnlock(SelectableCar *a, SelectableCar *b) {
     return static_cast<int>(binA > binB);
 }
 
-bool IsValidMikeMannCar(FECarRecord *car, unsigned int filterBits) {
-    if (!car) return false;
-    if (!car->IsValid()) return false;
-    if ((car->FilterBits & filterBits) == 0) return false;
-    Attrib::Gen::frontend fe_attrib(car->FEKey, 0, nullptr);
-    return fe_attrib.UnlockedAt() != 0;
+bool IsValidMikeMannCar(FECarRecord *fe_car, unsigned int filter) {
+    if (GetMikeMannBuild() == 1) {
+        return fe_car->GetType() != CARTYPE_CAYMANS;
+    }
+    if (GetMikeMannBuild() != 2) {
+        return true;
+    }
+    unsigned short lowFilter = static_cast<unsigned short>(filter);
+    if (lowFilter == 1) {
+        switch (fe_car->GetType()) {
+        case CARTYPE_RX8:
+        case CARTYPE_SLR:
+        case CARTYPE_BMWM3GTR:
+        case CARTYPE_CAYMANS:
+        case CARTYPE_GALLARDO:
+        case CARTYPE_PUNTO:
+            return true;
+        default:
+            return false;
+        }
+    }
+    if (lowFilter != 0x10) {
+        return true;
+    }
+    return fe_car->Handle == bStringHash("M3GTRCAREERSTART");
 }
 
 void UIQRCarSelect::RefreshBonusCarList() {
