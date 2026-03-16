@@ -891,8 +891,8 @@ void FEngine::ProcessPadsForPackage(FEPackage* pPackage) {
 
             if ((Pressed & Mask) != 0) {
                 unsigned long PadMask = FromPadPressed[i];
-                unsigned long MsgID = PadButtonHash[i];
                 HeldButtons[i] = pCurButton;
+                unsigned long MsgID = PadButtonHash[i];
                 if (pCurButton && pCurButton->FindResponse(MsgID) != nullptr) {
                     QueueMessage(MsgID, nullptr, pPackage, pCurButton, PadMask);
                     QueueMessage(MsgID, pCurButton, pPackage, reinterpret_cast<FEObject*>(0xFFFFFFFB), PadMask);
