@@ -394,7 +394,7 @@ PostRaceResultsScreen::PostRaceResultsScreen(ScreenConstructorData *sd)
     , mNumberOfRacers(GRaceStatus::Get().GetRacerCount()) //
     , mIndexOfWinner(-1) //
     , mIndexOfCurrentRacer(-1) //
-    , mNumberOfLaps(GRaceStatus::Get().GetRaceParameters() != nullptr ? GRaceStatus::Get().GetRaceParameters()->GetNumLaps() : 0) //
+    , mNumberOfLaps(GRaceStatus::Get().GetRaceParameters()->GetNumLaps()) //
     , mNumberOfStats(0) //
     , mRaceType(GRaceStatus::Get().GetRaceType()) //
     , mPostRaceScreenMode(POSTRACESCREENMODE_RESULTS) //
@@ -408,33 +408,28 @@ PostRaceResultsScreen::PostRaceResultsScreen(ScreenConstructorData *sd)
         mPostRaceScreenMode = POSTRACESCREENMODE_LAPSTATS;
     }
 
+    for (int i = 0; i < mNumberOfRacers; ++i) {
+        GRacerInfo &info = GRaceStatus::Get().GetRacerInfo(i);
+
+        if (info.GetSimable() != nullptr && mIndexOfCurrentRacer == -1 && info.GetSimable()->GetPlayer() != nullptr) {
+            mPlayerRacerInfo = &info;
+            mIndexOfCurrentRacer = i;
+            break;
+        }
+    }
+
+    if (mPlayerRacerInfo == nullptr) {
+        mPlayerRacerInfo = GRaceStatus::Get().GetWinningPlayerInfo();
+    }
+
+    if (mPlayerRacerInfo != nullptr) {
+        mIndexOfWinner = GetRacerRanking(mPlayerRacerInfo) - 1;
+    }
+
     for (int i = 0; i < 16; ++i) {
         RacerStats[i].SetParentPkg(GetPackageName());
     }
     RaceResults.SetParentPkg(GetPackageName());
-
-    if (GRaceStatus::Exists()) {
-        GRaceStatus &race_status = GRaceStatus::Get();
-
-        for (int i = 0; i < mNumberOfRacers; ++i) {
-            GRacerInfo &info = race_status.GetRacerInfo(i);
-            ISimable *simable = info.GetSimable();
-
-            if (simable != nullptr && simable->GetPlayer() != nullptr) {
-                mPlayerRacerInfo = &info;
-                mIndexOfCurrentRacer = i;
-                break;
-            }
-        }
-
-        if (mPlayerRacerInfo == nullptr) {
-            mPlayerRacerInfo = race_status.GetWinningPlayerInfo();
-        }
-
-        if (mPlayerRacerInfo != nullptr) {
-            mIndexOfWinner = GetRacerRanking(mPlayerRacerInfo) - 1;
-        }
-    }
 
     Setup();
 }
@@ -896,6 +891,9 @@ void PostRaceResultsScreen::SetupLapStats(int racerIndex, GRacerInfo *racer_info
         FEngSetLanguageHash(GetPackageName(), 0x30EE5E68, 0xB67DA102);
         break;
     case GRace::kRaceType_SpeedTrap:
+        if (GRaceStatus::Exists()) {
+            GRaceStatus::Get().SortCheckPointRankings();
+        }
         FEngSetLanguageHash(GetPackageName(), 0x2D691760, 0xECD0E6A6);
         obj = FEngFindObject(GetPackageName(), 0x586AB4A6);
         FEngSetVisible(obj);
@@ -921,7 +919,7 @@ void PostRaceResultsScreen::SetupLapStats(int racerIndex, GRacerInfo *racer_info
         break;
     }
 
-    RacerStats[racerIndex].RacerName = ReadField< const char * >(racer_info, 0x8);
+    RacerStats[racerIndex].RacerName = racer_info->GetName();
 
     GRaceStatus &race_status = GRaceStatus::Get();
     StatsPanel &panel = RacerStats[racerIndex];
@@ -938,15 +936,16 @@ void PostRaceResultsScreen::SetupLapStats(int racerIndex, GRacerInfo *racer_info
 
         panel.AddStat(new ("", 0)
                           StageStat(GetPanelString(panel, lbl_803E5DCC), GetPanelString(panel, lbl_803E5DDC),
-                                    GetPanelString(panel, lbl_803E5E24), 4, GetRacerTotalStageTime(racer_info),
-                                    GetRacerRanking(racer_info)));
+                                    GetPanelString(panel, lbl_803E5E24),
+                                    4, racer_info->IsFinishedRacing() ? racer_info->GetRaceTimer().GetTime() : 0.0f,
+                                    racer_info->GetRanking()));
         break;
     case GRace::kRaceType_Circuit:
     case GRace::kRaceType_Knockout:
         for (int i = 0; i < race_status.GetRaceParameters()->GetNumLaps(); ++i) {
             int lap_position = race_status.GetLapPosition(i, racerIndex, true);
 
-            if (ReadField< int >(racer_info, 0x1C) != 0 && lap_position < 2) {
+            if (racer_info->GetIsKnockedOut() && lap_position < 2) {
                 lap_position = -1;
             }
 
@@ -970,8 +969,7 @@ void PostRaceResultsScreen::SetupLapStats(int racerIndex, GRacerInfo *racer_info
         panel.AddStat(new ("", 0)
                           TollboothStat(GetPanelString(panel, lbl_803E5DCC), GetPanelString(panel, lbl_803E5DDC),
                                         GetPanelString(panel, lbl_803E5E24), num_booths + 1,
-                                        ReadField< int >(racer_info, 0x30) != 0 ? race_status.GetRaceTimeRemaining()
-                                                                                : 0.0f,
+                                        racer_info->IsFinishedRacing() ? race_status.GetRaceTimeRemaining() : 0.0f,
                                         1));
         break;
     }
@@ -1598,7 +1596,7 @@ PostRacePursuitScreen::PostRacePursuitScreen(ScreenConstructorData *sd)
         FEImage *checkMark = FEngFindImage(GetPackageName(), FEHashUpper(sztemp));
         FEngSNPrintf(sztemp, 0x20, lbl_803E5F50, i);
         FEImage *emptyMark = FEngFindImage(GetPackageName(), FEHashUpper(sztemp));
-        AddSlot(new PursuitResultsArraySlot(wrapperGroup, itemName, itemValue, checkMark, emptyMark));
+        AddSlot(new ("", 0) PursuitResultsArraySlot(wrapperGroup, itemName, itemValue, checkMark, emptyMark));
     }
     Initialize();
 }

@@ -856,16 +856,17 @@ bool QuickRaceUnlocker::IsCarUnlocked(eUnlockFilters filter, unsigned int car, i
     FECarRecord *fe_car = stable->GetCarRecordByHandle(car);
     {
         Attrib::Gen::frontend CarAttribs(fe_car->FEKey, 0, nullptr);
-        answer = static_cast<bool>(FEDatabase->GetCareerSettings()->GetCurrentBin() <= CarAttribs.UnlockedAt() | answer);
+        bool unlockedCheck = FEDatabase->GetCareerSettings()->GetCurrentBin() <= CarAttribs.UnlockedAt();
+        answer = static_cast<bool>(unlockedCheck | answer);
     }
     if (fe_car->MatchesFilter(0xF0007)) {
         int type = fe_car->GetType();
         if (type < 0x19) {
-            if (type >= 0x17 || !(type < 5 || (type > 6 && type != 8))) {
+            if (type >= 0x17 || type <= 4 || type == 5 || type == 6 || type == 8) {
                 answer = true;
             }
         } else if (type < 0x45) {
-            if (type >= 0x43 || type == 0x2F || type == 0x3E) {
+            if (type > 0x42 || type == 0x2F || type == 0x3E) {
                 answer = true;
             }
         } else if (type == 0x4A) {
