@@ -60,14 +60,14 @@ uiRapSheetRankingsDetail::~uiRapSheetRankingsDetail() {}
 void uiRapSheetRankingsDetail::NotificationMessage(unsigned long msg, FEObject* pobj, unsigned long param1, unsigned long param2) {
     ArrayScrollerMenu::NotificationMessage(msg, pobj, param1, param2);
     switch (msg) {
+    case 0xC519BFC4:
+        career_view = !career_view;
+        Setup();
+        break;
     case 0x911C0A4B:
     case 0x35F8620B:
     case 0x72619778:
         UpdateHighlight();
-        break;
-    case 0xC519BFC4:
-        career_view = !career_view;
-        Setup();
         break;
     case 0xE1FDE1D1:
         uiRapSheetRankings::career_view = career_view;
