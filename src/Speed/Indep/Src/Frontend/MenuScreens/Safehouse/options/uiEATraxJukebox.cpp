@@ -241,9 +241,13 @@ void UIEATraxScreen::ReInsertSong() {
 void UIEATraxScreen::NotificationMessage(unsigned long msg, FEObject* pObject, unsigned long Param1,
                                          unsigned long Param2) {
     switch (msg) {
-    case 0x35F8620B:
-        Tracks.HighlightSelected();
+    case 0x35F8620B: {
+        ScrollerSlot* slot = Tracks.GetSelectedSlot();
+        if (slot != nullptr) {
+            slot->SetScript(0x249DB7B7);
+        }
         break;
+    }
     case 0x5073EF13:
     case 0xD9FEEC59:
         ScrollOrderState(msg);
