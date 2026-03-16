@@ -4021,16 +4021,21 @@ void CustomizePaint::Setup() {
     if (Showcase::FromFilter != -1) {
         TheFilter = Showcase::FromFilter;
     }
-    if (Category == 0x303) {
-        DisplayHelper.TitleHash = 0xe126ff53;
-        SetupRimPaint();
-    } else if (Category == 0x301) {
+    switch (Category) {
+    case 0x301:
         cFEng::Get()->QueuePackageMessage(0x1a7240f3, GetPackageName(), nullptr);
         DisplayHelper.TitleHash = 0x55da70c;
         SetupBasePaint();
-    } else if (static_cast<unsigned int>(Category) > 0x401 && static_cast<unsigned int>(Category) < 0x40a) {
+        break;
+    case 0x303:
+        DisplayHelper.TitleHash = 0xe126ff53;
+        SetupRimPaint();
+        break;
+    case 0x402: case 0x403: case 0x404: case 0x405:
+    case 0x406: case 0x407: case 0x408: case 0x409:
         DisplayHelper.TitleHash = 0xd8ee1a80;
         SetupVinylColor();
+        break;
     }
     Showcase::FromFilter = -1;
     Options.bFadingIn = true;
@@ -4342,15 +4347,8 @@ void CustomizePaint::RefreshHeader() {
     ThePaints.RefreshHeader();
     int filter = TheFilter;
     unsigned int hash = 0;
-    if (filter == 1) {
-        if (Category == 0x301) {
-            hash = 0x452b5481;
-        } else if (NumRemapColors == 2) {
-            hash = 0x5198be57;
-        } else if (NumRemapColors == 3) {
-            hash = 0x5198be58;
-        }
-    } else if (filter == 0) {
+    switch (filter) {
+    case 0:
         if (Category == 0x301) {
             hash = 0xb6763cde;
         } else if (NumRemapColors == 2) {
@@ -4360,12 +4358,23 @@ void CustomizePaint::RefreshHeader() {
         } else {
             hash = 0xd8ee1a80;
         }
-    } else if (filter == 2) {
+        break;
+    case 1:
+        if (Category == 0x301) {
+            hash = 0x452b5481;
+        } else if (NumRemapColors == 2) {
+            hash = 0x5198be57;
+        } else if (NumRemapColors == 3) {
+            hash = 0x5198be58;
+        }
+        break;
+    case 2:
         if (Category == 0x301) {
             hash = 0xb715070a;
         } else if (NumRemapColors == 3) {
             hash = 0x5198c299;
         }
+        break;
     }
     FEngSetLanguageHash(PackageFilename, 0x78008599, hash);
     if (Category == 0x301) {
