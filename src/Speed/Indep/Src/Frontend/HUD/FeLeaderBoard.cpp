@@ -26,10 +26,10 @@ LeaderBoard::LeaderBoard(UTL::COM::Object *pOutter, const char *pkg_name, int pl
     , ILeaderBoard(pOutter)
 {
     mPlayerIndex = -1;
-    mNumFramesBeforeTogglingPlayerTimes = 90;
-    mShowingRacerTimes = false;
     mNumRacers = -1;
     mSplitTimeQueued = false;
+    mNumFramesBeforeTogglingPlayerTimes = 90;
+    mShowingRacerTimes = false;
     mDataLeaderboardGroup = static_cast<FEGroup *>(RegisterGroup(FEHashUpper("LeaderBoardGroup")));
 
     char sztemp[32];
