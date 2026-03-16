@@ -720,34 +720,28 @@ void FEPackage::AddMouseObjectState(FEObject* pObj) {
     NumMouseObjects++;
 }
 
-void FEPackage::UpdateMouseObjectOffsets(FEObject* pObj) {
-    if (!pObj) {
+void FEPackage::UpdateMouseObjectOffsets(FEObject* obj) {
+    if (!obj) {
         return;
     }
-    unsigned long NameHash = pObj->NameHash;
-    FEObject* pChild = static_cast<FEObject*>(Objects.GetHead());
-    while (pChild) {
-        if (pChild->Type == FE_Group) {
-            if (static_cast<FEGroup*>(pChild)->FindChildRecursive(NameHash) || NameHash == pChild->NameHash) {
-                FEPoint offset;
-                if (OffsetCalculatron(NameHash, pChild, offset)) {
-                    FEObjectMouseState* pState = MouseObjectStates + NumMouseObjectsCounter;
-                    NumMouseObjectsCounter++;
-                    pState->Offset.h = offset.h;
-                    pState->Offset.v = offset.v;
+    FEObject* pObj = GetFirstObject();
+    unsigned long mouseable = obj->NameHash;
+    while (pObj) {
+        if (pObj->Type == FE_Group) {
+            if (static_cast<FEGroup*>(pObj)->FindChildRecursive(mouseable) || mouseable == pObj->NameHash) {
+                FEPoint p;
+                if (OffsetCalculatron(mouseable, pObj, p)) {
+                    MouseObjectStates[NumMouseObjectsCounter++].Offset = p;
                     break;
                 }
             }
-        } else if (NameHash == pChild->NameHash) {
-            FEPoint offset;
-            if (OffsetCalculatron(NameHash, pChild, offset)) {
-                FEObjectMouseState* pState = MouseObjectStates + NumMouseObjectsCounter;
-                NumMouseObjectsCounter++;
-                pState->Offset.h = offset.h;
-                pState->Offset.v = offset.v;
+        } else if (mouseable == pObj->NameHash) {
+            FEPoint p;
+            if (OffsetCalculatron(mouseable, pObj, p)) {
+                MouseObjectStates[NumMouseObjectsCounter++].Offset = p;
                 break;
             }
         }
-        pChild = static_cast<FEObject*>(pChild->GetNext());
+        pObj = static_cast<FEObject*>(pObj->GetNext());
     }
 }
