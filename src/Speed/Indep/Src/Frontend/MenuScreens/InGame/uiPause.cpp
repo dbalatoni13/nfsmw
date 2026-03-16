@@ -212,9 +212,22 @@ void PauseMenu::SetupOptions() {
                 AddOption(new("", 0) pm_ResumeFreeRoam(0x12BB5EA2, 0x01BD185C, 0));
                 AddOption(new("", 0) pm_QuitRaceToFE(0x4C9E34E6, 0x690E9B7C, 0));
                 AddOption(new("", 0) pm_SwitchToOptions(0x520DE4E3, 0x2B5A03A8, 0));
-            } else {
+            } else if (FEDatabase->IsFinalEpicChase()) {
                 AddOption(new("", 0) pm_ResumeFreeRoam(0x12BB5EA2, 0x01BD185C, 0));
                 AddOption(new("", 0) pm_QuitRaceToFE(0x4C9E34E6, 0x690E9B7C, 0));
+                pm_SwitchToTuning* tuning = new("", 0) pm_SwitchToTuning(0x483238FD, 0x6A3672A2, 0);
+                tuning->Locked = !IsTuningAvailable();
+                AddOption(tuning);
+                AddOption(new("", 0) pm_SwitchToOptions(0x520DE4E3, 0x2B5A03A8, 0));
+            } else if (PostRacePursuitScreen::GetPursuitData().mPursuitIsActive) {
+                AddOption(new("", 0) pm_ResumeFreeRoam(0x12BB5EA2, 0x01BD185C, 0));
+                pm_SwitchToTuning* tuning = new("", 0) pm_SwitchToTuning(0x483238FD, 0x6A3672A2, 0);
+                tuning->Locked = !IsTuningAvailable();
+                AddOption(tuning);
+                AddOption(new("", 0) pm_SwitchToOptions(0x520DE4E3, 0x2B5A03A8, 0));
+            } else {
+                AddOption(new("", 0) pm_ResumeFreeRoam(0x12BB5EA2, 0x01BD185C, 0));
+                AddOption(new("", 0) pm_QuitRaceToFE(0x4C9E34E6, 0x3C14C420, 0));
                 pm_SwitchToTuning* tuning = new("", 0) pm_SwitchToTuning(0x483238FD, 0x6A3672A2, 0);
                 tuning->Locked = !IsTuningAvailable();
                 AddOption(tuning);
@@ -240,28 +253,24 @@ void PauseMenu::SetupOptions() {
                 AddOption(tuning);
                 AddOption(new("", 0) pm_SwitchToOptions(0x520DE4E3, 0x2B5A03A8, 0));
             } else {
-                if (PostRacePursuitScreen::GetPursuitData().mPursuitIsActive == false) {
-                    AddOption(new("", 0) pm_ResumeRace(0x12BB5EA2, 0xDED357E7, 0));
-                    AddOption(new("", 0) pm_RestartRace(0xB295A6B6, 0xF893AFA1, 0));
-                    AddOption(new("", 0) pm_QuitRaceToFE(0x4C9E34E6, 0x3C14C420, 0));
-                    AddOption(new("", 0) pm_QuitRaceToFreeRoam(0x56FFBD2C, 0x9DC599B0, 0));
-                    pm_SwitchToTuning* tuning =
-                        new("", 0) pm_SwitchToTuning(0x483238FD, 0x6A3672A2, 0);
-                    tuning->Locked = !IsTuningAvailable();
-                    AddOption(tuning);
-                    AddOption(new("", 0) pm_SwitchToOptions(0x520DE4E3, 0x2B5A03A8, 0));
-                } else {
-                    AddOption(new("", 0) pm_ResumeFreeRoam(0x12BB5EA2, 0x01BD185C, 0));
-                    pm_SwitchToTuning* tuning =
-                        new("", 0) pm_SwitchToTuning(0x483238FD, 0x6A3672A2, 0);
-                    tuning->Locked = !IsTuningAvailable();
-                    AddOption(tuning);
-                    AddOption(new("", 0) pm_SwitchToOptions(0x520DE4E3, 0x2B5A03A8, 0));
-                }
+                AddOption(new("", 0) pm_ResumeRace(0x12BB5EA2, 0xDED357E7, 0));
+                AddOption(new("", 0) pm_RestartRace(0xB295A6B6, 0xF893AFA1, 0));
+                AddOption(new("", 0) pm_QuitRaceToFE(0x4C9E34E6, 0x3C14C420, 0));
+                AddOption(new("", 0) pm_QuitRaceToFreeRoam(0x56FFBD2C, 0x9DC599B0, 0));
+                pm_SwitchToTuning* tuning = new("", 0) pm_SwitchToTuning(0x483238FD, 0x6A3672A2, 0);
+                tuning->Locked = !IsTuningAvailable();
+                AddOption(tuning);
+                AddOption(new("", 0) pm_SwitchToOptions(0x520DE4E3, 0x2B5A03A8, 0));
             }
         }
     } else {
-        if (Sim::GetUserMode() != 1) {
+        int userMode = Sim::GetUserMode();
+        if (userMode == 1) {
+            AddOption(new("", 0) pm_ResumeRace(0x12BB5EA2, 0xDED357E7, 0));
+            AddOption(new("", 0) pm_RestartRace(0xB295A6B6, 0xF893AFA1, 0));
+            AddOption(new("", 0) pm_QuitQuickRace(0x4C9E34E6, 0x4349998B, 0));
+            AddOption(new("", 0) pm_SwitchToOptions(0x520DE4E3, 0x2B5A03A8, 0));
+        } else {
             AddOption(new("", 0) pm_ResumeRace(0x12BB5EA2, 0xDED357E7, 0));
             AddOption(new("", 0) pm_RestartRace(0xB295A6B6, 0xF893AFA1, 0));
             GRaceParameters* pParams = GRaceStatus::Get().GetRaceParameters();
@@ -279,12 +288,7 @@ void PauseMenu::SetupOptions() {
                 AddOption(tuning);
             }
             AddOption(new("", 0) pm_SwitchToOptions(0x520DE4E3, 0x2B5A03A8, 0));
-            return;
         }
-        AddOption(new("", 0) pm_ResumeRace(0x12BB5EA2, 0xDED357E7, 0));
-        AddOption(new("", 0) pm_RestartRace(0xB295A6B6, 0xF893AFA1, 0));
-        AddOption(new("", 0) pm_QuitQuickRace(0x4C9E34E6, 0x4349998B, 0));
-        AddOption(new("", 0) pm_SwitchToOptions(0x520DE4E3, 0x2B5A03A8, 0));
     }
 }
 
