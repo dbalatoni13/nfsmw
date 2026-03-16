@@ -88,18 +88,6 @@ void AddInfractions(FEInfractionsData &dst, const FEInfractionsData &src) {
     dst += src;
 }
 
-void DefaultCarRecord(FECarRecord &record) {
-    record.Handle = 0xFFFFFFFF;
-}
-
-void DefaultCustomizationRecord(FECustomizationRecord &record) {
-    record.Handle = 0xFF;
-}
-
-bool IsCareerRecordValid(const FECareerRecord &record) {
-    return record.Handle != 0xFF;
-}
-
 const unsigned int kHeatAdjustCollectionKey = 0xEEC2271A;
 
 } // namespace
@@ -735,7 +723,7 @@ FECustomizationRecord *FEPlayerCarDB::CreateNewCustomizationRecord() {
 
 FECareerRecord *FEPlayerCarDB::CreateNewCareerRecord() {
     for (int i = 0; i < 25; i++) {
-        if (!IsCareerRecordValid(CareerRecords[i])) {
+        if (CareerRecords[i].Handle == 0xFF) {
             CareerRecords[i].Default();
             CareerRecords[i].Handle = i;
             return &CareerRecords[i];
