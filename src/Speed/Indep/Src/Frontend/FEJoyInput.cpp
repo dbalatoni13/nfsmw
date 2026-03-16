@@ -151,7 +151,7 @@ bool cFEngJoyInput::CheckUnplugged() {
     if (!TheGameFlowManager.IsInGame() && !FEManager::Get()->IsAllowingControllerError()) {
         SetRequiredJoy(kJP_NumPorts, false);
     } else {
-        bool is_splitscreen = false;
+        int is_splitscreen = false;
         if (FEDatabase->IsSplitScreenMode()) {
             is_splitscreen = FEDatabase->iNumPlayers == 2;
         }
@@ -163,25 +163,26 @@ bool cFEngJoyInput::CheckUnplugged() {
         }
         JoystickPort player_port2 = static_cast<JoystickPort>(-1);
         JoystickPort player_port1 = static_cast<JoystickPort>(FEDatabase->GetPlayersJoystickPort(0));
-        if (player_port1 != static_cast<JoystickPort>(-1)) {
-            if (bIsSplit) {
-                player_port2 = static_cast<JoystickPort>(FEDatabase->GetPlayersJoystickPort(1));
-            }
-            SetRequiredJoy(player_port1, true);
-            if (player_port2 != static_cast<JoystickPort>(-1)) {
-                SetRequiredJoy(player_port2, true);
-            }
-            FEManager* feManager = FEManager::Get();
-            if (!IsJoyPluggedIn(player_port1)) {
-                feManager->WantControllerError(player_port1);
-                unplugged = true;
-            } else if (!bIsSplit && !cFEng::Get()->IsPackagePushed("ControllerUnplugged.fng")) {
-                feManager->ClearControllerError(player_port1);
-            }
-            if (player_port2 != static_cast<JoystickPort>(-1) && !IsJoyPluggedIn(player_port2)) {
-                feManager->WantControllerError(player_port2);
-                unplugged = true;
-            }
+        if (player_port1 == static_cast<JoystickPort>(-1)) {
+            return false;
+        }
+        if (bIsSplit) {
+            player_port2 = static_cast<JoystickPort>(FEDatabase->GetPlayersJoystickPort(1));
+        }
+        SetRequiredJoy(player_port1, true);
+        if (player_port2 != static_cast<JoystickPort>(-1)) {
+            SetRequiredJoy(player_port2, true);
+        }
+        FEManager* feManager = FEManager::Get();
+        if (!IsJoyPluggedIn(player_port1)) {
+            feManager->WantControllerError(player_port1);
+            unplugged = true;
+        } else if (!bIsSplit && !cFEng::Get()->IsPackagePushed("ControllerUnplugged.fng")) {
+            feManager->ClearControllerError(player_port1);
+        }
+        if (player_port2 != static_cast<JoystickPort>(-1) && !IsJoyPluggedIn(player_port2)) {
+            feManager->WantControllerError(player_port2);
+            unplugged = true;
         }
     }
     return unplugged;
