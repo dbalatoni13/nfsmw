@@ -357,8 +357,7 @@ void UIQRTrackSelect::RefreshHeader() {
             pCurrentTrack->GetRaceType() == GRace::kRaceType_Drag ||
             pCurrentTrack->GetRaceType() == GRace::kRaceType_Knockout ||
             pCurrentTrack->GetRaceType() == GRace::kRaceType_Tollbooth) {
-            Timer t;
-            t.SetTime(info->mHighScores);
+            Timer t(info->mHighScores);
             char timeBuf[128];
             t.PrintToString(timeBuf, 0);
             FEPrintf(PackageFilename, 0xb515499c, "%s", timeBuf);
