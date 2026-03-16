@@ -19,7 +19,6 @@ extern unsigned short gSaveType1[];
 extern unsigned short gSaveType2[];
 extern IAllocator* gMemoryAllocator;
 extern MemcardCallbacks gMemcardCallbacks;
-extern unsigned int gMemcardSetupPreviousOp;
 
 void bStrCpy(unsigned short* to, const char* from);
 void bStrCpy(unsigned short* to, const unsigned short* from);
@@ -33,6 +32,22 @@ void LOCALE_setstate(void* data, int state, int param);
 const char* LOCALE_getstrA(void* data, int strID);
 
 bool FEngIsScriptSet(const char* pkg_name, unsigned long obj_hash, unsigned long script_hash);
+
+#if !defined(_MSC_VER) || defined(_NATIVE_WCHAR_T_DEFINED)
+extern void RealmcIfaceGameInfoCtorUnsignedShort(RealmcIface::GameInfo* self,
+                                                 const unsigned short* gameTitle,
+                                                 unsigned int titleId,
+                                                 bool multipleSaveTypesUsed,
+                                                 bool multitapSupported)
+    asm("__Q211RealmcIface8GameInfoPCUwUibT3");
+extern void RealmcIfaceMemcardInterfaceLoadUnsignedShort(RealmcIface::MemcardInterface* self,
+                                                         const char* entryName,
+                                                         char* header,
+                                                         char* body,
+                                                         const unsigned short* contentName,
+                                                         const RealmcIface::TitleInfo* titleInfo)
+    asm("Load__Q211RealmcIface16MemcardInterfacePCcPcT2PCUwPCQ211RealmcIface9TitleInfoT4");
+#endif
 
 void CaptureJoyOp(MemoryCardJoyLoggableEvents op) {
     Joylog::AddData(static_cast< int >(op), 8, JOYLOG_CHANNEL_MEMORY_CARD);
@@ -55,15 +70,16 @@ void Realmc::SystemInterface::Clear() {
 #if !defined(_MSC_VER) || defined(_NATIVE_WCHAR_T_DEFINED)
 RealmcIface::GameInfo::GameInfo(const wchar_t* gameTitle, unsigned int titleId,
                                 bool multipleSaveTypesUsed, bool multitapSupported) {
-    GameInfo(reinterpret_cast< const unsigned short * >(gameTitle), titleId,
-             multipleSaveTypesUsed, multitapSupported);
+    RealmcIfaceGameInfoCtorUnsignedShort(this, reinterpret_cast< const unsigned short * >(gameTitle),
+                                         titleId, multipleSaveTypesUsed, multitapSupported);
 }
 
 void RealmcIface::MemcardInterface::Load(const char* entryName, char* header, char* body,
                                          const wchar_t* contentName,
                                          const RealmcIface::TitleInfo* titleInfo) {
-    Load(entryName, header, body, reinterpret_cast< const unsigned short * >(contentName),
-         titleInfo, reinterpret_cast< const unsigned short * >(contentName));
+    RealmcIfaceMemcardInterfaceLoadUnsignedShort(
+        this, entryName, header, body, reinterpret_cast< const unsigned short * >(contentName),
+        titleInfo);
 }
 
 void RealmcIface::MemcardInterface::Delete(const char* entryName, const wchar_t* contentName) {
@@ -476,12 +492,13 @@ void MemoryCard::SetMonitor(bool bEnabled) {
 
 void MemoryCard::SetAutoSaveEnabled(bool bEnabled) {
     char entryname[16];
+    char* filename = m_Filename;
     const char* name = FEDatabase->CurrentUserProfiles[0]->GetProfileName();
     bStrCpy(entryname, name);
     unsigned int saveSize = FEDatabase->GetUserProfileSaveSize(false);
     SetExtraParam(ST_PROFILE, entryname, nullptr, saveSize);
     const char* prefix = m_pImp->GetPrefix();
-    bStrCat(m_Filename, prefix, entryname);
+    bStrCat(filename, prefix, entryname);
     bStrNCpy(MemoryCardImp::gContentName, entryname, 16);
     if (m_pFEScreen && gMemcardSetup.GetMethod() == 0xa0) {
         m_pFEScreen->SetStringCheckingCard();
@@ -489,14 +506,18 @@ void MemoryCard::SetAutoSaveEnabled(bool bEnabled) {
     } else {
         ShowMessages(false);
     }
-    bool bDisabling = !bEnabled;
     m_pIMemcard->SetMessage(RealmcIface::MESSAGE_SHOW, 1);
-    if (bDisabling) { m_bDisablingAutoSaveForSave = true; }
-    else { gMemcardSetupPreviousOp = gMemcardSetup.mOp & 0xf0; gMemcardSetup.ClearMethod(); gMemcardSetup.SetMethod(0xa0); }
+    if (bEnabled) {
+        gMemcardSetup.mPreviousCommand = gMemcardSetup.mOp & 0xf0;
+        gMemcardSetup.ClearMethod();
+        gMemcardSetup.SetMethod(0xa0);
+    } else {
+        m_bDisablingAutoSaveForSave = true;
+    }
     InitCommand(MO_AutoSave);
     if (!Joylog::IsReplaying())
-        m_pIMemcard->SetAutosave(bDisabling ? RealmcIface::AUTOSAVE_DISABLE : RealmcIface::AUTOSAVE_ENABLE, 0, nullptr, entryname, RealmcIface::CARD_UNKNOWN);
-    if (bDisabling && Joylog::IsReplaying()) ReplayJoyOp();
+        m_pIMemcard->SetAutosave(bEnabled ? RealmcIface::AUTOSAVE_ENABLE : RealmcIface::AUTOSAVE_DISABLE, 0, nullptr, entryname, RealmcIface::CARD_UNKNOWN);
+    if (!bEnabled && Joylog::IsReplaying()) ReplayJoyOp();
 }
 
 void MemoryCard::ShowOnlyAutoSaveMessages() {

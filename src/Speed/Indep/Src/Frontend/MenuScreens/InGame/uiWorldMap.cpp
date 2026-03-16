@@ -631,7 +631,7 @@ float WorldMap::GetZoomFactor(eWorldMapZoomLevels level) {
     switch (level) {
     case WMZ_LEVEL_1: return 1.0f;
     case WMZ_LEVEL_2: return 2.0f;
-    case WMZ_LEVEL_4: return 4.0f;
+    case WMZ_LEVEL_4: return 8.0f;
     default: return 1.0f;
     }
 }
@@ -678,26 +678,31 @@ bool WorldMap::ClampToMapBounds(float& x, float& y) {
     float bottom_right_y;
     FEngGetBottomRight(static_cast< FEObject* >(TrackMap), bottom_right_x, bottom_right_y);
 
+    bool changed = false;
     float min_x = MapTopLeft.x + 8.0f;
-    if (min_x <= x) {
-        if (x <= bottom_right_x - 8.0f) {
-            float min_y = MapTopLeft.y + 26.0f;
-            if (min_y <= y) {
-                float max_y = bottom_right_y - 32.0f;
-                if (y <= max_y) {
-                    return false;
-                }
-                y = max_y;
-            } else {
-                y = min_y;
-            }
-        } else {
-            x = bottom_right_x - 8.0f;
-        }
-    } else {
+    if (x < min_x) {
         x = min_x;
+        changed = true;
+    } else {
+        float max_x = bottom_right_x - 8.0f;
+        if (x > max_x) {
+            x = max_x;
+            changed = true;
+        } else {
+            float min_y = MapTopLeft.y + 26.0f;
+            if (y < min_y) {
+                y = min_y;
+                changed = true;
+            } else {
+                float max_y = bottom_right_y - 32.0f;
+                if (y > max_y) {
+                    y = max_y;
+                    changed = true;
+                }
+            }
+        }
     }
-    return true;
+    return changed;
 }
 
 void WorldMap::UpdateAnalogInput() {
