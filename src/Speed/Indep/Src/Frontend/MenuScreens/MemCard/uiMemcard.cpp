@@ -518,6 +518,6 @@ void MemcardExit(unsigned int msg) {
         unsigned long hash = FEHashUpper("LEAVE_SCREEN");
         cFEng::Get()->QueuePackageMessage(hash, gMemcardSetup.mMemScreen, nullptr);
     }
-    MemoryCard::GetInstance()->SetMemcardScreenExiting(true);
     MemoryCard::GetInstance()->m_bInitialized = false;
+    MemoryCard::GetInstance()->SetMemcardScreenExiting(true);
 }
