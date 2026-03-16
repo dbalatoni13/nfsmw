@@ -181,12 +181,11 @@ void uiRepSheetMilestones::NotificationMessage(unsigned long msg, FEObject* obj,
         } else {
             cFEng::Get()->QueuePackageSwitch("SafeHouseReputationOverview.fng", 0, 0, false);
         }
-        return;
+        break;
     case 0x72619778:
     case 0x9120409e:
-        break;
     case 0x34dc1bcf:
-        return;
+        break;
     default:
         return;
     }
