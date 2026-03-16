@@ -1329,14 +1329,14 @@ void UIQRCarSelect::SetSelectedCar(SelectableCar *newCar, int player_num) {
 }
 
 int SortCarsByUnlock(SelectableCar *a, SelectableCar *b) {
-    FECarRecord *carA = FEDatabase->GetPlayerCarStable(0)->GetCarRecordByHandle(a->mHandle);
-    FECarRecord *carB = FEDatabase->GetPlayerCarStable(0)->GetCarRecordByHandle(b->mHandle);
+    FEPlayerCarDB *stable = FEDatabase->GetPlayerCarStable(gPlayerNum);
+    FECarRecord *carA = stable->GetCarRecordByHandle(a->mHandle);
     Attrib::Gen::frontend fe_a(carA->FEKey, 0, nullptr);
+    FECarRecord *carB = stable->GetCarRecordByHandle(b->mHandle);
     Attrib::Gen::frontend fe_b(carB->FEKey, 0, nullptr);
     int binA = fe_a.UnlockedAt();
     int binB = fe_b.UnlockedAt();
-    if (binA != binB) return binA - binB;
-    return 0;
+    return static_cast<int>(binA > binB);
 }
 
 bool IsValidMikeMannCar(FECarRecord *car, unsigned int filterBits) {
