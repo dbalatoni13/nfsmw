@@ -198,8 +198,9 @@ void QRCarSelectBustedManager::RefreshHeader() {
         }
         unsigned int cost = WorkingCarRecord->GetReleaseFromImpoundCost();
         int playerCash = *reinterpret_cast<int *>(reinterpret_cast<char *>(FEDatabase->GetPlayerCarStable(0)) + 0xf0);
+        bool canAffordRelease = static_cast<int>(cost) <= playerCash;
         bool hasMarkers = TheFEMarkerManager.GetNumMarkers(FEMarkerManager::MARKER_IMPOUND_RELEASE, 0) > 0;
-        if (WorkingCareerRecord->TheImpoundData.ImpoundedState == 4 && static_cast<int>(cost) <= playerCash) {
+        if (WorkingCareerRecord->TheImpoundData.ImpoundedState == 4 && canAffordRelease) {
             FEngSetLanguageHash(ParentPkg, 0xb94139f4, 0x281dee8a);
         } else if (hasMarkers) {
             FEngSetLanguageHash(ParentPkg, 0xb94139f4, 0xf9c73cc2);

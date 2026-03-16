@@ -310,20 +310,21 @@ void UIQRTrackSelect::RefreshHeader() {
         } else {
             char buf[128];
             FEngSNPrintf(buf, 0x80, "blacklist_rival_%02d_aka", pCurrentNode->bin);
+            const char *pkg = PackageFilename;
             const char *rival_label = GetLocalizedString(0xbd563be5);
             unsigned int aka_hash = FEHashUpper(buf);
             const char *aka_name = GetLocalizedString(aka_hash);
-            FEPrintf(PackageFilename, 0x68215623, rival_label, aka_name, pCurrentNode->bin);
+            FEPrintf(pkg, 0x68215623, rival_label, aka_name, pCurrentNode->bin);
             FEngSetInvisible(PackageFilename, 0xe08434fc);
         }
 
         unsigned int trackNameHash = CalcLanguageHash("TRACKNAME_", pCurrentTrack);
-        if (!DoesStringExist(trackNameHash)) {
-            FEPrintf(PackageFilename, 0x5e7b09c9, pCurrentTrack->GetEventID());
-            FEPrintf(PackageFilename, 0xdfb7a2e, pCurrentTrack->GetEventID());
-        } else {
+        if (DoesStringExist(trackNameHash)) {
             FEngSetLanguageHash(PackageFilename, 0x5e7b09c9, trackNameHash);
             FEngSetLanguageHash(PackageFilename, 0xdfb7a2e, trackNameHash);
+        } else {
+            FEPrintf(PackageFilename, 0x5e7b09c9, pCurrentTrack->GetEventID());
+            FEPrintf(PackageFilename, 0xdfb7a2e, pCurrentTrack->GetEventID());
         }
 
         FEngSetInvisible(PackageFilename, 0xbbf970cd);
@@ -351,8 +352,7 @@ void UIQRTrackSelect::RefreshHeader() {
 
         GRaceSaveInfo *info = GRaceDatabase::Get().GetScoreInfo(pCurrentTrack->GetEventHash());
 
-        GRace::Type raceType = pCurrentTrack->GetRaceType();
-        if (raceType == GRace::kRaceType_P2P ||
+        if (pCurrentTrack->GetRaceType() == GRace::kRaceType_P2P ||
             pCurrentTrack->GetRaceType() == GRace::kRaceType_Circuit ||
             pCurrentTrack->GetRaceType() == GRace::kRaceType_Drag ||
             pCurrentTrack->GetRaceType() == GRace::kRaceType_Knockout ||
@@ -364,10 +364,11 @@ void UIQRTrackSelect::RefreshHeader() {
             FEPrintf(PackageFilename, 0xb515499c, "%s", timeBuf);
         } else if (pCurrentTrack->GetRaceType() == GRace::kRaceType_SpeedTrap) {
             float bestSpeed;
-            if (kph) {
+            if (FEDatabase->GetGameplaySettings()->SpeedoUnits == 1) {
                 bestSpeed = info->mHighScores;
             } else {
-                bestSpeed = info->mHighScores * 0.27778f * 2.237f;
+                bestSpeed = info->mHighScores * 0.27778f;
+                bestSpeed *= 2.237f;
             }
             FEngSetLanguageHash(PackageFilename, 0x28462c64, 0x512e823);
             FEPrintf(PackageFilename, 0xb515499c, "%$0.0f %s", bestSpeed, speedUnits);
@@ -380,8 +381,10 @@ void UIQRTrackSelect::RefreshHeader() {
             FEngSetLanguageHash(PackageFilename, 0x28462c64, 0xc5b5a177);
         }
 
-        img = FEngFindImage(PackageFilename, 0x8007b4c);
-        FEngSetTextureHash(img, FEDatabase->GetRaceIconHash(pCurrentTrack->GetRaceType()));
+        const char *pkg = PackageFilename;
+        unsigned int raceIconHash = FEDatabase->GetRaceIconHash(pCurrentTrack->GetRaceType());
+        img = FEngFindImage(pkg, 0x8007b4c);
+        FEngSetTextureHash(img, raceIconHash);
     }
 }
 
