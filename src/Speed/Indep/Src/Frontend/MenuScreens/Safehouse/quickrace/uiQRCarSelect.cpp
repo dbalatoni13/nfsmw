@@ -975,25 +975,28 @@ void UIQRCarSelect::UpdateSliders() {
 
     AccelerationSlider.SetValue(perf1.Acceleration);
     float acc_val = perf2.Acceleration;
-    if (acc_val - AccelerationSlider.GetMin() < 0.0f) acc_val = AccelerationSlider.GetMin();
-    float acc_preview = AccelerationSlider.GetMax();
-    if (acc_val - AccelerationSlider.GetMax() < 0.0f) acc_preview = acc_val;
+    float acc_min = AccelerationSlider.GetMin();
+    float acc_max = AccelerationSlider.GetMax();
+    acc_val = acc_val < acc_min ? acc_min : acc_val;
+    float acc_preview = acc_val > acc_max ? acc_max : acc_val;
     AccelerationSlider.SetPreviewValue(acc_preview);
     AccelerationSlider.Draw();
 
     TopSpeedSlider.SetValue(perf1.TopSpeed);
     float top_val = perf2.TopSpeed;
-    if (top_val - TopSpeedSlider.GetMin() < 0.0f) top_val = TopSpeedSlider.GetMin();
-    float top_preview = TopSpeedSlider.GetMax();
-    if (top_val - TopSpeedSlider.GetMax() < 0.0f) top_preview = top_val;
+    float top_min = TopSpeedSlider.GetMin();
+    float top_max = TopSpeedSlider.GetMax();
+    top_val = top_val < top_min ? top_min : top_val;
+    float top_preview = top_val > top_max ? top_max : top_val;
     TopSpeedSlider.SetPreviewValue(top_preview);
     TopSpeedSlider.Draw();
 
     HandlingSlider.SetValue(perf1.Handling);
     float hdl_val = perf2.Handling;
-    if (hdl_val - HandlingSlider.GetMin() < 0.0f) hdl_val = HandlingSlider.GetMin();
-    float hdl_preview = HandlingSlider.GetMax();
-    if (hdl_val - HandlingSlider.GetMax() < 0.0f) hdl_preview = hdl_val;
+    float hdl_min = HandlingSlider.GetMin();
+    float hdl_max = HandlingSlider.GetMax();
+    hdl_val = hdl_val < hdl_min ? hdl_min : hdl_val;
+    float hdl_preview = hdl_val > hdl_max ? hdl_max : hdl_val;
     HandlingSlider.SetPreviewValue(hdl_preview);
     HandlingSlider.Draw();
 }

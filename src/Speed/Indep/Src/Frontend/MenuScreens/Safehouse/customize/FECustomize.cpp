@@ -148,6 +148,18 @@ extern void *MemoryCard_s_pThis;
 class GarageMainScreen;
 extern GarageMainScreen *GetInstance_GarageMainScreen();
 
+inline void CustomizeFEngSetVisible(const char *pkg_name, unsigned int obj_hash) {
+    FEngSetVisible(FEngFindObject(pkg_name, obj_hash));
+}
+
+inline void CustomizeFEngSetInvisible(const char *pkg_name, unsigned int obj_hash) {
+    FEngSetInvisible(FEngFindObject(pkg_name, obj_hash));
+}
+
+inline void CustomizeFEngSetTextureHash(const char *pkg_name, unsigned int obj_hash, unsigned int texture_hash) {
+    FEngSetTextureHash(FEngFindImage(pkg_name, obj_hash), texture_hash);
+}
+
 // --- CustomizationScreenHelper ---
 
 CustomizationScreenHelper::CustomizationScreenHelper(const char *pkg_name) {
@@ -2313,19 +2325,18 @@ void CustomizePerformance::Setup() {
 get_part_list:
     gCarCustomizeManager.GetPerformancePartsList(type, part_list);
 
-after_initial_part_list:
+    after_initial_part_list:
     for (j = 1;; j++) {
         bNode *end = &part_list.HeadNode;
         if (part_list.HeadNode.GetNext() == end) {
             break;
         }
-        bNode *head = part_list.HeadNode.GetNext();
-        SelectablePart *temp_part = static_cast<SelectablePart *>(head);
-        bNode *next = head->GetNext();
+        SelectablePart *temp_part = static_cast<SelectablePart *>(part_list.HeadNode.GetNext());
+        bNode *next = temp_part->Next;
+        bNode *prev = temp_part->Prev;
+        prev->Next = next;
+        next->Prev = prev;
         part = temp_part;
-        head = head->GetPrev();
-        head->Next = next;
-        next->Prev = head;
         int unlock_level = gCarCustomizeManager.GetMaxPackages(type) - gCarCustomizeManager.GetNumPackages(type) + part->GetUpgradeLevel();
         unsigned int unlock_hash = gCarCustomizeManager.GetUnlockHash(static_cast<eCustomizeCategory>(Category), unlock_level);
         is_locked = gCarCustomizeManager.IsPartLocked(part, 0);
@@ -2399,44 +2410,39 @@ void CustomizePerformance::RefreshHeader() {
     }
 
     int i = 0;
-    if (num_lines > 0) {
+    while (i < num_lines) {
         int line_idx = i;
-        do {
-            i = line_idx + 1;
-            unsigned int desc_hash = GetPerfPkgDesc(static_cast<Physics::Upgrades::Type>(phys_type), pkg_index, i, gCarCustomizeManager.IsTurbo());
-            if (!DoesStringExist(desc_hash)) {
-                FEngSetInvisible(DescLines[line_idx]);
-                FEngSetInvisible(DescBullets[line_idx]);
-            } else {
-                FEngSetVisible(DescLines[line_idx]);
-                FEngSetVisible(DescBullets[line_idx]);
-                FEngSetLanguageHash(GetPackageName(), DescLines[line_idx]->NameHash, desc_hash);
-            }
+        unsigned int desc_hash = GetPerfPkgDesc(static_cast<Physics::Upgrades::Type>(phys_type), pkg_index, line_idx + 1, gCarCustomizeManager.IsTurbo());
+        i = line_idx + 1;
+        if (DoesStringExist(desc_hash)) {
+            FEngSetVisible(DescLines[line_idx]);
+            FEngSetVisible(DescBullets[line_idx]);
+            FEngSetLanguageHash(GetPackageName(), DescLines[line_idx]->NameHash, desc_hash);
+        } else {
+            FEngSetInvisible(DescLines[line_idx]);
+            FEngSetInvisible(DescBullets[line_idx]);
+        }
 
-            Attrib::Instance inst(Attrib::FindCollection(Attrib::Gen::frontend::ClassKey(), gCarCustomizeManager.GetTuningCar()->FEKey), 0, nullptr);
-            inst.SetDefaultLayout(100);
+        Attrib::Gen::frontend inst(Attrib::FindCollection(0x85885722, gCarCustomizeManager.GetTuningCar()->FEKey), 0, nullptr);
 
-            unsigned int brand_hash = GetPerfPkgBrand(static_cast<Physics::Upgrades::Type>(phys_type), pkg_index, line_idx);
-            unsigned int brand_icon_hash = FEngHashString("BRAND_ICON_%d", i);
+        unsigned int brand_hash = GetPerfPkgBrand(static_cast<Physics::Upgrades::Type>(phys_type), pkg_index, line_idx);
+        unsigned int brand_icon_hash = FEngHashString("BRAND_ICON_%d", i);
 
-            if (!GetTextureInfo(brand_hash, 0, 0)) {
-                FEngSetInvisible(FEngFindObject(GetPackageName(), brand_icon_hash));
-            } else {
-                FEngSetVisible(FEngFindObject(GetPackageName(), brand_icon_hash));
-                FEngSetTextureHash(FEngFindImage(GetPackageName(), brand_icon_hash), brand_hash);
-            }
-
-            line_idx = i;
-        } while (i < num_lines);
+        if (GetTextureInfo(brand_hash, 0, 0)) {
+            CustomizeFEngSetVisible(GetPackageName(), brand_icon_hash);
+            CustomizeFEngSetTextureHash(GetPackageName(), brand_icon_hash, brand_hash);
+        } else {
+            CustomizeFEngSetInvisible(GetPackageName(), brand_icon_hash);
+        }
     }
 
     while (i < 3) {
-        int offset = i * 4;
-        i++;
-        FEngSetInvisible(DescLines[offset / 4]);
-        FEngSetInvisible(DescBullets[offset / 4]);
+        int line_idx = i;
+        i = line_idx + 1;
+        FEngSetInvisible(DescLines[line_idx]);
+        FEngSetInvisible(DescBullets[line_idx]);
         unsigned int icon_hash = FEngHashString("BRAND_ICON_%d", i);
-        FEngSetInvisible(FEngFindObject(GetPackageName(), icon_hash));
+        CustomizeFEngSetInvisible(GetPackageName(), icon_hash);
     }
 
     CustomizationScreen::RefreshHeader();
@@ -2446,7 +2452,7 @@ void CustomizePerformance::RefreshHeader() {
         level_hash = 0xedd14807;
     } else {
         int num = gCarCustomizeManager.GetNumPackages(static_cast<Physics::Upgrades::Type>(phys_type));
-        level_hash = FEngHashString("PN_LEVEL_%d", (level + 6) - num);
+        level_hash = FEngHashString("PN_LEVEL_%d", level - (num - 6));
     }
     FEngSetLanguageHash(pOptionName, level_hash);
 }
@@ -2576,28 +2582,25 @@ void CustomizeParts::Setup() {
     switch (Category) {
     case 0x101:
         SetTitleHash(0x6134c218);
+        icon_hash = 0x28c24f6;
         if (CustomizeIsInBackRoom()) {
             icon_hash = 0xaf393dba;
-        } else {
-            icon_hash = 0x28c24f6;
         }
         car_slot_id = 0x17;
         goto after_switch;
     case 0x104:
         SetTitleHash(0x4d4a88d);
+        icon_hash = 0x28f7092;
         if (CustomizeIsInBackRoom()) {
             icon_hash = 0xf375276e;
-        } else {
-            icon_hash = 0x28f7092;
         }
         car_slot_id = 0x3f;
         goto after_switch;
     case 0x105:
         SetTitleHash(0x61e8f83c);
+        icon_hash = 0x79165861;
         if (CustomizeIsInBackRoom()) {
             icon_hash = 0x25a4375e;
-        } else {
-            icon_hash = 0x79165861;
         }
         car_slot_id = 0x3e;
         goto after_switch;
@@ -2614,10 +2617,9 @@ void CustomizeParts::Setup() {
             part_found = true;
         }
         SetTitleHash(0x78980a6b);
+        icon_hash = 0x28f88bc;
         if (CustomizeIsInBackRoom()) {
             icon_hash = 0x8ba602fc;
-        } else {
-            icon_hash = 0x28f88bc;
         }
         car_slot_id = 0x84;
         goto after_switch;
@@ -2732,20 +2734,22 @@ after_switch:
             if (cpart->HasAppliedAttribute(bStringHash("CARBONFIBRE"))) {
                 int cfVal = cpart->GetAppliedAttributeIParam(bStringHash("CARBONFIBRE"), 0);
                 if (cfVal != 0) {
-                    if (Category == 0x104) {
+                    if (Category != 0x104) {
+                        if (Category == 0x105) {
+                            if (CustomizeIsInBackRoom()) {
+                                icon_hash = 0xcd6b4e26;
+                            } else {
+                                icon_hash = 0xfc618215;
+                            }
+                        } else {
+                            icon_hash = original_icon_hash;
+                        }
+                    } else {
                         if (CustomizeIsInBackRoom()) {
                             icon_hash = 0x2478e136;
                         } else {
                             icon_hash = 0x68495926;
                         }
-                    } else if (Category == 0x105) {
-                        if (CustomizeIsInBackRoom()) {
-                            icon_hash = 0xcd6b4e26;
-                        } else {
-                            icon_hash = 0xfc618215;
-                        }
-                    } else {
-                        icon_hash = original_icon_hash;
                     }
                 } else {
                     icon_hash = original_icon_hash;

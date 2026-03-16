@@ -14,7 +14,7 @@ int Showcase::FromFilter;
 void *Showcase::FromColor[3];
 
 Showcase::Showcase(ScreenConstructorData *sd) : MenuScreen(sd) //
-    , RivalStreamer(GetPackageName(), false)
+    , RivalStreamer(sd->PackageFilename, false)
 {
     if (eIsWidescreen()) {
         cFEng::Get()->QueuePackageMessage(bStringHash("WidescreenFix"), GetPackageName(), 0);
