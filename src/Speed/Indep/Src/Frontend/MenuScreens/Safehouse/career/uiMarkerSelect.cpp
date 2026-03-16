@@ -227,39 +227,39 @@ void FEMarkerSelection::NotificationMessage(unsigned long msg, FEObject *pobj, u
 void FEMarkerSelection::Redraw() {
     for (int i = 0; i < NumVisibleMarkers; i++) {
         FEMarkerManager::ePossibleMarker marker = TheMarkers[i].Marker;
-        if (!TheMarkers[i].Selected) {
-            FEImage *img = FEngFindImage(GetPackageName(), FEngHashString("BUTTON_%d", i + 1));
-            FEngSetTextureHash(img, GetCategoryIconHashForType(marker));
-        } else {
+        if (TheMarkers[i].Selected) {
             FEImage *img = FEngFindImage(GetPackageName(), FEngHashString("BUTTON_%d", i + 1));
             FEngSetTextureHash(img, GetIconHashForType(marker));
+        } else {
+            FEImage *img = FEngFindImage(GetPackageName(), FEngHashString("BUTTON_%d", i + 1));
+            FEngSetTextureHash(img, GetCategoryIconHashForType(marker));
         }
     }
 
     int idx = GetSelectedButtonIndex();
-    FEMarkerManager::ePossibleMarker marker = TheMarkers[idx].Marker;
-    int param = TheMarkers[idx].Param;
+    Selection selection = TheMarkers[idx];
 
-    if (!TheMarkers[idx].Selected || marker == FEMarkerManager::MARKER_NONE) {
-        FEngSetLanguageHash(GetPackageName(), 0x4960f369, GetCategoryNameHashForType(marker));
-        FEngSetLanguageHash(GetPackageName(), 0xeb0a8abd, GetCategoryBlurbHashForType(marker));
-    } else {
-        FEngSetLanguageHash(GetPackageName(), 0x4960f369, GetNameHashForType(marker));
-        unsigned int blurb = GetBlurbHashForType(marker);
-        if (marker == static_cast<FEMarkerManager::ePossibleMarker>(0x13)) {
+    if (selection.Selected && selection.Marker != FEMarkerManager::MARKER_NONE) {
+        FEngSetLanguageHash(GetPackageName(), 0x4960f369, GetNameHashForType(selection.Marker));
+        unsigned int blurb = GetBlurbHashForType(selection.Marker);
+        if (selection.Marker == static_cast<FEMarkerManager::ePossibleMarker>(0x13)) {
             const char *str = GetLocalizedString(blurb);
-            FEPrintf(GetPackageName(), 0xeb0a8abd, str, param);
+            FEPrintf(GetPackageName(), 0xeb0a8abd, str, selection.Param);
         } else {
             FEngSetLanguageHash(GetPackageName(), 0xeb0a8abd, blurb);
         }
+    } else {
+        FEngSetLanguageHash(GetPackageName(), 0x4960f369, GetCategoryNameHashForType(selection.Marker));
+        FEngSetLanguageHash(GetPackageName(), 0xeb0a8abd, GetCategoryBlurbHashForType(selection.Marker));
     }
 
     const char *remaining_str = GetLocalizedString(0x5bb3a130);
     FEPrintf(GetPackageName(), 0x38deac6b, remaining_str, 2 - GetNumSelected());
 
+    int current_bin = FEDatabase->GetCareerSettings()->GetCurrentBin() + 1;
     char buf[256];
     GetLocalizedString(buf, 0x100, 0xae5bc899);
-    unsigned int rival_hash = FEngHashString("BLACKLIST_RIVAL_%02d_AKA", FEDatabase->GetCareerSettings()->GetCurrentBin() + 1);
+    unsigned int rival_hash = FEngHashString("BLACKLIST_RIVAL_%02d_AKA", current_bin);
     const char *rival_name = GetLocalizedString(rival_hash);
     FEPrintf(GetPackageName(), 0xd6c0e097, buf, 2 - GetNumSelected(), rival_name);
 }
