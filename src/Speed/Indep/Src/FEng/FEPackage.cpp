@@ -557,8 +557,32 @@ done:
 }
 
 void ResourceConnector::ConnectListBoxResources(FEListBox* pList) {
-    pList->SetCurrentColumn(0);
-    pList->SetCurrentRow(0);
+    {
+        unsigned long* pCurrentColumn = &pList->mulCurrentColumn;
+        unsigned long col;
+        if (pList->mulNumColumns == 0) {
+            col = 0;
+        } else {
+            col = 0;
+            if (col >= pList->mulNumColumns) {
+                col = pList->mulNumColumns - 1;
+            }
+        }
+        *pCurrentColumn = col;
+    }
+    {
+        unsigned long* pCurrentRow = &pList->mulCurrentRow;
+        unsigned long row;
+        if (pList->mulNumRows == 0) {
+            row = 0;
+        } else {
+            row = 0;
+            if (row >= pList->mulNumRows) {
+                row = pList->mulNumRows - 1;
+            }
+        }
+        *pCurrentRow = row;
+    }
     unsigned long j = 0;
     unsigned long Rows = pList->GetNumRows();
     unsigned long Cols = pList->GetNumColumns();

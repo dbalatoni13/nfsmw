@@ -36,7 +36,13 @@ class FERefList {
     FEMinNode* RemHead();
     FEMinNode* RemTail();
     FEMinNode* FindNode(unsigned long ordinalnumber) const;
-    void Purge();
+    inline void Purge() {
+        FEMinNode* cmn = RemHead();
+        while (cmn) {
+            delete cmn;
+            cmn = RemHead();
+        }
+    }
     unsigned long GetNumElements();
 
   private:

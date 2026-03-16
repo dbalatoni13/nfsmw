@@ -50,7 +50,13 @@ public:
     inline FEMinNode* GetTail() const { return tail; }
     inline void AddHead(FEMinNode* n) { AddNode(nullptr, n); }
     inline void AddTail(FEMinNode* n) { AddNode(tail, n); }
-    void Purge();
+    inline void Purge() {
+        FEMinNode* cmn = RemHead();
+        while (cmn) {
+            delete cmn;
+            cmn = RemHead();
+        }
+    }
     inline bool IsListEmpty() const { return numElements == 0; }
     inline unsigned long GetNumElements() const { return numElements; }
 

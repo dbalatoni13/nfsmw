@@ -102,12 +102,4 @@ unsigned long FERefList::GetNumElements() {
     return Count;
 }
 
-void FERefList::Purge() {
-    FEMinNode* n;
-
-    while ((n = RemHead()) != nullptr) {
-        delete n;
-    }
-}
-
 // destructor moved to header for inlining
