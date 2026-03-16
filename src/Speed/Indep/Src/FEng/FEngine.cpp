@@ -825,9 +825,9 @@ void FEngine::ProcessPadsForPackage(FEPackage* pPackage) {
                         }
                         if (pJoyPad[PadIndex].WasHeld(Mask)) {
                             Held = Held | Mask;
-                            if (HeldFor[i] <= pJoyPad[PadIndex].HeldFor(Mask)) {
-                                HeldFor[i] = pJoyPad[PadIndex].HeldFor(Mask);
-                            }
+                            HeldFor[i] = HeldFor[i] > pJoyPad[PadIndex].HeldFor(Mask)
+                                ? HeldFor[i]
+                                : pJoyPad[PadIndex].HeldFor(Mask);
                             FromPadHeld[i] = FromPadHeld[i] | static_cast<unsigned char>(1 << (PadIndex & 0x3F));
                         }
                     }
@@ -851,9 +851,9 @@ void FEngine::ProcessPadsForPackage(FEPackage* pPackage) {
                         }
                         if (pJoyPad[PadIndex].WasHeld(0x40)) {
                             Held = Held | Mask;
-                            if (HeldFor[4] <= pJoyPad[PadIndex].HeldFor(0x40)) {
-                                HeldFor[4] = pJoyPad[PadIndex].HeldFor(0x40);
-                            }
+                            HeldFor[4] = HeldFor[4] > pJoyPad[PadIndex].HeldFor(0x40)
+                                ? HeldFor[4]
+                                : pJoyPad[PadIndex].HeldFor(0x40);
                             FromPadHeld[4] = FromPadHeld[4] | static_cast<unsigned char>(1 << (PadIndex & 0x3F));
                         }
                     }
@@ -965,9 +965,9 @@ void FEngine::ProcessPadsForPackage(FEPackage* pPackage) {
                         }
                         pJoyPad[PadIndex].WasReleased(Mask);
                         if (pJoyPad[PadIndex].WasHeld(Mask)) {
-                            if (HeldFor[i] <= pJoyPad[PadIndex].HeldFor(Mask)) {
-                                HeldFor[i] = pJoyPad[PadIndex].HeldFor(Mask);
-                            }
+                            HeldFor[i] = HeldFor[i] > pJoyPad[PadIndex].HeldFor(Mask)
+                                ? HeldFor[i]
+                                : pJoyPad[PadIndex].HeldFor(Mask);
                             FromPadHeld[i] = FromPadHeld[i] | static_cast<unsigned char>(1 << (PadIndex & 0x3F));
                         }
                     }
@@ -1038,15 +1038,15 @@ void FEngine::ProcessPadsForPackage(FEPackage* pPackage) {
             HoldDecrement[ImpulseDir[i].dir1] = Compare;
             {
                 if (ImpulseDir[i].dir1 != 0xFF) {
-                    HeldFor[ImpulseDir[i].dir0] = 0;
-                    HeldFor[ImpulseDir[i].dir1] = 0;
-                    PadHoldRegistered =
-                        PadHoldRegistered |
+                        HeldFor[ImpulseDir[i].dir0] = 0;
+                        HeldFor[ImpulseDir[i].dir1] = 0;
+                        PadHoldRegistered =
+                            PadHoldRegistered |
                         (1 << (ImpulseDir[i].dir0 & 0x3F)) |
                         (1 << (ImpulseDir[i].dir1 & 0x3F));
-                    goto fire_direction;
+                        goto fire_direction;
+                    }
                 }
-            }
         }
         {
             HeldFor[ImpulseDir[i].dir0] = 0;
