@@ -9,10 +9,10 @@ void FEInterpNone(FEKeyTrack* pTrack, long tTime, void* pOutDataPtr) {
     if (tTime <= pTrack->Length) {
         pKey = pTrack->GetKeyAt(tTime);
         pPrevKey = static_cast<FEKeyNode*>(pKey->GetPrev());
-        if (!pPrevKey || pKey->tTime <= tTime) {
-            FEngMemCpy(pOutDataPtr, &pKey->Val, KeySize - 4);
-        } else {
+        if (pPrevKey && pKey->tTime > tTime) {
             FEngMemCpy(pOutDataPtr, &pPrevKey->Val, KeySize - 4);
+        } else {
+            FEngMemCpy(pOutDataPtr, &pKey->Val, KeySize - 4);
         }
         return;
     }

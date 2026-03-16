@@ -539,8 +539,8 @@ void FEngine::Render() {
     uGroupContext = 0;
     while (pPack) {
         pInterface->BeginPackageRendering(pPack);
-        FEObject* pObj = pPack->GetFirstObject();
         Sorter.Zero();
+        FEObject* pObj = pPack->GetFirstObject();
         while (pObj) {
             if (pObj->Type == FE_Group) {
                 RenderGroup(static_cast<FEGroup*>(pObj), mIdentity, mView, 0);

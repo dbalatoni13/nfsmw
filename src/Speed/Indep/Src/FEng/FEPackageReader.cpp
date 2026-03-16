@@ -830,7 +830,8 @@ bool FEPackageReader::ReadObjectTags(FETag* pTag, unsigned long Length) {
                 }
                 break;
         }
-        pTag = reinterpret_cast<FETag*>(reinterpret_cast<char*>(pTag) + pTag->GetSize() + 4);
+        unsigned long nextSize = pTag->GetSize() + 4;
+        pTag = reinterpret_cast<FETag*>(reinterpret_cast<char*>(pTag) + nextSize);
     }
     return true;
 }

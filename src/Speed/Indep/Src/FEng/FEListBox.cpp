@@ -289,11 +289,13 @@ void FEListBox::ScrollSelection(long lColumnNum, long lRowNum) {
             if (static_cast<long>(ulNewColumn) < 0) {
                 unsigned long numCols = mulNumColumns;
                 unsigned long i = numCols + ulNewColumn;
-                mstCurrentLocation.h = mpstColumnData[i].fCummulativeValue;
-                mstTargetLocation.h = mpstColumnData[i].fCummulativeValue;
+                float fCummulativeValue = mpstColumnData[i].fCummulativeValue;
+                mstTargetLocation.h = fCummulativeValue;
+                mstCurrentLocation.h = fCummulativeValue;
                 do {
                     mstCurrentLocation.h = mstCurrentLocation.h + mpstColumnData[i].fValue;
-                    i = (i + 1) - ((i + 1) / numCols) * numCols;
+                    unsigned long next = i + 1;
+                    i = next - (next / numCols) * numCols;
                 } while (i != ulCurrentColumn);
             } else {
                 unsigned long numCols = mulNumColumns;
@@ -357,11 +359,13 @@ void FEListBox::ScrollSelection(long lColumnNum, long lRowNum) {
             if (static_cast<long>(ulNewRow) < 0) {
                 unsigned long numRows = mulNumRows;
                 unsigned long i = numRows + ulNewRow;
-                mstCurrentLocation.v = mpstRowData[i].fCummulativeValue;
-                mstTargetLocation.v = mpstRowData[i].fCummulativeValue;
+                float fCummulativeValue = mpstRowData[i].fCummulativeValue;
+                mstTargetLocation.v = fCummulativeValue;
+                mstCurrentLocation.v = fCummulativeValue;
                 do {
                     mstCurrentLocation.v = mstCurrentLocation.v + mpstRowData[i].fValue;
-                    i = (i + 1) - ((i + 1) / numRows) * numRows;
+                    unsigned long next = i + 1;
+                    i = next - (next / numRows) * numRows;
                 } while (i != ulCurrentRow);
             } else {
                 unsigned long numRows = mulNumRows;

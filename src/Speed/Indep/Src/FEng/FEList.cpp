@@ -149,10 +149,7 @@ FEMinNode* FEMinList::RemHead() {
 FEMinNode* FEMinList::FindNode(unsigned long ordinalnumber) const {
     FEMinNode* node = head;
     unsigned long i = 0;
-    while (node) {
-        if (i == ordinalnumber) {
-            return node;
-        }
+    while (node && i != ordinalnumber) {
         node = node->next;
         i++;
     }

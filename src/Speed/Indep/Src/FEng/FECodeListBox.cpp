@@ -149,16 +149,15 @@ void FECodeListBox::Initialize(unsigned long ulNumVisCols, unsigned long ulNumVi
                     }
                 }
             }
-            while (ulNumRows < ulOldNumVisibleRows) {
-                unsigned long ulNextRow = ulNumRows + 1;
+            for (unsigned long i = ulNumRows; i < ulOldNumVisibleRows; i++) {
                 for (unsigned long j = 0; j < ulOldNumVisibleColumns; j++) {
-                    FEListBoxCell* pOldCell = &pstOldCells[ulNumRows * ulOldNumVisibleColumns + j];
+                    FEListBoxCell* pOldCell = &pstOldCells[i * ulOldNumVisibleColumns + j];
                     if (pOldCell->ulType == 2) {
                         DeallocateString(pOldCell->u.string.pStr);
                     }
                 }
-                ulNumRows = ulNextRow;
             }
+            ulNumRows = ulOldNumVisibleRows;
             if (pstOldCells) {
                 delete[] pstOldCells;
             }
