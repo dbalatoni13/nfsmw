@@ -248,7 +248,7 @@ void CarCustomizeManager::AddToCart(SelectablePart *part) {
                 CarPart *installed = GetInstalledCarPart(part->CarSlotID);
                 if (installed) {
                     trade_in = new SelectablePart(installed, part->CarSlotID,
-                        installed->GetUpgradeLevel(), static_cast<GRace::Type>(7), false,
+                        static_cast<unsigned int>(installed->GroupNumber_UpgradeLevel >> 5), static_cast<GRace::Type>(7), false,
                         CPS_INSTALLED, 0, false);
                     trade_in->SetPrice(GetPartPrice(trade_in));
                 }

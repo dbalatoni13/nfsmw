@@ -3827,7 +3827,8 @@ void CustomizeNumbers::NotificationMessage(unsigned long msg, FEObject *pobj, un
         break;
     case 0xcf91aacd: {
         SelectablePart *lnode = static_cast<SelectablePart *>(LeftNumberList.GetHead());
-        while (lnode != reinterpret_cast<SelectablePart *>(&LeftNumberList)) {
+        SelectablePart *lsentinel = reinterpret_cast<SelectablePart *>(&LeftNumberList);
+        while (lnode != lsentinel) {
             if (lnode->ThePart == gCarCustomizeManager.GetInstalledCarPart(0x69) ||
                 lnode->ThePart == gCarCustomizeManager.GetInstalledCarPart(0x6a)) {
                 lnode->PartState = static_cast<eCustomizePartState>((lnode->PartState & CPS_GAME_STATE_MASK) | CPS_INSTALLED);
@@ -3835,7 +3836,8 @@ void CustomizeNumbers::NotificationMessage(unsigned long msg, FEObject *pobj, un
             lnode = static_cast<SelectablePart *>(lnode->Next);
         }
         SelectablePart *rnode = static_cast<SelectablePart *>(RightNumberList.GetHead());
-        while (rnode != reinterpret_cast<SelectablePart *>(&RightNumberList)) {
+        SelectablePart *rsentinel = reinterpret_cast<SelectablePart *>(&RightNumberList);
+        while (rnode != rsentinel) {
             if (rnode->ThePart == gCarCustomizeManager.GetInstalledCarPart(0x71) ||
                 rnode->ThePart == gCarCustomizeManager.GetInstalledCarPart(0x72)) {
                 rnode->PartState = static_cast<eCustomizePartState>((rnode->PartState & CPS_GAME_STATE_MASK) | CPS_INSTALLED);
@@ -4392,15 +4394,14 @@ skip_color:
     unsigned int brand = CalcBrandHash(matchPart);
     if (TheFilter == -1) {
         int filterVal = 0;
-        switch (brand) {
-        case 0x2daab07:
-            break;
-        case 0x3437a52:
-            filterVal = 1;
-            break;
-        case 0x3797533:
-            filterVal = 2;
-            break;
+        if (brand == 0x2daab07) {
+        } else if (brand > 0x2daab07) {
+            if (brand == 0x3437a52) {
+                filterVal = 1;
+            } else if (brand == 0x3797533) {
+                filterVal = 2;
+            }
+        } else if (brand == 0xda27) {
         }
         TheFilter = filterVal;
     }
@@ -4413,7 +4414,8 @@ skip_color:
         if (partBrand == brand) {
             sp->Remove();
             unsigned int unlockHash = gCarCustomizeManager.GetUnlockHash(
-                static_cast<eCustomizeCategory>(Category), sp->GetPart()->GetUpgradeLevel());
+                static_cast<eCustomizeCategory>(Category),
+                static_cast<unsigned int>(sp->GetPart()->GroupNumber_UpgradeLevel >> 5));
             CustomizePaintDatum *datum = new CustomizePaintDatum(sp, unlockHash);
             if (SelectedIndex[TheFilter] == -1 && matchPart == sp->GetPart()) {
                 SelectedIndex[TheFilter] = datumIndex;
@@ -4662,10 +4664,10 @@ unsigned int CustomizePerformance::GetPerfPkgBrand(Physics::Upgrades::Type type,
     }
     {
         unsigned int *ptr = static_cast<unsigned int *>(inst.GetAttributePointer(key, num_packages));
-        if (!ptr) {
-            ptr = static_cast<unsigned int *>(Attrib::DefaultDataArea(4));
-        }
-        hash = *ptr;
+    if (!ptr) {
+        ptr = static_cast<unsigned int *>(Attrib::DefaultDataArea(4));
+    }
+    hash = *ptr;
     }
 done:
     inst.~Instance();

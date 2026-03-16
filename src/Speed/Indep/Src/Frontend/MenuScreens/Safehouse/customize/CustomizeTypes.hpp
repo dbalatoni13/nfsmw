@@ -214,6 +214,9 @@ struct SelectablePart : public bTNode<SelectablePart> {
 
 // total size: 0x18
 struct ShoppingCartItem : public bTNode<ShoppingCartItem> {
+    static void *operator new(size_t s) { return ::operator new[](s); }
+    static void operator delete(void *p) { ::operator delete[](p); }
+
     ShoppingCartItem(SelectablePart *to_buy, SelectablePart *trade_in)
         : ToBuy(to_buy) //
         , TradeIn(trade_in) //
