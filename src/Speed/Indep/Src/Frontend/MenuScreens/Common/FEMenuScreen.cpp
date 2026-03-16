@@ -28,18 +28,6 @@ extern const char lbl_803E85C4[];
 extern const char lbl_803E85E0[];
 extern const char lbl_803E8600[];
 
-static bool ShouldTrackOLCurrentScreen(const char *package_name) {
-    if (bStrCmp(package_name, lbl_803E5EEC) == 0 || bStrCmp(package_name, lbl_803E6D54) == 0 ||
-        bStrCmp(package_name, lbl_803E7FC4) == 0 || bStrCmp(package_name, lbl_803E6D6C) == 0 ||
-        bStrCmp(package_name, lbl_803E59BC) == 0 || bStrCmp(package_name, lbl_803E6D8C) == 0 ||
-        bStrCmp(package_name, lbl_803E85A8) == 0 || bStrCmp(package_name, lbl_803E85C4) == 0 ||
-        bStrCmp(package_name, lbl_803E85E0) == 0) {
-        return false;
-    }
-
-    return !cFEng::Get()->IsPackagePushed(lbl_803E8600);
-}
-
 MenuScreen::MenuScreen(ScreenConstructorData *sd)
     : mPlaySound(true) //
     , mDirectionForNextSound(0) //
@@ -53,7 +41,12 @@ MenuScreen::MenuScreen(ScreenConstructorData *sd)
     FEngSetButtonTexture(FEngFindImage(PackageFilename, 0x6B364F8B), 0x5BC);
     FEngSetButtonTexture(FEngFindImage(PackageFilename, 0x79354351), 0x682);
 
-    if (ShouldTrackOLCurrentScreen(PackageFilename)) {
+    if (bStrCmp(PackageFilename, lbl_803E5EEC) == 0 || bStrCmp(PackageFilename, lbl_803E6D54) == 0 ||
+        bStrCmp(PackageFilename, lbl_803E7FC4) == 0 || bStrCmp(PackageFilename, lbl_803E6D6C) == 0 ||
+        bStrCmp(PackageFilename, lbl_803E59BC) == 0 || bStrCmp(PackageFilename, lbl_803E6D8C) == 0 ||
+        bStrCmp(PackageFilename, lbl_803E85A8) == 0 || bStrCmp(PackageFilename, lbl_803E85C4) == 0 ||
+        bStrCmp(PackageFilename, lbl_803E85E0) == 0) {
+    } else if (!cFEng::Get()->IsPackagePushed(lbl_803E8600)) {
         g_pOLCurrentScreen = this;
     }
 }
@@ -61,7 +54,12 @@ MenuScreen::MenuScreen(ScreenConstructorData *sd)
 MenuScreen::~MenuScreen() {
     FESoundControl(false, PackageFilename);
 
-    if (ShouldTrackOLCurrentScreen(PackageFilename)) {
+    if (bStrCmp(PackageFilename, lbl_803E5EEC) == 0 || bStrCmp(PackageFilename, lbl_803E6D54) == 0 ||
+        bStrCmp(PackageFilename, lbl_803E7FC4) == 0 || bStrCmp(PackageFilename, lbl_803E6D6C) == 0 ||
+        bStrCmp(PackageFilename, lbl_803E59BC) == 0 || bStrCmp(PackageFilename, lbl_803E6D8C) == 0 ||
+        bStrCmp(PackageFilename, lbl_803E85A8) == 0 || bStrCmp(PackageFilename, lbl_803E85C4) == 0 ||
+        bStrCmp(PackageFilename, lbl_803E85E0) == 0) {
+    } else if (!cFEng::Get()->IsPackagePushed(lbl_803E8600)) {
         g_pOLCurrentScreen = nullptr;
     }
 }
