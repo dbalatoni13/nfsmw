@@ -234,7 +234,7 @@ void FEPackage::UpdateObjectTracks(FEObject* pObj, FEScript* pScript) {
         if (*reinterpret_cast<int*>(pObj->pData + 0xC)) {
             unsigned char TrackCount = static_cast<unsigned char>(pScript->TrackCount);
             for (unsigned char i = 0; i < TrackCount; i++, pTracks++) {
-                bDone &= pTracks->InterpAction;
+                bDone = pTracks->InterpAction & bDone;
                 FEKeyInterpFast(pTracks, CurTime,
                                 pData + pTracks->LongOffset * 4);
             }

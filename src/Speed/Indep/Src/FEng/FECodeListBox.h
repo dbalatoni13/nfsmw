@@ -28,15 +28,31 @@ inline int GetValidIndex(int lIndex, int lRange) {
 }
 
 inline int GetRealValue(int i, int lNumTotal, int lCurrentVirtual, int lNumVisible) {
-    if (lNumTotal == 0) return -1;
+    if (lNumTotal == 0) {
+        return -1;
+    }
+
     if (i >= lNumTotal) {
         i = i % lNumTotal;
     }
-    int lRet = i - lCurrentVirtual;
-    if (lRet < 0) {
-        lRet += lNumTotal;
+
+    i -= lCurrentVirtual;
+    if (i < 0) {
+        i += lNumTotal;
     }
-    return GetValidIndex(lRet, lNumVisible);
+
+    if (i >= 0) {
+        int rem = i - (i / lNumVisible) * lNumVisible;
+        return rem;
+    }
+
+    int posIndex = -i;
+    int rem = posIndex - (posIndex / lNumVisible) * lNumVisible;
+    int ret = 0;
+    if (lNumVisible > 1) {
+        ret = lNumVisible - rem;
+    }
+    return ret;
 }
 
 // total size: 0xC8
