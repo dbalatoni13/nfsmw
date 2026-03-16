@@ -21,8 +21,7 @@ extern unsigned long FEHashUpper(const char *str);
 extern int GetMikeMannBuild();
 extern void StartRace();
 extern void FEngSetScript(const char *pkg_name, unsigned int obj_hash, unsigned int script_hash, bool play);
-extern int IsEventAvailable(unsigned int hash);
-extern int IsTrackUnlocked(int filter, unsigned int hash, int param);
+
 extern void SetNumOpponents(void *custom, int num);
 extern void SetCopsEnabled(void *custom, bool enabled);
 extern const char *gOnlineMainMenu;
@@ -126,24 +125,40 @@ bool UIQRTrackSelect::IsRaceValidForMike(GRaceParameters *parms) {
 }
 
 void UIQRTrackSelect::TryToAddTrack(GRaceParameters *parms, int unlock_filter, int bin_num) {
-    GRace::Type raceType = parms->GetRaceType();
-    if (raceType == FEDatabase->RaceMode) {
-        if (GetMikeMannBuild()) {
-            if (!IsRaceValidForMike(parms)) {
-                return;
-            }
-        } else {
-            unsigned int eventHash = parms->GetEventHash();
-            if (!IsEventAvailable(eventHash)) {
-                return;
-            }
-            eventHash = parms->GetEventHash();
-            if (!IsTrackUnlocked(unlock_filter, eventHash, 0)) {
-                return;
-            }
+    if (!UnlockSystem::IsEventAvailable(parms->GetEventHash())) {
+        return;
+    }
+    if (parms->GetNeverInQuickRace()) {
+        return;
+    }
+    if (parms->GetRaceType() != FEDatabase->RaceMode) {
+        return;
+    }
+    int isDDay = parms->GetIsDDayRace();
+    if (isDDay) {
+        return;
+    }
+    if (GetMikeMannBuild()) {
+        if (!IsRaceValidForMike(parms)) {
+            return;
         }
-        SelectableTrack *node = new SelectableTrack(parms, false, bin_num);
+        SelectableTrack *node = new SelectableTrack(parms, isDDay, bin_num);
         Tracks.AddTail(node);
+    } else {
+        RaceSettings *settings = FEDatabase->GetQuickRaceSettings(static_cast<GRace::Type>(0xb));
+        unsigned char region = settings->RegionFilterBits;
+        if (parms->GetRegion() != region && region != kRaceRegion_NumRegions) {
+            return;
+        }
+        unsigned int eventHash = parms->GetEventHash();
+        bool isUnlocked = UnlockSystem::IsTrackUnlocked(static_cast<eUnlockFilters>(unlock_filter), eventHash, 0);
+        SelectableTrack *node = new SelectableTrack(parms, !isUnlocked, bin_num);
+        Tracks.AddTail(node);
+        settings = FEDatabase->GetQuickRaceSettings(static_cast<GRace::Type>(0xb));
+        unsigned int settingsHash = settings->EventHash;
+        if (parms->GetEventHash() == settingsHash) {
+            pCurrentNode = node;
+        }
     }
 }
 

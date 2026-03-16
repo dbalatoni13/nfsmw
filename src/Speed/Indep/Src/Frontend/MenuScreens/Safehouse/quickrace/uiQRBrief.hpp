@@ -30,6 +30,9 @@ struct SelectableCar : public bTNode<SelectableCar> {
 
 // total size: 0x14
 struct SelectableTrack : public bTNode<SelectableTrack> {
+    static void *operator new(size_t s) { return ::operator new[](s); }
+    static void operator delete(void *p) { ::operator delete[](p); }
+
     SelectableTrack(GRaceParameters *rp, bool locked, int bin_num)
         : pRaceParams(rp) //
         , bLocked(locked) //

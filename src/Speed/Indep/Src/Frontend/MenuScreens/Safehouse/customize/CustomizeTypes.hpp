@@ -149,6 +149,9 @@ struct CustomizeMeter {
 
 // total size: 0x2C
 struct SelectablePart : public bTNode<SelectablePart> {
+    static void *operator new(size_t s) { return ::operator new[](s); }
+    static void operator delete(void *p) { ::operator delete[](p); }
+
     SelectablePart(SelectablePart *part)
         : ThePart(part->ThePart) //
         , CarSlotID(part->CarSlotID) //
