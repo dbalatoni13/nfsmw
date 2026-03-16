@@ -1784,20 +1784,22 @@ void CustomizeMain::NotificationMessage(unsigned long msg, FEObject *pobj, unsig
     }
     case 0x911ab364:
         if (gCarCustomizeManager.IsCareerMode()) {
-            if (CustomizeIsInBackRoom()) {
+            if (!CustomizeIsInBackRoom()) {
+                cFEng_mInstance->QueuePackageMessage(0x6d5d86a1, GetPackageName(), nullptr);
+                cFrontendDatabase *db = FEDatabase;
+                GarageMainScreen *gms = GetInstance_GarageMainScreen();
+                *(unsigned int *)((char *)gms + 0x8c) = 0xFFFFFFFF;
+                char port = FEngMapJoyParamToJoyport(param1);
+                db->SetPlayersJoystickPort(0, port);
+                if (!db->IsCarStableDirty()) {
+                    *(int *)((char *)MemoryCard_s_pThis + 0x78) = 1;
+                }
+                CarViewer_haveLoadedOnce = 0;
+                StartCareerFreeRoam();
+            } else {
                 SwitchRooms();
                 return;
             }
-            cFEng_mInstance->QueuePackageMessage(0x6d5d86a1, GetPackageName(), nullptr);
-            GarageMainScreen *gms = GetInstance_GarageMainScreen();
-            *(unsigned int *)((char *)gms + 0x8c) = 0xFFFFFFFF;
-            char port = FEngMapJoyParamToJoyport(param1);
-            FEDatabase->SetPlayersJoystickPort(0, port);
-            if (!FEDatabase->IsCarStableDirty()) {
-                *(int *)((char *)MemoryCard_s_pThis + 0x78) = 1;
-            }
-            CarViewer_haveLoadedOnce = 0;
-            StartCareerFreeRoam();
         } else {
             cFEng_mInstance->QueuePackageMessage(0x6d5d86a1, GetPackageName(), nullptr);
         }
@@ -4290,29 +4292,32 @@ SelectablePart *CustomizePaint::GetSelectedPart() {
 void CustomizePaint::BuildSwatchList(unsigned int slot) {
     CarPart *matchPart = nullptr;
     ThePaints.ClearData();
-    if (slot > 0x4e && slot < 0x52) {
-        int colorIndex = 0;
-        if (slot == 0x50) {
-            colorIndex = 1;
-        } else if (slot == 0x51) {
-            colorIndex = 2;
-        }
-        if (Showcase::FromColor[colorIndex] && !VinylColors[colorIndex]) {
-            matchPart = static_cast<SelectablePart *>(Showcase::FromColor[colorIndex])->GetPart();
-        }
+    int colorIndex = 0;
+    switch (slot) {
+    case 0x4f: colorIndex = 0; break;
+    case 0x50: colorIndex = 1; break;
+    case 0x51: colorIndex = 2; break;
+    default: goto skip_color;
     }
+    if (Showcase::FromColor[colorIndex] && !VinylColors[colorIndex]) {
+        matchPart = static_cast<SelectablePart *>(Showcase::FromColor[colorIndex])->GetPart();
+    }
+skip_color:
     if (!matchPart) {
         matchPart = gCarCustomizeManager.GetActivePartFromSlot(slot);
     }
     unsigned int brand = CalcBrandHash(matchPart);
     if (TheFilter == -1) {
         int filterVal = 0;
-        if (brand == 0x2daab07) {
-            filterVal = 0;
-        } else if (brand == 0x3437a52) {
+        switch (brand) {
+        case 0x2daab07:
+            break;
+        case 0x3437a52:
             filterVal = 1;
-        } else if (brand == 0x3797533) {
+            break;
+        case 0x3797533:
             filterVal = 2;
+            break;
         }
         TheFilter = filterVal;
     }
@@ -4351,9 +4356,7 @@ void CustomizePaint::BuildSwatchList(unsigned int slot) {
         }
         ThePaints.SetInitialPosition(SelectedIndex[TheFilter]);
     } else {
-        int idx = Showcase::FromIndex - 1;
-        SelectedIndex[TheFilter] = idx;
-        ThePaints.SetInitialPosition(idx);
+        SelectedIndex[TheFilter] = Showcase::FromIndex - 1;
         Showcase::FromIndex = 0;
     }
     RefreshHeader();

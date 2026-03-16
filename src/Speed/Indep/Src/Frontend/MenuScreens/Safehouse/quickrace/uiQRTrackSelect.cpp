@@ -394,7 +394,9 @@ void UIQRTrackSelect::NotificationMessage(unsigned long msg, FEObject *pobj, uns
                 isSplitQR = FEDatabase->iNumPlayers == 2;
             }
             GRace::Type rt = pCurrentTrack->GetRaceType();
-            if (isSplitQR && (rt == GRace::kRaceType_Drag || rt == GRace::kRaceType_P2P || rt == GRace::kRaceType_SpeedTrap)) {
+            if (isSplitQR && (rt == GRace::kRaceType_Drag ||
+                              pCurrentTrack->GetRaceType() == GRace::kRaceType_P2P ||
+                              pCurrentTrack->GetRaceType() == GRace::kRaceType_SpeedTrap)) {
                 GRaceCustom *custom = GRaceDatabase::Get().AllocCustomRace(pCurrentTrack);
                 SetNumOpponents(custom, 1);
                 SetCopsEnabled(custom, false);
@@ -412,10 +414,10 @@ void UIQRTrackSelect::NotificationMessage(unsigned long msg, FEObject *pobj, uns
         RaceSettings *settings = FEDatabase->GetQuickRaceSettings(static_cast<GRace::Type>(0xb));
         settings->EventHash = 0;
         const char *pkg;
-        if (!FEDatabase->IsOnlineMode() && !FEDatabase->IsLANMode()) {
-            pkg = "MainMenu_Sub.fng";
-        } else {
+        if (FEDatabase->IsOnlineMode() || FEDatabase->IsLANMode()) {
             pkg = "OL_MAIN.fng";
+        } else {
+            pkg = "MainMenu_Sub.fng";
         }
         cFEng::Get()->QueuePackageSwitch(pkg, 0, 0, false);
         break;
