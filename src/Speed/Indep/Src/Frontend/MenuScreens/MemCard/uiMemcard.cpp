@@ -384,10 +384,11 @@ UIMemcardList::~UIMemcardList() {}
 void UIMemcardList::NotificationMessage(unsigned long msg, FEObject* obj, unsigned long param1,
                                          unsigned long param2) {
     switch (msg) {
-    case 0x35f8620b:
+    case 0x35f8620b: {
         m_SaveGameList.SetSelected(m_SaveGameList.Slots.GetHead());
-        if (m_SaveGameList.SelectedSlot != nullptr) {
-            m_SaveGameList.SelectedSlot->SetScript(0x249db7b7);
+        ScrollerSlot* slot = m_SaveGameList.SelectedSlot;
+        if (slot != nullptr) {
+            slot->SetScript(0x249db7b7);
         }
         MemoryCard::GetInstance()->GetScreen()->m_ExpectingInput = true;
         m_Initialized++;
@@ -395,6 +396,7 @@ void UIMemcardList::NotificationMessage(unsigned long msg, FEObject* obj, unsign
             FEngSetLanguageHash(GetPackageName(), 0xb8a7c6cd, 0x1a294dad);
         }
         break;
+    }
     case 0xc98356ba:
         if (m_Initialized == 0) {
             m_Initialized = 1;
@@ -447,9 +449,9 @@ void UIMemcardList::NotificationMessage(unsigned long msg, FEObject* obj, unsign
     }
     case 0xeb29392a:
         if (m_LastMsg == 0x406415e3) {
-            UIMemcardBase* parent = MemoryCard::GetInstance()->GetScreen();
             ScrollerDatum* datum = m_SaveGameList.SelectedDatum;
             if (datum != nullptr) {
+                UIMemcardBase* parent = MemoryCard::GetInstance()->GetScreen();
                 parent->DoSelect(datum->Strings.GetNode(0)->String);
             }
         }
