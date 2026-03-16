@@ -354,107 +354,88 @@ void FEKeyboard::UpdateCursorPosition() {
 void FEKeyboard::NotificationMessage(unsigned long msg, FEObject *pObject, unsigned long param1, unsigned long param2) {
     unsigned long soundTrigger = 0;
     int nButton = -1;
-    if (msg == 0xB5971BF1) {
+    switch (msg) {
+    case 0xB5971BF1:
         soundTrigger = 3;
-    } else if (msg < 0xB5971BF2) {
-        if (msg == 0x72619778) {
-            soundTrigger = 0;
-        } else if (msg < 0x72619779) {
-            if (msg != 0xC407210) {
-                if (msg != 0x5073EF13) {
-                    return;
-                }
-                MoveCursor(-1);
-                return;
-            }
-            if (!pObject) {
-                return;
-            }
-            nButton = IsKeyButton(pObject);
-            if (nButton > -1 && GetLetterMap(nButton) != 0) {
-                g_pEAXSound->PlayUISoundFX(static_cast<eMenuSoundTriggers>(0x2E));
-                AppendLetter(nButton);
-                return;
-            }
-            soundTrigger = 7;
-        } else if (msg == 0x911C0A4B) {
-            soundTrigger = 1;
-        } else {
-            if (msg < 0x911C0A4C) {
-                if (msg != 0x911AB364) {
-                    return;
-                }
-                if (mnDeclineHash == -1U) {
-                    return;
-                }
-                Dispose(true);
-                return;
-            }
-            if (msg != 0x9120409E) {
-                return;
-            }
-            soundTrigger = 2;
-        }
-    } else {
-        if (msg != 0xD7AD0DD9) {
-            if (msg < 0xD7AD0DDA) {
-                if (msg == 0xC1A6F000) {
-                    if (mnMode == MODE_PROFILE_ENTRY) {
-                        soundTrigger = 7;
-                    } else {
-                        AppendSpace();
-                        soundTrigger = 0x2E;
-                    }
-                    goto play_sound;
-                }
-                if (msg > 0xC1A6F000) {
-                    if (msg != 0xC519BFC4) {
-                        return;
-                    }
-                    if (GetCurrentLanguage() == eLANGUAGE_KOREAN) {
-                        return;
-                    }
-                    ToggleSpecialCharacters();
-                    return;
-                }
-                if (msg != 0xB5AF2461) {
-                    return;
-                }
-                if (bStrCmp(mString, "") == 0) {
-                    cFEng::Get()->QueuePackageMessage(0x8CB81F09, GetPackageName(), nullptr);
-                    return;
-                }
-            } else {
-                if (msg == 0xDB3D597C) {
-                    g_pEAXSound->PlayUISoundFX(static_cast<eMenuSoundTriggers>(0x30));
-                    AppendBackspace();
-                    return;
-                }
-                if (msg < 0xDB3D597D) {
-                    if (msg != 0xD9FEEC59) {
-                        return;
-                    }
-                    MoveCursor(1);
-                    return;
-                }
-                if (msg != 0xE1FDE1D1) {
-                    return;
-                }
-                if (bStrCmp(mString, "") == 0 && mnMode == MODE_FILENAME) {
-                    return;
-                }
-            }
-            g_pEAXSound->PlayUISoundFX(static_cast<eMenuSoundTriggers>(0x2F));
-            Dispose(false);
+        goto play_sound;
+    case 0x72619778:
+        soundTrigger = 0;
+        goto play_sound;
+    case 0xC407210:
+        if (!pObject) {
             return;
         }
+        nButton = IsKeyButton(pObject);
+        if (nButton > -1 && GetLetterMap(nButton) != 0) {
+            g_pEAXSound->PlayUISoundFX(static_cast<eMenuSoundTriggers>(0x2E));
+            AppendLetter(nButton);
+            return;
+        }
+        soundTrigger = 7;
+        goto play_sound;
+    case 0x5073EF13:
+        MoveCursor(-1);
+        return;
+    case 0x911C0A4B:
+        soundTrigger = 1;
+        goto play_sound;
+    case 0x911AB364:
+        if (mnDeclineHash == -1U) {
+            return;
+        }
+        Dispose(true);
+        return;
+    case 0x9120409E:
+        soundTrigger = 2;
+        goto play_sound;
+    case 0xB5AF2461:
+        if (bStrLen(mString) == 0) {
+            cFEng::Get()->QueuePackageMessage(0x8CB81F09, GetPackageName(), nullptr);
+            return;
+        }
+        goto dispose_keyboard;
+    case 0xC1A6F000:
+        if (mnMode == MODE_PROFILE_ENTRY) {
+            soundTrigger = 7;
+        } else {
+            AppendSpace();
+            soundTrigger = 0x2E;
+        }
+        goto play_sound;
+    case 0xC519BFC4:
+        if (GetCurrentLanguage() == eLANGUAGE_KOREAN) {
+            return;
+        }
+        ToggleSpecialCharacters();
+        return;
+    case 0xD7AD0DD9:
         if (mnMode == MODE_PROFILE_ENTRY && !(FEDatabase->GetGameMode() & 8) && !(FEDatabase->GetGameMode() & 0x40)) {
             soundTrigger = 7;
         } else {
             ToggleCapsLock();
             soundTrigger = 0x30;
         }
+        goto play_sound;
+    case 0xD9FEEC59:
+        MoveCursor(1);
+        return;
+    case 0xDB3D597C:
+        g_pEAXSound->PlayUISoundFX(static_cast<eMenuSoundTriggers>(0x30));
+        AppendBackspace();
+        return;
+    case 0xE1FDE1D1:
+        if (bStrLen(mString) == 0 && mnMode == MODE_FILENAME) {
+            return;
+        }
+        goto dispose_keyboard;
+    default:
+        return;
     }
+
+dispose_keyboard:
+    g_pEAXSound->PlayUISoundFX(static_cast<eMenuSoundTriggers>(0x2F));
+    Dispose(false);
+    return;
 play_sound:
     g_pEAXSound->PlayUISoundFX(static_cast<eMenuSoundTriggers>(soundTrigger));
 }
