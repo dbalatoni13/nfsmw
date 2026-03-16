@@ -592,8 +592,7 @@ void FEngine::RenderGroup(FEGroup* pGroup, FEMatrix4& mParent, FEMatrix4& mAccum
 void FEngine::RenderObject(FEObject* pObj, FEMatrix4& mParent, unsigned short RenderContext) {
     FEObjData* pData = pObj->GetObjData();
     if (pData->Col.a != 0) {
-        FEVector3 pos;
-        pos = pData->Pivot;
+        FEVector3 pos(pData->Pivot);
         FEVector3 result(0.0f);
         pos.x = pos.x + pData->Pos.x;
         pos.y = pos.y + pData->Pos.y;
