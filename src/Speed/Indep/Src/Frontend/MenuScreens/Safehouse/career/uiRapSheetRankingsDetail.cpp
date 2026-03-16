@@ -16,29 +16,29 @@ void RapSheetRankingsArraySlot::Update(ArrayDatum* datum, bool isSelected) {
     if (datum != nullptr) {
         RapSheetRankingsDatum* d = static_cast<RapSheetRankingsDatum*>(datum);
         FEPrintf(pValue, "%.0f", d->getValue());
-        if (d->getItemNum() == 0x10) { FEngSetLanguageHash(pItemNum, 0xFC1BF40); }
-        else { FEPrintf(pItemNum, "%d"); }
-        if (d->getCarName() == 0) { FEPrintf(pCarName, ""); }
-        else { FEngSetLanguageHash(pCarName, d->getCarName()); }
-        if (d->getPlayerName() == 1) { FEPrintf(pPlayerName, "%s", FEDatabase->GetUserProfile(0)->GetProfileName()); }
-        else { FEngSetLanguageHash(pPlayerName, d->getPlayerName()); }
+        if (d->getItemNum() != 0x10) { FEPrintf(pItemNum, "%d"); }
+        else { FEngSetLanguageHash(pItemNum, 0xFC1BF40); }
+        if (d->getCarName() != 0) { FEngSetLanguageHash(pCarName, d->getCarName()); }
+        else { FEPrintf(pCarName, ""); }
+        if (d->getPlayerName() != 1) { FEngSetLanguageHash(pPlayerName, d->getPlayerName()); }
+        else { FEPrintf(pPlayerName, "%s", FEDatabase->GetUserProfile(0)->GetProfileName()); }
     }
 }
 void RapSheetRankingsTimerArraySlot::Update(ArrayDatum* datum, bool isSelected) {
     ArraySlot::Update(datum, isSelected);
     if (datum != nullptr) {
         RapSheetRankingsDatum* d = static_cast<RapSheetRankingsDatum*>(datum);
-        if (d->getItemNum() == 0x10) { FEPrintf(pItemNum, "#"); }
-        else { FEPrintf(pItemNum, "%d"); }
-        if (d->getCarName() == 0) { FEPrintf(pCarName, ""); }
-        else { FEngSetLanguageHash(pCarName, d->getCarName()); }
+        if (d->getItemNum() != 0x10) { FEPrintf(pItemNum, "%d"); }
+        else { FEPrintf(pItemNum, "#"); }
+        if (d->getCarName() != 0) { FEngSetLanguageHash(pCarName, d->getCarName()); }
+        else { FEPrintf(pCarName, ""); }
         Timer t;
         t.SetTime(d->getValue());
         char time_str[16];
         t.PrintToString(time_str, 16);
         FEPrintf(pValue, "%s", time_str);
-        if (d->getPlayerName() == 1) { FEPrintf(pPlayerName, "%s", FEDatabase->GetUserProfile(0)->GetProfileName()); }
-        else { FEngSetLanguageHash(pPlayerName, d->getPlayerName()); }
+        if (d->getPlayerName() != 1) { FEngSetLanguageHash(pPlayerName, d->getPlayerName()); }
+        else { FEPrintf(pPlayerName, "%s", FEDatabase->GetUserProfile(0)->GetProfileName()); }
     }
 }
 uiRapSheetRankingsDetail::uiRapSheetRankingsDetail(ScreenConstructorData* sd)
