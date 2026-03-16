@@ -65,12 +65,12 @@ void PauseMenu::NotificationMessage(unsigned long msg, FEObject* pobj, unsigned 
         mSelectionHash = 0xFDAE152F;
         FEngSetScript(GetPackageName(), 0x47FF4E7C, 0xDE6EFF34, true);
         return;
+    case 0xC9BFD1C3:
     case 0x43DA9FD0:
     case 0x30EB8F53:
     case 0x30F32A49:
     case 0x451E768E:
     case 0xE1A57D51:
-    case 0xC9BFD1C3:
         FEngSetScript(GetPackageName(), 0x47FF4E7C, 0xDE6EFF34, true);
         return;
     case 0xB4623F67:
@@ -120,8 +120,7 @@ void PauseMenu::NotificationMessage(unsigned long msg, FEObject* pobj, unsigned 
                 return;
             }
             case 0xFBDF2EE3:
-                if (GRaceStatus::Exists() && GRaceStatus::Get().GetRaceParameters() &&
-                    GRaceStatus::Get().GetRaceParameters()->GetIsDDayRace()) {
+                if (GRaceStatus::Exists() && GRaceStatus::Get().GetRaceParameters()) {
                     MemoryCard::GetInstance()->CancelNextAutoSave();
                 }
                 new ERestartRace();
@@ -213,21 +212,24 @@ void PauseMenu::SetupOptions() {
             } else if (FEDatabase->IsFinalEpicChase()) {
                 AddOption(new("", 0) pm_ResumeFreeRoam(0x12BB5EA2, 0x01BD185C, 0));
                 AddOption(new("", 0) pm_QuitRaceToFE(0x4C9E34E6, 0x690E9B7C, 0));
+                bool tuningAvailable = IsTuningAvailable();
                 pm_SwitchToTuning* tuning = new("", 0) pm_SwitchToTuning(0x483238FD, 0x6A3672A2, 0);
-                tuning->Locked = !IsTuningAvailable();
+                tuning->Locked = !tuningAvailable;
                 AddOption(tuning);
                 AddOption(new("", 0) pm_SwitchToOptions(0x520DE4E3, 0x2B5A03A8, 0));
             } else if (PostRacePursuitScreen::GetPursuitData().mPursuitIsActive) {
                 AddOption(new("", 0) pm_ResumeFreeRoam(0x12BB5EA2, 0x01BD185C, 0));
+                bool tuningAvailable = IsTuningAvailable();
                 pm_SwitchToTuning* tuning = new("", 0) pm_SwitchToTuning(0x483238FD, 0x6A3672A2, 0);
-                tuning->Locked = !IsTuningAvailable();
+                tuning->Locked = !tuningAvailable;
                 AddOption(tuning);
                 AddOption(new("", 0) pm_SwitchToOptions(0x520DE4E3, 0x2B5A03A8, 0));
             } else {
                 AddOption(new("", 0) pm_ResumeFreeRoam(0x12BB5EA2, 0x01BD185C, 0));
                 AddOption(new("", 0) pm_QuitRaceToFE(0x4C9E34E6, 0x3C14C420, 0));
+                bool tuningAvailable = IsTuningAvailable();
                 pm_SwitchToTuning* tuning = new("", 0) pm_SwitchToTuning(0x483238FD, 0x6A3672A2, 0);
-                tuning->Locked = !IsTuningAvailable();
+                tuning->Locked = !tuningAvailable;
                 AddOption(tuning);
                 AddOption(new("", 0) pm_SwitchToOptions(0x520DE4E3, 0x2B5A03A8, 0));
             }
@@ -246,8 +248,9 @@ void PauseMenu::SetupOptions() {
                 AddOption(new("", 0) pm_ResumeRace(0x12BB5EA2, 0xDED357E7, 0));
                 AddOption(new("", 0) pm_RestartRace(0xB295A6B6, 0xF893AFA1, 0));
                 AddOption(new("", 0) pm_QuitRaceToFE(0x4C9E34E6, 0x690E9B7C, 0));
+                bool tuningAvailable = IsTuningAvailable();
                 pm_SwitchToTuning* tuning = new("", 0) pm_SwitchToTuning(0x483238FD, 0x6A3672A2, 0);
-                tuning->Locked = !IsTuningAvailable();
+                tuning->Locked = !tuningAvailable;
                 AddOption(tuning);
                 AddOption(new("", 0) pm_SwitchToOptions(0x520DE4E3, 0x2B5A03A8, 0));
             } else {
@@ -255,8 +258,9 @@ void PauseMenu::SetupOptions() {
                 AddOption(new("", 0) pm_RestartRace(0xB295A6B6, 0xF893AFA1, 0));
                 AddOption(new("", 0) pm_QuitRaceToFE(0x4C9E34E6, 0x3C14C420, 0));
                 AddOption(new("", 0) pm_QuitRaceToFreeRoam(0x56FFBD2C, 0x9DC599B0, 0));
+                bool tuningAvailable = IsTuningAvailable();
                 pm_SwitchToTuning* tuning = new("", 0) pm_SwitchToTuning(0x483238FD, 0x6A3672A2, 0);
-                tuning->Locked = !IsTuningAvailable();
+                tuning->Locked = !tuningAvailable;
                 AddOption(tuning);
                 AddOption(new("", 0) pm_SwitchToOptions(0x520DE4E3, 0x2B5A03A8, 0));
             }
@@ -281,8 +285,9 @@ void PauseMenu::SetupOptions() {
             }
             if (!GRaceStatus::IsTollboothRace() &&
                 (pParams == nullptr || !pParams->GetIsChallengeSeriesRace())) {
+                bool tuningAvailable = IsTuningAvailable();
                 pm_SwitchToTuning* tuning = new("", 0) pm_SwitchToTuning(0x483238FD, 0x6A3672A2, 0);
-                tuning->Locked = !IsTuningAvailable();
+                tuning->Locked = !tuningAvailable;
                 AddOption(tuning);
             }
             AddOption(new("", 0) pm_SwitchToOptions(0x520DE4E3, 0x2B5A03A8, 0));
