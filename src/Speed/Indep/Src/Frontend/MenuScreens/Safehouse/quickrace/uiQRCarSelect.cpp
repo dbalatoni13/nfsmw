@@ -481,16 +481,15 @@ void UIQRCarSelect::NotificationMessage(unsigned long msg, FEObject *pobj, unsig
         if (FEDatabase->GetCareerSettings()->GetCurrentBin() > 15) return;
         if (!pSelectedCar) return;
         FECarRecord *car = GetSelectedCarRecord();
-        bool showImpoundedDialog = false;
         if (car->CareerHandle != 0xff) {
             FEPlayerCarDB *stable = FEDatabase->GetPlayerCarStable(iPlayerNum);
             FECareerRecord *career = stable->GetCareerRecordByHandle(car->CareerHandle);
-            showImpoundedDialog = career->TheImpoundData.IsImpounded();
-        }
-        if (showImpoundedDialog) {
-            DialogInterface::ShowOneButton(GetPackageName(), "", static_cast<eDialogTitle>(1),
-                0x417b2601, 0x34dc1bcf, 0x80e4f27c);
-            return;
+            bool showImpoundedDialog = career->TheImpoundData.IsImpounded();
+            if (showImpoundedDialog) {
+                DialogInterface::ShowOneButton(GetPackageName(), "", static_cast<eDialogTitle>(1),
+                    0x417b2601, 0x34dc1bcf, 0x80e4f27c);
+                return;
+            }
         }
         FEPlayerCarDB *stable2 = FEDatabase->GetPlayerCarStable(iPlayerNum);
         if (stable2->GetNumAvailableCareerCars() > 1) {

@@ -2574,10 +2574,6 @@ void CustomizeParts::Setup() {
     bool is_vinyl = false;
     CarPart *installed_part = nullptr;
     bool part_found = false;
-    int installed_index;
-    int current_part_index;
-    unsigned int original_icon_hash;
-    SelectablePart *part;
 
     switch (Category) {
     case 0x101:
@@ -2635,41 +2631,49 @@ void CustomizeParts::Setup() {
     case 0x402:
         SetTitleHash(0xd9228fc6);
         icon_hash = 0xf8148554;
+        car_slot_id = 0x4d;
         vinyl_group_number = 0;
         goto set_vinyl;
     case 0x403:
         SetTitleHash(0x1e8d885f);
         icon_hash = 0x192d84da;
+        car_slot_id = 0x4d;
         vinyl_group_number = 1;
         goto set_vinyl;
     case 0x404:
         SetTitleHash(0x1c619fd8);
         icon_hash = 0xf7352706;
+        car_slot_id = 0x4d;
         vinyl_group_number = 2;
         goto set_vinyl;
     case 0x405:
         SetTitleHash(0x9c1b8935);
         icon_hash = 0x1223cc89;
+        car_slot_id = 0x4d;
         vinyl_group_number = 3;
         goto set_vinyl;
     case 0x406:
         SetTitleHash(0x7956f7b0);
         icon_hash = 0xbc44bbcb;
+        car_slot_id = 0x4d;
         vinyl_group_number = 4;
         goto set_vinyl;
     case 0x407:
         SetTitleHash(0x2d5bff0f);
         icon_hash = 0x694ca0ca;
+        car_slot_id = 0x4d;
         vinyl_group_number = 5;
         goto set_vinyl;
     case 0x408:
         SetTitleHash(0x209a9158);
         icon_hash = 0x1b3a8dd3;
+        car_slot_id = 0x4d;
         vinyl_group_number = 6;
         goto set_vinyl;
     case 0x409:
         SetTitleHash(0xcd057d21);
         icon_hash = 0x1ba508fc;
+        car_slot_id = 0x4d;
         vinyl_group_number = 7;
         goto set_vinyl;
     default:
@@ -2677,7 +2681,6 @@ void CustomizeParts::Setup() {
     }
 
 set_vinyl:
-    car_slot_id = 0x4d;
     is_vinyl = true;
 
 after_switch:
@@ -2696,6 +2699,10 @@ after_switch:
         gCarCustomizeManager.GetCarPartList(car_slot_id, part_list, 0);
     }
 
+    int installed_index;
+    int current_part_index;
+    unsigned int original_icon_hash;
+    SelectablePart *part;
     installed_index = 0;
     current_part_index = 1;
     original_icon_hash = icon_hash;
@@ -2707,19 +2714,23 @@ after_switch:
 
         if (is_vinyl) {
             CarPart *cpart = part->GetPart();
-            unsigned int part_name_hash = static_cast<unsigned int>(cpart->PartNameHashTop) << 16 | cpart->PartNameHashBot;
             unsigned char gl = cpart->GroupNumber_UpgradeLevel;
-            if ((gl & 0x1f) == vinyl_group_number && UnlockSystem::IsUnlockableAvailable(part_name_hash)) {
-                unsigned int upgrade_level = gl >> 5;
-                bool locked = gCarCustomizeManager.IsPartLocked(part, 0);
-                AddPartOption(part, icon_hash, upgrade_level, 0, unlock_hash, locked);
+            if ((gl & 0x1f) == vinyl_group_number) {
+                unsigned int part_name_hash = static_cast<unsigned int>(cpart->PartNameHashTop) << 16 | cpart->PartNameHashBot;
+                if (UnlockSystem::IsUnlockableAvailable(part_name_hash)) {
+                    unsigned int upgrade_level = gl >> 5;
+                    bool locked = gCarCustomizeManager.IsPartLocked(part, 0);
+                    AddPartOption(part, icon_hash, upgrade_level, 0, unlock_hash, locked);
+                } else {
+                    delete part;
+                    part = nullptr;
+                }
             } else {
                 delete part;
                 part = nullptr;
             }
         } else {
             CarPart *cpart = part->GetPart();
-            icon_hash = original_icon_hash;
             if (cpart->HasAppliedAttribute(bStringHash("CARBONFIBRE"))) {
                 int cfVal = cpart->GetAppliedAttributeIParam(bStringHash("CARBONFIBRE"), 0);
                 if (cfVal != 0) {
@@ -2735,8 +2746,14 @@ after_switch:
                         } else {
                             icon_hash = 0xfc618215;
                         }
+                    } else {
+                        icon_hash = original_icon_hash;
                     }
+                } else {
+                    icon_hash = original_icon_hash;
                 }
+            } else {
+                icon_hash = original_icon_hash;
             }
             unsigned int upgrade_level = cpart->GroupNumber_UpgradeLevel >> 5;
             bool locked = gCarCustomizeManager.IsPartLocked(part, 0);
@@ -2750,11 +2767,11 @@ after_switch:
         }
     }
 
-    if (Showcase::FromIndex == 0) {
-        SetInitialOption(installed_index);
-    } else {
+    if (Showcase::FromIndex != 0) {
         SetInitialOption(Showcase::FromIndex);
         Showcase::FromIndex = 0;
+    } else {
+        SetInitialOption(installed_index);
     }
     RefreshHeader();
 
