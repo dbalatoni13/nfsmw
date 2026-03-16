@@ -747,11 +747,11 @@ void UIMemcardBase::ExitComplete() {
         switch (cmd) {
         case 1: {
             bool popExtra;
-            if (!m_SimPausedForMemcard) {
-                popExtra = true;
-            } else {
+            if (m_SimPausedForMemcard) {
                 m_SimPausedForMemcard = false;
                 popExtra = cFEng::Get()->IsPackagePushed("SMS_Mailboxes.fng");
+            } else {
+                popExtra = true;
             }
             cFEng::Get()->QueuePackagePop(popExtra ? 1 : 0);
             break;
