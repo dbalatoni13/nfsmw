@@ -882,8 +882,7 @@ void FEngine::ProcessPadsForPackage(FEPackage* pPackage) {
                         pPackage,
                         reinterpret_cast<FEObject*>(0xFFFFFFFB),
                         FromPadPressed[4]);
-                } else {
-                    if (pPackage->FindResponse(0x406415E3u) == nullptr) goto check_released;
+                } else if (pPackage->FindResponse(0x406415E3u) != nullptr) {
                     QueueMessage(0x406415E3u, nullptr, pPackage, reinterpret_cast<FEObject*>(0xFFFFFFFD), FromPadPressed[4]);
                     QueueMessage(0x406415E3u, nullptr, pPackage, reinterpret_cast<FEObject*>(0xFFFFFFFB), FromPadPressed[4]);
                 }
@@ -973,11 +972,7 @@ void FEngine::ProcessPadsForPackage(FEPackage* pPackage) {
             }
 
             pCurButton = pPackage->GetCurrentButton();
-            if (ImpulseDir[i].dir1 == 0xFF) {
-                JustPressed = Pressed >> ImpulseDir[i].dir0;
-                Result = HeldFor[ImpulseDir[i].dir0];
-                PadMask = FromPadPressed[ImpulseDir[i].dir0] | FromPadHeld[ImpulseDir[i].dir0];
-            } else {
+            if (ImpulseDir[i].dir1 != 0xFF) {
                 Result = HeldFor[ImpulseDir[i].dir1];
                 if (HeldFor[ImpulseDir[i].dir0] < HeldFor[ImpulseDir[i].dir1]) {
                     Result = HeldFor[ImpulseDir[i].dir0];
@@ -987,6 +982,10 @@ void FEngine::ProcessPadsForPackage(FEPackage* pPackage) {
                 PadMask =
                     (FromPadPressed[ImpulseDir[i].dir0] & FromPadPressed[ImpulseDir[i].dir1]) |
                     (FromPadHeld[ImpulseDir[i].dir0] & FromPadHeld[ImpulseDir[i].dir1]);
+            } else {
+                JustPressed = Pressed >> ImpulseDir[i].dir0;
+                Result = HeldFor[ImpulseDir[i].dir0];
+                PadMask = FromPadPressed[ImpulseDir[i].dir0] | FromPadHeld[ImpulseDir[i].dir0];
             }
 
             Compare = FEFramesToTicks(20);
@@ -1015,17 +1014,13 @@ void FEngine::ProcessPadsForPackage(FEPackage* pPackage) {
         HoldDecrement[ImpulseDir[i].dir0] = Compare;
         if (ImpulseDir[i].dir1 != 0xFF) {
             HoldDecrement[ImpulseDir[i].dir1] = Compare;
-            {
-                if (ImpulseDir[i].dir1 != 0xFF) {
-                        HeldFor[ImpulseDir[i].dir0] = 0;
-                        HeldFor[ImpulseDir[i].dir1] = 0;
-                        PadHoldRegistered =
-                            PadHoldRegistered |
-                        (1 << ImpulseDir[i].dir0) |
-                        (1 << ImpulseDir[i].dir1);
-                        goto fire_direction;
-                    }
-                }
+            HeldFor[ImpulseDir[i].dir0] = 0;
+            HeldFor[ImpulseDir[i].dir1] = 0;
+            PadHoldRegistered =
+                PadHoldRegistered |
+                (1 << ImpulseDir[i].dir0) |
+                (1 << ImpulseDir[i].dir1);
+            goto fire_direction;
         }
         {
             HeldFor[ImpulseDir[i].dir0] = 0;
