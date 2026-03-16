@@ -21,7 +21,6 @@ from typing import Any, Dict, List, Optional, Tuple
 from _common import (
     ROOT_DIR,
     ToolError,
-    build_objdiff_name_size_fallback_rows,
     build_objdiff_symbol_rows,
     fail,
     load_objdiff_config,
@@ -97,50 +96,6 @@ def analyze_unit(diff_data: Dict[str, Any]) -> Dict[str, Any]:
     text_match = text_section.get("match_percent")
     text_size = text_section.get("size", 0)
 
-    pairing_rows = build_objdiff_name_size_fallback_rows(diff_data)
-    pairing_function_rows = [
-        r for r in pairing_rows if r["type"] == "function" and r["side"] == "left"
-    ]
-    pairing_unmatched_function_rows = [
-        r
-        for r in pairing_function_rows
-        if r["status"] == "nonmatching" and r["unmatched_bytes_est"] > 0
-    ]
-    pairing_unmatched_function_rows.sort(
-        key=lambda r: (-r["unmatched_bytes_est"], -r["size"], r["name"].lower())
-    )
-
-    pairing_total_funcs = 0
-    pairing_matching_funcs = 0
-    pairing_total_code_size = 0
-    pairing_matching_code_size = 0
-    pairing_remaining_code_size_est = 0
-    for row in pairing_function_rows:
-        size = row["size"]
-        pairing_total_funcs += 1
-        pairing_total_code_size += size
-        mp = row["match_percent"]
-        if mp is not None and mp >= 100.0:
-            pairing_matching_funcs += 1
-            pairing_matching_code_size += size
-        pairing_remaining_code_size_est += row["unmatched_bytes_est"]
-
-    pairing_match_percent = None
-    if pairing_total_funcs > 0:
-        pairing_match_percent = pairing_matching_funcs / pairing_total_funcs * 100.0
-
-    blind_spot_rows = build_objdiff_name_size_fallback_rows(diff_data, unpaired_only=True)
-    blind_spot_function_rows = [
-        r for r in blind_spot_rows if r["type"] == "function" and r["side"] == "left"
-    ]
-    blind_spot_total_funcs = 0
-    blind_spot_matching_funcs = 0
-    for row in blind_spot_function_rows:
-        blind_spot_total_funcs += 1
-        mp = row["match_percent"]
-        if mp is not None and mp >= 100.0:
-            blind_spot_matching_funcs += 1
-
     return {
         "total_functions": total_funcs,
         "matching_functions": matching_funcs,
@@ -160,24 +115,6 @@ def analyze_unit(diff_data: Dict[str, Any]) -> Dict[str, Any]:
             }
             for row in unmatched_function_rows[:10]
         ],
-        "pairing_pairable_functions": pairing_total_funcs,
-        "pairing_matching_functions": pairing_matching_funcs,
-        "pairing_match_percent": pairing_match_percent,
-        "pairing_total_code_size": pairing_total_code_size,
-        "pairing_matching_code_size": pairing_matching_code_size,
-        "pairing_remaining_code_size_est": pairing_remaining_code_size_est,
-        "pairing_top_unmatched_functions": [
-            {
-                "name": row["name"],
-                "status": row["status"],
-                "size": row["size"],
-                "match_percent": row["match_percent"],
-                "unmatched_bytes_est": row["unmatched_bytes_est"],
-            }
-            for row in pairing_unmatched_function_rows[:10]
-        ],
-        "blind_spot_pairable_functions": blind_spot_total_funcs,
-        "blind_spot_matching_functions": blind_spot_matching_funcs,
     }
 
 
@@ -302,51 +239,11 @@ def main():
                 tf = entry.get("total_functions", 0)
                 mf = entry.get("matching_functions", 0)
                 tm = entry.get("text_match_percent")
+                tm_str = f"{tm:.1f}%" if tm is not None else "?"
                 remain = entry.get("remaining_code_size_est", 0)
-                pairing_total = entry.get("pairing_pairable_functions", 0)
-                pairing_matching = entry.get("pairing_matching_functions", 0)
-                pairing_pct = entry.get("pairing_match_percent")
-                if args.unit and tm is None and pairing_pct is not None:
-                    pairing_remain = entry.get("pairing_remaining_code_size_est", 0)
-                    print(
-                        f"  {display_name:<50s} .text diag {pairing_pct:>5.1f}%  "
-                        f"~{pairing_remain:>6}B rem  ({pairing_matching}/{pairing_total} pairable functions)"
-                    )
-                    print(
-                        f"    official objdiff: ?  ~{remain:>6}B rem  ({mf}/{tf} functions)"
-                    )
-                else:
-                    tm_str = f"{tm:.1f}%" if tm is not None else "?"
-                    print(
-                        f"  {display_name:<50s} .text {tm_str:>6s}  ~{remain:>6}B rem  ({mf}/{tf} functions)"
-                    )
-                if args.unit and pairing_total > 0:
-                    print(
-                        "    diag pairing: "
-                        f"{pairing_pct:.1f}% exact normalized instruction matches "
-                        f"({pairing_matching}/{pairing_total} unique same-name/same-size pairs)"
-                    )
-                    blind_total = entry.get("blind_spot_pairable_functions", 0)
-                    blind_matching = entry.get("blind_spot_matching_functions", 0)
-                    if blind_total > 0:
-                        blind_pct = blind_matching / blind_total * 100.0
-                        print(
-                            "    diag blind spot: "
-                            f"{blind_pct:.1f}% exact ({blind_matching}/{blind_total} currently unpaired candidates)"
-                        )
-                    pairing_top = entry.get("pairing_top_unmatched_functions", [])
-                    if pairing_top:
-                        print("    diag nearest misses:")
-                        for candidate in pairing_top[:5]:
-                            match_str = (
-                                f"{candidate['match_percent']:.1f}%"
-                                if candidate["match_percent"] is not None
-                                else "-"
-                            )
-                            print(
-                                f"      ~{candidate['unmatched_bytes_est']:>4}B  "
-                                f"{match_str:>7}  {candidate['name']}"
-                            )
+                print(
+                    f"  {display_name:<50s} .text {tm_str:>6s}  ~{remain:>6}B rem  ({mf}/{tf} functions)"
+                )
                 cat_funcs += tf
                 cat_matching += mf
                 cat_size += entry.get("total_code_size", 0)

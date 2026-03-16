@@ -25,7 +25,7 @@ extern int gPlayerNum;
 
 extern void LoadOneTexture(const char *pkg_name, unsigned int hash, void (*callback)(unsigned int), unsigned int param);
 extern bool GetIsCollectorsEdition();
-extern FEImage *FEngFindImage(const char *pkg, int hash);
+extern FEImage *FEngFindImage(const char *pkg, unsigned int hash);
 extern void FEngSetTextureHash(FEImage *img, unsigned int hash);
 extern void FEngSetScript(const char *pkg, unsigned int obj_hash, unsigned int script_hash, bool p);
 extern bool FEngIsScriptSet(const char *pkg, unsigned int obj_hash, unsigned int script_hash);
@@ -76,7 +76,7 @@ bool QRCarSelectBustedManager::IsImpoundInfoVisible() {
 }
 
 bool QRCarSelectBustedManager::ShowImpoundedTexture() {
-    return WorkingCareerRecord->TheImpoundData.IsImpounded();
+    return WorkingCareerRecord->TheImpoundData.EvadeCount != 0;
 }
 
 void QRCarSelectBustedManager::NotificationMessage(unsigned long msg, FEObject *pobj, unsigned long param1, unsigned long param2) {

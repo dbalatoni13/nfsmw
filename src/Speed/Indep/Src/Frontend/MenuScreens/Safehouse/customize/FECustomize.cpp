@@ -53,7 +53,7 @@ struct EAXSound;
 extern void FEngSetVisible(FEObject *obj);
 extern void FEngSetInvisible(FEObject *obj);
 extern FEObject *FEngFindObject(const char *pkg, unsigned int hash);
-extern FEImage *FEngFindImage(const char *pkg, int hash);
+extern FEImage *FEngFindImage(const char *pkg, unsigned int hash);
 extern void FEngSetTextureHash(FEImage *img, unsigned int hash);
 extern void FEngSetScript(const char *pkg, unsigned int hash, unsigned int script, bool b);
 extern void FEngSetScript(FEObject *obj, unsigned int script, bool b);
@@ -82,7 +82,7 @@ extern void CustomizeSetInPerformance(bool b);
 extern int GetCurrentLanguage();
 extern const char *GetLocalizedString(unsigned int hash);
 extern void GetLocalizedString(char *buf, int size, unsigned int hash);
-extern int FEPrintf(const char *pkg, int hash, const char *fmt, ...);
+extern void FEPrintf(const char *pkg, unsigned int hash, const char *fmt, ...);
 extern int FEPrintf(FEString *text, const char *fmt, ...);
 extern int bSNPrintf(char *buf, int size, const char *fmt, ...);
 extern int bSPrintf(char *buf, const char *fmt, ...);
@@ -2192,55 +2192,54 @@ eMenuSoundTriggers CustomizePerformance::NotifySoundMessage(unsigned long msg, e
 
 void CustomizePerformance::Setup() {
     if (!gCarCustomizeManager.IsCareerMode()) {
-        const unsigned long FEObj_QUICKRACE = 0xde511657;
-        cFEng::Get()->QueuePackageMessage(FEObj_QUICKRACE, GetPackageName(), nullptr);
+        cFEng::Get()->QueuePackageMessage(0xde511657, GetPackageName(), nullptr);
     }
 
     for (int i = 0; i < 3; i++) {
-        DescLines[i] = FEngFindString(GetPackageName(), FEngHashString("DETAIL_TEXT_LINE%d", i + 1));
-        DescBullets[i] = FEngFindImage(GetPackageName(), FEngHashString("PERFORMANCE_DETAILS_ICON%d", i + 1));
+        int lineNum = i + 1;
+        DescLines[i] = FEngFindString(GetPackageName(), FEngHashString("DETAIL_TEXT_LINE%d", lineNum));
+        DescBullets[i] = FEngFindImage(GetPackageName(), FEngHashString("PERFORMANCE_DETAILS_ICON%d", lineNum));
     }
 
-    AccelSlider.Init(
-        GetPackageName(), "ACCELERATION", 0.0f, 10.0f, 0.0f,
-        gCarCustomizeManager.GetPerformanceRating(PRT_ACCELERATION, true),
-        gCarCustomizeManager.GetPerformanceRating(PRT_ACCELERATION, false), 1.0f);
-    HandlingSlider.Init(
-        GetPackageName(), "HANDLING", 0.0f, 10.0f, 0.0f,
-        gCarCustomizeManager.GetPerformanceRating(PRT_HANDLING, true),
-        gCarCustomizeManager.GetPerformanceRating(PRT_HANDLING, false), 1.0f);
-    TopSpeedSlider.Init(
-        GetPackageName(), "TOPSPEED", 0.0f, 10.0f, 0.0f,
-        gCarCustomizeManager.GetPerformanceRating(PRT_TOP_SPEED, true),
-        gCarCustomizeManager.GetPerformanceRating(PRT_TOP_SPEED, false), 1.0f);
+    float accelPreview = gCarCustomizeManager.GetPerformanceRating(PRT_ACCELERATION, true);
+    float accelBase = gCarCustomizeManager.GetPerformanceRating(PRT_ACCELERATION, false);
+    AccelSlider.Init(GetPackageName(), "ACCELERATION", 0.0f, 10.0f, 0.0f, accelPreview, accelBase, 1.0f);
 
-    Physics::Upgrades::Type type = Physics::Upgrades::kType_Tires;
+    float handlingPreview = gCarCustomizeManager.GetPerformanceRating(PRT_HANDLING, true);
+    float handlingBase = gCarCustomizeManager.GetPerformanceRating(PRT_HANDLING, false);
+    HandlingSlider.Init(GetPackageName(), "HANDLING", 0.0f, 10.0f, 0.0f, handlingPreview, handlingBase, 1.0f);
+
+    float topspeedPreview = gCarCustomizeManager.GetPerformanceRating(PRT_TOP_SPEED, true);
+    float topspeedBase = gCarCustomizeManager.GetPerformanceRating(PRT_TOP_SPEED, false);
+    TopSpeedSlider.Init(GetPackageName(), "TOPSPEED", 0.0f, 10.0f, 0.0f, topspeedPreview, topspeedBase, 1.0f);
+
+    int type = 4; // kType_Tires
     switch (Category) {
     case CC_ENGINE:
         SetTitleHash(0x9853d9a6);
         break;
     case CC_TRANSMISSION:
-        type = Physics::Upgrades::kType_Nitrous;
+        type = 3; // kType_Nitrous
         SetTitleHash(0x29aa74ba);
         break;
     case CC_SUSPENSION:
-        type = Physics::Upgrades::kType_Chassis;
+        type = 2; // kType_Chassis
         SetTitleHash(0x6e101aa7);
         break;
     case CC_NITROUS:
-        type = Physics::Upgrades::kType_Induction;
+        type = 6; // kType_Induction
         SetTitleHash(0x4ce19aa4);
         break;
     case CC_TIRES:
-        type = Physics::Upgrades::kType_Engine;
+        type = 0; // kType_Engine
         SetTitleHash(0x5aa9137);
         break;
     case CC_BRAKES:
-        type = Physics::Upgrades::kType_Transmission;
+        type = 1; // kType_Transmission
         SetTitleHash(0x91997ee8);
         break;
     case CC_FORCED_INDUCTION:
-        type = Physics::Upgrades::kType_Brakes;
+        type = 5; // kType_Brakes
         if (gCarCustomizeManager.IsTurbo()) {
             SetTitleHash(0x5b1255c);
         } else {
@@ -2249,92 +2248,58 @@ void CustomizePerformance::Setup() {
         break;
     }
 
-    unsigned int icon_hash = 0xb8c8c0d4;
     bTList<SelectablePart> part_list;
-    int j;
-    bool is_locked;
-    unsigned int desc_hash = 0;
-    SelectablePart *part;
 
-    if (!gCarCustomizeManager.IsInBackRoom()) {
-        goto get_part_list;
-    }
-    if (!gCarCustomizeManager.IsCareerMode()) {
-        goto get_part_list;
-    }
-    if (gCarCustomizeManager.IsHeroCar()) {
-        goto get_part_list;
-    }
-
-    {
+    if (!CustomizeIsInBackRoom() || !gCarCustomizeManager.IsCareerMode() || gCarCustomizeManager.IsHeroCar()) {
+        gCarCustomizeManager.GetPerformancePartsList(static_cast<Physics::Upgrades::Type>(type), part_list);
+    } else {
         unsigned int unlock_hash = 0;
-        if (!gCarCustomizeManager.IsInBackRoom()) {
+        if (!CustomizeIsInBackRoom()) {
             unlock_hash = gCarCustomizeManager.GetUnlockHash(static_cast<eCustomizeCategory>(Category), 7);
         }
-        SelectablePart *new_part = new SelectablePart(nullptr, 0, 7, static_cast<GRace::Type>(static_cast<int>(type)), true, CPS_AVAILABLE, 0, true);
-        AddPartOption(new_part, icon_hash, 7, desc_hash, unlock_hash, false);
-        if (gCarCustomizeManager.IsPartInstalled(new_part)) {
-            new_part->SetInstalled();
-        } else if (gCarCustomizeManager.IsPartInCart(new_part)) {
-            new_part->SetInCart();
+        SelectablePart *part = new SelectablePart(nullptr, 0, 7, static_cast<GRace::Type>(type), true, static_cast<eCustomizePartState>(1), 0, true);
+        AddPartOption(part, 0xb8c8c0d4, 7, 0, unlock_hash, false);
+        if (gCarCustomizeManager.IsPartInstalled(part)) {
+            part->SetInstalled();
+        } else if (gCarCustomizeManager.IsPartInCart(part)) {
+            part->SetInCart();
         }
-        goto after_initial_part_list;
     }
 
-get_part_list:
-    gCarCustomizeManager.GetPerformancePartsList(type, part_list);
-
-after_initial_part_list:
-    for (j = 1;; j++) {
-        bNode *end = &part_list.HeadNode;
-        if (part_list.HeadNode.GetNext() == end) {
-            break;
-        }
-        bNode *head = part_list.HeadNode.GetNext();
-        SelectablePart *temp_part = static_cast<SelectablePart *>(head);
-        bNode *next = head->GetNext();
-        part = temp_part;
-        head = head->GetPrev();
-        head->Next = next;
-        next->Prev = head;
-        int unlock_level = gCarCustomizeManager.GetMaxPackages(type) - gCarCustomizeManager.GetNumPackages(type) + part->GetUpgradeLevel();
-        unsigned int unlock_hash = gCarCustomizeManager.GetUnlockHash(static_cast<eCustomizeCategory>(Category), unlock_level);
-        is_locked = gCarCustomizeManager.IsPartLocked(part, 0);
-        AddPartOption(part, icon_hash, j, desc_hash, unlock_hash, is_locked);
+    int j = 1;
+    while (!part_list.IsEmpty()) {
+        SelectablePart *part = part_list.RemoveHead();
+        int maxPkgs = gCarCustomizeManager.GetMaxPackages(static_cast<Physics::Upgrades::Type>(type));
+        int numPkgs = gCarCustomizeManager.GetNumPackages(static_cast<Physics::Upgrades::Type>(type));
+        unsigned int unlock_hash = gCarCustomizeManager.GetUnlockHash(static_cast<eCustomizeCategory>(Category), (maxPkgs - numPkgs) + part->GetUpgradeLevel());
+        bool is_locked = gCarCustomizeManager.IsPartLocked(part, 0);
+        AddPartOption(part, 0xb8c8c0d4, j, 0, unlock_hash, is_locked);
+        j++;
     }
 
     if (((FEDatabase->GetCareerSettings()->HasBeenAwardedBKReward() && !FEDatabase->IsCareerMode()) ||
          (FEDatabase->GetUserProfile(0)->CareerModeHasBeenCompletedAtLeastOnce && !gCarCustomizeManager.IsHeroCar())) &&
-        gCarCustomizeManager.CanInstallJunkman(type)) {
-        SelectablePart *new_part = new SelectablePart(nullptr, 0, 7, static_cast<GRace::Type>(static_cast<int>(type)), true, CPS_AVAILABLE, 0, true);
-        AddPartOption(new_part, icon_hash, 7, desc_hash, 0, false);
-        if (gCarCustomizeManager.IsPartInstalled(new_part)) {
-            new_part->SetInstalled();
-        } else if (gCarCustomizeManager.IsPartInCart(new_part)) {
-            new_part->SetInCart();
+        gCarCustomizeManager.CanInstallJunkman(static_cast<Physics::Upgrades::Type>(type))) {
+        SelectablePart *part = new SelectablePart(nullptr, 0, 7, static_cast<GRace::Type>(type), true, static_cast<eCustomizePartState>(1), 0, true);
+        AddPartOption(part, 0xb8c8c0d4, 7, 0, 0, false);
+        if (gCarCustomizeManager.IsPartInstalled(part)) {
+            part->SetInstalled();
+        } else if (gCarCustomizeManager.IsPartInCart(part)) {
+            part->SetInCart();
         }
     }
 
-    if (!gCarCustomizeManager.IsInBackRoom()) {
-        goto set_installed_option;
-    }
-    if (!gCarCustomizeManager.IsCareerMode()) {
-        goto set_installed_option;
-    }
-    SetInitialOption(1);
-    goto after_initial_option;
-
-set_installed_option:
-    {
-        int installed_index = gCarCustomizeManager.GetInstalledPerfPkg(type);
-        ShoppingCartItem *item = gCarCustomizeManager.IsPartTypeInCart(type);
+    if (!CustomizeIsInBackRoom() || !gCarCustomizeManager.IsCareerMode()) {
+        int installed_index = gCarCustomizeManager.GetInstalledPerfPkg(static_cast<Physics::Upgrades::Type>(type));
+        ShoppingCartItem *item = gCarCustomizeManager.IsPartTypeInCart(static_cast<Physics::Upgrades::Type>(type));
         if (item) {
             installed_index = item->GetBuyingPart()->GetUpgradeLevel();
         }
         SetInitialOption(installed_index);
+    } else {
+        SetInitialOption(1);
     }
 
-after_initial_option:
     RefreshHeader();
 }
 
@@ -2545,14 +2510,12 @@ void CustomizeParts::Setup() {
     bool is_vinyl = false;
     CarPart *installed_part = nullptr;
     bool part_found = false;
-    int installed_index;
-    int current_part_index;
-    unsigned int original_icon_hash;
-    SelectablePart *part;
 
-    switch (Category) {
+    unsigned int cat = Category;
+
+    switch (cat) {
     case 0x101:
-        SetTitleHash(0x6134c218);
+        DisplayHelper.TitleHash = 0x6134c218;
         if (CustomizeIsInBackRoom()) {
             icon_hash = 0xaf393dba;
         } else {
@@ -2561,7 +2524,7 @@ void CustomizeParts::Setup() {
         car_slot_id = 0x17;
         goto after_switch;
     case 0x104:
-        SetTitleHash(0x4d4a88d);
+        DisplayHelper.TitleHash = 0x4d4a88d;
         if (CustomizeIsInBackRoom()) {
             icon_hash = 0xf375276e;
         } else {
@@ -2570,7 +2533,7 @@ void CustomizeParts::Setup() {
         car_slot_id = 0x3f;
         goto after_switch;
     case 0x105:
-        SetTitleHash(0x61e8f83c);
+        DisplayHelper.TitleHash = 0x61e8f83c;
         if (CustomizeIsInBackRoom()) {
             icon_hash = 0x25a4375e;
         } else {
@@ -2586,11 +2549,11 @@ void CustomizeParts::Setup() {
             ShowHudObjects();
             cFEng::Get()->QueuePackageMessage(0x8cb81f09, GetPackageName(), nullptr);
         }
+        part_found = false;
         if (gCarCustomizeManager.GetTempColoredPart()) {
             installed_part = gCarCustomizeManager.GetTempColoredPart()->GetPart();
-            part_found = true;
         }
-        SetTitleHash(0x78980a6b);
+        DisplayHelper.TitleHash = 0x78980a6b;
         if (CustomizeIsInBackRoom()) {
             icon_hash = 0x8ba602fc;
         } else {
@@ -2599,60 +2562,50 @@ void CustomizeParts::Setup() {
         car_slot_id = 0x84;
         goto after_switch;
     case 0x304:
-        SetTitleHash(0xd32729a6);
-        icon_hash = 0x3f23165c;
+        DisplayHelper.TitleHash = 0xd32729a6;
+        SetTitleHash(0x3f23165c);
         car_slot_id = 0x83;
         goto after_switch;
     case 0x402:
-        SetTitleHash(0xd9228fc6);
-        icon_hash = 0xf8148554;
+        DisplayHelper.TitleHash = 0xd9228fc6;
         vinyl_group_number = 0;
-        goto set_vinyl;
+        break;
     case 0x403:
-        SetTitleHash(0x1e8d885f);
-        icon_hash = 0x192d84da;
+        SetTitleHash(0x192d84da);
         vinyl_group_number = 1;
-        goto set_vinyl;
+        break;
     case 0x404:
-        SetTitleHash(0x1c619fd8);
-        icon_hash = 0xf7352706;
+        DisplayHelper.TitleHash = 0x1c619fd8;
         vinyl_group_number = 2;
-        goto set_vinyl;
+        break;
     case 0x405:
-        SetTitleHash(0x9c1b8935);
-        icon_hash = 0x1223cc89;
+        DisplayHelper.TitleHash = 0x9c1b8935;
         vinyl_group_number = 3;
-        goto set_vinyl;
+        break;
     case 0x406:
-        SetTitleHash(0x7956f7b0);
-        icon_hash = 0xbc44bbcb;
+        DisplayHelper.TitleHash = 0x7956f7b0;
         vinyl_group_number = 4;
-        goto set_vinyl;
+        break;
     case 0x407:
-        SetTitleHash(0x2d5bff0f);
-        icon_hash = 0x694ca0ca;
+        DisplayHelper.TitleHash = 0x2d5bff0f;
         vinyl_group_number = 5;
-        goto set_vinyl;
+        break;
     case 0x408:
-        SetTitleHash(0x209a9158);
-        icon_hash = 0x1b3a8dd3;
+        DisplayHelper.TitleHash = 0x209a9158;
         vinyl_group_number = 6;
-        goto set_vinyl;
+        break;
     case 0x409:
-        SetTitleHash(0xcd057d21);
-        icon_hash = 0x1ba508fc;
+        DisplayHelper.TitleHash = 0xcd057d21;
         vinyl_group_number = 7;
-        goto set_vinyl;
+        break;
     default:
         goto after_switch;
     }
-
-set_vinyl:
     car_slot_id = 0x4d;
     is_vinyl = true;
 
 after_switch:
-    if (is_vinyl && gCarCustomizeManager.GetTempColoredPart()) {
+    if (!is_vinyl && gCarCustomizeManager.GetTempColoredPart()) {
         installed_part = gCarCustomizeManager.GetTempColoredPart()->GetPart();
         part_found = true;
     }
@@ -2667,14 +2620,18 @@ after_switch:
         gCarCustomizeManager.GetCarPartList(car_slot_id, part_list, 0);
     }
 
-    installed_index = 0;
-    current_part_index = 1;
-    original_icon_hash = icon_hash;
-    part = part_list.GetHead();
+    int installed_index = 0;
+    int current_part_index = 1;
+    unsigned int original_icon_hash = icon_hash;
 
-    while (!part_list.IsEmpty()) {
-        part = part_list.RemoveHead();
+    SelectablePart *part = part_list.GetHead();
+    while (part != reinterpret_cast<SelectablePart *>(&part_list)) {
+        SelectablePart *next = static_cast<SelectablePart *>(part->Next);
+        part->Prev->Next = part->Next;
+        part->Next->Prev = part->Prev;
+
         unsigned int unlock_hash = gCarCustomizeManager.GetUnlockHash(static_cast<eCustomizeCategory>(Category), part->GetUpgradeLevel());
+        icon_hash = original_icon_hash;
 
         if (is_vinyl) {
             CarPart *cpart = part->GetPart();
@@ -2682,15 +2639,15 @@ after_switch:
             if ((group & 0x1f) == vinyl_group_number && UnlockSystem::IsUnlockableAvailable(cpart->GetPartNameHash())) {
                 unsigned char gl = *reinterpret_cast<unsigned char *>(reinterpret_cast<int>(part->GetPart()) + 5);
                 bool locked = gCarCustomizeManager.IsPartLocked(part, 0);
-                AddPartOption(part, icon_hash, gl >> 5, 0, unlock_hash, locked);
+                AddPartOption(part, original_icon_hash, gl >> 5, 0, unlock_hash, locked);
             } else {
                 delete part;
                 part = nullptr;
             }
         } else {
             CarPart *cpart = part->GetPart();
+            icon_hash = original_icon_hash;
             if (cpart->HasAppliedAttribute(bStringHash("CARBONFIBRE"))) {
-                icon_hash = original_icon_hash;
                 int cfVal = cpart->GetAppliedAttributeIParam(bStringHash("CARBONFIBRE"), 0);
                 if (cfVal != 0) {
                     if (Category == 0x104) {
@@ -2699,13 +2656,11 @@ after_switch:
                         } else {
                             icon_hash = 0x68495926;
                         }
-                    } else {
-                        if (Category == 0x105) {
-                            if (CustomizeIsInBackRoom()) {
-                                icon_hash = 0xcd6b4e26;
-                            } else {
-                                icon_hash = 0xfc618215;
-                            }
+                    } else if (Category == 0x105) {
+                        if (CustomizeIsInBackRoom()) {
+                            icon_hash = 0xcd6b4e26;
+                        } else {
+                            icon_hash = 0xfc618215;
                         }
                     }
                 }
@@ -2714,24 +2669,30 @@ after_switch:
             bool locked = gCarCustomizeManager.IsPartLocked(part, 0);
             AddPartOption(part, icon_hash, gl >> 5, 0, unlock_hash, locked);
         }
+        original_icon_hash = icon_hash;
         if (part) {
             if (installed_part && part->GetPart() == installed_part) {
                 installed_index = current_part_index;
             }
             current_part_index++;
         }
+        part = next;
     }
 
     if (Showcase::FromIndex == 0) {
         SetInitialOption(installed_index);
     } else {
-        SetInitialOption(Showcase::FromIndex);
+        SetInitialOption(0);
         Showcase::FromIndex = 0;
     }
     RefreshHeader();
 
-    while (!part_list.IsEmpty()) {
-        delete part_list.RemoveHead();
+    // Clean up remaining temp list nodes
+    while (part_list.GetHead() != reinterpret_cast<bNode *>(&part_list)) {
+        SelectablePart *del = static_cast<SelectablePart *>(part_list.GetHead());
+        del->Prev->Next = del->Next;
+        del->Next->Prev = del->Prev;
+        delete del;
     }
 }
 
@@ -3355,11 +3316,10 @@ void CustomizeRims::ScrollRimSizes(eScrollDir dir) {
         }
     }
     if (radius != InnerRadius) {
-        IconScroller *options = &Options;
         InnerRadius = radius;
         int sel;
-        if (options->pCurrentNode) {
-            sel = options->GetCurrentIndex();
+        if (Options.pCurrentNode) {
+            sel = Options.GetCurrentIndex();
         } else {
             sel = 0;
         }
@@ -4075,7 +4035,7 @@ void CustomizePaint::Setup() {
     FEImage *rightBtn = FEngFindImage(GetPackageName(), 0x2d145be3);
     FEngSetButtonTexture(rightBtn, 0x682);
     for (int i = 1; i <= 0x50; i++) {
-        ArraySlot *slot = new ArraySlot(FEngFindImage(GetPackageName(), static_cast< int >(FEngHashString("COLOR_%d", i))));
+        ArraySlot *slot = new ArraySlot(FEngFindImage(GetPackageName(), FEngHashString("COLOUR_%d", i)));
         ThePaints.AddSlot(slot);
     }
     for (int i = 0; i < 3; i++) {
@@ -4101,7 +4061,7 @@ void CustomizePaint::Setup() {
         break;
     }
     Showcase::FromFilter = -1;
-    Options.bInitialized = true;
+    Options.bFadingIn = true;
     RefreshHeader();
 }
 
