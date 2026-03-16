@@ -491,6 +491,70 @@ void FERenderObject::AddPoly(float x0, float y0, float x1, float y1, float z,
     }
 }
 
+void FERenderObject::AddPolyWithRotatedMask(float x0, float y0, float x1, float y1, float z,
+                                             float s0, float t0, float s1, float t1,
+                                             float ms0, float mt0, float ms1, float mt1,
+                                             float ms2, float mt2, float ms3, float mt3,
+                                             unsigned int *colors, TextureInfo *texture,
+                                             TextureInfo *textureMask) {
+    FERenderEPoly *render = new FERenderEPoly();
+    ePoly *pPoly = &render->EPoly;
+    render->pTexture = texture;
+    render->pTextureMask = textureMask;
+    mobPolyList.AddTail(render);
+    mPolyCount++;
+
+    pPoly->Vertices[0].x = x0;
+    pPoly->Vertices[0].y = y0;
+    pPoly->Vertices[0].z = z;
+    pPoly->Vertices[1].x = x1;
+    pPoly->Vertices[1].y = y0;
+    pPoly->Vertices[1].z = z;
+    pPoly->Vertices[2].x = x1;
+    pPoly->Vertices[2].y = y1;
+    pPoly->Vertices[2].z = z;
+    pPoly->Vertices[3].x = x0;
+    pPoly->Vertices[3].y = y1;
+    pPoly->Vertices[3].z = z;
+
+    bMulMatrix(&pPoly->Vertices[0], &mstTransform, &pPoly->Vertices[0]);
+    bMulMatrix(&pPoly->Vertices[1], &mstTransform, &pPoly->Vertices[1]);
+    bMulMatrix(&pPoly->Vertices[2], &mstTransform, &pPoly->Vertices[2]);
+    bMulMatrix(&pPoly->Vertices[3], &mstTransform, &pPoly->Vertices[3]);
+
+    pPoly->SetFlailer(5);
+
+    pPoly->Vertices[0].z = z;
+    pPoly->Vertices[1].z = z;
+    pPoly->Vertices[2].z = z;
+    pPoly->Vertices[3].z = z;
+
+    pPoly->UVs[0][0] = s0;
+    pPoly->UVs[0][1] = t0;
+    pPoly->UVs[0][2] = s1;
+    pPoly->UVs[0][3] = t0;
+    pPoly->UVs[1][0] = s1;
+    pPoly->UVs[1][1] = t1;
+    pPoly->UVs[1][2] = s0;
+    pPoly->UVs[1][3] = t1;
+
+    pPoly->UVs[2][0] = ms0;
+    pPoly->UVs[2][1] = mt0;
+    pPoly->UVs[2][2] = ms1;
+    pPoly->UVs[2][3] = mt1;
+    pPoly->UVs[3][0] = ms2;
+    pPoly->UVs[3][1] = mt2;
+    pPoly->UVs[3][2] = ms3;
+    pPoly->UVs[3][3] = mt3;
+
+    reinterpret_cast<unsigned int *>(pPoly->Colours)[0] = colors[0];
+    reinterpret_cast<unsigned int *>(pPoly->Colours)[1] = colors[1];
+    reinterpret_cast<unsigned int *>(pPoly->Colours)[2] = colors[2];
+    reinterpret_cast<unsigned int *>(pPoly->Colours)[3] = colors[3];
+
+    pPoly->SetFlags(1);
+}
+
 extern void *bOMalloc(SlotPool *pool);
 extern void bMemSet(void *dst, int val, unsigned int size);
 
