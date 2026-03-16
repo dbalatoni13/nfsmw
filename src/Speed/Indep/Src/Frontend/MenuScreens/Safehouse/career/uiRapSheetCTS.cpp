@@ -31,9 +31,11 @@ void uiRapSheetCTS::NotificationMessage(unsigned long msg, FEObject* pobj, unsig
     if (msg == 0xE1FDE1D1) { cFEng::Get()->QueuePackageSwitch("RapSheetMain.fng", 0, 0, false); }
 }
 void uiRapSheetCTS::Setup() {
-    int quantity = 0;
-    unsigned int value = 0;
+    int quantity;
+    unsigned int value;
     ClearData();
+    quantity = 0;
+    value = 0;
     HighScoresDatabase* scores = FEDatabase->GetUserProfile(0)->GetHighScores();
     scores->GetCareerCST(RAP_CTS_PROPERTY_DAMAGE, quantity, value); AddDatum(new(__FILE__, __LINE__) RapSheetCTSDatum(quantity, 0x3682A8CF, value));
     scores->GetCareerCST(RAP_CTS_TRAFFIC_CAR_HIT, quantity, value); AddDatum(new(__FILE__, __LINE__) RapSheetCTSDatum(quantity, 0x6DE4810A, value));

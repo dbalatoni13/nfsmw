@@ -1076,13 +1076,8 @@ void WorldMap::AddIcon(eWorldMapItemType type, unsigned int hash, GIcon* icon) {
         if (image != nullptr) {
             bVector2 pos2D;
             icon->GetPosition2D(pos2D);
-            bVector2 world_pos;
-            unsigned int* world_pos_words = reinterpret_cast< unsigned int* >(&world_pos);
-            const unsigned int* pos2d_words = reinterpret_cast< const unsigned int* >(&pos2D);
+            bVector2 world_pos = pos2D;
             float rot = 0.0f;
-
-            world_pos_words[0] = pos2d_words[0];
-            world_pos_words[1] = pos2d_words[1];
             ConvertPos(pos2D);
             MapItem* item = new MapItem(type, static_cast< FEObject* >(image), pos2D, world_pos, rot, icon);
             TheMapItems.AddTail(item);

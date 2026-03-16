@@ -155,18 +155,15 @@ void UIEATraxScreen::ScrollTracks(unsigned long msg) {
 void UIEATraxScreen::ScrollTrackPlayability(unsigned long msg) {
     JukeBoxScrollerDatum* datum =
         static_cast< JukeBoxScrollerDatum* >(Tracks.GetSelectedDatum());
-    unsigned int index = 0;
     JukeboxEntry* entry;
     JukeboxEntry* playlist = FEDatabase->GetUserProfile(0)->Playlist;
     int play_flag;
-    JukeBoxScrollerSlot* slot;
     ScrollerDatumNode* node;
 
     entry = playlist;
     for (int i = 0; i < NumSongs; i++) {
         if (playlist[i].SongIndex == datum->SongIndex) {
             entry = &playlist[i];
-            index = i;
             break;
         }
     }
@@ -186,9 +183,9 @@ void UIEATraxScreen::ScrollTrackPlayability(unsigned long msg) {
     entry->PlayabilityField = play_flag;
     datum->PlayabilityField = play_flag;
 
-    slot = static_cast< JukeBoxScrollerSlot* >(Tracks.GetSelectedSlot());
     node = datum->Strings.GetTail();
-    GetLocalizedString(node->String, 128, GetPlaybilityString(entry->PlayabilityField));
+    const char* playabilityString = GetLocalizedString(GetPlaybilityString(entry->PlayabilityField));
+    FEngSNPrintf(node->String, 128, playabilityString);
     Tracks.Update(true);
     MControlPathfinder(true, 0, 0, 0).Send("EATraxInit");
 }
