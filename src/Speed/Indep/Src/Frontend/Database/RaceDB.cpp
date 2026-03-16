@@ -19,37 +19,6 @@ void FixDot(char *buf, int size) {
 
 unsigned int GetFECarNameHashFromFEKey(unsigned int fekey);
 
-namespace {
-
-const char *GetPursuitRankAttribName(ePursuitDetailTypes type, bool career_rank) {
-    switch (static_cast< int >(type)) {
-    case 0:
-        return career_rank ? "rap_sheet_cost_to_state_career" : "rap_sheet_cost_to_state_all";
-    case 1:
-        return career_rank ? "rap_sheet_bounty_career" : "rap_sheet_bounty_all";
-    case 2:
-        return career_rank ? "rap_sheet_infractions_career" : "rap_sheet_infractions_all";
-    case 3:
-        return career_rank ? "rap_sheet_speeding_career" : "rap_sheet_speeding_all";
-    case 4:
-        return career_rank ? "rap_sheet_roadblocks_career" : "rap_sheet_roadblocks_all";
-    case 5:
-        return career_rank ? "rap_sheet_cops_disabled_career" : "rap_sheet_cops_disabled_all";
-    case 6:
-        return career_rank ? "rap_sheet_spike_strips_career" : "rap_sheet_spike_strips_all";
-    case 7:
-        return career_rank ? "rap_sheet_cops_deployed_career" : "rap_sheet_cops_deployed_all";
-    case 8:
-        return career_rank ? "rap_sheet_helicopters_career" : "rap_sheet_helicopters_all";
-    case 9:
-        return "rap_sheet_pursuit_length";
-    default:
-        return nullptr;
-    }
-}
-
-}
-
 int CareerPursuitScores::GetValue(ePursuitDetailTypes type) const {
     return Value[type];
 }
@@ -93,40 +62,124 @@ void HighScoresDatabase::Default() {
 }
 
 int HighScoresDatabase::CalcPursuitRank(ePursuitDetailTypes type, bool career_rank) {
-    const char *attrib_name = GetPursuitRankAttribName(type, career_rank);
-    Attrib::Key key = attrib_name ? Attrib::StringToKey(attrib_name) : 0;
-    Attrib::Gen::frontend rankingsData(Attrib::FindCollection(Attrib::Gen::frontend::ClassKey(), key), 0, nullptr);
-    int player_value = 0;
-    int rank = 0x10;
+    const char *attrib_name;
+    Attrib::Key key;
+    int player_value;
+    int rank;
 
-    if (!rankingsData.IsValid()) {
-        return rank;
-    }
-
-    if (rankingsData.Num_RapSheetRanks() != 15) {
-        return rank;
-    }
-
-    if (career_rank) {
-        player_value = CareerPursuitDetails.GetValue(type);
-    } else {
-        player_value = BestPursuitRankings[type].Value;
-    }
-
-    for (int i = 0; i < static_cast< int >(rankingsData.Num_RapSheetRanks()); i++) {
-        int rank_value;
-
-        if (type == 0) {
-            Timer t;
-            t.SetTime(rankingsData.RapSheetRanks(static_cast< unsigned int >(i)));
-            rank_value = t.GetPackedTime();
+    if (type == static_cast< ePursuitDetailTypes >(4)) {
+        if (!career_rank) {
+            attrib_name = "tire_spikes_dodged_in_pursuit";
         } else {
-            rank_value = static_cast< int >(rankingsData.RapSheetRanks(static_cast< unsigned int >(i)));
+            attrib_name = "tire_spikes_dodged";
         }
+    } else if (type < static_cast< ePursuitDetailTypes >(5)) {
+        if (type == static_cast< ePursuitDetailTypes >(1)) {
+            if (!career_rank) {
+                attrib_name = "cops_involved_in_pursuit";
+            } else {
+                attrib_name = "cops_involved";
+            }
+        } else if (type < static_cast< ePursuitDetailTypes >(2)) {
+            if (type != static_cast< ePursuitDetailTypes >(0)) {
+                key = 0;
+                goto GotAttribKey;
+            }
+            if (!career_rank) {
+                attrib_name = "pursuit_length_in_pursuit";
+            } else {
+                attrib_name = "pursuit_length";
+            }
+        } else if (type == static_cast< ePursuitDetailTypes >(2)) {
+            if (!career_rank) {
+                attrib_name = "cops_damaged_in_pursuit";
+            } else {
+                attrib_name = "cops_damaged";
+            }
+        } else {
+            if (type != static_cast< ePursuitDetailTypes >(3)) {
+                key = 0;
+                goto GotAttribKey;
+            }
+            if (!career_rank) {
+                attrib_name = "cops_destroyed_in_pursuit";
+            } else {
+                attrib_name = "cops_destroyed";
+            }
+        }
+    } else if (type == static_cast< ePursuitDetailTypes >(7)) {
+        if (!career_rank) {
+            attrib_name = "cost_to_state_in_pursuit";
+        } else {
+            attrib_name = "cost_to_state";
+        }
+    } else if (type < static_cast< ePursuitDetailTypes >(8)) {
+        if (type == static_cast< ePursuitDetailTypes >(5)) {
+            if (!career_rank) {
+                attrib_name = "roadblocks_dodged_in_pursuit";
+            } else {
+                attrib_name = "roadblocks_dodged";
+            }
+        } else {
+            if (type != static_cast< ePursuitDetailTypes >(6)) {
+                key = 0;
+                goto GotAttribKey;
+            }
+            if (!career_rank) {
+                attrib_name = "helis_involved_in_pursuit";
+            } else {
+                attrib_name = "helis_involved";
+            }
+        }
+    } else if (type == static_cast< ePursuitDetailTypes >(8)) {
+        if (!career_rank) {
+            attrib_name = "total_infractions_in_pursuit";
+        } else {
+            attrib_name = "total_infractions";
+        }
+    } else {
+        if (type != static_cast< ePursuitDetailTypes >(9)) {
+            key = 0;
+            goto GotAttribKey;
+        }
+        if (!career_rank) {
+            attrib_name = "bounty_in_pursuit";
+        } else {
+            attrib_name = "bounty";
+        }
+    }
 
-        if (rank_value <= player_value) {
-            rank = i + 1;
-            break;
+    key = Attrib::StringToKey(attrib_name);
+
+GotAttribKey:
+    Attrib::Gen::frontend rankingsData(Attrib::FindCollection(Attrib::Gen::frontend::ClassKey(), key), 0, nullptr);
+    rank = 0x10;
+
+    if (rankingsData.IsValid()) {
+        if (rankingsData.Num_RapSheetRanks() == 15) {
+            if (career_rank) {
+                player_value = CareerPursuitDetails.GetValue(type);
+            } else {
+                player_value = BestPursuitRankings[type].Value;
+            }
+
+            for (int i = 0; i < static_cast< int >(rankingsData.Num_RapSheetRanks()); i++) {
+                int rank_value;
+
+                if (type == 0) {
+                    Timer t;
+                    float rank_time = rankingsData.RapSheetRanks(static_cast< unsigned int >(i));
+                    t.SetTime(rank_time);
+                    rank_value = t.GetPackedTime();
+                } else {
+                    rank_value = static_cast< int >(rankingsData.RapSheetRanks(static_cast< unsigned int >(i)));
+                }
+
+                if (player_value >= rank_value) {
+                    rank = i + 1;
+                    break;
+                }
+            }
         }
     }
 
