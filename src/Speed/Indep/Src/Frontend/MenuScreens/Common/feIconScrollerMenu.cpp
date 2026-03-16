@@ -12,6 +12,7 @@ extern void FEngSetTextureHash(FEImage *image, unsigned int hash);
 extern void FEngSetCurrentButton(const char *pkg_name, unsigned int hash);
 extern void FEngGetCenter(FEObject *object, float &x, float &y);
 extern void FEngSetCenter(FEObject *object, float x, float y);
+extern void FEngSetLanguageHash(FEString *text, unsigned int hash);
 extern unsigned long FEHash(const char *str);
 extern FEColor FEngGetObjectColor(FEObject *object);
 extern void FEngSetColor(FEObject *obj, unsigned int color);
@@ -910,6 +911,30 @@ void IconScrollerMenu::StorePrevNotification(unsigned int msg, FEObject *pobj, u
     PrevButtonObj = pobj;
     PrevParam1 = param1;
     PrevParam2 = param2;
+}
+
+void IconScrollerMenu::RefreshHeader() {
+    const unsigned long FEObj_TUTORIALGROUP = 0x9C7D33FF;
+
+    FEngSetLanguageHash(pOptionName, Options.GetCurrentName());
+    FEngSetLanguageHash(pOptionNameShadow, Options.GetCurrentName());
+    FEngSetLanguageHash(pOptionDesc, Options.GetCurrentDesc());
+
+    if (Options.AtHead()) {
+        const unsigned long FEObj_ENDPADLEFT = 0xD7118934;
+        cFEng::Get()->QueuePackageMessage(FEObj_ENDPADLEFT, GetPackageName(), nullptr);
+    }
+
+    if (Options.AtTail()) {
+        const unsigned long FEObj_ENDPADRIGHT = 0xB9B17747;
+        cFEng::Get()->QueuePackageMessage(FEObj_ENDPADRIGHT, GetPackageName(), nullptr);
+    }
+
+    if (!Options.GetCurrentOption()->IsTutorialAvailable()) {
+        FEngSetScript(GetPackageName(), FEObj_TUTORIALGROUP, 0x16A259, true);
+    } else {
+        FEngSetScript(GetPackageName(), FEObj_TUTORIALGROUP, 0x1CA7C0, true);
+    }
 }
 
 eMenuSoundTriggers IconScrollerMenu::NotifySoundMessage(unsigned long msg, eMenuSoundTriggers maybe) {
