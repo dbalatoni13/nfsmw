@@ -3942,8 +3942,22 @@ void CustomizeDecals::BuildDecalList(unsigned int selected_name_hash) {
 void CustomizeDecals::NotificationMessage(unsigned long msg, FEObject *pobj, unsigned long param1, unsigned long param2) {
     CustomizationScreen::NotificationMessage(msg, pobj, param1, param2);
     switch (msg) {
-    case 0x911ab364:
-        cFEng::Get()->QueuePackageSwitch(g_pCustomizeSubTopPkg, FromCategory | Category << 16, 0, false);
+    case 0xc519bfbf:
+        Showcase::FromFilter = bIsBlack;
+        break;
+    case 0x5073ef13:
+    case 0xd9feec59:
+        bIsBlack ^= 1;
+        {
+            CustomizePartOption *opt = GetSelectedOption();
+            if (opt->GetPart()) {
+                unsigned int nameHash = opt->GetPart()->GetPart()->GetAppliedAttributeUParam(0xebb03e66, 0);
+                BuildDecalList(nameHash);
+            } else {
+                BuildDecalList(0);
+            }
+        }
+        RefreshHeader();
         break;
     case 0x5a928018: {
         SelectablePart *sel = GetSelectedPart();
@@ -3956,26 +3970,11 @@ void CustomizeDecals::NotificationMessage(unsigned long msg, FEObject *pobj, uns
         }
         break;
     }
-    case 0x5073ef13:
-        break;
-    case 0xc519bfbf:
-        Showcase::FromFilter = bIsBlack;
+    case 0x911ab364:
+        cFEng::Get()->QueuePackageSwitch(g_pCustomizeSubTopPkg, FromCategory | Category << 16, 0, false);
         break;
     case 0xc519bfc3:
         return;
-    case 0xd9feec59:
-        bIsBlack ^= 1;
-        {
-            CustomizePartOption *opt = GetSelectedOption();
-            if (!opt->GetPart()) {
-                BuildDecalList(0);
-            } else {
-                unsigned int nameHash = opt->GetPart()->GetPart()->GetAppliedAttributeUParam(0xebb03e66, 0);
-                BuildDecalList(nameHash);
-            }
-        }
-        RefreshHeader();
-        break;
     }
 }
 

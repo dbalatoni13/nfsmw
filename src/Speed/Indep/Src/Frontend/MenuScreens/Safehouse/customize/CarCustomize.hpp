@@ -268,7 +268,7 @@ struct CustomizeDecals : public CustomizationScreen {
 
     static unsigned int CurrentDecalLocation; // address: 0x8043922C
 
-    bool bIsBlack;  // offset 0x1E4, size 0x1
+    int bIsBlack;  // offset 0x1E4, size 0x4
 };
 
 // total size: 0x1F8
