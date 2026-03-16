@@ -5,8 +5,12 @@
 #include "Speed/Indep/Src/Gameplay/GRaceDatabase.h"
 #include "Speed/Indep/Src/Gameplay/GManager.h"
 #include "Speed/Indep/Src/Gameplay/GMilestone.h"
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/audiosystem.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/frontend.h"
+typedef int PathEventEnum;
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/music.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/pvehicle.h"
+#include "Speed/Indep/Libs/Support/Utility/UStandard.h"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 
@@ -16,6 +20,38 @@ extern EAXSound *g_pEAXSound;
 extern unsigned int bCalculateCrc32(const void *data, int size, unsigned int prev_crc32);
 extern int SkipFE;
 extern int SkipFESplitScreen;
+extern int g_MaxSongs;
+extern void InitializeEATrax(bool breset);
+
+namespace Sound {
+
+struct stSongInfo {
+    char *SongName;
+    char *Artist;
+    char *Album;
+    char *DefPlay;
+    int PathEvent;
+};
+
+} // namespace Sound
+
+typedef UTL::Std::vector<Sound::stSongInfo *, _type_vector> SongInfoList;
+
+extern SongInfoList Songs;
+
+namespace {
+
+struct StringKeyView {
+    unsigned long long mHash64;
+    unsigned int mHash32;
+    const char *mString;
+};
+
+static const char *GetStringView(const Attrib::StringKey &key) {
+    return reinterpret_cast<const StringKeyView &>(key).mString;
+}
+
+} // namespace
 
 const char* UserProfile::GetProfileName() {}
 
@@ -47,6 +83,80 @@ UserProfile::~UserProfile() {
 
 bool UserProfile::IsProfileNamed() {
     return m_bNamed;
+}
+
+void UserProfile::Default(int player_number, bool commit_default) {
+    static bool song_info_loaded = false;
+
+    if (!commit_default) {
+        SetProfileName(nullptr, true);
+    } else {
+        SetProfileName(nullptr, false);
+    }
+
+    PlayersCarStable.Default();
+
+    if (!commit_default) {
+        TheOptionsSettings.Default();
+        TheCareerSettings.Default();
+        HighScores.Default();
+        CareerModeHasBeenCompletedAtLeastOnce = false;
+
+        if (!song_info_loaded) {
+            song_info_loaded = true;
+
+            Attrib::Gen::audiosystem playlist_atrs(0x7E4B0ED2, 0, nullptr);
+            if (playlist_atrs.IsValid()) {
+                Attrib::Gen::audiosystem licensed_music(static_cast<const Attrib::Collection *>(nullptr), 0, nullptr);
+                licensed_music.ChangeWithDefault(playlist_atrs.LicensedMusic(0));
+                g_MaxSongs = licensed_music.Num_PFMapping();
+
+                for (int i = 0; i < static_cast<int>(Songs.size()); i++) {
+                    delete Songs[i];
+                }
+                Songs.clear();
+
+                for (int i = 0; i < g_MaxSongs; i++) {
+                    Sound::stSongInfo *newsong = new (__FILE__, __LINE__) Sound::stSongInfo;
+                    Attrib::Gen::music currsong(playlist_atrs.PFMapping(i), 0, nullptr);
+
+                    const char *song_name = GetStringView(currsong.SongName());
+                    const char *artist = GetStringView(currsong.Artist());
+                    const char *album = GetStringView(currsong.Album());
+                    const char *def_play = GetStringView(currsong.DefPlay());
+
+                    newsong->SongName = const_cast<char *>(song_name ? song_name : "");
+                    newsong->Artist = const_cast<char *>(artist ? artist : "");
+                    newsong->Album = const_cast<char *>(album ? album : "");
+                    newsong->DefPlay = const_cast<char *>(def_play ? def_play : "");
+                    newsong->PathEvent = currsong.PathEvent();
+                    Songs.push_back(newsong);
+                }
+            }
+        }
+
+        for (int i = 0; i < g_MaxSongs; i++) {
+            Playlist[i].SongIndex = i;
+
+            unsigned char playability = 0;
+            Sound::stSongInfo *song = Songs[i];
+            if (song) {
+                if (bStrCmp(song->DefPlay, "FE") == 0) {
+                    playability = 1;
+                } else if (bStrCmp(song->DefPlay, "IG") == 0) {
+                    playability = 2;
+                } else if (bStrCmp(song->DefPlay, "AL") == 0) {
+                    playability = 3;
+                }
+            }
+            Playlist[i].PlayabilityField = playability;
+        }
+
+        InitializeEATrax(true);
+    }
+
+    PlayersCarStable.AwardBonusCars();
+    TheCareerSettings.TryAwardDemoMarker();
 }
 
 SMSMessage *CareerSettings::GetSMSMessage(unsigned int index) {
