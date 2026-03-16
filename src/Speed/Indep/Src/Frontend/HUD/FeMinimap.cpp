@@ -1,20 +1,37 @@
 #include "Speed/Indep/Src/Frontend/HUD/FeMinimap.hpp"
 #include "Speed/Indep/Src/Frontend/HUD/FeMinimapStreamer.hpp"
+#include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Gameplay/GIcon.h"
+#include "Speed/Indep/Src/Gameplay/GManager.h"
 #include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
 #include "Speed/Indep/Src/Sim/Simulation.h"
 #include "Speed/Indep/Src/World/TrackInfo.hpp"
+#include "Speed/Indep/Src/World/OnlineManager.hpp"
 #include "Speed/Indep/Src/World/RaceParameters.hpp"
 
+#include "Speed/Indep/Src/AI/AITarget.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ICollisionBody.h"
+#include "Speed/Indep/Src/Physics/Common/VehicleSystem.h"
+#include "Speed/Indep/bWare/Inc/bMath.hpp"
 
 extern void FEngSetRotationZ(FEObject *obj, float rot);
 extern void FEngSetVisible(FEObject *obj);
 extern void FEngSetInvisible(FEObject *obj);
+extern void FEngSetCenter(FEObject *obj, float x, float y);
+extern void FEngSetColor(FEObject *obj, unsigned int color);
+extern FEColor FEngGetObjectColor(FEObject *obj);
+extern bool FEngIsScriptSet(FEObject *obj, unsigned int script_hash);
+extern void FEngSetScript(FEObject *object, unsigned int script_hash, bool start_at_beginning);
+extern unsigned long FEHashUpper(const char *str);
 extern void FEngSetTextureHash(FEImage *img, unsigned int hash);
 extern float MinimapPivotX;
 extern float MinimapPivotY;
 extern float MinimapDispX;
+extern float MinimapMaxSpeed;
+extern bool MinimapShowNonPursuitCops;
+extern bool MinimapShowPursuitCops;
 extern RaceParameters TheRaceParameters;
 
 void GetVehicleVectors(bVector2 *pos, bVector2 *dir, ISimable *isimable) {
@@ -116,6 +133,64 @@ Minimap::~Minimap() {
 }
 
 void Minimap::Update(IPlayer *player) {
+    if (!IsElementVisible() || !player) {
+        return;
+    }
+
+    ISimable *isimable = player->GetSimable();
+    if (!isimable) {
+        return;
+    }
+
+    MinimapRotateWithPlayer = 1;
+    if (Sim::GetUserMode() == Sim::USER_SPLIT_SCREEN) {
+        MinimapRotateWithPlayer = 0;
+    } else {
+        unsigned char rotate_with_player =
+            GRaceStatus::Get().GetRaceParameters() == nullptr ? FEDatabase->GetGameplaySettings()->ExploringMiniMapMode
+                                                              : FEDatabase->GetGameplaySettings()->RacingMiniMapMode;
+        if (!rotate_with_player) {
+            MinimapRotateWithPlayer = 0;
+        }
+    }
+
+    SetupMinimap(player);
+
+    bVector2 target_pos;
+    bVector2 target_dir;
+    GetVehicleVectors(&target_pos, &target_dir, isimable);
+
+    IVehicle *ivehicle = nullptr;
+    float speed = 0.0f;
+    if (isimable->QueryInterface(&ivehicle)) {
+        speed = bAbs(ivehicle->GetSpeed());
+    }
+
+    mPolyRotation = bAngToDeg(bATan(target_dir.y, target_dir.x));
+    ConvertPos(target_pos, mTrackTargetNormalized, CurrentTrack);
+
+    if (speed > MinimapMaxSpeed) {
+        speed = MinimapMaxSpeed;
+    }
+    if (speed < 0.0f) {
+        speed = 0.0f;
+    }
+
+    mSpeedZoomScale = 2.0f - speed / MinimapMaxSpeed;
+    if (mSpeedZoomScale < 1.0f) {
+        mSpeedZoomScale = 1.0f;
+    }
+
+    UpdateTrackMapArt();
+    if (!MinimapRotateWithPlayer) {
+        mPolyRotation = 0.0f;
+    }
+
+    UpdateCopElements(ivehicle);
+    UpdateAiRacerElements();
+    UpdatePlayer2Element();
+    UpdateRaceElements();
+    UpdateGameplayIcons(player);
 }
 
 void Minimap::SetupMinimap(IPlayer *player) {
@@ -346,5 +421,194 @@ void Minimap::UpdatePlayer2Element() {
         bVector2 *pDir = &target_dir;
         GetVehicleVectors(pPos, pDir, isimable);
         UpdateElementArt(pPos, pDir, mPlayerCarIndicator2, false);
+    }
+}
+
+void Minimap::UpdateCopElements(IVehicle *ivehicle) {
+    unsigned int artIter = 0;
+    bool helicopterFound = false;
+    eVehicleList list_id = VEHICLE_AICOPS;
+    IPursuit *ipursuit = nullptr;
+
+    mCopFlashCounter++;
+    if (mCopFlashCounter > 7) {
+        mCopFlashCounter = 0;
+    }
+
+    if (ivehicle) {
+        IVehicleAI *ivehicleAI = ivehicle->GetAIVehiclePtr();
+        if (ivehicleAI) {
+            ipursuit = ivehicleAI->GetPursuit();
+        }
+    }
+
+    if (MinimapShowNonPursuitCops || ipursuit) {
+        const IVehicle::List &vehicles = IVehicle::GetList(list_id);
+        for (IVehicle *const *iter = vehicles.begin(); iter != vehicles.end(); ++iter) {
+            IVehicle *copVehicle = *iter;
+            if (!copVehicle->IsActive()) {
+                continue;
+            }
+            if (artIter > 7) {
+                break;
+            }
+
+            bVector2 target_pos;
+            bVector2 target_dir;
+            ISimable *isimable = copVehicle->GetSimable();
+            GetVehicleVectors(&target_pos, &target_dir, isimable);
+
+            IPursuitAI *ipursuitai = nullptr;
+            copVehicle->QueryInterface(&ipursuitai);
+            FEObject *copArtToUse;
+
+            if (copVehicle->GetVehicleClass() == VehicleClass::CHOPPER) {
+                copArtToUse = mHeliElementArt;
+                if (MinimapShowNonPursuitCops || (ipursuitai && ipursuitai->GetInPursuit())) {
+                    AITarget *target = ipursuitai ? ipursuitai->GetPursuitTarget() : nullptr;
+                    if (!target || target->GetSpeed() > 0.25f) {
+                        if (!FEngIsScriptSet(mHeliLineOfSiteArt, 0x1744B3)) {
+                            FEngSetScript(mHeliLineOfSiteArt, 0x1744B3, true);
+                        }
+                    } else {
+                        unsigned int tracking_hash = FEHashUpper("TRACKING");
+                        if (!FEngIsScriptSet(mHeliLineOfSiteArt, tracking_hash)) {
+                            FEngSetScript(mHeliLineOfSiteArt, tracking_hash, true);
+                        }
+                    }
+                }
+                helicopterFound = true;
+                UpdateElementArt(&target_pos, &target_dir, copArtToUse, false);
+                UpdateElementArt(&target_pos, &target_dir, mHeliLineOfSiteArt, false);
+            } else {
+                if (MinimapShowNonPursuitCops || (ipursuitai && ipursuitai->GetInPursuit() && MinimapShowPursuitCops)) {
+                    copArtToUse = mCopElementArt[artIter];
+                    UpdateElementArt(&target_pos, &target_dir, copArtToUse, false);
+                } else {
+                    FEngSetInvisible(mCopElementArt[artIter]);
+                }
+
+                unsigned int copFlasherColour = 0xFFCCCCCC;
+                if (ipursuitai && ipursuitai->GetInPursuit()) {
+                    if (mCopFlashCounter < 3) {
+                        copFlasherColour = 0xFF0000FF;
+                    } else if (mCopFlashCounter - 4U < 3) {
+                        copFlasherColour = 0xFFA00000;
+                    }
+                }
+                FEngSetColor(mCopElementArt[artIter], copFlasherColour);
+                artIter++;
+            }
+        }
+    }
+
+    for (unsigned int i = artIter; i < 8; i++) {
+        FEngSetInvisible(mCopElementArt[i]);
+    }
+    if (!helicopterFound) {
+        FEngSetInvisible(mHeliElementArt);
+        FEngSetInvisible(mHeliLineOfSiteArt);
+    }
+}
+
+void Minimap::UpdateElementArt(bVector2 *elementPos, bVector2 *elementDir, FEObject *elementArt, bool pulse) {
+    bVector2 mapPos;
+    ConvertPos(*elementPos, mapPos, CurrentTrack);
+
+    float epoly_x = (mapPos.x - mTrackTargetNormalized.x) * mSpeedZoomScale;
+    float epoly_y = (mapPos.y - mTrackTargetNormalized.y) * mSpeedZoomScale;
+    const float sa = bSin(bDegToRad(mPolyRotation));
+    const float ca = bCos(bDegToRad(mPolyRotation));
+    float rot_epoly_x = epoly_y * ca - epoly_x * sa;
+    float rot_epoly_y = epoly_x * ca + epoly_y * sa;
+    float distance = bSqrt(rot_epoly_y * rot_epoly_y + rot_epoly_x * rot_epoly_x);
+    float alpha = 1.0f;
+
+    if (distance > 0.0f && distance > 0.06f && distance < 0.23f) {
+        float scaleDist = distance;
+        rot_epoly_x *= 0.06f / scaleDist;
+        rot_epoly_y *= 0.06f / scaleDist;
+        distance = 0.06f;
+
+        if (scaleDist > 0.125f) {
+            alpha = 1.0f - (scaleDist - 0.125f) * 9.523809f;
+        }
+        if (pulse) {
+            alpha = 1.0f;
+        }
+    }
+
+    if (distance <= 0.06f) {
+        float screen_x = mTrackMapCentre.x + rot_epoly_y * 1024.0f;
+        float screen_y = mTrackMapCentre.y + rot_epoly_x * 1024.0f;
+        FEngSetCenter(elementArt, screen_x, screen_y);
+        FEngSetVisible(elementArt);
+        FEngSetRotationZ(elementArt, bAngToDeg(bATan(elementDir->y, elementDir->x)) - mPolyRotation);
+
+        unsigned int color = static_cast<unsigned long>(FEngGetObjectColor(elementArt));
+        FEngSetColor(elementArt, color & 0x00FFFFFF | static_cast<unsigned int>(alpha * 255.0f) << 24);
+
+        if (pulse) {
+            FEngSetVisible(mGPSSelectionElementArt);
+            FEngSetCenter(mGPSSelectionElementArt, screen_x, screen_y);
+        }
+    } else {
+        FEngSetInvisible(elementArt);
+    }
+}
+
+void Minimap::UpdateGameplayIcons(IPlayer *player) {
+    int iconsPlaced[GIcon::kType_Count];
+    GIcon *sortedIcons[200];
+
+    FEngSetInvisible(mGPSSelectionElementArt);
+    bMemSet(iconsPlaced, 0, sizeof(iconsPlaced));
+
+    int numIcons = GManager::Get().GatherVisibleIcons(sortedIcons, player);
+    for (int onIcon = 0; onIcon < numIcons; onIcon++) {
+        GIcon *icon = sortedIcons[onIcon];
+        int iconType = static_cast<int>(icon->GetType());
+        GameplayIconInfo &iconInfo = kGameplayIconInfo[iconType];
+
+        if (iconInfo.mItemType != 0 && iconsPlaced[iconType] < 8) {
+            if (FEDatabase->GetGameplaySettings()->IsMapItemEnabled(static_cast<eWorldMapItemType>(iconInfo.mItemType))) {
+                unsigned int iconSlot = static_cast<unsigned int>(iconsPlaced[iconType]);
+                FEImage *image = mGameplayIcons[iconType][iconSlot];
+                iconsPlaced[iconType]++;
+                if (image) {
+                    UpdateIconElement(image, icon);
+                }
+            }
+        }
+    }
+
+    for (int onType = 0; onType < GIcon::kType_Count; onType++) {
+        for (int onHideIcon = iconsPlaced[onType]; onHideIcon < 8; onHideIcon++) {
+            FEImage *image = mGameplayIcons[onType][onHideIcon];
+            if (image) {
+                FEngSetInvisible(image);
+            }
+        }
+    }
+}
+
+void Minimap::UpdateAiRacerElements() {
+    unsigned int artIter = 0;
+    eVehicleList listid = TheOnlineManager.IsOnlineRace() ? VEHICLE_REMOTE : VEHICLE_AIRACERS;
+    const IVehicle::List &vehicles = IVehicle::GetList(listid);
+
+    for (IVehicle *const *iter = vehicles.begin(); iter != vehicles.end(); ++iter) {
+        IVehicle *ivehicle = *iter;
+        if (ivehicle->IsActive()) {
+            bVector2 target_pos;
+            bVector2 target_dir;
+            GetVehicleVectors(&target_pos, &target_dir, ivehicle->GetSimable());
+            UpdateElementArt(&target_pos, &target_dir, mRacerElementArt[artIter], false);
+            artIter++;
+        }
+    }
+
+    for (unsigned int i = artIter; i < 8; i++) {
+        FEngSetInvisible(mRacerElementArt[i]);
     }
 }

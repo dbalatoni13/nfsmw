@@ -4,6 +4,9 @@
 extern void bEndianSwap32(void *data);
 extern void bEndianSwap16(void *data);
 extern int bSNPrintf(char *buf, int size, const char *fmt, ...);
+extern int LZDecompress(unsigned char *pSrc, unsigned char *pDst);
+extern void UnloadChunks(bChunk *chunks, int sizeof_chunks, const char *debug_name);
+extern void LoadEmbeddedChunks(bChunk *chunk, int sizeof_chunks, const char *debug_name);
 
 ChoppedMiniMapManager *gChoppedMiniMapManager;
 
@@ -54,4 +57,54 @@ void ChoppedMiniMapManager::SetMapHeader(char *header) {
 
 void ChoppedMiniMapManager::GetTextureName(char *buffer, int buffer_size, int chop_num) {
     bSNPrintf(buffer, buffer_size, "%s_%d", map_header, chop_num);
+}
+void ChoppedMiniMapManager::UncompressMaps(short *chop_nums, int num_chops) {
+    for (int n = 0; n < NumSections; n++) {
+        UncompressedMiniMap *map = &UncompressedMiniMaps[n];
+        if (map->Chunks) {
+            bool keep_map = false;
+            for (int i = 0; i < num_chops; i++) {
+                if (chop_nums[i] == static_cast<short>(map->ChopNum)) {
+                    keep_map = true;
+                    break;
+                }
+            }
+            if (!keep_map) {
+                UnloadChunks(map->Chunks, map->SizeofChunks, "MiniMap Chop");
+                bFree(map->Chunks);
+                map->SizeofChunks = 0;
+                map->Chunks = nullptr;
+            }
+        }
+    }
+
+    for (int i = 0; i < num_chops; i++) {
+        int chop_num = chop_nums[i];
+        int n = 0;
+        UncompressedMiniMap *free_map = nullptr;
+
+        for (; n < NumSections; n++) {
+            UncompressedMiniMap *map = &UncompressedMiniMaps[n];
+            if (!map->Chunks) {
+                if (!free_map) {
+                    free_map = map;
+                }
+            } else if (map->ChopNum == chop_num) {
+                break;
+            }
+        }
+
+        if (n == NumSections && chop_num > -1) {
+            void *lz_header = CompressedMiniMaps[chop_num];
+            if (lz_header) {
+                free_map->ChopNum = chop_num;
+                int size = *reinterpret_cast<int *>(reinterpret_cast<char *>(lz_header) + 8);
+                free_map->SizeofChunks = size;
+                free_map->Chunks = static_cast<bChunk *>(bMalloc(size, 0x2000));
+                LZDecompress(reinterpret_cast<unsigned char *>(lz_header),
+                             reinterpret_cast<unsigned char *>(free_map->Chunks));
+                LoadEmbeddedChunks(free_map->Chunks, free_map->SizeofChunks, "MiniMap Chop embedded");
+            }
+        }
+    }
 }
