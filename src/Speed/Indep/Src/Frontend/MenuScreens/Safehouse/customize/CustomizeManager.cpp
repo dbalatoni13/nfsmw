@@ -582,46 +582,49 @@ bool CarCustomizeManager::IsPartInstalled(SelectablePart *part) {
 
 bool CarCustomizeManager::IsPartLocked(SelectablePart *part, int perf_unlock_level) {
     bool unlocked;
-    int slot;
     if (part->IsPerformancePkg()) {
         eUnlockFilters filter = GetUnlockFilter();
+        int physType = static_cast<int>(part->GetPhysicsType());
         bool backroom = CustomizeIsInBackRoom();
-        unlocked = UnlockSystem::IsPerfPackageUnlocked(filter, static_cast<Physics::Upgrades::Type>(static_cast<int>(part->GetPhysicsType())), perf_unlock_level, 0, backroom);
+        unlocked = UnlockSystem::IsPerfPackageUnlocked(filter, static_cast<Physics::Upgrades::Type>(physType), perf_unlock_level, 0, backroom);
         goto done;
     }
-    slot = part->GetSlotID();
-    if (slot < 0x69) {
-        if (slot > 0x62) {
-shared_unlockable_2e:
-            {
-                eUnlockFilters filter = GetUnlockFilter();
-                bool backroom = CustomizeIsInBackRoom();
-                unlocked = UnlockSystem::IsUnlockableUnlocked(filter, static_cast<eUnlockableEntity>(0x2e), 2, 0, backroom);
-            }
-            goto done;
-        }
-        if (slot == 0x53 || slot == 0x5b) {
+    {
+        int slot = part->GetSlotID();
+        switch (slot) {
+        case 0x53:
+        case 0x5b: {
             eUnlockFilters filter = GetUnlockFilter();
             bool backroom = CustomizeIsInBackRoom();
             unlocked = UnlockSystem::IsUnlockableUnlocked(filter, static_cast<eUnlockableEntity>(0x2c), 1, 0, backroom);
-            goto done;
+            break;
         }
-    } else if (slot > 0x6a) {
-        if (slot < 0x71) goto shared_unlockable_2e;
-        if (slot == 0x73 || slot == 0x7b) {
+        case 0x63: case 0x64: case 0x65: case 0x66: case 0x67: case 0x68:
+        case 0x6b: case 0x6c: case 0x6d: case 0x6e: case 0x6f: case 0x70: {
+            eUnlockFilters filter = GetUnlockFilter();
+            bool backroom = CustomizeIsInBackRoom();
+            unlocked = UnlockSystem::IsUnlockableUnlocked(filter, static_cast<eUnlockableEntity>(0x2e), 2, 0, backroom);
+            break;
+        }
+        case 0x73:
+        case 0x7b: {
             eUnlockFilters filter = GetUnlockFilter();
             bool backroom = CustomizeIsInBackRoom();
             unlocked = UnlockSystem::IsUnlockableUnlocked(filter, static_cast<eUnlockableEntity>(0x30), 3, 0, backroom);
-            goto done;
+            break;
+        }
+        default: {
+            eUnlockFilters filter = GetUnlockFilter();
+            CarPart *p = part->GetPart();
+            int sid = part->GetSlotID();
+            bool backroom = CustomizeIsInBackRoom();
+            unlocked = UnlockSystem::IsCarPartUnlocked(filter, sid, p, 0, backroom);
+            break;
+        }
         }
     }
-    {
-        eUnlockFilters filter = GetUnlockFilter();
-        bool backroom = CustomizeIsInBackRoom();
-        unlocked = UnlockSystem::IsCarPartUnlocked(filter, part->GetSlotID(), part->GetPart(), 0, backroom);
-    }
 done:
-    return unlocked ^ true;
+    return !unlocked;
 }
 
 bool CarCustomizeManager::IsPartNew(SelectablePart *part, int perf_unlock_level) {
