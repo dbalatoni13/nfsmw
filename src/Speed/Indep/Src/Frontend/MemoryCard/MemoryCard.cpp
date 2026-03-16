@@ -34,11 +34,11 @@ const char* LOCALE_getstrA(void* data, int strID);
 bool FEngIsScriptSet(const char* pkg_name, unsigned long obj_hash, unsigned long script_hash);
 
 #if !defined(_MSC_VER) || defined(_NATIVE_WCHAR_T_DEFINED)
-extern void RealmcIfaceGameInfoCtorUnsignedShort(RealmcIface::GameInfo* self,
-                                                 const unsigned short* gameTitle,
-                                                 unsigned int titleId,
-                                                 bool multipleSaveTypesUsed,
-                                                 bool multitapSupported)
+extern RealmcIface::GameInfo* RealmcIfaceGameInfoCtorUnsignedShort(RealmcIface::GameInfo* self,
+                                                                   const unsigned short* gameTitle,
+                                                                   unsigned int titleId,
+                                                                   bool multipleSaveTypesUsed,
+                                                                   bool multitapSupported)
     asm("__Q211RealmcIface8GameInfoPCUwUibT3");
 extern void RealmcIfaceMemcardInterfaceLoadUnsignedShort(RealmcIface::MemcardInterface* self,
                                                          const char* entryName,
@@ -299,7 +299,12 @@ bool MemoryCard::IsCardBusy() {
 
 void MemoryCard::Init() {
     static Realmc::SystemInterface iSystem;
+    static int bSystemCleared;
     static Realmc::SystemInterface* pSystem;
+    if (!bSystemCleared) {
+        iSystem.Clear();
+        bSystemCleared = 1;
+    }
     static MemoryCardImp sMemcardImp;
     if (pSystem == nullptr) {
         iSystem.mAllocator = gMemoryAllocator;
@@ -588,8 +593,9 @@ void MemoryCard::Load(const char* filename) {
     m_pBuffer = static_cast< char* >(bMalloc(m_DataSize, 0x40));
     if (filename != nullptr) {
         bStrNCpy(MemoryCardImp::gContentName, filename, 16);
+        char* filename_buf = m_Filename;
         const char* prefix = m_pImp->GetPrefix();
-        bStrCat(m_Filename, prefix, filename);
+        bStrCat(filename_buf, prefix, filename);
     }
     InitCommand(MO_Load);
     if (!Joylog::IsReplaying()) {
@@ -598,21 +604,22 @@ void MemoryCard::Load(const char* filename) {
             BootupCheck(filename);
         } else {
             m_pIMemcard->Load(m_Filename, static_cast< char* >(nullptr), static_cast< char* >(nullptr),
-                              MemoryCardImp::gContentName,
-                              static_cast< const RealmcIface::TitleInfo* >(nullptr),
-                              static_cast< const unsigned short* >(nullptr));
+                              reinterpret_cast< const wchar_t* >(MemoryCardImp::gContentName),
+                              static_cast< const RealmcIface::TitleInfo* >(nullptr));
         }
     }
 }
 
 void MemoryCard::Delete(const char* filename) {
     InitCommand(MO_Delete);
+    char* filename_buf = m_Filename;
     if (filename != nullptr) {
         bStrNCpy(MemoryCardImp::gContentName, filename, 16);
         const char* prefix = m_pImp->GetPrefix();
-        bStrCat(m_Filename, prefix, filename);
+        bStrCat(filename_buf, prefix, filename);
     }
-    if (!Joylog::IsReplaying()) m_pIMemcard->Delete(m_Filename, MemoryCardImp::gContentName);
+    if (!Joylog::IsReplaying())
+        m_pIMemcard->Delete(m_Filename, reinterpret_cast< const wchar_t* >(MemoryCardImp::gContentName));
 }
 
 void MemoryCard::ListOldSaveFilesNGC() {

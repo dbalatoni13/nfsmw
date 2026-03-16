@@ -348,8 +348,8 @@ WorldMap::WorldMap(ScreenConstructorData* sd)
     CurrentView = 0;
     CurrentZoom = 0;
     bInToggleMode = false;
-    bCursorOn = false;
     bCursorMoving = false;
+    bCursorOn = false;
 
     signed char joyport = FEDatabase->PlayerJoyports[0];
     mActionQ = new ActionQueue(joyport, 0x82d21520, "WorldMapMain", false);
@@ -629,8 +629,8 @@ void WorldMap::ScrollZoom(eScrollDir dir) {
 
 float WorldMap::GetZoomFactor(eWorldMapZoomLevels level) {
     switch (level) {
-    case WMZ_LEVEL_1: return 1.0f;
-    case WMZ_LEVEL_2: return 2.0f;
+    case WMZ_LEVEL_1: return 2.0f;
+    case WMZ_LEVEL_2: return 4.0f;
     case WMZ_LEVEL_4: return 8.0f;
     default: return 1.0f;
     }
@@ -674,9 +674,8 @@ void WorldMap::ClearItems() {
 }
 
 bool WorldMap::ClampToMapBounds(float& x, float& y) {
-    float bottom_right_x;
-    float bottom_right_y;
-    FEngGetBottomRight(static_cast< FEObject* >(TrackMap), bottom_right_x, bottom_right_y);
+    bVector2 bottom_right;
+    FEngGetBottomRight(static_cast< FEObject* >(TrackMap), bottom_right.x, bottom_right.y);
 
     bool changed = false;
     float min_x = MapTopLeft.x + 8.0f;
@@ -684,7 +683,7 @@ bool WorldMap::ClampToMapBounds(float& x, float& y) {
         x = min_x;
         changed = true;
     } else {
-        float max_x = bottom_right_x - 8.0f;
+        float max_x = bottom_right.x - 8.0f;
         if (x > max_x) {
             x = max_x;
             changed = true;
@@ -694,7 +693,7 @@ bool WorldMap::ClampToMapBounds(float& x, float& y) {
                 y = min_y;
                 changed = true;
             } else {
-                float max_y = bottom_right_y - 32.0f;
+                float max_y = bottom_right.y - 32.0f;
                 if (y > max_y) {
                     y = max_y;
                     changed = true;
@@ -898,13 +897,14 @@ void WorldMap::PanToPlayer() {
     ISimable* isimable = player->GetSimable();
     bVector2 target_pos;
     bVector2 target_dir;
-    GetVehicleVectors(&target_pos, &target_dir, isimable);
-    target_pos.x = (target_pos.x - pCurrentTrack->TrackMapCalibrationUpperLeft.x) / pCurrentTrack->TrackMapCalibrationMapWidthMetres;
-    target_pos.y = (pCurrentTrack->TrackMapCalibrationUpperLeft.y - target_pos.y) / pCurrentTrack->TrackMapCalibrationMapWidthMetres + 1.0f;
+    bVector2* pTargetPos = &target_pos;
+    GetVehicleVectors(pTargetPos, &target_dir, isimable);
+    pTargetPos->x = (pTargetPos->x - pCurrentTrack->TrackMapCalibrationUpperLeft.x) / pCurrentTrack->TrackMapCalibrationMapWidthMetres;
+    pTargetPos->y = (pCurrentTrack->TrackMapCalibrationUpperLeft.y - pTargetPos->y) / pCurrentTrack->TrackMapCalibrationMapWidthMetres + 1.0f;
     float max_pan = 1.0f / GetZoomFactor(static_cast< eWorldMapZoomLevels >(CurrentZoom)) * 0.5f;
-    target_pos.x = bClamp(target_pos.x, max_pan, 1.0f - max_pan);
-    target_pos.y = bClamp(target_pos.y, max_pan, 1.0f - max_pan);
-    MapStreamer->SetPan(target_pos);
+    pTargetPos->x = bClamp(pTargetPos->x, max_pan, 1.0f - max_pan);
+    pTargetPos->y = bClamp(pTargetPos->y, max_pan, 1.0f - max_pan);
+    MapStreamer->SetPan(*pTargetPos);
 }
 
 void WorldMap::Setup() {

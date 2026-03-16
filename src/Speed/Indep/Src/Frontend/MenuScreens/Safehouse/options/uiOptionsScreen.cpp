@@ -65,20 +65,14 @@ UIOptionsScreen::UIOptionsScreen(ScreenConstructorData* sd)
     , OriginalVideoSettings(nullptr) //
     , OriginalGameplaySettings(nullptr) //
     , OriginalPlayerSettings(nullptr) {
-    unsigned int maxWidgets = 9;
-    if (mCalledFromPauseMenu) {
-        maxWidgets = 10;
-    }
-    iMaxWidgetsOnScreen = maxWidgets;
+    iMaxWidgetsOnScreen = mCalledFromPauseMenu ? 10 : 9;
 
     if (FEDatabase->GetOptionsSettings()->CurrentCategory == OC_PLAYER &&
         Sim::GetUserMode() == Sim::USER_SPLIT_SCREEN) {
         cFEng::Get()->QueuePackageMessage(0x7DB7B6D7, GetPackageName(), 0);
-        unsigned int lang = 0x7B070985;
-        if (GetPlayerToEditForOptions() == 0) {
-            lang = 0x7B070984;
-        }
-        FEngSetLanguageHash(GetPackageName(), 0x53BF826D, lang);
+        const char* pkg = GetPackageName();
+        FEngSetLanguageHash(pkg, 0x53BF826D,
+                            GetPlayerToEditForOptions() == 0 ? 0x7B070984 : 0x7B070985);
     }
 
     Setup();
@@ -339,11 +333,8 @@ void UIOptionsScreen::SetupPlayer() {
 
     FEngSetScript(GetPackageName(), 0x8A41F5B9, 0x5079C8F8, true);
 
-    unsigned int lang = 0x7B070985;
-    if (GetPlayerToEditForOptions() == 0) {
-        lang = 0x7B070984;
-    }
-    FEngSetLanguageHash(GetPackageName(), 0x53BF826D, lang);
+    FEngSetLanguageHash(GetPackageName(), 0x53BF826D,
+                        GetPlayerToEditForOptions() == 0 ? 0x7B070984 : 0x7B070985);
 
     if (!GRaceStatus::Exists() || GRaceStatus::Get().GetRaceType() != GRace::kRaceType_Drag) {
         AddToggleOption(new POTransmission(true), true);

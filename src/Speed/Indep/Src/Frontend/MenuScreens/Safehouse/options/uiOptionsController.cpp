@@ -176,16 +176,12 @@ void UIOptionsController::Setup() {
     config->SetBackingOffsetX(-295.0f);
     AddToggleOption(config, true);
 
-    int player = GetPlayerToEditForOptions();
-    COVibration* vibration = new COVibration(player, true);
+    COVibration* vibration = new COVibration(GetPlayerToEditForOptions(), true);
     int idx = AddToggleOption(vibration, true);
     Options.GetNode(idx - 1)->SetBackingOffsetX(-295.0f);
 
-    unsigned int lang = 0x7B070985;
-    if (GetPlayerToEditForOptions() == 0) {
-        lang = 0x7B070984;
-    }
-    FEngSetLanguageHash(GetPackageName(), 0x53BF826D, lang);
+    FEngSetLanguageHash(GetPackageName(), 0x53BF826D,
+                        GetPlayerToEditForOptions() == 0 ? 0x7B070984 : 0x7B070985);
 
     SetInitialOption(0);
     HideControllerConfig();
@@ -244,8 +240,8 @@ void UIOptionsController::DetectControllers() {
 }
 
 void UIOptionsController::ClearLoadedControllerTexture() {
-    unsigned int tex = WhichControllerTexture;
-    if (tex != 0) {
+    if (WhichControllerTexture != 0) {
+        unsigned int tex = WhichControllerTexture;
         eUnloadStreamingTexture(&tex, 1);
     }
 }
