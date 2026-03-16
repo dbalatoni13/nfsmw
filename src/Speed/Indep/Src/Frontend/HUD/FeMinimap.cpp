@@ -13,7 +13,9 @@
 
 #include "Speed/Indep/Src/AI/AITarget.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ICollisionBody.h"
+#include "Speed/Indep/Src/Misc/MD5.hpp"
 #include "Speed/Indep/Src/Physics/Common/VehicleSystem.h"
+#include "Speed/Indep/Src/Physics/PhysicsTunings.h"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
 extern void FEngSetRotationZ(FEObject *obj, float rot);
@@ -57,6 +59,38 @@ void UnloaderMiniMap(bChunk *chunk) {
 extern unsigned int FEngHashString(const char *, ...);
 extern void FEngGetCenter(FEObject *obj, float &x, float &y);
 extern char *bStrStr(const char *, const char *);
+
+bool GIcon::IsFlagSet(unsigned int mask) const {
+    return (mFlags & mask) != 0;
+}
+
+void Physics::Tunings::Default() {
+    bMemSet(this, 0, 0x1C);
+}
+
+void MD5::Reset() {
+    uCount = 0;
+    uRegs[0] = 0x67452301;
+    uRegs[1] = 0xEFCDAB89;
+    uRegs[2] = 0x98BADCFE;
+    uRegs[3] = 0x10325476;
+    computed = false;
+}
+
+namespace UTL {
+namespace Collections {
+
+template <>
+IPlayer *ListableSet<IPlayer, 8, ePlayerList, PLAYER_MAX>::Last(ePlayerList idx) {
+    ListableSet<IPlayer, 8, ePlayerList, PLAYER_MAX>::List &l = _mLists._buckets[idx];
+    if (l.size() != 0) {
+        return l[l.size() - 1];
+    }
+    return nullptr;
+}
+
+} // namespace Collections
+} // namespace UTL
 
 Minimap::Minimap(const char *pkg_name, int player_number)
     : HudElement(pkg_name, 0x40010000)

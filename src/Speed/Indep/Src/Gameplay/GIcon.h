@@ -32,7 +32,7 @@ struct GIcon {
     static EffectInfo kEffectInfo[];
     void SetFlag(unsigned int mask);
     void ClearFlag(unsigned int mask);
-    bool IsFlagSet(unsigned int mask) const { return (mFlags & mask) != 0; }
+    bool IsFlagSet(unsigned int mask) const;
     bool IsFlagClear(unsigned int mask) const { return (mFlags & mask) == 0; }
     void SetGPSing() { SetFlag(0x80); }
     void ClearGPSing() { ClearFlag(0x80); }

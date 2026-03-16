@@ -29,7 +29,7 @@ struct Tunings {
     };
     float Value[7]; // offset 0x0, size 0x1C
 
-    void Default() { bMemSet(this, 0, 0x1C); }
+    void Default();
 
     static float LowerLimit(Path path);
     static float UpperLimit(Path path);
