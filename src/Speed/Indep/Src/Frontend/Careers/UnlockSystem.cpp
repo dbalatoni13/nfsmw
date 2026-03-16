@@ -739,111 +739,124 @@ bool CareerUnlocker::IsCarUnlocked(eUnlockFilters filter, unsigned int car) {
 bool CareerUnlocker::IsBackroomAvailable(eUnlockFilters filter, eUnlockableEntity ent, int level) {
     bool answer = false;
     FEMarkerManager::ePossibleMarker marker = FEMarkerManager::MARKER_NONE;
-    if (ent == UNLOCKABLE_THING_SPOILERS) {
-        marker = FEMarkerManager::MARKER_SPOILER;
-    } else if (ent < UNLOCKABLE_THING_HOODS) {
-        if (ent == UNLOCKABLE_THING_PUT_CHASSIS) {
-            marker = FEMarkerManager::MARKER_CHASSIS;
-        } else if (ent < UNLOCKABLE_THING_PUT_TRANSMISSION) {
-            if (ent == UNLOCKABLE_THING_CUSTOMIZE_VISUAL) {
-                answer = CareerUnlocker::IsBackroomAvailable(filter, UNLOCKABLE_THING_PAINT_METALLIC, level);
-                answer = static_cast<bool>(CareerUnlocker::IsBackroomAvailable(filter, UNLOCKABLE_VINYLS_GROUP_FLAME, level) | answer);
-                answer = static_cast<bool>(CareerUnlocker::IsBackroomAvailable(filter, UNLOCKABLE_DECAL_WINDSHIELD, level) | answer);
-            } else {
-                if (ent > UNLOCKABLE_THING_CUSTOMIZE_VISUAL) {
-                    if (ent == UNLOCKABLE_THING_PUT_TIRES) {
-                        marker = FEMarkerManager::MARKER_TIRES;
+    if (ent != UNLOCKABLE_THING_SPOILERS) {
+        if (ent > UNLOCKABLE_THING_SPOILERS) {
+            if (ent < UNLOCKABLE_THING_PAINTABLE_RIMS) {
+                if (ent > UNLOCKABLE_THING_WINDOW_TINT) {
+                    marker = FEMarkerManager::MARKER_PAINT;
+                    goto marker_check;
+                }
+                if (ent == UNLOCKABLE_THING_HOODS) {
+                    marker = FEMarkerManager::MARKER_HOOD;
+                    goto marker_check;
+                }
+                if (ent > UNLOCKABLE_THING_RIM_BRANDS) {
+                    if (ent == UNLOCKABLE_THING_ROOF_SCOOPS) {
+                        marker = FEMarkerManager::MARKER_ROOF_SCOOP;
                     } else {
-                        if (ent != UNLOCKABLE_THING_PUT_BRAKES) {
+                        if (ent != UNLOCKABLE_THING_CUSTOM_HUD) {
                             return false;
                         }
-                        marker = FEMarkerManager::MARKER_BRAKES;
+                        marker = FEMarkerManager::MARKER_CUSTOM_HUD;
                     }
                     goto marker_check;
                 }
-                if (ent == UNLOCKABLE_THING_CUSTOMIZE_PARTS) {
-                    answer = CareerUnlocker::IsBackroomAvailable(filter, UNLOCKABLE_THING_BODY_KIT, level);
-                    answer = static_cast<bool>(CareerUnlocker::IsBackroomAvailable(filter, UNLOCKABLE_THING_SPOILERS, level) | answer);
-                    answer = static_cast<bool>(CareerUnlocker::IsBackroomAvailable(filter, UNLOCKABLE_THING_RIM_BRANDS, level) | answer);
-                    answer = static_cast<bool>(CareerUnlocker::IsBackroomAvailable(filter, UNLOCKABLE_THING_HOODS, level) | answer);
-                    answer = static_cast<bool>(CareerUnlocker::IsBackroomAvailable(filter, UNLOCKABLE_THING_ROOF_SCOOPS, level) | answer);
-                    answer = static_cast<bool>(CareerUnlocker::IsBackroomAvailable(filter, UNLOCKABLE_THING_CUSTOM_HUD, level) | answer);
-                    answer = static_cast<bool>(CareerUnlocker::IsBackroomAvailable(filter, UNLOCKABLE_THING_RIM_BRAND_5_ZIGEN, level) | answer);
-                } else {
-                    if (ent != UNLOCKABLE_THING_CUSTOMIZE_PERFORMANCE) {
+            } else {
+                if (ent > UNLOCKABLE_VINYLS_GROUP_CONTEST) {
+                    if (ent > UNLOCKABLE_DECAL_SLOT_6 || ent < UNLOCKABLE_DECAL_WINDSHIELD) {
                         return false;
                     }
-                    answer = CareerUnlocker::IsBackroomAvailable(filter, UNLOCKABLE_THING_PUT_TIRES, level);
-                    answer = static_cast<bool>(CareerUnlocker::IsBackroomAvailable(filter, UNLOCKABLE_THING_PUT_BRAKES, level) | answer);
-                    answer = static_cast<bool>(CareerUnlocker::IsBackroomAvailable(filter, UNLOCKABLE_THING_PUT_CHASSIS, level) | answer);
-                    answer = static_cast<bool>(CareerUnlocker::IsBackroomAvailable(filter, UNLOCKABLE_THING_PUT_TRANSMISSION, level) | answer);
-                    answer = static_cast<bool>(CareerUnlocker::IsBackroomAvailable(filter, UNLOCKABLE_THING_PUT_ENGINE, level) | answer);
-                    answer = static_cast<bool>(CareerUnlocker::IsBackroomAvailable(filter, UNLOCKABLE_THING_PUT_INDUCTION, level) | answer);
-                    answer = static_cast<bool>(CareerUnlocker::IsBackroomAvailable(filter, UNLOCKABLE_THING_PUT_NOS, level) | answer);
+                    marker = FEMarkerManager::MARKER_DECAL;
+                    goto marker_check;
                 }
-            }
-        } else if (ent == UNLOCKABLE_THING_PUT_INDUCTION) {
-            marker = FEMarkerManager::MARKER_INDUCTION;
-        } else if (ent < UNLOCKABLE_THING_PUT_NOS) {
-            if (ent == UNLOCKABLE_THING_PUT_TRANSMISSION) {
-                marker = FEMarkerManager::MARKER_TRANSMISSION;
-            } else {
-                if (ent != UNLOCKABLE_THING_PUT_ENGINE) {
+                if (ent > UNLOCKABLE_THING_RIM_BRAND_ROJA) {
+                    marker = FEMarkerManager::MARKER_VINYL;
+                    goto marker_check;
+                }
+                if (ent < UNLOCKABLE_THING_RIM_BRAND_5_ZIGEN) {
                     return false;
                 }
-                marker = FEMarkerManager::MARKER_ENGINE;
             }
-        } else if (ent == UNLOCKABLE_THING_PUT_NOS) {
-            marker = FEMarkerManager::MARKER_NOS;
+            marker = FEMarkerManager::MARKER_RIMS;
         } else {
-            if (ent != UNLOCKABLE_THING_BODY_KIT) {
-                return false;
+            if (ent != UNLOCKABLE_THING_PUT_CHASSIS) {
+                if (ent > UNLOCKABLE_THING_PUT_CHASSIS) {
+                    if (ent != UNLOCKABLE_THING_PUT_INDUCTION) {
+                        if (ent < UNLOCKABLE_THING_PUT_INDUCTION) {
+                            if (ent == UNLOCKABLE_THING_PUT_TRANSMISSION) {
+                                marker = FEMarkerManager::MARKER_TRANSMISSION;
+                            } else {
+                                if (ent != UNLOCKABLE_THING_PUT_ENGINE) {
+                                    return false;
+                                }
+                                marker = FEMarkerManager::MARKER_ENGINE;
+                            }
+                            goto marker_check;
+                        }
+                        if (ent != UNLOCKABLE_THING_PUT_NOS) {
+                            if (ent != UNLOCKABLE_THING_BODY_KIT) {
+                                return false;
+                            }
+                            marker = FEMarkerManager::MARKER_BODY;
+                            goto marker_check;
+                        }
+                        marker = FEMarkerManager::MARKER_NOS;
+                        goto marker_check;
+                    }
+                    marker = FEMarkerManager::MARKER_INDUCTION;
+                    goto marker_check;
+                }
+                if (ent < UNLOCKABLE_THING_PUT_TRANSMISSION) {
+                    if (ent != UNLOCKABLE_THING_CUSTOMIZE_VISUAL) {
+                        if (ent > UNLOCKABLE_THING_CUSTOMIZE_VISUAL) {
+                            if (ent == UNLOCKABLE_THING_PUT_TIRES) {
+                                marker = FEMarkerManager::MARKER_TIRES;
+                            } else {
+                                if (ent != UNLOCKABLE_THING_PUT_BRAKES) {
+                                    return false;
+                                }
+                                marker = FEMarkerManager::MARKER_BRAKES;
+                            }
+                            goto marker_check;
+                        }
+                        if (ent == UNLOCKABLE_THING_CUSTOMIZE_PARTS) {
+                            answer = CareerUnlocker::IsBackroomAvailable(filter, UNLOCKABLE_THING_BODY_KIT, level);
+                            answer = static_cast<bool>(answer) | static_cast<bool>(CareerUnlocker::IsBackroomAvailable(filter, UNLOCKABLE_THING_SPOILERS, level));
+                            answer = static_cast<bool>(answer) | static_cast<bool>(CareerUnlocker::IsBackroomAvailable(filter, UNLOCKABLE_THING_RIM_BRANDS, level));
+                            answer = static_cast<bool>(answer) | static_cast<bool>(CareerUnlocker::IsBackroomAvailable(filter, UNLOCKABLE_THING_HOODS, level));
+                            answer = static_cast<bool>(answer) | static_cast<bool>(CareerUnlocker::IsBackroomAvailable(filter, UNLOCKABLE_THING_ROOF_SCOOPS, level));
+                            answer = static_cast<bool>(answer) | static_cast<bool>(CareerUnlocker::IsBackroomAvailable(filter, UNLOCKABLE_THING_CUSTOM_HUD, level));
+                            answer = static_cast<bool>(answer) | static_cast<bool>(CareerUnlocker::IsBackroomAvailable(filter, UNLOCKABLE_THING_RIM_BRAND_5_ZIGEN, level));
+                        } else {
+                            if (ent != UNLOCKABLE_THING_CUSTOMIZE_PERFORMANCE) {
+                                return false;
+                            }
+                            answer = CareerUnlocker::IsBackroomAvailable(filter, UNLOCKABLE_THING_PUT_TIRES, level);
+                            answer = static_cast<bool>(answer) | static_cast<bool>(CareerUnlocker::IsBackroomAvailable(filter, UNLOCKABLE_THING_PUT_BRAKES, level));
+                            answer = static_cast<bool>(answer) | static_cast<bool>(CareerUnlocker::IsBackroomAvailable(filter, UNLOCKABLE_THING_PUT_CHASSIS, level));
+                            answer = static_cast<bool>(answer) | static_cast<bool>(CareerUnlocker::IsBackroomAvailable(filter, UNLOCKABLE_THING_PUT_TRANSMISSION, level));
+                            answer = static_cast<bool>(answer) | static_cast<bool>(CareerUnlocker::IsBackroomAvailable(filter, UNLOCKABLE_THING_PUT_ENGINE, level));
+                            answer = static_cast<bool>(answer) | static_cast<bool>(CareerUnlocker::IsBackroomAvailable(filter, UNLOCKABLE_THING_PUT_INDUCTION, level));
+                            answer = static_cast<bool>(answer) | static_cast<bool>(CareerUnlocker::IsBackroomAvailable(filter, UNLOCKABLE_THING_PUT_NOS, level));
+                        }
+                    } else {
+                        answer = CareerUnlocker::IsBackroomAvailable(filter, UNLOCKABLE_THING_PAINT_METALLIC, level);
+                        answer = static_cast<bool>(answer) | static_cast<bool>(CareerUnlocker::IsBackroomAvailable(filter, UNLOCKABLE_VINYLS_GROUP_FLAME, level));
+                        answer = static_cast<bool>(answer) | static_cast<bool>(CareerUnlocker::IsBackroomAvailable(filter, UNLOCKABLE_DECAL_WINDSHIELD, level));
+                    }
+                }
+            } else {
+                marker = FEMarkerManager::MARKER_CHASSIS;
+                goto marker_check;
             }
-            marker = FEMarkerManager::MARKER_BODY;
         }
     } else {
-        if (ent < UNLOCKABLE_THING_PAINTABLE_RIMS) {
-            if (ent > UNLOCKABLE_THING_WINDOW_TINT) {
-                marker = FEMarkerManager::MARKER_PAINT;
-                goto marker_check;
-            }
-            if (ent == UNLOCKABLE_THING_HOODS) {
-                marker = FEMarkerManager::MARKER_HOOD;
-                goto marker_check;
-            }
-            if (ent > UNLOCKABLE_THING_RIM_BRANDS) {
-                if (ent == UNLOCKABLE_THING_ROOF_SCOOPS) {
-                    marker = FEMarkerManager::MARKER_ROOF_SCOOP;
-                } else {
-                    if (ent != UNLOCKABLE_THING_CUSTOM_HUD) {
-                        return false;
-                    }
-                    marker = FEMarkerManager::MARKER_CUSTOM_HUD;
-                }
-                goto marker_check;
-            }
-        } else {
-            if (ent > UNLOCKABLE_VINYLS_GROUP_CONTEST) {
-                if (ent > UNLOCKABLE_DECAL_SLOT_6 || ent < UNLOCKABLE_DECAL_WINDSHIELD) {
-                    return false;
-                }
-                marker = FEMarkerManager::MARKER_DECAL;
-                goto marker_check;
-            }
-            if (ent > UNLOCKABLE_THING_RIM_BRAND_ROJA) {
-                marker = FEMarkerManager::MARKER_VINYL;
-                goto marker_check;
-            }
-            if (ent < UNLOCKABLE_THING_RIM_BRAND_5_ZIGEN) {
-                return false;
-            }
-        }
-        marker = FEMarkerManager::MARKER_RIMS;
+        marker = FEMarkerManager::MARKER_SPOILER;
+        goto marker_check;
     }
 
 marker_check:
-    answer = static_cast<bool>(TheFEMarkerManager.IsMarkerAvailable(marker, 0) | answer);
-    return answer;
+    return static_cast<bool>(answer) | static_cast<bool>(TheFEMarkerManager.IsMarkerAvailable(marker, 0));
 }
 
 // ============================================================

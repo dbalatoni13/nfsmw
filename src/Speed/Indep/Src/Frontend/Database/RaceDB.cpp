@@ -63,29 +63,29 @@ void CareerPursuitScores::IncValue(ePursuitDetailTypes type, int amount) {
 }
 
 void TopEvadedPursuitDetail::GeneratePursuitID() {
-    char *id = reinterpret_cast< char * >(this);
-    char *it = id + 3;
-    int i = 0;
+    char *c = PursuitName + 3;
 
-    id[0] = 'M';
-    id[1] = 'W';
-    id[2] = '-';
+    PursuitName[0] = 'M';
+    PursuitName[1] = 'W';
+    PursuitName[2] = '-';
 
-    do {
-        char c;
+    {
+        int i = 0;
 
-        if ((i & 1) != 0) {
-            c = static_cast< char >(bRandom(0x1A) + 'A');
-        } else {
-            c = static_cast< char >(bRandom(10) + '0');
-        }
+        do {
+            if ((i & 1) != 0) {
+                int r = bRandom(0x1A);
+                *c = static_cast< char >(r + 'A');
+            } else {
+                int r = bRandom(10);
+                *c = static_cast< char >(r + '0');
+            }
+            i++;
+            c++;
+        } while (i <= 10);
+    }
 
-        *it = c;
-        i++;
-        it++;
-    } while (i <= 10);
-
-    id[11] = '\0';
+    PursuitName[11] = '\0';
 }
 
 void HighScoresDatabase::Default() {

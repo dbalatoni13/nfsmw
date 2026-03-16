@@ -337,10 +337,12 @@ void HudResourceManager::ChooseLoadableTextures(ePlayerHudType hudType, int &tex
             redlineRotation = isDrag ? 34.0f : 152.0f;
         } else if (RedLineRPM >= 6500.0f) {
             redlineRotation = isDrag ? 28.25f : 138.0f;
-        } else if (RedLineRPM < 6000.0f) {
-            redlineRotation = isDrag ? 17.25f : 110.0f;
         } else {
-            redlineRotation = isDrag ? 22.5f : 123.0f;
+            if (RedLineRPM >= 6000.0f) {
+                redlineRotation = isDrag ? 22.5f : 123.0f;
+            } else {
+                redlineRotation = isDrag ? 17.25f : 110.0f;
+            }
         }
     } else if (MaxRPM < 9000.0f) {
         if (RedLineRPM >= 8500.0f) {

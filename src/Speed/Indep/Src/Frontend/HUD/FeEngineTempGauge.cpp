@@ -48,20 +48,20 @@ void EngineTempGauge::Update(IPlayer *player) {
     }
 
     if (mpWarningLight) {
-        const char *script;
         if (mEngineTemp > warningPulseMinRpm) {
-            script = "OVERHEAT_PULSE";
+            if (!FEngIsScriptSet(mpWarningLight, FEHashUpper("OVERHEAT_PULSE"))) {
+                FEngSetScript(mpWarningLight, FEHashUpper("OVERHEAT_PULSE"), true);
+            }
         } else if (mEngineTemp > 0.1f) {
-            script = "ACTIVATE";
+            if (!FEngIsScriptSet(mpWarningLight, FEHashUpper("ACTIVATE"))) {
+                FEngSetScript(mpWarningLight, FEHashUpper("ACTIVATE"), true);
+            }
         } else {
             if (FEngIsScriptSet(mpWarningLight, FEHashUpper("INIT"))) {
                 return;
             }
             FEngSetScript(mpWarningLight, FEHashUpper("INIT"), true);
             return;
-        }
-        if (!FEngIsScriptSet(mpWarningLight, FEHashUpper(script))) {
-            FEngSetScript(mpWarningLight, FEHashUpper(script), true);
         }
     }
 }

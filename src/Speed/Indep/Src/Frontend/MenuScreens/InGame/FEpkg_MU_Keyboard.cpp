@@ -352,7 +352,8 @@ void FEKeyboard::UpdateCursorPosition() {
 }
 
 void FEKeyboard::NotificationMessage(unsigned long msg, FEObject *pObject, unsigned long param1, unsigned long param2) {
-    unsigned long soundTrigger;
+    unsigned long soundTrigger = 0;
+    int nButton = -1;
     if (msg == 0xB5971BF1) {
         soundTrigger = 3;
     } else if (msg < 0xB5971BF2) {
@@ -369,7 +370,7 @@ void FEKeyboard::NotificationMessage(unsigned long msg, FEObject *pObject, unsig
             if (!pObject) {
                 return;
             }
-            int nButton = IsKeyButton(pObject);
+            nButton = IsKeyButton(pObject);
             if (nButton > -1 && GetLetterMap(nButton) != 0) {
                 g_pEAXSound->PlayUISoundFX(static_cast<eMenuSoundTriggers>(0x2E));
                 AppendLetter(nButton);

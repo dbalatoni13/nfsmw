@@ -568,13 +568,13 @@ void Minimap::UpdateGameplayIcons(IPlayer *player) {
     int numIcons = GManager::Get().GatherVisibleIcons(sortedIcons, player);
     for (int onIcon = 0; onIcon < numIcons; onIcon++) {
         GIcon *icon = sortedIcons[onIcon];
-        int iconType = static_cast<int>(icon->GetType());
+        GIcon::Type iconType = icon->GetType();
         GameplayIconInfo &iconInfo = kGameplayIconInfo[iconType];
+        FEImage *image;
 
-        if (iconInfo.mItemType != 0 && iconsPlaced[iconType] < 8) {
+        if (iconInfo.mItemType != 0 && static_cast< unsigned int >(iconsPlaced[iconType]) < 8) {
             if (FEDatabase->GetGameplaySettings()->IsMapItemEnabled(static_cast<eWorldMapItemType>(iconInfo.mItemType))) {
-                unsigned int iconSlot = static_cast<unsigned int>(iconsPlaced[iconType]);
-                FEImage *image = mGameplayIcons[iconType][iconSlot];
+                image = mGameplayIcons[iconType][static_cast< unsigned int >(iconsPlaced[iconType])];
                 iconsPlaced[iconType]++;
                 if (image) {
                     UpdateIconElement(image, icon);
@@ -584,10 +584,9 @@ void Minimap::UpdateGameplayIcons(IPlayer *player) {
     }
 
     for (int onType = 0; onType < GIcon::kType_Count; onType++) {
-        for (int onHideIcon = iconsPlaced[onType]; onHideIcon < 8; onHideIcon++) {
-            FEImage *image = mGameplayIcons[onType][onHideIcon];
-            if (image) {
-                FEngSetInvisible(image);
+        for (int onHideIcon = iconsPlaced[onType]; static_cast< unsigned int >(onHideIcon) < 8; onHideIcon++) {
+            if (mGameplayIcons[onType][onHideIcon]) {
+                FEngSetInvisible(mGameplayIcons[onType][onHideIcon]);
             }
         }
     }
