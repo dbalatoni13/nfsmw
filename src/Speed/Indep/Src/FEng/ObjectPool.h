@@ -57,8 +57,7 @@ struct ObjectPool {
         return pNode;
     }
 
-    inline void FreeSingle(T* pNode) {
-        pNode->~T();
+    inline void FreeSingleNoDestroy(T* pNode) {
         FEPoolNode<T, N>* pPool = static_cast<FEPoolNode<T, N>*>(Pools.GetHead());
         while (pPool) {
             bool bInPool = false;
@@ -78,6 +77,11 @@ struct ObjectPool {
             }
             pPool = pPool->GetNext();
         }
+    }
+
+    inline void FreeSingle(T* pNode) {
+        pNode->~T();
+        FreeSingleNoDestroy(pNode);
     }
 };
 

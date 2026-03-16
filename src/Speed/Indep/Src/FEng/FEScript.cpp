@@ -12,7 +12,9 @@ void* FEScript::operator new(unsigned int) {
 }
 
 void FEScript::operator delete(void* pNode) {
-    NodePool.FreeSingle(static_cast<FEScript*>(pNode));
+    FEScript* pDeleteNode = static_cast<FEScript*>(pNode);
+    pDeleteNode->~FEScript();
+    NodePool.FreeSingleNoDestroy(pDeleteNode);
 }
 
 extern const unsigned long FETrackOffsets[11] = {

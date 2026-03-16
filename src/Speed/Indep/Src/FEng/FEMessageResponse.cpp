@@ -12,7 +12,9 @@ void* FEMessageResponse::operator new(unsigned int) {
 }
 
 void FEMessageResponse::operator delete(void* pNode) {
-    NodePool.FreeSingle(static_cast<FEMessageResponse*>(pNode));
+    FEMessageResponse* pDeleteNode = static_cast<FEMessageResponse*>(pNode);
+    pDeleteNode->~FEMessageResponse();
+    NodePool.FreeSingleNoDestroy(pDeleteNode);
 }
 
 FEResponse::~FEResponse() {

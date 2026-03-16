@@ -10,7 +10,9 @@ void* FEKeyNode::operator new(unsigned int) {
 }
 
 void FEKeyNode::operator delete(void* pNode) {
-    NodePool.FreeSingle(static_cast<FEKeyNode*>(pNode));
+    FEKeyNode* pDeleteNode = static_cast<FEKeyNode*>(pNode);
+    pDeleteNode->~FEKeyNode();
+    NodePool.FreeSingleNoDestroy(pDeleteNode);
 }
 
 FEKeyNode* FEKeyTrack::GetKeyAt(long tTime) {
