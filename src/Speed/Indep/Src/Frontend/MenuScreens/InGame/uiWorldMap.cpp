@@ -315,6 +315,14 @@ void WorldMap::ClearGPSing() {
     }
 }
 
+void GIcon::SetFlag(unsigned int mask) {
+    mFlags |= mask;
+}
+
+void GIcon::ClearFlag(unsigned int mask) {
+    mFlags &= ~mask;
+}
+
 WorldMap::WorldMap(ScreenConstructorData* sd)
     : UIWidgetMenu(sd) {
     MapSize.y = 0.0f;

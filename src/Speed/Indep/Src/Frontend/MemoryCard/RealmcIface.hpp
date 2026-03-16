@@ -191,7 +191,13 @@ enum DataFormat {
 
 struct SaveInfo;
 struct AutoloadEntry;
-struct SaveReq;
+struct SaveReq {
+    unsigned int mNumSaves; // offset 0x0, size 0x4
+    SaveInfo *mSaveInfo;    // offset 0x4, size 0x4
+
+    SaveReq();
+    void Clear();
+};
 
 // total size: 0x10
 struct BootupCheckParams {

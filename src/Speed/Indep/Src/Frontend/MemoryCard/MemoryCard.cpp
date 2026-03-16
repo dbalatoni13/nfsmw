@@ -287,19 +287,21 @@ void MemoryCard::Init() {
     static MemoryCardImp sMemcardImp;
     if (pSystem == nullptr) {
         iSystem.mAllocator = gMemoryAllocator;
-        iSystem.mThread = new MyThread();
-        iSystem.mMutex = new MyMutex();
+        iSystem.mThread = new (__FILE__, __LINE__) MyThread();
+        MyMutex* pMutex = new (__FILE__, __LINE__) MyMutex();
         pSystem = &iSystem;
+        iSystem.mMutex = pMutex;
         iSystem.mGetStrCallback = GetLocaleString;
     }
     m_pImp = &sMemcardImp;
     bStrCpy(reinterpret_cast< unsigned short* >(m_GameTitle), "Need for Speed Most Wanted");
-    GameInfo* pGameInfo = new GameInfo(reinterpret_cast< unsigned short* >(m_GameTitle), 0, false, false);
+    GameInfo* pGameInfo =
+        new (__FILE__, __LINE__) GameInfo(reinterpret_cast< unsigned short* >(m_GameTitle), 0, false, false);
     m_pGameInfo = pGameInfo;
     m_pIMemcard = RealmcIface::MemcardInterface::CreateInstance(&iSystem, &gMemcardCallbacks, pGameInfo);
     m_pIMemcard->SetMessage(RealmcIface::MESSAGE_SHOW, 1);
-    m_pLocaleFileHandler = nullptr;
     m_TimeOffsetSec = 0;
+    m_pLocaleFileHandler = nullptr;
 }
 
 void MemoryCard::StartBootSequence() {
