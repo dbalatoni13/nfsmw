@@ -19,6 +19,8 @@ typedef unsigned int type_operator_new;
 
 #define ONLINE_SUPPORT (0)
 
+#define OVERLAYED __attribute__((section(".over")))
+
 #elif defined(EA_PLATFORM_XENON)
 
 #include <cstddef>
@@ -82,6 +84,8 @@ typedef unsigned __int8 u8;
 // typedef signed char i8;
 
 #define ONLINE_SUPPORT (1)
+
+#define OVERLAYED
 
 #elif defined(EA_PLATFORM_PLAYSTATION2)
 #include <cstddef>
@@ -151,6 +155,8 @@ typedef unsigned char u8;
 typedef signed char i8;
 
 #define ONLINE_SUPPORT (1)
+
+#define OVERLAYED
 
 #endif
 
