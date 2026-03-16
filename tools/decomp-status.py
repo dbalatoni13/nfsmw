@@ -92,9 +92,13 @@ def analyze_unit(diff_data: Dict[str, Any]) -> Dict[str, Any]:
             matching_code_size += size
         remaining_code_size_est += row["unmatched_bytes_est"]
 
-    text_section = section_stats.get(".text", {})
-    text_match = text_section.get("match_percent")
-    text_size = text_section.get("size", 0)
+    code_section_name = next(
+        (sec["name"] for sec in left_sections if sec.get("kind") == "SECTION_CODE"),
+        ".text",
+    )
+    code_section = section_stats.get(code_section_name, {})
+    text_match = code_section.get("match_percent")
+    text_size = code_section.get("size", 0)
 
     return {
         "total_functions": total_funcs,
@@ -102,6 +106,7 @@ def analyze_unit(diff_data: Dict[str, Any]) -> Dict[str, Any]:
         "total_code_size": total_code_size,
         "matching_code_size": matching_code_size,
         "remaining_code_size_est": remaining_code_size_est,
+        "code_section_name": code_section_name,
         "text_match_percent": text_match,
         "text_size": text_size,
         "sections": section_stats,
@@ -238,11 +243,12 @@ def main():
             elif status == "incomplete":
                 tf = entry.get("total_functions", 0)
                 mf = entry.get("matching_functions", 0)
+                code_section_name = entry.get("code_section_name", ".text")
                 tm = entry.get("text_match_percent")
                 tm_str = f"{tm:.1f}%" if tm is not None else "?"
                 remain = entry.get("remaining_code_size_est", 0)
                 print(
-                    f"  {display_name:<50s} .text {tm_str:>6s}  ~{remain:>6}B rem  ({mf}/{tf} functions)"
+                    f"  {display_name:<50s} {code_section_name:<6s} {tm_str:>6s}  ~{remain:>6}B rem  ({mf}/{tf} functions)"
                 )
                 cat_funcs += tf
                 cat_matching += mf
