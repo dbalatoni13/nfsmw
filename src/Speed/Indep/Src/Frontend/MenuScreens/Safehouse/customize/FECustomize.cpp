@@ -3968,11 +3968,13 @@ void CustomizeDecals::BuildDecalList(unsigned int selected_name_hash) {
     unsigned int slotID = GetSlotIDFromCategory();
     bTList<SelectablePart> tempList;
     SelectablePart *stockPart = new SelectablePart(nullptr, slotID, 0, static_cast<GRace::Type>(7), false, static_cast<eCustomizePartState>(1), 0, false);
+    eCustomizePartState stockState = CPS_AVAILABLE;
     if (gCarCustomizeManager.IsPartInstalled(stockPart)) {
-        stockPart->PartState = static_cast<eCustomizePartState>(0x11);
+        stockState = static_cast<eCustomizePartState>(0x11);
     } else if (gCarCustomizeManager.IsPartInCart(stockPart)) {
-        stockPart->PartState = static_cast<eCustomizePartState>(0x21);
+        stockState = static_cast<eCustomizePartState>(0x21);
     }
+    stockPart->PartState = stockState;
     AddPartOption(stockPart, 0x697b4ad4, 0x60a662f5, 0, 0, false);
 
     gCarCustomizeManager.GetCarPartList(slotID, tempList, 0);
@@ -3980,26 +3982,27 @@ void CustomizeDecals::BuildDecalList(unsigned int selected_name_hash) {
     int unlockLevel = MapCarPartToUnlockable(slotID, nullptr);
     if (unlockLevel == 0x2e) {
         unlockLevel = 2;
-    } else if (unlockLevel < 0x2f) {
-        if (unlockLevel == 0x2c) {
-            unlockLevel = 1;
+    } else if (unlockLevel > 0x2e) {
+        if (unlockLevel == 0x30) {
+            unlockLevel = 3;
         }
-    } else if (unlockLevel == 0x30) {
-        unlockLevel = 3;
+    } else if (unlockLevel == 0x2c) {
+        unlockLevel = 1;
     }
 
     SelectablePart *node = static_cast<SelectablePart *>(tempList.GetHead());
-    while (node != reinterpret_cast<SelectablePart *>(&tempList)) {
+    SelectablePart *sentinel = reinterpret_cast<SelectablePart *>(&tempList);
+    while (node != sentinel) {
         SelectablePart *next = static_cast<SelectablePart *>(node->Next);
         unsigned int nameHash = node->GetPart()->GetAppliedAttributeUParam(0xebb03e66, 0);
         if (!bIsBlack) {
             nameHash = bStringHash("_WHITE", nameHash);
         }
         unsigned int mirrorHash = node->GetPart()->GetAppliedAttributeUParam(bStringHash("DECAL_MIRROR_HASH"), 0);
-        node->Prev->Next = node->Next;
-        node->Next->Prev = node->Prev;
         if (nameHash == mirrorHash) {
             unsigned int unlockHash = gCarCustomizeManager.GetUnlockHash(static_cast<eCustomizeCategory>(Category), unlockLevel);
+            node->Prev->Next = node->Next;
+            node->Next->Prev = node->Prev;
             bool locked = gCarCustomizeManager.IsPartLocked(node, 0);
             AddPartOption(node, 0x697b4ad4, nameHash, 0, unlockHash, locked);
             if (node->GetPart()->GetAppliedAttributeUParam(0xebb03e66, 0) == selected_name_hash) {
@@ -4007,15 +4010,17 @@ void CustomizeDecals::BuildDecalList(unsigned int selected_name_hash) {
             }
             curIdx++;
         } else {
+            node->Prev->Next = node->Next;
+            node->Next->Prev = node->Prev;
             delete node;
         }
         node = next;
     }
-    if (Showcase::FromIndex == 0) {
-        SetInitialOption(matchIdx);
-    } else {
+    if (Showcase::FromIndex != 0) {
         SetInitialOption(0);
         Showcase::FromIndex = 0;
+    } else {
+        SetInitialOption(matchIdx);
     }
 
     while (tempList.GetHead() != tempList.EndOfList()) {
