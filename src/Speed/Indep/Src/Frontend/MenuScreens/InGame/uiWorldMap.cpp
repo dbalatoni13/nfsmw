@@ -740,20 +740,15 @@ void WorldMap::UpdateCursor(bool zoom_thing) {
         FEngGetCenter(static_cast< FEObject* >(TrackMap), map_center.x, map_center.y);
         FEngGetTopLeft(static_cast< FEObject* >(TrackMap), MapTopLeft.x, MapTopLeft.y);
         bVector2 pos(CursorMoveFrom.x, CursorMoveFrom.y);
-        bVector2 delta;
-        delta.x = pos.x - map_center.x;
-        delta.y = pos.y - map_center.y;
-        delta.x *= zoom;
-        delta.y *= zoom;
-        pos.x = delta.x + map_center.x;
-        pos.y = delta.y + map_center.y;
+        bVector2 delta = pos - map_center;
+        delta *= zoom;
+        bVector2 map_br = delta + map_center;
+        pos = map_br;
         bVector2 dpan;
         dpan.x = pan.x * MapSize.x;
         dpan.y = pan.y * MapSize.y;
-        dpan.x *= zoom;
-        dpan.y *= zoom;
-        pos.x -= dpan.x;
-        pos.y -= dpan.y;
+        dpan = dpan * zoom;
+        pos = pos - dpan;
         ClampToMapBounds(pos.x, pos.y);
         FEngSetCenter(Cursor, pos.x, pos.y);
     } else if (!zoom_thing) {

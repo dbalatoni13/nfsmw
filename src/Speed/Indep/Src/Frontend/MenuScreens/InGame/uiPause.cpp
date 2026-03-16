@@ -74,9 +74,6 @@ void PauseMenu::NotificationMessage(unsigned long msg, FEObject* pobj, unsigned 
         FEngSetScript(GetPackageName(), 0x47FF4E7C, 0xDE6EFF34, true);
         return;
     case 0xB4623F67:
-        Options.bFadingIn = true;
-        Options.fCurFadeTime = 0.0f;
-        Options.bFadingOut = false;
         Options.StartFadeIn();
         cFEng::Get()->QueuePackageMessage(0xC6341FF6, GetPackageName(), 0);
         return;

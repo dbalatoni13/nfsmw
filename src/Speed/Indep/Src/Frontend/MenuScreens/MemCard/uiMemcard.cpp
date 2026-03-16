@@ -385,10 +385,10 @@ void UIMemcardList::NotificationMessage(unsigned long msg, FEObject* obj, unsign
                                          unsigned long param2) {
     switch (msg) {
     case 0x35f8620b: {
-        m_SaveGameList.SetSelected(m_SaveGameList.Slots.GetHead());
-        ScrollerSlot* slot = m_SaveGameList.SelectedSlot;
-        if (slot != nullptr) {
-            slot->SetScript(0x249db7b7);
+        Scrollerina& saveGameList = m_SaveGameList;
+        saveGameList.SetSelected(saveGameList.Slots.GetHead());
+        if (saveGameList.SelectedSlot != nullptr) {
+            saveGameList.SelectedSlot->SetScript(0x249db7b7);
         }
         MemoryCard::GetInstance()->GetScreen()->m_ExpectingInput = true;
         m_Initialized++;
@@ -416,12 +416,11 @@ void UIMemcardList::NotificationMessage(unsigned long msg, FEObject* obj, unsign
     case 0x911ab364:
         if (MemoryCard::GetInstance()->InBootSequence()) {
             cFEng::Get()->QueueGameMessage(0x8d0cc9f9, "MC_Main_GC.fng", 0xff);
-            gMemcardSetup.mLastController = param1;
         } else {
             cFEng::Get()->QueueGameMessage(0x8867412d,
                 MemoryCard::GetInstance()->GetScreen()->GetPackageName(), 0xff);
-            gMemcardSetup.mLastController = param1;
         }
+        gMemcardSetup.mLastController = param1;
         break;
     case 0x72619778:
         gMemcardSetup.mLastController = param1;
@@ -432,10 +431,10 @@ void UIMemcardList::NotificationMessage(unsigned long msg, FEObject* obj, unsign
         m_SaveGameList.ScrollNext();
         break;
     case 0x406415e3: {
+        gMemcardSetup.mLastController = param1;
         cFrontendDatabase* database = FEDatabase;
         bool isMultitap = false;
-        gMemcardSetup.mLastController = param1;
-        if (database->MatchesGameMode(4)) {
+        if (database->IsSplitScreenMode()) {
             isMultitap = database->iNumPlayers == 2;
         }
         if (!isMultitap) {
@@ -449,11 +448,8 @@ void UIMemcardList::NotificationMessage(unsigned long msg, FEObject* obj, unsign
     }
     case 0xeb29392a:
         if (m_LastMsg == 0x406415e3) {
-            ScrollerDatum* datum = m_SaveGameList.SelectedDatum;
-            if (datum != nullptr) {
-                UIMemcardBase* parent = MemoryCard::GetInstance()->GetScreen();
-                parent->DoSelect(datum->Strings.GetNode(0)->String);
-            }
+            UIMemcardBase* parent = MemoryCard::GetInstance()->GetScreen();
+            parent->DoSelect(m_SaveGameList.SelectedDatum->Strings.GetNode(0)->String);
         }
         break;
     }
