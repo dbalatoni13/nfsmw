@@ -520,8 +520,6 @@ bool FEPackageReader::ReadMessageTargetListChunk() {
 
 void FEPackageReader::ProcessListBoxTag(FETag* pTag) {
     FEListBox* pList = static_cast<FEListBox*>(pObj);
-    FEListEntryData* pRowColData;
-    unsigned long val;
     int idx;
     unsigned short tagID = pTag->GetID();
     switch (tagID) {
@@ -569,14 +567,20 @@ void FEPackageReader::ProcessListBoxTag(FETag* pTag) {
         }
         case 0x634c:
             CurListCol++;
-            val = pTag->Getu32(0);
-            pRowColData = pList->GetPColumnData(CurListCol);
-            break;
+            {
+                FEListEntryData* pRowColData = pList->GetPColumnData(CurListCol);
+                *reinterpret_cast<unsigned long*>(&pRowColData->fValue) = pTag->Getu32(0);
+                pRowColData->ulJustification = pTag->Getu32(1);
+            }
+            return;
         case 0x724c:
             CurListRow++;
-            val = pTag->Getu32(0);
-            pRowColData = pList->GetPRowData(CurListRow);
-            break;
+            {
+                FEListEntryData* pRowColData = pList->GetPRowData(CurListRow);
+                *reinterpret_cast<unsigned long*>(&pRowColData->fValue) = pTag->Getu32(0);
+                pRowColData->ulJustification = pTag->Getu32(1);
+            }
+            return;
         case 0x6343: {
             CurListCell++;
             if (CurListCell != 0) {
@@ -626,9 +630,6 @@ void FEPackageReader::ProcessListBoxTag(FETag* pTag) {
         default:
             return;
     }
-    // Shared code for Lc (0x634c) and Lr (0x724c)
-    *reinterpret_cast<unsigned long*>(&pRowColData->fValue) = val;
-    pRowColData->ulJustification = pTag->Getu32(1);
 }
 
 bool FEPackageReader::ReadObjectChunk() {
