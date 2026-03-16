@@ -2404,9 +2404,18 @@ void CustomizeHUDColor::AddLayerOption(unsigned int layer, unsigned int icon_has
 }
 
 void CustomizeHUDColor::Setup() {
-    AddLayerOption(0xb98c46c3, 0xa1faff6e, 0x74acecbf);
-    AddLayerOption(0x93e1e0ee, 0xc0f8c27, 0x66126b05);
-    AddLayerOption(0xa2c44293, 0xd094b1c2, 0x17d84e58);
+    DisplayHelper.TitleHash = 0xb1b0e8af;
+    AddLayerOption(0x86, 0x70f56628, 0xe18ddce1);
+    AddLayerOption(0x87, 0xbf6682c9, 0xe18ddce0);
+    AddLayerOption(0x85, 0xcc9e1ce4, 0xe18ddcdf);
+    if (Showcase::FromIndex) {
+        SetInitialOption(Showcase::FromIndex);
+        Showcase::FromIndex = 0;
+    } else {
+        SetInitialOption(1);
+    }
+    BuildColorOptions();
+    SetHUDTextures();
     SetInitialColors();
     RefreshHeader();
 }
