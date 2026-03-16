@@ -770,18 +770,13 @@ unsigned int FEPlayerCarDB::GetTotalNumInfractions(bool get_unserved) {
 }
 
 unsigned short FEPlayerCarDB::GetNumInfractionsOnCar(unsigned int car_handle, bool get_unserved) {
-    FECarRecord *carRecord = GetCarRecordByHandle(car_handle);
-    if (carRecord == nullptr) {
-        return 0;
+    FECarRecord *fe_car = GetCarRecordByHandle(car_handle);
+    FECareerRecord *record = GetCareerRecordByHandle(fe_car->CareerHandle);
+    if (record != nullptr) {
+        return static_cast< unsigned short >(record->GetInfractions(get_unserved).NumInfractions());
     }
 
-    FECareerRecord *careerRecord = GetCareerRecordByHandle(carRecord->CareerHandle);
-    if (careerRecord == nullptr) {
-        return 0;
-    }
-
-    return static_cast< unsigned short >(GetInfractionCount(get_unserved ? careerRecord->GetInfractions(true)
-                                                                         : careerRecord->GetInfractions(false)));
+    return 0;
 }
 
 unsigned int FEPlayerCarDB::GetTotalBounty() {
