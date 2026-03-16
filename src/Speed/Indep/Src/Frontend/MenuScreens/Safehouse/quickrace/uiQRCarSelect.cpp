@@ -1232,13 +1232,13 @@ void UIQRCarSelect::RefreshHeader() {
     FECareerRecord *career = stable->GetCareerRecordByHandle(car->CareerHandle);
 
     int num_markers = TheFEMarkerManager.GetNumMarkers(static_cast<FEMarkerManager::ePossibleMarker>(0x14), 0);
-    if (num_markers < 1 && (!CheatCanAddImpoundBox || career->TheImpoundData.ImpoundedState != 0)) {
-        FEngSetInvisible(GetPackageName(), 0x39dc21f9);
-    } else {
+    if (num_markers > 0 || (CheatCanAddImpoundBox && career->TheImpoundData.ImpoundedState == 0)) {
         num_markers = TheFEMarkerManager.GetNumMarkers(static_cast<FEMarkerManager::ePossibleMarker>(0x14), 0);
         FEngSetVisible(GetPackageName(), 0x39dc21f9);
         FEPrintf(GetPackageName(), 0x5b875870, "%2d", num_markers);
         FEPrintf(GetPackageName(), 0xea8aecd9, "%2d", num_markers);
+    } else {
+        FEngSetInvisible(GetPackageName(), 0x39dc21f9);
     }
 
     if (career->TheImpoundData.ImpoundedState == FEImpoundData::IMPOUND_RELEASED) {

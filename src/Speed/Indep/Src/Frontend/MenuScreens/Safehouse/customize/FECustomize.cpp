@@ -4633,7 +4633,6 @@ unsigned int CustomizePerformance::GetPerfPkgBrand(Physics::Upgrades::Type type,
         break;
     case static_cast<Physics::Upgrades::Type>(4):
         if (gCarCustomizeManager.IsCastrolCar() && level == 4 && num_packages == 2) {
-            inst.~Instance();
             return 0xb95d4df;
         }
         switch (level) {
@@ -4675,7 +4674,6 @@ unsigned int CustomizePerformance::GetPerfPkgBrand(Physics::Upgrades::Type type,
     hash = *ptr;
     }
 done:
-    inst.~Instance();
     return hash;
 }
 

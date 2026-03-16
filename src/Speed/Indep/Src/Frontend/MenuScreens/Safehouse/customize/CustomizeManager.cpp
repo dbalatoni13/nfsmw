@@ -1177,20 +1177,14 @@ unsigned int CarCustomizeManager::GetUnlockHash(eCustomizeCategory cat, int upgr
 
 void CarCustomizeManager::GetCarPartList(int car_slot, bTList<SelectablePart> &the_list, unsigned int param) {
     CarType cartype = static_cast<CarType>(-1);
-    if (TuningCar) {
-        cartype = TuningCar->GetType();
+    if (gCarCustomizeManager.TuningCar) {
+        cartype = gCarCustomizeManager.TuningCar->GetType();
     }
     CarPart *part = CarPartDB.NewGetFirstCarPart(cartype, car_slot, 0, -1);
     eUnlockableEntity unlockable = MapCarPartToUnlockable(car_slot, nullptr);
     while (part) {
         int next_slot = car_slot;
-        if (car_slot == 0x42) {
-            if (param != 0) {
-                if (part->GetAppliedAttributeUParam(0xebb03e66, 0) != param) {
-                    goto next_part;
-                }
-            }
-        } else if (car_slot > 0x42) {
+        if (car_slot > 0x42) {
             if (car_slot == 0x4d) {
                 unsigned int vinylHash = GetVinylLayerHash(part, cartype, 1);
                 eStreamingEntry *streaming = StreamingTexturePackLoader.GetStreamingEntry(vinylHash);
@@ -1206,6 +1200,12 @@ void CarCustomizeManager::GetCarPartList(int car_slot, bTList<SelectablePart> &t
                     if (!GetIsCollectorsEdition()) {
                         goto next_part;
                     }
+                }
+            }
+        } else if (car_slot == 0x42) {
+            if (param != 0) {
+                if (part->GetAppliedAttributeUParam(0xebb03e66, 0) != param) {
+                    goto next_part;
                 }
             }
         } else if (car_slot == 0x17) {
@@ -1230,22 +1230,18 @@ void CarCustomizeManager::GetCarPartList(int car_slot, bTList<SelectablePart> &t
                 } else if (unlockable == 0x2c) {
                     level = 1;
                 }
-                if (CustomizeIsInBackRoom()) {
-                    if (UnlockSystem::IsUnlockableUnlocked(UNLOCK_CAREER_MODE, unlockable, level, 0, true)) {
-                    } else {
-                        goto next_part;
-                    }
+                if (CustomizeIsInBackRoom() &&
+                    !UnlockSystem::IsUnlockableUnlocked(UNLOCK_CAREER_MODE, unlockable, level, 0, true)) {
+                    goto next_part;
                 }
                 sp = new SelectablePart(part, car_slot, static_cast<unsigned int>(level), static_cast<GRace::Type>(7), false, CPS_AVAILABLE, 0, false);
             } else {
                 if (CustomizeIsInBackRoom()) {
-                    if (UnlockSystem::IsCarPartUnlocked(UNLOCK_CAREER_MODE, car_slot, part, 0, true)) {
-                    } else {
+                    if (!UnlockSystem::IsCarPartUnlocked(UNLOCK_CAREER_MODE, car_slot, part, 0, true)) {
                         goto next_part;
                     }
-                } else if ((FEDatabase->GetGameMode() & 0x4000) != 0 ||
-                    static_cast<unsigned int>(part->GroupNumber_UpgradeLevel >> 5) != 7u) {
-                } else {
+                } else if ((FEDatabase->GetGameMode() & 0x4000) == 0 &&
+                    static_cast<unsigned int>(part->GroupNumber_UpgradeLevel >> 5) == 7u) {
                     goto next_part;
                 }
                 sp = new SelectablePart(part, car_slot,
