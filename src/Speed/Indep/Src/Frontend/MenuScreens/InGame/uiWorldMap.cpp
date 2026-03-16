@@ -600,8 +600,8 @@ void WorldMap::ScrollZoom(eScrollDir dir) {
         float factor = GetZoomFactor(static_cast<eWorldMapZoomLevels>(zoom));
         float factorInv = 1.0f / factor;
         bVector2 scale;
-        scale.x = factorInv;
         scale.y = factorInv;
+        scale.x = factorInv;
         MapStreamer->ZoomTo(scale);
         PanToCursor(factor);
         if (CurrentView > 1) {

@@ -34,14 +34,12 @@ void uiCareerManager::NotificationMessage(unsigned long msg, FEObject* pobj, uns
         break;
     case 0xE1FDE1D1:
         if (PrevButtonMessage == 0x911AB364) {
-            const char* pkg;
             if (FEDatabase->GetCareerSettings()->IsGameOver()) {
-                pkg = GetPackageName();
+                cFEng::Get()->QueuePackageSwitch(GetPackageName(), 0, 0, false);
             } else {
-                pkg = "MainMenu.fng";
                 FEDatabase->ClearGameMode(eFE_GAME_MODE_CAREER_MANAGER);
+                cFEng::Get()->QueuePackageSwitch("MainMenu.fng", 0, 0, false);
             }
-            cFEng::Get()->QueuePackageSwitch(pkg, 0, 0, false);
         }
         break;
     case 0x7E998E5E:
