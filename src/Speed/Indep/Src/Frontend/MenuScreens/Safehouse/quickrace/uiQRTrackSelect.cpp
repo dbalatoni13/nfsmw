@@ -329,26 +329,27 @@ void UIQRTrackSelect::RefreshHeader() {
 
         FEngSetInvisible(PackageFilename, 0xbbf970cd);
 
+        bool kph = true;
         const char *distUnits;
-        unsigned int speedHash;
-        bool kph;
+        const char *speedUnits;
         if (FEDatabase->GetGameplaySettings()->SpeedoUnits == 1) {
             distUnits = GetLocalizedString(0x8569a26a);
-            speedHash = 0x8569a25f;
-            kph = true;
+            speedUnits = GetLocalizedString(0x8569a25f);
         } else {
             distUnits = GetLocalizedString(0x867dcfd9);
-            speedHash = 0x8569ab44;
+            speedUnits = GetLocalizedString(0x8569ab44);
             kph = false;
         }
-        const char *speedUnits = GetLocalizedString(speedHash);
 
-        float distConv = 0.000621371f;
+        const char *distFmt = "%$0.1f %s";
+        const char *distPkg = PackageFilename;
+        float distance = pCurrentTrack->GetRaceLengthMeters();
         if (kph) {
-            distConv = 0.001f;
+            distance *= 0.001f;
+        } else {
+            distance *= 0.000621371f;
         }
-        float distance = pCurrentTrack->GetRaceLengthMeters() * distConv;
-        FEPrintf(PackageFilename, 0xb5154999, "%$0.1f %s", distance, distUnits);
+        FEPrintf(distPkg, 0xb5154999, distFmt, distance, distUnits);
 
         GRaceSaveInfo *info = GRaceDatabase::Get().GetScoreInfo(pCurrentTrack->GetEventHash());
 

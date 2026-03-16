@@ -4613,47 +4613,47 @@ unsigned int CustomizePerformance::GetPerfPkgDesc(Physics::Upgrades::Type type, 
 unsigned int CustomizePerformance::GetPerfPkgBrand(Physics::Upgrades::Type type, int level, int num_packages) {
     unsigned int hash = 0;
     CarCustomizeManager *mgr = &gCarCustomizeManager;
-    Attrib::Instance inst(Attrib::FindCollection(Attrib::Gen::frontend::ClassKey(), mgr->GetTuningCar()->FEKey), 0, nullptr);
-    inst.SetDefaultLayout(100);
+    Attrib::Gen::frontend inst(mgr->GetTuningCar()->FEKey, 0, nullptr);
+    Attrib::Instance *inst_ptr = &inst;
     unsigned int *ptr = nullptr;
     switch (type) {
     case static_cast<Physics::Upgrades::Type>(0):
         switch (level) {
         case 0: hash = 0xad6a0504; goto done;
-        case 1: ptr = static_cast<unsigned int *>(inst.GetAttributePointer(0xf0c7c400, num_packages)); break;
-        case 2: ptr = static_cast<unsigned int *>(inst.GetAttributePointer(0x1e6ddf1, num_packages)); break;
-        case 3: ptr = static_cast<unsigned int *>(inst.GetAttributePointer(0x92378a0a, num_packages)); break;
-        case 4: ptr = static_cast<unsigned int *>(inst.GetAttributePointer(0x16b700d6, num_packages)); break;
+        case 1: ptr = static_cast<unsigned int *>(inst_ptr->GetAttributePointer(0xf0c7c400, num_packages)); break;
+        case 2: ptr = static_cast<unsigned int *>(inst_ptr->GetAttributePointer(0x1e6ddf1, num_packages)); break;
+        case 3: ptr = static_cast<unsigned int *>(inst_ptr->GetAttributePointer(0x92378a0a, num_packages)); break;
+        case 4: ptr = static_cast<unsigned int *>(inst_ptr->GetAttributePointer(0x16b700d6, num_packages)); break;
         default: goto done;
         }
         break;
     case static_cast<Physics::Upgrades::Type>(1):
         switch (level) {
         case 0: hash = 0xa1a5e9e5; goto done;
-        case 1: ptr = static_cast<unsigned int *>(inst.GetAttributePointer(0xe4af1260, num_packages)); break;
-        case 2: ptr = static_cast<unsigned int *>(inst.GetAttributePointer(0x70b14851, num_packages)); break;
-        case 3: ptr = static_cast<unsigned int *>(inst.GetAttributePointer(0x8e8b78e1, num_packages)); break;
-        case 4: ptr = static_cast<unsigned int *>(inst.GetAttributePointer(0xb4df5439, num_packages)); break;
+        case 1: ptr = static_cast<unsigned int *>(inst_ptr->GetAttributePointer(0xe4af1260, num_packages)); break;
+        case 2: ptr = static_cast<unsigned int *>(inst_ptr->GetAttributePointer(0x70b14851, num_packages)); break;
+        case 3: ptr = static_cast<unsigned int *>(inst_ptr->GetAttributePointer(0x8e8b78e1, num_packages)); break;
+        case 4: ptr = static_cast<unsigned int *>(inst_ptr->GetAttributePointer(0xb4df5439, num_packages)); break;
         default: goto done;
         }
         break;
     case static_cast<Physics::Upgrades::Type>(2):
         switch (level) {
         case 0: hash = 0xad6a0504; goto done;
-        case 1: ptr = static_cast<unsigned int *>(inst.GetAttributePointer(0x37ea2169, num_packages)); break;
-        case 2: ptr = static_cast<unsigned int *>(inst.GetAttributePointer(0xe5650914, num_packages)); break;
-        case 3: ptr = static_cast<unsigned int *>(inst.GetAttributePointer(0xe321687d, num_packages)); break;
-        case 4: ptr = static_cast<unsigned int *>(inst.GetAttributePointer(0xfb1ef23f, num_packages)); break;
+        case 1: ptr = static_cast<unsigned int *>(inst_ptr->GetAttributePointer(0x37ea2169, num_packages)); break;
+        case 2: ptr = static_cast<unsigned int *>(inst_ptr->GetAttributePointer(0xe5650914, num_packages)); break;
+        case 3: ptr = static_cast<unsigned int *>(inst_ptr->GetAttributePointer(0xe321687d, num_packages)); break;
+        case 4: ptr = static_cast<unsigned int *>(inst_ptr->GetAttributePointer(0xfb1ef23f, num_packages)); break;
         default: goto done;
         }
         break;
     case static_cast<Physics::Upgrades::Type>(3):
         switch (level) {
         case 0: hash = 0x98ed935e; goto done;
-        case 1: ptr = static_cast<unsigned int *>(inst.GetAttributePointer(0x1e823f0b, num_packages)); break;
-        case 2: ptr = static_cast<unsigned int *>(inst.GetAttributePointer(0x79c8d7e9, num_packages)); break;
-        case 3: ptr = static_cast<unsigned int *>(inst.GetAttributePointer(0xa1b53a33, num_packages)); break;
-        case 4: ptr = static_cast<unsigned int *>(inst.GetAttributePointer(0xf424c06d, num_packages)); break;
+        case 1: ptr = static_cast<unsigned int *>(inst_ptr->GetAttributePointer(0x1e823f0b, num_packages)); break;
+        case 2: ptr = static_cast<unsigned int *>(inst_ptr->GetAttributePointer(0x79c8d7e9, num_packages)); break;
+        case 3: ptr = static_cast<unsigned int *>(inst_ptr->GetAttributePointer(0xa1b53a33, num_packages)); break;
+        case 4: ptr = static_cast<unsigned int *>(inst_ptr->GetAttributePointer(0xf424c06d, num_packages)); break;
         default: goto done;
         }
         break;
@@ -4664,30 +4664,30 @@ unsigned int CustomizePerformance::GetPerfPkgBrand(Physics::Upgrades::Type type,
         }
         switch (level) {
         case 0: hash = 0x7d0ac98f; goto done;
-        case 1: ptr = static_cast<unsigned int *>(inst.GetAttributePointer(0x512303af, num_packages)); break;
-        case 2: ptr = static_cast<unsigned int *>(inst.GetAttributePointer(0xdb8a8a1d, num_packages)); break;
-        case 3: ptr = static_cast<unsigned int *>(inst.GetAttributePointer(0x4f56a655, num_packages)); break;
-        case 4: ptr = static_cast<unsigned int *>(inst.GetAttributePointer(0x85ab21da, num_packages)); break;
+        case 1: ptr = static_cast<unsigned int *>(inst_ptr->GetAttributePointer(0x512303af, num_packages)); break;
+        case 2: ptr = static_cast<unsigned int *>(inst_ptr->GetAttributePointer(0xdb8a8a1d, num_packages)); break;
+        case 3: ptr = static_cast<unsigned int *>(inst_ptr->GetAttributePointer(0x4f56a655, num_packages)); break;
+        case 4: ptr = static_cast<unsigned int *>(inst_ptr->GetAttributePointer(0x85ab21da, num_packages)); break;
         default: goto done;
         }
         break;
     case static_cast<Physics::Upgrades::Type>(5):
         switch (level) {
         case 0: hash = 0x9e8f71ad; goto done;
-        case 1: ptr = static_cast<unsigned int *>(inst.GetAttributePointer(0xe141cde, num_packages)); break;
-        case 2: ptr = static_cast<unsigned int *>(inst.GetAttributePointer(0x4d3b62f3, num_packages)); break;
-        case 3: ptr = static_cast<unsigned int *>(inst.GetAttributePointer(0xea7f3fe4, num_packages)); break;
-        case 4: ptr = static_cast<unsigned int *>(inst.GetAttributePointer(0xb6be1d52, num_packages)); break;
+        case 1: ptr = static_cast<unsigned int *>(inst_ptr->GetAttributePointer(0xe141cde, num_packages)); break;
+        case 2: ptr = static_cast<unsigned int *>(inst_ptr->GetAttributePointer(0x4d3b62f3, num_packages)); break;
+        case 3: ptr = static_cast<unsigned int *>(inst_ptr->GetAttributePointer(0xea7f3fe4, num_packages)); break;
+        case 4: ptr = static_cast<unsigned int *>(inst_ptr->GetAttributePointer(0xb6be1d52, num_packages)); break;
         default: goto done;
         }
         break;
     case static_cast<Physics::Upgrades::Type>(6):
         switch (level) {
         case 0: hash = 0x98ed935e; goto done;
-        case 1: ptr = static_cast<unsigned int *>(inst.GetAttributePointer(0x7f6e85a3, num_packages)); break;
-        case 2: ptr = static_cast<unsigned int *>(inst.GetAttributePointer(0xd810d2dc, num_packages)); break;
-        case 3: ptr = static_cast<unsigned int *>(inst.GetAttributePointer(0xa459ecef, num_packages)); break;
-        case 4: ptr = static_cast<unsigned int *>(inst.GetAttributePointer(0x8da087a4, num_packages)); break;
+        case 1: ptr = static_cast<unsigned int *>(inst_ptr->GetAttributePointer(0x7f6e85a3, num_packages)); break;
+        case 2: ptr = static_cast<unsigned int *>(inst_ptr->GetAttributePointer(0xd810d2dc, num_packages)); break;
+        case 3: ptr = static_cast<unsigned int *>(inst_ptr->GetAttributePointer(0xa459ecef, num_packages)); break;
+        case 4: ptr = static_cast<unsigned int *>(inst_ptr->GetAttributePointer(0x8da087a4, num_packages)); break;
         default: goto done;
         }
         break;
