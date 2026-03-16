@@ -583,34 +583,30 @@ void ResourceConnector::ConnectListBoxResources(FEListBox* pList) {
         }
         *pCurrentRow = row;
     }
-    unsigned long j = 0;
     unsigned long Rows = pList->GetNumRows();
     unsigned long Cols = pList->GetNumColumns();
-    if (j < Rows) {
-        do {
-            unsigned long i = 0;
-            j++;
-            while (i < Cols) {
-                const FEListBoxCell* pCellData = pList->GetCurrentCellData();
-                unsigned long resIdx = pCellData->stResource.ResourceIndex;
-                if (resIdx != 0xFFFFFFFF) {
-                    FEResourceRequest* pReq = &(*pReqList)[resIdx];
-                    unsigned long handle = pReq->Handle;
-                    unsigned long userParam = pReq->UserParam;
-                    FEListBoxCell* pCell = pList->GetPCellData(pList->mulCurrentColumn, pList->mulCurrentRow);
-                    pCell->stResource.Handle = handle;
-                    pCell->stResource.UserParam = userParam;
-                    pCell->stResource.ResourceIndex = resIdx;
-                } else {
-                    FEListBoxCell* pCell = pList->GetPCellData(pList->mulCurrentColumn, pList->mulCurrentRow);
-                    pCell->stResource.Handle = 0;
-                    pCell->stResource.UserParam = 0;
-                    pCell->stResource.ResourceIndex = 0xFFFFFFFF;
-                }
-                i++;
-                pList->IncrementCellByColumn();
+    for (unsigned long j = 0; j < Rows; j++) {
+        unsigned long i = 0;
+        while (i < Cols) {
+            const FEListBoxCell* pCellData = pList->GetCurrentCellData();
+            unsigned long resIdx = pCellData->stResource.ResourceIndex;
+            if (resIdx != 0xFFFFFFFF) {
+                FEResourceRequest* pReq = &(*pReqList)[resIdx];
+                unsigned long handle = pReq->Handle;
+                unsigned long userParam = pReq->UserParam;
+                FEListBoxCell* pCell = pList->GetPCellData(pList->mulCurrentColumn, pList->mulCurrentRow);
+                pCell->stResource.Handle = handle;
+                pCell->stResource.UserParam = userParam;
+                pCell->stResource.ResourceIndex = resIdx;
+            } else {
+                FEListBoxCell* pCell = pList->GetPCellData(pList->mulCurrentColumn, pList->mulCurrentRow);
+                pCell->stResource.Handle = 0;
+                pCell->stResource.UserParam = 0;
+                pCell->stResource.ResourceIndex = 0xFFFFFFFF;
             }
-        } while (j < Rows);
+            i++;
+            pList->IncrementCellByColumn();
+        }
     }
 }
 
