@@ -165,7 +165,7 @@ void UIQRBrief::UpdateSliders() {
     Physics::Info::Performance tuned_perf;
     FEPlayerCarDB *stable = FEDatabase->GetPlayerCarStable(0);
     FECarRecord *car_rec = stable->GetCarRecordByHandle(pSelectedCar->mHandle);
-    Attrib::Gen::pvehicle pveh(Attrib::FindCollection(Attrib::Gen::pvehicle::ClassKey(), car_rec->VehicleKey), 0, nullptr);
+    Attrib::Gen::pvehicle pveh(car_rec->VehicleKey, 0, nullptr);
     bool hasCustomization = (car_rec->Customization != 0xff);
     if (hasCustomization) {
         FECustomizationRecord *cust = stable->GetCustomizationRecordByHandle(car_rec->Customization);
@@ -220,25 +220,25 @@ void UIQRBrief::NotificationMessage(unsigned long msg, FEObject *pobj, unsigned 
         pSelectedTrack = next_track;
         FEDatabase->GetRandomRaceOptions(&raceSettings, pSelectedTrack->pRaceParams->GetRaceType());
         RefreshHeader();
-        PlayUISoundFX(g_pEAXSound, static_cast<eMenuSoundTriggers>(0x8b));
         randomCount--;
+        PlayUISoundFX(g_pEAXSound, static_cast<eMenuSoundTriggers>(0x8b));
         if (randomCount != 0) return;
         FEPlayerCarDB *stable = FEDatabase->GetPlayerCarStable(0);
         FECarRecord *car_rec = stable->GetCarRecordByHandle(pSelectedCar->mHandle);
-        Attrib::Gen::frontend fe_attrib(Attrib::FindCollection(Attrib::Gen::frontend::ClassKey(), car_rec->FEKey), 0, nullptr);
-        unsigned char unlocked_at = fe_attrib.UnlockedAt();
+        Attrib::Gen::frontend fe_attrib(car_rec->FEKey, 0, nullptr);
+        int unlocked_at = fe_attrib.UnlockedAt();
         if (unlocked_at < FEDatabase->GetUserProfile(0)->GetCareer()->GetCurrentBin()) {
             FEngSetScript(PackageFilename, 0xfe8fdbf7, 0x5079c8f8, true);
             char buf[128];
             int req_bin = unlocked_at + 1;
             FEngSNPrintf(buf, 128, "BLACKLIST_%d", req_bin);
+            const char *pkg = PackageFilename;
             const char *locked_str = GetLocalizedString(0x4ef2a115);
             unsigned int bin_hash = FEHashUpper(buf);
             const char *bin_name = GetLocalizedString(bin_hash);
-            FEPrintf(PackageFilename, 0xfe8fdbf7, locked_str, bin_name, req_bin);
+            FEPrintf(pkg, 0xfe8fdbf7, locked_str, bin_name, req_bin);
         }
         RideInfo ride;
-        ride.Init(static_cast<CarType>(-1), static_cast<CarRenderUsage>(0), 0, 0);
         stable->BuildRideForPlayer(pSelectedCar->mHandle, 0, &ride);
         ride.SetRandomPaint();
         ride.SetRandomParts();
@@ -246,8 +246,9 @@ void UIQRBrief::NotificationMessage(unsigned long msg, FEObject *pobj, unsigned 
         break;
     }
     case 0x406415e3: {
+        cFrontendDatabase *db = FEDatabase;
         char port = FEngMapJoyParamToJoyport(param2);
-        FEDatabase->SetPlayersJoystickPort(0, port);
+        db->SetPlayersJoystickPort(0, port);
         break;
     }
     case 0xe1fde1d1: {
@@ -261,7 +262,7 @@ void UIQRBrief::NotificationMessage(unsigned long msg, FEObject *pobj, unsigned 
         FECustomizationRecord *cust_rec = stable->GetCustomizationRecordByHandle(placeholder->Customization);
         RideInfo *player_ride = CarViewer::GetRideInfo(static_cast<eCarViewerWhichCar>(0));
         cust_rec->WriteRideIntoRecord(player_ride);
-        Attrib::Gen::pvehicle pveh(Attrib::FindCollection(Attrib::Gen::pvehicle::ClassKey(), placeholder->VehicleKey), 0, nullptr);
+        Attrib::Gen::pvehicle pveh(placeholder->VehicleKey, 0, nullptr);
         int max_nitrous = Physics::Upgrades::GetMaxLevel(pveh, static_cast<Physics::Upgrades::Type>(6));
         Physics::Upgrades::SetLevel(pveh, static_cast<Physics::Upgrades::Type>(6), max_nitrous);
         cust_rec->WritePhysicsIntoRecord(pveh);
