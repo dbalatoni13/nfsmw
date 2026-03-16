@@ -113,3 +113,12 @@ void TimeExtension::Update(IPlayer *player) {
 void TimeExtension::SetPlayerLapTime(float lapTime) {
     mPlayerLapTime = lapTime;
 }
+
+void TimeExtension::RequestTimeExtensionMessage(IPlayer *iplayer, float timeToShow) {
+    IGenericMessage *igenericmessage;
+    if (iplayer->GetHud()->QueryInterface(&igenericmessage) && igenericmessage->IsGenericMessageShowing()) {
+        igenericmessage->RequestGenericMessageZoomOut(0xE1C034FC);
+    }
+    mTimeToShow = timeToShow;
+    mScriptHash = 0;
+}
