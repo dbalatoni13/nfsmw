@@ -36,7 +36,7 @@ struct UIEATraxScreen : public MenuScreen {
     int NumSongs;                        // offset 0x110, size 0x4
     JukeboxEntry* OriginalPlaylist;      // offset 0x114, size 0x4
     int OriginalPlayState;               // offset 0x118, size 0x4
-    bool bTrackGrabbed;                  // offset 0x11C, size 0x1
+    int bTrackGrabbed;                   // offset 0x11C, size 0x1
 
     UIEATraxScreen(ScreenConstructorData* sd);
     ~UIEATraxScreen() override;

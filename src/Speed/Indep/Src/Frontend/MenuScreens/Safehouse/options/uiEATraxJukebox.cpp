@@ -254,10 +254,10 @@ void UIEATraxScreen::NotificationMessage(unsigned long msg, FEObject* pObject, u
         break;
     case 0x72619778:
     case 0x911C0A4B:
-        if (bTrackGrabbed == false) {
-            ScrollTracks(msg);
-        } else {
+        if (bTrackGrabbed) {
             MoveTrack(msg);
+        } else {
+            ScrollTracks(msg);
         }
         break;
     case 0x911AB364:
@@ -285,9 +285,9 @@ void UIEATraxScreen::NotificationMessage(unsigned long msg, FEObject* pObject, u
     case 0xE1FDE1D1:
         MControlPathfinder(true, 0xFFFFFFFF, 0, 0).Send("EATraxInit");
         {
-            unsigned long dirty = 0;
+            bool dirty = false;
             if (FEDatabase->IsOptionsDirty() || !OptionsDidNotChange()) {
-                dirty = 1;
+                dirty = true;
             }
             FEDatabase->SetOptionsDirty(dirty);
         }
