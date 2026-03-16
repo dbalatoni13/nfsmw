@@ -489,11 +489,12 @@ unsigned long FECodeListBox::CalculateCurrentFromTarget(unsigned long ulTarget, 
             ulTarget = ulTotal - 1;
         }
     }
+    unsigned long result = ulTarget;
     if (mulFlags & 8) {
-        int lRet = static_cast<int>(ulTarget) - static_cast<int>(ulVisible >> 1);
-        return static_cast<unsigned long>(GetValidIndex(lRet, static_cast<int>(ulTotal)));
+        int lRet = static_cast<int>(result) - static_cast<int>(ulVisible >> 1);
+        result = static_cast<unsigned long>(GetValidIndex(lRet, static_cast<int>(ulTotal)));
     }
-    return ulTarget;
+    return result;
 }
 
 void FECodeListBox::Update(float fNumTicks) {
@@ -576,14 +577,18 @@ success:
 
 bool FECodeListBox::MakeMove(long lNumMove, unsigned long& ulCurrentVirtual, unsigned long& ulTarget, unsigned long ulNumTotal, unsigned long ulNumVis) {
     if (mulFlags & 8) {
-        ulCurrentVirtual = GetValidIndex(static_cast<int>(ulCurrentVirtual) + lNumMove, ulNumTotal);
-        ulTarget = GetValidIndex(static_cast<int>(ulTarget) + lNumMove, ulNumTotal);
+        int lNewCurrent = GetValidIndex(static_cast<int>(ulCurrentVirtual) + lNumMove, ulNumTotal);
+        int lNewTarget = GetValidIndex(static_cast<int>(ulTarget) + lNumMove, ulNumTotal);
+        ulCurrentVirtual = lNewCurrent;
+        ulTarget = lNewTarget;
     } else if ((mulFlags & 6) == 6) {
-        ulCurrentVirtual = GetValidIndex(static_cast<int>(ulCurrentVirtual) + lNumMove, ulNumTotal);
-        ulTarget = ulCurrentVirtual;
+        int lNewCurrent = GetValidIndex(static_cast<int>(ulCurrentVirtual) + lNumMove, ulNumTotal);
+        ulCurrentVirtual = lNewCurrent;
+        ulTarget = lNewCurrent;
     } else {
         unsigned long ulOldTarget = ulTarget;
-        ulTarget = GetValidIndex(static_cast<int>(ulTarget) + lNumMove, ulNumTotal);
+        int lNewTarget = GetValidIndex(static_cast<int>(ulTarget) + lNumMove, ulNumTotal);
+        ulTarget = lNewTarget;
         if (lNumMove < 0) {
             if (ulCurrentVirtual != ulOldTarget) {
                 return false;

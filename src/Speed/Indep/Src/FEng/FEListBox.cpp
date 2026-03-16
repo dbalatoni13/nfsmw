@@ -284,9 +284,7 @@ void FEListBox::ScrollSelection(long lColumnNum, long lRowNum) {
             if (static_cast<long>(ulNewColumn) < 0) {
                 ulNewColumn = 0;
             }
-        set_column:
-            mulCurrentColumn = ulNewColumn;
-            mstTargetLocation.h = mpstColumnData[ulNewColumn].fCummulativeValue;
+            goto set_column;
         } else {
             if (static_cast<long>(ulNewColumn) < 0) {
                 unsigned long numCols = mulNumColumns;
@@ -311,7 +309,12 @@ void FEListBox::ScrollSelection(long lColumnNum, long lRowNum) {
             }
             mulFlags = mulFlags | 8;
             mulCurrentColumn = ulNewColumn - (ulNewColumn / mulNumColumns) * mulNumColumns;
+            goto end_column;
         }
+    set_column:
+        mulCurrentColumn = ulNewColumn;
+        mstTargetLocation.h = mpstColumnData[ulNewColumn].fCummulativeValue;
+    end_column:
 
         unsigned long i = mulCurrentColumn;
         float fNewWidth = 0.0f;
@@ -349,9 +352,7 @@ void FEListBox::ScrollSelection(long lColumnNum, long lRowNum) {
             if (static_cast<long>(ulNewRow) < 0) {
                 ulNewRow = 0;
             }
-        set_row:
-            mulCurrentRow = ulNewRow;
-            mstTargetLocation.v = mpstRowData[ulNewRow].fCummulativeValue;
+            goto set_row;
         } else {
             if (static_cast<long>(ulNewRow) < 0) {
                 unsigned long numRows = mulNumRows;
@@ -376,7 +377,12 @@ void FEListBox::ScrollSelection(long lColumnNum, long lRowNum) {
             }
             mulFlags = mulFlags | 8;
             mulCurrentRow = ulNewRow - (ulNewRow / mulNumRows) * mulNumRows;
+            goto end_row;
         }
+    set_row:
+        mulCurrentRow = ulNewRow;
+        mstTargetLocation.v = mpstRowData[ulNewRow].fCummulativeValue;
+    end_row:
 
         unsigned long i = mulCurrentRow;
         float fNewHeight = 0.0f;
@@ -408,7 +414,7 @@ compute_direction:
     if (fLength < 0.1f) {
         CompleteScroll();
     } else {
-        obDirection.Normalize();
+        obDirection *= 1.0f / obDirection.Length();
     }
 }
 
