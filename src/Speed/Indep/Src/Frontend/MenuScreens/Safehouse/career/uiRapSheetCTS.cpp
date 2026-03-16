@@ -33,19 +33,20 @@ void uiRapSheetCTS::NotificationMessage(unsigned long msg, FEObject* pobj, unsig
 void uiRapSheetCTS::Setup() {
     int quantity;
     unsigned int value;
+    unsigned int total_value;
     ClearData();
     quantity = 0;
     value = 0;
-    HighScoresDatabase* scores = FEDatabase->GetUserProfile(0)->GetHighScores();
-    scores->GetCareerCST(RAP_CTS_PROPERTY_DAMAGE, quantity, value); AddDatum(new(__FILE__, __LINE__) RapSheetCTSDatum(quantity, 0x3682A8CF, value));
-    scores->GetCareerCST(RAP_CTS_TRAFFIC_CAR_HIT, quantity, value); AddDatum(new(__FILE__, __LINE__) RapSheetCTSDatum(quantity, 0x6DE4810A, value));
-    scores->GetCareerCST(RAP_CTS_COP_CAR_DEPLOYED, quantity, value); AddDatum(new(__FILE__, __LINE__) RapSheetCTSDatum(quantity, 0x89A9C941, value));
-    scores->GetCareerCST(RAP_CTS_SUPPORT_VEHICLE_DEPLOYED, quantity, value); AddDatum(new(__FILE__, __LINE__) RapSheetCTSDatum(quantity, 0x443B615F, value));
-    scores->GetCareerCST(RAP_CTS_COP_DAMAGED, quantity, value); AddDatum(new(__FILE__, __LINE__) RapSheetCTSDatum(quantity, 0xD3AA88DA, value));
-    scores->GetCareerCST(RAP_CTS_COP_DESTROYED, quantity, value); AddDatum(new(__FILE__, __LINE__) RapSheetCTSDatum(quantity, 0xBDB16FEA, value));
-    scores->GetCareerCST(RAP_CTS_ROADBLOCK_DEPLOYED, quantity, value); AddDatum(new(__FILE__, __LINE__) RapSheetCTSDatum(quantity, 0xD320C6C3, value));
-    scores->GetCareerCST(RAP_CTS_SPIKE_STRIP_DEPLOYED, quantity, value); AddDatum(new(__FILE__, __LINE__) RapSheetCTSDatum(quantity, 0xA83862AF, value));
-    scores->GetCareerCST(RAP_CTS_HELI_SPAWN, quantity, value); AddDatum(new(__FILE__, __LINE__) RapSheetCTSDatum(quantity, 0x80E9CCB2, value));
+    const HighScoresDatabase& scores = *FEDatabase->GetUserProfile(0)->GetHighScores();
+    scores.GetCareerCST(RAP_CTS_PROPERTY_DAMAGE, quantity, value); AddDatum(new(__FILE__, __LINE__) RapSheetCTSDatum(quantity, 0x3682A8CF, value));
+    scores.GetCareerCST(RAP_CTS_TRAFFIC_CAR_HIT, quantity, value); AddDatum(new(__FILE__, __LINE__) RapSheetCTSDatum(quantity, 0x6DE4810A, value));
+    scores.GetCareerCST(RAP_CTS_COP_CAR_DEPLOYED, quantity, value); AddDatum(new(__FILE__, __LINE__) RapSheetCTSDatum(quantity, 0x89A9C941, value));
+    scores.GetCareerCST(RAP_CTS_SUPPORT_VEHICLE_DEPLOYED, quantity, value); AddDatum(new(__FILE__, __LINE__) RapSheetCTSDatum(quantity, 0x443B615F, value));
+    scores.GetCareerCST(RAP_CTS_COP_DAMAGED, quantity, value); AddDatum(new(__FILE__, __LINE__) RapSheetCTSDatum(quantity, 0xD3AA88DA, value));
+    scores.GetCareerCST(RAP_CTS_COP_DESTROYED, quantity, value); AddDatum(new(__FILE__, __LINE__) RapSheetCTSDatum(quantity, 0xBDB16FEA, value));
+    scores.GetCareerCST(RAP_CTS_ROADBLOCK_DEPLOYED, quantity, value); AddDatum(new(__FILE__, __LINE__) RapSheetCTSDatum(quantity, 0xD320C6C3, value));
+    scores.GetCareerCST(RAP_CTS_SPIKE_STRIP_DEPLOYED, quantity, value); AddDatum(new(__FILE__, __LINE__) RapSheetCTSDatum(quantity, 0xA83862AF, value));
+    scores.GetCareerCST(RAP_CTS_HELI_SPAWN, quantity, value); AddDatum(new(__FILE__, __LINE__) RapSheetCTSDatum(quantity, 0x80E9CCB2, value));
     RefreshHeader();
 }
 void uiRapSheetCTS::RefreshHeader() {
