@@ -501,21 +501,22 @@ void MemcardCallbacks::CardChecked(const RealmcIface::CardInfo* info) {
         Joylog::AddOrGetData(
             static_cast<unsigned int>(info->mTotalSpaceOverLimit), 1,
             JOYLOG_CHANNEL_MEMORY_CARD) != 0;
+    unsigned int msg = 0x8867412d;
     if (GetMemcard()->IsCheckingCardForAutoSave()) {
         GetMemcard()->m_MemOp = MemoryCard::MO_NONE;
         GetMemcard()->m_LastError =
             *reinterpret_cast<const unsigned short*>(
                 reinterpret_cast<const char*>(info) + 6);
-        unsigned int msg = 0x8867412d;
         RealmcIface::CardStatus cardStatus = info->mStatus;
         if (cardStatus == RealmcIface::STATUS_CARD_CHANGED ||
             (cardStatus >= RealmcIface::STATUS_CARD_DAMAGED &&
-             cardStatus <= RealmcIface::STATUS_WRONG_DEVICE)) {
+             cardStatus <= RealmcIface::STATUS_ACCESS_DENIED)) {
             GetMemcard()->m_bFoundAutoSaveFile = true;
+            GetMemcard()->DoAutoSave();
+            return;
         }
         if (cardStatus == RealmcIface::STATUS_OK) {
             if (FEDatabase->bAutoSaveOverwriteConfirmed) {
-                GetMemcard()->m_bFoundAutoSaveFile = true;
                 GetMemcard()->DoAutoSave();
                 return;
             }
@@ -537,7 +538,6 @@ void MemcardCallbacks::CardChecked(const RealmcIface::CardInfo* info) {
         }
     } else {
         MemoryCard::SetMessageMode(1, true);
-        unsigned int msg = 0x8867412d;
         if (info->mStatus == RealmcIface::STATUS_OK) {
             msg = 0x461a18ee;
         }
