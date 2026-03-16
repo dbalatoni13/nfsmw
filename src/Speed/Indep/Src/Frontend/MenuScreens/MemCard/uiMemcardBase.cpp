@@ -983,8 +983,9 @@ void UIMemcardBase::HandleButtonPressed(unsigned long msg, FEObject* obj, unsign
             ShowMessage(MemoryCard::GetInstance()->GetPendingMessage());
         }
         if (MemoryCard::GetInstance()->GetOp() == 7) {
+            cFEng* feng = cFEng::Get();
             unsigned long hash = FEHashUpper("SHOW LOADER");
-            cFEng::Get()->QueuePackageMessage(hash, GetPackageName(), nullptr);
+            feng->QueuePackageMessage(hash, GetPackageName(), nullptr);
         }
         break;
     }
