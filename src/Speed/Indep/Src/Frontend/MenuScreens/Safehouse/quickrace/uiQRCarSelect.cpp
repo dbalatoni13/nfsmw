@@ -948,7 +948,8 @@ void UIQRCarSelect::UpdateSliders() {
             if (car != nullptr) {
                 Attrib::Gen::pvehicle pveh(Attrib::FindCollection(Attrib::Gen::pvehicle::ClassKey(), car->VehicleKey), 0, nullptr);
                 pveh.SetDefaultLayout(0x50);
-                if (car->Customization != 0xff) {
+                bool hasCustomization = (car->Customization != 0xff);
+                if (hasCustomization) {
                     FECustomizationRecord *cust = stable->GetCustomizationRecordByHandle(car->Customization);
                     cust->WriteRecordIntoPhysics(pveh);
                 }
@@ -960,7 +961,8 @@ void UIQRCarSelect::UpdateSliders() {
             if (car != nullptr) {
                 Attrib::Gen::pvehicle pveh2(Attrib::FindCollection(Attrib::Gen::pvehicle::ClassKey(), car->VehicleKey), 0, nullptr);
                 pveh2.SetDefaultLayout(0x50);
-                if (car->Customization != 0xff) {
+                bool hasCustomization = (car->Customization != 0xff);
+                if (hasCustomization) {
                     FECustomizationRecord *cust = stable->GetCustomizationRecordByHandle(car->Customization);
                     cust->WriteRecordIntoPhysics(pveh2);
                 }
@@ -977,8 +979,7 @@ void UIQRCarSelect::UpdateSliders() {
     float acc_val = perf2.Acceleration;
     float acc_min = AccelerationSlider.GetMin();
     float acc_max = AccelerationSlider.GetMax();
-    acc_val = acc_val < acc_min ? acc_min : acc_val;
-    float acc_preview = acc_val > acc_max ? acc_max : acc_val;
+    float acc_preview = bClamp(acc_val, acc_min, acc_max);
     AccelerationSlider.SetPreviewValue(acc_preview);
     AccelerationSlider.Draw();
 
@@ -986,8 +987,7 @@ void UIQRCarSelect::UpdateSliders() {
     float top_val = perf2.TopSpeed;
     float top_min = TopSpeedSlider.GetMin();
     float top_max = TopSpeedSlider.GetMax();
-    top_val = top_val < top_min ? top_min : top_val;
-    float top_preview = top_val > top_max ? top_max : top_val;
+    float top_preview = bClamp(top_val, top_min, top_max);
     TopSpeedSlider.SetPreviewValue(top_preview);
     TopSpeedSlider.Draw();
 
@@ -995,8 +995,7 @@ void UIQRCarSelect::UpdateSliders() {
     float hdl_val = perf2.Handling;
     float hdl_min = HandlingSlider.GetMin();
     float hdl_max = HandlingSlider.GetMax();
-    hdl_val = hdl_val < hdl_min ? hdl_min : hdl_val;
-    float hdl_preview = hdl_val > hdl_max ? hdl_max : hdl_val;
+    float hdl_preview = bClamp(hdl_val, hdl_min, hdl_max);
     HandlingSlider.SetPreviewValue(hdl_preview);
     HandlingSlider.Draw();
 }
