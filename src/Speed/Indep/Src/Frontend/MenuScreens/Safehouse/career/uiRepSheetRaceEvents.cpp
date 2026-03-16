@@ -240,8 +240,12 @@ void UISafehouseRaceSheet::RefreshHeader() {
 
 bool UISafehouseRaceSheet::AddRace(GRaceParameters* race) {
     GRace::Type type = race->GetRaceType();
-    if (type == GRace::kRaceType_JumpToSpeedTrap || type == GRace::kRaceType_JumpToMilestone) {
+    switch (type) {
+    case GRace::kRaceType_JumpToSpeedTrap:
+    case GRace::kRaceType_JumpToMilestone:
         return false;
+    default:
+        break;
     }
     RaceDatum* datum = new ("", 0) RaceDatum(
         FEDBGetRaceIconHash(FEDatabase, race->GetRaceType()),
