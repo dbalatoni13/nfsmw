@@ -1286,14 +1286,16 @@ void FEngine::ProcessResponses(FEMessageResponse* pRespList, FEObject* pObj, FEP
             QueueMessage(pAction->ResponseParam, pObj, pPack, reinterpret_cast<FEObject*>(0xFFFFFFFB), uControlMask);
             break;
         case 0x100: {
-            FEObject* pButton = nullptr;
+            FEObject* pButton;
             if (pAction->ResponseParam != 0) {
                 pButton = pPack->FindObjectByGUID(pAction->ResponseParam);
+            } else {
+                pButton = nullptr;
             }
-            bool bFound = pButton != nullptr;
-            if (bFound || pAction->ResponseParam == 0) {
-                pPack->SetCurrentButton(pButton, bFound);
+            if (!pButton && pAction->ResponseParam != 0) {
+                break;
             }
+            pPack->SetCurrentButton(pButton, pButton != nullptr);
             break;
         }
         case 0x101:
@@ -1312,18 +1314,15 @@ void FEngine::ProcessResponses(FEMessageResponse* pRespList, FEObject* pObj, FEP
             if (recalled != 0) {
                 pButton = pPack->FindObjectByGUID(recalled);
             }
-            bool bFound = pButton != nullptr;
-            if (!bFound) {
+            if (!pButton) {
                 if (pAction->ResponseParam != 0) {
                     pButton = pPack->FindObjectByGUID(pAction->ResponseParam);
                 }
-                bFound = pButton != nullptr;
-                if (!bFound && pAction->ResponseParam != 0) {
+                if (!pButton && pAction->ResponseParam != 0) {
                     break;
                 }
             }
-            bFound = bFound;
-            pPack->SetCurrentButton(pButton, bFound);
+            pPack->SetCurrentButton(pButton, pButton != nullptr);
             break;
         }
         case 0x104:
