@@ -2507,8 +2507,7 @@ void CustomizeParts::NotificationMessage(unsigned long msg, FEObject *pobj, unsi
             if (gCarCustomizeManager.GetTempColoredPart()) {
                 gCarCustomizeManager.ClearTempColoredPart();
             }
-            SelectablePart *copy = new SelectablePart(sel);
-            gCarCustomizeManager.SetTempColoredPart(copy);
+            gCarCustomizeManager.SetTempColoredPart(new SelectablePart(sel));
             cFEng_mInstance->QueuePackageSwitch(g_pCustomizeHudColorPkg, Category | (FromCategory << 16), 0, false);
         } else if (Category >= 0x402 && Category <= 0x409) {
             SelectablePart *sel = GetSelectedPart();
@@ -2521,8 +2520,7 @@ void CustomizeParts::NotificationMessage(unsigned long msg, FEObject *pobj, unsi
                 CustomizationScreen::NotificationMessage(0x406415e3, pobj, param1, param2);
                 return;
             }
-            SelectablePart *copy = new SelectablePart(sel);
-            gCarCustomizeManager.SetTempColoredPart(copy);
+            gCarCustomizeManager.SetTempColoredPart(new SelectablePart(sel));
             cFEng_mInstance->QueuePackageSwitch(g_pCustomizePaintPkg, Category | (FromCategory << 16), 0, false);
         } else {
             CustomizationScreen::NotificationMessage(0x406415e3, pobj, param1, param2);
@@ -4423,17 +4421,19 @@ skip_color:
     }
     unsigned int brand = CalcBrandHash(matchPart);
     if (TheFilter == -1) {
-        int filterVal = 0;
         if (brand == 0x2daab07) {
+            TheFilter = 0;
         } else if (brand > 0x2daab07) {
             if (brand == 0x3437a52) {
-                filterVal = 1;
+                TheFilter = 1;
             } else if (brand == 0x3797533) {
-                filterVal = 2;
+                TheFilter = 2;
             }
         } else if (brand == 0xda27) {
+            TheFilter = 0;
+        } else {
+            TheFilter = 0;
         }
-        TheFilter = filterVal;
     }
     bTList<SelectablePart> partList;
     gCarCustomizeManager.GetCarPartList(slot, partList, 0);
@@ -4453,10 +4453,9 @@ skip_color:
             ThePaints.AddDatum(datum);
             ArraySlot *aslot = ThePaints.GetSlotAt(datumIndex);
             if (aslot) {
-                CarPart *part = sp->GetPart();
-                int r = part->GetAppliedAttributeIParam(bStringHash("RED"), 0);
-                int g = part->GetAppliedAttributeIParam(bStringHash("GREEN"), 0);
-                int b = part->GetAppliedAttributeIParam(bStringHash("BLUE"), 0);
+                unsigned char r = datum->ThePart->GetPart()->GetAppliedAttributeIParam(bStringHash("RED"), 0);
+                unsigned char g = datum->ThePart->GetPart()->GetAppliedAttributeIParam(bStringHash("GREEN"), 0);
+                unsigned char b = datum->ThePart->GetPart()->GetAppliedAttributeIParam(bStringHash("BLUE"), 0);
                 FEngSetColor(aslot->GetFEngObject(), 0xff000000 | ((r & 0xff) << 16) | ((g & 0xff) << 8) | (b & 0xff));
             }
             datumIndex++;
@@ -4465,14 +4464,14 @@ skip_color:
             delete sp;
         }
     }
-    if (Showcase::FromIndex == 0) {
+    if (Showcase::FromIndex != 0) {
+        SelectedIndex[TheFilter] = Showcase::FromIndex - 1;
+        Showcase::FromIndex = 0;
+    } else {
         if (SelectedIndex[TheFilter] == -1) {
             SelectedIndex[TheFilter] = 0;
         }
         ThePaints.SetInitialPosition(SelectedIndex[TheFilter]);
-    } else {
-        SelectedIndex[TheFilter] = Showcase::FromIndex - 1;
-        Showcase::FromIndex = 0;
     }
     RefreshHeader();
     while (partList.GetHead() != partList.EndOfList()) {
@@ -4659,8 +4658,7 @@ unsigned int CustomizePerformance::GetPerfPkgBrand(Physics::Upgrades::Type type,
         break;
     case static_cast<Physics::Upgrades::Type>(4):
         if (mgr->IsCastrolCar() && level == 4 && num_packages == 2) {
-            hash = 0xb95d4df;
-            goto done;
+            return 0xb95d4df;
         }
         switch (level) {
         case 0: hash = 0x7d0ac98f; goto done;

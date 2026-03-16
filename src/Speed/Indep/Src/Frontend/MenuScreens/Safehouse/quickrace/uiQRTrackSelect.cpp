@@ -308,11 +308,11 @@ void UIQRTrackSelect::RefreshHeader() {
             FEngSetInvisible(PackageFilename, 0x6b67d70b);
             FEngSetVisible(PackageFilename, 0xe08434fc);
         } else {
-            char buf[128];
-            FEngSNPrintf(buf, 0x80, "blacklist_rival_%02d_aka", pCurrentNode->bin);
+            char rival_name_locdb[128];
+            FEngSNPrintf(rival_name_locdb, 0x80, "blacklist_rival_%02d_aka", pCurrentNode->bin);
             const char *pkg = PackageFilename;
             const char *rival_label = GetLocalizedString(0xbd563be5);
-            unsigned int aka_hash = FEHashUpper(buf);
+            unsigned int aka_hash = FEHashUpper(rival_name_locdb);
             const char *aka_name = GetLocalizedString(aka_hash);
             FEPrintf(pkg, 0x68215623, rival_label, aka_name, pCurrentNode->bin);
             FEngSetInvisible(PackageFilename, 0xe08434fc);
@@ -359,19 +359,18 @@ void UIQRTrackSelect::RefreshHeader() {
             pCurrentTrack->GetRaceType() == GRace::kRaceType_Knockout ||
             pCurrentTrack->GetRaceType() == GRace::kRaceType_Tollbooth) {
             Timer t(info->mHighScores);
-            char timeBuf[128];
-            t.PrintToString(timeBuf, 0);
-            FEPrintf(PackageFilename, 0xb515499c, "%s", timeBuf);
+            char buf[64];
+            t.PrintToString(buf, 0);
+            FEPrintf(PackageFilename, 0xb515499c, "%s", buf);
         } else if (pCurrentTrack->GetRaceType() == GRace::kRaceType_SpeedTrap) {
-            float bestSpeed;
+            float max_speed;
             if (FEDatabase->GetGameplaySettings()->SpeedoUnits == 1) {
-                bestSpeed = info->mHighScores;
+                max_speed = info->mHighScores;
             } else {
-                bestSpeed = info->mHighScores * 0.27778f;
-                bestSpeed *= 2.237f;
+                max_speed = MPS2MPH(KPH2MPS(info->mHighScores));
             }
             FEngSetLanguageHash(PackageFilename, 0x28462c64, 0x512e823);
-            FEPrintf(PackageFilename, 0xb515499c, "%$0.0f %s", bestSpeed, speedUnits);
+            FEPrintf(PackageFilename, 0xb515499c, "%$0.0f %s", max_speed, speedUnits);
         } else {
             FEPrintf(PackageFilename, 0xb515499c, "%s", GetLocalizedString(0x472aa00a));
         }
