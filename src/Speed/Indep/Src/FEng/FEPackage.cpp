@@ -684,39 +684,35 @@ bool OffsetCalculatron(unsigned long NameHash, FEObject* pObj, FEPoint& Offset) 
     return false;
 }
 
-void FEPackage::AddMouseObjectState(FEObject* pObj) {
-    if (!pObj) {
+void FEPackage::AddMouseObjectState(FEObject* obj) {
+    if (!obj) {
         return;
     }
-    unsigned long NameHash = pObj->NameHash;
-    FEObject* pChild = static_cast<FEObject*>(Objects.GetHead());
-    while (pChild) {
-        if (pChild->Type == FE_Group) {
-            if (static_cast<FEGroup*>(pChild)->FindChildRecursive(NameHash) || NameHash == pChild->NameHash) {
-                FEPoint offset;
-                offset.h = 0.0f;
-                offset.v = 0.0f;
-                if (OffsetCalculatron(NameHash, pChild, offset)) {
-                    FEObjectMouseState* pState = MouseObjectStates + NumMouseObjects;
-                    pState->Offset.h = offset.h;
-                    pState->Offset.v = offset.v;
+    FEObject* pObj = GetFirstObject();
+    unsigned long mouseable = obj->NameHash;
+    while (pObj) {
+        if (pObj->Type == FE_Group) {
+            if (static_cast<FEGroup*>(pObj)->FindChildRecursive(mouseable) || mouseable == pObj->NameHash) {
+                FEPoint p;
+                p.h = 0.0f;
+                p.v = 0.0f;
+                if (OffsetCalculatron(mouseable, pObj, p)) {
+                    MouseObjectStates[NumMouseObjects].Offset = p;
                     break;
                 }
             }
-        } else if (NameHash == pChild->NameHash) {
-            FEPoint offset;
-            offset.h = 0.0f;
-            offset.v = 0.0f;
-            if (OffsetCalculatron(NameHash, pChild, offset)) {
-                FEObjectMouseState* pState = MouseObjectStates + NumMouseObjects;
-                pState->Offset.h = offset.h;
-                pState->Offset.v = offset.v;
+        } else if (mouseable == pObj->NameHash) {
+            FEPoint p;
+            p.h = 0.0f;
+            p.v = 0.0f;
+            if (OffsetCalculatron(mouseable, pObj, p)) {
+                MouseObjectStates[NumMouseObjects].Offset = p;
                 break;
             }
         }
-        pChild = static_cast<FEObject*>(pChild->GetNext());
+        pObj = static_cast<FEObject*>(pObj->GetNext());
     }
-    MouseObjectStates[NumMouseObjects].pObject = pObj;
+    MouseObjectStates[NumMouseObjects].pObject = obj;
     NumMouseObjects++;
 }
 
