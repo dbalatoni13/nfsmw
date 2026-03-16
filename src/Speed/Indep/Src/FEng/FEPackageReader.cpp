@@ -919,11 +919,12 @@ bool FEPackageReader::ReadScriptTags(FETag* pTag, unsigned long Length) {
                         for (unsigned long DestIndex = 0; DestIndex <= pScript->TrackCount; DestIndex++) {
                             if (pSrcTrack && SrcIndex < pScript->TrackCount) {
                                 if (pField) {
+                                    int srcLongOffset = pSrcTrack[SrcIndex].LongOffset;
                                     int fieldOffset = static_cast<int>(pField->GetOffset());
                                     if (fieldOffset < 0) {
                                         fieldOffset += 3;
                                     }
-                                    if (pSrcTrack[SrcIndex].LongOffset >= (fieldOffset >> 2)) {
+                                    if (srcLongOffset >= (fieldOffset >> 2)) {
                                         goto insert_track;
                                     }
                                 }
