@@ -617,12 +617,14 @@ void WorldMap::ScrollZoom(eScrollDir dir) {
         scale.x = factorInv;
         MapStreamer->ZoomTo(scale);
         PanToCursor(factor);
-        if (CurrentView > 1) {
-            if (CurrentView == 3) {
-                FEDatabase->GetGameplaySettings()->LastPursuitMapZoom = static_cast<unsigned char>(CurrentZoom);
-            }
-        } else {
+        switch (CurrentView) {
+        case 0:
+        case 1:
             FEDatabase->GetGameplaySettings()->LastMapZoom = static_cast<unsigned char>(CurrentZoom);
+            break;
+        case 3:
+            FEDatabase->GetGameplaySettings()->LastPursuitMapZoom = static_cast<unsigned char>(CurrentZoom);
+            break;
         }
     }
 }

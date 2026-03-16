@@ -611,15 +611,17 @@ void MemoryCard::Load(const char* filename) {
 }
 
 void MemoryCard::Delete(const char* filename) {
-    InitCommand(MO_Delete);
-    char* filename_buf = m_Filename;
+    MemoryCard* pThis = this;
+    pThis->InitCommand(MO_Delete);
     if (filename != nullptr) {
         bStrNCpy(MemoryCardImp::gContentName, filename, 16);
-        const char* prefix = m_pImp->GetPrefix();
+        char* filename_buf = pThis->m_Filename;
+        const char* prefix = pThis->m_pImp->GetPrefix();
         bStrCat(filename_buf, prefix, filename);
     }
     if (!Joylog::IsReplaying())
-        m_pIMemcard->Delete(m_Filename, reinterpret_cast< const wchar_t* >(MemoryCardImp::gContentName));
+        pThis->m_pIMemcard->Delete(pThis->m_Filename,
+                                   reinterpret_cast< const wchar_t* >(MemoryCardImp::gContentName));
 }
 
 void MemoryCard::ListOldSaveFilesNGC() {
