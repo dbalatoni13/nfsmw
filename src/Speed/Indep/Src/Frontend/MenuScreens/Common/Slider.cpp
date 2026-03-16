@@ -80,28 +80,19 @@ void cSlider::InitObjects(const char *pkg_name, const char *name) {
 
 void cSlider::InitValues(float min, float max, float inc, float cur, float range) {
     fRange = range;
-    if (cur - min < 0.0f) {
-        cur = min;
-    }
+    cur = bMax(cur, min);
     fIncrement = inc;
     fMaxValue = max;
-    if (cur - max < 0.0f) {
-        max = cur;
-    }
+    max = bMin(cur, max);
     fMinValue = min;
     fDesiredValue = max;
     fCurValue = max;
 }
 
 void cSlider::SetValue(float fvalue) {
-    if (fvalue - fMinValue < 0.0f) {
-        fvalue = fMinValue;
-    }
+    fvalue = bMax(fvalue, fMinValue);
     fPrevValue = fCurValue;
-    float max = fMaxValue;
-    if (fvalue - fMaxValue < 0.0f) {
-        max = fvalue;
-    }
+    float max = bMin(fvalue, fMaxValue);
     fCurValue = max;
 }
 
