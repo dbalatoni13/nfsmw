@@ -401,29 +401,21 @@ PostRaceResultsScreen::PostRaceResultsScreen(ScreenConstructorData *sd)
     , mPlayerRacerInfo(nullptr) //
     , mMaxSlotsLeftSide(11) //
     , m_RaceButtonHash(0x5CED1D04) //
-    , m_lastErrorKind(0) //
-    , m_lastErrorCode(0) //
     , m_raceResultsUploaded(false) {
+    bEnableEAMessenger = false;
+
     if (mRaceType == GRace::kRaceType_Tollbooth) {
         mPostRaceScreenMode = POSTRACESCREENMODE_LAPSTATS;
     }
 
     for (int i = 0; i < mNumberOfRacers; ++i) {
-        GRacerInfo &info = GRaceStatus::Get().GetRacerInfo(i);
+        GRacerInfo *info = &GRaceStatus::Get().GetRacerInfo(i);
 
-        if (info.GetSimable() != nullptr && mIndexOfCurrentRacer == -1 && info.GetSimable()->GetPlayer() != nullptr) {
-            mPlayerRacerInfo = &info;
+        if (info->GetSimable() != nullptr && mIndexOfCurrentRacer == -1 && info->GetSimable()->IsPlayer()) {
+            mPlayerRacerInfo = info;
             mIndexOfCurrentRacer = i;
             break;
         }
-    }
-
-    if (mPlayerRacerInfo == nullptr) {
-        mPlayerRacerInfo = GRaceStatus::Get().GetWinningPlayerInfo();
-    }
-
-    if (mPlayerRacerInfo != nullptr) {
-        mIndexOfWinner = GetRacerRanking(mPlayerRacerInfo) - 1;
     }
 
     for (int i = 0; i < 16; ++i) {
@@ -442,33 +434,24 @@ PostRaceResultsScreen::~PostRaceResultsScreen() {
 }
 
 void PostRaceResultsScreen::Setup() {
-    if (!GRaceStatus::Exists()) {
-        return;
-    }
-
-    GRaceStatus &race_status = GRaceStatus::Get();
-
     for (int i = 0; i < mNumberOfRacers; ++i) {
-        GRacerInfo &info = race_status.GetRacerInfo(i);
+        GRacerInfo *info = &GRaceStatus::Get().GetRacerInfo(i);
 
-        if (ReadField< bool >(&info, 0x30) && GetRacerRanking(&info) == 1) {
+        if (info->IsFinishedRacing() && info->GetRanking() == 1) {
             mIndexOfWinner = i;
             break;
         }
     }
 
-    unsigned int script_hash = FEngHashString(lbl_803E5DB0);
-
-    for (int i = 1; i <= mMaxSlotsLeftSide; ++i) {
-        FEngSetScript(GetPackageName(), script_hash, 0x0016A259, true);
-
-        FEObject *obj = FEngFindObject(GetPackageName(), FEngHashString(lbl_803E5E04, i));
+    for (int i = 0; i < mMaxSlotsLeftSide;) {
+        ++i;
+        FEngSetScript(GetPackageName(), FEngHashString(lbl_803E5DB0), 0x0016A259, true);
 
         if (mPostRaceScreenMode == POSTRACESCREENMODE_STATS ||
             (mPostRaceScreenMode == POSTRACESCREENMODE_LAPSTATS && mRaceType == GRace::kRaceType_Tollbooth)) {
-            FEngSetInvisible(obj);
+            FEngSetInvisible(FEngFindObject(GetPackageName(), FEngHashString(lbl_803E5E04, i)));
         } else {
-            FEngSetVisible(obj);
+            FEngSetVisible(FEngFindObject(GetPackageName(), FEngHashString(lbl_803E5E04, i)));
         }
     }
 
@@ -483,28 +466,26 @@ void PostRaceResultsScreen::Setup() {
         RaceResults.Draw(mNumberOfRacers);
         break;
     case POSTRACESCREENMODE_STATS:
-        if (mIndexOfCurrentRacer >= 0 && mPlayerRacerInfo != nullptr) {
-            RacerStats[mIndexOfCurrentRacer].Reset();
-            SetupRacerStats(mIndexOfCurrentRacer, mPlayerRacerInfo);
-            RacerStats[mIndexOfCurrentRacer].Draw(mNumberOfRacers);
-        }
+        RacerStats[mIndexOfCurrentRacer].Reset();
+        SetupRacerStats(mIndexOfCurrentRacer, &GRaceStatus::Get().GetRacerInfo(mIndexOfCurrentRacer));
+        RacerStats[mIndexOfCurrentRacer].Draw(mNumberOfRacers);
         break;
     case POSTRACESCREENMODE_LAPSTATS:
-        if (mIndexOfCurrentRacer >= 0 && mPlayerRacerInfo != nullptr) {
-            RacerStats[mIndexOfCurrentRacer].Reset();
-            SetupLapStats(mIndexOfCurrentRacer, mPlayerRacerInfo);
-            RacerStats[mIndexOfCurrentRacer].Draw(mNumberOfRacers);
-        }
+        RacerStats[mIndexOfCurrentRacer].Reset();
+        SetupLapStats(mIndexOfCurrentRacer, &GRaceStatus::Get().GetRacerInfo(mIndexOfCurrentRacer));
+        RacerStats[mIndexOfCurrentRacer].Draw(mNumberOfRacers);
         break;
     default:
         break;
     }
 
-    unsigned int fe_flags = ReadField< unsigned int >(FEDatabase, 0x1C0);
+    unsigned int fe_flags = FEDatabase->GetGameMode();
 
-    if ((fe_flags & 8) == 0 && (fe_flags & 0x40) == 0 &&
-        !FEngIsScriptSet(GetPackageName(), 0x445A862B, 0x5079C8F8)) {
-        FEngSetScript(GetPackageName(), 0x445A862B, 0x5079C8F8, true);
+    if ((fe_flags & 8) == 0) {
+        if ((fe_flags & 0x40) == 0 &&
+            !FEngIsScriptSet(GetPackageName(), 0x445A862B, 0x5079C8F8)) {
+            FEngSetScript(GetPackageName(), 0x445A862B, 0x5079C8F8, true);
+        }
     }
 }
 
@@ -783,8 +764,6 @@ void PostRaceResultsScreen::SetupStat_SpeedBehind() {
 }
 
 void PostRaceResultsScreen::SetupRacerStats(int index, GRacerInfo *racer_info) {
-    StatsPanel &panel = RacerStats[index];
-
     FEngSetLanguageHash(GetPackageName(), 0x2D691760, 0x4E706980);
     switch (mRaceType) {
     case GRace::kRaceType_P2P:
@@ -805,15 +784,18 @@ void PostRaceResultsScreen::SetupRacerStats(int index, GRacerInfo *racer_info) {
         break;
     }
 
-    panel.RacerName = GetRacerName(racer_info);
-    unsigned int fe_flags = ReadField< unsigned int >(FEDatabase, 0x1C0);
+    StatsPanel &panel = RacerStats[index];
+    panel.RacerName = racer_info->GetName();
+    unsigned int fe_flags = FEDatabase->GetGameMode();
 
     switch (mRaceType) {
     case GRace::kRaceType_Drag:
         SetupStat_ZeroToSixty();
         SetupStat_QuarterMile();
         SetupStat_PerfectShifts();
-        if ((fe_flags & 0x40) != 0 || (fe_flags & 8) != 0) {
+        if ((fe_flags & 0x40) != 0) {
+            SetupStat_NosUsed();
+        } else if ((fe_flags & 8) != 0) {
             SetupStat_NosUsed();
         } else {
             SetupStat_TimeBehind();
@@ -823,11 +805,13 @@ void PostRaceResultsScreen::SetupRacerStats(int index, GRacerInfo *racer_info) {
     case GRace::kRaceType_P2P:
         SetupStat_TopSpeed();
         SetupStat_AverageSpeed();
-        if ((fe_flags & 0x40) == 0 && (fe_flags & 8) == 0) {
+        if ((fe_flags & 0x40) != 0) {
+            SetupStat_NosUsed();
+        } else if ((fe_flags & 8) != 0) {
+            SetupStat_NosUsed();
+        } else {
             SetupStat_TimeBehind();
             SetupStat_TrafficCollisions();
-        } else {
-            SetupStat_NosUsed();
         }
         SetupStat_StageVariance();
         break;
@@ -835,7 +819,9 @@ void PostRaceResultsScreen::SetupRacerStats(int index, GRacerInfo *racer_info) {
     case GRace::kRaceType_Knockout:
         SetupStat_TopSpeed();
         SetupStat_AverageSpeed();
-        if ((fe_flags & 0x40) != 0 || (fe_flags & 8) != 0) {
+        if ((fe_flags & 0x40) != 0) {
+            SetupStat_NosUsed();
+        } else if ((fe_flags & 8) != 0) {
             SetupStat_NosUsed();
         } else {
             SetupStat_TimeBehind();
