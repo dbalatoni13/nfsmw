@@ -62,9 +62,14 @@ void MemcardCallbacks::ShowMessage(const wchar_t* msg, unsigned int nOptions,
         }
     } else {
         int op = GetMemcard()->GetOp();
-        if (loggedOptions != 0 ||
-            op > MemoryCard::MO_LoadYNCF ||
-            op < MemoryCard::MO_FakeLoad) {
+        switch (op) {
+        case MemoryCard::MO_FakeLoad:
+        case MemoryCard::MO_LoadYNCF:
+            if (loggedOptions == 0) {
+                break;
+            }
+            // fallthrough
+        default: {
             UIMemcardBase* pScreen = GetScreen();
             if (pScreen != nullptr) {
                 if (pScreen->IsInButtonAnimation()) {
@@ -79,6 +84,8 @@ void MemcardCallbacks::ShowMessage(const wchar_t* msg, unsigned int nOptions,
                                              options[1], options[2]);
                 }
             }
+            break;
+        }
         }
     }
 }
@@ -87,13 +94,17 @@ void MemcardCallbacks::ClearMessage() {
     if (!GetMemcard()->IsAutoSaving()) {
         JLog(MJ_ClearMessage);
         int op = GetMemcard()->GetOp();
-        if (op != MemoryCard::MO_FakeLoad) {
-            if (op != MemoryCard::MO_LoadYNCF) {
-                UIMemcardBase* pScreen = GetScreen();
-                if (pScreen != nullptr) {
-                    GetMemcard();
-                }
+        switch (op) {
+        case MemoryCard::MO_FakeLoad:
+        case MemoryCard::MO_LoadYNCF:
+            break;
+        default: {
+            UIMemcardBase* pScreen = GetScreen();
+            if (pScreen != nullptr) {
+                GetMemcard();
             }
+            break;
+        }
         }
     }
 }
