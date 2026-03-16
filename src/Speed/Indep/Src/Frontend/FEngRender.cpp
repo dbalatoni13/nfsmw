@@ -2,6 +2,7 @@
 #include "Speed/Indep/Src/FEng/FEObject.h"
 #include "Speed/Indep/Src/FEng/feimage.h"
 #include "Speed/Indep/Src/FEng/FEMultiImage.h"
+#include "Speed/Indep/Src/FEng/FEColoredImage.h"
 #include "Speed/Indep/Src/Frontend/FERenderObject.hpp"
 #include "Speed/Indep/Src/Frontend/MoviePlayer/MoviePlayer.hpp"
 #include "Speed/Indep/Src/Ecstasy/Texture.hpp"
@@ -251,6 +252,64 @@ void cFEngRender::RenderMultiImage(FEMultiImage *image, FERenderObject *cached, 
         uvs[2].x, uvs[2].y,
         uvs[3].x, uvs[3].y,
         Colours, texture_info, texture_info_mask);
+    cached->SetTexture(texture_info);
+    cached->Render();
+}
+
+void cFEngRender::RenderCBVImage(FEColoredImage *image, FERenderObject *cached, FEPackageRenderInfo *pkg_render_info) {
+    FEColoredImageData *image_data = reinterpret_cast<FEColoredImageData *>(image->pData);
+
+    bMatrix4 screen;
+    bIdentity(&screen);
+    screen.v3.x = 320.0f;
+    screen.v3.y = 240.0f;
+    screen.v3.z = 0.0f;
+
+    bMatrix4 trans;
+    FEColor fe_color;
+
+    FEClipInfo *clip_info = MakeRenderMatrix(
+        reinterpret_cast<FEObjData *>(image_data), &trans, fe_color,
+        image->RenderContext, 1.0f);
+
+    bMulMatrix(&trans, &screen, &trans);
+
+    TextureInfo *texture_info = GetTextureInfo(image->Handle, 1, 0);
+
+    if (!cached) {
+        cached = CreateCachedRender(reinterpret_cast<FEObject *>(image), texture_info);
+    } else {
+        cached->Clear(pkg_render_info);
+    }
+
+    unsigned int tw = texture_info->Width;
+    unsigned int th = texture_info->Height;
+    float ftw = static_cast<float>(tw);
+    float fth = static_cast<float>(th);
+
+    unsigned int t2w = next_power_of_2(tw);
+    unsigned int t2h = next_power_of_2(th);
+    float ft2w = static_cast<float>(t2w);
+    float ft2h = static_cast<float>(t2h);
+
+    float convertu = ftw / ft2w;
+    float convertv = fth / ft2h;
+
+    unsigned int Colours[4];
+    Colours[0] = FEngColorToEpolyColor(image_data->VertexColors[0]);
+    Colours[1] = FEngColorToEpolyColor(image_data->VertexColors[1]);
+    Colours[2] = FEngColorToEpolyColor(image_data->VertexColors[2]);
+    Colours[3] = FEngColorToEpolyColor(image_data->VertexColors[3]);
+
+    float s0 = image_data->UpperLeft.x * convertu;
+    float s1 = image_data->LowerRight.x * convertu;
+    float t0 = image_data->UpperLeft.y * convertv;
+    float t1 = image_data->LowerRight.y * convertv;
+
+    cached->SetTransform(&trans);
+    cached->AddPoly(-0.5f, -0.5f, 0.5f, 0.5f, 1.0f,
+                    s0, t0, s1, t1,
+                    Colours, clip_info, pkg_render_info);
     cached->SetTexture(texture_info);
     cached->Render();
 }
