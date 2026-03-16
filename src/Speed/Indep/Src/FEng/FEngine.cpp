@@ -1220,9 +1220,7 @@ void FEngine::ProcessMessageQueue() {
             break;
         case 0xFFFFFFFC: {
             FEPackage* pPack = PackList.GetFirstPackage();
-            while (pPack) {
-                if (pPack == pNode->pFromPackage)
-                    break;
+            while (pPack && pPack != pNode->pFromPackage) {
                 pPack = pPack->GetNext();
             }
             if (pPack) {
@@ -1245,9 +1243,9 @@ void FEngine::ProcessMessageQueue() {
             break;
         case 0xFFFFFFFA:
             if (pNode->MsgID == 0x59bed120) {
-                SetProcessInput(pNode->pFromPackage, false);
-            } else if (pNode->MsgID == 0x5d4ce32d) {
                 SetProcessInput(pNode->pFromPackage, true);
+            } else if (pNode->MsgID == 0x5d4ce32d) {
+                SetProcessInput(pNode->pFromPackage, false);
             }
             break;
         default:
