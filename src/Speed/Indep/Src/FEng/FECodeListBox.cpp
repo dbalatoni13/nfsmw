@@ -171,8 +171,8 @@ void FECodeListBox::FillAllCells() {
         return;
     }
     unsigned long ulNumVisRows = mulNumVisibleRows;
-    int lRow = mulCurrentVirtualRow;
     int lStartColumn = mulCurrentVirtualColumn;
+    int lRow = mulCurrentVirtualRow;
     if (ulNumVisRows > mulNumTotalRows) {
         ulNumVisRows = mulNumTotalRows;
     }
