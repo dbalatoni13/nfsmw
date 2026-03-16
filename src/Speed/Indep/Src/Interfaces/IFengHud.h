@@ -245,7 +245,7 @@ class IMenuZoneTrigger : public UTL::COM::IUnknown {
     virtual void ExitTriggerForAutoSave();
     virtual void EnterTrigger(class GRuntimeInstance *activity);
     virtual void EnterTrigger(const char *zoneType);
-    virtual void ExitTrigger(int port);
+    virtual void ExitTrigger();
     virtual void RequestEventInfoDialog(int index);
     virtual void RequestZoneInfoDialog(int index);
     virtual void RequestDoAction();

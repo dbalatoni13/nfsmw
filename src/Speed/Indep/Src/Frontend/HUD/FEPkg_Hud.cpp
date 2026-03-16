@@ -933,7 +933,7 @@ void FEngHud::JoyHandle(IPlayer *player) {
                         } else {
                             if (QueryInterface(&izone)) {
                                 if (izone->IsPlayerInsideTrigger()) {
-                                    izone->ExitTrigger(mActionQ.GetPort());
+                                    izone->ExitTrigger();
                                     izone->RequestEventInfoDialog(mActionQ.GetPort());
                                 }
                             }

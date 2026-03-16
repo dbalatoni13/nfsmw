@@ -15,6 +15,7 @@ extern int SkipFE;
 extern int SkipFESplitScreen;
 
 void GetLocalizedString(char *buf, unsigned int maxlen, unsigned int hash);
+unsigned int FEngHashString(const char *fmt, ...);
 
 // GRaceDatabase inline methods (can't add bodies to header - DWARF crash)
 inline GRaceSaveInfo *GRaceDatabase::GetScoreInfo() {
@@ -1183,6 +1184,69 @@ void AwardUnlockUpgrade(Attrib::Gen::gameplay &inst) {
             }
         }
         UnlockUnlockableThing(entity, 2, upgradeLevel, "");
+    }
+}
+
+struct MarkerUnlockTypeEntry {
+    const char *mMarkerName;
+    const char *mPartName;
+    FEMarkerManager::ePossibleMarker mMarker;
+};
+
+static MarkerUnlockTypeEntry markerUnlockType[21] = {
+    { "backroom", "brakes", FEMarkerManager::MARKER_BRAKES },
+    { "backroom", "chassis", FEMarkerManager::MARKER_CHASSIS },
+    { "backroom", "engine", FEMarkerManager::MARKER_ENGINE },
+    { "backroom", "induction", FEMarkerManager::MARKER_INDUCTION },
+    { "backroom", "nos", FEMarkerManager::MARKER_NOS },
+    { "backroom", "tires", FEMarkerManager::MARKER_TIRES },
+    { "backroom", "transmission", FEMarkerManager::MARKER_TRANSMISSION },
+    { "backroom", "bodykit", FEMarkerManager::MARKER_BODY },
+    { "backroom", "decals", FEMarkerManager::MARKER_DECAL },
+    { "backroom", "hood", FEMarkerManager::MARKER_HOOD },
+    { "backroom", "hud", FEMarkerManager::MARKER_CUSTOM_HUD },
+    { "backroom", "paint", FEMarkerManager::MARKER_PAINT },
+    { "backroom", "rims", FEMarkerManager::MARKER_RIMS },
+    { "backroom", "roofscoop", FEMarkerManager::MARKER_ROOF_SCOOP },
+    { "backroom", "spoiler", FEMarkerManager::MARKER_SPOILER },
+    { "backroom", "vinyls", FEMarkerManager::MARKER_VINYL },
+    { "add_impound_box", nullptr, FEMarkerManager::MARKER_ADD_IMPOUND_BOX },
+    { "cash_bonus", nullptr, FEMarkerManager::MARKER_CASH },
+    { "out_of_jail_free", nullptr, FEMarkerManager::MARKER_GET_OUT_OF_JAIL },
+    { "pink_slip", nullptr, FEMarkerManager::MARKER_PINK_SLIP },
+    { "release_car_from_impound", nullptr, FEMarkerManager::MARKER_IMPOUND_RELEASE },
+};
+
+FEMarkerManager::ePossibleMarker FEMarkerManager::ConvertBigBangMarkerAward(const char *marker_name, const char *partid) {
+    for (int onMarker = 0; onMarker < 21; onMarker++) {
+        if (bStrICmp(marker_name, markerUnlockType[onMarker].mMarkerName) == 0
+            && (!markerUnlockType[onMarker].mPartName
+                || bStrICmp(partid, markerUnlockType[onMarker].mPartName) == 0)) {
+            return markerUnlockType[onMarker].mMarker;
+        }
+    }
+    return MARKER_NONE;
+}
+
+void FEMarkerManager::AwardMarker(Attrib::Gen::gameplay &inst, bool immediate_reward) {
+    ePossibleMarker marker = ConvertBigBangMarkerAward(inst.RewardMarkerType(0), inst.UpgradePartID(0));
+    if (marker != MARKER_NONE) {
+        int param = 0;
+        if (!immediate_reward) {
+            if (marker == MARKER_PINK_SLIP) {
+                param = FEngHashString("BL%d", FEDatabase->GetCareerSettings()->GetCurrentBin(), 0);
+            } else if (marker == MARKER_CASH) {
+                param = static_cast<int>(inst.CashReward(0));
+            }
+            AddMarkerForLaterSelection(marker, param);
+        } else if (marker == MARKER_PINK_SLIP) {
+            unsigned int hash = FEngHashString("BL%d", FEDatabase->GetCareerSettings()->GetCurrentBin());
+            FEDatabase->GetPlayerCarStable(0)->AwardRivalCar(hash);
+        } else if (marker == MARKER_CASH) {
+            FEDatabase->GetCareerSettings()->AddCash(static_cast<int>(inst.CashReward(0)));
+        } else {
+            AddMarkerToInventory(marker, 0);
+        }
     }
 }
 
