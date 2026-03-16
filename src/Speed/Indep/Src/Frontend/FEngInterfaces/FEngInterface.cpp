@@ -17,7 +17,7 @@ void HideEverySingleHud();
 int bStrCmp(const char* s1, const char* s2);
 FEPackageRenderInfo* HACK_FEPkgMgr_GetPackageRenderInfo(FEPackage* pkg);
 
-extern Timer MessengerCreationTimer;
+Timer MessengerCreationTimer(0);
 extern float RealTimeElapsed;
 
 cFEng* cFEng::mInstance;

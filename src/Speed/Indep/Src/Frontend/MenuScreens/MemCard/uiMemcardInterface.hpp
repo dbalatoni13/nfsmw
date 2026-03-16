@@ -18,6 +18,8 @@ struct MemoryCardSetup {
     unsigned int mLastController;
     bool mInBootFlow;
 
+    MemoryCardSetup() { Clear(); }
+
     unsigned int GetCommand() const {
         return mOp & 0xf;
     }

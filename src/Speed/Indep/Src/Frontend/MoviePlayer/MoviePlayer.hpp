@@ -87,7 +87,7 @@ bool GiveTheMoviePlayerBandwidth();
 struct ShapeMemoryAllocator : public EA::Allocator::IAllocator {
     int mRefcount; // offset 0x4, size 0x4
 
-    ShapeMemoryAllocator() {}
+    ShapeMemoryAllocator() : mRefcount(1) {}
     ~ShapeMemoryAllocator() override {}
     void* Alloc(unsigned int size, const EA::TagValuePair& flags) override;
     void* Alloc(unsigned int size);
