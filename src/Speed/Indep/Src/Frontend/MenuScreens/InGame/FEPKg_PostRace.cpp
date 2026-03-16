@@ -29,6 +29,7 @@ extern unsigned long FEHashUpper(const char *);
 extern void MemcardEnter(const char *, const char *, unsigned int, void (*)(void *), void *, unsigned int, unsigned int);
 extern void FEngSetInvisible(FEObject *obj);
 extern void FEngSetVisible(FEObject *obj);
+extern void FEngSetInvisible(const char *pkg_name, unsigned int obj_hash);
 extern bool FEngIsScriptSet(const char *pkg_name, unsigned int obj_hash, unsigned int script_hash);
 extern bool FEngIsScriptSet(FEObject *obj, unsigned int script_hash);
 extern void FEngSetScript(const char *pkg_name, unsigned int obj_hash, unsigned int script_hash,
@@ -38,6 +39,10 @@ extern void FEngSetLanguageHash(FEString *text, unsigned int hash);
 extern void FEngSetLanguageHash(const char *pkg_name, unsigned int object_hash, unsigned int language_hash);
 extern unsigned int FEngHashString(const char *, ...);
 extern int FEPrintf(FEString *text, const char *fmt, ...);
+
+inline void FEngSetVisible(const char *pkg_name, unsigned int obj_hash) {
+    FEngSetVisible(FEngFindObject(pkg_name, obj_hash));
+}
 extern const char *GetLocalizedPercentSign();
 extern float GRaceStatusGetRaceTimeElapsed(const GRaceStatus *race_status) asm("GetRaceTimeElapsed__C11GRaceStatus");
 extern float GRacerInfoCalcAverageSpeed(const GRacerInfo *racer_info) asm("CalcAverageSpeed__C10GRacerInfo");
@@ -443,8 +448,7 @@ void PostRaceResultsScreen::Setup() {
         }
     }
 
-    for (int i = 0; i < mMaxSlotsLeftSide;) {
-        ++i;
+    for (int i = 1; i <= mMaxSlotsLeftSide; ++i) {
         FEngSetScript(GetPackageName(), FEngHashString(lbl_803E5DB0), 0x0016A259, true);
 
         if (mPostRaceScreenMode == POSTRACESCREENMODE_STATS ||
@@ -774,11 +778,11 @@ void PostRaceResultsScreen::SetupRacerStats(int index, GRacerInfo *racer_info) {
     case GRace::kRaceType_Knockout:
         FEngSetLanguageHash(GetPackageName(), m_RaceButtonHash, 0x7B8F45DF);
         break;
-    case GRace::kRaceType_SpeedTrap:
-        FEngSetLanguageHash(GetPackageName(), m_RaceButtonHash, 0xAC23368C);
-        break;
     case GRace::kRaceType_Tollbooth:
         FEngSetLanguageHash(GetPackageName(), m_RaceButtonHash, 0xAEF51E9D);
+        break;
+    case GRace::kRaceType_SpeedTrap:
+        FEngSetLanguageHash(GetPackageName(), m_RaceButtonHash, 0xAC23368C);
         break;
     default:
         break;
@@ -789,19 +793,6 @@ void PostRaceResultsScreen::SetupRacerStats(int index, GRacerInfo *racer_info) {
     unsigned int fe_flags = FEDatabase->GetGameMode();
 
     switch (mRaceType) {
-    case GRace::kRaceType_Drag:
-        SetupStat_ZeroToSixty();
-        SetupStat_QuarterMile();
-        SetupStat_PerfectShifts();
-        if ((fe_flags & 0x40) != 0) {
-            SetupStat_NosUsed();
-        } else if ((fe_flags & 8) != 0) {
-            SetupStat_NosUsed();
-        } else {
-            SetupStat_TimeBehind();
-            SetupStat_TrafficCollisions();
-        }
-        break;
     case GRace::kRaceType_P2P:
         SetupStat_TopSpeed();
         SetupStat_AverageSpeed();
@@ -829,16 +820,29 @@ void PostRaceResultsScreen::SetupRacerStats(int index, GRacerInfo *racer_info) {
             SetupStat_TrafficCollisions();
         }
         break;
-    case GRace::kRaceType_SpeedTrap:
-        SetupStat_TopSpeed();
-        SetupStat_AverageSpeed();
-        SetupStat_StageVariance();
-        SetupStat_TrafficCollisions();
+    case GRace::kRaceType_Drag:
+        SetupStat_ZeroToSixty();
+        SetupStat_QuarterMile();
+        SetupStat_PerfectShifts();
+        if ((fe_flags & 0x40) != 0) {
+            SetupStat_NosUsed();
+        } else if ((fe_flags & 8) != 0) {
+            SetupStat_NosUsed();
+        } else {
+            SetupStat_TimeBehind();
+            SetupStat_TrafficCollisions();
+        }
         break;
     case GRace::kRaceType_Tollbooth:
         SetupStat_AccumulatedSpeed();
         SetupStat_SpeedVariance();
         SetupStat_SpeedBehind();
+        break;
+    case GRace::kRaceType_SpeedTrap:
+        SetupStat_TopSpeed();
+        SetupStat_AverageSpeed();
+        SetupStat_StageVariance();
+        SetupStat_TrafficCollisions();
         break;
     default:
         break;
@@ -1333,27 +1337,22 @@ void PostRaceMilestonesScreen::StartMilestoneDoneAnimations() {
     FEngSetScript(mpDataBigIcon, 0x16a259, true);
     FEngSetScript(GetPackageName(), 0xe526d0d2, 0x33113ac, true);
     FEngSetScript(GetPackageName(), 0xe1045a4f, 0x33113ac, true);
-    unsigned int posHash = FEHashUpper("POS2");
-    FEngSetScript(GetPackageName(), 0x962b9c62, posHash, true);
-    posHash = FEHashUpper("POS2");
-    FEngSetScript(GetPackageName(), 0xec85c7e4, posHash, true);
+    FEngSetScript(GetPackageName(), 0x962b9c62, FEHashUpper("POS2"), true);
+    FEngSetScript(GetPackageName(), 0xec85c7e4, FEHashUpper("POS2"), true);
 }
 
-void PostRaceMilestonesScreen::StartAnimations(bool isMilestone, int typeKey, float bountyEarned, const char *descriptionStr) {
+void PostRaceMilestonesScreen::StartAnimations(bool isMilestone, int typeKey, float bountyEarned, const char *const descriptionStr) {
     mBountyEarned += bountyEarned;
     SetMilestoneAnimationScriptHash(isMilestone, typeKey);
-    unsigned int iconHash = FEDatabase->GetMilestoneIconHash(typeKey, isMilestone);
-    FEngSetTextureHash(mpDataBigIcon, iconHash);
+    FEngSetTextureHash(mpDataBigIcon, FEDatabase->GetMilestoneIconHash(typeKey, isMilestone));
     FEPrintf(GetPackageName(), 0xe526d0d2, "%s", descriptionStr);
     if (bountyEarned > 0.0f) {
-        FEngSetVisible(FEngFindObject(GetPackageName(), 0xe1045a4f));
+        FEngSetVisible(GetPackageName(), 0xe1045a4f);
     } else {
-        FEngSetInvisible(FEngFindObject(GetPackageName(), 0xe1045a4f));
+        FEngSetInvisible(GetPackageName(), 0xe1045a4f);
     }
-    const char *bountyStr = GetTranslatedString(0x29b1b96a);
-    FEPrintf(GetPackageName(), 0xe1045a4f, "%s: %$0.0f", bountyStr, bountyEarned);
-    const char *totalStr = GetTranslatedString(0x5ccf949a);
-    FEPrintf(GetPackageName(), 0x324f7792, "%s: %$0.0f", totalStr, mBountyEarned);
+    FEPrintf(GetPackageName(), 0xe1045a4f, "%s: %$0.0f", GetTranslatedString(0x29b1b96a), bountyEarned);
+    FEPrintf(GetPackageName(), 0x324f7792, "%s: %$0.0f", GetTranslatedString(0x5ccf949a), mBountyEarned);
     FEngSetScript(mpDataBigIcon, 0x5079c8f8, true);
 }
 
@@ -1376,29 +1375,48 @@ bool PostRaceMilestonesScreen::StartBountyAnimations(bool copDestruction) {
 
 bool PostRaceMilestonesScreen::SetMilestoneAnimationScriptHash(bool isMilestone, int type) {
     const char *posStr;
-    if (type == 0x2377e50d) {
-        posStr = "POS1";
-    } else if (type == static_cast<int>(0xA61CAC24)) {
-        posStr = "POS2";
-    } else if (type == static_cast<int>(0xFD989A3A)) {
+    if (type == static_cast<int>(0xFD989A3A)) {
         posStr = "POS3";
-    } else if (type == static_cast<int>(0xEB45F99D)) {
-        posStr = "POS4";
-    } else if (type == static_cast<int>(0xCDF36FC2)) {
-        posStr = "POS5";
-    } else if (type == static_cast<int>(0x850A64BC)) {
-        posStr = "POS6";
-    } else if (type == 0x33fa23a) {
-        posStr = isMilestone ? "POS7" : "POS0";
-    } else if (type == 0x5392e4fd) {
-        posStr = "POS8";
-    } else if (type == 0x4fc942ca) {
-        posStr = "POS00";
+    } else if (type > static_cast<int>(0xFD989A3A)) {
+        if (type == 0x2377e50d) {
+            posStr = "POS1";
+        } else if (type > 0x2377e50d) {
+            if (type == 0x4fc942ca) {
+                posStr = "POS00";
+            } else if (type == 0x5392e4fd) {
+                posStr = "POS8";
+            } else {
+                mCurrMilestoneScriptHash = 0;
+                goto done;
+            }
+        } else if (type == 0x33fa23a) {
+            posStr = isMilestone ? "POS7" : "POS0";
+        } else {
+            mCurrMilestoneScriptHash = 0;
+            goto done;
+        }
     } else {
-        mCurrMilestoneScriptHash = 0;
-        return false;
+        if (type == static_cast<int>(0xA61CAC24)) {
+            posStr = "POS2";
+        } else if (type > static_cast<int>(0xA61CAC24)) {
+            if (type == static_cast<int>(0xCDF36FC2)) {
+                posStr = "POS5";
+            } else if (type == static_cast<int>(0xEB45F99D)) {
+                posStr = "POS4";
+            } else {
+                mCurrMilestoneScriptHash = 0;
+                goto done;
+            }
+        } else {
+            if (type != static_cast<int>(0x850A64BC)) {
+                mCurrMilestoneScriptHash = 0;
+                goto done;
+            }
+            posStr = "POS6";
+        }
     }
     mCurrMilestoneScriptHash = FEHashUpper(posStr);
+done:
     return mCurrMilestoneScriptHash != 0;
 }
 
@@ -1448,31 +1466,45 @@ extern bool FEngIsScriptRunning(FEObject *obj, unsigned int script_hash);
 void PostRaceMilestonesScreen::NotificationMessage(unsigned long msg, FEObject *pobj, unsigned long param1, unsigned long param2) {
     if (msg == 0x35f8620b) {
         StartBountyAnimations(false);
-    } else if (msg < 0x35f8620bu) {
-        if (msg == 0xd3c3de7) {
-            if (!mCopDestructionBountyShown) {
-                mCopDestructionBountyShown = true;
-                if (PostRacePursuitScreen::mPursuitData.mNumCopsDestroyed > 0) {
-                    StartBountyAnimations(true);
-                    return;
-                }
-            }
-            if (!GRaceStatus::Exists() || !GRaceStatus::Get().GetRaceParameters() ||
-                !GRaceStatus::Get().GetRaceParameters()->GetIsPursuitRace() ||
-                FEDatabase->IsFinalEpicChase()) {
-                StartMilestoneAnimations();
-            } else {
-                StartChallengeAnimations();
+        return;
+    }
+
+    if (msg <= 0x35f8620a) {
+        if (msg != 0xd3c3de7) {
+            return;
+        }
+
+        if (!mCopDestructionBountyShown) {
+            mCopDestructionBountyShown = true;
+            if (PostRacePursuitScreen::GetPursuitData().mNumCopsDestroyed > 0) {
+                StartBountyAnimations(true);
+                return;
             }
         }
-    } else if (msg == 0x406415e3) {
-        cFEng::mInstance->QueuePackagePop(1);
+
+        if (GRaceStatus::Exists() && GRaceStatus::Get().GetRaceParameters() &&
+            GRaceStatus::Get().GetRaceParameters()->GetIsPursuitRace() &&
+            !FEDatabase->IsFinalEpicChase()) {
+            StartChallengeAnimations();
+        } else {
+            StartMilestoneAnimations();
+        }
+        return;
+    }
+
+    if (msg == 0x406415e3) {
+        cFEng::Get()->QueuePackagePop(1);
         new EShowResults(FERESULTTYPE_PURSUIT, false);
-    } else if (msg == 0xc98356ba) {
-        if (FEngIsScriptSet(mpDataBigIcon, 0x5079c8f8) &&
-            !FEngIsScriptRunning(mpDataBigIcon, 0x5079c8f8)) {
-            FEngSetScript(mpDataBigIcon, mCurrMilestoneScriptHash, true);
-        }
+        return;
+    }
+
+    if (msg != 0xc98356ba) {
+        return;
+    }
+
+    if (FEngIsScriptSet(mpDataBigIcon, 0x5079c8f8) &&
+        !FEngIsScriptRunning(mpDataBigIcon, 0x5079c8f8)) {
+        FEngSetScript(mpDataBigIcon, mCurrMilestoneScriptHash, true);
     }
 }
 
