@@ -556,22 +556,21 @@ void FEngine::Render() {
 
 void FEngine::RenderGroup(FEGroup* pGroup, FEMatrix4& mParent, FEMatrix4& mAccum, unsigned short RenderContext) {
     FEObjData* pData = pGroup->GetObjData();
+    FEMatrix4 stTemp;
+    FEMatrix4 stContext;
+    FEMatrix4 stContextView;
     FEVector3 stOffset(0.0f);
     FEVector3 stPivot(0.0f);
     if (pData->Col.a != 0) {
         if (bExecuting || static_cast<int>(pGroup->Flags) >= 0) {
-            FEMatrix4 stTemp;
             pData->Rot.GetMatrix(&stTemp);
-            stPivot.x = -pData->Pivot.x;
-            stPivot.y = -pData->Pivot.y;
-            stPivot.z = -pData->Pivot.z;
+            stPivot = pData->Pivot;
+            stPivot *= -1.0f;
             FEMultMatrix(&stOffset, &stTemp, &stPivot);
             stTemp.m41 = stOffset.x + pData->Pivot.x + pData->Pos.x;
             stTemp.m42 = stOffset.y + pData->Pivot.y + pData->Pos.y;
             stTemp.m43 = stOffset.z + pData->Pivot.z + pData->Pos.z;
-            FEMatrix4 stContext;
             FEMultMatrix(&stContext, &stTemp, &mParent);
-            FEMatrix4 stContextView;
             FEMultMatrix(&stContextView, &stContext, &mAccum);
             unsigned short ctx = uGroupContext + 1;
             uGroupContext = ctx;

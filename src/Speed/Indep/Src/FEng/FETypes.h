@@ -54,6 +54,7 @@ struct FEVector3 {
 
     inline FEVector3& operator=(const FEVector3& v) { x = v.x; y = v.y; z = v.z; return *this; }
     inline FEVector3 operator-(const FEVector3& v) const { return FEVector3(x - v.x, y - v.y, z - v.z); }
+    inline FEVector3& operator*=(float f) { x *= f; y *= f; z *= f; return *this; }
     inline FEVector3& operator+=(const FEVector3& v) { x += v.x; y += v.y; z += v.z; return *this; }
 };
 
@@ -88,10 +89,10 @@ struct FEQuaternion {
     inline FEQuaternion& operator*=(const FEQuaternion& q) { *this = *this * q; return *this; }
     inline FEQuaternion operator*(const FEQuaternion& q1) {
         FEQuaternion qRet;
-        qRet.x = (y * q1.z - z * q1.y) + (x * q1.w + q1.x * w);
-        qRet.y = (z * q1.x - x * q1.z) + (y * q1.w + q1.y * w);
-        qRet.z = (x * q1.y - y * q1.x) + (z * q1.w + q1.z * w);
-        qRet.w = q1.w * w - (q1.y * y + q1.x * x + q1.z * z);
+        qRet.x = (y * q1.z - z * q1.y) + (q1.w * x + q1.x * w);
+        qRet.y = (z * q1.x - x * q1.z) + (q1.w * y + q1.y * w);
+        qRet.z = (x * q1.y - y * q1.x) + (q1.w * z + q1.z * w);
+        qRet.w = q1.w * w - (q1.x * x + q1.y * y + q1.z * z);
         return qRet;
     }
     void GetMatrix(FEMatrix4* pMatrix);
