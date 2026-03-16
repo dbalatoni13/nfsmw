@@ -515,9 +515,9 @@ void FEngine::UnloadLibraryPackage(FEPackage* pLibPack) {
 }
 
 void FEngine::Render() {
+    FEMatrix4 mView;
     FEMatrix4 mIdentity;
     mIdentity.Identify();
-    FEMatrix4 mView;
     pInterface->GetViewTransformation(&mView);
     FEPackage* aPackages[32];
     int numPackages = 0;
