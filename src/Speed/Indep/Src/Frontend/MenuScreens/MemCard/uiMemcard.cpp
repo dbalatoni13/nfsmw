@@ -512,11 +512,13 @@ void MemcardEnter(const char* from, const char* to, unsigned int op,
 void MemcardExit(unsigned int msg) {
     gMemcardSetup.mLastMessage = msg;
     if (!MemoryCard::GetInstance()->m_bInitialized) {
+        cFEng* feng = cFEng::Get();
         unsigned long hash = FEHashUpper("EXIT_COMPLETE");
-        cFEng::Get()->QueueGameMessage(hash, gMemcardSetup.mMemScreen, 0xff);
+        feng->QueueGameMessage(hash, gMemcardSetup.mMemScreen, 0xff);
     } else {
+        cFEng* feng = cFEng::Get();
         unsigned long hash = FEHashUpper("LEAVE_SCREEN");
-        cFEng::Get()->QueuePackageMessage(hash, gMemcardSetup.mMemScreen, nullptr);
+        feng->QueuePackageMessage(hash, gMemcardSetup.mMemScreen, nullptr);
     }
     MemoryCard::GetInstance()->m_bInitialized = false;
     MemoryCard::GetInstance()->SetMemcardScreenExiting(true);
