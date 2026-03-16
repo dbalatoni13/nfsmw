@@ -230,11 +230,12 @@ void MemcardCallbacks::LoadDone(const char* filename) {
                 }
                 GetMemcard()->SetAutoSaveEnabled(true);
             } else {
+                cFEng* feng = cFEng::Get();
                 unsigned int msg = 0x461a18ee;
                 if (gMemcardSetup.GetMethod() == 0x20) {
                     msg = 0xa4bb7ae1;
                 }
-                cFEng::Get()->QueueGameMessage(msg, nullptr, 0xff);
+                feng->QueueGameMessage(msg, nullptr, 0xff);
             }
         } else {
             GetMemcard()->ShowMessages(false);
