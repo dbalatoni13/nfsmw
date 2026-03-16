@@ -26,6 +26,7 @@
 extern int g_MaximumMaximumTimesBusted;
 extern float g_fImpoundPercentageOfOriginalCost;
 extern TextureInfo *GetTextureInfo(unsigned int hash, int, int);
+extern bool DoesStringExist(unsigned int hash);
 
 struct PresetCar {
     unsigned int Pad0[2];
@@ -180,7 +181,17 @@ const char *FECarRecord::GetDebugName() {
 }
 
 unsigned int FECarRecord::GetNameHash() {
-    return FEKey;
+    const char *manu = GetManufacturerName();
+    if (bStrCmp(manu, "")) {
+        char buf[128];
+        Attrib::Gen::frontend frontend(FEKey, 0, nullptr);
+        FEngSNPrintf(buf, 0x80, "CARNAME_%s_%s", manu, frontend.CollectionName());
+        unsigned int hash = FEHashUpper(buf);
+        if (DoesStringExist(hash)) {
+            return hash;
+        }
+    }
+    return 0x9BB9CCC3;
 }
 
 unsigned int FECarRecord::GetReleaseFromImpoundCost() {
