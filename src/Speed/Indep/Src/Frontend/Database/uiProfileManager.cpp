@@ -49,15 +49,15 @@ void UIProfileManager::NotificationMessage(unsigned long msg, FEObject* obj, uns
     IconScrollerMenu::NotificationMessage(msg, obj, param1, param2);
 
     switch (msg) {
-    case 0x7E998E5E:
-        FEDatabase->RefreshCurrentRide();
-        Refresh();
+    case 0x911AB364:
+        cFEng::Get()->QueuePackageSwitch("MainMenu.fng", 0, 0, false);
         break;
     case 0x35F8620B:
         Refresh();
         break;
-    case 0x911AB364:
-        cFEng::Get()->QueuePackageSwitch("MainMenu.fng", 0, 0, false);
+    case 0x7E998E5E:
+        FEDatabase->RefreshCurrentRide();
+        Refresh();
         break;
     }
 }
