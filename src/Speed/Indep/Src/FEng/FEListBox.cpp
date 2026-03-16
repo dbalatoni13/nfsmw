@@ -314,7 +314,6 @@ void FEListBox::ScrollSelection(long lColumnNum, long lRowNum) {
         }
 
         unsigned long i = mulCurrentColumn;
-        float fViewWidth = mstViewDimensions.h;
         float fNewWidth = 0.0f;
         if (i < mulNumColumns) {
             do {
@@ -325,11 +324,11 @@ void FEListBox::ScrollSelection(long lColumnNum, long lRowNum) {
         }
 
         if ((mulFlags & 4) != 0) {
-            if (fNewWidth < fViewWidth) {
-                mstTargetLocation.h = mstTargetLocation.h - (fViewWidth - fNewWidth);
+            if (fNewWidth < mstViewDimensions.h) {
+                mstTargetLocation.h = mstTargetLocation.h - (mstViewDimensions.h - fNewWidth);
             }
         } else {
-            if (fNewWidth < fViewWidth) {
+            if (fNewWidth < mstViewDimensions.h) {
                 mulFlags = mulFlags | 8;
             }
         }
@@ -380,7 +379,6 @@ void FEListBox::ScrollSelection(long lColumnNum, long lRowNum) {
         }
 
         unsigned long i = mulCurrentRow;
-        float fViewHeight = mstViewDimensions.v;
         float fNewHeight = 0.0f;
         if (i < mulNumRows) {
             do {
@@ -391,11 +389,11 @@ void FEListBox::ScrollSelection(long lColumnNum, long lRowNum) {
         }
 
         if ((mulFlags & 4) != 0) {
-            if (fNewHeight < fViewHeight) {
-                mstTargetLocation.v = mstTargetLocation.v - (fViewHeight - fNewHeight);
+            if (fNewHeight < mstViewDimensions.v) {
+                mstTargetLocation.v = mstTargetLocation.v - (mstViewDimensions.v - fNewHeight);
             }
         } else {
-            if (fNewHeight < fViewHeight) {
+            if (fNewHeight < mstViewDimensions.v) {
                 mulFlags = mulFlags | 0x10;
             }
         }

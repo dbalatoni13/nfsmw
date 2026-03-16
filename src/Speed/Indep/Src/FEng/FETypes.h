@@ -16,7 +16,7 @@ struct FEVector2 {
     inline FEVector2(float v) : x(v), y(v) {}
     inline FEVector2(float vx, float vy) : x(vx), y(vy) {}
     inline FEVector2(float* pf) : x(pf[0]), y(pf[1]) {}
-    inline FEVector2(const FEVector2& v) : x(v.x), y(v.y) {}
+    inline FEVector2(const FEVector2& v) { *this = v; }
 
     inline FEVector2 operator+(const FEVector2& v) const { return FEVector2(x + v.x, y + v.y); }
     inline FEVector2 operator-(const FEVector2& v) const { return FEVector2(x - v.x, y - v.y); }
