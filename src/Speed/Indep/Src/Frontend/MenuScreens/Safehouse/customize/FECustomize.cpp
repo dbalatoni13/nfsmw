@@ -3308,17 +3308,15 @@ void CustomizeRims::Setup() {
     FEImage *rightBtn = FEngFindImage(GetPackageName(), 0x2d145be3);
     FEngSetButtonTexture(rightBtn, 0x682);
     DisplayHelper.TitleHash = 0xe167f7c8;
-    MinRadius = gCarCustomizeManager.GetMinInnerRadius();
-    InnerRadius = MinRadius;
+    InnerRadius = gCarCustomizeManager.GetMinInnerRadius();
+    MinRadius = InnerRadius;
     MaxRadius = gCarCustomizeManager.GetMaxInnerRadius();
-    if (Showcase::FromFilter == -1) {
-        CarPart *activePart = gCarCustomizeManager.GetActivePartFromSlot(0x42);
-        if (activePart) {
-            InnerRadius = static_cast<int>(activePart->GetAppliedAttributeIParam(0xeb0101e2, 0));
-        }
-    } else {
+    CarPart *activePart = gCarCustomizeManager.GetActivePartFromSlot(0x42);
+    if (Showcase::FromFilter != -1) {
         InnerRadius = Showcase::FromFilter;
         Showcase::FromFilter = -1;
+    } else if (activePart) {
+        InnerRadius = static_cast<signed char>(activePart->GetAppliedAttributeIParam(0xeb0101e2, 0));
     }
     BuildRimsList(-1);
     RefreshHeader();

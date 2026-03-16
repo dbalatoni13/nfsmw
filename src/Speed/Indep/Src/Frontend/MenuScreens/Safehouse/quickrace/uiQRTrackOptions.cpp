@@ -283,7 +283,14 @@ void UIQRTrackOptions::SetupKnockout() {
 }
 
 void UIQRTrackOptions::SetupSpeedTrap() {
-    if (!(FEDatabase->IsOnlineMode()) && !(FEDatabase->IsLANMode())) {
+    if (FEDatabase->IsOnlineMode() || FEDatabase->IsLANMode()) {
+        bool boAddLaps = false;
+        BoilerPlateOnline(boAddLaps);
+        if (race->GetCanBeReversed()) {
+            TrackDirection *td = new TrackDirection(true);
+            AddToggleOption(td, true);
+        }
+    } else {
         if (race->GetCanBeReversed()) {
             TrackDirection *td = new TrackDirection(true);
             AddToggleOption(td, true);
@@ -308,18 +315,18 @@ void UIQRTrackOptions::SetupSpeedTrap() {
             CatchUp *cu = new CatchUp(true);
             AddToggleOption(cu, true);
         }
-    } else {
+    }
+}
+
+void UIQRTrackOptions::SetupTollbooth() {
+    if (FEDatabase->IsOnlineMode() || FEDatabase->IsLANMode()) {
         bool boAddLaps = false;
         BoilerPlateOnline(boAddLaps);
         if (race->GetCanBeReversed()) {
             TrackDirection *td = new TrackDirection(true);
             AddToggleOption(td, true);
         }
-    }
-}
-
-void UIQRTrackOptions::SetupTollbooth() {
-    if (!(FEDatabase->IsOnlineMode()) && !(FEDatabase->IsLANMode())) {
+    } else {
         if (race->GetCanBeReversed()) {
             TrackDirection *td = new TrackDirection(true);
             AddToggleOption(td, true);
@@ -331,13 +338,6 @@ void UIQRTrackOptions::SetupTollbooth() {
         if (!isSplitScreen) {
             TrafficLevel *tl = new TrafficLevel(true);
             AddToggleOption(tl, true);
-        }
-    } else {
-        bool boAddLaps = false;
-        BoilerPlateOnline(boAddLaps);
-        if (race->GetCanBeReversed()) {
-            TrackDirection *td = new TrackDirection(true);
-            AddToggleOption(td, true);
         }
     }
 }
