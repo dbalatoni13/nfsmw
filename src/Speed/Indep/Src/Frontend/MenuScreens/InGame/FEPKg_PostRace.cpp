@@ -492,7 +492,8 @@ void PostRaceResultsScreen::Setup() {
 }
 
 void PostRaceResultsScreen::SetupResults() {
-    if (!GRaceStatus::Exists()) {
+    int race_status_exists = GRaceStatus::Exists();
+    if (!race_status_exists) {
         return;
     }
 
@@ -501,7 +502,7 @@ void PostRaceResultsScreen::SetupResults() {
     FEngSetVisible(GetPackageName(), 0x30EE5E68);
 
     if (mRaceType >= GRace::kRaceType_P2P) {
-        if (mRaceType < GRace::kRaceType_Tollbooth) {
+        if (mRaceType <= GRace::kRaceType_Drag) {
             FEngSetLanguageHash(GetPackageName(), 0x586AB4A6, 0x96B05F47);
             FEngSetLanguageHash(GetPackageName(), 0x44AC8987, 0xCE678AD3);
             FEngSetLanguageHash(GetPackageName(), 0x30EE5E68, 0xB67DA102);
@@ -524,49 +525,65 @@ void PostRaceResultsScreen::SetupResults() {
     RaceResults.Reset();
 
     if (mRaceType >= GRace::kRaceType_P2P) {
-        if (mRaceType < GRace::kRaceType_SpeedTrap) {
-            for (int place = 1; place <= mNumberOfRacers; ++place) {
-                int i = 0;
-                GRacerInfo *racer_info = nullptr;
+        if (mRaceType <= GRace::kRaceType_Tollbooth) {
+            int place = 1;
+            if (place <= mNumberOfRacers) {
+                do {
+                    int i = 0;
+                    GRacerInfo *racer_info = nullptr;
 
-                while ((racer_info = &GRaceStatus::Get().GetRacerInfo(i), GetRacerRanking(racer_info) != place)) {
-                    ++i;
-                }
+                    while (true) {
+                        racer_info = &GRaceStatus::Get().GetRacerInfo(i);
+                        if (GetRacerRanking(racer_info) == place) {
+                            break;
+                        }
+                        ++i;
+                    }
 
-                FEString *column2 = FEngFindString(
-                    RaceResults.ParentPkg, FEngHashString(lbl_803E5088, "COLUMN2_DATA", RaceResults.iWidgetToAdd));
-                FEString *column3 = FEngFindString(
-                    RaceResults.ParentPkg, FEngHashString(lbl_803E5088, "COLUMN3_DATA", RaceResults.iWidgetToAdd));
-                FEString *column1 = FEngFindString(
-                    RaceResults.ParentPkg, FEngHashString(lbl_803E5088, "COLUMN1_DATA", RaceResults.iWidgetToAdd));
+                    FEString *column2 = FEngFindString(
+                        RaceResults.ParentPkg, FEngHashString(lbl_803E5088, "COLUMN2_DATA", RaceResults.iWidgetToAdd));
+                    FEString *column3 = FEngFindString(
+                        RaceResults.ParentPkg, FEngHashString(lbl_803E5088, "COLUMN3_DATA", RaceResults.iWidgetToAdd));
+                    FEString *column1 = FEngFindString(
+                        RaceResults.ParentPkg, FEngHashString(lbl_803E5088, "COLUMN1_DATA", RaceResults.iWidgetToAdd));
 
-                RaceResults.AddStat(new ("", 0)
-                                        RaceResultStat(column2, column3, column1, racer_info));
+                    RaceResultStat *result = new ("", 0) RaceResultStat(column2, column3, column1, racer_info);
+                    RaceResults.AddStat(result);
+                    ++place;
+                } while (place <= mNumberOfRacers);
             }
         } else if (mRaceType == GRace::kRaceType_SpeedTrap) {
-            for (int place = 1; place <= mNumberOfRacers; ++place) {
-                int i = 0;
-                GRacerInfo *racer_info = nullptr;
+            int place = 1;
+            if (place <= mNumberOfRacers) {
+                do {
+                    int i = 0;
+                    GRacerInfo *racer_info = nullptr;
 
-                while ((racer_info = &GRaceStatus::Get().GetRacerInfo(i), GetRacerRanking(racer_info) != place)) {
-                    ++i;
-                }
+                    while (true) {
+                        racer_info = &GRaceStatus::Get().GetRacerInfo(i);
+                        if (GetRacerRanking(racer_info) == place) {
+                            break;
+                        }
+                        ++i;
+                    }
 
-                float speed = ReadField< float >(racer_info, 0x134);
-                if (FEDatabase->GetGameplaySettings()->SpeedoUnits == 0) {
-                    speed = (speed * lbl_803E5E4C) * lbl_803E5E50;
-                }
+                    float speed = ReadField< float >(racer_info, 0x134);
+                    if (FEDatabase->GetGameplaySettings()->SpeedoUnits == 0) {
+                        speed = (speed * lbl_803E5E4C) * lbl_803E5E50;
+                    }
 
-                FEString *column2 = FEngFindString(
-                    RaceResults.ParentPkg, FEngHashString(lbl_803E5088, "COLUMN2_DATA", RaceResults.iWidgetToAdd));
-                FEString *column3 = FEngFindString(
-                    RaceResults.ParentPkg, FEngHashString(lbl_803E5088, "COLUMN3_DATA", RaceResults.iWidgetToAdd));
-                FEString *column1 = FEngFindString(
-                    RaceResults.ParentPkg, FEngHashString(lbl_803E5088, "COLUMN1_DATA", RaceResults.iWidgetToAdd));
+                    FEString *column2 = FEngFindString(
+                        RaceResults.ParentPkg, FEngHashString(lbl_803E5088, "COLUMN2_DATA", RaceResults.iWidgetToAdd));
+                    FEString *column3 = FEngFindString(
+                        RaceResults.ParentPkg, FEngHashString(lbl_803E5088, "COLUMN3_DATA", RaceResults.iWidgetToAdd));
+                    FEString *column1 = FEngFindString(
+                        RaceResults.ParentPkg, FEngHashString(lbl_803E5088, "COLUMN1_DATA", RaceResults.iWidgetToAdd));
 
-                RaceResults.AddStat(new ("", 0)
-                                        GenericResult(column2, column3, column1, speed_units, speed, "%$0.0f",
-                                                      racer_info));
+                    GenericResult *result =
+                        new ("", 0) GenericResult(column2, column3, column1, speed_units, speed, "%$0.0f", racer_info);
+                    RaceResults.AddStat(result);
+                    ++place;
+                } while (place <= mNumberOfRacers);
             }
         }
     }
@@ -793,11 +810,11 @@ void PostRaceResultsScreen::SetupRacerStats(int index, GRacerInfo *racer_info) {
     case GRace::kRaceType_Knockout:
         FEngSetLanguageHash(GetPackageName(), m_RaceButtonHash, 0x7B8F45DF);
         break;
-    case GRace::kRaceType_Tollbooth:
-        FEngSetLanguageHash(GetPackageName(), m_RaceButtonHash, 0xAEF51E9D);
-        break;
     case GRace::kRaceType_SpeedTrap:
         FEngSetLanguageHash(GetPackageName(), m_RaceButtonHash, 0xAC23368C);
+        break;
+    case GRace::kRaceType_Tollbooth:
+        FEngSetLanguageHash(GetPackageName(), m_RaceButtonHash, 0xAEF51E9D);
         break;
     default:
         break;
@@ -1774,7 +1791,7 @@ void PostRacePursuitScreen::SetupPursuit() {
     AddDatum(new PursuitResultsDatum(PursuitResultsDatum::PursuitResultsDatumType_Number, 0xa999f6e2, static_cast<float>(mPursuitData.mNumCopsDamaged), 0.0f, PursuitResultsDatum::PursuitResultsDatumCheckType_Off));
     AddDatum(new PursuitResultsDatum(PursuitResultsDatum::PursuitResultsDatumType_Number, 0x23f6e732, static_cast<float>(mPursuitData.mNumCopsDestroyed), 0.0f, PursuitResultsDatum::PursuitResultsDatumCheckType_Off));
     AddDatum(new PursuitResultsDatum(PursuitResultsDatum::PursuitResultsDatumType_Number, 0x0291c816, static_cast<float>(mPursuitData.mNumSpikeStripsDodged), 0.0f, PursuitResultsDatum::PursuitResultsDatumCheckType_Off));
-    AddDatum(new PursuitResultsDatum(PursuitResultsDatum::PursuitResultsDatumType_Number, 0x2df2ba15, static_cast<float>(mPursuitData.mNumRoadblocksDodged), 0.0f, PursuitResultsDatum::PursuitResultsDatumCheckType_Off));
+    AddDatum(new PursuitResultsDatum(PursuitResultsDatum::PursuitResultsDatumType_Number, 0x29daba15, static_cast<float>(mPursuitData.mNumRoadblocksDodged), 0.0f, PursuitResultsDatum::PursuitResultsDatumCheckType_Off));
     AddDatum(new PursuitResultsDatum(PursuitResultsDatum::PursuitResultsDatumType_Number, 0xd9bb7d2d, static_cast<float>(mPursuitData.mCostToStateAchieved), 0.0f, PursuitResultsDatum::PursuitResultsDatumCheckType_Off));
     AddDatum(new PursuitResultsDatum(PursuitResultsDatum::PursuitResultsDatumType_Number, 0xb7dfff96, static_cast<float>(GInfractionManager::Get().GetNumInfractions()), 0.0f, PursuitResultsDatum::PursuitResultsDatumCheckType_Off));
 }

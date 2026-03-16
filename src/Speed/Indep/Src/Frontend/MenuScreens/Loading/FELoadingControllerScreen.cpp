@@ -93,19 +93,19 @@ void LoadingControllerScreen::SetupControllerConfig() {
         FEngSNPrintf(sztemp, 0x20, "BUTTON%d_I", i + 1);
         unsigned int img_hash = FEHashUpper(sztemp);
         unsigned int button_hash = FindButtonNameHashForFEString(config, i, port);
-        if (button_hash == 0) {
-            FEngSetInvisible(GetPackageName(), obj_hash);
-            FEngSetInvisible(GetPackageName(), img_hash);
-        } else {
+        if (button_hash != 0) {
             FEngSetVisible(GetPackageName(), obj_hash);
             FEngSetLanguageHash(GetPackageName(), obj_hash, button_hash);
             FEngSetVisible(GetPackageName(), img_hash);
+        } else {
+            FEngSetInvisible(GetPackageName(), obj_hash);
+            FEngSetInvisible(GetPackageName(), img_hash);
         }
     }
-    if (FEDatabase->GetPlayerSettings(0)->DriveWithAnalog == 0) {
-        FEngSetTextureHash(GetPackageName(), 0x4592229c, 0xb30961b);
-    } else {
+    if (FEDatabase->GetPlayerSettings(0)->DriveWithAnalog != 0) {
         FEngSetTextureHash(GetPackageName(), 0x4592229c, 0x148e38);
+    } else {
+        FEngSetButtonTexture(FEngFindImage(GetPackageName(), 0x4592229c), 0xb30961b);
     }
     FEngSetInvisible(GetPackageName(), 0xf274b86);
     FEngSetInvisible(GetPackageName(), 0x673d77bc);

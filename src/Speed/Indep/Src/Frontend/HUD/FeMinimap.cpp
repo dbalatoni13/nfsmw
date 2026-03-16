@@ -374,6 +374,7 @@ void Minimap::RefreshMapItems() {
         item = item->GetNext();
     }
     StaticMiniMapItems.DeleteAllElements();
+    InitStaticMiniMapItems();
 }
 
 extern bool GPS_IsEngaged();

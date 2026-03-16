@@ -38,7 +38,7 @@ struct InGameAnyMovieScreen : MenuScreen {
     ~InGameAnyMovieScreen() override;
     static MenuScreen *Create(ScreenConstructorData *sd);
     void NotificationMessage(unsigned long msg, FEObject *obj, unsigned long param1, unsigned long param2) override;
-    void LaunchMovie(const char *filename);
+    static void LaunchMovie(const char *filename);
     void DismissMovie();
     static bool IsPlaying();
     static void SetMovieName(const char *filename);
@@ -111,7 +111,7 @@ void InGameAnyMovieScreen::NotificationMessage(unsigned long msg, FEObject *obj,
 }
 
 void InGameAnyMovieScreen::LaunchMovie(const char *filename) {
-    SetMovieName(filename);
+    InGameAnyMovieScreen::SetMovieName(filename);
     gInGameMoviePlaying = true;
     if (cFEng::mInstance->IsPackageInControl(GetLoadingScreenPackageName())) {
         cFEng::mInstance->QueuePackageSwitch(GetFEngPackageName(), 0, 0, false);

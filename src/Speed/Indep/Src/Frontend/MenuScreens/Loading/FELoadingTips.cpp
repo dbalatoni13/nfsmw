@@ -179,8 +179,7 @@ bool LoadingTips::TipTestLastCarWithTwoStrikes(LoadingScreen::LoadingScreenTypes
     if (!stable) {
         return false;
     }
-    int num_cars = stable->GetNumAvailableCareerCars();
-    if (num_cars != 1) {
+    if (stable->GetNumAvailableCareerCars() != 1) {
         return false;
     }
     UserProfile *prof = FEDatabase->GetUserProfile(0);
@@ -202,7 +201,10 @@ bool LoadingTips::TipTestLastCarWithTwoStrikes(LoadingScreen::LoadingScreenTypes
     if (!record) {
         return false;
     }
-    return record->GetTimesBusted() >= record->GetMaxBusted() - 1;
+    if (record->GetTimesBusted() == record->GetMaxBusted() - 1) {
+        return true;
+    }
+    return false;
 }
 
 bool LoadingTips::TipTestFirstTimeOutOfSafeHouse(LoadingScreen::LoadingScreenTypes loading_direction) {
@@ -215,6 +217,9 @@ bool LoadingTips::TipTestFirstTimeOutOfSafeHouse(LoadingScreen::LoadingScreenTyp
         return false;
     }
     CareerSettings *career = FEDatabase->GetCareerSettings();
+    if (!career) {
+        return false;
+    }
     if (!career->HasDoneCareerIntro()) {
         return false;
     }

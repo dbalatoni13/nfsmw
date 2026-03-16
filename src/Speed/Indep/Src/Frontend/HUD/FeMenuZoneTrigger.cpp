@@ -21,14 +21,14 @@ void FEngSetTextureHash(FEImage *img, unsigned int hash);
 void BeginCarCustomize(eCustomizeEntryPoint entry, FECarRecord *record);
 
 MenuZoneTrigger::MenuZoneTrigger(UTL::COM::Object *pOutter, const char *pkg_name, int player_number)
-    : HudElement(pkg_name, 0) //
+    : HudElement(pkg_name, 0x400000) //
     , IMenuZoneTrigger(pOutter)
 {
+    mCingularTimer = 0;
     mbInsideTrigger = false;
     mbCingularQueued = false;
     mpRaceActivity = nullptr;
     mZoneType = nullptr;
-    mCingularTimer = 0;
     mEngageMechanic = RegisterGroup(FEHashUpper("Engage_Mechanic"));
     mEventIcon = RegisterImage(FEHashUpper("EventIcon"));
     mCingularIcon = RegisterGroup(0xDA8141D4);

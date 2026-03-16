@@ -39,20 +39,6 @@ typedef UTL::Std::vector<Sound::stSongInfo *, _type_vector> SongInfoList;
 
 extern SongInfoList Songs;
 
-namespace {
-
-struct StringKeyView {
-    unsigned long long mHash64;
-    unsigned int mHash32;
-    const char *mString;
-};
-
-static const char *GetStringView(const Attrib::StringKey &key) {
-    return reinterpret_cast<const StringKeyView &>(key).mString;
-}
-
-} // namespace
-
 const char* UserProfile::GetProfileName() {}
 
 UserProfile::UserProfile() {
@@ -105,10 +91,9 @@ void UserProfile::Default(int player_number, bool commit_default) {
         if (!song_info_loaded) {
             song_info_loaded = true;
 
-            Attrib::Gen::audiosystem playlist_atrs(0x7E4B0ED2, 0, nullptr);
-            if (playlist_atrs.IsValid()) {
-                Attrib::Gen::audiosystem licensed_music(static_cast<const Attrib::Collection *>(nullptr), 0, nullptr);
-                licensed_music.ChangeWithDefault(playlist_atrs.LicensedMusic(0));
+            Attrib::Gen::audiosystem *playlist_atrs = new Attrib::Gen::audiosystem(0x7E4B0ED2, 0, nullptr);
+            if (playlist_atrs->IsValid()) {
+                Attrib::Gen::audiosystem licensed_music(playlist_atrs->LicensedMusic(0), 0, nullptr);
                 g_MaxSongs = licensed_music.Num_PFMapping();
 
                 for (int i = 0; i < static_cast<int>(Songs.size()); i++) {
@@ -116,19 +101,25 @@ void UserProfile::Default(int player_number, bool commit_default) {
                 }
                 Songs.clear();
 
+                if (static_cast<int>(Songs.capacity()) < g_MaxSongs) {
+                    Songs.reserve(g_MaxSongs);
+                }
+
                 for (int i = 0; i < g_MaxSongs; i++) {
                     Sound::stSongInfo *newsong = new (__FILE__, __LINE__) Sound::stSongInfo;
-                    Attrib::Gen::music currsong(playlist_atrs.PFMapping(i), 0, nullptr);
+                    Attrib::Gen::music currsong(static_cast<const Attrib::Collection *>(nullptr), 0, nullptr);
+                    const char *tmpSongName;
 
-                    const char *song_name = GetStringView(currsong.SongName());
-                    const char *artist = GetStringView(currsong.Artist());
-                    const char *album = GetStringView(currsong.Album());
-                    const char *def_play = GetStringView(currsong.DefPlay());
+                    currsong.ChangeWithDefault(licensed_music.PFMapping(i));
 
-                    newsong->SongName = const_cast<char *>(song_name ? song_name : "");
-                    newsong->Artist = const_cast<char *>(artist ? artist : "");
-                    newsong->Album = const_cast<char *>(album ? album : "");
-                    newsong->DefPlay = const_cast<char *>(def_play ? def_play : "");
+                    tmpSongName = currsong.SongName().GetString();
+                    newsong->SongName = const_cast<char *>(tmpSongName ? tmpSongName : "");
+                    tmpSongName = currsong.Album().GetString();
+                    newsong->Album = const_cast<char *>(tmpSongName ? tmpSongName : "");
+                    tmpSongName = currsong.Artist().GetString();
+                    newsong->Artist = const_cast<char *>(tmpSongName ? tmpSongName : "");
+                    tmpSongName = currsong.DefPlay().GetString();
+                    newsong->DefPlay = const_cast<char *>(tmpSongName ? tmpSongName : "");
                     newsong->PathEvent = currsong.PathEvent();
                     Songs.push_back(newsong);
                 }
@@ -380,8 +371,8 @@ void PlayerSettings::DefaultFromOptionsScreen() {
     eControllerConfig savedConfig = Config;
     int savedRumble = Rumble;
     Default();
-    Config = savedConfig;
     DriveWithAnalog = savedDriveWithAnalog;
+    Config = savedConfig;
     Rumble = savedRumble;
 }
 

@@ -967,13 +967,14 @@ void SplashScreen::NotificationMessage(unsigned long msg, FEObject *obj, unsigne
     case 0xc98356ba: {
         Timer lastJoyTime = CalculateLastJoyEventTime();
         Timer elapsed = RealTimer - lastJoyTime;
-        bool timed_out = elapsed.GetSeconds() > SplashScreenMovieTimeout ||
+        int timed_out = elapsed.GetSeconds() > SplashScreenMovieTimeout ||
             (SplashScreenTotalTimeout != 0.0f &&
              (RealTimer - SplashStartedTimer).GetSeconds() > SplashScreenTotalTimeout);
+        int final_timed_out = timed_out;
         if (TheTrackStreamer.IsPermFileLoading()) {
-            timed_out = false;
+            final_timed_out = 0;
         }
-        if (timed_out) {
+        if (final_timed_out != 0) {
             if (!BootFlowManager::Get()->DoAttract()) {
                 SplashStartedTimer.ResetHigh();
             }

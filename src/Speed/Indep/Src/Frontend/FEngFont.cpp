@@ -38,7 +38,7 @@ extern int NumFontReplacements;
 
 ExtraFontData *FindExtraFontData(unsigned int font_hash) {
     for (int i = 0; i < 4; i++) {
-        if (ExtraFontDataTable[i].FontHash == font_hash) {
+        if (font_hash == ExtraFontDataTable[i].FontHash) {
             return &ExtraFontDataTable[i];
         }
     }

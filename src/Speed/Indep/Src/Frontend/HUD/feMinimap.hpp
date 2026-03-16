@@ -48,7 +48,7 @@ class Minimap : public HudElement {
     void UpdateMiniMapItems();
     void UpdateGameplayIcons(IPlayer *player);
     void AdjustForWidescreen(bool widescreen);
-    static void InitStaticMiniMapItems();
+    void InitStaticMiniMapItems();
 
     struct GameplayIconInfo {
         int mIconType;

@@ -20,7 +20,7 @@ struct InGameAnyTutorialScreen : MenuScreen {
     ~InGameAnyTutorialScreen() override;
     static MenuScreen *Create(ScreenConstructorData *sd);
     void NotificationMessage(unsigned long msg, FEObject *obj, unsigned long param1, unsigned long param2) override;
-    void LaunchMovie(const char *filename, const char *packageName);
+    static void LaunchMovie(const char *filename, const char *packageName);
     void DismissMovie();
     static void SetMovieName(const char *filename);
     static void SetPackageName(const char *packageName);

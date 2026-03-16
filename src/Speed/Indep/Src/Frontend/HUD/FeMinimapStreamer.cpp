@@ -32,8 +32,7 @@ int ChoppedMiniMapManager::Loader(bChunk *chunk) {
         bEndianSwap16(reinterpret_cast<char *>(chunk) + 0xE);
         bEndianSwap32(reinterpret_cast<char *>(lzh) + 8);
         bEndianSwap32(reinterpret_cast<char *>(chunk) + 0x14);
-        CompressedMiniMaps[LoadingChopNum] = lzh;
-        LoadingChopNum++;
+        CompressedMiniMaps[LoadingChopNum++] = lzh;
         return 1;
     }
     return 0;

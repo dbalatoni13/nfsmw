@@ -705,7 +705,8 @@ bool UnlockSystem::IsBonusCarCEOnly(unsigned int name_hash) {
 
 bool UnlockSystem::IsUnlockableAvailable(unsigned int part_name_hash) {
     if (part_name_hash <= 0x13D0CA) {
-        if (part_name_hash < 0x13D0C8) {
+        unsigned int collectors_edition_start = 0x13D0C8;
+        if (part_name_hash < collectors_edition_start) {
             return true;
         }
         return GetIsCollectorsEdition() != 0;
@@ -738,7 +739,6 @@ bool CareerUnlocker::IsCarUnlocked(eUnlockFilters filter, unsigned int car) {
 bool CareerUnlocker::IsBackroomAvailable(eUnlockFilters filter, eUnlockableEntity ent, int level) {
     bool answer = false;
     FEMarkerManager::ePossibleMarker marker = FEMarkerManager::MARKER_NONE;
-    eUnlockableEntity recurse_ent;
     if (ent == UNLOCKABLE_THING_SPOILERS) {
         marker = FEMarkerManager::MARKER_SPOILER;
     } else if (ent < UNLOCKABLE_THING_HOODS) {
@@ -746,9 +746,9 @@ bool CareerUnlocker::IsBackroomAvailable(eUnlockFilters filter, eUnlockableEntit
             marker = FEMarkerManager::MARKER_CHASSIS;
         } else if (ent < UNLOCKABLE_THING_PUT_TRANSMISSION) {
             if (ent == UNLOCKABLE_THING_CUSTOMIZE_VISUAL) {
-                answer = CareerUnlocker::IsBackroomAvailable(filter, UNLOCKABLE_THING_PAINT_METALLIC, level)
-                    || CareerUnlocker::IsBackroomAvailable(filter, UNLOCKABLE_VINYLS_GROUP_FLAME, level);
-                recurse_ent = UNLOCKABLE_DECAL_WINDSHIELD;
+                answer = CareerUnlocker::IsBackroomAvailable(filter, UNLOCKABLE_THING_PAINT_METALLIC, level);
+                answer = static_cast<bool>(CareerUnlocker::IsBackroomAvailable(filter, UNLOCKABLE_VINYLS_GROUP_FLAME, level) | answer);
+                answer = static_cast<bool>(CareerUnlocker::IsBackroomAvailable(filter, UNLOCKABLE_DECAL_WINDSHIELD, level) | answer);
             } else {
                 if (ent > UNLOCKABLE_THING_CUSTOMIZE_VISUAL) {
                     if (ent == UNLOCKABLE_THING_PUT_TIRES) {
@@ -762,27 +762,26 @@ bool CareerUnlocker::IsBackroomAvailable(eUnlockFilters filter, eUnlockableEntit
                     goto marker_check;
                 }
                 if (ent == UNLOCKABLE_THING_CUSTOMIZE_PARTS) {
-                    answer = CareerUnlocker::IsBackroomAvailable(filter, UNLOCKABLE_THING_BODY_KIT, level)
-                        || CareerUnlocker::IsBackroomAvailable(filter, UNLOCKABLE_THING_SPOILERS, level)
-                        || CareerUnlocker::IsBackroomAvailable(filter, UNLOCKABLE_THING_RIM_BRANDS, level)
-                        || CareerUnlocker::IsBackroomAvailable(filter, UNLOCKABLE_THING_HOODS, level)
-                        || CareerUnlocker::IsBackroomAvailable(filter, UNLOCKABLE_THING_ROOF_SCOOPS, level)
-                        || CareerUnlocker::IsBackroomAvailable(filter, UNLOCKABLE_THING_CUSTOM_HUD, level);
-                    recurse_ent = UNLOCKABLE_THING_RIM_BRAND_5_ZIGEN;
+                    answer = CareerUnlocker::IsBackroomAvailable(filter, UNLOCKABLE_THING_BODY_KIT, level);
+                    answer = static_cast<bool>(CareerUnlocker::IsBackroomAvailable(filter, UNLOCKABLE_THING_SPOILERS, level) | answer);
+                    answer = static_cast<bool>(CareerUnlocker::IsBackroomAvailable(filter, UNLOCKABLE_THING_RIM_BRANDS, level) | answer);
+                    answer = static_cast<bool>(CareerUnlocker::IsBackroomAvailable(filter, UNLOCKABLE_THING_HOODS, level) | answer);
+                    answer = static_cast<bool>(CareerUnlocker::IsBackroomAvailable(filter, UNLOCKABLE_THING_ROOF_SCOOPS, level) | answer);
+                    answer = static_cast<bool>(CareerUnlocker::IsBackroomAvailable(filter, UNLOCKABLE_THING_CUSTOM_HUD, level) | answer);
+                    answer = static_cast<bool>(CareerUnlocker::IsBackroomAvailable(filter, UNLOCKABLE_THING_RIM_BRAND_5_ZIGEN, level) | answer);
                 } else {
                     if (ent != UNLOCKABLE_THING_CUSTOMIZE_PERFORMANCE) {
                         return false;
                     }
-                    answer = CareerUnlocker::IsBackroomAvailable(filter, UNLOCKABLE_THING_PUT_TIRES, level)
-                        || CareerUnlocker::IsBackroomAvailable(filter, UNLOCKABLE_THING_PUT_BRAKES, level)
-                        || CareerUnlocker::IsBackroomAvailable(filter, UNLOCKABLE_THING_PUT_CHASSIS, level)
-                        || CareerUnlocker::IsBackroomAvailable(filter, UNLOCKABLE_THING_PUT_TRANSMISSION, level)
-                        || CareerUnlocker::IsBackroomAvailable(filter, UNLOCKABLE_THING_PUT_ENGINE, level)
-                        || CareerUnlocker::IsBackroomAvailable(filter, UNLOCKABLE_THING_PUT_INDUCTION, level);
-                    recurse_ent = UNLOCKABLE_THING_PUT_NOS;
+                    answer = CareerUnlocker::IsBackroomAvailable(filter, UNLOCKABLE_THING_PUT_TIRES, level);
+                    answer = static_cast<bool>(CareerUnlocker::IsBackroomAvailable(filter, UNLOCKABLE_THING_PUT_BRAKES, level) | answer);
+                    answer = static_cast<bool>(CareerUnlocker::IsBackroomAvailable(filter, UNLOCKABLE_THING_PUT_CHASSIS, level) | answer);
+                    answer = static_cast<bool>(CareerUnlocker::IsBackroomAvailable(filter, UNLOCKABLE_THING_PUT_TRANSMISSION, level) | answer);
+                    answer = static_cast<bool>(CareerUnlocker::IsBackroomAvailable(filter, UNLOCKABLE_THING_PUT_ENGINE, level) | answer);
+                    answer = static_cast<bool>(CareerUnlocker::IsBackroomAvailable(filter, UNLOCKABLE_THING_PUT_INDUCTION, level) | answer);
+                    answer = static_cast<bool>(CareerUnlocker::IsBackroomAvailable(filter, UNLOCKABLE_THING_PUT_NOS, level) | answer);
                 }
             }
-            answer = answer || CareerUnlocker::IsBackroomAvailable(filter, recurse_ent, level);
         } else if (ent == UNLOCKABLE_THING_PUT_INDUCTION) {
             marker = FEMarkerManager::MARKER_INDUCTION;
         } else if (ent < UNLOCKABLE_THING_PUT_NOS) {
@@ -843,7 +842,8 @@ bool CareerUnlocker::IsBackroomAvailable(eUnlockFilters filter, eUnlockableEntit
     }
 
 marker_check:
-    return answer || TheFEMarkerManager.IsMarkerAvailable(marker, 0);
+    answer = static_cast<bool>(TheFEMarkerManager.IsMarkerAvailable(marker, 0) | answer);
+    return answer;
 }
 
 // ============================================================
@@ -1285,11 +1285,11 @@ void cFrontendDatabase::DefaultRaceSettings() {
         settings.SetSelectedCar(default_car, 0);
         settings.SetSelectedCar(default_car, 1);
     }
-    TheQuickRaceSettings[5].NumLaps = 1;
-    TheQuickRaceSettings[2].NumLaps = 1;
     TheQuickRaceSettings[0].NumLaps = 1;
-    TheQuickRaceSettings[3].NumLaps = TheQuickRaceSettings[3].NumOpponents;
+    TheQuickRaceSettings[2].NumLaps = 1;
+    TheQuickRaceSettings[5].NumLaps = 1;
     TheQuickRaceSettings[4].NumOpponents = 0;
+    TheQuickRaceSettings[3].NumLaps = TheQuickRaceSettings[3].NumOpponents;
     TheQuickRaceSettings[4].NumLaps = 1;
 }
 
