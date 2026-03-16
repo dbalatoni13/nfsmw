@@ -197,53 +197,24 @@ void DebugCarCustomizeScreen::Redraw() {
 
 void DebugCarCustomizeScreen::NotificationMessage(unsigned long msg, FEObject *pobj, unsigned long param1, unsigned long param2) {
     switch (msg) {
-    case 0xb5971bf1: {
-        unsigned int hash = pobj->NameHash;
-        if (hash == 0x36db742) {
-            FECarRecord *car = FEDatabase->GetPlayerCarStable(0)->GetCarRecordByHandle(pDebugCar->mHandle);
-            if (!wasCarCustomized) {
-                car->Customization = 0xFF;
-            }
-            for (int i = 0; i < iFastScroll; i++) {
-                DebugCar *next = pDebugCar->GetNext();
-                if (next == reinterpret_cast<DebugCar *>(&FilteredCarsList)) {
-                    next = FilteredCarsList.GetHead();
-                }
-                pDebugCar = next;
-            }
-            CurrentCarTypeNameHash = CurrentCarTypeNameHash->GetNext();
-            if (CurrentCarTypeNameHash == reinterpret_cast<DebugCarOption *>(&CarTypeNameHashes)) {
-                CurrentCarTypeNameHash = CarTypeNameHashes.GetHead();
-            }
-            LoadCurrentCar();
-        } else if (hash == 0x36db743) {
-            for (int i = 0; i < iFastScroll; i++) {
-                DebugCarOption *next = CurrentLookupSlotID->GetNext();
-                if (next == reinterpret_cast<DebugCarOption *>(&LookupCarSlotIDs)) {
-                    next = LookupCarSlotIDs.GetHead();
-                }
-                CurrentLookupSlotID = next;
-            }
-        } else if (hash == 0x36db746) {
-            if (InstallableParts.IsEmpty()) goto done;
-            for (int i = 0; i < iFastScroll; i++) {
-                bPNode *next = CurrentInstallablePart->GetNext();
-                if (next == reinterpret_cast<bPNode *>(&InstallableParts)) {
-                    next = InstallableParts.GetHead();
-                }
-                CurrentInstallablePart = next;
-            }
-            NewPreviewPart();
-            goto done;
-        } else {
-            goto done;
-        }
-        RebuildPartsList();
-        break;
-    }
+    case 0xc519bfc2:
+        iFastScroll = 10;
+        return;
+    case 0xe086d2e6:
+        iFastScroll = 1;
+        return;
+    case 0xc519bfbf:
+        if (InstallableParts.IsEmpty()) return;
+        gCarCustomizeManager.ResetToStockCarParts();
+        NewPreviewPart();
+        return;
+    case 0xc519bfc0:
+        DumpPresetRide();
+        return;
     case 0x9120409e: {
         unsigned int hash = pobj->NameHash;
-        if (hash == 0x36db742) {
+        switch (hash) {
+        case 0x36db742: {
             FECarRecord *car = FEDatabase->GetPlayerCarStable(0)->GetCarRecordByHandle(pDebugCar->mHandle);
             if (!wasCarCustomized) {
                 car->Customization = 0xFF;
@@ -260,7 +231,9 @@ void DebugCarCustomizeScreen::NotificationMessage(unsigned long msg, FEObject *p
                 CurrentCarTypeNameHash = CarTypeNameHashes.GetTail();
             }
             LoadCurrentCar();
-        } else if (hash == 0x36db743) {
+            break;
+        }
+        case 0x36db743:
             for (int i = 0; i < iFastScroll; i++) {
                 DebugCarOption *prev = CurrentLookupSlotID->GetPrev();
                 if (prev == reinterpret_cast<DebugCarOption *>(&LookupCarSlotIDs)) {
@@ -268,7 +241,8 @@ void DebugCarCustomizeScreen::NotificationMessage(unsigned long msg, FEObject *p
                 }
                 CurrentLookupSlotID = prev;
             }
-        } else if (hash == 0x36db746) {
+            break;
+        case 0x36db746:
             if (InstallableParts.IsEmpty()) goto done;
             for (int i = 0; i < iFastScroll; i++) {
                 bPNode *prev = CurrentInstallablePart->GetPrev();
@@ -279,7 +253,55 @@ void DebugCarCustomizeScreen::NotificationMessage(unsigned long msg, FEObject *p
             }
             NewPreviewPart();
             goto done;
-        } else {
+        default:
+            goto done;
+        }
+        RebuildPartsList();
+        break;
+    }
+    case 0xb5971bf1: {
+        unsigned int hash = pobj->NameHash;
+        switch (hash) {
+        case 0x36db742: {
+            FECarRecord *car = FEDatabase->GetPlayerCarStable(0)->GetCarRecordByHandle(pDebugCar->mHandle);
+            if (!wasCarCustomized) {
+                car->Customization = 0xFF;
+            }
+            for (int i = 0; i < iFastScroll; i++) {
+                DebugCar *next = pDebugCar->GetNext();
+                if (next == reinterpret_cast<DebugCar *>(&FilteredCarsList)) {
+                    next = FilteredCarsList.GetHead();
+                }
+                pDebugCar = next;
+            }
+            CurrentCarTypeNameHash = CurrentCarTypeNameHash->GetNext();
+            if (CurrentCarTypeNameHash == reinterpret_cast<DebugCarOption *>(&CarTypeNameHashes)) {
+                CurrentCarTypeNameHash = CarTypeNameHashes.GetHead();
+            }
+            LoadCurrentCar();
+            break;
+        }
+        case 0x36db743:
+            for (int i = 0; i < iFastScroll; i++) {
+                DebugCarOption *next = CurrentLookupSlotID->GetNext();
+                if (next == reinterpret_cast<DebugCarOption *>(&LookupCarSlotIDs)) {
+                    next = LookupCarSlotIDs.GetHead();
+                }
+                CurrentLookupSlotID = next;
+            }
+            break;
+        case 0x36db746:
+            if (InstallableParts.IsEmpty()) goto done;
+            for (int i = 0; i < iFastScroll; i++) {
+                bPNode *next = CurrentInstallablePart->GetNext();
+                if (next == reinterpret_cast<bPNode *>(&InstallableParts)) {
+                    next = InstallableParts.GetHead();
+                }
+                CurrentInstallablePart = next;
+            }
+            NewPreviewPart();
+            goto done;
+        default:
             goto done;
         }
         RebuildPartsList();
@@ -291,20 +313,6 @@ void DebugCarCustomizeScreen::NotificationMessage(unsigned long msg, FEObject *p
     case 0x911ab364:
         gCarCustomizeManager.RelinquishControl();
         cFEng::Get()->QueuePackageSwitch("MainMenu.fng", 0, 0, false);
-        return;
-    case 0xc519bfbf:
-        if (InstallableParts.IsEmpty()) return;
-        gCarCustomizeManager.ResetToStockCarParts();
-        NewPreviewPart();
-        return;
-    case 0xc519bfc0:
-        DumpPresetRide();
-        return;
-    case 0xc519bfc2:
-        iFastScroll = 10;
-        return;
-    case 0xe086d2e6:
-        iFastScroll = 1;
         return;
     default:
         return;
