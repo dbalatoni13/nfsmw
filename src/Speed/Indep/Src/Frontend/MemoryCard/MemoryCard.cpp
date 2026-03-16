@@ -602,8 +602,9 @@ void MemoryCard::ShowAutoSaveIcon() {
     m_bAutoSaveIconShowing = true;
     if (!cFEng::Get()->IsPackagePushed("AutoSaveIcon.fng"))
         cFEng::Get()->PushNoControlPackage("AutoSaveIcon.fng", static_cast< FE_PACKAGE_PRIORITY >(0x68));
+    cFEng* feng = cFEng::Get();
     unsigned int msg = FEHashUpper("FadeIn");
-    cFEng::Get()->QueuePackageMessage(msg, "AutoSaveIcon.fng", nullptr);
+    feng->QueuePackageMessage(msg, "AutoSaveIcon.fng", nullptr);
     bool bWidescreen = FEDatabase->GetVideoSettings()->WideScreen;
     if (GRaceStatus::Exists() && GRaceStatus::Get().GetRaceParameters() != nullptr
         && GRaceStatus::Get().GetRaceParameters()->GetIsDDayRace()) {
