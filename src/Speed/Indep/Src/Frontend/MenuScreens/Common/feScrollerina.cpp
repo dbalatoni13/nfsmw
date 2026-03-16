@@ -48,6 +48,50 @@ Scrollerina::Scrollerina(const char *parent_pkg, const char *backing, const char
     }
 }
 
+void Scrollerina::FindSize() {
+    bVector2 top_left;
+    bVector2 size;
+    ScrollerSlot *slot;
+    float top;
+    float bottom;
+    float left;
+    float right;
+
+    if (!pBacking) {
+        slot = Slots.GetHead();
+        slot->GetTopLeft(top_left);
+        slot->GetSize(size);
+        top = top_left.y;
+        bottom = top + vSize.y;
+        left = top_left.x;
+        right = left + vSize.x;
+
+        while (slot != Slots.EndOfList()) {
+            slot->GetTopLeft(top_left);
+            slot->GetSize(size);
+            left = bMin(left, top_left.x);
+            top = bMin(top, top_left.y);
+            bottom = bMax(bottom, top_left.y + size.y);
+            right = bMax(right, top_left.x + size.x);
+            slot = slot->GetNext();
+        }
+
+        if (pScrollRegion) {
+            FEngGetTopLeft(pScrollRegion, top_left.x, top_left.y);
+            FEngGetSize(pScrollRegion, size.x, size.y);
+            top = bMin(top, top_left.y);
+            bottom = bMax(bottom, top_left.y + size.y);
+            left = bMin(left, top_left.x);
+            right = bMax(right, top_left.x + size.x);
+        }
+
+        vTopLeft.x = left;
+        vSize.x = bAbs(right - left);
+        vSize.y = bAbs(bottom - top);
+        vTopLeft.y = top;
+    }
+}
+
 unsigned int Scrollerina::GetNodeIndex(ScrollerDatum* datum) {
     ScrollerDatum* node = Data.GetHead();
     unsigned int index = 1;
