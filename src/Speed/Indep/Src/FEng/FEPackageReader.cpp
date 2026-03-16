@@ -981,11 +981,11 @@ bool FEPackageReader::ReadScriptTags(FETag* pTag, unsigned long Length) {
                 {
                     unsigned long CurKey = 0;
                     unsigned long KeySize = pTrack->ParamSize + 4;
+                    unsigned long Count = (KeySize >> 2) - 1;
                     unsigned long NumKeys = pTag->GetSize() / KeySize;
                     unsigned char* pKeyData = pTag->Data();
                     FEKeyNode* pKey;
                     unsigned long* pSrc;
-                    unsigned long Count;
                     unsigned long Index;
 
                     if (pTrack->IsReference()) {
@@ -1000,7 +1000,6 @@ bool FEPackageReader::ReadScriptTags(FETag* pTag, unsigned long Length) {
                         }
                         pSrc = reinterpret_cast<unsigned long*>(pKeyData);
                         pKey->tTime = static_cast<int>(BSwap32(*pSrc));
-                        Count = (KeySize >> 2) - 1;
                         Index = 0;
                         if (Count != 0) {
                             do {
