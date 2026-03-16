@@ -23,13 +23,7 @@ Showcase::Showcase(ScreenConstructorData *sd) : MenuScreen(sd) //
     car = reinterpret_cast<FECarRecord *>(sd->Arg);
 
     if (car) {
-        if (BlackListNumber == 0) {
-            FEImage *manuLogo = FEngFindImage(GetPackageName(), 0x3e01ad1d);
-            FEngSetTextureHash(manuLogo, car->GetManuLogoHash());
-            FEImage *carBadge = FEngFindImage(GetPackageName(), 0xb05dd708);
-            FEngSetTextureHash(carBadge, car->GetLogoHash());
-            RivalStreamer.Init(1, nullptr, nullptr, nullptr);
-        } else {
+        if (BlackListNumber != 0) {
             const char *titleStr = GetLocalizedString(0x3a64de21);
             char buf[32];
             FEngSNPrintf(buf, 0x20, titleStr, BlackListNumber);
@@ -39,6 +33,12 @@ Showcase::Showcase(ScreenConstructorData *sd) : MenuScreen(sd) //
             FEngSetLanguageHash(GetPackageName(), 0x7ac3d0c9, FEngHashString("BL_RIVAL_%d", BlackListNumber));
             pTagImg = FEngFindImage(GetPackageName(), 0xf5a2a087);
             RivalStreamer.Init(BlackListNumber, nullptr, pTagImg, nullptr);
+        } else {
+            FEImage *manuLogo = FEngFindImage(GetPackageName(), 0x3e01ad1d);
+            FEngSetTextureHash(manuLogo, car->GetManuLogoHash());
+            FEImage *carBadge = FEngFindImage(GetPackageName(), 0xb05dd708);
+            FEngSetTextureHash(carBadge, car->GetLogoHash());
+            RivalStreamer.Init(1, nullptr, nullptr, nullptr);
         }
     }
 
