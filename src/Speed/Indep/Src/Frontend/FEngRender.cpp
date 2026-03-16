@@ -1,6 +1,9 @@
 #include "Speed/Indep/Src/Frontend/cFEngRender.hpp"
 #include "Speed/Indep/Src/FEng/FEObject.h"
+#include "Speed/Indep/Src/FEng/feimage.h"
+#include "Speed/Indep/Src/Frontend/FERenderObject.hpp"
 #include "Speed/Indep/Src/Frontend/MoviePlayer/MoviePlayer.hpp"
+#include "Speed/Indep/Src/Ecstasy/Texture.hpp"
 #include "Speed/Indep/Src/FEng/FETypes.h"
 
 extern float ObjectSortLastZ;
@@ -8,6 +11,7 @@ extern FEPackage *ObjectSortRenderingPackage;
 extern void GCDrawMovie(FEObject *obj, FERenderObject *renderObj);
 extern void FinishedRenderingFEngLayer();
 extern FEPackageRenderInfo *HACK_FEPkgMgr_GetPackageRenderInfo(FEPackage *pkg);
+extern TextureInfo *GetTextureInfo(unsigned int hash, int, int);
 
 unsigned int FEngColorToEpolyColor(FEColor c) {
     return (c.a / 2) | ((c.b / 2) << 8) | ((c.g / 2) << 16) | ((c.r / 2) << 24);
@@ -34,6 +38,65 @@ void cFEngRender::RenderMovie(FEMovie *movie, FERenderObject *cached, FEPackageR
 }
 
 void cFEngRender::RenderModel(FEModel* model, FERenderObject* renderObj) {}
+
+void cFEngRender::RenderImage(FEImage *image, FERenderObject *cached, FEPackageRenderInfo *pkg_render_info) {
+    FEImageData *image_data = reinterpret_cast<FEImageData *>(image->pData);
+
+    bMatrix4 screen;
+    bIdentity(&screen);
+    screen.v3.x = 320.0f;
+    screen.v3.y = 240.0f;
+    screen.v3.z = 0.0f;
+
+    bMatrix4 trans;
+    FEColor fe_color;
+
+    FEClipInfo *clip_info = MakeRenderMatrix(
+        reinterpret_cast<FEObjData *>(image_data), &trans, fe_color,
+        image->RenderContext, 1.0f);
+
+    bMulMatrix(&trans, &screen, &trans);
+
+    TextureInfo *texture_info = GetTextureInfo(image->Handle, 1, 0);
+
+    if (!cached) {
+        cached = CreateCachedRender(reinterpret_cast<FEObject *>(image), texture_info);
+    } else {
+        cached->Clear(pkg_render_info);
+    }
+
+    unsigned int tw = texture_info->Width;
+    unsigned int th = texture_info->Height;
+    float ftw = static_cast<float>(tw);
+    float fth = static_cast<float>(th);
+
+    unsigned int t2w = next_power_of_2(tw);
+    unsigned int t2h = next_power_of_2(th);
+    float ft2w = static_cast<float>(t2w);
+    float ft2h = static_cast<float>(t2h);
+
+    float convertu = ftw / ft2w;
+    float convertv = fth / ft2h;
+
+    unsigned int color = FEngColorToEpolyColor(fe_color);
+    unsigned int Colours[4];
+    Colours[0] = color;
+    Colours[1] = color;
+    Colours[2] = color;
+    Colours[3] = color;
+
+    float s0 = image_data->UpperLeft.x * convertu;
+    float s1 = image_data->LowerRight.x * convertu;
+    float t0 = image_data->UpperLeft.y * convertv;
+    float t1 = image_data->LowerRight.y * convertv;
+
+    cached->SetTransform(&trans);
+    cached->AddPoly(-0.5f, -0.5f, 0.5f, 0.5f, 1.0f,
+                    s0, t0, s1, t1,
+                    Colours, clip_info, pkg_render_info);
+    cached->SetTexture(texture_info);
+    cached->Render();
+}
 
 FERenderObject *cFEngRender::FindCachedRender(FEObject *object) {
     return object->Cached;
