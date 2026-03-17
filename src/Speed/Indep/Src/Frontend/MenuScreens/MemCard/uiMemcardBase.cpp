@@ -824,8 +824,8 @@ void UIMemcardBase::NotificationMessage(unsigned long msg, FEObject* obj, unsign
     case 0xe1fde1d1:
         ExitComplete();
         break;
-    case 0x35f8620b:
     case 0x3a2be557:
+    case 0x35f8620b:
         InitComplete();
         break;
     case 0xda5b8712: {
@@ -855,7 +855,7 @@ void UIMemcardBase::NotificationMessage(unsigned long msg, FEObject* obj, unsign
         break;
     case 0xc502df5d:
         m_bInButtonAnimation = true;
-        TranslateButton(reinterpret_cast< FEObject* >(param1));
+        TranslateButton(obj);
         break;
     case 0xc407210:
         m_bInButtonAnimation = false;
