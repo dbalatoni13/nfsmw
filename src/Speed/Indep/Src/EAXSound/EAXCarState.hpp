@@ -246,6 +246,16 @@ struct EAX_CarState : public UTL::Collections::Listable<EAX_CarState, 10> {
         return MPS2MPH(GetVelocityMagnitude());
     }
 
+    int GetWheelsOnGround() {
+        int num = 0;
+        for (int i = 0; i < 4; i++) {
+            if (mWheel[i].mWheelOnGround != 0) {
+                num++;
+            }
+        }
+        return num;
+    }
+
     void SetVisualRPM(float pct) {
         mVisualRPM = pct;
     }

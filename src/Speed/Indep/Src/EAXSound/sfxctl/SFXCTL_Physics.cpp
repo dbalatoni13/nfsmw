@@ -275,144 +275,51 @@ void SFXCTL_Physics::UpdateParams(float t) {
 }
 
 void SFXCTL_Physics::UpdateMixerOutputs() {
-    int *outputs = GetOutputBlockPtr();
-    EAXCar *carOwner = m_pEAXCar;
-    EAX_CarState *pCar = carOwner != nullptr ? ReadStateCar(carOwner) : nullptr;
+    int TargeVal;
 
-    float fVelY = pCar->mVel0.y;
-    float fVelX = pCar->mVel0.x;
-    float fVelZ = pCar->mVel0.z;
-    float fVelLenSq = fVelZ * fVelZ + fVelX * fVelX + fVelY * fVelY;
-    float fVelLen = 0.0f;
-    if (fVelLenSq > 0.0f) {
-        fVelLen = bSqrt(fVelLenSq);
-    }
+    TargeVal = bClamp(static_cast<int>(bAbs(GetPhysCar()->GetVelocityMagnitudeMPH()) * 1092.2334f), 0, 0x7FFF);
+    SetDMIX_Input(0, TargeVal);
+    TargeVal = bClamp(static_cast<int>(bAbs(GetPhysCar()->GetVelocityMagnitudeMPH()) * 546.1167f), 0, 0x7FFF);
+    SetDMIX_Input(1, TargeVal);
+    TargeVal = bClamp(static_cast<int>(bAbs(GetPhysCar()->GetVelocityMagnitudeMPH()) * 327.66998f), 0, 0x7FFF);
+    SetDMIX_Input(2, TargeVal);
+    TargeVal = bClamp(static_cast<int>(bAbs(GetPhysCar()->GetVelocityMagnitudeMPH()) * 234.05f), 0, 0x7FFF);
+    SetDMIX_Input(3, TargeVal);
+    TargeVal = bClamp(static_cast<int>((10000.0f - m_pEAXCar->GetPhysRPM()) * 3.6407778f), 0, 0x7FFF);
+    SetDMIX_Input(4, TargeVal);
 
-    int iOut = static_cast< int >(bAbs(fVelLen * 2.23699f) * 1092.2334f);
-    int iClamp = 0;
-    if (iOut > 0) {
-        iClamp = iOut;
-    }
-    if (iClamp > 0x7FFF) {
-        iClamp = 0x7FFF;
-    }
-    outputs[0] = iClamp;
-
-    pCar = carOwner != nullptr ? ReadStateCar(carOwner) : nullptr;
-    fVelY = pCar->mVel0.y;
-    fVelX = pCar->mVel0.x;
-    fVelZ = pCar->mVel0.z;
-    fVelLenSq = fVelZ * fVelZ + fVelX * fVelX + fVelY * fVelY;
-    fVelLen = 0.0f;
-    if (fVelLenSq > 0.0f) {
-        fVelLen = bSqrt(fVelLenSq);
-    }
-
-    iOut = static_cast< int >(bAbs(fVelLen * 2.23699f) * 546.1167f);
-    iClamp = 0;
-    if (iOut > 0) {
-        iClamp = iOut;
-    }
-    if (iClamp > 0x7FFF) {
-        iClamp = 0x7FFF;
-    }
-    outputs[1] = iClamp;
-
-    pCar = carOwner != nullptr ? ReadStateCar(carOwner) : nullptr;
-    fVelY = pCar->mVel0.y;
-    fVelX = pCar->mVel0.x;
-    fVelZ = pCar->mVel0.z;
-    fVelLenSq = fVelZ * fVelZ + fVelX * fVelX + fVelY * fVelY;
-    fVelLen = 0.0f;
-    if (fVelLenSq > 0.0f) {
-        fVelLen = bSqrt(fVelLenSq);
-    }
-
-    iOut = static_cast< int >(bAbs(fVelLen * 2.23699f) * 327.66998f);
-    iClamp = 0;
-    if (iOut > 0) {
-        iClamp = iOut;
-    }
-    if (iClamp > 0x7FFF) {
-        iClamp = 0x7FFF;
-    }
-    outputs[2] = iClamp;
-
-    float fMaxPhysRPM = 10000.0f;
-    pCar = carOwner != nullptr ? ReadStateCar(carOwner) : nullptr;
-    fVelY = pCar->mVel0.y;
-    fVelX = pCar->mVel0.x;
-    fVelZ = pCar->mVel0.z;
-    fVelLenSq = fVelZ * fVelZ + fVelX * fVelX + fVelY * fVelY;
-    fVelLen = 0.0f;
-    if (fVelLenSq > 0.0f) {
-        fVelLen = bSqrt(fVelLenSq);
-    }
-
-    iOut = static_cast< int >(bAbs(fVelLen * 2.23699f) * 234.05f);
-    iClamp = 0;
-    if (iOut > 0) {
-        iClamp = iOut;
-    }
-    if (iClamp > 0x7FFF) {
-        iClamp = 0x7FFF;
-    }
-    outputs[3] = iClamp;
-
-    iOut = static_cast<int>(
-        (fMaxPhysRPM - ReadCarPhysRPMRef(carOwner)) *
-        3.6407778f);
-    iClamp = 0;
-    if (iOut > 0) {
-        iClamp = iOut;
-    }
-    if (iClamp > 0x7FFF) {
-        iClamp = 0x7FFF;
-    }
-    outputs[4] = iClamp;
-
-    int iAccelOutput = 0;
+    TargeVal = 0;
     if (*static_cast<int *>(static_cast<void *>(&IsAccelerating)) != 0) {
-        iAccelOutput = 0x7FFF;
+        TargeVal = 0x7FFF;
     }
-    outputs[10] = iAccelOutput;
+    SetDMIX_Input(10, TargeVal);
+    SetDMIX_Input(5, static_cast<int>(static_cast<float>(GetPhysCar()->GetWheelsOnGround()) * 8191.75f));
 
-    unsigned int wheelsOnGround = 0;
-    int wheelIndex = 0;
-    Sound::Wheel *wheels = ReadCarWheels(pCar);
-    do {
-        if (wheels[wheelIndex].mWheelOnGround != 0) {
-            wheelsOnGround += 1;
-        }
-        wheelIndex += 1;
-    } while (wheelIndex < 4);
-    outputs[5] = static_cast< int >(static_cast<float>(wheelsOnGround) * 8191.75f);
-
-    int pov = ReadCarPovTypeRef(carOwner);
-    if (pov == 3) {
-        pov = 0x7FFF;
+    TargeVal = m_pEAXCar->GetPOV();
+    if (TargeVal == 3) {
+        TargeVal = 0x7FFF;
     } else {
-        if (pov < 4) {
-            if (pov == 1) {
-                pov = 4000;
-                goto L_POV_DONE;
+        if (TargeVal < 4) {
+            if (TargeVal == 1) {
+                TargeVal = 4000;
+                goto L_SET_POV;
             }
-            if (pov > 1) {
-                pov = 0x7FFF;
-                goto L_POV_DONE;
+            if (TargeVal > 1) {
+                TargeVal = 0x7FFF;
+                goto L_SET_POV;
             }
-        } else if ((pov == 5) || (pov < 5) || (pov == 6)) {
-            pov = 0x7FFF;
-            goto L_POV_DONE;
+        } else if ((TargeVal == 5) || (TargeVal < 5) || (TargeVal == 6)) {
+            TargeVal = 0x7FFF;
+            goto L_SET_POV;
         }
-        pov = 0;
+        TargeVal = 0;
     }
 
-L_POV_DONE:
-    pov = smooth(outputs[6], pov, 0x3FFF);
-    outputs[6] = pov;
-    outputs[8] = 0;
-    outputs[7] = 0;
+L_SET_POV:
+    TargeVal = smooth(GetDMIX_InputValue(6), TargeVal, 0x3FFF);
+    SetDMIX_Input(6, TargeVal);
+    SetDMIX_Input(8, 0);
+    SetDMIX_Input(7, 0);
 }
 
 void SFXCTL_Physics::MsgRevEngine(const MAIEngineRev &message) {
@@ -540,8 +447,10 @@ float SFXCTL_AIPhysics::GenDeltaRPM() {
         RPM_LengthScale *= SteadyVelocityFactor;
         m_DeltaRPM_LFO_Offset = DeltaRPM_LFO_Offset * 15.0f;
     }
-    RPM_LengthScale *= 33.333336f;
-    return RPM_LengthScale * SndBase::m_fDeltaTime;
+    float DeltaRPM = 33.333336f;
+
+    DeltaRPM *= RPM_LengthScale;
+    return DeltaRPM * SndBase::m_fDeltaTime;
 }
 
 void SFXCTL_AIPhysics::UpdateRPM(float t) {
@@ -673,38 +582,61 @@ void SFXCTL_Physics::UpdateNIS(float TotalTime, float deltaTime) {
             pRevData = nullptr;
             *static_cast<int *>(static_cast<void *>(&PattternPlay)) = 0;
             if (PatternNumber == 8) {
-                patternLength = 0x43;
-                patternData = RevPat8;
-            } else if (PatternNumber < 9) {
-                if (PatternNumber == 6) {
-                    patternLength = 0x16;
-                    patternData = RevPat6;
-                } else if (PatternNumber < 7) {
-                    patternLength = 0x1B;
-                    patternData = RevPat5;
-                } else {
-                    patternLength = 0x13;
-                    patternData = RevPat7;
+                goto L_Pattern8;
+            }
+            if (PatternNumber > 8) {
+                if (PatternNumber == 10) {
+                    goto L_Pattern10;
                 }
-            } else if (PatternNumber == 10) {
-                patternLength = 0x22;
-                patternData = RevPat10;
-            } else if (PatternNumber < 10) {
-                patternLength = 0x38;
-                patternData = RevPat9;
-            } else if (PatternNumber == 11) {
-                patternLength = 0x1E;
-                patternData = RevPat11;
+                if (PatternNumber < 10) {
+                    goto L_Pattern9;
+                }
+                if (PatternNumber == 11) {
+                    goto L_Pattern11;
+                }
+                if (PatternNumber == 12) {
+                    goto L_Pattern12;
+                }
             } else {
-                if (PatternNumber != 12) {
-                    patternLength = 0x1B;
-                    patternData = RevPat5;
-                } else {
-                    patternLength = 0x1D;
-                    patternData = RevPat12;
+                if (PatternNumber == 6) {
+                    goto L_Pattern6;
+                }
+                if (PatternNumber > 6) {
+                    goto L_Pattern7;
                 }
             }
+            patternLength = 0x1B;
+            patternData = RevPat5;
+            goto L_PatternDone;
+L_Pattern6:
+            patternLength = 0x16;
+            patternData = RevPat6;
+            goto L_PatternDone;
+L_Pattern7:
+            patternLength = 0x13;
+            patternData = RevPat7;
+            goto L_PatternDone;
+L_Pattern8:
+            patternLength = 0x43;
+            patternData = RevPat8;
+            goto L_PatternDone;
+L_Pattern9:
+            patternLength = 0x38;
+            patternData = RevPat9;
+            goto L_PatternDone;
+L_Pattern10:
+            patternLength = 0x22;
+            patternData = RevPat10;
+            goto L_PatternDone;
+L_Pattern11:
+            patternLength = 0x1E;
+            patternData = RevPat11;
+            goto L_PatternDone;
+L_Pattern12:
+            patternLength = 0x1D;
+            patternData = RevPat12;
 
+L_PatternDone:
             NumDataPoints = patternLength;
             pRevData = patternData;
             if (pRevData != nullptr) {
@@ -733,60 +665,61 @@ void SFXCTL_Physics::UpdateNIS(float TotalTime, float deltaTime) {
         }
     }
 
-    if (eCurNisRevingState != NIS_PATTERN_ON) {
-        if (eCurNisRevingState == NIS_MERGE_WITH_PHYSICS) {
-            NISTRQ = 0.0f;
-            if (m_pEAXCar->GetPhysRPM() < PhysicsRPM) {
-                NISTRQ = 100.0f;
-            }
-            NISRPM = smooth(m_pEAXCar->GetPhysRPM(), PhysicsRPM, 500.0f);
+    switch (eCurNisRevingState) {
+    case NIS_PATTERN_ON:
+        if (TotalTime < 0.001f) {
+            TimeIntoRev = TimeIntoRev + deltaTime;
         } else {
-            NISTRQ = NISTRQ - 15.0f;
-            NISRPM = NISRPM - 500.0f;
+            TimeIntoRev = TotalTime;
         }
-        goto ClampAndStore;
-    }
 
-    if (TotalTime < 0.001f) {
-        TimeIntoRev = TimeIntoRev + deltaTime;
-    } else {
-        TimeIntoRev = TotalTime;
-    }
-
-    if (TimeIntoRev <= pRevData[1].time) {
+        if (TimeIntoRev <= pRevData[1].time) {
 InterpolatePattern:
-        if (eCurNisRevingState != NIS_OFF) {
-            Slope RPMSlope(static_cast<float>(pRevData->RPM), static_cast<float>(pRevData[1].RPM), pRevData->time, pRevData[1].time);
-            Slope TRQSlope(static_cast<float>(pRevData->Trq), static_cast<float>(pRevData[1].Trq), pRevData->time, pRevData[1].time);
-            NISRPM = RPMSlope.GetValue(TimeIntoRev);
-            NISTRQ = TRQSlope.GetValue(TimeIntoRev);
-        }
-    } else if (eCurNisRevingState != NIS_OFF) {
-        do {
-            NumDataPoints = NumDataPoints - 1;
-            if (NumDataPoints == 0) {
-                eCurNisRevingState = NIS_OFF;
-            } else {
-                pRevData = pRevData + 1;
+            if (eCurNisRevingState != NIS_OFF) {
+                Slope RPMSlope(static_cast<float>(pRevData->RPM), static_cast<float>(pRevData[1].RPM), pRevData->time, pRevData[1].time);
+                Slope TRQSlope(static_cast<float>(pRevData->Trq), static_cast<float>(pRevData[1].Trq), pRevData->time, pRevData[1].time);
+                NISRPM = RPMSlope.GetValue(TimeIntoRev);
+                NISTRQ = TRQSlope.GetValue(TimeIntoRev);
             }
-        } while (pRevData[1].time < TimeIntoRev && eCurNisRevingState != NIS_OFF);
-        goto InterpolatePattern;
-    }
+        } else if (eCurNisRevingState != NIS_OFF) {
+            do {
+                NumDataPoints = NumDataPoints - 1;
+                if (NumDataPoints == 0) {
+                    eCurNisRevingState = NIS_OFF;
+                } else {
+                    pRevData = pRevData + 1;
+                }
+            } while (pRevData[1].time < TimeIntoRev && eCurNisRevingState != NIS_OFF);
+            goto InterpolatePattern;
+        }
 
-    timeLeft = -1.0f;
-    player = IPlayer::First(PLAYER_LOCAL);
-    if (player != nullptr) {
-        hud = player->GetHud();
-        if (hud != nullptr) {
-            icountdown = nullptr;
-            if (hud->QueryInterface(&icountdown)) {
-                timeLeft = icountdown->GetSecondsBeforeRaceStart();
+        timeLeft = -1.0f;
+        player = IPlayer::First(PLAYER_LOCAL);
+        if (player != nullptr) {
+            hud = player->GetHud();
+            if (hud != nullptr) {
+                icountdown = nullptr;
+                if (hud->QueryInterface(&icountdown)) {
+                    timeLeft = icountdown->GetSecondsBeforeRaceStart();
+                }
             }
         }
-    }
 
-    if (timeLeft < 1.0f && 0.0f < timeLeft) {
-        eCurNisRevingState = NIS_MERGE_WITH_PHYSICS;
+        if (timeLeft < 1.0f && 0.0f < timeLeft) {
+            eCurNisRevingState = NIS_MERGE_WITH_PHYSICS;
+        }
+        break;
+    case NIS_MERGE_WITH_PHYSICS:
+        NISTRQ = 0.0f;
+        if (m_pEAXCar->GetPhysRPM() < PhysicsRPM) {
+            NISTRQ = 100.0f;
+        }
+        NISRPM = smooth(m_pEAXCar->GetPhysRPM(), PhysicsRPM, 500.0f);
+        goto ClampAndStore;
+    default:
+        NISTRQ = NISTRQ - 15.0f;
+        NISRPM = NISRPM - 500.0f;
+        goto ClampAndStore;
     }
 
 ClampAndStore:
