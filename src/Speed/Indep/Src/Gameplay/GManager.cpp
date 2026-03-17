@@ -1414,6 +1414,52 @@ void GManager::RefreshEngageTriggerIcons() {
     }
 }
 
+GIcon *GManager::AllocIcon(GIcon::Type iconType, const UMath::Vector3 &pos, float rotDeg, bool disposable) {
+    GIcon *icon = nullptr;
+
+    if (mNumIcons < 200) {
+        icon = new GIcon(iconType, pos, rotDeg);
+        if (icon) {
+            mIcons[mNumIcons++] = icon;
+            if (disposable) {
+                icon->MarkDisposable();
+            }
+        }
+    }
+
+    return icon;
+}
+
+void GManager::FreeIconAt(unsigned int index) {
+    if (mNumIcons == 0) {
+        return;
+    }
+
+    GIcon *icon = mIcons[index];
+    if (icon) {
+        icon->ClearGPSing();
+        delete icon;
+        mIcons[index] = nullptr;
+    }
+
+    if (index + 1 < mNumIcons) {
+        if (index + 1 < mNumVisibleIcons) {
+            mIcons[index] = mIcons[mNumVisibleIcons - 1];
+            if (mNumVisibleIcons < mNumIcons) {
+                mIcons[mNumVisibleIcons - 1] = mIcons[mNumIcons - 1];
+            }
+        } else {
+            mIcons[index] = mIcons[mNumIcons - 1];
+        }
+    }
+
+    if (index < mNumVisibleIcons) {
+        mNumVisibleIcons--;
+    }
+
+    mNumIcons--;
+}
+
 bool GManager::AddIconForTrackMarker(TrackPositionMarker *marker, unsigned int tag) {
     if (marker->NameHash == tag) {
         UMath::Vector3 pos;
