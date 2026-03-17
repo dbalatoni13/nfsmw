@@ -2,6 +2,8 @@
 
 #include "Speed/Indep/Src/World/Scenery.cpp"
 
+#include "Speed/Indep/Src/World/Skids.cpp"
+
 #include "Speed/Indep/Src/World/TrackPath.cpp"
 
 #include "Speed/Indep/Src/World/EventManager.cpp"

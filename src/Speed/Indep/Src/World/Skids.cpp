@@ -1,0 +1,231 @@
+#include "Skids.hpp"
+
+#include "Speed/Indep/Src/Ecstasy/Texture.hpp"
+#include "Speed/Indep/bWare/Inc/Strings.hpp"
+#include "Speed/Indep/bWare/Inc/bVector.hpp"
+#include "Speed/Indep/bWare/Inc/bWare.hpp"
+
+void bInitializeBoundingBox(bVector3 *bbox_min, bVector3 *bbox_max, const bVector3 *point);
+void bExpandBoundingBox(bVector3 *bbox_min, bVector3 *bbox_max, const bVector3 *point, float extra_width);
+void bExpandBoundingBox(bVector3 *bbox_min, bVector3 *bbox_max, const bVector3 *bbox2_min, const bVector3 *bbox2_max);
+
+static const int kNumSkidSegments_Skids = 8;
+static const int kNumSkidTextures_Skids = 29;
+static const float kSkidSegmentScale_Skids = 64.0f;
+static const float kInverseSkidSegmentScale_Skids = 1.0f / 64.0f;
+static const float kSkidDirectionBreakThreshold_Skids = 0.2f;
+static const float kSkidDirectionMergeThreshold_Skids = 0.002f;
+static const float kSkidLengthMergeThreshold_Skids = 0.25f;
+static const float kSkidLengthSplitThreshold_Skids = 3.0f;
+static const float kSkidIntensityScale_Skids = 255.0f;
+
+SlotPool *SkidSetSlotPool = 0;
+int PlotSkidsInCaffeine = 0;
+int PlotSkidPointsInCaffeine = 0;
+bTList<SkidSet> SkidSetList;
+TextureInfo *SkidTextureInfo[kNumSkidTextures_Skids];
+
+void *SkidSet::operator new(size_t) {
+    return bMalloc(SkidSetSlotPool);
+}
+
+void SkidSet::operator delete(void *ptr) {
+    bFree(SkidSetSlotPool, ptr);
+}
+
+void SkidSegment::SetPoints(bVector3 *position, bVector3 *delta_position) {
+    Position[0] = position->x;
+    Position[1] = position->y;
+    Position[2] = position->z;
+    DeltaPosition[0] = static_cast<signed char>(delta_position->x * kSkidSegmentScale_Skids);
+    DeltaPosition[1] = static_cast<signed char>(delta_position->y * kSkidSegmentScale_Skids);
+    DeltaPosition[2] = static_cast<signed char>(delta_position->z * kSkidSegmentScale_Skids);
+}
+
+void SkidSegment::GetPoints(bVector3 *position, bVector3 *delta_position) {
+    position->x = Position[0];
+    position->y = Position[1];
+    position->z = Position[2];
+
+    if (delta_position) {
+        delta_position->x = static_cast<float>(DeltaPosition[0]) * kInverseSkidSegmentScale_Skids;
+        delta_position->y = static_cast<float>(DeltaPosition[1]) * kInverseSkidSegmentScale_Skids;
+        delta_position->z = static_cast<float>(DeltaPosition[2]) * kInverseSkidSegmentScale_Skids;
+    }
+}
+
+void SkidSegment::GetEndPoints(bVector3 *left_point, bVector3 *right_point) {
+    float delta_x = static_cast<float>(DeltaPosition[0]) * kInverseSkidSegmentScale_Skids;
+    float delta_y = static_cast<float>(DeltaPosition[1]) * kInverseSkidSegmentScale_Skids;
+    float delta_z = static_cast<float>(DeltaPosition[2]) * kInverseSkidSegmentScale_Skids;
+
+    left_point->x = Position[0] + delta_x;
+    left_point->y = Position[1] + delta_y;
+    left_point->z = Position[2] + delta_z;
+
+    right_point->x = Position[0] - delta_x;
+    right_point->y = Position[1] - delta_y;
+    right_point->z = Position[2] - delta_z;
+}
+
+SkidSet::SkidSet(SkidMaker *skid_maker, bVector3 *position, bVector3 *delta_position, int terrain_type, float intensity)
+    : pClan(0)
+    , pClanNode(0)
+    , pSkidMaker(skid_maker)
+    , TheTerrainType(terrain_type)
+    , NumSkidSegments(0)
+{
+    Position = *position;
+    bInitializeBoundingBox(&BBoxMin, &BBoxMax, position);
+    BBoxCentre = *position;
+
+    if (pSkidMaker) {
+        pSkidMaker->pSkidSet = this;
+    }
+
+    pClan = GetClan(position);
+    if (pClan) {
+        pClanNode = pClan->SkidSetList.AddTail(this);
+    }
+
+    AddSegment(position, delta_position, false, intensity);
+}
+
+SkidSet::~SkidSet() {
+    if (pSkidMaker) {
+        pSkidMaker->MakeNoSkid();
+    }
+
+    if (pClan && pClanNode) {
+        pClan->SkidSetList.Remove(pClanNode);
+        pClanNode = 0;
+    }
+}
+
+int SkidSet::AddSegment(bVector3 *position, bVector3 *delta_position, bool skid_is_flaming, float intensity) {
+    (void)skid_is_flaming;
+
+    float segment_length = 0.0f;
+    bVector3 direction;
+    if (NumSkidSegments > 0) {
+        bVector3 last_position;
+        bVector3 last_delta_position;
+        SkidSegments[NumSkidSegments - 1].GetPoints(&last_position, &last_delta_position);
+
+        direction.x = position->x - last_position.x;
+        direction.y = position->y - last_position.y;
+        direction.z = position->z - last_position.z;
+        segment_length = bSqrt(direction.x * direction.x + direction.y * direction.y + direction.z * direction.z);
+        bNormalize(&direction, &direction);
+    }
+
+    bool extend_last_segment = false;
+    if (NumSkidSegments > 1) {
+        float normal_delta =
+            1.0f - (direction.x * LastNormal.x + direction.y * LastNormal.y + direction.z * LastNormal.z);
+        float total_length = LastSegmentLength + segment_length;
+        if (normal_delta > kSkidDirectionBreakThreshold_Skids) {
+            FinishedAddingSkids();
+            return 0;
+        }
+
+        extend_last_segment = normal_delta < kSkidDirectionMergeThreshold_Skids || total_length < kSkidLengthMergeThreshold_Skids;
+        if (total_length > kSkidLengthSplitThreshold_Skids) {
+            extend_last_segment = false;
+        }
+    }
+
+    SkidSegment *segment = 0;
+    if (extend_last_segment) {
+        segment = &SkidSegments[NumSkidSegments - 1];
+        LastSegmentLength += segment_length;
+    } else {
+        if (NumSkidSegments == kNumSkidSegments_Skids) {
+            return 1;
+        }
+
+        segment = &SkidSegments[NumSkidSegments];
+        NumSkidSegments += 1;
+        if (NumSkidSegments > 1) {
+            LastNormal = direction;
+        }
+        LastSegmentLength = segment_length;
+    }
+
+    segment->SetPoints(position, delta_position);
+    segment->Intensity = static_cast<unsigned char>(intensity * kSkidIntensityScale_Skids);
+
+    bExpandBoundingBox(&BBoxMin, &BBoxMax, position, segment_length);
+    if (pClan) {
+        bExpandBoundingBox(&pClan->BBoxMin, &pClan->BBoxMax, &BBoxMin, &BBoxMax);
+    }
+
+    BBoxCentre.x = (BBoxMin.x + BBoxMax.x) * 0.5f;
+    BBoxCentre.y = (BBoxMin.y + BBoxMax.y) * 0.5f;
+    BBoxCentre.z = (BBoxMin.z + BBoxMax.z) * 0.5f;
+    return 0;
+}
+
+void SkidSet::FinishedAddingSkids() {
+    if (pSkidMaker) {
+        pSkidMaker->pSkidSet = 0;
+        pSkidMaker = 0;
+    }
+}
+
+SkidSet *CreateNewSkidSet(SkidMaker *skid_maker, bVector3 *position, bVector3 *delta_position, int terrain_type, float intensity) {
+    if (SkidSetSlotPool->IsFull() && !SkidSetList.IsEmpty()) {
+        DeleteThisSkid(SkidSetList.GetTail());
+    }
+
+    SkidSet *skid_set = new SkidSet(skid_maker, position, delta_position, terrain_type, intensity);
+    SkidSetList.AddHead(skid_set);
+    return skid_set;
+}
+
+void SkidMaker::MakeNoSkid() {
+    if (pSkidSet) {
+        pSkidSet->FinishedAddingSkids();
+    }
+}
+
+void InitSkids(int max_skids) {
+    if (!SkidSetSlotPool) {
+        SkidSetSlotPool = bNewSlotPool(0xF0, max_skids, "SkidSetSlotPool", GetVirtualMemoryAllocParams());
+        SkidSetSlotPool->Flags = static_cast<SlotPoolFlags>(SkidSetSlotPool->Flags & ~1);
+    }
+
+    for (int i = 0; i < kNumSkidTextures_Skids; i++) {
+        SkidTextureInfo[i] = 0;
+        SkidTextureInfo[i] = GetTextureInfo(bStringHash("SKID_ROAD"), 1, 0);
+    }
+
+    PlotSkidsInCaffeine = 0;
+    PlotSkidPointsInCaffeine = 0;
+}
+
+void CloseSkids() {
+    if (SkidSetSlotPool) {
+        bDeleteSlotPool(SkidSetSlotPool);
+        SkidSetSlotPool = 0;
+    }
+
+    for (int i = 0; i < kNumSkidTextures_Skids; i++) {
+        SkidTextureInfo[i] = 0;
+    }
+}
+
+void DeleteThisSkid(SkidSet *skid_set) {
+    if (!skid_set) {
+        return;
+    }
+
+    SkidSetList.Remove(skid_set);
+    delete skid_set;
+}
+
+void DeleteAllSkids() {
+    while (!SkidSetList.IsEmpty()) {
+        DeleteThisSkid(SkidSetList.GetTail());
+    }
+}
