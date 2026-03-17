@@ -32,6 +32,7 @@ extern int FEPrintf(FEString *text, const char *fmt, ...);
 extern int FEngSNPrintf(char *, int, const char *, ...);
 extern unsigned long FEHashUpper(const char *str);
 extern int FEngMapJoyParamToJoyport(int feng_param);
+extern unsigned int AttribGenFrontendClassKey() asm("ClassKey__Q36Attrib3Gen8frontend");
 
 extern void SetSelectCarLighting(int view_id, float f, int);
 extern void eRotateZ(bMatrix4 *, bMatrix4 *, unsigned short);
@@ -946,7 +947,7 @@ static unsigned int FindGarageCameraInfo(const char *prefix) {
     const char *garage_name = GetCurrentGarageName();
     bStrCat(buf, buf, garage_name);
     unsigned int key = Attrib::StringToLowerCaseKey(buf);
-    Attrib::Gen::frontend inst(Attrib::FindCollection(Attrib::Gen::frontend::ClassKey(), key), 0, nullptr);
+    Attrib::Gen::frontend inst(Attrib::FindCollection(AttribGenFrontendClassKey(), key), 0, nullptr);
     bool hasCollection = inst.GetConstCollection() != 0;
     if (hasCollection) {
         return key;
