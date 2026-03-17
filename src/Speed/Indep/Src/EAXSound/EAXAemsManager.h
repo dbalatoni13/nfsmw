@@ -119,9 +119,7 @@ struct stSndAssetQueue {
     EAX_CarState *pCar;       // offset 0x24, size 0x4
 
     bool operator==(const stSndAssetQueue &rhs) const {
-        return Asset.eDataType == rhs.Asset.eDataType && Asset.FileName == rhs.Asset.FileName &&
-               Asset.DataPath == rhs.Asset.DataPath && Asset.bLoadToTop == rhs.Asset.bLoadToTop &&
-               pThis == rhs.pThis && pCar == rhs.pCar;
+        return pThis == rhs.pThis && Asset.FileName == rhs.Asset.FileName;
     }
 };
 

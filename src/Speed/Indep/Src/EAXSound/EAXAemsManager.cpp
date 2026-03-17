@@ -149,7 +149,7 @@ static BankSlotNode *&GetBankSlotHead(BankSlotSystem &slots) {
 }
 
 static ListNodeQueue *&GetQueueHead(SndAssetQueue &queue) {
-    return *static_cast<ListNodeQueue **>(static_cast<void *>(&queue));
+    return *static_cast<ListNodeQueue **>(static_cast<void *>(static_cast<char *>(static_cast<void *>(&queue)) + 4));
 }
 
 static void ClearSndAssetQueue(SndAssetQueue &queue) {
@@ -627,115 +627,91 @@ void EAXAemsManager::SetupNextLoad() {
         m_nCurLoadedBankIndex++;
         m_pCurLoadSDLP = g_SndAssetList + m_nCurLoadedBankIndex;
         if (InitiateLoad() < 0) {
-            stSndDataLoadParams *currentLoad = m_pCurLoadSDLP;
-            Attrib::StringKey failedFile = currentLoad->AssetDescription.FileName;
-
-            SndBase *sfxToDelete[32];
-            bMemSet(sfxToDelete, '\0', sizeof(sfxToDelete));
+            Attrib::StringKey FileName = m_pCurLoadSDLP->AssetDescription.FileName;
+            SndBase *SfxToDel[32];
+            SndAssetQueue::iterator i;
             int deleteCount = 0;
 
-            ListNodeQueue *head = GetQueueHead(mWaitForResolve);
-            if (head == nullptr) {
-                RemoveBankListing(m_nCurLoadedBankIndex);
-                SetupNextLoad();
-                return;
-            }
-
-        RestartScan:
-            ListNodeQueue *match = head->next;
-            while (match != head) {
-                if (match->data.Asset.FileName == failedFile) {
+            bMemSet(SfxToDel, '\0', 0x80);
+            while (true) {
+                i = mWaitForResolve.begin();
+                if (i == mWaitForResolve.end()) {
                     break;
                 }
-                match = match->next;
-            }
 
-            if (match != head) {
-                SndBase *targetThis = match->data.pThis;
-
-                for (ListNodeQueue *scan = head->next; scan != head;) {
-                    ListNodeQueue *next = scan->next;
-                    if (scan->data.pThis == targetThis && scan->data.Asset.FileName == failedFile) {
-                        scan->prev->next = scan->next;
-                        scan->next->prev = scan->prev;
-                        gFastMem.Free(scan, 0x30, nullptr);
+                while (true) {
+                    stSndAssetQueue currequst = *i;
+                    if (currequst.Asset.FileName == FileName) {
+                        mWaitForResolve.remove(currequst);
+                        if (deleteCount < 32) {
+                            SfxToDel[deleteCount] = currequst.pThis;
+                        }
+                        deleteCount++;
+                        goto ContinueScanning;
                     }
-                    scan = next;
-                }
 
-                if (deleteCount < 32) {
-                    sfxToDelete[deleteCount] = targetThis;
-                    ++deleteCount;
-                }
-                goto RestartScan;
-            }
-
-            for (int i = deleteCount - 1; i >= 0; --i) {
-                SndBase *targetThis = sfxToDelete[i];
-                ListNodeQueue *findThis = head->next;
-                while (findThis != head && findThis->data.pThis != targetThis) {
-                    findThis = findThis->next;
-                }
-
-                if (findThis == head) {
-                    deleteCount = i;
-                    continue;
-                }
-
-                Attrib::StringKey targetFile = findThis->data.Asset.FileName;
-                for (ListNodeQueue *scan = head->next; scan != head;) {
-                    ListNodeQueue *next = scan->next;
-                    if (scan->data.pThis == targetThis && scan->data.Asset.FileName == targetFile) {
-                        scan->prev->next = scan->next;
-                        scan->next->prev = scan->prev;
-                        gFastMem.Free(scan, 0x30, nullptr);
+                    ++i;
+                    if (i == mWaitForResolve.end()) {
+                        goto RemoveQueuedLoads;
                     }
-                    scan = next;
                 }
+
+            ContinueScanning:
+                ;
             }
 
-            if (deleteCount <= 0) {
-                RemoveBankListing(m_nCurLoadedBankIndex);
-                SetupNextLoad();
-            }
+        RemoveQueuedLoads:
+            deleteCount--;
+            do {
+                i = mWaitForResolve.begin();
+                while (true) {
+                    if (i == mWaitForResolve.end()) {
+                        goto ContinueDeleting;
+                    }
+
+                    stSndAssetQueue currequst = *i;
+                    if (SfxToDel[deleteCount] == currequst.pThis) {
+                        mWaitForResolve.remove(currequst);
+                        goto ContinueDeleting;
+                    }
+
+                    ++i;
+                }
+
+            ContinueDeleting:
+                ;
+            } while (deleteCount-- > 0);
+
+            RemoveBankListing(m_nCurLoadedBankIndex);
+            SetupNextLoad();
         }
     }
 }
 
 void EAXAemsManager::Update() {
 ReprocessQueue:
-    ListNodeQueue *head = GetQueueHead(mWaitForResolve);
-    ListNodeQueue *iter = head->next;
-    while (iter != head) {
-        stSndAssetQueue currentRequest = iter->data;
-        if (IsAssetLoaded(currentRequest.Asset.FileName) == -1) {
-            iter = iter->next;
-            continue;
-        }
-
-        bool shouldInit = true;
-        for (ListNodeQueue *scan = head->next; scan != head; scan = scan->next) {
-            if (scan->data.pThis == currentRequest.pThis && !(scan->data.Asset.FileName == currentRequest.Asset.FileName)) {
-                shouldInit = false;
+    SndAssetQueue::iterator i = mWaitForResolve.begin();
+    while (i != mWaitForResolve.end()) {
+        stSndAssetQueue currequst = *i;
+        if (IsAssetLoaded(currequst.Asset.FileName) != -1) {
+            bool callinit = true;
+            i++;
+            while (i != mWaitForResolve.end() && callinit) {
+                stSndAssetQueue futureitems = *i;
+                if (futureitems.pThis == currequst.pThis) {
+                    callinit = false;
+                }
+                i++;
             }
-        }
 
-        if (shouldInit && currentRequest.pThis != nullptr) {
-            currentRequest.pThis->InitSFX();
-        }
-
-        for (ListNodeQueue *removeIter = head->next; removeIter != head;) {
-            ListNodeQueue *next = removeIter->next;
-            if (removeIter->data.pThis == currentRequest.pThis &&
-                removeIter->data.Asset.FileName == currentRequest.Asset.FileName) {
-                removeIter->prev->next = removeIter->next;
-                removeIter->next->prev = removeIter->prev;
-                gFastMem.Free(removeIter, 0x30, nullptr);
+            if (callinit && currequst.pThis != nullptr) {
+                currequst.pThis->InitSFX();
             }
-            removeIter = next;
-        }
 
-        goto ReprocessQueue;
+            mWaitForResolve.remove(currequst);
+            goto ReprocessQueue;
+        }
+        i++;
     }
 
     if (m_ItemsPendingAsyncResolve != 0 && m_bBulkLoad) {
