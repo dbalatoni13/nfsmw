@@ -1,5 +1,6 @@
 #include "Scenery.hpp"
 
+#include "Speed/Indep/Libs/Support/Utility/UStandard.h"
 #include "VisibleSection.hpp"
 #include "Speed/Indep/Src/Ecstasy/eModel.hpp"
 #include "Speed/Indep/Src/Ecstasy/eSolid.hpp"
@@ -18,6 +19,10 @@ struct SceneryOverrideInfo {
 
     void AssignOverrides(ScenerySectionHeader *section_header);
 };
+
+struct ModelHeirarchy;
+struct _type_map;
+typedef UTL::Std::map<unsigned int, ModelHeirarchy *, _type_map> ModelHeirarchyMap;
 
 struct tPrecullerInfo {
     unsigned int Values[6];
@@ -94,6 +99,8 @@ void (*ModelConnectionCallback)(ScenerySectionHeader *, int, eModel *) = 0;
 void (*ModelDisconnectionCallback)(ScenerySectionHeader *, int, eModel *) = 0;
 void (*SectionConnectionCallback)(ScenerySectionHeader *) = 0;
 void (*SectionDisconnectionCallback)(ScenerySectionHeader *) = 0;
+ModelHeirarchyMap HeirarchyMap;
+short SceneryOverrideHashTable[257];
 SceneryDrawInfo GrandSceneryCullInfo::SceneryDrawInfoTable[3500];
 
 static char GetScenerySectionLetter_Scenery(int section_number) {
@@ -179,10 +186,26 @@ static float GetSceneryRadius_Scenery(unsigned char *scenery_info) {
     return *reinterpret_cast<float *>(scenery_info + 0x38);
 }
 
-void BuildSceneryOverrideHashTable() {}
+void BuildSceneryOverrideHashTable() {
+    int index = 0;
 
-unsigned int FindSceneryHeirarchyByName(unsigned int name_hash) {
-    return name_hash;
+    for (int i = 0; i < 0x100; i++) {
+        SceneryOverrideHashTable[i] = static_cast<short>(index);
+        while (index < NumSceneryOverrideInfos &&
+               reinterpret_cast<unsigned char *>(&SceneryOverrideInfoTable[index])[0] == i) {
+            index += 1;
+        }
+    }
+
+    SceneryOverrideHashTable[0x100] = static_cast<short>(index);
+}
+
+ModelHeirarchy *FindSceneryHeirarchyByName(unsigned int name_hash) {
+    ModelHeirarchyMap::iterator it = HeirarchyMap.find(name_hash);
+    if (it == HeirarchyMap.end()) {
+        return 0;
+    }
+    return it->second;
 }
 
 void SceneryOverrideInfo::AssignOverrides(ScenerySectionHeader *section_header) {
@@ -444,7 +467,8 @@ int LoaderScenery(bChunk *chunk) {
                         unsigned char *scenery_info = reinterpret_cast<unsigned char *>(section_header_words[6] + i * 0x48);
                         unsigned int hierarchy_name = *reinterpret_cast<unsigned int *>(scenery_info + 0x40);
                         if (hierarchy_name != 0) {
-                            *reinterpret_cast<unsigned int *>(scenery_info + 0x44) = FindSceneryHeirarchyByName(hierarchy_name);
+                            *reinterpret_cast<unsigned int *>(scenery_info + 0x44) =
+                                reinterpret_cast<unsigned int>(FindSceneryHeirarchyByName(hierarchy_name));
                         }
                     }
                     break;
@@ -595,6 +619,32 @@ int LoaderScenery(bChunk *chunk) {
     }
 
     if (chunk_id == 0x8003410B) {
+        bChunk *last_chunk = chunk->GetLastChunk();
+        for (bChunk *subchunk = chunk->GetFirstChunk(); subchunk != last_chunk; subchunk = subchunk->GetNext()) {
+            unsigned int *entry_words = reinterpret_cast<unsigned int *>(subchunk->GetData());
+            bEndianSwap32(&entry_words[0]);
+
+            unsigned int num_models = *reinterpret_cast<unsigned char *>(&entry_words[1]);
+            for (unsigned int i = 0; i < num_models; i++) {
+                bEndianSwap32(&entry_words[i * 4 + 2]);
+                bEndianSwap32(&entry_words[i * 4 + 3]);
+            }
+
+            HeirarchyMap[entry_words[0]] = reinterpret_cast<ModelHeirarchy *>(entry_words);
+            for (unsigned int i = 0; i < num_models; i++) {
+                eModel *model = 0;
+                if (entry_words[i * 4 + 3] != 0) {
+                    model = reinterpret_cast<eModel *>(bOMalloc(eModelSlotPool));
+                    if (model) {
+                        model->Solid = 0;
+                        model->pReplacementTextureTable = 0;
+                        model->NumReplacementTextures = 0;
+                        model->Init(entry_words[i * 4 + 3]);
+                    }
+                }
+                entry_words[i * 4 + 4] = reinterpret_cast<unsigned int>(model);
+            }
+        }
         return 1;
     }
 
@@ -694,6 +744,25 @@ int UnloaderScenery(bChunk *chunk) {
     }
 
     if (chunk_id == 0x8003410B) {
+        bChunk *last_chunk = chunk->GetLastChunk();
+        for (bChunk *subchunk = chunk->GetFirstChunk(); subchunk != last_chunk; subchunk = subchunk->GetNext()) {
+            unsigned int *entry_words = reinterpret_cast<unsigned int *>(subchunk->GetData());
+            unsigned int num_models = *reinterpret_cast<unsigned char *>(&entry_words[1]);
+
+            for (unsigned int i = 0; i < num_models; i++) {
+                eModel *model = reinterpret_cast<eModel *>(entry_words[i * 4 + 4]);
+                if (model) {
+                    model->UnInit();
+                    bFree(eModelSlotPool, model);
+                    entry_words[i * 4 + 4] = 0;
+                }
+            }
+
+            ModelHeirarchyMap::iterator it = HeirarchyMap.find(entry_words[0]);
+            if (it != HeirarchyMap.end()) {
+                HeirarchyMap.erase(it);
+            }
+        }
         return 1;
     }
 
