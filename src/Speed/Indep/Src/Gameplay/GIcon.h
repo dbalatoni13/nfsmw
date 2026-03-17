@@ -7,6 +7,8 @@
 
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
 
+#include <new>
+
 struct EmitterGroup;
 struct WorldModel;
 struct bVector2;
@@ -92,6 +94,17 @@ struct GIcon {
     static EffectInfo kEffectInfo[];
 
   private:
+    enum Flags {
+        kFlag_VisibleInWorld = 0x1,
+        kFlag_VisibleOnMap = 0x2,
+        kFlag_Spawned = 0x4,
+        kFlag_Enabled = 0x8,
+        kFlag_Disposable = 0x10,
+        kFlag_Snapped = 0x20,
+        kFlag_ShowWhenSpawned = 0x40,
+        kFlag_GPSing = 0x80,
+    };
+
     unsigned short mType;     // offset 0x0, size 0x2
     unsigned short mFlags;    // offset 0x2, size 0x2
     short mSectionID;         // offset 0x4, size 0x2
@@ -102,5 +115,126 @@ struct GIcon {
     unsigned short mRotation; // offset 0x1C, size 0x2
     unsigned short mPad;      // offset 0x1E, size 0x2
 };
+
+inline void GIcon::Show() {
+    SetFlag(kFlag_VisibleInWorld);
+    if (GetIsEnabled()) {
+        Enable();
+    }
+}
+
+inline void GIcon::Hide() {
+    ClearFlag(kFlag_VisibleInWorld);
+    Disable();
+}
+
+inline void GIcon::HideUntilRespawn() {
+    if (IsFlagSet(kFlag_Spawned)) {
+        Hide();
+    } else {
+        SetFlag(kFlag_ShowWhenSpawned);
+    }
+}
+
+inline void GIcon::ShowOnMap() {
+    SetFlag(kFlag_VisibleOnMap);
+}
+
+inline void GIcon::HideOnMap() {
+    ClearFlag(kFlag_VisibleOnMap);
+}
+
+inline void GIcon::SetGPSing() {
+    SetFlag(kFlag_GPSing);
+}
+
+inline void GIcon::ClearGPSing() {
+    ClearFlag(kFlag_GPSing);
+}
+
+inline GIcon::Type GIcon::GetType() const {
+    return static_cast<Type>(mType);
+}
+
+inline int GIcon::GetSectionID() const {
+    return mSectionID;
+}
+
+inline int GIcon::GetCombinedSectionID() const {
+    return mCombSectionID;
+}
+
+inline bool GIcon::GetVisibleInWorld() const {
+    return IsFlagSet(kFlag_VisibleInWorld);
+}
+
+inline bool GIcon::GetVisibleOnMap() const {
+    return IsFlagSet(kFlag_VisibleOnMap);
+}
+
+inline bool GIcon::GetIsDisposable() const {
+    return IsFlagSet(kFlag_Disposable);
+}
+
+inline bool GIcon::GetIsSnapped() const {
+    return IsFlagSet(kFlag_Snapped);
+}
+
+inline bool GIcon::GetIsGPSing() const {
+    return IsFlagSet(kFlag_GPSing);
+}
+
+inline const UMath::Vector3 &GIcon::GetPosition() const {
+    return mPosition;
+}
+
+inline void GIcon::GetPosition2D(bVector2 &outPos) {
+    outPos.x = mPosition.x;
+    outPos.y = mPosition.z;
+}
+
+inline void *GIcon::operator new(unsigned int size) {
+    return ::operator new(size);
+}
+
+inline void GIcon::operator delete(void *mem, unsigned int) {
+    ::operator delete(mem);
+}
+
+inline void *GIcon::operator new(unsigned int size, const char *) {
+    return ::operator new(size);
+}
+
+inline void GIcon::operator delete(void *mem, const char *) {
+    ::operator delete(mem);
+}
+
+inline void GIcon::operator delete(void *mem, unsigned int, const char *) {
+    ::operator delete(mem);
+}
+
+inline void GIcon::MarkDisposable() {
+    SetFlag(kFlag_Disposable);
+}
+
+inline bool GIcon::GetIsEnabled() const {
+    return IsFlagSet(kFlag_Enabled);
+}
+
+inline void GIcon::SetFlag(unsigned int mask) {
+    mFlags = static_cast<unsigned short>(mFlags | mask);
+}
+
+inline void GIcon::ClearFlag(unsigned int mask) {
+    mFlags = static_cast<unsigned short>(mFlags & ~mask);
+}
+
+inline bool GIcon::IsFlagSet(unsigned int mask) const {
+    return (mFlags & mask) != 0;
+}
+
+inline bool GIcon::IsFlagClear(unsigned int mask) const {
+    return (mFlags & mask) == 0;
+}
 
 #endif
