@@ -159,7 +159,7 @@ void UIQRChallengeSeries::RefreshHeader() {
     FEngSetTextureHash(FEngFindImage(GetPackageName(), 0xa018de49), iconHash);
 
     float goal = static_cast<float>(race->GetChallengeGoal());
-    if (FEDatabase->IsMilestoneTimeFormat(challengeType)) {
+    if (FEDatabase->IsMilestoneTimeFormat(race->GetChallengeType())) {
         goal *= (1.0f / 60.0f);
     }
     char buf[32];
@@ -170,9 +170,7 @@ void UIQRChallengeSeries::RefreshHeader() {
     const char *desc = GetLocalizedString(descHash);
     FEPrintf(GetPackageName(), 0x7b230d64, desc, buf);
 
-    if (!cd->IsLocked()) {
-        cFEng::Get()->QueuePackageMessage(0x38091fa1, GetPackageName(), nullptr);
-    } else {
+    if (cd->IsLocked()) {
         cFEng::Get()->QueuePackageMessage(0xc5dd9d68, GetPackageName(), nullptr);
         int index = pos - 1;
         int page = (pos / 5) * 5;
@@ -187,6 +185,8 @@ void UIQRChallengeSeries::RefreshHeader() {
         } else {
             FEPrintf(GetPackageName(), 0x68215623, GetLocalizedString(0xced8931e), index);
         }
+    } else {
+        cFEng::Get()->QueuePackageMessage(0x38091fa1, GetPackageName(), nullptr);
     }
 
     for (int i = 0; i < GetNumSlots(); i++) {
