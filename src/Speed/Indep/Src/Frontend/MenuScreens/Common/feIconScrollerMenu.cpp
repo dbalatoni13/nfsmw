@@ -632,63 +632,36 @@ void IconScroller::PositionOption(IconOption *option) {
 }
 
 void IconScroller::UpdateFade(IconOption *option, float scale) {
-    if (option != nullptr && option->FEngObject != nullptr && option->FEngObject->pData != nullptr) {
+    FEObject *object;
+
+    if (option != nullptr && (object = option->FEngObject) != nullptr && object->pData != nullptr) {
         unsigned int idle_color = IdleColor;
         unsigned int fade_color = FadeColor;
-        int idle_alpha = static_cast<int>(idle_color >> 24);
-        int idle_red = static_cast<int>(idle_color >> 16 & 0xFF);
-        int idle_green = static_cast<int>(idle_color >> 8 & 0xFF);
-        int idle_blue = static_cast<int>(idle_color & 0xFF);
-        int fade_alpha = static_cast<int>(fade_color >> 24);
-        int fade_red = static_cast<int>(fade_color >> 16 & 0xFF);
-        int fade_green = static_cast<int>(fade_color >> 8 & 0xFF);
-        int fade_blue = static_cast<int>(fade_color & 0xFF);
+        float a1 = static_cast<float>(idle_color >> 24);
+        float r1 = static_cast<float>(idle_color >> 16 & 0xFF);
+        float g1 = static_cast<float>(idle_color >> 8 & 0xFF);
+        float b1 = static_cast<float>(idle_color & 0xFF);
+        float a2 = static_cast<float>(fade_color >> 24);
+        float r2 = static_cast<float>(fade_color >> 16 & 0xFF);
+        float g2 = static_cast<float>(fade_color >> 8 & 0xFF);
+        float b2 = static_cast<float>(fade_color & 0xFF);
+        unsigned char alpha = static_cast<int>(a1 * scale + a2 * (1.0f - scale)) & 0xFF;
 
-        int alpha = static_cast<int>(static_cast<float>(idle_alpha) * scale + static_cast<float>(fade_alpha) * (1.0f - scale)) & 0xFF;
-        if (!option->IsGreyOut) {
-            int alpha_clamped = 0;
-            if (alpha != 0) {
-                alpha_clamped = alpha;
-            }
-            if (alpha_clamped > 0xFF) {
-                alpha_clamped = 0xFF;
-            }
-            alpha = alpha_clamped;
-        } else {
+        if (option->IsGreyOut) {
             alpha = 0x96;
+        } else {
+            alpha = bClamp(alpha, 0, 0xFF);
         }
 
         float inverse_scale = 1.0f - scale;
-        int red = static_cast<int>(static_cast<float>(idle_red) * scale + static_cast<float>(fade_red) * inverse_scale) & 0xFF;
-        int green = static_cast<int>(static_cast<float>(idle_green) * scale + static_cast<float>(fade_green) * inverse_scale) & 0xFF;
-        int blue = static_cast<int>(static_cast<float>(idle_blue) * scale + static_cast<float>(fade_blue) * inverse_scale) & 0xFF;
-
-        int red_clamped = 0;
-        if (red != 0) {
-            red_clamped = red;
-        }
-        if (red_clamped > 0xFF) {
-            red_clamped = 0xFF;
-        }
-
-        int green_clamped = 0;
-        if (green != 0) {
-            green_clamped = green;
-        }
-        if (green_clamped > 0xFF) {
-            green_clamped = 0xFF;
-        }
-
-        int blue_clamped = 0;
-        if (blue != 0) {
-            blue_clamped = blue;
-        }
-        if (blue_clamped > 0xFF) {
-            blue_clamped = 0xFF;
-        }
-
-        FEngSetColor(option->FEngObject,
-                     alpha * 0x1000000 + red_clamped * 0x10000 + green_clamped * 0x100 + blue_clamped);
+        unsigned char red = static_cast<int>(r1 * scale + r2 * inverse_scale) & 0xFF;
+        unsigned char green = static_cast<int>(g1 * scale + g2 * inverse_scale) & 0xFF;
+        unsigned char blue = static_cast<int>(b1 * scale + b2 * inverse_scale) & 0xFF;
+        red = bClamp(red, 0, 0xFF);
+        green = bClamp(green, 0, 0xFF);
+        blue = bClamp(blue, 0, 0xFF);
+        unsigned int color = alpha * 0x1000000 + red * 0x10000 + green * 0x100 + blue;
+        FEngSetColor(object, color);
     }
 }
 
