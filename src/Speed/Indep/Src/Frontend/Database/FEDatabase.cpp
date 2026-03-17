@@ -596,8 +596,14 @@ bool cFrontendDatabase::IsMilestoneTimeFormat(int typeKey) const {
     return false;
 }
 
-GameCompletionStats::GameCompletionStats() {
-    bMemSet(this, 0, sizeof(GameCompletionStats));
+GameCompletionStats::GameCompletionStats()
+    : m_nOverall(0) //
+    , m_nCareer(0) //
+    , m_nRapSheetRankings(0) //
+    , m_nChallenge(0) //
+    , m_nTotalChallengeRaces(0) //
+    , m_nCompletedChallengeRaces(0)
+{
 }
 
 GameCompletionStats cFrontendDatabase::GetGameCompletionStats() {
@@ -937,7 +943,6 @@ unsigned int cFrontendDatabase::GetRaceIconHash(GRace::Type type) {
     case GRace::kRaceType_Tollbooth:
         return 0x1a091045;
     case GRace::kRaceType_SpeedTrap:
-        return 0x66c9a7b6;
     case GRace::kRaceType_JumpToSpeedTrap:
         return 0x66c9a7b6;
     case GRace::kRaceType_JumpToMilestone:

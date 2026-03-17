@@ -235,7 +235,9 @@ void HighScoresDatabase::GetCareerCST(RAP_CTS_ITEM item, int &quantity, unsigned
     }
 }
 
-void HighScoresDatabase::CommitHighScoresPauseQuit() {}
+void HighScoresDatabase::CommitHighScoresPauseQuit() {
+    ++TotalLosses;
+}
 
 void HighScoresDatabase::CommitPursuitInfo(IPursuit *iPursuit, unsigned int car_FEKey, int bounty, unsigned int num_infractions) {
     int cost_to_state = iPursuit->CalcTotalCostToState();

@@ -111,6 +111,7 @@ void Chyron::Start() {
 }
 
 void InitChyron() {
+    ChyronScreenPtr = static_cast<MenuScreen *>(bMalloc(0x30, 0));
 }
 
 MenuScreen *CreateChyronScreen(ScreenConstructorData *sd) {
