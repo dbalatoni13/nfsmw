@@ -70,6 +70,13 @@ CGEmitter::CGEmitter(const Attrib::Collection *spec, const XenonEffectDef &eDef)
     , mVel(eDef.vel) //
     , mLocalWorld(eDef.mat) {}
 
+NGParticle *ParticleList::GetNextParticle() {
+    if (mNumParticles < 300) {
+        return &mParticles[mNumParticles++];
+    }
+    return 0;
+}
+
 void CGEmitter::SpawnParticles(float dt, float intensity) {
     unsigned int seed = randomSeed;
 
@@ -165,6 +172,29 @@ NGEffect::NGEffect(const XenonEffectDef &eDef)
             i++;
         }
     }
+}
+
+void ParticleList::AgeParticles(float dt) {
+    int alive = 0;
+    int i = 0;
+
+    if (static_cast<int>(mNumParticles) > 0) {
+        NGParticle *src = mParticles;
+        NGParticle *dst = mParticles;
+        do {
+            if (dt * 8191.0f <= static_cast<float>(src->life)) {
+                alive++;
+                *dst = *src;
+                dst->age += dt;
+                dst->life = static_cast<uint16>(static_cast<float>(src->life) - dt * 8191.0f);
+                dst++;
+            }
+            src++;
+            i++;
+        } while (i < static_cast<int>(mNumParticles));
+    }
+
+    mNumParticles = alive;
 }
 
 void DrawXenonEmitters(eView *view) {}
