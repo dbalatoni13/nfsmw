@@ -78,6 +78,7 @@ struct SFXCTL_Engine : public SFXCTL {
     virtual float GetEngTorque();
     virtual float GetSmoothedEngTorque();
     virtual void UpdateEngineLFO_FX(float t);
+    void SetEngRPM(float _RPM) { m_fEng_RPM = _RPM; }
 
     void MsgCountdownDone(const MCountdownDone &message);
     void UpdateClutchState();

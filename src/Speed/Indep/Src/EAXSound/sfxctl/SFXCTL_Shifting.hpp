@@ -23,7 +23,8 @@ enum SHIFT_STAGE {
 };
 enum AEMS_SHIFTING_SAMPLES {};
 enum FX_POST_SHIFT_LFO {
-    SHIFT_LFO_NONE = 0
+    SHIFT_LFO_NONE = 0,
+    SHIFT_LFO_ON = 1,
 };
 
 namespace Attrib {
