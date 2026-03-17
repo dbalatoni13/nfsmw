@@ -576,8 +576,7 @@ void UIQRCarSelect::NotificationMessage(unsigned long msg, FEObject *pobj, unsig
                     if ((FEDatabase->GetGameMode() & 4) != 0) {
                         isSplitScreen = FEDatabase->iNumPlayers == 2;
                     }
-                    if (isSplitScreen && iPlayerNum == 0) {
-                        ForceCar = 0xffffffff;
+                    if (isSplitScreen && iPlayerNum != 1) {
                         return;
                     }
                     CommitChangeStartRace(true);
