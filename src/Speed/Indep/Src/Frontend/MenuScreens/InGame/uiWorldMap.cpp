@@ -513,37 +513,39 @@ update_map:
         bVector2 map_br;
         FEngGetBottomRight(static_cast< FEObject* >(TrackMap), map_br.x, map_br.y);
 
+        bVector2 pos;
+        bVector2* pPos = &pos;
+        bVector2 delta;
+        bVector2* pDelta = &delta;
+        bVector2 map_pos;
+        bVector2* pMapPos = &map_pos;
+        bVector2 pan_offset;
+        bVector2* pPanOffset = &pan_offset;
+        bVector2 zoomed_pan;
+        bVector2* pZoomedPan = &zoomed_pan;
+        bVector2 final_pos;
+        bVector2* pFinalPos = &final_pos;
+
         for (MapItem* item = TheMapItems.GetHead(); item != TheMapItems.EndOfList();
              item = item->GetNext()) {
-            bVector2 pos(0.0f, 0.0f);
-            bVector2* pPos = &pos;
+            pPos->x = 0.0f;
+            pPos->y = 0.0f;
             item->GetInitialPos(*pPos);
-
-            bVector2 delta;
-            bVector2* pDelta = &delta;
             pDelta->x = pPos->x - pSavedMapCenter->x;
             pDelta->y = pPos->y - pSavedMapCenter->y;
             pDelta->x *= zoom;
             pDelta->y *= zoom;
-            bVector2 map_pos;
-            bVector2* pMapPos = &map_pos;
             pMapPos->x = pDelta->x + pSavedMapCenter->x;
             pMapPos->y = pDelta->y + pSavedMapCenter->y;
             pPos->x = pMapPos->x;
             pPos->y = pMapPos->y;
 
-            bVector2 pan_offset;
-            bVector2* pPanOffset = &pan_offset;
             pPanOffset->x = pPan->x;
             pPanOffset->y = pPan->y;
             pPanOffset->x *= MapSize.x;
             pPanOffset->y *= MapSize.y;
-            bVector2 zoomed_pan;
-            bVector2* pZoomedPan = &zoomed_pan;
             pZoomedPan->x = pPanOffset->x * zoom;
             pZoomedPan->y = pPanOffset->y * zoom;
-            bVector2 final_pos;
-            bVector2* pFinalPos = &final_pos;
             pFinalPos->x = pPos->x - pZoomedPan->x;
             pFinalPos->y = pPos->y - pZoomedPan->y;
             pPos->x = pFinalPos->x;
