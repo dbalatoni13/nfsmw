@@ -110,16 +110,14 @@ void UIQRBrief::RefreshHeader() {
     FEImage *icon_img = FEngFindImage(PackageFilename, 0x2521e5eb);
     FEngSetTextureHash(icon_img, race_icon);
     unsigned int track_name = CalcLanguageHash("TRACKNAME_", track_params);
-    if (!DoesStringExist(track_name)) {
-        FEPrintf(PackageFilename, 0xb5154999, track_params->GetEventID());
-    } else {
+    if (DoesStringExist(track_name)) {
         FEngSetLanguageHash(PackageFilename, 0xb5154999, track_name);
+    } else {
+        FEPrintf(PackageFilename, 0xb5154999, track_params->GetEventID());
     }
-    unsigned int unit_hash;
+    unsigned int unit_hash = 0x867dcfd9;
     if (FEDatabase->GetUserProfile(0)->GetOptions()->TheGameplaySettings.SpeedoUnits == 1) {
         unit_hash = 0x8569a26a;
-    } else {
-        unit_hash = 0x867dcfd9;
     }
     const char *unit_str = GetLocalizedString(unit_hash);
     float race_length = track_params->GetRaceLengthMeters() * 0.001f;
@@ -132,7 +130,7 @@ void UIQRBrief::RefreshHeader() {
     }
     FEPrintf(PackageFilename, 0xb515499c, "%d", raceSettings.NumOpponents);
     unsigned int ai_hash;
-    switch (raceSettings.AISkill) {
+    switch (raceSettings.TrafficDensity) {
     case 0: ai_hash = 0x8cdc3937; break;
     case 1: ai_hash = 0x73c615a3; break;
     case 2: ai_hash = 0xa2cca838; break;
@@ -145,7 +143,7 @@ void UIQRBrief::RefreshHeader() {
     }
     FEngSetLanguageHash(PackageFilename, 0xb515499d, ai_hash);
     unsigned int traffic_hash;
-    switch (raceSettings.TrafficDensity) {
+    switch (raceSettings.AISkill) {
     case 0: traffic_hash = 0x61973e01; break;
     case 1: traffic_hash = 0x3747f6d0; break;
     case 2: traffic_hash = 0x6198e2ee; break;
@@ -153,7 +151,7 @@ void UIQRBrief::RefreshHeader() {
     }
     FEngSetLanguageHash(PackageFilename, 0xb515499e, traffic_hash);
     unsigned int cops_hash = 0x70dfe5c2;
-    if (raceSettings.CopsOn) {
+    if (raceSettings.CatchUp) {
         cops_hash = 0x417b2604;
     }
     FEngSetLanguageHash(PackageFilename, 0xb515499e, cops_hash);
