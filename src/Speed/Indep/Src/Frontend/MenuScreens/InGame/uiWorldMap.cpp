@@ -540,16 +540,20 @@ update_map:
             pPos->x = pMapPos->x;
             pPos->y = pMapPos->y;
 
-            pPanOffset->x = pPan->x;
-            pPanOffset->y = pPan->y;
+            reinterpret_cast< unsigned int* >(pPanOffset)[0] =
+                reinterpret_cast< const unsigned int* >(pPan)[0];
+            reinterpret_cast< unsigned int* >(pPanOffset)[1] =
+                reinterpret_cast< const unsigned int* >(pPan)[1];
             pPanOffset->x *= MapSize.x;
             pPanOffset->y *= MapSize.y;
             pZoomedPan->x = pPanOffset->x * zoom;
             pZoomedPan->y = pPanOffset->y * zoom;
             pFinalPos->x = pPos->x - pZoomedPan->x;
             pFinalPos->y = pPos->y - pZoomedPan->y;
-            pPos->x = pFinalPos->x;
-            pPos->y = pFinalPos->y;
+            reinterpret_cast< unsigned int* >(pPos)[0] =
+                reinterpret_cast< const unsigned int* >(pFinalPos)[0];
+            reinterpret_cast< unsigned int* >(pPos)[1] =
+                reinterpret_cast< const unsigned int* >(pFinalPos)[1];
 
             item->UpdatePos(*pPos);
 
