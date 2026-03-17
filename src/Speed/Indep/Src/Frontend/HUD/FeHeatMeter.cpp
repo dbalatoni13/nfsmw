@@ -45,23 +45,18 @@ void HeatMeter::Update(IPlayer *player) {
     const int heatIntegerPart = static_cast<int>(heatToUse);
     const float heatDecimalPart = heatToUse - static_cast<float>(heatIntegerPart);
 
-    {
-        float heatDecimalPartToUse = heatDecimalPart;
-        if (heatDecimalPart > lbl_803E48A0) {
-            heatDecimalPartToUse = lbl_803E48A0;
-        }
-        FEngSetMultiImageRot(mpHeatMeterBar, (heatDecimalPartToUse + heatDecimalPartToUse) * lbl_803E48A8 + lbl_803E48A4);
+    float heatDecimalPartToUse = heatDecimalPart;
+    if (heatDecimalPart > lbl_803E48A0) {
+        heatDecimalPartToUse = lbl_803E48A0;
     }
+    FEngSetMultiImageRot(mpHeatMeterBar, (heatDecimalPartToUse + heatDecimalPartToUse) * lbl_803E48A8 + lbl_803E48A4);
 
-    {
-        float heatDecimalPartToUse;
-        if (heatDecimalPart > lbl_803E48A0) {
-            heatDecimalPartToUse = heatDecimalPart - lbl_803E48A0;
-        } else {
-            heatDecimalPartToUse = lbl_803E4890;
-        }
-        FEngSetMultiImageRot(mpHeatMeterBar2, (heatDecimalPartToUse + heatDecimalPartToUse) * lbl_803E48A8 + lbl_803E48A4);
+    if (heatDecimalPartToUse < heatDecimalPart) {
+        heatDecimalPartToUse = heatDecimalPart - heatDecimalPartToUse;
+    } else {
+        heatDecimalPartToUse = lbl_803E4890;
     }
+    FEngSetMultiImageRot(mpHeatMeterBar2, (heatDecimalPartToUse + heatDecimalPartToUse) * lbl_803E48A8 + lbl_803E48A4);
 
     if (heatToUse >= lbl_803E48AC) {
         if (heatDecimalPart < lbl_803E48A0) {
