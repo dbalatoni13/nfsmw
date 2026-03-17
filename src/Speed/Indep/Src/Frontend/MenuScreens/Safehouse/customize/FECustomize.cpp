@@ -3493,11 +3493,11 @@ void CustomizeRims::RefreshHeader() {
     CustomizationScreen::RefreshHeader();
     int numOpts = Options.Options.TraversebList(nullptr);
     if (numOpts != Options.iNumBookEnds) {
-        CustomizePartOption *opt = static_cast<CustomizePartOption *>(GetSelectedOption());
-        gCarCustomizeManager.PreviewPart(opt->ThePart->GetSlotID(), opt->ThePart->ThePart);
+        SelectablePart *part = GetSelectedPart();
+        gCarCustomizeManager.PreviewPart(part->GetSlotID(), part->GetPart());
         FEPrintf(GetPackageName(), 0xe6782841, "%$d\"", InnerRadius);
         char buf[64];
-        const char *name = opt->ThePart->ThePart->GetName();
+        const char *name = part->GetPart()->GetName();
         bSNPrintf(buf, 64, "%s", name);
         int len = bStrLen(buf);
         for (int i = len; i >= len - 6; i--) {
