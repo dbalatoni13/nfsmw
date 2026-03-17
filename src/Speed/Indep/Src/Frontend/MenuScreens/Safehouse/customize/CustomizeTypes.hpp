@@ -178,10 +178,10 @@ struct SelectablePart : public bTNode<SelectablePart> {
     int GetSlotID() { return CarSlotID; }
     unsigned int GetUpgradeLevel() { return UpgradeLevel; }
     GRace::Type GetPhysicsType() { return PhysicsType; }
-    bool IsPerformancePkg() { return PerformancePkg; }
+    int IsPerformancePkg() { return PerformancePkg; }
     eCustomizePartState GetPartState() { return PartState; }
     int GetPrice() { return Price; }
-    bool IsJunkmanPart() { return JunkmanPart; }
+    int IsJunkmanPart() { return JunkmanPart; }
 
     void SetSlotID(unsigned int id) { CarSlotID = static_cast<int>(id); }
 
@@ -205,10 +205,10 @@ struct SelectablePart : public bTNode<SelectablePart> {
     int CarSlotID;                  // offset 0xC, size 0x4
     unsigned int UpgradeLevel;      // offset 0x10, size 0x4
     GRace::Type PhysicsType;          // offset 0x14, size 0x4
-    bool PerformancePkg;            // offset 0x18, size 0x1
+    int PerformancePkg;             // offset 0x18, size 0x4
     eCustomizePartState PartState;  // offset 0x1C, size 0x4
     int Price;                      // offset 0x20, size 0x4
-    bool JunkmanPart;               // offset 0x24, size 0x1
+    int JunkmanPart;                // offset 0x24, size 0x4
     // vtable at 0x28
 };
 

@@ -84,7 +84,7 @@ asm(
     "blr\n"
     ".globl IsPerformancePkg__14SelectablePart\n"
     "IsPerformancePkg__14SelectablePart:\n"
-    "lbz 3, 0x18(3)\n"
+    "lwz 3, 0x18(3)\n"
     "blr\n"
     ".globl GetPartState__14SelectablePart\n"
     "GetPartState__14SelectablePart:\n"
@@ -96,7 +96,7 @@ asm(
     "blr\n"
     ".globl IsJunkmanPart__14SelectablePart\n"
     "IsJunkmanPart__14SelectablePart:\n"
-    "lbz 3, 0x24(3)\n"
+    "lwz 3, 0x24(3)\n"
     "blr\n");
 
 int CarCustomizeManager::GetNumPackages(Physics::Upgrades::Type type) {
