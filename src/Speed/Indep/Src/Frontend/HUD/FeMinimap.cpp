@@ -236,8 +236,6 @@ void Minimap::Update(IPlayer *player) {
 void Minimap::SetupMinimap(IPlayer *player) {
     const int num_chops = 8;
     char texture_name[128];
-    FEVector2 top_left;
-    FEVector2 bottom_right;
     short chop_nums[4] = {0};
     bVector2 map_pos;
     bVector2 target_pos;
@@ -298,60 +296,36 @@ void Minimap::SetupMinimap(IPlayer *player) {
     float SectionSize = mSpeedZoomScale;
     float uvScale = SectionSize - 1.0f;
 
-    top_left.x = uvScale;
-    top_left.y = uvScale;
-    bottom_right.x = 1.0f;
-    bottom_right.y = 1.0f;
-    TrackmapArt[0]->SetTopLeft(top_left, false);
-    TrackmapArt[0]->SetBottomRight(bottom_right, false);
+    TrackmapArt[0]->SetTopLeft(FEVector2(uvScale, uvScale), false);
+    TrackmapArt[0]->SetBottomRight(FEVector2(1.0f, 1.0f), false);
 
-    top_left.x = 0.0f;
-    top_left.y = uvScale;
-    bottom_right.x = 1.0f - uvScale;
-    bottom_right.y = 1.0f;
-    TrackmapArt[1]->SetTopLeft(top_left, false);
-    TrackmapArt[1]->SetBottomRight(bottom_right, false);
+    TrackmapArt[1]->SetTopLeft(FEVector2(0.0f, uvScale), false);
+    TrackmapArt[1]->SetBottomRight(FEVector2(1.0f - uvScale, 1.0f), false);
 
-    top_left.x = uvScale;
-    top_left.y = 0.0f;
-    bottom_right.x = 1.0f;
-    bottom_right.y = 1.0f - uvScale;
-    TrackmapArt[2]->SetTopLeft(top_left, false);
-    TrackmapArt[2]->SetBottomRight(bottom_right, false);
+    TrackmapArt[2]->SetTopLeft(FEVector2(uvScale, 0.0f), false);
+    TrackmapArt[2]->SetBottomRight(FEVector2(1.0f, 1.0f - uvScale), false);
 
-    top_left.x = 0.0f;
-    top_left.y = 0.0f;
-    bottom_right.x = 1.0f - uvScale;
-    bottom_right.y = 1.0f - uvScale;
-    TrackmapArt[3]->SetTopLeft(top_left, false);
-    TrackmapArt[3]->SetBottomRight(bottom_right, false);
+    TrackmapArt[3]->SetTopLeft(FEVector2(0.0f, 0.0f), false);
+    TrackmapArt[3]->SetBottomRight(FEVector2(1.0f - uvScale, 1.0f - uvScale), false);
 
     float xDisp = -(XSection_decimal * SectionSize);
     float yDisp = -(YSection_decimal * SectionSize);
 
-    top_left.x = TrackmapArtUVs[0][0].x + xDisp;
-    top_left.y = TrackmapArtUVs[0][0].y + yDisp;
-    bottom_right.x = TrackmapArtUVs[0][1].x + xDisp;
-    bottom_right.y = TrackmapArtUVs[0][1].y + yDisp;
-    TrackmapArt[0]->SetUVs(0, top_left, bottom_right);
+    TrackmapArt[0]->SetUVs(
+        0, FEVector2(TrackmapArtUVs[0][0].x + xDisp, TrackmapArtUVs[0][0].y + yDisp),
+        FEVector2(TrackmapArtUVs[0][1].x + xDisp, TrackmapArtUVs[0][1].y + yDisp));
 
-    top_left.x = TrackmapArtUVs[1][0].x + xDisp;
-    top_left.y = TrackmapArtUVs[1][0].y + yDisp;
-    bottom_right.x = TrackmapArtUVs[1][1].x + xDisp;
-    bottom_right.y = TrackmapArtUVs[1][1].y + yDisp;
-    TrackmapArt[1]->SetUVs(0, top_left, bottom_right);
+    TrackmapArt[1]->SetUVs(
+        0, FEVector2(TrackmapArtUVs[1][0].x + xDisp, TrackmapArtUVs[1][0].y + yDisp),
+        FEVector2(TrackmapArtUVs[1][1].x + xDisp, TrackmapArtUVs[1][1].y + yDisp));
 
-    top_left.x = TrackmapArtUVs[2][0].x + xDisp;
-    top_left.y = TrackmapArtUVs[2][0].y + yDisp;
-    bottom_right.x = TrackmapArtUVs[2][1].x + xDisp;
-    bottom_right.y = TrackmapArtUVs[2][1].y + yDisp;
-    TrackmapArt[2]->SetUVs(0, top_left, bottom_right);
+    TrackmapArt[2]->SetUVs(
+        0, FEVector2(TrackmapArtUVs[2][0].x + xDisp, TrackmapArtUVs[2][0].y + yDisp),
+        FEVector2(TrackmapArtUVs[2][1].x + xDisp, TrackmapArtUVs[2][1].y + yDisp));
 
-    top_left.x = TrackmapArtUVs[3][0].x + xDisp;
-    top_left.y = TrackmapArtUVs[3][0].y + yDisp;
-    bottom_right.x = TrackmapArtUVs[3][1].x + xDisp;
-    bottom_right.y = TrackmapArtUVs[3][1].y + yDisp;
-    TrackmapArt[3]->SetUVs(0, top_left, bottom_right);
+    TrackmapArt[3]->SetUVs(
+        0, FEVector2(TrackmapArtUVs[3][0].x + xDisp, TrackmapArtUVs[3][0].y + yDisp),
+        FEVector2(TrackmapArtUVs[3][1].x + xDisp, TrackmapArtUVs[3][1].y + yDisp));
 
     FEObjData *data = TrackmapLayout->GetObjData();
     xDisp *= -128.0f;
