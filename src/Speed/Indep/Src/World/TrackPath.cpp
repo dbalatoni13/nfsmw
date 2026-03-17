@@ -19,7 +19,7 @@ static inline char *GetTrackPathBarrierData(TrackPathBarrier *barriers, int inde
     return reinterpret_cast<char *>(barriers) + index * 0x18;
 }
 
-bVector2 zoneB;
+TrackPathZone *zoneB[2];
 TrackPathManager TheTrackPathManager;
 bChunkLoader bChunkLoaderTrackPath(0x80034147, LoaderTrackPath, UnloaderTrackPath);
 bChunkLoader bChunkLoaderTrackPathBarriers(0x3414D, LoaderTrackPath, UnloaderTrackPath);
@@ -32,8 +32,8 @@ void TrackPathManager::Clear() {
     MostCachedZones = 0;
     NumBarriers = 0;
     pBarriers = nullptr;
-    zoneB.x = 0.0f;
-    zoneB.y = 0.0f;
+    zoneB[0] = 0;
+    zoneB[1] = 0;
 }
 
 int TrackPathManager::Loader(bChunk *chunk) {

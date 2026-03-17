@@ -310,6 +310,8 @@ struct Rain {
     void SetRoadDampness(float damp) {}
 
     bVector3 *GetWind() {}
+
+    void AttachRainCurtain(float in0x, float in0y, float in0z, float in1x, float in1y, float in1z, float out0x, float out0y);
 };
 
 struct FacePixelation {
