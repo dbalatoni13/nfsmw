@@ -1257,12 +1257,12 @@ void PursuitData::PopulateData(IPursuit *ipursuit, IPerpetrator *iperpetrator, i
 }
 
 bool PursuitData::AddMilestone(GMilestone *milestone) {
-    if (mNumMilestonesThisPursuit < 0x20) {
-        mMilestonesCompleted[mNumMilestonesThisPursuit] = milestone;
-        mNumMilestonesThisPursuit = mNumMilestonesThisPursuit + 1;
-        return true;
+    if (mNumMilestonesThisPursuit > 0x1f) {
+        return false;
     }
-    return false;
+    mMilestonesCompleted[mNumMilestonesThisPursuit] = milestone;
+    mNumMilestonesThisPursuit = mNumMilestonesThisPursuit + 1;
+    return true;
 }
 
 const GMilestone *const PursuitData::GetMilestone(int index) const {

@@ -271,10 +271,10 @@ void cFrontendDatabase::FillCustomRace(GRaceCustom *parms, RaceSettings *race) {
 }
 
 RaceSettings *cFrontendDatabase::GetQuickRaceSettings(GRace::Type type) {
-    if (static_cast<int>(type) < 11) {
-        return &TheQuickRaceSettings[type];
+    if (static_cast<int>(type) > 10) {
+        return &TheQuickRaceSettings[RaceMode];
     }
-    return &TheQuickRaceSettings[RaceMode];
+    return &TheQuickRaceSettings[type];
 }
 
 unsigned int cFrontendDatabase::GetUserProfileSaveSize(bool bExcludeGameplay) {

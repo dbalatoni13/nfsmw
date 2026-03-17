@@ -268,7 +268,7 @@ void FESliderWidget::Hide() {
 }
 
 void FESliderWidget::Disable() {
-    FEWidget::Disable();
+    FEToggleWidget::Disable();
 }
 
 void FESliderWidget::SetFocus(const char* parent_pkg) {
