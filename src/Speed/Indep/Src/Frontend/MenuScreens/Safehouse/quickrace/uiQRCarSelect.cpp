@@ -1439,7 +1439,6 @@ void UIQRCarSelect::RefreshCarList() {
 
 void UIQRCarSelect::ClearCarList() {
     FilteredCarsList.DeleteAllElements();
-    pSelectedCar = nullptr;
 }
 
 void UIQRCarSelect::ScrollCars(eScrollDir dir) {

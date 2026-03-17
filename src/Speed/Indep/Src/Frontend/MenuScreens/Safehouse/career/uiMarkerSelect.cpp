@@ -90,10 +90,10 @@ int FEMarkerSelection::GetButtonIndex(unsigned int hash) {
 
 int FEMarkerSelection::GetSelectedButtonIndex() {
     FEObject *btn = FEngGetCurrentButton(GetPackageName());
-    if (!btn) {
-        return 0;
+    if (btn) {
+        return GetButtonIndex(btn->NameHash);
     }
-    return GetButtonIndex(btn->NameHash);
+    return 0;
 }
 
 FEMarkerSelection::FEMarkerSelection(ScreenConstructorData *sd)
