@@ -1,5 +1,6 @@
 #include "TrackStreamer.hpp"
 
+#include "TrackPath.hpp"
 #include "VisibleSection.hpp"
 #include "Speed/Indep/Src/Misc/ResourceLoader.hpp"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
@@ -21,6 +22,7 @@ const char *GetScenerySectionName(int section_number);
 void PostLoadFixup();
 void SetDuplicateTextureWarning(BOOL enabled);
 bool LoadTempPermChunks(bChunk **ppchunks, int *psizeof_chunks, int allocation_params, const char *debug_name);
+int DoLinesIntersect(const bVector2 &line1_start, const bVector2 &line1_end, const bVector2 &line2_start, const bVector2 &line2_end);
 
 static unsigned int prev_need_loading_bar_26275 = 0;
 static const float kMaxDistance_TrackStreamer = 3.4028235e+38f;
@@ -31,6 +33,10 @@ static const float kPredictionScaleB_TrackStreamer = 1.0f;
 static const float kLoadingBarDistanceThreshold_TrackStreamer = 15.0f;
 static const float kLoadingBarSpeedThreshold_TrackStreamer = 100.0f;
 static const float kSwitchZoneFarLoadThreshold_TrackStreamer = 0.1f;
+static const float kPredictedZoneScale_TrackStreamer = 1.5f;
+static const float kPredictedZoneMaxDistance_TrackStreamer = 100.0f;
+static const float kPredictedZoneStopProjectSpeed_TrackStreamer = 178.81091f;
+static const float kPredictedZoneEqualEpsilon_TrackStreamer = 0.001f;
 
 static char GetScenerySectionLetter_TrackStreamer(int section_number) {
     return static_cast<char>(section_number / 100 + 'A' - 1);
@@ -840,4 +846,72 @@ void TrackStreamer::CheckLoadingBar() {
     }
 
     prev_need_loading_bar_26275 = minimum_distance < kLoadingBarDistanceThreshold_TrackStreamer;
+}
+
+int TrackStreamer::GetPredictedZone(StreamingPositionEntry *streaming_position) {
+    float speed = bSqrt(streaming_position->Velocity.x * streaming_position->Velocity.x +
+                        streaming_position->Velocity.y * streaming_position->Velocity.y);
+    bool found_predicted_zone = false;
+    short predicted_zone = 0;
+    TrackPathZone *track_path_zone = 0;
+    bVector2 predicted_position;
+
+    do {
+        track_path_zone =
+            TheTrackPathManager.FindZone(&streaming_position->Position, TRACK_PATH_ZONE_STREAMER_PREDICTION, track_path_zone);
+        if (!track_path_zone) {
+            break;
+        }
+
+        float zone_elevation = track_path_zone->Elevation;
+        if (((zone_elevation <= 0.0f) || (zone_elevation <= streaming_position->Elevation)) &&
+            ((zone_elevation >= 0.0f) || (streaming_position->Elevation <= -zone_elevation))) {
+            if (speed > kPredictedZoneStopProjectSpeed_TrackStreamer) {
+                predicted_position = streaming_position->Position;
+            } else if (speed * kPredictedZoneScale_TrackStreamer <= kPredictedZoneMaxDistance_TrackStreamer) {
+                bScaleAdd(&predicted_position, &streaming_position->Position, &streaming_position->Velocity,
+                          kPredictedZoneScale_TrackStreamer);
+            } else {
+                bScaleAdd(&predicted_position, &streaming_position->Position, &streaming_position->Velocity,
+                          kPredictedZoneMaxDistance_TrackStreamer / speed);
+            }
+
+            DrivableScenerySection *drivable_section = TheVisibleSectionManager.FindDrivableSection(&predicted_position);
+            if (drivable_section && track_path_zone->Data[0] != 0) {
+                short section_number = drivable_section->SectionNumber;
+                for (int i = 0; i < 4; i++) {
+                    if (track_path_zone->Data[i] == section_number) {
+                        found_predicted_zone = true;
+                        predicted_zone = section_number;
+                        break;
+                    }
+                    if (track_path_zone->Data[i] == 0) {
+                        break;
+                    }
+                }
+            }
+        }
+    } while (!found_predicted_zone);
+
+    if (found_predicted_zone) {
+        if (!bEqual(&predicted_position, &streaming_position->Position, kPredictedZoneEqualEpsilon_TrackStreamer)) {
+            for (int i = 0; i < NumBarriers; i++) {
+                if (DoLinesIntersect(pBarriers[i].Points[0], pBarriers[i].Points[1], streaming_position->Position,
+                                     predicted_position)) {
+                    found_predicted_zone = false;
+                    predicted_zone = 0;
+                }
+            }
+        }
+
+        if (found_predicted_zone) {
+            return predicted_zone;
+        }
+    }
+
+    DrivableScenerySection *drivable_section = TheVisibleSectionManager.FindDrivableSection(&streaming_position->Position);
+    if (drivable_section) {
+        predicted_zone = drivable_section->SectionNumber;
+    }
+    return predicted_zone;
 }

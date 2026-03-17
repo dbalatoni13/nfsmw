@@ -166,6 +166,7 @@ class TrackStreamer {
     void RemoveCurrentStreamingSections();
     void AddCurrentStreamingSections(short *section_numbers, int num_sections, int position_number);
     void DetermineStreamingSections();
+    int GetPredictedZone(StreamingPositionEntry *streaming_position);
     void PlotLoadingMarker(StreamingPositionEntry *streaming_position);
     void SwitchZones(short *current_zones);
     void UnactivateSection(TrackStreamingSection *section);
