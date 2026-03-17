@@ -82,7 +82,7 @@ int VisibleSectionBoundary::GetSectionNumber() {
 }
 
 int VisibleSectionBoundary::GetMemoryImageSize() {
-    return 0xA4;
+    return 0x24 + NumPoints * sizeof(bVector2);
 }
 
 void DrivableSectionsInRegion::EndianSwap() {
@@ -107,7 +107,7 @@ int DrivableScenerySection::GetSectionNumber() {
 }
 
 int DrivableScenerySection::GetMemoryImageSize() {
-    return 0xA4;
+    return 0x12 + NumVisibleSections * sizeof(short) + sizeof(Padding);
 }
 
 void LoadingSection::EndianSwap() {

@@ -172,6 +172,10 @@ class TrackStreamer {
     void FreeSectionMemory();
     void SetLoadingPhase(eLoadingPhase loading_phase);
     int Loader(bChunk *chunk);
+    void StartLoadingSections();
+    int HandleMemoryAllocation();
+    void FinishedLoading();
+    void UnJettisonSections();
     bool NeedsGameStateActivation(TrackStreamingSection *section);
     int GetSectionToActivate(int loaded_frames);
     void HandleSectionActivation();

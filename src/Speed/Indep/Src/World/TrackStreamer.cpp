@@ -14,10 +14,13 @@ extern int ScenerySectionLODOffset;
 extern int SeeulatorToolActive;
 extern int ScenerySectionToBlink;
 extern bool PostLoadFixupDisabled;
+extern int AllowDuplicateSolids;
 int Get2PlayerSectionNumber(int section_number);
 void GetScenerySectionName(char *name, int section_number);
 const char *GetScenerySectionName(int section_number);
 void PostLoadFixup();
+void SetDuplicateTextureWarning(BOOL enabled);
+bool LoadTempPermChunks(bChunk **ppchunks, int *psizeof_chunks, int allocation_params, const char *debug_name);
 
 static unsigned int prev_need_loading_bar_26275 = 0;
 static const float kMaxDistance_TrackStreamer = 3.4028235e+38f;
@@ -586,6 +589,86 @@ void TrackStreamer::HandleSectionActivation() {
             }
             ActivateSection(section);
         }
+    }
+}
+
+void TrackStreamer::ActivateSection(TrackStreamingSection *section) {
+    NumSectionsActivated += 1;
+    AllowDuplicateSolids += 1;
+    SetDuplicateTextureWarning(false);
+
+    bChunk *chunks = reinterpret_cast<bChunk *>(section->pMemory);
+    int sizeof_chunks = section->LoadedSize;
+    LoadTempPermChunks(&chunks, &sizeof_chunks, 0x2087, section->SectionName);
+
+    AllowDuplicateSolids -= 1;
+    section->LoadedTime = 0;
+    section->pMemory = chunks;
+    section->LoadedSize = sizeof_chunks;
+    section->Status = TrackStreamingSection::ACTIVATED;
+    SetDuplicateTextureWarning(true);
+}
+
+void TrackStreamer::HandleLoading() {
+    if (!SkipNextHandleLoad) {
+        if (LoadingPhase != LOADING_IDLE) {
+            if ((LoadingPhase == LOADING_TEXTURE_SECTIONS || LoadingPhase == LOADING_GEOMETRY_SECTIONS ||
+                 LoadingPhase == LOADING_REGULAR_SECTIONS) &&
+                (StartLoadingSections(), NumSectionsLoading == 0)) {
+                if (!CurrentZoneAllocatedButIncomplete) {
+                    if (LoadingPhase == LOADING_REGULAR_SECTIONS) {
+                        FinishedLoading();
+                        return;
+                    }
+                    SetLoadingPhase(static_cast<eLoadingPhase>(LoadingPhase + 1));
+                } else {
+                    SetLoadingPhase(static_cast<eLoadingPhase>(LoadingPhase - 1));
+                }
+            }
+
+            if ((LoadingPhase == ALLOCATING_TEXTURE_SECTIONS || LoadingPhase == ALLOCATING_GEOMETRY_SECTIONS ||
+                 LoadingPhase == ALLOCATING_REGULAR_SECTIONS) &&
+                NumSectionsLoading < 1) {
+                int num_sections_unactivated = 0;
+                for (int i = 0; i < NumTrackStreamingSections; i++) {
+                    TrackStreamingSection *section = &pTrackStreamingSections[i];
+                    if (section->Status == TrackStreamingSection::ACTIVATED && !section->CurrentlyVisible) {
+                        char section_letter = GetScenerySectionLetter_TrackStreamer(section->SectionNumber);
+                        if (LoadingPhase == ALLOCATING_GEOMETRY_SECTIONS) {
+                            if (section_letter == 'Y' || section_letter == 'W') {
+                                num_sections_unactivated += 1;
+                                UnactivateSection(section);
+                            }
+                        } else if (LoadingPhase == ALLOCATING_REGULAR_SECTIONS) {
+                            if (section_letter == 'X' || section_letter == 'U') {
+                                num_sections_unactivated += 1;
+                                UnactivateSection(section);
+                            }
+                        }
+                    }
+                }
+
+                if (num_sections_unactivated < 1) {
+                    PostLoadFixupDisabled = true;
+                    int did_allocate = HandleMemoryAllocation();
+                    PostLoadFixupDisabled = false;
+                    if (NumSectionsMoved > 0) {
+                        PostLoadFixup();
+                    }
+                    if (did_allocate != 0) {
+                        SetLoadingPhase(static_cast<eLoadingPhase>(LoadingPhase + 1));
+                        if (LoadingPhase == LOADING_TEXTURE_SECTIONS || LoadingPhase == LOADING_GEOMETRY_SECTIONS) {
+                            UnJettisonSections();
+                        }
+                        HandleLoading();
+                    }
+                } else {
+                    SkipNextHandleLoad = true;
+                }
+            }
+        }
+    } else {
+        SkipNextHandleLoad = false;
     }
 }
 
