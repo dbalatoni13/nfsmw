@@ -6,6 +6,7 @@
 #include "Speed/Indep/Src/Generated/Messages/MEnteringGameplay.h"
 #include "Speed/Indep/Src/Gameplay/GMarker.h"
 #include "Speed/Indep/Src/Gameplay/GVault.h"
+#include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
 #include "Speed/Indep/Src/Interfaces/SimActivities/INIS.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
 #include "Speed/Indep/Src/Misc/LZCompress.hpp"
@@ -1487,6 +1488,21 @@ void GManager::RefreshTrackMarkerIcons() {
     }
 }
 
+void GManager::FindBountySpawnPoints() {
+    Attrib::Gen::gameplay gameplay(Attrib::FindCollection(Attrib::Gen::gameplay::ClassKey(), 0x3D48E303), 0, nullptr);
+    AttribKeyList keys;
+    AttribKeyList::iterator it;
+
+    GatherInstanceKeys(gameplay, keys, 0xA7BCCF63);
+    mNumBountySpawnPoints = 0;
+    for (it = keys.begin(); it != keys.end(); ++it) {
+        mBountySpawnPoint[mNumBountySpawnPoints++] = *it;
+        if (mNumBountySpawnPoints > 0x13) {
+            break;
+        }
+    }
+}
+
 void GManager::RefreshSpeedTrapIcons() {
     for (GSpeedTrap *speedTrap = GetFirstSpeedTrap(false, 0); speedTrap;
          speedTrap = GetNextSpeedTrap(speedTrap, false, 0)) {
@@ -1880,6 +1896,51 @@ void GManager::DefragObjectStateStorage() {
 
     delete[] blocks;
     mObjectStateBufferFree = freePtr;
+}
+
+void GManager::GetPlayerPursuitInterfaces(IPursuit *&pursuit, IPerpetrator *&perpetrator) {
+    IPlayer *player = IPlayer::First(PLAYER_LOCAL);
+    ISimable *simable = player ? player->GetSimable() : nullptr;
+    IVehicleAI *vehicleAI = nullptr;
+
+    if (simable) {
+        simable->QueryInterface(&vehicleAI);
+    }
+
+    if (!vehicleAI) {
+        pursuit = nullptr;
+    } else {
+        pursuit = vehicleAI->GetPursuit();
+    }
+
+    perpetrator = nullptr;
+    if (simable) {
+        simable->QueryInterface(&perpetrator);
+    }
+}
+
+void GManager::OnRemovedVehicleCache(IVehicle *ivehicle) {
+    for (StockCarMap::iterator it = mStockCars.begin(); it != mStockCars.end(); ++it) {
+        if (UTL::COM::ComparePtr(it->second, ivehicle)) {
+            mStockCars.erase(it);
+            return;
+        }
+    }
+}
+
+void GManager::SuspendAllBinActivities() {
+    for (unsigned int i = 0; i < GRaceDatabase::Get().GetBinCount(); ++i) {
+        GRaceBin *bin = GRaceDatabase::Get().GetBin(i);
+
+        if (bin) {
+            GActivity *activity = static_cast<GActivity *>(FindInstance(bin->GetCollectionKey()));
+
+            if (activity && activity->GetIsRunning()) {
+                activity->SerializeVars(false);
+                activity->Suspend();
+            }
+        }
+    }
 }
 
 void GManager::UpdatePursuit() {

@@ -70,6 +70,7 @@ class GManager : public UTL::COM::Object, public IVehicleCache {
     ~GManager() override;
 
     const char *GetCacheName() const override { return "GManager"; }
+    void OnRemovedVehicleCache(IVehicle *ivehicle) override;
 
     void InitializeVaults();
     void InitializeRaceStreaming();
