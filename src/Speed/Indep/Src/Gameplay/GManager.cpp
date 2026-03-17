@@ -16,6 +16,7 @@
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/Common/AttribPrivate.h"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
+#include "Speed/Indep/bWare/Inc/Strings.hpp"
 
 #include <algorithm>
 #include <new>
@@ -378,6 +379,60 @@ void GManager::StartActivities() {
 void GManager::UpdateTimers(float dT) {
     for (unsigned int i = 0; i < 8; ++i) {
         mTimers[i].Update(dT);
+    }
+}
+
+bool GManager::SetTimer(const char *name, float interval) {
+    unsigned int hash = bStringHash(name);
+    int index;
+
+    for (index = 0; index < 8; ++index) {
+        GEventTimer &timer = mTimers[index];
+
+        if (hash == timer.GetNameHash()) {
+            timer.Stop();
+            timer.SetInterval(interval);
+            timer.Start();
+            return true;
+        }
+    }
+
+    for (index = 0; index < 8; ++index) {
+        GEventTimer &timer = mTimers[index];
+
+        if (!timer.IsRunning()) {
+            timer.SetName(name);
+            timer.SetInterval(interval);
+            timer.Start();
+            return true;
+        }
+    }
+
+    return false;
+}
+
+void GManager::KillTimer(const char *name) {
+    unsigned int hash = bStringHash(name);
+
+    for (unsigned int i = 0; i < 8; ++i) {
+        if (hash == mTimers[i].GetNameHash()) {
+            mTimers[i].Stop();
+            return;
+        }
+    }
+}
+
+unsigned int GManager::SaveTimerInfo(SavedTimerInfo *saveInfo) {
+    for (unsigned int i = 0; i < 8; ++i) {
+        mTimers[i].Serialize(&saveInfo[i]);
+    }
+
+    return 8;
+}
+
+void GManager::LoadTimerInfo(SavedTimerInfo *saveInfo, unsigned int count) {
+    for (unsigned int i = 0; i < count; ++i) {
+        mTimers[i].Deserialize(&saveInfo[i]);
     }
 }
 

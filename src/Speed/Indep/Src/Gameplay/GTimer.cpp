@@ -2,6 +2,7 @@
 
 #include "Speed/Indep/Src/Generated/Messages/MNotifyTimer.h"
 #include "Speed/Indep/Src/Sim/Simulation.h"
+#include "Speed/Indep/bWare/Inc/Strings.hpp"
 
 GTimer::GTimer() {
     Reset(0.0f);
@@ -66,6 +67,11 @@ void GEventTimer::SetInterval(float value) {
     mElapsed = 0.0f;
 }
 
+void GEventTimer::SetName(const char *name) {
+    bSafeStrCpy(mName, name, sizeof(mName));
+    mNameHash = bStringHash(mName);
+}
+
 void GEventTimer::Update(float dT) {
     if (mRunning != 0) {
         mElapsed += dT;
@@ -74,4 +80,19 @@ void GEventTimer::Update(float dT) {
             mElapsed -= mInterval;
         }
     }
+}
+
+void GEventTimer::Serialize(SavedTimerInfo *saveInfo) {
+    saveInfo->mElapsed = mElapsed;
+    saveInfo->mInterval = mInterval;
+    saveInfo->mRunning = mRunning;
+    bSafeStrCpy(saveInfo->mName, mName, sizeof(saveInfo->mName));
+}
+
+void GEventTimer::Deserialize(SavedTimerInfo *saveInfo) {
+    mElapsed = saveInfo->mElapsed;
+    mInterval = saveInfo->mInterval;
+    mRunning = saveInfo->mRunning;
+    bSafeStrCpy(mName, saveInfo->mName, sizeof(mName));
+    mNameHash = bStringHash(mName);
 }
