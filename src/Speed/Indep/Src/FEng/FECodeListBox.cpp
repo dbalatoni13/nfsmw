@@ -8,6 +8,20 @@
 template <class T> void CopyString(short* pDst, const T* pSrc);
 template <class T> void CopyString(short* pDst, const T* pSrc, unsigned long ulMaxLength);
 
+static inline int GetValidIndexListBox(int lIndex, int lRange) {
+    if (lIndex >= 0) {
+        int rem = lIndex - (lIndex / lRange) * lRange;
+        return rem;
+    }
+
+    int posIndex = -lIndex;
+    int rem = posIndex - (posIndex / lRange) * lRange;
+    if (lRange <= 1) {
+        return 0;
+    }
+    return lRange - rem;
+}
+
 void (*FECodeListBox::mpDefaultCallback)(FECodeListBox*) = FECodeListBox::DefaultSelectCallback;
 
 FECodeListBox::FECodeListBox()
@@ -189,11 +203,11 @@ void FECodeListBox::FillAllCells() {
                 if (j < ulNumVisCols) {
                     do {
                         mpSetCellCallback(mpvCallbackData, this, lColumn, lStartColumn);
-                        lColumn = GetValidIndex(lColumn + 1, mulNumTotalColumns);
+                        lColumn = GetValidIndexListBox(lColumn + 1, mulNumTotalColumns);
                         j++;
                     } while (j < ulNumVisCols);
                 }
-                lStartColumn = GetValidIndex(lStartColumn + 1, mulNumTotalRows);
+                lStartColumn = GetValidIndexListBox(lStartColumn + 1, mulNumTotalRows);
                 i++;
             } while (i < ulNumVisRows);
         }
@@ -207,11 +221,11 @@ void FECodeListBox::FillAllCells() {
                     if (j < ulNumVisCols) {
                         do {
                             mpobRenderer->SetCellData(this, lColumn, lStartColumn);
-                            lColumn = GetValidIndex(lColumn + 1, mulNumTotalColumns);
+                            lColumn = GetValidIndexListBox(lColumn + 1, mulNumTotalColumns);
                             j++;
                         } while (j < ulNumVisCols);
                     }
-                    lStartColumn = GetValidIndex(lStartColumn + 1, mulNumTotalRows);
+                    lStartColumn = GetValidIndexListBox(lStartColumn + 1, mulNumTotalRows);
                     i++;
                 } while (i < ulNumVisRows);
             }
@@ -566,17 +580,17 @@ success:
 
 bool FECodeListBox::MakeMove(long lNumMove, unsigned long& ulCurrentVirtual, unsigned long& ulTarget, unsigned long ulNumTotal, unsigned long ulNumVis) {
     if (mulFlags & 8) {
-        int lNewCurrent = GetValidIndex(static_cast<int>(ulCurrentVirtual) + lNumMove, ulNumTotal);
-        int lNewTarget = GetValidIndex(static_cast<int>(ulTarget) + lNumMove, ulNumTotal);
+        int lNewCurrent = GetValidIndexListBox(static_cast<int>(ulCurrentVirtual) + lNumMove, ulNumTotal);
+        int lNewTarget = GetValidIndexListBox(static_cast<int>(ulTarget) + lNumMove, ulNumTotal);
         ulCurrentVirtual = lNewCurrent;
         ulTarget = lNewTarget;
     } else if ((mulFlags & 6) == 6) {
-        int lNewCurrent = GetValidIndex(static_cast<int>(ulCurrentVirtual) + lNumMove, ulNumTotal);
+        int lNewCurrent = GetValidIndexListBox(static_cast<int>(ulCurrentVirtual) + lNumMove, ulNumTotal);
         ulCurrentVirtual = lNewCurrent;
         ulTarget = lNewCurrent;
     } else {
         unsigned long ulOldTarget = ulTarget;
-        int lNewTarget = GetValidIndex(static_cast<int>(ulOldTarget) + lNumMove, ulNumTotal);
+        int lNewTarget = GetValidIndexListBox(static_cast<int>(ulOldTarget) + lNumMove, ulNumTotal);
         ulTarget = lNewTarget;
         if (lNumMove < 0) {
             if (ulCurrentVirtual != ulOldTarget) {
@@ -597,7 +611,7 @@ bool FECodeListBox::MakeMove(long lNumMove, unsigned long& ulCurrentVirtual, uns
         if (ulDifference < ulNumVis) {
             return false;
         }
-        ulCurrentVirtual = GetValidIndex(static_cast<int>(ulCurrentVirtual) + lNumMove, ulNumTotal);
+        ulCurrentVirtual = GetValidIndexListBox(static_cast<int>(ulCurrentVirtual) + lNumMove, ulNumTotal);
     }
     return true;
 }

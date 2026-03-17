@@ -345,11 +345,10 @@ void FEPackage::UpdateObject(FEObject* pObj, long tDeltaTicks) {
 
     unsigned long Flags = pObj->Flags;
     if (Flags & 0x1C00000) {
-        Flags |= 0x2000000;
+        pObj->Flags = Flags | 0x2000000;
     } else {
-        Flags &= FEPackage::uHoldDirtyFlags | 0xFDFFFFFF;
+        pObj->Flags = Flags & (FEPackage::uHoldDirtyFlags | 0xFDFFFFFF);
     }
-    pObj->Flags = Flags;
 
     FEScript* pScript = pObj->pCurrentScript;
     int tPrevTime = pScript->CurTime;
