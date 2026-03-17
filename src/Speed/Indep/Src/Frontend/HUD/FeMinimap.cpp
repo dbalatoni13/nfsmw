@@ -453,7 +453,7 @@ void Minimap::UpdateCopElements(IVehicle *ivehicle) {
     IVehicleAI *ivehicleAI = ivehicle->GetAIVehiclePtr();
     ipursuit = ivehicleAI->GetPursuit();
 
-    if (MinimapShowNonPursuitCops || ipursuit) {
+    if (MinimapShowNonPursuitCops || (ipursuit && !ipursuit->IsPursuitBailed())) {
         const IVehicle::List &vehicles = IVehicle::GetList(list_id);
         for (IVehicle *const *iter = vehicles.begin(); iter != vehicles.end(); ++iter) {
             IVehicle *copVehicle = *iter;
@@ -466,8 +466,10 @@ void Minimap::UpdateCopElements(IVehicle *ivehicle) {
 
             bVector2 target_pos;
             bVector2 target_dir;
+            bVector2 *target_pos_to_use = &target_pos;
+            bVector2 *target_dir_to_use = &target_dir;
             ISimable *isimable = copVehicle->GetSimable();
-            GetVehicleVectors(&target_pos, &target_dir, isimable);
+            GetVehicleVectors(target_pos_to_use, target_dir_to_use, isimable);
 
             IPursuitAI *ipursuitai = nullptr;
             copVehicle->QueryInterface(&ipursuitai);
@@ -475,12 +477,11 @@ void Minimap::UpdateCopElements(IVehicle *ivehicle) {
 
             if (copVehicle->GetVehicleClass() == VehicleClass::CHOPPER) {
                 copArtToUse = mHeliElementArt;
-                if (MinimapShowNonPursuitCops || (ipursuitai && ipursuitai->GetInPursuit())) {
+                if (MinimapShowNonPursuitCops || (ipursuitai && ipursuitai->WasWithinEngagementRadius())) {
                     AITarget *target = ipursuitai->GetPursuitTarget();
                     if (!target || target->GetSpeed() > 0.25f) {
-                        unsigned int tracking_hash = FEHashUpper("TRACKING");
-                        if (!FEngIsScriptSet(mHeliLineOfSiteArt, tracking_hash)) {
-                            FEngSetScript(mHeliLineOfSiteArt, tracking_hash, true);
+                        if (!FEngIsScriptSet(mHeliLineOfSiteArt, FEHashUpper("TRACKING"))) {
+                            FEngSetScript(mHeliLineOfSiteArt, FEHashUpper("TRACKING"), true);
                         }
                     } else {
                         if (!FEngIsScriptSet(mHeliLineOfSiteArt, 0x1744B3)) {
@@ -489,16 +490,19 @@ void Minimap::UpdateCopElements(IVehicle *ivehicle) {
                     }
                 }
                 helicopterFound = true;
-                UpdateElementArt(&target_pos, &target_dir, copArtToUse, false);
-                UpdateElementArt(&target_pos, &target_dir, mHeliLineOfSiteArt, false);
+                UpdateElementArt(target_pos_to_use, target_dir_to_use, copArtToUse, false);
+                UpdateElementArt(target_pos_to_use, target_dir_to_use, mHeliLineOfSiteArt, false);
             } else {
-                if (MinimapShowNonPursuitCops || (ipursuitai && ipursuitai->GetInPursuit() && MinimapShowPursuitCops)) {
+                if (MinimapShowNonPursuitCops ||
+                    (ipursuitai && ipursuitai->WasWithinEngagementRadius() && MinimapShowPursuitCops)) {
                     copArtToUse = mCopElementArt[artIter];
-                    UpdateElementArt(&target_pos, &target_dir, copArtToUse, false);
+                    UpdateElementArt(target_pos_to_use, target_dir_to_use, copArtToUse, false);
                 } else {
                     FEngSetInvisible(mCopElementArt[artIter]);
                 }
+            }
 
+            if (copVehicle->GetVehicleClass() != VehicleClass::CHOPPER) {
                 unsigned int copFlasherColour = 0xFFCCCCCC;
                 if (ipursuitai && ipursuitai->GetInPursuit()) {
                     if (mCopFlashCounter < 3) {
