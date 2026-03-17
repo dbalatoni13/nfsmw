@@ -134,6 +134,55 @@ unsigned char TextureInfoPlatInfo::SetImage(TextureInfo *texture_info) {
     return 1;
 }
 
+unsigned char TextureInfoPlatInfo::SetImage(int width, int height, int mip, int format, void *imageData, void *imagePal,
+                                            int alphaUsageType, int clamp) {
+    int wrap_s = 0;
+    int wrap_t = 0;
+    int texture_format = format & 0x7FFFFFFF;
+    GXTlutFmt tlut_format = static_cast<GXTlutFmt>(format >= 0 ? GX_TL_RGB5A3 : GX_TL_IA8);
+
+    if (clamp & 1) {
+        int width_lsb = width & -width;
+
+        if (width == width_lsb) {
+            wrap_s = 1;
+        }
+    }
+
+    if (clamp & 2) {
+        int height_lsb = height & -height;
+
+        if (height == height_lsb) {
+            wrap_t = 1;
+        }
+    }
+
+    if (HasClut()) {
+        GXTexObj *obj = &ImageInfos.obj;
+
+        GXInitTexObjCI(obj, imageData, static_cast<u16>(width), static_cast<u16>(height), static_cast<GXCITexFmt>(texture_format),
+                       static_cast<GXTexWrapMode>(wrap_s), static_cast<GXTexWrapMode>(wrap_t), static_cast<u8>(mip), 0);
+        GXInitTlutObj(&ImageInfos.objClut, imagePal, tlut_format, texture_format == GX_TF_C4 ? 0x10 : 0x100);
+    } else {
+        GXInitTexObj(&ImageInfos.obj, imageData, static_cast<u16>(width), static_cast<u16>(height), static_cast<GXTexFmt>(texture_format),
+                     static_cast<GXTexWrapMode>(wrap_s), static_cast<GXTexWrapMode>(wrap_t), static_cast<u8>(mip));
+    }
+
+    if (mip) {
+        float max_lod = static_cast<float>(mip - 1);
+
+        if (alphaUsageType && max_lod > 1.0f) {
+            max_lod -= 1.0f;
+        }
+
+        GXInitTexObjLOD(&ImageInfos.obj, GX_LIN_MIP_LIN, GX_LINEAR, 0.0f, max_lod, 0.0f, GX_FALSE, GX_FALSE, GX_ANISO_1);
+    } else {
+        GXInitTexObjLOD(&ImageInfos.obj, GX_LINEAR, GX_LINEAR, 0.0f, 0.0f, 0.0f, GX_FALSE, GX_FALSE, GX_ANISO_1);
+    }
+
+    return 1;
+}
+
 int eSetTexture(TextureInfo *texture_info, int stage) {
     static int stagePrev;
     TextureInfoPlatInfo *plat_info = texture_info->GetPlatInfo();
