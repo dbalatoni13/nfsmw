@@ -598,28 +598,26 @@ void UIQRCarSelect::NotificationMessage(unsigned long msg, FEObject *pobj, unsig
                     FEDatabase->GetCareerSettings()->SetCurrentCar(originalCar);
                 }
                 cFEng::Get()->QueuePackageSwitch("MainMenu_Sub.fng", 0, 0, false);
-                iVar3 = originalCar;
             } else if ((flags & 8) != 0 || (flags & 0x40) != 0) {
                 RaceSettings *settings = FEDatabase->GetQuickRaceSettings(static_cast<GRace::Type>(0xb));
                 settings->SelectedCar[iPlayerNum] = originalCar;
                 cFEng::Get()->QueuePackageSwitch("OL_MAIN.fng", 0, 0, false);
-                iVar3 = originalCar;
             } else if ((flags & 0x20) != 0) {
                 cFEng::Get()->QueuePackageSwitch("MyCarsManager.fng", 0, 0, false);
-                iVar3 = originalCar;
             } else {
                 bool isSplitScreen = false;
                 if ((flags & 4) != 0) {
                     isSplitScreen = FEDatabase->iNumPlayers == 2;
                 }
                 if (isSplitScreen) {
-                    if (iPlayerNum != 1) {
+                    bool returnToPressStart = iPlayerNum != 1;
+                    if (returnToPressStart) {
                         FEManager::Get()->SetGarageType(GARAGETYPE_NONE);
                     } else {
                         FEDatabase->SetPlayersJoystickPort(1, -1);
                     }
-                    cFEng::Get()->QueuePackageSwitch("PressStart.fng", !isSplitScreen, 0xff, false);
-                    iVar3 = originalCar;
+                    returnToPressStart = !returnToPressStart;
+                    cFEng::Get()->QueuePackageSwitch("PressStart.fng", returnToPressStart, 0xff, false);
                 } else {
                     RaceSettings *settings = FEDatabase->GetQuickRaceSettings(static_cast<GRace::Type>(0xb));
                     settings->SelectedCar[iPlayerNum] = originalCar;
