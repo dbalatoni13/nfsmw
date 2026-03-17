@@ -35,7 +35,7 @@ struct stSongInfo {
 
 } // namespace Sound
 
-typedef UTL::Std::vector<Sound::stSongInfo *, _type_vector> SongInfoList;
+typedef std::vector<Sound::stSongInfo *> SongInfoList;
 
 extern SongInfoList Songs;
 
