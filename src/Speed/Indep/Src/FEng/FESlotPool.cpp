@@ -5,19 +5,18 @@ unsigned char* FESlotNode::AllocBlock() {
     if (SlotsUsed == 0x20) {
         return nullptr;
     }
-    unsigned char* pMask = SlotMask;
     unsigned long Index = 0;
-    while (pMask[Index] == 0xFF) {
+    while (SlotMask[Index] == 0xFF) {
         Index++;
     }
     Index <<= 3;
-    if (pMask[Index >> 3] & 1) {
+    if (SlotMask[Index >> 3] & 1) {
         do {
             Index++;
-        } while ((pMask[Index >> 3] >> (Index & 7)) & 1);
+        } while ((SlotMask[Index >> 3] >> (Index & 7)) & 1);
     }
     SlotsUsed++;
-    pMask[Index >> 3] |= static_cast<unsigned char>(1 << (Index & 7));
+    SlotMask[Index >> 3] |= static_cast<unsigned char>(1 << (Index & 7));
     return pData + SlotSize * Index;
 }
 
