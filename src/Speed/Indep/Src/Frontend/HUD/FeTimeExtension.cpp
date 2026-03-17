@@ -13,9 +13,14 @@ extern const char lbl_803E4CF4[];
 extern const char lbl_803E5060[];
 
 TimeExtension::TimeExtension(UTL::COM::Object *pOutter, const char *pkg_name, int player_number)
-    : HudElement(pkg_name, 0) //
-    , ITimeExtension(pOutter)
+    : HudElement(pkg_name, 0x2000000) //
+    , ITimeExtension(pOutter) //
+    , mPlayerLapTime(0.0f) //
+    , mTimeToShow(0.0f) //
+    , mScriptHash(0)
 {
+    mTimerTimeExtension.ResetLow();
+    mTimerNextTollbooth.ResetLow();
 }
 
 void TimeExtension::Update(IPlayer *player) {

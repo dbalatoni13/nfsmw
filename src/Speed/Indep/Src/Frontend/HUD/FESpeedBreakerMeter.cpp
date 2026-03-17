@@ -30,14 +30,12 @@ SpeedBreakerMeter::SpeedBreakerMeter(UTL::COM::Object *pOutter, const char *pkg_
     , mPursuitLevel(lbl_803E4D9C) //
 {
     RegisterGroup(FEHashUpper(lbl_803E4D40));
-    mpSpeedBreakerMeterIcon = FEngFindObject(pkg_name, FEHashUpper(lbl_803E4D5C));
+    mpSpeedBreakerMeterIcon = FEngFindObject(GetPackageName(), FEHashUpper(lbl_803E4D5C));
     mpSpeedBreakerMeterBar = RegisterMultiImage(FEHashUpper(lbl_803E4D7C));
     mpSpeedBreakerGroup = RegisterGroup(0x82D60021);
-    mpSpeedBreakerBar = FEngFindObject(pkg_name, 0x1FDAF669);
-    if (mpSpeedBreakerBar != nullptr) {
-        float w, h;
-        FEngGetSize(mpSpeedBreakerBar, w, h);
-        mSpeedBreakerBarOriginalWidth = w;
+    mpSpeedBreakerBar = FEngFindObject(GetPackageName(), 0x1FDAF669);
+    if (mpSpeedBreakerBar) {
+        mSpeedBreakerBarOriginalWidth = mpSpeedBreakerBar->GetObjData()->Size.x;
     }
 }
 
