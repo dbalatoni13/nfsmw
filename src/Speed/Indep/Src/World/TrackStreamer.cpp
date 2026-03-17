@@ -478,6 +478,83 @@ void TrackStreamer::SwitchZones(short *current_zones) {
     CalculateLoadingBacklog();
 }
 
+int TrackStreamer::Loader(bChunk *chunk) {
+    unsigned int chunk_id = chunk->GetID();
+    if (chunk_id == 0x34110) {
+        pTrackStreamingSections = reinterpret_cast<TrackStreamingSection *>(chunk->GetData());
+        NumTrackStreamingSections = chunk->Size / sizeof(TrackStreamingSection);
+        for (int i = 0; i < NumTrackStreamingSections; i++) {
+            TrackStreamingSection *section = &pTrackStreamingSections[i];
+            bEndianSwap16(&section->SectionNumber);
+            bEndianSwap32(&section->Status);
+            bEndianSwap32(&section->FileType);
+            bEndianSwap32(&section->FileOffset);
+            bEndianSwap32(&section->Size);
+            bEndianSwap32(&section->CompressedSize);
+            bEndianSwap32(&section->PermSize);
+            bEndianSwap32(&section->SectionPriority);
+            bPlatEndianSwap(&section->Centre);
+            bEndianSwap32(&section->Radius);
+            bEndianSwap32(&section->Checksum);
+        }
+
+        for (int i = 0; i < NumHibernatingSections; i++) {
+            TrackStreamingSection *section = FindSection(HibernatingSections[i].SectionNumber);
+            bMemCpy(section, &HibernatingSections[i], sizeof(TrackStreamingSection));
+            NumSectionsLoaded += 1;
+            ActivateSection(section);
+            JettisonedSections[NumJettisonedSections] = section;
+            NumJettisonedSections += 1;
+        }
+
+        NumHibernatingSections = 0;
+    } else if (chunk_id == 0x34113) {
+        pDiscBundleSections = reinterpret_cast<DiscBundleSection *>(chunk->GetData());
+        pLastDiscBundleSection = reinterpret_cast<DiscBundleSection *>(reinterpret_cast<char *>(pDiscBundleSections) + chunk->Size);
+        for (DiscBundleSection *disc_bundle = pDiscBundleSections; disc_bundle < pLastDiscBundleSection;
+             disc_bundle = reinterpret_cast<DiscBundleSection *>(
+                 reinterpret_cast<char *>(disc_bundle) + disc_bundle->NumMembers * sizeof(DiscBundleSectionMember) + 0x14)) {
+            bEndianSwap32(&disc_bundle->FileOffset);
+            bEndianSwap32(&disc_bundle->FileSize);
+            for (int i = 0; i < disc_bundle->NumMembers; i++) {
+                DiscBundleSectionMember *member = &disc_bundle->Members[i];
+                bEndianSwap16(&member->SectionNumber);
+                bEndianSwap16(&member->FileOffset);
+                member->pSection = FindSection(member->SectionNumber);
+            }
+        }
+    } else if (chunk_id == 0x34111) {
+        pInfo = reinterpret_cast<TrackStreamingInfo *>(chunk->GetData());
+        for (int i = 0; i < 2; i++) {
+            bEndianSwap32(&pInfo->FileSize[i]);
+        }
+    } else {
+        if (chunk_id != 0x34112) {
+            return 0;
+        }
+
+        pBarriers = reinterpret_cast<TrackStreamingBarrier *>(chunk->GetData());
+        NumBarriers = chunk->Size / sizeof(TrackStreamingBarrier);
+        for (int i = 0; i < NumBarriers; i++) {
+            TrackStreamingBarrier *barrier = &pBarriers[i];
+            bPlatEndianSwap(&barrier->Points[0]);
+            bPlatEndianSwap(&barrier->Points[1]);
+        }
+    }
+
+    return 1;
+}
+
+bool TrackStreamer::NeedsGameStateActivation(TrackStreamingSection *section) {
+    int subsection_number = section->SectionNumber % 100;
+    if (!IsRegularScenerySection_TrackStreamer(section->SectionNumber) || subsection_number < ScenerySectionLODOffset ||
+        ScenerySectionLODOffset * 2 <= subsection_number) {
+        return false;
+    }
+
+    return true;
+}
+
 int TrackStreamer::GetSectionToActivate(int loaded_frames) {
     if (NumSectionsActivated < NumCurrentStreamingSections) {
         for (int i = 0; i < NumCurrentStreamingSections; i++) {
@@ -490,6 +567,26 @@ int TrackStreamer::GetSectionToActivate(int loaded_frames) {
     }
 
     return 0;
+}
+
+void TrackStreamer::HandleSectionActivation() {
+    short section_number = static_cast<short>(GetSectionToActivate(0));
+    if (section_number != 0) {
+        TrackStreamingSection *section = FindSection(section_number);
+        if (section->Status != TrackStreamingSection::ACTIVATED) {
+            if (section->Status != TrackStreamingSection::LOADED) {
+                if (!section->CurrentlyVisible) {
+                    return;
+                }
+
+                do {
+                    HandleLoading();
+                    ServiceResourceLoading();
+                } while (section->Status != TrackStreamingSection::LOADED);
+            }
+            ActivateSection(section);
+        }
+    }
 }
 
 int TrackStreamer::GetLoadingPriority(TrackStreamingSection *section, StreamingPositionEntry *streaming_position, bool use_direction) {
