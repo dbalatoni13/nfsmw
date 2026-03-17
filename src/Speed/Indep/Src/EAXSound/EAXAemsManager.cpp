@@ -2,6 +2,7 @@
 #include "Speed/Indep/Libs/Support/Utility/UStandard.h"
 #include "Speed/Indep/Src/EAXSound/EAXAemsManager.h"
 #include "Speed/Indep/Src/EAXSound/AudioMemoryManager.hpp"
+#include "Speed/Indep/Src/EAXSound/Csis.hpp"
 #include "Speed/Indep/Src/Misc/Joylog.hpp"
 #include "Speed/Indep/Src/Misc/QueuedFile.hpp"
 #include "Speed/Indep/Src/World/TrackStreamer.hpp"
@@ -33,17 +34,6 @@ extern unsigned int bGetTicker();
 extern unsigned int StartBankLoadTicks;
 
 namespace Csis {
-struct InterfaceId;
-struct ClassHandle {
-    int Set(const InterfaceId *pInterfaceId);
-};
-struct FunctionHandle {
-    int Set(const InterfaceId *pInterfaceId);
-};
-namespace System {
-void Subscribe(void *desc);
-}
-
 extern ClassHandle gFX_NITROUSHandle;
 extern InterfaceId FX_NITROUSId;
 extern ClassHandle gFX_PURGEHandle;

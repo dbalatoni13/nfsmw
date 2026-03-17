@@ -2,6 +2,7 @@
 #include "Speed/Indep/Libs/Support/Utility/UStandard.h"
 #include "Speed/Indep/Libs/Support/Utility/UListable.h"
 #include "Speed/Indep/Src/EAXSound/AudioMemoryManager.hpp"
+#include "Speed/Indep/Src/EAXSound/Csis.hpp"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 #include "Speed/Indep/bWare/Inc/bMemory.hpp"
 #include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
@@ -9,17 +10,6 @@
 #include <algorithm>
 
 namespace Csis {
-struct InterfaceId;
-struct ClassHandle;
-struct Class {
-    static int CreateInstance(ClassHandle *handle, void *memberData, Class **outClass);
-    void SetMemberData(void *data);
-    void GetRefCount(int *refcount);
-};
-namespace System {
-void *Alloc(int bytes);
-}
-
 extern ClassHandle gAEMS_StichCollisionHandle;
 extern InterfaceId AEMS_StichCollisionId;
 extern ClassHandle gAEMS_StichWooshHandle;

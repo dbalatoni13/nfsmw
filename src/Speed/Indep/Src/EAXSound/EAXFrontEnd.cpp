@@ -1,7 +1,14 @@
 #include "Speed/Indep/Src/EAXSound/EAXFrontEnd.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXCommon.hpp"
+#include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
+#include "Speed/Indep/Src/EAXSound/snd_gen/FE_AEMS.h"
 #include "Speed/Indep/Src/Generated/Messages/MMiscSound.h"
+#include "Speed/Indep/Src/Misc/Config.h"
 #include "Speed/Indep/Src/Misc/Hermes.h"
+#include "Speed/Indep/bWare/Inc/bMath.hpp"
+
+extern float g_SliderValue;
+extern int Debug_Common_FE_OFF;
 
 EAXFrontEnd::EAXFrontEnd() {
     int i;
@@ -42,7 +49,36 @@ void EAXFrontEnd::AttachSFXOBJ(SFX_Base *psfx, eSFXOBJ_MAIN_TYPES sfxtype) {
 void EAXFrontEnd::Initialize() {}
 
 int EAXFrontEnd::Play(eMenuSoundTriggers etrigger) {
-    return Play(GetEventPointer(static_cast< int >(etrigger)));
+    int nvol;
+    int testID;
+
+    if (IsSoundEnabled == 0) {
+        return -1;
+    }
+
+    nvol = 0;
+    if (m_pSFXOBJ_FEHUD) {
+        nvol = m_pSFXOBJ_FEHUD->GetDMixOutput(2, DMX_VOL);
+        g_pEAXSound->SetCsisName(m_pSFXOBJ_FEHUD);
+
+        testID = static_cast<int>(etrigger);
+        if (static_cast<unsigned int>(testID - 80) < 16 && etrigger != UISND_EA_MSGR_CHALLENGE_REQ &&
+            etrigger != UISND_MAIN_MENU) {
+            delete m_pPlayRapSheet;
+            m_pPlayRapSheet = new PlayFrontEndSample_RS(testID, nvol, 0x1000, 0);
+        } else {
+            int getref;
+
+            m_pPlayFrontEndSampleHandle = new PlayFrontEndSample(testID, nvol, 0x1000, 0);
+            getref = m_pPlayFrontEndSampleHandle->GetRefCount();
+            delete m_pPlayFrontEndSampleHandle;
+            m_pPlayFrontEndSampleHandle = nullptr;
+        }
+
+        nvol = 0;
+    }
+
+    return nvol;
 }
 
 void EAXFrontEnd::Stop(eMenuSoundTriggers etrigger) {
@@ -91,7 +127,41 @@ void EAXCommon::AttachSFXOBJ(SFX_Base *psfx, eSFXOBJ_MAIN_TYPES sfxtype) {
 void EAXCommon::Initialize() {}
 
 int EAXCommon::Play(eMenuSoundTriggers etrigger) {
-    return Play(GetEventPointer(static_cast< int >(etrigger)));
+    int nvol;
+
+    if (IsSoundEnabled != 0) {
+        if (Debug_Common_FE_OFF != 0) {
+            return -1;
+        }
+
+        if (m_pSFXOBJ_FEHUD) {
+            if (m_pSFXOBJ_FEHUD->GetOutputBlockPtr() == nullptr) {
+                return 0;
+            }
+
+            nvol = m_pSFXOBJ_FEHUD->GetDMixOutput(1, DMX_VOL);
+            if (-1.0f < g_SliderValue) {
+                int CurSliderVol = bClamp(static_cast<int>(g_SliderValue * 32767.0f), 0, 0x7FFF);
+
+                g_SliderValue = -1.0f;
+                nvol = nvol * CurSliderVol >> 15;
+            }
+
+            if (etrigger == UISND_ENTER_TRIGGER) {
+                m_pSFXOBJ_FEHUD->SetDMIX_Input(4, 0x7FFF);
+            }
+
+            g_pEAXSound->SetCsisName(m_pSFXOBJ_FEHUD);
+            m_pPlayCommonSampleHandle = new PlayCommonSample(static_cast<int>(etrigger), nvol, 0x1000, 0);
+            if (m_pPlayCommonSampleHandle) {
+                delete m_pPlayCommonSampleHandle;
+            }
+            m_pPlayCommonSampleHandle = nullptr;
+            return 0;
+        }
+    }
+
+    return -1;
 }
 
 void EAXCommon::Stop(eMenuSoundTriggers etrigger) {}
