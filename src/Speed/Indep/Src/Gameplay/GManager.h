@@ -36,6 +36,8 @@ typedef UTL::Std::map<unsigned int, ObjectStateBlockHeader *, _type_ID_ObjectSta
 typedef UTL::Std::list<int, _type_ID_PendingSMSList> PendingSMSList;
 typedef UTL::Std::list<unsigned int, _type_ID_AttribKeyList> AttribKeyList;
 
+class GVault;
+
 // total size: 0x308
 class GManager : public UTL::COM::Object, public IVehicleCache {
   public:
@@ -214,7 +216,13 @@ class GManager : public UTL::COM::Object, public IVehicleCache {
     }
 
   private:
+    friend class GVault;
+
     GManager(const char *vaultPackName);
+
+    int GetAvailableBinSlot();
+    int GetAvailableRaceSlot();
+    void LoadVaultSync(GVault *vault);
 
     static GManager *mObj;
 
