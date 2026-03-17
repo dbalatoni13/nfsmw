@@ -864,17 +864,15 @@ static unsigned int FindScreenInfo(const char *pkg_name, int category) {
                 bSPrintf(prefix, "%s_%d", prefix, category);
             }
             unsigned int key = Attrib::StringToLowerCaseKey(prefix);
-            Attrib::Gen::frontend inst(Attrib::FindCollection(Attrib::Gen::frontend::ClassKey(), key), 0, nullptr);
-            if (inst.GetLayoutPointer()) {
-                inst.~frontend();
-                return key;
+            {
+                Attrib::Gen::frontend inst(Attrib::FindCollection(Attrib::Gen::frontend::ClassKey(), key), 0, nullptr);
+                if (inst.GetConstCollection()) {
+                    return key;
+                }
+                if (category > -1) {
+                    return FindScreenInfo(pkg_name, -1);
+                }
             }
-            if (category > -1) {
-                unsigned int fallback = FindScreenInfo(pkg_name, -1);
-                inst.~frontend();
-                return fallback;
-            }
-            inst.~frontend();
         } else if (flags & 0x8000) {
             bStrCat(prefix, "carlot_", name);
         } else if (flags & 1) {
@@ -895,11 +893,9 @@ static unsigned int FindScreenInfo(const char *pkg_name, int category) {
         unsigned int key = Attrib::StringToLowerCaseKey(prefix);
         {
             Attrib::Gen::frontend inst(Attrib::FindCollection(Attrib::Gen::frontend::ClassKey(), key), 0, nullptr);
-            if (inst.GetLayoutPointer()) {
-                inst.~frontend();
+            if (inst.GetConstCollection()) {
                 return key;
             }
-            inst.~frontend();
         }
     }
     return 0x3b5aea62;
@@ -911,30 +907,21 @@ static unsigned int FindGarageCameraInfo(const char *prefix) {
     const char *garage_name = GetCurrentGarageName();
     bStrCat(buf, buf, garage_name);
     unsigned int key = Attrib::StringToLowerCaseKey(buf);
-    {
-        Attrib::Gen::frontend inst(Attrib::FindCollection(Attrib::Gen::frontend::ClassKey(), key), 0, nullptr);
-        if (!inst.GetLayoutPointer()) {
-            inst.~frontend();
-            return 0xf907e767;
-        }
-        inst.~frontend();
+    Attrib::Gen::frontend inst(Attrib::FindCollection(Attrib::Gen::frontend::ClassKey(), key), 0, nullptr);
+    if (!inst.GetConstCollection()) {
+        return 0xf907e767;
     }
     return key;
 }
 
 static unsigned int FindScreenCameraInfo(unsigned int screen_key) {
-    {
-        Attrib::Gen::frontend inst(Attrib::FindCollection(Attrib::Gen::frontend::ClassKey(), screen_key), 0, nullptr);
-        if (!inst.GetLayoutPointer()) {
-            inst.~frontend();
-            return 0xf907e767;
-        }
-        Attrib::Gen::frontend cam_inst(reinterpret_cast<Attrib::Gen::frontend::_LayoutStruct *>(inst.GetLayoutPointer())->cam_angle, 0, nullptr);
-        unsigned int result = cam_inst.GetCollection();
-        cam_inst.~frontend();
-        inst.~frontend();
-        return result;
+    Attrib::Gen::frontend inst(Attrib::FindCollection(Attrib::Gen::frontend::ClassKey(), screen_key), 0, nullptr);
+    if (!inst.GetConstCollection()) {
+        return 0xf907e767;
     }
+    Attrib::Gen::frontend cam_inst(reinterpret_cast<Attrib::Gen::frontend::_LayoutStruct *>(inst.GetLayoutPointer())->cam_angle, 0, nullptr);
+    unsigned int result = cam_inst.GetCollection();
+    return result;
 }
 
 static unsigned int FindGarageEntryCameraInfo() {
