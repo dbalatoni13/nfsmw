@@ -510,6 +510,14 @@ class GRaceStatus : public UTL::COM::Object, public IVehicleCache {
         return fRaceLength;
     }
 
+    int GetNumTollbooths() const {
+        return mNumTollbooths;
+    }
+
+    int GetNumSpeedTraps() const {
+        return nSpeedTraps;
+    }
+
     static bool IsChallengeRace() {
         return Exists() && Get().GetRaceType() == GRace::kRaceType_Challenge;
     }

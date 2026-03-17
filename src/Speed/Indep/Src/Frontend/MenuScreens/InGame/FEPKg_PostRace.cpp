@@ -940,10 +940,9 @@ void PostRaceResultsScreen::SetupLapStats(int racerIndex, GRacerInfo *racer_info
         FEString *labelString = GetPanelString(panel, lbl_803E5DCC);
         FEString *timeString = GetPanelString(panel, lbl_803E5DDC);
         FEString *positionString = GetPanelString(panel, lbl_803E5E24);
-        unsigned int num_booths =
-            race_status.GetRaceParameters() != nullptr ? race_status.GetRaceParameters()->GetNumCheckpoints() : 0;
+        int num_booths = race_status.GetNumTollbooths();
 
-        for (unsigned int i = 0; i < num_booths; ++i) {
+        for (int i = 0; i < num_booths; ++i) {
             panel.AddStat(new ("", 0)
                               TollboothStat(labelString, timeString, positionString, i + 1,
                                             race_status.GetRaceTollboothTime(i, racerIndex), 1));
@@ -956,9 +955,9 @@ void PostRaceResultsScreen::SetupLapStats(int racerIndex, GRacerInfo *racer_info
         break;
     }
     case GRace::kRaceType_SpeedTrap: {
-        unsigned int num_traps = GManager::Exists() ? GManager::Get().GetNumSpeedTraps() : 0;
+        int num_traps = race_status.GetNumSpeedTraps();
 
-        for (unsigned int i = 0; i < num_traps; ++i) {
+        for (int i = 0; i < num_traps; ++i) {
             FEString *labelString =
                 FEngFindString(panel.ParentPkg, FEngHashString(lbl_803E5088, lbl_803E5DCC, panel.RacerName));
             FEString *timeString =
