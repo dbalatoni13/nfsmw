@@ -3,11 +3,7 @@
 #include "Speed/Indep/Src/FEng/FEngStandard.h"
 
 char FEUpperCase(char val) {
-    if (static_cast<unsigned int>(val - 'a') > 25) {
-        return val;
-    }
-
-    return val - 0x20;
+    return static_cast<unsigned int>(val - 'a') > 25 ? val : static_cast<char>(val - 0x20);
 }
 
 unsigned long FEHash(const char* String) {
