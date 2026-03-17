@@ -61,18 +61,18 @@ void ChoppedMiniMapManager::UncompressMaps(short *chop_nums, int num_chops) {
     for (int n = 0; n < NumSections; n++) {
         UncompressedMiniMap *map = &UncompressedMiniMaps[n];
         if (map->Chunks) {
-            bool keep_map = false;
+            int keep_map = -1;
             for (int i = 0; i < num_chops; i++) {
                 if (chop_nums[i] == static_cast<short>(map->ChopNum)) {
-                    keep_map = true;
+                    keep_map = i;
                     break;
                 }
             }
-            if (!keep_map) {
+            if (keep_map < 0) {
                 UnloadChunks(map->Chunks, map->SizeofChunks, "MiniMap Chop");
                 bFree(map->Chunks);
-                map->SizeofChunks = 0;
                 map->Chunks = nullptr;
+                map->SizeofChunks = 0;
             }
         }
     }
@@ -85,15 +85,13 @@ void ChoppedMiniMapManager::UncompressMaps(short *chop_nums, int num_chops) {
         for (; n < NumSections; n++) {
             UncompressedMiniMap *map = &UncompressedMiniMaps[n];
             if (!map->Chunks) {
-                if (!free_map) {
-                    free_map = map;
-                }
+                free_map = map;
             } else if (map->ChopNum == chop_num) {
                 break;
             }
         }
 
-        if (n == NumSections && chop_num > -1) {
+        if (n == NumSections && chop_num >= 0) {
             void *lz_header = CompressedMiniMaps[chop_num];
             if (lz_header) {
                 free_map->ChopNum = chop_num;
