@@ -193,6 +193,22 @@ void GCharacter::Unspawn() {
     mState = kCharState_Unspawned;
 }
 
+void GCharacter::UnspawnWhenOffscreen() {
+    switch (mState) {
+        case kCharState_Spawning_WaitingForModel:
+        case kCharState_Spawning_WaitingForTrack:
+            Unspawn();
+            break;
+        case kCharState_Spawned:
+        case kCharState_Unspawning_WaitingUntilOffscreen:
+            if (mVehicle && mVehicle->GetOffscreenTime() > 0.0f) {
+                Unspawn();
+            }
+            mState = kCharState_Unspawning_WaitingUntilOffscreen;
+            break;
+    }
+}
+
 IVehicle *GCharacter::GetSpawnedVehicle() const {
     return mVehicle;
 }
