@@ -892,13 +892,12 @@ bool FEPackageReader::ReadScriptTags(FETag* pTag, unsigned long Length) {
                 CurTrack++;
                 pTrack = &pScript->pTracks[CurTrack];
                 pTrack->ParamType = pTag->Data()[0];
-                unsigned char paramSize = pTag->Data()[1];
-                pTrack->ParamSize = paramSize;
+                pTrack->ParamSize = pTag->Data()[1];
                 pTrack->InterpType = pTag->Data()[2];
                 pTrack->InterpAction = pTag->Data()[3];
                 pTrack->Length = static_cast<int>(pTag->Getu32(1));
                 pTrack->LongOffset = RunningTrackOffset;
-                RunningTrackOffset += paramSize >> 2;
+                RunningTrackOffset += pTrack->ParamSize >> 2;
                 break;
             }
             case 0x6f54: {
