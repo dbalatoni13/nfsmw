@@ -1163,13 +1163,15 @@ set_bits:
 
 void FEngine::ProcessMessageQueue() {
     FEMessageNode* pNode = static_cast<FEMessageNode*>(MsgQ.RemHead());
+    FEPackage* pPack;
     while (pNode) {
         if (bDebugMessages) {
             pInterface->DebugMessageProcessed(pNode->MsgID, pNode->pMsgTarget, pNode->pMsgFrom, pNode->pFromPackage, pNode->ControlMask);
         }
         switch (reinterpret_cast<unsigned long>(pNode->pMsgTarget)) {
         case 0: {
-            for (FEPackage* pPack = PackList.GetFirstPackage(); pPack; pPack = pPack->GetNext()) {
+            pPack = PackList.GetFirstPackage();
+            while (pPack) {
                 ProcessGlobalMessage(pPack, pNode->MsgID, pNode->ControlMask);
                 FEMsgTargetList* pTargList = pPack->GetMessageTargets(pNode->MsgID);
                 if (pTargList) {
@@ -1181,6 +1183,7 @@ void FEngine::ProcessMessageQueue() {
                         i++;
                     }
                 }
+                pPack = pPack->GetNext();
             }
             break;
         }
@@ -1188,15 +1191,17 @@ void FEngine::ProcessMessageQueue() {
             pInterface->NotificationMessage(pNode->MsgID, pNode->pMsgFrom, pNode->ControlMask, reinterpret_cast<unsigned long>(pNode->pFromPackage));
             break;
         case 0xFFFFFFFE:
-            for (FEPackage* pPack = PackList.GetFirstPackage(); pPack; pPack = pPack->GetNext()) {
+            pPack = PackList.GetFirstPackage();
+            while (pPack) {
                 ProcessGlobalMessage(pPack, pNode->MsgID, pNode->ControlMask);
+                pPack = pPack->GetNext();
             }
             break;
         case 0xFFFFFFFD:
             ProcessGlobalMessage(pNode->pFromPackage, pNode->MsgID, pNode->ControlMask);
             break;
         case 0xFFFFFFFC: {
-            FEPackage* pPack = PackList.GetFirstPackage();
+            pPack = PackList.GetFirstPackage();
             while (pPack && pPack != pNode->pFromPackage) {
                 pPack = pPack->GetNext();
             }
