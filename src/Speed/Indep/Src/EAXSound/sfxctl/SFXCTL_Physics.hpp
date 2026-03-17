@@ -82,7 +82,7 @@ struct SFXCTL_Physics : public SFXCTL {
     void UpdateNIS(float t, float dt);
 
     float GetPhysRPM() { return PhysicsRPM; }
-    float GetPhysTRQ() { return PhysicsTRQ; }
+    virtual float GetPhysTRQ() { return PhysicsTRQ; }
 };
 
 struct SndAIStateManager;
