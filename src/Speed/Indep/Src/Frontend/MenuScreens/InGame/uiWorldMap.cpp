@@ -375,105 +375,106 @@ WorldMap::~WorldMap() {
 
 void WorldMap::NotificationMessage(unsigned long msg, FEObject* obj, unsigned long param1,
                                    unsigned long param2) {
+    register unsigned long message asm("r30") = msg;
     UMath::Vector3 pos;
 
     if (!bInToggleMode) {
-        if (msg == 0x72619778) {
+        if (message == 0x72619778) {
             goto after_base_message;
         }
-        if (msg == 0x911c0a4b) {
+        if (message == 0x911c0a4b) {
             goto after_base_message;
         }
     }
-    if (msg != 0xc407210) {
-        UIWidgetMenu::NotificationMessage(msg, obj, param1, param2);
+    if (message != 0xc407210) {
+        UIWidgetMenu::NotificationMessage(message, obj, param1, param2);
     }
 after_base_message:
-    if (msg == 0xa16ca7bd) {
+    if (message == 0xa16ca7bd) {
         goto handle_gps;
     }
-    if (msg > 0xa16ca7bd) {
+    if (message > 0xa16ca7bd) {
         goto msg_gt_a16ca7bd;
     }
-    if (msg == 0x72619778) {
+    if (message == 0x72619778) {
         goto refresh_and_end;
     }
-    if (msg > 0x72619778) {
+    if (message > 0x72619778) {
         goto msg_gt_72619778;
     }
-    if (msg == 0x35f8620b) {
+    if (message == 0x35f8620b) {
         goto clear_focus;
     }
-    if (msg > 0x35f8620b) {
+    if (message > 0x35f8620b) {
         goto msg_gt_35f8620b;
     }
-    if (msg == 0xc407210) {
+    if (message == 0xc407210) {
         goto handle_toggle_or_dialog;
     }
     return;
 
 msg_gt_35f8620b:
-    if (msg == 0x5073ef13) {
+    if (message == 0x5073ef13) {
         goto zoom_prev;
     }
     return;
 
 msg_gt_72619778:
-    if (msg == 0x911c0a4b) {
+    if (message == 0x911c0a4b) {
         goto refresh_and_end;
     }
-    if (msg > 0x911c0a4b) {
+    if (message > 0x911c0a4b) {
         goto msg_gt_911c0a4b;
     }
-    if (msg == 0x911ab364) {
+    if (message == 0x911ab364) {
         goto leave_screen;
     }
     return;
 
 msg_gt_911c0a4b:
-    if (msg == 0x9120409e) {
+    if (message == 0x9120409e) {
         goto maybe_view_switch;
     }
     return;
 
 msg_gt_a16ca7bd:
-    if (msg == 0xc519bfc4) {
+    if (message == 0xc519bfc4) {
         return;
     }
-    if (msg > 0xc519bfc4) {
+    if (message > 0xc519bfc4) {
         goto msg_gt_c519bfc4;
     }
-    if (msg == 0xb5af2461) {
+    if (message == 0xb5af2461) {
         goto set_last_button_and_leave;
     }
-    if (msg > 0xb5af2461) {
+    if (message > 0xb5af2461) {
         goto msg_gt_b5af2461;
     }
-    if (msg == 0xb5971bf1) {
+    if (message == 0xb5971bf1) {
         goto maybe_view_switch;
     }
     return;
 
 msg_gt_b5af2461:
-    if (msg == 0xc519bfc3) {
+    if (message == 0xc519bfc3) {
         goto handle_toggle;
     }
     return;
 
 msg_gt_c519bfc4:
-    if (msg == 0xd9feec59) {
+    if (message == 0xd9feec59) {
         goto zoom_next;
     }
-    if (msg > 0xd9feec59) {
+    if (message > 0xd9feec59) {
         goto msg_gt_d9feec59;
     }
-    if (msg == 0xc98356ba) {
+    if (message == 0xc98356ba) {
         goto update_map;
     }
     return;
 
 msg_gt_d9feec59:
-    if (msg == 0xe1fde1d1) {
+    if (message == 0xe1fde1d1) {
         goto world_map_off;
     }
     return;
@@ -571,7 +572,7 @@ handle_toggle_or_dialog:
             return;
         }
         ItemTypeToggle* tog = static_cast< ItemTypeToggle* >(w);
-        tog->Act(GetPackageName(), msg);
+        tog->Act(GetPackageName(), message);
         UpdateIconVisibility(tog->GetType(), tog->GetVisibility());
         goto refresh_and_end;
     } else {
