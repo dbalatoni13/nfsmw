@@ -895,10 +895,6 @@ void PostRaceResultsScreen::SetupLapStats(int racerIndex, GRacerInfo *racer_info
     }
     case GRace::kRaceType_Circuit:
     case GRace::kRaceType_Knockout: {
-        FEString *labelString = GetPanelString(panel, lbl_803E5DCC);
-        FEString *timeString = GetPanelString(panel, lbl_803E5DDC);
-        FEString *positionString = GetPanelString(panel, lbl_803E5E24);
-
         for (int i = 0; i < race_status.GetRaceParameters()->GetNumLaps(); ++i) {
             int lap_position = race_status.GetLapPosition(i, racerIndex, true);
 
@@ -907,8 +903,14 @@ void PostRaceResultsScreen::SetupLapStats(int racerIndex, GRacerInfo *racer_info
             }
 
             panel.AddStat(new ("", 0)
-                              LapStat(labelString, timeString, positionString, i + 1,
-                                      race_status.GetLapTime(i, racerIndex, false), lap_position));
+                              LapStat(FEngFindString(panel.ParentPkg,
+                                                     FEngHashString(lbl_803E5088, lbl_803E5DCC, panel.RacerName)),
+                                      FEngFindString(panel.ParentPkg,
+                                                     FEngHashString(lbl_803E5088, lbl_803E5DDC, panel.RacerName)),
+                                      FEngFindString(panel.ParentPkg,
+                                                     FEngHashString(lbl_803E5088, lbl_803E5E24, panel.RacerName)),
+                                      i + 1,
+                                       race_status.GetLapTime(i, racerIndex, false), lap_position));
         }
         break;
     }
@@ -930,21 +932,30 @@ void PostRaceResultsScreen::SetupLapStats(int racerIndex, GRacerInfo *racer_info
         break;
     }
     case GRace::kRaceType_Tollbooth: {
-        FEString *labelString = GetPanelString(panel, lbl_803E5DCC);
-        FEString *timeString = GetPanelString(panel, lbl_803E5DDC);
-        FEString *positionString = GetPanelString(panel, lbl_803E5E24);
         int num_booths = race_status.GetNumTollbooths();
 
         for (int i = 0; i < num_booths; ++i) {
             panel.AddStat(new ("", 0)
-                              TollboothStat(labelString, timeString, positionString, i + 1,
-                                            race_status.GetRaceTollboothTime(i, racerIndex), 1));
+                              TollboothStat(FEngFindString(panel.ParentPkg,
+                                                           FEngHashString(lbl_803E5088, lbl_803E5DCC, panel.RacerName)),
+                                            FEngFindString(panel.ParentPkg,
+                                                           FEngHashString(lbl_803E5088, lbl_803E5DDC, panel.RacerName)),
+                                            FEngFindString(panel.ParentPkg,
+                                                           FEngHashString(lbl_803E5088, lbl_803E5E24, panel.RacerName)),
+                                            i + 1,
+                                             race_status.GetRaceTollboothTime(i, racerIndex), 1));
         }
 
         panel.AddStat(new ("", 0)
-                          TollboothStat(labelString, timeString, positionString, num_booths + 1,
-                                        racer_info->IsFinishedRacing() ? race_status.GetRaceTimeRemaining() : 0.0f,
-                                        1));
+                          TollboothStat(FEngFindString(panel.ParentPkg,
+                                                       FEngHashString(lbl_803E5088, lbl_803E5DCC, panel.RacerName)),
+                                        FEngFindString(panel.ParentPkg,
+                                                       FEngHashString(lbl_803E5088, lbl_803E5DDC, panel.RacerName)),
+                                        FEngFindString(panel.ParentPkg,
+                                                       FEngHashString(lbl_803E5088, lbl_803E5E24, panel.RacerName)),
+                                        num_booths + 1,
+                                         racer_info->IsFinishedRacing() ? race_status.GetRaceTimeRemaining() : 0.0f,
+                                         1));
         break;
     }
     default:
