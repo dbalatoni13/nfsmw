@@ -518,14 +518,16 @@ void MemcardCallbacks::CardChecked(const RealmcIface::CardInfo* info) {
             *reinterpret_cast<const unsigned short*>(
                 reinterpret_cast<const char*>(info) + 6);
         RealmcIface::CardStatus cardStatus = info->mStatus;
-        if (cardStatus == RealmcIface::STATUS_CARD_CHANGED ||
-            (cardStatus >= RealmcIface::STATUS_CARD_DAMAGED &&
-             cardStatus <= RealmcIface::STATUS_ACCESS_DENIED)) {
+        switch (cardStatus) {
+        case RealmcIface::STATUS_CARD_CHANGED:
+        case RealmcIface::STATUS_CARD_DAMAGED:
+        case RealmcIface::STATUS_WRONG_DEVICE:
+        case RealmcIface::STATUS_CARD_FULL:
+        case RealmcIface::STATUS_ACCESS_DENIED:
             GetMemcard()->m_bFoundAutoSaveFile = true;
             GetMemcard()->DoAutoSave();
             return;
-        }
-        if (cardStatus == RealmcIface::STATUS_OK) {
+        case RealmcIface::STATUS_OK: {
             if (FEDatabase->bAutoSaveOverwriteConfirmed) {
                 GetMemcard()->DoAutoSave();
                 return;
@@ -540,10 +542,11 @@ void MemcardCallbacks::CardChecked(const RealmcIface::CardInfo* info) {
             GetMemcard()->m_bFoundAutoSaveFile = false;
             GetMemcard()->List(filter, nullptr);
             return;
-        } else if (cardStatus == RealmcIface::STATUS_NO_CARD) {
+        }
+        case RealmcIface::STATUS_NO_CARD:
             GetMemcard()->HandleAutoSaveError();
             return;
-        } else {
+        default:
             return;
         }
     } else {
