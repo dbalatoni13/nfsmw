@@ -165,10 +165,12 @@ void UIQRChallengeSeries::RefreshHeader() {
     char buf[32];
     bSNPrintf(buf, 32, "%$0.0f", goal);
 
+    const char *pkg = GetPackageName();
+    cFrontendDatabase *db = FEDatabase;
     unsigned int tag = race->GetLocalizationTag();
-    unsigned int descHash = FEDatabase->GetChallengeDescHash(tag);
+    unsigned int descHash = db->GetChallengeDescHash(tag);
     const char *desc = GetLocalizedString(descHash);
-    FEPrintf(GetPackageName(), 0x7b230d64, desc, buf);
+    FEPrintf(pkg, 0x7b230d64, desc, buf, buf);
 
     if (cd->IsLocked()) {
         cFEng::Get()->QueuePackageMessage(0xc5dd9d68, GetPackageName(), nullptr);
