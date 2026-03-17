@@ -231,43 +231,45 @@ bool FEPackageReader::FindReferencedObject(unsigned long ObjGUID, FEObject** ppR
 
 bool FEPackageReader::ReadReferencedPackagesChunk() {
     FEChunk* pRefChunk = FindChild(pChunk, 0x4C62694C);
-    if (pRefChunk) {
-        char* pStrings = pRefChunk->GetData();
-        unsigned long* pData = reinterpret_cast<unsigned long*>(pStrings);
-        unsigned long NumRefs = BSwap32(pData[0]);
-        FEList& LibList = pPack->LibrariesUsed;
-        unsigned long* pRefs = pData + 1;
-        for (unsigned long i = 0; i < NumRefs; i++) {
-            FENode* pNode = new FENode();
-            unsigned long Offset = BSwap32(pRefs[i]);
-            pNode->SetName(pStrings + Offset);
-            LibList.AddNode(LibList.GetTail(), pNode);
-        }
-        FENode* pLibNode = static_cast<FENode*>(LibList.GetHead());
-        while (pLibNode) {
-            FEPackage* pLibPack = pEngine->FindLibraryPackage(pLibNode->GetNameHash());
-            if (!pLibPack) {
-                bool bDeleteBlock;
-                unsigned char* pBlockStart;
-                unsigned char* pPackData = pInterface->GetPackageData(pLibNode->GetName(), &pBlockStart, bDeleteBlock);
-                if (!pPackData) {
-                    return false;
-                }
-                pLibPack = pEngine->LoadPackage(pPackData, true);
-                if (bDeleteBlock && pBlockStart) {
-                    delete[] pBlockStart;
-                }
-                if (!pLibPack) {
-                    return false;
-                }
-                pInterface->PackageWasLoaded(pLibPack);
-                pLibPack->SetPriority(1);
-                pEngine->AddToLibraryList(pLibPack);
-            } else {
-                pLibPack->SetPriority(pLibPack->GetPriority() + 1);
+    if (!pRefChunk) {
+        return false;
+    }
+
+    char* pStrings = pRefChunk->GetData();
+    unsigned long* pData = reinterpret_cast<unsigned long*>(pStrings);
+    unsigned long NumRefs = BSwap32(pData[0]);
+    FEList& LibList = pPack->LibrariesUsed;
+    unsigned long* pRefs = pData + 1;
+    for (unsigned long i = 0; i < NumRefs; i++) {
+        FENode* pNode = new FENode();
+        unsigned long Offset = BSwap32(pRefs[i]);
+        pNode->SetName(pStrings + Offset);
+        LibList.AddNode(LibList.GetTail(), pNode);
+    }
+    FENode* pLibNode = static_cast<FENode*>(LibList.GetHead());
+    while (pLibNode) {
+        FEPackage* pLibPack = pEngine->FindLibraryPackage(pLibNode->GetNameHash());
+        if (!pLibPack) {
+            bool bDeleteBlock;
+            unsigned char* pBlockStart;
+            unsigned char* pPackData = pInterface->GetPackageData(pLibNode->GetName(), &pBlockStart, bDeleteBlock);
+            if (!pPackData) {
+                return false;
             }
-            pLibNode = pLibNode->GetNext();
+            pLibPack = pEngine->LoadPackage(pPackData, true);
+            if (bDeleteBlock && pBlockStart) {
+                delete[] pBlockStart;
+            }
+            if (!pLibPack) {
+                return false;
+            }
+            pInterface->PackageWasLoaded(pLibPack);
+            pLibPack->SetPriority(1);
+            pEngine->AddToLibraryList(pLibPack);
+        } else {
+            pLibPack->SetPriority(pLibPack->GetPriority() + 1);
         }
+        pLibNode = pLibNode->GetNext();
     }
     return true;
 }
