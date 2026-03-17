@@ -224,6 +224,11 @@ class GManager : public UTL::COM::Object, public IVehicleCache {
     GManager(const char *vaultPackName);
 
     void AllocateObjectStateStorage();
+    void AllocateInstanceMap();
+    void AllocateStreamingBuffers();
+    void BuildVaultTable(struct AttribVaultPackImage *packImage);
+    void FindKeyReductionShifts();
+    unsigned int FindUniqueKeyShift(unsigned int *keys, unsigned int numKeys, unsigned int uniqueBits);
     void ReleaseObjectStateStorage();
     void ReleaseInstanceMap();
     void ReleaseStreamingBuffers();

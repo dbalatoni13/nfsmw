@@ -1,9 +1,13 @@
 #include "Speed/Indep/Src/Gameplay/GManager.h"
 
 #include "Speed/Indep/Libs/Support/Utility/FastMem.h"
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/gameplay.h"
 #include "Speed/Indep/Src/Gameplay/GVault.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
+
+#include <algorithm>
+#include <new>
 
 GManager *GManager::mObj = nullptr;
 
@@ -240,6 +244,106 @@ void GManager::AllocateObjectStateStorage() {
     mObjectStateBufferSize = 0x4000;
 }
 
+void GManager::AllocateInstanceMap() {
+    unsigned int largestTransientCount;
+
+    largestTransientCount = 0;
+    mMaxObjects = 0;
+
+    for (unsigned int i = 0; i < mVaultCount; ++i) {
+        GVault &vault = mVaults[i];
+
+        if (vault.IsResident()) {
+            mMaxObjects += vault.GetObjectCount();
+        } else if (largestTransientCount < vault.GetObjectCount()) {
+            largestTransientCount = vault.GetObjectCount();
+        }
+    }
+
+    mMaxObjects += largestTransientCount * 2;
+    mInstanceHashTableSize = 0x100;
+
+    {
+        unsigned int neededSize = mMaxObjects + (mMaxObjects >> 1);
+
+        while (mInstanceHashTableSize < neededSize) {
+            mInstanceHashTableSize <<= 1;
+        }
+    }
+
+    mInstanceHashTableMask = mInstanceHashTableSize - 1;
+    mKeyToInstanceMap = static_cast<HashEntry *>(bMalloc(mInstanceHashTableSize << 3, GetVirtualMemoryAllocParams()));
+    bMemSet(mKeyToInstanceMap, 0, mInstanceHashTableSize << 3);
+}
+
+void GManager::AllocateStreamingBuffers() {
+    GVault *largestBinVault;
+    GVault *largestRaceVault;
+
+    largestBinVault = nullptr;
+    for (unsigned int i = 0; i < GRaceDatabase::Get().GetBinCount(); ++i) {
+        GRaceBin *raceBin = GRaceDatabase::Get().GetBin(i);
+        GVault *vault = raceBin->GetChildVault();
+
+        if (vault && !vault->IsResident()) {
+            if (!largestBinVault || largestBinVault->GetFootprint() < vault->GetFootprint()) {
+                largestBinVault = vault;
+            }
+        }
+    }
+
+    largestRaceVault = nullptr;
+    for (unsigned int i = 0; i < GRaceDatabase::Get().GetRaceCount(); ++i) {
+        GRaceParameters *raceParameters = GRaceDatabase::Get().GetRaceParameters(i);
+        GVault *vault = raceParameters->GetChildVault();
+
+        if (vault && !vault->IsResident()) {
+            if (!largestRaceVault || largestRaceVault->GetFootprint() < vault->GetFootprint()) {
+                largestRaceVault = vault;
+            }
+        }
+    }
+
+    mBinSlotSize = largestBinVault ? largestBinVault->GetFootprint() : 0;
+    mRaceSlotSize = largestRaceVault ? largestRaceVault->GetFootprint() : 0;
+
+    mStreamedBinSlots = new unsigned char[mBinSlotSize];
+    mStreamedRaceSlots = new unsigned char[mRaceSlotSize];
+
+    {
+        unsigned int maxLoadDataSize = 0;
+
+        for (unsigned int i = 0; i < mVaultCount; ++i) {
+            GVault &vault = mVaults[i];
+
+            if (vault.IsTransient()) {
+                if (maxLoadDataSize < vault.GetLoadDataSize()) {
+                    maxLoadDataSize = vault.GetLoadDataSize();
+                }
+            }
+        }
+
+        mTempLoadData = new unsigned char[maxLoadDataSize];
+    }
+}
+
+void GManager::BuildVaultTable(AttribVaultPackImage *packImage) {
+    char *image;
+    AttribVaultPackEntry *entries;
+
+    image = reinterpret_cast<char *>(packImage);
+    mVaultNameStrings = new char[*reinterpret_cast<unsigned int *>(image + 0xC)];
+    bMemCpy(const_cast<char *>(mVaultNameStrings), image + *reinterpret_cast<int *>(image + 8), *reinterpret_cast<unsigned int *>(image + 0xC));
+
+    mVaultCount = *reinterpret_cast<int *>(image + 4);
+    mVaults = static_cast<GVault *>(bMalloc(mVaultCount << 6, GetVirtualMemoryAllocParams() | 0x1000));
+
+    entries = reinterpret_cast<AttribVaultPackEntry *>(image + 0x10);
+    for (unsigned int i = 0; i < mVaultCount; ++i) {
+        new (&mVaults[i]) GVault(&entries[i], mVaultNameStrings + entries[i].mVaultNameOffset);
+    }
+}
+
 void GManager::ReleaseObjectStateStorage() {
     mPersistentStateBlocks.clear();
     mSessionStateBlocks.clear();
@@ -280,6 +384,165 @@ void GManager::ReleaseStreamingBuffers() {
     }
 }
 
+unsigned int GManager::GetStrippedNameKey(const char *name) {
+    int length;
+    const char *start;
+    const char *scan;
+
+    length = bStrLen(name);
+    scan = name + length;
+    do {
+        start = scan;
+        scan = start - 1;
+        if (scan < name || *scan == '/') {
+            break;
+        }
+    } while (*scan != '\\');
+
+    return Attrib::StringToKey(start);
+}
+
+unsigned int GManager::FindUniqueKeyShift(unsigned int *keys, unsigned int numKeys, unsigned int uniqueBits) {
+    if (numKeys > 1) {
+        unsigned int shift = 0x20 - uniqueBits;
+        unsigned int clearMask = 0xFFFFFFFF;
+        unsigned int compareMask = ((1 << (uniqueBits & 0x1F)) - 1) << (shift & 0x1F);
+
+        while (static_cast<int>(shift) > -1) {
+            for (unsigned int i = 0; i < numKeys; ++i) {
+                keys[i] &= clearMask;
+            }
+
+            std::sort(keys, keys + numKeys);
+
+            {
+                bool foundDuplicate = false;
+
+                for (unsigned int i = 1; i < numKeys; ++i) {
+                    if ((keys[i] & compareMask) == (keys[i - 1] & compareMask)) {
+                        foundDuplicate = true;
+                        break;
+                    }
+                }
+
+                if (!foundDuplicate) {
+                    return shift;
+                }
+            }
+
+            clearMask >>= 1;
+            compareMask >>= 1;
+            shift--;
+        }
+    }
+
+    return 0;
+}
+
+void GManager::FindKeyReductionShifts() {
+    unsigned int numCollections;
+    unsigned int numDefinitions;
+    unsigned int numKeys;
+    unsigned int *keys;
+    unsigned int *out;
+    unsigned int collectionKey;
+    Attrib::Key definitionKey;
+
+    numCollections = mGameplayClass->GetNumCollections();
+    numDefinitions = mGameplayClass->GetNumDefinitions();
+    numKeys = numCollections;
+    if (numKeys < numDefinitions + numCollections) {
+        numKeys = numDefinitions + numCollections;
+    }
+
+    keys = new unsigned int[numKeys];
+    out = keys;
+
+    for (definitionKey = mGameplayClass->GetFirstDefinition(); definitionKey != 0; definitionKey = mGameplayClass->GetNextDefinition(definitionKey)) {
+        *out++ = definitionKey;
+    }
+
+    for (collectionKey = mGameplayClass->GetFirstCollection(); collectionKey != 0; collectionKey = mGameplayClass->GetNextCollection(collectionKey)) {
+        Attrib::Gen::gameplay gameplay(collectionKey, 0, nullptr);
+        *out++ = GetStrippedNameKey(gameplay.CollectionName());
+    }
+
+    std::sort(keys, out);
+    out = std::unique(keys, out);
+    mAttributeKeyShiftTo24 = FindUniqueKeyShift(keys, out - keys, 0x18);
+    delete[] keys;
+}
+
+void GManager::TrackValue(const char *valueName, float value) {
+    unsigned int valueKey;
+    MilestoneInfoMap::iterator it;
+    bool updateBest;
+
+    valueKey = Attrib::StringToKey(valueName);
+    it = mMilestoneTypeInfo.find(valueKey);
+    if (it == mMilestoneTypeInfo.end()) {
+        MilestoneTypeInfo info;
+
+        info.mTypeKey = valueKey;
+        info.mLastKnownValue = value;
+        info.mBestValue = value;
+        info.mFlags = 0;
+        mMilestoneTypeInfo.insert(MilestoneInfoMap::value_type(valueKey, info));
+        return;
+    }
+
+    it->second.mLastKnownValue = value;
+    updateBest = it->second.mBestValue == -1.0f;
+    if (!updateBest) {
+        if ((it->second.mFlags & GMilestone::kFlag_BiggerIsBetter) != 0) {
+            updateBest = it->second.mBestValue < value;
+        } else {
+            updateBest = value < it->second.mBestValue;
+        }
+    }
+
+    if (updateBest) {
+        it->second.mBestValue = value;
+    }
+}
+
+void GManager::IncValue(const char *valueName) {
+    float value;
+
+    value = GetValue(valueName);
+    if (value == -1.0f) {
+        TrackValue(valueName, 1.0f);
+    } else {
+        TrackValue(valueName, value + 1.0f);
+    }
+}
+
+float GManager::GetValue(const char *valueName) {
+    return GetValue(Attrib::StringToKey(valueName));
+}
+
+float GManager::GetValue(unsigned int valueKey) {
+    MilestoneInfoMap::iterator it;
+
+    it = mMilestoneTypeInfo.find(valueKey);
+    if (it == mMilestoneTypeInfo.end()) {
+        return -1.0f;
+    }
+
+    return it->second.mLastKnownValue;
+}
+
+bool GManager::GetIsBiggerValueBetter(unsigned int valueKey) {
+    MilestoneInfoMap::iterator it;
+
+    it = mMilestoneTypeInfo.find(valueKey);
+    if (it == mMilestoneTypeInfo.end()) {
+        return false;
+    }
+
+    return (it->second.mFlags & GMilestone::kFlag_BiggerIsBetter) != 0;
+}
+
 void GManager::DestroyVaults() {
     if (mVaults) {
         for (unsigned int i = 0; i < mVaultCount; ++i) {
@@ -306,8 +569,50 @@ void GManager::ReleaseMilestones() {
     mMilestones = nullptr;
 }
 
+void GManager::AllocateMilestones() {
+    Attrib::Gen::gameplay gameplay(Attrib::FindCollection(Attrib::Gen::gameplay::ClassKey(), 0x1D975142), 0, nullptr);
+    AttribKeyList keys;
+    AttribKeyList::iterator it;
+    unsigned int i;
+
+    GatherInstanceKeys(gameplay, keys, 0xA3D34781);
+
+    mNumMilestones = 0;
+    for (it = keys.begin(); it != keys.end(); ++it) {
+        mNumMilestones++;
+    }
+
+    mMilestones = new GMilestone[mNumMilestones];
+
+    i = 0;
+    for (it = keys.begin(); it != keys.end(); ++it) {
+        mMilestones[i].Init(*it);
+        i++;
+    }
+}
+
 void GManager::ResetMilestoneTrackingInfo() {
     mMilestoneTypeInfo.clear();
+}
+
+void GManager::LoadMilestoneInfo(MilestoneTypeInfo *savedInfo, unsigned int count) {
+    unsigned int i;
+
+    ResetMilestoneTrackingInfo();
+    for (i = 0; i < count; ++i) {
+        MilestoneTypeInfo &info = savedInfo[i];
+        mMilestoneTypeInfo[info.mTypeKey] = info;
+    }
+}
+
+unsigned int GManager::SaveMilestoneInfo(MilestoneTypeInfo *dest) {
+    MilestoneInfoMap::iterator it;
+
+    for (it = mMilestoneTypeInfo.begin(); it != mMilestoneTypeInfo.end(); ++it, ++dest) {
+        *dest = it->second;
+    }
+
+    return mMilestoneTypeInfo.size();
 }
 
 void GManager::ResetMilestones() {
@@ -329,6 +634,28 @@ void GManager::ReleaseSpeedTraps() {
     mSpeedTraps = nullptr;
 }
 
+void GManager::AllocateSpeedTraps() {
+    Attrib::Gen::gameplay gameplay(Attrib::FindCollection(Attrib::Gen::gameplay::ClassKey(), 0x49511906), 0, nullptr);
+    AttribKeyList keys;
+    AttribKeyList::iterator it;
+    unsigned int i;
+
+    GatherInstanceKeys(gameplay, keys, 0xB05871D3);
+
+    mNumSpeedTraps = 0;
+    for (it = keys.begin(); it != keys.end(); ++it) {
+        mNumSpeedTraps++;
+    }
+
+    mSpeedTraps = new GSpeedTrap[mNumSpeedTraps];
+
+    i = 0;
+    for (it = keys.begin(); it != keys.end(); ++it) {
+        mSpeedTraps[i].Init(*it);
+        i++;
+    }
+}
+
 void GManager::ResetSpeedTraps() {
     if (!mSpeedTraps) {
         return;
@@ -336,6 +663,29 @@ void GManager::ResetSpeedTraps() {
 
     for (unsigned int i = 0; i < mNumSpeedTraps; ++i) {
         mSpeedTraps[i].Reset();
+    }
+}
+
+void GManager::GatherInstanceKeys(Attrib::Gen::gameplay &collection, AttribKeyList &list, unsigned int templateKey) {
+    Attrib::Key parentKey;
+    unsigned int i;
+
+    parentKey = collection.GetParent();
+    while (parentKey != 0) {
+        if (parentKey == templateKey) {
+            list.push_back(collection.GetCollection());
+            break;
+        }
+
+        {
+            Attrib::Gen::gameplay parent(Attrib::FindCollection(Attrib::Gen::gameplay::ClassKey(), parentKey), 0, nullptr);
+            parentKey = parent.GetParent();
+        }
+    }
+
+    for (i = 0; i < collection.Num_Children(); ++i) {
+        Attrib::Gen::gameplay child(Attrib::FindCollection(Attrib::Gen::gameplay::ClassKey(), collection.Children(i).GetCollectionKey()), 0, nullptr);
+        GatherInstanceKeys(child, list, templateKey);
     }
 }
 
