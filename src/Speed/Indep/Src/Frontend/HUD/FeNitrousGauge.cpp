@@ -48,13 +48,13 @@ void NitrousGauge::SetNos(float nos) {
         if (!FEngIsScriptSet(mpDataNosMeterIcon, 0x1744B3)) {
             FEngSetScript(mpDataNosMeterIcon, 0x1744B3, true);
         }
-    } else if (mNos <= nos) {
-        if (!FEngIsScriptSet(mpDataNosMeterIcon, 0x03826A28)) {
-            FEngSetScript(mpDataNosMeterIcon, 0x03826A28, true);
-        }
-    } else {
+    } else if (nos < mNos) {
         if (!FEngIsScriptSet(mpDataNosMeterIcon, 0x77031C70)) {
             FEngSetScript(mpDataNosMeterIcon, 0x77031C70, true);
+        }
+    } else {
+        if (!FEngIsScriptSet(mpDataNosMeterIcon, 0x03826A28)) {
+            FEngSetScript(mpDataNosMeterIcon, 0x03826A28, true);
         }
     }
     mNos = nos;
