@@ -1545,8 +1545,8 @@ void CustomizeShoppingCart::SetMarkerData(int idx, ShoppingCartItem *item, int s
 }
 
 int CustomizeShoppingCart::GetNumMarkersSpending(unsigned int marker) {
-    int result = 0;
     ShoppingCartItem *item = gCarCustomizeManager.IsPartTypeInCart(marker);
+    int result = 0;
     if (item && item->IsActive()) {
         result = 1;
     }

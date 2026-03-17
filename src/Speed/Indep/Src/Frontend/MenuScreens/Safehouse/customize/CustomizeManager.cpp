@@ -274,19 +274,23 @@ bool CarCustomizeManager::RemoveFromCart(ShoppingCartItem *item) {
 
 ShoppingCartItem *CarCustomizeManager::IsPartTypeInCart(SelectablePart *to_find) {
     if (!to_find) return nullptr;
+    ShoppingCartItem *end = reinterpret_cast<ShoppingCartItem *>(&ShoppingCart);
     ShoppingCartItem *item = GetFirstCartItem();
-    while (item != reinterpret_cast<ShoppingCartItem *>(&ShoppingCart)) {
-        SelectablePart *buying = item->GetBuyingPart();
-        if (to_find->IsPerformancePkg()) {
-            if (buying->GetPhysicsType() == to_find->GetPhysicsType()) {
+    while (true) {
+        if (item == end) {
+            break;
+        }
+        SelectablePart *buying = item->ToBuy;
+        if (to_find->PerformancePkg) {
+            if (buying->PhysicsType == to_find->PhysicsType) {
                 return item;
             }
         } else {
-            if (buying->GetSlotID() == to_find->GetSlotID()) {
+            if (buying->CarSlotID == to_find->CarSlotID) {
                 return item;
             }
         }
-        item = item->GetNext();
+        item = static_cast<ShoppingCartItem *>(item->Next);
     }
     return nullptr;
 }
@@ -302,21 +306,25 @@ ShoppingCartItem *CarCustomizeManager::IsPartTypeInCart(Physics::Upgrades::Type 
 }
 
 ShoppingCartItem *CarCustomizeManager::IsPartInCart(SelectablePart *to_find) {
+    ShoppingCartItem *end = reinterpret_cast<ShoppingCartItem *>(&ShoppingCart);
     ShoppingCartItem *item = GetFirstCartItem();
-    while (item != reinterpret_cast<ShoppingCartItem *>(&ShoppingCart)) {
-        SelectablePart *buyPart = item->GetBuyingPart();
-        if (to_find->IsPerformancePkg()) {
-            if (buyPart->GetPhysicsType() == to_find->GetPhysicsType() &&
-                buyPart->GetUpgradeLevel() == to_find->GetUpgradeLevel()) {
+    while (true) {
+        if (item == end) {
+            break;
+        }
+        SelectablePart *buyPart = item->ToBuy;
+        if (to_find->PerformancePkg) {
+            if (buyPart->PhysicsType == to_find->PhysicsType &&
+                buyPart->UpgradeLevel == to_find->UpgradeLevel) {
                 return item;
             }
         } else {
-            if (buyPart->GetPart() == to_find->GetPart() &&
-                buyPart->GetSlotID() == to_find->GetSlotID()) {
+            if (buyPart->ThePart == to_find->ThePart &&
+                buyPart->CarSlotID == to_find->CarSlotID) {
                 return item;
             }
         }
-        item = item->GetNext();
+        item = static_cast<ShoppingCartItem *>(item->Next);
     }
     return nullptr;
 }
