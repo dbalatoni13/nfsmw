@@ -100,8 +100,8 @@ Minimap::Minimap(const char *pkg_name, int player_number)
 {
     for (int i = 3; i >= 0; i--) {
         for (int j = 1; j >= 0; j--) {
-            TrackmapArtUVs[i][j].x = 0.0f;
             TrackmapArtUVs[i][j].y = 0.0f;
+            TrackmapArtUVs[i][j].x = 0.0f;
         }
     }
 
@@ -112,10 +112,10 @@ Minimap::Minimap(const char *pkg_name, int player_number)
     mSpeedZoomScale = 0.0f;
     mPolyRotation = 0.0f;
     MinimapPivotX = 0.0f;
-    mTrackMapCentre.x = 0.0f;
-    mTrackTargetNormalized.y = 0.0f;
-    mTrackTargetNormalized.x = 0.0f;
     mTrackMapCentre.y = 0.0f;
+    mTrackTargetNormalized.x = 0.0f;
+    mTrackTargetNormalized.y = 0.0f;
+    mTrackMapCentre.x = 0.0f;
 
     for (unsigned int i = 0; i < 4; i++) {
         TrackmapArt[i] = static_cast<FEMultiImage *>(RegisterMultiImage(FEngHashString("TRACK_MAP%d", i + 1)));
@@ -163,6 +163,8 @@ Minimap::Minimap(const char *pkg_name, int player_number)
         mTrackMapCentre.x = x;
         mTrackMapCentre.y = y;
     }
+
+    InitStaticMiniMapItems();
 }
 
 Minimap::~Minimap() {
