@@ -15,6 +15,14 @@ struct acceltrans;
 }
 }
 
+enum FX_ACCEL_STATE {
+    FX_ACCEL_STATE_NONE = 0,
+    FX_ACCEL_STATE_ATTACK = 1,
+    FX_ACCEL_STATE_IDLE_REVING = 2,
+    FX_ACCEL_STATE_IDLE_ENGAGING = 3,
+    FX_ACCEL_STATE_INTERRUPT = 4,
+};
+
 struct SFXCTL_AccelTrans : public SFXCTL {
   protected:
     static TypeInfo s_TypeInfo;
@@ -51,6 +59,10 @@ struct SFXCTL_AccelTrans : public SFXCTL {
     bool ShouldBeginAccelTrans_Idle();
     bool ShouldBeginAccelTrans();
     bool ShouldPlayEngOffSweet();
+
+    bool IsActive() {
+        return eAccelTransFxState != FX_ACCEL_STATE_NONE;
+    }
 };
 
 #endif

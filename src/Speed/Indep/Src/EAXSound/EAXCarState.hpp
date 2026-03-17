@@ -160,6 +160,10 @@ struct EAX_CarState : public UTL::Collections::Listable<EAX_CarState, 10> {
     float mDesiredSpeed; // offset 0x240
     Sound::ControlSource mControlSource; // offset 0x244
 
+    bool IsShifting() {
+        return mDriveline.mGearShiftFlag != 0;
+    }
+
     EAX_CarState(const Attrib::Collection *atr, Sound::Context context, unsigned int wuid, HSIMABLE__ *handle);
 };
 

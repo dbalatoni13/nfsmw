@@ -63,6 +63,7 @@ struct EAXCar : public CSTATE_Base {
     Attrib::Gen::shiftpattern &GetShiftInfo() { return mShiftInfo; }
     Attrib::Gen::turbosfx &GetTurboInfo() { return mTurboInfo; }
     Attrib::Gen::acceltrans &GetAccelInfo() { return mAccelInfo; }
+    SFXCTL_Physics *GetPhysicsCTL() { return m_pPhysicsCTL; }
     Sound::Gear GetCurGear() { return static_cast<Sound::Gear>(CurGear); }
 
     static StateInfo *GetStaticStateInfo(void) {
