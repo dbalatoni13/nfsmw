@@ -92,6 +92,7 @@ class GManager : public UTL::COM::Object, public IVehicleCache {
     void IncValue(const char *valueName);
     float GetValue(const char *valueName);
     float GetValue(unsigned int valueKey);
+    float GetBestValue(unsigned int valueKey);
     bool GetIsBiggerValueBetter(unsigned int valueKey);
 
     void RegisterInstance(GRuntimeInstance *instance);

@@ -355,6 +355,10 @@ GMilestone *GManager::GetNextMilestone(GMilestone *current, bool availOnly, unsi
     return nullptr;
 }
 
+GMilestone *GManager::GetFirstMilestone(bool availOnly, unsigned int binNumber) {
+    return GetNextMilestone(mMilestones - 1, availOnly, binNumber);
+}
+
 unsigned int GManager::SaveMilestones(GMilestone *dest) {
     bMemCpy(dest, mMilestones, mNumMilestones * sizeof(GMilestone));
     return mNumMilestones;
@@ -793,6 +797,10 @@ float GManager::GetValue(unsigned int valueKey) {
     return it->second.mLastKnownValue;
 }
 
+float GManager::GetBestValue(unsigned int valueKey) {
+    return mMilestoneTypeInfo.find(valueKey)->second.mBestValue;
+}
+
 bool GManager::GetIsBiggerValueBetter(unsigned int valueKey) {
     MilestoneInfoMap::iterator it;
 
@@ -952,6 +960,22 @@ void GManager::EnableBinSpeedTraps(unsigned int binNumber) {
          speedTrap = GetNextSpeedTrap(speedTrap, false, binNumber)) {
         speedTrap->Unlock();
         speedTrap->Activate();
+    }
+}
+
+void GManager::EnableBinMilestones(unsigned int binNumber) {
+    for (GMilestone *milestone = GetFirstMilestone(false, binNumber); milestone;
+         milestone = GetNextMilestone(milestone, false, binNumber)) {
+        milestone->Unlock();
+    }
+}
+
+void GManager::NotifyPursuitStarted() {
+    for (MilestoneInfoMap::iterator it = mMilestoneTypeInfo.begin(); it != mMilestoneTypeInfo.end(); ++it) {
+        if ((it->second.mFlags & GMilestone::kFlag_CompletionFaked) != 0) {
+            it->second.mLastKnownValue = -1.0f;
+            it->second.mBestValue = -1.0f;
+        }
     }
 }
 
