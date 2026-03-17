@@ -402,14 +402,15 @@ void CarCustomizeManager::Checkout() {
 }
 
 bool CarCustomizeManager::DoesCartHaveActiveParts() {
-    for (ShoppingCartItem *item = GetFirstCartItem(); item != reinterpret_cast<ShoppingCartItem *>(&ShoppingCart); item = item->GetNext()) {
+    ShoppingCartItem *end = reinterpret_cast<ShoppingCartItem *>(&ShoppingCart);
+    for (ShoppingCartItem *item = GetFirstCartItem(); item != end; item = item->GetNext()) {
         SelectablePart *buy = item->GetBuyingPart();
         if (buy && !buy->IsPerformancePkg()) {
             int slot = buy->GetSlotID();
-            if (slot >= 0x4f) {
+            if (slot > 0x4e) {
                 if (slot <= 0x52) continue;
                 if (slot <= 0x87) {
-                    if (slot >= 0x85) continue;
+                    if (slot > 0x84) continue;
                 }
             }
         }
