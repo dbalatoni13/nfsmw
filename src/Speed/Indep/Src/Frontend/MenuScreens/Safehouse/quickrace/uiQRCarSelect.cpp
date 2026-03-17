@@ -91,7 +91,7 @@ void QRCarSelectBustedManager::NotificationMessage(unsigned long msg, FEObject *
         WorkingCareerRecord->SetVehicleHeat(0.0f);
         {
             unsigned int cost = WorkingCarRecord->GetReleaseFromImpoundCost();
-            FEDatabase->GetCareerSettings()->SpendCash(cost);
+            FEDatabase->GetCareerSettings()->SpendCash(static_cast<int>(static_cast<float>(cost)));
         }
         break;
     case 0xe845bc1c:
