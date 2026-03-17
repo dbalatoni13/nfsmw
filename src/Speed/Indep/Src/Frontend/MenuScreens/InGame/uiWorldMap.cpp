@@ -871,13 +871,10 @@ void WorldMap::UpdateCursor(bool zoom_thing) {
         delta *= zoom;
         bVector2 map_br = delta + map_center;
         pos = map_br;
-        bVector2 dpan;
-        dpan.x = pan.x;
-        dpan.y = pan.y;
-        dpan.x *= MapSize.x;
-        dpan.y *= MapSize.y;
-        dpan = dpan * zoom;
-        pos = pos - dpan;
+        pan.x *= MapSize.x;
+        pan.y *= MapSize.y;
+        pan = pan * zoom;
+        pos = pos - pan;
         ClampToMapBounds(pos.x, pos.y);
         FEngSetCenter(Cursor, pos.x, pos.y);
     } else if (!zoom_thing) {
