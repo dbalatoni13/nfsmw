@@ -921,11 +921,9 @@ void TrackStreamer::DetermineStreamingSections() {
             if (!loading_section) {
                 DrivableScenerySection *drivable_section = TheVisibleSectionManager.FindDrivableSection(streaming_position->CurrentZone);
                 num_sections = 0;
-                if (drivable_section) {
-                    for (int n = 0; n < drivable_section->NumVisibleSections; n++) {
-                        section_numbers[num_sections] = drivable_section->VisibleSections[n];
-                        num_sections += 1;
-                    }
+                for (int n = 0; n < drivable_section->NumVisibleSections; n++) {
+                    section_numbers[num_sections] = drivable_section->VisibleSections[n];
+                    num_sections += 1;
                 }
             } else {
                 num_sections = TheVisibleSectionManager.GetSectionsToLoad(loading_section, section_numbers, 0x180);
