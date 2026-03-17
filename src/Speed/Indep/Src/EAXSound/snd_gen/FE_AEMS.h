@@ -24,6 +24,14 @@ struct PlayFrontEndSampleStruct {
     int azimuth;
 };
 
+struct PlayFrontEndSampleSt {
+    int nHack;
+    int id;
+    int volume;
+    int pitch;
+    int azimuth;
+};
+
 struct PlayFrontEndSample_RSStruct {
     int id;
     int volume;
@@ -32,6 +40,14 @@ struct PlayFrontEndSample_RSStruct {
 };
 
 struct PlayCommonSampleStruct {
+    int id;
+    int volume;
+    int pitch;
+    int azimuth;
+};
+
+struct PlayCommonSampleSt {
+    int nHack;
     int id;
     int volume;
     int pitch;
@@ -69,6 +85,11 @@ struct PlayCommonSample {
     }
 
     void SetPitch(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0x1FFF) {
+            x = 0x1FFF;
+        }
         mData.pitch = x;
     }
 
@@ -77,6 +98,11 @@ struct PlayCommonSample {
     }
 
     void SetAzimuth(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0xFFFF) {
+            x = 0xFFFF;
+        }
         mData.azimuth = x;
     }
 
@@ -161,6 +187,11 @@ struct PlayFrontEndSample {
     }
 
     void SetPitch(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0x1FFF) {
+            x = 0x1FFF;
+        }
         mData.pitch = x;
     }
 
@@ -169,6 +200,11 @@ struct PlayFrontEndSample {
     }
 
     void SetAzimuth(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0xFFFF) {
+            x = 0xFFFF;
+        }
         mData.azimuth = x;
     }
 

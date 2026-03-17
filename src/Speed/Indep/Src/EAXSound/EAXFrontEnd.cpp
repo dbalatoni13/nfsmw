@@ -86,8 +86,26 @@ void EAXFrontEnd::Stop(eMenuSoundTriggers etrigger) {
 }
 
 int EAXFrontEnd::Play(void *peventst) {
-    (void)peventst;
-    return 0;
+    if (IsSoundEnabled != 0 && m_pSFXOBJ_FEHUD) {
+        if (m_pSFXOBJ_FEHUD->GetOutputBlockPtr() == nullptr) {
+            return 0;
+        }
+
+        if (peventst != nullptr) {
+            PlayFrontEndSampleSt *pst = static_cast<PlayFrontEndSampleSt *>(peventst);
+            int Vol = pst->volume;
+            int nvol = Vol * m_pSFXOBJ_FEHUD->GetDMixOutput(2, DMX_VOL) >> 15;
+
+            g_pEAXSound->SetCsisName(m_pSFXOBJ_FEHUD);
+            m_pPlayFrontEndSampleHandle = new PlayFrontEndSample(pst->id, nvol, pst->pitch, pst->azimuth);
+            if (m_pPlayFrontEndSampleHandle) {
+                delete m_pPlayFrontEndSampleHandle;
+            }
+            m_pPlayFrontEndSampleHandle = nullptr;
+        }
+    }
+
+    return -1;
 }
 
 void EAXFrontEnd::Update(void *peventst) {
@@ -167,8 +185,26 @@ int EAXCommon::Play(eMenuSoundTriggers etrigger) {
 void EAXCommon::Stop(eMenuSoundTriggers etrigger) {}
 
 int EAXCommon::Play(void *peventst) {
-    (void)peventst;
-    return 0;
+    if (IsSoundEnabled != 0 && m_pSFXOBJ_FEHUD) {
+        if (m_pSFXOBJ_FEHUD->GetOutputBlockPtr() == nullptr) {
+            return 0;
+        }
+
+        if (peventst != nullptr) {
+            PlayCommonSampleSt *pst = static_cast<PlayCommonSampleSt *>(peventst);
+            int Vol = pst->volume;
+            int nvol = Vol * m_pSFXOBJ_FEHUD->GetDMixOutput(1, DMX_VOL) >> 15;
+
+            g_pEAXSound->SetCsisName(m_pSFXOBJ_FEHUD);
+            m_pPlayCommonSampleHandle = new PlayCommonSample(pst->id, nvol, pst->pitch, pst->azimuth);
+            if (m_pPlayCommonSampleHandle) {
+                delete m_pPlayCommonSampleHandle;
+            }
+            m_pPlayCommonSampleHandle = nullptr;
+        }
+    }
+
+    return -1;
 }
 
 void EAXCommon::Update(void *peventst) {
