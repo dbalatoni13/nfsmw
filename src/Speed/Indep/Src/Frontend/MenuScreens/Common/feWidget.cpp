@@ -58,16 +58,16 @@ void FEButtonWidget::Position() {
 }
 
 void FEButtonWidget::Show() {
-    FEWidget::Show();
-    if (pTitle) {
-        FEngSetVisible(reinterpret_cast<FEObject*>(pTitle));
+    FEngSetVisible(reinterpret_cast<FEObject*>(pTitle));
+    if (pBacking) {
+        FEngSetVisible(pBacking);
     }
 }
 
 void FEButtonWidget::Hide() {
-    FEWidget::Hide();
-    if (pTitle) {
-        FEngSetInvisible(reinterpret_cast<FEObject*>(pTitle));
+    FEngSetInvisible(reinterpret_cast<FEObject*>(pTitle));
+    if (pBacking) {
+        FEngSetInvisible(pBacking);
     }
 }
 
@@ -123,22 +123,18 @@ void FEStatWidget::Position() {
 }
 
 void FEStatWidget::Show() {
-    FEWidget::Show();
-    if (pTitle) {
-        FEngSetVisible(reinterpret_cast<FEObject*>(pTitle));
-    }
-    if (pData) {
-        FEngSetVisible(reinterpret_cast<FEObject*>(pData));
+    FEngSetVisible(reinterpret_cast<FEObject*>(pTitle));
+    FEngSetVisible(reinterpret_cast<FEObject*>(pData));
+    if (pBacking) {
+        FEngSetVisible(pBacking);
     }
 }
 
 void FEStatWidget::Hide() {
-    FEWidget::Hide();
-    if (pTitle) {
-        FEngSetInvisible(reinterpret_cast<FEObject*>(pTitle));
-    }
-    if (pData) {
-        FEngSetInvisible(reinterpret_cast<FEObject*>(pData));
+    FEngSetInvisible(reinterpret_cast<FEObject*>(pTitle));
+    FEngSetInvisible(reinterpret_cast<FEObject*>(pData));
+    if (pBacking) {
+        FEngSetInvisible(pBacking);
     }
 }
 
@@ -207,22 +203,22 @@ void FEToggleWidget::SetScript(unsigned int script) {
 }
 
 void FEToggleWidget::Show() {
-    FEStatWidget::Show();
-    if (pLeftImage) {
-        FEngSetVisible(reinterpret_cast<FEObject*>(pLeftImage));
-    }
-    if (pRightImage) {
-        FEngSetVisible(reinterpret_cast<FEObject*>(pRightImage));
+    FEngSetVisible(reinterpret_cast<FEObject*>(pTitle));
+    FEngSetVisible(reinterpret_cast<FEObject*>(pData));
+    FEngSetVisible(reinterpret_cast<FEObject*>(pLeftImage));
+    FEngSetVisible(reinterpret_cast<FEObject*>(pRightImage));
+    if (pBacking) {
+        FEngSetVisible(pBacking);
     }
 }
 
 void FEToggleWidget::Hide() {
-    FEStatWidget::Hide();
-    if (pLeftImage) {
-        FEngSetInvisible(reinterpret_cast<FEObject*>(pLeftImage));
-    }
-    if (pRightImage) {
-        FEngSetInvisible(reinterpret_cast<FEObject*>(pRightImage));
+    FEngSetInvisible(reinterpret_cast<FEObject*>(pTitle));
+    FEngSetInvisible(reinterpret_cast<FEObject*>(pData));
+    FEngSetInvisible(reinterpret_cast<FEObject*>(pLeftImage));
+    FEngSetInvisible(reinterpret_cast<FEObject*>(pRightImage));
+    if (pBacking) {
+        FEngSetInvisible(pBacking);
     }
 }
 
@@ -231,7 +227,7 @@ void FEToggleWidget::SetFocus(const char* parent_pkg) {
 }
 
 void FEToggleWidget::UnsetFocus() {
-    FEStatWidget::UnsetFocus();
+    SetScript(0x7AB5521A);
 }
 
 void FEToggleWidget::Position() {
@@ -258,13 +254,23 @@ void FESliderWidget::Position() {
 }
 
 void FESliderWidget::Show() {
-    FEToggleWidget::Show();
+    FEngSetVisible(reinterpret_cast<FEObject*>(pTitle));
+    FEngSetVisible(reinterpret_cast<FEObject*>(pLeftImage));
+    FEngSetVisible(reinterpret_cast<FEObject*>(pRightImage));
     Slider.ToggleVisible(true);
+    if (pBacking) {
+        FEngSetVisible(pBacking);
+    }
 }
 
 void FESliderWidget::Hide() {
-    FEToggleWidget::Hide();
+    FEngSetInvisible(reinterpret_cast<FEObject*>(pTitle));
+    FEngSetInvisible(reinterpret_cast<FEObject*>(pLeftImage));
+    FEngSetInvisible(reinterpret_cast<FEObject*>(pRightImage));
     Slider.ToggleVisible(false);
+    if (pBacking) {
+        FEngSetInvisible(pBacking);
+    }
 }
 
 void FESliderWidget::Disable() {

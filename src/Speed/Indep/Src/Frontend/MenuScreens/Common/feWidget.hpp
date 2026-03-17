@@ -140,7 +140,7 @@ public:
 
 // 0x64
 struct FEToggleWidget : public FEStatWidget {
-private:
+protected:
     FEImage* pLeftImage;       // 0x54
     FEImage* pRightImage;      // 0x58
     unsigned int EnableScript; // 0x5C
