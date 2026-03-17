@@ -238,7 +238,7 @@ void Minimap::SetupMinimap(IPlayer *player) {
     char texture_name[128];
     FEVector2 top_left;
     FEVector2 bottom_right;
-    short chop_nums[4];
+    short chop_nums[4] = {0};
     bVector2 map_pos;
     bVector2 target_pos;
     bVector2 target_dir;
@@ -561,17 +561,22 @@ void Minimap::UpdateElementArt(bVector2 *elementPos, bVector2 *elementDir, FEObj
     float distance = bSqrt(rot_epoly_y * rot_epoly_y + rot_epoly_x * rot_epoly_x);
     float alpha = 1.0f;
 
-    if (distance > 0.0f && distance > 0.06f && distance < 0.23f) {
-        float scaleDist = distance;
-        rot_epoly_x *= 0.06f / scaleDist;
-        rot_epoly_y *= 0.06f / scaleDist;
-        distance = 0.06f;
+    if (distance > 0.0f) {
+        if (distance > 0.06f) {
+            rot_epoly_x *= 0.06f / distance;
+            rot_epoly_y *= 0.06f / distance;
 
-        if (scaleDist > 0.125f) {
-            alpha = 1.0f - (scaleDist - 0.125f) * 9.523809f;
-        }
-        if (pulse) {
-            alpha = 1.0f;
+            if (distance > 0.125f) {
+                alpha = 1.0f - (distance - 0.125f) * 9.523809f;
+            }
+            if (distance > 0.23f) {
+                alpha = 0.0f;
+            }
+            distance = 0.06f;
+
+            if (pulse) {
+                alpha = 1.0f;
+            }
         }
     }
 
@@ -583,7 +588,8 @@ void Minimap::UpdateElementArt(bVector2 *elementPos, bVector2 *elementDir, FEObj
         FEngSetRotationZ(elementArt, bAngToDeg(bATan(elementDir->y, elementDir->x)) - mPolyRotation);
 
         unsigned int color = static_cast<unsigned long>(FEngGetObjectColor(elementArt));
-        FEngSetColor(elementArt, color & 0x00FFFFFF | static_cast<unsigned int>(alpha * 255.0f) << 24);
+        int alphaInt = static_cast<int>(alpha * 255.0f);
+        FEngSetColor(elementArt, color & 0x00FFFFFF | alphaInt << 24);
 
         if (pulse) {
             FEngSetVisible(mGPSSelectionElementArt);
