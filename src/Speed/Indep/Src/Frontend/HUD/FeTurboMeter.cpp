@@ -4,9 +4,14 @@
 extern void FEngSetRotationZ(FEObject *object, float angle);
 
 TurboMeter::TurboMeter(UTL::COM::Object *pOutter, const char *pkg_name, int player_number)
-    : HudElement(pkg_name, 0) //
-    , ITurbometer(pOutter)
+    : HudElement(pkg_name, 0x80020000) //
+    , ITurbometer(pOutter) //
+    , mUpdated(true) //
+    , mInductionPsi(0.0f)
 {
+    pTurboGroup = RegisterGroup(FEHashUpper("TURBO_GROUP"));
+    pTurboNeedle = FEngFindObject(GetPackageName(), FEHashUpper("3rdperson_TurboDial"));
+    pTurboDialLines = FEngFindObject(GetPackageName(), FEHashUpper("TURBO_LINES"));
 }
 
 void TurboMeter::Update(IPlayer *player) {

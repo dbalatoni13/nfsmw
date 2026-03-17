@@ -9,9 +9,20 @@ extern unsigned long FEHashUpper(const char *String);
 extern float warningPulseMinRpm;
 
 ShiftUpdater::ShiftUpdater(UTL::COM::Object *pOutter, const char *pkg_name, int player_number)
-    : HudElement(pkg_name, 0) //
-    , IShiftUpdater(pOutter)
+    : HudElement(pkg_name, 0x20000000) //
+    , IShiftUpdater(pOutter) //
+    , mGear(G_NEUTRAL) //
+    , mShiftPotential(SHIFT_POTENTIAL_NONE) //
+    , mGearChanged(0) //
+    , mLastShiftStatus(SHIFT_STATUS_NONE) //
+    , mIsEngineBlown(false) //
+    , mEngineTemp(0.0f)
 {
+    pShiftIndicator = RegisterImage(FEHashUpper("Shift_light"));
+    pShiftIndicatorOverheatGroup = RegisterGroup(FEHashUpper("ENGINE_HEAT_SHIFTLIGHT_GROUP"));
+    pShiftMsgGroup = RegisterGroup(FEHashUpper("SHIFT_GROUP"));
+    pShiftMsg = static_cast<FEString *>(FEngFindObject(pkg_name, FEHashUpper("ShiftMessage")));
+    pShiftMsgShadow = static_cast<FEString *>(FEngFindObject(pkg_name, FEHashUpper("ShiftMessage_Shadow")));
 }
 
 void ShiftUpdater::Update(IPlayer *player) {

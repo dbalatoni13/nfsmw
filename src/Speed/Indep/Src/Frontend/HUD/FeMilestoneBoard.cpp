@@ -16,9 +16,45 @@ inline unsigned int FEngGetColor(FEObject *obj) {
 }
 
 MilestoneBoard::MilestoneBoard(UTL::COM::Object *pOutter, const char *pkg_name, int player_number)
-    : HudElement(pkg_name, 0) //
+    : HudElement(pkg_name, 0x400000000ULL) //
     , IMilestoneBoard(pOutter)
 {
+    mInPursuit = false;
+    mChallengeSeries = false;
+    mPlayerBinNumber = FEDatabase->GetCareerSettings()->GetCurrentBin();
+    mScrollTimer = Timer(0);
+    mNumMilestones = 0;
+    mMilestoneSetVisible = 0;
+
+    {
+        MilestoneBoard_Milestone *p = mMilestones;
+        int m = 3;
+        do {
+            p->mMilestoneIconHash = 0;
+            p->mType = 0;
+            p->mGoal = 0.0f;
+            p->mCurrVal = 0.0f;
+            p->mHeaderHash = 0;
+            p->mComplete = false;
+            p++;
+        } while (m--);
+    }
+
+    mpDataMilestoneInfoGroup = RegisterGroup(FEHashUpper("MILESTONE_INFO_GROUP"));
+    mpDataMilestoneIconGroup = RegisterGroup(FEHashUpper("MILESTONE_ICON_GROUP"));
+    mpDataMilestonesTotal = FEngFindString(GetPackageName(), 0x894662c5);
+
+    for (int i = 0; i < 4; i++) {
+        char buf[32];
+        bSPrintf(buf, "MILSTONE_ICON_%d", i + 1);
+        mpDataIcons[i] = FEngFindObject(GetPackageName(), FEHashUpper(buf));
+        bSPrintf(buf, "MILESTONE_ICON_BACKING_%d", i + 1);
+        mpDataIconBackings[i] = FEngFindObject(GetPackageName(), FEHashUpper(buf));
+    }
+
+    mpDataDetailsBacking = FEngFindObject(GetPackageName(), 0x5c697702);
+    mpDataDetailsGroup = FEngFindObject(GetPackageName(), 0xf4405ec0);
+    mpDataMilestoneGoal = FEngFindString(GetPackageName(), 0xc3e48fbf);
 }
 
 void MilestoneBoard::Update(IPlayer *player) {

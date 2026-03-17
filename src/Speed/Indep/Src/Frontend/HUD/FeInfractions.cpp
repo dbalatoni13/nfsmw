@@ -7,9 +7,17 @@ extern int FEPrintf(const char *pkg_name, FEObject *obj, const char *fmt, ...);
 extern int FEPrintf(FEString *text, const char *fmt, ...);
 
 Infractions::Infractions(UTL::COM::Object *pOutter, const char *pkg_name, int player_number)
-    : HudElement(pkg_name, 0) //
+    : HudElement(pkg_name, 0x200000000ULL) //
     , IInfractions(pOutter)
 {
+    RegisterGroup(FEHashUpper("INFRACTIONS_HEADER_GROUP"));
+    mpDataGenericIcon = RegisterObject(FEHashUpper("GENERIC_ICONS"));
+    mpDataTotalInfractions = RegisterString(FEHashUpper("TOTAL_INFRACTIONS_TEXT"));
+    for (int i = 0; i < 4; i++) {
+        char buf[32];
+        bSPrintf(buf, "INFRACTION_GROUP_%d", i + 1);
+        mpDataInfractionStrings[i] = RegisterGroup(FEHashUpper(buf));
+    }
 }
 
 void Infractions::Update(IPlayer *player) {
