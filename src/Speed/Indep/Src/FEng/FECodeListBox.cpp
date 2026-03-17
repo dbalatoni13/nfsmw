@@ -526,11 +526,11 @@ void FECodeListBox::Update(float fNumTicks) {
 }
 
 void FECodeListBox::SetCellColor(unsigned long ulStartColumn, unsigned long ulStartRow, unsigned long ulColor, unsigned long ulNumColumns, unsigned long ulNumRows) {
+    unsigned long endRow = ulNumRows + ulStartRow;
     unsigned long i = ulStartRow;
-    unsigned long endRow = i + ulNumRows;
+    unsigned long endColumn = ulNumColumns + ulStartColumn;
     while (i < endRow) {
         unsigned long j = ulStartColumn;
-        unsigned long endColumn = j + ulNumColumns;
         while (j < endColumn) {
             long lCIndex = GetRealColumn(j);
             long lRIndex = GetRealRow(i);
@@ -543,11 +543,11 @@ void FECodeListBox::SetCellColor(unsigned long ulStartColumn, unsigned long ulSt
 }
 
 void FECodeListBox::SetCellScale(unsigned long ulStartColumn, unsigned long ulStartRow, const FEPoint& stScale, unsigned long ulNumColumns, unsigned long ulNumRows) {
+    unsigned long endRow = ulNumRows + ulStartRow;
     unsigned long i = ulStartRow;
-    unsigned long endRow = i + ulNumRows;
+    unsigned long endColumn = ulNumColumns + ulStartColumn;
     while (i < endRow) {
         unsigned long j = ulStartColumn;
-        unsigned long endColumn = j + ulNumColumns;
         while (j < endColumn) {
             long lCIndex = GetRealColumn(j);
             long lRIndex = GetRealRow(i);
@@ -560,11 +560,11 @@ void FECodeListBox::SetCellScale(unsigned long ulStartColumn, unsigned long ulSt
 }
 
 void FECodeListBox::SetCellJustification(unsigned long ulStartColumn, unsigned long ulStartRow, unsigned long ulJustification, unsigned long ulNumColumns, unsigned long ulNumRows) {
+    unsigned long endRow = ulNumRows + ulStartRow;
     unsigned long i = ulStartRow;
-    unsigned long endRow = i + ulNumRows;
+    unsigned long endColumn = ulNumColumns + ulStartColumn;
     while (i < endRow) {
         unsigned long j = ulStartColumn;
-        unsigned long endColumn = j + ulNumColumns;
         while (j < endColumn) {
             long lCIndex = GetRealColumn(j);
             long lRIndex = GetRealRow(i);
