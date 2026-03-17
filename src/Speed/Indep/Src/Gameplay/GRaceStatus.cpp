@@ -15,6 +15,105 @@ extern int UnlockAllThings;
 
 GRaceStatus *GRaceStatus::fObj = nullptr;
 
+bool GRacerInfo::GetIsHuman() const {
+    ISimable *simable = GetSimable();
+    return simable && simable->IsPlayer();
+}
+
+void GRacerInfo::SetSimable(ISimable *isim) {
+    mhSimable = isim ? isim->GetInstanceHandle() : nullptr;
+}
+
+void GRacerInfo::KnockOut() {
+    mKnockedOut = true;
+    mFinishedRacing = true;
+}
+
+void GRacerInfo::TotalVehicle() {
+    mTotalled = true;
+    mFinishedRacing = true;
+}
+
+void GRacerInfo::Busted() {
+    mBusted = true;
+    mFinishedRacing = true;
+}
+
+void GRacerInfo::ChallengeComplete() {
+    mChallengeComplete = true;
+}
+
+void GRacerInfo::ForceStop() {
+    mRaceTimer.Stop();
+    mLapTimer.Stop();
+    mCheckTimer.Stop();
+    mFinishedRacing = true;
+    mFinishingSpeed = 0.0f;
+}
+
+void GRacerInfo::BlowEngine() {
+    mEngineBlown = true;
+    mFinishedRacing = true;
+}
+
+void GRacerInfo::AddToPointTotal(float points) {
+    mPointTotal += points;
+}
+
+float GRacerInfo::CalcAverageSpeed() const {
+    float time = mRaceTimer.GetTime();
+
+    if (time <= 0.0f) {
+        return 0.0f;
+    }
+
+    return mDistanceDriven / time;
+}
+
+float GRacerInfo::GetHudPctRaceComplete() const {
+    if (mFinishedRacing) {
+        return 1.0f;
+    }
+
+    return mPctRaceComplete;
+}
+
+void GRacerInfo::StartRace() {
+    mFinishedRacing = false;
+    mRaceTimer.Reset(0.0f);
+    mLapTimer.Reset(0.0f);
+    mCheckTimer.Reset(0.0f);
+    mRaceTimer.Start();
+    mLapTimer.Start();
+    mCheckTimer.Start();
+}
+
+void GRacerInfo::StartLap(int lap) {
+    mLapsCompleted = lap;
+    mCheckpointsHitThisLap = 0;
+    mLapTimer.Reset(0.0f);
+    mLapTimer.Start();
+}
+
+void GRacerInfo::StartCheckpoint(int checkpoint) {
+    mCheckpointsHitThisLap = checkpoint;
+    mCheckTimer.Reset(0.0f);
+    mCheckTimer.Start();
+}
+
+void GRacerInfo::NotifySpeedTrapTriggered(float speed) {
+    if (mSpeedTrapsCrossed < 16) {
+        mSpeedTrapSpeed[mSpeedTrapsCrossed] = speed;
+        mSpeedTrapPosition[mSpeedTrapsCrossed] = mRanking;
+    }
+
+    ++mSpeedTrapsCrossed;
+}
+
+bool GRacerInfo::AreStatsReady() const {
+    return mhSimable != nullptr;
+}
+
 GRaceParameters::GRaceParameters(unsigned int collectionKey, GRaceIndexData *index)
     : mIndex(index), //
       mRaceRecord(new Attrib::Gen::gameplay(collectionKey, 0, nullptr)), //

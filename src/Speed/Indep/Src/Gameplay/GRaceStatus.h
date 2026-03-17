@@ -83,16 +83,29 @@ struct GRacerInfo {
     void SetDistDriven(float f) { mDistanceDriven = f; }
     void SetTopSpeed(float f) { mTopSpeed = f; }
     void SetPoundsNOSUsed(float f) { mPoundsNOSUsed = f; }
+    void SetSimable(ISimable *isim);
 
     void Reset();
     void Update(float dT);
     void SaveExistingRaceStats();
     void RestoreExistingRaceStats();
+    float CalcAverageSpeed() const;
+    float GetHudPctRaceComplete() const;
     bool AreStatsReady() const;
     void ChooseRandomName();
     bool ChooseBossName();
     bool ChooseRacerName();
     void FinalizeRaceStats();
+    void KnockOut();
+    void TotalVehicle();
+    void Busted();
+    void ForceStop();
+    void BlowEngine();
+    void AddToPointTotal(float points);
+    void StartRace();
+    void StartLap(int lap);
+    void StartCheckpoint(int checkpoint);
+    void NotifySpeedTrapTriggered(float speed);
     void ChallengeComplete();
     void ClearAll() {}
 
