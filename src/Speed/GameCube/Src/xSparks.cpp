@@ -3,6 +3,7 @@
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/emitteruv.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/fuelcell_effect.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/fuelcell_emitter.h"
+#include "Speed/Indep/Libs/Support/Utility/UVectorMath.h"
 #include "Speed/Indep/Libs/Support/Utility/UTypes.h"
 
 struct XenonEffectDef {
@@ -51,20 +52,107 @@ class ParticleList {
   public:
     void GeneratePolys();
     void AgeParticles(float dt);
+    NGParticle *GetNextParticle();
     uint32 GetNumParticles();
 };
 
 extern XenonEffectLists gNGEffectList;
 extern ParticleList gParticleList;
+extern unsigned int randomSeed;
 
 void reserveXenonEffectVec(void *vec, unsigned int count)
     __asm__("reserve__Q24_STLt6vector2Z14XenonEffectDefZQ33UTL3Stdt9Allocator2Z14XenonEffectDefZ20_type_XenonEffectDefUi");
+float bRandom(float range, unsigned int *seed);
 
 CGEmitter::CGEmitter(const Attrib::Collection *spec, const XenonEffectDef &eDef)
     : mEmitterDef(spec, 0, nullptr) //
     , mTextureUVs(mEmitterDef.emitteruv(), 0, nullptr) //
     , mVel(eDef.vel) //
     , mLocalWorld(eDef.mat) {}
+
+void CGEmitter::SpawnParticles(float dt, float intensity) {
+    unsigned int seed = randomSeed;
+
+    if (intensity > 0.0f) {
+        UMath::Matrix4 local_world = mLocalWorld;
+        UMath::Vector4 velocity_base;
+        UMath::Vector4 velocity_center;
+        UMath::Vector4 volume_extent;
+        UMath::Vector4 spawn_point;
+        UMath::Vector4 world_spawn_point;
+        float age = 0.0f;
+        float count = intensity * mEmitterDef.NumParticles();
+        float life = mEmitterDef.Life();
+        float count_after_variance = count - count * mEmitterDef.NumParticlesVariance() * 100.0f;
+        float colour_r = mEmitterDef.Colour1().x;
+        float colour_g = mEmitterDef.Colour1().y;
+        float colour_b = mEmitterDef.Colour1().z;
+        unsigned int colour_a = static_cast<unsigned int>(mEmitterDef.Colour1().w * 255.0f);
+
+        VU0_v4scalexyz(mVel, mEmitterDef.VelocityInherit().x, velocity_base);
+        UMath::RotateTranslate(mEmitterDef.VolumeCenter(), local_world, velocity_center);
+        velocity_base.x += velocity_center.x;
+        velocity_base.y += velocity_center.y;
+        velocity_base.z += velocity_center.z;
+
+        if (count_after_variance != 0.0f) {
+            float particle_step = dt / count_after_variance;
+            while (count_after_variance != 0.0f) {
+                NGParticle *particle;
+                float length_start;
+                float length_clamped;
+                float gravity;
+
+                count_after_variance -= 1.0f;
+                particle = gParticleList.GetNextParticle();
+                if (!particle) {
+                    break;
+                }
+
+                length_start = mEmitterDef.LengthStart() + bRandom(mEmitterDef.LengthDelta(), &seed);
+                if (length_start < 0.0f) {
+                    break;
+                }
+
+                length_clamped = 1.0f;
+                if (length_start < 1.0f) {
+                    length_clamped = length_start;
+                }
+
+                volume_extent.x = 1.0f - (mEmitterDef.VolumeExtent().x - bRandom(mEmitterDef.VolumeExtent().x, &seed) * 2.0f);
+                volume_extent.y = 1.0f - (mEmitterDef.VolumeExtent().y - bRandom(mEmitterDef.VolumeExtent().y, &seed) * 2.0f);
+                volume_extent.z = 1.0f - (mEmitterDef.VolumeExtent().z - bRandom(mEmitterDef.VolumeExtent().z, &seed) * 2.0f);
+                volume_extent.w = 1.0f;
+
+                spawn_point.x = mEmitterDef.VolumeCenter().x + (bRandom(mEmitterDef.VolumeCenter().x, &seed) - mEmitterDef.VolumeCenter().x * 0.5f);
+                spawn_point.y = mEmitterDef.VolumeCenter().y + (bRandom(mEmitterDef.VolumeCenter().y, &seed) - mEmitterDef.VolumeCenter().y * 0.5f);
+                spawn_point.z = mEmitterDef.VolumeCenter().z + (bRandom(mEmitterDef.VolumeCenter().z, &seed) - mEmitterDef.VolumeCenter().z * 0.5f);
+                spawn_point.w = 1.0f;
+
+                UMath::RotateTranslate(spawn_point, local_world, world_spawn_point);
+                VU0_v4scalexyz(velocity_base, volume_extent.x, velocity_center);
+                VU0_v3scaleadd(UMath::Vector4To3(velocity_center), age, UMath::Vector4To3(world_spawn_point),
+                               *reinterpret_cast<UMath::Vector3 *>(particle));
+
+                gravity = (mEmitterDef.GravityStart() - mEmitterDef.GravityDelta()) + bRandom(mEmitterDef.GravityDelta(), &seed) * 2.0f;
+                particle->initialPos = UMath::Vector4To3(world_spawn_point);
+                particle->vel = UMath::Vector4To3(velocity_center);
+                particle->age = age;
+                particle->gravity = gravity;
+                particle->life = static_cast<uint16>((life - life * mEmitterDef.LifeVariance()) * 65535.0f);
+                particle->color =
+                    colour_a << 24 | static_cast<unsigned int>(colour_b * 255.0f) << 16 | static_cast<unsigned int>(colour_g * 255.0f) << 8 |
+                    static_cast<unsigned int>(colour_r * 255.0f);
+                particle->length = static_cast<uint8>(length_clamped * 255.0f);
+                particle->width = static_cast<uint8>(mEmitterDef.HeightStart());
+
+                age += particle_step;
+            }
+        }
+
+        randomSeed = seed;
+    }
+}
 
 NGEffect::NGEffect(const XenonEffectDef &eDef)
     : mEffectDef(eDef.spec, 0, nullptr) {
