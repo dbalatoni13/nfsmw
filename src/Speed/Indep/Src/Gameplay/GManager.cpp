@@ -20,6 +20,8 @@
 #include <algorithm>
 #include <new>
 
+extern int SkipFE;
+
 char *bStrIStr(const char *s1, const char *s2);
 void bCloseMemoryPool(int pool_num);
 bool bSetMemoryPoolDebugTracing(int pool_num, bool on_off);
@@ -337,6 +339,25 @@ void GManager::EndGameplay() {
     mOverrideFreeRoamStartMarker = 0;
     ApplyTimeOfDayTickOver();
     SetOverRideRainIntensity(0.0f);
+}
+
+void GManager::StartWorldActivities(bool startFreeRoamOnly) {
+    for (unsigned int i = 0; i < mInstanceHashTableSize; ++i) {
+        GRuntimeInstance *instance = mKeyToInstanceMap[i].mInstance;
+
+        if (instance && instance->GetType() == kGameplayObjType_Activity) {
+            GActivity *activity = static_cast<GActivity *>(instance);
+            bool autoStart = activity->AutoStart(0);
+
+            if (activity->FreeRoamOnly(0) && !startFreeRoamOnly) {
+                autoStart = false;
+            }
+
+            if (autoStart) {
+                activity->Run();
+            }
+        }
+    }
 }
 
 void GManager::StartBinActivity(GRaceBin *raceBin) {
