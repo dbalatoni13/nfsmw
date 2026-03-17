@@ -144,6 +144,14 @@ struct TrackStreamingBarrier {
     bVector2 Points[2]; // offset 0x0, size 0x10
 };
 
+struct HoleMovement {
+    // total size: 0x10
+    int Address;            // offset 0x0, size 0x4
+    int NewAddress;         // offset 0x4, size 0x4
+    int Size;               // offset 0x8, size 0x4
+    unsigned int Checksum;  // offset 0xC, size 0x4
+};
+
 // total size: 0x888
 class TrackStreamer {
   public:
@@ -184,6 +192,8 @@ class TrackStreamer {
     TrackStreamingSection *ChooseSectionToJettison();
     void FinishedLoading();
     void UnJettisonSections();
+    int BuildHoleMovements(HoleMovement *hole_movements, int max_movements, int filler_method, int largest_free,
+                           int *pamount_moved, int max_amount_to_move);
     bool NeedsGameStateActivation(TrackStreamingSection *section);
     int GetSectionToActivate(int loaded_frames);
     void HandleSectionActivation();

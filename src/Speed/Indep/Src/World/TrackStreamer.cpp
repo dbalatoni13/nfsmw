@@ -40,6 +40,18 @@ static const float kPredictedZoneStopProjectSpeed_TrackStreamer = 178.81091f;
 static const float kPredictedZoneEqualEpsilon_TrackStreamer = 0.001f;
 static unsigned int last_jettison_print_26154 = 0;
 
+static void SortIntsAscending_TrackStreamer(int *values, int count) {
+    for (int i = 1; i < count; i++) {
+        int value = values[i];
+        int n = i - 1;
+        while (n >= 0 && value < values[n]) {
+            values[n + 1] = values[n];
+            n -= 1;
+        }
+        values[n + 1] = value;
+    }
+}
+
 static char GetScenerySectionLetter_TrackStreamer(int section_number) {
     return static_cast<char>(section_number / 100 + 'A' - 1);
 }
@@ -385,6 +397,215 @@ TrackStreamingSection *TrackStreamer::FindSectionByAddress(int address) {
     }
 
     return 0;
+}
+
+int TrackStreamer::BuildHoleMovements(HoleMovement *hole_movements, int max_movements, int filler_method, int largest_free,
+                                      int *pamount_moved, int max_amount_to_move) {
+    int biggest_allocation = -1;
+    bool failed = false;
+    int num_movements = 0;
+    int amount_moved = 0;
+
+    while (true) {
+        if (largest_free < 0) {
+            int did_allocate = AllocateSectionMemory(&biggest_allocation);
+            FreeSectionMemory();
+            if (!did_allocate) {
+                break;
+            }
+        } else if (largest_free <= pMemoryPool->GetLargestFreeBlock()) {
+            break;
+        }
+
+        if (filler_method != 0) {
+            if (pMemoryPool->GetAmountFree() == pMemoryPool->GetLargestFreeBlock()) {
+                break;
+            }
+        }
+
+        if (num_movements == max_movements) {
+            break;
+        }
+
+        HoleMovement *movement = &hole_movements[num_movements];
+        movement->Address = 0;
+
+        if (filler_method <= 2) {
+            bool start_from_top = filler_method == 2;
+            TSMemoryNode *free_node = pMemoryPool->GetNextFreeNode(start_from_top, 0);
+            TSMemoryNode *allocated_node = pMemoryPool->GetNextAllocatedNode(start_from_top, free_node);
+            if (filler_method == 0 && !allocated_node) {
+                break;
+            }
+
+            if (allocated_node && free_node) {
+                movement->Size = allocated_node->Size;
+                movement->Address = allocated_node->Address;
+                movement->NewAddress =
+                    start_from_top ? free_node->Address : free_node->Address + free_node->Size - movement->Size;
+                if (filler_method == 0 && !FindSectionByAddress(movement->Address)) {
+                    break;
+                }
+            }
+        } else if (filler_method == 4 || filler_method == 5) {
+            bool start_from_top = filler_method == 5;
+            TSMemoryNode *free_node = pMemoryPool->GetNextFreeNode(start_from_top, 0);
+            bool found = false;
+            int best_combined_size = 0;
+
+            for (TSMemoryNode *allocated_node = pMemoryPool->GetNextAllocatedNode(start_from_top, free_node); allocated_node;
+                 allocated_node = pMemoryPool->GetNextAllocatedNode(start_from_top, allocated_node)) {
+                TSMemoryNode *next_free = pMemoryPool->GetNextFreeNode(start_from_top, allocated_node);
+                if (!next_free) {
+                    continue;
+                }
+                if (!found || allocated_node->Size <= free_node->Size) {
+                    int combined_size = allocated_node->Size;
+                    TSMemoryNode *other_node = pMemoryPool->GetNextNode(!start_from_top, allocated_node);
+                    TSMemoryNode *same_dir_node = pMemoryPool->GetNextNode(start_from_top, allocated_node);
+                    if (other_node && !other_node->Allocated) {
+                        combined_size += other_node->Size;
+                    }
+                    if (same_dir_node && !same_dir_node->Allocated) {
+                        combined_size += same_dir_node->Size;
+                    }
+                    if (best_combined_size < combined_size) {
+                        best_combined_size = combined_size;
+                        movement->Size = allocated_node->Size;
+                        movement->Address = allocated_node->Address;
+                        movement->NewAddress =
+                            start_from_top ? free_node->Address : free_node->Address + free_node->Size - movement->Size;
+                        found = true;
+                    }
+                }
+            }
+        } else {
+            bool found = false;
+            int smallest_size = 0x3e8000;
+            int best_gap = 0;
+            int best_address = 0;
+            TSMemoryNode *best_node = 0;
+
+            for (TSMemoryNode *free_node = pMemoryPool->GetNextFreeNode(true, 0); free_node;
+                 free_node = pMemoryPool->GetNextFreeNode(true, free_node)) {
+                int gap_size = free_node->Size;
+                TSMemoryNode *next_free = pMemoryPool->GetNextFreeNode(true, free_node);
+                if (!next_free) {
+                    break;
+                }
+
+                gap_size += next_free->Size;
+                TSMemoryNode *node = pMemoryPool->GetNextNode(true, free_node);
+                if (!node) {
+                    continue;
+                }
+
+                int sizes[32];
+                int count = 0;
+                int total_size = node->Size;
+                TSMemoryNode *largest_node = node;
+                while (node && node != next_free && count < 32) {
+                    sizes[count] = node->Size;
+                    if (largest_node->Size < node->Size) {
+                        largest_node = node;
+                    }
+                    count += 1;
+                    node = pMemoryPool->GetNextNode(true, node);
+                    if (node && node != next_free) {
+                        total_size += node->Size;
+                    }
+                }
+
+                if (count <= 0) {
+                    continue;
+                }
+
+                int free_gap = gap_size - total_size;
+                if (!found || best_gap < free_gap) {
+                    SortIntsAscending_TrackStreamer(sizes, count);
+
+                    bool started = false;
+                    int chosen_count = 0;
+                    int free_index = 0;
+                    TSMemoryNode *candidate_free = pMemoryPool->GetNextFreeNode(true, 0);
+                    while (0 < count - chosen_count && candidate_free) {
+                        bool used = false;
+                        int target_index = count - chosen_count - 1;
+                        for (int i = 0; i < count; i++) {
+                            if (sizes[target_index] == free_index) {
+                                used = true;
+                            }
+                        }
+                        if (candidate_free == free_node || candidate_free == next_free) {
+                            used = true;
+                        }
+                        if (!used && sizes[target_index] <= candidate_free->Size) {
+                            sizes[target_index] = free_index;
+                            chosen_count += 1;
+                            if (!started) {
+                                best_address = candidate_free->Address;
+                                started = true;
+                            }
+                            candidate_free = pMemoryPool->GetNextFreeNode(true, 0);
+                        }
+                        candidate_free = pMemoryPool->GetNextFreeNode(true, candidate_free);
+                        free_index += 1;
+                    }
+
+                    if (count <= chosen_count) {
+                        best_gap = free_gap;
+                        best_address = best_address;
+                        best_node = largest_node;
+                        if (biggest_allocation <= gap_size + total_size) {
+                            found = true;
+                            smallest_size = total_size;
+                        }
+                    }
+                }
+            }
+
+            if (found && best_node && FindSectionByAddress(best_node->Address)) {
+                movement->Size = best_node->Size;
+                movement->Address = best_node->Address;
+                movement->NewAddress = best_address;
+            }
+        }
+
+        if (movement->Address == 0) {
+            failed = true;
+            break;
+        }
+
+        num_movements += 1;
+        movement->Checksum = pMemoryPool->GetPoolChecksum();
+        pMemoryPool->Free(reinterpret_cast<void *>(movement->Address));
+        pMemoryPool->Malloc(movement->Size, "HoleMovement", false, false, movement->NewAddress);
+        amount_moved += movement->Size;
+        if (max_amount_to_move < amount_moved) {
+            failed = true;
+            break;
+        }
+    }
+
+    for (int i = num_movements - 1; i >= 0; i--) {
+        HoleMovement *movement = &hole_movements[i];
+        pMemoryPool->Free(reinterpret_cast<void *>(movement->NewAddress));
+        TrackStreamingSection *section = FindSectionByAddress(movement->Address);
+        const char *debug_name = "UndoHoleMovement";
+        if (section) {
+            debug_name = section->SectionName;
+        }
+        pMemoryPool->Malloc(movement->Size, debug_name, false, false, movement->Address);
+    }
+
+    if (pamount_moved) {
+        *pamount_moved = amount_moved;
+    }
+
+    if (failed) {
+        return -1;
+    }
+    return num_movements;
 }
 
 void TrackStreamer::RemoveCurrentStreamingSections() {
