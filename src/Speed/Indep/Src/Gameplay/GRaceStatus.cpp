@@ -5,6 +5,7 @@
 #include "Speed/Indep/Src/Gameplay/GVault.h"
 #include "Speed/Indep/Src/Main/AttribSupport.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
+#include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 
 void SetCurrentTimeOfDay(float value);
@@ -20,6 +21,97 @@ GRaceParameters::~GRaceParameters() {
     delete mRaceRecord;
     mRaceRecord = nullptr;
     mIndex = nullptr;
+}
+
+void GRaceParameters::GenerateIndex(GRaceIndexData *index) {
+    unsigned int flags;
+    char *indexBytes;
+    float topLeft[2];
+    float botRight[2];
+
+    if (!index) {
+        return;
+    }
+
+    indexBytes = reinterpret_cast<char *>(index);
+    bMemSet(indexBytes, 0, 0x30);
+
+    *reinterpret_cast<unsigned int *>(indexBytes + 0x00) = GetCollectionKey();
+    *reinterpret_cast<unsigned int *>(indexBytes + 0x10) = GetChallengeType();
+    *reinterpret_cast<unsigned int *>(indexBytes + 0x14) = GetEventHash();
+    *reinterpret_cast<unsigned int *>(indexBytes + 0x18) = 0;
+    *reinterpret_cast<float *>(indexBytes + 0x1C) = GetRaceLengthMeters();
+    *reinterpret_cast<unsigned short *>(indexBytes + 0x20) = static_cast<unsigned short>(GetLocalizationTag());
+    *reinterpret_cast<unsigned short *>(indexBytes + 0x22) = static_cast<unsigned short>(GetCashValue());
+    *reinterpret_cast<short *>(indexBytes + 0x26) = static_cast<short>(GetRivalBestTime() * 8.0f);
+    indexBytes[0x29] = static_cast<char>(GetRegion());
+    indexBytes[0x2A] = static_cast<char>(GetCopDensity());
+    indexBytes[0x2B] = static_cast<char>(GetRaceType());
+
+    flags = 0;
+    if (GetInitiallyUnlockedQuickRace()) {
+        flags |= 1 << 0;
+    }
+    if (GetInitiallyUnlockedOnline()) {
+        flags |= 1 << 1;
+    }
+    if (GetInitiallyUnlockedChallenge()) {
+        flags |= 1 << 2;
+    }
+    if (GetCanBeReversed()) {
+        flags |= 1 << 3;
+    }
+    if (GetIsDDayRace()) {
+        flags |= 1 << 4;
+    }
+    if (GetIsBossRace()) {
+        flags |= 1 << 5;
+    }
+    if (GetIsMarkerRace()) {
+        flags |= 1 << 6;
+    }
+    if (GetIsPursuitRace()) {
+        flags |= 1 << 7;
+    }
+    if (GetIsLoopingRace()) {
+        flags |= 1 << 8;
+    }
+    if (GetRankPlayersByPoints()) {
+        flags |= 1 << 9;
+    }
+    if (GetRankPlayersByDistance()) {
+        flags |= 1 << 10;
+    }
+    if (GetCopsEnabled()) {
+        flags |= 1 << 11;
+    }
+    if (GetScriptedCopsInRace()) {
+        flags |= 1 << 12;
+    }
+    if (GetTimeOfDay() > 0.8f) {
+        flags |= 1 << 13;
+    }
+    if (GetNeverInQuickRace()) {
+        flags |= 1 << 14;
+    }
+    if (GetIsChallengeSeriesRace()) {
+        flags |= 1 << 15;
+    }
+    if (GetIsCollectorsEditionRace()) {
+        flags |= 1 << 16;
+    }
+    if (GetTimeOfDay() <= 0.8f && GetTimeOfDay() >= 0.0f) {
+        flags |= 1 << 17;
+    }
+
+    *reinterpret_cast<unsigned short *>(indexBytes + 0x04) = static_cast<unsigned short>(flags);
+    bSafeStrCpy(indexBytes + 0x06, GetEventID(), 10);
+
+    GetBoundingBox(*reinterpret_cast<UMath::Vector2 *>(topLeft), *reinterpret_cast<UMath::Vector2 *>(botRight));
+    indexBytes[0x2C] = static_cast<char>(topLeft[0] * 255.0f);
+    indexBytes[0x2D] = static_cast<char>(topLeft[1] * 255.0f);
+    indexBytes[0x2E] = static_cast<char>(botRight[0] * 255.0f);
+    indexBytes[0x2F] = static_cast<char>(botRight[1] * 255.0f);
 }
 
 void GRaceParameters::EnsureLoaded() const {
@@ -73,6 +165,29 @@ GActivity *GRaceParameters::GetActivity() const {
 
 unsigned int GRaceParameters::GetCollectionKey() const {
     return mRaceRecord ? mRaceRecord->GetCollection() : 0;
+}
+
+void GRaceParameters::GetBoundingBox(UMath::Vector2 &topLeft, UMath::Vector2 &botRight) const {
+    float *topLeftValues;
+    float *botRightValues;
+
+    topLeftValues = reinterpret_cast<float *>(&topLeft);
+    botRightValues = reinterpret_cast<float *>(&botRight);
+    if (mIndex) {
+        const unsigned char *indexBytes;
+
+        indexBytes = reinterpret_cast<const unsigned char *>(mIndex);
+        topLeftValues[0] = indexBytes[0x2C] * (1.0f / 255.0f);
+        topLeftValues[1] = indexBytes[0x2D] * (1.0f / 255.0f);
+        botRightValues[0] = indexBytes[0x2E] * (1.0f / 255.0f);
+        botRightValues[1] = indexBytes[0x2F] * (1.0f / 255.0f);
+        return;
+    }
+
+    topLeftValues[0] = 0.0f;
+    topLeftValues[1] = 0.0f;
+    botRightValues[0] = 0.0f;
+    botRightValues[1] = 0.0f;
 }
 
 float GRaceParameters::GetRaceLengthMeters() const {
@@ -671,4 +786,160 @@ float GRaceParameters::GetStartPercent() const {
 const char *GRaceParameters::GetSpeedTrapCamera() const {
     EnsureLoaded();
     return mRaceRecord->SpeedTrapCamera(0);
+}
+
+GRaceCustom::GRaceCustom(const GRaceParameters &other)
+    : GRaceParameters(other.GetCollectionKey(), nullptr), //
+      mRaceActivity(nullptr), //
+      mNumOpponents(0), //
+      mReversed(false), //
+      mFreedByOwner(false), //
+      mHeatLevel(-1) {
+    Attrib::Attribute opponents;
+    unsigned int customKey;
+
+    customKey = mRaceRecord->GenerateUniqueKey("GRaceCustom", true);
+    mRaceRecord->Modify(customKey, 0);
+    mRaceRecord->SetParent(other.GetGameplayObj()->GetCollection());
+
+    opponents = mRaceRecord->Get(0x5839FA1A);
+    mNumOpponents = opponents.GetLength();
+}
+
+GRaceCustom::~GRaceCustom() {
+    if (mRaceActivity) {
+        delete mRaceActivity;
+        mRaceActivity = nullptr;
+    }
+}
+
+GActivity *GRaceCustom::GetRaceActivity() const {
+    return mRaceActivity;
+}
+
+void GRaceCustom::GetCheckpointPosition(unsigned int index, UMath::Vector3 &pos) const {
+    if (mReversed) {
+        index = GetNumCheckpoints() - (index + 1);
+    }
+
+    GRaceParameters::GetCheckpointPosition(index, pos);
+}
+
+void GRaceCustom::GetCheckpointDirection(unsigned int index, UMath::Vector3 &dir) const {
+    float rotate;
+
+    if (mReversed) {
+        index = GetNumCheckpoints() - (index + 1);
+        rotate = 180.0f;
+    } else {
+        rotate = 0.0f;
+    }
+
+    EnsureLoaded();
+    dir = UMath::Vector3::kZero;
+    {
+        unsigned int collectionKey;
+
+        collectionKey = mRaceRecord->Checkpoint(index).GetCollectionKey();
+        if (collectionKey) {
+            Attrib::Gen::gameplay checkpoint(collectionKey, 0, nullptr);
+
+            ExtractDirection(checkpoint, dir, rotate);
+        }
+    }
+}
+
+void GRaceCustom::SetReversed(bool isReverseDir) {
+    mReversed = isReverseDir;
+}
+
+void GRaceCustom::SetNumLaps(int numLaps) {
+    SetAttribute(0x0EBDC165, numLaps, 0);
+}
+
+void GRaceCustom::SetTrafficDensity(int density) {
+    if (density < 0) {
+        density = 0;
+    } else if (density > 100) {
+        density = 100;
+    }
+
+    SetAttribute(0xC64BC341, density, 0);
+}
+
+void GRaceCustom::SetNumOpponents(int numOpponents) {
+    mNumOpponents = numOpponents;
+}
+
+void GRaceCustom::SetDifficulty(GRace::Difficulty difficulty) {
+    int value;
+
+    if (difficulty == GRace::kRaceDifficulty_Easy) {
+        value = 0x21;
+    } else if (difficulty == GRace::kRaceDifficulty_Medium) {
+        value = 0x42;
+    } else if (difficulty == GRace::kRaceDifficulty_Hard) {
+        value = 100;
+    } else {
+        value = 0;
+    }
+
+    SetAttribute(0x88A7E3BE, value, 0);
+}
+
+void GRaceCustom::SetCatchUp(bool catchUpEnabled) {
+    SetAttribute(0x10DB04E6, catchUpEnabled, 0);
+}
+
+void GRaceCustom::SetCopsEnabled(bool copsEnabled) {
+    SetAttribute(0x3918E889, copsEnabled, 0);
+}
+
+void GRaceCustom::SetForceHeatLevel(int level) {
+    SetAttribute(0xE4211F4F, level, 0);
+}
+
+void GRaceCustom::SetAttribute(unsigned int key, const int &value, unsigned int index) {
+    Attrib::Attribute attribute;
+    int *dest;
+
+    attribute = mRaceRecord->Get(key);
+    if (!attribute.IsValid()) {
+        mRaceRecord->Add(key, 1);
+    }
+
+    dest = reinterpret_cast<int *>(const_cast<void *>(mRaceRecord->GetAttributePointer(key, index)));
+    if (dest) {
+        *dest = value;
+    }
+}
+
+void GRaceCustom::SetAttribute(unsigned int key, const float &value, unsigned int index) {
+    Attrib::Attribute attribute;
+    float *dest;
+
+    attribute = mRaceRecord->Get(key);
+    if (!attribute.IsValid()) {
+        mRaceRecord->Add(key, 1);
+    }
+
+    dest = reinterpret_cast<float *>(const_cast<void *>(mRaceRecord->GetAttributePointer(key, index)));
+    if (dest) {
+        *dest = value;
+    }
+}
+
+void GRaceCustom::SetAttribute(unsigned int key, const bool &value, unsigned int index) {
+    Attrib::Attribute attribute;
+    bool *dest;
+
+    attribute = mRaceRecord->Get(key);
+    if (!attribute.IsValid()) {
+        mRaceRecord->Add(key, 1);
+    }
+
+    dest = reinterpret_cast<bool *>(const_cast<void *>(mRaceRecord->GetAttributePointer(key, index)));
+    if (dest) {
+        *dest = value;
+    }
 }

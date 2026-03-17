@@ -291,7 +291,7 @@ class GRaceParameters {
 
     struct GVault *GetParentVault() const;
 
-    void GetBoundingBox(struct Vector2 &topLeft, struct Vector2 &botRight) const;
+    void GetBoundingBox(UMath::Vector2 &topLeft, UMath::Vector2 &botRight) const;
 
     unsigned int GetChallengeType() const;
 
@@ -672,7 +672,7 @@ class GRaceCustom : public GRaceParameters {
 
     void CreateRaceActivity();
 
-    GActivity *GetRaceActivity() const { return mRaceActivity; }
+    GActivity *GetRaceActivity() const;
 
     // Overrides: GRaceParameters
     void GetCheckpointPosition(unsigned int index, UMath::Vector3 &pos) const override;
@@ -680,7 +680,7 @@ class GRaceCustom : public GRaceParameters {
     // Overrides: GRaceParameters
     void GetCheckpointDirection(unsigned int index, UMath::Vector3 &dir) const override;
 
-    void SetReversed(bool isReverseDir) { mReversed = isReverseDir; }
+    void SetReversed(bool isReverseDir);
 
     void SetPositionalKnockout(bool enabled, int knockoutsPerLap);
 
@@ -690,7 +690,7 @@ class GRaceCustom : public GRaceParameters {
 
     void SetTrafficDensity(int density);
 
-    void SetNumOpponents(int numOpponents) { mNumOpponents = numOpponents; }
+    void SetNumOpponents(int numOpponents);
 
     void SetDifficulty(GRace::Difficulty difficulty);
 
