@@ -31,6 +31,7 @@ bool LoadTempPermChunks(bChunk **ppchunks, int *psizeof_chunks, int allocation_p
 int DoLinesIntersect(const bVector2 &line1_start, const bVector2 &line1_end, const bVector2 &line2_start, const bVector2 &line2_end);
 void eWaitUntilRenderingDone();
 void MoveChunks(bChunk *dest_chunks, bChunk *source_chunks, int sizeof_chunks, const char *debug_name);
+void bSetMemoryPoolOverrideInfo(int pool_num, MemoryPoolOverrideInfo *override_info);
 
 static unsigned int prev_need_loading_bar_26275 = 0;
 static const float kMaxDistance_TrackStreamer = 3.4028235e+38f;
@@ -100,6 +101,52 @@ struct bMemoryTraceAllocatePacket {
     int AllocationNumber;
     char Name[48];
 };
+
+TSMemoryPool::TSMemoryPool(int address, int size, const char *debug_name, int pool_num) {
+    PoolNum = pool_num;
+    DebugName = debug_name;
+    TotalSize = size;
+    TracingEnabled = true;
+    Updated = false;
+    AllocationNumber = 0;
+    AmountFree = size;
+    LargestFree = size;
+    NeedToRecalcLargestFree = false;
+
+    for (int i = 0; i < 192; i++) {
+        UnusedNodeList.AddTail(&MemoryNodes[i]);
+    }
+
+    if (TracingEnabled && bMemoryTracing) {
+        bMemoryTraceNewPoolPacket packet;
+        packet.PoolID = reinterpret_cast<uintptr_t>(this);
+        bMemSet(packet.Name, 0, sizeof(packet.Name));
+        bStrNCpy(packet.Name, debug_name, sizeof(packet.Name) - 1);
+        bFunkCallASync("CODEINE", 0x19, &packet, sizeof(packet));
+    }
+
+    GetNewNode(address, size, false, 0);
+
+    if (TracingEnabled && bMemoryTracing) {
+        bMemoryTraceFreePacket packet;
+        bMemSet(&packet, 0, sizeof(packet));
+        packet.PoolID = reinterpret_cast<uintptr_t>(this);
+        packet.MemoryAddress = static_cast<uintptr_t>(address);
+        packet.Size = size;
+        bFunkCallASync("CODEINE", 0x1b, &packet, sizeof(packet));
+    }
+
+    bMemSet(&OverrideInfo, 0, sizeof(OverrideInfo));
+    OverrideInfo.Name = DebugName;
+    OverrideInfo.Pool = this;
+    OverrideInfo.Address = address;
+    OverrideInfo.Size = size;
+    OverrideInfo.Malloc = OverrideMalloc;
+    OverrideInfo.Free = OverrideFree;
+    OverrideInfo.GetAmountFree = OverrideGetAmountFree;
+    OverrideInfo.GetLargestFreeBlock = OverrideGetLargestFreeBlock;
+    bSetMemoryPoolOverrideInfo(PoolNum, &OverrideInfo);
+}
 
 TSMemoryNode *TSMemoryPool::GetNewNode(int address, int size, bool allocated, const char *debug_name) {
     TSMemoryNode *node = 0;
@@ -235,6 +282,34 @@ void *TSMemoryPool::Malloc(int size, const char *debug_name, bool best_fit, bool
     Updated = true;
     AllocationNumber += 1;
     return reinterpret_cast<void *>(address);
+}
+
+void *TSMemoryPool::OverrideMalloc(void *pool, int size, const char *debug_text, int debug_line, int allocation_params) {
+    TSMemoryPool *memory_pool = static_cast<TSMemoryPool *>(pool);
+    unsigned int align_offset = static_cast<unsigned int>(allocation_params >> 17) & 0x1FFC;
+    bool best_fit = (allocation_params & 0x80) != 0;
+    bool allocate_from_top = (allocation_params & 0x40) != 0;
+    (void)debug_line;
+
+    if (align_offset == 0) {
+        return memory_pool->Malloc(size, debug_text, best_fit, allocate_from_top, 0);
+    }
+
+    int memory = reinterpret_cast<int>(memory_pool->Malloc(size + 0x80, debug_text, best_fit, allocate_from_top, 0));
+    return reinterpret_cast<void *>((memory + 0x80) - align_offset);
+}
+
+void TSMemoryPool::OverrideFree(void *pool, void *ptr) {
+    static_cast<TSMemoryPool *>(pool)->Free(
+        reinterpret_cast<void *>(reinterpret_cast<uintptr_t>(ptr) & ~static_cast<uintptr_t>(0x7F)));
+}
+
+int TSMemoryPool::OverrideGetAmountFree(void *pool) {
+    return static_cast<TSMemoryPool *>(pool)->GetAmountFree();
+}
+
+int TSMemoryPool::OverrideGetLargestFreeBlock(void *pool) {
+    return static_cast<TSMemoryPool *>(pool)->GetLargestFreeBlock();
 }
 
 int TSMemoryPool::GetAmountFree() {

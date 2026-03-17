@@ -103,6 +103,7 @@ class TSMemoryNode : public bTNode<TSMemoryNode> {
 // total size: 0x2754
 class TSMemoryPool {
   public:
+    TSMemoryPool(int address, int size, const char *debug_name, int pool_num);
     void *Malloc(int size, const char *debug_name, bool best_fit, bool allocate_from_top, int address);
     void Free(void *memory);
     int GetAmountFree();
@@ -114,6 +115,11 @@ class TSMemoryPool {
     void DebugPrint();
 
   private:
+    static void *OverrideMalloc(void *pool, int size, const char *debug_text, int debug_line, int allocation_params);
+    static void OverrideFree(void *pool, void *ptr);
+    static int OverrideGetAmountFree(void *pool);
+    static int OverrideGetLargestFreeBlock(void *pool);
+
     TSMemoryNode *GetNewNode(int address, int size, bool allocated, const char *debug_name);
     void RemoveNode(TSMemoryNode *node);
 
