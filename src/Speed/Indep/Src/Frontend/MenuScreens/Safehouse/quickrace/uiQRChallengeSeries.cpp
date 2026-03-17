@@ -122,7 +122,7 @@ void UIQRChallengeSeries::RefreshHeader() {
     ArrayScrollerMenu::RefreshHeader();
     if (!currentDatum) return;
 
-    int pos = data.GetNodeNumber(currentDatum) + 1;
+    int pos = data.TraversebList(currentDatum);
     FEPrintf(GetPackageName(), 0x5a856a34, "%d", pos);
     FEPrintf(GetPackageName(), 0x2d4d22c8, "%d", GetNumDatum());
 
@@ -172,14 +172,15 @@ void UIQRChallengeSeries::RefreshHeader() {
     const char *desc = GetLocalizedString(descHash);
     FEPrintf(pkg, 0x7b230d64, desc, buf, buf);
 
-    if (cd->IsLocked()) {
+    if (static_cast<ChallengeDatum *>(currentDatum)->IsLocked()) {
         cFEng::Get()->QueuePackageMessage(0xc5dd9d68, GetPackageName(), nullptr);
-        int index = pos - 1;
-        int page = (pos / 5) * 5;
-        if (pos < 61) {
-            if (static_cast<unsigned int>(pos - page - 1) <= 1) {
+        int lockedPos = data.TraversebList(currentDatum);
+        int index = lockedPos - 1;
+        int page = (lockedPos / 5) * 5;
+        if (lockedPos < 61) {
+            if (static_cast<unsigned int>(lockedPos - page - 1) <= 1) {
                 FEPrintf(GetPackageName(), 0x68215623, GetLocalizedString(0xced8931e), page);
-            } else if (static_cast<unsigned int>(pos - page - 3) <= 1) {
+            } else if (static_cast<unsigned int>(lockedPos - page - 3) <= 1) {
                 FEPrintf(GetPackageName(), 0x68215623, GetLocalizedString(0xced8931d), page + 1, page + 2);
             } else {
                 FEPrintf(GetPackageName(), 0x68215623, GetLocalizedString(0xced8931d), page - 2, page - 1);
