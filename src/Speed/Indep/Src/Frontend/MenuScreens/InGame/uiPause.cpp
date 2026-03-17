@@ -167,11 +167,10 @@ message_E1FDE1D1:
             if (GRaceStatus::Exists()) {
                 GRaceStatus::Get().RaceAbandoned();
             }
-            eGarageType garageType = static_cast<eGarageType>(1);
-            if (GRaceStatus::Get().GetRaceContext() == GRace::kRaceContext_Career) {
-                garageType = static_cast<eGarageType>(2);
-            }
-            new EQuitToFE(garageType, static_cast<const char*>(0));
+            new EQuitToFE(GRaceStatus::Get().GetRaceContext() == GRace::kRaceContext_Career
+                              ? static_cast<eGarageType>(2)
+                              : static_cast<eGarageType>(1),
+                          static_cast<const char*>(0));
             return;
         }
         case 0x85162CB0:
