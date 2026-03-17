@@ -46,7 +46,7 @@ Read every instruction pair. Categorize each mismatch:
 | **Stack frame size** | Wrong frame size in prologue | Count locals in DWARF; remove temporaries not in DWARF |
 | **Float vs int sequence** | `xoris` present → field is `int`; absent → `uint` | Check field type in DWARF; change cast |
 | **`fmuls` operand order** | `fmuls fX, fX, fY` or `fmuls fX, fY, fX` | Try `v *= fY` vs `fY * v` explicitly |
-| **Relocation offset** | `@stringBase0` or data offset differs | More string literals will shift this; add them in order |
+| **Relocation offset** | `@stringBase0` or data offset differs | More string literals will shift this; add them in order. Use `python tools/elf_lookup.py 0xADDR` when you need to confirm the original string/rodata at a virtual address |
 | **Virtual vs direct call** | `bl` vs indirect through vtable | Check const-qualifier; use `GetFoo()` vs `Foo()` |
 | **Inline vs outlined** | Extra call to helper vs inlined sequence | Force inline by rewriting the expression without calling the helper |
 | **Loop structure** | Guarded `do/while` from Ghidra or mismatched loop branches | Rewrite to the natural source form suggested by the control flow; in particular, a guarded `do/while` often needs to become a plain `for` loop |
@@ -115,7 +115,23 @@ sequences on PPC (see `xoris` pattern in AGENTS.md). Check all casts.
 
 ## Phase 3: DWARF verification
 
-After any instruction match, verify the DWARF also matches.
+After any instruction match, verify the DWARF also matches. The function is not done
+until both objdiff and normalized DWARF are exact.
+
+Preferred shortcut:
+
+```bash
+python tools/decomp-workflow.py verify -u main/Path/To/TU -f FunctionName
+```
+
+If the combined gate fails because of DWARF, inspect the DWARF diff directly with:
+
+```bash
+python tools/decomp-workflow.py dwarf -u main/Path/To/TU -f FunctionName
+```
+
+Manual fallback:
+
 Use the rebuilt shared object from Phase 1 (or rebuild again if you've changed the source):
 
 ```bash
@@ -143,5 +159,5 @@ Summarize:
 - What was blocking the match (the root cause category from Phase 1)
 - The specific source change that resolved it
 - Any new generalizable assembly pattern discovered (add to AGENTS.md if so)
-- DWARF match status
+- DWARF match status and whether `verify` passes
 - If still not matching: the exact diff lines that remain and your best theory
