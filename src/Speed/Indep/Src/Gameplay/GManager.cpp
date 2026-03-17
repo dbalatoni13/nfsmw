@@ -6,6 +6,7 @@
 #include "Speed/Indep/Src/Generated/Messages/MEnteringGameplay.h"
 #include "Speed/Indep/Src/Gameplay/GMarker.h"
 #include "Speed/Indep/Src/Gameplay/GVault.h"
+#include "Speed/Indep/Src/Interfaces/SimActivities/INIS.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
 #include "Speed/Indep/Src/Misc/LZCompress.hpp"
 #include "Speed/Indep/Src/Misc/Platform.h"
@@ -23,6 +24,7 @@
 #include <new>
 
 extern int SkipFE;
+extern int TWEAK_ShowAllGameplayIcons;
 
 char *bStrIStr(const char *s1, const char *s2);
 void bCloseMemoryPool(int pool_num);
@@ -1375,6 +1377,43 @@ void GManager::RefreshZoneIcons() {
     }
 }
 
+void GManager::RefreshWorldParticleEffects() {
+    for (unsigned int i = 0; i < mInstanceHashTableSize; ++i) {
+        GRuntimeInstance *instance = mKeyToInstanceMap[i].mInstance;
+
+        if (instance && instance->GetType() == kGameplayObjType_Trigger) {
+            static_cast<GTrigger *>(instance)->RefreshParticleEffects();
+        }
+    }
+
+    for (unsigned int i = 0; i < mNumIcons; ++i) {
+        mIcons[i]->RefreshEffects();
+    }
+}
+
+void GManager::RefreshEngageTriggerIcons() {
+    for (unsigned int i = 0; i < mInstanceHashTableSize; ++i) {
+        GRuntimeInstance *instance = mKeyToInstanceMap[i].mInstance;
+
+        if (instance && instance->GetType() == kGameplayObjType_Trigger) {
+            GTrigger *trigger = static_cast<GTrigger *>(instance);
+            GActivity *activity = trigger->GetTargetActivity();
+
+            if (activity) {
+                GRaceParameters *race = GRaceDatabase::Get().GetRaceFromActivity(activity);
+
+                if (race) {
+                    if (!race->GetIsAvailable(GRace::kRaceContext_Career)) {
+                        trigger->HideIcon();
+                    } else {
+                        trigger->ShowIcon();
+                    }
+                }
+            }
+        }
+    }
+}
+
 bool GManager::AddIconForTrackMarker(TrackPositionMarker *marker, unsigned int tag) {
     if (marker->NameHash == tag) {
         UMath::Vector3 pos;
@@ -1827,6 +1866,81 @@ void GManager::UpdatePursuit() {
 
     mHidingSpotIconsShown = (roaming || challengeRace) && pursuit && cooldown;
     mPursuitBreakerIconsShown = (roaming || challengeRace) && pursuit && !cooldown;
+}
+
+void GManager::UpdateTriggerAvailability() {
+    IPursuit *pursuit;
+    IPerpetrator *perpetrator;
+    bool roaming;
+    bool cooldown;
+    bool inPursuit;
+
+    pursuit = nullptr;
+    perpetrator = nullptr;
+    roaming = GRaceStatus::Get().GetPlayMode() == GRaceStatus::kPlayMode_Roaming;
+    GetPlayerPursuitInterfaces(pursuit, perpetrator);
+
+    cooldown = false;
+    inPursuit = pursuit != nullptr;
+    if (inPursuit) {
+        cooldown = pursuit->GetPursuitStatus() == 2;
+    }
+
+    mAllowMenuGates = roaming && !inPursuit;
+    mAllowEngageEvents = roaming && !inPursuit;
+    mAllowEngageSafehouse = roaming && (!inPursuit || cooldown);
+}
+
+void GManager::UpdateIconVisibility() {
+    bool visible[GIcon::kType_Count];
+
+    mEventIconsShown = mAllowEngageEvents;
+    mMenuGateIconsShown = mAllowMenuGates;
+    mSpeedTrapIconsShown = mAllowEngageEvents;
+    mSpeedTrapRaceIconsShown =
+        GRaceStatus::Exists() && GRaceStatus::Get().GetRaceParameters() &&
+        GRaceStatus::Get().GetRaceParameters()->GetRaceType() == GRace::kRaceType_SpeedTrap;
+
+    for (unsigned int i = 0; i < GIcon::kType_Count; ++i) {
+        visible[i] = TWEAK_ShowAllGameplayIcons != 0;
+    }
+
+    if (!TWEAK_ShowAllGameplayIcons && !INIS::Exists()) {
+        visible[GIcon::kType_RaceSprint] = mEventIconsShown;
+        visible[GIcon::kType_RaceCircuit] = mEventIconsShown;
+        visible[GIcon::kType_RaceDrag] = mEventIconsShown;
+        visible[GIcon::kType_RaceKnockout] = mEventIconsShown;
+        visible[GIcon::kType_RaceTollbooth] = mEventIconsShown;
+        visible[GIcon::kType_RaceSpeedtrap] = mEventIconsShown;
+        visible[GIcon::kType_RaceRival] = mEventIconsShown;
+        visible[GIcon::kType_GateSafehouse] = mAllowEngageSafehouse;
+        visible[GIcon::kType_GateCarLot] = mMenuGateIconsShown;
+        visible[GIcon::kType_GateCustomShop] = mMenuGateIconsShown;
+        visible[GIcon::kType_HidingSpot] = mHidingSpotIconsShown;
+        visible[GIcon::kType_PursuitBreaker] = mPursuitBreakerIconsShown;
+        visible[GIcon::kType_SpeedTrap] = mSpeedTrapIconsShown;
+        visible[GIcon::kType_SpeedTrapInRace] = mSpeedTrapRaceIconsShown;
+        visible[GIcon::kType_AreaUnlock] = true;
+    }
+
+    mNumVisibleIcons = 0;
+    for (unsigned int i = 0; i < mNumIcons; ++i) {
+        GIcon *icon = mIcons[i];
+        bool shouldShow = icon->IsFlagSet(1) && visible[icon->GetType()];
+
+        if (shouldShow) {
+            if (icon->IsFlagClear(8)) {
+                icon->Enable();
+            }
+
+            GIcon *swap = mIcons[mNumVisibleIcons];
+            mIcons[mNumVisibleIcons] = mIcons[i];
+            mIcons[i] = swap;
+            mNumVisibleIcons++;
+        } else if (icon->IsFlagSet(8)) {
+            icon->Disable();
+        }
+    }
 }
 
 bool GManager::CalcMapCoordsForMarker(unsigned int markerKey, bVector2 &outPos, float &outRotDeg) {
