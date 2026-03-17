@@ -1,7 +1,9 @@
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Physics.hpp"
+#include "Speed/Indep/Src/EAXSound/States/STATE_Base.hpp"
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Shifting.hpp"
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_NISReving.hpp"
 #include "Speed/Indep/Src/EAXSound/OldSoundTemplates.hpp"
+#include "Speed/Indep/Src/EAXSound/EAXCarState.hpp"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/engineaudio.h"
 #include "Speed/Indep/Src/Interfaces/SimActivities/INIS.h"
 #include "Speed/Indep/Src/Misc/Hermes.h"
@@ -24,51 +26,45 @@ enum ControlSource {
     CONTROL_ONLINE = 4,
 };
 
-struct EAX_CarState_Engine_Physics {
-    int mBoostFlag;
-    int mNOSFlag;
-    float mNOS;
-    float mRPMPct;
-    float mThrottle;
-    float mBoost;
-    int mBlownFlag;
-};
+inline EAX_CarState *ReadStateCar(EAXCar *carOwner) {
+    return *static_cast<EAX_CarState **>(static_cast<void *>(static_cast<char *>(static_cast<void *>(carOwner)) + 0x34));
+}
 
-struct EAX_CarState_Driveline_Physics {
-    int mGearShiftFlag;
-    int mGear;
-};
+inline float &ReadStateCurTime(EAXCar *carOwner) {
+    return *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(carOwner)) + 0x3C));
+}
 
-// total size: 0x248
-struct EAX_CarState_PhysicsView {
-    unsigned int _listable;
-    char _pad0[0x1B8];
-    EAX_CarState_Engine_Physics mEngine;       // offset 0x1BC
-    EAX_CarState_Driveline_Physics mDriveline; // offset 0x1D8
-    char _pad1[0x60];
-    float mDesiredSpeed;                       // offset 0x240
-    int mControlSource;                        // offset 0x244
-};
+inline float &ReadCarPhysTRQRef(EAXCar *carOwner) {
+    return *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(carOwner)) + 0x60));
+}
 
-// total size: 0xD8
-struct EAXCar_PhysicsView {
-    void *vptr;
-    char _pad0[0x30];
-    EAX_CarState_PhysicsView *m_pCar; // offset 0x34
-    char _pad1[0x4];
-    float t_CurTime;           // offset 0x3C
-    char _pad2[0x20];
-    float PhysTRQ;             // offset 0x60
-    float PhysRPM;             // offset 0x64
-    int bIsAccelerating;       // offset 0x68
-    int CurGear;               // offset 0x6C
-    float fTrottle;            // offset 0x70
-    char _pad3[0x50];
-    char mEngineInfo[0x14];    // offset 0xC4
-};
+inline float &ReadCarPhysRPMRef(EAXCar *carOwner) {
+    return *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(carOwner)) + 0x64));
+}
 
-typedef char EAX_CarState_PhysicsViewSizeCheck[(sizeof(EAX_CarState_PhysicsView) == 0x248) ? 1 : -1];
-typedef char EAXCar_PhysicsViewSizeCheck[(sizeof(EAXCar_PhysicsView) == 0xD8) ? 1 : -1];
+inline int &ReadCarIsAcceleratingRef(EAXCar *carOwner) {
+    return *static_cast<int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(carOwner)) + 0x68));
+}
+
+inline int &ReadCarCurGearRef(EAXCar *carOwner) {
+    return *static_cast<int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(carOwner)) + 0x6C));
+}
+
+inline float &ReadCarTrottleRef(EAXCar *carOwner) {
+    return *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(carOwner)) + 0x70));
+}
+
+inline int &ReadCarPovTypeRef(EAXCar *carOwner) {
+    return *static_cast<int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(carOwner)) + 0xB8));
+}
+
+inline char *ReadCarEngineInfo(EAXCar *carOwner) {
+    return static_cast<char *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(carOwner)) + 0xC4));
+}
+
+inline Sound::Wheel *ReadCarWheels(EAX_CarState *car) {
+    return static_cast<Sound::Wheel *>(static_cast<void *>(car->mWheel));
+}
 } // namespace
 
 extern int GameFlowSndState[];
@@ -155,10 +151,10 @@ void SFXCTL_Physics::UpdateParams(float t) {
     SFXCTL::UpdateParams(t);
 
     m_LastGear = m_CurGear;
-    EAXCar_PhysicsView *carOwner = static_cast<EAXCar_PhysicsView *>(static_cast<void *>(m_pEAXCar));
-    EAX_CarState_PhysicsView *car = carOwner->m_pCar;
+    EAXCar *carOwner = m_pEAXCar;
+    EAX_CarState *car = ReadStateCar(carOwner);
 
-    m_CurGear = static_cast< Gear >(car->mDriveline.mGear);
+    m_CurGear = static_cast< Gear >(static_cast<int>(car->mDriveline.mGear));
     m_OldThrottle = m_fThrottle;
 
     if (car->mControlSource == CONTROL_AI) {
@@ -182,11 +178,11 @@ void SFXCTL_Physics::UpdateParams(float t) {
     if (m_fThrottle > 30.0f) {
         if (!IsAccelerating) {
             IsAccelerating = true;
-            t_Last_Accel = carOwner->t_CurTime;
+            t_Last_Accel = ReadStateCurTime(carOwner);
         }
     } else if (IsAccelerating) {
         IsAccelerating = false;
-        t_Last_Deccel = carOwner->t_CurTime;
+        t_Last_Deccel = ReadStateCurTime(carOwner);
     }
 
     PhysicsTRQ = smooth(PhysicsTRQ, m_fThrottle, 100.0f);
@@ -194,7 +190,7 @@ void SFXCTL_Physics::UpdateParams(float t) {
     float rpm = car->mEngine.mRPMPct;
     if (m_pStateBase->m_eStateType == eMM_PLAYERCAR) {
         const Attrib::Gen::engineaudio *engineInfo =
-            static_cast<const Attrib::Gen::engineaudio *>(static_cast<const void *>(carOwner->mEngineInfo));
+            static_cast<const Attrib::Gen::engineaudio *>(static_cast<const void *>(ReadCarEngineInfo(carOwner)));
         const bMatrix4 *curve = static_cast<const bMatrix4 *>(
             static_cast<const void *>(engineInfo->GetAttributePointer(0x07E3C833, 0)));
         if (curve == nullptr) {
@@ -220,23 +216,21 @@ void SFXCTL_Physics::UpdateParams(float t) {
         return;
     }
 
-    carOwner->PhysTRQ = PhysicsTRQ;
-    carOwner->PhysRPM = PhysicsRPM;
-    carOwner->fTrottle = m_fThrottle;
-    carOwner->bIsAccelerating = static_cast<int>(static_cast<float>(*static_cast<int *>(static_cast<void *>(&IsAccelerating))) != 0.0f);
-    carOwner->CurGear = static_cast< int >(m_CurGear);
+    ReadCarPhysTRQRef(carOwner) = PhysicsTRQ;
+    ReadCarPhysRPMRef(carOwner) = PhysicsRPM;
+    ReadCarTrottleRef(carOwner) = m_fThrottle;
+    ReadCarIsAcceleratingRef(carOwner) = static_cast<int>(static_cast<float>(*static_cast<int *>(static_cast<void *>(&IsAccelerating))) != 0.0f);
+    ReadCarCurGearRef(carOwner) = static_cast< int >(m_CurGear);
 }
 
 void SFXCTL_Physics::UpdateMixerOutputs() {
     int *outputs = GetOutputBlockPtr();
-    EAX_CarState *pCar =
-        m_pEAXCar != nullptr
-            ? *static_cast<EAX_CarState **>(static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pEAXCar)) + 0x34))
-            : nullptr;
+    EAXCar *carOwner = m_pEAXCar;
+    EAX_CarState *pCar = carOwner != nullptr ? ReadStateCar(carOwner) : nullptr;
 
-    float fVelY = *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(pCar)) + 0x58));
-    float fVelX = *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(pCar)) + 0x54));
-    float fVelZ = *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(pCar)) + 0x5C));
+    float fVelY = pCar->mVel0.y;
+    float fVelX = pCar->mVel0.x;
+    float fVelZ = pCar->mVel0.z;
     float fVelLenSq = fVelZ * fVelZ + fVelX * fVelX + fVelY * fVelY;
     float fVelLen = 0.0f;
     if (fVelLenSq > 0.0f) {
@@ -253,12 +247,10 @@ void SFXCTL_Physics::UpdateMixerOutputs() {
     }
     outputs[0] = iClamp;
 
-    pCar = m_pEAXCar != nullptr
-               ? *static_cast<EAX_CarState **>(static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pEAXCar)) + 0x34))
-               : nullptr;
-    fVelY = *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(pCar)) + 0x58));
-    fVelX = *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(pCar)) + 0x54));
-    fVelZ = *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(pCar)) + 0x5C));
+    pCar = carOwner != nullptr ? ReadStateCar(carOwner) : nullptr;
+    fVelY = pCar->mVel0.y;
+    fVelX = pCar->mVel0.x;
+    fVelZ = pCar->mVel0.z;
     fVelLenSq = fVelZ * fVelZ + fVelX * fVelX + fVelY * fVelY;
     fVelLen = 0.0f;
     if (fVelLenSq > 0.0f) {
@@ -275,12 +267,10 @@ void SFXCTL_Physics::UpdateMixerOutputs() {
     }
     outputs[1] = iClamp;
 
-    pCar = m_pEAXCar != nullptr
-               ? *static_cast<EAX_CarState **>(static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pEAXCar)) + 0x34))
-               : nullptr;
-    fVelY = *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(pCar)) + 0x58));
-    fVelX = *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(pCar)) + 0x54));
-    fVelZ = *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(pCar)) + 0x5C));
+    pCar = carOwner != nullptr ? ReadStateCar(carOwner) : nullptr;
+    fVelY = pCar->mVel0.y;
+    fVelX = pCar->mVel0.x;
+    fVelZ = pCar->mVel0.z;
     fVelLenSq = fVelZ * fVelZ + fVelX * fVelX + fVelY * fVelY;
     fVelLen = 0.0f;
     if (fVelLenSq > 0.0f) {
@@ -298,12 +288,10 @@ void SFXCTL_Physics::UpdateMixerOutputs() {
     outputs[2] = iClamp;
 
     float fMaxPhysRPM = 10000.0f;
-    pCar = m_pEAXCar != nullptr
-               ? *static_cast<EAX_CarState **>(static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pEAXCar)) + 0x34))
-               : nullptr;
-    fVelY = *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(pCar)) + 0x58));
-    fVelX = *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(pCar)) + 0x54));
-    fVelZ = *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(pCar)) + 0x5C));
+    pCar = carOwner != nullptr ? ReadStateCar(carOwner) : nullptr;
+    fVelY = pCar->mVel0.y;
+    fVelX = pCar->mVel0.x;
+    fVelZ = pCar->mVel0.z;
     fVelLenSq = fVelZ * fVelZ + fVelX * fVelX + fVelY * fVelY;
     fVelLen = 0.0f;
     if (fVelLenSq > 0.0f) {
@@ -321,7 +309,7 @@ void SFXCTL_Physics::UpdateMixerOutputs() {
     outputs[3] = iClamp;
 
     iOut = static_cast<int>(
-        (fMaxPhysRPM - *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pEAXCar)) + 0x64))) *
+        (fMaxPhysRPM - ReadCarPhysRPMRef(carOwner)) *
         3.6407778f);
     iClamp = 0;
     if (iOut > 0) {
@@ -340,15 +328,16 @@ void SFXCTL_Physics::UpdateMixerOutputs() {
 
     unsigned int wheelsOnGround = 0;
     int wheelIndex = 0;
+    Sound::Wheel *wheels = ReadCarWheels(pCar);
     do {
-        if (*static_cast<int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(pCar)) + 0xB8 + wheelIndex * 0x44)) != 0) {
+        if (wheels[wheelIndex].mWheelOnGround != 0) {
             wheelsOnGround += 1;
         }
         wheelIndex += 1;
     } while (wheelIndex < 4);
     outputs[5] = static_cast< int >(static_cast<float>(wheelsOnGround) * 8191.75f);
 
-    int pov = *static_cast<int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pEAXCar)) + 0xB8));
+    int pov = ReadCarPovTypeRef(carOwner);
     if (pov == 3) {
         pov = 0x7FFF;
     } else {

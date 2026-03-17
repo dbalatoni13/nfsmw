@@ -1,6 +1,8 @@
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Tunnel.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
 #include "Speed/Indep/Libs/Support/Utility/UVectorMath.h"
+#include "Speed/Indep/Src/EAXSound/OldSoundTemplates.hpp"
+#include "Speed/Indep/Src/EAXSound/States/Managers/STATEMGR_Base.hpp"
 #include "Speed/Indep/Src/Generated/Messages/MMiscSound.h"
 #include "Speed/Indep/Src/World/WCollisionMgr.h"
 
@@ -69,23 +71,60 @@ struct stDriveByInfo {
     unsigned int UniqueID;
 };
 
-static EAX_CarState *GetCarStateFromEAXCar(EAXCar *car) {
-    return car != nullptr
-               ? *static_cast<EAX_CarState **>(
-                     static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0x34))
-               : nullptr;
-}
+struct EAXCarStatePtrView {
+    char _pad[0x34];
+    EAX_CarState *mCarState;
+};
 
-static inline float GetCarStateFloat(EAX_CarState *car, int offset) {
-    return *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + offset));
-}
+struct EAXCarStateTunnelView {
+    char _pad0[0x14];
+    bMatrix4 mMatrix;
+    bVector3 mVel0;
+    char _pad64[0x2C];
+    float mFWSpeed;
+    char _pad94[0x17C];
+    int mContext;
+};
 
-static inline float GetCarSpeedMagnitude(EAX_CarState *car) {
-    float vx = GetCarStateFloat(car, 0x54);
-    float vy = GetCarStateFloat(car, 0x58);
-    float vz = GetCarStateFloat(car, 0x5C);
-    return bSqrt(vx * vx + vy * vy + vz * vz);
-}
+struct CSTATE_BaseTunnelView {
+    char _pad0[0x10];
+    int mInstNum;
+    char _pad14[0x20];
+    EAX_CarState *mCarState;
+};
+
+struct SFXTunnelObjectIDByteView {
+    char _pad[0x21];
+    unsigned char mObjectIDByte1;
+};
+
+struct SFXTunnelRuntimeView {
+    char _pad0[0x40];
+    int bPlayDriveBy;
+    char _pad44[0x1C];
+    int bPlayTunnelExit;
+    char _pad64[0x0C];
+    int bIsTunnelRamping;
+    int m_PrevReverbZone;
+    int m_CurReverbZone;
+    char _pad7C[0x1C];
+    int bFadingOut;
+    int bFadingIn;
+    int bIsReadyForSwitch;
+    int m_IsLeadCar;
+    char _padA8[0x3C];
+    int bToggleOffset;
+};
+
+struct EAXSoundModeView {
+    char _pad[0x84];
+    int mGameMode;
+};
+
+#define TUNNEL_STATE_VIEW(ptr) (*static_cast<CSTATE_BaseTunnelView *>(static_cast<void *>(ptr)))
+#define TUNNEL_EAXCAR_VIEW(ptr) (*static_cast<EAXCarStatePtrView *>(static_cast<void *>(ptr)))
+#define TUNNEL_CAR_VIEW(ptr) (*static_cast<EAXCarStateTunnelView *>(static_cast<void *>(ptr)))
+#define TUNNEL_RUNTIME_VIEW(ptr) (*static_cast<SFXTunnelRuntimeView *>(static_cast<void *>(ptr)))
 
 static inline float Distancexyz(const UMath::Vector4 &a, const UMath::Vector4 &b) {
     UMath::Vector4 temp;
@@ -174,13 +213,11 @@ void SFXCTL_Tunnel::InitSFX() {
     m_bIsInTunnel = false;
     m_bWasInTunnel = false;
 
-    int context = *static_cast<int *>(static_cast<void *>(
-        static_cast<char *>(static_cast<void *>(*static_cast<EAX_CarState **>(
-            static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pStateBase)) + 0x34)))) +
-        0x210));
+    EAXCarStateTunnelView *car =
+        static_cast<EAXCarStateTunnelView *>(static_cast<void *>(TUNNEL_STATE_VIEW(m_pStateBase).mCarState));
+    int context = static_cast<int>(car->mContext);
     int isLeadCar = 0;
-    if (context == 0 &&
-        *static_cast<int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pStateBase)) + 0x10)) == 0) {
+    if (context == 0 && TUNNEL_STATE_VIEW(m_pStateBase).mInstNum == 0) {
         isLeadCar = 1;
     }
 
@@ -191,18 +228,14 @@ void SFXCTL_Tunnel::InitSFX() {
 void SFXCTL_Tunnel::UpdateParams(float t) {
     SFXCTL::UpdateParams(t);
 
-    g_pEAXSound->GetPlayerTunerCar(
-        *static_cast<int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pStateBase)) + 0x10)));
+    g_pEAXSound->GetPlayerTunerCar(TUNNEL_STATE_VIEW(m_pStateBase).mInstNum);
 
     UpdateIsInTunnel(t);
     UpdateDriveBySnds(t);
     UpdateCityVerb(t);
     UpdateReflectionParams(t);
 
-    int context = *static_cast<int *>(static_cast<void *>(
-        static_cast<char *>(static_cast<void *>(*static_cast<EAX_CarState **>(
-            static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pStateBase)) + 0x34)))) +
-        0x210));
+    int context = static_cast<int>(TUNNEL_CAR_VIEW(TUNNEL_STATE_VIEW(m_pStateBase).mCarState).mContext);
     if (context == 1 || context == 2) {
         UpdateOcclusion(t);
     }
@@ -216,10 +249,7 @@ void SFXCTL_Tunnel::UpdateMixerOutputs() {
 
     SetDMIX_Input(4, IsOccluded != 0 ? 0x7FFF : 0);
 
-    if (*static_cast<int *>(static_cast<void *>(
-            static_cast<char *>(static_cast<void *>(*static_cast<EAX_CarState **>(
-                static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pStateBase)) + 0x34)))) +
-            0x210)) == 0) {
+    if (static_cast<int>(TUNNEL_CAR_VIEW(TUNNEL_STATE_VIEW(m_pStateBase).mCarState).mContext) == 0) {
         SetDMIX_Input(5, m_AEMSDryVol);
         SetDMIX_Input(6, m_AEMSWetVol);
     }
@@ -265,11 +295,7 @@ TrackPathZone *SFXCTL_Tunnel::GetTunnelType(bVector3 &pos, eTrackPathZoneType zo
         if (zone->Elevation == 0.0f) {
             break;
         }
-        if (*static_cast<float *>(static_cast<void *>(
-                static_cast<char *>(static_cast<void *>(*static_cast<EAX_CarState **>(
-                    static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pStateBase)) + 0x34)))) +
-                0x4C)) <=
-            zone->Elevation) {
+        if (TUNNEL_CAR_VIEW(TUNNEL_STATE_VIEW(m_pStateBase).mCarState).mMatrix.v3.z <= zone->Elevation) {
             return zone;
         }
     }
@@ -283,39 +309,29 @@ void SFXCTL_Tunnel::UpdateIsInTunnel(float t) {
     bool InTunnel;
 
     CurZoneType = TRACK_PATH_ZONE_TUNNEL;
-    zone = GetTunnelType(*static_cast<bVector3 *>(static_cast<void *>(
-                             static_cast<char *>(static_cast<void *>(*static_cast<EAX_CarState **>(
-                                 static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pStateBase)) + 0x34)))) +
-                             0x44)),
+    zone = GetTunnelType(
+        *static_cast<bVector3 *>(static_cast<void *>(&TUNNEL_CAR_VIEW(TUNNEL_STATE_VIEW(m_pStateBase).mCarState).mMatrix.v3)),
                          TRACK_PATH_ZONE_TUNNEL);
     if (zone == nullptr) {
         CurZoneType = TRACK_PATH_ZONE_OVERPASS;
-        zone = GetTunnelType(*static_cast<bVector3 *>(static_cast<void *>(
-                                 static_cast<char *>(static_cast<void *>(*static_cast<EAX_CarState **>(
-                                     static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pStateBase)) + 0x34)))) +
-                                 0x44)),
-                             TRACK_PATH_ZONE_OVERPASS);
+        zone = GetTunnelType(
+            *static_cast<bVector3 *>(static_cast<void *>(&TUNNEL_CAR_VIEW(TUNNEL_STATE_VIEW(m_pStateBase).mCarState).mMatrix.v3)),
+            TRACK_PATH_ZONE_OVERPASS);
         if (zone == nullptr) {
             CurZoneType = TRACK_PATH_ZONE_OVERPASS_SMALL;
-            zone = GetTunnelType(*static_cast<bVector3 *>(static_cast<void *>(
-                                     static_cast<char *>(static_cast<void *>(*static_cast<EAX_CarState **>(
-                                         static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pStateBase)) + 0x34)))) +
-                                     0x44)),
-                                 TRACK_PATH_ZONE_OVERPASS_SMALL);
+            zone = GetTunnelType(
+                *static_cast<bVector3 *>(static_cast<void *>(&TUNNEL_CAR_VIEW(TUNNEL_STATE_VIEW(m_pStateBase).mCarState).mMatrix.v3)),
+                TRACK_PATH_ZONE_OVERPASS_SMALL);
             if (zone == nullptr) {
                 CurZoneType = TRACK_PATH_ZONE_GARAGE;
-                zone = GetTunnelType(*static_cast<bVector3 *>(static_cast<void *>(
-                                         static_cast<char *>(static_cast<void *>(*static_cast<EAX_CarState **>(
-                                             static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pStateBase)) + 0x34)))) +
-                                         0x44)),
-                                     TRACK_PATH_ZONE_GARAGE);
+                zone = GetTunnelType(
+                    *static_cast<bVector3 *>(static_cast<void *>(&TUNNEL_CAR_VIEW(TUNNEL_STATE_VIEW(m_pStateBase).mCarState).mMatrix.v3)),
+                    TRACK_PATH_ZONE_GARAGE);
                 if (zone == nullptr) {
                     CurZoneType = TRACK_PATH_ZONE_DYNAMIC;
-                    zone = GetTunnelType(*static_cast<bVector3 *>(static_cast<void *>(
-                                             static_cast<char *>(static_cast<void *>(*static_cast<EAX_CarState **>(
-                                                 static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pStateBase)) + 0x34)))) +
-                                             0x44)),
-                                         TRACK_PATH_ZONE_DYNAMIC);
+                    zone = GetTunnelType(
+                        *static_cast<bVector3 *>(static_cast<void *>(&TUNNEL_CAR_VIEW(TUNNEL_STATE_VIEW(m_pStateBase).mCarState).mMatrix.v3)),
+                        TRACK_PATH_ZONE_DYNAMIC);
                     if (zone != nullptr) {
                         if (zone->VisitInfo == 1) {
                             zone = nullptr;
@@ -336,10 +352,7 @@ LAB_IN_TUNNEL:
     InTunnel = true;
     if (m_bIsInTunnel == 0) {
         m_bIsInTunnel = true;
-        int carContext = *static_cast<int *>(static_cast<void *>(
-            static_cast<char *>(static_cast<void *>(*static_cast<EAX_CarState **>(
-                static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pStateBase)) + 0x34)))) +
-            0x210));
+        int carContext = static_cast<int>(TUNNEL_CAR_VIEW(TUNNEL_STATE_VIEW(m_pStateBase).mCarState).mContext);
         if (carContext == 0) {
             MMiscSound(1).Send(UCrc32("TunnelUpdate"));
 
@@ -363,10 +376,7 @@ LAB_DEFAULT_VERB:
 LAB_UPDATE_END:
     if (!InTunnel && m_bIsInTunnel) {
         m_bIsInTunnel = false;
-        int carContext = *static_cast<int *>(static_cast<void *>(
-            static_cast<char *>(static_cast<void *>(*static_cast<EAX_CarState **>(
-                static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pStateBase)) + 0x34)))) +
-            0x210));
+        int carContext = static_cast<int>(TUNNEL_CAR_VIEW(TUNNEL_STATE_VIEW(m_pStateBase).mCarState).mContext);
         if (carContext == 0) {
             MMiscSound(0).Send(UCrc32("TunnelUpdate"));
             EndTunnelVerb();
@@ -374,16 +384,13 @@ LAB_UPDATE_END:
     }
 
     m_bWasInTunnel = m_bIsInTunnel;
-    if (*static_cast<int *>(static_cast<void *>(
-            static_cast<char *>(static_cast<void *>(*static_cast<EAX_CarState **>(
-                static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pStateBase)) + 0x34)))) +
-            0x210)) == 0) {
+    if (static_cast<int>(TUNNEL_CAR_VIEW(TUNNEL_STATE_VIEW(m_pStateBase).mCarState).mContext) == 0) {
         m_PlayerZoneType = CurZoneType;
     }
 }
 
 void SFXCTL_Tunnel::SetCurrentReverbType(eREVERBFX type, int reverboffset) {
-    *static_cast<int *>(static_cast<void *>(&bFadingOut)) = 1;
+    TUNNEL_RUNTIME_VIEW(this).bFadingOut = 1;
     m_ReverbOffset = static_cast< float >(reverboffset);
     m_TargetType = type;
     ReflRamp.Initialize(0.0f, 1.0f, g_REVERBFXMODULES[m_ReverbType].FadeOut, LINEAR);
@@ -406,13 +413,11 @@ void SFXCTL_Tunnel::UpdateCityVerb(float t) {
 
     if ((isValid != 0) &&
         (m_pEAXCar != nullptr) &&
-        (*static_cast<unsigned char *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(this)) + 0x21)) == 2)) {
-        EAX_CarState *pcar = *static_cast<EAX_CarState **>(
-            static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pEAXCar)) + 0x34));
+        (static_cast<SFXTunnelObjectIDByteView *>(static_cast<void *>(this))->mObjectIDByte1 == 2)) {
+        EAXCarStateTunnelView *pcar =
+            static_cast<EAXCarStateTunnelView *>(static_cast<void *>(TUNNEL_EAXCAR_VIEW(m_pEAXCar).mCarState));
         if (pcar != nullptr) {
-            ReverbAccessor.CaptureData(
-                *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(pcar)) + 0x44)),
-                *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(pcar)) + 0x48)));
+            ReverbAccessor.CaptureData(pcar->mMatrix.v3.x, pcar->mMatrix.v3.y);
             m_CurReverbZone = ReverbAccessor.GetDataInt(0);
             ncurrentoffset = ReverbAccessor.GetDataInt(2);
         }
@@ -420,7 +425,7 @@ void SFXCTL_Tunnel::UpdateCityVerb(float t) {
 
     if (static_cast< unsigned int >(m_CurReverbZone) > 0xB) {
         register int zone asm("r0");
-        if (*static_cast<int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(g_pEAXSound)) + 0x84)) == SND_FRONTEND) {
+        if (static_cast<EAXSoundModeView *>(static_cast<void *>(g_pEAXSound))->mGameMode == SND_FRONTEND) {
             zone = 0;
         } else {
             zone = 9;
@@ -441,8 +446,8 @@ void SFXCTL_Tunnel::UpdateCityVerb(float t) {
 }
 
 void SFXCTL_Tunnel::AdjustReverbOffset(int reverboffset) {
-    if (*static_cast<int *>(static_cast<void *>(&bFadingOut)) == 0 &&
-        *static_cast<int *>(static_cast<void *>(&bFadingIn)) == 0) {
+    if (TUNNEL_RUNTIME_VIEW(this).bFadingOut == 0 &&
+        TUNNEL_RUNTIME_VIEW(this).bFadingIn == 0) {
         m_ReverbOffset = static_cast< float >(reverboffset);
 
         int ndBGinsu = -10000;
@@ -469,18 +474,18 @@ void SFXCTL_Tunnel::AdjustReverbOffset(int reverboffset) {
 }
 
 void SFXCTL_Tunnel::UpdateReflectionParams(float t) {
-    *static_cast<int *>(static_cast<void *>(&bIsReadyForSwitch)) = 0;
+    TUNNEL_RUNTIME_VIEW(this).bIsReadyForSwitch = 0;
     ReflRamp.Update(t);
 
-    if (*static_cast<int *>(static_cast<void *>(&bFadingOut)) != 0) {
+    if (TUNNEL_RUNTIME_VIEW(this).bFadingOut != 0) {
         if (*static_cast<int *>(static_cast<void *>(&ReflRamp.bComplete)) != 0 &&
-            *static_cast<int *>(static_cast<void *>(&bIsTunnelRamping)) == 0) {
+            TUNNEL_RUNTIME_VIEW(this).bIsTunnelRamping == 0) {
             if (m_IsLeadCar != 0) {
-                *static_cast<int *>(static_cast<void *>(&bIsReadyForSwitch)) = 1;
+                TUNNEL_RUNTIME_VIEW(this).bIsReadyForSwitch = 1;
             }
-            *static_cast<int *>(static_cast<void *>(&bFadingIn)) = 1;
+            TUNNEL_RUNTIME_VIEW(this).bFadingIn = 1;
             m_ReverbType = m_TargetType;
-            *static_cast<int *>(static_cast<void *>(&bFadingOut)) = *static_cast<int *>(static_cast<void *>(&bIsTunnelRamping));
+            TUNNEL_RUNTIME_VIEW(this).bFadingOut = TUNNEL_RUNTIME_VIEW(this).bIsTunnelRamping;
             ReflRamp.Initialize(0.0f, 1.0f, g_REVERBFXMODULES[m_TargetType].FadeIn, LINEAR);
 
             m_CurWetGinsu = m_CurWetGinsuTarget;
@@ -499,17 +504,17 @@ void SFXCTL_Tunnel::UpdateReflectionParams(float t) {
             m_CurDryGinsuTarget = GetFloatFromHundredthsdB__11NFSMixShapei(g_REVERBFXMODULES[m_ReverbType].GinsuDry);
             m_CurDryAemsTarget = GetFloatFromHundredthsdB__11NFSMixShapei(g_REVERBFXMODULES[m_ReverbType].AemsDry);
         }
-    } else if (*static_cast<int *>(static_cast<void *>(&bFadingIn)) != 0 &&
+    } else if (TUNNEL_RUNTIME_VIEW(this).bFadingIn != 0 &&
                *static_cast<int *>(static_cast<void *>(&ReflRamp.bComplete)) != 0) {
         m_CurWetGinsu = m_CurWetGinsuTarget;
         m_CurDryGinsu = m_CurDryGinsuTarget;
         m_CurWetAems = m_CurWetAemsTarget;
         m_CurDryAems = m_CurDryAemsTarget;
-        *static_cast<int *>(static_cast<void *>(&bFadingIn)) = 0;
+        TUNNEL_RUNTIME_VIEW(this).bFadingIn = 0;
     }
 
-    if (*static_cast<int *>(static_cast<void *>(&bFadingOut)) != 0 ||
-        *static_cast<int *>(static_cast<void *>(&bFadingIn)) != 0) {
+    if (TUNNEL_RUNTIME_VIEW(this).bFadingOut != 0 ||
+        TUNNEL_RUNTIME_VIEW(this).bFadingIn != 0) {
         float ramp = ReflRamp.CurValue;
         m_GinsuWetVol = static_cast<int>(((m_CurWetGinsuTarget - m_CurWetGinsu) * ramp + m_CurWetGinsu) * 32767.0f);
         m_GinsuDryVol = static_cast<int>(((m_CurDryGinsuTarget - m_CurDryGinsu) * ramp + m_CurDryGinsu) * 32767.0f);
@@ -528,7 +533,7 @@ void SFXCTL_Tunnel::UpdateReflectionParams(float t) {
     }
 
     int toggleValue;
-    if (*static_cast<int *>(static_cast<void *>(&bToggleOffset)) == 0) {
+    if (TUNNEL_RUNTIME_VIEW(this).bToggleOffset == 0) {
         toggleValue = 1;
     } else {
         int aemsWet = m_AEMSWetVol + 1;
@@ -555,9 +560,8 @@ void SFXCTL_Tunnel::UpdateReflectionParams(float t) {
         toggleValue = 0;
     }
 
-    *static_cast<int *>(static_cast<void *>(&bToggleOffset)) = toggleValue;
-    *static_cast<int *>(static_cast<void *>(&bIsTunnelRamping)) =
-        *static_cast<int *>(static_cast<void *>(&ReflRamp.bComplete)) ^ 1;
+    TUNNEL_RUNTIME_VIEW(this).bToggleOffset = toggleValue;
+    TUNNEL_RUNTIME_VIEW(this).bIsTunnelRamping = ReflRamp.bComplete ^ 1;
 }
 
 void SFXCTL_Tunnel::UpdateOcclusion(float t) {
@@ -591,18 +595,9 @@ void SFXCTL_Tunnel::UpdateOcclusion(float t) {
     originToBarrier[0].y = SndCamera::m_v3WorldCarPos[0].z;
     originToBarrier[0].z = SndCamera::m_v3WorldCarPos[0].x;
 
-    originToBarrier[1].z = *static_cast<float *>(static_cast<void *>(
-        static_cast<char *>(static_cast<void *>(*static_cast<EAX_CarState **>(
-            static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pStateBase)) + 0x34)))) +
-        0x44));
-    originToBarrier[1].x = -*static_cast<float *>(static_cast<void *>(
-        static_cast<char *>(static_cast<void *>(*static_cast<EAX_CarState **>(
-            static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pStateBase)) + 0x34)))) +
-        0x48));
-    originToBarrier[1].y = *static_cast<float *>(static_cast<void *>(
-        static_cast<char *>(static_cast<void *>(*static_cast<EAX_CarState **>(
-            static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pStateBase)) + 0x34)))) +
-        0x4C));
+    originToBarrier[1].z = TUNNEL_CAR_VIEW(TUNNEL_STATE_VIEW(m_pStateBase).mCarState).mMatrix.v3.x;
+    originToBarrier[1].x = -TUNNEL_CAR_VIEW(TUNNEL_STATE_VIEW(m_pStateBase).mCarState).mMatrix.v3.y;
+    originToBarrier[1].y = TUNNEL_CAR_VIEW(TUNNEL_STATE_VIEW(m_pStateBase).mCarState).mMatrix.v3.z;
 
     float testDist = Distancexyz(originToBarrier[0], originToBarrier[1]);
     if (MaxDistanceToOccludeTest < testDist) {
@@ -642,8 +637,8 @@ void SFXCTL_Tunnel::EndTunnelVerb() {
 }
 
 void SFXCTL_Tunnel::UpdateDriveBySnds(float t) {
-    *static_cast<int *>(static_cast<void *>(&bPlayDriveBy)) = 0;
-    *static_cast<int *>(static_cast<void *>(&bPlayTunnelExit)) = 0;
+    TUNNEL_RUNTIME_VIEW(this).bPlayDriveBy = 0;
+    TUNNEL_RUNTIME_VIEW(this).bPlayTunnelExit = 0;
 
     tTimeToWaitBeforeAnotherDriveBy -= t;
     if (tTimeToWaitBeforeAnotherDriveBy < 0.0f) {
@@ -656,8 +651,8 @@ void SFXCTL_Tunnel::UpdateDriveBySnds(float t) {
 
     FutureZoneType = TRACK_PATH_ZONE_RESET;
 
-    EAX_CarState *car =
-        *static_cast<EAX_CarState **>(static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pEAXCar)) + 0x34));
+    EAXCarStateTunnelView *car =
+        static_cast<EAXCarStateTunnelView *>(static_cast<void *>(TUNNEL_EAXCAR_VIEW(m_pEAXCar).mCarState));
     bVector3 futureCarPos;
     bVector2 futureCarPos2D;
     bVector2 futureCarPos2DCopy;
@@ -668,25 +663,22 @@ void SFXCTL_Tunnel::UpdateDriveBySnds(float t) {
     bVector2 unNormalizedCurCarDir;
     bVector2 curCarDir;
 
-    unNormalizedCurCarDir.x = *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0x14));
-    unNormalizedCurCarDir.y = *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0x18));
+    unNormalizedCurCarDir.x = car->mMatrix.v0.x;
+    unNormalizedCurCarDir.y = car->mMatrix.v0.y;
     unNormalizedCurCarDirCopy = unNormalizedCurCarDir;
     bNormalize(&curCarDir, &unNormalizedCurCarDirCopy);
 
-    float futureDistance = *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0x90)) * 0.4f;
+    float futureDistance = car->mFWSpeed * 0.4f;
     futureCarDir = curCarDir;
     scaledFutureCarDir.x = futureCarDir.x * futureDistance;
     scaledFutureCarDir.y = futureCarDir.y * futureDistance;
     scaledFutureCarDirCopy = scaledFutureCarDir;
-    futureCarPos2D.x = *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0x44)) + scaledFutureCarDirCopy.x;
-    futureCarPos2D.y = *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0x48)) + scaledFutureCarDirCopy.y;
+    futureCarPos2D.x = car->mMatrix.v3.x + scaledFutureCarDirCopy.x;
+    futureCarPos2D.y = car->mMatrix.v3.y + scaledFutureCarDirCopy.y;
     futureCarPos2DCopy = futureCarPos2D;
     futureCarPos.x = futureCarPos2DCopy.x;
     futureCarPos.y = futureCarPos2DCopy.y;
-    futureCarPos.z = *static_cast<float *>(static_cast<void *>(
-        static_cast<char *>(static_cast<void *>(*static_cast<EAX_CarState **>(
-            static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pStateBase)) + 0x34)))) +
-        0x4C));
+    futureCarPos.z = TUNNEL_CAR_VIEW(TUNNEL_STATE_VIEW(m_pStateBase).mCarState).mMatrix.v3.z;
 
     FutureZoneType = TRACK_PATH_ZONE_TUNNEL;
     TrackPathZone *futureZone = GetTunnelType(futureCarPos, TRACK_PATH_ZONE_TUNNEL);
@@ -711,39 +703,26 @@ void SFXCTL_Tunnel::UpdateDriveBySnds(float t) {
 
         if (shouldCheckDriveBy) {
             if (g_WooshVol_vs_Vel.GetValue(
-                    bSqrt(*static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0x54)) *
-                              *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0x54)) +
-                          *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0x58)) *
-                              *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0x58)) +
-                          *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0x5C)) *
-                              *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0x5C)))) > 0.01f) {
+                    bSqrt(car->mVel0.x * car->mVel0.x + car->mVel0.y * car->mVel0.y + car->mVel0.z * car->mVel0.z)) >
+                0.01f) {
                 bPlayDriveBy = true;
                 tTimeToWaitBeforeAnotherDriveBy = 3.0f;
                 pLastZoneWePlayedWooshFor = futureZone;
 
                 vDriveByLoc.x = futureCarPos.x;
                 vDriveByLoc.y = futureCarPos.y;
-                vDriveByLoc.z = *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0x4C)) + 10.0f;
+                vDriveByLoc.z = car->mMatrix.v3.z + 10.0f;
                 m_fIntensity = g_WooshVol_vs_Vel.GetValue(
-                    bSqrt(*static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0x54)) *
-                              *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0x54)) +
-                          *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0x58)) *
-                              *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0x58)) +
-                          *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0x5C)) *
-                              *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0x5C))));
+                    bSqrt(car->mVel0.x * car->mVel0.x + car->mVel0.y * car->mVel0.y + car->mVel0.z * car->mVel0.z));
 
                 stDriveByInfo driveByInfo;
                 driveByInfo.eDriveByType = DRIVE_BY_TUNNEL_IN;
                 driveByInfo.pEAXCar = m_pEAXCar;
-                EAX_CarState *stateCar = *static_cast<EAX_CarState **>(
-                    static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pStateBase)) + 0x34));
+                EAXCarStateTunnelView *stateCar =
+                    static_cast<EAXCarStateTunnelView *>(static_cast<void *>(TUNNEL_STATE_VIEW(m_pStateBase).mCarState));
                 driveByInfo.ClosingVelocity = bSqrt(
-                    *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(stateCar)) + 0x54)) *
-                        *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(stateCar)) + 0x54)) +
-                    *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(stateCar)) + 0x58)) *
-                        *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(stateCar)) + 0x58)) +
-                    *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(stateCar)) + 0x5C)) *
-                        *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(stateCar)) + 0x5C)));
+                    stateCar->mVel0.x * stateCar->mVel0.x + stateCar->mVel0.y * stateCar->mVel0.y +
+                    stateCar->mVel0.z * stateCar->mVel0.z);
                 driveByInfo.vLocation = vDriveByLoc;
                 driveByInfo.UniqueID = 0;
                 CSTATE_Base *state = EAXSound::m_pStateMgr[eMM_DRIVEBY]->GetFreeState(&driveByInfo);
@@ -763,39 +742,26 @@ void SFXCTL_Tunnel::UpdateDriveBySnds(float t) {
 
         if (shouldCheckExitDriveBy) {
             if (g_WooshVol_vs_Vel.GetValue(
-                    bSqrt(*static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0x54)) *
-                              *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0x54)) +
-                          *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0x58)) *
-                              *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0x58)) +
-                          *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0x5C)) *
-                              *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0x5C)))) > 0.01f) {
+                    bSqrt(car->mVel0.x * car->mVel0.x + car->mVel0.y * car->mVel0.y + car->mVel0.z * car->mVel0.z)) >
+                0.01f) {
                 bPlayTunnelExit = true;
                 tTimeToWaitBeforeAnotherExitDriveBy = 3.0f;
                 pLastZoneWePlayedExitWooshFor = futureZone;
 
                 vDriveByLoc.x = futureCarPos.x;
                 vDriveByLoc.y = futureCarPos.y;
-                vDriveByLoc.z = *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0x4C)) + 10.0f;
+                vDriveByLoc.z = car->mMatrix.v3.z + 10.0f;
                 m_fExitIntensity = g_WooshVol_vs_Vel.GetValue(
-                    bSqrt(*static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0x54)) *
-                              *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0x54)) +
-                          *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0x58)) *
-                              *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0x58)) +
-                          *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0x5C)) *
-                              *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0x5C))));
+                    bSqrt(car->mVel0.x * car->mVel0.x + car->mVel0.y * car->mVel0.y + car->mVel0.z * car->mVel0.z));
 
                 stDriveByInfo driveByInfo;
                 driveByInfo.eDriveByType = DRIVE_BY_TUNNEL_OUT;
                 driveByInfo.pEAXCar = m_pEAXCar;
-                EAX_CarState *stateCar = *static_cast<EAX_CarState **>(
-                    static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pStateBase)) + 0x34));
+                EAXCarStateTunnelView *stateCar =
+                    static_cast<EAXCarStateTunnelView *>(static_cast<void *>(TUNNEL_STATE_VIEW(m_pStateBase).mCarState));
                 driveByInfo.ClosingVelocity = bSqrt(
-                    *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(stateCar)) + 0x54)) *
-                        *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(stateCar)) + 0x54)) +
-                    *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(stateCar)) + 0x58)) *
-                        *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(stateCar)) + 0x58)) +
-                    *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(stateCar)) + 0x5C)) *
-                        *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(stateCar)) + 0x5C)));
+                    stateCar->mVel0.x * stateCar->mVel0.x + stateCar->mVel0.y * stateCar->mVel0.y +
+                    stateCar->mVel0.z * stateCar->mVel0.z);
                 driveByInfo.vLocation = vDriveByLoc;
                 driveByInfo.UniqueID = 0;
                 CSTATE_Base *state = EAXSound::m_pStateMgr[eMM_DRIVEBY]->GetFreeState(&driveByInfo);

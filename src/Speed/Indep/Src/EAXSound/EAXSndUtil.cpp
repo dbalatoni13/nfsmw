@@ -1,4 +1,5 @@
 #include "Speed/Indep/Src/EAXSound/EAXSndUtil.h"
+#include "Speed/Indep/Src/EAXSound/EAXCarState.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
 class NFSMixShape {
@@ -6,13 +7,6 @@ class NFSMixShape {
     enum eMIXTABLEID { SHAPE_UP_EQPWR_SQ = 0 };
     static int GetCurveOutput(eMIXTABLEID id, int nQ15Ratio, bool invert);
 };
-
-namespace {
-struct EAX_CarStateRadiusView {
-    char _pad0[0x44];
-    bVector3 mPosition; // offset 0x44
-};
-} // namespace
 
 cPathLine::cPathLine() {
     ClearStages();
@@ -259,7 +253,7 @@ bool IsCarInRadius(EAX_CarState *pCar, const bVector3 *vPos, float fRadius) {
     if (pCar == nullptr) {
         return false;
     }
-    const EAX_CarStateRadiusView *carView = static_cast<const EAX_CarStateRadiusView *>(static_cast<const void *>(pCar));
-    float dist = bDistBetween(vPos, &carView->mPosition);
+    const bVector3 *carPos = static_cast<const bVector3 *>(static_cast<const void *>(&pCar->mMatrix.v3));
+    float dist = bDistBetween(vPos, carPos);
     return dist < fRadius;
 }

@@ -9,6 +9,54 @@ struct stShiftPair {
     short Time;
 };
 
+struct stShiftPatternLayout {
+    Attrib::StringKey BankName;
+    float Down_Shift_Sound_Delay;
+    float Up_Engaging_Attack_Vol;
+    unsigned int LFO_RPM_Amp;
+    unsigned int LFO_Vol_Amp;
+    unsigned int Down_Engaging_Rise_T;
+    unsigned int Up_Engaging_Attack_T;
+    unsigned int LFO_RPM_Decay_Time;
+    float Down_Reattach_Scale;
+    unsigned int Down_Engaging_Fall_T;
+    float Up_Shift_Sound_Delay;
+    unsigned int Up_Vol_Shift;
+    unsigned int Down_Disengage_Fall_T;
+    unsigned int LFO_Vol_Freq;
+    unsigned int Down_Disengage_Fall_RPM;
+    unsigned int Down_Vol_Shift;
+    unsigned int Down_Engaging_Rise_RPM;
+    unsigned int LFO_RPM_Freq;
+    unsigned int LFO_Vol_Decay_Time;
+};
+
+struct EAXCarShiftView {
+    char _pad_state[0x34];
+    EAX_CarState *mCarState;
+    char _pad_38[0x34];
+    int mCurGear;
+    char _pad_70[0x68];
+    char mShiftInfo[0x14];
+};
+
+struct EAXCarStateShiftView {
+    char _pad0[0x54];
+    bVector3 mVel0;
+    char _pad64[0x14];
+    float mBrake;
+    char _pad7C[0x194];
+    int mContext;
+};
+
+#define SHIFT_EAXCAR_VIEW(ptr) (*static_cast<EAXCarShiftView *>(static_cast<void *>(ptr)))
+#define SHIFT_CAR_VIEW(ptr) (*static_cast<EAXCarStateShiftView *>(static_cast<void *>(ptr)))
+
+static inline const stShiftPatternLayout *GetShiftingPatternLayout(const shiftpattern *pattern) {
+    return reinterpret_cast<const stShiftPatternLayout *>(
+        static_cast<const Attrib::Instance *>(static_cast<const void *>(pattern))->GetLayoutPointer());
+}
+
 void FillGraphFromSpline(const UMath::Matrix4 &matrix, bVector2 *points, int num_points, float XScale, float YScale);
 
 SFXCTL_Shifting::SFXCTL_Shifting()
@@ -110,8 +158,7 @@ void SFXCTL_Shifting::SetupSFX(CSTATE_Base *_StateBase) {
     SndBase::SetupSFX(_StateBase);
     eAemsUpgradeLevel ugl = m_pEAXCar->m_TurboUGL;
     m_UGL = ugl;
-    m_pShiftingPatternData =
-        static_cast<shiftpattern *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pEAXCar)) + 0xd8));
+    m_pShiftingPatternData = static_cast<shiftpattern *>(static_cast<void *>(SHIFT_EAXCAR_VIEW(m_pEAXCar).mShiftInfo));
     m_nPostShiftFXLevel = ugl % 2;
 }
 
@@ -145,22 +192,21 @@ void SFXCTL_Shifting::UpdateGearShiftState(float t) {
     int isWhining = static_cast<int>(GetCurGear());
     *static_cast<int *>(static_cast<void *>(&m_bShouldBeWhining)) = (isWhining == 0);
 
-    EAX_CarState *carstate = *static_cast<EAX_CarState **>(
-        static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pEAXCar)) + 0x34));
-    if (*static_cast<int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(carstate)) + 0x210)) == 0) {
+    EAXCarStateShiftView *carstate =
+        static_cast<EAXCarStateShiftView *>(static_cast<void *>(SHIFT_EAXCAR_VIEW(m_pEAXCar).mCarState));
+    if (static_cast<int>(carstate->mContext) == 0) {
         float t_last_mashed =
             static_cast<float>(WorldTimer.GetPackedTime() - m_timeBrakeLastMashed.GetPackedTime()) * 0.00025f;
 
         if (_brakeInit == 0) {
-            _prevBrakeState = *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(carstate)) + 0x78));
+            _prevBrakeState = carstate->mBrake;
             _brakeInit = 1;
         }
 
-        if (*static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(carstate)) + 0x78)) >= 1.0f) {
+        if (carstate->mBrake >= 1.0f) {
             if (*static_cast<int *>(static_cast<void *>(&m_bBrakePedalMashed)) == 0) {
                 if (t_last_mashed > 1.0f && _prevBrakeState == 0.0f) {
-                    bVector3 &vel = *static_cast<bVector3 *>(
-                        static_cast<void *>(static_cast<char *>(static_cast<void *>(carstate)) + 0x54));
+                    bVector3 &vel = carstate->mVel0;
                     if (bLength(vel) * 2.23699f > 5.0f) {
                         *static_cast<int *>(static_cast<void *>(&m_bBrakePedalMashed)) = 1;
                     }
@@ -170,12 +216,12 @@ void SFXCTL_Shifting::UpdateGearShiftState(float t) {
 
         if (*static_cast<int *>(static_cast<void *>(&m_bBrakePedalMashed)) != 0) {
             m_timeBrakeLastMashed = WorldTimer;
-            if (*static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(carstate)) + 0x78)) == 0.0f) {
+            if (carstate->mBrake == 0.0f) {
                 *static_cast<int *>(static_cast<void *>(&m_bBrakePedalMashed)) = 0;
             }
         }
 
-        _prevBrakeState = *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(carstate)) + 0x78));
+        _prevBrakeState = carstate->mBrake;
     }
 
     eShiftStageChanged = SHFT_NONE;
@@ -257,16 +303,14 @@ void SFXCTL_Shifting::UpdateGearShiftState(float t) {
                 float currpm = bClamp(static_cast<float>(RPMOffset) + m_RPMGraph.GetValue(t_CurStage), 1000.0f, 10000.0f);
                 m_InterpShiftRPM.Initialize(currpm, currpm, 0, LINEAR);
 
-                int length = bClamp(
-                    *static_cast<int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pEAXCar)) + 0x6C)) + kSportShift, 0,
-                    3);
+                int length = bClamp(SHIFT_EAXCAR_VIEW(m_pEAXCar).mCurGear + kSportShift, 0, 3);
                 float physTRQ = m_pEngineCtl->m_pPhysicsCtl->GetPhysTRQ();
                 m_InterpShiftTorque.Initialize(kUpShiftTrqAttachInitialPercent[length] * physTRQ, physTRQ,
                                                kUpShiftTrqAttackTime[length], LINEAR);
 
-                void *layout = static_cast<Attrib::Instance *>(static_cast<void *>(m_pShiftingPatternData))->GetLayoutPointer();
-                m_InterpShiftVol.Initialize(*static_cast<float *>(static_cast<void *>(static_cast<char *>(layout) + 0x14)), 0.0f,
-                                            *static_cast<int *>(static_cast<void *>(static_cast<char *>(layout) + 0x24)), LINEAR);
+                const stShiftPatternLayout *layout = GetShiftingPatternLayout(m_pShiftingPatternData);
+                m_InterpShiftVol.Initialize(layout->Up_Engaging_Attack_Vol, 0.0f,
+                                            static_cast<int>(layout->Up_Engaging_Attack_T), LINEAR);
 
                 PostShiftFX_Init();
                 PostShiftFX_Update(t);
@@ -305,15 +349,15 @@ void SFXCTL_Shifting::UpdateGearShiftState(float t) {
         eShiftStageChanged = SHFT_DOWN_ENGAGING_RISE;
         eShiftState = SHFT_DOWN_ENGAGING_RISE;
 
-        void *layout = static_cast<Attrib::Instance *>(static_cast<void *>(m_pShiftingPatternData))->GetLayoutPointer();
-        int riseTime = *static_cast<int *>(static_cast<void *>(static_cast<char *>(layout) + 0x20));
+        const stShiftPatternLayout *layout = GetShiftingPatternLayout(m_pShiftingPatternData);
+        int riseTime = static_cast<int>(layout->Down_Engaging_Rise_T);
         if (m_pEngineCtl->m_pPhysicsCtl->m_CurGear < static_cast<Gear>(2)) {
             riseTime = static_cast<int>(static_cast<float>(riseTime) * 0.7f);
         }
 
         float lowRpmScale = m_pEngineCtl->GetEngRPM() < 1500.0f ? 0.0f : 1.0f;
         float targetRpm = bClamp(m_pEngineCtl->m_pPhysicsCtl->PhysicsRPM +
-                                     static_cast<float>(*static_cast<unsigned int *>(static_cast<void *>(static_cast<char *>(layout) + 0x4C))) *
+                                     static_cast<float>(layout->Down_Engaging_Rise_RPM) *
                                          lowRpmScale,
                                  1000.0f, 10000.0f);
         m_InterpShiftRPM.Initialize(m_pEngineCtl->GetEngRPM(), targetRpm, riseTime, EQ_PWR_SQ);
@@ -328,8 +372,8 @@ void SFXCTL_Shifting::UpdateGearShiftState(float t) {
         eShiftStageChanged = SHFT_DOWN_ENGAGING_FALL;
         eShiftState = SHFT_DOWN_ENGAGING_FALL;
 
-        void *layout = static_cast<Attrib::Instance *>(static_cast<void *>(m_pShiftingPatternData))->GetLayoutPointer();
-        int fallTime = *static_cast<int *>(static_cast<void *>(static_cast<char *>(layout) + 0x30));
+        const stShiftPatternLayout *layout = GetShiftingPatternLayout(m_pShiftingPatternData);
+        int fallTime = static_cast<int>(layout->Down_Engaging_Fall_T);
         if (GetCurGear() < static_cast<Gear>(2) && m_UGL < AEMS_LEVEL2) {
             fallTime = static_cast<int>(static_cast<float>(fallTime) * 0.7f);
         }
@@ -355,10 +399,10 @@ void SFXCTL_Shifting::UpdateGearShiftState(float t) {
         eShiftStageChanged = SHFT_DOWN_ENGAGING_REATTACH;
         eShiftState = SHFT_DOWN_ENGAGING_REATTACH;
 
-        void *layout = static_cast<Attrib::Instance *>(static_cast<void *>(m_pShiftingPatternData))->GetLayoutPointer();
+        const stShiftPatternLayout *layout = GetShiftingPatternLayout(m_pShiftingPatternData);
         float attachTime =
             bClamp(bAbs((m_pEngineCtl->GetEngRPM() - m_pEngineCtl->m_pPhysicsCtl->PhysicsRPM) *
-                        *static_cast<float *>(static_cast<void *>(static_cast<char *>(layout) + 0x2C))),
+                        layout->Down_Reattach_Scale),
                    0.0f, 800.0f);
         m_InterpShiftRPM.Initialize(m_pEngineCtl->GetEngRPM(), m_pEngineCtl->m_pPhysicsCtl->PhysicsRPM,
                                     static_cast<int>(attachTime), EQ_PWR_SQ);
@@ -424,14 +468,12 @@ void SFXCTL_Shifting::BeginUpShift() {
             pair2 = static_cast<const stShiftPair *>(static_cast<const void *>(Attrib::DefaultDataArea(sizeof(stShiftPair))));
         }
 
-        FillGraphFromSpline(*curve, static_cast<bVector2 *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(this)) + 0xDC)), 7,
-                            static_cast<float>(pair->Time), static_cast<float>(pair2->RPM));
+        FillGraphFromSpline(*curve, m_RPMPoints, 7, static_cast<float>(pair->Time), static_cast<float>(pair2->RPM));
 
         float shiftRpm = RPM_AtShift;
-        *static_cast<unsigned char *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(this)) + 0x118)) = 0;
-        *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(this)) + 0x114)) = 0.0f;
-        *static_cast<unsigned short *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(this)) + 0x11A)) =
-            static_cast<unsigned short>(static_cast<int>(shiftRpm));
+        m_CurStage = 0;
+        t_CurStage = 0.0f;
+        RPMOffset = static_cast<unsigned short>(static_cast<int>(shiftRpm));
 
         m_InterpShiftRPM.Initialize(shiftRpm, shiftRpm, 0, LINEAR);
         m_InterpShiftVol.Initialize(0.0f, 0.0f, 1, LINEAR);
@@ -467,14 +509,11 @@ void SFXCTL_Shifting::BeginUpShift() {
             upEngage = static_cast<const stShiftPair *>(static_cast<const void *>(Attrib::DefaultDataArea(sizeof(stShiftPair))));
         }
         int visualLength = static_cast<int>(totalDuration + static_cast<float>(upEngage->Time));
-        cInterpLine &visualRpm =
-            *static_cast<cInterpLine *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(this)) + 0x160));
-        visualRpm.Initialize(RPM_AtShift, RPM_AtShift - 500.0f, visualLength, EQ_PWR_SQ);
+        m_VisualRPM.Initialize(RPM_AtShift, RPM_AtShift - 500.0f, visualLength, EQ_PWR_SQ);
 
         *static_cast<int *>(static_cast<void *>(&m_bNeed_DisengageSnd)) = 1;
         *static_cast<int *>(static_cast<void *>(&m_bPendingNeedShiftSound)) = 1;
-        tShiftDelay = SndBase::m_fRunningTime +
-                      *static_cast<float *>(static_cast<void *>(static_cast<char *>(shiftPattern->GetLayoutPointer()) + 0x34));
+        tShiftDelay = SndBase::m_fRunningTime + GetShiftingPatternLayout(m_pShiftingPatternData)->Up_Shift_Sound_Delay;
         ShiftType = static_cast< AEMS_SHIFTING_SAMPLES >(1);
     }
 }
@@ -498,16 +537,14 @@ void SFXCTL_Shifting::BeginDownShift() {
         float physTrq = engine->m_pPhysicsCtl->GetPhysTRQ();
         m_InterpShiftTorque.Initialize(physTrq, 0.0f, 0x32, LINEAR);
 
-        void *layout = *static_cast<void **>(
-            static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pShiftingPatternData)) + 8));
+        const stShiftPatternLayout *layout = GetShiftingPatternLayout(m_pShiftingPatternData);
         float targetRpm =
-            RPM_AtShift - static_cast<float>(*static_cast<unsigned int *>(static_cast<void *>(static_cast<char *>(layout) + 0x44)));
+            RPM_AtShift - static_cast<float>(layout->Down_Disengage_Fall_RPM);
         targetRpm = bClamp(targetRpm, 1000.0f, 10000.0f);
-        m_InterpShiftRPM.Initialize(RPM_AtShift, targetRpm,
-                                    *static_cast<int *>(static_cast<void *>(static_cast<char *>(layout) + 0x3C)), LINEAR);
+        m_InterpShiftRPM.Initialize(RPM_AtShift, targetRpm, static_cast<int>(layout->Down_Disengage_Fall_T), LINEAR);
         m_InterpShiftVol.Initialize(0.0f, 0.0f, 1, LINEAR);
 
-        tShiftDelay = SndBase::m_fRunningTime + *static_cast<float *>(static_cast<void *>(static_cast<char *>(layout) + 0x10));
+        tShiftDelay = SndBase::m_fRunningTime + layout->Down_Shift_Sound_Delay;
         if (3000.0f < engine->m_pPhysicsCtl->PhysicsRPM) {
             *static_cast<int *>(static_cast<void *>(&m_bPendingNeedShiftSound)) = 1;
         }

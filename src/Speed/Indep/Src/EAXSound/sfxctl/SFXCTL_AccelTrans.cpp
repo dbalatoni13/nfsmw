@@ -2,6 +2,13 @@
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Engine.hpp"
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Shifting.hpp"
 
+namespace {
+struct EAXCarAccelTransView {
+    char _pad[0x100];
+    char mAccelTransDataSet;
+};
+} // namespace
+
 SFXCTL_AccelTrans::SFXCTL_AccelTrans()
     : m_pEngineCtl(nullptr) //
     , m_pShiftCtl(nullptr) //
@@ -48,7 +55,8 @@ void SFXCTL_AccelTrans::SetupSFX(CSTATE_Base *_StateBase) {
     SndBase::SetupSFX(_StateBase);
     m_UGL = static_cast<eAemsUpgradeLevel>(m_pEAXCar->GetEngineUpgradeLevel());
     m_pAccelTransDataSet =
-        static_cast<acceltrans *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pEAXCar)) + 0x100));
+        static_cast<acceltrans *>(static_cast<void *>(&static_cast<EAXCarAccelTransView *>(static_cast<void *>(m_pEAXCar))
+                                                           ->mAccelTransDataSet));
 }
 
 void SFXCTL_AccelTrans::InitSFX() {

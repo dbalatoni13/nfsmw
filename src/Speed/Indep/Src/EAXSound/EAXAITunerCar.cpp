@@ -1,6 +1,7 @@
 #include "Speed/Indep/Src/EAXSound/States/STATE_Base.hpp"
 #include "Speed/Indep/Src/EAXSound/AudioMemoryManager.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
+#include "Speed/Indep/Src/EAXSound/EAXCarState.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXSndUtil.h"
 #include "Speed/Indep/Src/Generated/Messages/MGamePlayMoment.h"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
@@ -183,16 +184,14 @@ void EAXAITunerCar::UpdatAIDriveBy(float t) {
         return;
     }
 
-    ClosestPlayer = GetClosestPlayerCar(static_cast<bVector3 *>(
-        static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pCar)) + 0x44)));
-    if (!IsCarInRadius(ClosestPlayer, static_cast<bVector3 *>(
-                            static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pCar)) + 0x44)), 12.0f)) {
+    ClosestPlayer = GetClosestPlayerCar(static_cast<bVector3 *>(static_cast<void *>(&m_pCar->mMatrix.v3)));
+    if (!IsCarInRadius(ClosestPlayer, static_cast<bVector3 *>(static_cast<void *>(&m_pCar->mMatrix.v3)), 12.0f)) {
         return;
     }
 
     vVelDiff = bSub(
-        *static_cast<bVector3 *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pCar)) + 0x54)),
-        *static_cast<bVector3 *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(ClosestPlayer)) + 0x54)));
+        m_pCar->mVel0,
+        ClosestPlayer->mVel0);
     fRelativeVel = bLength(vVelDiff);
     if (fRelativeVel < 15.0f) {
         return;
@@ -200,15 +199,13 @@ void EAXAITunerCar::UpdatAIDriveBy(float t) {
 
     TmpDriveByPackage.eDriveByType = AIDriveBy::DRIVE_BY_AI_CAR;
     TmpDriveByPackage.ClosingVelocity = fRelativeVel;
-    TmpDriveByPackage.vLocation =
-        *static_cast<bVector3 *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pCar)) + 0x44));
+    TmpDriveByPackage.vLocation = *static_cast<bVector3 *>(static_cast<void *>(&m_pCar->mMatrix.v3));
     TmpDriveByPackage.pEAXCar = this;
     TmpDriveByPackage.UniqueID = reinterpret_cast< unsigned int >(this);
 
-    if (*static_cast<int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pCar)) + 0x210)) == 2) {
+    if (m_pCar->mContext == Sound::CONTEXT_COP) {
         MGamePlayMoment moment(UMath::Vector4::kZero, UMath::Vector4::kZero, UMath::Vector4::kZero,
-                               *static_cast<unsigned int *>(
-                                   static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pCar)) + 0x21C)),
+                               m_pCar->mWorldID,
                                0);
         moment.Send(UCrc32("BlewByCop"));
     }

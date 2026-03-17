@@ -6,6 +6,52 @@ namespace {
 extern Slope g_WheelLoadSlope;
 extern float gWheelSlipSensitivity[2];
 extern int PRINT_SKID_FX_DEBUG;
+
+struct EAXCarStateWheelEntryView {
+    bVector2 mWheelSlip;
+    float _pad8;
+    float mWheelTractionMag;
+    int mWheelOnGround;
+    char _pad14[0x4];
+    const Attrib::Collection *mTerrainCollection;
+    char _pad1C[0x20];
+    float mLoad;
+    unsigned char mBlownState;
+    char _pad41[0x3];
+};
+
+struct EAXCarStateWheelView {
+    char _pad0[0xA8];
+    EAXCarStateWheelEntryView mWheel[4];
+    char _pad1B8[0x58];
+    int mContext;
+};
+
+struct CSTATE_WheelView {
+    char _pad0[0x34];
+    EAXCarStateWheelView *mCarState;
+};
+
+struct SFXCTL_WheelPosView {
+    char _pad0[0x28];
+    bVector3 mWheelPos[2];
+};
+
+struct SFXCTL_WheelRuntimeView {
+    char _pad0[0x28];
+    bVector2 mNormWheelSlip[4];
+    bVector2 mTotalRight;
+    bVector2 mTotalLeft;
+    float mWheelTractionMag[4];
+    float mWheelLoad[4];
+    char _pad78[0x70];
+    int mLeftSideTouchingGround;
+    int mRightSideTouchingGround;
+};
+
+#define WHEEL_STATE_VIEW(ptr) (*static_cast<CSTATE_WheelView *>(static_cast<void *>(ptr)))
+#define WHEEL_POS_VIEW(ptr) (*static_cast<SFXCTL_WheelPosView *>(static_cast<void *>(ptr)))
+#define WHEEL_RUNTIME_VIEW(ptr) (*static_cast<SFXCTL_WheelRuntimeView *>(static_cast<void *>(ptr)))
 } // namespace
 
 void DebugPrintSkidBar(int Horz, int Vert, char *Str, int Value);
@@ -39,32 +85,25 @@ void SFXCTL_Wheel::UpdateParams(float t) {
 bVector3 *SFXCTL_Wheel::GetWheelPos(int wheelID, int numtires) {
     if (numtires == 2) {
         if (wheelID == 0) {
-            return static_cast<bVector3 *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(this)) + 0x28));
+            return &WHEEL_POS_VIEW(this).mWheelPos[0];
         }
-        return static_cast<bVector3 *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(this)) + 0x34));
+        return &WHEEL_POS_VIEW(this).mWheelPos[1];
     }
     if (numtires == 1) {
-        return static_cast<bVector3 *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(this)) + 0x28));
+        return &WHEEL_POS_VIEW(this).mWheelPos[0];
     }
-    return static_cast<bVector3 *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(this)) + 0x28));
+    return &WHEEL_POS_VIEW(this).mWheelPos[0];
 }
 
 void SFXCTL_Wheel::GenerateWheelPosition() {}
 
 void SFXCTL_Wheel::GenerateTerrainTypes() {
-    EAX_CarState *car =
-        m_pStateBase != nullptr
-            ? *static_cast<EAX_CarState **>(static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pStateBase)) + 0x34))
-            : nullptr;
+    EAXCarStateWheelView *car = m_pStateBase != nullptr ? WHEEL_STATE_VIEW(m_pStateBase).mCarState : nullptr;
 
-    const Attrib::Collection *col0 =
-        *static_cast<Attrib::Collection **>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0xC0));
-    const Attrib::Collection *col1 =
-        *static_cast<Attrib::Collection **>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0x104));
-    const Attrib::Collection *col2 =
-        *static_cast<Attrib::Collection **>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0x148));
-    const Attrib::Collection *col3 =
-        *static_cast<Attrib::Collection **>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0x18C));
+    const Attrib::Collection *col0 = car->mWheel[0].mTerrainCollection;
+    const Attrib::Collection *col1 = car->mWheel[1].mTerrainCollection;
+    const Attrib::Collection *col2 = car->mWheel[2].mTerrainCollection;
+    const Attrib::Collection *col3 = car->mWheel[3].mTerrainCollection;
 
     Attrib::Instance FLTerrainType(col0, 0, nullptr);
     FLTerrainType.SetDefaultLayout(0xFC);
@@ -94,8 +133,7 @@ void SFXCTL_Wheel::GenerateTerrainTypes() {
     PrevRightSideTerrain.Attrib::Instance::operator=(RightSideTerrain);
     PrevLeftSideTerrain.Attrib::Instance::operator=(LeftSideTerrain);
 
-    if (*static_cast<unsigned char *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0x12C)) == 2 ||
-        *static_cast<unsigned char *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0x170)) == 2) {
+    if (car->mWheel[1].mBlownState == 2 || car->mWheel[2].mBlownState == 2) {
         const Attrib::Collection *blownTerrain =
             Attrib::FindCollection(Attrib::Gen::simsurface::ClassKey(), 0x8EE645B3);
         Attrib::Instance blown(blownTerrain, 0, nullptr);
@@ -105,8 +143,7 @@ void SFXCTL_Wheel::GenerateTerrainTypes() {
         RightSideTerrain.Attrib::Instance::operator=(CurRight);
     }
 
-    if (*static_cast<unsigned char *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0xE8)) == 2 ||
-        *static_cast<unsigned char *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0x1B4)) == 2) {
+    if (car->mWheel[0].mBlownState == 2 || car->mWheel[3].mBlownState == 2) {
         const Attrib::Collection *blownTerrain =
             Attrib::FindCollection(Attrib::Gen::simsurface::ClassKey(), 0x8EE645B3);
         Attrib::Instance blown(blownTerrain, 0, nullptr);

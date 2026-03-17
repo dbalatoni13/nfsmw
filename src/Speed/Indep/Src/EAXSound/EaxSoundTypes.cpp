@@ -389,7 +389,7 @@ void ScheduledSpeechEvent::AddSample(SpeechSampleData *sample, unsigned char spe
 }
 
 void *ScheduledSpeechEvent::GetData(unsigned int *datasize) {
-    void *data = static_cast<char *>(static_cast<void *>(this)) + 0x40;
+    void *data = static_cast<void *>(this + 1);
     if (datasize != nullptr) {
         *datasize = 0x40;
     }

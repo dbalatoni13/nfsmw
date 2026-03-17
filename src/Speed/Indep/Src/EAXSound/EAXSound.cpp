@@ -1,4 +1,5 @@
 #include "./EAXSOund.hpp"
+#include "Speed/Indep/Src/EAXSound/EAXCarState.hpp"
 #include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_NISStream.hpp"
 #include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_Pathfinder.hpp"
 #include "Speed/Indep/Src/EAXSound/Stream/EAXS_StreamManager.h"
@@ -79,69 +80,6 @@ struct Manager {
 } // namespace Speech
 
 extern Speech::Cache gSpeechCache;
-
-namespace Sound {
-enum Context {
-    CONTEXT_PLAYER = 0,
-    CONTEXT_AIRACER = 1,
-    CONTEXT_COP = 2,
-    CONTEXT_TRAFFIC = 3,
-    CONTEXT_ONLINE = 4,
-    CONTEXT_TRACTOR = 5,
-    CONTEXT_TRAILER = 6,
-    CONTEXT_MAX = 7,
-
-    kRaceContext_QuickRace = CONTEXT_PLAYER,
-    kRaceContext_TimeTrial = CONTEXT_AIRACER,
-    kRaceContext_Career = CONTEXT_COP,
-    kRaceContext_Count = CONTEXT_TRAFFIC,
-};
-
-enum MovementMode {
-    NO_MOVEMENT = 0,
-    PHYSICS_MOVEMENT = 1,
-    TRAFFIC_MOVEMENT = 2,
-    MELLOW_MOVEMENT = 3,
-    ONLINE_MOVEMENT = 4,
-    BELT_MOVEMENT = 5,
-    NIS_MOVEMENT = 6,
-    NUM_MOVEMENT_MODES = 7,
-};
-
-enum PlayerZones {
-    PLAYER_ZONE_NONE = 0,
-    PLAYER_ZONE_FREEZE = 1,
-    PLAYER_ZONE_PREVIEW = 2,
-    PLAYER_ZONE_SLOMO = 3,
-    PLAYER_ZONE_SLOMO2 = 4,
-    PLAYER_ZONE_WARP = 5,
-    PLAYER_ZONE_JUMPVIEW = 6,
-    PLAYER_ZONE_JUMPVIEW2 = 7,
-    PLAYER_ZONE_COUNT = 8,
-};
-
-enum Gear {
-    SPORT_SHIFT = -2,
-    AUTOMATIC = -1,
-    REVERSE = 0,
-    NEUTRAL = 1,
-    FIRST_GEAR = 2,
-    SECOND_GEAR = 3,
-    THIRD_GEAR = 4,
-    FOURTH_GEAR = 5,
-    FIFTH_GEAR = 6,
-    SIXTH_GEAR = 7,
-    SEVENTH_GEAR = 8,
-};
-
-enum ControlSource {
-    CONTROL_NONE = 0,
-    CONTROL_HUMAN = 1,
-    CONTROL_AI = 2,
-    CONTROL_NIS = 3,
-    CONTROL_ONLINE = 4,
-};
-}
 
 #include "Speed/Indep/Src/EAXSound/EAXCommon.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXFrontEnd.hpp"
@@ -416,63 +354,6 @@ struct NFSMixMaster {
     void ProcessMixMap(float dt, int cam_state);
     void AssignSFXCallbacks(int *(*GetPointerCB)(int), void (*SetSFXOutCB)(int, int *), bool (*SetSFXInputCB)(int, int *),
                             int (*GetStateRefCountCB)(int), void (*MixReadyCB)());
-};
-
-namespace Sound {
-
-struct Wheel {
-    bVector2 mWheelSlip;          // offset 0x0
-    float mWheelForceZ;           // offset 0x8
-    float mPercentFsFkTransfer;   // offset 0xC
-    int mWheelOnGround;           // offset 0x10
-    SimSurface mTerrainType;      // offset 0x14
-    SimSurface mPrevTerrainType;  // offset 0x28
-    float mLoad;                  // offset 0x3C
-    unsigned char mBlownState;    // offset 0x40
-    unsigned char mPrevBlownState; // offset 0x41
-
-    void Reset();
-};
-
-struct Engine {
-    int mBoostFlag; // offset 0x0
-    int mNOSFlag;   // offset 0x4
-    float mNOS;     // offset 0x8
-    float mRPMPct;  // offset 0xC
-    float mThrottle; // offset 0x10
-    float mBoost;   // offset 0x14
-    int mBlownFlag; // offset 0x18
-
-    void Reset();
-};
-
-struct Driveline {
-    int mGearShiftFlag; // offset 0x0
-    Gear mGear;         // offset 0x4
-};
-
-} // namespace Sound
-
-struct EAX_CarState : public UTL::Collections::Listable<EAX_CarState, 10> {
-    char _pad_context[0x20C];
-    Sound::Context mContext;
-    bool mSimUpdating; // offset 0x214
-    char _pad_sim[3];
-    bool mAssetsLoaded; // offset 0x218
-    char _pad_assets[3];
-    unsigned int mWorldID; // offset 0x21C
-    HSIMABLE__ *mHandle; // offset 0x220
-    unsigned int mTrailerID; // offset 0x224
-    float mOversteer; // offset 0x228
-    float mUndersteer; // offset 0x22C
-    float mSlipAngle; // offset 0x230
-    float mVisualRPM; // offset 0x234
-    float mTimeSinceSeen; // offset 0x238
-    int mNISCarID; // offset 0x23C
-    float mDesiredSpeed; // offset 0x240
-    int mControlSource; // offset 0x244
-
-    EAX_CarState(const Attrib::Collection *atr, Sound::Context context, unsigned int wuid, HSIMABLE__ *handle);
 };
 
 template <>

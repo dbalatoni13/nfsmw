@@ -177,6 +177,33 @@ struct EAXCar_View {
     int m_Rotation;
     char mEngineInfo[0x14];
 };
+
+struct CSTATE_BaseEngineView {
+    char _pad[0x34];
+    EAX_CarState_View *m_pCar;
+};
+
+struct EAXCarRPMView {
+    char _pad0[0x64];
+    float mPhysRPM;
+    char _pad68[0x0C];
+    float mAudioRPM;
+};
+
+struct EAXCarStateRPMView {
+    char _pad0[0x1C8];
+    float mVisualRPM;
+    char _pad1CC[0x44];
+    int mContext;
+};
+
+struct CSTATE_BaseEngineRPMView {
+    char _pad0[0x34];
+    EAXCarStateRPMView *mCarState;
+};
+
+#define ENGINE_EAXCAR_RPM_VIEW(ptr) (*static_cast<EAXCarRPMView *>(static_cast<void *>(ptr)))
+#define ENGINE_STATE_RPM_VIEW(ptr) (*static_cast<CSTATE_BaseEngineRPMView *>(static_cast<void *>(ptr)))
 } // namespace
 
 SFXCTL_Engine::SFXCTL_Engine()
@@ -364,7 +391,7 @@ void SFXCTL_Engine::UpdateRPM(float t) {
         }
     }
 
-    VisualRPM = *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pEAXCar)) + 0x64));
+    VisualRPM = ENGINE_EAXCAR_RPM_VIEW(m_pEAXCar).mPhysRPM;
 
 have_cur_rpm:
     if (*static_cast<int *>(static_cast<void *>(&bClutchStateOn)) != 0) {
@@ -375,7 +402,7 @@ have_cur_rpm:
         if (shiftActive == 0) {
             VisualRPM =
                 smooth(GetEngRPM(),
-                       *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pEAXCar)) + 0x64)),
+                       ENGINE_EAXCAR_RPM_VIEW(m_pEAXCar).mPhysRPM,
                        lbl_803D72D4, lbl_803D72D8);
         }
     }
@@ -388,7 +415,7 @@ have_cur_rpm:
     if (static_cast< unsigned int >(m_pShiftCtl->eShiftState - SHFT_UP_DISENGAGE) < 2u) {
         VisualRPM = m_pShiftCtl->m_VisualRPM.GetValue();
     } else if (m_pAccelTransitionCtl->eAccelTransFxState == 1) {
-        VisualRPM = *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pEAXCar)) + 0x64));
+        VisualRPM = ENGINE_EAXCAR_RPM_VIEW(m_pEAXCar).mPhysRPM;
     } else {
         if (*static_cast<int *>(static_cast<void *>(&bIsRedlining)) != 0) {
             float target = lbl_803D72E4;
@@ -413,12 +440,10 @@ have_cur_rpm:
     VisRpmAvg.Recalculate();
 
     PhysicsNewAudioRPM = (VisRpmAvg.GetValue() - lbl_803D72EC) * lbl_803D72F0;
-    char *car = static_cast<char *>(static_cast<void *>(
-        *static_cast<EAX_CarState_View **>(
-            static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pStateBase)) + 0x34))));
-    if (*static_cast<int *>(static_cast<void *>(car + 0x210)) == 0) {
+    EAXCarStateRPMView *car = ENGINE_STATE_RPM_VIEW(m_pStateBase).mCarState;
+    if (car->mContext == 0) {
         if (bPreRace != 0) {
-            PhysicsNewAudioRPM = *static_cast<float *>(static_cast<void *>(car + 0x1C8));
+            PhysicsNewAudioRPM = car->mVisualRPM;
         } else if (tMergeWithPhysicsOffStart > lbl_803D72D0) {
             tMergeWithPhysicsOffStart -= t;
             if (tMergeWithPhysicsOffStart < lbl_803D72D0) {
@@ -426,12 +451,11 @@ have_cur_rpm:
             }
             float PercentInterp = (lbl_803D72F4 - tMergeWithPhysicsOffStart) * lbl_803D72F8;
             PhysicsNewAudioRPM =
-                (PhysicsNewAudioRPM - *static_cast<float *>(static_cast<void *>(car + 0x1C8))) * PercentInterp +
-                *static_cast<float *>(static_cast<void *>(car + 0x1C8));
+                (PhysicsNewAudioRPM - car->mVisualRPM) * PercentInterp + car->mVisualRPM;
         }
     }
 
-    *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pEAXCar)) + 0x74)) = PhysicsNewAudioRPM;
+    ENGINE_EAXCAR_RPM_VIEW(m_pEAXCar).mAudioRPM = PhysicsNewAudioRPM;
 }
 
 void SFXCTL_Engine::UpdateTorque(float t) {

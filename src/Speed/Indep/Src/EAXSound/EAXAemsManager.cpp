@@ -226,6 +226,14 @@ struct stAssetDescriptionClearView {
     int bLoadToTop;
 };
 
+struct stAssetDescriptionAddView {
+    int eDataType;
+    int _pad4;
+    Attrib::StringKey FileName;
+    int DataPath;
+    int bLoadToTop;
+};
+
 struct stSndDataLoadParamsView {
     stAssetDescription AssetDescription;
     eTEMPALLOCLOCATION MemLocation;
@@ -246,6 +254,22 @@ struct stSndDataLoadParamsView {
 
 struct stSndDataLoadParamsClearView {
     stAssetDescriptionClearView AssetDescription;
+    eTEMPALLOCLOCATION MemLocation;
+    stBankSlot *mBankSlot;
+    void *pmem;
+    void *plocmem;
+    int nSize;
+    int Handle;
+    int bResolvedAsync;
+    int bResolvedSync;
+    ResAllocList resallocs;
+    RefCountList RefCount;
+    Timer t_req;
+    Timer t_load;
+};
+
+struct stSndDataLoadParamsAddView {
+    stAssetDescriptionAddView AssetDescription;
     eTEMPALLOCLOCATION MemLocation;
     stBankSlot *mBankSlot;
     void *pmem;
@@ -366,13 +390,8 @@ static const char *GetStringKeyChars(const Attrib::StringKey &key) {
 
 void stAssetDescription::Clear() {
     eDataType = -1;
-    _pad4 = 0;
     FileName = Attrib::StringKey("");
     DataPath = 0;
-    bLoadToTop = false;
-    _pad[0] = 0;
-    _pad[1] = 0;
-    _pad[2] = 0;
 }
 
 void stBankSlot::Clear() {
@@ -409,8 +428,8 @@ void stSndDataLoadParams::Clear() {
     view.bResolvedAsync = 0;
     view.resallocs.clear();
     view.RefCount.clear();
-    view.t_req = Timer(0);
     view.t_load = Timer(0);
+    view.t_req = Timer(0);
 }
 
 stBankSlot *BankSlotSystem::GetFreeSlot(eBANK_SLOT_TYPE Type) {
@@ -1240,27 +1259,29 @@ LoadDone:
 }
 
 int EAXAemsManager::AddBankListing(stAssetDescription &asset) {
-    stSndDataLoadParamsView *entry =
-        static_cast<stSndDataLoadParamsView *>(static_cast<void *>(g_SndAssetList + m_nEndOfList));
+    {
+        stSndDataLoadParamsAddView *entry =
+            static_cast<stSndDataLoadParamsAddView *>(static_cast<void *>(g_SndAssetList + m_nEndOfList));
 
-    entry->AssetDescription.eDataType = -1;
-    entry->AssetDescription.FileName = Attrib::StringKey("");
-    entry->Handle = -1;
-    entry->bResolvedSync = 0;
-    entry->AssetDescription.DataPath = static_cast<eSNDDATAPATH>(0);
-    entry->MemLocation = static_cast<eTEMPALLOCLOCATION>(0);
-    entry->mBankSlot = nullptr;
-    entry->pmem = nullptr;
-    entry->plocmem = nullptr;
-    entry->nSize = 0;
-    entry->bResolvedAsync = 0;
-    entry->resallocs.clear();
-    entry->RefCount.clear();
-    entry->t_req = Timer(0);
-    entry->t_load = Timer(0);
+        entry->AssetDescription.eDataType = -1;
+        entry->AssetDescription.FileName = Attrib::StringKey("");
+        entry->Handle = -1;
+        entry->bResolvedSync = 0;
+        entry->AssetDescription.DataPath = static_cast<eSNDDATAPATH>(0);
+        entry->MemLocation = static_cast<eTEMPALLOCLOCATION>(0);
+        entry->mBankSlot = nullptr;
+        entry->pmem = nullptr;
+        entry->plocmem = nullptr;
+        entry->nSize = 0;
+        entry->bResolvedAsync = 0;
+        entry->resallocs.clear();
+        entry->RefCount.clear();
+        entry->t_req = Timer(0);
+        entry->t_load = Timer(0);
+    }
 
-    stSndDataLoadParamsView &dst =
-        *static_cast<stSndDataLoadParamsView *>(static_cast<void *>(g_SndAssetList + m_nEndOfList));
+    stSndDataLoadParamsAddView &dst =
+        *static_cast<stSndDataLoadParamsAddView *>(static_cast<void *>(g_SndAssetList + m_nEndOfList));
     dst.AssetDescription.eDataType = asset.eDataType;
     static_cast<StringKeyView *>(static_cast<void *>(&dst.AssetDescription.FileName))->mString =
         static_cast<const StringKeyView *>(static_cast<const void *>(&asset.FileName))->mString;
