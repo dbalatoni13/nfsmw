@@ -399,8 +399,10 @@ void NumOpponents::Act(const char *parent_pkg, unsigned int data) {
 
 void NumOpponents::Draw() {
     FEngSetLanguageHash(pTitle, 0x3384a679);
+    FEString *data = pData;
+    const char *fmt = "%d";
     RaceSettings *settings = FEDatabase->GetQuickRaceSettings(static_cast<GRace::Type>(0xb));
-    FEPrintf(pData, "%d", settings->NumOpponents);
+    FEPrintf(data, fmt, settings->NumOpponents);
 }
 
 // --- AISkill ---
@@ -537,8 +539,10 @@ void NumLaps::Act(const char *parent_pkg, unsigned int data) {
 }
 
 void NumLaps::Draw() {
+    FEString *data = pData;
+    const char *fmt = "%d";
     RaceSettings *settings = FEDatabase->GetQuickRaceSettings(static_cast<GRace::Type>(0xb));
-    FEPrintf(pData, "%d", settings->NumLaps);
+    FEPrintf(data, fmt, settings->NumLaps);
     FEngSetLanguageHash(pTitle, 0x48494e83);
 }
 
