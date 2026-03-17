@@ -1223,13 +1223,17 @@ void FEngine::ProcessMessageQueue() {
         case 0xFFFFFFFB:
             pInterface->NotifySoundMessage(pNode->MsgID, pNode->pMsgFrom, pNode->ControlMask, reinterpret_cast<unsigned long>(pNode->pFromPackage));
             break;
-        case 0xFFFFFFFA:
-            if (pNode->MsgID == 0x59bed120) {
-                SetProcessInput(pNode->pFromPackage, true);
-            } else if (pNode->MsgID == 0x5d4ce32d) {
+        case 0xFFFFFFFA: {
+            switch (pNode->MsgID) {
+            case 0x5d4ce32d:
                 SetProcessInput(pNode->pFromPackage, false);
+                break;
+            case 0x59bed120:
+                SetProcessInput(pNode->pFromPackage, true);
+                break;
             }
             break;
+        }
         default:
             ProcessObjectMessage(pNode->pMsgTarget, pNode->pFromPackage, pNode->MsgID, pNode->ControlMask);
             break;
