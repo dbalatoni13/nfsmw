@@ -133,7 +133,7 @@ message_B4623F67:
     cFEng::Get()->QueuePackageMessage(0xC6341FF6, GetPackageName(), 0);
     return;
 
-    message_E1FDE1D1:
+message_E1FDE1D1:
     if (PrevButtonMessage != 0x911AB364) {
         switch (mSelectionHash) {
         case 0xFBDF2EE3:
