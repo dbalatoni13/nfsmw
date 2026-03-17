@@ -213,8 +213,7 @@ void Minimap::Update(IPlayer *player) {
 
     if (speed > MinimapMaxSpeed) {
         speed = MinimapMaxSpeed;
-    }
-    if (speed < 0.0f) {
+    } else if (speed < 0.0f) {
         speed = 0.0f;
     }
 
