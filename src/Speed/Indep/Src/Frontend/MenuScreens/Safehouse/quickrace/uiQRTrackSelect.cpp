@@ -91,8 +91,10 @@ void UIQRTrackSelect::Setup() {
 }
 
 void UIQRTrackSelect::SetSelectedTrack(GRaceParameters *track) {
-    RaceSettings *settings = FEDatabase->GetQuickRaceSettings(static_cast<GRace::Type>(0xb));
-    settings->EventHash = track->GetEventHash();
+    if (track) {
+        RaceSettings *settings = FEDatabase->GetQuickRaceSettings(track->GetRaceType());
+        settings->EventHash = track->GetEventHash();
+    }
 }
 
 bool UIQRTrackSelect::IsRaceValidForMike(GRaceParameters *parms) {
