@@ -5,7 +5,9 @@
 #include "Speed/Indep/Src/Gameplay/GMarker.h"
 #include "Speed/Indep/Src/Gameplay/GVault.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
+#include "Speed/Indep/Tools/AttribSys/Runtime/AttribLoadAndGo.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
+#include "Speed/Indep/Tools/AttribSys/Runtime/Common/AttribPrivate.h"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 
 #include <algorithm>
@@ -105,6 +107,59 @@ GManager::~GManager() {
     }
 
     mObj = nullptr;
+}
+
+GVault *GManager::FindVault(const char *vaultName) {
+    int lower = 0;
+    int upper = mVaultCount - 1;
+
+    while (lower <= upper) {
+        int middle = (lower + upper) / 2;
+        int cmp = bStrCmp(vaultName, mVaults[middle].GetName());
+
+        if (cmp < 0) {
+            upper = middle - 1;
+        } else if (cmp > 0) {
+            lower = middle + 1;
+        } else {
+            return &mVaults[middle];
+        }
+    }
+
+    return nullptr;
+}
+
+GVault *GManager::FindVaultContaining(unsigned int collectionKey) {
+    unsigned int collectionType = Attrib::StringToTypeID("Attrib::CollectionLoadData");
+
+    for (int i = 0; i < mVaultCount; ++i) {
+        GVault *vault = &mVaults[i];
+
+        if (vault->IsLoaded()) {
+            Attrib::Vault *attribVault = vault->GetAttribVault();
+            unsigned int exportCount = attribVault->CountExports();
+
+            for (unsigned int exportIndex = 0; exportIndex < exportCount; ++exportIndex) {
+                if (attribVault->GetExportType(exportIndex) == collectionType) {
+                    Attrib::Collection *collection = reinterpret_cast<Attrib::Collection *>(attribVault->GetExportData(exportIndex));
+
+                    if (collection && collection->GetKey() == collectionKey) {
+                        return vault;
+                    }
+                }
+            }
+        }
+    }
+
+    return nullptr;
+}
+
+void GManager::LoadCoreVault(AttribVaultPackImage *packImage) {
+    FindVault("gpcore")->LoadResident(packImage);
+}
+
+void GManager::UnloadCoreVault() {
+    FindVault("gpcore")->Unload();
 }
 
 void GManager::StartBinActivity(GRaceBin *raceBin) {

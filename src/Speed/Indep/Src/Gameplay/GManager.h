@@ -71,7 +71,14 @@ class GManager : public UTL::COM::Object, public IVehicleCache {
 
     const char *GetCacheName() const override { return "GManager"; }
 
+    void InitializeVaults();
     void InitializeRaceStreaming();
+    GVault *FindVault(const char *vaultName);
+    GVault *FindVaultContaining(unsigned int collectionKey);
+    void LoadCoreVault(struct AttribVaultPackImage *packImage);
+    void PreloadTransientVaults(struct AttribVaultPackImage *packImage);
+    void UnloadCoreVault();
+    void UnloadTransientVaults();
     void PreBeginGameplay();
     void BeginGameplay();
     void EndGameplay();
