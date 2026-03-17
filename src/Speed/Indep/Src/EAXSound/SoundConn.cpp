@@ -48,42 +48,6 @@ void UpdateServices(float dT) {
     }
 }
 
-Pkt_Car_Service::Pkt_Car_Service(float audible_rpm)
-    : mRPMPercent(0.0f) //
-    , mThrottlePercent(0.0f) //
-    , mBrakePercent(0.0f) //
-    , mEBrakePercent(0.0f) //
-    , mSteering(0.0f) //
-    , mGear(1) //
-    , mSirenState(-1) //
-    , mHotPursuit(false) //
-    , mOversteer(0.0f) //
-    , mUndersteer(0.0f) //
-    , mSlipAngle(0.0f) //
-    , mHealth(1.0f) //
-    , mAudibleRPMPct(audible_rpm) //
-    , mEngineBlown(0) //
-    , mNOSFlag(false) //
-    , mNOSCapacity(0.0f) //
-    , mTrailer(0) //
-    , mTimeSinceSeen(0.0f) //
-    , mDesiredSpeed(0.0f) //
-    , mControlSource(0) {
-    const Attrib::Collection *const nullSpec = SimSurface::kNull.GetConstCollection();
-    for (int i = 0; i < 4; ++i) {
-        mTractionPct[i] = 1.0f;
-        if (nullSpec != nullptr) {
-            mWheelTerrain[i].Change(nullSpec);
-        }
-        mWheelSlip[i].x = 0.0f;
-        mWheelSlip[i].y = 0.0f;
-        mWheelLoad[i] = 0.0f;
-        mWheelZforce[i] = 0.0f;
-        mWheelOnGround[i] = false;
-        mBlownTires[i] = 0;
-    }
-}
-
 Pkt_Car_Service::~Pkt_Car_Service() {}
 
 UCrc32 Pkt_Car_Service::ConnectionClass() {
@@ -225,132 +189,114 @@ void CarSoundConn::SetAssetsLoaded(CarSoundConn *conn) {
 }
 
 void CarSoundConn::UpdateState(float dT) {
-    if (g_pEAXSound == nullptr || mTarget.GetMatrix() == nullptr || !mConnected || mState == nullptr) {
+    if (g_pEAXSound == nullptr) {
+        return;
+    }
+    if (mTarget.GetMatrix() == nullptr) {
+        return;
+    }
+    if (!mConnected) {
+        return;
+    }
+    if (mState == nullptr) {
+        return;
+    }
+    if (mState->mAssetsLoaded == 0) {
         return;
     }
 
-    EAX_CarState &state = *mState;
-    if (state.mAssetsLoaded == 0) {
-        return;
-    }
-
-    bMatrix4 &matrix = state.mMatrix;
-    bVector3 &vel0 = state.mVel0;
-    bVector3 &vel1 = state.mVel1;
-    bVector3 &accel = state.mAccel;
-    float &brake = state.mBrake;
-    float &eBrake = state.mEBrake;
-    float &fwSpeedState = state.mFWSpeed;
-    float &health = state.mHealth;
-    Sound::Wheel *const wheels = state.mWheel;
-    unsigned short &steering = state.mSteering;
-    Sound::Engine &engine = state.mEngine;
-    Sound::Driveline &driveline = state.mDriveline;
-    int &siren = state.mSirenState;
-    bool &hotPursuitWord = state.mHotPursuit;
-    bool &simUpdating = state.mSimUpdating;
-    unsigned int &trailerID = state.mTrailerID;
-    float &oversteer = state.mOversteer;
-    float &understeer = state.mUndersteer;
-    float &slipAngle = state.mSlipAngle;
-    float &visualRPM = state.mVisualRPM;
-    float &timeSinceSeen = state.mTimeSinceSeen;
-    float &desiredSpeed = state.mDesiredSpeed;
-    Sound::ControlSource &controlSource = state.mControlSource;
-
-    SoundConn::Pkt_Car_Service data(visualRPM);
-    PSMTX44Copy((Mtx44)mTarget.GetMatrix(), (Mtx44)&matrix);
+    SoundConn::Pkt_Car_Service data(mState->mVisualRPM);
+    PSMTX44Copy((Mtx44)mTarget.GetMatrix(), (Mtx44)&mState->mMatrix);
 
     if (!Service(&data)) {
-        simUpdating = 0;
-        accel.x = 0.0f;
-        accel.y = 0.0f;
-        accel.z = 0.0f;
-        vel1 = accel;
-        vel0 = vel1;
-        fwSpeedState = 0.0f;
+        mState->mSimUpdating = 0;
+        mState->mAccel.x = 0.0f;
+        mState->mAccel.y = 0.0f;
+        mState->mAccel.z = 0.0f;
+        mState->mVel1 = mState->mAccel;
+        mState->mVel0 = mState->mVel1;
+        mState->mFWSpeed = 0.0f;
 
         const Attrib::Collection *const nullSpec = SimSurface::kNull.GetConstCollection();
         for (int i = 0; i < 4; ++i) {
-            Sound::Wheel &wheel = wheels[i];
-            wheel.mWheelOnGround = 1;
-            wheel.mWheelForceZ = 0.0f;
-            wheel.mWheelSlip.x = 0.0f;
-            wheel.mWheelSlip.y = 0.0f;
+            mState->mWheel[i].mWheelOnGround = 1;
+            mState->mWheel[i].mWheelForceZ = 0.0f;
+            mState->mWheel[i].mWheelSlip.x = 0.0f;
+            mState->mWheel[i].mWheelSlip.y = 0.0f;
             if (nullSpec != nullptr) {
-                wheel.mTerrainType.Change(nullSpec);
+                mState->mWheel[i].mTerrainType.Change(nullSpec);
             }
-            wheel.mPrevBlownState = 0;
-            wheel.mPercentFsFkTransfer = 0.0f;
-            wheel.mLoad = 0.0f;
-            wheel.mBlownState = 0;
+            mState->mWheel[i].mPrevBlownState = 0;
+            mState->mWheel[i].mPercentFsFkTransfer = 0.0f;
+            mState->mWheel[i].mLoad = 0.0f;
+            mState->mWheel[i].mBlownState = 0;
         }
 
-        engine.mBlownFlag = 0;
-        engine.mBoost = 0.0f;
-        engine.mBoostFlag = 0;
-        engine.mNOSFlag = 0;
-        engine.mNOS = 0.0f;
-        engine.mRPMPct = 0.0f;
-        engine.mThrottle = 0.0f;
+        mState->mEngine.mBlownFlag = 0;
+        mState->mEngine.mBoost = 0.0f;
+        mState->mEngine.mBoostFlag = 0;
+        mState->mEngine.mNOSFlag = 0;
+        mState->mEngine.mNOS = 0.0f;
+        mState->mEngine.mRPMPct = 0.0f;
+        mState->mEngine.mThrottle = 0.0f;
         return;
     }
 
-    simUpdating = 1;
-    vel1 = vel0;
-    vel0 = *mTarget.GetVelocity();
+    mState->mSimUpdating = 1;
+    mState->mVel1 = mState->mVel0;
+    mState->mVel0 = *mTarget.GetVelocity();
 
     const float invDT = 1.0f / dT;
-    accel.x = (vel0.x - vel1.x) * invDT;
-    accel.y = (vel0.y - vel1.y) * invDT;
-    accel.z = (vel0.z - vel1.z) * invDT;
+    mState->mAccel.x = (mState->mVel0.x - mState->mVel1.x) * invDT;
+    mState->mAccel.y = (mState->mVel0.y - mState->mVel1.y) * invDT;
+    mState->mAccel.z = (mState->mVel0.z - mState->mVel1.z) * invDT;
 
-    engine.mRPMPct = data.mRPMPercent;
-    engine.mNOSFlag = data.mNOSFlag;
-    engine.mNOS = data.mNOSCapacity;
-    engine.mThrottle = data.mThrottlePercent;
-    engine.mBlownFlag = data.mEngineBlown;
-    brake = data.mBrakePercent;
-    eBrake = data.mEBrakePercent;
-    steering = static_cast<unsigned short>(static_cast<int>(data.mSteering * 10430.378f));
-    siren = data.mSirenState;
-    hotPursuitWord = data.mHotPursuit;
-    oversteer = data.mOversteer;
-    understeer = data.mUndersteer;
-    slipAngle = -data.mSlipAngle;
-    health = data.mHealth;
+    mState->mEngine.mRPMPct = data.mRPMPercent;
+    mState->mEngine.mNOSFlag = data.mNOSFlag;
+    mState->mEngine.mNOS = data.mNOSCapacity;
+    mState->mEngine.mThrottle = data.mThrottlePercent;
+    mState->mEngine.mBlownFlag = data.mEngineBlown;
+    mState->mBrake = data.mBrakePercent;
+    mState->mEBrake = data.mEBrakePercent;
+    mState->mSteering = static_cast<unsigned short>(static_cast<int>(data.mSteering * 10430.378f));
+    mState->mSirenState = data.mSirenState;
+    mState->mHotPursuit = data.mHotPursuit;
+    mState->mOversteer = data.mOversteer;
+    mState->mUndersteer = data.mUndersteer;
+    mState->mSlipAngle = -data.mSlipAngle;
+    mState->mHealth = data.mHealth;
 
     const bVector3 *velocity = mTarget.GetVelocity();
     const float speedSq = velocity->x * velocity->x + velocity->y * velocity->y + velocity->z * velocity->z;
-    float fwSpeed = 0.0f;
     if (speedSq > 0.0f) {
-        fwSpeed = bSqrt(speedSq);
+        mState->mFWSpeed = bSqrt(speedSq);
+    } else {
+        mState->mFWSpeed = 0.0f;
     }
-    fwSpeedState = fwSpeed;
 
-    trailerID = data.mTrailer;
-    timeSinceSeen = data.mTimeSinceSeen;
-    desiredSpeed = data.mDesiredSpeed;
-    controlSource = static_cast<Sound::ControlSource>(data.mControlSource);
+    mState->mTrailerID = data.mTrailer;
+    mState->mTimeSinceSeen = data.mTimeSinceSeen;
+    mState->mDesiredSpeed = data.mDesiredSpeed;
+    mState->mControlSource = static_cast<Sound::ControlSource>(data.mControlSource);
 
     for (int i = 0; i < 4; ++i) {
-        Sound::Wheel &wheel = wheels[i];
-        wheel.mWheelOnGround = data.mWheelOnGround[i] ? 1 : 0;
-        wheel.mWheelSlip = data.mWheelSlip[i];
-        wheel.mPercentFsFkTransfer = 1.0f - data.mTractionPct[i];
-        wheel.mPrevTerrainType = wheel.mTerrainType;
-        wheel.mTerrainType = data.mWheelTerrain[i];
-        wheel.mLoad = data.mWheelLoad[i];
-        wheel.mPrevBlownState = wheel.mBlownState;
-        wheel.mBlownState = data.mBlownTires[i];
-        wheel.mWheelForceZ = data.mWheelZforce[i];
+        mState->mWheel[i].mWheelOnGround = data.mWheelOnGround[i] ? 1 : 0;
+        mState->mWheel[i].mWheelSlip = data.mWheelSlip[i];
+        mState->mWheel[i].mPercentFsFkTransfer = 1.0f - data.mTractionPct[i];
+        mState->mWheel[i].mPrevTerrainType = mState->mWheel[i].mTerrainType;
+        mState->mWheel[i].mTerrainType = data.mWheelTerrain[i];
+        mState->mWheel[i].mLoad = data.mWheelLoad[i];
+        mState->mWheel[i].mPrevBlownState = mState->mWheel[i].mBlownState;
+        mState->mWheel[i].mBlownState = data.mBlownTires[i];
+        mState->mWheel[i].mWheelForceZ = data.mWheelZforce[i];
     }
 
-    const bool gearChanged = driveline.mGear != data.mGear;
-    if (gearChanged) {
-        driveline.mGear = static_cast<Sound::Gear>(data.mGear);
+    if (mState->mDriveline.mGear != data.mGear) {
+        mState->mDriveline.mGear = static_cast<Sound::Gear>(data.mGear);
+        mState->mDriveline.mGearShiftFlag = 1;
+    } else {
+        mState->mDriveline.mGearShiftFlag = 0;
     }
-    driveline.mGearShiftFlag = gearChanged;
 }
 
 void HeliSoundConn::UpdateState(float dT) {

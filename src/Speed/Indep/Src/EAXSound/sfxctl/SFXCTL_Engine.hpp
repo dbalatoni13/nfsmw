@@ -8,6 +8,7 @@
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL.hpp"
 #include "Speed/Indep/Src/Misc/Table.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXSndUtil.h"
+#include "Speed/Indep/bWare/Inc/bMath.hpp"
 
 struct SFXCTL_Shifting;
 struct SFXCTL_AccelTrans;
@@ -24,18 +25,19 @@ struct SFXCTL_Engine : public SFXCTL {
     /* 0x2c */ SFXCTL_AccelTrans *m_pAccelTransitionCtl;
     /* 0x30 */ struct SFXCTL_Physics *m_pPhysicsCtl;
     /* 0x34 */ SFXCTL_3DCarPos *m_p3DCarPosCtl;
-    /* 0x38 */ char _pad_eng_vec[0x10]; // bVector3 vCarPos + pad
+    /* 0x38 */ bVector3 vCarPos;
     /* 0x48 */ Average Trq;
     /* 0x70 */ Average Rpm;
     /* 0x98 */ Average VisRpmAvg;
     /* 0xc0 */ float tMergeWithPhysicsOffStart;
-    /* 0xc4 */ int bPreRace;
+    /* 0xc4 */ bool bPreRace;
     /* 0xc8 */ int m_iEngineVol;
     /* 0xcc */ bool bIsRedlining;
-    /* 0xd0 */ char _pad_eng1[0x4]; // padding to cInterpLine
+    /* 0xd0 */ bool bWasRedlining;
     /* 0xd4 */ cInterpLine RedLineSampFactor;
     /* 0xf0 */ cInterpLine RedLineEngFactor;
-    /* 0x10c */ char _pad_eng2[0x114 - 0x10c];
+    /* 0x10c */ bool bRedliningBounce;
+    /* 0x110 */ float RedlineingVisualOffset;
     /* 0x114 */ float m_fEng_RPM;
     /* 0x118 */ float m_fPrevRPM;
     /* 0x11c */ float m_fSmoothedEng_RPM;
@@ -51,7 +53,7 @@ struct SFXCTL_Engine : public SFXCTL {
     /* 0x144 */ unsigned short m_aglRPM_LFO;
     /* 0x146 */ unsigned short m_aglTRQ_LFO;
     /* 0x148 */ unsigned short m_aglVOL_LFO;
-    /* 0x14a */ char _pad_eng3[0x150 - 0x14a];
+    /* 0x14c */ bool bPlayCompression;
     /* 0x150 */ cPathLine m_ComppressionRPM;
     /* 0x1dc */ HHANDLER mmsgMVehicleDestroyed;
     /* 0x1e0 */ HHANDLER mmsgMVehicleDestroyed2;

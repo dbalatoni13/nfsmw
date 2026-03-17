@@ -47,7 +47,41 @@ class Pkt_Heli_Open : public Sim::Packet {
 
 class Pkt_Car_Service : public Sim::Packet {
   public:
-    explicit Pkt_Car_Service(float audible_rpm);
+    explicit Pkt_Car_Service(float audible_rpm)
+        : mRPMPercent(0.0f) //
+        , mThrottlePercent(0.0f) //
+        , mBrakePercent(0.0f) //
+        , mEBrakePercent(0.0f) //
+        , mSteering(0.0f) //
+        , mGear(1) //
+        , mSirenState(-1) //
+        , mHotPursuit(false) //
+        , mOversteer(0.0f) //
+        , mUndersteer(0.0f) //
+        , mSlipAngle(0.0f) //
+        , mHealth(1.0f) //
+        , mAudibleRPMPct(audible_rpm) //
+        , mEngineBlown(0) //
+        , mNOSFlag(false) //
+        , mNOSCapacity(0.0f) //
+        , mTrailer(0) //
+        , mTimeSinceSeen(0.0f) //
+        , mDesiredSpeed(0.0f) //
+        , mControlSource(0) {
+        const Attrib::Collection *const nullSpec = SimSurface::kNull.GetConstCollection();
+        for (int i = 0; i < 4; ++i) {
+            mTractionPct[i] = 1.0f;
+            if (nullSpec != nullptr) {
+                mWheelTerrain[i].Change(nullSpec);
+            }
+            mWheelSlip[i].x = 0.0f;
+            mWheelSlip[i].y = 0.0f;
+            mWheelLoad[i] = 0.0f;
+            mWheelZforce[i] = 0.0f;
+            mWheelOnGround[i] = false;
+            mBlownTires[i] = 0;
+        }
+    }
     ~Pkt_Car_Service() override;
     UCrc32 ConnectionClass() override;
     unsigned int Size() override;

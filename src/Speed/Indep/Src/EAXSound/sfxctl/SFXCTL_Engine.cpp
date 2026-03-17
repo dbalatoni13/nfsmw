@@ -24,6 +24,10 @@ extern float lbl_803D72EC;
 extern float lbl_803D72F0;
 extern float lbl_803D72F4;
 extern float lbl_803D72F8;
+extern Slope RedLineDelayPerGear;
+
+static const float REDLINE_ENG_FADE[2] = {450.0f, 50.0f};
+static const float REDLINE_REDSAMP_FADE[2] = {50.0f, 120.0f};
 
 struct HSIMABLE__;
 
@@ -33,9 +37,12 @@ SFXCTL_Engine::SFXCTL_Engine()
     , m_pPhysicsCtl(nullptr) //
     , m_p3DCarPosCtl(nullptr) //
     , tMergeWithPhysicsOffStart(0.0f) //
-    , bPreRace(0) //
+    , bPreRace(false) //
     , m_iEngineVol(0) //
     , bIsRedlining(false) //
+    , bWasRedlining(false) //
+    , bRedliningBounce(false) //
+    , RedlineingVisualOffset(0.0f) //
     , m_fEng_RPM(0.0f) //
     , m_fPrevRPM(0.0f) //
     , m_fSmoothedEng_RPM(0.0f) //
@@ -51,6 +58,7 @@ SFXCTL_Engine::SFXCTL_Engine()
     , m_aglRPM_LFO(0x4097) //
     , m_aglTRQ_LFO(0x4097) //
     , m_aglVOL_LFO(0x4097) //
+    , bPlayCompression(false) //
     , mmsgMVehicleDestroyed(nullptr) //
     , mmsgMVehicleDestroyed2(nullptr) {}
 
@@ -76,6 +84,9 @@ void SFXCTL_Engine::InitSFX() {
     SFXCTL::InitSFX();
     m_iEngineVol = 0;
     bIsRedlining = false;
+    bWasRedlining = false;
+    bRedliningBounce = false;
+    RedlineingVisualOffset = 0.0f;
     m_fEng_RPM = 0.0f;
     m_fPrevRPM = 0.0f;
     m_fSmoothedEng_RPM = 0.0f;
@@ -94,7 +105,6 @@ void SFXCTL_Engine::UpdateParams(float t) {
     const bVector3 *forward = static_cast<const bVector3 *>(static_cast<const void *>(&car->mMatrix.v0));
     m_p3DCarPosCtl->AssignDirectionVector(forward);
 
-    bVector3 &vCarPos = *static_cast<bVector3 *>(static_cast<void *>(_pad_eng_vec));
     const bVector3 *cur3dPos = static_cast<const bVector3 *>(static_cast<const void *>(&car->mMatrix.v3));
     const bVector2 *cur2dPos = static_cast<const bVector2 *>(static_cast<const void *>(cur3dPos));
     (void)cur2dPos;
@@ -169,8 +179,44 @@ void SFXCTL_Engine::UpdateCompression(float t) {
 }
 
 void SFXCTL_Engine::UpdateRedlining(float t) {
-    (void)t;
-    bIsRedlining = (m_fEng_RPM > 0.95f);
+    bWasRedlining = bIsRedlining;
+    if (m_pStateBase->m_eStateType == eMM_AIRACECAR) {
+        return;
+    }
+
+    if (!bIsRedlining) {
+        if (!m_pShiftCtl->IsActive() && GetEngRPM() > 9800.0f) {
+            bIsRedlining = true;
+            float TimeScaleValue = RedLineDelayPerGear.GetValue(static_cast<float>(m_pEAXCar->GetCurGear()));
+            RedLineEngFactor.Initialize(
+                RedLineEngFactor.GetValue(),
+                0.14999998f,
+                static_cast<int>(REDLINE_ENG_FADE[0] * RedLineEngFactor.GetValue() * TimeScaleValue),
+                LINEAR);
+            RedLineSampFactor.Initialize(
+                RedLineSampFactor.GetValue(),
+                0.85f,
+                static_cast<int>(REDLINE_REDSAMP_FADE[1] * (1.0f - RedLineSampFactor.GetValue()) * TimeScaleValue),
+                LINEAR);
+            bRedliningBounce = true;
+            RedlineingVisualOffset = 0.0f;
+        }
+    } else if (GetEngRPM() < 9800.0f || m_pShiftCtl->IsActive()) {
+        bIsRedlining = false;
+        RedLineEngFactor.Initialize(
+            RedLineEngFactor.GetValue(),
+            1.0f,
+            static_cast<int>(REDLINE_ENG_FADE[1] * (1.0f - RedLineEngFactor.GetValue())),
+            LINEAR);
+        RedLineSampFactor.Initialize(
+            RedLineSampFactor.GetValue(),
+            0.0f,
+            static_cast<int>(REDLINE_REDSAMP_FADE[0] * RedLineSampFactor.GetValue()),
+            LINEAR);
+    }
+
+    RedLineEngFactor.Update(t);
+    RedLineSampFactor.Update(t);
 }
 
 void SFXCTL_Engine::UpdateVolume(float t) {
@@ -237,22 +283,22 @@ have_cur_rpm:
     } else if (m_pAccelTransitionCtl->eAccelTransFxState == 1) {
         VisualRPM = m_pEAXCar->PhysRPM;
     } else {
-        if (*static_cast<int *>(static_cast<void *>(&bIsRedlining)) != 0) {
+        if (bIsRedlining) {
             float target = lbl_803D72E4;
-            if (*static_cast<int *>(static_cast<void *>(&_pad_eng2[0])) != 0) {
-                float offset = smooth(*static_cast<float *>(static_cast<void *>(&_pad_eng2[4])), target, lbl_803D72E8);
-                *static_cast<float *>(static_cast<void *>(&_pad_eng2[4])) = offset;
+            if (bRedliningBounce) {
+                float offset = smooth(RedlineingVisualOffset, target, lbl_803D72E8);
+                RedlineingVisualOffset = offset;
                 if (offset == target) {
-                    *static_cast<int *>(static_cast<void *>(&_pad_eng2[0])) = 0;
+                    bRedliningBounce = false;
                 }
             } else {
-                float offset = smooth(*static_cast<float *>(static_cast<void *>(&_pad_eng2[4])), lbl_803D72D0, lbl_803D72E8);
-                *static_cast<float *>(static_cast<void *>(&_pad_eng2[4])) = offset;
+                float offset = smooth(RedlineingVisualOffset, lbl_803D72D0, lbl_803D72E8);
+                RedlineingVisualOffset = offset;
                 if (offset == lbl_803D72D0) {
-                    *static_cast<int *>(static_cast<void *>(&_pad_eng2[0])) = 1;
+                    bRedliningBounce = true;
                 }
             }
-            VisualRPM = VisualRPM - *static_cast<float *>(static_cast<void *>(&_pad_eng2[4]));
+            VisualRPM = VisualRPM - RedlineingVisualOffset;
         }
     }
 
