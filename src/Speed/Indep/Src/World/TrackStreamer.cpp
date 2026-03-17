@@ -218,6 +218,52 @@ void *TSMemoryPool::Malloc(int size, const char *debug_name, bool best_fit, bool
     return reinterpret_cast<void *>(address);
 }
 
+int TSMemoryPool::GetAmountFree() {
+    for (TSMemoryNode *node = NodeList.GetHead(); node != NodeList.EndOfList(); node = node->GetNext()) {
+    }
+    return AmountFree;
+}
+
+TSMemoryNode *TSMemoryPool::GetNextNode(bool start_from_top, TSMemoryNode *node) {
+    TSMemoryNode *next_node;
+    if (!start_from_top) {
+        next_node = node ? node->GetPrev() : NodeList.GetTail();
+    } else {
+        next_node = node ? node->GetNext() : NodeList.GetHead();
+    }
+
+    if (next_node == NodeList.EndOfList()) {
+        return 0;
+    }
+    return next_node;
+}
+
+TSMemoryNode *TSMemoryPool::GetNextFreeNode(bool start_from_top, TSMemoryNode *node) {
+    do {
+        node = GetNextNode(start_from_top, node);
+        if (!node) {
+            return 0;
+        }
+    } while (node->Allocated);
+
+    return node;
+}
+
+TSMemoryNode *TSMemoryPool::GetNextAllocatedNode(bool start_from_top, TSMemoryNode *node) {
+    do {
+        node = GetNextNode(start_from_top, node);
+        if (!node) {
+            return 0;
+        }
+    } while (!node->Allocated);
+
+    return node;
+}
+
+unsigned int TSMemoryPool::GetPoolChecksum() {
+    return 0;
+}
+
 void *TrackStreamer::AllocateMemory(TrackStreamingSection *section, int allocation_params) {
     void *memory = bMalloc(section->Size, allocation_params | 0x2007);
     if (!memory) {
@@ -319,6 +365,26 @@ int TrackStreamer::AllocateSectionMemory(int *ptotal_needing_allocation) {
     CurrentZoneAllocatedButIncomplete = false;
     *ptotal_needing_allocation = total_needing_allocation;
     return total_out_of_memory;
+}
+
+TrackStreamingSection *TrackStreamer::FindSectionByAddress(int address) {
+    void *memory = reinterpret_cast<void *>(address);
+
+    for (int i = 0; i < NumCurrentStreamingSections; i++) {
+        TrackStreamingSection *section = CurrentStreamingSections[i];
+        if (section->pMemory == memory) {
+            return section;
+        }
+    }
+
+    for (int i = 0; i < NumTrackStreamingSections; i++) {
+        TrackStreamingSection *section = &pTrackStreamingSections[i];
+        if (section->pMemory == memory) {
+            return section;
+        }
+    }
+
+    return 0;
 }
 
 void TrackStreamer::RemoveCurrentStreamingSections() {

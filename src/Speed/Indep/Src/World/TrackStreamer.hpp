@@ -105,7 +105,12 @@ class TSMemoryPool {
   public:
     void *Malloc(int size, const char *debug_name, bool best_fit, bool allocate_from_top, int address);
     void Free(void *memory);
+    int GetAmountFree();
     int GetLargestFreeBlock();
+    TSMemoryNode *GetNextNode(bool start_from_top, TSMemoryNode *node = 0);
+    TSMemoryNode *GetNextFreeNode(bool start_from_top, TSMemoryNode *node = 0);
+    TSMemoryNode *GetNextAllocatedNode(bool start_from_top, TSMemoryNode *node = 0);
+    unsigned int GetPoolChecksum();
 
   private:
     TSMemoryNode *GetNewNode(int address, int size, bool allocated, const char *debug_name);
@@ -163,6 +168,7 @@ class TrackStreamer {
     void *AllocateMemory(TrackStreamingSection *section, int allocation_params);
     int AllocateSectionMemory(int *ptotal_needing_allocation);
     TrackStreamingSection *FindSection(int section_number);
+    TrackStreamingSection *FindSectionByAddress(int address);
     void RemoveCurrentStreamingSections();
     void AddCurrentStreamingSections(short *section_numbers, int num_sections, int position_number);
     void DetermineStreamingSections();
