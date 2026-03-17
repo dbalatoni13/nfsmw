@@ -58,11 +58,14 @@ class ParticleList {
 
 extern XenonEffectLists gNGEffectList;
 extern ParticleList gParticleList;
+extern XSpriteManager NGSpriteManager;
 extern unsigned int randomSeed;
 
 void reserveXenonEffectVec(void *vec, unsigned int count)
     __asm__("reserve__Q24_STLt6vector2Z14XenonEffectDefZQ33UTL3Stdt9Allocator2Z14XenonEffectDefZ20_type_XenonEffectDefUi");
 float bRandom(float range, unsigned int *seed);
+unsigned int bStringHash(const char *str);
+TextureInfo *GetTextureInfo(unsigned int name_hash, int allow_default, int force_local);
 
 CGEmitter::CGEmitter(const Attrib::Collection *spec, const XenonEffectDef &eDef)
     : mEmitterDef(spec, 0, nullptr) //
@@ -195,6 +198,33 @@ void ParticleList::AgeParticles(float dt) {
     }
 
     mNumParticles = alive;
+}
+
+void ParticleList::GeneratePolys() {
+    NGParticle *particle = mParticles;
+
+    if (mNumParticles != 0) {
+        if (!mContrail_tex) {
+            mContrail_tex = GetTextureInfo(bStringHash("PS2_CONTRAIL"), 0, 0);
+            mSparks_tex = GetTextureInfo(bStringHash("PS2_SPARKS"), 0, 0);
+        }
+
+        {
+            unsigned int i = 0;
+
+            do {
+                if (particle->uv[0] == 0x7f) {
+                    mCurrentTexture = mContrail_tex;
+                } else {
+                    mCurrentTexture = mSparks_tex;
+                }
+
+                i++;
+                NGSpriteManager.AddSpark(*particle, mCurrentTexture);
+                particle++;
+            } while (i < mNumParticles);
+        }
+    }
 }
 
 void DrawXenonEmitters(eView *view) {}
