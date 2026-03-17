@@ -267,7 +267,7 @@ class GRaceParameters {
 
     const char *GetSpeedTrapCamera() const;
 
-    inline void EnsureLoaded() const {}
+    void EnsureLoaded() const;
 
     void BlockUntilLoaded();
 

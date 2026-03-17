@@ -118,17 +118,20 @@ class GRaceDatabase {
 
     static void Init();
 
-    GRaceCustom *GetStartupRace() { return mStartupRace; }
-    Context GetStartupRaceContext() { return mStartupRaceContext; }
+    GRaceCustom *GetStartupRace();
+    Context GetStartupRaceContext();
     void SetStartupRace(GRaceCustom *custom, Context context);
     void FreeCustomRace(GRaceCustom *custom);
+    void DestroyCustomRace(GRaceCustom *custom);
     GRaceParameters *GetRaceFromHash(unsigned int hash);
+    GRaceParameters *GetRaceFromKey(unsigned int key);
+    GRaceParameters *GetRaceParameters(unsigned int index);
     GRaceCustom *AllocCustomRace(GRaceParameters *parms);
 
-    unsigned int GetBinCount() { return mBinCount; }
+    unsigned int GetBinCount();
     GRaceBin *GetBin(unsigned int index);
     GRaceBin *GetBinNumber(int number);
-    unsigned int GetRaceCount() { return mRaceCountStatic + mRaceCountDynamic; }
+    unsigned int GetRaceCount();
 
     void SimulateDDayComplete() {}
 
@@ -148,6 +151,8 @@ class GRaceDatabase {
     }
 
   private:
+    void ClearStartupRace();
+
     unsigned int mRaceCountStatic;           // offset 0x0, size 0x4
     unsigned int mRaceCountDynamic;          // offset 0x4, size 0x4
     struct GRaceIndexData *mRaceIndex;       // offset 0x8, size 0x4
