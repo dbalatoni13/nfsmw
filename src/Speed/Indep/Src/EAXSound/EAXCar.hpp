@@ -67,11 +67,13 @@ struct EAXCar : public CSTATE_Base {
     bool IsAccelerating() { return bIsAccelerating; }
     Sound::Gear GetCurGear() { return static_cast<Sound::Gear>(CurGear); }
     float GetPhysRPM() { return PhysRPM; }
+    float GetThrottle() { return fTrottle; }
     void SetPhysTRQ(float _TRQ) { PhysTRQ = _TRQ; }
     void SetPhysRPM(float _RPM) { PhysRPM = _RPM; }
     void SetIsAccelerating(float _IsAccelerating) { bIsAccelerating = _IsAccelerating != 0.0f; }
     void SetCurGear(Sound::Gear _CurGear) { CurGear = _CurGear; }
     void SetThrottle(float _fTrottle) { fTrottle = _fTrottle; }
+    float GetFinalAudioRPM() { return m_fAudioRPM; }
 
     static StateInfo *GetStaticStateInfo(void) {
         return &s_StateInfo;
@@ -124,9 +126,5 @@ struct EAXCar : public CSTATE_Base {
     Attrib::Gen::turbosfx mTurboInfo;         // offset 0xEC
     Attrib::Gen::acceltrans mAccelInfo;       // offset 0x100
 };
-
-inline EAX_CarState *SndBase::GetPhysCar() {
-    return m_pEAXCar->GetPhysCar();
-}
 
 #endif

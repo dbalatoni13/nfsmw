@@ -20,6 +20,8 @@
 
 extern unsigned int bDefaultSeed;
 
+typedef unsigned short bAngle;
+
 unsigned int bRandom(int range, unsigned int *seed);
 float bRandom(float range, unsigned int *seed);
 unsigned int bRandom(int range);

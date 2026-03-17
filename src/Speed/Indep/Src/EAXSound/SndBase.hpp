@@ -93,4 +93,10 @@ struct SndBase : public AudioMemBase {
     int objectID;                     // offset 0x20, size 0x4
 };
 
+#include "Speed/Indep/Src/EAXSound/States/STATE_Base.hpp"
+
+inline EAX_CarState *SndBase::GetPhysCar() {
+    return m_pStateBase->GetPhysCar();
+}
+
 #endif

@@ -96,7 +96,14 @@ struct SFXCTL_AIPhysics : public SFXCTL_Physics {
     SFXCTL_AIPhysics();
     /* 0xd0 */ SFXCTL_Shifting *m_pShiftCtl;
     /* 0xd4 */ SndAIStateManager AIStateManager;
-    /* 0x268 */ char _pad_ai[0x20]; // padding for intermediate fields
+    /* 0x268 */ bool IsDrifting;
+    /* 0x26c */ bool IsCornering;
+    /* 0x270 */ float SteadyVelocityFactor;
+    /* 0x274 */ float TargetRPMOffset;
+    /* 0x278 */ bAngle m_AngleDeltaRPM_LFO;
+    /* 0x27c */ float m_DeltaRPM_LFO_Offset;
+    /* 0x280 */ int UpShiftSameGearCount;
+    /* 0x284 */ int DownShiftSameGearCount;
     /* 0x288 */ float Zero60Time;
     /* 0x28c */ float m_fDeltaRPM;
 
@@ -109,7 +116,7 @@ struct SFXCTL_AIPhysics : public SFXCTL_Physics {
     void InitSFX() override;
     void UpdateParams(float t) override;
     void AttachController(SFXCTL *) override;
-    void GenDeltaRPM();
+    float GenDeltaRPM();
     void UpdateRPM(float t);
     void UpdateTorque(float t);
     void UpdateAccel(float t);

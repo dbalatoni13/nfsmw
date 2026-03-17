@@ -182,6 +182,14 @@ struct EAX_CarState : public UTL::Collections::Listable<EAX_CarState, 10> {
         return mDriveline.mGearShiftFlag != 0;
     }
 
+    EAX_CarState *GetState() {
+        return this;
+    }
+
+    EAX_CarState *GetDriver() {
+        return this;
+    }
+
     int GetNISCarID() {
         return mNISCarID;
     }
@@ -192,6 +200,10 @@ struct EAX_CarState : public UTL::Collections::Listable<EAX_CarState, 10> {
 
     float GetBrake() {
         return mBrake;
+    }
+
+    Sound::Gear GetGear() {
+        return mDriveline.mGear;
     }
 
     const bVector3 *GetForwardVector() {
@@ -210,12 +222,20 @@ struct EAX_CarState : public UTL::Collections::Listable<EAX_CarState, 10> {
         return mFWSpeed;
     }
 
+    float GetThrottle() {
+        return mEngine.mThrottle;
+    }
+
     float GetVelocityMagnitude() {
         return bLength(mVel0);
     }
 
     float GetVelocityMagnitudeMPH() {
         return MPS2MPH(GetVelocityMagnitude());
+    }
+
+    void SetVisualRPM(float pct) {
+        mVisualRPM = pct;
     }
 
     EAX_CarState(const Attrib::Collection *atr, Sound::Context context, unsigned int wuid, HSIMABLE__ *handle);

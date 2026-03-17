@@ -62,6 +62,9 @@ struct SndAIStateManager : public AudioMemBase {
     void Update(float t);
     void UpdateState(float t);
     void GeneratePotentialStates(bool *pPotentialStates);
+    SND_AI_STATE GetState() {
+        return CurState;
+    }
 };
 
 #endif

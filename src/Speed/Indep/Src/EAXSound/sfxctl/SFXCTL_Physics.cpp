@@ -423,17 +423,47 @@ void SFXCTL_AIPhysics::UpdateTorque(float t) {
 }
 
 void SFXCTL_AIPhysics::UpdateParams(float t) {
-    SFXCTL_Physics::UpdateParams(t);
-    GenDeltaRPM();
+    bool IsRacing;
+
+    SFXCTL::UpdateParams(t);
+    AIStateManager.Update(t);
+    IsCornering = AIStateManager.GetState() == SND_AI_STATE_CORNER_LEFT || AIStateManager.GetState() == SND_AI_STATE_CORNER_RIGHT;
+    Average_Record(&m_fDeltaDesiredSpeed, GetPhysCar()->GetDriver()->GetThrottle() * 100.0f);
+    AverageBase_Recalculate(&m_fDeltaDesiredSpeed);
+    m_OldThrottle = m_fThrottle;
+    m_fDeltaRPM = GenDeltaRPM();
+    UpdateAccel(t);
+    m_fThrottle = static_cast<float>(*static_cast<int *>(static_cast<void *>(&IsAccelerating))) * 100.0f;
     UpdateRPM(t);
     UpdateTorque(t);
-    UpdateAccel(t);
+    m_LastGear = m_CurGear;
     UpdateGear();
+
+    m_LastGear = m_CurGear;
+    UpdateGear();
+
+    if (INIS::Get() != nullptr && INIS::Get()->IsPlaying()) {
+        if (INIS::Get()->GetAnimScene() != nullptr) {
+            UpdateNIS(INIS::Get()->GetAnimScene()->GetTimeElapsed(), 0.0f);
+            return;
+        }
+    } else if (GameFlowSndState[3] != 0) {
+        UpdateNIS(0.0f, t);
+        return;
+    }
+
+    m_pEAXCar->SetPhysTRQ(PhysicsTRQ);
+    m_pEAXCar->SetPhysRPM(PhysicsRPM);
+    m_pEAXCar->SetIsAccelerating(static_cast<float>(IsAccelerating));
+    m_pEAXCar->SetCurGear(m_CurGear);
+    m_pEAXCar->SetThrottle(m_fThrottle);
+    GetPhysCar()->SetVisualRPM(m_pEAXCar->GetFinalAudioRPM());
 }
 
-void SFXCTL_AIPhysics::GenDeltaRPM() {
+float SFXCTL_AIPhysics::GenDeltaRPM() {
     float prev = m_fDeltaRPM;
     m_fDeltaRPM = PhysicsRPM - prev;
+    return m_fDeltaRPM;
 }
 
 void SFXCTL_AIPhysics::UpdateRPM(float t) {
