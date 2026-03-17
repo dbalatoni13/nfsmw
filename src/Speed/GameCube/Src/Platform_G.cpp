@@ -199,3 +199,64 @@ void eInitTexture() {}
 void eUnSwizzle8bitPalette(unsigned int *palette) {}
 
 void eSwizzle8bitPalette(unsigned int *palette) {}
+
+struct VMStats {
+    unsigned int mNumPageFaults;
+    unsigned int mNumWritebacks;
+    float mElapsedTime;
+    unsigned int mServiceTimeMicroSecs;
+    unsigned int mServiceTimeMin;
+    unsigned int mServiceTimeMax;
+    float mServiceTimeAvg;
+
+    void Init();
+};
+
+struct VMStatsManager {
+    bool mInitialized;
+    unsigned long long mFrameCounter;
+    VMStats mFrameStats;
+    float mElapsedTime;
+    unsigned int mAccumService_us;
+    unsigned int mAccumNumFaults;
+    float mMinServicePercentPerFrame;
+    float mMaxServicePercentPerFrame;
+    unsigned int mMinNumServicesPerFrame;
+    unsigned int mMaxNumServicesPerFrame;
+    float mMinFrameTime;
+    float mMaxFrameTime;
+    const char *DebugName;
+
+    void Init(const char *name);
+};
+
+void VMStats::Init() {
+    mServiceTimeMax = 0;
+    mServiceTimeAvg = 0.0f;
+    mServiceTimeMin = static_cast<unsigned int>(-1);
+    mNumPageFaults = 0;
+    mNumWritebacks = 0;
+    mElapsedTime = 0.0f;
+    mServiceTimeMicroSecs = 0;
+}
+
+void VMStatsManager::Init(const char *name) {
+    mFrameStats.mNumPageFaults = 0;
+    mFrameStats.mNumWritebacks = 0;
+    DebugName = name;
+    mFrameStats.mServiceTimeMin = static_cast<unsigned int>(-1);
+    mFrameCounter = 0;
+    mElapsedTime = 0.0f;
+    mMinNumServicesPerFrame = 9999999;
+    mMaxNumServicesPerFrame = 0;
+    mMinFrameTime = 9999999.0f;
+    mMaxFrameTime = -9999999.0f;
+    mFrameStats.mElapsedTime = 0.0f;
+    mFrameStats.mServiceTimeMicroSecs = 0;
+    mFrameStats.mServiceTimeMax = 0;
+    mFrameStats.mServiceTimeAvg = 0.0f;
+    mAccumService_us = 0;
+    mAccumNumFaults = 0;
+    mMinServicePercentPerFrame = 9999999.0f;
+    mMaxServicePercentPerFrame = -9999999.0f;
+}

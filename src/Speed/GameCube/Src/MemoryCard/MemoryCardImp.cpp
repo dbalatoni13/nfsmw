@@ -94,6 +94,7 @@ struct MemoryCardImp {
     RealmcIface::SaveReq *m_pSaveReq;
     RealmcIface::SaveReq m_SaveReq;
 
+    const char *GetPrefix();
     RealmcIface::SaveInfo *ConstructSaveInfo(MemoryCard::SaveType type, const char *DisplayName, int aSize);
     void DestructSaveInfo();
     void BootupCheckDone(RealmcIface::CardStatus status, RealmcIface::BootupCheckResults *pParam);
@@ -104,6 +105,14 @@ int bStrLen(const char *str);
 MemoryCard *GetMemcard();
 
 extern const char *gComment1;
+
+MemoryCard *GetMemcard() {
+    return MemoryCard::s_pThis;
+}
+
+const char *MemoryCardImp::GetPrefix() {
+    return "NFSMW";
+}
 
 RealmcIface::SaveInfo *MemoryCardImp::ConstructSaveInfo(MemoryCard::SaveType type, const char *DisplayName, int aSize) {
     static char sDisplayName[32];

@@ -52,6 +52,10 @@ struct GCHW_VD {
     void iDraw();
 };
 
+struct MoviePlayer {
+    void FillInTextureInfo(unsigned int *buffer, TextureInfo *texture_info, RealShape::Shape *yuv_shape);
+};
+
 GCHW_VD *gGCVD;
 
 GCHW_VD::GCHW_VD(RealShape::Shape *yuvshp, bool isVP6Movie) : mIsVP6(isVP6Movie) {
@@ -81,6 +85,12 @@ GCHW_VD::GCHW_VD(RealShape::Shape *yuvshp, bool isVP6Movie) : mIsVP6(isVP6Movie)
 
 GCHW_VD::~GCHW_VD() {
     DELETE_tBigYUVSwizzler(m_pYUVSwizzler);
+}
+
+void MoviePlayer::FillInTextureInfo(unsigned int *buffer, TextureInfo *texture_info, RealShape::Shape *yuv_shape) {
+    if (gGCVD) {
+        gGCVD->mCurrentFrame = yuv_shape;
+    }
 }
 
 void GCDrawMovie() {
