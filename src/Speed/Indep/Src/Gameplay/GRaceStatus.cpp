@@ -117,26 +117,32 @@ float GRacerInfo::GetHudPctRaceComplete() const {
 }
 
 void GRacerInfo::StartRace() {
+    GRaceParameters *raceParameters = GRaceStatus::Get().GetRaceParameters();
+    float startTime = raceParameters ? raceParameters->GetStartTime() : 0.0f;
+
     mFinishedRacing = false;
-    mRaceTimer.Reset(0.0f);
-    mLapTimer.Reset(0.0f);
-    mCheckTimer.Reset(0.0f);
+    mRaceTimer.Reset(startTime);
     mRaceTimer.Start();
-    mLapTimer.Start();
-    mCheckTimer.Start();
+    StartLap(1);
 }
 
-void GRacerInfo::StartLap(int lap) {
-    mLapsCompleted = lap;
+void GRacerInfo::StartLap(int lapIndexOneBased) {
+    mLapsCompleted = lapIndexOneBased - 1;
     mCheckpointsHitThisLap = 0;
     mLapTimer.Reset(0.0f);
     mLapTimer.Start();
+    StartCheckpoint(0);
 }
 
-void GRacerInfo::StartCheckpoint(int checkpoint) {
-    mCheckpointsHitThisLap = checkpoint;
+void GRacerInfo::StartCheckpoint(int checkIndex) {
+    if (checkIndex == mCheckpointsHitThisLap + 1) {
+        mCheckpointsHitThisLap = checkIndex;
+    }
+
     mCheckTimer.Reset(0.0f);
     mCheckTimer.Start();
+    mDistToNextCheckpoint = 0.0f;
+    mTimeCrossedLastCheck = mRaceTimer.GetTime();
 }
 
 void GRacerInfo::NotifySpeedTrapTriggered(float speed) {
@@ -149,11 +155,17 @@ void GRacerInfo::NotifySpeedTrapTriggered(float speed) {
 }
 
 void GRacerInfo::FinishRace() {
+    ISimable *simable;
+    UMath::Vector3 linearVelocity;
+
     mRaceTimer.Stop();
-    mLapTimer.Stop();
-    mCheckTimer.Stop();
     mFinishedRacing = true;
-    mFinishingSpeed = CalcAverageSpeed();
+
+    simable = GetSimable();
+    if (simable) {
+        simable->GetLinearVelocity(linearVelocity);
+        mFinishingSpeed = UMath::Length(linearVelocity);
+    }
 }
 
 bool GRacerInfo::IsBehind(const GRacerInfo &rhs) const {
@@ -187,7 +199,11 @@ bool GRacerInfo::IsBehind(const GRacerInfo &rhs) const {
 }
 
 bool GRacerInfo::AreStatsReady() const {
-    return mhSimable != nullptr;
+    if (GRaceStatus::Get().GetRaceContext() != GRace::kRaceContext_TimeTrial) {
+        return true;
+    }
+
+    return IsFinishedRacing() || GetIsEngineBlown() || GetIsTotalled();
 }
 
 void GRacerInfo::ClearAll() {
@@ -1453,6 +1469,20 @@ void GRaceStatus::MakeCatchUpData() {
     }
 }
 
+void GRaceStatus::ParseCatchUpData(const char *skill, const char *spread) {}
+
+int GRaceStatus::GetCheckpointCount() {
+    return mCheckpoints.size();
+}
+
+GTrigger *GRaceStatus::GetCheckpoint(int index) {
+    return mCheckpoints[index];
+}
+
+GTrigger *GRaceStatus::GetNextCheckpoint() {
+    return mNextCheckpoint;
+}
+
 void GRaceStatus::ClearTimes() {
     bMemSet(mLapTimes, 0, sizeof(mLapTimes));
     bMemSet(mCheckTimes, 0, sizeof(mCheckTimes));
@@ -1534,6 +1564,37 @@ float GRaceStatus::GetWorstLapTime(int racerIndex) {
     }
 
     return worst;
+}
+
+float GRaceStatus::GetFinishTimeBehind(int racerIndex) {
+    GRacerInfo &info = mRacerInfo[racerIndex];
+    float finishTime = info.GetRaceTime();
+    float bestFinish = finishTime;
+
+    for (int i = 0; i < mRacerCount; ++i) {
+        if (i == racerIndex) {
+            continue;
+        }
+
+        GRacerInfo &opponent = mRacerInfo[i];
+        if (opponent.GetRaceTime() < bestFinish) {
+            bestFinish = opponent.GetRaceTime();
+        }
+    }
+
+    return finishTime - bestFinish;
+}
+
+int GRaceStatus::GetLapsLed(int racerIndex) {
+    int numLed = 0;
+
+    for (int i = 0; i < 10; ++i) {
+        if (GetLapPosition(i, racerIndex, true) == 1) {
+            ++numLed;
+        }
+    }
+
+    return numLed;
 }
 
 float GRaceStatus::GetRaceSpeedTrapSpeed(int trapIndex, int racerIndex) {
