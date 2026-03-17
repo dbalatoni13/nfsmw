@@ -111,6 +111,7 @@ class TSMemoryPool {
     TSMemoryNode *GetNextFreeNode(bool start_from_top, TSMemoryNode *node = 0);
     TSMemoryNode *GetNextAllocatedNode(bool start_from_top, TSMemoryNode *node = 0);
     unsigned int GetPoolChecksum();
+    void DebugPrint();
 
   private:
     TSMemoryNode *GetNewNode(int address, int size, bool allocated, const char *debug_name);
@@ -168,6 +169,7 @@ class TrackStreamer {
 
     void ServiceGameState();
     void ServiceNonGameState();
+    int CountUserAllocations(const char **pdebug_name);
     void SetStreamingPosition(int position_number, const bVector3 *position);
     void ClearStreamingPositions();
     void BlockUntilLoadingComplete();
@@ -194,6 +196,7 @@ class TrackStreamer {
     void UnJettisonSections();
     int BuildHoleMovements(HoleMovement *hole_movements, int max_movements, int filler_method, int largest_free,
                            int *pamount_moved, int max_amount_to_move);
+    int DoHoleFilling(int largest_free);
     bool NeedsGameStateActivation(TrackStreamingSection *section);
     int GetSectionToActivate(int loaded_frames);
     void HandleSectionActivation();

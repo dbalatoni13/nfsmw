@@ -6,6 +6,7 @@
 #endif
 
 #include "Clans.hpp"
+#include "Car.hpp"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
@@ -29,6 +30,7 @@ struct SkidMaker {
     // total size: 0x4
     struct SkidSet *pSkidSet; // offset 0x0, size 0x4
 
+    void MakeSkid(Car *pCar, bVector3 *position, bVector3 *delta_position, int terrain_type, float intensity);
     void MakeNoSkid();
 };
 

@@ -1,8 +1,11 @@
 #include "WeatherMan.hpp"
 
+#include "Speed/Indep/Src/Camera/Camera.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
-extern bTList<GenericRegion> RegionLists[NUM_REGION_TYPES];
+bTList<GenericRegion> RegionLists[NUM_REGION_TYPES];
+int RegionCount[NUM_REGION_TYPES];
+bVector3 cPos;
 extern float BaseWeatherFogStart;
 extern float BaseWeatherFog;
 extern float BaseFogFalloffY;
@@ -123,4 +126,69 @@ int RegionQuery::CalculateRegionInfo(eView *view, RegionType regionKind, int InF
     oldDistFogPower_27398 = DistFogPower;
     oldDistFogColour_27397 = DistFogColour;
     return 1;
+}
+
+void AddRegion(GenericRegion *region) {
+    unsigned int region_type = static_cast<unsigned int>(region->Type);
+    if (region_type == 0 && region->Blend == 0) {
+        region_type = REGION_TUNNEL;
+        region->Type = REGION_TUNNEL;
+    }
+
+    if (region_type < NUM_REGION_TYPES) {
+        RegionLists[region_type].AddTail(region);
+        RegionCount[region_type] += 1;
+    }
+}
+
+void RemoveRegion(GenericRegion *region) {
+    region->Remove();
+}
+
+int DepthRegion(GenericRegion *before, GenericRegion *after) {
+    bVector3 before_position(before->PositionX - cPos.x, before->PositionY - cPos.y, before->PositionZ - cPos.z);
+    bVector3 after_position(after->PositionX - cPos.x, after->PositionY - cPos.y, after->PositionZ - cPos.z);
+    float before_distance = bSqrt(before_position.x * before_position.x + before_position.y * before_position.y +
+                                  before_position.z * before_position.z);
+    float after_distance = bSqrt(after_position.x * after_position.x + after_position.y * after_position.y +
+                                 after_position.z * after_position.z);
+    return before_distance <= after_distance;
+}
+
+GenericRegion *GetClosestRegionInView(eView *view, bVector3 *endVector, float *angleCos) {
+    Camera *camera = view ? view->GetCamera() : 0;
+    if (!camera || view->CameraMoverList.IsEmpty()) {
+        return 0;
+    }
+
+    cPos = *camera->GetPosition();
+    bVector3 camera_direction = *camera->GetDirection();
+    RegionLists[REGION_BLOOM].Sort(DepthRegion);
+
+    GenericRegion *closest_region = 0;
+    float closest_distance = 99999.0f;
+    for (GenericRegion *region = RegionLists[REGION_BLOOM].GetHead(); region != RegionLists[REGION_BLOOM].EndOfList();
+         region = region->GetNext()) {
+        bVector3 to_region(region->PositionX - cPos.x, region->PositionY - cPos.y, region->PositionZ - cPos.z);
+        bVector3 direction;
+        bNormalize(&direction, &to_region);
+
+        float dot = direction.x * camera_direction.x + direction.y * camera_direction.y + direction.z * camera_direction.z;
+        if (0.0f < dot) {
+            float distance =
+                bSqrt(to_region.x * to_region.x + to_region.y * to_region.y + to_region.z * to_region.z);
+            if (distance < closest_distance) {
+                *angleCos = dot;
+                closest_region = region;
+                closest_distance = distance;
+            }
+        }
+    }
+
+    if (closest_region) {
+        endVector->x = closest_region->PositionX;
+        endVector->y = closest_region->PositionY;
+        endVector->z = closest_region->PositionZ;
+    }
+    return closest_region;
 }

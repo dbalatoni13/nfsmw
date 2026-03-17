@@ -9,6 +9,8 @@
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 #include "Speed/Indep/bWare/Inc/bFunk.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
+#include "dolphin/PPCArch.h"
+#include "dolphin/os/OSCache.h"
 
 extern BOOL bMemoryTracing;
 extern int ScenerySectionLODOffset;
@@ -17,6 +19,9 @@ extern int ScenerySectionToBlink;
 extern int RealLoopCounter;
 extern bool PostLoadFixupDisabled;
 extern int AllowDuplicateSolids;
+extern int ForceHoleFillerMethod;
+extern int WaitForFrameBufferSwapDisabled;
+extern unsigned int eFrameCounter;
 int Get2PlayerSectionNumber(int section_number);
 void GetScenerySectionName(char *name, int section_number);
 const char *GetScenerySectionName(int section_number);
@@ -24,6 +29,8 @@ void PostLoadFixup();
 void SetDuplicateTextureWarning(BOOL enabled);
 bool LoadTempPermChunks(bChunk **ppchunks, int *psizeof_chunks, int allocation_params, const char *debug_name);
 int DoLinesIntersect(const bVector2 &line1_start, const bVector2 &line1_end, const bVector2 &line2_start, const bVector2 &line2_end);
+void eWaitUntilRenderingDone();
+void MoveChunks(bChunk *dest_chunks, bChunk *source_chunks, int sizeof_chunks, const char *debug_name);
 
 static unsigned int prev_need_loading_bar_26275 = 0;
 static const float kMaxDistance_TrackStreamer = 3.4028235e+38f;
@@ -606,6 +613,80 @@ int TrackStreamer::BuildHoleMovements(HoleMovement *hole_movements, int max_move
         return -1;
     }
     return num_movements;
+}
+
+int TrackStreamer::DoHoleFilling(int largest_free) {
+    const char *debug_name = 0;
+    HoleMovement hole_movements[128];
+    int amount_moved = 0;
+
+    CountUserAllocations(&debug_name);
+    if (debug_name) {
+        pMemoryPool->DebugPrint();
+        return 0;
+    }
+
+    int best_method = -1;
+    int best_amount_moved = 0x7FFFFFFF;
+    if (ForceHoleFillerMethod < 0) {
+        for (int filler_method = 1; filler_method < 6; filler_method++) {
+            int num_movements =
+                BuildHoleMovements(hole_movements, 0x80, filler_method, largest_free, &amount_moved, best_amount_moved);
+            if (num_movements > 0 && amount_moved < best_amount_moved) {
+                best_method = filler_method;
+                best_amount_moved = amount_moved;
+            }
+        }
+    } else {
+        int num_movements = BuildHoleMovements(hole_movements, 0x80, ForceHoleFillerMethod, largest_free, 0, 0x7FFFFFFF);
+        if (num_movements > 0) {
+            best_method = ForceHoleFillerMethod;
+        }
+    }
+
+    if (best_method < 0) {
+        return 0;
+    }
+
+    int num_movements = BuildHoleMovements(hole_movements, 0x80, best_method, largest_free, 0, 0x7FFFFFFF);
+    for (int i = 0; i < num_movements; i++) {
+        HoleMovement *movement = &hole_movements[i];
+        TrackStreamingSection *section = FindSectionByAddress(movement->Address);
+        if (LastWaitUntilRenderingDoneFrameCount != eFrameCounter) {
+            unsigned int wait_start = bGetTicker();
+            WaitForFrameBufferSwapDisabled = 1;
+            eWaitUntilRenderingDone();
+            LastWaitUntilRenderingDoneFrameCount = eFrameCounter;
+            WaitForFrameBufferSwapDisabled = 0;
+            bGetTickerDifference(wait_start);
+        }
+
+        unsigned int move_start = bGetTicker();
+        int new_address = movement->NewAddress;
+        pMemoryPool->Free(reinterpret_cast<void *>(movement->Address));
+        pMemoryPool->Malloc(movement->Size, section ? section->SectionName : "HoleMovement", false, false, new_address);
+        if (section && section->Status == TrackStreamingSection::ACTIVATED) {
+            AllowDuplicateSolids += 1;
+            SetDuplicateTextureWarning(false);
+            MoveChunks(reinterpret_cast<bChunk *>(new_address), reinterpret_cast<bChunk *>(section->pMemory), section->LoadedSize,
+                       section->SectionName);
+            DCStoreRangeNoSync(reinterpret_cast<void *>(new_address), section->LoadedSize);
+            AllowDuplicateSolids -= 1;
+            SetDuplicateTextureWarning(true);
+        } else if (section) {
+            eWaitUntilRenderingDone();
+            bOverlappedMemCpy(reinterpret_cast<void *>(new_address), section->pMemory, section->LoadedSize);
+        }
+
+        if (section) {
+            section->pMemory = reinterpret_cast<void *>(new_address);
+        }
+        bGetTickerDifference(move_start);
+        NumSectionsMoved += 1;
+        PPCSync();
+    }
+
+    return 1;
 }
 
 void TrackStreamer::RemoveCurrentStreamingSections() {

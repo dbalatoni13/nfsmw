@@ -183,6 +183,27 @@ SkidSet *CreateNewSkidSet(SkidMaker *skid_maker, bVector3 *position, bVector3 *d
     return skid_set;
 }
 
+void SkidMaker::MakeSkid(Car *pCar, bVector3 *position, bVector3 *delta_position, int terrain_type, float intensity) {
+    if (pCar && bLength(delta_position) > 4.0f) {
+        return;
+    }
+
+    if (!pSkidSet) {
+        pSkidSet = CreateNewSkidSet(this, position, delta_position, terrain_type, intensity);
+    } else if (pSkidSet->TheTerrainType != terrain_type || pSkidSet->AddSegment(position, delta_position, false, intensity) != 0) {
+        bVector3 last_position;
+        bVector3 last_delta_position;
+        SkidSegment *last_segment = &pSkidSet->SkidSegments[pSkidSet->NumSkidSegments - 1];
+        float last_intensity;
+
+        last_segment->GetPoints(&last_position, &last_delta_position);
+        last_intensity = static_cast<float>(last_segment->Intensity) * (1.0f / 255.0f);
+        pSkidSet->FinishedAddingSkids();
+        pSkidSet = CreateNewSkidSet(this, &last_position, &last_delta_position, terrain_type, last_intensity);
+        pSkidSet->AddSegment(position, delta_position, false, intensity);
+    }
+}
+
 void SkidMaker::MakeNoSkid() {
     if (pSkidSet) {
         pSkidSet->FinishedAddingSkids();
