@@ -858,10 +858,9 @@ void PostRaceResultsScreen::SetupLapStats(int racerIndex, GRacerInfo *racer_info
         break;
     }
 
-    RacerStats[racerIndex].RacerName = racer_info->GetName();
-
-    GRaceStatus &race_status = GRaceStatus::Get();
     StatsPanel &panel = RacerStats[racerIndex];
+    panel.RacerName = racer_info->GetName();
+    GRaceStatus &race_status = GRaceStatus::Get();
 
     switch (mRaceType) {
     case GRace::kRaceType_P2P:
