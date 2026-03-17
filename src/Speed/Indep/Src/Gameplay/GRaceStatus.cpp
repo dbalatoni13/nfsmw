@@ -1490,6 +1490,89 @@ float GRaceStatus::GetCheckpointTime(int lapIndex, int checkIndex, int racerInde
     return time;
 }
 
+int GRaceStatus::GetLapPosition(int lapIndex, int racerIndex, bool bOverallPosition) {
+    float racerTime = GetLapTime(lapIndex, racerIndex, bOverallPosition);
+    int position = 1;
+
+    for (int i = 0; i < mRacerCount; ++i) {
+        if (i == racerIndex) {
+            continue;
+        }
+
+        float otherTime = GetLapTime(lapIndex, i, bOverallPosition);
+        if (otherTime > 0.0f && (racerTime <= 0.0f || otherTime < racerTime)) {
+            ++position;
+        }
+    }
+
+    return position;
+}
+
+float GRaceStatus::GetBestLapTime(int racerIndex) {
+    float best = 0.0f;
+    int lapCount = mRaceParms ? mRaceParms->GetNumLaps() : 10;
+
+    for (int i = 0; i < lapCount && i < 10; ++i) {
+        float time = GetLapTime(i, racerIndex, false);
+        if (time > 0.0f && (best <= 0.0f || time < best)) {
+            best = time;
+        }
+    }
+
+    return best;
+}
+
+float GRaceStatus::GetWorstLapTime(int racerIndex) {
+    float worst = 0.0f;
+    int lapCount = mRaceParms ? mRaceParms->GetNumLaps() : 10;
+
+    for (int i = 0; i < lapCount && i < 10; ++i) {
+        float time = GetLapTime(i, racerIndex, false);
+        if (time > worst) {
+            worst = time;
+        }
+    }
+
+    return worst;
+}
+
+float GRaceStatus::GetRaceSpeedTrapSpeed(int trapIndex, int racerIndex) {
+    return mRacerInfo[racerIndex].GetSpeedTrapSpeed(trapIndex);
+}
+
+int GRaceStatus::GetRaceSpeedTrapPosition(int trapIndex, int racerIndex) {
+    return mRacerInfo[racerIndex].GetSpeedTrapPosition(trapIndex);
+}
+
+float GRaceStatus::GetBestSpeedTrapSpeed(int racerIndex) {
+    float best = 0.0f;
+
+    for (int i = 0; i < 16; ++i) {
+        best = UMath::Max(best, GetRaceSpeedTrapSpeed(i, racerIndex));
+    }
+
+    return best;
+}
+
+float GRaceStatus::GetWorstSpeedTrapSpeed(int racerIndex) {
+    float worst = 0.0f;
+    bool found = false;
+
+    for (int i = 0; i < 16; ++i) {
+        float speed = GetRaceSpeedTrapSpeed(i, racerIndex);
+        if (speed > 0.0f && (!found || speed < worst)) {
+            worst = speed;
+            found = true;
+        }
+    }
+
+    return worst;
+}
+
+float GRaceStatus::GetRaceTollboothTime(int boothIndex, int racerIndex) {
+    return mRacerInfo[racerIndex].GetTollboothTime(boothIndex);
+}
+
 bool GRaceStatus::IsAudioLoading() {
     return false;
 }

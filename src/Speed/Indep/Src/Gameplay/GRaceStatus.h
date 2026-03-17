@@ -50,6 +50,9 @@ struct GRacerInfo {
     int GetIndex() const { return mIndex; }
     int GetAiRanking() const { return mAiRanking; }
     int GetSpeedTrapsCrossed() const { return mSpeedTrapsCrossed; }
+    float GetSpeedTrapSpeed(int index) const { return mSpeedTrapSpeed[index]; }
+    int GetSpeedTrapPosition(int index) const { return mSpeedTrapPosition[index]; }
+    float GetTollboothTime(int index) const { return mTimeRemainingToBooth[index]; }
     bool GetIsKnockedOut() const { return mKnockedOut; }
     bool GetIsTotalled() const { return mTotalled; }
     bool GetIsEngineBlown() const { return mEngineBlown; }
