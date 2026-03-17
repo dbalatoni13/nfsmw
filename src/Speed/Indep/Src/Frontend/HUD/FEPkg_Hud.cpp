@@ -121,6 +121,8 @@ inline void FEngSetColor(const char *pkg_name, unsigned int obj_hash, unsigned i
     FEngSetColor(FEngFindObject(pkg_name, obj_hash), color);
 }
 
+IHud::~IHud() {}
+
 HudResourceManager TheHudResourceManager;
 
 int HudResourceManager::mCustIndex;

@@ -148,7 +148,7 @@ protected:
 
 public:
     FEToggleWidget(bool enabled);
-    ~FEToggleWidget() override {}
+    ~FEToggleWidget() override;
     void Act(const char* parent_pkg, unsigned int data) override;
     void CheckMouse(const char* parent_pkg, const float mouse_x, const float mouse_y) override;
     void Draw() override;
@@ -186,7 +186,7 @@ protected:
 
 public:
     FESliderWidget(bool enabled);
-    ~FESliderWidget() override {}
+    ~FESliderWidget() override;
     void Act(const char* parent_pkg, unsigned int data) override;
     void Draw() override;
     void Position() override;

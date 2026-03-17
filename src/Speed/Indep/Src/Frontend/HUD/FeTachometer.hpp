@@ -27,7 +27,7 @@ class ITachometer : public UTL::COM::IUnknown {
     virtual void SetInPerfectLaunchRange(bool inRange);
 
   protected:
-    virtual ~ITachometer() {}
+    virtual ~ITachometer();
 };
 
 // total size: 0x70

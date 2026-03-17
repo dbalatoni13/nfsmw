@@ -18,7 +18,7 @@ class IHud : public UTL::COM::IUnknown, public UTL::Collections::Listable<IHud, 
 
     IHud(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
 
-    virtual ~IHud() {}
+    virtual ~IHud();
 
     virtual void Update(class IPlayer *player, float dT);
     virtual void Release();

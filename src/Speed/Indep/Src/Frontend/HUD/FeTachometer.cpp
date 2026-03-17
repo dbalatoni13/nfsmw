@@ -85,6 +85,8 @@ Tachometer::Tachometer(UTL::COM::Object *pOutter, const char *pkg_name, int play
     mOriginalNeedleWidth = TachNeedle->GetObjData()->Size.x;
 }
 
+ITachometer::~ITachometer() {}
+
 void Tachometer::Update(IPlayer *player) {
     if (Sim::GetUserMode() == 1) {
         float topX, topY;
