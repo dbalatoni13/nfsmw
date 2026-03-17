@@ -24,11 +24,11 @@ int bStrICmp(const char *s1, const char *s2);
 
 extern const char lbl_803E4D20[];
 extern const char lbl_803E4EB8[];
-extern const char lbl_803E4ED0[];
-extern const char lbl_803E4EDC[];
-extern const char lbl_803E4EEC[];
-extern const char lbl_803E4EF8[];
-extern const char lbl_803E4F04[];
+extern const char lbl_803E4EC8[];
+extern const char lbl_803E4ED8[];
+extern const char lbl_803E4EE4[];
+extern const char lbl_803E4EF0[];
+extern const char lbl_803E4F00[];
 extern const float lbl_803E4F10;
 extern const char lbl_803E4F14[];
 
@@ -64,8 +64,6 @@ static float CalcAngleForRPM(float rpm, float redline) {
 Tachometer::Tachometer(UTL::COM::Object *pOutter, const char *pkg_name, int player_number)
     : HudElement(pkg_name, 2) //
     , ITachometer(pOutter) //
-    , PerfectShiftDetectedTimer(0) //
-    , MissedShiftTimer(0) //
     , mRpm(lbl_803E4F10) //
     , mRedline(lbl_803E4F10) //
     , mMaxRpm(lbl_803E4F10) //
@@ -76,16 +74,15 @@ Tachometer::Tachometer(UTL::COM::Object *pOutter, const char *pkg_name, int play
     , mNeedleColourSetToPerfectLaunch(false) //
 {
     RegisterGroup(FEHashUpper(lbl_803E4EB8));
-    TachNeedle = FEngFindObject(pkg_name, FEHashUpper(lbl_803E4ED0));
-    pRPM_bar = FEngFindObject(pkg_name, FEHashUpper(lbl_803E4EDC));
-    pGearString = static_cast< FEString * >(FEngFindObject(pkg_name, FEHashUpper(lbl_803E4EEC)));
-    pShiftIndicator = FEngFindObject(pkg_name, FEHashUpper(lbl_803E4EF8));
-    pRedline = FEngFindObject(pkg_name, FEHashUpper(lbl_803E4F04));
-    if (TachNeedle != nullptr) {
-        float x, y;
-        FEngGetSize(TachNeedle, x, y);
-        mOriginalNeedleWidth = x;
-    }
+    TachNeedle = FEngFindObject(pkg_name, FEHashUpper(lbl_803E4EC8));
+    pRedline = FEngFindObject(pkg_name, FEHashUpper(lbl_803E4ED8));
+    pShiftIndicator = FEngFindObject(pkg_name, FEHashUpper(lbl_803E4EE4));
+    pRPM_bar = FEngFindObject(pkg_name, FEHashUpper(lbl_803E4EF0));
+    pGearString = static_cast< FEString * >(FEngFindObject(pkg_name, FEHashUpper(lbl_803E4F00)));
+    RegisterGroup(0x045E9562);
+    PerfectShiftDetectedTimer.ResetLow();
+    MissedShiftTimer.ResetLow();
+    mOriginalNeedleWidth = TachNeedle->GetObjData()->Size.x;
 }
 
 void Tachometer::Update(IPlayer *player) {
