@@ -15,7 +15,7 @@ struct Message;
 
 struct IMessageFilterContext : public UTL::COM::IUnknown {
     static HINTERFACE _IHandle() {
-        return reinterpret_cast<HINTERFACE>(_IHandle);
+        return (HINTERFACE)_IHandle;
     }
 
     IMessageFilterContext(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
@@ -32,7 +32,8 @@ struct IMessageFilterContext : public UTL::COM::IUnknown {
 struct LuaMessageDeliveryInfo : public UTL::COM::Object, public IMessageFilterContext {
     LuaMessageDeliveryInfo(UCrc32 messageKind, const Message *messageBase,
                            void (*buildTableFunc)(lua_State *, const Message *))
-        : IMessageFilterContext(this) //
+        : UTL::COM::Object(1) //
+        , IMessageFilterContext(this) //
         , mMessageKind(messageKind) //
         , mMessageBase(messageBase) //
         , mBuildTableFunc(buildTableFunc) //
@@ -45,7 +46,7 @@ struct LuaMessageDeliveryInfo : public UTL::COM::Object, public IMessageFilterCo
 
     ~LuaMessageDeliveryInfo() override {}
 
-    unsigned int GetMessageKind() const { return mMessageKind; }
+    unsigned int GetMessageKind() const { return mMessageKind.GetValue(); }
 
     void SetLuaState(lua_State *luaState) { mLuaState = luaState; }
     void SetActivityContext(GActivity *activity) { mActivityContext = activity; }
