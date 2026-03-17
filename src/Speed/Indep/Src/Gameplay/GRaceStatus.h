@@ -297,7 +297,7 @@ class GRaceParameters {
 
     GRace::Type GetRaceType() const;
 
-    // enum Region GetRegion() const;
+    unsigned int GetRegion() const;
 
     void ExtractPosition(Attrib::Gen::gameplay &collection, UMath::Vector3 &pos) const;
 
@@ -305,7 +305,7 @@ class GRaceParameters {
 
     unsigned int GetEventHash() const;
 
-    // bool GetIsAvailable(enum Context context) const;
+    bool GetIsAvailable(GRace::Context context) const;
 
     bool GetIsSunsetRace() const;
 

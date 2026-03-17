@@ -111,6 +111,7 @@ class GRaceBin {
 class GRaceDatabase {
   public:
     friend class GRaceBin;
+    friend class GRaceParameters;
 
     enum ScoreFlags {
         kCompleted_ContextQuickRace = 1 << 0,
