@@ -481,7 +481,7 @@ void UIQRCarSelect::NotificationMessage(unsigned long msg, FEObject *pobj, unsig
         if (FEDatabase->GetCareerSettings()->GetCurrentBin() > 15) return;
         if (!pSelectedCar) return;
         FECarRecord *car = GetSelectedCarRecord();
-        if (car->CareerHandle != 0xff) {
+        if (car->IsCareer()) {
             FEPlayerCarDB *stable = FEDatabase->GetPlayerCarStable(iPlayerNum);
             FECareerRecord *career = stable->GetCareerRecordByHandle(car->CareerHandle);
             bool showImpoundedDialog = career->TheImpoundData.IsImpounded();
@@ -559,7 +559,7 @@ void UIQRCarSelect::NotificationMessage(unsigned long msg, FEObject *pobj, unsig
                 if ((flags & 0x20) != 0) {
                     FEPlayerCarDB *stable = FEDatabase->GetPlayerCarStable(iPlayerNum);
                     FECarRecord *car = stable->GetCarRecordByHandle(pSelectedCar->mHandle);
-                    if (car->CareerHandle == static_cast<unsigned char>(-1)) {
+                    if (!car->IsCustomized()) {
                         FECarRecord *new_car = FEDatabase->GetPlayerCarStable(iPlayerNum)->CreateNewCustomCar(car->Handle);
                         car = new_car;
                     }
@@ -568,20 +568,11 @@ void UIQRCarSelect::NotificationMessage(unsigned long msg, FEObject *pobj, unsig
                     cFEng::Get()->QueuePackageSwitch("MyCarsManager.fng", 0, 0, false);
                     return;
                 }
-                if (FEDatabase->iNumPlayers != 2 &&
-                    FEDatabase->GetPlayersJoystickPort(iPlayerNum) != 0) {
-                    bool isSplitScreen = false;
-                    if ((FEDatabase->GetGameMode() & 4) != 0) {
-                        isSplitScreen = FEDatabase->iNumPlayers == 2;
-                    }
-                    if (isSplitScreen && iPlayerNum == 0) {
-                        ForceCar = 0xffffffff;
-                        return;
-                    }
-                    CommitChangeStartRace(true);
+                if (FEDatabase->GetPlayerSettings(iPlayerNum)->TransmissionPromptOn != 0) {
+                    ChooseTransmission();
                     return;
                 }
-                ChooseTransmission();
+                CommitChangeStartRace(true);
                 return;
             }
         } else if (iPrevButtonMsg == 0x911ab364) {
