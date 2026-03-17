@@ -92,7 +92,16 @@ struct Wheel {
         Reset();
     }
 
-    void Reset();
+    inline void Reset() {
+        mWheelOnGround = 1;
+        mWheelForceZ = 0.0f;
+        mWheelSlip = bVector2(mWheelForceZ, 0.0f);
+        mTerrainType = SimSurface::kNull;
+        mPrevBlownState = 0;
+        mPercentFsFkTransfer = 0.0f;
+        mLoad = 0.0f;
+        mBlownState = 0;
+    }
 };
 
 struct Engine {
@@ -108,7 +117,15 @@ struct Engine {
         Reset();
     }
 
-    void Reset();
+    inline void Reset() {
+        mBoostFlag = 0;
+        mNOSFlag = 0;
+        mNOS = 0.0f;
+        mRPMPct = 0.0f;
+        mThrottle = 0.0f;
+        mBoost = 0.0f;
+        mBlownFlag = 0;
+    }
 };
 
 struct Driveline {

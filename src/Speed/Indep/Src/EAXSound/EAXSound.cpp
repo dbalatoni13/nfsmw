@@ -976,26 +976,26 @@ float MaxTorque(const Attrib::Gen::engine &engine, float &atrpm);
 } // namespace Info
 } // namespace Physics
 
-void Sound::Wheel::Reset() {
-    mWheelOnGround = 1;
-    mWheelForceZ = 0.0f;
-    mWheelSlip = bVector2(mWheelForceZ, 0.0f);
-    mTerrainType = SimSurface::kNull;
-    mPercentFsFkTransfer = 0.0f;
-    mBlownState = 0;
-    mLoad = 0.0f;
-    mPrevBlownState = 0;
-}
+// Sound::Wheel::Reset and Sound::Engine::Reset are defined inline in EAXCarState.hpp.
 
-void Sound::Engine::Reset() {
-    mBoostFlag = 0;
-    mNOSFlag = 0;
-    mNOS = 0.0f;
-    mRPMPct = 0.0f;
-    mThrottle = 0.0f;
-    mBoost = 0.0f;
-    mBlownFlag = 0;
-}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 EAX_HeliState::EAX_HeliState(const Attrib::Collection *atr, unsigned int wuid)
     : mFWSpeed(0.0f) //

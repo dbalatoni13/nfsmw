@@ -39,15 +39,15 @@ SFXCTL_Shifting::SFXCTL_Shifting()
     , eShift_LFO(SHIFT_LFO_NONE) {}
 
 SndBase *SFXCTL_Shifting::CreateObject(unsigned int allocator) {
-    SFXCTL_Shifting *object;
     if (allocator != 0) {
-        object = static_cast<SFXCTL_Shifting *>(
-            gAudioMemoryManager.AllocateMemory(sizeof(SFXCTL_Shifting), SFXCTL_Shifting::s_TypeInfo.typeName, true));
+        return new (static_cast<SFXCTL_Shifting *>(
+            gAudioMemoryManager.AllocateMemory(sizeof(SFXCTL_Shifting), SFXCTL_Shifting::s_TypeInfo.typeName, true)))
+            SFXCTL_Shifting();
     } else {
-        object = static_cast<SFXCTL_Shifting *>(
-            gAudioMemoryManager.AllocateMemory(sizeof(SFXCTL_Shifting), SFXCTL_Shifting::s_TypeInfo.typeName, false));
+        return new (static_cast<SFXCTL_Shifting *>(
+            gAudioMemoryManager.AllocateMemory(sizeof(SFXCTL_Shifting), SFXCTL_Shifting::s_TypeInfo.typeName, false)))
+            SFXCTL_Shifting();
     }
-    return new (object) SFXCTL_Shifting();
 }
 
 SFXCTL_Shifting::~SFXCTL_Shifting() {}
@@ -58,9 +58,7 @@ char *SFXCTL_Shifting::GetTypeName() const { return s_TypeInfo.typeName; }
 
 void SFXCTL_Shifting::InitSFX() {
     SFXCTL::InitSFX();
-    m_timeBrakeLastMashed = Timer(0);
     ShiftType = static_cast< AEMS_SHIFTING_SAMPLES >(1);
-    t_Last_Shift = 0.0f;
     m_VOL_LFO_AMP = 0;
     m_VOL_LFO_FRQ = 0;
     m_TRQ_LFO_AMP = 0;
@@ -76,7 +74,9 @@ void SFXCTL_Shifting::InitSFX() {
     tShiftDelay = 0.0f;
     m_nPostShiftFXLevel = 0;
     *static_cast<int *>(static_cast<void *>(&m_bNeed_DeccelSnd)) = 0;
+    t_Last_Shift = 0.0f;
     *static_cast<int *>(static_cast<void *>(&m_bNeed_AccelSnd)) = 0;
+    m_timeBrakeLastMashed = Timer(0);
 }
 
 void SFXCTL_Shifting::UpdateParams(float t) {

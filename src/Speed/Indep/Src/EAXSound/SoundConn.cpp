@@ -201,55 +201,32 @@ void CarSoundConn::UpdateState(float dT) {
     if (mState == nullptr) {
         return;
     }
-    if (mState->mAssetsLoaded == 0) {
+    if (!mState->mAssetsLoaded) {
         return;
     }
 
     SoundConn::Pkt_Car_Service data(mState->mVisualRPM);
-    PSMTX44Copy((Mtx44)mTarget.GetMatrix(), (Mtx44)&mState->mMatrix);
+    mState->mMatrix = *mTarget.GetMatrix();
 
     if (!Service(&data)) {
-        mState->mSimUpdating = 0;
-        mState->mAccel.x = 0.0f;
-        mState->mAccel.y = 0.0f;
-        mState->mAccel.z = 0.0f;
+        mState->mSimUpdating = false;
+        mState->mAccel = bVector3(0.0f, 0.0f, 0.0f);
         mState->mVel1 = mState->mAccel;
         mState->mVel0 = mState->mVel1;
         mState->mFWSpeed = 0.0f;
-
-        const Attrib::Collection *const nullSpec = SimSurface::kNull.GetConstCollection();
-        for (int i = 0; i < 4; ++i) {
-            mState->mWheel[i].mWheelOnGround = 1;
-            mState->mWheel[i].mWheelForceZ = 0.0f;
-            mState->mWheel[i].mWheelSlip.x = 0.0f;
-            mState->mWheel[i].mWheelSlip.y = 0.0f;
-            if (nullSpec != nullptr) {
-                mState->mWheel[i].mTerrainType.Change(nullSpec);
-            }
-            mState->mWheel[i].mPrevBlownState = 0;
-            mState->mWheel[i].mPercentFsFkTransfer = 0.0f;
-            mState->mWheel[i].mLoad = 0.0f;
-            mState->mWheel[i].mBlownState = 0;
-        }
-
-        mState->mEngine.mBlownFlag = 0;
-        mState->mEngine.mBoost = 0.0f;
-        mState->mEngine.mBoostFlag = 0;
-        mState->mEngine.mNOSFlag = 0;
-        mState->mEngine.mNOS = 0.0f;
-        mState->mEngine.mRPMPct = 0.0f;
-        mState->mEngine.mThrottle = 0.0f;
+        mState->mWheel[0].Reset();
+        mState->mWheel[1].Reset();
+        mState->mWheel[2].Reset();
+        mState->mWheel[3].Reset();
+        mState->mEngine.Reset();
         return;
     }
 
-    mState->mSimUpdating = 1;
+    mState->mSimUpdating = true;
     mState->mVel1 = mState->mVel0;
     mState->mVel0 = *mTarget.GetVelocity();
-
-    const float invDT = 1.0f / dT;
-    mState->mAccel.x = (mState->mVel0.x - mState->mVel1.x) * invDT;
-    mState->mAccel.y = (mState->mVel0.y - mState->mVel1.y) * invDT;
-    mState->mAccel.z = (mState->mVel0.z - mState->mVel1.z) * invDT;
+    bSub(&mState->mAccel, &mState->mVel0, &mState->mVel1);
+    bScale(&mState->mAccel, &mState->mAccel, 1.0f / dT);
 
     mState->mEngine.mRPMPct = data.mRPMPercent;
     mState->mEngine.mNOSFlag = data.mNOSFlag;
