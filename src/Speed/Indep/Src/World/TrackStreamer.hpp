@@ -192,7 +192,12 @@ class TrackStreamer {
     void PlotLoadingMarker(StreamingPositionEntry *streaming_position);
     void SwitchZones(short *current_zones);
     void UnactivateSection(TrackStreamingSection *section);
+    bool WillUnloadBlock(TrackStreamingSection *section);
+    void UnloadSection(TrackStreamingSection *section);
     void FreeSectionMemory();
+    int UnloadLeastRecentlyUsedSection();
+    void JettisonSection(TrackStreamingSection *section);
+    bool JettisonLeastImportantSection();
     void SetLoadingPhase(eLoadingPhase loading_phase);
     int Loader(bChunk *chunk);
     void StartLoadingSections();

@@ -366,6 +366,87 @@ void *TrackStreamer::AllocateMemory(TrackStreamingSection *section, int allocati
     return memory;
 }
 
+bool TrackStreamer::WillUnloadBlock(TrackStreamingSection *section) {
+    unsigned int frame = section->UnactivatedFrameCount;
+    return frame != 0 && frame == eFrameCounter && LastWaitUntilRenderingDoneFrameCount != frame;
+}
+
+void TrackStreamer::UnloadSection(TrackStreamingSection *section) {
+    if (section->Status == TrackStreamingSection::ACTIVATED) {
+        UnactivateSection(section);
+    }
+
+    if (section->Status == TrackStreamingSection::LOADED) {
+        if (WillUnloadBlock(section)) {
+            WaitForFrameBufferSwapDisabled = 1;
+            eWaitUntilRenderingDone();
+            WaitForFrameBufferSwapDisabled = 0;
+            LastWaitUntilRenderingDoneFrameCount = eFrameCounter;
+        }
+
+        section->UnactivatedFrameCount = 0;
+        bFree(section->pMemory);
+        section->LoadedTime = 0;
+        section->pMemory = 0;
+        section->Status = TrackStreamingSection::UNLOADED;
+        NumSectionsLoaded -= 1;
+    }
+}
+
+int TrackStreamer::UnloadLeastRecentlyUsedSection() {
+    TrackStreamingSection *best_section = 0;
+
+    for (int i = 0; i < NumTrackStreamingSections; i++) {
+        TrackStreamingSection *section = &pTrackStreamingSections[i];
+        if (section->Status == TrackStreamingSection::LOADED && !section->CurrentlyVisible &&
+            (!best_section || section->LastNeededTimestamp < best_section->LastNeededTimestamp)) {
+            best_section = section;
+        }
+    }
+
+    if (!best_section) {
+        return 0;
+    }
+
+    UnloadSection(best_section);
+    return best_section->LoadedSize;
+}
+
+void TrackStreamer::JettisonSection(TrackStreamingSection *section) {
+    AmountJettisoned += section->Size;
+    JettisonedSections[NumJettisonedSections] = section;
+    NumJettisonedSections += 1;
+
+    if (section->Status == TrackStreamingSection::ACTIVATED) {
+        UnactivateSection(section);
+    }
+    if (section->Status == TrackStreamingSection::LOADED) {
+        UnloadSection(section);
+    }
+
+    section->CurrentlyVisible = false;
+
+    int index = 0;
+    while (CurrentStreamingSections[index] != section) {
+        index += 1;
+    }
+
+    while (index < NumCurrentStreamingSections - 1) {
+        CurrentStreamingSections[index] = CurrentStreamingSections[index + 1];
+        index += 1;
+    }
+
+    NumCurrentStreamingSections -= 1;
+}
+
+bool TrackStreamer::JettisonLeastImportantSection() {
+    TrackStreamingSection *section = ChooseSectionToJettison();
+    if (section) {
+        JettisonSection(section);
+    }
+    return section != 0;
+}
+
 int TrackStreamer::AllocateSectionMemory(int *ptotal_needing_allocation) {
     int total_out_of_memory = 0;
     int total_needing_allocation = 0;
@@ -1118,6 +1199,72 @@ void TrackStreamer::UnJettisonSections() {
     }
     AmountJettisoned = 0;
     NumJettisonedSections = 0;
+}
+
+int TrackStreamer::HandleMemoryAllocation() {
+    int amount_unloaded = 0;
+    int amount_moved = 0;
+    int total_out_of_memory;
+    int total_needing_allocation[2];
+    int amount;
+
+    do {
+        amount = UnloadLeastRecentlyUsedSection();
+    } while (amount != 0);
+
+    NumSectionsOutOfMemory = 0;
+
+    do {
+        do {
+            do {
+                FreeSectionMemory();
+                total_out_of_memory = AllocateSectionMemory(total_needing_allocation);
+                if (total_out_of_memory == 0) {
+                    goto done;
+                }
+                if (amount_unloaded > 0x7FFFFFFF || amount_moved > 0x200000) {
+                    return 0;
+                }
+                if (NumSectionsOutOfMemory > 15) {
+                    return 0;
+                }
+
+                FreeSectionMemory();
+                amount = UnloadLeastRecentlyUsedSection();
+                amount_unloaded += amount;
+            } while (amount > 0);
+
+            while (bCountFreeMemory(7) < total_needing_allocation[0] + 0x4000) {
+                CurrentZoneOutOfMemory = true;
+                if (!JettisonLeastImportantSection()) {
+                    break;
+                }
+                AllocateSectionMemory(total_needing_allocation);
+                FreeSectionMemory();
+            }
+
+            amount = DoHoleFilling(0);
+            amount_moved += amount;
+        } while (amount != 0);
+
+        CurrentZoneOutOfMemory = true;
+    } while (JettisonLeastImportantSection());
+
+    total_out_of_memory = AllocateSectionMemory(total_needing_allocation);
+
+done:
+    MemorySafetyMargin = 0;
+
+    int memory_safety_margin = bCountFreeMemory(7) - (total_out_of_memory + AmountJettisoned);
+    for (int i = 0; i < NumTrackStreamingSections; i++) {
+        TrackStreamingSection *section = &pTrackStreamingSections[i];
+        if (!section->CurrentlyVisible && section->Status != TrackStreamingSection::UNLOADED) {
+            memory_safety_margin += section->PermSize;
+        }
+    }
+    MemorySafetyMargin = memory_safety_margin;
+
+    return 1;
 }
 
 void TrackStreamer::HandleLoading() {
