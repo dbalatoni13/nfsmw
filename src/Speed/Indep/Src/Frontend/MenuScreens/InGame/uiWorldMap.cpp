@@ -504,7 +504,8 @@ update_map:
         MapStreamer->GetPan(pan);
 
         bVector2 map_center;
-        FEngGetCenter(static_cast< FEObject* >(TrackMap), map_center.x, map_center.y);
+        bVector2* pMapCenter = &map_center;
+        FEngGetCenter(static_cast< FEObject* >(TrackMap), pMapCenter->x, pMapCenter->y);
 
         bVector2 map_br;
         FEngGetBottomRight(static_cast< FEObject* >(TrackMap), map_br.x, map_br.y);
@@ -512,25 +513,46 @@ update_map:
         for (MapItem* item = TheMapItems.GetHead(); item != TheMapItems.EndOfList();
              item = item->GetNext()) {
             bVector2 pos(0.0f, 0.0f);
-            item->GetInitialPos(pos);
+            bVector2* pPos = &pos;
+            item->GetInitialPos(*pPos);
 
-            bVector2 delta = pos - map_center;
-            delta *= zoom;
-            pos = delta + map_center;
+            bVector2 delta;
+            bVector2* pDelta = &delta;
+            pDelta->x = pPos->x - pMapCenter->x;
+            pDelta->y = pPos->y - pMapCenter->y;
+            pDelta->x *= zoom;
+            pDelta->y *= zoom;
+            bVector2 map_pos;
+            bVector2* pMapPos = &map_pos;
+            pMapPos->x = pDelta->x + pMapCenter->x;
+            pMapPos->y = pDelta->y + pMapCenter->y;
+            pPos->x = pMapPos->x;
+            pPos->y = pMapPos->y;
 
-            bVector2 dpan = pan;
-            dpan.x *= MapSize.x;
-            dpan.y *= MapSize.y;
-            dpan = dpan * zoom;
-            pos -= dpan;
+            bVector2 pan_offset;
+            bVector2* pPanOffset = &pan_offset;
+            pPanOffset->x = pan.x;
+            pPanOffset->y = pan.y;
+            pPanOffset->x *= MapSize.x;
+            pPanOffset->y *= MapSize.y;
+            bVector2 zoomed_pan;
+            bVector2* pZoomedPan = &zoomed_pan;
+            pZoomedPan->x = pPanOffset->x * zoom;
+            pZoomedPan->y = pPanOffset->y * zoom;
+            bVector2 final_pos;
+            bVector2* pFinalPos = &final_pos;
+            pFinalPos->x = pPos->x - pZoomedPan->x;
+            pFinalPos->y = pPos->y - pZoomedPan->y;
+            pPos->x = pFinalPos->x;
+            pPos->y = pFinalPos->y;
 
-            item->UpdatePos(pos);
+            item->UpdatePos(*pPos);
 
             float icon_scale = ((zoom - 1.0f) / (max_zoom - 1.0f)) * 0.5f + 1.0f;
             item->UpdateScale(icon_scale);
 
-            item->GetCurrentPos(pos);
-            if (ClampToMapBounds(pos.x, pos.y)) {
+            item->GetCurrentPos(*pPos);
+            if (ClampToMapBounds(pPos->x, pPos->y)) {
                 item->Hide();
             } else if (!item->IsHidden()) {
                 item->Show();
@@ -838,7 +860,8 @@ void WorldMap::UpdateCursor(bool zoom_thing) {
         delta *= zoom;
         bVector2 map_br = delta + map_center;
         pos = map_br;
-        bVector2 dpan = pan;
+        bVector2 dpan;
+        dpan = pan;
         dpan.x *= MapSize.x;
         dpan.y *= MapSize.y;
         dpan = dpan * zoom;
