@@ -375,6 +375,12 @@ void GManager::StartActivities() {
     }
 }
 
+void GManager::UpdateTimers(float dT) {
+    for (unsigned int i = 0; i < 8; ++i) {
+        mTimers[i].Update(dT);
+    }
+}
+
 void GManager::StartBinActivity(GRaceBin *raceBin) {
     GActivity *activity;
 

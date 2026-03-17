@@ -37,6 +37,15 @@ class GEventTimer {
 
     // float GetElapsed() const {}
 
+    GEventTimer();
+    ~GEventTimer();
+
+    void Reset();
+    void Start();
+    void Stop();
+    void SetInterval(float value);
+    void Update(float dT);
+
   private:
     float mInterval;        // offset 0x0, size 0x4
     bool mRunning;          // offset 0x4, size 0x1
