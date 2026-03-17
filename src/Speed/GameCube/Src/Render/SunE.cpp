@@ -1,5 +1,7 @@
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
+#include "Speed/Indep/Src/Misc/GameFlow.hpp"
 #include "Speed/Indep/Src/World/Sun.hpp"
+#include "Speed/Indep/Src/Camera/Camera.hpp"
 #include "dolphin.h"
 
 SunLayer vis_layer_fix;
@@ -12,6 +14,7 @@ extern float SunVisibility;
 extern int DoSunVisibility;
 extern float SunMaxIntensity;
 extern unsigned int eFrameCounter;
+extern TextureInfo *SunTextures[5];
 
 int eGetScreenWidth();
 int eGetScreenHeight();
@@ -32,6 +35,7 @@ void eBuildSunPoly(ePoly *poly, SunLayer *layer, float max_size, float x, float 
 void eBuildSunPolyFix(ePoly *poly, SunLayer *layer, float max_size, float x, float y);
 void eUpdateSunPolyFix(ePoly *poly, SunLayer *layer, float max_size, float x, float y);
 void eCalcSunVisibility(eView *view, float x, float y);
+void eRenderSun(eView *view);
 
 void eBuildSunPoly(ePoly *poly, SunLayer *layer, float max_size, float x, float y) {
     float screen_width = static_cast<float>(eGetScreenWidth());
@@ -232,6 +236,73 @@ void eCalcSunVisibility(eView *view, float x, float y) {
             GXReadPixMetric(&top_in, &top_out, &bottom_in, &bottom_out, &clear_in, &copy_clocks);
             eSetColourUpdate(1, 1);
             SunVisibility = static_cast<float>(top_out) / (static_cast<float>(top_in) + 1.0f);
+        }
+    }
+}
+
+void eRenderSun(eView *view) {
+    SetCurrentSunInfo();
+
+    if (IsGameFlowInGame()) {
+        SunChunkInfo *sun_info = SunInfo;
+        Camera *camera = view->GetCamera();
+        bMatrix4 *world_view = camera->GetCameraMatrix();
+        bVector4 position3d;
+        bVector4 position2d;
+        bVector4 view3d;
+        float screen_widthf;
+        float screen_heightf;
+        float x;
+        float y;
+        float max_size;
+
+        position3d.x = sun_info->PositionX;
+        position3d.y = sun_info->PositionY;
+        position3d.z = sun_info->PositionZ;
+        position3d.w = 1.0f;
+        GetScreenPosition(view, reinterpret_cast<bVector3 *>(&position2d), reinterpret_cast<const bVector3 *>(&position3d));
+        eMulVector(&view3d, world_view, &position3d);
+
+        screen_widthf = static_cast<float>(eGetScreenWidth());
+        screen_heightf = static_cast<float>(eGetScreenHeight());
+
+        if (SunPosX != 0.0f || SunPosY != 0.0f) {
+            x = SunPosX;
+            y = SunPosY;
+        } else {
+            x = position2d.x;
+            y = position2d.y;
+        }
+
+        max_size = 0.0f;
+
+        for (int i = 0; i < 4; i++) {
+            SunLayer *layer = &sun_info->SunLayers[i];
+
+            if (0.0f < layer->IntensityScale && layer->Texture == SUNTEX_CENTER && max_size < layer->Size) {
+                max_size = layer->Size;
+            }
+        }
+
+        if (0.0f <= view3d.z && -max_size <= x && x <= screen_widthf + max_size && -max_size <= y && y <= screen_heightf + max_size) {
+            eRecalculateOthographicProjection(1, 100000.0f);
+            eSetOrthographicMatrixToHW();
+            eCalcSunVisibility(eGetView(0, false), x, y);
+            eRecalculateOthographicProjection(1, 0.0f);
+            eSetOrthographicMatrixToHW();
+
+            for (int i = 0; i < 4; i++) {
+                SunLayer *layer = &sun_info->SunLayers[i];
+                TextureInfo *texture_info = SunTextures[layer->Texture];
+
+                if (texture_info) {
+                    ePoly sun_poly;
+
+                    ConstructePoly(&sun_poly);
+                    eBuildSunPoly(&sun_poly, layer, max_size, x, y);
+                    RenderViewPoly(view, &sun_poly, texture_info, 0);
+                }
+            }
         }
     }
 }
