@@ -22,7 +22,28 @@ struct XenonEffectLists {
     XenonEffectVec staging; // offset 0x10, size 0x10
 };
 
+class NGEffect {
+    char mEffectDef[0x14];
+
+  public:
+    NGEffect(const XenonEffectDef &effect);
+};
+
+class ParticleList {
+    NGParticle mParticles[300];
+    uint32 mNumParticles;
+    TextureInfo *mContrail_tex;
+    TextureInfo *mSparks_tex;
+    TextureInfo *mCurrentTexture;
+
+  public:
+    void GeneratePolys();
+    void AgeParticles(float dt);
+    uint32 GetNumParticles();
+};
+
 extern XenonEffectLists gNGEffectList;
+extern ParticleList gParticleList;
 
 void reserveXenonEffectVec(void *vec, unsigned int count)
     __asm__("reserve__Q24_STLt6vector2Z14XenonEffectDefZQ33UTL3Stdt9Allocator2Z14XenonEffectDefZ20_type_XenonEffectDefUi");
@@ -57,4 +78,26 @@ void AddXenonEffect(EmitterGroup *piggyback_fx, const Attrib::Collection *spec, 
         *gNGEffectList.active.finish = effect;
         ++gNGEffectList.active.finish;
     }
+}
+
+void UpdateXenonEmitters(float dt) {
+    gParticleList.AgeParticles(dt);
+
+    XenonEffectDef *effect = gNGEffectList.active.start;
+    while (effect != gNGEffectList.active.finish) {
+        *gNGEffectList.staging.finish = *effect;
+        ++gNGEffectList.staging.finish;
+        ++effect;
+    }
+
+    gNGEffectList.active.finish = gNGEffectList.active.start;
+
+    effect = gNGEffectList.staging.start;
+    while (effect != gNGEffectList.staging.finish) {
+        NGEffect ng_effect(*effect);
+        ++effect;
+    }
+
+    gNGEffectList.staging.finish = gNGEffectList.staging.start;
+    gParticleList.GeneratePolys();
 }
