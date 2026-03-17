@@ -237,12 +237,12 @@ void Minimap::Update(IPlayer *player) {
 void Minimap::SetupMinimap(IPlayer *player) {
     const int num_chops = 8;
     char texture_name[128];
-    short chop_nums[4] = {0};
     bVector2 map_pos;
     bVector2 target_pos;
     bVector2 target_dir;
 
     CurrentTrack = TrackInfo::GetTrackInfo(TheRaceParameters.TrackNumber);
+    short chop_nums[4] = {0};
 
     ISimable *isimable = player->GetSimable();
     GetVehicleVectors(&target_pos, &target_dir, isimable);
