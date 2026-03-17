@@ -580,18 +580,14 @@ success:
 
 bool FECodeListBox::MakeMove(long lNumMove, unsigned long& ulCurrentVirtual, unsigned long& ulTarget, unsigned long ulNumTotal, unsigned long ulNumVis) {
     if (mulFlags & 8) {
-        int lNewCurrent = GetValidIndexListBox(static_cast<int>(ulCurrentVirtual) + lNumMove, ulNumTotal);
-        int lNewTarget = GetValidIndexListBox(static_cast<int>(ulTarget) + lNumMove, ulNumTotal);
-        ulCurrentVirtual = lNewCurrent;
-        ulTarget = lNewTarget;
+        ulCurrentVirtual = GetValidIndexListBox(static_cast<int>(ulCurrentVirtual) + lNumMove, ulNumTotal);
+        ulTarget = GetValidIndexListBox(static_cast<int>(ulTarget) + lNumMove, ulNumTotal);
     } else if ((mulFlags & 6) == 6) {
-        int lNewCurrent = GetValidIndexListBox(static_cast<int>(ulCurrentVirtual) + lNumMove, ulNumTotal);
-        ulCurrentVirtual = lNewCurrent;
-        ulTarget = lNewCurrent;
+        ulCurrentVirtual = GetValidIndexListBox(static_cast<int>(ulCurrentVirtual) + lNumMove, ulNumTotal);
+        ulTarget = ulCurrentVirtual;
     } else {
         unsigned long ulOldTarget = ulTarget;
-        int lNewTarget = GetValidIndexListBox(static_cast<int>(ulOldTarget) + lNumMove, ulNumTotal);
-        ulTarget = lNewTarget;
+        ulTarget = GetValidIndexListBox(static_cast<int>(ulOldTarget) + lNumMove, ulNumTotal);
         if (lNumMove < 0) {
             if (ulCurrentVirtual != ulOldTarget) {
                 return false;
