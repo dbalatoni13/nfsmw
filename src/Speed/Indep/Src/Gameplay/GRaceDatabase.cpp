@@ -3,10 +3,15 @@
 #include "Speed/Indep/Src/Gameplay/GManager.h"
 #include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
 #include "Speed/Indep/Src/Gameplay/GVault.h"
+#include "Speed/Indep/Src/World/WCollisionAssets.h"
+#include "Speed/Indep/Src/World/WRoadNetwork.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 
 #include <new>
+
+void EnableBarrierSceneryGroup(const char *name, bool flipped);
+void RedoTopologyAndSceneryGroups();
 
 GRaceDatabase *GRaceDatabase::mObj = nullptr;
 static const char *kDDayRaces[5] = {
@@ -150,6 +155,23 @@ unsigned int GRaceBin::GetBarrierCount() const {
 
     barriers = mBinRecord.Get(0xE244F26B);
     return barriers.GetLength();
+}
+
+void GRaceBin::EnableBarriers() {
+    unsigned int i;
+
+    for (i = 0; i < GetBarrierCount(); i++) {
+        EnableBarrierSceneryGroup(GetBarrierName(i), GetBarrierIsFlipped(i));
+    }
+
+    WCollisionAssets::Get().SetExclusionFlags();
+    WRoadNetwork::Get().ResolveBarriers();
+}
+
+void GRaceBin::DisableBarriers() {
+    RedoTopologyAndSceneryGroups();
+    WRoadNetwork::Get().ResetBarriers();
+    WRoadNetwork::Get().ResetRaceSegments();
 }
 
 unsigned int GRaceBin::Serialize(unsigned char *dest) {
@@ -726,4 +748,75 @@ const char *GRaceDatabase::GetNextDDayRace() {
     }
 
     return nullptr;
+}
+
+void GRaceDatabase::UpdateRaceScore(bool raceCompleted) {
+    GRaceParameters *race;
+    GRacerInfo *winner;
+    int *scoreInfo;
+    float recordValue;
+    float value;
+    int scale;
+
+    race = GRaceStatus::Get().GetRaceParameters();
+    winner = GRaceStatus::Get().GetWinningPlayerInfo();
+    if (!winner || !race) {
+        return;
+    }
+
+    scoreInfo = reinterpret_cast<int *>(GetScoreInfo(race->GetEventHash()));
+
+    value = winner->GetTopSpeed();
+    scale = 8;
+    recordValue = static_cast<float>(*reinterpret_cast<unsigned short *>(reinterpret_cast<char *>(scoreInfo) + 0x0C)) / scale;
+    if (recordValue < value) {
+        recordValue = value;
+    }
+    *reinterpret_cast<short *>(reinterpret_cast<char *>(scoreInfo) + 0x0C) = static_cast<short>(recordValue * scale);
+
+    value = winner->GetDistDriven();
+    recordValue = static_cast<float>(*reinterpret_cast<unsigned short *>(reinterpret_cast<char *>(scoreInfo) + 0x0E)) / scale;
+    if (recordValue < value) {
+        recordValue = value;
+    }
+    *reinterpret_cast<short *>(reinterpret_cast<char *>(scoreInfo) + 0x0E) = static_cast<short>(recordValue * scale);
+
+    switch (race->GetRaceType()) {
+    case GRace::kRaceType_P2P:
+    case GRace::kRaceType_Circuit:
+    case GRace::kRaceType_Drag:
+    case GRace::kRaceType_Knockout:
+    case GRace::kRaceType_Tollbooth:
+    case GRace::kRaceType_JumpToSpeedTrap:
+    case GRace::kRaceType_JumpToMilestone:
+        if ((scoreInfo[1] & 3) == 0 || winner->GetRaceTime() < *reinterpret_cast<float *>(scoreInfo + 2)) {
+            *reinterpret_cast<float *>(scoreInfo + 2) = winner->GetRaceTime();
+        }
+        break;
+
+    case GRace::kRaceType_SpeedTrap:
+    case GRace::kRaceType_CashGrab:
+        if ((scoreInfo[1] & 3) == 0 || *reinterpret_cast<float *>(scoreInfo + 2) < winner->GetPointTotal()) {
+            *reinterpret_cast<float *>(scoreInfo + 2) = winner->GetPointTotal();
+        }
+        break;
+
+    case GRace::kRaceType_Checkpoint:
+        if ((scoreInfo[1] & 3) == 0 || static_cast<unsigned int>(scoreInfo[2]) < static_cast<unsigned int>(winner->GetPointTotal())) {
+            scoreInfo[2] = static_cast<unsigned int>(winner->GetPointTotal());
+        }
+        break;
+
+    default:
+        break;
+    }
+
+    if (raceCompleted) {
+        if (GRaceStatus::Get().GetRaceContext() == GRace::kRaceContext_Career) {
+            scoreInfo[1] |= kCompleted_ContextCareer;
+        } else {
+            scoreInfo[1] |= kCompleted_ContextQuickRace;
+        }
+        RefreshBinProgress();
+    }
 }

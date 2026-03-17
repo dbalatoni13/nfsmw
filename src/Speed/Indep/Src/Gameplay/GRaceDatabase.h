@@ -149,6 +149,7 @@ class GRaceDatabase {
     unsigned int DeserializeBins(unsigned char *src);
     GRaceParameters *GetRaceFromActivity(GActivity *activity);
     const char *GetNextDDayRace();
+    void UpdateRaceScore(bool raceCompleted);
 
     static GRaceDatabase &Get() {
         return *mObj;

@@ -69,6 +69,12 @@ class WRoadNetwork : public Debugable {
 
     // WRoadSegment *GetSegmentNonConst(int index) {}
 
+    void ResolveBarriers();
+
+    void ResetBarriers();
+
+    void ResetRaceSegments();
+
     // unsigned int GetNumRoads() {}
 
     // unsigned int GetNumNodes() {}
