@@ -867,8 +867,9 @@ static unsigned int FindScreenInfo(const char *pkg_name, int category) {
             }
             unsigned int key = Attrib::StringToLowerCaseKey(prefix);
             {
-                Attrib::Gen::frontend inst(Attrib::FindCollection(Attrib::Gen::frontend::ClassKey(), key), 0, nullptr);
-                if (inst.GetConstCollection()) {
+                Attrib::Gen::frontend inst(Attrib::FindCollection(0x85885722, key), 0, nullptr);
+                bool hasCollection = inst.GetConstCollection() != 0;
+                if (hasCollection) {
                     return key;
                 }
                 if (category > -1) {
@@ -898,8 +899,9 @@ static unsigned int FindScreenInfo(const char *pkg_name, int category) {
         }
         unsigned int key = Attrib::StringToLowerCaseKey(prefix);
         {
-            Attrib::Gen::frontend inst(Attrib::FindCollection(Attrib::Gen::frontend::ClassKey(), key), 0, nullptr);
-            if (inst.GetConstCollection()) {
+            Attrib::Gen::frontend inst(Attrib::FindCollection(0x85885722, key), 0, nullptr);
+            bool hasCollection = inst.GetConstCollection() != 0;
+            if (hasCollection) {
                 return key;
             }
         }
@@ -914,16 +916,18 @@ static unsigned int FindGarageCameraInfo(const char *prefix) {
     bStrCat(buf, buf, garage_name);
     unsigned int key = Attrib::StringToLowerCaseKey(buf);
     Attrib::Gen::frontend inst(Attrib::FindCollection(Attrib::Gen::frontend::ClassKey(), key), 0, nullptr);
-    if (inst.GetConstCollection()) {
+    bool hasCollection = inst.GetConstCollection() != 0;
+    if (hasCollection) {
         return key;
     }
     return 0xf907e767;
 }
 
 static unsigned int FindScreenCameraInfo(unsigned int screen_key) {
-    Attrib::Gen::frontend inst(Attrib::FindCollection(Attrib::Gen::frontend::ClassKey(), screen_key), 0, nullptr);
+    Attrib::Gen::frontend inst(Attrib::FindCollection(0x85885722, screen_key), 0, nullptr);
+    bool hasCollection = inst.GetConstCollection() != 0;
     unsigned int result = 0xf907e767;
-    if (inst.GetConstCollection()) {
+    if (hasCollection) {
         Attrib::Gen::frontend cam_inst(reinterpret_cast<Attrib::Gen::frontend::_LayoutStruct *>(inst.GetLayoutPointer())->cam_angle, 0, nullptr);
         result = cam_inst.GetCollection();
     }
