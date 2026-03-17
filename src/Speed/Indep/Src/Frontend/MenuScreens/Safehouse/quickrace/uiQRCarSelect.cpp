@@ -571,11 +571,20 @@ void UIQRCarSelect::NotificationMessage(unsigned long msg, FEObject *pobj, unsig
                     cFEng::Get()->QueuePackageSwitch("MyCarsManager.fng", 0, 0, false);
                     return;
                 }
-                if (FEDatabase->GetPlayerSettings(iPlayerNum)->TransmissionPromptOn != 0) {
-                    ChooseTransmission();
+                if (FEDatabase->iNumPlayers == 2 ||
+                    FEDatabase->GetPlayerSettings(iPlayerNum)->TransmissionPromptOn == 0) {
+                    bool isSplitScreen = false;
+                    if ((FEDatabase->GetGameMode() & 4) != 0) {
+                        isSplitScreen = FEDatabase->iNumPlayers == 2;
+                    }
+                    if (isSplitScreen && iPlayerNum == 0) {
+                        ForceCar = 0xffffffff;
+                        return;
+                    }
+                    CommitChangeStartRace(true);
                     return;
                 }
-                CommitChangeStartRace(true);
+                ChooseTransmission();
                 return;
             }
         } else if (iPrevButtonMsg == 0x911ab364) {
