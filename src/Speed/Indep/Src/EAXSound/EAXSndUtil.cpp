@@ -16,14 +16,14 @@ cPathLine::cPathLine() {
 cPathLine::~cPathLine() {}
 
 void cPathLine::ClearStages() {
-    num_stages = 0;
     CurValue = 0.0f;
     ElapsedTime = 0.0f;
     cur_stage = 0;
+    num_stages = 0;
     for (int i = 0; i < 6; i++) {
+        Length[i] = 0.0f;
         Start[i] = 0.0f;
         Finish[i] = 0.0f;
-        Length[i] = 0.0f;
         IsLinked[i] = false;
         CurveTypes[i] = LINEAR;
     }

@@ -66,6 +66,45 @@ template <typename T, int Alignment = 16> class Vector {
         mSize++;
     }
 
+    iterator insert(iterator position, const_reference val) {
+        size_type posIndex = position - mBegin;
+        pointer oldBuffer = mBegin;
+        size_type oldSize = mSize;
+        size_type oldCapacity = mCapacity;
+
+        size_type newSize = oldSize + 1;
+        if (newSize > oldCapacity) {
+            size_type newCap = GetGrowSize(newSize);
+            mBegin = AllocVectorSpace(newCap, Alignment);
+            mCapacity = newCap;
+        }
+
+        mSize = newSize;
+
+        if (oldBuffer != mBegin) {
+            for (size_type ii = 0; ii < posIndex; ++ii) {
+                new (&mBegin[ii]) T(oldBuffer[ii]);
+            }
+        }
+
+        if (oldSize != posIndex) {
+            size_type shiftCount = oldSize - posIndex;
+            for (size_type ii = 0; ii < shiftCount; ++ii) {
+                pointer src = oldBuffer + (oldSize - 1 - ii);
+                pointer dst = mBegin + (oldSize - ii);
+                new (dst) T(*src);
+            }
+        }
+
+        new (&mBegin[posIndex]) T(val);
+
+        if (oldBuffer && oldBuffer != mBegin) {
+            FreeVectorSpace(oldBuffer, oldCapacity);
+        }
+
+        return mBegin + posIndex;
+    }
+
     void pop_back() {
         mSize = size() - 1;
     }

@@ -144,7 +144,7 @@ def main() -> None:
             print(f"    {lineno:>5}: [{kind}] {text.strip()}")
         print()
 
-    print("Include the header above instead of redeclaring.")
+    print("If it's a header file, include it instead of redeclaring. If it's a .cpp file, you need to move it to the correct header.")
     sys.exit(0)
 
 

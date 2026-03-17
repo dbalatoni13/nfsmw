@@ -2,7 +2,6 @@
 
 #include <algorithm>
 #include <new>
-#include <vector>
 
 #include "Speed/Indep/Src/Interfaces/Simables/ISimable.h"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
@@ -72,23 +71,28 @@ struct copPair {
     }
 };
 
-class copMap : public std::vector<copPair> {
+DECLARE_CONTAINER_TYPE(copMap);
+
+class copMap : public UTL::Std::vector<copPair, _type_copMap> {
   public:
+    copMap(int size) {}
     void Add(HSIMABLE__ *hsimable, EAXCop *cop);
     EAXCop *Remove(HSIMABLE__ *hsimable);
     void ModifyHandle(HSIMABLE__ *hsimable, HSIMABLE__ *newhandle);
     EAXCop *Find(HSIMABLE__ *hsimable) const;
 };
 
-class SpeechHashIDMap : public std::vector<SpeechEventPair> {
+class SpeechHashIDMap : public UTL::FixedVector<SpeechEventPair, 264, 16>, public AudioMemBase {
   public:
+    SpeechHashIDMap() {}
     void Add(unsigned int hash, SPCHType_1_EventID id);
     SPCHType_1_EventID GetID(unsigned int hash);
     unsigned int GetHash(SPCHType_1_EventID id);
 };
 
-class EventHistory : public std::vector<HistoryPair> {
+class EventHistory : public UTL::FixedVector<HistoryPair, 264, 16>, public AudioMemBase {
   public:
+    EventHistory() {}
     void Init();
     History *Find(SPCHType_1_EventID id);
     int GetCount(SPCHType_1_EventID id);
