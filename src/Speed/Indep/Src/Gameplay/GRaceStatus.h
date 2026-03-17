@@ -34,6 +34,10 @@ struct GRacerInfo {
     }
     float GetFinishingSpeed() const { return mFinishingSpeed; }
     float GetPointTotal() const { return mPointTotal; }
+#ifndef EA_BUILD_A124
+    float GetSplitTime(int split) const { return mSplitTimes[split]; }
+    int GetSplitRanking(int split) const { return mSplitRankings[split]; }
+#endif
     const GTimer &GetRaceTimer() const { return mRaceTimer; }
 
     bool GetIsKnockedOut() const { return mKnockedOut; }

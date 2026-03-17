@@ -96,62 +96,6 @@ extern const char lbl_803E52D4[];
 
 PursuitData PostRacePursuitScreen::mPursuitData;
 
-template <typename T> static T ReadField(const void *base, int offset) {
-    return *reinterpret_cast< const T * >(reinterpret_cast< const char * >(base) + offset);
-}
-
-static const char *GetRacerName(const GRacerInfo *info) {
-    return info != nullptr ? ReadField< const char * >(info, 0x8) : nullptr;
-}
-
-static int GetRacerRanking(const GRacerInfo *info) {
-    return info != nullptr ? ReadField< int >(info, 0x10) : -1;
-}
-
-static float GetRacerDistanceDriven(const GRacerInfo *info) {
-    return info != nullptr ? ReadField< float >(info, 0x110) : 0.0f;
-}
-
-static float GetRacerTopSpeed(const GRacerInfo *info) {
-    return info != nullptr ? ReadField< float >(info, 0x114) : 0.0f;
-}
-
-static float GetRacerNosUsed(const GRacerInfo *info) {
-    return info != nullptr ? ReadField< float >(info, 0x11C) : 0.0f;
-}
-
-static int GetRacerPerfectShifts(const GRacerInfo *info) {
-    return info != nullptr ? ReadField< int >(info, 0x128) : 0;
-}
-
-static int GetRacerTrafficCollisions(const GRacerInfo *info) {
-    return info != nullptr ? ReadField< int >(info, 0x12C) : 0;
-}
-
-static float GetRacerZeroToSixty(const GRacerInfo *info) {
-    return info != nullptr ? ReadField< float >(info, 0x138) : 0.0f;
-}
-
-static float GetRacerQuarterMile(const GRacerInfo *info) {
-    return info != nullptr ? ReadField< float >(info, 0x13C) : 0.0f;
-}
-
-static float GetRacerStageTime(const GRacerInfo *info, int index) {
-    return info != nullptr ? ReadField< float >(info, 0x140 + index * 4) : 0.0f;
-}
-
-static int GetRacerStagePosition(const GRacerInfo *info, int index) {
-    return info != nullptr ? ReadField< int >(info, 0x150 + index * 4) : 0;
-}
-
-static float GetRacerTotalStageTime(const GRacerInfo *info) {
-    if (info == nullptr || ReadField< int >(info, 0x30) == 0) {
-        return 0.0f;
-    }
-
-    return ReadField< const GTimer >(info, 0x160).GetTime();
-}
-
 static FEString *GetPanelString(StatsPanel &panel, const char *label) {
     return FEngFindString(panel.ParentPkg, FEngHashString(lbl_803E5088, label, panel.RacerName));
 }
@@ -265,7 +209,7 @@ void SpeedStat::Draw() {
     }
 
     float scale = 2.23699f;
-    if (ReadField< unsigned char >(ReadField< void * >(FEDatabase, 0x20), 0x44) == 1) {
+    if (FEDatabase->GetGameplaySettings()->SpeedoUnits == 1) {
         scale = 3.6f;
     }
 
@@ -536,7 +480,7 @@ void PostRaceResultsScreen::SetupResults() {
 
                     while (true) {
                         racer_info = &GRaceStatus::Get().GetRacerInfo(i);
-                        if (GetRacerRanking(racer_info) == place) {
+                        if (racer_info->GetRanking() == place) {
                             break;
                         }
                         ++i;
@@ -563,13 +507,13 @@ void PostRaceResultsScreen::SetupResults() {
 
                     while (true) {
                         racer_info = &GRaceStatus::Get().GetRacerInfo(i);
-                        if (GetRacerRanking(racer_info) == place) {
+                        if (racer_info->GetRanking() == place) {
                             break;
                         }
                         ++i;
                     }
 
-                    float speed = ReadField< float >(racer_info, 0x134);
+                    float speed = racer_info->GetPointTotal();
                     if (FEDatabase->GetGameplaySettings()->SpeedoUnits == 0) {
                         speed = (speed * lbl_803E5E4C) * lbl_803E5E50;
                     }
@@ -956,8 +900,8 @@ void PostRaceResultsScreen::SetupLapStats(int racerIndex, GRacerInfo *racer_info
 
         for (int i = 0; i < 4; ++i) {
             panel.AddStat(new ("", 0)
-                              StageStat(labelString, timeString, positionString, i, GetRacerStageTime(racer_info, i),
-                                        GetRacerStagePosition(racer_info, i)));
+                              StageStat(labelString, timeString, positionString, i, racer_info->GetSplitTime(i),
+                                        racer_info->GetSplitRanking(i)));
         }
 
         panel.AddStat(new ("", 0)
