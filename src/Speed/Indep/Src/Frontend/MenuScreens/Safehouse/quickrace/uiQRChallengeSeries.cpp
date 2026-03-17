@@ -120,15 +120,13 @@ void UIQRChallengeSeries::ChooseTransmission() {
 
 void UIQRChallengeSeries::RefreshHeader() {
     ArrayScrollerMenu::RefreshHeader();
-    ArrayDatum *current = GetCurrentDatum();
-    if (!current) return;
+    if (!currentDatum) return;
 
-    int pos = GetCurrentDatumNum() + 1;
-    int total = GetNumDatum();
+    int pos = data.GetNodeNumber(currentDatum) + 1;
     FEPrintf(GetPackageName(), 0x5a856a34, "%d", pos);
-    FEPrintf(GetPackageName(), 0x2d4d22c8, "%d", total);
+    FEPrintf(GetPackageName(), 0x2d4d22c8, "%d", GetNumDatum());
 
-    ChallengeDatum *cd = static_cast<ChallengeDatum *>(current);
+    ChallengeDatum *cd = static_cast<ChallengeDatum *>(currentDatum);
     GRaceParameters *race = cd->race;
     if (!race || prev_race_hash == race->GetEventHash()) return;
 
@@ -172,21 +170,19 @@ void UIQRChallengeSeries::RefreshHeader() {
     const char *desc = GetLocalizedString(descHash);
     FEPrintf(GetPackageName(), 0x7b230d64, desc, buf);
 
-    if (cd->IsLocked()) {
+    if (!cd->IsLocked()) {
         cFEng::Get()->QueuePackageMessage(0x38091fa1, GetPackageName(), nullptr);
     } else {
         cFEng::Get()->QueuePackageMessage(0xc5dd9d68, GetPackageName(), nullptr);
         int index = pos - 1;
-        int groupBase = (pos / 5) * 5;
+        int page = (pos / 5) * 5;
         if (pos < 61) {
-            int mod = pos % 5;
-            if (mod >= 1 && mod <= 2) {
-                FEPrintf(GetPackageName(), 0x68215623, GetLocalizedString(0xced8931e), groupBase);
-            } else if (mod >= 3 && mod <= 4) {
-                FEPrintf(GetPackageName(), 0x68215623, GetLocalizedString(0xced8931d), groupBase + 1, groupBase + 2);
+            if (static_cast<unsigned int>(pos - page - 1) <= 1) {
+                FEPrintf(GetPackageName(), 0x68215623, GetLocalizedString(0xced8931e), page);
+            } else if (static_cast<unsigned int>(pos - page - 3) <= 1) {
+                FEPrintf(GetPackageName(), 0x68215623, GetLocalizedString(0xced8931d), page + 1, page + 2);
             } else {
-                int prevBase = ((pos / 5) - 1) * 5;
-                FEPrintf(GetPackageName(), 0x68215623, GetLocalizedString(0xced8931d), prevBase + 3, prevBase + 4);
+                FEPrintf(GetPackageName(), 0x68215623, GetLocalizedString(0xced8931d), page - 2, page - 1);
             }
         } else {
             FEPrintf(GetPackageName(), 0x68215623, GetLocalizedString(0xced8931e), index);
@@ -194,18 +190,18 @@ void UIQRChallengeSeries::RefreshHeader() {
     }
 
     for (int i = 0; i < GetNumSlots(); i++) {
-        ArrayDatum *datum = GetDatumAt(i + GetCurrentDatumNum());
-        unsigned int slotHash = FEngHashString("CHECK_%d", i + 1);
+        ChallengeDatum *datum = static_cast<ChallengeDatum *>(GetDatumAt(i + GetStartDatumNum()));
+        unsigned int check_hash = FEngHashString("CHECK_%d", i + 1);
         if (!datum) {
-            FEngSetScript(GetPackageName(), slotHash, 0x16a259, true);
+            FEngSetScript(GetPackageName(), check_hash, 0x16a259, true);
         } else if (datum->IsLocked()) {
-            FEngSetScript(GetPackageName(), slotHash, 0x5079c8f8, true);
-            FEngSetTextureHash(FEngFindImage(GetPackageName(), slotHash), 0x18ed48);
+            FEngSetScript(GetPackageName(), check_hash, 0x5079c8f8, true);
+            FEngSetTextureHash(FEngFindImage(GetPackageName(), check_hash), 0x18ed48);
         } else if (datum->IsChecked()) {
-            FEngSetScript(GetPackageName(), slotHash, 0x5079c8f8, true);
-            FEngSetTextureHash(FEngFindImage(GetPackageName(), slotHash), 0x28feadd);
+            FEngSetScript(GetPackageName(), check_hash, 0x5079c8f8, true);
+            FEngSetTextureHash(FEngFindImage(GetPackageName(), check_hash), 0x28feadd);
         } else {
-            FEngSetScript(GetPackageName(), slotHash, 0x16a259, true);
+            FEngSetScript(GetPackageName(), check_hash, 0x16a259, true);
         }
     }
     TrackMapStreamer.Init(race, TrackMap, 0, 0);
