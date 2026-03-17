@@ -193,12 +193,13 @@ void Minimap::Update(IPlayer *player) {
 
     SetupMinimap(player);
 
-    bVector2 target_pos;
-    bVector2 target_dir;
-    GetVehicleVectors(&target_pos, &target_dir, isimable);
-
     IVehicle *ivehicle = nullptr;
     float speed = 0.0f;
+    bVector2 target_pos;
+    bVector2 target_dir;
+    isimable = player->GetSimable();
+    GetVehicleVectors(&target_pos, &target_dir, isimable);
+
     if (isimable->QueryInterface(&ivehicle)) {
         speed = bAbs(ivehicle->GetSpeed());
     }
@@ -473,12 +474,8 @@ void Minimap::UpdateCopElements(IVehicle *ivehicle) {
         mCopFlashCounter = 0;
     }
 
-    if (ivehicle) {
-        IVehicleAI *ivehicleAI = ivehicle->GetAIVehiclePtr();
-        if (ivehicleAI) {
-            ipursuit = ivehicleAI->GetPursuit();
-        }
-    }
+    IVehicleAI *ivehicleAI = ivehicle->GetAIVehiclePtr();
+    ipursuit = ivehicleAI->GetPursuit();
 
     if (MinimapShowNonPursuitCops || ipursuit) {
         const IVehicle::List &vehicles = IVehicle::GetList(list_id);
@@ -505,13 +502,13 @@ void Minimap::UpdateCopElements(IVehicle *ivehicle) {
                 if (MinimapShowNonPursuitCops || (ipursuitai && ipursuitai->GetInPursuit())) {
                     AITarget *target = ipursuitai ? ipursuitai->GetPursuitTarget() : nullptr;
                     if (!target || target->GetSpeed() > 0.25f) {
-                        if (!FEngIsScriptSet(mHeliLineOfSiteArt, 0x1744B3)) {
-                            FEngSetScript(mHeliLineOfSiteArt, 0x1744B3, true);
-                        }
-                    } else {
                         unsigned int tracking_hash = FEHashUpper("TRACKING");
                         if (!FEngIsScriptSet(mHeliLineOfSiteArt, tracking_hash)) {
                             FEngSetScript(mHeliLineOfSiteArt, tracking_hash, true);
+                        }
+                    } else {
+                        if (!FEngIsScriptSet(mHeliLineOfSiteArt, 0x1744B3)) {
+                            FEngSetScript(mHeliLineOfSiteArt, 0x1744B3, true);
                         }
                     }
                 }
