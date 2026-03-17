@@ -5,6 +5,11 @@
 #pragma once
 #endif
 
+class MemoryCard {
+  public:
+    static int IsCardBusy();
+};
+
 void InitMemoryCard();
 
 #endif

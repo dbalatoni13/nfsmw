@@ -6,6 +6,7 @@
 #endif
 
 #include "Speed/Indep/bWare/Inc/bList.hpp"
+#include "Speed/Indep/Src/Ecstasy/TextureTypes.hpp"
 #include <dolphin.h>
 
 struct TextureInfoPlatInfoOBJ {
@@ -22,6 +23,7 @@ struct TextureInfoPlatInfo : public bTNode<TextureInfoPlatInfo> {
 
     unsigned char SetImage(int width, int height, int mip, int format, void *imageData, void *imagePal, int alphaUsageType, int clamp);
     unsigned char SetImage(struct TextureInfo *texture_info);
+    unsigned char HasClut();
 };
 
 class TextureInfoPlatInterface {
@@ -35,6 +37,10 @@ class TextureInfoPlatInterface {
     void SetPlatInfo(TextureInfoPlatInfo *info);
     void Init();
     void Close();
+    void *LockImage(TextureLockType lock);
+    void UnlockImage(void *image_lock);
+    void *LockPalette(TextureLockType lock);
+    void UnlockPalette(void *palette_lock);
 
     TextureInfoPlatInfo *GetPlatInfo() {
         return this->PlatInfo;
