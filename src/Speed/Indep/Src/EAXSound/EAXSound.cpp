@@ -1316,26 +1316,21 @@ void EAXSound::DestroyEAXCar(EAX_CarState *pCar) {
 }
 
 void LoadCommonIngameFiles() {
-    Attrib::Gen::audiosystem *attributes = g_pEAXSound->GetAttributes();
-    if (attributes == nullptr) {
-        return;
-    }
-
-    g_LoadSndAsset(attributes->AEMS_FEBanks(1), SNDPATH_GLOBAL, EAXSND_DT_AEMS_ASYNCSPUMEM);
-    g_LoadSndAsset(attributes->AEMS_EnvBanks(0), SNDPATH_INGAME, EAXSND_DT_AEMS_ASYNCSPUMEM);
-    g_LoadSndAsset(attributes->AEMS_MiscBanks(5), SNDPATH_INGAME, EAXSND_DT_AEMS_ASYNCSPUMEM);
-    g_LoadSndAsset(attributes->AEMS_MiscBanks(4), SNDPATH_INGAME, EAXSND_DT_AEMS_ASYNCSPUMEM);
-    g_LoadSndAsset(attributes->AEMS_MiscBanks(3), SNDPATH_INGAME, EAXSND_DT_AEMS_ASYNCSPUMEM);
-    g_LoadSndAsset(attributes->AEMS_MiscBanks(1), SNDPATH_INGAME, EAXSND_DT_AEMS_ASYNCSPUMEM);
-    g_LoadSndAsset(attributes->AEMS_RNBanks(0), SNDPATH_INGAME, EAXSND_DT_AEMS_ASYNCSPUMEM);
+    g_LoadSndAsset(g_pEAXSound->GetAttributes()->AEMS_FEBanks(1), SNDPATH_GLOBAL, EAXSND_DT_AEMS_ASYNCSPUMEM);
+    g_LoadSndAsset(g_pEAXSound->GetAttributes()->AEMS_EnvBanks(0), SNDPATH_INGAME, EAXSND_DT_AEMS_ASYNCSPUMEM);
+    g_LoadSndAsset(g_pEAXSound->GetAttributes()->AEMS_MiscBanks(5), SNDPATH_INGAME, EAXSND_DT_AEMS_ASYNCSPUMEM);
+    g_LoadSndAsset(g_pEAXSound->GetAttributes()->AEMS_MiscBanks(4), SNDPATH_INGAME, EAXSND_DT_AEMS_ASYNCSPUMEM);
+    g_LoadSndAsset(g_pEAXSound->GetAttributes()->AEMS_MiscBanks(3), SNDPATH_INGAME, EAXSND_DT_AEMS_ASYNCSPUMEM);
+    g_LoadSndAsset(g_pEAXSound->GetAttributes()->AEMS_MiscBanks(1), SNDPATH_INGAME, EAXSND_DT_AEMS_ASYNCSPUMEM);
+    g_LoadSndAsset(g_pEAXSound->GetAttributes()->AEMS_RNBanks(0), SNDPATH_INGAME, EAXSND_DT_AEMS_ASYNCSPUMEM);
     g_LoadSndAsset(Attrib::StringKey("SIREN_MB.abk"), SNDPATH_INGAME, EAXSND_DT_AEMS_ASYNCSPUMEM);
-    g_LoadSndAsset(attributes->AEMS_StitchBanks(0), SNDPATH_INGAME, EAXSND_DT_AEMS_ASYNCSPUMEM);
-    g_LoadSndAsset(attributes->AEMS_StitchBanks(2), SNDPATH_INGAME, EAXSND_DT_AEMS_ASYNCSPUMEM);
-    g_LoadSndAsset(attributes->AEMS_StitchBanks(1), SNDPATH_INGAME, EAXSND_DT_AEMS_ASYNCSPUMEM);
-    g_LoadSndAsset(attributes->AEMS_MiscBanks(2), SNDPATH_INGAME, EAXSND_DT_AEMS_ASYNCSPUMEM);
-    g_LoadSndAsset(attributes->AEMS_WNBanks(0), SNDPATH_INGAME, EAXSND_DT_AEMS_ASYNCSPUMEM);
-    g_LoadSndAsset(attributes->AEMS_MiscBanks(6), SNDPATH_ENGINE, EAXSND_DT_AEMS_ASYNCSPUMEM);
-    g_LoadSndAsset(attributes->AEMS_MiscBanks(7), SNDPATH_ENGINE, EAXSND_DT_AEMS_ASYNCSPUMEM);
+    g_LoadSndAsset(g_pEAXSound->GetAttributes()->AEMS_StitchBanks(0), SNDPATH_INGAME, EAXSND_DT_AEMS_ASYNCSPUMEM);
+    g_LoadSndAsset(g_pEAXSound->GetAttributes()->AEMS_StitchBanks(2), SNDPATH_INGAME, EAXSND_DT_AEMS_ASYNCSPUMEM);
+    g_LoadSndAsset(g_pEAXSound->GetAttributes()->AEMS_StitchBanks(1), SNDPATH_INGAME, EAXSND_DT_AEMS_ASYNCSPUMEM);
+    g_LoadSndAsset(g_pEAXSound->GetAttributes()->AEMS_MiscBanks(2), SNDPATH_INGAME, EAXSND_DT_AEMS_ASYNCSPUMEM);
+    g_LoadSndAsset(g_pEAXSound->GetAttributes()->AEMS_WNBanks(0), SNDPATH_INGAME, EAXSND_DT_AEMS_ASYNCSPUMEM);
+    g_LoadSndAsset(g_pEAXSound->GetAttributes()->AEMS_MiscBanks(6), SNDPATH_ENGINE, EAXSND_DT_AEMS_ASYNCSPUMEM);
+    g_LoadSndAsset(g_pEAXSound->GetAttributes()->AEMS_MiscBanks(7), SNDPATH_ENGINE, EAXSND_DT_AEMS_ASYNCSPUMEM);
 
     for (int n = 0; n < 12; n++) {
         g_LoadSndAsset(Attrib::StringKey(csfxedit[n]), SNDPATH_FXEDIT, EAXSND_DT_GENERIC_DATA);
