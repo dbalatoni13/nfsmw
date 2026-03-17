@@ -254,45 +254,41 @@ void CameraAnchor::SetModel(int model) {
 }
 
 POV *CameraAnchor::GetPov(int pov_type) {
-    unsigned int attrib_key;
+    const Attrib::RefSpec *refspec;
 
     mPOV.Type = static_cast<short>(pov_type);
 
     switch (pov_type) {
         case 0:
-            attrib_key = 0x585517f3;
+            refspec = reinterpret_cast<const Attrib::RefSpec *>(mModelAttributes.GetAttributePointer(0x585517f3, 0));
             break;
         case 1:
-            attrib_key = 0xd74c1435;
+            refspec = reinterpret_cast<const Attrib::RefSpec *>(mModelAttributes.GetAttributePointer(0xd74c1435, 0));
             break;
         case 2:
-            attrib_key = 0x0c2da793;
+            refspec = reinterpret_cast<const Attrib::RefSpec *>(mModelAttributes.GetAttributePointer(0x0c2da793, 0));
             break;
         case 3:
-            attrib_key = 0xccf03cb3;
+            refspec = reinterpret_cast<const Attrib::RefSpec *>(mModelAttributes.GetAttributePointer(0xccf03cb3, 0));
             break;
         case 4:
-            attrib_key = 0x10204a90;
+            refspec = reinterpret_cast<const Attrib::RefSpec *>(mModelAttributes.GetAttributePointer(0x10204a90, 0));
             break;
         case 5:
-            attrib_key = 0x4b675dc8;
+            refspec = reinterpret_cast<const Attrib::RefSpec *>(mModelAttributes.GetAttributePointer(0x4b675dc8, 0));
             break;
         case 6:
-            attrib_key = 0xd76a6fad;
+            refspec = reinterpret_cast<const Attrib::RefSpec *>(mModelAttributes.GetAttributePointer(0xd76a6fad, 0));
             break;
         default:
             goto default_case;
     }
 
-    {
-        const Attrib::RefSpec *refspec = reinterpret_cast<const Attrib::RefSpec *>(mModelAttributes.GetAttributePointer(attrib_key, 0));
-
-        if (!refspec) {
-            refspec = reinterpret_cast<const Attrib::RefSpec *>(Attrib::DefaultDataArea(sizeof(Attrib::RefSpec)));
-        }
-
-        mCameraInfoAttributes.ChangeWithDefault(*refspec);
+    if (!refspec) {
+        refspec = reinterpret_cast<const Attrib::RefSpec *>(Attrib::DefaultDataArea(sizeof(Attrib::RefSpec)));
     }
+
+    mCameraInfoAttributes.ChangeWithDefault(*refspec);
     goto after_camerainfo;
 
 default_case:
@@ -301,10 +297,8 @@ default_case:
 
 after_camerainfo:
     {
-        float zoom;
-        if (mZoom > 1.0f) {
-            zoom = mZoom;
-        } else {
+        float zoom = mZoom;
+        if (zoom < 1.0f) {
             zoom = 1.0f;
         }
         unsigned int index = eGetCurrentViewMode() == 3;
