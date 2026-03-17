@@ -2,12 +2,14 @@
 #include "CTextScroller.hpp"
 #include "Speed/Indep/Src/FEng/FEObject.h"
 #include "Speed/Indep/Src/FEng/FEString.h"
+#include "Speed/Indep/Src/FEng/FETypes.h"
 #include "Speed/Indep/Src/Frontend/FEngFont.hpp"
 
 struct FEObject;
 void FEngSetVisible(FEObject* obj);
 void FEngSetInvisible(FEObject* obj);
 void FEngSetScript(FEObject* object, unsigned int script_hash, bool start_at_beginning);
+void FEngGetCenter(FEObject* object, float& x, float& y);
 void FEngGetSize(FEObject* object, float& x, float& y);
 void FEngSetCenter(FEObject* object, float x, float y);
 void FEngGetTopLeft(FEObject* object, float& x, float& y);
@@ -51,14 +53,19 @@ FEButtonWidget::FEButtonWidget(bool enabled)
 {}
 
 void FEButtonWidget::Position() {
-    float x, y;
-    FEngGetTopLeft(pBacking, x, y);
-    vTopLeft.x = x;
-    vTopLeft.y = y;
-    if (pTitle) {
-        FEngGetTopLeft(reinterpret_cast<FEObject*>(pTitle), x, y);
-        vMaxTitleSize.x = x;
-        vMaxTitleSize.y = y;
+    unsigned int format = pTitle->Format;
+    if ((format & 1) != 0) {
+        FEngSetCenter(reinterpret_cast<FEObject*>(pTitle), vTopLeft.x, vTopLeft.y + vMaxTitleSize.y * 0.5f);
+    } else if ((format & 2) != 0) {
+        FEngSetCenter(reinterpret_cast<FEObject*>(pTitle), vTopLeft.x + vMaxTitleSize.x,
+                      vTopLeft.y + vMaxTitleSize.y * 0.5f);
+    } else {
+        FEngSetCenter(reinterpret_cast<FEObject*>(pTitle), vTopLeft.x + vMaxTitleSize.x * 0.5f,
+                      vTopLeft.y + vMaxTitleSize.y * 0.5f);
+    }
+
+    if (pBacking) {
+        FEngSetTopLeft(pBacking, vTopLeft.x - vBackingOffset.x, vTopLeft.y - vBackingOffset.y);
     }
 }
 
@@ -112,19 +119,35 @@ void FEStatWidget::Draw() {}
 void FEStatWidget::CheckMouse(const char* parent_pkg, const float mouse_x, const float mouse_y) {}
 
 void FEStatWidget::Position() {
-    float x, y;
-    FEngGetTopLeft(pBacking, x, y);
-    vTopLeft.x = x;
-    vTopLeft.y = y;
+    float title_y = vTopLeft.y + vMaxTitleSize.y * 0.5f;
     if (pTitle) {
-        FEngGetTopLeft(reinterpret_cast<FEObject*>(pTitle), x, y);
-        vMaxTitleSize.x = x;
-        vMaxTitleSize.y = y;
+        unsigned int format = pTitle->Format;
+        if ((format & 1) != 0) {
+            FEngSetCenter(reinterpret_cast<FEObject*>(pTitle), vTopLeft.x, title_y);
+        } else if ((format & 2) != 0) {
+            FEngSetCenter(reinterpret_cast<FEObject*>(pTitle), vTopLeft.x + vMaxTitleSize.x, title_y);
+        } else {
+            FEngSetCenter(reinterpret_cast<FEObject*>(pTitle), vTopLeft.x + vMaxTitleSize.x * 0.5f, title_y);
+        }
     }
     if (pData) {
-        FEngGetTopLeft(reinterpret_cast<FEObject*>(pData), x, y);
-        vDataPos.x = x;
-        vDataPos.y = y;
+        unsigned int format = pData->Format;
+        if ((format & 1) != 0) {
+            FEngSetCenter(reinterpret_cast<FEObject*>(pData), vDataPos.x + vMaxDataSize.x * 0.5f, title_y);
+        } else if ((format & 2) != 0) {
+            float center_x, center_y;
+            FEngGetCenter(reinterpret_cast<FEObject*>(pData), center_x, center_y);
+            FEngSetCenter(reinterpret_cast<FEObject*>(pData), center_x, title_y);
+
+            FEVector3 pos = pData->GetObjData()->Pos;
+            pos.x = vDataPos.x + vMaxDataSize.x;
+            reinterpret_cast<FEObject*>(pData)->SetPosition(pos, false);
+        } else {
+            FEngSetCenter(reinterpret_cast<FEObject*>(pData), vDataPos.x, title_y);
+        }
+    }
+    if (pBacking) {
+        FEngSetTopLeft(pBacking, vTopLeft.x - vBackingOffset.x, vTopLeft.y - vBackingOffset.y);
     }
 }
 
@@ -241,14 +264,13 @@ void FEToggleWidget::UnsetFocus() {
 
 void FEToggleWidget::Position() {
     FEStatWidget::Position();
-    if (pLeftImage) {
-        float x, y;
-        FEngGetTopLeft(reinterpret_cast<FEObject*>(pLeftImage), x, y);
-    }
-    if (pRightImage) {
-        float x, y;
-        FEngGetTopLeft(reinterpret_cast<FEObject*>(pRightImage), x, y);
-    }
+    float left_width, left_height;
+    FEngGetSize(reinterpret_cast<FEObject*>(pLeftImage), left_width, left_height);
+    float right_width, right_height;
+    FEngGetSize(reinterpret_cast<FEObject*>(pRightImage), right_width, right_height);
+    FEngSetCenter(reinterpret_cast<FEObject*>(pLeftImage), vDataPos.x, vDataPos.y + vMaxTitleSize.y * 0.5f);
+    FEngSetCenter(reinterpret_cast<FEObject*>(pRightImage), vDataPos.x + vMaxDataSize.x,
+                  vDataPos.y + vMaxTitleSize.y * 0.5f);
 }
 
 FESliderWidget::FESliderWidget(bool enabled)
@@ -260,28 +282,28 @@ FESliderWidget::FESliderWidget(bool enabled)
 FESliderWidget::~FESliderWidget() {}
 
 void FESliderWidget::Position() {
+    float half = 0.5f;
     unsigned int format = pTitle->Format;
     if ((format & 1) != 0) {
-        FEngSetCenter(reinterpret_cast<FEObject*>(pTitle), vTopLeft.x, vTopLeft.y + vMaxTitleSize.y * 0.5f);
+        FEngSetCenter(reinterpret_cast<FEObject*>(pTitle), vTopLeft.x, vTopLeft.y + vMaxTitleSize.y * half);
     } else if ((format & 2) != 0) {
-        FEngSetCenter(reinterpret_cast<FEObject*>(pTitle), vTopLeft.x + vMaxTitleSize.x, vTopLeft.y + vMaxTitleSize.y * 0.5f);
+        FEngSetCenter(reinterpret_cast<FEObject*>(pTitle), vTopLeft.x + vMaxTitleSize.x, vTopLeft.y + vMaxTitleSize.y * half);
     } else {
-        FEngSetCenter(reinterpret_cast<FEObject*>(pTitle), vTopLeft.x + vMaxTitleSize.x * 0.5f,
-                      vTopLeft.y + vMaxTitleSize.y * 0.5f);
+        FEngSetCenter(reinterpret_cast<FEObject*>(pTitle), vTopLeft.x + vMaxTitleSize.x * half, vTopLeft.y + vMaxTitleSize.y * half);
     }
 
+    float slider_center_x = vDataPos.x + vMaxDataSize.x * half;
     float slider_width, slider_height;
     FEngGetSize(*reinterpret_cast<FEObject**>(&Slider), slider_width, slider_height);
-    Slider.SetPos(vDataPos.x + vMaxDataSize.x * 0.5f - slider_width * 0.5f, vDataPos.y + fVertOffset);
+    Slider.SetPos(slider_center_x - slider_width * half, vDataPos.y + fVertOffset);
     Slider.Draw();
 
     float left_width, left_height;
     FEngGetSize(reinterpret_cast<FEObject*>(pLeftImage), left_width, left_height);
     float right_width, right_height;
     FEngGetSize(reinterpret_cast<FEObject*>(pRightImage), right_width, right_height);
-    FEngSetCenter(reinterpret_cast<FEObject*>(pLeftImage), vDataPos.x, vDataPos.y + vMaxDataSize.y * 0.5f);
-    FEngSetCenter(reinterpret_cast<FEObject*>(pRightImage), vDataPos.x + vMaxDataSize.x,
-                  vDataPos.y + vMaxDataSize.y * 0.5f);
+    FEngSetCenter(reinterpret_cast<FEObject*>(pLeftImage), vDataPos.x, vDataPos.y + vMaxTitleSize.y * half);
+    FEngSetCenter(reinterpret_cast<FEObject*>(pRightImage), vDataPos.x + vMaxDataSize.x, vDataPos.y + vMaxTitleSize.y * half);
     if (pBacking != nullptr) {
         FEngSetTopLeft(pBacking, vTopLeft.x - vBackingOffset.x, vTopLeft.y - vBackingOffset.y);
     }
