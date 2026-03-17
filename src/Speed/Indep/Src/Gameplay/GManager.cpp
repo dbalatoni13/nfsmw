@@ -10,6 +10,7 @@
 #include "Speed/Indep/Src/Misc/LZCompress.hpp"
 #include "Speed/Indep/Src/Misc/Platform.h"
 #include "Speed/Indep/Src/World/TrackPath.hpp"
+#include "Speed/Indep/Src/World/TrackPositionMarker.hpp"
 #include "Speed/Indep/Src/World/WCollisionAssets.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribLoadAndGo.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
@@ -24,6 +25,7 @@ void bCloseMemoryPool(int pool_num);
 bool bSetMemoryPoolDebugTracing(int pool_num, bool on_off);
 void ApplyTimeOfDayTickOver();
 void SetOverRideRainIntensity(float intensity);
+void ForEachTrackPositionMarker(bool (*callback)(TrackPositionMarker *marker, unsigned int tag), unsigned int tag);
 void LZByteSwapHeader(LZHeader *header);
 
 GManager *GManager::mObj = nullptr;
@@ -1081,6 +1083,33 @@ void GManager::RefreshZoneIcons() {
             icon->ShowOnMap();
         }
     }
+
+    if (GetInGameplay()) {
+        SpawnAllLoadedSectionIcons();
+    }
+}
+
+bool GManager::AddIconForTrackMarker(TrackPositionMarker *marker, unsigned int tag) {
+    if (marker->NameHash == tag) {
+        UMath::Vector3 pos;
+
+        pos.x = marker->Position.x;
+        pos.y = marker->Position.y;
+        pos.z = marker->Position.z;
+
+        GIcon *icon = GManager::Get().AllocIcon(GIcon::kType_PursuitBreaker, pos, 0.0f, true);
+        if (icon) {
+            icon->Show();
+            icon->ShowOnMap();
+        }
+    }
+
+    return true;
+}
+
+void GManager::RefreshTrackMarkerIcons() {
+    FreeDisposableIcons(GIcon::kType_PursuitBreaker);
+    ForEachTrackPositionMarker(AddIconForTrackMarker, bStringHash("IconMarker"));
 
     if (GetInGameplay()) {
         SpawnAllLoadedSectionIcons();
