@@ -857,38 +857,47 @@ void FEngine::ProcessPadsForPackage(FEPackage* pPackage) {
         if ((Held | Released | Pressed) != 0) {
             pCurButton = pPackage->GetCurrentButton();
 
-            if (i > 6 && i < 9) {
-                if ((Held & Mask) != 0) {
-                    unsigned long PadMask = FromPadPressed[i];
-                    unsigned long MsgID = PadButtonHeldHash[i - 7];
-                    if (pCurButton && pCurButton->FindResponse(MsgID) != nullptr) {
-                        QueueMessage(MsgID, nullptr, pPackage, pCurButton, PadMask);
-                        QueueMessage(MsgID, pCurButton, pPackage, reinterpret_cast<FEObject*>(0xFFFFFFFB), PadMask);
-                    } else if (pPackage->FindResponse(MsgID) != nullptr) {
-                        QueueMessage(MsgID, nullptr, pPackage, reinterpret_cast<FEObject*>(0xFFFFFFFD), PadMask);
-                        QueueMessage(MsgID, nullptr, pPackage, reinterpret_cast<FEObject*>(0xFFFFFFFB), PadMask);
-                    }
-                }
-                goto check_released;
+            if (i > 8) goto outer_range;
+            if (i >= 7) goto held_handler;
+            if (i == 4) goto accept_handler;
+            if (i < 4) goto check_released;
+            goto default_press;
+
+        outer_range:
+            if (i > 18) goto check_released;
+            goto default_press;
+
+        accept_handler:
+            if ((Pressed & 0x10) == 0) goto check_released;
+            HeldButtons[4] = pCurButton;
+            if (pCurButton && pCurButton->FindResponse(0x0C407210u) != nullptr) {
+                QueueMessage(0x0C407210u, nullptr, pPackage, pPackage->GetCurrentButton(), FromPadPressed[4]);
+                QueueMessage(
+                    0x0C407210u,
+                    pPackage->GetCurrentButton(),
+                    pPackage,
+                    reinterpret_cast<FEObject*>(0xFFFFFFFB),
+                    FromPadPressed[4]);
+            } else if (pPackage->FindResponse(0x406415E3u) != nullptr) {
+                QueueMessage(0x406415E3u, nullptr, pPackage, reinterpret_cast<FEObject*>(0xFFFFFFFD), FromPadPressed[4]);
+                QueueMessage(0x406415E3u, nullptr, pPackage, reinterpret_cast<FEObject*>(0xFFFFFFFB), FromPadPressed[4]);
             }
-            if (i == 4) {
-                if ((Pressed & 0x10) == 0) goto check_released;
-                HeldButtons[4] = pCurButton;
-                if (pCurButton && pCurButton->FindResponse(0x0C407210u) != nullptr) {
-                    QueueMessage(0x0C407210u, nullptr, pPackage, pPackage->GetCurrentButton(), FromPadPressed[4]);
-                    QueueMessage(
-                        0x0C407210u,
-                        pPackage->GetCurrentButton(),
-                        pPackage,
-                        reinterpret_cast<FEObject*>(0xFFFFFFFB),
-                        FromPadPressed[4]);
-                } else if (pPackage->FindResponse(0x406415E3u) != nullptr) {
-                    QueueMessage(0x406415E3u, nullptr, pPackage, reinterpret_cast<FEObject*>(0xFFFFFFFD), FromPadPressed[4]);
-                    QueueMessage(0x406415E3u, nullptr, pPackage, reinterpret_cast<FEObject*>(0xFFFFFFFB), FromPadPressed[4]);
+            goto check_released;
+
+        held_handler:
+            if ((Held & Mask) != 0) {
+                unsigned long PadMask = FromPadPressed[i];
+                unsigned long MsgID = PadButtonHeldHash[i - 7];
+                if (pCurButton && pCurButton->FindResponse(MsgID) != nullptr) {
+                    QueueMessage(MsgID, nullptr, pPackage, pCurButton, PadMask);
+                    QueueMessage(MsgID, pCurButton, pPackage, reinterpret_cast<FEObject*>(0xFFFFFFFB), PadMask);
+                } else if (pPackage->FindResponse(MsgID) != nullptr) {
+                    QueueMessage(MsgID, nullptr, pPackage, reinterpret_cast<FEObject*>(0xFFFFFFFD), PadMask);
+                    QueueMessage(MsgID, nullptr, pPackage, reinterpret_cast<FEObject*>(0xFFFFFFFB), PadMask);
                 }
-                goto check_released;
             }
 
+        default_press:
             if ((Pressed & Mask) != 0) {
                 unsigned long PadMask = FromPadPressed[i];
                 HeldButtons[i] = pCurButton;
