@@ -272,69 +272,32 @@ void StatsPanel::Draw(unsigned int numPlayers) {
 }
 
 void StatsPanel::AddStat(RaceStat *stat) {
-    if (stat == nullptr) {
-        return;
-    }
+    bNode *tail = TheStats.HeadNode.Prev;
 
-    TheStats.AddTail(stat);
+    FEngSetScript(ParentPkg, FEngHashString(lbl_803E5DB0, iWidgetToAdd), 0x001744B3, true);
+    tail->Next = stat;
+    TheStats.HeadNode.Prev = stat;
+    stat->Prev = tail;
+    stat->Next = reinterpret_cast<bNode *>(this);
     ++iWidgetToAdd;
 }
 
 void StatsPanel::AddInfoStat(unsigned int title, unsigned int info) {
-    FEString *title_string = nullptr;
-    FEString *info_string = nullptr;
-
-    if (ParentPkg != nullptr) {
-        if (title != 0) {
-            title_string = FEngFindString(ParentPkg, title);
-        }
-        if (info != 0) {
-            info_string = FEngFindString(ParentPkg, info);
-        }
-    }
-
-    AddStat(new ("", 0) RaceStat(title_string, info_string));
+    FEString *title_string = FEngFindString(ParentPkg, FEngHashString(lbl_803E5088, lbl_803E5DCC, iWidgetToAdd));
+    FEString *info_string = FEngFindString(ParentPkg, FEngHashString(lbl_803E5088, lbl_803E5E24, iWidgetToAdd));
+    AddStat(new ("", 0) InfoStat(title_string, info_string, title, info));
 }
 
 void StatsPanel::AddGenericStat(float stat_data, unsigned int title_hash, unsigned int units_hash, const char *format) {
-    FEString *title_string = nullptr;
-    FEString *data_string = nullptr;
-
-    if (ParentPkg != nullptr) {
-        if (title_hash != 0) {
-            title_string = FEngFindString(ParentPkg, title_hash);
-        }
-        if (units_hash != 0) {
-            data_string = FEngFindString(ParentPkg, units_hash);
-        }
-    }
-
-    if (data_string != nullptr && format != nullptr) {
-        FEPrintf(data_string, format, stat_data);
-    }
-
-    AddStat(new ("", 0) RaceStat(title_string, data_string));
+    FEString *title_string = FEngFindString(ParentPkg, FEngHashString(lbl_803E5088, lbl_803E5DCC, iWidgetToAdd));
+    FEString *data_string = FEngFindString(ParentPkg, FEngHashString(lbl_803E5088, lbl_803E5E24, iWidgetToAdd));
+    AddStat(new ("", 0) GenericStat(title_string, data_string, stat_data, title_hash, units_hash, format));
 }
 
 void StatsPanel::AddTimerStat(float seconds, unsigned int title_hash) {
-    FEString *title_string = nullptr;
-    FEString *data_string = nullptr;
-    Timer time(seconds);
-    char text[32];
-
-    if (ParentPkg != nullptr) {
-        if (title_hash != 0) {
-            title_string = FEngFindString(ParentPkg, title_hash);
-        }
-        data_string = GetCurrentString("STAT_DATA");
-    }
-
-    time.PrintToString(text, sizeof(text));
-    if (data_string != nullptr) {
-        FEPrintf(data_string, "%s", text);
-    }
-
-    AddStat(new ("", 0) RaceStat(title_string, data_string));
+    FEString *title_string = FEngFindString(ParentPkg, FEngHashString(lbl_803E5088, lbl_803E5DCC, iWidgetToAdd));
+    FEString *data_string = FEngFindString(ParentPkg, FEngHashString(lbl_803E5088, lbl_803E5E24, iWidgetToAdd));
+    AddStat(new ("", 0) TimerStat(title_string, data_string, seconds, title_hash));
 }
 
 PostRaceResultsScreen::PostRaceResultsScreen(ScreenConstructorData *sd)
