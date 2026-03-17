@@ -126,6 +126,13 @@ enum ScreenEffectControl {
     SEC_FRAME = 0,
 };
 
+enum ScreenEffectPalette {
+    EFX_CAMERA_FLASH = 0,
+    EFX_TUNNEL = 1,
+    EFX_UNIQUE = 2,
+    EFX_NUMBER = 3,
+};
+
 struct ScreenEffectInf {
     // total size: 0xC
     ScreenEffectControl Controller; // offset 0x0, size 0x4
@@ -144,6 +151,14 @@ struct ScreenEffectDef {
                       struct ScreenEffectDB *); // offset 0x4C, size 0x4
 };
 
+struct ScreenEffectPaletteDef {
+    // total size: 0x10C
+    int NumEffects;                         // offset 0x0, size 0x4
+    ScreenEffectType SE_type[3];           // offset 0x4, size 0xC
+    ScreenEffectDef SE_Def[3];             // offset 0x10, size 0xF0
+    ScreenEffectControl SE_Controller[3];  // offset 0x100, size 0xC
+};
+
 struct ScreenEffectDB {
     // total size: 0x1E8
     eView *MyView;              // offset 0x0, size 0x4
@@ -153,6 +168,10 @@ struct ScreenEffectDB {
     float SE_time;              // offset 0x1E4, size 0x4
 
     ScreenEffectDB();
+    void AddScreenEffect(ScreenEffectType type, float intensity, float r, float g, float b);
+    void AddScreenEffect(ScreenEffectType type, ScreenEffectDef *info, unsigned int lock, ScreenEffectControl controller);
+    void AddPaletteEffect(ScreenEffectPalette palette);
+    void AddPaletteEffect(ScreenEffectPaletteDef *palette);
 
     void SetMyView(eView *view) {
         MyView = view;

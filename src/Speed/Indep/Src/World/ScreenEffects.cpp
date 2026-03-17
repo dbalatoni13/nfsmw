@@ -5,6 +5,7 @@
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
 static unsigned int AccumulationBufferNeedsFlush = 0;
+ScreenEffectPaletteDef SE_PaletteFile[EFX_NUMBER];
 
 struct TerrainType;
 struct eLightContext;
@@ -28,6 +29,63 @@ extern unsigned int FrameMallocFailed;
 extern unsigned int FrameMallocFailAmount;
 
 void TickSFX() {}
+
+void ScreenEffectDB::AddScreenEffect(ScreenEffectType type, float intensity, float r, float g, float b) {
+    ScreenEffectDef info;
+
+    info.r = r;
+    info.g = g;
+    info.b = b;
+    info.a = 0.0f;
+    info.intensity = intensity;
+    bMemSet(info.data, 0, sizeof(info.data));
+    info.UpdateFnc = 0;
+    AddScreenEffect(type, &info, 1, SEC_FRAME);
+}
+
+void ScreenEffectDB::AddScreenEffect(ScreenEffectType type, ScreenEffectDef *info, unsigned int lock,
+                                     ScreenEffectControl controller) {
+    ScreenEffectDef *screen_effect = &SE_data[type];
+    if (lock == 0) {
+        unsigned int previous_count = numType[type];
+        unsigned int current_count = previous_count + 1;
+        float blend = static_cast<float>(current_count) / static_cast<float>(previous_count + 2);
+        float inverse_blend = 1.0f - blend;
+
+        numType[type] = current_count;
+        screen_effect->r = blend * screen_effect->r + inverse_blend * info->r;
+        screen_effect->g = blend * screen_effect->g + inverse_blend * info->g;
+        screen_effect->b = blend * screen_effect->b + inverse_blend * info->b;
+        screen_effect->a = blend * screen_effect->a + inverse_blend * info->a;
+        screen_effect->intensity = blend * screen_effect->intensity + inverse_blend * info->intensity;
+    } else {
+        if (info) {
+            *screen_effect = *info;
+        }
+        numType[type] = 1;
+    }
+
+    SE_inf[type].active = 1;
+    if (!screen_effect->UpdateFnc) {
+        SE_inf[type].Controller = controller;
+    } else {
+        screen_effect->UpdateFnc(type, this);
+    }
+
+    if (screen_effect->intensity < 0.01f) {
+        SE_inf[type].active = 0;
+    }
+}
+
+void ScreenEffectDB::AddPaletteEffect(ScreenEffectPaletteDef *palette) {
+    for (int i = 0; i < palette->NumEffects; i++) {
+        AddScreenEffect(palette->SE_type[i], &palette->SE_Def[i], 1, palette->SE_Controller[i]);
+    }
+}
+
+void ScreenEffectDB::AddPaletteEffect(ScreenEffectPalette palette) {
+    AddPaletteEffect(&SE_PaletteFile[palette]);
+}
 
 void RenderVisibleSectionBoundary(VisibleSectionBoundary *boundary, eView *view) {
     if (!boundary || !view || boundary->NumPoints <= 0) {

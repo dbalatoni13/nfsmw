@@ -3,9 +3,29 @@
 #include "Speed/Indep/Src/Main/Event.h"
 #include "Speed/Indep/Src/World/VisibleSection.hpp"
 #include "Speed/Indep/bWare/Inc/bChunk.hpp"
+#include "Speed/Indep/bWare/Inc/bDebug.hpp"
 #include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
 
 struct vAABBTree;
+
+struct emEvent : public bTNode<emEvent> {
+    int ReferenceCount;
+    unsigned int ID;
+    void *pEventTrigger;
+    Car *CarPtr;
+    int Parameter0;
+    int Parameter1;
+    int Parameter2;
+};
+
+typedef void (*EVENT_HANDLER_FUNC)(emEvent *);
+
+struct emEventHandler : public bTNode<emEventHandler> {
+    EVENT_HANDLER_FUNC HandlerFunction;
+    unsigned int StreamMask;
+    int ReferenceCount;
+    float TotalTime;
+};
 
 void bEndianSwap32(void *value);
 void SwapEndian(vAABBTree *tree);
@@ -62,6 +82,10 @@ SlotPool *EventSlotPool = 0;
 SlotPool *EventHandlerSlotPool = 0;
 bList EmptyEventTriggerPackList;
 bList EventTriggerPackList;
+bTList<emEventHandler> EventHandlerList;
+bTList<emEvent> MasterEventQueue;
+bTList<emEvent> *CurrentEventQueue = &MasterEventQueue;
+emEvent *CurrentlyHandlingEvent = 0;
 
 void emEventManagerInit() {
     EventSlotPool = bNewSlotPool(0x24, 0x3C, "EventSlotPool", 0);
@@ -154,4 +178,41 @@ int UnloaderEventManager(bChunk *chunk) {
     }
 
     return true;
+}
+
+void emProcessAllEvents() {
+    bTList<emEvent> queued_events;
+    bTList<emEvent> referenced_events;
+
+    CurrentEventQueue = &queued_events;
+    while (!MasterEventQueue.IsEmpty()) {
+        emEvent *event = MasterEventQueue.GetHead();
+        CurrentlyHandlingEvent = event;
+
+        for (emEventHandler *handler = EventHandlerList.GetHead(); handler != EventHandlerList.EndOfList();
+             handler = handler->GetNext()) {
+            if ((event->ID & handler->StreamMask) != 0) {
+                unsigned int start_ticks = bGetTicker();
+                handler->HandlerFunction(event);
+                handler->TotalTime += bGetTickerDifference(start_ticks, bGetTicker());
+            }
+        }
+
+        MasterEventQueue.Remove(event);
+        CurrentlyHandlingEvent = 0;
+        if (event->ReferenceCount == 0) {
+            bFree(EventSlotPool, event);
+        } else {
+            referenced_events.AddTail(event);
+        }
+    }
+
+    while (!referenced_events.IsEmpty()) {
+        MasterEventQueue.AddTail(referenced_events.RemoveHead());
+    }
+    while (!queued_events.IsEmpty()) {
+        MasterEventQueue.AddTail(queued_events.RemoveHead());
+    }
+
+    CurrentEventQueue = &MasterEventQueue;
 }
