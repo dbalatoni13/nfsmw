@@ -155,7 +155,7 @@ void UIQRChallengeSeries::RefreshHeader() {
     }
     float length = race->GetRaceLengthMeters() * conv;
     int laps = race->GetNumLaps();
-    FEPrintf(GetPackageName(), 0x80c9daa, "%s x%d %.1f", unit, laps, length);
+    FEPrintf(GetPackageName(), 0x80c9daa, "%$0.1f %s - %d laps", length, unit, laps);
 
     FEngSetInvisible(FEngFindObject(GetPackageName(), 0xbbf970cd));
     int challengeType = race->GetChallengeType();
@@ -171,15 +171,15 @@ void UIQRChallengeSeries::RefreshHeader() {
 
     float goal = static_cast<float>(race->GetChallengeGoal());
     if (FEDatabase->IsMilestoneTimeFormat(challengeType)) {
-        goal *= 0.001f;
+        goal *= (1.0f / 60.0f);
     }
     char buf[32];
-    bSNPrintf(buf, 32, "%.2f", goal);
+    bSNPrintf(buf, 32, "%$0.0f", goal);
 
     unsigned int tag = race->GetLocalizationTag();
     unsigned int descHash = FEDatabase->GetChallengeDescHash(tag);
     const char *desc = GetLocalizedString(descHash);
-    FEPrintf(GetPackageName(), 0x7b230d64, "%s%s", desc, buf);
+    FEPrintf(GetPackageName(), 0x7b230d64, desc, buf);
 
     if (cd->IsLocked()) {
         cFEng::Get()->QueuePackageMessage(0x38091fa1, GetPackageName(), nullptr);
@@ -187,38 +187,34 @@ void UIQRChallengeSeries::RefreshHeader() {
         cFEng::Get()->QueuePackageMessage(0xc5dd9d68, GetPackageName(), nullptr);
         int index = pos - 1;
         int groupBase = (pos / 5) * 5;
-        int mod = pos % 5;
-        if (mod >= 1 && mod <= 2) {
-            const char *locStr = GetLocalizedString(0xced8931e);
-            FEPrintf(GetPackageName(), 0x68215623, "%s%d", locStr, index);
-        } else if (mod >= 3 && mod <= 4) {
-            const char *locStr = GetLocalizedString(0xced8931d);
-            FEPrintf(GetPackageName(), 0x68215623, "%s%d-%d", locStr, groupBase + 1, groupBase + 2);
+        if (pos < 61) {
+            int mod = pos % 5;
+            if (mod >= 1 && mod <= 2) {
+                FEPrintf(GetPackageName(), 0x68215623, GetLocalizedString(0xced8931e), groupBase);
+            } else if (mod >= 3 && mod <= 4) {
+                FEPrintf(GetPackageName(), 0x68215623, GetLocalizedString(0xced8931d), groupBase + 1, groupBase + 2);
+            } else {
+                int prevBase = ((pos / 5) - 1) * 5;
+                FEPrintf(GetPackageName(), 0x68215623, GetLocalizedString(0xced8931d), prevBase + 3, prevBase + 4);
+            }
         } else {
-            const char *locStr = GetLocalizedString(0xced8931d);
-            int prevBase = ((pos / 5) - 1) * 5;
-            FEPrintf(GetPackageName(), 0x68215623, "%s%d-%d", locStr, prevBase + 3, prevBase + 4);
+            FEPrintf(GetPackageName(), 0x68215623, GetLocalizedString(0xced8931e), index);
         }
     }
 
-    int numSlots = GetNumSlots();
-    int currentDatumNum = GetCurrentDatumNum();
-    for (int i = 0; i < numSlots; i++) {
-        ArrayDatum *datum = GetDatumAt(i + currentDatumNum);
-        unsigned int slotHash = FEngHashString("TRACK_IMAGE_%d", i + 1);
+    for (int i = 0; i < GetNumSlots(); i++) {
+        ArrayDatum *datum = GetDatumAt(i + GetCurrentDatumNum());
+        unsigned int slotHash = FEngHashString("CHECK_%d", i + 1);
         if (!datum) {
             FEngSetScript(GetPackageName(), slotHash, 0x16a259, true);
-        } else {
-            unsigned int texHash = 0;
-            if (datum->IsLocked()) {
-                texHash = 0x18ed48;
-            } else if (datum->IsChecked()) {
-                texHash = 0x28feadd;
-            } else {
-                continue;
-            }
+        } else if (datum->IsLocked()) {
             FEngSetScript(GetPackageName(), slotHash, 0x5079c8f8, true);
-            FEngSetTextureHash(FEngFindImage(GetPackageName(), slotHash), texHash);
+            FEngSetTextureHash(FEngFindImage(GetPackageName(), slotHash), 0x18ed48);
+        } else if (datum->IsChecked()) {
+            FEngSetScript(GetPackageName(), slotHash, 0x5079c8f8, true);
+            FEngSetTextureHash(FEngFindImage(GetPackageName(), slotHash), 0x28feadd);
+        } else {
+            FEngSetScript(GetPackageName(), slotHash, 0x16a259, true);
         }
     }
     TrackMapStreamer.Init(race, TrackMap, 0, 0);
