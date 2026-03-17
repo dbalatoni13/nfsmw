@@ -180,7 +180,7 @@ void CarCustomizeManager::TakeControl(eCustomizeEntryPoint entry_point, FECarRec
         for (int i = 0; i < 3; i++) {
             (&_8Showcase_FromColor)[i] = nullptr;
         }
-        NumPartsInCart = 0;
+        TheTempColoredPart = nullptr;
         EntryPoint = entry_point;
         TuningCar = tuning_car;
         FEPlayerCarDB *stable = FEDatabase->GetPlayerCarStable(0);
@@ -191,7 +191,7 @@ void CarCustomizeManager::TakeControl(eCustomizeEntryPoint entry_point, FECarRec
         RideInfo info;
         stable->BuildRideForPlayer(TuningCar->Handle, 0, &info);
         CarViewer::SetRideInfo(&info, SET_RIDE_INFO_REASON_LOAD_CAR, eCARVIEWER_PLAYER1_CAR);
-        TheTempColoredPart = nullptr;
+        NumPartsInCart = 0;
     }
 }
 
