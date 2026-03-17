@@ -40,6 +40,10 @@ struct engine : Instance {
         this->SetDefaultLayout(sizeof(_LayoutStruct));
     }
 
+    engine(const RefSpec &refspec, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(refspec, msgPort, owner) {
+        this->SetDefaultLayout(sizeof(_LayoutStruct));
+    }
+
     ~engine() {}
 
     void Change(const Collection *c) {
@@ -48,6 +52,10 @@ struct engine : Instance {
 
     void Change(Key collectionkey) {
         Change(FindCollection(ClassKey(), collectionkey));
+    }
+
+    void Change(const RefSpec &refspec) {
+        Instance::Change(refspec);
     }
 
     static Key ClassKey() {

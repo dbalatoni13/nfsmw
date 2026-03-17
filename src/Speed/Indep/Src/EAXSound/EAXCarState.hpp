@@ -87,6 +87,10 @@ struct Wheel {
     unsigned char mBlownState;    // offset 0x40
     unsigned char mPrevBlownState; // offset 0x41
 
+    Wheel() : mWheelSlip(), mTerrainType(), mPrevTerrainType() {
+        Reset();
+    }
+
     void Reset();
 };
 
@@ -99,12 +103,18 @@ struct Engine {
     float mBoost;   // offset 0x14
     int mBlownFlag; // offset 0x18
 
+    Engine() {
+        Reset();
+    }
+
     void Reset();
 };
 
 struct Driveline {
     int mGearShiftFlag; // offset 0x0
     Gear mGear;         // offset 0x4
+
+    Driveline() : mGearShiftFlag(0), mGear(NEUTRAL) {}
 };
 } // namespace Sound
 

@@ -299,7 +299,7 @@ void stSndDataLoadParams::Clear() {
     t_load = Timer(0);
 }
 
-stBankSlot *BankSlotSystem::GetFreeSlot(eBANK_SLOT_TYPE Type) {
+ stBankSlot *BankSlotSystem::GetFreeSlot(eBANK_SLOT_TYPE Type) {
     for (BankSlotSystem::iterator i = begin(); i != end(); i++) {
         if ((*i).Type == Type && (*i).pAssetParams == nullptr) {
             return &(*i);
@@ -1057,7 +1057,22 @@ LoadDone:
 
 int EAXAemsManager::AddBankListing(stAssetDescription &asset) {
     stSndDataLoadParams *entry = g_SndAssetList + m_nEndOfList;
-    ResetSndAssetParams(*entry);
+    entry->AssetDescription.eDataType = EAXSND_DT_NONE;
+    entry->AssetDescription.FileName.operator=(Attrib::StringKey(""));
+    entry->AssetDescription.DataPath = SNDPATH_ROUTE;
+    entry->AssetDescription.bLoadToTop = false;
+    entry->Handle = -1;
+    entry->bResolvedSync = false;
+    entry->MemLocation = TMP_ALLOC_NONE;
+    entry->mBankSlot = nullptr;
+    entry->pmem = nullptr;
+    entry->plocmem = nullptr;
+    entry->nSize = 0;
+    entry->bResolvedAsync = false;
+    entry->resallocs.clear();
+    entry->RefCount.clear();
+    entry->t_req = Timer(0);
+    entry->t_load = Timer(0);
 
     stSndDataLoadParams &dst = g_SndAssetList[m_nEndOfList];
     dst.AssetDescription = asset;

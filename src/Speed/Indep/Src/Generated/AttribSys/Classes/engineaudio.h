@@ -94,6 +94,10 @@ struct engineaudio : Instance {
         Change(FindCollection(ClassKey(), collectionkey));
     }
 
+    void ChangeWithDefault(Key collectionkey) {
+        Change(FindCollectionWithDefault(ClassKey(), collectionkey));
+    }
+
     void Change(const RefSpec &refspec) {
         Instance::Change(refspec);
     }

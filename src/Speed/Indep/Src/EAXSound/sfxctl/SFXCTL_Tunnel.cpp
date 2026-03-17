@@ -251,23 +251,26 @@ void SFXCTL_Tunnel::UpdateIsInTunnel(float t) {
 
     TrackPathZone *zone;
     bool InTunnel;
-    EAX_CarState *car = m_pStateBase->GetPhysCar();
-    bVector3 &carPos = *static_cast<bVector3 *>(static_cast<void *>(&car->mMatrix.v3));
 
     CurZoneType = TRACK_PATH_ZONE_TUNNEL;
-    zone = GetTunnelType(carPos, TRACK_PATH_ZONE_TUNNEL);
+    zone = GetTunnelType(*static_cast<bVector3 *>(static_cast<void *>(&m_pStateBase->GetPhysCar()->mMatrix.v3)),
+                         TRACK_PATH_ZONE_TUNNEL);
     if (zone == nullptr) {
         CurZoneType = TRACK_PATH_ZONE_OVERPASS;
-        zone = GetTunnelType(carPos, TRACK_PATH_ZONE_OVERPASS);
+        zone = GetTunnelType(*static_cast<bVector3 *>(static_cast<void *>(&m_pStateBase->GetPhysCar()->mMatrix.v3)),
+                             TRACK_PATH_ZONE_OVERPASS);
         if (zone == nullptr) {
             CurZoneType = TRACK_PATH_ZONE_OVERPASS_SMALL;
-            zone = GetTunnelType(carPos, TRACK_PATH_ZONE_OVERPASS_SMALL);
+            zone = GetTunnelType(*static_cast<bVector3 *>(static_cast<void *>(&m_pStateBase->GetPhysCar()->mMatrix.v3)),
+                                 TRACK_PATH_ZONE_OVERPASS_SMALL);
             if (zone == nullptr) {
                 CurZoneType = TRACK_PATH_ZONE_GARAGE;
-                zone = GetTunnelType(carPos, TRACK_PATH_ZONE_GARAGE);
+                zone = GetTunnelType(*static_cast<bVector3 *>(static_cast<void *>(&m_pStateBase->GetPhysCar()->mMatrix.v3)),
+                                     TRACK_PATH_ZONE_GARAGE);
                 if (zone == nullptr) {
                     CurZoneType = TRACK_PATH_ZONE_DYNAMIC;
-                    zone = GetTunnelType(carPos, TRACK_PATH_ZONE_DYNAMIC);
+                    zone = GetTunnelType(*static_cast<bVector3 *>(static_cast<void *>(&m_pStateBase->GetPhysCar()->mMatrix.v3)),
+                                         TRACK_PATH_ZONE_DYNAMIC);
                     if (zone != nullptr) {
                         if (zone->VisitInfo == 1) {
                             zone = nullptr;
@@ -288,8 +291,7 @@ LAB_IN_TUNNEL:
     InTunnel = true;
     if (m_bIsInTunnel == 0) {
         m_bIsInTunnel = true;
-        int carContext = static_cast<int>(car->mContext);
-        if (carContext == 0) {
+        if (static_cast<int>(m_pStateBase->GetPhysCar()->mContext) == 0) {
             MMiscSound(1).Send(UCrc32("TunnelUpdate"));
 
             eREVERBFX NewVerbType;
@@ -312,15 +314,14 @@ LAB_DEFAULT_VERB:
 LAB_UPDATE_END:
     if (!InTunnel && m_bIsInTunnel) {
         m_bIsInTunnel = false;
-        int carContext = static_cast<int>(car->mContext);
-        if (carContext == 0) {
+        if (static_cast<int>(m_pStateBase->GetPhysCar()->mContext) == 0) {
             MMiscSound(0).Send(UCrc32("TunnelUpdate"));
             EndTunnelVerb();
         }
     }
 
     m_bWasInTunnel = m_bIsInTunnel;
-    if (static_cast<int>(car->mContext) == 0) {
+    if (static_cast<int>(m_pStateBase->GetPhysCar()->mContext) == 0) {
         m_PlayerZoneType = CurZoneType;
     }
 }

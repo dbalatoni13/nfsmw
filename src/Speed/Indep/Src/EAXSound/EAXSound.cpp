@@ -1011,98 +1011,53 @@ EAX_HeliState::EAX_HeliState(const Attrib::Collection *atr, unsigned int wuid)
 }
 
 EAX_CarState::EAX_CarState(const Attrib::Collection *atr, Sound::Context context, unsigned int wuid, HSIMABLE__ *handle)
-    : mAttributes(atr, 0, nullptr) //
+    : mVel0(0.0f, 0.0f, 0.0f) //
+    , mRacePos(0) //
+    , mBrake(0.0f) //
+    , mEBrake(0.0f) //
+    , mNosEmptyFlag(0) //
+    , mMovementMode(Sound::PHYSICS_MOVEMENT) //
+    , mPlayerZone(Sound::PLAYER_ZONE_NONE) //
+    , mSteering(0) //
+    , mAngle(0) //
+    , mSirenState(-1) //
+    , mHotPursuit(0) //
+    , mAttributes(atr, 0, nullptr) //
     , mEngineInfo(static_cast<const Attrib::Collection *>(nullptr), 0, nullptr) {
-    EAX_CarState &state = *this;
     static int PlayerUpgrade;
+    float max_torque_rpm;
 
-    state.mEBrake = 0.0f;
-    state.mMovementMode = Sound::PHYSICS_MOVEMENT;
-    state.mPlayerZone = Sound::PLAYER_ZONE_NONE;
-    state.mVel0.x = 0.0f;
-    state.mVel0.y = 0.0f;
-    state.mVel0.z = 0.0f;
-    state.mRacePos = 0;
-    state.mBrake = 0.0f;
-    state.mNosEmptyFlag = 0;
+    mWorldID = wuid;
+    mContext = context;
+    mSimUpdating = 1;
+    mHandle = handle;
+    mTrailerID = 0;
+    mNISCarID = -1;
+    mAssetsLoaded = 0;
+    mControlSource = Sound::CONTROL_AI;
+    mDesiredSpeed = 0.0f;
+    mVel1 = mVel0;
+    mOversteer = 0.0f;
+    mUndersteer = 0.0f;
+    mSlipAngle = 0.0f;
+    mVisualRPM = 0.0f;
+    PSMTX44Identity((Mtx44)&mMatrix);
 
-    Sound::Wheel *wheel = mWheel;
-    int i = 3;
-    do {
-        new (&wheel->mTerrainType) Attrib::Instance(static_cast<const Attrib::Collection *>(nullptr), 0, nullptr);
-        wheel->mTerrainType.SetDefaultLayout(0xFC);
-        const Attrib::Collection *nullSpec = SimSurface::kNull.GetConstCollection();
-        if (nullSpec) {
-            wheel->mTerrainType.Change(nullSpec);
+    Attrib::Gen::pvehicle vehicleinfo(mAttributes);
+    Attrib::Gen::engine engine(vehicleinfo.engine(0), 0, nullptr);
+
+    if (mContext == Sound::kRaceContext_QuickRace) {
+        int phys_cur_upgrade = mAttributes.engine_current();
+        int phys_num_upgrades = mAttributes.engine_upgrades();
+        int base_upgrade = 4 - phys_num_upgrades;
+        int curupgade_offset = phys_cur_upgrade;
+
+        if (base_upgrade < 0) {
+            base_upgrade = 0;
         }
-
-        new (&wheel->mPrevTerrainType) Attrib::Instance(static_cast<const Attrib::Collection *>(nullptr), 0, nullptr);
-        wheel->mPrevTerrainType.SetDefaultLayout(0xFC);
-        if (nullSpec) {
-            wheel->mPrevTerrainType.Change(nullSpec);
+        if (base_upgrade > 4) {
+            base_upgrade = 4;
         }
-
-        wheel->Reset();
-        ++wheel;
-    } while (i-- != 0);
-
-    state.mAngle = 0;
-    state.mSteering = 0;
-    state.mEngine.Reset();
-    state.mDriveline.mGearShiftFlag = 0;
-    state.mDriveline.mGear = Sound::NEUTRAL;
-    state.mHotPursuit = 0;
-    state.mSirenState = -1;
-
-    Attrib::Gen::pvehicle &attributesInst = mAttributes;
-    attributesInst.SetDefaultLayout(0x50);
-
-    Attrib::Gen::engineaudio &engineInfoInst = mEngineInfo;
-    engineInfoInst.SetDefaultLayout(0xB0);
-
-    state.mWorldID = wuid;
-    state.mContext = context;
-    state.mSimUpdating = 1;
-    state.mHandle = handle;
-    state.mTrailerID = 0;
-    state.mNISCarID = -1;
-    state.mAssetsLoaded = 0;
-    state.mControlSource = Sound::CONTROL_AI;
-    state.mDesiredSpeed = 0.0f;
-    state.mVel1 = state.mVel0;
-    state.mOversteer = 0.0f;
-    state.mUndersteer = 0.0f;
-    state.mSlipAngle = 0.0f;
-    state.mVisualRPM = 0.0f;
-    PSMTX44Identity((Mtx44)&state.mMatrix);
-
-    Attrib::Gen::pvehicle &attributes = attributesInst;
-    Attrib::Gen::engineaudio &engineInfo = engineInfoInst;
-    Attrib::Gen::pvehicle vehicleinfo(attributes);
-    vehicleinfo.SetDefaultLayout(0x50);
-
-    const Attrib::RefSpec *engineRef = static_cast<const Attrib::RefSpec *>(vehicleinfo.GetAttributePointer(0xF1F5FBC7, 0));
-    if (!engineRef) {
-        engineRef = static_cast<const Attrib::RefSpec *>(Attrib::DefaultDataArea(0xC));
-    }
-
-    Attrib::Gen::engine engine(engineRef->GetCollectionWithDefault(), 0, nullptr);
-
-    if (state.mContext == Sound::kRaceContext_QuickRace) {
-        const int *physCurUpgrade = static_cast<const int *>(attributes.GetAttributePointer(0xB12CCB69, 0));
-        if (!physCurUpgrade) {
-            physCurUpgrade = static_cast<const int *>(Attrib::DefaultDataArea(4));
-        }
-
-        int baseUpgrade = 4 - attributes.engine_upgrades();
-        if (baseUpgrade < 0) {
-            baseUpgrade = 0;
-        }
-        if (baseUpgrade > 4) {
-            baseUpgrade = 4;
-        }
-
-        int curupgade_offset = *physCurUpgrade;
         if (curupgade_offset < 0) {
             curupgade_offset = 0;
         }
@@ -1110,29 +1065,27 @@ EAX_CarState::EAX_CarState(const Attrib::Collection *atr, Sound::Context context
             curupgade_offset = 4;
         }
 
-        PlayerUpgrade = 0;
-        if (baseUpgrade + curupgade_offset > 0) {
-            PlayerUpgrade = baseUpgrade + curupgade_offset;
+        PlayerUpgrade = base_upgrade + curupgade_offset;
+        if (PlayerUpgrade < 0) {
+            PlayerUpgrade = 0;
         }
         if (PlayerUpgrade > 4) {
             PlayerUpgrade = 4;
         }
     }
 
-    unsigned int upgradedEngine = GenerateUpgradedEngine(this, PlayerUpgrade);
-    unsigned int (*engineAudioClassKey)() = Attrib::Gen::engineaudio::ClassKey;
-    const Attrib::Collection *engineCollection =
-        Attrib::FindCollectionWithDefault(engineAudioClassKey(), upgradedEngine);
-    engineInfo.Change(engineCollection);
+    mEngineInfo.ChangeWithDefault(GenerateUpgradedEngine(this, PlayerUpgrade));
+    mMaxTorque = Physics::Info::MaxTorque(engine, max_torque_rpm);
+    mMaxRPM = engine.MAX_RPM();
+    mMinRPM = engine.IDLE();
+    mRedline = engine.RED_LINE();
 
-    float max_torque_rpm;
-    state.mMaxTorque = Physics::Info::MaxTorque(engine, max_torque_rpm);
-    state.mMaxRPM = engine.MAX_RPM();
-    state.mMinRPM = engine.IDLE();
-    state.mRedline = engine.RED_LINE();
-
-    if (state.mContext == Sound::kRaceContext_Count || (state.mContext > 2 && state.mContext < 7 && state.mContext > 4)) {
-        state.mAssetsLoaded = 1;
+    if (mContext == Sound::kRaceContext_Count) {
+        mAssetsLoaded = 1;
+    } else if (mContext > Sound::kRaceContext_Count) {
+        if (mContext <= Sound::CONTEXT_TRAILER && mContext >= Sound::CONTEXT_TRACTOR) {
+            mAssetsLoaded = 1;
+        }
     }
 }
 

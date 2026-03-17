@@ -25,9 +25,10 @@ class SimSurface : public Attrib::Gen::simsurface {
 
     SimSurface(const SimSurface &from) : Attrib::Gen::simsurface(from.GetConstCollection(), 0, nullptr) {}
 
-    SimSurface() : Attrib::Gen::simsurface(GetConstCollection(), 0, nullptr) {
-        // TODO
-        // Change()
+    SimSurface() : Attrib::Gen::simsurface(static_cast<const Attrib::Collection *>(nullptr), 0, nullptr) {
+        if (mNullSpec) {
+            Change(mNullSpec);
+        }
     }
 
     ~SimSurface() {
