@@ -500,7 +500,7 @@ void UIQRCarSelect::NotificationMessage(unsigned long msg, FEObject *pobj, unsig
             char buf[512];
             bSNPrintf(buf, 0x200, fmt, cost_str);
             DialogInterface::ShowTwoButtons(GetPackageName(), "", static_cast<eDialogTitle>(1),
-                0x70e01038, 0x417b25e4, 0xd05fc3a3, 0x34dc1bcf, 0x34dc1bcf,
+                0x70e01038, 0x417b25e4, 0xa46253ba, 0x34dc1bcf, 0x34dc1bcf,
                 static_cast<eDialogFirstButtons>(1), buf);
             return;
         }
@@ -681,14 +681,9 @@ void UIQRCarSelect::NotificationMessage(unsigned long msg, FEObject *pobj, unsig
                     return;
                 }
                 if (FEDatabase->GetCareerSettings()->GetCurrentBin() > 15) {
-                    char cost_str[16];
-                    bSNPrintf(cost_str, 0x10, "%d", cost >> 1);
-                    const char *fmt = GetLocalizedString(0xb4a40135);
-                    char buf[512];
-                    bSNPrintf(buf, 0x200, fmt, cost_str);
                     DialogInterface::ShowTwoButtons(GetPackageName(), "", static_cast<eDialogTitle>(1),
                         0x70e01038, 0x417b25e4, 0xd05fc3a3, 0x34dc1bcf, 0x34dc1bcf,
-                        static_cast<eDialogFirstButtons>(1), buf);
+                        static_cast<eDialogFirstButtons>(1), 0x74317cbc);
                     return;
                 }
                 DialogInterface::ShowThreeButtons(GetPackageName(), "", static_cast<eDialogTitle>(1),
