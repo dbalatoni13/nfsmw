@@ -59,6 +59,7 @@ static Physics::Upgrades::tPartMap put_maps[] = {
 };
 
 const Physics::Upgrades::tPartMap *FindPartMap(Physics::Upgrades::Type type) {
+    Physics::Upgrades::tPartMap *t;
     const Physics::Upgrades::tPartMap *type_map = put_maps;
     if (type_map->key == 0) {
         goto not_found;
@@ -469,8 +470,7 @@ bool Physics::Upgrades::SetMaximum(Attrib::Gen::pvehicle &pvehicle) {
     package.Default();
 
     for (int i = 0; i < Physics::Upgrades::PUT_MAX; i++) {
-        Physics::Upgrades::Type type = static_cast<Physics::Upgrades::Type>(i);
-        package.Part[i] = GetMaxLevel(pvehicle, type);
+        package.Part[i] = GetMaxLevel(pvehicle, static_cast<Physics::Upgrades::Type>(i));
     }
 
     return SetPackage(pvehicle, package);

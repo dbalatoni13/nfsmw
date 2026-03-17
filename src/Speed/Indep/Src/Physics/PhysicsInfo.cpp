@@ -56,11 +56,7 @@ Physics::Info::eInductionType Physics::Info::InductionType(const Attrib::Gen::in
 
 bool Physics::Info::HasNos(const Attrib::Gen::pvehicle &pvehicle) {
     const Attrib::Gen::nos nos(pvehicle.nos(0), 0, nullptr);
-    bool result = false;
-    if (nos.TORQUE_BOOST() > 0.0f) {
-        result = nos.NOS_CAPACITY() > 0.0f;
-    }
-    return result;
+    return nos.TORQUE_BOOST() > 0.0f && nos.NOS_CAPACITY() > 0.0f;
 }
 
 bool Physics::Info::HasRunflatTires(const Attrib::Gen::pvehicle &pvehicle) {

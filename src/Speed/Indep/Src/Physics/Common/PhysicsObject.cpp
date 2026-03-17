@@ -292,18 +292,15 @@ void PhysicsObject::PauseBehavior(const UCrc32 &mechanic, bool pause) {
 
 bool PhysicsObject::ResetBehavior(const UCrc32 &mechanic) {
     unsigned int key = mechanic.GetValue();
-    Mechanics::iterator iter = mMechanics.find(key);
-    if (iter._M_node == mMechanics.end()._M_node) {
-        goto ret_false;
-    }
-    {
-        Behavior *beh = mMechanics[key];
+    Behavior *beh;
+    if (mMechanics.find(key) == mMechanics.end()) {
+    } else {
+        beh = mMechanics[key];
         if (beh != nullptr) {
             beh->Reset();
             return true;
         }
     }
-ret_false:
     return false;
 }
 
