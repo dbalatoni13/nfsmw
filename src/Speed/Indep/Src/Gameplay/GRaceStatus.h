@@ -702,11 +702,7 @@ class GRaceCustom : public GRaceParameters {
 
     void SetForceHeatLevel(int level);
 
-    void SetAttribute(unsigned int key, const int &value, unsigned int index);
-
-    void SetAttribute(unsigned int key, const float &value, unsigned int index);
-
-    void SetAttribute(unsigned int key, const bool &value, unsigned int index);
+    template <typename T> void SetAttribute(unsigned int key, const T &value, unsigned int index);
 
     void SetHeatLevel(int level) {
         mHeatLevel = level;

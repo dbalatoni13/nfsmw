@@ -2,6 +2,7 @@
 
 #include "Speed/Indep/Src/Gameplay/GManager.h"
 #include "Speed/Indep/Src/Gameplay/GMarker.h"
+#include "Speed/Indep/Src/Gameplay/GObjectBlock.h"
 #include "Speed/Indep/Src/Gameplay/GVault.h"
 #include "Speed/Indep/Src/Main/AttribSupport.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
@@ -813,6 +814,29 @@ GRaceCustom::~GRaceCustom() {
     }
 }
 
+void GRaceCustom::CreateRaceActivity() {
+    if (mReversed && !GetCanBeReversed()) {
+        mReversed = false;
+    }
+
+    if (GRaceStatus::Get().GetRaceContext() != GRace::kRaceContext_Career && GetIsBossRace()) {
+        mNumOpponents = 0;
+    } else {
+        mNumOpponents = GetNumOpponents();
+    }
+
+    if (mHeatLevel != -1) {
+        if (mHeatLevel == 0) {
+            SetCopsEnabled(false);
+        } else {
+            SetForceHeatLevel(mHeatLevel);
+        }
+    }
+
+    mRaceActivity = new GActivity(mRaceRecord->GetCollection());
+    mRaceActivity->AllocateConnectionBuffer(GObjectBlock::CalcNumConnections(mRaceRecord->GetCollection()));
+}
+
 GActivity *GRaceCustom::GetRaceActivity() const {
     return mRaceActivity;
 }
@@ -899,47 +923,20 @@ void GRaceCustom::SetForceHeatLevel(int level) {
     SetAttribute(0xE4211F4F, level, 0);
 }
 
-void GRaceCustom::SetAttribute(unsigned int key, const int &value, unsigned int index) {
+template <typename T> void GRaceCustom::SetAttribute(unsigned int key, const T &value, unsigned int index) {
     Attrib::Attribute attribute;
-    int *dest;
+    T *dest;
 
     attribute = mRaceRecord->Get(key);
     if (!attribute.IsValid()) {
         mRaceRecord->Add(key, 1);
     }
 
-    dest = reinterpret_cast<int *>(const_cast<void *>(mRaceRecord->GetAttributePointer(key, index)));
+    dest = reinterpret_cast<T *>(const_cast<void *>(mRaceRecord->GetAttributePointer(key, index)));
     if (dest) {
         *dest = value;
     }
 }
 
-void GRaceCustom::SetAttribute(unsigned int key, const float &value, unsigned int index) {
-    Attrib::Attribute attribute;
-    float *dest;
-
-    attribute = mRaceRecord->Get(key);
-    if (!attribute.IsValid()) {
-        mRaceRecord->Add(key, 1);
-    }
-
-    dest = reinterpret_cast<float *>(const_cast<void *>(mRaceRecord->GetAttributePointer(key, index)));
-    if (dest) {
-        *dest = value;
-    }
-}
-
-void GRaceCustom::SetAttribute(unsigned int key, const bool &value, unsigned int index) {
-    Attrib::Attribute attribute;
-    bool *dest;
-
-    attribute = mRaceRecord->Get(key);
-    if (!attribute.IsValid()) {
-        mRaceRecord->Add(key, 1);
-    }
-
-    dest = reinterpret_cast<bool *>(const_cast<void *>(mRaceRecord->GetAttributePointer(key, index)));
-    if (dest) {
-        *dest = value;
-    }
-}
+template void GRaceCustom::SetAttribute<int>(unsigned int key, const int &value, unsigned int index);
+template void GRaceCustom::SetAttribute<bool>(unsigned int key, const bool &value, unsigned int index);
