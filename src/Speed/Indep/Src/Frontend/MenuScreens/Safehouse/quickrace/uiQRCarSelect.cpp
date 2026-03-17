@@ -481,7 +481,8 @@ void UIQRCarSelect::NotificationMessage(unsigned long msg, FEObject *pobj, unsig
         if (FEDatabase->GetCareerSettings()->GetCurrentBin() > 15) return;
         if (!pSelectedCar) return;
         FECarRecord *car = GetSelectedCarRecord();
-        if (car->CareerHandle != 0xff) {
+        bool isCareer = car->CareerHandle != 0xff;
+        if (isCareer) {
             FEPlayerCarDB *stable = FEDatabase->GetPlayerCarStable(iPlayerNum);
             FECareerRecord *career = stable->GetCareerRecordByHandle(car->CareerHandle);
             if (career->TheImpoundData.IsImpounded()) {
@@ -497,11 +498,10 @@ void UIQRCarSelect::NotificationMessage(unsigned long msg, FEObject *pobj, unsig
             return;
         }
         unsigned int cost = car->GetCost();
+        char buf[512];
         char cost_str[16];
         bSNPrintf(cost_str, 0x10, "%d", cost >> 1);
-        const char *fmt = GetLocalizedString(0xb4a40135);
-        char buf[512];
-        bSNPrintf(buf, 0x200, fmt, cost_str);
+        bSNPrintf(buf, 0x200, GetLocalizedString(0xb4a40135), cost_str);
         DialogInterface::ShowTwoButtons(GetPackageName(), "", static_cast<eDialogTitle>(1),
             0x70e01038, 0x417b25e4, 0xa46253ba, 0x34dc1bcf, 0x34dc1bcf,
             static_cast<eDialogFirstButtons>(1), buf);
