@@ -66,9 +66,9 @@ void uiRapSheetTEP::Setup() {
     FEPrintf(GetPackageName(), 0xE3DA78E8, GetLocalizedString(0x364E4525), stable->GetTotalBounty());
     for (int i = 0; i < 5; i++) {
         const TopEvadedPursuitDetail& pursuit = scores->GetTopEvadedPursuitScores(static_cast<unsigned short>(i));
-        Timer t(pursuit.Length);
-        if (t != Timer()) {
+        if (pursuit.Length != 0) {
             char time_str[16];
+            Timer t(pursuit.Length);
             t.PrintToString(time_str, 0);
             int index = i + 1;
             FEPrintf(GetPackageName(), FEngHashString("RAPSHEET_CAR_%d", index), GetLocalizedString(0x69EAB50F), GetLocalizedString(GetFECarNameHashFromFEKey(pursuit.CarFEKey)));
