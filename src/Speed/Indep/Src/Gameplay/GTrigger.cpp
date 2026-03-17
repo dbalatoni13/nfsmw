@@ -7,6 +7,8 @@
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #include "Speed/Indep/Libs/Support/Utility/UStandard.h"
 
+#include <algorithm>
+
 GTrigger::GTrigger(const Attrib::Key &triggerKey)
     : GRuntimeInstance(triggerKey, kGameplayObjType_Trigger), //
       mWorldTrigger(), //
@@ -130,4 +132,126 @@ GTrigger::GTrigger(const Attrib::Key &triggerKey)
         mIcon->SetFlag(1);
         mIcon->SetFlag(2);
     }
+}
+
+GTrigger::~GTrigger() {
+    ClearParticleEffects();
+    if (mIcon) {
+        GManager::Get().FreeIcon(mIcon);
+        mIcon = nullptr;
+    }
+}
+
+GActivity *GTrigger::GetTargetActivity() {
+    return reinterpret_cast<GActivity *>(GManager::Get().FindInstance(TargetActivity(0).GetCollectionKey()));
+}
+
+void GTrigger::AddActivationReference() {
+    mActivationReferences++;
+    if (mActivationReferences > 0) {
+        Enable(true);
+    }
+}
+
+void GTrigger::RemoveActivationReference() {
+    if (mActivationReferences > 0) {
+        mActivationReferences--;
+    }
+    if (mActivationReferences <= 0) {
+        Enable(false);
+    }
+}
+
+void GTrigger::ClearParticleEffects() {
+    for (int i = 0; i < 2; i++) {
+        if (mParticleEffect[i]) {
+            delete mParticleEffect[i];
+            mParticleEffect[i] = nullptr;
+        }
+    }
+}
+
+void GTrigger::EnableParticleEffects(bool enabled) {
+    for (int i = 0; i < 2; i++) {
+        if (mParticleEffect[i]) {
+            if (enabled) {
+                mParticleEffect[i]->Enable();
+            } else {
+                mParticleEffect[i]->Disable();
+            }
+        }
+    }
+}
+
+void GTrigger::RefreshParticleEffects() {
+    EnableParticleEffects(mEnabled);
+}
+
+void GTrigger::NotifyEmitterGroupDelete(void *obj, EmitterGroup *group) {
+    GTrigger *trigger = reinterpret_cast<GTrigger *>(obj);
+
+    if (!trigger) {
+        return;
+    }
+
+    for (int i = 0; i < 2; i++) {
+        if (trigger->mParticleEffect[i] == group) {
+            trigger->mParticleEffect[i] = nullptr;
+        }
+    }
+}
+
+void GTrigger::Enable(bool setEnabled) {
+    mEnabled = setEnabled;
+    if (setEnabled) {
+        mWorldTrigger.Enable();
+        ShowIcon();
+    } else {
+        mWorldTrigger.Disable();
+        HideIcon();
+    }
+    EnableParticleEffects(setEnabled);
+}
+
+void GTrigger::GetPosition(UMath::Vector3 &pos) {
+    mWorldTrigger.GetCenter(pos);
+}
+
+void GTrigger::Reset() {
+    mSimObjInside.clear();
+    mTriggerEnabled = 0;
+    mActivationReferences = 0;
+    Enable(false);
+}
+
+void GTrigger::ShowIcon() {
+    if (mIcon) {
+        mIcon->SetFlag(1);
+        mIcon->SetFlag(2);
+    }
+}
+
+void GTrigger::HideIcon() {
+    if (mIcon) {
+        mIcon->ClearFlag(1);
+        mIcon->ClearFlag(2);
+    }
+}
+
+void GTrigger::MarkAsInside(ISimable *simable) {
+    if (!IsInside(simable)) {
+        mSimObjInside.push_back(simable);
+    }
+}
+
+void GTrigger::MarkAsOutside(ISimable *simable) {
+    UTL::Std::vector<ISimable *, _type_ID_SimObjList>::iterator it = std::find(mSimObjInside.begin(), mSimObjInside.end(), simable);
+
+    if (it != mSimObjInside.end()) {
+        mSimObjInside.erase(it);
+    }
+}
+
+bool GTrigger::IsInside(ISimable *simable) {
+    return std::find(mSimObjInside.begin(), mSimObjInside.end(), simable) != mSimObjInside.end();
 }
