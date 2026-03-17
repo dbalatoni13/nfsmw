@@ -12,6 +12,7 @@
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/engineaudio.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/pvehicle.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
+#include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
 namespace Sound {
@@ -166,6 +167,22 @@ struct EAX_CarState : public UTL::Collections::Listable<EAX_CarState, 10> {
 
     int GetNISCarID() {
         return mNISCarID;
+    }
+
+    bool IsLocalPlayerCar() {
+        return mContext == Sound::CONTEXT_PLAYER;
+    }
+
+    float GetBrake() {
+        return mBrake;
+    }
+
+    float GetVelocityMagnitude() {
+        return bLength(mVel0);
+    }
+
+    float GetVelocityMagnitudeMPH() {
+        return MPS2MPH(GetVelocityMagnitude());
     }
 
     EAX_CarState(const Attrib::Collection *atr, Sound::Context context, unsigned int wuid, HSIMABLE__ *handle);

@@ -81,6 +81,7 @@ struct SFXCTL_Physics : public SFXCTL {
     void MsgRevOff(const MAIEngineRev &message);
     void UpdateNIS(float t, float dt);
 
+    float GetPhysRPM() { return PhysicsRPM; }
     float GetPhysTRQ() { return PhysicsTRQ; }
 };
 

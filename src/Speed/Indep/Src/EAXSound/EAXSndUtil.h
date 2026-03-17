@@ -29,6 +29,7 @@ struct cInterpLine {
     void Update(float dt, float target);
     void Update(float dt);
     float GetValue() { return CurValue; }
+    bool IsFinished() { return bComplete; }
 };
 
 struct cPathLine {
