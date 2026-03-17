@@ -1184,37 +1184,36 @@ void CarCustomizeManager::GetCarPartList(int car_slot, bTList<SelectablePart> &t
     eUnlockableEntity unlockable = MapCarPartToUnlockable(car_slot, nullptr);
     while (part) {
         int next_slot = car_slot;
-        if (car_slot == 0x42) {
-            if (param != 0) {
-                if (part->GetAppliedAttributeUParam(0xebb03e66, 0) != param) {
-                    goto next_part;
-                }
-            }
-        } else if (car_slot > 0x42) {
-            if (car_slot == 0x4d) {
-                unsigned int vinylHash = GetVinylLayerHash(part, cartype, 1);
-                eStreamingEntry *streaming = StreamingTexturePackLoader.GetStreamingEntry(vinylHash);
-                unsigned int brand = part->GetAppliedAttributeUParam(0xebb03e66, 0);
-                unsigned int specialHash = bStringHash("SPECIAL");
-                if (!streaming) {
-                    goto next_part;
-                }
-                if ((part->GetGroupNumber() & 0x1f) != param) {
-                    goto next_part;
-                }
-                if (brand == specialHash) {
-                    if (!GetIsCollectorsEdition()) {
-                        goto next_part;
-                    }
-                }
-            }
-        } else if (car_slot == 0x17) {
+        if (car_slot == 0x17) {
             bool valid = false;
             unsigned int modelHash = part->GetModelNameHash(0, 1);
             if (modelHash && StreamingSolidPackLoader.GetStreamingEntry(modelHash)) {
                 valid = true;
             }
             if (!valid) goto next_part;
+        } else if (car_slot == 0x42) {
+            if (param != 0) {
+                if (part->GetAppliedAttributeUParam(0xebb03e66, 0) != param) {
+                    goto next_part;
+                }
+            }
+        } else if (car_slot == 0x4d) {
+            unsigned int vinylHash = GetVinylLayerHash(part, cartype, 1);
+            eStreamingEntry *streaming = StreamingTexturePackLoader.GetStreamingEntry(vinylHash);
+            unsigned int brand = part->GetAppliedAttributeUParam(0xebb03e66, 0);
+            unsigned int specialHash = bStringHash("SPECIAL");
+            bool isSpecial = brand == specialHash;
+            if (!streaming) {
+                goto next_part;
+            }
+            if ((part->GetGroupNumber() & 0x1f) != param) {
+                goto next_part;
+            }
+            if (isSpecial) {
+                if (!GetIsCollectorsEdition()) {
+                    goto next_part;
+                }
+            }
         }
 
         {
