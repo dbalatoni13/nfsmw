@@ -3,8 +3,30 @@
 #include "Speed/Indep/Src/Generated/Messages/MMiscSound.h"
 #include "Speed/Indep/Src/Misc/Hermes.h"
 
-EAXFrontEnd::EAXFrontEnd()
-    : m_pSFXOBJ_FEHUD(nullptr) {}
+EAXFrontEnd::EAXFrontEnd() {
+    int i;
+    int Index;
+
+    for (Index = 0; Index < NUM_CAR_INDEXS; Index++) {
+        for (i = 0; i < NUM_DRIVE_ON_STATES; i++) {
+            m_pDriveOnOffSampleHandle[Index][i] = nullptr;
+            DriveOnFadeOut[Index][i].Initialize(1.0f, 1.0f, 100, LINEAR);
+            IsEnding[Index][i] = false;
+        }
+        DriveONCarState[Index] = DRIVE_ON_NONE;
+    }
+
+    m_pSFXOBJ_FEHUD = nullptr;
+
+    {
+        for (int k = 0; k < 4; k++) {
+            m_hydraulicsControls[k] = nullptr;
+            m_hydraulicsBounce[k] = nullptr;
+        }
+    }
+
+    m_pPlayRapSheet = nullptr;
+}
 
 EAXFrontEnd::~EAXFrontEnd() {
     DestroyAllDriveOnSnds();
@@ -46,9 +68,12 @@ void EAXFrontEnd::SetFEDrivingCarState(bVector3 *, bVector3 *, Camera *, int) {}
 
 void EAXFrontEnd::DestroyAllDriveOnSnds() {}
 
-EAXCommon::EAXCommon()
-    : m_pSFXOBJ_FEHUD(nullptr) //
-    , mMsgMiscSound(nullptr) {}
+EAXCommon::EAXCommon() {
+    mMsgMiscSound =
+        Hermes::Handler::Create<MMiscSound, EAXCommon, EAXCommon>(this, &EAXCommon::MsgPlayMiscSound, "Snd", 0);
+    m_pSFXOBJ_FEHUD = nullptr;
+    m_pRadar = nullptr;
+}
 
 EAXCommon::~EAXCommon() {
     if (mMsgMiscSound != nullptr) {
