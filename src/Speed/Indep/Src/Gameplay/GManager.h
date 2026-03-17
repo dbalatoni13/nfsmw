@@ -117,6 +117,7 @@ class GManager : public UTL::COM::Object, public IVehicleCache {
     unsigned int GetNumBountySpawnMarkers() const { return mNumBountySpawnPoints; }
     unsigned int GetBountySpawnMarker(unsigned int index) const;
     void ServicePendingCharacters();
+    void UnspawnAllCharacters();
     void UnspawnUselessCharacters();
     unsigned int GetRespawnMarker();
     int GetBountySpawnMarkerTag(unsigned int index) const;

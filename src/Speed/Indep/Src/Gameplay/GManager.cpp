@@ -901,6 +901,26 @@ void GManager::ReleaseStockCar(ISimable *stockCar) {
     mStockCars[stockCar->GetAttributes().GetCollection()] = stockCar;
 }
 
+void GManager::AttachCharacter(GCharacter *character) {
+    if (std::find(mActiveCharacters.begin(), mActiveCharacters.end(), character) == mActiveCharacters.end()) {
+        mActiveCharacters.push_back(character);
+    }
+}
+
+void GManager::DetachCharacter(GCharacter *character) {
+    GCharacterList::iterator it = std::find(mActiveCharacters.begin(), mActiveCharacters.end(), character);
+
+    if (it != mActiveCharacters.end()) {
+        mActiveCharacters.erase(it);
+    }
+}
+
+void GManager::UnspawnAllCharacters() {
+    while (!mActiveCharacters.empty()) {
+        mActiveCharacters.front()->Unspawn();
+    }
+}
+
 bool GManager::GetHasPendingSMS() const {
     return !mPendingSMS.empty();
 }
