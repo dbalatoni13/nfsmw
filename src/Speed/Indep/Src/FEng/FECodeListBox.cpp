@@ -624,21 +624,22 @@ bool FECodeListBox::MakeMove(long lNumMove, unsigned long& ulCurrentVirtual, uns
                 return false;
             }
             ulCurrentVirtual = ulTarget;
-            return true;
-        }
-        if (ulCurrentVirtual == ulOldTarget) {
-            return false;
-        }
-        unsigned long ulDifference;
-        if (ulCurrentVirtual < ulTarget) {
-            ulDifference = ulTarget - ulCurrentVirtual;
         } else {
-            ulDifference = ulTarget + ulNumTotal - ulCurrentVirtual;
+            unsigned long ulDifference;
+            if (ulCurrentVirtual == ulOldTarget) {
+                return false;
+            }
+            if (ulCurrentVirtual < ulTarget) {
+                ulDifference = ulTarget - ulCurrentVirtual;
+            } else {
+                ulDifference = ulTarget + ulNumTotal - ulCurrentVirtual;
+            }
+            if (ulDifference < ulNumVis) {
+                return false;
+            }
+            ulDifference = GetValidIndexListBox(static_cast<int>(ulCurrentVirtual) + lNumMove, ulNumTotal);
+            ulCurrentVirtual = ulDifference;
         }
-        if (ulDifference < ulNumVis) {
-            return false;
-        }
-        ulCurrentVirtual = GetValidIndexListBox(static_cast<int>(ulCurrentVirtual) + lNumMove, ulNumTotal);
     }
     return true;
 }
