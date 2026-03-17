@@ -64,6 +64,7 @@ class GManager : public UTL::COM::Object, public IVehicleCache {
     };
 
     static void Init(const char *vaultPackName);
+    ~GManager() override;
 
     const char *GetCacheName() const override { return "GManager"; }
 
@@ -221,6 +222,13 @@ class GManager : public UTL::COM::Object, public IVehicleCache {
     friend class GVault;
 
     GManager(const char *vaultPackName);
+
+    void AllocateObjectStateStorage();
+    void ReleaseObjectStateStorage();
+    void ReleaseInstanceMap();
+    void ReleaseStreamingBuffers();
+    void DestroyVaults();
+    void ResetAllGameplayData();
 
     int GetAvailableBinSlot();
     int GetAvailableRaceSlot();
