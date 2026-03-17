@@ -866,7 +866,8 @@ void WorldMap::UpdateCursor(bool zoom_thing) {
         bVector2 map_br = delta + map_center;
         pos = map_br;
         bVector2 dpan;
-        dpan = pan;
+        dpan.x = pan.x;
+        dpan.y = pan.y;
         dpan.x *= MapSize.x;
         dpan.y *= MapSize.y;
         dpan = dpan * zoom;
@@ -1193,22 +1194,29 @@ void WorldMap::AddRoadBlocks() {
     for (IRoadBlock* const* i = blocks.begin(); i != blocks.end(); i++) {
         IRoadBlock* rb = *i;
         UMath::Vector3 pos;
+        UMath::Vector3* pPos = &pos;
         UMath::Vector3 dir;
-        pos = rb->GetRoadBlockCentre();
-        dir = rb->GetRoadBlockDir();
+        UMath::Vector3* pDir = &dir;
+        *pPos = rb->GetRoadBlockCentre();
+        *pDir = rb->GetRoadBlockDir();
         bVector2 target_pos;
+        bVector2* pTargetPos = &target_pos;
         bVector2 target_dir;
-        target_pos.x = pos.z;
-        target_pos.y = -pos.x;
-        target_dir.x = dir.z;
-        target_dir.y = -dir.x;
+        bVector2* pTargetDir = &target_dir;
+        pTargetPos->x = pPos->z;
+        pTargetPos->y = -pPos->x;
+        pTargetDir->x = pDir->z;
+        pTargetDir->y = -pDir->x;
         bVector2 world_pos;
-        world_pos = target_pos;
-        ConvertPos(target_pos);
-        float rot = ConvertRot(target_dir);
+        bVector2* pWorldPos = &world_pos;
+        pWorldPos->x = pTargetPos->x;
+        pWorldPos->y = pTargetPos->y;
+        ConvertPos(*pTargetPos);
+        float rot = ConvertRot(*pTargetDir);
         FEImage* icon = FEngFindImage(GetPackageName(), FEngHashString("MMICON_ROADBLOCK_%d", img_num));
         img_num++;
-        MapItem* item = new MapItem(WMIT_ROADBLOCK, static_cast< FEObject* >(icon), target_pos, world_pos, rot, nullptr);
+        MapItem* item = new MapItem(WMIT_ROADBLOCK, static_cast< FEObject* >(icon), *pTargetPos,
+                                    *pWorldPos, rot, nullptr);
         TheMapItems.AddTail(item);
     }
     if (img_num > 0) {
