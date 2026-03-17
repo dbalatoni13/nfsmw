@@ -623,67 +623,68 @@ void GarageMainScreen::HandleJoyEvents() {
     for (int port = startPort; port < endPort; port++) {
         if (!mActionQ[port]) continue;
         while (!mActionQ[port]->IsEmpty()) {
-            if (!bUserRotate && CarGuysCamera == 0) break;
-            ActionRef action = mActionQ[port]->GetAction();
-            float dVar7;
-            if (!mActionQ[port]->IsConnected()) {
-                dVar7 = 0.0f;
-            } else if (action.IsNull()) {
-                dVar7 = 0.0f;
-            } else {
-                dVar7 = action.Data();
-            }
-            int id = action.ID();
-            if (id == 0x20) {
-                mOrbitH = -dVar7;
-                SetHRotateSpeed(pCameraMover, -dVar7);
-                sNumTicksSinceUserMovedCamera = sNumTicksBeforeCamMovesBackToScreenPosition;
-            } else if (id < 0x21) {
-                if (id == 0x1e) {
-                    mOrbitV = -dVar7;
-                    SetVRotateSpeed(pCameraMover, -dVar7);
-                    sNumTicksSinceUserMovedCamera = sNumTicksBeforeCamMovesBackToScreenPosition;
-                } else if (id == 0x1d) {
-                    mOrbitV = dVar7;
-                    SetVRotateSpeed(pCameraMover, dVar7);
-                    sNumTicksSinceUserMovedCamera = sNumTicksBeforeCamMovesBackToScreenPosition;
-                } else if (id == 0x1f) {
-                    mOrbitH = dVar7;
-                    SetHRotateSpeed(pCameraMover, dVar7);
-                    sNumTicksSinceUserMovedCamera = sNumTicksBeforeCamMovesBackToScreenPosition;
+            if (bUserRotate || CarGuysCamera != 0) {
+                ActionRef action = mActionQ[port]->GetAction();
+                float dVar7;
+                if (!mActionQ[port]->IsConnected()) {
+                    dVar7 = 0.0f;
+                } else if (action.ID() == 0) {
+                    dVar7 = 0.0f;
+                } else {
+                    dVar7 = action.Data();
                 }
-            } else if (id > 0x2a) {
-                if (id < 0x2d) {
-                    if (id == 0x2b) {
-                        zoomOut = dVar7;
-                    } else {
-                        zoomIn = -dVar7;
-                    }
+                int id = action.ID();
+                if (id == 0x20) {
+                    mOrbitH = -dVar7;
+                    SetHRotateSpeed(pCameraMover, -dVar7);
                     sNumTicksSinceUserMovedCamera = sNumTicksBeforeCamMovesBackToScreenPosition;
-                    if (ABS(zoomIn) > ABS(zoomOut)) {
-                        mZoom = zoomIn;
-                    } else if (ABS(zoomOut) > ABS(zoomIn)) {
-                        mZoom = zoomOut;
-                    } else {
-                        if (zoomOut == 0.0f && zoomIn == 0.0f) {
-                            mZoom = 0.0f;
+                } else if (id < 0x21) {
+                    if (id == 0x1e) {
+                        mOrbitV = -dVar7;
+                        SetVRotateSpeed(pCameraMover, -dVar7);
+                        sNumTicksSinceUserMovedCamera = sNumTicksBeforeCamMovesBackToScreenPosition;
+                    } else if (id == 0x1d) {
+                        mOrbitV = dVar7;
+                        SetVRotateSpeed(pCameraMover, dVar7);
+                        sNumTicksSinceUserMovedCamera = sNumTicksBeforeCamMovesBackToScreenPosition;
+                    } else if (id == 0x1f) {
+                        mOrbitH = dVar7;
+                        SetHRotateSpeed(pCameraMover, dVar7);
+                        sNumTicksSinceUserMovedCamera = sNumTicksBeforeCamMovesBackToScreenPosition;
+                    }
+                } else if (id > 0x2a) {
+                    if (id < 0x2d) {
+                        if (id == 0x2b) {
+                            zoomOut = dVar7;
+                        } else {
+                            zoomIn = -dVar7;
+                        }
+                        sNumTicksSinceUserMovedCamera = sNumTicksBeforeCamMovesBackToScreenPosition;
+                        if (ABS(zoomIn) > ABS(zoomOut)) {
+                            mZoom = zoomIn;
+                        } else if (ABS(zoomOut) > ABS(zoomIn)) {
+                            mZoom = zoomOut;
+                        } else {
+                            if (zoomOut == 0.0f && zoomIn == 0.0f) {
+                                mZoom = 0.0f;
+                            }
+                        }
+                        SetZoomSpeed(pCameraMover, mZoom);
+                    } else if (id == 0x88) {
+                        SetVRotateSpeed(pCameraMover, 0.0f);
+                        SetHRotateSpeed(pCameraMover, 0.0f);
+                        SetZoomSpeed(pCameraMover, 0.0f);
+                        sNumTicksSinceUserMovedCamera = sNumTicksBeforeCamMovesBackToScreenPosition;
+                    }
+                }
+                if (sNumTicksSinceUserMovedCamera > 0) {
+                    if (bAutoMovement) {
+                        if (action.ID() != 0x1f && action.ID() != 0x20) {
+                            SetHRotateSpeed(pCameraMover, 0.0f);
                         }
                     }
-                    SetZoomSpeed(pCameraMover, mZoom);
-                } else if (id == 0x88) {
-                    SetVRotateSpeed(pCameraMover, 0.0f);
-                    SetHRotateSpeed(pCameraMover, 0.0f);
-                    SetZoomSpeed(pCameraMover, 0.0f);
-                    sNumTicksSinceUserMovedCamera = sNumTicksBeforeCamMovesBackToScreenPosition;
+                    bAutoMovement = 0;
                 }
-            }
-            if (sNumTicksSinceUserMovedCamera > 0) {
-                if (bAutoMovement) {
-                    if (action.ID() != 0x1f && action.ID() != 0x20) {
-                        SetHRotateSpeed(pCameraMover, 0.0f);
-                    }
-                }
-                bAutoMovement = 0;
             }
             mActionQ[port]->PopAction();
         }

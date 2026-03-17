@@ -3652,10 +3652,10 @@ void CustomizeNumbers::RefreshHeader() {
         CarPart *installed = gCarCustomizeManager.GetInstalledCarPart(0x71);
         if (!installed) {
             DisplayHelper.SetPlayerCarStatusIcon(CPS_INSTALLED);
-        } else if (!inCart || inCart->GetBuyingPart()->ThePart != nullptr) {
-            DisplayHelper.SetPlayerCarStatusIcon(CPS_AVAILABLE);
-        } else {
+        } else if (inCart && !inCart->GetBuyingPart()->ThePart) {
             DisplayHelper.SetPlayerCarStatusIcon(CPS_IN_CART);
+        } else {
+            DisplayHelper.SetPlayerCarStatusIcon(CPS_AVAILABLE);
         }
         FEPrintf(GetPackageName(), 0x2a08ba92, "-");
         FEPrintf(GetPackageName(), 0x1a88dc05, "-");

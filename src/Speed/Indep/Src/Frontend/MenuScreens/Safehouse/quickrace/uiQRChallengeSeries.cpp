@@ -252,31 +252,25 @@ bool UIQRChallengeSeries::IsRaceValidForMike(GRaceParameters *parms) {
 void UIQRChallengeSeries::Setup() {
     ClearData();
     GRaceBin *bin = GRaceDatabase::Get().GetBinNumber(0x13);
-    unsigned int raceCount = bin->GetWorldRaceCount();
-    for (unsigned int i = 0; i < raceCount; i++) {
+    for (unsigned int i = 0; i < bin->GetWorldRaceCount(); i++) {
         unsigned int raceHash = bin->GetWorldRaceHash(i);
         GRaceParameters *race = GRaceDatabase::Get().GetRaceFromHash(raceHash);
-        int mikeBuild = GetMikeMannBuild();
-        if (mikeBuild == 0) {
-            unsigned int eventHash = race->GetEventHash();
-            if (UnlockSystem::IsEventAvailable(eventHash)) {
-                bool unlocked = UnlockSystem::IsTrackUnlocked(UNLOCK_QUICK_RACE, eventHash, 0);
-                AddRace(race);
-                int count = GetNumDatum();
-                ArrayDatum *lastDatum = GetDatumAt(count - 1);
-                lastDatum->SetLocked(!unlocked);
-                if (GRaceDatabase::Get().CheckRaceScoreFlags(raceHash, static_cast<GRaceDatabase::ScoreFlags>(1))) {
-                    count = GetNumDatum();
-                    lastDatum = GetDatumAt(count - 1);
-                    lastDatum->SetChecked(true);
-                }
-            }
-        } else {
+        if (GetMikeMannBuild() != 0) {
             if (IsRaceValidForMike(race)) {
                 AddRace(race);
             }
+        } else {
+            if (UnlockSystem::IsEventAvailable(race->GetEventHash())) {
+                bool unlocked = UnlockSystem::IsTrackUnlocked(UNLOCK_QUICK_RACE, race->GetEventHash(), 0);
+                AddRace(race);
+                GetDatumAt(GetNumDatum() - 1)->SetLocked(!unlocked);
+                if (GRaceDatabase::Get().IsQuickRaceComplete(raceHash)) {
+                    GetDatumAt(GetNumDatum() - 1)->SetChecked(true);
+                }
+            }
         }
     }
+    SetDescLabel(0x790ce49);
     SetInitialPosition(0);
     RefreshHeader();
 }
