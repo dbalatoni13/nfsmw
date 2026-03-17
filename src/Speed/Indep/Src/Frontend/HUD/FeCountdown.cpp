@@ -10,9 +10,14 @@ void FEngSetLanguageHash(FEString *text, unsigned int hash);
 int FEPrintf(FEString *text, const char *fmt, ...);
 
 Countdown::Countdown(UTL::COM::Object *pOutter, const char *pkg_name, int player_number)
-    : HudElement(pkg_name, 0) //
-    , ICountdown(pOutter)
+    : HudElement(pkg_name, 0x400) //
+    , ICountdown(pOutter) //
+    , mCountdown(RACE_COUNTDOWN_NUMBER_NONE) //
+    , mSecondTimer(0)
 {
+    pMessageGroup = RegisterGroup(FEHashUpper("321_GO_GROUP"));
+    pMessage = static_cast<FEString *>(FEngFindObject(pkg_name, FEHashUpper("321_GO")));
+    pMessageShadow = static_cast<FEString *>(FEngFindObject(pkg_name, FEHashUpper("321_GO_SHADOW")));
 }
 
 void Countdown::Update(IPlayer *player) {

@@ -14,9 +14,23 @@ extern float TWK_RadarDetectorMinThreshold;
 float RadarDetector::mStaticRange;
 
 RadarDetector::RadarDetector(UTL::COM::Object *pOutter, const char *pkg_name, int player_number)
-    : HudElement(pkg_name, 0) //
-    , IRadarDetector(pOutter)
+    : HudElement(pkg_name, 0x200000) //
+    , IRadarDetector(pOutter) //
+    , mRange(0.0f) //
+    , mDirection(0.0f) //
+    , mTargetType(RADAR_TARGET_NONE) //
+    , mCurrLedAmountShowing(0.3f) //
+    , mInPursuit(false) //
+    , mIsCoolingDown(false) //
+    , mTimeCycleStarted(0)
 {
+    mpDataRadarDetectorGroup = RegisterGroup(0x062743f5);
+    mpDataRadarDetectorLightsLeft = FEngFindObject(pkg_name, 0x69aa01e7);
+    mpDataRadarDetectorLightsRight = FEngFindObject(pkg_name, 0x9f59065a);
+    mpDataRadarDetectorArrow = FEngFindObject(pkg_name, FEHashUpper("Radar_DirectionArrow"));
+    mpDataRadarIcon = FEngFindObject(pkg_name, FEHashUpper("Radar_Icon"));
+    mpDataRadarDetectorBacking = RegisterObject(0x839e7d77);
+    mpDataRadarDetectorBackingWithMirror = RegisterObject(0x9ee06631);
 }
 
 void RadarDetector::Update(IPlayer *player) {
