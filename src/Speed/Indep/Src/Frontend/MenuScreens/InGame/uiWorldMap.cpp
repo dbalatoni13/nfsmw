@@ -719,12 +719,14 @@ void WorldMap::ScrollZoom(eScrollDir dir) {
 }
 
 float WorldMap::GetZoomFactor(eWorldMapZoomLevels level) {
+    float factor = 1.0f;
     switch (level) {
-    case WMZ_LEVEL_1: return 2.0f;
-    case WMZ_LEVEL_2: return 4.0f;
-    case WMZ_LEVEL_4: return 8.0f;
-    default: return 1.0f;
+    case WMZ_LEVEL_1: factor = 2.0f; break;
+    case WMZ_LEVEL_2: factor = 4.0f; break;
+    case WMZ_LEVEL_4: factor = 8.0f; break;
+    default: break;
     }
+    return factor;
 }
 
 void WorldMap::UpdateIconVisibility(eWorldMapItemType type, bool visible) {
