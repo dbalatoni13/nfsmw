@@ -11,6 +11,7 @@
 #include "Speed/Indep/Src/Misc/Platform.h"
 #include "Speed/Indep/Src/World/TrackPath.hpp"
 #include "Speed/Indep/Src/World/TrackPositionMarker.hpp"
+#include "Speed/Indep/Src/World/TrackStreamer.hpp"
 #include "Speed/Indep/Src/World/WCollisionAssets.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribLoadAndGo.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
@@ -1272,6 +1273,62 @@ void GManager::UnspawnSectionIcons(int section) {
 void GManager::UnspawnAllIcons() {
     for (unsigned int i = 0; i < mNumIcons; ++i) {
         mIcons[i]->Unspawn();
+    }
+}
+
+bool GManager::GetIsIconVisible(GIcon *icon) {
+    for (unsigned int i = 0; i < mNumVisibleIcons; ++i) {
+        if (mIcons[i] == icon) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+void GManager::SpawnAllLoadedSectionIcons() {
+    for (unsigned int i = 0; i < mNumIcons; ++i) {
+        GIcon *icon = mIcons[i];
+
+        icon->FindSection();
+        if (icon->GetSectionID() >= 0) {
+            if (TheTrackStreamer.IsSectionVisible(icon->GetSectionID()) ||
+                TheTrackStreamer.IsSectionVisible(icon->GetCombinedSectionID())) {
+                icon->Spawn();
+            }
+        }
+    }
+}
+
+void GManager::RestorePursuitBreakerIcons(int sectionID) {
+    for (unsigned int i = 0; i < mNumIcons; ++i) {
+        GIcon *icon = mIcons[i];
+
+        if (icon->GetType() == GIcon::kType_PursuitBreaker &&
+            (sectionID == -1 || sectionID == icon->GetSectionID() || sectionID == icon->GetCombinedSectionID())) {
+            icon->SetFlag(1);
+        }
+    }
+}
+
+void GManager::FreeDisposableIcons(GIcon::Type iconType) {
+    for (unsigned int i = 0; i < mNumIcons;) {
+        GIcon *icon = mIcons[i];
+
+        if (icon->GetIsDisposable() && icon->GetType() == iconType) {
+            FreeIconAt(i);
+        } else {
+            ++i;
+        }
+    }
+}
+
+void GManager::FreeIcon(GIcon *icon) {
+    for (unsigned int i = 0; i < mNumIcons; ++i) {
+        if (mIcons[i] == icon) {
+            FreeIconAt(i);
+            return;
+        }
     }
 }
 
