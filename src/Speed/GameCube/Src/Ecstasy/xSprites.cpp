@@ -1,6 +1,7 @@
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
 #include "Speed/Indep/Src/Ecstasy/Texture.hpp"
+#include "Speed/Indep/Src/Ecstasy/eMath.hpp"
 
 struct NGParticle {
     // total size: 0x30
@@ -35,57 +36,58 @@ struct XSpriteManager {
     void RenderAll(eView *view);
 };
 
-extern bMatrix4 eMathIdentityMatrix;
-
 void RenderViewPolyEx(eView *view, ePoly *poly, TextureInfo *texture_info, bMatrix4 *matrix, int flags, float z_bias)
     __asm__("Render__18eViewPlatInterfaceP5ePolyP11TextureInfoP8bMatrix4if");
 
 void XSpriteManager::AddSpark(const NGParticle &particle, TextureInfo *CurrentTexture) {
     if (this->position < 300) {
-        UMath::Vector3 startPos;
-        UMath::Vector3 endPos;
-        float endAge = static_cast<float>(particle.length) * (1.0f / 2048.0f) + particle.age;
-        float width = static_cast<float>(particle.width) * (1.0f / 2048.0f);
-        SpriteDef *XSpriteBufferP = &this->XSpriteBuffer[this->position];
+        {
+            UMath::Vector3 startPos;
+            UMath::Vector3 endPos;
+            float endAge = static_cast<float>(particle.length) * (1.0f / 2048.0f) + particle.age;
+            float width = static_cast<float>(particle.width) * (1.0f / 2048.0f);
+            SpriteDef *XSpriteBufferP = &this->XSpriteBuffer[this->position];
 
-        UMath::ScaleAdd(particle.initialPos, particle.age, particle.vel, startPos);
-        startPos.z += particle.gravity * particle.age * particle.age;
-        UMath::ScaleAdd(particle.initialPos, endAge, particle.vel, endPos);
-        endPos.z += particle.gravity * endAge * endAge;
+            UMath::ScaleAdd(particle.initialPos, particle.age, particle.vel, startPos);
+            startPos.z += particle.gravity * particle.age * particle.age;
+            UMath::ScaleAdd(particle.initialPos, endAge, particle.vel, endPos);
+            endPos.z += particle.gravity * endAge * endAge;
 
-        XSpriteBufferP->texture_info = CurrentTexture;
-        XSpriteBufferP->color =
-            particle.color >> 24 | particle.color >> 8 & 0xFF00 | (particle.color & 0xFF00) << 8 | particle.color << 24;
-        XSpriteBufferP->width = width;
-        XSpriteBufferP->startPos = startPos;
-        XSpriteBufferP->EndPosPos = endPos;
-        this->position++;
+            XSpriteBufferP->texture_info = CurrentTexture;
+            XSpriteBufferP->color =
+                particle.color >> 24 | particle.color >> 8 & 0xFF00 | (particle.color & 0xFF00) << 8 | particle.color << 24;
+            XSpriteBufferP->width = width;
+            XSpriteBufferP->startPos = startPos;
+            XSpriteBufferP->EndPosPos = endPos;
+            this->position++;
+        }
     }
 }
 
 void XSpriteManager::RenderAll(eView *view) {
-    unsigned int i = 0;
-    ePoly poly;
+    ePoly pPoly;
+    SpriteDef *XSpriteBufferP = this->XSpriteBuffer;
 
-    if (this->position != 0) {
-        do {
-            SpriteDef *sprite = &this->XSpriteBuffer[i];
+    {
+        int i;
+        bMatrix4 *identity = eGetIdentityMatrix();
 
-            poly.Vertices[0] = sprite->startPos;
-            poly.Vertices[1] = sprite->startPos;
-            poly.Vertices[1].z += sprite->width;
-            poly.Vertices[2] = sprite->EndPosPos;
-            poly.Vertices[2].z += sprite->width;
-            poly.Vertices[3] = sprite->EndPosPos;
+        for (i = 0; i < static_cast<int>(this->position); i++) {
+            pPoly.Vertices[0] = XSpriteBufferP->startPos;
+            pPoly.Vertices[1] = XSpriteBufferP->startPos;
+            pPoly.Vertices[1].z += XSpriteBufferP->width;
+            pPoly.Vertices[2] = XSpriteBufferP->EndPosPos;
+            pPoly.Vertices[2].z += XSpriteBufferP->width;
+            pPoly.Vertices[3] = XSpriteBufferP->EndPosPos;
 
-            *reinterpret_cast<uint32 *>(poly.Colours[0]) = sprite->color;
-            *reinterpret_cast<uint32 *>(poly.Colours[1]) = sprite->color;
-            *reinterpret_cast<uint32 *>(poly.Colours[2]) = sprite->color;
-            *reinterpret_cast<uint32 *>(poly.Colours[3]) = sprite->color;
+            *reinterpret_cast<uint32 *>(pPoly.Colours[0]) = XSpriteBufferP->color;
+            *reinterpret_cast<uint32 *>(pPoly.Colours[1]) = XSpriteBufferP->color;
+            *reinterpret_cast<uint32 *>(pPoly.Colours[2]) = XSpriteBufferP->color;
+            *reinterpret_cast<uint32 *>(pPoly.Colours[3]) = XSpriteBufferP->color;
 
-            i++;
-            RenderViewPolyEx(view, &poly, sprite->texture_info, &eMathIdentityMatrix, 0, 0.0f);
-        } while (i < this->position);
+            RenderViewPolyEx(view, &pPoly, XSpriteBufferP->texture_info, identity, 0, 0.0f);
+            XSpriteBufferP++;
+        }
     }
 
     this->position = 0;
