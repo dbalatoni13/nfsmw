@@ -63,10 +63,19 @@ void SFXCTL_Shifting::InitSFX() {
 
 void SFXCTL_Shifting::UpdateParams(float t) {
     SFXCTL::UpdateParams(t);
+    m_bNeed_DeccelSnd = false;
+    m_bNeed_AccelSnd = false;
+    m_bNeed_ShiftGearSnd = false;
+    m_bNeed_DisengageSnd = false;
+    m_bNeed_EngageSnd = false;
+
+    if (GetCurGear() > GetLastGear()) {
+        BeginUpShift();
+    } else if (GetCurGear() < GetLastGear()) {
+        BeginDownShift();
+    }
+
     UpdateGearShiftState(t);
-    UpdateRPM(t);
-    UpdateTorque(t);
-    PostShiftFX_Update(t);
 }
 
 int SFXCTL_Shifting::GetController(int Index) {
