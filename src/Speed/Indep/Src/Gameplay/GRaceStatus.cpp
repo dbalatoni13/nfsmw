@@ -4,6 +4,8 @@
 #include "Speed/Indep/Src/Gameplay/GMarker.h"
 #include "Speed/Indep/Src/Gameplay/GObjectBlock.h"
 #include "Speed/Indep/Src/Gameplay/GVault.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
 #include "Speed/Indep/Src/Main/AttribSupport.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 #include "Speed/Indep/Src/World/WRoadNetwork.h"
@@ -238,6 +240,54 @@ void GRacerInfo::ClearAll() {
 #ifndef EA_BUILD_A124
     mDNF = false;
 #endif
+}
+
+void GRacerInfo::SaveStartPosition() {
+    ISimable *simable = GetSimable();
+
+    if (!simable) {
+        return;
+    }
+
+    IRigidBody *rigidBody = simable->GetRigidBody();
+    if (rigidBody) {
+        mSavedPosition = rigidBody->GetPosition();
+        rigidBody->GetForwardVector(mSavedDirection);
+        mSavedSpeed = rigidBody->GetSpeed();
+    }
+
+    mSavedHeatLevel = 0.0f;
+    {
+        IPerpetrator *perp;
+
+        if (simable->QueryInterface(&perp)) {
+            mSavedHeatLevel = perp->GetHeat();
+        }
+    }
+}
+
+void GRacerInfo::RestoreStartPosition() {
+    ISimable *simable = GetSimable();
+    IRacer *racer;
+
+    if (!simable || !simable->QueryInterface(&racer)) {
+        return;
+    }
+
+    RacePreparationInfo rpi;
+    rpi.Position = mSavedPosition;
+    rpi.Speed = mSavedSpeed;
+    rpi.Direction = mSavedDirection;
+    rpi.HeatLevel = mSavedHeatLevel;
+    rpi.Flags = RacePreparationInfo::RESET_DAMAGE;
+    racer->PrepareForRace(rpi);
+}
+
+void GRacerInfo::ForceStartPosition(const UMath::Vector3 &pos, const UMath::Vector3 &dir) {
+    mSavedPosition = pos;
+    mSavedDirection = dir;
+    mSavedSpeed = 0.0f;
+    RestoreStartPosition();
 }
 
 GRaceParameters::GRaceParameters(unsigned int collectionKey, GRaceIndexData *index)

@@ -108,6 +108,9 @@ struct GRacerInfo {
     void StartCheckpoint(int checkpoint);
     void NotifySpeedTrapTriggered(float speed);
     void FinishRace();
+    void SaveStartPosition();
+    void RestoreStartPosition();
+    void ForceStartPosition(const UMath::Vector3 &pos, const UMath::Vector3 &dir);
     void ChallengeComplete();
     void ClearAll();
 
