@@ -172,7 +172,7 @@ void RenderVisibleSectionBoundary(VisibleSectionBoundary *boundary, eView *view)
 }
 
 void DoTunnelBloom(eView *view) {
-    if (!view || !view->Active || !view->ScreenEffects) {
+    if (!view->Active) {
         return;
     }
 
@@ -188,9 +188,6 @@ void DoTunnelBloom(eView *view) {
     }
 
     Camera *view_camera = view->GetCamera();
-    if (!view_camera) {
-        return;
-    }
 
     bVector3 *camera_position = view_camera->GetPosition();
     bVector3 *camera_direction = view_camera->GetDirection();
