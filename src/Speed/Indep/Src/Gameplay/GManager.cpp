@@ -726,6 +726,22 @@ void GManager::ReleaseSpeedTraps() {
     mSpeedTraps = nullptr;
 }
 
+void GManager::AllocateIcons() {
+    mNumIcons = 0;
+    mNumVisibleIcons = 0;
+    mIcons = new GIcon *[200];
+}
+
+void GManager::ReleaseIcons() {
+    if (mIcons) {
+        delete[] mIcons;
+    }
+
+    mIcons = nullptr;
+    mNumIcons = 0;
+    mNumVisibleIcons = 0;
+}
+
 void GManager::AllocateSpeedTraps() {
     Attrib::Gen::gameplay gameplay(Attrib::FindCollection(Attrib::Gen::gameplay::ClassKey(), 0x49511906), 0, nullptr);
     AttribKeyList keys;
@@ -755,6 +771,33 @@ void GManager::ResetSpeedTraps() {
 
     for (unsigned int i = 0; i < mNumSpeedTraps; ++i) {
         mSpeedTraps[i].Reset();
+    }
+}
+
+GSpeedTrap *GManager::GetFirstSpeedTrap(bool activeOnly, unsigned int binNumber) {
+    return GetNextSpeedTrap(mSpeedTraps - 1, activeOnly, binNumber);
+}
+
+void GManager::EnableBinSpeedTraps(unsigned int binNumber) {
+    for (GSpeedTrap *speedTrap = GetFirstSpeedTrap(false, binNumber); speedTrap;
+         speedTrap = GetNextSpeedTrap(speedTrap, false, binNumber)) {
+        speedTrap->Unlock();
+        speedTrap->Activate();
+    }
+}
+
+void GManager::RefreshSpeedTrapIcons() {
+    for (GSpeedTrap *speedTrap = GetFirstSpeedTrap(false, 0); speedTrap;
+         speedTrap = GetNextSpeedTrap(speedTrap, false, 0)) {
+        GTrigger *trigger = speedTrap->GetTrapTrigger();
+
+        if (trigger) {
+            if (!speedTrap->IsFlagSet(GSpeedTrap::kFlag_Active) || speedTrap->IsFlagSet(GSpeedTrap::kFlag_Completed)) {
+                trigger->HideIcon();
+            } else {
+                trigger->ShowIcon();
+            }
+        }
     }
 }
 

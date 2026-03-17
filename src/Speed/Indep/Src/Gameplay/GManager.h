@@ -126,6 +126,8 @@ class GManager : public UTL::COM::Object, public IVehicleCache {
     void RefreshEngageTriggerIcons();
     void HidePursuitBreakerIcon(const UMath::Vector3 &pos, float radius);
 
+    void AllocateIcons();
+    void ReleaseIcons();
     GIcon *AllocIcon(GIcon::Type iconType, const UMath::Vector3 &pos, float rotDeg, bool disposable);
     void FreeDisposableIcons(GIcon::Type iconType);
     void FreeIcon(struct GIcon *icon);
