@@ -979,6 +979,14 @@ void GManager::NotifyPursuitStarted() {
     }
 }
 
+unsigned int GManager::GetBountySpawnMarker(unsigned int index) const {
+    if (index >= mNumBountySpawnPoints) {
+        return 0;
+    }
+
+    return mBountySpawnPoint[index];
+}
+
 void GManager::RefreshSpeedTrapIcons() {
     for (GSpeedTrap *speedTrap = GetFirstSpeedTrap(false, 0); speedTrap;
          speedTrap = GetNextSpeedTrap(speedTrap, false, 0)) {
@@ -991,6 +999,18 @@ void GManager::RefreshSpeedTrapIcons() {
                 trigger->ShowIcon();
             }
         }
+    }
+}
+
+void NotifyGameZonesChanged() {
+    if (GManager::Exists()) {
+        GManager::Get().RefreshZoneIcons();
+    }
+}
+
+void NotifyTrackMarkersChanged() {
+    if (GManager::Exists()) {
+        GManager::Get().RefreshTrackMarkerIcons();
     }
 }
 
