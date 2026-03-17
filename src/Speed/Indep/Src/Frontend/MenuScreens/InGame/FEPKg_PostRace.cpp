@@ -298,21 +298,50 @@ void StatsPanel::AddStat(RaceStat *stat) {
 }
 
 void StatsPanel::AddInfoStat(unsigned int title, unsigned int info) {
-    FEString *title_string = FEngFindString(ParentPkg, FEngHashString(lbl_803E5088, lbl_803E5DCC, iWidgetToAdd));
-    FEString *info_string = FEngFindString(ParentPkg, FEngHashString(lbl_803E5088, lbl_803E5E24, iWidgetToAdd));
-    AddStat(new ("", 0) InfoStat(title_string, info_string, title, info));
+    FEngSetScript(ParentPkg, FEngHashString(lbl_803E5DB0, iWidgetToAdd), 0x001744B3, true);
+    InfoStat *stat = new ("", 0) InfoStat(
+        FEngFindString(ParentPkg, FEngHashString(lbl_803E5088, lbl_803E5DCC, iWidgetToAdd)),
+        FEngFindString(ParentPkg, FEngHashString(lbl_803E5088, lbl_803E5E24, iWidgetToAdd)),
+        title,
+        info);
+    bNode *tail = TheStats.HeadNode.Prev;
+    tail->Next = stat;
+    stat->Prev = tail;
+    stat->Next = reinterpret_cast<bNode *>(this);
+    TheStats.HeadNode.Prev = stat;
+    ++iWidgetToAdd;
 }
 
 void StatsPanel::AddGenericStat(float stat_data, unsigned int title_hash, unsigned int units_hash, const char *format) {
-    FEString *title_string = FEngFindString(ParentPkg, FEngHashString(lbl_803E5088, lbl_803E5DCC, iWidgetToAdd));
-    FEString *data_string = FEngFindString(ParentPkg, FEngHashString(lbl_803E5088, lbl_803E5E24, iWidgetToAdd));
-    AddStat(new ("", 0) GenericStat(title_string, data_string, stat_data, title_hash, units_hash, format));
+    FEngSetScript(ParentPkg, FEngHashString(lbl_803E5DB0, iWidgetToAdd), 0x001744B3, true);
+    GenericStat *stat = new ("", 0) GenericStat(
+        FEngFindString(ParentPkg, FEngHashString(lbl_803E5088, lbl_803E5DCC, iWidgetToAdd)),
+        FEngFindString(ParentPkg, FEngHashString(lbl_803E5088, lbl_803E5E24, iWidgetToAdd)),
+        stat_data,
+        title_hash,
+        units_hash,
+        format);
+    bNode *tail = TheStats.HeadNode.Prev;
+    tail->Next = stat;
+    stat->Prev = tail;
+    stat->Next = reinterpret_cast<bNode *>(this);
+    TheStats.HeadNode.Prev = stat;
+    ++iWidgetToAdd;
 }
 
 void StatsPanel::AddTimerStat(float seconds, unsigned int title_hash) {
-    FEString *title_string = FEngFindString(ParentPkg, FEngHashString(lbl_803E5088, lbl_803E5DCC, iWidgetToAdd));
-    FEString *data_string = FEngFindString(ParentPkg, FEngHashString(lbl_803E5088, lbl_803E5E24, iWidgetToAdd));
-    AddStat(new ("", 0) TimerStat(title_string, data_string, seconds, title_hash));
+    FEngSetScript(ParentPkg, FEngHashString(lbl_803E5DB0, iWidgetToAdd), 0x001744B3, true);
+    TimerStat *stat = new ("", 0) TimerStat(
+        FEngFindString(ParentPkg, FEngHashString(lbl_803E5088, lbl_803E5DCC, iWidgetToAdd)),
+        FEngFindString(ParentPkg, FEngHashString(lbl_803E5088, lbl_803E5E24, iWidgetToAdd)),
+        seconds,
+        title_hash);
+    bNode *tail = TheStats.HeadNode.Prev;
+    tail->Next = stat;
+    stat->Prev = tail;
+    stat->Next = reinterpret_cast<bNode *>(this);
+    TheStats.HeadNode.Prev = stat;
+    ++iWidgetToAdd;
 }
 
 PostRaceResultsScreen::PostRaceResultsScreen(ScreenConstructorData *sd)
@@ -950,10 +979,10 @@ void PostRaceResultsScreen::SetupLapStats(int racerIndex, GRacerInfo *racer_info
                                                TollboothStat(FEngFindString(RacerStats[racerIndex].ParentPkg,
                                                                             FEngHashString(lbl_803E5088, lbl_803E5DCC,
                                                                                 RacerStats[racerIndex].RacerName)),
-                                                             FEngFindString(RacerStats[racerIndex].ParentPkg,
+                                                            FEngFindString(RacerStats[racerIndex].ParentPkg,
                                                                             FEngHashString(lbl_803E5088, lbl_803E5DDC,
                                                                                 RacerStats[racerIndex].RacerName)),
-                                                             FEngFindString(RacerStats[racerIndex].ParentPkg,
+                                                            FEngFindString(RacerStats[racerIndex].ParentPkg,
                                                                             FEngHashString(lbl_803E5088, lbl_803E5E24,
                                                                                 RacerStats[racerIndex].RacerName)),
                                              i + 1,
