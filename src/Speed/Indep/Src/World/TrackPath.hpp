@@ -5,6 +5,7 @@
 #pragma once
 #endif
 
+#include "Speed/Indep/bWare/Inc/bChunk.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
 enum eTrackPathZoneType {
@@ -79,6 +80,10 @@ class TrackPathManager {
     struct TrackPathBarrier *pBarriers; // offset 0x488, size 0x4
 
   public:
+    void Clear();
+    int Loader(bChunk *chunk);
+    int Unloader(bChunk *chunk);
+    void DisableAllBarriers();
     void EnableBarriers(const char *group_name);
     void BuildZoneInfoTable();
     TrackPathZone *FindZone(const bVector2 *position, eTrackPathZoneType zone_type, TrackPathZone *prev_zone);
@@ -88,5 +93,7 @@ class TrackPathManager {
 extern TrackPathManager TheTrackPathManager;
 
 void TrackPathInitRemoteCaffeineConnection();
+int LoaderTrackPath(bChunk *chunk);
+int UnloaderTrackPath(bChunk *chunk);
 
 #endif
