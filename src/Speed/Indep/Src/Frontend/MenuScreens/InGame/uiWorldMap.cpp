@@ -460,10 +460,6 @@ msg_gt_b5af2461:
     }
     return;
 
-set_last_button_and_leave:
-    FEngSetLastButton(GetPackageName(), 0);
-    goto leave_screen;
-
 msg_gt_c519bfc4:
     if (msg == 0xd9feec59) {
         goto zoom_next;
@@ -478,7 +474,7 @@ msg_gt_c519bfc4:
 
 msg_gt_d9feec59:
     if (msg == 0xe1fde1d1) {
-        new EWorldMapOff();
+        goto world_map_off;
     }
     return;
 
@@ -496,13 +492,15 @@ update_map:
     } else {
         float zoom;
         float max_zoom;
-        bVector2 pan(0.0f, 0.0f);
+        bVector2 pan;
 
         UpdateCursor(false);
         MapStreamer->UpdateAnimation();
         UpdateCursor(true);
         zoom = MapStreamer->GetZoomFactor();
         max_zoom = GetZoomFactor(WMZ_LEVEL_4);
+        pan.x = 0.0f;
+        pan.y = 0.0f;
         MapStreamer->GetPan(pan);
 
         bVector2 map_center;
@@ -657,6 +655,10 @@ refresh_and_end:
     RefreshHeader();
     return;
 
+set_last_button_and_leave:
+    FEngSetLastButton(GetPackageName(), 0);
+    goto leave_screen;
+
 leave_screen:
     if (!bInToggleMode) {
         cFEng::Get()->QueuePackageMessage(0x587c018b, GetPackageName(), nullptr);
@@ -676,6 +678,10 @@ zoom_next:
     if (!bInToggleMode) {
         ScrollZoom(eSD_NEXT);
     }
+    return;
+
+world_map_off:
+    new EWorldMapOff();
     return;
 }
 
