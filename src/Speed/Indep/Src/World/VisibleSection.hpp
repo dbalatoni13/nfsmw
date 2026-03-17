@@ -18,6 +18,10 @@ struct VisibleSectionBoundary : public bTNode<VisibleSectionBoundary> {
     bVector2 BBoxMax;      // offset 0x14, size 0x8
     bVector2 Centre;       // offset 0x1C, size 0x8
     bVector2 Points[16];   // offset 0x24, size 0x80
+
+    void EndianSwap();
+    int GetSectionNumber();
+    int GetMemoryImageSize();
 };
 
 struct VisibleSectionCoordinate {
@@ -37,6 +41,10 @@ struct DrivableScenerySection : public bTNode<DrivableScenerySection> {
     short VisibleSections[72];         // offset 0x12, size 0x90
     short Padding;                     // offset 0xA2, size 0x2
 
+    void EndianSwap();
+    int GetSectionNumber();
+    int GetMemoryImageSize();
+
     int GetVisibleSection(int i) {
         return this->VisibleSections[i];
     }
@@ -46,6 +54,8 @@ struct DrivableSectionsInRegion {
     // total size: 0x324
     int NumSections;     // offset 0x0, size 0x4
     short Sections[400]; // offset 0x4, size 0x320
+
+    void EndianSwap();
 };
 
 struct VisibleTextureSection : public bTNode<VisibleTextureSection> {
@@ -65,6 +75,8 @@ struct LoadingSection : public bTNode<LoadingSection> {
     short DrivableSections[16]; // offset 0x1A, size 0x20
     short NumExtraSections;     // offset 0x3A, size 0x2
     short ExtraSections[8];     // offset 0x3C, size 0x10
+
+    void EndianSwap();
 };
 
 struct SuperScenerySection : public bTNode<SuperScenerySection> {
@@ -111,12 +123,16 @@ struct VisibleSectionOverlay : public bTNode<VisibleSectionOverlay> {
     char Name[40];                 // offset 0x8, size 0x28
     int NumEntries;                // offset 0x30, size 0x4
     OverlayEntry EntryTable[4096]; // offset 0x34, size 0x6000
+
+    void EndianSwap();
 };
 
 struct VisibleSectionManagerInfo {
     // total size: 0x328
     int LODOffset;                                        // offset 0x0, size 0x4
     DrivableSectionsInRegion TheDrivableSectionsInRegion; // offset 0x4, size 0x324
+
+    void EndianSwap();
 };
 
 struct OverrideSectionObject : public bTNode<OverrideSectionObject> {
@@ -163,9 +179,12 @@ class VisibleSectionManager {
     unsigned int EnabledGroups[256];                                   // offset 0x6430, size 0x40
 
   public:
+    VisibleSectionUserInfo *AllocateUserInfo(int section_number);
     void UnallocateUserInfo(int section_number);
+    VisibleSectionBoundary *FindBoundary(int section_number);
     DrivableScenerySection *FindDrivableSection(const bVector2 *point);
     DrivableScenerySection *FindDrivableSection(int section_number /* r4 */);
+    int Loader(bChunk *chunk);
 
     VisibleSectionUserInfo *GetUserInfo(int section_number) {
         return this->UserInfoTable[section_number];

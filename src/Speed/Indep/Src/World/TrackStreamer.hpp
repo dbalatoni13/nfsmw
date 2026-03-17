@@ -103,7 +103,12 @@ class TSMemoryNode : public bTNode<TSMemoryNode> {
 // total size: 0x2754
 class TSMemoryPool {
   public:
+    void *Malloc(int size, const char *debug_name, bool best_fit, bool allocate_from_top, int address);
+
   private:
+    TSMemoryNode *GetNewNode(int address, int size, bool allocated, const char *debug_name);
+    void RemoveNode(TSMemoryNode *node);
+
     int PoolNum;                         // offset 0x0, size 0x4
     const char *DebugName;               // offset 0x4, size 0x4
     int TotalSize;                       // offset 0x8, size 0x4
