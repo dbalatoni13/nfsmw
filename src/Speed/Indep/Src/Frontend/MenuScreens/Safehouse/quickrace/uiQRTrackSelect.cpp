@@ -221,14 +221,15 @@ void UIQRTrackSelect::ScrollTracks(eScrollDir dir) {
             prev = Tracks.GetTail();
         }
         pCurrentNode = prev;
+        pCurrentTrack = prev->pRaceParams;
     } else if (dir == eSD_NEXT) {
         SelectableTrack *next = pCurrentNode->GetNext();
         if (next == Tracks.EndOfList()) {
             next = Tracks.GetHead();
         }
         pCurrentNode = next;
+        pCurrentTrack = next->pRaceParams;
     }
-    pCurrentTrack = pCurrentNode->pRaceParams;
     if (oldTrack != pCurrentTrack) {
         TrackMapStreamer.Init(pCurrentTrack, TrackMap, 0, 0);
         RefreshHeader();
