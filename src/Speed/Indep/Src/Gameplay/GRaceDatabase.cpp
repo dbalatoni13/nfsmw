@@ -14,6 +14,10 @@ const Attrib::Gen::gameplay *GRaceBin::GetGameplayObj() const {
     return &mBinRecord;
 }
 
+GVault *GRaceBin::GetChildVault() const {
+    return mChildVault;
+}
+
 int GRaceBin::GetBinNumber() const {
     return *reinterpret_cast<const int *>(mBinRecord.GetAttributePointer(0x6CE23062, 0) ?
                                               mBinRecord.GetAttributePointer(0x6CE23062, 0) :
@@ -162,6 +166,22 @@ int GRaceBin::GetRequiredRaceWins() const {
                                               Attrib::DefaultDataArea(sizeof(int)));
 }
 
+int GRaceBin::GetCompletedChallenges() const {
+    return mStats.mChallengesCompleted;
+}
+
+int GRaceBin::GetAwardedRaceWins() const {
+    return mStats.mRacesWon;
+}
+
+void GRaceBin::SetCompletedChallenges(int numChallenges) {
+    mStats.mChallengesCompleted = numChallenges;
+}
+
+void GRaceBin::SetRacesWon(int numRaces) {
+    mStats.mRacesWon = numRaces;
+}
+
 GRaceCustom *GRaceDatabase::GetStartupRace() {
     return mStartupRace;
 }
@@ -177,6 +197,8 @@ unsigned int GRaceDatabase::GetBinCount() {
 unsigned int GRaceDatabase::GetRaceCount() {
     return mRaceCountStatic + mRaceCountDynamic;
 }
+
+void GRaceDatabase::SimulateDDayComplete() {}
 
 GRaceBin *GRaceDatabase::GetBin(unsigned int index) {
     return &mBins[index];

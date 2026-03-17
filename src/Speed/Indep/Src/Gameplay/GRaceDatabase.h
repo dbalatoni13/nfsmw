@@ -36,7 +36,7 @@ class GRaceBin {
 
     const Attrib::Gen::gameplay *GetGameplayObj() const;
 
-    GVault *GetChildVault() const { return mChildVault; }
+    GVault *GetChildVault() const;
 
     int GetBinNumber() const;
 
@@ -84,9 +84,9 @@ class GRaceBin {
 
     int GetRequiredRaceWins() const;
 
-    int GetCompletedChallenges() const { return mStats.mChallengesCompleted; }
+    int GetCompletedChallenges() const;
 
-    int GetAwardedRaceWins() const { return mStats.mRacesWon; }
+    int GetAwardedRaceWins() const;
 
     void RefreshProgress();
 
@@ -95,9 +95,9 @@ class GRaceBin {
 
     unsigned int Deserialize(unsigned char *src);
 
-    void SetCompletedChallenges(int numChallenges) { mStats.mChallengesCompleted = numChallenges; }
+    void SetCompletedChallenges(int numChallenges);
 
-    void SetRacesWon(int numRaces) { mStats.mRacesWon = numRaces; }
+    void SetRacesWon(int numRaces);
 
     Attrib::Gen::gameplay mBinRecord; // offset 0x0, size 0x14
     GVault *mChildVault;              // offset 0x14, size 0x4
@@ -133,7 +133,7 @@ class GRaceDatabase {
     GRaceBin *GetBinNumber(int number);
     unsigned int GetRaceCount();
 
-    void SimulateDDayComplete() {}
+    void SimulateDDayComplete();
 
     void NotifyVaultLoaded(GVault *vault);
     void NotifyVaultUnloading(GVault *vault);
