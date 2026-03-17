@@ -517,7 +517,7 @@ void MemcardCallbacks::CardChecked(const RealmcIface::CardInfo* info) {
         GetMemcard()->m_LastError =
             *reinterpret_cast<const unsigned short*>(
                 reinterpret_cast<const char*>(info) + 6);
-        RealmcIface::CardStatus cardStatus = info->mStatus;
+        int cardStatus = info->mStatus;
         switch (cardStatus) {
         case RealmcIface::STATUS_CARD_CHANGED:
         case RealmcIface::STATUS_CARD_DAMAGED:
@@ -528,19 +528,19 @@ void MemcardCallbacks::CardChecked(const RealmcIface::CardInfo* info) {
             GetMemcard()->DoAutoSave();
             return;
         case RealmcIface::STATUS_OK: {
-            if (FEDatabase->bAutoSaveOverwriteConfirmed) {
-                GetMemcard()->DoAutoSave();
+            if (!FEDatabase->bAutoSaveOverwriteConfirmed) {
+                GetMemcard()->m_bCheckingCardForAutoSave = false;
+                GetMemcard()->m_bCheckingCardForOverwrite = true;
+                GetMemcard()->ShowMessages(true);
+                char filter[32];
+                UserProfile* profile = FEDatabase->GetMultiplayerProfile(0);
+                bStrCat(filter, GetMemcard()->GetPrefix(),
+                        profile->GetProfileName());
+                GetMemcard()->m_bFoundAutoSaveFile = false;
+                GetMemcard()->List(filter, nullptr);
                 return;
             }
-            GetMemcard()->m_bCheckingCardForAutoSave = false;
-            GetMemcard()->m_bCheckingCardForOverwrite = true;
-            GetMemcard()->ShowMessages(true);
-            char filter[32];
-            UserProfile* profile = FEDatabase->GetMultiplayerProfile(0);
-            bStrCat(filter, GetMemcard()->GetPrefix(),
-                    profile->GetProfileName());
-            GetMemcard()->m_bFoundAutoSaveFile = false;
-            GetMemcard()->List(filter, nullptr);
+            GetMemcard()->DoAutoSave();
             return;
         }
         case RealmcIface::STATUS_NO_CARD:

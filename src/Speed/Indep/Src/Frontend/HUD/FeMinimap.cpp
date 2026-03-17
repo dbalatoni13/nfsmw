@@ -199,15 +199,17 @@ void Minimap::Update(IPlayer *player) {
     float speed = 0.0f;
     bVector2 target_pos;
     bVector2 target_dir;
+    bVector2 *target_pos_to_use = &target_pos;
+    bVector2 *target_dir_to_use = &target_dir;
     isimable = player->GetSimable();
-    GetVehicleVectors(&target_pos, &target_dir, isimable);
+    GetVehicleVectors(target_pos_to_use, target_dir_to_use, isimable);
 
     if (isimable->QueryInterface(&ivehicle)) {
         speed = bAbs(ivehicle->GetSpeed());
     }
 
-    mPolyRotation = bAngToDeg(bATan(target_dir.y, target_dir.x));
-    ConvertPos(target_pos, mTrackTargetNormalized, CurrentTrack);
+    mPolyRotation = bAngToDeg(bATan(target_dir_to_use->y, target_dir_to_use->x));
+    ConvertPos(*target_pos_to_use, mTrackTargetNormalized, CurrentTrack);
 
     if (speed > MinimapMaxSpeed) {
         speed = MinimapMaxSpeed;
