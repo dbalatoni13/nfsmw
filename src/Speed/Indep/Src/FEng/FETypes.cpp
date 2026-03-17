@@ -45,9 +45,8 @@ FEColor::operator unsigned long() const {
     }
 
     if (a >= 0) {
-        if (a > 255) {
-            av = 255;
-        } else {
+        av = 255;
+        if (a < 256) {
             av = a;
         }
     } else {
