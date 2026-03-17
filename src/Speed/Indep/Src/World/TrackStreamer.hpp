@@ -175,6 +175,7 @@ class TrackStreamer {
     int Loader(bChunk *chunk);
     void StartLoadingSections();
     int HandleMemoryAllocation();
+    TrackStreamingSection *ChooseSectionToJettison();
     void FinishedLoading();
     void UnJettisonSections();
     bool NeedsGameStateActivation(TrackStreamingSection *section);

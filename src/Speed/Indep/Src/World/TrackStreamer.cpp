@@ -14,6 +14,7 @@ extern BOOL bMemoryTracing;
 extern int ScenerySectionLODOffset;
 extern int SeeulatorToolActive;
 extern int ScenerySectionToBlink;
+extern int RealLoopCounter;
 extern bool PostLoadFixupDisabled;
 extern int AllowDuplicateSolids;
 int Get2PlayerSectionNumber(int section_number);
@@ -37,6 +38,7 @@ static const float kPredictedZoneScale_TrackStreamer = 1.5f;
 static const float kPredictedZoneMaxDistance_TrackStreamer = 100.0f;
 static const float kPredictedZoneStopProjectSpeed_TrackStreamer = 178.81091f;
 static const float kPredictedZoneEqualEpsilon_TrackStreamer = 0.001f;
+static unsigned int last_jettison_print_26154 = 0;
 
 static char GetScenerySectionLetter_TrackStreamer(int section_number) {
     return static_cast<char>(section_number / 100 + 'A' - 1);
@@ -613,6 +615,66 @@ void TrackStreamer::ActivateSection(TrackStreamingSection *section) {
     section->LoadedSize = sizeof_chunks;
     section->Status = TrackStreamingSection::ACTIVATED;
     SetDuplicateTextureWarning(true);
+}
+
+TrackStreamingSection *TrackStreamer::ChooseSectionToJettison() {
+    TrackStreamingSection *best_section = 0;
+    int best_priority = 0;
+
+    last_jettison_print_26154 = RealLoopCounter;
+    for (int i = 0; i < NumCurrentStreamingSections; i++) {
+        TrackStreamingSection *section = CurrentStreamingSections[i];
+        short section_number = section->SectionNumber;
+        char section_letter = GetScenerySectionLetter_TrackStreamer(section_number);
+        bool is_y_or_w = section_letter == 'Y' || section_letter == 'W';
+        bool is_x_or_u = section_letter == 'X' || section_letter == 'U';
+        int priority = 0;
+
+        if (is_y_or_w || is_x_or_u) {
+            priority = 2;
+            if (section_number == 0x9C4 || section_number == 0x8FC || section_number == 0x960) {
+                priority = 1;
+            } else if (LoadingPhase == ALLOCATING_TEXTURE_SECTIONS) {
+                if (is_y_or_w && section->Status == TrackStreamingSection::ACTIVATED && !SplitScreen) {
+                    priority = 10000;
+                }
+            } else if (LoadingPhase == ALLOCATING_GEOMETRY_SECTIONS) {
+                if (is_x_or_u && section->Status == TrackStreamingSection::ACTIVATED && !SplitScreen) {
+                    priority = 10000;
+                }
+            }
+        } else if (IsRegularScenerySection_TrackStreamer(section_number)) {
+            priority = GetLoadingPriority(section, &StreamingPositionEntries[0], true);
+            if (SplitScreen) {
+                int player_two_priority = GetLoadingPriority(section, &StreamingPositionEntries[1], true);
+                if (player_two_priority < priority) {
+                    priority = player_two_priority;
+                }
+            }
+            priority = priority * 10 + 100;
+        }
+
+        if (priority != 0 && section->Status != TrackStreamingSection::LOADED && section->Status != TrackStreamingSection::ACTIVATED) {
+            priority += 1;
+        }
+        if (best_priority < priority) {
+            best_priority = priority;
+            best_section = section;
+        }
+    }
+
+    return best_section;
+}
+
+void TrackStreamer::UnJettisonSections() {
+    for (int i = 0; i < NumJettisonedSections; i++) {
+        TrackStreamingSection *section = JettisonedSections[i];
+        CurrentStreamingSections[NumCurrentStreamingSections] = section;
+        NumCurrentStreamingSections += 1;
+        section->CurrentlyVisible = true;
+    }
+    AmountJettisoned = 0;
+    NumJettisonedSections = 0;
 }
 
 void TrackStreamer::HandleLoading() {
