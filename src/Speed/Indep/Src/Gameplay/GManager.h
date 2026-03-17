@@ -7,6 +7,7 @@
 
 #include "GActivity.h"
 #include "GCharacter.h"
+#include "GIcon.h"
 #include "GMilestone.h"
 #include "GRaceDatabase.h"
 #include "GSpeedTrap.h"
@@ -125,8 +126,8 @@ class GManager : public UTL::COM::Object, public IVehicleCache {
     void RefreshEngageTriggerIcons();
     void HidePursuitBreakerIcon(const UMath::Vector3 &pos, float radius);
 
-    // struct GIcon *AllocIcon(enum Type iconType, const UMath::Vector3 &pos, float rotDeg, bool disposable);
-    // void FreeDisposableIcons(enum Type iconType);
+    GIcon *AllocIcon(GIcon::Type iconType, const UMath::Vector3 &pos, float rotDeg, bool disposable);
+    void FreeDisposableIcons(GIcon::Type iconType);
     void FreeIcon(struct GIcon *icon);
     void FreeIconAt(unsigned int index);
     int GatherVisibleIcons(struct GIcon **iconArray, IPlayer *player);
