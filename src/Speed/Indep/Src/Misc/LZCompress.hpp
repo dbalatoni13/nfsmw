@@ -1,3 +1,10 @@
+#ifndef MISC_LZCOMPRESS_HPP
+#define MISC_LZCOMPRESS_HPP
+
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
+#pragma once
+#endif
+
 #include "types.h"
 
 // total size: 0x10
@@ -13,3 +20,5 @@ class LZHeader {
 
 int32 LZDecompress(uint8 *pSrc, uint8 *pDst);
 int LZValidHeader(LZHeader *header);
+
+#endif

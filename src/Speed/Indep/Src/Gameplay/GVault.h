@@ -6,6 +6,7 @@
 #endif
 
 #include "Speed/Indep/Src/Misc/AttribAlloc.h"
+#include "Speed/Indep/bWare/Inc/bWare.hpp"
 
 // total size: 0x14
 struct AttribVaultPackEntry {
@@ -16,7 +17,58 @@ struct AttribVaultPackEntry {
     unsigned int mVltOffset;       // offset 0x10, size 0x4
 };
 
-struct AttribVaultPackImage;
+// total size: 0x10
+struct AttribVaultPackHeader {
+    char mMagic[4];                   // offset 0x0, size 0x4
+    unsigned int mNumEntries;         // offset 0x4, size 0x4
+    unsigned int mStringBlockOffset;  // offset 0x8, size 0x4
+    unsigned int mStringBlockSize;    // offset 0xC, size 0x4
+};
+
+// total size: 0x24
+struct AttribVaultPackImage {
+    const char *GetVaultName(int index) {
+        return reinterpret_cast<const char *>(this) + mHeader.mStringBlockOffset + GetEntry(index).mVaultNameOffset;
+    }
+
+    int GetVaultIndex(const char *name) {
+        for (unsigned int i = 0; i < mHeader.mNumEntries; ++i) {
+            if (bStrCmp(GetVaultName(i), name) == 0) {
+                return static_cast<int>(i);
+            }
+        }
+
+        return -1;
+    }
+
+    AttribVaultPackEntry &GetEntry(int index) {
+        return mEntry[index];
+    }
+
+    unsigned char *GetData(unsigned int offset) {
+        return reinterpret_cast<unsigned char *>(this) + offset;
+    }
+
+    void EndianSwap() {
+        bPlatEndianSwap(&mHeader.mNumEntries);
+        bPlatEndianSwap(&mHeader.mStringBlockOffset);
+        bPlatEndianSwap(&mHeader.mStringBlockSize);
+
+        for (int onEntry = 0; onEntry < static_cast<int>(mHeader.mNumEntries); ++onEntry) {
+            AttribVaultPackEntry &entry = GetEntry(onEntry);
+
+            bPlatEndianSwap(&entry.mVaultNameOffset);
+            bPlatEndianSwap(&entry.mBinSize);
+            bPlatEndianSwap(&entry.mVltSize);
+            bPlatEndianSwap(&entry.mBinOffset);
+            bPlatEndianSwap(&entry.mVltOffset);
+        }
+    }
+
+    AttribVaultPackHeader mHeader;    // offset 0x0, size 0x10
+    AttribVaultPackEntry mEntry[1];   // offset 0x10, size 0x14
+};
+
 struct GObjectBlock;
 
 // total size: 0x18

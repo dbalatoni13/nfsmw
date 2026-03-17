@@ -5,6 +5,8 @@
 #include "Speed/Indep/Src/Gameplay/GMarker.h"
 #include "Speed/Indep/Src/Gameplay/GVault.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
+#include "Speed/Indep/Src/Misc/LZCompress.hpp"
+#include "Speed/Indep/Src/Misc/Platform.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribLoadAndGo.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/Common/AttribPrivate.h"
@@ -12,6 +14,11 @@
 
 #include <algorithm>
 #include <new>
+
+char *bStrIStr(const char *s1, const char *s2);
+void bCloseMemoryPool(int pool_num);
+bool bSetMemoryPoolDebugTracing(int pool_num, bool on_off);
+void LZByteSwapHeader(LZHeader *header);
 
 GManager *GManager::mObj = nullptr;
 
@@ -160,6 +167,87 @@ void GManager::LoadCoreVault(AttribVaultPackImage *packImage) {
 
 void GManager::UnloadCoreVault() {
     FindVault("gpcore")->Unload();
+}
+
+void GManager::PreloadTransientVaults(AttribVaultPackImage *packImage) {
+    mTransientPoolMemory = bMalloc(0x164000, 0x47);
+    mTransientPoolNumber = bGetFreeMemoryPoolNum();
+    bInitMemoryPool(mTransientPoolNumber, mTransientPoolMemory, 0x164000, "GManager Temp");
+    bSetMemoryPoolDebugTracing(mTransientPoolNumber, false);
+
+    for (unsigned int i = 0; i < mVaultCount; ++i) {
+        DVDErrorTask(nullptr, 0);
+
+        if (!mVaults[i].IsLoaded()) {
+            mVaults[i].PreloadTransient(packImage, mTransientPoolNumber);
+        }
+    }
+}
+
+void GManager::Init(const char *vaultPackName) {
+    mObj = new GManager(vaultPackName);
+    mObj->InitializeVaults();
+}
+
+void GManager::InitializeVaults() {
+    char compressedFilename[128];
+    void *compressedBuf;
+    LZHeader *header;
+    AttribVaultPackImage *imageBuffer;
+    unsigned int tableBufferSize;
+
+    bStrCpy(compressedFilename, mVaultPackFileName);
+    bStrCpy(bStrIStr(compressedFilename, ".BIN"), ".LZC");
+
+    compressedBuf = bGetFile(compressedFilename, nullptr, 0);
+    header = reinterpret_cast<LZHeader *>(compressedBuf);
+    LZByteSwapHeader(header);
+    imageBuffer = static_cast<AttribVaultPackImage *>(bMalloc(header->UncompressedSize, 0x1047));
+    LZDecompress(reinterpret_cast<uint8 *>(compressedBuf), reinterpret_cast<uint8 *>(imageBuffer));
+    bFree(compressedBuf);
+
+    mLoadingPackImage = imageBuffer;
+    mLoadingPackImage->EndianSwap();
+
+    tableBufferSize = mGameplayClass->GetTableNodeSize() << 14;
+    mClassTempBuffer = bMalloc(tableBufferSize, 0x40);
+    mGameplayClass->SetTableBuffer(mClassTempBuffer, tableBufferSize);
+
+    BuildVaultTable(mLoadingPackImage);
+    LoadCoreVault(mLoadingPackImage);
+    PreloadTransientVaults(mLoadingPackImage);
+    FindKeyReductionShifts();
+    AllocateIcons();
+    AllocateMilestones();
+    AllocateSpeedTraps();
+    FindBountySpawnPoints();
+    RefreshZoneIcons();
+    RefreshTrackMarkerIcons();
+}
+
+void GManager::InitializeRaceStreaming() {
+    AllocateStreamingBuffers();
+    AllocateInstanceMap();
+    UnloadTransientVaults();
+
+    mGameplayClass->SetTableBuffer(nullptr, mMaxObjects * 3 * mGameplayClass->GetTableNodeSize());
+    bFree(mClassTempBuffer);
+    mClassTempBuffer = nullptr;
+    bFree(mLoadingPackImage);
+    mLoadingPackImage = nullptr;
+}
+
+void GManager::UnloadTransientVaults() {
+    for (unsigned int i = 0; i < mVaultCount; ++i) {
+        if (mVaults[i].IsTransient()) {
+            mVaults[i].Unload();
+        }
+    }
+
+    bCloseMemoryPool(mTransientPoolNumber);
+    bFree(mTransientPoolMemory);
+    mTransientPoolNumber = 0;
+    mTransientPoolMemory = nullptr;
 }
 
 void GManager::StartBinActivity(GRaceBin *raceBin) {
