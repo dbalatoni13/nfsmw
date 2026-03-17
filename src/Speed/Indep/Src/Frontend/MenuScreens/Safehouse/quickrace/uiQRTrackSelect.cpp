@@ -83,8 +83,9 @@ void UIQRTrackSelect::Setup() {
         break;
     }
     FEngSetLanguageHash(PackageFilename, 0xb71b576d, hash);
+    const char *pkg = PackageFilename;
     unsigned int objHash = FEngHashString("TRACK_MAP");
-    FEObject *obj = FEngFindObject(PackageFilename, objHash);
+    FEObject *obj = FEngFindObject(pkg, objHash);
     TrackMap = reinterpret_cast<FEMultiImage *>(obj);
     BuildPresetTrackList();
     RefreshHeader();
