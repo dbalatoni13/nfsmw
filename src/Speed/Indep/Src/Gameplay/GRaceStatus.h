@@ -283,13 +283,13 @@ class GRaceParameters {
 
     void NotifyParentVaultLoaded();
 
-    const Attrib::Gen::gameplay *GetGameplayObj() const { return mRaceRecord; }
+    const Attrib::Gen::gameplay *GetGameplayObj() const;
 
     struct GActivity *GetActivity() const;
 
-    struct GVault *GetChildVault() const { return mChildVault; }
+    struct GVault *GetChildVault() const;
 
-    struct GVault *GetParentVault() const { return mParentVault; }
+    struct GVault *GetParentVault() const;
 
     void GetBoundingBox(struct Vector2 &topLeft, struct Vector2 &botRight) const;
 
@@ -315,9 +315,9 @@ class GRaceParameters {
 
     int GetTrafficDensity() const;
 
-    // enum Difficulty GetDifficulty() const;
+    GRace::Difficulty GetDifficulty() const;
 
-    // enum CopDensity GetCopDensity() const;
+    int GetCopDensity() const;
 
     bool GetCanBeReversed() const;
 

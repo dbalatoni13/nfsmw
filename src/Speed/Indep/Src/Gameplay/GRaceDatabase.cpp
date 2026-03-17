@@ -1,5 +1,6 @@
 #include "Speed/Indep/Src/Gameplay/GRaceDatabase.h"
 
+#include "Speed/Indep/Src/Gameplay/GManager.h"
 #include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
 #include "Speed/Indep/Src/Gameplay/GVault.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
@@ -38,6 +39,12 @@ GRaceDatabase::GRaceDatabase()
     BuildBinList();
     BuildRaceList();
     BuildScoreList();
+}
+
+GRaceBin::GRaceBin(unsigned int collectionKey)
+    : mBinRecord(collectionKey, 0, nullptr), //
+      mChildVault(nullptr) {
+    bMemSet(&mStats, 0, sizeof(mStats));
 }
 
 unsigned int GRaceBin::GetCollectionKey() const {
@@ -224,6 +231,42 @@ void GRaceBin::SetCompletedChallenges(int numChallenges) {
 
 void GRaceBin::SetRacesWon(int numRaces) {
     mStats.mRacesWon = numRaces;
+}
+
+void GRaceBin::RefreshProgress() {
+    unsigned int racesWon;
+    int completedChallenges;
+    unsigned int binNumber;
+    GMilestone *milestone;
+    GSpeedTrap *speedTrap;
+
+    racesWon = 0;
+    for (binNumber = 0; binNumber < GetWorldRaceCount(); binNumber++) {
+        if (GRaceDatabase::Get().CheckRaceScoreFlags(GetWorldRaceHash(binNumber), GRaceDatabase::kCompleted_ContextCareer)) {
+            racesWon++;
+        }
+    }
+
+    completedChallenges = 0;
+    binNumber = GetBinNumber();
+    milestone = GManager::Get().GetFirstMilestone(false, binNumber);
+    while (milestone) {
+        if (milestone->GetIsAwarded()) {
+            completedChallenges++;
+        }
+        milestone = GManager::Get().GetNextMilestone(milestone, false, binNumber);
+    }
+
+    speedTrap = GManager::Get().GetFirstSpeedTrap(false, binNumber);
+    while (speedTrap) {
+        if (speedTrap->IsFlagSet(4)) {
+            completedChallenges++;
+        }
+        speedTrap = GManager::Get().GetNextSpeedTrap(speedTrap, false, binNumber);
+    }
+
+    SetRacesWon(racesWon);
+    SetCompletedChallenges(completedChallenges);
 }
 
 void GRaceDatabase::Init() {

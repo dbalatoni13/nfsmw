@@ -4,6 +4,20 @@
 #include "Speed/Indep/Src/Gameplay/GVault.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 
+void SetCurrentTimeOfDay(float value);
+
+GRaceParameters::GRaceParameters(unsigned int collectionKey, GRaceIndexData *index)
+    : mIndex(index), //
+      mRaceRecord(new Attrib::Gen::gameplay(collectionKey, 0, nullptr)), //
+      mParentVault(nullptr), //
+      mChildVault(nullptr) {}
+
+GRaceParameters::~GRaceParameters() {
+    delete mRaceRecord;
+    mRaceRecord = nullptr;
+    mIndex = nullptr;
+}
+
 void GRaceParameters::EnsureLoaded() const {
     if (mParentVault && !mParentVault->IsLoaded()) {
         mParentVault->LoadSyncTransient();
@@ -377,6 +391,64 @@ unsigned int GRaceParameters::GetEventHash() const {
 int GRaceParameters::GetTrafficDensity() const {
     EnsureLoaded();
     return mRaceRecord->ForceTrafficDensity(0);
+}
+
+bool GRaceParameters::GetIsSunsetRace() const {
+    return GetTimeOfDay() >= 0.8f;
+}
+
+bool GRaceParameters::GetIsMiddayRace() const {
+    float timeOfDay;
+
+    timeOfDay = GetTimeOfDay();
+    return timeOfDay >= 0.0f && timeOfDay < 0.8f;
+}
+
+void GRaceParameters::SetupTimeOfDay() {
+    if (GetIsSunsetRace()) {
+        SetCurrentTimeOfDay(0.9f);
+    } else if (GetIsMiddayRace()) {
+        SetCurrentTimeOfDay(0.0f);
+    }
+}
+
+GRace::Difficulty GRaceParameters::GetDifficulty() const {
+    int trafficLevel;
+
+    EnsureLoaded();
+    trafficLevel = *reinterpret_cast<const int *>(mRaceRecord->GetAttributePointer(0x88A7E3BE, 0) ?
+                                                     mRaceRecord->GetAttributePointer(0x88A7E3BE, 0) :
+                                                     Attrib::DefaultDataArea(sizeof(int)));
+    if (trafficLevel < 0x22) {
+        return GRace::kRaceDifficulty_Easy;
+    }
+    if (trafficLevel > 0x42) {
+        return GRace::kRaceDifficulty_Hard;
+    }
+    return GRace::kRaceDifficulty_Medium;
+}
+
+int GRaceParameters::GetCopDensity() const {
+    int density;
+
+    EnsureLoaded();
+    density = *reinterpret_cast<const int *>(mRaceRecord->GetAttributePointer(0xDBC08D32, 0) ?
+                                                 mRaceRecord->GetAttributePointer(0xDBC08D32, 0) :
+                                                 Attrib::DefaultDataArea(sizeof(int)));
+    if (density == 0 && !GetCopsEnabled()) {
+        return 0;
+    }
+    if (density < 0x22) {
+        return 1;
+    }
+    if (density > 0x42) {
+        return 3;
+    }
+    return 2;
+}
+
+bool GRaceParameters::GetCanBeReversed() const {
+    return false;
 }
 
 int GRaceParameters::GetNumOpponents() const {

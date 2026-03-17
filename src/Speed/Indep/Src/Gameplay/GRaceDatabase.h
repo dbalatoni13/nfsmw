@@ -110,6 +110,8 @@ class GRaceBin {
 // total size: 0x40
 class GRaceDatabase {
   public:
+    friend class GRaceBin;
+
     enum ScoreFlags {
         kCompleted_ContextQuickRace = 1 << 0,
         kCompleted_ContextCareer = 1 << 1,
