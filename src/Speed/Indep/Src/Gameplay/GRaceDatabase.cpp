@@ -3,6 +3,7 @@
 #include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
 #include "Speed/Indep/Src/Gameplay/GVault.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
+#include "Speed/Indep/bWare/Inc/bWare.hpp"
 
 GRaceDatabase *GRaceDatabase::mObj = nullptr;
 
@@ -227,6 +228,21 @@ GRaceParameters *GRaceDatabase::GetRaceFromKey(unsigned int key) {
     return nullptr;
 }
 
+GRaceParameters *GRaceDatabase::GetRaceFromHash(unsigned int hash) {
+    unsigned int i;
+
+    for (i = 0; i < GetRaceCount(); i++) {
+        GRaceParameters *race;
+
+        race = GetRaceParameters(i);
+        if (race && race->GetEventHash() == hash) {
+            return race;
+        }
+    }
+
+    return nullptr;
+}
+
 void GRaceDatabase::DestroyCustomRace(GRaceCustom *custom) {
     unsigned int i;
 
@@ -256,6 +272,15 @@ void GRaceDatabase::ClearStartupRace() {
 
     mStartupRaceContext = kRaceContext_QuickRace;
     mStartupRace = nullptr;
+}
+
+void GRaceDatabase::SetStartupRace(GRaceCustom *custom, Context context) {
+    if (mStartupRace) {
+        ClearStartupRace();
+    }
+
+    mStartupRaceContext = context;
+    mStartupRace = custom;
 }
 
 GRaceBin *GRaceDatabase::GetBinNumber(int number) {
@@ -313,4 +338,80 @@ void GRaceDatabase::FreeCustomRace(GRaceCustom *custom) {
     } else {
         DestroyCustomRace(custom);
     }
+}
+
+void GRaceDatabase::BuildScoreList() {
+    unsigned int i;
+
+    mRaceScoreInfo = static_cast<GRaceSaveInfo *>(bMalloc(mRaceCountStatic << 4, 0x800));
+    if (!mRaceScoreInfo) {
+        return;
+    }
+
+    bMemSet(mRaceScoreInfo, 0, mRaceCountStatic << 4);
+
+    for (i = 0; i < mRaceCountStatic; i++) {
+        GRaceParameters *race;
+
+        race = &mRaceParameters[i];
+        if (!race->GetIsDDayRace()) {
+            bool unlockedQuick;
+            bool unlockedOnline;
+            bool unlockedChallenge;
+
+            unlockedQuick = race->GetInitiallyUnlockedQuickRace();
+            unlockedOnline = race->GetInitiallyUnlockedOnline();
+            unlockedChallenge = race->GetInitiallyUnlockedChallenge();
+
+            if (race->GetIsBossRace()) {
+                unlockedQuick = false;
+                unlockedOnline = false;
+                unlockedChallenge = false;
+            }
+
+            if (unlockedQuick || unlockedOnline || unlockedChallenge) {
+                unsigned int *flags;
+
+                flags = &reinterpret_cast<unsigned int *>(GetScoreInfo(race->GetEventHash()))[1];
+                if (unlockedQuick || unlockedChallenge) {
+                    *flags |= kUnlocked_QuickRace;
+                }
+                if (unlockedOnline) {
+                    *flags |= kUnlocked_Online;
+                }
+            }
+        }
+    }
+}
+
+GRaceSaveInfo *GRaceDatabase::GetScoreInfo(unsigned int hash) {
+    unsigned int i;
+    int *scoreInfo;
+
+    i = 0;
+    scoreInfo = reinterpret_cast<int *>(mRaceScoreInfo);
+    while (i < mRaceCountStatic && *scoreInfo) {
+        if (static_cast<unsigned int>(*scoreInfo) == hash) {
+            return reinterpret_cast<GRaceSaveInfo *>(scoreInfo);
+        }
+        i++;
+        scoreInfo += 4;
+    }
+
+    *scoreInfo = static_cast<int>(hash);
+    return reinterpret_cast<GRaceSaveInfo *>(scoreInfo);
+}
+
+bool GRaceDatabase::CheckRaceScoreFlags(unsigned int hash, ScoreFlags flags) {
+    GRaceSaveInfo *scoreInfo;
+
+    scoreInfo = GetScoreInfo(hash);
+    return scoreInfo && (reinterpret_cast<unsigned int *>(scoreInfo)[1] & flags) != 0;
+}
+
+void GRaceDatabase::ResetCareerCompleteFlag(unsigned int hash) {
+    unsigned int *flags;
+
+    flags = &reinterpret_cast<unsigned int *>(GetScoreInfo(hash))[1];
+    *flags &= ~kCompleted_ContextCareer;
 }

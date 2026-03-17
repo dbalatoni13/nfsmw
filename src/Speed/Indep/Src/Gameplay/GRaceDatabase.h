@@ -151,6 +151,10 @@ class GRaceDatabase {
     }
 
   private:
+    void BuildScoreList();
+    struct GRaceSaveInfo *GetScoreInfo(unsigned int hash);
+    bool CheckRaceScoreFlags(unsigned int hash, ScoreFlags flags);
+    void ResetCareerCompleteFlag(unsigned int hash);
     void ClearStartupRace();
 
     unsigned int mRaceCountStatic;           // offset 0x0, size 0x4
