@@ -166,6 +166,13 @@ class TrackStreamer {
     void RemoveCurrentStreamingSections();
     void AddCurrentStreamingSections(short *section_numbers, int num_sections, int position_number);
     void DetermineStreamingSections();
+    void PlotLoadingMarker(StreamingPositionEntry *streaming_position);
+    void SwitchZones(short *current_zones);
+    void UnactivateSection(TrackStreamingSection *section);
+    void FreeSectionMemory();
+    void SetLoadingPhase(eLoadingPhase loading_phase);
+    void AssignLoadingPriority();
+    void CalculateLoadingBacklog();
     bool IsLoadingInProgress();
     bool AreAllSectionsActivated();
     void CheckLoadingBar();
