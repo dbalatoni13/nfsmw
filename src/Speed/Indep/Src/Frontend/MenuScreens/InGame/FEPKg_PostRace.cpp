@@ -26,9 +26,11 @@ extern FEObject *FEngFindObject(const char *pkg_name, unsigned int hash);
 extern FEImage *FEngFindImage(const char *pkg_name, int hash);
 extern int FEngSNPrintf(char *, int, const char *, ...);
 extern unsigned long FEHashUpper(const char *);
+extern int bStrCmp(const char *, const char *);
 extern void MemcardEnter(const char *, const char *, unsigned int, void (*)(void *), void *, unsigned int, unsigned int);
 extern void FEngSetInvisible(FEObject *obj);
 extern void FEngSetVisible(FEObject *obj);
+extern void FEngSetButtonTexture(FEImage *img, unsigned int hash);
 extern void FEngSetInvisible(const char *pkg_name, unsigned int obj_hash);
 extern bool FEngIsScriptSet(const char *pkg_name, unsigned int obj_hash, unsigned int script_hash);
 extern bool FEngIsScriptSet(FEObject *obj, unsigned int script_hash);
@@ -39,6 +41,7 @@ extern void FEngSetLanguageHash(FEString *text, unsigned int hash);
 extern void FEngSetLanguageHash(const char *pkg_name, unsigned int object_hash, unsigned int language_hash);
 extern unsigned int FEngHashString(const char *, ...);
 extern int FEPrintf(FEString *text, const char *fmt, ...);
+extern int FEPrintf(const char *pkg_name, int object_hash, const char *fmt, ...);
 
 inline void FEngSetVisible(const char *pkg_name, unsigned int obj_hash) {
     FEngSetVisible(FEngFindObject(pkg_name, obj_hash));
@@ -50,6 +53,7 @@ extern bool GRacerInfoAreStatsReady(const GRacerInfo *racer_info) asm("AreStatsR
 
 extern const char lbl_803E4CB4[];  // "%d"
 extern const char lbl_803E4CF0[];  // "%s"
+extern const char lbl_803E43DC[];
 
 int bSNPrintf(char *buf, int max_len, const char *format, ...);
 const char *GetLocalizedString(unsigned int hash);
@@ -259,6 +263,18 @@ void StatsPanel::Reset() {
 }
 
 void StatsPanel::Draw(unsigned int numPlayers) {
+    if (numPlayers > 1 && RacerName != nullptr && bStrCmp(RacerName, lbl_803E43DC) != 0) {
+        if (!FEngIsScriptSet(ParentPkg, 0x8A41F5B9, 0x5079C8F8)) {
+            FEngSetScript(ParentPkg, 0x8A41F5B9, 0x5079C8F8, true);
+        }
+
+        FEngSetButtonTexture(FEngFindImage(ParentPkg, 0x5BC), 0x5BC);
+        FEngSetButtonTexture(FEngFindImage(ParentPkg, 0x682), 0x682);
+        FEPrintf(ParentPkg, 0xEB43CCB0, lbl_803E4CF0, RacerName);
+    } else if (!FEngIsScriptSet(ParentPkg, 0x8A41F5B9, 0x0016A259)) {
+        FEngSetScript(ParentPkg, 0x8A41F5B9, 0x0016A259, true);
+    }
+
     FEWidget *widget = TheStats.GetHead();
 
     while (widget != TheStats.EndOfList()) {
@@ -272,9 +288,8 @@ void StatsPanel::Draw(unsigned int numPlayers) {
 }
 
 void StatsPanel::AddStat(RaceStat *stat) {
-    bNode *tail = TheStats.HeadNode.Prev;
-
     FEngSetScript(ParentPkg, FEngHashString(lbl_803E5DB0, iWidgetToAdd), 0x001744B3, true);
+    bNode *tail = TheStats.HeadNode.Prev;
     tail->Next = stat;
     TheStats.HeadNode.Prev = stat;
     stat->Prev = tail;
