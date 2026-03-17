@@ -3,11 +3,14 @@
 #include "Speed/Indep/Libs/Support/Utility/FastMem.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/gameplay.h"
 #include "Speed/Indep/Src/Generated/Events/EAutoSave.hpp"
+#include "Speed/Indep/Src/Generated/Messages/MEnteringGameplay.h"
 #include "Speed/Indep/Src/Gameplay/GMarker.h"
 #include "Speed/Indep/Src/Gameplay/GVault.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
 #include "Speed/Indep/Src/Misc/LZCompress.hpp"
 #include "Speed/Indep/Src/Misc/Platform.h"
+#include "Speed/Indep/Src/World/TrackPath.hpp"
+#include "Speed/Indep/Src/World/WCollisionAssets.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribLoadAndGo.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/Common/AttribPrivate.h"
@@ -19,6 +22,8 @@
 char *bStrIStr(const char *s1, const char *s2);
 void bCloseMemoryPool(int pool_num);
 bool bSetMemoryPoolDebugTracing(int pool_num, bool on_off);
+void ApplyTimeOfDayTickOver();
+void SetOverRideRainIntensity(float intensity);
 void LZByteSwapHeader(LZHeader *header);
 
 GManager *GManager::mObj = nullptr;
@@ -261,6 +266,40 @@ void GManager::PreBeginGameplay() {
     }
 }
 
+void GManager::BeginGameplay() {
+    for (unsigned int i = 0; i < mVaultCount; ++i) {
+        if (mVaults[i].IsLoaded()) {
+            mVaults[i].CreateGameplayObjects();
+        }
+    }
+
+    GRaceCustom *startupRace = GRaceDatabase::Get().GetStartupRace();
+    if (startupRace) {
+        startupRace->CreateRaceActivity();
+    }
+
+    ConnectRuntimeInstances();
+    StartActivities();
+    WCollisionAssets::Get().AddPackLoadCallback(NotifyCollisionPackLoaded);
+    mPursuitBreakerIconsShown = false;
+    mHidingSpotIconsShown = false;
+    mEventIconsShown = false;
+    mMenuGateIconsShown = false;
+    mSpeedTrapIconsShown = false;
+    mSpeedTrapRaceIconsShown = false;
+    RefreshEngageTriggerIcons();
+    RefreshSpeedTrapIcons();
+    SpawnAllLoadedSectionIcons();
+
+    if (!startupRace) {
+        GRaceStatus::Get().EnableBinBarriers();
+    }
+
+    MEnteringGameplay().Post(UCrc32(0x20D60DBF));
+    mStartFreeRoamFromSafeHouse = false;
+    mInGameplay = true;
+}
+
 void GManager::Update(float dT) {
     GRaceStatus::Get().Update(dT);
     UnspawnUselessCharacters();
@@ -275,6 +314,27 @@ void GManager::Update(float dT) {
 void GManager::ClearAllSessionData() {
     mSessionStateBlocks.clear();
     DefragObjectStateStorage();
+}
+
+void GManager::EndGameplay() {
+    UnspawnAllCharacters();
+    ClearStockCars();
+
+    for (unsigned int i = 0; i < mVaultCount; ++i) {
+        if (mVaults[i].IsLoaded()) {
+            mVaults[i].DestroyGameplayObjects();
+        }
+    }
+
+    UnspawnAllIcons();
+    ClearAllSessionData();
+    WCollisionAssets::Get().RemovePackLoadCallback(NotifyCollisionPackLoaded);
+    GRaceDatabase::Get().SetStartupRace(nullptr, kRaceContext_Career);
+    mInGameplay = false;
+    mWorstHashCollision = 0;
+    mOverrideFreeRoamStartMarker = 0;
+    ApplyTimeOfDayTickOver();
+    SetOverRideRainIntensity(0.0f);
 }
 
 void GManager::StartBinActivity(GRaceBin *raceBin) {
@@ -980,6 +1040,16 @@ void GManager::NotifyPursuitStarted() {
     }
 }
 
+void GManager::NotifyCollisionPackLoaded(int sectionID, bool loaded) {
+    if (mObj) {
+        if (loaded) {
+            mObj->SpawnSectionIcons(sectionID);
+        } else {
+            mObj->UnspawnSectionIcons(sectionID);
+        }
+    }
+}
+
 unsigned int GManager::GetBountySpawnMarker(unsigned int index) const {
     if (index >= mNumBountySpawnPoints) {
         return 0;
@@ -992,6 +1062,29 @@ int GManager::GetBountySpawnMarkerTag(unsigned int index) const {
     Attrib::Gen::gameplay gameplay(Attrib::FindCollection(Attrib::Gen::gameplay::ClassKey(), GetBountySpawnMarker(index)), 0, nullptr);
 
     return gameplay.LocalizationTag(0);
+}
+
+void GManager::RefreshZoneIcons() {
+    FreeDisposableIcons(GIcon::kType_HidingSpot);
+
+    for (TrackPathZone *zone = TheTrackPathManager.FindZone(nullptr, TRACK_PATH_ZONE_HIDDEN, nullptr); zone;
+         zone = TheTrackPathManager.FindZone(nullptr, TRACK_PATH_ZONE_HIDDEN, zone)) {
+        UMath::Vector3 pos;
+
+        pos.x = zone->Position.x;
+        pos.y = zone->Position.y;
+        pos.z = zone->Elevation;
+
+        GIcon *icon = AllocIcon(GIcon::kType_HidingSpot, pos, 0.0f, true);
+        if (icon) {
+            icon->Show();
+            icon->ShowOnMap();
+        }
+    }
+
+    if (GetInGameplay()) {
+        SpawnAllLoadedSectionIcons();
+    }
 }
 
 void GManager::RefreshSpeedTrapIcons() {

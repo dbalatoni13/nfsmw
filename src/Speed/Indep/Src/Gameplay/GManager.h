@@ -209,6 +209,8 @@ class GManager : public UTL::COM::Object, public IVehicleCache {
         return *mObj;
     }
 
+    static void NotifyCollisionPackLoaded(int sectionID, bool loaded);
+
     static bool Exists() {
         return mObj != nullptr;
     }
