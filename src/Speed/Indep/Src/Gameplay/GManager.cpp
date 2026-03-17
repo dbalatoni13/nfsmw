@@ -360,6 +360,21 @@ void GManager::StartWorldActivities(bool startFreeRoamOnly) {
     }
 }
 
+void GManager::StartActivities() {
+    bool startWorld = SkipFE == 0;
+    GRaceCustom *startupRace = GRaceDatabase::Get().GetStartupRace();
+
+    if (startupRace) {
+        startupRace->GetRaceActivity()->Run();
+        GRaceStatus::Get().SetRaceContext(GRaceDatabase::Get().GetStartupRaceContext());
+        startWorld = GRaceDatabase::Get().GetStartupRaceContext() == GRace::kRaceContext_Career && startWorld;
+    }
+
+    if (startWorld) {
+        StartWorldActivities(startupRace == nullptr);
+    }
+}
+
 void GManager::StartBinActivity(GRaceBin *raceBin) {
     GActivity *activity;
 
