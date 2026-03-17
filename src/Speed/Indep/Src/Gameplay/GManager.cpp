@@ -2,6 +2,7 @@
 
 #include "Speed/Indep/Libs/Support/Utility/FastMem.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/gameplay.h"
+#include "Speed/Indep/Src/Generated/Events/EAutoSave.hpp"
 #include "Speed/Indep/Src/Gameplay/GMarker.h"
 #include "Speed/Indep/Src/Gameplay/GVault.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
@@ -987,6 +988,12 @@ unsigned int GManager::GetBountySpawnMarker(unsigned int index) const {
     return mBountySpawnPoint[index];
 }
 
+int GManager::GetBountySpawnMarkerTag(unsigned int index) const {
+    Attrib::Gen::gameplay gameplay(Attrib::FindCollection(Attrib::Gen::gameplay::ClassKey(), GetBountySpawnMarker(index)), 0, nullptr);
+
+    return gameplay.LocalizationTag(0);
+}
+
 void GManager::RefreshSpeedTrapIcons() {
     for (GSpeedTrap *speedTrap = GetFirstSpeedTrap(false, 0); speedTrap;
          speedTrap = GetNextSpeedTrap(speedTrap, false, 0)) {
@@ -1011,6 +1018,17 @@ void NotifyGameZonesChanged() {
 void NotifyTrackMarkersChanged() {
     if (GManager::Exists()) {
         GManager::Get().RefreshTrackMarkerIcons();
+    }
+}
+
+void GManager::NotifyPursuitEnded(bool evaded) {
+    for (GMilestone *availMile = GetFirstMilestone(true, 0); availMile;
+         availMile = GetNextMilestone(availMile, true, 0)) {
+        availMile->NotifyPursuitOver(evaded);
+    }
+
+    if (evaded && GRaceStatus::Get().GetPlayMode() == GRaceStatus::kPlayMode_Roaming) {
+        new EAutoSave();
     }
 }
 
