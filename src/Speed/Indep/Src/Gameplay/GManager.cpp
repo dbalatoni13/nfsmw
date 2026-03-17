@@ -402,6 +402,72 @@ unsigned int GManager::GetStrippedNameKey(const char *name) {
     return Attrib::StringToKey(start);
 }
 
+void GManager::RegisterInstance(GRuntimeInstance *instance) {
+    unsigned int key;
+    unsigned int collisions;
+    unsigned int slot;
+
+    key = instance->GetCollection() >> (mCollectionKeyShiftTo32 & 0x1F);
+    collisions = 0;
+    if (mInstanceHashTableSize != 0) {
+        slot = key & mInstanceHashTableMask;
+        do {
+            if (!mKeyToInstanceMap[slot].mInstance) {
+                if (mWorstHashCollision < collisions) {
+                    mWorstHashCollision = collisions;
+                }
+
+                mKeyToInstanceMap[slot].mKey32 = key;
+                mKeyToInstanceMap[slot].mInstance = instance;
+                return;
+            }
+
+            collisions++;
+            slot = (slot + 1) & mInstanceHashTableMask;
+        } while (collisions < mInstanceHashTableSize);
+    }
+}
+
+void GManager::UnregisterInstance(GRuntimeInstance *instance) {
+    unsigned int key;
+    unsigned int collisions;
+    unsigned int slot;
+
+    key = instance->GetCollection() >> (mCollectionKeyShiftTo32 & 0x1F);
+    collisions = 0;
+    slot = key & mInstanceHashTableMask;
+    do {
+        if (mKeyToInstanceMap[slot].mKey32 == key) {
+            mKeyToInstanceMap[slot].mKey32 = 0;
+            mKeyToInstanceMap[slot].mInstance = nullptr;
+            return;
+        }
+
+        collisions++;
+        slot = (slot + 1) & mInstanceHashTableMask;
+    } while (collisions <= mWorstHashCollision);
+}
+
+GRuntimeInstance *GManager::FindInstance(Attrib::Key key) const {
+    unsigned int key32;
+    unsigned int collisions;
+    unsigned int slot;
+
+    collisions = 0;
+    key32 = key >> (mCollectionKeyShiftTo32 & 0x1F);
+    slot = key32 & mInstanceHashTableMask;
+    do {
+        if (mKeyToInstanceMap[slot].mKey32 == key32) {
+            return mKeyToInstanceMap[slot].mInstance;
+        }
+
+        collisions++;
+        slot = (slot + 1) & mInstanceHashTableMask;
+    } while (collisions <= mWorstHashCollision);
+
+    return nullptr;
+}
+
 unsigned int GManager::FindUniqueKeyShift(unsigned int *keys, unsigned int numKeys, unsigned int uniqueBits) {
     if (numKeys > 1) {
         unsigned int shift = 0x20 - uniqueBits;
@@ -471,6 +537,30 @@ void GManager::FindKeyReductionShifts() {
     out = std::unique(keys, out);
     mAttributeKeyShiftTo24 = FindUniqueKeyShift(keys, out - keys, 0x18);
     delete[] keys;
+}
+
+void GManager::ConnectInstanceReferences(GRuntimeInstance *runtimeInstance, const Attrib::Gen::gameplay &collection) {}
+
+void GManager::ConnectRuntimeInstances() {
+    for (unsigned int i = 0; i < mInstanceHashTableSize; ++i) {
+        GRuntimeInstance *instance = mKeyToInstanceMap[i].mInstance;
+
+        if (instance) {
+            instance->ResetConnections();
+            ConnectChildren(instance);
+            instance->LockConnections();
+        }
+    }
+}
+
+void GManager::ConnectChildren(GRuntimeInstance *runtimeInstance) {
+    for (unsigned int i = 0; i < runtimeInstance->Num_Children(); ++i) {
+        GRuntimeInstance *child = FindInstance(runtimeInstance->Children(i).GetCollectionKey());
+
+        if (child) {
+            runtimeInstance->ConnectToInstance(GetStrippedNameKey(child->CollectionName()), 0, child);
+        }
+    }
 }
 
 void GManager::TrackValue(const char *valueName, float value) {
@@ -691,6 +781,148 @@ void GManager::GatherInstanceKeys(Attrib::Gen::gameplay &collection, AttribKeyLi
 
 void GManager::ClearStockCars() {
     mStockCars.clear();
+}
+
+void GManager::ReserveStockCar(const char *carName) {
+    unsigned int carKey;
+
+    if (!carName || !*carName) {
+        return;
+    }
+
+    carKey = Attrib::StringHash32(carName);
+    if (mStockCars.find(carKey) == mStockCars.end()) {
+        mStockCars.insert(StockCarMap::value_type(carKey, static_cast<ISimable *>(nullptr)));
+    }
+}
+
+bool GManager::StockCarsLoaded() {
+    StockCarMap::iterator it;
+
+    for (it = mStockCars.begin(); it != mStockCars.end(); ++it) {
+        if (!it->second) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+ISimable *GManager::GetStockCar(const char *carName) {
+    StockCarMap::iterator it;
+    ISimable *stockCar;
+
+    it = mStockCars.find(Attrib::StringHash32(carName));
+    if (it == mStockCars.end()) {
+        return nullptr;
+    }
+
+    stockCar = it->second;
+    mStockCars.erase(it);
+    return stockCar;
+}
+
+ISimable *GManager::GetRandomEmergencyStockCar() {
+    StockCarMap::iterator it;
+    int index;
+    ISimable *stockCar;
+
+    if (mStockCars.empty()) {
+        return nullptr;
+    }
+
+    index = bRandom(static_cast<int>(mStockCars.size()));
+    it = mStockCars.begin();
+    while (index > 0 && it != mStockCars.end()) {
+        ++it;
+        index--;
+    }
+
+    if (it == mStockCars.end()) {
+        return nullptr;
+    }
+
+    stockCar = it->second;
+    mStockCars.erase(it);
+    return stockCar;
+}
+
+void GManager::ReleaseStockCar(ISimable *stockCar) {
+    if (!stockCar) {
+        return;
+    }
+
+    stockCar->Kill();
+    mStockCars[stockCar->GetAttributes().GetCollection()] = stockCar;
+}
+
+bool GManager::GetHasPendingSMS() const {
+    return !mPendingSMS.empty();
+}
+
+unsigned int GManager::SaveSMSInfo(int *saveInfo) {
+    PendingSMSList::const_iterator it;
+    unsigned int count;
+
+    count = 0;
+    for (it = mPendingSMS.begin(); it != mPendingSMS.end(); ++it) {
+        *saveInfo++ = *it;
+        count++;
+    }
+
+    return count;
+}
+
+void GManager::LoadSMSInfo(int *loadInfo, unsigned int count) {
+    unsigned int i;
+
+    mPendingSMS.clear();
+    for (i = 0; i < count; ++i) {
+        mPendingSMS.push_back(loadInfo[i]);
+    }
+}
+
+bool GManager::CanPlaySMS() const {
+    return !mPendingSMS.empty();
+}
+
+void GManager::DispatchSMSMessage(int smsID) {
+    mPendingSMS.push_back(smsID);
+}
+
+void GManager::AddSMS(int smsID) {
+    PendingSMSList::iterator it;
+
+    if ((smsID - 10U < 5) || smsID == 0x5F || smsID == 0x60) {
+        DispatchSMSMessage(smsID);
+        return;
+    }
+
+    for (it = mPendingSMS.begin(); it != mPendingSMS.end(); ++it) {
+        if (*it == smsID) {
+            return;
+        }
+    }
+
+    mPendingSMS.push_back(smsID);
+}
+
+int GManager::PushSMSToInbox() {
+    int smsID;
+
+    smsID = -1;
+    if (!mPendingSMS.empty()) {
+        smsID = mPendingSMS.front();
+    }
+
+    mPendingSMS.clear();
+    return smsID;
+}
+
+void GManager::UpdatePendingSMS() {
+    if (GetHasPendingSMS() && CanPlaySMS()) {
+        PushSMSToInbox();
+    }
 }
 
 void GManager::ResetTimers() {

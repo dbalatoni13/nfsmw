@@ -6,6 +6,7 @@
 #include "Speed/Indep/Src/Gameplay/GVault.h"
 #include "Speed/Indep/Src/Main/AttribSupport.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
+#include "Speed/Indep/Src/World/WRoadNetwork.h"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 
@@ -935,6 +936,91 @@ template <typename T> void GRaceCustom::SetAttribute(unsigned int key, const T &
     dest = reinterpret_cast<T *>(const_cast<void *>(mRaceRecord->GetAttributePointer(key, index)));
     if (dest) {
         *dest = value;
+    }
+}
+
+float GRaceStatus::DetermineRaceSegmentLength(const UMath::Vector4 *positions, const UMath::Vector4 *directions, int start, int end) {
+    WRoadNav nav;
+    bVector3 delta;
+    float pathDistance;
+
+    nav.SetPathType(WRoadNav::kPathChopper);
+
+    bSub(&delta, reinterpret_cast<const bVector3 *>(&positions[start]), reinterpret_cast<const bVector3 *>(&positions[end]));
+    pathDistance = bLength(delta);
+
+    nav.InitAtPoint(UMath::Vector4To3(positions[start]), UMath::Vector4To3(directions[start]), true, 1.0f);
+    if (!nav.IsValid()) {
+        bRaceRouteError = true;
+        return pathDistance;
+    }
+
+    if (nav.FindPathNow(&UMath::Vector4To3(positions[end]), &UMath::Vector4To3(directions[end]), nullptr)) {
+        pathDistance = nav.GetPathDistanceRemaining();
+    } else {
+        bRaceRouteError = true;
+    }
+
+    return pathDistance;
+}
+
+void GRaceStatus::DetermineRaceLength() {
+    UMath::Vector4 positions[18];
+    UMath::Vector4 directions[18];
+    UMath::Vector3 pos;
+    UMath::Vector3 dir;
+    int numCheckpoints;
+    int numSegments;
+
+    nSpeedTraps = 0;
+    fSubsequentLapLength = 0.0f;
+    fRaceLength = 0.0f;
+    fFirstLapLength = 0.0f;
+    bMemSet(mSegmentLengths, 0, sizeof(mSegmentLengths));
+    bRaceRouteError = false;
+
+    if (!mRaceParms || !mRaceParms->HasFinishLine()) {
+        return;
+    }
+
+    numCheckpoints = mRaceParms->GetNumCheckpoints();
+    mRaceParms->GetStartPosition(pos);
+    positions[0] = UMath::Vector4Make(pos, 0.0f);
+    mRaceParms->GetStartDirection(dir);
+    directions[0] = UMath::Vector4Make(dir, 0.0f);
+
+    for (int i = 0; i < numCheckpoints; ++i) {
+        mRaceParms->GetCheckpointPosition(i, pos);
+        positions[i + 1] = UMath::Vector4Make(pos, 0.0f);
+        mRaceParms->GetCheckpointDirection(i, dir);
+        directions[i + 1] = UMath::Vector4Make(dir, 0.0f);
+    }
+
+    mRaceParms->GetFinishPosition(pos);
+    positions[numCheckpoints + 1] = UMath::Vector4Make(pos, 0.0f);
+    mRaceParms->GetFinishDirection(dir);
+    directions[numCheckpoints + 1] = UMath::Vector4Make(dir, 0.0f);
+
+    numSegments = numCheckpoints + 1;
+    if (mRaceParms->GetIsLoopingRace()) {
+        numSegments = numCheckpoints + 2;
+    }
+
+    for (int i = 0; i < numSegments; ++i) {
+        int end = (i % (numCheckpoints + 1)) + 1;
+        float segmentLength = DetermineRaceSegmentLength(positions, directions, i, end);
+
+        mSegmentLengths[i] = segmentLength;
+        fRaceLength += segmentLength;
+    }
+
+    if (mRaceParms->GetIsLoopingRace()) {
+        fSubsequentLapLength = fRaceLength - mSegmentLengths[0];
+        fFirstLapLength = fRaceLength - mSegmentLengths[numCheckpoints + 1];
+        fRaceLength = fSubsequentLapLength * static_cast<float>(mRaceParms->GetNumLaps() - 1) + fFirstLapLength;
+    } else {
+        fSubsequentLapLength = fRaceLength;
+        fFirstLapLength = fRaceLength;
     }
 }
 
