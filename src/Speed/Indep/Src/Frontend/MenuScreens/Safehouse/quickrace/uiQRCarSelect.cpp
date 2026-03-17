@@ -550,11 +550,14 @@ void UIQRCarSelect::NotificationMessage(unsigned long msg, FEObject *pobj, unsig
                     cFEng::Get()->QueuePackageSwitch("MainMenu_Sub.fng", 0, 0, false);
                     return;
                 }
-                if (FEDatabase->iNumPlayers != 2 ||
-                    FEDatabase->GetPlayersJoystickPort(iPlayerNum) == 0) {
-                    CommitChangeStartRace(true);
-                    return;
+                if (FEDatabase->iNumPlayers != 2) {
+                    if (FEDatabase->GetPlayerSettings(iPlayerNum)->TransmissionPromptOn != 0) {
+                        ChooseTransmission();
+                        return;
+                    }
                 }
+                CommitChangeStartRace(true);
+                return;
             } else {
                 if ((flags & 0x20) != 0) {
                     FEPlayerCarDB *stable = FEDatabase->GetPlayerCarStable(iPlayerNum);
