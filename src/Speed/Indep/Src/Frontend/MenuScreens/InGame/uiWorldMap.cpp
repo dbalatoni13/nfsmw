@@ -490,48 +490,6 @@ clear_focus : {
 }
     return;
 
-handle_toggle_or_dialog:
-    if (bInToggleMode) {
-        FEWidget* w = pCurrentOption;
-        if (w == nullptr) {
-            return;
-        }
-        ItemTypeToggle* tog = static_cast< ItemTypeToggle* >(w);
-        tog->Act(GetPackageName(), 0xc407210);
-        UpdateIconVisibility(tog->GetType(), tog->GetVisibility());
-        goto refresh_and_end;
-    } else {
-        IPlayer* iplayer = IPlayer::First(PLAYER_LOCAL);
-        if (iplayer == nullptr) {
-            return;
-        }
-        ISimable* isimable = iplayer->GetSimable();
-        if (isimable == nullptr) {
-            return;
-        }
-
-        unsigned int title_hash;
-        unsigned int message_hash;
-        unsigned int button_hash;
-        if (SelectedItem != nullptr && SelectedItem->GetIcon() != nullptr) {
-            title_hash = 0x70e01038;
-            message_hash = 0x417b25e4;
-            button_hash = 0x96ac0a32;
-        } else {
-            if (mGPSingIcon == nullptr) {
-                return;
-            }
-            title_hash = 0x417b2601;
-            message_hash = 0x1a294dad;
-            button_hash = 0xa6be2ebb;
-        }
-        DialogInterface::ShowTwoButtons(GetPackageName(), "InGameDialog.fng",
-                                        static_cast< eDialogTitle >(3), title_hash, message_hash,
-                                        0xa16ca7bd, 0xb4edeb6d, 0xb4edeb6d,
-                                        static_cast< eDialogFirstButtons >(1), button_hash);
-    }
-    return;
-
 update_map:
     if (!cFEng::Get()->IsPackageInControl(GetPackageName())) {
         return;
@@ -581,6 +539,48 @@ update_map:
             }
             item->Draw();
         }
+    }
+    return;
+
+handle_toggle_or_dialog:
+    if (bInToggleMode) {
+        FEWidget* w = pCurrentOption;
+        if (w == nullptr) {
+            return;
+        }
+        ItemTypeToggle* tog = static_cast< ItemTypeToggle* >(w);
+        tog->Act(GetPackageName(), 0xc407210);
+        UpdateIconVisibility(tog->GetType(), tog->GetVisibility());
+        goto refresh_and_end;
+    } else {
+        IPlayer* iplayer = IPlayer::First(PLAYER_LOCAL);
+        if (iplayer == nullptr) {
+            return;
+        }
+        ISimable* isimable = iplayer->GetSimable();
+        if (isimable == nullptr) {
+            return;
+        }
+
+        unsigned int title_hash;
+        unsigned int message_hash;
+        unsigned int button_hash;
+        if (SelectedItem != nullptr && SelectedItem->GetIcon() != nullptr) {
+            title_hash = 0x70e01038;
+            message_hash = 0x417b25e4;
+            button_hash = 0x96ac0a32;
+        } else {
+            if (mGPSingIcon == nullptr) {
+                return;
+            }
+            title_hash = 0x417b2601;
+            message_hash = 0x1a294dad;
+            button_hash = 0xa6be2ebb;
+        }
+        DialogInterface::ShowTwoButtons(GetPackageName(), "InGameDialog.fng",
+                                        static_cast< eDialogTitle >(3), title_hash, message_hash,
+                                        0xa16ca7bd, 0xb4edeb6d, 0xb4edeb6d,
+                                        static_cast< eDialogFirstButtons >(1), button_hash);
     }
     return;
 
