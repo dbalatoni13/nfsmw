@@ -193,6 +193,14 @@ class GManager : public UTL::COM::Object, public IVehicleCache {
         return mStartFreeRoamPursuit;
     }
 
+    unsigned int Get24BitAttributeKey(unsigned int attribKey) const {
+        return attribKey >> mAttributeKeyShiftTo24;
+    }
+
+    unsigned int Get32BitCollectionKey(unsigned int collectionKey) const {
+        return collectionKey << mCollectionKeyShiftTo32;
+    }
+
     void TrackValue(const char *valueName, int value) {
         TrackValue(valueName, static_cast<float>(value));
     }

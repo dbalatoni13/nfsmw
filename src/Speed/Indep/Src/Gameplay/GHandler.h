@@ -12,6 +12,12 @@ class GHandler : public GRuntimeInstance {
   public:
     GHandler(const Attrib::Key &handlerKey);
 
+    GameplayObjType GetType() const override {
+        return kGameplayObjType_Handler;
+    }
+
+    void NotifyBytecodeFlushed();
+
   private:
     bool mAttached; // offset 0x28, size 0x1
 };
