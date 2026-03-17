@@ -51,14 +51,14 @@ static const char *gTUTORIAL_MOVIE_TOLLBOOTH = "TUT_TOLLBOOTH";
 // ============================================================
 
 IconOption::IconOption(unsigned int tex_hash, unsigned int name_hash, unsigned int desc_hash) {
-    XPos = 0.0f;
+    YPos = 0.0f;
     NameHash = name_hash;
     DescHash = desc_hash;
     fScaleAtStart = 1.0f;
     pTutorialMovieName = nullptr;
     Item = tex_hash;
     FEngObject = nullptr;
-    YPos = 0.0f;
+    XPos = 0.0f;
     IsGreyOut = false;
     IsFlashable = true;
     fScaleToPcnt = 1.0f;
@@ -70,13 +70,10 @@ IconOption::IconOption(unsigned int tex_hash, unsigned int name_hash, unsigned i
 
     if (tex_hash == 0xAAAB31E9) {
         bIsTutorialAvailable = true;
-        SetTutorialMovieName(gTUTORIAL_MOVIE_DRAG);
-    } else if (tex_hash == 0x1A091045) {
-        bIsTutorialAvailable = true;
-        SetTutorialMovieName(gTUTORIAL_MOVIE_TOLLBOOTH);
+        pTutorialMovieName = gTUTORIAL_MOVIE_DRAG;
     } else if (tex_hash == 0x66C9A7B6) {
         bIsTutorialAvailable = true;
-        SetTutorialMovieName(gTUTORIAL_MOVIE_SPEEDTRAP);
+        pTutorialMovieName = gTUTORIAL_MOVIE_SPEEDTRAP;
     }
 }
 
