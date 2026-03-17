@@ -1001,6 +1001,206 @@ GRaceStatus::GRaceStatus()
     }
 }
 
+void GRaceStatus::Init() {
+    if (!fObj) {
+        new GRaceStatus();
+    }
+}
+
+void GRaceStatus::Shutdown() {
+    if (fObj) {
+        delete fObj;
+        fObj = nullptr;
+    }
+}
+
+void GRaceStatus::EnableBinBarriers() {
+    EnableBarriers();
+}
+
+void GRaceStatus::DisableBinBarriers() {
+    DisableBarriers();
+}
+
+void GRaceStatus::RefreshBinWhileInGame() {
+    mQueueBinChange = true;
+}
+
+GRacerInfo &GRaceStatus::GetRacerInfo(int index) {
+    return mRacerInfo[index];
+}
+
+GRacerInfo *GRaceStatus::GetRacerInfo(ISimable *isim) {
+    for (int i = 0; i < mRacerCount; ++i) {
+        if (mRacerInfo[i].GetSimable() == isim) {
+            return &mRacerInfo[i];
+        }
+    }
+
+    return nullptr;
+}
+
+GRacerInfo *GRaceStatus::GetWinningPlayerInfo() {
+    GRacerInfo *winner = nullptr;
+
+    for (int i = 0; i < mRacerCount; ++i) {
+        GRacerInfo &info = mRacerInfo[i];
+
+        if (!info.GetIsHuman()) {
+            continue;
+        }
+
+        if (!winner || info.GetRanking() < winner->GetRanking()) {
+            winner = &info;
+        }
+    }
+
+    return winner;
+}
+
+void GRaceStatus::StartMasterTimer() {
+    float startTime = 0.0f;
+
+    if (mRaceParms) {
+        startTime = mRaceParms->GetStartTime();
+    }
+
+    mRaceMasterTimer.Reset(-startTime);
+    mRaceMasterTimer.Start();
+    mLastSecondTickSent = static_cast<int>(GetRaceTimeElapsed());
+    mTimeExpiredMsgSent = false;
+}
+
+void GRaceStatus::StopMasterTimer() {
+    mRaceMasterTimer.Stop();
+}
+
+float GRaceStatus::GetRaceTimeElapsed() const {
+    return mRaceMasterTimer.GetTime();
+}
+
+float GRaceStatus::GetRaceTimeRemaining() const {
+    float limit = mRaceParms ? mRaceParms->GetTimeLimit() : 0.0f;
+
+    if (limit <= 0.0f) {
+        return 0.0f;
+    }
+
+    return limit + mBonusTime - GetRaceTimeElapsed();
+}
+
+void GRaceStatus::SetRaceActivity(GActivity *activity) {
+    mRaceParms = activity ? GRaceDatabase::Get().GetRaceFromActivity(activity) : nullptr;
+    DetermineRaceLength();
+}
+
+void GRaceStatus::AwardBonusTime(float seconds) {
+    mBonusTime += seconds;
+}
+
+void GRaceStatus::ClearCheckpoints() {
+    mCheckpoints.clear();
+    mNextCheckpoint = nullptr;
+}
+
+void GRaceStatus::AddCheckpoint(GRuntimeInstance *trigger) {
+    GTrigger *gtrigger = static_cast<GTrigger *>(trigger);
+
+    if (!gtrigger) {
+        return;
+    }
+
+    mCheckpoints.push_back(gtrigger);
+    if (!mNextCheckpoint) {
+        mNextCheckpoint = gtrigger;
+    }
+}
+
+float GRaceStatus::GetAdaptiveDifficutly() const {
+    return fCatchUpAdaptiveBonus;
+}
+
+void GRaceStatus::SyncronizeAdaptiveBonus() {
+    if (fCatchUpAdaptiveBonus < 0.0f) {
+        fCatchUpAdaptiveBonus = 0.0f;
+    }
+}
+
+void GRaceStatus::MakeDefaultCatchUpData() {
+    nCatchUpSkillEntries = 0;
+    nCatchUpSpreadEntries = 0;
+    fCatchUpIntegral = 0.0f;
+    fCatchUpDerivative = 0.0f;
+    bMemSet(aCatchUpSkillData, 0, sizeof(aCatchUpSkillData));
+    bMemSet(aCatchUpSpreadData, 0, sizeof(aCatchUpSpreadData));
+}
+
+void GRaceStatus::MakeCatchUpData() {
+    MakeDefaultCatchUpData();
+    if (mRaceParms) {
+        ParseCatchUpData(mRaceParms->GetCatchUpSkill(), mRaceParms->GetCatchUpSpread());
+        fCatchUpIntegral = mRaceParms->GetCatchUpIntegral();
+        fCatchUpDerivative = mRaceParms->GetCatchUpDerivative();
+    }
+}
+
+void GRaceStatus::ClearTimes() {
+    bMemSet(mLapTimes, 0, sizeof(mLapTimes));
+    bMemSet(mCheckTimes, 0, sizeof(mCheckTimes));
+}
+
+void GRaceStatus::SetLapTime(int lapIndex, int racerIndex, float time) {
+    mLapTimes[lapIndex][racerIndex] = time;
+}
+
+float GRaceStatus::GetLapTime(int lapIndex, int racerIndex, bool bCumulativeTimeAtLap) {
+    float time = mLapTimes[lapIndex][racerIndex];
+
+    if (bCumulativeTimeAtLap) {
+        for (int i = 0; i < lapIndex; ++i) {
+            time += mLapTimes[i][racerIndex];
+        }
+    }
+
+    return time;
+}
+
+void GRaceStatus::SetCheckpointTime(int lapIndex, int checkIndex, int racerIndex, float time) {
+    mCheckTimes[lapIndex][checkIndex][racerIndex] = time;
+}
+
+float GRaceStatus::GetCheckpointTime(int lapIndex, int checkIndex, int racerIndex, bool bCumulative) {
+    float time = mCheckTimes[lapIndex][checkIndex][racerIndex];
+
+    if (bCumulative) {
+        for (int i = 0; i < checkIndex; ++i) {
+            time += mCheckTimes[lapIndex][i][racerIndex];
+        }
+    }
+
+    return time;
+}
+
+bool GRaceStatus::IsAudioLoading() {
+    return false;
+}
+
+bool GRaceStatus::IsModelsLoading() {
+    return false;
+}
+
+bool GRaceStatus::IsLoading() {
+    return mIsLoading || IsAudioLoading() || IsModelsLoading();
+}
+
+float GRaceStatus::GetSegmentLength(int segment, int lap) {
+    if (segment < 0 || segment >= 18) {
+        return 0.0f;
+    }
+
+    return mSegmentLengths[segment];
+}
+
 float GRaceStatus::DetermineRaceSegmentLength(const UMath::Vector4 *positions, const UMath::Vector4 *directions, int start, int end) {
     WRoadNav nav;
     bVector3 delta;
