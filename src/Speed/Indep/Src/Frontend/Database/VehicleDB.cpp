@@ -1288,6 +1288,7 @@ POVTypes GetPOVTypeFromPlayerCamera(ePlayerSettingsCameras cam) {
 }
 
 bool IsPlayerCameraSelectable(POVTypes pov_type) {
+    Attrib::Gen::camerainfo camera_info(Attrib::FindCollection(Attrib::Gen::camerainfo::ClassKey(), 0xeec2271a), 0, nullptr);
     unsigned int model_name_key = 0;
     IPlayer *player = IPlayer::First(PLAYER_LOCAL);
     if (player) {
@@ -1304,7 +1305,6 @@ bool IsPlayerCameraSelectable(POVTypes pov_type) {
     }
 
     Attrib::Gen::ecar car_info(Attrib::FindCollectionWithDefault(Attrib::Gen::ecar::ClassKey(), model_name_key), 0, nullptr);
-    Attrib::Gen::camerainfo camera_info(Attrib::FindCollection(Attrib::Gen::camerainfo::ClassKey(), 0xeec2271a), 0, nullptr);
 
     const Attrib::RefSpec *ref_spec = nullptr;
     switch (pov_type) {
@@ -1336,7 +1336,7 @@ bool IsPlayerCameraSelectable(POVTypes pov_type) {
         return camera_info.SELECTABLE(eGetCurrentViewMode() == EVIEWMODE_TWOH);
     }
 
-    camera_info.Change(ref_spec->GetCollection());
+    static_cast<Attrib::Instance &>(camera_info).Change(*ref_spec);
     return camera_info.SELECTABLE(eGetCurrentViewMode() == EVIEWMODE_TWOH);
 }
 
