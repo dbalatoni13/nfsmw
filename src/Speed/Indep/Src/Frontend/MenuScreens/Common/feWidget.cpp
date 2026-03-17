@@ -8,6 +8,7 @@ void FEngSetInvisible(FEObject* obj);
 void FEngSetScript(FEObject* object, unsigned int script_hash, bool start_at_beginning);
 void FEngGetTopLeft(FEObject* object, float& x, float& y);
 void FEngSetTopLeft(FEObject* object, float x, float y);
+void FEngSetCurrentButton(const char* pkg_name, unsigned int hash);
 
 FEWidget::FEWidget(FEObject* backing, bool enabled, bool hidden)
     : vTopLeft(0.0f, 0.0f) //
@@ -74,14 +75,15 @@ void FEButtonWidget::Hide() {
 void FEButtonWidget::CheckMouse(const char* parent_pkg, float mouse_x, float mouse_y) {}
 
 void FEButtonWidget::SetFocus(const char* parent_pkg) {
-    FEWidget::SetFocus(parent_pkg);
+    FEngSetCurrentButton(parent_pkg, pTitle->NameHash);
+    FEngSetScript(reinterpret_cast<FEObject*>(pTitle), 0x249DB7B7, true);
     if (pBacking) {
-        FEngSetScript(pBacking, 0x37389004, true);
+        FEngSetScript(pBacking, 0x249DB7B7, true);
     }
 }
 
 void FEButtonWidget::UnsetFocus() {
-    FEWidget::UnsetFocus();
+    FEngSetScript(reinterpret_cast<FEObject*>(pTitle), 0x7AB5521A, true);
     if (pBacking) {
         FEngSetScript(pBacking, 0x7AB5521A, true);
     }
@@ -223,7 +225,8 @@ void FEToggleWidget::Hide() {
 }
 
 void FEToggleWidget::SetFocus(const char* parent_pkg) {
-    FEStatWidget::SetFocus(parent_pkg);
+    FEngSetCurrentButton(parent_pkg, pTitle->NameHash);
+    SetScript(0x249DB7B7);
 }
 
 void FEToggleWidget::UnsetFocus() {
@@ -278,13 +281,20 @@ void FESliderWidget::Disable() {
 }
 
 void FESliderWidget::SetFocus(const char* parent_pkg) {
-    FEToggleWidget::SetFocus(parent_pkg);
+    FEngSetCurrentButton(parent_pkg, pTitle->NameHash);
+    FEngSetScript(reinterpret_cast<FEObject*>(pTitle), 0x249DB7B7, true);
     Slider.Highlight();
+    if (pBacking) {
+        FEngSetScript(pBacking, 0x249DB7B7, true);
+    }
 }
 
 void FESliderWidget::UnsetFocus() {
-    FEToggleWidget::UnsetFocus();
+    FEngSetScript(reinterpret_cast<FEObject*>(pTitle), 0x7AB5521A, true);
     Slider.UnHighlight();
+    if (pBacking) {
+        FEngSetScript(pBacking, 0x7AB5521A, true);
+    }
 }
 
 void FESliderWidget::UpdateSlider(unsigned int msg) {

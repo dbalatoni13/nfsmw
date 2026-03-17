@@ -13,6 +13,8 @@ struct Chyron : public MenuScreen {
     void NotificationMessage(unsigned long msg, FEObject *pobject, unsigned long param1, unsigned long param2) override;
     void Start();
 
+    void *operator new(size_t, void *ptr) { return ptr; }
+
     static char *mTitle;
     static char *mArtist;
     static char *mAlbum;
