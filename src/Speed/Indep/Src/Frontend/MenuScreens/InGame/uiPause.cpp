@@ -150,8 +150,7 @@ message_E1FDE1D1:
             if (GRaceStatus::Exists()) {
                 GRaceStatus::Get().RaceAbandoned();
             }
-            MNotifyRaceAbandoned abandoned;
-            abandoned.Post(MNotifyRaceAbandoned::_GetKind());
+            MNotifyRaceAbandoned().Post(MNotifyRaceAbandoned::_GetKind());
             return;
         }
         case 0x0506202D:
