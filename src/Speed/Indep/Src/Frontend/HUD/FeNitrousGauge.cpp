@@ -44,22 +44,17 @@ void NitrousGauge::Update(IPlayer *player) {
 }
 
 void NitrousGauge::SetNos(float nos) {
-    if (nos > lbl_803E4D3C) {
-        if (mNos == nos) {
-            return;
-        }
-        if (nos >= mNos) {
-            if (!FEngIsScriptSet(mpDataNosMeterIcon, 0x03826A28)) {
-                FEngSetScript(mpDataNosMeterIcon, 0x03826A28, true);
-            }
-        } else {
-            if (!FEngIsScriptSet(mpDataNosMeterIcon, 0x77031C70)) {
-                FEngSetScript(mpDataNosMeterIcon, 0x77031C70, true);
-            }
-        }
-    } else {
+    if (nos <= lbl_803E4D3C) {
         if (!FEngIsScriptSet(mpDataNosMeterIcon, 0x1744B3)) {
             FEngSetScript(mpDataNosMeterIcon, 0x1744B3, true);
+        }
+    } else if (mNos <= nos) {
+        if (!FEngIsScriptSet(mpDataNosMeterIcon, 0x03826A28)) {
+            FEngSetScript(mpDataNosMeterIcon, 0x03826A28, true);
+        }
+    } else {
+        if (!FEngIsScriptSet(mpDataNosMeterIcon, 0x77031C70)) {
+            FEngSetScript(mpDataNosMeterIcon, 0x77031C70, true);
         }
     }
     mNos = nos;
