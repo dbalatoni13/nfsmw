@@ -869,25 +869,31 @@ void PostRaceResultsScreen::SetupLapStats(int racerIndex, GRacerInfo *racer_info
         const int *split_rankings = racer_info->GetSplitRankings();
 
         for (int i = 0; i < 4; ++i) {
-            panel.AddStat(new ("", 0)
-                              StageStat(FEngFindString(panel.ParentPkg,
-                                                       FEngHashString(lbl_803E5088, lbl_803E5DCC, panel.RacerName)),
-                                        FEngFindString(panel.ParentPkg,
-                                                       FEngHashString(lbl_803E5088, lbl_803E5DDC, panel.RacerName)),
-                                        FEngFindString(panel.ParentPkg,
-                                                       FEngHashString(lbl_803E5088, lbl_803E5E24, panel.RacerName)),
+            RacerStats[racerIndex].AddStat(new ("", 0)
+                                               StageStat(FEngFindString(RacerStats[racerIndex].ParentPkg,
+                                                                        FEngHashString(lbl_803E5088, lbl_803E5DCC,
+                                                                            RacerStats[racerIndex].RacerName)),
+                                                         FEngFindString(RacerStats[racerIndex].ParentPkg,
+                                                                        FEngHashString(lbl_803E5088, lbl_803E5DDC,
+                                                                            RacerStats[racerIndex].RacerName)),
+                                                         FEngFindString(RacerStats[racerIndex].ParentPkg,
+                                                                        FEngHashString(lbl_803E5088, lbl_803E5E24,
+                                                                            RacerStats[racerIndex].RacerName)),
                                         i,
                                         split_times[i],
                                         split_rankings[i]));
         }
 
-        panel.AddStat(new ("", 0)
-                          StageStat(FEngFindString(panel.ParentPkg,
-                                                   FEngHashString(lbl_803E5088, lbl_803E5DCC, panel.RacerName)),
-                                    FEngFindString(panel.ParentPkg,
-                                                   FEngHashString(lbl_803E5088, lbl_803E5DDC, panel.RacerName)),
-                                    FEngFindString(panel.ParentPkg,
-                                                   FEngHashString(lbl_803E5088, lbl_803E5E24, panel.RacerName)),
+        RacerStats[racerIndex].AddStat(new ("", 0)
+                                           StageStat(FEngFindString(RacerStats[racerIndex].ParentPkg,
+                                                                    FEngHashString(lbl_803E5088, lbl_803E5DCC,
+                                                                        RacerStats[racerIndex].RacerName)),
+                                                     FEngFindString(RacerStats[racerIndex].ParentPkg,
+                                                                    FEngHashString(lbl_803E5088, lbl_803E5DDC,
+                                                                        RacerStats[racerIndex].RacerName)),
+                                                     FEngFindString(RacerStats[racerIndex].ParentPkg,
+                                                                    FEngHashString(lbl_803E5088, lbl_803E5E24,
+                                                                        RacerStats[racerIndex].RacerName)),
                                     4,
                                      racer_info->IsFinishedRacing() ? racer_info->GetRaceTimer().GetTime() : 0.0f,
                                      racer_info->GetRanking()));
@@ -902,13 +908,16 @@ void PostRaceResultsScreen::SetupLapStats(int racerIndex, GRacerInfo *racer_info
                 lap_position = -1;
             }
 
-            panel.AddStat(new ("", 0)
-                              LapStat(FEngFindString(panel.ParentPkg,
-                                                     FEngHashString(lbl_803E5088, lbl_803E5DCC, panel.RacerName)),
-                                      FEngFindString(panel.ParentPkg,
-                                                     FEngHashString(lbl_803E5088, lbl_803E5DDC, panel.RacerName)),
-                                      FEngFindString(panel.ParentPkg,
-                                                     FEngHashString(lbl_803E5088, lbl_803E5E24, panel.RacerName)),
+            RacerStats[racerIndex].AddStat(new ("", 0)
+                                               LapStat(FEngFindString(RacerStats[racerIndex].ParentPkg,
+                                                                      FEngHashString(lbl_803E5088, lbl_803E5DCC,
+                                                                          RacerStats[racerIndex].RacerName)),
+                                                       FEngFindString(RacerStats[racerIndex].ParentPkg,
+                                                                      FEngHashString(lbl_803E5088, lbl_803E5DDC,
+                                                                          RacerStats[racerIndex].RacerName)),
+                                                       FEngFindString(RacerStats[racerIndex].ParentPkg,
+                                                                      FEngHashString(lbl_803E5088, lbl_803E5E24,
+                                                                          RacerStats[racerIndex].RacerName)),
                                       i + 1,
                                        race_status.GetLapTime(i, racerIndex, false), lap_position));
         }
@@ -918,13 +927,16 @@ void PostRaceResultsScreen::SetupLapStats(int racerIndex, GRacerInfo *racer_info
         int num_traps = race_status.GetNumSpeedTraps();
 
         for (int i = 0; i < num_traps; ++i) {
-            panel.AddStat(new ("", 0)
-                              SpeedStat(FEngFindString(panel.ParentPkg,
-                                                       FEngHashString(lbl_803E5088, lbl_803E5DCC, panel.RacerName)),
-                                        FEngFindString(panel.ParentPkg,
-                                                       FEngHashString(lbl_803E5088, lbl_803E5DDC, panel.RacerName)),
-                                        FEngFindString(panel.ParentPkg,
-                                                       FEngHashString(lbl_803E5088, lbl_803E5E24, panel.RacerName)),
+            RacerStats[racerIndex].AddStat(new ("", 0)
+                                               SpeedStat(FEngFindString(RacerStats[racerIndex].ParentPkg,
+                                                                        FEngHashString(lbl_803E5088, lbl_803E5DCC,
+                                                                            RacerStats[racerIndex].RacerName)),
+                                                         FEngFindString(RacerStats[racerIndex].ParentPkg,
+                                                                        FEngHashString(lbl_803E5088, lbl_803E5DDC,
+                                                                            RacerStats[racerIndex].RacerName)),
+                                                         FEngFindString(RacerStats[racerIndex].ParentPkg,
+                                                                        FEngHashString(lbl_803E5088, lbl_803E5E24,
+                                                                            RacerStats[racerIndex].RacerName)),
                                         i + 1,
                                          race_status.GetRaceSpeedTrapSpeed(i, racerIndex),
                                          race_status.GetRaceSpeedTrapPosition(i, racerIndex)));
@@ -935,24 +947,30 @@ void PostRaceResultsScreen::SetupLapStats(int racerIndex, GRacerInfo *racer_info
         int num_booths = race_status.GetNumTollbooths();
 
         for (int i = 0; i < num_booths; ++i) {
-            panel.AddStat(new ("", 0)
-                              TollboothStat(FEngFindString(panel.ParentPkg,
-                                                           FEngHashString(lbl_803E5088, lbl_803E5DCC, panel.RacerName)),
-                                            FEngFindString(panel.ParentPkg,
-                                                           FEngHashString(lbl_803E5088, lbl_803E5DDC, panel.RacerName)),
-                                            FEngFindString(panel.ParentPkg,
-                                                           FEngHashString(lbl_803E5088, lbl_803E5E24, panel.RacerName)),
+            RacerStats[racerIndex].AddStat(new ("", 0)
+                                               TollboothStat(FEngFindString(RacerStats[racerIndex].ParentPkg,
+                                                                            FEngHashString(lbl_803E5088, lbl_803E5DCC,
+                                                                                RacerStats[racerIndex].RacerName)),
+                                                             FEngFindString(RacerStats[racerIndex].ParentPkg,
+                                                                            FEngHashString(lbl_803E5088, lbl_803E5DDC,
+                                                                                RacerStats[racerIndex].RacerName)),
+                                                             FEngFindString(RacerStats[racerIndex].ParentPkg,
+                                                                            FEngHashString(lbl_803E5088, lbl_803E5E24,
+                                                                                RacerStats[racerIndex].RacerName)),
                                             i + 1,
                                              race_status.GetRaceTollboothTime(i, racerIndex), 1));
         }
 
-        panel.AddStat(new ("", 0)
-                          TollboothStat(FEngFindString(panel.ParentPkg,
-                                                       FEngHashString(lbl_803E5088, lbl_803E5DCC, panel.RacerName)),
-                                        FEngFindString(panel.ParentPkg,
-                                                       FEngHashString(lbl_803E5088, lbl_803E5DDC, panel.RacerName)),
-                                        FEngFindString(panel.ParentPkg,
-                                                       FEngHashString(lbl_803E5088, lbl_803E5E24, panel.RacerName)),
+        RacerStats[racerIndex].AddStat(new ("", 0)
+                                           TollboothStat(FEngFindString(RacerStats[racerIndex].ParentPkg,
+                                                                        FEngHashString(lbl_803E5088, lbl_803E5DCC,
+                                                                            RacerStats[racerIndex].RacerName)),
+                                                         FEngFindString(RacerStats[racerIndex].ParentPkg,
+                                                                        FEngHashString(lbl_803E5088, lbl_803E5DDC,
+                                                                            RacerStats[racerIndex].RacerName)),
+                                                         FEngFindString(RacerStats[racerIndex].ParentPkg,
+                                                                        FEngHashString(lbl_803E5088, lbl_803E5E24,
+                                                                            RacerStats[racerIndex].RacerName)),
                                         num_booths + 1,
                                          racer_info->IsFinishedRacing() ? race_status.GetRaceTimeRemaining() : 0.0f,
                                          1));
