@@ -194,6 +194,22 @@ struct EAX_CarState : public UTL::Collections::Listable<EAX_CarState, 10> {
         return mBrake;
     }
 
+    const bVector3 *GetForwardVector() {
+        return static_cast<const bVector3 *>(static_cast<const void *>(&mMatrix.v0));
+    }
+
+    bVector3 *GetPosition() {
+        return static_cast<bVector3 *>(static_cast<void *>(&mMatrix.v3));
+    }
+
+    const bVector2 *GetPosition2D() {
+        return static_cast<const bVector2 *>(static_cast<const void *>(GetPosition()));
+    }
+
+    float GetForwardSpeed() {
+        return mFWSpeed;
+    }
+
     float GetVelocityMagnitude() {
         return bLength(mVel0);
     }

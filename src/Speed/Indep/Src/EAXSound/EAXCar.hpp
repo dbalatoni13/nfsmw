@@ -125,4 +125,8 @@ struct EAXCar : public CSTATE_Base {
     Attrib::Gen::acceltrans mAccelInfo;       // offset 0x100
 };
 
+inline EAX_CarState *SndBase::GetPhysCar() {
+    return m_pEAXCar->GetPhysCar();
+}
+
 #endif

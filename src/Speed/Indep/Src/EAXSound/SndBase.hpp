@@ -7,6 +7,9 @@
 
 #include "Speed/Indep/Src/EAXSound/AudioMemBase.hpp"
 
+struct EAXCar;
+struct EAX_CarState;
+
 enum DMX_PRESET_TYPE {
     DMX_DEPTH = 4,
     DMX_AZIM = 3,
@@ -68,6 +71,7 @@ struct SndBase : public AudioMemBase {
         }
     }
     CSTATE_Base *GetStateBase() { return m_pStateBase; }
+    EAX_CarState *GetPhysCar();
     int GetUniqueID() { return objectID; }
 
   protected:

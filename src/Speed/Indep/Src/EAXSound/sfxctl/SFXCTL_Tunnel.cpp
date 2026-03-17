@@ -571,6 +571,16 @@ void SFXCTL_Tunnel::EndTunnelVerb() {
 }
 
 void SFXCTL_Tunnel::UpdateDriveBySnds(float t) {
+    bool InTunnel = m_bIsInTunnel;
+    eTrackPathZoneType PrevFutureZoneType = FutureZoneType;
+    TrackPathZone *zone;
+    const bVector2 *CurCarPos;
+    bVector2 UnNormalCurCarDir;
+    bVector2 CurCarDir;
+    bVector2 FutureCarDir;
+    bVector2 FutureCar2dPos;
+    bVector3 FutureCarPos;
+
     bPlayDriveBy = false;
     bPlayTunnelExit = false;
 
@@ -583,122 +593,86 @@ void SFXCTL_Tunnel::UpdateDriveBySnds(float t) {
         tTimeToWaitBeforeAnotherExitDriveBy = 0.0f;
     }
 
+    (void)PrevFutureZoneType;
     FutureZoneType = TRACK_PATH_ZONE_RESET;
 
-    EAX_CarState *car = m_pStateBase->GetPhysCar();
-    bVector3 futureCarPos;
-    bVector2 futureCarPos2D;
-    bVector2 futureCarPos2DCopy;
-    bVector2 scaledFutureCarDir;
-    bVector2 scaledFutureCarDirCopy;
-    bVector2 futureCarDir;
-    bVector2 unNormalizedCurCarDirCopy;
-    bVector2 unNormalizedCurCarDir;
-    bVector2 curCarDir;
-
-    unNormalizedCurCarDir.x = car->mMatrix.v0.x;
-    unNormalizedCurCarDir.y = car->mMatrix.v0.y;
-    unNormalizedCurCarDirCopy = unNormalizedCurCarDir;
-    bNormalize(&curCarDir, &unNormalizedCurCarDirCopy);
-
-    float futureDistance = car->mFWSpeed * 0.4f;
-    futureCarDir = curCarDir;
-    scaledFutureCarDir.x = futureCarDir.x * futureDistance;
-    scaledFutureCarDir.y = futureCarDir.y * futureDistance;
-    scaledFutureCarDirCopy = scaledFutureCarDir;
-    futureCarPos2D.x = car->mMatrix.v3.x + scaledFutureCarDirCopy.x;
-    futureCarPos2D.y = car->mMatrix.v3.y + scaledFutureCarDirCopy.y;
-    futureCarPos2DCopy = futureCarPos2D;
-    futureCarPos.x = futureCarPos2DCopy.x;
-    futureCarPos.y = futureCarPos2DCopy.y;
-    futureCarPos.z = car->mMatrix.v3.z;
+    CurCarPos = m_pStateBase->GetPhysCar()->GetPosition2D();
+    UnNormalCurCarDir = bVector2(
+        m_pStateBase->GetPhysCar()->GetForwardVector()->x,
+        m_pStateBase->GetPhysCar()->GetForwardVector()->y);
+    CurCarDir = bNormalize(UnNormalCurCarDir);
+    FutureCarDir = bScale(CurCarDir, m_pStateBase->GetPhysCar()->GetForwardSpeed() * 0.4f);
+    FutureCar2dPos = bAdd(*CurCarPos, FutureCarDir);
+    FutureCarPos = bVector3(
+        FutureCar2dPos.x,
+        FutureCar2dPos.y,
+        m_pStateBase->GetPhysCar()->GetPosition()->z);
 
     FutureZoneType = TRACK_PATH_ZONE_TUNNEL;
-    TrackPathZone *futureZone = GetTunnelType(futureCarPos, TRACK_PATH_ZONE_TUNNEL);
-    if (futureZone == nullptr) {
+    zone = GetTunnelType(FutureCarPos, TRACK_PATH_ZONE_TUNNEL);
+    if (zone == nullptr) {
         FutureZoneType = TRACK_PATH_ZONE_OVERPASS;
-        futureZone = GetTunnelType(futureCarPos, TRACK_PATH_ZONE_OVERPASS);
-        if (futureZone == nullptr) {
+        zone = GetTunnelType(FutureCarPos, TRACK_PATH_ZONE_OVERPASS);
+        if (zone == nullptr) {
             FutureZoneType = TRACK_PATH_ZONE_OVERPASS_SMALL;
-            futureZone = GetTunnelType(futureCarPos, TRACK_PATH_ZONE_OVERPASS_SMALL);
-            if (futureZone == nullptr) {
+            zone = GetTunnelType(FutureCarPos, TRACK_PATH_ZONE_OVERPASS_SMALL);
+            if (zone == nullptr) {
                 FutureZoneType = TRACK_PATH_ZONE_RESET;
             }
         }
     }
 
-    if (!m_bIsInTunnel && FutureZoneType != TRACK_PATH_ZONE_RESET) {
-        bool shouldCheckDriveBy = false;
-        if ((tTimeToWaitBeforeAnotherDriveBy < 0.01f && pLastZoneWePlayedWooshFor == futureZone) ||
-            pLastZoneWePlayedWooshFor != futureZone) {
-            shouldCheckDriveBy = true;
-        }
+    if (!InTunnel) {
+        if (FutureZoneType != TRACK_PATH_ZONE_RESET &&
+            ((tTimeToWaitBeforeAnotherDriveBy < 0.01f && pLastZoneWePlayedWooshFor == zone) ||
+             pLastZoneWePlayedWooshFor != zone)) {
+            if (g_WooshVol_vs_Vel.GetValue(m_pStateBase->GetPhysCar()->GetVelocityMagnitude()) > 0.01f) {
+                stDriveByInfo tmpdrivebypackage;
+                CSTATE_Base *ReturnedObj;
 
-        if (shouldCheckDriveBy) {
-            if (g_WooshVol_vs_Vel.GetValue(
-                    bSqrt(car->mVel0.x * car->mVel0.x + car->mVel0.y * car->mVel0.y + car->mVel0.z * car->mVel0.z)) >
-                0.01f) {
                 bPlayDriveBy = true;
                 tTimeToWaitBeforeAnotherDriveBy = 3.0f;
-                pLastZoneWePlayedWooshFor = futureZone;
-
-                vDriveByLoc.x = futureCarPos.x;
-                vDriveByLoc.y = futureCarPos.y;
-                vDriveByLoc.z = car->mMatrix.v3.z + 10.0f;
-                m_fIntensity = g_WooshVol_vs_Vel.GetValue(
-                    bSqrt(car->mVel0.x * car->mVel0.x + car->mVel0.y * car->mVel0.y + car->mVel0.z * car->mVel0.z));
-
-                stDriveByInfo driveByInfo;
-                driveByInfo.eDriveByType = DRIVE_BY_TUNNEL_IN;
-                driveByInfo.pEAXCar = m_pEAXCar;
-                EAX_CarState *stateCar = m_pStateBase->GetPhysCar();
-                driveByInfo.ClosingVelocity = bSqrt(
-                    stateCar->mVel0.x * stateCar->mVel0.x + stateCar->mVel0.y * stateCar->mVel0.y +
-                    stateCar->mVel0.z * stateCar->mVel0.z);
-                driveByInfo.vLocation = vDriveByLoc;
-                driveByInfo.UniqueID = 0;
-                CSTATE_Base *state = EAXSound::m_pStateMgr[eMM_DRIVEBY]->GetFreeState(&driveByInfo);
-                if (state != nullptr) {
-                    state->Attach(&driveByInfo);
+                pLastZoneWePlayedWooshFor = zone;
+                vDriveByLoc = bVector3(FutureCarPos.x, FutureCarPos.y, GetPhysCar()->GetPosition()->z + 10.0f);
+                m_fIntensity = g_WooshVol_vs_Vel.GetValue(GetPhysCar()->GetVelocityMagnitude());
+                tmpdrivebypackage.eDriveByType = DRIVE_BY_TUNNEL_IN;
+                tmpdrivebypackage.pEAXCar = m_pEAXCar;
+                tmpdrivebypackage.ClosingVelocity = m_pStateBase->GetPhysCar()->GetVelocityMagnitude();
+                tmpdrivebypackage.vLocation = vDriveByLoc;
+                tmpdrivebypackage.UniqueID = 0;
+                ReturnedObj = EAXSound::m_pStateMgr[eMM_DRIVEBY]->GetFreeState(&tmpdrivebypackage);
+                if (ReturnedObj != nullptr) {
+                    ReturnedObj->Attach(&tmpdrivebypackage);
                 }
             }
         }
+
+        if (!InTunnel) {
+            return;
+        }
     }
 
-    if (m_bIsInTunnel && FutureZoneType == TRACK_PATH_ZONE_RESET && CurZoneType == TRACK_PATH_ZONE_TUNNEL) {
-        bool shouldCheckExitDriveBy = false;
-        if ((tTimeToWaitBeforeAnotherExitDriveBy < 0.01f && pLastZoneWePlayedExitWooshFor == futureZone) ||
-            pLastZoneWePlayedExitWooshFor != futureZone) {
-            shouldCheckExitDriveBy = true;
-        }
+    if (FutureZoneType == TRACK_PATH_ZONE_RESET &&
+        CurZoneType == TRACK_PATH_ZONE_TUNNEL &&
+        ((tTimeToWaitBeforeAnotherExitDriveBy < 0.01f && pLastZoneWePlayedExitWooshFor == zone) ||
+         pLastZoneWePlayedExitWooshFor != zone)) {
+        if (g_WooshVol_vs_Vel.GetValue(m_pStateBase->GetPhysCar()->GetVelocityMagnitude()) > 0.01f) {
+            stDriveByInfo tmpdrivebypackage;
+            CSTATE_Base *ReturnedObj;
 
-        if (shouldCheckExitDriveBy) {
-            if (g_WooshVol_vs_Vel.GetValue(
-                    bSqrt(car->mVel0.x * car->mVel0.x + car->mVel0.y * car->mVel0.y + car->mVel0.z * car->mVel0.z)) >
-                0.01f) {
-                bPlayTunnelExit = true;
-                tTimeToWaitBeforeAnotherExitDriveBy = 3.0f;
-                pLastZoneWePlayedExitWooshFor = futureZone;
-
-                vDriveByLoc.x = futureCarPos.x;
-                vDriveByLoc.y = futureCarPos.y;
-                vDriveByLoc.z = car->mMatrix.v3.z + 10.0f;
-                m_fExitIntensity = g_WooshVol_vs_Vel.GetValue(
-                    bSqrt(car->mVel0.x * car->mVel0.x + car->mVel0.y * car->mVel0.y + car->mVel0.z * car->mVel0.z));
-
-                stDriveByInfo driveByInfo;
-                driveByInfo.eDriveByType = DRIVE_BY_TUNNEL_OUT;
-                driveByInfo.pEAXCar = m_pEAXCar;
-                EAX_CarState *stateCar = m_pStateBase->GetPhysCar();
-                driveByInfo.ClosingVelocity = bSqrt(
-                    stateCar->mVel0.x * stateCar->mVel0.x + stateCar->mVel0.y * stateCar->mVel0.y +
-                    stateCar->mVel0.z * stateCar->mVel0.z);
-                driveByInfo.vLocation = vDriveByLoc;
-                driveByInfo.UniqueID = 0;
-                CSTATE_Base *state = EAXSound::m_pStateMgr[eMM_DRIVEBY]->GetFreeState(&driveByInfo);
-                if (state != nullptr) {
-                    state->Attach(&driveByInfo);
-                }
+            bPlayTunnelExit = true;
+            tTimeToWaitBeforeAnotherExitDriveBy = 3.0f;
+            pLastZoneWePlayedExitWooshFor = zone;
+            vDriveByLoc = bVector3(FutureCarPos.x, FutureCarPos.y, GetPhysCar()->GetPosition()->z + 10.0f);
+            m_fExitIntensity = g_WooshVol_vs_Vel.GetValue(GetPhysCar()->GetVelocityMagnitude());
+            tmpdrivebypackage.eDriveByType = DRIVE_BY_TUNNEL_OUT;
+            tmpdrivebypackage.pEAXCar = m_pEAXCar;
+            tmpdrivebypackage.ClosingVelocity = m_pStateBase->GetPhysCar()->GetVelocityMagnitude();
+            tmpdrivebypackage.vLocation = vDriveByLoc;
+            tmpdrivebypackage.UniqueID = 0;
+            ReturnedObj = EAXSound::m_pStateMgr[eMM_DRIVEBY]->GetFreeState(&tmpdrivebypackage);
+            if (ReturnedObj != nullptr) {
+                ReturnedObj->Attach(&tmpdrivebypackage);
             }
         }
     }

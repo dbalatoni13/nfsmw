@@ -243,6 +243,8 @@ struct bVector2 {
 bVector2 *bNormalize(bVector2 *dest, const bVector2 *v);
 bVector2 *bNormalize(bVector2 *dest, const bVector2 *v, float length);
 bVector2 *bScaleAdd(bVector2 *dest, const bVector2 *v1, const bVector2 *v2, float scale);
+bVector2 *bAdd(bVector2 *dest, const bVector2 *v1, const bVector2 *v2);
+bVector2 *bScale(bVector2 *dest, const bVector2 *v, float scale);
 
 inline bVector2 *bFill(bVector2 *dest, float x, float y) {
     dest->x = x;
@@ -276,6 +278,24 @@ inline bVector2 bVector2::operator-(const bVector2 &v) {
     return bVector2(_x, _y);
 }
 
+inline bVector2 *bAdd(bVector2 *dest, const bVector2 *v1, const bVector2 *v2) {
+    float x1 = v1->x;
+    float y1 = v1->y;
+    float x2 = v2->x;
+    float y2 = v2->y;
+
+    bFill(dest, x1 + x2, y1 + y2);
+    return dest;
+}
+
+inline bVector2 *bScale(bVector2 *dest, const bVector2 *v, float scale) {
+    float x = v->x;
+    float y = v->y;
+
+    bFill(dest, x * scale, y * scale);
+    return dest;
+}
+
 inline float bLength(const bVector2 *v) {
     float x = v->x;
     float y = v->y;
@@ -285,6 +305,18 @@ inline float bLength(const bVector2 *v) {
 inline bVector2 bNormalize(const bVector2 &v) {
     bVector2 dest;
     bNormalize(&dest, &v);
+    return dest;
+}
+
+inline bVector2 bAdd(const bVector2 &v1, const bVector2 &v2) {
+    bVector2 dest;
+    bAdd(&dest, &v1, &v2);
+    return dest;
+}
+
+inline bVector2 bScale(const bVector2 &v, float scale) {
+    bVector2 dest;
+    bScale(&dest, &v, scale);
     return dest;
 }
 
