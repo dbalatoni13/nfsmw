@@ -171,18 +171,17 @@ void uiRapSheetRankingsDetail::Setup() {
     if (rankingsData.IsValid()) {
         int last = rankingsData.Num_RapSheetRanks();
         if (last == 15) {
-            int player_rank_index = player_rank - 1;
-            int num_rankings_to_show = last;
+            int num_rankings_to_show = rankingsData.Num_RapSheetRanks();
             int rival_offset = 0;
+            int player_rank_index = player_rank - 1;
             if (player_rank == 0x10) {
                 num_rankings_to_show = 0x10;
             }
             for (int i = 0; i < num_rankings_to_show; i++) {
                 if (i == player_rank_index) {
-                    unsigned int car_hash;
+                    unsigned int car_hash = 0;
                     int player_value;
                     if (career_view) {
-                        car_hash = 0;
                         player_value = scores->CareerPursuitDetails.GetValue(rank_type);
                     } else {
                         car_hash = GetFECarNameHashFromFEKey(scores->BestPursuitRankings[rank_type].CarFEKey);

@@ -547,7 +547,7 @@ handle_toggle_or_dialog:
             return;
         }
         ItemTypeToggle* tog = static_cast< ItemTypeToggle* >(w);
-        tog->Act(GetPackageName(), 0xc407210);
+        tog->Act(GetPackageName(), msg);
         UpdateIconVisibility(tog->GetType(), tog->GetVisibility());
         goto refresh_and_end;
     } else {
@@ -606,6 +606,17 @@ handle_gps:
     cFEng::Get()->QueuePackageMessage(0x911ab364, GetPackageName(), nullptr);
     goto refresh_and_end;
 
+set_last_button_and_leave:
+    FEngSetLastButton(GetPackageName(), 0);
+leave_screen:
+    if (!bInToggleMode) {
+        cFEng::Get()->QueuePackageMessage(0x587c018b, GetPackageName(), nullptr);
+        return;
+    }
+    bInToggleMode = false;
+    cFEng::Get()->QueuePackageMessage(0x947e6205, GetPackageName(), nullptr);
+    goto finish_toggle;
+
 maybe_view_switch:
     if (bInToggleMode || CurrentView == 3) {
         return;
@@ -654,19 +665,6 @@ finish_toggle : {
 refresh_and_end:
     RefreshHeader();
     return;
-
-set_last_button_and_leave:
-    FEngSetLastButton(GetPackageName(), 0);
-    goto leave_screen;
-
-leave_screen:
-    if (!bInToggleMode) {
-        cFEng::Get()->QueuePackageMessage(0x587c018b, GetPackageName(), nullptr);
-        return;
-    }
-    bInToggleMode = false;
-    cFEng::Get()->QueuePackageMessage(0x947e6205, GetPackageName(), nullptr);
-    goto finish_toggle;
 
 zoom_prev:
     if (!bInToggleMode) {
