@@ -4196,10 +4196,16 @@ void CustomizePaint::AddVinylAndColorsToCart() {
 }
 
 eMenuSoundTriggers CustomizePaint::NotifySoundMessage(unsigned long msg, eMenuSoundTriggers maybe) {
-    CustomizationScreen::NotifySoundMessage(msg, maybe);
-    if (Category != 0x301 && Category != 0x303) {
-        if (msg == 0xc407210 || msg == 0xd9feec59 || msg == 0x5073ef13) {
-            return static_cast<eMenuSoundTriggers>(0);
+    if (static_cast<unsigned int>(maybe - 0x29) < 2) {
+        if (Category == 0x303) {
+            return static_cast<eMenuSoundTriggers>(-1);
+        }
+        SelectablePart *temp = gCarCustomizeManager.GetTempColoredPart();
+        if (temp) {
+            CarPart *part = temp->GetPart();
+            if (part && part->GetAppliedAttributeUParam(0x6212682b, 0) < 2) {
+                return static_cast<eMenuSoundTriggers>(-1);
+            }
         }
     }
     return maybe;
