@@ -321,6 +321,27 @@ void GManager::ClearAllSessionData() {
     DefragObjectStateStorage();
 }
 
+void GManager::ServicePendingCharacters() {
+    for (GCharacterList::iterator it = mActiveCharacters.begin(); it != mActiveCharacters.end(); ++it) {
+        GCharacter *character = *it;
+
+        if (character->SpawnPending() && character->AttemptSpawn()) {
+            return;
+        }
+    }
+}
+
+void GManager::UnspawnUselessCharacters() {
+    for (GCharacterList::iterator it = mActiveCharacters.begin(); it != mActiveCharacters.end(); ++it) {
+        GCharacter *character = *it;
+
+        if (character->IsNoLongerUseful()) {
+            character->Unspawn();
+            return;
+        }
+    }
+}
+
 void GManager::EndGameplay() {
     UnspawnAllCharacters();
     ClearStockCars();
@@ -1217,6 +1238,46 @@ void GManager::NotifyCollisionPackLoaded(int sectionID, bool loaded) {
         } else {
             mObj->UnspawnSectionIcons(sectionID);
         }
+    }
+}
+
+void GManager::SpawnSectionIcons(int section) {
+    for (unsigned int i = 0; i < mNumIcons; ++i) {
+        GIcon *icon = mIcons[i];
+
+        if (icon->GetSectionID() < 0) {
+            icon->FindSection();
+        }
+
+        if (icon->GetSectionID() == section || icon->GetCombinedSectionID() == section) {
+            icon->Spawn();
+        }
+    }
+}
+
+void GManager::UnspawnSectionIcons(int section) {
+    for (unsigned int i = 0; i < mNumIcons; ++i) {
+        GIcon *icon = mIcons[i];
+
+        if (icon->GetSectionID() < 0) {
+            icon->FindSection();
+        }
+
+        if (icon->GetSectionID() == section || icon->GetCombinedSectionID() == section) {
+            icon->Unspawn();
+        }
+    }
+}
+
+void GManager::UnspawnAllIcons() {
+    for (unsigned int i = 0; i < mNumIcons; ++i) {
+        mIcons[i]->Unspawn();
+    }
+}
+
+void GManager::FreeAllIcons() {
+    while (mNumIcons != 0) {
+        FreeIconAt(0);
     }
 }
 
