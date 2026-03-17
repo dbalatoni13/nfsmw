@@ -9,6 +9,7 @@
 #include "Speed/Indep/Src/Interfaces/SimActivities/INIS.h"
 #include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
 #include "Speed/Indep/Src/Misc/Hermes.h"
+#include "Speed/Indep/Src/World/RaceParameters.hpp"
 
 namespace {
 extern EngRevDataPoint RevPat5[];
@@ -30,6 +31,42 @@ static const float SND_AI_DOWNSHIFT_RPMS[] = {
     7300.0f,
     7400.0f,
     7500.0f,
+};
+
+static const float SND_AI_RPM_Lengths_FINE[] = {
+    40.0f,
+    40.0f,
+    40.5f,
+    21.0f,
+    12.0f,
+    6.5f,
+    3.6f,
+    2.0f,
+    1.0f,
+};
+
+static const float SND_AI_SHORT_TRACK_RPM_Lengths_FINE[] = {
+    40.0f,
+    40.0f,
+    30.5f,
+    12.5f,
+    6.0f,
+    3.5f,
+    2.6f,
+    1.5f,
+    1.0f,
+};
+
+static const float SND_AI_DRIFT_RPM_Lengths_FINE[] = {
+    40.0f,
+    40.0f,
+    40.5f,
+    21.0f,
+    12.0f,
+    7.5f,
+    3.6f,
+    2.0f,
+    1.0f,
 };
 
 enum ControlSource {
@@ -473,14 +510,66 @@ void SFXCTL_AIPhysics::UpdateParams(float t) {
 }
 
 float SFXCTL_AIPhysics::GenDeltaRPM() {
-    float prev = m_fDeltaRPM;
-    m_fDeltaRPM = PhysicsRPM - prev;
-    return m_fDeltaRPM;
+    float RPM_LengthScale;
+
+    if (TheRaceParameters.IsDriftRace()) {
+        RPM_LengthScale = SND_AI_DRIFT_RPM_Lengths_FINE[m_CurGear] * 3.0f;
+        if (!IsAccelerating) {
+            RPM_LengthScale *= 1.5f;
+        }
+    } else if (TheRaceParameters.IsShortTrackRace()) {
+        RPM_LengthScale = SND_AI_SHORT_TRACK_RPM_Lengths_FINE[m_CurGear] * 4.0f;
+        if (!IsAccelerating) {
+            RPM_LengthScale *= 1.5f;
+        }
+    } else {
+        RPM_LengthScale = SND_AI_RPM_Lengths_FINE[m_CurGear] * 3.02f;
+        if (!IsAccelerating) {
+            RPM_LengthScale *= 2.5f;
+        }
+    }
+
+    if (m_CurGear < Sound::FOURTH_GEAR) {
+        unsigned int angle = static_cast<unsigned int>(m_AngleDeltaRPM_LFO + static_cast<int>(SndBase::m_fDeltaTime * 43689.99609375f));
+        float DeltaRPM_LFO_Offset;
+
+        angle = static_cast<unsigned short>(angle);
+        angle = angle % 0xFFFF;
+        m_AngleDeltaRPM_LFO = static_cast<unsigned short>(angle);
+        DeltaRPM_LFO_Offset = bSin(m_AngleDeltaRPM_LFO);
+        RPM_LengthScale *= SteadyVelocityFactor;
+        m_DeltaRPM_LFO_Offset = DeltaRPM_LFO_Offset * 15.0f;
+    }
+    RPM_LengthScale *= 33.333336f;
+    return RPM_LengthScale * SndBase::m_fDeltaTime;
 }
 
 void SFXCTL_AIPhysics::UpdateRPM(float t) {
     (void)t;
-    PhysicsRPM = smooth(PhysicsRPM, m_fThrottle, 10.0f);
+    if (!m_pShiftCtl->IsActive()) {
+        if (IsAccelerating) {
+            if (AIStateManager.AccelMonitor.AvgMonitor.GetValue() < 1.0f) {
+                if (m_pEAXCar->GetVelocityMagnitudeMPH() < 5.0f) {
+                    PhysicsRPM = smooth(PhysicsRPM, 9000.0f, m_fDeltaRPM);
+                    return;
+                }
+            }
+            PhysicsRPM = smooth(PhysicsRPM, 10000.0f, m_fDeltaRPM);
+        } else if (m_pEAXCar->GetVelocityMagnitudeMPH() < 3.0f) {
+            PhysicsRPM = smooth(PhysicsRPM, 1000.0f, 50.0f);
+        } else {
+            PhysicsRPM = smooth(PhysicsRPM, 8000.0f, m_fDeltaRPM);
+        }
+    } else if (m_pShiftCtl->IsDownShifting()) {
+        PhysicsRPM = 5000.0f;
+    } else if (fMaxPhysRPM != 0.0f) {
+        float ratio = 3000.0f / fMaxPhysRPM;
+        float rpm = ratio * 10000.0f;
+
+        rpm += 100.0f;
+        rpm += TargetRPMOffset;
+        PhysicsRPM = rpm;
+    }
 }
 
 void SFXCTL_AIPhysics::UpdateAccel(float t) {

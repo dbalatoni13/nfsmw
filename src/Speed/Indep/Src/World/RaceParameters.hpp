@@ -76,6 +76,10 @@ struct RaceParameters {
         return ((this->bDriftRaceFlag) || (g_tweakIsDriftRace));
     }
 
+    inline bool IsShortTrackRace() {
+        return ((this->bShortRaceFlag) || (g_tweakIsShortTrackRace));
+    }
+
     int TrackNumber;                            // offset 0x0, size 0x4
     eTrackDirection TrackDirection;             // offset 0x4, size 0x4
     eTrafficDensity TrafficDensity;             // offset 0x8, size 0x4
@@ -114,5 +118,7 @@ struct RaceParameters {
     Timer TimeTrialTime;                        // offset 0x98, size 0x4
     bool bCareerEventRace;                      // offset 0x9C, size 0x1
 };
+
+extern RaceParameters TheRaceParameters;
 
 #endif
