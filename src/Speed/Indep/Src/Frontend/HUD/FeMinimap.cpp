@@ -232,13 +232,13 @@ void Minimap::Update(IPlayer *player) {
 
 void Minimap::SetupMinimap(IPlayer *player) {
     const int num_chops = 8;
+    char texture_name[128];
+    FEVector2 top_left;
+    FEVector2 bottom_right;
     short chop_nums[4];
     bVector2 map_pos;
     bVector2 target_pos;
     bVector2 target_dir;
-    char texture_name[128];
-    FEVector2 top_left;
-    FEVector2 bottom_right;
 
     CurrentTrack = TrackInfo::GetTrackInfo(TheRaceParameters.TrackNumber);
 
@@ -254,33 +254,33 @@ void Minimap::SetupMinimap(IPlayer *player) {
     float XSection_decimal = map_pos.x - static_cast<float>(XSection);
     float YSection_decimal = map_pos.y - static_cast<float>(YSection);
 
-    if (XSection_decimal >= 0.5f) {
-        if (YSection_decimal >= 0.5f) {
+    if (XSection_decimal < 0.5f) {
+        if (YSection_decimal < 0.5f) {
+            chop_nums[0] = (YSection - 1) * 8 + XSection - 1;
+            chop_nums[1] = (YSection - 1) * 8 + XSection;
+            chop_nums[2] = YSection * 8 + XSection - 1;
+            chop_nums[3] = YSection * 8 + XSection;
+        } else {
+            chop_nums[0] = YSection * 8 + XSection - 1;
+            chop_nums[1] = YSection * 8 + XSection;
+            chop_nums[2] = (YSection + 1) * 8 + XSection - 1;
+            chop_nums[3] = (YSection + 1) * 8 + XSection;
+            YSection_decimal -= 1.0f;
+        }
+    } else {
+        if (YSection_decimal < 0.5f) {
+            chop_nums[0] = (YSection - 1) * 8 + XSection;
+            chop_nums[1] = (YSection - 1) * 8 + XSection + 1;
+            chop_nums[2] = YSection * 8 + XSection;
+            chop_nums[3] = YSection * 8 + XSection + 1;
+            XSection_decimal -= 1.0f;
+        } else {
             chop_nums[0] = YSection * 8 + XSection;
             chop_nums[1] = YSection * 8 + XSection + 1;
             chop_nums[2] = (YSection + 1) * 8 + XSection;
             chop_nums[3] = (YSection + 1) * 8 + XSection + 1;
             YSection_decimal -= 1.0f;
             XSection_decimal -= 1.0f;
-        } else {
-            chop_nums[0] = (YSection - 1) * 8 + XSection;
-            chop_nums[1] = (YSection - 1) * 8 + XSection + 1;
-            chop_nums[2] = YSection * 8 + XSection;
-            chop_nums[3] = YSection * 8 + XSection + 1;
-            XSection_decimal -= 1.0f;
-        }
-    } else {
-        if (YSection_decimal >= 0.5f) {
-            chop_nums[0] = YSection * 8 + XSection - 1;
-            chop_nums[1] = YSection * 8 + XSection;
-            chop_nums[2] = (YSection + 1) * 8 + XSection - 1;
-            chop_nums[3] = (YSection + 1) * 8 + XSection;
-            YSection_decimal -= 1.0f;
-        } else {
-            chop_nums[0] = (YSection - 1) * 8 + XSection - 1;
-            chop_nums[1] = (YSection - 1) * 8 + XSection;
-            chop_nums[2] = YSection * 8 + XSection - 1;
-            chop_nums[3] = YSection * 8 + XSection;
         }
     }
 
