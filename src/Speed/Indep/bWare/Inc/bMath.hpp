@@ -219,33 +219,33 @@ struct bVector2 {
 
     bVector2() {}
 
-    bVector2 operator+() {}
-
     bVector2(float _x, float _y);
+    
+    bVector2 operator+(const bVector2 &v) const;
+    
+    bVector2 operator-(const bVector2 &v) const;
+    
+    bVector2 operator*(float f) const;
 
-    bVector2(const bVector2 &v) {}
+    bVector2 operator-() const;
 
-    bVector2 operator-(const bVector2 &v);
+    bVector2 &operator-=(const bVector2 &v);
 
-    bVector2 &operator=(const bVector2 &v) {}
+    bVector2 &operator+=(const bVector2 &v);
 
-    bVector2 &operator*=(float scale) {}
+    bVector2 &operator*=(float scale);
 
-    bVector2 &operator/=(float inv_scale) {}
-
-    int operator==(const bVector2 &v) {}
-
-    float &operator[](int index) {}
-
-    bVector2 operator+(const bVector2 &v) {}
-
-    bVector2 operator-() {}
-
-    bVector2 operator*(float f) {}
-
-    bVector2 &operator-=(const bVector2 &v) {}
-
-    bVector2 &operator+=(const bVector2 &v) {}
+    bVector2 &operator/=(float inv_scale);
+    
+    int operator==(const bVector2 &v);
+    
+    // bVector2 &operator=(const bVector2 &v) {} // compiler generated? shown in dwarf
+    
+    // bVector2(const bVector2 &v) {} // compiler generated
+    
+    // bVector2 operator+() {} // not present in dwarf
+        
+    // float &operator[](int index) {} // not present in dwarf
 };
 
 bVector2 *bNormalize(bVector2 *dest, const bVector2 *v);
@@ -262,7 +262,17 @@ inline bVector2::bVector2(float _x, float _y) {
     bFill(this, _x, _y);
 }
 
-inline bVector2 bVector2::operator-(const bVector2 &v) {
+inline bVector2 bVector2::operator+(const bVector2 &v) const {
+    float x1 = this->x;
+    float y1 = this->y;
+    float x2 = v.x;
+    float y2 = v.y;
+    float _x = x1 + x2;
+    float _y = y1 + y2;
+    return bVector2(_x, _y);
+}
+
+inline bVector2 bVector2::operator-(const bVector2 &v) const {
     float x1 = this->x;
     float y1 = this->y;
     float x2 = v.x;
