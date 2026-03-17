@@ -967,52 +967,17 @@ void EAXSound::PlayFEMusic(int nIndex) {
 }
 
 namespace {
+static Sound::Wheel *GetCarStateWheels(EAX_CarState *state) {
+    return static_cast<Sound::Wheel *>(static_cast<void *>(state->mWheel));
+}
 
-struct EAX_CarStateCtorView {
-    int _listNode; // offset 0x0
-    float mMaxTorque; // offset 0x4
-    float mMaxRPM; // offset 0x8
-    float mMinRPM; // offset 0xC
-    float mRedline; // offset 0x10
-    bMatrix4 mMatrix; // offset 0x14
-    bVector3 mVel0; // offset 0x54
-    int mRacePos; // offset 0x64
-    bVector3 mVel1; // offset 0x68
-    float mBrake; // offset 0x78
-    bVector3 mAccel; // offset 0x7C
-    float mEBrake; // offset 0x8C
-    float mFWSpeed; // offset 0x90
-    int mIsShocked; // offset 0x94
-    float mHealth; // offset 0x98
-    int mNosEmptyFlag; // offset 0x9C
-    int mMovementMode; // offset 0xA0
-    int mPlayerZone; // offset 0xA4
-    Sound::Wheel mWheel[4]; // offset 0xA8
-    unsigned short mSteering; // offset 0x1B8
-    unsigned short mAngle; // offset 0x1BA
-    Sound::Engine mEngine; // offset 0x1BC
-    Sound::Driveline mDriveline; // offset 0x1D8
-    int mSirenState; // offset 0x1E0
-    int mHotPursuit; // offset 0x1E4
-    Attrib::Instance mAttributes; // offset 0x1E8
-    Attrib::Instance mEngineInfo; // offset 0x1FC
-    Sound::Context mContext; // offset 0x210
-    int mSimUpdating; // offset 0x214
-    int mAssetsLoaded; // offset 0x218
-    unsigned int mWorldID; // offset 0x21C
-    HSIMABLE__ *mHandle; // offset 0x220
-    unsigned int mTrailerID; // offset 0x224
-    float mOversteer; // offset 0x228
-    float mUndersteer; // offset 0x22C
-    float mSlipAngle; // offset 0x230
-    float mVisualRPM; // offset 0x234
-    float mTimeSinceSeen; // offset 0x238
-    int mNISCarID; // offset 0x23C
-    float mDesiredSpeed; // offset 0x240
-    int mControlSource; // offset 0x244
-};
+static Attrib::Instance &GetCarStateAttributes(EAX_CarState *state) {
+    return *static_cast<Attrib::Instance *>(static_cast<void *>(state->mAttributes));
+}
 
-typedef char EAX_CarStateCtorViewSizeCheck[(sizeof(EAX_CarStateCtorView) == 0x248) ? 1 : -1];
+static Attrib::Instance &GetCarStateEngineInfo(EAX_CarState *state) {
+    return *static_cast<Attrib::Instance *>(static_cast<void *>(state->mEngineInfo));
+}
 
 } // namespace
 
@@ -1062,7 +1027,7 @@ EAX_HeliState::EAX_HeliState(const Attrib::Collection *atr, unsigned int wuid)
 
 EAX_CarState::EAX_CarState(const Attrib::Collection *atr, Sound::Context context, unsigned int wuid, HSIMABLE__ *handle)
 {
-    EAX_CarStateCtorView &state = *static_cast<EAX_CarStateCtorView *>(static_cast<void *>(this));
+    EAX_CarState &state = *this;
     static int PlayerUpgrade;
 
     state.mEBrake = 0.0f;
@@ -1075,7 +1040,7 @@ EAX_CarState::EAX_CarState(const Attrib::Collection *atr, Sound::Context context
     state.mBrake = 0.0f;
     state.mNosEmptyFlag = 0;
 
-    Sound::Wheel *wheel = state.mWheel;
+    Sound::Wheel *wheel = GetCarStateWheels(this);
     int i = 3;
     do {
         new (&wheel->mTerrainType) Attrib::Instance(static_cast<const Attrib::Collection *>(nullptr), 0, nullptr);
@@ -1103,11 +1068,13 @@ EAX_CarState::EAX_CarState(const Attrib::Collection *atr, Sound::Context context
     state.mHotPursuit = 0;
     state.mSirenState = -1;
 
-    new (&state.mAttributes) Attrib::Instance(atr, 0, nullptr);
-    state.mAttributes.SetDefaultLayout(0x50);
+    Attrib::Instance &attributesInst = GetCarStateAttributes(this);
+    new (&attributesInst) Attrib::Instance(atr, 0, nullptr);
+    attributesInst.SetDefaultLayout(0x50);
 
-    new (&state.mEngineInfo) Attrib::Instance(static_cast<const Attrib::Collection *>(nullptr), 0, nullptr);
-    state.mEngineInfo.SetDefaultLayout(0xB0);
+    Attrib::Instance &engineInfoInst = GetCarStateEngineInfo(this);
+    new (&engineInfoInst) Attrib::Instance(static_cast<const Attrib::Collection *>(nullptr), 0, nullptr);
+    engineInfoInst.SetDefaultLayout(0xB0);
 
     state.mWorldID = wuid;
     state.mContext = context;
@@ -1126,9 +1093,9 @@ EAX_CarState::EAX_CarState(const Attrib::Collection *atr, Sound::Context context
     PSMTX44Identity((Mtx44)&state.mMatrix);
 
     Attrib::Gen::pvehicle &attributes =
-        *static_cast<Attrib::Gen::pvehicle *>(static_cast<void *>(&state.mAttributes));
+        *static_cast<Attrib::Gen::pvehicle *>(static_cast<void *>(&attributesInst));
     Attrib::Gen::engineaudio &engineInfo =
-        *static_cast<Attrib::Gen::engineaudio *>(static_cast<void *>(&state.mEngineInfo));
+        *static_cast<Attrib::Gen::engineaudio *>(static_cast<void *>(&engineInfoInst));
     Attrib::Gen::pvehicle vehicleinfo(attributes);
     vehicleinfo.SetDefaultLayout(0x50);
 

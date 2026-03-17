@@ -1,4 +1,6 @@
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Engine.hpp"
+#include "Speed/Indep/Src/EAXSound/EAXCar.hpp"
+#include "Speed/Indep/Src/EAXSound/EAXCarState.hpp"
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Shifting.hpp"
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_AccelTrans.hpp"
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Physics.hpp"
@@ -26,184 +28,15 @@ extern float lbl_803D72F8;
 struct HSIMABLE__;
 
 namespace {
-struct Vec2F {
-    float x;
-    float y;
-};
+static EAX_CarState *GetEngineCarState(const EAXCar *car) {
+    return *static_cast<EAX_CarState *const *>(
+        static_cast<const void *>(static_cast<const char *>(static_cast<const void *>(car)) + 0x34));
+}
 
-struct Vec3F {
-    float x;
-    float y;
-    float z;
-    float pad;
-};
-
-struct Vec4F {
-    float x;
-    float y;
-    float z;
-    float w;
-};
-
-struct Matrix4F {
-    Vec4F v0;
-    Vec4F v1;
-    Vec4F v2;
-    Vec4F v3;
-};
-
-struct EAX_CarState_Wheel {
-    Vec2F mWheelSlip;
-    float mWheelForceZ;
-    float mPercentFsFkTransfer;
-    int mWheelOnGround;
-    char mTerrainType[0x14];
-    char mPrevTerrainType[0x14];
-    float mLoad;
-    unsigned char mBlownState;
-    unsigned char mPrevBlownState;
-    unsigned short _pad;
-};
-
-struct EAX_CarState_Engine {
-    int mBoostFlag;
-    int mNOSFlag;
-    float mNOS;
-    float mRPMPct;
-    float mThrottle;
-    float mBoost;
-    int mBlownFlag;
-};
-
-struct EAX_CarState_Driveline {
-    int mGearShiftFlag;
-    int mGear;
-};
-
-struct EAX_CarState_View {
-    unsigned int _listable;
-    float mMaxTorque;
-    float mMaxRPM;
-    float mMinRPM;
-    float mRedline;
-    Matrix4F mMatrix;
-    Vec3F mVel0;
-    int mRacePos;
-    Vec3F mVel1;
-    float mBrake;
-    Vec3F mAccel;
-    float mEBrake;
-    float mFWSpeed;
-    bool mIsShocked;
-    char _padIsShocked[3];
-    float mHealth;
-    bool mNosEmptyFlag;
-    char _padNosEmpty[3];
-    int mMovementMode;
-    int mPlayerZone;
-    EAX_CarState_Wheel mWheel[4];
-    unsigned short mSteering;
-    unsigned short mAngle;
-    EAX_CarState_Engine mEngine;
-    EAX_CarState_Driveline mDriveline;
-    int mSirenState;
-    bool mHotPursuit;
-    char _padHotPursuit[3];
-    char mAttributes[0x14];
-    char mEngineInfo[0x14];
-    int mContext;
-    bool mSimUpdating;
-    char _padSimUpdating[3];
-    bool mAssetsLoaded;
-    char _padAssetsLoaded[3];
-    unsigned int mWorldID;
-    HSIMABLE__ *mHandle;
-    unsigned int mTrailerID;
-    float mOversteer;
-    float mUndersteer;
-    float mSlipAngle;
-    float mVisualRPM;
-    float mTimeSinceSeen;
-    int mNISCarID;
-    float mDesiredSpeed;
-    int mControlSource;
-};
-
-struct EAXCar_View {
-    void *vptr;
-    CSTATE_Base *m_pNextState;
-    CSTATE_Base *m_pPreviousState;
-    CSTATEMGR_Base *m_pStateMgr;
-    int m_InstNum;
-    int m_eStateType;
-    int m_StateInstType;
-    void *m_pAttachment;
-    SndBase *m_pHeadSFXCTL;
-    SndBase *m_pHeadSFXObj;
-    int m_SFXFlags;
-    int m_NumLoadedSFXObj;
-    int m_NumLoadedSFXCTL;
-    EAX_CarState_View *m_pCar;
-    bool bIsAttached;
-    char _padAttached[3];
-    float t_CurTime;
-    float t_DeltaTime;
-    int m_nHornState;
-    char m_FEEngineAttribs[0x14];
-    void *m_pPhysicsCTL;
-    float PhysTRQ;
-    float PhysRPM;
-    bool bIsAccelerating;
-    char _padAccelerating[3];
-    int CurGear;
-    float fTrottle;
-    float m_fAudioRPM;
-    float m_CurTime2;
-    float m_DeltaTime2;
-    bool m_bIsInSoundSphere;
-    char _padSoundSphere[3];
-    Vec3F m_v3CurSpherePos;
-    float m_fSphereRadius;
-    void *m_pDriverInfo;
-    int m_EngineType;
-    int m_nTrueEngineUpgradeLevel;
-    int m_EngUGL;
-    int m_TurboUGL;
-    int m_NOSUGL;
-    int m_TireUGL;
-    int m_TransmissionUGL;
-    int m_PovType;
-    int m_IsDriveCamera;
-    int m_Rotation;
-    char mEngineInfo[0x14];
-};
-
-struct CSTATE_BaseEngineView {
-    char _pad[0x34];
-    EAX_CarState_View *m_pCar;
-};
-
-struct EAXCarRPMView {
-    char _pad0[0x64];
-    float mPhysRPM;
-    char _pad68[0x0C];
-    float mAudioRPM;
-};
-
-struct EAXCarStateRPMView {
-    char _pad0[0x1C8];
-    float mVisualRPM;
-    char _pad1CC[0x44];
-    int mContext;
-};
-
-struct CSTATE_BaseEngineRPMView {
-    char _pad0[0x34];
-    EAXCarStateRPMView *mCarState;
-};
-
-#define ENGINE_EAXCAR_RPM_VIEW(ptr) (*static_cast<EAXCarRPMView *>(static_cast<void *>(ptr)))
-#define ENGINE_STATE_RPM_VIEW(ptr) (*static_cast<CSTATE_BaseEngineRPMView *>(static_cast<void *>(ptr)))
+static EAX_CarState *GetEngineStateCar(CSTATE_Base *stateBase) {
+    return *static_cast<EAX_CarState **>(
+        static_cast<void *>(static_cast<char *>(static_cast<void *>(stateBase)) + 0x34));
+}
 } // namespace
 
 SFXCTL_Engine::SFXCTL_Engine()
@@ -265,8 +98,8 @@ void SFXCTL_Engine::InitSFX() {
 void SFXCTL_Engine::UpdateParams(float t) {
     SFXCTL::UpdateParams(t);
 
-    EAXCar_View *carOwner = static_cast<EAXCar_View *>(static_cast<void *>(m_pEAXCar));
-    EAX_CarState_View *car = carOwner->m_pCar;
+    EAXCar *carOwner = m_pEAXCar;
+    EAX_CarState *car = GetEngineCarState(carOwner);
 
     const Attrib::Gen::engineaudio &attributes =
         *static_cast<const Attrib::Gen::engineaudio *>(static_cast<const void *>(carOwner->mEngineInfo));
@@ -391,7 +224,7 @@ void SFXCTL_Engine::UpdateRPM(float t) {
         }
     }
 
-    VisualRPM = ENGINE_EAXCAR_RPM_VIEW(m_pEAXCar).mPhysRPM;
+    VisualRPM = m_pEAXCar->PhysRPM;
 
 have_cur_rpm:
     if (*static_cast<int *>(static_cast<void *>(&bClutchStateOn)) != 0) {
@@ -402,7 +235,7 @@ have_cur_rpm:
         if (shiftActive == 0) {
             VisualRPM =
                 smooth(GetEngRPM(),
-                       ENGINE_EAXCAR_RPM_VIEW(m_pEAXCar).mPhysRPM,
+                       m_pEAXCar->PhysRPM,
                        lbl_803D72D4, lbl_803D72D8);
         }
     }
@@ -415,7 +248,7 @@ have_cur_rpm:
     if (static_cast< unsigned int >(m_pShiftCtl->eShiftState - SHFT_UP_DISENGAGE) < 2u) {
         VisualRPM = m_pShiftCtl->m_VisualRPM.GetValue();
     } else if (m_pAccelTransitionCtl->eAccelTransFxState == 1) {
-        VisualRPM = ENGINE_EAXCAR_RPM_VIEW(m_pEAXCar).mPhysRPM;
+        VisualRPM = m_pEAXCar->PhysRPM;
     } else {
         if (*static_cast<int *>(static_cast<void *>(&bIsRedlining)) != 0) {
             float target = lbl_803D72E4;
@@ -440,7 +273,7 @@ have_cur_rpm:
     VisRpmAvg.Recalculate();
 
     PhysicsNewAudioRPM = (VisRpmAvg.GetValue() - lbl_803D72EC) * lbl_803D72F0;
-    EAXCarStateRPMView *car = ENGINE_STATE_RPM_VIEW(m_pStateBase).mCarState;
+    EAX_CarState *car = GetEngineStateCar(m_pStateBase);
     if (car->mContext == 0) {
         if (bPreRace != 0) {
             PhysicsNewAudioRPM = car->mVisualRPM;
@@ -455,7 +288,7 @@ have_cur_rpm:
         }
     }
 
-    ENGINE_EAXCAR_RPM_VIEW(m_pEAXCar).mAudioRPM = PhysicsNewAudioRPM;
+    m_pEAXCar->m_fAudioRPM = PhysicsNewAudioRPM;
 }
 
 void SFXCTL_Engine::UpdateTorque(float t) {

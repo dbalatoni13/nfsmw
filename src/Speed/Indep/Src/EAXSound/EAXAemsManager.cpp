@@ -130,60 +130,6 @@ template <typename T> struct RawVector {
     T *end_of_storage;
 };
 
-struct StringKeyView {
-    unsigned long long mHash64;
-    unsigned int mHash32;
-    const char *mString;
-};
-
-struct stAssetDescriptionClearView {
-    int eDataType;
-    int _pad4;
-    StringKeyView FileName;
-    int DataPath;
-    int bLoadToTop;
-};
-
-struct stSndDataLoadParamsView {
-    stAssetDescription AssetDescription;
-    eTEMPALLOCLOCATION MemLocation;
-    stBankSlot *mBankSlot;
-    void *pmem;
-    void *plocmem;
-    int nSize;
-    int Handle;
-    bool bResolvedAsync;
-    bool bResolvedSync;
-    ResAllocList resallocs;
-    RefCountList RefCount;
-    Timer t_req;
-    Timer t_load;
-};
-
-struct stSndDataLoadParamsClearView {
-    stAssetDescriptionClearView AssetDescription;
-    eTEMPALLOCLOCATION MemLocation;
-    stBankSlot *mBankSlot;
-    void *pmem;
-    void *plocmem;
-    int nSize;
-    int Handle;
-    int bResolvedAsync;
-    int bResolvedSync;
-    ResAllocList resallocs;
-    RefCountList RefCount;
-    Timer t_req;
-    Timer t_load;
-};
-
-struct stSndDataLoadParamsAllocView {
-    char _assetDescription[0x20];
-    eTEMPALLOCLOCATION MemLocation;
-    stBankSlot *mBankSlot;
-    void *pmem;
-    void *plocmem;
-};
-
 typedef void (*ExternalLoadCallbackFn)(int);
 
 struct BankSlotNode {
@@ -274,7 +220,7 @@ template <typename T> static void RawVectorPushBack(RawVector<T> &vec, const T &
     vec.finish++;
 }
 
-static void ResetSndAssetParams(stSndDataLoadParamsView &params) {
+static void ResetSndAssetParams(stSndDataLoadParams &params) {
     params.AssetDescription.eDataType = EAXSND_DT_NONE;
     params.AssetDescription.FileName = Attrib::StringKey("");
     params.AssetDescription.DataPath = SNDPATH_ROUTE;
@@ -304,12 +250,12 @@ static eTEMPALLOCLOCATION &GetAsyncBufferLocation(EAXAemsManager *mgr) {
     return mgr->m_AsyncBuffLocation;
 }
 
-static stSndDataLoadParamsView &AsLoadParamsView(stSndDataLoadParams *params) {
-    return *static_cast<stSndDataLoadParamsView *>(static_cast<void *>(params));
+static stSndDataLoadParams &AsLoadParams(stSndDataLoadParams *params) {
+    return *params;
 }
 
-static const stSndDataLoadParamsView &AsLoadParamsView(const stSndDataLoadParams *params) {
-    return *static_cast<const stSndDataLoadParamsView *>(static_cast<const void *>(params));
+static const stSndDataLoadParams &AsLoadParams(const stSndDataLoadParams *params) {
+    return *params;
 }
 
 static const char *GetStringKeyChars(const Attrib::StringKey &key) {
@@ -497,8 +443,7 @@ void EAXAemsManager::RegisterSlots(eBANK_SLOT_TYPE Type, int NumSlots, int SizeP
 
 void EAXAemsManager::ResolveCurrentDataMemory() {
     EAXAemsManager *mgr = &gAEMSMgr;
-    stSndDataLoadParamsAllocView *curLoad =
-        static_cast<stSndDataLoadParamsAllocView *>(static_cast<void *>(mgr->m_pCurLoadSDLP));
+    stSndDataLoadParams *curLoad = mgr->m_pCurLoadSDLP;
     eTEMPALLOCLOCATION MemLocation = curLoad->MemLocation;
 
     if (MemLocation == TMP_ALLOC_MAIN) {
@@ -517,7 +462,7 @@ void EAXAemsManager::ResolveCurrentDataMemory() {
     } else {
         return;
     }
-    static_cast<stSndDataLoadParamsAllocView *>(static_cast<void *>(mgr->m_pCurLoadSDLP))->pmem = nullptr;
+    mgr->m_pCurLoadSDLP->pmem = nullptr;
 }
 
 int EAXAemsManager::InitiateLoad() {
@@ -525,12 +470,12 @@ int EAXAemsManager::InitiateLoad() {
     stBankSlot *pBankSlot;
     void *allocatedMemory;
     char *fileString;
-    stSndDataLoadParamsView *currentLoad;
+    stSndDataLoadParams *currentLoad;
     int loadSize;
     eTEMPALLOCLOCATION memLocation;
     QueuedFileParams queuedFileParams;
 
-    currentLoad = static_cast<stSndDataLoadParamsView *>(static_cast<void *>(m_pCurLoadSDLP));
+    currentLoad = m_pCurLoadSDLP;
     fileString = *static_cast<char **>(
         static_cast<void *>(static_cast<char *>(static_cast<void *>(&currentLoad->AssetDescription.FileName)) + 0xC));
     if (fileString == nullptr) {
@@ -576,7 +521,7 @@ HaveQueueParams:
         *static_cast<unsigned int *>(static_cast<void *>(&queuedFileParams.Compressed)) = 0;
         queuedFileParams.Priority = QueuedFileDefaultPriority - 2;
         queuedFileParams.UncompressedSize = 0;
-        currentLoad = static_cast<stSndDataLoadParamsView *>(static_cast<void *>(m_pCurLoadSDLP));
+        currentLoad = m_pCurLoadSDLP;
         memLocation = currentLoad->MemLocation;
         if (memLocation == TMP_ALLOC_MAIN) {
             result = bLargestMalloc(0);
@@ -601,7 +546,7 @@ SetWaitingState:
                 if (result == 0) {
                     return -3;
                 }
-                currentLoad = static_cast<stSndDataLoadParamsView *>(static_cast<void *>(m_pCurLoadSDLP));
+                currentLoad = m_pCurLoadSDLP;
                 fileString = *static_cast<char **>(
                     static_cast<void *>(static_cast<char *>(static_cast<void *>(&currentLoad->AssetDescription.FileName)) + 0xC));
                 if (fileString == nullptr) {
@@ -627,7 +572,7 @@ SetWaitingState:
                     fileString = pBankSlot->MAINmemLocation;
                 } else {
                     result = bLargestMalloc(AudioMemoryPool);
-                    currentLoad = static_cast<stSndDataLoadParamsView *>(static_cast<void *>(m_pCurLoadSDLP));
+                    currentLoad = m_pCurLoadSDLP;
                     if (result < currentLoad->nSize) {
                         return -4;
                     }
@@ -648,7 +593,7 @@ SetWaitingState:
             m_IsWaitingForFileCB = 1;
         }
 CheckAsyncSpuLoad:
-        currentLoad = static_cast<stSndDataLoadParamsView *>(static_cast<void *>(m_pCurLoadSDLP));
+        currentLoad = m_pCurLoadSDLP;
         if (currentLoad->AssetDescription.eDataType == EAXSND_DT_AEMS_ASYNCSPU) {
             pBankSlot = currentLoad->mBankSlot;
             if (pBankSlot == nullptr) {
@@ -666,7 +611,7 @@ ReturnResult:
     return result;
 
 HaveAsyncBuffer:
-    currentLoad = static_cast<stSndDataLoadParamsView *>(static_cast<void *>(m_pCurLoadSDLP));
+    currentLoad = m_pCurLoadSDLP;
     pBankSlot = currentLoad->mBankSlot;
     if (pBankSlot != nullptr) {
         pBankSlot->LoadFailed = 0;
@@ -682,8 +627,7 @@ void EAXAemsManager::SetupNextLoad() {
         m_nCurLoadedBankIndex++;
         m_pCurLoadSDLP = g_SndAssetList + m_nCurLoadedBankIndex;
         if (InitiateLoad() < 0) {
-            stSndDataLoadParamsView *currentLoad =
-                static_cast<stSndDataLoadParamsView *>(static_cast<void *>(m_pCurLoadSDLP));
+            stSndDataLoadParams *currentLoad = m_pCurLoadSDLP;
             Attrib::StringKey failedFile = currentLoad->AssetDescription.FileName;
 
             SndBase *sfxToDelete[32];
@@ -871,8 +815,7 @@ ReprocessQueue:
         return;
     }
 
-    stSndDataLoadParamsView &currentLoad =
-        *static_cast<stSndDataLoadParamsView *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pCurLoadSDLP))));
+    stSndDataLoadParams &currentLoad = *m_pCurLoadSDLP;
     if (!currentLoad.bResolvedAsync) {
         CheckForCompleteAsyncLoad();
     }
@@ -896,14 +839,12 @@ ReprocessQueue:
 }
 
 void EAXAemsManager::RemoveBankListing(int index) {
-    ResetSndAssetParams(*static_cast<stSndDataLoadParamsView *>(static_cast<void *>(&g_SndAssetList[index])));
+    ResetSndAssetParams(g_SndAssetList[index]);
     for (int n = index; n < 0x2F; n++) {
         stSndDataLoadParams *currentParams = g_SndAssetList + n;
         stSndDataLoadParams *futureParams = currentParams + 1;
-        stSndDataLoadParamsView &current =
-            *static_cast<stSndDataLoadParamsView *>(static_cast<void *>(currentParams));
-        stSndDataLoadParamsView &future =
-            *static_cast<stSndDataLoadParamsView *>(static_cast<void *>(futureParams));
+        stSndDataLoadParams &current = *currentParams;
+        stSndDataLoadParams &future = *futureParams;
 
         current.AssetDescription = future.AssetDescription;
         current.MemLocation = future.MemLocation;
@@ -1034,7 +975,7 @@ void *EAXAemsManager::ResidentAllocCB(void *pbank, int residentsize, int totalsi
     (void)pbank;
     if (residentsize != totalsize) {
         stSndDataLoadParams *currentLoadRaw = gAEMSMgr.m_pCurLoadSDLP;
-        stSndDataLoadParamsView &currentLoad = AsLoadParamsView(currentLoadRaw);
+        stSndDataLoadParams &currentLoad = AsLoadParams(currentLoadRaw);
         void *resmem;
         if (currentLoad.AssetDescription.eDataType == EAXSND_DT_AEMS_MAINMEM) {
             resmem = bMalloc(residentsize, 0x1040);
@@ -1043,7 +984,7 @@ void *EAXAemsManager::ResidentAllocCB(void *pbank, int residentsize, int totalsi
             if (pBankSlot != nullptr) {
                 pBankSlot->pLastAlloc += residentsize;
                 currentLoadRaw = gAEMSMgr.m_pCurLoadSDLP;
-                pBankSlot = AsLoadParamsView(currentLoadRaw).mBankSlot;
+                pBankSlot = AsLoadParams(currentLoadRaw).mBankSlot;
                 return pBankSlot->MAINmemLocation;
             }
 
@@ -1055,13 +996,13 @@ void *EAXAemsManager::ResidentAllocCB(void *pbank, int residentsize, int totalsi
         }
 
         currentLoadRaw = gAEMSMgr.m_pCurLoadSDLP;
-        AsLoadParamsView(currentLoadRaw).plocmem = resmem;
+        AsLoadParams(currentLoadRaw).plocmem = resmem;
         gAEMSMgr.m_NumBankLoadResolves++;
         currentLoadRaw = gAEMSMgr.m_pCurLoadSDLP;
-        return AsLoadParamsView(currentLoadRaw).plocmem;
+        return AsLoadParams(currentLoadRaw).plocmem;
     }
 
-    return AsLoadParamsView(gAEMSMgr.m_pCurLoadSDLP).pmem;
+    return AsLoadParams(gAEMSMgr.m_pCurLoadSDLP).pmem;
 }
 
 void EAXAemsManager::DataLoadCB(int param, int error_status) {
@@ -1115,21 +1056,11 @@ LoadDone:
 }
 
 int EAXAemsManager::AddBankListing(stAssetDescription &asset) {
-    stSndDataLoadParamsView *entry =
-        static_cast<stSndDataLoadParamsView *>(static_cast<void *>(g_SndAssetList + m_nEndOfList));
+    stSndDataLoadParams *entry = g_SndAssetList + m_nEndOfList;
     ResetSndAssetParams(*entry);
 
-    stSndDataLoadParamsView &dst =
-        *static_cast<stSndDataLoadParamsView *>(static_cast<void *>(g_SndAssetList + m_nEndOfList));
-    dst.AssetDescription.eDataType = asset.eDataType;
-    static_cast<StringKeyView *>(static_cast<void *>(&dst.AssetDescription.FileName))->mString =
-        static_cast<const StringKeyView *>(static_cast<const void *>(&asset.FileName))->mString;
-    static_cast<StringKeyView *>(static_cast<void *>(&dst.AssetDescription.FileName))->mHash64 =
-        static_cast<const StringKeyView *>(static_cast<const void *>(&asset.FileName))->mHash64;
-    static_cast<StringKeyView *>(static_cast<void *>(&dst.AssetDescription.FileName))->mHash32 =
-        static_cast<const StringKeyView *>(static_cast<const void *>(&asset.FileName))->mHash32;
-    dst.AssetDescription.DataPath = asset.DataPath;
-    dst.AssetDescription.bLoadToTop = asset.bLoadToTop;
+    stSndDataLoadParams &dst = g_SndAssetList[m_nEndOfList];
+    dst.AssetDescription = asset;
 
     return m_nEndOfList++;
 }

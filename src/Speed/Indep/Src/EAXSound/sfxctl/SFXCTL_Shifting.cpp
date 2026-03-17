@@ -31,7 +31,7 @@ struct stShiftPatternLayout {
     unsigned int LFO_Vol_Decay_Time;
 };
 
-struct EAXCarShiftView {
+struct EAXCarShiftFields {
     char _pad_state[0x34];
     EAX_CarState *mCarState;
     char _pad_38[0x34];
@@ -40,7 +40,7 @@ struct EAXCarShiftView {
     char mShiftInfo[0x14];
 };
 
-struct EAXCarStateShiftView {
+struct EAXCarStateShiftFields {
     char _pad0[0x54];
     bVector3 mVel0;
     char _pad64[0x14];
@@ -49,8 +49,8 @@ struct EAXCarStateShiftView {
     int mContext;
 };
 
-#define SHIFT_EAXCAR_VIEW(ptr) (*static_cast<EAXCarShiftView *>(static_cast<void *>(ptr)))
-#define SHIFT_CAR_VIEW(ptr) (*static_cast<EAXCarStateShiftView *>(static_cast<void *>(ptr)))
+#define SHIFT_EAXCAR_FIELDS(ptr) (*static_cast<EAXCarShiftFields *>(static_cast<void *>(ptr)))
+#define SHIFT_CAR_FIELDS(ptr) (*static_cast<EAXCarStateShiftFields *>(static_cast<void *>(ptr)))
 
 static inline const stShiftPatternLayout *GetShiftingPatternLayout(const shiftpattern *pattern) {
     return reinterpret_cast<const stShiftPatternLayout *>(
@@ -158,7 +158,7 @@ void SFXCTL_Shifting::SetupSFX(CSTATE_Base *_StateBase) {
     SndBase::SetupSFX(_StateBase);
     eAemsUpgradeLevel ugl = m_pEAXCar->m_TurboUGL;
     m_UGL = ugl;
-    m_pShiftingPatternData = static_cast<shiftpattern *>(static_cast<void *>(SHIFT_EAXCAR_VIEW(m_pEAXCar).mShiftInfo));
+    m_pShiftingPatternData = static_cast<shiftpattern *>(static_cast<void *>(SHIFT_EAXCAR_FIELDS(m_pEAXCar).mShiftInfo));
     m_nPostShiftFXLevel = ugl % 2;
 }
 
@@ -192,8 +192,8 @@ void SFXCTL_Shifting::UpdateGearShiftState(float t) {
     int isWhining = static_cast<int>(GetCurGear());
     *static_cast<int *>(static_cast<void *>(&m_bShouldBeWhining)) = (isWhining == 0);
 
-    EAXCarStateShiftView *carstate =
-        static_cast<EAXCarStateShiftView *>(static_cast<void *>(SHIFT_EAXCAR_VIEW(m_pEAXCar).mCarState));
+    EAXCarStateShiftFields *carstate =
+        static_cast<EAXCarStateShiftFields *>(static_cast<void *>(SHIFT_EAXCAR_FIELDS(m_pEAXCar).mCarState));
     if (static_cast<int>(carstate->mContext) == 0) {
         float t_last_mashed =
             static_cast<float>(WorldTimer.GetPackedTime() - m_timeBrakeLastMashed.GetPackedTime()) * 0.00025f;
@@ -303,7 +303,7 @@ void SFXCTL_Shifting::UpdateGearShiftState(float t) {
                 float currpm = bClamp(static_cast<float>(RPMOffset) + m_RPMGraph.GetValue(t_CurStage), 1000.0f, 10000.0f);
                 m_InterpShiftRPM.Initialize(currpm, currpm, 0, LINEAR);
 
-                int length = bClamp(SHIFT_EAXCAR_VIEW(m_pEAXCar).mCurGear + kSportShift, 0, 3);
+                int length = bClamp(SHIFT_EAXCAR_FIELDS(m_pEAXCar).mCurGear + kSportShift, 0, 3);
                 float physTRQ = m_pEngineCtl->m_pPhysicsCtl->GetPhysTRQ();
                 m_InterpShiftTorque.Initialize(kUpShiftTrqAttachInitialPercent[length] * physTRQ, physTRQ,
                                                kUpShiftTrqAttackTime[length], LINEAR);

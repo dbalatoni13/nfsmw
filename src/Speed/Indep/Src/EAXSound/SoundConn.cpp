@@ -1,5 +1,7 @@
 #include "Speed/Indep/Src/EAXSound/SoundConn.h"
+#include "Speed/Indep/Src/EAXSound/EAXCarState.hpp"
 #include "Speed/Indep/Src/Generated/Events/ECommitAudioAssets.hpp"
+#include "Speed/Indep/Src/World/WorldConn.h"
 
 class CarPartDatabase {
 public:
@@ -27,95 +29,13 @@ struct Pkt_Heli_Open : public Sim::Packet {
     WUID mWorldID;                           // offset 0x8
 };
 
-// total size: 0x44
-struct CarWheelState {
-    bVector2 mWheelSlip;          // offset 0x0
-    float mWheelForceZ;           // offset 0x8
-    float mPercentFsFkTransfer;   // offset 0xC
-    int mWheelOnGround;           // offset 0x10
-    SimSurface mTerrainType;      // offset 0x14
-    SimSurface mPrevTerrainType;  // offset 0x28
-    float mLoad;                  // offset 0x3C
-    unsigned char mBlownState;    // offset 0x40
-    unsigned char mPrevBlownState; // offset 0x41
-};
-
-// total size: 0x1C
-struct CarEngineState {
-    int mBoostFlag;
-    int mNOSFlag;
-    float mNOS;
-    float mRPMPct;
-    float mThrottle;
-    float mBoost;
-    int mBlownFlag;
-};
-
-// total size: 0x8
-struct CarDrivelineState {
-    int mGearShiftFlag;
-    int mGear;
-};
-
-// total size: 0x248
-struct CarStateView {
-    int _listNode;
-    float mMaxTorque;
-    float mMaxRPM;
-    float mMinRPM;
-    float mRedline;
-    bMatrix4 mMatrix;
-    bVector3 mVel0;
-    int mRacePos;
-    bVector3 mVel1;
-    float mBrake;
-    bVector3 mAccel;
-    float mEBrake;
-    float mFWSpeed;
-    int mIsShocked;
-    float mHealth;
-    int mNosEmptyFlag;
-    int mMovementMode;
-    int mPlayerZone;
-    CarWheelState mWheel[4];
-    unsigned short mSteering;
-    unsigned short mAngle;
-    CarEngineState mEngine;
-    CarDrivelineState mDriveline;
-    int mSirenState;
-    int mHotPursuit;
-    char mAttributes[0x14];
-    char mEngineInfo[0x14];
-    Sound::Context mContext;
-    int mSimUpdating;
-    int mAssetsLoaded;
-    unsigned int mWorldID;
-    HSIMABLE__ *mHandle;
-    unsigned int mTrailerID;
-    float mOversteer;
-    float mUndersteer;
-    float mSlipAngle;
-    float mVisualRPM;
-    float mTimeSinceSeen;
-    int mNISCarID;
-    float mDesiredSpeed;
-    int mControlSource;
-};
-
-struct WorldRefView {
-    unsigned int mWorldID;
-    const bMatrix4 *mMatrix;
-    const bVector3 *mVelocity;
-    const bVector3 *mAcceleration;
-};
-
-typedef char CarWheelStateSizeCheck[(sizeof(CarWheelState) == 0x44) ? 1 : -1];
-typedef char CarEngineStateSizeCheck[(sizeof(CarEngineState) == 0x1C) ? 1 : -1];
-typedef char CarDrivelineStateSizeCheck[(sizeof(CarDrivelineState) == 0x8) ? 1 : -1];
-typedef char CarStateViewSizeCheck[(sizeof(CarStateView) == 0x248) ? 1 : -1];
+inline Sound::Wheel *GetCarWheels(EAX_CarState *state) {
+    return static_cast<Sound::Wheel *>(static_cast<void *>(state->mWheel));
+}
 
 inline const bVector3 *GetWorldVelocity(const WorldConn::Reference &ref) {
-    return static_cast<const WorldRefView *>(static_cast<const void *>(&ref))->mVelocity;
+    return *static_cast<const bVector3 *const *>(
+        static_cast<const void *>(static_cast<const char *>(static_cast<const void *>(&ref)) + 0x8));
 }
 
 } // namespace
@@ -318,7 +238,7 @@ void CarSoundConn::UpdateState(float dT) {
         return;
     }
 
-    CarStateView &state = *static_cast<CarStateView *>(static_cast<void *>(mState));
+    EAX_CarState &state = *mState;
     if (state.mAssetsLoaded == 0) {
         return;
     }
@@ -331,10 +251,10 @@ void CarSoundConn::UpdateState(float dT) {
     float &eBrake = state.mEBrake;
     float &fwSpeedState = state.mFWSpeed;
     float &health = state.mHealth;
-    CarWheelState *const wheels = state.mWheel;
+    Sound::Wheel *const wheels = GetCarWheels(&state);
     unsigned short &steering = state.mSteering;
-    CarEngineState &engine = state.mEngine;
-    CarDrivelineState &driveline = state.mDriveline;
+    Sound::Engine &engine = state.mEngine;
+    Sound::Driveline &driveline = state.mDriveline;
     int &siren = state.mSirenState;
     int &hotPursuitWord = state.mHotPursuit;
     int &simUpdating = state.mSimUpdating;
@@ -361,7 +281,7 @@ void CarSoundConn::UpdateState(float dT) {
 
         const Attrib::Collection *const nullSpec = SimSurface::kNull.GetConstCollection();
         for (int i = 0; i < 4; ++i) {
-            CarWheelState &wheel = wheels[i];
+            Sound::Wheel &wheel = wheels[i];
             wheel.mWheelOnGround = 1;
             wheel.mWheelForceZ = 0.0f;
             wheel.mWheelSlip.x = 0.0f;
@@ -423,7 +343,7 @@ void CarSoundConn::UpdateState(float dT) {
     controlSource = data.mControlSource;
 
     for (int i = 0; i < 4; ++i) {
-        CarWheelState &wheel = wheels[i];
+        Sound::Wheel &wheel = wheels[i];
         wheel.mWheelOnGround = data.mWheelOnGround[i] ? 1 : 0;
         wheel.mWheelSlip = data.mWheelSlip[i];
         wheel.mPercentFsFkTransfer = 1.0f - data.mTractionPct[i];

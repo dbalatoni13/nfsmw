@@ -1,13 +1,7 @@
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_AccelTrans.hpp"
+#include "Speed/Indep/Src/EAXSound/EAXCar.hpp"
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Engine.hpp"
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Shifting.hpp"
-
-namespace {
-struct EAXCarAccelTransView {
-    char _pad[0x100];
-    char mAccelTransDataSet;
-};
-} // namespace
 
 SFXCTL_AccelTrans::SFXCTL_AccelTrans()
     : m_pEngineCtl(nullptr) //
@@ -54,9 +48,7 @@ ReturnNegOne:
 void SFXCTL_AccelTrans::SetupSFX(CSTATE_Base *_StateBase) {
     SndBase::SetupSFX(_StateBase);
     m_UGL = static_cast<eAemsUpgradeLevel>(m_pEAXCar->GetEngineUpgradeLevel());
-    m_pAccelTransDataSet =
-        static_cast<acceltrans *>(static_cast<void *>(&static_cast<EAXCarAccelTransView *>(static_cast<void *>(m_pEAXCar))
-                                                           ->mAccelTransDataSet));
+    m_pAccelTransDataSet = static_cast<acceltrans *>(static_cast<void *>(m_pEAXCar->mAccelInfo));
 }
 
 void SFXCTL_AccelTrans::InitSFX() {

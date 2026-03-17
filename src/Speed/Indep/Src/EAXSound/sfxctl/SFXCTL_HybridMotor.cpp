@@ -1,4 +1,6 @@
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_HybridMotor.hpp"
+#include "Speed/Indep/Src/EAXSound/EAXCar.hpp"
+#include "Speed/Indep/Src/EAXSound/EAXCarState.hpp"
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Engine.hpp"
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Shifting.hpp"
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_AccelTrans.hpp"
@@ -6,28 +8,10 @@
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/engineaudio.h"
 
 namespace {
-struct EAXCarHybridView {
-    char _pad0[0x5C];
-    SFXCTL_Physics *mPhysicsCtl;
-    int bIsAccelerating;
-    char _pad6C[0x58];
-    char mEngineInfo[0x14];
-    char *mEngineInfoLayout;
-};
-
-struct CSTATEHybridView {
-    char _pad0[0x34];
-    EAX_CarState *mCarState;
-};
-
-struct EAXCarStateHybridView {
-    char _pad0[0x1D8];
-    int mGearShiftFlag;
-};
-
-#define HYBRID_EAXCAR_VIEW(ptr) (*static_cast<EAXCarHybridView *>(static_cast<void *>(ptr)))
-#define HYBRID_STATE_VIEW(ptr) (*static_cast<CSTATEHybridView *>(static_cast<void *>(ptr)))
-#define HYBRID_CARSTATE_VIEW(ptr) (*static_cast<EAXCarStateHybridView *>(static_cast<void *>(ptr)))
+static EAX_CarState *GetHybridStateCar(CSTATE_Base *stateBase) {
+    return *static_cast<EAX_CarState **>(
+        static_cast<void *>(static_cast<char *>(static_cast<void *>(stateBase)) + 0x34));
+}
 } // namespace
 
 SFXCTL_HybridMotor::SFXCTL_HybridMotor()
@@ -132,8 +116,7 @@ void SFXCTL_HybridMotor::UpdateDualMixEng(float t) {
     float trqWeight = TrqThreshold.GetValue(m_pEngineCtl->Trq.GetValue());
 
     Attrib::Gen::engineaudio *engineInfo =
-        static_cast<Attrib::Gen::engineaudio *>(
-            static_cast<void *>(HYBRID_EAXCAR_VIEW(m_pEAXCar).mEngineInfo));
+        static_cast<Attrib::Gen::engineaudio *>(static_cast<void *>(m_pEAXCar->mEngineInfo));
 
     float deltaRPM = bAbs(m_AvgDeltaRPM.GetValue() + 10.0f);
     float accelThresholdRange = engineInfo->AccelDeltaRPMThreshold();
@@ -156,15 +139,15 @@ void SFXCTL_HybridMotor::UpdateDualMixEng(float t) {
         PercentOfDecelThreshold = 1.0f;
     }
 
-    SFXCTL_Physics *physicsCtl = HYBRID_EAXCAR_VIEW(m_pEAXCar).mPhysicsCtl;
+    SFXCTL_Physics *physicsCtl = m_pEAXCar->m_pPhysicsCTL;
     if (*static_cast<int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(physicsCtl)) + 0xB4)) == 0) {
         bool bDisableSmooth = false;
         EAX_CarState *stateCar =
             m_pStateBase != nullptr
-                ? HYBRID_STATE_VIEW(m_pStateBase).mCarState
+                ? GetHybridStateCar(m_pStateBase)
                 : nullptr;
         int gearShiftFlag = stateCar != nullptr
-                                ? HYBRID_CARSTATE_VIEW(stateCar).mGearShiftFlag
+                                ? stateCar->mDriveline.mGearShiftFlag
                                 : 0;
         if (gearShiftFlag == 0 && m_pShiftingCtl->eShiftState == SHFT_NONE) {
             int accelState = m_pAccelTranCtl->eAccelTransFxState;
@@ -252,8 +235,7 @@ void SFXCTL_HybridMotor::UpdateSingleMixEng(float t) {
     float trqWeight = TrqThreshold.GetValue(trqValue);
 
     Attrib::Gen::engineaudio *engineInfo =
-        static_cast<Attrib::Gen::engineaudio *>(
-            static_cast<void *>(HYBRID_EAXCAR_VIEW(m_pEAXCar).mEngineInfo));
+        static_cast<Attrib::Gen::engineaudio *>(static_cast<void *>(m_pEAXCar->mEngineInfo));
 
     float deltaRPM = m_AvgDeltaRPM.GetValue() + 10.0f;
     float accelThresholdRange = engineInfo->AccelDeltaRPMThreshold();
@@ -278,10 +260,10 @@ void SFXCTL_HybridMotor::UpdateSingleMixEng(float t) {
 
     EAX_CarState *stateCar =
         m_pStateBase != nullptr
-            ? HYBRID_STATE_VIEW(m_pStateBase).mCarState
+            ? GetHybridStateCar(m_pStateBase)
             : nullptr;
     int gearShiftFlag = stateCar != nullptr
-                            ? HYBRID_CARSTATE_VIEW(stateCar).mGearShiftFlag
+                            ? stateCar->mDriveline.mGearShiftFlag
                             : 0;
     SHIFT_STAGE shiftState = m_pShiftingCtl->eShiftState;
 
@@ -297,7 +279,7 @@ void SFXCTL_HybridMotor::UpdateSingleMixEng(float t) {
                     bDoSmooth = false;
                 }
             } else if (shiftState != SHFT_DOWN_ENGAGING_RISE && shiftState == SHFT_DOWN_ENGAGING_REATTACH &&
-                       HYBRID_EAXCAR_VIEW(m_pEAXCar).bIsAccelerating) {
+                       m_pEAXCar->bIsAccelerating) {
                 bDoSmooth = false;
             }
         }

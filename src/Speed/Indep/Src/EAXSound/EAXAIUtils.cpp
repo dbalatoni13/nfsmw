@@ -1,28 +1,11 @@
 #include "Speed/Indep/Src/EAXSound/EAXAIUtils.hpp"
+#include "Speed/Indep/Src/EAXSound/EAXCarState.hpp"
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Physics.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include <types.h>
 
 extern "C" void Average_Record(Average *avg, float value) asm("Record__7Averagef");
 extern "C" void AverageBase_Recalculate(AverageBase *avg) asm("Recalculate__11AverageBase");
-
-namespace {
-struct EAX_CarState_AIView {
-    unsigned int _listable;
-    char _pad0[0x50];
-    bVector3 mVel0;            // offset 0x54
-    int mRacePos;              // offset 0x64
-    bVector3 mVel1;            // offset 0x68
-    char _pad1[0x148];
-    unsigned short mSteering;  // offset 0x1B8
-};
-
-struct CSTATE_Base_AIView {
-    void *vptr;
-    char _pad0[0x30];
-    EAX_CarState_AIView *m_pCar; // offset 0x34
-};
-} // namespace
 
 void SndAITrigger::BeginTrigger() {
     bTrigger = true;
@@ -203,8 +186,8 @@ void SndAIStateManager::Update(float t) {
         return;
     }
 
-    CSTATE_Base_AIView *stateBase = static_cast<CSTATE_Base_AIView *>(static_cast<void *>(m_pPhysicsCTL->GetStateBase()));
-    EAX_CarState_AIView *car = stateBase->m_pCar;
+    EAX_CarState *car = *static_cast<EAX_CarState **>(
+        static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pPhysicsCTL->GetStateBase())) + 0x34));
 
     float steering = static_cast< float >(car->mSteering) * 0.005493248f;
     if (180.0f < steering) {

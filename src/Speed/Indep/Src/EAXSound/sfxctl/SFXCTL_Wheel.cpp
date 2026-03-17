@@ -1,4 +1,5 @@
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Wheel.hpp"
+#include "Speed/Indep/Src/EAXSound/EAXCarState.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXSndUtil.h"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
@@ -7,51 +8,46 @@ extern Slope g_WheelLoadSlope;
 extern float gWheelSlipSensitivity[2];
 extern int PRINT_SKID_FX_DEBUG;
 
-struct EAXCarStateWheelEntryView {
-    bVector2 mWheelSlip;
-    float _pad8;
-    float mWheelTractionMag;
-    int mWheelOnGround;
-    char _pad14[0x4];
-    const Attrib::Collection *mTerrainCollection;
-    char _pad1C[0x20];
-    float mLoad;
-    unsigned char mBlownState;
-    char _pad41[0x3];
-};
+static EAX_CarState *GetWheelStateCar(CSTATE_Base *stateBase) {
+    return *static_cast<EAX_CarState **>(
+        static_cast<void *>(static_cast<char *>(static_cast<void *>(stateBase)) + 0x34));
+}
 
-struct EAXCarStateWheelView {
-    char _pad0[0xA8];
-    EAXCarStateWheelEntryView mWheel[4];
-    char _pad1B8[0x58];
-    int mContext;
-};
+static Sound::Wheel *GetWheelEntries(EAX_CarState *car) {
+    return static_cast<Sound::Wheel *>(static_cast<void *>(car->mWheel));
+}
 
-struct CSTATE_WheelView {
-    char _pad0[0x34];
-    EAXCarStateWheelView *mCarState;
-};
+static bVector3 *GetWheelPosStorage(SFXCTL_Wheel *wheelCtl) {
+    return static_cast<bVector3 *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(wheelCtl)) + 0x28));
+}
 
-struct SFXCTL_WheelPosView {
-    char _pad0[0x28];
-    bVector3 mWheelPos[2];
-};
+static int &GetLeftSideTouchingGround(SFXCTL_Wheel *wheelCtl) {
+    return *static_cast<int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(wheelCtl)) + 0xE8));
+}
 
-struct SFXCTL_WheelRuntimeView {
-    char _pad0[0x28];
-    bVector2 mNormWheelSlip[4];
-    bVector2 mTotalRight;
-    bVector2 mTotalLeft;
-    float mWheelTractionMag[4];
-    float mWheelLoad[4];
-    char _pad78[0x70];
-    int mLeftSideTouchingGround;
-    int mRightSideTouchingGround;
-};
+static int &GetRightSideTouchingGround(SFXCTL_Wheel *wheelCtl) {
+    return *static_cast<int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(wheelCtl)) + 0xEC));
+}
 
-#define WHEEL_STATE_VIEW(ptr) (*static_cast<CSTATE_WheelView *>(static_cast<void *>(ptr)))
-#define WHEEL_POS_VIEW(ptr) (*static_cast<SFXCTL_WheelPosView *>(static_cast<void *>(ptr)))
-#define WHEEL_RUNTIME_VIEW(ptr) (*static_cast<SFXCTL_WheelRuntimeView *>(static_cast<void *>(ptr)))
+static bVector2 *GetNormWheelSlipStorage(SFXCTL_Wheel *wheelCtl) {
+    return static_cast<bVector2 *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(wheelCtl)) + 0x28));
+}
+
+static bVector2 &GetTotalRightStorage(SFXCTL_Wheel *wheelCtl) {
+    return *static_cast<bVector2 *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(wheelCtl)) + 0x48));
+}
+
+static bVector2 &GetTotalLeftStorage(SFXCTL_Wheel *wheelCtl) {
+    return *static_cast<bVector2 *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(wheelCtl)) + 0x50));
+}
+
+static float *GetWheelTractionMagStorage(SFXCTL_Wheel *wheelCtl) {
+    return static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(wheelCtl)) + 0x58));
+}
+
+static float *GetWheelLoadStorage(SFXCTL_Wheel *wheelCtl) {
+    return static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(wheelCtl)) + 0x68));
+}
 } // namespace
 
 void DebugPrintSkidBar(int Horz, int Vert, char *Str, int Value);
@@ -85,25 +81,26 @@ void SFXCTL_Wheel::UpdateParams(float t) {
 bVector3 *SFXCTL_Wheel::GetWheelPos(int wheelID, int numtires) {
     if (numtires == 2) {
         if (wheelID == 0) {
-            return &WHEEL_POS_VIEW(this).mWheelPos[0];
+            return &GetWheelPosStorage(this)[0];
         }
-        return &WHEEL_POS_VIEW(this).mWheelPos[1];
+        return &GetWheelPosStorage(this)[1];
     }
     if (numtires == 1) {
-        return &WHEEL_POS_VIEW(this).mWheelPos[0];
+        return &GetWheelPosStorage(this)[0];
     }
-    return &WHEEL_POS_VIEW(this).mWheelPos[0];
+    return &GetWheelPosStorage(this)[0];
 }
 
 void SFXCTL_Wheel::GenerateWheelPosition() {}
 
 void SFXCTL_Wheel::GenerateTerrainTypes() {
-    EAXCarStateWheelView *car = m_pStateBase != nullptr ? WHEEL_STATE_VIEW(m_pStateBase).mCarState : nullptr;
+    EAX_CarState *car = m_pStateBase != nullptr ? GetWheelStateCar(m_pStateBase) : nullptr;
+    Sound::Wheel *wheels = GetWheelEntries(car);
 
-    const Attrib::Collection *col0 = car->mWheel[0].mTerrainCollection;
-    const Attrib::Collection *col1 = car->mWheel[1].mTerrainCollection;
-    const Attrib::Collection *col2 = car->mWheel[2].mTerrainCollection;
-    const Attrib::Collection *col3 = car->mWheel[3].mTerrainCollection;
+    const Attrib::Collection *col0 = wheels[0].mTerrainType.GetConstCollection();
+    const Attrib::Collection *col1 = wheels[1].mTerrainType.GetConstCollection();
+    const Attrib::Collection *col2 = wheels[2].mTerrainType.GetConstCollection();
+    const Attrib::Collection *col3 = wheels[3].mTerrainType.GetConstCollection();
 
     Attrib::Instance FLTerrainType(col0, 0, nullptr);
     FLTerrainType.SetDefaultLayout(0xFC);
@@ -133,7 +130,7 @@ void SFXCTL_Wheel::GenerateTerrainTypes() {
     PrevRightSideTerrain.Attrib::Instance::operator=(RightSideTerrain);
     PrevLeftSideTerrain.Attrib::Instance::operator=(LeftSideTerrain);
 
-    if (car->mWheel[1].mBlownState == 2 || car->mWheel[2].mBlownState == 2) {
+    if (wheels[1].mBlownState == 2 || wheels[2].mBlownState == 2) {
         const Attrib::Collection *blownTerrain =
             Attrib::FindCollection(Attrib::Gen::simsurface::ClassKey(), 0x8EE645B3);
         Attrib::Instance blown(blownTerrain, 0, nullptr);
@@ -143,7 +140,7 @@ void SFXCTL_Wheel::GenerateTerrainTypes() {
         RightSideTerrain.Attrib::Instance::operator=(CurRight);
     }
 
-    if (car->mWheel[0].mBlownState == 2 || car->mWheel[3].mBlownState == 2) {
+    if (wheels[0].mBlownState == 2 || wheels[3].mBlownState == 2) {
         const Attrib::Collection *blownTerrain =
             Attrib::FindCollection(Attrib::Gen::simsurface::ClassKey(), 0x8EE645B3);
         Attrib::Instance blown(blownTerrain, 0, nullptr);
@@ -158,11 +155,10 @@ void SFXCTL_Wheel::UpdateTireParams() {
     GenerateWheelPosition();
     GenerateTerrainTypes();
 
-    EAX_CarState *car =
-        *static_cast<EAX_CarState **>(static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pStateBase)) + 0x34));
+    EAX_CarState *car = GetWheelStateCar(m_pStateBase);
 
-    int *leftSideTouchingGround = static_cast<int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(this)) + 0xe8));
-    int *rightSideTouchingGround = static_cast<int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(this)) + 0xec));
+    int *leftSideTouchingGround = &GetLeftSideTouchingGround(this);
+    int *rightSideTouchingGround = &GetRightSideTouchingGround(this);
 
     *leftSideTouchingGround = 1;
     if (*static_cast<int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0xb8)) == 0 &&
@@ -176,11 +172,11 @@ void SFXCTL_Wheel::UpdateTireParams() {
         *rightSideTouchingGround = 0;
     }
 
-    bVector2 *normWheelSlip = static_cast<bVector2 *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(this)) + 0x28));
-    bVector2 *totalRight = static_cast<bVector2 *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(this)) + 0x48));
-    bVector2 *totalLeft = static_cast<bVector2 *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(this)) + 0x50));
-    float *wheelTractionMag = static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(this)) + 0x58));
-    float *wheelLoad = static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(this)) + 0x68));
+    bVector2 *normWheelSlip = GetNormWheelSlipStorage(this);
+    bVector2 *totalRight = &GetTotalRightStorage(this);
+    bVector2 *totalLeft = &GetTotalLeftStorage(this);
+    float *wheelTractionMag = GetWheelTractionMagStorage(this);
+    float *wheelLoad = GetWheelLoadStorage(this);
     bVector2 wheelslip[4];
 
     totalRight->x = 0.0f;

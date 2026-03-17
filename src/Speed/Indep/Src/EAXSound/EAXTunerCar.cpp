@@ -1,9 +1,9 @@
+#include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
+#include "Speed/Indep/bWare/Inc/bMath.hpp"
+
 struct bVector3;
-struct eView;
 
 extern eView eViews[];
-
-#include "Speed/Indep/bWare/Inc/bMath.hpp"
 
 struct EAXTunerCar : public EAXCar {
     float m_fCarVolume;          // offset 0x118
