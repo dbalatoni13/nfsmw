@@ -448,3 +448,23 @@ inline unsigned int SceneryModel::GetSpawnerID() const {
     }
     return 0xFFFFFFFF;
 }
+
+bool HeirarchyModel::OnUpdateAvoidable(UMath::Vector3 &pos, float &sweep) {
+    if (mTrigger != nullptr && mTrigger->IsEnabled()) {
+        if (0.0f < mTriggerAvoid.w) {
+            pos = UMath::Vector4To3(mTriggerAvoid);
+            sweep = mTriggerAvoid.w;
+            return true;
+        }
+    } else {
+        if (GetSimable() != nullptr) {
+            IRigidBody *irb = GetSimable()->GetRigidBody();
+            if (irb != nullptr) {
+                sweep = irb->GetRadius();
+                pos = irb->GetPosition();
+                return true;
+            }
+        }
+    }
+    return false;
+}

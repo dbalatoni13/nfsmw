@@ -101,36 +101,40 @@ void Explosion::TestCollisions(float dT) {
     if (!mIRBSimple) {
         return;
     }
-    SimCollisionMap *cmap = mIRBSimple->GetCollisionMap();
-    if (!cmap) {
-        return;
-    }
-    if (!cmap->CollisionWithAny()) {
-        return;
-    }
-
-    IRigidBody *mybody = GetRigidBody();
-    float radius = mybody->GetRadius();
-    UVector3 mydim(radius, radius, radius);
-    Dynamics::Collision::Geometry explosion_sphere(UMath::Matrix4::kIdentity, mybody->GetPosition(),
-                                                   mydim, Dynamics::Collision::Geometry::SPHERE,
-                                                   UMath::Vector3::kZero);
-
-    for (unsigned int i = 0; i < 0xA0; i++) {
-        if (!cmap->CollisionWithOrderedBody(i)) {
-            continue;
+    {
+        SimCollisionMap *cmap = mIRBSimple->GetCollisionMap();
+        if (!cmap) {
+            return;
         }
-        IRigidBody *irb = cmap->GetOrderedBody(i);
-        if (!irb) {
-            continue;
+        if (!cmap->CollisionWithAny()) {
+            return;
         }
-        if (!mEffectSource) {
-            IRenderable *irender;
-            if (irb->QueryInterface(&irender) && irender->GetModelHandle() == mSource) {
-                continue;
+
+        {
+            IRigidBody *mybody = GetRigidBody();
+            float radius = mybody->GetRadius();
+            UVector3 mydim(radius, radius, radius);
+            Dynamics::Collision::Geometry explosion_sphere(UMath::Matrix4::kIdentity, mybody->GetPosition(),
+                                                           mydim, Dynamics::Collision::Geometry::SPHERE,
+                                                           UMath::Vector3::kZero);
+
+            for (unsigned int i = 0; i < 0xA0; i++) {
+                if (!cmap->CollisionWithOrderedBody(i)) {
+                    continue;
+                }
+                IRigidBody *irb = cmap->GetOrderedBody(i);
+                if (!irb) {
+                    continue;
+                }
+                if (!mEffectSource) {
+                    IRenderable *irender;
+                    if (irb->QueryInterface(&irender) && irender->GetModelHandle() == mSource) {
+                        continue;
+                    }
+                }
+                OnCollide(irb, dT, radius, explosion_sphere);
             }
         }
-        OnCollide(irb, dT, radius, explosion_sphere);
     }
 }
 

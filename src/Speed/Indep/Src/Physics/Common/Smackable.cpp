@@ -927,30 +927,6 @@ void HeirarchyModel::SetTrigger(const UMath::Matrix4 &matrix, bool virgin) {
     mTriggerAvoid.w = UMath::Sqrt(zx * zx + zz * zz);
 }
 
-bool HeirarchyModel::OnUpdateAvoidable(UMath::Vector3 &pos, float &sweep) {
-    if (mTrigger != nullptr && mTrigger->IsEnabled()) {
-        if (0.0f < mTriggerAvoid.w) {
-            pos = *reinterpret_cast<const UMath::Vector3 *>(&mTriggerAvoid);
-            sweep = mTriggerAvoid.w;
-            return true;
-        }
-    } else {
-        IModel *model = static_cast<IModel *>(this);
-        ISimable *simable = model->GetSimable();
-        if (simable != nullptr) {
-            ISimable *sim = model->GetSimable();
-            IRigidBody *irb = sim->GetRigidBody();
-            if (irb != nullptr) {
-                sweep = irb->GetRadius();
-                const UMath::Vector3 &position = irb->GetPosition();
-                pos = position;
-                return true;
-            }
-        }
-    }
-    return false;
-}
-
 void HeirarchyModel::PlaceTrigger(const UMath::Matrix4 &matrix, bool enable) {
     SetTrigger(matrix, false);
     if (!enable) {
