@@ -272,20 +272,22 @@ void MemoryCard::RequestTask(int op, const char* name) {
 }
 
 void MemoryCard::ProcessTask() {
-    if (GetScreen() != nullptr) {
-        switch (m_ReqOp) {
-        case MO_Delete:
-            Delete(m_ReqFilename);
-            break;
-        case MO_Load:
-            Load(m_ReqFilename);
-            break;
-        case MO_List:
-            List(nullptr, nullptr);
-            break;
-        }
+    if (GetScreen() == nullptr) {
         m_ReqOp = 0;
+        return;
     }
+    switch (m_ReqOp) {
+    case MO_Delete:
+        Delete(m_ReqFilename);
+        break;
+    case MO_Load:
+        Load(m_ReqFilename);
+        break;
+    case MO_List:
+        List(nullptr, nullptr);
+        break;
+    }
+    m_ReqOp = 0;
 }
 
 bool MemoryCard::IsCardBusy() {

@@ -1,5 +1,6 @@
 #include "feWidget.hpp"
 #include "CTextScroller.hpp"
+#include "Speed/Indep/Src/FEng/FEObject.h"
 #include "Speed/Indep/Src/Frontend/FEngFont.hpp"
 
 struct FEObject;
@@ -75,7 +76,7 @@ void FEButtonWidget::Hide() {
 void FEButtonWidget::CheckMouse(const char* parent_pkg, float mouse_x, float mouse_y) {}
 
 void FEButtonWidget::SetFocus(const char* parent_pkg) {
-    FEngSetCurrentButton(parent_pkg, pTitle->NameHash);
+    FEngSetCurrentButton(parent_pkg, reinterpret_cast< FEObject* >(pTitle)->NameHash);
     FEngSetScript(reinterpret_cast<FEObject*>(pTitle), 0x249DB7B7, true);
     if (pBacking) {
         FEngSetScript(pBacking, 0x249DB7B7, true);
@@ -225,7 +226,7 @@ void FEToggleWidget::Hide() {
 }
 
 void FEToggleWidget::SetFocus(const char* parent_pkg) {
-    FEngSetCurrentButton(parent_pkg, pTitle->NameHash);
+    FEngSetCurrentButton(parent_pkg, reinterpret_cast< FEObject* >(pTitle)->NameHash);
     SetScript(0x249DB7B7);
 }
 
@@ -281,7 +282,7 @@ void FESliderWidget::Disable() {
 }
 
 void FESliderWidget::SetFocus(const char* parent_pkg) {
-    FEngSetCurrentButton(parent_pkg, pTitle->NameHash);
+    FEngSetCurrentButton(parent_pkg, reinterpret_cast< FEObject* >(pTitle)->NameHash);
     FEngSetScript(reinterpret_cast<FEObject*>(pTitle), 0x249DB7B7, true);
     Slider.Highlight();
     if (pBacking) {
