@@ -956,12 +956,15 @@ void PostRaceResultsScreen::SetupLapStats(int racerIndex, GRacerInfo *racer_info
         break;
     }
     case GRace::kRaceType_SpeedTrap: {
-        FEString *labelString = GetPanelString(panel, lbl_803E5DCC);
-        FEString *timeString = GetPanelString(panel, lbl_803E5DDC);
-        FEString *positionString = GetPanelString(panel, lbl_803E5E24);
         unsigned int num_traps = GManager::Exists() ? GManager::Get().GetNumSpeedTraps() : 0;
 
         for (unsigned int i = 0; i < num_traps; ++i) {
+            FEString *labelString =
+                FEngFindString(panel.ParentPkg, FEngHashString(lbl_803E5088, lbl_803E5DCC, panel.RacerName));
+            FEString *timeString =
+                FEngFindString(panel.ParentPkg, FEngHashString(lbl_803E5088, lbl_803E5DDC, panel.RacerName));
+            FEString *positionString =
+                FEngFindString(panel.ParentPkg, FEngHashString(lbl_803E5088, lbl_803E5E24, panel.RacerName));
             panel.AddStat(new ("", 0)
                               SpeedStat(labelString, timeString, positionString, i + 1,
                                         race_status.GetRaceSpeedTrapSpeed(i, racerIndex),
