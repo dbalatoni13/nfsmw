@@ -850,10 +850,10 @@ bool CarViewer::haveLoadedOnce;
 static unsigned int FindScreenInfo(const char *pkg_name, int category) {
     char name[128];
     char prefix[128];
-    if (!pkg_name) {
-        bStrCpy(name, "");
-    } else {
+    if (pkg_name) {
         bStrCpy(name, pkg_name);
+    } else {
+        bStrCpy(name, "");
     }
     int len = bStrLen(name);
     if (len > 3) {
@@ -879,11 +879,15 @@ static unsigned int FindScreenInfo(const char *pkg_name, int category) {
             bStrCat(prefix, "carlot_", name);
         } else if (flags & 1) {
             bStrCat(prefix, "career_", name);
-        } else if ((flags & 4) && (flags & 0x400)) {
-            bStrCat(prefix, "quickrace_", name);
         } else if (flags & 4) {
+            if (flags & 0x400) {
+                bStrCat(prefix, "quickrace_", name);
+            } else {
+                bStrCat(prefix, "quickracemain_", name);
+            }
+        } else if (flags & 8) {
             bStrCat(prefix, "quickracemain_", name);
-        } else if ((flags & 8) || (flags & 0x40)) {
+        } else if (flags & 0x40) {
             bStrCat(prefix, "quickracemain_", name);
         } else if (flags & 0x10) {
             bStrCat(prefix, "options_", name);
@@ -910,19 +914,20 @@ static unsigned int FindGarageCameraInfo(const char *prefix) {
     bStrCat(buf, buf, garage_name);
     unsigned int key = Attrib::StringToLowerCaseKey(buf);
     Attrib::Gen::frontend inst(Attrib::FindCollection(Attrib::Gen::frontend::ClassKey(), key), 0, nullptr);
+    unsigned int result = key;
     if (!inst.GetConstCollection()) {
-        return 0xf907e767;
+        result = 0xf907e767;
     }
-    return key;
+    return result;
 }
 
 static unsigned int FindScreenCameraInfo(unsigned int screen_key) {
     Attrib::Gen::frontend inst(Attrib::FindCollection(Attrib::Gen::frontend::ClassKey(), screen_key), 0, nullptr);
-    if (!inst.GetConstCollection()) {
-        return 0xf907e767;
+    unsigned int result = 0xf907e767;
+    if (inst.GetConstCollection()) {
+        Attrib::Gen::frontend cam_inst(reinterpret_cast<Attrib::Gen::frontend::_LayoutStruct *>(inst.GetLayoutPointer())->cam_angle, 0, nullptr);
+        result = cam_inst.GetCollection();
     }
-    Attrib::Gen::frontend cam_inst(reinterpret_cast<Attrib::Gen::frontend::_LayoutStruct *>(inst.GetLayoutPointer())->cam_angle, 0, nullptr);
-    unsigned int result = cam_inst.GetCollection();
     return result;
 }
 
