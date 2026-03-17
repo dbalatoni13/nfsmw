@@ -491,8 +491,9 @@ void FEngFont::RenderString(const FEColor &Color, const short *pcString, FEStrin
     render_colors[2] = render_color;
     render_colors[3] = render_color;
 
+    float line_width = GetLineWidth(pcString, flags, obj->MaxWidth, word_wrap);
     float current_y = CalculateYOffset(format, GetTextHeight(pcString, leading, flags, obj->MaxWidth, word_wrap));
-    float current_x = CalculateXOffset(format, GetLineWidth(pcString, flags, obj->MaxWidth, word_wrap));
+    float current_x = CalculateXOffset(format, line_width);
 
     if (pTextureInfo) {
         cached->SetTransform(matrix);
@@ -516,7 +517,7 @@ void FEngFont::RenderString(const FEColor &Color, const short *pcString, FEStrin
                 } else {
                     if (obj->MaxWidth != 0 && current == ' ' && word_wrap) {
                         float next_word_width = GetNextWordWidth(next - 1, flags);
-                        if (static_cast<float>(obj->MaxWidth) < (current_x - line_start_x) + next_word_width) {
+                        if ((current_x - line_start_x) + next_word_width > static_cast<float>(obj->MaxWidth)) {
                             current_x = CalculateXOffset(format, GetLineWidth(next, flags, obj->MaxWidth, word_wrap));
                             current_y += Height + static_cast<float>(leading);
                             line_start_x = current_x;
