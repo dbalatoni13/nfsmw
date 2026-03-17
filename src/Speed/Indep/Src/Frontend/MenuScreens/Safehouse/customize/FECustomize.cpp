@@ -2072,7 +2072,7 @@ void CustomizeSpoiler::NotificationMessage(unsigned long msg, FEObject *pobj, un
         Showcase::FromFilter = TheFilter;
         break;
     case 0x5a928018: {
-        SelectablePart *sel = FindInCartPart();
+        SelectablePart *sel = GetSelectedPart();
         if (!sel) {
             return;
         }
@@ -2545,7 +2545,7 @@ void CustomizeParts::NotificationMessage(unsigned long msg, FEObject *pobj, unsi
         bTexturesNeedUnload = true;
         break;
     case 0x5a928018: {
-        SelectablePart *sel = GetSelectedPart();
+        SelectablePart *sel = FindInCartPart();
         if (!sel) {
             return;
         }
@@ -3444,14 +3444,12 @@ void CustomizeRims::BuildRimsList(int selected_index) {
     int curIdx = 1;
     CarPart *activeMatch = nullptr;
     bTList<SelectablePart> tempList;
-    unsigned int brandHash = GetCategoryBrandHash();
-    gCarCustomizeManager.GetCarPartList(0x42, tempList, brandHash);
+    gCarCustomizeManager.GetCarPartList(0x42, tempList, GetCategoryBrandHash());
     if (selected_index == -1) {
         activeMatch = gCarCustomizeManager.GetActivePartFromSlot(0x42);
     }
-    SelectablePart *node = static_cast<SelectablePart *>(tempList.GetHead());
-    while (node != reinterpret_cast<SelectablePart *>(&tempList)) {
-        SelectablePart *next = static_cast<SelectablePart *>(node->Next);
+    while (tempList.GetHead() != reinterpret_cast<bNode *>(&tempList)) {
+        SelectablePart *node = static_cast<SelectablePart *>(tempList.GetHead());
         node->Prev->Next = node->Next;
         node->Next->Prev = node->Prev;
         int rimSize = static_cast<int>(node->ThePart->GetAppliedAttributeIParam(0xeb0101e2, 0));
@@ -3467,12 +3465,12 @@ void CustomizeRims::BuildRimsList(int selected_index) {
         } else {
             delete node;
         }
-        node = next;
     }
-    if (selected_index == -1 && activeMatch) {
-        selected_index = matchIdx;
-    } else if (selected_index == -1) {
+    if (selected_index == -1) {
         selected_index = 1;
+        if (activeMatch) {
+            selected_index = matchIdx;
+        }
     }
     if (Showcase::FromIndex == 0) {
         SetInitialOption(selected_index);
