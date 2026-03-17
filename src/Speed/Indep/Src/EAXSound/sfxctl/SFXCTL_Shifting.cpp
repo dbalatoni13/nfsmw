@@ -457,9 +457,10 @@ void SFXCTL_Shifting::PostShiftFX_Update(float t) {
 }
 
 void SFXCTL_Shifting::PostShiftFX_Init() {
-    float ScaleDown = 1.0f;
+    float ScaleDown;
 
     if (GetCurGear() < Sound::SIXTH_GEAR) {
+        ScaleDown = 1.0f;
         if (GetCurGear() == Sound::SECOND_GEAR) {
             ScaleDown = 0.85f;
         }
