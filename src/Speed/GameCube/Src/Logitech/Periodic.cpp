@@ -18,7 +18,7 @@ static inline unsigned long &PeriodicGetEffectID(Force *self, int channel, int f
 
 Periodic::Periodic() : Force() {}
 
-int Periodic::DownloadForce(int channel, int forceNumber, unsigned long & handle, unsigned char type, unsigned long duration, unsigned long startDelay, unsigned char magnitude, unsigned short direction, unsigned short period, unsigned short phase, short offset, unsigned long attackTime, unsigned long fadeTime, unsigned char attackLevel, unsigned char fadeLevel) {
+int Periodic::DownloadForce(long channel, long forceNumber, unsigned long & handle, unsigned char type, unsigned long duration, unsigned long startDelay, unsigned char magnitude, unsigned short direction, unsigned short period, unsigned short phase, short offset, unsigned long attackTime, unsigned long fadeTime, unsigned char attackLevel, unsigned char fadeLevel) {
     LGForceEffect force;
     int ret;
 
@@ -54,7 +54,7 @@ int Periodic::DownloadForce(int channel, int forceNumber, unsigned long & handle
     return ret;
 }
 
-int Periodic::UpdateForce(int channel, int forceNumber, unsigned char type, unsigned long duration, unsigned long startDelay, unsigned char magnitude, unsigned short direction, unsigned short period, unsigned short phase, short offset, unsigned long attackTime, unsigned long fadeTime, unsigned char attackLevel, unsigned char fadeLevel) {
+int Periodic::UpdateForce(long channel, long forceNumber, unsigned char type, unsigned long duration, unsigned long startDelay, unsigned char magnitude, unsigned short direction, unsigned short period, unsigned short phase, short offset, unsigned long attackTime, unsigned long fadeTime, unsigned char attackLevel, unsigned char fadeLevel) {
     LGForceEffect force;
     int ret;
 

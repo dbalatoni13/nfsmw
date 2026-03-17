@@ -18,7 +18,7 @@ static inline unsigned long &ConditionGetEffectID(Force *self, int channel, int 
 
 Condition::Condition() : Force() {}
 
-int Condition::DownloadForce(int channel, int forceNumber, unsigned long & handle, unsigned char type, unsigned long duration, unsigned long startDelay, char offset, unsigned char deadband, unsigned char satNeg, unsigned char satPos, short coeffNeg, short coeffPos) {
+int Condition::DownloadForce(long channel, long forceNumber, unsigned long & handle, unsigned char type, unsigned long duration, unsigned long startDelay, signed char offset, unsigned char deadband, unsigned char satNeg, unsigned char satPos, short coeffNeg, short coeffPos) {
     LGForceEffect force;
     int ret;
 
@@ -52,7 +52,7 @@ int Condition::DownloadForce(int channel, int forceNumber, unsigned long & handl
     return ret;
 }
 
-int Condition::UpdateForce(int channel, int forceNumber, unsigned char type, unsigned long duration, unsigned long startDelay, char offset, unsigned char deadband, unsigned char satNeg, unsigned char satPos, short coeffNeg, short coeffPos) {
+int Condition::UpdateForce(long channel, long forceNumber, unsigned char type, unsigned long duration, unsigned long startDelay, signed char offset, unsigned char deadband, unsigned char satNeg, unsigned char satPos, short coeffNeg, short coeffPos) {
     LGForceEffect force;
     int ret;
 

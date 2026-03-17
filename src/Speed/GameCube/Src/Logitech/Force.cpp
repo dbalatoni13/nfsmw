@@ -39,7 +39,7 @@ void Force::InitVars() {
     }
 }
 
-int Force::Start(int channel, int forceNumber) {
+int Force::Start(long channel, long forceNumber) {
     int ret;
 
     ret = 0;
@@ -57,7 +57,7 @@ int Force::Start(int channel, int forceNumber) {
     return ret;
 }
 
-int Force::Stop(int channel, int forceNumber) {
+int Force::Stop(long channel, long forceNumber) {
     int ret;
 
     ret = 0;
@@ -75,7 +75,7 @@ int Force::Stop(int channel, int forceNumber) {
     return ret;
 }
 
-int Force::Destroy(int channel, int forceNumber) {
+int Force::Destroy(long channel, long forceNumber) {
     int ret;
 
     ret = 0;
