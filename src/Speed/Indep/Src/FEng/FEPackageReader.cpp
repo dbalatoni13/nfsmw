@@ -472,13 +472,13 @@ bool FEPackageReader::ReadMessageResponseTags(FETag* pTag, unsigned long Length,
                 pResp->SetID(pTag->Getu32(0));
                 break;
             case 0x7552:
-                pResp->ResponseTarget = pTag->Getu32(0);
+                pResp->ResponseParam = pTag->Getu32(0);
                 break;
             case 0x7352:
                 pResp->SetParam(reinterpret_cast<const char*>(pTag->Data()));
                 break;
             case 0x7452:
-                pResp->ResponseParam = pTag->Getu32(0);
+                pResp->ResponseTarget = pTag->Getu32(0);
                 break;
         }
         pTag = reinterpret_cast<FETag*>(reinterpret_cast<char*>(pTag) + 4 + pTag->GetSize());

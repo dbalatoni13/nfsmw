@@ -496,19 +496,18 @@ long FECodeListBox::GetRealRow(long lRow) const {
     return GetRealValue(lRow, mulNumTotalRows, mulCurrentVirtualRow, mulNumVisibleRows);
 }
 
-unsigned long FECodeListBox::CalculateCurrentFromTarget(unsigned long ulTarget, unsigned long ulTotal, unsigned long ulVisible) {
-    if (ulTarget >= ulTotal) {
+unsigned long FECodeListBox::CalculateCurrentFromTarget(unsigned long ulTarget, unsigned long ulNumTotal, unsigned long ulNumVisible) {
+    if (ulTarget >= ulNumTotal) {
         ulTarget = 0;
-        if (ulTotal != 0) {
-            ulTarget = ulTotal - 1;
+        if (ulNumTotal != 0) {
+            ulTarget = ulNumTotal - 1;
         }
     }
-    unsigned long result = ulTarget;
+    int lRet = static_cast<int>(ulTarget);
     if (mulFlags & 8) {
-        result = static_cast<unsigned long>(GetValidIndex(static_cast<int>(result) - static_cast<int>(ulVisible >> 1),
-                                                          static_cast<int>(ulTotal)));
+        lRet = GetValidIndex(lRet - static_cast<int>(ulNumVisible >> 1), static_cast<int>(ulNumTotal));
     }
-    return result;
+    return static_cast<unsigned long>(lRet);
 }
 
 void FECodeListBox::Update(float fNumTicks) {

@@ -19,7 +19,6 @@ struct FEMessageResponse;
 struct FEObject;
 
 struct FEObjectDestructorCallback {
-    virtual ~FEObjectDestructorCallback();
     virtual void OnDestroy(FEObject* pObject) = 0;
 };
 struct FEVector2;

@@ -30,9 +30,9 @@ void FEMultMatrix(FEMatrix4* dest, const FEMatrix4* a, const FEMatrix4* b) {
 }
 
 void FEMultMatrix(FEVector3* dest, const FEMatrix4* m, const FEVector3* v) {
-    float x = m->m21 * v->y + m->m11 * v->x + m->m31 * v->z + m->m41;
-    float y = m->m22 * v->y + m->m12 * v->x + m->m32 * v->z + m->m42;
-    float z = m->m23 * v->y + m->m13 * v->x + m->m33 * v->z + m->m43;
+    float x = m->m11 * v->x + m->m21 * v->y + m->m31 * v->z + m->m41;
+    float y = m->m12 * v->x + m->m22 * v->y + m->m32 * v->z + m->m42;
+    float z = m->m13 * v->x + m->m23 * v->y + m->m33 * v->z + m->m43;
     dest->z = z;
     dest->x = x;
     dest->y = y;
