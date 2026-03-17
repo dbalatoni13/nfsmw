@@ -39,27 +39,33 @@ void GRacerInfo::SetSimable(ISimable *isim) {
 }
 
 void GRacerInfo::KnockOut() {
-    if (!IsFinishedRacing()) {
-        mKnockedOut = true;
-        mFinishedRacing = true;
-        GRaceStatus::Get().CalculateRankings();
+    if (mFinishedRacing) {
+        return;
     }
+
+    mKnockedOut = true;
+    mFinishedRacing = true;
+    GRaceStatus::Get().CalculateRankings();
 }
 
 void GRacerInfo::TotalVehicle() {
-    if (!IsFinishedRacing()) {
-        mTotalled = true;
-        mFinishedRacing = true;
-        GRaceStatus::Get().CalculateRankings();
+    if (mFinishedRacing) {
+        return;
     }
+
+    mTotalled = true;
+    mFinishedRacing = true;
+    GRaceStatus::Get().CalculateRankings();
 }
 
 void GRacerInfo::Busted() {
-    if (!IsFinishedRacing()) {
-        mBusted = true;
-        mFinishedRacing = true;
-        GRaceStatus::Get().CalculateRankings();
+    if (mFinishedRacing) {
+        return;
     }
+
+    mBusted = true;
+    mFinishedRacing = true;
+    GRaceStatus::Get().CalculateRankings();
 }
 
 void GRacerInfo::ChallengeComplete() {
@@ -84,11 +90,13 @@ void GRacerInfo::ForceStop() {
 }
 
 void GRacerInfo::BlowEngine() {
-    if (!IsFinishedRacing()) {
-        mEngineBlown = true;
-        mFinishedRacing = true;
-        GRaceStatus::Get().CalculateRankings();
+    if (mFinishedRacing) {
+        return;
     }
+
+    mEngineBlown = true;
+    mFinishedRacing = true;
+    GRaceStatus::Get().CalculateRankings();
 }
 
 void GRacerInfo::AddToPointTotal(float points) {
@@ -106,8 +114,11 @@ float GRacerInfo::CalcAverageSpeed() const {
 }
 
 float GRacerInfo::GetHudPctRaceComplete() const {
-    GRaceParameters *raceParameters = GRaceStatus::Get().GetRaceParameters();
-    float startPercent = raceParameters ? raceParameters->GetStartPercent() : 0.0f;
+    float startPercent = 0.0f;
+
+    if (GRaceStatus::Get().GetRaceParameters()) {
+        startPercent = GRaceStatus::Get().GetRaceParameters()->GetStartPercent();
+    }
 
     if (mFinishedRacing) {
         return 1.0f;
@@ -203,7 +214,7 @@ bool GRacerInfo::AreStatsReady() const {
         return true;
     }
 
-    return IsFinishedRacing() || GetIsEngineBlown() || GetIsTotalled();
+    return mFinishedRacing || mEngineBlown || mTotalled;
 }
 
 void GRacerInfo::ClearAll() {
@@ -1408,6 +1419,43 @@ float GRaceStatus::GetRaceTimeRemaining() const {
     }
 
     return limit + mBonusTime - GetRaceTimeElapsed();
+}
+
+void GRaceStatus::ClearRacers() {
+    for (int i = 0; i < mRacerCount; ++i) {
+        mRacerInfo[i].ClearAll();
+    }
+
+    mRacerCount = 0;
+}
+
+GRacerInfo &GRaceStatus::AddSimablePlayer(ISimable *isim) {
+    int index = mRacerCount;
+    GRacerInfo &info = mRacerInfo[index];
+
+    info.ClearAll();
+    info.SetSimable(isim);
+    info.SetIndex(index);
+    info.SetRanking(index);
+    ++mRacerCount;
+    return info;
+}
+
+void GRaceStatus::AddRacer(GRuntimeInstance *racer) {
+    GCharacter *character = static_cast<GCharacter *>(racer);
+    IVehicle *vehicle = character ? character->GetSpawnedVehicle() : nullptr;
+    ISimable *isimable = nullptr;
+    int index = mRacerCount;
+    GRacerInfo &info = mRacerInfo[index];
+
+    info.ClearAll();
+    info.SetIndex(index);
+    info.SetRanking(index);
+    if (vehicle && vehicle->QueryInterface(&isimable)) {
+        info.SetSimable(isimable);
+    }
+
+    ++mRacerCount;
 }
 
 void GRaceStatus::SetRaceActivity(GActivity *activity) {
