@@ -246,11 +246,22 @@ void UITrackMapStreamer::ZoomToTrack() {
 }
 
 void UITrackMapStreamer::PanToTrack() {
-    bVector2 mapTL(0.0f, 0.0f);
-    bVector2 mapBR(1.0f, 1.0f);
+    bVector2 mapTL;
+    bVector2 mapBR;
+    bVector2 pan_to;
+    bVector2* pMapTL = &mapTL;
+    bVector2* pMapBR = &mapBR;
+    bVector2* pPanTo = &pan_to;
+
     bUsingTrackForAnim = true;
+    pMapTL->x = 0.0f;
+    pMapTL->y = 0.0f;
+    pMapBR->x = 1.0f;
+    pMapBR->y = 1.0f;
     CalcBoundsForRace(mapTL, mapBR);
-    bVector2 pan_to((mapTL.x + mapBR.x) * 0.5f, (mapTL.y + mapBR.y) * 0.5f);
+
+    pPanTo->x = (pMapTL->x + pMapBR->x) * 0.5f;
+    pPanTo->y = (pMapTL->y + pMapBR->y) * 0.5f;
     PanTo(pan_to);
 }
 
