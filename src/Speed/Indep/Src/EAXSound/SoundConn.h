@@ -69,18 +69,42 @@ class Pkt_Car_Service : public Sim::Packet {
         , mDesiredSpeed(0.0f) //
         , mControlSource(0) {
         const Attrib::Collection *const nullSpec = SimSurface::kNull.GetConstCollection();
-        for (int i = 0; i < 4; ++i) {
-            mTractionPct[i] = 1.0f;
-            if (nullSpec != nullptr) {
-                mWheelTerrain[i].Change(nullSpec);
-            }
-            mWheelSlip[i].x = 0.0f;
-            mWheelSlip[i].y = 0.0f;
-            mWheelLoad[i] = 0.0f;
-            mWheelZforce[i] = 0.0f;
-            mWheelOnGround[i] = false;
-            mBlownTires[i] = 0;
+        if (nullSpec != nullptr) {
+            mWheelTerrain[0].Change(nullSpec);
+            mWheelTerrain[1].Change(nullSpec);
+            mWheelTerrain[2].Change(nullSpec);
+            mWheelTerrain[3].Change(nullSpec);
         }
+
+        mTractionPct[0] = 1.0f;
+        mTractionPct[1] = 1.0f;
+        mTractionPct[2] = 1.0f;
+        mTractionPct[3] = 1.0f;
+
+        mWheelSlip[0] = bVector2(0.0f, 0.0f);
+        mWheelSlip[1] = bVector2(0.0f, 0.0f);
+        mWheelSlip[2] = bVector2(0.0f, 0.0f);
+        mWheelSlip[3] = bVector2(0.0f, 0.0f);
+
+        mWheelLoad[0] = 0.0f;
+        mWheelLoad[1] = 0.0f;
+        mWheelLoad[2] = 0.0f;
+        mWheelLoad[3] = 0.0f;
+
+        mWheelZforce[0] = 0.0f;
+        mWheelZforce[1] = 0.0f;
+        mWheelZforce[2] = 0.0f;
+        mWheelZforce[3] = 0.0f;
+
+        mWheelOnGround[0] = false;
+        mWheelOnGround[1] = false;
+        mWheelOnGround[2] = false;
+        mWheelOnGround[3] = false;
+
+        mBlownTires[0] = 0;
+        mBlownTires[1] = 0;
+        mBlownTires[2] = 0;
+        mBlownTires[3] = 0;
     }
     ~Pkt_Car_Service() override;
     UCrc32 ConnectionClass() override;
