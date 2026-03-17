@@ -347,75 +347,117 @@ int VisibleSectionManager::GetSectionsToLoad(LoadingSection *loading_section, sh
 }
 
 int VisibleSectionManager::Loader(bChunk *chunk) {
-    if (chunk->GetID() == 0x34158) {
+    if (chunk->GetID() == 0x80034150) {
+        bChunk *current_chunk = chunk->GetFirstChunk();
+        bChunk *last_chunk = chunk->GetLastChunk();
+
+        while (current_chunk < last_chunk) {
+            switch (current_chunk->GetID()) {
+                case 0x34152: {
+                    VisibleSectionBoundary *boundary = reinterpret_cast<VisibleSectionBoundary *>(current_chunk->GetData());
+                    VisibleSectionBoundary *last_boundary = reinterpret_cast<VisibleSectionBoundary *>(current_chunk->GetLastChunk());
+
+                    if (boundary < last_boundary) {
+                        do {
+                            bPlatEndianSwap(&boundary->SectionNumber);
+                            bPlatEndianSwap(&boundary->BBoxMin);
+                            bPlatEndianSwap(&boundary->BBoxMax);
+                            bPlatEndianSwap(&boundary->Centre);
+                            for (int i = 0; i < boundary->NumPoints; i++) {
+                                bPlatEndianSwap(&boundary->Points[i]);
+                            }
+
+                            if (IsScenerySectionDrivable(boundary->SectionNumber)) {
+                                DrivableBoundaryList.AddTail(boundary);
+                            } else {
+                                NonDrivableBoundaryList.AddTail(boundary);
+                            }
+
+                            boundary = reinterpret_cast<VisibleSectionBoundary *>(
+                                reinterpret_cast<char *>(boundary) + 0x24 + boundary->NumPoints * sizeof(bVector2));
+                        } while (boundary < last_boundary);
+                    }
+                    break;
+                }
+
+                case 0x34153: {
+                    DrivableScenerySection *section = reinterpret_cast<DrivableScenerySection *>(current_chunk->GetData());
+                    DrivableScenerySection *last_section = reinterpret_cast<DrivableScenerySection *>(current_chunk->GetLastChunk());
+
+                    if (section < last_section) {
+                        do {
+                            DrivableSectionList.AddTail(section);
+                            bPlatEndianSwap(&section->SectionNumber);
+                            bPlatEndianSwap(&section->NumVisibleSections);
+                            for (int i = 0; i < section->NumVisibleSections; i++) {
+                                bPlatEndianSwap(&section->VisibleSections[i]);
+                            }
+                            section->pBoundary = FindBoundary(section->SectionNumber);
+                            section = reinterpret_cast<DrivableScenerySection *>(
+                                reinterpret_cast<char *>(section) + 0x14 + section->NumVisibleSections * sizeof(short));
+                        } while (section < last_section);
+                    }
+
+                    pSectionD9 = FindDrivableSection(0x199);
+                    pSectionC14 = FindDrivableSection(0x13A);
+                    break;
+                }
+
+                case 0x34151: {
+                    pInfo = reinterpret_cast<VisibleSectionManagerInfo *>(current_chunk->GetData());
+                    bPlatEndianSwap(&pInfo->LODOffset);
+                    bPlatEndianSwap(&pInfo->TheDrivableSectionsInRegion.NumSections);
+                    for (int i = 0; i < pInfo->TheDrivableSectionsInRegion.NumSections; i++) {
+                        bPlatEndianSwap(&pInfo->TheDrivableSectionsInRegion.Sections[i]);
+                    }
+                    ScenerySectionLODOffset = pInfo->LODOffset;
+                    break;
+                }
+
+                case 0x34155: {
+                    int num_loading_sections = current_chunk->Size / sizeof(LoadingSection);
+                    if (num_loading_sections != 0) {
+                        for (int n = 0; n < num_loading_sections; n++) {
+                            LoadingSection *section =
+                                reinterpret_cast<LoadingSection *>(reinterpret_cast<char *>(current_chunk) + n * sizeof(LoadingSection) + 8);
+                            LoadingSectionList.AddTail(section);
+                            bPlatEndianSwap(&section->NumDrivableSections);
+                            for (int i = 0; i < section->NumDrivableSections; i++) {
+                                bPlatEndianSwap(&section->DrivableSections[i]);
+                            }
+                            bPlatEndianSwap(&section->NumExtraSections);
+                            for (int i = 0; i < section->NumExtraSections; i++) {
+                                bPlatEndianSwap(&section->ExtraSections[i]);
+                            }
+                        }
+                    }
+                    break;
+                }
+
+                case 0x34154:
+                default:
+                    break;
+            }
+
+            current_chunk = current_chunk->GetNext();
+        }
+
+        InitVisibleZones();
+        RefreshTrackStreamer();
+    } else {
+        if (chunk->GetID() != 0x34158) {
+            return 0;
+        }
+
         VisibleSectionOverlay *overlay = reinterpret_cast<VisibleSectionOverlay *>(chunk->GetData());
         OverlayList.AddTail(overlay);
-        overlay->EndianSwap();
-        return 1;
-    }
-
-    if (chunk->GetID() != 0x80034150) {
-        return 0;
-    }
-
-    bChunk *first_chunk = chunk->GetFirstChunk();
-    bChunk *last_chunk = chunk->GetLastChunk();
-    for (bChunk *current_chunk = first_chunk; current_chunk < last_chunk; current_chunk = current_chunk->GetNext()) {
-        switch (current_chunk->GetID()) {
-            case 0x34152: {
-                VisibleSectionBoundary *boundary = reinterpret_cast<VisibleSectionBoundary *>(current_chunk->GetData());
-                VisibleSectionBoundary *last_boundary = reinterpret_cast<VisibleSectionBoundary *>(current_chunk->GetLastChunk());
-                while (boundary < last_boundary) {
-                    boundary->EndianSwap();
-                    if (IsScenerySectionDrivable(boundary->GetSectionNumber())) {
-                        DrivableBoundaryList.AddTail(boundary);
-                    } else {
-                        NonDrivableBoundaryList.AddTail(boundary);
-                    }
-                    boundary = reinterpret_cast<VisibleSectionBoundary *>(reinterpret_cast<char *>(boundary) + boundary->GetMemoryImageSize());
-                }
-                break;
-            }
-
-            case 0x34153: {
-                DrivableScenerySection *section = reinterpret_cast<DrivableScenerySection *>(current_chunk->GetData());
-                DrivableScenerySection *last_section = reinterpret_cast<DrivableScenerySection *>(current_chunk->GetLastChunk());
-                while (section < last_section) {
-                    DrivableSectionList.AddTail(section);
-                    section->EndianSwap();
-                    section->pBoundary = FindBoundary(section->GetSectionNumber());
-                    section = reinterpret_cast<DrivableScenerySection *>(reinterpret_cast<char *>(section) + section->GetMemoryImageSize());
-                }
-                pSectionD9 = FindDrivableSection(GetScenerySectionNumber('D', 9));
-                pSectionC14 = FindDrivableSection(GetScenerySectionNumber('C', 14));
-                break;
-            }
-
-            case 0x34151: {
-                pInfo = reinterpret_cast<VisibleSectionManagerInfo *>(current_chunk->GetData());
-                pInfo->EndianSwap();
-                ScenerySectionLODOffset = pInfo->LODOffset;
-                break;
-            }
-
-            case 0x34155: {
-                LoadingSection *loading_sections = reinterpret_cast<LoadingSection *>(current_chunk->GetData());
-                int num_loading_sections = current_chunk->Size / sizeof(LoadingSection);
-                for (int n = 0; n < num_loading_sections; n++) {
-                    LoadingSection *section = &loading_sections[n];
-                    LoadingSectionList.AddTail(section);
-                    section->EndianSwap();
-                }
-                break;
-            }
-
-            case 0x34154:
-            default:
-                break;
+        bPlatEndianSwap(&overlay->NumEntries);
+        for (int n = 0; n < overlay->NumEntries; n++) {
+            OverlayEntry *entry = &overlay->EntryTable[n];
+            bPlatEndianSwap(&entry->DrivableSectionNumber);
+            bPlatEndianSwap(&entry->SectionNumber);
         }
     }
 
-    InitVisibleZones();
-    RefreshTrackStreamer();
     return 1;
 }
