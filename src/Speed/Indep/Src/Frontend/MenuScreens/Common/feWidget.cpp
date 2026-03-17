@@ -1,12 +1,15 @@
 #include "feWidget.hpp"
 #include "CTextScroller.hpp"
 #include "Speed/Indep/Src/FEng/FEObject.h"
+#include "Speed/Indep/Src/FEng/FEString.h"
 #include "Speed/Indep/Src/Frontend/FEngFont.hpp"
 
 struct FEObject;
 void FEngSetVisible(FEObject* obj);
 void FEngSetInvisible(FEObject* obj);
 void FEngSetScript(FEObject* object, unsigned int script_hash, bool start_at_beginning);
+void FEngGetSize(FEObject* object, float& x, float& y);
+void FEngSetCenter(FEObject* object, float x, float y);
 void FEngGetTopLeft(FEObject* object, float& x, float& y);
 void FEngSetTopLeft(FEObject* object, float x, float y);
 void FEngSetCurrentButton(const char* pkg_name, unsigned int hash);
@@ -257,8 +260,31 @@ FESliderWidget::FESliderWidget(bool enabled)
 FESliderWidget::~FESliderWidget() {}
 
 void FESliderWidget::Position() {
-    FEToggleWidget::Position();
-    Slider.SetPos(GetTopLeftX(), GetTopLeftY() + fVertOffset);
+    unsigned int format = pTitle->Format;
+    if ((format & 1) != 0) {
+        FEngSetCenter(reinterpret_cast<FEObject*>(pTitle), vTopLeft.x, vTopLeft.y + vMaxTitleSize.y * 0.5f);
+    } else if ((format & 2) != 0) {
+        FEngSetCenter(reinterpret_cast<FEObject*>(pTitle), vTopLeft.x + vMaxTitleSize.x, vTopLeft.y + vMaxTitleSize.y * 0.5f);
+    } else {
+        FEngSetCenter(reinterpret_cast<FEObject*>(pTitle), vTopLeft.x + vMaxTitleSize.x * 0.5f,
+                      vTopLeft.y + vMaxTitleSize.y * 0.5f);
+    }
+
+    float slider_width, slider_height;
+    FEngGetSize(*reinterpret_cast<FEObject**>(&Slider), slider_width, slider_height);
+    Slider.SetPos(vDataPos.x + vMaxDataSize.x * 0.5f - slider_width * 0.5f, vDataPos.y + fVertOffset);
+    Slider.Draw();
+
+    float left_width, left_height;
+    FEngGetSize(reinterpret_cast<FEObject*>(pLeftImage), left_width, left_height);
+    float right_width, right_height;
+    FEngGetSize(reinterpret_cast<FEObject*>(pRightImage), right_width, right_height);
+    FEngSetCenter(reinterpret_cast<FEObject*>(pLeftImage), vDataPos.x, vDataPos.y + vMaxDataSize.y * 0.5f);
+    FEngSetCenter(reinterpret_cast<FEObject*>(pRightImage), vDataPos.x + vMaxDataSize.x,
+                  vDataPos.y + vMaxDataSize.y * 0.5f);
+    if (pBacking != nullptr) {
+        FEngSetTopLeft(pBacking, vTopLeft.x - vBackingOffset.x, vTopLeft.y - vBackingOffset.y);
+    }
 }
 
 void FESliderWidget::Show() {
