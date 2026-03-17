@@ -75,7 +75,7 @@ void UIQRChallengeSeries::NotificationMessage(unsigned long msg, FEObject *obj, 
             0x70e01038, 0x417b25e4, 0xd05fc3a3, 0x34dc1bcf, 0x34dc1bcf, static_cast<eDialogFirstButtons>(1), 0x77cf03c5);
         break;
     case 0xc519bfc3:
-        if (theChallengeRace->GetChallengeType() != 0) {
+        if (static_cast<ChallengeDatum *>(currentDatum)->race->GetChallengeType() != 0) {
             return;
         }
         FEngSetScript(GetPackageName(), 0x99344537, 0x16a259, true);
@@ -88,7 +88,7 @@ void UIQRChallengeSeries::NotificationMessage(unsigned long msg, FEObject *obj, 
         FEDatabase->GetPlayerSettings(0)->Transmission = 1;
         goto start_race;
     case 0xd05fc3a3: {
-        signed char port = static_cast<signed char>(FEngMapJoyParamToJoyport(param2));
+        signed char port = static_cast<signed char>(FEngMapJoyParamToJoyport(param1));
         FEDatabase->SetPlayersJoystickPort(0, port);
         if (FEDatabase->GetPlayerSettings(0)->TransmissionPromptOn != 0) {
             ChooseTransmission();
