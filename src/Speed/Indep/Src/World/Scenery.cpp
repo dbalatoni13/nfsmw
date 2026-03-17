@@ -121,7 +121,48 @@ unsigned int FindSceneryHeirarchyByName(unsigned int name_hash) {
 }
 
 void SceneryOverrideInfo::AssignOverrides(ScenerySectionHeader *section_header) {
-    (void)section_header;
+    int *section_header_words = reinterpret_cast<int *>(section_header);
+    SceneryInstance *instance = reinterpret_cast<SceneryInstance *>(section_header_words[8]) +
+                                *reinterpret_cast<short *>(reinterpret_cast<char *>(this) + 2);
+    unsigned short override_flags = *reinterpret_cast<unsigned short *>(reinterpret_cast<char *>(this) + 4);
+
+    if ((instance->ExcludeFlags & 0x800000) != 0 && ((instance->ExcludeFlags ^ override_flags) & 0x400) != 0) {
+        bMatrix4 rotation;
+        bMatrix4 flip_matrix;
+
+        rotation.v0.x = static_cast<float>(instance->Rotation[0]) * 0.00012207031f;
+        rotation.v0.y = static_cast<float>(instance->Rotation[1]) * 0.00012207031f;
+        rotation.v0.z = static_cast<float>(instance->Rotation[2]) * 0.00012207031f;
+        rotation.v0.w = 0.0f;
+        rotation.v1.x = static_cast<float>(instance->Rotation[3]) * 0.00012207031f;
+        rotation.v1.y = static_cast<float>(instance->Rotation[4]) * 0.00012207031f;
+        rotation.v1.z = static_cast<float>(instance->Rotation[5]) * 0.00012207031f;
+        rotation.v1.w = 0.0f;
+        rotation.v2.x = static_cast<float>(instance->Rotation[6]) * 0.00012207031f;
+        rotation.v2.y = static_cast<float>(instance->Rotation[7]) * 0.00012207031f;
+        rotation.v2.z = static_cast<float>(instance->Rotation[8]) * 0.00012207031f;
+        rotation.v2.w = 0.0f;
+        rotation.v3.x = 0.0f;
+        rotation.v3.y = 0.0f;
+        rotation.v3.z = 0.0f;
+        rotation.v3.w = 1.0f;
+
+        bIdentity(&flip_matrix);
+        flip_matrix.v0.x = -1.0f;
+        bMulMatrix(&rotation, &rotation, &flip_matrix);
+
+        instance->Rotation[0] = static_cast<short>(rotation.v0.x * 8192.0f);
+        instance->Rotation[1] = static_cast<short>(rotation.v0.y * 8192.0f);
+        instance->Rotation[2] = static_cast<short>(rotation.v0.z * 8192.0f);
+        instance->Rotation[3] = static_cast<short>(rotation.v1.x * 8192.0f);
+        instance->Rotation[4] = static_cast<short>(rotation.v1.y * 8192.0f);
+        instance->Rotation[5] = static_cast<short>(rotation.v1.z * 8192.0f);
+        instance->Rotation[6] = static_cast<short>(rotation.v2.x * 8192.0f);
+        instance->Rotation[7] = static_cast<short>(rotation.v2.y * 8192.0f);
+        instance->Rotation[8] = static_cast<short>(rotation.v2.z * 8192.0f);
+    }
+
+    instance->ExcludeFlags = (instance->ExcludeFlags & 0xFFFF0000) | override_flags;
 }
 
 void InitVisibleZones() {}

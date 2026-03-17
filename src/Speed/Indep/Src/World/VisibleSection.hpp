@@ -20,6 +20,8 @@ struct VisibleSectionBoundary : public bTNode<VisibleSectionBoundary> {
     bVector2 Points[16];   // offset 0x24, size 0x80
 
     void EndianSwap();
+    bool IsPointInside(const bVector2 *point);
+    float GetDistanceOutside(const bVector2 *point, float max_distance);
     int GetSectionNumber();
     int GetMemoryImageSize();
 };

@@ -9,6 +9,9 @@ DrivableScenerySection *pSectionD9 = 0;
 DrivableScenerySection *pSectionC14 = 0;
 
 void RefreshTrackStreamer();
+BOOL bBoundingBoxIsInside(const bVector2 *bbox_min, const bVector2 *bbox_max, const bVector2 *point, float extra_width);
+int MyIsPointInPoly(const bVector2 *point, const bVector2 *polygon, int num_points);
+float bDistToLine(const bVector2 *point, const bVector2 *pointa, const bVector2 *pointb);
 
 static char GetScenerySectionLetter(int section_number) {
     return static_cast<char>(section_number / 100 + 'A' - 1);
@@ -46,6 +49,32 @@ void VisibleSectionBoundary::EndianSwap() {
     for (int i = 0; i < NumPoints; i++) {
         bPlatEndianSwap(&Points[i]);
     }
+}
+
+bool VisibleSectionBoundary::IsPointInside(const bVector2 *point) {
+    if (!bBoundingBoxIsInside(&BBoxMin, &BBoxMax, point, 0.0f)) {
+        return false;
+    }
+
+    return MyIsPointInPoly(point, Points, NumPoints) != 0;
+}
+
+float VisibleSectionBoundary::GetDistanceOutside(const bVector2 *point, float max_distance) {
+    if (bBoundingBoxIsInside(&BBoxMin, &BBoxMax, point, 0.0f)) {
+        if (IsPointInside(point)) {
+            max_distance = 0.0f;
+        } else {
+            for (int i = 0; i < NumPoints; i++) {
+                int next = i + 1;
+                float distance = bDistToLine(point, &Points[i], &Points[next - (next / NumPoints) * NumPoints]);
+                if (distance < max_distance) {
+                    max_distance = distance;
+                }
+            }
+        }
+    }
+
+    return max_distance;
 }
 
 int VisibleSectionBoundary::GetSectionNumber() {

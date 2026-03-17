@@ -104,6 +104,8 @@ class TSMemoryNode : public bTNode<TSMemoryNode> {
 class TSMemoryPool {
   public:
     void *Malloc(int size, const char *debug_name, bool best_fit, bool allocate_from_top, int address);
+    void Free(void *memory);
+    int GetLargestFreeBlock();
 
   private:
     TSMemoryNode *GetNewNode(int address, int size, bool allocated, const char *debug_name);
@@ -158,6 +160,11 @@ class TrackStreamer {
     void BlockUntilLoadingComplete();
     void *AllocateUserMemory(int size, const char *debug_name, int offset);
     void FreeUserMemory(void *mem);
+    void *AllocateMemory(TrackStreamingSection *section, int allocation_params);
+    int AllocateSectionMemory(int *ptotal_needing_allocation);
+    bool IsLoadingInProgress();
+    bool AreAllSectionsActivated();
+    void CheckLoadingBar();
 
     void DisableZoneSwitching() {
         ZoneSwitchingDisabled = true;
