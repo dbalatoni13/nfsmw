@@ -8,6 +8,7 @@
 
 struct ScenerySectionHeader : public bNode {
     void DrawAScenery(int scenery_instance_number, SceneryCullInfo *scenery_cull_info, int visibility_state);
+    void TreeCull(SceneryCullInfo *scenery_cull_info);
 };
 
 struct SceneryOverrideInfo {
@@ -31,10 +32,55 @@ struct tPrecullerInfo {
     }
 };
 
+struct eLightContext;
+struct PrecullerBooBooManager {
+    unsigned char Data[0x800];
+
+    int GetSectionNumber(bVector3 &position);
+    unsigned char *GetByte(int section_number);
+    unsigned char GetBit(int section_number);
+};
+
+class eViewSceneryRenderShim : public eView {
+  public:
+    void Render(eModel *model, bMatrix4 *matrix, eLightContext *light_context, unsigned int a4, unsigned int a5,
+                unsigned int a6);
+};
+
+struct GrandSceneryCullInfo {
+    // total size: 0x8E0
+    SceneryCullInfo SceneryCullInfos[12]; // offset 0x0, size 0x8D0
+    int NumCullInfos;                     // offset 0x8D0, size 0x4
+    SceneryDrawInfo *pFirstDrawInfo;      // offset 0x8D4, size 0x4
+    SceneryDrawInfo *pCurrentDrawInfo;    // offset 0x8D8, size 0x4
+    SceneryDrawInfo *pTopDrawInfo;        // offset 0x8DC, size 0x4
+
+    static SceneryDrawInfo SceneryDrawInfoTable[3500];
+
+    int WhatSectionsShouldWeDraw(short *sections_to_draw, int max_sections_to_draw, SceneryCullInfo *scenery_cull_info);
+    void CullView(SceneryCullInfo *scenery_cull_info);
+    void DoCulling();
+    void StuffScenery(eView *view, int stuff_flags);
+};
+
 extern unsigned int FrameMallocFailed;
 extern unsigned int FrameMallocFailAmount;
 extern float EnvMapShadowExtraHeight;
+extern eModel *pDebugModel;
+extern PrecullerBooBooManager gPrecullerBooBooManager;
+extern float EnablePrecullingSpeed;
+extern int PrecullerMode;
+extern int DisablePrecullerCounter;
+extern int RealTimeFrames;
+extern int CurrentZoneNumber;
+extern int SeeulatorToolActive;
+extern int ScenerySectionToBlink;
+extern int SeeulatorRefreshTrackStreamer;
+void RefreshTrackStreamer();
 void CreateWindRotMatrix(eView *view, bMatrix4 *matrix, int x, const bMatrix4 *world, int y);
+ScenerySectionHeader *GetScenerySectionHeader(int section_number);
+int IsInTable(short *section_numbers, int num_sections, int section_number);
+int ToggleIsInTable(short *section_numbers, int num_sections, int max_sections, int section_number);
 
 bList ScenerySectionHeaderList;
 RegionQuery RegionInfo;
@@ -48,6 +94,7 @@ void (*ModelConnectionCallback)(ScenerySectionHeader *, int, eModel *) = 0;
 void (*ModelDisconnectionCallback)(ScenerySectionHeader *, int, eModel *) = 0;
 void (*SectionConnectionCallback)(ScenerySectionHeader *) = 0;
 void (*SectionDisconnectionCallback)(ScenerySectionHeader *) = 0;
+SceneryDrawInfo GrandSceneryCullInfo::SceneryDrawInfoTable[3500];
 
 static char GetScenerySectionLetter_Scenery(int section_number) {
     return static_cast<char>(section_number / 100 + 'A' - 1);
@@ -554,6 +601,40 @@ int LoaderScenery(bChunk *chunk) {
     return 0;
 }
 
+ScenerySectionHeader *GetScenerySectionHeader(int section_number) {
+    VisibleSectionUserInfo *user_info = TheVisibleSectionManager.GetUserInfo(section_number);
+    if (!user_info) {
+        return 0;
+    }
+    return user_info->pScenerySectionHeader;
+}
+
+int IsInTable(short *section_numbers, int num_sections, int section_number) {
+    for (int i = 0; i < num_sections; i++) {
+        if (section_numbers[i] == section_number) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+int ToggleIsInTable(short *section_numbers, int num_sections, int max_sections, int section_number) {
+    for (int i = 0; i < num_sections; i++) {
+        if (section_numbers[i] == section_number) {
+            for (int n = i + 1; n < num_sections; n++) {
+                section_numbers[n - 1] = section_numbers[n];
+            }
+            return num_sections - 1;
+        }
+    }
+
+    if (num_sections < max_sections) {
+        section_numbers[num_sections] = static_cast<short>(section_number);
+        num_sections += 1;
+    }
+    return num_sections;
+}
+
 int UnloaderScenery(bChunk *chunk) {
     unsigned int chunk_id = chunk->GetID();
 
@@ -617,4 +698,258 @@ int UnloaderScenery(bChunk *chunk) {
     }
 
     return 0;
+}
+
+int GrandSceneryCullInfo::WhatSectionsShouldWeDraw(short *sections_to_draw, int max_sections_to_draw,
+                                                   SceneryCullInfo *scenery_cull_info) {
+    eView *view = scenery_cull_info->pView;
+    Camera *camera = view ? view->GetCamera() : 0;
+    if (view && (view->GetID() == EVIEW_SHADOWMAP1 || view->GetID() == EVIEW_SHADOWMAP2)) {
+        if (view->GetID() == EVIEW_SHADOWMAP2) {
+            camera = eGetView(EVIEW_PLAYER2)->GetCamera();
+        } else {
+            camera = eGetView(EVIEW_PLAYER1)->GetCamera();
+        }
+    }
+
+    DrivableScenerySection *drivable_section = 0;
+    if (camera) {
+        drivable_section =
+            TheVisibleSectionManager.FindDrivableSection(reinterpret_cast<const bVector2 *>(reinterpret_cast<unsigned char *>(camera) + 0x40));
+    }
+
+    int num_sections = 0;
+    if (drivable_section) {
+        for (int section_number = 0xA28; section_number < 0xA8C; section_number++) {
+            if (GetScenerySectionHeader(section_number) && num_sections < max_sections_to_draw) {
+                sections_to_draw[num_sections] = static_cast<short>(section_number);
+                num_sections += 1;
+            }
+        }
+
+        for (int i = 0; i < drivable_section->NumVisibleSections; i++) {
+            short section_number = drivable_section->VisibleSections[i];
+            if (section_number > -1 && GetScenerySectionHeader(section_number) && num_sections < max_sections_to_draw) {
+                sections_to_draw[num_sections] = section_number;
+                num_sections += 1;
+            }
+        }
+    } else {
+        for (bNode *node = ScenerySectionHeaderList.GetHead(); node != ScenerySectionHeaderList.EndOfList();
+             node = node->GetNext()) {
+            ScenerySectionHeader *section_header = reinterpret_cast<ScenerySectionHeader *>(node);
+            int section_number = reinterpret_cast<int *>(section_header)[3];
+            if (section_number % 100 < 10 && num_sections < max_sections_to_draw) {
+                sections_to_draw[num_sections] = static_cast<short>(section_number);
+                num_sections += 1;
+            }
+        }
+    }
+
+    if (view && view->GetID() == EVIEW_PLAYER1) {
+        int zone_number = -1;
+        if (drivable_section) {
+            zone_number = drivable_section->SectionNumber;
+        }
+
+        if (zone_number != CurrentZoneNumber) {
+            CurrentZoneNumber = zone_number;
+            if (!SeeulatorToolActive) {
+                return num_sections;
+            }
+            if (drivable_section) {
+                bFunkCallASync("Seeulator", 1, &CurrentZoneNumber, 4);
+            }
+        }
+
+        if (SeeulatorToolActive) {
+            if (ScenerySectionToBlink != 0 && ((RealTimeFrames / 5) & 1U) != 0) {
+                num_sections =
+                    ToggleIsInTable(sections_to_draw, num_sections, max_sections_to_draw, ScenerySectionToBlink);
+            }
+            if (SeeulatorRefreshTrackStreamer != 0) {
+                RefreshTrackStreamer();
+                SeeulatorRefreshTrackStreamer = 0;
+            }
+        }
+    }
+
+    return num_sections;
+}
+
+void GrandSceneryCullInfo::CullView(SceneryCullInfo *scenery_cull_info) {
+    short sections_to_draw[128];
+    int num_sections = WhatSectionsShouldWeDraw(sections_to_draw, 0x80, scenery_cull_info);
+
+    for (int i = 0; i < num_sections; i++) {
+        if (sections_to_draw[i] > -1) {
+            ScenerySectionHeader *section_header = GetScenerySectionHeader(sections_to_draw[i]);
+            if (section_header && reinterpret_cast<int *>(section_header)[10] != 0) {
+                section_header->TreeCull(scenery_cull_info);
+            }
+        }
+    }
+}
+
+void GrandSceneryCullInfo::DoCulling() {
+    pFirstDrawInfo = SceneryDrawInfoTable;
+    pCurrentDrawInfo = SceneryDrawInfoTable;
+    pTopDrawInfo = SceneryDrawInfoTable + 3500;
+
+    for (int i = 0; i < NumCullInfos; i++) {
+        SceneryCullInfo *scenery_cull_info = &SceneryCullInfos[i];
+        eView *view = scenery_cull_info->pView;
+        unsigned char *camera = view ? reinterpret_cast<unsigned char *>(view->GetCamera()) : 0;
+        bool do_precull = true;
+
+        if (camera) {
+            scenery_cull_info->Position.x = *reinterpret_cast<float *>(camera + 0x40);
+            scenery_cull_info->Position.y = *reinterpret_cast<float *>(camera + 0x44);
+            scenery_cull_info->Position.z = *reinterpret_cast<float *>(camera + 0x48);
+            scenery_cull_info->Direction.x = *reinterpret_cast<float *>(camera + 0x50);
+            scenery_cull_info->Direction.y = *reinterpret_cast<float *>(camera + 0x54);
+            scenery_cull_info->Direction.z = *reinterpret_cast<float *>(camera + 0x58);
+        }
+        scenery_cull_info->H = view ? view->H : 0.0f;
+
+        if (PrecullerMode == 0) {
+            do_precull = false;
+        } else if (PrecullerMode == 2) {
+            if (RealTimeFrames % 0x3D < 0xF) {
+                do_precull = false;
+            }
+        } else if (PrecullerMode == 3 && camera) {
+            float speed_x = *reinterpret_cast<float *>(camera + 0x1E8);
+            float speed_y = *reinterpret_cast<float *>(camera + 0x1EC);
+            float speed_z = *reinterpret_cast<float *>(camera + 0x1F0);
+            float speed = bSqrt(speed_x * speed_x + speed_y * speed_y + speed_z * speed_z);
+            if (speed < EnablePrecullingSpeed) {
+                do_precull = false;
+            }
+        }
+
+        if (DisablePrecullerCounter > 0 && PrecullerMode != 2) {
+            do_precull = false;
+        }
+
+        scenery_cull_info->PrecullerSectionNumber = -1;
+        if (do_precull) {
+            int section_number = gPrecullerBooBooManager.GetSectionNumber(scenery_cull_info->Position);
+            unsigned char *section_byte = gPrecullerBooBooManager.GetByte(section_number);
+            unsigned char section_bit = gPrecullerBooBooManager.GetBit(section_number);
+            if (section_byte && (*section_byte & section_bit) == 0) {
+                scenery_cull_info->PrecullerSectionNumber =
+                    (static_cast<int>(scenery_cull_info->Position.y) & 0x3E0) +
+                    ((static_cast<unsigned int>(static_cast<int>(scenery_cull_info->Position.x)) >> 5) & 0x1F);
+            }
+        }
+    }
+
+    for (int i = 0; i < NumCullInfos; i++) {
+        SceneryCullInfo *scenery_cull_info = &SceneryCullInfos[i];
+        scenery_cull_info->pFirstDrawInfo = pCurrentDrawInfo;
+        scenery_cull_info->pCurrentDrawInfo = pCurrentDrawInfo;
+        scenery_cull_info->pTopDrawInfo = pTopDrawInfo;
+        CullView(scenery_cull_info);
+        pCurrentDrawInfo = scenery_cull_info->pCurrentDrawInfo;
+    }
+}
+
+void GrandSceneryCullInfo::StuffScenery(eView *view, int stuff_flags) {
+    unsigned int base_flags = 0;
+    unsigned int required_flags = 0;
+    unsigned int forbidden_flags = 0;
+
+    if ((stuff_flags & 1) != 0) {
+        base_flags = 0x1000;
+    }
+    if ((stuff_flags & 0x400) != 0) {
+        required_flags = 0x100000;
+    }
+    if ((stuff_flags & 0x80) != 0) {
+        base_flags |= 0x100;
+    }
+    if ((stuff_flags & 0x10) == 0) {
+        if ((stuff_flags & 8) != 0) {
+            forbidden_flags = 0x2000;
+        }
+    } else {
+        required_flags = 0x2000;
+    }
+    if ((stuff_flags & 0x300) != 0) {
+        required_flags = 0x10000;
+    }
+    if ((stuff_flags & 0x800) != 0) {
+        forbidden_flags |= 0x400000;
+    }
+    if ((stuff_flags & 0x1000) != 0) {
+        required_flags = 0x1000000;
+    }
+
+    for (int i = 0; i < NumCullInfos; i++) {
+        SceneryCullInfo *scenery_cull_info = &SceneryCullInfos[i];
+        if (scenery_cull_info->pView != view) {
+            continue;
+        }
+
+        for (SceneryDrawInfo *draw_info = scenery_cull_info->pFirstDrawInfo; draw_info < scenery_cull_info->pCurrentDrawInfo;
+             draw_info++) {
+            unsigned int model_word = reinterpret_cast<unsigned int>(draw_info->pModel);
+            unsigned int exclude_flags = draw_info->SceneryInst->ExcludeFlags;
+            unsigned int render_flags = base_flags;
+
+            pDebugModel = reinterpret_cast<eModel *>(model_word & ~3);
+            if ((exclude_flags & 0x80) != 0) {
+                render_flags |= 0x2000;
+            }
+            if ((exclude_flags & 0x1000000) != 0) {
+                render_flags |= 0x100000;
+            }
+            if ((exclude_flags & 0x100) != 0) {
+                render_flags |= 0x20000;
+            }
+            if ((exclude_flags & 0x400000) != 0) {
+                render_flags |= 0x40000;
+            }
+            if ((exclude_flags & 0x20000) != 0) {
+                render_flags |= 0x800000;
+            }
+            if ((exclude_flags & 0x80000) != 0) {
+                render_flags |= 0x400000;
+            }
+            if ((stuff_flags & 0x200) != 0) {
+                if ((exclude_flags & 0x200000) != 0 && ((exclude_flags >> 0x1A) & 1U) == 0) {
+                    render_flags |= 0x10000;
+                }
+                if ((exclude_flags & 0x40000000) != 0) {
+                    render_flags |= 0x10000;
+                }
+            }
+            if ((stuff_flags & 0x100) != 0) {
+                if ((exclude_flags & 0x200000) != 0) {
+                    render_flags |= 0x10000;
+                }
+                if ((exclude_flags & 0x40000000) != 0) {
+                    render_flags |= 0x10000;
+                }
+            }
+            if ((model_word & 3) == 2) {
+                render_flags |= 4;
+            }
+
+            bool required_ok = required_flags == 0 || (render_flags & required_flags) != 0;
+            bool forbidden_ok = forbidden_flags == 0 || (render_flags & forbidden_flags) == 0;
+            if (required_ok && forbidden_ok) {
+                bMatrix4 *matrix = draw_info->pMatrix;
+                bMatrix4 identity;
+                if (!matrix) {
+                    bIdentity(&identity);
+                    matrix = &identity;
+                }
+                reinterpret_cast<eViewSceneryRenderShim *>(view)->Render(pDebugModel, matrix, 0, render_flags, 0, 0);
+                pDebugModel = 0;
+            }
+        }
+        return;
+    }
 }
