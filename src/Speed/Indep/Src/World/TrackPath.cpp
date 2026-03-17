@@ -141,9 +141,11 @@ void TrackPathManager::BuildZoneInfoTable() {
 
 TrackPathZone *TrackPathManager::FindZone(const bVector2 *position, eTrackPathZoneType zone_type, TrackPathZone *prev_zone) {
     ZoneInfo *zone_info = &ZoneInfoTable[zone_type];
-    bool use_cached_zones = false;
+    bool use_cached_zones;
 
-    if (position) {
+    if (!position) {
+        use_cached_zones = false;
+    } else {
         if (!bBoundingBoxIsInside(&zone_info->CachedBBoxMin, &zone_info->CachedBBoxMax, position, 0.0f)) {
             zone_info->CachedBBoxMin.x = position->x - 64.0f;
             zone_info->CachedBBoxMin.y = position->y - 64.0f;
@@ -161,14 +163,13 @@ TrackPathZone *TrackPathManager::FindZone(const bVector2 *position, eTrackPathZo
                     zone_info->NumCachedZones += 1;
                 }
             }
-
-            if (zone_info->NumCachedZones > MostCachedZones) {
-                MostCachedZones = zone_info->NumCachedZones;
-            }
+            MostCachedZones = bMax(MostCachedZones, zone_info->NumCachedZones);
         }
         use_cached_zones = zone_info->NumCachedZones < 9;
     }
 
+    TrackPathZone *zone = 0;
+    TrackPathZone *result = zone;
     if (use_cached_zones) {
         int zone_index = 0;
         zone_info->NumCacheHits += 1;
@@ -176,34 +177,29 @@ TrackPathZone *TrackPathManager::FindZone(const bVector2 *position, eTrackPathZo
             zone_index = prev_zone->CachedIndex + 1;
         }
 
-        for (; zone_index < zone_info->NumCachedZones; zone_index++) {
-            TrackPathZone *zone = zone_info->CachedZones[zone_index];
+        while (zone_index < zone_info->NumCachedZones) {
+            zone = zone_info->CachedZones[zone_index];
             if (bBoundingBoxIsInside(&zone->BBoxMin, &zone->BBoxMax, position, 0.0f) && zone->IsPointInside(position)) {
                 return zone;
             }
+            zone_index += 1;
         }
     } else {
-        TrackPathZone *zone = zone_info->pFirstZone;
-        TrackPathZone *result = nullptr;
-
+        TrackPathZone *last_zone = zone_info->pLastZone;
+        TrackPathZone *current_zone = zone_info->pFirstZone;
         zone_info->NumCacheRebuilds += 1;
         if (prev_zone) {
-            zone = NextTrackPathZone(prev_zone);
+            current_zone = NextTrackPathZone(prev_zone);
         }
 
-        while (zone < zone_info->pLastZone && position &&
-               (!bBoundingBoxIsInside(&zone->BBoxMin, &zone->BBoxMax, position, 0.0f) || !zone->IsPointInside(position))) {
-            result = zone;
-            zone = NextTrackPathZone(zone);
+        while ((result = zone, current_zone < last_zone) && (result = current_zone, position) &&
+               (!bBoundingBoxIsInside(&current_zone->BBoxMin, &current_zone->BBoxMax, position, 0.0f) ||
+                !current_zone->IsPointInside(position))) {
+            current_zone = NextTrackPathZone(current_zone);
         }
-
-        if (zone < zone_info->pLastZone && position) {
-            return zone;
-        }
-        return result;
     }
 
-    return nullptr;
+    return result;
 }
 
 void TrackPathManager::ResetZoneVisitInfos() {

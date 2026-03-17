@@ -264,11 +264,13 @@ void DoTunnelBloom(eView *view) {
         return;
     }
 
-    bVector3 p3(endVector);
-    eUnSwizzleWorldVector(p3, p3);
+    UMath::Vector3 usPoint;
+    usPoint.x = -endVector.y;
+    usPoint.y = endVector.z;
+    usPoint.z = endVector.x;
     float height = 0.0f;
     WCollisionMgr cmap(0, 3);
-    cmap.GetWorldHeightAtPointRigorous(reinterpret_cast<UMath::Vector3 &>(p3), height, 0);
+    cmap.GetWorldHeightAtPointRigorous(usPoint, height, 0);
 
     dataBackup_27616[kTunnelPoint0X][vIndex] = p0.x + camera_direction->x;
     dataBackup_27616[kTunnelPoint0Y][vIndex] = p0.y + camera_direction->y;
