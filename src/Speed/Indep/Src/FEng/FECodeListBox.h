@@ -19,8 +19,8 @@ inline int GetValidIndex(int lIndex, int lRange) {
     }
 
     int posIndex = -lIndex;
-    int rem = posIndex - (posIndex / lRange) * lRange;
     int ret = 0;
+    int rem = posIndex - (posIndex / lRange) * lRange;
     if (lRange > 1) {
         ret = lRange - rem;
     }
@@ -28,6 +28,8 @@ inline int GetValidIndex(int lIndex, int lRange) {
 }
 
 inline int GetRealValue(int i, int lNumTotal, int lCurrentVirtual, int lNumVisible) {
+    int lRet;
+
     if (lNumTotal == 0) {
         return -1;
     }
@@ -36,19 +38,19 @@ inline int GetRealValue(int i, int lNumTotal, int lCurrentVirtual, int lNumVisib
         i = i % lNumTotal;
     }
 
-    i -= lCurrentVirtual;
-    if (i < 0) {
-        i += lNumTotal;
+    lRet = i - lCurrentVirtual;
+    if (lRet < 0) {
+        lRet += lNumTotal;
     }
 
-    if (i >= 0) {
-        int rem = i - (i / lNumVisible) * lNumVisible;
+    if (lRet >= 0) {
+        int rem = lRet - (lRet / lNumVisible) * lNumVisible;
         return rem;
     }
 
-    int posIndex = -i;
-    int rem = posIndex - (posIndex / lNumVisible) * lNumVisible;
+    int posIndex = -lRet;
     int ret = 0;
+    int rem = posIndex - (posIndex / lNumVisible) * lNumVisible;
     if (lNumVisible > 1) {
         ret = lNumVisible - rem;
     }
