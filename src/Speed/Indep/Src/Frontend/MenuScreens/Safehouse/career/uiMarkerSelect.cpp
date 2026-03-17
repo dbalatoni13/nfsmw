@@ -100,20 +100,19 @@ FEMarkerSelection::FEMarkerSelection(ScreenConstructorData *sd)
     : MenuScreen(sd) //
     , NumVisibleMarkers(0) //
     , RivalStreamer(sd->PackageFilename, false) {
-    static const unsigned int CategoryOrder[] = {0xbdaa5794, 0xe69d4f7c, 0x73272ed2, 0xc61c8d3a};
+    unsigned int CategoryOrder[] = {0xbdaa5794, 0xe69d4f7c, 0x73272ed2, 0xc61c8d3a};
     for (int cat = 0; cat < 4; cat++) {
+        unsigned int categoryHash = CategoryOrder[cat];
         for (int j = 0; j < 6; j++) {
             FEMarkerManager::ePossibleMarker marker = static_cast<FEMarkerManager::ePossibleMarker>(0);
             int param = 0;
             TheFEMarkerManager.GetMarkerForLaterSelection(j, marker, param);
-            if (marker != static_cast<FEMarkerManager::ePossibleMarker>(0)) {
-                unsigned int catIcon = GetCategoryIconHashForType(marker);
-                if (static_cast<unsigned int>(CategoryOrder[cat]) == catIcon) {
-                    TheMarkers[NumVisibleMarkers].Marker = marker;
-                    TheMarkers[NumVisibleMarkers].Param = param;
-                    TheMarkers[NumVisibleMarkers].Selected = false;
-                    NumVisibleMarkers++;
-                }
+            if (marker != static_cast<FEMarkerManager::ePossibleMarker>(0) &&
+                categoryHash == GetCategoryIconHashForType(marker)) {
+                TheMarkers[NumVisibleMarkers].Marker = marker;
+                TheMarkers[NumVisibleMarkers].Param = param;
+                TheMarkers[NumVisibleMarkers].Selected = false;
+                NumVisibleMarkers++;
             }
         }
     }
