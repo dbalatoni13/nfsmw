@@ -1,4 +1,5 @@
 #include "./EAXSOund.hpp"
+#include "Speed/Indep/Src/EAXSound/EAXAemsManager.h"
 #include "Speed/Indep/Src/EAXSound/EAXCarState.hpp"
 #include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_NISStream.hpp"
 #include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_Pathfinder.hpp"
@@ -102,145 +103,6 @@ struct EAXSND8Wrapper : public AudioMemBase {
     eSndAudioMode SetSnd8RenderMode(eSndAudioMode mode);
     void Update();
     void STUPID();
-};
-
-struct stSndDataLoadParams {
-    /* 0x00 */ char _pad0[0x34];
-    /* 0x34 */ int Handle;
-    /* 0x38 */ int bResolvedAsync;
-    /* 0x3c */ int bResolvedSync;
-    /* 0x40 */ char _pad40[0x20];
-    /* 0x60 */ int t_req;
-    /* 0x64 */ int t_load;
-
-    void Clear();
-};
-
-struct stAssetDescription;
-struct stSndAssetQueue;
-
-enum eBANK_SLOT_TYPE {
-    eBANK_SLOT_NONE = -1,
-    eBANK_SLOT_AI_AEMS_ENGINE = 0,
-    eBANK_SLOT_AI_GINA_ENGINE = 1,
-    eBANK_SLOT_AI_GIND_ENGINE = 2,
-    eBANK_SLOT_PATHFINDER = 3,
-    eBANK_SLOT_MAX_NUM = 4
-};
-
-enum eEVTSYS {
-    EVTSYS_MAIN = 0,
-    EVTSYS_FE = 1,
-};
-
-enum eSNDDATAPATH {
-    SNDPATH_ROUTE = 0,
-    SNDPATH_ENGINE = 1,
-    SNDPATH_EVTSYS = 2,
-    SNDPATH_FE = 3,
-    SNDPATH_GLOBAL = 4,
-    SNDPATH_INGAME = 5,
-    SNDPATH_NOS = 6,
-    SNDPATH_PATHFINDER = 7,
-    SNDPATH_SKIDS = 8,
-    SNDPATH_SPEECH = 9,
-    SNDPATH_TURBO = 10,
-    SNDPATH_SHIFT = 11,
-    SNDPATH_FXEDIT = 12,
-    MAX_SNDDATA_PATHS = 13,
-};
-
-enum eSNDDATATYPE {
-    EAXSND_DT_NONE = -1,
-    EAXSND_DT_AEMS_AUDIOMEM = 0,
-    EAXSND_DT_AEMS_MAINMEM = 1,
-    EAXSND_DT_AEMS_SYNCSPU = 2,
-    EAXSND_DT_AEMS_ASYNCSPU = 3,
-    EAXSND_DT_AEMS_ASYNCSPUMEM = 4,
-    EAXSND_DT_GENERIC_DATA = 5,
-};
-
-struct stBankSlot {
-    /* 0x00 */ eBANK_SLOT_TYPE Type;
-    /* 0x04 */ int BANKmemLocation;
-    /* 0x08 */ char *MAINmemLocation;
-    /* 0x0c */ char *pLastAlloc;
-    /* 0x10 */ int MAINmemSize;
-    /* 0x14 */ int BANKMemSize;
-    /* 0x18 */ int LoadFailed;
-    /* 0x1c */ unsigned char Index;
-    /* 0x20 */ stSndDataLoadParams *pAssetParams;
-
-    void Clear();
-};
-
-struct EAXAemsManager : public AudioMemBase {
-    static int m_RequiredSlots[4];
-    static int m_SlotSizes[4][2];
-
-    /* 0x004 */ void (*m_ExternalLoadCallback)(int);
-    /* 0x008 */ int m_ExternalLoadParam;
-    /* 0x00c */ int m_Unknown0C;
-    /* 0x010 */ char m_LoadFilename[0x80];
-    /* 0x090 */ int m_AsyncBufferSize;
-    /* 0x094 */ char *m_AsyncBuffer;
-    /* 0x098 */ int m_AsyncBufferLocation;
-    /* 0x09c */ int m_nCurLoadedBankIndex;
-    /* 0x0a0 */ int m_nEndOfList;
-    /* 0x0a4 */ void *m_pMainSlotHead;
-    /* 0x0a8 */ int m_UnknownA8;
-    /* 0x0ac */ void *m_pPfSlotHead;
-    /* 0x0b0 */ int m_UnknownB0;
-    /* 0x0b4 */ int m_SPUMainAllocsEnd;
-    /* 0x0b8 */ int m_SPU_UpperAddress;
-    /* 0x0bc */ void *m_pQueuedFileHead;
-    /* 0x0c0 */ char _pad0c0[0xF8 - 0xc0];
-    /* 0x0f8 */ void **m_pEvtSystems_start;
-    /* 0x0fc */ void **m_pEvtSystems_end;
-    /* 0x100 */ void **m_pEvtSystems_end_of_storage;
-    /* 0x104 */ int m_nResidentAllocs;
-    /* 0x108 */ int m_nEvtSysQueued;
-    /* 0x10c */ int m_nEvtSysCount;
-    /* 0x110 */ void *m_pEvtSysUserData;
-    /* 0x114 */ int m_nCallbackEvtSys;
-    /* 0x118 */ stSndDataLoadParams *m_pCurLoadSDLP;
-    /* 0x11c */ stSndDataLoadParams *m_pCurUNLOADSDLP;
-    /* 0x120 */ stSndDataLoadParams *m_pAsyncLoadSDLP;
-    /* 0x124 */ int m_ItemsPendingAsyncResolve;
-    /* 0x128 */ int m_HasExternalLoadPending;
-    /* 0x12c */ int m_IsWaitingForFileCB;
-
-    EAXAemsManager();
-    virtual ~EAXAemsManager();
-    void Init();
-    int AddEventSystem(eEVTSYS eESIndex, eSNDDATAPATH eSDP);
-    int InitiateLoad();
-    void SetupNextLoad();
-    void Update();
-    bool AreResourceLoadsPending();
-    void *GetCallbackEventSys();
-    static void EvtSysLoadCallback(int param, int error_status);
-    void UnloadSndData(Attrib::StringKey filename);
-    void UnloadSndData(int index);
-    void RemoveAEMSBank();
-    static void AddAemsBank();
-    void CheckForCompleteAsyncLoad();
-    void ResolvePendingAsyncLoads();
-    void InitSPUram();
-    void InitializeSlots(bool bDoPFSlot);
-    void RegisterSlots(eBANK_SLOT_TYPE Type, int NumSlots, int SizePerSlotSPU, int SizePerSlotMainMem, bool bDoPFSlot);
-    void ResetBankLoadParams();
-    void RemoveBankListing(int index);
-    int AddBankListing(stAssetDescription &asset);
-    void QueueFileLoad(stSndAssetQueue &queueitem, eBANK_SLOT_TYPE SlotType);
-    static void *AsyncResidentAllocCB(int size);
-    static void *ResidentAllocCB(void *pbank, int residentsize, int totalsize);
-    static void DataLoadCB(int param, int error_status);
-    void DestroySlots(bool bDoPFSlot);
-    int IsAssetInList(Attrib::StringKey filename);
-    int IsAssetLoaded(Attrib::StringKey filename);
-    void CompleteAsyncLoad();
-    void ResolveCurrentDataMemory();
 };
 
 struct CarSoundConn : public Sim::Connection, public UTL::Collections::Listable<CarSoundConn, 10> {
@@ -369,7 +231,6 @@ template <>
 UTL::Collections::Listable<EAX_HeliState, 10>::List UTL::Collections::Listable<EAX_HeliState, 10>::_mTable =
     UTL::Collections::Listable<EAX_HeliState, 10>::List();
 
-extern EAXAemsManager gAEMSMgr;
 extern unsigned int SoundRandomSeed;
 extern float g_SliderValue;
 extern float g_fMasterSFXVolume;
@@ -432,12 +293,13 @@ bool g_EAXIsPaused() {
 }
 
 void g_LoadSndAsset(Attrib::StringKey filename, eSNDDATAPATH path, eSNDDATATYPE type) {
-    char assetBytes[0x1C];
-    *static_cast<int *>(static_cast<void *>(assetBytes + 0x0)) = static_cast<int>(type);
-    *static_cast<int *>(static_cast<void *>(assetBytes + 0x4)) = static_cast<int>(path);
-    *static_cast<Attrib::StringKey *>(static_cast<void *>(assetBytes + 0x8)) = filename;
-    *static_cast<bool *>(static_cast<void *>(assetBytes + 0x18)) = false;
-    gAEMSMgr.AddBankListing(*static_cast<stAssetDescription *>(static_cast<void *>(assetBytes)));
+    stAssetDescription asset;
+    asset.Clear();
+    asset.eDataType = type;
+    asset.FileName = filename;
+    asset.DataPath = path;
+    asset.bLoadToTop = false;
+    gAEMSMgr.AddBankListing(asset);
 }
 
 void EAXSound::START_321Countdown() {
@@ -1634,7 +1496,7 @@ void EAXSound::LoadFrontEndSoundBanks(void (*callback)(int), int callback_param)
     }
 
     gAEMSMgr.m_ExternalLoadCallback = callback;
-    gAEMSMgr.m_ExternalLoadParam = callback_param;
+    gAEMSMgr.m_ExternalLoadCallbackParam = callback_param;
 
     ReInitMasterVolumes();
     bSyncTaskRun();
@@ -1782,7 +1644,7 @@ void EAXSound::LoadInGameSoundBanks(void (*callback)(int), int callback_param) {
     }
 
     gAEMSMgr.m_ExternalLoadCallback = callback;
-    gAEMSMgr.m_ExternalLoadParam = callback_param;
+    gAEMSMgr.m_ExternalLoadCallbackParam = callback_param;
 
     if (IsSpeechEnabled) {
         gSpeechCache.Validate();
