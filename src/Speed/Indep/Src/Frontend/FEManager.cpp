@@ -260,8 +260,7 @@ void FEManager::WantControllerError(int port) {
 
     if (TheGameFlowManager.IsInGame() &&
         (FEDatabase->IsOnlineMode() || FEDatabase->IsLANMode())) {
-        IPlayer *player = IPlayer::First(PLAYER_LOCAL);
-        ISimable *simable = player->GetSimable();
+        ISimable *simable = IPlayer::First(PLAYER_LOCAL)->GetSimable();
         GRacerInfo *racerInfo;
         if (simable) {
             racerInfo = GRaceStatus::Get().GetRacerInfo(simable);
@@ -269,10 +268,10 @@ void FEManager::WantControllerError(int port) {
             racerInfo = nullptr;
         }
         if (racerInfo) {
-            ISimable *playerSimable = racerInfo->GetSimable();
-            if (playerSimable) {
+            IPlayer *player = racerInfo->GetSimable()->GetPlayer();
+            if (player->GetHud()) {
                 ICountdown *icountdown;
-                if (playerSimable->QueryInterface(&icountdown) && icountdown->IsActive()) {
+                if (player->GetHud()->QueryInterface(&icountdown) && icountdown->IsActive()) {
                     return;
                 }
             }
