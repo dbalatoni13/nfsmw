@@ -7,20 +7,17 @@ char FEUpperCase(char val) {
 }
 
 unsigned long FEHash(const char* String) {
-    unsigned long hash = 0xFFFFFFFF;
+    unsigned long Hash = 0xFFFFFFFF;
 
     if (String) {
-        unsigned char c = *reinterpret_cast<const unsigned char*>(String);
-
-        while (c != 0) {
-            hash += hash << 5;
-            hash += c;
+        while (*String) {
+            Hash += Hash << 5;
+            Hash += *reinterpret_cast<const unsigned char*>(String);
             String++;
-            c = *reinterpret_cast<const unsigned char*>(String);
         }
     }
 
-    return hash;
+    return Hash;
 }
 
 unsigned long FEHashUpper(const char* String) {
