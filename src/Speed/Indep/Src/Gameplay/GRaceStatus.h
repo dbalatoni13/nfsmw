@@ -74,9 +74,9 @@ struct GRacerInfo {
     float GetZeroToSixtyTime() const { return mZeroToSixtyTime; }
     float GetQuarterMileTime() const { return mQuarterMileTime; }
 
-    void SetName(const char *name) { mName = name; }
-    void SetIndex(int n) { mIndex = n; }
-    void SetRanking(int n) { mRanking = n; }
+    void SetName(const char *name);
+    void SetIndex(int n);
+    void SetRanking(int n);
     void SetRaceTime(float f) { mRaceTimer.SetTime(f); }
     void SetLapsCompleted(int n) { mLapsCompleted = n; }
     void SetPctRaceComplete(float f) { mPctRaceComplete = f; }
@@ -89,6 +89,7 @@ struct GRacerInfo {
     void Update(float dT);
     void SaveExistingRaceStats();
     void RestoreExistingRaceStats();
+    bool IsBehind(const GRacerInfo &rhs) const;
     float CalcAverageSpeed() const;
     float GetHudPctRaceComplete() const;
     bool AreStatsReady() const;
@@ -106,8 +107,9 @@ struct GRacerInfo {
     void StartLap(int lap);
     void StartCheckpoint(int checkpoint);
     void NotifySpeedTrapTriggered(float speed);
+    void FinishRace();
     void ChallengeComplete();
-    void ClearAll() {}
+    void ClearAll();
 
   private:
     HSIMABLE mhSimable;              // offset 0x0, size 0x4

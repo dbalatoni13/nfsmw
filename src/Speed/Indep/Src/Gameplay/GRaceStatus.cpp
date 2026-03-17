@@ -20,23 +20,44 @@ bool GRacerInfo::GetIsHuman() const {
     return simable && simable->IsPlayer();
 }
 
+void GRacerInfo::SetName(const char *name) {
+    mName = name;
+}
+
+void GRacerInfo::SetIndex(int index) {
+    mIndex = index;
+}
+
+void GRacerInfo::SetRanking(int ranking) {
+    mRanking = ranking;
+}
+
 void GRacerInfo::SetSimable(ISimable *isim) {
     mhSimable = isim ? isim->GetInstanceHandle() : nullptr;
 }
 
 void GRacerInfo::KnockOut() {
-    mKnockedOut = true;
-    mFinishedRacing = true;
+    if (!IsFinishedRacing()) {
+        mKnockedOut = true;
+        mFinishedRacing = true;
+        GRaceStatus::Get().CalculateRankings();
+    }
 }
 
 void GRacerInfo::TotalVehicle() {
-    mTotalled = true;
-    mFinishedRacing = true;
+    if (!IsFinishedRacing()) {
+        mTotalled = true;
+        mFinishedRacing = true;
+        GRaceStatus::Get().CalculateRankings();
+    }
 }
 
 void GRacerInfo::Busted() {
-    mBusted = true;
-    mFinishedRacing = true;
+    if (!IsFinishedRacing()) {
+        mBusted = true;
+        mFinishedRacing = true;
+        GRaceStatus::Get().CalculateRankings();
+    }
 }
 
 void GRacerInfo::ChallengeComplete() {
@@ -44,20 +65,32 @@ void GRacerInfo::ChallengeComplete() {
 }
 
 void GRacerInfo::ForceStop() {
+    ISimable *simable = GetSimable();
     mRaceTimer.Stop();
     mLapTimer.Stop();
     mCheckTimer.Stop();
     mFinishedRacing = true;
     mFinishingSpeed = 0.0f;
+
+    if (simable) {
+        IVehicle *vehicle;
+
+        if (simable->QueryInterface(&vehicle)) {
+            vehicle->SetSpeed(0.0f);
+        }
+    }
 }
 
 void GRacerInfo::BlowEngine() {
-    mEngineBlown = true;
-    mFinishedRacing = true;
+    if (!IsFinishedRacing()) {
+        mEngineBlown = true;
+        mFinishedRacing = true;
+        GRaceStatus::Get().CalculateRankings();
+    }
 }
 
 void GRacerInfo::AddToPointTotal(float points) {
-    mPointTotal += points;
+    mPointTotal = UMath::Max(mPointTotal + points, 0.0f);
 }
 
 float GRacerInfo::CalcAverageSpeed() const {
@@ -71,11 +104,14 @@ float GRacerInfo::CalcAverageSpeed() const {
 }
 
 float GRacerInfo::GetHudPctRaceComplete() const {
+    GRaceParameters *raceParameters = GRaceStatus::Get().GetRaceParameters();
+    float startPercent = raceParameters ? raceParameters->GetStartPercent() : 0.0f;
+
     if (mFinishedRacing) {
         return 1.0f;
     }
 
-    return mPctRaceComplete;
+    return bClamp(startPercent + ((1.0f - startPercent) * mPctRaceComplete), 0.0f, 1.0f);
 }
 
 void GRacerInfo::StartRace() {
@@ -110,8 +146,98 @@ void GRacerInfo::NotifySpeedTrapTriggered(float speed) {
     ++mSpeedTrapsCrossed;
 }
 
+void GRacerInfo::FinishRace() {
+    mRaceTimer.Stop();
+    mLapTimer.Stop();
+    mCheckTimer.Stop();
+    mFinishedRacing = true;
+    mFinishingSpeed = CalcAverageSpeed();
+}
+
+bool GRacerInfo::IsBehind(const GRacerInfo &rhs) const {
+    if (IsFinishedRacing() && rhs.IsFinishedRacing()) {
+        return GetRaceTime() > rhs.GetRaceTime();
+    }
+
+    if (IsFinishedRacing() != rhs.IsFinishedRacing()) {
+        return !IsFinishedRacing();
+    }
+
+    if (GetIsKnockedOut() != rhs.GetIsKnockedOut()) {
+        return GetIsKnockedOut();
+    }
+
+    if (GetIsEngineBlown() != rhs.GetIsEngineBlown()) {
+        return GetIsEngineBlown();
+    }
+
+    if (GetIsTotalled() != rhs.GetIsTotalled()) {
+        return GetIsTotalled();
+    }
+
+#ifndef EA_BUILD_A124
+    if (mDNF != rhs.mDNF) {
+        return mDNF;
+    }
+#endif
+
+    return GetPctRaceComplete() < rhs.GetPctRaceComplete();
+}
+
 bool GRacerInfo::AreStatsReady() const {
     return mhSimable != nullptr;
+}
+
+void GRacerInfo::ClearAll() {
+    mhSimable = nullptr;
+    mGameCharacter = nullptr;
+    mName = nullptr;
+    mIndex = 0;
+    mRanking = 0;
+    mAiRanking = 0;
+    mPctRaceComplete = 0.0f;
+    mKnockedOut = false;
+    mTotalled = false;
+    mEngineBlown = false;
+    mBusted = false;
+    mChallengeComplete = false;
+    mFinishedRacing = false;
+    mCameraDetached = false;
+    mPctLapComplete = 0.0f;
+    mLapsCompleted = 0;
+    mCheckpointsHitThisLap = 0;
+    mTollboothsCrossed = 0;
+    bMemSet(mTimeRemainingToBooth, 0, sizeof(mTimeRemainingToBooth));
+    mSpeedTrapsCrossed = 0;
+    bMemSet(mSpeedTrapSpeed, 0, sizeof(mSpeedTrapSpeed));
+    bMemSet(mSpeedTrapPosition, 0, sizeof(mSpeedTrapPosition));
+    mDistToNextCheckpoint = 0.0f;
+    mDistanceDriven = 0.0f;
+    mTopSpeed = 0.0f;
+    mFinishingSpeed = 0.0f;
+    mPoundsNOSUsed = 0.0f;
+    mTimeCrossedLastCheck = 0.0f;
+    mTotalUpdateTime = 0.0f;
+    mNumPerfectShifts = 0;
+    mNumTrafficCarsHit = 0;
+    mSpeedBreakerTime = 0.0f;
+    mPointTotal = 0.0f;
+    mZeroToSixtyTime = 0.0f;
+    mQuarterMileTime = 0.0f;
+#ifndef EA_BUILD_A124
+    bMemSet(mSplitTimes, 0, sizeof(mSplitTimes));
+    bMemSet(mSplitRankings, 0, sizeof(mSplitRankings));
+#endif
+    mRaceTimer.Reset(0.0f);
+    mLapTimer.Reset(0.0f);
+    mCheckTimer.Reset(0.0f);
+    mSavedPosition = UMath::Vector3Make(0.0f, 0.0f, 0.0f);
+    mSavedHeatLevel = 0.0f;
+    mSavedDirection = UMath::Vector3Make(0.0f, 0.0f, 0.0f);
+    mSavedSpeed = 0.0f;
+#ifndef EA_BUILD_A124
+    mDNF = false;
+#endif
 }
 
 GRaceParameters::GRaceParameters(unsigned int collectionKey, GRaceIndexData *index)
