@@ -1329,7 +1329,9 @@ bool IsPlayerCameraSelectable(POVTypes pov_type) {
     case 6:
         ref_spec = &car_info.CameraInfo_Pursuit(0);
         break;
-    default:
+    }
+
+    if (!ref_spec) {
         camera_info.Change(0xeec2271a);
         return camera_info.SELECTABLE(eGetCurrentViewMode() == EVIEWMODE_TWOH);
     }
