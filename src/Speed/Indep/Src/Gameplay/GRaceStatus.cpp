@@ -1463,6 +1463,18 @@ void GRaceStatus::SetRaceActivity(GActivity *activity) {
     DetermineRaceLength();
 }
 
+void GRaceStatus::EnableBarriers() {
+    if (mRaceBin) {
+        mRaceBin->EnableBarriers();
+    }
+}
+
+void GRaceStatus::DisableBarriers() {
+    if (mRaceBin) {
+        mRaceBin->DisableBarriers();
+    }
+}
+
 void GRaceStatus::AddAvailableEventToMap(GRuntimeInstance *trigger, GRuntimeInstance *activity) {}
 
 void GRaceStatus::AddSpeedTrapToMap(GRuntimeInstance *trigger) {}
@@ -1767,11 +1779,13 @@ void GRaceStatus::DetermineRaceLength() {
     fFirstLapLength = 0.0f;
     bMemSet(mSegmentLengths, 0, sizeof(mSegmentLengths));
     bRaceRouteError = false;
+    WRoadNetwork::Get().ResolveShortcuts();
 
     if (!mRaceParms || !mRaceParms->HasFinishLine()) {
         return;
     }
 
+    WRoadNetwork::Get().SetRaceFilterValid(true);
     numCheckpoints = mRaceParms->GetNumCheckpoints();
     mRaceParms->GetStartPosition(pos);
     positions[0] = UMath::Vector4Make(pos, 0.0f);
@@ -1810,6 +1824,37 @@ void GRaceStatus::DetermineRaceLength() {
     } else {
         fSubsequentLapLength = fRaceLength;
         fFirstLapLength = fRaceLength;
+    }
+
+    {
+        WRoadNav nav;
+
+        nav.SetPathType(WRoadNav::kPathChopper);
+        nav.InitAtPoint(UMath::Vector4To3(positions[numCheckpoints + 1]), UMath::Vector4To3(directions[numCheckpoints + 1]), true, 1.0f);
+        if (nav.IsValid()) {
+            for (int i = 0; i < 100; ++i) {
+                WRoadSegment *segment;
+
+                nav.IncNavPosition(1.0f, UMath::Vector3::kZero, 0.0f);
+                segment = const_cast<WRoadSegment *>(nav.GetSegment());
+                segment->fFlags |= 0x8000;
+                if (nav.GetNodeInd() == 1) {
+                    segment->fFlags |= 0x8004;
+                } else {
+                    segment->fFlags = (segment->fFlags & static_cast<unsigned short>(~4)) | 0x8000;
+                }
+            }
+        }
+    }
+
+    nSpeedTraps = 0;
+    for (unsigned int i = 0; i < GManager::Get().GetNumSpeedTraps() && nSpeedTraps < 16; ++i) {
+        GTrigger *trigger = GManager::Get().GetSpeedTrap(i)->GetTrapTrigger();
+
+        if (trigger) {
+            aSpeedTraps[nSpeedTraps] = trigger;
+            ++nSpeedTraps;
+        }
     }
 }
 

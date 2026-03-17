@@ -16,6 +16,25 @@ extern int SkipFE;
 extern int SkipFEDisableTraffic;
 extern int SkipFEDisableCops;
 
+GCharacter::GCharacter(const Attrib::Key &triggerKey)
+    : GRuntimeInstance(triggerKey, kGameplayObjType_Character), //
+      UTL::COM::Object(1), //
+      IAttachable(this), //
+      mSpawnPos(UMath::Vector3::kZero), //
+      mState(kCharState_Unspawned), //
+      mFlags(0), //
+      mCreateAttemptsMade(0), //
+      mSpawnDir(UMath::Vector3::kZero), //
+      mSpawnSpeed(0.0f), //
+      mTargetPos(UMath::Vector3::kZero), //
+      mVehicle(nullptr), //
+      mTargetDir(UMath::Vector3::kZero), //
+      mAttachments(new Sim::Attachments(this)) {}
+
+GCharacter::~GCharacter() {
+    delete mAttachments;
+}
+
 void GCharacter::OnAttached(IAttachable *pOther) {
     IVehicle *vehicle;
 
@@ -149,4 +168,36 @@ bool GCharacter::AttemptSpawn() {
     }
 
     return mState == kCharState_Spawned;
+}
+
+bool GCharacter::IsSpawned() const {
+    return mState == kCharState_Spawned;
+}
+
+void GCharacter::ReleaseVehicle() {
+    if (mVehicle) {
+        mAttachments->Detach(mVehicle);
+    }
+}
+
+void GCharacter::Unspawn() {
+    if (IsFlagSet(kCharFlag_AttachedToManager)) {
+        GManager::Get().DetachCharacter(this);
+        ClearFlag(kCharFlag_AttachedToManager);
+    }
+
+    if (mVehicle) {
+        ReleaseVehicle();
+    }
+
+    mState = kCharState_Unspawned;
+}
+
+IVehicle *GCharacter::GetSpawnedVehicle() const {
+    return mVehicle;
+}
+
+unsigned int GCharacter::GetName() const {
+    const char *name = RacerName(0);
+    return name ? Attrib::StringToKey(name) : 0;
 }

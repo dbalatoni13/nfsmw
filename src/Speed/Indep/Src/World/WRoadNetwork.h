@@ -43,7 +43,9 @@ class WRoadNetwork : public Debugable {
 
     ~WRoadNetwork() {}
 
-    // void SetRaceFilterValid(bool b) {}
+    inline void SetRaceFilterValid(bool b) {
+        fValidRaceFilter = b;
+    }
 
     bool IsRaceFilterValid() {
         return fValidRaceFilter;
@@ -70,6 +72,7 @@ class WRoadNetwork : public Debugable {
     // WRoadSegment *GetSegmentNonConst(int index) {}
 
     void ResolveBarriers();
+    void ResolveShortcuts();
 
     void ResetBarriers();
 
@@ -300,6 +303,10 @@ class WRoadNav {
 
     short GetSegmentInd() const {
         return fSegmentInd;
+    }
+
+    char GetNodeInd() const {
+        return fNodeInd;
     }
 
     char HitDeadEnd() const {

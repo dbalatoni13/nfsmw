@@ -91,9 +91,7 @@ class GCharacter : public GRuntimeInstance, public UTL::COM::Object, public IAtt
 
     bool AttemptSpawn();
 
-    IVehicle *GetSpawnedVehicle() const {
-        return mVehicle;
-    }
+    IVehicle *GetSpawnedVehicle() const;
 
     unsigned int GetName() const;
 
