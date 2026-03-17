@@ -37,6 +37,8 @@ struct GRacerInfo {
 #ifndef EA_BUILD_A124
     float GetSplitTime(int split) const { return mSplitTimes[split]; }
     int GetSplitRanking(int split) const { return mSplitRankings[split]; }
+    const float *GetSplitTimes() const { return mSplitTimes; }
+    const int *GetSplitRankings() const { return mSplitRankings; }
 #endif
     const GTimer &GetRaceTimer() const { return mRaceTimer; }
 
