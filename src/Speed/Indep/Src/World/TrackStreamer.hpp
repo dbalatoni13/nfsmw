@@ -171,6 +171,9 @@ class TrackStreamer {
     void UnactivateSection(TrackStreamingSection *section);
     void FreeSectionMemory();
     void SetLoadingPhase(eLoadingPhase loading_phase);
+    bool NeedsGameStateActivation(TrackStreamingSection *section);
+    int GetSectionToActivate(int loaded_frames);
+    int GetLoadingPriority(TrackStreamingSection *section, StreamingPositionEntry *streaming_position, bool use_direction);
     void AssignLoadingPriority();
     void CalculateLoadingBacklog();
     bool IsLoadingInProgress();

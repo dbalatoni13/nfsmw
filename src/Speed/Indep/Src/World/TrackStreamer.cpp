@@ -478,6 +478,117 @@ void TrackStreamer::SwitchZones(short *current_zones) {
     CalculateLoadingBacklog();
 }
 
+int TrackStreamer::GetSectionToActivate(int loaded_frames) {
+    if (NumSectionsActivated < NumCurrentStreamingSections) {
+        for (int i = 0; i < NumCurrentStreamingSections; i++) {
+            TrackStreamingSection *section = CurrentStreamingSections[i];
+            if (section->Status == TrackStreamingSection::LOADED && NeedsGameStateActivation(section) &&
+                loaded_frames <= RealTimeFrames - section->LoadedTime) {
+                return section->SectionNumber;
+            }
+        }
+    }
+
+    return 0;
+}
+
+int TrackStreamer::GetLoadingPriority(TrackStreamingSection *section, StreamingPositionEntry *streaming_position, bool use_direction) {
+    if (!section->pBoundary) {
+        return 0;
+    }
+
+    float speed = bLength(&streaming_position->Velocity);
+    if (use_direction) {
+        speed = 100.0f;
+    }
+
+    if (speed < 1.0f) {
+        return 0;
+    }
+
+    bVector2 lookahead(streaming_position->Position.x + streaming_position->Velocity.x,
+                       streaming_position->Position.y + streaming_position->Velocity.y);
+    float distance = section->pBoundary->GetDistanceOutside(&lookahead, 999.0f);
+
+    bVector2 heading;
+    if (use_direction) {
+        bNormalize(&heading, &streaming_position->Direction);
+    } else {
+        bNormalize(&heading, &streaming_position->Velocity);
+    }
+
+    bVector2 to_section(section->Centre.x - lookahead.x, section->Centre.y - lookahead.y);
+    bVector2 section_direction;
+    bNormalize(&section_direction, &to_section);
+
+    float speed_scale = speed * 0.016666668f;
+    if (speed_scale > 1.0f) {
+        speed_scale = 1.0f;
+    }
+
+    unsigned short angle = bASin(bDot(&section_direction, &heading));
+    float degrees = static_cast<unsigned short>(0x4000 - angle) * 0.005493164f;
+    if (degrees < 20.0f) {
+        degrees = 20.0f;
+    }
+    if (degrees > 90.0f) {
+        degrees = 90.0f;
+    }
+
+    int loading_priority =
+        static_cast<int>(distance * (1.0f - (90.0f - degrees) * 0.014285714f * speed_scale * 0.66999996f) * 0.013333334f);
+    if (loading_priority < 0) {
+        loading_priority = 0;
+    }
+    if (loading_priority > 2) {
+        loading_priority = 2;
+    }
+
+    return loading_priority;
+}
+
+void TrackStreamer::AssignLoadingPriority() {
+    for (int i = 0; i < NumCurrentStreamingSections; i++) {
+        TrackStreamingSection *section = CurrentStreamingSections[i];
+        int loading_priority = 99;
+        for (unsigned int position_number = 0; position_number < 2; position_number++) {
+            if (((section->CurrentlyVisible >> (position_number & 0x1f)) & 1U) != 0) {
+                int position_priority = GetLoadingPriority(section, &StreamingPositionEntries[position_number], false);
+                if (position_priority < loading_priority) {
+                    loading_priority = position_priority;
+                }
+            }
+        }
+
+        section->LoadingPriority = loading_priority * 100000 + section->SectionPriority;
+    }
+}
+
+void TrackStreamer::CalculateLoadingBacklog() {
+    float loading_backlog = 0.0f;
+    for (int i = 0; i < NumCurrentStreamingSections; i++) {
+        TrackStreamingSection *section = CurrentStreamingSections[i];
+        if (section->CurrentlyVisible && section->Status != TrackStreamingSection::LOADED &&
+            section->Status != TrackStreamingSection::ACTIVATED) {
+            int rounded_size = section->Size;
+            if (rounded_size < 0) {
+                rounded_size += 0x3ff;
+            }
+
+            float section_backlog = static_cast<float>(rounded_size >> 10) * 0.0004f + 0.2f;
+            if (section->BaseLoadingPriority == 1) {
+                section_backlog *= 0.4f;
+            }
+            if (section->BaseLoadingPriority == 2) {
+                section_backlog *= 0.2f;
+            }
+            loading_backlog += section_backlog;
+        }
+    }
+
+    LoadingBacklog = loading_backlog;
+}
+
 bool TrackStreamer::AreAllSectionsActivated() {
     bool all_sections_activated = false;
     if (LoadingPhase == LOADING_IDLE) {
