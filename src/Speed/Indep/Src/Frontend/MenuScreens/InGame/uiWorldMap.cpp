@@ -544,10 +544,12 @@ update_map:
                 reinterpret_cast< const unsigned int* >(pPan)[0];
             reinterpret_cast< unsigned int* >(pPanOffset)[1] =
                 reinterpret_cast< const unsigned int* >(pPan)[1];
-            pPanOffset->x *= MapSize.x;
-            pPanOffset->y *= MapSize.y;
-            pZoomedPan->x = pPanOffset->x * zoom;
-            pZoomedPan->y = pPanOffset->y * zoom;
+            float pan_offset_x = pPanOffset->x * MapSize.x;
+            float pan_offset_y = pPanOffset->y * MapSize.y;
+            pPanOffset->x = pan_offset_x;
+            pPanOffset->y = pan_offset_y;
+            pZoomedPan->x = pan_offset_x * zoom;
+            pZoomedPan->y = pan_offset_y * zoom;
             pFinalPos->x = pPos->x - pZoomedPan->x;
             pFinalPos->y = pPos->y - pZoomedPan->y;
             reinterpret_cast< unsigned int* >(pPos)[0] =
