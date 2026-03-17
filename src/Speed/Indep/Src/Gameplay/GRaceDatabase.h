@@ -36,7 +36,7 @@ class GRaceBin {
 
     const Attrib::Gen::gameplay *GetGameplayObj() const;
 
-    GVault *GetChildVault() const;
+    GVault *GetChildVault() const { return mChildVault; }
 
     int GetBinNumber() const;
 
@@ -84,9 +84,9 @@ class GRaceBin {
 
     int GetRequiredRaceWins() const;
 
-    int GetCompletedChallenges() const;
+    int GetCompletedChallenges() const { return mStats.mChallengesCompleted; }
 
-    int GetAwardedRaceWins() const;
+    int GetAwardedRaceWins() const { return mStats.mRacesWon; }
 
     void RefreshProgress();
 
@@ -95,9 +95,9 @@ class GRaceBin {
 
     unsigned int Deserialize(unsigned char *src);
 
-    void SetCompletedChallenges(int numChallenges);
+    void SetCompletedChallenges(int numChallenges) { mStats.mChallengesCompleted = numChallenges; }
 
-    void SetRacesWon(int numRaces);
+    void SetRacesWon(int numRaces) { mStats.mRacesWon = numRaces; }
 
     Attrib::Gen::gameplay mBinRecord; // offset 0x0, size 0x14
     GVault *mChildVault;              // offset 0x14, size 0x4
@@ -118,11 +118,22 @@ class GRaceDatabase {
 
     static void Init();
 
-    GRaceCustom *GetStartupRace();
+    GRaceCustom *GetStartupRace() { return mStartupRace; }
+    Context GetStartupRaceContext() { return mStartupRaceContext; }
     void SetStartupRace(GRaceCustom *custom, Context context);
     void FreeCustomRace(GRaceCustom *custom);
     GRaceParameters *GetRaceFromHash(unsigned int hash);
     GRaceCustom *AllocCustomRace(GRaceParameters *parms);
+
+    unsigned int GetBinCount() { return mBinCount; }
+    GRaceBin *GetBin(unsigned int index);
+    GRaceBin *GetBinNumber(int number);
+    unsigned int GetRaceCount() { return mRaceCountStatic + mRaceCountDynamic; }
+
+    void SimulateDDayComplete() {}
+
+    void NotifyVaultLoaded(GVault *vault);
+    void NotifyVaultUnloading(GVault *vault);
 
     static GRaceDatabase &Get() {
         return *mObj;

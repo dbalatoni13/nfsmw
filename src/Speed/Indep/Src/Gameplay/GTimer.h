@@ -8,6 +8,16 @@
 // total size: 0xC
 class GTimer {
   public:
+    GTimer();
+    ~GTimer();
+
+    bool IsRunning() { return mRunning; }
+    void Start();
+    void Stop();
+    void Reset(float value);
+    float GetTime() const;
+    void SetTime(float time);
+
   private:
     float mStartTime; // offset 0x0, size 0x4
     float mTotalTime; // offset 0x4, size 0x4

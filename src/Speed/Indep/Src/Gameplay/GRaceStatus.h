@@ -45,6 +45,57 @@ struct GRacerInfo {
         return mCameraDetached;
     }
 
+    bool GetIsHuman() const;
+    const char *GetName() const { return mName; }
+    int GetIndex() const { return mIndex; }
+    int GetAiRanking() const { return mAiRanking; }
+    int GetSpeedTrapsCrossed() const { return mSpeedTrapsCrossed; }
+    bool GetIsKnockedOut() const { return mKnockedOut; }
+    bool GetIsTotalled() const { return mTotalled; }
+    bool GetIsEngineBlown() const { return mEngineBlown; }
+    bool GetIsBusted() const { return mBusted; }
+    bool GetChallengeComplete() const { return mChallengeComplete; }
+    float GetPctLapComplete() const { return mPctLapComplete; }
+    int GetLapsCompleted() const { return mLapsCompleted; }
+    int GetChecksHitThisLap() const { return mCheckpointsHitThisLap; }
+    int GetTollboothsCrossed() const { return mTollboothsCrossed; }
+    float GetDistToNextCheck() const { return mDistToNextCheckpoint; }
+    float GetDistDriven() const { return mDistanceDriven; }
+    float GetTopSpeed() const { return mTopSpeed; }
+    float GetFinishingSpeed() const { return mFinishingSpeed; }
+    float GetPoundsNOSUsed() const { return mPoundsNOSUsed; }
+    float GetRaceTime() const { return mRaceTimer.GetTime(); }
+    float GetLapTime() const { return mLapTimer.GetTime(); }
+    float GetCheckTime() const { return mCheckTimer.GetTime(); }
+    int GetPerfectShifts() const { return mNumPerfectShifts; }
+    int GetTrafficCarsHit() const { return mNumTrafficCarsHit; }
+    float GetSpeedBreakerTime() const { return mSpeedBreakerTime; }
+    float GetPointTotal() const { return mPointTotal; }
+    float GetZeroToSixtyTime() const { return mZeroToSixtyTime; }
+    float GetQuarterMileTime() const { return mQuarterMileTime; }
+
+    void SetName(const char *name) { mName = name; }
+    void SetIndex(int n) { mIndex = n; }
+    void SetRanking(int n) { mRanking = n; }
+    void SetRaceTime(float f) { mRaceTimer.SetTime(f); }
+    void SetLapsCompleted(int n) { mLapsCompleted = n; }
+    void SetPctRaceComplete(float f) { mPctRaceComplete = f; }
+    void SetDistDriven(float f) { mDistanceDriven = f; }
+    void SetTopSpeed(float f) { mTopSpeed = f; }
+    void SetPoundsNOSUsed(float f) { mPoundsNOSUsed = f; }
+
+    void Reset();
+    void Update(float dT);
+    void SaveExistingRaceStats();
+    void RestoreExistingRaceStats();
+    bool AreStatsReady() const;
+    void ChooseRandomName();
+    bool ChooseBossName();
+    bool ChooseRacerName();
+    void FinalizeRaceStats();
+    void ChallengeComplete();
+    void ClearAll() {}
+
   private:
     HSIMABLE mhSimable;              // offset 0x0, size 0x4
     GCharacter *mGameCharacter;      // offset 0x4, size 0x4
@@ -232,13 +283,13 @@ class GRaceParameters {
 
     void NotifyParentVaultLoaded();
 
-    const Attrib::Gen::gameplay *GetGameplayObj() const;
+    const Attrib::Gen::gameplay *GetGameplayObj() const { return mRaceRecord; }
 
     struct GActivity *GetActivity() const;
 
-    struct GVault *GetChildVault() const;
+    struct GVault *GetChildVault() const { return mChildVault; }
 
-    struct GVault *GetParentVault() const;
+    struct GVault *GetParentVault() const { return mParentVault; }
 
     void GetBoundingBox(struct Vector2 &topLeft, struct Vector2 &botRight) const;
 
@@ -340,9 +391,12 @@ class GRaceStatus : public UTL::COM::Object, public IVehicleCache {
     enum eVehicleCacheResult OnQueryVehicleCache(const IVehicle *removethis, const IVehicleCache *whosasking) const override;
 
     // Overrides: IVehicleCache
-    void OnRemovedVehicleCache(IVehicle *ivehicle) override;
+    void OnRemovedVehicleCache(IVehicle *ivehicle) override {}
 
-    void SetRaceContext(GRace::Context context);
+    // Overrides: IVehicleCache
+    const char *GetCacheName() const override { return "GRaceStatus"; }
+
+    void SetRaceContext(GRace::Context context) { mRaceContext = context; }
 
     GRacerInfo &GetRacerInfo(int index);
 
@@ -350,7 +404,12 @@ class GRaceStatus : public UTL::COM::Object, public IVehicleCache {
 
     GRacerInfo *GetWinningPlayerInfo();
 
-    int GetRacerCount() const;
+    int GetRacerCount() const { return mRacerCount; }
+
+    void SetActivelyRacing(bool racing) { mActivelyRacing = racing; }
+    void SetHasBeenWon(bool won) { mHasBeenWon = won; }
+    void SetIsLoading(bool loading) { mIsLoading = loading; }
+    void SetTaskTime(float time) { mTaskTime = time; }
 
     void StartMasterTimer();
 
@@ -382,9 +441,9 @@ class GRaceStatus : public UTL::COM::Object, public IVehicleCache {
 
     void NotifyScriptWhenLoaded();
 
-    void AddAvailableEventToMap(GRuntimeInstance *trigger, GRuntimeInstance *activity);
+    void AddAvailableEventToMap(GRuntimeInstance *trigger, GRuntimeInstance *activity) {}
 
-    void AddSpeedTrapToMap(GRuntimeInstance *trigger);
+    void AddSpeedTrapToMap(GRuntimeInstance *trigger) {}
 
     void AwardBonusTime(float seconds);
 
@@ -528,6 +587,8 @@ class GRaceStatus : public UTL::COM::Object, public IVehicleCache {
         return mRaceBin->GetScaleOpenWorldHeat();
     }
 
+    void EnterSuddenDeath() { mSuddenDeathMode = true; }
+
   private:
     static struct GRaceStatus *fObj;
 
@@ -611,7 +672,7 @@ class GRaceCustom : public GRaceParameters {
 
     void CreateRaceActivity();
 
-    GActivity *GetRaceActivity() const;
+    GActivity *GetRaceActivity() const { return mRaceActivity; }
 
     // Overrides: GRaceParameters
     void GetCheckpointPosition(unsigned int index, UMath::Vector3 &pos) const override;
@@ -619,7 +680,7 @@ class GRaceCustom : public GRaceParameters {
     // Overrides: GRaceParameters
     void GetCheckpointDirection(unsigned int index, UMath::Vector3 &dir) const override;
 
-    void SetReversed(bool isReverseDir);
+    void SetReversed(bool isReverseDir) { mReversed = isReverseDir; }
 
     void SetPositionalKnockout(bool enabled, int knockoutsPerLap);
 
@@ -629,7 +690,7 @@ class GRaceCustom : public GRaceParameters {
 
     void SetTrafficDensity(int density);
 
-    void SetNumOpponents(int numOpponents);
+    void SetNumOpponents(int numOpponents) { mNumOpponents = numOpponents; }
 
     void SetDifficulty(GRace::Difficulty difficulty);
 

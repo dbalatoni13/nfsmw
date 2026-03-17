@@ -39,33 +39,60 @@ class GInfractionManager {
         return *mObj;
     }
 
-    // static bool Exists() {}
+    static bool Exists() {
+        return mObj != nullptr;
+    }
 
-    // void ClearInfractions() {}
+    void ClearInfractions() {
+        mInfractions = 0;
+    }
 
-    // void ReportResistingArrest() {}
+    void ReportResistingArrest() {
+        ReportInfraction(kInfraction_Resist);
+    }
 
-    // void ReportSpeeding(bool speeding) {}
+    void ReportSpeeding(bool speeding) {
+        mSpeeding = speeding;
+        if (speeding) {
+            ReportInfraction(kInfraction_Speeding);
+        }
+    }
 
-    // void ReportRecklessDriving(bool reckless) {}
+    void ReportRecklessDriving(bool reckless) {
+        mDrivingRecklessly = reckless;
+        if (reckless) {
+            ReportInfraction(kInfraction_Reckless);
+        }
+    }
 
-    // void ReportRacing(bool racing) {}
+    void ReportRacing(bool racing) {
+        mRacing = racing;
+        if (racing) {
+            ReportInfraction(kInfraction_Racing);
+        }
+    }
 
-    // void ReportAssaultingPoliceOfficer() {}
+    void ReportAssaultingPoliceOfficer() {
+        ReportInfraction(kInfraction_Assault);
+    }
 
-    // void ReportHitAndRun() {}
+    void ReportHitAndRun() {
+        ReportInfraction(kInfraction_HitAndRun);
+    }
 
-    // void ReportDamageToProperty() {}
+    void ReportDamageToProperty() {
+        ReportInfraction(kInfraction_Damage);
+    }
 
     void ReportDrivingOffRoadWay() {
         ReportInfraction(kInfraction_OffRoad);
     }
 
-    // float GetRecklessSpeedThreshold() {}
+    float GetRecklessSpeedThreshold();
 
-    // float GetSpeedLimit() {}
+    float GetSpeedLimit();
 
-    // float GetRacingSpeedLimit() {}
+    float GetRacingSpeedLimit();
 
     unsigned int GetInfractions() {
         return mInfractions;

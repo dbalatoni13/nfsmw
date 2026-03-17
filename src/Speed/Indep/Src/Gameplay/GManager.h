@@ -63,6 +63,8 @@ class GManager : public UTL::COM::Object, public IVehicleCache {
 
     static void Init(const char *vaultPackName);
 
+    const char *GetCacheName() const override { return "GManager"; }
+
     void InitializeRaceStreaming();
     void PreBeginGameplay();
     void BeginGameplay();
@@ -76,6 +78,8 @@ class GManager : public UTL::COM::Object, public IVehicleCache {
     void TrackValue(const char *valueName, float value);
     void IncValue(const char *valueName);
     float GetValue(const char *valueName);
+    float GetValue(unsigned int valueKey);
+    bool GetIsBiggerValueBetter(unsigned int valueKey);
 
     void RegisterInstance(GRuntimeInstance *instance);
     void UnregisterInstance(GRuntimeInstance *instance);
@@ -104,7 +108,7 @@ class GManager : public UTL::COM::Object, public IVehicleCache {
     void RefreshSpeedTrapIcons();
     void GatherInstanceKeys(Attrib::Gen::gameplay &collection, AttribKeyList &list, unsigned int templateKey);
     void FindBountySpawnPoints();
-    unsigned int GetNumBountySpawnMarkers() const;
+    unsigned int GetNumBountySpawnMarkers() const { return mNumBountySpawnPoints; }
     unsigned int GetBountySpawnMarker(unsigned int index) const;
     void ServicePendingCharacters();
     void UnspawnUselessCharacters();
@@ -128,8 +132,8 @@ class GManager : public UTL::COM::Object, public IVehicleCache {
     void UnspawnAllIcons();
     void FreeAllIcons();
 
-    unsigned int GetNumMilestones();
-    GMilestone *GetMilestone(unsigned int index);
+    unsigned int GetNumMilestones() { return mNumMilestones; }
+    GMilestone *GetMilestone(unsigned int index) { return &mMilestones[index]; }
     GMilestone *GetFirstMilestone(bool availOnly, unsigned int binNumber);
     GMilestone *GetNextMilestone(GMilestone *current, bool availOnly, unsigned int binNumber);
     void AllocateMilestones();
@@ -142,8 +146,8 @@ class GManager : public UTL::COM::Object, public IVehicleCache {
     unsigned int SaveMilestones(GMilestone *dest);
     void LoadMilestones(GMilestone *src, unsigned int count);
 
-    unsigned int GetNumSpeedTraps();
-    GSpeedTrap *GetSpeedTrap(unsigned int index);
+    unsigned int GetNumSpeedTraps() { return mNumSpeedTraps; }
+    GSpeedTrap *GetSpeedTrap(unsigned int index) { return &mSpeedTraps[index]; }
     GSpeedTrap *GetFirstSpeedTrap(bool activeOnly, unsigned int binNumber);
     GSpeedTrap *GetNextSpeedTrap(GSpeedTrap *current, bool activeOnly, unsigned int binNumber);
     void AllocateSpeedTraps();
@@ -187,6 +191,10 @@ class GManager : public UTL::COM::Object, public IVehicleCache {
 
     bool GetIsWarping() const {
         return mWarping;
+    }
+
+    bool GetInGameplay() const {
+        return mInGameplay;
     }
 
     bool GetStartFreeRoamPursuit() {
