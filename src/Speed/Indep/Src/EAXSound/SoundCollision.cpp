@@ -1,8 +1,13 @@
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
 #include "Speed/Indep/Src/EAXSound/STICH_Playback.h"
+#include "Speed/Indep/Src/Camera/CameraMover.hpp"
+#include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
+#include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
 #include "Speed/Indep/Src/World/WorldConn.h"
+
+#include <float.h>
 
 struct CSTATE_Base;
 struct EAX_CarState;
@@ -55,9 +60,21 @@ struct AudioEvent {
     }
 };
 
-float DistanceToView(const bVector3 *vPosition) {
-    (void)vPosition;
-    return 0.0f;
+float DistanceToView(const bVector3 *position) {
+    float dist = FLT_MAX;
+    eView *view;
+
+    view = eGetView(1, false);
+    if (view && view->GetCameraMover()) {
+        dist = UMath::Min(view->GetCameraMover()->GetDistanceTo(position), dist);
+    }
+
+    view = eGetView(2, false);
+    if (view && view->GetCameraMover()) {
+        dist = UMath::Min(view->GetCameraMover()->GetDistanceTo(position), dist);
+    }
+
+    return dist;
 }
 
 bool IsPrimaryTarget(unsigned int target) {

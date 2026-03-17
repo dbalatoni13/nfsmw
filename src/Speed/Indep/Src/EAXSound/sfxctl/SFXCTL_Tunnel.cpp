@@ -640,7 +640,7 @@ void SFXCTL_Tunnel::UpdateDriveBySnds(float t) {
                 tmpdrivebypackage.ClosingVelocity = m_pStateBase->GetPhysCar()->GetVelocityMagnitude();
                 tmpdrivebypackage.vLocation = vDriveByLoc;
                 tmpdrivebypackage.UniqueID = 0;
-                ReturnedObj = EAXSound::m_pStateMgr[eMM_DRIVEBY]->GetFreeState(&tmpdrivebypackage);
+                ReturnedObj = EAXSound::GetStateMgr(eMM_DRIVEBY)->GetFreeState(&tmpdrivebypackage);
                 if (ReturnedObj != nullptr) {
                     ReturnedObj->Attach(&tmpdrivebypackage);
                 }
@@ -670,7 +670,7 @@ void SFXCTL_Tunnel::UpdateDriveBySnds(float t) {
             tmpdrivebypackage.ClosingVelocity = m_pStateBase->GetPhysCar()->GetVelocityMagnitude();
             tmpdrivebypackage.vLocation = vDriveByLoc;
             tmpdrivebypackage.UniqueID = 0;
-            ReturnedObj = EAXSound::m_pStateMgr[eMM_DRIVEBY]->GetFreeState(&tmpdrivebypackage);
+            ReturnedObj = EAXSound::GetStateMgr(eMM_DRIVEBY)->GetFreeState(&tmpdrivebypackage);
             if (ReturnedObj != nullptr) {
                 ReturnedObj->Attach(&tmpdrivebypackage);
             }

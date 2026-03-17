@@ -178,6 +178,7 @@ class EAXSound : public AudioMemBase {
     void InitializeInGame();
     void InitializeFrontEnd();
 
+    static CSTATEMGR_Base *GetStateMgr(eMAINMAPSTATES estate) { return m_pStateMgr[estate]; }
     static struct SndBase *GetSndBase_Object(int nID);
     cSTICH_PlayBack *GetSTICHPlayback() const { return m_pSTICH_Playback; }
     struct AudioSettings *GetCurrentAudioSettings() const { return m_pCurAudioSettings; }
