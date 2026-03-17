@@ -246,27 +246,19 @@ void SFXCTL_HybridMotor::UpdateSingleMixEng(float t) {
     }
     PercentOfDecelThreshold = decelPct;
 
-    EAX_CarState *stateCar = m_pStateBase != nullptr ? m_pStateBase->GetPhysCar() : nullptr;
-    int gearShiftFlag = stateCar != nullptr
-                            ? stateCar->mDriveline.mGearShiftFlag
-                            : 0;
     SHIFT_STAGE shiftState = m_pShiftingCtl->eShiftState;
 
-    if (gearShiftFlag == 0 && shiftState == SHFT_NONE) {
-        int accelState = m_pAccelTranCtl->eAccelTransFxState;
-        if (accelState != 0 && accelState == 1) {
+    if (shiftState == SHFT_NONE) {
+        if (m_pAccelTranCtl->eAccelTransFxState == 1) {
             bDoSmooth = false;
         }
-    } else {
-        if (shiftState != SHFT_UP_LFO) {
-            if (static_cast<int>(shiftState) < 4) {
-                if (shiftState == SHFT_UP_ENGAGING) {
-                    bDoSmooth = false;
-                }
-            } else if (shiftState != SHFT_DOWN_ENGAGING_RISE && shiftState == SHFT_DOWN_ENGAGING_REATTACH &&
-                       m_pEAXCar->bIsAccelerating) {
+    } else if (shiftState != SHFT_UP_LFO) {
+        if (static_cast<int>(shiftState) > SHFT_UP_LFO) {
+            if (shiftState == SHFT_DOWN_ENGAGING_REATTACH && m_pEAXCar->bIsAccelerating) {
                 bDoSmooth = false;
             }
+        } else if (shiftState == SHFT_UP_ENGAGING) {
+            bDoSmooth = false;
         }
     }
 

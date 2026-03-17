@@ -144,29 +144,8 @@ struct ListNodeQueue {
     stSndAssetQueue data;
 };
 
-static BankSlotNode *&GetBankSlotHead(BankSlotSystem &slots) {
-    return *static_cast<BankSlotNode **>(static_cast<void *>(&slots));
-}
-
-static ListNodeQueue *&GetQueueHead(SndAssetQueue &queue) {
-    return *static_cast<ListNodeQueue **>(static_cast<void *>(static_cast<char *>(static_cast<void *>(&queue)) + 4));
-}
-
 static void ClearSndAssetQueue(SndAssetQueue &queue) {
-    ListNodeQueue *head = GetQueueHead(queue);
-    if (head == nullptr) {
-        return;
-    }
-
-    ListNodeQueue *node = head->next;
-    while (node != head) {
-        ListNodeQueue *next = node->next;
-        gFastMem.Free(node, 0x30, nullptr);
-        node = next;
-    }
-
-    head->next = head;
-    head->prev = head;
+    queue.clear();
 }
 
 template <typename T, typename Tag> static RawVector<T> &AsRawVector(UTL::Std::vector<T, Tag> &vec) {
@@ -238,30 +217,6 @@ static void ResetSndAssetParams(stSndDataLoadParams &params) {
     params.t_req = 0;
 }
 
-static char *&GetAsyncBuffer(EAXAemsManager *mgr) {
-    return mgr->m_pAsyncBuff;
-}
-
-static int &GetAsyncBufferSize(EAXAemsManager *mgr) {
-    return mgr->m_NumBankLoadResolves;
-}
-
-static eTEMPALLOCLOCATION &GetAsyncBufferLocation(EAXAemsManager *mgr) {
-    return mgr->m_AsyncBuffLocation;
-}
-
-static stSndDataLoadParams &AsLoadParams(stSndDataLoadParams *params) {
-    return *params;
-}
-
-static const stSndDataLoadParams &AsLoadParams(const stSndDataLoadParams *params) {
-    return *params;
-}
-
-static const char *GetStringKeyChars(const Attrib::StringKey &key) {
-    return *static_cast<const char *const *>(
-        static_cast<const void *>(static_cast<const char *>(static_cast<const void *>(&key)) + 0xC));
-}
 } // namespace
 
 void stAssetDescription::Clear() {
@@ -353,23 +308,11 @@ EAXAemsManager::~EAXAemsManager() {
 }
 
 void EAXAemsManager::Init() {
-    Attrib::Gen::audiosystem *attrs = g_pEAXSound->GetAttributes();
-    unsigned int numEvtSys = attrs->Num_EvtSys();
-    mNumEvtSys = static_cast<int>(numEvtSys);
-    m_NumEvtSysLoaded = 0;
+    m_NumBankLoadResolves = 0;
+    unsigned int numEvtSys = g_pEAXSound->GetAttributes()->Num_EvtSys();
+    mNumEvtSys = numEvtSys;
     if (static_cast<int>(numEvtSys) > 0) {
-        RawVector<char *> &evtSystems = AsRawVector(m_pEvtSystems);
-        if (evtSystems.start != nullptr) {
-            int oldByteCount = static_cast<int>(
-                static_cast<char *>(static_cast<void *>(evtSystems.end_of_storage)) -
-                static_cast<char *>(static_cast<void *>(evtSystems.start)));
-            gFastMem.Free(evtSystems.start, oldByteCount, nullptr);
-        }
-
-        evtSystems.start = static_cast<char **>(
-            gFastMem.Alloc(static_cast<unsigned int>(numEvtSys * sizeof(char *)), nullptr));
-        evtSystems.finish = evtSystems.start;
-        evtSystems.end_of_storage = evtSystems.start + numEvtSys;
+        m_pEvtSystems.resize(numEvtSys);
     }
 
     int n = 0;
@@ -382,21 +325,21 @@ void EAXAemsManager::Init() {
 }
 
 int EAXAemsManager::AddEventSystem(eEVTSYS eESIndex, eSNDDATAPATH eSDP) {
-    char tempPath[256];
-    Attrib::Gen::audiosystem *attrs = g_pEAXSound->GetAttributes();
-    const Attrib::StringKey &evtStringKey = attrs->EvtSys(eESIndex);
-    const char *evtName = *static_cast<const char *const *>(
-        static_cast<const void *>(static_cast<const char *>(static_cast<const void *>(&evtStringKey)) + 0xC));
+    const char *evtName = g_pEAXSound->GetAttributes()->EvtSys(eESIndex).GetString();
     if (evtName == nullptr) {
         evtName = "";
     }
 
-    bStrCat(tempPath, g_DataPaths[eSDP], evtName);
-    int filesize = bFileSize(tempPath);
-    AsRawVector(m_pEvtSystems).start[eESIndex] = gAudioMemoryManager.AllocateMemoryChar(filesize, evtName, false);
+    bStrCat(m_csTemp1, g_DataPaths[eSDP], evtName);
+    int filesize = bFileSize(m_csTemp1);
+    evtName = g_pEAXSound->GetAttributes()->EvtSys(eESIndex).GetString();
+    if (evtName == nullptr) {
+        evtName = "";
+    }
+    m_pEvtSystems[eESIndex] = gAudioMemoryManager.AllocateMemoryChar(filesize, evtName, false);
 
     int callback_param = m_NumEvtSysLoaded;
-    AddQueuedFile(AsRawVector(m_pEvtSystems).start[callback_param], tempPath, 0, filesize, EvtSysLoadCallback, callback_param, nullptr);
+    AddQueuedFile(m_pEvtSystems[callback_param], m_csTemp1, 0, filesize, EvtSysLoadCallback, callback_param, nullptr);
     m_NumEvtSysLoaded = callback_param + 1;
     return callback_param;
 }
@@ -470,140 +413,123 @@ int EAXAemsManager::InitiateLoad() {
     stBankSlot *pBankSlot;
     void *allocatedMemory;
     char *fileString;
-    stSndDataLoadParams *currentLoad;
     int loadSize;
     eTEMPALLOCLOCATION memLocation;
     QueuedFileParams queuedFileParams;
 
-    currentLoad = m_pCurLoadSDLP;
-    fileString = *static_cast<char **>(
-        static_cast<void *>(static_cast<char *>(static_cast<void *>(&currentLoad->AssetDescription.FileName)) + 0xC));
+    fileString = const_cast<char *>(m_pCurLoadSDLP->AssetDescription.FileName.GetString());
     if (fileString == nullptr) {
         fileString = "";
     }
-    bStrCat(m_csTemp1, g_DataPaths[currentLoad->AssetDescription.DataPath], fileString);
+    bStrCat(m_csTemp1, g_DataPaths[m_pCurLoadSDLP->AssetDescription.DataPath], fileString);
     result = bFileSize(m_csTemp1);
-    currentLoad->nSize = result;
-    result = AudioMemoryPool;
-    if (currentLoad->nSize < 1) {
+    m_pCurLoadSDLP->nSize = result;
+    if (result < 1) {
         return -1;
     }
 
-    if (currentLoad->AssetDescription.eDataType < EAXSND_DT_GENERIC_DATA) {
-        if (GetAsyncBuffer(this) != nullptr) {
+    if (m_pCurLoadSDLP->AssetDescription.eDataType < EAXSND_DT_GENERIC_DATA) {
+        if (m_pAsyncBuff != nullptr) {
             goto HaveAsyncBuffer;
         }
-        GetAsyncBufferLocation(this) = TMP_ALLOC_AUDIO;
-        bLargestMalloc(result);
+        m_AsyncBuffLocation = TMP_ALLOC_AUDIO;
+        bLargestMalloc(AudioMemoryPool);
         result = bLargestMalloc(0);
         if (result > 0x20000) {
-            GetAsyncBufferLocation(this) = TMP_ALLOC_MAIN;
-            fileString = static_cast<char *>(bMalloc(0x10000, 0));
-            GetAsyncBuffer(this) = fileString;
+            m_AsyncBuffLocation = TMP_ALLOC_MAIN;
+            m_pAsyncBuff = static_cast<char *>(bMalloc(0x10000, 0));
             goto HaveAsyncBuffer;
         }
-        fileString = static_cast<char *>(TheTrackStreamer.AllocateUserMemory(0x10000, "EAXAemsManager::m_pAsyncBuff", 0));
-        GetAsyncBufferLocation(this) = TMP_ALLOC_TRACKSTREAMER;
-        GetAsyncBuffer(this) = fileString;
-        if (fileString != nullptr) {
+        m_pAsyncBuff = static_cast<char *>(TheTrackStreamer.AllocateUserMemory(0x10000, "EAXAemsManager::m_pAsyncBuff", 0));
+        m_AsyncBuffLocation = TMP_ALLOC_TRACKSTREAMER;
+        if (m_pAsyncBuff != nullptr) {
             goto HaveAsyncBuffer;
         }
-        pBankSlot = currentLoad->mBankSlot;
+        pBankSlot = m_pCurLoadSDLP->mBankSlot;
         if (pBankSlot != nullptr) {
             pBankSlot->LoadFailed = 1;
         }
         result = -2;
     } else {
-        currentLoad->MemLocation = TMP_ALLOC_AUDIO;
+        m_pCurLoadSDLP->MemLocation = TMP_ALLOC_AUDIO;
 HaveQueueParams:
         queuedFileParams.BlockSize = 0x7FFFFFF;
         queuedFileParams.Compressed = false;
-        *static_cast<unsigned int *>(static_cast<void *>(&queuedFileParams.Compressed)) = 0;
         queuedFileParams.Priority = QueuedFileDefaultPriority - 2;
         queuedFileParams.UncompressedSize = 0;
-        currentLoad = m_pCurLoadSDLP;
-        memLocation = currentLoad->MemLocation;
-        if (memLocation == TMP_ALLOC_MAIN) {
+        memLocation = m_pCurLoadSDLP->MemLocation;
+        switch (memLocation) {
+        case TMP_ALLOC_MAIN:
             result = bLargestMalloc(0);
-            loadSize = currentLoad->nSize;
+            loadSize = m_pCurLoadSDLP->nSize;
             if (result < loadSize) {
                 result = -2;
                 goto ReturnResult;
             }
-            allocatedMemory = bMalloc(loadSize, 0x1040);
-            currentLoad->pmem = allocatedMemory;
-            AddQueuedFile(currentLoad->pmem, m_csTemp1, 0, currentLoad->nSize, DataLoadCB,
-                          reinterpret_cast<int>(currentLoad), &queuedFileParams);
-SetWaitingState:
+            m_pCurLoadSDLP->pmem = bMalloc(loadSize, 0x1040);
+            AddQueuedFile(m_pCurLoadSDLP->pmem, m_csTemp1, 0, m_pCurLoadSDLP->nSize, DataLoadCB,
+                          reinterpret_cast<int>(m_pCurLoadSDLP), &queuedFileParams);
+        SetWaitingState:
             m_IsWaitingForFileCB = memLocation;
-        } else if (static_cast<int>(memLocation) < 2) {
-            if (memLocation == TMP_ALLOC_NONE) {
-                goto SetWaitingState;
+            break;
+        case TMP_ALLOC_NONE:
+            goto SetWaitingState;
+        case TMP_ALLOC_TRACKSTREAMER:
+            result = GetMemoryPoolSize__13TrackStreamer(&TheTrackStreamer);
+            if (result == 0) {
+                return -3;
             }
-        } else {
-            if (memLocation == TMP_ALLOC_TRACKSTREAMER) {
-                result = GetMemoryPoolSize__13TrackStreamer(&TheTrackStreamer);
-                if (result == 0) {
-                    return -3;
+            fileString = const_cast<char *>(m_pCurLoadSDLP->AssetDescription.FileName.GetString());
+            if (fileString == nullptr) {
+                fileString = "";
+            }
+            m_pCurLoadSDLP->pmem = TheTrackStreamer.AllocateUserMemory(m_pCurLoadSDLP->nSize, fileString, 0);
+            fileString = static_cast<char *>(m_pCurLoadSDLP->pmem);
+            if (fileString == nullptr) {
+                return -3;
+            }
+            result = m_pCurLoadSDLP->nSize;
+            break;
+        case TMP_ALLOC_AUDIO:
+            if (m_pCurLoadSDLP->AssetDescription.eDataType == EAXSND_DT_GENERIC_DATA &&
+                (pBankSlot = m_pCurLoadSDLP->mBankSlot, pBankSlot != nullptr)) {
+                result = m_pCurLoadSDLP->nSize;
+                if (pBankSlot->MAINmemSize < result) {
+                    return -4;
                 }
-                currentLoad = m_pCurLoadSDLP;
-                fileString = *static_cast<char **>(
-                    static_cast<void *>(static_cast<char *>(static_cast<void *>(&currentLoad->AssetDescription.FileName)) + 0xC));
+                fileString = pBankSlot->MAINmemLocation;
+            } else {
+                result = bLargestMalloc(AudioMemoryPool);
+                if (result < m_pCurLoadSDLP->nSize) {
+                    return -4;
+                }
+                fileString = const_cast<char *>(m_pCurLoadSDLP->AssetDescription.FileName.GetString());
                 if (fileString == nullptr) {
                     fileString = "";
                 }
-                allocatedMemory = TheTrackStreamer.AllocateUserMemory(currentLoad->nSize, fileString, 0);
-                currentLoad->pmem = allocatedMemory;
-                fileString = static_cast<char *>(currentLoad->pmem);
-                if (fileString == nullptr) {
-                    return -3;
-                }
-                result = currentLoad->nSize;
-            } else {
-                if (memLocation != TMP_ALLOC_AUDIO) {
-                    goto CheckAsyncSpuLoad;
-                }
-                if (currentLoad->AssetDescription.eDataType == EAXSND_DT_GENERIC_DATA &&
-                    (pBankSlot = currentLoad->mBankSlot, pBankSlot != nullptr)) {
-                    result = currentLoad->nSize;
-                    if (pBankSlot->MAINmemSize < result) {
-                        return -4;
-                    }
-                    fileString = pBankSlot->MAINmemLocation;
-                } else {
-                    result = bLargestMalloc(AudioMemoryPool);
-                    currentLoad = m_pCurLoadSDLP;
-                    if (result < currentLoad->nSize) {
-                        return -4;
-                    }
-                    fileString = *static_cast<char **>(
-                        static_cast<void *>(static_cast<char *>(static_cast<void *>(&currentLoad->AssetDescription.FileName)) + 0xC));
-                    if (fileString == nullptr) {
-                        fileString = "";
-                    }
-                    allocatedMemory = gAudioMemoryManager.AllocateMemory(currentLoad->nSize, fileString,
-                                                                         currentLoad->AssetDescription.bLoadToTop);
-                    currentLoad->pmem = allocatedMemory;
-                    fileString = static_cast<char *>(currentLoad->pmem);
-                    result = currentLoad->nSize;
-                }
+                m_pCurLoadSDLP->pmem = gAudioMemoryManager.AllocateMemory(m_pCurLoadSDLP->nSize, fileString,
+                                                                          m_pCurLoadSDLP->AssetDescription.bLoadToTop);
+                fileString = static_cast<char *>(m_pCurLoadSDLP->pmem);
+                result = m_pCurLoadSDLP->nSize;
             }
             AddQueuedFile(fileString, m_csTemp1, 0, result, DataLoadCB,
-                          reinterpret_cast<int>(currentLoad), &queuedFileParams);
+                          reinterpret_cast<int>(m_pCurLoadSDLP), &queuedFileParams);
             m_IsWaitingForFileCB = 1;
+            break;
+        default:
+            break;
         }
-CheckAsyncSpuLoad:
-        currentLoad = m_pCurLoadSDLP;
-        if (currentLoad->AssetDescription.eDataType == EAXSND_DT_AEMS_ASYNCSPU) {
-            pBankSlot = currentLoad->mBankSlot;
+    CheckAsyncSpuLoad:
+        if (m_pCurLoadSDLP->AssetDescription.eDataType == EAXSND_DT_AEMS_ASYNCSPU) {
+            pBankSlot = m_pCurLoadSDLP->mBankSlot;
             if (pBankSlot == nullptr) {
                 SNDmemlimits(-1, gAEMSMgr.m_SPUMainAllocsEnd);
             } else {
                 SNDmemlimits(pBankSlot->BANKmemLocation, pBankSlot->BANKmemLocation + pBankSlot->BANKMemSize);
             }
-            result = SNDAEMS_asyncloadmodulebank(m_csTemp1, 0, nullptr, 0, GetAsyncBuffer(this),
-                                                 GetAsyncBufferSize(this), AsyncResidentAllocCB);
-            currentLoad->Handle = result;
+            result = SNDAEMS_asyncloadmodulebank(m_csTemp1, 0, nullptr, 0, m_pAsyncBuff, mAsyncBuffSize,
+                                                 AsyncResidentAllocCB);
+            m_pCurLoadSDLP->Handle = result;
         }
         result = 0;
     }
@@ -611,13 +537,12 @@ ReturnResult:
     return result;
 
 HaveAsyncBuffer:
-    currentLoad = m_pCurLoadSDLP;
-    pBankSlot = currentLoad->mBankSlot;
+    pBankSlot = m_pCurLoadSDLP->mBankSlot;
     if (pBankSlot != nullptr) {
         pBankSlot->LoadFailed = 0;
     }
-    currentLoad->MemLocation = TMP_ALLOC_NONE;
-    currentLoad->AssetDescription.eDataType = EAXSND_DT_AEMS_ASYNCSPU;
+    m_pCurLoadSDLP->MemLocation = TMP_ALLOC_NONE;
+    m_pCurLoadSDLP->AssetDescription.eDataType = EAXSND_DT_AEMS_ASYNCSPU;
     goto HaveQueueParams;
 }
 
@@ -718,99 +643,89 @@ ReprocessQueue:
         ResolvePendingAsyncLoads();
     }
 
-    if (m_pCurLoadSDLP == nullptr) {
-        SetupNextLoad();
-        if (m_pCurLoadSDLP != nullptr) {
-            return;
-        }
-        if (m_ItemsPendingAsyncResolve != 0) {
-            return;
-        }
-
-        char *mem = m_pAsyncBuff;
-        if (mem != nullptr) {
-            eTEMPALLOCLOCATION location = m_AsyncBuffLocation;
-            if (location == TMP_ALLOC_AUDIO) {
-                gAudioMemoryManager.FreeMemory(mem);
-            } else if (location == TMP_ALLOC_MAIN) {
-                bFree(mem);
-            } else if (location == TMP_ALLOC_TRACKSTREAMER) {
-                TheTrackStreamer.FreeUserMemory(mem);
-            }
-            m_pAsyncBuff = nullptr;
-        }
-
-        ExternalLoadCallbackFn callback = m_ExternalLoadCallback;
-        if (callback == nullptr) {
-            return;
-        }
-
-        Csis::gFX_NITROUSHandle.Set(&Csis::FX_NITROUSId);
-        Csis::gFX_PURGEHandle.Set(&Csis::FX_PURGEId);
-        Csis::gFX_SHIFTING_01Handle.Set(&Csis::FX_SHIFTING_01Id);
-        Csis::gFX_SPARKCHATTERHandle.Set(&Csis::FX_SPARKCHATTERId);
-        Csis::gFX_SKIDHandle.Set(&Csis::FX_SKIDId);
-        Csis::gFX_HydraulicHandle.Set(&Csis::FX_HydraulicId);
-        Csis::gFX_HelicopterHandle.Set(&Csis::FX_HelicopterId);
-        Csis::gFX_Hydr_BounceHandle.Set(&Csis::FX_Hydr_BounceId);
-        Csis::gFX_WeatherHandle.Set(&Csis::FX_WeatherId);
-        Csis::gFX_CameraHandle.Set(&Csis::FX_CameraId);
-        Csis::gFX_UVESHandle.Set(&Csis::FX_UVESId);
-        Csis::gFX_RadarHandle.Set(&Csis::FX_RadarId);
-        Csis::gFX_ScrapeHandle.Set(&Csis::FX_ScrapeId);
-        Csis::gSputter_MessageHandle.Set(&Csis::Sputter_MessageId);
-        Csis::gCARHandle.Set(&Csis::CARId);
-        Csis::gCAR_SWTNHandle.Set(&Csis::CAR_SWTNId);
-        Csis::gCAR_WHINEHandle.Set(&Csis::CAR_WHINEId);
-        Csis::gCAR_TRANNYHandle.Set(&Csis::CAR_TRANNYId);
-        Csis::gCAR_SputterHandle.Set(&Csis::CAR_SputterId);
-        Csis::gCAR_SputOutputHandle.Set(&Csis::CAR_SputOutputId);
-        Csis::gFX_ROADNOISEHandle.Set(&Csis::FX_ROADNOISEId);
-        Csis::gFX_ROADNOISE_TRANSHandle.Set(&Csis::FX_ROADNOISE_TRANSId);
-        Csis::gENV_STATICHandle.Set(&Csis::ENV_STATICId);
-        Csis::gFX_MAIN_MEMHandle.Set(&Csis::FX_MAIN_MEMId);
-        Csis::gFX_WINDHandle.Set(&Csis::FX_WINDId);
-        Csis::gFX_WIND_WeatherHandle.Set(&Csis::FX_WIND_WeatherId);
-        Csis::gFX_TRAFFICHandle.Set(&Csis::FX_TRAFFICId);
-        Csis::gFX_TRUCK_FXHandle.Set(&Csis::FX_TRUCK_FXId);
-        Csis::gFX_TURBO_01Handle.Set(&Csis::FX_TURBO_01Id);
-        Csis::gPlayCommonSampleHandle.Set(&Csis::PlayCommonSampleId);
-        Csis::gPlayFrontEndSampleHandle.Set(&Csis::PlayFrontEndSampleId);
-        Csis::gPlayFrontEndSample_RSHandle.Set(&Csis::PlayFrontEndSample_RSId);
-        Csis::gFEDriveOnHandle.Set(&Csis::FEDriveOnId);
-        Csis::gSIRENHandle.Set(&Csis::SIRENId);
-        Csis::gSIREN_BEDHandle.Set(&Csis::SIREN_BEDId);
-        Csis::gAEMS_StichCollisionHandle.Set(&Csis::AEMS_StichCollisionId);
-        Csis::gAEMS_StichWooshHandle.Set(&Csis::AEMS_StichWooshId);
-        Csis::gAEMS_StichStaticHandle.Set(&Csis::AEMS_StichStaticId);
-
-        callback(m_ExternalLoadCallbackParam);
-        m_bBulkLoad = false;
-        m_ExternalLoadCallback = nullptr;
-        m_ExternalLoadCallbackParam = 0;
-        return;
-    }
-
-    stSndDataLoadParams &currentLoad = *m_pCurLoadSDLP;
-    if (!currentLoad.bResolvedAsync) {
-        CheckForCompleteAsyncLoad();
-    }
-
-    currentLoad.bResolvedSync =
-        Joylog::AddOrGetData(static_cast<unsigned int>(currentLoad.bResolvedAsync), 8, JOYLOG_CHANNEL_SOUND_LOADING) != 0;
-
-    if (Joylog::IsReplaying() != 0 && currentLoad.bResolvedSync) {
-        while (!currentLoad.bResolvedAsync) {
-            SNDSYS_service();
+    if (m_pCurLoadSDLP != nullptr) {
+        if (!m_pCurLoadSDLP->bResolvedAsync) {
             CheckForCompleteAsyncLoad();
         }
-    }
 
-    if (currentLoad.bResolvedSync) {
-        if (currentLoad.AssetDescription.eDataType < EAXSND_DT_GENERIC_DATA) {
-            ResolveCurrentDataMemory();
+        m_pCurLoadSDLP->bResolvedSync =
+            Joylog::AddOrGetData(static_cast<unsigned int>(m_pCurLoadSDLP->bResolvedAsync), 8, JOYLOG_CHANNEL_SOUND_LOADING) != 0;
+
+        if (Joylog::IsReplaying() != 0 && m_pCurLoadSDLP->bResolvedSync) {
+            while (!m_pCurLoadSDLP->bResolvedAsync) {
+                SNDSYS_service();
+                CheckForCompleteAsyncLoad();
+            }
         }
+
+        if (m_pCurLoadSDLP->bResolvedSync) {
+            if (m_pCurLoadSDLP->AssetDescription.eDataType < EAXSND_DT_GENERIC_DATA) {
+                ResolveCurrentDataMemory();
+            }
+            SetupNextLoad();
+        }
+    } else {
         SetupNextLoad();
+        if (m_pCurLoadSDLP == nullptr && m_ItemsPendingAsyncResolve == 0) {
+            char *mem = m_pAsyncBuff;
+            if (mem != nullptr) {
+                eTEMPALLOCLOCATION location = m_AsyncBuffLocation;
+                if (location == TMP_ALLOC_AUDIO) {
+                    gAudioMemoryManager.FreeMemory(mem);
+                } else if (location == TMP_ALLOC_MAIN) {
+                    bFree(mem);
+                } else if (location == TMP_ALLOC_TRACKSTREAMER) {
+                    TheTrackStreamer.FreeUserMemory(mem);
+                }
+                m_pAsyncBuff = nullptr;
+            }
+
+            if (m_ExternalLoadCallback != nullptr) {
+                Csis::gFX_NITROUSHandle.Set(&Csis::FX_NITROUSId);
+                Csis::gFX_PURGEHandle.Set(&Csis::FX_PURGEId);
+                Csis::gFX_SHIFTING_01Handle.Set(&Csis::FX_SHIFTING_01Id);
+                Csis::gFX_SPARKCHATTERHandle.Set(&Csis::FX_SPARKCHATTERId);
+                Csis::gFX_SKIDHandle.Set(&Csis::FX_SKIDId);
+                Csis::gFX_HydraulicHandle.Set(&Csis::FX_HydraulicId);
+                Csis::gFX_HelicopterHandle.Set(&Csis::FX_HelicopterId);
+                Csis::gFX_Hydr_BounceHandle.Set(&Csis::FX_Hydr_BounceId);
+                Csis::gFX_WeatherHandle.Set(&Csis::FX_WeatherId);
+                Csis::gFX_CameraHandle.Set(&Csis::FX_CameraId);
+                Csis::gFX_UVESHandle.Set(&Csis::FX_UVESId);
+                Csis::gFX_RadarHandle.Set(&Csis::FX_RadarId);
+                Csis::gFX_ScrapeHandle.Set(&Csis::FX_ScrapeId);
+                Csis::gSputter_MessageHandle.Set(&Csis::Sputter_MessageId);
+                Csis::gCARHandle.Set(&Csis::CARId);
+                Csis::gCAR_SWTNHandle.Set(&Csis::CAR_SWTNId);
+                Csis::gCAR_WHINEHandle.Set(&Csis::CAR_WHINEId);
+                Csis::gCAR_TRANNYHandle.Set(&Csis::CAR_TRANNYId);
+                Csis::gCAR_SputterHandle.Set(&Csis::CAR_SputterId);
+                Csis::gCAR_SputOutputHandle.Set(&Csis::CAR_SputOutputId);
+                Csis::gFX_ROADNOISEHandle.Set(&Csis::FX_ROADNOISEId);
+                Csis::gFX_ROADNOISE_TRANSHandle.Set(&Csis::FX_ROADNOISE_TRANSId);
+                Csis::gENV_STATICHandle.Set(&Csis::ENV_STATICId);
+                Csis::gFX_MAIN_MEMHandle.Set(&Csis::FX_MAIN_MEMId);
+                Csis::gFX_WINDHandle.Set(&Csis::FX_WINDId);
+                Csis::gFX_WIND_WeatherHandle.Set(&Csis::FX_WIND_WeatherId);
+                Csis::gFX_TRAFFICHandle.Set(&Csis::FX_TRAFFICId);
+                Csis::gFX_TRUCK_FXHandle.Set(&Csis::FX_TRUCK_FXId);
+                Csis::gFX_TURBO_01Handle.Set(&Csis::FX_TURBO_01Id);
+                Csis::gPlayCommonSampleHandle.Set(&Csis::PlayCommonSampleId);
+                Csis::gPlayFrontEndSampleHandle.Set(&Csis::PlayFrontEndSampleId);
+                Csis::gPlayFrontEndSample_RSHandle.Set(&Csis::PlayFrontEndSample_RSId);
+                Csis::gFEDriveOnHandle.Set(&Csis::FEDriveOnId);
+                Csis::gSIRENHandle.Set(&Csis::SIRENId);
+                Csis::gSIREN_BEDHandle.Set(&Csis::SIREN_BEDId);
+                Csis::gAEMS_StichCollisionHandle.Set(&Csis::AEMS_StichCollisionId);
+                Csis::gAEMS_StichWooshHandle.Set(&Csis::AEMS_StichWooshId);
+                Csis::gAEMS_StichStaticHandle.Set(&Csis::AEMS_StichStaticId);
+
+                m_ExternalLoadCallback(m_ExternalLoadCallbackParam);
+                m_bBulkLoad = false;
+                m_ExternalLoadCallback = nullptr;
+                m_ExternalLoadCallbackParam = 0;
+            }
+        }
     }
 }
 
@@ -950,35 +865,30 @@ void *EAXAemsManager::AsyncResidentAllocCB(int size) {
 void *EAXAemsManager::ResidentAllocCB(void *pbank, int residentsize, int totalsize) {
     (void)pbank;
     if (residentsize != totalsize) {
-        stSndDataLoadParams *currentLoadRaw = gAEMSMgr.m_pCurLoadSDLP;
-        stSndDataLoadParams &currentLoad = AsLoadParams(currentLoadRaw);
+        stSndDataLoadParams *currentLoad = gAEMSMgr.m_pCurLoadSDLP;
         void *resmem;
-        if (currentLoad.AssetDescription.eDataType == EAXSND_DT_AEMS_MAINMEM) {
+        if (currentLoad->AssetDescription.eDataType == EAXSND_DT_AEMS_MAINMEM) {
             resmem = bMalloc(residentsize, 0x1040);
         } else {
-            stBankSlot *pBankSlot = currentLoad.mBankSlot;
+            stBankSlot *pBankSlot = currentLoad->mBankSlot;
             if (pBankSlot != nullptr) {
                 pBankSlot->pLastAlloc += residentsize;
-                currentLoadRaw = gAEMSMgr.m_pCurLoadSDLP;
-                pBankSlot = AsLoadParams(currentLoadRaw).mBankSlot;
                 return pBankSlot->MAINmemLocation;
             }
 
-            char *filename = const_cast<char *>(GetStringKeyChars(currentLoad.AssetDescription.FileName));
+            char *filename = const_cast<char *>(currentLoad->AssetDescription.FileName.GetString());
             if (filename == nullptr) {
                 filename = const_cast<char *>("");
             }
             resmem = gAudioMemoryManager.AllocateMemory(residentsize, filename, false);
         }
 
-        currentLoadRaw = gAEMSMgr.m_pCurLoadSDLP;
-        AsLoadParams(currentLoadRaw).plocmem = resmem;
+        currentLoad->plocmem = resmem;
         gAEMSMgr.m_NumBankLoadResolves++;
-        currentLoadRaw = gAEMSMgr.m_pCurLoadSDLP;
-        return AsLoadParams(currentLoadRaw).plocmem;
+        return currentLoad->plocmem;
     }
 
-    return AsLoadParams(gAEMSMgr.m_pCurLoadSDLP).pmem;
+    return gAEMSMgr.m_pCurLoadSDLP->pmem;
 }
 
 void EAXAemsManager::DataLoadCB(int param, int error_status) {
@@ -1060,35 +970,51 @@ void EAXAemsManager::QueueFileLoad(stSndAssetQueue &queueitem, eBANK_SLOT_TYPE S
     Attrib::StringKey filename(queueitem.Asset.FileName);
     int bankIndex = IsAssetInList(filename);
     if (bankIndex == -1) {
+        stBankSlot *slot = nullptr;
         if (DISABLE_SLOT_LOADING != 0) {
             SlotType = eBANK_SLOT_NONE;
         }
-        bankIndex = AddBankListing(queueitem.Asset);
+
         if (SlotType != eBANK_SLOT_NONE) {
-            stBankSlot *slot = nullptr;
             if (SlotType == eBANK_SLOT_PATHFINDER) {
-                slot = mPFBankSlot.GetFreeSlot(SlotType);
+                slot = mPFBankSlot.GetFreeSlot(eBANK_SLOT_PATHFINDER);
             } else {
                 slot = mBankSlots.GetFreeSlot(SlotType);
             }
-            if (slot != nullptr) {
-                slot->pAssetParams = &g_SndAssetList[bankIndex];
-                *static_cast<stBankSlot **>(
-                    static_cast<void *>(static_cast<char *>(static_cast<void *>(&g_SndAssetList[bankIndex])) + 0x24)) = slot;
+
+            if (slot == nullptr) {
+                SndBase *owner = queueitem.pThis;
+                if (!owner) {
+                    return;
+                }
+
+                while (true) {
+                    SndAssetQueue::iterator i = mWaitForResolve.begin();
+                    while (true) {
+                        if (i == mWaitForResolve.end()) {
+                            return;
+                        }
+
+                        stSndAssetQueue currequst = *i;
+                        if (currequst.pThis == owner) {
+                            mWaitForResolve.remove(currequst);
+                            break;
+                        }
+
+                        ++i;
+                    }
+                }
             }
+        }
+
+        bankIndex = AddBankListing(queueitem.Asset);
+        if (slot != nullptr) {
+            slot->pAssetParams = &g_SndAssetList[bankIndex];
+            g_SndAssetList[bankIndex].mBankSlot = slot;
         }
     }
 
-    ListNodeQueue *head = GetQueueHead(mWaitForResolve);
-    ListNodeQueue *node = static_cast<ListNodeQueue *>(gFastMem.Alloc(0x30, nullptr));
-    if (node == nullptr || head == nullptr) {
-        return;
-    }
-    node->data = queueitem;
-    node->next = head;
-    node->prev = head->prev;
-    head->prev->next = node;
-    head->prev = node;
+    mWaitForResolve.push_back(queueitem);
 }
 
 void EAXAemsManager::ResolvePendingAsyncLoads() {}
@@ -1216,30 +1142,26 @@ void EAXAemsManager::UnloadSndData(Attrib::StringKey filename) {
 
 void EAXAemsManager::AddAemsBank() {
     stSndDataLoadParams *pCurLoad = gAEMSMgr.m_pCurLoadSDLP;
-    stBankSlot *pBankSlot =
-        *static_cast<stBankSlot **>(static_cast<void *>(static_cast<char *>(static_cast<void *>(pCurLoad)) + 0x24));
+    stBankSlot *pBankSlot = pCurLoad->mBankSlot;
     if (pBankSlot == nullptr) {
         SNDmemlimits(-1, gAEMSMgr.m_SPUMainAllocsEnd);
     } else {
         SNDmemlimits(pBankSlot->BANKmemLocation, pBankSlot->BANKmemLocation + pBankSlot->BANKMemSize);
     }
 
-    int nhandle = SNDAEMS_addmodulebank(
-        *static_cast<void **>(static_cast<void *>(static_cast<char *>(static_cast<void *>(pCurLoad)) + 0x28)), nullptr, 0,
-        ResidentAllocCB);
+    int nhandle = SNDAEMS_addmodulebank(pCurLoad->pmem, nullptr, 0, ResidentAllocCB);
     SNDmemlimits(-1, gAEMSMgr.m_SPUMainAllocsEnd);
     pCurLoad->Handle = nhandle;
 }
 
 void EAXAemsManager::CheckForCompleteAsyncLoad() {
-    if (*static_cast<int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pCurLoadSDLP)) + 0x38)) == 0) {
-        if (*static_cast<int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pCurLoadSDLP)) + 0x0)) == 3) {
+    if (!m_pCurLoadSDLP->bResolvedAsync) {
+        if (m_pCurLoadSDLP->AssetDescription.eDataType == EAXSND_DT_AEMS_ASYNCSPU) {
             if (SNDAEMS_asyncloadmodulebankdone() > 0) {
                 CompleteAsyncLoad();
             }
-        } else if ((*static_cast<int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pCurLoadSDLP)) + 0x0)) > 3) &&
-                   (*static_cast<int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pCurLoadSDLP)) + 0x0)) == 4) &&
-                   ((SNDAEMS_asyncloadmodulebankmemdone() > 0)) && (m_IsWaitingForFileCB == 0)) {
+        } else if (m_pCurLoadSDLP->AssetDescription.eDataType == EAXSND_DT_AEMS_ASYNCSPUMEM &&
+                   SNDAEMS_asyncloadmodulebankmemdone() > 0 && m_IsWaitingForFileCB == 0) {
             CompleteAsyncLoad();
         }
     }
