@@ -132,6 +132,21 @@ void MenuZoneTrigger::HideDPadButton() {
             FEngSetScript(downBtn, 0x33113AC, true);
         }
     }
+    FEObject *obj3 = FEngFindObject(pPackageName, 0xA206A0B4);
+    if (obj3) {
+        if (!FEngIsScriptSet(obj3, 0x33113AC) && !FEngIsScriptSet(obj3, 0x1744B3)) {
+            FEngSetScript(obj3, 0x33113AC, true);
+        }
+    }
+    FEObject *obj4 = FEngFindObject(pPackageName, 0x7180B901);
+    if (obj4) {
+        if (!FEngIsScriptSet(obj4, 0x33113AC) && !FEngIsScriptSet(obj4, 0x1744B3)) {
+            FEngSetScript(obj4, 0x33113AC, true);
+        }
+    }
+    if (FEngIsScriptSet(mEngageMechanic, 0x5079C8F8)) {
+        FEngSetScript(mEngageMechanic, 0x33113AC, true);
+    }
 }
 
 void MenuZoneTrigger::PulseDPadButton(ENGAGE_DPAD_ELEMENT_DIRECTION direction, FEObject *iconToShow) {
