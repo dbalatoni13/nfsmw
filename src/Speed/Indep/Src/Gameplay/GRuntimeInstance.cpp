@@ -17,8 +17,9 @@ GRuntimeInstance::GRuntimeInstance(const Attrib::Key &key, GameplayObjType type)
     mConnected = nullptr;
     mPrev = nullptr;
     mNext = nullptr;
-    GManager::Get().RegisterInstance(this);
     AddToTypeList(type);
+    GManager::Get().RegisterInstance(this);
+    SetFlag(1);
 }
 
 GRuntimeInstance::~GRuntimeInstance() {

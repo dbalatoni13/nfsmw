@@ -17,6 +17,7 @@ enum Context {
 };
 
 class GVault;
+class GActivity;
 class GRaceCustom;
 class GRaceParameters;
 
@@ -128,7 +129,7 @@ class GRaceDatabase {
 
     GRaceCustom *GetStartupRace();
     GRace::Context GetStartupRaceContext();
-    void SetStartupRace(GRaceCustom *custom, GRace::Context context);
+    void SetStartupRace(GRaceCustom *custom, Context context);
     void FreeCustomRace(GRaceCustom *custom);
     void DestroyCustomRace(GRaceCustom *custom);
     GRaceParameters *GetRaceFromHash(unsigned int hash);

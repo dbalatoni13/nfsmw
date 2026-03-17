@@ -157,6 +157,8 @@ class GManager : public UTL::COM::Object, public IVehicleCache {
     void ResetSpeedTraps();
     unsigned int SaveSpeedTraps(GSpeedTrap *dest);
     void LoadSpeedTraps(GSpeedTrap *src, unsigned int count);
+    void AttachCharacter(GCharacter *character);
+    void DetachCharacter(GCharacter *character);
 
     void RecursivePreloadCharacterCars(GRuntimeInstance *instance, bool forcePreload);
     void PreloadStockCarsForActivity(GActivity *activity);

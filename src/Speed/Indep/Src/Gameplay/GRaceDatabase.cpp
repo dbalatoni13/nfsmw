@@ -470,15 +470,15 @@ void GRaceDatabase::ClearStartupRace() {
     mStartupRace = nullptr;
 }
 
-void GRaceDatabase::SetStartupRace(GRaceCustom *custom, GRace::Context context) {
+void GRaceDatabase::SetStartupRace(GRaceCustom *custom, Context context) {
     if (mStartupRace) {
         ClearStartupRace();
     }
 
-    mStartupRaceContext = context;
+    mStartupRaceContext = GRace::Context(context);
     mStartupRace = custom;
 
-    if (custom && context == GRace::kRaceContext_Career) {
+    if (custom && mStartupRaceContext == GRace::kRaceContext_Career) {
         custom->SetupTimeOfDay();
     }
 }

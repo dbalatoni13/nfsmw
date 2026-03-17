@@ -5,6 +5,8 @@
 #pragma once
 #endif
 
+#include "Speed/Indep/Src/Misc/AttribAlloc.h"
+
 // total size: 0x14
 struct AttribVaultPackEntry {
     unsigned int mVaultNameOffset; // offset 0x0, size 0x4
@@ -16,7 +18,59 @@ struct AttribVaultPackEntry {
 
 struct AttribVaultPackImage;
 struct GObjectBlock;
-struct LoggingAttribAllocator;
+
+// total size: 0x18
+class LoggingAttribAllocator : public IAttribAllocator {
+  public:
+    static void *operator new(std::size_t size);
+    static void operator delete(void *mem, std::size_t size);
+
+    LoggingAttribAllocator();
+    virtual ~LoggingAttribAllocator();
+
+    virtual void *Allocate(std::size_t bytes, const char *name);
+    virtual void Free(void *ptr, std::size_t bytes, const char *name);
+
+    unsigned int GetChecksum() const;
+    unsigned int GetByteCount() const;
+
+  protected:
+    void LogAlloc(unsigned int bytes, const char *name);
+    void LogFree(unsigned int bytes, const char *name);
+
+    unsigned int mChecksum;  // offset 0x4, size 0x4
+    unsigned int mAllocCount; // offset 0x8, size 0x4
+    unsigned int mAllocBytes; // offset 0xC, size 0x4
+    unsigned int mFreeCount;  // offset 0x10, size 0x4
+    unsigned int mFreeBytes;  // offset 0x14, size 0x4
+};
+
+// total size: 0x1C
+class PreloadingAttribAllocator : public LoggingAttribAllocator {
+  public:
+    PreloadingAttribAllocator(int pool_num);
+
+    void *Allocate(std::size_t bytes, const char *name) override;
+    void Free(void *ptr, std::size_t bytes, const char *name) override;
+
+  private:
+    int mPoolNum; // offset 0x18, size 0x4
+};
+
+// total size: 0x24
+class BlockLoadingAttribAllocator : public LoggingAttribAllocator {
+  public:
+    BlockLoadingAttribAllocator(unsigned char *buffer, unsigned int heapSize, unsigned int targetChecksum);
+
+    void *Allocate(std::size_t bytes, const char *name) override;
+    void Free(void *ptr, std::size_t bytes, const char *name) override;
+    void VerifyAllocations();
+
+  private:
+    unsigned char *mAllocPtr;       // offset 0x18, size 0x4
+    unsigned int mAvailBytes;       // offset 0x1C, size 0x4
+    unsigned int mTargetChecksum;   // offset 0x20, size 0x4
+};
 
 namespace Attrib {
 class Vault;

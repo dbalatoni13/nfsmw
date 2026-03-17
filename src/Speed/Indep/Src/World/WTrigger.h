@@ -73,6 +73,7 @@ class FireOnExitList : public std::set<FireOnExitRec> {};
 class WTriggerManager {
   public:
     void Update(float dT);
+    void ClearAllFireOnExit();
 
     static WTriggerManager &Get() {
         return *fgTriggerManager;
