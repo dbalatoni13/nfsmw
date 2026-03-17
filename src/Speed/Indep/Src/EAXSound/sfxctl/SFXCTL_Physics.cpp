@@ -3,9 +3,11 @@
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Shifting.hpp"
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_NISReving.hpp"
 #include "Speed/Indep/Src/EAXSound/OldSoundTemplates.hpp"
+#include "Speed/Indep/Src/EAXSound/EAXCar.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXCarState.hpp"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/engineaudio.h"
 #include "Speed/Indep/Src/Interfaces/SimActivities/INIS.h"
+#include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
 #include "Speed/Indep/Src/Misc/Hermes.h"
 
 namespace {
@@ -463,171 +465,150 @@ SndBase *SFXCTL_TruckPhysics::CreateObject(unsigned int allocator) {
 }
 
 void SFXCTL_Physics::UpdateNIS(float TotalTime, float deltaTime) {
-    NIS_ENGINE_REVING_STATE nisState = eCurNisRevingState;
-    if (nisState == NIS_OFF) {
-        if (*static_cast<int *>(static_cast<void *>(&PattternPlay)) == 0) {
-            eCurNisRevingState = NIS_OFF;
-            TimeIntoRev = TotalTime;
-            EAX_CarState *stateCar =
-                m_pStateBase != nullptr
-                    ? *static_cast<EAX_CarState **>(static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pStateBase)) + 0x34))
-                    : nullptr;
-            CarID = stateCar != nullptr
-                        ? *static_cast<int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(stateCar)) + 0x23C))
-                        : -1;
-            if (CarID < 0) {
-                return;
-            }
-            if (*static_cast<int *>(static_cast<void *>(&g_pNISRevMgr->IsInitialized)) == 0) {
-                return;
-            }
+    float timeLeft;
+    IPlayer *player;
+    IHud *hud;
+    ICountdown *icountdown;
 
-            int numPoints = g_pNISRevMgr->m_EngineDataSet[CarID].NumPoints;
-            if (numPoints < 2) {
-                return;
-            }
+    if (eCurNisRevingState == NIS_OFF) {
+        if (*static_cast<int *>(static_cast<void *>(&PattternPlay)) != 0) {
+            EngRevDataPoint *patternData;
+            int patternLength;
 
-            pRevData = g_pNISRevMgr->m_EngineDataSet[CarID].DataPoints;
-            eCurNisRevingState = NIS_PATTERN_ON;
-            nisState = NIS_PATTERN_ON;
-            NumDataPoints = numPoints - 1;
-        } else {
-            *static_cast<int *>(static_cast<void *>(&PattternPlay)) = 0;
             pRevData = nullptr;
-
-            EngRevDataPoint *patternData = RevPat5;
-            int patternLength = 0x1B;
-            switch (PatternNumber) {
-            case 6:
-                patternLength = 0x16;
-                patternData = RevPat6;
-                break;
-            case 7:
-                patternLength = 0x13;
-                patternData = RevPat7;
-                break;
-            case 8:
+            *static_cast<int *>(static_cast<void *>(&PattternPlay)) = 0;
+            if (PatternNumber == 8) {
                 patternLength = 0x43;
                 patternData = RevPat8;
-                break;
-            case 9:
-                patternLength = 0x38;
-                patternData = RevPat9;
-                break;
-            case 10:
+            } else if (PatternNumber < 9) {
+                if (PatternNumber == 6) {
+                    patternLength = 0x16;
+                    patternData = RevPat6;
+                } else if (PatternNumber < 7) {
+                    patternLength = 0x1B;
+                    patternData = RevPat5;
+                } else {
+                    patternLength = 0x13;
+                    patternData = RevPat7;
+                }
+            } else if (PatternNumber == 10) {
                 patternLength = 0x22;
                 patternData = RevPat10;
-                break;
-            case 11:
+            } else if (PatternNumber < 10) {
+                patternLength = 0x38;
+                patternData = RevPat9;
+            } else if (PatternNumber == 11) {
                 patternLength = 0x1E;
                 patternData = RevPat11;
-                break;
-            case 12:
-                patternLength = 0x1D;
-                patternData = RevPat12;
-                break;
-            default:
-                break;
+            } else {
+                if (PatternNumber != 12) {
+                    patternLength = 0x1B;
+                    patternData = RevPat5;
+                } else {
+                    patternLength = 0x1D;
+                    patternData = RevPat12;
+                }
             }
 
             NumDataPoints = patternLength;
             pRevData = patternData;
             if (pRevData != nullptr) {
                 eCurNisRevingState = NIS_PATTERN_ON;
-                Slope rpmSlope(static_cast< float >(pRevData->RPM), static_cast< float >(pRevData[1].RPM), pRevData->time,
-                               pRevData[1].time);
-                Slope trqSlope(static_cast< float >(pRevData->Trq), static_cast< float >(pRevData[1].Trq), pRevData->time,
-                               pRevData[1].time);
-                NISRPM = rpmSlope.GetValue(TimeIntoRev);
-                NISTRQ = trqSlope.GetValue(TimeIntoRev);
-                nisState = eCurNisRevingState;
-            } else {
-                nisState = eCurNisRevingState;
+                Slope RPMSlope(static_cast<float>(pRevData->RPM), static_cast<float>(pRevData[1].RPM), pRevData->time, pRevData[1].time);
+                Slope TRQSlope(static_cast<float>(pRevData->Trq), static_cast<float>(pRevData[1].Trq), pRevData->time, pRevData[1].time);
+                NISRPM = RPMSlope.GetValue(TimeIntoRev);
+                NISTRQ = TRQSlope.GetValue(TimeIntoRev);
             }
-        }
-    }
-
-    if (nisState == NIS_PATTERN_ON) {
-        if (TotalTime < 0.001f) {
-            TimeIntoRev = TimeIntoRev + deltaTime;
         } else {
+            eCurNisRevingState = NIS_OFF;
             TimeIntoRev = TotalTime;
+            CarID = m_pStateBase->GetPhysCar()->GetNISCarID();
+            if (CarID < 0) {
+                return;
+            }
+            if (*static_cast<int *>(static_cast<void *>(&g_pNISRevMgr->IsInitialized)) == 0) {
+                return;
+            }
+            if (g_pNISRevMgr->m_EngineDataSet[CarID].NumPoints < 2) {
+                return;
+            }
+            eCurNisRevingState = NIS_PATTERN_ON;
+            NumDataPoints = g_pNISRevMgr->m_EngineDataSet[CarID].NumPoints - 1;
+            pRevData = g_pNISRevMgr->m_EngineDataSet[CarID].DataPoints;
         }
+    }
 
-        EngRevDataPoint *revData = pRevData;
-        int stateValue = 2;
-        if (revData[1].time < TimeIntoRev) {
-            int remainingDataPoints = NumDataPoints;
-            while (true) {
-                NumDataPoints = remainingDataPoints - 1;
-                if ((remainingDataPoints - 1) == 0) {
-                    eCurNisRevingState = NIS_OFF;
-                    stateValue = 1;
-                } else {
-                    revData = revData + 1;
-                    pRevData = revData;
-                }
-                if ((TimeIntoRev <= revData[1].time) || (stateValue == 1)) {
-                    break;
-                }
-                remainingDataPoints = NumDataPoints;
+    if (eCurNisRevingState != NIS_PATTERN_ON) {
+        if (eCurNisRevingState == NIS_MERGE_WITH_PHYSICS) {
+            NISTRQ = 0.0f;
+            if (m_pEAXCar->GetPhysRPM() < PhysicsRPM) {
+                NISTRQ = 100.0f;
+            }
+            NISRPM = smooth(m_pEAXCar->GetPhysRPM(), PhysicsRPM, 500.0f);
+        } else {
+            NISTRQ = NISTRQ - 15.0f;
+            NISRPM = NISRPM - 500.0f;
+        }
+        goto ClampAndStore;
+    }
+
+    if (TotalTime < 0.001f) {
+        TimeIntoRev = TimeIntoRev + deltaTime;
+    } else {
+        TimeIntoRev = TotalTime;
+    }
+
+    if (TimeIntoRev <= pRevData[1].time) {
+InterpolatePattern:
+        if (eCurNisRevingState != NIS_OFF) {
+            Slope RPMSlope(static_cast<float>(pRevData->RPM), static_cast<float>(pRevData[1].RPM), pRevData->time, pRevData[1].time);
+            Slope TRQSlope(static_cast<float>(pRevData->Trq), static_cast<float>(pRevData[1].Trq), pRevData->time, pRevData[1].time);
+            NISRPM = RPMSlope.GetValue(TimeIntoRev);
+            NISTRQ = TRQSlope.GetValue(TimeIntoRev);
+        }
+    } else if (eCurNisRevingState != NIS_OFF) {
+        do {
+            NumDataPoints = NumDataPoints - 1;
+            if (NumDataPoints == 0) {
+                eCurNisRevingState = NIS_OFF;
+            } else {
+                pRevData = pRevData + 1;
+            }
+        } while (pRevData[1].time < TimeIntoRev && eCurNisRevingState != NIS_OFF);
+        goto InterpolatePattern;
+    }
+
+    timeLeft = -1.0f;
+    player = IPlayer::First(PLAYER_LOCAL);
+    if (player != nullptr) {
+        hud = player->GetHud();
+        if (hud != nullptr) {
+            icountdown = nullptr;
+            if (hud->QueryInterface(&icountdown)) {
+                timeLeft = icountdown->GetSecondsBeforeRaceStart();
             }
         }
-
-        if (stateValue != 1) {
-            Slope rpmSlope(static_cast< float >(revData->RPM), static_cast< float >(revData[1].RPM), revData->time,
-                           revData[1].time);
-            revData = pRevData;
-            Slope trqSlope(static_cast< float >(revData->Trq), static_cast< float >(revData[1].Trq), revData->time,
-                           revData[1].time);
-            NISRPM = rpmSlope.GetValue(TimeIntoRev);
-            NISTRQ = trqSlope.GetValue(TimeIntoRev);
-        }
-
-        float secondsBeforeRaceStart = -1.0f;
-        if (secondsBeforeRaceStart < 1.0f && secondsBeforeRaceStart > 0.0f) {
-            eCurNisRevingState = NIS_MERGE_WITH_PHYSICS;
-        }
-    } else if (nisState == NIS_MERGE_WITH_PHYSICS) {
-        float carPhysRPM =
-            *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pEAXCar)) + 0x64));
-        if (carPhysRPM < PhysicsRPM) {
-            NISTRQ = 100.0f;
-        } else {
-            NISTRQ = 0.0f;
-        }
-        NISRPM = smooth(carPhysRPM, PhysicsRPM, 500.0f);
-    } else {
-        NISRPM = NISRPM - 500.0f;
-        NISTRQ = NISTRQ - 15.0f;
     }
 
-    float nisTrq = NISTRQ;
-    if (nisTrq < 0.0f) {
-        nisTrq = 0.0f;
-    }
-    if (nisTrq > 100.0f) {
-        nisTrq = 100.0f;
+    if (timeLeft < 1.0f && 0.0f < timeLeft) {
+        eCurNisRevingState = NIS_MERGE_WITH_PHYSICS;
     }
 
-    float nisRpm = NISRPM;
-    if (nisRpm < 1000.0f) {
-        nisRpm = 1000.0f;
-    }
-    if (nisRpm > 10000.0f) {
-        nisRpm = 10000.0f;
-    }
+ClampAndStore:
+    {
+        float clampedTRQ = bClamp(NISTRQ, 0.0f, 100.0f);
+        float clampedRPM = bClamp(NISRPM, 1000.0f, 10000.0f);
 
-    NISTRQ = nisTrq;
-    PhysicsRPM = nisRpm;
-    NISRPM = nisRpm;
-    PhysicsTRQ = nisTrq;
-    m_fThrottle = nisTrq;
-    *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pEAXCar)) + 0x60)) = nisTrq;
-    *static_cast<int *>(static_cast<void *>(&IsAccelerating)) = (nisTrq > 30.0f);
-    *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pEAXCar)) + 0x64)) = PhysicsRPM;
-    *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pEAXCar)) + 0x70)) = m_fThrottle;
-    *static_cast<int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pEAXCar)) + 0x68)) =
-        static_cast<int>(static_cast<float>(*static_cast<int *>(static_cast<void *>(&IsAccelerating))) != 0.0f);
-    *static_cast<int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pEAXCar)) + 0x6C)) = static_cast<int>(m_CurGear);
+        PhysicsRPM = clampedRPM;
+        IsAccelerating = clampedTRQ > 30.0f;
+        m_fThrottle = clampedTRQ;
+        NISRPM = clampedRPM;
+        NISTRQ = clampedTRQ;
+        PhysicsTRQ = clampedTRQ;
+        m_pEAXCar->SetPhysTRQ(clampedTRQ);
+        m_pEAXCar->SetPhysRPM(PhysicsRPM);
+        m_pEAXCar->SetIsAccelerating(static_cast<float>(IsAccelerating));
+        m_pEAXCar->SetCurGear(static_cast<Sound::Gear>(m_CurGear));
+        m_pEAXCar->SetThrottle(m_fThrottle);
+    }
 }

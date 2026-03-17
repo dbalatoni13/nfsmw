@@ -30,6 +30,23 @@ class IHud : public UTL::COM::IUnknown, public UTL::Collections::Listable<IHud, 
     virtual void RefreshMiniMapItems();
 };
 
+class ICountdown : public UTL::COM::IUnknown {
+  public:
+    static HINTERFACE _IHandle() {
+        return (HINTERFACE)_IHandle;
+    }
+
+    ICountdown(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
+
+  protected:
+    virtual ~ICountdown() {}
+
+  public:
+    virtual void BeginCountdown();
+    virtual bool IsActive();
+    virtual float GetSecondsBeforeRaceStart();
+};
+
 enum GenericMessage_Priority {
     GenericMessage_Priority_None = 0,
     GenericMessage_Priority_5 = 1,

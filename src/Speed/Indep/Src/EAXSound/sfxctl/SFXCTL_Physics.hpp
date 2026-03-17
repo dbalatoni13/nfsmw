@@ -6,13 +6,14 @@
 #endif
 
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL.hpp"
+#include "Speed/Indep/Src/EAXSound/EAXCarState.hpp"
 #include "Speed/Indep/Src/Misc/Table.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXAIUtils.hpp"
 
 struct EngRevDataPoint;
 struct MAIEngineRev;
 
-enum Gear {};
+typedef Sound::Gear Gear;
 enum NIS_ENGINE_REVING_STATE {
     NIS_DISABLED = 0,
     NIS_OFF = 1,

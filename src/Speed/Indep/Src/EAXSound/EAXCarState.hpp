@@ -164,6 +164,10 @@ struct EAX_CarState : public UTL::Collections::Listable<EAX_CarState, 10> {
         return mDriveline.mGearShiftFlag != 0;
     }
 
+    int GetNISCarID() {
+        return mNISCarID;
+    }
+
     EAX_CarState(const Attrib::Collection *atr, Sound::Context context, unsigned int wuid, HSIMABLE__ *handle);
 };
 
