@@ -1232,6 +1232,36 @@ void GRaceStatus::Init() {
     }
 }
 
+void GRaceStatus::OnRemovedVehicleCache(IVehicle *ivehicle) {}
+
+const char *GRaceStatus::GetCacheName() const {
+    return "GRaceStatus";
+}
+
+void GRaceStatus::SetRaceContext(GRace::Context context) {
+    mRaceContext = context;
+}
+
+int GRaceStatus::GetRacerCount() const {
+    return mRacerCount;
+}
+
+void GRaceStatus::SetActivelyRacing(bool racing) {
+    mActivelyRacing = racing;
+}
+
+void GRaceStatus::SetHasBeenWon(bool won) {
+    mHasBeenWon = won;
+}
+
+void GRaceStatus::SetIsLoading(bool loading) {
+    mIsLoading = loading;
+}
+
+void GRaceStatus::SetTaskTime(float time) {
+    mTaskTime = time;
+}
+
 void GRaceStatus::Shutdown() {
     if (fObj) {
         delete fObj;
@@ -1318,6 +1348,10 @@ void GRaceStatus::SetRaceActivity(GActivity *activity) {
     mRaceParms = activity ? GRaceDatabase::Get().GetRaceFromActivity(activity) : nullptr;
     DetermineRaceLength();
 }
+
+void GRaceStatus::AddAvailableEventToMap(GRuntimeInstance *trigger, GRuntimeInstance *activity) {}
+
+void GRaceStatus::AddSpeedTrapToMap(GRuntimeInstance *trigger) {}
 
 void GRaceStatus::AwardBonusTime(float seconds) {
     mBonusTime += seconds;
@@ -1424,6 +1458,10 @@ float GRaceStatus::GetSegmentLength(int segment, int lap) {
     }
 
     return mSegmentLengths[segment];
+}
+
+void GRaceStatus::EnterSuddenDeath() {
+    mSuddenDeathMode = true;
 }
 
 float GRaceStatus::DetermineRaceSegmentLength(const UMath::Vector4 *positions, const UMath::Vector4 *directions, int start, int end) {

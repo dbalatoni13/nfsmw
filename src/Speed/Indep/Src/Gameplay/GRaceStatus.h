@@ -406,12 +406,12 @@ class GRaceStatus : public UTL::COM::Object, public IVehicleCache {
     enum eVehicleCacheResult OnQueryVehicleCache(const IVehicle *removethis, const IVehicleCache *whosasking) const override;
 
     // Overrides: IVehicleCache
-    void OnRemovedVehicleCache(IVehicle *ivehicle) override {}
+    void OnRemovedVehicleCache(IVehicle *ivehicle) override;
 
     // Overrides: IVehicleCache
-    const char *GetCacheName() const override { return "GRaceStatus"; }
+    const char *GetCacheName() const override;
 
-    void SetRaceContext(GRace::Context context) { mRaceContext = context; }
+    void SetRaceContext(GRace::Context context);
 
     GRacerInfo &GetRacerInfo(int index);
 
@@ -419,12 +419,12 @@ class GRaceStatus : public UTL::COM::Object, public IVehicleCache {
 
     GRacerInfo *GetWinningPlayerInfo();
 
-    int GetRacerCount() const { return mRacerCount; }
+    int GetRacerCount() const;
 
-    void SetActivelyRacing(bool racing) { mActivelyRacing = racing; }
-    void SetHasBeenWon(bool won) { mHasBeenWon = won; }
-    void SetIsLoading(bool loading) { mIsLoading = loading; }
-    void SetTaskTime(float time) { mTaskTime = time; }
+    void SetActivelyRacing(bool racing);
+    void SetHasBeenWon(bool won);
+    void SetIsLoading(bool loading);
+    void SetTaskTime(float time);
 
     void StartMasterTimer();
 
@@ -456,9 +456,9 @@ class GRaceStatus : public UTL::COM::Object, public IVehicleCache {
 
     void NotifyScriptWhenLoaded();
 
-    void AddAvailableEventToMap(GRuntimeInstance *trigger, GRuntimeInstance *activity) {}
+    void AddAvailableEventToMap(GRuntimeInstance *trigger, GRuntimeInstance *activity);
 
-    void AddSpeedTrapToMap(GRuntimeInstance *trigger) {}
+    void AddSpeedTrapToMap(GRuntimeInstance *trigger);
 
     void AwardBonusTime(float seconds);
 
@@ -602,7 +602,7 @@ class GRaceStatus : public UTL::COM::Object, public IVehicleCache {
         return mRaceBin->GetScaleOpenWorldHeat();
     }
 
-    void EnterSuddenDeath() { mSuddenDeathMode = true; }
+    void EnterSuddenDeath();
 
   private:
     static struct GRaceStatus *fObj;
