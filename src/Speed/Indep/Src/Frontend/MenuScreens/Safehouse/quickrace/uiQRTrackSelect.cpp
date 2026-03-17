@@ -60,9 +60,6 @@ void UIQRTrackSelect::Setup() {
     GRace::Type raceMode = FEDatabase->RaceMode;
     unsigned int hash;
     switch (raceMode) {
-    case GRace::kRaceType_P2P:
-        hash = 0xc2d85652;
-        break;
     case GRace::kRaceType_Circuit:
         hash = 0x3de80a85;
         break;
@@ -71,6 +68,9 @@ void UIQRTrackSelect::Setup() {
         break;
     case GRace::kRaceType_Knockout:
         hash = 0xd6d65640;
+        break;
+    case GRace::kRaceType_P2P:
+        hash = 0xc2d85652;
         break;
     case GRace::kRaceType_Tollbooth:
         hash = 0xe3afadc9;
