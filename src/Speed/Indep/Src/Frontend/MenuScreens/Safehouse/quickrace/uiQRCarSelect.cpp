@@ -696,7 +696,8 @@ void UIQRCarSelect::NotificationMessage(unsigned long msg, FEObject *pobj, unsig
             FEPlayerCarDB *stable2 = FEDatabase->GetPlayerCarStable(0);
             FECarRecord *car = stable2->GetCarRecordByHandle(pSelectedCar->mHandle);
             FECareerRecord *career = stable2->GetCareerRecordByHandle(car->CareerHandle);
-            if (career->TheImpoundData.IsImpounded()) {
+            if (career->TheImpoundData.IsImpounded() ||
+                career->TheImpoundData.ImpoundedState == FEImpoundData::IMPOUND_RELEASED) {
                 TheBustedManager.MaybeReleaseCar();
                 return;
             }
@@ -743,7 +744,8 @@ void UIQRCarSelect::NotificationMessage(unsigned long msg, FEObject *pobj, unsig
             FEPlayerCarDB *stable = FEDatabase->GetPlayerCarStable(0);
             FECarRecord *car = stable->GetCarRecordByHandle(originalCar);
             FECareerRecord *career = stable->GetCareerRecordByHandle(car->CareerHandle);
-            if (career->TheImpoundData.IsImpounded()) {
+            if (career->TheImpoundData.IsImpounded() ||
+                career->TheImpoundData.ImpoundedState == FEImpoundData::IMPOUND_RELEASED) {
                 DialogInterface::ShowOk(GetPackageName(), "", static_cast<eDialogTitle>(1), 0x630931b6);
                 bShouldProceed = false;
             }
