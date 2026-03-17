@@ -192,7 +192,7 @@ void CarSoundConn::UpdateState(float dT) {
     if (g_pEAXSound == nullptr) {
         return;
     }
-    if (mTarget.GetMatrix() == nullptr) {
+    if (!mTarget.IsValid()) {
         return;
     }
     if (!mConnected) {
@@ -258,7 +258,7 @@ void CarSoundConn::UpdateState(float dT) {
     mState->mEngine.mBlownFlag = data.mEngineBlown;
     mState->mBrake = data.mBrakePercent;
     mState->mEBrake = data.mEBrakePercent;
-    mState->mSteering = static_cast<unsigned short>(static_cast<int>(data.mSteering * 10430.378f));
+    mState->mSteering = bRadToAng(data.mSteering);
     mState->mSirenState = data.mSirenState;
     mState->mHotPursuit = data.mHotPursuit;
     mState->mOversteer = data.mOversteer;
@@ -266,13 +266,7 @@ void CarSoundConn::UpdateState(float dT) {
     mState->mSlipAngle = -data.mSlipAngle;
     mState->mHealth = data.mHealth;
 
-    const bVector3 *velocity = mTarget.GetVelocity();
-    const float speedSq = velocity->x * velocity->x + velocity->y * velocity->y + velocity->z * velocity->z;
-    if (speedSq > 0.0f) {
-        mState->mFWSpeed = bSqrt(speedSq);
-    } else {
-        mState->mFWSpeed = 0.0f;
-    }
+    mState->mFWSpeed = bLength(mTarget.GetVelocity());
 
     mState->mTrailerID = data.mTrailer;
     mState->mTimeSinceSeen = data.mTimeSinceSeen;
@@ -280,7 +274,7 @@ void CarSoundConn::UpdateState(float dT) {
     mState->mControlSource = static_cast<Sound::ControlSource>(data.mControlSource);
 
     for (int i = 0; i < 4; ++i) {
-        mState->mWheel[i].mWheelOnGround = data.mWheelOnGround[i] ? 1 : 0;
+        mState->mWheel[i].mWheelOnGround = data.mWheelOnGround[i];
         mState->mWheel[i].mWheelSlip = data.mWheelSlip[i];
         mState->mWheel[i].mPercentFsFkTransfer = 1.0f - data.mTractionPct[i];
         mState->mWheel[i].mPrevTerrainType = mState->mWheel[i].mTerrainType;
