@@ -5,7 +5,7 @@
 unsigned int bDefaultSeed = 0x12345678;
 
 void bEndianSwap64(void *value) {
-    unsigned long long temp = *reinterpret_cast<unsigned long long *>(value);
+    long long temp = *reinterpret_cast<long long *>(value);
     *reinterpret_cast<unsigned char *>(value) = temp;
     *(reinterpret_cast<unsigned char *>(value) + 1) = temp >> 8;
     *(reinterpret_cast<unsigned char *>(value) + 2) = temp >> 16;
@@ -67,7 +67,7 @@ int bDiv(int a, int b) {
         return -0x80000000;
     } else {
         int half_inverse_b = 0x7fffffff / b;
-        return ((((long long)a * half_inverse_b) >> 32) << 16 | (unsigned int)((long long)a * half_inverse_b) >> 16) << 1;
+        return bMult(a, half_inverse_b);
     }
 }
 
@@ -142,6 +142,43 @@ float bSin(float angle) {
 
 float bCos(unsigned short angle) {
     return bSin(static_cast<unsigned short>(angle + bDegToAng(90.0f)));
+}
+
+void bSinCos(float *presult_sin, float *presult_cos, unsigned short angle) {
+    float a = bAngToRad(angle);
+    float flip_sign = 1.0f;
+    const float pi = 3.1415927f;
+
+    if (a >= 4.712389f) {
+        a -= 2.0f * pi;
+    } else if (a >= 1.5707964f) {
+        flip_sign = -flip_sign;
+        a -= pi;
+    }
+
+    float a2 = a * a;
+    float a3 = a * a2;
+    float result_cos = 1.0f;
+    float result_sin = a;
+    result_cos -= a2 * 0.5f;
+    result_sin -= a3 * 0.16666667f;
+    float a4 = a2 * a2;
+    float a5 = a3 * a2;
+    result_cos += a4 * 0.041666668f;
+    result_sin += a5 * 0.008333334f;
+    float a6 = a4 * a2;
+    float a7 = a5 * a2;
+    result_cos -= a6 * 0.0013888889f;
+    result_sin -= a7 * 0.0001984127f;
+    float a8 = a6 * a2;
+    float a9 = a7 * a2;
+    result_cos += a8 * 0.000024801588f;
+    result_sin += a9 * 0.0000027557319f;
+    float a10 = a8 * a2;
+    result_cos -= a10 * 0.00000027557319f;
+
+    *presult_sin = result_sin * flip_sign;
+    *presult_cos = result_cos * flip_sign;
 }
 
 struct ASinTableEntry {
@@ -243,7 +280,7 @@ unsigned short bATan(float x, float y) {
             float r = y;
             int i = static_cast<int>((x / r) * 65536.0f);
             const unsigned short *table = &bFastATanTable[i >> 8];
-            a = bDegToAng(90.0f) - (((table[1] - table[0]) * (i & 0xFF)) >> 8) - table[0];
+            a = bDegToAng(90.0f) - (table[0] + (((table[1] - table[0]) * (i & 0xFF)) >> 8));
         } else if (y == 0.0f) {
             a = 0;
         } else {
@@ -261,6 +298,127 @@ unsigned short bATan(float x, float y) {
         return bDegToAng(180.0f) + a;
 }
 
+unsigned short bASin(float x) {
+    register int negative = 0;
+    if (x < 0.0f) {
+        x = -x;
+        negative = 1;
+    }
+
+    unsigned int a;
+    if (x >= 1.0f) {
+        a = 0xc000;
+        if (negative == 0) {
+            a = 0x4000;
+        }
+    } else {
+        int table_spacing = 0x8000;
+        int table_number = 0;
+        int fix_x = static_cast<int>(x * 65536.0f);
+        int table_top = 0x8000;
+
+        if (fix_x >= table_spacing) {
+            do {
+                table_spacing = table_spacing >> 1;
+                table_number = table_number + 1;
+                table_top = table_top + table_spacing;
+                if (fix_x < table_top) {
+                    break;
+                }
+            } while (table_number < 0xb);
+        }
+
+        int table_index = (fix_x - (table_top - table_spacing)) >> (0xbU - table_number);
+        int entry = (table_number * 0x10 + table_index) * 8;
+        float table_value = static_cast<float>(table_top - table_spacing + table_index * (table_spacing >> 4)) * 1.5258789e-05f;
+        a = (static_cast<unsigned int>(*reinterpret_cast<unsigned short *>(reinterpret_cast<char *>(bASinTable) + entry)) +
+             static_cast<int>(static_cast<float>(x - table_value) * *reinterpret_cast<float *>(reinterpret_cast<char *>(bASinTable) + entry + 4) * 65536.0f)) &
+            0xffff;
+        if (negative != 0) {
+            a = (-static_cast<int>(a)) & 0xffff;
+        }
+    }
+
+    return static_cast<unsigned short>(a);
+}
+
+unsigned short bFixATan(int x) {
+    int negate = 0;
+    if (x < 0) {
+        negate = 1;
+        x = -x;
+    }
+
+    unsigned int lo;
+    unsigned int hi;
+    int fraction;
+
+    if (x < 0x200000) {
+        const unsigned short *table;
+
+        if (x < 0x40000) {
+            table = bFixATanTableLow + (x >> 0xb);
+            fraction = (x << 5) & 0xffff;
+        } else {
+            table = bFixATanTableHigh + (x >> 0xe);
+            fraction = (x << 2) & 0xffff;
+        }
+
+        lo = table[0];
+        hi = table[1];
+    } else if (x < 0x1000000) {
+        fraction = x >> 8;
+        hi = 0x3fd7;
+        lo = 0x3eba;
+    } else {
+        lo = 0x3fff;
+        hi = 0x3fff;
+        fraction = 0;
+    }
+
+    unsigned int result = lo + (static_cast<int>((hi - lo) * fraction) >> 16);
+    if (negate) {
+        return static_cast<unsigned short>((-static_cast<int>(result)) & 0xffff);
+    }
+    return static_cast<unsigned short>(result & 0xffff);
+}
+
+unsigned short bFixATan(int x, int y) {
+    int quad = 0;
+    if (x < 0) {
+        quad = 1;
+        x = -x;
+    }
+
+    if (y < 0) {
+        quad ^= 3;
+        y = -y;
+    }
+
+    int angle;
+    if (x <= (y >> 0xe)) {
+        angle = 0x4000;
+    } else {
+        angle = bFixATan(bDiv(y, x));
+    }
+
+    switch (quad) {
+    case 1:
+        angle = -0x8000 - angle;
+        break;
+    case 0:
+        break;
+    case 2:
+        angle += -0x8000;
+        break;
+    default:
+        angle = -angle;
+        break;
+    }
+
+    return static_cast<unsigned short>(angle);
+}
+
 void bMathTimingTest() {}
 
 void bInvertMatrix(bMatrix4 *dest, const bMatrix4 *src) {
@@ -269,26 +427,179 @@ void bInvertMatrix(bMatrix4 *dest, const bMatrix4 *src) {
 
 // UNSOLVED
 float fDeterminant(bMatrix4 *m) {
-    float value =
-        m->v0.x * m->v1.y * m->v2.z * m->v3.w +
-        (((m->v0.z * m->v1.x * m->v2.y * m->v3.w + m->v0.y * m->v1.z * m->v2.x * m->v3.w +
-           (((m->v0.y * m->v1.x * m->v2.w * m->v3.z + m->v0.x * m->v1.w * m->v2.y * m->v3.z +
-              (((m->v0.w * m->v1.y * m->v2.x * m->v3.z + m->v0.x * m->v1.z * m->v2.w * m->v3.y +
-                 (((m->v0.w * m->v1.x * m->v2.z * m->v3.y + m->v0.z * m->v1.w * m->v2.x * m->v3.y +
-                    (((m->v0.z * m->v1.y * m->v2.w * m->v3.x + m->v0.y * m->v1.w * m->v2.z * m->v3.x +
-                       ((m->v0.w * m->v1.z * m->v2.y * m->v3.x - m->v0.z * m->v1.w * m->v2.y * m->v3.x) - m->v0.w * m->v1.y * m->v2.z * m->v3.x)) -
-                      m->v0.y * m->v1.z * m->v2.w * m->v3.x) -
-                     m->v0.w * m->v1.z * m->v2.x * m->v3.y)) -
-                   m->v0.x * m->v1.w * m->v2.z * m->v3.y) -
-                  m->v0.z * m->v1.x * m->v2.w * m->v3.y)) -
-                m->v0.y * m->v1.w * m->v2.x * m->v3.z) -
-               m->v0.w * m->v1.x * m->v2.y * m->v3.z)) -
-             m->v0.x * m->v1.y * m->v2.w * m->v3.z) -
-            m->v0.z * m->v1.y * m->v2.x * m->v3.w)) -
-          m->v0.x * m->v1.z * m->v2.y * m->v3.w) -
-         m->v0.y * m->v1.x * m->v2.z * m->v3.w);
+    float *param_1 = reinterpret_cast<float *>(m);
+    float fVar1 = param_1[2];
+    float fVar2 = param_1[7];
+    float fVar3 = param_1[9];
+    float fVar4 = param_1[3];
+    float fVar5 = param_1[6];
+    float fVar6 = param_1[5];
+    float fVar7 = param_1[0xc];
+    float fVar8 = param_1[10];
+    float fVar9 = param_1[1];
+    float fVar10 = param_1[0xb];
+    float fVar11 = param_1[8];
+    float fVar12 = param_1[0xd];
+    float fVar13 = param_1[4];
+    float fVar14 = param_1[0];
+    float fVar15 = param_1[0xe];
+    float fVar16 = param_1[0xf];
 
+    float value =
+        fVar14 * fVar6 * fVar8 * fVar16 -
+        fVar9 * fVar13 * fVar8 * fVar16 -
+        fVar14 * fVar5 * fVar3 * fVar16 +
+        fVar1 * fVar13 * fVar3 * fVar16 +
+        fVar9 * fVar5 * fVar11 * fVar16 -
+        fVar1 * fVar6 * fVar11 * fVar16 -
+        fVar14 * fVar6 * fVar10 * fVar15 +
+        fVar9 * fVar13 * fVar10 * fVar15 +
+        fVar14 * fVar2 * fVar3 * fVar15 -
+        fVar4 * fVar13 * fVar3 * fVar15 -
+        fVar9 * fVar2 * fVar11 * fVar15 +
+        fVar4 * fVar6 * fVar11 * fVar15 +
+        fVar14 * fVar5 * fVar10 * fVar12 -
+        fVar1 * fVar13 * fVar10 * fVar12 -
+        fVar14 * fVar2 * fVar8 * fVar12 +
+        fVar4 * fVar13 * fVar8 * fVar12 +
+        fVar1 * fVar2 * fVar11 * fVar12 -
+        fVar4 * fVar5 * fVar11 * fVar12 +
+        fVar1 * fVar6 * fVar10 * fVar7 -
+        fVar9 * fVar5 * fVar10 * fVar7 +
+        fVar9 * fVar2 * fVar8 * fVar7 -
+        fVar1 * fVar2 * fVar3 * fVar7 +
+        fVar4 * fVar5 * fVar3 * fVar7 -
+        fVar4 * fVar6 * fVar8 * fVar7;
     return value;
+}
+
+void fInvertMatrix(bMatrix4 *d, bMatrix4 *s) {
+    float *param_1 = reinterpret_cast<float *>(d);
+    float *pfVar1 = reinterpret_cast<float *>(s);
+    float fVar2 = fDeterminant(s);
+    fVar2 = 1.0f / fVar2;
+
+    *param_1 = fVar2 * (((((pfVar1[6] * pfVar1[0xb] * pfVar1[0xd] - pfVar1[7] * pfVar1[10] * pfVar1[0xd]) + pfVar1[7] * pfVar1[9] * pfVar1[0xe]) -
+                           pfVar1[5] * pfVar1[0xb] * pfVar1[0xe]) -
+                          pfVar1[6] * pfVar1[9] * pfVar1[0xf]) +
+                         pfVar1[5] * pfVar1[10] * pfVar1[0xf]);
+    param_1[1] = fVar2 * ((((pfVar1[3] * pfVar1[10] * pfVar1[0xd] - pfVar1[2] * pfVar1[0xb] * pfVar1[0xd]) - pfVar1[3] * pfVar1[9] * pfVar1[0xe]) +
+                            pfVar1[1] * pfVar1[0xb] * pfVar1[0xe] + pfVar1[2] * pfVar1[9] * pfVar1[0xf]) -
+                           pfVar1[1] * pfVar1[10] * pfVar1[0xf]);
+    param_1[2] = fVar2 * (((((pfVar1[2] * pfVar1[7] * pfVar1[0xd] - pfVar1[3] * pfVar1[6] * pfVar1[0xd]) + pfVar1[3] * pfVar1[5] * pfVar1[0xe]) -
+                             pfVar1[1] * pfVar1[7] * pfVar1[0xe]) -
+                            pfVar1[2] * pfVar1[5] * pfVar1[0xf]) +
+                           pfVar1[1] * pfVar1[6] * pfVar1[0xf]);
+    param_1[3] = fVar2 * ((((pfVar1[3] * pfVar1[6] * pfVar1[9] - pfVar1[2] * pfVar1[7] * pfVar1[9]) - pfVar1[3] * pfVar1[5] * pfVar1[10]) +
+                            pfVar1[1] * pfVar1[7] * pfVar1[10] + pfVar1[2] * pfVar1[5] * pfVar1[0xb]) -
+                           pfVar1[1] * pfVar1[6] * pfVar1[0xb]);
+    param_1[4] = fVar2 * ((((pfVar1[7] * pfVar1[10] * pfVar1[0xc] - pfVar1[6] * pfVar1[0xb] * pfVar1[0xc]) - pfVar1[7] * pfVar1[8] * pfVar1[0xe]) +
+                            pfVar1[4] * pfVar1[0xb] * pfVar1[0xe] + pfVar1[6] * pfVar1[8] * pfVar1[0xf]) -
+                           pfVar1[4] * pfVar1[10] * pfVar1[0xf]);
+    param_1[5] = fVar2 * (((((pfVar1[2] * pfVar1[0xb] * pfVar1[0xc] - pfVar1[3] * pfVar1[10] * pfVar1[0xc]) + pfVar1[3] * pfVar1[8] * pfVar1[0xe]) -
+                             *pfVar1 * pfVar1[0xb] * pfVar1[0xe]) -
+                            pfVar1[2] * pfVar1[8] * pfVar1[0xf]) +
+                           *pfVar1 * pfVar1[10] * pfVar1[0xf]);
+    param_1[6] = fVar2 * ((((pfVar1[3] * pfVar1[6] * pfVar1[0xc] - pfVar1[2] * pfVar1[7] * pfVar1[0xc]) - pfVar1[3] * pfVar1[4] * pfVar1[0xe]) +
+                            *pfVar1 * pfVar1[7] * pfVar1[0xe] + pfVar1[2] * pfVar1[4] * pfVar1[0xf]) -
+                           *pfVar1 * pfVar1[6] * pfVar1[0xf]);
+    param_1[7] = fVar2 * (((((pfVar1[2] * pfVar1[7] * pfVar1[8] - pfVar1[3] * pfVar1[6] * pfVar1[8]) + pfVar1[3] * pfVar1[4] * pfVar1[10]) -
+                             *pfVar1 * pfVar1[7] * pfVar1[10]) -
+                            pfVar1[2] * pfVar1[4] * pfVar1[0xb]) +
+                           *pfVar1 * pfVar1[6] * pfVar1[0xb]);
+    param_1[8] = fVar2 * (((((pfVar1[5] * pfVar1[0xb] * pfVar1[0xc] - pfVar1[7] * pfVar1[9] * pfVar1[0xc]) + pfVar1[7] * pfVar1[8] * pfVar1[0xd]) -
+                             pfVar1[4] * pfVar1[0xb] * pfVar1[0xd]) -
+                            pfVar1[5] * pfVar1[8] * pfVar1[0xf]) +
+                           pfVar1[4] * pfVar1[9] * pfVar1[0xf]);
+    param_1[9] = fVar2 * ((((pfVar1[3] * pfVar1[9] * pfVar1[0xc] - pfVar1[1] * pfVar1[0xb] * pfVar1[0xc]) - pfVar1[3] * pfVar1[8] * pfVar1[0xd]) +
+                            *pfVar1 * pfVar1[0xb] * pfVar1[0xd] + pfVar1[1] * pfVar1[8] * pfVar1[0xf]) -
+                           *pfVar1 * pfVar1[9] * pfVar1[0xf]);
+    param_1[10] = fVar2 * (((((pfVar1[1] * pfVar1[7] * pfVar1[0xc] - pfVar1[3] * pfVar1[5] * pfVar1[0xc]) + pfVar1[3] * pfVar1[4] * pfVar1[0xd]) -
+                              *pfVar1 * pfVar1[7] * pfVar1[0xd]) -
+                             pfVar1[1] * pfVar1[4] * pfVar1[0xf]) +
+                            *pfVar1 * pfVar1[5] * pfVar1[0xf]);
+    param_1[0xb] = fVar2 * ((((pfVar1[3] * pfVar1[5] * pfVar1[8] - pfVar1[1] * pfVar1[7] * pfVar1[8]) - pfVar1[3] * pfVar1[4] * pfVar1[9]) +
+                              *pfVar1 * pfVar1[7] * pfVar1[9] + pfVar1[1] * pfVar1[4] * pfVar1[0xb]) -
+                             *pfVar1 * pfVar1[5] * pfVar1[0xb]);
+    param_1[0xc] = fVar2 * ((((pfVar1[6] * pfVar1[9] * pfVar1[0xc] - pfVar1[5] * pfVar1[10] * pfVar1[0xc]) - pfVar1[6] * pfVar1[8] * pfVar1[0xd]) +
+                              pfVar1[4] * pfVar1[10] * pfVar1[0xd] + pfVar1[5] * pfVar1[8] * pfVar1[0xe]) -
+                             pfVar1[4] * pfVar1[9] * pfVar1[0xe]);
+    param_1[0xd] = fVar2 * (((((pfVar1[1] * pfVar1[10] * pfVar1[0xc] - pfVar1[2] * pfVar1[9] * pfVar1[0xc]) + pfVar1[2] * pfVar1[8] * pfVar1[0xd]) -
+                              *pfVar1 * pfVar1[10] * pfVar1[0xd]) -
+                             pfVar1[1] * pfVar1[8] * pfVar1[0xe]) +
+                            *pfVar1 * pfVar1[9] * pfVar1[0xe]);
+    param_1[0xe] = fVar2 * ((((pfVar1[2] * pfVar1[5] * pfVar1[0xc] - pfVar1[1] * pfVar1[6] * pfVar1[0xc]) - pfVar1[2] * pfVar1[4] * pfVar1[0xd]) +
+                              *pfVar1 * pfVar1[6] * pfVar1[0xd] + pfVar1[1] * pfVar1[4] * pfVar1[0xe]) -
+                             *pfVar1 * pfVar1[5] * pfVar1[0xe]);
+    param_1[0xf] = fVar2 * (((((pfVar1[1] * pfVar1[6] * pfVar1[8] - pfVar1[2] * pfVar1[5] * pfVar1[8]) + pfVar1[2] * pfVar1[4] * pfVar1[9]) -
+                              *pfVar1 * pfVar1[6] * pfVar1[9]) -
+                             pfVar1[1] * pfVar1[4] * pfVar1[10]) +
+                            *pfVar1 * pfVar1[5] * pfVar1[10]);
+}
+
+void hermite_basis(bMatrix4 *b, bMatrix4 *p, float u1, float u2, float u3, float u4) {
+    bMatrix4 U;
+    bMatrix4 iU;
+    bMatrix4 Mf;
+    bMatrix4 iMf;
+    bMatrix4 K;
+    bMatrix4 Nf;
+
+    Mf.v0.x = 2.0f;
+    Mf.v0.y = -2.0f;
+    Mf.v0.z = 1.0f;
+    Mf.v0.w = 1.0f;
+    Mf.v1.x = -3.0f;
+    Mf.v1.y = 3.0f;
+    Mf.v1.z = -2.0f;
+    Mf.v1.w = -1.0f;
+    Mf.v2.x = 0.0f;
+    Mf.v2.y = 0.0f;
+    Mf.v2.z = 1.0f;
+    Mf.v2.w = 0.0f;
+    Mf.v3.x = 1.0f;
+    Mf.v3.y = 0.0f;
+    Mf.v3.z = 0.0f;
+    Mf.v3.w = 0.0f;
+
+    iMf.v0.x = 0.0f;
+    iMf.v0.y = 0.0f;
+    iMf.v0.z = 0.0f;
+    iMf.v0.w = 1.0f;
+    iMf.v1.x = 1.0f;
+    iMf.v1.y = 1.0f;
+    iMf.v1.z = 1.0f;
+    iMf.v1.w = 1.0f;
+    iMf.v2.x = 0.0f;
+    iMf.v2.y = 0.0f;
+    iMf.v2.z = 1.0f;
+    iMf.v2.w = 0.0f;
+    iMf.v3.x = 3.0f;
+    iMf.v3.y = 2.0f;
+    iMf.v3.z = 1.0f;
+    iMf.v3.w = 0.0f;
+
+    U.v0.x = u1 * u1 * u1;
+    U.v0.y = u1 * u1;
+    U.v0.z = u1;
+    U.v0.w = 1.0f;
+    U.v1.x = u2 * u2 * u2;
+    U.v1.y = u2 * u2;
+    U.v1.z = u2;
+    U.v1.w = 1.0f;
+    U.v2.x = u3 * u3 * u3;
+    U.v2.y = u3 * u3;
+    U.v2.z = u3;
+    U.v2.w = 1.0f;
+    U.v3.x = u4 * u4 * u4;
+    U.v3.y = u4 * u4;
+    U.v3.z = u4;
+    U.v3.w = 1.0f;
+
+    fInvertMatrix(&iU, &U);
+    eMulMatrix(&K, &iMf, &iU);
+    eMulMatrix(&Nf, &Mf, &K);
+    eMulMatrix(b, &Nf, p);
 }
 
 void hermite_parameter(bVector4 *dest, const bMatrix4 *b, float t) {
@@ -320,4 +631,38 @@ bMatrix4 *bTransposeMatrix(bMatrix4 *dest, const bMatrix4 *m) {
 // TODO
 #endif
     return dest;
+}
+
+void bConvertToBond(bMatrix4 &dest, const bMatrix4 &m) {
+    float v1x = m.v1.y;
+    float v1y = m.v1.z;
+    float v1z = m.v1.x;
+    float v1w = m.v1.w;
+
+    bConvertToBond(dest.v1, m.v2);
+    bConvertToBond(dest.v2, m.v0);
+
+    dest.v0.x = v1x;
+    dest.v0.y = -v1y;
+    dest.v0.z = -v1z;
+    dest.v0.w = v1w;
+
+    bConvertToBond(dest.v3, m.v3);
+}
+
+void bConvertFromBond(bMatrix4 &dest, const bMatrix4 &m) {
+    float v0x = m.v0.z;
+    float v0y = m.v0.x;
+    float v0z = m.v0.y;
+    float v0w = m.v0.w;
+
+    bConvertFromBond(dest.v0, m.v2);
+    bConvertFromBond(dest.v2, m.v1);
+
+    dest.v1.x = -v0x;
+    dest.v1.y = v0y;
+    dest.v1.z = -v0z;
+    dest.v1.w = v0w;
+
+    bConvertFromBond(dest.v3, m.v3);
 }

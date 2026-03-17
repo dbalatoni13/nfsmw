@@ -7,6 +7,8 @@
 
 #include "Speed/Indep/bWare/Inc/bDebug.hpp"
 
+extern "C" void bMemSet(void *dest, unsigned char pattern, unsigned int size);
+
 struct bSharedString {
     // total size: 0x8
     unsigned short Size;  // offset 0x0, size 0x2
@@ -22,12 +24,14 @@ struct bSharedStringPool {
     bSharedString *StringTable;           // offset 0x8, size 0x4
     bMutex Mutex;                         // offset 0xC, size 0x20
     int NumBytesAllocated;                // offset 0x2C, size 0x4
-    int MostBytesAllocated;               // offset 0x30, size 0x4
+    int MostBytesAllocated;              // offset 0x30, size 0x4
     int NumStringsAllocated;              // offset 0x34, size 0x4
     int MostStringsAllocated;             // offset 0x38, size 0x4
     bSharedString *FastLookupTable[2048]; // offset 0x3C, size 0x2000
     char FastLookupTableCount[2048];      // offset 0x203C, size 0x800
     bSharedString *LargestFreeString;     // offset 0x283C, size 0x4
+
+    bSharedStringPool() { bMemSet(this, 0, sizeof(bSharedStringPool)); }
 
     void Init(int size);
     const char *Allocate(const char *s);
