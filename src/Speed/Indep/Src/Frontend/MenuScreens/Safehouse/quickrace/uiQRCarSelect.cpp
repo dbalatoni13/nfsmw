@@ -481,31 +481,30 @@ void UIQRCarSelect::NotificationMessage(unsigned long msg, FEObject *pobj, unsig
         if (FEDatabase->GetCareerSettings()->GetCurrentBin() > 15) return;
         if (!pSelectedCar) return;
         FECarRecord *car = GetSelectedCarRecord();
-        if (car->IsCareer()) {
+        if (car->CareerHandle != 0xff) {
             FEPlayerCarDB *stable = FEDatabase->GetPlayerCarStable(iPlayerNum);
             FECareerRecord *career = stable->GetCareerRecordByHandle(car->CareerHandle);
-            bool showImpoundedDialog = career->TheImpoundData.IsImpounded();
-            if (showImpoundedDialog) {
+            if (career->TheImpoundData.IsImpounded()) {
                 DialogInterface::ShowOneButton(GetPackageName(), "", static_cast<eDialogTitle>(1),
                     0x417b2601, 0x34dc1bcf, 0x80e4f27c);
                 return;
             }
         }
         FEPlayerCarDB *stable2 = FEDatabase->GetPlayerCarStable(iPlayerNum);
-        if (stable2->GetNumAvailableCareerCars() > 1) {
-            unsigned int cost = car->GetCost();
-            char cost_str[16];
-            bSNPrintf(cost_str, 0x10, "%d", cost >> 1);
-            const char *fmt = GetLocalizedString(0xb4a40135);
-            char buf[512];
-            bSNPrintf(buf, 0x200, fmt, cost_str);
-            DialogInterface::ShowTwoButtons(GetPackageName(), "", static_cast<eDialogTitle>(1),
-                0x70e01038, 0x417b25e4, 0xa46253ba, 0x34dc1bcf, 0x34dc1bcf,
-                static_cast<eDialogFirstButtons>(1), buf);
+        if (stable2->GetNumAvailableCareerCars() < 2) {
+            DialogInterface::ShowOneButton(GetPackageName(), "", static_cast<eDialogTitle>(1),
+                0x417b2601, 0x34dc1bcf, 0x9a772bd6);
             return;
         }
-        DialogInterface::ShowOneButton(GetPackageName(), "", static_cast<eDialogTitle>(1),
-            0x417b2601, 0x34dc1bcf, 0x9a772bd6);
+        unsigned int cost = car->GetCost();
+        char cost_str[16];
+        bSNPrintf(cost_str, 0x10, "%d", cost >> 1);
+        const char *fmt = GetLocalizedString(0xb4a40135);
+        char buf[512];
+        bSNPrintf(buf, 0x200, fmt, cost_str);
+        DialogInterface::ShowTwoButtons(GetPackageName(), "", static_cast<eDialogTitle>(1),
+            0x70e01038, 0x417b25e4, 0xa46253ba, 0x34dc1bcf, 0x34dc1bcf,
+            static_cast<eDialogFirstButtons>(1), buf);
         return;
     }
     case 0xc519bfc3: {
