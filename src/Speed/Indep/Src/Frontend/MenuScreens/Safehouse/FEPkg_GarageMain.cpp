@@ -914,11 +914,10 @@ static unsigned int FindGarageCameraInfo(const char *prefix) {
     bStrCat(buf, buf, garage_name);
     unsigned int key = Attrib::StringToLowerCaseKey(buf);
     Attrib::Gen::frontend inst(Attrib::FindCollection(Attrib::Gen::frontend::ClassKey(), key), 0, nullptr);
-    unsigned int result = key;
-    if (!inst.GetConstCollection()) {
-        result = 0xf907e767;
+    if (inst.GetConstCollection()) {
+        return key;
     }
-    return result;
+    return 0xf907e767;
 }
 
 static unsigned int FindScreenCameraInfo(unsigned int screen_key) {
