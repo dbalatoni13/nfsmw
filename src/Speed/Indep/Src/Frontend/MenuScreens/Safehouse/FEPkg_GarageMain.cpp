@@ -835,8 +835,9 @@ float GarageMainScreen::GetGeometryZPos() {
 // --- CarViewer ---
 
 GarageMainScreen *CarViewer::FindWhichScreenToUpdate(eCarViewerWhichCar which_car) {
+    cFEng *eng = cFEng::mInstance;
     const char *name = lbl_GarageMain;
-    if (cFEng::mInstance->IsPackagePushed(name)) {
+    if (eng->IsPackagePushed(name)) {
         return static_cast<GarageMainScreen *>(FEngFindScreen(name));
     }
     return nullptr;
