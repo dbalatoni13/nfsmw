@@ -718,10 +718,11 @@ void UIQRCarSelect::NotificationMessage(unsigned long msg, FEObject *pobj, unsig
             cFEng::Get()->QueuePackageMessage(0x2e76edfb, GetPackageName(), nullptr);
             return;
         }
-        if (FEDatabase->iNumPlayers != 2 &&
-            FEDatabase->GetPlayersJoystickPort(iPlayerNum) != 0) {
-            ChooseTransmission();
-            return;
+        if (FEDatabase->iNumPlayers != 2) {
+            if (FEDatabase->GetPlayerSettings(iPlayerNum)->TransmissionPromptOn != 0) {
+                ChooseTransmission();
+                return;
+            }
         }
         char port = FEngMapJoyParamToJoyport(param2);
         FEDatabase->SetPlayersJoystickPort(iPlayerNum, port);
@@ -783,39 +784,31 @@ void UIQRCarSelect::NotificationMessage(unsigned long msg, FEObject *pobj, unsig
     case 0x1a2826e1: {
         char port = FEngMapJoyParamToJoyport(param2);
         FEDatabase->SetPlayersJoystickPort(iPlayerNum, port);
-        FEDatabase->GetPlayerSettings(iPlayerNum)->Transmission = 1;
-        bool isSplitScreen = false;
-        if ((FEDatabase->GetGameMode() & 4) != 0) {
-            isSplitScreen = FEDatabase->iNumPlayers == 2;
-        }
-        if (!isSplitScreen) {
-            CommitChangeStartRace(false);
-            return;
-        }
-        if (iPlayerNum != 0) {
-            CommitChangeStartRace(false);
-            return;
-        }
-        cFEng::Get()->QueuePackageSwitch("PressStart.fng", true, 0xff, false);
-        return;
-    }
-    case 0x5f5e3886: {
-        char port = FEngMapJoyParamToJoyport(param2);
-        FEDatabase->SetPlayersJoystickPort(iPlayerNum, port);
         FEDatabase->GetPlayerSettings(iPlayerNum)->Transmission = 0;
         bool isSplitScreen = false;
         if ((FEDatabase->GetGameMode() & 4) != 0) {
             isSplitScreen = FEDatabase->iNumPlayers == 2;
         }
-        if (!isSplitScreen) {
-            CommitChangeStartRace(false);
+        if (isSplitScreen && iPlayerNum == 0) {
+            cFEng::Get()->QueuePackageSwitch("PressStart.fng", true, 0xff, false);
             return;
         }
-        if (iPlayerNum != 0) {
-            CommitChangeStartRace(false);
+        CommitChangeStartRace(false);
+        return;
+    }
+    case 0x5f5e3886: {
+        char port = FEngMapJoyParamToJoyport(param2);
+        FEDatabase->SetPlayersJoystickPort(iPlayerNum, port);
+        FEDatabase->GetPlayerSettings(iPlayerNum)->Transmission = 1;
+        bool isSplitScreen = false;
+        if ((FEDatabase->GetGameMode() & 4) != 0) {
+            isSplitScreen = FEDatabase->iNumPlayers == 2;
+        }
+        if (isSplitScreen && iPlayerNum == 0) {
+            cFEng::Get()->QueuePackageSwitch("PressStart.fng", true, 0xff, false);
             return;
         }
-        cFEng::Get()->QueuePackageSwitch("PressStart.fng", true, 0xff, false);
+        CommitChangeStartRace(false);
         return;
     }
     case 0x7e998e5e:
