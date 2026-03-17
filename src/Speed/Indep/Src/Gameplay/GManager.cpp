@@ -2,7 +2,9 @@
 
 #include "Speed/Indep/Libs/Support/Utility/FastMem.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/gameplay.h"
+#include "Speed/Indep/Src/Gameplay/GMarker.h"
 #include "Speed/Indep/Src/Gameplay/GVault.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 
@@ -923,6 +925,224 @@ void GManager::UpdatePendingSMS() {
     if (GetHasPendingSMS() && CanPlaySMS()) {
         PushSMSToInbox();
     }
+}
+
+bool GManager::SaveGameplayData(unsigned char *dest, unsigned int maxSize) {
+    SavedGameplayDataHeader *header;
+    unsigned char *cursor;
+    ObjectStateMap::iterator it;
+
+    if (maxSize < 0x80) {
+        return false;
+    }
+
+    bMemSet(dest, 0, maxSize);
+    header = reinterpret_cast<SavedGameplayDataHeader *>(dest);
+    header->mMagic = 0x656D6147;
+    header->mVersion = 8;
+    header->mNumPersistent = mPersistentStateBlocks.size();
+
+    cursor = dest + 0x80;
+    for (it = mPersistentStateBlocks.begin(); it != mPersistentStateBlocks.end(); ++it) {
+        ObjectStateBlockHeader *block = it->second;
+        unsigned int blockSize = (block->mSize + 0x17U) & ~0xFU;
+
+        if (static_cast<unsigned int>(cursor - dest) + blockSize > maxSize) {
+            return false;
+        }
+
+        bMemCpy(cursor, block, blockSize);
+        cursor += blockSize;
+    }
+
+    cursor = reinterpret_cast<unsigned char *>((reinterpret_cast<unsigned int>(cursor) + 0xFU) & ~0xFU);
+    header->mNumSavedTimers = SaveTimerInfo(reinterpret_cast<SavedTimerInfo *>(cursor));
+    cursor += header->mNumSavedTimers * 0x20;
+
+    header->mNumMilestoneTypes = SaveMilestoneInfo(reinterpret_cast<MilestoneTypeInfo *>(cursor));
+    cursor += header->mNumMilestoneTypes * 0x10;
+
+    header->mNumMilestoneRecords = SaveMilestones(reinterpret_cast<GMilestone *>(cursor));
+    cursor += header->mNumMilestoneRecords * 0x14;
+    cursor = reinterpret_cast<unsigned char *>((reinterpret_cast<unsigned int>(cursor) + 0xFU) & ~0xFU);
+
+    header->mNumSpeedTrapRecords = SaveSpeedTraps(reinterpret_cast<GSpeedTrap *>(cursor));
+    cursor += header->mNumSpeedTrapRecords * 0x14;
+    cursor = reinterpret_cast<unsigned char *>((reinterpret_cast<unsigned int>(cursor) + 0xFU) & ~0xFU);
+
+    header->mNumHidingSpotFlags = 0x200;
+    bMemCpy(cursor, mHidingSpotFound, sizeof(mHidingSpotFound));
+    cursor += sizeof(mHidingSpotFound);
+
+    header->mNumBytesBinStats = GRaceDatabase::Get().SerializeBins(cursor);
+    cursor += header->mNumBytesBinStats;
+    cursor = reinterpret_cast<unsigned char *>((reinterpret_cast<unsigned int>(cursor) + 0xFU) & ~0xFU);
+
+    header->mNumPendingSMS = SaveSMSInfo(reinterpret_cast<int *>(cursor));
+    cursor += header->mNumPendingSMS * sizeof(int);
+    cursor = reinterpret_cast<unsigned char *>((reinterpret_cast<unsigned int>(cursor) + 0xFU) & ~0xFU);
+
+    bMemCpy(cursor, &mFreeRoamStartMarker, sizeof(mFreeRoamStartMarker));
+    bMemCpy(cursor + 0x10, &mFreeRoamFromSafeHouseStartMarker, sizeof(mFreeRoamFromSafeHouseStartMarker));
+    return true;
+}
+
+bool GManager::LoadGameplayData(unsigned char *src, unsigned int maxSize) {
+    SavedGameplayDataHeader *header;
+    unsigned char *cursor;
+    unsigned int i;
+
+    if (maxSize < 0x80) {
+        return false;
+    }
+
+    header = reinterpret_cast<SavedGameplayDataHeader *>(src);
+    if (header->mMagic != 0x656D6147 || header->mVersion < 8) {
+        return false;
+    }
+
+    ResetAllGameplayData();
+
+    cursor = src + 0x80;
+    for (i = 0; i < header->mNumPersistent; ++i) {
+        ObjectStateBlockHeader *savedBlock = reinterpret_cast<ObjectStateBlockHeader *>(cursor);
+        ObjectStateBlockHeader *block = AllocObjectStateBlock(savedBlock->mKey, savedBlock->mSize, true);
+
+        if (block) {
+            bMemCpy(block, savedBlock, savedBlock->mSize + sizeof(ObjectStateBlockHeader));
+        }
+
+        cursor += (savedBlock->mSize + 0x17U) & ~0xFU;
+    }
+
+    cursor = reinterpret_cast<unsigned char *>((reinterpret_cast<unsigned int>(cursor) + 0xFU) & ~0xFU);
+    LoadTimerInfo(reinterpret_cast<SavedTimerInfo *>(cursor), header->mNumSavedTimers);
+    cursor += header->mNumSavedTimers * 0x20;
+
+    LoadMilestoneInfo(reinterpret_cast<MilestoneTypeInfo *>(cursor), header->mNumMilestoneTypes);
+    cursor += header->mNumMilestoneTypes * 0x10;
+
+    LoadMilestones(reinterpret_cast<GMilestone *>(cursor), header->mNumMilestoneRecords);
+    cursor += header->mNumMilestoneRecords * 0x14;
+    cursor = reinterpret_cast<unsigned char *>((reinterpret_cast<unsigned int>(cursor) + 0xFU) & ~0xFU);
+
+    LoadSpeedTraps(reinterpret_cast<GSpeedTrap *>(cursor), header->mNumSpeedTrapRecords);
+    cursor += header->mNumSpeedTrapRecords * 0x14;
+    cursor = reinterpret_cast<unsigned char *>((reinterpret_cast<unsigned int>(cursor) + 0xFU) & ~0xFU);
+
+    bMemCpy(mHidingSpotFound, cursor, sizeof(mHidingSpotFound));
+    cursor += (header->mNumHidingSpotFlags + 7U) >> 3;
+    cursor = reinterpret_cast<unsigned char *>((reinterpret_cast<unsigned int>(cursor) + 0xFU) & ~0xFU);
+
+    cursor += GRaceDatabase::Get().DeserializeBins(cursor);
+    cursor = reinterpret_cast<unsigned char *>((reinterpret_cast<unsigned int>(cursor) + 0xFU) & ~0xFU);
+
+    LoadSMSInfo(reinterpret_cast<int *>(cursor), header->mNumPendingSMS);
+    cursor += header->mNumPendingSMS * sizeof(int);
+    cursor = reinterpret_cast<unsigned char *>((reinterpret_cast<unsigned int>(cursor) + 0xFU) & ~0xFU);
+
+    bMemCpy(&mFreeRoamStartMarker, cursor, sizeof(mFreeRoamStartMarker));
+    bMemCpy(&mFreeRoamFromSafeHouseStartMarker, cursor + 0x10, sizeof(mFreeRoamFromSafeHouseStartMarker));
+    return true;
+}
+
+void GManager::DefragObjectStateStorage() {
+    unsigned int count;
+    unsigned int index;
+    ObjectStateBlockHeader **blocks;
+    ObjectStateMap::iterator it;
+    unsigned char *freePtr;
+
+    count = mPersistentStateBlocks.size() + mSessionStateBlocks.size();
+    if (count == 0) {
+        mObjectStateBufferFree = mObjectStateBuffer;
+        return;
+    }
+
+    blocks = new ObjectStateBlockHeader *[count];
+    index = 0;
+    for (it = mPersistentStateBlocks.begin(); it != mPersistentStateBlocks.end(); ++it) {
+        blocks[index++] = it->second;
+    }
+    for (it = mSessionStateBlocks.begin(); it != mSessionStateBlocks.end(); ++it) {
+        blocks[index++] = it->second;
+    }
+
+    std::sort(blocks, blocks + count);
+    freePtr = mObjectStateBuffer;
+    for (index = 0; index < count; ++index) {
+        ObjectStateBlockHeader *block = blocks[index];
+        unsigned int blockSize = (block->mSize + 0x17U) & ~0xFU;
+
+        if (reinterpret_cast<unsigned char *>(block) != freePtr) {
+            bOverlappedMemCpy(freePtr, block, blockSize);
+
+            it = mPersistentStateBlocks.find(block->mKey);
+            if (it != mPersistentStateBlocks.end()) {
+                it->second = reinterpret_cast<ObjectStateBlockHeader *>(freePtr);
+            }
+
+            it = mSessionStateBlocks.find(block->mKey);
+            if (it != mSessionStateBlocks.end()) {
+                it->second = reinterpret_cast<ObjectStateBlockHeader *>(freePtr);
+            }
+        }
+
+        freePtr += blockSize;
+    }
+
+    delete[] blocks;
+    mObjectStateBufferFree = freePtr;
+}
+
+void GManager::UpdatePursuit() {
+    IPursuit *pursuit;
+    IPerpetrator *perpetrator;
+    bool roaming;
+    bool challengeRace;
+    bool cooldown;
+
+    pursuit = nullptr;
+    perpetrator = nullptr;
+    roaming = GRaceStatus::Exists() && GRaceStatus::Get().GetPlayMode() == GRaceStatus::kPlayMode_Roaming;
+    GetPlayerPursuitInterfaces(pursuit, perpetrator);
+
+    cooldown = false;
+    if (pursuit) {
+        TrackValue("cost_to_state_in_pursuit", static_cast<float>(pursuit->CalcTotalCostToState()));
+        cooldown = pursuit->GetPursuitStatus() == 2;
+    }
+
+    if (perpetrator) {
+        TrackValue("cost_to_state", static_cast<float>(perpetrator->GetCostToState()));
+        TrackValue("bounty_in_pursuit",
+                   static_cast<float>(perpetrator->GetPendingRepPointsNormal() +
+                                      perpetrator->GetPendingRepPointsFromCopDestruction()));
+    }
+
+    challengeRace = GRaceStatus::Exists() && GRaceStatus::Get().GetRaceParameters() &&
+                    GRaceStatus::Get().GetRaceParameters()->GetIsChallengeSeriesRace();
+
+    mHidingSpotIconsShown = (roaming || challengeRace) && pursuit && cooldown;
+    mPursuitBreakerIconsShown = (roaming || challengeRace) && pursuit && !cooldown;
+}
+
+bool GManager::CalcMapCoordsForMarker(unsigned int markerKey, bVector2 &outPos, float &outRotDeg) {
+    GMarker *marker;
+    UMath::Vector3 pos;
+    UMath::Vector3 dir;
+
+    marker = static_cast<GMarker *>(FindInstance(markerKey));
+    if (!marker) {
+        return false;
+    }
+
+    pos = marker->GetPosition();
+    dir = marker->GetDirection();
+    outPos.x = pos.x;
+    outPos.y = pos.z;
+    outRotDeg = bAngToDeg(bATan(-dir.x, dir.z));
+    return true;
 }
 
 void GManager::ResetTimers() {

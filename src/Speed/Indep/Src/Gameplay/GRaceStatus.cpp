@@ -13,6 +13,8 @@
 void SetCurrentTimeOfDay(float value);
 extern int UnlockAllThings;
 
+GRaceStatus *GRaceStatus::fObj = nullptr;
+
 GRaceParameters::GRaceParameters(unsigned int collectionKey, GRaceIndexData *index)
     : mIndex(index), //
       mRaceRecord(new Attrib::Gen::gameplay(collectionKey, 0, nullptr)), //
@@ -936,6 +938,66 @@ template <typename T> void GRaceCustom::SetAttribute(unsigned int key, const T &
     dest = reinterpret_cast<T *>(const_cast<void *>(mRaceRecord->GetAttributePointer(key, index)));
     if (dest) {
         *dest = value;
+    }
+}
+
+GRaceStatus::GRaceStatus()
+    : UTL::COM::Object(1), //
+      IVehicleCache((UTL::COM::Object *)this), //
+      mRacerCount(0), //
+      mIsLoading(false), //
+      mPlayMode(kPlayMode_Racing), //
+      mRaceContext(GRace::kRaceContext_Career), //
+      mRaceParms(nullptr), //
+      mRaceBin(nullptr), //
+      mBonusTime(0.0f), //
+      mTaskTime(0.0f), //
+      mSuddenDeathMode(false), //
+      mTimeExpiredMsgSent(false), //
+      mActivelyRacing(false), //
+      mLastSecondTickSent(0), //
+      mCheckpointModel(nullptr), //
+      mCheckpointEmitter(nullptr), //
+      mQueueBinChange(false), //
+      mNumTollbooths(0), //
+      mScriptWaitingForLoad(false), //
+      mCheckpoints(), //
+      mNextCheckpoint(nullptr), //
+      fRaceLength(0.0f), //
+      fFirstLapLength(0.0f), //
+      fSubsequentLapLength(0.0f), //
+      fCatchUpIntegral(0.0f), //
+      fCatchUpDerivative(0.0f), //
+      fCatchUpAdaptiveBonus(0.0f), //
+      fAveragePercentComplete(0.0f), //
+      nCatchUpSkillEntries(0), //
+      nCatchUpSpreadEntries(0), //
+      nSpeedTraps(0), //
+      mVehicleCacheLocked(false), //
+      bRaceRouteError(false), //
+      mTrafficDensity(0), //
+      mTrafficPattern(0), //
+      mHasBeenWon(false) {
+    fObj = this;
+
+    bMemSet(mSegmentLengths, 0, sizeof(mSegmentLengths));
+    bMemSet(mLapTimes, 0, sizeof(mLapTimes));
+    bMemSet(mCheckTimes, 0, sizeof(mCheckTimes));
+    bMemSet(aCatchUpSkillData, 0, sizeof(aCatchUpSkillData));
+    bMemSet(aCatchUpSpreadData, 0, sizeof(aCatchUpSpreadData));
+    bMemSet(aSpeedTraps, 0, sizeof(aSpeedTraps));
+
+    for (int i = 0; i < 16; ++i) {
+        mRacerInfo[i].ClearAll();
+    }
+
+    ClearTimes();
+    SyncronizeAdaptiveBonus();
+    MakeDefaultCatchUpData();
+
+    if (!GRaceDatabase::Get().GetStartupRace()) {
+        EnterBin(0);
+        SetRoaming();
     }
 }
 

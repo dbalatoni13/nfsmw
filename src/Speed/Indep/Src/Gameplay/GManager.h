@@ -37,6 +37,8 @@ typedef UTL::Std::list<int, _type_ID_PendingSMSList> PendingSMSList;
 typedef UTL::Std::list<unsigned int, _type_ID_AttribKeyList> AttribKeyList;
 
 class GVault;
+class IPursuit;
+class IPerpetrator;
 
 // total size: 0x308
 class GManager : public UTL::COM::Object, public IVehicleCache {
@@ -176,6 +178,8 @@ class GManager : public UTL::COM::Object, public IVehicleCache {
     void UpdateTimers(float dT);
     unsigned int SaveTimerInfo(struct SavedTimerInfo *saveInfo);
     void LoadTimerInfo(struct SavedTimerInfo *saveInfo, unsigned int count);
+    bool SaveGameplayData(unsigned char *dest, unsigned int maxSize);
+    bool LoadGameplayData(unsigned char *src, unsigned int maxSize);
 
     unsigned int SaveSMSInfo(int *saveInfo);
     void LoadSMSInfo(int *loadInfo, unsigned int count);
@@ -220,6 +224,7 @@ class GManager : public UTL::COM::Object, public IVehicleCache {
 
   private:
     friend class GVault;
+    friend class GActivity;
 
     GManager(const char *vaultPackName);
 
@@ -234,6 +239,10 @@ class GManager : public UTL::COM::Object, public IVehicleCache {
     void ReleaseStreamingBuffers();
     void DestroyVaults();
     void ResetAllGameplayData();
+    ObjectStateBlockHeader *AllocObjectStateBlock(unsigned int key, unsigned int size, bool persistent);
+    void DefragObjectStateStorage();
+    void UpdatePursuit();
+    void GetPlayerPursuitInterfaces(IPursuit *&pursuit, IPerpetrator *&perpetrator);
 
     int GetAvailableBinSlot();
     int GetAvailableRaceSlot();
