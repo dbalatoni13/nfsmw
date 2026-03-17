@@ -61,8 +61,39 @@ float carPosY = 0.0f;
 float CarSelectTireSteerAngle = 21.6723f;
 extern int CarTypeInfoArrayUpdated;
 
+struct SelectCarCameraData {
+    float OrbitVAngle;
+    float OrbitHAngle;
+    float Radius;
+    float RollAngle;
+    float FOV;
+    bVector3 LookAt;
+};
+
 struct SelectCarCameraMover : CameraMover {
+    SelectCarCameraMover(int view_id);
     ~SelectCarCameraMover() override;
+    void Update(float dT) override;
+    void SetVRotateSpeed(float f);
+    void SetHRotateSpeed(float f);
+    void SetZoomSpeed(float f);
+    void SetCurrentOrientation(bVector3 &orbit, float roll, float fov, bVector3 &lookAt);
+    void SetDesiredOrientation(bVector3 &orbit, float roll, float fov, bVector3 &lookAt, float animSpeed, float damping, int periods);
+    float FindBestAngleGoal(float start, float goal);
+
+    int ControlMode;
+    int DramaticMode;
+    int LookingAtParts;
+    SelectCarCameraData CurrentCameraData;
+    SelectCarCameraData StartAnimCameraData;
+    SelectCarCameraData GoalAnimCameraData;
+    float RadiusSpeed;
+    float OrbitVSpeed;
+    float OrbitHSpeed;
+    float Damping;
+    int Periods;
+    float CurrentAnimationTime;
+    float TotalAnimationTime;
 };
 extern void SetHRotateSpeed(SelectCarCameraMover *mover, float speed);
 extern void SetVRotateSpeed(SelectCarCameraMover *mover, float speed);
@@ -157,8 +188,7 @@ void FEGeometryModels::Init(char *filterPrefix) {
     filterPrefixSize = bStrLen(filterPrefix);
     for (eSolid *solid = SolidList.GetHead(); solid != SolidList.EndOfList(); solid = solid->GetNext()) {
         if (bStrNICmp(solid->GetName(), filterPrefix, filterPrefixSize) == 0) {
-            SolidTable[mNumModels] = solid;
-            mNumModels++;
+            SolidTable[mNumModels++] = solid;
         }
     }
 
@@ -314,7 +344,7 @@ GarageMainScreen::GarageMainScreen(ScreenConstructorData *sd, int eview_id, Ride
     SetRideInfo(start_ride, LoadingReason);
     CarState = 0;
     RenderingCar = new FrontEndRenderingCar(nullptr, ViewID);
-    pCameraMover = NewSelectCarCameraMover(ViewID);
+    pCameraMover = new SelectCarCameraMover(ViewID);
     mGeometryModels.Init("BACKDROP");
 
     char sztemp[32];
