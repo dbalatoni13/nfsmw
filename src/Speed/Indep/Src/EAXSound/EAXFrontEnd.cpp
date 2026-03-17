@@ -2,6 +2,7 @@
 #include "Speed/Indep/Src/EAXSound/EAXCommon.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
 #include "Speed/Indep/Src/EAXSound/snd_gen/FE_AEMS.h"
+#include "Speed/Indep/Src/EAXSound/snd_gen/MAIN_AEMS.h"
 #include "Speed/Indep/Src/Generated/Messages/MMiscSound.h"
 #include "Speed/Indep/Src/Misc/Config.h"
 #include "Speed/Indep/Src/Misc/Hermes.h"
@@ -82,7 +83,9 @@ int EAXFrontEnd::Play(eMenuSoundTriggers etrigger) {
 }
 
 void EAXFrontEnd::Stop(eMenuSoundTriggers etrigger) {
-    (void)etrigger;
+    if (IsSoundEnabled != 0 && m_pPlayRapSheet && m_pPlayRapSheet->GetId() == etrigger) {
+        delete m_pPlayRapSheet;
+    }
 }
 
 int EAXFrontEnd::Play(void *peventst) {
@@ -209,6 +212,19 @@ int EAXCommon::Play(void *peventst) {
 
 void EAXCommon::Update(void *peventst) {
     (void)peventst;
+
+    if (m_pRadar) {
+        int refCount = m_pRadar->GetRefCount();
+
+        if (refCount < 2) {
+            delete m_pRadar;
+            m_pRadar = nullptr;
+        }
+    }
+
+    if (m_pSFXOBJ_FEHUD) {
+        m_pSFXOBJ_FEHUD->SetDMIX_Input(4, 0);
+    }
 }
 
 void *EAXCommon::GetEventPointer(int neventindex) {
@@ -216,5 +232,12 @@ void *EAXCommon::GetEventPointer(int neventindex) {
 }
 
 void EAXCommon::MsgPlayMiscSound(const MMiscSound &msg) {
-    Play(static_cast< eMenuSoundTriggers >(msg.GetSoundID()));
+    if (msg.GetSoundID() == 0) {
+        if (m_pRadar) {
+            delete m_pRadar;
+        }
+
+        g_pEAXSound->SetCsisName("FE Radar");
+        m_pRadar = new FX_Radar(0, m_pSFXOBJ_FEHUD->GetDMixOutput(3, DMX_VOL), 0, 0, 0);
+    }
 }
