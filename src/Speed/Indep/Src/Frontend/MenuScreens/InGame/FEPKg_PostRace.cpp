@@ -884,6 +884,11 @@ void PostRaceResultsScreen::SetupLapStats(int racerIndex, GRacerInfo *racer_info
                                         split_rankings[i]));
         }
 
+        float final_time = 0.0f;
+        if (racer_info->IsFinishedRacing()) {
+            final_time = racer_info->GetRaceTimer().GetTime();
+        }
+
         RacerStats[racerIndex].AddStat(new ("", 0)
                                            StageStat(FEngFindString(RacerStats[racerIndex].ParentPkg,
                                                                     FEngHashString(lbl_803E5088, lbl_803E5DCC,
@@ -895,7 +900,7 @@ void PostRaceResultsScreen::SetupLapStats(int racerIndex, GRacerInfo *racer_info
                                                                     FEngHashString(lbl_803E5088, lbl_803E5E24,
                                                                         RacerStats[racerIndex].RacerName)),
                                     4,
-                                     racer_info->IsFinishedRacing() ? racer_info->GetRaceTimer().GetTime() : 0.0f,
+                                     final_time,
                                      racer_info->GetRanking()));
         break;
     }
@@ -961,6 +966,11 @@ void PostRaceResultsScreen::SetupLapStats(int racerIndex, GRacerInfo *racer_info
                                              race_status.GetRaceTollboothTime(i, racerIndex), 1));
         }
 
+        float remaining_time = 0.0f;
+        if (racer_info->IsFinishedRacing()) {
+            remaining_time = race_status.GetRaceTimeRemaining();
+        }
+
         RacerStats[racerIndex].AddStat(new ("", 0)
                                            TollboothStat(FEngFindString(RacerStats[racerIndex].ParentPkg,
                                                                         FEngHashString(lbl_803E5088, lbl_803E5DCC,
@@ -972,7 +982,7 @@ void PostRaceResultsScreen::SetupLapStats(int racerIndex, GRacerInfo *racer_info
                                                                         FEngHashString(lbl_803E5088, lbl_803E5E24,
                                                                             RacerStats[racerIndex].RacerName)),
                                         num_booths + 1,
-                                         racer_info->IsFinishedRacing() ? race_status.GetRaceTimeRemaining() : 0.0f,
+                                         remaining_time,
                                          1));
         break;
     }
