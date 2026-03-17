@@ -1167,19 +1167,17 @@ void FEngine::ProcessMessageQueue() {
         if (bDebugMessages) {
             pInterface->DebugMessageProcessed(pNode->MsgID, pNode->pMsgTarget, pNode->pMsgFrom, pNode->pFromPackage, pNode->ControlMask);
         }
-        FEObject* pTarget = pNode->pMsgTarget;
-        unsigned long target = reinterpret_cast<unsigned long>(pTarget);
-        switch (target) {
+        switch (reinterpret_cast<unsigned long>(pNode->pMsgTarget)) {
         case 0: {
             for (FEPackage* pPack = PackList.GetFirstPackage(); pPack; pPack = pPack->GetNext()) {
                 ProcessGlobalMessage(pPack, pNode->MsgID, pNode->ControlMask);
-                FEMsgTargetList* pTargets = pPack->GetMessageTargets(pNode->MsgID);
-                if (pTargets) {
-                    unsigned long Count = pTargets->Count;
+                FEMsgTargetList* pTargList = pPack->GetMessageTargets(pNode->MsgID);
+                if (pTargList) {
+                    unsigned long Count = pTargList->GetCount();
                     unsigned long i = 0;
                     unsigned long MsgID = pNode->MsgID;
                     while (i < Count) {
-                        ProcessObjectMessage(pTargets->pTargets[i], pPack, MsgID, pNode->ControlMask);
+                        ProcessObjectMessage(pTargList->GetTarget(i), pPack, MsgID, pNode->ControlMask);
                         i++;
                     }
                 }
@@ -1204,13 +1202,13 @@ void FEngine::ProcessMessageQueue() {
             }
             if (pPack) {
                 ProcessGlobalMessage(pPack, pNode->MsgID, pNode->ControlMask);
-                FEMsgTargetList* pTargets = pPack->GetMessageTargets(pNode->MsgID);
-                if (pTargets) {
-                    unsigned long Count = pTargets->Count;
+                FEMsgTargetList* pTargList = pPack->GetMessageTargets(pNode->MsgID);
+                if (pTargList) {
+                    unsigned long Count = pTargList->GetCount();
                     unsigned long i = 0;
                     unsigned long MsgID = pNode->MsgID;
                     while (i < Count) {
-                        ProcessObjectMessage(pTargets->pTargets[i], pPack, MsgID, pNode->ControlMask);
+                        ProcessObjectMessage(pTargList->GetTarget(i), pPack, MsgID, pNode->ControlMask);
                         i++;
                     }
                 }
@@ -1228,7 +1226,7 @@ void FEngine::ProcessMessageQueue() {
             }
             break;
         default:
-            ProcessObjectMessage(pTarget, pNode->pFromPackage, pNode->MsgID, pNode->ControlMask);
+            ProcessObjectMessage(pNode->pMsgTarget, pNode->pFromPackage, pNode->MsgID, pNode->ControlMask);
             break;
         }
         delete pNode;
