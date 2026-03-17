@@ -100,10 +100,6 @@ extern const char lbl_803E52D4[];
 
 PursuitData PostRacePursuitScreen::mPursuitData;
 
-static FEString *GetPanelString(StatsPanel &panel, const char *label) {
-    return FEngFindString(panel.ParentPkg, FEngHashString(lbl_803E5088, label, panel.RacerName));
-}
-
 struct LapStat : public ResultStat {
     LapStat(FEString *lap, FEString *time, FEString *pos, int lap_num, float seconds, int pos_num)
         : ResultStat(lap, time, pos, nullptr) //
@@ -245,17 +241,9 @@ void TollboothStat::Draw() {
 
 StatsPanel::StatsPanel()
     : TheStats() //
-    , iWidgetToAdd(0) //
-    , RacerName(nullptr) //
-    , ParentPkg(nullptr) {}
-
-FEString *StatsPanel::GetCurrentString(const char *name) {
-    if (ParentPkg == nullptr || name == nullptr) {
-        return nullptr;
-    }
-
-    return FEngFindString(ParentPkg, bStringHash(name));
-}
+    , iWidgetToAdd(1) //
+    , RacerName(lbl_803E43DC) //
+    , ParentPkg(lbl_803E43DC) {}
 
 void StatsPanel::Reset() {
     TheStats.DeleteAllElements();
@@ -281,10 +269,6 @@ void StatsPanel::Draw(unsigned int numPlayers) {
         widget->Draw();
         widget = widget->GetNext();
     }
-
-    if (numPlayers == 0) {
-        iWidgetToAdd = 0;
-    }
 }
 
 void StatsPanel::AddStat(RaceStat *stat) {
@@ -307,8 +291,8 @@ void StatsPanel::AddInfoStat(unsigned int title, unsigned int info) {
     bNode *tail = TheStats.HeadNode.Prev;
     tail->Next = stat;
     stat->Prev = tail;
-    stat->Next = reinterpret_cast<bNode *>(this);
     TheStats.HeadNode.Prev = stat;
+    stat->Next = reinterpret_cast<bNode *>(this);
     ++iWidgetToAdd;
 }
 
@@ -324,8 +308,8 @@ void StatsPanel::AddGenericStat(float stat_data, unsigned int title_hash, unsign
     bNode *tail = TheStats.HeadNode.Prev;
     tail->Next = stat;
     stat->Prev = tail;
-    stat->Next = reinterpret_cast<bNode *>(this);
     TheStats.HeadNode.Prev = stat;
+    stat->Next = reinterpret_cast<bNode *>(this);
     ++iWidgetToAdd;
 }
 
@@ -339,8 +323,8 @@ void StatsPanel::AddTimerStat(float seconds, unsigned int title_hash) {
     bNode *tail = TheStats.HeadNode.Prev;
     tail->Next = stat;
     stat->Prev = tail;
-    stat->Next = reinterpret_cast<bNode *>(this);
     TheStats.HeadNode.Prev = stat;
+    stat->Next = reinterpret_cast<bNode *>(this);
     ++iWidgetToAdd;
 }
 
@@ -489,15 +473,14 @@ void PostRaceResultsScreen::SetupResults() {
                         ++i;
                     }
 
-                    FEString *column2 = FEngFindString(
-                        RaceResults.ParentPkg, FEngHashString(lbl_803E5088, "COLUMN2_DATA", RaceResults.iWidgetToAdd));
-                    FEString *column3 = FEngFindString(
-                        RaceResults.ParentPkg, FEngHashString(lbl_803E5088, "COLUMN3_DATA", RaceResults.iWidgetToAdd));
-                    FEString *column1 = FEngFindString(
-                        RaceResults.ParentPkg, FEngHashString(lbl_803E5088, "COLUMN1_DATA", RaceResults.iWidgetToAdd));
-
-                    RaceResultStat *result = new ("", 0) RaceResultStat(column2, column3, column1, racer_info);
-                    RaceResults.AddStat(result);
+                    RaceResults.AddStat(new ("", 0) RaceResultStat(
+                        FEngFindString(RaceResults.ParentPkg,
+                                       FEngHashString(lbl_803E5088, "COLUMN2_DATA", RaceResults.iWidgetToAdd)),
+                        FEngFindString(RaceResults.ParentPkg,
+                                       FEngHashString(lbl_803E5088, "COLUMN3_DATA", RaceResults.iWidgetToAdd)),
+                        FEngFindString(RaceResults.ParentPkg,
+                                       FEngHashString(lbl_803E5088, "COLUMN1_DATA", RaceResults.iWidgetToAdd)),
+                        racer_info));
                 } while (place < mNumberOfRacers);
             }
         } else if (mRaceType == GRace::kRaceType_SpeedTrap) {
@@ -521,16 +504,17 @@ void PostRaceResultsScreen::SetupResults() {
                         speed = (speed * lbl_803E5E4C) * lbl_803E5E50;
                     }
 
-                    FEString *column2 = FEngFindString(
-                        RaceResults.ParentPkg, FEngHashString(lbl_803E5088, "COLUMN2_DATA", RaceResults.iWidgetToAdd));
-                    FEString *column3 = FEngFindString(
-                        RaceResults.ParentPkg, FEngHashString(lbl_803E5088, "COLUMN3_DATA", RaceResults.iWidgetToAdd));
-                    FEString *column1 = FEngFindString(
-                        RaceResults.ParentPkg, FEngHashString(lbl_803E5088, "COLUMN1_DATA", RaceResults.iWidgetToAdd));
-
-                    GenericResult *result =
-                        new ("", 0) GenericResult(column2, column3, column1, speed_units, speed, "%$0.0f", racer_info);
-                    RaceResults.AddStat(result);
+                    RaceResults.AddStat(new ("", 0) GenericResult(
+                        FEngFindString(RaceResults.ParentPkg,
+                                       FEngHashString(lbl_803E5088, "COLUMN2_DATA", RaceResults.iWidgetToAdd)),
+                        FEngFindString(RaceResults.ParentPkg,
+                                       FEngHashString(lbl_803E5088, "COLUMN3_DATA", RaceResults.iWidgetToAdd)),
+                        FEngFindString(RaceResults.ParentPkg,
+                                       FEngHashString(lbl_803E5088, "COLUMN1_DATA", RaceResults.iWidgetToAdd)),
+                        speed_units,
+                        speed,
+                        "%$0.0f",
+                        racer_info));
                 } while (place < mNumberOfRacers);
             }
         }
@@ -759,10 +743,10 @@ void PostRaceResultsScreen::SetupRacerStats(int index, GRacerInfo *racer_info) {
         FEngSetLanguageHash(GetPackageName(), m_RaceButtonHash, 0x7B8F45DF);
         break;
     case GRace::kRaceType_SpeedTrap:
-        FEngSetLanguageHash(GetPackageName(), m_RaceButtonHash, 0xAC23368C);
+        FEngSetLanguageHash(GetPackageName(), m_RaceButtonHash, 0xAEF51E9D);
         break;
     case GRace::kRaceType_Tollbooth:
-        FEngSetLanguageHash(GetPackageName(), m_RaceButtonHash, 0xAEF51E9D);
+        FEngSetLanguageHash(GetPackageName(), m_RaceButtonHash, 0xAC23368C);
         break;
     default:
         break;
