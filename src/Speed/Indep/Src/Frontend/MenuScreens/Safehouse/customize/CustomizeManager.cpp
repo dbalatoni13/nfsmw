@@ -330,11 +330,11 @@ ShoppingCartItem *CarCustomizeManager::IsPartInCart(SelectablePart *to_find) {
 }
 
 CarPart *CarCustomizeManager::GetActivePartFromSlot(unsigned int slot_id) {
-    ShoppingCartItem *item = IsPartTypeInCart(slot_id);
+    ShoppingCartItem *item = gCarCustomizeManager.IsPartTypeInCart(slot_id);
     if (item) {
-        return item->GetBuyingPart()->GetPart();
+        return item->ToBuy->ThePart;
     }
-    return GetInstalledCarPart(slot_id);
+    return gCarCustomizeManager.GetInstalledCarPart(slot_id);
 }
 
 int CarCustomizeManager::GetCartTotal(eCustomizeCartTotals type) {
@@ -544,16 +544,16 @@ bool CarCustomizeManager::IsJunkmanInstalled(Physics::Upgrades::Type type) {
 }
 
 eUnlockFilters CarCustomizeManager::GetUnlockFilter() {
-    if (FEDatabase->IsCareerMode()) {
-        if (CustomizeIsInBackRoom()) {
-            return static_cast<eUnlockFilters>(10);
+    if (!FEDatabase->IsCareerMode()) {
+        if ((FEDatabase->GetGameMode() & 0x28) == 0x28) {
+            return static_cast<eUnlockFilters>(4);
         }
-        return static_cast<eUnlockFilters>(2);
+        return static_cast<eUnlockFilters>(1);
     }
-    if ((FEDatabase->GetGameMode() & 0x28) == 0x28) {
-        return static_cast<eUnlockFilters>(4);
+    if (CustomizeIsInBackRoom()) {
+        return static_cast<eUnlockFilters>(10);
     }
-    return static_cast<eUnlockFilters>(1);
+    return static_cast<eUnlockFilters>(2);
 }
 
 bool CarCustomizeManager::IsTurbo() {
