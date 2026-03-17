@@ -1,6 +1,11 @@
 #include "Speed/Indep/Src/Gameplay/GTrigger.h"
 
+#include "Speed/Indep/Src/Ecstasy/EmitterSystem.h"
+#include "Speed/Indep/Src/Ecstasy/eMath.hpp"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
+#include "Speed/Indep/Src/Generated/Messages/MTriggerEnter.h"
+#include "Speed/Indep/Src/Generated/Messages/MTriggerExit.h"
+#include "Speed/Indep/Src/Generated/Messages/MTriggerInside.h"
 #include "Speed/Indep/Src/Gameplay/GIcon.h"
 #include "Speed/Indep/Src/Gameplay/GManager.h"
 #include "Speed/Indep/Src/Gameplay/GRaceDatabase.h"
@@ -162,6 +167,55 @@ void GTrigger::RemoveActivationReference() {
     }
 }
 
+EmitterGroup *GTrigger::CreateParticleEffect(const char *effectName, UMath::Vector3 &pos) {
+    Attrib::StringKey effectKey(effectName);
+    EmitterGroup *group = gEmitterSystem.CreateEmitterGroup(effectKey, 0x8040000);
+
+    if (group) {
+        bMatrix4 localWorld;
+        bVector3 translation(pos.z, pos.y, -pos.x);
+
+        eCreateTranslationMatrix(&localWorld, translation);
+        group->SetLocalWorld(&localWorld);
+        group->SetAutoUpdate(true);
+        group->SubscribeToDeletion(this, NotifyEmitterGroupDelete);
+        group->Disable();
+        gEmitterSystem.AddEmitterGroup(group);
+    }
+
+    return group;
+}
+
+void GTrigger::CreateAllParticleEffects() {
+    const char *effectName = ParticleEffect(0);
+
+    if (effectName && *effectName) {
+        UMath::Vector3 pos;
+        float flareSpacing = FlareSpacing(0);
+
+        GetPosition(pos);
+        if (flareSpacing <= 0.0f) {
+            mParticleEffect[0] = CreateParticleEffect(effectName, pos);
+        } else {
+            bVector3 triggerPos(pos.x, pos.y, pos.z);
+            bVector3 up(0.0f, 1.0f, 0.0f);
+            bVector3 direction(mDirection.x, mDirection.y, mDirection.z);
+            bVector3 offset;
+            bVector3 leftOffset;
+            bVector3 rightOffset;
+
+            bCross(&offset, &up, &direction);
+            offset *= flareSpacing;
+            leftOffset = bScaleAdd(triggerPos, offset, -1.0f);
+            rightOffset = bScaleAdd(triggerPos, offset, 1.0f);
+            UMath::Vector3 leftPos = UMath::Vector3Make(leftOffset.x, leftOffset.y, leftOffset.z);
+            UMath::Vector3 rightPos = UMath::Vector3Make(rightOffset.x, rightOffset.y, rightOffset.z);
+            mParticleEffect[0] = CreateParticleEffect(effectName, leftPos);
+            mParticleEffect[1] = CreateParticleEffect(effectName, rightPos);
+        }
+    }
+}
+
 void GTrigger::ClearParticleEffects() {
     for (int i = 0; i < 2; i++) {
         if (mParticleEffect[i]) {
@@ -215,6 +269,31 @@ void GTrigger::Enable(bool setEnabled) {
 
 void GTrigger::GetPosition(UMath::Vector3 &pos) {
     mWorldTrigger.GetCenter(pos);
+}
+
+void GTrigger::NotifySimableTrigger(ISimable *isim, int triggerStimulus) {
+    if (!isim) {
+        return;
+    }
+
+    bool wasInside = IsInside(isim);
+    if (triggerStimulus == 2) {
+        MarkAsOutside(isim);
+        if (FireOnExit(0)) {
+            MTriggerExit msg(GCollectionKey(this), isim->GetOwnerHandle());
+            msg.Post(UCrc32(0x20D60DBF));
+        }
+    }
+
+    if (triggerStimulus == 1) {
+        if (!wasInside) {
+            MarkAsInside(isim);
+            MTriggerEnter enterMsg(GCollectionKey(this), isim->GetOwnerHandle());
+            enterMsg.Post(UCrc32(0x20D60DBF));
+        }
+        MTriggerInside insideMsg(GCollectionKey(this), isim->GetOwnerHandle());
+        insideMsg.Post(UCrc32(0x20D60DBF));
+    }
 }
 
 void GTrigger::Reset() {

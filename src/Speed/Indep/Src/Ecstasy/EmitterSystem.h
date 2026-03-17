@@ -572,4 +572,6 @@ class EmitterSystem {
     LibList mLibs;                         // offset 0x39C, size 0x10
 };
 
+extern EmitterSystem gEmitterSystem;
+
 #endif
