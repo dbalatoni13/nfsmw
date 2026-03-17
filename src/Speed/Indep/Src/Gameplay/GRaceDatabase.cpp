@@ -5,7 +5,33 @@
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 
+#include <new>
+
 GRaceDatabase *GRaceDatabase::mObj = nullptr;
+
+GRaceDatabase::GRaceDatabase()
+    : mRaceCountStatic(0), //
+      mRaceCountDynamic(0), //
+      mRaceIndex(nullptr), //
+      mRaceParameters(nullptr), //
+      mBinCount(0), //
+      mBins(nullptr), //
+      mGameplayClass(Attrib::Database::Get().GetClass(0x5CEA9D46)), //
+      mStartupRace(nullptr), //
+      mStartupRaceContext(kRaceContext_QuickRace), //
+      mNumInitialUnlocks(0), //
+      mInitialUnlockHash(nullptr), //
+      mRaceScoreInfo(nullptr) {
+    unsigned int i;
+
+    for (i = 0; i < 4; i++) {
+        mRaceCustom[i] = nullptr;
+    }
+
+    BuildBinList();
+    BuildRaceList();
+    BuildScoreList();
+}
 
 unsigned int GRaceBin::GetCollectionKey() const {
     return mBinRecord.GetCollection();
@@ -193,6 +219,10 @@ void GRaceBin::SetRacesWon(int numRaces) {
     mStats.mRacesWon = numRaces;
 }
 
+void GRaceDatabase::Init() {
+    mObj = new GRaceDatabase;
+}
+
 GRaceCustom *GRaceDatabase::GetStartupRace() {
     return mStartupRace;
 }
@@ -213,6 +243,90 @@ void GRaceDatabase::SimulateDDayComplete() {}
 
 GRaceBin *GRaceDatabase::GetBin(unsigned int index) {
     return &mBins[index];
+}
+
+bool GRaceDatabase::CollectionIsRaceActivity(Attrib::Gen::gameplay &collection) {
+    return collection.GetAttributePointer(0xA78403EC, 0) != nullptr;
+}
+
+bool GRaceDatabase::CollectionIsRaceBin(Attrib::Gen::gameplay &collection) {
+    return collection.GetAttributePointer(0x6CE23062, 0) != nullptr;
+}
+
+unsigned int GRaceDatabase::StoreBinList(GRaceBin *dest) {
+    unsigned int count;
+    unsigned int collectionKey;
+    GRaceBin *current;
+
+    count = 0;
+    current = dest;
+    for (collectionKey = mGameplayClass->GetFirstCollection(); collectionKey != 0;
+         collectionKey = mGameplayClass->GetNextCollection(collectionKey)) {
+        Attrib::Gen::gameplay gameplay(collectionKey, 0, nullptr);
+
+        if (CollectionIsRaceBin(gameplay)) {
+            if (dest && current) {
+                new (current) GRaceBin(collectionKey);
+                current = reinterpret_cast<GRaceBin *>(reinterpret_cast<unsigned char *>(current) + 0x1C);
+            }
+            count++;
+        }
+    }
+
+    return count;
+}
+
+void GRaceDatabase::BuildBinList() {
+    mBinCount = StoreBinList(nullptr);
+    mBins = static_cast<GRaceBin *>(bMalloc(mBinCount * 0x1C, 0));
+    StoreBinList(mBins);
+}
+
+unsigned int GRaceDatabase::StoreRaceList(GRaceParameters *dest) {
+    unsigned int count;
+    unsigned int collectionKey;
+    GRaceParameters *current;
+    unsigned char *indexData;
+
+    count = 0;
+    current = dest;
+    indexData = reinterpret_cast<unsigned char *>(mRaceIndex);
+    for (collectionKey = mGameplayClass->GetFirstCollection(); collectionKey != 0;
+         collectionKey = mGameplayClass->GetNextCollection(collectionKey)) {
+        Attrib::Gen::gameplay gameplay(collectionKey, 0, nullptr);
+
+        if (CollectionIsRaceActivity(gameplay)) {
+            if (dest && current) {
+                new (current) GRaceParameters(collectionKey, reinterpret_cast<GRaceIndexData *>(indexData));
+                current = reinterpret_cast<GRaceParameters *>(reinterpret_cast<unsigned char *>(current) + 0x14);
+            }
+            indexData += 0x30;
+            count++;
+        }
+    }
+
+    return count;
+}
+
+void GRaceDatabase::BuildRaceList() {
+    unsigned int i;
+
+    mRaceCountStatic = StoreRaceList(nullptr);
+    mRaceCountDynamic = 0;
+    mRaceIndex = reinterpret_cast<GRaceIndexData *>(bMalloc(mRaceCountStatic * 0x30, 0));
+    mRaceParameters = static_cast<GRaceParameters *>(bMalloc(mRaceCountStatic * 0x14, 0));
+    for (i = 0; i < 4; i++) {
+        mRaceCustom[i] = nullptr;
+    }
+    StoreRaceList(mRaceParameters);
+}
+
+void GRaceDatabase::RefreshBinProgress() {
+    unsigned int i;
+
+    for (i = 0; i < mBinCount; i++) {
+        mBins[i].RefreshProgress();
+    }
 }
 
 GRaceParameters *GRaceDatabase::GetRaceParameters(unsigned int index) {
@@ -411,6 +525,46 @@ void GRaceDatabase::BuildScoreList() {
     }
 }
 
+void GRaceDatabase::ClearRaceScores() {
+    unsigned int i;
+
+    if (!mRaceScoreInfo) {
+        return;
+    }
+
+    bMemSet(mRaceScoreInfo, 0, mRaceCountStatic << 4);
+    for (i = 0; i < mRaceCountStatic; i++) {
+        GRaceParameters *race;
+
+        race = &mRaceParameters[i];
+        if (!race->GetIsDDayRace()) {
+            bool unlockedQuick;
+            bool unlockedOnline;
+            bool unlockedChallenge;
+
+            unlockedQuick = race->GetInitiallyUnlockedQuickRace();
+            unlockedOnline = race->GetInitiallyUnlockedOnline();
+            unlockedChallenge = race->GetInitiallyUnlockedChallenge();
+
+            if (race->GetIsBossRace()) {
+                unlockedChallenge = false;
+            }
+
+            if (unlockedQuick || unlockedOnline || unlockedChallenge) {
+                unsigned int *flags;
+
+                flags = &reinterpret_cast<unsigned int *>(GetScoreInfo(race->GetEventHash()))[1];
+                if (unlockedQuick || unlockedChallenge) {
+                    *flags |= kUnlocked_QuickRace;
+                }
+                if (unlockedOnline) {
+                    *flags |= kUnlocked_Online;
+                }
+            }
+        }
+    }
+}
+
 GRaceSaveInfo *GRaceDatabase::GetScoreInfo(unsigned int hash) {
     unsigned int i;
     int *scoreInfo;
@@ -441,4 +595,26 @@ void GRaceDatabase::ResetCareerCompleteFlag(unsigned int hash) {
 
     flags = &reinterpret_cast<unsigned int *>(GetScoreInfo(hash))[1];
     *flags &= ~kCompleted_ContextCareer;
+}
+
+void GRaceDatabase::LoadBestScores(GRaceSaveInfo *scores, unsigned int count) {
+    int *scoreWords;
+    int *dest;
+    unsigned int loaded;
+    unsigned int i;
+
+    loaded = 0;
+    i = 0;
+    scoreWords = reinterpret_cast<int *>(scores);
+    dest = reinterpret_cast<int *>(mRaceScoreInfo);
+    bMemSet(mRaceScoreInfo, 0, mRaceCountStatic << 4);
+    while (i < count && loaded != mRaceCountStatic) {
+        if (scoreWords[0] && GetRaceFromHash(scoreWords[0])) {
+            loaded++;
+            bMemCpy(dest, scoreWords, 0x10);
+            dest += 4;
+        }
+        scoreWords += 4;
+        i++;
+    }
 }

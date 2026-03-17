@@ -116,6 +116,8 @@ class GRaceDatabase {
         kUnlocked_Online = 1 << 4,
     };
 
+    GRaceDatabase();
+
     static void Init();
 
     GRaceCustom *GetStartupRace();
@@ -151,7 +153,16 @@ class GRaceDatabase {
     }
 
   private:
+    void BuildBinList();
+    unsigned int StoreBinList(GRaceBin *dest);
+    void RefreshBinProgress();
+    void BuildRaceList();
+    unsigned int StoreRaceList(GRaceParameters *dest);
+    bool CollectionIsRaceActivity(Attrib::Gen::gameplay &collection);
+    bool CollectionIsRaceBin(Attrib::Gen::gameplay &collection);
     void BuildScoreList();
+    void ClearRaceScores();
+    void LoadBestScores(struct GRaceSaveInfo *scores, unsigned int count);
     struct GRaceSaveInfo *GetScoreInfo(unsigned int hash);
     bool CheckRaceScoreFlags(unsigned int hash, ScoreFlags flags);
     void ResetCareerCompleteFlag(unsigned int hash);
