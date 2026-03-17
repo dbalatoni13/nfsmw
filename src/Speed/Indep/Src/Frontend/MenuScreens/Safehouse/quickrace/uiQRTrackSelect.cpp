@@ -165,50 +165,46 @@ void UIQRTrackSelect::TryToAddTrack(GRaceParameters *parms, int unlock_filter, i
 }
 
 void UIQRTrackSelect::BuildPresetTrackList() {
-    while (!Tracks.IsEmpty()) {
-        SelectableTrack *node = Tracks.GetHead();
-        node->Remove();
-        delete node;
-    }
-    int unlockFilter = 0;
+    // TODO: normalized DWARF still differs around DeleteAllElements/GetHead ownership.
+    Tracks.DeleteAllElements();
+    int unlock_filter = 0;
     if (FEDatabase->IsCareerMode()) {
-        unlockFilter = 2;
+        unlock_filter = 2;
     } else if (FEDatabase->IsQuickRaceMode()) {
-        unlockFilter = 1;
+        unlock_filter = 1;
     } else if (FEDatabase->IsOnlineMode() || FEDatabase->IsLANMode()) {
-        unlockFilter = 4;
+        unlock_filter = 4;
     }
-    int binIdx = 0x15;
-    pCurrentNode = nullptr;
-    do {
-        GRaceBin *bin = GRaceDatabase::Get().GetBinNumber(binIdx);
-        for (unsigned int i = 0; i < bin->GetWorldRaceCount(); i++) {
-            unsigned int hash = bin->GetWorldRaceHash(i);
-            GRaceParameters *rp = GRaceDatabase::Get().GetRaceFromHash(hash);
-            TryToAddTrack(rp, unlockFilter, binIdx);
-        }
-        for (unsigned int i = 0; i < bin->GetBossRaceCount(); i++) {
-            unsigned int hash = bin->GetBossRaceHash(i);
-            GRaceParameters *rp = GRaceDatabase::Get().GetRaceFromHash(hash);
-            TryToAddTrack(rp, unlockFilter, binIdx);
-        }
-        if (binIdx == 0x15) {
-            binIdx = 0x10;
-        }
-        binIdx--;
-    } while (binIdx > 0);
+    {
+        int bin_num = 0x15;
+        pCurrentNode = nullptr;
+        do {
+            GRaceBin *bin = GRaceDatabase::Get().GetBinNumber(bin_num);
+            for (unsigned int i = 0; i < bin->GetWorldRaceCount(); i++) {
+                unsigned int raceHash = bin->GetWorldRaceHash(i);
+                GRaceParameters *parms = GRaceDatabase::Get().GetRaceFromHash(raceHash);
+                TryToAddTrack(parms, unlock_filter, bin_num);
+            }
+            for (unsigned int i = 0; i < bin->GetBossRaceCount(); i++) {
+                unsigned int raceHash = bin->GetBossRaceHash(i);
+                GRaceParameters *parms = GRaceDatabase::Get().GetRaceFromHash(raceHash);
+                TryToAddTrack(parms, unlock_filter, bin_num);
+            }
+            if (bin_num == 0x15) {
+                bin_num = 0x10;
+            }
+            bin_num--;
+        } while (bin_num > 0);
+    }
     if (!pCurrentNode) {
         pCurrentTrack = nullptr;
-        int count = Tracks.CountElements();
-        if (count > 0) {
+        if (Tracks.CountElements() > 0) {
             pCurrentNode = Tracks.GetHead();
         }
-        if (!pCurrentNode) {
-            goto skip;
-        }
     }
-    pCurrentTrack = pCurrentNode->pRaceParams;
-skip:
+    if (pCurrentNode) {
+        pCurrentTrack = pCurrentNode->pRaceParams;
+    }
     TrackMapStreamer.Init(pCurrentTrack, TrackMap, 0, 0);
 }
 
