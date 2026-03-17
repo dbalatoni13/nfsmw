@@ -1573,6 +1573,28 @@ float GRaceStatus::GetRaceTollboothTime(int boothIndex, int racerIndex) {
     return mRacerInfo[racerIndex].GetTollboothTime(boothIndex);
 }
 
+void GRaceStatus::RaceAbandoned() {
+    if (GetRaceContext() != GRace::kRaceContext_Career) {
+        return;
+    }
+
+    GManager::Get().SuspendAllActivities();
+}
+
+void GRaceStatus::EndStopAll() {
+    for (int i = 0; i < mRacerCount; ++i) {
+        mRacerInfo[i].ForceStop();
+    }
+}
+
+void GRaceStatus::FinalizeRaceStats() {
+    if (GRaceStatus::Get().GetRaceContext() == GRace::kRaceContext_Career) {
+        for (int i = 0; i < mRacerCount; ++i) {
+            mRacerInfo[i].FinalizeRaceStats();
+        }
+    }
+}
+
 bool GRaceStatus::IsAudioLoading() {
     return false;
 }
