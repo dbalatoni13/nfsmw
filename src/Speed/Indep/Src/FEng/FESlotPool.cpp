@@ -6,19 +6,19 @@ unsigned char* FESlotNode::AllocBlock() {
         return nullptr;
     }
     unsigned char* pMask = SlotMask;
-    unsigned long byteIdx = 0;
-    while (pMask[byteIdx] == 0xFF) {
-        byteIdx++;
+    unsigned long Index = 0;
+    while (pMask[Index] == 0xFF) {
+        Index++;
     }
-    unsigned long bitIdx = byteIdx << 3;
-    if (pMask[byteIdx] & 1) {
+    Index <<= 3;
+    if (pMask[Index >> 3] & 1) {
         do {
-            bitIdx++;
-        } while ((static_cast<int>(static_cast<unsigned int>(pMask[bitIdx >> 3])) >> (bitIdx & 7) & 1) != 0);
+            Index++;
+        } while ((pMask[Index >> 3] >> (Index & 7)) & 1);
     }
     SlotsUsed++;
-    pMask[bitIdx >> 3] |= static_cast<unsigned char>(1 << (bitIdx & 7));
-    return pData + SlotSize * bitIdx;
+    pMask[Index >> 3] |= static_cast<unsigned char>(1 << (Index & 7));
+    return pData + SlotSize * Index;
 }
 
 void FESlotNode::FreeBlock(unsigned char* pSlot) {
