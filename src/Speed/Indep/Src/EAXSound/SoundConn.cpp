@@ -29,15 +29,6 @@ struct Pkt_Heli_Open : public Sim::Packet {
     WUID mWorldID;                           // offset 0x8
 };
 
-inline Sound::Wheel *GetCarWheels(EAX_CarState *state) {
-    return static_cast<Sound::Wheel *>(static_cast<void *>(state->mWheel));
-}
-
-inline const bVector3 *GetWorldVelocity(const WorldConn::Reference &ref) {
-    return *static_cast<const bVector3 *const *>(
-        static_cast<const void *>(static_cast<const char *>(static_cast<const void *>(&ref)) + 0x8));
-}
-
 } // namespace
 
 namespace SoundConn {
@@ -251,13 +242,13 @@ void CarSoundConn::UpdateState(float dT) {
     float &eBrake = state.mEBrake;
     float &fwSpeedState = state.mFWSpeed;
     float &health = state.mHealth;
-    Sound::Wheel *const wheels = GetCarWheels(&state);
+    Sound::Wheel *const wheels = state.mWheel;
     unsigned short &steering = state.mSteering;
     Sound::Engine &engine = state.mEngine;
     Sound::Driveline &driveline = state.mDriveline;
     int &siren = state.mSirenState;
-    int &hotPursuitWord = state.mHotPursuit;
-    int &simUpdating = state.mSimUpdating;
+    bool &hotPursuitWord = state.mHotPursuit;
+    bool &simUpdating = state.mSimUpdating;
     unsigned int &trailerID = state.mTrailerID;
     float &oversteer = state.mOversteer;
     float &understeer = state.mUndersteer;
@@ -265,7 +256,7 @@ void CarSoundConn::UpdateState(float dT) {
     float &visualRPM = state.mVisualRPM;
     float &timeSinceSeen = state.mTimeSinceSeen;
     float &desiredSpeed = state.mDesiredSpeed;
-    int &controlSource = state.mControlSource;
+    Sound::ControlSource &controlSource = state.mControlSource;
 
     SoundConn::Pkt_Car_Service data(visualRPM);
     PSMTX44Copy((Mtx44)mTarget.GetMatrix(), (Mtx44)&matrix);
@@ -307,7 +298,7 @@ void CarSoundConn::UpdateState(float dT) {
 
     simUpdating = 1;
     vel1 = vel0;
-    vel0 = *GetWorldVelocity(mTarget);
+    vel0 = *mTarget.GetVelocity();
 
     const float invDT = 1.0f / dT;
     accel.x = (vel0.x - vel1.x) * invDT;
@@ -323,13 +314,13 @@ void CarSoundConn::UpdateState(float dT) {
     eBrake = data.mEBrakePercent;
     steering = static_cast<unsigned short>(static_cast<int>(data.mSteering * 10430.378f));
     siren = data.mSirenState;
-    hotPursuitWord = *static_cast<const int *>(static_cast<const void *>(&data.mHotPursuit));
+    hotPursuitWord = data.mHotPursuit;
     oversteer = data.mOversteer;
     understeer = data.mUndersteer;
     slipAngle = -data.mSlipAngle;
     health = data.mHealth;
 
-    const bVector3 *velocity = GetWorldVelocity(mTarget);
+    const bVector3 *velocity = mTarget.GetVelocity();
     const float speedSq = velocity->x * velocity->x + velocity->y * velocity->y + velocity->z * velocity->z;
     float fwSpeed = 0.0f;
     if (speedSq > 0.0f) {
@@ -340,7 +331,7 @@ void CarSoundConn::UpdateState(float dT) {
     trailerID = data.mTrailer;
     timeSinceSeen = data.mTimeSinceSeen;
     desiredSpeed = data.mDesiredSpeed;
-    controlSource = data.mControlSource;
+    controlSource = static_cast<Sound::ControlSource>(data.mControlSource);
 
     for (int i = 0; i < 4; ++i) {
         Sound::Wheel &wheel = wheels[i];
@@ -357,7 +348,7 @@ void CarSoundConn::UpdateState(float dT) {
 
     const bool gearChanged = driveline.mGear != data.mGear;
     if (gearChanged) {
-        driveline.mGear = data.mGear;
+        driveline.mGear = static_cast<Sound::Gear>(data.mGear);
     }
     driveline.mGearShiftFlag = gearChanged;
 }
@@ -392,14 +383,14 @@ void HeliSoundConn::UpdateState(float dT) {
     mState->mSimUpdating = true;
     PSMTX44Copy((Mtx44)mTarget.GetMatrix(), (Mtx44)&mState->mMatrix);
     mState->mVel1 = mState->mVel0;
-    mState->mVel0 = *GetWorldVelocity(mTarget);
+    mState->mVel0 = *mTarget.GetVelocity();
 
     const float invDT = 1.0f / dT;
     mState->mAccel.x = (mState->mVel0.x - mState->mVel1.x) * invDT;
     mState->mAccel.y = (mState->mVel0.y - mState->mVel1.y) * invDT;
     mState->mAccel.z = (mState->mVel0.z - mState->mVel1.z) * invDT;
 
-    const bVector3 *velocity = GetWorldVelocity(mTarget);
+    const bVector3 *velocity = mTarget.GetVelocity();
     const float speedSq = velocity->x * velocity->x + velocity->y * velocity->y + velocity->z * velocity->z;
     float fwSpeed = 0.0f;
     if (speedSq > 0.0f) {

@@ -17,11 +17,19 @@ struct SFXCTL_Wheel : public SFXCTL {
 
   public:
     SFXCTL_Wheel();
-    /* 0x28 */ char _pad_whl0[0x78 - 0x28]; // bVector2/float arrays
+    /* 0x28 */ bVector2 m_NormWheelSlip[4];
+    /* 0x48 */ bVector2 m_bvTotalRightWheelSlip;
+    /* 0x50 */ bVector2 m_bvTotalLeftWheelSlip;
+    /* 0x58 */ float m_fWheelTractionMag[4];
+    /* 0x68 */ float m_fLoad[4];
     /* 0x78 */ Attrib::Gen::simsurface LeftSideTerrain;
     /* 0x8c */ Attrib::Gen::simsurface RightSideTerrain;
     /* 0xa0 */ Attrib::Gen::simsurface PrevLeftSideTerrain;
     /* 0xb4 */ Attrib::Gen::simsurface PrevRightSideTerrain;
+    /* 0xc8 */ bVector3 v3NewPosLeft;
+    /* 0xd8 */ bVector3 v3NewPosRight;
+    /* 0xe8 */ bool LeftSideTouchingGround;
+    /* 0xec */ bool RightSideTouchingGround;
 
     ~SFXCTL_Wheel() override;
     TypeInfo *GetTypeInfo() const override;

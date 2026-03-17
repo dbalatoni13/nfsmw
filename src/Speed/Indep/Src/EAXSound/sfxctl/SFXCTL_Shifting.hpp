@@ -26,7 +26,11 @@ enum FX_POST_SHIFT_LFO {
     SHIFT_LFO_NONE = 0
 };
 
+namespace Attrib {
+namespace Gen {
 struct shiftpattern;
+}
+}
 
 struct SFXCTL_Engine;
 
@@ -43,7 +47,7 @@ struct SFXCTL_Shifting : public SFXCTL {
     /* 0x3c */ bool m_bNeed_DeccelSnd;
     /* 0x40 */ bool m_bShouldBeWhining;
     /* 0x44 */ bool m_bBrakePedalMashed;
-    /* 0x48 */ shiftpattern *m_pShiftingPatternData;
+    /* 0x48 */ Attrib::Gen::shiftpattern *m_pShiftingPatternData;
     /* 0x4c */ SHIFT_STAGE eShiftState;
     /* 0x50 */ SHIFT_STAGE eShiftStageChanged;
     /* 0x54 */ int m_VOL_LFO_AMP;

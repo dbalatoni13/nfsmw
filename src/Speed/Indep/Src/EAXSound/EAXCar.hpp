@@ -5,7 +5,16 @@
 #pragma once
 #endif
 
+struct stShiftPair {
+    short RPM;
+    short Time;
+};
+
 #include "Speed/Indep/Src/EAXSound/States/STATE_Base.hpp"
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/acceltrans.h"
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/engineaudio.h"
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/shiftpattern.h"
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/turbosfx.h"
 
 struct SFXCTL_Physics;
 struct DriverInfo;
@@ -50,6 +59,11 @@ struct EAXCar : public CSTATE_Base {
     virtual void UpdatePov();
     virtual int UpdateRotation();
 
+    Attrib::Gen::engineaudio &GetAttributes() { return mEngineInfo; }
+    Attrib::Gen::shiftpattern &GetShiftInfo() { return mShiftInfo; }
+    Attrib::Gen::turbosfx &GetTurboInfo() { return mTurboInfo; }
+    Attrib::Gen::acceltrans &GetAccelInfo() { return mAccelInfo; }
+
     static StateInfo *GetStaticStateInfo(void) {
         return &s_StateInfo;
     }
@@ -72,7 +86,7 @@ struct EAXCar : public CSTATE_Base {
     static StateInfo s_StateInfo;
 
     int m_nHornState;                         // offset 0x44
-    char m_FEEngineAttribs[0x14];             // offset 0x48
+    Attrib::Gen::engineaudio m_FEEngineAttribs; // offset 0x48
     SFXCTL_Physics *m_pPhysicsCTL;            // offset 0x5C
     float PhysTRQ;                            // offset 0x60
     float PhysRPM;                            // offset 0x64
@@ -96,10 +110,10 @@ struct EAXCar : public CSTATE_Base {
     int m_PovType;                            // offset 0xB8
     int m_IsDriveCamera;                      // offset 0xBC
     int m_Rotation;                           // offset 0xC0
-    char mEngineInfo[0x14];                   // offset 0xC4
-    char mShiftInfo[0x14];                    // offset 0xD8
-    char mTurboInfo[0x14];                    // offset 0xEC
-    char mAccelInfo[0x14];                    // offset 0x100
+    Attrib::Gen::engineaudio mEngineInfo;     // offset 0xC4
+    Attrib::Gen::shiftpattern mShiftInfo;     // offset 0xD8
+    Attrib::Gen::turbosfx mTurboInfo;         // offset 0xEC
+    Attrib::Gen::acceltrans mAccelInfo;       // offset 0x100
 };
 
 #endif

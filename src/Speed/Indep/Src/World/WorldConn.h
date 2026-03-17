@@ -29,6 +29,14 @@ class Reference {
         return mMatrix;
     }
 
+    const bVector3 *GetVelocity() const {
+        return mVelocity;
+    }
+
+    const bVector3 *GetAcceleration() const {
+        return mAcceleration;
+    }
+
   private:
     unsigned int mWorldID;         // offset 0x0, size 0x4
     const bMatrix4 *mMatrix;       // offset 0x4, size 0x4

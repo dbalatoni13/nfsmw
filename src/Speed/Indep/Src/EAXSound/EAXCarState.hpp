@@ -9,6 +9,8 @@
 #include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ISimable.h"
 #include "Speed/Indep/Src/Sim/SimSurface.h"
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/engineaudio.h"
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/pvehicle.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
@@ -119,23 +121,23 @@ struct EAX_CarState : public UTL::Collections::Listable<EAX_CarState, 10> {
     bVector3 mAccel; // offset 0x7C
     float mEBrake; // offset 0x8C
     float mFWSpeed; // offset 0x90
-    int mIsShocked; // offset 0x94
+    bool mIsShocked; // offset 0x94
     float mHealth; // offset 0x98
-    int mNosEmptyFlag; // offset 0x9C
-    int mMovementMode; // offset 0xA0
-    int mPlayerZone; // offset 0xA4
-    char mWheel[0x110]; // offset 0xA8
+    bool mNosEmptyFlag; // offset 0x9C
+    Sound::MovementMode mMovementMode; // offset 0xA0
+    Sound::PlayerZones mPlayerZone; // offset 0xA4
+    Sound::Wheel mWheel[4]; // offset 0xA8
     unsigned short mSteering; // offset 0x1B8
     unsigned short mAngle; // offset 0x1BA
     Sound::Engine mEngine; // offset 0x1BC
     Sound::Driveline mDriveline; // offset 0x1D8
     int mSirenState; // offset 0x1E0
-    int mHotPursuit; // offset 0x1E4
-    char mAttributes[0x14]; // offset 0x1E8
-    char mEngineInfo[0x14]; // offset 0x1FC
+    bool mHotPursuit; // offset 0x1E4
+    Attrib::Gen::pvehicle mAttributes; // offset 0x1E8
+    Attrib::Gen::engineaudio mEngineInfo; // offset 0x1FC
     Sound::Context mContext; // offset 0x210
-    int mSimUpdating; // offset 0x214
-    int mAssetsLoaded; // offset 0x218
+    bool mSimUpdating; // offset 0x214
+    bool mAssetsLoaded; // offset 0x218
     unsigned int mWorldID; // offset 0x21C
     HSIMABLE__ *mHandle; // offset 0x220
     unsigned int mTrailerID; // offset 0x224
@@ -146,7 +148,7 @@ struct EAX_CarState : public UTL::Collections::Listable<EAX_CarState, 10> {
     float mTimeSinceSeen; // offset 0x238
     int mNISCarID; // offset 0x23C
     float mDesiredSpeed; // offset 0x240
-    int mControlSource; // offset 0x244
+    Sound::ControlSource mControlSource; // offset 0x244
 
     EAX_CarState(const Attrib::Collection *atr, Sound::Context context, unsigned int wuid, HSIMABLE__ *handle);
 };

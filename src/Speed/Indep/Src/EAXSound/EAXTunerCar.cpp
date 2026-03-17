@@ -104,9 +104,9 @@ int EAXTunerCar::UpdateRotation() {
     int zero = 0;
     asm volatile("" : "+r"(zero));
     int val = zero;
-    *(int *)&_pad_eaxcar2[0xC0 - 0xb8] = zero;
+    m_Rotation = zero;
     if (val > 0x400) val = 0x400;
-    *(int *)&_pad_eaxcar2[0xC0 - 0xb8] = val;
+    m_Rotation = val;
     return val;
 }
 
@@ -124,15 +124,15 @@ void EAXTunerCar::UpdatePov() {
         int (*vfunc)(char *) = (int (*)(char *))(*(int *)((char *)vtable2 + 0x2C));
         char *anchor = (char *)vfunc(cm + vthis_off);
 
-        *(int *)&_pad_eaxcar2[0xBC - 0xb8] = (*(int *)(cm + 0xC) == 1);
+        m_IsDriveCamera = (*(int *)(cm + 0xC) == 1);
 
         if (anchor != 0) {
-            *(int *)&_pad_eaxcar2[0xB8 - 0xb8] = static_cast<int>(*(short *)(anchor + 0xD8));
+            m_PovType = static_cast<int>(*(short *)(anchor + 0xD8));
         } else {
-            *(int *)&_pad_eaxcar2[0xB8 - 0xb8] = 7;
+            m_PovType = 7;
         }
     } else {
-        *(int *)&_pad_eaxcar2[0xBC - 0xb8] = 0;
+        m_IsDriveCamera = 0;
     }
 }
 

@@ -27,18 +27,6 @@ extern float lbl_803D72F8;
 
 struct HSIMABLE__;
 
-namespace {
-static EAX_CarState *GetEngineCarState(const EAXCar *car) {
-    return *static_cast<EAX_CarState *const *>(
-        static_cast<const void *>(static_cast<const char *>(static_cast<const void *>(car)) + 0x34));
-}
-
-static EAX_CarState *GetEngineStateCar(CSTATE_Base *stateBase) {
-    return *static_cast<EAX_CarState **>(
-        static_cast<void *>(static_cast<char *>(static_cast<void *>(stateBase)) + 0x34));
-}
-} // namespace
-
 SFXCTL_Engine::SFXCTL_Engine()
     : m_pShiftCtl(nullptr) //
     , m_pAccelTransitionCtl(nullptr) //
@@ -99,10 +87,9 @@ void SFXCTL_Engine::UpdateParams(float t) {
     SFXCTL::UpdateParams(t);
 
     EAXCar *carOwner = m_pEAXCar;
-    EAX_CarState *car = GetEngineCarState(carOwner);
+    EAX_CarState *car = carOwner->GetPhysCar();
 
-    const Attrib::Gen::engineaudio &attributes =
-        *static_cast<const Attrib::Gen::engineaudio *>(static_cast<const void *>(carOwner->mEngineInfo));
+    const Attrib::Gen::engineaudio &attributes = carOwner->GetAttributes();
     SetDMIX_Input(2, static_cast<int>(attributes.Master_Vol()));
     const bVector3 *forward = static_cast<const bVector3 *>(static_cast<const void *>(&car->mMatrix.v0));
     m_p3DCarPosCtl->AssignDirectionVector(forward);
@@ -273,7 +260,7 @@ have_cur_rpm:
     VisRpmAvg.Recalculate();
 
     PhysicsNewAudioRPM = (VisRpmAvg.GetValue() - lbl_803D72EC) * lbl_803D72F0;
-    EAX_CarState *car = GetEngineStateCar(m_pStateBase);
+    EAX_CarState *car = m_pStateBase->GetPhysCar();
     if (car->mContext == 0) {
         if (bPreRace != 0) {
             PhysicsNewAudioRPM = car->mVisualRPM;

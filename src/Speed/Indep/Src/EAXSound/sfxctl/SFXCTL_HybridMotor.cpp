@@ -7,13 +7,6 @@
 #include "Speed/Indep/Src/EAXSound/OldSoundTemplates.hpp"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/engineaudio.h"
 
-namespace {
-static EAX_CarState *GetHybridStateCar(CSTATE_Base *stateBase) {
-    return *static_cast<EAX_CarState **>(
-        static_cast<void *>(static_cast<char *>(static_cast<void *>(stateBase)) + 0x34));
-}
-} // namespace
-
 SFXCTL_HybridMotor::SFXCTL_HybridMotor()
     : m_pEngineCtl(nullptr) //
     , m_pShiftingCtl(nullptr) //
@@ -115,8 +108,7 @@ void SFXCTL_HybridMotor::UpdateDualMixEng(float t) {
     Slope TrqThreshold(0.0f, 1.0f, 0.0f, 35.0f);
     float trqWeight = TrqThreshold.GetValue(m_pEngineCtl->Trq.GetValue());
 
-    Attrib::Gen::engineaudio *engineInfo =
-        static_cast<Attrib::Gen::engineaudio *>(static_cast<void *>(m_pEAXCar->mEngineInfo));
+    Attrib::Gen::engineaudio *engineInfo = &m_pEAXCar->GetAttributes();
 
     float deltaRPM = bAbs(m_AvgDeltaRPM.GetValue() + 10.0f);
     float accelThresholdRange = engineInfo->AccelDeltaRPMThreshold();
@@ -140,12 +132,9 @@ void SFXCTL_HybridMotor::UpdateDualMixEng(float t) {
     }
 
     SFXCTL_Physics *physicsCtl = m_pEAXCar->m_pPhysicsCTL;
-    if (*static_cast<int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(physicsCtl)) + 0xB4)) == 0) {
+    if (!physicsCtl->NISRevingEnabled) {
         bool bDisableSmooth = false;
-        EAX_CarState *stateCar =
-            m_pStateBase != nullptr
-                ? GetHybridStateCar(m_pStateBase)
-                : nullptr;
+        EAX_CarState *stateCar = m_pStateBase != nullptr ? m_pStateBase->GetPhysCar() : nullptr;
         int gearShiftFlag = stateCar != nullptr
                                 ? stateCar->mDriveline.mGearShiftFlag
                                 : 0;
@@ -234,8 +223,7 @@ void SFXCTL_HybridMotor::UpdateSingleMixEng(float t) {
     float trqValue = m_pEngineCtl->Trq.GetValue();
     float trqWeight = TrqThreshold.GetValue(trqValue);
 
-    Attrib::Gen::engineaudio *engineInfo =
-        static_cast<Attrib::Gen::engineaudio *>(static_cast<void *>(m_pEAXCar->mEngineInfo));
+    Attrib::Gen::engineaudio *engineInfo = &m_pEAXCar->GetAttributes();
 
     float deltaRPM = m_AvgDeltaRPM.GetValue() + 10.0f;
     float accelThresholdRange = engineInfo->AccelDeltaRPMThreshold();
@@ -258,10 +246,7 @@ void SFXCTL_HybridMotor::UpdateSingleMixEng(float t) {
     }
     PercentOfDecelThreshold = decelPct;
 
-    EAX_CarState *stateCar =
-        m_pStateBase != nullptr
-            ? GetHybridStateCar(m_pStateBase)
-            : nullptr;
+    EAX_CarState *stateCar = m_pStateBase != nullptr ? m_pStateBase->GetPhysCar() : nullptr;
     int gearShiftFlag = stateCar != nullptr
                             ? stateCar->mDriveline.mGearShiftFlag
                             : 0;

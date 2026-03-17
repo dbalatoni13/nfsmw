@@ -4,6 +4,8 @@
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
+
+#include "Speed/Indep/Src/EAXSound/EAXCarState.hpp"
 #include "Speed/Indep/Src/EAXSound/AudioMemBase.hpp"
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL.hpp"
 
@@ -59,6 +61,7 @@ struct CSTATE_Base : public AudioMemBase {
     SndBase *GetSFXCTLObject(int sfxid);
 
     bool IsAttached() { return bIsAttached; }
+    EAX_CarState *GetPhysCar() { return m_pCar; }
 
     void *operator new(size_t s) {
         return gAudioMemoryManager.AllocateMemory(s, GetStaticStateInfo()->stateName, 0);

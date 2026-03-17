@@ -9,7 +9,11 @@
 
 struct SFXCTL_Engine;
 struct SFXCTL_Shifting;
+namespace Attrib {
+namespace Gen {
 struct acceltrans;
+}
+}
 
 struct SFXCTL_AccelTrans : public SFXCTL {
   protected:
@@ -26,7 +30,7 @@ struct SFXCTL_AccelTrans : public SFXCTL {
     /* 0x88 */ float t_LastAccelTrans;
     /* 0x8c */ bool IsAccelerating;
     /* 0x90 */ bool OldIsAccelerating;
-    /* 0x94 */ acceltrans *m_pAccelTransDataSet;
+    /* 0x94 */ Attrib::Gen::acceltrans *m_pAccelTransDataSet;
     /* 0x98 */ bool PlayEngOffSweet;
 
     ~SFXCTL_AccelTrans() override;

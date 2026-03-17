@@ -71,61 +71,6 @@ struct stDriveByInfo {
     unsigned int UniqueID;
 };
 
-struct EAXCarStatePtrFields {
-    char _pad[0x34];
-    EAX_CarState *mCarState;
-};
-
-struct EAXCarStateTunnelFields {
-    char _pad0[0x14];
-    bMatrix4 mMatrix;
-    bVector3 mVel0;
-    char _pad64[0x2C];
-    float mFWSpeed;
-    char _pad94[0x17C];
-    int mContext;
-};
-
-struct CSTATE_BaseTunnelFields {
-    char _pad0[0x10];
-    int mInstNum;
-    char _pad14[0x20];
-    EAX_CarState *mCarState;
-};
-
-struct SFXTunnelObjectIDByteFields {
-    char _pad[0x21];
-    unsigned char mObjectIDByte1;
-};
-
-struct SFXTunnelRuntimeFields {
-    char _pad0[0x40];
-    int bPlayDriveBy;
-    char _pad44[0x1C];
-    int bPlayTunnelExit;
-    char _pad64[0x0C];
-    int bIsTunnelRamping;
-    int m_PrevReverbZone;
-    int m_CurReverbZone;
-    char _pad7C[0x1C];
-    int bFadingOut;
-    int bFadingIn;
-    int bIsReadyForSwitch;
-    int m_IsLeadCar;
-    char _padA8[0x3C];
-    int bToggleOffset;
-};
-
-struct EAXSoundModeFields {
-    char _pad[0x84];
-    int mGameMode;
-};
-
-#define TUNNEL_STATE_FIELDS(ptr) (*static_cast<CSTATE_BaseTunnelFields *>(static_cast<void *>(ptr)))
-#define TUNNEL_EAXCAR_FIELDS(ptr) (*static_cast<EAXCarStatePtrFields *>(static_cast<void *>(ptr)))
-#define TUNNEL_CAR_FIELDS(ptr) (*static_cast<EAXCarStateTunnelFields *>(static_cast<void *>(ptr)))
-#define TUNNEL_RUNTIME_FIELDS(ptr) (*static_cast<SFXTunnelRuntimeFields *>(static_cast<void *>(ptr)))
-
 static inline float Distancexyz(const UMath::Vector4 &a, const UMath::Vector4 &b) {
     UMath::Vector4 temp;
     VU0_v4subxyz(a, b, temp);
@@ -213,11 +158,10 @@ void SFXCTL_Tunnel::InitSFX() {
     m_bIsInTunnel = false;
     m_bWasInTunnel = false;
 
-    EAXCarStateTunnelFields *car =
-        static_cast<EAXCarStateTunnelFields *>(static_cast<void *>(TUNNEL_STATE_FIELDS(m_pStateBase).mCarState));
+    EAX_CarState *car = m_pStateBase->GetPhysCar();
     int context = static_cast<int>(car->mContext);
     int isLeadCar = 0;
-    if (context == 0 && TUNNEL_STATE_FIELDS(m_pStateBase).mInstNum == 0) {
+    if (context == 0 && m_pStateBase->m_InstNum == 0) {
         isLeadCar = 1;
     }
 
@@ -228,14 +172,14 @@ void SFXCTL_Tunnel::InitSFX() {
 void SFXCTL_Tunnel::UpdateParams(float t) {
     SFXCTL::UpdateParams(t);
 
-    g_pEAXSound->GetPlayerTunerCar(TUNNEL_STATE_FIELDS(m_pStateBase).mInstNum);
+    g_pEAXSound->GetPlayerTunerCar(m_pStateBase->m_InstNum);
 
     UpdateIsInTunnel(t);
     UpdateDriveBySnds(t);
     UpdateCityVerb(t);
     UpdateReflectionParams(t);
 
-    int context = static_cast<int>(TUNNEL_CAR_FIELDS(TUNNEL_STATE_FIELDS(m_pStateBase).mCarState).mContext);
+    int context = static_cast<int>(m_pStateBase->GetPhysCar()->mContext);
     if (context == 1 || context == 2) {
         UpdateOcclusion(t);
     }
@@ -249,7 +193,7 @@ void SFXCTL_Tunnel::UpdateMixerOutputs() {
 
     SetDMIX_Input(4, IsOccluded != 0 ? 0x7FFF : 0);
 
-    if (static_cast<int>(TUNNEL_CAR_FIELDS(TUNNEL_STATE_FIELDS(m_pStateBase).mCarState).mContext) == 0) {
+    if (static_cast<int>(m_pStateBase->GetPhysCar()->mContext) == 0) {
         SetDMIX_Input(5, m_AEMSDryVol);
         SetDMIX_Input(6, m_AEMSWetVol);
     }
@@ -295,7 +239,7 @@ TrackPathZone *SFXCTL_Tunnel::GetTunnelType(bVector3 &pos, eTrackPathZoneType zo
         if (zone->Elevation == 0.0f) {
             break;
         }
-        if (TUNNEL_CAR_FIELDS(TUNNEL_STATE_FIELDS(m_pStateBase).mCarState).mMatrix.v3.z <= zone->Elevation) {
+        if (m_pStateBase->GetPhysCar()->mMatrix.v3.z <= zone->Elevation) {
             return zone;
         }
     }
@@ -307,31 +251,23 @@ void SFXCTL_Tunnel::UpdateIsInTunnel(float t) {
 
     TrackPathZone *zone;
     bool InTunnel;
+    EAX_CarState *car = m_pStateBase->GetPhysCar();
+    bVector3 &carPos = *static_cast<bVector3 *>(static_cast<void *>(&car->mMatrix.v3));
 
     CurZoneType = TRACK_PATH_ZONE_TUNNEL;
-    zone = GetTunnelType(
-        *static_cast<bVector3 *>(static_cast<void *>(&TUNNEL_CAR_FIELDS(TUNNEL_STATE_FIELDS(m_pStateBase).mCarState).mMatrix.v3)),
-                         TRACK_PATH_ZONE_TUNNEL);
+    zone = GetTunnelType(carPos, TRACK_PATH_ZONE_TUNNEL);
     if (zone == nullptr) {
         CurZoneType = TRACK_PATH_ZONE_OVERPASS;
-        zone = GetTunnelType(
-            *static_cast<bVector3 *>(static_cast<void *>(&TUNNEL_CAR_FIELDS(TUNNEL_STATE_FIELDS(m_pStateBase).mCarState).mMatrix.v3)),
-            TRACK_PATH_ZONE_OVERPASS);
+        zone = GetTunnelType(carPos, TRACK_PATH_ZONE_OVERPASS);
         if (zone == nullptr) {
             CurZoneType = TRACK_PATH_ZONE_OVERPASS_SMALL;
-            zone = GetTunnelType(
-                *static_cast<bVector3 *>(static_cast<void *>(&TUNNEL_CAR_FIELDS(TUNNEL_STATE_FIELDS(m_pStateBase).mCarState).mMatrix.v3)),
-                TRACK_PATH_ZONE_OVERPASS_SMALL);
+            zone = GetTunnelType(carPos, TRACK_PATH_ZONE_OVERPASS_SMALL);
             if (zone == nullptr) {
                 CurZoneType = TRACK_PATH_ZONE_GARAGE;
-                zone = GetTunnelType(
-                    *static_cast<bVector3 *>(static_cast<void *>(&TUNNEL_CAR_FIELDS(TUNNEL_STATE_FIELDS(m_pStateBase).mCarState).mMatrix.v3)),
-                    TRACK_PATH_ZONE_GARAGE);
+                zone = GetTunnelType(carPos, TRACK_PATH_ZONE_GARAGE);
                 if (zone == nullptr) {
                     CurZoneType = TRACK_PATH_ZONE_DYNAMIC;
-                    zone = GetTunnelType(
-                        *static_cast<bVector3 *>(static_cast<void *>(&TUNNEL_CAR_FIELDS(TUNNEL_STATE_FIELDS(m_pStateBase).mCarState).mMatrix.v3)),
-                        TRACK_PATH_ZONE_DYNAMIC);
+                    zone = GetTunnelType(carPos, TRACK_PATH_ZONE_DYNAMIC);
                     if (zone != nullptr) {
                         if (zone->VisitInfo == 1) {
                             zone = nullptr;
@@ -352,7 +288,7 @@ LAB_IN_TUNNEL:
     InTunnel = true;
     if (m_bIsInTunnel == 0) {
         m_bIsInTunnel = true;
-        int carContext = static_cast<int>(TUNNEL_CAR_FIELDS(TUNNEL_STATE_FIELDS(m_pStateBase).mCarState).mContext);
+        int carContext = static_cast<int>(car->mContext);
         if (carContext == 0) {
             MMiscSound(1).Send(UCrc32("TunnelUpdate"));
 
@@ -376,7 +312,7 @@ LAB_DEFAULT_VERB:
 LAB_UPDATE_END:
     if (!InTunnel && m_bIsInTunnel) {
         m_bIsInTunnel = false;
-        int carContext = static_cast<int>(TUNNEL_CAR_FIELDS(TUNNEL_STATE_FIELDS(m_pStateBase).mCarState).mContext);
+        int carContext = static_cast<int>(car->mContext);
         if (carContext == 0) {
             MMiscSound(0).Send(UCrc32("TunnelUpdate"));
             EndTunnelVerb();
@@ -384,13 +320,13 @@ LAB_UPDATE_END:
     }
 
     m_bWasInTunnel = m_bIsInTunnel;
-    if (static_cast<int>(TUNNEL_CAR_FIELDS(TUNNEL_STATE_FIELDS(m_pStateBase).mCarState).mContext) == 0) {
+    if (static_cast<int>(car->mContext) == 0) {
         m_PlayerZoneType = CurZoneType;
     }
 }
 
 void SFXCTL_Tunnel::SetCurrentReverbType(eREVERBFX type, int reverboffset) {
-    TUNNEL_RUNTIME_FIELDS(this).bFadingOut = 1;
+    bFadingOut = true;
     m_ReverbOffset = static_cast< float >(reverboffset);
     m_TargetType = type;
     ReflRamp.Initialize(0.0f, 1.0f, g_REVERBFXMODULES[m_ReverbType].FadeOut, LINEAR);
@@ -413,9 +349,8 @@ void SFXCTL_Tunnel::UpdateCityVerb(float t) {
 
     if ((isValid != 0) &&
         (m_pEAXCar != nullptr) &&
-        (static_cast<SFXTunnelObjectIDByteFields *>(static_cast<void *>(this))->mObjectIDByte1 == 2)) {
-        EAXCarStateTunnelFields *pcar =
-            static_cast<EAXCarStateTunnelFields *>(static_cast<void *>(TUNNEL_EAXCAR_FIELDS(m_pEAXCar).mCarState));
+        (((GetUniqueID() >> 16) & 0xFF) == 2)) {
+        EAX_CarState *pcar = m_pStateBase->GetPhysCar();
         if (pcar != nullptr) {
             ReverbAccessor.CaptureData(pcar->mMatrix.v3.x, pcar->mMatrix.v3.y);
             m_CurReverbZone = ReverbAccessor.GetDataInt(0);
@@ -425,7 +360,7 @@ void SFXCTL_Tunnel::UpdateCityVerb(float t) {
 
     if (static_cast< unsigned int >(m_CurReverbZone) > 0xB) {
         register int zone asm("r0");
-        if (static_cast<EAXSoundModeFields *>(static_cast<void *>(g_pEAXSound))->mGameMode == SND_FRONTEND) {
+        if (g_pEAXSound->GetSoundGameMode() == SND_FRONTEND) {
             zone = 0;
         } else {
             zone = 9;
@@ -446,8 +381,7 @@ void SFXCTL_Tunnel::UpdateCityVerb(float t) {
 }
 
 void SFXCTL_Tunnel::AdjustReverbOffset(int reverboffset) {
-    if (TUNNEL_RUNTIME_FIELDS(this).bFadingOut == 0 &&
-        TUNNEL_RUNTIME_FIELDS(this).bFadingIn == 0) {
+    if (!bFadingOut && !bFadingIn) {
         m_ReverbOffset = static_cast< float >(reverboffset);
 
         int ndBGinsu = -10000;
@@ -474,18 +408,18 @@ void SFXCTL_Tunnel::AdjustReverbOffset(int reverboffset) {
 }
 
 void SFXCTL_Tunnel::UpdateReflectionParams(float t) {
-    TUNNEL_RUNTIME_FIELDS(this).bIsReadyForSwitch = 0;
+    bIsReadyForSwitch = false;
     ReflRamp.Update(t);
 
-    if (TUNNEL_RUNTIME_FIELDS(this).bFadingOut != 0) {
+    if (bFadingOut) {
         if (*static_cast<int *>(static_cast<void *>(&ReflRamp.bComplete)) != 0 &&
-            TUNNEL_RUNTIME_FIELDS(this).bIsTunnelRamping == 0) {
+            bIsTunnelRamping == 0) {
             if (m_IsLeadCar != 0) {
-                TUNNEL_RUNTIME_FIELDS(this).bIsReadyForSwitch = 1;
+                bIsReadyForSwitch = true;
             }
-            TUNNEL_RUNTIME_FIELDS(this).bFadingIn = 1;
+            bFadingIn = true;
             m_ReverbType = m_TargetType;
-            TUNNEL_RUNTIME_FIELDS(this).bFadingOut = TUNNEL_RUNTIME_FIELDS(this).bIsTunnelRamping;
+            bFadingOut = bIsTunnelRamping;
             ReflRamp.Initialize(0.0f, 1.0f, g_REVERBFXMODULES[m_TargetType].FadeIn, LINEAR);
 
             m_CurWetGinsu = m_CurWetGinsuTarget;
@@ -504,17 +438,16 @@ void SFXCTL_Tunnel::UpdateReflectionParams(float t) {
             m_CurDryGinsuTarget = GetFloatFromHundredthsdB__11NFSMixShapei(g_REVERBFXMODULES[m_ReverbType].GinsuDry);
             m_CurDryAemsTarget = GetFloatFromHundredthsdB__11NFSMixShapei(g_REVERBFXMODULES[m_ReverbType].AemsDry);
         }
-    } else if (TUNNEL_RUNTIME_FIELDS(this).bFadingIn != 0 &&
+    } else if (bFadingIn &&
                *static_cast<int *>(static_cast<void *>(&ReflRamp.bComplete)) != 0) {
         m_CurWetGinsu = m_CurWetGinsuTarget;
         m_CurDryGinsu = m_CurDryGinsuTarget;
         m_CurWetAems = m_CurWetAemsTarget;
         m_CurDryAems = m_CurDryAemsTarget;
-        TUNNEL_RUNTIME_FIELDS(this).bFadingIn = 0;
+        bFadingIn = false;
     }
 
-    if (TUNNEL_RUNTIME_FIELDS(this).bFadingOut != 0 ||
-        TUNNEL_RUNTIME_FIELDS(this).bFadingIn != 0) {
+    if (bFadingOut || bFadingIn) {
         float ramp = ReflRamp.CurValue;
         m_GinsuWetVol = static_cast<int>(((m_CurWetGinsuTarget - m_CurWetGinsu) * ramp + m_CurWetGinsu) * 32767.0f);
         m_GinsuDryVol = static_cast<int>(((m_CurDryGinsuTarget - m_CurDryGinsu) * ramp + m_CurDryGinsu) * 32767.0f);
@@ -533,7 +466,7 @@ void SFXCTL_Tunnel::UpdateReflectionParams(float t) {
     }
 
     int toggleValue;
-    if (TUNNEL_RUNTIME_FIELDS(this).bToggleOffset == 0) {
+    if (!bToggleOffset) {
         toggleValue = 1;
     } else {
         int aemsWet = m_AEMSWetVol + 1;
@@ -560,8 +493,8 @@ void SFXCTL_Tunnel::UpdateReflectionParams(float t) {
         toggleValue = 0;
     }
 
-    TUNNEL_RUNTIME_FIELDS(this).bToggleOffset = toggleValue;
-    TUNNEL_RUNTIME_FIELDS(this).bIsTunnelRamping = ReflRamp.bComplete ^ 1;
+    bToggleOffset = toggleValue;
+    bIsTunnelRamping = ReflRamp.bComplete ^ 1;
 }
 
 void SFXCTL_Tunnel::UpdateOcclusion(float t) {
@@ -595,9 +528,9 @@ void SFXCTL_Tunnel::UpdateOcclusion(float t) {
     originToBarrier[0].y = SndCamera::m_v3WorldCarPos[0].z;
     originToBarrier[0].z = SndCamera::m_v3WorldCarPos[0].x;
 
-    originToBarrier[1].z = TUNNEL_CAR_FIELDS(TUNNEL_STATE_FIELDS(m_pStateBase).mCarState).mMatrix.v3.x;
-    originToBarrier[1].x = -TUNNEL_CAR_FIELDS(TUNNEL_STATE_FIELDS(m_pStateBase).mCarState).mMatrix.v3.y;
-    originToBarrier[1].y = TUNNEL_CAR_FIELDS(TUNNEL_STATE_FIELDS(m_pStateBase).mCarState).mMatrix.v3.z;
+    originToBarrier[1].z = m_pStateBase->GetPhysCar()->mMatrix.v3.x;
+    originToBarrier[1].x = -m_pStateBase->GetPhysCar()->mMatrix.v3.y;
+    originToBarrier[1].y = m_pStateBase->GetPhysCar()->mMatrix.v3.z;
 
     float testDist = Distancexyz(originToBarrier[0], originToBarrier[1]);
     if (MaxDistanceToOccludeTest < testDist) {
@@ -637,8 +570,8 @@ void SFXCTL_Tunnel::EndTunnelVerb() {
 }
 
 void SFXCTL_Tunnel::UpdateDriveBySnds(float t) {
-    TUNNEL_RUNTIME_FIELDS(this).bPlayDriveBy = 0;
-    TUNNEL_RUNTIME_FIELDS(this).bPlayTunnelExit = 0;
+    bPlayDriveBy = false;
+    bPlayTunnelExit = false;
 
     tTimeToWaitBeforeAnotherDriveBy -= t;
     if (tTimeToWaitBeforeAnotherDriveBy < 0.0f) {
@@ -651,8 +584,7 @@ void SFXCTL_Tunnel::UpdateDriveBySnds(float t) {
 
     FutureZoneType = TRACK_PATH_ZONE_RESET;
 
-    EAXCarStateTunnelFields *car =
-        static_cast<EAXCarStateTunnelFields *>(static_cast<void *>(TUNNEL_EAXCAR_FIELDS(m_pEAXCar).mCarState));
+    EAX_CarState *car = m_pStateBase->GetPhysCar();
     bVector3 futureCarPos;
     bVector2 futureCarPos2D;
     bVector2 futureCarPos2DCopy;
@@ -678,7 +610,7 @@ void SFXCTL_Tunnel::UpdateDriveBySnds(float t) {
     futureCarPos2DCopy = futureCarPos2D;
     futureCarPos.x = futureCarPos2DCopy.x;
     futureCarPos.y = futureCarPos2DCopy.y;
-    futureCarPos.z = TUNNEL_CAR_FIELDS(TUNNEL_STATE_FIELDS(m_pStateBase).mCarState).mMatrix.v3.z;
+    futureCarPos.z = car->mMatrix.v3.z;
 
     FutureZoneType = TRACK_PATH_ZONE_TUNNEL;
     TrackPathZone *futureZone = GetTunnelType(futureCarPos, TRACK_PATH_ZONE_TUNNEL);
@@ -718,8 +650,7 @@ void SFXCTL_Tunnel::UpdateDriveBySnds(float t) {
                 stDriveByInfo driveByInfo;
                 driveByInfo.eDriveByType = DRIVE_BY_TUNNEL_IN;
                 driveByInfo.pEAXCar = m_pEAXCar;
-                EAXCarStateTunnelFields *stateCar =
-                    static_cast<EAXCarStateTunnelFields *>(static_cast<void *>(TUNNEL_STATE_FIELDS(m_pStateBase).mCarState));
+                EAX_CarState *stateCar = m_pStateBase->GetPhysCar();
                 driveByInfo.ClosingVelocity = bSqrt(
                     stateCar->mVel0.x * stateCar->mVel0.x + stateCar->mVel0.y * stateCar->mVel0.y +
                     stateCar->mVel0.z * stateCar->mVel0.z);
@@ -757,8 +688,7 @@ void SFXCTL_Tunnel::UpdateDriveBySnds(float t) {
                 stDriveByInfo driveByInfo;
                 driveByInfo.eDriveByType = DRIVE_BY_TUNNEL_OUT;
                 driveByInfo.pEAXCar = m_pEAXCar;
-                EAXCarStateTunnelFields *stateCar =
-                    static_cast<EAXCarStateTunnelFields *>(static_cast<void *>(TUNNEL_STATE_FIELDS(m_pStateBase).mCarState));
+                EAX_CarState *stateCar = m_pStateBase->GetPhysCar();
                 driveByInfo.ClosingVelocity = bSqrt(
                     stateCar->mVel0.x * stateCar->mVel0.x + stateCar->mVel0.y * stateCar->mVel0.y +
                     stateCar->mVel0.z * stateCar->mVel0.z);

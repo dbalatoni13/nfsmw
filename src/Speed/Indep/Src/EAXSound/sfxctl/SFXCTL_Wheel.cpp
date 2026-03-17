@@ -7,47 +7,6 @@ namespace {
 extern Slope g_WheelLoadSlope;
 extern float gWheelSlipSensitivity[2];
 extern int PRINT_SKID_FX_DEBUG;
-
-static EAX_CarState *GetWheelStateCar(CSTATE_Base *stateBase) {
-    return *static_cast<EAX_CarState **>(
-        static_cast<void *>(static_cast<char *>(static_cast<void *>(stateBase)) + 0x34));
-}
-
-static Sound::Wheel *GetWheelEntries(EAX_CarState *car) {
-    return static_cast<Sound::Wheel *>(static_cast<void *>(car->mWheel));
-}
-
-static bVector3 *GetWheelPosStorage(SFXCTL_Wheel *wheelCtl) {
-    return static_cast<bVector3 *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(wheelCtl)) + 0x28));
-}
-
-static int &GetLeftSideTouchingGround(SFXCTL_Wheel *wheelCtl) {
-    return *static_cast<int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(wheelCtl)) + 0xE8));
-}
-
-static int &GetRightSideTouchingGround(SFXCTL_Wheel *wheelCtl) {
-    return *static_cast<int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(wheelCtl)) + 0xEC));
-}
-
-static bVector2 *GetNormWheelSlipStorage(SFXCTL_Wheel *wheelCtl) {
-    return static_cast<bVector2 *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(wheelCtl)) + 0x28));
-}
-
-static bVector2 &GetTotalRightStorage(SFXCTL_Wheel *wheelCtl) {
-    return *static_cast<bVector2 *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(wheelCtl)) + 0x48));
-}
-
-static bVector2 &GetTotalLeftStorage(SFXCTL_Wheel *wheelCtl) {
-    return *static_cast<bVector2 *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(wheelCtl)) + 0x50));
-}
-
-static float *GetWheelTractionMagStorage(SFXCTL_Wheel *wheelCtl) {
-    return static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(wheelCtl)) + 0x58));
-}
-
-static float *GetWheelLoadStorage(SFXCTL_Wheel *wheelCtl) {
-    return static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(wheelCtl)) + 0x68));
-}
 } // namespace
 
 void DebugPrintSkidBar(int Horz, int Vert, char *Str, int Value);
@@ -81,21 +40,21 @@ void SFXCTL_Wheel::UpdateParams(float t) {
 bVector3 *SFXCTL_Wheel::GetWheelPos(int wheelID, int numtires) {
     if (numtires == 2) {
         if (wheelID == 0) {
-            return &GetWheelPosStorage(this)[0];
+            return &v3NewPosLeft;
         }
-        return &GetWheelPosStorage(this)[1];
+        return &v3NewPosRight;
     }
     if (numtires == 1) {
-        return &GetWheelPosStorage(this)[0];
+        return &v3NewPosLeft;
     }
-    return &GetWheelPosStorage(this)[0];
+    return &v3NewPosLeft;
 }
 
 void SFXCTL_Wheel::GenerateWheelPosition() {}
 
 void SFXCTL_Wheel::GenerateTerrainTypes() {
-    EAX_CarState *car = m_pStateBase != nullptr ? GetWheelStateCar(m_pStateBase) : nullptr;
-    Sound::Wheel *wheels = GetWheelEntries(car);
+    EAX_CarState *car = m_pStateBase != nullptr ? m_pStateBase->GetPhysCar() : nullptr;
+    Sound::Wheel *wheels = car->mWheel;
 
     const Attrib::Collection *col0 = wheels[0].mTerrainType.GetConstCollection();
     const Attrib::Collection *col1 = wheels[1].mTerrainType.GetConstCollection();
@@ -155,53 +114,30 @@ void SFXCTL_Wheel::UpdateTireParams() {
     GenerateWheelPosition();
     GenerateTerrainTypes();
 
-    EAX_CarState *car = GetWheelStateCar(m_pStateBase);
-
-    int *leftSideTouchingGround = &GetLeftSideTouchingGround(this);
-    int *rightSideTouchingGround = &GetRightSideTouchingGround(this);
-
-    *leftSideTouchingGround = 1;
-    if (*static_cast<int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0xb8)) == 0 &&
-        *static_cast<int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0xb8 + 3 * 0x44)) == 0) {
-        *leftSideTouchingGround = 0;
-    }
-
-    *rightSideTouchingGround = 1;
-    if (*static_cast<int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0xb8 + 0x44)) == 0 &&
-        *static_cast<int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0xb8 + 2 * 0x44)) == 0) {
-        *rightSideTouchingGround = 0;
-    }
-
-    bVector2 *normWheelSlip = GetNormWheelSlipStorage(this);
-    bVector2 *totalRight = &GetTotalRightStorage(this);
-    bVector2 *totalLeft = &GetTotalLeftStorage(this);
-    float *wheelTractionMag = GetWheelTractionMagStorage(this);
-    float *wheelLoad = GetWheelLoadStorage(this);
+    EAX_CarState *car = m_pStateBase->GetPhysCar();
     bVector2 wheelslip[4];
 
-    totalRight->x = 0.0f;
-    totalRight->y = 0.0f;
-    totalLeft->x = 0.0f;
-    totalLeft->y = 0.0f;
+    LeftSideTouchingGround = car->mWheel[0].mWheelOnGround || car->mWheel[3].mWheelOnGround;
+    RightSideTouchingGround = car->mWheel[1].mWheelOnGround || car->mWheel[2].mWheelOnGround;
+
+    m_bvTotalRightWheelSlip.x = 0.0f;
+    m_bvTotalRightWheelSlip.y = 0.0f;
+    m_bvTotalLeftWheelSlip.x = 0.0f;
+    m_bvTotalLeftWheelSlip.y = 0.0f;
 
     for (int i = 0; i <= 3; i++) {
-        const int wheelOffset = i * 0x44;
-        wheelTractionMag[i] = bAbs(*static_cast<float *>(
-            static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0xb4 + wheelOffset)));
-
-        wheelslip[i].x = *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0xa8 + wheelOffset));
-        wheelslip[i].y = *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0xac + wheelOffset));
-        wheelLoad[i] = g_WheelLoadSlope.GetValue(
-            *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0xe4 + wheelOffset)));
+        m_fWheelTractionMag[i] = bAbs(car->mWheel[i].mPercentFsFkTransfer);
+        wheelslip[i] = car->mWheel[i].mWheelSlip;
+        m_fLoad[i] = g_WheelLoadSlope.GetValue(car->mWheel[i].mLoad);
 
         if (static_cast<unsigned int>(i - 1) < 2U) {
-            if (*static_cast<int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0xb8 + wheelOffset)) != 0) {
-                totalRight->x += wheelslip[i].x;
-                totalRight->y += wheelslip[i].y;
+            if (car->mWheel[i].mWheelOnGround) {
+                m_bvTotalRightWheelSlip.x += wheelslip[i].x;
+                m_bvTotalRightWheelSlip.y += wheelslip[i].y;
             }
-        } else if (*static_cast<int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0xb8 + wheelOffset)) != 0) {
-            totalLeft->x += wheelslip[i].x;
-            totalLeft->y += wheelslip[i].y;
+        } else if (car->mWheel[i].mWheelOnGround) {
+            m_bvTotalLeftWheelSlip.x += wheelslip[i].x;
+            m_bvTotalLeftWheelSlip.y += wheelslip[i].y;
         }
 
         float slipX = wheelslip[i].x * gWheelSlipSensitivity[0];
@@ -211,7 +147,7 @@ void SFXCTL_Wheel::UpdateTireParams() {
         if (slipX > 1023.0f) {
             slipX = 1023.0f;
         }
-        normWheelSlip[i].x = slipX;
+        m_NormWheelSlip[i].x = slipX;
 
         float slipY = wheelslip[i].y * gWheelSlipSensitivity[1];
         if (slipY < -1023.0f) {
@@ -220,10 +156,9 @@ void SFXCTL_Wheel::UpdateTireParams() {
         if (slipY > 1023.0f) {
             slipY = 1023.0f;
         }
-        normWheelSlip[i].y = slipY;
+        m_NormWheelSlip[i].y = slipY;
 
-        if (PRINT_SKID_FX_DEBUG != 0 &&
-            *static_cast<int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0x210)) == 0) {
+        if (PRINT_SKID_FX_DEBUG != 0 && car->mContext == Sound::CONTEXT_PLAYER) {
             int x = 0;
             int y = 0;
 
@@ -241,11 +176,11 @@ void SFXCTL_Wheel::UpdateTireParams() {
                 y = -100;
             }
 
-            int value = static_cast<int>(normWheelSlip[i].x);
+            int value = static_cast<int>(m_NormWheelSlip[i].x);
             DebugPrintSkidBar(x, y, "X", (value + 0x3ff) / 2);
-            value = static_cast<int>(normWheelSlip[i].y);
+            value = static_cast<int>(m_NormWheelSlip[i].y);
             DebugPrintSkidBar(x, y + 0x14, "Y", (value + 0x3ff) / 2);
-            DebugPrintSkidBar(x, y + 0x28, "LD", static_cast<int>(wheelLoad[i]));
+            DebugPrintSkidBar(x, y + 0x28, "LD", static_cast<int>(m_fLoad[i]));
         }
     }
 }

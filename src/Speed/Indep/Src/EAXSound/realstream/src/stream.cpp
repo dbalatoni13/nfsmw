@@ -6,77 +6,49 @@ struct STREAMCHUNKHDR {
     int size;
 };
 
-struct REQUESTSTRUCTtag {
-    int handle;
-    int state;
-    int hold;
-    REQUESTSTRUCTtag *next;
-};
-
-struct TAPSTRUCTtag {
-    void *owner;
-    int index;
-    int used;
-    int pad;
-};
-
-struct STREAMHEADERtag {
-    int magic;
-    int state;
-    int priority;
-    int greedylevel;
-    int greedystate;
-    int eof;
-    int buffersize;
-    int maxrequests;
-    int maxfilters;
-    int maxtaps;
-    int currentrequest;
-    int outstandingrequests;
-    REQUESTSTRUCTtag requests[256];
-    TAPSTRUCTtag taps[16];
-};
-
-namespace {
+struct REQUESTSTRUCTtag;
+struct TAPSTRUCTtag;
+struct FILTERSTRUCTtag;
+struct STREAMHEADERtag;
 
 // total size: 0x124
-struct StreamRequest {
+typedef struct REQUESTSTRUCTtag {
     int id;
     int state;
-    StreamRequest *prev;
-    StreamRequest *next;
+    REQUESTSTRUCTtag *prev;
+    REQUESTSTRUCTtag *next;
     int type;
     char fname[255];
     char *address;
     int parm;
     int endchunkid;
     char *datastart;
-};
+} REQUESTSTRUCT;
 
 // total size: 0x10
-struct StreamTap {
+typedef struct TAPSTRUCTtag {
     STREAMHEADERtag *stream;
     int tapnum;
     int gettable;
     char *getptr;
-};
+} TAPSTRUCT;
 
 // total size: 0xC
-struct StreamFilter {
+typedef struct FILTERSTRUCTtag {
     int mask;
     int value;
     int tapnum;
-};
+} FILTERSTRUCT;
 
 // total size: 0x18C
-struct StreamHeader {
+typedef struct STREAMHEADERtag {
     int id;
     MUTEX mutex;
-    StreamRequest *request;
+    REQUESTSTRUCT *request;
     int requests;
-    void *filter;
+    FILTERSTRUCT *filter;
     int filters;
-    StreamTap *tap;
+    TAPSTRUCT *tap;
     int taps;
     char *actualbufferstart;
     char *bufferstart;
@@ -90,36 +62,36 @@ struct StreamHeader {
     char *datastart;
     char *datatail;
     char *dataend;
-    StreamRequest *firstreq;
-    StreamRequest *curreq;
-    StreamRequest *lastreq;
-    StreamRequest *freereq;
+    REQUESTSTRUCT *firstreq;
+    REQUESTSTRUCT *curreq;
+    REQUESTSTRUCT *lastreq;
+    REQUESTSTRUCT *freereq;
     char fname[255];
     int fhandle;
     int foffset;
     int fop;
     int readsize;
     int readblocksize;
-};
+} STREAMHEADER;
 
-enum StreamRequestState {
+typedef enum STREAMREQUESTSTATE {
     STREAMREQUEST_FREE = 0,
     STREAMREQUEST_PENDING = 1,
     STREAMREQUEST_EXECUTING = 2,
     STREAMREQUEST_COMPLETED = 3,
     STREAMREQUEST_CANCELED = 4,
-};
+} STREAMREQUESTSTATE;
 
-enum StreamState {
+typedef enum STREAMSTATE {
     STREAM_IDLE_STATE = 0,
     STREAM_RUNNING_STATE = 1,
     STREAM_STOPPED_STATE = 2,
-};
+} STREAMSTATE;
 
-typedef char StreamRequestSizeCheck[(sizeof(StreamRequest) == 0x124) ? 1 : -1];
-typedef char StreamTapSizeCheck[(sizeof(StreamTap) == 0x10) ? 1 : -1];
-typedef char StreamFilterSizeCheck[(sizeof(StreamFilter) == 0xC) ? 1 : -1];
-typedef char StreamHeaderSizeCheck[(sizeof(StreamHeader) == 0x18C) ? 1 : -1];
+typedef char StreamRequestSizeCheck[(sizeof(REQUESTSTRUCT) == 0x124) ? 1 : -1];
+typedef char StreamTapSizeCheck[(sizeof(TAPSTRUCT) == 0x10) ? 1 : -1];
+typedef char StreamFilterSizeCheck[(sizeof(FILTERSTRUCT) == 0xC) ? 1 : -1];
+typedef char StreamHeaderSizeCheck[(sizeof(STREAMHEADER) == 0x18C) ? 1 : -1];
 
 inline int ReadChunkWord(const int *field) {
     const unsigned char *bytes = static_cast<const unsigned char *>(static_cast<const void *>(field));
@@ -134,8 +106,6 @@ inline void WriteChunkWord(int *field, int value) {
     bytes[2] = static_cast<unsigned char>(static_cast<unsigned int>(value) >> 16);
     bytes[3] = static_cast<unsigned char>(static_cast<unsigned int>(value) >> 24);
 }
-
-} // namespace
 
 struct FILEOPERATION;
 
@@ -201,7 +171,7 @@ int validatehandle(int sndstreamhandle, STREAMHEADERtag **stream, TAPSTRUCTtag *
         *stream = header;
     }
     if (tap != nullptr) {
-        *tap = &header->taps[0];
+        *tap = &header->tap[0];
     }
     return 0;
 }
@@ -215,16 +185,16 @@ int decbufferusage(STREAMHEADERtag *stream, int amount) {
         return -1;
     }
 
-    stream->buffersize -= amount;
-    if (stream->buffersize < 0) {
-        stream->buffersize = 0;
+    stream->bufferusage -= amount;
+    if (stream->bufferusage < 0) {
+        stream->bufferusage = 0;
     }
-    return stream->buffersize;
+    return stream->bufferusage;
 }
 
 REQUESTSTRUCTtag *getfreerequest(STREAMHEADERtag *stream) {
-    StreamHeader *header = reinterpret_cast<StreamHeader *>(stream);
-    StreamRequest *request = nullptr;
+    STREAMHEADER *header = reinterpret_cast<STREAMHEADER *>(stream);
+    REQUESTSTRUCT *request = nullptr;
 
     MUTEX_lock(&header->mutex);
     request = header->freereq;
@@ -242,8 +212,8 @@ REQUESTSTRUCTtag *getfreerequest(STREAMHEADERtag *stream) {
 }
 
 void queuerequest(STREAMHEADERtag *stream, REQUESTSTRUCTtag *reqRaw) {
-    StreamHeader *header = reinterpret_cast<StreamHeader *>(stream);
-    StreamRequest *request = reinterpret_cast<StreamRequest *>(reqRaw);
+    STREAMHEADER *header = reinterpret_cast<STREAMHEADER *>(stream);
+    REQUESTSTRUCT *request = reinterpret_cast<REQUESTSTRUCT *>(reqRaw);
 
     request->state = STREAMREQUEST_PENDING;
     request->next = nullptr;
@@ -262,13 +232,13 @@ void queuerequest(STREAMHEADERtag *stream, REQUESTSTRUCTtag *reqRaw) {
 }
 
 REQUESTSTRUCTtag *locaterequest(STREAMHEADERtag *stream, int requesthandle) {
-    StreamHeader *header = reinterpret_cast<StreamHeader *>(stream);
+    STREAMHEADER *header = reinterpret_cast<STREAMHEADER *>(stream);
     unsigned int requestIndex = static_cast<unsigned int>(requesthandle) & 0xFF;
     if (static_cast<int>(requestIndex) >= header->requests) {
         return nullptr;
     }
 
-    StreamRequest *request = header->request + requestIndex;
+    REQUESTSTRUCT *request = header->request + requestIndex;
     if (requesthandle == request->id) {
         if (request->state == STREAMREQUEST_FREE) {
             return nullptr;
@@ -279,8 +249,8 @@ REQUESTSTRUCTtag *locaterequest(STREAMHEADERtag *stream, int requesthandle) {
 }
 
 void freerequest(STREAMHEADERtag *stream, REQUESTSTRUCTtag *reqRaw) {
-    StreamHeader *header = reinterpret_cast<StreamHeader *>(stream);
-    StreamRequest *request = reinterpret_cast<StreamRequest *>(reqRaw);
+    STREAMHEADER *header = reinterpret_cast<STREAMHEADER *>(stream);
+    REQUESTSTRUCT *request = reinterpret_cast<REQUESTSTRUCT *>(reqRaw);
     if (request == header->firstreq) {
         header->firstreq = request->next;
     } else {
@@ -294,7 +264,7 @@ void freerequest(STREAMHEADERtag *stream, REQUESTSTRUCTtag *reqRaw) {
     }
 
     if (request == header->curreq) {
-        StreamRequest *current = request->next;
+        REQUESTSTRUCT *current = request->next;
         if (current == nullptr) {
             current = request->prev;
         }
@@ -316,9 +286,9 @@ int parsechunks(STREAMHEADERtag *stream) {
         return -1;
     }
 
-    StreamHeader *strm = reinterpret_cast<StreamHeader *>(stream);
+    STREAMHEADER *strm = reinterpret_cast<STREAMHEADER *>(stream);
     STREAMCHUNKHDR *chunk = reinterpret_cast<STREAMCHUNKHDR *>(strm->datatail);
-    StreamRequest *req = strm->curreq;
+    REQUESTSTRUCT *req = strm->curreq;
     int bytesAvailable = strm->dataend - reinterpret_cast<char *>(chunk);
 
     while (bytesAvailable > 7) {
@@ -356,7 +326,7 @@ int parsechunks(STREAMHEADERtag *stream) {
             MUTEX_lock(&strm->mutex);
             requestCanceled = req->state == STREAMREQUEST_CANCELED;
             if (!requestCanceled) {
-                StreamTap *tap = strm->tap;
+                TAPSTRUCT *tap = strm->tap;
                 int tapBytes = tap[tapIndex - 1].gettable + chunkSize;
                 tap[tapIndex - 1].gettable = tapBytes;
                 if (tapBytes == chunkSize) {
@@ -418,8 +388,8 @@ int readcallback(int sndstreamhandle, int status, void *userdata) {
 }
 
 void startnextrequest(STREAMHEADERtag *stream, int priority) {
-    StreamHeader *header = reinterpret_cast<StreamHeader *>(stream);
-    StreamRequest *request = nullptr;
+    STREAMHEADER *header = reinterpret_cast<STREAMHEADER *>(stream);
+    REQUESTSTRUCT *request = nullptr;
     int noPendingRequest;
 
     MUTEX_lock(&header->mutex);
@@ -479,7 +449,7 @@ void startnextrequest(STREAMHEADERtag *stream, int priority) {
 }
 
 void restartstream(STREAMHEADERtag *stream, int priority) {
-    StreamHeader *strm = reinterpret_cast<StreamHeader *>(stream);
+    STREAMHEADER *strm = reinterpret_cast<STREAMHEADER *>(stream);
     char *dataStart = strm->datastart;
     char *dataTail = strm->datatail;
 
@@ -501,8 +471,8 @@ void restartstream(STREAMHEADERtag *stream, int priority) {
     RealSystem::Mutex *mutex = reinterpret_cast<RealSystem::Mutex *>(&strm->mutex);
     mutex->Lock();
     while (true) {
-        StreamRequest *req = strm->firstreq;
-        StreamRequest *next = req != nullptr ? req->next : nullptr;
+        REQUESTSTRUCT *req = strm->firstreq;
+        REQUESTSTRUCT *next = req != nullptr ? req->next : nullptr;
         if (next == nullptr) {
             break;
         }
@@ -532,7 +502,7 @@ void restartstream(STREAMHEADERtag *stream, int priority) {
         if (reinterpret_cast<int>(bytesAvailable) < readBlockSize) {
             char *dataTailNow = strm->datatail;
             int count = dataEnd - dataTailNow;
-            StreamRequest *curReq = strm->curreq;
+            REQUESTSTRUCT *curReq = strm->curreq;
             int reqType = curReq->type;
             char *bufferStart = strm->bufferstart;
 
@@ -597,7 +567,7 @@ void restartstream(STREAMHEADERtag *stream, int priority) {
     gbWorldDataBlocksAudioRead = false;
 
     if (reinterpret_cast<int>(bytesAvailable) >= readBlockSize) {
-        StreamRequest *curReq = strm->curreq;
+        REQUESTSTRUCT *curReq = strm->curreq;
         int reqType = curReq->type;
         if (reqType == 1) {
             int reqParm = curReq->parm;
@@ -645,18 +615,18 @@ int STREAM_create(int requests, int filters, int taps, void *buffer, int size) {
         return 0;
     }
 
-    StreamHeader *stream = static_cast<StreamHeader *>(buffer);
+    STREAMHEADER *stream = static_cast<STREAMHEADER *>(buffer);
     stream->id = 0x4D525453;
     MUTEX_create(&stream->mutex);
 
-    StreamRequest *requestBase = static_cast<StreamRequest *>(
-        static_cast<void *>(static_cast<char *>(buffer) + sizeof(StreamHeader)));
-    StreamFilter *filterBase = reinterpret_cast<StreamFilter *>(requestBase + requests);
-    StreamTap *tapBase = static_cast<StreamTap *>(
-        static_cast<void *>(static_cast<char *>(static_cast<void *>(filterBase)) + filters * sizeof(StreamFilter)));
+    REQUESTSTRUCT *requestBase = static_cast<REQUESTSTRUCT *>(
+        static_cast<void *>(static_cast<char *>(buffer) + sizeof(STREAMHEADER)));
+    FILTERSTRUCT *filterBase = reinterpret_cast<FILTERSTRUCT *>(requestBase + requests);
+    TAPSTRUCT *tapBase = static_cast<TAPSTRUCT *>(
+        static_cast<void *>(static_cast<char *>(static_cast<void *>(filterBase)) + filters * sizeof(FILTERSTRUCT)));
 
     char *dataBase =
-        reinterpret_cast<char *>((reinterpret_cast<unsigned int>(reinterpret_cast<char *>(tapBase) + taps * sizeof(StreamTap)) &
+        reinterpret_cast<char *>((reinterpret_cast<unsigned int>(reinterpret_cast<char *>(tapBase) + taps * sizeof(TAPSTRUCT)) &
                                   0xFFFFFFE0U) +
                                  0x20);
 
@@ -702,12 +672,12 @@ int STREAM_create(int requests, int filters, int taps, void *buffer, int size) {
     }
 
     for (int i = 0; i < requests; ++i) {
-        StreamRequest *request = static_cast<StreamRequest *>(
-            static_cast<void *>(static_cast<char *>(static_cast<void *>(requestBase)) + i * sizeof(StreamRequest)));
+        REQUESTSTRUCT *request = static_cast<REQUESTSTRUCT *>(
+            static_cast<void *>(static_cast<char *>(static_cast<void *>(requestBase)) + i * sizeof(REQUESTSTRUCT)));
         request->id = i;
         request->state = STREAMREQUEST_FREE;
-        request->next = static_cast<StreamRequest *>(
-            static_cast<void *>(static_cast<char *>(static_cast<void *>(request)) + sizeof(StreamRequest)));
+        request->next = static_cast<REQUESTSTRUCT *>(
+            static_cast<void *>(static_cast<char *>(static_cast<void *>(request)) + sizeof(REQUESTSTRUCT)));
     }
     if (requests > 0) {
         requestBase[requests - 1].next = nullptr;
@@ -737,7 +707,7 @@ void STREAM_setfilter(int sndstreamhandle, int filternum, int mask, int value, i
         return;
     }
 
-    StreamHeader *stream = static_cast<StreamHeader *>(static_cast<void *>(streamRaw));
+    STREAMHEADER *stream = static_cast<STREAMHEADER *>(static_cast<void *>(streamRaw));
     if (filternum <= 0 || filternum > stream->filters) {
         return;
     }
@@ -756,8 +726,8 @@ void STREAM_setfilter(int sndstreamhandle, int filternum, int mask, int value, i
         return;
     }
 
-    StreamFilter *filter =
-        static_cast<StreamFilter *>(static_cast<void *>(stream->filter)) + (filternum - 1);
+    FILTERSTRUCT *filter =
+        static_cast<FILTERSTRUCT *>(static_cast<void *>(stream->filter)) + (filternum - 1);
     filter->tapnum = tapnum;
     filter->mask = mask;
     filter->value = value;
@@ -771,7 +741,7 @@ void STREAM_destroy(int sndstreamhandle) {
         return;
     }
 
-    StreamHeader *stream = reinterpret_cast<StreamHeader *>(streamRaw);
+    STREAMHEADER *stream = reinterpret_cast<STREAMHEADER *>(streamRaw);
     STREAM_kill(sndstreamhandle);
     while (stream->state == STREAM_RUNNING_STATE) {
         SYNCTASK_run();
@@ -790,7 +760,7 @@ void STREAM_setpriority(int sndstreamhandle, int prioritylow, int priorityhigh) 
     TAPSTRUCTtag *tapRaw;
     int status = validatehandle(sndstreamhandle, &streamRaw, &tapRaw);
     if (status == 0) {
-        StreamHeader *stream = reinterpret_cast<StreamHeader *>(streamRaw);
+        STREAMHEADER *stream = reinterpret_cast<STREAMHEADER *>(streamRaw);
         stream->prioritylow = prioritylow;
         stream->priorityhigh = priorityhigh;
     }
@@ -801,7 +771,7 @@ void STREAM_setgreedylevel(int sndstreamhandle, int greedylevel) {
     TAPSTRUCTtag *tapRaw;
     int status = validatehandle(sndstreamhandle, &streamRaw, &tapRaw);
     if (status == 0) {
-        StreamHeader *stream = reinterpret_cast<StreamHeader *>(streamRaw);
+        STREAMHEADER *stream = reinterpret_cast<STREAMHEADER *>(streamRaw);
         int bufferUsage = stream->bufferusage;
         int oldGreedyLevel = stream->greedylevel;
         stream->greedylevel = greedylevel;
@@ -816,7 +786,7 @@ void STREAM_setgreedystate(int sndstreamhandle, int greedystate) {
     TAPSTRUCTtag *tapRaw;
     int status = validatehandle(sndstreamhandle, &streamRaw, &tapRaw);
     if (status == 0) {
-        StreamHeader *stream = reinterpret_cast<StreamHeader *>(streamRaw);
+        STREAMHEADER *stream = reinterpret_cast<STREAMHEADER *>(streamRaw);
         stream->greedystate = greedystate;
         if (greedystate != 0 && stream->state == STREAM_RUNNING_STATE) {
             FILESYS_priorityop(stream->fop, stream->priorityhigh);
@@ -828,9 +798,9 @@ int STREAM_taphandle(int sndstreamhandle, int tapindex) {
     STREAMHEADERtag *streamRaw;
     TAPSTRUCTtag *tapRaw;
     int status = validatehandle(sndstreamhandle, &streamRaw, &tapRaw);
-    StreamTap *tap = nullptr;
+    TAPSTRUCT *tap = nullptr;
     if (status == 0 && tapindex > 0) {
-        StreamHeader *stream = reinterpret_cast<StreamHeader *>(streamRaw);
+        STREAMHEADER *stream = reinterpret_cast<STREAMHEADER *>(streamRaw);
         if (stream->taps < tapindex) {
             tap = nullptr;
         } else {
@@ -854,14 +824,14 @@ int STREAM_queuefile(int sndstreamhandle, const char *filename, int offset, int 
         return 0;
     }
 
-    StreamRequest *request = reinterpret_cast<StreamRequest *>(requestRaw);
+    REQUESTSTRUCT *request = reinterpret_cast<REQUESTSTRUCT *>(requestRaw);
     request->type = 0;
     strncpy(request->fname, filename, 0xFE);
     request->parm = offset;
     request->endchunkid = holdtime;
     queuerequest(streamRaw, requestRaw);
 
-    StreamHeader *stream = reinterpret_cast<StreamHeader *>(streamRaw);
+    STREAMHEADER *stream = reinterpret_cast<STREAMHEADER *>(streamRaw);
     MUTEX_lock(&stream->mutex);
     bool wasIdle = stream->state == STREAM_IDLE_STATE;
     if (wasIdle) {
@@ -901,14 +871,14 @@ int STREAM_queuemem(int sndstreamhandle, void *address, int length, int holdtime
                 length = totalLength + ReadChunkWord(&chunk->size);
             }
 
-            StreamRequest *request = reinterpret_cast<StreamRequest *>(requestRaw);
+            REQUESTSTRUCT *request = reinterpret_cast<REQUESTSTRUCT *>(requestRaw);
             request->parm = length;
             request->address = static_cast<char *>(address);
             request->endchunkid = holdtime;
             request->type = 1;
             queuerequest(streamRaw, requestRaw);
 
-            StreamHeader *stream = reinterpret_cast<StreamHeader *>(streamRaw);
+            STREAMHEADER *stream = reinterpret_cast<STREAMHEADER *>(streamRaw);
             MUTEX_lock(&stream->mutex);
             int streamState = stream->state;
             if (streamState == STREAM_IDLE_STATE) {
@@ -928,10 +898,10 @@ int STREAM_queuemem(int sndstreamhandle, void *address, int length, int holdtime
 void STREAM_cancelrequest(int sndstreamhandle, int requesthandle) {
     STREAMHEADERtag *streamRaw;
     TAPSTRUCTtag *tapRaw;
-    StreamHeader *stream;
-    StreamTap *tap;
-    StreamRequest *request;
-    StreamRequest *nextRequest;
+    STREAMHEADER *stream;
+    TAPSTRUCT *tap;
+    REQUESTSTRUCT *request;
+    REQUESTSTRUCT *nextRequest;
     STREAMCHUNKHDR *chunk;
     unsigned int amount;
     int status = validatehandle(sndstreamhandle, &streamRaw, &tapRaw);
@@ -939,9 +909,9 @@ void STREAM_cancelrequest(int sndstreamhandle, int requesthandle) {
     char *requestStart = nullptr;
     char *requestEnd = nullptr;
     if (status == 0) {
-        stream = reinterpret_cast<StreamHeader *>(streamRaw);
+        stream = reinterpret_cast<STREAMHEADER *>(streamRaw);
         MUTEX_lock(&stream->mutex);
-        request = reinterpret_cast<StreamRequest *>(locaterequest(streamRaw, requesthandle));
+        request = reinterpret_cast<REQUESTSTRUCT *>(locaterequest(streamRaw, requesthandle));
         bool finished;
         if (request == nullptr || request->state == STREAMREQUEST_CANCELED) {
             finished = true;
@@ -1027,8 +997,8 @@ void STREAM_kill(int sndstreamhandle) {
     int status = validatehandle(sndstreamhandle, &streamRaw, &tapRaw);
     int chunkSize = 0;
     if (status == 0) {
-        StreamHeader *stream = reinterpret_cast<StreamHeader *>(streamRaw);
-        StreamRequest *request = stream->lastreq;
+        STREAMHEADER *stream = reinterpret_cast<STREAMHEADER *>(streamRaw);
+        REQUESTSTRUCT *request = stream->lastreq;
         if (request != nullptr) {
             while (request->state - STREAMREQUEST_PENDING < 2) {
                 STREAM_cancelrequest(sndstreamhandle, request->id);
@@ -1106,8 +1076,8 @@ STREAMCHUNKHDR *STREAM_get(int sndstreamhandle) {
         return nullptr;
     }
 
-    StreamHeader *stream = reinterpret_cast<StreamHeader *>(streamRaw);
-    StreamTap *tap = reinterpret_cast<StreamTap *>(tapRaw);
+    STREAMHEADER *stream = reinterpret_cast<STREAMHEADER *>(streamRaw);
+    TAPSTRUCT *tap = reinterpret_cast<TAPSTRUCT *>(tapRaw);
     if (tap->gettable == 0) {
         return nullptr;
     }
@@ -1158,7 +1128,7 @@ void STREAM_release(int sndstreamhandle, STREAMCHUNKHDR *chunk) {
         return;
     }
 
-    StreamHeader *stream = reinterpret_cast<StreamHeader *>(streamRaw);
+    STREAMHEADER *stream = reinterpret_cast<STREAMHEADER *>(streamRaw);
     STREAMCHUNKHDR *bufferStart = reinterpret_cast<STREAMCHUNKHDR *>(stream->bufferstart);
     STREAMCHUNKHDR *bufferEnd = reinterpret_cast<STREAMCHUNKHDR *>(stream->bufferend - 8);
     if (!(bufferStart <= chunk && chunk <= bufferEnd && ReadChunkWord(&chunk->type) != -2)) {
@@ -1189,7 +1159,7 @@ int STREAM_gettable(int sndstreamhandle) {
     if (validatehandle(sndstreamhandle, &streamRaw, &tapRaw) != 0) {
         return 0;
     }
-    return reinterpret_cast<StreamTap *>(tapRaw)->gettable;
+    return reinterpret_cast<TAPSTRUCT *>(tapRaw)->gettable;
 }
 
 int STREAM_state(int sndstreamhandle) {
@@ -1198,7 +1168,7 @@ int STREAM_state(int sndstreamhandle) {
     if (validatehandle(sndstreamhandle, &streamRaw, &tapRaw) != 0) {
         return STREAM_IDLE_STATE;
     }
-    return reinterpret_cast<StreamHeader *>(streamRaw)->state;
+    return reinterpret_cast<STREAMHEADER *>(streamRaw)->state;
 }
 
 int STREAM_isendofstream(int sndstreamhandle) {
@@ -1208,8 +1178,8 @@ int STREAM_isendofstream(int sndstreamhandle) {
     bool isEnd = false;
     if (status == 0) {
         isEnd = false;
-        if (reinterpret_cast<StreamHeader *>(streamRaw)->state == STREAM_IDLE_STATE) {
-            isEnd = reinterpret_cast<StreamTap *>(tapRaw)->gettable == 0;
+        if (reinterpret_cast<STREAMHEADER *>(streamRaw)->state == STREAM_IDLE_STATE) {
+            isEnd = reinterpret_cast<TAPSTRUCT *>(tapRaw)->gettable == 0;
         }
     }
     return isEnd;
@@ -1222,6 +1192,6 @@ int STREAM_buffersize(int sndstreamhandle) {
         return 0;
     }
 
-    StreamHeader *stream = static_cast<StreamHeader *>(static_cast<void *>(streamRaw));
+    STREAMHEADER *stream = static_cast<STREAMHEADER *>(static_cast<void *>(streamRaw));
     return static_cast<int>(stream->bufferend - stream->actualbufferstart);
 }

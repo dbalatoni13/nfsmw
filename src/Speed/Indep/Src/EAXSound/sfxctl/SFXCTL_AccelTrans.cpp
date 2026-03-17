@@ -48,7 +48,7 @@ ReturnNegOne:
 void SFXCTL_AccelTrans::SetupSFX(CSTATE_Base *_StateBase) {
     SndBase::SetupSFX(_StateBase);
     m_UGL = static_cast<eAemsUpgradeLevel>(m_pEAXCar->GetEngineUpgradeLevel());
-    m_pAccelTransDataSet = static_cast<acceltrans *>(static_cast<void *>(m_pEAXCar->mAccelInfo));
+    m_pAccelTransDataSet = &m_pEAXCar->GetAccelInfo();
 }
 
 void SFXCTL_AccelTrans::InitSFX() {
