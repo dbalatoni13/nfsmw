@@ -524,7 +524,8 @@ void FECodeListBox::SetCellColor(unsigned long ulStartColumn, unsigned long ulSt
         while (j < endColumn) {
             long lCIndex = GetRealColumn(j);
             long lRIndex = GetRealRow(i);
-            mpstCells[lRIndex * mulNumVisibleColumns + lCIndex].ulColor = ulColor;
+            FEListBoxCell* pstCell = &mpstCells[lRIndex * mulNumVisibleColumns + lCIndex];
+            pstCell->ulColor = ulColor;
             j++;
         }
         i++;
@@ -540,7 +541,8 @@ void FECodeListBox::SetCellScale(unsigned long ulStartColumn, unsigned long ulSt
         while (j < endColumn) {
             long lCIndex = GetRealColumn(j);
             long lRIndex = GetRealRow(i);
-            mpstCells[lRIndex * mulNumVisibleColumns + lCIndex].stScale = stScale;
+            FEListBoxCell* pstCell = &mpstCells[lRIndex * mulNumVisibleColumns + lCIndex];
+            pstCell->stScale = stScale;
             j++;
         }
         i++;
@@ -556,7 +558,8 @@ void FECodeListBox::SetCellJustification(unsigned long ulStartColumn, unsigned l
         while (j < endColumn) {
             long lCIndex = GetRealColumn(j);
             long lRIndex = GetRealRow(i);
-            mpstCells[lRIndex * mulNumVisibleColumns + lCIndex].ulJustification = ulJustification;
+            FEListBoxCell* pstCell = &mpstCells[lRIndex * mulNumVisibleColumns + lCIndex];
+            pstCell->ulJustification = ulJustification;
             j++;
         }
         i++;
