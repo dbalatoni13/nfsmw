@@ -274,7 +274,7 @@ void CarSoundConn::UpdateState(float dT) {
     mState->mControlSource = static_cast<Sound::ControlSource>(data.mControlSource);
 
     for (int i = 0; i < 4; ++i) {
-        mState->mWheel[i].mWheelOnGround = data.mWheelOnGround[i];
+        mState->mWheel[i].mWheelOnGround = data.mWheelOnGround[i] ? 1 : 0;
         mState->mWheel[i].mWheelSlip = data.mWheelSlip[i];
         mState->mWheel[i].mPercentFsFkTransfer = 1.0f - data.mTractionPct[i];
         mState->mWheel[i].mPrevTerrainType = mState->mWheel[i].mTerrainType;

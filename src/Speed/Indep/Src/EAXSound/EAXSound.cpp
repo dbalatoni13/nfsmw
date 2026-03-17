@@ -979,12 +979,12 @@ float MaxTorque(const Attrib::Gen::engine &engine, float &atrpm);
 void Sound::Wheel::Reset() {
     mWheelOnGround = 1;
     mWheelForceZ = 0.0f;
-    mWheelSlip = bVector2(0.0f, 0.0f);
+    mWheelSlip = bVector2(mWheelForceZ, 0.0f);
     mTerrainType = SimSurface::kNull;
-    mLoad = 0.0f;
-    mPrevBlownState = 0;
     mPercentFsFkTransfer = 0.0f;
     mBlownState = 0;
+    mLoad = 0.0f;
+    mPrevBlownState = 0;
 }
 
 void Sound::Engine::Reset() {

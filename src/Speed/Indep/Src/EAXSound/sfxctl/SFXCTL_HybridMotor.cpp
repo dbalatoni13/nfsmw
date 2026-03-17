@@ -228,22 +228,12 @@ void SFXCTL_HybridMotor::UpdateSingleMixEng(float t) {
     float deltaRPM = m_AvgDeltaRPM.GetValue() + 10.0f;
     float accelThresholdRange = engineInfo->AccelDeltaRPMThreshold();
     float accelPct = 1.0f - (accelThresholdRange - bAbs(deltaRPM)) / accelThresholdRange;
-    if (accelPct < 0.0f) {
-        accelPct = 0.0f;
-    }
-    if (accelPct > 1.0f) {
-        accelPct = 1.0f;
-    }
+    accelPct = bClamp(accelPct, 0.0f, 1.0f);
     PercentOfAccelThreshold = accelPct;
 
     float decelThresholdRange = engineInfo->DecelDeltaRPMThreshold();
     float decelPct = 1.0f - (decelThresholdRange - bAbs(deltaRPM)) / decelThresholdRange;
-    if (decelPct < 0.0f) {
-        decelPct = 0.0f;
-    }
-    if (decelPct > 1.0f) {
-        decelPct = 1.0f;
-    }
+    decelPct = bClamp(decelPct, 0.0f, 1.0f);
     PercentOfDecelThreshold = decelPct;
 
     SHIFT_STAGE shiftState = m_pShiftingCtl->eShiftState;
