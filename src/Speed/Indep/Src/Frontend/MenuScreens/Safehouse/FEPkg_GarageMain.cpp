@@ -802,10 +802,10 @@ float GarageMainScreen::GetGeometryZPos() {
 
 // --- CarViewer ---
 
-// NON_MATCHING: register allocation mismatch - original loads cFEng::mInstance before lbl_GarageMain
 GarageMainScreen *CarViewer::FindWhichScreenToUpdate(eCarViewerWhichCar which_car) {
-    if (cFEng::Get()->IsPackagePushed(lbl_GarageMain)) {
-        return static_cast<GarageMainScreen *>(FEngFindScreen(lbl_GarageMain));
+    const char *name = lbl_GarageMain;
+    if (cFEng::mInstance->IsPackagePushed(name)) {
+        return static_cast<GarageMainScreen *>(FEngFindScreen(name));
     }
     return nullptr;
 }
@@ -815,7 +815,7 @@ void CarViewer::SetRideInfo(RideInfo *ride, eSetRideInfoReasons reason, eCarView
     TopOrFullScreenRide = *ride;
     TopOrFullScreenLoadingReason = reason;
     if (screen) {
-        screen->SetRideInfo(ride, reason);
+        screen->SetRideInfo(&TopOrFullScreenRide, reason);
     }
 }
 
