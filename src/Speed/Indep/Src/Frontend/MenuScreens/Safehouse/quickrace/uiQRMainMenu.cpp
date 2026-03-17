@@ -85,11 +85,10 @@ void UIQRMainMenu::NotificationMessage(unsigned long msg, FEObject *pobj, unsign
         switch (PrevButtonMessage) {
         case 0xc407210: {
             FEDatabase->iNumPlayers = 1;
-            cFEng *feng = cFEng::Get();
             switch (QRMode) {
             case 1:
                 FEDatabase->SetGameMode(static_cast<eFEGameModes>(FEDatabase->GetGameMode() | 0x400));
-                feng->QueuePackageSwitch("MainMenu_Sub.fng", 0, 0, false);
+                cFEng::Get()->QueuePackageSwitch("MainMenu_Sub.fng", 0, 0, false);
                 break;
             case 0:
                 cFEng::Get()->QueuePackageSwitch("Quick_Race_Brief.fng", 0, 0, false);
@@ -97,7 +96,7 @@ void UIQRMainMenu::NotificationMessage(unsigned long msg, FEObject *pobj, unsign
             case 2:
                 FEDatabase->iNumPlayers = 2;
                 FEDatabase->SetGameMode(static_cast<eFEGameModes>(FEDatabase->GetGameMode() | 0x400));
-                feng->QueuePackageSwitch("MainMenu_Sub.fng", 0, 0, false);
+                cFEng::Get()->QueuePackageSwitch("MainMenu_Sub.fng", 0, 0, false);
                 break;
             }
             break;

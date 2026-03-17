@@ -175,30 +175,27 @@ void UIQRBrief::UpdateSliders() {
     float acc_val = stock_perf.Acceleration;
     float acc_min = AccelerationSlider.GetMin();
     float acc_max = AccelerationSlider.GetMax();
-    if (acc_val - acc_min < 0.0f) acc_val = acc_min;
-    float acc_preview = acc_max;
-    if (acc_val - acc_max < 0.0f) acc_preview = acc_val;
-    AccelerationSlider.SetPreviewValue(acc_preview);
+    if (acc_val < acc_min) acc_val = acc_min;
+    if (acc_val > acc_max) acc_val = acc_max;
+    AccelerationSlider.SetPreviewValue(acc_val);
     AccelerationSlider.Draw();
 
     TopSpeedSlider.SetValue(stock_perf.TopSpeed);
     float top_val = stock_perf.TopSpeed;
     float top_min = TopSpeedSlider.GetMin();
     float top_max = TopSpeedSlider.GetMax();
-    if (top_val - top_min < 0.0f) top_val = top_min;
-    float top_preview = top_max;
-    if (top_val - top_max < 0.0f) top_preview = top_val;
-    TopSpeedSlider.SetPreviewValue(top_preview);
+    if (top_val < top_min) top_val = top_min;
+    if (top_val > top_max) top_val = top_max;
+    TopSpeedSlider.SetPreviewValue(top_val);
     TopSpeedSlider.Draw();
 
     HandlingSlider.SetValue(stock_perf.Handling);
     float hdl_val = stock_perf.Handling;
     float hdl_min = HandlingSlider.GetMin();
     float hdl_max = HandlingSlider.GetMax();
-    if (hdl_val - hdl_min < 0.0f) hdl_val = hdl_min;
-    float hdl_preview = hdl_max;
-    if (hdl_val - hdl_max < 0.0f) hdl_preview = hdl_val;
-    HandlingSlider.SetPreviewValue(hdl_preview);
+    if (hdl_val < hdl_min) hdl_val = hdl_min;
+    if (hdl_val > hdl_max) hdl_val = hdl_max;
+    HandlingSlider.SetPreviewValue(hdl_val);
     HandlingSlider.Draw();
 }
 
