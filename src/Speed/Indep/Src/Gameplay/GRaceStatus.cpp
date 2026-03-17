@@ -1,5 +1,6 @@
 #include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
 
+#include "Speed/Indep/Src/Gameplay/GManager.h"
 #include "Speed/Indep/Src/Gameplay/GVault.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 
@@ -46,6 +47,10 @@ GVault *GRaceParameters::GetChildVault() const {
 
 GVault *GRaceParameters::GetParentVault() const {
     return mParentVault;
+}
+
+GActivity *GRaceParameters::GetActivity() const {
+    return static_cast<GActivity *>(GManager::Get().FindInstance(GetCollectionKey()));
 }
 
 unsigned int GRaceParameters::GetCollectionKey() const {

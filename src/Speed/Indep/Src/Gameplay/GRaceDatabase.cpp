@@ -112,6 +112,16 @@ unsigned int GRaceBin::GetBarrierCount() const {
     return barriers.GetLength();
 }
 
+unsigned int GRaceBin::Serialize(unsigned char *dest) {
+    *reinterpret_cast<BinStats *>(dest) = mStats;
+    return sizeof(mStats);
+}
+
+unsigned int GRaceBin::Deserialize(unsigned char *src) {
+    mStats = *reinterpret_cast<BinStats *>(src);
+    return sizeof(mStats);
+}
+
 const char *GRaceBin::GetBarrierName(unsigned int index) const {
     const char *barrierName;
     const EA::Reflection::Text *barrierText;
@@ -281,6 +291,10 @@ void GRaceDatabase::SetStartupRace(GRaceCustom *custom, Context context) {
 
     mStartupRaceContext = context;
     mStartupRace = custom;
+
+    if (custom && context == kRaceContext_Career) {
+        custom->SetupTimeOfDay();
+    }
 }
 
 GRaceBin *GRaceDatabase::GetBinNumber(int number) {
@@ -338,6 +352,19 @@ void GRaceDatabase::FreeCustomRace(GRaceCustom *custom) {
     } else {
         DestroyCustomRace(custom);
     }
+}
+
+GRaceCustom *GRaceDatabase::AllocCustomRace(GRaceParameters *parms) {
+    GRaceCustom *custom;
+
+    custom = nullptr;
+    if (parms) {
+        parms->BlockUntilLoaded();
+        custom = new GRaceCustom(*parms);
+        mRaceCustom[mRaceCountDynamic++] = custom;
+    }
+
+    return custom;
 }
 
 void GRaceDatabase::BuildScoreList() {
