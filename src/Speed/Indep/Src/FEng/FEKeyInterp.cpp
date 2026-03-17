@@ -16,7 +16,6 @@ void FEKeyInterp(FEScript* pScript, unsigned char TrackNum, long tTime, FEObject
     case 3:
         FEInterpLinear(pScript, TrackNum, tTime, pOutObj->pData);
         break;
-    case 2:
     default:
         break;
     }
@@ -34,7 +33,6 @@ void FEKeyInterp(FEKeyTrack* pTrack, long tTime, void* pOutData) {
     case 3:
         FEInterpLinear(pTrack, tTime, pOutData);
         break;
-    case 2:
     default:
         break;
     }
@@ -53,7 +51,6 @@ void FEKeyInterpFast(FEKeyTrack* pTrack, long tTime, void* pOutData) {
     case 3:
         FEInterpLinear(pTrack, tTime, pOutData);
         break;
-    case 2:
     default:
         break;
     }
