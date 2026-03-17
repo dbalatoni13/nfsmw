@@ -2,6 +2,7 @@
 
 #include "VisibleSection.hpp"
 #include "Speed/Indep/Src/Ecstasy/eModel.hpp"
+#include "Speed/Indep/Src/Ecstasy/eSolid.hpp"
 #include "Speed/Indep/Src/Misc/ResourceLoader.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 
@@ -29,6 +30,11 @@ struct tPrecullerInfo {
         return !IsVisible(visibility_state);
     }
 };
+
+extern unsigned int FrameMallocFailed;
+extern unsigned int FrameMallocFailAmount;
+extern float EnvMapShadowExtraHeight;
+void CreateWindRotMatrix(eView *view, bMatrix4 *matrix, int x, const bMatrix4 *world, int y);
 
 bList ScenerySectionHeaderList;
 RegionQuery RegionInfo;
@@ -114,6 +120,18 @@ static eModel *FindExistingModel_Scenery(unsigned char *scenery_info, int model_
     return 0;
 }
 
+static unsigned char *GetSceneryInfo_Scenery(int *section_header_words, short scenery_info_number) {
+    return reinterpret_cast<unsigned char *>(section_header_words[6]) + scenery_info_number * 0x48;
+}
+
+static eModel *GetSceneryModel_Scenery(unsigned char *scenery_info, int model_slot) {
+    return *reinterpret_cast<eModel **>(scenery_info + 0x28 + model_slot * 4);
+}
+
+static float GetSceneryRadius_Scenery(unsigned char *scenery_info) {
+    return *reinterpret_cast<float *>(scenery_info + 0x38);
+}
+
 void BuildSceneryOverrideHashTable() {}
 
 unsigned int FindSceneryHeirarchyByName(unsigned int name_hash) {
@@ -181,15 +199,89 @@ void ScenerySectionHeader::DrawAScenery(int scenery_instance_number, SceneryCull
     }
 
     SceneryInstance *instance = &instances[scenery_instance_number];
-    if ((instance->ExcludeFlags & scenery_cull_info->ExcludeFlags) != 0) {
+    if (((instance->ExcludeFlags ^ 0x60) & scenery_cull_info->ExcludeFlags) != 0) {
         return;
     }
 
-    if (instance->PrecullerInfoIndex >= 0 && section_header_words[10]) {
-        tPrecullerInfo *preculler_info = reinterpret_cast<tPrecullerInfo *>(section_header_words[10]) + instance->PrecullerInfoIndex;
-        if (preculler_info->IsNotVisible(visibility_state)) {
+    if (visibility_state >= 0 && section_header_words[12] && instance->PrecullerInfoIndex >= 0) {
+        unsigned char *visibility_table = reinterpret_cast<unsigned char *>(section_header_words[12]) + instance->PrecullerInfoIndex * 0x80;
+        if ((visibility_table[visibility_state >> 3] & (1 << (visibility_state & 7))) != 0) {
             return;
         }
+    }
+
+    unsigned char *scenery_info = GetSceneryInfo_Scenery(section_header_words, instance->SceneryInfoNumber);
+    if (visibility_state == EVISIBLESTATE_PARTIAL) {
+        bVector3 bbox_min(instance->BBoxMin[0], instance->BBoxMin[1], instance->BBoxMin[2]);
+        bVector3 bbox_max(instance->BBoxMax[0], instance->BBoxMax[1], instance->BBoxMax[2]);
+        visibility_state = scenery_cull_info->pView->GetVisibleState(&bbox_min, &bbox_max, 0);
+        if (visibility_state == EVISIBLESTATE_NOT) {
+            return;
+        }
+    }
+
+    bVector3 to_instance(
+        instance->Position[0] - scenery_cull_info->Position.x,
+        instance->Position[1] - scenery_cull_info->Position.y,
+        instance->Position[2] - scenery_cull_info->Position.z
+    );
+    float radius = GetSceneryRadius_Scenery(scenery_info) + 6.0f;
+    float forward_distance = to_instance.x * scenery_cull_info->Direction.x + to_instance.y * scenery_cull_info->Direction.y +
+                             to_instance.z * scenery_cull_info->Direction.z;
+    if (forward_distance < -radius) {
+        return;
+    }
+
+    float distance = bSqrt(to_instance.x * to_instance.x + to_instance.y * to_instance.y + to_instance.z * to_instance.z);
+    float pixel_size = scenery_cull_info->H;
+    if (radius < distance - radius) {
+        pixel_size = (radius * pixel_size) / (distance - radius);
+    }
+
+    int pixel_size_int = static_cast<int>(pixel_size);
+    if (pixel_size_int < 2) {
+        return;
+    }
+    if ((instance->ExcludeFlags & 0x2000000) != 0) {
+        pixel_size_int += 10;
+    }
+
+    eModel *model = 0;
+    if ((scenery_cull_info->ExcludeFlags & 0x1800) == 0) {
+        if ((scenery_cull_info->ExcludeFlags & 0x20) != 0) {
+            if (pixel_size_int > 0x1F) {
+                model = GetSceneryModel_Scenery(scenery_info, 2);
+            }
+        } else if (eGetCurrentViewMode() > EVIEWMODE_ONE_RVM) {
+            if (pixel_size_int > 0x16) {
+                model = GetSceneryModel_Scenery(scenery_info, 2);
+            }
+        } else if (pixel_size_int > 0x11) {
+            model = GetSceneryModel_Scenery(scenery_info, 0);
+            if (model && model->Solid && model->Solid->NumPolys > 0x27) {
+                float lod_scale = model->Solid->Volume;
+                if (lod_scale < 6.0f) {
+                    lod_scale = 6.0f;
+                }
+                if ((static_cast<float>(pixel_size_int) / lod_scale) < 8.7f) {
+                    model = GetSceneryModel_Scenery(scenery_info, 2);
+                }
+            }
+        }
+    } else if ((instance->ExcludeFlags & 0x80) == 0) {
+        if (pixel_size_int > 0x1F) {
+            if ((instance->ExcludeFlags & 0x1000100) == 0) {
+                model = GetSceneryModel_Scenery(scenery_info, 3);
+            } else {
+                model = GetSceneryModel_Scenery(scenery_info, 0);
+            }
+        }
+    } else if (pixel_size_int > 0x1F) {
+        model = GetSceneryModel_Scenery(scenery_info, 2);
+    }
+
+    if (!model) {
+        return;
     }
 
     if (scenery_cull_info->pCurrentDrawInfo == scenery_cull_info->pTopDrawInfo) {
@@ -197,9 +289,51 @@ void ScenerySectionHeader::DrawAScenery(int scenery_instance_number, SceneryCull
     }
 
     SceneryDrawInfo *draw_info = scenery_cull_info->pCurrentDrawInfo;
-    draw_info->pModel = 0;
-    draw_info->pMatrix = 0;
-    draw_info->SceneryInst = instance;
+    int *draw_info_words = reinterpret_cast<int *>(draw_info);
+    bMatrix4 *matrix = 0;
+
+    if ((instance->ExcludeFlags & 0x200) == 0) {
+        unsigned char *matrix_memory = CurrentBufferPos;
+        unsigned char *next_buffer_pos = CurrentBufferPos + sizeof(bMatrix4);
+        if (CurrentBufferEnd <= next_buffer_pos) {
+            FrameMallocFailed = 1;
+            FrameMallocFailAmount += sizeof(bMatrix4);
+            next_buffer_pos = CurrentBufferPos;
+        } else {
+            matrix = reinterpret_cast<bMatrix4 *>(matrix_memory);
+        }
+        CurrentBufferPos = next_buffer_pos;
+
+        if (matrix) {
+            matrix->v0.x = static_cast<float>(instance->Rotation[0]) * 0.00012207031f;
+            matrix->v0.y = static_cast<float>(instance->Rotation[1]) * 0.00012207031f;
+            matrix->v0.z = static_cast<float>(instance->Rotation[2]) * 0.00012207031f;
+            matrix->v0.w = 0.0f;
+            matrix->v1.x = static_cast<float>(instance->Rotation[3]) * 0.00012207031f;
+            matrix->v1.y = static_cast<float>(instance->Rotation[4]) * 0.00012207031f;
+            matrix->v1.z = static_cast<float>(instance->Rotation[5]) * 0.00012207031f;
+            matrix->v1.w = 0.0f;
+            matrix->v2.x = static_cast<float>(instance->Rotation[6]) * 0.00012207031f;
+            matrix->v2.y = static_cast<float>(instance->Rotation[7]) * 0.00012207031f;
+            matrix->v2.z = static_cast<float>(instance->Rotation[8]) * 0.00012207031f;
+            matrix->v2.w = 0.0f;
+            matrix->v3.x = instance->Position[0];
+            matrix->v3.y = instance->Position[1];
+            matrix->v3.z = instance->Position[2];
+            matrix->v3.w = 1.0f;
+
+            if ((instance->ExcludeFlags & scenery_cull_info->ExcludeFlags & 0x100) != 0) {
+                matrix->v3.z += EnvMapShadowExtraHeight;
+            }
+            if ((scenery_cull_info->ExcludeFlags & 0x800) != 0) {
+                matrix->v2.z = -matrix->v2.z;
+            }
+        }
+    }
+
+    draw_info_words[0] = reinterpret_cast<int>(model) + visibility_state;
+    draw_info_words[1] = reinterpret_cast<int>(matrix);
+    draw_info_words[2] = reinterpret_cast<int>(instance);
     scenery_cull_info->pCurrentDrawInfo = draw_info + 1;
 }
 
