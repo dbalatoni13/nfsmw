@@ -500,7 +500,7 @@ void Minimap::UpdateCopElements(IVehicle *ivehicle) {
             if (copVehicle->GetVehicleClass() == VehicleClass::CHOPPER) {
                 copArtToUse = mHeliElementArt;
                 if (MinimapShowNonPursuitCops || (ipursuitai && ipursuitai->GetInPursuit())) {
-                    AITarget *target = ipursuitai ? ipursuitai->GetPursuitTarget() : nullptr;
+                    AITarget *target = ipursuitai->GetPursuitTarget();
                     if (!target || target->GetSpeed() > 0.25f) {
                         unsigned int tracking_hash = FEHashUpper("TRACKING");
                         if (!FEngIsScriptSet(mHeliLineOfSiteArt, tracking_hash)) {
