@@ -137,7 +137,8 @@ message_E1FDE1D1:
     if (PrevButtonMessage != 0x911AB364) {
         switch (mSelectionHash) {
         case 0xFBDF2EE3:
-            if (GRaceStatus::Exists() && GRaceStatus::Get().GetRaceParameters()) {
+            if (GRaceStatus::Exists() && GRaceStatus::Get().GetRaceParameters()
+                && GRaceStatus::Get().GetRaceParameters()->GetIsDDayRace()) {
                 MemoryCard::GetInstance()->CancelNextAutoSave();
             }
             new ERestartRace();
