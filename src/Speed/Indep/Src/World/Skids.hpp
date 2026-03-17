@@ -63,5 +63,6 @@ void InitSkids(int max_skids);
 void CloseSkids();
 void DeleteThisSkid(SkidSet *skid_set);
 void DeleteAllSkids();
+void RenderSkids(eView *view, Clan *clan);
 
 #endif

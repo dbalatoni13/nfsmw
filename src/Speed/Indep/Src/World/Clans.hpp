@@ -19,6 +19,12 @@ struct Clan : public bTNode<Clan> {
     bVector3 Position;           // offset 0x18, size 0x10
     bVector3 BBoxMin;            // offset 0x28, size 0x10
     bVector3 BBoxMax;            // offset 0x38, size 0x10
+
+    void *operator new(size_t size);
+    void operator delete(void *ptr);
+
+    Clan(bVector3 *position, unsigned int hash);
+    ~Clan();
 };
 
 void InitClans();
