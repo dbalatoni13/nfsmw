@@ -135,14 +135,15 @@ void SceneryModel::InitScene() {
     bool enable_sequencer = start_sequencer();
 
     if (no_trigger()) {
-        if (mTrigger != nullptr) {
-            mTrigger->Disable();
+        SmackableTrigger *trigger = GetTrigger();
+        if (trigger != nullptr) {
+            trigger->Disable();
         }
         enable_sequencer = true;
     }
 
     if (enable_sequencer) {
-        Sim::Model::StartSequencer(UCrc32(EventSequencer().GetHash32()));
+        Sim::Model::StartSequencer(UCrc32(EventSequencer()));
     }
 
     SetCameraAvoidable(true);

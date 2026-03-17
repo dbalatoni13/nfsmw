@@ -113,7 +113,8 @@ struct smackable : Instance {
     }
 
     const float &ExplosionEffect() const {
-        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0x360552da, 0));
+        const float *resultptr;
+        resultptr = reinterpret_cast<const float *>(GetAttributePointer(0x360552da, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }

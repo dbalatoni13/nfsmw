@@ -180,7 +180,7 @@ bool PhysicsObject::OnTask(HSIMTASK htask, float dT) {
         }
         return true;
     }
-    return false;
+    return Sim::Object::OnTask(htask, dT);
 }
 
 void PhysicsObject::Kill() {

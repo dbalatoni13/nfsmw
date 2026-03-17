@@ -50,9 +50,8 @@ class PhysicsObject : public Sim::Object,
 
         void Simulate(float dT) {
             for (const_iterator iter = begin(); iter != end(); ++iter) {
-                Behavior *beh = *iter;
-                if (!beh->IsPaused()) {
-                    beh->DoSimulate(dT);
+                if (!(*iter)->IsPaused()) {
+                    (*iter)->DoSimulate(dT);
                 }
             }
         }

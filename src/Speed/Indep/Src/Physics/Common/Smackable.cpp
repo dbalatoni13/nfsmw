@@ -247,7 +247,8 @@ bool Smackable::SetDynamicData(const EventSequencer::System *system, EventDynami
 
 bool Smackable::OnExplosion(const UMath::Vector3 &normal, const UMath::Vector3 &position,
                             float dT, IExplosion *explosion) {
-    if ((explosion->GetTargets() & 1) == 0) {
+    unsigned int targets = explosion->GetTargets();
+    if ((targets & 1) == 0) {
         return false;
     }
     IRigidBody *irb = GetRigidBody();
@@ -260,8 +261,9 @@ bool Smackable::OnExplosion(const UMath::Vector3 &normal, const UMath::Vector3 &
     irb->GetPointVelocity(position, point_velocity);
     float speed = UMath::Dot(point_velocity, normal);
     if (speed < targetspeed) {
+        float deltaspeed = targetspeed - speed;
         UMath::Vector3 impactvel;
-        UMath::Scale(normal, targetspeed - speed, impactvel);
+        UMath::Scale(normal, deltaspeed, impactvel);
         UMath::Vector3 force;
         UMath::Scale(impactvel, irb->GetMass() / dT, force);
         irb->ResolveForce(force, position);
@@ -310,16 +312,19 @@ void Smackable::OnBehaviorChange(const UCrc32 &mechanic) {
 }
 
 void Smackable::DoImpactStimulus(unsigned int systemid, float intensity) {
-    float time = Sim::GetTime();
-    EventSequencer::IEngine *iev = static_cast<ISimable *>(this)->GetEventSequencer();
+    float time;
+    EventSequencer::IEngine *iev;
+    EventSequencer::System *system;
+    unsigned int level;
+    time = Sim::GetTime();
+    iev = static_cast<ISimable *>(this)->GetEventSequencer();
     if (iev != nullptr) {
-        EventSequencer::System *system = iev->FindSystem(systemid);
+        system = iev->FindSystem(systemid);
         if (system != nullptr) {
             intensity = UMath::Clamp(intensity, 0.0f, 1.0f);
-            unsigned int level = static_cast<unsigned int>(intensity * 6.0f);
+            level = static_cast<unsigned int>(intensity * 6.0f);
             for (unsigned int i = 0; i < level + 1; i++) {
-                UCrc32 stimulus = DamageZone::GetImpactStimulus(i);
-                system->ProcessStimulus(stimulus.GetValue(), time,
+                system->ProcessStimulus(DamageZone::GetImpactStimulus(i).GetValue(), time,
                                         static_cast<EventSequencer::IContext *>(this),
                                         EventSequencer::QUEUE_ALLOW);
             }
@@ -440,17 +445,17 @@ bool Smackable::Dropout() {
 }
 
 bool Smackable::ValidateWorld() {
-    const UMath::Vector3 &pos = static_cast<ISimable *>(this)->GetPosition();
+    const UMath::Vector3 &position = static_cast<ISimable *>(this)->GetPosition();
     WWorldPos &wpos = static_cast<ISimable *>(this)->GetWPos();
-    wpos.FindClosestFace(pos, true);
+    wpos.FindClosestFace(position, true);
     if (!wpos.OnValidFace()) {
         goto fail;
     }
     {
-        float height = wpos.HeightAtPoint(pos);
+        float height = wpos.HeightAtPoint(position);
         IRigidBody *irb = GetRigidBody();
         float radius = irb->GetRadius();
-        if (height <= pos.y + radius) {
+        if (height <= position.y + radius) {
             goto success;
         }
     }
@@ -537,10 +542,10 @@ void Smackable::ProcessDeath(float dT) {
 
 bool Smackable::ProcessDropout(float dT) {
     if (mDropOutTimerMax > 0.0f && mDropTimer > 0.0f) {
-        IRigidBody *irb = GetRigidBody();
+        IRigidBody &rb = *GetRigidBody();
         mDropTimer -= dT;
-        float dropspeed = mAttributes.DROPOUT(1);
-        irb->ModifyYPos(-dropspeed * dT);
+        const float dropspeed = mAttributes.DROPOUT(1);
+        rb.ModifyYPos(-dropspeed * dT);
         if (mDropTimer <= 0.0f) {
             static_cast<ISimable *>(this)->Kill();
             mDropTimer = 0.0f;
@@ -590,10 +595,8 @@ void Smackable::CalcSimplificationWeight() {
     if (mCollisionBody == nullptr || mPersistant) {
         mSimplifyWeight = -1.0f;
     }
-    const UMath::Vector3 &pos = static_cast<ISimable *>(this)->GetPosition();
-    float dist = Sim::DistanceToCamera(pos);
-    IRigidBody *irb = GetRigidBody();
-    float radius = irb->GetRadius();
+    float dist = Sim::DistanceToCamera(static_cast<ISimable *>(this)->GetPosition());
+    float radius = GetRigidBody()->GetRadius();
     float baseweight = static_cast<float>(mAttributes.CAN_SIMPLIFY());
     if (!static_cast<IRenderable *>(this)->InView()) {
         baseweight += baseweight;

@@ -75,13 +75,11 @@ class PVehicle : public PhysicsObject,
     }
 
     struct LaunchState {
-        LaunchState() : Time(0.0f), Amount(0.0f) {}
-        void Clear() { Time = 0.0f; Amount = 0.0f; }
-        bool IsSet() const { return Time > 0.0f; }
-        void Set(float time) { Time = time; }
-        void Tick(float dT) {
-            Time -= dT;
-        }
+        LaunchState();
+        void Clear();
+        bool IsSet() const;
+        void Set(float time);
+        void Tick(float dT);
 
         float Time;   // offset 0x0, size 0x4
         float Amount; // offset 0x4, size 0x4

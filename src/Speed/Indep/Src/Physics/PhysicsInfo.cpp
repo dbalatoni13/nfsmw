@@ -55,10 +55,10 @@ Physics::Info::eInductionType Physics::Info::InductionType(const Attrib::Gen::in
 }
 
 bool Physics::Info::HasNos(const Attrib::Gen::pvehicle &pvehicle) {
-    const Attrib::Gen::nos n(pvehicle.nos(0), 0, nullptr);
+    const Attrib::Gen::nos nos(pvehicle.nos(0), 0, nullptr);
     bool result = false;
-    if (n.TORQUE_BOOST() > 0.0f) {
-        result = n.NOS_CAPACITY() > 0.0f;
+    if (nos.TORQUE_BOOST() > 0.0f) {
+        result = nos.NOS_CAPACITY() > 0.0f;
     }
     return result;
 }

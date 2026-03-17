@@ -99,6 +99,27 @@ struct AIBehaviors {
 };
 extern AIBehaviors ai_behaviors[];
 
+inline PVehicle::LaunchState::LaunchState()
+    : Time(0.0f), //
+      Amount(0.0f) {}
+
+inline void PVehicle::LaunchState::Clear() {
+    Time = 0.0f;
+    Amount = 0.0f;
+}
+
+inline bool PVehicle::LaunchState::IsSet() const {
+    return Time > 0.0f;
+}
+
+inline void PVehicle::LaunchState::Set(float time) {
+    Time = time;
+}
+
+inline void PVehicle::LaunchState::Tick(float dT) {
+    Time -= dT;
+}
+
 const ISimable *PVehicle::GetSimable() const { return static_cast<const ISimable *>(this); }
 
 ISimable *PVehicle::GetSimable() { return static_cast<ISimable *>(this); }
@@ -298,8 +319,7 @@ void PVehicle::SetAnimating(bool animate) {
         mBehaviorOverrides.clear();
         mAnimating = animate;
         ReloadBehaviors();
-        UCrc32 mechanic(BEHAVIOR_MECHANIC_AI);
-        PauseBehavior(mechanic, animate);
+        PauseBehavior(UCrc32(BEHAVIOR_MECHANIC_AI), animate);
         if (mCollisionBody != nullptr) {
             mCollisionBody->SetAnimating(mAnimating);
         }
@@ -324,32 +344,32 @@ void PVehicle::RemoveBehaviorOverride(UCrc32 mechanic) {
 
 void PVehicle::OnBehaviorChange(const UCrc32 &mechanic) {
     PhysicsObject::OnBehaviorChange(mechanic);
-    unsigned int crc = mechanic.GetValue();
-    if (crc == UCrc32(BEHAVIOR_MECHANIC_AI).GetValue()) {
+    if (mechanic == UCrc32(BEHAVIOR_MECHANIC_AI)) {
         static_cast<ISimable *>(this)->QueryInterface(&mAI);
-    } else if (crc == UCrc32(BEHAVIOR_MECHANIC_INPUT).GetValue()) {
+    } else if (mechanic == UCrc32(BEHAVIOR_MECHANIC_INPUT)) {
         static_cast<ISimable *>(this)->QueryInterface(&mInput);
-    } else if (crc == UCrc32(BEHAVIOR_MECHANIC_RIGIDBODY).GetValue()) {
+    } else if (mechanic == UCrc32(BEHAVIOR_MECHANIC_RIGIDBODY)) {
         if (static_cast<ISimable *>(this)->QueryInterface(&mCollisionBody)) {
             mCollisionBody->SetAnimating(mAnimating);
         }
         static_cast<ISimable *>(this)->QueryInterface(&mArticulation);
-    } else if (crc == UCrc32(BEHAVIOR_MECHANIC_DRAW).GetValue()) {
+    } else if (mechanic == UCrc32(BEHAVIOR_MECHANIC_DRAW)) {
         static_cast<ISimable *>(this)->QueryInterface(&mRenderable);
-    } else if (crc == UCrc32(BEHAVIOR_MECHANIC_AUDIO).GetValue()) {
+    } else if (mechanic == UCrc32(BEHAVIOR_MECHANIC_AUDIO)) {
         static_cast<ISimable *>(this)->QueryInterface(&mAudible);
-    } else if (crc == UCrc32(BEHAVIOR_MECHANIC_SUSPENSION).GetValue()) {
+    } else if (mechanic == UCrc32(BEHAVIOR_MECHANIC_SUSPENSION)) {
         if (!static_cast<ISimable *>(this)->QueryInterface(&mSuspension)) {
             return;
         }
         if (mCollisionBody == nullptr) {
             return;
         }
-        const UMath::Vector3 &fwd = mCollisionBody->GetForwardVector();
-        const UMath::Vector3 &vel = static_cast<ISimable *>(this)->GetRigidBody()->GetLinearVelocity();
-        float speed = UMath::Dot(fwd, vel);
-        mSuspension->MatchSpeed(speed);
-    } else if (crc == UCrc32(BEHAVIOR_MECHANIC_ENGINE).GetValue()) {
+        {
+            float speed = UMath::Dot(mCollisionBody->GetForwardVector(),
+                                     static_cast<ISimable *>(this)->GetRigidBody()->GetLinearVelocity());
+            mSuspension->MatchSpeed(speed);
+        }
+    } else if (mechanic == UCrc32(BEHAVIOR_MECHANIC_ENGINE)) {
         static_cast<ISimable *>(this)->QueryInterface(&mTranny);
         if (!static_cast<ISimable *>(this)->QueryInterface(&mEngine)) {
             return;
@@ -358,11 +378,12 @@ void PVehicle::OnBehaviorChange(const UCrc32 &mechanic) {
         if (mCollisionBody == nullptr) {
             return;
         }
-        const UMath::Vector3 &fwd = mCollisionBody->GetForwardVector();
-        const UMath::Vector3 &vel = static_cast<ISimable *>(this)->GetRigidBody()->GetLinearVelocity();
-        float speed = UMath::Dot(fwd, vel);
-        mEngine->MatchSpeed(speed);
-    } else if (crc == UCrc32(BEHAVIOR_MECHANIC_DAMAGE).GetValue()) {
+        {
+            float speed = UMath::Dot(mCollisionBody->GetForwardVector(),
+                                     static_cast<ISimable *>(this)->GetRigidBody()->GetLinearVelocity());
+            mEngine->MatchSpeed(speed);
+        }
+    } else if (mechanic == UCrc32(BEHAVIOR_MECHANIC_DAMAGE)) {
         static_cast<ISimable *>(this)->QueryInterface(&mDamage);
     }
 }
@@ -678,38 +699,14 @@ void PVehicle::OnBeginMode(const PhysicsMode mode) {
             mCollisionBody->EnableModeling();
         }
         CameraAI::AddAvoidable(static_cast<IBody *>(this));
-        {
-            UCrc32 mechanic(BEHAVIOR_MECHANIC_DRAW);
-            PauseBehavior(mechanic, false);
-        }
-        {
-            UCrc32 mechanic(BEHAVIOR_MECHANIC_SUSPENSION);
-            PauseBehavior(mechanic, false);
-        }
-        {
-            UCrc32 mechanic(BEHAVIOR_MECHANIC_ENGINE);
-            PauseBehavior(mechanic, false);
-        }
-        {
-            UCrc32 mechanic(BEHAVIOR_MECHANIC_RIGIDBODY);
-            PauseBehavior(mechanic, false);
-        }
-        {
-            UCrc32 mechanic(BEHAVIOR_MECHANIC_EFFECTS);
-            PauseBehavior(mechanic, false);
-        }
-        {
-            UCrc32 mechanic(BEHAVIOR_MECHANIC_RESET);
-            PauseBehavior(mechanic, false);
-        }
-        {
-            UCrc32 mechanic(BEHAVIOR_MECHANIC_AUDIO);
-            PauseBehavior(mechanic, false);
-        }
-        {
-            UCrc32 mechanic(BEHAVIOR_MECHANIC_DAMAGE);
-            PauseBehavior(mechanic, false);
-        }
+        PauseBehavior(UCrc32(BEHAVIOR_MECHANIC_DRAW), false);
+        PauseBehavior(UCrc32(BEHAVIOR_MECHANIC_SUSPENSION), false);
+        PauseBehavior(UCrc32(BEHAVIOR_MECHANIC_ENGINE), false);
+        PauseBehavior(UCrc32(BEHAVIOR_MECHANIC_RIGIDBODY), false);
+        PauseBehavior(UCrc32(BEHAVIOR_MECHANIC_EFFECTS), false);
+        PauseBehavior(UCrc32(BEHAVIOR_MECHANIC_RESET), false);
+        PauseBehavior(UCrc32(BEHAVIOR_MECHANIC_AUDIO), false);
+        PauseBehavior(UCrc32(BEHAVIOR_MECHANIC_DAMAGE), false);
     }
 }
 
@@ -726,38 +723,14 @@ void PVehicle::OnEndMode(const PhysicsMode mode) {
             mCollisionBody->DisableModeling();
         }
         CameraAI::RemoveAvoidable(static_cast<IBody *>(this));
-        {
-            UCrc32 mechanic(BEHAVIOR_MECHANIC_DRAW);
-            PauseBehavior(mechanic, true);
-        }
-        {
-            UCrc32 mechanic(BEHAVIOR_MECHANIC_SUSPENSION);
-            PauseBehavior(mechanic, true);
-        }
-        {
-            UCrc32 mechanic(BEHAVIOR_MECHANIC_ENGINE);
-            PauseBehavior(mechanic, true);
-        }
-        {
-            UCrc32 mechanic(BEHAVIOR_MECHANIC_RIGIDBODY);
-            PauseBehavior(mechanic, true);
-        }
-        {
-            UCrc32 mechanic(BEHAVIOR_MECHANIC_EFFECTS);
-            PauseBehavior(mechanic, true);
-        }
-        {
-            UCrc32 mechanic(BEHAVIOR_MECHANIC_RESET);
-            PauseBehavior(mechanic, true);
-        }
-        {
-            UCrc32 mechanic(BEHAVIOR_MECHANIC_AUDIO);
-            PauseBehavior(mechanic, true);
-        }
-        {
-            UCrc32 mechanic(BEHAVIOR_MECHANIC_DAMAGE);
-            PauseBehavior(mechanic, true);
-        }
+        PauseBehavior(UCrc32(BEHAVIOR_MECHANIC_DRAW), true);
+        PauseBehavior(UCrc32(BEHAVIOR_MECHANIC_SUSPENSION), true);
+        PauseBehavior(UCrc32(BEHAVIOR_MECHANIC_ENGINE), true);
+        PauseBehavior(UCrc32(BEHAVIOR_MECHANIC_RIGIDBODY), true);
+        PauseBehavior(UCrc32(BEHAVIOR_MECHANIC_EFFECTS), true);
+        PauseBehavior(UCrc32(BEHAVIOR_MECHANIC_RESET), true);
+        PauseBehavior(UCrc32(BEHAVIOR_MECHANIC_AUDIO), true);
+        PauseBehavior(UCrc32(BEHAVIOR_MECHANIC_DAMAGE), true);
     }
 }
 
