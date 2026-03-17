@@ -243,19 +243,19 @@ void PhotoFinishScreen::Setup() {
 
     GRaceStatus &race_status = GRaceStatus::Get();
     GRaceParameters *race_params = race_status.GetRaceParameters();
-    GRacerInfo racer_info = race_status.GetRacerInfo(0);
+    GRacerInfo *racer_info = &race_status.GetRacerInfo(0);
     int racer_count = race_status.GetRacerCount();
 
     for (int i = 0; i < racer_count; ++i) {
-        racer_info = race_status.GetRacerInfo(i);
-        if (racer_info.GetSimable() != nullptr) {
+        racer_info = &race_status.GetRacerInfo(i);
+        if (racer_info->GetSimable() != nullptr) {
             break;
         }
     }
 
     float cash = race_params->GetCashValue();
-    float finishing_speed = racer_info.GetFinishingSpeed() * lbl_803E6204;
-    float point_total = racer_info.GetPointTotal();
+    float finishing_speed = racer_info->GetFinishingSpeed() * lbl_803E6204;
+    float point_total = racer_info->GetPointTotal();
 
     if (FEDatabase->GetGameplaySettings()->SpeedoUnits == 1) {
         finishing_speed *= lbl_803E6208;
@@ -266,13 +266,13 @@ void PhotoFinishScreen::Setup() {
 
     Timer race_time;
     Timer lap_time;
-    char race_time_buffer[64];
-    char lap_time_buffer[64];
+    char race_time_buffer[32];
+    char lap_time_buffer[32];
     char summary_buffer[64];
 
     race_time.SetTime(race_status.GetRaceTimeRemaining());
     race_time.PrintToString(race_time_buffer, 0);
-    lap_time.SetTime(racer_info.GetRaceTimer().GetTime());
+    lap_time.SetTime(racer_info->GetRaceTimer().GetTime());
     lap_time.PrintToString(lap_time_buffer, 0);
 
     bSNPrintf(summary_buffer, 64, lbl_803E61E0, lap_time_buffer, GetTranslatedString(0x474),
@@ -303,13 +303,13 @@ void PhotoFinishScreen::Setup() {
         result_hash = 0x3D1773DD;
     }
 
-    if (cash > lbl_803E6210 && race_params != nullptr) {
+    if (cash > lbl_803E6210) {
         FEPrintf(GetPackageName(), result_hash, lbl_803E5FD8, GetTranslatedString(0xB7F2B3C8), cash);
     } else {
         FEngSetInvisible(FEngFindObject(GetPackageName(), result_hash));
     }
 
-    if (race_params != nullptr && race_params->GetEventHash() == Attrib::StringHash32(lbl_803E4744)) {
+    if (race_params->GetEventHash() == Attrib::StringHash32(lbl_803E4744)) {
         DialogInterface::ShowOneButton(GetPackageName(), lbl_803E43DC, static_cast< eDialogTitle >(1),
                                        0x417B2601, 0x1FAB5998, 0x4C54B7EA);
         FEDatabase->GetCareerSettings()->SpecialFlags |= 0x2000;
