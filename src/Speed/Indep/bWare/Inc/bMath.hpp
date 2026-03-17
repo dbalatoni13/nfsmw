@@ -219,7 +219,7 @@ struct bVector2 {
 
     bVector2 operator-(const bVector2 &v);
 
-    bVector2 &operator=(const bVector2 &v) {}
+    bVector2 &operator=(const bVector2 &v);
 
     bVector2 &operator*=(float scale) {}
 
@@ -250,8 +250,20 @@ inline bVector2 *bFill(bVector2 *dest, float x, float y) {
     return dest;
 }
 
+inline bVector2 *bCopy(bVector2 *dest, const bVector2 *v) {
+    float x = v->x;
+    float y = v->y;
+    bFill(dest, x, y);
+    return dest;
+}
+
 inline bVector2::bVector2(float _x, float _y) {
     bFill(this, _x, _y);
+}
+
+inline bVector2 &bVector2::operator=(const bVector2 &v) {
+    bCopy(this, &v);
+    return *this;
 }
 
 inline bVector2 bVector2::operator-(const bVector2 &v) {
