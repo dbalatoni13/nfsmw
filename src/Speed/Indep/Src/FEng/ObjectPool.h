@@ -48,8 +48,7 @@ struct ObjectPool {
             pPool = pPool->GetNext();
         }
         if (!pPool) {
-            pPool = static_cast<FEPoolNode<T, N>*>(FEngMalloc(sizeof(FEPoolNode<T, N>), nullptr, 0));
-            new (pPool) FEPoolNode<T, N>();
+            pPool = FENG_NEW FEPoolNode<T, N>();
             Pools.AddHead(pPool);
         }
         T* pNode = static_cast<T*>(pPool->Free.RemHead());
