@@ -68,6 +68,7 @@ struct EAXCar : public CSTATE_Base {
     Sound::Gear GetCurGear() { return static_cast<Sound::Gear>(CurGear); }
     float GetPhysRPM() { return PhysRPM; }
     float GetThrottle() { return fTrottle; }
+    float GetVelocityMagnitudeMPH();
     void SetPhysTRQ(float _TRQ) { PhysTRQ = _TRQ; }
     void SetPhysRPM(float _RPM) { PhysRPM = _RPM; }
     void SetIsAccelerating(float _IsAccelerating) { bIsAccelerating = _IsAccelerating != 0.0f; }

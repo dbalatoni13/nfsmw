@@ -182,6 +182,10 @@ struct EAX_CarState : public UTL::Collections::Listable<EAX_CarState, 10> {
         return mDriveline.mGearShiftFlag != 0;
     }
 
+    bool GetNitroFlag() {
+        return mEngine.mNOSFlag != 0;
+    }
+
     EAX_CarState *GetState() {
         return this;
     }
@@ -228,6 +232,14 @@ struct EAX_CarState : public UTL::Collections::Listable<EAX_CarState, 10> {
 
     float GetVelocityMagnitude() {
         return bLength(mVel0);
+    }
+
+    float GetTheoreticalTopSpeed() {
+        return 100.0f;
+    }
+
+    int GetTopGear() {
+        return Sound::SEVENTH_GEAR;
     }
 
     float GetVelocityMagnitudeMPH() {

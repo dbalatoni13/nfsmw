@@ -20,6 +20,18 @@ extern EngRevDataPoint RevPat10[];
 extern EngRevDataPoint RevPat11[];
 extern EngRevDataPoint RevPat12[];
 
+static const float SND_AI_DOWNSHIFT_RPMS[] = {
+    6000.0f,
+    6000.0f,
+    5700.0f,
+    6200.0f,
+    6650.0f,
+    7000.0f,
+    7300.0f,
+    7400.0f,
+    7500.0f,
+};
+
 enum ControlSource {
     CONTROL_NONE = 0,
     CONTROL_HUMAN = 1,
@@ -473,16 +485,80 @@ void SFXCTL_AIPhysics::UpdateRPM(float t) {
 
 void SFXCTL_AIPhysics::UpdateAccel(float t) {
     (void)t;
-    IsAccelerating = (m_fThrottle > 0.2f);
+    SteadyVelocityFactor = bClamp(bAbs(AIStateManager.AccelMonitor.AvgMonitor.GetValue()) * 5.5555553f, 0.1f, 1.0f);
+    if (m_pShiftCtl->IsActive()) {
+        return;
+    }
+    if (GetPhysCar()->GetNitroFlag()) {
+        IsAccelerating = true;
+        return;
+    }
+    IsAccelerating = AIStateManager.GetState() == SND_AI_STATE_ACCEL;
 }
 
-int SFXCTL_AIPhysics::SuggestGear() {
-    return static_cast< int >(m_CurGear);
+Gear SFXCTL_AIPhysics::SuggestGear() {
+    float PercentOfMaxSpeed = GetPhysCar()->GetVelocityMagnitude();
+    int GearNumber;
+    int Result = Sound::FIRST_GEAR;
+    float Spread = 1.22f;
+
+    PercentOfMaxSpeed /= GetPhysCar()->GetTheoreticalTopSpeed();
+    GearNumber = static_cast<int>(PercentOfMaxSpeed * Spread * 8.0f);
+    if (GearNumber > Sound::FIRST_GEAR) {
+        Result = GearNumber;
+    }
+    GearNumber = Sound::SEVENTH_GEAR;
+    if (GearNumber < Result) {
+        Result = GearNumber;
+    }
+    return static_cast<Gear>(Result);
 }
 
 void SFXCTL_AIPhysics::UpdateGear() {
-    m_LastGear = m_CurGear;
-    m_CurGear = static_cast< Gear >(SuggestGear());
+    Gear SuggestedGear;
+    int GearDiff;
+
+    if (GetPhysCar()->GetGear() == Sound::REVERSE) {
+        m_CurGear = Sound::FIRST_GEAR;
+    } else {
+        SuggestedGear = SuggestGear();
+        GearDiff = (m_CurGear - SuggestedGear) + 1;
+        if (static_cast<unsigned int>(GearDiff) > 2u) {
+            m_LastGear = SuggestGear();
+            m_CurGear = m_LastGear;
+        }
+        if (GetPhysRPM() > 9300.0f) {
+            SuggestedGear = SuggestGear();
+            if (SuggestedGear < Sound::SECOND_GEAR) {
+                SuggestedGear = Sound::SECOND_GEAR;
+            }
+            if (SuggestedGear > Sound::SIXTH_GEAR) {
+                SuggestedGear = Sound::SIXTH_GEAR;
+            }
+            m_CurGear = SuggestedGear;
+            TargetRPMOffset = g_pEAXSound->Random(700.0f);
+            SuggestedGear = static_cast<Gear>(m_CurGear + Sound::AUTOMATIC);
+            UpShiftSameGearCount = 0;
+        } else {
+            if (GetPhysRPM() >= SND_AI_DOWNSHIFT_RPMS[m_CurGear]) {
+                return;
+            }
+            if (m_CurGear < Sound::SECOND_GEAR) {
+                return;
+            }
+            m_CurGear = SuggestGear();
+            if (m_CurGear == m_LastGear) {
+                DownShiftSameGearCount++;
+            } else {
+                DownShiftSameGearCount = 0;
+            }
+            if (m_CurGear == Sound::FIRST_GEAR && m_pEAXCar->GetVelocityMagnitudeMPH() > 10.0f) {
+                m_CurGear = Sound::SECOND_GEAR;
+            }
+            SuggestedGear = static_cast<Gear>(m_CurGear + Sound::NEUTRAL);
+        }
+        m_LastGear = SuggestedGear;
+    }
 }
 
 SndBase::TypeInfo *SFXCTL_TruckPhysics::GetTypeInfo() const { return &s_TypeInfo; }

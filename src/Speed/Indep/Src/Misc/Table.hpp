@@ -117,6 +117,10 @@ class Average : public AverageBase {
         return fAverage;
     }
 
+    float GetValue() const {
+        return fAverage;
+    }
+
     float GetTotal() {
         return fTotal;
     }

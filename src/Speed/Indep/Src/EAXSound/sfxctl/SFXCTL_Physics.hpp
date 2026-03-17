@@ -120,7 +120,7 @@ struct SFXCTL_AIPhysics : public SFXCTL_Physics {
     void UpdateRPM(float t);
     void UpdateTorque(float t);
     void UpdateAccel(float t);
-    int SuggestGear();
+    Gear SuggestGear();
     void UpdateGear();
     void Destroy() override;
     void UpdateMixerOutputs() override;
