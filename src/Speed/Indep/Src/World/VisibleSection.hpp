@@ -184,8 +184,12 @@ class VisibleSectionManager {
     VisibleSectionUserInfo *AllocateUserInfo(int section_number);
     void UnallocateUserInfo(int section_number);
     VisibleSectionBoundary *FindBoundary(int section_number);
+    VisibleSectionBoundary *FindClosestBoundary(const bVector2 *point, float *distance);
+    VisibleSectionBoundary *FindBoundary(const bVector2 *point);
     DrivableScenerySection *FindDrivableSection(const bVector2 *point);
     DrivableScenerySection *FindDrivableSection(int section_number /* r4 */);
+    LoadingSection *FindLoadingSection(int section_number);
+    int GetSectionsToLoad(LoadingSection *loading_section, short *section_numbers, int max_sections);
     int Loader(bChunk *chunk);
 
     VisibleSectionUserInfo *GetUserInfo(int section_number) {

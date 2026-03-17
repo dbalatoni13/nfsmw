@@ -201,6 +201,54 @@ VisibleSectionBoundary *VisibleSectionManager::FindBoundary(int section_number) 
     return 0;
 }
 
+VisibleSectionBoundary *VisibleSectionManager::FindClosestBoundary(const bVector2 *point, float *distance) {
+    float closest_distance = 9999999.0f;
+    VisibleSectionBoundary *closest_boundary = 0;
+
+    for (VisibleSectionBoundary *boundary = DrivableBoundaryList.GetHead(); boundary != DrivableBoundaryList.EndOfList();
+         boundary = boundary->GetNext()) {
+        if (boundary->IsPointInside(point)) {
+            closest_distance = 0.0f;
+            DrivableBoundaryList.Remove(boundary);
+            DrivableBoundaryList.AddHead(boundary);
+            closest_boundary = boundary;
+            break;
+        }
+
+        float boundary_distance = boundary->GetDistanceOutside(point, closest_distance);
+        if (!closest_boundary || boundary_distance < closest_distance ||
+            (boundary_distance == closest_distance && boundary->SectionNumber < closest_boundary->SectionNumber)) {
+            closest_distance = boundary_distance;
+            closest_boundary = boundary;
+        }
+    }
+
+    if (distance) {
+        *distance = closest_distance;
+    }
+
+    return closest_boundary;
+}
+
+VisibleSectionBoundary *VisibleSectionManager::FindBoundary(const bVector2 *point) {
+    for (VisibleSectionBoundary *boundary = DrivableBoundaryList.GetHead(); boundary != DrivableBoundaryList.EndOfList();
+         boundary = boundary->GetNext()) {
+        if (boundary->IsPointInside(point)) {
+            DrivableBoundaryList.Remove(boundary);
+            DrivableBoundaryList.AddHead(boundary);
+            return boundary;
+        }
+    }
+
+    float distance_to_boundary;
+    VisibleSectionBoundary *boundary = FindClosestBoundary(point, &distance_to_boundary);
+    if (distance_to_boundary >= 0.1f) {
+        return 0;
+    }
+
+    return boundary;
+}
+
 DrivableScenerySection *VisibleSectionManager::FindDrivableSection(const bVector2 *point) {
     for (DrivableScenerySection *section = DrivableSectionList.GetHead(); section != DrivableSectionList.EndOfList(); section = section->GetNext()) {
         if (section->pBoundary && PointInBBox(point, &section->pBoundary->BBoxMin, &section->pBoundary->BBoxMax)) {
@@ -219,6 +267,83 @@ DrivableScenerySection *VisibleSectionManager::FindDrivableSection(int section_n
     }
 
     return 0;
+}
+
+LoadingSection *VisibleSectionManager::FindLoadingSection(int section_number) {
+    for (LoadingSection *loading_section = LoadingSectionList.GetHead(); loading_section != LoadingSectionList.EndOfList();
+         loading_section = loading_section->GetNext()) {
+        for (int i = 0; i < loading_section->NumDrivableSections; i++) {
+            if (loading_section->DrivableSections[i] == section_number) {
+                return loading_section;
+            }
+        }
+    }
+
+    return 0;
+}
+
+int VisibleSectionManager::GetSectionsToLoad(LoadingSection *loading_section, short *section_numbers, int max_sections) {
+    int num_sections = 0;
+    if (!loading_section) {
+        return num_sections;
+    }
+
+    for (int i = 0; i < loading_section->NumDrivableSections; i++) {
+        DrivableScenerySection *drivable_section = FindDrivableSection(loading_section->DrivableSections[i]);
+        if (!drivable_section) {
+            continue;
+        }
+
+        for (int n = 0; n < drivable_section->NumVisibleSections; n++) {
+            short section_number = drivable_section->VisibleSections[n];
+            int existing_index = -1;
+            for (int j = 0; j < num_sections; j++) {
+                if (section_numbers[j] == section_number) {
+                    existing_index = j;
+                    break;
+                }
+            }
+
+            if (existing_index < 0 && num_sections < max_sections) {
+                section_numbers[num_sections] = section_number;
+                num_sections += 1;
+            }
+        }
+    }
+
+    for (int i = 0; i < loading_section->NumExtraSections; i++) {
+        short section_number = loading_section->ExtraSections[i];
+        int existing_index = -1;
+        for (int j = 0; j < num_sections; j++) {
+            if (section_numbers[j] == section_number) {
+                existing_index = j;
+                break;
+            }
+        }
+
+        if (existing_index < 0 && num_sections < max_sections) {
+            section_numbers[num_sections] = section_number;
+            num_sections += 1;
+        }
+
+        if (IsScenerySectionDrivable(section_number)) {
+            short lod_section_number = static_cast<short>(section_number + ScenerySectionLODOffset);
+            existing_index = -1;
+            for (int j = 0; j < num_sections; j++) {
+                if (section_numbers[j] == lod_section_number) {
+                    existing_index = j;
+                    break;
+                }
+            }
+
+            if (existing_index < 0 && num_sections < max_sections) {
+                section_numbers[num_sections] = lod_section_number;
+                num_sections += 1;
+            }
+        }
+    }
+
+    return num_sections;
 }
 
 int VisibleSectionManager::Loader(bChunk *chunk) {

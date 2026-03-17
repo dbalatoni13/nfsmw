@@ -2,6 +2,7 @@
 
 #include "VisibleSection.hpp"
 #include "Speed/Indep/Src/Misc/ResourceLoader.hpp"
+#include "Speed/Indep/Src/Misc/Timer.hpp"
 #include "Speed/Indep/bWare/Inc/bDebug.hpp"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 #include "Speed/Indep/bWare/Inc/bFunk.hpp"
@@ -9,6 +10,9 @@
 
 extern BOOL bMemoryTracing;
 extern int ScenerySectionLODOffset;
+extern int SeeulatorToolActive;
+extern int ScenerySectionToBlink;
+int Get2PlayerSectionNumber(int section_number);
 
 static unsigned int prev_need_loading_bar_26275 = 0;
 static const float kMaxDistance_TrackStreamer = 3.4028235e+38f;
@@ -36,6 +40,21 @@ static bool IsLoadingBarSection_TrackStreamer(int section_number) {
     int subsection_number = section_number % 100;
     return (subsection_number > 0 && subsection_number < ScenerySectionLODOffset) ||
            (ScenerySectionLODOffset <= subsection_number && subsection_number < ScenerySectionLODOffset * 2);
+}
+
+struct bBitTableLayout_TrackStreamer {
+    int NumBits;
+    uint8 *Bits;
+};
+
+static void SetBit_TrackStreamer(bBitTable *bit_table, int bit) {
+    bBitTableLayout_TrackStreamer *layout = reinterpret_cast<bBitTableLayout_TrackStreamer *>(bit_table);
+    layout->Bits[bit >> 3] |= static_cast<uint8>(1 << (bit & 7));
+}
+
+static void ClearTable_TrackStreamer(bBitTable *bit_table) {
+    bBitTableLayout_TrackStreamer *layout = reinterpret_cast<bBitTableLayout_TrackStreamer *>(bit_table);
+    bMemSet(layout->Bits, 0, layout->NumBits >> 3);
 }
 
 struct bMemoryTraceAllocatePacket {
@@ -283,6 +302,97 @@ int TrackStreamer::AllocateSectionMemory(int *ptotal_needing_allocation) {
     CurrentZoneAllocatedButIncomplete = false;
     *ptotal_needing_allocation = total_needing_allocation;
     return total_out_of_memory;
+}
+
+void TrackStreamer::RemoveCurrentStreamingSections() {
+    for (int i = 0; i < NumCurrentStreamingSections; i++) {
+        CurrentStreamingSections[i]->CurrentlyVisible = 0;
+    }
+
+    NumCurrentStreamingSections = 0;
+    ClearTable_TrackStreamer(&CurrentVisibleSectionTable);
+}
+
+void TrackStreamer::AddCurrentStreamingSections(short *section_numbers, int num_sections, int position_number) {
+    if (num_sections <= 0) {
+        return;
+    }
+
+    StreamingPositionEntry *streaming_position = &StreamingPositionEntries[position_number];
+    for (int i = 0; i < num_sections; i++) {
+        short &section_number = section_numbers[i];
+        SetBit_TrackStreamer(&CurrentVisibleSectionTable, section_number);
+        if (SplitScreen) {
+            section_number = static_cast<short>(Get2PlayerSectionNumber(section_number));
+        }
+
+        TrackStreamingSection *section = FindSection(section_number);
+        if (!section) {
+            continue;
+        }
+
+        section->LastNeededTimestamp = RealTimeFrames;
+        if (!section->CurrentlyVisible) {
+            CurrentStreamingSections[NumCurrentStreamingSections] = section;
+            NumCurrentStreamingSections += 1;
+        }
+
+        unsigned char position_bit = static_cast<unsigned char>(1 << (position_number & 0x1f));
+        if ((section->CurrentlyVisible & position_bit) == 0) {
+            section->CurrentlyVisible |= position_bit;
+            if (section->Status < TrackStreamingSection::LOADED) {
+                streaming_position->NumSectionsToLoad += 1;
+                streaming_position->AmountToLoad += section->Size;
+            }
+        }
+    }
+}
+
+void TrackStreamer::DetermineStreamingSections() {
+    short section_numbers[384];
+    int num_sections = 3;
+
+    RemoveCurrentStreamingSections();
+
+    section_numbers[0] = 0x9c4;
+    section_numbers[1] = 0x960;
+    section_numbers[2] = 0xa28;
+    if (SeeulatorToolActive && ScenerySectionToBlink != 0) {
+        section_numbers[3] = static_cast<short>(ScenerySectionToBlink);
+        num_sections = 4;
+    }
+
+    for (int i = 0; i < 4; i++) {
+        short keep_section = KeepSectionTable[i];
+        if (keep_section != 0) {
+            section_numbers[num_sections] = keep_section;
+            num_sections += 1;
+        }
+    }
+
+    AddCurrentStreamingSections(section_numbers, num_sections, 0);
+    AddCurrentStreamingSections(section_numbers, num_sections, 1);
+
+    for (int i = 0; i < 2; i++) {
+        StreamingPositionEntry *streaming_position = &StreamingPositionEntries[i];
+        if (streaming_position->CurrentZone > 0) {
+            LoadingSection *loading_section = TheVisibleSectionManager.FindLoadingSection(streaming_position->CurrentZone);
+            if (!loading_section) {
+                DrivableScenerySection *drivable_section = TheVisibleSectionManager.FindDrivableSection(streaming_position->CurrentZone);
+                num_sections = 0;
+                if (drivable_section) {
+                    for (int n = 0; n < drivable_section->NumVisibleSections; n++) {
+                        section_numbers[num_sections] = drivable_section->VisibleSections[n];
+                        num_sections += 1;
+                    }
+                }
+            } else {
+                num_sections = TheVisibleSectionManager.GetSectionsToLoad(loading_section, section_numbers, 0x180);
+            }
+
+            AddCurrentStreamingSections(section_numbers, num_sections, i);
+        }
+    }
 }
 
 bool TrackStreamer::AreAllSectionsActivated() {

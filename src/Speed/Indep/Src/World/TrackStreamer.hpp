@@ -162,6 +162,10 @@ class TrackStreamer {
     void FreeUserMemory(void *mem);
     void *AllocateMemory(TrackStreamingSection *section, int allocation_params);
     int AllocateSectionMemory(int *ptotal_needing_allocation);
+    TrackStreamingSection *FindSection(int section_number);
+    void RemoveCurrentStreamingSections();
+    void AddCurrentStreamingSections(short *section_numbers, int num_sections, int position_number);
+    void DetermineStreamingSections();
     bool IsLoadingInProgress();
     bool AreAllSectionsActivated();
     void CheckLoadingBar();
