@@ -4,6 +4,7 @@
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 
 extern SlotPool *eAnimTextureSlotPool;
+extern TextureInfo *pTexPrev;
 
 static inline unsigned int Convert16To32(unsigned short entry) {
     if (entry & 0x8000) {
@@ -130,5 +131,24 @@ unsigned char TextureInfoPlatInfo::SetImage(TextureInfo *texture_info) {
 
     plat_info->SetImage(texture_info->Width, texture_info->Height, texture_info->NumMipMapLevels, plat_info->Format, texture_info->ImageData,
                         texture_info->PaletteData, texture_info->AlphaUsageType, texture_info->TilableUV);
+    return 1;
+}
+
+int eSetTexture(TextureInfo *texture_info, int stage) {
+    static int stagePrev;
+    TextureInfoPlatInfo *plat_info = texture_info->GetPlatInfo();
+
+    if (texture_info == pTexPrev && stage == stagePrev) {
+        return 0;
+    }
+
+    if (plat_info->HasClut()) {
+        GXLoadTlut(&plat_info->ImageInfos.objClut, 0);
+    }
+
+    GXLoadTexObj(&plat_info->ImageInfos.obj, static_cast<GXTexMapID>(stage));
+
+    pTexPrev = texture_info;
+    stagePrev = stage;
     return 1;
 }

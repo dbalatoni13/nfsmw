@@ -7,6 +7,14 @@
 
 class MemoryCard {
   public:
+    enum SaveType {
+        ST_PROFILE = 0,
+        ST_THUMBNAIL = 1,
+        ST_IMAGE = 2,
+        ST_MAX = 3,
+    };
+
+    static MemoryCard *s_pThis;
     static int IsCardBusy();
 };
 
