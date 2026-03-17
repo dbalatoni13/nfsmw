@@ -373,16 +373,16 @@ void FEObject::SetColor(const FEColor& color, bool bRelative) {
     if (Type > 0xFF) {
         return;
     }
+    bool bClose;
     if (bRelative) {
         FEColor zero(0);
-        if (!CloseEnoughColor(color, zero)) {
-            Flags |= 0x400000;
-        }
+        bClose = CloseEnoughColor(color, zero);
     } else {
         FEObjData* pData = GetObjData();
-        if (!CloseEnoughColor(color, pData->Col)) {
-            Flags |= 0x400000;
-        }
+        bClose = CloseEnoughColor(color, pData->Col);
+    }
+    if (!bClose) {
+        Flags |= 0x400000;
     }
     SetTrackValue(FETrack_Color, color, bRelative);
 }

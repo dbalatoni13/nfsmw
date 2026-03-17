@@ -1243,15 +1243,14 @@ void FEngine::ProcessMessageQueue() {
     }
 }
 
-void FEngine::ProcessResponses(FEMessageResponse* pRespList, FEObject* pObj, FEPackage* pPack, unsigned long uControlMask) {
-    unsigned long NumActions = pRespList->Count;
-    for (unsigned long i = 0; i < NumActions; i++) {
-        unsigned long Action = pRespList->pResponseList[i].ResponseID;
-        FEResponse* pAction = &pRespList->pResponseList[i];
-        switch (Action) {
+void FEngine::ProcessResponses(FEMessageResponse* pRespList, FEObject* pObj, FEPackage* pPack, unsigned long ControlMask) {
+    unsigned long Count = pRespList->GetCount();
+    for (unsigned long i = 0; i < Count; i++) {
+        FEResponse* pResp = pRespList->GetResponse(i);
+        switch (pResp->ResponseID) {
         case 0:
             if (pObj) {
-                FEScript* pScript = pObj->FindScript(pAction->ResponseParam);
+                FEScript* pScript = pObj->FindScript(pResp->ResponseParam);
                 if (pScript) {
                     pObj->SetCurrentScript(pScript);
                     pScript->CurTime = 0;
@@ -1259,53 +1258,53 @@ void FEngine::ProcessResponses(FEMessageResponse* pRespList, FEObject* pObj, FEP
             }
             break;
         case 1: {
-            FEObject* pTo = reinterpret_cast<FEObject*>(pAction->ResponseTarget);
+            FEObject* pTo = reinterpret_cast<FEObject*>(pResp->ResponseTarget);
             if (reinterpret_cast<unsigned long>(pTo) != 0xFFFFFFFC && reinterpret_cast<unsigned long>(pTo) != 0xFFFFFFFF) {
-                pTo = pPack->FindObjectByGUID(pAction->ResponseTarget);
+                pTo = pPack->FindObjectByGUID(pResp->ResponseTarget);
             }
-            QueueMessage(pAction->ResponseParam, pObj, pPack, pTo, uControlMask);
+            QueueMessage(pResp->ResponseParam, pObj, pPack, pTo, ControlMask);
             break;
         }
         case 2:
-            QueueMessage(pAction->ResponseParam, pObj, pPack, reinterpret_cast<FEObject*>(0xFFFFFFFF), uControlMask);
+            QueueMessage(pResp->ResponseParam, pObj, pPack, reinterpret_cast<FEObject*>(0xFFFFFFFF), ControlMask);
             break;
         case 3:
-            QueueMessage(pAction->ResponseParam, pObj, pPack, reinterpret_cast<FEObject*>(0xFFFFFFFB), uControlMask);
+            QueueMessage(pResp->ResponseParam, pObj, pPack, reinterpret_cast<FEObject*>(0xFFFFFFFB), ControlMask);
             break;
         case 0x100: {
             FEObject* pButton;
-            if (pAction->ResponseParam != 0) {
-                pButton = pPack->FindObjectByGUID(pAction->ResponseParam);
+            if (pResp->ResponseParam != 0) {
+                pButton = pPack->FindObjectByGUID(pResp->ResponseParam);
             } else {
                 pButton = nullptr;
             }
-            if (!pButton && pAction->ResponseParam != 0) {
+            if (!pButton && pResp->ResponseParam != 0) {
                 break;
             }
             pPack->SetCurrentButton(pButton, pButton != nullptr);
             break;
         }
         case 0x101:
-            SetProcessInput(pPack, pAction->ResponseParam == 1);
+            SetProcessInput(pPack, pResp->ResponseParam == 1);
             break;
         case 0x102:
-            if (pPack->pCurrentButton) {
-                RecordLastPackageButton(pPack->nameHash, pPack->pCurrentButton->GUID);
+            if (pPack->GetCurrentButton()) {
+                RecordLastPackageButton(pPack->GetNameHash(), pPack->GetCurrentButton()->GUID);
             } else {
-                RecordLastPackageButton(pPack->nameHash, 0);
+                RecordLastPackageButton(pPack->GetNameHash(), 0);
             }
             break;
         case 0x103: {
             FEObject* pButton = nullptr;
-            unsigned long recalled = RecallLastPackageButton(pPack->nameHash);
+            unsigned long recalled = RecallLastPackageButton(pPack->GetNameHash());
             if (recalled != 0) {
                 pButton = pPack->FindObjectByGUID(recalled);
             }
             if (!pButton) {
-                if (pAction->ResponseParam != 0) {
-                    pButton = pPack->FindObjectByGUID(pAction->ResponseParam);
+                if (pResp->ResponseParam != 0) {
+                    pButton = pPack->FindObjectByGUID(pResp->ResponseParam);
                 }
-                if (!pButton && pAction->ResponseParam != 0) {
+                if (!pButton && pResp->ResponseParam != 0) {
                     break;
                 }
             }
@@ -1315,46 +1314,46 @@ void FEngine::ProcessResponses(FEMessageResponse* pRespList, FEObject* pObj, FEP
         case 0x104:
             break;
         case 0x105:
-            QueuePackageUserTransfer(pPack, true, uControlMask);
+            QueuePackageUserTransfer(pPack, true, ControlMask);
             break;
         case 0x106:
             QueuePackageUserTransfer(pPack, true, 0xFF);
             break;
         case 0x107:
-            QueuePackageUserTransfer(pPack, false, uControlMask);
+            QueuePackageUserTransfer(pPack, false, ControlMask);
             break;
         case 0x108:
             QueuePackageUserTransfer(pPack, false, 0xFF);
             break;
         case 0x200:
-            QueuePackageSwitch(reinterpret_cast<const char*>(pAction->ResponseParam), pPack->Controllers);
+            QueuePackageSwitch(reinterpret_cast<const char*>(pResp->ResponseParam), pPack->GetControlMask());
             break;
         case 0x201:
-            QueuePackagePush(reinterpret_cast<const char*>(pAction->ResponseParam), pPack->Controllers);
+            QueuePackagePush(reinterpret_cast<const char*>(pResp->ResponseParam), pPack->GetControlMask());
             break;
         case 0x202: {
             unsigned long pad = 0;
             do {
-                if (uControlMask & (1 << pad)) {
-                    QueuePackagePush(reinterpret_cast<const char*>(pAction->ResponseParam), uControlMask);
+                if (ControlMask & (1 << pad)) {
+                    QueuePackagePush(reinterpret_cast<const char*>(pResp->ResponseParam), ControlMask);
                 }
                 pad++;
             } while (pad < 8);
             break;
         }
         case 0x204:
-            QueuePackagePush(reinterpret_cast<const char*>(pAction->ResponseParam), 0);
+            QueuePackagePush(reinterpret_cast<const char*>(pResp->ResponseParam), 0);
             break;
         case 0x203:
             QueuePackagePop();
             break;
         case 0x2c0:
-            RecordPackageMarker(pPack->name);
+            RecordPackageMarker(pPack->GetName());
             break;
         case 0x2c1: {
             const char* pMarker = RecallPackageMarker();
             if (pMarker) {
-                QueuePackageSwitch(pMarker, pPack->Controllers);
+                QueuePackageSwitch(pMarker, pPack->GetControlMask());
             }
             break;
         }
@@ -1362,12 +1361,12 @@ void FEngine::ProcessResponses(FEMessageResponse* pRespList, FEObject* pObj, FEP
             ClearPackageMarkers();
             break;
         case 0x300:
-            if (pObj->pCurrentScript->ID != pAction->ResponseParam) {
+            if (pObj->pCurrentScript->ID != pResp->ResponseParam) {
                 i = pRespList->FindConditionBranchTarget(i);
             }
             break;
         case 0x301:
-            if (pObj->pCurrentScript->ID == pAction->ResponseParam) {
+            if (pObj->pCurrentScript->ID == pResp->ResponseParam) {
                 i = pRespList->FindConditionBranchTarget(i);
             }
             break;
