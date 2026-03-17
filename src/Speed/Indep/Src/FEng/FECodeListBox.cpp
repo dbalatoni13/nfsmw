@@ -236,16 +236,17 @@ void FECodeListBox::FillAllCells() {
 void FECodeListBox::AllocateStrings(unsigned long ulNumStrings, unsigned long ulStringSize) {
     short* psOldStrings = mpsStrings;
     short** ppsOldStringData = mppsStringData;
+    unsigned long i = 0;
+    unsigned long j = 0;
+    mulNumStrings = 0;
     mulCurrentString = 0;
     mulStringSize = 0;
     mpsStrings = nullptr;
     mppsStringData = nullptr;
-    mulNumStrings = 0;
     if (ulNumStrings == 0 || ulStringSize == 0) {
-        unsigned long i = 0;
         if (i < mulNumVisibleRows) {
             do {
-                unsigned long j = 0;
+                j = 0;
                 i++;
                 if (j < mulNumVisibleColumns) {
                     do {
@@ -258,7 +259,7 @@ void FECodeListBox::AllocateStrings(unsigned long ulNumStrings, unsigned long ul
         mpsStrings = static_cast<short*>(FEngMalloc((ulNumStrings * ulStringSize) << 1, 0, 0));
         mppsStringData = static_cast<short**>(FEngMalloc(ulNumStrings * 4, 0, 0));
         FEngMemSet(mpsStrings, 0, ulNumStrings * (ulStringSize + ulStringSize));
-        for (unsigned long i = 0; i < ulNumStrings; i++) {
+        for (i = 0; i < ulNumStrings; i++) {
             mppsStringData[i] = mpsStrings + i * ulStringSize;
         }
         mulNumStrings = ulNumStrings;
@@ -267,10 +268,10 @@ void FECodeListBox::AllocateStrings(unsigned long ulNumStrings, unsigned long ul
             goto cleanup_ptrs;
         }
         if (ppsOldStringData) {
-            unsigned long i = 0;
+            i = 0;
             if (i < mulNumVisibleRows) {
                 do {
-                    unsigned long j = 0;
+                    j = 0;
                     if (j < mulNumVisibleColumns) {
                         do {
                             FEListBoxCell* pstCell = GetCellData(j, i);
