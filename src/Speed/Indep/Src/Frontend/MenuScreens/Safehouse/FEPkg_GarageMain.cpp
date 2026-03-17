@@ -573,8 +573,9 @@ void GarageMainScreen::BackgroundLoaded(int param) {
 
 void GarageMainScreen::HandleRender(unsigned int render_flags) {
     if (HideEntireScreen == 0) {
+        eView *view = &eViews[ViewID];
         bMatrix4 *local = reinterpret_cast<bMatrix4 *>(CurrentBufferPos);
-        if (CurrentBufferEnd <= CurrentBufferPos + 0x40) {
+        if (CurrentBufferPos + 0x40 >= CurrentBufferEnd) {
             FrameMallocFailed = 1;
             FrameMallocFailAmount += 0x40;
             local = nullptr;
@@ -588,7 +589,7 @@ void GarageMainScreen::HandleRender(unsigned int render_flags) {
             local->v3.x = GetGeometryXPos();
             local->v3.y = GetGeometryYPos();
             local->v3.z = GetGeometryZPos();
-            mGeometryModels.Render(&eViews[ViewID], local, render_flags);
+            mGeometryModels.Render(view, local, render_flags);
         }
         gEmitterSystem.Update(RealTimeElapsed);
     }
