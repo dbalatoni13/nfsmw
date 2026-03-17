@@ -2072,7 +2072,7 @@ void CustomizeSpoiler::NotificationMessage(unsigned long msg, FEObject *pobj, un
         Showcase::FromFilter = TheFilter;
         break;
     case 0x5a928018: {
-        SelectablePart *sel = GetSelectedPart();
+        SelectablePart *sel = FindInCartPart();
         if (!sel) {
             return;
         }
@@ -3452,12 +3452,13 @@ void CustomizeRims::BuildRimsList(int selected_index) {
         SelectablePart *node = static_cast<SelectablePart *>(tempList.GetHead());
         node->Prev->Next = node->Next;
         node->Next->Prev = node->Prev;
-        int rimSize = static_cast<int>(node->ThePart->GetAppliedAttributeIParam(0xeb0101e2, 0));
-        if (rimSize == InnerRadius) {
+        signed char rimSize = static_cast<signed char>(node->ThePart->GetAppliedAttributeIParam(0xeb0101e2, 0));
+        if (static_cast<int>(rimSize) == InnerRadius) {
             unsigned int unlockHash = gCarCustomizeManager.GetUnlockHash(static_cast<eCustomizeCategory>(Category), node->GetUpgradeLevel());
             unsigned char gl = *reinterpret_cast<unsigned char *>(reinterpret_cast<int>(node->ThePart) + 5);
+            unsigned int wheelPos = gl >> 5;
             bool locked = gCarCustomizeManager.IsPartLocked(node, 0);
-            AddPartOption(node, 0x294d2a3, gl >> 5, 0, unlockHash, locked);
+            AddPartOption(node, 0x294d2a3, wheelPos, 0, unlockHash, locked);
             if (activeMatch && node->ThePart == activeMatch) {
                 matchIdx = curIdx;
             }
@@ -3472,11 +3473,23 @@ void CustomizeRims::BuildRimsList(int selected_index) {
             selected_index = matchIdx;
         }
     }
-    if (Showcase::FromIndex == 0) {
-        SetInitialOption(selected_index);
-    } else {
-        SetInitialOption(0);
+    if (Showcase::FromIndex != 0) {
+        if (bFadeInIconsImmediately) {
+            Options.bFadingIn = true;
+            Options.bFadingOut = false;
+            Options.bDelayUpdate = false;
+            Options.fCurFadeTime = 0.0f;
+        }
+        Options.SetInitialPos(0);
         Showcase::FromIndex = 0;
+    } else {
+        if (bFadeInIconsImmediately) {
+            Options.bFadingIn = true;
+            Options.bFadingOut = false;
+            Options.bDelayUpdate = false;
+            Options.fCurFadeTime = 0.0f;
+        }
+        Options.SetInitialPos(selected_index);
     }
     // Clean up remaining temp list nodes
     while (tempList.GetHead() != reinterpret_cast<bNode *>(&tempList)) {
