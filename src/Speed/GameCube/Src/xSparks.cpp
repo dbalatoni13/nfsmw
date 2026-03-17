@@ -1,5 +1,8 @@
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
 #include "Speed/Indep/Src/Ecstasy/EmitterSystem.h"
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/emitteruv.h"
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/fuelcell_effect.h"
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/fuelcell_emitter.h"
 #include "Speed/Indep/Libs/Support/Utility/UTypes.h"
 
 struct XenonEffectDef {
@@ -22,11 +25,20 @@ struct XenonEffectLists {
     XenonEffectVec staging; // offset 0x10, size 0x10
 };
 
-class NGEffect {
-    char mEffectDef[0x14];
+struct CGEmitter {
+    Attrib::Gen::fuelcell_emitter mEmitterDef;
+    Attrib::Gen::emitteruv mTextureUVs;
+    UMath::Vector4 mVel;
+    UMath::Matrix4 mLocalWorld;
 
-  public:
-    NGEffect(const XenonEffectDef &effect);
+    CGEmitter(const Attrib::Collection *spec, const XenonEffectDef &eDef);
+    void SpawnParticles(float, float);
+};
+
+struct NGEffect {
+    Attrib::Gen::fuelcell_effect mEffectDef;
+
+    NGEffect(const XenonEffectDef &eDef);
 };
 
 class ParticleList {
@@ -47,6 +59,25 @@ extern ParticleList gParticleList;
 
 void reserveXenonEffectVec(void *vec, unsigned int count)
     __asm__("reserve__Q24_STLt6vector2Z14XenonEffectDefZQ33UTL3Stdt9Allocator2Z14XenonEffectDefZ20_type_XenonEffectDefUi");
+
+CGEmitter::CGEmitter(const Attrib::Collection *spec, const XenonEffectDef &eDef)
+    : mEmitterDef(spec, 0, nullptr) //
+    , mTextureUVs(mEmitterDef.emitteruv(), 0, nullptr) //
+    , mVel(eDef.vel) //
+    , mLocalWorld(eDef.mat) {}
+
+NGEffect::NGEffect(const XenonEffectDef &eDef)
+    : mEffectDef(eDef.spec, 0, nullptr) {
+    if (mEffectDef.GetCollection() != 0) {
+        int i = 0;
+        int length = mEffectDef.Num_NGEmitter();
+        while (i < length) {
+            CGEmitter emitter(mEffectDef.NGEmitter(i).GetCollection(), eDef);
+            emitter.SpawnParticles(1.0f / 30.0f, 1.0f);
+            i++;
+        }
+    }
+}
 
 void DrawXenonEmitters(eView *view) {}
 
