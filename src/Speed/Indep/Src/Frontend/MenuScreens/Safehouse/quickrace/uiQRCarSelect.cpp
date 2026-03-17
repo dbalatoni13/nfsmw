@@ -189,17 +189,16 @@ void QRCarSelectBustedManager::RefreshHeader() {
     if (ShowImpoundedTexture()) {
         TextureInfo *texInfo = GetTextureInfo(ImpoundStampHash, 0, 0);
         if (texInfo) {
-            unsigned int stampHash = ImpoundStampHash;
             FEngSetScript(ParentPkg, 0xbc7b91f, 0x6ebbfb68, true);
             FEngSetScript(ParentPkg, 0x64f3a49c, 0x5079c8f8, true);
             FEImage *img1 = FEngFindImage(ParentPkg, 0xce18427d);
-            FEngSetTextureHash(img1, stampHash);
+            FEngSetTextureHash(img1, ImpoundStampHash);
             FEImage *img2 = FEngFindImage(ParentPkg, 0x5b8f2a45);
-            FEngSetTextureHash(img2, stampHash);
+            FEngSetTextureHash(img2, ImpoundStampHash);
         }
         unsigned int cost = WorkingCarRecord->GetReleaseFromImpoundCost();
-        int playerCash = *reinterpret_cast<int *>(reinterpret_cast<char *>(FEDatabase->GetPlayerCarStable(0)) + 0xf0);
-        bool canAffordRelease = static_cast<int>(cost) <= playerCash;
+        int playerCash = *reinterpret_cast<int *>(reinterpret_cast<char *>(FEDatabase->GetUserProfile(0)) + 0xf0);
+        bool canAffordRelease = playerCash >= static_cast<int>(static_cast<float>(cost));
         bool hasMarkers = TheFEMarkerManager.GetNumMarkers(FEMarkerManager::MARKER_IMPOUND_RELEASE, 0) > 0;
         if (WorkingCareerRecord->TheImpoundData.ImpoundedState == 4 && canAffordRelease) {
             FEngSetLanguageHash(ParentPkg, 0xb94139f4, 0x281dee8a);
@@ -217,10 +216,10 @@ void QRCarSelectBustedManager::RefreshHeader() {
         int posIndex = 1;
         unsigned int script1 = 0x16a259;
         unsigned int script2 = 0x16a259;
-        if (WorkingCareerRecord->TheImpoundData.ImpoundedState == 4) {
+        if (WorkingCareerRecord->TheImpoundData.MaxBusted == 4) {
             posIndex = 2;
             script2 = 0x1ca7c0;
-        } else if (WorkingCareerRecord->TheImpoundData.ImpoundedState == 5) {
+        } else if (WorkingCareerRecord->TheImpoundData.MaxBusted == 5) {
             posIndex = 3;
             script2 = 0x1ca7c0;
             script1 = 0x1ca7c0;
@@ -234,17 +233,19 @@ void QRCarSelectBustedManager::RefreshHeader() {
             Flags = BUSTED_ANIM_NOTHING;
         }
         for (int i = 1; i <= static_cast<int>(static_cast<unsigned char>(WorkingCareerRecord->TheImpoundData.MaxBusted)); i++) {
-            if (WorkingCareerRecord->TheImpoundData.TimesBusted < i) {
-                FEngSetScript(ParentPkg, FEngHashString("IMPOUND_STATE_%d", i), 0x16a259, true);
-            } else {
+            if (WorkingCareerRecord->TheImpoundData.TimesBusted >= i) {
                 if (!FEngIsScriptSet(ParentPkg, FEngHashString("IMPOUND_STATE_%d", i), 0x5a8e4ebe)) {
                     FEngSetScript(ParentPkg, FEngHashString("IMPOUND_STATE_%d", i), 0x1ca7c0, true);
                 }
+            } else {
+                FEngSetScript(ParentPkg, FEngHashString("IMPOUND_STATE_%d", i), 0x16a259, true);
             }
         }
     } else {
         signed char impState = WorkingCareerRecord->TheImpoundData.ImpoundedState;
-        if (impState == 4 || impState != 0) {
+        if (impState == 4) {
+            FEngSetInvisible(FEngFindObject(ParentPkg, 0x75721326));
+        } else if (impState != 0) {
             FEngSetInvisible(FEngFindObject(ParentPkg, 0x75721326));
         } else {
             bNotImpounded = true;
