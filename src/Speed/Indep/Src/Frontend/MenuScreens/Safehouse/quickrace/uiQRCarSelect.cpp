@@ -259,12 +259,19 @@ void QRCarSelectBustedManager::RefreshHeader() {
 }
 
 bool QRCarSelectBustedManager::CalcGameOver() {
+    bool result = false;
     int numCars = FEDatabase->GetPlayerCarStable(0)->GetNumAvailableCareerCars();
     if (numCars < 1) {
         int numMarkers = TheFEMarkerManager.GetNumMarkers(FEMarkerManager::MARKER_IMPOUND_RELEASE, 0);
-        if (numMarkers < 1) return true;
+        int noMarkers = 1;
+        if (numMarkers > 0) {
+            noMarkers = 0;
+        }
+        if (noMarkers != 0) {
+            result = true;
+        }
     }
-    return false;
+    return result;
 }
 
 void QRCarSelectBustedManager::MaybeReleaseCar() {
