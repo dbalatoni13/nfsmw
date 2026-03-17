@@ -416,17 +416,12 @@ void PostRaceResultsScreen::Setup() {
 }
 
 void PostRaceResultsScreen::SetupResults() {
-    int race_status_exists = GRaceStatus::Exists();
-    if (!race_status_exists) {
-        return;
-    }
-
     FEngSetVisible(GetPackageName(), 0x586AB4A6);
     FEngSetVisible(GetPackageName(), 0x44AC8987);
     FEngSetVisible(GetPackageName(), 0x30EE5E68);
 
     if (mRaceType >= GRace::kRaceType_P2P) {
-        if (mRaceType <= GRace::kRaceType_Drag) {
+        if (mRaceType < GRace::kRaceType_Tollbooth) {
             FEngSetLanguageHash(GetPackageName(), 0x586AB4A6, 0x96B05F47);
             FEngSetLanguageHash(GetPackageName(), 0x44AC8987, 0xCE678AD3);
             FEngSetLanguageHash(GetPackageName(), 0x30EE5E68, 0xB67DA102);
@@ -450,9 +445,10 @@ void PostRaceResultsScreen::SetupResults() {
 
     if (mRaceType >= GRace::kRaceType_P2P) {
         if (mRaceType <= GRace::kRaceType_Tollbooth) {
-            int place = 1;
-            if (place <= mNumberOfRacers) {
+            int place = 0;
+            if (place < mNumberOfRacers) {
                 do {
+                    ++place;
                     int i = 0;
                     GRacerInfo *racer_info = nullptr;
 
@@ -473,13 +469,13 @@ void PostRaceResultsScreen::SetupResults() {
 
                     RaceResultStat *result = new ("", 0) RaceResultStat(column2, column3, column1, racer_info);
                     RaceResults.AddStat(result);
-                    ++place;
-                } while (place <= mNumberOfRacers);
+                } while (place < mNumberOfRacers);
             }
         } else if (mRaceType == GRace::kRaceType_SpeedTrap) {
-            int place = 1;
-            if (place <= mNumberOfRacers) {
+            int place = 0;
+            if (place < mNumberOfRacers) {
                 do {
+                    ++place;
                     int i = 0;
                     GRacerInfo *racer_info = nullptr;
 
@@ -506,8 +502,7 @@ void PostRaceResultsScreen::SetupResults() {
                     GenericResult *result =
                         new ("", 0) GenericResult(column2, column3, column1, speed_units, speed, "%$0.0f", racer_info);
                     RaceResults.AddStat(result);
-                    ++place;
-                } while (place <= mNumberOfRacers);
+                } while (place < mNumberOfRacers);
             }
         }
     }
