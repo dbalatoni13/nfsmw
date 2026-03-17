@@ -375,105 +375,106 @@ WorldMap::~WorldMap() {
 
 void WorldMap::NotificationMessage(unsigned long msg, FEObject* obj, unsigned long param1,
                                    unsigned long param2) {
+    register unsigned long message asm("r30") = msg;
     UMath::Vector3 pos;
 
     if (!bInToggleMode) {
-        if (msg == 0x72619778) {
+        if (message == 0x72619778) {
             goto after_base_message;
         }
-        if (msg == 0x911c0a4b) {
+        if (message == 0x911c0a4b) {
             goto after_base_message;
         }
     }
-    if (msg != 0xc407210) {
-        UIWidgetMenu::NotificationMessage(msg, obj, param1, param2);
+    if (message != 0xc407210) {
+        UIWidgetMenu::NotificationMessage(message, obj, param1, param2);
     }
 after_base_message:
-    if (msg == 0xa16ca7bd) {
+    if (message == 0xa16ca7bd) {
         goto handle_gps;
     }
-    if (msg > 0xa16ca7bd) {
+    if (message > 0xa16ca7bd) {
         goto msg_gt_a16ca7bd;
     }
-    if (msg == 0x72619778) {
+    if (message == 0x72619778) {
         goto refresh_and_end;
     }
-    if (msg > 0x72619778) {
+    if (message > 0x72619778) {
         goto msg_gt_72619778;
     }
-    if (msg == 0x35f8620b) {
+    if (message == 0x35f8620b) {
         goto clear_focus;
     }
-    if (msg > 0x35f8620b) {
+    if (message > 0x35f8620b) {
         goto msg_gt_35f8620b;
     }
-    if (msg == 0xc407210) {
+    if (message == 0xc407210) {
         goto handle_toggle_or_dialog;
     }
     return;
 
 msg_gt_35f8620b:
-    if (msg == 0x5073ef13) {
+    if (message == 0x5073ef13) {
         goto zoom_prev;
     }
     return;
 
 msg_gt_72619778:
-    if (msg == 0x911c0a4b) {
+    if (message == 0x911c0a4b) {
         goto refresh_and_end;
     }
-    if (msg > 0x911c0a4b) {
+    if (message > 0x911c0a4b) {
         goto msg_gt_911c0a4b;
     }
-    if (msg == 0x911ab364) {
+    if (message == 0x911ab364) {
         goto leave_screen;
     }
     return;
 
 msg_gt_911c0a4b:
-    if (msg == 0x9120409e) {
+    if (message == 0x9120409e) {
         goto maybe_view_switch;
     }
     return;
 
 msg_gt_a16ca7bd:
-    if (msg == 0xc519bfc4) {
+    if (message == 0xc519bfc4) {
         return;
     }
-    if (msg > 0xc519bfc4) {
+    if (message > 0xc519bfc4) {
         goto msg_gt_c519bfc4;
     }
-    if (msg == 0xb5af2461) {
+    if (message == 0xb5af2461) {
         goto set_last_button_and_leave;
     }
-    if (msg > 0xb5af2461) {
+    if (message > 0xb5af2461) {
         goto msg_gt_b5af2461;
     }
-    if (msg == 0xb5971bf1) {
+    if (message == 0xb5971bf1) {
         goto maybe_view_switch;
     }
     return;
 
 msg_gt_b5af2461:
-    if (msg == 0xc519bfc3) {
+    if (message == 0xc519bfc3) {
         goto handle_toggle;
     }
     return;
 
 msg_gt_c519bfc4:
-    if (msg == 0xd9feec59) {
+    if (message == 0xd9feec59) {
         goto zoom_next;
     }
-    if (msg > 0xd9feec59) {
+    if (message > 0xd9feec59) {
         goto msg_gt_d9feec59;
     }
-    if (msg == 0xc98356ba) {
+    if (message == 0xc98356ba) {
         goto update_map;
     }
     return;
 
 msg_gt_d9feec59:
-    if (msg == 0xe1fde1d1) {
+    if (message == 0xe1fde1d1) {
         goto world_map_off;
     }
     return;
@@ -493,44 +494,76 @@ update_map:
         float zoom;
         float max_zoom;
         bVector2 pan;
+        bVector2* pPan = &pan;
 
         UpdateCursor(false);
         MapStreamer->UpdateAnimation();
         UpdateCursor(true);
         zoom = MapStreamer->GetZoomFactor();
         max_zoom = GetZoomFactor(WMZ_LEVEL_4);
-        pan.x = 0.0f;
-        pan.y = 0.0f;
-        MapStreamer->GetPan(pan);
+        pPan->x = 0.0f;
+        pPan->y = 0.0f;
+        MapStreamer->GetPan(*pPan);
 
         bVector2 map_center;
-        FEngGetCenter(static_cast< FEObject* >(TrackMap), map_center.x, map_center.y);
+        bVector2* pMapCenter = &map_center;
+        bVector2* pSavedMapCenter = pMapCenter;
+        FEngGetCenter(static_cast< FEObject* >(TrackMap), pMapCenter->x, pMapCenter->y);
 
         bVector2 map_br;
         FEngGetBottomRight(static_cast< FEObject* >(TrackMap), map_br.x, map_br.y);
 
+        bVector2 pos;
+        bVector2* pPos = &pos;
+        bVector2 delta;
+        bVector2* pDelta = &delta;
+        bVector2 map_pos;
+        bVector2* pMapPos = &map_pos;
+        bVector2 pan_offset;
+        bVector2* pPanOffset = &pan_offset;
+        bVector2 zoomed_pan;
+        bVector2* pZoomedPan = &zoomed_pan;
+        bVector2 final_pos;
+        bVector2* pFinalPos = &final_pos;
+
         for (MapItem* item = TheMapItems.GetHead(); item != TheMapItems.EndOfList();
              item = item->GetNext()) {
-            bVector2 pos(0.0f, 0.0f);
-            item->GetInitialPos(pos);
+            pPos->x = 0.0f;
+            pPos->y = 0.0f;
+            item->GetInitialPos(*pPos);
+            pDelta->x = pPos->x - pSavedMapCenter->x;
+            pDelta->y = pPos->y - pSavedMapCenter->y;
+            pDelta->x *= zoom;
+            pDelta->y *= zoom;
+            pMapPos->x = pDelta->x + pSavedMapCenter->x;
+            pMapPos->y = pDelta->y + pSavedMapCenter->y;
+            pPos->x = pMapPos->x;
+            pPos->y = pMapPos->y;
 
-            bVector2 delta = pos - map_center;
-            delta *= zoom;
-            pos = delta + map_center;
+            reinterpret_cast< unsigned int* >(pPanOffset)[0] =
+                reinterpret_cast< const unsigned int* >(pPan)[0];
+            reinterpret_cast< unsigned int* >(pPanOffset)[1] =
+                reinterpret_cast< const unsigned int* >(pPan)[1];
+            float pan_offset_x = pPanOffset->x * MapSize.x;
+            float pan_offset_y = pPanOffset->y * MapSize.y;
+            pPanOffset->x = pan_offset_x;
+            pPanOffset->y = pan_offset_y;
+            pZoomedPan->x = pan_offset_x * zoom;
+            pZoomedPan->y = pan_offset_y * zoom;
+            pFinalPos->x = pPos->x - pZoomedPan->x;
+            pFinalPos->y = pPos->y - pZoomedPan->y;
+            reinterpret_cast< unsigned int* >(pPos)[0] =
+                reinterpret_cast< const unsigned int* >(pFinalPos)[0];
+            reinterpret_cast< unsigned int* >(pPos)[1] =
+                reinterpret_cast< const unsigned int* >(pFinalPos)[1];
 
-            bVector2 dpan = pan;
-            dpan.x *= MapSize.x;
-            dpan.y *= MapSize.y;
-            dpan = dpan * zoom;
-            pos -= dpan;
-
-            item->UpdatePos(pos);
+            item->UpdatePos(*pPos);
 
             float icon_scale = ((zoom - 1.0f) / (max_zoom - 1.0f)) * 0.5f + 1.0f;
             item->UpdateScale(icon_scale);
 
-            item->GetCurrentPos(pos);
-            if (ClampToMapBounds(pos.x, pos.y)) {
+            item->GetCurrentPos(*pPos);
+            if (ClampToMapBounds(pPos->x, pPos->y)) {
                 item->Hide();
             } else if (!item->IsHidden()) {
                 item->Show();
@@ -547,7 +580,7 @@ handle_toggle_or_dialog:
             return;
         }
         ItemTypeToggle* tog = static_cast< ItemTypeToggle* >(w);
-        tog->Act(GetPackageName(), msg);
+        tog->Act(GetPackageName(), message);
         UpdateIconVisibility(tog->GetType(), tog->GetVisibility());
         goto refresh_and_end;
     } else {
@@ -719,12 +752,14 @@ void WorldMap::ScrollZoom(eScrollDir dir) {
 }
 
 float WorldMap::GetZoomFactor(eWorldMapZoomLevels level) {
+    float factor = 1.0f;
     switch (level) {
-    case WMZ_LEVEL_1: return 2.0f;
-    case WMZ_LEVEL_2: return 4.0f;
-    case WMZ_LEVEL_4: return 8.0f;
-    default: return 1.0f;
+    case WMZ_LEVEL_1: factor = 2.0f; break;
+    case WMZ_LEVEL_2: factor = 4.0f; break;
+    case WMZ_LEVEL_4: factor = 8.0f; break;
+    default: break;
     }
+    return factor;
 }
 
 void WorldMap::UpdateIconVisibility(eWorldMapItemType type, bool visible) {
@@ -836,11 +871,10 @@ void WorldMap::UpdateCursor(bool zoom_thing) {
         delta *= zoom;
         bVector2 map_br = delta + map_center;
         pos = map_br;
-        bVector2 dpan = pan;
-        dpan.x *= MapSize.x;
-        dpan.y *= MapSize.y;
-        dpan = dpan * zoom;
-        pos = pos - dpan;
+        pan.x *= MapSize.x;
+        pan.y *= MapSize.y;
+        pan = pan * zoom;
+        pos = pos - pan;
         ClampToMapBounds(pos.x, pos.y);
         FEngSetCenter(Cursor, pos.x, pos.y);
     } else if (!zoom_thing) {
@@ -976,18 +1010,30 @@ void WorldMap::PanToCursor(float to_zoom) {
     float zoom = MapStreamer->GetZoomFactor();
     FEngGetCenter(static_cast< FEObject* >(TrackMap), pMap_c->x, pMap_c->y);
     bVector2 offset;
-    offset = *pCursor - *pMap_c;
-    offset.x = offset.x / MapSize.x;
-    offset.y = offset.y / MapSize.y;
+    bVector2* pOffset = &offset;
+    pOffset->x = pCursor->x - pMap_c->x;
+    pOffset->y = pCursor->y - pMap_c->y;
+    pOffset->x = pOffset->x / MapSize.x;
+    pOffset->y = pOffset->y / MapSize.y;
     float max_pan = 1.0f / to_zoom * 0.5f;
-    offset = offset * (1.0f / zoom);
+    float zoom_factor = 1.0f / zoom;
+    pOffset->x *= zoom_factor;
+    pOffset->y *= zoom_factor;
+    bVector2 scaled_offset;
+    bVector2* pScaledOffset = &scaled_offset;
+    reinterpret_cast< unsigned int* >(pScaledOffset)[0] =
+        reinterpret_cast< const unsigned int* >(pOffset)[0];
+    reinterpret_cast< unsigned int* >(pScaledOffset)[1] =
+        reinterpret_cast< const unsigned int* >(pOffset)[1];
     bVector2 pan_to;
-    pan_to = *pPan + offset;
-    CursorMoveFrom.y = pan_to.y * MapSize.y + MapTopLeft.y;
-    CursorMoveFrom.x = pan_to.x * MapSize.x + MapTopLeft.x;
-    pan_to.x = bClamp(pan_to.x, max_pan, 1.0f - max_pan);
-    pan_to.y = bClamp(pan_to.y, max_pan, 1.0f - max_pan);
-    MapStreamer->PanTo(pan_to);
+    bVector2* pPanTo = &pan_to;
+    pPanTo->x = pPan->x + pScaledOffset->x;
+    pPanTo->y = pPan->y + pScaledOffset->y;
+    CursorMoveFrom.y = pPanTo->y * MapSize.y + MapTopLeft.y;
+    CursorMoveFrom.x = pPanTo->x * MapSize.x + MapTopLeft.x;
+    pPanTo->x = bClamp(pPanTo->x, max_pan, 1.0f - max_pan);
+    pPanTo->y = bClamp(pPanTo->y, max_pan, 1.0f - max_pan);
+    MapStreamer->PanTo(*pPanTo);
 }
 
 void WorldMap::PanToPlayer() {
@@ -1163,22 +1209,29 @@ void WorldMap::AddRoadBlocks() {
     for (IRoadBlock* const* i = blocks.begin(); i != blocks.end(); i++) {
         IRoadBlock* rb = *i;
         UMath::Vector3 pos;
+        UMath::Vector3* pPos = &pos;
         UMath::Vector3 dir;
-        pos = rb->GetRoadBlockCentre();
-        dir = rb->GetRoadBlockDir();
+        UMath::Vector3* pDir = &dir;
+        *pPos = rb->GetRoadBlockCentre();
+        *pDir = rb->GetRoadBlockDir();
         bVector2 target_pos;
+        bVector2* pTargetPos = &target_pos;
         bVector2 target_dir;
-        target_pos.x = pos.z;
-        target_pos.y = -pos.x;
-        target_dir.x = dir.z;
-        target_dir.y = -dir.x;
+        bVector2* pTargetDir = &target_dir;
+        pTargetPos->x = pPos->z;
+        pTargetPos->y = -pPos->x;
+        pTargetDir->x = pDir->z;
+        pTargetDir->y = -pDir->x;
         bVector2 world_pos;
-        world_pos = target_pos;
-        ConvertPos(target_pos);
-        float rot = ConvertRot(target_dir);
+        bVector2* pWorldPos = &world_pos;
+        pWorldPos->x = pTargetPos->x;
+        pWorldPos->y = pTargetPos->y;
+        ConvertPos(*pTargetPos);
+        float rot = ConvertRot(*pTargetDir);
         FEImage* icon = FEngFindImage(GetPackageName(), FEngHashString("MMICON_ROADBLOCK_%d", img_num));
         img_num++;
-        MapItem* item = new MapItem(WMIT_ROADBLOCK, static_cast< FEObject* >(icon), target_pos, world_pos, rot, nullptr);
+        MapItem* item = new MapItem(WMIT_ROADBLOCK, static_cast< FEObject* >(icon), *pTargetPos,
+                                    *pWorldPos, rot, nullptr);
         TheMapItems.AddTail(item);
     }
     if (img_num > 0) {

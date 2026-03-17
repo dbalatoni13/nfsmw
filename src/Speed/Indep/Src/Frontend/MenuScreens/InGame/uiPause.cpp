@@ -137,7 +137,8 @@ message_E1FDE1D1:
     if (PrevButtonMessage != 0x911AB364) {
         switch (mSelectionHash) {
         case 0xFBDF2EE3:
-            if (GRaceStatus::Exists() && GRaceStatus::Get().GetRaceParameters()) {
+            if (GRaceStatus::Exists() && GRaceStatus::Get().GetRaceParameters()
+                && GRaceStatus::Get().GetRaceParameters()->GetIsDDayRace()) {
                 MemoryCard::GetInstance()->CancelNextAutoSave();
             }
             new ERestartRace();
@@ -149,8 +150,7 @@ message_E1FDE1D1:
             if (GRaceStatus::Exists()) {
                 GRaceStatus::Get().RaceAbandoned();
             }
-            MNotifyRaceAbandoned abandoned;
-            abandoned.Post(MNotifyRaceAbandoned::_GetKind());
+            MNotifyRaceAbandoned().Post(MNotifyRaceAbandoned::_GetKind());
             return;
         }
         case 0x0506202D:
@@ -167,11 +167,10 @@ message_E1FDE1D1:
             if (GRaceStatus::Exists()) {
                 GRaceStatus::Get().RaceAbandoned();
             }
-            eGarageType garageType = static_cast<eGarageType>(1);
-            if (GRaceStatus::Get().GetRaceContext() == GRace::kRaceContext_Career) {
-                garageType = static_cast<eGarageType>(2);
-            }
-            new EQuitToFE(garageType, static_cast<const char*>(0));
+            new EQuitToFE(GRaceStatus::Get().GetRaceContext() == GRace::kRaceContext_Career
+                              ? static_cast<eGarageType>(2)
+                              : static_cast<eGarageType>(1),
+                          static_cast<const char*>(0));
             return;
         }
         case 0x85162CB0:
