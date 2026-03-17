@@ -936,6 +936,23 @@ void PostRaceResultsScreen::SetupLapStats(int racerIndex, GRacerInfo *racer_info
         }
         break;
     }
+    case GRace::kRaceType_SpeedTrap: {
+        int num_traps = race_status.GetNumSpeedTraps();
+
+        for (int i = 0; i < num_traps; ++i) {
+            FEString *labelString =
+                FEngFindString(panel.ParentPkg, FEngHashString(lbl_803E5088, lbl_803E5DCC, panel.RacerName));
+            FEString *timeString =
+                FEngFindString(panel.ParentPkg, FEngHashString(lbl_803E5088, lbl_803E5DDC, panel.RacerName));
+            FEString *positionString =
+                FEngFindString(panel.ParentPkg, FEngHashString(lbl_803E5088, lbl_803E5E24, panel.RacerName));
+            panel.AddStat(new ("", 0)
+                              SpeedStat(labelString, timeString, positionString, i + 1,
+                                        race_status.GetRaceSpeedTrapSpeed(i, racerIndex),
+                                        race_status.GetRaceSpeedTrapPosition(i, racerIndex)));
+        }
+        break;
+    }
     case GRace::kRaceType_Tollbooth: {
         FEString *labelString = GetPanelString(panel, lbl_803E5DCC);
         FEString *timeString = GetPanelString(panel, lbl_803E5DDC);
@@ -952,23 +969,6 @@ void PostRaceResultsScreen::SetupLapStats(int racerIndex, GRacerInfo *racer_info
                           TollboothStat(labelString, timeString, positionString, num_booths + 1,
                                         racer_info->IsFinishedRacing() ? race_status.GetRaceTimeRemaining() : 0.0f,
                                         1));
-        break;
-    }
-    case GRace::kRaceType_SpeedTrap: {
-        int num_traps = race_status.GetNumSpeedTraps();
-
-        for (int i = 0; i < num_traps; ++i) {
-            FEString *labelString =
-                FEngFindString(panel.ParentPkg, FEngHashString(lbl_803E5088, lbl_803E5DCC, panel.RacerName));
-            FEString *timeString =
-                FEngFindString(panel.ParentPkg, FEngHashString(lbl_803E5088, lbl_803E5DDC, panel.RacerName));
-            FEString *positionString =
-                FEngFindString(panel.ParentPkg, FEngHashString(lbl_803E5088, lbl_803E5E24, panel.RacerName));
-            panel.AddStat(new ("", 0)
-                              SpeedStat(labelString, timeString, positionString, i + 1,
-                                        race_status.GetRaceSpeedTrapSpeed(i, racerIndex),
-                                        race_status.GetRaceSpeedTrapPosition(i, racerIndex)));
-        }
         break;
     }
     default:
