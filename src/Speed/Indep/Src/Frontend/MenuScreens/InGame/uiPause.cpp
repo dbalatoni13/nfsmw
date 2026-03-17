@@ -50,89 +50,139 @@ void PauseMenu::NotificationMessage(unsigned long msg, FEObject* pobj, unsigned 
     if (msg != 0x911AB364 || !mCalledFromPostRace) {
         IconScrollerMenu::NotificationMessage(msg, pobj, param1, param2);
     }
-    switch (msg) {
-    case 0x911AB364:
-        if (mCalledFromPostRace) {
-            return;
-        }
-        FEngSetScript(GetPackageName(), 0x47FF4E7C, 0xDE6EFF34, true);
-        StorePrevNotification(0x911AB364, pobj, param1, param2);
-        return;
-    case 0xB5AF2461:
-        if (mCalledFromPostRace) {
-            return;
-        }
-        mSelectionHash = 0xFDAE152F;
-        FEngSetScript(GetPackageName(), 0x47FF4E7C, 0xDE6EFF34, true);
-        return;
-    case 0xC9BFD1C3:
-    case 0x43DA9FD0:
-    case 0x30EB8F53:
-    case 0x30F32A49:
-    case 0x451E768E:
-    case 0xE1A57D51:
-        FEngSetScript(GetPackageName(), 0x47FF4E7C, 0xDE6EFF34, true);
-        return;
-    case 0xB4623F67:
-        Options.StartFadeIn();
-        cFEng::Get()->QueuePackageMessage(0xC6341FF6, GetPackageName(), 0);
-        return;
-    case 0xE1FDE1D1:
-        if (PrevButtonMessage != 0x911AB364) {
-            switch (mSelectionHash) {
-            case 0x85162CB0:
-                if (GRaceStatus::Exists()) {
-                    GRaceStatus::Get().RaceAbandoned();
-                }
-                new EQuitToFE(static_cast<eGarageType>(1), "MainMenu.fng");
-                return;
-            case 0x33195CF0:
-                FEDatabase->SetGameMode(eFE_GAME_MODE_OPTIONS);
-                cFEng::Get()->QueuePackageSwitch("Pause_Main.fng", 1, 0, false);
-                return;
-            case 0x0506202D:
-                new EQuitDemo(DEMO_DISC_ENDREASON_PLAYABLE_QUIT);
-                return;
-            case 0x78F1C035:
-                cFEng::Get()->QueuePackageSwitch("Pause_Performance_Tuning.fng", 0, 0, false);
-                return;
-            case 0xE5C9C609: {
-                if (GRaceStatus::Exists()) {
-                    GRaceStatus::Get().RaceAbandoned();
-                }
-                eGarageType garageType = static_cast<eGarageType>(1);
-                if (GRaceStatus::Get().GetRaceContext() == GRace::kRaceContext_Career) {
-                    garageType = static_cast<eGarageType>(2);
-                }
-                new EQuitToFE(garageType, static_cast<const char*>(0));
-                return;
-            }
-            case 0xCDD2635A: {
-                new EUnPause();
-                if (GRaceStatus::Exists()) {
-                    GRaceStatus::Get().RaceAbandoned();
-                }
-                MNotifyRaceAbandoned abandoned;
-                abandoned.Post(MNotifyRaceAbandoned::_GetKind());
-                return;
-            }
-            case 0xFBDF2EE3:
-                if (GRaceStatus::Exists() && GRaceStatus::Get().GetRaceParameters()) {
-                    MemoryCard::GetInstance()->CancelNextAutoSave();
-                }
-                new ERestartRace();
-                break;
-            case 0xFDAE152F:
-                break;
-            default:
-                return;
-            }
-        }
-        new EUnPause();
-        return;
-    case 0x9120409E:
+    if (msg == 0x9120409E) {
         return;
     }
+    if (msg > 0x9120409E) {
+        goto msg_gt_9120409E;
+    }
+    if (msg == 0x43DA9FD0) {
+        goto show_script;
+    }
+    if (msg > 0x43DA9FD0) {
+        goto msg_gt_43DA9FD0;
+    }
+    if (msg == 0x30EB8F53 || msg == 0x30F32A49) {
+        goto show_script;
+    }
+    return;
+
+msg_gt_43DA9FD0:
+    if (msg == 0x451E768E) {
+        goto show_script;
+    }
+    if (msg == 0x911AB364) {
+        goto message_911AB364;
+    }
+    return;
+
+msg_gt_9120409E:
+    if (msg == 0xB5AF2461) {
+        goto message_B5AF2461;
+    }
+    if (msg > 0xB5AF2461) {
+        goto msg_gt_B5AF2461;
+    }
+    if (msg == 0xB4623F67) {
+        goto message_B4623F67;
+    }
+    return;
+
+msg_gt_B5AF2461:
+    if (msg == 0xE1A57D51) {
+        goto show_script;
+    }
+    if (msg > 0xE1A57D51) {
+        goto msg_gt_E1A57D51;
+    }
+    if (msg == 0xC9BFD1C3) {
+        goto show_script;
+    }
+    return;
+
+msg_gt_E1A57D51:
+    if (msg == 0xE1FDE1D1) {
+        goto message_E1FDE1D1;
+    }
+    return;
+
+message_911AB364:
+    if (mCalledFromPostRace) {
+        return;
+    }
+    FEngSetScript(GetPackageName(), 0x47FF4E7C, 0xDE6EFF34, true);
+    StorePrevNotification(0x911AB364, pobj, param1, param2);
+    return;
+
+message_B5AF2461:
+    if (mCalledFromPostRace) {
+        return;
+    }
+    mSelectionHash = 0xFDAE152F;
+    goto show_script;
+
+show_script:
+    FEngSetScript(GetPackageName(), 0x47FF4E7C, 0xDE6EFF34, true);
+    return;
+
+message_B4623F67:
+    Options.StartFadeIn();
+    cFEng::Get()->QueuePackageMessage(0xC6341FF6, GetPackageName(), 0);
+    return;
+
+message_E1FDE1D1:
+    if (PrevButtonMessage != 0x911AB364) {
+        switch (mSelectionHash) {
+        case 0x85162CB0:
+            if (GRaceStatus::Exists()) {
+                GRaceStatus::Get().RaceAbandoned();
+            }
+            new EQuitToFE(static_cast<eGarageType>(1), "MainMenu.fng");
+            return;
+        case 0x33195CF0:
+            FEDatabase->SetGameMode(eFE_GAME_MODE_OPTIONS);
+            cFEng::Get()->QueuePackageSwitch("Pause_Main.fng", 1, 0, false);
+            return;
+        case 0x0506202D:
+            new EQuitDemo(DEMO_DISC_ENDREASON_PLAYABLE_QUIT);
+            return;
+        case 0x78F1C035:
+            cFEng::Get()->QueuePackageSwitch("Pause_Performance_Tuning.fng", 0, 0, false);
+            return;
+        case 0xE5C9C609: {
+            if (GRaceStatus::Exists()) {
+                GRaceStatus::Get().RaceAbandoned();
+            }
+            eGarageType garageType = static_cast<eGarageType>(1);
+            if (GRaceStatus::Get().GetRaceContext() == GRace::kRaceContext_Career) {
+                garageType = static_cast<eGarageType>(2);
+            }
+            new EQuitToFE(garageType, static_cast<const char*>(0));
+            return;
+        }
+        case 0xCDD2635A: {
+            new EUnPause();
+            if (GRaceStatus::Exists()) {
+                GRaceStatus::Get().RaceAbandoned();
+            }
+            MNotifyRaceAbandoned abandoned;
+            abandoned.Post(MNotifyRaceAbandoned::_GetKind());
+            return;
+        }
+        case 0xFBDF2EE3:
+            if (GRaceStatus::Exists() && GRaceStatus::Get().GetRaceParameters()) {
+                MemoryCard::GetInstance()->CancelNextAutoSave();
+            }
+            new ERestartRace();
+            break;
+        case 0xFDAE152F:
+            break;
+        default:
+            return;
+        }
+    }
+    new EUnPause();
+    return;
 }
 
 bool PauseMenu::IsTuningAvailable() {
