@@ -458,11 +458,21 @@ void SFXCTL_Shifting::BeginDownShift() {
 }
 
 void SFXCTL_Shifting::PostShiftFX_Update(float t) {
-    if (t <= 0.0f) {
-        return;
+    if (eShift_LFO != SHIFT_LFO_NONE) {
+        m_Shift_RPM_AMP_DECAY.Update(t);
+        m_Shift_VOL_AMP_DECAY.Update(t);
+        if (m_Shift_RPM_AMP_DECAY.IsFinished()) {
+        }
+        if (m_Shift_RPM_AMP_DECAY.IsFinished()) {
+            CleanUpShiftFX();
+            return;
+        }
+
+        m_RPM_LFO_AMP = static_cast<int>(m_Shift_RPM_AMP_DECAY.GetValue());
+        m_RPM_LFO_FRQ = static_cast<int>(m_pShiftingPatternData->LFO_RPM_Freq());
+        m_VOL_LFO_AMP = static_cast<int>(m_Shift_VOL_AMP_DECAY.GetValue());
+        m_VOL_LFO_FRQ = static_cast<int>(m_pShiftingPatternData->LFO_Vol_Freq());
     }
-    m_Shift_VOL_AMP_DECAY.Update(t);
-    m_Shift_RPM_AMP_DECAY.Update(t);
 }
 
 void SFXCTL_Shifting::PostShiftFX_Init() {
