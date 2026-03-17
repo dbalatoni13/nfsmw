@@ -250,6 +250,32 @@ void GManager::UnloadTransientVaults() {
     mTransientPoolMemory = nullptr;
 }
 
+void GManager::PreBeginGameplay() {
+    if (mRestartEventHash) {
+        GRaceCustom *customRace = GRaceDatabase::Get().AllocCustomRace(GRaceDatabase::Get().GetRaceFromHash(mRestartEventHash));
+
+        GRaceDatabase::Get().SetStartupRace(customRace, kRaceContext_Career);
+        GRaceDatabase::Get().FreeCustomRace(customRace);
+        mRestartEventHash = 0;
+    }
+}
+
+void GManager::Update(float dT) {
+    GRaceStatus::Get().Update(dT);
+    UnspawnUselessCharacters();
+    ServicePendingCharacters();
+    UpdatePursuit();
+    UpdateTimers(dT);
+    UpdatePendingSMS();
+    UpdateTriggerAvailability();
+    UpdateIconVisibility();
+}
+
+void GManager::ClearAllSessionData() {
+    mSessionStateBlocks.clear();
+    DefragObjectStateStorage();
+}
+
 void GManager::StartBinActivity(GRaceBin *raceBin) {
     GActivity *activity;
 

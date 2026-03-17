@@ -199,7 +199,10 @@ class GManager : public UTL::COM::Object, public IVehicleCache {
     void AddSMS(int smsID);
     void DispatchSMSMessage(int smsID);
     void UpdatePendingSMS();
+    void UpdateTriggerAvailability();
+    void UpdateIconVisibility();
     int PushSMSToInbox();
+    void ClearAllSessionData();
 
     static GManager &Get() {
         return *mObj;
