@@ -516,38 +516,50 @@ void FECodeListBox::Update(float fNumTicks) {
 }
 
 void FECodeListBox::SetCellColor(unsigned long ulStartColumn, unsigned long ulStartRow, unsigned long ulColor, unsigned long ulNumColumns, unsigned long ulNumRows) {
-    unsigned long endRow = ulStartRow + ulNumRows;
-    for (unsigned long i = ulStartRow; i < endRow; i++) {
-        unsigned long endColumn = ulStartColumn + ulNumColumns;
-        for (unsigned long j = ulStartColumn; j < endColumn; j++) {
+    unsigned long i = ulStartRow;
+    unsigned long endRow = i + ulNumRows;
+    while (i < endRow) {
+        unsigned long j = ulStartColumn;
+        unsigned long endColumn = j + ulNumColumns;
+        while (j < endColumn) {
             long lCIndex = GetRealColumn(j);
             long lRIndex = GetRealRow(i);
             mpstCells[lRIndex * mulNumVisibleColumns + lCIndex].ulColor = ulColor;
+            j++;
         }
+        i++;
     }
 }
 
 void FECodeListBox::SetCellScale(unsigned long ulStartColumn, unsigned long ulStartRow, const FEPoint& stScale, unsigned long ulNumColumns, unsigned long ulNumRows) {
-    unsigned long endRow = ulStartRow + ulNumRows;
-    for (unsigned long i = ulStartRow; i < endRow; i++) {
-        unsigned long endColumn = ulStartColumn + ulNumColumns;
-        for (unsigned long j = ulStartColumn; j < endColumn; j++) {
+    unsigned long i = ulStartRow;
+    unsigned long endRow = i + ulNumRows;
+    while (i < endRow) {
+        unsigned long j = ulStartColumn;
+        unsigned long endColumn = j + ulNumColumns;
+        while (j < endColumn) {
             long lCIndex = GetRealColumn(j);
             long lRIndex = GetRealRow(i);
             mpstCells[lRIndex * mulNumVisibleColumns + lCIndex].stScale = stScale;
+            j++;
         }
+        i++;
     }
 }
 
 void FECodeListBox::SetCellJustification(unsigned long ulStartColumn, unsigned long ulStartRow, unsigned long ulJustification, unsigned long ulNumColumns, unsigned long ulNumRows) {
-    unsigned long endRow = ulStartRow + ulNumRows;
-    for (unsigned long i = ulStartRow; i < endRow; i++) {
-        unsigned long endColumn = ulStartColumn + ulNumColumns;
-        for (unsigned long j = ulStartColumn; j < endColumn; j++) {
+    unsigned long i = ulStartRow;
+    unsigned long endRow = i + ulNumRows;
+    while (i < endRow) {
+        unsigned long j = ulStartColumn;
+        unsigned long endColumn = j + ulNumColumns;
+        while (j < endColumn) {
             long lCIndex = GetRealColumn(j);
             long lRIndex = GetRealRow(i);
             mpstCells[lRIndex * mulNumVisibleColumns + lCIndex].ulJustification = ulJustification;
+            j++;
         }
+        i++;
     }
 }
 
