@@ -217,6 +217,42 @@ bool TrackPathZone::IsPointInside(const bVector2 *point) {
     return bIsPointInPoly(point, Points, NumPoints);
 }
 
+float TrackPathZone::GetSegmentNextTo(bVector2 *point, bVector2 *segment_point_a, bVector2 *segment_point_b) {
+    float closest_distance = 1.0e30f;
+    int closest_segment_a = -1;
+    int closest_segment_b = -1;
+
+    for (int i = 0; i < NumPoints; i++) {
+        int next_point = (i + 1) % NumPoints;
+        bVector2 edge;
+        edge.x = Points[next_point].y - Points[i].y;
+        edge.y = Points[i].x - Points[next_point].x;
+        bNormalize(&edge, &edge);
+
+        float distance = edge.x * (Points[i].x - point->x) + edge.y * (Points[i].y - point->y);
+        bVector2 near_point;
+        near_point.x = point->x + edge.x * (distance * 0.999f);
+        near_point.y = point->y + edge.y * (distance * 0.999f);
+        bVector2 far_point;
+        far_point.x = point->x + edge.x * (distance * 1.001f);
+        far_point.y = point->y + edge.y * (distance * 1.001f);
+
+        if ((distance < 0.0f ? -distance : distance) < closest_distance && (IsPointInside(&near_point) || IsPointInside(&far_point))) {
+            closest_segment_a = i;
+            closest_segment_b = next_point;
+            closest_distance = distance < 0.0f ? -distance : distance;
+        }
+    }
+
+    if (closest_segment_a == -1 || closest_segment_b == -1) {
+        return -1.0f;
+    }
+
+    *segment_point_a = Points[closest_segment_a];
+    *segment_point_b = Points[closest_segment_b];
+    return closest_distance;
+}
+
 void TrackPathInitRemoteCaffeineConnection() {}
 
 int LoaderTrackPath(bChunk *chunk) {

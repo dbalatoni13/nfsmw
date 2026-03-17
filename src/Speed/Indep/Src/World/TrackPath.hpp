@@ -49,6 +49,7 @@ class TrackPathZone {
     void GetOpposite(bVector2 *in0, bVector2 *in1, bVector2 *opp0, bVector2 *opp1);
     bool GetIntercept(bVector2 &InterceptPoint, const bVector2 *Start, const bVector2 *Direction);
     bool IsPointInside(const bVector2 *point);
+    float GetSegmentNextTo(bVector2 *point, bVector2 *segment_point_a, bVector2 *segment_point_b);
 
     int GetData(int index) {
         return Data[index];
