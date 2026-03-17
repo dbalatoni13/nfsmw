@@ -5,6 +5,7 @@
 #pragma once
 #endif
 
+#include "GRace.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/gameplay.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribHash.h"
 
@@ -22,6 +23,8 @@ class GRaceParameters;
 // total size: 0x1C
 class GRaceBin {
   public:
+    friend class GRaceDatabase;
+
     // total size: 0x4
     struct BinStats {
         uint16 mChallengesCompleted; // offset 0x0, size 0x2
@@ -121,8 +124,8 @@ class GRaceDatabase {
     static void Init();
 
     GRaceCustom *GetStartupRace();
-    Context GetStartupRaceContext();
-    void SetStartupRace(GRaceCustom *custom, Context context);
+    GRace::Context GetStartupRaceContext();
+    void SetStartupRace(GRaceCustom *custom, GRace::Context context);
     void FreeCustomRace(GRaceCustom *custom);
     void DestroyCustomRace(GRaceCustom *custom);
     GRaceParameters *GetRaceFromHash(unsigned int hash);
@@ -139,6 +142,10 @@ class GRaceDatabase {
 
     void NotifyVaultLoaded(GVault *vault);
     void NotifyVaultUnloading(GVault *vault);
+    unsigned int SerializeBins(unsigned char *dest);
+    unsigned int DeserializeBins(unsigned char *src);
+    GRaceParameters *GetRaceFromActivity(GActivity *activity);
+    const char *GetNextDDayRace();
 
     static GRaceDatabase &Get() {
         return *mObj;
@@ -177,7 +184,7 @@ class GRaceDatabase {
     GRaceBin *mBins;                         // offset 0x24, size 0x4
     Attrib::Class *mGameplayClass;           // offset 0x28, size 0x4
     struct GRaceCustom *mStartupRace;        // offset 0x2C, size 0x4
-    Context mStartupRaceContext;             // offset 0x30, size 0x4
+    GRace::Context mStartupRaceContext;      // offset 0x30, size 0x4
     unsigned int mNumInitialUnlocks;         // offset 0x34, size 0x4
     unsigned int *mInitialUnlockHash;        // offset 0x38, size 0x4
     struct GRaceSaveInfo *mRaceScoreInfo;    // offset 0x3C, size 0x4

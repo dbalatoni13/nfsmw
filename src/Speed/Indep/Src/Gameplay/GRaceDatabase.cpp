@@ -8,6 +8,13 @@
 #include <new>
 
 GRaceDatabase *GRaceDatabase::mObj = nullptr;
+static const char *kDDayRaces[5] = {
+    "16.1.0",
+    "16.2.2",
+    "16.2.3",
+    "16.1.1",
+    "16.2.1",
+};
 
 GRaceDatabase::GRaceDatabase()
     : mRaceCountStatic(0), //
@@ -18,7 +25,7 @@ GRaceDatabase::GRaceDatabase()
       mBins(nullptr), //
       mGameplayClass(Attrib::Database::Get().GetClass(0x5CEA9D46)), //
       mStartupRace(nullptr), //
-      mStartupRaceContext(kRaceContext_QuickRace), //
+      mStartupRaceContext(GRace::kRaceContext_QuickRace), //
       mNumInitialUnlocks(0), //
       mInitialUnlockHash(nullptr), //
       mRaceScoreInfo(nullptr) {
@@ -227,7 +234,7 @@ GRaceCustom *GRaceDatabase::GetStartupRace() {
     return mStartupRace;
 }
 
-Context GRaceDatabase::GetStartupRaceContext() {
+GRace::Context GRaceDatabase::GetStartupRaceContext() {
     return mStartupRaceContext;
 }
 
@@ -394,11 +401,11 @@ void GRaceDatabase::ClearStartupRace() {
         DestroyCustomRace(mStartupRace);
     }
 
-    mStartupRaceContext = kRaceContext_QuickRace;
+    mStartupRaceContext = GRace::kRaceContext_QuickRace;
     mStartupRace = nullptr;
 }
 
-void GRaceDatabase::SetStartupRace(GRaceCustom *custom, Context context) {
+void GRaceDatabase::SetStartupRace(GRaceCustom *custom, GRace::Context context) {
     if (mStartupRace) {
         ClearStartupRace();
     }
@@ -406,7 +413,7 @@ void GRaceDatabase::SetStartupRace(GRaceCustom *custom, Context context) {
     mStartupRaceContext = context;
     mStartupRace = custom;
 
-    if (custom && context == kRaceContext_Career) {
+    if (custom && context == GRace::kRaceContext_Career) {
         custom->SetupTimeOfDay();
     }
 }
@@ -454,6 +461,50 @@ void GRaceDatabase::NotifyVaultUnloading(GVault *vault) {
     if (mStartupRace && mStartupRace->GetParentVault() == vault) {
         ClearStartupRace();
     }
+}
+
+unsigned int GRaceDatabase::SerializeBins(unsigned char *dest) {
+    unsigned int i;
+    unsigned char *cursor;
+
+    *reinterpret_cast<unsigned int *>(dest) = mBinCount;
+    cursor = dest + 4;
+    for (i = 0; i < mBinCount; i++) {
+        unsigned short bytes;
+
+        *reinterpret_cast<unsigned short *>(cursor) = static_cast<unsigned short>(mBins[i].GetBinNumber());
+        bytes = static_cast<unsigned short>(mBins[i].Serialize(cursor + 4));
+        *reinterpret_cast<unsigned short *>(cursor + 2) = bytes;
+        cursor += 4 + bytes;
+    }
+
+    return cursor - dest;
+}
+
+unsigned int GRaceDatabase::DeserializeBins(unsigned char *src) {
+    unsigned int count;
+    unsigned int i;
+    unsigned char *cursor;
+
+    count = *reinterpret_cast<unsigned int *>(src);
+    cursor = src + 4;
+    for (i = 0; i < count; i++) {
+        GRaceBin *bin;
+        unsigned short bytes;
+
+        bytes = *reinterpret_cast<unsigned short *>(cursor + 2);
+        bin = GetBinNumber(*reinterpret_cast<unsigned short *>(cursor));
+        if (bin) {
+            bin->Deserialize(cursor + 4);
+        }
+        cursor += 4 + bytes;
+    }
+
+    return cursor - src;
+}
+
+GRaceParameters *GRaceDatabase::GetRaceFromActivity(GActivity *activity) {
+    return GetRaceFromKey(activity->GetCollection());
 }
 
 void GRaceDatabase::FreeCustomRace(GRaceCustom *custom) {
@@ -617,4 +668,19 @@ void GRaceDatabase::LoadBestScores(GRaceSaveInfo *scores, unsigned int count) {
         scoreWords += 4;
         i++;
     }
+}
+
+const char *GRaceDatabase::GetNextDDayRace() {
+    int i;
+
+    for (i = 0; i < 5; i++) {
+        GRaceParameters *race;
+
+        race = GetRaceFromHash(Attrib::StringHash32(kDDayRaces[i]));
+        if (!CheckRaceScoreFlags(race->GetEventHash(), kCompleted_ContextCareer)) {
+            return kDDayRaces[i];
+        }
+    }
+
+    return nullptr;
 }
