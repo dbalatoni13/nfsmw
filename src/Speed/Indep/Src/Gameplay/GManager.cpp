@@ -3,6 +3,7 @@
 #include "Speed/Indep/Libs/Support/Utility/FastMem.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/gameplay.h"
 #include "Speed/Indep/Src/Generated/Events/EAutoSave.hpp"
+#include "Speed/Indep/Src/Generated/Events/EFadeScreenOn.hpp"
 #include "Speed/Indep/Src/Generated/Messages/MEnteringGameplay.h"
 #include "Speed/Indep/Src/Gameplay/GMarker.h"
 #include "Speed/Indep/Src/Gameplay/GVault.h"
@@ -11,7 +12,9 @@
 #include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
 #include "Speed/Indep/Src/Misc/LZCompress.hpp"
 #include "Speed/Indep/Src/Misc/Platform.h"
+#include "Speed/Indep/Src/Sim/Simulation.h"
 #include "Speed/Indep/Src/World/TrackPath.hpp"
+#include "Speed/Indep/Src/World/TrackInfo.hpp"
 #include "Speed/Indep/Src/World/TrackPositionMarker.hpp"
 #include "Speed/Indep/Src/World/TrackStreamer.hpp"
 #include "Speed/Indep/Src/World/WCollisionAssets.h"
@@ -19,6 +22,7 @@
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/Common/AttribPrivate.h"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
+#include "Speed/Indep/bWare/Inc/bPrintf.hpp"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 
 #include <algorithm>
@@ -2086,4 +2090,73 @@ void GManager::ResetAllGameplayData() {
     mOverrideFreeRoamStartMarker = 0;
     mFreeRoamFromSafeHouseStartMarker = 0;
     mPendingSMS.clear();
+}
+
+bool GManager::WarpToMarker(unsigned int markerKey, bool startPursuit) {
+    if (GRaceStatus::Exists() && GRaceStatus::Get().GetPlayMode() == GRaceStatus::kPlayMode_Racing) {
+        return false;
+    }
+
+    if (mWarping) {
+        return false;
+    }
+
+    GMarker *marker = static_cast<GMarker *>(FindInstance(markerKey));
+    if (!marker) {
+        return false;
+    }
+
+    new EFadeScreenOn(false);
+    Sim::SetStream(const_cast<UMath::Vector3 &>(marker->GetPosition()), false);
+
+    IPlayer *player = IPlayer::First(PLAYER_LOCAL);
+    ISimable *simable = player ? player->GetSimable() : nullptr;
+    IVehicle *vehicle = nullptr;
+
+    if (simable) {
+        simable->QueryInterface(&vehicle);
+    }
+
+    if (vehicle) {
+        vehicle->SetVehicleOnGround(marker->GetPosition(), marker->GetDirection());
+    }
+
+    mWarpStartPursuit = startPursuit;
+    mWarping = true;
+    mWarpTargetMarker = markerKey;
+    return true;
+}
+
+unsigned int GManager::GetRespawnMarker() {
+    unsigned int markerKey = mOverrideFreeRoamStartMarker;
+    const Attrib::Collection *collection = Attrib::FindCollection(Attrib::Gen::gameplay::ClassKey(), markerKey);
+
+    if (!collection) {
+        markerKey = mStartFreeRoamFromSafeHouse ? mFreeRoamFromSafeHouseStartMarker : mFreeRoamStartMarker;
+        collection = Attrib::FindCollection(Attrib::Gen::gameplay::ClassKey(), markerKey);
+
+        if (!collection) {
+            char markerName[32];
+
+            bSPrintf(markerName, "career_start_%s", LoadedTrackInfo->GetLoadedTrackInfo());
+            markerKey = Attrib::StringToLowerCaseKey(markerName);
+            mFreeRoamStartMarker = markerKey;
+        }
+    }
+
+    return markerKey;
+}
+
+void GManager::GetRespawnLocation(UMath::Vector3 &startLoc, UMath::Vector3 &initialVec) {
+    Attrib::Gen::gameplay gameplayObj(GetRespawnMarker(), 0, nullptr);
+    UMath::Vector3 position = gameplayObj.Position(0);
+    UMath::Matrix4 rotMat;
+    UMath::Vector3 forward = {0.0f, 0.0f, 1.0f};
+
+    startLoc.x = -position.y;
+    startLoc.y = position.z;
+    startLoc.z = position.x;
+
+    UMath::MultYRot(UMath::Matrix4::kIdentity, -gameplayObj.Rotation(0) * 0.00069444446f, rotMat);
+    VU0_MATRIX3x4_vect3mult(forward, rotMat, initialVec);
 }
