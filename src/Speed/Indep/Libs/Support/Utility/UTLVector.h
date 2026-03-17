@@ -9,7 +9,7 @@
 #include <cstddef>
 
 namespace UTL {
-template <typename T, unsigned int Alignment = 16> class Vector {
+template <typename T, int Alignment = 16> class Vector {
   public:
     typedef T value_type;
     typedef value_type *pointer;

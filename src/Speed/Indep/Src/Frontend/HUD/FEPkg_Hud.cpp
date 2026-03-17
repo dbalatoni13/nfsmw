@@ -123,6 +123,8 @@ inline void FEngSetColor(const char *pkg_name, unsigned int obj_hash, unsigned i
 
 IHud::~IHud() {}
 
+template void UTL::Vector<IHud *, 16>::push_back(IHud *const &);
+
 HudResourceManager TheHudResourceManager;
 
 int HudResourceManager::mCustIndex;
