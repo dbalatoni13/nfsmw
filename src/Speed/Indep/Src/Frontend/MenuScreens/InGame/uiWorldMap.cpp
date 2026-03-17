@@ -880,42 +880,46 @@ void WorldMap::MoveCursor(float x, float y) {
     float dy = cursor_y.y + y;
     bVector2 excess(0.0f, 0.0f);
     bVector2 bottom_right;
-    FEngGetBottomRight(static_cast< FEObject* >(TrackMap), bottom_right.x, bottom_right.y);
+    bVector2* pExcess = &excess;
+    bVector2* pBottomRight = &bottom_right;
+    FEngGetBottomRight(static_cast< FEObject* >(TrackMap), pBottomRight->x, pBottomRight->y);
     if (CurrentZoom != 0 && (x != 0.0f || y != 0.0f)) {
         if (dx < MapTopLeft.x + 8.0f) {
-            excess.x = (MapTopLeft.x + 8.0f) - dx;
-        } else if (dx > bottom_right.x + -8.0f) {
-            excess.x = dx - (bottom_right.x + -8.0f);
+            pExcess->x = (MapTopLeft.x + 8.0f) - dx;
+        } else if (dx > pBottomRight->x + -8.0f) {
+            pExcess->x = dx - (pBottomRight->x + -8.0f);
         } else if (dy < MapTopLeft.y + 26.0f) {
-            excess.y = (MapTopLeft.y + 26.0f) - dy;
-        } else if (dy > bottom_right.y + -32.0f) {
-            excess.y = dy - (bottom_right.y + -32.0f);
+            pExcess->y = (MapTopLeft.y + 26.0f) - dy;
+        } else if (dy > pBottomRight->y + -32.0f) {
+            pExcess->y = dy - (pBottomRight->y + -32.0f);
         }
-        if (excess.x != 0.0f || excess.y != 0.0f) {
+        if (pExcess->x != 0.0f || pExcess->y != 0.0f) {
             bVector2 cur_pan;
-            MapStreamer->GetPan(cur_pan);
-            if (excess.x != 0.0f) {
-                excess.x = x / MapSize.x;
+            bVector2* pCurPan = &cur_pan;
+            MapStreamer->GetPan(*pCurPan);
+            if (pExcess->x != 0.0f) {
+                pExcess->x = x / MapSize.x;
             }
-            if (excess.y != 0.0f) {
-                excess.y = y / MapSize.y;
+            if (pExcess->y != 0.0f) {
+                pExcess->y = y / MapSize.y;
             }
             float factor = MapStreamer->GetZoomFactor();
-            cur_pan += excess;
+            *pCurPan += *pExcess;
             float max_pan = 0.5f - 1.0f / factor * 0.5f;
-            cur_pan.x = bClamp(cur_pan.x, -max_pan, max_pan);
-            cur_pan.y = bClamp(cur_pan.y, -max_pan, max_pan);
+            pCurPan->x = bClamp(pCurPan->x, -max_pan, max_pan);
+            pCurPan->y = bClamp(pCurPan->y, -max_pan, max_pan);
             bVector2 prev_pan;
-            MapStreamer->GetPan(prev_pan);
-            bVector2 pan_to = cur_pan + prev_pan;
-            cur_pan = pan_to * 0.5f;
-            cur_pan.x += 0.5f;
-            cur_pan.y += 0.5f;
-            MapStreamer->SetPan(cur_pan);
+            bVector2* pPrevPan = &prev_pan;
+            MapStreamer->GetPan(*pPrevPan);
+            bVector2 pan_to = *pCurPan + *pPrevPan;
+            *pCurPan = pan_to * 0.5f;
+            pCurPan->x += 0.5f;
+            pCurPan->y += 0.5f;
+            MapStreamer->SetPan(*pCurPan);
         }
     }
-    dx = bClamp(dx, MapTopLeft.x + 8.0f, bottom_right.x + -8.0f);
-    dy = bClamp(dy, MapTopLeft.y + 26.0f, bottom_right.y + -32.0f);
+    dx = bClamp(dx, MapTopLeft.x + 8.0f, pBottomRight->x + -8.0f);
+    dy = bClamp(dy, MapTopLeft.y + 26.0f, pBottomRight->y + -32.0f);
     FEngSetCenter(Cursor, dx, dy);
 }
 
