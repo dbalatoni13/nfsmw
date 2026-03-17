@@ -192,6 +192,8 @@ class GManager : public UTL::COM::Object, public IVehicleCache {
     void LoadTimerInfo(struct SavedTimerInfo *saveInfo, unsigned int count);
     bool SaveGameplayData(unsigned char *dest, unsigned int maxSize);
     bool LoadGameplayData(unsigned char *src, unsigned int maxSize);
+    void *GetObjectStateBlock(unsigned int key);
+    void ClearObjectStateBlock(unsigned int key);
 
     unsigned int SaveSMSInfo(int *saveInfo);
     void LoadSMSInfo(int *loadInfo, unsigned int count);

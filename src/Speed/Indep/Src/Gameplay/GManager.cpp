@@ -1034,6 +1034,77 @@ void GManager::LoadMilestoneInfo(MilestoneTypeInfo *savedInfo, unsigned int coun
     }
 }
 
+ObjectStateBlockHeader *GManager::AllocObjectStateBlock(unsigned int key, unsigned int size, bool persistent) {
+    ObjectStateMap &blocks = persistent ? mPersistentStateBlocks : mSessionStateBlocks;
+    unsigned int shiftedKey = key >> mCollectionKeyShiftTo32;
+    ObjectStateMap::iterator it = blocks.find(shiftedKey);
+    unsigned int blockSize;
+    unsigned int tryCount;
+    ObjectStateBlockHeader *block;
+
+    if (it != blocks.end()) {
+        block = it->second;
+        if (size <= block->mSize) {
+            block->mSize = size;
+            return block;
+        }
+
+        ClearObjectStateBlock(key);
+    }
+
+    blockSize = (size + 0x17U) & ~0xFU;
+    for (tryCount = 0; tryCount < 2; ++tryCount) {
+        if (mObjectStateBufferSize >= static_cast<unsigned int>(mObjectStateBufferFree - mObjectStateBuffer) + blockSize) {
+            break;
+        }
+
+        if (tryCount != 0) {
+            return nullptr;
+        }
+
+        DefragObjectStateStorage();
+    }
+
+    block = reinterpret_cast<ObjectStateBlockHeader *>(mObjectStateBufferFree);
+    mObjectStateBufferFree += blockSize;
+    if (persistent) {
+        bMemSet(block, 0, blockSize);
+    }
+
+    block->mKey = key;
+    block->mSize = size;
+    blocks[shiftedKey] = block;
+    return block;
+}
+
+void *GManager::GetObjectStateBlock(unsigned int key) {
+    unsigned int shiftedKey = key >> mCollectionKeyShiftTo32;
+    ObjectStateMap::iterator it = mSessionStateBlocks.find(shiftedKey);
+
+    if (it == mSessionStateBlocks.end()) {
+        it = mPersistentStateBlocks.find(shiftedKey);
+        if (it == mPersistentStateBlocks.end()) {
+            return nullptr;
+        }
+    }
+
+    return it->second + 1;
+}
+
+void GManager::ClearObjectStateBlock(unsigned int key) {
+    unsigned int shiftedKey = key >> mCollectionKeyShiftTo32;
+    ObjectStateMap::iterator it = mSessionStateBlocks.find(shiftedKey);
+
+    if (it != mSessionStateBlocks.end()) {
+        mSessionStateBlocks.erase(it);
+    }
+
+    it = mPersistentStateBlocks.find(shiftedKey);
+    if (it != mPersistentStateBlocks.end()) {
+        mPersistentStateBlocks.erase(it);
+    }
+}
+
 unsigned int GManager::SaveMilestoneInfo(MilestoneTypeInfo *dest) {
     MilestoneInfoMap::iterator it;
 
