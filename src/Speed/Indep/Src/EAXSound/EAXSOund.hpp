@@ -113,6 +113,7 @@ class EAXSound : public AudioMemBase {
 
     void StartSND11();
     void StopSND11();
+    void StartNewGamePlay();
 
     void QueueNISStream(unsigned int anim_id, int camera_track_number, void (*setmstimecb)(unsigned int, int));
     bool IsNISStreamQueued();

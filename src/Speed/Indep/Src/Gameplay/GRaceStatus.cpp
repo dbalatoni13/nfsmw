@@ -11,6 +11,7 @@
 #include "Speed/Indep/Src/Generated/Events/EAutoSave.hpp"
 #include "Speed/Indep/Src/Generated/Events/EFadeScreenOn.hpp"
 #include "Speed/Indep/Src/Generated/Events/EReloadHud.hpp"
+#include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
 #include "Speed/Indep/Src/Frontend/Database/VehicleDB.hpp"
 #include "Speed/Indep/Src/Interfaces/SimActivities/ICopMgr.h"
 #include "Speed/Indep/Src/Interfaces/SimActivities/ITrafficMgr.h"
@@ -56,6 +57,11 @@ class Minimap {
 struct GRaceStatusCompat {
     unsigned char _pad[0x1AB0];
     GRaceBin *mRaceBin;
+};
+
+struct GManagerRestartCompat {
+    unsigned char _pad[0x304];
+    unsigned int mRestartEventHash;
 };
 
 GRaceStatus *GRaceStatus::fObj = nullptr;
@@ -2222,33 +2228,66 @@ void GRaceStatus::NotifyScriptWhenLoaded() {
 }
 
 void GRaceStatus::SetRoaming() {
-    bool skipHudReload = false;
+    bool lastDDay = false;
+    IPlayer *player;
+    bool dDay = false;
 
     if (mRaceParms) {
-        skipHudReload = bStrCmp(mRaceParms->GetEventID(), "16.2.1") == 0;
+        const unsigned int *startNewGame =
+            reinterpret_cast<const unsigned int *>(mRaceParms->GetGameplayObj()->GetAttributePointer(0x64273C71, 0));
+
+        lastDDay = bStrCmp(mRaceParms->GetEventID(), "16.2.1") == 0;
+        if (!startNewGame) {
+            startNewGame = reinterpret_cast<const unsigned int *>(Attrib::DefaultDataArea(sizeof(unsigned int)));
+        }
+
+        if (!*startNewGame) {
+            g_pEAXSound->StartNewGamePlay();
+        }
+    } else {
+        g_pEAXSound->StartNewGamePlay();
     }
 
     mPlayMode = kPlayMode_Roaming;
     SetRaceContext(GRace::kRaceContext_Career);
-    mIsLoading = false;
+    SetIsLoading(false);
     mRaceParms = nullptr;
     WRoadNetwork::Get().ResetShortcuts();
 
     for (IPlayer::List::const_iterator iter = IPlayer::GetList(PLAYER_ALL).begin(); iter != IPlayer::GetList(PLAYER_ALL).end(); ++iter) {
-        IPlayer *player = *iter;
+        ISimable *simable;
+        IVehicle *vehicle;
+        IVehicleAI *ivai;
+
+        player = *iter;
 
         if (player->InGameBreaker()) {
             player->ResetGameBreaker(true);
         }
+
+        simable = player->GetSimable();
+        if (simable && simable->QueryInterface(&vehicle) && simable->QueryInterface(&ivai) && !ivai->GetPursuit()) {
+            ICopMgr *copMgr = ICopMgr::Get();
+
+            if (copMgr) {
+                copMgr->ResetCopsForRestart(true);
+            }
+        }
     }
 
-    if (!skipHudReload) {
+    if (!lastDDay && !reinterpret_cast<GManagerRestartCompat *>(&GManager::Get())->mRestartEventHash) {
         new EReloadHud();
     }
 
     new EAutoSave();
-    SetOverRideRainIntensity(0.0f);
-    SetCurrentTimeOfDay(0.5f);
+    if (mRaceParms) {
+        dDay = mRaceParms->GetIsDDayRace();
+    }
+
+    if (!dDay) {
+        SetOverRideRainIntensity(0.0f);
+    }
+
     GManager::Get().SpawnAllLoadedSectionIcons();
     ICopMgr::mDisableCops = 0;
 }
