@@ -144,7 +144,12 @@ void ScreenEffectDB::AddScreenEffect(ScreenEffectType type, float intensity, flo
 
 void ScreenEffectDB::AddScreenEffect(ScreenEffectType type, ScreenEffectDef *info, unsigned int lock,
                                      ScreenEffectControl controller) {
-    if (lock == 0) {
+    if (lock != 0) {
+        if (info) {
+            SE_data[type] = *info;
+        }
+        numType[type] = 1;
+    } else {
         float influence;
         float invFluence;
 
@@ -157,18 +162,13 @@ void ScreenEffectDB::AddScreenEffect(ScreenEffectType type, ScreenEffectDef *inf
         SE_data[type].b = influence * SE_data[type].b + invFluence * info->b;
         SE_data[type].a = influence * SE_data[type].a + invFluence * info->a;
         SE_data[type].intensity = influence * SE_data[type].intensity + invFluence * info->intensity;
-    } else {
-        if (info) {
-            SE_data[type] = *info;
-        }
-        numType[type] = 1;
     }
 
     SE_inf[type].active = 1;
-    if (!SE_data[type].UpdateFnc) {
-        SetController(type, controller);
-    } else {
+    if (SE_data[type].UpdateFnc) {
         SE_data[type].UpdateFnc(type, this);
+    } else {
+        SetController(type, controller);
     }
 
     if (SE_data[type].intensity < 0.01f) {
