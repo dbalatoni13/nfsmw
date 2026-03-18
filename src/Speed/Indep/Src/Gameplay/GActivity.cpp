@@ -7,6 +7,9 @@
 #include "Speed/Indep/Src/Lua/LuaRuntime.h"
 #include "Speed/Indep/Src/Lua/source/lua.h"
 
+unsigned short SerializeTable(lua_State *state, unsigned char *buffer, bool allowUserData)
+    __asm__("SerializeTable__10LuaRuntimeP9lua_StatePUcb");
+
 template <typename T> struct GObjectIteratorTraits;
 
 template <> struct GObjectIteratorTraits<GState> {
@@ -241,32 +244,84 @@ void GActivity::EnterState(GState *newState) {
 void GActivity::SerializeVars(bool abandonLuaTable) {
     SerializedHeader header;
     ObjectStateBlockHeader *block;
-    const bool *persistent;
     const char *stateName;
+    bool isDoneState;
 
     if (!mVarsInLuaVM) {
         return;
     }
 
-    stateName = nullptr;
+    stateName = "";
     if (mCurrentState) {
-        stateName = mCurrentState->CollectionName();
+        const char *const *stateNamePtr = reinterpret_cast<const char *const *>(mCurrentState->GetAttributePointer(0x3E225EC1, 0));
+
+        if (!stateNamePtr) {
+            stateNamePtr = reinterpret_cast<const char *const *>(Attrib::DefaultDataArea(sizeof(const char *)));
+        }
+
+        stateName = *stateNamePtr;
     }
 
-    header.mStateNameHash = stateName && *stateName ? Attrib::StringHash32(stateName) : 0;
-    header.mFlags = mRunning ? 1 : 0;
+    isDoneState = false;
+    if (mCurrentState) {
+        const char *const *stateNamePtr = reinterpret_cast<const char *const *>(mCurrentState->GetAttributePointer(0x3E225EC1, 0));
+
+        if (!stateNamePtr) {
+            stateNamePtr = reinterpret_cast<const char *const *>(Attrib::DefaultDataArea(sizeof(const char *)));
+        }
+
+        if (bStrCmp(*stateNamePtr, "done") == 0) {
+            isDoneState = true;
+        }
+    }
+
+    header.mStateNameHash = *stateName ? stringhash32(stateName) : 0;
+    header.mFlags = static_cast<unsigned short>(mRunning != 0);
     header.mTableBytes = 0;
 
-    persistent = reinterpret_cast<const bool *>(GetAttributePointer(0xE4542E9B, 0) ?
-                                                    GetAttributePointer(0xE4542E9B, 0) :
-                                                    Attrib::DefaultDataArea(sizeof(bool)));
-    block = GManager::Get().AllocObjectStateBlock(GetCollection(), sizeof(header), *persistent);
-    if (block) {
-        bMemCpy(block, &header, sizeof(header));
+    if (isDoneState) {
+        header.mFlags = header.mFlags | 2;
     }
 
+    lua_State *luaState = LuaRuntime::Get().GetState();
+    int top = lua_gettop(luaState);
+
+    if (!isDoneState) {
+        lua_pushstring(luaState, *reinterpret_cast<const char *const *>(GetLayoutPointer()));
+        lua_gettable(luaState, LUA_REGISTRYINDEX);
+        if (lua_type(luaState, -1) == LUA_TTABLE) {
+            const bool *persistent = reinterpret_cast<const bool *>(GetAttributePointer(0xE4542E9B, 0));
+
+            if (!persistent) {
+                persistent = reinterpret_cast<const bool *>(Attrib::DefaultDataArea(sizeof(bool)));
+            }
+
+            header.mTableBytes = SerializeTable(luaState, nullptr, !*persistent);
+        }
+    }
+
+    block = GManager::Get().AllocObjectStateBlock(
+        GetCollection(), header.mTableBytes + sizeof(header),
+        *reinterpret_cast<const bool *>(GetAttributePointer(0xE4542E9B, 0) ? GetAttributePointer(0xE4542E9B, 0)
+                                                                            : Attrib::DefaultDataArea(sizeof(bool))));
+
+    if (block) {
+        bMemCpy(block, &header, sizeof(header));
+        if (header.mTableBytes != 0) {
+            const bool *persistent = reinterpret_cast<const bool *>(GetAttributePointer(0xE4542E9B, 0));
+
+            if (!persistent) {
+                persistent = reinterpret_cast<const bool *>(Attrib::DefaultDataArea(sizeof(bool)));
+            }
+
+            SerializeTable(luaState, reinterpret_cast<unsigned char *>(block) + sizeof(header), !*persistent);
+        }
+    }
+
+    lua_settop(luaState, top);
+
     if (abandonLuaTable) {
-        mVarsInLuaVM = false;
+        ClearActivityVars(luaState);
     }
 }
 
