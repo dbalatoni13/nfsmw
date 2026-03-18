@@ -13,7 +13,8 @@ static const char kDownloadPeriodicForceInvalidWheel[] = "ERROR: Trying to downl
 static const char kUpdatePeriodicForceError[] = "ERROR: UpdateForce(periodic force) on channel %d returned %d\n";
 
 static inline unsigned long &PeriodicGetEffectID(Force *self, int channel, int forceNumber) {
-    return reinterpret_cast<unsigned long *>(reinterpret_cast<char *>(self) + 0x80)[channel * 8 + forceNumber];
+    typedef unsigned long Row[8];
+    return reinterpret_cast<Row *>(reinterpret_cast<char *>(self) + 0x80)[channel][forceNumber];
 }
 
 Periodic::Periodic() : Force() {}

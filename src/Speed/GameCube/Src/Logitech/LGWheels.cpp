@@ -90,11 +90,13 @@ static inline unsigned char &LGWheelsGetOverallGain(LGWheels *self) {
 }
 
 static inline int &LGWheelsGetPlaying(Force *self, int channel, int forceNumber) {
-    return reinterpret_cast<int *>(self)[channel * 8 + forceNumber];
+    typedef int Row[8];
+    return reinterpret_cast<Row *>(self)[channel][forceNumber];
 }
 
 static inline unsigned long &LGWheelsGetEffectID(Force *self, int channel, int forceNumber) {
-    return reinterpret_cast<unsigned long *>(reinterpret_cast<char *>(self) + 0x80)[channel * 8 + forceNumber];
+    typedef unsigned long Row[8];
+    return reinterpret_cast<Row *>(reinterpret_cast<char *>(self) + 0x80)[channel][forceNumber];
 }
 
 static inline SpringForceParams *LGWheelsGetSpringForceParams(LGWheels *self) {
