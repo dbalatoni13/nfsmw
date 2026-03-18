@@ -600,7 +600,7 @@ int TrackStreamer::BuildHoleMovements(HoleMovement *hole_movements, int max_move
 
         if (filler_method <= 2) {
             bool start_from_top = filler_method == 2;
-            TSMemoryNode *free_node = pMemoryPool->GetNextFreeNode(start_from_top, 0);
+            TSMemoryNode *free_node = pMemoryPool->GetFirstFreeNode(start_from_top);
             TSMemoryNode *allocated_node = pMemoryPool->GetNextAllocatedNode(start_from_top, free_node);
             if (filler_method == 0 && !allocated_node) {
                 break;
@@ -609,15 +609,14 @@ int TrackStreamer::BuildHoleMovements(HoleMovement *hole_movements, int max_move
             if (allocated_node && free_node) {
                 movement->Size = allocated_node->Size;
                 movement->Address = allocated_node->Address;
-                movement->NewAddress =
-                    start_from_top ? free_node->Address : free_node->Address + free_node->Size - movement->Size;
+                movement->NewAddress = free_node->GetAddress(start_from_top, movement->Size);
                 if (filler_method == 0 && !FindSectionByAddress(movement->Address)) {
                     break;
                 }
             }
         } else if (filler_method == 4 || filler_method == 5) {
             bool start_from_top = filler_method == 5;
-            TSMemoryNode *free_node = pMemoryPool->GetNextFreeNode(start_from_top, 0);
+            TSMemoryNode *free_node = pMemoryPool->GetFirstFreeNode(start_from_top);
             bool found = false;
             int best_combined_size = 0;
 
@@ -631,18 +630,17 @@ int TrackStreamer::BuildHoleMovements(HoleMovement *hole_movements, int max_move
                     int combined_size = allocated_node->Size;
                     TSMemoryNode *other_node = pMemoryPool->GetNextNode(!start_from_top, allocated_node);
                     TSMemoryNode *same_dir_node = pMemoryPool->GetNextNode(start_from_top, allocated_node);
-                    if (other_node && !other_node->Allocated) {
+                    if (other_node && other_node->IsFree()) {
                         combined_size += other_node->Size;
                     }
-                    if (same_dir_node && !same_dir_node->Allocated) {
+                    if (same_dir_node && same_dir_node->IsFree()) {
                         combined_size += same_dir_node->Size;
                     }
                     if (best_combined_size < combined_size) {
                         best_combined_size = combined_size;
                         movement->Size = allocated_node->Size;
                         movement->Address = allocated_node->Address;
-                        movement->NewAddress =
-                            start_from_top ? free_node->Address : free_node->Address + free_node->Size - movement->Size;
+                        movement->NewAddress = free_node->GetAddress(start_from_top, movement->Size);
                         found = true;
                     }
                 }
@@ -653,7 +651,7 @@ int TrackStreamer::BuildHoleMovements(HoleMovement *hole_movements, int max_move
             int best_address = 0;
             TSMemoryNode *best_node = 0;
 
-            for (TSMemoryNode *free_node = pMemoryPool->GetNextFreeNode(true, 0); free_node;
+            for (TSMemoryNode *free_node = pMemoryPool->GetFirstFreeNode(true); free_node;
                  free_node = pMemoryPool->GetNextFreeNode(true, free_node)) {
                 int gap_size = free_node->Size;
                 TSMemoryNode *next_free = pMemoryPool->GetNextFreeNode(true, free_node);
@@ -694,7 +692,7 @@ int TrackStreamer::BuildHoleMovements(HoleMovement *hole_movements, int max_move
                     bool started = false;
                     int chosen_count = 0;
                     int free_index = 0;
-                    TSMemoryNode *candidate_free = pMemoryPool->GetNextFreeNode(true, 0);
+                    TSMemoryNode *candidate_free = pMemoryPool->GetFirstFreeNode(true);
                     while (0 < count - chosen_count && candidate_free) {
                         bool used = false;
                         int target_index = count - chosen_count - 1;

@@ -98,6 +98,17 @@ class TSMemoryNode : public bTNode<TSMemoryNode> {
     int Size;           // offset 0xC, size 0x4
     bool Allocated;     // offset 0x10, size 0x1
     char DebugName[32]; // offset 0x14, size 0x20
+
+    bool IsFree() {
+        return !Allocated;
+    }
+
+    int GetAddress(bool start_from_top, int size) {
+        if (start_from_top) {
+            return Address;
+        }
+        return Address + Size - size;
+    }
 };
 
 // total size: 0x2754
@@ -109,7 +120,13 @@ class TSMemoryPool {
     int GetAmountFree();
     int GetLargestFreeBlock();
     TSMemoryNode *GetNextNode(bool start_from_top, TSMemoryNode *node = 0);
+    TSMemoryNode *GetFirstNode(bool start_from_top) {
+        return GetNextNode(start_from_top, 0);
+    }
     TSMemoryNode *GetNextFreeNode(bool start_from_top, TSMemoryNode *node = 0);
+    TSMemoryNode *GetFirstFreeNode(bool start_from_top) {
+        return GetNextFreeNode(start_from_top, 0);
+    }
     TSMemoryNode *GetNextAllocatedNode(bool start_from_top, TSMemoryNode *node = 0);
     unsigned int GetPoolChecksum();
     void EnableTracing(bool enabled) {
