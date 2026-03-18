@@ -2,6 +2,7 @@
 
 #include "TrackPath.hpp"
 #include "VisibleSection.hpp"
+#include "Speed/Indep/Src/Misc/Profiler.hpp"
 #include "Speed/Indep/Src/Misc/ResourceLoader.hpp"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
 #include "Speed/Indep/bWare/Inc/bDebug.hpp"
@@ -564,14 +565,18 @@ TrackStreamingSection *TrackStreamer::FindSectionByAddress(int address) {
 
 int TrackStreamer::BuildHoleMovements(HoleMovement *hole_movements, int max_movements, int filler_method, int largest_free,
                                       int *pamount_moved, int max_amount_to_move) {
-    int biggest_allocation = -1;
+    ProfileNode profile_node("TODO", 0);
+    int ticks = bGetTicker();
+    unsigned int checksum = pMemoryPool->GetPoolChecksum();
+    int total_needing_allocation = -1;
     bool failed = false;
     int num_movements = 0;
     int amount_moved = 0;
 
+    pMemoryPool->EnableTracing(false);
     while (true) {
         if (largest_free < 0) {
-            int did_allocate = AllocateSectionMemory(&biggest_allocation);
+            int did_allocate = AllocateSectionMemory(&total_needing_allocation);
             FreeSectionMemory();
             if (!did_allocate) {
                 break;
@@ -644,7 +649,6 @@ int TrackStreamer::BuildHoleMovements(HoleMovement *hole_movements, int max_move
             }
         } else {
             bool found = false;
-            int smallest_size = 0x3e8000;
             int best_gap = 0;
             int best_address = 0;
             TSMemoryNode *best_node = 0;
@@ -717,11 +721,9 @@ int TrackStreamer::BuildHoleMovements(HoleMovement *hole_movements, int max_move
 
                     if (count <= chosen_count) {
                         best_gap = free_gap;
-                        best_address = best_address;
                         best_node = largest_node;
-                        if (biggest_allocation <= gap_size + total_size) {
+                        if (total_needing_allocation <= gap_size + total_size) {
                             found = true;
-                            smallest_size = total_size;
                         }
                     }
                 }
@@ -765,6 +767,7 @@ int TrackStreamer::BuildHoleMovements(HoleMovement *hole_movements, int max_move
         *pamount_moved = amount_moved;
     }
 
+    pMemoryPool->EnableTracing(true);
     if (failed) {
         return -1;
     }

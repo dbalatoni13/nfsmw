@@ -112,6 +112,9 @@ class TSMemoryPool {
     TSMemoryNode *GetNextFreeNode(bool start_from_top, TSMemoryNode *node = 0);
     TSMemoryNode *GetNextAllocatedNode(bool start_from_top, TSMemoryNode *node = 0);
     unsigned int GetPoolChecksum();
+    void EnableTracing(bool enabled) {
+        TracingEnabled = enabled;
+    }
     void DebugPrint();
 
   private:
