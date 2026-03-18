@@ -22,6 +22,7 @@
 #include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
 #include "Speed/Indep/Src/Main/AttribSupport.h"
 #include "Speed/Indep/Src/Physics/PVehicle.h"
+#include "Speed/Indep/Src/Misc/Table.hpp"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 #include "Speed/Indep/Src/Sim/Simulation.h"
 #include "Speed/Indep/Src/World/WRoadNetwork.h"
@@ -40,6 +41,9 @@ void SetOverRideRainIntensity(float intensity);
 bool DoesStringExist(unsigned int hash);
 const char *GetLocalizedString(unsigned int hash);
 extern int UnlockAllThings;
+int NotNumeric(char c);
+int SplitChars(char *in, char ***array, int (*func)(char));
+float ParseFloat(char *word);
 
 class Minimap {
   public:
@@ -1631,6 +1635,52 @@ float GRaceParameters::GetStartPercent() const {
 const char *GRaceParameters::GetSpeedTrapCamera() const {
     EnsureLoaded();
     return mRaceRecord->SpeedTrapCamera(0);
+}
+
+int ParseArray(const char *string, float *data, int max) {
+    int len = bStrLen(string);
+    char *copy = new (__FILE__, __LINE__) char[len + 1];
+    char **words;
+    int num;
+    float *temp = nullptr;
+
+    bMemCpy(copy, string, len + 1);
+    num = SplitChars(copy, &words, NotNumeric);
+    if (num > max) {
+        temp = new (__FILE__, __LINE__) float[num];
+
+        for (int i = 0; i < num; ++i) {
+            temp[i] = ParseFloat(words[i]);
+        }
+
+        Table table(temp, num, 0.0f, static_cast<float>(max - 1));
+
+        for (int i = 0; i < max; ++i) {
+            data[i] = table.GetValue(static_cast<float>(i));
+        }
+    } else {
+        for (int i = 0; i < num; ++i) {
+            data[i] = ParseFloat(words[i]);
+        }
+
+        max = num;
+        if (num == 1) {
+            max = 2;
+            data[1] = *data;
+        }
+    }
+
+    if (temp) {
+        delete[] temp;
+    }
+    if (words) {
+        delete[] words;
+    }
+    if (copy) {
+        delete[] copy;
+    }
+
+    return max;
 }
 
 GRaceCustom::GRaceCustom(const GRaceParameters &other)
