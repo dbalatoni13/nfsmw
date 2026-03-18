@@ -46,6 +46,11 @@ class Minimap {
     static void ConvertPos(bVector2 &worldPos, bVector2 &minimapPos, TrackInfo *track);
 };
 
+struct GRaceStatusCompat {
+    unsigned char _pad[0x1AB0];
+    GRaceBin *mRaceBin;
+};
+
 GRaceStatus *GRaceStatus::fObj = nullptr;
 
 DECLARE_CONTAINER_TYPE(ID_ROAD_SET);
@@ -344,6 +349,21 @@ bool GRacerInfo::ChooseRacerName() {
     }
 
     mName = GetLocalizedString(nameHash);
+    return true;
+}
+
+bool GRacerInfo::ChooseBossName() {
+    char stringBuffer[32];
+    GRaceBin *raceBin;
+
+    if (!GRaceStatus::Exists() || GRaceStatus::Get().GetRaceContext() != GRace::kRaceContext_Career || !GRaceStatus::Get().GetRaceParameters() ||
+        !GRaceStatus::Get().GetRaceParameters()->GetIsBossRace()) {
+        return false;
+    }
+
+    raceBin = reinterpret_cast<GRaceStatusCompat *>(&GRaceStatus::Get())->mRaceBin;
+    bSNPrintf(stringBuffer, 0x20, "BLACKLIST_RIVAL_%02d_LEADERBOARD", raceBin->GetBinNumber());
+    mName = GetLocalizedString(bStringHash(stringBuffer));
     return true;
 }
 
