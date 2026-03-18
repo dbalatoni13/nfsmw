@@ -23,13 +23,14 @@ GTrigger::GTrigger(const Attrib::Key &triggerKey)
       mEnabled(false), //
       mActivationReferences(0) {
     const UMath::Vector3 &pos = Position(0);
-    const UMath::Vector3 *dimensions = reinterpret_cast<const UMath::Vector3 *>(GetAttributePointer(0x6D9E21AD, 0));
-    const float *radiusAttr = reinterpret_cast<const float *>(GetAttributePointer(0x39BF8002, 0));
+    const UMath::Vector3 &dimensions = Dimensions(0);
+    bool hasDimensions = GetAttributePointer(0x6D9E21AD, 0) != nullptr;
+    bool hasRadius = GetAttributePointer(0x39BF8002, 0) != nullptr;
     UMath::Vector3 initialVec = UMath::Vector3Make(0.0f, 0.0f, 1.0f);
     UMath::Vector3 posSwizzled = UMath::Vector3Make(-pos.y, pos.z, pos.x);
+    UMath::Vector3 dimSwizzled = UMath::Vector3Make(dimensions.x, dimensions.z, dimensions.y);
     UMath::Matrix4 rotMat;
-    UMath::Matrix4 triggerMat;
-    float radius = radiusAttr ? *radiusAttr : 0.0f;
+    float radius = Radius(0);
     bool showIconBasedOnBin = true;
     GIcon::Type iconType = GIcon::kType_Invalid;
 
@@ -39,19 +40,16 @@ GTrigger::GTrigger(const Attrib::Key &triggerKey)
 
     UMath::MultYRot(UMath::Matrix4::kIdentity, -Rotation(0) * 0.00069444446f, rotMat);
     UMath::Rotate(initialVec, rotMat, mDirection);
+    UMath::Set(rotMat, 3, UMath::Vector4Make(posSwizzled, 1.0f));
 
-    triggerMat = rotMat;
-    UMath::Set(triggerMat, 3, UMath::Vector4Make(posSwizzled, 1.0f));
-
-    if (dimensions) {
-        UMath::Vector3 dimSwizzled = UMath::Vector3Make(dimensions->x, dimensions->z, dimensions->y);
-        mWorldTrigger = WTrigger(triggerMat, dimSwizzled, &mEventList, OneShot(0) ? 2 : 0);
+    if (hasDimensions) {
+        mWorldTrigger = WTrigger(rotMat, dimSwizzled, &mEventList, OneShot(0) ? 2 : 0);
     } else {
-        if (!radiusAttr) {
+        if (!hasRadius) {
             float width = Width(0);
             radius = UMath::Sqrt(width * width + 1.0f);
         }
-        mWorldTrigger = WTrigger(triggerMat, radius, radius * 2.0f, &mEventList, OneShot(0) ? 2 : 0);
+        mWorldTrigger = WTrigger(rotMat, radius, radius * 2.0f, &mEventList, OneShot(0) ? 2 : 0);
     }
 
     mEventList.fNumEvents = 1;
