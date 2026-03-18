@@ -70,5 +70,6 @@ void AddRegion(GenericRegion *region);
 void RemoveRegion(GenericRegion *region);
 int DepthRegion(GenericRegion *before, GenericRegion *after);
 GenericRegion *GetClosestRegionInView(eView *view, bVector3 *endVector, float *angleCos);
+int UnloaderWeatherMan(bChunk *bchunk);
 
 #endif

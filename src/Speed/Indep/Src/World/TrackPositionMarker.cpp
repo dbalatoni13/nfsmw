@@ -7,6 +7,15 @@ bTList<TrackPositionMarker> TrackPositionMarkerList;
 
 static void NotifyTrackMarkersChanged() {}
 
+void ForEachTrackPositionMarker(bool (*callback)(TrackPositionMarker *, unsigned int), unsigned int tag) {
+    for (TrackPositionMarker *marker = TrackPositionMarkerList.GetHead(); marker != TrackPositionMarkerList.EndOfList();
+         marker = marker->GetNext()) {
+        if (!callback(marker, tag)) {
+            break;
+        }
+    }
+}
+
 int LoaderTrackPositionMarkers(bChunk *chunk) {
     int count = chunk->Size / sizeof(TrackPositionMarker);
     TrackPositionMarker *marker = reinterpret_cast<TrackPositionMarker *>(chunk->GetData());

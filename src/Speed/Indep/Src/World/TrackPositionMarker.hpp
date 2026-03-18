@@ -24,6 +24,7 @@ struct TrackPositionMarker : public bTNode<TrackPositionMarker> {
 
 int LoaderTrackPositionMarkers(bChunk *chunk);
 int UnloaderTrackPositionMarkers(bChunk *chunk);
+void ForEachTrackPositionMarker(bool (*callback)(TrackPositionMarker *, unsigned int), unsigned int tag);
 int GetNumTrackPositionMarkers(int track_number, unsigned int name_hash);
 TrackPositionMarker *GetTrackPositionMarker(int track_number, unsigned int name_hash, int index);
 TrackPositionMarker *GetTrackPositionMarker(unsigned int name_hash, int index);

@@ -165,6 +165,24 @@ int LoaderWeatherMan(bChunk *bchunk) {
     return 0;
 }
 
+int UnloaderWeatherMan(bChunk *bchunk) {
+    if (bchunk->GetID() == 0x34250) {
+        unsigned char *data = reinterpret_cast<unsigned char *>(bchunk->GetAlignedData(0x10));
+        int version = *reinterpret_cast<int *>(data + 8);
+        if (version == 2) {
+            GenericRegion *region = reinterpret_cast<GenericRegion *>(data + 0x10);
+            int num_regions = *reinterpret_cast<int *>(data + 0xC);
+            for (int i = 0; i < num_regions; i++) {
+                RemoveRegion(region);
+                region += 1;
+            }
+        }
+        return 1;
+    }
+
+    return 0;
+}
+
 void AddRegion(GenericRegion *region) {
     unsigned int region_type = static_cast<unsigned int>(region->Type);
     if (region_type == 0 && region->Blend == 0) {

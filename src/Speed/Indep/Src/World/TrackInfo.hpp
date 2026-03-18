@@ -80,6 +80,8 @@ class TrackInfo {
     char TrackMapStartZoomed;                        // offset 0x11C, size 0x1
 
     static int LoaderTrackInfo(bChunk *chunk);
+    static int UnloaderTrackInfo(bChunk *chunk);
+    static TrackInfo *GetTrackInfo(int track_number);
 
     const char *GetLoadedTrackInfo() {
         return this->RegionName;

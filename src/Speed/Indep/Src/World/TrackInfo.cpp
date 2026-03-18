@@ -59,3 +59,25 @@ int TrackInfo::LoaderTrackInfo(bChunk *chunk) {
 
     return 1;
 }
+
+TrackInfo *TrackInfo::GetTrackInfo(int track_number) {
+    for (unsigned int n = 0; n < NumTrackInfo; n++) {
+        TrackInfo *info = &TrackInfoTable[n];
+        if (info->TrackNumber == track_number) {
+            return info;
+        }
+    }
+
+    return 0;
+}
+
+int TrackInfo::UnloaderTrackInfo(bChunk *chunk) {
+    if (chunk->GetID() != 0x34201) {
+        return 0;
+    }
+
+    TrackInfoTable = 0;
+    NumTrackInfo = 0;
+    LoadedTrackInfo = 0;
+    return 1;
+}
