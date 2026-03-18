@@ -169,6 +169,12 @@ struct VisibleSectionUserInfo {
 
 struct UnallocatedVisibleSectionUserInfo {};
 
+struct VisibleGroupInfo {
+    // total size: 0x8
+    char *SelectionSetName; // offset 0x0, size 0x4
+    bool UsedForTopology;   // offset 0x4, size 0x1
+};
+
 class VisibleSectionManager {
     // total size: 0x6830
     bTList<VisibleSectionBoundary> DrivableBoundaryList;               // offset 0x0, size 0x8
@@ -202,6 +208,7 @@ class VisibleSectionManager {
     DrivableScenerySection *FindDrivableSection(int section_number /* r4 */);
     LoadingSection *FindLoadingSection(int section_number);
     int GetSectionsToLoad(LoadingSection *loading_section, short *section_numbers, int max_sections);
+    VisibleGroupInfo *GetGroupInfo(const char *selection_set_name);
     void EnableGroup(unsigned int group_name);
     int Loader(bChunk *chunk);
     int Unloader(bChunk *chunk);

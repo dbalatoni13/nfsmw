@@ -5,6 +5,8 @@
 static char *TrackOBBTable = 0;
 static int NumTrackOBBs = 0;
 
+void EstablishRemoteCaffeineConnection() {}
+
 int GetNumTrackOBBs() {
     return NumTrackOBBs;
 }

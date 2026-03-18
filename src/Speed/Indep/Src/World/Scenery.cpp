@@ -309,6 +309,39 @@ void SceneryOverrideInfo::AssignOverrides(ScenerySectionHeader *section_header) 
     instance->ExcludeFlags = (instance->ExcludeFlags & 0xFFFF0000) | override_flags;
 }
 
+int LoaderSceneryGroup(bChunk *chunk) {
+    if (chunk->GetID() != 0x34109) {
+        return 0;
+    }
+
+    SceneryGroup *group = reinterpret_cast<SceneryGroup *>(chunk->GetData());
+    SceneryGroup *last_group = reinterpret_cast<SceneryGroup *>(chunk->GetLastChunk());
+    while (group < last_group) {
+        SceneryGroupList.AddHead(group);
+        bEndianSwap32(&group->NameHash);
+        bEndianSwap16(&group->GroupNumber);
+        bEndianSwap16(&group->NumObjects);
+        for (int i = 0; i < group->NumObjects; i++) {
+            bEndianSwap16(&group->OverrideInfoNumbers[i]);
+        }
+
+        int group_size = (group->NumObjects * sizeof(unsigned short) + 0x17U) & 0xFFFFFFFC;
+        group = reinterpret_cast<SceneryGroup *>(reinterpret_cast<char *>(group) + group_size);
+    }
+
+    return 1;
+}
+
+int UnloaderSceneryGroup(bChunk *chunk) {
+    int chunk_id = chunk->GetID();
+    if (chunk_id == 0x34109) {
+        bMemSet(SceneryGroupEnabledTable, 0, 0x1000);
+        SceneryGroupEnabledTable[0] = 1;
+        SceneryGroupList.InitList();
+    }
+    return chunk_id == 0x34109;
+}
+
 void *FindSceneryGroup(unsigned int name_hash) {
     for (SceneryGroup *group = SceneryGroupList.GetHead(); group != SceneryGroupList.EndOfList(); group = group->GetNext()) {
         if (group->NameHash == name_hash) {
@@ -426,6 +459,10 @@ void LoadPrecullerBooBooScript(const char *filename, bool reset) {
             }
         }
     }
+}
+
+void LoadPrecullerBooBooScripts() {
+    LoadPrecullerBooBooScript("TRACKS\\PrecullerBooBooScript.hoo", 1);
 }
 
 void ScenerySectionHeader::DrawAScenery(int scenery_instance_number, SceneryCullInfo *scenery_cull_info, int visibility_state) {

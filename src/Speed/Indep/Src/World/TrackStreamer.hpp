@@ -230,6 +230,7 @@ class TrackStreamer {
     void JettisonSection(TrackStreamingSection *section);
     bool JettisonLeastImportantSection();
     void SetLoadingPhase(eLoadingPhase loading_phase);
+    void EmptyCaffeineLayers();
     int Loader(bChunk *chunk);
     int Unloader(bChunk *chunk);
     void InitMemoryPool(int size);

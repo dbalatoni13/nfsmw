@@ -1,6 +1,7 @@
 #include "VisibleSection.hpp"
 
 #include "Scenery.hpp"
+#include "Speed/Indep/bWare/Inc/Strings.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 
 VisibleSectionManager TheVisibleSectionManager; // size: 0x6830
@@ -30,12 +31,16 @@ struct SectionRemapper {
     short SectionNumber2P;
 };
 
+extern VisibleGroupInfo VisibleGroupInfoTable[5];
 extern SectionRemapper SectionRemapperTable[134];
 extern SectionRemapper SectionRemapperTable_Gamecube[129];
 char *bGetPlatformName();
+int bStrNICmp(const char *s1, const char *s2, int n);
 
 static bool initialized_VisibleSection = false;
 static int map_table_VisibleSection[2800];
+static int counter_VisibleSection = 0;
+static char text_VisibleSection[4][16];
 
 static char GetScenerySectionLetter(int section_number) {
     return static_cast<char>(section_number / 100 + 'A' - 1);
@@ -57,6 +62,21 @@ static bool IsRegularScenerySection(int section_number) {
 static bool IsScenerySectionDrivable(int section_number) {
     int subsection_number = GetScenerySubsectionNumber(section_number);
     return IsRegularScenerySection(section_number) && subsection_number > 0 && subsection_number < ScenerySectionLODOffset;
+}
+
+void GetScenerySectionName(char *name, int section_number) {
+    if (section_number < 1) {
+        bStrCpy(name, "--");
+    } else {
+        bSPrintf(name, "%c%d", GetScenerySectionLetter(section_number), GetScenerySubsectionNumber(section_number));
+    }
+}
+
+char *GetScenerySectionName(int section_number) {
+    unsigned int index = static_cast<unsigned int>(counter_VisibleSection) & 3;
+    counter_VisibleSection += 1;
+    GetScenerySectionName(text_VisibleSection[index], section_number);
+    return text_VisibleSection[index];
 }
 
 static bool PointInBBox(const bVector2 *point, const bVector2 *bbox_min, const bVector2 *bbox_max) {
@@ -430,6 +450,18 @@ int VisibleSectionManager::GetSectionsToLoad(LoadingSection *loading_section, sh
     }
 
     return num_sections;
+}
+
+VisibleGroupInfo *VisibleSectionManager::GetGroupInfo(const char *selection_set_name) {
+    VisibleGroupInfo *group_info = VisibleGroupInfoTable;
+    for (int i = 0; i < 5; i++) {
+        int name_length = bStrLen(group_info->SelectionSetName);
+        if (bStrNICmp(selection_set_name, group_info->SelectionSetName, name_length) == 0) {
+            return group_info;
+        }
+        group_info += 1;
+    }
+    return 0;
 }
 
 void VisibleSectionManager::EnableGroup(unsigned int group_name) {

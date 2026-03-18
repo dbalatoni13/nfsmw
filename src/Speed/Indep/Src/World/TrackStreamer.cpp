@@ -25,10 +25,11 @@ extern int AllowDuplicateSolids;
 extern int ForceHoleFillerMethod;
 extern int WaitForFrameBufferSwapDisabled;
 extern int WaitUntilRenderingDoneDisabled;
+extern int TrackStreamerRemoteCaffeinating;
 extern unsigned int eFrameCounter;
 int Get2PlayerSectionNumber(int section_number);
 void GetScenerySectionName(char *name, int section_number);
-const char *GetScenerySectionName(int section_number);
+char *GetScenerySectionName(int section_number);
 void PostLoadFixup();
 void SetDuplicateTextureWarning(BOOL enabled);
 bool LoadTempPermChunks(bChunk **ppchunks, int *psizeof_chunks, int allocation_params, const char *debug_name);
@@ -1706,6 +1707,10 @@ void TrackStreamer::FinishedLoading() {
         CallbackParam = 0;
         pCallback = 0;
     }
+}
+
+void TrackStreamer::EmptyCaffeineLayers() {
+    TrackStreamerRemoteCaffeinating = 0;
 }
 
 void TrackStreamer::HandleLoading() {
