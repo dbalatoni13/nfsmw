@@ -150,6 +150,12 @@ struct EAX_HeliState : public UTL::Collections::Listable<EAX_HeliState, 10> {
     const unsigned int mWorldID; // offset 0x9C
 
     EAX_HeliState(const Attrib::Collection *atr, unsigned int wuid);
+
+    bool IsSimUpdating();
+    bVector3 *GetPosition();
+    const bVector3 *GetForwardVector();
+    const bVector3 *GetVelocity();
+    float GetForwardSpeed();
 };
 
 struct HeliSoundConn : public Sim::Connection, public UTL::Collections::Listable<HeliSoundConn, 10> {

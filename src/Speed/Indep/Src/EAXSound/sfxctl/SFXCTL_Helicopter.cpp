@@ -1,4 +1,7 @@
 #include "Speed/Indep/Src/EAXSound/sfxctl/sfxctl_helicopter.hpp"
+#include "Speed/Indep/Src/EAXSound/EAXSndUtil.h"
+#include "Speed/Indep/Src/EAXSound/SimStates/EAX_HeliState.hpp"
+#include "Speed/Indep/bWare/Inc/bMath.hpp"
 
 SFXCTL_3DHeliPos::~SFXCTL_3DHeliPos() {}
 
@@ -49,4 +52,39 @@ void SFXCTL_Helicopter::SetupSFX(CSTATE_Base *_StateBase) {
 
 void SFXCTL_Helicopter::InitSFX() {}
 
-void SFXCTL_Helicopter::UpdateParams(float t) { (void)t; }
+void SFXCTL_Helicopter::UpdateParams(float t) {
+    float dot;
+
+    (void)t;
+
+    if (m_pHeliState != nullptr && m_pHeliState->IsSimUpdating()) {
+        EAX_CarState *pcar;
+
+        vHeliPos = *m_pHeliState->GetPosition();
+        vHeliFwd = *m_pHeliState->GetForwardVector();
+        vHeliVel = *m_pHeliState->GetVelocity();
+
+        pcar = GetClosestPlayerCar(&vHeliPos);
+        if (pcar == nullptr) {
+            return;
+        }
+
+        m_fdist = bDistBetween(&vHeliPos, pcar->GetPosition());
+        m_fspeed = m_pHeliState->GetForwardSpeed() * 0.002f;
+        if (m_fspeed > 1.0f) {
+            m_fspeed = 1.0f;
+        } else if (m_fspeed < 0.25f) {
+            m_fspeed = 0.5f;
+        }
+
+        m_fspeed *= 1023.0f;
+
+        bVector3 pPos(*pcar->GetPosition());
+        bVector3 p2h;
+        bSub(&p2h, &pPos, &vHeliPos);
+        bVector3 np2h;
+        bNormalize(&np2h, &p2h);
+        dot = bDot(&np2h, &vHeliFwd);
+        m_Rotation = bACos(dot) >> 6;
+    }
+}
