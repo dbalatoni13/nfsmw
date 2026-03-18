@@ -30,11 +30,25 @@
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 
+#include <algorithm>
+
 void SetCurrentTimeOfDay(float value);
 void SetOverRideRainIntensity(float intensity);
 extern int UnlockAllThings;
 
 GRaceStatus *GRaceStatus::fObj = nullptr;
+
+DECLARE_CONTAINER_TYPE(ID_ROAD_SET);
+DECLARE_CONTAINER_TYPE(ID_PATH_SET);
+
+struct PathSegment {
+    bool operator<(const PathSegment &rhs) const {
+        return Length < rhs.Length;
+    }
+
+    float Length;
+    UTL::Std::set<short, _type_ID_ROAD_SET> Roads;
+};
 
 static const float Tweak_GlueSpreadData_Low[5] = {
     1000.0f,
@@ -1430,14 +1444,141 @@ GRaceCustom::~GRaceCustom() {
 }
 
 void GRaceCustom::CreateRaceActivity() {
-    if (mReversed && !GetCanBeReversed()) {
-        mReversed = false;
+    if (mReversed) {
+        if (!GetCanBeReversed()) {
+            mReversed = false;
+        } else {
+            const unsigned int *reverse_start = reinterpret_cast<const unsigned int *>(
+                mRaceRecord->GetAttributePointer(0xFD945479, 0) ? mRaceRecord->GetAttributePointer(0xFD945479, 0) : Attrib::DefaultDataArea(sizeof(unsigned int)));
+            const unsigned int *reverse_finish = reinterpret_cast<const unsigned int *>(
+                mRaceRecord->GetAttributePointer(0x7C7CF20F, 0) ? mRaceRecord->GetAttributePointer(0x7C7CF20F, 0) : Attrib::DefaultDataArea(sizeof(unsigned int)));
+            Attrib::Attribute race_start = mRaceRecord->Get(0xE43B2CCC);
+            Attrib::Attribute race_finish = mRaceRecord->Get(0xB0A24ADC);
+
+            if (race_start.IsValid() && race_start.GetCollection() != mRaceRecord->GetConstCollection()) {
+                unsigned int length = race_start.GetLength();
+                unsigned int *values = length ? new unsigned int[length] : nullptr;
+
+                for (unsigned int i = 0; i < length; ++i) {
+                    const unsigned int *src =
+                        reinterpret_cast<const unsigned int *>(mRaceRecord->GetAttributePointer(0xE43B2CCC, i));
+                    values[i] = src ? *src : 0;
+                }
+
+                if (mRaceRecord->Add(0xE43B2CCC, length)) {
+                    for (unsigned int i = 0; i < length; ++i) {
+                        unsigned int *dst =
+                            reinterpret_cast<unsigned int *>(const_cast<void *>(mRaceRecord->GetAttributePointer(0xE43B2CCC, i)));
+
+                        if (dst) {
+                            *dst = values[i];
+                        }
+                    }
+
+                    race_start = mRaceRecord->Get(0xE43B2CCC);
+                }
+
+                delete[] values;
+            }
+
+            if (race_start.IsValid()) {
+                unsigned int *dst =
+                    reinterpret_cast<unsigned int *>(const_cast<void *>(mRaceRecord->GetAttributePointer(0xE43B2CCC, 0)));
+
+                if (dst) {
+                    *dst = *reverse_start;
+                }
+            }
+
+            if (race_finish.IsValid() && race_finish.GetCollection() != mRaceRecord->GetConstCollection()) {
+                unsigned int length = race_finish.GetLength();
+                unsigned int *values = length ? new unsigned int[length] : nullptr;
+
+                for (unsigned int i = 0; i < length; ++i) {
+                    const unsigned int *src =
+                        reinterpret_cast<const unsigned int *>(mRaceRecord->GetAttributePointer(0xB0A24ADC, i));
+                    values[i] = src ? *src : 0;
+                }
+
+                if (mRaceRecord->Add(0xB0A24ADC, length)) {
+                    for (unsigned int i = 0; i < length; ++i) {
+                        unsigned int *dst =
+                            reinterpret_cast<unsigned int *>(const_cast<void *>(mRaceRecord->GetAttributePointer(0xB0A24ADC, i)));
+
+                        if (dst) {
+                            *dst = values[i];
+                        }
+                    }
+
+                    race_finish = mRaceRecord->Get(0xB0A24ADC);
+                }
+
+                delete[] values;
+            }
+
+            if (race_finish.IsValid()) {
+                unsigned int *dst =
+                    reinterpret_cast<unsigned int *>(const_cast<void *>(mRaceRecord->GetAttributePointer(0xB0A24ADC, 0)));
+
+                if (dst) {
+                    *dst = *reverse_finish;
+                }
+            }
+        }
     }
 
-    if (GRaceStatus::Get().GetRaceContext() != GRace::kRaceContext_Career && GetIsBossRace()) {
-        mNumOpponents = 0;
-    } else {
-        mNumOpponents = GetNumOpponents();
+    {
+        unsigned int num_opponents = GetNumOpponents();
+        bool boss_race = false;
+
+        if (GRaceStatus::Get().GetRaceContext() != GRace::kRaceContext_Career && GetIsBossRace()) {
+            boss_race = true;
+            num_opponents = 0;
+        }
+
+        if (mNumOpponents != num_opponents) {
+            unsigned int opponent_keys[16];
+            unsigned int old_length = 0;
+
+            if (!boss_race) {
+                Attrib::Attribute opponents = mRaceRecord->Get(0x5839FA1A);
+
+                old_length = opponents.GetLength();
+                for (unsigned int i = 0; i < old_length && i < 16; ++i) {
+                    const unsigned int *src = reinterpret_cast<const unsigned int *>(mRaceRecord->GetAttributePointer(0x5839FA1A, i));
+
+                    if (!src) {
+                        src = reinterpret_cast<const unsigned int *>(Attrib::DefaultDataArea(sizeof(unsigned int)));
+                    }
+
+                    opponent_keys[i] = *src;
+                }
+            }
+
+            if (old_length < mNumOpponents && mNumOpponents <= 16) {
+                if (old_length == 0) {
+                    for (unsigned int i = 0; i < mNumOpponents; ++i) {
+                        opponent_keys[i] = 0x9F3B88C5;
+                    }
+                } else {
+                    for (unsigned int i = old_length; i < mNumOpponents; ++i) {
+                        opponent_keys[i] = opponent_keys[i % old_length];
+                    }
+                }
+            }
+
+            mRaceRecord->Add(0x5839FA1A, mNumOpponents);
+            if (mNumOpponents != 0) {
+                for (unsigned int i = 0; i < mNumOpponents && i < 16; ++i) {
+                    unsigned int *dst =
+                        reinterpret_cast<unsigned int *>(const_cast<void *>(mRaceRecord->GetAttributePointer(0x5839FA1A, i)));
+
+                    if (dst) {
+                        *dst = opponent_keys[i];
+                    }
+                }
+            }
+        }
     }
 
     if (mHeatLevel != -1) {
@@ -2727,6 +2868,9 @@ float GRaceStatus::DetermineRaceSegmentLength(const UMath::Vector4 *positions, c
     WRoadNav nav;
     bVector3 delta;
     float pathDistance;
+    float segmentDistance = 0.0f;
+    UTL::Std::set<PathSegment, _type_ID_PATH_SET> pathSegments;
+    char shortcutAllowed[32];
 
     nav.SetPathType(WRoadNav::kPathChopper);
 
@@ -2739,10 +2883,98 @@ float GRaceStatus::DetermineRaceSegmentLength(const UMath::Vector4 *positions, c
         return pathDistance;
     }
 
-    if (nav.FindPathNow(&UMath::Vector4To3(positions[end]), &UMath::Vector4To3(directions[end]), nullptr)) {
-        pathDistance = nav.GetPathDistanceRemaining();
-    } else {
-        bRaceRouteError = true;
+    if (start == end) {
+        short segment = nav.GetSegmentInd();
+
+        do {
+            float distance = static_cast<float>(nav.GetSegment()->nLength) * 0.015259022f * (1.0f - nav.GetSegTime());
+
+            if (distance < 0.01f) {
+                distance = 0.01f;
+            }
+
+            segmentDistance += distance;
+            nav.IncNavPosition(distance, UMath::Vector4To3(directions[end]), 0.0f);
+        } while (segment == nav.GetSegmentInd());
+    }
+
+    bMemSet(shortcutAllowed, 1, sizeof(shortcutAllowed));
+
+    {
+        bool noShortcuts = true;
+
+        do {
+            PathSegment pathSegment;
+
+            nav.FindPathNow(&UMath::Vector4To3(positions[end]), &UMath::Vector4To3(directions[end]), shortcutAllowed);
+            if (nav.GetNavType() != WRoadNav::kTypePath) {
+                break;
+            }
+
+            WRoadNetwork::Get().AddRaceSegments(&nav);
+            pathDistance = nav.GetPathDistanceRemaining();
+
+            {
+                unsigned char shortcut = nav.FirstShortcutInPath();
+
+                noShortcuts = shortcut == 0xFF;
+                if (!noShortcuts) {
+                    shortcutAllowed[shortcut] = 0;
+                }
+            }
+
+            pathSegment.Length = pathDistance;
+            for (int i = 0; i < nav.GetNumPathSegments(); ++i) {
+                const WRoadSegment *roadSegment = WRoadNetwork::Get().GetSegment(nav.GetPathSegment(i));
+
+                if (!(roadSegment->fFlags & 1)) {
+                    pathSegment.Roads.insert(roadSegment->fRoadID);
+                }
+            }
+
+            pathSegments.insert(pathSegment);
+        } while (!noShortcuts);
+
+        pathDistance += segmentDistance;
+        if (noShortcuts && pathSegments.size() == 0) {
+            bRaceRouteError = true;
+        }
+    }
+
+    if (pathSegments.size() > 1) {
+        PathSegment *sortedPaths[32];
+        int count = 0;
+
+        for (UTL::Std::set<PathSegment, _type_ID_PATH_SET>::iterator it = pathSegments.begin(); it != pathSegments.end(); ++it) {
+            sortedPaths[count++] = const_cast<PathSegment *>(&*it);
+        }
+
+        for (int i = 1; i < count; ++i) {
+            PathSegment *current = sortedPaths[i];
+            PathSegment *previous = sortedPaths[i - 1];
+            UTL::Std::set<short, _type_ID_ROAD_SET> roadDiff;
+            float roadDiffLength = 0.0f;
+
+            std::set_difference(
+                previous->Roads.begin(),
+                previous->Roads.end(),
+                current->Roads.begin(),
+                current->Roads.end(),
+                std::insert_iterator<UTL::Std::set<short, _type_ID_ROAD_SET> >(roadDiff, roadDiff.begin()));
+
+            for (UTL::Std::set<short, _type_ID_ROAD_SET>::iterator it = roadDiff.begin(); it != roadDiff.end(); ++it) {
+                roadDiffLength += static_cast<float>(WRoadNetwork::Get().GetRoad(*it)->nLength) * 0.061036088f;
+            }
+
+            if (roadDiffLength > 0.0f) {
+                for (UTL::Std::set<short, _type_ID_ROAD_SET>::iterator it = roadDiff.begin(); it != roadDiff.end(); ++it) {
+                    WRoad *road = const_cast<WRoad *>(WRoadNetwork::Get().GetRoad(*it));
+                    int scale = static_cast<int>((((current->Length - previous->Length) + roadDiffLength) / roadDiffLength) * 65536.0f);
+
+                    road->nScale = static_cast<unsigned short>(scale >> 8);
+                }
+            }
+        }
     }
 
     return pathDistance;
