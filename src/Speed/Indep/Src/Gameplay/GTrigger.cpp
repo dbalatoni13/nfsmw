@@ -16,50 +16,67 @@
 
 GTrigger::GTrigger(const Attrib::Key &triggerKey)
     : GRuntimeInstance(triggerKey, kGameplayObjType_Trigger), //
-      mWorldTrigger(), //
-      mDirection(UMath::Vector3Make(0.0f, 0.0f, 0.0f)), //
-      mTriggerEnabled(0), //
-      mIcon(nullptr), //
-      mEnabled(false), //
-      mActivationReferences(0) {
+      mWorldTrigger() {
     const UMath::Vector3 &pos = Position(0);
-    const UMath::Vector3 &dimensions = Dimensions(0);
-    bool hasDimensions = GetAttributePointer(0x6D9E21AD, 0) != nullptr;
-    bool hasRadius = GetAttributePointer(0x39BF8002, 0) != nullptr;
-    UMath::Vector3 initialVec = UMath::Vector3Make(0.0f, 0.0f, 1.0f);
+    UMath::Vector3 dim;
+    const UMath::Vector3 *dimPtr = reinterpret_cast<const UMath::Vector3 *>(GetAttributePointer(0x6D9E21AD, 0));
+    bool hasDimensions = dimPtr != nullptr;
     UMath::Vector3 posSwizzled = UMath::Vector3Make(-pos.y, pos.z, pos.x);
-    UMath::Vector3 dimSwizzled = UMath::Vector3Make(dimensions.x, dimensions.z, dimensions.y);
-    UMath::Matrix4 rotMat;
-    float radius = Radius(0);
+    UMath::Vector3 dimSwizzled;
+    UMath::Matrix4 mat;
+    float radius;
+    EventStaticData *pTriggerData = &mEventStaticData;
     bool showIconBasedOnBin = true;
     GIcon::Type iconType = GIcon::kType_Invalid;
 
-    mParticleEffect[0] = nullptr;
-    mParticleEffect[1] = nullptr;
+    if (!dimPtr) {
+        dimPtr = reinterpret_cast<const UMath::Vector3 *>(Attrib::DefaultDataArea(sizeof(UMath::Vector3)));
+    }
+
+    dim = *dimPtr;
+    dimSwizzled = UMath::Vector3Make(dim.x, dim.z, dim.y);
+    mTriggerEnabled = 0;
+    mIcon = nullptr;
+    mEnabled = false;
+    mActivationReferences = 0;
+    bMemSet(mParticleEffect, 0, 8);
     mSimObjInside.reserve(8);
 
-    UMath::MultYRot(UMath::Matrix4::kIdentity, -Rotation(0) * 0.00069444446f, rotMat);
-    UMath::Rotate(initialVec, rotMat, mDirection);
-    UMath::Set(rotMat, 3, UMath::Vector4Make(posSwizzled, 1.0f));
+    {
+        UMath::Matrix4 rotMat = UMath::Matrix4::kIdentity;
+        UMath::Vector3 initialVec = UMath::Vector3Make(0.0f, 0.0f, 1.0f);
+
+        MATRIX4_multyrot(&rotMat, -Rotation(0) * 0.00069444446f, &rotMat);
+        VU0_MATRIX3x4_vect3mult(initialVec, rotMat, mDirection);
+        mat = rotMat;
+    }
+
+    UMath::Set(mat, 3, UMath::Vector4Make(posSwizzled, 1.0f));
 
     if (hasDimensions) {
-        mWorldTrigger = WTrigger(rotMat, dimSwizzled, &mEventList, OneShot(0) ? 2 : 0);
+        new (&mWorldTrigger) WTrigger(mat, dimSwizzled, &mEventList, OneShot(0) ? 2 : 0);
     } else {
-        if (!hasRadius) {
+        const float *radiusPtr = reinterpret_cast<const float *>(GetAttributePointer(0x39BF8002, 0));
+
+        if (radiusPtr) {
+            radius = *radiusPtr;
+        } else {
             float width = Width(0);
+
             radius = UMath::Sqrt(width * width + 1.0f);
         }
-        mWorldTrigger = WTrigger(rotMat, radius, radius * 2.0f, &mEventList, OneShot(0) ? 2 : 0);
+
+        new (&mWorldTrigger) WTrigger(mat, radius, radius * 2.0f, &mEventList, OneShot(0) ? 2 : 0);
     }
 
     mEventList.fNumEvents = 1;
     mEventList.fPad[0] = 0;
     mEventList.fPad[1] = 0;
     mEventList.fPad[2] = 0;
-    mEventStaticData.fEventID = 0xC34649C0u;
-    mEventStaticData.fEventSize = 8;
-    mEventStaticData.fDataOffset = 0x10;
-    mEventStaticData.fPad = 0;
+    pTriggerData->fEventID = 0xC34649C0u;
+    pTriggerData->fEventSize = 8;
+    pTriggerData->fDataOffset = 0x10;
+    pTriggerData->fPad = 0;
     bMemSet(mTriggerEventData, 0, sizeof(mTriggerEventData));
     reinterpret_cast<unsigned int *>(mTriggerEventData)[1] = GetCollection();
 
@@ -132,8 +149,8 @@ GTrigger::GTrigger(const Attrib::Key &triggerKey)
     }
 
     if (showIconBasedOnBin && mIcon && FEDatabase && FEDatabase->GetCareerSettings()->GetCurrentBin() <= BinIndex(0)) {
-        mIcon->SetFlag(1);
-        mIcon->SetFlag(2);
+        mIcon->Show();
+        mIcon->ShowOnMap();
     }
 }
 
