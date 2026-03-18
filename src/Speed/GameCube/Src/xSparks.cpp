@@ -231,13 +231,13 @@ void CGEmitter::SpawnParticles(float dt, float intensity) {
         UMath::Vector4 volume_extent;
         UMath::Vector4 spawn_point;
         float age = 0.0f;
-        float count = intensity * mEmitterDef.NumParticles();
-        float life = mEmitterDef.Life();
-        float count_after_variance = count - count * mEmitterDef.NumParticlesVariance() * 100.0f;
-        unsigned int colour_a = static_cast<unsigned int>(mEmitterDef.Colour1().w * 255.0f);
         int colour_r = static_cast<int>(mEmitterDef.Colour1().x * 255.0f);
         int colour_g = static_cast<int>(mEmitterDef.Colour1().y * 255.0f);
         int colour_b = static_cast<int>(mEmitterDef.Colour1().z * 255.0f);
+        int colour_a = static_cast<int>(mEmitterDef.Colour1().w * 255.0f);
+        float count = intensity * mEmitterDef.NumParticles();
+        float life = mEmitterDef.Life();
+        float count_after_variance = count - count * mEmitterDef.NumParticlesVariance() * 100.0f;
         unsigned int precomputed_color = colour_a << 24 | colour_b << 16 | colour_g << 8 | colour_r;
 
         if (count_after_variance != 0.0f) {
