@@ -172,11 +172,12 @@ void RenderVisibleSectionBoundary(VisibleSectionBoundary *boundary, eView *view)
 }
 
 void DoTunnelBloom(eView *view) {
-    if (!view->Active) {
+    if (!view->IsActive()) {
         return;
     }
 
-    unsigned int vIndex = static_cast<unsigned int>(view->GetID() != 1);
+    int vIndex = view->GetID() != 1;
+    float base_glare = 0.0f;
     CameraMover *camera_mover = view->GetCameraMover();
     if (!camera_mover) {
         return;
@@ -187,12 +188,11 @@ void DoTunnelBloom(eView *view) {
         return;
     }
 
+    bVector3 *my_car_pos = camera_anchor->GetGeometryPosition();
     Camera *view_camera = view->GetCamera();
-
     bVector3 *camera_position = view_camera->GetPosition();
     bVector3 *camera_direction = view_camera->GetDirection();
     bVector2 twoDpos(camera_position->x, camera_position->y);
-    float base_glare = 0.0f;
 
     if (!__tmp_14_27615) {
         int i = 1;
@@ -207,14 +207,14 @@ void DoTunnelBloom(eView *view) {
     }
 
     TrackPathZone *zone = 0;
-    if (zoneB[vIndex] && zoneB[vIndex]->IsPointInside(&twoDpos)) {
-        zone = zoneB[vIndex];
+    TrackPathZone *zoneBP = zoneB[vIndex];
+    if (zoneBP && zoneBP->IsPointInside(&twoDpos)) {
+        zone = zoneBP;
     } else {
         zone = TheTrackPathManager.FindZone(&twoDpos, TRACK_PATH_ZONE_TUNNEL, 0);
     }
 
-    float anchor_z = *reinterpret_cast<float *>(reinterpret_cast<char *>(camera_anchor) + 0x20);
-    if (!zone || zone->Elevation <= anchor_z) {
+    if (!zone || zone->Elevation <= my_car_pos->z) {
         if (base_glare < view->ScreenEffects->SE_data[SE_GLARE].intensity) {
             ScreenEffectDef SE_def;
             bMemSet(&SE_def, 0, sizeof(SE_def));
