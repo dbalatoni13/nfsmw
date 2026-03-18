@@ -781,13 +781,15 @@ int LoaderScenery(bChunk *chunk) {
                 section_header_words[7] = static_cast<unsigned int>(subchunk->Size) / 0x48;
                 if (section_header_words[2] == 0) {
                     for (int i = 0; i < section_header_words[7]; i++) {
-                        unsigned char *scenery_info = reinterpret_cast<unsigned char *>(section_header_words[6] + i * 0x48);
-                        bEndianSwap32(scenery_info + 0x40);
+                        int scenery_info_offset = i * 0x48;
+                        bEndianSwap32(reinterpret_cast<unsigned char *>(section_header_words[6] + scenery_info_offset + 0x40));
                         for (int n = 0; n < 4; n++) {
-                            bEndianSwap32(scenery_info + 0x18 + n * 4);
+                            bEndianSwap32(
+                                reinterpret_cast<unsigned char *>(section_header_words[6] + scenery_info_offset + 0x18 + n * 4)
+                            );
                         }
-                        bEndianSwap32(scenery_info + 0x38);
-                        bEndianSwap32(scenery_info + 0x3C);
+                        bEndianSwap32(reinterpret_cast<unsigned char *>(section_header_words[6] + scenery_info_offset + 0x38));
+                        bEndianSwap32(reinterpret_cast<unsigned char *>(section_header_words[6] + scenery_info_offset + 0x3C));
                     }
                 }
 
@@ -809,22 +811,25 @@ int LoaderScenery(bChunk *chunk) {
                     subchunk->Size - (section_header_words[8] - reinterpret_cast<int>(subchunk->GetData()))
                 ) >> 6;
                 if (section_header_words[2] == 0) {
-                    SceneryInstance *instances = reinterpret_cast<SceneryInstance *>(section_header_words[8]);
+                    unsigned char *instances = reinterpret_cast<unsigned char *>(section_header_words[8]);
                     for (int i = 0; i < section_header_words[9]; i++) {
-                        bPlatEndianSwap(&instances[i].ExcludeFlags);
-                        bPlatEndianSwap(&instances[i].PrecullerInfoIndex);
-                        bPlatEndianSwap(&instances[i].LightingContextNumber);
+                        unsigned char *instance = instances + i * 0x40;
+                        bEndianSwap16(instance + 0x3E);
+                        bEndianSwap32(instance + 0x18);
                         for (int n = 0; n < 3; n++) {
-                            bPlatEndianSwap(&instances[i].Position[n]);
+                            bEndianSwap32(instance + 0x20 + n * 4);
                         }
                         for (int n = 0; n < 9; n++) {
-                            bPlatEndianSwap(&instances[i].Rotation[n]);
+                            bEndianSwap16(instance + 0x2C + n * 2);
                         }
-                        bPlatEndianSwap(&instances[i].SceneryInfoNumber);
-                        for (int n = 0; n < 3; n++) {
-                            bPlatEndianSwap(&instances[i].BBoxMin[n]);
-                            bPlatEndianSwap(&instances[i].BBoxMax[n]);
-                        }
+                        bEndianSwap32(instance + 0x00);
+                        bEndianSwap32(instance + 0x04);
+                        bEndianSwap32(instance + 0x08);
+                        bEndianSwap32(instance + 0x0C);
+                        bEndianSwap32(instance + 0x10);
+                        bEndianSwap32(instance + 0x14);
+                        bEndianSwap16(instance + 0x1C);
+                        bEndianSwap16(instance + 0x1E);
                     }
                 }
             } else if (subchunk_id == 0x34105) {
