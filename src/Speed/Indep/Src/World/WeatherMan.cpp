@@ -36,10 +36,10 @@ int RegionQuery::CalculateRegionInfo(eView *view, RegionType regionKind, int InF
         unsigned int retcol;
         unsigned int fog_colour = BaseWeatherFogColourB << 16 | BaseWeatherFogColourG << 8 | BaseWeatherFogColourR;
 
-        DistFogStart = BaseWeatherFogStart;
         FogFalloff = BaseFogFalloff;
         FogFalloffX = BaseFogFalloffX;
         FogFalloffY = BaseFogFalloffY;
+        DistFogStart = BaseWeatherFogStart;
         DistFogPower = BaseWeatherFog;
         retcol = fog_colour | 0x80000000;
         DistFogColour = retcol;
@@ -47,8 +47,11 @@ int RegionQuery::CalculateRegionInfo(eView *view, RegionType regionKind, int InF
             return 0;
         }
     } else {
-        DistFogStart = DistFogPower = DAT_80409c34;
-        FogFalloff = FogFalloffX = FogFalloffY = DAT_80409c34;
+        DistFogPower = DAT_80409c34;
+        DistFogStart = DAT_80409c34;
+        FogFalloffY = DAT_80409c34;
+        FogFalloffX = DAT_80409c34;
+        FogFalloff = DAT_80409c34;
         float smallest = DAT_80409c38;
         bTList<GenericRegion> *region_list = &RegionLists[static_cast<int>(regionKind)];
 
