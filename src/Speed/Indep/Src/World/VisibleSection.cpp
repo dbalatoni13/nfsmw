@@ -42,24 +42,24 @@ static int map_table_VisibleSection[2800];
 static int counter_VisibleSection = 0;
 static char text_VisibleSection[4][16];
 
-static char GetScenerySectionLetter(int section_number) {
+static inline char GetScenerySectionLetter(int section_number) {
     return static_cast<char>(section_number / 100 + 'A' - 1);
 }
 
-static int GetScenerySubsectionNumber(int section_number) {
+static inline int GetScenerySubsectionNumber(int section_number) {
     return section_number % 100;
 }
 
-static short GetScenerySectionNumber(char section_letter, int subsection_number) {
+static inline short GetScenerySectionNumber(char section_letter, int subsection_number) {
     return static_cast<short>((section_letter - 'A' + 1) * 100 + subsection_number);
 }
 
-static bool IsRegularScenerySection(int section_number) {
+static inline bool IsRegularScenerySection(int section_number) {
     char section_letter = GetScenerySectionLetter(section_number);
     return section_letter >= 'A' && section_letter < 'U';
 }
 
-static bool IsScenerySectionDrivable(int section_number) {
+static inline bool IsScenerySectionDrivable(int section_number) {
     int subsection_number = GetScenerySubsectionNumber(section_number);
     return IsRegularScenerySection(section_number) && subsection_number > 0 && subsection_number < ScenerySectionLODOffset;
 }
@@ -79,11 +79,11 @@ char *GetScenerySectionName(int section_number) {
     return text_VisibleSection[index];
 }
 
-static bool PointInBBox(const bVector2 *point, const bVector2 *bbox_min, const bVector2 *bbox_max) {
+static inline bool PointInBBox(const bVector2 *point, const bVector2 *bbox_min, const bVector2 *bbox_max) {
     return point->x >= bbox_min->x && point->x <= bbox_max->x && point->y >= bbox_min->y && point->y <= bbox_max->y;
 }
 
-void VisibleSectionBoundary::EndianSwap() {
+inline void VisibleSectionBoundary::EndianSwap() {
     bPlatEndianSwap(&SectionNumber);
     bPlatEndianSwap(reinterpret_cast<signed char *>(&NumPoints));
     bPlatEndianSwap(reinterpret_cast<signed char *>(&PanoramaBoundary));
@@ -121,22 +121,22 @@ float VisibleSectionBoundary::GetDistanceOutside(const bVector2 *point, float ma
     return max_distance;
 }
 
-int VisibleSectionBoundary::GetSectionNumber() {
+inline int VisibleSectionBoundary::GetSectionNumber() {
     return SectionNumber;
 }
 
-int VisibleSectionBoundary::GetMemoryImageSize() {
+inline int VisibleSectionBoundary::GetMemoryImageSize() {
     return 0x24 + NumPoints * sizeof(bVector2);
 }
 
-void DrivableSectionsInRegion::EndianSwap() {
+inline void DrivableSectionsInRegion::EndianSwap() {
     bPlatEndianSwap(&NumSections);
     for (int i = 0; i < NumSections; i++) {
         bPlatEndianSwap(&Sections[i]);
     }
 }
 
-void DrivableScenerySection::EndianSwap() {
+inline void DrivableScenerySection::EndianSwap() {
     bPlatEndianSwap(&SectionNumber);
     bPlatEndianSwap(reinterpret_cast<signed char *>(&MostVisibleSections));
     bPlatEndianSwap(reinterpret_cast<signed char *>(&MaxVisibleSections));
@@ -146,11 +146,11 @@ void DrivableScenerySection::EndianSwap() {
     }
 }
 
-int DrivableScenerySection::GetSectionNumber() {
+inline int DrivableScenerySection::GetSectionNumber() {
     return SectionNumber;
 }
 
-int DrivableScenerySection::GetMemoryImageSize() {
+inline int DrivableScenerySection::GetMemoryImageSize() {
     return 0x12 + NumVisibleSections * sizeof(short) + sizeof(Padding);
 }
 
@@ -216,7 +216,7 @@ void DrivableScenerySection::SortVisibleSections() {
     } while (swap);
 }
 
-void LoadingSection::EndianSwap() {
+inline void LoadingSection::EndianSwap() {
     bPlatEndianSwap(&NumDrivableSections);
     for (int i = 0; i < NumDrivableSections; i++) {
         bPlatEndianSwap(&DrivableSections[i]);
@@ -227,7 +227,7 @@ void LoadingSection::EndianSwap() {
     }
 }
 
-void VisibleSectionOverlay::EndianSwap() {
+inline void VisibleSectionOverlay::EndianSwap() {
     bPlatEndianSwap(&NumEntries);
     for (int n = 0; n < NumEntries; n++) {
         OverlayEntry *entry = &EntryTable[n];
@@ -236,7 +236,7 @@ void VisibleSectionOverlay::EndianSwap() {
     }
 }
 
-void VisibleSectionManagerInfo::EndianSwap() {
+inline void VisibleSectionManagerInfo::EndianSwap() {
     bPlatEndianSwap(&LODOffset);
     TheDrivableSectionsInRegion.EndianSwap();
 }
