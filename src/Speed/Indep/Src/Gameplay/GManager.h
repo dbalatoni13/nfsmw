@@ -71,6 +71,7 @@ class GManager : public UTL::COM::Object, public IVehicleCache {
 
     const char *GetCacheName() const override { return "GManager"; }
     void OnRemovedVehicleCache(IVehicle *ivehicle) override;
+    eVehicleCacheResult OnQueryVehicleCache(const IVehicle *removethis, const IVehicleCache *whosasking) const override;
 
     void InitializeVaults();
     void InitializeRaceStreaming();

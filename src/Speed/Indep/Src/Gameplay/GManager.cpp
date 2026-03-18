@@ -9,6 +9,7 @@
 #include "Speed/Indep/Src/Gameplay/GVault.h"
 #include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
 #include "Speed/Indep/Src/Interfaces/SimActivities/INIS.h"
+#include "Speed/Indep/Src/Interfaces/SimActivities/ITrafficMgr.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IArticulatedVehicle.h"
 #include "Speed/Indep/Src/Misc/LZCompress.hpp"
@@ -1935,6 +1936,44 @@ void GManager::OnRemovedVehicleCache(IVehicle *ivehicle) {
             return;
         }
     }
+}
+
+eVehicleCacheResult GManager::OnQueryVehicleCache(const IVehicle *removethis, const IVehicleCache *whosasking) const {
+    GManager *self = const_cast<GManager *>(this);
+
+    for (StockCarMap::iterator it = self->mStockCars.begin(); it != self->mStockCars.end(); ++it) {
+        IVehicle *stockCar = nullptr;
+
+        if (it->second && it->second->QueryInterface(&stockCar) && UTL::COM::ComparePtr(stockCar, removethis)) {
+            if (!UTL::COM::ComparePtr(whosasking, INIS::Get())) {
+                return VCR_WANT;
+            }
+
+            self->mStockCars.erase(it);
+            return VCR_DONTCARE;
+        }
+    }
+
+    for (GCharacterList::const_iterator it = mActiveCharacters.begin(); it != mActiveCharacters.end(); ++it) {
+        GCharacter *character = *it;
+        IVehicle *vehicle = character->GetSpawnedVehicle();
+
+        if (!UTL::COM::ComparePtr(vehicle, removethis)) {
+            continue;
+        }
+
+        if (vehicle && character->IsFlagSet(GCharacter::kCharFlag_UsingStockCar)) {
+            return VCR_DONTCARE;
+        }
+
+        if (UTL::COM::ComparePtr(whosasking, ITrafficMgr::Get()) || vehicle->GetOffscreenTime() == 0.0f) {
+            return VCR_DONTCARE;
+        }
+
+        return character == mActiveCharacters.front() ? VCR_DONTCARE : VCR_WANT;
+    }
+
+    return VCR_DONTCARE;
 }
 
 void GManager::SuspendAllBinActivities() {
