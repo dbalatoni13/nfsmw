@@ -23,6 +23,18 @@ struct SceneryOverrideInfo {
     void AssignOverrides(ScenerySectionHeader *section_header);
 };
 
+struct ModelHeirarchy;
+
+struct SceneryInfo {
+    char DebugName[24];
+    unsigned int NameHash[4];
+    eModel *pModel[4];
+    float Radius;
+    unsigned int MeshChecksum;
+    unsigned int mHeirarchyNameHash;
+    ModelHeirarchy *mHeirarchy;
+};
+
 SceneryOverrideInfo *GetSceneryOverrideInfo(int override_info_number);
 void *FindSceneryGroup(unsigned int name_hash);
 
@@ -40,7 +52,6 @@ struct SceneryGroup : public bTNode<SceneryGroup> {
     }
 };
 
-struct ModelHeirarchy;
 struct _type_map;
 typedef UTL::Std::map<unsigned int, ModelHeirarchy *, _type_map> ModelHeirarchyMap;
 
@@ -463,6 +474,39 @@ void LoadPrecullerBooBooScript(const char *filename, bool reset) {
 
 void LoadPrecullerBooBooScripts() {
     LoadPrecullerBooBooScript("TRACKS\\PrecullerBooBooScript.hoo", 1);
+}
+
+SceneryInfo *FindSceneryInfo(unsigned int name_hash) {
+    for (ScenerySectionHeader *section_header = reinterpret_cast<ScenerySectionHeader *>(ScenerySectionHeaderList.GetHead());
+         section_header != reinterpret_cast<ScenerySectionHeader *>(ScenerySectionHeaderList.EndOfList());
+         section_header = reinterpret_cast<ScenerySectionHeader *>(section_header->GetNext())) {
+        int *section_header_words = reinterpret_cast<int *>(section_header);
+        for (int i = 0; i < section_header_words[7]; i++) {
+            SceneryInfo *scenery_info = reinterpret_cast<SceneryInfo *>(section_header_words[6]) + i;
+            eModel *model = scenery_info->pModel[0];
+            if (model && model->NameHash == name_hash) {
+                return scenery_info;
+            }
+        }
+    }
+    return 0;
+}
+
+SceneryInstance *FindSceneryInstance(unsigned int name_hash) {
+    for (ScenerySectionHeader *section_header = reinterpret_cast<ScenerySectionHeader *>(ScenerySectionHeaderList.GetHead());
+         section_header != reinterpret_cast<ScenerySectionHeader *>(ScenerySectionHeaderList.EndOfList());
+         section_header = reinterpret_cast<ScenerySectionHeader *>(section_header->GetNext())) {
+        int *section_header_words = reinterpret_cast<int *>(section_header);
+        for (int i = 0; i < section_header_words[9]; i++) {
+            SceneryInstance *instance = reinterpret_cast<SceneryInstance *>(section_header_words[8]) + i;
+            SceneryInfo *scenery_info = reinterpret_cast<SceneryInfo *>(section_header_words[6]) + instance->SceneryInfoNumber;
+            eModel *model = scenery_info->pModel[0];
+            if (model && model->NameHash == name_hash) {
+                return instance;
+            }
+        }
+    }
+    return 0;
 }
 
 void ScenerySectionHeader::DrawAScenery(int scenery_instance_number, SceneryCullInfo *scenery_cull_info, int visibility_state) {

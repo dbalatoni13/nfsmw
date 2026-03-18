@@ -464,6 +464,76 @@ VisibleGroupInfo *VisibleSectionManager::GetGroupInfo(const char *selection_set_
     return 0;
 }
 
+void VisibleSectionManager::ActivateOverlay(const char *name) {
+    VisibleSectionOverlay *overlay = OverlayList.GetHead();
+    while (overlay != OverlayList.EndOfList()) {
+        if (bStrICmp(overlay->Name, name) == 0) {
+            break;
+        }
+        overlay = overlay->GetNext();
+    }
+
+    if (overlay == OverlayList.EndOfList() || overlay == pActiveOverlay) {
+        return;
+    }
+
+    if (pActiveOverlay) {
+        UnactivateOverlay();
+    }
+
+    DisablePrecullerCounter += 1;
+    pActiveOverlay = overlay;
+    VisibleSectionOverlay *undo_overlay = new VisibleSectionOverlay;
+    undo_overlay->NumEntries = 0;
+    bMemSet(undo_overlay->Name, 0, sizeof(undo_overlay->Name));
+    bSafeStrCpy(undo_overlay->Name, "Undo", sizeof(undo_overlay->Name));
+    pUndoOverlay = undo_overlay;
+    ActivateOverlay(overlay, undo_overlay);
+    RefreshTrackStreamer();
+}
+
+void VisibleSectionManager::ActivateOverlay(VisibleSectionOverlay *overlay, VisibleSectionOverlay *undo_overlay) {
+    for (int i = 0; i < overlay->NumEntries; i++) {
+        OverlayEntry *entry = &overlay->EntryTable[i];
+        DrivableScenerySection *section = FindDrivableSection(entry->DrivableSectionNumber);
+        if (!section) {
+            continue;
+        }
+
+        bool changed = false;
+        if (entry->AddRemove == 0) {
+            if (section->IsSectionVisible(entry->SectionNumber)) {
+                changed = true;
+                section->RemoveVisibleSection(entry->SectionNumber);
+            }
+        } else if (!section->IsSectionVisible(entry->SectionNumber)) {
+            changed = true;
+            section->AddVisibleSection(entry->SectionNumber);
+        }
+
+        if (changed) {
+            section->SortVisibleSections();
+            if (undo_overlay) {
+                OverlayEntry *undo_entry = &undo_overlay->EntryTable[undo_overlay->NumEntries];
+                undo_overlay->NumEntries += 1;
+                *undo_entry = *entry;
+                undo_entry->AddRemove = entry->AddRemove == 0;
+            }
+        }
+    }
+}
+
+void VisibleSectionManager::UnactivateOverlay() {
+    if (pActiveOverlay) {
+        DisablePrecullerCounter -= 1;
+        ActivateOverlay(pUndoOverlay, 0);
+        if (pUndoOverlay) {
+            delete pUndoOverlay;
+        }
+        pActiveOverlay = 0;
+    }
+}
+
 void VisibleSectionManager::EnableGroup(unsigned int group_name) {
     for (int i = 0; i < 0x100; i++) {
         if (EnabledGroups[i] == 0) {

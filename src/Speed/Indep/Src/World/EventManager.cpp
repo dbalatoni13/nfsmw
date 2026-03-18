@@ -151,6 +151,7 @@ static inline VisibleSectionUserInfo **GetUserInfoTable_EventManager() {
 emEvent *TriggerEventArray[41];
 SlotPool *EventSlotPool = 0;
 SlotPool *EventHandlerSlotPool = 0;
+int EventManagerStats[5];
 bList EmptyEventTriggerPackList;
 bList EventTriggerPackList;
 bTList<emEventHandler> EventHandlerList;
@@ -161,6 +162,61 @@ emEvent *CurrentlyHandlingEvent = 0;
 void emEventManagerInit() {
     EventSlotPool = bNewSlotPool(0x24, 0x3C, "EventSlotPool", 0);
     EventHandlerSlotPool = bNewSlotPool(0x18, 0x14, "EventHandlerSlotPool", 0);
+}
+
+int emAddHandler(EVENT_HANDLER_FUNC function, unsigned int stream_mask) {
+    if (function && stream_mask) {
+        for (emEventHandler *handler = EventHandlerList.GetHead(); handler != EventHandlerList.EndOfList();
+             handler = handler->GetNext()) {
+            if (handler->HandlerFunction == function) {
+                handler->ReferenceCount += 1;
+                return 1;
+            }
+        }
+
+        emEventHandler *handler = reinterpret_cast<emEventHandler *>(bOMalloc(EventHandlerSlotPool));
+        if (handler) {
+            handler->HandlerFunction = function;
+            handler->StreamMask = stream_mask;
+            handler->ReferenceCount = 1;
+            EventHandlerList.AddTail(handler);
+            EventManagerStats[1] += 1;
+            if (EventManagerStats[4] < EventManagerStats[1]) {
+                EventManagerStats[4] = EventManagerStats[1];
+            }
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
+void emRemoveHandler(EVENT_HANDLER_FUNC function) {
+    for (emEventHandler *handler = EventHandlerList.GetHead(); handler != EventHandlerList.EndOfList();
+         handler = handler->GetNext()) {
+        if (handler->HandlerFunction == function) {
+            int ref_count = handler->ReferenceCount;
+            handler->ReferenceCount = ref_count - 1;
+            if (ref_count - 1 == 0) {
+                handler->Remove();
+                bFree(EventHandlerSlotPool, handler);
+                EventManagerStats[1] -= 1;
+            }
+            return;
+        }
+    }
+}
+
+emEvent *emAddEvent(EVENT_ID event_id) {
+    emEvent *event = reinterpret_cast<emEvent *>(bOMalloc(EventSlotPool));
+    if (event) {
+        bMemSet(event, 0, sizeof(emEvent));
+        event->ReferenceCount = 0;
+        event->ID = event_id;
+        CurrentEventQueue->AddTail(event);
+        EventManagerStats[0] += 1;
+    }
+    return event;
 }
 
 int LoaderEventManager(bChunk *chunk) {

@@ -354,6 +354,27 @@ int TSMemoryPool::GetAmountFree() {
     return AmountFree;
 }
 
+int TSMemoryPool::GetLargestFreeBlock() {
+    if (NeedToRecalcLargestFree) {
+        int largest_free = 0;
+        for (TSMemoryNode *node = NodeList.GetHead(); node != NodeList.EndOfList(); node = node->GetNext()) {
+            if (!node->Allocated && largest_free < node->Size) {
+                largest_free = node->Size;
+            }
+        }
+        LargestFree = largest_free;
+        NeedToRecalcLargestFree = false;
+    }
+
+    int largest_free = 0;
+    for (TSMemoryNode *node = NodeList.GetHead(); node != NodeList.EndOfList(); node = node->GetNext()) {
+        if (!node->Allocated && largest_free < node->Size) {
+            largest_free = node->Size;
+        }
+    }
+    return LargestFree;
+}
+
 void TSMemoryPool::Free(void *memory) {
     int address = reinterpret_cast<int>(memory);
     Updated = true;

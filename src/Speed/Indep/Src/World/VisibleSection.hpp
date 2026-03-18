@@ -208,6 +208,9 @@ class VisibleSectionManager {
     DrivableScenerySection *FindDrivableSection(int section_number /* r4 */);
     LoadingSection *FindLoadingSection(int section_number);
     int GetSectionsToLoad(LoadingSection *loading_section, short *section_numbers, int max_sections);
+    void ActivateOverlay(const char *name);
+    void ActivateOverlay(VisibleSectionOverlay *overlay, VisibleSectionOverlay *undo_overlay);
+    void UnactivateOverlay();
     VisibleGroupInfo *GetGroupInfo(const char *selection_set_name);
     void EnableGroup(unsigned int group_name);
     int Loader(bChunk *chunk);
