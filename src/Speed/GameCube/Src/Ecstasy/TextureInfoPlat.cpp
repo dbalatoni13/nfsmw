@@ -185,17 +185,16 @@ unsigned char TextureInfoPlatInfo::SetImage(int width, int height, int mip, int 
 
 int eSetTexture(TextureInfo *texture_info, int stage) {
     static int stagePrev;
-    TextureInfoPlatInfo *plat_info = texture_info->GetPlatInfo();
 
     if (texture_info == pTexPrev && stage == stagePrev) {
         return 0;
     }
 
-    if (plat_info->HasClut()) {
-        GXLoadTlut(&plat_info->ImageInfos.objClut, 0);
+    if (texture_info->GetPlatInfo()->HasClut()) {
+        GXLoadTlut(&texture_info->GetPlatInfo()->ImageInfos.objClut, 0);
     }
 
-    GXLoadTexObj(&plat_info->ImageInfos.obj, static_cast<GXTexMapID>(stage));
+    GXLoadTexObj(&texture_info->GetPlatInfo()->ImageInfos.obj, static_cast<GXTexMapID>(stage));
 
     pTexPrev = texture_info;
     stagePrev = stage;
