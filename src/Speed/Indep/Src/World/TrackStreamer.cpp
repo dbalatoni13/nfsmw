@@ -15,6 +15,8 @@
 #include "dolphin/PPCArch.h"
 #include "dolphin/os/OSCache.h"
 
+#include <algorithm>
+
 extern BOOL bMemoryTracing;
 extern int ScenerySectionLODOffset;
 extern int SeeulatorToolActive;
@@ -65,18 +67,6 @@ static const float kPredictedZoneEqualEpsilon_TrackStreamer = 0.001f;
 static unsigned int last_jettison_print_26154 = 0;
 static VisibleSectionBitTable CurrentVisibleSectionTableMem;
 TrackStreamer TheTrackStreamer;
-
-static void SortIntsAscending_TrackStreamer(int *values, int count) {
-    for (int i = 1; i < count; i++) {
-        int value = values[i];
-        int n = i - 1;
-        while (n >= 0 && value < values[n]) {
-            values[n + 1] = values[n];
-            n -= 1;
-        }
-        values[n + 1] = value;
-    }
-}
 
 static char GetScenerySectionLetter_TrackStreamer(int section_number) {
     return static_cast<char>(section_number / 100 + 'A' - 1);
@@ -799,7 +789,7 @@ int TrackStreamer::BuildHoleMovements(HoleMovement *hole_movements, int max_move
 
                 int free_gap = gap_size - total_size;
                 if (!found || best_gap < free_gap) {
-                    SortIntsAscending_TrackStreamer(sizes, count);
+                    std::sort(sizes, sizes + count);
 
                     bool started = false;
                     int chosen_count = 0;
