@@ -2106,28 +2106,28 @@ short TrackStreamer::GetPredictedZone(StreamingPositionEntry *streaming_position
         float zone_elevation = track_path_zone->Elevation;
         if (((zone_elevation <= 0.0f) || (zone_elevation <= streaming_position->Elevation)) &&
             ((zone_elevation >= 0.0f) || (streaming_position->Elevation <= -zone_elevation))) {
-            if (speed > kPredictedZoneStopProjectSpeed_TrackStreamer) {
-                predicted_position = streaming_position->Position;
-            } else if (speed * kPredictedZoneScale_TrackStreamer <= kPredictedZoneMaxDistance_TrackStreamer) {
-                bScaleAdd(&predicted_position, &streaming_position->Position, &streaming_position->Velocity,
-                          kPredictedZoneScale_TrackStreamer);
+            if (speed <= kPredictedZoneStopProjectSpeed_TrackStreamer * kPredictedZoneScale_TrackStreamer) {
+                if (speed * kPredictedZoneScale_TrackStreamer <= kPredictedZoneMaxDistance_TrackStreamer) {
+                    bScaleAdd(&predicted_position, &streaming_position->Position, &streaming_position->Velocity,
+                              kPredictedZoneScale_TrackStreamer);
+                } else {
+                    bScaleAdd(&predicted_position, &streaming_position->Position, &streaming_position->Velocity,
+                              kPredictedZoneMaxDistance_TrackStreamer / speed);
+                }
             } else {
-                bScaleAdd(&predicted_position, &streaming_position->Position, &streaming_position->Velocity,
-                          kPredictedZoneMaxDistance_TrackStreamer / speed);
+                predicted_position = streaming_position->Position;
             }
 
             DrivableScenerySection *drivable_section = TheVisibleSectionManager.FindDrivableSection(&predicted_position);
             if (drivable_section && track_path_zone->Data[0] != 0) {
                 short section_number = drivable_section->SectionNumber;
-                int i = 0;
-                while (track_path_zone->Data[i] != 0) {
+                for (int i = 0; i <= 3; i++) {
+                    if (track_path_zone->Data[i] == 0) {
+                        break;
+                    }
                     if (track_path_zone->Data[i] == section_number) {
                         found_predicted_zone = true;
                         predicted_zone = section_number;
-                        break;
-                    }
-                    i++;
-                    if (i > 3) {
                         break;
                     }
                 }
