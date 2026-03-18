@@ -145,6 +145,7 @@ void RenderVisibleSectionBoundary(VisibleSectionBoundary *boundary, eView *view)
                 bScaleAdd(reinterpret_cast<bVector2 *>(&position), boundary->GetPoint(point_number), &normal, pos);
 
                 if (topology_coordinate.HasTopology(reinterpret_cast<bVector2 *>(&position))) {
+                    position.z = 9999.0f;
                     position.z = topology_coordinate.GetElevation(&position, 0, 0, 0);
                     if (view->GetPixelSize(&position, 1.0f) > 0) {
                         unsigned char *matrix_memory = CurrentBufferPos;
