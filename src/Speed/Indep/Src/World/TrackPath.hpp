@@ -50,6 +50,13 @@ class TrackPathZone {
     bool GetIntercept(bVector2 &InterceptPoint, const bVector2 *Start, const bVector2 *Direction);
     bool IsPointInside(const bVector2 *point);
     float GetSegmentNextTo(bVector2 *point, bVector2 *segment_point_a, bVector2 *segment_point_b);
+    int GetMemoryImageSize() {
+        return MemoryImageSize;
+    }
+
+    TrackPathZone *GetMemoryImageNext() {
+        return reinterpret_cast<TrackPathZone *>(reinterpret_cast<char *>(this) + GetMemoryImageSize());
+    }
 
     int GetData(int index) {
         return Data[index];
