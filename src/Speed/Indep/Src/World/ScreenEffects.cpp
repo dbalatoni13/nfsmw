@@ -96,32 +96,34 @@ void ScreenEffectDB::AddScreenEffect(ScreenEffectType type, float intensity, flo
 
 void ScreenEffectDB::AddScreenEffect(ScreenEffectType type, ScreenEffectDef *info, unsigned int lock,
                                      ScreenEffectControl controller) {
-    ScreenEffectDef *screen_effect = &SE_data[type];
     if (lock == 0) {
-        unsigned int previous_count = numType[type];
-        unsigned int current_count = previous_count + 1;
-        float blend = static_cast<float>(current_count) / static_cast<float>(previous_count + 2);
-        float inverse_blend = 1.0f - blend;
+        float influence;
+        float invFluence;
 
-        numType[type] = current_count;
-        screen_effect->r = blend * screen_effect->r + inverse_blend * info->r;
-        screen_effect->g = blend * screen_effect->g + inverse_blend * info->g;
-        screen_effect->b = blend * screen_effect->b + inverse_blend * info->b;
-        screen_effect->a = blend * screen_effect->a + inverse_blend * info->a;
-        screen_effect->intensity = blend * screen_effect->intensity + inverse_blend * info->intensity;
+        numType[type] += 1;
+        influence = static_cast<float>(numType[type]) / static_cast<float>(numType[type] + 1);
+        invFluence = 1.0f - influence;
+
+        SE_data[type].r = influence * SE_data[type].r + invFluence * info->r;
+        SE_data[type].g = influence * SE_data[type].g + invFluence * info->g;
+        SE_data[type].b = influence * SE_data[type].b + invFluence * info->b;
+        SE_data[type].a = influence * SE_data[type].a + invFluence * info->a;
+        SE_data[type].intensity = influence * SE_data[type].intensity + invFluence * info->intensity;
     } else {
-        bMemCpy(screen_effect, info, sizeof(*screen_effect));
+        if (info) {
+            SE_data[type] = *info;
+        }
         numType[type] = 1;
     }
 
     SE_inf[type].active = 1;
-    if (!screen_effect->UpdateFnc) {
+    if (!SE_data[type].UpdateFnc) {
         SetController(type, controller);
     } else {
-        screen_effect->UpdateFnc(type, this);
+        SE_data[type].UpdateFnc(type, this);
     }
 
-    if (screen_effect->intensity < 0.01f) {
+    if (SE_data[type].intensity < 0.01f) {
         SE_inf[type].active = 0;
     }
 }
