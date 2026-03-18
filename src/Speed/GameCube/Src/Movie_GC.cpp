@@ -80,9 +80,8 @@ struct MoviePlayer {
 GCHW_VD *gGCVD;
 
 GCHW_VD::GCHW_VD(RealShape::Shape *yuvshp, bool isVP6Movie) : mIsVP6(isVP6Movie) {
-    TextureElement *texture = yuvshp->GetTexture();
-    int w = texture->GetWidth();
-    int h = texture->GetHeight();
+    int w = yuvshp->GetWidth();
+    int h = yuvshp->GetHeight();
 
     if (mIsVP6) {
         w += 0x60;
