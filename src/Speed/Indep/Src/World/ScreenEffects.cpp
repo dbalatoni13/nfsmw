@@ -8,6 +8,7 @@
 #include "Speed/Indep/Src/World/WCollisionMgr.h"
 #include "Speed/Indep/Src/World/WeatherMan.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
+#include "Speed/Indep/bWare/Inc/bWare.hpp"
 
 static unsigned int AccumulationBufferNeedsFlush = 0;
 ScreenEffectPaletteDef SE_PaletteFile[EFX_NUMBER];
@@ -88,9 +89,7 @@ void ScreenEffectDB::AddScreenEffect(ScreenEffectType type, ScreenEffectDef *inf
         screen_effect->a = blend * screen_effect->a + inverse_blend * info->a;
         screen_effect->intensity = blend * screen_effect->intensity + inverse_blend * info->intensity;
     } else {
-        if (info) {
-            *screen_effect = *info;
-        }
+        bMemCpy(screen_effect, info, sizeof(*screen_effect));
         numType[type] = 1;
     }
 
@@ -196,13 +195,11 @@ void DoTunnelBloom(eView *view) {
 
     if (!__tmp_14_27615) {
         int i = 1;
+        bool more;
         do {
-            bool more = i != 0;
+            more = i != 0;
             i -= 1;
-            if (!more) {
-                break;
-            }
-        } while (true);
+        } while (more);
         __tmp_14_27615 = 1;
     }
 
