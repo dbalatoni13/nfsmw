@@ -32,7 +32,20 @@ int RegionQuery::CalculateRegionInfo(eView *view, RegionType regionKind, int InF
 
     (void)InFE;
 
-    if (!FogControlOverRide) {
+    if (FogControlOverRide) {
+        unsigned int retcol;
+
+        DistFogStart = BaseWeatherFogStart;
+        FogFalloff = BaseFogFalloff;
+        FogFalloffX = BaseFogFalloffX;
+        FogFalloffY = BaseFogFalloffY;
+        DistFogPower = BaseWeatherFog;
+        retcol = (BaseWeatherFogColourB << 16 | BaseWeatherFogColourG << 8 | BaseWeatherFogColourR) | 0x80000000;
+        DistFogColour = retcol;
+        if (oldDistFogColour_27397 == retcol && oldDistFogPower_27398 == DistFogPower && oldDistFogStart_27399 == DistFogStart) {
+            return 0;
+        }
+    } else {
         float smallest = DAT_80409c38;
         bTList<GenericRegion> *region_list = &RegionLists[static_cast<int>(regionKind)];
 
@@ -90,32 +103,21 @@ int RegionQuery::CalculateRegionInfo(eView *view, RegionType regionKind, int InF
             }
 
             if (region->effect != DAT_80409c34) {
+                unsigned int fog_colour = region->FogColour;
+
                 FogFalloff += region->FogFalloff * region->effect;
                 FogFalloffX += region->FogFalloffX * region->effect;
                 FogFalloffY += region->FogFalloffY * region->effect;
                 DistFogStart += region->FogStart * region->effect;
                 DistFogPower += region->Intensity * region->effect;
 
-                colr_r += static_cast<unsigned int>(static_cast<unsigned char>(region->FogColour & 0xff) * region->effect);
-                colr_g += static_cast<unsigned int>(static_cast<unsigned char>(region->FogColour >> 8 & 0xff) * region->effect);
-                colr_b += static_cast<unsigned int>(static_cast<unsigned char>(region->FogColour >> 16 & 0xff) * region->effect);
+                colr_r += static_cast<unsigned int>(static_cast<unsigned char>(fog_colour) * region->effect);
+                colr_g += static_cast<unsigned int>(static_cast<unsigned char>(fog_colour >> 8) * region->effect);
+                colr_b += static_cast<unsigned int>(static_cast<unsigned char>(fog_colour >> 16) * region->effect);
             }
         }
 
         unsigned int retcol = colr_r | colr_g << 8 | colr_b << 16 | 0x80000000;
-        DistFogColour = retcol;
-        if (oldDistFogColour_27397 == retcol && oldDistFogPower_27398 == DistFogPower && oldDistFogStart_27399 == DistFogStart) {
-            return 0;
-        }
-    } else {
-        unsigned int retcol;
-
-        DistFogStart = BaseWeatherFogStart;
-        FogFalloff = BaseFogFalloff;
-        FogFalloffX = BaseFogFalloffX;
-        FogFalloffY = BaseFogFalloffY;
-        DistFogPower = BaseWeatherFog;
-        retcol = (BaseWeatherFogColourB << 16 | BaseWeatherFogColourG << 8 | BaseWeatherFogColourR) | 0x80000000;
         DistFogColour = retcol;
         if (oldDistFogColour_27397 == retcol && oldDistFogPower_27398 == DistFogPower && oldDistFogStart_27399 == DistFogStart) {
             return 0;
