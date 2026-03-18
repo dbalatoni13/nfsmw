@@ -770,20 +770,16 @@ void GRaceDatabase::UpdateRaceScore(bool raceCompleted) {
     value = racerInfo->GetTopSpeed();
     recordValue = static_cast<float>(*reinterpret_cast<unsigned short *>(reinterpret_cast<char *>(saveInfo) + 0x0C)) /
                   FixedPoint<unsigned short, 10, 2>::GetScale();
-    if (recordValue < value) {
-        recordValue = value;
-    }
-    *reinterpret_cast<short *>(reinterpret_cast<char *>(saveInfo) + 0x0C) =
-        static_cast<short>(recordValue * FixedPoint<unsigned short, 10, 2>::GetScale());
+    value = UMath::Max(recordValue, value);
+    *reinterpret_cast<unsigned short *>(reinterpret_cast<char *>(saveInfo) + 0x0C) =
+        FixedPoint<unsigned short, 10, 2>(value).mValue;
 
     value = racerInfo->CalcAverageSpeed();
     recordValue = static_cast<float>(*reinterpret_cast<unsigned short *>(reinterpret_cast<char *>(saveInfo) + 0x0E)) /
                   FixedPoint<unsigned short, 10, 2>::GetScale();
-    if (recordValue < value) {
-        recordValue = value;
-    }
-    *reinterpret_cast<short *>(reinterpret_cast<char *>(saveInfo) + 0x0E) =
-        static_cast<short>(recordValue * FixedPoint<unsigned short, 10, 2>::GetScale());
+    value = UMath::Max(recordValue, value);
+    *reinterpret_cast<unsigned short *>(reinterpret_cast<char *>(saveInfo) + 0x0E) =
+        FixedPoint<unsigned short, 10, 2>(value).mValue;
 
     switch (parms->GetRaceType()) {
     case GRace::kRaceType_Circuit:
@@ -806,18 +802,26 @@ void GRaceDatabase::UpdateRaceScore(bool raceCompleted) {
         break;
 
     case GRace::kRaceType_Checkpoint:
-        if ((reinterpret_cast<unsigned int *>(saveInfo)[1] & 3) == 0 ||
-            static_cast<unsigned int>(reinterpret_cast<int *>(saveInfo)[2]) < static_cast<unsigned int>(racerInfo->GetPointTotal())) {
-            reinterpret_cast<int *>(saveInfo)[2] = static_cast<unsigned int>(racerInfo->GetPointTotal());
+        {
+            unsigned int score;
+
+            score = static_cast<unsigned int>(racerInfo->GetPointTotal());
+            if ((reinterpret_cast<unsigned int *>(saveInfo)[1] & 3) != 0 &&
+                score <= reinterpret_cast<unsigned int *>(saveInfo)[2]) {
+                break;
+            }
+            reinterpret_cast<unsigned int *>(saveInfo)[2] = score;
         }
         break;
 
     case GRace::kRaceType_SpeedTrap:
     case GRace::kRaceType_CashGrab:
-        if ((reinterpret_cast<unsigned int *>(saveInfo)[1] & 3) == 0 ||
-            *reinterpret_cast<float *>(reinterpret_cast<int *>(saveInfo) + 2) < racerInfo->GetPointTotal()) {
-            *reinterpret_cast<float *>(reinterpret_cast<int *>(saveInfo) + 2) = racerInfo->GetPointTotal();
+        value = racerInfo->GetPointTotal();
+        if ((reinterpret_cast<unsigned int *>(saveInfo)[1] & 3) != 0 &&
+            value <= *reinterpret_cast<float *>(reinterpret_cast<int *>(saveInfo) + 2)) {
+            break;
         }
+        *reinterpret_cast<float *>(reinterpret_cast<int *>(saveInfo) + 2) = value;
         break;
 
     default:
