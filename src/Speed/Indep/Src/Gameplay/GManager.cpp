@@ -1591,6 +1591,65 @@ void GManager::FreeIconAt(unsigned int index) {
     mNumIcons--;
 }
 
+struct IconSort {
+    GIcon *icon;
+    int distance;
+};
+
+static int CompareVisibleIcons(const void *lhs, const void *rhs) {
+    return reinterpret_cast<const IconSort *>(lhs)->distance - reinterpret_cast<const IconSort *>(rhs)->distance;
+}
+
+int GManager::GatherVisibleIcons(GIcon **iconArray, IPlayer *player) {
+    UMath::Vector3 playerPos = UMath::Vector3::kZero;
+    IconSort iconSort[200];
+    ISimable *simable = nullptr;
+
+    if (player) {
+        simable = player->GetSimable();
+    }
+
+    if (simable) {
+        const UMath::Vector3 &pos = simable->GetPosition();
+
+        playerPos.x = pos.z;
+        playerPos.y = -pos.x;
+        playerPos.z = pos.y;
+    }
+
+    int count = 0;
+    for (unsigned int i = 0; i < mNumVisibleIcons; i++) {
+        GIcon *icon = mIcons[i];
+        bool show = false;
+
+        if (icon->IsFlagSet(1)) {
+            if (icon->IsFlagSet(2)) {
+                show = true;
+            }
+        }
+
+        if (show) {
+            iconSort[count].icon = icon;
+            if (!simable) {
+                iconSort[count].distance = 0;
+            } else {
+                iconSort[count].distance = static_cast<int>(VU0_v3distancesquarexz(icon->GetPosition(), playerPos));
+            }
+            count++;
+        }
+    }
+
+    if (simable) {
+        qsort(iconSort, count, sizeof(IconSort), CompareVisibleIcons);
+    }
+
+    for (int i = 0; i < count; i++) {
+        iconArray[i] = iconSort[i].icon;
+    }
+
+    return count;
+}
+
 bool GManager::AddIconForTrackMarker(TrackPositionMarker *marker, unsigned int tag) {
     if (marker->NameHash == tag) {
         UMath::Vector3 pos;
