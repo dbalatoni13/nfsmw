@@ -34,6 +34,8 @@ bool DoLinesIntersect(const bVector2 &line1_start, const bVector2 &line1_end, co
 void eWaitUntilRenderingDone();
 void MoveChunks(bChunk *dest_chunks, bChunk *source_chunks, int sizeof_chunks, const char *debug_name);
 void bSetMemoryPoolOverrideInfo(int pool_num, MemoryPoolOverrideInfo *override_info);
+void SetQueuedFileMinPriority(int priority);
+extern int QueuedFileDefaultPriority;
 
 static unsigned int prev_need_loading_bar_26275 = 0;
 static const float kMaxDistance_TrackStreamer = 3.4028235e+38f;
@@ -50,6 +52,7 @@ static const float kPredictedZoneStopProjectSpeed_TrackStreamer = 178.81091f;
 static const float kPredictedZoneEqualEpsilon_TrackStreamer = 0.001f;
 static unsigned int last_jettison_print_26154 = 0;
 static VisibleSectionBitTable CurrentVisibleSectionTableMem;
+TrackStreamer TheTrackStreamer;
 
 static void SortIntsAscending_TrackStreamer(int *values, int count) {
     for (int i = 1; i < count; i++) {
@@ -610,6 +613,16 @@ int TrackStreamer::AllocateSectionMemory(int *ptotal_needing_allocation) {
     return total_out_of_memory;
 }
 
+TrackStreamingSection *TrackStreamer::FindSection(int section_number) {
+    for (int i = 0; i < NumTrackStreamingSections; i++) {
+        TrackStreamingSection *section = &pTrackStreamingSections[i];
+        if (section->SectionNumber == section_number) {
+            return section;
+        }
+    }
+    return 0;
+}
+
 TrackStreamingSection *TrackStreamer::FindSectionByAddress(int address) {
     void *memory = reinterpret_cast<void *>(address);
 
@@ -878,6 +891,25 @@ TrackStreamer::TrackStreamer() {
     MakeSpaceInPoolCallback = 0;
     MakeSpaceInPoolCallbackParam = 0;
     MakeSpaceInPoolSize = 0;
+}
+
+int LoaderTrackStreamer(bChunk *chunk) {
+    return TheTrackStreamer.Loader(chunk);
+}
+
+int UnloaderTrackStreamer(bChunk *chunk) {
+    return TheTrackStreamer.Unloader(chunk);
+}
+
+void RefreshTrackStreamer() {
+    TheTrackStreamer.RefreshLoading();
+}
+
+int TrackStreamer::GetMemoryPoolSize() {
+    if (pMemoryPool->IsUpdated()) {
+        UserMemoryAllocationSize = CountUserAllocations(0);
+    }
+    return MemoryPoolSize - UserMemoryAllocationSize;
 }
 
 int TrackStreamer::CountUserAllocations(const char **pfragmented_user_allocation) {
@@ -1267,6 +1299,19 @@ bool TrackStreamer::NeedsGameStateActivation(TrackStreamingSection *section) {
     }
 
     return true;
+}
+
+void TrackStreamer::FreeSectionMemory() {
+    NumSectionsOutOfMemory = 0;
+    for (int i = 0; i < NumTrackStreamingSections; i++) {
+        TrackStreamingSection *section = &pTrackStreamingSections[i];
+        if (section->Status == TrackStreamingSection::ALLOCATED) {
+            bFree(section->pMemory);
+            section->Status = TrackStreamingSection::UNLOADED;
+            section->pDiscBundle = 0;
+            section->pMemory = 0;
+        }
+    }
 }
 
 int TrackStreamer::GetSectionToActivate(int loaded_frames) {
@@ -1797,6 +1842,45 @@ bool TrackStreamer::CheckLoadingBar() {
     return prev_need_loading_bar_26275 = minimum_distance < kLoadingBarDistanceThreshold_TrackStreamer;
 }
 
+void *TrackStreamer::AllocateUserMemory(int size, const char *debug_name, int offset) {
+    (void)debug_name;
+
+    int allocation_params;
+    if (bLargestMalloc(7) < size) {
+        allocation_params = (offset & 0x1FFC) << 17 | 0x2000;
+    } else {
+        allocation_params = (offset & 0x1FFC) << 17 | 0x2047;
+    }
+    return bMalloc(size, allocation_params);
+}
+
+void TrackStreamer::FreeUserMemory(void *mem) {
+    int free_before = pMemoryPool->GetAmountFree();
+    bFree(mem);
+    int size = pMemoryPool->GetAmountFree();
+    (void)free_before;
+    (void)size;
+}
+
+bool TrackStreamer::IsUserMemory(void *mem) {
+    int pos = static_cast<char *>(mem) - static_cast<char *>(pMemoryPoolMem);
+    if (pMemoryPoolMem && pos >= 0) {
+        return pos < MemoryPoolSize;
+    }
+    return false;
+}
+
+void TrackStreamer::ReadyToMakeSpaceInPool() {
+    MakeSpaceInPool(MakeSpaceInPoolSize, true);
+
+    void (*callback)(int) = MakeSpaceInPoolCallback;
+    int param = MakeSpaceInPoolCallbackParam;
+    MakeSpaceInPoolSize = 0;
+    MakeSpaceInPoolCallback = 0;
+    MakeSpaceInPoolCallbackParam = 0;
+    callback(param);
+}
+
 short TrackStreamer::GetPredictedZone(StreamingPositionEntry *streaming_position) {
     float speed = bSqrt(streaming_position->Velocity.x * streaming_position->Velocity.x +
                         streaming_position->Velocity.y * streaming_position->Velocity.y);
@@ -1875,6 +1959,22 @@ void TrackStreamer::ClearStreamingPositions() {
     }
 }
 
+void TrackStreamer::SetStreamingPosition(int position_number, const bVector3 *position) {
+    StreamingPositionEntry *position_entry = &StreamingPositionEntries[position_number];
+    position_entry->Position.x = position->x;
+    position_entry->Position.y = position->y;
+    position_entry->PredictedZone = 0;
+    position_entry->Elevation = position->z;
+    position_entry->Direction.y = 0.0f;
+    position_entry->PredictedZoneValidTime = -1;
+    position_entry->Velocity.x = 0.0f;
+    position_entry->Velocity.y = 0.0f;
+    position_entry->Direction.x = 0.0f;
+    position_entry->PositionSet = true;
+    position_entry->FollowingCar = false;
+    CurrentZoneNeedsRefreshing = true;
+}
+
 bool TrackStreamer::DetermineCurrentZones(short *current_zones) {
     bool changed = false;
     for (int position_number = 0; position_number < 2; position_number++) {
@@ -1930,6 +2030,29 @@ void TrackStreamer::ServiceNonGameState() {
     GetDebugRealTime();
     HandleLoading();
     GetDebugRealTime();
+}
+
+void TrackStreamer::SetLoadingPhase(eLoadingPhase phase) {
+    LoadingPhase = phase;
+    if (phase == LOADING_IDLE || phase == LOADING_REGULAR_SECTIONS) {
+        SetQueuedFileMinPriority(0);
+    } else {
+        SetQueuedFileMinPriority(QueuedFileDefaultPriority);
+    }
+}
+
+void TrackStreamer::BlockUntilLoadingComplete() {
+    RefreshLoading();
+    WaitForCurrentLoadingToComplete();
+}
+
+void TrackStreamer::RefreshLoading() {
+    CurrentZoneNeedsRefreshing = true;
+    for (int position_number = 0; position_number < 2; position_number++) {
+        StreamingPositionEntry *position_entry = &StreamingPositionEntries[position_number];
+        position_entry->PredictedZoneValidTime = -1;
+    }
+    HandleZoneSwitching();
 }
 
 void TrackStreamer::HandleZoneSwitching() {

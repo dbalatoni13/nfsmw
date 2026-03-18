@@ -128,6 +128,11 @@ class TSMemoryPool {
         return GetNextFreeNode(start_from_top, 0);
     }
     TSMemoryNode *GetNextAllocatedNode(bool start_from_top, TSMemoryNode *node = 0);
+    bool IsUpdated() {
+        bool updated = Updated;
+        Updated = false;
+        return updated;
+    }
     unsigned int GetPoolChecksum();
     void EnableTracing(bool enabled) {
         TracingEnabled = enabled;
@@ -196,12 +201,15 @@ class TrackStreamer {
 
     void ServiceGameState();
     void ServiceNonGameState();
+    int GetMemoryPoolSize();
     int CountUserAllocations(const char **pdebug_name);
     void SetStreamingPosition(int position_number, const bVector3 *position);
     void ClearStreamingPositions();
     void BlockUntilLoadingComplete();
+    void WaitForCurrentLoadingToComplete();
     void *AllocateUserMemory(int size, const char *debug_name, int offset);
     void FreeUserMemory(void *mem);
+    bool IsUserMemory(void *mem);
     void *AllocateMemory(TrackStreamingSection *section, int allocation_params);
     int AllocateSectionMemory(int *ptotal_needing_allocation);
     TrackStreamingSection *FindSection(int section_number);
@@ -221,6 +229,7 @@ class TrackStreamer {
     bool JettisonLeastImportantSection();
     void SetLoadingPhase(eLoadingPhase loading_phase);
     int Loader(bChunk *chunk);
+    int Unloader(bChunk *chunk);
     void StartLoadingSections();
     int HandleMemoryAllocation();
     TrackStreamingSection *ChooseSectionToJettison();
@@ -240,6 +249,10 @@ class TrackStreamer {
     bool IsLoadingInProgress();
     bool AreAllSectionsActivated();
     bool CheckLoadingBar();
+    bool MakeSpaceInPool(int size, bool force_unloading);
+    void MakeSpaceInPool(int size, void (*callback)(int), int param);
+    void ReadyToMakeSpaceInPool();
+    void RefreshLoading();
 
     void DisableZoneSwitching() {
         ZoneSwitchingDisabled = true;
