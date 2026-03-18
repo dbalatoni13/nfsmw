@@ -129,26 +129,24 @@ void RenderVisibleSectionBoundary(VisibleSectionBoundary *boundary, eView *view)
         return;
     }
 
-    float phase = static_cast<float>((static_cast<int>(WorldTimer.GetPackedTime() * 0.00025f * 262144.0f) & 0xffff)) * 6.1035156e-05f;
-    for (int i = 0; i < boundary->NumPoints; i++) {
-        int next_index = (i + 1) % boundary->NumPoints;
-        bVector2 segment;
-        segment.x = boundary->Points[next_index].x - boundary->Points[i].x;
-        segment.y = boundary->Points[next_index].y - boundary->Points[i].y;
+    float perimeter = 0.0f;
+    bVector3 position;
+    TopologyCoordinate topology_coordinate;
+    float pos = static_cast<float>((static_cast<int>(WorldTimer.GetPackedTime() * 0.00025f * 262144.0f) & 0xffff)) * 6.1035156e-05f;
+    int point_number;
 
-        float segment_length = bLength(&segment);
-        bVector2 direction;
-        bNormalize(&direction, &segment);
-        if (phase < segment_length) {
+    for (point_number = 0; point_number < boundary->GetNumPoints(); point_number++) {
+        bVector2 normal = *boundary->GetPoint((point_number + 1) % boundary->GetNumPoints()) - *boundary->GetPoint(point_number);
+        float length = bLength(&normal);
+
+        bNormalize(&normal, &normal);
+        if (pos < length) {
             do {
-                bVector2 point2;
-                bScaleAdd(&point2, &boundary->Points[i], &direction, phase);
+                bScaleAdd(reinterpret_cast<bVector2 *>(&position), boundary->GetPoint(point_number), &normal, pos);
 
-                TopologyCoordinate topology_coordinate;
-                if (topology_coordinate.HasTopology(&point2)) {
-                    bVector3 point3(point2.x, point2.y, 0.0f);
-                    point3.z = topology_coordinate.GetElevation(&point3, 0, 0, 0);
-                    if (view->GetPixelSize(&point3, 1.0f) > 0) {
+                if (topology_coordinate.HasTopology(reinterpret_cast<bVector2 *>(&position))) {
+                    position.z = topology_coordinate.GetElevation(&position, 0, 0, 0);
+                    if (view->GetPixelSize(&position, 1.0f) > 0) {
                         unsigned char *matrix_memory = CurrentBufferPos;
                         unsigned char *next_buffer_pos = CurrentBufferPos + sizeof(bMatrix4);
                         if (CurrentBufferEnd <= next_buffer_pos) {
@@ -161,21 +159,18 @@ void RenderVisibleSectionBoundary(VisibleSectionBoundary *boundary, eView *view)
                         CurrentBufferPos = next_buffer_pos;
                         if (matrix_memory) {
                             bMatrix4 *matrix = reinterpret_cast<bMatrix4 *>(matrix_memory);
-                            PSMTX44Identity(*reinterpret_cast<Mtx44 *>(matrix));
-                            matrix->v3.x = point3.x;
-                            matrix->v3.y = point3.y;
-                            matrix->v3.z = point3.z;
-                            matrix->v3.w = 1.0f;
+                            bIdentity(matrix);
+                            bCopy(&matrix->v3, &position, 1.0f);
                             reinterpret_cast<eViewRenderShim *>(view)->Render(pVisibleZoneBoundaryModel, matrix, 0, 0, 0, 0);
                         }
                     }
                 }
 
-                phase += 4.0f;
-            } while (phase < segment_length);
+                pos += 4.0f;
+            } while (pos < length);
         }
 
-        phase -= segment_length;
+        pos -= length;
     }
 }
 

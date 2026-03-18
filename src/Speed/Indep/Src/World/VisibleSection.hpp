@@ -24,6 +24,14 @@ struct VisibleSectionBoundary : public bTNode<VisibleSectionBoundary> {
     float GetDistanceOutside(const bVector2 *point, float max_distance);
     int GetSectionNumber();
     int GetMemoryImageSize();
+
+    int GetNumPoints() {
+        return NumPoints;
+    }
+
+    bVector2 *GetPoint(int n) {
+        return &Points[n];
+    }
 };
 
 struct VisibleSectionCoordinate {
