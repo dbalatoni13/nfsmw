@@ -15,6 +15,7 @@
 #include "types.h"
 
 extern class WRoadNetwork *fgRoadNetwork;
+class WRoadNav;
 
 // total size: 0x1
 class WRoadNetwork : public Debugable {
@@ -80,7 +81,7 @@ class WRoadNetwork : public Debugable {
     void ResetShortcuts();
 
     void ResetRaceSegments();
-    void AddRaceSegments(WRoadNav *road_nav);
+    void AddRaceSegments(class WRoadNav *road_nav);
 
     // unsigned int GetNumRoads() {}
 
