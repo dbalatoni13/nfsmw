@@ -370,52 +370,47 @@ void ClearXenonEmitters() {
 }
 
 void AddXenonEffect(EmitterGroup *piggyback_fx, const Attrib::Collection *spec, const UMath::Matrix4 *mat, const UMath::Vector4 *vel) {
-    XenonEffectVec &active = gNGEffectList.lists[XenonEffectLists::ACTIVE];
-    XenonEffectVec &staging = gNGEffectList.lists[XenonEffectLists::STAGING];
-    unsigned int size = active.finish - active.start;
+    unsigned int size = gNGEffectList.lists[XenonEffectLists::ACTIVE].finish - gNGEffectList.lists[XenonEffectLists::ACTIVE].start;
 
     if (size < 20) {
-        unsigned int active_capacity = active.end_of_storage - active.start;
+        unsigned int active_capacity = gNGEffectList.lists[XenonEffectLists::ACTIVE].end_of_storage - gNGEffectList.lists[XenonEffectLists::ACTIVE].start;
         if (active_capacity < 20) {
-            reserveXenonEffectVecImpl(&active, 20);
+            reserveXenonEffectVecImpl(&gNGEffectList.lists[XenonEffectLists::ACTIVE], 20);
         }
 
-        unsigned int staging_capacity = staging.end_of_storage - staging.start;
+        unsigned int staging_capacity = gNGEffectList.lists[XenonEffectLists::STAGING].end_of_storage - gNGEffectList.lists[XenonEffectLists::STAGING].start;
         if (staging_capacity < 20) {
-            reserveXenonEffectVecImpl(&staging, 20);
+            reserveXenonEffectVecImpl(&gNGEffectList.lists[XenonEffectLists::STAGING], 20);
         }
 
         XenonEffectDef effect;
-        effect.vel = *vel;
         effect.mat = UMath::Matrix4::kIdentity;
         effect.mat.v3 = mat->v3;
         effect.spec = const_cast<Attrib::Collection *>(spec);
         effect.piggyback_effect = piggyback_fx;
+        effect.vel = *vel;
 
-        active.push_back(effect);
+        gNGEffectList.lists[XenonEffectLists::ACTIVE].push_back(effect);
     }
 }
 
 void UpdateXenonEmitters(float dt) {
-    XenonEffectVec &active = gNGEffectList.lists[XenonEffectLists::ACTIVE];
-    XenonEffectVec &staging = gNGEffectList.lists[XenonEffectLists::STAGING];
-
     gParticleList.AgeParticles(dt);
 
-    XenonEffectDef *effect = active.start;
-    while (effect != active.finish) {
-        staging.push_back(*effect);
+    XenonEffectDef *effect = gNGEffectList.lists[XenonEffectLists::ACTIVE].start;
+    while (effect != gNGEffectList.lists[XenonEffectLists::ACTIVE].finish) {
+        gNGEffectList.lists[XenonEffectLists::STAGING].push_back(*effect);
         ++effect;
     }
 
-    active.finish = active.start;
+    gNGEffectList.lists[XenonEffectLists::ACTIVE].finish = gNGEffectList.lists[XenonEffectLists::ACTIVE].start;
 
-    effect = staging.start;
-    while (effect != staging.finish) {
+    effect = gNGEffectList.lists[XenonEffectLists::STAGING].start;
+    while (effect != gNGEffectList.lists[XenonEffectLists::STAGING].finish) {
         NGEffect ng_effect(*effect);
         ++effect;
     }
 
-    staging.finish = staging.start;
+    gNGEffectList.lists[XenonEffectLists::STAGING].finish = gNGEffectList.lists[XenonEffectLists::STAGING].start;
     gParticleList.GeneratePolys();
 }
