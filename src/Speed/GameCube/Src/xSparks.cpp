@@ -238,6 +238,7 @@ void CGEmitter::SpawnParticles(float dt, float intensity) {
         float count = intensity * mEmitterDef.NumParticles();
         float life = mEmitterDef.Life();
         float count_after_variance = count - count * mEmitterDef.NumParticlesVariance() * 100.0f;
+        float life_factor = life - life * mEmitterDef.LifeVariance();
         unsigned int precomputed_color = colour_a << 24 | colour_b << 16 | colour_g << 8 | colour_r;
 
         if (count_after_variance != 0.0f) {
@@ -274,6 +275,8 @@ void CGEmitter::SpawnParticles(float dt, float intensity) {
                 VU0_v4add(velocity_base, velocity_center, velocity_base);
                 VU0_v4scalexyz(velocity_base, volume_extent, velocity_base);
 
+                gravity = (mEmitterDef.GravityStart() - mEmitterDef.GravityDelta()) + bRandom(mEmitterDef.GravityDelta(), &seed) * 2.0f;
+
                 spawn_point.x = mEmitterDef.VolumeCenter().x + (bRandom(mEmitterDef.VolumeExtent().x, &seed) - mEmitterDef.VolumeExtent().x * 0.5f);
                 spawn_point.y = mEmitterDef.VolumeCenter().y + (bRandom(mEmitterDef.VolumeExtent().y, &seed) - mEmitterDef.VolumeExtent().y * 0.5f);
                 spawn_point.z = mEmitterDef.VolumeCenter().z + (bRandom(mEmitterDef.VolumeExtent().z, &seed) - mEmitterDef.VolumeExtent().z * 0.5f);
@@ -281,14 +284,13 @@ void CGEmitter::SpawnParticles(float dt, float intensity) {
 
                 UMath::RotateTranslate(spawn_point, local_world, spawn_point);
                 VU0_v3scaleadd(UMath::Vector4To3(velocity_base), age, UMath::Vector4To3(spawn_point),
-                               *reinterpret_cast<UMath::Vector3 *>(particle));
+                               particle->initialPos);
 
-                gravity = (mEmitterDef.GravityStart() - mEmitterDef.GravityDelta()) + bRandom(mEmitterDef.GravityDelta(), &seed) * 2.0f;
-                particle->initialPos = UMath::Vector4To3(spawn_point);
+                particle->initialPos.z += gravity * age * age;
                 particle->vel = UMath::Vector4To3(velocity_base);
                 particle->age = age;
                 particle->gravity = gravity;
-                particle->life = static_cast<uint16>((life - life * mEmitterDef.LifeVariance()) * 65535.0f);
+                particle->life = static_cast<uint16>(life_factor * 65535.0f);
                 particle->color = precomputed_color;
                 particle->length = static_cast<uint8>(length_clamped * 255.0f);
                 particle->width = static_cast<uint8>(mEmitterDef.HeightStart());
