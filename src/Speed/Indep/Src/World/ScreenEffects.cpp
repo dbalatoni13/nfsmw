@@ -224,9 +224,8 @@ void DoTunnelBloom(eView *view) {
             SE_def.a = 128.0f;
             SE_def.intensity = view->ScreenEffects->SE_data[SE_GLARE].intensity - GlareFalloff;
 
-            bVector3 posScreen((camera_position->x - lcamPosInside_27614[vIndex].x) + camera_direction->x,
-                               (camera_position->y - lcamPosInside_27614[vIndex].y) + camera_direction->y,
-                               (camera_position->z - lcamPosInside_27614[vIndex].z) + camera_direction->z);
+            bVector3 posScreen(*camera_position - lcamPosInside_27614[vIndex]);
+            posScreen += *camera_direction;
 
             if (base_glare < SE_def.intensity) {
                 SE_def.data[0] = posScreen.x + dataBackup_27616[kTunnelPoint0X][vIndex];
@@ -304,10 +303,13 @@ void DoTunnelBloom(eView *view) {
     SE_def.data[10] = dataBackup_27616[kTunnelPoint3Y][vIndex];
     SE_def.data[11] = dataBackup_27616[kTunnelPoint3Z][vIndex];
 
-    if (regionB_27617[vIndex] != end_tunnel || zoneB[vIndex] != zone) {
+    if (regionB_27617[vIndex] != end_tunnel) {
         view->ScreenEffects->SE_data[SE_GLARE].data[1] = base_glare;
     }
     regionB_27617[vIndex] = end_tunnel;
+    if (zoneB[vIndex] != zone) {
+        view->ScreenEffects->SE_data[SE_GLARE].data[1] = base_glare;
+    }
     zoneB[vIndex] = zone;
 
     bVector2 r(p0.x - twoDpos.x, p0.y - twoDpos.y);
