@@ -168,30 +168,26 @@ TrackPathZone *TrackPathManager::FindZone(const bVector2 *position, eTrackPathZo
                 }
             }
 
-            int most_cached_zones = zone_info->NumCachedZones;
-            if (MostCachedZones > zone_info->NumCachedZones) {
-                most_cached_zones = MostCachedZones;
-            }
-            MostCachedZones = most_cached_zones;
+            MostCachedZones = bMax(MostCachedZones, zone_info->NumCachedZones);
         }
         cache_valid = zone_info->NumCachedZones < 9;
     }
 
     TrackPathZone *found_zone = 0;
     if (!cache_valid) {
+        TrackPathZone *first_zone = zone_info->pFirstZone;
         TrackPathZone *last_zone = zone_info->pLastZone;
-        TrackPathZone *current_zone = zone_info->pFirstZone;
         zone_info->NumCacheRebuilds += 1;
         if (prev_zone) {
-            current_zone = prev_zone->GetMemoryImageNext();
+            first_zone = prev_zone->GetMemoryImageNext();
         }
 
-        while (current_zone < last_zone && position &&
-               (!bBoundingBoxIsInside(&current_zone->BBoxMin, &current_zone->BBoxMax, position, 0.0f) ||
-                !current_zone->IsPointInside(position))) {
-            current_zone = current_zone->GetMemoryImageNext();
+        TrackPathZone *zone = first_zone;
+        while (zone < last_zone && position &&
+               (!bBoundingBoxIsInside(&zone->BBoxMin, &zone->BBoxMax, position, 0.0f) || !zone->IsPointInside(position))) {
+            zone = zone->GetMemoryImageNext();
         }
-        found_zone = current_zone;
+        found_zone = zone;
     } else {
         int first_zone_index = 0;
         zone_info->NumCacheHits += 1;

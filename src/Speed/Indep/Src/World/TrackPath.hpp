@@ -73,8 +73,8 @@ class TrackPathManager {
         bVector2 CachedBBoxMax;
         int NumCachedZones;
         int NumCacheHits;
-        int NumCacheRebuilds;
         int NumFullRebuilds;
+        int NumCacheRebuilds;
         TrackPathZone *CachedZones[8];
     };
 
