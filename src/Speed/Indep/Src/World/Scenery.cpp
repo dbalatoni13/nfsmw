@@ -32,7 +32,22 @@ struct SceneryOverrideInfo {
     void AssignOverrides(ScenerySectionHeader *section_header);
 };
 
-struct ModelHeirarchy;
+struct ModelHeirarchy {
+    struct Node {
+        unsigned int mNodeName;
+        unsigned int mModelHash;
+        eModel *mModel;
+        unsigned char mFlags;
+        unsigned char mParent;
+        unsigned char mNumChildren;
+        unsigned char mChildIndex;
+    };
+
+    unsigned int mNameHash;
+    unsigned char mNumNodes;
+    unsigned char mFlags;
+    unsigned short pad;
+};
 
 struct SceneryInfo {
     char DebugName[24];
@@ -563,7 +578,8 @@ void ScenerySectionHeader::DrawAScenery(int scenery_instance_number, SceneryCull
         }
     }
 
-    unsigned char *scenery_info = reinterpret_cast<unsigned char *>(section_header_words[6]) + instance->SceneryInfoNumber * 0x48;
+    int scenery_info_offset = instance->SceneryInfoNumber * 0x48;
+    unsigned char *scenery_info = reinterpret_cast<unsigned char *>(section_header_words[6]) + scenery_info_offset;
     if (((instance->ExcludeFlags ^ 0x60) & scenery_cull_info->ExcludeFlags) != 0) {
         return;
     }
@@ -580,9 +596,9 @@ void ScenerySectionHeader::DrawAScenery(int scenery_instance_number, SceneryCull
     float to_instance_x = instance->Position[0] - scenery_cull_info->Position.x;
     float to_instance_y = instance->Position[1] - scenery_cull_info->Position.y;
     float to_instance_z = instance->Position[2] - scenery_cull_info->Position.z;
-    float radius = GetSceneryRadius_Scenery(scenery_info) + 6.0f;
     float forward_distance = to_instance_x * scenery_cull_info->Direction.x + to_instance_y * scenery_cull_info->Direction.y +
                              to_instance_z * scenery_cull_info->Direction.z;
+    float radius = GetSceneryRadius_Scenery(scenery_info) + 6.0f;
     int pixel_size_int = 0;
     if (-radius <= forward_distance) {
         float distance = bSqrt(
@@ -604,37 +620,37 @@ void ScenerySectionHeader::DrawAScenery(int scenery_instance_number, SceneryCull
     }
 
     eModel *model = 0;
-    if ((scenery_cull_info->ExcludeFlags & 0x1800) == 0) {
-        if ((scenery_cull_info->ExcludeFlags & 0x20) != 0) {
+    if ((scenery_cull_info->ExcludeFlags & 0x1800) != 0) {
+        if ((instance_flags & 0x80) != 0) {
             if (pixel_size_int > 0x1F) {
                 model = GetSceneryModel_Scenery(scenery_info, 2);
             }
-        } else if (eGetCurrentViewMode() > EVIEWMODE_ONE_RVM) {
-            if (pixel_size_int > 0x16) {
-                model = GetSceneryModel_Scenery(scenery_info, 2);
-            }
-        } else if (pixel_size_int > 0x11) {
-            model = GetSceneryModel_Scenery(scenery_info, 0);
-            if (model && model->Solid && model->Solid->NumPolys > 0x27) {
-                float lod_scale = model->Solid->Volume;
-                if (lod_scale < 6.0f) {
-                    lod_scale = 6.0f;
-                }
-                if ((static_cast<float>(pixel_size_int) / lod_scale) < 8.7f) {
-                    model = GetSceneryModel_Scenery(scenery_info, 2);
-                }
-            }
-        }
-    } else if ((instance_flags & 0x80) == 0) {
-        if (pixel_size_int > 0x1F) {
+        } else if (pixel_size_int > 0x1F) {
             if ((instance_flags & 0x1000100) == 0) {
                 model = GetSceneryModel_Scenery(scenery_info, 3);
             } else {
                 model = GetSceneryModel_Scenery(scenery_info, 0);
             }
         }
-    } else if (pixel_size_int > 0x1F) {
-        model = GetSceneryModel_Scenery(scenery_info, 2);
+    } else if ((scenery_cull_info->ExcludeFlags & 0x20) != 0) {
+        if (pixel_size_int > 0x1F) {
+            model = GetSceneryModel_Scenery(scenery_info, 2);
+        }
+    } else if (eGetCurrentViewMode() > EVIEWMODE_ONE_RVM) {
+        if (pixel_size_int > 0x16) {
+            model = GetSceneryModel_Scenery(scenery_info, 2);
+        }
+    } else if (pixel_size_int > 0x11) {
+        model = GetSceneryModel_Scenery(scenery_info, 0);
+        if (model && model->Solid && model->Solid->NumPolys > 0x27) {
+            float lod_scale = model->Solid->Volume;
+            if (lod_scale < 6.0f) {
+                lod_scale = 6.0f;
+            }
+            if ((static_cast<float>(pixel_size_int) / lod_scale) < 8.7f) {
+                model = GetSceneryModel_Scenery(scenery_info, 2);
+            }
+        }
     }
 
     if (!model) {
@@ -773,7 +789,7 @@ int LoaderScenery(bChunk *chunk) {
                     ScenerySectionHeaderList.AddTail(section_header);
                 }
             } else if (subchunk_id == 0x34102) {
-                if (!section_header_words) {
+                if (!section_header) {
                     continue;
                 }
 
@@ -802,7 +818,7 @@ int LoaderScenery(bChunk *chunk) {
                     }
                 }
             } else if (subchunk_id == 0x34103) {
-                if (!section_header_words) {
+                if (!section_header) {
                     continue;
                 }
 
@@ -832,7 +848,7 @@ int LoaderScenery(bChunk *chunk) {
                     }
                 }
             } else if (subchunk_id == 0x34105) {
-                if (!section_header_words) {
+                if (!section_header) {
                     continue;
                 }
 
@@ -856,7 +872,7 @@ int LoaderScenery(bChunk *chunk) {
                     }
                 }
             } else if (subchunk_id == 0x34106) {
-                if (!section_header_words) {
+                if (!section_header) {
                     continue;
                 }
 
@@ -876,7 +892,7 @@ int LoaderScenery(bChunk *chunk) {
                     }
                 }
             } else if (subchunk_id == 0x34107) {
-                if (!section_header_words) {
+                if (!section_header) {
                     continue;
                 }
 
@@ -885,7 +901,7 @@ int LoaderScenery(bChunk *chunk) {
             }
         }
 
-        if (section_header_words && ChunkMovementOffset == 0) {
+        if (section_header && ChunkMovementOffset == 0) {
             unsigned char *scenery_infos = reinterpret_cast<unsigned char *>(section_header_words[6]);
             for (int i = 0; i < section_header_words[7]; i++) {
                 unsigned char *scenery_info = scenery_infos + i * 0x48;
@@ -929,7 +945,7 @@ int LoaderScenery(bChunk *chunk) {
             }
         }
 
-        if (section_header_words) {
+        if (section_header) {
             section_header_words[2] = 1;
         }
         return 1;
@@ -1039,8 +1055,7 @@ int ToggleIsInTable(short *section_numbers, int num_sections, int max_sections, 
 }
 
 int UnloaderScenery(bChunk *chunk) {
-    bChunk *scenery_chunk = chunk;
-    unsigned int chunk_id = scenery_chunk->GetID();
+    unsigned int chunk_id = chunk->GetID();
 
     if (chunk_id == 0x34108) {
         SceneryOverrideInfoTable = 0;
@@ -1050,12 +1065,10 @@ int UnloaderScenery(bChunk *chunk) {
     }
 
     if (chunk_id == 0x80034100) {
-        ScenerySectionHeader *section_header = reinterpret_cast<ScenerySectionHeader *>(scenery_chunk->GetAlignedData(0x10));
+        ScenerySectionHeader *section_header = reinterpret_cast<ScenerySectionHeader *>(chunk->GetAlignedData(0x10));
         int *section_header_words = reinterpret_cast<int *>(section_header);
         VisibleSectionUserInfo *user_info = TheVisibleSectionManager.GetUserInfo(section_header_words[3]);
-        if (user_info) {
-            user_info->pScenerySectionHeader = 0;
-        }
+        user_info->pScenerySectionHeader = 0;
         TheVisibleSectionManager.UnallocateUserInfo(section_header_words[3]);
         section_header->Remove();
 
@@ -1098,21 +1111,22 @@ int UnloaderScenery(bChunk *chunk) {
     }
 
     if (chunk_id == 0x8003410B) {
-        bChunk *last_chunk = scenery_chunk->GetLastChunk();
-        for (bChunk *subchunk = scenery_chunk->GetFirstChunk(); subchunk != last_chunk; subchunk = subchunk->GetNext()) {
-            unsigned int *entry_words = reinterpret_cast<unsigned int *>(subchunk->GetData());
-            unsigned int num_models = *reinterpret_cast<unsigned char *>(&entry_words[1]);
+        bChunk *last_chunk = chunk->GetLastChunk();
+        for (bChunk *subchunk = chunk->GetFirstChunk(); subchunk != last_chunk; subchunk = subchunk->GetNext()) {
+            ModelHeirarchy *heirarchy = reinterpret_cast<ModelHeirarchy *>(subchunk->GetData());
+            ModelHeirarchy::Node *nodes = reinterpret_cast<ModelHeirarchy::Node *>(heirarchy + 1);
+            unsigned int num_models = heirarchy->mNumNodes;
 
             for (unsigned int i = 0; i < num_models; i++) {
-                eModel *model = reinterpret_cast<eModel *>(entry_words[i * 4 + 4]);
+                eModel *model = nodes[i].mModel;
                 if (model) {
                     model->UnInit();
                     bFree(eModelSlotPool, model);
-                    entry_words[i * 4 + 4] = 0;
+                    nodes[i].mModel = 0;
                 }
             }
 
-            ModelHeirarchyMap::iterator it = HeirarchyMap.find(entry_words[0]);
+            ModelHeirarchyMap::iterator it = HeirarchyMap.find(heirarchy->mNameHash);
             if (it != HeirarchyMap.end()) {
                 HeirarchyMap.erase(it);
             }
@@ -1121,8 +1135,8 @@ int UnloaderScenery(bChunk *chunk) {
     }
 
     if (chunk_id == 0x80034115) {
-        LightTable = 0;
         MaxSceneryLightContexts = 0;
+        LightTable = 0;
         SceneryLightContextTable = 0;
         return 1;
     }
