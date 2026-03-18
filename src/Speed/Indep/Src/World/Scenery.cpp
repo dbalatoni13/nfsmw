@@ -782,12 +782,12 @@ int LoaderScenery(bChunk *chunk) {
                 if (section_header_words[2] == 0) {
                     for (int i = 0; i < section_header_words[7]; i++) {
                         unsigned char *scenery_info = reinterpret_cast<unsigned char *>(section_header_words[6] + i * 0x48);
+                        bEndianSwap32(scenery_info + 0x40);
                         for (int n = 0; n < 4; n++) {
                             bEndianSwap32(scenery_info + 0x18 + n * 4);
                         }
                         bEndianSwap32(scenery_info + 0x38);
                         bEndianSwap32(scenery_info + 0x3C);
-                        bEndianSwap32(scenery_info + 0x40);
                     }
                 }
 
