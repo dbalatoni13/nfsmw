@@ -441,6 +441,24 @@ void VisibleSectionManager::EnableGroup(unsigned int group_name) {
     }
 }
 
+int VisibleSectionManager::Unloader(bChunk *chunk) {
+    if (chunk->GetID() == 0x80034150) {
+        pInfo = 0;
+        NonDrivableBoundaryList.InitList();
+        LoadingSectionList.InitList();
+        DrivableSectionList.InitList();
+        DrivableBoundaryList.InitList();
+        return 1;
+    }
+
+    if (chunk->GetID() != 0x34158) {
+        return 0;
+    }
+
+    reinterpret_cast<VisibleSectionOverlay *>(chunk->GetData())->Remove();
+    return 1;
+}
+
 int Get2PlayerSectionNumber(int section_number, const char *build_platform) {
     if (bStrICmp(build_platform, "PC") != 0) {
         char section_letter = GetScenerySectionLetter(section_number);

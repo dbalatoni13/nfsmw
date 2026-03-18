@@ -24,6 +24,7 @@ extern bool PostLoadFixupDisabled;
 extern int AllowDuplicateSolids;
 extern int ForceHoleFillerMethod;
 extern int WaitForFrameBufferSwapDisabled;
+extern int WaitUntilRenderingDoneDisabled;
 extern unsigned int eFrameCounter;
 int Get2PlayerSectionNumber(int section_number);
 void GetScenerySectionName(char *name, int section_number);
@@ -35,6 +36,7 @@ bool DoLinesIntersect(const bVector2 &line1_start, const bVector2 &line1_end, co
 void eWaitUntilRenderingDone();
 void MoveChunks(bChunk *dest_chunks, bChunk *source_chunks, int sizeof_chunks, const char *debug_name);
 void bSetMemoryPoolOverrideInfo(int pool_num, MemoryPoolOverrideInfo *override_info);
+void UnloadChunks(bChunk *chunks, int sizeof_chunks, const char *debug_name);
 void SetQueuedFileMinPriority(int priority);
 void SetDelayedResourceCallback(void (*callback)(int), int param);
 void NotifySkyLoader();
@@ -1416,6 +1418,22 @@ void TrackStreamer::HandleSectionActivation() {
     }
 }
 
+void TrackStreamer::UnloadEverything() {
+    while (NumSectionsLoaded != 0) {
+        ServiceResourceLoading();
+    }
+
+    for (int i = 0; i < NumTrackStreamingSections; i++) {
+        TrackStreamingSection *section = &pTrackStreamingSections[i];
+        if (static_cast<unsigned int>(section->Status - TrackStreamingSection::LOADED) < 2U) {
+            UnloadSection(section);
+        }
+    }
+
+    FreeSectionMemory();
+    ClearCurrentZones();
+}
+
 void TrackStreamer::ActivateSection(TrackStreamingSection *section) {
     NumSectionsActivated += 1;
     AllowDuplicateSolids += 1;
@@ -1431,6 +1449,16 @@ void TrackStreamer::ActivateSection(TrackStreamingSection *section) {
     section->LoadedSize = sizeof_chunks;
     section->Status = TrackStreamingSection::ACTIVATED;
     SetDuplicateTextureWarning(true);
+}
+
+void TrackStreamer::UnactivateSection(TrackStreamingSection *section) {
+    section->UnactivatedFrameCount = 0;
+    WaitUntilRenderingDoneDisabled = 1;
+    section->UnactivatedFrameCount = eFrameCounter;
+    UnloadChunks(reinterpret_cast<bChunk *>(section->pMemory), section->LoadedSize, section->SectionName);
+    WaitUntilRenderingDoneDisabled = 0;
+    NumSectionsActivated -= 1;
+    section->Status = TrackStreamingSection::LOADED;
 }
 
 void TrackStreamer::LoadDiscBundle(DiscBundleSection *disc_bundle) {
@@ -1939,6 +1967,38 @@ bool TrackStreamer::IsUserMemory(void *mem) {
         return pos < MemoryPoolSize;
     }
     return false;
+}
+
+bool TrackStreamer::MakeSpaceInPool(int size, bool force_unloading) {
+    WaitForCurrentLoadingToComplete();
+    while (bCountFreeMemory(7) < size) {
+        int amount_unloaded = UnloadLeastRecentlyUsedSection();
+        if (amount_unloaded == 0 && (!force_unloading || !JettisonLeastImportantSection())) {
+            break;
+        }
+    }
+
+    ForceHoleFillerMethod = 0;
+    DoHoleFilling(0x7FFFFFFF);
+    ForceHoleFillerMethod = -1;
+    return size <= bLargestMalloc(7);
+}
+
+void TrackStreamer::MakeSpaceInPool(int size, void (*callback)(int), int param) {
+    if (LoadingPhase == LOADING_IDLE) {
+        IsLoadingInProgress();
+    }
+
+    if (!IsLoadingInProgress()) {
+        MakeSpaceInPool(size, true);
+        callback(param);
+    } else {
+        MakeSpaceInPoolSize = size;
+        MakeSpaceInPoolCallback = callback;
+        MakeSpaceInPoolCallbackParam = param;
+        pCallback = ReadyToMakeSpaceInPoolBridge;
+        CallbackParam = reinterpret_cast<int>(this);
+    }
 }
 
 void TrackStreamer::ReadyToMakeSpaceInPool() {
