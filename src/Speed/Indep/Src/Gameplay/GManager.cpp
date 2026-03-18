@@ -39,6 +39,7 @@
 
 extern int SkipFE;
 extern int TWEAK_ShowAllGameplayIcons;
+extern int gVerboseTesterOutput;
 
 char *bStrIStr(const char *s1, const char *s2);
 void bCloseMemoryPool(int pool_num);
@@ -1750,6 +1751,62 @@ void GManager::GatherInstanceKeys(Attrib::Gen::gameplay &collection, AttribKeyLi
     for (i = 0; i < collection.Num_Children(); ++i) {
         Attrib::Gen::gameplay child(Attrib::FindCollection(Attrib::Gen::gameplay::ClassKey(), collection.Children(i).GetCollectionKey()), 0, nullptr);
         GatherInstanceKeys(child, list, templateKey);
+    }
+}
+
+void GManager::RecursivePreloadCharacterCars(GRuntimeInstance *instance, bool forcePreload) {
+    if (instance->GetType() == kGameplayObjType_Character) {
+        const char *carName = *reinterpret_cast<const char *const *>(instance->GetAttributePointer(0xF833C06F, 0) ?
+                                                                         instance->GetAttributePointer(0xF833C06F, 0) :
+                                                                         Attrib::DefaultDataArea(sizeof(const char *)));
+        const char *stockCarName = *reinterpret_cast<const char *const *>(instance->GetAttributePointer(0xFD3CF790, 0) ?
+                                                                              instance->GetAttributePointer(0xFD3CF790, 0) :
+                                                                              Attrib::DefaultDataArea(sizeof(const char *)));
+
+        if (stockCarName && *stockCarName) {
+            carName = stockCarName;
+        }
+
+        if (*reinterpret_cast<const int *>(instance->GetAttributePointer(0x9652AF0F, 0) ?
+                                               instance->GetAttributePointer(0x9652AF0F, 0) :
+                                               Attrib::DefaultDataArea(sizeof(int))) != 0 ||
+            forcePreload) {
+            ReserveStockCar(carName);
+        }
+    }
+
+    for (unsigned int i = 0; i < instance->Get(0x916E0E78).GetLength(); ++i) {
+        const unsigned int *childKey = reinterpret_cast<const unsigned int *>(instance->GetAttributePointer(0x916E0E78, i));
+
+        if (!childKey) {
+            childKey = reinterpret_cast<const unsigned int *>(Attrib::DefaultDataArea(sizeof(unsigned int)));
+        }
+
+        GRuntimeInstance *child = FindInstance(*childKey);
+        if (child) {
+            RecursivePreloadCharacterCars(child, forcePreload);
+        }
+    }
+}
+
+void GManager::PreloadStockCarsForActivity(GActivity *activity) {
+    GRaceParameters *raceParms;
+    bool forcePreload;
+
+    ClearStockCars();
+    if (activity) {
+        forcePreload = false;
+        raceParms = GRaceDatabase::Get().GetRaceFromActivity(activity);
+
+        if (raceParms) {
+            forcePreload = raceParms->GetRaceType() == GRace::kRaceType_Drag;
+        }
+
+        if (gVerboseTesterOutput && raceParms) {
+            raceParms->GetEventID();
+        }
+
+        RecursivePreloadCharacterCars(activity, forcePreload);
     }
 }
 
