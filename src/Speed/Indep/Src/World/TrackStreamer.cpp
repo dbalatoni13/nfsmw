@@ -111,6 +111,10 @@ bool DoLinesIntersect(
     return false;
 }
 
+inline bool TrackStreamingBarrier::Intersects(const bVector2 *pointa, const bVector2 *pointb) {
+    return DoLinesIntersect(Points[0], Points[1], *pointa, *pointb);
+}
+
 struct bBitTableLayout_TrackStreamer {
     int NumBits;
     uint8 *Bits;
@@ -672,8 +676,8 @@ int TrackStreamer::BuildHoleMovements(HoleMovement *hole_movements, int max_move
         HoleMovement *movement = &hole_movements[num_movements];
         movement->Address = 0;
 
-        if (filler_method <= 2) {
-            bool start_from_top = filler_method == 2;
+        if (filler_method == 2 || filler_method == 0 || filler_method == 3) {
+            bool start_from_top = filler_method == 3;
             TSMemoryNode *free_node = pMemoryPool->GetFirstFreeNode(start_from_top);
             TSMemoryNode *node = pMemoryPool->GetNextAllocatedNode(start_from_top, free_node);
             if (filler_method == 0 && !node) {
@@ -2090,42 +2094,40 @@ void TrackStreamer::ReadyToMakeSpaceInPoolBridge(int param) {
     reinterpret_cast<TrackStreamer *>(param)->ReadyToMakeSpaceInPool();
 }
 
-short TrackStreamer::GetPredictedZone(StreamingPositionEntry *streaming_position) {
-    float speed = bLength(&streaming_position->Velocity);
+short TrackStreamer::GetPredictedZone(StreamingPositionEntry *position_entry) {
+    float speed = bLength(&position_entry->Velocity);
     int predicted_zone = 0;
     bool found_predicted_zone = false;
-    TrackPathZone *track_path_zone = 0;
-    bVector2 predicted_position;
+    TrackPathZone *zone = 0;
+    bVector2 predict_position;
 
-    while ((track_path_zone =
-                TheTrackPathManager.FindZone(&streaming_position->Position, TRACK_PATH_ZONE_STREAMER_PREDICTION, track_path_zone))) {
-        float zone_elevation = track_path_zone->GetElevation();
-        if ((0.0f < zone_elevation && streaming_position->Elevation < zone_elevation) ||
-            (zone_elevation < 0.0f && -zone_elevation < streaming_position->Elevation)) {
+    while ((zone = TheTrackPathManager.FindZone(&position_entry->Position, TRACK_PATH_ZONE_STREAMER_PREDICTION, zone))) {
+        float elevation = zone->GetElevation();
+        if ((0.0f < elevation && position_entry->Elevation < elevation) || (elevation < 0.0f && -elevation < position_entry->Elevation)) {
             continue;
         }
 
         float max_speed = kPredictedZoneStopProjectSpeed_TrackStreamer * kPredictedZoneScale_TrackStreamer;
         float distance = speed * kPredictedZoneScale_TrackStreamer;
-        DrivableScenerySection *drivable_section;
+        DrivableScenerySection *scenery_section;
         if (max_speed < speed) {
-            predicted_position = streaming_position->Position;
+            predict_position = position_entry->Position;
         } else if (kPredictedZoneMaxDistance_TrackStreamer < distance) {
-            bScaleAdd(&predicted_position, &streaming_position->Position, &streaming_position->Velocity,
+            bScaleAdd(&predict_position, &position_entry->Position, &position_entry->Velocity,
                       kPredictedZoneMaxDistance_TrackStreamer / speed);
         } else {
-            bScaleAdd(&predicted_position, &streaming_position->Position, &streaming_position->Velocity,
+            bScaleAdd(&predict_position, &position_entry->Position, &position_entry->Velocity,
                       kPredictedZoneScale_TrackStreamer);
         }
 
-        drivable_section = TheVisibleSectionManager.FindDrivableSection(&predicted_position);
-        if (drivable_section && track_path_zone->Data[0] != 0) {
-            short section_number = drivable_section->SectionNumber;
+        scenery_section = TheVisibleSectionManager.FindDrivableSection(&predict_position);
+        if (scenery_section && zone->Data[0] != 0) {
+            short section_number = scenery_section->SectionNumber;
             for (int i = 0; i <= 3; i++) {
-                if (track_path_zone->Data[i] == 0) {
+                if (zone->Data[i] == 0) {
                     break;
                 }
-                if (track_path_zone->Data[i] == section_number) {
+                if (zone->Data[i] == section_number) {
                     found_predicted_zone = true;
                     predicted_zone = section_number;
                     break;
@@ -2135,10 +2137,10 @@ short TrackStreamer::GetPredictedZone(StreamingPositionEntry *streaming_position
     }
 
     if (found_predicted_zone) {
-        if (!bEqual(&predicted_position, &streaming_position->Position, kPredictedZoneEqualEpsilon_TrackStreamer)) {
-            for (int i = 0; i < NumBarriers; i++) {
-                if (DoLinesIntersect(pBarriers[i].Points[0], pBarriers[i].Points[1], streaming_position->Position,
-                                     predicted_position)) {
+        if (!bEqual(&predict_position, &position_entry->Position, kPredictedZoneEqualEpsilon_TrackStreamer)) {
+            for (int barrier_num = 0; barrier_num < NumBarriers; barrier_num++) {
+                TrackStreamingBarrier *barrier = &pBarriers[barrier_num];
+                if (barrier->Intersects(&position_entry->Position, &predict_position)) {
                     found_predicted_zone = false;
                     predicted_zone = 0;
                 }
@@ -2150,9 +2152,9 @@ short TrackStreamer::GetPredictedZone(StreamingPositionEntry *streaming_position
         }
     }
 
-    DrivableScenerySection *drivable_section = TheVisibleSectionManager.FindDrivableSection(&streaming_position->Position);
-    if (drivable_section) {
-        predicted_zone = drivable_section->SectionNumber;
+    DrivableScenerySection *scenery_section = TheVisibleSectionManager.FindDrivableSection(&position_entry->Position);
+    if (scenery_section) {
+        predicted_zone = scenery_section->SectionNumber;
     }
     return predicted_zone;
 }

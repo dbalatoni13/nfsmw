@@ -171,7 +171,7 @@ struct TrackStreamingInfo {
 struct TrackStreamingBarrier {
     // void EndianSwap() {}
 
-    // bool Intersects(const bVector2 *pointa, const bVector2 *pointb) {}
+    bool Intersects(const bVector2 *pointa, const bVector2 *pointb);
 
     bVector2 Points[2]; // offset 0x0, size 0x10
 };
