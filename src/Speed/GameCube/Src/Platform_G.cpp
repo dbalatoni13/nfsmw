@@ -87,7 +87,7 @@ extern int g_discErrorOccured;
 extern int g_discErrorNumber;
 extern EAXSound *g_pEAXSound;
 extern MoviePlayer *gMoviePlayer;
-extern const char *s_OpenCover_ErrorText[];
+extern const char *s_OpenCover_ErrorText[][6];
 extern const char FEngDiscErrorPackage[];
 extern PADStatus HardwarePadStatus[4];
 
@@ -268,11 +268,15 @@ void CheckReset(int resetMode) {
 int DVDValidErrorState(int error) {
     switch (error) {
         case 5:
+            return 5;
         case 4:
+            return 4;
         case 6:
+            return 6;
         case 11:
+            return 11;
         case -1:
-            return error;
+            return -1;
         default:
             return 0;
     }
@@ -388,15 +392,16 @@ void DVDErrorTask(void *, int) {
             if (OSGetResetSwitchState()) {
                 resetButtonPressed = 1;
             }
-        }
-        if (num_queued_resets > 0 || resetButtonPressed) {
+        } else if (num_queued_resets > 0 || resetButtonPressed) {
             resetMode = 0;
         }
 
         driveStatus = DVDGetDriveStatus();
 
         if (driveStatus != -1 && resetMode != -1) {
-            CheckReset(resetMode);
+            int mode = resetMode;
+            resetMode = -1;
+            CheckReset(mode);
         }
 
         /* Map drive status to error index */
@@ -427,25 +432,24 @@ void DVDErrorTask(void *, int) {
             /* New error detected */
             language = GC_GetOSLanguage();
             g_discErrorNumber = errorState;
+            g_discErrorOccured = 1;
             if (gMoviePlayer != 0) {
                 gMoviePlayer->Stop();
             }
-            g_discErrorOccured = 1;
             SoundPause(true, -1);
             SetSoundControlState(true, 0x10, "GC Error");
             if (g_pEAXSound != 0) {
                 g_pEAXSound->Update(0.1f);
             }
 
-            feng = cFEng::mInstance;
             pkgName = "DiscError.fng";
-            if (!feng->IsPackagePushed(pkgName)) {
-                feng->PushErrorPackage(pkgName, 0, 0xff);
+            if (!cFEng::mInstance->IsPackagePushed(pkgName)) {
+                cFEng::mInstance->PushErrorPackage(pkgName, 0, 0xff);
             }
 
             nextFrame = frame + 1;
             FEPrintf(pkgName, 0xEEFFD04F,
-                s_OpenCover_ErrorText[language * 6 + errorIndex]);
+                s_OpenCover_ErrorText[language][errorIndex]);
         } else if (g_discErrorOccured == 0) {
             nextFrame = frame + 1;
             goto loop_end;
@@ -453,8 +457,8 @@ void DVDErrorTask(void *, int) {
             /* Disc error was active, check if we should service streaming */
             nextFrame = frame + 1;
 
-            if (TheTrackStreamer.UserMemoryAllocationSize <= 0 &&
-                TheTrackStreamer.LoadingPhase != TrackStreamer::LOADING_IDLE) {
+            if (!(TheTrackStreamer.UserMemoryAllocationSize > 0) &&
+                (TheTrackStreamer.LoadingPhase != TrackStreamer::LOADING_IDLE)) {
                 ServiceResourceLoading();
                 driveStatus = 1;
                 TheTrackStreamer.ServiceNonGameState();
@@ -464,7 +468,7 @@ void DVDErrorTask(void *, int) {
             if (driveStatus != 0) {
                 /* Scrolling text display */
                 scrollLen = (signed char)bStrLen(
-                    s_OpenCover_ErrorText[language * 6 + errorIndex]);
+                    s_OpenCover_ErrorText[language][errorIndex]);
 
                 bMemSet(textBuf, 0, 16);
 
@@ -486,7 +490,7 @@ void DVDErrorTask(void *, int) {
                 }
 
                 bStrNCpy(textBuf,
-                    s_OpenCover_ErrorText[language * 6 + errorIndex],
+                    s_OpenCover_ErrorText[language][errorIndex],
                     scrollLen - scrollOffset);
 
                 nextFrame = frame + 1;
@@ -519,14 +523,13 @@ void DVDErrorTask(void *, int) {
                     gMoviePlayer->Stop();
                 }
 
-                feng = cFEng::mInstance;
-                feng->MakeLoadedPackagesDirty();
-                if (feng->IsPackagePushed("DiscError.fng")) {
-                    feng->PopErrorPackage();
+                cFEng::mInstance->MakeLoadedPackagesDirty();
+                if (cFEng::mInstance->IsPackagePushed("DiscError.fng")) {
+                    cFEng::mInstance->PopErrorPackage();
                 }
                 nextFrame = frame + 1;
                 if (movieWasPlaying) {
-                    feng->QueueGameMessage(0xC3960EB9, 0, 0xff);
+                    cFEng::mInstance->QueueGameMessage(0xC3960EB9, 0, 0xff);
                 }
             }
         }
@@ -609,13 +612,13 @@ VMStatsManager gVMStatsManager_LS("LoadScreen Streamer");
 VMStatsManager gVMStatsManager_IG("InGame");
 
 void VMStats::Init() {
+    mServiceTimeMicroSecs = 0;
+    mServiceTimeMin = static_cast<unsigned int>(-1);
+    mElapsedTime = 0.0f;
     mServiceTimeMax = 0;
     mServiceTimeAvg = 0.0f;
-    mServiceTimeMin = static_cast<unsigned int>(-1);
     mNumPageFaults = 0;
     mNumWritebacks = 0;
-    mElapsedTime = 0.0f;
-    mServiceTimeMicroSecs = 0;
 }
 
 void VMStatsManager::Init(const char *name) {
