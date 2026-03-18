@@ -130,7 +130,7 @@ void RenderVisibleSectionBoundary(VisibleSectionBoundary *boundary, eView *view)
     }
 
     float perimeter = 0.0f;
-    bVector3 position;
+    bVector3 position(0.0f, 0.0f, 0.0f);
     TopologyCoordinate topology_coordinate;
     float pos = static_cast<float>((static_cast<int>(WorldTimer.GetPackedTime() * 0.00025f * 262144.0f) & 0xffff)) * 6.1035156e-05f;
     int point_number;
