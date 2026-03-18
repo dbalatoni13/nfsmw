@@ -65,18 +65,6 @@ static inline bool PointInBBox(const bVector2 *point, const bVector2 *bbox_min, 
     return point->x >= bbox_min->x && point->x <= bbox_max->x && point->y >= bbox_min->y && point->y <= bbox_max->y;
 }
 
-inline void VisibleSectionBoundary::EndianSwap() {
-    bPlatEndianSwap(&SectionNumber);
-    bPlatEndianSwap(reinterpret_cast<signed char *>(&NumPoints));
-    bPlatEndianSwap(reinterpret_cast<signed char *>(&PanoramaBoundary));
-    bPlatEndianSwap(&BBoxMin);
-    bPlatEndianSwap(&BBoxMax);
-    bPlatEndianSwap(&Centre);
-    for (int i = 0; i < NumPoints; i++) {
-        bPlatEndianSwap(&Points[i]);
-    }
-}
-
 bool VisibleSectionBoundary::IsPointInside(const bVector2 *point) {
     if (!bBoundingBoxIsInside(&BBoxMin, &BBoxMax, point, 0.0f)) {
         return false;
@@ -101,35 +89,6 @@ float VisibleSectionBoundary::GetDistanceOutside(const bVector2 *point, float ma
     }
 
     return max_distance;
-}
-
-inline int VisibleSectionBoundary::GetSectionNumber() {
-    return SectionNumber;
-}
-
-inline int VisibleSectionBoundary::GetMemoryImageSize() {
-    return 0x24 + NumPoints * sizeof(bVector2);
-}
-
-inline void DrivableSectionsInRegion::EndianSwap() {
-    bPlatEndianSwap(&NumSections);
-    for (int i = 0; i < NumSections; i++) {
-        bPlatEndianSwap(&Sections[i]);
-    }
-}
-
-inline void DrivableScenerySection::EndianSwap() {
-    bPlatEndianSwap(&SectionNumber);
-    bPlatEndianSwap(reinterpret_cast<signed char *>(&MostVisibleSections));
-    bPlatEndianSwap(reinterpret_cast<signed char *>(&MaxVisibleSections));
-    bPlatEndianSwap(&NumVisibleSections);
-    for (int i = 0; i < NumVisibleSections; i++) {
-        bPlatEndianSwap(&VisibleSections[i]);
-    }
-}
-
-inline int DrivableScenerySection::GetMemoryImageSize() {
-    return 0x12 + NumVisibleSections * sizeof(short) + sizeof(Padding);
 }
 
 void DrivableScenerySection::AddVisibleSection(int section_number) {
@@ -192,31 +151,6 @@ void DrivableScenerySection::SortVisibleSections() {
             }
         }
     } while (swap);
-}
-
-inline void LoadingSection::EndianSwap() {
-    bPlatEndianSwap(&NumDrivableSections);
-    for (int i = 0; i < NumDrivableSections; i++) {
-        bPlatEndianSwap(&DrivableSections[i]);
-    }
-    bPlatEndianSwap(&NumExtraSections);
-    for (int i = 0; i < NumExtraSections; i++) {
-        bPlatEndianSwap(&ExtraSections[i]);
-    }
-}
-
-inline void VisibleSectionOverlay::EndianSwap() {
-    bPlatEndianSwap(&NumEntries);
-    for (int n = 0; n < NumEntries; n++) {
-        OverlayEntry *entry = &EntryTable[n];
-        bPlatEndianSwap(&entry->DrivableSectionNumber);
-        bPlatEndianSwap(&entry->SectionNumber);
-    }
-}
-
-inline void VisibleSectionManagerInfo::EndianSwap() {
-    bPlatEndianSwap(&LODOffset);
-    TheDrivableSectionsInRegion.EndianSwap();
 }
 
 VisibleSectionUserInfo *VisibleSectionManager::AllocateUserInfo(int section_number) {
@@ -610,22 +544,15 @@ int VisibleSectionManager::Loader(bChunk *chunk) {
 
                     if (boundary < last_boundary) {
                         do {
-                            bPlatEndianSwap(&boundary->SectionNumber);
-                            bPlatEndianSwap(&boundary->BBoxMin);
-                            bPlatEndianSwap(&boundary->BBoxMax);
-                            bPlatEndianSwap(&boundary->Centre);
-                            for (int i = 0; i < boundary->NumPoints; i++) {
-                                bPlatEndianSwap(&boundary->Points[i]);
-                            }
-
-                            if (IsScenerySectionDrivable(boundary->SectionNumber)) {
+                            boundary->EndianSwap();
+                            if (IsScenerySectionDrivable(boundary->GetSectionNumber())) {
                                 DrivableBoundaryList.AddTail(boundary);
                             } else {
                                 NonDrivableBoundaryList.AddTail(boundary);
                             }
 
                             boundary = reinterpret_cast<VisibleSectionBoundary *>(
-                                reinterpret_cast<char *>(boundary) + 0x24 + boundary->NumPoints * sizeof(bVector2));
+                                reinterpret_cast<char *>(boundary) + boundary->GetMemoryImageSize());
                         } while (boundary < last_boundary);
                     }
                     break;
@@ -638,14 +565,10 @@ int VisibleSectionManager::Loader(bChunk *chunk) {
                     if (section < last_section) {
                         do {
                             DrivableSectionList.AddTail(section);
-                            bPlatEndianSwap(&section->SectionNumber);
-                            bPlatEndianSwap(&section->NumVisibleSections);
-                            for (int i = 0; i < section->NumVisibleSections; i++) {
-                                bPlatEndianSwap(&section->VisibleSections[i]);
-                            }
-                            section->pBoundary = FindBoundary(section->SectionNumber);
-                            section = reinterpret_cast<DrivableScenerySection *>(
-                                reinterpret_cast<char *>(section) + 0x14 + section->NumVisibleSections * sizeof(short));
+                            section->EndianSwap();
+                            section->pBoundary = FindBoundary(section->GetSectionNumber());
+                            section =
+                                reinterpret_cast<DrivableScenerySection *>(reinterpret_cast<char *>(section) + section->GetMemoryImageSize());
                         } while (section < last_section);
                     }
 
@@ -656,11 +579,7 @@ int VisibleSectionManager::Loader(bChunk *chunk) {
 
                 case 0x34151: {
                     pInfo = reinterpret_cast<VisibleSectionManagerInfo *>(current_chunk->GetData());
-                    bPlatEndianSwap(&pInfo->LODOffset);
-                    bPlatEndianSwap(&pInfo->TheDrivableSectionsInRegion.NumSections);
-                    for (int i = 0; i < pInfo->TheDrivableSectionsInRegion.NumSections; i++) {
-                        bPlatEndianSwap(&pInfo->TheDrivableSectionsInRegion.Sections[i]);
-                    }
+                    pInfo->EndianSwap();
                     ScenerySectionLODOffset = pInfo->LODOffset;
                     break;
                 }
@@ -672,14 +591,7 @@ int VisibleSectionManager::Loader(bChunk *chunk) {
                             LoadingSection *section =
                                 reinterpret_cast<LoadingSection *>(reinterpret_cast<char *>(current_chunk) + n * sizeof(LoadingSection) + 8);
                             LoadingSectionList.AddTail(section);
-                            bPlatEndianSwap(&section->NumDrivableSections);
-                            for (int i = 0; i < section->NumDrivableSections; i++) {
-                                bPlatEndianSwap(&section->DrivableSections[i]);
-                            }
-                            bPlatEndianSwap(&section->NumExtraSections);
-                            for (int i = 0; i < section->NumExtraSections; i++) {
-                                bPlatEndianSwap(&section->ExtraSections[i]);
-                            }
+                            section->EndianSwap();
                         }
                     }
                     break;
@@ -702,12 +614,7 @@ int VisibleSectionManager::Loader(bChunk *chunk) {
 
         VisibleSectionOverlay *overlay = reinterpret_cast<VisibleSectionOverlay *>(chunk->GetData());
         OverlayList.AddTail(overlay);
-        bPlatEndianSwap(&overlay->NumEntries);
-        for (int n = 0; n < overlay->NumEntries; n++) {
-            OverlayEntry *entry = &overlay->EntryTable[n];
-            bPlatEndianSwap(&entry->DrivableSectionNumber);
-            bPlatEndianSwap(&entry->SectionNumber);
-        }
+        overlay->EndianSwap();
     }
 
     return 1;

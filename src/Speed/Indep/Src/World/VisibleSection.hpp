@@ -8,6 +8,7 @@
 #include "Speed/Indep/bWare/Inc/bChunk.hpp"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
+#include "Speed/Indep/bWare/Inc/bWare.hpp"
 
 extern int ScenerySectionLODOffset;
 
@@ -200,6 +201,72 @@ struct VisibleSectionManagerInfo {
 
     void EndianSwap();
 };
+
+inline void VisibleSectionBoundary::EndianSwap() {
+    bPlatEndianSwap(&SectionNumber);
+    bPlatEndianSwap(reinterpret_cast<signed char *>(&NumPoints));
+    bPlatEndianSwap(reinterpret_cast<signed char *>(&PanoramaBoundary));
+    bPlatEndianSwap(&BBoxMin);
+    bPlatEndianSwap(&BBoxMax);
+    bPlatEndianSwap(&Centre);
+    for (int i = 0; i < NumPoints; i++) {
+        bPlatEndianSwap(&Points[i]);
+    }
+}
+
+inline int VisibleSectionBoundary::GetSectionNumber() {
+    return SectionNumber;
+}
+
+inline int VisibleSectionBoundary::GetMemoryImageSize() {
+    return 0x24 + NumPoints * sizeof(bVector2);
+}
+
+inline void DrivableSectionsInRegion::EndianSwap() {
+    bPlatEndianSwap(&NumSections);
+    for (int i = 0; i < NumSections; i++) {
+        bPlatEndianSwap(&Sections[i]);
+    }
+}
+
+inline void DrivableScenerySection::EndianSwap() {
+    bPlatEndianSwap(&SectionNumber);
+    bPlatEndianSwap(reinterpret_cast<signed char *>(&MostVisibleSections));
+    bPlatEndianSwap(reinterpret_cast<signed char *>(&MaxVisibleSections));
+    bPlatEndianSwap(&NumVisibleSections);
+    for (int i = 0; i < NumVisibleSections; i++) {
+        bPlatEndianSwap(&VisibleSections[i]);
+    }
+}
+
+inline int DrivableScenerySection::GetMemoryImageSize() {
+    return 0x12 + NumVisibleSections * sizeof(short) + sizeof(Padding);
+}
+
+inline void LoadingSection::EndianSwap() {
+    bPlatEndianSwap(&NumDrivableSections);
+    for (int i = 0; i < NumDrivableSections; i++) {
+        bPlatEndianSwap(&DrivableSections[i]);
+    }
+    bPlatEndianSwap(&NumExtraSections);
+    for (int i = 0; i < NumExtraSections; i++) {
+        bPlatEndianSwap(&ExtraSections[i]);
+    }
+}
+
+inline void VisibleSectionOverlay::EndianSwap() {
+    bPlatEndianSwap(&NumEntries);
+    for (int n = 0; n < NumEntries; n++) {
+        OverlayEntry *entry = &EntryTable[n];
+        bPlatEndianSwap(&entry->DrivableSectionNumber);
+        bPlatEndianSwap(&entry->SectionNumber);
+    }
+}
+
+inline void VisibleSectionManagerInfo::EndianSwap() {
+    bPlatEndianSwap(&LODOffset);
+    TheDrivableSectionsInRegion.EndianSwap();
+}
 
 struct OverrideSectionObject : public bTNode<OverrideSectionObject> {
     // total size: 0x4C
