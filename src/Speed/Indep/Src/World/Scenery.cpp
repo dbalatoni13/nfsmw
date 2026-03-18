@@ -548,15 +548,16 @@ int LoaderScenery(bChunk *chunk) {
                     section_header = reinterpret_cast<ScenerySectionHeader *>(subchunk->GetAlignedData(0x10));
                     section_header_words = reinterpret_cast<int *>(section_header);
                     if (section_header_words[2] == 0) {
-                        EndianSwapSectionHeader_Scenery(section_header_words);
+                        bEndianSwap32(reinterpret_cast<char *>(section_header_words) + 0xC);
+                        bEndianSwap32(reinterpret_cast<char *>(section_header_words) + 0x10);
+                        bEndianSwap32(reinterpret_cast<char *>(section_header_words) + 0x14);
+                        bEndianSwap32(reinterpret_cast<char *>(section_header_words) + 0x38);
                     }
 
                     VisibleSectionUserInfo *user_info = TheVisibleSectionManager.AllocateUserInfo(section_header_words[3]);
-                    if (user_info) {
-                        user_info->pScenerySectionHeader = section_header;
-                    }
+                    user_info->pScenerySectionHeader = section_header;
 
-                    if (GetScenerySectionLetter_Scenery(section_header_words[3]) == 'Z') {
+                    if (static_cast<char>(section_header_words[3] / 100 + 'A' - 1) == 'Z') {
                         ScenerySectionHeaderList.AddHead(section_header);
                     } else {
                         ScenerySectionHeaderList.AddTail(section_header);
@@ -573,7 +574,13 @@ int LoaderScenery(bChunk *chunk) {
                     section_header_words[7] = subchunk->Size / 0x48;
                     if (section_header_words[2] == 0) {
                         for (int i = 0; i < section_header_words[7]; i++) {
-                            EndianSwapSceneryInfo_Scenery(reinterpret_cast<unsigned char *>(section_header_words[6] + i * 0x48));
+                            unsigned char *scenery_info = reinterpret_cast<unsigned char *>(section_header_words[6] + i * 0x48);
+                            for (int n = 0; n < 4; n++) {
+                                bEndianSwap32(scenery_info + 0x18 + n * 4);
+                            }
+                            bEndianSwap32(scenery_info + 0x38);
+                            bEndianSwap32(scenery_info + 0x3C);
+                            bEndianSwap32(scenery_info + 0x40);
                         }
                     }
 
@@ -593,12 +600,26 @@ int LoaderScenery(bChunk *chunk) {
                         break;
                     }
 
-                    section_header_words[8] = reinterpret_cast<int>(subchunk->GetAlignedData(0x10));
-                    section_header_words[9] = subchunk->GetAlignedSize(0x10) / sizeof(SceneryInstance);
+                    section_header_words[8] = (reinterpret_cast<int>(subchunk) + 0x17) & 0xFFFFFFF0;
+                    section_header_words[9] =
+                        (subchunk->Size - (section_header_words[8] - reinterpret_cast<int>(subchunk->GetData()))) >> 6;
                     if (section_header_words[2] == 0) {
                         SceneryInstance *instances = reinterpret_cast<SceneryInstance *>(section_header_words[8]);
                         for (int i = 0; i < section_header_words[9]; i++) {
-                            EndianSwapSceneryInstance_Scenery(&instances[i]);
+                            bPlatEndianSwap(&instances[i].ExcludeFlags);
+                            bPlatEndianSwap(&instances[i].PrecullerInfoIndex);
+                            bPlatEndianSwap(&instances[i].LightingContextNumber);
+                            for (int n = 0; n < 3; n++) {
+                                bPlatEndianSwap(&instances[i].Position[n]);
+                            }
+                            for (int n = 0; n < 9; n++) {
+                                bPlatEndianSwap(&instances[i].Rotation[n]);
+                            }
+                            bPlatEndianSwap(&instances[i].SceneryInfoNumber);
+                            for (int n = 0; n < 3; n++) {
+                                bPlatEndianSwap(&instances[i].BBoxMin[n]);
+                                bPlatEndianSwap(&instances[i].BBoxMax[n]);
+                            }
                         }
                     }
                     break;
@@ -613,7 +634,18 @@ int LoaderScenery(bChunk *chunk) {
                     section_header_words[11] = subchunk->Size / 0x24;
                     if (section_header_words[2] == 0) {
                         for (int i = 0; i < section_header_words[11]; i++) {
-                            EndianSwapPrecullerInfo_Scenery(reinterpret_cast<unsigned char *>(section_header_words[10] + i * 0x24));
+                            unsigned char *preculler_info =
+                                reinterpret_cast<unsigned char *>(section_header_words[10] + i * 0x24);
+                            bEndianSwap32(preculler_info + 0x00);
+                            bEndianSwap32(preculler_info + 0x04);
+                            bEndianSwap32(preculler_info + 0x08);
+                            bEndianSwap32(preculler_info + 0x0C);
+                            bEndianSwap32(preculler_info + 0x10);
+                            bEndianSwap32(preculler_info + 0x14);
+                            bEndianSwap16(preculler_info + 0x18);
+                            for (int n = 0; n < 5; n++) {
+                                bEndianSwap16(preculler_info + 0x1A + n * 2);
+                            }
                         }
                     }
                     break;
@@ -626,12 +658,15 @@ int LoaderScenery(bChunk *chunk) {
 
                     int num_overrides = subchunk->Size >> 2;
                     for (int i = 0; i < num_overrides; i++) {
-                        unsigned char *override_data = reinterpret_cast<unsigned char *>(subchunk->GetData()) + i * 4;
-                        bEndianSwap16(override_data + 0);
-                        bEndianSwap16(override_data + 2);
-                        SceneryOverrideInfo *override_info =
-                            FindMatchingOverrideInfo_Scenery(section_header_words[3], *reinterpret_cast<unsigned short *>(override_data));
-                        if (override_info) {
+                        unsigned short *override_data =
+                            reinterpret_cast<unsigned short *>(reinterpret_cast<unsigned char *>(subchunk->GetData()) + i * 4);
+                        bEndianSwap16(&override_data[0]);
+                        bEndianSwap16(&override_data[1]);
+                        SceneryOverrideInfo *override_info = reinterpret_cast<SceneryOverrideInfo *>(
+                            reinterpret_cast<unsigned char *>(SceneryOverrideInfoTable) + override_data[1] * 6
+                        );
+                        if (override_info->OverrideSectionNumber == override_data[0] &&
+                            override_info->SectionNumber == section_header_words[3]) {
                             override_info->AssignOverrides(section_header);
                         }
                     }
@@ -660,17 +695,22 @@ int LoaderScenery(bChunk *chunk) {
                 for (int j = 0; j < 4; j++) {
                     unsigned int name_hash = *reinterpret_cast<unsigned int *>(scenery_info + 0x18 + j * 4);
                     if (name_hash != 0 && name_hash != 0xBE43EDBB && name_hash != 0x90F70174) {
-                        eModel *model = FindExistingModel_Scenery(scenery_info, j);
+                        eModel *model = 0;
+                        for (int n = 0; n < j; n++) {
+                            model = *reinterpret_cast<eModel **>(scenery_info + 0x28 + n * 4);
+                            if (model && model->NameHash == name_hash) {
+                                break;
+                            }
+                            model = 0;
+                        }
                         if (!model) {
                             model = reinterpret_cast<eModel *>(bOMalloc(eModelSlotPool));
-                            if (model) {
-                                model->Solid = 0;
-                                model->pReplacementTextureTable = 0;
-                                model->NumReplacementTextures = 0;
-                                model->Init(name_hash);
-                                if (ModelConnectionCallback) {
-                                    ModelConnectionCallback(section_header, i, model);
-                                }
+                            model->Solid = 0;
+                            model->pReplacementTextureTable = 0;
+                            model->NumReplacementTextures = 0;
+                            model->Init(name_hash);
+                            if (ModelConnectionCallback) {
+                                ModelConnectionCallback(section_header, i, model);
                             }
                         }
                         *reinterpret_cast<eModel **>(scenery_info + 0x28 + j * 4) = model;
