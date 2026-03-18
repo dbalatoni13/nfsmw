@@ -41,7 +41,12 @@ struct XenonEffectVec {
     }
 
     void push_back(const XenonEffectDef &value) {
-        if (finish == end_of_storage) {
+        if (finish != end_of_storage) {
+            if (finish != 0) {
+                *finish = value;
+            }
+            finish++;
+        } else {
             unsigned int size = finish - start;
             unsigned int old_capacity = end_of_storage - start;
             unsigned int new_capacity = size + (size == 0 ? 1 : size);
@@ -80,11 +85,6 @@ struct XenonEffectVec {
             start = new_start;
             finish = dst;
             end_of_storage = reinterpret_cast<XenonEffectDef *>(reinterpret_cast<char *>(new_start) + new_bytes);
-        } else {
-            if (finish != 0) {
-                *finish = value;
-            }
-            finish++;
         }
     }
 };
@@ -381,8 +381,8 @@ void AddXenonEffect(EmitterGroup *piggyback_fx, const Attrib::Collection *spec, 
         XenonEffectDef effect;
         effect.mat = UMath::Matrix4::kIdentity;
         effect.mat.v3 = mat->v3;
-        effect.spec = const_cast<Attrib::Collection *>(spec);
         effect.piggyback_effect = piggyback_fx;
+        effect.spec = const_cast<Attrib::Collection *>(spec);
         effect.vel = *vel;
 
         gNGEffectList.lists[XenonEffectLists::ACTIVE].push_back(effect);
