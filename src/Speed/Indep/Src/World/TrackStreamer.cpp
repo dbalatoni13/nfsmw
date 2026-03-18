@@ -48,6 +48,7 @@ static const float kPredictedZoneMaxDistance_TrackStreamer = 100.0f;
 static const float kPredictedZoneStopProjectSpeed_TrackStreamer = 178.81091f;
 static const float kPredictedZoneEqualEpsilon_TrackStreamer = 0.001f;
 static unsigned int last_jettison_print_26154 = 0;
+static VisibleSectionBitTable CurrentVisibleSectionTableMem;
 
 static void SortIntsAscending_TrackStreamer(int *values, int count) {
     for (int i = 1; i < count; i++) {
@@ -812,6 +813,68 @@ int TrackStreamer::BuildHoleMovements(HoleMovement *hole_movements, int max_move
     return num_movements;
 }
 
+TrackStreamer::TrackStreamer() {
+    pTrackStreamingSections = 0;
+    NumTrackStreamingSections = 0;
+    pDiscBundleSections = 0;
+    pLastDiscBundleSection = 0;
+    pInfo = 0;
+    NumBarriers = 0;
+    pBarriers = 0;
+    NumSectionsLoaded = 0;
+    NumSectionsLoading = 0;
+    NumSectionsActivated = 0;
+    NumSectionsOutOfMemory = 0;
+    NumSectionsMoved = 0;
+    bMemSet(StreamFilenames, 0, sizeof(StreamFilenames));
+    SplitScreen = false;
+    PermFileLoading = false;
+    PermFilename = 0;
+    PermFileChunks = 0;
+    PermFileSize = 0;
+    CurrentZoneNeedsRefreshing = false;
+    ZoneSwitchingDisabled = false;
+    LastWaitUntilRenderingDoneFrameCount = 0;
+    LastPrintedFrameCount = 0;
+    SkipNextHandleLoad = false;
+    NumCurrentStreamingSections = 0;
+    NumHibernatingSections = 0;
+
+    ClearCurrentZones();
+    ClearStreamingPositions();
+
+    bBitTableLayout_TrackStreamer *layout = reinterpret_cast<bBitTableLayout_TrackStreamer *>(&CurrentVisibleSectionTable);
+    layout->NumBits = 0xAF0;
+    layout->Bits = CurrentVisibleSectionTableMem.Bits;
+    ClearTable_TrackStreamer(&CurrentVisibleSectionTable);
+    bMemSet(KeepSectionTable, 0, sizeof(KeepSectionTable));
+    pCallback = 0;
+    CallbackParam = 0;
+    MakeSpaceInPoolCallback = 0;
+    MakeSpaceInPoolCallbackParam = 0;
+    MakeSpaceInPoolSize = 0;
+}
+
+int TrackStreamer::CountUserAllocations(const char **pfragmented_user_allocation) {
+    if (pfragmented_user_allocation) {
+        *pfragmented_user_allocation = 0;
+    }
+
+    int total = 0;
+    for (TSMemoryNode *node = pMemoryPool->GetNextAllocatedNode(false); node;
+         node = pMemoryPool->GetNextAllocatedNode(false, node)) {
+        if (!FindSectionByAddress(node->Address)) {
+            total += node->Size;
+            if (pMemoryPool->GetNextFreeNode(false, node) && pMemoryPool->GetNextFreeNode(true, node) &&
+                pfragmented_user_allocation) {
+                *pfragmented_user_allocation = node->DebugName;
+            }
+        }
+    }
+
+    return total;
+}
+
 int TrackStreamer::DoHoleFilling(int largest_free) {
     const char *debug_name = 0;
     HoleMovement hole_movements[128];
@@ -884,6 +947,34 @@ int TrackStreamer::DoHoleFilling(int largest_free) {
     }
 
     return 1;
+}
+
+void TrackStreamer::ClearCurrentZones() {
+    for (int position_number = 0; position_number < 2; position_number++) {
+        StreamingPositionEntry *position_entry = &StreamingPositionEntries[position_number];
+        position_entry->AmountLoaded = 0;
+        position_entry->CurrentZone = 0;
+        position_entry->BeginLoadingPosition.x = 0.0f;
+        position_entry->BeginLoadingPosition.y = 0.0f;
+        position_entry->BeginLoadingTime = 0.0f;
+        position_entry->NumSectionsToLoad = 0;
+        position_entry->NumSectionsLoaded = 0;
+        position_entry->AmountToLoad = 0;
+    }
+
+    CurrentZoneFarLoad = true;
+    StartLoadingTime = 0.0f;
+    NumJettisonedSections = 0;
+    LoadingPhase = LOADING_IDLE;
+    LoadingBacklog = 0.0f;
+    CurrentZoneOutOfMemory = false;
+    CurrentZoneAllocatedButIncomplete = false;
+    CurrentZoneNonReplayLoad = false;
+    CurrentZoneName[0] = 0;
+    MemorySafetyMargin = 0;
+    AmountJettisoned = 0;
+    bMemSet(JettisonedSections, 0, sizeof(JettisonedSections));
+    RemoveCurrentStreamingSections();
 }
 
 void TrackStreamer::RemoveCurrentStreamingSections() {
@@ -1165,6 +1256,27 @@ int TrackStreamer::GetSectionToActivate(int loaded_frames) {
     }
 
     return 0;
+}
+
+int TrackStreamer::GetCombinedSectionNumber(int section_number) {
+    bool use_combined_section = false;
+    if ((static_cast<unsigned int>(section_number / 100 - 1) & 0xFF) < 0x14) {
+        int subsection_number = section_number % 100;
+        use_combined_section = subsection_number > 0 && subsection_number < ScenerySectionLODOffset;
+    }
+
+    if (use_combined_section) {
+        int combined_section_number = section_number + ScenerySectionLODOffset;
+        TrackStreamingSection *section = FindSection(section_number);
+        if (!section) {
+            section = FindSection(combined_section_number);
+            if (section) {
+                return combined_section_number;
+            }
+        }
+    }
+
+    return section_number;
 }
 
 void TrackStreamer::HandleSectionActivation() {
@@ -1631,4 +1743,78 @@ short TrackStreamer::GetPredictedZone(StreamingPositionEntry *streaming_position
         predicted_zone = drivable_section->SectionNumber;
     }
     return predicted_zone;
+}
+
+void TrackStreamer::ClearStreamingPositions() {
+    for (int position_number = 0; position_number < 2; position_number++) {
+        StreamingPositionEntry *position_entry = &StreamingPositionEntries[position_number];
+        position_entry->FollowingCar = false;
+        position_entry->PositionSet = false;
+    }
+}
+
+bool TrackStreamer::DetermineCurrentZones(short *current_zones) {
+    bool changed = false;
+    for (int position_number = 0; position_number < 2; position_number++) {
+        StreamingPositionEntry *position_entry = &StreamingPositionEntries[position_number];
+        short current_zone = -1;
+        if (position_entry->PositionSet) {
+            current_zone = GetPredictedZone(position_entry);
+        }
+
+        if (current_zone == position_entry->PredictedZone) {
+            position_entry->PredictedZoneValidTime += 1;
+        } else if (position_entry->PredictedZoneValidTime == -1) {
+            position_entry->PredictedZone = current_zone;
+            position_entry->PredictedZoneValidTime = 1000;
+        } else {
+            position_entry->PredictedZone = current_zone;
+            position_entry->PredictedZoneValidTime = 1;
+        }
+
+        short section_number = position_entry->CurrentZone;
+        if (current_zone != section_number) {
+            if (position_entry->PredictedZoneValidTime < 0) {
+                current_zone = section_number;
+            }
+            if (current_zone != section_number) {
+                changed = true;
+            }
+        }
+
+        current_zones[position_number] = current_zone;
+    }
+
+    return changed || CurrentZoneNeedsRefreshing;
+}
+
+void TrackStreamer::ServiceGameState() {
+    GetDebugRealTime();
+    HandleZoneSwitching();
+    HandleSectionActivation();
+    GetDebugRealTime();
+
+    AmountNotRendered = 0;
+    for (int i = 0; i < NumCurrentStreamingSections; i++) {
+        TrackStreamingSection *section = CurrentStreamingSections[i];
+        if (!section->WasRendered && IsRegularScenerySection_TrackStreamer(section->SectionNumber)) {
+            AmountNotRendered += section->Size;
+        }
+        section->WasRendered = 0;
+    }
+}
+
+void TrackStreamer::ServiceNonGameState() {
+    GetDebugRealTime();
+    HandleLoading();
+    GetDebugRealTime();
+}
+
+void TrackStreamer::HandleZoneSwitching() {
+    if (!ZoneSwitchingDisabled && pMemoryPoolMem) {
+        short current_zones[4];
+        if (DetermineCurrentZones(current_zones)) {
+            SwitchZones(current_zones);
+        }
+    }
 }

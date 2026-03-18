@@ -182,6 +182,7 @@ struct HoleMovement {
 // total size: 0x888
 class TrackStreamer {
   public:
+    TrackStreamer();
     enum eLoadingPhase {
         LOADING_IDLE = 0,
         ALLOCATING_TEXTURE_SECTIONS = 1,
@@ -249,6 +250,10 @@ class TrackStreamer {
     }
 
   private:
+    void ClearCurrentZones();
+    bool DetermineCurrentZones(short *current_zones);
+    void HandleZoneSwitching();
+    int GetCombinedSectionNumber(int section_number);
     TrackStreamingSection *pTrackStreamingSections;       // offset 0x0, size 0x4
     int NumTrackStreamingSections;                        // offset 0x4, size 0x4
     DiscBundleSection *pDiscBundleSections;               // offset 0x8, size 0x4
