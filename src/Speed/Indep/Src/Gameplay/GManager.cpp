@@ -1001,34 +1001,35 @@ void GManager::ConnectInstanceReferences(GRuntimeInstance *runtimeInstance, cons
 
     while (iter.Valid()) {
         unsigned int attributeKey = iter.GetKey();
-        Attrib::Attribute attribute = collection.Get(attributeKey);
+        {
+            Attrib::Attribute attribute = collection.Get(attributeKey);
 
-        if (attributeKey != 0x916E0E78) {
-            if (attribute.IsValid()) {
-                const Attrib::TypeDesc &typeDesc = Attrib::Database::Get().GetTypeDesc(attribute.GetType());
-                const char *typeName =
-                    *reinterpret_cast<const char *const *>(reinterpret_cast<const char *>(&typeDesc) + sizeof(unsigned int));
+            if (attributeKey != 0x916E0E78) {
+                if (attribute.IsValid()) {
+                    const Attrib::TypeDesc &typeDesc = Attrib::Database::Get().GetTypeDesc(attribute.GetType());
+                    const char *typeName =
+                        *reinterpret_cast<const char *const *>(reinterpret_cast<const char *>(&typeDesc) + sizeof(unsigned int));
 
-                if (bStrCmp(typeName, "GCollectionKey") == 0) {
-                    const Attrib::Definition *definition = mGameplayClass->GetDefinition(attribute.GetKey());
-                    int numConnections = definition->GetFlag(1) ? static_cast<int>(attribute.GetLength()) : 1;
+                    if (bStrCmp(typeName, "GCollectionKey") == 0) {
+                        const Attrib::Definition *definition = mGameplayClass->GetDefinition(attribute.GetKey());
+                        int numConnections = definition->GetFlag(1) ? static_cast<int>(attribute.GetLength()) : 1;
 
-                    for (int i = 0; i < numConnections; ++i) {
-                        const GCollectionKey *connectedKey =
-                            reinterpret_cast<const GCollectionKey *>(collection.GetAttributePointer(attributeKey, i));
+                        for (int i = 0; i < numConnections; ++i) {
+                            const GCollectionKey *connectedKey =
+                                reinterpret_cast<const GCollectionKey *>(collection.GetAttributePointer(attributeKey, i));
 
-                        if (connectedKey) {
-                            GRuntimeInstance *connected = FindInstance(connectedKey->GetCollectionKey());
+                            if (connectedKey) {
+                                GRuntimeInstance *connected = FindInstance(connectedKey->GetCollectionKey());
 
-                            if (connected) {
-                                runtimeInstance->ConnectToInstance(attributeKey, i, connected);
+                                if (connected) {
+                                    runtimeInstance->ConnectToInstance(attributeKey, i, connected);
+                                }
                             }
                         }
                     }
                 }
             }
         }
-
         iter.Advance();
     }
 }
