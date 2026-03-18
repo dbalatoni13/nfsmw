@@ -8,6 +8,8 @@
 #include "Speed/Indep/Src/Generated/Messages/MNotifyRaceTime.h"
 #include "Speed/Indep/Src/Generated/Messages/MNotifyRaceTimeExpired.h"
 #include "Speed/Indep/Src/Generated/Messages/MNotifyRaceTimeSecTick.h"
+#include "Speed/Indep/Src/Generated/Events/EAutoSave.hpp"
+#include "Speed/Indep/Src/Generated/Events/EReloadHud.hpp"
 #include "Speed/Indep/Src/Interfaces/SimActivities/ICopMgr.h"
 #include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
@@ -22,6 +24,7 @@
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 
 void SetCurrentTimeOfDay(float value);
+void SetOverRideRainIntensity(float intensity);
 extern int UnlockAllThings;
 
 GRaceStatus *GRaceStatus::fObj = nullptr;
@@ -1594,6 +1597,84 @@ void GRaceStatus::DisableBinBarriers() {
 
 void GRaceStatus::RefreshBinWhileInGame() {
     mQueueBinChange = true;
+}
+
+void GRaceStatus::EnterBin(unsigned int binNumber) {
+    if (mRaceBin) {
+        DisableBarriers();
+    }
+
+    mRaceBin = GRaceDatabase::Get().GetBinNumber(binNumber);
+    if (mRaceBin) {
+        EnableBarriers();
+        if (mRaceBin->GetChildVault() && !mRaceBin->GetChildVault()->IsLoaded()) {
+            mRaceBin->GetChildVault()->LoadSyncTransient();
+        }
+    }
+
+    if (GManager::Get().GetInGameplay()) {
+        GManager::Get().StartWorldActivities(true);
+        GManager::Get().StartBinActivity(mRaceBin);
+        GManager::Get().RefreshEngageTriggerIcons();
+        GManager::Get().RefreshSpeedTrapIcons();
+    }
+}
+
+void GRaceStatus::SetRacing() {
+    mPlayMode = kPlayMode_Racing;
+    ClearTimes();
+
+    for (IPlayer::List::const_iterator iter = IPlayer::GetList(PLAYER_ALL).begin(); iter != IPlayer::GetList(PLAYER_ALL).end(); ++iter) {
+        IPlayer *player = *iter;
+
+        if (player->InGameBreaker()) {
+            player->ResetGameBreaker(true);
+        }
+    }
+
+    mNumTollbooths = 0;
+
+    if ((!mRaceParms || !mRaceParms->GetIsDDayRace() || bStrCmp(mRaceParms->GetEventID(), "16.1.0") == 0) && !IsFinalEpicPursuit()) {
+        new EAutoSave();
+    }
+
+    new EReloadHud();
+
+#ifndef EA_BUILD_A124
+    mCaluclatedAdaptiveGain = false;
+#endif
+}
+
+void GRaceStatus::SetRoaming() {
+    bool skipHudReload = false;
+
+    if (mRaceParms) {
+        skipHudReload = bStrCmp(mRaceParms->GetEventID(), "16.2.1") == 0;
+    }
+
+    mPlayMode = kPlayMode_Roaming;
+    SetRaceContext(GRace::kRaceContext_Career);
+    mIsLoading = false;
+    mRaceParms = nullptr;
+    WRoadNetwork::Get().ResetShortcuts();
+
+    for (IPlayer::List::const_iterator iter = IPlayer::GetList(PLAYER_ALL).begin(); iter != IPlayer::GetList(PLAYER_ALL).end(); ++iter) {
+        IPlayer *player = *iter;
+
+        if (player->InGameBreaker()) {
+            player->ResetGameBreaker(true);
+        }
+    }
+
+    if (!skipHudReload) {
+        new EReloadHud();
+    }
+
+    new EAutoSave();
+    SetOverRideRainIntensity(0.0f);
+    SetCurrentTimeOfDay(0.5f);
+    GManager::Get().SpawnAllLoadedSectionIcons();
+    ICopMgr::mDisableCops = 0;
 }
 
 void GRaceStatus::CalculateRankings() {

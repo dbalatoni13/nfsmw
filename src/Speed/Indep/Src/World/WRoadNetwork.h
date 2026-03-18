@@ -75,6 +75,7 @@ class WRoadNetwork : public Debugable {
     void ResolveShortcuts();
 
     void ResetBarriers();
+    void ResetShortcuts();
 
     void ResetRaceSegments();
 
