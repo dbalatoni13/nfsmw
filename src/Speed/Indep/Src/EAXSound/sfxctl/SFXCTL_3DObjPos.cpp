@@ -18,12 +18,6 @@ inline e3DPlayerMix EAXSound::GetPlayerMixMode() {
     return m_ePlayerMixMode;
 }
 
-namespace SndCamera {
-static inline bVector2 *GetWorldCarPos(int nPlayer) {
-    return m_WorldCarPos + nPlayer;
-}
-} // namespace SndCamera
-
 inline float bDistBetween(const bVector2 *v1, const bVector2 *v2) {
     float y;
     float x;
@@ -159,8 +153,8 @@ void SFXCTL_3DObjPos::GenerateSinglePlayerMix() {
 
 single_player_mix:
     {
-        m_pv2AzimRefDir = SndCamera::m_AvergeCamDir + m_PlayerRef;
-        m_pv2AzimRefPos = SndCamera::m_WorldCamPos + m_PlayerRef;
+        m_pv2AzimRefDir = SndCamera::GetAvgCamDir(m_PlayerRef);
+        m_pv2AzimRefPos = SndCamera::GetWorldCamPos(m_PlayerRef);
         SetCameraAngle();
         SetDMIX_Input(3, static_cast<unsigned int>(m_CameraAngle));
 
@@ -169,8 +163,8 @@ single_player_mix:
         float fDistToObj = bSqrt(dx * dx + dy * dy);
         SetDMIX_Input(1, static_cast<int>(fDistToObj * 100.0f));
 
-        m_pv2AzimRefDir = SndCamera::m_NormCarDir + m_PlayerRef;
-        m_pv2AzimRefPos = SndCamera::m_WorldCarPos + m_PlayerRef;
+        m_pv2AzimRefDir = SndCamera::GetNormCarDir(m_PlayerRef);
+        m_pv2AzimRefPos = SndCamera::GetWorldCarPos(m_PlayerRef);
         SetCameraAngle();
         SetDMIX_Input(2, static_cast<unsigned int>(m_CameraAngle));
 
@@ -183,8 +177,8 @@ single_player_mix:
 
 ave_cam_mix:
     {
-        m_pv2AzimRefDir = SndCamera::m_NormCamDir + m_PlayerRef;
-        m_pv2AzimRefPos = SndCamera::m_AveragedCamPos + m_PlayerRef;
+        m_pv2AzimRefDir = SndCamera::GetNormCamDir(m_PlayerRef);
+        m_pv2AzimRefPos = SndCamera::GetAveragedCamPos(m_PlayerRef);
         SetCameraAngle();
         SetDMIX_Input(3, static_cast<unsigned int>(m_CameraAngle));
 
@@ -193,8 +187,8 @@ ave_cam_mix:
         float fDistToObj = bSqrt(dx * dx + dy * dy);
         SetDMIX_Input(1, static_cast<int>(fDistToObj * 100.0f));
 
-        m_pv2AzimRefDir = SndCamera::m_NormCarDir + m_PlayerRef;
-        m_pv2AzimRefPos = SndCamera::m_WorldCarPos + m_PlayerRef;
+        m_pv2AzimRefDir = SndCamera::GetNormCarDir(m_PlayerRef);
+        m_pv2AzimRefPos = SndCamera::GetWorldCarPos(m_PlayerRef);
         SetCameraAngle();
         SetDMIX_Input(2, static_cast<unsigned int>(m_CameraAngle));
 
@@ -207,8 +201,8 @@ ave_cam_mix:
 
 centered_car_mix:
     {
-        m_pv2AzimRefDir = SndCamera::m_NormCamDir + m_PlayerRef;
-        m_pv2AzimRefPos = SndCamera::m_CenteredCarPos + m_PlayerRef;
+        m_pv2AzimRefDir = SndCamera::GetNormCamDir(m_PlayerRef);
+        m_pv2AzimRefPos = SndCamera::GetCenteredCarPos(m_PlayerRef);
         SetCameraAngle();
         SetDMIX_Input(2, static_cast<unsigned int>(m_CameraAngle));
 

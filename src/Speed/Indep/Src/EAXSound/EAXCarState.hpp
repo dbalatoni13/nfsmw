@@ -218,6 +218,26 @@ struct EAX_CarState : public UTL::Collections::Listable<EAX_CarState, 10> {
         return mContext;
     }
 
+    Attrib::Gen::pvehicle *GetAttributes() {
+        return &mAttributes;
+    }
+
+    float GetWheelTractionUsage(int w) {
+        return mWheel[w].mPercentFsFkTransfer;
+    }
+
+    bVector2 GetWheelSlip(int w) {
+        return bVector2(mWheel[w].mWheelSlip.x, mWheel[w].mWheelSlip.y);
+    }
+
+    float GetWheelLoad(int wheel_ndx) {
+        return mWheel[wheel_ndx].mLoad;
+    }
+
+    bool IsWheelTouchingGround(int w) {
+        return mWheel[w].mWheelOnGround != 0;
+    }
+
     const bVector3 *GetForwardVector() {
         return static_cast<const bVector3 *>(static_cast<const void *>(&mMatrix.v0));
     }

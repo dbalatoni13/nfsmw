@@ -132,73 +132,78 @@ void SFXCTL_Wheel::UpdateTireParams() {
     GenerateWheelPosition();
     GenerateTerrainTypes();
 
-    EAX_CarState *car = m_pStateBase->GetPhysCar();
     bVector2 wheelslip[4];
+    float totalwheelload;
+    int nloop;
 
-    LeftSideTouchingGround = car->mWheel[0].mWheelOnGround || car->mWheel[3].mWheelOnGround;
-    RightSideTouchingGround = car->mWheel[1].mWheelOnGround || car->mWheel[2].mWheelOnGround;
+    LeftSideTouchingGround = true;
+    if (!GetPhysCar()->IsWheelTouchingGround(0) && !GetPhysCar()->IsWheelTouchingGround(3)) {
+        LeftSideTouchingGround = false;
+    }
 
-    m_bvTotalRightWheelSlip.x = 0.0f;
-    m_bvTotalRightWheelSlip.y = 0.0f;
-    m_bvTotalLeftWheelSlip.x = 0.0f;
-    m_bvTotalLeftWheelSlip.y = 0.0f;
+    RightSideTouchingGround = true;
+    if (!GetPhysCar()->IsWheelTouchingGround(1) && !GetPhysCar()->IsWheelTouchingGround(2)) {
+        RightSideTouchingGround = false;
+    }
 
-    for (int i = 0; i <= 3; i++) {
-        m_fWheelTractionMag[i] = bAbs(car->mWheel[i].mPercentFsFkTransfer);
-        wheelslip[i] = car->mWheel[i].mWheelSlip;
-        m_fLoad[i] = g_WheelLoadSlope.GetValue(car->mWheel[i].mLoad);
+    m_bvTotalRightWheelSlip = bVector2(0.0f, 0.0f);
+    m_bvTotalLeftWheelSlip = bVector2(0.0f, 0.0f);
+    totalwheelload = 0.0f;
 
-        if (static_cast<unsigned int>(i - 1) < 2U) {
-            if (car->mWheel[i].mWheelOnGround) {
-                m_bvTotalRightWheelSlip.x += wheelslip[i].x;
-                m_bvTotalRightWheelSlip.y += wheelslip[i].y;
-            }
-        } else if (car->mWheel[i].mWheelOnGround) {
-            m_bvTotalLeftWheelSlip.x += wheelslip[i].x;
-            m_bvTotalLeftWheelSlip.y += wheelslip[i].y;
-        }
+    {
+        float vehicle_mass;
 
-        float slipX = wheelslip[i].x * gWheelSlipSensitivity[0];
-        if (slipX < -1023.0f) {
-            slipX = -1023.0f;
-        }
-        if (slipX > 1023.0f) {
-            slipX = 1023.0f;
-        }
-        m_NormWheelSlip[i].x = slipX;
+        vehicle_mass = GetPhysCar()->GetAttributes()->MASS();
+        for (nloop = 0; nloop <= 3; nloop++) {
+            m_fWheelTractionMag[nloop] = bAbs(GetPhysCar()->GetWheelTractionUsage(nloop));
+            wheelslip[nloop] = GetPhysCar()->GetWheelSlip(nloop);
+            m_fLoad[nloop] = g_WheelLoadSlope.GetValue(GetPhysCar()->GetWheelLoad(nloop));
 
-        float slipY = wheelslip[i].y * gWheelSlipSensitivity[1];
-        if (slipY < -1023.0f) {
-            slipY = -1023.0f;
-        }
-        if (slipY > 1023.0f) {
-            slipY = 1023.0f;
-        }
-        m_NormWheelSlip[i].y = slipY;
-
-        if (PRINT_SKID_FX_DEBUG != 0 && car->mContext == Sound::CONTEXT_PLAYER) {
-            int x = 0;
-            int y = 0;
-
-            if (i == 0) {
-                x = -0x122;
-                y = -0xaa;
-            } else if (i == 1) {
-                x = 0xe6;
-                y = -0xaa;
-            } else if (i == 2) {
-                x = 0xe6;
-                y = -100;
-            } else if (i == 3) {
-                x = -0x122;
-                y = -100;
+            if (static_cast<unsigned int>(nloop - 1) < 2U) {
+                if (GetPhysCar()->IsWheelTouchingGround(nloop)) {
+                    bAdd(&m_bvTotalRightWheelSlip, &m_bvTotalRightWheelSlip, &wheelslip[nloop]);
+                }
+            } else if (GetPhysCar()->IsWheelTouchingGround(nloop)) {
+                bAdd(&m_bvTotalLeftWheelSlip, &m_bvTotalLeftWheelSlip, &wheelslip[nloop]);
             }
 
-            int value = static_cast<int>(m_NormWheelSlip[i].x);
-            DebugPrintSkidBar(x, y, "X", (value + 0x3ff) / 2);
-            value = static_cast<int>(m_NormWheelSlip[i].y);
-            DebugPrintSkidBar(x, y + 0x14, "Y", (value + 0x3ff) / 2);
-            DebugPrintSkidBar(x, y + 0x28, "LD", static_cast<int>(m_fLoad[i]));
+            m_NormWheelSlip[nloop].x =
+                bClamp(wheelslip[nloop].x * gWheelSlipSensitivity[0], -1023.0f, 1023.0f);
+            m_NormWheelSlip[nloop].y =
+                bClamp(wheelslip[nloop].y * gWheelSlipSensitivity[1], -1023.0f, 1023.0f);
+
+            if (PRINT_SKID_FX_DEBUG != 0 && GetPhysCar()->IsLocalPlayerCar()) {
+                int x;
+                int y;
+                const float scale = 0.5f;
+
+                x = 0;
+                y = 0;
+
+                if (nloop == 1) {
+                    x = 0xe6;
+                    y = -0xaa;
+                } else if (nloop > 1) {
+                    if (nloop == 2) {
+                        x = 0xe6;
+                    } else {
+                        if (nloop != 3) {
+                            goto print_skid_bars;
+                        }
+                        x = -0x122;
+                    }
+                    y = -100;
+                } else if (nloop == 0) {
+                    x = -0x122;
+                    y = -0xaa;
+                }
+
+            print_skid_bars:
+                (void)scale;
+                DebugPrintSkidBar(x, y, "X", (static_cast<int>(m_NormWheelSlip[nloop].x) + 0x3ff) / 2);
+                DebugPrintSkidBar(x, y + 0x14, "Y", (static_cast<int>(m_NormWheelSlip[nloop].y) + 0x3ff) / 2);
+                DebugPrintSkidBar(x, y + 0x28, "LD", static_cast<int>(m_fLoad[nloop]));
+            }
         }
     }
 }

@@ -7,6 +7,11 @@
 
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
+namespace Attrib {
+class StringKey;
+}
+
+class EAXCar;
 struct Camera;
 
 enum eCamStates {
@@ -20,56 +25,100 @@ enum eCamStates {
     MAX_DMIX_CAMS = 6,
 };
 
-namespace SndCamera {
-Camera *GetCam(int);
-void UpdateCameras();
+struct SndCamera {
+    static int NumPlayers;
+    static Attrib::StringKey m_CamAction[2];
+    static Attrib::StringKey m_NewCamAction[2];
 
-extern bVector2 m_AvergeCamDir[2];
-extern bVector2 m_WorldCamPos[2];
-extern bVector2 m_NormCamDir[2];
-extern bVector2 m_AveragedCamPos[2];
-extern bVector2 m_NormCarDir[2];
-extern bVector2 m_WorldCarPos[2];
-extern bVector2 m_CenteredCarPos[2];
-extern bVector3 m_v3WorldCarVel[2];
-extern bVector3 m_v3WorldCamVel[2];
-extern bVector3 m_v3WorldCarPos[2];
-extern bVector3 m_CurCamPos[2];
-extern int m_CurCamState[2];
-extern int m_PrevCamState[2];
+  private:
+    static Camera *m_pCams[2];
+    static eCamStates m_CurCamState[2];
+    static eCamStates m_PrevCamState[2];
+    static bVector3 m_CurCamPos[2];
+    static bVector3 m_CurCamDir[2];
+    static bVector3 m_CurCamTarget[2];
+    static bVector2 m_NormCamDir[2];
+    static bVector2 m_AvergeCamDir[2];
+    static bVector3 m_v3WorldCarPos[2];
+    static bVector3 m_v3WorldCarDir[2];
+    static bVector2 m_WorldCarPos[2];
+    static bVector2 m_CenteredCarPos[2];
+    static bVector2 m_AverageCarPos[2];
+    static bVector2 m_WorldCamPos[2];
+    static bVector2 m_CenteredCamPos[2];
+    static bVector2 m_AveragedCamPos[2];
+    static bVector2 m_NormCarDir[2];
+    static bVector2 m_NormCarPos[2];
+    static bVector3 m_v3WorldCarVel[2];
+    static bVector3 m_v3WorldCamVel[2];
+    static float m_WorldCarVel[2];
+    static EAXCar *m_PLayerCars[2];
 
-static inline bVector3 *GetV3WorldCarVel(int nPlayer);
-static inline bVector3 *GetWorldCamVel(int nPlayer);
-static inline bVector3 *GetV3WorldCarPos(int nPlayer);
-static inline bVector3 *GetCamPos(int nPlayer);
-static inline eCamStates GetCurCamState(int nPlayer);
-static inline eCamStates GetPrevCamState(int nPlayer);
-} // namespace SndCamera
+  public:
+    static void InitializeCameras();
+    static void UpdateCameras();
+    static Camera *GetCam(int nPlayer);
 
-static inline bVector3 *SndCamera::GetV3WorldCarVel(int nPlayer) {
-    return m_v3WorldCarVel + nPlayer;
-}
+    static bVector3 *GetCamPos(int nPlayer);
+    static bVector3 *GetCamDir(int nPlayer);
+    static bVector3 *GetCamTarget(int nPlayer);
+    static bVector2 *GetNormCamDir(int nPlayer);
+    static bVector2 *GetNormCarDir(int nPlayer);
+    static bVector2 *GetWorldCamPos(int nPlayer);
+    static bVector2 *GetAvgCamDir(int nPlayer);
+    static bVector2 *GetWorldCarPos(int nPlayer);
+    static bVector2 *GetAveragedCamPos(int nPlayer);
+    static bVector2 *GetCenteredCarPos(int nPlayer);
+    static bVector3 *GetV3WorldCarPos(int nPlayer);
+    static bVector3 *GetV3WorldCarVel(int nPlayer);
+    static bVector3 *GetWorldCamVel(int nPlayer);
+    static eCamStates GetCurCamState(int nPlayer);
+    static eCamStates GetPrevCamState(int nPlayer);
+    static bVector3 *GetNormCarDir3(int nPlayer);
+    static bVector3 *GetWorldCarPos3(int nPlayer);
+    static float GetWorldCarVel(int nPlayer);
+    static EAXCar *GetPlayerCar(int nPlayer);
+    static bVector3 *GetCamPos3(int nPlayer);
+};
 
-static inline bVector3 *SndCamera::GetWorldCamVel(int nPlayer) {
-    return m_v3WorldCamVel + nPlayer;
-}
+inline bVector3 *SndCamera::GetCamPos(int nPlayer) { return m_CurCamPos + nPlayer; }
 
-static inline bVector3 *SndCamera::GetV3WorldCarPos(int nPlayer) {
-    return m_v3WorldCarPos + nPlayer;
-}
+inline bVector3 *SndCamera::GetCamDir(int nPlayer) { return m_CurCamDir + nPlayer; }
 
-static inline bVector3 *SndCamera::GetCamPos(int nPlayer) {
-    return m_CurCamPos + nPlayer;
-}
+inline bVector3 *SndCamera::GetCamTarget(int nPlayer) { return m_CurCamTarget + nPlayer; }
 
-static inline eCamStates SndCamera::GetCurCamState(int nPlayer) {
-    return static_cast<eCamStates>(m_CurCamState[nPlayer]);
-}
+inline bVector2 *SndCamera::GetNormCamDir(int nPlayer) { return m_NormCamDir + nPlayer; }
 
-static inline eCamStates SndCamera::GetPrevCamState(int nPlayer) {
-    return static_cast<eCamStates>(m_PrevCamState[nPlayer]);
-}
+inline bVector2 *SndCamera::GetNormCarDir(int nPlayer) { return m_NormCarDir + nPlayer; }
 
+inline bVector2 *SndCamera::GetWorldCamPos(int nPlayer) { return m_WorldCamPos + nPlayer; }
 
+inline bVector2 *SndCamera::GetAvgCamDir(int nPlayer) { return m_AvergeCamDir + nPlayer; }
+
+inline bVector2 *SndCamera::GetWorldCarPos(int nPlayer) { return m_WorldCarPos + nPlayer; }
+
+inline bVector2 *SndCamera::GetAveragedCamPos(int nPlayer) { return m_AveragedCamPos + nPlayer; }
+
+inline bVector2 *SndCamera::GetCenteredCarPos(int nPlayer) { return m_CenteredCarPos + nPlayer; }
+
+inline bVector3 *SndCamera::GetV3WorldCarPos(int nPlayer) { return m_v3WorldCarPos + nPlayer; }
+
+inline bVector3 *SndCamera::GetV3WorldCarVel(int nPlayer) { return m_v3WorldCarVel + nPlayer; }
+
+inline bVector3 *SndCamera::GetWorldCamVel(int nPlayer) { return m_v3WorldCamVel + nPlayer; }
+
+inline eCamStates SndCamera::GetCurCamState(int nPlayer) { return m_CurCamState[nPlayer]; }
+
+inline eCamStates SndCamera::GetPrevCamState(int nPlayer) { return m_PrevCamState[nPlayer]; }
+
+inline bVector3 *SndCamera::GetNormCarDir3(int nPlayer) { return m_v3WorldCarDir + nPlayer; }
+
+inline bVector3 *SndCamera::GetWorldCarPos3(int nPlayer) { return m_v3WorldCarPos + nPlayer; }
+
+inline float SndCamera::GetWorldCarVel(int nPlayer) { return m_WorldCarVel[nPlayer]; }
+
+inline EAXCar *SndCamera::GetPlayerCar(int nPlayer) { return m_PLayerCars[nPlayer]; }
+
+inline bVector3 *SndCamera::GetCamPos3(int nPlayer) { return m_CurCamPos + nPlayer; }
 
 #endif

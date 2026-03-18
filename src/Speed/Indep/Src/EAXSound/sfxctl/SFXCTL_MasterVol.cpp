@@ -11,10 +11,6 @@ struct MoviePlayer {
 
 extern MoviePlayer *gMoviePlayer;
 
-namespace SndCamera {
-extern int m_CurCamState[2];
-}
-
 namespace RadarDetector {
 extern float mStaticRange;
 }
@@ -92,7 +88,7 @@ void SFXCTL_MasterVol::UpdateParams(float t) {
         }
     }
 
-    outputs[9] = SndCamera::m_CurCamState[0] == 3 ? 0x7fff : 0;
+    outputs[9] = SndCamera::GetCurCamState(0) == DMIX_NFS_JUMP_CAM ? 0x7fff : 0;
     outputs[10] = static_cast<int>(RadarDetector::mStaticRange * 32767.0f);
 }
 

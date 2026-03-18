@@ -29,11 +29,6 @@ extern unsigned int TickerTimeStart;
 extern unsigned int TickerTimeAccum;
 extern unsigned int bGetTicker();
 
-namespace SndCamera {
-extern int NumPlayers;
-extern bVector3 m_v3WorldCarPos[2];
-}
-
 struct stREVERB_PARAMS {
     int GinsuWet;
     int GinsuDry;
@@ -525,9 +520,9 @@ void SFXCTL_Tunnel::UpdateOcclusion(float t) {
     UMath::Vector4 originToBarrier[2];
     UMath::Vector4 directionVec;
 
-    originToBarrier[0].x = -SndCamera::m_v3WorldCarPos[0].y;
-    originToBarrier[0].y = SndCamera::m_v3WorldCarPos[0].z;
-    originToBarrier[0].z = SndCamera::m_v3WorldCarPos[0].x;
+    originToBarrier[0].x = -SndCamera::GetV3WorldCarPos(0)->y;
+    originToBarrier[0].y = SndCamera::GetV3WorldCarPos(0)->z;
+    originToBarrier[0].z = SndCamera::GetV3WorldCarPos(0)->x;
 
     originToBarrier[1].z = m_pStateBase->GetPhysCar()->mMatrix.v3.x;
     originToBarrier[1].x = -m_pStateBase->GetPhysCar()->mMatrix.v3.y;
