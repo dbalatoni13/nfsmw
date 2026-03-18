@@ -756,41 +756,55 @@ void GRaceDatabase::UpdateRaceScore(bool raceCompleted) {
     int *scoreInfo;
     float recordValue;
     float value;
-    int scale;
+    unsigned int eventHash;
 
     race = GRaceStatus::Get().GetRaceParameters();
-    winner = GRaceStatus::Get().GetWinningPlayerInfo();
-    if (!winner || !race) {
+    if (!race) {
         return;
     }
 
-    scoreInfo = reinterpret_cast<int *>(GetScoreInfo(race->GetEventHash()));
+    eventHash = race->GetEventHash();
+    winner = GRaceStatus::Get().GetWinningPlayerInfo();
+    if (!winner) {
+        return;
+    }
+
+    scoreInfo = reinterpret_cast<int *>(GetScoreInfo(eventHash));
 
     value = winner->GetTopSpeed();
-    scale = 8;
-    recordValue = static_cast<float>(*reinterpret_cast<unsigned short *>(reinterpret_cast<char *>(scoreInfo) + 0x0C)) / scale;
+    recordValue = static_cast<float>(*reinterpret_cast<unsigned short *>(reinterpret_cast<char *>(scoreInfo) + 0x0C)) /
+                  FixedPoint<unsigned short, 10, 2>::GetScale();
     if (recordValue < value) {
         recordValue = value;
     }
-    *reinterpret_cast<short *>(reinterpret_cast<char *>(scoreInfo) + 0x0C) = static_cast<short>(recordValue * scale);
+    *reinterpret_cast<short *>(reinterpret_cast<char *>(scoreInfo) + 0x0C) =
+        static_cast<short>(recordValue * FixedPoint<unsigned short, 10, 2>::GetScale());
 
-    value = winner->GetDistDriven();
-    recordValue = static_cast<float>(*reinterpret_cast<unsigned short *>(reinterpret_cast<char *>(scoreInfo) + 0x0E)) / scale;
+    value = winner->CalcAverageSpeed();
+    recordValue = static_cast<float>(*reinterpret_cast<unsigned short *>(reinterpret_cast<char *>(scoreInfo) + 0x0E)) /
+                  FixedPoint<unsigned short, 10, 2>::GetScale();
     if (recordValue < value) {
         recordValue = value;
     }
-    *reinterpret_cast<short *>(reinterpret_cast<char *>(scoreInfo) + 0x0E) = static_cast<short>(recordValue * scale);
+    *reinterpret_cast<short *>(reinterpret_cast<char *>(scoreInfo) + 0x0E) =
+        static_cast<short>(recordValue * FixedPoint<unsigned short, 10, 2>::GetScale());
 
     switch (race->GetRaceType()) {
     case GRace::kRaceType_P2P:
-    case GRace::kRaceType_Circuit:
     case GRace::kRaceType_Drag:
-    case GRace::kRaceType_Knockout:
     case GRace::kRaceType_Tollbooth:
     case GRace::kRaceType_JumpToSpeedTrap:
     case GRace::kRaceType_JumpToMilestone:
         if ((scoreInfo[1] & 3) == 0 || winner->GetRaceTime() < *reinterpret_cast<float *>(scoreInfo + 2)) {
             *reinterpret_cast<float *>(scoreInfo + 2) = winner->GetRaceTime();
+        }
+        break;
+
+    case GRace::kRaceType_Circuit:
+    case GRace::kRaceType_Knockout:
+        if ((scoreInfo[1] & 3) == 0 ||
+            GRaceStatus::Get().GetBestLapTime(winner->GetIndex()) < *reinterpret_cast<float *>(scoreInfo + 2)) {
+            *reinterpret_cast<float *>(scoreInfo + 2) = GRaceStatus::Get().GetBestLapTime(winner->GetIndex());
         }
         break;
 
