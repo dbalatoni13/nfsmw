@@ -45,10 +45,13 @@ int NotNumeric(char c);
 int SplitChars(char *in, char ***array, int (*func)(char));
 float ParseFloat(char *word);
 
+#ifndef DECLARE_GAMEPLAY_MINIMAP_CLASS
+#define DECLARE_GAMEPLAY_MINIMAP_CLASS
 class Minimap {
   public:
     static void ConvertPos(bVector2 &worldPos, bVector2 &minimapPos, TrackInfo *track);
 };
+#endif
 
 struct GRaceStatusCompat {
     unsigned char _pad[0x1AB0];

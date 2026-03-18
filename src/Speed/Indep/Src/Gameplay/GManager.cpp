@@ -64,6 +64,14 @@ class PhotoFinishScreen {
     static int mActive;
 };
 
+#ifndef DECLARE_GAMEPLAY_MINIMAP_CLASS
+#define DECLARE_GAMEPLAY_MINIMAP_CLASS
+class Minimap {
+  public:
+    static void ConvertPos(bVector2 &worldPos, bVector2 &minimapPos, TrackInfo *track);
+};
+#endif
+
 struct GManagerRaceStatusCompat {
     unsigned char _padRaceBin[0x1AB0];
     GRaceBin *mRaceBin;
@@ -2295,20 +2303,23 @@ void GManager::UpdateIconVisibility() {
 }
 
 bool GManager::CalcMapCoordsForMarker(unsigned int markerKey, bVector2 &outPos, float &outRotDeg) {
-    GMarker *marker;
-    UMath::Vector3 pos;
-    UMath::Vector3 dir;
+    Attrib::Gen::gameplay marker(markerKey, 0, nullptr);
 
-    marker = static_cast<GMarker *>(FindInstance(markerKey));
-    if (!marker) {
+    if (!marker.IsValid()) {
         return false;
     }
 
-    pos = marker->GetPosition();
-    dir = marker->GetDirection();
-    outPos.x = pos.x;
-    outPos.y = pos.z;
-    outRotDeg = bAngToDeg(bATan(-dir.x, dir.z));
+    const UMath::Vector3 &pos = marker.Position(0);
+    TrackInfo *trackInfo = TrackInfo::GetTrackInfo(2000);
+    bVector2 worldPos(pos.x, pos.y);
+    UMath::Matrix4 rotMat;
+    UMath::Vector3 forwardVec = {0.0f, 0.0f, 1.0f};
+
+    Minimap::ConvertPos(worldPos, outPos, trackInfo);
+    UMath::Init(rotMat, 1.0f, 1.0f, 1.0f);
+    UMath::MultYRot(rotMat, -marker.Rotation(0) * 0.0027777778f, rotMat);
+    UMath::Rotate(forwardVec, rotMat, forwardVec);
+    outRotDeg = bAngToDeg(bATan(-forwardVec.x, forwardVec.z));
     return true;
 }
 
