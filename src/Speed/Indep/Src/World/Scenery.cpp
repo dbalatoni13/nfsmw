@@ -19,7 +19,25 @@ struct SceneryOverrideInfo {
     short OverrideSectionNumber;
     short OverrideIndex;
 
+    void AssignOverrides();
     void AssignOverrides(ScenerySectionHeader *section_header);
+};
+
+SceneryOverrideInfo *GetSceneryOverrideInfo(int override_info_number);
+void *FindSceneryGroup(unsigned int name_hash);
+
+struct SceneryGroup : public bTNode<SceneryGroup> {
+    unsigned int NameHash;
+    short GroupNumber;
+    short NumObjects;
+    char BarrierFlag;
+    char DriveThroughBarrierFlag;
+    short Pad2;
+    unsigned short OverrideInfoNumbers[16384];
+
+    SceneryOverrideInfo *GetOverrideInfo(int index) {
+        return GetSceneryOverrideInfo(OverrideInfoNumbers[index]);
+    }
 };
 
 struct ModelHeirarchy;
@@ -127,6 +145,8 @@ eModel *pVisibleZoneBoundaryModel = 0;
 ModelHeirarchyMap HeirarchyMap;
 short SceneryOverrideHashTable[257];
 SceneryDrawInfo GrandSceneryCullInfo::SceneryDrawInfoTable[3500];
+extern bTList<SceneryGroup> SceneryGroupList;
+extern unsigned char SceneryGroupEnabledTable[0x1000];
 
 static char GetScenerySectionLetter_Scenery(int section_number) {
     return static_cast<char>(section_number / 100 + 'A' - 1);
@@ -233,6 +253,17 @@ ModelHeirarchy *FindSceneryHeirarchyByName(unsigned int name_hash) {
     return it->second;
 }
 
+SceneryOverrideInfo *GetSceneryOverrideInfo(int override_info_number) {
+    return reinterpret_cast<SceneryOverrideInfo *>(reinterpret_cast<char *>(SceneryOverrideInfoTable) + override_info_number * 6);
+}
+
+void SceneryOverrideInfo::AssignOverrides() {
+    ScenerySectionHeader *section_header = GetScenerySectionHeader(SectionNumber);
+    if (section_header) {
+        AssignOverrides(section_header);
+    }
+}
+
 void SceneryOverrideInfo::AssignOverrides(ScenerySectionHeader *section_header) {
     int *section_header_words = reinterpret_cast<int *>(section_header);
     SceneryInstance *instance = reinterpret_cast<SceneryInstance *>(section_header_words[8]) +
@@ -276,6 +307,67 @@ void SceneryOverrideInfo::AssignOverrides(ScenerySectionHeader *section_header) 
     }
 
     instance->ExcludeFlags = (instance->ExcludeFlags & 0xFFFF0000) | override_flags;
+}
+
+void *FindSceneryGroup(unsigned int name_hash) {
+    for (SceneryGroup *group = SceneryGroupList.GetHead(); group != SceneryGroupList.EndOfList(); group = group->GetNext()) {
+        if (group->NameHash == name_hash) {
+            return group;
+        }
+    }
+    return 0;
+}
+
+void EnableSceneryGroup(unsigned int name_hash, bool flip_artwork) {
+    SceneryGroup *group = static_cast<SceneryGroup *>(FindSceneryGroup(name_hash));
+    if (group) {
+        unsigned short override_flags = 0;
+        if (flip_artwork) {
+            override_flags = 0x400;
+        }
+
+        for (int i = 0; i < group->NumObjects; i++) {
+            SceneryOverrideInfo *override_info = group->GetOverrideInfo(i);
+            *reinterpret_cast<unsigned short *>(&override_info->OverrideIndex) =
+                override_flags | (*reinterpret_cast<unsigned short *>(&override_info->OverrideIndex) & 0xFBEF);
+            override_info->AssignOverrides();
+        }
+
+        SceneryGroupEnabledTable[group->GroupNumber] = 1;
+        if (flip_artwork) {
+            SceneryGroupEnabledTable[group->GroupNumber] |= 2;
+        }
+        if (group->DriveThroughBarrierFlag) {
+            SceneryGroupEnabledTable[group->GroupNumber] |= 4;
+        }
+    }
+}
+
+void DisableSceneryGroup(unsigned int name_hash) {
+    SceneryGroup *group = static_cast<SceneryGroup *>(FindSceneryGroup(name_hash));
+    if (group) {
+        for (int i = 0; i < group->NumObjects; i++) {
+            SceneryOverrideInfo *override_info = group->GetOverrideInfo(i);
+            *reinterpret_cast<unsigned short *>(&override_info->OverrideIndex) =
+                *reinterpret_cast<unsigned short *>(&override_info->OverrideIndex) | 0x10;
+            override_info->AssignOverrides();
+        }
+        SceneryGroupEnabledTable[group->GroupNumber] = 0;
+    }
+}
+
+void DisableAllSceneryGroups() {
+    for (SceneryGroup *group = SceneryGroupList.GetHead(); group != SceneryGroupList.EndOfList(); group = group->GetNext()) {
+        if (SceneryGroupEnabledTable[group->GroupNumber]) {
+            for (int i = 0; i < group->NumObjects; i++) {
+                SceneryOverrideInfo *override_info = group->GetOverrideInfo(i);
+                *reinterpret_cast<unsigned short *>(&override_info->OverrideIndex) =
+                    *reinterpret_cast<unsigned short *>(&override_info->OverrideIndex) | 0x10;
+                override_info->AssignOverrides();
+            }
+            SceneryGroupEnabledTable[group->GroupNumber] = 0;
+        }
+    }
 }
 
 void InitVisibleZones() {
