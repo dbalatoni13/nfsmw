@@ -5,11 +5,11 @@
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 #include "Speed/Indep/bWare/Inc/bPrintf.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
-#include "dolphin/os/OSArena.h"
 
 #include <types.h>
 
 #ifdef EA_PLATFORM_GAMECUBE
+#include "dolphin/os/OSArena.h"
 #include <dolphin.h>
 #endif
 
