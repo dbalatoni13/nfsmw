@@ -260,7 +260,7 @@ void DoTunnelBloom(eView *view) {
     bVector2 p0;
     bVector2 p1;
     float len = zone->GetSegmentNextTo(&endP, &p0, &p1);
-    if (len == -1.0f) {
+    if (len == -1.0f || len >= 40.0f) {
         return;
     }
 
@@ -314,13 +314,13 @@ void DoTunnelBloom(eView *view) {
     bVector2 v(p1.y - p0.y, p0.x - p1.x);
     bNormalize(&v, &v);
     float dir_dot = bAbs(v.x * r.x + v.y * r.y);
-    if (0.8f <= dir_dot) {
+    if (17.0f <= dir_dot) {
         SE_def.intensity = 1.0f;
         if (view->ScreenEffects->SE_data[SE_GLARE].data[1] < 1.0f) {
             SE_def.intensity = view->ScreenEffects->SE_data[SE_GLARE].data[1] + GlareFallon;
         }
     } else {
-        SE_def.intensity = view->ScreenEffects->SE_data[SE_GLARE].data[1] * 0.5f * dir_dot;
+        SE_def.intensity = view->ScreenEffects->SE_data[SE_GLARE].data[1] * 0.05882353f * dir_dot;
     }
 
     view->ScreenEffects->SE_data[SE_GLARE].data[1] = SE_def.intensity;
