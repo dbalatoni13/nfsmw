@@ -650,7 +650,6 @@ int TrackStreamer::BuildHoleMovements(HoleMovement *hole_movements, int max_move
             int best_gap = 0;
             int best_address = 0;
             TSMemoryNode *best_node = 0;
-
             for (TSMemoryNode *free_node = pMemoryPool->GetFirstFreeNode(true); free_node;
                  free_node = pMemoryPool->GetNextFreeNode(true, free_node)) {
                 int gap_size = free_node->Size;
@@ -891,48 +890,72 @@ void TrackStreamer::AddCurrentStreamingSections(short *section_numbers, int num_
 }
 
 void TrackStreamer::DetermineStreamingSections() {
-    short section_numbers[384];
-    int num_sections = 3;
+    const int max_sections_to_load = 0x180;
+    short sections_to_load[384];
+    int num_sections_to_load = 3;
+    short section_number;
 
     RemoveCurrentStreamingSections();
 
-    section_numbers[0] = 0x9c4;
-    section_numbers[1] = 0x960;
-    section_numbers[2] = 0xa28;
+    sections_to_load[0] = 0x9c4;
+    sections_to_load[1] = 0x960;
+    sections_to_load[2] = 0xa28;
     if (SeeulatorToolActive && ScenerySectionToBlink != 0) {
-        section_numbers[3] = static_cast<short>(ScenerySectionToBlink);
-        num_sections = 4;
+        num_sections_to_load = 4;
+        sections_to_load[3] = static_cast<short>(ScenerySectionToBlink);
     }
 
-    for (int i = 0; i < 4; i++) {
-        short keep_section = KeepSectionTable[i];
-        if (keep_section != 0) {
-            section_numbers[num_sections] = keep_section;
-            num_sections += 1;
+    {
+        short *sections = sections_to_load + num_sections_to_load;
+        short *keep_section = KeepSectionTable;
+        int n = 3;
+
+        section_number = *keep_section;
+        while (true) {
+            n -= 1;
+            short current_keep = *keep_section;
+            keep_section += 1;
+            if (section_number != 0) {
+                *sections = current_keep;
+                num_sections_to_load += 1;
+                sections += 1;
+            }
+            if (n < 0) {
+                break;
+            }
+            section_number = *keep_section;
         }
     }
 
-    AddCurrentStreamingSections(section_numbers, num_sections, 0);
-    AddCurrentStreamingSections(section_numbers, num_sections, 1);
-
-    for (int i = 0; i < 2; i++) {
-        StreamingPositionEntry *streaming_position = &StreamingPositionEntries[i];
-        if (streaming_position->CurrentZone > 0) {
-            LoadingSection *loading_section = TheVisibleSectionManager.FindLoadingSection(streaming_position->CurrentZone);
+    AddCurrentStreamingSections(sections_to_load, num_sections_to_load, 0);
+    int position_number = 0;
+    AddCurrentStreamingSections(sections_to_load, num_sections_to_load, 1);
+    do {
+        StreamingPositionEntry *position_entry = &StreamingPositionEntries[position_number];
+        if (position_entry->CurrentZone > 0) {
+            LoadingSection *loading_section = TheVisibleSectionManager.FindLoadingSection(position_entry->CurrentZone);
             if (!loading_section) {
-                DrivableScenerySection *drivable_section = TheVisibleSectionManager.FindDrivableSection(streaming_position->CurrentZone);
-                num_sections = 0;
-                for (int n = 0; n < drivable_section->NumVisibleSections; n++) {
-                    section_numbers[num_sections] = drivable_section->VisibleSections[n];
-                    num_sections += 1;
+                DrivableScenerySection *drivable_section = TheVisibleSectionManager.FindDrivableSection(position_entry->CurrentZone);
+                int i = 0;
+                num_sections_to_load = 0;
+                while (true) {
+                    bool done = drivable_section->NumVisibleSections <= i;
+                    i += 1;
+                    if (done) {
+                        break;
+                    }
+                    section_number = drivable_section->VisibleSections[i - 1];
+                    sections_to_load[num_sections_to_load] = section_number;
+                    num_sections_to_load += 1;
                 }
             } else {
-                num_sections = TheVisibleSectionManager.GetSectionsToLoad(loading_section, section_numbers, 0x180);
+                num_sections_to_load = TheVisibleSectionManager.GetSectionsToLoad(loading_section, sections_to_load, max_sections_to_load);
             }
 
-            AddCurrentStreamingSections(section_numbers, num_sections, i);
+            AddCurrentStreamingSections(sections_to_load, num_sections_to_load, position_number);
         }
-    }
+        position_number += 1;
+    } while (position_number < 2);
 }
 
 void TrackStreamer::PlotLoadingMarker(StreamingPositionEntry *streaming_position) {}
