@@ -811,9 +811,8 @@ int LoaderScenery(bChunk *chunk) {
                     subchunk->Size - (section_header_words[8] - reinterpret_cast<int>(subchunk->GetData()))
                 ) >> 6;
                 if (section_header_words[2] == 0) {
-                    unsigned char *instances = reinterpret_cast<unsigned char *>(section_header_words[8]);
                     for (int i = 0; i < section_header_words[9]; i++) {
-                        unsigned char *instance = instances + i * 0x40;
+                        unsigned char *instance = reinterpret_cast<unsigned char *>(section_header_words[8] + i * 0x40);
                         bEndianSwap16(instance + 0x3E);
                         bEndianSwap32(instance + 0x18);
                         for (int n = 0; n < 3; n++) {
