@@ -16,7 +16,9 @@
 #include "Speed/Indep/Src/Interfaces/SimActivities/ITrafficMgr.h"
 #include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IAudible.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IEngine.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IRenderable.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
 #include "Speed/Indep/Src/Main/AttribSupport.h"
 #include "Speed/Indep/Src/Physics/PVehicle.h"
@@ -2674,10 +2676,34 @@ void GRaceStatus::FinalizeRaceStats() {
 }
 
 bool GRaceStatus::IsAudioLoading() {
+    for (int i = 0; i < GetRacerCount(); ++i) {
+        ISimable *simable = GetRacerInfo(i).GetSimable();
+
+        if (simable) {
+            IAudible *iaudible;
+
+            if (simable->QueryInterface(&iaudible) && !iaudible->IsAudible()) {
+                return true;
+            }
+        }
+    }
+
     return false;
 }
 
 bool GRaceStatus::IsModelsLoading() {
+    for (int i = 0; i < GetRacerCount(); ++i) {
+        ISimable *simable = GetRacerInfo(i).GetSimable();
+
+        if (simable) {
+            IRenderable *irenderable;
+
+            if (simable->QueryInterface(&irenderable) && !irenderable->IsRenderable()) {
+                return true;
+            }
+        }
+    }
+
     return false;
 }
 
