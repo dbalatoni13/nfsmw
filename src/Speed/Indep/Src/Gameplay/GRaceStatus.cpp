@@ -1643,24 +1643,38 @@ int ParseArray(const char *string, float *data, int max) {
     char **words;
     int num;
     float *temp = nullptr;
+    int i;
 
     bMemCpy(copy, string, len + 1);
     num = SplitChars(copy, &words, NotNumeric);
     if (num > max) {
         temp = new (__FILE__, __LINE__) float[num];
-
-        for (int i = 0; i < num; ++i) {
-            temp[i] = ParseFloat(words[i]);
+        i = 0;
+        if (num > 0) {
+            do {
+                temp[i] = ParseFloat(words[i]);
+                i += 1;
+            } while (i < num);
         }
 
-        Table table(temp, num, 0.0f, static_cast<float>(max - 1));
+        {
+            Table table(temp, num, 0.0f, static_cast<float>(max - 1));
 
-        for (int i = 0; i < max; ++i) {
-            data[i] = table.GetValue(static_cast<float>(i));
+            i = 0;
+            if (max > 0) {
+                do {
+                    data[i] = table.GetValue(static_cast<float>(i));
+                    i += 1;
+                } while (i < max);
+            }
         }
     } else {
-        for (int i = 0; i < num; ++i) {
-            data[i] = ParseFloat(words[i]);
+        i = 0;
+        if (num > 0) {
+            do {
+                data[i] = ParseFloat(words[i]);
+                i += 1;
+            } while (i < num);
         }
 
         max = num;
