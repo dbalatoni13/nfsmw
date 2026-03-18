@@ -563,11 +563,11 @@ void ScenerySectionHeader::DrawAScenery(int scenery_instance_number, SceneryCull
         }
     }
 
+    unsigned char *scenery_info = reinterpret_cast<unsigned char *>(section_header_words[6]) + instance->SceneryInfoNumber * 0x48;
     if (((instance->ExcludeFlags ^ 0x60) & scenery_cull_info->ExcludeFlags) != 0) {
         return;
     }
 
-    unsigned char *scenery_info = GetSceneryInfo_Scenery(section_header_words, instance->SceneryInfoNumber);
     if (visibility_state == EVISIBLESTATE_PARTIAL) {
         bVector3 bbox_min(instance->BBoxMin[0], instance->BBoxMin[1], instance->BBoxMin[2]);
         bVector3 bbox_max(instance->BBoxMax[0], instance->BBoxMax[1], instance->BBoxMax[2]);
@@ -583,23 +583,23 @@ void ScenerySectionHeader::DrawAScenery(int scenery_instance_number, SceneryCull
     float radius = GetSceneryRadius_Scenery(scenery_info) + 6.0f;
     float forward_distance = to_instance_x * scenery_cull_info->Direction.x + to_instance_y * scenery_cull_info->Direction.y +
                              to_instance_z * scenery_cull_info->Direction.z;
-    if (forward_distance < -radius) {
-        return;
+    int pixel_size_int = 0;
+    if (-radius <= forward_distance) {
+        float distance = bSqrt(
+            to_instance_x * to_instance_x + to_instance_y * to_instance_y + to_instance_z * to_instance_z
+        );
+        float pixel_size = scenery_cull_info->H;
+        if (radius < distance - radius) {
+            pixel_size = (radius * pixel_size) / (distance - radius);
+        }
+        pixel_size_int = static_cast<int>(pixel_size);
     }
 
-    float distance = bSqrt(
-        to_instance_x * to_instance_x + to_instance_y * to_instance_y + to_instance_z * to_instance_z
-    );
-    float pixel_size = scenery_cull_info->H;
-    if (radius < distance - radius) {
-        pixel_size = (radius * pixel_size) / (distance - radius);
-    }
-
-    int pixel_size_int = static_cast<int>(pixel_size);
     if (pixel_size_int < 2) {
         return;
     }
-    if ((instance->ExcludeFlags & 0x2000000) != 0) {
+    unsigned int instance_flags = instance->ExcludeFlags;
+    if ((instance_flags & 0x2000000) != 0) {
         pixel_size_int += 10;
     }
 
@@ -625,9 +625,9 @@ void ScenerySectionHeader::DrawAScenery(int scenery_instance_number, SceneryCull
                 }
             }
         }
-    } else if ((instance->ExcludeFlags & 0x80) == 0) {
+    } else if ((instance_flags & 0x80) == 0) {
         if (pixel_size_int > 0x1F) {
-            if ((instance->ExcludeFlags & 0x1000100) == 0) {
+            if ((instance_flags & 0x1000100) == 0) {
                 model = GetSceneryModel_Scenery(scenery_info, 3);
             } else {
                 model = GetSceneryModel_Scenery(scenery_info, 0);
