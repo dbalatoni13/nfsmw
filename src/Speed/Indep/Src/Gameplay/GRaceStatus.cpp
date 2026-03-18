@@ -9,14 +9,17 @@
 #include "Speed/Indep/Src/Generated/Messages/MNotifyRaceTimeExpired.h"
 #include "Speed/Indep/Src/Generated/Messages/MNotifyRaceTimeSecTick.h"
 #include "Speed/Indep/Src/Generated/Events/EAutoSave.hpp"
+#include "Speed/Indep/Src/Generated/Events/EFadeScreenOn.hpp"
 #include "Speed/Indep/Src/Generated/Events/EReloadHud.hpp"
 #include "Speed/Indep/Src/Interfaces/SimActivities/ICopMgr.h"
+#include "Speed/Indep/Src/Interfaces/SimActivities/ITrafficMgr.h"
 #include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IEngine.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
 #include "Speed/Indep/Src/Main/AttribSupport.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
+#include "Speed/Indep/Src/Sim/Simulation.h"
 #include "Speed/Indep/Src/World/WRoadNetwork.h"
 #include "Speed/Indep/Src/World/WorldModel.hpp"
 #include "Speed/Indep/Src/World/TrackStreamer.hpp"
@@ -1556,6 +1559,51 @@ const char *GRaceStatus::GetCacheName() const {
     return "GRaceStatus";
 }
 
+bool GRaceStatus::CanUnspawnRoamer(const IVehicle *roamer) const {
+    const GRacerInfo *info = nullptr;
+
+    if (roamer->IsActive()) {
+        for (int onRacer = 0; onRacer < GetRacerCount(); ++onRacer) {
+            const GRacerInfo &racerInfo = mRacerInfo[onRacer];
+
+            if (UTL::COM::ComparePtr(racerInfo.GetSimable(), roamer)) {
+                info = &racerInfo;
+                break;
+            }
+        }
+
+        if (info) {
+            if (roamer->GetOffscreenTime() >= 4.0f) {
+                return Sim::DistanceToCamera(roamer->GetPosition()) >= 100.0f;
+            }
+
+            return false;
+        }
+    }
+
+    return true;
+}
+
+eVehicleCacheResult GRaceStatus::OnQueryVehicleCache(const IVehicle *removethis, const IVehicleCache *whosasking) const {
+    if (mPlayMode == kPlayMode_Racing || mVehicleCacheLocked) {
+        for (int i = 0; i < GetRacerCount(); ++i) {
+            if (UTL::COM::ComparePtr(mRacerInfo[i].GetSimable(), removethis)) {
+                return VCR_WANT;
+            }
+        }
+    } else {
+        if (!UTL::COM::ComparePtr(whosasking, ICopMgr::Get()) && !UTL::COM::ComparePtr(whosasking, ITrafficMgr::Get())) {
+            return VCR_DONTCARE;
+        }
+
+        if (!CanUnspawnRoamer(removethis)) {
+            return VCR_WANT;
+        }
+    }
+
+    return VCR_DONTCARE;
+}
+
 void GRaceStatus::SetRaceContext(GRace::Context context) {
     mRaceContext = context;
 }
@@ -1643,6 +1691,32 @@ void GRaceStatus::SetRacing() {
 #ifndef EA_BUILD_A124
     mCaluclatedAdaptiveGain = false;
 #endif
+}
+
+void GRaceStatus::NotifyScriptWhenLoaded() {
+    bool racersLoading = IsLoading();
+    bool trackLoading = TheTrackStreamer.IsLoadingInProgress();
+    bool copsSpawning = false;
+
+    if (ICopMgr::Get() && ICopMgr::Get()->IsCopSpawnPending()) {
+        copsSpawning = true;
+    }
+
+    if (trackLoading) {
+        if (!racersLoading) {
+            if (!copsSpawning) {
+                if (!TheTrackStreamer.IsFarLoadingInProgress()) {
+                    trackLoading = false;
+                }
+            }
+        }
+    }
+
+    if (racersLoading || trackLoading || copsSpawning) {
+        new EFadeScreenOn(false);
+    }
+
+    mScriptWaitingForLoad = true;
 }
 
 void GRaceStatus::SetRoaming() {
@@ -2002,6 +2076,47 @@ void GRaceStatus::AddCheckpoint(GRuntimeInstance *trigger) {
     mCheckpoints.push_back(gtrigger);
     if (!mNextCheckpoint) {
         mNextCheckpoint = gtrigger;
+    }
+}
+
+void GRaceStatus::SetNextCheckpointPos(GRuntimeInstance *trigger) {
+    bool checkpointsVisible = false;
+
+    mNextCheckpoint = static_cast<GTrigger *>(trigger);
+
+    if (mRaceParms) {
+        checkpointsVisible = mRaceParms->GetCheckpointsVisible();
+    }
+
+    if (!trigger || !checkpointsVisible) {
+        if (mCheckpointModel) {
+            delete mCheckpointModel;
+        }
+        mCheckpointModel = nullptr;
+
+        if (mCheckpointEmitter) {
+            mCheckpointEmitter->UnSubscribe();
+            delete mCheckpointEmitter;
+            mCheckpointEmitter = nullptr;
+        }
+
+        return;
+    }
+
+    if (!mCheckpointModel) {
+        mCheckpointModel = new WorldModel(0x738B1F9B, nullptr, false);
+    }
+
+    UMath::Vector3 position;
+    bMatrix4 matrix;
+
+    trigger->GetPosition(position);
+    bIdentity(&matrix);
+    eSwizzleWorldVector(reinterpret_cast<const bVector3 &>(position), reinterpret_cast<bVector3 &>(matrix.v3));
+    mCheckpointModel->SetMatrix(&matrix);
+
+    if (mCheckpointEmitter) {
+        mCheckpointEmitter->SetLocalWorld(&matrix);
     }
 }
 

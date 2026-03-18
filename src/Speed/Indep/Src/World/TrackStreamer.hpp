@@ -153,6 +153,9 @@ class TrackStreamer {
     void ClearStreamingPositions();
     void BlockUntilLoadingComplete();
     int IsLoadingInProgress();
+    bool IsFarLoadingInProgress() {
+        return CurrentZoneFarLoad;
+    }
     void *AllocateUserMemory(int size, const char *debug_name, int offset);
     void FreeUserMemory(void *mem);
 
