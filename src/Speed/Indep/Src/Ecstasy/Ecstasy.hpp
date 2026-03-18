@@ -83,6 +83,10 @@ struct eView : public eViewPlatInterface {
         this->Active = state;
     }
 
+    int IsActive() const {
+        return Active;
+    }
+
     CameraMover *GetCameraMover() {
         if (!this->CameraMoverList.IsEmpty()) {
             return this->CameraMoverList.GetHead();

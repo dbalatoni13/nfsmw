@@ -319,6 +319,47 @@ int TSMemoryPool::GetAmountFree() {
     return AmountFree;
 }
 
+void TSMemoryPool::Free(void *memory) {
+    int address = reinterpret_cast<int>(memory);
+    Updated = true;
+
+    for (TSMemoryNode *node = NodeList.GetHead(); node != NodeList.EndOfList(); node = node->GetNext()) {
+        if (node->Address == address) {
+            int size = node->Size;
+            TSMemoryNode *prev_node = node->GetPrev();
+
+            node->DebugName[0] = 0;
+            node->Allocated = false;
+            if (prev_node != NodeList.EndOfList() && prev_node->IsFree()) {
+                node->Address = address - prev_node->Size;
+                node->Size = size + prev_node->Size;
+                RemoveNode(prev_node);
+            }
+
+            TSMemoryNode *next_node = node->GetNext();
+            if (next_node != NodeList.EndOfList() && next_node->IsFree()) {
+                node->Size += next_node->Size;
+                RemoveNode(next_node);
+            }
+
+            AmountFree += size;
+            if (LargestFree < node->Size) {
+                LargestFree = node->Size;
+            }
+
+            if (TracingEnabled && bMemoryTracing) {
+                bMemoryTraceFreePacket packet;
+                bMemSet(&packet, 0, sizeof(packet));
+                packet.PoolID = reinterpret_cast<uintptr_t>(this);
+                packet.MemoryAddress = static_cast<uintptr_t>(address);
+                packet.Size = size;
+                bFunkCallASync("CODEINE", 0x1b, &packet, sizeof(packet));
+            }
+            return;
+        }
+    }
+}
+
 TSMemoryNode *TSMemoryPool::GetNextNode(bool start_from_top, TSMemoryNode *node) {
     TSMemoryNode *next_node;
     if (!start_from_top) {
