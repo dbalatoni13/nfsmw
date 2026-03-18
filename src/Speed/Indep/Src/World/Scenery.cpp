@@ -273,11 +273,11 @@ void SceneryOverrideInfo::AssignOverrides(ScenerySectionHeader *section_header) 
 }
 
 void InitVisibleZones() {
-    if (!pVisibleZoneBoundaryModel) {
+    if (pVisibleZoneBoundaryModel == 0) {
         eModel *model = reinterpret_cast<eModel *>(bOMalloc(eModelSlotPool));
         unsigned int name_hash = bStringHash("MARKER_BOUNDARY");
-        model->Solid = 0;
         model->NameHash = 0;
+        model->Solid = 0;
         model->Init(name_hash);
         pVisibleZoneBoundaryModel = model;
     }
