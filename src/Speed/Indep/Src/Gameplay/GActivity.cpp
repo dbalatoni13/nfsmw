@@ -13,6 +13,10 @@ template <> struct GObjectIteratorTraits<GState> {
     enum { kType = kGameplayObjType_State };
 };
 
+template <> struct GObjectIteratorTraits<GHandler> {
+    enum { kType = kGameplayObjType_Handler };
+};
+
 template <typename T> class GObjectIterator {
   public:
     GObjectIterator(unsigned int)
@@ -40,6 +44,21 @@ template <typename T> class GObjectIterator {
     T *mInstance;
     GRuntimeInstance *mHead;
 };
+
+template <>
+GObjectIterator<GHandler>::GObjectIterator(unsigned int)
+    : mInstance(static_cast<GHandler *>(GRuntimeInstance::sRingListHead[GObjectIteratorTraits<GHandler>::kType])) //
+    , mHead(mInstance) {}
+
+template <>
+void GObjectIterator<GHandler>::Advance() {
+    if (!mInstance) {
+        return;
+    }
+
+    GRuntimeInstance *next = mInstance->GetNextRuntimeInstance();
+    mInstance = next == mHead ? nullptr : static_cast<GHandler *>(next);
+}
 
 GActivity::GActivity(const Attrib::Key &activityKey)
     : GRuntimeInstance(activityKey, kGameplayObjType_Activity) //
@@ -81,6 +100,27 @@ void GActivity::GatherStatesAndHandlers() {
         handlerVec.reserve(handlerCount);
         StoreHandlers(state, &handlerVec);
     }
+}
+
+unsigned int GActivity::StoreHandlers(GState *state, UTL::Std::vector<GHandler *, _type_ID_GHandlerVector> *handlerVec) {
+    unsigned int count = 0;
+    GObjectIterator<GHandler> iter(0xFFFFFFFF);
+
+    while (iter.IsValid()) {
+        GHandler *handler = iter.GetInstance();
+
+        if (CollectionIsHandlerForState(state, handler)) {
+            if (handlerVec) {
+                handlerVec->push_back(handler);
+            }
+
+            count++;
+        }
+
+        iter.Advance();
+    }
+
+    return count;
 }
 
 void GActivity::Run() {
