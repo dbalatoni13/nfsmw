@@ -25,6 +25,7 @@
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 #include "Speed/Indep/Src/Sim/Simulation.h"
 #include "Speed/Indep/Src/World/WRoadNetwork.h"
+#include "Speed/Indep/Src/World/TrackInfo.hpp"
 #include "Speed/Indep/Src/World/WorldModel.hpp"
 #include "Speed/Indep/Src/World/TrackStreamer.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
@@ -35,6 +36,11 @@
 void SetCurrentTimeOfDay(float value);
 void SetOverRideRainIntensity(float intensity);
 extern int UnlockAllThings;
+
+class Minimap {
+  public:
+    static void ConvertPos(bVector2 &worldPos, bVector2 &minimapPos, TrackInfo *track);
+};
 
 GRaceStatus *GRaceStatus::fObj = nullptr;
 
@@ -895,26 +901,60 @@ unsigned int GRaceParameters::GetCollectionKey() const {
 }
 
 void GRaceParameters::GetBoundingBox(UMath::Vector2 &topLeft, UMath::Vector2 &botRight) const {
-    float *topLeftValues;
-    float *botRightValues;
+    UMath::Vector3 pos;
+    float x1;
+    float x2;
+    float y1;
+    float y2;
+    TrackInfo *trackInfo;
+    bVector2 topLeftWorld;
+    bVector2 botRightWorld;
+    bVector2 topLeftMap;
+    bVector2 botRightMap;
 
-    topLeftValues = reinterpret_cast<float *>(&topLeft);
-    botRightValues = reinterpret_cast<float *>(&botRight);
     if (mIndex) {
         const unsigned char *indexBytes;
 
         indexBytes = reinterpret_cast<const unsigned char *>(mIndex);
-        topLeftValues[0] = indexBytes[0x2C] * (1.0f / 255.0f);
-        topLeftValues[1] = indexBytes[0x2D] * (1.0f / 255.0f);
-        botRightValues[0] = indexBytes[0x2E] * (1.0f / 255.0f);
-        botRightValues[1] = indexBytes[0x2F] * (1.0f / 255.0f);
+        topLeft.x = indexBytes[0x2C] * (1.0f / 255.0f);
+        topLeft.y = indexBytes[0x2D] * (1.0f / 255.0f);
+        botRight.x = indexBytes[0x2E] * (1.0f / 255.0f);
+        botRight.y = indexBytes[0x2F] * (1.0f / 255.0f);
         return;
     }
 
-    topLeftValues[0] = 0.0f;
-    topLeftValues[1] = 0.0f;
-    botRightValues[0] = 0.0f;
-    botRightValues[1] = 0.0f;
+    EnsureLoaded();
+    GetStartPosition(pos);
+    x1 = pos.z;
+    x2 = pos.z;
+    y1 = -pos.x;
+    y2 = y1;
+
+    if (HasFinishLine()) {
+        GetFinishPosition(pos);
+        x1 = std::min(pos.z, x1);
+        x2 = std::max(x2, pos.z);
+        y1 = std::min(-pos.x, y1);
+        y2 = std::max(y2, -pos.x);
+    }
+
+    for (unsigned int onCheck = 0; onCheck < GetNumCheckpoints(); ++onCheck) {
+        GetCheckpointPosition(onCheck, pos);
+        x1 = std::min(pos.z, x1);
+        x2 = std::max(x2, pos.z);
+        y1 = std::min(-pos.x, y1);
+        y2 = std::max(y2, -pos.x);
+    }
+
+    trackInfo = TrackInfo::GetTrackInfo(2000);
+    topLeftWorld = bVector2(x1, y1);
+    botRightWorld = bVector2(x2, y2);
+    Minimap::ConvertPos(topLeftWorld, topLeftMap, trackInfo);
+    Minimap::ConvertPos(botRightWorld, botRightMap, trackInfo);
+    topLeft.x = topLeftMap.x;
+    topLeft.y = topLeftMap.y;
+    botRight.x = botRightMap.x;
+    botRight.y = botRightMap.y;
 }
 
 float GRaceParameters::GetRaceLengthMeters() const {
