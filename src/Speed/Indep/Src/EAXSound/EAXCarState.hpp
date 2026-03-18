@@ -214,8 +214,16 @@ struct EAX_CarState : public UTL::Collections::Listable<EAX_CarState, 10> {
         return mDriveline.mGear;
     }
 
+    Sound::Context GetContext() {
+        return mContext;
+    }
+
     const bVector3 *GetForwardVector() {
         return static_cast<const bVector3 *>(static_cast<const void *>(&mMatrix.v0));
+    }
+
+    const bVector3 *GetLeftVector() {
+        return static_cast<const bVector3 *>(static_cast<const void *>(&mMatrix.v1));
     }
 
     bVector3 *GetPosition() {

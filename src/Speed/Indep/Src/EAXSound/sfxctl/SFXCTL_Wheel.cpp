@@ -6,6 +6,8 @@
 namespace {
 extern Slope g_WheelLoadSlope;
 extern float gWheelSlipSensitivity[2];
+extern float gfTireOffsetDist;
+extern float gfTireFwdOffsetDist;
 extern int PRINT_SKID_FX_DEBUG;
 } // namespace
 
@@ -50,7 +52,23 @@ bVector3 *SFXCTL_Wheel::GetWheelPos(int wheelID, int numtires) {
     return &v3NewPosLeft;
 }
 
-void SFXCTL_Wheel::GenerateWheelPosition() {}
+void SFXCTL_Wheel::GenerateWheelPosition() {
+    const bVector3 *pv3CarPos;
+    bVector3 pv3LeftDir;
+    bVector3 FwdOffsetVec;
+
+    if (GetPhysCar()->GetContext() == Sound::kRaceContext_Count) {
+        return;
+    }
+
+    pv3CarPos = GetPhysCar()->GetPosition();
+    pv3LeftDir = bScale(*GetPhysCar()->GetLeftVector(), gfTireOffsetDist);
+    FwdOffsetVec = bScale(*GetPhysCar()->GetForwardVector(), gfTireFwdOffsetDist);
+    v3NewPosRight = bSub(*pv3CarPos, pv3LeftDir);
+    v3NewPosRight += FwdOffsetVec;
+    v3NewPosLeft = bAdd(*pv3CarPos, pv3LeftDir);
+    v3NewPosLeft += FwdOffsetVec;
+}
 
 void SFXCTL_Wheel::GenerateTerrainTypes() {
     EAX_CarState *car = m_pStateBase != nullptr ? m_pStateBase->GetPhysCar() : nullptr;

@@ -132,7 +132,8 @@ HeliSoundConn::HeliSoundConn(const Sim::ConnectionData &data)
     Pkt_Heli_Open *oc = static_cast<Pkt_Heli_Open *>(data.pkt);
     Attrib::Instance att(oc->m_VehicleSpec, 0, nullptr);
     mTarget.Set(oc->mWorldID);
-    mState = new EAX_HeliState(att.GetConstCollection(), oc->mWorldID);
+    mState = static_cast<EAX_HeliState *>(__builtin_vec_new(0xA0));
+    new (mState) EAX_HeliState(att.GetConstCollection(), oc->mWorldID);
     if (g_pEAXSound != nullptr && mState != nullptr) {
         g_pEAXSound->SpawnHelicopter(mState);
         mState->mSimUpdating = false;
