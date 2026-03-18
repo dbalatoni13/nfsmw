@@ -5,6 +5,8 @@
 #include "Speed/Indep/Src/Ecstasy/eModel.hpp"
 #include "Speed/Indep/Src/Ecstasy/eSolid.hpp"
 #include "Speed/Indep/Src/Misc/ResourceLoader.hpp"
+#include "Speed/Indep/Src/World/TrackInfo.hpp"
+#include "Speed/Indep/bWare/Inc/SpeedScript.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 
 struct ScenerySectionHeader : public bNode {
@@ -41,9 +43,25 @@ struct eLightContext;
 struct PrecullerBooBooManager {
     unsigned char Data[0x800];
 
+    void Reset() {
+        bMemSet(this, 0, 0x800);
+    }
+
     int GetSectionNumber(bVector3 &position);
     unsigned char *GetByte(int section_number);
     unsigned char GetBit(int section_number);
+
+    void Set(bVector3 &pos) {
+        int n = GetSectionNumber(pos);
+        unsigned char *p = GetByte(n);
+        *p |= GetBit(n);
+    }
+
+    void Clr(bVector3 &pos) {
+        int n = GetSectionNumber(pos);
+        unsigned char *p = GetByte(n);
+        *p &= -GetBit(n) - 1U;
+    }
 };
 
 class eViewSceneryRenderShim : public eView {
@@ -258,6 +276,36 @@ void InitVisibleZones() {}
 void CloseVisibleZones() {}
 
 void ServicePreculler() {}
+
+void LoadPrecullerBooBooScript(const char *filename, bool reset) {
+    if (reset) {
+        gPrecullerBooBooManager.Reset();
+    }
+
+    SpeedScript script(filename, 1);
+    while (true) {
+        char *region = script.GetNextCommand("BOOBOO:");
+        if (!region) {
+            return;
+        }
+        if (bStrICmp(script.GetNextArgumentString(), LoadedTrackInfo->GetLoadedTrackInfo()) == 0) {
+            char *section = script.GetNextArgumentString();
+            char *option = script.GetNextArgumentString();
+            bool set_booboo = bStrICmp(option, "SET") == 0;
+            bool clr_booboo = bStrICmp(option, "CLR") == 0;
+            bVector3 pos;
+
+            (void)section;
+            script.GetNextArgumentString();
+            pos = script.GetNextArgumentVector3();
+            if (set_booboo) {
+                gPrecullerBooBooManager.Set(pos);
+            } else if (clr_booboo) {
+                gPrecullerBooBooManager.Clr(pos);
+            }
+        }
+    }
+}
 
 void ScenerySectionHeader::DrawAScenery(int scenery_instance_number, SceneryCullInfo *scenery_cull_info, int visibility_state) {
     int *section_header_words = reinterpret_cast<int *>(this);
