@@ -1563,7 +1563,7 @@ void TrackStreamer::CheckLoadingBar() {
     prev_need_loading_bar_26275 = minimum_distance < kLoadingBarDistanceThreshold_TrackStreamer;
 }
 
-int TrackStreamer::GetPredictedZone(StreamingPositionEntry *streaming_position) {
+short TrackStreamer::GetPredictedZone(StreamingPositionEntry *streaming_position) {
     float speed = bSqrt(streaming_position->Velocity.x * streaming_position->Velocity.x +
                         streaming_position->Velocity.y * streaming_position->Velocity.y);
     bool found_predicted_zone = false;
@@ -1571,7 +1571,7 @@ int TrackStreamer::GetPredictedZone(StreamingPositionEntry *streaming_position) 
     TrackPathZone *track_path_zone = 0;
     bVector2 predicted_position;
 
-    do {
+    while (true) {
         track_path_zone =
             TheTrackPathManager.FindZone(&streaming_position->Position, TRACK_PATH_ZONE_STREAMER_PREDICTION, track_path_zone);
         if (!track_path_zone) {
@@ -1594,19 +1594,21 @@ int TrackStreamer::GetPredictedZone(StreamingPositionEntry *streaming_position) 
             DrivableScenerySection *drivable_section = TheVisibleSectionManager.FindDrivableSection(&predicted_position);
             if (drivable_section && track_path_zone->Data[0] != 0) {
                 short section_number = drivable_section->SectionNumber;
-                for (int i = 0; i < 4; i++) {
+                int i = 0;
+                while (track_path_zone->Data[i] != 0) {
                     if (track_path_zone->Data[i] == section_number) {
                         found_predicted_zone = true;
                         predicted_zone = section_number;
                         break;
                     }
-                    if (track_path_zone->Data[i] == 0) {
+                    i++;
+                    if (i > 3) {
                         break;
                     }
                 }
             }
         }
-    } while (!found_predicted_zone);
+    }
 
     if (found_predicted_zone) {
         if (!bEqual(&predicted_position, &streaming_position->Position, kPredictedZoneEqualEpsilon_TrackStreamer)) {
