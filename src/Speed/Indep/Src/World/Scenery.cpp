@@ -143,8 +143,10 @@ extern int CurrentZoneNumber;
 extern int SeeulatorToolActive;
 extern int ScenerySectionToBlink;
 extern int SeeulatorRefreshTrackStreamer;
+extern int ShowSectionBoarder;
 void RefreshTrackStreamer();
 void CreateWindRotMatrix(eView *view, bMatrix4 *matrix, int x, const bMatrix4 *world, int y);
+void RenderVisibleSectionBoundary(VisibleSectionBoundary *boundary, eView *view);
 ScenerySectionHeader *GetScenerySectionHeader(int section_number);
 int IsInTable(short *section_numbers, int num_sections, int section_number);
 int ToggleIsInTable(short *section_numbers, int num_sections, int max_sections, int section_number);
@@ -168,6 +170,19 @@ short SceneryOverrideHashTable[257];
 SceneryDrawInfo GrandSceneryCullInfo::SceneryDrawInfoTable[3500];
 extern bTList<SceneryGroup> SceneryGroupList;
 extern unsigned char SceneryGroupEnabledTable[0x1000];
+
+inline int PrecullerBooBooManager::GetSectionNumber(bVector3 &position) {
+    return ((static_cast<int>(position.y) & 0xFE0) << 2) |
+           ((static_cast<unsigned int>(static_cast<int>(position.x)) >> 5) & 0x7F);
+}
+
+unsigned char *PrecullerBooBooManager::GetByte(int section_number) {
+    return Data + (section_number >> 3);
+}
+
+unsigned char PrecullerBooBooManager::GetBit(int section_number) {
+    return static_cast<unsigned char>(1 << (section_number & 7));
+}
 
 static char GetScenerySectionLetter_Scenery(int section_number) {
     return static_cast<char>(section_number / 100 + 'A' - 1);
@@ -1270,6 +1285,16 @@ void GrandSceneryCullInfo::DoCulling() {
         scenery_cull_info->pTopDrawInfo = pTopDrawInfo;
         CullView(scenery_cull_info);
         pCurrentDrawInfo = scenery_cull_info->pCurrentDrawInfo;
+    }
+}
+
+void RenderVisibleZones(eView *view) {
+    if (ShowSectionBoarder != 0 && pVisibleZoneBoundaryModel != 0) {
+        DrivableScenerySection *drivable_section =
+            TheVisibleSectionManager.FindDrivableSection(reinterpret_cast<const bVector2 *>(view->GetCamera()->GetPosition()));
+        if (drivable_section) {
+            RenderVisibleSectionBoundary(drivable_section->pBoundary, view);
+        }
     }
 }
 

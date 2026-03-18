@@ -172,6 +172,7 @@ struct ScreenEffectDB {
     float SE_time;              // offset 0x1E4, size 0x4
 
     ScreenEffectDB();
+    void Update(float deltatime);
     void AddScreenEffect(ScreenEffectType type, float intensity, float r, float g, float b);
     void AddScreenEffect(ScreenEffectType type, ScreenEffectDef *info, unsigned int lock, ScreenEffectControl controller);
     void AddPaletteEffect(ScreenEffectPalette palette);

@@ -81,6 +81,21 @@ void TickSFX() {
     }
 }
 
+void ScreenEffectDB::Update(float deltatime) {
+    SE_time += deltatime;
+
+    for (int i = 0; i < SE_NUM_TYPES; i++) {
+        if (SE_inf[i].active == 1) {
+            SE_inf[i].frameNum += 1;
+            ScreenEffectControl controller = SE_inf[i].Controller;
+            if (controller == SEC_FRAME || controller == SEC_FUNCTION) {
+                SE_inf[i].active = 0;
+                numType[i] = 0;
+            }
+        }
+    }
+}
+
 void ScreenEffectDB::AddScreenEffect(ScreenEffectType type, float intensity, float r, float g, float b) {
     ScreenEffectDef info;
 
@@ -381,6 +396,10 @@ void UpdateAllScreenEFX() {
         DoTunnelBloom(view);
         DoTinting(view);
     }
+}
+
+void FlushAccumulationBuffer() {
+    AccumulationBufferNeedsFlush = 1;
 }
 
 void AccumulationBufferFlushed() {
