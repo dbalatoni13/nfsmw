@@ -52,7 +52,7 @@ void eBuildSunPoly(ePoly *poly, SunLayer *layer, float max_size, float x, float 
 
     eGetScreenHeight();
 
-    if (layer->Texture == SUNTEX_CENTER && max_size < layer->Size) {
+    if (layer->Texture == SUNTEX_CENTER && layer->Size > max_size) {
         max_size = layer->Size;
     }
 
@@ -69,42 +69,49 @@ void eBuildSunPoly(ePoly *poly, SunLayer *layer, float max_size, float x, float 
     poly->Vertices[2].z = 1.0f;
     poly->Vertices[3].z = 1.0f;
 
-    diagonal0 = half_size * cos_angle;
     diagonal1 = half_size * sin_angle;
+    diagonal0 = half_size * cos_angle;
     intensity = layer->IntensityScale * SunVisibility * SunMaxIntensity;
     center_x = x + layer->OffsetX;
     center_y = y + layer->OffsetY;
 
-    if (intensity >= 28.0f) {
-        alpha = static_cast<unsigned char>(static_cast<int>(intensity - 28.0f));
-    } else {
+    if (intensity < 28.0f) {
         alpha = static_cast<unsigned char>(static_cast<int>(intensity));
+    } else {
+        alpha = static_cast<unsigned char>(static_cast<int>(intensity - 28.0f));
     }
 
-    poly->Vertices[3].x = center_x - (diagonal0 - diagonal1);
-    poly->Vertices[0].x = center_x - (diagonal1 + diagonal0);
-    poly->Vertices[3].y = center_y + (diagonal1 + diagonal0);
-    poly->Vertices[0].y = center_y - (diagonal0 - diagonal1);
-    poly->Vertices[1].y = center_y - (diagonal1 + diagonal0);
-    poly->Vertices[1].x = center_x + (diagonal0 - diagonal1);
-    poly->Vertices[2].x = center_x + (diagonal1 + diagonal0);
-    poly->Vertices[2].y = center_y + (diagonal0 - diagonal1);
+    float sum = diagonal1 + diagonal0;
+    float diff = diagonal0 - diagonal1;
+
+    poly->Vertices[3].x = center_x - diff;
+    poly->Vertices[0].x = center_x - sum;
+    poly->Vertices[3].y = center_y + sum;
+    poly->Vertices[0].y = center_y - diff;
+    poly->Vertices[1].y = center_y - sum;
+    poly->Vertices[1].x = center_x + diff;
+    poly->Vertices[2].x = center_x + sum;
+    poly->Vertices[2].y = center_y + diff;
+
+    unsigned char c0 = layer->Colour[0];
+    unsigned char c1 = layer->Colour[1];
+    unsigned char c2 = layer->Colour[2];
 
     poly->Colours[3][3] = alpha;
-    poly->Colours[3][0] = layer->Colour[0];
-    poly->Colours[3][1] = layer->Colour[1];
-    poly->Colours[3][2] = layer->Colour[2];
-    poly->Colours[0][0] = layer->Colour[0];
-    poly->Colours[0][1] = layer->Colour[1];
-    poly->Colours[0][2] = layer->Colour[2];
+    poly->Colours[3][0] = c0;
+    poly->Colours[3][1] = c1;
+    poly->Colours[3][2] = c2;
+    poly->Colours[0][0] = c0;
+    poly->Colours[0][1] = c1;
+    poly->Colours[0][2] = c2;
     poly->Colours[0][3] = alpha;
-    poly->Colours[1][0] = layer->Colour[0];
-    poly->Colours[1][1] = layer->Colour[1];
-    poly->Colours[1][2] = layer->Colour[2];
+    poly->Colours[1][0] = c0;
+    poly->Colours[1][1] = c1;
+    poly->Colours[1][2] = c2;
     poly->Colours[1][3] = alpha;
-    poly->Colours[2][0] = layer->Colour[0];
-    poly->Colours[2][1] = layer->Colour[1];
-    poly->Colours[2][2] = layer->Colour[2];
+    poly->Colours[2][0] = c0;
+    poly->Colours[2][1] = c1;
+    poly->Colours[2][2] = c2;
     poly->Colours[2][3] = alpha;
 }
 
@@ -123,7 +130,7 @@ void eBuildSunPolyFix(ePoly *poly, SunLayer *layer, float max_size, float x, flo
 
     eGetScreenHeight();
 
-    if (layer->Texture == SUNTEX_CENTER && max_size < layer->Size) {
+    if (layer->Texture == SUNTEX_CENTER && layer->Size > max_size) {
         max_size = layer->Size;
     }
 
@@ -140,27 +147,30 @@ void eBuildSunPolyFix(ePoly *poly, SunLayer *layer, float max_size, float x, flo
     poly->Vertices[2].z = sun_vis_poly_fix_ini[2];
     poly->Vertices[3].z = sun_vis_poly_fix_ini[2];
 
-    diagonal0 = half_size * cos_angle;
     diagonal1 = half_size * sin_angle;
+    diagonal0 = half_size * cos_angle;
     intensity = layer->IntensityScale * SunVisibility * SunMaxIntensity;
     center_x = x + layer->OffsetX;
     center_y = y + layer->OffsetY;
 
-    if (intensity >= 28.0f) {
-        alpha = static_cast<unsigned char>(static_cast<int>(intensity - 28.0f));
-    } else {
+    if (intensity < 28.0f) {
         alpha = static_cast<unsigned char>(static_cast<int>(intensity));
+    } else {
+        alpha = static_cast<unsigned char>(static_cast<int>(intensity - 28.0f));
     }
 
-    poly->Vertices[3].x = center_x - (diagonal0 - diagonal1);
-    poly->Vertices[3].y = center_y + (diagonal1 + diagonal0);
-    poly->Vertices[0].y = center_y - (diagonal0 - diagonal1);
-    sun_vis_poly_fix_ini[0] = center_x - (diagonal1 + diagonal0);
+    float sum = diagonal1 + diagonal0;
+    float diff = diagonal0 - diagonal1;
+
+    poly->Vertices[3].x = center_x - diff;
+    poly->Vertices[3].y = center_y + sum;
+    poly->Vertices[0].y = center_y - diff;
+    sun_vis_poly_fix_ini[0] = center_x - sum;
     poly->Vertices[0].x = sun_vis_poly_fix_ini[0];
-    poly->Vertices[1].y = center_y - (diagonal1 + diagonal0);
-    poly->Vertices[1].x = center_x + (diagonal0 - diagonal1);
-    poly->Vertices[2].y = center_y + (diagonal0 - diagonal1);
-    poly->Vertices[2].x = center_x + (diagonal1 + diagonal0);
+    poly->Vertices[1].y = center_y - sum;
+    poly->Vertices[1].x = center_x + diff;
+    poly->Vertices[2].y = center_y + diff;
+    poly->Vertices[2].x = center_x + sum;
 
     sun_vis_poly_fix_ini[1] = poly->Vertices[0].y;
     sun_vis_poly_fix_ini[4] = poly->Vertices[1].x;
@@ -170,21 +180,25 @@ void eBuildSunPolyFix(ePoly *poly, SunLayer *layer, float max_size, float x, flo
     sun_vis_poly_fix_ini[12] = poly->Vertices[3].x;
     sun_vis_poly_fix_ini[13] = poly->Vertices[3].y;
 
-    poly->Colours[0][0] = layer->Colour[0];
-    poly->Colours[0][1] = layer->Colour[1];
-    poly->Colours[0][2] = layer->Colour[2];
+    unsigned char c0 = layer->Colour[0];
+    unsigned char c1 = layer->Colour[1];
+    unsigned char c2 = layer->Colour[2];
+
+    poly->Colours[0][0] = c0;
+    poly->Colours[0][1] = c1;
+    poly->Colours[0][2] = c2;
     poly->Colours[0][3] = alpha;
-    poly->Colours[1][0] = layer->Colour[0];
-    poly->Colours[1][1] = layer->Colour[1];
-    poly->Colours[1][2] = layer->Colour[2];
+    poly->Colours[1][0] = c0;
+    poly->Colours[1][1] = c1;
+    poly->Colours[1][2] = c2;
     poly->Colours[1][3] = alpha;
-    poly->Colours[2][0] = layer->Colour[0];
-    poly->Colours[2][1] = layer->Colour[1];
-    poly->Colours[2][2] = layer->Colour[2];
+    poly->Colours[2][0] = c0;
+    poly->Colours[2][1] = c1;
+    poly->Colours[2][2] = c2;
     poly->Colours[2][3] = alpha;
-    poly->Colours[3][0] = layer->Colour[0];
-    poly->Colours[3][1] = layer->Colour[1];
-    poly->Colours[3][2] = layer->Colour[2];
+    poly->Colours[3][0] = c0;
+    poly->Colours[3][1] = c1;
+    poly->Colours[3][2] = c2;
     poly->Colours[3][3] = alpha;
 }
 
