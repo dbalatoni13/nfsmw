@@ -311,12 +311,10 @@ void RenderSkids(eView *view, Clan *clan) {
         eVisibleState visibility = view->GetVisibleState(&skid_set->BBoxMin, &skid_set->BBoxMax, 0);
         if (visibility != EVISIBLESTATE_NOT) {
             int pixel_size = view->GetPixelSize(1.0f, bDistBetween(&skid_set->BBoxCentre, view->GetCamera()->GetPosition()));
-            if (pixel_size > 4) {
-                unsigned char intensityReduction;
-                if (pixel_size <= 10) {
+            if (4.0f < static_cast<float>(pixel_size)) {
+                unsigned char intensityReduction = 0;
+                if (static_cast<float>(pixel_size) <= 10.0f) {
                     intensityReduction = static_cast<unsigned char>(static_cast<int>(256.0f - (pixel_size - 4.0f) * 42.666668f) & 0xff);
-                } else {
-                    intensityReduction = 0;
                 }
 
                 skid_set->Render(view, intensityReduction);
