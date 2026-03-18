@@ -41,6 +41,9 @@ void UnloadChunks(bChunk *chunks, int sizeof_chunks, const char *debug_name);
 void SetQueuedFileMinPriority(int priority);
 void SetDelayedResourceCallback(void (*callback)(int), int param);
 void NotifySkyLoader();
+void BlockWhileQueuedFileBusy();
+char *bGetPlatformName();
+int GetBoundarySectionNumber(int section_number, const char *platform_name);
 extern int QueuedFileDefaultPriority;
 
 static unsigned int prev_need_loading_bar_26275 = 0;
@@ -1178,6 +1181,59 @@ void TrackStreamer::DetermineStreamingSections() {
         }
         position_number += 1;
     } while (position_number < 2);
+}
+
+void TrackStreamer::InitRegion(const char *region_stream_filename, bool split_screen) {
+    bool flush_hibernating_sections = false;
+
+    if (SplitScreen != split_screen) {
+        SplitScreen = split_screen;
+        flush_hibernating_sections = true;
+    }
+    if (!bStrEqual(StreamFilenames[0], region_stream_filename)) {
+        bStrCpy(StreamFilenames[0], region_stream_filename);
+        flush_hibernating_sections = true;
+    }
+    if (flush_hibernating_sections) {
+        FlushHibernatingSections();
+    }
+    if (PermFileLoading) {
+        BlockWhileQueuedFileBusy();
+    }
+
+    ClearCurrentZones();
+    ClearStreamingPositions();
+
+    int position_number = 0;
+    do {
+        StreamingPositionEntry *position_entry = &StreamingPositionEntries[position_number];
+
+        position_entry->AudioBlockingPosition.y = 0.0f;
+        position_entry->PredictedZone = 0;
+        position_entry->PredictedZoneValidTime = 0;
+        position_entry->AudioReading = false;
+        position_entry->AudioReadingTime = 0.0f;
+        position_entry->AudioReadingPosition.x = 0.0f;
+        position_entry->AudioReadingPosition.y = 0.0f;
+        position_entry->AudioBlocking = false;
+        position_entry->AudioBlockingTime = 0.0f;
+        position_entry->AudioBlockingPosition.x = 0.0f;
+        position_number += 1;
+    } while (position_number < 2);
+
+    if (NumTrackStreamingSections > 0) {
+        int n = 0;
+        do {
+            TrackStreamingSection *section = &pTrackStreamingSections[n];
+            int boundary_section_number = GetBoundarySectionNumber(static_cast<int>(section->SectionNumber), bGetPlatformName());
+            VisibleSectionBoundary *boundary = TheVisibleSectionManager.FindBoundary(boundary_section_number);
+
+            section->pBoundary = boundary;
+            n += 1;
+        } while (n < NumTrackStreamingSections);
+    }
+
+    EmptyCaffeineLayers();
 }
 
 void TrackStreamer::PlotLoadingMarker(StreamingPositionEntry *streaming_position) {}
