@@ -7,6 +7,10 @@ bPList<SndBase::TypeInfo> CSTATEMGR_Base::m_SFXCTRLClassList;
 bPList<SndBase::TypeInfo> CSTATEMGR_Base::m_SFXClassList;
 bPList<CSTATE_Base::StateInfo> CSTATEMGR_Base::m_STATEClassList;
 
+void *CSTATEMGR_Base::operator new(unsigned int size, const char *debug_name) {
+    return gAudioMemoryManager.AllocateMemory(size, debug_name, false);
+}
+
 CSTATEMGR_Base::CSTATEMGR_Base() {
     m_pHeadStateObj = nullptr;
     m_eStateType = eMM_MAIN;

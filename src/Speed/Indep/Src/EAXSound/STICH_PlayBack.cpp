@@ -18,6 +18,10 @@ extern ClassHandle gAEMS_StichStaticHandle;
 extern InterfaceId AEMS_StichStaticId;
 } // namespace Csis
 
+void *cSTICH_PlayBack::operator new(unsigned int size, const char *debug_name) {
+    return gAudioMemoryManager.AllocateMemory(size, debug_name, false);
+}
+
 struct AEMS_StichData {
     int type;
     int iD;

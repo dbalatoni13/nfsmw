@@ -21,9 +21,7 @@ void cPathLine::ClearStages() {
     cur_stage = 0;
     num_stages = 0;
     for (int i = 0; i < 6; i++) {
-        Length[i] = 0.0f;
-        Start[i] = 0.0f;
-        Finish[i] = 0.0f;
+        Length[i] = Finish[i] = Start[i] = 0.0f;
         IsLinked[i] = false;
         CurveTypes[i] = LINEAR;
     }
@@ -135,14 +133,14 @@ void cPathLine::Update(float delta_time) {
 }
 
 cInterpLine::cInterpLine()
-: ElapsedTime(0.0f) //
-, Length(0.0f) //
-, Start(0.0f) //
-, Finish(0.0f) //
+: Length(0.0f) //
 , CurveTypes(LINEAR) //
-, CurValue(0.0f) //
-, bComplete(true)
-{}
+, bComplete(true) {
+    CurValue = 0.0f;
+    ElapsedTime = 0.0f;
+    Start = 0.0f;
+    Finish = 0.0f;
+}
 
 cInterpLine::~cInterpLine() {}
 
@@ -227,8 +225,8 @@ void Slope::Initialize(float _Min, float _Max, float _Start, float _Finish) {
     if (bAbs(_Finish - _Start) < 1e-06f) {
         Finish = _Finish + 1e-06f;
     }
-    LastOutput = Min;
     LastInput = 0.0f;
+    LastOutput = Min;
 }
 
 float Slope::GetValue(float input) {

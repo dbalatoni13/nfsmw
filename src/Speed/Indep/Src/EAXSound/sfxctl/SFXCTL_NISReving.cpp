@@ -4,6 +4,10 @@
 
 NIS_RevManager *g_pNISRevMgr = nullptr;
 
+void *NIS_RevManager::operator new(unsigned int size, const char *debug_name) {
+    return gAudioMemoryManager.AllocateMemory(size, debug_name, false);
+}
+
 NIS_RevManager::NIS_RevManager()
     : pRevData(nullptr) //
     , IsInitialized(false) //

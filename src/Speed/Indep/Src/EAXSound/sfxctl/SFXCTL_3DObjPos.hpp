@@ -7,11 +7,16 @@
 
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL.hpp"
 
+struct bVector2;
 struct bVector3;
 
 struct SFXCTL_3DObjPos : public SFXCTL {
   protected:
     static TypeInfo s_TypeInfo;
+    static bVector2 m_v2ObjPosCopy;
+    static bVector2 *m_pv2AzimRefDir;
+    static bVector2 *m_pv2AzimRefPos;
+    static unsigned short m_CameraAngle;
     /* 0x28 */ bVector3 *m_pV3ObjPos;
     /* 0x2c */ bVector3 *m_pV3ObjDir;
     /* 0x30 */ bVector3 *m_pV3ObjVel;

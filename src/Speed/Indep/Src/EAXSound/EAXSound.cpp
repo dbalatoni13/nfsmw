@@ -104,6 +104,10 @@ struct EAXSND8Wrapper : public AudioMemBase {
     eSndAudioMode m_eCurrentAudioMode; // offset 0x14
     eSndAudioMode m_eLastAudioMode;    // offset 0x18
 
+    void *operator new(unsigned int size, const char *debug_name) {
+        return gAudioMemoryManager.AllocateMemory(size, debug_name, false);
+    }
+
     EAXSND8Wrapper();
     virtual ~EAXSND8Wrapper();
     bool Initialize();
@@ -645,58 +649,52 @@ void EAXSound::InitializeDriver() {
         return;
     }
 
-    m_pEAXSND8Wrapper = new (gAudioMemoryManager.AllocateMemory(0x1C, "EAXSND8Wrapper", false)) EAXSND8Wrapper();
-    if (m_pEAXSND8Wrapper == nullptr) {
-        IsSoundEnabled = false;
-        return;
-    }
-
+    m_pEAXSND8Wrapper = new ("EAXSND8Wrapper") EAXSND8Wrapper();
     if (!m_pEAXSND8Wrapper->Initialize()) {
         IsSoundEnabled = false;
         return;
     }
 
     gAEMSMgr.InitSPUram();
-    m_pNFSMixMaster = new (gAudioMemoryManager.AllocateMemory(0x74, "NFSMixMaster", false)) NFSMixMaster();
-    m_pSTICH_Playback = new (gAudioMemoryManager.AllocateMemory(0x1C, "STICH_PlayBack", false)) cSTICH_PlayBack();
-    g_pNISRevMgr = new (gAudioMemoryManager.AllocateMemory(0x98, "NISRevMan", false)) NIS_RevManager();
+    m_pNFSMixMaster = new ("NFSMixMaster") NFSMixMaster();
+    m_pSTICH_Playback = new ("STICH_PlayBack") cSTICH_PlayBack();
+    g_pNISRevMgr = new ("NISRevMan") NIS_RevManager();
 
     for (int n = 0; n < 13; n++) {
         m_pStateMgr[n] = nullptr;
     }
 
-    m_pStateMgr[0] = new (gAudioMemoryManager.AllocateMemory(0x1C, "SND: CSTATEMGR_MAIN", false)) CSTATEMGR_Main();
+    m_pStateMgr[0] = new ("SND: CSTATEMGR_MAIN") CSTATEMGR_Main();
     m_pStateMgr[0]->Initialize(static_cast<eMAINMAPSTATES>(0));
 
-    m_pStateMgr[1] = new (gAudioMemoryManager.AllocateMemory(0x1C, "SND: CSTATEMGR_Music", false)) CSTATEMGR_Music();
+    m_pStateMgr[1] = new ("SND: CSTATEMGR_Music") CSTATEMGR_Music();
     m_pStateMgr[1]->Initialize(static_cast<eMAINMAPSTATES>(1));
 
-    m_pStateMgr[2] = new (gAudioMemoryManager.AllocateMemory(0x1C, "SND: CSTATEMGR_PlyrCar", false)) CSTATEMGR_PlayerCar();
+    m_pStateMgr[2] = new ("SND: CSTATEMGR_PlyrCar") CSTATEMGR_PlayerCar();
     m_pStateMgr[2]->Initialize(static_cast<eMAINMAPSTATES>(2));
 
-    m_pStateMgr[3] = new (gAudioMemoryManager.AllocateMemory(0x24, "SND: CSTATEMGR_AICar", false)) CSTATEMGR_AICar();
+    m_pStateMgr[3] = new ("SND: CSTATEMGR_AICar") CSTATEMGR_AICar();
     m_pStateMgr[3]->Initialize(static_cast<eMAINMAPSTATES>(3));
 
-    m_pStateMgr[4] = new (gAudioMemoryManager.AllocateMemory(0x28, "SND: CSTATEMGR_CarState", false)) CSTATEMGR_CopCar();
+    m_pStateMgr[4] = new ("SND: CSTATEMGR_CarState") CSTATEMGR_CopCar();
     m_pStateMgr[4]->Initialize(static_cast<eMAINMAPSTATES>(4));
 
-    m_pStateMgr[5] = new (gAudioMemoryManager.AllocateMemory(0x24, "SND: CSTATEMGR_TrafficCar", false)) CSTATEMGR_TrafficCar();
+    m_pStateMgr[5] = new ("SND: CSTATEMGR_TrafficCar") CSTATEMGR_TrafficCar();
     m_pStateMgr[5]->Initialize(static_cast<eMAINMAPSTATES>(5));
 
-    m_pStateMgr[6] = new (gAudioMemoryManager.AllocateMemory(0x24, "SND: CSTATEMGR_ENVIRO", false)) CSTATEMGR_Enviro();
+    m_pStateMgr[6] = new ("SND: CSTATEMGR_ENVIRO") CSTATEMGR_Enviro();
     m_pStateMgr[6]->Initialize(static_cast<eMAINMAPSTATES>(6));
 
-    m_pStateMgr[7] = new (gAudioMemoryManager.AllocateMemory(0x1C, "SND: CSTATEMGR_Collision", false)) CSTATEMGR_Collision();
+    m_pStateMgr[7] = new ("SND: CSTATEMGR_Collision") CSTATEMGR_Collision();
     m_pStateMgr[7]->Initialize(static_cast<eMAINMAPSTATES>(7));
 
-    m_pStateMgr[8] = new (gAudioMemoryManager.AllocateMemory(0x20, "SND: CSTATEMGR_DriveBy", false)) CSTATEMGR_DriveBy();
+    m_pStateMgr[8] = new ("SND: CSTATEMGR_DriveBy") CSTATEMGR_DriveBy();
     m_pStateMgr[8]->Initialize(static_cast<eMAINMAPSTATES>(8));
 
-    m_pStateMgr[11] =
-        new (gAudioMemoryManager.AllocateMemory(0x1C, "SND: CSTATEMGR_Helicopter", false)) CSTATEMGR_Helicopter();
+    m_pStateMgr[11] = new ("SND: CSTATEMGR_Helicopter") CSTATEMGR_Helicopter();
     m_pStateMgr[11]->Initialize(static_cast<eMAINMAPSTATES>(11));
 
-    m_pStateMgr[12] = new (gAudioMemoryManager.AllocateMemory(0x24, "SND: CSTATEMGR_Truck", false)) CSTATEMGR_Truck();
+    m_pStateMgr[12] = new ("SND: CSTATEMGR_Truck") CSTATEMGR_Truck();
     m_pStateMgr[12]->Initialize(static_cast<eMAINMAPSTATES>(12));
 
     m_pNFSMixMaster->AssignSFXCallbacks(EAXSound::GetPointerCallback, EAXSound::SetSFXOutCallback,
@@ -860,15 +858,15 @@ void EAXSound::InitializeFrontEnd() {
         mAttributes = new Attrib::Gen::audiosystem(0x7e4b0ed2, 0, nullptr);
     }
 
-    if (mLocalAttr == nullptr && mAttributes != nullptr) {
+    if (mLocalAttr == nullptr) {
         mLocalAttr = new Attrib::Gen::audiosystem(mAttributes->Locales(0).GetCollectionWithDefault(), 0, nullptr);
     }
 
     m_pCmnSnd = new EAXCommon();
     m_pFESnd = new EAXFrontEnd();
     RefreshLocalAttr();
-    Speech::Manager::Init(0);
-    SoundRandomSeed = bRandom(-1, &SoundRandomSeed);
+    Speech::Manager::Init(2);
+    SoundRandomSeed = bRandom(-1);
     m_pCurAudioSettings = &FEDatabase->CurrentUserProfiles[0]->GetOptions()->TheAudioSettings;
     EAXAemsManager::m_RequiredSlots[3]++;
     gAEMSMgr.InitializeSlots(true);
@@ -880,7 +878,7 @@ void EAXSound::InitializeFrontEnd() {
         m_pStateMgr[1]->EnterWorld(m_eSndGameMode);
     }
 
-    InitEATRAX();
+    g_pEAXSound->InitEATRAX();
 }
 
 void EAXSound::InitializeInGame() {
@@ -888,20 +886,18 @@ void EAXSound::InitializeInGame() {
         return;
     }
 
-    int skipState = -1;
+    int nstate = -1;
     m_pCmnSnd = new EAXCommon();
-    if (m_pCmnSnd != nullptr) {
-        m_pCmnSnd->Initialize();
-    }
+    m_pCmnSnd->Initialize();
 
-    SoundRandomSeed = bRandom(-1, &SoundRandomSeed);
+    SoundRandomSeed = bRandom(-1);
     if (!bIsAnFEToIngameTransition) {
-        skipState = 1;
+        nstate = 1;
     }
     bIsAnFEToIngameTransition = false;
 
     for (int n = 0; n < 13; n++) {
-        if (n != skipState && m_pStateMgr[n] != nullptr) {
+        if (n != nstate && m_pStateMgr[n] != nullptr) {
             m_pStateMgr[n]->EnterWorld(m_eSndGameMode);
         }
     }

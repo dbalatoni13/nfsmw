@@ -13,12 +13,10 @@ enum ePOSMIXTYPE {
 
 extern int POSMIXTYPE;
 
-namespace {
-bVector2 m_v2ObjPosCopy;
-bVector2 *m_pv2AzimRefPos;
-bVector2 *m_pv2AzimRefDir;
-unsigned short m_CameraAngle;
-} // namespace
+bVector2 SFXCTL_3DObjPos::m_v2ObjPosCopy;
+bVector2 *SFXCTL_3DObjPos::m_pv2AzimRefDir = nullptr;
+bVector2 *SFXCTL_3DObjPos::m_pv2AzimRefPos = nullptr;
+unsigned short SFXCTL_3DObjPos::m_CameraAngle = 0;
 
 SndBase *SFXCTL_3DObjPos::CreateObject(unsigned int) { return new SFXCTL_3DObjPos(); }
 
@@ -62,17 +60,16 @@ void SFXCTL_3DObjPos::Detach() {
 void SFXCTL_3DObjPos::SetCameraAngle() {
     bVector2 v2Pos;
     bVector2 v2NormPos;
+    float fdotobj;
 
     v2Pos.x = m_v2ObjPosCopy.x - m_pv2AzimRefPos->x;
     v2Pos.y = m_v2ObjPosCopy.y - m_pv2AzimRefPos->y;
     v2NormPos.x = 0.0f;
     v2NormPos.y = 0.0f;
-
     bNormalize(&v2NormPos, &v2Pos);
 
-    const unsigned short angle =
-        bASin(v2NormPos.x * m_pv2AzimRefDir->x + v2NormPos.y * m_pv2AzimRefDir->y);
-    m_CameraAngle = 0x4000 - angle;
+    fdotobj = bDot(&v2NormPos, m_pv2AzimRefDir);
+    m_CameraAngle = bACos(fdotobj);
 
     if (-v2NormPos.y * m_pv2AzimRefDir->x + v2NormPos.x * m_pv2AzimRefDir->y < 0.0f) {
         m_CameraAngle = static_cast<unsigned short>(~m_CameraAngle);
@@ -80,84 +77,108 @@ void SFXCTL_3DObjPos::SetCameraAngle() {
 }
 
 void SFXCTL_3DObjPos::GenerateSinglePlayerMix() {
-    Camera *cam = SndCamera::GetCam(m_PlayerRef);
-    int *out = GetOutputBlockPtr();
-
-    if (cam == nullptr || m_pV3ObjPos == nullptr) {
-        out[0] = -1;
-        out[3] = 0;
-        out[1] = -1;
-        out[2] = 0;
+    if (SndCamera::GetCam(m_PlayerRef) == nullptr || m_pV3ObjPos == nullptr) {
+        SetDMIX_Input(3, 0);
+        SetDMIX_Input(1, -1);
+        SetDMIX_Input(2, 0);
+        SetDMIX_Input(0, -1);
         return;
     }
 
     m_v2ObjPosCopy.x = m_pV3ObjPos->x;
     m_v2ObjPosCopy.y = m_pV3ObjPos->y;
 
-    float outVol = 0.0f;
+    float outVol;
 
     if (POSMIXTYPE == TPMIX_AVE_CAM) {
-        m_pv2AzimRefDir = SndCamera::m_NormCamDir + m_PlayerRef;
-        m_pv2AzimRefPos = SndCamera::m_AveragedCamPos + m_PlayerRef;
-        SetCameraAngle();
-        out[3] = static_cast<unsigned int>(m_CameraAngle);
+        goto ave_cam_mix;
+    }
 
-        float dx = m_v2ObjPosCopy.x - m_pv2AzimRefPos->x;
-        float dy = m_v2ObjPosCopy.y - m_pv2AzimRefPos->y;
-        out[1] = static_cast<int>(bSqrt(dx * dx + dy * dy) * 100.0f);
-
-        m_pv2AzimRefDir = SndCamera::m_NormCarDir + m_PlayerRef;
-        m_pv2AzimRefPos = SndCamera::m_WorldCarPos + m_PlayerRef;
-        SetCameraAngle();
-        out[2] = static_cast<unsigned int>(m_CameraAngle);
-
-        dx = m_v2ObjPosCopy.x - m_pv2AzimRefPos->x;
-        dy = m_v2ObjPosCopy.y - m_pv2AzimRefPos->y;
-        outVol = bSqrt(dx * dx + dy * dy) * 100.0f;
-    } else if (POSMIXTYPE < 2) {
-        if (POSMIXTYPE != SINGLE_PLAYER) {
-            goto done_mix;
+    if (POSMIXTYPE <= TPMIX_AVE_CAM) {
+        if (POSMIXTYPE == SINGLE_PLAYER) {
+            goto single_player_mix;
         }
+        goto done_mix;
+    }
 
+    if (POSMIXTYPE == TPMIX_AVE_CAR) {
+        goto centered_car_mix;
+    }
+    if (POSMIXTYPE == TPMIX_AVE_CAM_CAR) {
+        goto centered_car_mix;
+    }
+    goto done_mix;
+
+single_player_mix:
+    {
         m_pv2AzimRefDir = SndCamera::m_AvergeCamDir + m_PlayerRef;
         m_pv2AzimRefPos = SndCamera::m_WorldCamPos + m_PlayerRef;
         SetCameraAngle();
-        out[3] = static_cast<unsigned int>(m_CameraAngle);
+        SetDMIX_Input(3, static_cast<unsigned int>(m_CameraAngle));
 
         float dx = m_v2ObjPosCopy.x - m_pv2AzimRefPos->x;
         float dy = m_v2ObjPosCopy.y - m_pv2AzimRefPos->y;
-        out[1] = static_cast<int>(bSqrt(dx * dx + dy * dy) * 100.0f);
+        float fDistToObj = bSqrt(dx * dx + dy * dy);
+        SetDMIX_Input(1, static_cast<int>(fDistToObj * 100.0f));
 
         m_pv2AzimRefDir = SndCamera::m_NormCarDir + m_PlayerRef;
         m_pv2AzimRefPos = SndCamera::m_WorldCarPos + m_PlayerRef;
         SetCameraAngle();
-        out[2] = static_cast<unsigned int>(m_CameraAngle);
+        SetDMIX_Input(2, static_cast<unsigned int>(m_CameraAngle));
 
         dx = m_v2ObjPosCopy.x - m_pv2AzimRefPos->x;
         dy = m_v2ObjPosCopy.y - m_pv2AzimRefPos->y;
-        outVol = bSqrt(dx * dx + dy * dy) * 100.0f;
-    } else {
-        if (POSMIXTYPE != TPMIX_AVE_CAR && POSMIXTYPE != TPMIX_AVE_CAM_CAR) {
-            goto done_mix;
-        }
+        fDistToObj = bSqrt(dx * dx + dy * dy);
+        outVol = fDistToObj * 100.0f;
+        goto store_mix;
+    }
 
+ave_cam_mix:
+    {
+        m_pv2AzimRefDir = SndCamera::m_NormCamDir + m_PlayerRef;
+        m_pv2AzimRefPos = SndCamera::m_AveragedCamPos + m_PlayerRef;
+        SetCameraAngle();
+        SetDMIX_Input(3, static_cast<unsigned int>(m_CameraAngle));
+
+        float dx = m_v2ObjPosCopy.x - m_pv2AzimRefPos->x;
+        float dy = m_v2ObjPosCopy.y - m_pv2AzimRefPos->y;
+        float fDistToObj = bSqrt(dx * dx + dy * dy);
+        SetDMIX_Input(1, static_cast<int>(fDistToObj * 100.0f));
+
+        m_pv2AzimRefDir = SndCamera::m_NormCarDir + m_PlayerRef;
+        m_pv2AzimRefPos = SndCamera::m_WorldCarPos + m_PlayerRef;
+        SetCameraAngle();
+        SetDMIX_Input(2, static_cast<unsigned int>(m_CameraAngle));
+
+        dx = m_v2ObjPosCopy.x - m_pv2AzimRefPos->x;
+        dy = m_v2ObjPosCopy.y - m_pv2AzimRefPos->y;
+        fDistToObj = bSqrt(dx * dx + dy * dy);
+        outVol = fDistToObj * 100.0f;
+        goto store_mix;
+    }
+
+centered_car_mix:
+    {
         m_pv2AzimRefDir = SndCamera::m_NormCamDir + m_PlayerRef;
         m_pv2AzimRefPos = SndCamera::m_CenteredCarPos + m_PlayerRef;
         SetCameraAngle();
-        out[2] = static_cast<unsigned int>(m_CameraAngle);
+        SetDMIX_Input(2, static_cast<unsigned int>(m_CameraAngle));
 
-        const float dx = m_v2ObjPosCopy.x - m_pv2AzimRefPos->x;
-        const float dy = m_v2ObjPosCopy.y - m_pv2AzimRefPos->y;
-        outVol = bSqrt(dx * dx + dy * dy) * 100.0f;
+        float dx = m_v2ObjPosCopy.x - m_pv2AzimRefPos->x;
+        float dy = m_v2ObjPosCopy.y - m_pv2AzimRefPos->y;
+        float fDistToObj = bSqrt(dx * dx + dy * dy);
+        outVol = fDistToObj * 100.0f;
+        goto store_mix;
     }
 
-    out[0] = static_cast<int>(outVol);
+store_mix:
+    SetDMIX_Input(0, static_cast<int>(outVol));
 
 done_mix:
     if (m_pV3ObjDir == nullptr) {
-        out[5] = 0;
-        out[6] = 0;
-        out[10] = 0;
+        SetDMIX_Input(5, 0);
+        SetDMIX_Input(6, 0);
+        SetDMIX_Input(10, 0);
     }
 }
 

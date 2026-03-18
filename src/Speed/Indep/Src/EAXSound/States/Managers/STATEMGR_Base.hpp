@@ -28,6 +28,7 @@ struct CSTATEMGR_Base : public AudioMemBase {
   public:
     CSTATEMGR_Base();
     virtual ~CSTATEMGR_Base();
+    void *operator new(unsigned int size, const char *debug_name);
     virtual void Initialize(eMAINMAPSTATES _m_eStateType);
     virtual void EnterWorld(eSndGameMode esgm);
     virtual CSTATE_Base *GetFreeState(void *ObjectPtr);
