@@ -898,9 +898,11 @@ class bBitTable {
 
     // void Init(void *mem, int num_bits) {}
 
-    // void ClearTable() {}
+    void ClearTable();
 
-    // void Set(int bit) {}
+    void Set(int bit) {
+        Bits[bit >> 3] |= static_cast<uint8>(1 << (bit & 7));
+    }
 
     // void Clear(int bit) {}
 

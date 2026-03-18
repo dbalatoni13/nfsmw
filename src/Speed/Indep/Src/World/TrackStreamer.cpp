@@ -116,14 +116,8 @@ struct bBitTableLayout_TrackStreamer {
     uint8 *Bits;
 };
 
-static void SetBit_TrackStreamer(bBitTable *bit_table, int bit) {
-    bBitTableLayout_TrackStreamer *layout = reinterpret_cast<bBitTableLayout_TrackStreamer *>(bit_table);
-    layout->Bits[bit >> 3] |= static_cast<uint8>(1 << (bit & 7));
-}
-
-static void ClearTable_TrackStreamer(bBitTable *bit_table) {
-    bBitTableLayout_TrackStreamer *layout = reinterpret_cast<bBitTableLayout_TrackStreamer *>(bit_table);
-    bMemSet(layout->Bits, 0, layout->NumBits >> 3);
+void bBitTable::ClearTable() {
+    bMemSet(Bits, 0, NumBits >> 3);
 }
 
 struct bMemoryTraceAllocatePacket {
@@ -907,7 +901,7 @@ TrackStreamer::TrackStreamer() {
     bBitTableLayout_TrackStreamer *layout = reinterpret_cast<bBitTableLayout_TrackStreamer *>(&CurrentVisibleSectionTable);
     layout->NumBits = 0xAF0;
     layout->Bits = CurrentVisibleSectionTableMem.Bits;
-    ClearTable_TrackStreamer(&CurrentVisibleSectionTable);
+    CurrentVisibleSectionTable.ClearTable();
     bMemSet(KeepSectionTable, 0, sizeof(KeepSectionTable));
     pCallback = 0;
     CallbackParam = 0;
@@ -1069,7 +1063,7 @@ void TrackStreamer::RemoveCurrentStreamingSections() {
     }
 
     NumCurrentStreamingSections = 0;
-    ClearTable_TrackStreamer(&CurrentVisibleSectionTable);
+    CurrentVisibleSectionTable.ClearTable();
 }
 
 void TrackStreamer::AddCurrentStreamingSections(short *section_numbers, int num_sections, int position_number) {
@@ -1080,7 +1074,7 @@ void TrackStreamer::AddCurrentStreamingSections(short *section_numbers, int num_
     StreamingPositionEntry *streaming_position = &StreamingPositionEntries[position_number];
     for (int i = 0; i < num_sections; i++) {
         short &section_number = section_numbers[i];
-        SetBit_TrackStreamer(&CurrentVisibleSectionTable, section_number);
+        CurrentVisibleSectionTable.Set(section_number);
         if (SplitScreen) {
             section_number = static_cast<short>(Get2PlayerSectionNumber(section_number));
         }
