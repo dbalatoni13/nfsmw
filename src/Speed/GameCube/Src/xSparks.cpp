@@ -221,25 +221,24 @@ void CGEmitter::SpawnParticles(float dt, float intensity) {
 
     if (intensity > 0.0f) {
         UMath::Matrix4 local_world = mLocalWorld;
+        UMath::Matrix4 rotation_world = local_world;
+        rotation_world.v3.x = 0.0f;
+        rotation_world.v3.y = 0.0f;
+        rotation_world.v3.z = 0.0f;
+        rotation_world.v3.w = 1.0f;
         UMath::Vector4 velocity_base;
         UMath::Vector4 velocity_center;
         UMath::Vector4 volume_extent;
         UMath::Vector4 spawn_point;
-        UMath::Vector4 world_spawn_point;
         float age = 0.0f;
         float count = intensity * mEmitterDef.NumParticles();
         float life = mEmitterDef.Life();
         float count_after_variance = count - count * mEmitterDef.NumParticlesVariance() * 100.0f;
-        float colour_r = mEmitterDef.Colour1().x;
-        float colour_g = mEmitterDef.Colour1().y;
-        float colour_b = mEmitterDef.Colour1().z;
         unsigned int colour_a = static_cast<unsigned int>(mEmitterDef.Colour1().w * 255.0f);
-
-        VU0_v4scalexyz(mVel, mEmitterDef.VelocityInherit().x, velocity_base);
-        UMath::RotateTranslate(mEmitterDef.VolumeCenter(), local_world, velocity_center);
-        velocity_base.x += velocity_center.x;
-        velocity_base.y += velocity_center.y;
-        velocity_base.z += velocity_center.z;
+        int colour_r = static_cast<int>(mEmitterDef.Colour1().x * 255.0f);
+        int colour_g = static_cast<int>(mEmitterDef.Colour1().y * 255.0f);
+        int colour_b = static_cast<int>(mEmitterDef.Colour1().z * 255.0f);
+        unsigned int precomputed_color = colour_a << 24 | colour_b << 16 | colour_g << 8 | colour_r;
 
         if (count_after_variance != 0.0f) {
             float particle_step = dt / count_after_variance;
@@ -270,25 +269,27 @@ void CGEmitter::SpawnParticles(float dt, float intensity) {
                 volume_extent.z = 1.0f - (mEmitterDef.VelocityDelta().z - bRandom(mEmitterDef.VelocityDelta().z, &seed) * 2.0f);
                 volume_extent.w = 1.0f;
 
+                VU0_v4scalexyz(mEmitterDef.VelocityInherit(), mVel, velocity_base);
+                VU0_MATRIX3x4_vect4mult(mEmitterDef.VolumeCenter(), mLocalWorld, velocity_center);
+                VU0_v4add(velocity_base, velocity_center, velocity_base);
+                VU0_v4scalexyz(velocity_base, volume_extent, velocity_base);
+
                 spawn_point.x = mEmitterDef.VolumeCenter().x + (bRandom(mEmitterDef.VolumeExtent().x, &seed) - mEmitterDef.VolumeExtent().x * 0.5f);
                 spawn_point.y = mEmitterDef.VolumeCenter().y + (bRandom(mEmitterDef.VolumeExtent().y, &seed) - mEmitterDef.VolumeExtent().y * 0.5f);
                 spawn_point.z = mEmitterDef.VolumeCenter().z + (bRandom(mEmitterDef.VolumeExtent().z, &seed) - mEmitterDef.VolumeExtent().z * 0.5f);
                 spawn_point.w = 1.0f;
 
-                UMath::RotateTranslate(spawn_point, local_world, world_spawn_point);
-                VU0_v4scalexyz(velocity_base, volume_extent.x, velocity_center);
-                VU0_v3scaleadd(UMath::Vector4To3(velocity_center), age, UMath::Vector4To3(world_spawn_point),
+                UMath::RotateTranslate(spawn_point, local_world, spawn_point);
+                VU0_v3scaleadd(UMath::Vector4To3(velocity_base), age, UMath::Vector4To3(spawn_point),
                                *reinterpret_cast<UMath::Vector3 *>(particle));
 
                 gravity = (mEmitterDef.GravityStart() - mEmitterDef.GravityDelta()) + bRandom(mEmitterDef.GravityDelta(), &seed) * 2.0f;
-                particle->initialPos = UMath::Vector4To3(world_spawn_point);
-                particle->vel = UMath::Vector4To3(velocity_center);
+                particle->initialPos = UMath::Vector4To3(spawn_point);
+                particle->vel = UMath::Vector4To3(velocity_base);
                 particle->age = age;
                 particle->gravity = gravity;
                 particle->life = static_cast<uint16>((life - life * mEmitterDef.LifeVariance()) * 65535.0f);
-                particle->color =
-                    colour_a << 24 | static_cast<unsigned int>(colour_b * 255.0f) << 16 | static_cast<unsigned int>(colour_g * 255.0f) << 8 |
-                    static_cast<unsigned int>(colour_r * 255.0f);
+                particle->color = precomputed_color;
                 particle->length = static_cast<uint8>(length_clamped * 255.0f);
                 particle->width = static_cast<uint8>(mEmitterDef.HeightStart());
 
