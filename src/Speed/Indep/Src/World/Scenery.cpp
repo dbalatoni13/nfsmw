@@ -117,6 +117,7 @@ void (*ModelConnectionCallback)(ScenerySectionHeader *, int, eModel *) = 0;
 void (*ModelDisconnectionCallback)(ScenerySectionHeader *, int, eModel *) = 0;
 void (*SectionConnectionCallback)(ScenerySectionHeader *) = 0;
 void (*SectionDisconnectionCallback)(ScenerySectionHeader *) = 0;
+eModel *pVisibleZoneBoundaryModel = 0;
 ModelHeirarchyMap HeirarchyMap;
 short SceneryOverrideHashTable[257];
 SceneryDrawInfo GrandSceneryCullInfo::SceneryDrawInfoTable[3500];
@@ -271,9 +272,31 @@ void SceneryOverrideInfo::AssignOverrides(ScenerySectionHeader *section_header) 
     instance->ExcludeFlags = (instance->ExcludeFlags & 0xFFFF0000) | override_flags;
 }
 
-void InitVisibleZones() {}
+void InitVisibleZones() {
+    if (!pVisibleZoneBoundaryModel) {
+        eModel *model = reinterpret_cast<eModel *>(bOMalloc(eModelSlotPool));
+        unsigned int name_hash = bStringHash("MARKER_BOUNDARY");
+        model->Solid = 0;
+        model->NameHash = 0;
+        model->Init(name_hash);
+        pVisibleZoneBoundaryModel = model;
+    }
+}
 
-void CloseVisibleZones() {}
+void CloseVisibleZones() {
+    eModel *model = pVisibleZoneBoundaryModel;
+    if (pVisibleZoneBoundaryModel) {
+        pVisibleZoneBoundaryModel->UnInit();
+        bFree(eModelSlotPool, model);
+    }
+    pVisibleZoneBoundaryModel = 0;
+    if (SeeulatorToolActive) {
+        int data = 0;
+        bFunkCallASync("Seeulator", 4, &data, 4);
+        bFunkCallASync("Seeulator", 5, &data, 4);
+        bFunkCallASync("Seeulator", 6, &data, 4);
+    }
+}
 
 void ServicePreculler() {}
 
