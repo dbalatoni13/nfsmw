@@ -1957,29 +1957,53 @@ bool TrackStreamer::CheckLoadingBar() {
 
         float velocity_squared = entry->Velocity.x * entry->Velocity.x + entry->Velocity.y * entry->Velocity.y;
         float velocity_magnitude = 0.0f;
-        if (velocity_squared > kVelocityEpsilon_TrackStreamer) {
+        float future_position_scale = kFuturePositionScale_TrackStreamer;
+        float prediction_scale_a = kPredictionScaleA_TrackStreamer;
+        float prediction_scale_b = kPredictionScaleB_TrackStreamer;
+        if (kVelocityEpsilon_TrackStreamer < velocity_squared) {
             velocity_magnitude = bSqrt(velocity_squared);
         }
 
-        if (velocity_magnitude > kLoadingBarSpeedThreshold_TrackStreamer) {
+        if (kLoadingBarSpeedThreshold_TrackStreamer < velocity_magnitude) {
             break;
         }
 
         for (int n = 0; n < NumCurrentStreamingSections; n++) {
             TrackStreamingSection *section = CurrentStreamingSections[n];
-            if (!section->pBoundary || section->Status == TrackStreamingSection::ACTIVATED ||
-                !IsLoadingBarSection_TrackStreamer(section->SectionNumber)) {
+            VisibleSectionBoundary *boundary = section->pBoundary;
+            if (!boundary) {
+                continue;
+            }
+
+            short section_number = section->SectionNumber;
+            bool is_loading_bar_section = false;
+            bool is_regular_section =
+                static_cast<unsigned int>(static_cast<unsigned char>(static_cast<char>(section_number / 100 + '@')) - 'A') < 0x14;
+            if (is_regular_section) {
+                bool is_primary_loading_bar_section = false;
+                if (is_regular_section) {
+                    int subsection_number = section_number % 100;
+                    is_primary_loading_bar_section = subsection_number > 0 && subsection_number < ScenerySectionLODOffset;
+                }
+
+                if (is_primary_loading_bar_section ||
+                    (ScenerySectionLODOffset <= section_number % 100 &&
+                     section_number % 100 < ScenerySectionLODOffset * 2)) {
+                    is_loading_bar_section = true;
+                }
+            }
+
+            if (!is_loading_bar_section || section->Status == TrackStreamingSection::ACTIVATED) {
                 continue;
             }
 
             bVector2 future_position;
-            future_position.x = entry->Position.x + entry->Velocity.x * kFuturePositionScale_TrackStreamer;
-            future_position.y = entry->Position.y + entry->Velocity.y * kFuturePositionScale_TrackStreamer;
+            future_position.x = entry->Position.x + entry->Velocity.x * future_position_scale;
+            future_position.y = entry->Position.y + entry->Velocity.y * future_position_scale;
 
-            float current_distance = section->pBoundary->GetDistanceOutside(&entry->Position, kMaxDistance_TrackStreamer);
-            float future_distance = section->pBoundary->GetDistanceOutside(&future_position, kMaxDistance_TrackStreamer);
-            float predicted_distance =
-                current_distance - (current_distance - future_distance) * kPredictionScaleA_TrackStreamer * kPredictionScaleB_TrackStreamer;
+            float current_distance = boundary->GetDistanceOutside(&entry->Position, kMaxDistance_TrackStreamer);
+            float future_distance = boundary->GetDistanceOutside(&future_position, kMaxDistance_TrackStreamer);
+            float predicted_distance = current_distance - (current_distance - future_distance) * prediction_scale_a * prediction_scale_b;
             if (predicted_distance < minimum_distance) {
                 minimum_distance = predicted_distance;
             }
