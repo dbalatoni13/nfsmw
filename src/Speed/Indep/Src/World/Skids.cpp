@@ -1,6 +1,7 @@
 #include "Skids.hpp"
 
 #include "Speed/Indep/Src/Ecstasy/Texture.hpp"
+#include "Speed/Indep/Src/Ecstasy/eMath.hpp"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 #include "Speed/Indep/bWare/Inc/bVector.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
@@ -18,6 +19,11 @@ static const float kSkidDirectionMergeThreshold_Skids = 0.002f;
 static const float kSkidLengthMergeThreshold_Skids = 0.25f;
 static const float kSkidLengthSplitThreshold_Skids = 3.0f;
 static const float kSkidIntensityScale_Skids = 255.0f;
+
+class eViewSkidRenderShim : public eView {
+  public:
+    void Render(ePoly *poly, TextureInfo *texture_info, bMatrix4 *matrix, int flags, float z_bias);
+};
 
 SlotPool *SkidSetSlotPool = 0;
 int PlotSkidsInCaffeine = 0;
@@ -170,6 +176,50 @@ void SkidSet::FinishedAddingSkids() {
     if (pSkidMaker) {
         pSkidMaker->pSkidSet = 0;
         pSkidMaker = 0;
+    }
+}
+
+void SkidSet::Render(eView *view, unsigned char intensityReduction) {
+    if (!SkidTextureInfo[TheTerrainType]) {
+        return;
+    }
+
+    bMatrix4 *identity_matrix = eGetIdentityMatrix();
+    ePoly poly;
+    float extra_height = 0.05f;
+
+    for (int n = 0; n < NumSkidSegments - 1; n++) {
+        SkidSegment *skid_segment = &SkidSegments[n];
+        SkidSegment *next_skid_segment = &SkidSegments[n + 1];
+        unsigned char alpha0;
+        unsigned char alpha1;
+
+        skid_segment->GetEndPoints(&poly.Vertices[0], &poly.Vertices[3]);
+        next_skid_segment->GetEndPoints(&poly.Vertices[1], &poly.Vertices[2]);
+        poly.Vertices[0].z += extra_height;
+        poly.Vertices[1].z += extra_height;
+        poly.Vertices[2].z += extra_height;
+        poly.Vertices[3].z += extra_height;
+
+        alpha0 = skid_segment->Intensity;
+        alpha1 = next_skid_segment->Intensity;
+        if (alpha0 < intensityReduction) {
+            alpha0 = 0;
+        } else {
+            alpha0 -= intensityReduction;
+        }
+        if (alpha1 < intensityReduction) {
+            alpha1 = 0;
+        } else {
+            alpha1 -= intensityReduction;
+        }
+
+        *reinterpret_cast<unsigned int *>(&poly.Colours[0][0]) = 0x80808000 | alpha0;
+        *reinterpret_cast<unsigned int *>(&poly.Colours[1][0]) = 0x80808000 | alpha1;
+        *reinterpret_cast<unsigned int *>(&poly.Colours[2][0]) = 0x80808000 | alpha1;
+        *reinterpret_cast<unsigned int *>(&poly.Colours[3][0]) = 0x80808000 | alpha0;
+        reinterpret_cast<eViewSkidRenderShim *>(view)->Render(&poly, SkidTextureInfo[TheTerrainType], identity_matrix, 0,
+                                                              0.05f);
     }
 }
 
