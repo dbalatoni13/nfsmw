@@ -45,8 +45,8 @@ void emRemoveHandler(void (*function)(emEvent *));
 bool g_EAXIsPaused(void);
 
 struct EAXAITunerCar : public EAXCar {
-    // offset 0x118 from base
-    int mPhysicsChangedGear; // offset 0x118, size 0x4
+    int m_PitchOffset;          // offset 0x114, size 0x4
+    bool mPhysicsChangedGear;   // offset 0x118, size 0x1
 
     EAXAITunerCar();
     virtual ~EAXAITunerCar();

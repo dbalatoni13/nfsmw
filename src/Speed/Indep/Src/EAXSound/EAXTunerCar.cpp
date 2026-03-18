@@ -6,14 +6,6 @@ struct bVector3;
 extern eView eViews[];
 
 struct EAXTunerCar : public EAXCar {
-    float m_fCarVolume;          // offset 0x118
-    bool BottomOutPlay;          // offset 0x11C
-    int BottomOutIntensity;      // offset 0x120
-    bool TrunkBouncePlay;        // offset 0x124
-    float TrunkBounceInstensity; // offset 0x128
-    bool PlayBackFire;           // offset 0x12C
-    bool bFirstUpdate;           // offset 0x130
-
     EAXTunerCar();
     virtual ~EAXTunerCar();
     virtual void PreLoadAssets() override;
@@ -33,6 +25,15 @@ struct EAXTunerCar : public EAXCar {
     void *operator new(size_t, void *p) { return p; }
 
     static StateInfo s_StateInfo;
+
+    int m_playerID; // offset 0x114, size 0x4
+    float m_fCarVolume; // offset 0x118, size 0x4
+    bool BottomOutPlay; // offset 0x11C, size 0x1
+    int BottomOutIntensity; // offset 0x120, size 0x4
+    bool TrunkBouncePlay; // offset 0x124, size 0x1
+    float TrunkBounceInstensity; // offset 0x128, size 0x4
+    bool PlayBackFire; // offset 0x12C, size 0x1
+    bool bFirstUpdate; // offset 0x130, size 0x1
 };
 
 CSTATE_Base::StateInfo EAXTunerCar::s_StateInfo = {
