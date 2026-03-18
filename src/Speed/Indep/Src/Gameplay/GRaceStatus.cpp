@@ -29,12 +29,15 @@
 #include "Speed/Indep/Src/World/WorldModel.hpp"
 #include "Speed/Indep/Src/World/TrackStreamer.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
+#include "Speed/Indep/bWare/Inc/bMath.hpp"
+#include "Speed/Indep/bWare/Inc/bPrintf.hpp"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 
 #include <algorithm>
 
 void SetCurrentTimeOfDay(float value);
 void SetOverRideRainIntensity(float intensity);
+bool DoesStringExist(unsigned int hash);
 const char *GetLocalizedString(unsigned int hash);
 extern int UnlockAllThings;
 
@@ -289,6 +292,47 @@ float GRacerInfo::CalcAverageSpeed() const {
     }
 
     return mDistanceDriven / time;
+}
+
+void GRacerInfo::ChooseRandomName() {
+    char nameBuffer[32];
+    const char *name;
+
+    if (!DoesStringExist(Attrib::StringHash32("RACERNAME_000"))) {
+        mName = "UNKNOWN";
+        return;
+    }
+
+    do {
+        bool duplicate = false;
+        unsigned int i;
+
+        bSPrintf(nameBuffer, "RACERNAME_%03d", bRandom(0x96));
+        name = GetLocalizedString(Attrib::StringHash32(nameBuffer));
+
+        for (i = 0; i < static_cast<unsigned int>(GRaceStatus::Get().GetRacerCount()); ++i) {
+            GRacerInfo &info = GRaceStatus::Get().GetRacerInfo(i);
+
+            if (info.mName && bStrCmp(name, info.mName) == 0) {
+                duplicate = true;
+                break;
+            }
+        }
+
+        if (!duplicate) {
+            mName = name;
+            return;
+        }
+    } while (true);
+}
+
+bool GRacerInfo::ChooseRacerName() {
+    if (!GRaceStatus::Exists() || GRaceStatus::Get().GetRaceContext() != GRace::kRaceContext_Career || !mGameCharacter->GetName()) {
+        return false;
+    }
+
+    mName = GetLocalizedString(mGameCharacter->GetName());
+    return true;
 }
 
 float GRacerInfo::GetHudPctRaceComplete() const {

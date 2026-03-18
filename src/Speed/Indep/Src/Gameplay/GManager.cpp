@@ -1376,6 +1376,19 @@ void GManager::RestorePursuitBreakerIcons(int sectionID) {
     }
 }
 
+void GManager::HidePursuitBreakerIcon(const UMath::Vector3 &pos, float radius) {
+    UMath::Vector3 swizzledPos = UMath::Vector3Make(pos.z, -pos.x, pos.y);
+
+    for (unsigned int i = 0; i < mNumIcons; ++i) {
+        GIcon *icon = mIcons[i];
+
+        if (icon->GetType() == GIcon::kType_PursuitBreaker &&
+            UMath::DistanceSquare(swizzledPos, icon->GetPosition()) <= radius * radius) {
+            icon->ClearFlag(1);
+        }
+    }
+}
+
 void GManager::FreeDisposableIcons(GIcon::Type iconType) {
     for (unsigned int i = 0; i < mNumIcons;) {
         GIcon *icon = mIcons[i];
