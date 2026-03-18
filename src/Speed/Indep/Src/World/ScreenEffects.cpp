@@ -45,6 +45,8 @@ static float dataBackup_27616[12][2];
 static GenericRegion *regionB_27617[2];
 static unsigned int ticS_27592;
 
+void InitScreenEFX() {}
+
 enum TunnelBloomDataIndex {
     kTunnelPoint0X = 0,
     kTunnelPoint0Y = 1,
@@ -59,6 +61,16 @@ enum TunnelBloomDataIndex {
     kTunnelPoint3Y = 10,
     kTunnelPoint3Z = 11,
 };
+
+ScreenEffectDB::ScreenEffectDB() {
+    SE_time = 0.0f;
+    for (int i = 0; i < SE_NUM_TYPES; i++) {
+        SE_inf[i].active = 0;
+        bMemSet(&SE_data[i], 0, sizeof(SE_data[i]));
+        numType[i] = 0;
+    }
+    InitScreenEFX();
+}
 
 void TickSFX() {
     if (TheGameFlowManager.IsInGame()) {

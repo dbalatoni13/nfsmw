@@ -128,6 +128,43 @@ int RegionQuery::CalculateRegionInfo(eView *view, RegionType regionKind, int InF
     return 1;
 }
 
+int LoaderWeatherMan(bChunk *bchunk) {
+    if (bchunk->GetID() == 0x34250) {
+        unsigned char *data = reinterpret_cast<unsigned char *>(bchunk->GetAlignedData(0x10));
+        bEndianSwap32(data + 8);
+        bEndianSwap32(data + 0xC);
+        if (*reinterpret_cast<int *>(data + 8) == 2) {
+            int num_regions = *reinterpret_cast<int *>(data + 0xC);
+            unsigned char *region_data = data + 0x10;
+            for (int i = 0; i < num_regions; i++) {
+                bEndianSwap32(region_data + 0x84);
+                bEndianSwap32(region_data + 0x88);
+                bEndianSwap32(region_data + 0x48);
+                bEndianSwap32(region_data + 0x4C);
+                bEndianSwap32(region_data + 0x50);
+                bEndianSwap32(region_data + 0x54);
+                bEndianSwap32(region_data + 0x58);
+                bEndianSwap32(region_data + 0x5C);
+                bEndianSwap32(region_data + 0x60);
+                bEndianSwap32(region_data + 0x64);
+                bEndianSwap32(region_data + 0x68);
+                bEndianSwap32(region_data + 0x6C);
+                bEndianSwap32(region_data + 0x70);
+                bEndianSwap32(region_data + 0x74);
+                bEndianSwap32(region_data + 0x78);
+                bEndianSwap32(region_data + 0x8C);
+                bEndianSwap32(region_data + 0x90);
+                bEndianSwap32(region_data + 0x94);
+                AddRegion(reinterpret_cast<GenericRegion *>(region_data));
+                region_data += sizeof(GenericRegion);
+            }
+        }
+        return 1;
+    }
+
+    return 0;
+}
+
 void AddRegion(GenericRegion *region) {
     unsigned int region_type = static_cast<unsigned int>(region->Type);
     if (region_type == 0 && region->Blend == 0) {
