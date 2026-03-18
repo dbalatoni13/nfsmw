@@ -11,6 +11,32 @@
 
 extern int ScenerySectionLODOffset;
 
+static inline char GetScenerySectionLetter(int section_number) {
+    return static_cast<char>(section_number / 100 + 'A' - 1);
+}
+
+static inline bool IsRegularScenerySection(int section_number) {
+    char section_letter = GetScenerySectionLetter(section_number);
+    return section_letter >= 'A' && section_letter < 'U';
+}
+
+static inline int GetScenerySubsectionNumber(int section_number) {
+    return section_number % 100;
+}
+
+static inline bool IsScenerySectionDrivable(int section_number) {
+    if (!IsRegularScenerySection(section_number)) {
+        return false;
+    }
+
+    int subsection_number = GetScenerySubsectionNumber(section_number);
+    return subsection_number > 0 && subsection_number < ScenerySectionLODOffset;
+}
+
+static inline int GetLODScenerySectionNumber(int drivable_section_number) {
+    return drivable_section_number + ScenerySectionLODOffset;
+}
+
 static inline int bGetTablePos(short *table, int num_elements, short element) {
     for (int n = 0; n < num_elements; n++) {
         if (table[n] == element) {
@@ -27,14 +53,6 @@ static inline bool bIsInTable(short *table, int num_elements, short element) {
 
 static inline bool HasSection(short *section_table, int num_sections, short section_number) {
     return bIsInTable(section_table, num_sections, section_number);
-}
-
-static inline int GetScenerySubsectionNumber(int section_number) {
-    return section_number % 100;
-}
-
-static inline int GetLODScenerySectionNumber(int drivable_section_number) {
-    return drivable_section_number + ScenerySectionLODOffset;
 }
 
 struct VisibleSectionBoundary : public bTNode<VisibleSectionBoundary> {

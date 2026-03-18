@@ -42,22 +42,8 @@ static int map_table_VisibleSection[2800];
 static int counter_VisibleSection = 0;
 static char text_VisibleSection[4][16];
 
-static inline char GetScenerySectionLetter(int section_number) {
-    return static_cast<char>(section_number / 100 + 'A' - 1);
-}
-
 static inline short GetScenerySectionNumber(char section_letter, int subsection_number) {
     return static_cast<short>((section_letter - 'A' + 1) * 100 + subsection_number);
-}
-
-static inline bool IsRegularScenerySection(int section_number) {
-    char section_letter = GetScenerySectionLetter(section_number);
-    return section_letter >= 'A' && section_letter < 'U';
-}
-
-static inline bool IsScenerySectionDrivable(int section_number) {
-    int subsection_number = section_number % 100;
-    return IsRegularScenerySection(section_number) && subsection_number > 0 && subsection_number < ScenerySectionLODOffset;
 }
 
 void GetScenerySectionName(char *name, int section_number) {
@@ -386,14 +372,14 @@ int VisibleSectionManager::GetSectionsToLoad(LoadingSection *loading_section, sh
     }
 
     int num_sections = 0;
-    for (int i = 0; i < loading_section->NumDrivableSections; i++) {
-        DrivableScenerySection *drivable_section = FindDrivableSection(loading_section->DrivableSections[i]);
+    for (int n = 0; n < loading_section->NumDrivableSections; n++) {
+        DrivableScenerySection *drivable_section = FindDrivableSection(loading_section->DrivableSections[n]);
         if (!drivable_section) {
             continue;
         }
 
-        for (int n = 0; n < drivable_section->GetNumVisibleSections(); n++) {
-            int section_number = drivable_section->GetVisibleSection(n);
+        for (int i = 0; i < drivable_section->GetNumVisibleSections(); i++) {
+            int section_number = drivable_section->GetVisibleSection(i);
             if (!HasSection(section_numbers, num_sections, static_cast<short>(section_number)) && num_sections < max_sections) {
                 section_numbers[num_sections] = section_number;
                 num_sections += 1;
