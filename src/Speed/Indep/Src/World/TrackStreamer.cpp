@@ -1511,7 +1511,7 @@ bool TrackStreamer::IsLoadingInProgress() {
     return loading_in_progress;
 }
 
-void TrackStreamer::CheckLoadingBar() {
+bool TrackStreamer::CheckLoadingBar() {
     float minimum_distance = kMaxDistance_TrackStreamer;
 
     for (int i = 0; i < 2; i++) {
@@ -1560,7 +1560,7 @@ void TrackStreamer::CheckLoadingBar() {
         }
     }
 
-    prev_need_loading_bar_26275 = minimum_distance < kLoadingBarDistanceThreshold_TrackStreamer;
+    return prev_need_loading_bar_26275 = minimum_distance < kLoadingBarDistanceThreshold_TrackStreamer;
 }
 
 short TrackStreamer::GetPredictedZone(StreamingPositionEntry *streaming_position) {

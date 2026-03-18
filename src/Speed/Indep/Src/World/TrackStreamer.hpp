@@ -238,7 +238,7 @@ class TrackStreamer {
     void CalculateLoadingBacklog();
     bool IsLoadingInProgress();
     bool AreAllSectionsActivated();
-    void CheckLoadingBar();
+    bool CheckLoadingBar();
 
     void DisableZoneSwitching() {
         ZoneSwitchingDisabled = true;
