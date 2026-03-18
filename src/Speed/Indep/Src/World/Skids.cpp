@@ -33,11 +33,11 @@ int PlotSkidPointsInCaffeine = 0;
 bTList<SkidSet> SkidSetList;
 TextureInfo *SkidTextureInfo[kNumSkidTextures_Skids];
 
-void *SkidSet::operator new(size_t) {
+inline void *SkidSet::operator new(size_t) {
     return bMalloc(SkidSetSlotPool);
 }
 
-void SkidSet::operator delete(void *ptr) {
+inline void SkidSet::operator delete(void *ptr) {
     bFree(SkidSetSlotPool, ptr);
 }
 

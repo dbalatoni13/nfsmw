@@ -52,7 +52,9 @@ struct DrivableScenerySection : public bTNode<DrivableScenerySection> {
     short Padding;                     // offset 0xA2, size 0x2
 
     void EndianSwap();
-    int GetSectionNumber();
+    int GetSectionNumber() {
+        return SectionNumber;
+    }
     int GetMemoryImageSize();
     void AddVisibleSection(int section_number);
     int IsSectionVisible(int section_number);

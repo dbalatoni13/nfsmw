@@ -46,10 +46,6 @@ static inline char GetScenerySectionLetter(int section_number) {
     return static_cast<char>(section_number / 100 + 'A' - 1);
 }
 
-static inline int GetScenerySubsectionNumber(int section_number) {
-    return section_number % 100;
-}
-
 static inline short GetScenerySectionNumber(char section_letter, int subsection_number) {
     return static_cast<short>((section_letter - 'A' + 1) * 100 + subsection_number);
 }
@@ -60,7 +56,7 @@ static inline bool IsRegularScenerySection(int section_number) {
 }
 
 static inline bool IsScenerySectionDrivable(int section_number) {
-    int subsection_number = GetScenerySubsectionNumber(section_number);
+    int subsection_number = section_number % 100;
     return IsRegularScenerySection(section_number) && subsection_number > 0 && subsection_number < ScenerySectionLODOffset;
 }
 
@@ -68,7 +64,7 @@ void GetScenerySectionName(char *name, int section_number) {
     if (section_number < 1) {
         bStrCpy(name, "--");
     } else {
-        bSPrintf(name, "%c%d", GetScenerySectionLetter(section_number), GetScenerySubsectionNumber(section_number));
+        bSPrintf(name, "%c%d", GetScenerySectionLetter(section_number), section_number % 100);
     }
 }
 
@@ -144,10 +140,6 @@ inline void DrivableScenerySection::EndianSwap() {
     for (int i = 0; i < NumVisibleSections; i++) {
         bPlatEndianSwap(&VisibleSections[i]);
     }
-}
-
-inline int DrivableScenerySection::GetSectionNumber() {
-    return SectionNumber;
 }
 
 inline int DrivableScenerySection::GetMemoryImageSize() {
@@ -565,11 +557,11 @@ int Get2PlayerSectionNumber(int section_number, const char *build_platform) {
     if (bStrICmp(build_platform, "PC") != 0) {
         char section_letter = GetScenerySectionLetter(section_number);
         if (section_letter == 'Y') {
-            return GetScenerySubsectionNumber(section_number) + 0x8FC;
+            return section_number % 100 + 0x8FC;
         }
 
         if (section_letter == 'X') {
-            return GetScenerySubsectionNumber(section_number) + 0x834;
+            return section_number % 100 + 0x834;
         }
 
         SectionRemapper *remap_table = SectionRemapperTable;
@@ -615,7 +607,7 @@ int Get1PlayerSectionNumber(int section_number_2p, const char *build_platform) {
 
 int GetBoundarySectionNumber(int section_number, const char *platform_name) {
     int boundary_section_number = Get1PlayerSectionNumber(section_number, platform_name);
-    int subsection_number = GetScenerySubsectionNumber(boundary_section_number);
+    int subsection_number = boundary_section_number % 100;
 
     if (ScenerySectionLODOffset <= subsection_number && subsection_number < ScenerySectionLODOffset * 2) {
         boundary_section_number -= ScenerySectionLODOffset;

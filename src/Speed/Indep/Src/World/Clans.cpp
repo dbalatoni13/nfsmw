@@ -11,11 +11,11 @@ extern int WorldTime;
 SlotPool *ClanSlotPool = 0;
 bTList<Clan> ClanList;
 
-void *Clan::operator new(size_t) {
+inline void *Clan::operator new(size_t) {
     return bOMalloc(ClanSlotPool);
 }
 
-void Clan::operator delete(void *ptr) {
+inline void Clan::operator delete(void *ptr) {
     bFree(ClanSlotPool, ptr);
 }
 

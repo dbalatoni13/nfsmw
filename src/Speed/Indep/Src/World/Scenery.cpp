@@ -150,8 +150,6 @@ void RenderVisibleSectionBoundary(VisibleSectionBoundary *boundary, eView *view)
 ScenerySectionHeader *GetScenerySectionHeader(int section_number);
 int IsInTable(short *section_numbers, int num_sections, int section_number);
 int ToggleIsInTable(short *section_numbers, int num_sections, int max_sections, int section_number);
-static int GetScenerySubsectionNumber(int section_number);
-
 bList ScenerySectionHeaderList;
 RegionQuery RegionInfo;
 SceneryDetailLevel ForceAllSceneryDetailLevels = SCENERY_DETAIL_NONE;
@@ -1155,7 +1153,7 @@ int GrandSceneryCullInfo::WhatSectionsShouldWeDraw(short *sections_to_draw, int 
              section_header != reinterpret_cast<ScenerySectionHeader *>(ScenerySectionHeaderList.EndOfList());
              section_header = section_header->GetNext()) {
             int section_number = section_header->GetSectionNumber();
-            int subsection_number = GetScenerySubsectionNumber(section_number);
+            int subsection_number = section_number % 100;
             if (subsection_number < 10 && num_sections_to_draw < max_sections_to_draw) {
                 sections_to_draw[num_sections_to_draw] = static_cast<short>(section_number);
                 num_sections_to_draw += 1;
