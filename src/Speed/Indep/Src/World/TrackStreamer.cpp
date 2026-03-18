@@ -42,9 +42,12 @@ void SetQueuedFileMinPriority(int priority);
 void SetDelayedResourceCallback(void (*callback)(int), int param);
 void NotifySkyLoader();
 void BlockWhileQueuedFileBusy();
-char *bGetPlatformName();
 int GetBoundarySectionNumber(int section_number, const char *platform_name);
 extern int QueuedFileDefaultPriority;
+
+static inline char *bGetPlatformName() {
+    return "GAMECUBE";
+}
 
 static unsigned int prev_need_loading_bar_26275 = 0;
 static const float kMaxDistance_TrackStreamer = 3.4028235e+38f;
@@ -1204,22 +1207,24 @@ void TrackStreamer::InitRegion(const char *region_stream_filename, bool split_sc
     ClearCurrentZones();
     ClearStreamingPositions();
 
-    int position_number = 0;
-    do {
-        StreamingPositionEntry *position_entry = &StreamingPositionEntries[position_number];
+    {
+        int position_number = 0;
+        do {
+            StreamingPositionEntry *position_entry = &StreamingPositionEntries[position_number];
 
-        position_entry->AudioBlockingPosition.y = 0.0f;
-        position_entry->PredictedZone = 0;
-        position_entry->PredictedZoneValidTime = 0;
-        position_entry->AudioReading = false;
-        position_entry->AudioReadingTime = 0.0f;
-        position_entry->AudioReadingPosition.x = 0.0f;
-        position_entry->AudioReadingPosition.y = 0.0f;
-        position_entry->AudioBlocking = false;
-        position_entry->AudioBlockingTime = 0.0f;
-        position_entry->AudioBlockingPosition.x = 0.0f;
-        position_number += 1;
-    } while (position_number < 2);
+            position_entry->AudioBlockingPosition.y = 0.0f;
+            position_entry->PredictedZone = 0;
+            position_entry->PredictedZoneValidTime = 0;
+            position_entry->AudioReading = false;
+            position_entry->AudioReadingTime = 0.0f;
+            position_entry->AudioReadingPosition.x = 0.0f;
+            position_entry->AudioReadingPosition.y = 0.0f;
+            position_entry->AudioBlocking = false;
+            position_entry->AudioBlockingTime = 0.0f;
+            position_entry->AudioBlockingPosition.x = 0.0f;
+            position_number += 1;
+        } while (position_number < 2);
+    }
 
     if (NumTrackStreamingSections > 0) {
         int n = 0;
