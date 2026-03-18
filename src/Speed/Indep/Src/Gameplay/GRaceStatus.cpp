@@ -335,36 +335,38 @@ void GRacerInfo::ChooseRandomName() {
 bool GRacerInfo::ChooseRacerName() {
     unsigned int nameHash;
 
-    if (!GRaceStatus::Exists()) {
-        return false;
+    if (GRaceStatus::Exists()) {
+        if (GRaceStatus::Get().GetRaceContext() == GRace::kRaceContext_Career) {
+            if ((nameHash = mGameCharacter->GetName()) != 0) {
+                mName = GetLocalizedString(nameHash);
+                return true;
+            }
+        }
     }
 
-    if (GRaceStatus::Get().GetRaceContext() != GRace::kRaceContext_Career) {
-        return false;
-    }
-
-    nameHash = mGameCharacter->GetName();
-    if (!nameHash) {
-        return false;
-    }
-
-    mName = GetLocalizedString(nameHash);
-    return true;
+    return false;
 }
 
 bool GRacerInfo::ChooseBossName() {
     char stringBuffer[32];
     GRaceBin *raceBin;
 
-    if (!GRaceStatus::Exists() || GRaceStatus::Get().GetRaceContext() != GRace::kRaceContext_Career || !GRaceStatus::Get().GetRaceParameters() ||
-        !GRaceStatus::Get().GetRaceParameters()->GetIsBossRace()) {
-        return false;
+    if (GRaceStatus::Exists()) {
+        if (GRaceStatus::Get().GetRaceContext() == GRace::kRaceContext_Career) {
+            GRaceParameters *raceParameters = GRaceStatus::Get().GetRaceParameters();
+
+            if (raceParameters) {
+                if (raceParameters->GetIsBossRace()) {
+                    raceBin = reinterpret_cast<GRaceStatusCompat *>(&GRaceStatus::Get())->mRaceBin;
+                    bSNPrintf(stringBuffer, 0x20, "BLACKLIST_RIVAL_%02d_LEADERBOARD", raceBin->GetBinNumber());
+                    mName = GetLocalizedString(bStringHash(stringBuffer));
+                    return true;
+                }
+            }
+        }
     }
 
-    raceBin = reinterpret_cast<GRaceStatusCompat *>(&GRaceStatus::Get())->mRaceBin;
-    bSNPrintf(stringBuffer, 0x20, "BLACKLIST_RIVAL_%02d_LEADERBOARD", raceBin->GetBinNumber());
-    mName = GetLocalizedString(bStringHash(stringBuffer));
-    return true;
+    return false;
 }
 
 float GRacerInfo::GetHudPctRaceComplete() const {
