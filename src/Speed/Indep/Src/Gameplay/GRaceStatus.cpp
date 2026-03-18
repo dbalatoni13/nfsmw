@@ -929,17 +929,17 @@ void GRaceParameters::GetBoundingBox(UMath::Vector2 &topLeft, UMath::Vector2 &bo
 
     if (HasFinishLine()) {
         GetFinishPosition(pos);
-        x1 = std::min(pos.z, x1);
+        x1 = std::min(x1, pos.z);
         x2 = std::max(x2, pos.z);
-        y1 = std::min(-pos.x, y1);
+        y1 = std::min(y1, -pos.x);
         y2 = std::max(y2, -pos.x);
     }
 
     for (unsigned int onCheck = 0; onCheck < GetNumCheckpoints(); ++onCheck) {
         GetCheckpointPosition(onCheck, pos);
-        x1 = std::min(pos.z, x1);
+        x1 = std::min(x1, pos.z);
         x2 = std::max(x2, pos.z);
-        y1 = std::min(-pos.x, y1);
+        y1 = std::min(y1, -pos.x);
         y2 = std::max(y2, -pos.x);
     }
 
