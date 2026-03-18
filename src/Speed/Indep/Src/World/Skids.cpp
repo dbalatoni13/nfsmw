@@ -45,15 +45,13 @@ void SkidSegment::SetPoints(bVector3 *position, bVector3 *delta_position) {
     float delta_x = delta_position->x * kSkidSegmentScale_Skids;
     float delta_y = delta_position->y * kSkidSegmentScale_Skids;
     float delta_z = delta_position->z * kSkidSegmentScale_Skids;
-    int *this_words = reinterpret_cast<int *>(this);
-    int *position_words = reinterpret_cast<int *>(position);
-    int position_y = position_words[1];
-    int position_z = position_words[2];
+    float position_y = position->y;
+    float position_z = position->z;
 
-    this_words[0] = position_words[0];
+    Position[0] = position->x;
     DeltaPosition[2] = static_cast<signed char>(delta_z);
-    this_words[1] = position_y;
-    this_words[2] = position_z;
+    Position[1] = position_y;
+    Position[2] = position_z;
     DeltaPosition[0] = static_cast<signed char>(delta_x);
     DeltaPosition[1] = static_cast<signed char>(delta_y);
 }

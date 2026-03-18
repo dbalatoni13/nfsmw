@@ -238,11 +238,15 @@ void RenderVisibleSectionBoundary(VisibleSectionBoundary *boundary, eView *view)
 }
 
 void DoTunnelBloom(eView *view) {
+    int vIndex = 1;
+    if (view->GetID() == 1) {
+        vIndex = 0;
+    }
+
     if (!view->IsActive()) {
         return;
     }
 
-    int vIndex = view->GetID() != 1;
     float base_glare = 0.0f;
     CameraMover *camera_mover = view->GetCameraMover();
     if (!camera_mover) {
