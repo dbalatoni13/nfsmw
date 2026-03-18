@@ -395,9 +395,9 @@ int VisibleSectionManager::GetSectionsToLoad(LoadingSection *loading_section, sh
         }
 
         if (IsScenerySectionDrivable(section_number)) {
-            short lod_section_number = static_cast<short>(GetLODScenerySectionNumber(section_number));
-            if (!HasSection(section_numbers, num_sections, lod_section_number) && num_sections < max_sections) {
-                section_numbers[num_sections] = lod_section_number;
+            section_number = GetLODScenerySectionNumber(section_number);
+            if (!HasSection(section_numbers, num_sections, static_cast<short>(section_number)) && num_sections < max_sections) {
+                section_numbers[num_sections] = section_number;
                 num_sections += 1;
             }
         }
