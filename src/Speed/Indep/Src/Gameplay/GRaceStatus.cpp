@@ -4,11 +4,19 @@
 #include "Speed/Indep/Src/Gameplay/GMarker.h"
 #include "Speed/Indep/Src/Gameplay/GObjectBlock.h"
 #include "Speed/Indep/Src/Gameplay/GVault.h"
+#include "Speed/Indep/Src/Generated/Messages/MLoadingComplete.h"
+#include "Speed/Indep/Src/Generated/Messages/MNotifyRaceTime.h"
+#include "Speed/Indep/Src/Generated/Messages/MNotifyRaceTimeExpired.h"
+#include "Speed/Indep/Src/Generated/Messages/MNotifyRaceTimeSecTick.h"
+#include "Speed/Indep/Src/Interfaces/SimActivities/ICopMgr.h"
+#include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IEngine.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
 #include "Speed/Indep/Src/Main/AttribSupport.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 #include "Speed/Indep/Src/World/WRoadNetwork.h"
+#include "Speed/Indep/Src/World/TrackStreamer.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 
@@ -315,6 +323,131 @@ void GRacerInfo::ForceStartPosition(const UMath::Vector3 &pos, const UMath::Vect
     mSavedDirection = dir;
     mSavedSpeed = 0.0f;
     RestoreStartPosition();
+}
+
+void GRacerInfo::Update(float dT) {
+    ISimable *simable;
+    IVehicleAI *vehicleAI;
+    GRaceStatus &raceStatus = GRaceStatus::Get();
+    IEngine *engine;
+    IPlayer *player;
+    UMath::Vector3 linearVelocity;
+    float speed;
+    float distance;
+    float raceLength;
+
+    if (IsFinishedRacing() || GetIsEngineBlown() || GetIsTotalled() || GetIsKnockedOut()) {
+        return;
+    }
+
+    simable = GetSimable();
+    if (!simable) {
+        return;
+    }
+
+    engine = nullptr;
+    if (simable->QueryInterface(&engine) && engine->IsNOSEngaged()) {
+        mPoundsNOSUsed += dT * engine->GetNOSFlowRate();
+    }
+
+    player = simable->GetPlayer();
+    if (player && player->InGameBreaker()) {
+        mSpeedBreakerTime += dT;
+    }
+
+    simable->GetLinearVelocity(linearVelocity);
+    speed = UMath::Length(linearVelocity);
+    if (mTopSpeed < speed) {
+        mTopSpeed = speed;
+    }
+
+    distance = mDistanceDriven + speed * dT;
+    mTotalUpdateTime += dT;
+    mDistanceDriven = distance;
+
+#ifndef EA_BUILD_A124
+    if (mQuarterMileTime == 0.0f) {
+        static const float quarterMileInMeters = 402.335f;
+
+        if (quarterMileInMeters <= distance) {
+            mQuarterMileTime = GetRaceTime();
+        }
+    }
+
+    if (mZeroToSixtyTime == 0.0f) {
+        static const float sixtyMphInMetersPerSec = 26.8218f;
+
+        if (sixtyMphInMetersPerSec <= mTopSpeed) {
+            mZeroToSixtyTime = GetRaceTime();
+        }
+    }
+#endif
+
+    raceLength = raceStatus.GetRaceLength();
+    vehicleAI = nullptr;
+    if (simable->QueryInterface(&vehicleAI)) {
+        mDistToNextCheckpoint = vehicleAI->GetPathDistanceRemaining();
+    } else {
+        mDistToNextCheckpoint = 0.0f;
+    }
+
+    if (raceLength > 0.0f) {
+        float raceDistanceCompleted = 0.0f;
+        int lapsCompleted = GetLapsCompleted();
+        float lapDistanceCompleted = 0.0f;
+        int checkpointsCompleted = GetChecksHitThisLap();
+        float distanceToNextCheckpoint;
+        float currentSegmentLength;
+
+        if (lapsCompleted > 0) {
+            raceDistanceCompleted = raceStatus.GetFirstLapLength();
+        }
+
+        if (lapsCompleted > 1) {
+            raceDistanceCompleted += raceStatus.GetSubsequentLapLength() * static_cast<float>(lapsCompleted - 1);
+        }
+
+        for (int i = 0; i < checkpointsCompleted; ++i) {
+            lapDistanceCompleted += raceStatus.GetSegmentLength(i, lapsCompleted);
+        }
+
+        distanceToNextCheckpoint = GetDistToNextCheck();
+        currentSegmentLength = raceStatus.GetSegmentLength(checkpointsCompleted, lapsCompleted);
+        if (distanceToNextCheckpoint != 0.0f) {
+            float lapLength;
+
+            lapDistanceCompleted += currentSegmentLength - distanceToNextCheckpoint;
+            lapLength = raceStatus.GetLapLength(lapsCompleted);
+            if (lapLength > 0.0f) {
+                mPctLapComplete = bClamp(lapDistanceCompleted / lapLength, 0.0f, 1.0f);
+            } else {
+                mPctLapComplete = 1.0f;
+            }
+
+            mPctRaceComplete = bClamp((raceDistanceCompleted + lapDistanceCompleted) / raceLength, 0.0f, 1.0f);
+        }
+    }
+}
+
+void GRacerInfo::UpdateSplits() {
+#ifndef EA_BUILD_A124
+    int split = -1;
+
+    if (mPctRaceComplete >= 1.0f && mSplitTimes[3] == 0.0f) {
+        split = 3;
+    } else if (mPctRaceComplete >= 0.75f && mSplitTimes[2] == 0.0f) {
+        split = 2;
+    } else if (mPctRaceComplete >= 0.5f && mSplitTimes[1] == 0.0f) {
+        split = 1;
+    } else if (mPctRaceComplete >= 0.25f && mSplitTimes[0] == 0.0f) {
+        split = 0;
+    }
+
+    if (split != -1) {
+        mSplitTimes[split] = mRaceTimer.GetTime();
+        mSplitRankings[split] = mRanking;
+    }
+#endif
 }
 
 GRaceParameters::GRaceParameters(unsigned int collectionKey, GRaceIndexData *index)
@@ -1356,6 +1489,123 @@ void GRaceStatus::DisableBinBarriers() {
 
 void GRaceStatus::RefreshBinWhileInGame() {
     mQueueBinChange = true;
+}
+
+void GRaceStatus::Update(float dT) {
+    int numRacers = mRacerCount;
+
+#ifndef EA_BUILD_A124
+    if (GetPlayMode() == kPlayMode_Racing && mRefreshBinAfterRace) {
+        RefreshBinWhileInGame();
+        mRefreshBinAfterRace = false;
+    }
+#endif
+
+    if (GetPlayMode() == kPlayMode_Roaming) {
+        if (mQueueBinChange) {
+            EnterBin(FEDatabase->GetCareerSettings()->GetCurrentBin());
+            mQueueBinChange = false;
+        }
+
+#ifndef EA_BUILD_A124
+        if (GetPlayMode() == kPlayMode_Roaming && mWarpWhenInFreeRoam && GManager::Get().WarpToMarker(mWarpWhenInFreeRoam, false)) {
+            mWarpWhenInFreeRoam = 0;
+        }
+#endif
+    }
+
+    if (GetPlayMode() == kPlayMode_Racing && numRacers > 0) {
+        int numAiRacers = 0;
+        float floatRacers = 0.0f;
+        float percentComplete = 0.0f;
+        float elapsed;
+        int elapsedSec;
+
+        for (int idx = 0; idx < numRacers; ++idx) {
+            GRacerInfo &info = GetRacerInfo(idx);
+
+            if (info.GetGameCharacter()) {
+                ++numAiRacers;
+            }
+        }
+
+        for (int idx = 0; idx < numRacers; ++idx) {
+            GRacerInfo &info = GetRacerInfo(idx);
+
+            info.Update(dT);
+            if (info.GetSimable()) {
+                float weight = 1.0f;
+
+                if (!info.GetGameCharacter()) {
+                    weight = bMax(1.0f, static_cast<float>(numAiRacers));
+                }
+
+                floatRacers += weight;
+                percentComplete += weight * info.GetPctRaceComplete();
+            }
+        }
+
+        fAveragePercentComplete = percentComplete / bMax(1.0f, floatRacers);
+        CalculateRankings();
+
+#ifndef EA_BUILD_A124
+        for (int idx = 0; idx < numRacers; ++idx) {
+            GetRacerInfo(idx).UpdateSplits();
+        }
+#endif
+
+        elapsed = GetRaceTimeElapsed();
+        MNotifyRaceTime(elapsed, GetIsTimeLimited(), GetRaceTimeRemaining()).Post(UCrc32(0x20D60DBF));
+
+        elapsedSec = static_cast<int>(elapsed);
+        if (mLastSecondTickSent < elapsedSec) {
+            mLastSecondTickSent = elapsedSec;
+            MNotifyRaceTimeSecTick(elapsed).Post(UCrc32(0x20D60DBF));
+        }
+
+        if (GetIsTimeLimited()) {
+            if (IsChallengeRace()) {
+#ifndef EA_BUILD_A124
+                if (mPlayerPursuitInCooldown) {
+                    if (mRaceMasterTimer.IsRunning()) {
+                        mRaceMasterTimer.Stop();
+                    }
+                } else if (!mRaceMasterTimer.IsRunning()) {
+                    mRaceMasterTimer.Start();
+                }
+#endif
+            }
+
+            if (!mTimeExpiredMsgSent && GetRaceTimeRemaining() <= 0.0f) {
+                MNotifyRaceTimeExpired().Post(UCrc32(0x20D60DBF));
+                mTimeExpiredMsgSent = true;
+
+                for (int idx = 0; idx < mRacerCount; ++idx) {
+                    GRacerInfo &info = mRacerInfo[idx];
+
+                    if (!info.GetIsHuman() && !info.IsFinishedRacing()) {
+                        info.ForceStop();
+                    }
+                }
+            }
+        }
+    }
+
+    if (mScriptWaitingForLoad) {
+        bool racersLoading = IsLoading();
+        bool trackLoading = TheTrackStreamer.IsLoadingInProgress();
+        bool copsSpawning = false;
+        ICopMgr *copMgr = ICopMgr::Get();
+
+        if (copMgr && copMgr->IsCopSpawnPending()) {
+            copsSpawning = true;
+        }
+
+        if (!racersLoading && !trackLoading && !copsSpawning) {
+            MLoadingComplete().Post(UCrc32(0x20D60DBF));
+            mScriptWaitingForLoad = false;
+        }
+    }
 }
 
 GRacerInfo &GRaceStatus::GetRacerInfo(int index) {

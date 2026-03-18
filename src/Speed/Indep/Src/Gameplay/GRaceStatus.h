@@ -89,7 +89,9 @@ struct GRacerInfo {
     void SetSimable(ISimable *isim);
 
     void Reset();
+    IVehicle *CreateVehicle(unsigned int default_key);
     void Update(float dT);
+    void UpdateSplits();
     void SaveExistingRaceStats();
     void RestoreExistingRaceStats();
     bool IsBehind(const GRacerInfo &rhs) const;
@@ -570,6 +572,22 @@ class GRaceStatus : public UTL::COM::Object, public IVehicleCache {
 
     bool GetIsTimeLimited() const {
         return mRaceParms != nullptr && mRaceParms->GetTimeLimit() > 0.0f;
+    }
+
+    float GetRaceLength() {
+        return fRaceLength;
+    }
+
+    float GetFirstLapLength() {
+        return fFirstLapLength;
+    }
+
+    float GetSubsequentLapLength() {
+        return fSubsequentLapLength;
+    }
+
+    float GetLapLength(int lap) {
+        return lap == 0 ? GetFirstLapLength() : GetSubsequentLapLength();
     }
 
     static bool IsChallengeRace() {

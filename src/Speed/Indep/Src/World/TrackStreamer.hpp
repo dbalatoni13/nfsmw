@@ -152,6 +152,7 @@ class TrackStreamer {
     void PredictStreamingPosition(int position_number, const bVector3 *position, const bVector3 *velocity, const bVector3 *direction, bool following_car);
     void ClearStreamingPositions();
     void BlockUntilLoadingComplete();
+    int IsLoadingInProgress();
     void *AllocateUserMemory(int size, const char *debug_name, int offset);
     void FreeUserMemory(void *mem);
 
