@@ -233,33 +233,35 @@ void LGWheels::StopForce(long channel, long forceType) {
         }
         break;
     case 9:
-        LGWheelsGetIsAirborne(this, channel) = 0;
-        if (LGWheelsGetWasPlayingBeforeAirborne(this, channel, 0) == 1) {
-            PlaySpringForce(channel, LGWheelsGetSpringForceParams(this)[channel].offset, LGWheelsGetSpringForceParams(this)[channel].saturation, LGWheelsGetSpringForceParams(this)[channel].coefficient);
-        }
-        if (LGWheelsGetWasPlayingBeforeAirborne(this, channel, 1) == 1) {
-            PlayConstantForce(channel, LGWheelsGetConstantForceParams(this)[channel].magnitude, LGWheelsGetConstantForceParams(this)[channel].direction);
-        }
-        if (LGWheelsGetWasPlayingBeforeAirborne(this, channel, 2) == 1) {
-            PlayDamperForce(channel, LGWheelsGetDamperForceParams(this)[channel].coefficient);
-        }
-        if (LGWheelsGetWasPlayingBeforeAirborne(this, channel, 5) == 1) {
-            PlayDirtRoadEffect(channel, static_cast<unsigned char>(LGWheelsGetDirtRoadParams(this)[channel].magnitude));
-        }
-        if (LGWheelsGetWasPlayingBeforeAirborne(this, channel, 6) == 1) {
-            PlayBumpyRoadEffect(channel, static_cast<unsigned char>(LGWheelsGetBumpyRoadParams(this)[channel].magnitude));
-        }
-        if (LGWheelsGetWasPlayingBeforeAirborne(this, channel, 7) == 1) {
-            PlaySlipperyRoadEffect(channel, LGWheelsGetSlipperyRoadParams(this)[channel].magnitude);
-        }
-        if (LGWheelsGetWasPlayingBeforeAirborne(this, channel, 8) == 1) {
-            PlaySurfaceEffect(channel, LGWheelsGetSurfaceEffectParams(this)[channel].type, LGWheelsGetSurfaceEffectParams(this)[channel].magnitude, LGWheelsGetSurfaceEffectParams(this)[channel].period);
-        }
-        {
-            int jj;
+        if (IsPlaying(channel, 9)) {
+            LGWheelsGetIsAirborne(this, channel) = 0;
+            if (LGWheelsGetWasPlayingBeforeAirborne(this, channel, 0) == 1) {
+                PlaySpringForce(channel, LGWheelsGetSpringForceParams(this)[channel].offset, LGWheelsGetSpringForceParams(this)[channel].saturation, LGWheelsGetSpringForceParams(this)[channel].coefficient);
+            }
+            if (LGWheelsGetWasPlayingBeforeAirborne(this, channel, 1) == 1) {
+                PlayConstantForce(channel, LGWheelsGetConstantForceParams(this)[channel].magnitude, LGWheelsGetConstantForceParams(this)[channel].direction);
+            }
+            if (LGWheelsGetWasPlayingBeforeAirborne(this, channel, 2) == 1) {
+                PlayDamperForce(channel, LGWheelsGetDamperForceParams(this)[channel].coefficient);
+            }
+            if (LGWheelsGetWasPlayingBeforeAirborne(this, channel, 5) == 1) {
+                PlayDirtRoadEffect(channel, static_cast<unsigned char>(LGWheelsGetDirtRoadParams(this)[channel].magnitude));
+            }
+            if (LGWheelsGetWasPlayingBeforeAirborne(this, channel, 6) == 1) {
+                PlayBumpyRoadEffect(channel, static_cast<unsigned char>(LGWheelsGetBumpyRoadParams(this)[channel].magnitude));
+            }
+            if (LGWheelsGetWasPlayingBeforeAirborne(this, channel, 7) == 1) {
+                PlaySlipperyRoadEffect(channel, LGWheelsGetSlipperyRoadParams(this)[channel].magnitude);
+            }
+            if (LGWheelsGetWasPlayingBeforeAirborne(this, channel, 8) == 1) {
+                PlaySurfaceEffect(channel, LGWheelsGetSurfaceEffectParams(this)[channel].type, LGWheelsGetSurfaceEffectParams(this)[channel].magnitude, LGWheelsGetSurfaceEffectParams(this)[channel].period);
+            }
+            {
+                int jj;
 
-            for (jj = 0; jj < 10; jj++) {
-                LGWheelsGetWasPlayingBeforeAirborne(this, channel, jj) = 0;
+                for (jj = 0; jj < 10; jj++) {
+                    LGWheelsGetWasPlayingBeforeAirborne(this, channel, jj) = 0;
+                }
             }
         }
         break;
