@@ -69,8 +69,11 @@ GObjectBlock::~GObjectBlock() {}
 void GObjectBlock::Initialize(unsigned int bufferSize) {}
 
 unsigned int GObjectBlock::CalcSpaceRequired(GVault *vault, unsigned int *outObjCount) {
-    unsigned int objCount = 0;
-    unsigned int spaceRequired = FindInstances<GHandler>(vault, nullptr, &objCount, nullptr);
+    unsigned int objCount;
+    unsigned int spaceRequired;
+
+    objCount = 0;
+    spaceRequired = FindInstances<GHandler>(vault, nullptr, &objCount, nullptr);
 
     spaceRequired += FindInstances<GState>(vault, nullptr, &objCount, nullptr);
     spaceRequired += FindInstances<GActivity>(vault, nullptr, &objCount, nullptr);
@@ -128,16 +131,22 @@ unsigned int GObjectBlock::CalcNumConnections(unsigned int collectionKey) {
                 {
                     Attrib::Attribute attrib = collection.Get(attribKey);
 
-                    if (attribKey != 0x916E0E78 && attrib.IsValid()) {
-                        const Attrib::TypeDesc &typeDesc = Attrib::Database::Get().GetTypeDesc(attrib.GetType());
-                        const char *typeName =
-                            *reinterpret_cast<const char *const *>(reinterpret_cast<const char *>(&typeDesc) + sizeof(unsigned int));
+                    if (attribKey != 0x916E0E78) {
+                        if (attrib.IsValid()) {
+                            const Attrib::TypeDesc &typeDesc = Attrib::Database::Get().GetTypeDesc(attrib.GetType());
+                            const char *typeName =
+                                *reinterpret_cast<const char *const *>(reinterpret_cast<const char *>(&typeDesc) + sizeof(unsigned int));
 
-                        if (bStrCmp(typeName, "GCollectionKey") == 0) {
-                            const Attrib::Definition *definition = gameplayClass->GetDefinition(attrib.GetKey());
-                            int count = ((reinterpret_cast<const unsigned char *>(definition)[0xE] & 1) != 0) ? attrib.GetLength() : 1;
+                            if (bStrCmp(typeName, "GCollectionKey") == 0) {
+                                const Attrib::Definition *definition = gameplayClass->GetDefinition(attrib.GetKey());
+                                int count = 1;
 
-                            numConnections += count;
+                                if (definition->GetFlag(1)) {
+                                    count = attrib.GetLength();
+                                }
+
+                                numConnections += count;
+                            }
                         }
                     }
                 }
