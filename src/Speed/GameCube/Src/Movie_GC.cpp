@@ -239,6 +239,10 @@ void PlatSetFirstMovieFrame(TextureInfo *texture_info, RealShape::Shape *yuv_sha
     }
 }
 
+int RCMP_GetMaxFramesOutStanding() {
+    return 2;
+}
+
 void PlatFinishMovie() {
     if (gGCVD) {
         delete gGCVD;

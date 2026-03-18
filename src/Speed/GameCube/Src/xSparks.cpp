@@ -1,5 +1,6 @@
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
 #include "Speed/Indep/Src/Ecstasy/EmitterSystem.h"
+#include "Speed/Indep/Libs/Support/Utility/FastMem.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/emitteruv.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/fuelcell_effect.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/fuelcell_emitter.h"
@@ -33,7 +34,14 @@ struct CGEmitter {
     UMath::Matrix4 mLocalWorld;
 
     CGEmitter(const Attrib::Collection *spec, const XenonEffectDef &eDef);
+    ~CGEmitter();
     void SpawnParticles(float, float);
+
+    void operator delete(void *ptr) {
+        if (ptr) {
+            gFastMem.Free(ptr, 0x78, 0);
+        }
+    }
 };
 
 struct NGEffect {
@@ -72,6 +80,8 @@ CGEmitter::CGEmitter(const Attrib::Collection *spec, const XenonEffectDef &eDef)
     , mTextureUVs(mEmitterDef.emitteruv(), 0, nullptr) //
     , mVel(eDef.vel) //
     , mLocalWorld(eDef.mat) {}
+
+CGEmitter::~CGEmitter() {}
 
 NGParticle *ParticleList::GetNextParticle() {
     if (mNumParticles < 300) {

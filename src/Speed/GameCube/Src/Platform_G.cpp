@@ -34,7 +34,7 @@ enum eLanguages {
     eLANGUAGE_MAX = 16,
 };
 
-extern bool bEURGB60;
+extern char bEURGB60;
 extern "C" void OSResetSystem(BOOL reset, u32 resetCode, BOOL forceMenu);
 
 struct FILESYSOPTS {

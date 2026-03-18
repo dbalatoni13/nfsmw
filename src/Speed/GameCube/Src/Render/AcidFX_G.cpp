@@ -2,6 +2,8 @@
 #include "Speed/Indep/Src/Camera/Camera.hpp"
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
 #include "Speed/Indep/Src/Ecstasy/Texture.hpp"
+#include "Speed/Indep/Libs/Support/Utility/UVectorMath.h"
+#include <dolphin/mtx44_ext.h>
 
 bVector4 BillboardedParticleBasisX;
 bVector4 BillboardedParticleBasisY;
@@ -52,4 +54,28 @@ bool PlatStartParticleRender(eView *view, TextureInfo *mTextureInfo, unsigned in
     afxBeginBillboardedParticles(view);
     afxBeginBillboardedParticleBatch(mTextureInfo);
     return 1;
+}
+
+void afxEndBillboardedParticleBatch(TextureInfo *texture_info, float f, int i) {}
+
+void afxEndBillboardedParticles() {}
+
+void PlatEndParticleRender() {
+    afxEndBillboardedParticleBatch(0, 0.0f, 0);
+    afxEndBillboardedParticles();
+}
+
+void PlatGetViewVectors(eView *view, UMath::Vector3 &right, UMath::Vector3 &up, UMath::Vector3 &forward) {
+    eViewPlatInfo *plat_info = view->GetPlatInfo();
+    Mtx44 local_matrix;
+    PSMTX44Copy(reinterpret_cast<const float(*)[4]>(&plat_info->WorldViewMatrix), local_matrix);
+    right.x = local_matrix[0][0];
+    right.y = local_matrix[1][1];
+    right.z = local_matrix[2][2];
+    up.x = local_matrix[0][0];
+    up.y = local_matrix[1][1];
+    up.z = local_matrix[2][2];
+    forward.x = local_matrix[0][0];
+    forward.y = local_matrix[1][1];
+    forward.z = local_matrix[2][2];
 }
