@@ -175,45 +175,16 @@ TSMemoryPool::TSMemoryPool(int address, int size, const char *debug_name, int po
 }
 
 TSMemoryNode *TSMemoryPool::GetNewNode(int address, int size, bool allocated, const char *debug_name) {
-    TSMemoryNode *node = 0;
-
-    if (!UnusedNodeList.IsEmpty()) {
-        node = UnusedNodeList.RemoveHead();
-    } else {
-        for (int i = 0; i < 192; i++) {
-            TSMemoryNode *candidate = &MemoryNodes[i];
-            if (!candidate->Allocated && candidate->Size == 0 && candidate->DebugName[0] == 0) {
-                node = candidate;
-                break;
-            }
-        }
-    }
-
-    if (!node) {
-        return 0;
-    }
+    TSMemoryNode *node = UnusedNodeList.RemoveHead();
 
     node->Address = address;
     node->Size = size;
     node->Allocated = allocated;
-    bMemSet(node->DebugName, 0, sizeof(node->DebugName));
-    if (debug_name) {
-        bStrNCpy(node->DebugName, debug_name, sizeof(node->DebugName) - 1);
-    }
-    NodeList.AddTail(node);
+    bSafeStrCpy(node->DebugName, debug_name, sizeof(node->DebugName));
     return node;
 }
 
 void TSMemoryPool::RemoveNode(TSMemoryNode *node) {
-    if (!node) {
-        return;
-    }
-
-    NodeList.Remove(node);
-    node->Address = 0;
-    node->Size = 0;
-    node->Allocated = false;
-    bMemSet(node->DebugName, 0, sizeof(node->DebugName));
     UnusedNodeList.AddTail(node);
 }
 
