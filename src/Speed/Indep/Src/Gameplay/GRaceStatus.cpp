@@ -11,6 +11,7 @@
 #include "Speed/Indep/Src/Generated/Events/EAutoSave.hpp"
 #include "Speed/Indep/Src/Generated/Events/EFadeScreenOn.hpp"
 #include "Speed/Indep/Src/Generated/Events/EReloadHud.hpp"
+#include "Speed/Indep/Src/Frontend/Database/VehicleDB.hpp"
 #include "Speed/Indep/Src/Interfaces/SimActivities/ICopMgr.h"
 #include "Speed/Indep/Src/Interfaces/SimActivities/ITrafficMgr.h"
 #include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
@@ -18,6 +19,7 @@
 #include "Speed/Indep/Src/Interfaces/Simables/IEngine.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
 #include "Speed/Indep/Src/Main/AttribSupport.h"
+#include "Speed/Indep/Src/Physics/PVehicle.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 #include "Speed/Indep/Src/Sim/Simulation.h"
 #include "Speed/Indep/Src/World/WRoadNetwork.h"
@@ -94,6 +96,38 @@ void GRacerInfo::SetRanking(int ranking) {
 
 void GRacerInfo::SetSimable(ISimable *isim) {
     mhSimable = isim ? isim->GetInstanceHandle() : nullptr;
+}
+
+IVehicle *GRacerInfo::CreateVehicle(unsigned int default_key) {
+    GCharacter *racerChar = GetGameCharacter();
+    unsigned int vehicle_key = default_key;
+    FECustomizationRecord customizations;
+    UMath::Vector3 direction = UMath::Vector3::kZero;
+    UMath::Vector3 position = UMath::Vector3::kZero;
+    IVehicleCache *cache = nullptr;
+    ISimable *result;
+    IVehicle *vehicle = nullptr;
+
+    bMemSet(&customizations, 0, sizeof(customizations));
+
+    if (racerChar) {
+        const char *carName = racerChar->CarType(0);
+
+        if (carName && *carName) {
+            vehicle_key = Attrib::StringToKey(carName);
+        }
+    }
+
+    if (GRaceStatus::Exists()) {
+        cache = &GRaceStatus::Get();
+    }
+
+    result = UTL::COM::Factory<Sim::Param, ISimable, UCrc32>::CreateInstance("PVehicle", VehicleParams(cache, DRIVER_RACER, vehicle_key, direction, position, 0, &customizations, nullptr));
+    if (result && result->QueryInterface(&vehicle)) {
+        SetSimable(result);
+    }
+
+    return vehicle;
 }
 
 void GRacerInfo::KnockOut() {
