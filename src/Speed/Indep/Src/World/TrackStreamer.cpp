@@ -735,11 +735,11 @@ int TrackStreamer::BuildHoleMovements(HoleMovement *hole_movements, int max_move
             TSMemoryNode *top_free_top = 0;
 
             do {
-                if (!first_pass) {
-                    top_free_top = pMemoryPool->GetNextFreeNode(true, top_free_top);
-                } else {
+                if (first_pass) {
                     first_pass = false;
                     top_free_top = pMemoryPool->GetFirstNode(true);
+                } else {
+                    top_free_top = pMemoryPool->GetNextFreeNode(true, top_free_top);
                 }
 
                 if (!top_free_top) {
@@ -785,12 +785,11 @@ int TrackStreamer::BuildHoleMovements(HoleMovement *hole_movements, int max_move
                             (found_big_enough &&
                              total_needing_allocation <= total_free_memory + middle_allocated_memory &&
                              middle_allocated_memory < current_best_middle_memory)) {
+                            std::sort(size_checking, size_checking + found_nodes);
                             int evaluated_best_address = 0;
                             bool largest_flag = false;
                             int nodes_to_move = 0;
                             int position = 0;
-
-                            std::sort(size_checking, size_checking + found_nodes);
 
                             TSMemoryNode *evaluated_top_free = pMemoryPool->GetFirstFreeNode(true);
                             while (0 < found_nodes - nodes_to_move && evaluated_top_free) {
