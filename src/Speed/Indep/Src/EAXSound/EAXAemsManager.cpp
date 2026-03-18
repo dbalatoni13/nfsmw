@@ -209,11 +209,10 @@ static void ResetSndAssetParams(stSndDataLoadParams &params) {
 
 } // namespace
 
-void stAssetDescription::Clear() {
+inline void stAssetDescription::Clear() {
     eDataType = EAXSND_DT_NONE;
-    FileName.operator=(Attrib::StringKey(""));
+    FileName = Attrib::StringKey("");
     DataPath = SNDPATH_ROUTE;
-    bLoadToTop = false;
 }
 
 void stBankSlot::Clear() {
@@ -228,7 +227,7 @@ void stBankSlot::Clear() {
     pAssetParams = nullptr;
 }
 
-void stSndDataLoadParams::Clear() {
+inline void stSndDataLoadParams::Clear() {
     AssetDescription.Clear();
     Handle = -1;
     bResolvedSync = false;
@@ -244,7 +243,43 @@ void stSndDataLoadParams::Clear() {
     t_load = Timer(0);
 }
 
- stBankSlot *BankSlotSystem::GetFreeSlot(eBANK_SLOT_TYPE Type) {
+inline stSndDataLoadParams &stSndDataLoadParams::operator=(stSndDataLoadParams &copy) {
+    AssetDescription = copy.AssetDescription;
+    MemLocation = copy.MemLocation;
+    mBankSlot = copy.mBankSlot;
+    if (mBankSlot != nullptr && mBankSlot->pAssetParams == &copy) {
+        mBankSlot->pAssetParams = this;
+    }
+
+    pmem = copy.pmem;
+    plocmem = copy.plocmem;
+    nSize = copy.nSize;
+    Handle = copy.Handle;
+    *static_cast<unsigned int *>(static_cast<void *>(&bResolvedAsync)) =
+        *static_cast<unsigned int *>(static_cast<void *>(&copy.bResolvedAsync));
+    *static_cast<unsigned int *>(static_cast<void *>(&bResolvedSync)) =
+        *static_cast<unsigned int *>(static_cast<void *>(&copy.bResolvedSync));
+
+    resallocs.clear();
+    resallocs.reserve(copy.resallocs.size());
+    for (const unsigned int *i = copy.resallocs.begin(); i != copy.resallocs.end(); ++i) {
+        resallocs.push_back(*i);
+    }
+    copy.resallocs.clear();
+
+    RefCount.clear();
+    RefCount.reserve(copy.RefCount.size());
+    for (EAX_CarState **j = copy.RefCount.begin(); j != copy.RefCount.end(); ++j) {
+        RefCount.push_back(*j);
+    }
+    copy.RefCount.clear();
+
+    t_req = copy.t_req;
+    t_load = copy.t_load;
+    return *this;
+}
+
+stBankSlot *BankSlotSystem::GetFreeSlot(eBANK_SLOT_TYPE Type) {
     for (BankSlotSystem::iterator i = begin(); i != end(); i++) {
         if ((*i).Type == Type && (*i).pAssetParams == nullptr) {
             return &(*i);
@@ -719,46 +754,13 @@ ReprocessQueue:
     }
 }
 
-void EAXAemsManager::RemoveBankListing(int index) {
-    ResetSndAssetParams(g_SndAssetList[index]);
-    for (int n = index; n < 0x2F; n++) {
-        stSndDataLoadParams *currentParams = g_SndAssetList + n;
-        stSndDataLoadParams *futureParams = currentParams + 1;
-        stSndDataLoadParams &current = *currentParams;
-        stSndDataLoadParams &future = *futureParams;
-
-        current.AssetDescription = future.AssetDescription;
-        current.MemLocation = future.MemLocation;
-        current.mBankSlot = future.mBankSlot;
-        if (current.mBankSlot != nullptr && current.mBankSlot->pAssetParams == futureParams) {
-            current.mBankSlot->pAssetParams = currentParams;
+void EAXAemsManager::RemoveBankListing(int Index) {
+    g_SndAssetList[Index].Clear();
+    {
+        for (int n = Index; n < 0x2F; n++) {
+            g_SndAssetList[n] = g_SndAssetList[n + 1];
+            g_SndAssetList[n + 1].Clear();
         }
-
-        current.pmem = future.pmem;
-        current.plocmem = future.plocmem;
-        current.nSize = future.nSize;
-        current.Handle = future.Handle;
-        *static_cast<unsigned int *>(static_cast<void *>(&current.bResolvedAsync)) =
-            *static_cast<unsigned int *>(static_cast<void *>(&future.bResolvedAsync));
-        *static_cast<unsigned int *>(static_cast<void *>(&current.bResolvedSync)) =
-            *static_cast<unsigned int *>(static_cast<void *>(&future.bResolvedSync));
-
-        current.resallocs.clear();
-        for (ResAllocList::const_iterator i = future.resallocs.begin(); i != future.resallocs.end(); ++i) {
-            current.resallocs.push_back(*i);
-        }
-        future.resallocs.clear();
-
-        current.RefCount.clear();
-        for (RefCountList::const_iterator i = future.RefCount.begin(); i != future.RefCount.end(); ++i) {
-            current.RefCount.push_back(*i);
-        }
-        future.RefCount.clear();
-
-        current.t_req = future.t_req;
-        current.t_load = future.t_load;
-
-        ResetSndAssetParams(future);
     }
 
     m_nCurLoadedBankIndex--;

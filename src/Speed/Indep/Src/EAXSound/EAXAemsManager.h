@@ -97,6 +97,7 @@ struct stSndDataLoadParams {
     Timer t_load;                        // offset 0x64, size 0x4
 
     void Clear();
+    stSndDataLoadParams &operator=(stSndDataLoadParams &copy);
 };
 
 struct stBankSlot {
