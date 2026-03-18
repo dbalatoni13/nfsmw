@@ -145,8 +145,16 @@ void SFXCTL_Engine::UpdateParams(float t) {
 }
 
 void SFXCTL_Engine::MessageVehicleDestroyed(const MNotifyVehicleDestroyed &message) {
-    (void)message;
-    m_bIsEngineBlown = true;
+    UMath::Vector4 vpos;
+
+    if (GetPhysCar() != nullptr && GetPhysCar()->mHandle == message.GetRacer() && GetPhysCar()->IsLocalPlayerCar()) {
+        vpos.z = GetPhysCar()->GetPosition()->x;
+        vpos.x = -GetPhysCar()->GetPosition()->y;
+        vpos.y = GetPhysCar()->GetPosition()->z;
+
+        MGamePlayMoment(vpos, UMath::Vector4::kZero, UMath::Vector4::kZero, 0, 0xC565AC30)
+            .Send(UCrc32("MomentStrm"));
+    }
 }
 
 float SFXCTL_Engine::GetEngRPM() { return m_fEng_RPM; }
