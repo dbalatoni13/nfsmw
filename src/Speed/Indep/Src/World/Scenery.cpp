@@ -1039,7 +1039,8 @@ int ToggleIsInTable(short *section_numbers, int num_sections, int max_sections, 
 }
 
 int UnloaderScenery(bChunk *chunk) {
-    unsigned int chunk_id = chunk->GetID();
+    bChunk *scenery_chunk = chunk;
+    unsigned int chunk_id = scenery_chunk->GetID();
 
     if (chunk_id == 0x34108) {
         SceneryOverrideInfoTable = 0;
@@ -1049,7 +1050,7 @@ int UnloaderScenery(bChunk *chunk) {
     }
 
     if (chunk_id == 0x80034100) {
-        ScenerySectionHeader *section_header = reinterpret_cast<ScenerySectionHeader *>(chunk->GetAlignedData(0x10));
+        ScenerySectionHeader *section_header = reinterpret_cast<ScenerySectionHeader *>(scenery_chunk->GetAlignedData(0x10));
         int *section_header_words = reinterpret_cast<int *>(section_header);
         VisibleSectionUserInfo *user_info = TheVisibleSectionManager.GetUserInfo(section_header_words[3]);
         if (user_info) {
@@ -1059,34 +1060,31 @@ int UnloaderScenery(bChunk *chunk) {
         section_header->Remove();
 
         if (!AreChunksBeingMoved()) {
-            unsigned char *scenery_infos = reinterpret_cast<unsigned char *>(section_header_words[6]);
             for (int i = 0; i < section_header_words[7]; i++) {
-                unsigned char *scenery_info = scenery_infos + i * 0x48;
+                unsigned char *scenery_info = reinterpret_cast<unsigned char *>(section_header_words[6]) + i * 0x48;
                 eModel **model_slots = reinterpret_cast<eModel **>(scenery_info + 0x28);
                 for (int j = 0; j < 4; j++) {
                     if (AreChunksBeingMoved()) {
                         break;
                     }
 
-                    eModel **model_slot = &model_slots[j];
-                    if (*model_slot) {
-                        eModel *slot_model = *model_slot;
+                    if (model_slots[j]) {
+                        eModel *slot_model = model_slots[j];
                         for (int k = j + 1; k < 4; k++) {
-                            eModel **duplicate_slot = &model_slots[k];
-                            if (*duplicate_slot == slot_model) {
-                                *duplicate_slot = 0;
+                            if (model_slots[k] == slot_model) {
+                                model_slots[k] = 0;
                             }
                         }
                         if (ModelDisconnectionCallback) {
-                            ModelDisconnectionCallback(section_header, i, slot_model);
+                            ModelDisconnectionCallback(section_header, i, model_slots[j]);
                         }
 
-                        eModel *model = *model_slot;
+                        eModel *model = model_slots[j];
                         if (model) {
                             model->UnInit();
                             bFree(eModelSlotPool, model);
                         }
-                        *model_slot = 0;
+                        model_slots[j] = 0;
                     }
                 }
             }
@@ -1100,8 +1098,8 @@ int UnloaderScenery(bChunk *chunk) {
     }
 
     if (chunk_id == 0x8003410B) {
-        bChunk *last_chunk = chunk->GetLastChunk();
-        for (bChunk *subchunk = chunk->GetFirstChunk(); subchunk != last_chunk; subchunk = subchunk->GetNext()) {
+        bChunk *last_chunk = scenery_chunk->GetLastChunk();
+        for (bChunk *subchunk = scenery_chunk->GetFirstChunk(); subchunk != last_chunk; subchunk = subchunk->GetNext()) {
             unsigned int *entry_words = reinterpret_cast<unsigned int *>(subchunk->GetData());
             unsigned int num_models = *reinterpret_cast<unsigned char *>(&entry_words[1]);
 
