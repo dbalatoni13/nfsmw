@@ -2,6 +2,7 @@
 
 #include "Speed/Indep/Libs/Support/Utility/FastMem.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/gameplay.h"
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/milestonetypes.h"
 #include "Speed/Indep/Src/Generated/Events/EAutoSave.hpp"
 #include "Speed/Indep/Src/Generated/Events/EFadeScreenOff.hpp"
 #include "Speed/Indep/Src/Generated/Events/EFadeScreenOn.hpp"
@@ -1088,7 +1089,26 @@ void GManager::AllocateMilestones() {
 }
 
 void GManager::ResetMilestoneTrackingInfo() {
+    unsigned int collectionKey;
+
     mMilestoneTypeInfo.clear();
+    collectionKey = mMilestoneClass->GetFirstCollection();
+    while (collectionKey) {
+        Attrib::Gen::milestonetypes milestoneType(
+            Attrib::FindCollection(Attrib::Gen::milestonetypes::ClassKey(), collectionKey), 0, nullptr);
+        MilestoneTypeInfo info;
+
+        info.mTypeKey = collectionKey;
+        info.mLastKnownValue = -1.0f;
+        info.mBestValue = -1.0f;
+        info.mFlags = milestoneType.MilestoneType() != 2 ? GMilestone::kFlag_BiggerIsBetter : 0;
+        if (milestoneType.ResetWhenPursuitStarts()) {
+            info.mFlags |= GMilestone::kFlag_CompletionFaked;
+        }
+
+        mMilestoneTypeInfo[collectionKey] = info;
+        collectionKey = mMilestoneClass->GetNextCollection(collectionKey);
+    }
 }
 
 void GManager::LoadMilestoneInfo(MilestoneTypeInfo *savedInfo, unsigned int count) {
