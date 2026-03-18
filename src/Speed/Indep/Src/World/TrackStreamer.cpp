@@ -723,90 +723,118 @@ int TrackStreamer::BuildHoleMovements(HoleMovement *hole_movements, int max_move
                     }
                 }
             }
-        } else {
-            bool found = false;
-            int best_gap = 0;
+        } else if (filler_method == 1) {
+            bool done = false;
+            bool found_one = false;
+            bool found_big_enough = false;
+            TSMemoryNode *largest_allocated = 0;
+            int current_best = 0;
+            int current_best_middle_memory = 0x3E8000;
             int best_address = 0;
-            TSMemoryNode *best_node = 0;
-            for (TSMemoryNode *free_node = pMemoryPool->GetFirstFreeNode(true); free_node;
-                 free_node = pMemoryPool->GetNextFreeNode(true, free_node)) {
-                int gap_size = free_node->Size;
-                TSMemoryNode *next_free = pMemoryPool->GetNextFreeNode(true, free_node);
-                if (!next_free) {
-                    break;
+            bool first_pass = true;
+            TSMemoryNode *top_free_top = 0;
+
+            do {
+                if (!first_pass) {
+                    top_free_top = pMemoryPool->GetNextFreeNode(true, top_free_top);
+                } else {
+                    first_pass = false;
+                    top_free_top = pMemoryPool->GetFirstNode(true);
                 }
 
-                gap_size += next_free->Size;
-                TSMemoryNode *node = pMemoryPool->GetNextNode(true, free_node);
-                if (!node) {
-                    continue;
-                }
+                if (!top_free_top) {
+                    done = true;
+                } else {
+                    int top_free_memory = top_free_top->Size;
+                    TSMemoryNode *bottom_free_top = pMemoryPool->GetNextFreeNode(true, top_free_top);
+                    if (!bottom_free_top) {
+                        done = true;
+                    } else {
+                        TSMemoryNode *top_allocated = pMemoryPool->GetNextNode(true, top_free_top);
+                        pMemoryPool->GetNextNode(false, bottom_free_top);
 
-                int sizes[32];
-                int count = 0;
-                int total_size = node->Size;
-                TSMemoryNode *largest_node = node;
-                while (node && node != next_free && count < 32) {
-                    sizes[count] = node->Size;
-                    if (largest_node->Size < node->Size) {
-                        largest_node = node;
-                    }
-                    count += 1;
-                    node = pMemoryPool->GetNextNode(true, node);
-                    if (node && node != next_free) {
-                        total_size += node->Size;
-                    }
-                }
+                        int middle_allocated_memory = top_allocated->Size;
+                        int total_free_memory = top_free_memory + bottom_free_top->Size;
+                        int size_checking[32];
+                        int i = 0;
+                        do {
+                            size_checking[i] = 0;
+                            i += 1;
+                        } while (i < 32);
 
-                if (count <= 0) {
-                    continue;
-                }
+                        size_checking[0] = top_allocated->Size;
 
-                int free_gap = gap_size - total_size;
-                if (!found || best_gap < free_gap) {
-                    std::sort(sizes, sizes + count);
-
-                    bool started = false;
-                    int chosen_count = 0;
-                    int free_index = 0;
-                    TSMemoryNode *candidate_free = pMemoryPool->GetFirstFreeNode(true);
-                    while (0 < count - chosen_count && candidate_free) {
-                        bool used = false;
-                        int target_index = count - chosen_count - 1;
-                        for (int i = 0; i < count; i++) {
-                            if (sizes[target_index] == free_index) {
-                                used = true;
+                        TSMemoryNode *largest_allocated_here = top_allocated;
+                        TSMemoryNode *cursor = top_allocated;
+                        int found_nodes = 1;
+                        while ((cursor = pMemoryPool->GetNextNode(true, top_allocated)) != bottom_free_top && top_allocated &&
+                               found_nodes < 32) {
+                            top_allocated = pMemoryPool->GetNextNode(true, top_allocated);
+                            if (top_allocated) {
+                                size_checking[found_nodes] = top_allocated->Size;
+                                middle_allocated_memory += top_allocated->Size;
+                                found_nodes += 1;
+                                if (largest_allocated_here->Size < top_allocated->Size) {
+                                    largest_allocated_here = top_allocated;
+                                }
                             }
                         }
-                        if (candidate_free == free_node || candidate_free == next_free) {
-                            used = true;
-                        }
-                        if (!used && sizes[target_index] <= candidate_free->Size) {
-                            sizes[target_index] = free_index;
-                            chosen_count += 1;
-                            if (!started) {
-                                best_address = candidate_free->Address;
-                                started = true;
-                            }
-                            candidate_free = pMemoryPool->GetNextFreeNode(true, 0);
-                        }
-                        candidate_free = pMemoryPool->GetNextFreeNode(true, candidate_free);
-                        free_index += 1;
-                    }
 
-                    if (count <= chosen_count) {
-                        best_gap = free_gap;
-                        best_node = largest_node;
-                        if (total_needing_allocation <= gap_size + total_size) {
-                            found = true;
+                        int free_gap = total_free_memory - middle_allocated_memory;
+                        if ((!found_big_enough && current_best < free_gap) ||
+                            (found_big_enough &&
+                             total_needing_allocation <= total_free_memory + middle_allocated_memory &&
+                             middle_allocated_memory < current_best_middle_memory)) {
+                            int evaluated_best_address = 0;
+                            bool largest_flag = false;
+                            int nodes_to_move = 0;
+                            int position = 0;
+
+                            std::sort(size_checking, size_checking + found_nodes);
+
+                            TSMemoryNode *evaluated_top_free = pMemoryPool->GetFirstFreeNode(true);
+                            while (0 < found_nodes - nodes_to_move && evaluated_top_free) {
+                                bool skip_flag = false;
+                                int target_index = found_nodes - nodes_to_move - 1;
+                                for (int i = 0; i < found_nodes; i++) {
+                                    if (size_checking[target_index] == position) {
+                                        skip_flag = true;
+                                    }
+                                }
+                                if (evaluated_top_free == top_free_top || evaluated_top_free == bottom_free_top) {
+                                    skip_flag = true;
+                                }
+                                if (!skip_flag && size_checking[target_index] <= evaluated_top_free->Size) {
+                                    size_checking[target_index] = position;
+                                    nodes_to_move += 1;
+                                    if (!largest_flag) {
+                                        evaluated_best_address = evaluated_top_free->Address;
+                                        largest_flag = true;
+                                    }
+                                    evaluated_top_free = pMemoryPool->GetNextFreeNode(true, 0);
+                                }
+                                evaluated_top_free = pMemoryPool->GetNextFreeNode(true, evaluated_top_free);
+                                position += 1;
+                            }
+
+                            if (found_nodes <= nodes_to_move) {
+                                current_best = free_gap;
+                                best_address = evaluated_best_address;
+                                found_one = true;
+                                largest_allocated = largest_allocated_here;
+                                if (total_needing_allocation <= total_free_memory + middle_allocated_memory) {
+                                    found_big_enough = true;
+                                    current_best_middle_memory = middle_allocated_memory;
+                                }
+                            }
                         }
                     }
                 }
-            }
+            } while (!done);
 
-            if (found && best_node && FindSectionByAddress(best_node->Address)) {
-                movement->Size = best_node->Size;
-                movement->Address = best_node->Address;
+            if (found_one && largest_allocated && FindSectionByAddress(largest_allocated->Address)) {
+                movement->Size = largest_allocated->Size;
+                movement->Address = largest_allocated->Address;
                 movement->NewAddress = best_address;
             }
         }
