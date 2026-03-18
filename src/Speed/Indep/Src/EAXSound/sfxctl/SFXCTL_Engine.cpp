@@ -5,7 +5,9 @@
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_AccelTrans.hpp"
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Physics.hpp"
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_3DCarPos.hpp"
+#include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/engineaudio.h"
+#include "Speed/Indep/Src/Generated/Messages/MCountdownDone.h"
 #include "Speed/Indep/Src/Generated/Messages/MGamePlayMoment.h"
 #include "Speed/Indep/Src/Generated/Messages/MNotifyVehicleDestroyed.h"
 #include "Speed/Indep/Src/Misc/Hermes.h"
@@ -32,35 +34,27 @@ static const float REDLINE_REDSAMP_FADE[2] = {50.0f, 120.0f};
 struct HSIMABLE__;
 
 SFXCTL_Engine::SFXCTL_Engine()
-    : m_pShiftCtl(nullptr) //
-    , m_pAccelTransitionCtl(nullptr) //
-    , m_pPhysicsCtl(nullptr) //
-    , m_p3DCarPosCtl(nullptr) //
-    , tMergeWithPhysicsOffStart(0.0f) //
-    , bPreRace(false) //
-    , m_iEngineVol(0) //
-    , bIsRedlining(false) //
-    , bWasRedlining(false) //
-    , bRedliningBounce(false) //
-    , RedlineingVisualOffset(0.0f) //
-    , m_fEng_RPM(0.0f) //
-    , m_fPrevRPM(0.0f) //
-    , m_fSmoothedEng_RPM(0.0f) //
-    , m_fEng_Trq(0.0f) //
-    , m_fSmoothedEng_Trq(0.0f) //
-    , m_Rotation(0) //
-    , m_bIsEngineBlown(false) //
-    , m_DistanceFltr(0) //
-    , bClutchStateOn(false) //
-    , m_VOL_LFO(0.0f) //
-    , m_RPM_LFO(0.0f) //
-    , m_TRQ_LFO(0.0f) //
-    , m_aglRPM_LFO(0x4097) //
-    , m_aglTRQ_LFO(0x4097) //
-    , m_aglVOL_LFO(0x4097) //
-    , bPlayCompression(false) //
-    , mmsgMVehicleDestroyed(nullptr) //
-    , mmsgMVehicleDestroyed2(nullptr) {}
+    : Trq(3), //
+      VisRpmAvg(2), //
+      m_fSmoothedEng_RPM(0.0f), //
+      m_fSmoothedEng_Trq(0.0f) {
+    mmsgMVehicleDestroyed = Hermes::Handler::Create<MNotifyVehicleDestroyed, SFXCTL_Engine, SFXCTL_Engine>(
+        this, &SFXCTL_Engine::MessageVehicleDestroyed, UCrc32(0x20D60DBF), 0);
+    mmsgMVehicleDestroyed2 = Hermes::Handler::Create<MCountdownDone, SFXCTL_Engine, SFXCTL_Engine>(
+        this, &SFXCTL_Engine::MsgCountdownDone, UCrc32(0x20D60DBF), 0);
+
+    m_pAccelTransitionCtl = nullptr;
+    m_pShiftCtl = nullptr;
+    m_pPhysicsCtl = nullptr;
+    bClutchStateOn = false;
+    bIsRedlining = false;
+    RedLineEngFactor.Initialize(1.0f, 1.0f, 1, LINEAR);
+    RedLineSampFactor.Initialize(0.0f, 0.0f, 1, LINEAR);
+    bPlayCompression = true;
+    m_ComppressionRPM.Initialize(0.0f, 0.0f, 1);
+    vCarPos = bVector3(0.0f, 0.0f, 0.0f);
+    bWasRedlining = false;
+}
 
 SndBase *SFXCTL_Engine::CreateObject(unsigned int allocator) {
     (void)allocator;
@@ -81,17 +75,56 @@ SndBase::TypeInfo *SFXCTL_Engine::GetTypeInfo() const { return &s_TypeInfo; }
 char *SFXCTL_Engine::GetTypeName() const { return s_TypeInfo.typeName; }
 
 void SFXCTL_Engine::InitSFX() {
+    GRaceParameters *race;
+
     SFXCTL::InitSFX();
-    m_iEngineVol = 0;
-    bIsRedlining = false;
-    bWasRedlining = false;
-    bRedliningBounce = false;
-    RedlineingVisualOffset = 0.0f;
-    m_fEng_RPM = 0.0f;
+    m_bIsEngineBlown = false;
+    m_Rotation = 0x96;
+    Trq.Flush(0.0f);
+    VisRpmAvg.Flush(0.0f);
+    Rpm.Flush(0.0f);
+    m_DistanceFltr = 24000;
     m_fPrevRPM = 0.0f;
-    m_fSmoothedEng_RPM = 0.0f;
-    m_fEng_Trq = 0.0f;
-    m_fSmoothedEng_Trq = 0.0f;
+    m_VOL_LFO = 0.0f;
+    m_RPM_LFO = 0.0f;
+    m_TRQ_LFO = 0.0f;
+    bClutchStateOn = false;
+    m_aglVOL_LFO = 0;
+    m_aglRPM_LFO = 0;
+    m_aglTRQ_LFO = 0;
+    m_p3DCarPosCtl->AssignPositionVector(&vCarPos);
+    m_p3DCarPosCtl->AssignVelocityVector(GetPhysCar()->GetVelocity());
+    m_p3DCarPosCtl->AssignDirectionVector(GetPhysCar()->GetForwardVector());
+
+    switch (m_pEAXCar->GetEngineUpgradeLevel()) {
+    case AEMS_LEVEL1:
+        SetDMIX_Input(0, 0x2AAA);
+        break;
+    case AEMS_LEVEL2:
+        SetDMIX_Input(0, 0x5554);
+        break;
+    case AEMS_LEVEL3:
+        SetDMIX_Input(0, 0x7FFF);
+        break;
+    default:
+        SetDMIX_Input(0, 0);
+        break;
+    }
+
+    tMergeWithPhysicsOffStart = 0.0f;
+    if (GRaceStatus::Exists()) {
+        race = GRaceStatus::Get().GetRaceParameters();
+    } else {
+        race = GRaceDatabase::Get().GetStartupRace();
+    }
+
+    if (!race) {
+        bPreRace = false;
+    } else if (race->GetIsRollingStart()) {
+        bPreRace = false;
+    } else {
+        bPreRace = true;
+    }
 }
 
 void SFXCTL_Engine::UpdateParams(float t) {

@@ -262,6 +262,10 @@ struct EAX_CarState : public UTL::Collections::Listable<EAX_CarState, 10> {
         return mEngine.mThrottle;
     }
 
+    const bVector3 *GetVelocity() {
+        return &mVel0;
+    }
+
     float GetVelocityMagnitude() {
         return bLength(mVel0);
     }

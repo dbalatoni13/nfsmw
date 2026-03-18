@@ -109,6 +109,7 @@ class Average : public AverageBase {
 
     void Init(int slots);
     void Reset(float fValue);
+    void Flush(float fValue);
     void Record(float fValue);
     void Recalculate() override;
     float GetLastRecordedValue() const;
