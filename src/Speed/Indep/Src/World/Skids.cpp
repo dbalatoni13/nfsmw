@@ -1,7 +1,9 @@
 #include "Skids.hpp"
 
+#include "Speed/Indep/Src/Camera/Camera.hpp"
 #include "Speed/Indep/Src/Ecstasy/Texture.hpp"
 #include "Speed/Indep/Src/Ecstasy/eMath.hpp"
+#include "Speed/Indep/Src/Misc/Profiler.hpp"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 #include "Speed/Indep/bWare/Inc/bVector.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
@@ -298,5 +300,29 @@ void DeleteThisSkid(SkidSet *skid_set) {
 void DeleteAllSkids() {
     while (!SkidSetList.IsEmpty()) {
         DeleteThisSkid(SkidSetList.GetTail());
+    }
+}
+
+void RenderSkids(eView *view, Clan *clan) {
+    ProfileNode profile_node("TODO", 0);
+
+    for (bPNode *p = clan->SkidSetList.GetHead(); p != clan->SkidSetList.EndOfList(); p = p->GetNext()) {
+        SkidSet *skid_set = reinterpret_cast<SkidSet *>(p->GetObject());
+        eVisibleState visibility = view->GetVisibleState(&skid_set->BBoxMin, &skid_set->BBoxMax, 0);
+        if (visibility != EVISIBLESTATE_NOT) {
+            int pixel_size = view->GetPixelSize(1.0f, bDistBetween(&skid_set->BBoxCentre, view->GetCamera()->GetPosition()));
+            if (pixel_size > 4) {
+                unsigned char intensityReduction;
+                if (pixel_size <= 10) {
+                    intensityReduction = static_cast<unsigned char>(static_cast<int>(256.0f - (pixel_size - 4.0f) * 42.666668f) & 0xff);
+                } else {
+                    intensityReduction = 0;
+                }
+
+                skid_set->Render(view, intensityReduction);
+                SkidSetList.Remove(skid_set);
+                SkidSetList.AddHead(skid_set);
+            }
+        }
     }
 }
