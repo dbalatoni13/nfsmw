@@ -41,26 +41,27 @@ void RenderViewPolyEx(eView *view, ePoly *poly, TextureInfo *texture_info, bMatr
 
 void XSpriteManager::AddSpark(const NGParticle &particle, TextureInfo *CurrentTexture) {
     if (this->position < 300) {
-        {
-            UMath::Vector3 startPos;
-            UMath::Vector3 endPos;
-            float endAge = static_cast<float>(particle.length) * (1.0f / 2048.0f) + particle.age;
-            float width = static_cast<float>(particle.width) * (1.0f / 2048.0f);
-            SpriteDef *XSpriteBufferP = &this->XSpriteBuffer[this->position];
+        UMath::Vector3 startPos;
+        UMath::Vector3 endPos;
 
-            UMath::ScaleAdd(particle.initialPos, particle.age, particle.vel, startPos);
-            startPos.z += particle.gravity * particle.age * particle.age;
-            UMath::ScaleAdd(particle.initialPos, endAge, particle.vel, endPos);
-            endPos.z += particle.gravity * endAge * endAge;
+        UMath::ScaleAdd(particle.vel, particle.age, particle.initialPos, startPos);
+        float endAge = static_cast<float>(particle.length) * (1.0f / 2048.0f) + particle.age;
+        startPos.z += particle.gravity * particle.age * particle.age;
 
-            XSpriteBufferP->texture_info = CurrentTexture;
-            XSpriteBufferP->color =
-                particle.color >> 24 | particle.color >> 8 & 0xFF00 | (particle.color & 0xFF00) << 8 | particle.color << 24;
-            XSpriteBufferP->width = width;
-            XSpriteBufferP->startPos = startPos;
-            XSpriteBufferP->EndPosPos = endPos;
-            this->position++;
-        }
+        UMath::ScaleAdd(particle.vel, endAge, particle.initialPos, endPos);
+
+        SpriteDef *XSpriteBufferP = &this->XSpriteBuffer[this->position];
+        endPos.z += particle.gravity * endAge * endAge;
+
+        XSpriteBufferP->texture_info = CurrentTexture;
+        XSpriteBufferP->color =
+            particle.color >> 24 | particle.color >> 8 & 0xFF00 | (particle.color & 0xFF00) << 8 | particle.color << 24;
+        XSpriteBufferP->startPos = startPos;
+        XSpriteBufferP->EndPosPos = endPos;
+
+        float width = static_cast<float>(particle.width) * (1.0f / 2048.0f);
+        XSpriteBufferP->width = width;
+        this->position++;
     }
 }
 
