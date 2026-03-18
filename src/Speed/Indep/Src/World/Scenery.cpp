@@ -301,10 +301,10 @@ void SceneryOverrideInfo::AssignOverrides() {
 void SceneryOverrideInfo::AssignOverrides(ScenerySectionHeader *section_header) {
     int *section_header_words = reinterpret_cast<int *>(section_header);
     SceneryInstance *instance = reinterpret_cast<SceneryInstance *>(section_header_words[8]) +
-                                *reinterpret_cast<short *>(reinterpret_cast<char *>(this) + 2);
-    unsigned short override_flags = *reinterpret_cast<unsigned short *>(reinterpret_cast<char *>(this) + 4);
+                                OverrideSectionNumber;
 
-    if ((instance->ExcludeFlags & 0x800000) != 0 && ((instance->ExcludeFlags ^ override_flags) & 0x400) != 0) {
+    if ((instance->ExcludeFlags & 0x800000) != 0 &&
+        ((instance->ExcludeFlags ^ *reinterpret_cast<unsigned short *>(&OverrideIndex)) & 0x400) != 0) {
         bMatrix4 rotation;
         bMatrix4 flip_matrix;
 
@@ -328,6 +328,10 @@ void SceneryOverrideInfo::AssignOverrides(ScenerySectionHeader *section_header) 
         bIdentity(&flip_matrix);
         flip_matrix.v0.x = -1.0f;
         bMulMatrix(&rotation, &rotation, &flip_matrix);
+        rotation.v3.x = instance->Position[0];
+        rotation.v3.y = instance->Position[1];
+        rotation.v3.z = instance->Position[2];
+        rotation.v3.w = 1.0f;
 
         instance->Rotation[0] = static_cast<short>(rotation.v0.x * 8192.0f);
         instance->Rotation[1] = static_cast<short>(rotation.v0.y * 8192.0f);
@@ -338,9 +342,12 @@ void SceneryOverrideInfo::AssignOverrides(ScenerySectionHeader *section_header) 
         instance->Rotation[6] = static_cast<short>(rotation.v2.x * 8192.0f);
         instance->Rotation[7] = static_cast<short>(rotation.v2.y * 8192.0f);
         instance->Rotation[8] = static_cast<short>(rotation.v2.z * 8192.0f);
+        instance->Position[0] = rotation.v3.x;
+        instance->Position[1] = rotation.v3.y;
+        instance->Position[2] = rotation.v3.z;
     }
 
-    instance->ExcludeFlags = (instance->ExcludeFlags & 0xFFFF0000) | override_flags;
+    instance->ExcludeFlags = (instance->ExcludeFlags & 0xFFFF0000) + *reinterpret_cast<unsigned short *>(&OverrideIndex);
 }
 
 int LoaderSceneryGroup(bChunk *chunk) {
