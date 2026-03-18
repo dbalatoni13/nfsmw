@@ -2096,7 +2096,7 @@ short TrackStreamer::GetPredictedZone(StreamingPositionEntry *streaming_position
     TrackPathZone *track_path_zone = 0;
     bVector2 predicted_position;
 
-    while (true) {
+    do {
         track_path_zone =
             TheTrackPathManager.FindZone(&streaming_position->Position, TRACK_PATH_ZONE_STREAMER_PREDICTION, track_path_zone);
         if (!track_path_zone) {
@@ -2133,7 +2133,7 @@ short TrackStreamer::GetPredictedZone(StreamingPositionEntry *streaming_position
                 }
             }
         }
-    }
+    } while (!found_predicted_zone);
 
     if (found_predicted_zone) {
         if (!bEqual(&predicted_position, &streaming_position->Position, kPredictedZoneEqualEpsilon_TrackStreamer)) {
