@@ -226,3 +226,12 @@ void GActivity::DeserializeVars() {
         }
     }
 }
+
+void GActivity::ClearActivityVars(lua_State *luaState) {
+    const char *activityName = *reinterpret_cast<const char *const *>(GetLayoutPointer());
+
+    lua_pushstring(luaState, activityName);
+    lua_pushnil(luaState);
+    lua_settable(luaState, LUA_REGISTRYINDEX);
+    mVarsInLuaVM = false;
+}
