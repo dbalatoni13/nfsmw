@@ -6,6 +6,7 @@
 #include "Speed/Indep/Src/AI/AITarget.h"
 #include "Speed/Indep/Src/Generated/Messages/MSetTrafficSpeed.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ISimable.h"
 #include "Speed/Indep/Src/Physics/PVehicle.h"
 #include "Speed/Indep/Src/World/WCollisionMgr.h"
@@ -207,6 +208,57 @@ void GCharacter::UnspawnWhenOffscreen() {
             mState = kCharState_Unspawning_WaitingUntilOffscreen;
             break;
     }
+}
+
+bool GCharacter::IsNoLongerUseful() const {
+    IVehicle *vehicle = mVehicle;
+
+    if (!IsSpawned()) {
+        return false;
+    }
+
+    if (vehicle->GetOffscreenTime() < 0.5f) {
+        return false;
+    }
+
+    IVehicle *otherVehicle = IVehicle::First(VEHICLE_RACERS);
+    for (int i = 0; i < IVehicle::Count(VEHICLE_RACERS); ++i) {
+        ISimable *simable = otherVehicle ? otherVehicle->GetSimable() : nullptr;
+
+        if (!otherVehicle->IsDestroyed() && simable) {
+            const IRigidBody *rigidBody = simable->GetRigidBody();
+
+            if (rigidBody) {
+                UMath::Vector3 direction;
+                UMath::Vector3 forward;
+                float distance;
+
+                UMath::Sub(vehicle->GetPosition(), otherVehicle->GetPosition(), direction);
+                distance = UMath::Normalize(direction);
+                if (distance < 100.0f) {
+                    return false;
+                }
+
+                rigidBody->GetForwardVector(forward);
+                if (UMath::Dot(direction, forward) >= 0.0f) {
+                    return false;
+                }
+            }
+        }
+
+        {
+            const IVehicle::List &vehicles = IVehicle::GetList(VEHICLE_RACERS);
+            IVehicle::List::const_iterator found = std::find(vehicles.begin(), vehicles.end(), otherVehicle);
+
+            if (found == vehicles.end() || ++found == vehicles.end()) {
+                otherVehicle = nullptr;
+            } else {
+                otherVehicle = *found;
+            }
+        }
+    }
+
+    return true;
 }
 
 IVehicle *GCharacter::GetSpawnedVehicle() const {
