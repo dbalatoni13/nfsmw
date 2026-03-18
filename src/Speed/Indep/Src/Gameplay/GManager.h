@@ -239,6 +239,14 @@ class GManager : public UTL::COM::Object, public IVehicleCache {
         return collectionKey << mCollectionKeyShiftTo32;
     }
 
+    void SetFreeRoamStartMarker(unsigned int markerKey) {
+        mFreeRoamStartMarker = markerKey;
+    }
+
+    void SetFreeRoamFromSafeHouseStartMarker(unsigned int markerKey) {
+        mFreeRoamFromSafeHouseStartMarker = markerKey;
+    }
+
     void TrackValue(const char *valueName, int value) {
         TrackValue(valueName, static_cast<float>(value));
     }
