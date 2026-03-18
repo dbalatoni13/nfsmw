@@ -1,14 +1,27 @@
 #include "GActivity.h"
 
 #include "GManager.h"
+#include "GTrigger.h"
+#include "LuaMessageDeliveryInfo.h"
 #include "Speed/Indep/Libs/Support/Miscellaneous/StringHash.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
+#include "Speed/Indep/Src/Generated/Events/EChangeState.hpp"
+#include "Speed/Indep/Src/Lua/LuaBindery.h"
+#include "Speed/Indep/Src/Lua/LuaPostOffice.h"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include "Speed/Indep/Src/Lua/LuaRuntime.h"
 #include "Speed/Indep/Src/Lua/source/lua.h"
 
 unsigned short SerializeTable(lua_State *state, unsigned char *buffer, bool allowUserData)
     __asm__("SerializeTable__10LuaRuntimeP9lua_StatePUcb");
+void AttachMetatable(lua_State *luaState, const char *name) __asm__("AttachMetatable__10LuaBinderyP9lua_StatePCc");
+void RegisterHandler(LuaPostOffice *postOffice, unsigned int messageType, GActivity *activity)
+    __asm__("RegisterHandler__13LuaPostOfficeUiP9GActivity");
+void UnregisterHandler(LuaPostOffice *postOffice, unsigned int messageType, GActivity *activity)
+    __asm__("UnregisterHandler__13LuaPostOfficeUiP9GActivity");
+void BeginDelivery(LuaRuntime *runtime) __asm__("BeginDelivery__10LuaRuntime");
+void EndDelivery(LuaRuntime *runtime) __asm__("EndDelivery__10LuaRuntime");
+extern LuaPostOffice *fObj__13LuaPostOffice __asm__("fObj__13LuaPostOffice");
 
 template <typename T> struct GObjectIteratorTraits;
 
@@ -20,11 +33,13 @@ template <> struct GObjectIteratorTraits<GHandler> {
     enum { kType = kGameplayObjType_Handler };
 };
 
+template <> struct GObjectIteratorTraits<GActivity> {
+    enum { kType = kGameplayObjType_Activity };
+};
+
 template <typename T> class GObjectIterator {
   public:
-    GObjectIterator(unsigned int)
-        : mInstance(static_cast<T *>(GRuntimeInstance::sRingListHead[GObjectIteratorTraits<T>::kType])) //
-        , mHead(mInstance) {}
+    GObjectIterator(unsigned int flagMask);
 
     bool IsValid() const {
         return mInstance != nullptr;
@@ -34,33 +49,36 @@ template <typename T> class GObjectIterator {
         return mInstance;
     }
 
-    void Advance() {
-        if (!mInstance) {
-            return;
-        }
-
-        GRuntimeInstance *next = mInstance->GetNextRuntimeInstance();
-        mInstance = next == mHead ? nullptr : static_cast<T *>(next);
-    }
+    void Advance();
 
   private:
     T *mInstance;
-    GRuntimeInstance *mHead;
+    unsigned int mFlagMask;
 };
 
-template <>
-GObjectIterator<GHandler>::GObjectIterator(unsigned int)
-    : mInstance(static_cast<GHandler *>(GRuntimeInstance::sRingListHead[GObjectIteratorTraits<GHandler>::kType])) //
-    , mHead(mInstance) {}
+template <typename T>
+GObjectIterator<T>::GObjectIterator(unsigned int flagMask)
+    : mInstance(nullptr), //
+      mFlagMask(flagMask) {
+    mInstance = static_cast<T *>(GRuntimeInstance::sRingListHead[GObjectIteratorTraits<T>::kType]);
+    if (mInstance && (mInstance->GetFlag(mFlagMask) == 0)) {
+        Advance();
+    }
+}
 
-template <>
-void GObjectIterator<GHandler>::Advance() {
+template <typename T>
+void GObjectIterator<T>::Advance() {
     if (!mInstance) {
         return;
     }
 
-    GRuntimeInstance *next = mInstance->GetNextRuntimeInstance();
-    mInstance = next == mHead ? nullptr : static_cast<GHandler *>(next);
+    do {
+        mInstance = static_cast<T *>(mInstance->GetNextRuntimeInstance());
+        if (mInstance == GRuntimeInstance::sRingListHead[GObjectIteratorTraits<T>::kType]) {
+            mInstance = nullptr;
+            return;
+        }
+    } while (mInstance->GetFlag(mFlagMask) == 0);
 }
 
 GActivity::GActivity(const Attrib::Key &activityKey)
@@ -77,6 +95,15 @@ GActivity::~GActivity() {
     SerializeVars(true);
     UnregisterMessageHandlers();
     mStateHandlers.clear();
+}
+
+LuaMessageDeliveryInfo::~LuaMessageDeliveryInfo() {}
+
+void LuaMessageDeliveryInfo::BuildMessageTable() {
+    if (!mLuaTableBuilt && mBuildTableFunc) {
+        mBuildTableFunc(mLuaState, mMessageBase);
+        mLuaTableBuilt = true;
+    }
 }
 
 void GActivity::GatherStatesAndHandlers() {
@@ -124,6 +151,82 @@ unsigned int GActivity::StoreHandlers(GState *state, UTL::Std::vector<GHandler *
     }
 
     return count;
+}
+
+bool GActivity::CollectionIsStateForActivity(GState *state) {
+    unsigned int parentKey = GetParent();
+
+    while (parentKey) {
+        Attrib::Gen::gameplay parent(Attrib::FindCollection(Attrib::Gen::gameplay::ClassKey(), parentKey), 0, nullptr);
+        const unsigned int *activityKey = reinterpret_cast<const unsigned int *>(state->GetAttributePointer(0xA0697302, 0));
+
+        if (!activityKey) {
+            activityKey = reinterpret_cast<const unsigned int *>(Attrib::DefaultDataArea(sizeof(unsigned int)));
+        }
+
+        if (*activityKey == parent.GetCollection()) {
+            return true;
+        }
+
+        parentKey = parent.GetParent();
+    }
+
+    return false;
+}
+
+void GActivity::RegisterMessageHandlers(GState *state) {
+    if (mRegisteredHandlersState != state) {
+        if (mRegisteredHandlersState) {
+            UnregisterMessageHandlers();
+        }
+
+        StateToHandlers::iterator iter = mStateHandlers.find(state);
+        for (UTL::Std::vector<GHandler *, _type_ID_GHandlerVector>::iterator handler = iter->second.begin();
+             handler != iter->second.end(); ++handler) {
+            RegisterHandler(fObj__13LuaPostOffice, (*handler)->GetCollection(), this);
+        }
+
+        mRegisteredHandlersState = state;
+    }
+}
+
+void GActivity::UnregisterMessageHandlers() {
+    if (mRegisteredHandlersState) {
+        StateToHandlers::iterator iter = mStateHandlers.find(mRegisteredHandlersState);
+        for (UTL::Std::vector<GHandler *, _type_ID_GHandlerVector>::iterator handler = iter->second.begin();
+             handler != iter->second.end(); ++handler) {
+            UnregisterHandler(fObj__13LuaPostOffice, (*handler)->GetCollection(), this);
+        }
+
+        mRegisteredHandlersState = nullptr;
+    }
+}
+
+void GActivity::ActivateReferencedTriggers(bool activate, GRuntimeInstance *instance) {
+    for (unsigned int i = 0; i < instance->GetConnectionCount(); i++) {
+        GTrigger *trigger = GRuntimeInstance::FindObject<GTrigger>(instance->GetConnectionAt(i)->GetCollection());
+
+        if (trigger) {
+            if (activate) {
+                trigger->AddActivationReference();
+            } else {
+                trigger->RemoveActivationReference();
+            }
+        }
+    }
+
+    for (unsigned int i = 0; i < instance->Get(0x916E0E78).GetLength(); i++) {
+        const unsigned int *childKey = reinterpret_cast<const unsigned int *>(instance->GetAttributePointer(0x916E0E78, i));
+
+        if (!childKey) {
+            childKey = reinterpret_cast<const unsigned int *>(Attrib::DefaultDataArea(sizeof(unsigned int)));
+        }
+
+        GRuntimeInstance *child = GManager::Get().FindInstance(*childKey);
+        if (child) {
+            ActivateReferencedTriggers(activate, child);
+        }
+    }
 }
 
 bool GActivity::CollectionIsHandlerForState(GState *state, GHandler *handler) {
@@ -240,6 +343,92 @@ void GActivity::EnterState(GState *newState) {
         RegisterMessageHandlers(mCurrentState);
     }
 }
+
+int GActivity::ChangeStateFromScript(lua_State *luaState) {
+    GActivity *activity = reinterpret_cast<GActivity *>(lua_touserdata(luaState, -10002));
+    GState *state = activity->GetStateByName(lua_tostring(luaState, 1));
+    new EChangeState(activity->GetCollection(), state->GetCollection());
+    return 0;
+}
+
+void GActivity::HandleLocalMessage(UCrc32 messageType) {
+    LuaMessageDeliveryInfo deliveryInfo(messageType, nullptr, nullptr);
+
+    BeginDelivery(&LuaRuntime::Get());
+    deliveryInfo.SetLuaState(LuaRuntime::Get().GetState());
+    HandleMessage(&deliveryInfo);
+    if (deliveryInfo.GetLuaState()) {
+        lua_settop(deliveryInfo.GetLuaState(), -2);
+    }
+    EndDelivery(&LuaRuntime::Get());
+}
+
+void GActivity::PushActivityVars(lua_State *luaState) {
+    if (!mVarsInLuaVM) {
+        DeserializeVars();
+    }
+
+    const char *activityName = *reinterpret_cast<const char *const *>(GetLayoutPointer());
+
+    lua_pushstring(luaState, activityName);
+    lua_gettable(luaState, LUA_REGISTRYINDEX);
+    if (lua_type(luaState, -1) == LUA_TNIL) {
+        lua_settop(luaState, -2);
+        lua_newtable(luaState);
+        lua_pushstring(luaState, activityName);
+        lua_pushvalue(luaState, -2);
+        lua_settable(luaState, LUA_REGISTRYINDEX);
+    }
+
+    mVarsInLuaVM = true;
+}
+
+int GActivity::BuildActivityTables(lua_State *luaState) {
+    int top = lua_gettop(luaState);
+    GActivity **userdata = reinterpret_cast<GActivity **>(lua_newuserdata(luaState, sizeof(GActivity *)));
+
+    *userdata = this;
+    AttachMetatable(luaState, "GRuntimeInstance");
+    PushActivityVars(luaState);
+    lua_pushstring(luaState, "ChangeState");
+    lua_pushlightuserdata(luaState, this);
+    lua_pushcclosure(luaState, ChangeStateFromScript, 1);
+    lua_settable(luaState, LUA_GLOBALSINDEX);
+    return top;
+}
+
+void GActivity::HandleMessage(LuaMessageDeliveryInfo *deliveryInfo) {
+    bool builtActivityTables = false;
+    int top = 0;
+    StateToHandlers::iterator iter = mStateHandlers.find(mCurrentState);
+
+    for (UTL::Std::vector<GHandler *, _type_ID_GHandlerVector>::iterator handler = iter->second.begin();
+         handler != iter->second.end(); ++handler) {
+        if ((*handler)->GetCollection() == deliveryInfo->GetMessageKind()) {
+            deliveryInfo->SetActivityContext(this);
+            deliveryInfo->SetHandlerContext(*handler);
+            if ((*handler)->MessagePassesFilters(deliveryInfo)) {
+                deliveryInfo->BuildMessageTable();
+                if (!builtActivityTables) {
+                    top = BuildActivityTables(deliveryInfo->GetLuaState());
+                    builtActivityTables = true;
+                }
+                (*handler)->HandleMessage(deliveryInfo);
+            }
+        }
+    }
+
+    if (builtActivityTables) {
+        lua_settop(deliveryInfo->GetLuaState(), top);
+    }
+}
+
+template GObjectIterator<GState>::GObjectIterator(unsigned int flagMask);
+template void GObjectIterator<GState>::Advance();
+template GObjectIterator<GHandler>::GObjectIterator(unsigned int flagMask);
+template void GObjectIterator<GHandler>::Advance();
+template GObjectIterator<GActivity>::GObjectIterator(unsigned int flagMask);
+template void GObjectIterator<GActivity>::Advance();
 
 void GActivity::SerializeVars(bool abandonLuaTable) {
     SerializedHeader header;

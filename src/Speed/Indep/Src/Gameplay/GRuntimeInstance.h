@@ -58,6 +58,9 @@ class GRuntimeInstance : public Attrib::Gen::gameplay {
 
     bool GetDirection(UMath::Vector3 &dir);
 
+    template <typename T>
+    static T *FindObject(unsigned int key);
+
     virtual GameplayObjType GetType() const {
         return kGameplayObjType_Invalid;
     }

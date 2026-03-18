@@ -1,5 +1,7 @@
 #include "GRuntimeInstance.h"
 
+#include "GActivity.h"
+#include "GCharacter.h"
 #include "GManager.h"
 #include "GMarker.h"
 #include "GTrigger.h"
@@ -181,6 +183,52 @@ bool GRuntimeInstance::GetDirection(UMath::Vector3 &dir) {
     }
     return false;
 }
+
+template <typename T>
+struct GRuntimeInstanceFindObjectTraits;
+
+template <>
+struct GRuntimeInstanceFindObjectTraits<GActivity> {
+    enum { kType = kGameplayObjType_Activity };
+};
+
+template <>
+struct GRuntimeInstanceFindObjectTraits<GCharacter> {
+    enum { kType = kGameplayObjType_Character };
+};
+
+template <>
+struct GRuntimeInstanceFindObjectTraits<GMarker> {
+    enum { kType = kGameplayObjType_Marker };
+};
+
+template <>
+struct GRuntimeInstanceFindObjectTraits<GTrigger> {
+    enum { kType = kGameplayObjType_Trigger };
+};
+
+template <typename T>
+T *GRuntimeInstance::FindObject(unsigned int key) {
+    T *instance = static_cast<T *>(sRingListHead[GRuntimeInstanceFindObjectTraits<T>::kType]);
+
+    while (instance) {
+        if (instance->GetCollection() == key) {
+            return instance;
+        }
+
+        instance = static_cast<T *>(instance->GetNextRuntimeInstance());
+        if (instance == sRingListHead[GRuntimeInstanceFindObjectTraits<T>::kType]) {
+            return nullptr;
+        }
+    }
+
+    return nullptr;
+}
+
+template GActivity *GRuntimeInstance::FindObject<GActivity>(unsigned int key);
+template GCharacter *GRuntimeInstance::FindObject<GCharacter>(unsigned int key);
+template GMarker *GRuntimeInstance::FindObject<GMarker>(unsigned int key);
+template GTrigger *GRuntimeInstance::FindObject<GTrigger>(unsigned int key);
 
 GCollectionKey::GCollectionKey(GRuntimeInstance *inst) : mCollectionKey(inst->GetCollection()) {}
 

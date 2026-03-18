@@ -44,9 +44,10 @@ struct LuaMessageDeliveryInfo : public UTL::COM::Object, public IMessageFilterCo
     {
     }
 
-    ~LuaMessageDeliveryInfo() override {}
+    ~LuaMessageDeliveryInfo() override;
 
     unsigned int GetMessageKind() const { return mMessageKind.GetValue(); }
+    void BuildMessageTable();
 
     void SetLuaState(lua_State *luaState) { mLuaState = luaState; }
     void SetActivityContext(GActivity *activity) { mActivityContext = activity; }
