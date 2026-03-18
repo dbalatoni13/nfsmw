@@ -199,6 +199,7 @@ class VisibleSectionManager {
     LoadingSection *FindLoadingSection(int section_number);
     int GetSectionsToLoad(LoadingSection *loading_section, short *section_numbers, int max_sections);
     int Loader(bChunk *chunk);
+    int Unloader(bChunk *chunk);
 
     VisibleSectionUserInfo *GetUserInfo(int section_number) {
         return this->UserInfoTable[section_number];

@@ -204,6 +204,8 @@ class TrackStreamer {
     int GetMemoryPoolSize();
     int CountUserAllocations(const char **pdebug_name);
     void SetStreamingPosition(int position_number, const bVector3 *position);
+    void PredictStreamingPosition(int position_number, const bVector3 *position, const bVector3 *velocity,
+                                  const bVector3 *direction, bool following_car);
     void ClearStreamingPositions();
     void BlockUntilLoadingComplete();
     void WaitForCurrentLoadingToComplete();
@@ -230,6 +232,8 @@ class TrackStreamer {
     void SetLoadingPhase(eLoadingPhase loading_phase);
     int Loader(bChunk *chunk);
     int Unloader(bChunk *chunk);
+    void InitMemoryPool(int size);
+    void InitRegion(const char *region_stream_filename, bool split_screen);
     void StartLoadingSections();
     int HandleMemoryAllocation();
     TrackStreamingSection *ChooseSectionToJettison();
@@ -249,6 +253,8 @@ class TrackStreamer {
     bool IsLoadingInProgress();
     bool AreAllSectionsActivated();
     bool CheckLoadingBar();
+    void HibernateStreamingSections();
+    void FlushHibernatingSections();
     bool MakeSpaceInPool(int size, bool force_unloading);
     void MakeSpaceInPool(int size, void (*callback)(int), int param);
     void ReadyToMakeSpaceInPool();
@@ -268,6 +274,7 @@ class TrackStreamer {
     void HandleZoneSwitching();
     int GetCombinedSectionNumber(int section_number);
     static void DiscBundleLoadedCallback(int param, int error_status);
+    static void ReadyToMakeSpaceInPoolBridge(int param);
     void DiscBundleLoadedCallback(DiscBundleSection *disc_bundle);
     void LoadDiscBundle(DiscBundleSection *disc_bundle);
     void LoadSection(TrackStreamingSection *section);

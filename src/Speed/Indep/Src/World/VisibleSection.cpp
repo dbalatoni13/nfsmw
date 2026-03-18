@@ -8,6 +8,14 @@ int ScenerySectionLODOffset = 0;
 DrivableScenerySection *pSectionD9 = 0;
 DrivableScenerySection *pSectionC14 = 0;
 
+int LoaderVisibleSections(bChunk *chunk) {
+    return TheVisibleSectionManager.Loader(chunk);
+}
+
+int UnloaderVisibleSections(bChunk *chunk) {
+    return TheVisibleSectionManager.Unloader(chunk);
+}
+
 void RefreshTrackStreamer();
 BOOL bBoundingBoxIsInside(const bVector2 *bbox_min, const bVector2 *bbox_max, const bVector2 *point, float extra_width);
 int Get2PlayerSectionNumber(int section_number, const char *build_platform);

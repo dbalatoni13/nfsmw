@@ -6,6 +6,7 @@
 #include "Speed/Indep/Src/Misc/QueuedFile.hpp"
 #include "Speed/Indep/Src/Misc/ResourceLoader.hpp"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
+#include "Speed/Indep/Src/Misc/bFile.hpp"
 #include "Speed/Indep/bWare/Inc/bDebug.hpp"
 #include "Speed/Indep/bWare/Inc/bPrintf.hpp"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
@@ -905,6 +906,12 @@ void RefreshTrackStreamer() {
     TheTrackStreamer.RefreshLoading();
 }
 
+void TrackStreamer::InitMemoryPool(int size) {
+    MemoryPoolSize = size;
+    pMemoryPoolMem = bMalloc(size, 0x2000);
+    pMemoryPool = new TSMemoryPool(reinterpret_cast<int>(pMemoryPoolMem), MemoryPoolSize, "Track Streaming", 7);
+}
+
 int TrackStreamer::GetMemoryPoolSize() {
     if (pMemoryPool->IsUpdated()) {
         UserMemoryAllocationSize = CountUserAllocations(0);
@@ -1289,6 +1296,15 @@ int TrackStreamer::Loader(bChunk *chunk) {
     }
 
     return 1;
+}
+
+void TrackStreamer::HibernateStreamingSections() {}
+
+void TrackStreamer::FlushHibernatingSections() {
+    for (int i = 0; i < NumHibernatingSections; i++) {
+        bFree(HibernatingSections[i].pMemory);
+    }
+    NumHibernatingSections = 0;
 }
 
 bool TrackStreamer::NeedsGameStateActivation(TrackStreamingSection *section) {
@@ -1881,6 +1897,10 @@ void TrackStreamer::ReadyToMakeSpaceInPool() {
     callback(param);
 }
 
+void TrackStreamer::ReadyToMakeSpaceInPoolBridge(int param) {
+    reinterpret_cast<TrackStreamer *>(param)->ReadyToMakeSpaceInPool();
+}
+
 short TrackStreamer::GetPredictedZone(StreamingPositionEntry *streaming_position) {
     float speed = bSqrt(streaming_position->Velocity.x * streaming_position->Velocity.x +
                         streaming_position->Velocity.y * streaming_position->Velocity.y);
@@ -1975,6 +1995,21 @@ void TrackStreamer::SetStreamingPosition(int position_number, const bVector3 *po
     CurrentZoneNeedsRefreshing = true;
 }
 
+void TrackStreamer::PredictStreamingPosition(
+    int position_number, const bVector3 *position, const bVector3 *velocity, const bVector3 *direction, bool following_car
+) {
+    StreamingPositionEntry *position_entry = &StreamingPositionEntries[position_number];
+    position_entry->Position.x = position->x;
+    position_entry->Position.y = position->y;
+    position_entry->Elevation = position->z;
+    position_entry->Velocity.x = velocity->x;
+    position_entry->Velocity.y = velocity->y;
+    position_entry->Direction.x = direction->x;
+    position_entry->FollowingCar = following_car;
+    position_entry->Direction.y = direction->y;
+    position_entry->PositionSet = true;
+}
+
 bool TrackStreamer::DetermineCurrentZones(short *current_zones) {
     bool changed = false;
     for (int position_number = 0; position_number < 2; position_number++) {
@@ -2044,6 +2079,18 @@ void TrackStreamer::SetLoadingPhase(eLoadingPhase phase) {
 void TrackStreamer::BlockUntilLoadingComplete() {
     RefreshLoading();
     WaitForCurrentLoadingToComplete();
+}
+
+void TrackStreamer::WaitForCurrentLoadingToComplete() {
+    while (!AreAllSectionsActivated()) {
+        HandleLoading();
+        short section_to_activate = static_cast<short>(GetSectionToActivate(0));
+        if (section_to_activate != 0) {
+            ActivateSection(FindSection(section_to_activate));
+        }
+        ServiceResourceLoading();
+        bThreadYield(8);
+    }
 }
 
 void TrackStreamer::RefreshLoading() {
