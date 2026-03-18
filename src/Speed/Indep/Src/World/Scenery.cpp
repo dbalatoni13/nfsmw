@@ -288,16 +288,16 @@ void LoadPrecullerBooBooScript(const char *filename, bool reset) {
         if (!region) {
             return;
         }
-        if (bStrICmp(script.GetNextArgumentString(), LoadedTrackInfo->GetLoadedTrackInfo()) == 0) {
+        region = script.GetNextArgumentString();
+        if (bStrICmp(region, LoadedTrackInfo->GetLoadedTrackInfo()) == 0) {
             char *section = script.GetNextArgumentString();
             char *option = script.GetNextArgumentString();
             bool set_booboo = bStrICmp(option, "SET") == 0;
             bool clr_booboo = bStrICmp(option, "CLR") == 0;
-            bVector3 pos;
 
-            (void)section;
             script.GetNextArgumentString();
-            pos = script.GetNextArgumentVector3();
+            bVector3 pos = script.GetNextArgumentVector3();
+            (void)section;
             if (set_booboo) {
                 gPrecullerBooBooManager.Set(pos);
             } else if (clr_booboo) {
