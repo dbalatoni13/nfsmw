@@ -1,6 +1,7 @@
 #include "GActivity.h"
 
 #include "GManager.h"
+#include "Speed/Indep/Libs/Support/Miscellaneous/StringHash.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include "Speed/Indep/Src/Lua/LuaRuntime.h"
@@ -179,6 +180,7 @@ void GActivity::DeserializeVars() {
     if (buffer) {
         bool handlerListWasEmpty = mStateHandlers.empty();
         SerializedHeader header;
+        const char *stateName;
 
         if (handlerListWasEmpty) {
             GatherStatesAndHandlers();
@@ -188,8 +190,18 @@ void GActivity::DeserializeVars() {
         if (header.mStateNameHash != 0) {
             for (StateToHandlers::iterator iterState = mStateHandlers.begin(); iterState != mStateHandlers.end(); ++iterState) {
                 GState *state = iterState->first;
+                const char *const *stateNamePtr =
+                    reinterpret_cast<const char *const *>(state->GetAttributePointer(0x3E225EC1, 0));
 
-                if (header.mStateNameHash == Attrib::StringHash32(state->Name(0))) {
+                if (!stateNamePtr) {
+                    stateNamePtr = reinterpret_cast<const char *const *>(Attrib::DefaultDataArea(sizeof(const char *)));
+                }
+
+                stateName = *stateNamePtr;
+                if (header.mStateNameHash == stringhash32(stateName)) {
+                    if (!state->GetAttributePointer(0x3E225EC1, 0)) {
+                        Attrib::DefaultDataArea(sizeof(const char *));
+                    }
                     mCurrentState = state;
                     break;
                 }
@@ -201,9 +213,9 @@ void GActivity::DeserializeVars() {
             unsigned int bytesLoaded = LuaRuntime::DeserializeTable(luaState, buffer + sizeof(header), !Persistent(0));
 
             if (bytesLoaded != 0) {
-                lua_pushstring(luaState, CollectionName());
+                lua_pushstring(luaState, *reinterpret_cast<const char *const *>(GetLayoutPointer()));
                 lua_pushvalue(luaState, -2);
-                lua_settable(luaState, LUA_GLOBALSINDEX);
+                lua_settable(luaState, LUA_REGISTRYINDEX);
                 lua_settop(luaState, -2);
                 mVarsInLuaVM = true;
             }

@@ -3,10 +3,12 @@
 #include "Speed/Indep/Libs/Support/Utility/FastMem.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/gameplay.h"
 #include "Speed/Indep/Src/Generated/Events/EAutoSave.hpp"
+#include "Speed/Indep/Src/Generated/Events/EFadeScreenOff.hpp"
 #include "Speed/Indep/Src/Generated/Events/EFadeScreenOn.hpp"
 #include "Speed/Indep/Src/Generated/Messages/MEnteringGameplay.h"
 #include "Speed/Indep/Src/Gameplay/GMarker.h"
 #include "Speed/Indep/Src/Gameplay/GVault.h"
+#include "Speed/Indep/Src/Interfaces/SimActivities/ICopMgr.h"
 #include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
 #include "Speed/Indep/Src/Interfaces/SimActivities/INIS.h"
 #include "Speed/Indep/Src/Interfaces/SimActivities/ITrafficMgr.h"
@@ -40,6 +42,40 @@ void ApplyTimeOfDayTickOver();
 void SetOverRideRainIntensity(float intensity);
 void ForEachTrackPositionMarker(bool (*callback)(TrackPositionMarker *marker, unsigned int tag), unsigned int tag);
 void LZByteSwapHeader(LZHeader *header);
+void World_RestoreProps();
+void GPS_Disengage();
+
+class IPursuit;
+
+class GCopMgrCompat : public UTL::COM::IUnknown {
+  public:
+    static HINTERFACE _IHandle() {
+        return (HINTERFACE)_IHandle;
+    }
+
+    static GCopMgrCompat *Get() {
+        return reinterpret_cast<GCopMgrCompat *>(ICopMgr::Get());
+    }
+
+    virtual float GetLockoutTimeRemaining() const;
+    virtual bool VehicleSpawningEnabled(bool isdespawn);
+    virtual void SpawnCop(UMath::Vector3 &InitialPos, UMath::Vector3 &InitialVec, const char *VehicleName, bool InPursuit, bool RoadBlock);
+    virtual bool IsCopSpawnPending() const;
+    virtual void SetAllBustedTimersToZero();
+    virtual void PursuitIsEvaded(IPursuit *ipursuit);
+    virtual bool IsCopRequestPending();
+    virtual bool CanPursueRacers();
+    virtual bool IsPlayerPursuitActive();
+    virtual bool PlayerPursuitHasCop() const;
+    virtual void PursueAtHeatLevel(int minHeatLevel);
+    virtual void ResetCopsForRestart(bool release);
+    virtual void LockoutCops(bool lockout);
+    virtual void NoNewPursuitsOrCops();
+
+  protected:
+    GCopMgrCompat(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
+    virtual ~GCopMgrCompat() {}
+};
 
 GManager *GManager::mObj = nullptr;
 
@@ -275,7 +311,7 @@ void GManager::PreBeginGameplay() {
     if (mRestartEventHash) {
         GRaceCustom *customRace = GRaceDatabase::Get().AllocCustomRace(GRaceDatabase::Get().GetRaceFromHash(mRestartEventHash));
 
-        GRaceDatabase::Get().SetStartupRace(customRace, kRaceContext_Career);
+        GRaceDatabase::Get().SetStartupRace(customRace, GRace::kRaceContext_Career);
         GRaceDatabase::Get().FreeCustomRace(customRace);
         mRestartEventHash = 0;
     }
@@ -365,7 +401,7 @@ void GManager::EndGameplay() {
     UnspawnAllIcons();
     ClearAllSessionData();
     WCollisionAssets::Get().RemovePackLoadCallback(NotifyCollisionPackLoaded);
-    GRaceDatabase::Get().SetStartupRace(nullptr, kRaceContext_Career);
+    GRaceDatabase::Get().SetStartupRace(nullptr, GRace::kRaceContext_Career);
     mInGameplay = false;
     mWorstHashCollision = 0;
     mOverrideFreeRoamStartMarker = 0;
@@ -2134,6 +2170,54 @@ void GManager::ResetAllGameplayData() {
     mOverrideFreeRoamStartMarker = 0;
     mFreeRoamFromSafeHouseStartMarker = 0;
     mPendingSMS.clear();
+}
+
+void GManager::NotifyWorldService() {
+    if (!mWarping) {
+        return;
+    }
+
+    if (TheTrackStreamer.IsLoadingInProgress() == 1) {
+        return;
+    }
+
+    if (mWarpTargetMarker != 0) {
+        GMarker *marker = static_cast<GMarker *>(FindInstance(mWarpTargetMarker));
+        const UMath::Vector3 &position = marker->GetPosition();
+        const UMath::Vector3 &direction = marker->GetDirection();
+        IVehicle *vehicle = nullptr;
+
+        if (IPlayer::First(PLAYER_LOCAL)->GetSimable()->QueryInterface(&vehicle)) {
+            vehicle->SetVehicleOnGround(position, direction);
+            vehicle->Activate();
+        }
+
+        mWarpTargetMarker = 0;
+        if (mWarpStartPursuit) {
+            World_RestoreProps();
+            GPS_Disengage();
+            ITrafficMgr::Get()->FlushAllTraffic(true);
+            GCopMgrCompat::Get()->ResetCopsForRestart(true);
+            GCopMgrCompat::Get()->LockoutCops(false);
+            GCopMgrCompat::Get()->PursueAtHeatLevel(1);
+        }
+    }
+
+    if (mWarpStartPursuit) {
+        if (GCopMgrCompat::Get()->IsCopSpawnPending()) {
+            mWarpStartPursuit = false;
+        } else {
+            GCopMgrCompat::Get()->PursueAtHeatLevel(1);
+            goto done;
+        }
+    }
+
+    mWarping = false;
+
+done:
+    if (!mWarping) {
+        new EFadeScreenOff(0x161A918);
+    }
 }
 
 bool GManager::WarpToMarker(unsigned int markerKey, bool startPursuit) {

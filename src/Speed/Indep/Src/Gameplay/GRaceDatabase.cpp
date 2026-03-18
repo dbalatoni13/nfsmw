@@ -470,12 +470,12 @@ void GRaceDatabase::ClearStartupRace() {
     mStartupRace = nullptr;
 }
 
-void GRaceDatabase::SetStartupRace(GRaceCustom *custom, Context context) {
+void GRaceDatabase::SetStartupRace(GRaceCustom *custom, GRace::Context context) {
     if (mStartupRace) {
         ClearStartupRace();
     }
 
-    mStartupRaceContext = GRace::Context(context);
+    mStartupRaceContext = context;
     mStartupRace = custom;
 
     if (custom && mStartupRaceContext == GRace::kRaceContext_Career) {
