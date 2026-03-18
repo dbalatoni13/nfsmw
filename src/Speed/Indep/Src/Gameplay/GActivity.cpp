@@ -123,6 +123,62 @@ unsigned int GActivity::StoreHandlers(GState *state, UTL::Std::vector<GHandler *
     return count;
 }
 
+bool GActivity::CollectionIsHandlerForState(GState *state, GHandler *handler) {
+    const Attrib::Key *handlerState = reinterpret_cast<const Attrib::Key *>(handler->GetAttributePointer(0x918c796e, 0));
+
+    if (!handlerState) {
+        handlerState = reinterpret_cast<const Attrib::Key *>(Attrib::DefaultDataArea(sizeof(Attrib::Key)));
+    }
+
+    if (*handlerState == state->GetCollection()) {
+        const Attrib::Key *handlerActivity = reinterpret_cast<const Attrib::Key *>(handler->GetAttributePointer(0x857fe432, 0));
+
+        if (!handlerActivity) {
+            handlerActivity = reinterpret_cast<const Attrib::Key *>(Attrib::DefaultDataArea(sizeof(Attrib::Key)));
+        }
+
+        if (*handlerActivity == GetCollection()) {
+            return true;
+        } else {
+            Attrib::Instance activity(Attrib::FindCollection(Attrib::Gen::gameplay::ClassKey(), *handlerActivity), 0, nullptr);
+            const Attrib::Gen::gameplay::_LayoutStruct *layout =
+                reinterpret_cast<const Attrib::Gen::gameplay::_LayoutStruct *>(activity.GetLayoutPointer());
+
+            if (!layout) {
+                layout = reinterpret_cast<const Attrib::Gen::gameplay::_LayoutStruct *>(
+                    Attrib::DefaultDataArea(sizeof(Attrib::Gen::gameplay::_LayoutStruct)));
+            }
+
+            if (bStrCmp(layout->CollectionName, CollectionName()) == 0) {
+                return true;
+            } else {
+                Attrib::Key collection = GetCollection();
+
+                if (collection) {
+                    do {
+                        if (collection == *handlerActivity) {
+                            return true;
+                        }
+
+                        Attrib::Instance parent(Attrib::FindCollection(Attrib::Gen::gameplay::ClassKey(), collection), 0, nullptr);
+                        const Attrib::Gen::gameplay::_LayoutStruct *parentLayout =
+                            reinterpret_cast<const Attrib::Gen::gameplay::_LayoutStruct *>(parent.GetLayoutPointer());
+
+                        if (!parentLayout) {
+                            parentLayout = reinterpret_cast<const Attrib::Gen::gameplay::_LayoutStruct *>(
+                                Attrib::DefaultDataArea(sizeof(Attrib::Gen::gameplay::_LayoutStruct)));
+                        }
+
+                        collection = parent.GetParent();
+                    } while (collection != 0);
+                }
+            }
+        }
+    }
+
+    return false;
+}
+
 void GActivity::Run() {
     if (mRunning) {
         return;
