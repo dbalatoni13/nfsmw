@@ -49,14 +49,13 @@ int RegionQuery::CalculateRegionInfo(eView *view, RegionType regionKind, int InF
             return 0;
         }
     } else {
-        float smallest = DAT_80409c38;
-        bTList<GenericRegion> *region_list = &RegionLists[static_cast<int>(regionKind)];
-
         FogFalloff = DAT_80409c34;
         FogFalloffX = DAT_80409c34;
         FogFalloffY = DAT_80409c34;
         DistFogStart = DAT_80409c34;
         DistFogPower = DAT_80409c34;
+        float smallest = DAT_80409c38;
+        bTList<GenericRegion> *region_list = &RegionLists[static_cast<int>(regionKind)];
 
         for (GenericRegion *region = region_list->GetHead(); region != region_list->EndOfList(); region = region->GetNext()) {
             bVector4 direction;
