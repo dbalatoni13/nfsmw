@@ -50,6 +50,68 @@ struct PathSegment {
     UTL::Std::set<short, _type_ID_ROAD_SET> Roads;
 };
 
+template <typename T, int TotalBits, unsigned int FractionBits> struct FixedPoint {
+    FixedPoint(float val)
+        : mValue(static_cast<T>(static_cast<int>(val * static_cast<float>(GetScale())))) {}
+
+    static int GetScale();
+
+    T mValue;
+};
+
+template <typename T, int TotalBits, unsigned int FractionBits>
+int FixedPoint<T, TotalBits, FractionBits>::GetScale() {
+    return 1 << FractionBits;
+}
+
+template <typename T, int TotalBits, int ExponentBits, int BiasBits, int MantissaBits>
+struct FloatingPoint {
+    FloatingPoint(float val) {
+        bool neg = val < 0.0f;
+        int man = 0;
+        int exp = 0;
+
+        if (neg) {
+            val = -val;
+        }
+
+        if (0.0f < val) {
+            while (val < static_cast<float>(GetNormalizedLower())) {
+                exp--;
+                val *= 10.0f;
+            }
+
+            man = static_cast<int>(val);
+            while (GetNormalizedUpper() <= man) {
+                exp++;
+                man /= 10;
+            }
+        }
+
+        if (neg) {
+            man = -man;
+        }
+
+        mValue = static_cast<T>((exp << MantissaBits) | (man & ((1 << MantissaBits) - 1)));
+    }
+
+    static int GetNormalizedLower();
+
+    static int GetNormalizedUpper();
+
+    T mValue;
+};
+
+template <typename T, int TotalBits, int ExponentBits, int BiasBits, int MantissaBits>
+int FloatingPoint<T, TotalBits, ExponentBits, BiasBits, MantissaBits>::GetNormalizedLower() {
+    return 1 << (MantissaBits - 1);
+}
+
+template <typename T, int TotalBits, int ExponentBits, int BiasBits, int MantissaBits>
+int FloatingPoint<T, TotalBits, ExponentBits, BiasBits, MantissaBits>::GetNormalizedUpper() {
+    return 1 << MantissaBits;
+}
+
 static const float Tweak_GlueSpreadData_Low[5] = {
     1000.0f,
     900.0f,
@@ -655,93 +717,128 @@ GRaceParameters::~GRaceParameters() {
 
 void GRaceParameters::GenerateIndex(GRaceIndexData *index) {
     unsigned int flags;
+    unsigned int *indexWords;
     char *indexBytes;
-    float topLeft[2];
-    float botRight[2];
+    UMath::Vector2 topLeft;
+    UMath::Vector2 botRight;
+    float timeOfDay;
 
     if (!index) {
         return;
     }
 
+    indexWords = reinterpret_cast<unsigned int *>(index);
     indexBytes = reinterpret_cast<char *>(index);
-    bMemSet(indexBytes, 0, 0x30);
 
-    *reinterpret_cast<unsigned int *>(indexBytes + 0x00) = GetCollectionKey();
-    *reinterpret_cast<unsigned int *>(indexBytes + 0x10) = GetChallengeType();
-    *reinterpret_cast<unsigned int *>(indexBytes + 0x14) = GetEventHash();
-    *reinterpret_cast<unsigned int *>(indexBytes + 0x18) = 0;
+    indexWords[0] = GetCollectionKey();
+    indexWords[5] = GetEventHash();
+    *reinterpret_cast<unsigned short *>(indexBytes + 0x20) = GetLocalizationTag();
     *reinterpret_cast<float *>(indexBytes + 0x1C) = GetRaceLengthMeters();
-    *reinterpret_cast<unsigned short *>(indexBytes + 0x20) = static_cast<unsigned short>(GetLocalizationTag());
-    *reinterpret_cast<unsigned short *>(indexBytes + 0x22) = static_cast<unsigned short>(GetCashValue());
-    *reinterpret_cast<short *>(indexBytes + 0x26) = static_cast<short>(GetRivalBestTime() * 8.0f);
-    indexBytes[0x29] = static_cast<char>(GetRegion());
+    *reinterpret_cast<unsigned short *>(indexBytes + 0x26) =
+        FixedPoint<unsigned short, 10, 2>(GetRivalBestTime()).mValue;
+    *reinterpret_cast<unsigned short *>(indexBytes + 0x24) =
+        FloatingPoint<short, 10, 3, 5, 11>(static_cast<float>(GetReputation())).mValue;
+    *reinterpret_cast<unsigned short *>(indexBytes + 0x22) =
+        FloatingPoint<short, 10, 3, 5, 11>(GetCashValue()).mValue;
+    indexWords[4] = GetChallengeType();
+    *reinterpret_cast<unsigned short *>(indexBytes + 0x0E) =
+        FloatingPoint<short, 10, 3, 5, 11>(GetChallengeGoal()).mValue;
+    indexBytes[0x28] = static_cast<char>(GetNumLaps());
     indexBytes[0x2A] = static_cast<char>(GetCopDensity());
     indexBytes[0x2B] = static_cast<char>(GetRaceType());
+    indexBytes[0x29] = static_cast<char>(GetRegion());
 
     flags = 0;
+    indexWords[6] = 0;
     if (GetInitiallyUnlockedQuickRace()) {
         flags |= 1 << 0;
     }
+    indexWords[6] = flags;
     if (GetInitiallyUnlockedOnline()) {
         flags |= 1 << 1;
     }
+    indexWords[6] = flags;
     if (GetInitiallyUnlockedChallenge()) {
         flags |= 1 << 2;
     }
+    indexWords[6] = flags;
     if (GetCanBeReversed()) {
         flags |= 1 << 3;
     }
+    indexWords[6] = flags;
     if (GetIsDDayRace()) {
         flags |= 1 << 4;
     }
+    indexWords[6] = flags;
     if (GetIsBossRace()) {
         flags |= 1 << 5;
     }
+    indexWords[6] = flags;
     if (GetIsMarkerRace()) {
         flags |= 1 << 6;
     }
+    indexWords[6] = flags;
     if (GetIsPursuitRace()) {
         flags |= 1 << 7;
     }
+    indexWords[6] = flags;
     if (GetIsLoopingRace()) {
         flags |= 1 << 8;
     }
+    indexWords[6] = flags;
     if (GetRankPlayersByPoints()) {
         flags |= 1 << 9;
     }
+    indexWords[6] = flags;
     if (GetRankPlayersByDistance()) {
         flags |= 1 << 10;
     }
+    indexWords[6] = flags;
     if (GetCopsEnabled()) {
         flags |= 1 << 11;
     }
+    indexWords[6] = flags;
     if (GetScriptedCopsInRace()) {
         flags |= 1 << 12;
     }
-    if (GetTimeOfDay() > 0.8f) {
+    indexWords[6] = flags;
+    timeOfDay = GetTimeOfDay();
+    if (0.8f < timeOfDay) {
         flags |= 1 << 13;
     }
+    indexWords[6] = flags;
     if (GetNeverInQuickRace()) {
         flags |= 1 << 14;
     }
+    indexWords[6] = flags;
     if (GetIsChallengeSeriesRace()) {
         flags |= 1 << 15;
     }
+    indexWords[6] = flags;
     if (GetIsCollectorsEditionRace()) {
         flags |= 1 << 16;
     }
-    if (GetTimeOfDay() <= 0.8f && GetTimeOfDay() >= 0.0f) {
-        flags |= 1 << 17;
+    indexWords[6] = flags;
+    timeOfDay = GetTimeOfDay();
+    if (timeOfDay < 0.8f) {
+        timeOfDay = GetTimeOfDay();
+        if (0.0f <= timeOfDay) {
+            flags = indexWords[6] | (1 << 17);
+            indexWords[6] = flags;
+        }
+    } else {
+        flags = indexWords[6] | (1 << 13);
+        indexWords[6] = flags;
     }
 
-    *reinterpret_cast<unsigned short *>(indexBytes + 0x04) = static_cast<unsigned short>(flags);
-    bSafeStrCpy(indexBytes + 0x06, GetEventID(), 10);
+    bMemSet(indexWords + 1, 0, 10);
+    bSafeStrCpy(reinterpret_cast<char *>(indexWords + 1), GetEventID(), 10);
 
-    GetBoundingBox(*reinterpret_cast<UMath::Vector2 *>(topLeft), *reinterpret_cast<UMath::Vector2 *>(botRight));
-    indexBytes[0x2C] = static_cast<char>(topLeft[0] * 255.0f);
-    indexBytes[0x2D] = static_cast<char>(topLeft[1] * 255.0f);
-    indexBytes[0x2E] = static_cast<char>(botRight[0] * 255.0f);
-    indexBytes[0x2F] = static_cast<char>(botRight[1] * 255.0f);
+    GetBoundingBox(topLeft, botRight);
+    indexBytes[0x2C] = static_cast<char>(topLeft.x * 255.0f);
+    indexBytes[0x2D] = static_cast<char>(topLeft.y * 255.0f);
+    indexBytes[0x2E] = static_cast<char>(botRight.x * 255.0f);
+    indexBytes[0x2F] = static_cast<char>(botRight.y * 255.0f);
 }
 
 void GRaceParameters::EnsureLoaded() const {
