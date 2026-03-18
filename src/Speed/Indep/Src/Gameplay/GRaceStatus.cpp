@@ -305,12 +305,13 @@ void GRacerInfo::ChooseRandomName() {
 
     do {
         bool duplicate = false;
-        unsigned int i;
+        int i;
+        const int racerCount = GRaceStatus::Get().GetRacerCount();
 
         bSPrintf(nameBuffer, "RACERNAME_%03d", bRandom(0x96));
-        name = GetLocalizedString(Attrib::StringHash32(nameBuffer));
+        name = GetLocalizedString(bStringHash(nameBuffer));
 
-        for (i = 0; i < static_cast<unsigned int>(GRaceStatus::Get().GetRacerCount()); ++i) {
+        for (i = 0; i < racerCount; ++i) {
             GRacerInfo &info = GRaceStatus::Get().GetRacerInfo(i);
 
             if (info.mName && bStrCmp(name, info.mName) == 0) {
@@ -327,11 +328,22 @@ void GRacerInfo::ChooseRandomName() {
 }
 
 bool GRacerInfo::ChooseRacerName() {
-    if (!GRaceStatus::Exists() || GRaceStatus::Get().GetRaceContext() != GRace::kRaceContext_Career || !mGameCharacter->GetName()) {
+    unsigned int nameHash;
+
+    if (!GRaceStatus::Exists()) {
         return false;
     }
 
-    mName = GetLocalizedString(mGameCharacter->GetName());
+    if (GRaceStatus::Get().GetRaceContext() != GRace::kRaceContext_Career) {
+        return false;
+    }
+
+    nameHash = mGameCharacter->GetName();
+    if (!nameHash) {
+        return false;
+    }
+
+    mName = GetLocalizedString(nameHash);
     return true;
 }
 
