@@ -208,13 +208,13 @@ void RemoveRegion(GenericRegion *region) {
 }
 
 int DepthRegion(GenericRegion *before, GenericRegion *after) {
-    bVector3 before_position(before->PositionX - cPos.x, before->PositionY - cPos.y, before->PositionZ - cPos.z);
-    bVector3 after_position(after->PositionX - cPos.x, after->PositionY - cPos.y, after->PositionZ - cPos.z);
-    float before_distance = bSqrt(before_position.x * before_position.x + before_position.y * before_position.y +
-                                  before_position.z * before_position.z);
-    float after_distance = bSqrt(after_position.x * after_position.x + after_position.y * after_position.y +
-                                 after_position.z * after_position.z);
-    return before_distance <= after_distance;
+    bVector3 Position(before->PositionX, before->PositionY, before->PositionZ);
+    bVector3 Delta = Position - cPos;
+    float distB = bLength(Delta);
+    Position = bVector3(after->PositionX, after->PositionY, after->PositionZ);
+    Delta = Position - cPos;
+    float distA = bLength(Delta);
+    return distB <= distA;
 }
 
 GenericRegion *GetClosestRegionInView(eView *view, bVector3 *endVector, float *angleCos) {
