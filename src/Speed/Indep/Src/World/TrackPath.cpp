@@ -145,38 +145,45 @@ TrackPathZone *TrackPathManager::FindZone(const bVector2 *position, eTrackPathZo
 
     if (!position) {
         cache_valid = false;
+    } else if (bBoundingBoxIsInside(&zone_info->CachedBBoxMin, &zone_info->CachedBBoxMax, position, 0.0f)) {
+        int num_cached_zones = zone_info->NumCachedZones;
+        cache_valid = num_cached_zones < 9;
     } else {
-        if (!bBoundingBoxIsInside(&zone_info->CachedBBoxMin, &zone_info->CachedBBoxMax, position, 0.0f)) {
-            const float cached_radius = 64.0f;
-            TrackPathZone *first_zone = zone_info->pFirstZone;
-            TrackPathZone *last_zone = zone_info->pLastZone;
+        const float cached_radius = 64.0f;
+        TrackPathZone *first_zone;
+        TrackPathZone *last_zone;
 
-            zone_info->CachedBBoxMin.x = position->x - cached_radius;
-            zone_info->CachedBBoxMin.y = position->y - cached_radius;
-            zone_info->CachedBBoxMax.x = position->x + cached_radius;
-            zone_info->CachedBBoxMax.y = position->y + cached_radius;
-            zone_info->NumCachedZones = 0;
-            zone_info->NumFullRebuilds += 1;
+        last_zone = zone_info->pLastZone;
+        first_zone = zone_info->pFirstZone;
 
-            for (TrackPathZone *zone = first_zone; zone < last_zone; zone = zone->GetMemoryImageNext()) {
-                if (bBoundingBoxOverlapping(&zone_info->CachedBBoxMin, &zone_info->CachedBBoxMax, &zone->BBoxMin, &zone->BBoxMax)) {
-                    if (zone_info->NumCachedZones < 8) {
-                        zone->CachedIndex = static_cast<char>(zone_info->NumCachedZones);
-                        zone_info->CachedZones[zone_info->NumCachedZones] = zone;
-                    }
-                    zone_info->NumCachedZones += 1;
+        zone_info->CachedBBoxMin.x = position->x - cached_radius;
+        zone_info->CachedBBoxMin.y = position->y - cached_radius;
+        zone_info->CachedBBoxMax.x = position->x + cached_radius;
+        zone_info->CachedBBoxMax.y = position->y + cached_radius;
+        zone_info->NumCachedZones = 0;
+        zone_info->NumFullRebuilds += 1;
+
+        for (TrackPathZone *zone = first_zone; zone < last_zone; zone = zone->GetMemoryImageNext()) {
+            if (bBoundingBoxOverlapping(&zone_info->CachedBBoxMin, &zone_info->CachedBBoxMax, &zone->BBoxMin, &zone->BBoxMax)) {
+                if (zone_info->NumCachedZones < 8) {
+                    zone->CachedIndex = static_cast<char>(zone_info->NumCachedZones);
+                    zone_info->CachedZones[zone_info->NumCachedZones] = zone;
                 }
+                zone_info->NumCachedZones += 1;
             }
-
-            MostCachedZones = bMax(MostCachedZones, zone_info->NumCachedZones);
         }
-        cache_valid = zone_info->NumCachedZones < 9;
+
+        int num_cached_zones = zone_info->NumCachedZones;
+        MostCachedZones = bMax(MostCachedZones, num_cached_zones);
+        cache_valid = num_cached_zones < 9;
     }
 
     TrackPathZone *found_zone = 0;
     if (!cache_valid) {
-        TrackPathZone *first_zone = zone_info->pFirstZone;
         TrackPathZone *last_zone = zone_info->pLastZone;
+        TrackPathZone *first_zone;
+
+        first_zone = zone_info->pFirstZone;
         zone_info->NumCacheRebuilds += 1;
         if (prev_zone) {
             first_zone = prev_zone->GetMemoryImageNext();

@@ -17,9 +17,9 @@ extern float DAT_80409c3c;
 extern float DAT_80409c40;
 extern float DAT_80409c44;
 extern int FogControlOverRide;
-extern unsigned char BaseWeatherFogColourR;
-extern unsigned char BaseWeatherFogColourG;
-extern unsigned char BaseWeatherFogColourB;
+extern int BaseWeatherFogColourR;
+extern int BaseWeatherFogColourG;
+extern int BaseWeatherFogColourB;
 extern float oldDistFogStart_27399;
 extern float oldDistFogPower_27398;
 extern unsigned int oldDistFogColour_27397;
@@ -34,26 +34,21 @@ int RegionQuery::CalculateRegionInfo(eView *view, RegionType regionKind, int InF
 
     if (FogControlOverRide) {
         unsigned int retcol;
-        unsigned int fog_colour_b = BaseWeatherFogColourB;
-        unsigned int fog_colour_g = BaseWeatherFogColourG;
-        unsigned int fog_colour_r = BaseWeatherFogColourR;
+        unsigned int fog_colour = BaseWeatherFogColourB << 16 | BaseWeatherFogColourG << 8 | BaseWeatherFogColourR;
 
+        DistFogStart = BaseWeatherFogStart;
         FogFalloff = BaseFogFalloff;
         FogFalloffX = BaseFogFalloffX;
         FogFalloffY = BaseFogFalloffY;
-        DistFogStart = BaseWeatherFogStart;
         DistFogPower = BaseWeatherFog;
-        retcol = (fog_colour_b << 16 | fog_colour_g << 8 | fog_colour_r) | 0x80000000;
+        retcol = fog_colour | 0x80000000;
         DistFogColour = retcol;
         if (oldDistFogColour_27397 == retcol && oldDistFogPower_27398 == DistFogPower && oldDistFogStart_27399 == DistFogStart) {
             return 0;
         }
     } else {
-        FogFalloff = DAT_80409c34;
-        FogFalloffX = DAT_80409c34;
-        FogFalloffY = DAT_80409c34;
-        DistFogStart = DAT_80409c34;
-        DistFogPower = DAT_80409c34;
+        DistFogStart = DistFogPower = DAT_80409c34;
+        FogFalloff = FogFalloffX = FogFalloffY = DAT_80409c34;
         float smallest = DAT_80409c38;
         bTList<GenericRegion> *region_list = &RegionLists[static_cast<int>(regionKind)];
 
@@ -129,9 +124,9 @@ int RegionQuery::CalculateRegionInfo(eView *view, RegionType regionKind, int InF
         }
     }
 
-    oldDistFogStart_27399 = DistFogStart;
-    oldDistFogPower_27398 = DistFogPower;
     oldDistFogColour_27397 = DistFogColour;
+    oldDistFogPower_27398 = DistFogPower;
+    oldDistFogStart_27399 = DistFogStart;
     return 1;
 }
 
