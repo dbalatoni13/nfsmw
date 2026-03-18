@@ -48,6 +48,13 @@ void GPS_Disengage();
 
 class IPursuit;
 
+struct GManagerRaceStatusCompat {
+    unsigned char _padRaceBin[0x1AB0];
+    GRaceBin *mRaceBin;
+    unsigned char _padRefresh[0x40];
+    bool mRefreshBinAfterRace;
+};
+
 class GCopMgrCompat : public UTL::COM::IUnknown {
   public:
     static HINTERFACE _IHandle() {
@@ -441,6 +448,27 @@ void GManager::StartActivities() {
 
     if (startWorld) {
         StartWorldActivities(startupRace == nullptr);
+    }
+}
+
+void GManager::StartRaceFromInGame(unsigned int raceHash) {
+    if (GRaceStatus::Get().GetPlayMode() == GRaceStatus::kPlayMode_Roaming) {
+        GRaceParameters *race = GRaceDatabase::Get().GetRaceFromHash(raceHash);
+
+        if (race) {
+            GManagerRaceStatusCompat &raceStatus = reinterpret_cast<GManagerRaceStatusCompat &>(GRaceStatus::Get());
+
+            if (raceStatus.mRaceBin) {
+                if (race->GetParentVault() != raceStatus.mRaceBin->GetChildVault()) {
+                    SuspendAllBinActivities();
+                    raceStatus.mRefreshBinAfterRace = true;
+                }
+            }
+
+            race->BlockUntilLoaded();
+            race->GetActivity()->Reset();
+            race->GetActivity()->Run();
+        }
     }
 }
 
