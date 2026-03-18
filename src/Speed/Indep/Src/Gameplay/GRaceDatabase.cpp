@@ -767,19 +767,19 @@ void GRaceDatabase::UpdateRaceScore(bool raceCompleted) {
 
     saveInfo = GetScoreInfo(eventHash);
 
-    value = racerInfo->GetTopSpeed();
-    recordValue = static_cast<float>(*reinterpret_cast<unsigned short *>(reinterpret_cast<char *>(saveInfo) + 0x0C)) /
-                  FixedPoint<unsigned short, 10, 2>::GetScale();
-    value = UMath::Max(recordValue, value);
+    recordValue = racerInfo->GetTopSpeed();
+    value = static_cast<float>(*reinterpret_cast<unsigned short *>(reinterpret_cast<char *>(saveInfo) + 0x0C)) /
+            FixedPoint<unsigned short, 10, 2>::GetScale();
+    recordValue = UMath::Max(recordValue, value);
     *reinterpret_cast<unsigned short *>(reinterpret_cast<char *>(saveInfo) + 0x0C) =
-        FixedPoint<unsigned short, 10, 2>(value).mValue;
+        FixedPoint<unsigned short, 10, 2>(recordValue).mValue;
 
-    value = racerInfo->CalcAverageSpeed();
-    recordValue = static_cast<float>(*reinterpret_cast<unsigned short *>(reinterpret_cast<char *>(saveInfo) + 0x0E)) /
-                  FixedPoint<unsigned short, 10, 2>::GetScale();
-    value = UMath::Max(recordValue, value);
+    recordValue = racerInfo->CalcAverageSpeed();
+    value = static_cast<float>(*reinterpret_cast<unsigned short *>(reinterpret_cast<char *>(saveInfo) + 0x0E)) /
+            FixedPoint<unsigned short, 10, 2>::GetScale();
+    recordValue = UMath::Max(recordValue, value);
     *reinterpret_cast<unsigned short *>(reinterpret_cast<char *>(saveInfo) + 0x0E) =
-        FixedPoint<unsigned short, 10, 2>(value).mValue;
+        FixedPoint<unsigned short, 10, 2>(recordValue).mValue;
 
     switch (parms->GetRaceType()) {
     case GRace::kRaceType_Circuit:
