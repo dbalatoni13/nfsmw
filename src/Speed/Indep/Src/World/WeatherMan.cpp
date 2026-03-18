@@ -25,54 +25,50 @@ extern float oldDistFogPower_27398;
 extern unsigned int oldDistFogColour_27397;
 
 int RegionQuery::CalculateRegionInfo(eView *view, RegionType regionKind, int InFE) {
-    unsigned int red = 0;
-    int green = 0;
-    int blue = 0;
-    char *camera = reinterpret_cast<char *>(view->pCamera);
-    float camera_x = *reinterpret_cast<float *>(camera + 0x40);
-    float camera_y = *reinterpret_cast<float *>(camera + 0x44);
+    unsigned int colr_r = 0;
+    unsigned int colr_g = 0;
+    unsigned int colr_b = 0;
+    bVector3 cPos(*view->GetCamera()->GetPosition());
 
     (void)InFE;
 
     if (!FogControlOverRide) {
+        float smallest = DAT_80409c38;
+        bTList<GenericRegion> *region_list = &RegionLists[static_cast<int>(regionKind)];
+
         FogFalloff = DAT_80409c34;
         FogFalloffX = DAT_80409c34;
         FogFalloffY = DAT_80409c34;
         DistFogStart = DAT_80409c34;
         DistFogPower = DAT_80409c34;
 
-        float smallest_radius = DAT_80409c38;
-        bTList<GenericRegion> &region_list = RegionLists[static_cast<int>(regionKind)];
+        for (GenericRegion *region = region_list->GetHead(); region != region_list->EndOfList(); region = region->GetNext()) {
+            bVector4 direction;
+            direction.x = region->PositionX - cPos.x;
+            direction.y = region->PositionY - cPos.y;
+            float distanceSq = direction.x * direction.x + direction.y * direction.y;
 
-        for (GenericRegion *region = region_list.GetHead(); region != region_list.EndOfList(); region = region->GetNext()) {
-            float delta_x = region->PositionX - camera_x;
-            float delta_y = region->PositionY - camera_y;
-            float distance_squared = delta_x * delta_x + delta_y * delta_y;
-
-            if (region->Radius * region->Radius <= distance_squared) {
+            if (region->Radius * region->Radius <= distanceSq) {
                 region->inFlags = 4;
                 region->effect = DAT_80409c34;
             } else {
-                float falloff = DAT_80409c34;
-                if (BaseFogFalloffX < distance_squared) {
-                    float inverse_distance = 1.0f / bSqrt(distance_squared);
-                    inverse_distance = -(distance_squared * inverse_distance * inverse_distance - DAT_80409c44) * inverse_distance * DAT_80409c40 +
-                                       inverse_distance;
-                    falloff = (-(distance_squared * inverse_distance * inverse_distance - DAT_80409c44) * inverse_distance * DAT_80409c40 +
-                               inverse_distance) *
-                              distance_squared;
+                float distance = DAT_80409c34;
+                if (BaseFogFalloffX < distanceSq) {
+                    float ratio = 1.0f / bSqrt(distanceSq);
+                    ratio = -(distanceSq * ratio * ratio - DAT_80409c44) * ratio * DAT_80409c40 + ratio;
+                    distance = (-(distanceSq * ratio * ratio - DAT_80409c44) * ratio * DAT_80409c40 + ratio) * distanceSq;
                 }
 
                 float blend = DAT_80409c34;
-                if (region->FarFalloffStart <= falloff) {
-                    blend = (falloff - region->FarFalloffStart) / (region->Radius - region->FarFalloffStart);
+                if (region->FarFalloffStart <= distance) {
+                    blend = (distance - region->FarFalloffStart) / (region->Radius - region->FarFalloffStart);
                 }
 
                 region->effect = DAT_80409c44 - blend;
                 if (blend == DAT_80409c34) {
                     region->inFlags = 1;
-                    if (region->Radius < smallest_radius) {
-                        smallest_radius = region->Radius;
+                    if (region->Radius < smallest) {
+                        smallest = region->Radius;
                     }
                 } else {
                     region->inFlags = 2;
@@ -80,17 +76,17 @@ int RegionQuery::CalculateRegionInfo(eView *view, RegionType regionKind, int InF
             }
         }
 
-        float total_effect = DAT_80409c34;
-        for (GenericRegion *region = region_list.GetHead(); region != region_list.EndOfList(); region = region->GetNext()) {
+        float totaleffex = DAT_80409c34;
+        for (GenericRegion *region = region_list->GetHead(); region != region_list->EndOfList(); region = region->GetNext()) {
             region->effect = region->effect * region->modifier;
-            total_effect += region->effect;
+            totaleffex += region->effect;
         }
 
-        for (GenericRegion *region = region_list.GetHead(); region != region_list.EndOfList(); region = region->GetNext()) {
-            if (total_effect == DAT_80409c34) {
+        for (GenericRegion *region = region_list->GetHead(); region != region_list->EndOfList(); region = region->GetNext()) {
+            if (totaleffex == DAT_80409c34) {
                 region->effect = DAT_80409c34;
             } else {
-                region->effect = region->effect / total_effect;
+                region->effect = region->effect / totaleffex;
             }
 
             if (region->effect != DAT_80409c34) {
@@ -100,24 +96,28 @@ int RegionQuery::CalculateRegionInfo(eView *view, RegionType regionKind, int InF
                 DistFogStart += region->FogStart * region->effect;
                 DistFogPower += region->Intensity * region->effect;
 
-                red += static_cast<unsigned int>(static_cast<unsigned char>(region->FogColour & 0xff) * region->effect);
-                green += static_cast<int>(static_cast<unsigned char>(region->FogColour >> 8 & 0xff) * region->effect);
-                blue += static_cast<int>(static_cast<unsigned char>(region->FogColour >> 16 & 0xff) * region->effect);
+                colr_r += static_cast<unsigned int>(static_cast<unsigned char>(region->FogColour & 0xff) * region->effect);
+                colr_g += static_cast<unsigned int>(static_cast<unsigned char>(region->FogColour >> 8 & 0xff) * region->effect);
+                colr_b += static_cast<unsigned int>(static_cast<unsigned char>(region->FogColour >> 16 & 0xff) * region->effect);
             }
         }
 
-        DistFogColour = red | green << 8 | blue << 16 | 0x80000000;
-        if (oldDistFogColour_27397 == DistFogColour && oldDistFogPower_27398 == DistFogPower && oldDistFogStart_27399 == DistFogStart) {
+        unsigned int retcol = colr_r | colr_g << 8 | colr_b << 16 | 0x80000000;
+        DistFogColour = retcol;
+        if (oldDistFogColour_27397 == retcol && oldDistFogPower_27398 == DistFogPower && oldDistFogStart_27399 == DistFogStart) {
             return 0;
         }
     } else {
+        unsigned int retcol;
+
         DistFogStart = BaseWeatherFogStart;
         FogFalloff = BaseFogFalloff;
         FogFalloffX = BaseFogFalloffX;
         FogFalloffY = BaseFogFalloffY;
         DistFogPower = BaseWeatherFog;
-        DistFogColour = (BaseWeatherFogColourB << 16 | BaseWeatherFogColourG << 8 | BaseWeatherFogColourR) | 0x80000000;
-        if (oldDistFogColour_27397 == DistFogColour && oldDistFogPower_27398 == DistFogPower && oldDistFogStart_27399 == DistFogStart) {
+        retcol = (BaseWeatherFogColourB << 16 | BaseWeatherFogColourG << 8 | BaseWeatherFogColourR) | 0x80000000;
+        DistFogColour = retcol;
+        if (oldDistFogColour_27397 == retcol && oldDistFogPower_27398 == DistFogPower && oldDistFogStart_27399 == DistFogStart) {
             return 0;
         }
     }
