@@ -54,28 +54,6 @@ class Minimap {
 };
 #endif
 
-class GCopMgrCompat : public UTL::COM::IUnknown {
-  public:
-    static GCopMgrCompat *Get() {
-        return reinterpret_cast<GCopMgrCompat *>(ICopMgr::Get());
-    }
-
-    virtual float GetLockoutTimeRemaining() const;
-    virtual bool VehicleSpawningEnabled(bool isdespawn);
-    virtual void SpawnCop(UMath::Vector3 &InitialPos, UMath::Vector3 &InitialVec, const char *VehicleName, bool InPursuit, bool RoadBlock);
-    virtual bool IsCopSpawnPending() const;
-    virtual void SetAllBustedTimersToZero();
-    virtual void PursuitIsEvaded(IPursuit *ipursuit);
-    virtual bool IsCopRequestPending();
-    virtual bool CanPursueRacers();
-    virtual bool IsPlayerPursuitActive();
-    virtual bool PlayerPursuitHasCop() const;
-    virtual void PursueAtHeatLevel(int minHeatLevel);
-    virtual void ResetCopsForRestart(bool release);
-    virtual void LockoutCops(bool lockout);
-    virtual void NoNewPursuitsOrCops();
-};
-
 struct GRaceStatusCompat {
     unsigned char _pad[0x1AB0];
     GRaceBin *mRaceBin;
@@ -84,6 +62,10 @@ struct GRaceStatusCompat {
 struct GManagerRestartCompat {
     unsigned char _pad[0x304];
     unsigned int mRestartEventHash;
+};
+
+template <> struct GObjectIteratorTraits<GTrigger> {
+    enum { kType = kGameplayObjType_Trigger };
 };
 
 GRaceStatus *GRaceStatus::fObj = nullptr;
@@ -2255,18 +2237,16 @@ void GRaceStatus::SetRoaming() {
     bool dDay = false;
 
     if (mRaceParms) {
+        const unsigned int *startNewGame =
+            reinterpret_cast<const unsigned int *>(mRaceParms->GetGameplayObj()->GetAttributePointer(0x64273C71, 0));
+
         lastDDay = bStrCmp(mRaceParms->GetEventID(), "16.2.1") == 0;
-        if (mRaceParms) {
-            const unsigned int *startNewGame =
-                reinterpret_cast<const unsigned int *>(mRaceParms->GetGameplayObj()->GetAttributePointer(0x64273C71, 0));
+        if (!startNewGame) {
+            startNewGame = reinterpret_cast<const unsigned int *>(Attrib::DefaultDataArea(sizeof(unsigned int)));
+        }
 
-            if (!startNewGame) {
-                startNewGame = reinterpret_cast<const unsigned int *>(Attrib::DefaultDataArea(sizeof(unsigned int)));
-            }
-
-            if (!*startNewGame) {
-                g_pEAXSound->StartNewGamePlay();
-            }
+        if (!*startNewGame) {
+            g_pEAXSound->StartNewGamePlay();
         }
     } else {
         g_pEAXSound->StartNewGamePlay();
@@ -2278,12 +2258,12 @@ void GRaceStatus::SetRoaming() {
     mRaceParms = nullptr;
     WRoadNetwork::Get().ResetShortcuts();
 
-    player = IPlayer::First(PLAYER_ALL);
-    while (player) {
+    for (IPlayer::List::const_iterator iter = IPlayer::GetList(PLAYER_ALL).begin(); iter != IPlayer::GetList(PLAYER_ALL).end(); ++iter) {
         ISimable *simable;
         IVehicle *vehicle;
         IVehicleAI *ivai;
-        IPlayer::List::const_iterator iter;
+
+        player = *iter;
 
         if (player->InGameBreaker()) {
             player->ResetGameBreaker(true);
@@ -2291,18 +2271,10 @@ void GRaceStatus::SetRoaming() {
 
         simable = player->GetSimable();
         if (simable && simable->QueryInterface(&vehicle) && simable->QueryInterface(&ivai) && !ivai->GetPursuit()) {
-            if (GCopMgrCompat::Get()) {
-                GCopMgrCompat::Get()->ResetCopsForRestart(true);
-            }
-        }
+            ICopMgr *copMgr = ICopMgr::Get();
 
-        iter = std::find(IPlayer::GetList(PLAYER_ALL).begin(), IPlayer::GetList(PLAYER_ALL).end(), player);
-        if (iter == IPlayer::GetList(PLAYER_ALL).end()) {
-            player = nullptr;
-        } else {
-            player = nullptr;
-            if (iter + 1 != IPlayer::GetList(PLAYER_ALL).end()) {
-                player = *(iter + 1);
+            if (copMgr) {
+                copMgr->ResetCopsForRestart(true);
             }
         }
     }
@@ -3418,10 +3390,13 @@ float GRaceStatus::DetermineRaceSegmentLength(const UMath::Vector4 *positions, c
 void GRaceStatus::DetermineRaceLength() {
     UMath::Vector4 positions[18];
     UMath::Vector4 directions[18];
-    UMath::Vector3 pos;
-    UMath::Vector3 dir;
     int numCheckpoints;
-    int numSegments;
+    int numPathPoints;
+    float totalDistance;
+    bool raceLoops;
+    int numSegmentLengths;
+    int j;
+    int numSpeedTraps;
 
     nSpeedTraps = 0;
     fSubsequentLapLength = 0.0f;
@@ -3437,56 +3412,59 @@ void GRaceStatus::DetermineRaceLength() {
 
     WRoadNetwork::Get().SetRaceFilterValid(true);
     numCheckpoints = mRaceParms->GetNumCheckpoints();
-    mRaceParms->GetStartPosition(pos);
-    positions[0] = UMath::Vector4Make(pos, 0.0f);
-    mRaceParms->GetStartDirection(dir);
-    directions[0] = UMath::Vector4Make(dir, 0.0f);
+    numPathPoints = numCheckpoints + 2;
+    mRaceParms->GetStartPosition(UMath::Vector4To3(positions[0]));
+    positions[0].w = 0.0f;
+    mRaceParms->GetStartDirection(UMath::Vector4To3(directions[0]));
+    directions[0].w = 0.0f;
 
     for (int i = 0; i < numCheckpoints; ++i) {
-        mRaceParms->GetCheckpointPosition(i, pos);
-        positions[i + 1] = UMath::Vector4Make(pos, 0.0f);
-        mRaceParms->GetCheckpointDirection(i, dir);
-        directions[i + 1] = UMath::Vector4Make(dir, 0.0f);
+        mRaceParms->GetCheckpointPosition(i, UMath::Vector4To3(positions[i + 1]));
+        positions[i + 1].w = 0.0f;
+        mRaceParms->GetCheckpointDirection(i, UMath::Vector4To3(directions[i + 1]));
+        directions[i + 1].w = 0.0f;
     }
 
-    mRaceParms->GetFinishPosition(pos);
-    positions[numCheckpoints + 1] = UMath::Vector4Make(pos, 0.0f);
-    mRaceParms->GetFinishDirection(dir);
-    directions[numCheckpoints + 1] = UMath::Vector4Make(dir, 0.0f);
+    mRaceParms->GetFinishPosition(UMath::Vector4To3(positions[numCheckpoints + 1]));
+    positions[numCheckpoints + 1].w = 0.0f;
+    mRaceParms->GetFinishDirection(UMath::Vector4To3(directions[numCheckpoints + 1]));
+    directions[numCheckpoints + 1].w = 0.0f;
 
-    numSegments = numCheckpoints + 1;
-    if (mRaceParms->GetIsLoopingRace()) {
-        numSegments = numCheckpoints + 2;
+    raceLoops = mRaceParms->GetIsLoopingRace();
+    totalDistance = 0.0f;
+    numSegmentLengths = numPathPoints;
+    if (!raceLoops) {
+        numSegmentLengths = numPathPoints - 1;
     }
 
-    for (int i = 0; i < numSegments; ++i) {
-        int end = (i % (numCheckpoints + 1)) + 1;
-        float segmentLength = DetermineRaceSegmentLength(positions, directions, i, end);
-
-        mSegmentLengths[i] = segmentLength;
-        fRaceLength += segmentLength;
+    for (j = 0; j < numSegmentLengths; ++j) {
+        mSegmentLengths[j] = DetermineRaceSegmentLength(positions, directions, j, (j % (numCheckpoints + 1)) + 1);
+        totalDistance += mSegmentLengths[j];
     }
 
-    if (mRaceParms->GetIsLoopingRace()) {
-        fSubsequentLapLength = fRaceLength - mSegmentLengths[0];
-        fFirstLapLength = fRaceLength - mSegmentLengths[numCheckpoints + 1];
+    if (raceLoops) {
+        fSubsequentLapLength = totalDistance - mSegmentLengths[0];
+        fFirstLapLength = totalDistance - mSegmentLengths[numCheckpoints + 1];
         fRaceLength = fSubsequentLapLength * static_cast<float>(mRaceParms->GetNumLaps() - 1) + fFirstLapLength;
     } else {
-        fSubsequentLapLength = fRaceLength;
-        fFirstLapLength = fRaceLength;
+        fSubsequentLapLength = totalDistance;
+        fRaceLength = totalDistance;
+        fFirstLapLength = totalDistance;
     }
 
     {
         WRoadNav nav;
 
-        nav.SetPathType(WRoadNav::kPathChopper);
+        nav.SetPathType(static_cast<WRoadNav::EPathType>(6));
         nav.InitAtPoint(UMath::Vector4To3(positions[numCheckpoints + 1]), UMath::Vector4To3(directions[numCheckpoints + 1]), true, 1.0f);
         if (nav.IsValid()) {
             for (int i = 0; i < 100; ++i) {
+                int segmentNumber;
                 WRoadSegment *segment;
 
                 nav.IncNavPosition(1.0f, UMath::Vector3::kZero, 0.0f);
-                segment = const_cast<WRoadSegment *>(nav.GetSegment());
+                segmentNumber = nav.GetSegmentInd();
+                segment = const_cast<WRoadSegment *>(WRoadNetwork::Get().GetSegment(segmentNumber));
                 segment->fFlags |= 0x8000;
                 if (nav.GetNodeInd() == 1) {
                     segment->fFlags |= 0x8004;
@@ -3497,14 +3475,22 @@ void GRaceStatus::DetermineRaceLength() {
         }
     }
 
-    nSpeedTraps = 0;
-    for (unsigned int i = 0; i < GManager::Get().GetNumSpeedTraps() && nSpeedTraps < 16; ++i) {
-        GTrigger *trigger = GManager::Get().GetSpeedTrap(i)->GetTrapTrigger();
+    {
+        GObjectIterator<GTrigger> iter(0x100);
 
-        if (trigger) {
-            aSpeedTraps[nSpeedTraps] = trigger;
-            ++nSpeedTraps;
+        numSpeedTraps = 0;
+        while (iter.IsValid()) {
+            GTrigger *trigger = iter.GetInstance();
+
+            if (!trigger->OpenWorldSpeedTrap(0)) {
+                aSpeedTraps[numSpeedTraps] = trigger;
+                ++numSpeedTraps;
+            }
+
+            iter.Advance();
         }
+
+        nSpeedTraps = numSpeedTraps;
     }
 }
 
