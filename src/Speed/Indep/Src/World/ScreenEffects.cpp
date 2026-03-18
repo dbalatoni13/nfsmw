@@ -4,6 +4,7 @@
 #include "Speed/Indep/Src/Camera/Camera.hpp"
 #include "Speed/Indep/Src/Camera/CameraMover.hpp"
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
+#include "Speed/Indep/Src/Misc/GameFlow.hpp"
 #include "Speed/Indep/Src/World/TrackPath.hpp"
 #include "Speed/Indep/Src/World/WCollisionMgr.h"
 #include "Speed/Indep/Src/World/WeatherMan.hpp"
@@ -42,6 +43,7 @@ static int __tmp_14_27615;
 static bVector3 lcamPosInside_27614[2];
 static float dataBackup_27616[12][2];
 static GenericRegion *regionB_27617[2];
+static unsigned int ticS_27592;
 
 enum TunnelBloomDataIndex {
     kTunnelPoint0X = 0,
@@ -58,7 +60,14 @@ enum TunnelBloomDataIndex {
     kTunnelPoint3Z = 11,
 };
 
-void TickSFX() {}
+void TickSFX() {
+    if (TheGameFlowManager.IsInGame()) {
+        if (ticS_27592 != eFrameCounter - 1) {
+            UpdateAllScreenEFX();
+        }
+        ticS_27592 = eFrameCounter;
+    }
+}
 
 void ScreenEffectDB::AddScreenEffect(ScreenEffectType type, float intensity, float r, float g, float b) {
     ScreenEffectDef info;
