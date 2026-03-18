@@ -133,14 +133,14 @@ void cPathLine::Update(float delta_time) {
 }
 
 cInterpLine::cInterpLine()
-: Length(0.0f) //
+: ElapsedTime(0.0f) //
+, Length(0.0f) //
+, Start(0.0f) //
+, Finish(0.0f) //
 , CurveTypes(LINEAR) //
-, bComplete(true) {
-    CurValue = 0.0f;
-    ElapsedTime = 0.0f;
-    Start = 0.0f;
-    Finish = 0.0f;
-}
+, CurValue(0.0f) //
+, bComplete(true)
+{}
 
 cInterpLine::~cInterpLine() {}
 
