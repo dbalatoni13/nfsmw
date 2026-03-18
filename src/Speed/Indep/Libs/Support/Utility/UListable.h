@@ -62,6 +62,10 @@ template <typename T, int U> class Listable {
         return _mTable;
     }
 
+    static int Count() {
+        return _mTable.size();
+    }
+
     static void Sort(ComparisonFunc pred) {
         std::sort(_mTable.begin(), _mTable.end(), pred);
     }

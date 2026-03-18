@@ -198,6 +198,10 @@ struct EAX_CarState : public UTL::Collections::Listable<EAX_CarState, 10> {
         return mNISCarID;
     }
 
+    void SetNISCarID(int _id) {
+        mNISCarID = _id;
+    }
+
     bool IsLocalPlayerCar() {
         return mContext == Sound::CONTEXT_PLAYER;
     }
@@ -244,6 +248,22 @@ struct EAX_CarState : public UTL::Collections::Listable<EAX_CarState, 10> {
 
     float GetVelocityMagnitudeMPH() {
         return MPS2MPH(GetVelocityMagnitude());
+    }
+
+    static EAX_CarState *Find(unsigned int objectid) {
+        {
+            EAX_CarState *const *iter = GetList().begin();
+            while (iter != GetList().end()) {
+                {
+                    EAX_CarState *state = *iter;
+                    if (state->mWorldID == objectid) {
+                        return state;
+                    }
+                }
+                ++iter;
+            }
+        }
+        return nullptr;
     }
 
     int GetWheelsOnGround() {

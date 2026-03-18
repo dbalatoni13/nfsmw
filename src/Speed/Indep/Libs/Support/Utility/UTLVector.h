@@ -113,6 +113,10 @@ template <typename T, int Alignment = 16> class Vector {
         return mBegin[idx];
     }
 
+    const_reference operator[](size_type idx) const {
+        return mBegin[idx];
+    }
+
     void reserve(size_type num) {
         if (num > capacity()) {
             OnGrowRequest(num);

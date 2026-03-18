@@ -1,6 +1,8 @@
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_NISReving.hpp"
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Physics.hpp"
 #include "Speed/Indep/Src/Generated/Messages/MAIEngineRev.h"
+#include "Speed/Indep/Src/Interfaces/SimActivities/INIS.h"
+#include "Speed/Indep/bWare/Inc/bPrintf.hpp"
 
 NIS_RevManager *g_pNISRevMgr = nullptr;
 
@@ -47,6 +49,42 @@ void NIS_RevManager::CloseNIS() {
 }
 
 void NIS_RevManager::Update(float t) {
+    if (INIS::Get() != nullptr && INIS::Get()->IsPlaying()) {
+        {
+            for (int n = 0; n < EAX_CarState::Count(); ++n) {
+                EAX_CarState *pcar = EAX_CarState::GetList()[n];
+                pcar->SetNISCarID(-1);
+            }
+        }
+
+        {
+            for (int i = 0; i < 16; ++i) {
+                char channelName[32];
+                int id;
+                IVehicle *NISCar;
+                ISimable *isim;
+                EAX_CarState *state;
+
+                if (i <= 7) {
+                    bSPrintf(channelName, "car%d", i + 1);
+                } else {
+                    bSPrintf(channelName, "cop%d", i - 7);
+                }
+
+                NISCar = INIS::Get()->GetCar(UCrc32(channelName));
+                if (NISCar) {
+                    isim = NISCar->GetSimable();
+                    if (isim) {
+                        state = EAX_CarState::Find(isim->GetWorldID());
+                        if (state) {
+                            state->SetNISCarID(i);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     (void)t;
 }
 
