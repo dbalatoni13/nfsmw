@@ -118,6 +118,8 @@ class EAXSound : public AudioMemBase {
     bool IsNISStreamQueued();
     void NISFinished();
 
+    void PlayUISoundFX(int trigger);
+
   private:
     int ncompiletest;                            // offset 0x4, size 0x4
     int m_nCopAIStateParam;                      // offset 0x8, size 0x4

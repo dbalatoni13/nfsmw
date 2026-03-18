@@ -80,6 +80,7 @@ class TrackPathManager {
 
   public:
     void EnableBarriers(const char *group_name);
+    void DisableAllBarriers();
     void BuildZoneInfoTable();
     TrackPathZone *FindZone(const bVector2 *position, eTrackPathZoneType zone_type, TrackPathZone *prev_zone);
     void ResetZoneVisitInfos();

@@ -5,13 +5,13 @@
 #pragma once
 #endif
 
-extern bool IsSoundEnabled;
-extern bool IsAudioStreamingEnabled;
-extern bool IsSpeechEnabled;
-extern bool IsNISAudioEnabled;
+extern int IsSoundEnabled;
+extern int IsAudioStreamingEnabled;
+extern int IsSpeechEnabled;
+extern int IsNISAudioEnabled;
 extern bool ShutJosieUp;
-extern bool IsMemcardEnabled;
-extern bool IsAutoSaveEnabled;
+extern int IsMemcardEnabled;
+extern int IsAutoSaveEnabled;
 
 void InitConfig();
 

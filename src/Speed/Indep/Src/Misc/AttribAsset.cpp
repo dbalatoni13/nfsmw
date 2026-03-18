@@ -1,6 +1,9 @@
 #include "AttribAsset.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribLoadAndGo.h"
 
+VaultMap::VaultMap() {}
+FileMap::FileMap() {}
+
 VaultMap gVaults;
 FileMap gFiles;
 
@@ -9,8 +12,7 @@ bool AddDepFile(const char *filename, void *data, size_t bytes) {
     FileMap::iterator result = gFiles.find(assetID);
 
     if (result == gFiles.end()) {
-        gFiles.insert(FileMap::value_type(assetID, FileRecord(data, bytes)));
-        // TODO
+        result = gFiles.insert(FileMap::value_type(assetID, FileRecord(data, bytes))).first;
         return true;
     } else {
         return false;

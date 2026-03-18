@@ -21,19 +21,14 @@ bChunkLoaderFunction UnloaderTable[LOADER_AMOUNT];
 
 // UNSOLVED
 int LoaderStub(bChunk *chunk) {
-    // TODO magic, put those into SpeedChunks.hpp
-    if (chunk->ID != BCHUNK_STYLE_MOMENTS_INFO) {
-        if (chunk->ID < BCHUNK_STYLE_PARTITIONS) {
-            if (chunk->ID != BCHUNK_SMOKEABLES) {
-                return 0;
-            }
-        } else if (chunk->ID != 0x34b00) {
+    switch (chunk->ID) {
+        case BCHUNK_SMOKEABLES:
+        case BCHUNK_STYLE_MOMENTS_INFO:
+        case 0x34b00:
+            return 1;
+        default:
             return 0;
-        }
-    } else {
-        return 1;
     }
-    return 0;
 }
 
 int CallChunkLoader(bChunk *chunk) {
@@ -530,16 +525,22 @@ int ServiceResourceLoading() {
 
     while (NumDelayedResourceCallbacks != 0) {
         ProfileNode profile_node("TODO2", 0);
-        // TODO registers instead of stack
+#ifdef EA_PLATFORM_PLAYSTATION2
         DelayedResourceCallback drc = DelayedResourceCallbacks[0];
-        // drc.pCallback = DelayedResourceCallbacks[0].pCallback;
-        // drc.Param = DelayedResourceCallbacks[0].Param;
+#else
+        void (*pCallback)(void *) = DelayedResourceCallbacks[0].pCallback;
+        void *callbackParam = DelayedResourceCallbacks[0].Param;
+#endif
         if (NumDelayedResourceCallbacks > 1) {
             bOverlappedMemCpy(&DelayedResourceCallbacks[0], &DelayedResourceCallbacks[1],
                               NumDelayedResourceCallbacks * sizeof(DelayedResourceCallback));
         }
         NumDelayedResourceCallbacks--;
+#ifdef EA_PLATFORM_PLAYSTATION2
         drc.pCallback(drc.Param);
+#else
+        pCallback(callbackParam);
+#endif
     }
     ServiceQueuedFiles();
     if (NumResourcesBeingLoaded != 0) {
@@ -559,7 +560,11 @@ int ServiceResourceLoading() {
 }
 
 int IsResourceLoadingComplete() {
-    return NumResourcesBeingLoaded == 0;
+    int result = 0;
+    if (NumResourcesBeingLoaded == 0) {
+        result = NumDelayedResourceCallbacks == 0;
+    }
+    return result;
 }
 
 void WaitForResourceLoadingComplete() {
@@ -679,14 +684,13 @@ void MoveFileIntoVirtualMemoryThenLoadChunks(int param, int err) {
             old_memory = nullptr;
             if (sizeofchunks != 0) {
                 int allocation_params = GetVirtualMemoryAllocParams();
-                void *realloc = bMalloc(sizeofchunks, "TODO2", 0, allocation_params);
-                old_memory = realloc;
-                LZDecompress(compressed_data, (uint8 *)old_memory);
+                old_memory = bMalloc(sizeofchunks, "TODO", __LINE__, allocation_params);
+                LZDecompress(compressed_data, static_cast<uint8 *>(old_memory));
             }
             bFree(compressed_data);
         }
     }
-    void *new_mem = bMalloc(sizeofchunks, "TODO", 0, GetVirtualMemoryAllocParams());
+    void *new_mem = bMalloc(sizeofchunks, "TODO", __LINE__, GetVirtualMemoryAllocParams());
     bMemCpy(new_mem, old_memory, sizeofchunks);
     vm_file->mVirtMemAddr = new_mem;
     if (vm_file->mUsedTrackPool) {

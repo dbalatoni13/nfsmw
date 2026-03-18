@@ -21,13 +21,21 @@ enum GameFlowState {
 // total size: 0x24
 class GameFlowManager {
   public:
-    void LoadFrontend();
-    void Service();
-    void CheckForDemoDiscTimeout();
-
+    GameFlowManager();
     ~GameFlowManager() {}
 
-    void SetSingleFunction(void (*function)(), const char *debug_name) {}
+    void SetSingleFunction(void (*function)(int), const char *debug_name, int param);
+    void SetWaitingForCallback(const char *name, int phase);
+    void ClearWaitingForCallback();
+    void Service();
+    void SetState(GameFlowState state);
+    void LoadFrontend();
+    void UnloadFrontend();
+    void LoadTrack();
+    void ReloadTrack();
+    void UnloadTrack();
+    void CheckForDemoDiscTimeout();
+    bool IsPaused();
 
     GameFlowState GetState() {
         return this->CurrentGameFlowState;
@@ -79,5 +87,43 @@ void BootLoadingScreen();
 void UnloadFrontEndVault();
 void MaybeDoMemoryProfile();
 void HandleTrackStreamerLoadingBar();
+void CheckLeakDetector(const char *);
+
+struct ResourceFile;
+struct VMFile;
+
+// total size: 0x20
+struct RegionLoader {
+    int Phase;                           // offset 0x0, size 0x4
+    ResourceFile *pResourceInGameA;      // offset 0x4, size 0x4
+    ResourceFile *pResourceInGameB;      // offset 0x8, size 0x4
+    ResourceFile *pResourceInGameSplitScreen; // offset 0xC, size 0x4
+    ResourceFile *pResourceRegion;       // offset 0x10, size 0x4
+    VMFile *pResourceGlobalB_VM;         // offset 0x14, size 0x4
+    VMFile *pResourceInGameB_VM;         // offset 0x18, size 0x4
+    VMFile *pResourceRegion_VM;          // offset 0x1C, size 0x4
+
+    void BeginLoading();
+    void LoadHandler();
+    void FinishedLoading();
+    void Unload();
+
+    static void LoadHandler(int);
+};
+
+// total size: 0x4
+struct TrackLoader {
+    int Phase; // offset 0x0, size 0x4
+
+    void BeginLoading();
+    void LoadHandler();
+    void FinishedLoading();
+    void Unload();
+    void InitTopologyAndSceneryGroups();
+    void CloseTopologyAndSceneryGroups();
+};
+
+extern RegionLoader TheRegionLoader;
+extern TrackLoader TheTrackLoader;
 
 #endif

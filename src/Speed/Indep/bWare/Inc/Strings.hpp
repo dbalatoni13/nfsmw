@@ -85,7 +85,11 @@ unsigned int bStringHash(const char *text, int prefix_hash);
 int bStrToLong(const char *s);
 float bStrToFloat(const char *s);
 int bStrLen(const char *s);
+unsigned int bStrLen(const unsigned short *s);
 char *bStrCpy(char *to, const char *from);
+char *bStrCat(char *to, const char *from);
+char *bStrCat(char *dest, const char *src1, const char *src2);
+char *bStrCopy(char *to, const char *from);
 int bMatchNameWithWildcard(const char *wild, const char *string);
 
 inline char bToUpper(char c) {
