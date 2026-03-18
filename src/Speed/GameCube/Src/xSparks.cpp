@@ -39,6 +39,54 @@ struct XenonEffectVec {
         }
         finish = start;
     }
+
+    void push_back(const XenonEffectDef &value) {
+        if (finish == end_of_storage) {
+            unsigned int size = finish - start;
+            unsigned int old_capacity = end_of_storage - start;
+            unsigned int new_capacity = size + (size == 0 ? 1 : size);
+            unsigned int new_bytes;
+            XenonEffectDef *new_start;
+            XenonEffectDef *src;
+            XenonEffectDef *dst;
+
+            if (new_capacity != 0) {
+                new_bytes = new_capacity * sizeof(XenonEffectDef);
+                new_start = static_cast<XenonEffectDef *>(gFastMem.Alloc(new_bytes, 0));
+            } else {
+                new_start = 0;
+                new_bytes = 0;
+            }
+
+            src = start;
+            dst = new_start;
+            while (src != finish) {
+                if (dst != 0) {
+                    *dst = *src;
+                }
+                src++;
+                dst++;
+            }
+
+            if (dst != 0) {
+                *dst = value;
+            }
+            dst++;
+
+            if (start != 0) {
+                gFastMem.Free(start, old_capacity * sizeof(XenonEffectDef), 0);
+            }
+
+            start = new_start;
+            finish = dst;
+            end_of_storage = reinterpret_cast<XenonEffectDef *>(reinterpret_cast<char *>(new_start) + new_bytes);
+        } else {
+            if (finish != 0) {
+                *finish = value;
+            }
+            finish++;
+        }
+    }
 };
 
 struct XenonEffectLists {
@@ -322,48 +370,52 @@ void ClearXenonEmitters() {
 }
 
 void AddXenonEffect(EmitterGroup *piggyback_fx, const Attrib::Collection *spec, const UMath::Matrix4 *mat, const UMath::Vector4 *vel) {
-    unsigned int size = gNGEffectList.lists[XenonEffectLists::ACTIVE].finish - gNGEffectList.lists[XenonEffectLists::ACTIVE].start;
+    XenonEffectVec &active = gNGEffectList.lists[XenonEffectLists::ACTIVE];
+    XenonEffectVec &staging = gNGEffectList.lists[XenonEffectLists::STAGING];
+    unsigned int size = active.finish - active.start;
+
     if (size < 20) {
-        unsigned int active_capacity = gNGEffectList.lists[XenonEffectLists::ACTIVE].end_of_storage - gNGEffectList.lists[XenonEffectLists::ACTIVE].start;
+        unsigned int active_capacity = active.end_of_storage - active.start;
         if (active_capacity < 20) {
-            reserveXenonEffectVecImpl(&gNGEffectList.lists[XenonEffectLists::ACTIVE], 20);
+            reserveXenonEffectVecImpl(&active, 20);
         }
 
-        unsigned int staging_capacity = gNGEffectList.lists[XenonEffectLists::STAGING].end_of_storage - gNGEffectList.lists[XenonEffectLists::STAGING].start;
+        unsigned int staging_capacity = staging.end_of_storage - staging.start;
         if (staging_capacity < 20) {
-            reserveXenonEffectVecImpl(&gNGEffectList.lists[XenonEffectLists::STAGING], 20);
+            reserveXenonEffectVecImpl(&staging, 20);
         }
 
         XenonEffectDef effect;
+        effect.vel = *vel;
         effect.mat = UMath::Matrix4::kIdentity;
         effect.mat.v3 = mat->v3;
         effect.spec = const_cast<Attrib::Collection *>(spec);
         effect.piggyback_effect = piggyback_fx;
-        effect.vel = *vel;
 
-        *gNGEffectList.lists[XenonEffectLists::ACTIVE].finish = effect;
-        ++gNGEffectList.lists[XenonEffectLists::ACTIVE].finish;
+        active.push_back(effect);
     }
 }
 
 void UpdateXenonEmitters(float dt) {
+    XenonEffectVec &active = gNGEffectList.lists[XenonEffectLists::ACTIVE];
+    XenonEffectVec &staging = gNGEffectList.lists[XenonEffectLists::STAGING];
+
     gParticleList.AgeParticles(dt);
 
-    XenonEffectDef *effect = gNGEffectList.lists[XenonEffectLists::ACTIVE].start;
-    while (effect != gNGEffectList.lists[XenonEffectLists::ACTIVE].finish) {
-        *gNGEffectList.lists[XenonEffectLists::STAGING].finish = *effect;
-        ++gNGEffectList.lists[XenonEffectLists::STAGING].finish;
+    XenonEffectDef *effect = active.start;
+    while (effect != active.finish) {
+        staging.push_back(*effect);
         ++effect;
     }
 
-    gNGEffectList.lists[XenonEffectLists::ACTIVE].finish = gNGEffectList.lists[XenonEffectLists::ACTIVE].start;
+    active.finish = active.start;
 
-    effect = gNGEffectList.lists[XenonEffectLists::STAGING].start;
-    while (effect != gNGEffectList.lists[XenonEffectLists::STAGING].finish) {
+    effect = staging.start;
+    while (effect != staging.finish) {
         NGEffect ng_effect(*effect);
         ++effect;
     }
 
-    gNGEffectList.lists[XenonEffectLists::STAGING].finish = gNGEffectList.lists[XenonEffectLists::STAGING].start;
+    staging.finish = staging.start;
     gParticleList.GeneratePolys();
 }
