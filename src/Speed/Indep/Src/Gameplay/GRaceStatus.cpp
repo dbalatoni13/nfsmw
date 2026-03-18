@@ -2173,6 +2173,199 @@ void GRaceStatus::SyncronizeAdaptiveBonus() {
     }
 }
 
+void GRaceStatus::UpdateAdaptiveDifficulty(eAdaptiveGainReason reason, ISimable *who) {
+    bool update = false;
+    GRacerInfo *winning_player = nullptr;
+    GRacerInfo *winning_ai = nullptr;
+    GRacerInfo *eliminated_player = nullptr;
+    float difficulty = fCatchUpAdaptiveBonus;
+    const int num_racers = GetRacerCount();
+
+    if (mCaluclatedAdaptiveGain || GetRaceContext() != GRace::kRaceContext_Career || num_racers < 2 || Sim::GetUserMode() != 0 || GetPlayMode() != kPlayMode_Racing ||
+        (mRaceParms && mRaceParms->GetNoPostRaceScreen()) || GetRaceLength() <= 0.0f) {
+        return;
+    }
+
+    for (int i = 0; i < num_racers; ++i) {
+        GRacerInfo &info = GetRacerInfo(i);
+
+        if (!info.GetGameCharacter()) {
+            if (info.GetIsBusted()) {
+                return;
+            }
+
+            if (info.IsFinishedRacing() && info.GetRanking() == 1) {
+                winning_player = &info;
+            } else if (GetRaceType() == GRace::kRaceType_Knockout && info.GetIsKnockedOut()) {
+                eliminated_player = &info;
+            }
+        } else if (info.IsFinishedRacing() && info.GetRanking() == 1) {
+            winning_ai = &info;
+        }
+    }
+
+    if (reason < kAdaptiveGainReason_2) {
+        float percent_ai_complete = 0.0f;
+        float percent_human_complete = 0.0f;
+
+        if (!who || !who->IsPlayer()) {
+            return;
+        }
+
+        for (int i = 0; i < num_racers; ++i) {
+            GRacerInfo &info = GetRacerInfo(i);
+
+            if (!info.GetIsKnockedOut()) {
+                if (!info.GetGameCharacter()) {
+                    percent_human_complete = UMath::Max(percent_human_complete, info.GetPctRaceComplete());
+                } else {
+                    percent_ai_complete = UMath::Max(percent_ai_complete, info.GetPctRaceComplete());
+                }
+            }
+        }
+
+        if (percent_human_complete < percent_ai_complete && percent_human_complete > 0.0f) {
+            float lose_margin = ((percent_ai_complete - percent_human_complete) * (GetRaceLength() * 0.01f)) / 300.0f;
+            float bonus = bClamp(lose_margin, 0.0f, 1.0f);
+
+            difficulty = bClamp(difficulty + (((bonus * -0.4f) * percent_human_complete) * 0.01f), -1.0f, 1.0f);
+            update = true;
+        }
+    } else if (reason == kAdaptiveGainReason_5) {
+        float percent_ai_complete = 0.0f;
+        float percent_human_complete = 0.0f;
+
+        for (int i = 0; i < num_racers; ++i) {
+            GRacerInfo &info = GetRacerInfo(i);
+
+            if (!info.GetIsKnockedOut() && !info.GetIsTotalled() && !info.GetIsEngineBlown()) {
+                if (!info.GetGameCharacter()) {
+                    percent_human_complete = UMath::Max(percent_human_complete, info.GetPctRaceComplete());
+                } else {
+                    percent_ai_complete = UMath::Max(percent_ai_complete, info.GetPctRaceComplete());
+                }
+            }
+        }
+
+        if (percent_human_complete < percent_ai_complete && percent_human_complete > 0.0f) {
+            float lose_margin = ((percent_ai_complete - percent_human_complete) * (GetRaceLength() * 0.01f)) / 300.0f;
+            float bonus = bClamp(lose_margin, 0.0f, 1.0f);
+
+            difficulty = bClamp(difficulty + (((bonus * -0.4f) * percent_human_complete) * 0.01f), -1.0f, 1.0f);
+            update = true;
+        }
+    } else if (GetRaceType() == GRace::kRaceType_SpeedTrap) {
+        float player_points = 0.0f;
+        float ai_points = 0.0f;
+        float total_points;
+
+        for (int i = 0; i < num_racers; ++i) {
+            GRacerInfo &info = GetRacerInfo(i);
+
+            if (!info.IsFinishedRacing()) {
+                return;
+            }
+
+            if (!info.GetGameCharacter()) {
+                player_points = info.GetPointTotal();
+            } else {
+                ai_points = UMath::Max(ai_points, info.GetPointTotal());
+            }
+        }
+
+        total_points = UMath::Max(player_points, ai_points);
+        if (total_points > 0.0f && player_points > 0.0f && ai_points > 0.0f) {
+            float point_spread_ratio = (player_points - ai_points) / total_points;
+
+            if (point_spread_ratio <= 0.0f) {
+                float bonus = bClamp((-point_spread_ratio) / 0.2f, 0.0f, 1.0f);
+
+                difficulty = bClamp(difficulty + (bonus * -0.2f), -1.0f, 1.0f);
+            } else {
+                float bonus = bClamp((point_spread_ratio - 0.05f) / (0.2f - 0.05f), 0.0f, 1.0f);
+
+                difficulty = bClamp(difficulty + (bonus * 0.2f), -1.0f, 1.0f);
+            }
+
+            update = true;
+        }
+    } else if (winning_ai) {
+        float max_pct_complete = 0.0f;
+
+        for (int i = 0; i < num_racers; ++i) {
+            GRacerInfo *info = &GetRacerInfo(i);
+
+            if (info != winning_ai && !info->IsFinishedRacing() && !info->GetIsTotalled() && !info->GetIsEngineBlown()) {
+                max_pct_complete = bMax(max_pct_complete, info->GetPctRaceComplete());
+            }
+        }
+
+        {
+            float win_margin = (GetRaceLength() * (100.0f - max_pct_complete)) * 0.01f;
+
+            if (win_margin > 200.0f && max_pct_complete > 0.0f) {
+                float bonus = bClamp((win_margin - 200.0f) / (750.0f - 200.0f), 0.0f, 1.0f);
+
+                difficulty = bClamp(difficulty + (bonus * 0.4f), -1.0f, 1.0f);
+                update = true;
+            }
+        }
+    } else if (winning_player) {
+        for (int i = 0; i < num_racers; ++i) {
+            GRacerInfo *info = &GetRacerInfo(i);
+
+            if (info->GetGameCharacter() && !info->IsFinishedRacing()) {
+                float lose_margin = (GetRaceLength() * (100.0f - info->GetPctRaceComplete())) * 0.01f;
+
+                if (lose_margin > 0.0f) {
+                    float bonus = bClamp(lose_margin / 300.0f, 0.0f, 1.0f);
+
+                    difficulty = bClamp(difficulty + ((((bonus * -0.3f) + -0.1f) * info->GetPctRaceComplete()) * 0.01f), -1.0f, 1.0f);
+                    update = true;
+                }
+            }
+        }
+    } else if (eliminated_player) {
+        int lap_count = 1;
+        float num_laps;
+        float race_lose_margin;
+        float lose_margin;
+
+        if (mRaceParms) {
+            lap_count = bMax(1, mRaceParms->GetNumLaps());
+        }
+
+        num_laps = static_cast<float>(lap_count);
+        lose_margin = (GetRaceLength() * (100.0f - eliminated_player->GetPctRaceComplete())) * 0.01f;
+        race_lose_margin = GetRaceLength() / num_laps;
+        lose_margin -= bFloor(lose_margin / race_lose_margin) * race_lose_margin;
+
+        if (lose_margin > 0.0f) {
+            float bonus = bClamp(lose_margin / 300.0f, 0.0f, 1.0f);
+
+            difficulty = bClamp(difficulty + ((((bonus * (-0.4f - -0.1f)) + -0.1f) * eliminated_player->GetPctRaceComplete()) * 0.01f), -1.0f, 1.0f);
+            update = true;
+        }
+    }
+
+    if (update) {
+        float clamped_difficulty;
+
+        mCaluclatedAdaptiveGain = true;
+        clamped_difficulty = bClamp(difficulty, -1.0f, 1.0f);
+
+        if (FEDatabase) {
+            CareerSettings *career = FEDatabase->GetCareerSettings();
+
+            if (career) {
+                *reinterpret_cast<short *>(reinterpret_cast<char *>(career) + 0x10) = static_cast<short>(clamped_difficulty * 32767.0f);
+            }
+        }
+
+        fCatchUpAdaptiveBonus = difficulty;
+    }
+}
+
 bool GRaceStatus::ComputeCatchUpSkill(GRacerInfo *racer_info, PidError *pid, float *output, float *skill, bool off_world) {
     float glue_level = 0.5f;
     bool is_boss = false;

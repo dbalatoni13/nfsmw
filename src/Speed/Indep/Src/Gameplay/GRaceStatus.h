@@ -386,6 +386,15 @@ class GRaceParameters {
 // total size: 0x46AC
 class GRaceStatus : public UTL::COM::Object, public IVehicleCache {
   public:
+    enum eAdaptiveGainReason {
+        kAdaptiveGainReason_0 = 0,
+        kAdaptiveGainReason_1 = 1,
+        kAdaptiveGainReason_2 = 2,
+        kAdaptiveGainReason_3 = 3,
+        kAdaptiveGainReason_4 = 4,
+        kAdaptiveGainReason_5 = 5,
+    };
+
     enum PlayMode {
         kPlayMode_Roaming = 0,
         kPlayMode_Racing = 1,
@@ -490,7 +499,7 @@ class GRaceStatus : public UTL::COM::Object, public IVehicleCache {
 
     void SyncronizeAdaptiveBonus();
 
-    // void UpdateAdaptiveDifficulty(enum eAdaptiveGainReason reason, struct ISimable *who);
+    void UpdateAdaptiveDifficulty(eAdaptiveGainReason reason, ISimable *who);
 
     bool ComputeCatchUpSkill(GRacerInfo *racer_info, PidError *pid, float *output, float *skill, bool off_world);
 
