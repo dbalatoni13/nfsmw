@@ -399,7 +399,8 @@ void UpdateXenonEmitters(float dt) {
 
     XenonEffectDef *effect = gNGEffectList.lists[XenonEffectLists::ACTIVE].start;
     while (effect != gNGEffectList.lists[XenonEffectLists::ACTIVE].finish) {
-        gNGEffectList.lists[XenonEffectLists::STAGING].push_back(*effect);
+        XenonEffectDef staged_effect = *effect;
+        gNGEffectList.lists[XenonEffectLists::STAGING].push_back(staged_effect);
         ++effect;
     }
 
@@ -407,7 +408,8 @@ void UpdateXenonEmitters(float dt) {
 
     effect = gNGEffectList.lists[XenonEffectLists::STAGING].start;
     while (effect != gNGEffectList.lists[XenonEffectLists::STAGING].finish) {
-        NGEffect ng_effect(*effect);
+        XenonEffectDef staged_effect = *effect;
+        NGEffect ng_effect(staged_effect);
         ++effect;
     }
 
