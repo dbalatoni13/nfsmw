@@ -73,11 +73,12 @@ int FixedPoint<T, TotalBits, FractionBits>::GetScale() {
 template <typename T, int TotalBits, int ExponentBits, int BiasBits, int MantissaBits>
 struct FloatingPoint {
     FloatingPoint(float val) {
-        bool neg = val < 0.0f;
+        bool neg = false;
         int man = 0;
         int exp = 0;
 
-        if (neg) {
+        if (val < 0.0f) {
+            neg = true;
             val = -val;
         }
 
@@ -88,7 +89,7 @@ struct FloatingPoint {
             }
 
             man = static_cast<int>(val);
-            while (GetNormalizedUpper() <= man) {
+            while (man >= GetNormalizedUpper()) {
                 exp++;
                 man /= 10;
             }
@@ -98,7 +99,7 @@ struct FloatingPoint {
             man = -man;
         }
 
-        mValue = static_cast<T>((exp << MantissaBits) | (man & ((1 << MantissaBits) - 1)));
+        mValue = static_cast<T>(((exp & 0x1F) << MantissaBits) | (man & ((1 << MantissaBits) - 1)));
     }
 
     static int GetNormalizedLower();
@@ -907,10 +908,6 @@ void GRaceParameters::GetBoundingBox(UMath::Vector2 &topLeft, UMath::Vector2 &bo
     float y1;
     float y2;
     TrackInfo *trackInfo;
-    bVector2 topLeftWorld;
-    bVector2 botRightWorld;
-    bVector2 topLeftMap;
-    bVector2 botRightMap;
 
     if (mIndex) {
         const unsigned char *indexBytes;
@@ -947,8 +944,10 @@ void GRaceParameters::GetBoundingBox(UMath::Vector2 &topLeft, UMath::Vector2 &bo
     }
 
     trackInfo = TrackInfo::GetTrackInfo(2000);
-    topLeftWorld = bVector2(x1, y1);
-    botRightWorld = bVector2(x2, y2);
+    bVector2 topLeftWorld(x1, y1);
+    bVector2 botRightWorld(x2, y2);
+    bVector2 topLeftMap;
+    bVector2 botRightMap;
     Minimap::ConvertPos(topLeftWorld, topLeftMap, trackInfo);
     Minimap::ConvertPos(botRightWorld, botRightMap, trackInfo);
     topLeft.x = topLeftMap.x;
