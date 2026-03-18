@@ -70,6 +70,10 @@ class GRuntimeInstance : public Attrib::Gen::gameplay {
         mFlags = mFlags | static_cast<unsigned short>(flag);
     }
 
+    GRuntimeInstance *GetNextRuntimeInstance() const {
+        return mNext;
+    }
+
     static GRuntimeInstance *sRingListHead[6];
 
   private:
