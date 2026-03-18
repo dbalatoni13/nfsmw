@@ -563,26 +563,25 @@ SceneryInstance *FindSceneryInstance(unsigned int name_hash) {
 
 void ScenerySectionHeader::DrawAScenery(int scenery_instance_number, SceneryCullInfo *scenery_cull_info, int visibility_state) {
     int *section_header_words = reinterpret_cast<int *>(this);
-    SceneryInstance *instances = reinterpret_cast<SceneryInstance *>(section_header_words[8]);
-    int num_instances = section_header_words[9];
-
-    if (!instances || scenery_instance_number < 0 || scenery_instance_number >= num_instances) {
+    if (!section_header_words[8] || scenery_instance_number < 0 || scenery_instance_number >= section_header_words[9]) {
         return;
     }
 
-    SceneryInstance *instance = &instances[scenery_instance_number];
+    SceneryInstance *instance = reinterpret_cast<SceneryInstance *>(section_header_words[8]) + scenery_instance_number;
     if (visibility_state >= 0 && section_header_words[12] && instance->PrecullerInfoIndex >= 0) {
         unsigned char *visibility_table = reinterpret_cast<unsigned char *>(section_header_words[12]) + instance->PrecullerInfoIndex * 0x80;
-        if ((visibility_table[visibility_state >> 3] & (1 << (visibility_state & 7))) != 0) {
+        int visibility_mask = 1 << (visibility_state & 7);
+        if ((visibility_table[visibility_state >> 3] & visibility_mask) != 0) {
             return;
         }
     }
 
-    int scenery_info_offset = instance->SceneryInfoNumber * 0x48;
-    unsigned char *scenery_info = reinterpret_cast<unsigned char *>(section_header_words[6]) + scenery_info_offset;
-    if (((instance->ExcludeFlags ^ 0x60) & scenery_cull_info->ExcludeFlags) != 0) {
+    unsigned char instance_exclude_flags = instance->ExcludeFlags;
+    short scenery_info_number = instance->SceneryInfoNumber;
+    if (((instance_exclude_flags ^ 0x60) & scenery_cull_info->ExcludeFlags) != 0) {
         return;
     }
+    unsigned char *scenery_info = GetSceneryInfo_Scenery(section_header_words, scenery_info_number);
 
     if (visibility_state == EVISIBLESTATE_PARTIAL) {
         bVector3 bbox_min(instance->BBoxMin[0], instance->BBoxMin[1], instance->BBoxMin[2]);
@@ -622,10 +621,10 @@ void ScenerySectionHeader::DrawAScenery(int scenery_instance_number, SceneryCull
     eModel *model = 0;
     if ((scenery_cull_info->ExcludeFlags & 0x1800) != 0) {
         if ((instance_flags & 0x80) != 0) {
-            if (pixel_size_int > 0x1F) {
+            if (pixel_size_int >= 0x20) {
                 model = GetSceneryModel_Scenery(scenery_info, 2);
             }
-        } else if (pixel_size_int > 0x1F) {
+        } else if (pixel_size_int >= 0x20) {
             if ((instance_flags & 0x1000100) == 0) {
                 model = GetSceneryModel_Scenery(scenery_info, 3);
             } else {
@@ -633,7 +632,7 @@ void ScenerySectionHeader::DrawAScenery(int scenery_instance_number, SceneryCull
             }
         }
     } else if ((scenery_cull_info->ExcludeFlags & 0x20) != 0) {
-        if (pixel_size_int > 0x1F) {
+        if (pixel_size_int >= 0x20) {
             model = GetSceneryModel_Scenery(scenery_info, 2);
         }
     } else if (eGetCurrentViewMode() > EVIEWMODE_ONE_RVM) {
@@ -663,44 +662,49 @@ void ScenerySectionHeader::DrawAScenery(int scenery_instance_number, SceneryCull
 
     SceneryDrawInfo *draw_info = scenery_cull_info->pCurrentDrawInfo;
     int *draw_info_words = reinterpret_cast<int *>(draw_info);
+    if ((instance->ExcludeFlags & 0x200) != 0) {
+        draw_info_words[0] = reinterpret_cast<int>(model) + visibility_state;
+        draw_info_words[1] = 0;
+        draw_info_words[2] = reinterpret_cast<int>(instance);
+        scenery_cull_info->pCurrentDrawInfo = draw_info + 1;
+        return;
+    }
+
     bMatrix4 *matrix = 0;
+    unsigned char *matrix_memory = CurrentBufferPos;
+    unsigned char *next_buffer_pos = CurrentBufferPos + sizeof(bMatrix4);
+    if (CurrentBufferEnd <= next_buffer_pos) {
+        FrameMallocFailed = 1;
+        FrameMallocFailAmount += sizeof(bMatrix4);
+        next_buffer_pos = CurrentBufferPos;
+    } else {
+        matrix = reinterpret_cast<bMatrix4 *>(matrix_memory);
+    }
+    CurrentBufferPos = next_buffer_pos;
 
-    if ((instance->ExcludeFlags & 0x200) == 0) {
-        unsigned char *matrix_memory = CurrentBufferPos;
-        unsigned char *next_buffer_pos = CurrentBufferPos + sizeof(bMatrix4);
-        if (CurrentBufferEnd <= next_buffer_pos) {
-            FrameMallocFailed = 1;
-            FrameMallocFailAmount += sizeof(bMatrix4);
-            next_buffer_pos = CurrentBufferPos;
-        } else {
-            matrix = reinterpret_cast<bMatrix4 *>(matrix_memory);
+    if (matrix) {
+        matrix->v0.x = static_cast<float>(instance->Rotation[0]) * 0.00012207031f;
+        matrix->v0.y = static_cast<float>(instance->Rotation[1]) * 0.00012207031f;
+        matrix->v0.z = static_cast<float>(instance->Rotation[2]) * 0.00012207031f;
+        matrix->v0.w = 0.0f;
+        matrix->v1.x = static_cast<float>(instance->Rotation[3]) * 0.00012207031f;
+        matrix->v1.y = static_cast<float>(instance->Rotation[4]) * 0.00012207031f;
+        matrix->v1.z = static_cast<float>(instance->Rotation[5]) * 0.00012207031f;
+        matrix->v1.w = 0.0f;
+        matrix->v2.x = static_cast<float>(instance->Rotation[6]) * 0.00012207031f;
+        matrix->v2.y = static_cast<float>(instance->Rotation[7]) * 0.00012207031f;
+        matrix->v2.z = static_cast<float>(instance->Rotation[8]) * 0.00012207031f;
+        matrix->v2.w = 0.0f;
+        matrix->v3.x = instance->Position[0];
+        matrix->v3.y = instance->Position[1];
+        matrix->v3.z = instance->Position[2];
+        matrix->v3.w = 1.0f;
+
+        if ((instance->ExcludeFlags & scenery_cull_info->ExcludeFlags & 0x100) != 0) {
+            matrix->v3.z += EnvMapShadowExtraHeight;
         }
-        CurrentBufferPos = next_buffer_pos;
-
-        if (matrix) {
-            matrix->v0.x = static_cast<float>(instance->Rotation[0]) * 0.00012207031f;
-            matrix->v0.y = static_cast<float>(instance->Rotation[1]) * 0.00012207031f;
-            matrix->v0.z = static_cast<float>(instance->Rotation[2]) * 0.00012207031f;
-            matrix->v0.w = 0.0f;
-            matrix->v1.x = static_cast<float>(instance->Rotation[3]) * 0.00012207031f;
-            matrix->v1.y = static_cast<float>(instance->Rotation[4]) * 0.00012207031f;
-            matrix->v1.z = static_cast<float>(instance->Rotation[5]) * 0.00012207031f;
-            matrix->v1.w = 0.0f;
-            matrix->v2.x = static_cast<float>(instance->Rotation[6]) * 0.00012207031f;
-            matrix->v2.y = static_cast<float>(instance->Rotation[7]) * 0.00012207031f;
-            matrix->v2.z = static_cast<float>(instance->Rotation[8]) * 0.00012207031f;
-            matrix->v2.w = 0.0f;
-            matrix->v3.x = instance->Position[0];
-            matrix->v3.y = instance->Position[1];
-            matrix->v3.z = instance->Position[2];
-            matrix->v3.w = 1.0f;
-
-            if ((instance->ExcludeFlags & scenery_cull_info->ExcludeFlags & 0x100) != 0) {
-                matrix->v3.z += EnvMapShadowExtraHeight;
-            }
-            if ((scenery_cull_info->ExcludeFlags & 0x800) != 0) {
-                matrix->v2.z = -matrix->v2.z;
-            }
+        if ((scenery_cull_info->ExcludeFlags & 0x800) != 0) {
+            matrix->v2.z = -matrix->v2.z;
         }
     }
 
