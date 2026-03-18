@@ -10,8 +10,24 @@ DrivableScenerySection *pSectionC14 = 0;
 
 void RefreshTrackStreamer();
 BOOL bBoundingBoxIsInside(const bVector2 *bbox_min, const bVector2 *bbox_max, const bVector2 *point, float extra_width);
-int MyIsPointInPoly(const bVector2 *point, const bVector2 *polygon, int num_points);
+int Get2PlayerSectionNumber(int section_number, const char *build_platform);
+int Get2PlayerSectionNumber(int section_number);
+int Get1PlayerSectionNumber(int section_number_2p, const char *build_platform);
+int GetBoundarySectionNumber(int section_number, const char *platform_name);
+static bool MyIsPointInPoly(const bVector2 *point, const bVector2 *polygon, int num_points);
 float bDistToLine(const bVector2 *point, const bVector2 *pointa, const bVector2 *pointb);
+
+struct SectionRemapper {
+    short SectionNumber;
+    short SectionNumber2P;
+};
+
+extern SectionRemapper SectionRemapperTable[134];
+extern SectionRemapper SectionRemapperTable_Gamecube[129];
+char *bGetPlatformName();
+
+static bool initialized_VisibleSection = false;
+static int map_table_VisibleSection[2800];
 
 static char GetScenerySectionLetter(int section_number) {
     return static_cast<char>(section_number / 100 + 'A' - 1);
@@ -344,6 +360,88 @@ int VisibleSectionManager::GetSectionsToLoad(LoadingSection *loading_section, sh
     }
 
     return num_sections;
+}
+
+int Get2PlayerSectionNumber(int section_number, const char *build_platform) {
+    if (bStrICmp(build_platform, "PC") != 0) {
+        char section_letter = GetScenerySectionLetter(section_number);
+        if (section_letter == 'Y') {
+            return GetScenerySubsectionNumber(section_number) + 0x8FC;
+        }
+
+        if (section_letter == 'X') {
+            return GetScenerySubsectionNumber(section_number) + 0x834;
+        }
+
+        SectionRemapper *remap_table = SectionRemapperTable;
+        int table_size = 134;
+        if (bStrICmp(build_platform, "GAMECUBE") == 0) {
+            table_size = 129;
+            remap_table = SectionRemapperTable_Gamecube;
+        }
+
+        for (int n = 0; n < table_size; n++) {
+            if (remap_table[n].SectionNumber == section_number) {
+                return remap_table[n].SectionNumber2P;
+            }
+        }
+    }
+
+    return section_number;
+}
+
+int Get2PlayerSectionNumber(int section_number) {
+    return Get2PlayerSectionNumber(section_number, bGetPlatformName());
+}
+
+int Get1PlayerSectionNumber(int section_number_2p, const char *build_platform) {
+    if (!initialized_VisibleSection) {
+        initialized_VisibleSection = true;
+        bMemSet(map_table_VisibleSection, 0, sizeof(map_table_VisibleSection));
+        for (int sec_1p = 0; sec_1p < 2800; sec_1p++) {
+            int sec_2p = Get2PlayerSectionNumber(sec_1p, build_platform);
+            if (sec_2p != sec_1p) {
+                map_table_VisibleSection[sec_2p] = sec_1p;
+            }
+        }
+    }
+
+    int sec_1p = map_table_VisibleSection[section_number_2p];
+    if (sec_1p == 0) {
+        sec_1p = section_number_2p;
+    }
+
+    return sec_1p;
+}
+
+int GetBoundarySectionNumber(int section_number, const char *platform_name) {
+    int boundary_section_number = Get1PlayerSectionNumber(section_number, platform_name);
+    int subsection_number = GetScenerySubsectionNumber(boundary_section_number);
+
+    if (ScenerySectionLODOffset <= subsection_number && subsection_number < ScenerySectionLODOffset * 2) {
+        boundary_section_number -= ScenerySectionLODOffset;
+    }
+
+    return boundary_section_number;
+}
+
+static bool MyIsPointInPoly(const bVector2 *point, const bVector2 *points, int num_points) {
+    float x = point->x;
+    float y = point->y;
+    bool inside = false;
+    int j = num_points - 1;
+
+    for (int i = 0; i < num_points; i++) {
+        float point_y = points[i].y;
+        if (((point_y <= y && y < points[j].y) || (points[j].y <= y && y < point_y)) &&
+            x < ((points[j].x - points[i].x) * (y - point_y)) / (points[j].y - point_y) + points[i].x) {
+            inside = !inside;
+        }
+
+        j = i;
+    }
+
+    return inside;
 }
 
 int VisibleSectionManager::Loader(bChunk *chunk) {

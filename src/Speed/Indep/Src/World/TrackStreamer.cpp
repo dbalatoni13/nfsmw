@@ -30,7 +30,7 @@ const char *GetScenerySectionName(int section_number);
 void PostLoadFixup();
 void SetDuplicateTextureWarning(BOOL enabled);
 bool LoadTempPermChunks(bChunk **ppchunks, int *psizeof_chunks, int allocation_params, const char *debug_name);
-int DoLinesIntersect(const bVector2 &line1_start, const bVector2 &line1_end, const bVector2 &line2_start, const bVector2 &line2_end);
+bool DoLinesIntersect(const bVector2 &line1_start, const bVector2 &line1_end, const bVector2 &line2_start, const bVector2 &line2_end);
 void eWaitUntilRenderingDone();
 void MoveChunks(bChunk *dest_chunks, bChunk *source_chunks, int sizeof_chunks, const char *debug_name);
 void bSetMemoryPoolOverrideInfo(int pool_num, MemoryPoolOverrideInfo *override_info);
@@ -80,6 +80,30 @@ static bool IsLoadingBarSection_TrackStreamer(int section_number) {
     int subsection_number = section_number % 100;
     return (subsection_number > 0 && subsection_number < ScenerySectionLODOffset) ||
            (ScenerySectionLODOffset <= subsection_number && subsection_number < ScenerySectionLODOffset * 2);
+}
+
+bool DoLinesIntersect(
+    const bVector2 &line1_start, const bVector2 &line1_end, const bVector2 &line2_start, const bVector2 &line2_end
+) {
+    float dy1 = line1_end.y - line1_start.y;
+    float dx2 = line2_end.x - line2_start.x;
+    float dx1 = line1_end.x - line1_start.x;
+    float dy2 = line2_end.y - line2_start.y;
+    float den = dx1 * dy2 - dy1 * dx2;
+
+    if (den != 0.0f) {
+        float dx3 = line1_start.x - line2_start.x;
+        float dy3 = line1_start.y - line2_start.y;
+        float r = (dy3 * dx2 - dx3 * dy2) / den;
+        if (0.0f <= r && r <= 1.0f) {
+            float s = (dy3 * dx1 - dx3 * dy1) / den;
+            if (0.0f <= s && s <= 1.0f) {
+                return true;
+            }
+        }
+    }
+
+    return false;
 }
 
 struct bBitTableLayout_TrackStreamer {
