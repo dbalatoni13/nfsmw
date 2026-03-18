@@ -8,6 +8,8 @@
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
+struct bChunk;
+
 // total size: 0x30
 struct TrackPositionMarker : public bTNode<TrackPositionMarker> {
     unsigned int NameHash; // offset 0x8, size 0x4
@@ -20,7 +22,11 @@ struct TrackPositionMarker : public bTNode<TrackPositionMarker> {
     int Padding3;          // offset 0x2C, size 0x4
 };
 
+int LoaderTrackPositionMarkers(bChunk *chunk);
+int UnloaderTrackPositionMarkers(bChunk *chunk);
 int GetNumTrackPositionMarkers(int track_number, unsigned int name_hash);
+TrackPositionMarker *GetTrackPositionMarker(int track_number, unsigned int name_hash, int index);
+TrackPositionMarker *GetTrackPositionMarker(unsigned int name_hash, int index);
 
 extern bTList<TrackPositionMarker> TrackPositionMarkerList;
 

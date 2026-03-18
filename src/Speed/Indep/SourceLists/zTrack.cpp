@@ -6,6 +6,10 @@
 
 #include "Speed/Indep/Src/World/Skids.cpp"
 
+#include "Speed/Indep/Src/World/Track.cpp"
+
+#include "Speed/Indep/Src/World/TrackPositionMarker.cpp"
+
 #include "Speed/Indep/Src/World/TrackPath.cpp"
 
 #include "Speed/Indep/Src/World/TrackInfo.cpp"

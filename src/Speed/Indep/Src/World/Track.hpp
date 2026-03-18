@@ -5,6 +5,13 @@
 #pragma once
 #endif
 
+struct bChunk;
+struct TrackOBB;
+
 void EstablishRemoteCaffeineConnection();
+int GetNumTrackOBBs();
+TrackOBB *GetTrackOBB(int index);
+int LoaderTrackOBB(bChunk *chunk);
+int UnloaderTrackOBB(bChunk *chunk);
 
 #endif
