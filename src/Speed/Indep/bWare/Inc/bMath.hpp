@@ -137,7 +137,7 @@ inline int bAbs(int a) {
 }
 
 inline int bMult(int a, int b) {
-    return ((((long long)a * b) >> 32) << 16 | (unsigned int)((long long)a * b) >> 16) << 1;
+    return (static_cast<long long>(a) * b) >> 16;
 }
 
 inline float bAbs(float a) {
@@ -224,11 +224,11 @@ struct bVector2 {
     bVector2() {}
 
     bVector2(float _x, float _y);
-    
+
     bVector2 operator+(const bVector2 &v) const;
-    
+
     bVector2 operator-(const bVector2 &v) const;
-    
+
     bVector2 operator*(float f) const;
 
     bVector2 operator-() const;
@@ -240,15 +240,15 @@ struct bVector2 {
     bVector2 &operator*=(float scale);
 
     bVector2 &operator/=(float inv_scale);
-    
+
     int operator==(const bVector2 &v);
-    
+
     // bVector2 &operator=(const bVector2 &v) {} // compiler generated? shown in dwarf
-    
+
     // bVector2(const bVector2 &v) {} // compiler generated
-    
+
     // bVector2 operator+() {} // not present in dwarf
-        
+
     // float &operator[](int index) {} // not present in dwarf
 };
 
@@ -275,6 +275,7 @@ inline bVector2 bVector2::operator+(const bVector2 &v) const {
     float _y = y1 + y2;
     return bVector2(_x, _y);
 }
+
 inline bVector2 bVector2::operator-(const bVector2 &v) const {
     float x1 = this->x;
     float y1 = this->y;
@@ -545,9 +546,13 @@ struct bVector4 {
 
     int operator==(const bVector4 &v) {}
 
-    float &operator[](int index) { return reinterpret_cast<float *>(this)[index]; }
+    float &operator[](int index) {
+        return reinterpret_cast<float *>(this)[index];
+    }
 
-    const float &operator[](int index) const { return reinterpret_cast<const float *>(this)[index]; }
+    const float &operator[](int index) const {
+        return reinterpret_cast<const float *>(this)[index];
+    }
 
     bVector4 operator+(const bVector4 &v) {
         bVector4 *pv;
@@ -837,9 +842,13 @@ struct bMatrix4 {
     bMatrix4(const bMatrix4 &m);
     bMatrix4 &operator=(const bMatrix4 &m);
 
-    bVector4 &operator[](int index) { return reinterpret_cast<bVector4 *>(this)[index]; }
+    bVector4 &operator[](int index) {
+        return reinterpret_cast<bVector4 *>(this)[index];
+    }
 
-    const bVector4 &operator[](int index) const { return reinterpret_cast<const bVector4 *>(this)[index]; }
+    const bVector4 &operator[](int index) const {
+        return reinterpret_cast<const bVector4 *>(this)[index];
+    }
 };
 
 inline bMatrix4 *bCopy(bMatrix4 *dest, const bMatrix4 *v) {

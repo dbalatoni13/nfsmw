@@ -5,6 +5,7 @@
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 #include "Speed/Indep/bWare/Inc/bPrintf.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
+#include "dolphin/os/OSArena.h"
 
 #include <types.h>
 
@@ -19,14 +20,14 @@ void VMInit(size_t, uintptr_t, size_t);
 BOOL VMAlloc(uintptr_t, size_t);
 }
 
-int bMemoryAutomaticVerifyPoolIntegrity = 0;   // size: 0x4, address: 0x80416418
-int bMemoryRandomFillPattern = 0;              // size: 0x4, address: 0x80416430
-BOOL bMemoryTracing = false;                   // size: 0x4, address: 0x80416438
-int bMemoryBreakOnAllocationNumber = -1;       // size: 0x4, address: 0x8041643C
-int bMemoryAllocationNumber = 0;               // size: 0x4, address: 0x80416440
-bMemoryAllocator TheMemoryAllocator;           // size: 0xC, address: 0x8045790C
-EA::Allocator::IAllocator &gMemoryAllocator = TheMemoryAllocator; // size: 0x4, address: 0x80457918
-bMemoryAllocator TheMemoryPersistentAllocator; // size: 0xC, address: 0x8045791C
+int bMemoryAutomaticVerifyPoolIntegrity = 0;                                          // size: 0x4, address: 0x80416418
+int bMemoryRandomFillPattern = 0;                                                     // size: 0x4, address: 0x80416430
+BOOL bMemoryTracing = false;                                                          // size: 0x4, address: 0x80416438
+int bMemoryBreakOnAllocationNumber = -1;                                              // size: 0x4, address: 0x8041643C
+int bMemoryAllocationNumber = 0;                                                      // size: 0x4, address: 0x80416440
+bMemoryAllocator TheMemoryAllocator;                                                  // size: 0xC, address: 0x8045790C
+EA::Allocator::IAllocator &gMemoryAllocator = TheMemoryAllocator;                     // size: 0x4, address: 0x80457918
+bMemoryAllocator TheMemoryPersistentAllocator;                                        // size: 0xC, address: 0x8045791C
 EA::Allocator::IAllocator &gMemoryPersistentAllocator = TheMemoryPersistentAllocator; // size: 0x4, address: 0x80457928
 // static const int bMemoryEnableFancyStompDetector; // size: 0x4
 const char *pTraceDebugText = nullptr;  // size: 0x4, address: 0x80416450
@@ -38,18 +39,16 @@ MemoryPoolInfo MemoryPoolInfoTable[16]; // size: 0x100, address: 0x8045A850
 bVirtualMemoryManager eARAMMM;          // size: 0x18, address: 0x8045A950
 unsigned int MemoryPoolZeroSize = 0;    // size: 0x4, address: 0x8041645C
 int bMemoryPersistentPoolNumber = -1;   // size: 0x4, address: 0x80416460
-static int found_memory_stomp_once_3842 = 0;
 
 void *bWareMalloc(int size, const char *debug_text, int debug_line, int allocation_params);
-void bMemoryInit();
 
 void bFunkGameCube(const char *server_name, unsigned char function_num, const void *param_buffer, long param_size) {}
 
-int GetAlignmentAdjustTop(int address, int alignment, int alignment_offset) {
+int GetAlignmentAdjustTop(intptr_t address, int alignment, int alignment_offset) {
     return (alignment - (address + alignment_offset & alignment - 1)) % alignment;
 }
 
-int GetAlignmentAdjustBottom(int address, int alignment, int alignment_offset) {
+int GetAlignmentAdjustBottom(intptr_t address, int alignment, int alignment_offset) {
     return (address + alignment_offset & alignment - 1) % alignment;
 }
 
@@ -102,53 +101,43 @@ void MemoryPool::AddFreeMemory(void *p, int size, const char *debug_name) {
     if (size != 0) {
         this->Mutex.Lock();
 
-        if ((bMemoryTracing != 0) && this->DebugTracingEnabled) {
-            this->TraceFreeMemory(p, size);
+        if (bMemoryTracing && this->DebugTracingEnabled) {
+            TraceFreeMemory(p, size);
         }
 
-        FreeBlock *free_block = static_cast<FreeBlock *>(p);
-        free_block->Size = size;
-        free_block->MagicNumber = 0x44443333;
+        FreeBlock *new_free_block = static_cast<FreeBlock *>(p);
+        new_free_block->Size = size;
+        new_free_block->MagicNumber = 0x44443333;
 
-        FreeBlock *insert_point = this->FreeBlockList.GetHead();
-        while ((insert_point != this->FreeBlockList.EndOfList()) &&
-               (reinterpret_cast<uintptr_t>(insert_point) <= reinterpret_cast<uintptr_t>(free_block))) {
-            insert_point = insert_point->GetNext();
+        FreeBlock *f = this->FreeBlockList.GetHead();
+        while (f != this->FreeBlockList.EndOfList() && f <= new_free_block) {
+            f = f->GetNext();
         }
 
-        FreeBlock *prev_block = insert_point->GetPrev();
-        prev_block->Next = free_block;
-        insert_point->Prev = free_block;
-        free_block->Prev = prev_block;
-        free_block->Next = insert_point;
+        this->FreeBlockList.AddBefore(f, new_free_block);
 
-        int block_size = free_block->Size;
-        FreeBlock *next_block = reinterpret_cast<FreeBlock *>(reinterpret_cast<char *>(free_block) + block_size);
-        void *fill_end = next_block;
-        FreeBlock *fill_start = free_block + 1;
-
-        if (next_block == insert_point) {
-            fill_end = next_block + 1;
-            free_block->Size = block_size + next_block->Size;
-            next_block->Remove();
+        // a GetTop inline missing
+        char *fill_bot = reinterpret_cast<char *>(new_free_block + 1);
+        char *fill_top = reinterpret_cast<char *>(new_free_block->GetTop());
+        if (fill_top == reinterpret_cast<char *>(f)) {
+            fill_top = reinterpret_cast<char *>(f + 1);
+            new_free_block->Size += f->Size;
+            this->FreeBlockList.Remove(f);
         }
 
-        prev_block = free_block->GetPrev();
-        if ((reinterpret_cast<char *>(prev_block) + prev_block->Size) == reinterpret_cast<char *>(free_block)) {
-            prev_block->Size = prev_block->Size + free_block->Size;
-            next_block = free_block->GetNext();
-            free_block->Remove();
-            fill_start = free_block;
-            free_block = prev_block;
+        f = new_free_block->GetPrev();
+        if (f->GetTop() == new_free_block) {
+            fill_bot = reinterpret_cast<char *>(new_free_block);
+            f->Size += new_free_block->Size;
+            this->FreeBlockList.Remove(new_free_block);
+            new_free_block = f;
         }
 
         if (this->DebugFillEnabled) {
             if (bMemoryRandomFillPattern != 0) {
-                bMemSet(fill_start, bGetTicker(),
-                        reinterpret_cast<char *>(fill_end) - reinterpret_cast<char *>(fill_start));
+                bMemSet(fill_bot, bGetTicker(), fill_top - fill_bot);
             } else {
-                bMemSet(fill_start, 0xee,
-                        reinterpret_cast<char *>(fill_end) - reinterpret_cast<char *>(fill_start));
+                bMemSet(fill_bot, 0xee, fill_top - fill_bot);
             }
         }
 
@@ -159,39 +148,39 @@ void MemoryPool::AddFreeMemory(void *p, int size, const char *debug_name) {
 void *MemoryPool::AllocateMemory(int size, int alignment, int alignment_offset, int start_from_top, int use_best_fit, int *new_size) {
     this->Mutex.Lock();
 
-    unsigned int actual_size = (size + 3U) & 0xfffffffc;
-    if (static_cast<int>(actual_size) < 0x10) {
-        actual_size = 0x10;
+    size = (size + 3) & ~3;
+    if (static_cast<int>(size) < 16) {
+        size = 16;
     }
 
-    FreeBlock *best_block = nullptr;
-    int best_align_adjust = 0;
-    int best_remaining = 0x7fffffff;
-    void *mem_bottom;
+    FreeBlock *best_free_block = nullptr;
+    int best_alignment_adjust = 0;
+    int best_amount_leftover = 0x7fffffff;
 
     if (start_from_top != 0) {
-        for (FreeBlock *block = this->FreeBlockList.GetHead(); block != this->FreeBlockList.EndOfList(); block = block->GetNext()) {
-            int align_adjust = GetAlignmentAdjustTop(reinterpret_cast<intptr_t>(block), alignment, alignment_offset);
-            int remaining = block->Size - (actual_size + align_adjust);
+        for (FreeBlock *f = this->FreeBlockList.GetHead(); f != this->FreeBlockList.EndOfList(); f = f->GetNext()) {
+            int alignment_adjust = GetAlignmentAdjustTop(reinterpret_cast<intptr_t>(f), alignment, alignment_offset);
+            int amount_leftover = f->Size - (size + alignment_adjust);
 
-            if (((remaining == 0) || (remaining > 0xf)) && (remaining < best_remaining)) {
-                best_remaining = remaining;
-                best_align_adjust = align_adjust;
-                best_block = block;
+            if (((amount_leftover == 0) || (amount_leftover > 0xf)) && (amount_leftover < best_amount_leftover)) {
+                best_amount_leftover = amount_leftover;
+                best_alignment_adjust = alignment_adjust;
+                best_free_block = f;
                 if (use_best_fit == 0) {
                     break;
                 }
             }
         }
     } else {
-        for (FreeBlock *block = this->FreeBlockList.GetTail(); block != this->FreeBlockList.EndOfList(); block = block->GetPrev()) {
-            int align_adjust = GetAlignmentAdjustBottom(reinterpret_cast<intptr_t>(reinterpret_cast<char *>(block) + block->Size) - actual_size, alignment, alignment_offset);
-            int remaining = block->Size - (actual_size + align_adjust);
+        for (FreeBlock *f = this->FreeBlockList.GetTail(); f != this->FreeBlockList.EndOfList(); f = f->GetPrev()) {
+            int alignment_adjust =
+                GetAlignmentAdjustBottom(reinterpret_cast<intptr_t>(reinterpret_cast<char *>(f) + f->Size) - size, alignment, alignment_offset);
+            int amount_leftover = f->Size - (size + alignment_adjust);
 
-            if (((remaining == 0) || (remaining > 0xf)) && (remaining < best_remaining)) {
-                best_remaining = remaining;
-                best_align_adjust = align_adjust;
-                best_block = block;
+            if (((amount_leftover == 0) || (amount_leftover > 15)) && (amount_leftover < best_amount_leftover)) {
+                best_amount_leftover = amount_leftover;
+                best_alignment_adjust = alignment_adjust;
+                best_free_block = f;
                 if (use_best_fit == 0) {
                     break;
                 }
@@ -199,67 +188,66 @@ void *MemoryPool::AllocateMemory(int size, int alignment, int alignment_offset, 
         }
     }
 
-    if (best_block == nullptr) {
+    if (best_free_block == nullptr) {
         this->Mutex.Unlock();
         return nullptr;
     }
 
-    int allocated_size = actual_size + best_align_adjust;
+    size += best_alignment_adjust;
 
+    void *mem_bottom;
     if (start_from_top == 0) {
-        int remaining = best_block->Size - allocated_size;
-        mem_bottom = reinterpret_cast<char *>(best_block) + remaining;
-        best_block->Size = remaining;
+        mem_bottom = reinterpret_cast<char *>(best_free_block->GetTop()) - size;
+        best_free_block->Size -= size;
 
-        if (remaining == 0) {
-            best_block->Remove();
-            this->CheckFancyStompDetector(reinterpret_cast<FreeBlock *>(mem_bottom) + 1, allocated_size - 0x10);
+        if (best_free_block->Size == 0) {
+            FreeBlockList.Remove(best_free_block);
+            CheckFancyStompDetector(reinterpret_cast<FreeBlock *>(mem_bottom) + 1, size - sizeof(FreeBlock));
         } else {
-            this->CheckFancyStompDetector(mem_bottom, allocated_size);
+            CheckFancyStompDetector(mem_bottom, size);
         }
-        best_block = reinterpret_cast<FreeBlock *>(mem_bottom);
     } else {
-        this->CheckFancyStompDetector(best_block + 1, allocated_size - 0x10);
+        mem_bottom = best_free_block;
+        CheckFancyStompDetector(best_free_block + 1, size - sizeof(FreeBlock));
 
-        if (best_block->Size != allocated_size) {
-            FreeBlock *next_block = reinterpret_cast<FreeBlock *>(reinterpret_cast<char *>(best_block) + allocated_size);
-            this->CheckFancyStompDetector(next_block, 0x10);
+        if (best_free_block->Size != size) {
+            FreeBlock *new_free_block = reinterpret_cast<FreeBlock *>(reinterpret_cast<char *>(best_free_block) + size);
+            CheckFancyStompDetector(new_free_block, sizeof(FreeBlock));
 
-            int old_size = best_block->Size;
-            next_block->MagicNumber = 0x44443333;
-            next_block->Size = old_size - allocated_size;
+            new_free_block->Size = best_free_block->Size - size;
+            new_free_block->MagicNumber = 0x44443333;
 
-            FreeBlock *old_next = best_block->GetNext();
-            best_block->Next = next_block;
-            old_next->Prev = next_block;
-            next_block->Prev = best_block;
-            next_block->Next = old_next;
+            FreeBlockList.AddAfter(best_free_block, new_free_block);
         }
 
-        best_block->Remove();
+        FreeBlockList.Remove(best_free_block);
     }
 
     if (this->DebugFillEnabled) {
         if (bMemoryRandomFillPattern != 0) {
-            bMemSet(best_block, bGetTicker(), allocated_size);
+            bMemSet(mem_bottom, bGetTicker(), size);
         } else {
-            bMemSet(best_block, 0xaa, allocated_size);
+            bMemSet(mem_bottom, 0xaa, size);
         }
     }
 
-    int amount_allocated = this->AmountAllocated + allocated_size;
+    // TODO milestone
+    if (bIsBFunkAvailable()) {
+        // TraceAllocateMemory()
+    }
+
     this->NumAllocations++;
     this->TotalNumAllocations++;
-    this->AmountAllocated = amount_allocated;
-    if (this->MostAmountAllocated < amount_allocated) {
-        this->MostAmountAllocated = amount_allocated;
+    this->AmountAllocated += size;
+    if (this->AmountAllocated > this->MostAmountAllocated) {
+        this->MostAmountAllocated = this->AmountAllocated;
     }
     this->AmountFree = this->PoolSize - this->AmountAllocated;
     this->LeastAmountFree = this->PoolSize - this->MostAmountAllocated;
 
     this->Mutex.Unlock();
-    *new_size = allocated_size;
-    return best_block;
+    *new_size = size;
+    return mem_bottom;
 }
 
 int MemoryPool::GetAmountFree() {
@@ -290,27 +278,28 @@ void MemoryPool::VerifyPoolIntegrity(bool verify_free_pattern) {
     this->Mutex.Lock();
 
     int errors = 0;
-    for (FreeBlock *free_block = this->FreeBlockList.GetHead(); free_block != this->FreeBlockList.EndOfList();
-         free_block = free_block->GetNext()) {
-        if ((bIsValidPointer(free_block, 1) == 0) || (bIsValidPointer(free_block->Next, 1) == 0) ||
-            (bIsValidPointer(free_block->Prev, 1) == 0) || (free_block->MagicNumber != 0x44443333)) {
+    FreeBlock *previous_f = this->FreeBlockList.GetHead();
+    FreeBlock *f;
+    for (f = previous_f; f != this->FreeBlockList.EndOfList(); f = f->GetNext()) {
+        if (!bIsValidPointer(f, 1) || !bIsValidPointer(f->GetNext(), 1) || !bIsValidPointer(f->GetPrev(), 1) || (f->MagicNumber != 0x44443333)) {
             errors++;
         } else {
-            if (found_memory_stomp_once_3842 != 0) {
+            static bool found_memory_stomp_once = false;
+            if (found_memory_stomp_once) {
                 break;
             }
 
             if (verify_free_pattern && this->DebugFillEnabled && (bMemoryRandomFillPattern == 0)) {
-                int *p = reinterpret_cast<int *>(free_block + 1);
-                int *end = reinterpret_cast<int *>(reinterpret_cast<char *>(free_block) + free_block->Size);
+                int *bot = reinterpret_cast<int *>(f + 1);
+                int *top = reinterpret_cast<int *>(f->GetTop());
 
-                while (p != end) {
-                    if (*p != static_cast<int>(0xeeeeeeee)) {
-                        found_memory_stomp_once_3842 = 1;
+                while (bot != top) {
+                    if (*bot != static_cast<int>(0xeeeeeeee)) {
+                        found_memory_stomp_once = true;
                         errors++;
                         break;
                     }
-                    p++;
+                    bot++;
                 }
             }
         }
@@ -322,12 +311,16 @@ void MemoryPool::VerifyPoolIntegrity(bool verify_free_pattern) {
 
     if (errors != 0) {
         bBreak();
-        this->PrintAllocationsByAddress(0, 0x7fffffff);
+        PrintAllocationsByAddress(0, 0x7fffffff);
+        if (errors != 0) {
+            goto asd;
+        }
     }
 
+    // TODO dwarf (previous_header)
     for (AllocationHeader *header = this->AllocationHeaderList.GetHead(); header != this->AllocationHeaderList.EndOfList();
          header = header->GetNext()) {
-        if ((bIsValidPointer(header, 1) == 0) || (bIsValidPointer(header->Next, 1) == 0) || (bIsValidPointer(header->Prev, 1) == 0) ||
+        if (!bIsValidPointer(header, 1) || !bIsValidPointer(header->GetNext(), 1) || !bIsValidPointer(header->GetPrev(), 1) ||
             (header->MagicNumber != 0x22)) {
             errors++;
         }
@@ -338,38 +331,46 @@ void MemoryPool::VerifyPoolIntegrity(bool verify_free_pattern) {
         }
     }
 
+asd:
     this->Mutex.Unlock();
 }
 
-BOOL CheckFlipMemoryByAddress(AllocationHeader *a, AllocationHeader *b) {
+int CheckFlipMemoryByAddress(AllocationHeader *a, AllocationHeader *b) {
     return a->GetBottomAddress() <= b->GetBottomAddress();
 }
 
-BOOL CheckFlipMemoryByAllocationNumber(AllocationHeader *a, AllocationHeader *b) {
+int CheckFlipMemoryByAllocationNumber(AllocationHeader *a, AllocationHeader *b) {
     return true;
 }
 
 void MemoryPool::PrintAllocationsByAddress(int from_allocation, int to_allocation) {
     this->AllocationHeaderList.Sort(CheckFlipMemoryByAddress);
-    bReleasePrintf("\nMemoryPool: \"%s\"\n", this->pDebugName);
+    bReleasePrintf("\nMemoryPool: \"%s\"\n", GetName());
     bReleasePrintf("AllocationNumber Address      Size    Debug Text (& Line)\n");
     bReleasePrintf("=========================================================\n");
 
+    AllocationHeader *header;
     AllocationHeader *prev_header = nullptr;
-    for (AllocationHeader *header = this->AllocationHeaderList.GetHead(); header != this->AllocationHeaderList.EndOfList(); header = header->GetNext()) {
-        int free_mem = 0;
-
-        if (free_mem >= from_allocation && free_mem < to_allocation) {
-            if (prev_header != nullptr) {
+    int free_mem;
+    for (header = this->AllocationHeaderList.GetHead(); header != this->AllocationHeaderList.EndOfList(); header = header->GetNext()) {
+        if (header->GetAllocationNumber() < from_allocation) {
+            prev_header = nullptr;
+        } else if (header->GetAllocationNumber() < to_allocation) {
+            if (prev_header) {
                 unsigned char *prev_header_bot = static_cast<unsigned char *>(prev_header->GetBottomAddress());
                 unsigned char *header_bot = static_cast<unsigned char *>(header->GetBottomAddress());
                 int block_size = header_bot - prev_header_bot;
-                if (block_size != prev_header->Size) {
-                    bReleasePrintf("   *** gap in allocations ***");
+                int gap_size = block_size - prev_header->Size;
+                if (gap_size != 0) {
+                    bReleasePrintf("     *************** FREE    %6d **************\n", gap_size);
                 }
             }
 
-            bReleasePrintf("    %5d        0x%08x %7d   %s", free_mem, header->GetBottomAddress(), header->Size, header->GetDebugText());
+            bReleasePrintf("    %5d        0x%08x %7d   %s", header->GetAllocationNumber(), header->GetBottomAddress(), header->Size,
+                           header->GetDebugText());
+            if (header->GetDebugLine() != 0) {
+                bReleasePrintf(", %d", header->GetDebugLine());
+            }
             bReleasePrintf("\n");
             prev_header = header;
         } else {
@@ -380,15 +381,18 @@ void MemoryPool::PrintAllocationsByAddress(int from_allocation, int to_allocatio
 
 void MemoryPool::PrintAllocations(int from_allocation, int to_allocation) {
     this->AllocationHeaderList.Sort(CheckFlipMemoryByAllocationNumber);
-    bReleasePrintf("\nMemoryPool: \"%s\"\n", this->pDebugName);
+    bReleasePrintf("\nMemoryPool: \"%s\"\n", this->GetName());
     bReleasePrintf("AllocationNumber Address      Size    Debug Text (& Line)\n");
     bReleasePrintf("=========================================================\n");
+
     for (AllocationHeader *header = this->AllocationHeaderList.GetHead(); header != this->AllocationHeaderList.EndOfList();
          header = header->GetNext()) {
-        int allocation_number = 0;
-        if ((allocation_number >= from_allocation) && (allocation_number < to_allocation)) {
-            AllocationHeader *bottom = reinterpret_cast<AllocationHeader *>(header->GetBottomAddress());
-            bReleasePrintf("    %5d        0x%08x %7d   %s", allocation_number, bottom, header->Size, header->GetDebugText());
+        if ((header->GetAllocationNumber() >= from_allocation) && (header->GetAllocationNumber() < to_allocation)) {
+            bReleasePrintf("    %5d        0x%08x %7d   %s", header->GetAllocationNumber(), header->GetBottomAddress(), header->Size,
+                           header->GetDebugText());
+            if (header->GetDebugLine() != 0) {
+                bReleasePrintf(", %d", header->GetDebugLine());
+            }
             bReleasePrintf("\n");
         }
     }
@@ -484,7 +488,7 @@ bool bSetMemoryPoolDebugTracing(int pool_num, bool on_off) {
     bool previous;
 
     if (!on_off) {
-        void *dummy = bMalloc(0x10, "TODO", __LINE__, (pool_num & 0xf) | 0x40);
+        void *dummy = bMalloc(0x10, "Tracing disabled for this pool", 0, (pool_num & 0xf) | 0x40);
 
         previous = MemoryPools[pool_num]->SetDebugTracing(false);
         bFree(dummy);
@@ -539,6 +543,52 @@ unsigned int GetVirtualMemoryAllocParams() {
     return (GetVirtualMemoryPoolNumber() & 0xf) | 0x400;
 }
 
+void bMemoryInit() {
+#ifdef EA_PLATFORM_GAMECUBE
+    void *arenaLo;
+    void *arenaHi;
+    if (!MemoryInitialized) {
+        int nPMem = PlatformMemoryINIT();
+        arenaLo = OSGetArenaLo();
+        arenaHi = OSGetArenaHi();
+
+        OSSetArenaLo(OSInitAlloc(arenaLo, arenaHi, 1));
+        eARAMMM.Init();
+        eARAMMM.Alloc();
+
+        arenaLo = OSGetArenaLo();
+        arenaHi = OSGetArenaHi();
+        arenaLo = reinterpret_cast<void *>((reinterpret_cast<uintptr_t>(arenaLo) + 0x1f) & 0xffffffe0);
+        arenaHi = reinterpret_cast<void *>(reinterpret_cast<uintptr_t>(arenaHi) & 0xffffffe0);
+        int nBMem = static_cast<char *>(arenaHi) - static_cast<char *>(arenaLo);
+
+        if ((nPMem < 1) || (nBMem <= nPMem)) {
+            nPMem = nBMem;
+        }
+
+        OSSetCurrentHeap(OSCreateHeap(arenaLo, arenaHi));
+        OSSetArenaLo(arenaHi);
+
+        if (bMemoryTracing != 0) {
+            bFunkGameCube("CODEINE", 24, nullptr, 0);
+        }
+
+        int bware_memory_size = nPMem - 0x40000;
+        void *main_pool = OSAlloc(bware_memory_size);
+        bInitMemoryPool(0, main_pool, bware_memory_size, "Main Pool");
+        // TODO
+        void *heap_bot;
+        void *heap_top;
+        int pool_number;
+        int pool_num_VM = GetVirtualMemoryPoolNumber();
+        bInitMemoryPool(pool_num_VM, reinterpret_cast<void *>(eARAMMM.mVirtualBaseAddr), eARAMMM.mARamSize, GetVirtualMemoryPoolName());
+        MemoryInitialized = true;
+    }
+#else
+    // TODO
+#endif
+}
+
 #ifdef MILESTONE_OPT
 void *bMalloc(int size, const char *debug_text, int debug_line, int allocation_params) {
     return bWareMalloc(size, debug_text, debug_line, allocation_params);
@@ -549,15 +599,16 @@ void *bMalloc(int size, int allocation_params) {
 }
 #endif
 
-// TODO
+// TODO variable names
 void *bWareMalloc(int size, const char *debug_text, int debug_line, int allocation_params) {
-    MemoryPoolInfo *info = &MemoryPoolInfoTable[allocation_params & 0xf];
+    int pool_num = bMemoryGetPoolNum(allocation_params);
+    MemoryPoolInfo *info = &MemoryPoolInfoTable[pool_num];
 
     if (info->OverflowPoolNumber != -1) {
-        int overflow_params = (allocation_params & ~0xf) | (info->OverflowPoolNumber & 0xf);
-        if (bLargestMalloc(overflow_params) > size) {
+        int overflow_allocation_params = (allocation_params & ~0xf) | (info->OverflowPoolNumber & 0xf);
+        if (bLargestMalloc(overflow_allocation_params) > size) {
             info = &MemoryPoolInfoTable[info->OverflowPoolNumber];
-            allocation_params = overflow_params;
+            allocation_params = overflow_allocation_params;
         }
     }
 
@@ -577,45 +628,42 @@ void *bWareMalloc(int size, const char *debug_text, int debug_line, int allocati
     }
 
     if (bMemoryAutomaticVerifyPoolIntegrity != 0) {
-        if (bMemoryAllocationNumber ==
-            (bMemoryAllocationNumber / bMemoryAutomaticVerifyPoolIntegrity) * bMemoryAutomaticVerifyPoolIntegrity) {
-            bVerifyPoolIntegrity(allocation_params & 0xf);
+        if (bMemoryAllocationNumber == (bMemoryAllocationNumber / bMemoryAutomaticVerifyPoolIntegrity) * bMemoryAutomaticVerifyPoolIntegrity) {
+            bVerifyPoolIntegrity(bMemoryGetPoolNum(allocation_params));
         }
     }
 
-    int alignment = allocation_params >> 6 & 0x1ffc;
+    // TODO rename
+    int alignment = bMemoryGetAlignment(allocation_params);
     if (alignment == 0) {
-        alignment = 0x10;
+        alignment = 16;
     }
 
-    int pool_num = allocation_params & 0xf;
-    MemoryPool *pool = MemoryPools[pool_num];
-    int allocation_header_offset = (allocation_params >> 0x11 & 0x1ffc) + 0x14;
+    // TODO rename
+    int allocation_header_offset = bMemoryGetAlignmentOffset(allocation_params) + 0x14;
     int new_size;
+    pool_num = bMemoryGetPoolNum(allocation_params);
+    MemoryPool *pool = MemoryPools[pool_num];
     void *memory =
         pool->AllocateMemory(size + 0x14, alignment, allocation_header_offset, allocation_params & 0x40, allocation_params & 0x80, &new_size);
 
     if (memory != nullptr) {
-        int front_padding = 0;
-        if ((allocation_params & 0x40) != 0) {
-            front_padding = GetAlignmentAdjustTop(reinterpret_cast<intptr_t>(memory), alignment, allocation_header_offset);
+        int padding = 0;
+        int front_padding; // TODO
+        if (allocation_params & 0x40) {
+            padding = GetAlignmentAdjustTop(reinterpret_cast<intptr_t>(memory), alignment, allocation_header_offset);
         }
 
-        AllocationHeader *tail = pool->AllocationHeaderList.GetTail();
-        AllocationHeader *header = reinterpret_cast<AllocationHeader *>(reinterpret_cast<char *>(memory) + front_padding);
-        AllocationHeader *head = pool->AllocationHeaderList.EndOfList();
+        AllocationHeader *header = reinterpret_cast<AllocationHeader *>(reinterpret_cast<char *>(memory) + padding);
+        pool->AddAllocationHeader(header);
 
-        tail->Next = header;
-        pool->AllocationHeaderList.HeadNode.Prev = header;
-        header->Prev = tail;
-        header->Next = head;
         header->PoolNum = pool_num;
         header->MagicNumber = 0x22;
-        header->FrontPadding = front_padding;
+        header->FrontPadding = padding;
 
         header->Size = new_size;
         header->RequestedSize = size;
-        if (bMemoryBreakOnAllocationNumber == bMemoryAllocationNumber) {
+        if (bMemoryAllocationNumber == bMemoryBreakOnAllocationNumber) {
             bBreak();
         }
 
@@ -623,8 +671,8 @@ void *bWareMalloc(int size, const char *debug_text, int debug_line, int allocati
         return &header[1];
     }
 
-    bReleasePrintf("ERROR:  Out of memory in pool %s allocating %s (size = %d).  Largest possible = %d  Total = %d", pool->GetName(),
-                   debug_text, size, bLargestMalloc(allocation_params), bCountFreeMemory(pool_num));
+    bReleasePrintf("ERROR:  Out of memory in pool %s allocating %s (size = %d).  Largest possible = %d  Total = %d", pool->GetName(), debug_text,
+                   size, bLargestMalloc(allocation_params), bCountFreeMemory(pool_num));
     bMemoryPrintAllocationsByAddress(pool_num, 0, 0x7fffffff);
     bBreak();
     return nullptr;
@@ -720,6 +768,12 @@ int bLargestMalloc(int allocation_params) {
     }
     int pool = MemoryPools[bMemoryGetPoolNum(allocation_params)]->GetLargestFreeBlock() - 0x5c;
     int alignment = bMemoryGetAlignment(allocation_params);
+    if (alignment == 0) {
+        alignment = 16;
+    }
+    if (alignment < 128) {
+        alignment = 128;
+    }
     int largest_malloc = pool - alignment;
     if (largest_malloc < 0) {
         largest_malloc = 0;
@@ -770,6 +824,8 @@ int bMemoryGetAllocations(int pool_num, void **allocations, int max_allocations)
     return 0;
 }
 
+static char bMemoryDebugStringNoName[8] = "NO_NAME";
+
 // UNSOLVED
 void *bMemoryAllocator::Alloc(unsigned int size, const EA::TagValuePair &flags) {
     // TODO magic numbers (flags)
@@ -792,7 +848,7 @@ void *bMemoryAllocator::Alloc(unsigned int size, const EA::TagValuePair &flags) 
                 break;
         }
     }
-    return bMalloc(size, "TODO", __LINE__, allocation_params);
+    return bMalloc(size, bMemoryDebugStringNoName, 0, allocation_params);
 }
 
 void bMemoryAllocator::Free(void *pBlock, unsigned int size) {
@@ -812,49 +868,9 @@ int bMemoryAllocator::Release() {
     return this->mRefcount;
 }
 
-void bMemoryInit() {
-#ifdef EA_PLATFORM_GAMECUBE
-    if (MemoryInitialized == 0) {
-        int main_pool_size = PlatformMemoryINIT();
-        void *arena_lo = OSGetArenaLo();
-        void *arena_hi = OSGetArenaHi();
-
-        OSSetArenaLo(OSInitAlloc(arena_lo, arena_hi, 1));
-        eARAMMM.Init();
-        eARAMMM.Alloc();
-
-        void *new_lo = OSGetArenaLo();
-        void *new_hi = OSGetArenaHi();
-        uintptr_t heap_hi = reinterpret_cast<uintptr_t>(new_hi) & 0xffffffe0;
-        uintptr_t heap_lo = (reinterpret_cast<uintptr_t>(new_lo) + 0x1fU) & 0xffffffe0;
-        int available_size = heap_hi - heap_lo;
-
-        if ((main_pool_size < 1) || (available_size <= main_pool_size)) {
-            main_pool_size = available_size;
-        }
-
-        OSHeapHandle heap = OSCreateHeap(reinterpret_cast<void *>(heap_lo), reinterpret_cast<void *>(heap_hi));
-        OSSetCurrentHeap(heap);
-        OSSetArenaLo(reinterpret_cast<void *>(heap_hi));
-
-        if (bMemoryTracing != 0) {
-            bFunkGameCube("CODEINE", 24, 0, 0);
-        }
-
-        void *main_memory = OSAlloc(main_pool_size - 0x40000);
-        bInitMemoryPool(0, main_memory, main_pool_size - 0x40000, "Main Pool");
-        bInitMemoryPool(GetVirtualMemoryPoolNumber(), reinterpret_cast<void *>(eARAMMM.mVirtualBaseAddr), eARAMMM.mARamSize,
-                        GetVirtualMemoryPoolName());
-        MemoryInitialized = 1;
-    }
-#else
-    // TODO
-#endif
-}
-
 void bMemoryCreatePersistentPool(int size) {
     bMemoryPersistentPoolNumber = bGetFreeMemoryPoolNum();
-    void *mem = bMalloc(size, "TODO", __LINE__, 0);
+    void *mem = bMalloc(size, "Persistent Memory Pool", 0, 0);
     bInitMemoryPool(bMemoryPersistentPoolNumber, mem, size, "Persistent Pool");
     TheMemoryPersistentAllocator.SetMemoryPool(bMemoryPersistentPoolNumber);
 }

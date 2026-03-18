@@ -9,11 +9,16 @@
 #include <stdarg.h>
 
 bool IsWhiteSpace(char c) {
-    if (c == ' ') return true;
-    if (c == '\n') return true;
-    if (c == '\t') return true;
-    if (c == '=') return true;
-    if (c == ',') return true;
+    if (c == ' ')
+        return true;
+    else if (c == '\n')
+        return true;
+    else if (c == '\t')
+        return true;
+    else if (c == '=')
+        return true;
+    else if (c == ',')
+        return true;
     return c == '\r';
 }
 
@@ -231,7 +236,6 @@ char *SpeedScript::GetNextCommand() {
     return this->GetName(entry);
 }
 
-// UNSOLVED
 char *SpeedScript::GetNextCommand(const char *command) {
     char *s;
     while ((s = GetNextCommand()) != nullptr) {
@@ -288,8 +292,17 @@ int SpeedScript::GetNextArgumentInt() {
 
 short SpeedScript::GetNextArgumentShort() {
     int a = this->GetNextArgumentInt();
-    if (a + 0x8000U > 0x17fff) {
+    if (a < -32768 || a > 65535) {
         this->Error("Parameter %d wouldn\'t fit into short in %s\n", a, this->GetPositionName());
+    }
+    return a;
+}
+
+// STRIPPED
+char SpeedScript::GetNextArgumentChar() {
+    int a = this->GetNextArgumentInt();
+    if (a < -128 || a > 255) {
+        this->Error("Parameter %d wouldn\'t fit into char in %s\n", a, this->GetPositionName());
     }
     return a;
 }

@@ -2,7 +2,6 @@
 
 bQuaternion bIdentityQuaternion(0.0f, 0.0f, 0.0f, 1.0f);
 
-// UNSOLVED
 bQuaternion &bQuaternion::Slerp(bQuaternion &r, const bQuaternion &target, float t) const {
     float cos_theta = bDot(reinterpret_cast<const bVector4 *>(this), reinterpret_cast<const bVector4 *>(&target));
     float scale1;
@@ -52,8 +51,8 @@ void bMatrixToQuaternion(bQuaternion &quat, const bMatrix4 &m) {
         }
         int j = (i + 1) % 3;
         int k = (j + 1) % 3;
-        float q[4];
         float t = bSqrt((m[i][i] - m[j][j] - m[k][k]) + 1.0f);
+        float q[4];
         q[i] = t * 0.5f;
         if (t != 0.0f) {
             t = 0.5f / t;

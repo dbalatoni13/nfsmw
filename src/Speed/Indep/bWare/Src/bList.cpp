@@ -29,7 +29,7 @@ int bList::TraversebList(bNode *match_node) {
     return n;
 }
 
-// UNSOLVED
+// UNSOLVED, it matches in ProStreet..
 void bList::Sort(SortFunc check_flip) {
     bNode *node = this->GetHead();
     bNode *next_node = node->GetNext();
@@ -52,91 +52,98 @@ void bList::Sort(SortFunc check_flip) {
 }
 
 void bList::MergeSort(SortFunc cmp) {
-    bNode *list = this->HeadNode.Next;
-    if (list == &this->HeadNode) {
+    if (IsEmpty()) {
         return;
     }
 
-    int insize = 1;
-    list->Prev = this->HeadNode.Prev;
-    this->HeadNode.Prev->Next = list;
+    bNode *list = GetHead();
+    list->Prev = GetTail();
+    GetTail()->Next = list;
 
     bNode *p;
     bNode *q;
     bNode *e;
     bNode *tail;
     bNode *oldhead;
+    int insize = 1;
     int nmerges;
     int psize;
     int qsize;
+    int i;
 
     while (true) {
-        oldhead = nullptr;
+        p = list;
+        oldhead = p;
+        list = nullptr;
         tail = nullptr;
         nmerges = 0;
-        p = list;
 
-        while (p != nullptr) {
+        while (p) {
             nmerges++;
 
-            psize = 0;
             q = p;
-            {
-                int i = 0;
-                while (i < insize) {
-                    psize++;
-                    q = q->Next;
-                    i++;
-                    if (q == list) {
-                        q = nullptr;
-                        break;
-                    }
-                }
+            psize = 0;
+            for (i = 0; i < insize; i++) {
+                psize++;
+                q = q->Next == oldhead ? nullptr : q->Next;
+                if (q == nullptr)
+                    break;
             }
             qsize = insize;
-            while (psize > 0 || (qsize > 0 && q != nullptr)) {
-                if (psize > 0 && (qsize == 0 || q == nullptr || cmp(p, q) > 0)) {
+            while (psize > 0 || (qsize > 0 && q)) {
+                if (psize == 0) {
+                    e = q;
+                    q = q->Next;
+                    qsize--;
+                    if (q == oldhead) {
+                        q = nullptr;
+                    }
+                } else if (qsize == 0 || !q) {
+                    e = p;
+                    p = p->Next;
+                    psize--;
+                    if (p == oldhead) {
+                        p = nullptr;
+                    }
+                } else if (cmp(p, q) > 0) {
                     psize--;
                     e = p;
                     p = p->Next;
-                    if (p == list) {
+                    if (p == oldhead) {
                         p = nullptr;
                     }
                 } else {
                     qsize--;
                     e = q;
                     q = q->Next;
-                    if (q == list) {
+                    if (q == oldhead) {
                         q = nullptr;
                     }
                 }
 
-                if (tail != nullptr) {
+                if (tail) {
                     tail->Next = e;
-                    e->Prev = tail;
                 } else {
-                    oldhead = e;
-                    e->Prev = nullptr;
+                    list = e;
                 }
 
+                e->Prev = tail;
                 tail = e;
             }
-
             p = q;
         }
 
-        tail->Next = oldhead;
-        oldhead->Prev = tail;
-        if (nmerges < 2) {
-            oldhead->Prev = &this->HeadNode;
-            this->HeadNode.Next = oldhead;
+        tail->Next = list;
+        list->Prev = tail;
+        if (nmerges <= 1) {
+            list->Prev = &this->HeadNode;
+            this->HeadNode.Next = list;
             this->HeadNode.Prev = tail;
             tail->Next = &this->HeadNode;
             return;
         }
 
         insize *= 2;
-        list = oldhead;
     }
 }
 

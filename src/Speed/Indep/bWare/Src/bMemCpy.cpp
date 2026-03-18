@@ -6,36 +6,79 @@ void bMemCpy(void *dest, const void *src, unsigned int numbytes) {
     char *psrc = (char *)src;
     int size = numbytes;
     int alignment = (int)pdest | (int)psrc;
-    
+
     if (!(alignment & 7)) {
-        for (; size > 15; ) {
+        for (; size > 15;) {
             size -= 16;
-            unsigned long long t0 = ((unsigned long long*)psrc)[0];
-            unsigned long long t1 = ((unsigned long long*)psrc)[1];
-            ((unsigned long long*)pdest)[0] = t0;
-            ((unsigned long long*)pdest)[1] = t1;
+            unsigned long long t0 = ((unsigned long long *)psrc)[0];
+            unsigned long long t1 = ((unsigned long long *)psrc)[1];
+            ((unsigned long long *)pdest)[0] = t0;
+            ((unsigned long long *)pdest)[1] = t1;
             psrc += 16;
             pdest += 16;
         }
     }
     if (!(alignment & 3)) {
-        for (; size > 7; ) {
+        for (; size > 7;) {
             size -= 8;
-            unsigned int t0 = ((unsigned int*)psrc)[0];
-            unsigned int t1 = ((unsigned int*)psrc)[1];
-            ((unsigned int*)pdest)[0] = t0;
-            ((unsigned int*)pdest)[1] = t1;
+            unsigned int t0 = ((unsigned int *)psrc)[0];
+            unsigned int t1 = ((unsigned int *)psrc)[1];
+            ((unsigned int *)pdest)[0] = t0;
+            ((unsigned int *)pdest)[1] = t1;
             psrc += 8;
             pdest += 8;
         }
     }
-    for ( ; size; )
-    {
+    for (; size;) {
         --size;
         unsigned char t0 = *psrc;
         *pdest = t0;
         ++psrc;
         ++pdest;
+    }
+}
+
+void bMemSet(void *dest, unsigned char pattern, unsigned int size) {
+    int original_size = size;
+    char *pdest = reinterpret_cast<char *>(dest);
+    int32 pattern32 = (pattern << 24) + (pattern << 16) + (pattern << 8) + pattern;
+
+    if ((reinterpret_cast<uintptr_t>(pdest) & 3) == 0) {
+        while (((reinterpret_cast<uintptr_t>(pdest) & 0xf) != 0) && (size > 3)) {
+            *reinterpret_cast<uint32 *>(&pdest[0]) = pattern32;
+            pdest += 4;
+            size -= 4;
+        }
+    }
+
+    if ((reinterpret_cast<uintptr_t>(pdest) & 7) == 0) {
+        volatile uint64 convert64;
+        reinterpret_cast<volatile uint32 *>(&convert64)[0] = pattern32;
+        reinterpret_cast<volatile uint32 *>(&convert64)[1] = pattern32;
+        uint64 pattern64 = convert64;
+
+        while (size > 15) {
+            *reinterpret_cast<uint64 *>(&pdest[0]) = pattern64;
+            size -= 16;
+            *reinterpret_cast<uint64 *>(&pdest[8]) = pattern64;
+            pdest += 16;
+        }
+    }
+
+    if ((reinterpret_cast<uintptr_t>(pdest) & 3) == 0) {
+        while (size > 7) {
+            reinterpret_cast<uint32 *>(pdest)[0] = pattern32;
+            reinterpret_cast<uint32 *>(pdest)[1] = pattern32;
+            pdest += 8;
+            size -= 8;
+        }
+    }
+
+    while (size != 0) {
+        int n;
+        *pdest = pattern;
+        pdest++;
+        size--;
     }
 }
 
@@ -48,52 +91,6 @@ int bMemCmp(const void *s1, const void *s2, unsigned int numbytes) {
         s2 = reinterpret_cast<void *>(reinterpret_cast<unsigned int>(s2) + 1);
     }
     return *reinterpret_cast<const unsigned char *>(s1) - *reinterpret_cast<const unsigned char *>(s2);
-}
-
-void bMemSet(void *dest, unsigned char c, unsigned int numbytes) {
-    int *idest = reinterpret_cast<int *>(dest);
-    int fill = c << 24;
-
-    fill = fill + (c << 16);
-    fill = fill + (c << 8);
-    fill = fill + c;
-
-    if ((reinterpret_cast<uintptr_t>(idest) & 3) == 0) {
-        while (((reinterpret_cast<uintptr_t>(idest) & 0xf) != 0) && (numbytes > 3)) {
-            *idest = fill;
-            idest++;
-            numbytes -= 4;
-        }
-    }
-
-    if ((reinterpret_cast<uintptr_t>(idest) & 7) == 0) {
-        volatile unsigned long long convert64;
-        reinterpret_cast<volatile int *>(&convert64)[0] = fill;
-        reinterpret_cast<volatile int *>(&convert64)[1] = fill;
-        unsigned long long pattern64 = convert64;
-
-        while (numbytes > 0xf) {
-            *reinterpret_cast<unsigned long long *>(&idest[0]) = pattern64;
-            numbytes -= 0x10;
-            *reinterpret_cast<unsigned long long *>(&idest[2]) = pattern64;
-            idest += 4;
-        }
-    }
-
-    if ((reinterpret_cast<uintptr_t>(idest) & 3) == 0) {
-        while (numbytes > 7) {
-            idest[0] = fill;
-            idest[1] = fill;
-            idest += 2;
-            numbytes -= 8;
-        }
-    }
-
-    while (numbytes != 0) {
-        *reinterpret_cast<unsigned char *>(idest) = c;
-        idest = reinterpret_cast<int *>(reinterpret_cast<char *>(idest) + 1);
-        numbytes--;
-    }
 }
 
 void bOverlappedMemCpy(void *dest, const void *src, unsigned int numbytes) {
