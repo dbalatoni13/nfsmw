@@ -2,6 +2,8 @@
 
 #include "Speed/Indep/bWare/Inc/bChunk.hpp"
 
+void bEndianSwap32(void *value);
+
 static char *TrackOBBTable = 0;
 static int NumTrackOBBs = 0;
 
@@ -12,16 +14,23 @@ int GetNumTrackOBBs() {
 }
 
 TrackOBB *GetTrackOBB(int index) {
-    if (index < 0 || index >= NumTrackOBBs || !TrackOBBTable) {
-        return 0;
-    }
-
     return reinterpret_cast<TrackOBB *>(TrackOBBTable + index * 0x60);
 }
 
 int LoaderTrackOBB(bChunk *chunk) {
-    NumTrackOBBs = chunk->Size / 0x60;
-    TrackOBBTable = chunk->GetData();
+    if (chunk->GetID() != 0x34191) {
+        return 0;
+    }
+
+    TrackOBBTable = chunk->GetAlignedData(16);
+    NumTrackOBBs = chunk->GetAlignedSize(16) / 0x60;
+    for (int i = 0; i < NumTrackOBBs; i++) {
+        int *obb_words = reinterpret_cast<int *>(TrackOBBTable + i * 0x60);
+        for (int j = 0; j < 24; j++) {
+            bEndianSwap32(&obb_words[j]);
+        }
+    }
+
     return 1;
 }
 

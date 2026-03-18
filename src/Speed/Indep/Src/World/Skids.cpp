@@ -289,12 +289,10 @@ void CloseSkids() {
 }
 
 void DeleteThisSkid(SkidSet *skid_set) {
-    if (!skid_set) {
-        return;
-    }
-
     SkidSetList.Remove(skid_set);
-    delete skid_set;
+    if (skid_set) {
+        delete skid_set;
+    }
 }
 
 void DeleteAllSkids() {
