@@ -14,6 +14,8 @@ class MemoryCard {
         ST_MAX = 3,
     };
 
+    void Tick(int);
+
     static MemoryCard *s_pThis;
     static int IsCardBusy();
 };

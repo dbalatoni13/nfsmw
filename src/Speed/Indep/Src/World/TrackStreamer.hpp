@@ -162,7 +162,6 @@ class TrackStreamer {
         return CurrentVisibleSectionTable.IsSet(section_number);
     }
 
-  private:
     TrackStreamingSection *pTrackStreamingSections;       // offset 0x0, size 0x4
     int NumTrackStreamingSections;                        // offset 0x4, size 0x4
     DiscBundleSection *pDiscBundleSections;               // offset 0x8, size 0x4

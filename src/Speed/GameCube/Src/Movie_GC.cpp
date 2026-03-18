@@ -73,9 +73,7 @@ struct GCHW_VD {
     void iDraw();
 };
 
-struct MoviePlayer {
-    void FillInTextureInfo(unsigned int *buffer, TextureInfo *texture_info, RealShape::Shape *yuv_shape);
-};
+/* MoviePlayer defined in Platform_G.cpp */
 
 GCHW_VD *gGCVD;
 

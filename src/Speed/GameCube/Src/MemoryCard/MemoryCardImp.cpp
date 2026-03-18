@@ -80,13 +80,6 @@ struct SaveReq {
 };
 } // namespace RealmcIface
 
-class cFEng {
-  public:
-    static cFEng *mInstance;
-
-    void QueuePackageMessage(unsigned int pMessage, const char *pPackageName, FEObject *obj);
-};
-
 struct MemoryCardImp {
     static unsigned short *gEntryType[MemoryCard::ST_MAX];
     static unsigned short gContentName[];

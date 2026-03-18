@@ -1,9 +1,95 @@
 #include "Speed/Indep/Src/Frontend/MemoryCard/MemoryCard.hpp"
 #include "Speed/Indep/Src/Misc/BuildRegion.hpp"
+#include "Speed/Indep/Src/Misc/GameFlow.hpp"
 #include "Speed/Indep/Src/Misc/Platform.h"
+#include "Speed/Indep/Src/World/TrackStreamer.hpp"
 #include "Speed/Indep/bWare/Inc/bMemory.hpp"
 #include <dolphin/DVDPriv.h>
 #include "dolphin.h"
+
+/* LGWheels is defined later in the unity build, so forward-declare wrappers with asm labels */
+class LGWheels;
+extern LGWheels *plat_lgwheels;
+
+void LGWheels_ReadAll(LGWheels *) asm("ReadAll__8LGWheels");
+int LGWheels_IsConnected(LGWheels *, long) asm("IsConnected__8LGWheelsl");
+void LGWheels_StopConstantForce(LGWheels *, long) asm("StopConstantForce__8LGWheelsl");
+void LGWheels_StopSurfaceEffect(LGWheels *, long) asm("StopSurfaceEffect__8LGWheelsl");
+void LGWheels_StopDamperForce(LGWheels *, long) asm("StopDamperForce__8LGWheelsl");
+void LGWheels_StopCarAirborne(LGWheels *, long) asm("StopCarAirborne__8LGWheelsl");
+void LGWheels_StopSlipperyRoadEffect(LGWheels *, long) asm("StopSlipperyRoadEffect__8LGWheelsl");
+void LGWheels_PlaySpringForce(LGWheels *, long, signed char, unsigned char, short) asm("PlaySpringForce__8LGWheelslScUcs");
+
+class IOModule {
+public:
+    static IOModule &GetIOModule();
+    void Update();
+};
+
+class cFEngJoyInput {
+public:
+    static cFEngJoyInput *mInstance;
+    void HandleJoy();
+};
+
+class FEObject;
+
+class cFEng {
+public:
+    static cFEng *mInstance;
+    void MakeLoadedPackagesDirty();
+    int IsPackagePushed(const char *);
+    void PushErrorPackage(const char *, int, unsigned long);
+    void PopErrorPackage();
+    void QueueGameMessage(unsigned int, const char *, unsigned int);
+    void QueuePackageMessage(unsigned int, const char *, FEObject *);
+};
+
+class EAXSound {
+public:
+    void Update(float);
+};
+
+class TextureInfo;
+namespace RealShape { class Shape; }
+
+struct MoviePlayer {
+    void Stop();
+    void FillInTextureInfo(unsigned int *, TextureInfo *, RealShape::Shape *);
+};
+
+class FEManager {
+public:
+    static FEManager *Get();
+    void Render();
+};
+
+void bSyncTaskRun();
+int DVDCheckDisk();
+void SoundPause(bool, int);
+void SetSoundControlState(bool, int, const char *);
+void FEPrintf(const char *, int, const char *, ...);
+void FEngTickSinglePackage(const char *, unsigned int);
+void eBeginScene();
+void eEndScene();
+int ServiceResourceLoading();
+int bStrLen(const char *);
+char *bStrNCpy(char *, const char *, int);
+char *bStrCat(char *, char const *, char const *);
+int ActualReadJoystickData();
+extern "C" {
+void bMemSet(void *, unsigned char, unsigned int);
+void bMemCpy(void *, const void *, unsigned int);
+}
+
+extern int FinishedLoadingGlobalSuccesful;
+extern int g_discErrorOccured;
+extern int g_discErrorNumber;
+extern EAXSound *g_pEAXSound;
+extern MoviePlayer *gMoviePlayer;
+extern const char *s_OpenCover_ErrorText[];
+extern const char FEngDiscErrorPackage[];
+extern PADStatus HardwarePadStatus[4];
 
 enum VIDEO_MODE {
     MODE_PAL = 0,
@@ -190,6 +276,288 @@ int DVDValidErrorState(int error) {
         default:
             return 0;
     }
+}
+
+void DVDErrorTask(void *, int) {
+    static int resetButtonPressed;
+    static int queuedSavingResetButtonPressed;
+    static int resetMode = -1;
+    static int softwareResetCheckStarted;
+    static u32 softwareResetStartTick;
+    static int num_queued_resets;
+
+    int errorIndex = 0;
+    unsigned int frame = 0;
+    int scrollIndex = 0;
+    int resetButtonPressedLocal = 0;
+    int language = 0;
+    unsigned int prevButtons = 0;
+    int scrollOffset = 0;
+    int errorState = 0;
+    unsigned int nextFrame;
+    int driveStatus;
+    int movieWasPlaying;
+    long ch;
+    int textLen;
+    int scrollLen;
+    int buttonMask;
+    cFEng *feng;
+    const char *pkgName;
+    char textBuf[16];
+    PADStatus padBuf[4];
+
+    do {
+        IOModule::GetIOModule().Update();
+
+        if (cFEngJoyInput::mInstance != 0) {
+            cFEngJoyInput::mInstance->HandleJoy();
+        }
+
+        if (!FinishedLoadingGlobalSuccesful) {
+            ActualReadJoystickData();
+        }
+
+        /* Check for software reset combo (L+R+Start = 0x1600) on pad 0 or pad 1 */
+        if ((HardwarePadStatus[0].button & 0x1600) == 0x1600 ||
+            (HardwarePadStatus[1].button & 0x1600) == 0x1600) {
+            if (!softwareResetCheckStarted) {
+                softwareResetStartTick = OSGetTick();
+                softwareResetCheckStarted = 1;
+            } else {
+                u32 currentTick = OSGetTick();
+                u32 ticksPerMs = *(volatile u32 *)0x800000F8 / 4000;
+                u32 elapsed = currentTick - softwareResetStartTick;
+                u32 msElapsed = elapsed / ticksPerMs;
+                if (msElapsed > 500) {
+                    resetMode = 0;
+                    resetButtonPressedLocal = 1;
+                }
+            }
+        } else {
+            softwareResetCheckStarted = 0;
+        }
+
+        if (MemoryCard::IsCardBusy()) {
+            /* Card is busy - check for reset button press and queue it */
+            if (OSGetResetSwitchState() || resetButtonPressedLocal) {
+                queuedSavingResetButtonPressed = 1;
+            } else if (queuedSavingResetButtonPressed) {
+                resetButtonPressed = 1;
+                num_queued_resets = num_queued_resets + 1;
+            }
+
+            nextFrame = frame + 1;
+            if (MemoryCard::s_pThis != 0) {
+                MemoryCard::s_pThis->Tick(16);
+            }
+            goto loop_end;
+        }
+
+        if (errorState != 0) {
+            /* Error state active - run sync tasks and handle input */
+            bSyncTaskRun();
+            if (MemoryCard::s_pThis != 0) {
+                MemoryCard::s_pThis->Tick(16);
+            }
+            DVDCheckDisk();
+
+            bMemSet(textBuf, 0, 16);
+            *(u32 *)&textBuf[0] = 2;
+            *(u32 *)&textBuf[4] = 2;
+            *(u32 *)&textBuf[8] = 2;
+            *(u32 *)&textBuf[12] = 2;
+            PADControlAllMotors((const u32 *)textBuf);
+
+            LGWheels_ReadAll(plat_lgwheels);
+            for (ch = 0; ch <= 3; ch++) {
+                if (LGWheels_IsConnected(plat_lgwheels, ch)) {
+                    LGWheels_StopConstantForce(plat_lgwheels, ch);
+                    LGWheels_StopSurfaceEffect(plat_lgwheels, ch);
+                    LGWheels_StopDamperForce(plat_lgwheels, ch);
+                    LGWheels_StopCarAirborne(plat_lgwheels, ch);
+                    LGWheels_StopSlipperyRoadEffect(plat_lgwheels, ch);
+                    LGWheels_PlaySpringForce(plat_lgwheels, ch,
+                        *(signed char *)((char *)plat_lgwheels + ch * 10 + 3),
+                        0xb4, 0xb4);
+                }
+            }
+        }
+
+        /* Check for hardware reset button */
+        if (num_queued_resets == 0 && resetMode == -1) {
+            if (OSGetResetSwitchState()) {
+                resetButtonPressed = 1;
+            }
+        }
+        if (num_queued_resets > 0 || resetButtonPressed) {
+            resetMode = 0;
+        }
+
+        driveStatus = DVDGetDriveStatus();
+
+        if (driveStatus != -1 && resetMode != -1) {
+            CheckReset(resetMode);
+        }
+
+        /* Map drive status to error index */
+        switch (driveStatus) {
+            case 5:
+                errorIndex = 0;
+                break;
+            case 4:
+                errorIndex = 1;
+                break;
+            case 6:
+                errorIndex = 2;
+                break;
+            case 11:
+                errorIndex = 3;
+                break;
+            case -1:
+                errorIndex = 4;
+                break;
+        }
+
+        if (MemoryCard::IsCardBusy()) {
+            return;
+        }
+
+        errorState = DVDValidErrorState(driveStatus);
+        if (errorState != 0) {
+            /* New error detected */
+            language = GC_GetOSLanguage();
+            g_discErrorNumber = errorState;
+            if (gMoviePlayer != 0) {
+                gMoviePlayer->Stop();
+            }
+            g_discErrorOccured = 1;
+            SoundPause(true, -1);
+            SetSoundControlState(true, 0x10, "GC Error");
+            if (g_pEAXSound != 0) {
+                g_pEAXSound->Update(0.1f);
+            }
+
+            feng = cFEng::mInstance;
+            pkgName = "DiscError.fng";
+            if (!feng->IsPackagePushed(pkgName)) {
+                feng->PushErrorPackage(pkgName, 0, 0xff);
+            }
+
+            nextFrame = frame + 1;
+            FEPrintf(pkgName, 0xEEFFD04F,
+                s_OpenCover_ErrorText[language * 6 + errorIndex]);
+        } else if (g_discErrorOccured == 0) {
+            nextFrame = frame + 1;
+            goto loop_end;
+        } else {
+            /* Disc error was active, check if we should service streaming */
+            nextFrame = frame + 1;
+
+            if (TheTrackStreamer.UserMemoryAllocationSize <= 0 &&
+                TheTrackStreamer.LoadingPhase != TrackStreamer::LOADING_IDLE) {
+                ServiceResourceLoading();
+                driveStatus = 1;
+                TheTrackStreamer.ServiceNonGameState();
+                TheTrackStreamer.ServiceGameState();
+            }
+
+            if (driveStatus != 0) {
+                /* Scrolling text display */
+                scrollLen = (signed char)bStrLen(
+                    s_OpenCover_ErrorText[language * 6 + errorIndex]);
+
+                bMemSet(textBuf, 0, 16);
+
+                buttonMask = 0x10;
+                if (TheGameFlowManager.GetState() == GAMEFLOW_STATE_RACING) {
+                    buttonMask = 0x40;
+                }
+
+                if ((frame & buttonMask) != (prevButtons & buttonMask)) {
+                    int rem;
+                    prevButtons = frame;
+                    rem = scrollIndex;
+                    if (scrollIndex < 0) {
+                        rem = scrollIndex + 3;
+                    }
+                    rem = rem & ~3;
+                    scrollOffset = (signed char)(3 - (scrollIndex - rem));
+                    scrollIndex = scrollIndex + 1;
+                }
+
+                bStrNCpy(textBuf,
+                    s_OpenCover_ErrorText[language * 6 + errorIndex],
+                    scrollLen - scrollOffset);
+
+                nextFrame = frame + 1;
+                textLen = bStrLen(textBuf);
+                while (textLen <= scrollLen) {
+                    bStrCat(textBuf, textBuf, " ");
+                    textLen = textLen + 1;
+                }
+
+                FEPrintf("DiscError.fng", 0xEEFFD04F, textBuf);
+
+                if (MemoryCard::s_pThis != 0) {
+                    MemoryCard::s_pThis->Tick(16);
+                }
+            } else {
+                /* Error resolved */
+                g_discErrorNumber = 0;
+                g_discErrorOccured = 0;
+                errorState = 0;
+
+                SoundPause(false, -1);
+                SetSoundControlState(false, 0x10, "GC Error");
+                if (g_pEAXSound != 0) {
+                    g_pEAXSound->Update(0.1f);
+                }
+
+                movieWasPlaying = 0;
+                if (gMoviePlayer != 0) {
+                    movieWasPlaying = 1;
+                    gMoviePlayer->Stop();
+                }
+
+                feng = cFEng::mInstance;
+                feng->MakeLoadedPackagesDirty();
+                if (feng->IsPackagePushed("DiscError.fng")) {
+                    feng->PopErrorPackage();
+                }
+                nextFrame = frame + 1;
+                if (movieWasPlaying) {
+                    feng->QueueGameMessage(0xC3960EB9, 0, 0xff);
+                }
+            }
+        }
+
+        /* Render error screen if disc error is active */
+        if (g_discErrorOccured != 0) {
+            FEngTickSinglePackage(FEngDiscErrorPackage, frame);
+            eBeginScene();
+            FEManager::Get()->Render();
+            eEndScene();
+
+            /* Read Logitech wheel data for pad input */
+            if (LGWheels_IsConnected(plat_lgwheels, 0) ||
+                LGWheels_IsConnected(plat_lgwheels, 1)) {
+                LGWheels_ReadAll(plat_lgwheels);
+                HardwarePadStatus[0].button = *(u16 *)((char *)plat_lgwheels);
+                HardwarePadStatus[1].button = *(u16 *)((char *)plat_lgwheels + 10);
+            } else {
+                PADRead(padBuf);
+                if (padBuf[0].err == 0) {
+                    bMemCpy(&HardwarePadStatus[0], &padBuf[0], 0xc);
+                }
+                if (padBuf[1].err == 0) {
+                    bMemCpy(&HardwarePadStatus[1], &padBuf[1], 0xc);
+                }
+            }
+        }
+
+    loop_end:
+        frame = nextFrame;
+    } while (g_discErrorOccured != 0);
 }
 
 void ServicePlatform() {}
