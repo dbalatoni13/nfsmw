@@ -16,6 +16,7 @@
 #include "Speed/Indep/Src/Main/AttribSupport.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 #include "Speed/Indep/Src/World/WRoadNetwork.h"
+#include "Speed/Indep/Src/World/WorldModel.hpp"
 #include "Speed/Indep/Src/World/TrackStreamer.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
@@ -1524,6 +1525,19 @@ GRaceStatus::GRaceStatus()
     if (!GRaceDatabase::Get().GetStartupRace()) {
         EnterBin(0);
         SetRoaming();
+    }
+}
+
+GRaceStatus::~GRaceStatus() {
+    if (mCheckpointModel) {
+        delete mCheckpointModel;
+        mCheckpointModel = nullptr;
+    }
+
+    if (mCheckpointEmitter) {
+        mCheckpointEmitter->UnSubscribe();
+        delete mCheckpointEmitter;
+        mCheckpointEmitter = nullptr;
     }
 }
 

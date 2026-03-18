@@ -551,6 +551,7 @@ class GRaceStatus : public UTL::COM::Object, public IVehicleCache {
     float GetSegmentLength(int segment, int lap);
 
     GRaceStatus();
+    ~GRaceStatus() override;
 
     GRaceParameters *GetRaceParameters() const {
         return mRaceParms;
