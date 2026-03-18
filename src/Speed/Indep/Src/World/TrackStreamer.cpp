@@ -2091,34 +2091,34 @@ void TrackStreamer::ReadyToMakeSpaceInPoolBridge(int param) {
 }
 
 short TrackStreamer::GetPredictedZone(StreamingPositionEntry *streaming_position) {
-    float speed = bSqrt(streaming_position->Velocity.x * streaming_position->Velocity.x +
-                        streaming_position->Velocity.y * streaming_position->Velocity.y);
-    short predicted_zone = 0;
+    float speed = bLength(&streaming_position->Velocity);
+    int predicted_zone = 0;
     bool found_predicted_zone = false;
     TrackPathZone *track_path_zone = 0;
     bVector2 predicted_position;
 
     while ((track_path_zone =
                 TheTrackPathManager.FindZone(&streaming_position->Position, TRACK_PATH_ZONE_STREAMER_PREDICTION, track_path_zone))) {
-        float zone_elevation = track_path_zone->Elevation;
+        float zone_elevation = track_path_zone->GetElevation();
         if ((0.0f < zone_elevation && streaming_position->Elevation < zone_elevation) ||
             (zone_elevation < 0.0f && -zone_elevation < streaming_position->Elevation)) {
             continue;
         }
 
-        if (speed <= kPredictedZoneStopProjectSpeed_TrackStreamer * kPredictedZoneScale_TrackStreamer) {
-            if (kPredictedZoneMaxDistance_TrackStreamer < speed * kPredictedZoneScale_TrackStreamer) {
-                bScaleAdd(&predicted_position, &streaming_position->Position, &streaming_position->Velocity,
-                          kPredictedZoneMaxDistance_TrackStreamer / speed);
-            } else {
-                bScaleAdd(&predicted_position, &streaming_position->Position, &streaming_position->Velocity,
-                          kPredictedZoneScale_TrackStreamer);
-            }
-        } else {
+        float max_speed = kPredictedZoneStopProjectSpeed_TrackStreamer * kPredictedZoneScale_TrackStreamer;
+        float distance = speed * kPredictedZoneScale_TrackStreamer;
+        DrivableScenerySection *drivable_section;
+        if (max_speed < speed) {
             predicted_position = streaming_position->Position;
+        } else if (kPredictedZoneMaxDistance_TrackStreamer < distance) {
+            bScaleAdd(&predicted_position, &streaming_position->Position, &streaming_position->Velocity,
+                      kPredictedZoneMaxDistance_TrackStreamer / speed);
+        } else {
+            bScaleAdd(&predicted_position, &streaming_position->Position, &streaming_position->Velocity,
+                      kPredictedZoneScale_TrackStreamer);
         }
 
-        DrivableScenerySection *drivable_section = TheVisibleSectionManager.FindDrivableSection(&predicted_position);
+        drivable_section = TheVisibleSectionManager.FindDrivableSection(&predicted_position);
         if (drivable_section && track_path_zone->Data[0] != 0) {
             short section_number = drivable_section->SectionNumber;
             for (int i = 0; i <= 3; i++) {
@@ -2131,10 +2131,6 @@ short TrackStreamer::GetPredictedZone(StreamingPositionEntry *streaming_position
                     break;
                 }
             }
-        }
-
-        if (found_predicted_zone) {
-            break;
         }
     }
 
