@@ -729,7 +729,7 @@ int LoaderScenery(bChunk *chunk) {
 
     if (chunk_id == 0x34108) {
         SceneryOverrideInfoTable = reinterpret_cast<SceneryOverrideInfo *>(chunk->GetData());
-        NumSceneryOverrideInfos = chunk->Size / 6;
+        NumSceneryOverrideInfos = static_cast<unsigned int>(chunk->Size) / 6;
         for (int i = 0; i < NumSceneryOverrideInfos; i++) {
             unsigned char *override_data = reinterpret_cast<unsigned char *>(SceneryOverrideInfoTable) + i * 6;
             bEndianSwap16(override_data + 0);
@@ -774,7 +774,7 @@ int LoaderScenery(bChunk *chunk) {
                     }
 
                     section_header_words[6] = reinterpret_cast<int>(subchunk->GetData());
-                    section_header_words[7] = subchunk->Size / 0x48;
+                    section_header_words[7] = static_cast<unsigned int>(subchunk->Size) / 0x48;
                     if (section_header_words[2] == 0) {
                         for (int i = 0; i < section_header_words[7]; i++) {
                             unsigned char *scenery_info = reinterpret_cast<unsigned char *>(section_header_words[6] + i * 0x48);
@@ -804,8 +804,9 @@ int LoaderScenery(bChunk *chunk) {
                     }
 
                     section_header_words[8] = (reinterpret_cast<int>(subchunk) + 0x17) & 0xFFFFFFF0;
-                    section_header_words[9] =
-                        (subchunk->Size - (section_header_words[8] - reinterpret_cast<int>(subchunk->GetData()))) >> 6;
+                    section_header_words[9] = static_cast<unsigned int>(
+                        subchunk->Size - (section_header_words[8] - reinterpret_cast<int>(subchunk->GetData()))
+                    ) >> 6;
                     if (section_header_words[2] == 0) {
                         SceneryInstance *instances = reinterpret_cast<SceneryInstance *>(section_header_words[8]);
                         for (int i = 0; i < section_header_words[9]; i++) {
@@ -834,7 +835,7 @@ int LoaderScenery(bChunk *chunk) {
                     }
 
                     section_header_words[10] = reinterpret_cast<int>(subchunk->GetData());
-                    section_header_words[11] = subchunk->Size / 0x24;
+                    section_header_words[11] = static_cast<unsigned int>(subchunk->Size) / 0x24;
                     if (section_header_words[2] == 0) {
                         for (int i = 0; i < section_header_words[11]; i++) {
                             unsigned char *preculler_info =
@@ -882,7 +883,7 @@ int LoaderScenery(bChunk *chunk) {
                     }
 
                     section_header_words[12] = reinterpret_cast<int>(subchunk->GetData());
-                    section_header_words[13] = subchunk->Size >> 7;
+                    section_header_words[13] = static_cast<unsigned int>(subchunk->Size) >> 7;
                     break;
                 }
 
@@ -891,7 +892,7 @@ int LoaderScenery(bChunk *chunk) {
             }
         }
 
-        if (ChunkMovementOffset == 0 && section_header_words) {
+        if (section_header_words && ChunkMovementOffset == 0) {
             unsigned char *scenery_infos = reinterpret_cast<unsigned char *>(section_header_words[6]);
             for (int i = 0; i < section_header_words[7]; i++) {
                 unsigned char *scenery_info = scenery_infos + i * 0x48;
