@@ -134,6 +134,68 @@ int DrivableScenerySection::GetMemoryImageSize() {
     return 0x12 + NumVisibleSections * sizeof(short) + sizeof(Padding);
 }
 
+void DrivableScenerySection::AddVisibleSection(int section_number) {
+    if (NumVisibleSections < MaxVisibleSections && !IsSectionVisible(section_number)) {
+        short num_visible_sections = NumVisibleSections;
+        NumVisibleSections = num_visible_sections + 1;
+        VisibleSections[num_visible_sections] = static_cast<short>(section_number);
+        if (MostVisibleSections < NumVisibleSections) {
+            MostVisibleSections = NumVisibleSections;
+        }
+    }
+}
+
+int DrivableScenerySection::IsSectionVisible(int section_number) {
+    for (int i = 0; i < NumVisibleSections; i++) {
+        if (VisibleSections[i] == section_number) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+void DrivableScenerySection::RemoveVisibleSection(int section_number) {
+    if (NumVisibleSections < 1) {
+        return;
+    }
+
+    short *visible_sections = VisibleSections;
+    for (int i = 0; i < NumVisibleSections; i++) {
+        if (visible_sections[i] == section_number) {
+            if (i < NumVisibleSections - 1) {
+                do {
+                    int next = i + 1;
+                    visible_sections[i] = visible_sections[next];
+                    i = next;
+                } while (i < NumVisibleSections - 1);
+            }
+
+            short num_visible_sections = NumVisibleSections - 1;
+            NumVisibleSections = num_visible_sections;
+            visible_sections[num_visible_sections] = 0;
+            return;
+        }
+    }
+}
+
+void DrivableScenerySection::SortVisibleSections() {
+    bool swap;
+    do {
+        swap = false;
+        if (NumVisibleSections - 1 > 0) {
+            for (int i = 0; i < NumVisibleSections - 1; i++) {
+                short a = VisibleSections[i];
+                short b = VisibleSections[i + 1];
+                if (b < a) {
+                    VisibleSections[i + 1] = a;
+                    swap = true;
+                    VisibleSections[i] = b;
+                }
+            }
+        }
+    } while (swap);
+}
+
 void LoadingSection::EndianSwap() {
     bPlatEndianSwap(&NumDrivableSections);
     for (int i = 0; i < NumDrivableSections; i++) {
@@ -368,6 +430,15 @@ int VisibleSectionManager::GetSectionsToLoad(LoadingSection *loading_section, sh
     }
 
     return num_sections;
+}
+
+void VisibleSectionManager::EnableGroup(unsigned int group_name) {
+    for (int i = 0; i < 0x100; i++) {
+        if (EnabledGroups[i] == 0) {
+            EnabledGroups[i] = group_name;
+            return;
+        }
+    }
 }
 
 int Get2PlayerSectionNumber(int section_number, const char *build_platform) {

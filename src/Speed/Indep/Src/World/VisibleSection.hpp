@@ -54,6 +54,10 @@ struct DrivableScenerySection : public bTNode<DrivableScenerySection> {
     void EndianSwap();
     int GetSectionNumber();
     int GetMemoryImageSize();
+    void AddVisibleSection(int section_number);
+    int IsSectionVisible(int section_number);
+    void RemoveVisibleSection(int section_number);
+    void SortVisibleSections();
 
     int GetVisibleSection(int i) {
         return this->VisibleSections[i];
@@ -198,6 +202,7 @@ class VisibleSectionManager {
     DrivableScenerySection *FindDrivableSection(int section_number /* r4 */);
     LoadingSection *FindLoadingSection(int section_number);
     int GetSectionsToLoad(LoadingSection *loading_section, short *section_numbers, int max_sections);
+    void EnableGroup(unsigned int group_name);
     int Loader(bChunk *chunk);
     int Unloader(bChunk *chunk);
 
