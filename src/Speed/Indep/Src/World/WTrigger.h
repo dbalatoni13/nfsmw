@@ -75,6 +75,10 @@ class WTriggerManager {
     void Update(float dT);
     void ClearAllFireOnExit();
 
+    static bool Exists() {
+        return fgTriggerManager != nullptr;
+    }
+
     static WTriggerManager &Get() {
         return *fgTriggerManager;
     }

@@ -60,13 +60,135 @@ static unsigned int FindInstances(GVault *vault, AttribKeyList *attribKeyList, u
     return (numObjects * GetPaddedObjectSize<T>() + numConnections * 8 + 0xFU) & ~0xFU;
 }
 
+template <typename T>
+struct GObjectBlockTypeTraits;
+
+template <>
+struct GObjectBlockTypeTraits<GActivity> {
+    enum { kType = kGameplayObjType_Activity };
+};
+
+template <>
+struct GObjectBlockTypeTraits<GCharacter> {
+    enum { kType = kGameplayObjType_Character };
+};
+
+template <>
+struct GObjectBlockTypeTraits<GHandler> {
+    enum { kType = kGameplayObjType_Handler };
+};
+
+template <>
+struct GObjectBlockTypeTraits<GMarker> {
+    enum { kType = kGameplayObjType_Marker };
+};
+
+template <>
+struct GObjectBlockTypeTraits<GState> {
+    enum { kType = kGameplayObjType_State };
+};
+
+template <>
+struct GObjectBlockTypeTraits<GTrigger> {
+    enum { kType = kGameplayObjType_Trigger };
+};
+
+template <typename T>
+static inline unsigned int GetGameplayType() {
+    return GObjectBlockTypeTraits<T>::kType;
+}
+
+template <typename T>
+void GObjectBlock::DeleteObjects() {
+    const unsigned int type = GetGameplayType<T>();
+    unsigned char *buffer = reinterpret_cast<unsigned char *>(mObjectList[type]);
+    unsigned int objSize = GetPaddedObjectSize<T>();
+
+    for (unsigned int onObj = 0; onObj < mObjectCount[type]; ++onObj) {
+        T *obj = reinterpret_cast<T *>(buffer + onObj * objSize);
+        obj->~T();
+    }
+
+    mObjectCount[type] = 0;
+    mObjectSize[type] = 0;
+    mObjectList[type] = nullptr;
+}
+
+template <typename T>
+unsigned int GObjectBlock::CreateObjects(GVault *vault, unsigned char *buffer) {
+    const unsigned int type = GetGameplayType<T>();
+    AttribKeyList keys;
+    unsigned int objSize;
+    unsigned int objCount;
+    GRuntimeInstance::ConnectedInstance *connectionBase;
+    GRuntimeInstance::ConnectedInstance *connectionDest;
+    unsigned int spaceUsed;
+
+    FindInstances<T>(vault, &keys, nullptr, nullptr);
+
+    objSize = GetPaddedObjectSize<T>();
+    objCount = 0;
+    connectionBase = reinterpret_cast<GRuntimeInstance::ConnectedInstance *>(buffer + objSize * keys.size());
+    connectionDest = connectionBase;
+
+    for (AttribKeyList::iterator iterObj = keys.begin(); iterObj != keys.end(); ++iterObj) {
+        unsigned int collectionKey = *iterObj;
+        T *pMem = ::new (buffer + objCount * objSize) T(collectionKey);
+        T *newObj = pMem;
+        unsigned int numConnections = CalcNumConnections(collectionKey);
+
+        newObj->SetConnectionBuffer(connectionDest, numConnections);
+        connectionDest += numConnections;
+        objCount += 1;
+    }
+
+    mObjectCount[type] = objCount;
+    mObjectSize[type] = objSize;
+    mObjectList[type] = reinterpret_cast<GRuntimeInstance *>(buffer);
+
+    spaceUsed = reinterpret_cast<unsigned char *>(connectionDest) - buffer;
+    return (spaceUsed + 0xFU) & ~0xFU;
+}
+
 GObjectBlock::GObjectBlock(GVault *vault, unsigned char *buffer)
     : mVault(vault), //
-      mObjectBuffer(buffer) {}
+      mObjectBuffer(buffer) {
+    unsigned int onType = 0;
 
-GObjectBlock::~GObjectBlock() {}
+    do {
+        mObjectCount[onType] = 0;
+        mObjectSize[onType] = 0;
+        mObjectList[onType] = nullptr;
+        onType += 1;
+    } while (onType < 6);
+}
 
-void GObjectBlock::Initialize(unsigned int bufferSize) {}
+GObjectBlock::~GObjectBlock() {
+    DeleteObjects<GTrigger>();
+    DeleteObjects<GMarker>();
+    DeleteObjects<GCharacter>();
+    DeleteObjects<GActivity>();
+    DeleteObjects<GState>();
+    DeleteObjects<GHandler>();
+
+    mObjectBuffer = nullptr;
+    mVault = nullptr;
+
+    if (WTriggerManager::Exists()) {
+        WTriggerManager::Get().ClearAllFireOnExit();
+    }
+}
+
+void GObjectBlock::Initialize(unsigned int bufferSize) {
+    unsigned char *buffer = mObjectBuffer;
+
+    buffer += CreateObjects<GHandler>(mVault, buffer);
+    buffer += CreateObjects<GState>(mVault, buffer);
+    buffer += CreateObjects<GActivity>(mVault, buffer);
+    buffer += CreateObjects<GCharacter>(mVault, buffer);
+    buffer += CreateObjects<GMarker>(mVault, buffer);
+    CreateObjects<GTrigger>(mVault, buffer);
+}
 
 unsigned int GObjectBlock::CalcSpaceRequired(GVault *vault, unsigned int *outObjCount) {
     unsigned int objCount;
@@ -160,3 +282,17 @@ unsigned int GObjectBlock::CalcNumConnections(unsigned int collectionKey) {
 
     return numConnections;
 }
+
+template void GObjectBlock::DeleteObjects<GActivity>();
+template void GObjectBlock::DeleteObjects<GCharacter>();
+template void GObjectBlock::DeleteObjects<GHandler>();
+template void GObjectBlock::DeleteObjects<GMarker>();
+template void GObjectBlock::DeleteObjects<GState>();
+template void GObjectBlock::DeleteObjects<GTrigger>();
+
+template unsigned int GObjectBlock::CreateObjects<GActivity>(GVault *vault, unsigned char *buffer);
+template unsigned int GObjectBlock::CreateObjects<GCharacter>(GVault *vault, unsigned char *buffer);
+template unsigned int GObjectBlock::CreateObjects<GHandler>(GVault *vault, unsigned char *buffer);
+template unsigned int GObjectBlock::CreateObjects<GMarker>(GVault *vault, unsigned char *buffer);
+template unsigned int GObjectBlock::CreateObjects<GState>(GVault *vault, unsigned char *buffer);
+template unsigned int GObjectBlock::CreateObjects<GTrigger>(GVault *vault, unsigned char *buffer);
