@@ -247,6 +247,7 @@ class TrackStreamer {
     void HandleSectionActivation();
     void ActivateSection(TrackStreamingSection *section);
     void HandleLoading();
+    void UnloadEverything();
     int GetLoadingPriority(TrackStreamingSection *section, StreamingPositionEntry *streaming_position, bool use_direction);
     void AssignLoadingPriority();
     void CalculateLoadingBacklog();

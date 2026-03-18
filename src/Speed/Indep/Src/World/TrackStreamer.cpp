@@ -36,6 +36,8 @@ void eWaitUntilRenderingDone();
 void MoveChunks(bChunk *dest_chunks, bChunk *source_chunks, int sizeof_chunks, const char *debug_name);
 void bSetMemoryPoolOverrideInfo(int pool_num, MemoryPoolOverrideInfo *override_info);
 void SetQueuedFileMinPriority(int priority);
+void SetDelayedResourceCallback(void (*callback)(int), int param);
+void NotifySkyLoader();
 extern int QueuedFileDefaultPriority;
 
 static unsigned int prev_need_loading_bar_26275 = 0;
@@ -1298,6 +1300,35 @@ int TrackStreamer::Loader(bChunk *chunk) {
     return 1;
 }
 
+int TrackStreamer::Unloader(bChunk *chunk) {
+    unsigned int chunk_id = chunk->GetID();
+    if (chunk_id == 0x34110) {
+        UnloadEverything();
+        NumTrackStreamingSections = 0;
+        pTrackStreamingSections = 0;
+        return 1;
+    }
+
+    if (chunk_id == 0x34113) {
+        pLastDiscBundleSection = 0;
+        pDiscBundleSections = 0;
+        return 1;
+    }
+
+    if (chunk_id == 0x34111) {
+        pInfo = 0;
+        return 1;
+    }
+
+    if (chunk_id == 0x34112) {
+        NumBarriers = 0;
+        pBarriers = 0;
+        return 1;
+    }
+
+    return 0;
+}
+
 void TrackStreamer::HibernateStreamingSections() {}
 
 void TrackStreamer::FlushHibernatingSections() {
@@ -1622,6 +1653,30 @@ void TrackStreamer::StartLoadingSections() {
         } else {
             LoadDiscBundle(section_to_load->pDiscBundle);
         }
+    }
+}
+
+void TrackStreamer::FinishedLoading() {
+    float load_time;
+    (void)load_time;
+
+    CurrentZoneFarLoad = false;
+    LoadingPhase = LOADING_IDLE;
+    CurrentZoneNonReplayLoad = false;
+    NotifySkyLoader();
+
+    for (int position_number = 0; position_number < 2; position_number++) {
+        StreamingPositionEntry *position_entry = &StreamingPositionEntries[position_number];
+        if (position_entry->BeginLoadingTime != 0.0f) {
+            PlotLoadingMarker(position_entry);
+        }
+        position_entry->BeginLoadingTime = 0.0f;
+    }
+
+    if (pCallback) {
+        SetDelayedResourceCallback(pCallback, CallbackParam);
+        CallbackParam = 0;
+        pCallback = 0;
     }
 }
 
