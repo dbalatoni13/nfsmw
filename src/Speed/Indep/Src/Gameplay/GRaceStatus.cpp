@@ -2847,17 +2847,24 @@ void GRaceStatus::SyncronizeAdaptiveBonus() {
 }
 
 void GRaceStatus::UpdateAdaptiveDifficulty(eAdaptiveGainReason reason, ISimable *who) {
-    bool update = false;
-    GRacerInfo *winning_player = nullptr;
-    GRacerInfo *winning_ai = nullptr;
-    GRacerInfo *eliminated_player = nullptr;
-    float difficulty = fCatchUpAdaptiveBonus;
-    const int num_racers = GetRacerCount();
+    bool update;
+    GRacerInfo *winning_player;
+    GRacerInfo *winning_ai;
+    GRacerInfo *eliminated_player;
+    float difficulty;
 
-    if (mCaluclatedAdaptiveGain || GetRaceContext() != GRace::kRaceContext_Career || num_racers < 2 || Sim::GetUserMode() != 0 || GetPlayMode() != kPlayMode_Racing ||
+    if (mCaluclatedAdaptiveGain || GetRaceContext() != GRace::kRaceContext_Career || GetRacerCount() <= 1 || Sim::GetUserMode() != 0 || GetPlayMode() != kPlayMode_Racing ||
         (mRaceParms && mRaceParms->GetNoPostRaceScreen()) || GetRaceLength() <= 0.0f) {
         return;
     }
+
+    difficulty = fCatchUpAdaptiveBonus;
+    const int num_racers = GetRacerCount();
+
+    update = false;
+    winning_player = nullptr;
+    winning_ai = nullptr;
+    eliminated_player = nullptr;
 
     for (int i = 0; i < num_racers; ++i) {
         GRacerInfo &info = GetRacerInfo(i);
