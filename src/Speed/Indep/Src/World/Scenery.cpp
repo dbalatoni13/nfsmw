@@ -767,22 +767,27 @@ int UnloaderScenery(bChunk *chunk) {
     }
 
     if (chunk_id == 0x80034100) {
-        int *section_header_words = reinterpret_cast<int *>(chunk->GetAlignedData(0x10));
+        ScenerySectionHeader *section_header = reinterpret_cast<ScenerySectionHeader *>(chunk->GetAlignedData(0x10));
+        int *section_header_words = reinterpret_cast<int *>(section_header);
         VisibleSectionUserInfo *user_info = TheVisibleSectionManager.GetUserInfo(section_header_words[3]);
         if (user_info) {
             user_info->pScenerySectionHeader = 0;
         }
         TheVisibleSectionManager.UnallocateUserInfo(section_header_words[3]);
-        reinterpret_cast<bNode *>(section_header_words)->Remove();
+        section_header->Remove();
 
-        if (ChunkMovementOffset == 0) {
+        if (!AreChunksBeingMoved()) {
             unsigned char *scenery_infos = reinterpret_cast<unsigned char *>(section_header_words[6]);
             for (int i = 0; i < section_header_words[7]; i++) {
                 unsigned char *scenery_info = scenery_infos + i * 0x48;
                 for (int j = 0; j < 4; j++) {
+                    if (AreChunksBeingMoved()) {
+                        break;
+                    }
+
                     eModel **model_slot = reinterpret_cast<eModel **>(scenery_info + 0x28 + j * 4);
-                    eModel *model = *model_slot;
-                    if (model) {
+                    if (*model_slot) {
+                        eModel *model = *model_slot;
                         for (int k = j + 1; k < 4; k++) {
                             eModel **duplicate_slot = reinterpret_cast<eModel **>(scenery_info + 0x28 + k * 4);
                             if (*duplicate_slot == model) {
@@ -790,7 +795,7 @@ int UnloaderScenery(bChunk *chunk) {
                             }
                         }
                         if (ModelDisconnectionCallback) {
-                            ModelDisconnectionCallback(reinterpret_cast<ScenerySectionHeader *>(section_header_words), i, model);
+                            ModelDisconnectionCallback(section_header, i, model);
                         }
                         model->UnInit();
                         bFree(eModelSlotPool, model);
@@ -800,7 +805,7 @@ int UnloaderScenery(bChunk *chunk) {
             }
 
             if (SectionDisconnectionCallback) {
-                SectionDisconnectionCallback(reinterpret_cast<ScenerySectionHeader *>(section_header_words));
+                SectionDisconnectionCallback(section_header);
             }
         }
 

@@ -176,6 +176,9 @@ struct ScreenEffectDB {
     void AddScreenEffect(ScreenEffectType type, ScreenEffectDef *info, unsigned int lock, ScreenEffectControl controller);
     void AddPaletteEffect(ScreenEffectPalette palette);
     void AddPaletteEffect(ScreenEffectPaletteDef *palette);
+    void SetController(ScreenEffectType type, ScreenEffectControl SEC) {
+        SE_inf[type].Controller = SEC;
+    }
 
     void SetMyView(eView *view) {
         MyView = view;

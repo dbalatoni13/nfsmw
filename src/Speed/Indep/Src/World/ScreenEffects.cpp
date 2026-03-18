@@ -104,7 +104,7 @@ void ScreenEffectDB::AddScreenEffect(ScreenEffectType type, ScreenEffectDef *inf
 
     SE_inf[type].active = 1;
     if (!screen_effect->UpdateFnc) {
-        SE_inf[type].Controller = controller;
+        SetController(type, controller);
     } else {
         screen_effect->UpdateFnc(type, this);
     }
