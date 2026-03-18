@@ -351,26 +351,32 @@ void SceneryOverrideInfo::AssignOverrides(ScenerySectionHeader *section_header) 
 }
 
 int LoaderSceneryGroup(bChunk *chunk) {
-    if (chunk->GetID() != 0x34109) {
-        return 0;
-    }
+    if (chunk->GetID() == 0x34109) {
+        int chunk_size = chunk->Size;
+        int group_offset = 0;
+        if (group_offset < chunk_size) {
+            do {
+                SceneryGroup *group = reinterpret_cast<SceneryGroup *>(reinterpret_cast<char *>(chunk) + group_offset + 8);
+                SceneryGroup *head = SceneryGroupList.GetHead();
+                head->Prev = group;
+                group->Next = head;
+                SceneryGroupList.HeadNode.Next = group;
+                group->Prev = reinterpret_cast<bNode *>(&SceneryGroupList);
 
-    SceneryGroup *group = reinterpret_cast<SceneryGroup *>(chunk->GetData());
-    SceneryGroup *last_group = reinterpret_cast<SceneryGroup *>(chunk->GetLastChunk());
-    while (group < last_group) {
-        SceneryGroupList.AddHead(group);
-        bEndianSwap32(&group->NameHash);
-        bEndianSwap16(&group->GroupNumber);
-        bEndianSwap16(&group->NumObjects);
-        for (int i = 0; i < group->NumObjects; i++) {
-            bEndianSwap16(&group->OverrideInfoNumbers[i]);
+                bEndianSwap32(&group->NameHash);
+                bEndianSwap16(&group->GroupNumber);
+                bEndianSwap16(&group->NumObjects);
+                for (int i = 0; i < group->NumObjects; i++) {
+                    bEndianSwap16(&group->OverrideInfoNumbers[i]);
+                }
+
+                group_offset += (group->NumObjects * sizeof(unsigned short) + 0x17U) & 0xFFFFFFFC;
+            } while (group_offset < chunk_size);
         }
-
-        int group_size = (group->NumObjects * sizeof(unsigned short) + 0x17U) & 0xFFFFFFFC;
-        group = reinterpret_cast<SceneryGroup *>(reinterpret_cast<char *>(group) + group_size);
+        return 1;
     }
 
-    return 1;
+    return 0;
 }
 
 int UnloaderSceneryGroup(bChunk *chunk) {
@@ -550,15 +556,15 @@ void ScenerySectionHeader::DrawAScenery(int scenery_instance_number, SceneryCull
     }
 
     SceneryInstance *instance = &instances[scenery_instance_number];
-    if (((instance->ExcludeFlags ^ 0x60) & scenery_cull_info->ExcludeFlags) != 0) {
-        return;
-    }
-
     if (visibility_state >= 0 && section_header_words[12] && instance->PrecullerInfoIndex >= 0) {
         unsigned char *visibility_table = reinterpret_cast<unsigned char *>(section_header_words[12]) + instance->PrecullerInfoIndex * 0x80;
         if ((visibility_table[visibility_state >> 3] & (1 << (visibility_state & 7))) != 0) {
             return;
         }
+    }
+
+    if (((instance->ExcludeFlags ^ 0x60) & scenery_cull_info->ExcludeFlags) != 0) {
+        return;
     }
 
     unsigned char *scenery_info = GetSceneryInfo_Scenery(section_header_words, instance->SceneryInfoNumber);
@@ -571,19 +577,19 @@ void ScenerySectionHeader::DrawAScenery(int scenery_instance_number, SceneryCull
         }
     }
 
-    bVector3 to_instance(
-        instance->Position[0] - scenery_cull_info->Position.x,
-        instance->Position[1] - scenery_cull_info->Position.y,
-        instance->Position[2] - scenery_cull_info->Position.z
-    );
+    float to_instance_x = instance->Position[0] - scenery_cull_info->Position.x;
+    float to_instance_y = instance->Position[1] - scenery_cull_info->Position.y;
+    float to_instance_z = instance->Position[2] - scenery_cull_info->Position.z;
     float radius = GetSceneryRadius_Scenery(scenery_info) + 6.0f;
-    float forward_distance = to_instance.x * scenery_cull_info->Direction.x + to_instance.y * scenery_cull_info->Direction.y +
-                             to_instance.z * scenery_cull_info->Direction.z;
+    float forward_distance = to_instance_x * scenery_cull_info->Direction.x + to_instance_y * scenery_cull_info->Direction.y +
+                             to_instance_z * scenery_cull_info->Direction.z;
     if (forward_distance < -radius) {
         return;
     }
 
-    float distance = bSqrt(to_instance.x * to_instance.x + to_instance.y * to_instance.y + to_instance.z * to_instance.z);
+    float distance = bSqrt(
+        to_instance_x * to_instance_x + to_instance_y * to_instance_y + to_instance_z * to_instance_z
+    );
     float pixel_size = scenery_cull_info->H;
     if (radius < distance - radius) {
         pixel_size = (radius * pixel_size) / (distance - radius);
@@ -861,7 +867,7 @@ int LoaderScenery(bChunk *chunk) {
                         break;
                     }
 
-                    int num_overrides = subchunk->Size >> 2;
+                    int num_overrides = static_cast<unsigned int>(subchunk->Size) >> 2;
                     for (int i = 0; i < num_overrides; i++) {
                         unsigned short *override_data =
                             reinterpret_cast<unsigned short *>(reinterpret_cast<unsigned char *>(subchunk->GetData()) + i * 4);
