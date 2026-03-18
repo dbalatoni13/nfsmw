@@ -15,6 +15,8 @@
 #include "Speed/Indep/Src/Interfaces/SimActivities/ITrafficMgr.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IArticulatedVehicle.h"
+#include "Speed/Indep/Src/Frontend/FEManager.hpp"
+#include "Speed/Indep/Src/Misc/GameFlow.hpp"
 #include "Speed/Indep/Src/Misc/LZCompress.hpp"
 #include "Speed/Indep/Src/Misc/Platform.h"
 #include "Speed/Indep/Src/Sim/Simulation.h"
@@ -47,6 +49,19 @@ void World_RestoreProps();
 void GPS_Disengage();
 
 class IPursuit;
+
+namespace Speech {
+class Manager {
+  public:
+    static int m_speechDisable;
+    static bool IsCopSpeechPlaying(int event_id);
+};
+}; // namespace Speech
+
+class PhotoFinishScreen {
+  public:
+    static int mActive;
+};
 
 struct GManagerRaceStatusCompat {
     unsigned char _padRaceBin[0x1AB0];
@@ -1795,7 +1810,56 @@ void GManager::LoadSMSInfo(int *loadInfo, unsigned int count) {
 }
 
 bool GManager::CanPlaySMS() const {
-    return !mPendingSMS.empty();
+    IPlayer *player;
+
+    if (Speech::Manager::m_speechDisable != 0 || TheGameFlowManager.GetState() != GAMEFLOW_STATE_RACING ||
+        UTL::Collections::Singleton<INIS>::Get() != nullptr || PhotoFinishScreen::mActive != 0 ||
+        !GRaceStatus::Exists() || GRaceStatus::Get().GetPlayMode() != GRaceStatus::kPlayMode_Roaming) {
+        return false;
+    }
+
+    if (!FEManager::IsOkayToRequestPauseSimulation(0, true, true)) {
+        return false;
+    }
+
+    if (Speech::Manager::IsCopSpeechPlaying(0xCC)) {
+        return false;
+    }
+
+    player = IPlayer::First(PLAYER_LOCAL);
+    if (!player) {
+        return false;
+    }
+
+    ISimable *simable = player->GetSimable();
+    if (!simable) {
+        return false;
+    }
+
+    IHud *ihud = player->GetHud();
+    if (!ihud) {
+        return false;
+    }
+
+    if (!ihud->AreResourcesLoaded()) {
+        return false;
+    }
+
+    IVehicle *ivehicle;
+    if (!simable->QueryInterface(&ivehicle) || !ivehicle) {
+        return false;
+    }
+
+    if (ivehicle->IsAnimating() || ivehicle->IsStaging() || ivehicle->IsLoading()) {
+        return false;
+    }
+
+    IVehicleAI *ivehicleai = ivehicle->GetAIVehiclePtr();
+    if (!ivehicleai) {
+        return false;
+    }
+
+    return !ivehicleai->GetPursuit();
 }
 
 void GManager::DispatchSMSMessage(int smsID) {
