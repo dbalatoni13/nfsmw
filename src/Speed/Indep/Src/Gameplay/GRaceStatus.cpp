@@ -42,9 +42,27 @@ void SetOverRideRainIntensity(float intensity);
 bool DoesStringExist(unsigned int hash);
 const char *GetLocalizedString(unsigned int hash);
 extern int UnlockAllThings;
-int NotNumeric(char c);
-int SplitChars(char *in, char ***array, int (*func)(char));
-float ParseFloat(char *word);
+extern int SkipFE;
+extern const char *SkipFEOpponentPresetRide;
+unsigned int bStringHashUpper(const char *text);
+
+struct PresetCar;
+struct CarPartDatabase;
+
+extern CarPartDatabase CarPartDB;
+
+FECustomizationRecord *FECustomizationRecordCtor(FECustomizationRecord *self) __asm__("__21FECustomizationRecord");
+PresetCar *FindFEPresetCar(unsigned int key) __asm__("FindFEPresetCar__FUi");
+void FECustomizationRecordBecomePreset(FECustomizationRecord *self, PresetCar *preset)
+    __asm__("BecomePreset__21FECustomizationRecordP9PresetCar");
+void FECustomizationRecordWriteRideIntoRecord(FECustomizationRecord *self, const RideInfo *ride)
+    __asm__("WriteRideIntoRecord__21FECustomizationRecordPC8RideInfo");
+void RideInfoSetRandomParts(RideInfo *self) __asm__("SetRandomParts__8RideInfo");
+CarType CarPartDatabaseGetCarType(CarPartDatabase *self, unsigned int key) __asm__("GetCarType__15CarPartDatabaseUi");
+
+static unsigned int GetPresetVehicleKey(PresetCar *preset) {
+    return *reinterpret_cast<unsigned int *>(reinterpret_cast<unsigned char *>(preset) + 0x54);
+}
 
 #ifndef DECLARE_GAMEPLAY_MINIMAP_CLASS
 #define DECLARE_GAMEPLAY_MINIMAP_CLASS
@@ -188,6 +206,98 @@ Table Tweak_GlueSpreadTable_High(Tweak_GlueSpreadData_High, 5, 0.0f, 100.0f);
 Table Tweak_GlueStrengthTable_Low(Tweak_GlueStrengthData_Low, 5, 0.0f, 100.0f);
 Table Tweak_GlueStrengthTable_High(Tweak_GlueStrengthData_High, 5, 0.0f, 100.0f);
 
+int NotNumeric(char c) {
+    if (c == '-' || c == '.') {
+        return 0;
+    }
+
+    int numeric = '0';
+    if (c > '0') {
+        numeric = c;
+    }
+    if (numeric > '9') {
+        numeric = '9';
+    }
+
+    return c != numeric;
+}
+
+int SplitChars(char *in, char ***array, int (*func)(char)) {
+    while (*in != '\0' && func(*in) != 0) {
+        in += 1;
+    }
+
+    int count = 0;
+    char *cursor = in;
+
+    while (*cursor != '\0') {
+        if (func(*cursor) == 0) {
+            count += 1;
+            while (*cursor != '\0' && func(*cursor) == 0) {
+                cursor += 1;
+            }
+        } else {
+            cursor += 1;
+        }
+    }
+
+    *array = new char *[count];
+    if (count > 0) {
+        int i = 0;
+
+        do {
+            char *end = in;
+
+            (*array)[i] = in;
+            i += 1;
+            while (*end != '\0' && func(*end) == 0) {
+                end += 1;
+            }
+
+            in = end;
+            while (*in != '\0' && func(*in) != 0) {
+                in += 1;
+            }
+
+            *end = '\0';
+        } while (i < count);
+    }
+
+    return count;
+}
+
+float ParseFloat(char *word) {
+    float whole = 0.0f;
+    unsigned int index = static_cast<unsigned int>(*word == '-');
+    bool pastDecimal = false;
+    float scale = 1.0f;
+
+    for (char c = word[index]; c != '\0'; c = word[++index]) {
+        if (c == '.') {
+            pastDecimal = true;
+        } else {
+            if (pastDecimal) {
+                scale *= 0.1f;
+            } else {
+                whole *= 10.0f;
+            }
+
+            int digit = c - '0';
+
+            if (digit < 0) {
+                digit = 0;
+            }
+            if (digit > 9) {
+                digit = 9;
+            }
+
+            whole = scale * static_cast<float>(digit) + whole;
+        }
+    }
+
+    return whole;
+}
+
 bool GRacerInfo::GetIsHuman() const {
     ISimable *simable = GetSimable();
     return simable && simable->IsPlayer();
@@ -211,31 +321,80 @@ void GRacerInfo::SetSimable(ISimable *isim) {
 
 IVehicle *GRacerInfo::CreateVehicle(unsigned int default_key) {
     GCharacter *racerChar = GetGameCharacter();
-    unsigned int vehicle_key = default_key;
+    const char *carName;
+    const char *carNameLowMem;
+    const char *presetRide;
     FECustomizationRecord customizations;
-    UMath::Vector3 direction = UMath::Vector3::kZero;
-    UMath::Vector3 position = UMath::Vector3::kZero;
-    IVehicleCache *cache = nullptr;
+    unsigned int vehicle_key;
+    Physics::Info::Performance ai_performance(1.0f, 0.0f, 0.0f);
+    IVehicleCache *cache;
+    UMath::Vector3 direction = {0.0f, 0.0f, 1.0f};
     ISimable *result;
     IVehicle *vehicle = nullptr;
 
-    bMemSet(&customizations, 0, sizeof(customizations));
+    if (!racerChar) {
+        return nullptr;
+    }
 
-    if (racerChar) {
-        const char *carName = racerChar->CarType(0);
+    carName = racerChar->CarType(0);
+    carNameLowMem = racerChar->CarTypeLowMem(0);
+    presetRide = racerChar->PresetRide(0);
+    FECustomizationRecordCtor(&customizations);
 
-        if (carName && *carName) {
-            vehicle_key = Attrib::StringToKey(carName);
+    if (SkipFE && bStrLen(SkipFEOpponentPresetRide) > 0) {
+        presetRide = SkipFEOpponentPresetRide;
+    }
+
+    vehicle_key = 0;
+    if (presetRide) {
+        PresetCar *preset = FindFEPresetCar(bStringHashUpper(presetRide));
+
+        if (preset) {
+            FECustomizationRecordBecomePreset(&customizations, preset);
+            vehicle_key = GetPresetVehicleKey(preset);
         }
     }
 
-    if (GRaceStatus::Exists()) {
-        cache = &GRaceStatus::Get();
+    if (vehicle_key == 0) {
+        if (carName && *carName) {
+            vehicle_key = Attrib::StringKey(carName);
+        }
+
+        if (vehicle_key == 0) {
+            vehicle_key = default_key;
+        }
     }
 
-    result = UTL::COM::Factory<Sim::Param, ISimable, UCrc32>::CreateInstance("PVehicle", VehicleParams(cache, DRIVER_RACER, vehicle_key, direction, position, 0, &customizations, nullptr));
-    if (result && result->QueryInterface(&vehicle)) {
-        SetSimable(result);
+    Attrib::Gen::pvehicle attributes(Attrib::FindCollection(Attrib::Gen::pvehicle::ClassKey(), vehicle_key), 0, nullptr);
+
+    if (!attributes.IsValid()) {
+        return nullptr;
+    }
+
+    if (customizations.Preset == 0) {
+        RideInfo ride;
+        const char *modelName = attributes.MODEL().GetString();
+
+        if (!modelName) {
+            modelName = "";
+        }
+
+        ride.Init(CarPartDatabaseGetCarType(&CarPartDB, bStringHashUpper(modelName)), CarRenderUsage_AIRacer, 0, 0);
+        RideInfoSetRandomParts(&ride);
+        FECustomizationRecordWriteRideIntoRecord(&customizations, &ride);
+    }
+
+    cache = nullptr;
+    if (GRaceStatus::Exists()) {
+        cache = static_cast<IVehicleCache *>(&GRaceStatus::Get());
+    }
+
+    VehicleParams params(cache, DRIVER_RACER, vehicle_key, direction, UMath::Vector3::kZero, 0, &customizations, &ai_performance);
+    result = UTL::COM::Factory<Sim::Param, ISimable, UCrc32>::CreateInstance("PVehicle", params);
+    if (result) {
+        if (result->QueryInterface(&vehicle)) {
+            SetSimable(result);
+        }
     }
 
     return vehicle;
@@ -491,55 +650,7 @@ bool GRacerInfo::AreStatsReady() const {
 }
 
 void GRacerInfo::ClearAll() {
-    mhSimable = nullptr;
-    mGameCharacter = nullptr;
-    mName = nullptr;
-    mIndex = 0;
-    mRanking = 0;
-    mAiRanking = 0;
-    mPctRaceComplete = 0.0f;
-    mKnockedOut = false;
-    mTotalled = false;
-    mEngineBlown = false;
-    mBusted = false;
-    mChallengeComplete = false;
-    mFinishedRacing = false;
-    mCameraDetached = false;
-    mPctLapComplete = 0.0f;
-    mLapsCompleted = 0;
-    mCheckpointsHitThisLap = 0;
-    mTollboothsCrossed = 0;
-    bMemSet(mTimeRemainingToBooth, 0, sizeof(mTimeRemainingToBooth));
-    mSpeedTrapsCrossed = 0;
-    bMemSet(mSpeedTrapSpeed, 0, sizeof(mSpeedTrapSpeed));
-    bMemSet(mSpeedTrapPosition, 0, sizeof(mSpeedTrapPosition));
-    mDistToNextCheckpoint = 0.0f;
-    mDistanceDriven = 0.0f;
-    mTopSpeed = 0.0f;
-    mFinishingSpeed = 0.0f;
-    mPoundsNOSUsed = 0.0f;
-    mTimeCrossedLastCheck = 0.0f;
-    mTotalUpdateTime = 0.0f;
-    mNumPerfectShifts = 0;
-    mNumTrafficCarsHit = 0;
-    mSpeedBreakerTime = 0.0f;
-    mPointTotal = 0.0f;
-    mZeroToSixtyTime = 0.0f;
-    mQuarterMileTime = 0.0f;
-#ifndef EA_BUILD_A124
-    bMemSet(mSplitTimes, 0, sizeof(mSplitTimes));
-    bMemSet(mSplitRankings, 0, sizeof(mSplitRankings));
-#endif
-    mRaceTimer.Reset(0.0f);
-    mLapTimer.Reset(0.0f);
-    mCheckTimer.Reset(0.0f);
-    mSavedPosition = UMath::Vector3Make(0.0f, 0.0f, 0.0f);
-    mSavedHeatLevel = 0.0f;
-    mSavedDirection = UMath::Vector3Make(0.0f, 0.0f, 0.0f);
-    mSavedSpeed = 0.0f;
-#ifndef EA_BUILD_A124
-    mDNF = false;
-#endif
+    ClearRaceStats();
 }
 
 void GRacerInfo::SaveStartPosition() {

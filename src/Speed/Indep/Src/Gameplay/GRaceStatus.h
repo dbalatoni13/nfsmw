@@ -122,6 +122,82 @@ struct GRacerInfo {
     void ClearAll();
 
   private:
+    inline void ClearRaceStats() {
+        mhSimable = nullptr;
+        mGameCharacter = nullptr;
+        mName = nullptr;
+        mIndex = -1;
+        mSavedHeatLevel = 0.0f;
+        mSavedSpeed = 0.0f;
+        mSavedPosition = UMath::Vector3::kZero;
+        mSavedDirection = UMath::Vector3::kZero;
+        mRanking = 0;
+        mAiRanking = 0;
+        mPctRaceComplete = 0.0f;
+        mKnockedOut = false;
+        mTotalled = false;
+        mEngineBlown = false;
+        mBusted = false;
+        mChallengeComplete = false;
+        mFinishedRacing = false;
+        mCameraDetached = false;
+        mPctLapComplete = 0.0f;
+        mLapsCompleted = 0;
+        mCheckpointsHitThisLap = 0;
+        mTollboothsCrossed = 0;
+        mSpeedTrapsCrossed = 0;
+        mDistToNextCheckpoint = 0.0f;
+        mDistanceDriven = 0.0f;
+        mTopSpeed = 0.0f;
+        mFinishingSpeed = 0.0f;
+        mPoundsNOSUsed = 0.0f;
+        mTimeCrossedLastCheck = 0.0f;
+        mTotalUpdateTime = 0.0f;
+        mNumPerfectShifts = 0;
+        mNumTrafficCarsHit = 0;
+        mPointTotal = 0.0f;
+        mZeroToSixtyTime = 0.0f;
+        mQuarterMileTime = 0.0f;
+        mSpeedBreakerTime = 0.0f;
+#ifndef EA_BUILD_A124
+        mDNF = false;
+#endif
+        mRaceTimer.Stop();
+        mRaceTimer.Reset(0.0f);
+        mLapTimer.Stop();
+        mLapTimer.Reset(0.0f);
+        mCheckTimer.Stop();
+        mCheckTimer.Reset(0.0f);
+
+        {
+            int i;
+
+            for (i = 0; i < 16; ++i) {
+                mTimeRemainingToBooth[i] = 0.0f;
+            }
+        }
+
+        {
+            int i;
+
+            for (i = 0; i < 16; ++i) {
+                mSpeedTrapSpeed[i] = 0.0f;
+                mSpeedTrapPosition[i] = -1;
+            }
+        }
+
+#ifndef EA_BUILD_A124
+        {
+            int i;
+
+            for (i = 0; i < 4; ++i) {
+                mSplitTimes[i] = 0.0f;
+                mSplitRankings[i] = 0;
+            }
+        }
+#endif
+    }
+
     HSIMABLE mhSimable;              // offset 0x0, size 0x4
     GCharacter *mGameCharacter;      // offset 0x4, size 0x4
     const char *mName;               // offset 0x8, size 0x4
