@@ -1756,26 +1756,48 @@ void GManager::GatherInstanceKeys(Attrib::Gen::gameplay &collection, AttribKeyLi
 
 void GManager::RecursivePreloadCharacterCars(GRuntimeInstance *instance, bool forcePreload) {
     if (instance->GetType() == kGameplayObjType_Character) {
-        const char *carName = *reinterpret_cast<const char *const *>(instance->GetAttributePointer(0xF833C06F, 0) ?
-                                                                         instance->GetAttributePointer(0xF833C06F, 0) :
-                                                                         Attrib::DefaultDataArea(sizeof(const char *)));
-        const char *stockCarName = *reinterpret_cast<const char *const *>(instance->GetAttributePointer(0xFD3CF790, 0) ?
-                                                                              instance->GetAttributePointer(0xFD3CF790, 0) :
-                                                                              Attrib::DefaultDataArea(sizeof(const char *)));
+        const char *const *carNamePtr = reinterpret_cast<const char *const *>(instance->GetAttributePointer(0xF833C06F, 0));
+        const char *const *stockCarNamePtr;
+        const int *preloadPtr;
+        const char *carName;
+        const char *stockCarName;
+
+        if (!carNamePtr) {
+            carNamePtr = reinterpret_cast<const char *const *>(Attrib::DefaultDataArea(sizeof(const char *)));
+        }
+
+        carName = *carNamePtr;
+        stockCarNamePtr = reinterpret_cast<const char *const *>(instance->GetAttributePointer(0xFD3CF790, 0));
+        if (!stockCarNamePtr) {
+            stockCarNamePtr = reinterpret_cast<const char *const *>(Attrib::DefaultDataArea(sizeof(const char *)));
+        }
+
+        stockCarName = *stockCarNamePtr;
+        preloadPtr = reinterpret_cast<const int *>(instance->GetAttributePointer(0x9652AF0F, 0));
+        if (!preloadPtr) {
+            preloadPtr = reinterpret_cast<const int *>(Attrib::DefaultDataArea(sizeof(int)));
+        }
 
         if (stockCarName && *stockCarName) {
             carName = stockCarName;
         }
 
-        if (*reinterpret_cast<const int *>(instance->GetAttributePointer(0x9652AF0F, 0) ?
-                                               instance->GetAttributePointer(0x9652AF0F, 0) :
-                                               Attrib::DefaultDataArea(sizeof(int))) != 0 ||
-            forcePreload) {
+        if (*preloadPtr != 0 || forcePreload) {
             ReserveStockCar(carName);
         }
     }
 
-    for (unsigned int i = 0; i < instance->Get(0x916E0E78).GetLength(); ++i) {
+    unsigned int i = 0;
+
+    while (true) {
+        Attrib::Attribute children = instance->Get(0x916E0E78);
+        unsigned int numChildren = children.GetLength();
+
+        children.~Attribute();
+        if (numChildren <= i) {
+            break;
+        }
+
         const unsigned int *childKey = reinterpret_cast<const unsigned int *>(instance->GetAttributePointer(0x916E0E78, i));
 
         if (!childKey) {
@@ -1786,6 +1808,8 @@ void GManager::RecursivePreloadCharacterCars(GRuntimeInstance *instance, bool fo
         if (child) {
             RecursivePreloadCharacterCars(child, forcePreload);
         }
+
+        i += 1;
     }
 }
 
