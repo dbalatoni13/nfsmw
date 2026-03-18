@@ -70,10 +70,10 @@ void XSpriteManager::RenderAll(eView *view) {
     SpriteDef *XSpriteBufferP = this->XSpriteBuffer;
 
     {
-        int i;
+        uint32 i;
         bMatrix4 *identity = eGetIdentityMatrix();
 
-        for (i = 0; i < static_cast<int>(this->position); i++) {
+        for (i = 0; i < this->position; i++) {
             pPoly.Vertices[0] = XSpriteBufferP->startPos;
             pPoly.Vertices[1] = XSpriteBufferP->startPos;
             pPoly.Vertices[1].z += XSpriteBufferP->width;
