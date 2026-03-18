@@ -13,6 +13,7 @@ struct XenonEffectDef {
     UMath::Matrix4 mat;                 // offset 0x10, size 0x40
     Attrib::Collection *spec;           // offset 0x50, size 0x4
     EmitterGroup *piggyback_effect;     // offset 0x54, size 0x4
+    ~XenonEffectDef() {}
 };
 
 struct XenonEffectVec {
@@ -20,6 +21,15 @@ struct XenonEffectVec {
     XenonEffectDef *finish;         // offset 0x4, size 0x4
     void *unused;                   // offset 0x8, size 0x4
     XenonEffectDef *end_of_storage; // offset 0xC, size 0x4
+
+    void clear() {
+        XenonEffectDef *p = start;
+        while (p != finish) {
+            p->~XenonEffectDef();
+            p++;
+        }
+        finish = start;
+    }
 };
 
 struct XenonEffectLists {
@@ -240,8 +250,8 @@ void ParticleList::GeneratePolys() {
 void DrawXenonEmitters(eView *view) {}
 
 void ClearXenonEmitters() {
-    gNGEffectList.active.finish = gNGEffectList.active.start;
-    gNGEffectList.staging.finish = gNGEffectList.staging.start;
+    gNGEffectList.active.clear();
+    gNGEffectList.staging.clear();
 }
 
 void AddXenonEffect(EmitterGroup *piggyback_fx, const Attrib::Collection *spec, const UMath::Matrix4 *mat, const UMath::Vector4 *vel) {
