@@ -6,10 +6,10 @@ int GlobalStichSizes = 0;
 
 struct cStitchLoop {
     unsigned int m_StitchAttribKey;
-    cStichWrapper *m_Stitch[2];
     SND_Stich *m_StichData;
-    short m_tTimeBeforeRepeat;
+    cStichWrapper *m_Stitch[2];
     short m_tOverlap;
+    short m_tTimeBeforeRepeat;
 
     cStitchLoop(unsigned int attrib);
     ~cStitchLoop();
@@ -62,13 +62,15 @@ cStitchLoop::~cStitchLoop() {
     }
 }
 
-void cStitchLoop::Update(const SND_Params *params, float dt) {
-    for (int i = 0; i < 2; i++) {
-        if (m_Stitch[i] != nullptr) {
-            m_Stitch[i]->Update(params);
-            if (!m_Stitch[i]->bIsPlaying) {
-                delete m_Stitch[i];
-                m_Stitch[i] = nullptr;
+void cStitchLoop::Update(const SND_Params *Params, float dt) {
+    {
+        for (int n = 0; n < 2; n++) {
+            if (m_Stitch[n] != nullptr) {
+                m_Stitch[n]->Update(Params);
+                if (!m_Stitch[n]->IsPlaying()) {
+                    delete m_Stitch[n];
+                    m_Stitch[n] = nullptr;
+                }
             }
         }
     }
@@ -76,15 +78,17 @@ void cStitchLoop::Update(const SND_Params *params, float dt) {
     m_tTimeBeforeRepeat = static_cast< short >(static_cast< int >(m_tTimeBeforeRepeat) - static_cast< int >(dt * 1000.0f));
     if (m_tTimeBeforeRepeat < 0) {
         m_tTimeBeforeRepeat = m_tOverlap;
-        int freeSlot = -1;
-        for (int i = 0; i < 2; i++) {
-            if (m_Stitch[i] == nullptr) {
-                freeSlot = i;
+        int index = -1;
+        {
+            for (int n = 0; n < 2; n++) {
+                if (m_Stitch[n] == nullptr) {
+                    index = n;
+                }
             }
         }
-        if (freeSlot != -1 && m_StichData != nullptr) {
-            m_Stitch[freeSlot] = new cStichWrapper(*m_StichData);
-            m_Stitch[freeSlot]->Play(0, 0, 0);
+        if (index != -1) {
+            m_Stitch[index] = new cStichWrapper(*m_StichData);
+            m_Stitch[index]->Play(0, 0, 0);
         }
     }
 }
