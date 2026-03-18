@@ -10,6 +10,7 @@
 #include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
 #include "Speed/Indep/Src/Interfaces/SimActivities/INIS.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IArticulatedVehicle.h"
 #include "Speed/Indep/Src/Misc/LZCompress.hpp"
 #include "Speed/Indep/Src/Misc/Platform.h"
 #include "Speed/Indep/Src/Sim/Simulation.h"
@@ -1612,27 +1613,31 @@ ISimable *GManager::GetStockCar(const char *carName) {
 }
 
 ISimable *GManager::GetRandomEmergencyStockCar() {
-    StockCarMap::iterator it;
-    int index;
-    ISimable *stockCar;
+    typedef UTL::Std::vector<StockCarMap::iterator, _type_vector> CandidateCars;
 
-    if (mStockCars.empty()) {
+    CandidateCars candidates;
+    GRaceParameters *raceParms = GRaceStatus::Exists() ? GRaceStatus::Get().GetRaceParameters() : nullptr;
+    ISimable *stockCar = nullptr;
+
+    if (raceParms && raceParms->GetRaceType() != 2) {
         return nullptr;
     }
 
-    index = bRandom(static_cast<int>(mStockCars.size()));
-    it = mStockCars.begin();
-    while (index > 0 && it != mStockCars.end()) {
-        ++it;
-        index--;
+    candidates.reserve(mStockCars.size());
+    for (StockCarMap::iterator it = mStockCars.begin(); it != mStockCars.end(); ++it) {
+        IArticulatedVehicle *iarticulation;
+
+        if (!it->second || !it->second->QueryInterface(&iarticulation)) {
+            candidates.push_back(it);
+        }
     }
 
-    if (it == mStockCars.end()) {
-        return nullptr;
+    if (!candidates.empty()) {
+        StockCarMap::iterator it = candidates[bRandom(static_cast<int>(candidates.size()))];
+        stockCar = it->second;
+        mStockCars.erase(it);
     }
 
-    stockCar = it->second;
-    mStockCars.erase(it);
     return stockCar;
 }
 
