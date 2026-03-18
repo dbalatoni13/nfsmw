@@ -32,6 +32,49 @@ extern int UnlockAllThings;
 
 GRaceStatus *GRaceStatus::fObj = nullptr;
 
+static const float Tweak_GlueSpreadData_Low[5] = {
+    1000.0f,
+    900.0f,
+    750.0f,
+    600.0f,
+    800.0f,
+};
+
+static const float Tweak_GlueSpreadData_High[5] = {
+    300.0f,
+    275.0f,
+    250.0f,
+    150.0f,
+    250.0f,
+};
+
+static const float Tweak_GlueStrengthData_Low[5] = {
+    0.75f,
+    0.75f,
+    0.75f,
+    0.5f,
+    0.25f,
+};
+
+static const float Tweak_GlueStrengthData_High[5] = {
+    0.75f,
+    0.75f,
+    0.75f,
+    0.75f,
+    0.25f,
+};
+
+static const float Tweak_QuickRaceGlue[3] = {
+    0.0f,
+    0.5f,
+    1.0f,
+};
+
+Table Tweak_GlueSpreadTable_Low(Tweak_GlueSpreadData_Low, 5, 0.0f, 100.0f);
+Table Tweak_GlueSpreadTable_High(Tweak_GlueSpreadData_High, 5, 0.0f, 100.0f);
+Table Tweak_GlueStrengthTable_Low(Tweak_GlueStrengthData_Low, 5, 0.0f, 100.0f);
+Table Tweak_GlueStrengthTable_High(Tweak_GlueStrengthData_High, 5, 0.0f, 100.0f);
+
 bool GRacerInfo::GetIsHuman() const {
     ISimable *simable = GetSimable();
     return simable && simable->IsPlayer();
@@ -2128,6 +2171,74 @@ void GRaceStatus::SyncronizeAdaptiveBonus() {
     if (fCatchUpAdaptiveBonus < 0.0f) {
         fCatchUpAdaptiveBonus = 0.0f;
     }
+}
+
+bool GRaceStatus::ComputeCatchUpSkill(GRacerInfo *racer_info, PidError *pid, float *output, float *skill, bool off_world) {
+    float glue_level = 0.5f;
+    bool is_boss = false;
+    bool use_race_override = false;
+    float percent_complete = racer_info->GetPctRaceComplete();
+    float glue_skill;
+    float glue_spread;
+    float glue_integral;
+    float glue_derivative;
+    float glue_p = pid->GetErrorIntegral();
+    float glue_error = pid->GetErrorDerivative();
+    float glue_output;
+
+    if (!off_world) {
+        if (GetRaceContext() == GRace::kRaceContext_QuickRace) {
+            if (!mRaceParms || !mRaceParms->GetCatchUp()) {
+                return false;
+            }
+
+            glue_level = Tweak_QuickRaceGlue[mRaceParms->GetDifficulty()];
+        } else {
+            if (GetRaceContext() != GRace::kRaceContext_Career) {
+                return false;
+            }
+
+            glue_level = bClamp((GetAdaptiveDifficutly() + 1.0f) * 0.5f, 0.0f, 1.0f);
+
+            if (mRaceParms) {
+                use_race_override = mRaceParms->GetCatchUpOverride();
+                if (mRaceParms->GetIsBossRace()) {
+                    is_boss = true;
+                    glue_level = ((1.0f - glue_level) * 0.5f) + glue_level;
+                }
+            }
+        }
+    } else {
+        glue_level = 1.0f;
+    }
+
+    if (use_race_override) {
+        Table glue_skill_table(aCatchUpSkillData, nCatchUpSkillEntries, 0.0f, 100.0f);
+        Table glue_spread_table(aCatchUpSpreadData, nCatchUpSpreadEntries, 0.0f, 100.0f);
+
+        glue_skill = glue_skill_table.GetValue(percent_complete);
+        glue_spread = glue_spread_table.GetValue(percent_complete);
+        glue_integral = fCatchUpIntegral;
+        glue_derivative = fCatchUpDerivative;
+    } else {
+        glue_spread = ((Tweak_GlueSpreadTable_High.GetValue(percent_complete) - Tweak_GlueSpreadTable_Low.GetValue(percent_complete)) * glue_level) +
+                      Tweak_GlueSpreadTable_Low.GetValue(percent_complete);
+        glue_skill = ((Tweak_GlueStrengthTable_High.GetValue(percent_complete) - Tweak_GlueStrengthTable_Low.GetValue(percent_complete)) * glue_level) +
+                     Tweak_GlueStrengthTable_Low.GetValue(percent_complete);
+        glue_integral = 5.0e-5f;
+        glue_derivative = 0.01f;
+    }
+
+    glue_spread = bMax(glue_spread, 100.0f);
+    glue_output = bClamp((2.0f / glue_spread) * pid->GetError() + glue_p * glue_integral + glue_error * glue_derivative, -1.0f, 1.0f);
+    *skill = glue_skill * glue_output;
+
+    if (is_boss) {
+        glue_output = 1.0f;
+    }
+
+    *output = glue_output;
+    return true;
 }
 
 void GRaceStatus::MakeDefaultCatchUpData() {
