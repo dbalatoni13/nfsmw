@@ -868,9 +868,10 @@ int LoaderScenery(bChunk *chunk) {
                     }
 
                     int num_overrides = static_cast<unsigned int>(subchunk->Size) >> 2;
+                    unsigned short *override_data_base = reinterpret_cast<unsigned short *>(subchunk->GetData());
                     for (int i = 0; i < num_overrides; i++) {
                         unsigned short *override_data =
-                            reinterpret_cast<unsigned short *>(reinterpret_cast<unsigned char *>(subchunk->GetData()) + i * 4);
+                            reinterpret_cast<unsigned short *>(reinterpret_cast<unsigned char *>(override_data_base) + i * 4);
                         bEndianSwap16(&override_data[0]);
                         bEndianSwap16(&override_data[1]);
                         SceneryOverrideInfo *override_info = reinterpret_cast<SceneryOverrideInfo *>(
