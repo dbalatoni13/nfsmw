@@ -1509,11 +1509,20 @@ void GRaceParameters::ExtractPosition(Attrib::Gen::gameplay &collection, UMath::
 }
 
 void GRaceParameters::ExtractDirection(Attrib::Gen::gameplay &collection, UMath::Vector3 &dir, float rotate) const {
-    UMath::Matrix4 rotMat;
+    UMath::Matrix4 rotMat = UMath::Matrix4::kIdentity;
     UMath::Vector3 forward = {0.0f, 0.0f, 1.0f};
+    const float *rotation = reinterpret_cast<const float *>(collection.GetAttributePointer(0x5A6A57C6, 0));
 
-    UMath::MultYRot(UMath::Matrix4::kIdentity, -(collection.Rotation(0) + rotate) * 0.00069444446f, rotMat);
-    VU0_MATRIX3x4_vect3mult(forward, rotMat, dir);
+    if (!rotation) {
+        rotation = reinterpret_cast<const float *>(Attrib::DefaultDataArea(sizeof(float)));
+    }
+
+    MATRIX4_multyrot(&rotMat, -(*rotation + rotate) * 0.0027777778f, &rotMat);
+    VU0_MATRIX3x4_vect3mult(forward, rotMat, forward);
+
+    dir.x = forward.x;
+    dir.y = forward.y;
+    dir.z = forward.z;
 }
 
 unsigned int GRaceParameters::GetEventHash() const {
