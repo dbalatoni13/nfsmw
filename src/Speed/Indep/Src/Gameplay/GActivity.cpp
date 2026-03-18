@@ -3,6 +3,8 @@
 #include "GManager.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
+#include "Speed/Indep/Src/Lua/LuaRuntime.h"
+#include "Speed/Indep/Src/Lua/source/lua.h"
 
 template <typename T> struct GObjectIteratorTraits;
 
@@ -168,5 +170,47 @@ void GActivity::SerializeVars(bool abandonLuaTable) {
 
     if (abandonLuaTable) {
         mVarsInLuaVM = false;
+    }
+}
+
+void GActivity::DeserializeVars() {
+    unsigned char *buffer = reinterpret_cast<unsigned char *>(GManager::Get().GetObjectStateBlock(GetCollection()));
+
+    if (buffer) {
+        bool handlerListWasEmpty = mStateHandlers.empty();
+        SerializedHeader header;
+
+        if (handlerListWasEmpty) {
+            GatherStatesAndHandlers();
+        }
+
+        bMemCpy(&header, buffer, sizeof(header));
+        if (header.mStateNameHash != 0) {
+            for (StateToHandlers::iterator iterState = mStateHandlers.begin(); iterState != mStateHandlers.end(); ++iterState) {
+                GState *state = iterState->first;
+
+                if (header.mStateNameHash == Attrib::StringHash32(state->Name(0))) {
+                    mCurrentState = state;
+                    break;
+                }
+            }
+        }
+
+        if (header.mTableBytes != 0) {
+            lua_State *luaState = LuaRuntime::Get().GetState();
+            unsigned int bytesLoaded = LuaRuntime::DeserializeTable(luaState, buffer + sizeof(header), !Persistent(0));
+
+            if (bytesLoaded != 0) {
+                lua_pushstring(luaState, CollectionName());
+                lua_pushvalue(luaState, -2);
+                lua_settable(luaState, LUA_GLOBALSINDEX);
+                lua_settop(luaState, -2);
+                mVarsInLuaVM = true;
+            }
+        }
+
+        if (handlerListWasEmpty && !mStateHandlers.empty()) {
+            mStateHandlers.clear();
+        }
     }
 }
