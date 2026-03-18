@@ -15,6 +15,7 @@
 #include "Speed/Indep/Src/Interfaces/SimActivities/ITrafficMgr.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IArticulatedVehicle.h"
+#include "Speed/Indep/Src/Physics/PVehicle.h"
 #include "Speed/Indep/Src/Frontend/FEManager.hpp"
 #include "Speed/Indep/Src/Misc/GameFlow.hpp"
 #include "Speed/Indep/Src/Misc/LZCompress.hpp"
@@ -1698,15 +1699,31 @@ void GManager::ClearStockCars() {
 }
 
 void GManager::ReserveStockCar(const char *carName) {
-    unsigned int carKey;
+    unsigned int carHash;
+    StockCarMap::iterator iterExisting;
 
     if (!carName || !*carName) {
         return;
     }
 
-    carKey = Attrib::StringHash32(carName);
-    if (mStockCars.find(carKey) == mStockCars.end()) {
-        mStockCars.insert(StockCarMap::value_type(carKey, static_cast<ISimable *>(nullptr)));
+    carHash = Attrib::StringHash32(carName);
+    iterExisting = mStockCars.find(carHash);
+    if (iterExisting == mStockCars.end()) {
+        UMath::Vector3 pos = UMath::Vector3::kZero;
+        UMath::Vector3 dir = UMath::Vector3::kZero;
+        IVehicleCache *cache = static_cast<IVehicleCache *>(this);
+        VehicleParams params(cache, DRIVER_TRAFFIC, Attrib::StringToKey(carName), dir, pos, 0, nullptr, nullptr);
+        ISimable *simable = UTL::COM::Factory<Sim::Param, ISimable, UCrc32>::CreateInstance("PVehicle", params);
+
+        if (simable) {
+            IVehicle *vehicle;
+
+            if (simable->QueryInterface(&vehicle)) {
+                vehicle->Deactivate();
+            }
+
+            mStockCars[carHash] = simable;
+        }
     }
 }
 
