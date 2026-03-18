@@ -219,29 +219,36 @@ void DoTunnelBloom(eView *view) {
     if (!zone || zone->Elevation <= my_car_pos->z) {
         if (base_glare < view->ScreenEffects->SE_data[SE_GLARE].intensity) {
             ScreenEffectDef SE_def;
+            float pos_screen_x;
+            float pos_screen_y;
+            float pos_screen_z;
+
             bMemSet(&SE_def, 0, sizeof(SE_def));
             SE_def.r = 128.0f;
             SE_def.g = 128.0f;
             SE_def.b = 128.0f;
             SE_def.a = 128.0f;
             SE_def.intensity = view->ScreenEffects->SE_data[SE_GLARE].intensity - GlareFalloff;
-
-            bVector3 posScreen(*camera_position - lcamPosInside_27614[vIndex]);
-            posScreen += *camera_direction;
+            pos_screen_x = camera_position->x - lcamPosInside_27614[vIndex].x;
+            pos_screen_y = camera_position->y - lcamPosInside_27614[vIndex].y;
+            pos_screen_z = camera_position->z - lcamPosInside_27614[vIndex].z;
+            pos_screen_x += camera_direction->x;
+            pos_screen_y += camera_direction->y;
+            pos_screen_z += camera_direction->z;
 
             if (base_glare < SE_def.intensity) {
-                SE_def.data[0] = posScreen.x + dataBackup_27616[kTunnelPoint0X][vIndex];
-                SE_def.data[1] = posScreen.y + dataBackup_27616[kTunnelPoint0Y][vIndex];
-                SE_def.data[2] = posScreen.z + dataBackup_27616[kTunnelPoint0Z][vIndex];
-                SE_def.data[3] = posScreen.x + dataBackup_27616[kTunnelPoint1X][vIndex];
-                SE_def.data[4] = posScreen.y + dataBackup_27616[kTunnelPoint1Y][vIndex];
-                SE_def.data[5] = posScreen.z + dataBackup_27616[kTunnelPoint1Z][vIndex];
-                SE_def.data[6] = posScreen.x + dataBackup_27616[kTunnelPoint2X][vIndex];
-                SE_def.data[7] = posScreen.y + dataBackup_27616[kTunnelPoint2Y][vIndex];
-                SE_def.data[8] = posScreen.z + dataBackup_27616[kTunnelPoint2Z][vIndex];
-                SE_def.data[9] = posScreen.x + dataBackup_27616[kTunnelPoint3X][vIndex];
-                SE_def.data[10] = posScreen.y + dataBackup_27616[kTunnelPoint3Y][vIndex];
-                SE_def.data[11] = posScreen.z + dataBackup_27616[kTunnelPoint3Z][vIndex];
+                SE_def.data[0] = pos_screen_x + dataBackup_27616[kTunnelPoint0X][vIndex];
+                SE_def.data[1] = pos_screen_y + dataBackup_27616[kTunnelPoint0Y][vIndex];
+                SE_def.data[2] = pos_screen_z + dataBackup_27616[kTunnelPoint0Z][vIndex];
+                SE_def.data[3] = pos_screen_x + dataBackup_27616[kTunnelPoint1X][vIndex];
+                SE_def.data[4] = pos_screen_y + dataBackup_27616[kTunnelPoint1Y][vIndex];
+                SE_def.data[5] = pos_screen_z + dataBackup_27616[kTunnelPoint1Z][vIndex];
+                SE_def.data[6] = pos_screen_x + dataBackup_27616[kTunnelPoint2X][vIndex];
+                SE_def.data[7] = pos_screen_y + dataBackup_27616[kTunnelPoint2Y][vIndex];
+                SE_def.data[8] = pos_screen_z + dataBackup_27616[kTunnelPoint2Z][vIndex];
+                SE_def.data[9] = pos_screen_x + dataBackup_27616[kTunnelPoint3X][vIndex];
+                SE_def.data[10] = pos_screen_y + dataBackup_27616[kTunnelPoint3Y][vIndex];
+                SE_def.data[11] = pos_screen_z + dataBackup_27616[kTunnelPoint3Z][vIndex];
                 view->ScreenEffects->AddScreenEffect(SE_GLARE, &SE_def, 1, SEC_FRAME);
                 AccumulationBufferNeedsFlush = 1;
             }
@@ -270,8 +277,7 @@ void DoTunnelBloom(eView *view) {
     usPoint.y = endVector.z;
     usPoint.z = endVector.x;
     float height = 0.0f;
-    WCollisionMgr cmap(0, 3);
-    cmap.GetWorldHeightAtPointRigorous(usPoint, height, 0);
+    WCollisionMgr(0, 3).GetWorldHeightAtPointRigorous(usPoint, height, 0);
 
     dataBackup_27616[kTunnelPoint0X][vIndex] = p0.x + camera_direction->x;
     dataBackup_27616[kTunnelPoint0Y][vIndex] = p0.y + camera_direction->y;
@@ -314,8 +320,12 @@ void DoTunnelBloom(eView *view) {
     }
     zoneB[vIndex] = zone;
 
-    bVector2 r(p0.x - twoDpos.x, p0.y - twoDpos.y);
-    bVector2 v(p1.y - p0.y, p0.x - p1.x);
+    bVector2 r;
+    bVector2 v;
+    r.x = p0.x - twoDpos.x;
+    r.y = p0.y - twoDpos.y;
+    v.x = p1.y - p0.y;
+    v.y = p0.x - p1.x;
     bNormalize(&v, &v);
     float dir_dot = bAbs(v.x * r.x + v.y * r.y);
     if (17.0f <= dir_dot) {
