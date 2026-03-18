@@ -6,7 +6,76 @@
 #include "Speed/Indep/bWare/Inc/bDebug.hpp"
 #include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
 
-struct vAABBTree;
+struct vAABB {
+    float PositionX;
+    float PositionY;
+    float PositionZ;
+    short ParentIndex;
+    short NumChildren;
+    float ExtentX;
+    float ExtentY;
+    float ExtentZ;
+    short ChildrenIndicies[10];
+};
+
+struct vAABBTree {
+    vAABB *NodeArray;
+    short NumLeafNodes;
+    short NumParentNodes;
+    short TotalNodes;
+    short Depth;
+    int pad1;
+
+    vAABB *QueryLeaf(float x, float y, float z);
+};
+
+struct EventTrigger {
+    unsigned int NameHash;
+    unsigned int EventID;
+    unsigned int Parameter;
+    int TrackDirectionMask;
+    float PositionX;
+    float PositionY;
+    float PositionZ;
+    float Radius;
+
+    unsigned int GetEventID() {
+        return EventID;
+    }
+
+    float GetRadius() {
+        return Radius;
+    }
+};
+
+struct EventTriggerPack : public bTNode<EventTriggerPack> {
+    int Version;
+    int ScenerySectionNumber;
+    int NumEventTriggers;
+    int EndianSwapped;
+    vAABBTree *EventTree;
+    EventTrigger *EventTriggerArray;
+};
+
+enum EVENT_ID {
+    TRIGGER_EVENT_CAR_ON_FERN = 65539,
+    TRIGGER_EVENT_VIEW_DRIVING_LINE = 65541,
+    TRIGGER_EVENT_ACTIVATE_TRAIN = 65542,
+    TRIGGER_EVENT_SOUND = 65543,
+    TRIGGER_EVENT_GUIDE_ARROW = 65544,
+    TRIGGER_EVENT_ACTIVATE_PLANE = 65545,
+    TRIGGER_EVENT_INITIATE_PURSUIT = 131072,
+    TRIGGER_EVENT_CALL_FOR_BACKUP = 131073,
+    TRIGGER_EVENT_CALL_FOR_ROADBLOCK = 131074,
+    TRIGGER_EVENT_STRATEGY_INITIATE = 131075,
+    TRIGGER_EVENT_COLLISION = 131076,
+    TRIGGER_EVENT_ANNOUNCE_ARREST = 131077,
+    TRIGGER_EVENT_STRATEGY_OUTCOME = 131078,
+    TRIGGER_EVENT_ROADBLOCK_UPDATE = 131079,
+    TRIGGER_EVENT_CANCEL_PURSUIT = 131080,
+    TRIGGER_EVENT_START_SIREN = 262144,
+    TRIGGER_EVENT_STOP_SIREN = 262145
+};
 
 struct emEvent : public bTNode<emEvent> {
     int ReferenceCount;
@@ -29,6 +98,7 @@ struct emEventHandler : public bTNode<emEventHandler> {
 
 void bEndianSwap32(void *value);
 void SwapEndian(vAABBTree *tree);
+emEvent *emAddEvent(EVENT_ID event_id);
 
 static inline bNode *GetEventTriggerPackNode_EventManager(void *event_trigger_pack) {
     return reinterpret_cast<bNode *>(event_trigger_pack);
@@ -78,6 +148,7 @@ static inline VisibleSectionUserInfo **GetUserInfoTable_EventManager() {
     return reinterpret_cast<VisibleSectionUserInfo **>(reinterpret_cast<char *>(&TheVisibleSectionManager) + 0x60);
 }
 
+emEvent *TriggerEventArray[41];
 SlotPool *EventSlotPool = 0;
 SlotPool *EventHandlerSlotPool = 0;
 bList EmptyEventTriggerPackList;
@@ -178,6 +249,53 @@ int UnloaderEventManager(bChunk *chunk) {
     }
 
     return true;
+}
+
+emEvent **emTriggerEventsInSection(bVector3 *position, int section_number) {
+    emEvent **current_event = TriggerEventArray;
+    float x = position->x;
+    float y = position->y;
+    float z = position->z;
+    VisibleSectionUserInfo *user_info = TheVisibleSectionManager.GetUserInfo(section_number);
+
+    if (user_info && user_info->pEventTriggerPack) {
+        EventTriggerPack *trigger_pack = user_info->pEventTriggerPack;
+        vAABBTree *tree = trigger_pack->EventTree;
+        if (tree) {
+            vAABB *aabb = tree->QueryLeaf(x, y, z);
+            if (aabb) {
+                EventTrigger *root_event = trigger_pack->EventTriggerArray;
+                int num_hits = -aabb->NumChildren;
+
+                for (int i = 0; i < num_hits && current_event < &TriggerEventArray[40]; i++) {
+                    EventTrigger *event = &root_event[aabb->ChildrenIndicies[i]];
+                    float event_x = event->PositionX;
+                    float event_y = event->PositionY;
+                    float event_z = event->PositionZ;
+                    float dx = bAbs(x - event_x);
+                    float dy = bAbs(y - event_y);
+                    float dz = bAbs(z - event_z);
+                    float r2 = event->GetRadius();
+                    float dist2 = dz * dz + dx * dx + dy * dy;
+
+                    r2 *= r2;
+                    if (dist2 < r2) {
+                        emEvent *new_event = emAddEvent(static_cast<EVENT_ID>(event->GetEventID()));
+                        new_event->pEventTrigger = event;
+                        *current_event = new_event;
+                        current_event++;
+                    }
+                }
+            }
+        }
+    }
+
+    if (current_event == TriggerEventArray) {
+        return 0;
+    }
+
+    *current_event = 0;
+    return TriggerEventArray;
 }
 
 void emProcessAllEvents() {
