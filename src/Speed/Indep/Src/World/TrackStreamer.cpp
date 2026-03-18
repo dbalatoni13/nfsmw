@@ -68,16 +68,16 @@ static unsigned int last_jettison_print_26154 = 0;
 static VisibleSectionBitTable CurrentVisibleSectionTableMem;
 TrackStreamer TheTrackStreamer;
 
-static char GetScenerySectionLetter_TrackStreamer(int section_number) {
+static inline char GetScenerySectionLetter_TrackStreamer(int section_number) {
     return static_cast<char>(section_number / 100 + 'A' - 1);
 }
 
-static bool IsRegularScenerySection_TrackStreamer(int section_number) {
+static inline bool IsRegularScenerySection_TrackStreamer(int section_number) {
     char section_letter = GetScenerySectionLetter_TrackStreamer(section_number);
     return section_letter >= 'A' && section_letter < 'U';
 }
 
-static bool IsLoadingBarSection_TrackStreamer(int section_number) {
+static inline bool IsLoadingBarSection_TrackStreamer(int section_number) {
     if (!IsRegularScenerySection_TrackStreamer(section_number)) {
         return false;
     }

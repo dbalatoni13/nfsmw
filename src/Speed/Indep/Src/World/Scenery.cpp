@@ -184,18 +184,18 @@ unsigned char PrecullerBooBooManager::GetBit(int section_number) {
     return static_cast<unsigned char>(1 << (section_number & 7));
 }
 
-static char GetScenerySectionLetter_Scenery(int section_number) {
+static inline char GetScenerySectionLetter_Scenery(int section_number) {
     return static_cast<char>(section_number / 100 + 'A' - 1);
 }
 
-static void EndianSwapSectionHeader_Scenery(int *section_header_words) {
+static inline void EndianSwapSectionHeader_Scenery(int *section_header_words) {
     bEndianSwap32(reinterpret_cast<char *>(section_header_words) + 0xC);
     bEndianSwap32(reinterpret_cast<char *>(section_header_words) + 0x10);
     bEndianSwap32(reinterpret_cast<char *>(section_header_words) + 0x14);
     bEndianSwap32(reinterpret_cast<char *>(section_header_words) + 0x38);
 }
 
-static void EndianSwapSceneryInfo_Scenery(unsigned char *data) {
+static inline void EndianSwapSceneryInfo_Scenery(unsigned char *data) {
     for (int i = 0; i < 4; i++) {
         bEndianSwap32(data + 0x18 + i * 4);
     }
@@ -204,7 +204,7 @@ static void EndianSwapSceneryInfo_Scenery(unsigned char *data) {
     bEndianSwap32(data + 0x40);
 }
 
-static void EndianSwapSceneryInstance_Scenery(SceneryInstance *instance) {
+static inline void EndianSwapSceneryInstance_Scenery(SceneryInstance *instance) {
     bPlatEndianSwap(&instance->ExcludeFlags);
     bPlatEndianSwap(&instance->PrecullerInfoIndex);
     bPlatEndianSwap(&instance->LightingContextNumber);
@@ -221,7 +221,7 @@ static void EndianSwapSceneryInstance_Scenery(SceneryInstance *instance) {
     }
 }
 
-static void EndianSwapPrecullerInfo_Scenery(unsigned char *data) {
+static inline void EndianSwapPrecullerInfo_Scenery(unsigned char *data) {
     bEndianSwap32(data + 0x00);
     bEndianSwap32(data + 0x04);
     bEndianSwap32(data + 0x08);
@@ -234,7 +234,7 @@ static void EndianSwapPrecullerInfo_Scenery(unsigned char *data) {
     }
 }
 
-static SceneryOverrideInfo *FindMatchingOverrideInfo_Scenery(int section_number, int override_index) {
+static inline SceneryOverrideInfo *FindMatchingOverrideInfo_Scenery(int section_number, int override_index) {
     for (int i = 0; i < NumSceneryOverrideInfos; i++) {
         SceneryOverrideInfo *override_info = &SceneryOverrideInfoTable[i];
         if (override_info->SectionNumber == section_number && override_info->OverrideIndex == override_index) {
@@ -244,7 +244,7 @@ static SceneryOverrideInfo *FindMatchingOverrideInfo_Scenery(int section_number,
     return 0;
 }
 
-static eModel *FindExistingModel_Scenery(unsigned char *scenery_info, int model_slot) {
+static inline eModel *FindExistingModel_Scenery(unsigned char *scenery_info, int model_slot) {
     unsigned int name_hash = *reinterpret_cast<unsigned int *>(scenery_info + 0x18 + model_slot * 4);
     for (int i = 0; i < model_slot; i++) {
         eModel *model = *reinterpret_cast<eModel **>(scenery_info + 0x28 + i * 4);
@@ -255,15 +255,15 @@ static eModel *FindExistingModel_Scenery(unsigned char *scenery_info, int model_
     return 0;
 }
 
-static unsigned char *GetSceneryInfo_Scenery(int *section_header_words, short scenery_info_number) {
+static inline unsigned char *GetSceneryInfo_Scenery(int *section_header_words, short scenery_info_number) {
     return reinterpret_cast<unsigned char *>(section_header_words[6]) + scenery_info_number * 0x48;
 }
 
-static eModel *GetSceneryModel_Scenery(unsigned char *scenery_info, int model_slot) {
+static inline eModel *GetSceneryModel_Scenery(unsigned char *scenery_info, int model_slot) {
     return *reinterpret_cast<eModel **>(scenery_info + 0x28 + model_slot * 4);
 }
 
-static float GetSceneryRadius_Scenery(unsigned char *scenery_info) {
+static inline float GetSceneryRadius_Scenery(unsigned char *scenery_info) {
     return *reinterpret_cast<float *>(scenery_info + 0x38);
 }
 
