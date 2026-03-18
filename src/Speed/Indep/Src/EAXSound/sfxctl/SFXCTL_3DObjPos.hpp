@@ -40,10 +40,10 @@ struct SFXCTL_3DObjPos : public SFXCTL {
     static SndBase *CreateObject(unsigned int);
     void Detach() override;
     void SetCameraAngle();
+    virtual void Generate3DParams(int);
     void UpdateParams(float t) override;
     void UpdateDoppler(int PlayerNum, float t);
 
-    virtual void Generate3DParams(int) {}
     void GenerateSinglePlayerMix();
     virtual void AssignPositionVector(bVector3 *pV3ObjPos);
     virtual void AssignDirectionVector(const bVector3 *pV3ObjDir);

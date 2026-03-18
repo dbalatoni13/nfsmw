@@ -1,4 +1,5 @@
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_3DObjPos.hpp"
+#include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
 #include "Speed/Indep/Src/EAXSound/SndCamera.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
@@ -12,6 +13,25 @@ enum ePOSMIXTYPE {
 };
 
 extern int POSMIXTYPE;
+
+inline e3DPlayerMix EAXSound::GetPlayerMixMode() {
+    return m_ePlayerMixMode;
+}
+
+namespace SndCamera {
+static inline bVector2 *GetWorldCarPos(int nPlayer) {
+    return m_WorldCarPos + nPlayer;
+}
+} // namespace SndCamera
+
+inline float bDistBetween(const bVector2 *v1, const bVector2 *v2) {
+    float y;
+    float x;
+
+    y = v2->y - v1->y;
+    x = v2->x - v1->x;
+    return bSqrt(x * x + y * y);
+}
 
 bVector2 SFXCTL_3DObjPos::m_v2ObjPosCopy;
 bVector2 *SFXCTL_3DObjPos::m_pv2AzimRefDir = nullptr;
@@ -73,6 +93,34 @@ void SFXCTL_3DObjPos::SetCameraAngle() {
 
     if (-v2NormPos.y * m_pv2AzimRefDir->x + v2NormPos.x * m_pv2AzimRefDir->y < 0.0f) {
         m_CameraAngle = static_cast<unsigned short>(~m_CameraAngle);
+    }
+}
+
+void SFXCTL_3DObjPos::Generate3DParams(int nplayer) {
+    if (m_pV3ObjPos != nullptr) {
+        m_PlayerRef = nplayer;
+        if (g_pEAXSound->GetPlayerMixMode() == EAXS3D_SINGLE_PLAYER_MIX) {
+            POSMIXTYPE = SINGLE_PLAYER;
+            m_PlayerRef = 0;
+            GenerateSinglePlayerMix();
+        } else {
+            bVector2 v2test;
+            float fdisttoCar0;
+            float fdisttoCar1;
+
+            v2test.x = m_pV3ObjPos->x;
+            v2test.y = m_pV3ObjPos->y;
+
+            POSMIXTYPE = TPMIX_AVE_CAM;
+            fdisttoCar0 = bDistBetween(SndCamera::GetWorldCarPos(0), &v2test);
+            fdisttoCar1 = bDistBetween(SndCamera::GetWorldCarPos(1), &v2test);
+            if (fdisttoCar0 < fdisttoCar1) {
+                m_PlayerRef = 0;
+            } else {
+                m_PlayerRef = 1;
+            }
+            GenerateSinglePlayerMix();
+        }
     }
 }
 
