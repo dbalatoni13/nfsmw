@@ -21,6 +21,8 @@
 // total size: 0x1A8
 struct GRacerInfo {
   public:
+    friend class GRaceStatus;
+
     GCharacter *GetGameCharacter() const {
         return mGameCharacter;
     }

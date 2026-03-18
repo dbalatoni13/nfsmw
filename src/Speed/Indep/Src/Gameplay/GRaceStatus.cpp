@@ -1491,6 +1491,74 @@ void GRaceStatus::RefreshBinWhileInGame() {
     mQueueBinChange = true;
 }
 
+void GRaceStatus::CalculateRankings() {
+    GRacerInfo *rankings[16];
+    bool rankPlayersByPoints = mRaceParms->GetRankPlayersByPoints();
+    int aiRacers = 0;
+
+    for (int i = 0; i < mRacerCount; ++i) {
+        rankings[i] = &mRacerInfo[i];
+    }
+
+    for (int i = mRacerCount - 1; i > 0; --i) {
+        for (int j = 0; j < i; ++j) {
+            bool swap;
+
+            if (!rankPlayersByPoints) {
+                swap = rankings[j]->IsBehind(*rankings[i]);
+            } else if (rankings[i]->GetPointTotal() + rankings[j]->GetPointTotal() <= 0.0f) {
+                swap = rankings[j]->IsBehind(*rankings[i]);
+            } else {
+                swap = rankings[j]->GetPointTotal() < rankings[i]->GetPointTotal();
+            }
+
+            if (swap) {
+                GRacerInfo *info = rankings[i];
+
+                rankings[i] = rankings[j];
+                rankings[j] = info;
+            }
+        }
+    }
+
+    for (int i = 0; i < mRacerCount; ++i) {
+        GRacerInfo *info = rankings[i];
+
+        info->SetRanking(i + 1);
+        if (!info->GetGameCharacter()) {
+            info->mAiRanking = 0;
+            ++aiRacers;
+        } else {
+            info->mAiRanking = (i + 1) - aiRacers;
+        }
+    }
+}
+
+void GRaceStatus::SortCheckPointRankings() {
+    GRacerInfo *rankings[16];
+
+    for (int checkpoint = 0; checkpoint < 16; ++checkpoint) {
+        for (int i = 0; i < mRacerCount; ++i) {
+            rankings[i] = &mRacerInfo[i];
+        }
+
+        for (int i = mRacerCount - 1; i > 0; --i) {
+            for (int j = 0; j < i; ++j) {
+                GRacerInfo *info = rankings[i];
+
+                if (rankings[j]->GetSpeedTrapSpeed(checkpoint) < info->GetSpeedTrapSpeed(checkpoint)) {
+                    rankings[i] = rankings[j];
+                    rankings[j] = info;
+                }
+            }
+        }
+
+        for (int i = 0; i < mRacerCount; ++i) {
+            rankings[i]->mSpeedTrapPosition[checkpoint] = i + 1;
+        }
+    }
+}
+
 void GRaceStatus::Update(float dT) {
     int numRacers = mRacerCount;
 
