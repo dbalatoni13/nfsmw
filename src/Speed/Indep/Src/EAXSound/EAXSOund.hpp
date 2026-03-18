@@ -27,6 +27,8 @@ struct CSTATEMGR_Base;
 struct EAX_HeliState;
 struct EAX_CarState;
 struct CSTATE_Base;
+struct EAXFrontEnd;
+struct EAXCommon;
 
 // yes that is the correct name for the file
 
@@ -181,6 +183,7 @@ class EAXSound : public AudioMemBase {
     static CSTATEMGR_Base *GetStateMgr(eMAINMAPSTATES estate) { return m_pStateMgr[estate]; }
     static struct SndBase *GetSndBase_Object(int nID);
     cSTICH_PlayBack *GetSTICHPlayback() const { return m_pSTICH_Playback; }
+    EAXFrontEnd *GetFrontEnd() { return m_pFESnd; }
     struct AudioSettings *GetCurrentAudioSettings() const { return m_pCurAudioSettings; }
     Attrib::Gen::audiosystem *GetAttributes() const { return mAttributes; }
     eSndGameMode GetSoundGameMode() const { return m_eSndGameMode; }

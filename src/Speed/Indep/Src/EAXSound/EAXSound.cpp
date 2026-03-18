@@ -1,8 +1,11 @@
 #include "./EAXSOund.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXAemsManager.h"
 #include "Speed/Indep/Src/EAXSound/EAXCarState.hpp"
+#include "Speed/Indep/Src/EAXSound/NFSMixMaster.hpp"
 #include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_NISStream.hpp"
+#include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_PFEATrax.hpp"
 #include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_Pathfinder.hpp"
+#include "Speed/Indep/Src/EAXSound/SndCamera.hpp"
 #include "Speed/Indep/Src/EAXSound/Stream/EAXS_StreamManager.h"
 #include "Speed/Indep/Src/EAXSound/States/Managers/STATEMGR_Base.hpp"
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_NISReving.hpp"
@@ -81,6 +84,14 @@ struct Manager {
 } // namespace Speech
 
 extern Speech::Cache gSpeechCache;
+namespace Attrib {
+namespace Gen {
+struct shiftpattern;
+struct turbosfx;
+} // namespace Gen
+} // namespace Attrib
+extern Attrib::Gen::shiftpattern *g_ShiftInfo;
+extern Attrib::Gen::turbosfx *g_TurboInfo;
 
 #include "Speed/Indep/Src/EAXSound/EAXCommon.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXFrontEnd.hpp"
@@ -201,23 +212,6 @@ struct CSTATEMGR_Truck : public CSTATEMGR_Base {
     CSTATEMGR_Truck();
 };
 
-enum eRaceMixType {
-    eRACE_CIRCUIT = 0,
-    eRACE_DRAG = 1,
-    eRACE_TWODRG = 2,
-    eRACE_TWOCIRC = 3,
-};
-
-struct NFSMixMaster {
-    bool m_bMapReady;
-    void CreateMainMainMap(eRaceMixType type);
-    void DestroyMainMainMap();
-    void InitMixMap(int mode);
-    void ProcessMixMap(float dt, int cam_state);
-    void AssignSFXCallbacks(int *(*GetPointerCB)(int), void (*SetSFXOutCB)(int, int *), bool (*SetSFXInputCB)(int, int *),
-                            int (*GetStateRefCountCB)(int), void (*MixReadyCB)());
-};
-
 template <>
 UTL::Collections::Listable<CarSoundConn, 10>::List UTL::Collections::Listable<CarSoundConn, 10>::_mTable =
     UTL::Collections::Listable<CarSoundConn, 10>::List();
@@ -282,11 +276,6 @@ int bSPrintf(char *destString, const char *fmt, ...);
 int bStrICmp(const char *s1, const char *s2);
 void SoundPause(bool on, eSNDPAUSE_REASON reason);
 void SetSoundControlState(bool on, eSNDCTLSTATE state, const char *caller);
-
-namespace SndCamera {
-void UpdateCameras();
-extern int m_CurCamState[2];
-}
 
 bool g_EAXIsPaused() {
     return (g_ActiveCtlStates & 0x3483b) != 0;
@@ -1116,45 +1105,70 @@ void EAXSound::Update(float t) {
     }
 
     if (!bReadCallbackToggle) {
-        if (!bStreamReadTiming) {
+        if (bStreamReadTiming == false) {
             bStreamReadTiming = true;
-            unsigned int cur = bGetTicker();
-            bGetTickerDifference(uStreamReadTicks, cur);
-            uStreamReadTicks = cur;
+            bGetTickerDifference(uStreamReadTicks, bGetTicker());
+            uStreamReadTicks = bGetTicker();
         }
-    } else if (bStreamReadTiming) {
-        unsigned int cur = bGetTicker();
-        bGetTickerDifference(uStreamReadTicks, cur);
-        uStreamReadTicks = cur;
+    } else if (bStreamReadTiming == true) {
+        bGetTickerDifference(uStreamReadTicks, bGetTicker());
+        uStreamReadTicks = bGetTicker();
         bStreamReadTiming = false;
     }
 
-    if (gbWorldDataBlocksAudioRead) {
-        if (!bStreamBlockState) {
-            bStreamBlockState = true;
+    if (gbWorldDataBlocksAudioRead == true) {
+        if (bStreamBlockState == false) {
+            bStreamBlockState = gbWorldDataBlocksAudioRead;
             uStreamBlockTicks = bGetTicker();
         }
-    } else if (bStreamBlockState) {
-        unsigned int cur = bGetTicker();
-        bGetTickerDifference(uStreamBlockTicks, cur);
+    } else if (bStreamBlockState == true) {
+        bGetTickerDifference(uStreamBlockTicks, bGetTicker());
         bStreamBlockState = false;
     }
 
-    if (gbAudioInterruptsWorldDataRead) {
-        if (!bAudioInterrupt) {
+    if (gbAudioInterruptsWorldDataRead == true) {
+        if (bAudioInterrupt == false) {
             uAudioInterruptTicks = bGetTicker();
         }
-        bAudioInterrupt = true;
-    } else if (bAudioInterrupt) {
+        bAudioInterrupt = gbAudioInterruptsWorldDataRead;
+    } else if (bAudioInterrupt == true) {
         bGetTickerDifference(uAudioInterruptTicks);
         bAudioInterrupt = false;
     } else {
         bAudioInterrupt = false;
     }
 
-    if (gb_DORESTART_RACE == 0) {
+    if (gb_DORESTART_RACE != 0) {
+        if (mEventID != 0) {
+            Scheduler::Get().fSchedule_OncePerGameLoop->RemoveTask(mEventID);
+        }
+        g_ShiftInfo = nullptr;
+        g_TurboInfo = nullptr;
+        m_pNFSMixMaster->DestroyMap();
+        InitializeInGame();
+        m_pNFSMixMaster->InitMixMap(0);
+
+        Speech::Module *module = Speech::Manager::GetSpeechModule(1);
+        if (module != nullptr) {
+            module = Speech::Manager::GetSpeechModule(1);
+            module->PurgeSpeech();
+        }
+
+        SFXObj_PFEATrax *ppf = static_cast<SFXObj_PFEATrax *>(GetSFXBase_Object(0x40010010));
+        if (ppf != nullptr) {
+            ppf->RestartRace();
+            if (m_ePlayerMixMode == EAXS3D_TWO_PLAYER_MIX) {
+                ppf->m_Flags |= 2;
+            } else {
+                ppf->m_Flags &= ~2u;
+            }
+        }
+
+        bMemSet(GameFlowSndState, '\0', 0x3C);
+        gb_DORESTART_RACE = 0;
+        SetSoundControlState(false, SNDSTATE_PAUSE, "PauseMenu");
+    } else {
         if (gb_Is321 != 0) {
-            QueueNISButtonThrough(bStringHash("RESTART_FAKE"), -1);
             if (g_pNISRevMgr != nullptr) {
                 g_pNISRevMgr->Start321Reving();
             }
@@ -1167,21 +1181,19 @@ void EAXSound::Update(float t) {
 
         gAEMSMgr.Update();
         SndCamera::UpdateCameras();
-        if (m_pEAXSND8Wrapper != nullptr) {
-            m_pEAXSND8Wrapper->Update();
-        }
+        m_pEAXSND8Wrapper->Update();
         if (g_pNISRevMgr != nullptr) {
             g_pNISRevMgr->Update(t);
         }
 
-        if (m_pNFSMixMaster != nullptr && m_pNFSMixMaster->m_bMapReady) {
+        if (m_pNFSMixMaster->IsMixMapReady() == true) {
             if (m_pSTICH_Playback != nullptr) {
                 m_pSTICH_Playback->Update(t);
             }
             Speech::Manager::Update(t);
 
-            if (m_pFESnd != nullptr) {
-                m_pFESnd->Update(nullptr);
+            if (GetFrontEnd() != nullptr) {
+                GetFrontEnd()->Update(nullptr);
             }
 
             SndBase::m_fRunningTime += t;
@@ -1192,19 +1204,21 @@ void EAXSound::Update(float t) {
                     mgr->UpdateParams(g_EAXIsPaused() ? 0.0f : t);
                 }
             }
+        }
 
-            m_pNFSMixMaster->ProcessMixMap(t, SndCamera::m_CurCamState[0]);
+        if (m_pNFSMixMaster != nullptr) {
+            m_pNFSMixMaster->ProcessMixMap(t, SndCamera::GetCurCamState(0));
+        }
 
-            for (int n = 0; n < 13; n++) {
-                CSTATEMGR_Base *mgr = m_pStateMgr[n];
-                if (mgr != nullptr) {
-                    mgr->ProcessUpdate();
-                }
+        for (int n = 0; n < 13; n++) {
+            CSTATEMGR_Base *mgr = m_pStateMgr[n];
+            if (mgr != nullptr) {
+                mgr->ProcessUpdate();
             }
+        }
 
-            if (m_pCmnSnd != nullptr) {
-                m_pCmnSnd->Update(nullptr);
-            }
+        if (m_pCmnSnd != nullptr) {
+            m_pCmnSnd->Update(nullptr);
         }
 
         m_prevSndGameMode = m_eSndGameMode;
@@ -1212,35 +1226,6 @@ void EAXSound::Update(float t) {
             UTL::Collections::Listable<CarSoundConn, 10>::ForEach(CarSoundConn::SetAssetsLoaded);
         }
         SNDSYS_service();
-    } else {
-        if (m_pNFSMixMaster != nullptr) {
-            m_pNFSMixMaster->DestroyMainMainMap();
-        }
-        InitializeInGame();
-        if (m_pNFSMixMaster != nullptr) {
-            m_pNFSMixMaster->InitMixMap(0);
-        }
-
-        Speech::Module *module = Speech::Manager::GetSpeechModule(1);
-        if (module != nullptr) {
-            module = Speech::Manager::GetSpeechModule(1);
-            if (module != nullptr) {
-                module->ReleaseResource();
-            }
-        }
-
-        SFXObj_Pathfinder *ppf = static_cast<SFXObj_Pathfinder *>(GetSFXBase_Object(0x40010010));
-        if (ppf != nullptr) {
-            if (m_ePlayerMixMode == EAXS3D_TWO_PLAYER_MIX) {
-                ppf->m_Flags |= 2;
-            } else {
-                ppf->m_Flags &= ~2u;
-            }
-        }
-
-        bMemSet(GameFlowSndState, '\0', 0x3C);
-        gb_DORESTART_RACE = 0;
-        SetSoundControlState(false, SNDSTATE_PAUSE, "PauseMenu");
     }
 }
 
