@@ -123,19 +123,19 @@ void GCHW_VD::iDraw() {
         float m_b;
         float m_z;
 
-        if (!mIsVP6) {
+        if (mIsVP6) {
+            w += 0x60;
+            h += 0x60;
+            int uvOfs = (w / 2) * 0x18;
+
+            cb = y + w * h;
+            y += w * 0x30;
+            cr = cb + (w / 2) * (h / 2) + uvOfs;
+            cb += uvOfs;
+            h -= 0x60;
+        } else {
             cb = y + w * h;
             cr = cb + (w / 2) * (h / 2);
-        } else {
-            const int vp6Border = 0x60;
-            int dataOfs = w + vp6Border;
-            int uvOfs = (dataOfs / 2) * 0x18;
-
-            cb = y + dataOfs * (h + vp6Border);
-            y += dataOfs * 0x30;
-            cr = cb + (dataOfs / 2) * ((h + vp6Border) / 2) + uvOfs;
-            cb += uvOfs;
-            w = dataOfs;
         }
 
         GXSetCullMode(GX_CULL_NONE);
@@ -152,7 +152,7 @@ void GCHW_VD::iDraw() {
         GXSetChanCtrl(static_cast<GXChannelID>(4), GX_FALSE, static_cast<GXColorSrc>(0), static_cast<GXColorSrc>(1), GX_LIGHT_NULL,
                       static_cast<GXDiffuseFn>(2), static_cast<GXAttnFn>(2));
         GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
-        GXSetTevOp(GX_TEVSTAGE0, GX_PASSCLR);
+        GXSetTevOp(GX_TEVSTAGE0, GX_MODULATE);
         DCFlushRangeNoSync(y, w * h);
         DCFlushRangeNoSync(cr, size);
         DCFlushRangeNoSync(cb, size);
