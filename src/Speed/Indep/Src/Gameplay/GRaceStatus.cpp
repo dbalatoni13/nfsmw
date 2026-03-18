@@ -450,6 +450,97 @@ void GRacerInfo::UpdateSplits() {
 #endif
 }
 
+void GRacerInfo::FinalizeRaceStats() {
+    GRaceParameters *raceParms = GRaceStatus::Get().GetRaceParameters();
+    float adjustedRaceTime;
+    float pctRaceComplete = mPctRaceComplete;
+
+    if (mFinishedRacing) {
+        return;
+    }
+
+    adjustedRaceTime = GetRaceTime();
+    if (0.1f < pctRaceComplete) {
+        adjustedRaceTime = GetRaceTime() / pctRaceComplete;
+    }
+
+#ifndef EA_BUILD_A124
+    mDNF = false;
+#endif
+
+    if (raceParms && raceParms->GetRaceType() == GRace::kRaceType_Drag &&
+        (mTotalled || mEngineBlown || pctRaceComplete < 1.0f)) {
+        adjustedRaceTime = 0.0f;
+#ifndef EA_BUILD_A124
+        mDNF = true;
+#endif
+    }
+
+    if (raceParms && raceParms->GetRaceType() == GRace::kRaceType_SpeedTrap && mGameCharacter) {
+        const unsigned int *pointPenalty =
+            reinterpret_cast<const unsigned int *>(raceParms->GetGameplayObj()->GetAttributePointer(0x26FD42B0, 0));
+
+        if (!pointPenalty) {
+            pointPenalty = reinterpret_cast<const unsigned int *>(Attrib::DefaultDataArea(sizeof(unsigned int)));
+        }
+
+        if (0.0f < adjustedRaceTime - GetRaceTime()) {
+            AddToPointTotal(-((adjustedRaceTime - GetRaceTime()) * static_cast<float>(*pointPenalty)));
+        }
+    }
+
+    if (raceParms && raceParms->GetIsLoopingRace() && mGameCharacter) {
+        int numLaps = raceParms->GetNumLaps();
+        float totalLapTime = 0.0f;
+
+        for (int i = 0; i < numLaps; ++i) {
+            float lapTime = GRaceStatus::Get().GetLapTime(i, GetIndex(), false);
+
+            if (lapTime == 0.0f) {
+                break;
+            }
+
+            totalLapTime += lapTime;
+        }
+
+        GRaceStatus::Get().SetLapTime(mLapsCompleted, GetIndex(), adjustedRaceTime - totalLapTime);
+    }
+
+#ifndef EA_BUILD_A124
+    if (mGameCharacter) {
+        static const float splitPct[4] = {
+            0.25f,
+            0.5f,
+            0.75f,
+            1.0f,
+        };
+        float effectivePct = mDNF ? pctRaceComplete : 1.0f;
+
+        for (int i = 0; i < 4; ++i) {
+            if (mSplitTimes[i] == 0.0f) {
+                if (effectivePct < splitPct[i]) {
+                    mSplitTimes[i] = 0.0f;
+                } else {
+                    mSplitTimes[i] = adjustedRaceTime * splitPct[i];
+                }
+            }
+
+            if (mSplitRankings[i] == 0) {
+                mSplitRankings[i] = mRanking;
+            }
+        }
+    }
+
+    if (!mDNF) {
+        mRaceTimer.SetTime(adjustedRaceTime);
+        FinishRace();
+    }
+#else
+    mRaceTimer.SetTime(adjustedRaceTime);
+    FinishRace();
+#endif
+}
+
 GRaceParameters::GRaceParameters(unsigned int collectionKey, GRaceIndexData *index)
     : mIndex(index), //
       mRaceRecord(new Attrib::Gen::gameplay(collectionKey, 0, nullptr)), //
