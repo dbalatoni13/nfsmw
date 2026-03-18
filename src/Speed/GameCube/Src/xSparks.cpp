@@ -79,8 +79,69 @@ extern ParticleList gParticleList;
 extern XSpriteManager NGSpriteManager;
 extern unsigned int randomSeed;
 
-void reserveXenonEffectVec(void *vec, unsigned int count)
-    __asm__("reserve__Q24_STLt6vector2Z14XenonEffectDefZQ33UTL3Stdt9Allocator2Z14XenonEffectDefZ20_type_XenonEffectDefUi");
+extern "C" void reserve__Q24_STLt6vector2Z14XenonEffectDefZQ33UTL3Stdt9Allocator2Z14XenonEffectDefZ20_type_XenonEffectDefUi(
+    XenonEffectVec *vec, unsigned int count);
+
+static inline void reserveXenonEffectVecImpl(XenonEffectVec *vec, unsigned int count) {
+    reserve__Q24_STLt6vector2Z14XenonEffectDefZQ33UTL3Stdt9Allocator2Z14XenonEffectDefZ20_type_XenonEffectDefUi(vec, count);
+}
+
+extern "C" void reserve__Q24_STLt6vector2Z14XenonEffectDefZQ33UTL3Stdt9Allocator2Z14XenonEffectDefZ20_type_XenonEffectDefUi(
+    XenonEffectVec *vec, unsigned int count) {
+    unsigned int capacity = vec->end_of_storage - vec->start;
+    if (capacity >= count) {
+        return;
+    }
+
+    unsigned int size = vec->finish - vec->start;
+    XenonEffectDef *old_start = vec->start;
+
+    XenonEffectDef *new_buf;
+    unsigned int new_bytes;
+    if (old_start != 0) {
+        if (count != 0) {
+            new_bytes = count * sizeof(XenonEffectDef);
+            new_buf = static_cast<XenonEffectDef *>(gFastMem.Alloc(new_bytes, 0));
+        } else {
+            new_buf = 0;
+            new_bytes = 0;
+        }
+
+        XenonEffectDef *src = old_start;
+        XenonEffectDef *dst = new_buf;
+        while (src != vec->finish) {
+            if (dst != 0) {
+                *dst = *src;
+            }
+            src++;
+            dst++;
+        }
+
+        XenonEffectDef *old_iter = vec->start;
+        XenonEffectDef *old_finish = vec->finish;
+        while (old_iter != old_finish) {
+            old_iter->~XenonEffectDef();
+            old_iter++;
+        }
+
+        unsigned int old_capacity = vec->end_of_storage - vec->start;
+        if (vec->start != 0) {
+            gFastMem.Free(vec->start, old_capacity * sizeof(XenonEffectDef), 0);
+        }
+    } else {
+        if (count != 0) {
+            new_bytes = count * sizeof(XenonEffectDef);
+            new_buf = static_cast<XenonEffectDef *>(gFastMem.Alloc(new_bytes, 0));
+        } else {
+            new_buf = 0;
+            new_bytes = 0;
+        }
+    }
+
+    vec->end_of_storage = reinterpret_cast<XenonEffectDef *>(reinterpret_cast<char *>(new_buf) + new_bytes);
+    vec->start = new_buf;
+    vec->finish = reinterpret_cast<XenonEffectDef *>(reinterpret_cast<char *>(new_buf) + size * sizeof(XenonEffectDef));
+}
 float bRandom(float range, unsigned int *seed);
 unsigned int bStringHash(const char *str);
 TextureInfo *GetTextureInfo(unsigned int name_hash, int allow_default, int force_local);
@@ -259,12 +320,12 @@ void AddXenonEffect(EmitterGroup *piggyback_fx, const Attrib::Collection *spec, 
     if (size < 20) {
         unsigned int active_capacity = gNGEffectList.active.end_of_storage - gNGEffectList.active.start;
         if (active_capacity < 20) {
-            reserveXenonEffectVec(&gNGEffectList.active, 20);
+            reserveXenonEffectVecImpl(&gNGEffectList.active, 20);
         }
 
         unsigned int staging_capacity = gNGEffectList.staging.end_of_storage - gNGEffectList.staging.start;
         if (staging_capacity < 20) {
-            reserveXenonEffectVec(&gNGEffectList.staging, 20);
+            reserveXenonEffectVecImpl(&gNGEffectList.staging, 20);
         }
 
         XenonEffectDef effect;
