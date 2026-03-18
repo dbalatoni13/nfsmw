@@ -219,7 +219,7 @@ inline int VisibleSectionBoundary::GetSectionNumber() {
 }
 
 inline int VisibleSectionBoundary::GetMemoryImageSize() {
-    return 0x24 + NumPoints * sizeof(bVector2);
+    return 0xA4 - (16 - NumPoints) * sizeof(bVector2);
 }
 
 inline void DrivableSectionsInRegion::EndianSwap() {

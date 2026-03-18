@@ -533,7 +533,8 @@ static bool MyIsPointInPoly(const bVector2 *point, const bVector2 *points, int n
 
 int VisibleSectionManager::Loader(bChunk *chunk) {
     if (chunk->GetID() == 0x80034150) {
-        bChunk *current_chunk = chunk->GetFirstChunk();
+        bChunk *first_chunk = chunk->GetFirstChunk();
+        bChunk *current_chunk = first_chunk;
         bChunk *last_chunk = chunk->GetLastChunk();
 
         while (current_chunk < last_chunk) {
@@ -585,11 +586,11 @@ int VisibleSectionManager::Loader(bChunk *chunk) {
                 }
 
                 case 0x34155: {
+                    LoadingSection *loading_sections = reinterpret_cast<LoadingSection *>(current_chunk->GetData());
                     int num_loading_sections = current_chunk->Size / sizeof(LoadingSection);
                     if (num_loading_sections != 0) {
                         for (int n = 0; n < num_loading_sections; n++) {
-                            LoadingSection *section =
-                                reinterpret_cast<LoadingSection *>(reinterpret_cast<char *>(current_chunk) + n * sizeof(LoadingSection) + 8);
+                            LoadingSection *section = &loading_sections[n];
                             LoadingSectionList.AddTail(section);
                             section->EndianSwap();
                         }
@@ -607,15 +608,15 @@ int VisibleSectionManager::Loader(bChunk *chunk) {
 
         InitVisibleZones();
         RefreshTrackStreamer();
-    } else {
-        if (chunk->GetID() != 0x34158) {
-            return 0;
-        }
+        return 1;
+    }
 
+    if (chunk->GetID() == 0x34158) {
         VisibleSectionOverlay *overlay = reinterpret_cast<VisibleSectionOverlay *>(chunk->GetData());
         OverlayList.AddTail(overlay);
         overlay->EndianSwap();
+        return 1;
     }
 
-    return 1;
+    return 0;
 }
