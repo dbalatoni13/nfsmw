@@ -34,13 +34,16 @@ int RegionQuery::CalculateRegionInfo(eView *view, RegionType regionKind, int InF
 
     if (FogControlOverRide) {
         unsigned int retcol;
+        unsigned int fog_colour_b = BaseWeatherFogColourB;
+        unsigned int fog_colour_g = BaseWeatherFogColourG;
+        unsigned int fog_colour_r = BaseWeatherFogColourR;
 
-        DistFogStart = BaseWeatherFogStart;
         FogFalloff = BaseFogFalloff;
         FogFalloffX = BaseFogFalloffX;
         FogFalloffY = BaseFogFalloffY;
+        DistFogStart = BaseWeatherFogStart;
         DistFogPower = BaseWeatherFog;
-        retcol = (BaseWeatherFogColourB << 16 | BaseWeatherFogColourG << 8 | BaseWeatherFogColourR) | 0x80000000;
+        retcol = (fog_colour_b << 16 | fog_colour_g << 8 | fog_colour_r) | 0x80000000;
         DistFogColour = retcol;
         if (oldDistFogColour_27397 == retcol && oldDistFogPower_27398 == DistFogPower && oldDistFogStart_27399 == DistFogStart) {
             return 0;
