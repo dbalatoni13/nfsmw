@@ -54,6 +54,28 @@ class Minimap {
 };
 #endif
 
+class GCopMgrCompat : public UTL::COM::IUnknown {
+  public:
+    static GCopMgrCompat *Get() {
+        return reinterpret_cast<GCopMgrCompat *>(ICopMgr::Get());
+    }
+
+    virtual float GetLockoutTimeRemaining() const;
+    virtual bool VehicleSpawningEnabled(bool isdespawn);
+    virtual void SpawnCop(UMath::Vector3 &InitialPos, UMath::Vector3 &InitialVec, const char *VehicleName, bool InPursuit, bool RoadBlock);
+    virtual bool IsCopSpawnPending() const;
+    virtual void SetAllBustedTimersToZero();
+    virtual void PursuitIsEvaded(IPursuit *ipursuit);
+    virtual bool IsCopRequestPending();
+    virtual bool CanPursueRacers();
+    virtual bool IsPlayerPursuitActive();
+    virtual bool PlayerPursuitHasCop() const;
+    virtual void PursueAtHeatLevel(int minHeatLevel);
+    virtual void ResetCopsForRestart(bool release);
+    virtual void LockoutCops(bool lockout);
+    virtual void NoNewPursuitsOrCops();
+};
+
 struct GRaceStatusCompat {
     unsigned char _pad[0x1AB0];
     GRaceBin *mRaceBin;
@@ -2233,16 +2255,18 @@ void GRaceStatus::SetRoaming() {
     bool dDay = false;
 
     if (mRaceParms) {
-        const unsigned int *startNewGame =
-            reinterpret_cast<const unsigned int *>(mRaceParms->GetGameplayObj()->GetAttributePointer(0x64273C71, 0));
-
         lastDDay = bStrCmp(mRaceParms->GetEventID(), "16.2.1") == 0;
-        if (!startNewGame) {
-            startNewGame = reinterpret_cast<const unsigned int *>(Attrib::DefaultDataArea(sizeof(unsigned int)));
-        }
+        if (mRaceParms) {
+            const unsigned int *startNewGame =
+                reinterpret_cast<const unsigned int *>(mRaceParms->GetGameplayObj()->GetAttributePointer(0x64273C71, 0));
 
-        if (!*startNewGame) {
-            g_pEAXSound->StartNewGamePlay();
+            if (!startNewGame) {
+                startNewGame = reinterpret_cast<const unsigned int *>(Attrib::DefaultDataArea(sizeof(unsigned int)));
+            }
+
+            if (!*startNewGame) {
+                g_pEAXSound->StartNewGamePlay();
+            }
         }
     } else {
         g_pEAXSound->StartNewGamePlay();
@@ -2254,12 +2278,12 @@ void GRaceStatus::SetRoaming() {
     mRaceParms = nullptr;
     WRoadNetwork::Get().ResetShortcuts();
 
-    for (IPlayer::List::const_iterator iter = IPlayer::GetList(PLAYER_ALL).begin(); iter != IPlayer::GetList(PLAYER_ALL).end(); ++iter) {
+    player = IPlayer::First(PLAYER_ALL);
+    while (player) {
         ISimable *simable;
         IVehicle *vehicle;
         IVehicleAI *ivai;
-
-        player = *iter;
+        IPlayer::List::const_iterator iter;
 
         if (player->InGameBreaker()) {
             player->ResetGameBreaker(true);
@@ -2267,10 +2291,18 @@ void GRaceStatus::SetRoaming() {
 
         simable = player->GetSimable();
         if (simable && simable->QueryInterface(&vehicle) && simable->QueryInterface(&ivai) && !ivai->GetPursuit()) {
-            ICopMgr *copMgr = ICopMgr::Get();
+            if (GCopMgrCompat::Get()) {
+                GCopMgrCompat::Get()->ResetCopsForRestart(true);
+            }
+        }
 
-            if (copMgr) {
-                copMgr->ResetCopsForRestart(true);
+        iter = std::find(IPlayer::GetList(PLAYER_ALL).begin(), IPlayer::GetList(PLAYER_ALL).end(), player);
+        if (iter == IPlayer::GetList(PLAYER_ALL).end()) {
+            player = nullptr;
+        } else {
+            player = nullptr;
+            if (iter + 1 != IPlayer::GetList(PLAYER_ALL).end()) {
+                player = *(iter + 1);
             }
         }
     }
