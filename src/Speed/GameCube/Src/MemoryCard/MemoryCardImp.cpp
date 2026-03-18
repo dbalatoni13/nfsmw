@@ -142,14 +142,13 @@ void MemoryCardImp::BootupCheckDone(RealmcIface::CardStatus status, RealmcIface:
     MemoryCard *memcard = GetMemcard();
 
     if (*reinterpret_cast<int *>(reinterpret_cast<char *>(memcard) + 0x30)) {
-        void *screen = *reinterpret_cast<void **>(reinterpret_cast<char *>(GetMemcard()) + 0x190);
-        const char *package_name = *reinterpret_cast<const char *const *>(reinterpret_cast<char *>(screen) + 0xC);
-
         if (status == RealmcIface::STATUS_NO_CARD || status == RealmcIface::STATUS_CARD_DAMAGED ||
             status == RealmcIface::STATUS_WRONG_DEVICE || status == RealmcIface::STATUS_CARD_FULL) {
-            cFEng::mInstance->QueuePackageMessage(0x8867412D, package_name, 0);
+            void *screen = *reinterpret_cast<void **>(reinterpret_cast<char *>(GetMemcard()) + 0x190);
+            cFEng::mInstance->QueuePackageMessage(0x8867412D, *reinterpret_cast<const char *const *>(reinterpret_cast<char *>(screen) + 0xC), 0);
         } else {
-            cFEng::mInstance->QueuePackageMessage(0x3A2BE557, package_name, 0);
+            void *screen = *reinterpret_cast<void **>(reinterpret_cast<char *>(GetMemcard()) + 0x190);
+            cFEng::mInstance->QueuePackageMessage(0x3A2BE557, *reinterpret_cast<const char *const *>(reinterpret_cast<char *>(screen) + 0xC), 0);
         }
     }
 }

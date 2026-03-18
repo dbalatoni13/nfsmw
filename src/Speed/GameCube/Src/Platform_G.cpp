@@ -595,8 +595,18 @@ struct VMStatsManager {
     float mMaxFrameTime;
     const char *DebugName;
 
+    VMStatsManager(const char *name) {
+        mFrameStats.Init();
+        Init(name);
+        mInitialized = false;
+    }
+
     void Init(const char *name);
 };
+
+VMStatsManager gVMStatsManager_FE("Frontend");
+VMStatsManager gVMStatsManager_LS("LoadScreen Streamer");
+VMStatsManager gVMStatsManager_IG("InGame");
 
 void VMStats::Init() {
     mServiceTimeMax = 0;
