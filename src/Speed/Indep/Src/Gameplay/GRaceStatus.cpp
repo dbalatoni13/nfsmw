@@ -3054,23 +3054,29 @@ bool GRaceStatus::ComputeCatchUpSkill(GRacerInfo *racer_info, PidError *pid, flo
 
     if (off_world) {
         glue_level = 1.0f;
-    } else if (GetRaceContext() == GRace::kRaceContext_QuickRace) {
-        if (!mRaceParms || !mRaceParms->GetCatchUp()) {
-            return false;
-        }
-
-        glue_level = Tweak_QuickRaceGlue[mRaceParms->GetDifficulty()];
     } else {
-        if (GetRaceContext() != GRace::kRaceContext_Career) {
-            return false;
-        }
+        if (GetRaceContext() == GRace::kRaceContext_QuickRace) {
+            if (!mRaceParms) {
+                return false;
+            }
 
-        glue_level = UMath::Clamp((GetAdaptiveDifficutly() + 1.0f) * 0.5f, 0.0f, 1.0f);
-        if (mRaceParms) {
-            use_race_override = mRaceParms->GetCatchUpOverride();
-            if (mRaceParms->GetIsBossRace()) {
-                is_boss = true;
-                glue_level = UMath::Lerp(glue_level, 1.0f, 0.5f);
+            if (!mRaceParms->GetCatchUp()) {
+                return false;
+            }
+
+            glue_level = Tweak_QuickRaceGlue[mRaceParms->GetDifficulty()];
+        } else {
+            if (GetRaceContext() != GRace::kRaceContext_Career) {
+                return false;
+            }
+
+            glue_level = UMath::Clamp((GetAdaptiveDifficutly() + 1.0f) * 0.5f, 0.0f, 1.0f);
+            if (mRaceParms) {
+                use_race_override = mRaceParms->GetCatchUpOverride();
+                if (mRaceParms->GetIsBossRace()) {
+                    is_boss = true;
+                    glue_level = UMath::Lerp(glue_level, 1.0f, 0.5f);
+                }
             }
         }
     }
@@ -3079,19 +3085,24 @@ bool GRaceStatus::ComputeCatchUpSkill(GRacerInfo *racer_info, PidError *pid, flo
     glue_p = pid->GetErrorIntegral();
     glue_error = pid->GetErrorDerivative();
 
-    if (use_race_override) {
-        Table glue_skill_table(aCatchUpSkillData, nCatchUpSkillEntries, 0.0f, 100.0f);
-        Table glue_spread_table(aCatchUpSpreadData, nCatchUpSpreadEntries, 0.0f, 100.0f);
-
-        glue_skill = glue_skill_table.GetValue(percent_complete);
-        glue_spread = glue_spread_table.GetValue(percent_complete);
-        glue_integral = fCatchUpIntegral;
-        glue_derivative = fCatchUpDerivative;
-    } else {
+    if (!use_race_override) {
         glue_spread = UMath::Lerp(Tweak_GlueSpreadTable_Low.GetValue(percent_complete), Tweak_GlueSpreadTable_High.GetValue(percent_complete), glue_level);
         glue_skill = UMath::Lerp(Tweak_GlueStrengthTable_Low.GetValue(percent_complete), Tweak_GlueStrengthTable_High.GetValue(percent_complete), glue_level);
         glue_integral = 5.0e-5f;
         glue_derivative = 0.01f;
+    } else {
+        {
+            Table glue_table(aCatchUpSkillData, nCatchUpSkillEntries, 0.0f, 100.0f);
+
+            glue_skill = glue_table.GetValue(percent_complete);
+        }
+        {
+            Table glue_table(aCatchUpSpreadData, nCatchUpSpreadEntries, 0.0f, 100.0f);
+
+            glue_spread = glue_table.GetValue(percent_complete);
+        }
+        glue_derivative = fCatchUpDerivative;
+        glue_integral = fCatchUpIntegral;
     }
 
     glue_spread = bMax(100.0f, glue_spread);
