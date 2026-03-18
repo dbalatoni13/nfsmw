@@ -642,17 +642,17 @@ int TrackStreamer::BuildHoleMovements(HoleMovement *hole_movements, int max_move
     ProfileNode profile_node("TODO", 0);
     int ticks = bGetTicker();
     unsigned int checksum = pMemoryPool->GetPoolChecksum();
-    int total_needing_allocation = -1;
     bool failed = false;
     int num_movements = 0;
     int amount_moved = 0;
+    int total_needing_allocation = -1;
 
     pMemoryPool->EnableTracing(false);
     while (true) {
         if (largest_free < 0) {
-            int did_allocate = AllocateSectionMemory(&total_needing_allocation);
+            int out_of_memory_size = AllocateSectionMemory(&total_needing_allocation);
             FreeSectionMemory();
-            if (!did_allocate) {
+            if (!out_of_memory_size) {
                 break;
             }
         } else if (largest_free <= pMemoryPool->GetLargestFreeBlock()) {
@@ -675,14 +675,14 @@ int TrackStreamer::BuildHoleMovements(HoleMovement *hole_movements, int max_move
         if (filler_method <= 2) {
             bool start_from_top = filler_method == 2;
             TSMemoryNode *free_node = pMemoryPool->GetFirstFreeNode(start_from_top);
-            TSMemoryNode *allocated_node = pMemoryPool->GetNextAllocatedNode(start_from_top, free_node);
-            if (filler_method == 0 && !allocated_node) {
+            TSMemoryNode *node = pMemoryPool->GetNextAllocatedNode(start_from_top, free_node);
+            if (filler_method == 0 && !node) {
                 break;
             }
 
-            if (allocated_node && free_node) {
-                movement->Size = allocated_node->Size;
-                movement->Address = allocated_node->Address;
+            if (node && free_node) {
+                movement->Size = node->Size;
+                movement->Address = node->Address;
                 movement->NewAddress = free_node->GetAddress(start_from_top, movement->Size);
                 if (filler_method == 0 && !FindSectionByAddress(movement->Address)) {
                     break;
@@ -691,31 +691,31 @@ int TrackStreamer::BuildHoleMovements(HoleMovement *hole_movements, int max_move
         } else if (filler_method == 4 || filler_method == 5) {
             bool start_from_top = filler_method == 5;
             TSMemoryNode *free_node = pMemoryPool->GetFirstFreeNode(start_from_top);
-            bool found = false;
-            int best_combined_size = 0;
+            int best_hole_size = 0;
+            bool first = true;
 
-            for (TSMemoryNode *allocated_node = pMemoryPool->GetNextAllocatedNode(start_from_top, free_node); allocated_node;
-                 allocated_node = pMemoryPool->GetNextAllocatedNode(start_from_top, allocated_node)) {
-                TSMemoryNode *next_free = pMemoryPool->GetNextFreeNode(start_from_top, allocated_node);
+            for (TSMemoryNode *next_node = pMemoryPool->GetNextAllocatedNode(start_from_top, free_node); next_node;
+                 next_node = pMemoryPool->GetNextAllocatedNode(start_from_top, next_node)) {
+                TSMemoryNode *next_free = pMemoryPool->GetNextFreeNode(start_from_top, next_node);
                 if (!next_free) {
                     continue;
                 }
-                if (!found || allocated_node->Size <= free_node->Size) {
-                    int combined_size = allocated_node->Size;
-                    TSMemoryNode *other_node = pMemoryPool->GetNextNode(!start_from_top, allocated_node);
-                    TSMemoryNode *same_dir_node = pMemoryPool->GetNextNode(start_from_top, allocated_node);
-                    if (other_node && other_node->IsFree()) {
-                        combined_size += other_node->Size;
+                if (first || next_node->Size <= free_node->Size) {
+                    TSMemoryNode *node1 = pMemoryPool->GetNextNode(!start_from_top, next_node);
+                    TSMemoryNode *node2 = pMemoryPool->GetNextNode(start_from_top, next_node);
+                    int hole_size = next_node->Size;
+                    if (node1 && node1->IsFree()) {
+                        hole_size += node1->Size;
                     }
-                    if (same_dir_node && same_dir_node->IsFree()) {
-                        combined_size += same_dir_node->Size;
+                    if (node2 && node2->IsFree()) {
+                        hole_size += node2->Size;
                     }
-                    if (best_combined_size < combined_size) {
-                        best_combined_size = combined_size;
-                        movement->Size = allocated_node->Size;
-                        movement->Address = allocated_node->Address;
+                    if (best_hole_size < hole_size) {
+                        best_hole_size = hole_size;
+                        movement->Size = next_node->Size;
+                        movement->Address = next_node->Address;
                         movement->NewAddress = free_node->GetAddress(start_from_top, movement->Size);
-                        found = true;
+                        first = false;
                     }
                 }
             }
@@ -823,13 +823,15 @@ int TrackStreamer::BuildHoleMovements(HoleMovement *hole_movements, int max_move
         }
     }
 
-    for (int i = num_movements - 1; i >= 0; i--) {
-        HoleMovement *movement = &hole_movements[i];
+    for (int n = num_movements - 1; n >= 0; n--) {
+        HoleMovement *movement = &hole_movements[n];
         pMemoryPool->Free(reinterpret_cast<void *>(movement->NewAddress));
         TrackStreamingSection *section = FindSectionByAddress(movement->Address);
-        const char *debug_name = "UndoHoleMovement";
+        char *debug_name;
         if (section) {
             debug_name = section->SectionName;
+        } else {
+            debug_name = "UndoHoleMovement";
         }
         pMemoryPool->Malloc(movement->Size, debug_name, false, false, movement->Address);
     }
@@ -2091,49 +2093,50 @@ void TrackStreamer::ReadyToMakeSpaceInPoolBridge(int param) {
 short TrackStreamer::GetPredictedZone(StreamingPositionEntry *streaming_position) {
     float speed = bSqrt(streaming_position->Velocity.x * streaming_position->Velocity.x +
                         streaming_position->Velocity.y * streaming_position->Velocity.y);
-    bool found_predicted_zone = false;
     short predicted_zone = 0;
+    bool found_predicted_zone = false;
     TrackPathZone *track_path_zone = 0;
     bVector2 predicted_position;
 
-    do {
-        track_path_zone =
-            TheTrackPathManager.FindZone(&streaming_position->Position, TRACK_PATH_ZONE_STREAMER_PREDICTION, track_path_zone);
-        if (!track_path_zone) {
+    while ((track_path_zone =
+                TheTrackPathManager.FindZone(&streaming_position->Position, TRACK_PATH_ZONE_STREAMER_PREDICTION, track_path_zone))) {
+        float zone_elevation = track_path_zone->Elevation;
+        if ((0.0f < zone_elevation && streaming_position->Elevation < zone_elevation) ||
+            (zone_elevation < 0.0f && -zone_elevation < streaming_position->Elevation)) {
+            continue;
+        }
+
+        if (speed <= kPredictedZoneStopProjectSpeed_TrackStreamer * kPredictedZoneScale_TrackStreamer) {
+            if (kPredictedZoneMaxDistance_TrackStreamer < speed * kPredictedZoneScale_TrackStreamer) {
+                bScaleAdd(&predicted_position, &streaming_position->Position, &streaming_position->Velocity,
+                          kPredictedZoneMaxDistance_TrackStreamer / speed);
+            } else {
+                bScaleAdd(&predicted_position, &streaming_position->Position, &streaming_position->Velocity,
+                          kPredictedZoneScale_TrackStreamer);
+            }
+        } else {
+            predicted_position = streaming_position->Position;
+        }
+
+        DrivableScenerySection *drivable_section = TheVisibleSectionManager.FindDrivableSection(&predicted_position);
+        if (drivable_section && track_path_zone->Data[0] != 0) {
+            short section_number = drivable_section->SectionNumber;
+            for (int i = 0; i <= 3; i++) {
+                if (track_path_zone->Data[i] == 0) {
+                    break;
+                }
+                if (track_path_zone->Data[i] == section_number) {
+                    found_predicted_zone = true;
+                    predicted_zone = section_number;
+                    break;
+                }
+            }
+        }
+
+        if (found_predicted_zone) {
             break;
         }
-
-        float zone_elevation = track_path_zone->Elevation;
-        if (((zone_elevation <= 0.0f) || (zone_elevation <= streaming_position->Elevation)) &&
-            ((zone_elevation >= 0.0f) || (streaming_position->Elevation <= -zone_elevation))) {
-            if (speed <= kPredictedZoneStopProjectSpeed_TrackStreamer * kPredictedZoneScale_TrackStreamer) {
-                if (speed * kPredictedZoneScale_TrackStreamer <= kPredictedZoneMaxDistance_TrackStreamer) {
-                    bScaleAdd(&predicted_position, &streaming_position->Position, &streaming_position->Velocity,
-                              kPredictedZoneScale_TrackStreamer);
-                } else {
-                    bScaleAdd(&predicted_position, &streaming_position->Position, &streaming_position->Velocity,
-                              kPredictedZoneMaxDistance_TrackStreamer / speed);
-                }
-            } else {
-                predicted_position = streaming_position->Position;
-            }
-
-            DrivableScenerySection *drivable_section = TheVisibleSectionManager.FindDrivableSection(&predicted_position);
-            if (drivable_section && track_path_zone->Data[0] != 0) {
-                short section_number = drivable_section->SectionNumber;
-                for (int i = 0; i <= 3; i++) {
-                    if (track_path_zone->Data[i] == 0) {
-                        break;
-                    }
-                    if (track_path_zone->Data[i] == section_number) {
-                        found_predicted_zone = true;
-                        predicted_zone = section_number;
-                        break;
-                    }
-                }
-            }
-        }
-    } while (!found_predicted_zone);
+    }
 
     if (found_predicted_zone) {
         if (!bEqual(&predicted_position, &streaming_position->Position, kPredictedZoneEqualEpsilon_TrackStreamer)) {
