@@ -7,6 +7,7 @@
 #include "Speed/Indep/Src/Misc/GameFlow.hpp"
 #include "Speed/Indep/Src/World/TrackPath.hpp"
 #include "Speed/Indep/Src/World/WCollisionMgr.h"
+#include "Speed/Indep/Src/World/WWorldPos.h"
 #include "Speed/Indep/Src/World/WeatherMan.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
@@ -94,6 +95,38 @@ void ScreenEffectDB::Update(float deltatime) {
             }
         }
     }
+}
+
+float TopologyCoordinate::GetElevation(const bVector3 *position, TerrainType *terrain_type, bVector3 *normal, bool *valid) {
+    UMath::Vector3 world_position;
+    UMath::Vector4 face_point;
+    WWorldPos world_pos(0.025f);
+
+    (void)terrain_type;
+    (void)normal;
+
+    world_position.x = position->x;
+    world_position.y = -position->y;
+    world_position.z = position->z;
+    world_pos.Update(world_position, face_point, true, 0, true);
+    if (valid) {
+        *valid = world_pos.OnValidFace();
+    }
+    if (world_pos.OnValidFace()) {
+        return world_pos.HeightAtPoint(world_position);
+    }
+    return position->z;
+}
+
+bool TopologyCoordinate::HasTopology(const bVector2 *position) {
+    bVector3 test_position;
+    bool valid;
+
+    test_position.x = position->x;
+    test_position.y = position->y;
+    test_position.z = 99999.1015625f;
+    GetElevation(&test_position, 0, 0, &valid);
+    return valid;
 }
 
 void ScreenEffectDB::AddScreenEffect(ScreenEffectType type, float intensity, float r, float g, float b) {

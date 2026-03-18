@@ -442,6 +442,12 @@ TSMemoryNode *TSMemoryPool::GetNextAllocatedNode(bool start_from_top, TSMemoryNo
     return node;
 }
 
+void TSMemoryPool::DebugPrint() {
+    for (TSMemoryNode *node = reinterpret_cast<TSMemoryNode *>(NodeList.GetHead());
+         node != reinterpret_cast<TSMemoryNode *>(&NodeList); node = reinterpret_cast<TSMemoryNode *>(node->GetNext())) {
+    }
+}
+
 unsigned int TSMemoryPool::GetPoolChecksum() {
     return 0;
 }
