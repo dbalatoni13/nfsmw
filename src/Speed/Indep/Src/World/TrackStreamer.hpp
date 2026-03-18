@@ -254,6 +254,12 @@ class TrackStreamer {
     bool DetermineCurrentZones(short *current_zones);
     void HandleZoneSwitching();
     int GetCombinedSectionNumber(int section_number);
+    static void DiscBundleLoadedCallback(int param, int error_status);
+    void DiscBundleLoadedCallback(DiscBundleSection *disc_bundle);
+    void LoadDiscBundle(DiscBundleSection *disc_bundle);
+    void LoadSection(TrackStreamingSection *section);
+    static void SectionLoadedCallback(int param, int error_status);
+    void SectionLoadedCallback(TrackStreamingSection *section);
     TrackStreamingSection *pTrackStreamingSections;       // offset 0x0, size 0x4
     int NumTrackStreamingSections;                        // offset 0x4, size 0x4
     DiscBundleSection *pDiscBundleSections;               // offset 0x8, size 0x4

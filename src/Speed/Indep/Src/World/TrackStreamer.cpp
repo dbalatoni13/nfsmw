@@ -3,6 +3,7 @@
 #include "TrackPath.hpp"
 #include "VisibleSection.hpp"
 #include "Speed/Indep/Src/Misc/Profiler.hpp"
+#include "Speed/Indep/Src/Misc/QueuedFile.hpp"
 #include "Speed/Indep/Src/Misc/ResourceLoader.hpp"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
 #include "Speed/Indep/bWare/Inc/bDebug.hpp"
@@ -1316,6 +1317,72 @@ void TrackStreamer::ActivateSection(TrackStreamingSection *section) {
     SetDuplicateTextureWarning(true);
 }
 
+void TrackStreamer::LoadDiscBundle(DiscBundleSection *disc_bundle) {
+    void *buffer = 0;
+    for (int i = 0; i < disc_bundle->NumMembers; i++) {
+        if (i == 0) {
+            buffer = disc_bundle->Members[i].pSection->pMemory;
+        }
+        disc_bundle->Members[i].pSection->Status = TrackStreamingSection::LOADING;
+    }
+
+    NumSectionsLoading += 1;
+    AddQueuedFile(buffer, StreamFilenames[1], disc_bundle->FileOffset, disc_bundle->FileSize, DiscBundleLoadedCallback,
+                  reinterpret_cast<int>(disc_bundle), 0);
+}
+
+void TrackStreamer::DiscBundleLoadedCallback(int param, int error_status) {
+    (void)error_status;
+    TheTrackStreamer.DiscBundleLoadedCallback(reinterpret_cast<DiscBundleSection *>(param));
+}
+
+void TrackStreamer::DiscBundleLoadedCallback(DiscBundleSection *disc_bundle) {
+    NumSectionsLoading += -1 + disc_bundle->NumMembers;
+    for (int i = 0; i < disc_bundle->NumMembers; i++) {
+        TrackStreamingSection *section = disc_bundle->Members[i].pSection;
+        section->pDiscBundle = 0;
+        SectionLoadedCallback(section);
+    }
+}
+
+void TrackStreamer::LoadSection(TrackStreamingSection *section) {
+    NumSectionsLoading += 1;
+    section->Status = TrackStreamingSection::LOADING;
+
+    int loaded_size = section->CompressedSize;
+    AddQueuedFile(section->pMemory, StreamFilenames[section->FileType], section->FileOffset, loaded_size, SectionLoadedCallback,
+                  reinterpret_cast<int>(section), 0);
+}
+
+void TrackStreamer::SectionLoadedCallback(int param, int error_status) {
+    (void)error_status;
+    TheTrackStreamer.SectionLoadedCallback(reinterpret_cast<TrackStreamingSection *>(param));
+}
+
+void TrackStreamer::SectionLoadedCallback(TrackStreamingSection *section) {
+    section->Status = TrackStreamingSection::LOADED;
+    section->LoadedSize = section->Size;
+    EndianSwapChunkHeadersRecursive(reinterpret_cast<bChunk *>(section->pMemory), section->Size);
+    NumSectionsLoading -= 1;
+    NumSectionsLoaded += 1;
+    section->LoadedTime = RealTimeFrames;
+
+    if (section->CurrentlyVisible && !NeedsGameStateActivation(section)) {
+        ActivateSection(section);
+    }
+
+    for (unsigned int position_number = 0; position_number < 2; position_number++) {
+        if (((section->CurrentlyVisible >> (position_number & 0x3f)) & 1U) != 0) {
+            StreamingPositionEntry *position_entry = &StreamingPositionEntries[position_number];
+            position_entry->NumSectionsLoaded += 1;
+            position_entry->AmountLoaded += section->Size;
+        }
+    }
+
+    CalculateLoadingBacklog();
+    DCStoreRange(section->pMemory, section->LoadedSize);
+}
+
 TrackStreamingSection *TrackStreamer::ChooseSectionToJettison() {
     TrackStreamingSection *best_section = 0;
     int best_priority = 0;
@@ -1440,6 +1507,37 @@ done:
     MemorySafetyMargin = memory_safety_margin;
 
     return 1;
+}
+
+void TrackStreamer::StartLoadingSections() {
+    bool keep_loading = true;
+    while (NumSectionsLoading < 2 && keep_loading) {
+        TrackStreamingSection *section_to_load = 0;
+        int best_loading_priority = 0x7FFFFFFF;
+        for (int i = 0; i < NumCurrentStreamingSections; i++) {
+            TrackStreamingSection *section = CurrentStreamingSections[i];
+            if (section->Status == TrackStreamingSection::ALLOCATED) {
+                int loading_priority = section->LoadingPriority;
+                if (section->pDiscBundle) {
+                    loading_priority = -1;
+                }
+                if (loading_priority < best_loading_priority) {
+                    section_to_load = section;
+                    best_loading_priority = loading_priority;
+                }
+            } else if (section->Status == TrackStreamingSection::LOADED && !NeedsGameStateActivation(section)) {
+                ActivateSection(section);
+            }
+        }
+
+        if (!section_to_load) {
+            keep_loading = false;
+        } else if (!section_to_load->pDiscBundle) {
+            LoadSection(section_to_load);
+        } else {
+            LoadDiscBundle(section_to_load->pDiscBundle);
+        }
+    }
 }
 
 void TrackStreamer::HandleLoading() {
