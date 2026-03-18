@@ -1326,6 +1326,32 @@ struct gameplay : Instance {
         return *resultptr;
     }
 
+    TAttrib<GCollectionKey> GetOrClone(unsigned int attributeKey) {
+        TAttrib<GCollectionKey> attr(this->Get(attributeKey));
+
+        if (attr.IsValid() && attr.GetCollection() != this->GetConstCollection()) {
+            unsigned int len = attr.GetLength();
+
+            if (this->Add(attributeKey, len)) {
+                TAttrib<GCollectionKey> localattr(this->Get(attributeKey));
+
+                for (unsigned int i = 0; i < len; i++) {
+                    localattr.Set(i, attr.Get(i));
+                }
+
+                return localattr;
+            }
+        }
+
+        return attr;
+    }
+
+    bool Set_racefinish(const GCollectionKey &input) {
+        TAttrib<GCollectionKey> attr = GetOrClone(0xb0a24adc);
+
+        return attr.Set(0, input);
+    }
+
     const float &MinimumAIPerformance() const {
         const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0xb1ece070, 0));
         if (!resultptr) {
@@ -1708,6 +1734,12 @@ struct gameplay : Instance {
             resultptr = reinterpret_cast<const GCollectionKey *>(DefaultDataArea(sizeof(GCollectionKey)));
         }
         return *resultptr;
+    }
+
+    bool Set_racestart(const GCollectionKey &input) {
+        TAttrib<GCollectionKey> attr = GetOrClone(0xe43b2ccc);
+
+        return attr.Set(0, input);
     }
 
     const bool &Persistent(unsigned int index) const {

@@ -1856,65 +1856,9 @@ void GRaceCustom::CreateRaceActivity() {
         } else {
             GCollectionKey startReverse = mRaceRecord->racestartReverse(0);
             GCollectionKey finishReverse = mRaceRecord->racefinishReverse(0);
-            Attrib::Attribute attr;
 
-            attr = mRaceRecord->Get(0xE43B2CCC);
-            if (attr.IsValid() && attr.GetCollection() != mRaceRecord->GetConstCollection()) {
-                unsigned int len = attr.GetLength();
-
-                if (mRaceRecord->Add(0xE43B2CCC, len)) {
-                    Attrib::Attribute localattr = mRaceRecord->Get(0xE43B2CCC);
-
-                    for (unsigned int i = 0; i < len; i++) {
-                        GCollectionKey *resultptr =
-                            reinterpret_cast<GCollectionKey *>(const_cast<void *>(mRaceRecord->GetAttributePointer(0xE43B2CCC, i)));
-
-                        if (resultptr) {
-                            *resultptr = mRaceRecord->racestart(i);
-                        }
-                    }
-
-                    attr = localattr;
-                }
-            }
-
-            if (attr.IsValid()) {
-                GCollectionKey *resultptr =
-                    reinterpret_cast<GCollectionKey *>(const_cast<void *>(mRaceRecord->GetAttributePointer(0xE43B2CCC, 0)));
-
-                if (resultptr) {
-                    *resultptr = startReverse;
-                }
-            }
-
-            attr = mRaceRecord->Get(0xB0A24ADC);
-            if (attr.IsValid() && attr.GetCollection() != mRaceRecord->GetConstCollection()) {
-                unsigned int len = attr.GetLength();
-
-                if (mRaceRecord->Add(0xB0A24ADC, len)) {
-                    Attrib::Attribute localattr = mRaceRecord->Get(0xB0A24ADC);
-
-                    for (unsigned int i = 0; i < len; i++) {
-                        GCollectionKey *resultptr =
-                            reinterpret_cast<GCollectionKey *>(const_cast<void *>(mRaceRecord->GetAttributePointer(0xB0A24ADC, i)));
-
-                        if (resultptr) {
-                            *resultptr = mRaceRecord->racefinish(i);
-                        }
-                    }
-
-                    attr = localattr;
-                }
-            }
-
-            if (attr.IsValid()) {
-                GCollectionKey *resultptr =
-                    reinterpret_cast<GCollectionKey *>(const_cast<void *>(mRaceRecord->GetAttributePointer(0xB0A24ADC, 0)));
-
-                if (resultptr) {
-                    *resultptr = finishReverse;
-                }
-            }
+            mRaceRecord->Set_racestart(startReverse);
+            mRaceRecord->Set_racefinish(finishReverse);
         }
     }
 
@@ -1956,12 +1900,7 @@ void GRaceCustom::CreateRaceActivity() {
         attribute = mRaceRecord->Get(0x5839FA1A);
         if (mNumOpponents != 0) {
             for (unsigned int onSet = 0; onSet < mNumOpponents; onSet++) {
-                GCollectionKey *resultptr =
-                    reinterpret_cast<GCollectionKey *>(const_cast<void *>(mRaceRecord->GetAttributePointer(0x5839FA1A, onSet)));
-
-                if (resultptr) {
-                    *resultptr = GCollectionKey(opponentKey[onSet]);
-                }
+                attribute.Set(onSet, GCollectionKey(opponentKey[onSet]));
             }
         }
     }
