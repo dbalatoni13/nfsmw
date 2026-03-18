@@ -381,28 +381,20 @@ LoadingSection *VisibleSectionManager::FindLoadingSection(int section_number) {
 }
 
 int VisibleSectionManager::GetSectionsToLoad(LoadingSection *loading_section, short *section_numbers, int max_sections) {
-    int num_sections = 0;
     if (!loading_section) {
-        return num_sections;
+        return 0;
     }
 
+    int num_sections = 0;
     for (int i = 0; i < loading_section->NumDrivableSections; i++) {
         DrivableScenerySection *drivable_section = FindDrivableSection(loading_section->DrivableSections[i]);
         if (!drivable_section) {
             continue;
         }
 
-        for (int n = 0; n < drivable_section->NumVisibleSections; n++) {
-            short section_number = drivable_section->VisibleSections[n];
-            int existing_index = -1;
-            for (int j = 0; j < num_sections; j++) {
-                if (section_numbers[j] == section_number) {
-                    existing_index = j;
-                    break;
-                }
-            }
-
-            if (existing_index < 0 && num_sections < max_sections) {
+        for (int n = 0; n < drivable_section->GetNumVisibleSections(); n++) {
+            int section_number = drivable_section->GetVisibleSection(n);
+            if (!HasSection(section_numbers, num_sections, static_cast<short>(section_number)) && num_sections < max_sections) {
                 section_numbers[num_sections] = section_number;
                 num_sections += 1;
             }
@@ -410,31 +402,15 @@ int VisibleSectionManager::GetSectionsToLoad(LoadingSection *loading_section, sh
     }
 
     for (int i = 0; i < loading_section->NumExtraSections; i++) {
-        short section_number = loading_section->ExtraSections[i];
-        int existing_index = -1;
-        for (int j = 0; j < num_sections; j++) {
-            if (section_numbers[j] == section_number) {
-                existing_index = j;
-                break;
-            }
-        }
-
-        if (existing_index < 0 && num_sections < max_sections) {
+        int section_number = loading_section->ExtraSections[i];
+        if (!HasSection(section_numbers, num_sections, static_cast<short>(section_number)) && num_sections < max_sections) {
             section_numbers[num_sections] = section_number;
             num_sections += 1;
         }
 
         if (IsScenerySectionDrivable(section_number)) {
-            short lod_section_number = static_cast<short>(section_number + ScenerySectionLODOffset);
-            existing_index = -1;
-            for (int j = 0; j < num_sections; j++) {
-                if (section_numbers[j] == lod_section_number) {
-                    existing_index = j;
-                    break;
-                }
-            }
-
-            if (existing_index < 0 && num_sections < max_sections) {
+            short lod_section_number = static_cast<short>(GetLODScenerySectionNumber(section_number));
+            if (!HasSection(section_numbers, num_sections, lod_section_number) && num_sections < max_sections) {
                 section_numbers[num_sections] = lod_section_number;
                 num_sections += 1;
             }

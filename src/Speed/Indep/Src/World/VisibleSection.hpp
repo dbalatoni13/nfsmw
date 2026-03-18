@@ -9,6 +9,34 @@
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
+extern int ScenerySectionLODOffset;
+
+static inline int bGetTablePos(short *table, int num_elements, short element) {
+    for (int n = 0; n < num_elements; n++) {
+        if (table[n] == element) {
+            return n;
+        }
+    }
+
+    return -1;
+}
+
+static inline bool bIsInTable(short *table, int num_elements, short element) {
+    return bGetTablePos(table, num_elements, element) >= 0;
+}
+
+static inline bool HasSection(short *section_table, int num_sections, short section_number) {
+    return bIsInTable(section_table, num_sections, section_number);
+}
+
+static inline int GetScenerySubsectionNumber(int section_number) {
+    return section_number % 100;
+}
+
+static inline int GetLODScenerySectionNumber(int drivable_section_number) {
+    return drivable_section_number + ScenerySectionLODOffset;
+}
+
 struct VisibleSectionBoundary : public bTNode<VisibleSectionBoundary> {
     // total size: 0xA4
     short SectionNumber;   // offset 0x8, size 0x2
@@ -60,6 +88,10 @@ struct DrivableScenerySection : public bTNode<DrivableScenerySection> {
     int IsSectionVisible(int section_number);
     void RemoveVisibleSection(int section_number);
     void SortVisibleSections();
+
+    int GetNumVisibleSections() {
+        return this->NumVisibleSections;
+    }
 
     int GetVisibleSection(int i) {
         return this->VisibleSections[i];
