@@ -1099,13 +1099,6 @@ int UnloaderScenery(bChunk *chunk) {
         return 1;
     }
 
-    if (chunk_id == 0x80034115) {
-        LightTable = 0;
-        MaxSceneryLightContexts = 0;
-        SceneryLightContextTable = 0;
-        return 1;
-    }
-
     if (chunk_id == 0x8003410B) {
         bChunk *last_chunk = chunk->GetLastChunk();
         for (bChunk *subchunk = chunk->GetFirstChunk(); subchunk != last_chunk; subchunk = subchunk->GetNext()) {
@@ -1126,6 +1119,13 @@ int UnloaderScenery(bChunk *chunk) {
                 HeirarchyMap.erase(it);
             }
         }
+        return 1;
+    }
+
+    if (chunk_id == 0x80034115) {
+        LightTable = 0;
+        MaxSceneryLightContexts = 0;
+        SceneryLightContextTable = 0;
         return 1;
     }
 
