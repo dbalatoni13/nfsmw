@@ -889,12 +889,14 @@ int LoaderScenery(bChunk *chunk) {
             unsigned char *scenery_infos = reinterpret_cast<unsigned char *>(section_header_words[6]);
             for (int i = 0; i < section_header_words[7]; i++) {
                 unsigned char *scenery_info = scenery_infos + i * 0x48;
+                unsigned int *name_hashes = reinterpret_cast<unsigned int *>(scenery_info + 0x18);
+                eModel **models = reinterpret_cast<eModel **>(scenery_info + 0x28);
                 for (int j = 0; j < 4; j++) {
-                    unsigned int name_hash = *reinterpret_cast<unsigned int *>(scenery_info + 0x18 + j * 4);
+                    unsigned int name_hash = name_hashes[j];
                     if (name_hash != 0 && name_hash != 0xBE43EDBB && name_hash != 0x90F70174) {
                         eModel *model = 0;
                         for (int n = 0; n < j; n++) {
-                            model = *reinterpret_cast<eModel **>(scenery_info + 0x28 + n * 4);
+                            model = models[n];
                             if (model && model->NameHash == name_hash) {
                                 break;
                             }
@@ -910,15 +912,15 @@ int LoaderScenery(bChunk *chunk) {
                                 ModelConnectionCallback(section_header, i, model);
                             }
                         }
-                        *reinterpret_cast<eModel **>(scenery_info + 0x28 + j * 4) = model;
+                        models[j] = model;
                     }
                 }
 
-                if (*reinterpret_cast<eModel **>(scenery_info + 0x30) == 0 && *reinterpret_cast<eModel **>(scenery_info + 0x2C) != 0) {
-                    *reinterpret_cast<eModel **>(scenery_info + 0x30) = *reinterpret_cast<eModel **>(scenery_info + 0x2C);
+                if (models[2] == 0 && models[1] != 0) {
+                    models[2] = models[1];
                 }
-                if (*reinterpret_cast<eModel **>(scenery_info + 0x28) == 0 && *reinterpret_cast<eModel **>(scenery_info + 0x2C) != 0) {
-                    *reinterpret_cast<eModel **>(scenery_info + 0x28) = *reinterpret_cast<eModel **>(scenery_info + 0x2C);
+                if (models[0] == 0 && models[1] != 0) {
+                    models[0] = models[1];
                 }
             }
 
