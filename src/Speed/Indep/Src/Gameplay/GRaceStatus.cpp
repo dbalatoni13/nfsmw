@@ -1847,138 +1847,120 @@ GRaceCustom::~GRaceCustom() {
 }
 
 void GRaceCustom::CreateRaceActivity() {
+    int existingOpponents;
+    bool bossINQuickRace;
+
     if (mReversed) {
         if (!GetCanBeReversed()) {
             mReversed = false;
         } else {
-            const unsigned int *reverse_start = reinterpret_cast<const unsigned int *>(
-                mRaceRecord->GetAttributePointer(0xFD945479, 0) ? mRaceRecord->GetAttributePointer(0xFD945479, 0) : Attrib::DefaultDataArea(sizeof(unsigned int)));
-            const unsigned int *reverse_finish = reinterpret_cast<const unsigned int *>(
-                mRaceRecord->GetAttributePointer(0x7C7CF20F, 0) ? mRaceRecord->GetAttributePointer(0x7C7CF20F, 0) : Attrib::DefaultDataArea(sizeof(unsigned int)));
-            Attrib::Attribute race_start = mRaceRecord->Get(0xE43B2CCC);
-            Attrib::Attribute race_finish = mRaceRecord->Get(0xB0A24ADC);
+            GCollectionKey startReverse = mRaceRecord->racestartReverse(0);
+            GCollectionKey finishReverse = mRaceRecord->racefinishReverse(0);
+            Attrib::Attribute attr;
 
-            if (race_start.IsValid() && race_start.GetCollection() != mRaceRecord->GetConstCollection()) {
-                unsigned int length = race_start.GetLength();
-                unsigned int *values = length ? new unsigned int[length] : nullptr;
+            attr = mRaceRecord->Get(0xE43B2CCC);
+            if (attr.IsValid() && attr.GetCollection() != mRaceRecord->GetConstCollection()) {
+                unsigned int len = attr.GetLength();
 
-                for (unsigned int i = 0; i < length; ++i) {
-                    const unsigned int *src =
-                        reinterpret_cast<const unsigned int *>(mRaceRecord->GetAttributePointer(0xE43B2CCC, i));
-                    values[i] = src ? *src : 0;
-                }
+                if (mRaceRecord->Add(0xE43B2CCC, len)) {
+                    Attrib::Attribute localattr = mRaceRecord->Get(0xE43B2CCC);
 
-                if (mRaceRecord->Add(0xE43B2CCC, length)) {
-                    for (unsigned int i = 0; i < length; ++i) {
-                        unsigned int *dst =
-                            reinterpret_cast<unsigned int *>(const_cast<void *>(mRaceRecord->GetAttributePointer(0xE43B2CCC, i)));
+                    for (unsigned int i = 0; i < len; i++) {
+                        GCollectionKey *resultptr =
+                            reinterpret_cast<GCollectionKey *>(const_cast<void *>(mRaceRecord->GetAttributePointer(0xE43B2CCC, i)));
 
-                        if (dst) {
-                            *dst = values[i];
+                        if (resultptr) {
+                            *resultptr = mRaceRecord->racestart(i);
                         }
                     }
 
-                    race_start = mRaceRecord->Get(0xE43B2CCC);
-                }
-
-                delete[] values;
-            }
-
-            if (race_start.IsValid()) {
-                unsigned int *dst =
-                    reinterpret_cast<unsigned int *>(const_cast<void *>(mRaceRecord->GetAttributePointer(0xE43B2CCC, 0)));
-
-                if (dst) {
-                    *dst = *reverse_start;
+                    attr = localattr;
                 }
             }
 
-            if (race_finish.IsValid() && race_finish.GetCollection() != mRaceRecord->GetConstCollection()) {
-                unsigned int length = race_finish.GetLength();
-                unsigned int *values = length ? new unsigned int[length] : nullptr;
+            if (attr.IsValid()) {
+                GCollectionKey *resultptr =
+                    reinterpret_cast<GCollectionKey *>(const_cast<void *>(mRaceRecord->GetAttributePointer(0xE43B2CCC, 0)));
 
-                for (unsigned int i = 0; i < length; ++i) {
-                    const unsigned int *src =
-                        reinterpret_cast<const unsigned int *>(mRaceRecord->GetAttributePointer(0xB0A24ADC, i));
-                    values[i] = src ? *src : 0;
+                if (resultptr) {
+                    *resultptr = startReverse;
                 }
+            }
 
-                if (mRaceRecord->Add(0xB0A24ADC, length)) {
-                    for (unsigned int i = 0; i < length; ++i) {
-                        unsigned int *dst =
-                            reinterpret_cast<unsigned int *>(const_cast<void *>(mRaceRecord->GetAttributePointer(0xB0A24ADC, i)));
+            attr = mRaceRecord->Get(0xB0A24ADC);
+            if (attr.IsValid() && attr.GetCollection() != mRaceRecord->GetConstCollection()) {
+                unsigned int len = attr.GetLength();
 
-                        if (dst) {
-                            *dst = values[i];
+                if (mRaceRecord->Add(0xB0A24ADC, len)) {
+                    Attrib::Attribute localattr = mRaceRecord->Get(0xB0A24ADC);
+
+                    for (unsigned int i = 0; i < len; i++) {
+                        GCollectionKey *resultptr =
+                            reinterpret_cast<GCollectionKey *>(const_cast<void *>(mRaceRecord->GetAttributePointer(0xB0A24ADC, i)));
+
+                        if (resultptr) {
+                            *resultptr = mRaceRecord->racefinish(i);
                         }
                     }
 
-                    race_finish = mRaceRecord->Get(0xB0A24ADC);
+                    attr = localattr;
                 }
-
-                delete[] values;
             }
 
-            if (race_finish.IsValid()) {
-                unsigned int *dst =
-                    reinterpret_cast<unsigned int *>(const_cast<void *>(mRaceRecord->GetAttributePointer(0xB0A24ADC, 0)));
+            if (attr.IsValid()) {
+                GCollectionKey *resultptr =
+                    reinterpret_cast<GCollectionKey *>(const_cast<void *>(mRaceRecord->GetAttributePointer(0xB0A24ADC, 0)));
 
-                if (dst) {
-                    *dst = *reverse_finish;
+                if (resultptr) {
+                    *resultptr = finishReverse;
                 }
             }
         }
     }
 
-    {
-        unsigned int num_opponents = GetNumOpponents();
-        bool boss_race = false;
+    existingOpponents = GetNumOpponents();
+    bossINQuickRace = false;
+    if (GRaceStatus::Get().GetRaceContext() != GRace::kRaceContext_Career && GetIsBossRace()) {
+        bossINQuickRace = true;
+        existingOpponents = 0;
+    }
 
-        if (GRaceStatus::Get().GetRaceContext() != GRace::kRaceContext_Career && GetIsBossRace()) {
-            boss_race = true;
-            num_opponents = 0;
+    if (mNumOpponents != static_cast<unsigned int>(existingOpponents)) {
+        unsigned int opponentKey[16];
+        unsigned int currOpponents = 0;
+        Attrib::Attribute attribute;
+
+        if (!bossINQuickRace) {
+            attribute = mRaceRecord->Get(0x5839FA1A);
+            currOpponents = attribute.GetLength();
+            if (currOpponents != 0) {
+                for (unsigned int onOpp = 0; onOpp < currOpponents; onOpp++) {
+                    opponentKey[onOpp] = mRaceRecord->Opponents(onOpp).GetCollectionKey();
+                }
+            }
         }
 
-        if (mNumOpponents != num_opponents) {
-            unsigned int opponent_keys[16];
-            unsigned int old_length = 0;
-
-            if (!boss_race) {
-                Attrib::Attribute opponents = mRaceRecord->Get(0x5839FA1A);
-
-                old_length = opponents.GetLength();
-                for (unsigned int i = 0; i < old_length && i < 16; ++i) {
-                    const unsigned int *src = reinterpret_cast<const unsigned int *>(mRaceRecord->GetAttributePointer(0x5839FA1A, i));
-
-                    if (!src) {
-                        src = reinterpret_cast<const unsigned int *>(Attrib::DefaultDataArea(sizeof(unsigned int)));
-                    }
-
-                    opponent_keys[i] = *src;
+        if (currOpponents < mNumOpponents) {
+            if (currOpponents == 0) {
+                for (unsigned int onSet = 0; onSet < mNumOpponents; onSet++) {
+                    opponentKey[onSet] = 0x9F3B88C5;
+                }
+            } else {
+                for (unsigned int onCopy = currOpponents; onCopy < mNumOpponents; onCopy++) {
+                    opponentKey[onCopy] = opponentKey[onCopy % currOpponents];
                 }
             }
+        }
 
-            if (old_length < mNumOpponents && mNumOpponents <= 16) {
-                if (old_length == 0) {
-                    for (unsigned int i = 0; i < mNumOpponents; ++i) {
-                        opponent_keys[i] = 0x9F3B88C5;
-                    }
-                } else {
-                    for (unsigned int i = old_length; i < mNumOpponents; ++i) {
-                        opponent_keys[i] = opponent_keys[i % old_length];
-                    }
-                }
-            }
+        mRaceRecord->Add(0x5839FA1A, mNumOpponents);
+        attribute = mRaceRecord->Get(0x5839FA1A);
+        if (mNumOpponents != 0) {
+            for (unsigned int onSet = 0; onSet < mNumOpponents; onSet++) {
+                GCollectionKey *resultptr =
+                    reinterpret_cast<GCollectionKey *>(const_cast<void *>(mRaceRecord->GetAttributePointer(0x5839FA1A, onSet)));
 
-            mRaceRecord->Add(0x5839FA1A, mNumOpponents);
-            if (mNumOpponents != 0) {
-                for (unsigned int i = 0; i < mNumOpponents && i < 16; ++i) {
-                    unsigned int *dst =
-                        reinterpret_cast<unsigned int *>(const_cast<void *>(mRaceRecord->GetAttributePointer(0x5839FA1A, i)));
-
-                    if (dst) {
-                        *dst = opponent_keys[i];
-                    }
+                if (resultptr) {
+                    *resultptr = GCollectionKey(opponentKey[onSet]);
                 }
             }
         }
