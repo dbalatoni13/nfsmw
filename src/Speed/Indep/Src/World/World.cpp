@@ -84,7 +84,7 @@ void World::ResetTimeScale() {
 
 // UNSOLVED
 void World_DEBUGStartLocation(UMath::Vector3 &startLoc, UMath::Vector3 &initialVec) {
-    const char *regionName = LoadedTrackInfo->GetLoadedTrackInfo();
+    const char *regionName = LoadedTrackInfo->RegionName;
     float rotInitialVec = 0.0f;
 
     if (strcasecmp(regionName, "L2RA") == 0) {

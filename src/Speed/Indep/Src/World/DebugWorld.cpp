@@ -85,7 +85,7 @@ void DebugWorld::HandleSaveHotPosition() {
         return;
 
     char filename[80];
-    bSPrintf(filename, "TRACKS\\HotPosition%s.HOT", LoadedTrackInfo->GetLoadedTrackInfo());
+    bSPrintf(filename, "TRACKS\\HotPosition%s.HOT", LoadedTrackInfo->RegionName);
 
     SavedHotPosition hot_positions[5];
     int num_hot_positions = ReadHotPositionScript(filename, hot_positions, 5);
@@ -123,7 +123,7 @@ void DebugWorld::HandleJumpToHotPosition() {
         return;
 
     char filename[80];
-    bSPrintf(filename, "TRACKS\\HotPosition%s.HOT", LoadedTrackInfo->GetLoadedTrackInfo());
+    bSPrintf(filename, "TRACKS\\HotPosition%s.HOT", LoadedTrackInfo->RegionName);
 
     SavedHotPosition hot_positions[5];
     int num_hot_positions = ReadHotPositionScript(filename, hot_positions, 5);
