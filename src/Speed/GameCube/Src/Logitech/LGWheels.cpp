@@ -326,47 +326,46 @@ void LGWheels::PlaySpringForce(long channel, signed char offset, unsigned char s
         return;
     }
 
-    if (!LGWheelsGetWheels(this)->IsConnected(channel)) {
-        OSReport(kPlayForceError, channel);
-        return;
-    }
-
-    if (LGWheelsGetIsAirborne(this, channel)) {
-        return;
-    }
-
-    if (LGWheelsGetPlaying(LGWheelsGetCondition(this), channel, 0) != 0) {
-        if (SameSpringForceParams(channel, offset, saturation, coefficient)) {
+    if (LGWheelsGetWheels(this)->IsConnected(channel)) {
+        if (LGWheelsGetIsAirborne(this, channel)) {
             return;
         }
 
-        ret = LGWheelsGetCondition(this)->UpdateForce(channel, 0, 7, static_cast<unsigned long>(-1), 0, offset, 0, saturation, saturation, coefficient, coefficient);
-        if (ret < 0) {
+        if (LGWheelsGetPlaying(LGWheelsGetCondition(this), channel, 0) != 0) {
+            if (SameSpringForceParams(channel, offset, saturation, coefficient)) {
+                return;
+            }
+
+            ret = LGWheelsGetCondition(this)->UpdateForce(channel, 0, 7, static_cast<unsigned long>(-1), 0, offset, 0, saturation, saturation, coefficient, coefficient);
+            if (ret < 0) {
+                return;
+            }
+
+            LGWheelsGetSpringForceParams(this)[channel].offset = offset;
+            LGWheelsGetSpringForceParams(this)[channel].saturation = saturation;
+            LGWheelsGetSpringForceParams(this)[channel].coefficient = coefficient;
             return;
         }
 
-        LGWheelsGetSpringForceParams(this)[channel].offset = offset;
-        LGWheelsGetSpringForceParams(this)[channel].saturation = saturation;
-        LGWheelsGetSpringForceParams(this)[channel].coefficient = coefficient;
-        return;
-    }
+        if (LGWheelsGetEffectID(LGWheelsGetCondition(this), channel, 0) == static_cast<unsigned long>(-1)) {
+            ret = LGWheelsGetCondition(this)->DownloadForce(channel, 0, LGWheelsGetWheelHandle(this, channel), 7, static_cast<unsigned long>(-1), 0, offset, 0, saturation, saturation, coefficient, coefficient);
+        } else if (SameSpringForceParams(channel, offset, saturation, coefficient)) {
+            LGWheelsGetCondition(this)->Start(channel, 0);
+            return;
+        } else {
+            ret = LGWheelsGetCondition(this)->UpdateForce(channel, 0, 7, static_cast<unsigned long>(-1), 0, offset, 0, saturation, saturation, coefficient, coefficient);
+        }
 
-    if (LGWheelsGetEffectID(LGWheelsGetCondition(this), channel, 0) == static_cast<unsigned long>(-1)) {
-        ret = LGWheelsGetCondition(this)->DownloadForce(channel, 0, LGWheelsGetWheelHandle(this, channel), 7, static_cast<unsigned long>(-1), 0, offset, 0, saturation, saturation, coefficient, coefficient);
-    } else if (SameSpringForceParams(channel, offset, saturation, coefficient)) {
+        if (ret >= 0) {
+            LGWheelsGetSpringForceParams(this)[channel].offset = offset;
+            LGWheelsGetSpringForceParams(this)[channel].saturation = saturation;
+            LGWheelsGetSpringForceParams(this)[channel].coefficient = coefficient;
+        }
+
         LGWheelsGetCondition(this)->Start(channel, 0);
-        return;
     } else {
-        ret = LGWheelsGetCondition(this)->UpdateForce(channel, 0, 7, static_cast<unsigned long>(-1), 0, offset, 0, saturation, saturation, coefficient, coefficient);
+        OSReport(kPlayForceError, channel);
     }
-
-    if (ret >= 0) {
-        LGWheelsGetSpringForceParams(this)[channel].offset = offset;
-        LGWheelsGetSpringForceParams(this)[channel].saturation = saturation;
-        LGWheelsGetSpringForceParams(this)[channel].coefficient = coefficient;
-    }
-
-    LGWheelsGetCondition(this)->Start(channel, 0);
 }
 
 void LGWheels::StopSpringForce(long channel) {
@@ -381,45 +380,44 @@ bool LGWheels::SameSpringForceParams(long channel, signed char offset, unsigned 
 void LGWheels::PlayConstantForce(long channel, short magnitude, unsigned short direction) {
     int ret;
 
-    if (!LGWheelsGetWheels(this)->IsConnected(channel)) {
-        OSReport(kPlayForceError, channel);
-        return;
-    }
-
-    if (LGWheelsGetIsAirborne(this, channel)) {
-        return;
-    }
-
-    if (LGWheelsGetPlaying(LGWheelsGetConstant(this), channel, 0) != 0) {
-        if (SameConstantForceParams(channel, magnitude, direction)) {
+    if (LGWheelsGetWheels(this)->IsConnected(channel)) {
+        if (LGWheelsGetIsAirborne(this, channel)) {
             return;
         }
 
-        ret = LGWheelsGetConstant(this)->UpdateForce(channel, 0, static_cast<unsigned long>(-1), 0, magnitude, direction, 0, 0, 0, 0);
-        if (ret < 0) {
+        if (LGWheelsGetPlaying(LGWheelsGetConstant(this), channel, 0) != 0) {
+            if (SameConstantForceParams(channel, magnitude, direction)) {
+                return;
+            }
+
+            ret = LGWheelsGetConstant(this)->UpdateForce(channel, 0, static_cast<unsigned long>(-1), 0, magnitude, direction, 0, 0, 0, 0);
+            if (ret < 0) {
+                return;
+            }
+
+            LGWheelsGetConstantForceParams(this)[channel].magnitude = magnitude;
+            LGWheelsGetConstantForceParams(this)[channel].direction = direction;
             return;
         }
 
-        LGWheelsGetConstantForceParams(this)[channel].magnitude = magnitude;
-        LGWheelsGetConstantForceParams(this)[channel].direction = direction;
-        return;
-    }
+        if (LGWheelsGetEffectID(LGWheelsGetConstant(this), channel, 0) == static_cast<unsigned long>(-1)) {
+            ret = LGWheelsGetConstant(this)->DownloadForce(channel, 0, LGWheelsGetWheelHandle(this, channel), static_cast<unsigned long>(-1), 0, magnitude, direction, 0, 0, 0, 0);
+        } else if (SameConstantForceParams(channel, magnitude, direction)) {
+            LGWheelsGetConstant(this)->Start(channel, 0);
+            return;
+        } else {
+            ret = LGWheelsGetConstant(this)->UpdateForce(channel, 0, static_cast<unsigned long>(-1), 0, magnitude, direction, 0, 0, 0, 0);
+        }
 
-    if (LGWheelsGetEffectID(LGWheelsGetConstant(this), channel, 0) == static_cast<unsigned long>(-1)) {
-        ret = LGWheelsGetConstant(this)->DownloadForce(channel, 0, LGWheelsGetWheelHandle(this, channel), static_cast<unsigned long>(-1), 0, magnitude, direction, 0, 0, 0, 0);
-    } else if (SameConstantForceParams(channel, magnitude, direction)) {
+        if (ret >= 0) {
+            LGWheelsGetConstantForceParams(this)[channel].magnitude = magnitude;
+            LGWheelsGetConstantForceParams(this)[channel].direction = direction;
+        }
+
         LGWheelsGetConstant(this)->Start(channel, 0);
-        return;
     } else {
-        ret = LGWheelsGetConstant(this)->UpdateForce(channel, 0, static_cast<unsigned long>(-1), 0, magnitude, direction, 0, 0, 0, 0);
+        OSReport(kPlayForceError, channel);
     }
-
-    if (ret >= 0) {
-        LGWheelsGetConstantForceParams(this)[channel].magnitude = magnitude;
-        LGWheelsGetConstantForceParams(this)[channel].direction = direction;
-    }
-
-    LGWheelsGetConstant(this)->Start(channel, 0);
 }
 
 void LGWheels::StopConstantForce(long channel) {
@@ -438,43 +436,42 @@ void LGWheels::PlayDamperForce(long channel, short coefficient) {
         return;
     }
 
-    if (!LGWheelsGetWheels(this)->IsConnected(channel)) {
-        OSReport(kPlayForceError, channel);
-        return;
-    }
-
-    if (LGWheelsGetIsAirborne(this, channel)) {
-        return;
-    }
-
-    if (LGWheelsGetPlaying(LGWheelsGetCondition(this), channel, 1) != 0) {
-        if (SameDamperForceParams(channel, coefficient)) {
+    if (LGWheelsGetWheels(this)->IsConnected(channel)) {
+        if (LGWheelsGetIsAirborne(this, channel)) {
             return;
         }
 
-        ret = LGWheelsGetCondition(this)->UpdateForce(channel, 1, 8, static_cast<unsigned long>(-1), 0, 0, 0xFF, 0xFF, 0xFF, coefficient, coefficient);
-        if (ret < 0) {
+        if (LGWheelsGetPlaying(LGWheelsGetCondition(this), channel, 1) != 0) {
+            if (SameDamperForceParams(channel, coefficient)) {
+                return;
+            }
+
+            ret = LGWheelsGetCondition(this)->UpdateForce(channel, 1, 8, static_cast<unsigned long>(-1), 0, 0, 0xFF, 0xFF, 0xFF, coefficient, coefficient);
+            if (ret < 0) {
+                return;
+            }
+
+            LGWheelsGetDamperForceParams(this)[channel].coefficient = coefficient;
             return;
         }
 
-        LGWheelsGetDamperForceParams(this)[channel].coefficient = coefficient;
-        return;
-    }
+        if (LGWheelsGetEffectID(LGWheelsGetCondition(this), channel, 1) == static_cast<unsigned long>(-1)) {
+            ret = LGWheelsGetCondition(this)->DownloadForce(channel, 1, LGWheelsGetWheelHandle(this, channel), 8, static_cast<unsigned long>(-1), 0, 0, 0xFF, 0xFF, 0xFF, coefficient, coefficient);
+        } else if (SameDamperForceParams(channel, coefficient)) {
+            LGWheelsGetCondition(this)->Start(channel, 1);
+            return;
+        } else {
+            ret = LGWheelsGetCondition(this)->UpdateForce(channel, 1, 8, static_cast<unsigned long>(-1), 0, 0, 0xFF, 0xFF, 0xFF, coefficient, coefficient);
+        }
 
-    if (LGWheelsGetEffectID(LGWheelsGetCondition(this), channel, 1) == static_cast<unsigned long>(-1)) {
-        ret = LGWheelsGetCondition(this)->DownloadForce(channel, 1, LGWheelsGetWheelHandle(this, channel), 8, static_cast<unsigned long>(-1), 0, 0, 0xFF, 0xFF, 0xFF, coefficient, coefficient);
-    } else if (SameDamperForceParams(channel, coefficient)) {
+        if (ret >= 0) {
+            LGWheelsGetDamperForceParams(this)[channel].coefficient = coefficient;
+        }
+
         LGWheelsGetCondition(this)->Start(channel, 1);
-        return;
     } else {
-        ret = LGWheelsGetCondition(this)->UpdateForce(channel, 1, 8, static_cast<unsigned long>(-1), 0, 0, 0xFF, 0xFF, 0xFF, coefficient, coefficient);
+        OSReport(kPlayForceError, channel);
     }
-
-    if (ret >= 0) {
-        LGWheelsGetDamperForceParams(this)[channel].coefficient = coefficient;
-    }
-
-    LGWheelsGetCondition(this)->Start(channel, 1);
 }
 
 void LGWheels::StopDamperForce(long channel) {
@@ -488,35 +485,34 @@ bool LGWheels::SameDamperForceParams(long channel, short coefficient) {
 void LGWheels::PlayFrontalCollisionForce(long channel, unsigned char magnitude) {
     int ret;
 
-    if (!LGWheelsGetWheels(this)->IsConnected(channel)) {
-        OSReport(kPlayForceError, channel);
-        return;
-    }
-
-    if (LGWheelsGetPlaying(LGWheelsGetPeriodic(this), channel, 0) != 0) {
-        if (!SameFrontalCollisionForceParams(channel, magnitude)) {
-            ret = LGWheelsGetPeriodic(this)->UpdateForce(channel, 0, 3, 150, 0, magnitude, 90, 75, 0, 0, 20, 0, 0, 0);
-            if (ret >= 0) {
-                LGWheelsGetFrontalCollisionParams(this)[channel].magnitude = magnitude;
+    if (LGWheelsGetWheels(this)->IsConnected(channel)) {
+        if (LGWheelsGetPlaying(LGWheelsGetPeriodic(this), channel, 0) != 0) {
+            if (!SameFrontalCollisionForceParams(channel, magnitude)) {
+                ret = LGWheelsGetPeriodic(this)->UpdateForce(channel, 0, 3, 150, 0, magnitude, 90, 75, 0, 0, 20, 0, 0, 0);
+                if (ret >= 0) {
+                    LGWheelsGetFrontalCollisionParams(this)[channel].magnitude = magnitude;
+                }
             }
+            LGWheelsGetPeriodic(this)->Start(channel, 0);
+            return;
         }
+
+        if (LGWheelsGetEffectID(LGWheelsGetPeriodic(this), channel, 0) == static_cast<unsigned long>(-1)) {
+            ret = LGWheelsGetPeriodic(this)->DownloadForce(channel, 0, LGWheelsGetWheelHandle(this, channel), 3, 150, 0, magnitude, 90, 75, 0, 0, 20, 0, 0, 0);
+        } else if (SameFrontalCollisionForceParams(channel, magnitude)) {
+            ret = 0;
+        } else {
+            ret = LGWheelsGetPeriodic(this)->UpdateForce(channel, 0, 3, 150, 0, magnitude, 90, 75, 0, 0, 20, 0, 0, 0);
+        }
+
+        if (ret >= 0) {
+            LGWheelsGetFrontalCollisionParams(this)[channel].magnitude = magnitude;
+        }
+
         LGWheelsGetPeriodic(this)->Start(channel, 0);
-        return;
-    }
-
-    if (LGWheelsGetEffectID(LGWheelsGetPeriodic(this), channel, 0) == static_cast<unsigned long>(-1)) {
-        ret = LGWheelsGetPeriodic(this)->DownloadForce(channel, 0, LGWheelsGetWheelHandle(this, channel), 3, 150, 0, magnitude, 90, 75, 0, 0, 20, 0, 0, 0);
-    } else if (SameFrontalCollisionForceParams(channel, magnitude)) {
-        ret = 0;
     } else {
-        ret = LGWheelsGetPeriodic(this)->UpdateForce(channel, 0, 3, 150, 0, magnitude, 90, 75, 0, 0, 20, 0, 0, 0);
+        OSReport(kPlayForceError, channel);
     }
-
-    if (ret >= 0) {
-        LGWheelsGetFrontalCollisionParams(this)[channel].magnitude = magnitude;
-    }
-
-    LGWheelsGetPeriodic(this)->Start(channel, 0);
 }
 
 bool LGWheels::SameFrontalCollisionForceParams(long channel, short magnitude) {
@@ -526,43 +522,42 @@ bool LGWheels::SameFrontalCollisionForceParams(long channel, short magnitude) {
 void LGWheels::PlayDirtRoadEffect(long channel, unsigned char magnitude) {
     int ret;
 
-    if (!LGWheelsGetWheels(this)->IsConnected(channel)) {
-        OSReport(kPlayForceError, channel);
-        return;
-    }
-
-    if (LGWheelsGetIsAirborne(this, channel)) {
-        return;
-    }
-
-    if (LGWheelsGetPlaying(LGWheelsGetPeriodic(this), channel, 1) != 0) {
-        if (SameDirtRoadEffectParams(channel, magnitude)) {
+    if (LGWheelsGetWheels(this)->IsConnected(channel)) {
+        if (LGWheelsGetIsAirborne(this, channel)) {
             return;
         }
 
-        ret = LGWheelsGetPeriodic(this)->UpdateForce(channel, 1, 2, static_cast<unsigned long>(-1), 0, magnitude, 90, 65, 0, 0, 0, 0, 0, 0);
-        if (ret < 0) {
+        if (LGWheelsGetPlaying(LGWheelsGetPeriodic(this), channel, 1) != 0) {
+            if (SameDirtRoadEffectParams(channel, magnitude)) {
+                return;
+            }
+
+            ret = LGWheelsGetPeriodic(this)->UpdateForce(channel, 1, 2, static_cast<unsigned long>(-1), 0, magnitude, 90, 65, 0, 0, 0, 0, 0, 0);
+            if (ret < 0) {
+                return;
+            }
+
+            LGWheelsGetDirtRoadParams(this)[channel].magnitude = magnitude;
             return;
         }
 
-        LGWheelsGetDirtRoadParams(this)[channel].magnitude = magnitude;
-        return;
-    }
+        if (LGWheelsGetEffectID(LGWheelsGetPeriodic(this), channel, 1) == static_cast<unsigned long>(-1)) {
+            ret = LGWheelsGetPeriodic(this)->DownloadForce(channel, 1, LGWheelsGetWheelHandle(this, channel), 2, static_cast<unsigned long>(-1), 0, magnitude, 90, 65, 0, 0, 0, 0, 0, 0);
+        } else if (SameDirtRoadEffectParams(channel, magnitude)) {
+            LGWheelsGetPeriodic(this)->Start(channel, 1);
+            return;
+        } else {
+            ret = LGWheelsGetPeriodic(this)->UpdateForce(channel, 1, 2, static_cast<unsigned long>(-1), 0, magnitude, 90, 65, 0, 0, 0, 0, 0, 0);
+        }
 
-    if (LGWheelsGetEffectID(LGWheelsGetPeriodic(this), channel, 1) == static_cast<unsigned long>(-1)) {
-        ret = LGWheelsGetPeriodic(this)->DownloadForce(channel, 1, LGWheelsGetWheelHandle(this, channel), 2, static_cast<unsigned long>(-1), 0, magnitude, 90, 65, 0, 0, 0, 0, 0, 0);
-    } else if (SameDirtRoadEffectParams(channel, magnitude)) {
+        if (ret >= 0) {
+            LGWheelsGetDirtRoadParams(this)[channel].magnitude = magnitude;
+        }
+
         LGWheelsGetPeriodic(this)->Start(channel, 1);
-        return;
     } else {
-        ret = LGWheelsGetPeriodic(this)->UpdateForce(channel, 1, 2, static_cast<unsigned long>(-1), 0, magnitude, 90, 65, 0, 0, 0, 0, 0, 0);
+        OSReport(kPlayForceError, channel);
     }
-
-    if (ret >= 0) {
-        LGWheelsGetDirtRoadParams(this)[channel].magnitude = magnitude;
-    }
-
-    LGWheelsGetPeriodic(this)->Start(channel, 1);
 }
 
 void LGWheels::StopDirtRoadEffect(long channel) {
@@ -576,43 +571,42 @@ bool LGWheels::SameDirtRoadEffectParams(long channel, short magnitude) {
 void LGWheels::PlayBumpyRoadEffect(long channel, unsigned char magnitude) {
     int ret;
 
-    if (!LGWheelsGetWheels(this)->IsConnected(channel)) {
-        OSReport(kPlayForceError, channel);
-        return;
-    }
-
-    if (LGWheelsGetIsAirborne(this, channel)) {
-        return;
-    }
-
-    if (LGWheelsGetPlaying(LGWheelsGetPeriodic(this), channel, 2) != 0) {
-        if (SameBumpyRoadEffectParams(channel, magnitude)) {
+    if (LGWheelsGetWheels(this)->IsConnected(channel)) {
+        if (LGWheelsGetIsAirborne(this, channel)) {
             return;
         }
 
-        ret = LGWheelsGetPeriodic(this)->UpdateForce(channel, 2, 3, static_cast<unsigned long>(-1), 0, magnitude, 90, 100, 0, 0, 0, 0, 0, 0);
-        if (ret < 0) {
+        if (LGWheelsGetPlaying(LGWheelsGetPeriodic(this), channel, 2) != 0) {
+            if (SameBumpyRoadEffectParams(channel, magnitude)) {
+                return;
+            }
+
+            ret = LGWheelsGetPeriodic(this)->UpdateForce(channel, 2, 3, static_cast<unsigned long>(-1), 0, magnitude, 90, 100, 0, 0, 0, 0, 0, 0);
+            if (ret < 0) {
+                return;
+            }
+
+            LGWheelsGetBumpyRoadParams(this)[channel].magnitude = magnitude;
             return;
         }
 
-        LGWheelsGetBumpyRoadParams(this)[channel].magnitude = magnitude;
-        return;
-    }
+        if (LGWheelsGetEffectID(LGWheelsGetPeriodic(this), channel, 2) == static_cast<unsigned long>(-1)) {
+            ret = LGWheelsGetPeriodic(this)->DownloadForce(channel, 2, LGWheelsGetWheelHandle(this, channel), 3, static_cast<unsigned long>(-1), 0, magnitude, 90, 100, 0, 0, 0, 0, 0, 0);
+        } else if (SameBumpyRoadEffectParams(channel, magnitude)) {
+            LGWheelsGetPeriodic(this)->Start(channel, 2);
+            return;
+        } else {
+            ret = LGWheelsGetPeriodic(this)->UpdateForce(channel, 2, 3, static_cast<unsigned long>(-1), 0, magnitude, 90, 100, 0, 0, 0, 0, 0, 0);
+        }
 
-    if (LGWheelsGetEffectID(LGWheelsGetPeriodic(this), channel, 2) == static_cast<unsigned long>(-1)) {
-        ret = LGWheelsGetPeriodic(this)->DownloadForce(channel, 2, LGWheelsGetWheelHandle(this, channel), 3, static_cast<unsigned long>(-1), 0, magnitude, 90, 100, 0, 0, 0, 0, 0, 0);
-    } else if (SameBumpyRoadEffectParams(channel, magnitude)) {
+        if (ret >= 0) {
+            LGWheelsGetBumpyRoadParams(this)[channel].magnitude = magnitude;
+        }
+
         LGWheelsGetPeriodic(this)->Start(channel, 2);
-        return;
     } else {
-        ret = LGWheelsGetPeriodic(this)->UpdateForce(channel, 2, 3, static_cast<unsigned long>(-1), 0, magnitude, 90, 100, 0, 0, 0, 0, 0, 0);
+        OSReport(kPlayForceError, channel);
     }
-
-    if (ret >= 0) {
-        LGWheelsGetBumpyRoadParams(this)[channel].magnitude = magnitude;
-    }
-
-    LGWheelsGetPeriodic(this)->Start(channel, 2);
 }
 
 void LGWheels::StopBumpyRoadEffect(long channel) {
@@ -638,43 +632,42 @@ void LGWheels::PlaySlipperyRoadEffect(long channel, short magnitude) {
         LGWheelsGetSpringWasPlaying(this, channel) = 1;
     }
 
-    if (!LGWheelsGetWheels(this)->IsConnected(channel)) {
-        OSReport(kPlayForceError, channel);
-        return;
-    }
-
-    if (LGWheelsGetIsAirborne(this, channel)) {
-        return;
-    }
-
-    if (LGWheelsGetPlaying(LGWheelsGetCondition(this), channel, 2) != 0) {
-        if (SameSlipperyRoadEffectParams(channel, magnitude)) {
+    if (LGWheelsGetWheels(this)->IsConnected(channel)) {
+        if (LGWheelsGetIsAirborne(this, channel)) {
             return;
         }
 
-        ret = LGWheelsGetCondition(this)->UpdateForce(channel, 2, 8, static_cast<unsigned long>(-1), 0, 0, 0xFF, 0xFF, 0xFF, -magnitude, -magnitude);
-        if (ret < 0) {
+        if (LGWheelsGetPlaying(LGWheelsGetCondition(this), channel, 2) != 0) {
+            if (SameSlipperyRoadEffectParams(channel, magnitude)) {
+                return;
+            }
+
+            ret = LGWheelsGetCondition(this)->UpdateForce(channel, 2, 8, static_cast<unsigned long>(-1), 0, 0, 0xFF, 0xFF, 0xFF, -magnitude, -magnitude);
+            if (ret < 0) {
+                return;
+            }
+
+            LGWheelsGetSlipperyRoadParams(this)[channel].magnitude = magnitude;
             return;
         }
 
-        LGWheelsGetSlipperyRoadParams(this)[channel].magnitude = magnitude;
-        return;
-    }
+        if (LGWheelsGetEffectID(LGWheelsGetCondition(this), channel, 2) == static_cast<unsigned long>(-1)) {
+            ret = LGWheelsGetCondition(this)->DownloadForce(channel, 2, LGWheelsGetWheelHandle(this, channel), 8, static_cast<unsigned long>(-1), 0, 0, 0xFF, 0xFF, 0xFF, -magnitude, -magnitude);
+        } else if (SameSlipperyRoadEffectParams(channel, magnitude)) {
+            LGWheelsGetCondition(this)->Start(channel, 2);
+            return;
+        } else {
+            ret = LGWheelsGetCondition(this)->UpdateForce(channel, 2, 8, static_cast<unsigned long>(-1), 0, 0, 0xFF, 0xFF, 0xFF, -magnitude, -magnitude);
+        }
 
-    if (LGWheelsGetEffectID(LGWheelsGetCondition(this), channel, 2) == static_cast<unsigned long>(-1)) {
-        ret = LGWheelsGetCondition(this)->DownloadForce(channel, 2, LGWheelsGetWheelHandle(this, channel), 8, static_cast<unsigned long>(-1), 0, 0, 0xFF, 0xFF, 0xFF, -magnitude, -magnitude);
-    } else if (SameSlipperyRoadEffectParams(channel, magnitude)) {
+        if (ret >= 0) {
+            LGWheelsGetSlipperyRoadParams(this)[channel].magnitude = magnitude;
+        }
+
         LGWheelsGetCondition(this)->Start(channel, 2);
-        return;
     } else {
-        ret = LGWheelsGetCondition(this)->UpdateForce(channel, 2, 8, static_cast<unsigned long>(-1), 0, 0, 0xFF, 0xFF, 0xFF, -magnitude, -magnitude);
+        OSReport(kPlayForceError, channel);
     }
-
-    if (ret >= 0) {
-        LGWheelsGetSlipperyRoadParams(this)[channel].magnitude = magnitude;
-    }
-
-    LGWheelsGetCondition(this)->Start(channel, 2);
 }
 
 void LGWheels::StopSlipperyRoadEffect(long channel) {
@@ -688,24 +681,51 @@ bool LGWheels::SameSlipperyRoadEffectParams(long channel, short magnitude) {
 void LGWheels::PlaySurfaceEffect(long channel, unsigned char type, unsigned char magnitude, unsigned short period) {
     int ret;
 
-    if (!LGWheelsGetWheels(this)->IsConnected(channel)) {
-        OSReport(kPlayForceError, channel);
-        return;
-    }
+    if (LGWheelsGetWheels(this)->IsConnected(channel)) {
+        if (LGWheelsGetIsAirborne(this, channel)) {
+            return;
+        }
 
-    if (LGWheelsGetIsAirborne(this, channel)) {
-        return;
-    }
+        if (LGWheelsGetPlaying(LGWheelsGetPeriodic(this), channel, 3) != 0) {
+            if (SameSurfaceEffectParams(channel, type, magnitude, period)) {
+                return;
+            }
 
-    if (LGWheelsGetPlaying(LGWheelsGetPeriodic(this), channel, 3) != 0) {
+            if (type != LGWheelsGetSurfaceEffectParams(this)[channel].type) {
+                LGWheelsGetPeriodic(this)->Destroy(channel, 3);
+                ret = LGWheelsGetPeriodic(this)->DownloadForce(channel, 3, LGWheelsGetWheelHandle(this, channel), type, static_cast<unsigned long>(-1), 0, magnitude, 90, period, 0, 0, 0, 0, 0, 0);
+                LGWheelsGetPeriodic(this)->Start(channel, 3);
+            } else {
+                ret = LGWheelsGetPeriodic(this)->UpdateForce(channel, 3, type, static_cast<unsigned long>(-1), 0, magnitude, 90, period, 0, 0, 0, 0, 0, 0);
+            }
+
+            if (ret >= 0) {
+                LGWheelsGetSurfaceEffectParams(this)[channel].type = type;
+                LGWheelsGetSurfaceEffectParams(this)[channel].magnitude = magnitude;
+                LGWheelsGetSurfaceEffectParams(this)[channel].period = period;
+            }
+            return;
+        }
+
+        if (LGWheelsGetEffectID(LGWheelsGetPeriodic(this), channel, 3) == static_cast<unsigned long>(-1)) {
+            ret = LGWheelsGetPeriodic(this)->DownloadForce(channel, 3, LGWheelsGetWheelHandle(this, channel), type, static_cast<unsigned long>(-1), 0, magnitude, 90, period, 0, 0, 0, 0, 0, 0);
+            if (ret >= 0) {
+                LGWheelsGetSurfaceEffectParams(this)[channel].type = type;
+                LGWheelsGetSurfaceEffectParams(this)[channel].magnitude = magnitude;
+                LGWheelsGetSurfaceEffectParams(this)[channel].period = period;
+            }
+            LGWheelsGetPeriodic(this)->Start(channel, 3);
+            return;
+        }
+
         if (SameSurfaceEffectParams(channel, type, magnitude, period)) {
+            LGWheelsGetPeriodic(this)->Start(channel, 3);
             return;
         }
 
         if (type != LGWheelsGetSurfaceEffectParams(this)[channel].type) {
             LGWheelsGetPeriodic(this)->Destroy(channel, 3);
             ret = LGWheelsGetPeriodic(this)->DownloadForce(channel, 3, LGWheelsGetWheelHandle(this, channel), type, static_cast<unsigned long>(-1), 0, magnitude, 90, period, 0, 0, 0, 0, 0, 0);
-            LGWheelsGetPeriodic(this)->Start(channel, 3);
         } else {
             ret = LGWheelsGetPeriodic(this)->UpdateForce(channel, 3, type, static_cast<unsigned long>(-1), 0, magnitude, 90, period, 0, 0, 0, 0, 0, 0);
         }
@@ -715,39 +735,11 @@ void LGWheels::PlaySurfaceEffect(long channel, unsigned char type, unsigned char
             LGWheelsGetSurfaceEffectParams(this)[channel].magnitude = magnitude;
             LGWheelsGetSurfaceEffectParams(this)[channel].period = period;
         }
-        return;
-    }
 
-    if (LGWheelsGetEffectID(LGWheelsGetPeriodic(this), channel, 3) == static_cast<unsigned long>(-1)) {
-        ret = LGWheelsGetPeriodic(this)->DownloadForce(channel, 3, LGWheelsGetWheelHandle(this, channel), type, static_cast<unsigned long>(-1), 0, magnitude, 90, period, 0, 0, 0, 0, 0, 0);
-        if (ret >= 0) {
-            LGWheelsGetSurfaceEffectParams(this)[channel].type = type;
-            LGWheelsGetSurfaceEffectParams(this)[channel].magnitude = magnitude;
-            LGWheelsGetSurfaceEffectParams(this)[channel].period = period;
-        }
         LGWheelsGetPeriodic(this)->Start(channel, 3);
-        return;
-    }
-
-    if (SameSurfaceEffectParams(channel, type, magnitude, period)) {
-        LGWheelsGetPeriodic(this)->Start(channel, 3);
-        return;
-    }
-
-    if (type != LGWheelsGetSurfaceEffectParams(this)[channel].type) {
-        LGWheelsGetPeriodic(this)->Destroy(channel, 3);
-        ret = LGWheelsGetPeriodic(this)->DownloadForce(channel, 3, LGWheelsGetWheelHandle(this, channel), type, static_cast<unsigned long>(-1), 0, magnitude, 90, period, 0, 0, 0, 0, 0, 0);
     } else {
-        ret = LGWheelsGetPeriodic(this)->UpdateForce(channel, 3, type, static_cast<unsigned long>(-1), 0, magnitude, 90, period, 0, 0, 0, 0, 0, 0);
+        OSReport(kPlayForceError, channel);
     }
-
-    if (ret >= 0) {
-        LGWheelsGetSurfaceEffectParams(this)[channel].type = type;
-        LGWheelsGetSurfaceEffectParams(this)[channel].magnitude = magnitude;
-        LGWheelsGetSurfaceEffectParams(this)[channel].period = period;
-    }
-
-    LGWheelsGetPeriodic(this)->Start(channel, 3);
 }
 
 void LGWheels::StopSurfaceEffect(long channel) {
@@ -760,39 +752,38 @@ bool LGWheels::SameSurfaceEffectParams(long channel, unsigned char type, unsigne
 }
 
 void LGWheels::PlayCarAirborne(long channel) {
-    if (!LGWheelsGetWheels(this)->IsConnected(channel)) {
+    if (LGWheelsGetWheels(this)->IsConnected(channel)) {
+        LGWheelsGetIsAirborne(this, channel) = 1;
+        if (IsPlaying(channel, 0)) {
+            StopSpringForce(channel);
+            LGWheelsGetWasPlayingBeforeAirborne(this, channel, 0) = 1;
+        }
+        if (IsPlaying(channel, 1)) {
+            StopConstantForce(channel);
+            LGWheelsGetWasPlayingBeforeAirborne(this, channel, 1) = 1;
+        }
+        if (IsPlaying(channel, 2)) {
+            StopDamperForce(channel);
+            LGWheelsGetWasPlayingBeforeAirborne(this, channel, 2) = 1;
+        }
+        if (IsPlaying(channel, 5)) {
+            StopDirtRoadEffect(channel);
+            LGWheelsGetWasPlayingBeforeAirborne(this, channel, 5) = 1;
+        }
+        if (IsPlaying(channel, 6)) {
+            StopBumpyRoadEffect(channel);
+            LGWheelsGetWasPlayingBeforeAirborne(this, channel, 6) = 1;
+        }
+        if (IsPlaying(channel, 7)) {
+            StopSlipperyRoadEffect(channel);
+            LGWheelsGetWasPlayingBeforeAirborne(this, channel, 7) = 1;
+        }
+        if (IsPlaying(channel, 8)) {
+            StopSurfaceEffect(channel);
+            LGWheelsGetWasPlayingBeforeAirborne(this, channel, 8) = 1;
+        }
+    } else {
         OSReport(kPlayForceError, channel);
-        return;
-    }
-
-    LGWheelsGetIsAirborne(this, channel) = 1;
-    if (IsPlaying(channel, 0)) {
-        StopSpringForce(channel);
-        LGWheelsGetWasPlayingBeforeAirborne(this, channel, 0) = 1;
-    }
-    if (IsPlaying(channel, 1)) {
-        StopConstantForce(channel);
-        LGWheelsGetWasPlayingBeforeAirborne(this, channel, 1) = 1;
-    }
-    if (IsPlaying(channel, 2)) {
-        StopDamperForce(channel);
-        LGWheelsGetWasPlayingBeforeAirborne(this, channel, 2) = 1;
-    }
-    if (IsPlaying(channel, 5)) {
-        StopDirtRoadEffect(channel);
-        LGWheelsGetWasPlayingBeforeAirborne(this, channel, 5) = 1;
-    }
-    if (IsPlaying(channel, 6)) {
-        StopBumpyRoadEffect(channel);
-        LGWheelsGetWasPlayingBeforeAirborne(this, channel, 6) = 1;
-    }
-    if (IsPlaying(channel, 7)) {
-        StopSlipperyRoadEffect(channel);
-        LGWheelsGetWasPlayingBeforeAirborne(this, channel, 7) = 1;
-    }
-    if (IsPlaying(channel, 8)) {
-        StopSurfaceEffect(channel);
-        LGWheelsGetWasPlayingBeforeAirborne(this, channel, 8) = 1;
     }
 }
 

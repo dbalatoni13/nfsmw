@@ -28,6 +28,7 @@ from _common import (
 
 root_dir = ROOT_DIR
 OBJDIFF_CLI = os.path.join(root_dir, "build", "tools", "objdiff-cli")
+RELOC_DIFF_CHOICES = ["none", "all"]
 
 
 def run_objdiff(
