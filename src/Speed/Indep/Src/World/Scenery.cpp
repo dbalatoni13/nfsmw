@@ -374,13 +374,14 @@ int LoaderSceneryGroup(bChunk *chunk) {
 }
 
 int UnloaderSceneryGroup(bChunk *chunk) {
-    int chunk_id = chunk->GetID();
-    if (chunk_id == 0x34109) {
+    if (chunk->GetID() == 0x34109) {
         bMemSet(SceneryGroupEnabledTable, 0, 0x1000);
         SceneryGroupEnabledTable[0] = 1;
         SceneryGroupList.InitList();
+        return 1;
     }
-    return chunk_id == 0x34109;
+
+    return 0;
 }
 
 void *FindSceneryGroup(unsigned int name_hash) {
