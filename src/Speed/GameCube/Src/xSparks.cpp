@@ -203,8 +203,9 @@ TextureInfo *GetTextureInfo(unsigned int name_hash, int allow_default, int force
 CGEmitter::CGEmitter(const Attrib::Collection *spec, const XenonEffectDef &eDef)
     : mEmitterDef(spec, 0, nullptr) //
     , mTextureUVs(mEmitterDef.emitteruv(), 0, nullptr) //
-    , mVel(eDef.vel) //
-    , mLocalWorld(eDef.mat) {}
+    , mLocalWorld(eDef.mat) {
+    mVel = eDef.vel;
+}
 
 CGEmitter::~CGEmitter() {}
 
@@ -264,14 +265,14 @@ void CGEmitter::SpawnParticles(float dt, float intensity) {
                     length_clamped = length_start;
                 }
 
-                volume_extent.x = 1.0f - (mEmitterDef.VolumeExtent().x - bRandom(mEmitterDef.VolumeExtent().x, &seed) * 2.0f);
-                volume_extent.y = 1.0f - (mEmitterDef.VolumeExtent().y - bRandom(mEmitterDef.VolumeExtent().y, &seed) * 2.0f);
-                volume_extent.z = 1.0f - (mEmitterDef.VolumeExtent().z - bRandom(mEmitterDef.VolumeExtent().z, &seed) * 2.0f);
+                volume_extent.x = 1.0f - (mEmitterDef.VelocityDelta().x - bRandom(mEmitterDef.VelocityDelta().x, &seed) * 2.0f);
+                volume_extent.y = 1.0f - (mEmitterDef.VelocityDelta().y - bRandom(mEmitterDef.VelocityDelta().y, &seed) * 2.0f);
+                volume_extent.z = 1.0f - (mEmitterDef.VelocityDelta().z - bRandom(mEmitterDef.VelocityDelta().z, &seed) * 2.0f);
                 volume_extent.w = 1.0f;
 
-                spawn_point.x = mEmitterDef.VolumeCenter().x + (bRandom(mEmitterDef.VolumeCenter().x, &seed) - mEmitterDef.VolumeCenter().x * 0.5f);
-                spawn_point.y = mEmitterDef.VolumeCenter().y + (bRandom(mEmitterDef.VolumeCenter().y, &seed) - mEmitterDef.VolumeCenter().y * 0.5f);
-                spawn_point.z = mEmitterDef.VolumeCenter().z + (bRandom(mEmitterDef.VolumeCenter().z, &seed) - mEmitterDef.VolumeCenter().z * 0.5f);
+                spawn_point.x = mEmitterDef.VolumeCenter().x + (bRandom(mEmitterDef.VolumeExtent().x, &seed) - mEmitterDef.VolumeExtent().x * 0.5f);
+                spawn_point.y = mEmitterDef.VolumeCenter().y + (bRandom(mEmitterDef.VolumeExtent().y, &seed) - mEmitterDef.VolumeExtent().y * 0.5f);
+                spawn_point.z = mEmitterDef.VolumeCenter().z + (bRandom(mEmitterDef.VolumeExtent().z, &seed) - mEmitterDef.VolumeExtent().z * 0.5f);
                 spawn_point.w = 1.0f;
 
                 UMath::RotateTranslate(spawn_point, local_world, world_spawn_point);
@@ -336,28 +337,22 @@ void ParticleList::AgeParticles(float dt) {
 }
 
 void ParticleList::GeneratePolys() {
-    NGParticle *particle = mParticles;
-
     if (mNumParticles != 0) {
         if (!mContrail_tex) {
             mContrail_tex = GetTextureInfo(bStringHash("PS2_CONTRAIL"), 0, 0);
             mSparks_tex = GetTextureInfo(bStringHash("PS2_SPARKS"), 0, 0);
         }
 
-        {
-            unsigned int i = 0;
+        NGParticle *particle = mParticles;
+        for (unsigned int i = 0; i < mNumParticles; i++) {
+            if (particle->uv[0] == 0x7f) {
+                mCurrentTexture = mContrail_tex;
+            } else {
+                mCurrentTexture = mSparks_tex;
+            }
 
-            do {
-                if (particle->uv[0] == 0x7f) {
-                    mCurrentTexture = mContrail_tex;
-                } else {
-                    mCurrentTexture = mSparks_tex;
-                }
-
-                i++;
-                NGSpriteManager.AddSpark(*particle, mCurrentTexture);
-                particle++;
-            } while (i < mNumParticles);
+            NGSpriteManager.AddSpark(*particle, mCurrentTexture);
+            particle++;
         }
     }
 }
@@ -395,24 +390,26 @@ void AddXenonEffect(EmitterGroup *piggyback_fx, const Attrib::Collection *spec, 
 }
 
 void UpdateXenonEmitters(float dt) {
+    XenonEffectDef staged_effect;
+
     gParticleList.AgeParticles(dt);
 
     XenonEffectDef *effect = gNGEffectList.lists[XenonEffectLists::ACTIVE].start;
     while (effect != gNGEffectList.lists[XenonEffectLists::ACTIVE].finish) {
-        XenonEffectDef staged_effect = *effect;
+        staged_effect = *effect;
         gNGEffectList.lists[XenonEffectLists::STAGING].push_back(staged_effect);
         ++effect;
     }
 
-    gNGEffectList.lists[XenonEffectLists::ACTIVE].finish = gNGEffectList.lists[XenonEffectLists::ACTIVE].start;
+    gNGEffectList.lists[XenonEffectLists::ACTIVE].clear();
 
     effect = gNGEffectList.lists[XenonEffectLists::STAGING].start;
     while (effect != gNGEffectList.lists[XenonEffectLists::STAGING].finish) {
-        XenonEffectDef staged_effect = *effect;
+        staged_effect = *effect;
         NGEffect ng_effect(staged_effect);
         ++effect;
     }
 
-    gNGEffectList.lists[XenonEffectLists::STAGING].finish = gNGEffectList.lists[XenonEffectLists::STAGING].start;
+    gNGEffectList.lists[XenonEffectLists::STAGING].clear();
     gParticleList.GeneratePolys();
 }
