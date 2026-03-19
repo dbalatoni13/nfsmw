@@ -329,7 +329,7 @@ void DVDErrorTask(void *, int) {
                 softwareResetCheckStarted = 1;
             } else {
                 u32 currentTick = OSGetTick();
-                u32 ticksPerMs = *(volatile u32 *)0x800000F8 / 4000;
+                u32 ticksPerMs = OS_BUS_CLOCK / 4000;
                 u32 elapsed = currentTick - softwareResetStartTick;
                 u32 msElapsed = elapsed / ticksPerMs;
                 if (msElapsed > 500) {
