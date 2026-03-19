@@ -3989,17 +3989,12 @@ void GRaceStatus::DetermineRaceLength() {
     UMath::Vector4 positions[18];
     UMath::Vector4 directions[18];
     int numCheckpoints;
-    int numPathPoints;
     float totalDistance;
     bool raceLoops;
     int numSegmentLengths;
     int j;
     WRoadNetwork &rn = WRoadNetwork::Get();
     GRaceParameters *race_parameters = mRaceParms;
-    WRoadNav nav;
-    const bool force_centre_lane = true;
-    const float direction_weight = 1.0f;
-    int numSpeedTraps;
 
     nSpeedTraps = 0;
     fSubsequentLapLength = 0.0f;
@@ -4015,7 +4010,6 @@ void GRaceStatus::DetermineRaceLength() {
 
     rn.SetRaceFilterValid(true);
     numCheckpoints = race_parameters->GetNumCheckpoints();
-    numPathPoints = numCheckpoints + 2;
     race_parameters->GetStartPosition(UMath::Vector4To3(positions[0]));
     positions[0].w = 0.0f;
     race_parameters->GetStartDirection(UMath::Vector4To3(directions[0]));
@@ -4034,10 +4028,9 @@ void GRaceStatus::DetermineRaceLength() {
 
     raceLoops = race_parameters->GetIsLoopingRace();
     totalDistance = 0.0f;
-    if (!raceLoops) {
-        numSegmentLengths = numPathPoints - 1;
-    } else {
-        numSegmentLengths = numPathPoints;
+    numSegmentLengths = numCheckpoints + 1;
+    if (raceLoops) {
+        numSegmentLengths = numCheckpoints + 2;
     }
 
     for (j = 0; j < numSegmentLengths; ++j) {
@@ -4055,27 +4048,29 @@ void GRaceStatus::DetermineRaceLength() {
         fRaceLength = fSubsequentLapLength * static_cast<float>(race_parameters->GetNumLaps() - 1) + fFirstLapLength;
     }
 
-    nav.SetPathType(WRoadNav::kPathRaceRoute);
-    nav.SetNavType(WRoadNav::kTypeDirection);
-    nav.SetDecisionFilter(true);
-    nav.InitAtPoint(UMath::Vector4To3(positions[numCheckpoints + 1]), UMath::Vector4To3(directions[numCheckpoints + 1]), force_centre_lane, direction_weight);
-    if (nav.IsValid()) {
-        for (int i = 0; i < 100; ++i) {
-            int segmentNumber;
-            WRoadSegment *segment;
+    {
+        WRoadNav nav;
 
-            nav.IncNavPosition(1.0f, UMath::Vector3::kZero, 0.0f);
-            segmentNumber = nav.GetSegmentInd();
-            segment = rn.GetSegmentNonConst(segmentNumber);
-            segment->SetInRace(true);
-            segment->SetRaceRouteForward(nav.GetNodeInd() == 1);
+        nav.SetPathType(WRoadNav::kPathRaceRoute);
+        nav.InitAtPoint(UMath::Vector4To3(positions[numCheckpoints + 1]), UMath::Vector4To3(directions[numCheckpoints + 1]), true, 1.0f);
+        if (nav.IsValid()) {
+            for (int i = 0; i < 100; ++i) {
+                int segmentNumber;
+                WRoadSegment *segment;
+
+                nav.IncNavPosition(1.0f, UMath::Vector3::kZero, 0.0f);
+                segmentNumber = nav.GetSegmentInd();
+                segment = rn.GetSegmentNonConst(segmentNumber);
+                segment->SetInRace(true);
+                segment->SetRaceRouteForward(nav.GetNodeInd() == 1);
+            }
         }
     }
 
     {
         GObjectIterator<GTrigger> iter(0x100);
+        int numSpeedTraps = 0;
 
-        numSpeedTraps = 0;
         while (iter.IsValid()) {
             GTrigger *trigger = iter.GetInstance();
 
