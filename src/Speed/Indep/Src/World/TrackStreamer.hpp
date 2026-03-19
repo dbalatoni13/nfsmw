@@ -236,7 +236,7 @@ class TrackStreamer {
     void InitMemoryPool(int size);
     void InitRegion(const char *region_stream_filename, bool split_screen);
     void StartLoadingSections();
-    int HandleMemoryAllocation();
+    bool HandleMemoryAllocation();
     TrackStreamingSection *ChooseSectionToJettison();
     void FinishedLoading();
     void UnJettisonSections();

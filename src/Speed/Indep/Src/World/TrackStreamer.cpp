@@ -1730,70 +1730,110 @@ void TrackStreamer::UnJettisonSections() {
     AmountJettisoned = 0;
 }
 
-int TrackStreamer::HandleMemoryAllocation() {
-    int amount_unloaded = 0;
-    int amount_moved = 0;
-    int total_out_of_memory;
-    int total_needing_allocation[2];
-    int amount;
+bool TrackStreamer::HandleMemoryAllocation() {
+    int out_of_memory_size;
+    int total_amount_unloaded = 0;
+    int total_amount_hole_filled = 0;
 
-    do {
-        amount = UnloadLeastRecentlyUsedSection();
-    } while (amount != 0);
+    {
+        int total_needing_allocation;
+        int amount_unloaded;
 
-    NumSectionsOutOfMemory = 0;
+        do {
+            amount_unloaded = UnloadLeastRecentlyUsedSection();
+        } while (amount_unloaded != 0);
 
-    do {
+        NumSectionsMoved = 0;
+
         do {
             do {
                 FreeSectionMemory();
-                total_out_of_memory = AllocateSectionMemory(total_needing_allocation);
-                if (total_out_of_memory == 0) {
+                out_of_memory_size = AllocateSectionMemory(&total_needing_allocation);
+                if (out_of_memory_size == 0) {
                     goto done;
                 }
-                if (amount_unloaded > 0x7FFFFFFF || amount_moved > 0x200000) {
-                    return 0;
+                if (total_amount_unloaded > 0x7FFFFFFF || total_amount_hole_filled > 0x200000) {
+                    return false;
                 }
-                if (NumSectionsOutOfMemory > 15) {
-                    return 0;
+                if (NumSectionsMoved > 15) {
+                    return false;
                 }
 
                 FreeSectionMemory();
-                amount = UnloadLeastRecentlyUsedSection();
-                amount_unloaded += amount;
-            } while (amount > 0);
+                amount_unloaded = UnloadLeastRecentlyUsedSection();
+                total_amount_unloaded += amount_unloaded;
+            } while (amount_unloaded > 0);
 
-            while (bCountFreeMemory(7) < total_needing_allocation[0] + 0x4000) {
-                CurrentZoneOutOfMemory = true;
-                if (!JettisonLeastImportantSection()) {
-                    break;
+            {
+                int amount_hole_filled;
+
+                while (bCountFreeMemory(7) < total_needing_allocation + 0x4000) {
+                    CurrentZoneOutOfMemory = true;
+                    if (!JettisonLeastImportantSection()) {
+                        break;
+                    }
+                    AllocateSectionMemory(&total_needing_allocation);
+                    FreeSectionMemory();
                 }
-                AllocateSectionMemory(total_needing_allocation);
-                FreeSectionMemory();
+
+                amount_hole_filled = DoHoleFilling(0);
+                total_amount_hole_filled += amount_hole_filled;
+                if (amount_hole_filled != 0) {
+                    continue;
+                }
             }
 
-            amount = DoHoleFilling(0);
-            amount_moved += amount;
-        } while (amount != 0);
+            CurrentZoneOutOfMemory = true;
+        } while (JettisonLeastImportantSection());
 
-        CurrentZoneOutOfMemory = true;
-    } while (JettisonLeastImportantSection());
-
-    total_out_of_memory = AllocateSectionMemory(total_needing_allocation);
+        out_of_memory_size = AllocateSectionMemory(&total_needing_allocation);
+    }
 
 done:
     MemorySafetyMargin = 0;
 
-    int memory_safety_margin = bCountFreeMemory(7) - (total_out_of_memory + AmountJettisoned);
-    for (int i = 0; i < NumTrackStreamingSections; i++) {
-        TrackStreamingSection *section = &pTrackStreamingSections[i];
-        if (!section->CurrentlyVisible && section->Status != TrackStreamingSection::UNLOADED) {
-            memory_safety_margin += section->PermSize;
+    {
+        int free_memory = bCountFreeMemory(7) - (out_of_memory_size + AmountJettisoned);
+        {
+            int n = 0;
+
+            if (NumTrackStreamingSections > 0) {
+                do {
+                    TrackStreamingSection *section = &pTrackStreamingSections[n];
+                    if (!section->CurrentlyVisible && section->Status != TrackStreamingSection::UNLOADED) {
+                        free_memory += section->PermSize;
+                    }
+                    n += 1;
+                } while (n < NumTrackStreamingSections);
+            }
+        }
+        MemorySafetyMargin = free_memory;
+    }
+
+    if (out_of_memory_size + AmountJettisoned != 0) {
+        {
+            int n = 0;
+
+            if (NumJettisonedSections > 0) {
+                do {
+                    n += 1;
+                } while (n < NumJettisonedSections);
+            }
+        }
+
+        if (LoadingPhase == LOADING_REGULAR_SECTIONS) {
+            int i = 0;
+
+            if (NumCurrentStreamingSections > 0) {
+                do {
+                    TrackStreamingSection *section;
+                    i += 1;
+                } while (i < NumCurrentStreamingSections);
+            }
         }
     }
-    MemorySafetyMargin = memory_safety_margin;
 
-    return 1;
+    return true;
 }
 
 void TrackStreamer::StartLoadingSections() {
