@@ -136,59 +136,56 @@ SkidSet::~SkidSet() {
 int SkidSet::AddSegment(bVector3 *position, bVector3 *delta_position, bool skid_is_flaming, float intensity) {
     (void)skid_is_flaming;
 
-    float segment_length = 0.0f;
-    bVector3 direction;
+    bVector3 new_segment_normal;
+    bVector3 new_segment_forward;
+    float length = 0.0f;
+    int expand_last_skid_segment = 0;
     if (NumSkidSegments > 0) {
-        bVector3 last_position;
-        bVector3 last_delta_position;
-        SkidSegments[NumSkidSegments - 1].GetPoints(&last_position, &last_delta_position);
-
-        direction.x = position->x - last_position.x;
-        direction.y = position->y - last_position.y;
-        direction.z = position->z - last_position.z;
-        segment_length = bSqrt(direction.x * direction.x + direction.y * direction.y + direction.z * direction.z);
-        bNormalize(&direction, &direction);
+        new_segment_normal = *position - *SkidSegments[NumSkidSegments - 1].GetPosition();
+        new_segment_forward = new_segment_normal;
+        length = bLength(&new_segment_forward);
+        bNormalize(&new_segment_forward, &new_segment_forward);
     }
 
-    bool extend_last_segment = false;
     if (NumSkidSegments > 1) {
-        float normal_delta =
-            1.0f - (direction.x * LastNormal.x + direction.y * LastNormal.y + direction.z * LastNormal.z);
-        float total_length = LastSegmentLength + segment_length;
-        if (normal_delta > kSkidDirectionBreakThreshold_Skids) {
+        float error = 1.0f - bDot(&new_segment_forward, &LastNormal);
+        float new_segment_length = LastSegmentLength + length;
+        if (error > kSkidDirectionBreakThreshold_Skids) {
             FinishedAddingSkids();
             return 0;
         }
 
-        extend_last_segment = normal_delta < kSkidDirectionMergeThreshold_Skids || total_length < kSkidLengthMergeThreshold_Skids;
-        if (total_length > kSkidLengthSplitThreshold_Skids) {
-            extend_last_segment = false;
+        if (error < kSkidDirectionMergeThreshold_Skids || new_segment_length < kSkidLengthMergeThreshold_Skids) {
+            expand_last_skid_segment = 1;
+        }
+        if (new_segment_length > kSkidLengthSplitThreshold_Skids) {
+            expand_last_skid_segment = 0;
         }
     }
 
-    SkidSegment *segment = 0;
-    if (extend_last_segment) {
-        segment = &SkidSegments[NumSkidSegments - 1];
-        LastSegmentLength += segment_length;
+    SkidSegment *skid_segment;
+    if (expand_last_skid_segment) {
+        skid_segment = &SkidSegments[NumSkidSegments - 1];
+        LastSegmentLength += length;
     } else {
         if (NumSkidSegments == kNumSkidSegments_Skids) {
             return 1;
         }
 
-        segment = &SkidSegments[NumSkidSegments];
+        skid_segment = &SkidSegments[NumSkidSegments];
         NumSkidSegments += 1;
         if (NumSkidSegments > 1) {
-            LastNormal = direction;
+            LastNormal = new_segment_forward;
         }
-        LastSegmentLength = segment_length;
+        LastSegmentLength = length;
     }
 
-    segment->SetPoints(position, delta_position);
-    segment->Intensity = static_cast<unsigned char>(intensity * kSkidIntensityScale_Skids);
+    skid_segment->SetPoints(position, delta_position);
+    skid_segment->SetIntensity(static_cast<unsigned char>(intensity * kSkidIntensityScale_Skids));
 
-    bExpandBoundingBox(&BBoxMin, &BBoxMax, position, segment_length);
+    bExpandBoundingBox(&BBoxMin, &BBoxMax, position, length);
     if (pClan) {
-        bExpandBoundingBox(&pClan->BBoxMin, &pClan->BBoxMax, &BBoxMin, &BBoxMax);
+        pClan->ExpandBoundingBox(&BBoxMin, &BBoxMax);
     }
 
     BBoxCentre.x = (BBoxMin.x + BBoxMax.x) * 0.5f;

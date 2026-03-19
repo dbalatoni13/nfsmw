@@ -24,8 +24,14 @@ struct SkidSegment {
     void SetPoints(bVector3 *position, bVector3 *delta_position);
     void GetPoints(bVector3 *position, bVector3 *delta_position);
     void GetEndPoints(bVector3 *left_point, bVector3 *right_point);
+    bVector3 *GetPosition() {
+        return reinterpret_cast<bVector3 *>(Position);
+    }
     unsigned char GetIntensity() {
         return Intensity;
+    }
+    void SetIntensity(unsigned char intensity) {
+        Intensity = intensity;
     }
 };
 

@@ -11,6 +11,8 @@
 struct SkidSet;
 struct eView;
 
+void bExpandBoundingBox(bVector3 *bbox_min, bVector3 *bbox_max, const bVector3 *bbox2_min, const bVector3 *bbox2_max);
+
 struct Clan : public bTNode<Clan> {
     // total size: 0x48
     bPList<SkidSet> SkidSetList; // offset 0x8, size 0x8
@@ -25,6 +27,9 @@ struct Clan : public bTNode<Clan> {
 
     Clan(bVector3 *position, unsigned int hash);
     ~Clan();
+    void ExpandBoundingBox(bVector3 *bbox_min, bVector3 *bbox_max) {
+        bExpandBoundingBox(&BBoxMin, &BBoxMax, bbox_min, bbox_max);
+    }
 };
 
 void InitClans();
