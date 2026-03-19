@@ -136,6 +136,12 @@ struct PrecullerBooBooManager {
         unsigned char *p = GetByte(n);
         *p &= -GetBit(n) - 1U;
     }
+
+    bool IsSet(bVector3 &pos) {
+        int n = GetSectionNumber(pos);
+        unsigned char *p = GetByte(n);
+        return (*p & GetBit(n)) != 0;
+    }
 };
 
 class eViewSceneryRenderShim : public eView {
@@ -1239,10 +1245,7 @@ void GrandSceneryCullInfo::DoCulling() {
 
         scenery_cull_info->PrecullerSectionNumber = -1;
         if (do_precull) {
-            int section_number = gPrecullerBooBooManager.GetSectionNumber(scenery_cull_info->Position);
-            unsigned char *section_byte = gPrecullerBooBooManager.GetByte(section_number);
-            unsigned char section_bit = gPrecullerBooBooManager.GetBit(section_number);
-            if (section_byte && (*section_byte & section_bit) == 0) {
+            if (!gPrecullerBooBooManager.IsSet(scenery_cull_info->Position)) {
                 scenery_cull_info->PrecullerSectionNumber =
                     GetPrecullerSectionNumber(scenery_cull_info->Position.x, scenery_cull_info->Position.y);
             }
