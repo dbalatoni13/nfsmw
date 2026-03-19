@@ -263,6 +263,7 @@ void *TSMemoryPool::Malloc(int size, const char *debug_name, bool best_fit, bool
     new_top_size = found_node->Address + found_node->Size - (address + size);
     found_node->Size = new_bottom_size;
     if (new_bottom_size == 0) {
+        found_node->Remove();
         RemoveNode(found_node);
     }
 
