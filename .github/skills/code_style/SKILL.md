@@ -19,6 +19,15 @@ In this repo, style cleanup must preserve decomp progress.
 - If a style tweak changes codegen or match status, revert it.
 - Extend this skill only from patterns you actually verified in the repo.
 
+### Authenticity Over Hacks
+
+A 100% match is the goal, but **how** we get there matters just as much.
+
+- Do not use "any means necessary" to force a match if it results in unreadable or unnatural code.
+- Always think about what the original code probably looked like and write it that way.
+- Even if a function matches 100% binary-wise, it is not "correct" if the source is unreadable or contains logic that no human developer would have written.
+- If you find a stubborn mismatch, look for a more natural C++ expression or a different architectural pattern instead of resorting to opaque hacks.
+
 ## Quick Tooling
 
 Use the repo-local helper before doing a style pass:
