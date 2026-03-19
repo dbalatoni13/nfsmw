@@ -64,7 +64,7 @@ GRuntimeInstance *GRuntimeInstance::GetConnectedInstance(const Attrib::Key &key,
     int upper = mNumConnected - 1;
 
     while (lower <= upper) {
-        int middle = (lower + upper) / 2;
+        int middle = (lower + upper) >> 1;
         ConnectedInstance &connected = mConnected[middle];
 
         if (targetKey > connected.mIndexedKey) {
@@ -235,7 +235,13 @@ template GCharacter *GRuntimeInstance::FindObject<GCharacter>(unsigned int key);
 template GMarker *GRuntimeInstance::FindObject<GMarker>(unsigned int key);
 template GTrigger *GRuntimeInstance::FindObject<GTrigger>(unsigned int key);
 
-GCollectionKey::GCollectionKey(GRuntimeInstance *inst) : mCollectionKey(inst->GetCollection()) {}
+GCollectionKey::GCollectionKey(GRuntimeInstance *inst) {
+    if (inst) {
+        mCollectionKey = inst->GetCollection();
+    } else {
+        mCollectionKey = 0;
+    }
+}
 
 GCollectionKey::operator GRuntimeInstance *() const {
     return GManager::Get().FindInstance(mCollectionKey);
