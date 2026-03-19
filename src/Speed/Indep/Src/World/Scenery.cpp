@@ -215,8 +215,8 @@ SceneryDrawInfo GrandSceneryCullInfo::SceneryDrawInfoTable[3500];
 extern unsigned char SceneryGroupEnabledTable[0x1000];
 
 inline int PrecullerBooBooManager::GetSectionNumber(bVector3 &position) {
-    return ((static_cast<unsigned int>(static_cast<int>(position.x)) >> 5) & 0x7F) |
-           ((static_cast<int>(position.y) & 0xFE0) << 2);
+    int x_section = (static_cast<unsigned int>(static_cast<int>(position.x)) >> 5) & 0x7F;
+    return ((static_cast<int>(position.y) & 0xFE0) << 2) | x_section;
 }
 
 static inline int GetPrecullerSectionNumber(float x, float y) {
