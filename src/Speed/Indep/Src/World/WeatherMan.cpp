@@ -229,6 +229,7 @@ GenericRegion *GetClosestRegionInView(eView *view, bVector3 *endVector, float *a
     bVector3 cDir(*view->GetCamera()->GetDirection());
     bTList<GenericRegion> *region_list = &RegionLists[REGION_BLOOM];
     region_list->Sort(DepthRegion);
+    bVector3 posScreen;
 
     CameraMover *cameraMover = view->GetCameraMover();
     if (!cameraMover) {
@@ -241,19 +242,19 @@ GenericRegion *GetClosestRegionInView(eView *view, bVector3 *endVector, float *a
     }
 
     bVector3 MyCarPos(*cameraAnchor->GetGeometryPosition());
-    GenericRegion *ClosestRegion = 0;
     float maxDist = 99999.0f;
+    float angleCOS;
+    GenericRegion *ClosestRegion = 0;
 
     for (GenericRegion *region = region_list->GetHead(); region != region_list->EndOfList(); region = region->GetNext()) {
-        float angleCOS;
         bVector3 Position(region->PositionX, region->PositionY, region->PositionZ);
         bVector3 Delta = Position - cPos;
         bVector3 Delta2(Delta);
-        bNormalize(&Delta, &Delta2);
+        bNormalize(&Delta2, &Delta);
 
-        angleCOS = bDot(Delta, cDir);
+        angleCOS = bDot(Delta2, cDir);
         if (0.0f < angleCOS) {
-            float dist = bLength(Delta2);
+            float dist = bLength(Delta);
             if (dist < maxDist) {
                 *angleCos = angleCOS;
                 ClosestRegion = region;
