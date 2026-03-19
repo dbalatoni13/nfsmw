@@ -1085,11 +1085,7 @@ int TrackStreamer::DoHoleFilling(int largest_free) {
         unsigned int start_ticks = bGetTicker();
         void *new_memory = reinterpret_cast<void *>(movement->NewAddress);
         pMemoryPool->Free(reinterpret_cast<void *>(movement->Address));
-        const char *move_debug_name = "HoleMovement";
-        if (section) {
-            move_debug_name = section->SectionName;
-        }
-        pMemoryPool->Malloc(movement->Size, move_debug_name, false, false, reinterpret_cast<int>(new_memory));
+        pMemoryPool->Malloc(movement->Size, section ? section->SectionName : 0, false, false, reinterpret_cast<int>(new_memory));
         if (section) {
             if (section->Status == TrackStreamingSection::ACTIVATED) {
                 eAllowDuplicateSolids(true);
