@@ -4,8 +4,10 @@
 #include "Speed/Indep/Src/Camera/Camera.hpp"
 #include "Speed/Indep/Src/Camera/CameraMover.hpp"
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
+#include "Speed/Indep/Src/Ecstasy/EcstasyE.hpp"
 #include "Speed/Indep/Src/Misc/GameFlow.hpp"
 #include "Speed/Indep/Src/World/TrackPath.hpp"
+#include "Speed/Indep/Src/World/Rain.hpp"
 #include "Speed/Indep/Src/World/WCollisionMgr.h"
 #include "Speed/Indep/Src/World/WWorldPos.h"
 #include "Speed/Indep/Src/World/WeatherMan.hpp"
@@ -430,13 +432,33 @@ void DoTunnelBloom(eView *view) {
 }
 
 void DoTinting(eView *view) {
-    if (!view || !view->ScreenEffects) {
+    ScreenEffectDef SE_def;
+    unsigned int r;
+    unsigned int g;
+    unsigned int b;
+    float intense;
+
+    if (IsRainDisabled()) {
         return;
     }
 
-    ScreenEffectDef *tint = &view->ScreenEffects->SE_data[SE_TINT];
-    if (tint->intensity > 0.0f) {
-        tint->a = tint->intensity;
+    if (view->Precipitation) {
+        intense = view->Precipitation->GetCloudIntensity();
+    } else {
+        intense = 0.0f;
+    }
+
+    if (0.0f < intense) {
+        if (view->Precipitation) {
+            view->Precipitation->GetPrecipFogColour(&r, &g, &b);
+        }
+        SE_def.r = static_cast<float>(r);
+        SE_def.g = static_cast<float>(g);
+        SE_def.a = 128.0f;
+        SE_def.UpdateFnc = 0;
+        SE_def.intensity = intense;
+        SE_def.b = static_cast<float>(b);
+        view->ScreenEffects->AddScreenEffect(SE_TINT, &SE_def, 1, SEC_FRAME);
     }
 }
 

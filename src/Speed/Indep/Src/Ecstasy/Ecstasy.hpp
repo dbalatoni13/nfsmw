@@ -303,13 +303,11 @@ struct Rain {
 
     float GetRainIntensity() {}
 
-    float GetCloudIntensity() {
-        return this->CloudIntensity;
-    }
+    float GetCloudIntensity();
 
     float GetRoadDampness() {}
 
-    void GetPrecipFogColour(unsigned int *r, unsigned int *g, unsigned int *b) {}
+    void GetPrecipFogColour(unsigned int *r, unsigned int *g, unsigned int *b);
 
     void SetPrecipFogColour(unsigned int r, unsigned int g, unsigned int b) {}
 
