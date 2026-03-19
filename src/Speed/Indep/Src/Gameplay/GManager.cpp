@@ -7,6 +7,7 @@
 #include "Speed/Indep/Src/Generated/Events/EFadeScreenOff.hpp"
 #include "Speed/Indep/Src/Generated/Events/EFadeScreenOn.hpp"
 #include "Speed/Indep/Src/Generated/Messages/MEnteringGameplay.h"
+#include "Speed/Indep/Src/Generated/Messages/MNotifyMilestoneProgress.h"
 #include "Speed/Indep/Src/Gameplay/GMarker.h"
 #include "Speed/Indep/Src/Gameplay/GVault.h"
 #include "Speed/Indep/Src/Interfaces/SimActivities/ICopMgr.h"
@@ -1057,35 +1058,38 @@ void GManager::ConnectChildren(GRuntimeInstance *runtimeInstance) {
 }
 
 void GManager::TrackValue(const char *valueName, float value) {
-    unsigned int valueKey;
-    MilestoneInfoMap::iterator it;
-    bool updateBest;
+    unsigned int key;
+    MilestoneInfoMap::iterator iterMile;
+    bool setBestValue;
 
-    valueKey = Attrib::StringToKey(valueName);
-    it = mMilestoneTypeInfo.find(valueKey);
-    if (it == mMilestoneTypeInfo.end()) {
-        MilestoneTypeInfo info;
+    key = Attrib::StringToKey(valueName);
+    iterMile = mMilestoneTypeInfo.find(key);
+    MilestoneTypeInfo &info = iterMile->second;
+    info.mLastKnownValue = value;
+    setBestValue = true;
 
-        info.mTypeKey = valueKey;
-        info.mLastKnownValue = value;
-        info.mBestValue = value;
-        info.mFlags = 0;
-        mMilestoneTypeInfo.insert(MilestoneInfoMap::value_type(valueKey, info));
-        return;
-    }
-
-    it->second.mLastKnownValue = value;
-    updateBest = it->second.mBestValue == -1.0f;
-    if (!updateBest) {
-        if ((it->second.mFlags & GMilestone::kFlag_BiggerIsBetter) != 0) {
-            updateBest = it->second.mBestValue < value;
+    if (info.mBestValue != -1.0f) {
+        if ((info.mFlags & GMilestone::kFlag_BiggerIsBetter) != 0) {
+            setBestValue = info.mBestValue < value;
         } else {
-            updateBest = value < it->second.mBestValue;
+            setBestValue = value < info.mBestValue;
         }
     }
 
-    if (updateBest) {
-        it->second.mBestValue = value;
+    if (setBestValue) {
+        info.mBestValue = value;
+
+        MNotifyMilestoneProgress message(valueName, value);
+        message.Post(UCrc32(0x20D60DBF));
+
+        if (GRaceStatus::Exists() && GRaceStatus::Get().GetPlayMode() == GRaceStatus::kPlayMode_Roaming) {
+            for (GMilestone *availMile = GetFirstMilestone(true, 0); availMile;
+                 availMile = GetNextMilestone(availMile, true, 0)) {
+                if (availMile->GetTypeKey() == info.mTypeKey) {
+                    availMile->NotifyProgress(value);
+                }
+            }
+        }
     }
 }
 
