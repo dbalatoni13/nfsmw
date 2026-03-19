@@ -354,25 +354,35 @@ This is a **C++98** codebase compiled with ProDG GC 3.9.3 (GCC 2.95 under the ho
 
 ## Committing Progress
 
-After each meaningful percentage-point improvement in objdiff match score, commit your changes. Check the current unit match percentage with:
+After each meaningful improvement in objdiff match score or DWARF progress, commit your changes. Check the current unit match percentage with:
 
 ```sh
 python tools/decomp-status.py --unit main/Path/To/TU
 ```
 
-Commit whenever the match percentage increases (e.g. you matched a new function). Use this format for the commit message:
+Commit whenever the match percentage increases or you achieve a milestone (e.g. you matched a new function or improved an existing one). Use this format for the commit message:
 
 ```
-n.n[n]%: short description of what was matched or changed
+n.n[n]%: [action] [Subject]::[Function]
 ```
+
+- **match+**: used when a function or object achieves 100% byte-match status AND 100% DWARF match.
+- **match**: used when a function achieves 100% byte-match status but DWARF is still missing/mismatched.
+- **improve**: used when the instruction match percentage increases.
+- **dwarf match**: used when the normalized DWARF achieves 100% match.
+- **dwarf improve**: used when DWARF issues are resolved but it's not yet 100% DWARF-matched.
 
 Examples:
 
-- `42.1%: match UpdateCamera`
-- `78.56%: match PlayerController constructor and destructor`
+- `42.1%: match+ UpdateCamera`
+- `76.7%: match+ TrackStreamer::HibernateStreamingSections`
+- `76.7%: match TrackStreamer::WillUnloadBlock`
+- `76.5%: dwarf match TrackStreamer::HandleLoading`
+- `76.5%: improve TrackStreamer::LoadSection`
+- `76.5%: dwarf improve TrackStreamer::CountUserAllocations`
 - `100.0%: full match for zAnim`
 
-Do not batch up multiple percentage milestones into one commit — commit as each improvement lands.
+Do not batch up multiple unrelated improvements into one commit — commit as each logical piece of work lands.
 
 ## Parallel Sub-Agent Matching
 
