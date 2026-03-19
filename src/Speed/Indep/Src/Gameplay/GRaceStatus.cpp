@@ -1171,7 +1171,39 @@ float GRaceParameters::GetRaceLengthMeters() const {
 }
 
 int GRaceParameters::GetReputation() const {
-    return 0;
+    if (!mIndex) {
+        const int *reputation;
+
+        EnsureLoaded();
+        reputation = reinterpret_cast<const int *>(mRaceRecord->GetAttributePointer(0x477EC5AA, 0));
+        if (!reputation) {
+            reputation = reinterpret_cast<const int *>(Attrib::DefaultDataArea(sizeof(int)));
+        }
+
+        return *reputation;
+    }
+
+    unsigned short value = *reinterpret_cast<const unsigned short *>(reinterpret_cast<const char *>(mIndex) + 0x24);
+    int exponent = static_cast<int>(static_cast<short>(value)) >> 11;
+    unsigned int scale = 1;
+    float result;
+
+    if (exponent < 0) {
+        exponent = -exponent;
+    }
+
+    while (exponent > 0) {
+        exponent--;
+        scale *= 10;
+    }
+
+    if ((value & 0x8000) == 0) {
+        result = static_cast<float>(static_cast<short>(value << 5) >> 5) * static_cast<float>(scale);
+    } else {
+        result = static_cast<float>(static_cast<short>(value << 5) >> 5) / static_cast<float>(scale);
+    }
+
+    return static_cast<int>(result);
 }
 
 float GRaceParameters::GetCashValue() const {
@@ -2138,19 +2170,23 @@ bool GRaceStatus::CanUnspawnRoamer(const IVehicle *roamer) const {
 }
 
 eVehicleCacheResult GRaceStatus::OnQueryVehicleCache(const IVehicle *removethis, const IVehicleCache *whosasking) const {
-    if (mPlayMode == kPlayMode_Racing || mVehicleCacheLocked) {
-        for (int i = 0; i < GetRacerCount(); ++i) {
-            if (UTL::COM::ComparePtr(mRacerInfo[i].GetSimable(), removethis)) {
-                return VCR_WANT;
+    if (mPlayMode != kPlayMode_Racing && !mVehicleCacheLocked) {
+        if (!UTL::COM::ComparePtr(whosasking, ICopMgr::Get())) {
+            if (!UTL::COM::ComparePtr(whosasking, ITrafficMgr::Get())) {
+                return VCR_DONTCARE;
             }
-        }
-    } else {
-        if (!UTL::COM::ComparePtr(whosasking, ICopMgr::Get()) && !UTL::COM::ComparePtr(whosasking, ITrafficMgr::Get())) {
-            return VCR_DONTCARE;
         }
 
         if (!CanUnspawnRoamer(removethis)) {
             return VCR_WANT;
+        }
+    } else {
+        for (int onRacer = 0; onRacer < GetRacerCount(); ++onRacer) {
+            const GRacerInfo &racerInfo = mRacerInfo[onRacer];
+
+            if (UTL::COM::ComparePtr(racerInfo.GetSimable(), removethis)) {
+                return VCR_WANT;
+            }
         }
     }
 
