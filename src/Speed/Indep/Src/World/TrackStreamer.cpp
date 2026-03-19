@@ -1482,9 +1482,9 @@ void TrackStreamer::FreeSectionMemory() {
         TrackStreamingSection *section = &pTrackStreamingSections[i];
         if (section->Status == TrackStreamingSection::ALLOCATED) {
             bFree(section->pMemory);
-            section->Status = TrackStreamingSection::UNLOADED;
             section->pDiscBundle = 0;
             section->pMemory = 0;
+            section->Status = TrackStreamingSection::UNLOADED;
         }
     }
 }
