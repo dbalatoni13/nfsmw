@@ -2044,9 +2044,9 @@ bool TrackStreamer::CheckLoadingBar() {
         for (int n = 0; n < NumCurrentStreamingSections; n++) {
             TrackStreamingSection *section = CurrentStreamingSections[n];
             VisibleSectionBoundary *boundary = section->pBoundary;
-            bool may_contain_road = false;
 
             if (boundary) {
+                bool may_contain_road = false;
                 if (IsRegularScenerySection(section->SectionNumber)) {
                     if (IsScenerySectionDrivable(section->SectionNumber) ||
                         IsLODScenerySectionNumber(section->SectionNumber)) {
