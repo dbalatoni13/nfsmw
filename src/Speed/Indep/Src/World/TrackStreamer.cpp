@@ -1774,14 +1774,16 @@ bool TrackStreamer::HandleMemoryAllocation() {
 
             {
                 int amount_hole_filled;
+                int threshold = total_needing_allocation + 0x4000;
 
-                while (bCountFreeMemory(7) < total_needing_allocation + 0x4000) {
+                while (bCountFreeMemory(7) < threshold) {
                     CurrentZoneOutOfMemory = true;
                     if (!JettisonLeastImportantSection()) {
                         break;
                     }
                     AllocateSectionMemory(&total_needing_allocation);
                     FreeSectionMemory();
+                    threshold = total_needing_allocation + 0x4000;
                 }
 
                 amount_hole_filled = DoHoleFilling(0);
@@ -1801,7 +1803,8 @@ done:
     MemorySafetyMargin = 0;
 
     {
-        int free_memory = bCountFreeMemory(7) - (out_of_memory_size + AmountJettisoned);
+        int amount_jettisoned = AmountJettisoned;
+        int free_memory = bCountFreeMemory(7) - (out_of_memory_size + amount_jettisoned);
         {
             int n = 0;
 
