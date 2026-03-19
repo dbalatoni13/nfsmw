@@ -1939,26 +1939,23 @@ unsigned int GRaceParameters::GetEventHash() const {
 }
 
 bool GRaceParameters::GetIsAvailable(GRace::Context context) const {
-    unsigned int eventHash;
-
     if (UnlockAllThings) {
         return true;
     }
 
-    eventHash = GetEventHash();
     switch (context) {
     case GRace::kRaceContext_QuickRace:
         return !GetNeverInQuickRace() &&
-               GRaceDatabase::Get().CheckRaceScoreFlags(eventHash, GRaceDatabase::kUnlocked_QuickRace);
+               GRaceDatabase::Get().CheckRaceScoreFlags(GetEventHash(), GRaceDatabase::kUnlocked_QuickRace);
 
     case GRace::kRaceContext_TimeTrial:
-        return GRaceDatabase::Get().CheckRaceScoreFlags(eventHash, GRaceDatabase::kUnlocked_Online);
+        return GRaceDatabase::Get().CheckRaceScoreFlags(GetEventHash(), GRaceDatabase::kUnlocked_Online);
 
     case GRace::kRaceContext_Career:
-        if (!GRaceDatabase::Get().CheckRaceScoreFlags(eventHash, GRaceDatabase::kUnlocked_Career)) {
+        if (!GRaceDatabase::Get().CheckRaceScoreFlags(GetEventHash(), GRaceDatabase::kUnlocked_Career)) {
             return false;
         }
-        return !GRaceDatabase::Get().CheckRaceScoreFlags(eventHash, GRaceDatabase::kCompleted_ContextCareer);
+        return !GRaceDatabase::Get().CheckRaceScoreFlags(GetEventHash(), GRaceDatabase::kCompleted_ContextCareer);
     }
 
     return false;
