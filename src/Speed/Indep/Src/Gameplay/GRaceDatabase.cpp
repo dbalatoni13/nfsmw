@@ -318,7 +318,28 @@ GRaceBin *GRaceDatabase::GetBin(unsigned int index) {
 }
 
 bool GRaceDatabase::CollectionIsRaceActivity(Attrib::Gen::gameplay &collection) {
-    return collection.GetAttributePointer(0xA78403EC, 0) != nullptr;
+    Attrib::Gen::gameplay activity(0xD1E66B67, 0, nullptr);
+    const int *isObject = reinterpret_cast<const int *>(collection.GetAttributePointer(0x3E9156CA, 0));
+
+    if (!isObject) {
+        isObject = reinterpret_cast<const int *>(Attrib::DefaultDataArea(sizeof(int)));
+    }
+
+    if (*isObject == 0) {
+        Attrib::Key parentKey = collection.GetParent();
+
+        while (parentKey != 0) {
+            Attrib::Gen::gameplay parent(parentKey, 0, nullptr);
+
+            if (parent.GetCollection() == activity.GetCollection()) {
+                return true;
+            }
+
+            parentKey = parent.GetParent();
+        }
+    }
+
+    return false;
 }
 
 bool GRaceDatabase::CollectionIsRaceBin(Attrib::Gen::gameplay &collection) {
