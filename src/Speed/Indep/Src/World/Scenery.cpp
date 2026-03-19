@@ -5,6 +5,7 @@
 #include "Speed/Indep/Src/Camera/Camera.hpp"
 #include "Speed/Indep/Src/Ecstasy/eModel.hpp"
 #include "Speed/Indep/Src/Ecstasy/eSolid.hpp"
+#include "Speed/Indep/Src/Misc/Profiler.hpp"
 #include "Speed/Indep/Src/Misc/ResourceLoader.hpp"
 #include "Speed/Indep/Src/World/TrackInfo.hpp"
 #include "Speed/Indep/bWare/Inc/SpeedScript.hpp"
@@ -206,6 +207,10 @@ extern unsigned char SceneryGroupEnabledTable[0x1000];
 inline int PrecullerBooBooManager::GetSectionNumber(bVector3 &position) {
     return ((static_cast<int>(position.y) & 0xFE0) << 2) |
            ((static_cast<unsigned int>(static_cast<int>(position.x)) >> 5) & 0x7F);
+}
+
+static inline int GetPrecullerSectionNumber(float x, float y) {
+    return ((static_cast<unsigned int>(static_cast<int>(x)) >> 5) & 0x1F) + (static_cast<int>(y) & 0x3E0);
 }
 
 unsigned char *PrecullerBooBooManager::GetByte(int section_number) {
@@ -1199,31 +1204,30 @@ void GrandSceneryCullInfo::CullView(SceneryCullInfo *scenery_cull_info) {
 }
 
 void GrandSceneryCullInfo::DoCulling() {
+    ProfileNode profile_node("TODO", 0);
+    int n;
     pFirstDrawInfo = SceneryDrawInfoTable;
     pCurrentDrawInfo = SceneryDrawInfoTable;
     pTopDrawInfo = SceneryDrawInfoTable + 3500;
 
-    for (int i = 0; i < NumCullInfos; i++) {
-        SceneryCullInfo *scenery_cull_info = &SceneryCullInfos[i];
-        Camera *camera = scenery_cull_info->pView->GetCamera();
-        unsigned char *camera_bytes = reinterpret_cast<unsigned char *>(camera);
+    for (n = 0; n < NumCullInfos; n++) {
+        SceneryCullInfo *scenery_cull_info = &SceneryCullInfos[n];
         bool do_precull = true;
 
-        scenery_cull_info->Position = *camera->GetPosition();
-        scenery_cull_info->Direction = *camera->GetDirection();
+        scenery_cull_info->Position = *scenery_cull_info->pView->GetCamera()->GetPosition();
+        scenery_cull_info->Direction = *scenery_cull_info->pView->GetCamera()->GetDirection();
         scenery_cull_info->H = scenery_cull_info->pView->H;
 
         if (PrecullerMode == 0) {
             do_precull = false;
         } else if (PrecullerMode == 2) {
-            if (RealTimeFrames % 0x3D < 0xF) {
+            int time = RealTimeFrames % 0x3D;
+            if (time < 0xF) {
                 do_precull = false;
             }
         } else if (PrecullerMode == 3) {
-            float speed_x = *reinterpret_cast<float *>(camera_bytes + 0x1E8);
-            float speed_y = *reinterpret_cast<float *>(camera_bytes + 0x1EC);
-            float speed_z = *reinterpret_cast<float *>(camera_bytes + 0x1F0);
-            float speed = bSqrt(speed_x * speed_x + speed_y * speed_y + speed_z * speed_z);
+            Camera *camera = scenery_cull_info->pView->GetCamera();
+            float speed = bLength(reinterpret_cast<bVector3 *>(reinterpret_cast<unsigned char *>(camera) + 0x1E8));
             if (speed < EnablePrecullingSpeed) {
                 do_precull = false;
             }
@@ -1240,14 +1244,13 @@ void GrandSceneryCullInfo::DoCulling() {
             unsigned char section_bit = gPrecullerBooBooManager.GetBit(section_number);
             if (section_byte && (*section_byte & section_bit) == 0) {
                 scenery_cull_info->PrecullerSectionNumber =
-                    ((static_cast<unsigned int>(static_cast<int>(scenery_cull_info->Position.x)) >> 5) & 0x1F) +
-                    (static_cast<int>(scenery_cull_info->Position.y) & 0x3E0);
+                    GetPrecullerSectionNumber(scenery_cull_info->Position.x, scenery_cull_info->Position.y);
             }
         }
     }
 
-    for (int i = 0; i < NumCullInfos; i++) {
-        SceneryCullInfo *scenery_cull_info = &SceneryCullInfos[i];
+    for (n = 0; n < NumCullInfos; n++) {
+        SceneryCullInfo *scenery_cull_info = &SceneryCullInfos[n];
         scenery_cull_info->pFirstDrawInfo = pCurrentDrawInfo;
         scenery_cull_info->pCurrentDrawInfo = pCurrentDrawInfo;
         scenery_cull_info->pTopDrawInfo = pTopDrawInfo;
