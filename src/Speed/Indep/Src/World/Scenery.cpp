@@ -1004,10 +1004,10 @@ ScenerySectionHeader *GetScenerySectionHeader(int section_number) {
 int IsInTable(short *section_numbers, int num_sections, int section_number) {
     for (int i = 0; i < num_sections; i++) {
         if (section_numbers[i] == section_number) {
-            return 1;
+            return i;
         }
     }
-    return 0;
+    return -1;
 }
 
 int ToggleIsInTable(short *section_numbers, int num_sections, int max_sections, int section_number) {
