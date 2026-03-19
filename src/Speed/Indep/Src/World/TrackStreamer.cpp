@@ -1499,8 +1499,8 @@ int TrackStreamer::GetSectionToActivate(int loaded_frames) {
     if (NumSectionsActivated < NumCurrentStreamingSections) {
         for (int i = 0; i < NumCurrentStreamingSections; i++) {
             TrackStreamingSection *section = CurrentStreamingSections[i];
-            if (section->Status == TrackStreamingSection::LOADED && NeedsGameStateActivation(section) &&
-                loaded_frames <= RealTimeFrames - section->LoadedTime) {
+            if (section->Status == TrackStreamingSection::LOADED && TheTrackStreamer.NeedsGameStateActivation(section) &&
+                RealTimeFrames - section->LoadedTime >= loaded_frames) {
                 return section->SectionNumber;
             }
         }

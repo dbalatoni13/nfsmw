@@ -78,10 +78,10 @@ ScreenEffectDB::ScreenEffectDB() {
         SE_data[i].g = 0.0f;
         SE_data[i].b = 0.0f;
         SE_data[i].a = 0.0f;
-        SE_data[i].intensity = 0.0f;
         for (int j = 0; j < 14; j++) {
             SE_data[i].data[j] = 0.0f;
         }
+        SE_data[i].intensity = 0.0f;
         SE_data[i].UpdateFnc = 0;
         numType[i] = 0;
     }

@@ -464,19 +464,19 @@ void VisibleSectionManager::EnableGroup(unsigned int group_name) {
 int VisibleSectionManager::Unloader(bChunk *chunk) {
     if (chunk->GetID() == 0x80034150) {
         pInfo = 0;
+        DrivableBoundaryList.InitList();
         NonDrivableBoundaryList.InitList();
         LoadingSectionList.InitList();
         DrivableSectionList.InitList();
-        DrivableBoundaryList.InitList();
         return 1;
     }
 
-    if (chunk->GetID() != 0x34158) {
-        return 0;
+    if (chunk->GetID() == 0x34158) {
+        reinterpret_cast<VisibleSectionOverlay *>(chunk->GetData())->Remove();
+        return 1;
     }
 
-    reinterpret_cast<VisibleSectionOverlay *>(chunk->GetData())->Remove();
-    return 1;
+    return 0;
 }
 
 int Get2PlayerSectionNumber(int section_number, const char *build_platform) {
@@ -523,8 +523,10 @@ int Get1PlayerSectionNumber(int section_number_2p, const char *build_platform) {
         }
     }
 
-    int sec_1p = map_table_VisibleSection[section_number_2p];
-    return sec_1p ? sec_1p : section_number_2p;
+    if (map_table_VisibleSection[section_number_2p] != 0) {
+        return map_table_VisibleSection[section_number_2p];
+    }
+    return section_number_2p;
 }
 
 int GetBoundarySectionNumber(int section_number, const char *platform_name) {
