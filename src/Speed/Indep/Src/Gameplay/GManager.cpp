@@ -78,7 +78,9 @@ class Minimap {
 struct GManagerRaceStatusCompat {
     unsigned char _padRaceBin[0x1AB0];
     GRaceBin *mRaceBin;
-    unsigned char _padRefresh[0x40];
+    unsigned char _padPursuitCooldown[0xC];
+    bool mPlayerPursuitInCooldown;
+    unsigned char _padRefresh[0x33];
     bool mRefreshBinAfterRace;
 };
 
@@ -2398,10 +2400,11 @@ void GManager::UpdatePursuit() {
     bool roaming;
     bool challengeRace;
     bool cooldown;
+    bool epicPursuitRace;
 
+    roaming = GRaceStatus::Get().GetPlayMode() == GRaceStatus::kPlayMode_Roaming;
     pursuit = nullptr;
     perpetrator = nullptr;
-    roaming = GRaceStatus::Exists() && GRaceStatus::Get().GetPlayMode() == GRaceStatus::kPlayMode_Roaming;
     GetPlayerPursuitInterfaces(pursuit, perpetrator);
 
     cooldown = false;
@@ -2409,6 +2412,7 @@ void GManager::UpdatePursuit() {
         TrackValue("cost_to_state_in_pursuit", static_cast<float>(pursuit->CalcTotalCostToState()));
         cooldown = pursuit->GetPursuitStatus() == 2;
     }
+    reinterpret_cast<GManagerRaceStatusCompat &>(GRaceStatus::Get()).mPlayerPursuitInCooldown = cooldown;
 
     if (perpetrator) {
         TrackValue("cost_to_state", static_cast<float>(perpetrator->GetCostToState()));
@@ -2417,11 +2421,30 @@ void GManager::UpdatePursuit() {
                                       perpetrator->GetPendingRepPointsFromCopDestruction()));
     }
 
-    challengeRace = GRaceStatus::Exists() && GRaceStatus::Get().GetRaceParameters() &&
-                    GRaceStatus::Get().GetRaceParameters()->GetIsChallengeSeriesRace();
+    challengeRace = false;
+    if (GRaceStatus::Get().GetRaceParameters() && GRaceStatus::Get().GetRaceParameters()->GetIsChallengeSeriesRace()) {
+        challengeRace = true;
+    }
 
-    mHidingSpotIconsShown = (roaming || challengeRace) && pursuit && cooldown;
-    mPursuitBreakerIconsShown = (roaming || challengeRace) && pursuit && !cooldown;
+    mHidingSpotIconsShown = false;
+    if ((roaming || challengeRace) && pursuit && cooldown) {
+        mHidingSpotIconsShown = true;
+    }
+
+    mPursuitBreakerIconsShown = false;
+    if (!roaming && !challengeRace) {
+        epicPursuitRace = false;
+        if (GRaceStatus::Exists() && GRaceStatus::Get().GetRaceParameters() &&
+            GRaceStatus::Get().GetRaceParameters()->GetIsEpicPursuitRace()) {
+            epicPursuitRace = true;
+        }
+
+        if (epicPursuitRace && pursuit && !cooldown) {
+            mPursuitBreakerIconsShown = true;
+        }
+    } else if (pursuit && !cooldown) {
+        mPursuitBreakerIconsShown = true;
+    }
 }
 
 void GManager::UpdateTriggerAvailability() {
