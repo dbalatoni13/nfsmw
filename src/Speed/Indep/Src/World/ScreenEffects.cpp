@@ -282,10 +282,9 @@ void DoTunnelBloom(eView *view) {
         zone = TheTrackPathManager.FindZone(twoDpos_ptr, TRACK_PATH_ZONE_TUNNEL, 0);
     }
 
-    float base_glare = 0.0f;
     if (zone && zone->Elevation > my_car_pos->z) {
         lcamPosInside_27614[vIndex] = *camera_position;
-        float angleCos = base_glare;
+        float angleCos = 0.0f;
         bVector3 endVector;
         GenericRegion *end_tunnel = GetClosestRegionInView(view, &endVector, &angleCos);
         if (!end_tunnel) {
@@ -341,11 +340,11 @@ void DoTunnelBloom(eView *view) {
         SE_def.data[11] = dataBackup_27616[kTunnelPoint3Z][vIndex];
 
         if (regionB_27617[vIndex] != end_tunnel) {
-            view->ScreenEffects->SE_data[SE_GLARE].data[1] = base_glare;
+            view->ScreenEffects->SE_data[SE_GLARE].data[1] = 0.0f;
         }
         regionB_27617[vIndex] = end_tunnel;
         if (zoneB[vIndex] != zone) {
-            view->ScreenEffects->SE_data[SE_GLARE].data[1] = base_glare;
+            view->ScreenEffects->SE_data[SE_GLARE].data[1] = 0.0f;
         }
         zoneB[vIndex] = zone;
 
@@ -370,7 +369,7 @@ void DoTunnelBloom(eView *view) {
         view->ScreenEffects->AddScreenEffect(SE_GLARE, &SE_def, 1, SEC_FRAME);
         AccumulationBufferNeedsFlush = 1;
 
-        if (view->Precipitation && base_glare < view->Precipitation->GetRainIntensity()) {
+        if (view->Precipitation && 0.0f < view->Precipitation->GetRainIntensity()) {
             view->Precipitation->IsValidRainCurtainPos = CT_OVERIDE;
             view->Precipitation->AttachRainCurtain(
                 dataBackup_27616[kTunnelPoint2X][vIndex], dataBackup_27616[kTunnelPoint2Y][vIndex],
@@ -382,7 +381,7 @@ void DoTunnelBloom(eView *view) {
         return;
     }
 
-    if (base_glare < view->ScreenEffects->SE_data[SE_GLARE].intensity) {
+    if (0.0f < view->ScreenEffects->SE_data[SE_GLARE].intensity) {
         ScreenEffectDef SE_def;
         float pos_screen_x;
         float pos_screen_y;
@@ -401,7 +400,7 @@ void DoTunnelBloom(eView *view) {
         pos_screen_y += camera_direction->y;
         pos_screen_z += camera_direction->z;
 
-        if (base_glare < SE_def.intensity) {
+        if (0.0f < SE_def.intensity) {
             SE_def.data[0] = pos_screen_x + dataBackup_27616[kTunnelPoint0X][vIndex];
             SE_def.data[1] = pos_screen_y + dataBackup_27616[kTunnelPoint0Y][vIndex];
             SE_def.data[2] = pos_screen_z + dataBackup_27616[kTunnelPoint0Z][vIndex];
