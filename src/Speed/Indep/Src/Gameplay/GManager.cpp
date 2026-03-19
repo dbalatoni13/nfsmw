@@ -2115,12 +2115,20 @@ bool GManager::SaveGameplayData(unsigned char *dest, unsigned int maxSize) {
     SavedGameplayDataHeader *header;
     unsigned char *cursor;
     ObjectStateMap::iterator it;
+    GObjectIterator<GActivity> activityIterator(0xFFFFFFFF);
+    MD5 md5;
+
+    bMemSet(dest, 0, maxSize);
+
+    while (activityIterator.IsValid()) {
+        activityIterator.GetInstance()->SerializeVars(false);
+        activityIterator.Advance();
+    }
 
     if (maxSize < 0x80) {
         return false;
     }
 
-    bMemSet(dest, 0, maxSize);
     header = reinterpret_cast<SavedGameplayDataHeader *>(dest);
     header->mMagic = 0x656D6147;
     header->mVersion = 8;
@@ -2168,6 +2176,10 @@ bool GManager::SaveGameplayData(unsigned char *dest, unsigned int maxSize) {
 
     bMemCpy(cursor, &mFreeRoamStartMarker, sizeof(mFreeRoamStartMarker));
     bMemCpy(cursor + 0x10, &mFreeRoamFromSafeHouseStartMarker, sizeof(mFreeRoamFromSafeHouseStartMarker));
+    md5.Reset();
+    md5.Update(dest + 0x10, maxSize - 0x10);
+    md5.GetRaw();
+    bMemCpy(dest, md5.GetRaw(), md5.GetRawLength());
     return true;
 }
 
