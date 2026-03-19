@@ -71,6 +71,10 @@ struct SceneryInfo {
 
 SceneryOverrideInfo *GetSceneryOverrideInfo(int override_info_number);
 void *FindSceneryGroup(unsigned int name_hash);
+int LoaderSceneryGroup(bChunk *chunk);
+int UnloaderSceneryGroup(bChunk *chunk);
+int LoaderScenery(bChunk *chunk);
+int UnloaderScenery(bChunk *chunk);
 
 struct SceneryGroup : public bTNode<SceneryGroup> {
     unsigned int NameHash;
@@ -177,6 +181,10 @@ int IsInTable(short *section_numbers, int num_sections, int section_number);
 int ToggleIsInTable(short *section_numbers, int num_sections, int max_sections, int section_number);
 bList ScenerySectionHeaderList;
 RegionQuery RegionInfo;
+bChunkLoader bChunkLoaderSceneryGroup(0x34109, LoaderSceneryGroup, UnloaderSceneryGroup);
+bChunkLoader bChunkLoaderScenerySection(0x80034100, LoaderScenery, UnloaderScenery);
+bChunkLoader bChunkLoaderSceneryHeirarchy(0x8003410B, LoaderScenery, UnloaderScenery);
+bChunkLoader bChunkLoaderSceneryLighting(0x80034115, LoaderScenery, UnloaderScenery);
 SceneryDetailLevel ForceAllSceneryDetailLevels = SCENERY_DETAIL_NONE;
 SceneryOverrideInfo *SceneryOverrideInfoTable = 0;
 int NumSceneryOverrideInfos = 0;
