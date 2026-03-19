@@ -327,15 +327,17 @@ static inline bMatrix4 *eFrameMallocMatrix(int num_matrices) {
 
 void BuildSceneryOverrideHashTable() {
     int num_scenery_override_infos = NumSceneryOverrideInfos;
-    unsigned char *scenery_override_info_table = reinterpret_cast<unsigned char *>(SceneryOverrideInfoTable);
+    SceneryOverrideInfo *scenery_override_info_table = SceneryOverrideInfoTable;
     int index = 0;
     unsigned int i = 0;
     do {
+        unsigned int next_i = i + 1;
         SceneryOverrideHashTable[i] = static_cast<short>(index);
-        while (index < num_scenery_override_infos && scenery_override_info_table[index * 6] == i) {
+        while (index < num_scenery_override_infos &&
+               (static_cast<int>(reinterpret_cast<unsigned short *>(&scenery_override_info_table[index])[0]) & 0xFF) == i) {
             index += 1;
         }
-        i += 1;
+        i = next_i;
     } while (static_cast<int>(i) < 0x100);
     SceneryOverrideHashTable[0x100] = static_cast<short>(index);
 }
