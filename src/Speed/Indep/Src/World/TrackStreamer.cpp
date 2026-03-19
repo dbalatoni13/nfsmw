@@ -123,6 +123,22 @@ static inline bool IsLoadingBarSection_TrackStreamer(int section_number) {
            (ScenerySectionLODOffset <= subsection_number && subsection_number < ScenerySectionLODOffset * 2);
 }
 
+static inline void DisableWaitForFrameBufferSwap() {
+    WaitForFrameBufferSwapDisabled = 1;
+}
+
+static inline void EnableWaitForFrameBufferSwap() {
+    WaitForFrameBufferSwapDisabled = 0;
+}
+
+static inline void eAllowDuplicateSolids(bool enable) {
+    if (enable) {
+        AllowDuplicateSolids += 1;
+    } else {
+        AllowDuplicateSolids -= 1;
+    }
+}
+
 bool DoLinesIntersect(
     const bVector2 &line1_start, const bVector2 &line1_end, const bVector2 &line2_start, const bVector2 &line2_end
 ) {
@@ -1018,6 +1034,7 @@ int TrackStreamer::CountUserAllocations(const char **pfragmented_user_allocation
 }
 
 int TrackStreamer::DoHoleFilling(int largest_free) {
+    ProfileNode profile_node("TODO", 0);
     const char *debug_name;
     HoleMovement hole_movements[128];
     int amount_moved;
@@ -1056,12 +1073,12 @@ int TrackStreamer::DoHoleFilling(int largest_free) {
     for (int i = 0; i < num_movements; i++) {
         HoleMovement *movement = &hole_movements[i];
         TrackStreamingSection *section = FindSectionByAddress(movement->Address);
-        if (LastWaitUntilRenderingDoneFrameCount != eFrameCounter) {
+        if (LastWaitUntilRenderingDoneFrameCount != eGetFrameCounter()) {
             unsigned int wait_start = bGetTicker();
-            WaitForFrameBufferSwapDisabled = 1;
+            DisableWaitForFrameBufferSwap();
             eWaitUntilRenderingDone();
-            LastWaitUntilRenderingDoneFrameCount = eFrameCounter;
-            WaitForFrameBufferSwapDisabled = 0;
+            LastWaitUntilRenderingDoneFrameCount = eGetFrameCounter();
+            EnableWaitForFrameBufferSwap();
             bGetTickerDifference(wait_start);
         }
 
@@ -1074,12 +1091,12 @@ int TrackStreamer::DoHoleFilling(int largest_free) {
         }
         pMemoryPool->Malloc(movement->Size, move_debug_name, false, false, new_address);
         if (section && section->Status == TrackStreamingSection::ACTIVATED) {
-            AllowDuplicateSolids += 1;
+            eAllowDuplicateSolids(true);
             SetDuplicateTextureWarning(false);
             MoveChunks(reinterpret_cast<bChunk *>(new_address), reinterpret_cast<bChunk *>(section->pMemory), section->LoadedSize,
                        section->SectionName);
             DCStoreRangeNoSync(reinterpret_cast<void *>(new_address), section->LoadedSize);
-            AllowDuplicateSolids -= 1;
+            eAllowDuplicateSolids(false);
             SetDuplicateTextureWarning(true);
         } else if (section) {
             eWaitUntilRenderingDone();
