@@ -206,10 +206,10 @@ void eUpdateSunPolyFix(ePoly *poly, SunLayer *layer, float max_size, float x, fl
     float intensity = layer->IntensityScale * SunVisibility * SunMaxIntensity;
     unsigned char alpha;
 
-    if (intensity >= 28.0f) {
-        alpha = static_cast<unsigned char>(static_cast<int>(intensity - 28.0f));
-    } else {
+    if (intensity < 28.0) {
         alpha = static_cast<unsigned char>(static_cast<int>(intensity));
+    } else {
+        alpha = static_cast<unsigned char>(static_cast<int>(intensity - 28.0));
     }
 
     poly->Vertices[0].x = sun_vis_poly_fix_ini[0] + x;

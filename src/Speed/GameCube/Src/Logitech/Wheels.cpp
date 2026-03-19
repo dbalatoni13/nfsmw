@@ -68,7 +68,7 @@ bool Wheels::ButtonIsPressed(long channel, unsigned long buttonMask) {
 
 bool Wheels::IsConnected(long channel) {
     const LGPosition *position = reinterpret_cast<const LGPosition *>(this);
-    return position[channel].err;
+    return !position[channel].err;
 }
 
 bool Wheels::PedalsConnected(long channel) {
