@@ -148,12 +148,6 @@ struct PrecullerBooBooManager {
     }
 };
 
-class eViewSceneryRenderShim : public eView {
-  public:
-    void Render(eModel *model, bMatrix4 *matrix, eLightContext *light_context, unsigned int a4, unsigned int a5,
-                unsigned int a6);
-};
-
 struct GrandSceneryCullInfo {
     // total size: 0x8E0
     SceneryCullInfo SceneryCullInfos[12]; // offset 0x0, size 0x8D0
@@ -1366,7 +1360,7 @@ void GrandSceneryCullInfo::StuffScenery(eView *view, int stuff_flags) {
                     bIdentity(&identity);
                     matrix = &identity;
                 }
-                reinterpret_cast<eViewSceneryRenderShim *>(view)->Render(pDebugModel, matrix, 0, render_flags, 0, 0);
+                reinterpret_cast<eViewPlatInterface *>(view)->Render(pDebugModel, matrix, 0, render_flags, 0);
                 pDebugModel = 0;
             }
         }
