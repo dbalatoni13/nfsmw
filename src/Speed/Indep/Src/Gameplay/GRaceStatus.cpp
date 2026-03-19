@@ -2319,8 +2319,9 @@ void GRaceStatus::SetRoaming() {
     bool dDay = false;
 
     if (mRaceParms) {
+        const Attrib::Gen::gameplay *gameplayObj = mRaceParms->GetGameplayObj();
         const unsigned int *startNewGame =
-            reinterpret_cast<const unsigned int *>(mRaceParms->GetGameplayObj()->GetAttributePointer(0x64273C71, 0));
+            reinterpret_cast<const unsigned int *>(gameplayObj->GetAttributePointer(0x64273C71, 0));
 
         lastDDay = bStrCmp(mRaceParms->GetEventID(), "16.2.1") == 0;
         if (!startNewGame) {
@@ -2340,28 +2341,44 @@ void GRaceStatus::SetRoaming() {
     mRaceParms = nullptr;
     WRoadNetwork::Get().ResetShortcuts();
 
-    for (IPlayer::List::const_iterator iter = IPlayer::GetList(PLAYER_ALL).begin(); iter != IPlayer::GetList(PLAYER_ALL).end(); ++iter) {
+    player = IPlayer::First(PLAYER_ALL);
+    while (player) {
         ISimable *simable;
         IVehicle *vehicle;
-        IVehicleAI *ivai;
-
-        player = *iter;
+        IVehicleAI *vehicleAI;
 
         if (player->InGameBreaker()) {
             player->ResetGameBreaker(true);
         }
 
         simable = player->GetSimable();
-        if (simable && simable->QueryInterface(&vehicle) && simable->QueryInterface(&ivai) && !ivai->GetPursuit()) {
-            ICopMgr *copMgr = ICopMgr::Get();
+        if (simable && simable->QueryInterface(&vehicle)) {
+            vehicle->ForceStopOff(vehicle->GetForceStop());
 
-            if (copMgr) {
-                copMgr->ResetCopsForRestart(true);
+            if (vehicle->QueryInterface(&vehicleAI) && !vehicleAI->GetPursuit()) {
+                ICopMgr *copMgr = ICopMgr::Get();
+
+                if (copMgr) {
+                    copMgr->ResetCopsForRestart(true);
+                }
+            }
+        }
+
+        {
+            IPlayer::List::const_iterator iter =
+                std::find(IPlayer::GetList(PLAYER_ALL).begin(), IPlayer::GetList(PLAYER_ALL).end(), player);
+            IPlayer::List::const_iterator end = IPlayer::GetList(PLAYER_ALL).end();
+
+            if (iter == end) {
+                player = nullptr;
+            } else {
+                ++iter;
+                player = iter == end ? nullptr : *iter;
             }
         }
     }
 
-    if (!lastDDay && !reinterpret_cast<GManagerRestartCompat *>(&GManager::Get())->mRestartEventHash) {
+    if (!lastDDay && reinterpret_cast<GManagerRestartCompat *>(&GManager::Get())->mRestartEventHash == 0) {
         new EReloadHud();
     }
 
