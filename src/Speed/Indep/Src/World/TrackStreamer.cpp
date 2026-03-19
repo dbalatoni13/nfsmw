@@ -525,8 +525,8 @@ void TrackStreamer::UnloadSection(TrackStreamingSection *section) {
         section->UnactivatedFrameCount = 0;
         bFree(section->pMemory);
         section->Status = TrackStreamingSection::UNLOADED;
-        section->LoadedTime = 0;
         section->pMemory = 0;
+        section->LoadedTime = 0;
         NumSectionsLoaded -= 1;
     }
 }
