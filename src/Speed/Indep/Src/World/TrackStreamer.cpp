@@ -654,7 +654,7 @@ int TrackStreamer::AllocateSectionMemory(int *ptotal_needing_allocation) {
 TrackStreamingSection *TrackStreamer::FindSection(int section_number) {
     for (int i = 0; i < NumTrackStreamingSections; i++) {
         TrackStreamingSection *section = &pTrackStreamingSections[i];
-        if (section->SectionNumber == section_number) {
+        if (section->SectionNumber == static_cast<short>(section_number)) {
             return section;
         }
     }
