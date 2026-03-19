@@ -3876,16 +3876,15 @@ void GRaceStatus::EnterSuddenDeath() {
 
 float GRaceStatus::DetermineRaceSegmentLength(const UMath::Vector4 *positions, const UMath::Vector4 *directions, int start, int end) {
     WRoadNav nav;
-    bVector3 delta;
+    UMath::Vector3 delta;
     float pathDistance;
     float segmentDistance = 0.0f;
-    UTL::Std::set<PathSegment, _type_ID_PATH_SET> pathSegments;
     char shortcutAllowed[32];
 
     nav.SetPathType(WRoadNav::kPathChopper);
 
-    bSub(&delta, reinterpret_cast<const bVector3 *>(&positions[start]), reinterpret_cast<const bVector3 *>(&positions[end]));
-    pathDistance = bLength(delta);
+    VU0_v3sub(UMath::Vector4To3(positions[start]), UMath::Vector4To3(positions[end]), delta);
+    pathDistance = VU0_sqrt(VU0_v3lengthsquare(delta));
 
     nav.InitAtPoint(UMath::Vector4To3(positions[start]), UMath::Vector4To3(directions[start]), true, 1.0f);
     if (!nav.IsValid()) {
@@ -3899,16 +3898,14 @@ float GRaceStatus::DetermineRaceSegmentLength(const UMath::Vector4 *positions, c
         do {
             float distance = static_cast<float>(nav.GetSegment()->nLength) * 0.015259022f * (1.0f - nav.GetSegTime());
 
-            if (distance < 0.01f) {
-                distance = 0.01f;
-            }
-
+            distance = UMath::Max(distance, 0.01f);
             segmentDistance += distance;
             nav.IncNavPosition(distance, UMath::Vector4To3(directions[end]), 0.0f);
         } while (segment == nav.GetSegmentInd());
     }
 
     bMemSet(shortcutAllowed, 1, sizeof(shortcutAllowed));
+    UTL::Std::set<PathSegment, _type_ID_PATH_SET> pathSegments;
 
     {
         bool noShortcuts = true;
@@ -3917,32 +3914,28 @@ float GRaceStatus::DetermineRaceSegmentLength(const UMath::Vector4 *positions, c
             PathSegment pathSegment;
 
             nav.FindPathNow(&UMath::Vector4To3(positions[end]), &UMath::Vector4To3(directions[end]), shortcutAllowed);
-            if (nav.GetNavType() != WRoadNav::kTypePath) {
-                break;
-            }
+            if (nav.GetNavType() == WRoadNav::kTypePath) {
+                WRoadNetwork::Get().AddRaceSegments(&nav);
+                pathDistance = nav.GetPathDistanceRemaining();
 
-            WRoadNetwork::Get().AddRaceSegments(&nav);
-            pathDistance = nav.GetPathDistanceRemaining();
-
-            {
                 unsigned char shortcut = nav.FirstShortcutInPath();
 
                 noShortcuts = shortcut == 0xFF;
                 if (!noShortcuts) {
                     shortcutAllowed[shortcut] = 0;
                 }
-            }
+                pathSegment.Length = pathDistance;
+                for (int i = 0; i < nav.GetNumPathSegments(); ++i) {
+                    const WRoadSegment *roadSegment = WRoadNetwork::Get().GetSegment(nav.GetPathSegment(i));
 
-            pathSegment.Length = pathDistance;
-            for (int i = 0; i < nav.GetNumPathSegments(); ++i) {
-                const WRoadSegment *roadSegment = WRoadNetwork::Get().GetSegment(nav.GetPathSegment(i));
-
-                if (!(roadSegment->fFlags & 1)) {
-                    pathSegment.Roads.insert(roadSegment->fRoadID);
+                    if (!(roadSegment->fFlags & 1)) {
+                        pathSegment.Roads.insert(roadSegment->fRoadID);
+                    }
                 }
+                pathSegments.insert(pathSegment);
+            } else {
+                break;
             }
-
-            pathSegments.insert(pathSegment);
         } while (!noShortcuts);
 
         pathDistance += segmentDistance;
@@ -3977,9 +3970,11 @@ float GRaceStatus::DetermineRaceSegmentLength(const UMath::Vector4 *positions, c
             }
 
             if (roadDiffLength > 0.0f) {
+                float scale_ratio = ((current->Length - previous->Length) + roadDiffLength) / roadDiffLength;
+
                 for (UTL::Std::set<short, _type_ID_ROAD_SET>::iterator it = roadDiff.begin(); it != roadDiff.end(); ++it) {
                     WRoad *road = const_cast<WRoad *>(WRoadNetwork::Get().GetRoad(*it));
-                    int scale = static_cast<int>((((current->Length - previous->Length) + roadDiffLength) / roadDiffLength) * 65536.0f);
+                    int scale = static_cast<int>(scale_ratio * 65536.0f);
 
                     road->nScale = static_cast<unsigned short>(scale >> 8);
                 }
@@ -3999,6 +3994,11 @@ void GRaceStatus::DetermineRaceLength() {
     bool raceLoops;
     int numSegmentLengths;
     int j;
+    WRoadNetwork &rn = WRoadNetwork::Get();
+    GRaceParameters *race_parameters = mRaceParms;
+    WRoadNav nav;
+    const bool force_centre_lane = true;
+    const float direction_weight = 1.0f;
     int numSpeedTraps;
 
     nSpeedTraps = 0;
@@ -4007,37 +4007,37 @@ void GRaceStatus::DetermineRaceLength() {
     fFirstLapLength = 0.0f;
     bMemSet(mSegmentLengths, 0, sizeof(mSegmentLengths));
     bRaceRouteError = false;
-    WRoadNetwork::Get().ResolveShortcuts();
+    rn.ResolveShortcuts();
 
-    if (!mRaceParms || !mRaceParms->HasFinishLine()) {
+    if (!race_parameters || !race_parameters->HasFinishLine()) {
         return;
     }
 
-    WRoadNetwork::Get().SetRaceFilterValid(true);
-    numCheckpoints = mRaceParms->GetNumCheckpoints();
+    rn.SetRaceFilterValid(true);
+    numCheckpoints = race_parameters->GetNumCheckpoints();
     numPathPoints = numCheckpoints + 2;
-    mRaceParms->GetStartPosition(UMath::Vector4To3(positions[0]));
+    race_parameters->GetStartPosition(UMath::Vector4To3(positions[0]));
     positions[0].w = 0.0f;
-    mRaceParms->GetStartDirection(UMath::Vector4To3(directions[0]));
+    race_parameters->GetStartDirection(UMath::Vector4To3(directions[0]));
     directions[0].w = 0.0f;
+    race_parameters->GetFinishPosition(UMath::Vector4To3(positions[numCheckpoints + 1]));
+    positions[numCheckpoints + 1].w = 0.0f;
+    race_parameters->GetFinishDirection(UMath::Vector4To3(directions[numCheckpoints + 1]));
+    directions[numCheckpoints + 1].w = 0.0f;
 
     for (int i = 0; i < numCheckpoints; ++i) {
-        mRaceParms->GetCheckpointPosition(i, UMath::Vector4To3(positions[i + 1]));
+        race_parameters->GetCheckpointPosition(i, UMath::Vector4To3(positions[i + 1]));
         positions[i + 1].w = 0.0f;
-        mRaceParms->GetCheckpointDirection(i, UMath::Vector4To3(directions[i + 1]));
+        race_parameters->GetCheckpointDirection(i, UMath::Vector4To3(directions[i + 1]));
         directions[i + 1].w = 0.0f;
     }
 
-    mRaceParms->GetFinishPosition(UMath::Vector4To3(positions[numCheckpoints + 1]));
-    positions[numCheckpoints + 1].w = 0.0f;
-    mRaceParms->GetFinishDirection(UMath::Vector4To3(directions[numCheckpoints + 1]));
-    directions[numCheckpoints + 1].w = 0.0f;
-
-    raceLoops = mRaceParms->GetIsLoopingRace();
+    raceLoops = race_parameters->GetIsLoopingRace();
     totalDistance = 0.0f;
-    numSegmentLengths = numPathPoints;
     if (!raceLoops) {
         numSegmentLengths = numPathPoints - 1;
+    } else {
+        numSegmentLengths = numPathPoints;
     }
 
     for (j = 0; j < numSegmentLengths; ++j) {
@@ -4045,36 +4045,30 @@ void GRaceStatus::DetermineRaceLength() {
         totalDistance += mSegmentLengths[j];
     }
 
-    if (raceLoops) {
-        fSubsequentLapLength = totalDistance - mSegmentLengths[0];
-        fFirstLapLength = totalDistance - mSegmentLengths[numCheckpoints + 1];
-        fRaceLength = fSubsequentLapLength * static_cast<float>(mRaceParms->GetNumLaps() - 1) + fFirstLapLength;
-    } else {
+    if (!raceLoops) {
         fSubsequentLapLength = totalDistance;
         fRaceLength = totalDistance;
         fFirstLapLength = totalDistance;
+    } else {
+        fSubsequentLapLength = totalDistance - mSegmentLengths[0];
+        fFirstLapLength = totalDistance - mSegmentLengths[numCheckpoints + 1];
+        fRaceLength = fSubsequentLapLength * static_cast<float>(race_parameters->GetNumLaps() - 1) + fFirstLapLength;
     }
 
-    {
-        WRoadNav nav;
+    nav.SetPathType(WRoadNav::kPathRaceRoute);
+    nav.SetNavType(WRoadNav::kTypeDirection);
+    nav.SetDecisionFilter(true);
+    nav.InitAtPoint(UMath::Vector4To3(positions[numCheckpoints + 1]), UMath::Vector4To3(directions[numCheckpoints + 1]), force_centre_lane, direction_weight);
+    if (nav.IsValid()) {
+        for (int i = 0; i < 100; ++i) {
+            int segmentNumber;
+            WRoadSegment *segment;
 
-        nav.SetPathType(static_cast<WRoadNav::EPathType>(6));
-        nav.InitAtPoint(UMath::Vector4To3(positions[numCheckpoints + 1]), UMath::Vector4To3(directions[numCheckpoints + 1]), true, 1.0f);
-        if (nav.IsValid()) {
-            for (int i = 0; i < 100; ++i) {
-                int segmentNumber;
-                WRoadSegment *segment;
-
-                nav.IncNavPosition(1.0f, UMath::Vector3::kZero, 0.0f);
-                segmentNumber = nav.GetSegmentInd();
-                segment = const_cast<WRoadSegment *>(WRoadNetwork::Get().GetSegment(segmentNumber));
-                segment->fFlags |= 0x8000;
-                if (nav.GetNodeInd() == 1) {
-                    segment->fFlags |= 0x8004;
-                } else {
-                    segment->fFlags = (segment->fFlags & static_cast<unsigned short>(~4)) | 0x8000;
-                }
-            }
+            nav.IncNavPosition(1.0f, UMath::Vector3::kZero, 0.0f);
+            segmentNumber = nav.GetSegmentInd();
+            segment = rn.GetSegmentNonConst(segmentNumber);
+            segment->SetInRace(true);
+            segment->SetRaceRouteForward(nav.GetNodeInd() == 1);
         }
     }
 

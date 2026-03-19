@@ -72,7 +72,9 @@ class WRoadNetwork : public Debugable {
 
     // WRoad *GetRoadNonConst(int index) {}
 
-    // WRoadSegment *GetSegmentNonConst(int index) {}
+    WRoadSegment *GetSegmentNonConst(int index) {
+        return &fSegments[index];
+    }
 
     void ResolveBarriers();
     void ResolveShortcuts();
