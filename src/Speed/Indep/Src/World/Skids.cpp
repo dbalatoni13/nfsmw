@@ -11,6 +11,7 @@
 void bInitializeBoundingBox(bVector3 *bbox_min, bVector3 *bbox_max, const bVector3 *point);
 void bExpandBoundingBox(bVector3 *bbox_min, bVector3 *bbox_max, const bVector3 *point, float extra_width);
 void bExpandBoundingBox(bVector3 *bbox_min, bVector3 *bbox_max, const bVector3 *bbox2_min, const bVector3 *bbox2_max);
+int bIsSlotPoolFull(SlotPool *slot_pool);
 
 static const int kNumSkidSegments_Skids = 8;
 static const int kNumSkidTextures_Skids = 29;
@@ -58,36 +59,52 @@ void SkidSegment::SetPoints(bVector3 *position, bVector3 *delta_position) {
 
 void SkidSegment::GetPoints(bVector3 *position, bVector3 *delta_position) {
     const float scale_factor = kInverseSkidSegmentScale_Skids;
-    float x = Position[0];
-    float y = Position[1];
-    float z = Position[2];
-    float dx = static_cast<float>(DeltaPosition[0]) * scale_factor;
-    float dy = static_cast<float>(DeltaPosition[1]) * scale_factor;
-    float dz = static_cast<float>(DeltaPosition[2]) * scale_factor;
+    float x;
+    float y;
+    float z;
+    float dx;
+    float dy;
+    float dz;
+
+    dx = static_cast<float>(DeltaPosition[0]) * scale_factor;
+    x = Position[0];
+    dy = static_cast<float>(DeltaPosition[1]) * scale_factor;
+    dz = static_cast<float>(DeltaPosition[2]) * scale_factor;
+    z = Position[2];
+    y = Position[1];
 
     position->x = x;
-    position->z = z;
     position->y = y;
+    position->z = z;
 
     if (delta_position) {
-        delta_position->z = dz;
         delta_position->x = dx;
         delta_position->y = dy;
+        delta_position->z = dz;
     }
 }
 
 void SkidSegment::GetEndPoints(bVector3 *left_point, bVector3 *right_point) {
-    float delta_x = static_cast<float>(DeltaPosition[0]) * kInverseSkidSegmentScale_Skids;
-    float delta_y = static_cast<float>(DeltaPosition[1]) * kInverseSkidSegmentScale_Skids;
-    float delta_z = static_cast<float>(DeltaPosition[2]) * kInverseSkidSegmentScale_Skids;
+    const float scale_factor = kInverseSkidSegmentScale_Skids;
+    float x;
+    float y;
+    float z;
+    float dx;
+    float dy;
+    float dz;
 
-    left_point->x = Position[0] + delta_x;
-    left_point->y = Position[1] + delta_y;
-    left_point->z = Position[2] + delta_z;
-
-    right_point->x = Position[0] - delta_x;
-    right_point->y = Position[1] - delta_y;
-    right_point->z = Position[2] - delta_z;
+    x = Position[0];
+    dx = static_cast<float>(DeltaPosition[0]) * scale_factor;
+    y = Position[1];
+    z = Position[2];
+    dy = static_cast<float>(DeltaPosition[1]) * scale_factor;
+    left_point->x = x + dx;
+    left_point->y = y + dy;
+    dz = static_cast<float>(DeltaPosition[2]) * scale_factor;
+    left_point->z = z + dz;
+    right_point->x = x - dx;
+    right_point->y = y - dy;
+    right_point->z = z - dz;
 }
 
 SkidSet::SkidSet(SkidMaker *skid_maker, bVector3 *position, bVector3 *delta_position, int terrain_type, float intensity)
@@ -240,7 +257,7 @@ void SkidSet::Render(eView *view, unsigned char intensityReduction) {
 }
 
 SkidSet *CreateNewSkidSet(SkidMaker *skid_maker, bVector3 *position, bVector3 *delta_position, int terrain_type, float intensity) {
-    if (SkidSetSlotPool->IsFull() && !SkidSetList.IsEmpty()) {
+    if (bIsSlotPoolFull(SkidSetSlotPool) && !SkidSetList.IsEmpty()) {
         DeleteThisSkid(SkidSetList.GetTail());
     }
 
