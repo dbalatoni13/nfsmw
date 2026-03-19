@@ -453,11 +453,11 @@ int Get2PlayerSectionNumber(int section_number, const char *build_platform) {
     if (bStrICmp(build_platform, "PC") != 0) {
         char section_letter = GetScenerySectionLetter(section_number);
         if (section_letter == 'Y') {
-            return section_number % 100 + 0x8FC;
+            return static_cast<short>(section_number % 100 + 0x8FC);
         }
 
         if (section_letter == 'X') {
-            return section_number % 100 + 0x834;
+            return static_cast<short>(section_number % 100 + 0x834);
         }
 
         SectionRemapper *remap_table = SectionRemapperTable;
@@ -494,11 +494,7 @@ int Get1PlayerSectionNumber(int section_number_2p, const char *build_platform) {
     }
 
     int sec_1p = map_table_VisibleSection[section_number_2p];
-    if (sec_1p == 0) {
-        sec_1p = section_number_2p;
-    }
-
-    return sec_1p;
+    return sec_1p ? sec_1p : section_number_2p;
 }
 
 int GetBoundarySectionNumber(int section_number, const char *platform_name) {
