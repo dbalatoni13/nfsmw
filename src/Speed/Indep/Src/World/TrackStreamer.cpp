@@ -1601,8 +1601,20 @@ void TrackStreamer::LoadSection(TrackStreamingSection *section) {
     section->Status = TrackStreamingSection::LOADING;
 
     int loaded_size = section->CompressedSize;
-    AddQueuedFile(section->pMemory, StreamFilenames[section->FileType], section->FileOffset, loaded_size, SectionLoadedCallback,
-                  reinterpret_cast<int>(section), 0);
+    int section_size = section->Size;
+    if (loaded_size == section_size) {
+        AddQueuedFile(section->pMemory, StreamFilenames[section->FileType], section->FileOffset, loaded_size, SectionLoadedCallback,
+                      reinterpret_cast<int>(section), 0);
+    } else {
+        QueuedFileParams params;
+        params.BlockSize = 0x7ffffff;
+        params.Priority = QueuedFileDefaultPriority;
+        params.Compressed = false;
+        params.Compressed = true;
+        params.UncompressedSize = section_size;
+        AddQueuedFile(section->pMemory, StreamFilenames[section->FileType], section->FileOffset, loaded_size, SectionLoadedCallback,
+                      reinterpret_cast<int>(section), &params);
+    }
 }
 
 void TrackStreamer::SectionLoadedCallback(int param, int error_status) {
