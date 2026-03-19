@@ -1212,7 +1212,42 @@ int GRaceParameters::GetReputation() const {
 }
 
 float GRaceParameters::GetCashValue() const {
-    return 0.0f;
+    if (mIndex) {
+        unsigned short value = *reinterpret_cast<const unsigned short *>(reinterpret_cast<const char *>(mIndex) + 0x22);
+        int exponent = static_cast<int>(static_cast<short>(value)) >> 11;
+        unsigned int scale = 1;
+
+        if (exponent < 0) {
+            exponent = -exponent;
+        }
+
+        while (true) {
+            bool done = exponent < 1;
+
+            exponent = exponent - 1;
+            if (done) {
+                break;
+            }
+
+            scale = scale * 10;
+        }
+
+        if ((value & 0x8000) != 0) {
+            return static_cast<float>(static_cast<short>(value << 5) >> 5) / static_cast<float>(scale);
+        }
+
+        return static_cast<float>(static_cast<short>(value << 5) >> 5) * static_cast<float>(scale);
+    }
+
+    const float *cashValue;
+
+    EnsureLoaded();
+    cashValue = reinterpret_cast<const float *>(mRaceRecord->GetAttributePointer(0xD8BAA07B, 0));
+    if (!cashValue) {
+        cashValue = reinterpret_cast<const float *>(Attrib::DefaultDataArea(sizeof(float)));
+    }
+
+    return *cashValue;
 }
 
 int GRaceParameters::GetLocalizationTag() const {
