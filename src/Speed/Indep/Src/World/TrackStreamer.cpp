@@ -1868,13 +1868,14 @@ void TrackStreamer::HandleLoading() {
     }
 }
 
-int TrackStreamer::GetLoadingPriority(TrackStreamingSection *section, StreamingPositionEntry *streaming_position, bool use_direction) {
-    if (!section->pBoundary) {
+int TrackStreamer::GetLoadingPriority(TrackStreamingSection *section, StreamingPositionEntry *position_entry, bool calculating_jettison) {
+    VisibleSectionBoundary *boundary = section->pBoundary;
+    if (!boundary) {
         return 0;
     }
 
-    float speed = bLength(&streaming_position->Velocity);
-    if (use_direction) {
+    float speed = bLength(&position_entry->Velocity);
+    if (calculating_jettison) {
         speed = 100.0f;
     }
 
@@ -1882,45 +1883,25 @@ int TrackStreamer::GetLoadingPriority(TrackStreamingSection *section, StreamingP
         return 0;
     }
 
-    bVector2 lookahead(streaming_position->Position.x + streaming_position->Velocity.x,
-                       streaming_position->Position.y + streaming_position->Velocity.y);
-    float distance = section->pBoundary->GetDistanceOutside(&lookahead, 999.0f);
+    bVector2 predict_pos = position_entry->Position + position_entry->Velocity;
+    float distance = boundary->GetDistanceOutside(&predict_pos, 999.0f);
 
-    bVector2 heading;
-    if (use_direction) {
-        bNormalize(&heading, &streaming_position->Direction);
+    bVector2 direction;
+    if (calculating_jettison) {
+        direction = bNormalize(position_entry->Direction);
     } else {
-        bNormalize(&heading, &streaming_position->Velocity);
+        direction = bNormalize(position_entry->Velocity);
     }
 
-    bVector2 to_section(section->Centre.x - lookahead.x, section->Centre.y - lookahead.y);
-    bVector2 section_direction;
-    bNormalize(&section_direction, &to_section);
+    bVector2 v = section->Centre - predict_pos;
+    float dot = bDot(&direction, &bNormalize(v));
+    float speed_factor = bMin(speed * 0.016666668f, 1.0f);
+    float angle = bAngToDeg(bACos(dot));
+    float angle_factor = bClamp(angle, 20.0f, 90.0f);
+    float adjusted_distance = distance * (1.0f - (90.0f - angle_factor) * 0.014285714f * speed_factor * 0.66999996f);
+    int priority = static_cast<int>(adjusted_distance * 0.013333334f);
 
-    float speed_scale = speed * 0.016666668f;
-    if (speed_scale > 1.0f) {
-        speed_scale = 1.0f;
-    }
-
-    unsigned short angle = bASin(bDot(&section_direction, &heading));
-    float degrees = static_cast<unsigned short>(0x4000 - angle) * 0.005493164f;
-    if (degrees < 20.0f) {
-        degrees = 20.0f;
-    }
-    if (degrees > 90.0f) {
-        degrees = 90.0f;
-    }
-
-    int loading_priority =
-        static_cast<int>(distance * (1.0f - (90.0f - degrees) * 0.014285714f * speed_scale * 0.66999996f) * 0.013333334f);
-    if (loading_priority < 0) {
-        loading_priority = 0;
-    }
-    if (loading_priority > 2) {
-        loading_priority = 2;
-    }
-
-    return loading_priority;
+    return bClamp(priority, 0, 2);
 }
 
 void TrackStreamer::AssignLoadingPriority() {
