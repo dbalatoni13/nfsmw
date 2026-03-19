@@ -208,27 +208,24 @@ void GTrigger::CreateAllParticleEffects() {
 
     if (effectName && *effectName) {
         UMath::Vector3 pos;
-        float flareSpacing = FlareSpacing(0);
+        float flareSpacing;
 
         GetPosition(pos);
-        if (flareSpacing <= 0.0f) {
-            mParticleEffect[0] = CreateParticleEffect(effectName, pos);
-        } else {
-            bVector3 triggerPos(pos.x, pos.y, pos.z);
-            bVector3 up(0.0f, 1.0f, 0.0f);
-            bVector3 direction(mDirection.x, mDirection.y, mDirection.z);
-            bVector3 offset;
-            bVector3 leftOffset;
-            bVector3 rightOffset;
+        flareSpacing = FlareSpacing(0);
+        if (flareSpacing > 0.0f) {
+            UMath::Vector3 upVec = UMath::Vector3Make(0.0f, 1.0f, 0.0f);
+            UMath::Vector3 lateralVec;
+            UMath::Vector3 posLeft;
+            UMath::Vector3 posRight;
 
-            bCross(&offset, &up, &direction);
-            offset *= flareSpacing;
-            leftOffset = bScaleAdd(triggerPos, offset, -1.0f);
-            rightOffset = bScaleAdd(triggerPos, offset, 1.0f);
-            UMath::Vector3 leftPos = UMath::Vector3Make(leftOffset.x, leftOffset.y, leftOffset.z);
-            UMath::Vector3 rightPos = UMath::Vector3Make(rightOffset.x, rightOffset.y, rightOffset.z);
-            mParticleEffect[0] = CreateParticleEffect(effectName, leftPos);
-            mParticleEffect[1] = CreateParticleEffect(effectName, rightPos);
+            bCross(reinterpret_cast<bVector3 *>(&lateralVec), reinterpret_cast<const bVector3 *>(&upVec), reinterpret_cast<const bVector3 *>(&mDirection));
+            bScale(reinterpret_cast<bVector3 *>(&lateralVec), reinterpret_cast<const bVector3 *>(&lateralVec), flareSpacing);
+            bScaleAdd(reinterpret_cast<bVector3 *>(&posLeft), reinterpret_cast<const bVector3 *>(&pos), reinterpret_cast<const bVector3 *>(&lateralVec), -1.0f);
+            bScaleAdd(reinterpret_cast<bVector3 *>(&posRight), reinterpret_cast<const bVector3 *>(&pos), reinterpret_cast<const bVector3 *>(&lateralVec), 1.0f);
+            mParticleEffect[0] = CreateParticleEffect(effectName, posLeft);
+            mParticleEffect[1] = CreateParticleEffect(effectName, posRight);
+        } else {
+            mParticleEffect[0] = CreateParticleEffect(effectName, pos);
         }
     }
 }
