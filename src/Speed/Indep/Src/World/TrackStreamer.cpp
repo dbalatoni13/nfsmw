@@ -1672,13 +1672,14 @@ TrackStreamingSection *TrackStreamer::ChooseSectionToJettison() {
             discard_priority = loading_priority * 10 + 100;
         }
 
-        if (discard_priority != 0 && section->Status != TrackStreamingSection::LOADED &&
-            section->Status != TrackStreamingSection::ACTIVATED) {
-            discard_priority += 1;
+        if (discard_priority != 0) {
+            if (static_cast<unsigned int>(section->Status - TrackStreamingSection::LOADED) > 1) {
+                discard_priority += 1;
+            }
         }
-        if (best_discard_priority < discard_priority) {
-            best_discard_priority = discard_priority;
+        if (discard_priority > best_discard_priority) {
             best_section = section;
+            best_discard_priority = discard_priority;
         }
     }
 
@@ -1984,6 +1985,7 @@ bool TrackStreamer::IsLoadingInProgress() {
 }
 
 bool TrackStreamer::CheckLoadingBar() {
+    ProfileNode profile_node("TODO", 0);
     float minimum_distance = kMaxDistance_TrackStreamer;
 
     for (int i = 0; i < 2; i++) {
@@ -1992,12 +1994,7 @@ bool TrackStreamer::CheckLoadingBar() {
             break;
         }
 
-        bool far_load = false;
-        if (CurrentZoneFarLoad && IsLoadingInProgress()) {
-            far_load = true;
-        }
-
-        if (far_load || !entry->PositionSet || !entry->FollowingCar) {
+        if (IsFarLoadingInProgress() || !entry->PositionSet || !entry->FollowingCar) {
             break;
         }
 
@@ -2021,31 +2018,12 @@ bool TrackStreamer::CheckLoadingBar() {
                 continue;
             }
 
-            short section_number = section->SectionNumber;
-            bool is_loading_bar_section = false;
-            bool is_regular_section =
-                static_cast<unsigned int>(static_cast<unsigned char>(static_cast<char>(section_number / 100 + '@')) - 'A') < 0x14;
-            if (is_regular_section) {
-                bool is_primary_loading_bar_section = false;
-                if (is_regular_section) {
-                    int subsection_number = section_number % 100;
-                    is_primary_loading_bar_section = subsection_number > 0 && subsection_number < ScenerySectionLODOffset;
-                }
-
-                if (is_primary_loading_bar_section ||
-                    (ScenerySectionLODOffset <= section_number % 100 &&
-                     section_number % 100 < ScenerySectionLODOffset * 2)) {
-                    is_loading_bar_section = true;
-                }
-            }
-
-            if (!is_loading_bar_section || section->Status == TrackStreamingSection::ACTIVATED) {
+            if (!IsLoadingBarSection_TrackStreamer(section->SectionNumber) ||
+                section->Status == TrackStreamingSection::ACTIVATED) {
                 continue;
             }
 
-            bVector2 future_position;
-            future_position.x = entry->Position.x + entry->Velocity.x * future_position_scale;
-            future_position.y = entry->Position.y + entry->Velocity.y * future_position_scale;
+            bVector2 future_position = entry->Position + entry->Velocity * future_position_scale;
 
             float current_distance = boundary->GetDistanceOutside(&entry->Position, kMaxDistance_TrackStreamer);
             float future_distance = boundary->GetDistanceOutside(&future_position, kMaxDistance_TrackStreamer);

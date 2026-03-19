@@ -257,6 +257,9 @@ class TrackStreamer {
     void AssignLoadingPriority();
     void CalculateLoadingBacklog();
     bool IsLoadingInProgress();
+    bool IsFarLoadingInProgress() {
+        return CurrentZoneFarLoad && IsLoadingInProgress();
+    }
     bool AreAllSectionsActivated();
     bool CheckLoadingBar();
     void HibernateStreamingSections();
