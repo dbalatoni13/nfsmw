@@ -715,21 +715,27 @@ int TrackStreamer::BuildHoleMovements(HoleMovement *hole_movements, int max_move
     ProfileNode profile_node("TODO", 0);
     int ticks = bGetTicker();
     unsigned int checksum = pMemoryPool->GetPoolChecksum();
-    bool failed = false;
-    int num_movements = 0;
-    int amount_moved = 0;
-    int total_needing_allocation = -1;
+    bool failed;
+    int num_movements;
+    int amount_moved;
+    int total_needing_allocation;
 
     pMemoryPool->EnableTracing(false);
+    total_needing_allocation = -1;
+    failed = false;
+    num_movements = 0;
+    amount_moved = 0;
     while (true) {
-        if (largest_free < 0) {
-            int out_of_memory_size = AllocateSectionMemory(&total_needing_allocation);
-            FreeSectionMemory();
-            if (!out_of_memory_size) {
+        if (largest_free >= 0) {
+            if (pMemoryPool->GetLargestFreeBlock() >= largest_free) {
                 break;
             }
-        } else if (largest_free <= pMemoryPool->GetLargestFreeBlock()) {
-            break;
+        } else {
+            int out_of_memory_size = AllocateSectionMemory(&total_needing_allocation);
+            FreeSectionMemory();
+            if (out_of_memory_size == 0) {
+                break;
+            }
         }
 
         if (filler_method != 0) {
