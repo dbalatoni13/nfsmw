@@ -325,18 +325,20 @@ bool GRaceDatabase::CollectionIsRaceActivity(Attrib::Gen::gameplay &collection) 
         isObject = reinterpret_cast<const int *>(Attrib::DefaultDataArea(sizeof(int)));
     }
 
-    if (*isObject == 0) {
-        Attrib::Key parentKey = collection.GetParent();
+    if (*isObject != 0) {
+        return false;
+    }
 
-        while (parentKey != 0) {
-            Attrib::Gen::gameplay parent(parentKey, 0, nullptr);
+    Attrib::Key parentKey = collection.GetParent();
 
-            if (parent.GetCollection() == activity.GetCollection()) {
-                return true;
-            }
+    while (parentKey != 0) {
+        Attrib::Gen::gameplay parent(parentKey, 0, nullptr);
 
-            parentKey = parent.GetParent();
+        if (parent.GetCollection() == activity.GetCollection()) {
+            return true;
         }
+
+        parentKey = parent.GetParent();
     }
 
     return false;
