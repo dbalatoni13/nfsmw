@@ -607,18 +607,23 @@ void ScenerySectionHeader::DrawAScenery(int scenery_instance_number, SceneryCull
     eModel *model = 0;
     if ((scenery_cull_info->ExcludeFlags & 0x1800) != 0) {
         if ((instance_flags & 0x80) != 0) {
-            if (pixel_size_int >= 0x20) {
+            if (pixel_size_int < 0x20) {
+            } else {
                 model = GetSceneryModel_Scenery(scenery_info, 2);
             }
-        } else if (pixel_size_int >= 0x20) {
-            if ((instance_flags & 0x1000100) != 0) {
-                model = GetSceneryModel_Scenery(scenery_info, 0);
+        } else {
+            if (pixel_size_int < 0x20) {
             } else {
-                model = GetSceneryModel_Scenery(scenery_info, 3);
+                if ((instance_flags & 0x1000100) != 0) {
+                    model = GetSceneryModel_Scenery(scenery_info, 0);
+                } else {
+                    model = GetSceneryModel_Scenery(scenery_info, 3);
+                }
             }
         }
     } else if ((scenery_cull_info->ExcludeFlags & 0x20) != 0) {
-        if (pixel_size_int >= 0x20) {
+        if (pixel_size_int < 0x20) {
+        } else {
             model = GetSceneryModel_Scenery(scenery_info, 2);
         }
     } else if (eGetCurrentViewMode() > EVIEWMODE_ONE_RVM) {
@@ -753,10 +758,6 @@ int LoaderScenery(bChunk *chunk) {
                     ScenerySectionHeaderList.AddTail(section_header);
                 }
             } else if (subchunk_id == 0x34102) {
-                if (!section_header) {
-                    continue;
-                }
-
                 int *section_header_words = reinterpret_cast<int *>(section_header);
                 section_header_words[6] = reinterpret_cast<int>(subchunk->GetData());
                 section_header_words[7] = static_cast<unsigned int>(subchunk->Size) / 0x48;
@@ -782,10 +783,6 @@ int LoaderScenery(bChunk *chunk) {
                     }
                 }
             } else if (subchunk_id == 0x34103) {
-                if (!section_header) {
-                    continue;
-                }
-
                 int *section_header_words = reinterpret_cast<int *>(section_header);
                 section_header_words[8] = (reinterpret_cast<int>(subchunk) + 0x17) & 0xFFFFFFF0;
                 section_header_words[9] = static_cast<unsigned int>(
@@ -813,10 +810,6 @@ int LoaderScenery(bChunk *chunk) {
                     }
                 }
             } else if (subchunk_id == 0x34105) {
-                if (!section_header) {
-                    continue;
-                }
-
                 int *section_header_words = reinterpret_cast<int *>(section_header);
                 section_header_words[10] = reinterpret_cast<int>(subchunk->GetData());
                 section_header_words[11] = static_cast<unsigned int>(subchunk->Size) / 0x24;
@@ -837,10 +830,6 @@ int LoaderScenery(bChunk *chunk) {
                     }
                 }
             } else if (subchunk_id == 0x34106) {
-                if (!section_header) {
-                    continue;
-                }
-
                 int *section_header_words = reinterpret_cast<int *>(section_header);
                 int num_overrides = static_cast<unsigned int>(subchunk->Size) >> 2;
                 unsigned short *override_data_base = reinterpret_cast<unsigned short *>(subchunk->GetData());
@@ -858,10 +847,6 @@ int LoaderScenery(bChunk *chunk) {
                     }
                 }
             } else if (subchunk_id == 0x34107) {
-                if (!section_header) {
-                    continue;
-                }
-
                 int *section_header_words = reinterpret_cast<int *>(section_header);
                 section_header_words[12] = reinterpret_cast<int>(subchunk->GetData());
                 section_header_words[13] = static_cast<unsigned int>(subchunk->Size) >> 7;
