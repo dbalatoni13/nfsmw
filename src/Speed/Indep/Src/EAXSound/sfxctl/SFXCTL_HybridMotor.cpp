@@ -106,7 +106,7 @@ void SFXCTL_HybridMotor::UpdateParams(float t) {
 void SFXCTL_HybridMotor::UpdateDualMixEng(float t) {
     (void)t;
     Slope TrqThreshold(0.0f, 1.0f, 0.0f, 35.0f);
-    float AccelDecelMix = TrqThreshold.GetValue(m_pEngineCtl->Trq.GetValue());
+    float AccelDecelMix = TrqThreshold.GetValue(m_pEngineCtl->GetEngTorque());
     bool USE_SMOOTHING = true;
     EngineMix AccelMix;
     EngineMix DecelMix;
@@ -125,10 +125,13 @@ void SFXCTL_HybridMotor::UpdateDualMixEng(float t) {
     PercentOfDecelThreshold = bClamp(1.0f - (adt - DeltaRPM) / adt, 0.0f, 1.0f);
 
     if (!m_pEAXCar->GetPhysicsCTL()->NISRevingEnabled) {
-        if (!m_pStateBase->GetPhysCar()->IsShifting() && !m_pShiftingCtl->IsActive()) {
-            UseAccelMix = m_pAccelTranCtl->IsActive();
-        } else {
+        if (m_pStateBase->GetPhysCar()->IsShifting() || m_pShiftingCtl->IsActive()) {
             UseAccelMix = m_pShiftingCtl->eShiftState == SHFT_UP_ENGAGING;
+        } else {
+            UseAccelMix = m_pAccelTranCtl->eAccelTransFxState != FX_ACCEL_STATE_NONE;
+            if (UseAccelMix) {
+                UseAccelMix = m_pAccelTranCtl->eAccelTransFxState == FX_ACCEL_STATE_ATTACK;
+            }
         }
         if (UseAccelMix) {
             USE_SMOOTHING = false;
@@ -206,8 +209,8 @@ void SFXCTL_HybridMotor::UpdateSingleMixEng(float t) {
     Slope TrqThreshold(0.0f, 1.0f, 0.0f, 35.0f);
     float AccelDecelMix = TrqThreshold.GetValue(m_pEngineCtl->GetEngTorque());
     bool USE_SMOOTHING = true;
-    EngineMix AccelMix = EngineMix();
-    EngineMix DecelMix = EngineMix();
+    EngineMix AccelMix;
+    EngineMix DecelMix;
     float DeltaRPM = bAbs(m_AvgDeltaRPM.GetValue() + 10.0f);
     float adt = m_pEAXCar->GetAttributes().AccelDeltaRPMThreshold();
     EngineMix newmix;

@@ -585,11 +585,18 @@ void EAXAemsManager::SetupNextLoad() {
         m_nCurLoadedBankIndex++;
         m_pCurLoadSDLP = g_SndAssetList + m_nCurLoadedBankIndex;
         if (InitiateLoad() < 0) {
-            Attrib::StringKey FileName = m_pCurLoadSDLP->AssetDescription.FileName;
+            struct {
+                unsigned int Hash32;
+                const char *String;
+            } FileName;
             SndBase *SfxToDel[32];
             SndAssetQueue::iterator i;
             int deleteCount = 0;
 
+            FileName.Hash32 =
+                *static_cast<unsigned int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pCurLoadSDLP)) + 8));
+            FileName.String =
+                *static_cast<const char **>(static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pCurLoadSDLP)) + 0xC));
             bMemSet(SfxToDel, '\0', 0x80);
             while (true) {
                 i = mWaitForResolve.begin();
@@ -599,11 +606,12 @@ void EAXAemsManager::SetupNextLoad() {
 
                 while (true) {
                     stSndAssetQueue currequst = *i;
-                    if (currequst.Asset.FileName == FileName) {
+                    if (*static_cast<unsigned int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(&currequst)) + 8)) ==
+                            FileName.Hash32 &&
+                        *static_cast<const char **>(static_cast<void *>(static_cast<char *>(static_cast<void *>(&currequst)) + 0xC)) ==
+                            FileName.String) {
                         mWaitForResolve.remove(currequst);
-                        if (deleteCount < 32) {
-                            SfxToDel[deleteCount] = currequst.pThis;
-                        }
+                        SfxToDel[deleteCount] = currequst.pThis;
                         deleteCount++;
                         goto ContinueScanning;
                     }
