@@ -222,14 +222,14 @@ void RenderVisibleSectionBoundary(VisibleSectionBoundary *boundary, eView *view)
                     if (view->GetPixelSize(&position, 1.0f) > 0) {
                         unsigned char *matrix_memory = CurrentBufferPos;
                         unsigned char *next_buffer_pos = CurrentBufferPos + sizeof(bMatrix4);
-                        if (CurrentBufferEnd <= next_buffer_pos) {
+                        if (CurrentBufferEnd > next_buffer_pos) {
+                            CurrentBufferPos = next_buffer_pos;
+                        } else {
                             FrameMallocFailed = 1;
                             FrameMallocFailAmount += sizeof(bMatrix4);
                             matrix_memory = 0;
-                            next_buffer_pos = CurrentBufferPos;
                         }
 
-                        CurrentBufferPos = next_buffer_pos;
                         if (matrix_memory) {
                             bMatrix4 *matrix = reinterpret_cast<bMatrix4 *>(matrix_memory);
                             bIdentity(matrix);

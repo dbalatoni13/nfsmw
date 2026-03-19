@@ -70,7 +70,7 @@ int TrackInfo::LoaderTrackInfo(bChunk *chunk) {
 }
 
 TrackInfo *TrackInfo::GetTrackInfo(int track_number) {
-    for (unsigned int n = 0; n < NumTrackInfo; n++) {
+    for (int n = 0; n < static_cast<int>(NumTrackInfo); n++) {
         TrackInfo *info = &TrackInfoTable[n];
         if (info->TrackNumber == track_number) {
             return info;
