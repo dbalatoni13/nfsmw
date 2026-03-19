@@ -441,9 +441,7 @@ void EAXAemsManager::ResolveCurrentDataMemory() {
 int EAXAemsManager::InitiateLoad() {
     int result;
     stBankSlot *pBankSlot;
-    void *allocatedMemory;
     char *fileString;
-    int loadSize;
     eTEMPALLOCLOCATION memLocation;
     QueuedFileParams queuedFileParams;
 
@@ -464,16 +462,19 @@ int EAXAemsManager::InitiateLoad() {
         }
         m_AsyncBuffLocation = TMP_ALLOC_AUDIO;
         bLargestMalloc(AudioMemoryPool);
-        result = bLargestMalloc(0);
-        if (result > 0x20000) {
-            m_AsyncBuffLocation = TMP_ALLOC_MAIN;
-            m_pAsyncBuff = static_cast<char *>(bMalloc(0x10000, 0));
-            goto HaveAsyncBuffer;
-        }
-        m_pAsyncBuff = static_cast<char *>(TheTrackStreamer.AllocateUserMemory(0x10000, "EAXAemsManager::m_pAsyncBuff", 0));
-        m_AsyncBuffLocation = TMP_ALLOC_TRACKSTREAMER;
-        if (m_pAsyncBuff != nullptr) {
-            goto HaveAsyncBuffer;
+        {
+            int nlargestbuff = bLargestMalloc(0);
+            if (nlargestbuff <= 0x20000) {
+                m_pAsyncBuff = static_cast<char *>(TheTrackStreamer.AllocateUserMemory(0x10000, "EAXAemsManager::m_pAsyncBuff", 0));
+                m_AsyncBuffLocation = TMP_ALLOC_TRACKSTREAMER;
+                if (m_pAsyncBuff != nullptr) {
+                    goto HaveAsyncBuffer;
+                }
+            } else {
+                m_AsyncBuffLocation = TMP_ALLOC_MAIN;
+                m_pAsyncBuff = static_cast<char *>(bMalloc(0x10000, 0));
+                goto HaveAsyncBuffer;
+            }
         }
         pBankSlot = m_pCurLoadSDLP->mBankSlot;
         if (pBankSlot != nullptr) {
@@ -482,21 +483,20 @@ int EAXAemsManager::InitiateLoad() {
         result = -2;
     } else {
         m_pCurLoadSDLP->MemLocation = TMP_ALLOC_AUDIO;
-HaveQueueParams:
-        queuedFileParams.BlockSize = 0x7FFFFFF;
-        queuedFileParams.Compressed = false;
-        queuedFileParams.Priority = QueuedFileDefaultPriority - 2;
+    HaveQueueParams:
         queuedFileParams.UncompressedSize = 0;
+        queuedFileParams.BlockSize = 0x7FFFFFF;
+        queuedFileParams.Priority = QueuedFileDefaultPriority - 2;
+        queuedFileParams.Compressed = false;
         memLocation = m_pCurLoadSDLP->MemLocation;
         switch (memLocation) {
         case TMP_ALLOC_MAIN:
             result = bLargestMalloc(0);
-            loadSize = m_pCurLoadSDLP->nSize;
-            if (result < loadSize) {
+            if (result < m_pCurLoadSDLP->nSize) {
                 result = -2;
                 goto ReturnResult;
             }
-            m_pCurLoadSDLP->pmem = bMalloc(loadSize, 0x1040);
+            m_pCurLoadSDLP->pmem = bMalloc(m_pCurLoadSDLP->nSize, 0x1040);
             AddQueuedFile(m_pCurLoadSDLP->pmem, m_csTemp1, 0, m_pCurLoadSDLP->nSize, DataLoadCB,
                           reinterpret_cast<int>(m_pCurLoadSDLP), &queuedFileParams);
         SetWaitingState:
@@ -519,6 +519,9 @@ HaveQueueParams:
                 return -3;
             }
             result = m_pCurLoadSDLP->nSize;
+            AddQueuedFile(fileString, m_csTemp1, 0, result, DataLoadCB,
+                          reinterpret_cast<int>(m_pCurLoadSDLP), &queuedFileParams);
+            m_IsWaitingForFileCB = 1;
             break;
         case TMP_ALLOC_AUDIO:
             if (m_pCurLoadSDLP->AssetDescription.eDataType == EAXSND_DT_GENERIC_DATA &&

@@ -222,6 +222,24 @@ struct CSTATEMGR_Truck : public CSTATEMGR_Base {
     CSTATEMGR_Truck();
 };
 
+Attrib::StringKey crcEngineAudio("EngineAudio");
+Attrib::StringKey crcAudioSystem("AudioSystem");
+Attrib::StringKey crcMostWanted("MostWanted");
+Attrib::StringKey crcDrivetrain("Drivetrain");
+Attrib::StringKey crcSkidParams("SkidParams");
+Attrib::StringKey crcTurboSFX("TurboSFX");
+Attrib::StringKey crcAccelTrans("AccelTrans");
+Attrib::StringKey crcShiftPattern("ShiftPattern");
+Attrib::StringKey crcSweetener("Sweetener");
+Attrib::StringKey crcEnglish("English");
+Attrib::StringKey crcCarHitWall("CarHitWall");
+Attrib::StringKey crcLicensedMusic("LicensedMusic");
+Attrib::StringKey crcMusic("Music");
+EAXAemsManager gAEMSMgr;
+stSndDataLoadParams g_SndAssetList[48];
+Slope TablePitch(0.0f, 1.0f, 3500.0f, 4500.0f);
+Slope BreakingPitchVsSpeed(3000.0f, 5000.0f, 30.0f, 100.0f);
+
 template <>
 UTL::Collections::Listable<CarSoundConn, 10>::List UTL::Collections::Listable<CarSoundConn, 10>::_mTable =
     UTL::Collections::Listable<CarSoundConn, 10>::List();

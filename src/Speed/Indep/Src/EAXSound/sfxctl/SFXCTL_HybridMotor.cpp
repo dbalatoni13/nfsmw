@@ -206,8 +206,8 @@ void SFXCTL_HybridMotor::UpdateSingleMixEng(float t) {
     Slope TrqThreshold(0.0f, 1.0f, 0.0f, 35.0f);
     float AccelDecelMix = TrqThreshold.GetValue(m_pEngineCtl->GetEngTorque());
     bool USE_SMOOTHING = true;
-    EngineMix AccelMix;
-    EngineMix DecelMix;
+    EngineMix AccelMix = EngineMix();
+    EngineMix DecelMix = EngineMix();
     float DeltaRPM = bAbs(m_AvgDeltaRPM.GetValue() + 10.0f);
     float adt = m_pEAXCar->GetAttributes().AccelDeltaRPMThreshold();
     EngineMix newmix;
@@ -220,17 +220,18 @@ void SFXCTL_HybridMotor::UpdateSingleMixEng(float t) {
     adt = m_pEAXCar->GetAttributes().DecelDeltaRPMThreshold();
     PercentOfDecelThreshold = bClamp(1.0f - (adt - DeltaRPM) / adt, 0.0f, 1.0f);
 
-    if (!m_pStateBase->GetPhysCar()->IsShifting() && m_pShiftingCtl->eShiftState == SHFT_NONE) {
-        if (m_pAccelTranCtl->eAccelTransFxState == FX_ACCEL_STATE_ATTACK) {
-            USE_SMOOTHING = false;
-        }
-    } else if (m_pShiftingCtl->eShiftState != SHFT_UP_LFO) {
-        if (static_cast<int>(m_pShiftingCtl->eShiftState) < 4) {
-            if (m_pShiftingCtl->eShiftState == SHFT_UP_ENGAGING) {
+    if (m_pStateBase->GetPhysCar()->IsShifting() || m_pShiftingCtl->IsActive()) {
+        SHIFT_STAGE shiftState = m_pShiftingCtl->eShiftState;
+        if (shiftState != SHFT_UP_LFO) {
+            if (shiftState == SHFT_UP_ENGAGING) {
+                USE_SMOOTHING = false;
+            } else if (shiftState != SHFT_DOWN_ENGAGING_RISE && shiftState == SHFT_DOWN_ENGAGING_REATTACH &&
+                       m_pEAXCar->IsAccelerating()) {
                 USE_SMOOTHING = false;
             }
-        } else if (m_pShiftingCtl->eShiftState != SHFT_DOWN_ENGAGING_RISE &&
-                   m_pShiftingCtl->eShiftState == SHFT_DOWN_ENGAGING_REATTACH && m_pEAXCar->IsAccelerating()) {
+        }
+    } else if (m_pAccelTranCtl->IsActive()) {
+        if (m_pAccelTranCtl->eAccelTransFxState == FX_ACCEL_STATE_ATTACK) {
             USE_SMOOTHING = false;
         }
     }

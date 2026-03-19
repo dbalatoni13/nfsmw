@@ -886,6 +886,11 @@ void cStichWrapper::Destroy() {
 }
 
 template <>
+UTL::FixedVector<SampleQueueItem, 43, 16> cSTICH_PlayBack::mQueuedSampleList[3] =
+    {UTL::FixedVector<SampleQueueItem, 43, 16>(), UTL::FixedVector<SampleQueueItem, 43, 16>(),
+     UTL::FixedVector<SampleQueueItem, 43, 16>()};
+
+template <>
 UTL::Collections::ListableSet<cSampleWarpper, 25, STICH_TYPE, MAX_NUM_STICH_TYPE>::_ListSet
     UTL::Collections::ListableSet<cSampleWarpper, 25, STICH_TYPE, MAX_NUM_STICH_TYPE>::_mLists =
         UTL::Collections::ListableSet<cSampleWarpper, 25, STICH_TYPE, MAX_NUM_STICH_TYPE>::_ListSet();
