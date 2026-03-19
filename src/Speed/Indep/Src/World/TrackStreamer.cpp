@@ -2220,8 +2220,8 @@ short TrackStreamer::GetPredictedZone(StreamingPositionEntry *position_entry) {
 void TrackStreamer::ClearStreamingPositions() {
     for (int position_number = 0; position_number < 2; position_number++) {
         StreamingPositionEntry *position_entry = &StreamingPositionEntries[position_number];
-        position_entry->FollowingCar = false;
         position_entry->PositionSet = false;
+        position_entry->FollowingCar = false;
     }
 }
 
