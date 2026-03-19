@@ -1600,20 +1600,19 @@ void TrackStreamer::LoadSection(TrackStreamingSection *section) {
     NumSectionsLoading += 1;
     section->Status = TrackStreamingSection::LOADING;
 
-    int loaded_size = section->CompressedSize;
-    int section_size = section->Size;
-    if (loaded_size == section_size) {
-        AddQueuedFile(section->pMemory, StreamFilenames[section->FileType], section->FileOffset, loaded_size, SectionLoadedCallback,
+    if (section->CompressedSize == section->Size) {
+        AddQueuedFile(section->pMemory, StreamFilenames[section->FileType], section->FileOffset, section->CompressedSize,
+                      SectionLoadedCallback,
                       reinterpret_cast<int>(section), 0);
     } else {
         QueuedFileParams params;
-        params.BlockSize = 0x7ffffff;
+        params.BlockSize = 0x7fffffff;
         params.Priority = QueuedFileDefaultPriority;
         params.Compressed = false;
         params.Compressed = true;
-        params.UncompressedSize = section_size;
-        AddQueuedFile(section->pMemory, StreamFilenames[section->FileType], section->FileOffset, loaded_size, SectionLoadedCallback,
-                      reinterpret_cast<int>(section), &params);
+        params.UncompressedSize = section->Size;
+        AddQueuedFile(section->pMemory, StreamFilenames[section->FileType], section->FileOffset, section->CompressedSize,
+                      SectionLoadedCallback, reinterpret_cast<int>(section), &params);
     }
 }
 
@@ -1835,19 +1834,21 @@ void TrackStreamer::EmptyCaffeineLayers() {
 }
 
 void TrackStreamer::HandleLoading() {
-    if (!SkipNextHandleLoad) {
+    if (SkipNextHandleLoad) {
+        SkipNextHandleLoad = false;
+    } else {
         if (LoadingPhase != LOADING_IDLE) {
             if ((LoadingPhase == LOADING_TEXTURE_SECTIONS || LoadingPhase == LOADING_GEOMETRY_SECTIONS ||
                  LoadingPhase == LOADING_REGULAR_SECTIONS) &&
                 (StartLoadingSections(), NumSectionsLoading == 0)) {
-                if (!CurrentZoneAllocatedButIncomplete) {
+                if (CurrentZoneAllocatedButIncomplete) {
+                    SetLoadingPhase(static_cast<eLoadingPhase>(LoadingPhase - 1));
+                } else {
                     if (LoadingPhase == LOADING_REGULAR_SECTIONS) {
                         FinishedLoading();
                         return;
                     }
                     SetLoadingPhase(static_cast<eLoadingPhase>(LoadingPhase + 1));
-                } else {
-                    SetLoadingPhase(static_cast<eLoadingPhase>(LoadingPhase - 1));
                 }
             }
 
@@ -1858,13 +1859,14 @@ void TrackStreamer::HandleLoading() {
                 for (int i = 0; i < NumTrackStreamingSections; i++) {
                     TrackStreamingSection *section = &pTrackStreamingSections[i];
                     if (section->Status == TrackStreamingSection::ACTIVATED && !section->CurrentlyVisible) {
-                        char section_letter = GetScenerySectionLetter_TrackStreamer(section->SectionNumber);
                         if (LoadingPhase == ALLOCATING_GEOMETRY_SECTIONS) {
+                            char section_letter = GetScenerySectionLetter_TrackStreamer(section->SectionNumber);
                             if (section_letter == 'Y' || section_letter == 'W') {
                                 num_sections_unactivated += 1;
                                 UnactivateSection(section);
                             }
                         } else if (LoadingPhase == ALLOCATING_REGULAR_SECTIONS) {
+                            char section_letter = GetScenerySectionLetter_TrackStreamer(section->SectionNumber);
                             if (section_letter == 'X' || section_letter == 'U') {
                                 num_sections_unactivated += 1;
                                 UnactivateSection(section);
@@ -1873,7 +1875,9 @@ void TrackStreamer::HandleLoading() {
                     }
                 }
 
-                if (num_sections_unactivated < 1) {
+                if (num_sections_unactivated > 0) {
+                    SkipNextHandleLoad = true;
+                } else {
                     PostLoadFixupDisabled = true;
                     int did_allocate = HandleMemoryAllocation();
                     PostLoadFixupDisabled = false;
@@ -1887,13 +1891,9 @@ void TrackStreamer::HandleLoading() {
                         }
                         HandleLoading();
                     }
-                } else {
-                    SkipNextHandleLoad = true;
                 }
             }
         }
-    } else {
-        SkipNextHandleLoad = false;
     }
 }
 
