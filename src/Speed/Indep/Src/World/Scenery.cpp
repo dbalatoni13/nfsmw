@@ -1263,6 +1263,9 @@ void GrandSceneryCullInfo::DoCulling() {
         CullView(scenery_cull_info);
         pCurrentDrawInfo = scenery_cull_info->pCurrentDrawInfo;
     }
+
+    for (n = 0; n < NumCullInfos; n++) {
+    }
 }
 
 void RenderVisibleZones(eView *view) {
