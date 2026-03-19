@@ -92,6 +92,10 @@ class TrackPathManager {
     struct TrackPathBarrier *pBarriers; // offset 0x488, size 0x4
 
   public:
+    TrackPathManager() {
+        Clear();
+    }
+
     void Clear();
     int Loader(bChunk *chunk);
     int Unloader(bChunk *chunk);

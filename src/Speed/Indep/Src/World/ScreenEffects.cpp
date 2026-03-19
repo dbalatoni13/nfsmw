@@ -283,137 +283,139 @@ void DoTunnelBloom(eView *view) {
     }
 
     float base_glare = 0.0f;
-    if (!zone || zone->Elevation <= my_car_pos->z) {
-        if (base_glare < view->ScreenEffects->SE_data[SE_GLARE].intensity) {
-            ScreenEffectDef SE_def;
-            float pos_screen_x;
-            float pos_screen_y;
-            float pos_screen_z;
+    if (zone && zone->Elevation > my_car_pos->z) {
+        lcamPosInside_27614[vIndex] = *camera_position;
+        float angleCos = base_glare;
+        bVector3 endVector;
+        GenericRegion *end_tunnel = GetClosestRegionInView(view, &endVector, &angleCos);
+        if (!end_tunnel) {
+            return;
+        }
 
-            bMemSet(&SE_def, 0, sizeof(SE_def));
-            SE_def.r = 128.0f;
-            SE_def.g = 128.0f;
-            SE_def.b = 128.0f;
-            SE_def.a = 128.0f;
-            SE_def.intensity = view->ScreenEffects->SE_data[SE_GLARE].intensity - GlareFalloff;
-            pos_screen_x = camera_position->x - lcamPosInside_27614[vIndex].x;
-            pos_screen_y = camera_position->y - lcamPosInside_27614[vIndex].y;
-            pos_screen_z = camera_position->z - lcamPosInside_27614[vIndex].z;
-            pos_screen_x += camera_direction->x;
-            pos_screen_y += camera_direction->y;
-            pos_screen_z += camera_direction->z;
+        bVector2 endP(endVector.x, endVector.y);
+        bVector2 p0;
+        bVector2 p1;
+        float len = zone->GetSegmentNextTo(&endP, &p0, &p1);
+        if (len == -1.0f || len >= 40.0f) {
+            return;
+        }
 
-            if (base_glare < SE_def.intensity) {
-                SE_def.data[0] = pos_screen_x + dataBackup_27616[kTunnelPoint0X][vIndex];
-                SE_def.data[1] = pos_screen_y + dataBackup_27616[kTunnelPoint0Y][vIndex];
-                SE_def.data[2] = pos_screen_z + dataBackup_27616[kTunnelPoint0Z][vIndex];
-                SE_def.data[3] = pos_screen_x + dataBackup_27616[kTunnelPoint1X][vIndex];
-                SE_def.data[4] = pos_screen_y + dataBackup_27616[kTunnelPoint1Y][vIndex];
-                SE_def.data[5] = pos_screen_z + dataBackup_27616[kTunnelPoint1Z][vIndex];
-                SE_def.data[6] = pos_screen_x + dataBackup_27616[kTunnelPoint2X][vIndex];
-                SE_def.data[7] = pos_screen_y + dataBackup_27616[kTunnelPoint2Y][vIndex];
-                SE_def.data[8] = pos_screen_z + dataBackup_27616[kTunnelPoint2Z][vIndex];
-                SE_def.data[9] = pos_screen_x + dataBackup_27616[kTunnelPoint3X][vIndex];
-                SE_def.data[10] = pos_screen_y + dataBackup_27616[kTunnelPoint3Y][vIndex];
-                SE_def.data[11] = pos_screen_z + dataBackup_27616[kTunnelPoint3Z][vIndex];
-                view->ScreenEffects->AddScreenEffect(SE_GLARE, &SE_def, 1, SEC_FRAME);
-                AccumulationBufferNeedsFlush = 1;
+        UMath::Vector3 usPoint;
+        usPoint.x = -endVector.y;
+        usPoint.y = endVector.z;
+        usPoint.z = endVector.x;
+        float height = 0.0f;
+        WCollisionMgr(0, 3).GetWorldHeightAtPointRigorous(usPoint, height, 0);
+
+        dataBackup_27616[kTunnelPoint0X][vIndex] = p0.x + camera_direction->x;
+        dataBackup_27616[kTunnelPoint0Y][vIndex] = p0.y + camera_direction->y;
+        dataBackup_27616[kTunnelPoint0Z][vIndex] = height + camera_direction->z;
+        dataBackup_27616[kTunnelPoint1X][vIndex] = p1.x + camera_direction->x;
+        dataBackup_27616[kTunnelPoint1Y][vIndex] = p1.y + camera_direction->y;
+        dataBackup_27616[kTunnelPoint1Z][vIndex] = height + camera_direction->z;
+        dataBackup_27616[kTunnelPoint2X][vIndex] = p0.x + camera_direction->x;
+        dataBackup_27616[kTunnelPoint2Y][vIndex] = p0.y + camera_direction->y;
+        dataBackup_27616[kTunnelPoint2Z][vIndex] = height + TUNHEIGHT + camera_direction->z;
+        dataBackup_27616[kTunnelPoint3X][vIndex] = p1.x + camera_direction->x;
+        dataBackup_27616[kTunnelPoint3Y][vIndex] = p1.y + camera_direction->y;
+        dataBackup_27616[kTunnelPoint3Z][vIndex] = height + TUNHEIGHT + camera_direction->z;
+
+        ScreenEffectDef SE_def;
+        bMemSet(&SE_def, 0, sizeof(SE_def));
+        SE_def.r = 128.0f;
+        SE_def.g = 128.0f;
+        SE_def.b = 128.0f;
+        SE_def.a = 128.0f;
+        SE_def.data[0] = dataBackup_27616[kTunnelPoint0X][vIndex];
+        SE_def.data[1] = dataBackup_27616[kTunnelPoint0Y][vIndex];
+        SE_def.data[2] = dataBackup_27616[kTunnelPoint0Z][vIndex];
+        SE_def.data[3] = dataBackup_27616[kTunnelPoint1X][vIndex];
+        SE_def.data[4] = dataBackup_27616[kTunnelPoint1Y][vIndex];
+        SE_def.data[5] = dataBackup_27616[kTunnelPoint1Z][vIndex];
+        SE_def.data[6] = dataBackup_27616[kTunnelPoint2X][vIndex];
+        SE_def.data[7] = dataBackup_27616[kTunnelPoint2Y][vIndex];
+        SE_def.data[8] = dataBackup_27616[kTunnelPoint2Z][vIndex];
+        SE_def.data[9] = dataBackup_27616[kTunnelPoint3X][vIndex];
+        SE_def.data[10] = dataBackup_27616[kTunnelPoint3Y][vIndex];
+        SE_def.data[11] = dataBackup_27616[kTunnelPoint3Z][vIndex];
+
+        if (regionB_27617[vIndex] != end_tunnel) {
+            view->ScreenEffects->SE_data[SE_GLARE].data[1] = base_glare;
+        }
+        regionB_27617[vIndex] = end_tunnel;
+        if (zoneB[vIndex] != zone) {
+            view->ScreenEffects->SE_data[SE_GLARE].data[1] = base_glare;
+        }
+        zoneB[vIndex] = zone;
+
+        bVector2 r;
+        bVector2 v;
+        r.x = p0.x - twoDpos.x;
+        r.y = p0.y - twoDpos.y;
+        v.x = p1.y - p0.y;
+        v.y = p0.x - p1.x;
+        bNormalize(&v, &v);
+        float dir_dot = bAbs(v.x * r.x + v.y * r.y);
+        if (17.0f <= dir_dot) {
+            SE_def.intensity = 1.0f;
+            if (view->ScreenEffects->SE_data[SE_GLARE].data[1] < 1.0f) {
+                SE_def.intensity = view->ScreenEffects->SE_data[SE_GLARE].data[1] + GlareFallon;
             }
+        } else {
+            SE_def.intensity = view->ScreenEffects->SE_data[SE_GLARE].data[1] * 0.05882353f * dir_dot;
+        }
+
+        view->ScreenEffects->SE_data[SE_GLARE].data[1] = SE_def.intensity;
+        view->ScreenEffects->AddScreenEffect(SE_GLARE, &SE_def, 1, SEC_FRAME);
+        AccumulationBufferNeedsFlush = 1;
+
+        if (view->Precipitation && base_glare < view->Precipitation->GetRainIntensity()) {
+            view->Precipitation->IsValidRainCurtainPos = CT_OVERIDE;
+            view->Precipitation->AttachRainCurtain(
+                dataBackup_27616[kTunnelPoint2X][vIndex], dataBackup_27616[kTunnelPoint2Y][vIndex],
+                dataBackup_27616[kTunnelPoint2Z][vIndex], dataBackup_27616[kTunnelPoint3X][vIndex],
+                dataBackup_27616[kTunnelPoint3Y][vIndex], dataBackup_27616[kTunnelPoint3Z][vIndex],
+                dataBackup_27616[kTunnelPoint0X][vIndex], dataBackup_27616[kTunnelPoint0Y][vIndex]
+            );
         }
         return;
     }
 
-    lcamPosInside_27614[vIndex] = *camera_position;
-    float angleCos = base_glare;
-    bVector3 endVector;
-    GenericRegion *end_tunnel = GetClosestRegionInView(view, &endVector, &angleCos);
-    if (!end_tunnel) {
-        return;
-    }
+    if (base_glare < view->ScreenEffects->SE_data[SE_GLARE].intensity) {
+        ScreenEffectDef SE_def;
+        float pos_screen_x;
+        float pos_screen_y;
+        float pos_screen_z;
 
-    bVector2 endP(endVector.x, endVector.y);
-    bVector2 p0;
-    bVector2 p1;
-    float len = zone->GetSegmentNextTo(&endP, &p0, &p1);
-    if (len == -1.0f || len >= 40.0f) {
-        return;
-    }
+        bMemSet(&SE_def, 0, sizeof(SE_def));
+        SE_def.r = 128.0f;
+        SE_def.g = 128.0f;
+        SE_def.b = 128.0f;
+        SE_def.a = 128.0f;
+        SE_def.intensity = view->ScreenEffects->SE_data[SE_GLARE].intensity - GlareFalloff;
+        pos_screen_x = camera_position->x - lcamPosInside_27614[vIndex].x;
+        pos_screen_y = camera_position->y - lcamPosInside_27614[vIndex].y;
+        pos_screen_z = camera_position->z - lcamPosInside_27614[vIndex].z;
+        pos_screen_x += camera_direction->x;
+        pos_screen_y += camera_direction->y;
+        pos_screen_z += camera_direction->z;
 
-    UMath::Vector3 usPoint;
-    usPoint.x = -endVector.y;
-    usPoint.y = endVector.z;
-    usPoint.z = endVector.x;
-    float height = 0.0f;
-    WCollisionMgr(0, 3).GetWorldHeightAtPointRigorous(usPoint, height, 0);
-
-    dataBackup_27616[kTunnelPoint0X][vIndex] = p0.x + camera_direction->x;
-    dataBackup_27616[kTunnelPoint0Y][vIndex] = p0.y + camera_direction->y;
-    dataBackup_27616[kTunnelPoint0Z][vIndex] = height + camera_direction->z;
-    dataBackup_27616[kTunnelPoint1X][vIndex] = p1.x + camera_direction->x;
-    dataBackup_27616[kTunnelPoint1Y][vIndex] = p1.y + camera_direction->y;
-    dataBackup_27616[kTunnelPoint1Z][vIndex] = height + camera_direction->z;
-    dataBackup_27616[kTunnelPoint2X][vIndex] = p0.x + camera_direction->x;
-    dataBackup_27616[kTunnelPoint2Y][vIndex] = p0.y + camera_direction->y;
-    dataBackup_27616[kTunnelPoint2Z][vIndex] = height + TUNHEIGHT + camera_direction->z;
-    dataBackup_27616[kTunnelPoint3X][vIndex] = p1.x + camera_direction->x;
-    dataBackup_27616[kTunnelPoint3Y][vIndex] = p1.y + camera_direction->y;
-    dataBackup_27616[kTunnelPoint3Z][vIndex] = height + TUNHEIGHT + camera_direction->z;
-
-    ScreenEffectDef SE_def;
-    bMemSet(&SE_def, 0, sizeof(SE_def));
-    SE_def.r = 128.0f;
-    SE_def.g = 128.0f;
-    SE_def.b = 128.0f;
-    SE_def.a = 128.0f;
-    SE_def.data[0] = dataBackup_27616[kTunnelPoint0X][vIndex];
-    SE_def.data[1] = dataBackup_27616[kTunnelPoint0Y][vIndex];
-    SE_def.data[2] = dataBackup_27616[kTunnelPoint0Z][vIndex];
-    SE_def.data[3] = dataBackup_27616[kTunnelPoint1X][vIndex];
-    SE_def.data[4] = dataBackup_27616[kTunnelPoint1Y][vIndex];
-    SE_def.data[5] = dataBackup_27616[kTunnelPoint1Z][vIndex];
-    SE_def.data[6] = dataBackup_27616[kTunnelPoint2X][vIndex];
-    SE_def.data[7] = dataBackup_27616[kTunnelPoint2Y][vIndex];
-    SE_def.data[8] = dataBackup_27616[kTunnelPoint2Z][vIndex];
-    SE_def.data[9] = dataBackup_27616[kTunnelPoint3X][vIndex];
-    SE_def.data[10] = dataBackup_27616[kTunnelPoint3Y][vIndex];
-    SE_def.data[11] = dataBackup_27616[kTunnelPoint3Z][vIndex];
-
-    if (regionB_27617[vIndex] != end_tunnel) {
-        view->ScreenEffects->SE_data[SE_GLARE].data[1] = base_glare;
-    }
-    regionB_27617[vIndex] = end_tunnel;
-    if (zoneB[vIndex] != zone) {
-        view->ScreenEffects->SE_data[SE_GLARE].data[1] = base_glare;
-    }
-    zoneB[vIndex] = zone;
-
-    bVector2 r;
-    bVector2 v;
-    r.x = p0.x - twoDpos.x;
-    r.y = p0.y - twoDpos.y;
-    v.x = p1.y - p0.y;
-    v.y = p0.x - p1.x;
-    bNormalize(&v, &v);
-    float dir_dot = bAbs(v.x * r.x + v.y * r.y);
-    if (17.0f <= dir_dot) {
-        SE_def.intensity = 1.0f;
-        if (view->ScreenEffects->SE_data[SE_GLARE].data[1] < 1.0f) {
-            SE_def.intensity = view->ScreenEffects->SE_data[SE_GLARE].data[1] + GlareFallon;
+        if (base_glare < SE_def.intensity) {
+            SE_def.data[0] = pos_screen_x + dataBackup_27616[kTunnelPoint0X][vIndex];
+            SE_def.data[1] = pos_screen_y + dataBackup_27616[kTunnelPoint0Y][vIndex];
+            SE_def.data[2] = pos_screen_z + dataBackup_27616[kTunnelPoint0Z][vIndex];
+            SE_def.data[3] = pos_screen_x + dataBackup_27616[kTunnelPoint1X][vIndex];
+            SE_def.data[4] = pos_screen_y + dataBackup_27616[kTunnelPoint1Y][vIndex];
+            SE_def.data[5] = pos_screen_z + dataBackup_27616[kTunnelPoint1Z][vIndex];
+            SE_def.data[6] = pos_screen_x + dataBackup_27616[kTunnelPoint2X][vIndex];
+            SE_def.data[7] = pos_screen_y + dataBackup_27616[kTunnelPoint2Y][vIndex];
+            SE_def.data[8] = pos_screen_z + dataBackup_27616[kTunnelPoint2Z][vIndex];
+            SE_def.data[9] = pos_screen_x + dataBackup_27616[kTunnelPoint3X][vIndex];
+            SE_def.data[10] = pos_screen_y + dataBackup_27616[kTunnelPoint3Y][vIndex];
+            SE_def.data[11] = pos_screen_z + dataBackup_27616[kTunnelPoint3Z][vIndex];
+            view->ScreenEffects->AddScreenEffect(SE_GLARE, &SE_def, 1, SEC_FRAME);
+            AccumulationBufferNeedsFlush = 1;
         }
-    } else {
-        SE_def.intensity = view->ScreenEffects->SE_data[SE_GLARE].data[1] * 0.05882353f * dir_dot;
-    }
-
-    view->ScreenEffects->SE_data[SE_GLARE].data[1] = SE_def.intensity;
-    view->ScreenEffects->AddScreenEffect(SE_GLARE, &SE_def, 1, SEC_FRAME);
-    AccumulationBufferNeedsFlush = 1;
-
-    if (view->Precipitation && base_glare < view->Precipitation->GetRainIntensity()) {
-        view->Precipitation->IsValidRainCurtainPos = CT_OVERIDE;
-        view->Precipitation->AttachRainCurtain(dataBackup_27616[kTunnelPoint2X][vIndex], dataBackup_27616[kTunnelPoint2Y][vIndex],
-                                               dataBackup_27616[kTunnelPoint2Z][vIndex], dataBackup_27616[kTunnelPoint3X][vIndex],
-                                               dataBackup_27616[kTunnelPoint3Y][vIndex], dataBackup_27616[kTunnelPoint3Z][vIndex],
-                                               dataBackup_27616[kTunnelPoint0X][vIndex], dataBackup_27616[kTunnelPoint0Y][vIndex]);
     }
 }
 
