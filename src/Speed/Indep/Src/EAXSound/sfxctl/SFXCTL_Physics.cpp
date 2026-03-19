@@ -6,6 +6,7 @@
 #include "Speed/Indep/Src/EAXSound/EAXCar.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXCarState.hpp"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/engineaudio.h"
+#include "Speed/Indep/Src/Generated/Messages/MAIEngineRev.h"
 #include "Speed/Indep/Src/Interfaces/SimActivities/INIS.h"
 #include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
 #include "Speed/Indep/Src/Misc/Hermes.h"
@@ -124,38 +125,35 @@ extern "C" void AverageBase_Recalculate(AverageBase *avg) asm("Recalculate__11Av
 extern "C" float GetValueFromSpline(float value, bMatrix4 *curve);
 
 SFXCTL_Physics::SFXCTL_Physics()
-    : m_bBlownEngineStreamQueued(false) //
-    , PhysicsRPM(0.0f) //
-    , RedLineRPM(0.0f) //
-    , fMinPhysRPM(0.0f) //
-    , fMaxPhysRPM(1.0f) //
-    , fRedLinePhysRPM(0.0f) //
-    , PhysicsTRQ(0.0f) //
-    , fMaxPhysTRQ(0.0f) //
-    , m_fThrottle(0.0f) //
-    , m_OldThrottle(0.0f) //
-    , m_OldDesiredSpeed(0.0f) //
-    , m_tHoldDecel(0.0f) //
-    , IsAccelerating(false) //
-    , t_Last_Deccel(0.0f) //
-    , t_Last_Accel(0.0f) //
-    , m_CurGear(static_cast< Gear >(0)) //
-    , m_LastGear(static_cast< Gear >(0)) //
-    , mRPMCurve(nullptr) //
-    , mMsgRevEngine(nullptr) //
-    , mMsgRevOff(nullptr) //
-    , PattternPlay(false) //
-    , PatternNumber(0) //
-    , CarID(-1) //
-    , bPlayerEngEnable(false) //
-    , RevFramesRemaining(0) //
-    , NISRevingEnabled(false) //
-    , eCurNisRevingState(NIS_OFF) //
-    , TimeIntoRev(0.0f) //
-    , NumDataPoints(0) //
-    , pRevData(nullptr) //
-    , NISRPM(0.0f) //
-    , NISTRQ(0.0f) {}
+    : m_fDeltaDesiredSpeed(2) {
+    mMsgRevEngine =
+        Hermes::Handler::Create<MAIEngineRev, SFXCTL_Physics, SFXCTL_Physics>(this, &SFXCTL_Physics::MsgRevEngine, UCrc32("QRev"), 0);
+    mMsgRevOff =
+        Hermes::Handler::Create<MAIEngineRev, SFXCTL_Physics, SFXCTL_Physics>(this, &SFXCTL_Physics::MsgRevOff, UCrc32("RevOFF"), 0);
+
+    m_fDeltaDesiredSpeed.Flush(0.0f);
+
+    eCurNisRevingState = NIS_OFF;
+    fMaxPhysRPM = 1.0f;
+    NISRPM = 0.0f;
+    PatternNumber = 0;
+    TimeIntoRev = 0.0f;
+    CarID = -1;
+    m_OldThrottle = 0.0f;
+    m_fThrottle = 0.0f;
+    IsAccelerating = false;
+    PhysicsRPM = 0.0f;
+    PhysicsTRQ = 0.0f;
+    fMaxPhysTRQ = 0.0f;
+    m_CurGear = static_cast<Gear>(Sound::NEUTRAL);
+    m_LastGear = static_cast<Gear>(Sound::NEUTRAL);
+    bPlayerEngEnable = false;
+    NISRevingEnabled = false;
+    RevFramesRemaining = 0;
+    NISTRQ = 0.0f;
+    mRPMCurve = nullptr;
+    PattternPlay = false;
+}
 
 SndBase *SFXCTL_Physics::CreateObject(unsigned int allocator) {
     (void)allocator;

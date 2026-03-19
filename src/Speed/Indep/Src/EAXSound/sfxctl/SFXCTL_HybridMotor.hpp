@@ -38,9 +38,7 @@ struct SFXCTL_HybridMotor : public SFXCTL {
     /* 0x78 */ int mPrevDeltaRPM;
     /* 0x7c */ float m_GinsuLPFVal;
     /* 0x80 */ bool m_bAEMSLPF;
-    /* 0x81 */ char _pad81[3];
     /* 0x84 */ unsigned short SteadyFrameCnt;
-    /* 0x86 */ char _pad86[2];
     /* 0x88 */ Average m_AvgDeltaRPM;
     /* 0xb0 */ float m_CurPhyDeltaRPMVal;
     /* 0xb4 */ float m_CurAudDeltaRPMVal;

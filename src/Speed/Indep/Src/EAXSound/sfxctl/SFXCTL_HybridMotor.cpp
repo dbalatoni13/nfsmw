@@ -208,7 +208,7 @@ void SFXCTL_HybridMotor::UpdateSingleMixEng(float t) {
     bool USE_SMOOTHING = true;
     EngineMix AccelMix;
     EngineMix DecelMix;
-    float DeltaRPM = m_AvgDeltaRPM.GetValue() + 10.0f;
+    float DeltaRPM = bAbs(m_AvgDeltaRPM.GetValue() + 10.0f);
     float adt = m_pEAXCar->GetAttributes().AccelDeltaRPMThreshold();
     EngineMix newmix;
     float EngineCtlVolFactor;
@@ -216,32 +216,24 @@ void SFXCTL_HybridMotor::UpdateSingleMixEng(float t) {
     int VolAccelGinsu;
     int VolDecelGinsu;
 
-    PercentOfAccelThreshold = bClamp(1.0f - (adt - bAbs(DeltaRPM)) / adt, 0.0f, 1.0f);
+    PercentOfAccelThreshold = bClamp(1.0f - (adt - DeltaRPM) / adt, 0.0f, 1.0f);
     adt = m_pEAXCar->GetAttributes().DecelDeltaRPMThreshold();
-    PercentOfDecelThreshold = bClamp(1.0f - (adt - bAbs(DeltaRPM)) / adt, 0.0f, 1.0f);
+    PercentOfDecelThreshold = bClamp(1.0f - (adt - DeltaRPM) / adt, 0.0f, 1.0f);
 
-    SHIFT_STAGE shiftState = m_pShiftingCtl->eShiftState;
-    if (!m_pStateBase->GetPhysCar()->IsShifting()) {
-        if (!m_pShiftingCtl->IsActive()) {
-            if (m_pAccelTranCtl->IsActive() && m_pAccelTranCtl->eAccelTransFxState == FX_ACCEL_STATE_ATTACK) {
+    if (!m_pStateBase->GetPhysCar()->IsShifting() && m_pShiftingCtl->eShiftState == SHFT_NONE) {
+        if (m_pAccelTranCtl->eAccelTransFxState == FX_ACCEL_STATE_ATTACK) {
+            USE_SMOOTHING = false;
+        }
+    } else if (m_pShiftingCtl->eShiftState != SHFT_UP_LFO) {
+        if (static_cast<int>(m_pShiftingCtl->eShiftState) < 4) {
+            if (m_pShiftingCtl->eShiftState == SHFT_UP_ENGAGING) {
                 USE_SMOOTHING = false;
             }
-            goto SingleMixReady;
-        }
-        shiftState = m_pShiftingCtl->eShiftState;
-    }
-
-    if (shiftState != SHFT_UP_LFO) {
-        if (static_cast<int>(shiftState) < 4) {
-            if (shiftState == SHFT_UP_ENGAGING) {
-                USE_SMOOTHING = false;
-            }
-        } else if (shiftState != SHFT_DOWN_ENGAGING_RISE && shiftState == SHFT_DOWN_ENGAGING_REATTACH) {
-            USE_SMOOTHING = !m_pEAXCar->IsAccelerating();
+        } else if (m_pShiftingCtl->eShiftState != SHFT_DOWN_ENGAGING_RISE &&
+                   m_pShiftingCtl->eShiftState == SHFT_DOWN_ENGAGING_REATTACH && m_pEAXCar->IsAccelerating()) {
+            USE_SMOOTHING = false;
         }
     }
-
-SingleMixReady:
     Attrib::Gen::engineaudio &engineInfo = m_pEAXCar->GetAttributes();
     AccelMix.Aems = PercentOfAccelThreshold * (engineInfo.AEMSMix_L_RPM() - engineInfo.AEMSMix_S_RPM()) + engineInfo.AEMSMix_S_RPM();
     AccelMix.AccelGinsu = PercentOfAccelThreshold * (engineInfo.GINSUMix_L_RPM() - engineInfo.GINSUMix_S_RPM()) + engineInfo.GINSUMix_S_RPM();
@@ -249,8 +241,7 @@ SingleMixReady:
     AccelMix.Cutoff = m_pEngineCtl->m_DistanceFltr;
     DecelMix.Aems = PercentOfDecelThreshold * (engineInfo.DECEL_AEMSMix_L_RPM() - engineInfo.DECEL_AEMSMix_S_RPM()) +
                     engineInfo.DECEL_AEMSMix_S_RPM();
-    DecelMix.AccelGinsu = PercentOfDecelThreshold * (engineInfo.Ginsu_ACL_Neg_S_RPM() - engineInfo.Ginsu_ACL_Neg_L_RPM()) +
-                          engineInfo.Ginsu_ACL_Neg_S_RPM();
+    DecelMix.AccelGinsu = engineInfo.Ginsu_ACL_Neg_S_RPM();
     DecelMix.DecelGinsu = 0.0f;
     DecelMix.Cutoff = bMin(static_cast<int>(engineInfo.GINSU_LowPassCutoff()), m_pEngineCtl->m_DistanceFltr);
     newmix.Aems = (AccelMix.Aems - DecelMix.Aems) * AccelDecelMix + DecelMix.Aems;

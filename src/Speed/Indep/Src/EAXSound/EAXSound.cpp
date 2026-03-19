@@ -147,7 +147,7 @@ struct EAX_HeliState : public UTL::Collections::Listable<EAX_HeliState, 10> {
     Sound::Context mContext; // offset 0x94
     bool mSimUpdating; // offset 0x98
     char _pad_sim[3];
-    const unsigned int mWorldID; // offset 0x9C
+    unsigned int mWorldID; // offset 0x9C
 
     EAX_HeliState(const Attrib::Collection *atr, unsigned int wuid);
 
@@ -988,17 +988,14 @@ float MaxTorque(const Attrib::Gen::engine &engine, float &atrpm);
 
 
 
-EAX_HeliState::EAX_HeliState(const Attrib::Collection *atr, unsigned int wuid)
-    : mFWSpeed(0.0f) //
-    , mMovementMode(1) //
-    , mPlayerZone(0) //
-    , mAttributes(atr, 0, nullptr) //
-    , mContext(Sound::kRaceContext_QuickRace) //
-    , mSimUpdating(true) //
-    , mWorldID(wuid) {
-    mVel0 = bVector3(0.0f, 0.0f, 0.0f);
+inline EAX_HeliState::EAX_HeliState(const Attrib::Collection *atr, unsigned int wuid)
+    : mVel0(0.0f, 0.0f, 0.0f) //
+    , mMovementMode(Sound::PHYSICS_MOVEMENT) //
+    , mPlayerZone(Sound::PLAYER_ZONE_NONE) //
+    , mAttributes(atr, 0, nullptr) {
     mVel1 = mVel0;
-    mAccel = bVector3(0.0f, 0.0f, 0.0f);
+    mSimUpdating = true;
+    mWorldID = wuid;
     PSMTX44Identity((Mtx44)&mMatrix);
 }
 

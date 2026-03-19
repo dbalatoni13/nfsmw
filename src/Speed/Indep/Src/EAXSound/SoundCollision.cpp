@@ -2,12 +2,31 @@
 #include "Speed/Indep/Src/EAXSound/STICH_Playback.h"
 #include "Speed/Indep/Src/Camera/CameraMover.hpp"
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
-#include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
+#include "Speed/Indep/Src/EAXSound/SoundCollision.hpp"
+#include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
 #include "Speed/Indep/Src/World/WorldConn.h"
 
 #include <float.h>
+
+struct CollisionStream {
+    Attrib::RefSpec StreamMoment;
+    unsigned char Threshold;
+};
+
+struct StitchCollisionVol {
+    short Vol1;
+    short Vol2;
+    short Vol3;
+    short Vol4;
+};
+
+enum STICH_COLLISION_TYPE {
+    CRSH_CAR_2_CAR_FRNT_VLIT1 = 0,
+};
+
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/audioimpact.h"
 
 struct CSTATE_Base;
 struct EAX_CarState;
@@ -24,41 +43,12 @@ struct audioimpact;
 
 namespace Sound {
 
-struct AudioEventParams {
-    bVector3 position;
-    bVector3 normal;
-    bVector3 velocity;
-    float magnitude;
-    Attrib::RefSpec attributes;
-    unsigned int object;
-    unsigned int other_object;
-};
-
-struct CollisionDescription {
-    int _pad;
-};
-
-struct AudioEvent {
-    unsigned int mFactoryPad;
-    AudioEventParams mParams;
-    Attrib::Instance mAttributes;
-    void *mVTableAudioEvent;
-
-    AudioEvent(const AudioEventParams &params)
-        : mFactoryPad(0) //
-        , mParams(params) //
-        , mAttributes(params.attributes, 0, nullptr) //
-        , mVTableAudioEvent(nullptr)
-    {}
-
-    const AudioEventParams &GetParameters() const {
-        return mParams;
-    }
-
-    const Attrib::Instance &GetAttributes() const {
-        return mAttributes;
-    }
-};
+void AudioEvent::Update(const bVector3 &p, const bVector3 &n, const bVector3 &v, float mag) {
+    mParams.position = p;
+    mParams.normal = n;
+    mParams.velocity = v;
+    mParams.magnitude = mag;
+}
 
 float DistanceToView(const bVector3 *position) {
     float dist = FLT_MAX;
@@ -77,14 +67,53 @@ float DistanceToView(const bVector3 *position) {
     return dist;
 }
 
-bool IsPrimaryTarget(unsigned int target) {
-    (void)target;
+bool IsPrimaryTarget(unsigned int object_id) {
+    eView *view;
+
+    view = eGetView(1, false);
+    if (view) {
+        if (view->GetCameraMover()) {
+            if (view->GetCameraMover()->GetAnchor()->GetWorldID() == object_id) {
+                return true;
+            }
+        }
+    }
+
+    view = eGetView(2, false);
+    if (view) {
+        if (view->GetCameraMover()) {
+            if (view->GetCameraMover()->GetAnchor()->GetWorldID() == object_id) {
+                return true;
+            }
+        }
+    }
+
     return false;
 }
 
-unsigned int GetCollisionDescription(const Attrib::StringKey &key) {
-    (void)key;
-    return 0;
+unsigned int GetCollisionDescription(const Attrib::StringKey &hash) {
+    switch (hash.GetHash32()) {
+    case 0x57F6E227:
+        return 2;
+    case 0x3E275E32:
+        return 4;
+    case 0xFDC476A6:
+        return 8;
+    case 0x336FCACF:
+        return 0x10;
+    case 0xD5ADD1AA:
+        return 0x80;
+    case 0x8FE44DFE:
+        return 0x40;
+    case 0x32CCE9F5:
+        return 0x20;
+    case 0x047645FB:
+        return 0x400;
+    case 0x15562639:
+        return 0x100;
+    default:
+        return 0;
+    }
 }
 
 struct CollisionEvent : public AudioEvent {
@@ -102,7 +131,6 @@ struct CollisionEvent : public AudioEvent {
     int mRefCount;
     const char *mCSISEffect;
     bool mActive;
-    char _padActive[3];
     unsigned int mAudioFX;
     unsigned int mActor;
     unsigned int mActee;
@@ -208,110 +236,81 @@ void CollisionEvent::Update(const bVector3 &position, const bVector3 &normal, co
 void CollisionEvent::InitAsScrape(const Attrib::Gen::audioscrape &) {}
 
 void CollisionEvent::InitAsImpact(const Attrib::Gen::audioimpact &audioFx) {
-    static unsigned int sCollisionCounter;
-
-    const Attrib::Instance *instance = static_cast<const Attrib::Instance *>(static_cast<const void *>(&audioFx));
     int levels[5];
+    int num_levels;
+    float magnitude;
 
-    mAudioFX = instance->GetCollection();
-
-    {
-        Attrib::Attribute attribute = instance->Get(0xc15856df);
-        levels[0] = static_cast<int>(attribute.GetLength());
-    }
-
-    {
-        Attrib::Attribute attribute = instance->Get(0xdadb5580);
-        levels[1] = static_cast<int>(attribute.GetLength());
-    }
-
-    {
-        Attrib::Attribute attribute = instance->Get(0xc9218f8c);
-        levels[2] = static_cast<int>(attribute.GetLength());
-    }
-
-    {
-        Attrib::Attribute attribute = instance->Get(0xefbca3c9);
-        levels[3] = static_cast<int>(attribute.GetLength());
-    }
-
+    mAudioFX = audioFx.GetCollection();
+    levels[0] = static_cast<int>(audioFx.Num_STITCH_LEVEL_0());
+    levels[1] = static_cast<int>(audioFx.Num_STITCH_LEVEL_1());
+    levels[2] = static_cast<int>(audioFx.Num_STITCH_LEVEL_2());
+    levels[3] = static_cast<int>(audioFx.Num_STITCH_LEVEL_3());
     levels[4] = 0;
 
-    int numLevels = 0;
-    while (numLevels < 5 && levels[numLevels] != 0) {
-        numLevels++;
+    {
+        int i;
+
+        num_levels = 0;
+        i = 0;
+        if (levels[0] != 0) {
+            do {
+                i = i + 1;
+                num_levels = num_levels + 1;
+                if (i > 4) {
+                    break;
+                }
+            } while (levels[i] != 0);
+        }
     }
 
-    if (numLevels == 0) {
+    magnitude = UMath::Clamp(GetParameters().magnitude, 0.0f, 1.0f);
+
+    if (num_levels == 0) {
         return;
     }
 
-    float magnitude = mParams.magnitude;
-    if (magnitude > 1.0f) {
-        magnitude = 1.0f;
-    }
-    if (magnitude < 0.0f) {
-        magnitude = 0.0f;
-    }
+    {
+        float max_level = static_cast<float>(num_levels - 1);
+        int selected_level = UMath::Clamp(static_cast<int>(magnitude * max_level + 0.5f), 0, num_levels - 1);
 
-    const int maxLevel = numLevels - 1;
-    int selectedLevel = static_cast<int>(magnitude * static_cast<float>(maxLevel) + 0.5f);
-    if (selectedLevel < 0) {
-        selectedLevel = 0;
-    } else if (selectedLevel > maxLevel) {
-        selectedLevel = maxLevel;
-    }
+        {
+            static int counter;
+            int index;
+            STICH_COLLISION_TYPE stich_id;
 
-    const int count = levels[selectedLevel];
-    if (count == 0) {
-        return;
-    }
+            if (levels[selected_level] == 0) {
+                return;
+            }
 
-    sCollisionCounter++;
-    const unsigned int entry = sCollisionCounter % static_cast<unsigned int>(count);
+            counter = counter + 1;
+            index = counter % levels[selected_level];
 
-    const short *volumes = static_cast<const short *>(instance->GetAttributePointer(0xfcc8e754, 0));
-    if (volumes == nullptr) {
-        volumes = static_cast<const short *>(Attrib::DefaultDataArea(8));
-    }
+            if (selected_level == 1) {
+                stich_id = audioFx.STITCH_LEVEL_1(index);
+                mVolume = static_cast<int>(audioFx.Volumes().Vol2);
+            } else {
+                if (selected_level > 1) {
+                    if (selected_level == 2) {
+                        stich_id = audioFx.STITCH_LEVEL_2(index);
+                        mVolume = static_cast<int>(audioFx.Volumes().Vol3);
+                        goto set_stich;
+                    }
 
-    int stitchIndex;
-    int volume;
+                    if (selected_level == 3) {
+                        stich_id = audioFx.STITCH_LEVEL_3(index);
+                        mVolume = static_cast<int>(audioFx.Volumes().Vol4);
+                        goto set_stich;
+                    }
+                }
 
-    if (selectedLevel == 1) {
-        const int *stitches = static_cast<const int *>(instance->GetAttributePointer(0xdadb5580, entry));
-        if (stitches == nullptr) {
-            stitches = static_cast<const int *>(Attrib::DefaultDataArea(4));
+                stich_id = audioFx.STITCH_LEVEL_0(index);
+                mVolume = static_cast<int>(audioFx.Volumes().Vol1);
+            }
+
+        set_stich:
+            ImpactStich = &g_pEAXSound->GetStichPlayer()->GetStich(STICH_TYPE_COLLISION, stich_id);
         }
-        stitchIndex = *stitches;
-        volume = static_cast<int>(volumes[1]);
-    } else if (selectedLevel == 2) {
-        const int *stitches = static_cast<const int *>(instance->GetAttributePointer(0xc9218f8c, entry));
-        if (stitches == nullptr) {
-            stitches = static_cast<const int *>(Attrib::DefaultDataArea(4));
-        }
-        stitchIndex = *stitches;
-        volume = static_cast<int>(volumes[2]);
-    } else if (selectedLevel == 3) {
-        const int *stitches = static_cast<const int *>(instance->GetAttributePointer(0xefbca3c9, entry));
-        if (stitches == nullptr) {
-            stitches = static_cast<const int *>(Attrib::DefaultDataArea(4));
-        }
-        stitchIndex = *stitches;
-        volume = static_cast<int>(volumes[3]);
-    } else {
-        const int *stitches = static_cast<const int *>(instance->GetAttributePointer(0xc15856df, entry));
-        if (stitches == nullptr) {
-            stitches = static_cast<const int *>(Attrib::DefaultDataArea(4));
-        }
-        stitchIndex = *stitches;
-        volume = static_cast<int>(volumes[0]);
     }
-
-    mVolume = volume;
-
-    cSTICH_PlayBack *playback = g_pEAXSound->GetSTICHPlayback();
-    ImpactStich = &playback->GetStich(STICH_TYPE_COLLISION, stitchIndex);
 }
 
 void CollisionEvent::Release() {}

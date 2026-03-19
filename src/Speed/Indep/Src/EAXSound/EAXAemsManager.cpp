@@ -333,6 +333,11 @@ EAXAemsManager::~EAXAemsManager() {
 }
 
 void EAXAemsManager::Init() {
+    if (0) {
+        void (stSndDataLoadParams::*forceClear)() = &stSndDataLoadParams::Clear;
+        (void)forceClear;
+    }
+
     m_NumBankLoadResolves = 0;
     unsigned int numEvtSys = g_pEAXSound->GetAttributes()->Num_EvtSys();
     mNumEvtSys = numEvtSys;

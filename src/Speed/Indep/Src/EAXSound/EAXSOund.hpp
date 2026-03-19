@@ -182,6 +182,7 @@ class EAXSound : public AudioMemBase {
 
     static CSTATEMGR_Base *GetStateMgr(eMAINMAPSTATES estate) { return m_pStateMgr[estate]; }
     static struct SndBase *GetSndBase_Object(int nID);
+    cSTICH_PlayBack *GetStichPlayer() { return m_pSTICH_Playback; }
     cSTICH_PlayBack *GetSTICHPlayback() const { return m_pSTICH_Playback; }
     EAXFrontEnd *GetFrontEnd() { return m_pFESnd; }
     struct AudioSettings *GetCurrentAudioSettings() const { return m_pCurAudioSettings; }
