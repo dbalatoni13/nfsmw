@@ -99,39 +99,37 @@ unsigned int GRuntimeInstance::MakePackedKey(unsigned int key, int index) const 
 
 void GRuntimeInstance::AddToTypeList(GameplayObjType type) {
     GRuntimeInstance *&head = sRingListHead[type];
-    if (head) {
-        mNext = head;
-        mPrev = head->mPrev;
-        head->mPrev->mNext = this;
-        head->mPrev = this;
-    } else {
+    if (!head) {
         mNext = this;
         mPrev = this;
         head = this;
+    } else {
+        mNext = head;
+        mPrev = head->mPrev;
+        mPrev->mNext = this;
+        mNext->mPrev = this;
     }
 }
 
 void GRuntimeInstance::RemoveFromTypeList() {
+    mNext->mPrev = mPrev;
+    mPrev->mNext = mNext;
+
     for (unsigned int onType = 0; onType < kGameplayObjType_Count; onType++) {
         if (sRingListHead[onType] == this) {
             if (mNext == this) {
                 sRingListHead[onType] = nullptr;
             } else {
                 sRingListHead[onType] = mNext;
-                mPrev->mNext = mNext;
-                mNext->mPrev = mPrev;
             }
-            mNext = nullptr;
             mPrev = nullptr;
+            mNext = nullptr;
             return;
         }
     }
-    if (mNext) {
-        mPrev->mNext = mNext;
-        mNext->mPrev = mPrev;
-        mNext = nullptr;
-        mPrev = nullptr;
-    }
+
+    mPrev = nullptr;
+    mNext = nullptr;
 }
 
 unsigned int GRuntimeInstance::GetConnectionCount() const {
@@ -161,13 +159,13 @@ bool GRuntimeInstance::GetPosition(UMath::Vector3 &pos) {
         GMarker *marker = static_cast<GMarker *>(this);
         pos = marker->GetPosition();
         return true;
-    }
-    if (GetType() == kGameplayObjType_Trigger) {
+    } else if (GetType() == kGameplayObjType_Trigger) {
         GTrigger *trigger = static_cast<GTrigger *>(this);
         trigger->GetPosition(pos);
         return true;
+    } else {
+        return false;
     }
-    return false;
 }
 
 bool GRuntimeInstance::GetDirection(UMath::Vector3 &dir) {
@@ -175,13 +173,13 @@ bool GRuntimeInstance::GetDirection(UMath::Vector3 &dir) {
         GMarker *marker = static_cast<GMarker *>(this);
         dir = marker->GetDirection();
         return true;
-    }
-    if (GetType() == kGameplayObjType_Trigger) {
+    } else if (GetType() == kGameplayObjType_Trigger) {
         GTrigger *trigger = static_cast<GTrigger *>(this);
         dir = trigger->GetDirection();
         return true;
+    } else {
+        return false;
     }
-    return false;
 }
 
 template <typename T>
