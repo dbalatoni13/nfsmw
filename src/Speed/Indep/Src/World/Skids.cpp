@@ -43,11 +43,15 @@ inline void SkidSet::operator delete(void *ptr) {
 }
 
 void SkidSegment::SetPoints(bVector3 *position, bVector3 *delta_position) {
-    float delta_x = delta_position->x * kSkidSegmentScale_Skids;
-    float delta_y = delta_position->y * kSkidSegmentScale_Skids;
-    float delta_z = delta_position->z * kSkidSegmentScale_Skids;
+    float delta_x;
+    float delta_y;
+    float delta_z;
     float position_y = position->y;
     float position_z = position->z;
+
+    delta_x = delta_position->x * kSkidSegmentScale_Skids;
+    delta_y = delta_position->y * kSkidSegmentScale_Skids;
+    delta_z = delta_position->z * kSkidSegmentScale_Skids;
 
     Position[0] = position->x;
     DeltaPosition[2] = static_cast<signed char>(delta_z);
@@ -135,9 +139,8 @@ SkidSet::~SkidSet() {
         pSkidMaker->MakeNoSkid();
     }
 
-    if (pClan && pClanNode) {
+    if (pClanNode) {
         pClan->SkidSetList.Remove(pClanNode);
-        pClanNode = 0;
     }
 }
 
@@ -258,7 +261,8 @@ void SkidSet::Render(eView *view, unsigned char intensityReduction) {
 
 SkidSet *CreateNewSkidSet(SkidMaker *skid_maker, bVector3 *position, bVector3 *delta_position, int terrain_type, float intensity) {
     if (bIsSlotPoolFull(SkidSetSlotPool) && !SkidSetList.IsEmpty()) {
-        DeleteThisSkid(SkidSetList.GetTail());
+        SkidSet *oldest_skid_set = SkidSetList.GetTail();
+        DeleteThisSkid(oldest_skid_set);
     }
 
     SkidSet *skid_set = new SkidSet(skid_maker, position, delta_position, terrain_type, intensity);
@@ -273,14 +277,13 @@ void SkidMaker::MakeSkid(Car *pCar, bVector3 *position, bVector3 *delta_position
 
     if (!pSkidSet) {
         pSkidSet = CreateNewSkidSet(this, position, delta_position, terrain_type, intensity);
-    } else if (pSkidSet->TheTerrainType != terrain_type || pSkidSet->AddSegment(position, delta_position, false, intensity) != 0) {
+    } else if (pSkidSet->GetTerrainType() != terrain_type || pSkidSet->AddSegment(position, delta_position, false, intensity) != 0) {
         bVector3 last_position;
         bVector3 last_delta_position;
-        SkidSegment *last_segment = &pSkidSet->SkidSegments[pSkidSet->NumSkidSegments - 1];
         float last_intensity;
 
-        last_segment->GetPoints(&last_position, &last_delta_position);
-        last_intensity = static_cast<float>(last_segment->Intensity) * (1.0f / 255.0f);
+        pSkidSet->GetLastPoints(&last_position, &last_delta_position);
+        last_intensity = pSkidSet->GetLastIntensity();
         pSkidSet->FinishedAddingSkids();
         pSkidSet = CreateNewSkidSet(this, &last_position, &last_delta_position, terrain_type, last_intensity);
         pSkidSet->AddSegment(position, delta_position, false, intensity);

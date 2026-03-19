@@ -24,6 +24,9 @@ struct SkidSegment {
     void SetPoints(bVector3 *position, bVector3 *delta_position);
     void GetPoints(bVector3 *position, bVector3 *delta_position);
     void GetEndPoints(bVector3 *left_point, bVector3 *right_point);
+    unsigned char GetIntensity() {
+        return Intensity;
+    }
 };
 
 struct SkidMaker {
@@ -58,6 +61,15 @@ struct SkidSet : public bTNode<SkidSet> {
     int AddSegment(bVector3 *position, bVector3 *delta_position, bool skid_is_flaming, float intensity);
     void FinishedAddingSkids();
     void Render(eView *view, unsigned char alpha);
+    int GetTerrainType() {
+        return TheTerrainType;
+    }
+    void GetLastPoints(bVector3 *position, bVector3 *delta_position) {
+        SkidSegments[NumSkidSegments - 1].GetPoints(position, delta_position);
+    }
+    float GetLastIntensity() {
+        return static_cast<float>(SkidSegments[NumSkidSegments - 1].GetIntensity()) * (1.0f / 255.0f);
+    }
 };
 
 SkidSet *CreateNewSkidSet(SkidMaker *skid_maker, bVector3 *position, bVector3 *delta_position, int terrain_type, float intensity);
