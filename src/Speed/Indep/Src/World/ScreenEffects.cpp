@@ -42,6 +42,11 @@ extern float GlareFallon;
 extern float TUNHEIGHT;
 extern TrackPathZone *zoneB[2];
 
+static inline UMath::Vector3 &bConvertToBond(UMath::Vector3 &dest, const bVector3 &v) {
+    bConvertToBond(*reinterpret_cast<bVector3 *>(&dest), v);
+    return dest;
+}
+
 static int __tmp_14_27615;
 static bVector3 lcamPosInside_27614[2];
 static float dataBackup_27616[12][2];
@@ -99,23 +104,21 @@ void ScreenEffectDB::Update(float deltatime) {
     }
 }
 
-float TopologyCoordinate::GetElevation(const bVector3 *position, TerrainType *terrain_type, bVector3 *normal, bool *valid) {
-    UMath::Vector3 world_position;
-    UMath::Vector4 face_point;
+float TopologyCoordinate::GetElevation(const bVector3 *position, TerrainType *type, bVector3 *normal, bool *point_valid) {
+    UMath::Vector3 bond_pos;
     WWorldPos world_pos(0.025f);
+    UMath::Vector4 dummy_normal;
 
-    (void)terrain_type;
+    (void)type;
     (void)normal;
 
-    world_position.x = position->x;
-    world_position.y = -position->y;
-    world_position.z = position->z;
-    world_pos.Update(world_position, face_point, true, 0, true);
-    if (valid) {
-        *valid = world_pos.OnValidFace();
+    bConvertToBond(bond_pos, *position);
+    world_pos.Update(bond_pos, dummy_normal, true, 0, true);
+    if (point_valid) {
+        *point_valid = world_pos.OnValidFace();
     }
     if (world_pos.OnValidFace()) {
-        return world_pos.HeightAtPoint(world_position);
+        return world_pos.HeightAtPoint(bond_pos);
     }
     return position->z;
 }
@@ -193,7 +196,6 @@ void RenderVisibleSectionBoundary(VisibleSectionBoundary *boundary, eView *view)
         return;
     }
 
-    float perimeter = 0.0f;
     bVector3 position(0.0f, 0.0f, 0.0f);
     TopologyCoordinate topology_coordinate;
     float pos = static_cast<float>((static_cast<int>(WorldTimer.GetPackedTime() * 0.00025f * 262144.0f) & 0xffff)) * 6.1035156e-05f;

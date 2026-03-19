@@ -321,30 +321,31 @@ void *TSMemoryPool::Malloc(int size, const char *debug_name, bool best_fit, bool
 
     if (new_top_size != 0) {
         TSMemoryNode *top_node = GetNewNode(address + size, new_top_size, false, 0);
-        if (top_node) {
-            top_node->AddAfter(new_node);
-        }
+        top_node->AddAfter(new_node);
     }
 
     if (TracingEnabled && bMemoryTracing) {
+        bMemoryTraceAllocatePacket send_packet;
         bMemoryTraceAllocatePacket packet;
+        bMemoryTraceAllocatePacket *fake_match = &packet;
         int extra_len;
         int n;
         unsigned char *p;
 
-        memset(&packet, 0, sizeof(packet));
+        memset(fake_match, 0, sizeof(packet));
         packet.PoolID = reinterpret_cast<int>(this);
         packet.MemoryAddress = address;
         packet.Size = size;
         packet.AllocationNumber = AllocationNumber;
-        p = reinterpret_cast<unsigned char *>(packet.DebugText);
-        n = sizeof(packet.DebugText);
+        send_packet = packet;
+        p = reinterpret_cast<unsigned char *>(send_packet.DebugText);
+        n = sizeof(send_packet.DebugText);
         bMemSet(p, 0, n);
         if (debug_name) {
             bStrNCpy(reinterpret_cast<char *>(p), debug_name, n - 1);
         }
         extra_len = bStrLen(reinterpret_cast<char *>(p)) + 0x15;
-        bFunkCallASync("CODEINE", 0x1c, &packet, extra_len);
+        bFunkCallASync("CODEINE", 0x1c, &send_packet, extra_len);
     }
 
     Updated = true;
@@ -1188,10 +1189,8 @@ void TrackStreamer::AddCurrentStreamingSections(short *section_numbers, int num_
 }
 
 void TrackStreamer::DetermineStreamingSections() {
-    const int max_sections_to_load = 0x180;
     short sections_to_load[384];
     int num_sections_to_load = 3;
-    short section_number;
 
     RemoveCurrentStreamingSections();
 
@@ -1203,25 +1202,11 @@ void TrackStreamer::DetermineStreamingSections() {
         sections_to_load[3] = static_cast<short>(ScenerySectionToBlink);
     }
 
-    {
-        short *sections = sections_to_load + num_sections_to_load;
-        short *keep_section = KeepSectionTable;
-        int n = 3;
-
-        section_number = *keep_section;
-        while (true) {
-            n -= 1;
-            short current_keep = *keep_section;
-            keep_section += 1;
-            if (section_number != 0) {
-                *sections = current_keep;
-                num_sections_to_load += 1;
-                sections += 1;
-            }
-            if (n < 0) {
-                break;
-            }
-            section_number = *keep_section;
+    for (int keep_section_number = 0; keep_section_number < 4; keep_section_number++) {
+        short section_number = KeepSectionTable[keep_section_number];
+        if (section_number != 0) {
+            sections_to_load[num_sections_to_load] = section_number;
+            num_sections_to_load += 1;
         }
     }
 
@@ -1234,20 +1219,15 @@ void TrackStreamer::DetermineStreamingSections() {
             LoadingSection *loading_section = TheVisibleSectionManager.FindLoadingSection(position_entry->CurrentZone);
             if (!loading_section) {
                 DrivableScenerySection *drivable_section = TheVisibleSectionManager.FindDrivableSection(position_entry->CurrentZone);
-                int i = 0;
                 num_sections_to_load = 0;
-                while (true) {
-                    bool done = drivable_section->NumVisibleSections <= i;
-                    i += 1;
-                    if (done) {
-                        break;
-                    }
-                    section_number = drivable_section->VisibleSections[i - 1];
+                for (int visible_section_number = 0; visible_section_number < drivable_section->NumVisibleSections;
+                     visible_section_number++) {
+                    short section_number = drivable_section->VisibleSections[visible_section_number];
                     sections_to_load[num_sections_to_load] = section_number;
                     num_sections_to_load += 1;
                 }
             } else {
-                num_sections_to_load = TheVisibleSectionManager.GetSectionsToLoad(loading_section, sections_to_load, max_sections_to_load);
+                num_sections_to_load = TheVisibleSectionManager.GetSectionsToLoad(loading_section, sections_to_load, 0x180);
             }
 
             AddCurrentStreamingSections(sections_to_load, num_sections_to_load, position_number);
