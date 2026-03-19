@@ -85,15 +85,15 @@ void GRuntimeInstance::ResetConnections() {
 }
 
 void GRuntimeInstance::DisconnectInstances() {
-    if (GetFlag(4)) {
+    if ((mFlags & 4) != 0) {
         if (mConnected) {
             delete[] mConnected;
         }
-        mFlags = mFlags & ~4;
+        mFlags &= ~4;
     }
     mNumConnected = 0;
     mConnected = nullptr;
-    mFlags = mFlags & ~2;
+    mFlags &= ~2;
 }
 
 unsigned int GRuntimeInstance::MakePackedKey(unsigned int key, int index) const {
