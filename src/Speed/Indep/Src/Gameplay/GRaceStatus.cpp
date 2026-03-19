@@ -2493,60 +2493,57 @@ template <typename T> void GRaceCustom::SetAttribute(unsigned int key, const T &
 
 GRaceStatus::GRaceStatus()
     : UTL::COM::Object(1), //
-      IVehicleCache((UTL::COM::Object *)this), //
-      mRacerCount(0), //
-      mIsLoading(false), //
-      mPlayMode(kPlayMode_Racing), //
-      mRaceContext(GRace::kRaceContext_Career), //
-      mRaceParms(nullptr), //
-      mRaceBin(nullptr), //
-      mBonusTime(0.0f), //
-      mTaskTime(0.0f), //
-      mSuddenDeathMode(false), //
-      mTimeExpiredMsgSent(false), //
-      mActivelyRacing(false), //
-      mLastSecondTickSent(0), //
-      mCheckpointModel(nullptr), //
-      mCheckpointEmitter(nullptr), //
-      mQueueBinChange(false), //
-      mNumTollbooths(0), //
-      mScriptWaitingForLoad(false), //
-      mCheckpoints(), //
-      mNextCheckpoint(nullptr), //
-      fRaceLength(0.0f), //
-      fFirstLapLength(0.0f), //
-      fSubsequentLapLength(0.0f), //
-      fCatchUpIntegral(0.0f), //
-      fCatchUpDerivative(0.0f), //
-      fCatchUpAdaptiveBonus(0.0f), //
-      fAveragePercentComplete(0.0f), //
-      nCatchUpSkillEntries(0), //
-      nCatchUpSpreadEntries(0), //
-      nSpeedTraps(0), //
-      mVehicleCacheLocked(false), //
-      bRaceRouteError(false), //
-      mTrafficDensity(0), //
-      mTrafficPattern(0), //
-      mHasBeenWon(false) {
-    fObj = this;
-
-    bMemSet(mSegmentLengths, 0, sizeof(mSegmentLengths));
-    bMemSet(mLapTimes, 0, sizeof(mLapTimes));
-    bMemSet(mCheckTimes, 0, sizeof(mCheckTimes));
-    bMemSet(aCatchUpSkillData, 0, sizeof(aCatchUpSkillData));
-    bMemSet(aCatchUpSpreadData, 0, sizeof(aCatchUpSpreadData));
-    bMemSet(aSpeedTraps, 0, sizeof(aSpeedTraps));
+      IVehicleCache((UTL::COM::Object *)this) {
+    unsigned char currentBin = FEDatabase->GetCareerSettings()->GetCurrentBin();
 
     for (int i = 0; i < 16; ++i) {
         mRacerInfo[i].ClearAll();
     }
+
+    mRacerCount = 0;
+    mIsLoading = false;
+    mRaceContext = GRace::kRaceContext_Career;
+    mRaceParms = nullptr;
+    mCheckpointModel = nullptr;
+    mCheckpointEmitter = nullptr;
+    mActivelyRacing = false;
+    mNumTollbooths = 0;
+    mPlayMode = kPlayMode_Racing;
+    mRaceBin = GRaceDatabase::Get().GetBinNumber(currentBin);
+    mScriptWaitingForLoad = false;
+    mHasBeenWon = false;
+    fRaceLength = 0.0f;
+    fFirstLapLength = 0.0f;
+    fSubsequentLapLength = 0.0f;
+#ifndef EA_BUILD_A124
+    mPlayerPursuitInCooldown = false;
+#endif
+    mBonusTime = 0.0f;
+    mTaskTime = 0.0f;
+    mSuddenDeathMode = false;
+    mTimeExpiredMsgSent = false;
+    mLastSecondTickSent = 0;
+    mQueueBinChange = false;
+#ifndef EA_BUILD_A124
+    mWarpWhenInFreeRoam = 0;
+#endif
+    mNextCheckpoint = nullptr;
+    nSpeedTraps = 0;
+    mVehicleCacheLocked = false;
+    bRaceRouteError = false;
+    mTrafficDensity = 0;
+    mTrafficPattern = 0;
+#ifndef EA_BUILD_A124
+    mRefreshBinAfterRace = false;
+#endif
+    fObj = this;
 
     ClearTimes();
     SyncronizeAdaptiveBonus();
     MakeDefaultCatchUpData();
 
     if (!GRaceDatabase::Get().GetStartupRace()) {
-        EnterBin(0);
+        EnterBin(currentBin);
         SetRoaming();
     }
 }
