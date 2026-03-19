@@ -19,6 +19,7 @@ struct bMutex {
     void Unlock();
 };
 
+int bIsValidPointer(void *p, int size);
 float bGetTickerDifference(unsigned int start_ticks);
 int bGetFixTickerDifference(unsigned int start_ticks, unsigned int end_ticks);
 float bGetTickerDifference(unsigned int start_ticks, unsigned int end_ticks);
