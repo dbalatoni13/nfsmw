@@ -305,7 +305,7 @@ void CGEmitter::SpawnParticles(float dt, float intensity) {
 
 NGEffect::NGEffect(const XenonEffectDef &eDef)
     : mEffectDef(eDef.spec, 0, nullptr) {
-    if (mEffectDef.GetCollection() != 0) {
+    if (mEffectDef.IsValid()) {
         int i = 0;
         int length = mEffectDef.Num_NGEmitter();
         while (i < length) {
