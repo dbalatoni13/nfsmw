@@ -345,7 +345,12 @@ bool GRaceDatabase::CollectionIsRaceActivity(Attrib::Gen::gameplay &collection) 
 }
 
 bool GRaceDatabase::CollectionIsRaceBin(Attrib::Gen::gameplay &collection) {
-    return collection.GetAttributePointer(0x6CE23062, 0) != nullptr;
+    Attrib::Key parentKey = collection.GetParent();
+    Attrib::Gen::gameplay bin(0x022EB0EE, 0, nullptr);
+    Attrib::Gen::gameplay parent(parentKey, 0, nullptr);
+    bool isRaceBin = parent.GetCollection() == bin.GetCollection();
+
+    return isRaceBin;
 }
 
 unsigned int GRaceDatabase::StoreBinList(GRaceBin *dest) {
