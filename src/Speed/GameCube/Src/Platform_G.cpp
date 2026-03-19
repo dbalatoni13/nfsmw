@@ -1,3 +1,4 @@
+#include "Speed/Indep/Libs/Support/Utility/UVectorMath.h"
 #include "Speed/Indep/Src/Frontend/MemoryCard/MemoryCard.hpp"
 #include "Speed/Indep/Src/Misc/BuildRegion.hpp"
 #include "Speed/Indep/Src/Misc/GameFlow.hpp"
@@ -612,13 +613,13 @@ VMStatsManager gVMStatsManager_LS("LoadScreen Streamer");
 VMStatsManager gVMStatsManager_IG("InGame");
 
 void VMStats::Init() {
-    mServiceTimeMicroSecs = 0;
-    mServiceTimeMin = static_cast<unsigned int>(-1);
-    mElapsedTime = 0.0f;
     mServiceTimeMax = 0;
     mServiceTimeAvg = 0.0f;
+    mServiceTimeMin = static_cast<unsigned int>(-1);
     mNumPageFaults = 0;
     mNumWritebacks = 0;
+    mElapsedTime = 0.0f;
+    mServiceTimeMicroSecs = 0;
 }
 
 void VMStatsManager::Init(const char *name) {
