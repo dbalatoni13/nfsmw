@@ -575,8 +575,9 @@ void ScenerySectionHeader::DrawAScenery(int scenery_instance_number, SceneryCull
             to_instance_x * to_instance_x + to_instance_y * to_instance_y + to_instance_z * to_instance_z
         );
         float pixel_size = scenery_cull_info->H;
-        if (radius < distance - radius) {
-            pixel_size = (radius * pixel_size) / (distance - radius);
+        float distance_minus_radius = distance - radius;
+        if (distance_minus_radius > radius) {
+            pixel_size = (radius * pixel_size) / distance_minus_radius;
         }
         pixel_size_int = static_cast<int>(pixel_size);
     }
@@ -596,10 +597,10 @@ void ScenerySectionHeader::DrawAScenery(int scenery_instance_number, SceneryCull
                 model = GetSceneryModel_Scenery(scenery_info, 2);
             }
         } else if (pixel_size_int >= 0x20) {
-            if ((instance_flags & 0x1000100) == 0) {
-                model = GetSceneryModel_Scenery(scenery_info, 3);
-            } else {
+            if ((instance_flags & 0x1000100) != 0) {
                 model = GetSceneryModel_Scenery(scenery_info, 0);
+            } else {
+                model = GetSceneryModel_Scenery(scenery_info, 3);
             }
         }
     } else if ((scenery_cull_info->ExcludeFlags & 0x20) != 0) {
@@ -613,7 +614,7 @@ void ScenerySectionHeader::DrawAScenery(int scenery_instance_number, SceneryCull
     } else if (pixel_size_int > 0x11) {
         model = GetSceneryModel_Scenery(scenery_info, 0);
         if (model && model->Solid && model->Solid->NumPolys > 0x27) {
-            float lod_scale = model->Solid->Volume;
+            float lod_scale = model->Solid->Density;
             if (lod_scale < 6.0f) {
                 lod_scale = 6.0f;
             }
