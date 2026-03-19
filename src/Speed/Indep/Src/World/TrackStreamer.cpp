@@ -1650,8 +1650,8 @@ void TrackStreamer::SectionLoadedCallback(TrackStreamingSection *section) {
     }
 
     for (int position_number = 0; position_number < 2; position_number++) {
+        StreamingPositionEntry *position_entry = &StreamingPositionEntries[position_number];
         if (((section->CurrentlyVisible >> position_number) & 1) != 0) {
-            StreamingPositionEntry *position_entry = &StreamingPositionEntries[position_number];
             position_entry->NumSectionsLoaded += 1;
             position_entry->AmountLoaded += section->Size;
         }
