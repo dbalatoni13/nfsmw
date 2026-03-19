@@ -238,12 +238,12 @@ int LoaderEventManager(bChunk *chunk) {
                     SwapEndian(reinterpret_cast<vAABBTree *>(tree));
                 }
             }
-        } else if (child_id < 0x36002) {
+        } else if (child_id == 0x36001) {
             event_trigger_pack = child->GetAlignedData(0x10);
             if (GetEventTriggerPackEndianSwapped_EventManager(event_trigger_pack) == 0) {
                 int *event_trigger_pack_words = GetEventTriggerPackWords_EventManager(event_trigger_pack);
-                bEndianSwap32(&event_trigger_pack_words[2]);
                 bEndianSwap32(&event_trigger_pack_words[3]);
+                bEndianSwap32(&event_trigger_pack_words[2]);
                 bEndianSwap32(&event_trigger_pack_words[4]);
             }
 
@@ -254,23 +254,25 @@ int LoaderEventManager(bChunk *chunk) {
             VisibleSectionUserInfo *user_info =
                 TheVisibleSectionManager.AllocateUserInfo(GetEventTriggerPackSectionNumber_EventManager(event_trigger_pack));
             user_info->pEventTriggerPack = reinterpret_cast<EventTriggerPack *>(event_trigger_pack);
-        } else if (child_id == 0x36003 && event_trigger_pack) {
-            int *event_data = reinterpret_cast<int *>(child->GetAlignedData(0x10));
-            SetEventTriggerPackData_EventManager(event_trigger_pack, event_data);
+        } else if (child_id == 0x36003) {
+            if (event_trigger_pack) {
+                int *event_data = reinterpret_cast<int *>(child->GetAlignedData(0x10));
+                SetEventTriggerPackData_EventManager(event_trigger_pack, event_data);
 
-            if (GetEventTriggerPackEndianSwapped_EventManager(event_trigger_pack) == 0) {
-                int num_event_words =
-                    (child->GetSize() - (reinterpret_cast<char *>(event_data) - child->GetData())) >> 5;
-                for (int i = 0; i < num_event_words; i++) {
-                    int *event_words = reinterpret_cast<int *>(reinterpret_cast<char *>(event_data) + i * 0x20);
-                    bEndianSwap32(&event_words[0]);
-                    bEndianSwap32(&event_words[1]);
-                    bEndianSwap32(&event_words[2]);
-                    bEndianSwap32(&event_words[3]);
-                    bEndianSwap32(&event_words[4]);
-                    bEndianSwap32(&event_words[5]);
-                    bEndianSwap32(&event_words[6]);
-                    bEndianSwap32(&event_words[7]);
+                if (GetEventTriggerPackEndianSwapped_EventManager(event_trigger_pack) == 0) {
+                    unsigned int num_event_words =
+                        (child->GetSize() - (reinterpret_cast<char *>(event_data) - child->GetData())) >> 5;
+                    for (unsigned int i = 0; i < num_event_words; i++) {
+                        int *event_words = reinterpret_cast<int *>(reinterpret_cast<char *>(event_data) + i * 0x20);
+                        bEndianSwap32(&event_words[0]);
+                        bEndianSwap32(&event_words[1]);
+                        bEndianSwap32(&event_words[2]);
+                        bEndianSwap32(&event_words[3]);
+                        bEndianSwap32(&event_words[4]);
+                        bEndianSwap32(&event_words[5]);
+                        bEndianSwap32(&event_words[6]);
+                        bEndianSwap32(&event_words[7]);
+                    }
                 }
             }
         }
@@ -278,12 +280,11 @@ int LoaderEventManager(bChunk *chunk) {
         child = child->GetNext();
     }
 
+    GetEventTriggerPackWords_EventManager(event_trigger_pack)[5] = 1;
     if (event_trigger_pack) {
-        GetEventTriggerPackWords_EventManager(event_trigger_pack)[5] = 1;
-
-        if (GetEventTriggerPackNumEvents_EventManager(event_trigger_pack) == 0 || !GetEventTriggerPackTree_EventManager(event_trigger_pack) ||
-            !GetEventTriggerPackData_EventManager(event_trigger_pack)) {
-            bList *event_trigger_pack_list = &EmptyEventTriggerPackList;
+        if (GetEventTriggerPackNumEvents_EventManager(event_trigger_pack) != 0 && GetEventTriggerPackTree_EventManager(event_trigger_pack) &&
+            GetEventTriggerPackData_EventManager(event_trigger_pack)) {
+            bList *event_trigger_pack_list = &EventTriggerPackList;
             bNode *node = GetEventTriggerPackNode_EventManager(event_trigger_pack);
             bNode *new_prev = event_trigger_pack_list->HeadNode.Prev;
             new_prev->Next = node;
@@ -291,7 +292,7 @@ int LoaderEventManager(bChunk *chunk) {
             node->Next = &event_trigger_pack_list->HeadNode;
             node->Prev = new_prev;
         } else {
-            bList *event_trigger_pack_list = &EventTriggerPackList;
+            bList *event_trigger_pack_list = &EmptyEventTriggerPackList;
             bNode *node = GetEventTriggerPackNode_EventManager(event_trigger_pack);
             bNode *new_prev = event_trigger_pack_list->HeadNode.Prev;
             new_prev->Next = node;
