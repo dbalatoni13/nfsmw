@@ -263,7 +263,7 @@ void GTrigger::RefreshParticleEffects() {
 void GTrigger::NotifyEmitterGroupDelete(void *obj, EmitterGroup *group) {
     GTrigger *trigger = reinterpret_cast<GTrigger *>(obj);
     EmitterGroup **particleEffect = trigger->mParticleEffect;
-    int i = 0;
+    unsigned int i = 0;
 
     do {
         if (*(particleEffect + i) == group) {

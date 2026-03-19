@@ -38,7 +38,8 @@ void GRuntimeInstance::SetConnectionBuffer(ConnectedInstance *destBuffer, unsign
 
 void GRuntimeInstance::AllocateConnectionBuffer(unsigned int numEntries) {
     ConnectedInstance *buffer = new ConnectedInstance[numEntries];
-    SetConnectionBuffer(buffer, numEntries);
+    mConnected = buffer;
+    mNumConnected = 0;
     SetFlag(4);
 }
 
@@ -121,11 +122,13 @@ void GRuntimeInstance::RemoveFromTypeList() {
 
     for (unsigned int onType = 0; onType < kGameplayObjType_Count; onType++) {
         if (sRingListHead[onType] == this) {
-            if (mNext == this) {
-                sRingListHead[onType] = nullptr;
-            } else {
-                sRingListHead[onType] = mNext;
+            GRuntimeInstance *newHead = nullptr;
+
+            if (mNext != this) {
+                newHead = mNext;
             }
+
+            sRingListHead[onType] = newHead;
             mPrev = nullptr;
             mNext = nullptr;
             return;
