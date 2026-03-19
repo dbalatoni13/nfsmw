@@ -187,6 +187,8 @@ class EAXSound : public AudioMemBase {
     EAXFrontEnd *GetFrontEnd() { return m_pFESnd; }
     struct AudioSettings *GetCurrentAudioSettings() const { return m_pCurAudioSettings; }
     Attrib::Gen::audiosystem *GetAttributes() const { return mAttributes; }
+    eSndGameMode GetSndGameMode() const { return m_eSndGameMode; }
+    eSndGameMode GetPrevSndGameMode() const { return m_prevSndGameMode; }
     e3DPlayerMix GetPlayerMixMode();
     eSndGameMode GetSoundGameMode() const { return m_eSndGameMode; }
     bool IsPauseMainFNG() const { return m_bPause_MainFNG; }

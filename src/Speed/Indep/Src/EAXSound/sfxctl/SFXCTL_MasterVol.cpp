@@ -7,6 +7,8 @@
 struct MoviePlayer {
     char _pad[0x128];
     int fStatus;
+
+    int GetStatus() { return fStatus; }
 };
 
 extern MoviePlayer *gMoviePlayer;
@@ -34,62 +36,68 @@ void SFXCTL_MasterVol::InitSFX() { SFXCTL::InitSFX(); }
 void SFXCTL_MasterVol::UpdateParams(float t) {
     (void)t;
 
-    int *outputs = GetOutputBlockPtr();
     const char *eaxSound = static_cast<const char *>(static_cast<const void *>(g_pEAXSound));
-    const AudioSettings *audioSettings =
-        *static_cast<const AudioSettings *const *>(static_cast<const void *>(eaxSound + 0x34));
+    const AudioSettings *audioSettings = *static_cast<const AudioSettings *const *>(static_cast<const void *>(eaxSound + 0x34));
 
     if (audioSettings != nullptr) {
-        const char *settings = static_cast<const char *>(static_cast<const void *>(audioSettings));
-        const float masterVol = *static_cast<const float *>(static_cast<const void *>(settings + 0x0));
-        const int nVol = static_cast<int>(masterVol * 32767.0f);
-        const int curve =
-            NFSMixShape::GetCurveOutput(static_cast<NFSMixShape::eMIXTABLEID>(1), nVol, false);
-        const float curveScale = static_cast<float>(curve) * 3.051851e-05f;
+        float fMasterVol = audioSettings->MasterVol;
+        int nvolindex = static_cast<int>(fMasterVol * 32767.0f);
+        int nmastervol = NFSMixShape::GetCurveOutput(NFSMixShape::SHAPE_UP_EQPWR_SQ, nvolindex, false);
+        float fvol = static_cast<float>(nmastervol) * 3.051851e-05f;
+        int nvol;
 
-        outputs[0] = static_cast<int>((1.0f - masterVol * *static_cast<const float *>(static_cast<const void *>(settings + 0x8)) * curveScale) * 32767.0f);
-        outputs[1] = static_cast<int>((1.0f - masterVol * *static_cast<const float *>(static_cast<const void *>(settings + 0xC)) * curveScale) * 32767.0f);
-        outputs[2] = static_cast<int>((1.0f - masterVol * *static_cast<const float *>(static_cast<const void *>(settings + 0x4)) * curveScale) * 32767.0f);
-        outputs[3] = static_cast<int>((1.0f - masterVol * *static_cast<const float *>(static_cast<const void *>(settings + 0x10)) * curveScale) * 32767.0f);
-
-        const int carVol =
-            static_cast<int>((1.0f - masterVol * *static_cast<const float *>(static_cast<const void *>(settings + 0x18)) * curveScale) * 32767.0f);
-        outputs[4] = carVol;
-        outputs[5] = carVol;
+        SetDMIX_Input(0, static_cast<int>((1.0f - audioSettings->GetMasteredFEMusicVol() * fvol) * 32767.0f));
+        SetDMIX_Input(1, static_cast<int>((1.0f - audioSettings->GetMasteredIGMusicVol() * fvol) * 32767.0f));
+        SetDMIX_Input(2, static_cast<int>((1.0f - audioSettings->GetMasteredSpeechVol() * fvol) * 32767.0f));
+        SetDMIX_Input(3, static_cast<int>((1.0f - audioSettings->GetMasteredSoundEffectsVol() * fvol) * 32767.0f));
+        SetDMIX_Input(4, static_cast<int>((1.0f - audioSettings->GetMasteredCarVol() * fvol) * 32767.0f));
+        nvol = static_cast<int>((1.0f - audioSettings->GetMasteredCarVol() * fvol) * 32767.0f);
+        SetDMIX_Input(5, nvol);
     }
 
-    const int gameMode = *static_cast<const int *>(static_cast<const void *>(eaxSound + 0x84));
-    if (gameMode == 1) {
-        outputs[6] = g_EAXIsPaused() ? 0x7fff : 0;
+    if (g_pEAXSound->GetSndGameMode() == SND_FRONTEND) {
+        if (g_EAXIsPaused()) {
+            SetDMIX_Input(6, 0x7fff);
+        } else {
+            SetDMIX_Input(6, 0);
+        }
     } else {
-        outputs[6] = g_EAXIsPaused() ? 0x7fff : 0;
+        int nvol = g_EAXIsPaused();
+        if (nvol != 0) {
+            SetDMIX_Input(6, 0x7fff);
+        } else {
+            SetDMIX_Input(6, nvol);
+        }
     }
 
-    if (gMoviePlayer != nullptr && gMoviePlayer->fStatus == 5) {
-        outputs[7] = 0x7fff;
+    if (gMoviePlayer != nullptr && gMoviePlayer->GetStatus() == 5) {
+        SetDMIX_Input(7, 0x7fff);
     } else {
-        outputs[7] = 0;
+        SetDMIX_Input(7, 0);
     }
 
-    const int previousGameMode = *static_cast<const int *>(static_cast<const void *>(eaxSound + 0x88));
-    if (gameMode == 10) {
-        outputs[8] = 0x7fff;
-        if (previousGameMode != 10) {
-            UCrc32 port(stringhash32("PursuitBreaker"));
+    if (g_pEAXSound->GetSndGameMode() == SND_PURSUITBREAKER) {
+        SetDMIX_Input(8, 0x7fff);
+        if (g_pEAXSound->GetPrevSndGameMode() != SND_PURSUITBREAKER) {
+            UCrc32 port("PursuitBreaker");
             MPursuitBreaker message(true);
             message.Post(port);
         }
     } else {
-        outputs[8] = 0;
-        if (previousGameMode == 10) {
-            UCrc32 port(stringhash32("PursuitBreaker"));
+        SetDMIX_Input(8, 0);
+        if (g_pEAXSound->GetPrevSndGameMode() == SND_PURSUITBREAKER) {
+            UCrc32 port("PursuitBreaker");
             MPursuitBreaker message(false);
             message.Post(port);
         }
     }
 
-    outputs[9] = SndCamera::GetCurCamState(0) == DMIX_NFS_JUMP_CAM ? 0x7fff : 0;
-    outputs[10] = static_cast<int>(RadarDetector::mStaticRange * 32767.0f);
+    if (SndCamera::GetCurCamState(0) == DMIX_NFS_JUMP_CAM) {
+        SetDMIX_Input(9, 0x7fff);
+    } else {
+        SetDMIX_Input(9, 0);
+    }
+    SetDMIX_Input(10, static_cast<int>(RadarDetector::mStaticRange * 32767.0f));
 }
 
 SFXCTL_GameState::SFXCTL_GameState() {}

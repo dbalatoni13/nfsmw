@@ -121,8 +121,14 @@ class VideoSettings {
 // total size: 0x34
 class AudioSettings {
   public:
-    float GetMasteredFEMusicVol() { return MasterVol * FEMusicVol; }
-    float GetMasteredIGMusicVol() { return MasterVol * IGMusicVol; }
+    float GetMasteredFEMusicVol() const { return MasterVol * FEMusicVol; }
+    float GetMasteredIGMusicVol() const { return MasterVol * IGMusicVol; }
+    float GetMasteredSpeechVol() const { return MasterVol * SpeechVol; }
+    float GetMasteredSoundEffectsVol() const { return MasterVol * SoundEffectsVol; }
+    float GetMasteredEngineVol() const { return MasterVol * EngineVol; }
+    float GetMasteredCarVol() const { return MasterVol * CarVol; }
+    float GetMasteredAmbientVol() const { return MasterVol * AmbientVol; }
+    float GetMasteredSpeedVol() const { return MasterVol * SpeedVol; }
 
     float MasterVol;          // offset 0x0, size 0x4
     float SpeechVol;          // offset 0x4, size 0x4
