@@ -139,9 +139,7 @@ SkidSet::~SkidSet() {
         pSkidMaker->MakeNoSkid();
     }
 
-    if (pClanNode) {
-        pClan->SkidSetList.Remove(pClanNode);
-    }
+    pClan->SkidSetList.Remove(pClanNode);
 }
 
 int SkidSet::AddSegment(bVector3 *position, bVector3 *delta_position, bool skid_is_flaming, float intensity) {
@@ -260,9 +258,11 @@ void SkidSet::Render(eView *view, unsigned char intensityReduction) {
 }
 
 SkidSet *CreateNewSkidSet(SkidMaker *skid_maker, bVector3 *position, bVector3 *delta_position, int terrain_type, float intensity) {
-    if (bIsSlotPoolFull(SkidSetSlotPool) && !SkidSetList.IsEmpty()) {
+    if (bIsSlotPoolFull(SkidSetSlotPool)) {
         SkidSet *oldest_skid_set = SkidSetList.GetTail();
-        DeleteThisSkid(oldest_skid_set);
+        if (oldest_skid_set != SkidSetList.EndOfList()) {
+            DeleteThisSkid(oldest_skid_set);
+        }
     }
 
     SkidSet *skid_set = new SkidSet(skid_maker, position, delta_position, terrain_type, intensity);
