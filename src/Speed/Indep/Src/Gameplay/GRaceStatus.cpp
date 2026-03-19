@@ -1285,17 +1285,35 @@ int GRaceParameters::GetLocalizationTag() const {
 }
 
 int GRaceParameters::GetNumLaps() const {
+    if (mIndex) {
+        return reinterpret_cast<const unsigned char *>(mIndex)[0x28];
+    }
+
+    const int *numLaps;
+
     EnsureLoaded();
-    return *reinterpret_cast<const int *>(mRaceRecord->GetAttributePointer(0x0EBDC165, 0) ?
-                                              mRaceRecord->GetAttributePointer(0x0EBDC165, 0) :
-                                              Attrib::DefaultDataArea(sizeof(int)));
+    numLaps = reinterpret_cast<const int *>(mRaceRecord->GetAttributePointer(0x0EBDC165, 0));
+    if (!numLaps) {
+        numLaps = reinterpret_cast<const int *>(Attrib::DefaultDataArea(sizeof(int)));
+    }
+
+    return *numLaps;
 }
 
 const char *GRaceParameters::GetEventID() const {
+    if (mIndex) {
+        return reinterpret_cast<const char *>(mIndex) + 4;
+    }
+
+    const EA::Reflection::Text *eventID;
+
     EnsureLoaded();
-    return *reinterpret_cast<const EA::Reflection::Text *>(mRaceRecord->GetAttributePointer(0xA78403EC, 0) ?
-                                                               mRaceRecord->GetAttributePointer(0xA78403EC, 0) :
-                                                               Attrib::DefaultDataArea(sizeof(EA::Reflection::Text)));
+    eventID = reinterpret_cast<const EA::Reflection::Text *>(mRaceRecord->GetAttributePointer(0xA78403EC, 0));
+    if (!eventID) {
+        eventID = reinterpret_cast<const EA::Reflection::Text *>(Attrib::DefaultDataArea(sizeof(EA::Reflection::Text)));
+    }
+
+    return *eventID;
 }
 
 float GRaceParameters::GetRivalBestTime() const {
@@ -1311,98 +1329,208 @@ float GRaceParameters::GetChallengeGoal() const {
 }
 
 bool GRaceParameters::GetIsPursuitRace() const {
+    if (mIndex) {
+        return (reinterpret_cast<const unsigned int *>(mIndex)[6] & (1 << 7)) != 0;
+    }
+
+    const bool *isPursuitRace;
+
     EnsureLoaded();
-    return *reinterpret_cast<const bool *>(mRaceRecord->GetAttributePointer(0x2B1F54F6, 0) ?
-                                               mRaceRecord->GetAttributePointer(0x2B1F54F6, 0) :
-                                               Attrib::DefaultDataArea(sizeof(bool)));
+    isPursuitRace = reinterpret_cast<const bool *>(mRaceRecord->GetAttributePointer(0x2B1F54F6, 0));
+    if (!isPursuitRace) {
+        isPursuitRace = reinterpret_cast<const bool *>(Attrib::DefaultDataArea(sizeof(bool)));
+    }
+
+    return *isPursuitRace;
 }
 
 bool GRaceParameters::GetIsLoopingRace() const {
+    if (mIndex) {
+        return (reinterpret_cast<const unsigned int *>(mIndex)[6] & (1 << 8)) != 0;
+    }
+
     EnsureLoaded();
     return mRaceRecord->IsLoopingRace(0);
 }
 
 bool GRaceParameters::GetInitiallyUnlockedQuickRace() const {
+    if (mIndex) {
+        return (reinterpret_cast<const unsigned int *>(mIndex)[6] & (1 << 0)) != 0;
+    }
+
+    const bool *initiallyUnlockedQuickRace;
+
     EnsureLoaded();
-    return *reinterpret_cast<const bool *>(mRaceRecord->GetAttributePointer(0xB39ED8C3, 0) ?
-                                              mRaceRecord->GetAttributePointer(0xB39ED8C3, 0) :
-                                              Attrib::DefaultDataArea(sizeof(bool)));
+    initiallyUnlockedQuickRace = reinterpret_cast<const bool *>(mRaceRecord->GetAttributePointer(0xB39ED8C3, 0));
+    if (!initiallyUnlockedQuickRace) {
+        initiallyUnlockedQuickRace = reinterpret_cast<const bool *>(Attrib::DefaultDataArea(sizeof(bool)));
+    }
+
+    return *initiallyUnlockedQuickRace;
 }
 
 bool GRaceParameters::GetInitiallyUnlockedOnline() const {
+    if (mIndex) {
+        return (reinterpret_cast<const unsigned int *>(mIndex)[6] & (1 << 1)) != 0;
+    }
+
+    const bool *initiallyUnlockedOnline;
+
     EnsureLoaded();
-    return *reinterpret_cast<const bool *>(mRaceRecord->GetAttributePointer(0x39509746, 0) ?
-                                              mRaceRecord->GetAttributePointer(0x39509746, 0) :
-                                              Attrib::DefaultDataArea(sizeof(bool)));
+    initiallyUnlockedOnline = reinterpret_cast<const bool *>(mRaceRecord->GetAttributePointer(0x39509746, 0));
+    if (!initiallyUnlockedOnline) {
+        initiallyUnlockedOnline = reinterpret_cast<const bool *>(Attrib::DefaultDataArea(sizeof(bool)));
+    }
+
+    return *initiallyUnlockedOnline;
 }
 
 bool GRaceParameters::GetInitiallyUnlockedChallenge() const {
+    if (mIndex) {
+        return (reinterpret_cast<const unsigned int *>(mIndex)[6] & (1 << 2)) != 0;
+    }
+
+    const bool *initiallyUnlockedChallenge;
+
     EnsureLoaded();
-    return *reinterpret_cast<const bool *>(mRaceRecord->GetAttributePointer(0xEA855EAF, 0) ?
-                                              mRaceRecord->GetAttributePointer(0xEA855EAF, 0) :
-                                              Attrib::DefaultDataArea(sizeof(bool)));
+    initiallyUnlockedChallenge = reinterpret_cast<const bool *>(mRaceRecord->GetAttributePointer(0xEA855EAF, 0));
+    if (!initiallyUnlockedChallenge) {
+        initiallyUnlockedChallenge = reinterpret_cast<const bool *>(Attrib::DefaultDataArea(sizeof(bool)));
+    }
+
+    return *initiallyUnlockedChallenge;
 }
 
 bool GRaceParameters::GetIsDDayRace() const {
+    if (mIndex) {
+        return (reinterpret_cast<const unsigned int *>(mIndex)[6] & (1 << 4)) != 0;
+    }
+
+    const bool *isDDayRace;
+
     EnsureLoaded();
-    return *reinterpret_cast<const bool *>(mRaceRecord->GetAttributePointer(0x8CB01ABF, 0) ?
-                                              mRaceRecord->GetAttributePointer(0x8CB01ABF, 0) :
-                                              Attrib::DefaultDataArea(sizeof(bool)));
+    isDDayRace = reinterpret_cast<const bool *>(mRaceRecord->GetAttributePointer(0x8CB01ABF, 0));
+    if (!isDDayRace) {
+        isDDayRace = reinterpret_cast<const bool *>(Attrib::DefaultDataArea(sizeof(bool)));
+    }
+
+    return *isDDayRace;
 }
 
 bool GRaceParameters::GetIsBossRace() const {
+    if (mIndex) {
+        return (reinterpret_cast<const unsigned int *>(mIndex)[6] & (1 << 5)) != 0;
+    }
+
+    const bool *isBossRace;
+
     EnsureLoaded();
-    return *reinterpret_cast<const bool *>(mRaceRecord->GetAttributePointer(0xFF5EE5D6, 0) ?
-                                              mRaceRecord->GetAttributePointer(0xFF5EE5D6, 0) :
-                                              Attrib::DefaultDataArea(sizeof(bool)));
+    isBossRace = reinterpret_cast<const bool *>(mRaceRecord->GetAttributePointer(0xFF5EE5D6, 0));
+    if (!isBossRace) {
+        isBossRace = reinterpret_cast<const bool *>(Attrib::DefaultDataArea(sizeof(bool)));
+    }
+
+    return *isBossRace;
 }
 
 bool GRaceParameters::GetIsMarkerRace() const {
+    if (mIndex) {
+        return (reinterpret_cast<const unsigned int *>(mIndex)[6] & (1 << 6)) != 0;
+    }
+
+    const bool *isMarkerRace;
+
     EnsureLoaded();
-    return *reinterpret_cast<const bool *>(mRaceRecord->GetAttributePointer(0xF2FE50D7, 0) ?
-                                              mRaceRecord->GetAttributePointer(0xF2FE50D7, 0) :
-                                              Attrib::DefaultDataArea(sizeof(bool)));
+    isMarkerRace = reinterpret_cast<const bool *>(mRaceRecord->GetAttributePointer(0xF2FE50D7, 0));
+    if (!isMarkerRace) {
+        isMarkerRace = reinterpret_cast<const bool *>(Attrib::DefaultDataArea(sizeof(bool)));
+    }
+
+    return *isMarkerRace;
 }
 
 bool GRaceParameters::GetRankPlayersByPoints() const {
+    if (mIndex) {
+        return (reinterpret_cast<const unsigned int *>(mIndex)[6] & (1 << 9)) != 0;
+    }
+
     EnsureLoaded();
     return mRaceRecord->RankPlayersByPoints(0);
 }
 
 bool GRaceParameters::GetRankPlayersByDistance() const {
+    if (mIndex) {
+        return (reinterpret_cast<const unsigned int *>(mIndex)[6] & (1 << 10)) != 0;
+    }
+
     EnsureLoaded();
     return mRaceRecord->RankPlayersByDistance(0);
 }
 
 bool GRaceParameters::GetScriptedCopsInRace() const {
+    if (mIndex) {
+        return (reinterpret_cast<const unsigned int *>(mIndex)[6] & (1 << 12)) != 0;
+    }
+
     EnsureLoaded();
     return mRaceRecord->ScriptedCopsInRace(0);
 }
 
 bool GRaceParameters::GetCopsEnabled() const {
+    if (mIndex) {
+        return (reinterpret_cast<const unsigned int *>(mIndex)[6] & (1 << 11)) != 0;
+    }
+
+    const bool *copsEnabled;
+
     EnsureLoaded();
-    return *reinterpret_cast<const bool *>(mRaceRecord->GetAttributePointer(0x3918E889, 0) ?
-                                              mRaceRecord->GetAttributePointer(0x3918E889, 0) :
-                                              Attrib::DefaultDataArea(sizeof(bool)));
+    copsEnabled = reinterpret_cast<const bool *>(mRaceRecord->GetAttributePointer(0x3918E889, 0));
+    if (!copsEnabled) {
+        copsEnabled = reinterpret_cast<const bool *>(Attrib::DefaultDataArea(sizeof(bool)));
+    }
+
+    return *copsEnabled;
 }
 
 bool GRaceParameters::GetNeverInQuickRace() const {
+    if (mIndex) {
+        return (reinterpret_cast<const unsigned int *>(mIndex)[6] & (1 << 14)) != 0;
+    }
+
     EnsureLoaded();
     return mRaceRecord->NeverInQuickRace(0);
 }
 
 bool GRaceParameters::GetIsChallengeSeriesRace() const {
+    if (mIndex) {
+        return (reinterpret_cast<const unsigned int *>(mIndex)[6] & (1 << 15)) != 0;
+    }
+
+    const bool *isChallengeSeriesRace;
+
     EnsureLoaded();
-    return *reinterpret_cast<const bool *>(mRaceRecord->GetAttributePointer(0x1C650104, 0) ?
-                                              mRaceRecord->GetAttributePointer(0x1C650104, 0) :
-                                              Attrib::DefaultDataArea(sizeof(bool)));
+    isChallengeSeriesRace = reinterpret_cast<const bool *>(mRaceRecord->GetAttributePointer(0x1C650104, 0));
+    if (!isChallengeSeriesRace) {
+        isChallengeSeriesRace = reinterpret_cast<const bool *>(Attrib::DefaultDataArea(sizeof(bool)));
+    }
+
+    return *isChallengeSeriesRace;
 }
 
 bool GRaceParameters::GetIsCollectorsEditionRace() const {
+    if (mIndex) {
+        return (reinterpret_cast<const unsigned int *>(mIndex)[6] & (1 << 16)) != 0;
+    }
+
+    const bool *isCollectorsEditionRace;
+
     EnsureLoaded();
-    return *reinterpret_cast<const bool *>(mRaceRecord->GetAttributePointer(0x637584FE, 0) ?
-                                              mRaceRecord->GetAttributePointer(0x637584FE, 0) :
-                                              Attrib::DefaultDataArea(sizeof(bool)));
+    isCollectorsEditionRace = reinterpret_cast<const bool *>(mRaceRecord->GetAttributePointer(0x637584FE, 0));
+    if (!isCollectorsEditionRace) {
+        isCollectorsEditionRace = reinterpret_cast<const bool *>(Attrib::DefaultDataArea(sizeof(bool)));
+    }
+
+    return *isCollectorsEditionRace;
 }
 
 float GRaceParameters::GetTimeLimit() const {
@@ -1421,10 +1549,15 @@ bool GRaceParameters::GetNoPostRaceScreen() const {
 }
 
 bool GRaceParameters::GetUseWorldHeatInRace() const {
+    const bool *useWorldHeatInRace;
+
     EnsureLoaded();
-    return *reinterpret_cast<const bool *>(mRaceRecord->GetAttributePointer(0x45F2AD6C, 0) ?
-                                              mRaceRecord->GetAttributePointer(0x45F2AD6C, 0) :
-                                              Attrib::DefaultDataArea(sizeof(bool)));
+    useWorldHeatInRace = reinterpret_cast<const bool *>(mRaceRecord->GetAttributePointer(0x45F2AD6C, 0));
+    if (!useWorldHeatInRace) {
+        useWorldHeatInRace = reinterpret_cast<const bool *>(Attrib::DefaultDataArea(sizeof(bool)));
+    }
+
+    return *useWorldHeatInRace;
 }
 
 float GRaceParameters::GetForceHeatLevel() const {
@@ -1433,10 +1566,15 @@ float GRaceParameters::GetForceHeatLevel() const {
 }
 
 float GRaceParameters::GetMaxRaceHeatLevel() const {
+    const float *maxRaceHeatLevel;
+
     EnsureLoaded();
-    return *reinterpret_cast<const float *>(mRaceRecord->GetAttributePointer(0xF5A03629, 0) ?
-                                                mRaceRecord->GetAttributePointer(0xF5A03629, 0) :
-                                                Attrib::DefaultDataArea(sizeof(float)));
+    maxRaceHeatLevel = reinterpret_cast<const float *>(mRaceRecord->GetAttributePointer(0xF5A03629, 0));
+    if (!maxRaceHeatLevel) {
+        maxRaceHeatLevel = reinterpret_cast<const float *>(Attrib::DefaultDataArea(sizeof(float)));
+    }
+
+    return *maxRaceHeatLevel;
 }
 
 float GRaceParameters::GetInitialPlayerSpeed() const {
@@ -1445,10 +1583,15 @@ float GRaceParameters::GetInitialPlayerSpeed() const {
 }
 
 bool GRaceParameters::GetIsRollingStart() const {
+    const bool *isRollingStart;
+
     EnsureLoaded();
-    return *reinterpret_cast<const bool *>(mRaceRecord->GetAttributePointer(0xB809D19C, 0) ?
-                                              mRaceRecord->GetAttributePointer(0xB809D19C, 0) :
-                                              Attrib::DefaultDataArea(sizeof(bool)));
+    isRollingStart = reinterpret_cast<const bool *>(mRaceRecord->GetAttributePointer(0xB809D19C, 0));
+    if (!isRollingStart) {
+        isRollingStart = reinterpret_cast<const bool *>(Attrib::DefaultDataArea(sizeof(bool)));
+    }
+
+    return *isRollingStart;
 }
 
 bool GRaceParameters::GetIsEpicPursuitRace() const {
@@ -1540,31 +1683,51 @@ unsigned int GRaceParameters::GetBarrierCount() const {
 }
 
 const char *GRaceParameters::GetPhotoFinishCamera() const {
+    const EA::Reflection::Text *photoFinishCamera;
+
     EnsureLoaded();
-    return *reinterpret_cast<const EA::Reflection::Text *>(mRaceRecord->GetAttributePointer(0x62DFC259, 0) ?
-                                                               mRaceRecord->GetAttributePointer(0x62DFC259, 0) :
-                                                               Attrib::DefaultDataArea(sizeof(EA::Reflection::Text)));
+    photoFinishCamera = reinterpret_cast<const EA::Reflection::Text *>(mRaceRecord->GetAttributePointer(0x62DFC259, 0));
+    if (!photoFinishCamera) {
+        photoFinishCamera = reinterpret_cast<const EA::Reflection::Text *>(Attrib::DefaultDataArea(sizeof(EA::Reflection::Text)));
+    }
+
+    return *photoFinishCamera;
 }
 
 const char *GRaceParameters::GetPhotoFinishTexture() const {
+    const EA::Reflection::Text *photoFinishTexture;
+
     EnsureLoaded();
-    return *reinterpret_cast<const EA::Reflection::Text *>(mRaceRecord->GetAttributePointer(0x038A3B53, 0) ?
-                                                               mRaceRecord->GetAttributePointer(0x038A3B53, 0) :
-                                                               Attrib::DefaultDataArea(sizeof(EA::Reflection::Text)));
+    photoFinishTexture = reinterpret_cast<const EA::Reflection::Text *>(mRaceRecord->GetAttributePointer(0x038A3B53, 0));
+    if (!photoFinishTexture) {
+        photoFinishTexture = reinterpret_cast<const EA::Reflection::Text *>(Attrib::DefaultDataArea(sizeof(EA::Reflection::Text)));
+    }
+
+    return *photoFinishTexture;
 }
 
 const char *GRaceParameters::GetTrafficPattern() const {
+    const EA::Reflection::Text *trafficPattern;
+
     EnsureLoaded();
-    return *reinterpret_cast<const EA::Reflection::Text *>(mRaceRecord->GetAttributePointer(0x6319B692, 0) ?
-                                                               mRaceRecord->GetAttributePointer(0x6319B692, 0) :
-                                                               Attrib::DefaultDataArea(sizeof(EA::Reflection::Text)));
+    trafficPattern = reinterpret_cast<const EA::Reflection::Text *>(mRaceRecord->GetAttributePointer(0x6319B692, 0));
+    if (!trafficPattern) {
+        trafficPattern = reinterpret_cast<const EA::Reflection::Text *>(Attrib::DefaultDataArea(sizeof(EA::Reflection::Text)));
+    }
+
+    return *trafficPattern;
 }
 
 float GRaceParameters::GetTimeOfDay() const {
+    const float *timeOfDay;
+
     EnsureLoaded();
-    return *reinterpret_cast<const float *>(mRaceRecord->GetAttributePointer(0x9DFF3C3D, 0) ?
-                                                mRaceRecord->GetAttributePointer(0x9DFF3C3D, 0) :
-                                                Attrib::DefaultDataArea(sizeof(float)));
+    timeOfDay = reinterpret_cast<const float *>(mRaceRecord->GetAttributePointer(0x9DFF3C3D, 0));
+    if (!timeOfDay) {
+        timeOfDay = reinterpret_cast<const float *>(Attrib::DefaultDataArea(sizeof(float)));
+    }
+
+    return *timeOfDay;
 }
 
 unsigned int GRaceParameters::GetChallengeType() const {
