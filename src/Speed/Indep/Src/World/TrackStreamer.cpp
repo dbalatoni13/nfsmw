@@ -1580,16 +1580,18 @@ void TrackStreamer::UnactivateSection(TrackStreamingSection *section) {
 }
 
 void TrackStreamer::LoadDiscBundle(DiscBundleSection *disc_bundle) {
-    void *buffer = 0;
+    void *memory = 0;
     for (int i = 0; i < disc_bundle->NumMembers; i++) {
+        DiscBundleSectionMember *member = &disc_bundle->Members[i];
+        TrackStreamingSection *section = member->pSection;
         if (i == 0) {
-            buffer = disc_bundle->Members[i].pSection->pMemory;
+            memory = section->pMemory;
         }
-        disc_bundle->Members[i].pSection->Status = TrackStreamingSection::LOADING;
+        section->Status = TrackStreamingSection::LOADING;
     }
 
     NumSectionsLoading += 1;
-    AddQueuedFile(buffer, StreamFilenames[1], disc_bundle->FileOffset, disc_bundle->FileSize, DiscBundleLoadedCallback,
+    AddQueuedFile(memory, StreamFilenames[1], disc_bundle->FileOffset, disc_bundle->FileSize, DiscBundleLoadedCallback,
                   reinterpret_cast<int>(disc_bundle), 0);
 }
 
