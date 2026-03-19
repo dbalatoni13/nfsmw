@@ -286,6 +286,22 @@ static inline float GetSceneryRadius_Scenery(unsigned char *scenery_info) {
     return *reinterpret_cast<float *>(scenery_info + 0x38);
 }
 
+static inline int InlinedViewGetPixelSize(SceneryCullInfo *scenery_cull_info, const bVector3 *position, float radius) {
+    int pixel_size = 0;
+    bVector3 dir = *position - scenery_cull_info->Position;
+    float distance_ahead = bDot(&dir, &scenery_cull_info->Direction);
+    if (-radius <= distance_ahead) {
+        float distance_away = bLength(&dir);
+        float pixel_size_float = scenery_cull_info->H;
+        float distance_minus_radius = distance_away - radius;
+        if (distance_minus_radius > radius) {
+            pixel_size_float = (radius * pixel_size_float) / distance_minus_radius;
+        }
+        pixel_size = static_cast<int>(pixel_size_float);
+    }
+    return pixel_size;
+}
+
 static inline bMatrix4 *eFrameMallocMatrix(int num_matrices) {
     unsigned char *address = CurrentBufferPos;
     unsigned int size = num_matrices * sizeof(bMatrix4);
@@ -577,24 +593,8 @@ void ScenerySectionHeader::DrawAScenery(int scenery_instance_number, SceneryCull
         }
     }
 
-    float to_instance_x = instance->Position[0] - scenery_cull_info->Position.x;
-    float to_instance_y = instance->Position[1] - scenery_cull_info->Position.y;
-    float to_instance_z = instance->Position[2] - scenery_cull_info->Position.z;
-    float forward_distance = to_instance_x * scenery_cull_info->Direction.x + to_instance_y * scenery_cull_info->Direction.y +
-                             to_instance_z * scenery_cull_info->Direction.z;
     float radius = GetSceneryRadius_Scenery(scenery_info) + 6.0f;
-    int pixel_size_int = 0;
-    if (-radius <= forward_distance) {
-        float distance = bSqrt(
-            to_instance_x * to_instance_x + to_instance_y * to_instance_y + to_instance_z * to_instance_z
-        );
-        float pixel_size = scenery_cull_info->H;
-        float distance_minus_radius = distance - radius;
-        if (distance_minus_radius > radius) {
-            pixel_size = (radius * pixel_size) / distance_minus_radius;
-        }
-        pixel_size_int = static_cast<int>(pixel_size);
-    }
+    int pixel_size_int = InlinedViewGetPixelSize(scenery_cull_info, instance->GetPosition(), radius);
 
     if (pixel_size_int < 2) {
         return;

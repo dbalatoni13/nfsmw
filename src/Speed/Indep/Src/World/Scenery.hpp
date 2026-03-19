@@ -54,6 +54,10 @@ struct SceneryInstance : public SceneryBoundingBox {
         bFill(position, Position[0], Position[1], Position[2], 1.0f);
     }
 
+    bVector3 *GetPosition() {
+        return reinterpret_cast<bVector3 *>(Position);
+    }
+
     void SetMatrix(const bMatrix4 *matrix) {
         const float rotation_conversion = 8192.0f;
         Rotation[0] = static_cast<short>(matrix->v0.x * rotation_conversion);
