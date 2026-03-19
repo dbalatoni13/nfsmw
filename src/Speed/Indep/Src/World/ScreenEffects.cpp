@@ -257,7 +257,6 @@ void DoTunnelBloom(eView *view) {
         return;
     }
 
-    float base_glare = 0.0f;
     bVector3 *my_car_pos = camera_anchor->GetGeometryPosition();
     Camera *view_camera = view->GetCamera();
     bVector3 *camera_position = view_camera->GetPosition();
@@ -277,11 +276,12 @@ void DoTunnelBloom(eView *view) {
     TrackPathZone *zone = 0;
     TrackPathZone *zoneBP = zoneB[vIndex];
     if (zoneBP && zoneBP->IsPointInside(&twoDpos)) {
-        zone = zoneBP;
+        zone = zoneB[vIndex];
     } else {
         zone = TheTrackPathManager.FindZone(&twoDpos, TRACK_PATH_ZONE_TUNNEL, 0);
     }
 
+    float base_glare = 0.0f;
     if (!zone || zone->Elevation <= my_car_pos->z) {
         if (base_glare < view->ScreenEffects->SE_data[SE_GLARE].intensity) {
             ScreenEffectDef SE_def;
