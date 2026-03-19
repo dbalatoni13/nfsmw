@@ -1018,9 +1018,11 @@ int TrackStreamer::CountUserAllocations(const char **pfragmented_user_allocation
 }
 
 int TrackStreamer::DoHoleFilling(int largest_free) {
-    const char *debug_name = 0;
+    const char *debug_name;
     HoleMovement hole_movements[128];
-    int amount_moved = 0;
+    int amount_moved;
+    debug_name = 0;
+    amount_moved = 0;
 
     CountUserAllocations(&debug_name);
     if (debug_name) {
@@ -1030,7 +1032,12 @@ int TrackStreamer::DoHoleFilling(int largest_free) {
 
     int best_method = -1;
     int best_amount_moved = 0x7FFFFFFF;
-    if (ForceHoleFillerMethod < 0) {
+    if (ForceHoleFillerMethod >= 0) {
+        int num_movements = BuildHoleMovements(hole_movements, 0x80, ForceHoleFillerMethod, largest_free, 0, 0x7FFFFFFF);
+        if (num_movements > 0) {
+            best_method = ForceHoleFillerMethod;
+        }
+    } else {
         for (int filler_method = 1; filler_method < 6; filler_method++) {
             int num_movements =
                 BuildHoleMovements(hole_movements, 0x80, filler_method, largest_free, &amount_moved, best_amount_moved);
@@ -1038,11 +1045,6 @@ int TrackStreamer::DoHoleFilling(int largest_free) {
                 best_method = filler_method;
                 best_amount_moved = amount_moved;
             }
-        }
-    } else {
-        int num_movements = BuildHoleMovements(hole_movements, 0x80, ForceHoleFillerMethod, largest_free, 0, 0x7FFFFFFF);
-        if (num_movements > 0) {
-            best_method = ForceHoleFillerMethod;
         }
     }
 
@@ -1066,7 +1068,11 @@ int TrackStreamer::DoHoleFilling(int largest_free) {
         unsigned int move_start = bGetTicker();
         int new_address = movement->NewAddress;
         pMemoryPool->Free(reinterpret_cast<void *>(movement->Address));
-        pMemoryPool->Malloc(movement->Size, section ? section->SectionName : "HoleMovement", false, false, new_address);
+        const char *move_debug_name = "HoleMovement";
+        if (section) {
+            move_debug_name = section->SectionName;
+        }
+        pMemoryPool->Malloc(movement->Size, move_debug_name, false, false, new_address);
         if (section && section->Status == TrackStreamingSection::ACTIVATED) {
             AllowDuplicateSolids += 1;
             SetDuplicateTextureWarning(false);
