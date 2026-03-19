@@ -215,9 +215,8 @@ TrackPathZone *TrackPathManager::FindZone(const bVector2 *position, eTrackPathZo
 }
 
 void TrackPathManager::ResetZoneVisitInfos() {
-    for (TrackPathZone *zone = pZones; zone < reinterpret_cast<TrackPathZone *>(reinterpret_cast<char *>(pZones) + SizeofZones);
-         zone = NextTrackPathZone(zone)) {
-        zone->VisitInfo = 0;
+    for (TrackPathZone *zone = pZones; zone < GetLastZone(); zone = zone->GetMemoryImageNext()) {
+        zone->SetVisitInfo(0);
     }
 }
 

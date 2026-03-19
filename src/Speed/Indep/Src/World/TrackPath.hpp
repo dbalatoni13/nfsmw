@@ -58,6 +58,10 @@ class TrackPathZone {
         return MemoryImageSize;
     }
 
+    void SetVisitInfo(int v) {
+        VisitInfo = v;
+    }
+
     TrackPathZone *GetMemoryImageNext() {
         return reinterpret_cast<TrackPathZone *>(reinterpret_cast<char *>(this) + GetMemoryImageSize());
     }
@@ -104,6 +108,9 @@ class TrackPathManager {
     void BuildZoneInfoTable();
     TrackPathZone *FindZone(const bVector2 *position, eTrackPathZoneType zone_type, TrackPathZone *prev_zone);
     void ResetZoneVisitInfos();
+    TrackPathZone *GetLastZone() {
+        return reinterpret_cast<TrackPathZone *>(reinterpret_cast<char *>(pZones) + SizeofZones);
+    }
 };
 
 extern TrackPathManager TheTrackPathManager;
