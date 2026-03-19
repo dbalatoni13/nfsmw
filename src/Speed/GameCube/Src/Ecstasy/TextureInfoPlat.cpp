@@ -142,7 +142,7 @@ unsigned char TextureInfoPlatInfo::SetImage(int width, int height, int mip, int 
     GXTlutFmt tlut_format = static_cast<GXTlutFmt>(format >= 0 ? GX_TL_RGB5A3 : GX_TL_IA8);
 
     if (clamp & 1) {
-        int width_lsb = width & -width;
+        int width_lsb = width & (~width + 1);
 
         if (width == width_lsb) {
             wrap_s = 1;
@@ -150,7 +150,7 @@ unsigned char TextureInfoPlatInfo::SetImage(int width, int height, int mip, int 
     }
 
     if (clamp & 2) {
-        int height_lsb = height & -height;
+        int height_lsb = height & (~height + 1);
 
         if (height == height_lsb) {
             wrap_t = 1;
