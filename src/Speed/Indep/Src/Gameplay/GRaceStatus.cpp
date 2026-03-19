@@ -1541,10 +1541,84 @@ float GRaceParameters::GetTimeOfDay() const {
 }
 
 unsigned int GRaceParameters::GetChallengeType() const {
-    return 0;
+    const EA::Reflection::Text *challengeType;
+
+    if (mIndex) {
+        return *reinterpret_cast<const unsigned int *>(reinterpret_cast<const char *>(mIndex) + 0x10);
+    }
+
+    if (mParentVault && !mParentVault->IsLoaded()) {
+        mParentVault->LoadSyncTransient();
+    }
+
+    if (mChildVault && !mChildVault->IsLoaded()) {
+        mChildVault->LoadSyncTransient();
+    }
+
+    challengeType = reinterpret_cast<const EA::Reflection::Text *>(mRaceRecord->GetAttributePointer(0x704F72E8, 0));
+    if (!challengeType) {
+        challengeType = reinterpret_cast<const EA::Reflection::Text *>(Attrib::DefaultDataArea(sizeof(EA::Reflection::Text)));
+    }
+
+    if (!*challengeType || !**challengeType) {
+        return 0;
+    }
+
+    return Attrib::StringHash32(*challengeType);
 }
 
 GRace::Type GRaceParameters::GetRaceType() const {
+    static const struct {
+        const char *mTypeName;
+        GRace::Type mType;
+    } typeTable[11] = {
+        {"circuit", GRace::kRaceType_Circuit},
+        {"p2p", GRace::kRaceType_P2P},
+        {"drag", GRace::kRaceType_Drag},
+        {"knockout", GRace::kRaceType_Knockout},
+        {"tollbooth", GRace::kRaceType_Tollbooth},
+        {"speedtrap", GRace::kRaceType_SpeedTrap},
+        {"cashgrab", GRace::kRaceType_CashGrab},
+        {"checkpointrace", GRace::kRaceType_Checkpoint},
+        {"challenge", GRace::kRaceType_Challenge},
+        {"speedtrapjump", GRace::kRaceType_JumpToSpeedTrap},
+        {"milestonejump", GRace::kRaceType_JumpToMilestone},
+    };
+    const char *eventType;
+
+    if (mIndex) {
+        return static_cast<GRace::Type>(static_cast<signed char>(reinterpret_cast<const char *>(mIndex)[0x2B]));
+    }
+
+    if (mParentVault && !mParentVault->IsLoaded()) {
+        mParentVault->LoadSyncTransient();
+    }
+
+    if (mChildVault && !mChildVault->IsLoaded()) {
+        mChildVault->LoadSyncTransient();
+    }
+
+    {
+        const EA::Reflection::Text *eventTypePtr =
+            reinterpret_cast<const EA::Reflection::Text *>(mRaceRecord->GetAttributePointer(0x0F6BCDE1, 0));
+
+        if (!eventTypePtr) {
+            eventTypePtr = reinterpret_cast<const EA::Reflection::Text *>(Attrib::DefaultDataArea(sizeof(EA::Reflection::Text)));
+        }
+
+        eventType = *eventTypePtr;
+    }
+
+    {
+        int onType;
+
+        for (onType = 0; onType < 11; ++onType) {
+            if (bStrCmp(eventType, typeTable[onType].mTypeName) == 0) {
+                return typeTable[onType].mType;
+            }
+        }
+    }
+
     return GRace::kRaceType_None;
 }
 
@@ -1687,6 +1761,18 @@ int GRaceParameters::GetCopDensity() const {
 }
 
 bool GRaceParameters::GetCanBeReversed() const {
+    if (mIndex) {
+        return (*reinterpret_cast<const unsigned int *>(reinterpret_cast<const char *>(mIndex) + 0x18) >> 3) & 1;
+    }
+
+    if (mParentVault && !mParentVault->IsLoaded()) {
+        mParentVault->LoadSyncTransient();
+    }
+
+    if (mChildVault && !mChildVault->IsLoaded()) {
+        mChildVault->LoadSyncTransient();
+    }
+
     return false;
 }
 
