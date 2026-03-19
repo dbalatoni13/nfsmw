@@ -2142,9 +2142,9 @@ void TrackStreamer::ReadyToMakeSpaceInPool() {
 
     void (*callback)(int) = MakeSpaceInPoolCallback;
     int param = MakeSpaceInPoolCallbackParam;
-    MakeSpaceInPoolSize = 0;
     MakeSpaceInPoolCallback = 0;
     MakeSpaceInPoolCallbackParam = 0;
+    MakeSpaceInPoolSize = 0;
     callback(param);
 }
 
