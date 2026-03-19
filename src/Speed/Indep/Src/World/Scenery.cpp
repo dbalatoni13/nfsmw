@@ -1013,19 +1013,13 @@ int IsInTable(short *section_numbers, int num_sections, int section_number) {
 }
 
 int ToggleIsInTable(short *section_numbers, int num_sections, int max_sections, int section_number) {
-    for (int i = 0; i < num_sections; i++) {
-        if (section_numbers[i] == section_number) {
-            for (int n = i + 1; n < num_sections; n++) {
-                section_numbers[n - 1] = section_numbers[n];
-            }
-            return num_sections - 1;
-        }
+    int section_index = IsInTable(section_numbers, num_sections, section_number);
+    if (section_index < 0) {
+        section_numbers[num_sections % max_sections] = static_cast<short>(section_number);
+        return num_sections + 1;
     }
 
-    if (num_sections < max_sections) {
-        section_numbers[num_sections] = static_cast<short>(section_number);
-        num_sections += 1;
-    }
+    section_numbers[section_index] = -1;
     return num_sections;
 }
 
