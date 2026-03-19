@@ -1452,8 +1452,9 @@ int TrackStreamer::Unloader(bChunk *chunk) {
 void TrackStreamer::HibernateStreamingSections() {}
 
 void TrackStreamer::FlushHibernatingSections() {
-    for (int i = 0; i < NumHibernatingSections; i++) {
-        bFree(HibernatingSections[i].pMemory);
+    for (int n = 0; n < NumHibernatingSections; n++) {
+        TrackStreamingSection *section = &HibernatingSections[n];
+        bFree(section->pMemory);
     }
     NumHibernatingSections = 0;
 }
