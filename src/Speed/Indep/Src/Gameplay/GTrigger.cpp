@@ -359,7 +359,7 @@ void GTrigger::HideIcon() {
 }
 
 void GTrigger::MarkAsInside(ISimable *simable) {
-    if (!IsInside(simable)) {
+    if (std::find(mSimObjInside.begin(), mSimObjInside.end(), simable) == mSimObjInside.end()) {
         mSimObjInside.push_back(simable);
     }
 }
