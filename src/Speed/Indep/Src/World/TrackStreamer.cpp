@@ -1807,15 +1807,16 @@ done:
         int free_memory = bCountFreeMemory(7) - (out_of_memory_size + amount_jettisoned);
         {
             int n = 0;
+            int num_track_streaming_sections = NumTrackStreamingSections;
 
-            if (NumTrackStreamingSections > 0) {
+            if (num_track_streaming_sections > 0) {
                 do {
                     TrackStreamingSection *section = &pTrackStreamingSections[n];
                     if (!section->CurrentlyVisible && section->Status != TrackStreamingSection::UNLOADED) {
                         free_memory += section->PermSize;
                     }
                     n += 1;
-                } while (n < NumTrackStreamingSections);
+                } while (n < num_track_streaming_sections);
             }
         }
         MemorySafetyMargin = free_memory;
