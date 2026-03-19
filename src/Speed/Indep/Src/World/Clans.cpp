@@ -48,22 +48,25 @@ Clan *GetClan(bVector3 *position) {
 
     int hash = ((static_cast<int>(position->y * 65536.0f) >> 22) * 0x10000) +
                ((static_cast<int>(position->x * 65536.0f) >> 22) & 0xffff);
-    for (Clan *clan = ClanList.GetHead(); clan != ClanList.EndOfList(); clan = clan->GetNext()) {
-        if (clan->Hash == static_cast<unsigned int>(hash)) {
-            ClanList.Remove(clan);
-            clan->LastUpdateTime = WorldTime;
-            ClanList.AddHead(clan);
-            return clan;
-        }
+    Clan *clan = ClanList.GetHead();
+    if (clan != ClanList.EndOfList() && clan->Hash != static_cast<unsigned int>(hash)) {
+        do {
+            clan = clan->GetNext();
+        } while (clan != ClanList.EndOfList() && clan->Hash != static_cast<unsigned int>(hash));
     }
-
-    if (ClanSlotPool->IsFull() && !ClanList.IsEmpty()) {
+    if (clan != ClanList.EndOfList()) {
+        ClanList.Remove(clan);
+        clan->LastUpdateTime = WorldTime;
+        ClanList.AddHead(clan);
+        return clan;
+    }
+    if (ClanSlotPool->IsFull()) {
         Clan *last_clan = ClanList.GetTail();
         ClanList.Remove(last_clan);
         delete last_clan;
     }
 
-    Clan *clan = new Clan(position, static_cast<unsigned int>(hash));
+    clan = new Clan(position, static_cast<unsigned int>(hash));
     ClanList.AddHead(clan);
     return clan;
 }
