@@ -13,8 +13,8 @@ static const char kDownloadConstantForceInvalidWheel[] = "ERROR: Trying to downl
 static const char kUpdateConstantForceError[] = "ERROR: UpdateForce(constant force) on channel %d returned %d\n";
 
 static inline unsigned long &ConstantGetEffectID(Force *self, int channel, int forceNumber) {
-    typedef unsigned long Row[8];
-    return reinterpret_cast<Row *>(reinterpret_cast<char *>(self) + 0x80)[channel][forceNumber];
+    char *base = reinterpret_cast<char *>(self) + 0x80;
+    return *reinterpret_cast<unsigned long *>(base + channel * 32 + forceNumber * 4);
 }
 
 Constant::Constant() : Force() {}
