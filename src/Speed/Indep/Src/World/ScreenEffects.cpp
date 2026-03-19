@@ -141,10 +141,10 @@ bool TopologyCoordinate::HasTopology(const bVector2 *position) {
 void ScreenEffectDB::AddScreenEffect(ScreenEffectType type, float intensity, float r, float g, float b) {
     ScreenEffectDef info;
 
+    info.intensity = intensity;
     info.r = r;
     info.g = g;
     info.b = b;
-    info.intensity = intensity;
     info.UpdateFnc = 0;
     AddScreenEffect(type, &info, 1, SEC_FRAME);
 }
