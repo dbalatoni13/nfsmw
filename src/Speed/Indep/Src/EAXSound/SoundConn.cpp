@@ -119,16 +119,13 @@ CarSoundConn::CarSoundConn(const Sim::ConnectionData &data)
 }
 
 CarSoundConn::~CarSoundConn() {
-    EAX_CarState *state;
-
     mTarget.Set(0);
-    state = mState;
-    if (g_pEAXSound != nullptr && state != nullptr) {
-        g_pEAXSound->DestroyEAXCar(state);
+    if (g_pEAXSound != nullptr) {
+        g_pEAXSound->DestroyEAXCar(mState);
     }
-    if (state != nullptr) {
-        state->~EAX_CarState();
-        __builtin_delete(state);
+    if (mState != nullptr) {
+        mState->~EAX_CarState();
+        __builtin_delete(mState);
     }
     mState = nullptr;
 }
