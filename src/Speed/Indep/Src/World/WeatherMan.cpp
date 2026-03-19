@@ -43,8 +43,12 @@ int RegionQuery::CalculateRegionInfo(eView *view, RegionType regionKind, int InF
         DistFogPower = BaseWeatherFog;
         retcol = fog_colour | 0x80000000;
         DistFogColour = retcol;
-        if (oldDistFogColour_27397 == retcol && oldDistFogPower_27398 == DistFogPower && oldDistFogStart_27399 == DistFogStart) {
-            return 0;
+        if (oldDistFogColour_27397 == retcol) {
+            if (oldDistFogPower_27398 == DistFogPower) {
+                if (oldDistFogStart_27399 == DistFogStart) {
+                    return 0;
+                }
+            }
         }
     } else {
         DistFogPower = DAT_80409c34;
@@ -66,7 +70,7 @@ int RegionQuery::CalculateRegionInfo(eView *view, RegionType regionKind, int InF
                 if (BaseFogFalloffX < distanceSq) {
                     float ratio = 1.0f / bSqrt(distanceSq);
                     ratio = -(distanceSq * ratio * ratio - DAT_80409c44) * ratio * DAT_80409c40 + ratio;
-                    distance = (-(distanceSq * ratio * ratio - DAT_80409c44) * ratio * DAT_80409c40 + ratio) * distanceSq;
+                    distance = ratio * distanceSq;
                 }
 
                 float blend = DAT_80409c34;
@@ -122,8 +126,12 @@ int RegionQuery::CalculateRegionInfo(eView *view, RegionType regionKind, int InF
 
         unsigned int retcol = colr_r | colr_g << 8 | colr_b << 16 | 0x80000000;
         DistFogColour = retcol;
-        if (oldDistFogColour_27397 == retcol && oldDistFogPower_27398 == DistFogPower && oldDistFogStart_27399 == DistFogStart) {
-            return 0;
+        if (oldDistFogColour_27397 == retcol) {
+            if (oldDistFogPower_27398 == DistFogPower) {
+                if (oldDistFogStart_27399 == DistFogStart) {
+                    return 0;
+                }
+            }
         }
     }
 
