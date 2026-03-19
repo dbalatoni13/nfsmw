@@ -1243,12 +1243,15 @@ void GrandSceneryCullInfo::DoCulling() {
             do_precull = false;
         }
 
+        if (do_precull) {
+            if (gPrecullerBooBooManager.IsSet(scenery_cull_info->Position)) {
+                do_precull = false;
+            }
+        }
         scenery_cull_info->PrecullerSectionNumber = -1;
         if (do_precull) {
-            if (!gPrecullerBooBooManager.IsSet(scenery_cull_info->Position)) {
-                scenery_cull_info->PrecullerSectionNumber =
-                    GetPrecullerSectionNumber(scenery_cull_info->Position.x, scenery_cull_info->Position.y);
-            }
+            scenery_cull_info->PrecullerSectionNumber =
+                GetPrecullerSectionNumber(scenery_cull_info->Position.x, scenery_cull_info->Position.y);
         }
     }
 
