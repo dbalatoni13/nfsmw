@@ -218,8 +218,8 @@ void VisibleSectionManager::UnallocateUserInfo(int section_number) {
     NumAllocatedUserInfo -= 1;
     tail->Next = reinterpret_cast<bNode *>(user_info);
     UnallocatedUserInfoList.HeadNode.Prev = reinterpret_cast<bNode *>(user_info);
-    reinterpret_cast<bNode *>(user_info)->Next = &UnallocatedUserInfoList.HeadNode;
     reinterpret_cast<bNode *>(user_info)->Prev = tail;
+    reinterpret_cast<bNode *>(user_info)->Next = &UnallocatedUserInfoList.HeadNode;
     UserInfoTable[section_number] = 0;
 }
 
@@ -291,9 +291,17 @@ VisibleSectionBoundary *VisibleSectionManager::FindBoundary(const bVector2 *poin
 
 DrivableScenerySection *VisibleSectionManager::FindDrivableSection(const bVector2 *point) {
     for (DrivableScenerySection *section = DrivableSectionList.GetHead(); section != DrivableSectionList.EndOfList(); section = section->GetNext()) {
-        if (section->pBoundary && PointInBBox(point, &section->pBoundary->BBoxMin, &section->pBoundary->BBoxMax)) {
+        if (section->pBoundary->IsPointInside(point)) {
+            DrivableSectionList.Remove(section);
+            DrivableSectionList.AddHead(section);
             return section;
         }
+    }
+
+    float distance;
+    VisibleSectionBoundary *boundary = FindClosestBoundary(point, &distance);
+    if (distance < 0.1f) {
+        return FindDrivableSection(boundary->SectionNumber);
     }
 
     return 0;
