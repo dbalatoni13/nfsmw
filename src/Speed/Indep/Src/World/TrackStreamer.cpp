@@ -714,7 +714,7 @@ int TrackStreamer::BuildHoleMovements(HoleMovement *hole_movements, int max_move
                     if (node2 && node2->IsFree()) {
                         hole_size += node2->Size;
                     }
-                    if (best_hole_size < hole_size) {
+                    if (hole_size > best_hole_size) {
                         best_hole_size = hole_size;
                         movement->Size = next_node->Size;
                         movement->Address = next_node->Address;
@@ -774,17 +774,17 @@ int TrackStreamer::BuildHoleMovements(HoleMovement *hole_movements, int max_move
                                 size_checking[found_nodes] = top_allocated->Size;
                                 middle_allocated_memory += top_allocated->Size;
                                 found_nodes += 1;
-                                if (largest_allocated_here->Size < top_allocated->Size) {
+                                if (top_allocated->Size > largest_allocated_here->Size) {
                                     largest_allocated_here = top_allocated;
                                 }
                             }
                         }
 
                         int free_gap = total_free_memory - middle_allocated_memory;
-                        if ((!found_big_enough && current_best < free_gap) ||
+                        if ((!found_big_enough && free_gap > current_best) ||
                             (found_big_enough &&
                              total_needing_allocation <= total_free_memory + middle_allocated_memory &&
-                             middle_allocated_memory < current_best_middle_memory)) {
+                             current_best_middle_memory > middle_allocated_memory)) {
                             std::sort(size_checking, size_checking + found_nodes);
                             int evaluated_best_address = 0;
                             bool largest_flag = false;
