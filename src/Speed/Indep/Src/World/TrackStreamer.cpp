@@ -1090,20 +1090,19 @@ int TrackStreamer::DoHoleFilling(int largest_free) {
             move_debug_name = section->SectionName;
         }
         pMemoryPool->Malloc(movement->Size, move_debug_name, false, false, reinterpret_cast<int>(new_memory));
-        if (section && section->Status == TrackStreamingSection::ACTIVATED) {
-            eAllowDuplicateSolids(true);
-            SetDuplicateTextureWarning(false);
-            MoveChunks(reinterpret_cast<bChunk *>(new_memory), reinterpret_cast<bChunk *>(section->pMemory), section->LoadedSize,
-                       section->SectionName);
-            DCStoreRangeNoSync(new_memory, section->LoadedSize);
-            eAllowDuplicateSolids(false);
-            SetDuplicateTextureWarning(true);
-        } else if (section) {
-            eWaitUntilRenderingDone();
-            bOverlappedMemCpy(new_memory, section->pMemory, section->LoadedSize);
-        }
-
         if (section) {
+            if (section->Status == TrackStreamingSection::ACTIVATED) {
+                eAllowDuplicateSolids(true);
+                SetDuplicateTextureWarning(false);
+                MoveChunks(reinterpret_cast<bChunk *>(new_memory), reinterpret_cast<bChunk *>(section->pMemory),
+                           section->LoadedSize, section->SectionName);
+                DCStoreRangeNoSync(new_memory, section->LoadedSize);
+                eAllowDuplicateSolids(false);
+                SetDuplicateTextureWarning(true);
+            } else {
+                eWaitUntilRenderingDone();
+                bOverlappedMemCpy(new_memory, section->pMemory, section->LoadedSize);
+            }
             section->pMemory = new_memory;
         }
         float move_time = bGetTickerDifference(start_ticks);
@@ -1363,8 +1362,8 @@ void TrackStreamer::SwitchZones(short *current_zones) {
         if (section->Status == TrackStreamingSection::ACTIVATED && !section->CurrentlyVisible) {
             char section_letter = GetScenerySectionLetter_TrackStreamer(section->SectionNumber);
             if (section_letter != 'Y' && section_letter != 'W' && section_letter != 'X' && section_letter != 'U') {
-                    num_sections_unactivated += 1;
-                    UnactivateSection(section);
+                num_sections_unactivated += 1;
+                UnactivateSection(section);
             }
         }
     }
