@@ -1203,18 +1203,16 @@ void GrandSceneryCullInfo::DoCulling() {
     for (int i = 0; i < NumCullInfos; i++) {
         SceneryCullInfo *scenery_cull_info = &SceneryCullInfos[i];
         eView *view = scenery_cull_info->pView;
-        unsigned char *camera = view ? reinterpret_cast<unsigned char *>(view->GetCamera()) : 0;
+        unsigned char *camera = reinterpret_cast<unsigned char *>(view->GetCamera());
         bool do_precull = true;
 
-        if (camera) {
-            scenery_cull_info->Position.x = *reinterpret_cast<float *>(camera + 0x40);
-            scenery_cull_info->Position.y = *reinterpret_cast<float *>(camera + 0x44);
-            scenery_cull_info->Position.z = *reinterpret_cast<float *>(camera + 0x48);
-            scenery_cull_info->Direction.x = *reinterpret_cast<float *>(camera + 0x50);
-            scenery_cull_info->Direction.y = *reinterpret_cast<float *>(camera + 0x54);
-            scenery_cull_info->Direction.z = *reinterpret_cast<float *>(camera + 0x58);
-        }
-        scenery_cull_info->H = view ? view->H : 0.0f;
+        scenery_cull_info->Position.x = *reinterpret_cast<float *>(camera + 0x40);
+        scenery_cull_info->Position.y = *reinterpret_cast<float *>(camera + 0x44);
+        scenery_cull_info->Position.z = *reinterpret_cast<float *>(camera + 0x48);
+        scenery_cull_info->Direction.x = *reinterpret_cast<float *>(camera + 0x50);
+        scenery_cull_info->Direction.y = *reinterpret_cast<float *>(camera + 0x54);
+        scenery_cull_info->Direction.z = *reinterpret_cast<float *>(camera + 0x58);
+        scenery_cull_info->H = view->H;
 
         if (PrecullerMode == 0) {
             do_precull = false;
@@ -1222,7 +1220,7 @@ void GrandSceneryCullInfo::DoCulling() {
             if (RealTimeFrames % 0x3D < 0xF) {
                 do_precull = false;
             }
-        } else if (PrecullerMode == 3 && camera) {
+        } else if (PrecullerMode == 3) {
             float speed_x = *reinterpret_cast<float *>(camera + 0x1E8);
             float speed_y = *reinterpret_cast<float *>(camera + 0x1EC);
             float speed_z = *reinterpret_cast<float *>(camera + 0x1F0);
@@ -1243,8 +1241,8 @@ void GrandSceneryCullInfo::DoCulling() {
             unsigned char section_bit = gPrecullerBooBooManager.GetBit(section_number);
             if (section_byte && (*section_byte & section_bit) == 0) {
                 scenery_cull_info->PrecullerSectionNumber =
-                    (static_cast<int>(scenery_cull_info->Position.y) & 0x3E0) +
-                    ((static_cast<unsigned int>(static_cast<int>(scenery_cull_info->Position.x)) >> 5) & 0x1F);
+                    ((static_cast<unsigned int>(static_cast<int>(scenery_cull_info->Position.x)) >> 5) & 0x1F) +
+                    (static_cast<int>(scenery_cull_info->Position.y) & 0x3E0);
             }
         }
     }
