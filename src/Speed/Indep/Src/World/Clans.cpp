@@ -42,12 +42,8 @@ void CloseClans() {
 }
 
 Clan *GetClan(bVector3 *position) {
-    if (!ClanSlotPool) {
-        InitClans();
-    }
-
-    int hash = ((static_cast<int>(position->y * 65536.0f) >> 22) * 0x10000) +
-               ((static_cast<int>(position->x * 65536.0f) >> 22) & 0xffff);
+    int hash = (static_cast<int>(position->x * 65536.0f) >> 22) & 0xffff;
+    hash += (static_cast<int>(position->y * 65536.0f) >> 22) * 0x10000;
     Clan *clan = ClanList.GetHead();
     if (clan != ClanList.EndOfList() && clan->Hash != static_cast<unsigned int>(hash)) {
         do {
