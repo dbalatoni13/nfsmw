@@ -44,10 +44,12 @@ void GRuntimeInstance::AllocateConnectionBuffer(unsigned int numEntries) {
 
 void GRuntimeInstance::ConnectToInstance(const Attrib::Key &key, int index, GRuntimeInstance *instance) {
     unsigned int packedKey = MakePackedKey(key, index);
-    ConnectedInstance &connected = mConnected[mNumConnected];
+    unsigned short connectedIndex = mNumConnected;
+    ConnectedInstance &connected = mConnected[connectedIndex];
+
     connected.mIndexedKey = packedKey;
     connected.mInstance = instance;
-    mNumConnected++;
+    mNumConnected = connectedIndex + 1;
 }
 
 void GRuntimeInstance::LockConnections() {
@@ -59,18 +61,20 @@ GRuntimeInstance *GRuntimeInstance::GetConnectedInstance(const Attrib::Key &key,
     unsigned int targetKey = MakePackedKey(key, index);
     int lower = 0;
     int upper = mNumConnected - 1;
+
     while (lower <= upper) {
         int middle = (lower + upper) / 2;
         ConnectedInstance &connected = mConnected[middle];
-        if (connected.mIndexedKey == targetKey) {
+
+        if (targetKey > connected.mIndexedKey) {
+            lower = middle + 1;
+        } else if (targetKey < connected.mIndexedKey) {
+            upper = middle - 1;
+        } else {
             return connected.mInstance;
         }
-        if (connected.mIndexedKey < targetKey) {
-            lower = middle + 1;
-        } else {
-            upper = middle - 1;
-        }
     }
+
     return nullptr;
 }
 
