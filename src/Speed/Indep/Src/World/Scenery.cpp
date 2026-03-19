@@ -3,6 +3,7 @@
 #include "Speed/Indep/Libs/Support/Utility/UStandard.h"
 #include "VisibleSection.hpp"
 #include "Speed/Indep/Src/Camera/Camera.hpp"
+#include "Speed/Indep/Src/Ecstasy/eMath.hpp"
 #include "Speed/Indep/Src/Ecstasy/eModel.hpp"
 #include "Speed/Indep/Src/Ecstasy/eSolid.hpp"
 #include "Speed/Indep/Src/Misc/Profiler.hpp"
@@ -1355,10 +1356,8 @@ void GrandSceneryCullInfo::StuffScenery(eView *view, int stuff_flags) {
             bool forbidden_ok = forbidden_flags == 0 || (render_flags & forbidden_flags) == 0;
             if (required_ok && forbidden_ok) {
                 bMatrix4 *matrix = draw_info->pMatrix;
-                bMatrix4 identity;
                 if (!matrix) {
-                    bIdentity(&identity);
-                    matrix = &identity;
+                    matrix = &eMathIdentityMatrix;
                 }
                 reinterpret_cast<eViewPlatInterface *>(view)->Render(pDebugModel, matrix, 0, render_flags, 0);
                 pDebugModel = 0;
