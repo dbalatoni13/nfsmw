@@ -1105,7 +1105,16 @@ GActivity *GRaceParameters::GetActivity() const {
 }
 
 unsigned int GRaceParameters::GetCollectionKey() const {
-    return mRaceRecord ? mRaceRecord->GetCollection() : 0;
+    unsigned int collectionKey;
+
+    if (!mIndex) {
+        EnsureLoaded();
+        collectionKey = mRaceRecord->GetCollection();
+    } else {
+        collectionKey = reinterpret_cast<const unsigned int *>(mIndex)[0];
+    }
+
+    return collectionKey;
 }
 
 void GRaceParameters::GetBoundingBox(UMath::Vector2 &topLeft, UMath::Vector2 &botRight) const {
@@ -1164,10 +1173,19 @@ void GRaceParameters::GetBoundingBox(UMath::Vector2 &topLeft, UMath::Vector2 &bo
 }
 
 float GRaceParameters::GetRaceLengthMeters() const {
+    if (mIndex) {
+        return *reinterpret_cast<const float *>(reinterpret_cast<const char *>(mIndex) + 0x1C);
+    }
+
+    const float *raceLength;
+
     EnsureLoaded();
-    return *reinterpret_cast<const float *>(mRaceRecord->GetAttributePointer(0x7C11C52E, 0) ?
-                                               mRaceRecord->GetAttributePointer(0x7C11C52E, 0) :
-                                               Attrib::DefaultDataArea(sizeof(float)));
+    raceLength = reinterpret_cast<const float *>(mRaceRecord->GetAttributePointer(0x7C11C52E, 0));
+    if (!raceLength) {
+        raceLength = reinterpret_cast<const float *>(Attrib::DefaultDataArea(sizeof(float)));
+    }
+
+    return *raceLength;
 }
 
 int GRaceParameters::GetReputation() const {
@@ -1251,10 +1269,19 @@ float GRaceParameters::GetCashValue() const {
 }
 
 int GRaceParameters::GetLocalizationTag() const {
+    if (mIndex) {
+        return *reinterpret_cast<const short *>(reinterpret_cast<const char *>(mIndex) + 0x20);
+    }
+
+    const int *localizationTag;
+
     EnsureLoaded();
-    return *reinterpret_cast<const int *>(mRaceRecord->GetAttributePointer(0xDB89AB5C, 0) ?
-                                              mRaceRecord->GetAttributePointer(0xDB89AB5C, 0) :
-                                              Attrib::DefaultDataArea(sizeof(int)));
+    localizationTag = reinterpret_cast<const int *>(mRaceRecord->GetAttributePointer(0xDB89AB5C, 0));
+    if (!localizationTag) {
+        localizationTag = reinterpret_cast<const int *>(Attrib::DefaultDataArea(sizeof(int)));
+    }
+
+    return *localizationTag;
 }
 
 int GRaceParameters::GetNumLaps() const {
