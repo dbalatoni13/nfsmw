@@ -247,7 +247,6 @@ void DoTunnelBloom(eView *view) {
         return;
     }
 
-    float base_glare = 0.0f;
     CameraMover *camera_mover = view->GetCameraMover();
     if (!camera_mover) {
         return;
@@ -258,6 +257,7 @@ void DoTunnelBloom(eView *view) {
         return;
     }
 
+    float base_glare = 0.0f;
     bVector3 *my_car_pos = camera_anchor->GetGeometryPosition();
     Camera *view_camera = view->GetCamera();
     bVector3 *camera_position = view_camera->GetPosition();
