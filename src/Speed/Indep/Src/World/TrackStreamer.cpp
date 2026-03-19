@@ -1200,15 +1200,16 @@ void TrackStreamer::DetermineStreamingSections() {
     sections_to_load[0] = 0x9c4;
     sections_to_load[1] = 0x960;
     sections_to_load[2] = 0xa28;
+    short *sections = sections_to_load;
     if (SeeulatorToolActive && ScenerySectionToBlink != 0) {
         num_sections_to_load = 4;
-        sections_to_load[3] = static_cast<short>(ScenerySectionToBlink);
+        sections[3] = static_cast<short>(ScenerySectionToBlink);
     }
 
     for (int keep_section_number = 0; keep_section_number < 4; keep_section_number++) {
         short section_number = KeepSectionTable[keep_section_number];
         if (section_number != 0) {
-            sections_to_load[num_sections_to_load] = section_number;
+            sections[num_sections_to_load] = section_number;
             num_sections_to_load += 1;
         }
     }
@@ -1226,11 +1227,11 @@ void TrackStreamer::DetermineStreamingSections() {
                 for (int visible_section_number = 0; visible_section_number < drivable_section->NumVisibleSections;
                      visible_section_number++) {
                     short section_number = drivable_section->VisibleSections[visible_section_number];
-                    sections_to_load[num_sections_to_load] = section_number;
+                    sections[num_sections_to_load] = section_number;
                     num_sections_to_load += 1;
                 }
             } else {
-                num_sections_to_load = TheVisibleSectionManager.GetSectionsToLoad(loading_section, sections_to_load, 0x180);
+                num_sections_to_load = TheVisibleSectionManager.GetSectionsToLoad(loading_section, sections, 0x180);
             }
 
             AddCurrentStreamingSections(sections_to_load, num_sections_to_load, position_number);
