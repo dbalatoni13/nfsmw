@@ -278,16 +278,21 @@ void *TSMemoryPool::Malloc(int size, const char *debug_name, bool best_fit, bool
     if (TracingEnabled && bMemoryTracing) {
         bMemoryTraceAllocatePacket packet;
         int extra_len;
+        int n;
+        char *p;
 
         memset(&packet, 0, sizeof(packet));
         packet.PoolID = reinterpret_cast<int>(this);
         packet.MemoryAddress = address;
         packet.Size = size;
         packet.AllocationNumber = AllocationNumber;
+        p = packet.DebugText;
+        n = sizeof(packet.DebugText);
+        bMemSet(p, 0, n);
         if (debug_name) {
-            bStrNCpy(packet.DebugText, debug_name, sizeof(packet.DebugText) - 1);
+            bStrNCpy(p, debug_name, n - 1);
         }
-        extra_len = bStrLen(packet.DebugText) + 0x15;
+        extra_len = bStrLen(p) + 0x15;
         bFunkCallASync("CODEINE", 0x1c, &packet, extra_len);
     }
 
