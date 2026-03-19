@@ -305,7 +305,8 @@ void DoTunnelBloom(eView *view) {
         usPoint.y = endVector.z;
         usPoint.z = endVector.x;
         float height = 0.0f;
-        WCollisionMgr(0, 3).GetWorldHeightAtPointRigorous(usPoint, height, 0);
+        WCollisionMgr collision_mgr(0, 3);
+        collision_mgr.GetWorldHeightAtPointRigorous(usPoint, height, 0);
 
         dataBackup_27616[kTunnelPoint0X][vIndex] = p0.x + camera_direction->x;
         dataBackup_27616[kTunnelPoint0Y][vIndex] = p0.y + camera_direction->y;
