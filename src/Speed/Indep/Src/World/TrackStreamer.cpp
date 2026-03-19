@@ -1330,9 +1330,7 @@ void TrackStreamer::SwitchZones(short *current_zones) {
                 for (int n = 0; n < old_boundary->NumPoints; n++) {
                     float boundary_distance =
                         new_boundary->GetDistanceOutside(&old_boundary->Points[n], kMaxDistance_TrackStreamer);
-                    if (boundary_distance < distance_to_boundary) {
-                        distance_to_boundary = boundary_distance;
-                    }
+                    distance_to_boundary = bMin(distance_to_boundary, boundary_distance);
                 }
             }
 
