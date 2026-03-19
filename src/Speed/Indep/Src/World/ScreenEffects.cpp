@@ -198,7 +198,7 @@ void ScreenEffectDB::AddPaletteEffect(ScreenEffectPalette palette) {
 }
 
 void RenderVisibleSectionBoundary(VisibleSectionBoundary *boundary, eView *view) {
-    if (!boundary || !view || boundary->NumPoints <= 0) {
+    if (boundary->NumPoints <= 0) {
         return;
     }
 
