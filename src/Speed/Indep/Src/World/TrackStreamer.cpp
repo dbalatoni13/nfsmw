@@ -1037,7 +1037,6 @@ int TrackStreamer::DoHoleFilling(int largest_free) {
     ProfileNode profile_node("TODO", 0);
     const char *debug_name;
     HoleMovement hole_movements[128];
-    int amount_moved;
 
     CountUserAllocations(&debug_name);
     if (debug_name) {
@@ -1056,6 +1055,7 @@ int TrackStreamer::DoHoleFilling(int largest_free) {
     } else {
         int best_amount_moved = 0x7FFFFFFF;
         for (int filler_method = 1; filler_method < 6; filler_method++) {
+            int amount_moved;
             int num_movements =
                 BuildHoleMovements(hole_movements, 0x80, filler_method, largest_free, &amount_moved, best_amount_moved);
             if (num_movements > 0 && amount_moved < best_amount_moved) {
@@ -1087,22 +1087,20 @@ int TrackStreamer::DoHoleFilling(int largest_free) {
         unsigned int start_ticks = bGetTicker();
         void *new_memory = reinterpret_cast<void *>(movement->NewAddress);
         pMemoryPool->Free(reinterpret_cast<void *>(movement->Address));
-        pMemoryPool->Malloc(movement->Size, section ? section->SectionName : 0, false, false, movement->NewAddress);
-        if (section) {
-            if (section->Status == TrackStreamingSection::ACTIVATED) {
-                eAllowDuplicateSolids(true);
-                SetDuplicateTextureWarning(false);
-                MoveChunks(reinterpret_cast<bChunk *>(new_memory), reinterpret_cast<bChunk *>(section->pMemory),
-                           section->LoadedSize, section->SectionName);
-                DCStoreRangeNoSync(new_memory, section->LoadedSize);
-                eAllowDuplicateSolids(false);
-                SetDuplicateTextureWarning(true);
-            } else {
-                eWaitUntilRenderingDone();
-                bOverlappedMemCpy(new_memory, section->pMemory, section->LoadedSize);
-            }
-            section->pMemory = new_memory;
+        pMemoryPool->Malloc(movement->Size, section->SectionName, false, false, movement->NewAddress);
+        if (section->Status == TrackStreamingSection::ACTIVATED) {
+            eAllowDuplicateSolids(true);
+            SetDuplicateTextureWarning(false);
+            MoveChunks(reinterpret_cast<bChunk *>(new_memory), reinterpret_cast<bChunk *>(section->pMemory),
+                       section->LoadedSize, section->SectionName);
+            DCStoreRangeNoSync(new_memory, section->LoadedSize);
+            eAllowDuplicateSolids(false);
+            SetDuplicateTextureWarning(true);
+        } else {
+            eWaitUntilRenderingDone();
+            bOverlappedMemCpy(new_memory, section->pMemory, section->LoadedSize);
         }
+        section->pMemory = new_memory;
         float move_time = bGetTickerDifference(start_ticks);
         (void)move_time;
         NumSectionsMoved += 1;
