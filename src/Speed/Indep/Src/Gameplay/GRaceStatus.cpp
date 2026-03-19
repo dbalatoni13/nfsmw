@@ -1813,23 +1813,37 @@ GRace::Type GRaceParameters::GetRaceType() const {
 }
 
 unsigned int GRaceParameters::GetRegion() const {
-    static const char *kRaceRegions[3] = {
-        "city",
-        "coastal",
-        "college_town",
+    static const struct {
+        const char *mName;
+        unsigned int mRegion;
+    } kRaceRegions[3] = {
+        {"city", 0},
+        {"coastal", 1},
+        {"college_town", 2},
     };
     unsigned int i;
-    const char *regionName;
+    const EA::Reflection::Text *regionName;
 
     if (mIndex) {
         return reinterpret_cast<const unsigned char *>(mIndex)[0x29];
     }
 
-    EnsureLoaded();
-    regionName = mRaceRecord->Region(0);
+    if (mParentVault && !mParentVault->IsLoaded()) {
+        mParentVault->LoadSyncTransient();
+    }
+
+    if (mChildVault && !mChildVault->IsLoaded()) {
+        mChildVault->LoadSyncTransient();
+    }
+
+    regionName = reinterpret_cast<const EA::Reflection::Text *>(mRaceRecord->GetAttributePointer(0xCB01E454, 0));
+    if (!regionName) {
+        regionName = reinterpret_cast<const EA::Reflection::Text *>(Attrib::DefaultDataArea(sizeof(EA::Reflection::Text)));
+    }
+
     for (i = 0; i < 3; i++) {
-        if (bStrCmp(regionName, kRaceRegions[i]) == 0) {
-            return i;
+        if (bStrCmp(*regionName, kRaceRegions[i].mName) == 0) {
+            return kRaceRegions[i].mRegion;
         }
     }
 
@@ -1862,7 +1876,26 @@ void GRaceParameters::ExtractDirection(Attrib::Gen::gameplay &collection, UMath:
 }
 
 unsigned int GRaceParameters::GetEventHash() const {
-    return Attrib::StringToKey(GetEventID());
+    const EA::Reflection::Text *eventID;
+
+    if (mIndex) {
+        return *reinterpret_cast<const unsigned int *>(reinterpret_cast<const char *>(mIndex) + 0x14);
+    }
+
+    if (mParentVault && !mParentVault->IsLoaded()) {
+        mParentVault->LoadSyncTransient();
+    }
+
+    if (mChildVault && !mChildVault->IsLoaded()) {
+        mChildVault->LoadSyncTransient();
+    }
+
+    eventID = reinterpret_cast<const EA::Reflection::Text *>(mRaceRecord->GetAttributePointer(0xA78403EC, 0));
+    if (!eventID) {
+        eventID = reinterpret_cast<const EA::Reflection::Text *>(Attrib::DefaultDataArea(sizeof(EA::Reflection::Text)));
+    }
+
+    return Attrib::StringHash32(*eventID);
 }
 
 bool GRaceParameters::GetIsAvailable(GRace::Context context) const {
@@ -1892,8 +1925,22 @@ bool GRaceParameters::GetIsAvailable(GRace::Context context) const {
 }
 
 int GRaceParameters::GetTrafficDensity() const {
-    EnsureLoaded();
-    return mRaceRecord->ForceTrafficDensity(0);
+    const int *trafficDensity;
+
+    if (mParentVault && !mParentVault->IsLoaded()) {
+        mParentVault->LoadSyncTransient();
+    }
+
+    if (mChildVault && !mChildVault->IsLoaded()) {
+        mChildVault->LoadSyncTransient();
+    }
+
+    trafficDensity = reinterpret_cast<const int *>(mRaceRecord->GetAttributePointer(0xC64BC341, 0));
+    if (!trafficDensity) {
+        trafficDensity = reinterpret_cast<const int *>(Attrib::DefaultDataArea(sizeof(int)));
+    }
+
+    return *trafficDensity;
 }
 
 bool GRaceParameters::GetIsSunsetRace() const {
@@ -1916,38 +1963,70 @@ void GRaceParameters::SetupTimeOfDay() {
 }
 
 GRace::Difficulty GRaceParameters::GetDifficulty() const {
-    int trafficLevel;
+    const int *difficulty;
+    GRace::Difficulty raceDifficulty;
 
-    EnsureLoaded();
-    trafficLevel = *reinterpret_cast<const int *>(mRaceRecord->GetAttributePointer(0x88A7E3BE, 0) ?
-                                                     mRaceRecord->GetAttributePointer(0x88A7E3BE, 0) :
-                                                     Attrib::DefaultDataArea(sizeof(int)));
-    if (trafficLevel < 0x22) {
+    if (mParentVault && !mParentVault->IsLoaded()) {
+        mParentVault->LoadSyncTransient();
+    }
+
+    if (mChildVault && !mChildVault->IsLoaded()) {
+        mChildVault->LoadSyncTransient();
+    }
+
+    difficulty = reinterpret_cast<const int *>(mRaceRecord->GetAttributePointer(0x88A7E3BE, 0));
+    if (!difficulty) {
+        difficulty = reinterpret_cast<const int *>(Attrib::DefaultDataArea(sizeof(int)));
+    }
+
+    if (*difficulty < 0x22) {
         return GRace::kRaceDifficulty_Easy;
     }
-    if (trafficLevel > 0x42) {
-        return GRace::kRaceDifficulty_Hard;
+
+    raceDifficulty = GRace::kRaceDifficulty_Medium;
+    if (*difficulty > 0x42) {
+        raceDifficulty = GRace::kRaceDifficulty_Hard;
     }
-    return GRace::kRaceDifficulty_Medium;
+
+    return raceDifficulty;
 }
 
 int GRaceParameters::GetCopDensity() const {
+    const int *copDensity;
+    int raceCopDensity;
     int density;
 
-    EnsureLoaded();
-    density = *reinterpret_cast<const int *>(mRaceRecord->GetAttributePointer(0xDBC08D32, 0) ?
-                                                 mRaceRecord->GetAttributePointer(0xDBC08D32, 0) :
-                                                 Attrib::DefaultDataArea(sizeof(int)));
+    if (mIndex) {
+        return static_cast<signed char>(reinterpret_cast<const char *>(mIndex)[0x2A]);
+    }
+
+    if (mParentVault && !mParentVault->IsLoaded()) {
+        mParentVault->LoadSyncTransient();
+    }
+
+    if (mChildVault && !mChildVault->IsLoaded()) {
+        mChildVault->LoadSyncTransient();
+    }
+
+    copDensity = reinterpret_cast<const int *>(mRaceRecord->GetAttributePointer(0xDBC08D32, 0));
+    if (!copDensity) {
+        copDensity = reinterpret_cast<const int *>(Attrib::DefaultDataArea(sizeof(int)));
+    }
+
+    density = *copDensity;
     if (density == 0 && !GetCopsEnabled()) {
         return 0;
     }
     if (density < 0x22) {
         return 1;
     }
+
+    raceCopDensity = 2;
     if (density > 0x42) {
-        return 3;
+        raceCopDensity = 3;
     }
-    return 2;
+
+    return raceCopDensity;
 }
 
 bool GRaceParameters::GetCanBeReversed() const {
