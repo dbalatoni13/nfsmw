@@ -1284,12 +1284,10 @@ void GrandSceneryCullInfo::StuffScenery(eView *view, int stuff_flags) {
     if ((stuff_flags & 0x80) != 0) {
         base_flags |= 0x100;
     }
-    if ((stuff_flags & 0x10) == 0) {
-        if ((stuff_flags & 8) != 0) {
-            forbidden_flags = 0x2000;
-        }
-    } else {
+    if ((stuff_flags & 0x10) != 0) {
         required_flags = 0x2000;
+    } else if ((stuff_flags & 8) != 0) {
+        forbidden_flags = 0x2000;
     }
     if ((stuff_flags & 0x300) != 0) {
         required_flags = 0x10000;
