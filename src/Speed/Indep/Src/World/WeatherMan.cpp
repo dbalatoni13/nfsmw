@@ -233,7 +233,8 @@ GenericRegion *GetClosestRegionInView(eView *view, bVector3 *endVector, float *a
     float closest_distance = 99999.0f;
     for (GenericRegion *region = RegionLists[REGION_BLOOM].GetHead(); region != RegionLists[REGION_BLOOM].EndOfList();
          region = region->GetNext()) {
-        bVector3 to_region(region->PositionX - cPos.x, region->PositionY - cPos.y, region->PositionZ - cPos.z);
+        bVector3 position(region->PositionX, region->PositionY, region->PositionZ);
+        bVector3 to_region = position - cPos;
         bVector3 direction;
         bNormalize(&direction, &to_region);
 
