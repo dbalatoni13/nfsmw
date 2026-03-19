@@ -38,14 +38,16 @@ void TrackPathManager::Clear() {
 
 int TrackPathManager::Loader(bChunk *chunk) {
     if (chunk->GetID() == 0x80034147) {
-        for (bChunk *child = chunk->GetFirstChunk(); child < chunk->GetLastChunk(); child = child->GetNext()) {
+        bChunk *last_chunk = chunk->GetLastChunk();
+
+        for (bChunk *child = chunk->GetFirstChunk(); child < last_chunk; child = child->GetNext()) {
             if (child->GetID() == 0x3414A) {
                 TrackPathZone *zone = reinterpret_cast<TrackPathZone *>(child->GetData());
                 pZones = zone;
                 SizeofZones = child->GetSize();
                 NumZones = 0;
 
-                for (; reinterpret_cast<char *>(zone) < reinterpret_cast<char *>(pZones) + SizeofZones; zone = NextTrackPathZone(zone)) {
+                for (; zone < GetLastZone(); zone = zone->GetMemoryImageNext()) {
                     bEndianSwap32(&zone->Type);
                     bPlatEndianSwap(&zone->Position);
                     bPlatEndianSwap(&zone->Direction);
@@ -55,11 +57,11 @@ int TrackPathManager::Loader(bChunk *chunk) {
                     bEndianSwap16(&zone->MemoryImageSize);
                     bPlatEndianSwap(&zone->BBoxMin);
                     bPlatEndianSwap(&zone->BBoxMax);
-                    for (int i = 0; i < zone->NumPoints; i++) {
-                        bPlatEndianSwap(&zone->Points[i]);
+                    for (int n = 0; n < zone->NumPoints; n++) {
+                        bPlatEndianSwap(&zone->Points[n]);
                     }
-                    for (int i = 0; i < 4; i++) {
-                        bEndianSwap32(&zone->Data[i]);
+                    for (int n = 0; n < 4; n++) {
+                        bEndianSwap32(&zone->Data[n]);
                     }
                     NumZones += 1;
                 }
@@ -70,13 +72,10 @@ int TrackPathManager::Loader(bChunk *chunk) {
     }
 
     if (chunk->GetID() == 0x3414D) {
-        NumBarriers = chunk->GetSize() / 0x18;
         pBarriers = reinterpret_cast<TrackPathBarrier *>(chunk->GetData());
+        NumBarriers = chunk->GetSize() / 0x18;
         for (int i = 0; i < NumBarriers; i++) {
-            char *barrier = GetTrackPathBarrierData(pBarriers, i);
-            bPlatEndianSwap(reinterpret_cast<bVector2 *>(barrier));
-            bPlatEndianSwap(reinterpret_cast<bVector2 *>(barrier + 8));
-            bEndianSwap32(barrier + 0x14);
+            pBarriers[i].EndianSwap();
         }
         return true;
     }
@@ -146,8 +145,7 @@ TrackPathZone *TrackPathManager::FindZone(const bVector2 *position, eTrackPathZo
     if (!position) {
         cache_valid = false;
     } else if (bBoundingBoxIsInside(&zone_info->CachedBBoxMin, &zone_info->CachedBBoxMax, position, 0.0f)) {
-        int num_cached_zones = zone_info->NumCachedZones;
-        cache_valid = num_cached_zones < 9;
+        cache_valid = zone_info->NumCachedZones < 9;
     } else {
         const float cached_radius = 64.0f;
         TrackPathZone *first_zone;
@@ -173,9 +171,8 @@ TrackPathZone *TrackPathManager::FindZone(const bVector2 *position, eTrackPathZo
             }
         }
 
-        int num_cached_zones = zone_info->NumCachedZones;
-        MostCachedZones = bMax(MostCachedZones, num_cached_zones);
-        cache_valid = num_cached_zones < 9;
+        cache_valid = zone_info->NumCachedZones < 9;
+        MostCachedZones = bMax(MostCachedZones, zone_info->NumCachedZones);
     }
 
     TrackPathZone *found_zone = 0;

@@ -7,6 +7,7 @@
 
 #include "Speed/Indep/bWare/Inc/bChunk.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
+#include "Speed/Indep/bWare/Inc/bWare.hpp"
 
 enum eTrackPathZoneType {
     NUM_TRACK_PATH_ZONES = 15,
@@ -25,6 +26,22 @@ enum eTrackPathZoneType {
     TRACK_PATH_ZONE_GUIDED_RESET = 2,
     TRACK_PATH_ZONE_RESET_TO_POINT = 1,
     TRACK_PATH_ZONE_RESET = 0,
+};
+
+// total size: 0x18
+struct TrackPathBarrier {
+    bVector2 Points[2];    // offset 0x0, size 0x10
+    char Enabled;          // offset 0x10, size 0x1
+    char Pad;              // offset 0x11, size 0x1
+    char PlayerBarrier;    // offset 0x12, size 0x1
+    char LeftHanded;       // offset 0x13, size 0x1
+    unsigned int GroupHash; // offset 0x14, size 0x4
+
+    void EndianSwap() {
+        bPlatEndianSwap(&Points[0]);
+        bPlatEndianSwap(&Points[1]);
+        bPlatEndianSwap(&GroupHash);
+    }
 };
 
 // total size: 0x244
@@ -93,7 +110,7 @@ class TrackPathManager {
     ZoneInfo ZoneInfoTable[15];         // offset 0xC, size 0x474
     int MostCachedZones;                // offset 0x480, size 0x4
     int NumBarriers;                    // offset 0x484, size 0x4
-    struct TrackPathBarrier *pBarriers; // offset 0x488, size 0x4
+    TrackPathBarrier *pBarriers; // offset 0x488, size 0x4
 
   public:
     TrackPathManager() {
