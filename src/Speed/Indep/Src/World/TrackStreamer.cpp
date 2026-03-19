@@ -83,6 +83,20 @@ static inline bool IsRegularScenerySection_TrackStreamer(int section_number) {
     return section_letter >= 'A' && section_letter < 'U';
 }
 
+static inline bool IsTextureSection_TrackStreamer(int section_number) {
+    char section_letter = GetScenerySectionLetter_TrackStreamer(section_number);
+    return section_letter == 'Y' || section_letter == 'W';
+}
+
+static inline bool IsLibrarySection_TrackStreamer(int section_number) {
+    char section_letter = GetScenerySectionLetter_TrackStreamer(section_number);
+    return section_letter == 'X' || section_letter == 'U';
+}
+
+static inline short GetScenerySectionNumber_TrackStreamer(char section_letter, int subsection_number) {
+    return static_cast<short>((section_letter - 'A' + 1) * 100 + subsection_number);
+}
+
 static inline bool IsLoadingBarSection_TrackStreamer(int section_number) {
     if (!IsRegularScenerySection_TrackStreamer(section_number)) {
         return false;
@@ -1622,46 +1636,48 @@ void TrackStreamer::SectionLoadedCallback(TrackStreamingSection *section) {
 
 TrackStreamingSection *TrackStreamer::ChooseSectionToJettison() {
     TrackStreamingSection *best_section = 0;
-    int best_priority = 0;
+    int best_discard_priority = 0;
 
     last_jettison_print_26154 = RealLoopCounter;
     for (int i = 0; i < NumCurrentStreamingSections; i++) {
         TrackStreamingSection *section = CurrentStreamingSections[i];
         short section_number = section->SectionNumber;
-        char section_letter = GetScenerySectionLetter_TrackStreamer(section_number);
-        bool is_y_or_w = section_letter == 'Y' || section_letter == 'W';
-        bool is_x_or_u = section_letter == 'X' || section_letter == 'U';
-        int priority = 0;
+        int discard_priority = 0;
 
-        if (is_y_or_w || is_x_or_u) {
-            priority = 2;
-            if (section_number == 0x9C4 || section_number == 0x8FC || section_number == 0x960) {
-                priority = 1;
+        if (IsTextureSection_TrackStreamer(section_number) || IsLibrarySection_TrackStreamer(section_number)) {
+            discard_priority = 2;
+            if (section_number == GetScenerySectionNumber_TrackStreamer('Y', 0) ||
+                section_number == GetScenerySectionNumber_TrackStreamer('W', 0) ||
+                section_number == GetScenerySectionNumber_TrackStreamer('X', 0)) {
+                discard_priority = 1;
             } else if (LoadingPhase == ALLOCATING_TEXTURE_SECTIONS) {
-                if (is_y_or_w && section->Status == TrackStreamingSection::ACTIVATED && !SplitScreen) {
-                    priority = 10000;
+                if (IsTextureSection_TrackStreamer(section_number) && section->Status == TrackStreamingSection::ACTIVATED &&
+                    !SplitScreen) {
+                    discard_priority = 10000;
                 }
             } else if (LoadingPhase == ALLOCATING_GEOMETRY_SECTIONS) {
-                if (is_x_or_u && section->Status == TrackStreamingSection::ACTIVATED && !SplitScreen) {
-                    priority = 10000;
+                if (IsLibrarySection_TrackStreamer(section_number) && section->Status == TrackStreamingSection::ACTIVATED &&
+                    !SplitScreen) {
+                    discard_priority = 10000;
                 }
             }
         } else if (IsRegularScenerySection_TrackStreamer(section_number)) {
-            priority = GetLoadingPriority(section, &StreamingPositionEntries[0], true);
+            int loading_priority = GetLoadingPriority(section, &StreamingPositionEntries[0], true);
             if (SplitScreen) {
-                int player_two_priority = GetLoadingPriority(section, &StreamingPositionEntries[1], true);
-                if (player_two_priority < priority) {
-                    priority = player_two_priority;
+                int loading_priority2 = GetLoadingPriority(section, &StreamingPositionEntries[1], true);
+                if (loading_priority2 < loading_priority) {
+                    loading_priority = loading_priority2;
                 }
             }
-            priority = priority * 10 + 100;
+            discard_priority = loading_priority * 10 + 100;
         }
 
-        if (priority != 0 && section->Status != TrackStreamingSection::LOADED && section->Status != TrackStreamingSection::ACTIVATED) {
-            priority += 1;
+        if (discard_priority != 0 && section->Status != TrackStreamingSection::LOADED &&
+            section->Status != TrackStreamingSection::ACTIVATED) {
+            discard_priority += 1;
         }
-        if (best_priority < priority) {
-            best_priority = priority;
+        if (best_discard_priority < discard_priority) {
+            best_discard_priority = discard_priority;
             best_section = section;
         }
     }
