@@ -1171,39 +1171,44 @@ float GRaceParameters::GetRaceLengthMeters() const {
 }
 
 int GRaceParameters::GetReputation() const {
-    if (!mIndex) {
-        const int *reputation;
+    if (mIndex) {
+        unsigned short value = *reinterpret_cast<const unsigned short *>(reinterpret_cast<const char *>(mIndex) + 0x24);
+        int exponent = static_cast<int>(static_cast<short>(value)) >> 11;
+        unsigned int scale = 1;
 
-        EnsureLoaded();
-        reputation = reinterpret_cast<const int *>(mRaceRecord->GetAttributePointer(0x477EC5AA, 0));
-        if (!reputation) {
-            reputation = reinterpret_cast<const int *>(Attrib::DefaultDataArea(sizeof(int)));
+        if (exponent < 0) {
+            exponent = -exponent;
         }
 
-        return *reputation;
+        while (true) {
+            bool done = exponent < 1;
+
+            exponent = exponent - 1;
+            if (done) {
+                break;
+            }
+
+            scale = scale * 10;
+        }
+
+        if ((value & 0x8000) != 0) {
+            return static_cast<int>(static_cast<float>(static_cast<short>(value << 5) >> 5) /
+                                    static_cast<float>(scale));
+        }
+
+        return static_cast<int>(static_cast<float>(static_cast<short>(value << 5) >> 5) *
+                                static_cast<float>(scale));
     }
 
-    unsigned short value = *reinterpret_cast<const unsigned short *>(reinterpret_cast<const char *>(mIndex) + 0x24);
-    int exponent = static_cast<int>(static_cast<short>(value)) >> 11;
-    unsigned int scale = 1;
-    float result;
+    const int *reputation;
 
-    if (exponent < 0) {
-        exponent = -exponent;
+    EnsureLoaded();
+    reputation = reinterpret_cast<const int *>(mRaceRecord->GetAttributePointer(0x477EC5AA, 0));
+    if (!reputation) {
+        reputation = reinterpret_cast<const int *>(Attrib::DefaultDataArea(sizeof(int)));
     }
 
-    while (exponent > 0) {
-        exponent--;
-        scale *= 10;
-    }
-
-    if ((value & 0x8000) == 0) {
-        result = static_cast<float>(static_cast<short>(value << 5) >> 5) * static_cast<float>(scale);
-    } else {
-        result = static_cast<float>(static_cast<short>(value << 5) >> 5) / static_cast<float>(scale);
-    }
-
-    return static_cast<int>(result);
+    return *reputation;
 }
 
 float GRaceParameters::GetCashValue() const {
