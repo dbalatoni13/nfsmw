@@ -57,14 +57,18 @@ void SkidSegment::SetPoints(bVector3 *position, bVector3 *delta_position) {
 }
 
 void SkidSegment::GetPoints(bVector3 *position, bVector3 *delta_position) {
+    float delta_x = static_cast<float>(DeltaPosition[0]) * kInverseSkidSegmentScale_Skids;
+    float delta_y = static_cast<float>(DeltaPosition[1]) * kInverseSkidSegmentScale_Skids;
+    float delta_z = static_cast<float>(DeltaPosition[2]) * kInverseSkidSegmentScale_Skids;
+
     position->x = Position[0];
-    position->y = Position[1];
     position->z = Position[2];
+    position->y = Position[1];
 
     if (delta_position) {
-        delta_position->x = static_cast<float>(DeltaPosition[0]) * kInverseSkidSegmentScale_Skids;
-        delta_position->y = static_cast<float>(DeltaPosition[1]) * kInverseSkidSegmentScale_Skids;
-        delta_position->z = static_cast<float>(DeltaPosition[2]) * kInverseSkidSegmentScale_Skids;
+        delta_position->z = delta_z;
+        delta_position->x = delta_x;
+        delta_position->y = delta_y;
     }
 }
 
