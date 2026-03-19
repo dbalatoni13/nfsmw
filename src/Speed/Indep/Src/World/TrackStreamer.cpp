@@ -221,14 +221,14 @@ void *TSMemoryPool::Malloc(int size, const char *debug_name, bool best_fit, bool
             }
         }
     } else if (allocate_from_top) {
-        for (TSMemoryNode *node = NodeList.GetTail(); node != NodeList.EndOfList(); node = node->GetPrev()) {
+        for (TSMemoryNode *node = NodeList.GetHead(); node != NodeList.EndOfList(); node = node->GetNext()) {
             if (!node->Allocated && node->Size >= size) {
                 found_node = node;
                 break;
             }
         }
     } else {
-        for (TSMemoryNode *node = NodeList.GetHead(); node != NodeList.EndOfList(); node = node->GetNext()) {
+        for (TSMemoryNode *node = NodeList.GetTail(); node != NodeList.EndOfList(); node = node->GetPrev()) {
             if (!node->Allocated && node->Size >= size) {
                 found_node = node;
                 break;
