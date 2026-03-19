@@ -82,9 +82,8 @@ GTrigger::GTrigger(const Attrib::Key &triggerKey)
     reinterpret_cast<unsigned int *>(mTriggerEventData)[1] = GetCollection();
 
     if (IsDerivedFromTemplate(0xF05931AB)) {
-        GRaceParameters *parms = GRaceDatabase::Get().GetRaceFromKey(TargetActivity(0).GetCollectionKey());
-
         SetFlag(0x200);
+        GRaceParameters *parms = GRaceDatabase::Get().GetRaceFromKey(TargetActivity(0).GetCollectionKey());
         if (parms) {
             if (parms->GetIsBossRace()) {
                 iconType = GIcon::kType_RaceRival;
@@ -149,9 +148,16 @@ GTrigger::GTrigger(const Attrib::Key &triggerKey)
         mIcon = GManager::Get().AllocIcon(iconType, posSwizzled, 0.0f, false);
     }
 
-    if (showIconBasedOnBin && mIcon && FEDatabase && FEDatabase->GetCareerSettings()->GetCurrentBin() <= BinIndex(0)) {
-        mIcon->Show();
-        mIcon->ShowOnMap();
+    if (showIconBasedOnBin && mIcon) {
+        int binIndex = BinIndex(0);
+
+        if (binIndex > 0 && FEDatabase && FEDatabase->GetCareerSettings()->GetCurrentBin() <= binIndex) {
+            mIcon->SetFlag(1);
+            if (mIcon->GetIsEnabled()) {
+                mIcon->Enable();
+            }
+            mIcon->SetFlag(2);
+        }
     }
 }
 
