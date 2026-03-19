@@ -96,6 +96,11 @@ struct stSndDataLoadParams {
     Timer t_req;                         // offset 0x60, size 0x4
     Timer t_load;                        // offset 0x64, size 0x4
 
+    stSndDataLoadParams() {
+        AssetDescription.Clear();
+        Clear();
+    }
+
     void Clear();
     stSndDataLoadParams &operator=(stSndDataLoadParams &copy);
 };

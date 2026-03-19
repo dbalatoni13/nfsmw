@@ -62,6 +62,7 @@ extern EAXSound *g_pEAXSound;
 extern void SNDSYS_service();
 
 CSISCoreAllocator g_CSISCoreAllocator;
+PF_Allocator gPF_MemoryAllocator;
 
 namespace Csis {
 namespace System {

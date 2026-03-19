@@ -31,6 +31,8 @@ extern Slope RedLineDelayPerGear;
 static const float REDLINE_ENG_FADE[2] = {450.0f, 50.0f};
 static const float REDLINE_REDSAMP_FADE[2] = {50.0f, 120.0f};
 
+Slope RedLineDelayPerGear(1.0f, 5.0f, 1.0f, 5.0f);
+
 struct HSIMABLE__;
 
 SFXCTL_Engine::SFXCTL_Engine()
