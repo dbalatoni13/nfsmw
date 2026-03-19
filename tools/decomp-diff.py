@@ -38,8 +38,10 @@ def run_objdiff(
         OBJDIFF_CLI,
         unit,
         base_obj=base_obj,
+        reloc_diffs=reloc_diffs,
         root_dir=root_dir,
     )
+
 
 def fuzzy_match(pattern: str, name: str) -> bool:
     """Case-insensitive substring match."""
@@ -118,9 +120,7 @@ def build_overview(data: Dict[str, Any], args) -> None:
     print("-" * 96)
     for row in rows:
         match_str = (
-            f"{row['match_percent']:.1f}%"
-            if row["match_percent"] is not None
-            else "-"
+            f"{row['match_percent']:.1f}%" if row["match_percent"] is not None else "-"
         )
         print(
             f"{row['status']:<10} {match_str:>7}  {row['unmatched_bytes_est']:>7}B  "
