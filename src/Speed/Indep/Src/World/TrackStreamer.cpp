@@ -6,6 +6,7 @@
 #include "Speed/Indep/Src/Misc/QueuedFile.hpp"
 #include "Speed/Indep/Src/Misc/ResourceLoader.hpp"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
+#include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
 #include "Speed/Indep/Src/Misc/bFile.hpp"
 #include "Speed/Indep/bWare/Inc/bDebug.hpp"
 #include "Speed/Indep/bWare/Inc/bPrintf.hpp"
@@ -105,6 +106,11 @@ static inline bool IsLibrarySection(int section_number) {
 
 static inline short GetScenerySectionNumber_TrackStreamer(char section_letter, int subsection_number) {
     return static_cast<short>((section_letter - 'A' + 1) * 100 + subsection_number);
+}
+
+static inline bool IsLODScenerySectionNumber(int section_number) {
+    int subsection_number = GetScenerySubsectionNumber(section_number);
+    return ScenerySectionLODOffset <= subsection_number && subsection_number < ScenerySectionLODOffset * 2;
 }
 
 static inline bool IsLoadingBarSection_TrackStreamer(int section_number) {
@@ -1090,9 +1096,9 @@ void TrackStreamer::ClearCurrentZones() {
         StreamingPositionEntry *position_entry = &StreamingPositionEntries[position_number];
         position_entry->AmountLoaded = 0;
         position_entry->CurrentZone = 0;
+        position_entry->BeginLoadingTime = 0.0f;
         position_entry->BeginLoadingPosition.x = 0.0f;
         position_entry->BeginLoadingPosition.y = 0.0f;
-        position_entry->BeginLoadingTime = 0.0f;
         position_entry->NumSectionsToLoad = 0;
         position_entry->NumSectionsLoaded = 0;
         position_entry->AmountToLoad = 0;
@@ -2008,55 +2014,66 @@ bool TrackStreamer::IsLoadingInProgress() {
 
 bool TrackStreamer::CheckLoadingBar() {
     ProfileNode profile_node("TODO", 0);
-    float minimum_distance = kMaxDistance_TrackStreamer;
+    float closest_distance = kMaxDistance_TrackStreamer;
+    TrackStreamingSection *closest_section;
+    StreamingPositionEntry *closest_position_entry;
+    float closest_approach_speed;
+    bool need_loading_bar;
 
-    for (int i = 0; i < 2; i++) {
-        StreamingPositionEntry *entry = &StreamingPositionEntries[i];
+    for (int position_number = 0; position_number < 2; position_number++) {
+        StreamingPositionEntry *position_entry = &StreamingPositionEntries[position_number];
+        float speed;
+        float max_speed;
+
         if (!IsLoadingInProgress()) {
             break;
         }
 
-        if (IsFarLoadingInProgress() || !entry->PositionSet || !entry->FollowingCar) {
+        if (IsFarLoadingInProgress() || !position_entry->PositionSet || !position_entry->FollowingCar) {
             break;
         }
 
-        float velocity_squared = entry->Velocity.x * entry->Velocity.x + entry->Velocity.y * entry->Velocity.y;
-        float velocity_magnitude = 0.0f;
-        float future_position_scale = kFuturePositionScale_TrackStreamer;
-        float prediction_scale_a = kPredictionScaleA_TrackStreamer;
-        float prediction_scale_b = kPredictionScaleB_TrackStreamer;
-        if (kVelocityEpsilon_TrackStreamer < velocity_squared) {
-            velocity_magnitude = bSqrt(velocity_squared);
-        }
-
-        if (kLoadingBarSpeedThreshold_TrackStreamer < velocity_magnitude) {
+        speed = bLength(&position_entry->Velocity);
+        max_speed = MPH2MPS(kLoadingBarSpeedThreshold_TrackStreamer);
+        if (max_speed < speed) {
             break;
         }
 
         for (int n = 0; n < NumCurrentStreamingSections; n++) {
             TrackStreamingSection *section = CurrentStreamingSections[n];
             VisibleSectionBoundary *boundary = section->pBoundary;
-            if (!boundary) {
-                continue;
-            }
+            bool may_contain_road = false;
 
-            if (!IsLoadingBarSection_TrackStreamer(section->SectionNumber) ||
-                section->Status == TrackStreamingSection::ACTIVATED) {
-                continue;
-            }
+            if (boundary) {
+                if (IsRegularScenerySection(section->SectionNumber)) {
+                    if (IsScenerySectionDrivable(section->SectionNumber) ||
+                        IsLODScenerySectionNumber(section->SectionNumber)) {
+                        may_contain_road = true;
+                    }
+                }
 
-            bVector2 future_position = entry->Position + entry->Velocity * future_position_scale;
-
-            float current_distance = boundary->GetDistanceOutside(&entry->Position, kMaxDistance_TrackStreamer);
-            float future_distance = boundary->GetDistanceOutside(&future_position, kMaxDistance_TrackStreamer);
-            float predicted_distance = current_distance - (current_distance - future_distance) * prediction_scale_a * prediction_scale_b;
-            if (predicted_distance < minimum_distance) {
-                minimum_distance = predicted_distance;
+                if (may_contain_road && section->Status != TrackStreamingSection::ACTIVATED) {
+                    const float small_test_time = kFuturePositionScale_TrackStreamer;
+                    bVector2 test_pos = position_entry->Position + position_entry->Velocity * small_test_time;
+                    float distance1 = boundary->GetDistanceOutside(&position_entry->Position, kMaxDistance_TrackStreamer);
+                    float distance2 = boundary->GetDistanceOutside(&test_pos, kMaxDistance_TrackStreamer);
+                    float approach_speed = (distance1 - distance2) * kPredictionScaleA_TrackStreamer *
+                                           kPredictionScaleB_TrackStreamer;
+                    float distance = distance1 - approach_speed;
+                    if (distance < closest_distance) {
+                        closest_distance = distance;
+                        closest_section = section;
+                        closest_position_entry = position_entry;
+                        closest_approach_speed = approach_speed;
+                    }
+                }
             }
         }
     }
 
-    return prev_need_loading_bar_26275 = minimum_distance < kLoadingBarDistanceThreshold_TrackStreamer;
+    need_loading_bar = closest_distance < kLoadingBarDistanceThreshold_TrackStreamer;
+    prev_need_loading_bar_26275 = need_loading_bar;
+    return need_loading_bar;
 }
 
 void *TrackStreamer::AllocateUserMemory(int size, const char *debug_name, int offset) {
