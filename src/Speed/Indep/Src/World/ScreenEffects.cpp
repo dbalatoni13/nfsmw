@@ -369,13 +369,13 @@ void DoTunnelBloom(eView *view) {
         v.y = p0.x - p1.x;
         bNormalize(&v, &v);
         float dir_dot = bAbs(v.x * r.x + v.y * r.y);
-        if (17.0f <= dir_dot) {
+        if (dir_dot < 17.0f) {
+            SE_def.intensity = view->ScreenEffects->SE_data[SE_GLARE].data[1] * 0.05882353f * dir_dot;
+        } else {
             SE_def.intensity = 1.0f;
             if (view->ScreenEffects->SE_data[SE_GLARE].data[1] < 1.0f) {
                 SE_def.intensity = view->ScreenEffects->SE_data[SE_GLARE].data[1] + GlareFallon;
             }
-        } else {
-            SE_def.intensity = view->ScreenEffects->SE_data[SE_GLARE].data[1] * 0.05882353f * dir_dot;
         }
 
         view->ScreenEffects->SE_data[SE_GLARE].data[1] = SE_def.intensity;
