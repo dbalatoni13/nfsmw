@@ -255,10 +255,11 @@ void eCalcSunVisibility(eView *view, float x, float y) {
 }
 
 void eRenderSun(eView *view) {
+    SunChunkInfo *sun_info = SunInfo;
+
     SetCurrentSunInfo();
 
     if (IsGameFlowInGame()) {
-        SunChunkInfo *sun_info = SunInfo;
         Camera *camera = view->GetCamera();
         bMatrix4 *world_view = camera->GetCameraMatrix();
         bVector4 position3d;
@@ -280,12 +281,11 @@ void eRenderSun(eView *view) {
         screen_widthf = static_cast<float>(eGetScreenWidth());
         screen_heightf = static_cast<float>(eGetScreenHeight());
 
+        x = position2d.x;
+        y = position2d.y;
         if (SunPosX != 0.0f || SunPosY != 0.0f) {
             x = SunPosX;
             y = SunPosY;
-        } else {
-            x = position2d.x;
-            y = position2d.y;
         }
 
         max_size = 0.0f;
@@ -293,12 +293,12 @@ void eRenderSun(eView *view) {
         for (int i = 0; i < 4; i++) {
             SunLayer *layer = &sun_info->SunLayers[i];
 
-            if (0.0f < layer->IntensityScale && layer->Texture == SUNTEX_CENTER && max_size < layer->Size) {
+            if (layer->IntensityScale > 0.0f && layer->Texture == SUNTEX_CENTER && layer->Size > max_size) {
                 max_size = layer->Size;
             }
         }
 
-        if (0.0f <= view3d.z && -max_size <= x && x <= screen_widthf + max_size && -max_size <= y && y <= screen_heightf + max_size) {
+        if (view3d.z >= 0.0f && x >= -max_size && x <= screen_widthf + max_size && y >= -max_size && y <= screen_heightf + max_size) {
             eRecalculateOthographicProjection(1, 100000.0f);
             eSetOrthographicMatrixToHW();
             eCalcSunVisibility(eGetView(0, false), x, y);
@@ -312,7 +312,6 @@ void eRenderSun(eView *view) {
                 if (texture_info) {
                     ePoly sun_poly;
 
-                    ConstructePoly(&sun_poly);
                     eBuildSunPoly(&sun_poly, layer, max_size, x, y);
                     RenderViewPoly(view, &sun_poly, texture_info, 0);
                 }
