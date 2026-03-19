@@ -288,11 +288,9 @@ void GTrigger::Enable(bool setEnabled) {
 
     if (setEnabled) {
         mWorldTrigger.Enable();
-        ShowIcon();
         CreateAllParticleEffects();
     } else {
         mWorldTrigger.Disable();
-        HideIcon();
         ClearParticleEffects();
     }
 
