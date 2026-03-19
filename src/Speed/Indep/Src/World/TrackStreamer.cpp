@@ -93,6 +93,16 @@ static inline bool IsLibrarySection_TrackStreamer(int section_number) {
     return section_letter == 'X' || section_letter == 'U';
 }
 
+static inline bool IsTextureSection(int section_number) {
+    char section_letter = GetScenerySectionLetter(section_number);
+    return section_letter == 'Y' || section_letter == 'W';
+}
+
+static inline bool IsLibrarySection(int section_number) {
+    char section_letter = GetScenerySectionLetter(section_number);
+    return section_letter == 'X' || section_letter == 'U';
+}
+
 static inline short GetScenerySectionNumber_TrackStreamer(char section_letter, int subsection_number) {
     return static_cast<short>((section_letter - 'A' + 1) * 100 + subsection_number);
 }
@@ -981,11 +991,12 @@ int TrackStreamer::CountUserAllocations(const char **pfragmented_user_allocation
     }
 
     int total = 0;
-    for (TSMemoryNode *node = pMemoryPool->GetNextAllocatedNode(false); node;
-         node = pMemoryPool->GetNextAllocatedNode(false, node)) {
+    bool start_from_top = false;
+    for (TSMemoryNode *node = pMemoryPool->GetNextAllocatedNode(start_from_top, 0); node;
+         node = pMemoryPool->GetNextAllocatedNode(start_from_top, node)) {
         if (!FindSectionByAddress(node->Address)) {
             total += node->Size;
-            if (pMemoryPool->GetNextFreeNode(false, node) && pMemoryPool->GetNextFreeNode(true, node) &&
+            if (pMemoryPool->GetNextFreeNode(start_from_top, node) && pMemoryPool->GetNextFreeNode(!start_from_top, node) &&
                 pfragmented_user_allocation) {
                 *pfragmented_user_allocation = node->DebugName;
             }
@@ -1856,18 +1867,16 @@ void TrackStreamer::HandleLoading() {
                  LoadingPhase == ALLOCATING_REGULAR_SECTIONS) &&
                 NumSectionsLoading < 1) {
                 int num_sections_unactivated = 0;
-                for (int i = 0; i < NumTrackStreamingSections; i++) {
-                    TrackStreamingSection *section = &pTrackStreamingSections[i];
+                for (int n = 0; n < NumTrackStreamingSections; n++) {
+                    TrackStreamingSection *section = &pTrackStreamingSections[n];
                     if (section->Status == TrackStreamingSection::ACTIVATED && !section->CurrentlyVisible) {
                         if (LoadingPhase == ALLOCATING_GEOMETRY_SECTIONS) {
-                            char section_letter = GetScenerySectionLetter_TrackStreamer(section->SectionNumber);
-                            if (section_letter == 'Y' || section_letter == 'W') {
+                            if (IsTextureSection(section->SectionNumber)) {
                                 num_sections_unactivated += 1;
                                 UnactivateSection(section);
                             }
                         } else if (LoadingPhase == ALLOCATING_REGULAR_SECTIONS) {
-                            char section_letter = GetScenerySectionLetter_TrackStreamer(section->SectionNumber);
-                            if (section_letter == 'X' || section_letter == 'U') {
+                            if (IsLibrarySection(section->SectionNumber)) {
                                 num_sections_unactivated += 1;
                                 UnactivateSection(section);
                             }
