@@ -1272,8 +1272,8 @@ void RenderVisibleZones(eView *view) {
 
 void GrandSceneryCullInfo::StuffScenery(eView *view, int stuff_flags) {
     unsigned int base_flags = 0;
-    unsigned int required_flags = 0;
     unsigned int forbidden_flags = 0;
+    unsigned int required_flags = 0;
 
     if ((stuff_flags & 1) != 0) {
         base_flags = 0x1000;
