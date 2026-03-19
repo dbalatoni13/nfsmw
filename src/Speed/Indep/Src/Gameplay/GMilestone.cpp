@@ -120,11 +120,12 @@ void GMilestone::NotifyPursuitOver(bool escaped) {
             {
                 Attrib::Gen::gameplay gameplayObj(mChallengeKey, 0, nullptr);
                 GRaceBin *bin = GRaceDatabase::Get().GetBinNumber(mBinNumber);
-                const int *bounty = reinterpret_cast<const int *>(gameplayObj.GetAttributePointer(0x8E1904C7, 0));
 
                 if (bin) {
                     bin->RefreshProgress();
                 }
+
+                const int *bounty = reinterpret_cast<const int *>(gameplayObj.GetAttributePointer(0x8E1904C7, 0));
 
                 if (!bounty) {
                     bounty = reinterpret_cast<const int *>(Attrib::DefaultDataArea(sizeof(int)));
