@@ -1205,17 +1205,13 @@ void GrandSceneryCullInfo::DoCulling() {
 
     for (int i = 0; i < NumCullInfos; i++) {
         SceneryCullInfo *scenery_cull_info = &SceneryCullInfos[i];
-        eView *view = scenery_cull_info->pView;
-        unsigned char *camera = reinterpret_cast<unsigned char *>(view->GetCamera());
+        Camera *camera = scenery_cull_info->pView->GetCamera();
+        unsigned char *camera_bytes = reinterpret_cast<unsigned char *>(camera);
         bool do_precull = true;
 
-        scenery_cull_info->Position.x = *reinterpret_cast<float *>(camera + 0x40);
-        scenery_cull_info->Position.y = *reinterpret_cast<float *>(camera + 0x44);
-        scenery_cull_info->Position.z = *reinterpret_cast<float *>(camera + 0x48);
-        scenery_cull_info->Direction.x = *reinterpret_cast<float *>(camera + 0x50);
-        scenery_cull_info->Direction.y = *reinterpret_cast<float *>(camera + 0x54);
-        scenery_cull_info->Direction.z = *reinterpret_cast<float *>(camera + 0x58);
-        scenery_cull_info->H = view->H;
+        scenery_cull_info->Position = *camera->GetPosition();
+        scenery_cull_info->Direction = *camera->GetDirection();
+        scenery_cull_info->H = scenery_cull_info->pView->H;
 
         if (PrecullerMode == 0) {
             do_precull = false;
@@ -1224,9 +1220,9 @@ void GrandSceneryCullInfo::DoCulling() {
                 do_precull = false;
             }
         } else if (PrecullerMode == 3) {
-            float speed_x = *reinterpret_cast<float *>(camera + 0x1E8);
-            float speed_y = *reinterpret_cast<float *>(camera + 0x1EC);
-            float speed_z = *reinterpret_cast<float *>(camera + 0x1F0);
+            float speed_x = *reinterpret_cast<float *>(camera_bytes + 0x1E8);
+            float speed_y = *reinterpret_cast<float *>(camera_bytes + 0x1EC);
+            float speed_z = *reinterpret_cast<float *>(camera_bytes + 0x1F0);
             float speed = bSqrt(speed_x * speed_x + speed_y * speed_y + speed_z * speed_z);
             if (speed < EnablePrecullingSpeed) {
                 do_precull = false;
