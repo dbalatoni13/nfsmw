@@ -797,10 +797,10 @@ int TrackStreamer::BuildHoleMovements(HoleMovement *hole_movements, int max_move
                         }
 
                         int free_gap = total_free_memory - middle_allocated_memory;
-                        if ((!found_big_enough && free_gap > current_best) ||
+                        if ((!found_big_enough && current_best < free_gap) ||
                             (found_big_enough &&
-                             total_needing_allocation <= total_free_memory + middle_allocated_memory &&
-                             current_best_middle_memory > middle_allocated_memory)) {
+                             total_free_memory + middle_allocated_memory >= total_needing_allocation &&
+                             middle_allocated_memory < current_best_middle_memory)) {
                             std::sort(size_checking, size_checking + found_nodes);
                             int evaluated_best_address = 0;
                             bool largest_flag = false;
