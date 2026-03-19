@@ -110,7 +110,7 @@ static inline short GetScenerySectionNumber_TrackStreamer(char section_letter, i
 
 static inline bool IsLODScenerySectionNumber(int section_number) {
     int subsection_number = GetScenerySubsectionNumber(section_number);
-    return ScenerySectionLODOffset <= subsection_number && subsection_number < ScenerySectionLODOffset * 2;
+    return subsection_number >= ScenerySectionLODOffset && subsection_number < ScenerySectionLODOffset * 2;
 }
 
 static inline bool IsLoadingBarSection_TrackStreamer(int section_number) {
