@@ -170,6 +170,10 @@ class CareerSettings {
         return CurrentBin;
     }
 
+    void SetAdaptiveDifficulty(float difficulty) {
+        AdaptiveDifficulty = static_cast<int16>(difficulty * 32767.0f);
+    }
+
   private:
     uint32 CurrentCar;           // offset 0x0, size 0x4
     uint32 SpecialFlags;         // offset 0x4, size 0x4

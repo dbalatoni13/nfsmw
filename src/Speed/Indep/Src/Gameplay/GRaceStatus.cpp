@@ -3338,6 +3338,7 @@ void GRaceStatus::SyncronizeAdaptiveBonus() {
 }
 
 void GRaceStatus::UpdateAdaptiveDifficulty(eAdaptiveGainReason reason, ISimable *who) {
+    int num_racers;
     bool update;
     GRacerInfo *winning_player;
     GRacerInfo *winning_ai;
@@ -3350,8 +3351,7 @@ void GRaceStatus::UpdateAdaptiveDifficulty(eAdaptiveGainReason reason, ISimable 
     }
 
     difficulty = fCatchUpAdaptiveBonus;
-    const int num_racers = GetRacerCount();
-
+    num_racers = GetRacerCount();
     update = false;
     winning_player = nullptr;
     winning_ai = nullptr;
@@ -3375,13 +3375,13 @@ void GRaceStatus::UpdateAdaptiveDifficulty(eAdaptiveGainReason reason, ISimable 
         }
     }
 
-    if (reason < kAdaptiveGainReason_2) {
-        float percent_ai_complete = 0.0f;
-        float percent_human_complete = 0.0f;
-
+    if (static_cast<unsigned int>(reason) < 2) {
         if (!who || !who->IsPlayer()) {
             return;
         }
+
+        float percent_ai_complete = 0.0f;
+        float percent_human_complete = 0.0f;
 
         for (int i = 0; i < num_racers; ++i) {
             GRacerInfo &info = GetRacerInfo(i);
@@ -3433,16 +3433,14 @@ void GRaceStatus::UpdateAdaptiveDifficulty(eAdaptiveGainReason reason, ISimable 
         float total_points;
 
         for (int i = 0; i < num_racers; ++i) {
-            GRacerInfo &info = GetRacerInfo(i);
-
-            if (!info.IsFinishedRacing()) {
+            if (!GetRacerInfo(i).IsFinishedRacing()) {
                 return;
             }
 
-            if (!info.GetGameCharacter()) {
-                player_points = info.GetPointTotal();
+            if (!GetRacerInfo(i).GetGameCharacter()) {
+                player_points = GetRacerInfo(i).GetPointTotal();
             } else {
-                ai_points = UMath::Max(ai_points, info.GetPointTotal());
+                ai_points = UMath::Max(ai_points, GetRacerInfo(i).GetPointTotal());
             }
         }
 
@@ -3505,19 +3503,19 @@ void GRaceStatus::UpdateAdaptiveDifficulty(eAdaptiveGainReason reason, ISimable 
             }
         }
     } else if (eliminated_player) {
-        int lap_count = 1;
         float num_laps;
         float race_lose_margin;
         float lose_margin;
 
         if (mRaceParms) {
-            lap_count = bMax(1, mRaceParms->GetNumLaps());
+            num_laps = static_cast<float>(bMax(1, mRaceParms->GetNumLaps()));
+        } else {
+            num_laps = 1.0f;
         }
 
-        num_laps = static_cast<float>(lap_count);
         lose_margin = (GetRaceLength() * (100.0f - eliminated_player->GetPctRaceComplete())) * 0.01f;
         race_lose_margin = GetRaceLength() / num_laps;
-        lose_margin -= bFloor(lose_margin / race_lose_margin) * race_lose_margin;
+        lose_margin = UMath::Mod(lose_margin, race_lose_margin);
 
         if (lose_margin > 0.0f) {
             float t = UMath::Ramp(lose_margin / 300.0f, 0.0f, 1.0f);
@@ -3535,14 +3533,10 @@ void GRaceStatus::UpdateAdaptiveDifficulty(eAdaptiveGainReason reason, ISimable 
         clamped_difficulty = bClamp(difficulty, -1.0f, 1.0f);
 
         if (FEDatabase) {
-            CareerSettings *career = FEDatabase->GetCareerSettings();
-
-            if (career) {
-                *reinterpret_cast<short *>(reinterpret_cast<char *>(career) + 0x10) = static_cast<short>(clamped_difficulty * 32767.0f);
-            }
+            FEDatabase->GetCareerSettings()->SetAdaptiveDifficulty(clamped_difficulty);
         }
 
-        fCatchUpAdaptiveBonus = difficulty;
+        fCatchUpAdaptiveBonus = clamped_difficulty;
     }
 }
 

@@ -39,6 +39,7 @@ inline float Cosr(const float a) {
 void BuildRotate(Matrix4 &m, float r, float x, float y, float z);
 
 float Ceil(const float x);
+float Mod(const float x, const float e);
 
 inline float Distance(const Vector3 &a, const Vector3 &b) {
     return VU0_v3distance(a, b);
