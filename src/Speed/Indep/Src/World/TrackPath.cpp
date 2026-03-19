@@ -226,8 +226,8 @@ bool TrackPathZone::IsPointInside(const bVector2 *point) {
 }
 
 float TrackPathZone::GetSegmentNextTo(bVector2 *point, bVector2 *segment_point_a, bVector2 *segment_point_b) {
-    int Closest0 = -1;
     int Closest1 = -1;
+    int Closest0 = -1;
     float d0 = 1.0e30f;
     float len;
 
@@ -241,11 +241,12 @@ float TrackPathZone::GetSegmentNextTo(bVector2 *point, bVector2 *segment_point_a
         len = bDot(&r, &v);
         bVector2 InPoint = *point + r * (len * 0.999f);
         bVector2 InPoint2 = *point + r * (len * 1.001f);
+        len = bAbs(len);
 
-        if (bAbs(len) < d0 && (IsPointInside(&InPoint) || IsPointInside(&InPoint2))) {
+        if (len < d0 && (IsPointInside(&InPoint) || IsPointInside(&InPoint2))) {
             Closest0 = n;
             Closest1 = (n + 1) % NumPoints;
-            d0 = bAbs(len);
+            d0 = len;
         }
     }
 
