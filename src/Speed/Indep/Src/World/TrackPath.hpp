@@ -71,6 +71,10 @@ class TrackPathZone {
         return Elevation;
     }
 
+    eTrackPathZoneType GetType() {
+        return Type;
+    }
+
     int GetMemoryImageSize() {
         return MemoryImageSize;
     }

@@ -30,8 +30,8 @@ void TrackPathManager::Clear() {
     pZones = nullptr;
     bMemSet(ZoneInfoTable, 0, sizeof(ZoneInfoTable));
     MostCachedZones = 0;
-    NumBarriers = 0;
     pBarriers = nullptr;
+    NumBarriers = 0;
     zoneB[0] = 0;
     zoneB[1] = 0;
 }
@@ -93,8 +93,8 @@ int TrackPathManager::Unloader(bChunk *chunk) {
     }
 
     if (chunk->GetID() == 0x3414D) {
-        NumBarriers = 0;
         pBarriers = nullptr;
+        NumBarriers = 0;
         return true;
     }
 
@@ -121,17 +121,16 @@ void TrackPathManager::EnableBarriers(const char *group_name) {
 }
 
 void TrackPathManager::BuildZoneInfoTable() {
-    for (int zone_type = 0; zone_type < NUM_TRACK_PATH_ZONES; zone_type++) {
-        ZoneInfo *zone_info = &ZoneInfoTable[zone_type];
+    for (int type = 0; type < NUM_TRACK_PATH_ZONES; type++) {
+        ZoneInfo *zone_info = &ZoneInfoTable[type];
         zone_info->NumZones = 0;
 
-        for (TrackPathZone *zone = pZones; zone < reinterpret_cast<TrackPathZone *>(reinterpret_cast<char *>(pZones) + SizeofZones);
-             zone = NextTrackPathZone(zone)) {
-            if (zone->Type == static_cast<eTrackPathZoneType>(zone_type)) {
+        for (TrackPathZone *zone = pZones; zone < GetLastZone(); zone = zone->GetMemoryImageNext()) {
+            if (zone->GetType() == static_cast<eTrackPathZoneType>(type)) {
                 if (zone_info->NumZones == 0) {
                     zone_info->pFirstZone = zone;
                 }
-                zone_info->pLastZone = NextTrackPathZone(zone);
+                zone_info->pLastZone = zone->GetMemoryImageNext();
                 zone_info->NumZones += 1;
             }
         }
