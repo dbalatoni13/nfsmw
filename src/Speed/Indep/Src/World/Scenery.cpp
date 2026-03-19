@@ -1308,6 +1308,7 @@ void GrandSceneryCullInfo::StuffScenery(eView *view, int stuff_flags) {
         for (SceneryDrawInfo *draw_info = scenery_cull_info->pFirstDrawInfo; draw_info < scenery_cull_info->pCurrentDrawInfo;
              draw_info++) {
             unsigned int model_word = reinterpret_cast<unsigned int>(draw_info->pModel);
+            unsigned int model_type = model_word & 3;
             unsigned int exclude_flags = draw_info->SceneryInst->ExcludeFlags;
             unsigned int render_flags = base_flags;
 
@@ -1346,7 +1347,7 @@ void GrandSceneryCullInfo::StuffScenery(eView *view, int stuff_flags) {
                     render_flags |= 0x10000;
                 }
             }
-            if ((model_word & 3) == 2) {
+            if (model_type == 2) {
                 render_flags |= 4;
             }
 
