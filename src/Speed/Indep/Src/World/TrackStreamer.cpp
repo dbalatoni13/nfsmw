@@ -1038,8 +1038,6 @@ int TrackStreamer::DoHoleFilling(int largest_free) {
     const char *debug_name;
     HoleMovement hole_movements[128];
     int amount_moved;
-    debug_name = 0;
-    amount_moved = 0;
 
     CountUserAllocations(&debug_name);
     if (debug_name) {
