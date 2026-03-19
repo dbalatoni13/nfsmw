@@ -477,11 +477,12 @@ void *TrackStreamer::AllocateMemory(TrackStreamingSection *section, int allocati
 
 bool TrackStreamer::WillUnloadBlock(TrackStreamingSection *section) {
     unsigned int frame = section->UnactivatedFrameCount;
-    bool will_unload = false;
     if ((frame != 0) && (frame == eFrameCounter)) {
-        will_unload = LastWaitUntilRenderingDoneFrameCount != frame;
+        if (LastWaitUntilRenderingDoneFrameCount != frame) {
+            return true;
+        }
     }
-    return will_unload;
+    return false;
 }
 
 void TrackStreamer::UnloadSection(TrackStreamingSection *section) {
