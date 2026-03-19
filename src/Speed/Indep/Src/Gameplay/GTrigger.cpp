@@ -302,22 +302,24 @@ void GTrigger::NotifySimableTrigger(ISimable *isim, int triggerStimulus) {
         return;
     }
 
+    bool triggerExited = triggerStimulus == 2;
+    bool triggerInside = triggerStimulus == 1;
     bool wasInside = IsInside(isim);
-    if (triggerStimulus == 2) {
+    if (triggerExited) {
         MarkAsOutside(isim);
         if (FireOnExit(0)) {
-            MTriggerExit msg(GCollectionKey(this), isim->GetOwnerHandle());
+            MTriggerExit msg(GCollectionKey(this), isim->GetInstanceHandle());
             msg.Post(UCrc32(0x20D60DBF));
         }
     }
 
-    if (triggerStimulus == 1) {
+    if (triggerInside) {
         if (!wasInside) {
             MarkAsInside(isim);
-            MTriggerEnter enterMsg(GCollectionKey(this), isim->GetOwnerHandle());
+            MTriggerEnter enterMsg(GCollectionKey(this), isim->GetInstanceHandle());
             enterMsg.Post(UCrc32(0x20D60DBF));
         }
-        MTriggerInside insideMsg(GCollectionKey(this), isim->GetOwnerHandle());
+        MTriggerInside insideMsg(GCollectionKey(this), isim->GetInstanceHandle());
         insideMsg.Post(UCrc32(0x20D60DBF));
     }
 }
