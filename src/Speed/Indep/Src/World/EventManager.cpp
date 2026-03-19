@@ -224,10 +224,9 @@ int LoaderEventManager(bChunk *chunk) {
         return false;
     }
 
-    bChunk *child = chunk->GetFirstChunk();
     bChunk *last_chunk = chunk->GetLastChunk();
     void *event_trigger_pack = 0;
-    while (child < last_chunk) {
+    for (bChunk *child = chunk->GetFirstChunk(); child != last_chunk; child = child->GetNext()) {
         int child_id = child->GetID();
         if (child_id == 0x36002) {
             if (event_trigger_pack) {
@@ -260,8 +259,10 @@ int LoaderEventManager(bChunk *chunk) {
                 SetEventTriggerPackData_EventManager(event_trigger_pack, event_data);
 
                 if (GetEventTriggerPackEndianSwapped_EventManager(event_trigger_pack) == 0) {
-                    unsigned int num_event_words =
-                        (child->GetSize() - (reinterpret_cast<char *>(event_data) - child->GetData())) >> 5;
+                    unsigned int num_event_words = static_cast<unsigned int>(
+                                                       child->GetSize() - (reinterpret_cast<char *>(event_data) - child->GetData())
+                                                   ) >>
+                                                   5;
                     for (unsigned int i = 0; i < num_event_words; i++) {
                         int *event_words = reinterpret_cast<int *>(reinterpret_cast<char *>(event_data) + i * 0x20);
                         bEndianSwap32(&event_words[0]);
@@ -276,8 +277,6 @@ int LoaderEventManager(bChunk *chunk) {
                 }
             }
         }
-
-        child = child->GetNext();
     }
 
     GetEventTriggerPackWords_EventManager(event_trigger_pack)[5] = 1;
@@ -289,16 +288,16 @@ int LoaderEventManager(bChunk *chunk) {
             bNode *new_prev = event_trigger_pack_list->HeadNode.Prev;
             new_prev->Next = node;
             event_trigger_pack_list->HeadNode.Prev = node;
-            node->Next = &event_trigger_pack_list->HeadNode;
             node->Prev = new_prev;
+            node->Next = &event_trigger_pack_list->HeadNode;
         } else {
             bList *event_trigger_pack_list = &EmptyEventTriggerPackList;
             bNode *node = GetEventTriggerPackNode_EventManager(event_trigger_pack);
             bNode *new_prev = event_trigger_pack_list->HeadNode.Prev;
             new_prev->Next = node;
             event_trigger_pack_list->HeadNode.Prev = node;
-            node->Next = &event_trigger_pack_list->HeadNode;
             node->Prev = new_prev;
+            node->Next = &event_trigger_pack_list->HeadNode;
         }
     }
 
