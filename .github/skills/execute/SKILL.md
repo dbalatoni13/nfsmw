@@ -11,6 +11,9 @@ the produced C++ compiles to byte-identical object code against the original ret
 
 For each function, "done" means both objdiff and normalized DWARF are exact.
 
+Human review is not a substitute for running `dwarf compare`. Each function should hit
+its own `verify` gate before you treat it as ready to hand off, commit, or move past.
+
 ## Overview
 
 This workflow combines several smaller workflows:
@@ -152,6 +155,10 @@ python tools/decomp-workflow.py verify -u main/Path/To/TU -f FunctionName
 If it fails, follow up with `decomp-workflow.py diff` and `decomp-workflow.py dwarf`
 until both checks pass.
 
+Do not queue up several "probably done" functions and leave the DWARF check for later.
+Close the `verify` gate per function before moving on whenever feasible; otherwise the
+reviewer ends up doing avoidable DWARF triage.
+
 ### 3g. Periodic reassessment
 
 After every few functions, re-run the full status check:
@@ -189,6 +196,8 @@ For any remaining nonmatching functions, make one final pass using the implement
 or refiner workflow with all context accumulated during the session.
 
 Do not report a function as complete unless its per-function `verify` check also passes.
+Do not hand a function to review as "done except maybe DWARF" — either resolve the DWARF
+failure yourself or explicitly call out the blocker and why it remains.
 
 ## Phase 5: Report
 

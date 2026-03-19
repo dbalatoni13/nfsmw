@@ -292,6 +292,14 @@ def choose_objdiff_row(unit_name: str, function_name: str, reloc_diffs: str = "n
     return matches[0]
 
 
+def resolve_exact_function_name(
+    unit_name: str, function_name: str, reloc_diffs: str = "none"
+) -> str:
+    return str(
+        choose_objdiff_row(unit_name, function_name, reloc_diffs=reloc_diffs)["name"]
+    )
+
+
 def load_dwarf_report(
     unit_name: str,
     function_name: str,
@@ -642,6 +650,9 @@ def command_function(args: argparse.Namespace) -> None:
     ensure_decomp_prereqs()
     print_section(f"Function Workflow: {args.function}")
     ensure_shared_unit_output(args.unit)
+    resolved_function_name = resolve_exact_function_name(
+        args.unit, args.function, reloc_diffs=args.reloc_diffs
+    )
     cmd = python_tool("decomp-context.py", "-u", args.unit, "-f", args.function)
     if args.no_source:
         cmd.append("--no-source")
@@ -661,9 +672,14 @@ def command_function(args: argparse.Namespace) -> None:
     print(flush=True)
     print(
         "Required completion check: python tools/decomp-workflow.py verify "
-        f"-u {shlex.quote(args.unit)} -f {shlex.quote(args.function)}",
+        f"-u {shlex.quote(args.unit)} -f {shlex.quote(resolved_function_name)}",
         flush=True,
     )
+    if resolved_function_name != args.function:
+        print(
+            f"(Resolved exact function name for DWARF-safe follow-up: {resolved_function_name})",
+            flush=True,
+        )
 
 
 def command_unit(args: argparse.Namespace) -> None:
@@ -810,8 +826,11 @@ def command_dwarf(args: argparse.Namespace) -> None:
     print_section(f"DWARF Workflow: {args.unit} / {args.function}")
     if not args.rebuilt_dwarf_file:
         ensure_shared_unit_output(args.unit)
+    resolved_function_name = resolve_exact_function_name(args.unit, args.function)
 
-    cmd: List[str] = python_tool("dwarf-compare.py", "-u", args.unit, "-f", args.function)
+    cmd: List[str] = python_tool(
+        "dwarf-compare.py", "-u", args.unit, "-f", resolved_function_name
+    )
     if args.summary:
         cmd.append("--summary")
     if args.json:
@@ -833,18 +852,24 @@ def command_verify(args: argparse.Namespace) -> None:
     ensure_shared_unit_output(args.unit)
 
     objdiff_row = choose_objdiff_row(args.unit, args.function, reloc_diffs=args.reloc_diffs)
-    dwarf_report = load_dwarf_report(
-        args.unit,
-        args.function,
-        rebuilt_dwarf_file=args.rebuilt_dwarf_file,
-    )
+    resolved_function_name = str(objdiff_row["name"])
+    dwarf_load_error: Optional[str] = None
+    dwarf_report: Optional[Dict[str, Any]] = None
+    try:
+        dwarf_report = load_dwarf_report(
+            args.unit,
+            resolved_function_name,
+            rebuilt_dwarf_file=args.rebuilt_dwarf_file,
+        )
+    except WorkflowError as e:
+        dwarf_load_error = str(e)
 
     objdiff_exact = (
         objdiff_row["status"] == "match"
         and objdiff_row["match_percent"] is not None
         and float(objdiff_row["match_percent"]) >= 100.0
     )
-    dwarf_exact = bool(dwarf_report["normalized_exact_match"])
+    dwarf_exact = bool(dwarf_report["normalized_exact_match"]) if dwarf_report else False
     overall_ok = objdiff_exact and dwarf_exact
 
     objdiff_percent = (
@@ -852,34 +877,56 @@ def command_verify(args: argparse.Namespace) -> None:
         if objdiff_row["match_percent"] is not None
         else "-"
     )
-    dwarf_percent = f"{float(dwarf_report['match_percent']):.1f}%"
+    dwarf_percent = (
+        f"{float(dwarf_report['match_percent']):.1f}%" if dwarf_report else "-"
+    )
 
     print(
         f"objdiff: {'PASS' if objdiff_exact else 'FAIL'} | "
         f"{objdiff_percent} | status={objdiff_row['status']} | "
         f"unmatched~{objdiff_row['unmatched_bytes_est']}B"
     )
-    print(
-        f"DWARF:  {'PASS' if dwarf_exact else 'FAIL'} | "
-        f"{dwarf_percent} | normalized exact={'yes' if dwarf_exact else 'no'} | "
-        f"change groups={dwarf_report['changed_groups']}"
-    )
+    if dwarf_report:
+        print(
+            f"DWARF:  {'PASS' if dwarf_exact else 'FAIL'} | "
+            f"{dwarf_percent} | normalized exact={'yes' if dwarf_exact else 'no'} | "
+            f"change groups={dwarf_report['changed_groups']}"
+        )
+    else:
+        print("DWARF:  FAIL | unable to compare rebuilt vs original DWARF", flush=True)
+    if resolved_function_name != args.function:
+        print(f"Resolved DWARF symbol: {resolved_function_name}")
     print(f"Overall: {'PASS' if overall_ok else 'FAIL'}")
     print("Done means both objdiff and normalized DWARF are exact for the function.")
 
     if overall_ok:
         return
 
+    if dwarf_load_error:
+        print(flush=True)
+        print("DWARF compare could not complete:", flush=True)
+        print(dwarf_load_error, flush=True)
+        if (
+            objdiff_row["status"] == "missing"
+            and "rebuilt DWARF: function" in dwarf_load_error
+            and "not found" in dwarf_load_error
+        ):
+            print(
+                "Hint: the rebuilt object does not contain this function yet. "
+                "Implement the function or fix its ownership/signature first, then rerun verify.",
+                flush=True,
+            )
+
     print(flush=True)
     print("Follow-up commands:", flush=True)
     print(
         f"  python tools/decomp-workflow.py diff -u {shlex.quote(args.unit)} "
-        f"-d {shlex.quote(args.function)}",
+        f"-d {shlex.quote(resolved_function_name)}",
         flush=True,
     )
     print(
         f"  python tools/decomp-workflow.py dwarf -u {shlex.quote(args.unit)} "
-        f"-f {shlex.quote(args.function)}",
+        f"-f {shlex.quote(resolved_function_name)}",
         flush=True,
     )
     raise WorkflowError(
@@ -941,7 +988,12 @@ def build_parser() -> argparse.ArgumentParser:
         help="Run decomp-context.py for one function",
     )
     function.add_argument("-u", "--unit", required=True, help="Translation unit name")
-    function.add_argument("-f", "--function", required=True, help="Function name to inspect")
+    function.add_argument(
+        "-f",
+        "--function",
+        required=True,
+        help="Function name to inspect (full name or a unique substring)",
+    )
     function.add_argument(
         "--no-source",
         action="store_true",
@@ -1086,7 +1138,12 @@ def build_parser() -> argparse.ArgumentParser:
         help="Compare original vs rebuilt DWARF for one function",
     )
     dwarf.add_argument("-u", "--unit", required=True, help="Translation unit name")
-    dwarf.add_argument("-f", "--function", required=True, help="Function name to compare")
+    dwarf.add_argument(
+        "-f",
+        "--function",
+        required=True,
+        help="Function name to compare (full name or a unique substring)",
+    )
     dwarf.add_argument(
         "--summary",
         action="store_true",
@@ -1127,7 +1184,12 @@ def build_parser() -> argparse.ArgumentParser:
         help="Fail unless one function matches in both objdiff and DWARF",
     )
     verify.add_argument("-u", "--unit", required=True, help="Translation unit name")
-    verify.add_argument("-f", "--function", required=True, help="Function name to verify")
+    verify.add_argument(
+        "-f",
+        "--function",
+        required=True,
+        help="Function name to verify (full name or a unique substring)",
+    )
     verify.add_argument(
         "--reloc-diffs",
         choices=RELOC_DIFF_CHOICES,

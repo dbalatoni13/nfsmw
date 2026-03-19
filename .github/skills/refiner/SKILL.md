@@ -15,8 +15,24 @@ approaches that were tried before — instead, apply systematic lateral analysis
 - A diff is available (`decomp-diff.py -u <TU> -d <func>`).
 - The "obvious" translation from Ghidra has been attempted.
 - You have been given the current source code and the diff.
+- You have already run the per-function `verify` gate and know whether the remaining work
+  is still structural DWARF cleanup or true late-stage instruction cleanup.
+
+Refiner is not the place to dump unresolved DWARF debt on a reviewer. If `verify` or
+`dwarf` is still showing obvious structural mismatches (missing locals, wrong types,
+wrong inline ownership, wrong helper/header owner), fix those first or drop back to the
+implementer workflow before doing late instruction polish.
 
 ## Phase 1: Read the full diff without collapsing
+
+Before you start a refiner pass, confirm the gate status:
+
+```sh
+python tools/decomp-workflow.py verify -u main/Path/To/TU -f FunctionName
+```
+
+If the combined gate is failing for reasons that are still clearly visible in the DWARF
+diff, address those first instead of treating them as reviewer follow-up.
 
 Preferred shortcut:
 
@@ -150,6 +166,9 @@ DWARF mismatches to watch for:
 - Wrong parameter types or qualifiers
 - Wrong return type
 - Missing inlined function records (means an inline call was outlined)
+
+If these mismatches are still present, you are not in pure refiner territory yet. Resolve
+them before you ask a reviewer to spend time on the function.
 
 ## Phase 4: Report
 
