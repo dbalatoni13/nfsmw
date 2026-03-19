@@ -2037,7 +2037,7 @@ bool TrackStreamer::CheckLoadingBar() {
 
         speed = bLength(&position_entry->Velocity);
         max_speed = MPH2MPS(kLoadingBarSpeedThreshold_TrackStreamer);
-        if (max_speed < speed) {
+        if (speed > max_speed) {
             break;
         }
 
