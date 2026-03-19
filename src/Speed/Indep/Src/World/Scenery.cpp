@@ -1197,7 +1197,7 @@ void GrandSceneryCullInfo::CullView(SceneryCullInfo *scenery_cull_info) {
     int num_sections = WhatSectionsShouldWeDraw(sections_to_draw, 0x80, scenery_cull_info);
 
     for (int i = 0; i < num_sections; i++) {
-        if (sections_to_draw[i] > -1) {
+        if (sections_to_draw[i] >= 0) {
             ScenerySectionHeader *section_header = GetScenerySectionHeader(sections_to_draw[i]);
             if (section_header && reinterpret_cast<int *>(section_header)[10] != 0) {
                 section_header->TreeCull(scenery_cull_info);
