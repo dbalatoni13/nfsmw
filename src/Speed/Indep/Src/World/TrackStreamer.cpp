@@ -1831,8 +1831,8 @@ void TrackStreamer::FinishedLoading() {
     float load_time;
     (void)load_time;
 
-    CurrentZoneNonReplayLoad = false;
     LoadingPhase = LOADING_IDLE;
+    CurrentZoneNonReplayLoad = false;
     CurrentZoneFarLoad = false;
     NotifySkyLoader();
 
