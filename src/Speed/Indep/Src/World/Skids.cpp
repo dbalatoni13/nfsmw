@@ -111,25 +111,16 @@ void SkidSegment::GetEndPoints(bVector3 *left_point, bVector3 *right_point) {
     right_point->z = z - dz;
 }
 
-SkidSet::SkidSet(SkidMaker *skid_maker, bVector3 *position, bVector3 *delta_position, int terrain_type, float intensity)
-    : pClan(0)
-    , pClanNode(0)
-    , pSkidMaker(skid_maker)
-    , TheTerrainType(terrain_type)
-    , NumSkidSegments(0)
-{
+SkidSet::SkidSet(SkidMaker *skid_maker, bVector3 *position, bVector3 *delta_position, int terrain_type, float intensity) {
+    TheTerrainType = terrain_type;
+    NumSkidSegments = 0;
+    pSkidMaker = skid_maker;
     Position = *position;
     bInitializeBoundingBox(&BBoxMin, &BBoxMax, position);
     BBoxCentre = *position;
 
-    if (pSkidMaker) {
-        pSkidMaker->pSkidSet = this;
-    }
-
     pClan = GetClan(position);
-    if (pClan) {
-        pClanNode = pClan->SkidSetList.AddTail(this);
-    }
+    pClanNode = pClan->SkidSetList.AddTail(this);
 
     AddSegment(position, delta_position, false, intensity);
 }
