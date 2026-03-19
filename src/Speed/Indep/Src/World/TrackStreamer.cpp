@@ -245,6 +245,14 @@ void TSMemoryPool::RemoveNode(TSMemoryNode *node) {
     UnusedNodeList.AddTail(node);
 }
 
+inline bool TSMemoryNode::IsFree() {
+    return !Allocated;
+}
+
+inline bool TSMemoryNode::Contains(int address) {
+    return address >= Address && address < Address + Size;
+}
+
 void *TSMemoryPool::Malloc(int size, const char *debug_name, bool best_fit, bool allocate_from_top, int address) {
     TSMemoryNode *found_node = 0;
     TSMemoryNode *new_node;
@@ -301,16 +309,13 @@ void *TSMemoryPool::Malloc(int size, const char *debug_name, bool best_fit, bool
     }
 
     new_node = GetNewNode(address, size, true, debug_name);
-    if (!new_node) {
-        return 0;
-    }
     new_node->AddAfter(found_node);
 
     new_bottom_size = address - found_node->Address;
     new_top_size = found_node->Address + found_node->Size - (address + size);
     found_node->Size = new_bottom_size;
     if (new_bottom_size == 0) {
-        found_node->Remove();
+        NodeList.Remove(found_node);
         RemoveNode(found_node);
     }
 
@@ -325,20 +330,20 @@ void *TSMemoryPool::Malloc(int size, const char *debug_name, bool best_fit, bool
         bMemoryTraceAllocatePacket packet;
         int extra_len;
         int n;
-        char *p;
+        unsigned char *p;
 
         memset(&packet, 0, sizeof(packet));
         packet.PoolID = reinterpret_cast<int>(this);
         packet.MemoryAddress = address;
         packet.Size = size;
         packet.AllocationNumber = AllocationNumber;
-        p = packet.DebugText;
+        p = reinterpret_cast<unsigned char *>(packet.DebugText);
         n = sizeof(packet.DebugText);
         bMemSet(p, 0, n);
         if (debug_name) {
-            bStrNCpy(p, debug_name, n - 1);
+            bStrNCpy(reinterpret_cast<char *>(p), debug_name, n - 1);
         }
-        extra_len = bStrLen(p) + 0x15;
+        extra_len = bStrLen(reinterpret_cast<char *>(p)) + 0x15;
         bFunkCallASync("CODEINE", 0x1c, &packet, extra_len);
     }
 

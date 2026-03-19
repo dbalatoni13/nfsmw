@@ -22,6 +22,11 @@ struct SceneryBoundingBox {
     // total size: 0x18
     float BBoxMin[3]; // offset 0x0, size 0xC
     float BBoxMax[3]; // offset 0xC, size 0xC
+
+    void GetBBox(bVector3 *bbox_min, bVector3 *bbox_max) {
+        bFill(bbox_min, BBoxMin[0], BBoxMin[1], BBoxMin[2]);
+        bFill(bbox_max, BBoxMax[0], BBoxMax[1], BBoxMax[2]);
+    }
 };
 
 struct SceneryInstance : public SceneryBoundingBox {

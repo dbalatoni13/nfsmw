@@ -26,6 +26,11 @@ struct ScenerySectionHeader : public bNode {
     int GetSectionNumber() {
         return reinterpret_cast<int *>(this)[3];
     }
+
+    struct tPrecullerInfo *GetPrecullerInfo(int preculler_info_index) {
+        return reinterpret_cast<tPrecullerInfo *>(reinterpret_cast<unsigned char *>(reinterpret_cast<int *>(this)[12]) +
+                                                  preculler_info_index * 0x80);
+    }
 };
 
 struct SceneryOverrideInfo {
@@ -95,15 +100,14 @@ struct _type_map;
 typedef UTL::Std::map<unsigned int, ModelHeirarchy *, _type_map> ModelHeirarchyMap;
 
 struct tPrecullerInfo {
-    unsigned int Values[6];
-    short Flags[6];
+    unsigned char VisibilityBits[0x80];
 
-    bool IsVisible(int visibility_state) {
-        return (Flags[0] & visibility_state) != 0;
+    bool IsVisible(int preculler_section_number) {
+        return (VisibilityBits[preculler_section_number >> 3] & (1 << (preculler_section_number & 7))) != 0;
     }
 
-    bool IsNotVisible(int visibility_state) {
-        return !IsVisible(visibility_state);
+    bool IsNotVisible(int preculler_section_number) {
+        return !IsVisible(preculler_section_number);
     }
 };
 
@@ -591,11 +595,10 @@ void ScenerySectionHeader::DrawAScenery(int scenery_instance_number, SceneryCull
         return;
     }
 
-    SceneryInstance *instance = reinterpret_cast<SceneryInstance *>(section_header_words[8]) + scenery_instance_number;
+    SceneryInstance *instance = GetSceneryInstance(scenery_instance_number);
     if (visibility_state >= 0 && section_header_words[12] && instance->PrecullerInfoIndex >= 0) {
-        unsigned char *visibility_table = reinterpret_cast<unsigned char *>(section_header_words[12]) + instance->PrecullerInfoIndex * 0x80;
-        int visibility_mask = 1 << (visibility_state & 7);
-        if ((visibility_table[visibility_state >> 3] & visibility_mask) != 0) {
+        tPrecullerInfo *preculler_info = GetPrecullerInfo(instance->PrecullerInfoIndex);
+        if (preculler_info->IsVisible(visibility_state)) {
             return;
         }
     }
@@ -605,18 +608,19 @@ void ScenerySectionHeader::DrawAScenery(int scenery_instance_number, SceneryCull
     if (((instance_exclude_flags ^ 0x60) & scenery_cull_info->ExcludeFlags) != 0) {
         return;
     }
-    unsigned char *scenery_info = GetSceneryInfo_Scenery(section_header_words, scenery_info_number);
+    SceneryInfo *scenery_info = reinterpret_cast<SceneryInfo *>(GetSceneryInfo_Scenery(section_header_words, scenery_info_number));
 
     if (visibility_state == EVISIBLESTATE_PARTIAL) {
-        bVector3 bbox_min(instance->BBoxMin[0], instance->BBoxMin[1], instance->BBoxMin[2]);
-        bVector3 bbox_max(instance->BBoxMax[0], instance->BBoxMax[1], instance->BBoxMax[2]);
+        bVector3 bbox_min;
+        bVector3 bbox_max;
+        instance->GetBBox(&bbox_min, &bbox_max);
         visibility_state = scenery_cull_info->pView->GetVisibleState(&bbox_min, &bbox_max, 0);
         if (visibility_state == EVISIBLESTATE_NOT) {
             return;
         }
     }
 
-    float radius = GetSceneryRadius_Scenery(scenery_info) + 6.0f;
+    float radius = scenery_info->Radius + 6.0f;
     int pixel_size_int = InlinedViewGetPixelSize(scenery_cull_info, instance->GetPosition(), radius);
 
     if (pixel_size_int < 2) {
@@ -630,38 +634,36 @@ void ScenerySectionHeader::DrawAScenery(int scenery_instance_number, SceneryCull
     eModel *model = 0;
     if ((scenery_cull_info->ExcludeFlags & 0x1800) != 0) {
         if ((instance_flags & 0x80) != 0) {
-            if (pixel_size_int < 0x20) {
-            } else {
-                model = GetSceneryModel_Scenery(scenery_info, 2);
+            if (pixel_size_int > 0x1F) {
+                model = scenery_info->pModel[2];
             }
         } else {
-            if (pixel_size_int < 0x20) {
-            } else {
+            if (pixel_size_int > 0x1F) {
                 if ((instance_flags & 0x1000100) != 0) {
-                    model = GetSceneryModel_Scenery(scenery_info, 0);
+                    model = scenery_info->pModel[0];
                 } else {
-                    model = GetSceneryModel_Scenery(scenery_info, 3);
+                    model = scenery_info->pModel[3];
                 }
             }
         }
     } else if ((scenery_cull_info->ExcludeFlags & 0x20) != 0) {
-        if (pixel_size_int < 0x20) {
-        } else {
-            model = GetSceneryModel_Scenery(scenery_info, 2);
+        if (pixel_size_int > 0x1F) {
+            model = scenery_info->pModel[2];
         }
     } else if (eGetCurrentViewMode() > EVIEWMODE_ONE_RVM) {
         if (pixel_size_int > 0x16) {
-            model = GetSceneryModel_Scenery(scenery_info, 2);
+            model = scenery_info->pModel[2];
         }
     } else if (pixel_size_int > 0x11) {
-        model = GetSceneryModel_Scenery(scenery_info, 0);
-        if (model && model->Solid && model->Solid->NumPolys > 0x27) {
-            float lod_scale = model->Solid->Density;
+        model = scenery_info->pModel[0];
+        eSolid *solid = model ? model->GetSolid() : 0;
+        if (solid && solid->NumPolys > 0x27) {
+            float lod_scale = solid->Density;
             if (lod_scale < 6.0f) {
                 lod_scale = 6.0f;
             }
             if ((static_cast<float>(pixel_size_int) / lod_scale) < 8.7f) {
-                model = GetSceneryModel_Scenery(scenery_info, 2);
+                model = scenery_info->pModel[2];
             }
         }
     }
@@ -675,11 +677,10 @@ void ScenerySectionHeader::DrawAScenery(int scenery_instance_number, SceneryCull
     }
 
     SceneryDrawInfo *draw_info = scenery_cull_info->pCurrentDrawInfo;
-    int *draw_info_words = reinterpret_cast<int *>(draw_info);
     if ((instance->ExcludeFlags & 0x200) != 0) {
-        draw_info_words[0] = reinterpret_cast<int>(model) + visibility_state;
-        draw_info_words[1] = 0;
-        draw_info_words[2] = reinterpret_cast<int>(instance);
+        draw_info->pModel = reinterpret_cast<eModel *>(reinterpret_cast<int>(model) + visibility_state);
+        draw_info->pMatrix = 0;
+        draw_info->SceneryInst = instance;
         scenery_cull_info->pCurrentDrawInfo = draw_info + 1;
         return;
     }
@@ -698,9 +699,9 @@ void ScenerySectionHeader::DrawAScenery(int scenery_instance_number, SceneryCull
         }
     }
 
-    draw_info_words[0] = reinterpret_cast<int>(model) + visibility_state;
-    draw_info_words[1] = reinterpret_cast<int>(matrix);
-    draw_info_words[2] = reinterpret_cast<int>(instance);
+    draw_info->pModel = reinterpret_cast<eModel *>(reinterpret_cast<int>(model) + visibility_state);
+    draw_info->pMatrix = matrix;
+    draw_info->SceneryInst = instance;
     scenery_cull_info->pCurrentDrawInfo = draw_info + 1;
 }
 
