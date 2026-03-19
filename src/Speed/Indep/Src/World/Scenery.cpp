@@ -654,22 +654,8 @@ void ScenerySectionHeader::DrawAScenery(int scenery_instance_number, SceneryCull
     CurrentBufferPos = next_buffer_pos;
 
     if (matrix) {
-        matrix->v0.x = static_cast<float>(instance->Rotation[0]) * 0.00012207031f;
-        matrix->v0.y = static_cast<float>(instance->Rotation[1]) * 0.00012207031f;
-        matrix->v0.z = static_cast<float>(instance->Rotation[2]) * 0.00012207031f;
-        matrix->v0.w = 0.0f;
-        matrix->v1.x = static_cast<float>(instance->Rotation[3]) * 0.00012207031f;
-        matrix->v1.y = static_cast<float>(instance->Rotation[4]) * 0.00012207031f;
-        matrix->v1.z = static_cast<float>(instance->Rotation[5]) * 0.00012207031f;
-        matrix->v1.w = 0.0f;
-        matrix->v2.x = static_cast<float>(instance->Rotation[6]) * 0.00012207031f;
-        matrix->v2.y = static_cast<float>(instance->Rotation[7]) * 0.00012207031f;
-        matrix->v2.z = static_cast<float>(instance->Rotation[8]) * 0.00012207031f;
-        matrix->v2.w = 0.0f;
-        matrix->v3.x = instance->Position[0];
-        matrix->v3.y = instance->Position[1];
-        matrix->v3.z = instance->Position[2];
-        matrix->v3.w = 1.0f;
+        instance->GetRotation(matrix);
+        instance->GetPosition(&matrix->v3);
 
         if ((instance->ExcludeFlags & scenery_cull_info->ExcludeFlags & 0x100) != 0) {
             matrix->v3.z += EnvMapShadowExtraHeight;
