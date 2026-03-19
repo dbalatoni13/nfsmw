@@ -391,7 +391,7 @@ int TSMemoryPool::GetLargestFreeBlock() {
     if (NeedToRecalcLargestFree) {
         int largest_free = 0;
         for (TSMemoryNode *node = NodeList.GetHead(); node != NodeList.EndOfList(); node = node->GetNext()) {
-            if (!node->Allocated && largest_free < node->Size) {
+            if (node->Allocated != 1 && node->Size > largest_free) {
                 largest_free = node->Size;
             }
         }
@@ -401,7 +401,7 @@ int TSMemoryPool::GetLargestFreeBlock() {
 
     int largest_free = 0;
     for (TSMemoryNode *node = NodeList.GetHead(); node != NodeList.EndOfList(); node = node->GetNext()) {
-        if (!node->Allocated && largest_free < node->Size) {
+        if (node->Allocated != 1 && node->Size > largest_free) {
             largest_free = node->Size;
         }
     }
@@ -451,10 +451,10 @@ void TSMemoryPool::Free(void *memory) {
 
 TSMemoryNode *TSMemoryPool::GetNextNode(bool start_from_top, TSMemoryNode *node) {
     TSMemoryNode *next_node;
-    if (!start_from_top) {
-        next_node = node ? node->GetPrev() : NodeList.GetTail();
-    } else {
+    if (start_from_top) {
         next_node = node ? node->GetNext() : NodeList.GetHead();
+    } else {
+        next_node = node ? node->GetPrev() : NodeList.GetTail();
     }
 
     if (next_node == NodeList.EndOfList()) {
@@ -464,25 +464,21 @@ TSMemoryNode *TSMemoryPool::GetNextNode(bool start_from_top, TSMemoryNode *node)
 }
 
 TSMemoryNode *TSMemoryPool::GetNextFreeNode(bool start_from_top, TSMemoryNode *node) {
-    do {
-        node = GetNextNode(start_from_top, node);
-        if (!node) {
-            return 0;
+    while ((node = GetNextNode(start_from_top, node)) != 0) {
+        if (!node->Allocated) {
+            return node;
         }
-    } while (node->Allocated);
-
-    return node;
+    }
+    return 0;
 }
 
 TSMemoryNode *TSMemoryPool::GetNextAllocatedNode(bool start_from_top, TSMemoryNode *node) {
-    do {
-        node = GetNextNode(start_from_top, node);
-        if (!node) {
-            return 0;
+    while ((node = GetNextNode(start_from_top, node)) != 0) {
+        if (node->Allocated) {
+            return node;
         }
-    } while (!node->Allocated);
-
-    return node;
+    }
+    return 0;
 }
 
 void TSMemoryPool::DebugPrint() {
@@ -1438,14 +1434,14 @@ int TrackStreamer::Unloader(bChunk *chunk) {
     unsigned int chunk_id = chunk->GetID();
     if (chunk_id == 0x34110) {
         UnloadEverything();
-        NumTrackStreamingSections = 0;
         pTrackStreamingSections = 0;
+        NumTrackStreamingSections = 0;
         return 1;
     }
 
     if (chunk_id == 0x34113) {
-        pLastDiscBundleSection = 0;
         pDiscBundleSections = 0;
+        pLastDiscBundleSection = 0;
         return 1;
     }
 
@@ -1455,8 +1451,8 @@ int TrackStreamer::Unloader(bChunk *chunk) {
     }
 
     if (chunk_id == 0x34112) {
-        NumBarriers = 0;
         pBarriers = 0;
+        NumBarriers = 0;
         return 1;
     }
 
@@ -1729,8 +1725,8 @@ void TrackStreamer::UnJettisonSections() {
         NumCurrentStreamingSections += 1;
         section->CurrentlyVisible = true;
     }
-    AmountJettisoned = 0;
     NumJettisonedSections = 0;
+    AmountJettisoned = 0;
 }
 
 int TrackStreamer::HandleMemoryAllocation() {
