@@ -1152,7 +1152,8 @@ void TrackStreamer::RemoveCurrentStreamingSections() {
     }
 
     NumCurrentStreamingSections = 0;
-    CurrentVisibleSectionTable.ClearTable();
+    bBitTableLayout_TrackStreamer *layout = reinterpret_cast<bBitTableLayout_TrackStreamer *>(&CurrentVisibleSectionTable);
+    bMemSet(layout->Bits, 0, layout->NumBits >> 3);
 }
 
 void TrackStreamer::AddCurrentStreamingSections(short *section_numbers, int num_sections, int position_number) {
