@@ -1356,9 +1356,11 @@ void GrandSceneryCullInfo::StuffScenery(eView *view, int stuff_flags) {
             if (required_ok && forbidden_ok) {
                 bMatrix4 *matrix = draw_info->pMatrix;
                 if (!matrix) {
-                    matrix = &eMathIdentityMatrix;
+                    reinterpret_cast<eViewPlatInterface *>(view)->Render(
+                        pDebugModel, &eMathIdentityMatrix, 0, render_flags, 0);
+                } else {
+                    reinterpret_cast<eViewPlatInterface *>(view)->Render(pDebugModel, matrix, 0, render_flags, 0);
                 }
-                reinterpret_cast<eViewPlatInterface *>(view)->Render(pDebugModel, matrix, 0, render_flags, 0);
                 pDebugModel = 0;
             }
         }
