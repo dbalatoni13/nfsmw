@@ -1938,30 +1938,31 @@ ISimable *GManager::GetStockCar(const char *carName) {
 ISimable *GManager::GetRandomEmergencyStockCar() {
     typedef UTL::Std::vector<StockCarMap::iterator, _type_vector> CandidateCars;
 
-    CandidateCars candidates;
-    GRaceParameters *raceParms = GRaceStatus::Exists() ? GRaceStatus::Get().GetRaceParameters() : nullptr;
-    ISimable *stockCar = nullptr;
+    GRaceParameters *parms = GRaceStatus::Get().GetRaceParameters();
+    CandidateCars validCars;
+    int numValid;
 
-    if (raceParms && raceParms->GetRaceType() != 2) {
-        return nullptr;
-    }
+    if (!parms || parms->GetRaceType() == 2) {
+        validCars.reserve(mStockCars.size());
+        for (StockCarMap::iterator it = mStockCars.begin(); it != mStockCars.end(); ++it) {
+            IArticulatedVehicle *iarticulation;
 
-    candidates.reserve(mStockCars.size());
-    for (StockCarMap::iterator it = mStockCars.begin(); it != mStockCars.end(); ++it) {
-        IArticulatedVehicle *iarticulation;
+            if (!it->second || !it->second->QueryInterface(&iarticulation)) {
+                validCars.push_back(it);
+            }
+        }
 
-        if (!it->second || !it->second->QueryInterface(&iarticulation)) {
-            candidates.push_back(it);
+        numValid = static_cast<int>(validCars.size());
+        if (numValid > 0) {
+            int index = bRandom(numValid);
+            ISimable *simable = validCars[index]->second;
+
+            mStockCars.erase(validCars[index]);
+            return simable;
         }
     }
 
-    if (!candidates.empty()) {
-        StockCarMap::iterator it = candidates[bRandom(static_cast<int>(candidates.size()))];
-        stockCar = it->second;
-        mStockCars.erase(it);
-    }
-
-    return stockCar;
+    return nullptr;
 }
 
 void GManager::ReleaseStockCar(ISimable *stockCar) {
