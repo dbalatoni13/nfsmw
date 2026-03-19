@@ -164,7 +164,7 @@ GTrigger::~GTrigger() {
 }
 
 GActivity *GTrigger::GetTargetActivity() {
-    unsigned int targetActivityKey = TargetActivity(0).GetCollectionKey();
+    unsigned int targetActivityKey = 0x277566F3;
     return reinterpret_cast<GActivity *>(GetConnectedInstance(targetActivityKey, 0));
 }
 
@@ -266,8 +266,8 @@ void GTrigger::NotifyEmitterGroupDelete(void *obj, EmitterGroup *group) {
     int i = 0;
 
     do {
-        if (particleEffect[i] == group) {
-            particleEffect[i] = nullptr;
+        if (*(particleEffect + i) == group) {
+            *(particleEffect + i) = nullptr;
         }
         i++;
     } while (i <= 1);
