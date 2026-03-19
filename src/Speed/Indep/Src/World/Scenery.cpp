@@ -523,21 +523,14 @@ void LoadPrecullerBooBooScript(const char *filename, bool reset) {
     }
 
     SpeedScript script(filename, 1);
-    while (true) {
-        char *region = script.GetNextCommand("BOOBOO:");
-        if (!region) {
-            return;
-        }
-        region = script.GetNextArgumentString();
-        if (bStrICmp(region, LoadedTrackInfo->GetLoadedTrackInfo()) == 0) {
-            char *section = script.GetNextArgumentString();
+    while (script.GetNextCommand("BOOBOO:")) {
+        if (bStrICmp(script.GetNextArgumentString(), LoadedTrackInfo->GetLoadedTrackInfo()) == 0) {
+            script.GetNextArgumentString();
             char *option = script.GetNextArgumentString();
             bool set_booboo = bStrICmp(option, "SET") == 0;
             bool clr_booboo = bStrICmp(option, "CLR") == 0;
-
             script.GetNextArgumentString();
             bVector3 pos = script.GetNextArgumentVector3();
-            (void)section;
             if (set_booboo) {
                 gPrecullerBooBooManager.Set(pos);
             } else if (clr_booboo) {
