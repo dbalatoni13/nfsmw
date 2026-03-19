@@ -232,20 +232,15 @@ float TrackPathZone::GetSegmentNextTo(bVector2 *point, bVector2 *segment_point_a
 
     for (int i = 0; i < NumPoints; i++) {
         int next_point = (i + 1) % NumPoints;
-        bVector2 edge;
-        edge.x = Points[next_point].y - Points[i].y;
-        edge.y = Points[i].x - Points[next_point].x;
+        bVector2 edge(Points[next_point].y - Points[i].y, Points[i].x - Points[next_point].x);
         bNormalize(&edge, &edge);
 
         float distance = edge.x * (Points[i].x - point->x) + edge.y * (Points[i].y - point->y);
-        bVector2 near_point;
-        near_point.x = point->x + edge.x * (distance * 0.999f);
-        near_point.y = point->y + edge.y * (distance * 0.999f);
-        bVector2 far_point;
-        far_point.x = point->x + edge.x * (distance * 1.001f);
-        far_point.y = point->y + edge.y * (distance * 1.001f);
+        bVector2 near_point(point->x + edge.x * (distance * 0.999f), point->y + edge.y * (distance * 0.999f));
+        bVector2 far_point(point->x + edge.x * (distance * 1.001f), point->y + edge.y * (distance * 1.001f));
 
-        if ((distance < 0.0f ? -distance : distance) < closest_distance && (IsPointInside(&near_point) || IsPointInside(&far_point))) {
+        if ((distance < 0.0f ? -distance : distance) < closest_distance &&
+            (IsPointInside(&near_point) || IsPointInside(&far_point))) {
             closest_segment_a = i;
             closest_segment_b = next_point;
             closest_distance = distance < 0.0f ? -distance : distance;
