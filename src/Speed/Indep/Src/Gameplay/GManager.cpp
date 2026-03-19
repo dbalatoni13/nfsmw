@@ -2115,11 +2115,10 @@ bool GManager::SaveGameplayData(unsigned char *dest, unsigned int maxSize) {
     SavedGameplayDataHeader *header;
     unsigned char *cursor;
     ObjectStateMap::iterator it;
-    GObjectIterator<GActivity> activityIterator(0xFFFFFFFF);
-    MD5 md5;
 
     bMemSet(dest, 0, maxSize);
 
+    GObjectIterator<GActivity> activityIterator(0xFFFFFFFF);
     while (activityIterator.IsValid()) {
         activityIterator.GetInstance()->SerializeVars(false);
         activityIterator.Advance();
@@ -2176,6 +2175,7 @@ bool GManager::SaveGameplayData(unsigned char *dest, unsigned int maxSize) {
 
     bMemCpy(cursor, &mFreeRoamStartMarker, sizeof(mFreeRoamStartMarker));
     bMemCpy(cursor + 0x10, &mFreeRoamFromSafeHouseStartMarker, sizeof(mFreeRoamFromSafeHouseStartMarker));
+    MD5 md5;
     md5.Reset();
     md5.Update(dest + 0x10, maxSize - 0x10);
     md5.GetRaw();
