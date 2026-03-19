@@ -524,9 +524,9 @@ void TrackStreamer::UnloadSection(TrackStreamingSection *section) {
 
         section->UnactivatedFrameCount = 0;
         bFree(section->pMemory);
+        section->Status = TrackStreamingSection::UNLOADED;
         section->LoadedTime = 0;
         section->pMemory = 0;
-        section->Status = TrackStreamingSection::UNLOADED;
         NumSectionsLoaded -= 1;
     }
 }
@@ -1569,11 +1569,11 @@ void TrackStreamer::ActivateSection(TrackStreamingSection *section) {
     int sizeof_chunks = section->LoadedSize;
     LoadTempPermChunks(&chunks, &sizeof_chunks, 0x2087, section->SectionName);
 
-    AllowDuplicateSolids -= 1;
     section->LoadedTime = 0;
     section->pMemory = chunks;
     section->LoadedSize = sizeof_chunks;
     section->Status = TrackStreamingSection::ACTIVATED;
+    AllowDuplicateSolids -= 1;
     SetDuplicateTextureWarning(true);
 }
 
@@ -1611,7 +1611,8 @@ void TrackStreamer::DiscBundleLoadedCallback(int param, int error_status) {
 void TrackStreamer::DiscBundleLoadedCallback(DiscBundleSection *disc_bundle) {
     NumSectionsLoading += -1 + disc_bundle->NumMembers;
     for (int i = 0; i < disc_bundle->NumMembers; i++) {
-        TrackStreamingSection *section = disc_bundle->Members[i].pSection;
+        DiscBundleSectionMember *member = &disc_bundle->Members[i];
+        TrackStreamingSection *section = member->pSection;
         section->pDiscBundle = 0;
         SectionLoadedCallback(section);
     }
