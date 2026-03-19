@@ -801,15 +801,14 @@ int LoaderScenery(bChunk *chunk) {
                 section_header_words[7] = static_cast<unsigned int>(subchunk->Size) / 0x48;
                 if (section_header_words[2] == 0) {
                     for (int i = 0; i < section_header_words[7]; i++) {
-                        int scenery_info_offset = i * 0x48;
-                        bEndianSwap32(reinterpret_cast<unsigned char *>(section_header_words[6] + scenery_info_offset + 0x40));
+                        bEndianSwap32(reinterpret_cast<unsigned char *>(section_header_words[6] + i * 0x48 + 0x40));
                         for (int n = 0; n < 4; n++) {
                             bEndianSwap32(
-                                reinterpret_cast<unsigned char *>(section_header_words[6] + scenery_info_offset + 0x18 + n * 4)
+                                reinterpret_cast<unsigned char *>(section_header_words[6] + i * 0x48 + 0x18 + n * 4)
                             );
                         }
-                        bEndianSwap32(reinterpret_cast<unsigned char *>(section_header_words[6] + scenery_info_offset + 0x38));
-                        bEndianSwap32(reinterpret_cast<unsigned char *>(section_header_words[6] + scenery_info_offset + 0x3C));
+                        bEndianSwap32(reinterpret_cast<unsigned char *>(section_header_words[6] + i * 0x48 + 0x38));
+                        bEndianSwap32(reinterpret_cast<unsigned char *>(section_header_words[6] + i * 0x48 + 0x3C));
                     }
                 }
 
@@ -862,17 +861,16 @@ int LoaderScenery(bChunk *chunk) {
                 section_header_words[11] = static_cast<unsigned int>(subchunk->Size) / 0x24;
                 if (section_header_words[2] == 0) {
                     for (int i = 0; i < section_header_words[11]; i++) {
-                        int preculler_offset = i * 0x24;
-                        bEndianSwap16(reinterpret_cast<unsigned char *>(section_header_words[10] + preculler_offset + 0x18));
-                        bEndianSwap32(reinterpret_cast<unsigned char *>(section_header_words[10] + preculler_offset + 0x00));
-                        bEndianSwap32(reinterpret_cast<unsigned char *>(section_header_words[10] + preculler_offset + 0x04));
-                        bEndianSwap32(reinterpret_cast<unsigned char *>(section_header_words[10] + preculler_offset + 0x08));
-                        bEndianSwap32(reinterpret_cast<unsigned char *>(section_header_words[10] + preculler_offset + 0x0C));
-                        bEndianSwap32(reinterpret_cast<unsigned char *>(section_header_words[10] + preculler_offset + 0x10));
-                        bEndianSwap32(reinterpret_cast<unsigned char *>(section_header_words[10] + preculler_offset + 0x14));
+                        bEndianSwap16(reinterpret_cast<unsigned char *>(section_header_words[10] + i * 0x24 + 0x18));
+                        bEndianSwap32(reinterpret_cast<unsigned char *>(section_header_words[10] + i * 0x24 + 0x00));
+                        bEndianSwap32(reinterpret_cast<unsigned char *>(section_header_words[10] + i * 0x24 + 0x04));
+                        bEndianSwap32(reinterpret_cast<unsigned char *>(section_header_words[10] + i * 0x24 + 0x08));
+                        bEndianSwap32(reinterpret_cast<unsigned char *>(section_header_words[10] + i * 0x24 + 0x0C));
+                        bEndianSwap32(reinterpret_cast<unsigned char *>(section_header_words[10] + i * 0x24 + 0x10));
+                        bEndianSwap32(reinterpret_cast<unsigned char *>(section_header_words[10] + i * 0x24 + 0x14));
                         for (int n = 0; n < 5; n++) {
                             bEndianSwap16(
-                                reinterpret_cast<unsigned char *>(section_header_words[10] + preculler_offset + 0x1A + n * 2)
+                                reinterpret_cast<unsigned char *>(section_header_words[10] + i * 0x24 + 0x1A + n * 2)
                             );
                         }
                     }
