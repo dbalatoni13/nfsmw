@@ -1071,42 +1071,45 @@ int TrackStreamer::DoHoleFilling(int largest_free) {
 
     int num_movements = BuildHoleMovements(hole_movements, 0x80, best_method, largest_free, 0, 0x7FFFFFFF);
     for (int i = 0; i < num_movements; i++) {
+        ProfileNode profile_node("TODO", 0);
         HoleMovement *movement = &hole_movements[i];
         TrackStreamingSection *section = FindSectionByAddress(movement->Address);
         if (LastWaitUntilRenderingDoneFrameCount != eGetFrameCounter()) {
-            unsigned int wait_start = bGetTicker();
+            unsigned int start_ticks = bGetTicker();
             DisableWaitForFrameBufferSwap();
             eWaitUntilRenderingDone();
             LastWaitUntilRenderingDoneFrameCount = eGetFrameCounter();
             EnableWaitForFrameBufferSwap();
-            bGetTickerDifference(wait_start);
+            float time = bGetTickerDifference(start_ticks);
+            (void)time;
         }
 
-        unsigned int move_start = bGetTicker();
-        int new_address = movement->NewAddress;
+        unsigned int start_ticks = bGetTicker();
+        void *new_memory = reinterpret_cast<void *>(movement->NewAddress);
         pMemoryPool->Free(reinterpret_cast<void *>(movement->Address));
         const char *move_debug_name = "HoleMovement";
         if (section) {
             move_debug_name = section->SectionName;
         }
-        pMemoryPool->Malloc(movement->Size, move_debug_name, false, false, new_address);
+        pMemoryPool->Malloc(movement->Size, move_debug_name, false, false, reinterpret_cast<int>(new_memory));
         if (section && section->Status == TrackStreamingSection::ACTIVATED) {
             eAllowDuplicateSolids(true);
             SetDuplicateTextureWarning(false);
-            MoveChunks(reinterpret_cast<bChunk *>(new_address), reinterpret_cast<bChunk *>(section->pMemory), section->LoadedSize,
+            MoveChunks(reinterpret_cast<bChunk *>(new_memory), reinterpret_cast<bChunk *>(section->pMemory), section->LoadedSize,
                        section->SectionName);
-            DCStoreRangeNoSync(reinterpret_cast<void *>(new_address), section->LoadedSize);
+            DCStoreRangeNoSync(new_memory, section->LoadedSize);
             eAllowDuplicateSolids(false);
             SetDuplicateTextureWarning(true);
         } else if (section) {
             eWaitUntilRenderingDone();
-            bOverlappedMemCpy(reinterpret_cast<void *>(new_address), section->pMemory, section->LoadedSize);
+            bOverlappedMemCpy(new_memory, section->pMemory, section->LoadedSize);
         }
 
         if (section) {
-            section->pMemory = reinterpret_cast<void *>(new_address);
+            section->pMemory = new_memory;
         }
-        bGetTickerDifference(move_start);
+        float move_time = bGetTickerDifference(start_ticks);
+        (void)move_time;
         NumSectionsMoved += 1;
         PPCSync();
     }
