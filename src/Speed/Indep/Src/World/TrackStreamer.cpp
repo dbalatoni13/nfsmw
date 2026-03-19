@@ -1831,9 +1831,9 @@ void TrackStreamer::FinishedLoading() {
     float load_time;
     (void)load_time;
 
-    CurrentZoneFarLoad = false;
-    LoadingPhase = LOADING_IDLE;
     CurrentZoneNonReplayLoad = false;
+    LoadingPhase = LOADING_IDLE;
+    CurrentZoneFarLoad = false;
     NotifySkyLoader();
 
     for (int position_number = 0; position_number < 2; position_number++) {
@@ -1846,8 +1846,8 @@ void TrackStreamer::FinishedLoading() {
 
     if (pCallback) {
         SetDelayedResourceCallback(pCallback, CallbackParam);
-        CallbackParam = 0;
         pCallback = 0;
+        CallbackParam = 0;
     }
 }
 
