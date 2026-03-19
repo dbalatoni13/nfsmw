@@ -131,11 +131,12 @@ void bBitTable::ClearTable() {
 }
 
 struct bMemoryTraceAllocatePacket {
-    uintptr_t PoolID;
-    uintptr_t MemoryAddress;
+    int PoolID;
+    int MemoryAddress;
     int Size;
+    int DebugLine;
     int AllocationNumber;
-    char Name[48];
+    char DebugText[48];
 };
 
 TSMemoryPool::TSMemoryPool(int address, int size, const char *debug_name, int pool_num) {
@@ -276,15 +277,18 @@ void *TSMemoryPool::Malloc(int size, const char *debug_name, bool best_fit, bool
 
     if (TracingEnabled && bMemoryTracing) {
         bMemoryTraceAllocatePacket packet;
-        bMemSet(&packet, 0, sizeof(packet));
-        packet.PoolID = reinterpret_cast<uintptr_t>(this);
-        packet.MemoryAddress = static_cast<uintptr_t>(address);
+        int extra_len;
+
+        memset(&packet, 0, sizeof(packet));
+        packet.PoolID = reinterpret_cast<int>(this);
+        packet.MemoryAddress = address;
         packet.Size = size;
         packet.AllocationNumber = AllocationNumber;
         if (debug_name) {
-            bStrNCpy(packet.Name, debug_name, sizeof(packet.Name) - 1);
+            bStrNCpy(packet.DebugText, debug_name, sizeof(packet.DebugText) - 1);
         }
-        bFunkCallASync("CODEINE", 0x1c, &packet, bStrLen(packet.Name) + 0x15);
+        extra_len = bStrLen(packet.DebugText) + 0x15;
+        bFunkCallASync("CODEINE", 0x1c, &packet, extra_len);
     }
 
     Updated = true;
