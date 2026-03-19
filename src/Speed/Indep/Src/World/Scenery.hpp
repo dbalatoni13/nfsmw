@@ -51,7 +51,7 @@ struct SceneryInstance : public SceneryBoundingBox {
     }
 
     void GetPosition(bVector4 *position) {
-        *position = bVector4(Position[0], Position[1], Position[2], 1.0f);
+        bFill(position, Position[0], Position[1], Position[2], 1.0f);
     }
 
     void SetMatrix(const bMatrix4 *matrix) {

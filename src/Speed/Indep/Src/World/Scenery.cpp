@@ -320,23 +320,23 @@ void SceneryOverrideInfo::AssignOverrides() {
 }
 
 void SceneryOverrideInfo::AssignOverrides(ScenerySectionHeader *section_header) {
-    SceneryInstance *instance = section_header->GetSceneryInstance(InstanceNumber);
+    SceneryInstance *scenery_instance = section_header->GetSceneryInstance(InstanceNumber);
 
-    if ((instance->ExcludeFlags & 0x800000) != 0 &&
-        ((instance->ExcludeFlags ^ ExcludeFlags) & 0x400) != 0) {
+    if ((scenery_instance->ExcludeFlags & 0x800000) != 0 &&
+        ((scenery_instance->ExcludeFlags ^ ExcludeFlags) & 0x400) != 0) {
         bMatrix4 matrix;
         bMatrix4 flip_matrix;
 
-        instance->GetRotation(&matrix);
+        scenery_instance->GetRotation(&matrix);
 
         bIdentity(&flip_matrix);
         flip_matrix.v0.x = -1.0f;
         bMulMatrix(&matrix, &matrix, &flip_matrix);
-        instance->GetPosition(&matrix.v3);
-        instance->SetMatrix(&matrix);
+        scenery_instance->GetPosition(&matrix.v3);
+        scenery_instance->SetMatrix(&matrix);
     }
 
-    instance->ExcludeFlags = (instance->ExcludeFlags & 0xFFFF0000) + ExcludeFlags;
+    scenery_instance->ExcludeFlags = ExcludeFlags + (scenery_instance->ExcludeFlags & 0xFFFF0000);
 }
 
 int LoaderSceneryGroup(bChunk *chunk) {
