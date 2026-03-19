@@ -792,7 +792,7 @@ int TrackStreamer::BuildHoleMovements(HoleMovement *hole_movements, int max_move
                             int position = 0;
 
                             TSMemoryNode *evaluated_top_free = pMemoryPool->GetFirstFreeNode(true);
-                            while (0 < found_nodes - nodes_to_move && evaluated_top_free) {
+                            while (found_nodes > nodes_to_move && evaluated_top_free) {
                                 bool skip_flag = false;
                                 int target_index = found_nodes - nodes_to_move - 1;
                                 for (int i = 0; i < found_nodes; i++) {
@@ -803,7 +803,7 @@ int TrackStreamer::BuildHoleMovements(HoleMovement *hole_movements, int max_move
                                 if (evaluated_top_free == top_free_top || evaluated_top_free == bottom_free_top) {
                                     skip_flag = true;
                                 }
-                                if (!skip_flag && size_checking[target_index] <= evaluated_top_free->Size) {
+                                if (!skip_flag && evaluated_top_free->Size >= size_checking[target_index]) {
                                     size_checking[target_index] = position;
                                     nodes_to_move += 1;
                                     if (!largest_flag) {
@@ -816,12 +816,12 @@ int TrackStreamer::BuildHoleMovements(HoleMovement *hole_movements, int max_move
                                 position += 1;
                             }
 
-                            if (found_nodes <= nodes_to_move) {
+                            if (nodes_to_move >= found_nodes) {
                                 current_best = free_gap;
                                 best_address = evaluated_best_address;
                                 found_one = true;
                                 largest_allocated = largest_allocated_here;
-                                if (total_needing_allocation <= total_free_memory + middle_allocated_memory) {
+                                if (total_free_memory + middle_allocated_memory >= total_needing_allocation) {
                                     found_big_enough = true;
                                     current_best_middle_memory = middle_allocated_memory;
                                 }
