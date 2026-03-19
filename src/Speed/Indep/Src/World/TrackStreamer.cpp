@@ -1087,7 +1087,7 @@ int TrackStreamer::DoHoleFilling(int largest_free) {
         unsigned int start_ticks = bGetTicker();
         void *new_memory = reinterpret_cast<void *>(movement->NewAddress);
         pMemoryPool->Free(reinterpret_cast<void *>(movement->Address));
-        pMemoryPool->Malloc(movement->Size, section ? section->SectionName : 0, false, false, reinterpret_cast<int>(new_memory));
+        pMemoryPool->Malloc(movement->Size, section ? section->SectionName : 0, false, false, movement->NewAddress);
         if (section) {
             if (section->Status == TrackStreamingSection::ACTIVATED) {
                 eAllowDuplicateSolids(true);
