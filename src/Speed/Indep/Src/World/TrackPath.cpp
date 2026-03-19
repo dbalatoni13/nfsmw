@@ -40,11 +40,11 @@ int TrackPathManager::Loader(bChunk *chunk) {
     if (chunk->GetID() == 0x80034147) {
         bChunk *last_chunk = chunk->GetLastChunk();
 
-        for (bChunk *child = chunk->GetFirstChunk(); child < last_chunk; child = child->GetNext()) {
-            if (child->GetID() == 0x3414A) {
-                TrackPathZone *zone = reinterpret_cast<TrackPathZone *>(child->GetData());
-                pZones = zone;
-                SizeofZones = child->GetSize();
+        for (chunk = chunk->GetFirstChunk(); chunk != last_chunk; chunk = chunk->GetNext()) {
+            if (chunk->GetID() == 0x3414A) {
+                pZones = reinterpret_cast<TrackPathZone *>(chunk->GetData());
+                TrackPathZone *zone = pZones;
+                SizeofZones = chunk->GetSize();
                 NumZones = 0;
 
                 for (; zone < GetLastZone(); zone = zone->GetMemoryImageNext()) {
@@ -61,7 +61,7 @@ int TrackPathManager::Loader(bChunk *chunk) {
                         bPlatEndianSwap(&zone->Points[n]);
                     }
                     for (int n = 0; n < 4; n++) {
-                        bEndianSwap32(&zone->Data[n]);
+                        bEndianSwap32(reinterpret_cast<void *>(n * sizeof(int) + reinterpret_cast<int>(zone) + 0x30));
                     }
                     NumZones += 1;
                 }
@@ -73,8 +73,10 @@ int TrackPathManager::Loader(bChunk *chunk) {
 
     if (chunk->GetID() == 0x3414D) {
         pBarriers = reinterpret_cast<TrackPathBarrier *>(chunk->GetData());
-        NumBarriers = chunk->GetSize() / 0x18;
-        for (int i = 0; i < NumBarriers; i++) {
+        int i;
+        unsigned int size = chunk->GetSize();
+        NumBarriers = size / 0x18;
+        for (i = 0; i < NumBarriers; i++) {
             pBarriers[i].EndianSwap();
         }
         return true;
