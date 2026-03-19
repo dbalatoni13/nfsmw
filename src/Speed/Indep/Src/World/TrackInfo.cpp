@@ -9,6 +9,7 @@ void bPlatEndianSwap(bVector2 *value);
 static TrackInfo *TrackInfoTable = 0;
 static unsigned int NumTrackInfo = 0;
 TrackInfo *LoadedTrackInfo = 0;
+bChunkLoader bChunkLoaderTrackInfo(0x34201, TrackInfo::LoaderTrackInfo, TrackInfo::UnloaderTrackInfo);
 
 int TrackInfo::LoaderTrackInfo(bChunk *chunk) {
     if (chunk->GetID() != 0x34201) {

@@ -45,6 +45,8 @@ void SetDelayedResourceCallback(void (*callback)(int), int param);
 void NotifySkyLoader();
 void BlockWhileQueuedFileBusy();
 int GetBoundarySectionNumber(int section_number, const char *platform_name);
+int LoaderTrackStreamer(bChunk *chunk);
+int UnloaderTrackStreamer(bChunk *chunk);
 extern int QueuedFileDefaultPriority;
 
 static inline char *bGetPlatformName() {
@@ -67,6 +69,10 @@ static const float kPredictedZoneEqualEpsilon_TrackStreamer = 0.001f;
 static unsigned int last_jettison_print_26154 = 0;
 static VisibleSectionBitTable CurrentVisibleSectionTableMem;
 TrackStreamer TheTrackStreamer;
+bChunkLoader bChunkLoaderTrackStreamingSection(0x34110, LoaderTrackStreamer, UnloaderTrackStreamer);
+bChunkLoader bChunkLoaderTrackStreamingDiscBundle(0x34113, LoaderTrackStreamer, UnloaderTrackStreamer);
+bChunkLoader bChunkLoaderTrackStreamingInfo(0x34111, LoaderTrackStreamer, UnloaderTrackStreamer);
+bChunkLoader bChunkLoaderTrackStreamingBarriers(0x34112, LoaderTrackStreamer, UnloaderTrackStreamer);
 
 static inline char GetScenerySectionLetter_TrackStreamer(int section_number) {
     return static_cast<char>(section_number / 100 + 'A' - 1);

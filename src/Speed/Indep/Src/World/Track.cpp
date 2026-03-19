@@ -6,6 +6,7 @@ void bEndianSwap32(void *value);
 
 static char *TrackOBBTable = 0;
 static int NumTrackOBBs = 0;
+bChunkLoader bChunkLoaderTrackOBB(0x34191, LoaderTrackOBB, UnloaderTrackOBB);
 
 void EstablishRemoteCaffeineConnection() {}
 

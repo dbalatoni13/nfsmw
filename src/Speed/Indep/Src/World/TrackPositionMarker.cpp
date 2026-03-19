@@ -4,6 +4,7 @@
 #include "Speed/Indep/bWare/Inc/bChunk.hpp"
 
 bTList<TrackPositionMarker> TrackPositionMarkerList;
+bChunkLoader bChunkLoaderTrackPositionMarkers(0x34146, LoaderTrackPositionMarkers, UnloaderTrackPositionMarkers);
 
 static void NotifyTrackMarkersChanged() {}
 
