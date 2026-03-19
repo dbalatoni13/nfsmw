@@ -1,6 +1,7 @@
 #include "WeatherMan.hpp"
 
 #include "Speed/Indep/Src/Camera/Camera.hpp"
+#include "Speed/Indep/Src/Camera/CameraMover.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
 bTList<GenericRegion> RegionLists[NUM_REGION_TYPES];
@@ -224,36 +225,48 @@ int DepthRegion(GenericRegion *before, GenericRegion *after) {
 }
 
 GenericRegion *GetClosestRegionInView(eView *view, bVector3 *endVector, float *angleCos) {
-    Camera *camera = view->GetCamera();
-    cPos = *camera->GetPosition();
-    bVector3 camera_direction = *camera->GetDirection();
-    RegionLists[REGION_BLOOM].Sort(DepthRegion);
+    cPos = *view->GetCamera()->GetPosition();
+    bVector3 cDir(*view->GetCamera()->GetDirection());
+    bTList<GenericRegion> *region_list = &RegionLists[REGION_BLOOM];
+    region_list->Sort(DepthRegion);
 
-    GenericRegion *closest_region = 0;
-    float closest_distance = 99999.0f;
-    for (GenericRegion *region = RegionLists[REGION_BLOOM].GetHead(); region != RegionLists[REGION_BLOOM].EndOfList();
-         region = region->GetNext()) {
-        bVector3 position(region->PositionX, region->PositionY, region->PositionZ);
-        bVector3 to_region = position - cPos;
-        bVector3 direction;
-        bNormalize(&direction, &to_region);
+    CameraMover *cameraMover = view->GetCameraMover();
+    if (!cameraMover) {
+        return 0;
+    }
 
-        float dot = direction.x * camera_direction.x + direction.y * camera_direction.y + direction.z * camera_direction.z;
-        if (0.0f < dot) {
-            float distance =
-                bSqrt(to_region.x * to_region.x + to_region.y * to_region.y + to_region.z * to_region.z);
-            if (distance < closest_distance) {
-                *angleCos = dot;
-                closest_region = region;
-                closest_distance = distance;
+    CameraAnchor *cameraAnchor = cameraMover->GetAnchor();
+    if (!cameraAnchor) {
+        return 0;
+    }
+
+    bVector3 MyCarPos(*cameraAnchor->GetGeometryPosition());
+    GenericRegion *ClosestRegion = 0;
+    float maxDist = 99999.0f;
+
+    for (GenericRegion *region = region_list->GetHead(); region != region_list->EndOfList(); region = region->GetNext()) {
+        float angleCOS;
+        bVector3 Position(region->PositionX, region->PositionY, region->PositionZ);
+        bVector3 Delta = Position - cPos;
+        bVector3 Delta2(Delta);
+        bNormalize(&Delta, &Delta2);
+
+        angleCOS = bDot(Delta, cDir);
+        if (0.0f < angleCOS) {
+            float dist = bLength(Delta2);
+            if (dist < maxDist) {
+                *angleCos = angleCOS;
+                ClosestRegion = region;
+                maxDist = dist;
             }
         }
     }
 
-    if (closest_region) {
-        endVector->x = closest_region->PositionX;
-        endVector->y = closest_region->PositionY;
-        endVector->z = closest_region->PositionZ;
+    if (ClosestRegion) {
+        endVector->x = ClosestRegion->PositionX;
+        endVector->y = ClosestRegion->PositionY;
+        endVector->z = ClosestRegion->PositionZ;
+        return ClosestRegion;
     }
-    return closest_region;
+    return 0;
 }
