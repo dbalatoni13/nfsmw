@@ -102,10 +102,6 @@ void GMilestone::NotifyPursuitOver(bool escaped) {
     if (mState == kState_DonePendingEscape) {
         if (escaped) {
             float currentValue = GetCurrentValue();
-            Attrib::Gen::milestonetypes milestoneType(mTypeKey, 0, nullptr);
-            Attrib::Gen::gameplay gameplayObj(mChallengeKey, 0, nullptr);
-            const int *bounty;
-            GRaceBin *bin;
 
             if ((mFlags & kFlag_CompletionFaked) != 0) {
                 currentValue = mRequiredValue;
@@ -114,20 +110,32 @@ void GMilestone::NotifyPursuitOver(bool escaped) {
             mRecordedValue = currentValue;
             mState = kState_Awarded;
 
-            MNotifyMilestoneReached message(milestoneType.CollectionName(), currentValue);
-            message.Post(UCrc32(0x20D60DBF));
+            {
+                Attrib::Gen::milestonetypes milestoneType(mTypeKey, 0, nullptr);
+                MNotifyMilestoneReached message(milestoneType.CollectionName(), currentValue);
 
-            bin = GRaceDatabase::Get().GetBinNumber(mBinNumber);
-            if (bin) {
-                bin->RefreshProgress();
+                message.Post(UCrc32(0x20D60DBF));
             }
 
-            bounty = reinterpret_cast<const int *>(gameplayObj.GetAttributePointer(0x8E1904C7, 0));
-            if (!bounty) {
-                bounty = reinterpret_cast<const int *>(Attrib::DefaultDataArea(sizeof(int)));
+            {
+                GRaceBin *bin = GRaceDatabase::Get().GetBinNumber(mBinNumber);
+
+                if (bin) {
+                    bin->RefreshProgress();
+                }
             }
 
-            Game_AwardPlayerBounty(*bounty);
+            {
+                Attrib::Gen::gameplay gameplayObj(mChallengeKey, 0, nullptr);
+                const int *bounty = reinterpret_cast<const int *>(gameplayObj.GetAttributePointer(0x8E1904C7, 0));
+
+                if (!bounty) {
+                    bounty = reinterpret_cast<const int *>(Attrib::DefaultDataArea(sizeof(int)));
+                }
+
+                Game_AwardPlayerBounty(*bounty);
+            }
+
             Game_ChallengeCompleted();
         } else {
             mState = kState_Available;
