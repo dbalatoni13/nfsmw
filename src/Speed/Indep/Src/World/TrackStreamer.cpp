@@ -208,28 +208,28 @@ void *TSMemoryPool::Malloc(int size, const char *debug_name, bool best_fit, bool
 
     if (address != 0) {
         for (TSMemoryNode *node = NodeList.GetHead(); node != NodeList.EndOfList(); node = node->GetNext()) {
-            if (!node->Allocated && node->Size >= size && address >= node->Address && address + size <= node->Address + node->Size) {
+            if (node->IsFree() && node->Size >= size && node->Contains(address)) {
                 found_node = node;
                 break;
             }
         }
     } else if (best_fit) {
         for (TSMemoryNode *node = NodeList.GetHead(); node != NodeList.EndOfList(); node = node->GetNext()) {
-            if (!node->Allocated && node->Size >= size &&
+            if (node->IsFree() && node->Size >= size &&
                 (!found_node || node->Size - size < found_node->Size - size)) {
                 found_node = node;
             }
         }
     } else if (allocate_from_top) {
         for (TSMemoryNode *node = NodeList.GetHead(); node != NodeList.EndOfList(); node = node->GetNext()) {
-            if (!node->Allocated && node->Size >= size) {
+            if (node->IsFree() && node->Size >= size) {
                 found_node = node;
                 break;
             }
         }
     } else {
         for (TSMemoryNode *node = NodeList.GetTail(); node != NodeList.EndOfList(); node = node->GetPrev()) {
-            if (!node->Allocated && node->Size >= size) {
+            if (node->IsFree() && node->Size >= size) {
                 found_node = node;
                 break;
             }

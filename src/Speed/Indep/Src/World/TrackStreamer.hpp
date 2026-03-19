@@ -103,6 +103,10 @@ class TSMemoryNode : public bTNode<TSMemoryNode> {
         return !Allocated;
     }
 
+    bool Contains(int address) {
+        return address >= Address && address < Address + Size;
+    }
+
     int GetAddress(bool start_from_top, int size) {
         if (start_from_top) {
             return Address;
