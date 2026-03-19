@@ -326,7 +326,7 @@ IVehicle *GRacerInfo::CreateVehicle(unsigned int default_key) {
     const char *presetRide;
     FECustomizationRecord customizations;
     unsigned int vehicle_key;
-    Physics::Info::Performance ai_performance(1.0f, 0.0f, 0.0f);
+    Physics::Info::Performance ai_performance(1.0f, 1.0f, 1.0f);
     IVehicleCache *cache;
     UMath::Vector3 direction = {0.0f, 0.0f, 1.0f};
     ISimable *result;
