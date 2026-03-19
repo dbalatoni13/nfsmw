@@ -71,15 +71,19 @@ enum TunnelBloomDataIndex {
 };
 
 ScreenEffectDB::ScreenEffectDB() {
-    ScreenEffectInf *screen_effect_inf = SE_inf;
-    ScreenEffectDef *screen_effect_data = SE_data;
-    unsigned int *num_type = numType;
-
     SE_time = 0.0f;
     for (int i = 0; i < SE_NUM_TYPES; i++) {
-        screen_effect_inf[i].active = 0;
-        bMemSet(&screen_effect_data[i], 0, sizeof(ScreenEffectDef));
-        num_type[i] = 0;
+        SE_inf[i].active = 0;
+        SE_data[i].r = 0.0f;
+        SE_data[i].g = 0.0f;
+        SE_data[i].b = 0.0f;
+        SE_data[i].a = 0.0f;
+        SE_data[i].intensity = 0.0f;
+        for (int j = 0; j < 14; j++) {
+            SE_data[i].data[j] = 0.0f;
+        }
+        SE_data[i].UpdateFnc = 0;
+        numType[i] = 0;
     }
     InitScreenEFX();
 }
