@@ -1872,16 +1872,12 @@ void TrackStreamer::HandleLoading() {
                 for (int n = 0; n < NumTrackStreamingSections; n++) {
                     TrackStreamingSection *section = &pTrackStreamingSections[n];
                     if (section->Status == TrackStreamingSection::ACTIVATED && !section->CurrentlyVisible) {
-                        if (LoadingPhase == ALLOCATING_GEOMETRY_SECTIONS) {
-                            if (IsTextureSection(section->SectionNumber)) {
-                                num_sections_unactivated += 1;
-                                UnactivateSection(section);
-                            }
-                        } else if (LoadingPhase == ALLOCATING_REGULAR_SECTIONS) {
-                            if (IsLibrarySection(section->SectionNumber)) {
-                                num_sections_unactivated += 1;
-                                UnactivateSection(section);
-                            }
+                        if (LoadingPhase == ALLOCATING_GEOMETRY_SECTIONS && IsTextureSection(section->SectionNumber)) {
+                            num_sections_unactivated += 1;
+                            UnactivateSection(section);
+                        } else if (LoadingPhase == ALLOCATING_REGULAR_SECTIONS && IsLibrarySection(section->SectionNumber)) {
+                            num_sections_unactivated += 1;
+                            UnactivateSection(section);
                         }
                     }
                 }
