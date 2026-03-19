@@ -286,6 +286,25 @@ inline bVector2 bVector2::operator-(const bVector2 &v) const {
     return bVector2(_x, _y);
 }
 
+inline bVector2 *bScale(bVector2 *dest, const bVector2 *v, float scale) {
+    float x = v->x;
+    float y = v->y;
+
+    dest->x = x * scale;
+    dest->y = y * scale;
+    return dest;
+}
+
+inline bVector2 bScale(const bVector2 &v, float scale) {
+    bVector2 dest;
+    bScale(&dest, &v, scale);
+    return dest;
+}
+
+inline bVector2 bVector2::operator*(float f) const {
+    return bScale(*this, f);
+}
+
 inline float bLength(const bVector2 *v) {
     float x = v->x;
     float y = v->y;
