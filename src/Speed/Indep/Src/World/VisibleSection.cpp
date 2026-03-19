@@ -4,11 +4,6 @@
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 
-VisibleSectionManager TheVisibleSectionManager; // size: 0x6830
-int ScenerySectionLODOffset = 0;
-DrivableScenerySection *pSectionD9 = 0;
-DrivableScenerySection *pSectionC14 = 0;
-
 int LoaderVisibleSections(bChunk *chunk) {
     return TheVisibleSectionManager.Loader(chunk);
 }
@@ -31,9 +26,20 @@ struct SectionRemapper {
     short SectionNumber2P;
 };
 
-extern VisibleGroupInfo VisibleGroupInfoTable[5];
-extern SectionRemapper SectionRemapperTable[134];
-extern SectionRemapper SectionRemapperTable_Gamecube[129];
+VisibleGroupInfo VisibleGroupInfoTable[5] = {
+    {"BARRIER_", 1},
+    {"BARRIERS_", 1},
+    {"PLAYER_BARRIERS_", 1},
+    {"SCENERY_GROUP_", 1},
+    {"FREE_ROAM", 0},
+};
+SectionRemapper SectionRemapperTable[134];
+SectionRemapper SectionRemapperTable_Gamecube[129];
+
+VisibleSectionManager TheVisibleSectionManager; // size: 0x6830
+int ScenerySectionLODOffset = 0;
+DrivableScenerySection *pSectionD9 = 0;
+DrivableScenerySection *pSectionC14 = 0;
 char *bGetPlatformName();
 int bStrNICmp(const char *s1, const char *s2, int n);
 
@@ -44,6 +50,30 @@ static char text_VisibleSection[4][16];
 
 static inline short GetScenerySectionNumber(char section_letter, int subsection_number) {
     return static_cast<short>((section_letter - 'A' + 1) * 100 + subsection_number);
+}
+
+VisibleSectionManager::VisibleSectionManager() {
+    pBoundaryChunks = 0;
+    pInfo = 0;
+    pActiveOverlay = 0;
+    pUndoOverlay = 0;
+
+    bMemSet(UserInfoTable, 0, sizeof(UserInfoTable));
+    NumAllocatedUserInfo = 0;
+
+    bNode *head = &UnallocatedUserInfoList.HeadNode;
+    for (int i = 0; i < 512; i++) {
+        VisibleSectionUserInfo *user_info = &UserInfoStorageTable[i];
+        bNode *tail = head->Prev;
+
+        tail->Next = reinterpret_cast<bNode *>(user_info);
+        head->Prev = reinterpret_cast<bNode *>(user_info);
+        reinterpret_cast<bNode *>(user_info)->Prev = tail;
+        reinterpret_cast<bNode *>(user_info)->Next = head;
+    }
+
+    VisibleBitTables = 0;
+    bMemSet(EnabledGroups, 0, sizeof(EnabledGroups));
 }
 
 void GetScenerySectionName(char *name, int section_number) {
@@ -155,28 +185,21 @@ void DrivableScenerySection::SortVisibleSections() {
 
 VisibleSectionUserInfo *VisibleSectionManager::AllocateUserInfo(int section_number) {
     VisibleSectionUserInfo *user_info = UserInfoTable[section_number];
-    if (user_info) {
-        user_info->ReferenceCount += 1;
-        return user_info;
+    if (!user_info) {
+        user_info = reinterpret_cast<VisibleSectionUserInfo *>(UnallocatedUserInfoList.HeadNode.Next);
+        NumAllocatedUserInfo += 1;
+
+        bNode *next = reinterpret_cast<bNode *>(user_info)->Next;
+        bNode *prev = reinterpret_cast<bNode *>(user_info)->Prev;
+        prev->Next = next;
+        next->Prev = prev;
+
+        bMemSet(user_info, 0, sizeof(VisibleSectionUserInfo));
+        UserInfoTable[section_number] = user_info;
     }
 
-    for (int i = 0; i < 512; i++) {
-        user_info = &UserInfoStorageTable[i];
-        if (user_info->ReferenceCount == 0) {
-            user_info->ReferenceCount = 1;
-            user_info->pScenerySectionHeader = 0;
-            user_info->pLightFlarePack = 0;
-            user_info->pLightPack = 0;
-            user_info->pSmokeableSpawnerPack = 0;
-            user_info->pParkedCarPack = 0;
-            user_info->pEventTriggerPack = 0;
-            UserInfoTable[section_number] = user_info;
-            NumAllocatedUserInfo += 1;
-            return user_info;
-        }
-    }
-
-    return 0;
+    user_info->ReferenceCount += 1;
+    return user_info;
 }
 
 void VisibleSectionManager::UnallocateUserInfo(int section_number) {
@@ -185,20 +208,19 @@ void VisibleSectionManager::UnallocateUserInfo(int section_number) {
         return;
     }
 
-    if (user_info->ReferenceCount > 1) {
-        user_info->ReferenceCount -= 1;
+    int ref_count = user_info->ReferenceCount - 1;
+    user_info->ReferenceCount = ref_count;
+    if (ref_count != 0) {
         return;
     }
 
-    user_info->ReferenceCount = 0;
-    user_info->pScenerySectionHeader = 0;
-    user_info->pLightFlarePack = 0;
-    user_info->pLightPack = 0;
-    user_info->pSmokeableSpawnerPack = 0;
-    user_info->pParkedCarPack = 0;
-    user_info->pEventTriggerPack = 0;
-    UserInfoTable[section_number] = 0;
+    bNode *tail = UnallocatedUserInfoList.HeadNode.Prev;
     NumAllocatedUserInfo -= 1;
+    tail->Next = reinterpret_cast<bNode *>(user_info);
+    UnallocatedUserInfoList.HeadNode.Prev = reinterpret_cast<bNode *>(user_info);
+    reinterpret_cast<bNode *>(user_info)->Next = &UnallocatedUserInfoList.HeadNode;
+    reinterpret_cast<bNode *>(user_info)->Prev = tail;
+    UserInfoTable[section_number] = 0;
 }
 
 VisibleSectionBoundary *VisibleSectionManager::FindBoundary(int section_number) {

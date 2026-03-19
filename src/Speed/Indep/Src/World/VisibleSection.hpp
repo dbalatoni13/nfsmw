@@ -318,6 +318,7 @@ class VisibleSectionManager {
     unsigned int EnabledGroups[256];                                   // offset 0x6430, size 0x40
 
   public:
+    VisibleSectionManager();
     VisibleSectionUserInfo *AllocateUserInfo(int section_number);
     void UnallocateUserInfo(int section_number);
     VisibleSectionBoundary *FindBoundary(int section_number);
