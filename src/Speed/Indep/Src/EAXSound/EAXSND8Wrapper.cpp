@@ -14,10 +14,37 @@ struct PF_Allocator : EA::Allocator::IAllocator {
     virtual int Release();
 };
 
-struct CSISCoreAllocator {
-    void *Alloc(unsigned int size, const char *name, unsigned int flags);
-    void *Alloc(unsigned int size, const char *name, unsigned int flags, unsigned int alignment, unsigned int offset);
-    void Free(void *pBlock, unsigned int size);
+namespace EA {
+namespace Allocator {
+class ICoreAllocator {
+  public:
+    ICoreAllocator() {}
+    virtual void *Alloc(unsigned int size, const char *name, unsigned int flags) {
+        (void)size;
+        (void)name;
+        (void)flags;
+        return nullptr;
+    }
+    virtual void *Alloc(unsigned int size, const char *name, unsigned int flags, unsigned int alignment, unsigned int offset) {
+        (void)size;
+        (void)name;
+        (void)flags;
+        (void)alignment;
+        (void)offset;
+        return nullptr;
+    }
+    virtual void Free(void *pBlock, unsigned int size) {
+        (void)pBlock;
+        (void)size;
+    }
+};
+} // namespace Allocator
+} // namespace EA
+
+struct CSISCoreAllocator : public EA::Allocator::ICoreAllocator {
+    void *Alloc(unsigned int size, const char *name, unsigned int flags) override;
+    void *Alloc(unsigned int size, const char *name, unsigned int flags, unsigned int alignment, unsigned int offset) override;
+    void Free(void *pBlock, unsigned int size) override;
 };
 
 extern SlotPool *pCsisSlotPools[];
@@ -34,11 +61,7 @@ extern bool IsSpeechEnabled;
 extern EAXSound *g_pEAXSound;
 extern void SNDSYS_service();
 
-namespace EA {
-namespace Allocator {
-class ICoreAllocator;
-}
-} // namespace EA
+CSISCoreAllocator g_CSISCoreAllocator;
 
 namespace Csis {
 namespace System {

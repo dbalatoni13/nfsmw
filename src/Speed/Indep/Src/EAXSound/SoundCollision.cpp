@@ -27,6 +27,7 @@ enum STICH_COLLISION_TYPE {
 };
 
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/audioimpact.h"
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/audioscrape.h"
 
 struct CSTATE_Base;
 struct EAX_CarState;
@@ -139,8 +140,8 @@ struct CollisionEvent : public AudioEvent {
     ~CollisionEvent();
     void SetOwner(CSTATE_Base *owner);
     void Pause(bool pause);
-    int PlayScrape(const AudioEventParams &params);
-    int Play(const AudioEventParams &params);
+    static AudioEvent *PlayScrape(const AudioEventParams &params);
+    static AudioEvent *Play(const AudioEventParams &params);
     void Update(const bVector3 &position, const bVector3 &normal, const bVector3 &velocity, float dt);
     void InitAsScrape(const Attrib::Gen::audioscrape &);
     void InitAsImpact(const Attrib::Gen::audioimpact &);
@@ -216,14 +217,12 @@ void CollisionEvent::Pause(bool pause) {
     (void)pause;
 }
 
-int CollisionEvent::PlayScrape(const AudioEventParams &params) {
-    (void)params;
-    return 0;
+AudioEvent *CollisionEvent::PlayScrape(const AudioEventParams &params) {
+    return new CollisionEvent(params, false);
 }
 
-int CollisionEvent::Play(const AudioEventParams &params) {
-    (void)params;
-    return 0;
+AudioEvent *CollisionEvent::Play(const AudioEventParams &params) {
+    return new CollisionEvent(params, true);
 }
 
 void CollisionEvent::Update(const bVector3 &position, const bVector3 &normal, const bVector3 &velocity, float dt) {
@@ -316,6 +315,15 @@ void CollisionEvent::InitAsImpact(const Attrib::Gen::audioimpact &audioFx) {
 void CollisionEvent::Release() {}
 
 } // namespace Sound
+
+template <>
+UTL::COM::Factory<Sound::AudioEventParams const &, Sound::AudioEvent, unsigned int>::Prototype *
+    UTL::COM::Factory<Sound::AudioEventParams const &, Sound::AudioEvent, unsigned int>::Prototype::mHead = nullptr;
+
+UTL::COM::Factory<Sound::AudioEventParams const &, Sound::AudioEvent, unsigned int>::Prototype __audioscrape(
+    Attrib::Gen::audioscrape::ClassKey(), Sound::CollisionEvent::PlayScrape);
+UTL::COM::Factory<Sound::AudioEventParams const &, Sound::AudioEvent, unsigned int>::Prototype __audioimpact(
+    Attrib::Gen::audioimpact::ClassKey(), Sound::CollisionEvent::Play);
 
 EAX_CarState *GetClosestPlayerCar(const bVector3 *vPosition, bool CameraRelative, int &CarID) {
     (void)vPosition;

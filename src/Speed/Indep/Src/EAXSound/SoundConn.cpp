@@ -89,6 +89,15 @@ unsigned int Pkt_Heli_Service::SType() {
 
 } // namespace SoundConn
 
+template <>
+UTL::COM::Factory<Sim::ConnectionData const &, Sim::Connection, UCrc32>::Prototype *
+    UTL::COM::Factory<Sim::ConnectionData const &, Sim::Connection, UCrc32>::Prototype::mHead = nullptr;
+
+UTL::COM::Factory<Sim::ConnectionData const &, Sim::Connection, UCrc32>::Prototype _CarSoundConn(
+    "CarSoundConn", CarSoundConn::Construct);
+UTL::COM::Factory<Sim::ConnectionData const &, Sim::Connection, UCrc32>::Prototype _HeliSoundConn(
+    "HeliSoundConn", HeliSoundConn::Construct);
+
 CarSoundConn::CarSoundConn(const Sim::ConnectionData &data)
     : Sim::Connection(data) //
     , mConnected(false) //
