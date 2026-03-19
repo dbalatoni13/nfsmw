@@ -1317,15 +1317,55 @@ const char *GRaceParameters::GetEventID() const {
 }
 
 float GRaceParameters::GetRivalBestTime() const {
+    const float *rivalBestTime;
+
+    if (mIndex) {
+        return static_cast<float>(*reinterpret_cast<const unsigned short *>(reinterpret_cast<const char *>(mIndex) + 0x26)) /
+               static_cast<float>(FixedPoint<unsigned short, 10, 2>::GetScale());
+    }
+
     EnsureLoaded();
-    return mRaceRecord->RivalBestTime(0);
+    rivalBestTime = reinterpret_cast<const float *>(mRaceRecord->GetAttributePointer(0xF9120D73, 0));
+    if (!rivalBestTime) {
+        rivalBestTime = reinterpret_cast<const float *>(Attrib::DefaultDataArea(sizeof(float)));
+    }
+
+    return *rivalBestTime;
 }
 
 float GRaceParameters::GetChallengeGoal() const {
+    const float *challengeGoal;
+
+    if (mIndex) {
+        short recordValue = *reinterpret_cast<const short *>(reinterpret_cast<const char *>(mIndex) + 0x0E);
+        int exponent = recordValue >> 11;
+        int multiplier = 1;
+        int mantissa;
+
+        if (exponent < 0) {
+            exponent = -exponent;
+        }
+
+        while (exponent > 0) {
+            exponent--;
+            multiplier *= 10;
+        }
+
+        mantissa = recordValue << 21 >> 21;
+        if (recordValue & 0x8000) {
+            return static_cast<float>(mantissa) / static_cast<float>(multiplier);
+        }
+
+        return static_cast<float>(mantissa) * static_cast<float>(multiplier);
+    }
+
     EnsureLoaded();
-    return *reinterpret_cast<const float *>(mRaceRecord->GetAttributePointer(0x4E90219D, 0) ?
-                                                mRaceRecord->GetAttributePointer(0x4E90219D, 0) :
-                                                Attrib::DefaultDataArea(sizeof(float)));
+    challengeGoal = reinterpret_cast<const float *>(mRaceRecord->GetAttributePointer(0x4E90219D, 0));
+    if (!challengeGoal) {
+        challengeGoal = reinterpret_cast<const float *>(Attrib::DefaultDataArea(sizeof(float)));
+    }
+
+    return *challengeGoal;
 }
 
 bool GRaceParameters::GetIsPursuitRace() const {
