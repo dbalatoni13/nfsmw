@@ -1979,9 +1979,9 @@ int TrackStreamer::GetLoadingPriority(TrackStreamingSection *section, StreamingP
 
     bVector2 direction;
     if (calculating_jettison) {
-        direction = bNormalize(position_entry->Direction);
+        bNormalize(&direction, &position_entry->Direction);
     } else {
-        direction = bNormalize(position_entry->Velocity);
+        bNormalize(&direction, &position_entry->Velocity);
     }
 
     bVector2 v = section->Centre - predict_pos;

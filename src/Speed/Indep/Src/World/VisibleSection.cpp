@@ -594,8 +594,8 @@ int VisibleSectionManager::Loader(bChunk *chunk) {
                             DrivableSectionList.AddTail(section);
                             section->EndianSwap();
                             section->pBoundary = FindBoundary(section->GetSectionNumber());
-                            section =
-                                reinterpret_cast<DrivableScenerySection *>(reinterpret_cast<char *>(section) + section->GetMemoryImageSize());
+                            section = reinterpret_cast<DrivableScenerySection *>(
+                                reinterpret_cast<char *>(section) + section->GetMemoryImageSize());
                         } while (section < last_section);
                     }
 
@@ -614,12 +614,14 @@ int VisibleSectionManager::Loader(bChunk *chunk) {
                 case 0x34155: {
                     LoadingSection *loading_sections = reinterpret_cast<LoadingSection *>(current_chunk->GetData());
                     int num_loading_sections = current_chunk->Size / sizeof(LoadingSection);
-                    if (num_loading_sections != 0) {
-                        for (int n = 0; n < num_loading_sections; n++) {
+                    if (num_loading_sections > 0) {
+                        int n = 0;
+                        do {
                             LoadingSection *section = &loading_sections[n];
                             LoadingSectionList.AddTail(section);
                             section->EndianSwap();
-                        }
+                            n += 1;
+                        } while (n < num_loading_sections);
                     }
                     break;
                 }
