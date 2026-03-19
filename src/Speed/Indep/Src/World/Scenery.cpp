@@ -286,6 +286,20 @@ static inline float GetSceneryRadius_Scenery(unsigned char *scenery_info) {
     return *reinterpret_cast<float *>(scenery_info + 0x38);
 }
 
+static inline bMatrix4 *eFrameMallocMatrix(int num_matrices) {
+    unsigned char *address = CurrentBufferPos;
+    unsigned int size = num_matrices * sizeof(bMatrix4);
+    unsigned char *next_buffer_pos = address + size;
+    if (CurrentBufferEnd <= next_buffer_pos) {
+        FrameMallocFailed = 1;
+        FrameMallocFailAmount += size;
+        next_buffer_pos = CurrentBufferPos;
+        address = 0;
+    }
+    CurrentBufferPos = next_buffer_pos;
+    return reinterpret_cast<bMatrix4 *>(address);
+}
+
 void BuildSceneryOverrideHashTable() {
     int index = 0;
 
@@ -642,17 +656,7 @@ void ScenerySectionHeader::DrawAScenery(int scenery_instance_number, SceneryCull
         return;
     }
 
-    bMatrix4 *matrix = 0;
-    unsigned char *matrix_memory = CurrentBufferPos;
-    unsigned char *next_buffer_pos = CurrentBufferPos + sizeof(bMatrix4);
-    if (CurrentBufferEnd <= next_buffer_pos) {
-        FrameMallocFailed = 1;
-        FrameMallocFailAmount += sizeof(bMatrix4);
-        next_buffer_pos = CurrentBufferPos;
-    } else {
-        matrix = reinterpret_cast<bMatrix4 *>(matrix_memory);
-    }
-    CurrentBufferPos = next_buffer_pos;
+    bMatrix4 *matrix = eFrameMallocMatrix(1);
 
     if (matrix) {
         instance->GetRotation(matrix);
