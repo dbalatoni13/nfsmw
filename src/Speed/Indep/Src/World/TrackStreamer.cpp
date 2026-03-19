@@ -217,7 +217,7 @@ void *TSMemoryPool::Malloc(int size, const char *debug_name, bool best_fit, bool
     } else if (best_fit) {
         for (TSMemoryNode *node = NodeList.GetHead(); node != NodeList.EndOfList(); node = node->GetNext()) {
             if (node->IsFree() && node->Size >= size &&
-                (!found_node || node->Size - size < found_node->Size - size)) {
+                (!found_node || found_node->Size - size > node->Size - size)) {
                 found_node = node;
             }
         }
