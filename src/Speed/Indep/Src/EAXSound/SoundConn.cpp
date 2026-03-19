@@ -10,6 +10,7 @@ public:
 
 extern CarPartDatabase CarPartDB;
 extern "C" void *__builtin_vec_new(unsigned int size);
+extern "C" void __builtin_delete(void *ptr);
 extern int btestprint;
 
 namespace {
@@ -118,9 +119,16 @@ CarSoundConn::CarSoundConn(const Sim::ConnectionData &data)
 }
 
 CarSoundConn::~CarSoundConn() {
+    EAX_CarState *state;
+
     mTarget.Set(0);
-    if (g_pEAXSound != nullptr && mState != nullptr) {
-        g_pEAXSound->DestroyEAXCar(mState);
+    state = mState;
+    if (g_pEAXSound != nullptr && state != nullptr) {
+        g_pEAXSound->DestroyEAXCar(state);
+    }
+    if (state != nullptr) {
+        state->~EAX_CarState();
+        __builtin_delete(state);
     }
     mState = nullptr;
 }

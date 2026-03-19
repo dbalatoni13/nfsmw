@@ -312,6 +312,8 @@ struct EAX_CarState : public UTL::Collections::Listable<EAX_CarState, 10> {
         mVisualRPM = pct;
     }
 
+    ~EAX_CarState() {}
+
     EAX_CarState(const Attrib::Collection *atr, Sound::Context context, unsigned int wuid, HSIMABLE__ *handle);
 };
 
