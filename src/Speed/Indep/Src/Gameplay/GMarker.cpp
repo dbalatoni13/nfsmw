@@ -8,8 +8,8 @@ GMarker::GMarker(const Attrib::Key &markerKey)
     UMath::Matrix4 rotMat = UMath::Matrix4::kIdentity;
     UMath::Vector3 initialVec = UMath::Vector3Make(0.0f, 0.0f, 1.0f);
 
-    UMath::MultYRot(rotMat, -Rotation(0) * 0.0027777778f, rotMat);
-    UMath::Rotate(initialVec, rotMat, initialVec);
+    MATRIX4_multyrot(&rotMat, -Rotation(0) * 0.0027777778f, &rotMat);
+    VU0_MATRIX3x4_vect3mult(initialVec, rotMat, initialVec);
 
     mPosition = UMath::Vector3Make(-pos.y, pos.z, pos.x);
     mDirection = initialVec;
