@@ -71,11 +71,15 @@ enum TunnelBloomDataIndex {
 };
 
 ScreenEffectDB::ScreenEffectDB() {
+    ScreenEffectInf *screen_effect_inf = SE_inf;
+    ScreenEffectDef *screen_effect_data = SE_data;
+    unsigned int *num_type = numType;
+
     SE_time = 0.0f;
     for (int i = 0; i < SE_NUM_TYPES; i++) {
-        SE_inf[i].active = 0;
-        bMemSet(&SE_data[i], 0, sizeof(SE_data[i]));
-        numType[i] = 0;
+        screen_effect_inf[i].active = 0;
+        bMemSet(&screen_effect_data[i], 0, sizeof(ScreenEffectDef));
+        num_type[i] = 0;
     }
     InitScreenEFX();
 }
@@ -136,15 +140,17 @@ bool TopologyCoordinate::HasTopology(const bVector2 *position) {
 
 void ScreenEffectDB::AddScreenEffect(ScreenEffectType type, float intensity, float r, float g, float b) {
     ScreenEffectDef info;
+    ScreenEffectDB *screen_effect_db = this;
+    ScreenEffectType effect_type = type;
 
     info.r = r;
     info.g = g;
     info.b = b;
     info.a = 0.0f;
     info.intensity = intensity;
-    bMemSet(info.data, 0, sizeof(info.data));
+    bMemSet(info.data, 0, 0x38);
     info.UpdateFnc = 0;
-    AddScreenEffect(type, &info, 1, SEC_FRAME);
+    screen_effect_db->AddScreenEffect(effect_type, &info, 1, SEC_FRAME);
 }
 
 void ScreenEffectDB::AddScreenEffect(ScreenEffectType type, ScreenEffectDef *info, unsigned int lock,
