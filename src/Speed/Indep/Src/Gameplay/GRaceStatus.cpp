@@ -3268,6 +3268,13 @@ void GRaceStatus::AddAvailableEventToMap(GRuntimeInstance *trigger, GRuntimeInst
 void GRaceStatus::AddSpeedTrapToMap(GRuntimeInstance *trigger) {}
 
 void GRaceStatus::AwardBonusTime(float seconds) {
+    for (int i = 0; i < mRacerCount; ++i) {
+        GRacerInfo &info = mRacerInfo[i];
+
+        info.mTimeRemainingToBooth[info.mTollboothsCrossed] = GRaceStatus::Get().GetRaceTimeRemaining();
+        info.mTollboothsCrossed++;
+    }
+
     mBonusTime += seconds;
 }
 
