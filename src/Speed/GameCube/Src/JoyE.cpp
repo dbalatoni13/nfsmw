@@ -43,47 +43,25 @@ float lastCalibTime[4];
 int JoystickInitialized;
 
 static inline unsigned short ConvertPadButtons(unsigned short buttons) {
-    unsigned short converted = 0xFFFF;
-
-    if (buttons & PAD_BUTTON_A) {
-        converted &= ~0x0001;
-    }
-    if (buttons & PAD_BUTTON_B) {
-        converted &= ~0x0002;
-    }
-    if (buttons & PAD_BUTTON_X) {
-        converted &= ~0x0004;
-    }
-    if (buttons & PAD_BUTTON_Y) {
-        converted &= ~0x0008;
-    }
-    if (buttons & PAD_TRIGGER_Z) {
-        converted &= ~0x0010;
-    }
-    if (buttons & PAD_BUTTON_START) {
-        converted &= ~0x0020;
-    }
-    if (buttons & PAD_BUTTON_UP) {
-        converted &= ~0x0100;
-    }
-    if (buttons & PAD_BUTTON_DOWN) {
-        converted &= ~0x0200;
-    }
-    if (buttons & PAD_BUTTON_LEFT) {
-        converted &= ~0x0400;
-    }
-    if (buttons & PAD_BUTTON_RIGHT) {
-        converted &= ~0x0800;
-    }
-
-    return converted;
+    unsigned short result;
+    result = (buttons >> 8) & 1;
+    result |= (buttons >> 8) & 2;
+    result |= (buttons >> 8) & 4;
+    result |= (buttons >> 8) & 8;
+    result |= buttons & 0x10;
+    result |= (buttons >> 7) & 0x20;
+    result |= (buttons << 5) & 0x100;
+    result |= (buttons << 7) & 0x200;
+    result |= (buttons & 1) << 10;
+    result |= (buttons << 10) & 0x800;
+    return ~result;
 }
 
 static inline unsigned char ClampAnalogValue(int value) {
-    if (value < 0) {
+    if (value & 0x8000) {
         return 0;
     }
-    if (value > 0xFF) {
+    if (static_cast<short>(value) > 0xFF) {
         return 0xFF;
     }
     return value;
