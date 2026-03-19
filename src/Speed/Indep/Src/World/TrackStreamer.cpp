@@ -1339,7 +1339,8 @@ void TrackStreamer::SwitchZones(short *current_zones) {
             }
 
             streaming_position->CurrentZone = current_zone;
-            streaming_position->BeginLoadingPosition = streaming_position->Position;
+            streaming_position->BeginLoadingPosition.x = streaming_position->Position.x;
+            streaming_position->BeginLoadingPosition.y = streaming_position->Position.y;
             streaming_position->BeginLoadingTime = GetDebugRealTime();
             streaming_position->NumSectionsToLoad = 0;
             streaming_position->NumSectionsLoaded = 0;
@@ -1362,8 +1363,8 @@ void TrackStreamer::SwitchZones(short *current_zones) {
         if (section->Status == TrackStreamingSection::ACTIVATED && !section->CurrentlyVisible) {
             char section_letter = GetScenerySectionLetter_TrackStreamer(section->SectionNumber);
             if (section_letter != 'Y' && section_letter != 'W' && section_letter != 'X' && section_letter != 'U') {
-                num_sections_unactivated += 1;
-                UnactivateSection(section);
+                    num_sections_unactivated += 1;
+                    UnactivateSection(section);
             }
         }
     }
