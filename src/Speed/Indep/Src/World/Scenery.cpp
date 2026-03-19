@@ -728,12 +728,9 @@ void ScenerySectionHeader::TreeCull(SceneryCullInfo *scenery_cull_info) {
 }
 
 int LoaderScenery(bChunk *chunk) {
-    bChunk *scene_chunk = chunk;
-    unsigned int chunk_id = scene_chunk->GetID();
-
-    if (chunk_id == 0x34108) {
-        SceneryOverrideInfoTable = reinterpret_cast<SceneryOverrideInfo *>(scene_chunk->GetData());
-        NumSceneryOverrideInfos = static_cast<unsigned int>(scene_chunk->Size) / 6;
+    if (chunk->GetID() == 0x34108) {
+        SceneryOverrideInfoTable = reinterpret_cast<SceneryOverrideInfo *>(chunk->GetData());
+        NumSceneryOverrideInfos = static_cast<unsigned int>(chunk->Size) / 6;
         for (int i = 0; i < NumSceneryOverrideInfos; i++) {
             SceneryOverrideInfo *override_info = &SceneryOverrideInfoTable[i];
             override_info->EndianSwap();
@@ -742,11 +739,11 @@ int LoaderScenery(bChunk *chunk) {
         return 1;
     }
 
-    if (chunk_id == 0x80034100) {
+    if (chunk->GetID() == 0x80034100) {
         ScenerySectionHeader *section_header = 0;
-        bChunk *last_chunk = scene_chunk->GetLastChunk();
+        bChunk *last_chunk = chunk->GetLastChunk();
 
-        for (bChunk *subchunk = scene_chunk->GetFirstChunk(); subchunk != last_chunk; subchunk = subchunk->GetNext()) {
+        for (bChunk *subchunk = chunk->GetFirstChunk(); subchunk != last_chunk; subchunk = subchunk->GetNext()) {
             unsigned int subchunk_id = subchunk->GetID();
             if (subchunk_id == 0x34101) {
                 section_header = reinterpret_cast<ScenerySectionHeader *>(subchunk->GetAlignedData(0x10));
@@ -784,11 +781,10 @@ int LoaderScenery(bChunk *chunk) {
                 }
 
                 for (int i = 0; i < section_header_words[7]; i++) {
-                    unsigned char *scenery_info = reinterpret_cast<unsigned char *>(section_header_words[6] + i * 0x48);
-                    unsigned int hierarchy_name = *reinterpret_cast<unsigned int *>(scenery_info + 0x40);
+                    SceneryInfo *scenery_info = reinterpret_cast<SceneryInfo *>(section_header_words[6]) + i;
+                    unsigned int hierarchy_name = scenery_info->mHeirarchyNameHash;
                     if (hierarchy_name != 0) {
-                        *reinterpret_cast<unsigned int *>(scenery_info + 0x44) =
-                            reinterpret_cast<unsigned int>(FindSceneryHeirarchyByName(hierarchy_name));
+                        scenery_info->mHeirarchy = FindSceneryHeirarchyByName(hierarchy_name);
                     }
                 }
             } else if (subchunk_id == 0x34103) {
@@ -862,7 +858,7 @@ int LoaderScenery(bChunk *chunk) {
             }
         }
 
-        if (section_header && ChunkMovementOffset == 0) {
+        if (ChunkMovementOffset == 0 && section_header) {
             int *section_header_words = reinterpret_cast<int *>(section_header);
             unsigned char *scenery_infos = reinterpret_cast<unsigned char *>(section_header_words[6]);
             for (int i = 0; i < section_header_words[7]; i++) {
@@ -913,9 +909,9 @@ int LoaderScenery(bChunk *chunk) {
         return 1;
     }
 
-    if (chunk_id == 0x80034115) {
-        bChunk *last_chunk = scene_chunk->GetLastChunk();
-        for (bChunk *subchunk = scene_chunk->GetFirstChunk(); subchunk != last_chunk; subchunk = subchunk->GetNext()) {
+    if (chunk->GetID() == 0x80034115) {
+        bChunk *last_chunk = chunk->GetLastChunk();
+        for (bChunk *subchunk = chunk->GetFirstChunk(); subchunk != last_chunk; subchunk = subchunk->GetNext()) {
             switch (subchunk->GetID()) {
                 case 0x34116:
                     LightTable = subchunk->GetData();
@@ -949,9 +945,9 @@ int LoaderScenery(bChunk *chunk) {
         return 1;
     }
 
-    if (chunk_id == 0x8003410B) {
-        bChunk *last_chunk = scene_chunk->GetLastChunk();
-        for (bChunk *subchunk = scene_chunk->GetFirstChunk(); subchunk != last_chunk; subchunk = subchunk->GetNext()) {
+    if (chunk->GetID() == 0x8003410B) {
+        bChunk *last_chunk = chunk->GetLastChunk();
+        for (bChunk *subchunk = chunk->GetFirstChunk(); subchunk != last_chunk; subchunk = subchunk->GetNext()) {
             unsigned int *entry_words = reinterpret_cast<unsigned int *>(subchunk->GetData());
             bEndianSwap32(&entry_words[0]);
 
