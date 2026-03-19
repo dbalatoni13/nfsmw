@@ -18,6 +18,10 @@ struct ScenerySectionHeader : public bNode {
         return reinterpret_cast<ScenerySectionHeader *>(bNode::GetNext());
     }
 
+    SceneryInstance *GetSceneryInstance(int scenery_instance_number) {
+        return reinterpret_cast<SceneryInstance *>(reinterpret_cast<int *>(this)[8]) + scenery_instance_number;
+    }
+
     int GetSectionNumber() {
         return reinterpret_cast<int *>(this)[3];
     }
@@ -25,8 +29,14 @@ struct ScenerySectionHeader : public bNode {
 
 struct SceneryOverrideInfo {
     short SectionNumber;
-    short OverrideSectionNumber;
-    short OverrideIndex;
+    short InstanceNumber;
+    unsigned short ExcludeFlags;
+
+    void EndianSwap() {
+        bPlatEndianSwap(&SectionNumber);
+        bPlatEndianSwap(&InstanceNumber);
+        bPlatEndianSwap(&ExcludeFlags);
+    }
 
     void AssignOverrides();
     void AssignOverrides(ScenerySectionHeader *section_header);
@@ -197,10 +207,6 @@ unsigned char PrecullerBooBooManager::GetBit(int section_number) {
     return static_cast<unsigned char>(1 << (section_number & 7));
 }
 
-static inline char GetScenerySectionLetter_Scenery(int section_number) {
-    return static_cast<char>(section_number / 100 + 'A' - 1);
-}
-
 static inline void EndianSwapSectionHeader_Scenery(int *section_header_words) {
     bEndianSwap32(reinterpret_cast<char *>(section_header_words) + 0xC);
     bEndianSwap32(reinterpret_cast<char *>(section_header_words) + 0x10);
@@ -250,7 +256,7 @@ static inline void EndianSwapPrecullerInfo_Scenery(unsigned char *data) {
 static inline SceneryOverrideInfo *FindMatchingOverrideInfo_Scenery(int section_number, int override_index) {
     for (int i = 0; i < NumSceneryOverrideInfos; i++) {
         SceneryOverrideInfo *override_info = &SceneryOverrideInfoTable[i];
-        if (override_info->SectionNumber == section_number && override_info->OverrideIndex == override_index) {
+        if (override_info->SectionNumber == section_number && override_info->InstanceNumber == override_index) {
             return override_info;
         }
     }
@@ -314,55 +320,23 @@ void SceneryOverrideInfo::AssignOverrides() {
 }
 
 void SceneryOverrideInfo::AssignOverrides(ScenerySectionHeader *section_header) {
-    int *section_header_words = reinterpret_cast<int *>(section_header);
-    SceneryInstance *instance = reinterpret_cast<SceneryInstance *>(section_header_words[8]) +
-                                OverrideSectionNumber;
+    SceneryInstance *instance = section_header->GetSceneryInstance(InstanceNumber);
 
     if ((instance->ExcludeFlags & 0x800000) != 0 &&
-        ((instance->ExcludeFlags ^ *reinterpret_cast<unsigned short *>(&OverrideIndex)) & 0x400) != 0) {
-        bMatrix4 rotation;
+        ((instance->ExcludeFlags ^ ExcludeFlags) & 0x400) != 0) {
+        bMatrix4 matrix;
         bMatrix4 flip_matrix;
 
-        rotation.v0.x = static_cast<float>(instance->Rotation[0]) * 0.00012207031f;
-        rotation.v0.y = static_cast<float>(instance->Rotation[1]) * 0.00012207031f;
-        rotation.v0.z = static_cast<float>(instance->Rotation[2]) * 0.00012207031f;
-        rotation.v0.w = 0.0f;
-        rotation.v1.x = static_cast<float>(instance->Rotation[3]) * 0.00012207031f;
-        rotation.v1.y = static_cast<float>(instance->Rotation[4]) * 0.00012207031f;
-        rotation.v1.z = static_cast<float>(instance->Rotation[5]) * 0.00012207031f;
-        rotation.v1.w = 0.0f;
-        rotation.v2.x = static_cast<float>(instance->Rotation[6]) * 0.00012207031f;
-        rotation.v2.y = static_cast<float>(instance->Rotation[7]) * 0.00012207031f;
-        rotation.v2.z = static_cast<float>(instance->Rotation[8]) * 0.00012207031f;
-        rotation.v2.w = 0.0f;
-        rotation.v3.x = 0.0f;
-        rotation.v3.y = 0.0f;
-        rotation.v3.z = 0.0f;
-        rotation.v3.w = 1.0f;
+        instance->GetRotation(&matrix);
 
         bIdentity(&flip_matrix);
         flip_matrix.v0.x = -1.0f;
-        bMulMatrix(&rotation, &rotation, &flip_matrix);
-        rotation.v3.x = instance->Position[0];
-        rotation.v3.y = instance->Position[1];
-        rotation.v3.z = instance->Position[2];
-        rotation.v3.w = 1.0f;
-
-        instance->Rotation[0] = static_cast<short>(rotation.v0.x * 8192.0f);
-        instance->Rotation[1] = static_cast<short>(rotation.v0.y * 8192.0f);
-        instance->Rotation[2] = static_cast<short>(rotation.v0.z * 8192.0f);
-        instance->Rotation[3] = static_cast<short>(rotation.v1.x * 8192.0f);
-        instance->Rotation[4] = static_cast<short>(rotation.v1.y * 8192.0f);
-        instance->Rotation[5] = static_cast<short>(rotation.v1.z * 8192.0f);
-        instance->Rotation[6] = static_cast<short>(rotation.v2.x * 8192.0f);
-        instance->Rotation[7] = static_cast<short>(rotation.v2.y * 8192.0f);
-        instance->Rotation[8] = static_cast<short>(rotation.v2.z * 8192.0f);
-        instance->Position[0] = rotation.v3.x;
-        instance->Position[1] = rotation.v3.y;
-        instance->Position[2] = rotation.v3.z;
+        bMulMatrix(&matrix, &matrix, &flip_matrix);
+        instance->GetPosition(&matrix.v3);
+        instance->SetMatrix(&matrix);
     }
 
-    instance->ExcludeFlags = (instance->ExcludeFlags & 0xFFFF0000) + *reinterpret_cast<unsigned short *>(&OverrideIndex);
+    instance->ExcludeFlags = (instance->ExcludeFlags & 0xFFFF0000) + ExcludeFlags;
 }
 
 int LoaderSceneryGroup(bChunk *chunk) {
@@ -424,8 +398,7 @@ void EnableSceneryGroup(unsigned int name_hash, bool flip_artwork) {
 
         for (int i = 0; i < group->NumObjects; i++) {
             SceneryOverrideInfo *override_info = group->GetOverrideInfo(i);
-            *reinterpret_cast<unsigned short *>(&override_info->OverrideIndex) =
-                override_flags | (*reinterpret_cast<unsigned short *>(&override_info->OverrideIndex) & 0xFBEF);
+            override_info->ExcludeFlags = override_flags | (override_info->ExcludeFlags & 0xFBEF);
             override_info->AssignOverrides();
         }
 
@@ -444,8 +417,7 @@ void DisableSceneryGroup(unsigned int name_hash) {
     if (group) {
         for (int i = 0; i < group->NumObjects; i++) {
             SceneryOverrideInfo *override_info = group->GetOverrideInfo(i);
-            *reinterpret_cast<unsigned short *>(&override_info->OverrideIndex) =
-                *reinterpret_cast<unsigned short *>(&override_info->OverrideIndex) | 0x10;
+            override_info->ExcludeFlags = override_info->ExcludeFlags | 0x10;
             override_info->AssignOverrides();
         }
         SceneryGroupEnabledTable[group->GroupNumber] = 0;
@@ -457,8 +429,7 @@ void DisableAllSceneryGroups() {
         if (SceneryGroupEnabledTable[group->GroupNumber]) {
             for (int i = 0; i < group->NumObjects; i++) {
                 SceneryOverrideInfo *override_info = group->GetOverrideInfo(i);
-                *reinterpret_cast<unsigned short *>(&override_info->OverrideIndex) =
-                    *reinterpret_cast<unsigned short *>(&override_info->OverrideIndex) | 0x10;
+                override_info->ExcludeFlags = override_info->ExcludeFlags | 0x10;
                 override_info->AssignOverrides();
             }
             SceneryGroupEnabledTable[group->GroupNumber] = 0;
@@ -752,16 +723,15 @@ void ScenerySectionHeader::TreeCull(SceneryCullInfo *scenery_cull_info) {
 }
 
 int LoaderScenery(bChunk *chunk) {
-    unsigned int chunk_id = chunk->GetID();
+    bChunk *scene_chunk = chunk;
+    unsigned int chunk_id = scene_chunk->GetID();
 
     if (chunk_id == 0x34108) {
-        SceneryOverrideInfoTable = reinterpret_cast<SceneryOverrideInfo *>(chunk->GetData());
-        NumSceneryOverrideInfos = static_cast<unsigned int>(chunk->Size) / 6;
+        SceneryOverrideInfoTable = reinterpret_cast<SceneryOverrideInfo *>(scene_chunk->GetData());
+        NumSceneryOverrideInfos = static_cast<unsigned int>(scene_chunk->Size) / 6;
         for (int i = 0; i < NumSceneryOverrideInfos; i++) {
-            unsigned char *override_data = reinterpret_cast<unsigned char *>(SceneryOverrideInfoTable) + i * 6;
-            bEndianSwap16(override_data + 0);
-            bEndianSwap16(override_data + 2);
-            bEndianSwap16(override_data + 4);
+            SceneryOverrideInfo *override_info = &SceneryOverrideInfoTable[i];
+            override_info->EndianSwap();
         }
         BuildSceneryOverrideHashTable();
         return 1;
@@ -769,9 +739,9 @@ int LoaderScenery(bChunk *chunk) {
 
     if (chunk_id == 0x80034100) {
         ScenerySectionHeader *section_header = 0;
-        bChunk *last_chunk = chunk->GetLastChunk();
+        bChunk *last_chunk = scene_chunk->GetLastChunk();
 
-        for (bChunk *subchunk = chunk->GetFirstChunk(); subchunk != last_chunk; subchunk = subchunk->GetNext()) {
+        for (bChunk *subchunk = scene_chunk->GetFirstChunk(); subchunk != last_chunk; subchunk = subchunk->GetNext()) {
             unsigned int subchunk_id = subchunk->GetID();
             if (subchunk_id == 0x34101) {
                 section_header = reinterpret_cast<ScenerySectionHeader *>(subchunk->GetAlignedData(0x10));
@@ -786,7 +756,7 @@ int LoaderScenery(bChunk *chunk) {
                 VisibleSectionUserInfo *user_info = TheVisibleSectionManager.AllocateUserInfo(section_header_words[3]);
                 user_info->pScenerySectionHeader = section_header;
 
-                if (static_cast<char>(section_header_words[3] / 100 + 'A' - 1) == 'Z') {
+                if (GetScenerySectionLetter(section_header_words[3]) == 'Z') {
                     ScenerySectionHeaderList.AddHead(section_header);
                 } else {
                     ScenerySectionHeaderList.AddTail(section_header);
@@ -891,7 +861,7 @@ int LoaderScenery(bChunk *chunk) {
                     SceneryOverrideInfo *override_info = reinterpret_cast<SceneryOverrideInfo *>(
                         reinterpret_cast<unsigned char *>(SceneryOverrideInfoTable) + override_data[1] * 6
                     );
-                    if (override_info->OverrideSectionNumber == override_data[0] &&
+                    if (override_info->InstanceNumber == override_data[0] &&
                         override_info->SectionNumber == section_header_words[3]) {
                         override_info->AssignOverrides(section_header);
                     }
@@ -959,8 +929,8 @@ int LoaderScenery(bChunk *chunk) {
     }
 
     if (chunk_id == 0x80034115) {
-        bChunk *last_chunk = chunk->GetLastChunk();
-        for (bChunk *subchunk = chunk->GetFirstChunk(); subchunk != last_chunk; subchunk = subchunk->GetNext()) {
+        bChunk *last_chunk = scene_chunk->GetLastChunk();
+        for (bChunk *subchunk = scene_chunk->GetFirstChunk(); subchunk != last_chunk; subchunk = subchunk->GetNext()) {
             switch (subchunk->GetID()) {
                 case 0x34116:
                     LightTable = subchunk->GetData();
@@ -995,8 +965,8 @@ int LoaderScenery(bChunk *chunk) {
     }
 
     if (chunk_id == 0x8003410B) {
-        bChunk *last_chunk = chunk->GetLastChunk();
-        for (bChunk *subchunk = chunk->GetFirstChunk(); subchunk != last_chunk; subchunk = subchunk->GetNext()) {
+        bChunk *last_chunk = scene_chunk->GetLastChunk();
+        for (bChunk *subchunk = scene_chunk->GetFirstChunk(); subchunk != last_chunk; subchunk = subchunk->GetNext()) {
             unsigned int *entry_words = reinterpret_cast<unsigned int *>(subchunk->GetData());
             bEndianSwap32(&entry_words[0]);
 

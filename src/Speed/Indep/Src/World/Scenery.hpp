@@ -32,6 +32,43 @@ struct SceneryInstance : public SceneryBoundingBox {
     float Position[3];           // offset 0x20, size 0xC
     short Rotation[9];           // offset 0x2C, size 0x12
     short SceneryInfoNumber;     // offset 0x3E, size 0x2
+
+    void GetRotation(bMatrix4 *matrix) {
+        const float rotation_conversion = 0.00012207031f;
+        float x = static_cast<float>(Rotation[0]) * rotation_conversion;
+        float y = static_cast<float>(Rotation[1]) * rotation_conversion;
+        float z = static_cast<float>(Rotation[2]) * rotation_conversion;
+        bFill(&matrix->v0, x, y, z, 0.0f);
+        x = static_cast<float>(Rotation[3]) * rotation_conversion;
+        y = static_cast<float>(Rotation[4]) * rotation_conversion;
+        z = static_cast<float>(Rotation[5]) * rotation_conversion;
+        bFill(&matrix->v1, x, y, z, 0.0f);
+        x = static_cast<float>(Rotation[6]) * rotation_conversion;
+        y = static_cast<float>(Rotation[7]) * rotation_conversion;
+        z = static_cast<float>(Rotation[8]) * rotation_conversion;
+        bFill(&matrix->v2, x, y, z, 0.0f);
+        bFill(&matrix->v3, 0.0f, 0.0f, 0.0f, 1.0f);
+    }
+
+    void GetPosition(bVector4 *position) {
+        *position = bVector4(Position[0], Position[1], Position[2], 1.0f);
+    }
+
+    void SetMatrix(const bMatrix4 *matrix) {
+        const float rotation_conversion = 8192.0f;
+        Rotation[0] = static_cast<short>(matrix->v0.x * rotation_conversion);
+        Rotation[1] = static_cast<short>(matrix->v0.y * rotation_conversion);
+        Rotation[2] = static_cast<short>(matrix->v0.z * rotation_conversion);
+        Rotation[3] = static_cast<short>(matrix->v1.x * rotation_conversion);
+        Rotation[4] = static_cast<short>(matrix->v1.y * rotation_conversion);
+        Rotation[5] = static_cast<short>(matrix->v1.z * rotation_conversion);
+        Rotation[6] = static_cast<short>(matrix->v2.x * rotation_conversion);
+        Rotation[7] = static_cast<short>(matrix->v2.y * rotation_conversion);
+        Rotation[8] = static_cast<short>(matrix->v2.z * rotation_conversion);
+        Position[0] = matrix->v3.x;
+        Position[1] = matrix->v3.y;
+        Position[2] = matrix->v3.z;
+    }
 };
 
 struct SceneryDrawInfo {
