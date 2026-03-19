@@ -181,8 +181,11 @@ int IsInTable(short *section_numbers, int num_sections, int section_number);
 int ToggleIsInTable(short *section_numbers, int num_sections, int max_sections, int section_number);
 bList ScenerySectionHeaderList;
 RegionQuery RegionInfo;
+ModelHeirarchyMap HeirarchyMap;
+bTList<SceneryGroup> SceneryGroupList;
 bChunkLoader bChunkLoaderSceneryGroup(0x34109, LoaderSceneryGroup, UnloaderSceneryGroup);
 bChunkLoader bChunkLoaderScenerySection(0x80034100, LoaderScenery, UnloaderScenery);
+bChunkLoader bChunkLoaderOverrideInfos(0x34108, LoaderScenery, UnloaderScenery);
 bChunkLoader bChunkLoaderSceneryHeirarchy(0x8003410B, LoaderScenery, UnloaderScenery);
 bChunkLoader bChunkLoaderSceneryLighting(0x80034115, LoaderScenery, UnloaderScenery);
 SceneryDetailLevel ForceAllSceneryDetailLevels = SCENERY_DETAIL_NONE;
@@ -196,10 +199,8 @@ void (*ModelDisconnectionCallback)(ScenerySectionHeader *, int, eModel *) = 0;
 void (*SectionConnectionCallback)(ScenerySectionHeader *) = 0;
 void (*SectionDisconnectionCallback)(ScenerySectionHeader *) = 0;
 eModel *pVisibleZoneBoundaryModel = 0;
-ModelHeirarchyMap HeirarchyMap;
 short SceneryOverrideHashTable[257];
 SceneryDrawInfo GrandSceneryCullInfo::SceneryDrawInfoTable[3500];
-extern bTList<SceneryGroup> SceneryGroupList;
 extern unsigned char SceneryGroupEnabledTable[0x1000];
 
 inline int PrecullerBooBooManager::GetSectionNumber(bVector3 &position) {
