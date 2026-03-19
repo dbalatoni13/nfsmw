@@ -687,16 +687,18 @@ void ScenerySectionHeader::DrawAScenery(int scenery_instance_number, SceneryCull
 
     bMatrix4 *matrix = eFrameMallocMatrix(1);
 
-    if (matrix) {
-        instance->GetRotation(matrix);
-        instance->GetPosition(&matrix->v3);
+    if (!matrix) {
+        return;
+    }
 
-        if ((instance->ExcludeFlags & scenery_cull_info->ExcludeFlags & 0x100) != 0) {
-            matrix->v3.z += EnvMapShadowExtraHeight;
-        }
-        if ((scenery_cull_info->ExcludeFlags & 0x800) != 0) {
-            matrix->v2.z = -matrix->v2.z;
-        }
+    instance->GetRotation(matrix);
+    instance->GetPosition(&matrix->v3);
+
+    if ((instance->ExcludeFlags & scenery_cull_info->ExcludeFlags & 0x100) != 0) {
+        matrix->v3.z += EnvMapShadowExtraHeight;
+    }
+    if ((scenery_cull_info->ExcludeFlags & 0x800) != 0) {
+        matrix->v2.z = -matrix->v2.z;
     }
 
     draw_info->pModel = reinterpret_cast<eModel *>(reinterpret_cast<int>(model) + visibility_state);
