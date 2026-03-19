@@ -2024,6 +2024,8 @@ bool TrackStreamer::CheckLoadingBar() {
         StreamingPositionEntry *position_entry = &StreamingPositionEntries[position_number];
         float speed;
         float max_speed;
+        float prediction_scale_a = kPredictionScaleA_TrackStreamer;
+        float prediction_scale_b = kPredictionScaleB_TrackStreamer;
 
         if (!IsLoadingInProgress()) {
             break;
@@ -2057,8 +2059,7 @@ bool TrackStreamer::CheckLoadingBar() {
                     bVector2 test_pos = position_entry->Position + position_entry->Velocity * small_test_time;
                     float distance1 = boundary->GetDistanceOutside(&position_entry->Position, kMaxDistance_TrackStreamer);
                     float distance2 = boundary->GetDistanceOutside(&test_pos, kMaxDistance_TrackStreamer);
-                    float approach_speed = (distance1 - distance2) * kPredictionScaleA_TrackStreamer *
-                                           kPredictionScaleB_TrackStreamer;
+                    float approach_speed = (distance1 - distance2) * prediction_scale_a * prediction_scale_b;
                     float distance = distance1 - approach_speed;
                     if (distance < closest_distance) {
                         closest_distance = distance;
