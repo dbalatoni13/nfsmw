@@ -477,7 +477,11 @@ void *TrackStreamer::AllocateMemory(TrackStreamingSection *section, int allocati
 
 bool TrackStreamer::WillUnloadBlock(TrackStreamingSection *section) {
     unsigned int frame = section->UnactivatedFrameCount;
-    return frame != 0 && frame == eFrameCounter && LastWaitUntilRenderingDoneFrameCount != frame;
+    bool will_unload = false;
+    if ((frame != 0) && (frame == eFrameCounter)) {
+        will_unload = LastWaitUntilRenderingDoneFrameCount != frame;
+    }
+    return will_unload;
 }
 
 void TrackStreamer::UnloadSection(TrackStreamingSection *section) {
@@ -1460,13 +1464,7 @@ void TrackStreamer::FlushHibernatingSections() {
 }
 
 bool TrackStreamer::NeedsGameStateActivation(TrackStreamingSection *section) {
-    int subsection_number = section->SectionNumber % 100;
-    if (!IsRegularScenerySection_TrackStreamer(section->SectionNumber) || subsection_number < ScenerySectionLODOffset ||
-        ScenerySectionLODOffset * 2 <= subsection_number) {
-        return false;
-    }
-
-    return true;
+    return false;
 }
 
 void TrackStreamer::FreeSectionMemory() {
