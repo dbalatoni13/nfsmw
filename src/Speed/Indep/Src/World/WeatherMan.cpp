@@ -224,11 +224,7 @@ int DepthRegion(GenericRegion *before, GenericRegion *after) {
 }
 
 GenericRegion *GetClosestRegionInView(eView *view, bVector3 *endVector, float *angleCos) {
-    Camera *camera = view ? view->GetCamera() : 0;
-    if (!camera || view->CameraMoverList.IsEmpty()) {
-        return 0;
-    }
-
+    Camera *camera = view->GetCamera();
     cPos = *camera->GetPosition();
     bVector3 camera_direction = *camera->GetDirection();
     RegionLists[REGION_BLOOM].Sort(DepthRegion);
