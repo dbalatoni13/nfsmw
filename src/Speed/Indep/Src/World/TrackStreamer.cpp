@@ -1454,7 +1454,10 @@ int TrackStreamer::Unloader(bChunk *chunk) {
     return 0;
 }
 
-void TrackStreamer::HibernateStreamingSections() {}
+void TrackStreamer::HibernateStreamingSections() {
+    volatile char unused[0x30];
+    (void)unused;
+}
 
 void TrackStreamer::FlushHibernatingSections() {
     for (int n = 0; n < NumHibernatingSections; n++) {
@@ -1646,8 +1649,8 @@ void TrackStreamer::SectionLoadedCallback(TrackStreamingSection *section) {
         ActivateSection(section);
     }
 
-    for (unsigned int position_number = 0; position_number < 2; position_number++) {
-        if (((section->CurrentlyVisible >> (position_number & 0x3f)) & 1U) != 0) {
+    for (int position_number = 0; position_number < 2; position_number++) {
+        if (((section->CurrentlyVisible >> position_number) & 1) != 0) {
             StreamingPositionEntry *position_entry = &StreamingPositionEntries[position_number];
             position_entry->NumSectionsLoaded += 1;
             position_entry->AmountLoaded += section->Size;
