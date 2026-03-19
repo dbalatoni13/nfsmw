@@ -7,6 +7,7 @@
 
 #include "GHandler.h"
 #include "GState.h"
+#include "Speed/Indep/Libs/Support/Utility/FastMem.h"
 #include "Speed/Indep/Libs/Support/Utility/UCrc.h"
 #include "Speed/Indep/Libs/Support/Utility/UStandard.h"
 
@@ -27,6 +28,16 @@ class GActivity : public GRuntimeInstance {
         unsigned short mFlags;       // offset 0x4, size 0x2
         unsigned short mTableBytes;  // offset 0x6, size 0x2
     };
+
+    void *operator new(std::size_t size) {
+        return gFastMem.Alloc(size, nullptr);
+    }
+
+    void operator delete(void *mem, std::size_t size) {
+        if (mem) {
+            gFastMem.Free(mem, size, nullptr);
+        }
+    }
 
     GActivity(const Attrib::Key &activityKey);
 
