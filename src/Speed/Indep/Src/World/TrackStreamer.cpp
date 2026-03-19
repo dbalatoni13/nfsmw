@@ -1046,13 +1046,13 @@ int TrackStreamer::DoHoleFilling(int largest_free) {
     }
 
     int best_method = -1;
-    int best_amount_moved = 0x7FFFFFFF;
     if (ForceHoleFillerMethod >= 0) {
         int num_movements = BuildHoleMovements(hole_movements, 0x80, ForceHoleFillerMethod, largest_free, 0, 0x7FFFFFFF);
         if (num_movements > 0) {
             best_method = ForceHoleFillerMethod;
         }
     } else {
+        int best_amount_moved = 0x7FFFFFFF;
         for (int filler_method = 1; filler_method < 6; filler_method++) {
             int num_movements =
                 BuildHoleMovements(hole_movements, 0x80, filler_method, largest_free, &amount_moved, best_amount_moved);
