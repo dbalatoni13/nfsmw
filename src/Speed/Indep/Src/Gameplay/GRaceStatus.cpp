@@ -2324,14 +2324,14 @@ void GRaceCustom::CreateRaceActivity() {
     bool bossINQuickRace;
 
     if (mReversed) {
-        if (!GetCanBeReversed()) {
-            mReversed = false;
-        } else {
+        if (GetCanBeReversed()) {
             GCollectionKey startReverse = mRaceRecord->racestartReverse(0);
             GCollectionKey finishReverse = mRaceRecord->racefinishReverse(0);
 
             mRaceRecord->Set_racestart(startReverse);
             mRaceRecord->Set_racefinish(finishReverse);
+        } else {
+            mReversed = false;
         }
     }
 
@@ -2345,10 +2345,10 @@ void GRaceCustom::CreateRaceActivity() {
     if (mNumOpponents != static_cast<unsigned int>(existingOpponents)) {
         unsigned int opponentKey[16];
         unsigned int currOpponents = 0;
-        Attrib::Attribute attribute;
 
         if (!bossINQuickRace) {
-            attribute = mRaceRecord->Get(0x5839FA1A);
+            Attrib::Attribute attribute(mRaceRecord->Get(0x5839FA1A));
+
             currOpponents = attribute.GetLength();
             if (currOpponents != 0) {
                 for (unsigned int onOpp = 0; onOpp < currOpponents; onOpp++) {
@@ -2370,10 +2370,13 @@ void GRaceCustom::CreateRaceActivity() {
         }
 
         mRaceRecord->Add(0x5839FA1A, mNumOpponents);
-        attribute = mRaceRecord->Get(0x5839FA1A);
-        if (mNumOpponents != 0) {
-            for (unsigned int onSet = 0; onSet < mNumOpponents; onSet++) {
-                attribute.Set(onSet, GCollectionKey(opponentKey[onSet]));
+        {
+            Attrib::Attribute attribute(mRaceRecord->Get(0x5839FA1A));
+
+            if (mNumOpponents != 0) {
+                for (unsigned int onSet = 0; onSet < mNumOpponents; onSet++) {
+                    attribute.Set(onSet, GCollectionKey(opponentKey[onSet]));
+                }
             }
         }
     }
