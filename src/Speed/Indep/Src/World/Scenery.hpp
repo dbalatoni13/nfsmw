@@ -84,7 +84,6 @@ struct SceneryDrawInfo {
     // total size: 0xC
     eModel *pModel;    // offset 0x0, size 0x4
     bMatrix4 *pMatrix; // offset 0x4, size 0x4
-    char unk08[4];
     SceneryInstance *SceneryInst; // offset 0x8, size 0x4
 };
 
