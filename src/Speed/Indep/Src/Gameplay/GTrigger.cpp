@@ -286,11 +286,25 @@ void GTrigger::Enable(bool setEnabled) {
         mTriggerEnabled = 0;
     }
 
+    {
+        unsigned char *triggerBytes = reinterpret_cast<unsigned char *>(&mWorldTrigger);
+        unsigned int word = *reinterpret_cast<unsigned int *>(triggerBytes + 0x10);
+        unsigned int flags = static_cast<unsigned int>(triggerBytes[0x13]) |
+                             (static_cast<unsigned int>(triggerBytes[0x12]) << 8) |
+                             (static_cast<unsigned int>(triggerBytes[0x11]) << 16);
+
+        if (setEnabled) {
+            flags |= 1;
+        } else {
+            flags &= 0xFFFFFE;
+        }
+
+        *reinterpret_cast<unsigned int *>(triggerBytes + 0x10) = (word & 0xFF000000) | flags;
+    }
+
     if (setEnabled) {
-        mWorldTrigger.Enable();
         CreateAllParticleEffects();
     } else {
-        mWorldTrigger.Disable();
         ClearParticleEffects();
     }
 
