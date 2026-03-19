@@ -232,7 +232,7 @@ float TrackPathZone::GetSegmentNextTo(bVector2 *point, bVector2 *segment_point_a
     float len;
 
     for (int n = 0; n < NumPoints; n++) {
-        bVector2 *p0 = &Points[n];
+        bVector2 *p0 = &Points[n % NumPoints];
         bVector2 *p1 = &Points[(n + 1) % NumPoints];
         bVector2 r(p1->y - p0->y, p0->x - p1->x);
         bVector2 v = *p0 - *point;
@@ -253,8 +253,8 @@ float TrackPathZone::GetSegmentNextTo(bVector2 *point, bVector2 *segment_point_a
         return -1.0f;
     }
 
-    *segment_point_a = Points[Closest0];
-    *segment_point_b = Points[Closest1];
+    bCopy(segment_point_a, &Points[Closest0]);
+    bCopy(segment_point_b, &Points[Closest1]);
     return d0;
 }
 
