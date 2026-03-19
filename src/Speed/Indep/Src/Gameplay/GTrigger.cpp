@@ -9,6 +9,7 @@
 #include "Speed/Indep/Src/Gameplay/GIcon.h"
 #include "Speed/Indep/Src/Gameplay/GManager.h"
 #include "Speed/Indep/Src/Gameplay/GRaceDatabase.h"
+#include "Speed/Indep/Src/World/WCollisionAssets.h"
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #include "Speed/Indep/Libs/Support/Utility/UStandard.h"
 
@@ -163,12 +164,13 @@ GTrigger::~GTrigger() {
 }
 
 GActivity *GTrigger::GetTargetActivity() {
-    return reinterpret_cast<GActivity *>(GManager::Get().FindInstance(TargetActivity(0).GetCollectionKey()));
+    unsigned int targetActivityKey = TargetActivity(0).GetCollectionKey();
+    return reinterpret_cast<GActivity *>(GetConnectedInstance(targetActivityKey, 0));
 }
 
 void GTrigger::AddActivationReference() {
     mActivationReferences++;
-    if (mActivationReferences > 0) {
+    if (!mEnabled) {
         Enable(true);
     }
 }
@@ -253,37 +255,50 @@ void GTrigger::EnableParticleEffects(bool enabled) {
 }
 
 void GTrigger::RefreshParticleEffects() {
+    ClearParticleEffects();
+    CreateAllParticleEffects();
     EnableParticleEffects(mEnabled);
 }
 
 void GTrigger::NotifyEmitterGroupDelete(void *obj, EmitterGroup *group) {
     GTrigger *trigger = reinterpret_cast<GTrigger *>(obj);
+    EmitterGroup **particleEffect = trigger->mParticleEffect;
+    int i = 0;
 
-    if (!trigger) {
-        return;
-    }
-
-    for (int i = 0; i < 2; i++) {
-        if (trigger->mParticleEffect[i] == group) {
-            trigger->mParticleEffect[i] = nullptr;
+    do {
+        if (particleEffect[i] == group) {
+            particleEffect[i] = nullptr;
         }
-    }
+        i++;
+    } while (i <= 1);
 }
 
 void GTrigger::Enable(bool setEnabled) {
-    mEnabled = setEnabled;
+    if (!mTriggerEnabled) {
+        if (setEnabled) {
+            WCollisionAssets::Get().AddTrigger(&mWorldTrigger);
+            mTriggerEnabled = 1;
+        }
+    } else if (!setEnabled) {
+        WCollisionAssets::Get().RemoveTrigger(&mWorldTrigger);
+        mTriggerEnabled = 0;
+    }
+
     if (setEnabled) {
         mWorldTrigger.Enable();
         ShowIcon();
+        CreateAllParticleEffects();
     } else {
         mWorldTrigger.Disable();
         HideIcon();
+        ClearParticleEffects();
     }
-    EnableParticleEffects(setEnabled);
+
+    mEnabled = setEnabled;
 }
 
 void GTrigger::GetPosition(UMath::Vector3 &pos) {
-    mWorldTrigger.GetCenter(pos);
+    pos = *reinterpret_cast<const UMath::Vector3 *>(&mWorldTrigger.fPosRadius);
 }
 
 void GTrigger::NotifySimableTrigger(ISimable *isim, int triggerStimulus) {
@@ -319,16 +334,20 @@ void GTrigger::Reset() {
 }
 
 void GTrigger::ShowIcon() {
-    if (mIcon) {
-        mIcon->SetFlag(1);
-        mIcon->SetFlag(2);
+    GIcon *icon = mIcon;
+
+    if (icon) {
+        icon->SetFlag(1);
+        icon->SetFlag(2);
     }
 }
 
 void GTrigger::HideIcon() {
-    if (mIcon) {
-        mIcon->ClearFlag(1);
-        mIcon->ClearFlag(2);
+    GIcon *icon = mIcon;
+
+    if (icon) {
+        icon->ClearFlag(1);
+        icon->ClearFlag(2);
     }
 }
 
