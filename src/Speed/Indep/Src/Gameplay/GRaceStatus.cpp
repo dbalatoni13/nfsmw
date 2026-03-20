@@ -648,10 +648,6 @@ bool GRacerInfo::AreStatsReady() const {
     return mFinishedRacing || mEngineBlown || mTotalled;
 }
 
-void GRacerInfo::ClearAll() {
-    ClearRaceStats();
-}
-
 void GRacerInfo::SaveStartPosition() {
     ISimable *simable = GetSimable();
 
@@ -3213,67 +3209,7 @@ void GRaceStatus::AddRacer(GRuntimeInstance *racer) {
     GRacerInfo &info = mRacerInfo[mRacerCount];
 
     ++mRacerCount;
-    info.mhSimable = nullptr;
-    info.mGameCharacter = nullptr;
-    info.mName = nullptr;
-    info.mIndex = -1;
-    info.mRanking = 0;
-    info.mAiRanking = 0;
-    info.mPctRaceComplete = 0.0f;
-    info.mKnockedOut = false;
-    info.mTotalled = false;
-    info.mEngineBlown = false;
-    info.mBusted = false;
-    info.mChallengeComplete = false;
-    info.mFinishedRacing = false;
-    info.mCameraDetached = false;
-    info.mPctLapComplete = 0.0f;
-    info.mLapsCompleted = 0;
-    info.mCheckpointsHitThisLap = 0;
-    info.mTollboothsCrossed = 0;
-    info.mSpeedTrapsCrossed = 0;
-    info.mDistToNextCheckpoint = 0.0f;
-    info.mDistanceDriven = 0.0f;
-    info.mTopSpeed = 0.0f;
-    info.mFinishingSpeed = 0.0f;
-    info.mPoundsNOSUsed = 0.0f;
-    info.mTimeCrossedLastCheck = 0.0f;
-    info.mTotalUpdateTime = 0.0f;
-    info.mNumPerfectShifts = 0;
-    info.mNumTrafficCarsHit = 0;
-    info.mSpeedBreakerTime = 0.0f;
-    info.mPointTotal = 0.0f;
-    info.mZeroToSixtyTime = 0.0f;
-    info.mQuarterMileTime = 0.0f;
-    info.mRaceTimer.Stop();
-    info.mRaceTimer.Reset(0.0f);
-    info.mLapTimer.Stop();
-    info.mLapTimer.Reset(0.0f);
-    info.mCheckTimer.Stop();
-    info.mCheckTimer.Reset(0.0f);
-    info.mSavedPosition = UMath::Vector3::kZero;
-    info.mSavedHeatLevel = 0.0f;
-    info.mSavedDirection = UMath::Vector3::kZero;
-    info.mSavedSpeed = 0.0f;
-#ifndef EA_BUILD_A124
-    info.mDNF = false;
-#endif
-
-    for (int i = 0; i < 16; ++i) {
-        info.mTimeRemainingToBooth[i] = 0.0f;
-    }
-
-    for (int i = 0; i < 16; ++i) {
-        info.mSpeedTrapSpeed[i] = 0.0f;
-        info.mSpeedTrapPosition[i] = -1;
-    }
-
-#ifndef EA_BUILD_A124
-    for (int i = 0; i < 4; ++i) {
-        info.mSplitTimes[i] = 0.0f;
-        info.mSplitRankings[i] = 0;
-    }
-#endif
+    info.ClearAll();
 
     info.mGameCharacter = static_cast<GCharacter *>(racer);
     info.SetIndex(mRacerCount - 1);

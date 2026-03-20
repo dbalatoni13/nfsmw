@@ -249,6 +249,10 @@ struct GRacerInfo {
 #endif
 };
 
+inline void GRacerInfo::ClearAll() {
+    ClearRaceStats();
+}
+
 DECLARE_CONTAINER_TYPE(ID_GRaceStatusTriggerList);
 
 // total size: 0x14
