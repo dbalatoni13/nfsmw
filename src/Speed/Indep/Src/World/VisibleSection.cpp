@@ -104,7 +104,7 @@ bool VisibleSectionBoundary::IsPointInside(const bVector2 *point) {
 }
 
 float VisibleSectionBoundary::GetDistanceOutside(const bVector2 *point, float max_distance) {
-    if (!bBoundingBoxIsInside(&BBoxMin, &BBoxMax, point, 0.0f)) {
+    if (!bBoundingBoxIsInside(&BBoxMin, &BBoxMax, point, max_distance)) {
         return max_distance;
     }
 
