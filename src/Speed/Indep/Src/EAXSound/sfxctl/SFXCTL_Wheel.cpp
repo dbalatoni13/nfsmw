@@ -28,8 +28,8 @@ SFXCTL_Wheel::SFXCTL_Wheel()
     , RightSideTerrain(static_cast< const Attrib::Collection * >(nullptr), 0, nullptr) //
     , PrevLeftSideTerrain(static_cast< const Attrib::Collection * >(nullptr), 0, nullptr) //
     , PrevRightSideTerrain(static_cast< const Attrib::Collection * >(nullptr), 0, nullptr) {
-    LeftSideTouchingGround = true;
     RightSideTouchingGround = true;
+    LeftSideTouchingGround = true;
 
     {
         Attrib::Gen::simsurface terrain(static_cast< const Attrib::Collection * >(nullptr), 0, nullptr);
