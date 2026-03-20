@@ -100,11 +100,6 @@ ScreenEffectDB::ScreenEffectDB() {
     }
     InitScreenEFX();
 }
-
-void ScreenEffectDB::SetController(ScreenEffectType type, ScreenEffectControl SEC) {
-    SE_inf[type].Controller = SEC;
-}
-
 void TickSFX() {
     if (TheGameFlowManager.IsInGame()) {
         if (ticS_27592 != eFrameCounter - 1) {
@@ -147,11 +142,6 @@ float TopologyCoordinate::GetElevation(const bVector3 *position, TerrainType *ty
     }
     return position->z;
 }
-
-bool WWorldPos::OnValidFace() const {
-    return fFaceValid;
-}
-
 bool TopologyCoordinate::HasTopology(const bVector2 *position) {
     bVector3 test_position(position->x, position->y, 99999.1015625f);
     bool valid;

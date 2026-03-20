@@ -128,7 +128,3 @@ void eView::UnattachCameraMover(CameraMover *camera_mover) {
     this->CameraMoverList.Remove(camera_mover);
     eUpdateViewMode();
 }
-
-int eView::IsActive() const {
-    return Active;
-}
