@@ -2502,21 +2502,23 @@ template <typename T> void GRaceCustom::SetAttribute(unsigned int key, const T &
 GRaceStatus::GRaceStatus()
     : UTL::COM::Object(1), //
       IVehicleCache((UTL::COM::Object *)this) {
-    unsigned char currentBin = FEDatabase->GetCareerSettings()->GetCurrentBin();
+    unsigned char currentBin;
 
     for (int i = 0; i < 16; ++i) {
         mRacerInfo[i].ClearAll();
     }
 
+    currentBin = FEDatabase->GetCareerSettings()->GetCurrentBin();
+
     mRacerCount = 0;
     mIsLoading = false;
+    mPlayMode = kPlayMode_Racing;
     mRaceContext = GRace::kRaceContext_Career;
     mRaceParms = nullptr;
     mCheckpointModel = nullptr;
     mCheckpointEmitter = nullptr;
     mActivelyRacing = false;
     mNumTollbooths = 0;
-    mPlayMode = kPlayMode_Racing;
     mRaceBin = GRaceDatabase::Get().GetBinNumber(currentBin);
     mScriptWaitingForLoad = false;
     mHasBeenWon = false;
