@@ -177,6 +177,10 @@ struct ScreenEffectDB {
     void AddScreenEffect(ScreenEffectType type, ScreenEffectDef *info, unsigned int lock, ScreenEffectControl controller);
     void AddPaletteEffect(ScreenEffectPalette palette);
     void AddPaletteEffect(ScreenEffectPaletteDef *palette);
+    float GetIntensity(ScreenEffectType type);
+    float GetDATA(ScreenEffectType type, int index);
+    void SetDATA(ScreenEffectType type, float data, int index);
+
     void SetController(ScreenEffectType type, ScreenEffectControl SEC) {
         SE_inf[type].Controller = SEC;
     }
@@ -301,7 +305,7 @@ struct Rain {
     Rain(eView *view, RainType StartType);
     void Init(RainType type, float percent);
 
-    float GetRainIntensity() {}
+    float GetRainIntensity();
 
     float GetCloudIntensity();
 

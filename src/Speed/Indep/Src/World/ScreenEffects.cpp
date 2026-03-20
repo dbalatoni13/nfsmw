@@ -276,11 +276,9 @@ void DoTunnelBloom(eView *view) {
 
     if (!__tmp_14_27615) {
         int i = 1;
-        bool more;
-        do {
-            more = i != 0;
+        while (i != 0) {
             i -= 1;
-        } while (more);
+        }
         __tmp_14_27615 = 1;
     }
 
@@ -292,7 +290,7 @@ void DoTunnelBloom(eView *view) {
         zone = TheTrackPathManager.FindZone(twoDpos_ptr, TRACK_PATH_ZONE_TUNNEL, 0);
     }
 
-    if (zone && zone->Elevation > my_car_pos->z) {
+    if (zone && zone->GetElevation() > my_car_pos->z) {
         lcamPosInside_27614[vIndex] = *camera_position;
         float angleCos = 0.0f;
         bVector3 endVector;
@@ -310,9 +308,7 @@ void DoTunnelBloom(eView *view) {
         }
 
         UMath::Vector3 usPoint;
-        usPoint.x = -endVector.y;
-        usPoint.y = endVector.z;
-        usPoint.z = endVector.x;
+        bConvertToBond(usPoint, endVector);
         float height = 0.0f;
         WCollisionMgr collision_mgr(0, 3);
         collision_mgr.GetWorldHeightAtPointRigorous(usPoint, height, 0);
@@ -363,32 +359,28 @@ void DoTunnelBloom(eView *view) {
         SE_def.data[11] = point3_z;
 
         if (regionB_27617[vIndex] != end_tunnel) {
-            view->ScreenEffects->SE_data[SE_GLARE].data[1] = 0.0f;
+            view->ScreenEffects->SetDATA(SE_GLARE, 0.0f, 1);
         }
         regionB_27617[vIndex] = end_tunnel;
         if (zoneB[vIndex] != zone) {
-            view->ScreenEffects->SE_data[SE_GLARE].data[1] = 0.0f;
+            view->ScreenEffects->SetDATA(SE_GLARE, 0.0f, 1);
         }
         zoneB[vIndex] = zone;
 
-        bVector2 r;
-        bVector2 v;
-        r.x = p0.x - twoDpos.x;
-        r.y = p0.y - twoDpos.y;
-        v.x = p1.y - p0.y;
-        v.y = p0.x - p1.x;
+        bVector2 r = p0 - twoDpos;
+        bVector2 v(p1.y - p0.y, p0.x - p1.x);
         bNormalize(&v, &v);
-        float dir_dot = bAbs(v.x * r.x + v.y * r.y);
+        float dir_dot = bAbs(bDot(&v, &r));
         if (dir_dot < 17.0f) {
-            SE_def.intensity = view->ScreenEffects->SE_data[SE_GLARE].data[1] * 0.05882353f * dir_dot;
+            SE_def.intensity = view->ScreenEffects->GetDATA(SE_GLARE, 1) * 0.05882353f * dir_dot;
         } else {
             SE_def.intensity = 1.0f;
-            if (view->ScreenEffects->SE_data[SE_GLARE].data[1] < 1.0f) {
-                SE_def.intensity = view->ScreenEffects->SE_data[SE_GLARE].data[1] + GlareFallon;
+            if (view->ScreenEffects->GetDATA(SE_GLARE, 1) < 1.0f) {
+                SE_def.intensity = view->ScreenEffects->GetDATA(SE_GLARE, 1) + GlareFallon;
             }
         }
 
-        view->ScreenEffects->SE_data[SE_GLARE].data[1] = SE_def.intensity;
+        view->ScreenEffects->SetDATA(SE_GLARE, SE_def.intensity, 1);
         view->ScreenEffects->AddScreenEffect(SE_GLARE, &SE_def, 1, SEC_FRAME);
         AccumulationBufferNeedsFlush = 1;
 
@@ -401,7 +393,7 @@ void DoTunnelBloom(eView *view) {
         return;
     }
 
-    if (0.0f < view->ScreenEffects->SE_data[SE_GLARE].intensity) {
+    if (0.0f < view->ScreenEffects->GetIntensity(SE_GLARE)) {
         ScreenEffectDef SE_def;
         float pos_screen_x;
         float pos_screen_y;
@@ -412,7 +404,7 @@ void DoTunnelBloom(eView *view) {
         SE_def.g = 128.0f;
         SE_def.b = 128.0f;
         SE_def.a = 128.0f;
-        SE_def.intensity = view->ScreenEffects->SE_data[SE_GLARE].intensity - GlareFalloff;
+        SE_def.intensity = view->ScreenEffects->GetIntensity(SE_GLARE) - GlareFalloff;
         pos_screen_x = camera_position->x - lcamPosInside_27614[vIndex].x;
         pos_screen_y = camera_position->y - lcamPosInside_27614[vIndex].y;
         pos_screen_z = camera_position->z - lcamPosInside_27614[vIndex].z;
