@@ -965,8 +965,6 @@ TrackStreamer::TrackStreamer() {
     pDiscBundleSections = 0;
     pLastDiscBundleSection = 0;
     pInfo = 0;
-    NumBarriers = 0;
-    pBarriers = 0;
     NumSectionsLoaded = 0;
     NumSectionsLoading = 0;
     NumSectionsActivated = 0;
@@ -978,20 +976,27 @@ TrackStreamer::TrackStreamer() {
     PermFilename = 0;
     PermFileChunks = 0;
     PermFileSize = 0;
+    NumBarriers = 0;
+    pBarriers = 0;
+    NumCurrentStreamingSections = 0;
+    NumHibernatingSections = 0;
     CurrentZoneNeedsRefreshing = false;
     ZoneSwitchingDisabled = false;
     LastWaitUntilRenderingDoneFrameCount = 0;
     LastPrintedFrameCount = 0;
     SkipNextHandleLoad = false;
-    NumCurrentStreamingSections = 0;
-    NumHibernatingSections = 0;
 
     ClearCurrentZones();
     ClearStreamingPositions();
 
+    pMemoryPoolMem = 0;
+    MemoryPoolSize = 0;
+    UserMemoryAllocationSize = 0;
+    pMemoryPool = 0;
+
     bBitTableLayout_TrackStreamer *layout = reinterpret_cast<bBitTableLayout_TrackStreamer *>(&CurrentVisibleSectionTable);
-    layout->NumBits = 0xAF0;
     layout->Bits = CurrentVisibleSectionTableMem.Bits;
+    layout->NumBits = 0xAF0;
     CurrentVisibleSectionTable.ClearTable();
     bMemSet(KeepSectionTable, 0, sizeof(KeepSectionTable));
     pCallback = 0;
