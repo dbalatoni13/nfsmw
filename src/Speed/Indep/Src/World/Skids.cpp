@@ -30,12 +30,6 @@ class eViewSkidRenderShim : public eView {
     void Render(ePoly *poly, TextureInfo *texture_info, bMatrix4 *matrix, int flags, float z_bias);
 };
 
-SlotPool *SkidSetSlotPool = 0;
-int PlotSkidsInCaffeine = 0;
-int PlotSkidPointsInCaffeine = 0;
-bTList<SkidSet> SkidSetList;
-TextureInfo *SkidTextureInfo[kNumSkidTextures_Skids];
-
 void SkidSegment::SetPoints(bVector3 *position, bVector3 *delta_position) {
     const float scale_factor = kSkidSegmentScale_Skids;
     float x = position->x;
@@ -52,6 +46,12 @@ void SkidSegment::SetPoints(bVector3 *position, bVector3 *delta_position) {
     DeltaPosition[1] = static_cast<signed char>(dy);
     DeltaPosition[2] = static_cast<signed char>(dz);
 }
+
+SlotPool *SkidSetSlotPool = 0;
+int PlotSkidsInCaffeine = 0;
+int PlotSkidPointsInCaffeine = 0;
+bTList<SkidSet> SkidSetList;
+TextureInfo *SkidTextureInfo[kNumSkidTextures_Skids];
 
 void SkidSegment::GetPoints(bVector3 *position, bVector3 *delta_position) {
     const float scale_factor = kInverseSkidSegmentScale_Skids;
