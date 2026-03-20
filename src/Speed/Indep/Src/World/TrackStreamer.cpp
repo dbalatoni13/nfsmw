@@ -1918,8 +1918,14 @@ void TrackStreamer::StartLoadingSections() {
 }
 
 void TrackStreamer::FinishedLoading() {
-    float load_time;
-    (void)load_time;
+    {
+        float load_time;
+        int position_number;
+        StreamingPositionEntry *position_entry;
+        (void)load_time;
+        (void)position_number;
+        (void)position_entry;
+    }
 
     LoadingPhase = LOADING_IDLE;
     CurrentZoneNonReplayLoad = false;
