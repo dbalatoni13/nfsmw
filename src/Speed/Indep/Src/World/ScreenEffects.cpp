@@ -121,6 +121,11 @@ float TopologyCoordinate::GetElevation(const bVector3 *position, TerrainType *ty
 
     bConvertToBond(bond_pos, *position);
     WWorldPos world_pos(0.025f);
+    world_pos.fFace.fPt0 = UMath::Vector3::kZero;
+    world_pos.fFace.fPt1 = UMath::Vector3::kZero;
+    world_pos.fFace.fPt2 = UMath::Vector3::kZero;
+    world_pos.fFace.fSurface.fSurface = 0;
+    world_pos.fFace.fSurface.fFlags = 0;
     world_pos.Update(bond_pos, dummy_normal, true, 0, true);
     if (point_valid) {
         *point_valid = world_pos.OnValidFace();
