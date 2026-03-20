@@ -304,7 +304,7 @@ void DoTunnelBloom(eView *view) {
         int i = 1;
         do {
             i -= 1;
-        } while (i != 0);
+        } while (i + 1 != 0);
         __tmp_14_27615 = 1;
     }
 
