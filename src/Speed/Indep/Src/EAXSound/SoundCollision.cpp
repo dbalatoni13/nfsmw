@@ -375,29 +375,27 @@ void CollisionEvent::InitAsImpact(const Attrib::Gen::audioimpact &audioFx) {
             counter = counter + 1;
             index = counter % levels[selected_level];
 
-            if (selected_level == 1) {
-                stich_id = audioFx.STITCH_LEVEL_1(index);
-                mVolume = static_cast<int>(audioFx.Volumes().Vol2);
-            } else {
-                if (selected_level > 1) {
-                    if (selected_level == 2) {
-                        stich_id = audioFx.STITCH_LEVEL_2(index);
-                        mVolume = static_cast<int>(audioFx.Volumes().Vol3);
-                        goto set_stich;
-                    }
+            switch (selected_level) {
+                case 1:
+                    stich_id = audioFx.STITCH_LEVEL_1(index);
+                    mVolume = static_cast<int>(audioFx.Volumes().Vol2);
+                    break;
 
-                    if (selected_level == 3) {
-                        stich_id = audioFx.STITCH_LEVEL_3(index);
-                        mVolume = static_cast<int>(audioFx.Volumes().Vol4);
-                        goto set_stich;
-                    }
-                }
+                case 2:
+                    stich_id = audioFx.STITCH_LEVEL_2(index);
+                    mVolume = static_cast<int>(audioFx.Volumes().Vol3);
+                    break;
 
-                stich_id = audioFx.STITCH_LEVEL_0(index);
-                mVolume = static_cast<int>(audioFx.Volumes().Vol1);
+                case 3:
+                    stich_id = audioFx.STITCH_LEVEL_3(index);
+                    mVolume = static_cast<int>(audioFx.Volumes().Vol4);
+                    break;
+
+                default:
+                    stich_id = audioFx.STITCH_LEVEL_0(index);
+                    mVolume = static_cast<int>(audioFx.Volumes().Vol1);
+                    break;
             }
-
-        set_stich:
             ImpactStich = &g_pEAXSound->GetStichPlayer()->GetStich(STICH_TYPE_COLLISION, stich_id);
         }
     }
