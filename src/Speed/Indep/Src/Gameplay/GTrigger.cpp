@@ -19,16 +19,7 @@
 GTrigger::GTrigger(const Attrib::Key &triggerKey)
     : GRuntimeInstance(triggerKey, kGameplayObjType_Trigger), //
       mWorldTrigger() {
-    const UMath::Vector3 &pos = Position();
-    UMath::Vector3 dim;
-    bool hasDimensions = Dimensions(dim);
-    UMath::Vector3 posSwizzled = UMath::Vector3Make(-pos.y, pos.z, pos.x);
-    UMath::Vector3 dimSwizzled;
     UMath::Matrix4 mat;
-    float radius;
-    EventStaticData *pTriggerData = &mEventStaticData;
-    bool showIconBasedOnBin = true;
-    dimSwizzled = UMath::Vector3Make(dim.x, dim.z, dim.y);
     mTriggerEnabled = 0;
     mIcon = nullptr;
     mEnabled = false;
@@ -38,13 +29,25 @@ GTrigger::GTrigger(const Attrib::Key &triggerKey)
 
     {
         UMath::Matrix4 rotMat;
-        UMath::Vector3 initialVec = {0.0f, 0.0f, 1.0f};
+        UMath::Vector3 initialVec;
 
         UMath::Init(rotMat, 1.0f, 1.0f, 1.0f);
+        initialVec.x = 0.0f;
+        initialVec.y = 0.0f;
+        initialVec.z = 1.0f;
         UMath::MultYRot(rotMat, -Rotation() * 0.00069444446f, rotMat);
         UMath::Rotate(initialVec, rotMat, mDirection);
         mat = rotMat;
     }
+
+    const UMath::Vector3 &pos = Position();
+    UMath::Vector3 dim;
+    bool hasDimensions = Dimensions(dim);
+    UMath::Vector3 posSwizzled = UMath::Vector3Make(-pos.y, pos.z, pos.x);
+    UMath::Vector3 dimSwizzled = UMath::Vector3Make(dim.x, dim.z, dim.y);
+    float radius;
+    EventStaticData *pTriggerData = &mEventStaticData;
+    bool showIconBasedOnBin = true;
 
     UMath::Set(mat, 3, UMath::Vector4Make(posSwizzled, 1.0f));
 
