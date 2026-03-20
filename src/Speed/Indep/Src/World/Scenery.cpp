@@ -614,6 +614,7 @@ void ScenerySectionHeader::DrawAScenery(int scenery_instance_number, SceneryCull
     if (((instance_exclude_flags ^ 0x60) & scenery_cull_info->ExcludeFlags) != 0) {
         return;
     }
+    int pixel_size_int;
     SceneryInfo *scenery_info = reinterpret_cast<SceneryInfo *>(GetSceneryInfo_Scenery(section_header_words, scenery_info_number));
 
     if (visibility_state == EVISIBLESTATE_PARTIAL) {
@@ -627,7 +628,7 @@ void ScenerySectionHeader::DrawAScenery(int scenery_instance_number, SceneryCull
     }
 
     float radius = scenery_info->Radius + 6.0f;
-    int pixel_size_int = InlinedViewGetPixelSize(scenery_cull_info, instance->GetPosition(), radius);
+    pixel_size_int = InlinedViewGetPixelSize(scenery_cull_info, instance->GetPosition(), radius);
 
     if (pixel_size_int < 2) {
         return;
@@ -698,9 +699,7 @@ void ScenerySectionHeader::DrawAScenery(int scenery_instance_number, SceneryCull
     }
 
     instance->GetRotation(matrix);
-    matrix->v3.x = instance->Position[0];
-    matrix->v3.y = instance->Position[1];
-    matrix->v3.z = instance->Position[2];
+    bFill(&matrix->v3, instance->Position[0], instance->Position[1], instance->Position[2], 1.0f);
 
     if ((instance->ExcludeFlags & scenery_cull_info->ExcludeFlags & 0x100) != 0) {
         matrix->v3.z += EnvMapShadowExtraHeight;
