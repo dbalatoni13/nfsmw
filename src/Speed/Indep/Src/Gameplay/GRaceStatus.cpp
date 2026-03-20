@@ -3936,7 +3936,7 @@ float GRaceStatus::DetermineRaceSegmentLength(const UMath::Vector4 *positions, c
                 for (int i = 0; i < nav.GetNumPathSegments(); ++i) {
                     const WRoadSegment *roadSegment = WRoadNetwork::Get().GetSegment(nav.GetPathSegment(i));
 
-                    if (!(roadSegment->fFlags & 1)) {
+                    if ((roadSegment->fFlags & 1) == 0) {
                         pathSegment.Roads.insert(roadSegment->fRoadID);
                     }
                 }
