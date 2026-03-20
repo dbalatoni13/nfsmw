@@ -7,6 +7,7 @@
 #include "Speed/Indep/Libs/Support/Utility/UStandard.h"
 #include "Speed/Indep/Libs/Support/Utility/UVectorMath.h"
 #include "Speed/Indep/Libs/Support/Utility/UTypes.h"
+#include "Speed/Indep/bWare/Inc/bMath.hpp"
 
 DECLARE_CONTAINER_TYPE(XenonEffectDef);
 
@@ -18,6 +19,8 @@ struct XenonEffectDef {
     EmitterGroup *piggyback_effect;     // offset 0x54, size 0x4
     ~XenonEffectDef() {}
 };
+
+typedef UTL::Std::vector<XenonEffectDef, _type_XenonEffectDef> XenonEffectStdVector;
 
 struct XenonEffectVec;
 
@@ -220,89 +223,86 @@ NGParticle *ParticleList::GetNextParticle() {
 }
 
 void CGEmitter::SpawnParticles(float dt, float intensity) {
-    unsigned int seed = randomSeed;
+    unsigned int random_seed = randomSeed;
 
     if (intensity > 0.0f) {
         UMath::Matrix4 local_world = mLocalWorld;
-        UMath::Matrix4 rotation_world = local_world;
-        rotation_world.v3.x = 0.0f;
-        rotation_world.v3.y = 0.0f;
-        rotation_world.v3.z = 0.0f;
-        rotation_world.v3.w = 1.0f;
-        UMath::Vector4 velocity_base;
-        UMath::Vector4 velocity_center;
-        UMath::Vector4 volume_extent;
-        UMath::Vector4 spawn_point;
-        float age = 0.0f;
-        int colour_r = static_cast<int>(mEmitterDef.Colour1().x * 255.0f);
-        int colour_g = static_cast<int>(mEmitterDef.Colour1().y * 255.0f);
-        int colour_b = static_cast<int>(mEmitterDef.Colour1().z * 255.0f);
-        int colour_a = static_cast<int>(mEmitterDef.Colour1().w * 255.0f);
-        float count = intensity * mEmitterDef.NumParticles();
+        UMath::Matrix4 local_orientation = local_world;
+        local_orientation.v3.x = 0.0f;
+        local_orientation.v3.y = 0.0f;
+        local_orientation.v3.z = 0.0f;
+        local_orientation.v3.w = 1.0f;
+        int r = static_cast<int>(mEmitterDef.Colour1().x * 255.0f);
+        int g = static_cast<int>(mEmitterDef.Colour1().y * 255.0f);
+        int b = static_cast<int>(mEmitterDef.Colour1().z * 255.0f);
+        int a = static_cast<int>(mEmitterDef.Colour1().w * 255.0f);
+        float num_particles = intensity * mEmitterDef.NumParticles();
         float life = mEmitterDef.Life();
-        float count_after_variance = count - count * mEmitterDef.NumParticlesVariance() * 100.0f;
-        float life_factor = life - life * mEmitterDef.LifeVariance();
-        unsigned int precomputed_color = colour_a << 24 | colour_b << 16 | colour_g << 8 | colour_r;
+        float num_particles_variance = num_particles - num_particles * mEmitterDef.NumParticlesVariance() * 100.0f;
+        float particle_age_factor = life - life * mEmitterDef.LifeVariance();
+        float current_particle_age = 0.0f;
+        unsigned int particleColor = a << 24 | b << 16 | g << 8 | r;
 
-        if (count_after_variance != 0.0f) {
-            float particle_step = dt / count_after_variance;
-            while (count_after_variance != 0.0f) {
+        if (num_particles_variance != 0.0f) {
+            float particle_step = dt / num_particles_variance;
+            while (num_particles_variance != 0.0f) {
                 NGParticle *particle;
-                float length_start;
-                float length_clamped;
+                float sparkLength;
+                float ld;
+                UMath::Vector4 pvel;
+                UMath::Vector4 rand;
+                UMath::Vector4 rotatedVel;
                 float gravity;
+                UMath::Vector4 ppos;
 
-                count_after_variance -= 1.0f;
+                num_particles_variance -= 1.0f;
                 particle = gParticleList.GetNextParticle();
                 if (!particle) {
                     break;
                 }
 
-                length_start = mEmitterDef.LengthStart() + bRandom(mEmitterDef.LengthDelta(), &seed);
-                if (length_start < 0.0f) {
+                sparkLength = mEmitterDef.LengthStart() + bRandom(mEmitterDef.LengthDelta(), &random_seed);
+                if (sparkLength < 0.0f) {
                     break;
                 }
 
-                length_clamped = 1.0f;
-                if (length_start < 1.0f) {
-                    length_clamped = length_start;
-                }
+                ld = bMin(sparkLength, 1.0f);
 
-                volume_extent.x = 1.0f - (mEmitterDef.VelocityDelta().x - bRandom(mEmitterDef.VelocityDelta().x, &seed) * 2.0f);
-                volume_extent.y = 1.0f - (mEmitterDef.VelocityDelta().y - bRandom(mEmitterDef.VelocityDelta().y, &seed) * 2.0f);
-                volume_extent.z = 1.0f - (mEmitterDef.VelocityDelta().z - bRandom(mEmitterDef.VelocityDelta().z, &seed) * 2.0f);
-                volume_extent.w = 1.0f;
+                rand.x = 1.0f - (mEmitterDef.VelocityDelta().x - bRandom(mEmitterDef.VelocityDelta().x, &random_seed) * 2.0f);
+                rand.y = 1.0f - (mEmitterDef.VelocityDelta().y - bRandom(mEmitterDef.VelocityDelta().y, &random_seed) * 2.0f);
+                rand.z = 1.0f - (mEmitterDef.VelocityDelta().z - bRandom(mEmitterDef.VelocityDelta().z, &random_seed) * 2.0f);
+                rand.w = 1.0f;
 
-                VU0_v4scalexyz(mEmitterDef.VelocityInherit(), mVel, velocity_base);
-                VU0_MATRIX3x4_vect4mult(mEmitterDef.VolumeCenter(), mLocalWorld, velocity_center);
-                VU0_v4add(velocity_base, velocity_center, velocity_base);
-                VU0_v4scalexyz(velocity_base, volume_extent, velocity_base);
+                VU0_v4scalexyz(mEmitterDef.VelocityInherit(), mVel, pvel);
+                VU0_MATRIX3x4_vect4mult(mEmitterDef.VelocityStart(), local_orientation, rotatedVel);
+                VU0_v4add(pvel, rotatedVel, pvel);
+                VU0_v4scalexyz(pvel, rand, pvel);
 
-                gravity = (mEmitterDef.GravityStart() - mEmitterDef.GravityDelta()) + bRandom(mEmitterDef.GravityDelta(), &seed) * 2.0f;
+                gravity = (mEmitterDef.GravityStart() - mEmitterDef.GravityDelta()) + bRandom(mEmitterDef.GravityDelta(), &random_seed) * 2.0f;
 
-                spawn_point.x = mEmitterDef.VolumeCenter().x + (bRandom(mEmitterDef.VolumeExtent().x, &seed) - mEmitterDef.VolumeExtent().x * 0.5f);
-                spawn_point.y = mEmitterDef.VolumeCenter().y + (bRandom(mEmitterDef.VolumeExtent().y, &seed) - mEmitterDef.VolumeExtent().y * 0.5f);
-                spawn_point.z = mEmitterDef.VolumeCenter().z + (bRandom(mEmitterDef.VolumeExtent().z, &seed) - mEmitterDef.VolumeExtent().z * 0.5f);
-                spawn_point.w = 1.0f;
+                ppos.x = mEmitterDef.VolumeCenter().x + (bRandom(mEmitterDef.VolumeExtent().x, &random_seed) - mEmitterDef.VolumeExtent().x * 0.5f);
+                ppos.y = mEmitterDef.VolumeCenter().y + (bRandom(mEmitterDef.VolumeExtent().y, &random_seed) - mEmitterDef.VolumeExtent().y * 0.5f);
+                ppos.z = mEmitterDef.VolumeCenter().z + (bRandom(mEmitterDef.VolumeExtent().z, &random_seed) - mEmitterDef.VolumeExtent().z * 0.5f);
+                ppos.w = 1.0f;
 
-                UMath::RotateTranslate(spawn_point, local_world, spawn_point);
-                VU0_v3scaleadd(UMath::Vector4To3(velocity_base), age, UMath::Vector4To3(spawn_point),
+                UMath::RotateTranslate(ppos, local_world, ppos);
+                VU0_v3scaleadd(UMath::Vector4To3(pvel), current_particle_age, UMath::Vector4To3(ppos),
                                particle->initialPos);
 
-                particle->initialPos.z += gravity * age * age;
-                particle->vel = UMath::Vector4To3(velocity_base);
-                particle->age = age;
+                particle->initialPos.z += gravity * current_particle_age * current_particle_age;
+                particle->vel = UMath::Vector4To3(pvel);
+                particle->age = current_particle_age;
                 particle->gravity = gravity;
-                particle->life = static_cast<uint16>(life_factor * 65535.0f);
-                particle->color = precomputed_color;
-                particle->length = static_cast<uint8>(length_clamped * 255.0f);
+                particle->life = static_cast<uint16>(particle_age_factor * 65535.0f);
+                particle->color = particleColor;
+                particle->length = static_cast<uint8>(ld * 255.0f);
                 particle->width = static_cast<uint8>(mEmitterDef.HeightStart());
 
-                age += particle_step;
+                current_particle_age += particle_step;
             }
         }
 
-        randomSeed = seed;
+        randomSeed = random_seed;
     }
 }
 
@@ -396,7 +396,6 @@ void AddXenonEffect(EmitterGroup *piggyback_fx, const Attrib::Collection *spec, 
 }
 
 void UpdateXenonEmitters(float dt) {
-    typedef UTL::Std::vector<XenonEffectDef, _type_XenonEffectDef> XenonEffectStdVector;
     XenonEffectDef *iter;
     XenonEffectDef eDef;
 
