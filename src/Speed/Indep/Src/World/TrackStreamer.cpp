@@ -1535,12 +1535,12 @@ void TrackStreamer::FreeSectionMemory() {
     }
 }
 
-int TrackStreamer::GetSectionToActivate(int loaded_frames) {
+int TrackStreamer::GetSectionToActivate(int activation_delay) {
     if (NumSectionsActivated < NumCurrentStreamingSections) {
-        for (int i = 0; i < NumCurrentStreamingSections; i++) {
-            TrackStreamingSection *section = CurrentStreamingSections[i];
+        for (int n = 0; n < NumCurrentStreamingSections; n++) {
+            TrackStreamingSection *section = CurrentStreamingSections[n];
             if (section->Status == TrackStreamingSection::LOADED && TheTrackStreamer.NeedsGameStateActivation(section) &&
-                RealTimeFrames - section->LoadedTime >= loaded_frames) {
+                RealTimeFrames - section->LoadedTime >= activation_delay) {
                 return section->SectionNumber;
             }
         }
