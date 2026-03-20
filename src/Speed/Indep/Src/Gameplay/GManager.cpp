@@ -2506,53 +2506,78 @@ void GManager::UpdateTriggerAvailability() {
 }
 
 void GManager::UpdateIconVisibility() {
-    bool visible[GIcon::kType_Count];
+    bool eventIconsShown;
+    bool menuGateIconsShown;
+    bool speedTrapIconsShown;
+    bool speedTrapRaceIconsShown;
+    bool hideAll;
+    bool showAll;
+    bool iconTypeVisible[GIcon::kType_Count];
+    unsigned int onFlag;
+    unsigned int onIcon;
 
-    mEventIconsShown = mAllowEngageEvents;
-    mMenuGateIconsShown = mAllowMenuGates;
-    mSpeedTrapIconsShown = mAllowEngageEvents;
-    mSpeedTrapRaceIconsShown =
-        GRaceStatus::Exists() && GRaceStatus::Get().GetRaceParameters() &&
-        GRaceStatus::Get().GetRaceParameters()->GetRaceType() == GRace::kRaceType_SpeedTrap;
-
-    for (unsigned int i = 0; i < GIcon::kType_Count; ++i) {
-        visible[i] = TWEAK_ShowAllGameplayIcons != 0;
+    eventIconsShown = mAllowEngageEvents;
+    menuGateIconsShown = mAllowMenuGates;
+    speedTrapIconsShown = mAllowEngageEvents;
+    mSpeedTrapIconsShown = speedTrapIconsShown;
+    mMenuGateIconsShown = menuGateIconsShown;
+    mEventIconsShown = eventIconsShown;
+    speedTrapRaceIconsShown =
+        GRaceStatus::Exists() &&
+        GRaceStatus::Get().GetRaceType() == GRace::kRaceType_SpeedTrap;
+    mSpeedTrapRaceIconsShown = speedTrapRaceIconsShown;
+    hideAll = false;
+    if (UTL::Collections::Singleton<INIS>::Exists()) {
+        hideAll = true;
+    }
+    showAll = false;
+    if (TWEAK_ShowAllGameplayIcons != 0) {
+        showAll = true;
     }
 
-    if (!TWEAK_ShowAllGameplayIcons && !INIS::Exists()) {
-        visible[GIcon::kType_RaceSprint] = mEventIconsShown;
-        visible[GIcon::kType_RaceCircuit] = mEventIconsShown;
-        visible[GIcon::kType_RaceDrag] = mEventIconsShown;
-        visible[GIcon::kType_RaceKnockout] = mEventIconsShown;
-        visible[GIcon::kType_RaceTollbooth] = mEventIconsShown;
-        visible[GIcon::kType_RaceSpeedtrap] = mEventIconsShown;
-        visible[GIcon::kType_RaceRival] = mEventIconsShown;
-        visible[GIcon::kType_GateSafehouse] = mAllowEngageSafehouse;
-        visible[GIcon::kType_GateCarLot] = mMenuGateIconsShown;
-        visible[GIcon::kType_GateCustomShop] = mMenuGateIconsShown;
-        visible[GIcon::kType_HidingSpot] = mHidingSpotIconsShown;
-        visible[GIcon::kType_PursuitBreaker] = mPursuitBreakerIconsShown;
-        visible[GIcon::kType_SpeedTrap] = mSpeedTrapIconsShown;
-        visible[GIcon::kType_SpeedTrapInRace] = mSpeedTrapRaceIconsShown;
-        visible[GIcon::kType_AreaUnlock] = true;
+    for (onFlag = 0; onFlag < GIcon::kType_Count; ++onFlag) {
+        iconTypeVisible[onFlag] = showAll;
+    }
+
+    if (!showAll && !hideAll) {
+        iconTypeVisible[GIcon::kType_RaceSprint] = mEventIconsShown;
+        iconTypeVisible[GIcon::kType_RaceCircuit] = mEventIconsShown;
+        iconTypeVisible[GIcon::kType_RaceDrag] = mEventIconsShown;
+        iconTypeVisible[GIcon::kType_RaceKnockout] = mEventIconsShown;
+        iconTypeVisible[GIcon::kType_RaceTollbooth] = mEventIconsShown;
+        iconTypeVisible[GIcon::kType_RaceSpeedtrap] = mEventIconsShown;
+        iconTypeVisible[GIcon::kType_RaceRival] = mEventIconsShown;
+        iconTypeVisible[GIcon::kType_GateSafehouse] = mAllowEngageSafehouse;
+        iconTypeVisible[GIcon::kType_GateCarLot] = mMenuGateIconsShown;
+        iconTypeVisible[GIcon::kType_GateCustomShop] = mMenuGateIconsShown;
+        iconTypeVisible[GIcon::kType_HidingSpot] = mHidingSpotIconsShown;
+        iconTypeVisible[GIcon::kType_PursuitBreaker] = mPursuitBreakerIconsShown;
+        iconTypeVisible[GIcon::kType_SpeedTrap] = mSpeedTrapIconsShown;
+        iconTypeVisible[GIcon::kType_SpeedTrapInRace] = mSpeedTrapRaceIconsShown;
+        iconTypeVisible[GIcon::kType_AreaUnlock] = true;
     }
 
     mNumVisibleIcons = 0;
-    for (unsigned int i = 0; i < mNumIcons; ++i) {
-        GIcon *icon = mIcons[i];
-        bool shouldShow = icon->IsFlagSet(1) && visible[icon->GetType()];
+    for (onIcon = 0; onIcon < mNumIcons; ++onIcon) {
+        GIcon *icon = mIcons[onIcon];
+        bool enabled = icon->GetIsEnabled();
+        bool iconVisible = icon->GetVisibleInWorld();
+        bool typeVisible = iconTypeVisible[icon->GetType()];
+        bool shouldBeVisible = iconVisible && typeVisible;
 
-        if (shouldShow) {
-            if (icon->IsFlagClear(8)) {
+        if (!shouldBeVisible) {
+            if (enabled) {
+                icon->Disable();
+            }
+        } else {
+            if (!enabled) {
                 icon->Enable();
             }
 
-            GIcon *swap = mIcons[mNumVisibleIcons];
-            mIcons[mNumVisibleIcons] = mIcons[i];
-            mIcons[i] = swap;
+            GIcon *visibleIcon = mIcons[mNumVisibleIcons];
+            mIcons[onIcon] = visibleIcon;
+            mIcons[mNumVisibleIcons] = icon;
             mNumVisibleIcons++;
-        } else if (icon->IsFlagSet(8)) {
-            icon->Disable();
         }
     }
 }
