@@ -1145,13 +1145,13 @@ void TrackStreamer::ClearCurrentZones() {
 
     CurrentZoneFarLoad = true;
     StartLoadingTime = 0.0f;
-    NumJettisonedSections = 0;
-    LoadingPhase = LOADING_IDLE;
-    LoadingBacklog = 0.0f;
     CurrentZoneOutOfMemory = false;
     CurrentZoneAllocatedButIncomplete = false;
     CurrentZoneNonReplayLoad = false;
+    LoadingPhase = LOADING_IDLE;
+    LoadingBacklog = 0.0f;
     CurrentZoneName[0] = 0;
+    NumJettisonedSections = 0;
     MemorySafetyMargin = 0;
     AmountJettisoned = 0;
     bMemSet(JettisonedSections, 0, sizeof(JettisonedSections));
