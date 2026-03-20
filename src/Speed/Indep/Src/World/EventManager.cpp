@@ -264,11 +264,9 @@ int LoaderEventManager(bChunk *chunk) {
                 SetEventTriggerPackData_EventManager(event_trigger_pack, event_data);
 
                 if (GetEventTriggerPackEndianSwapped_EventManager(event_trigger_pack) == 0) {
-                    unsigned int num_event_words = static_cast<unsigned int>(
-                                                       child->GetSize() - (reinterpret_cast<char *>(event_data) - child->GetData())
-                                                   ) >>
-                                                   5;
-                    for (unsigned int i = 0; i < num_event_words; i++) {
+                    int num_event_words =
+                        (child->GetSize() - (reinterpret_cast<char *>(event_data) - child->GetData())) >> 5;
+                    for (int i = 0; i < num_event_words; i++) {
                         int *event_words = reinterpret_cast<int *>(reinterpret_cast<char *>(event_data) + i * 0x20);
                         bEndianSwap32(&event_words[0]);
                         bEndianSwap32(&event_words[1]);
