@@ -44,6 +44,12 @@ struct audioimpact;
 
 namespace Sound {
 
+struct AudioEventVirtualFunction {
+    short Delta;
+    unsigned short Unknown;
+    void (*Function)(void *, int);
+};
+
 void AudioEvent::Update(const bVector3 &p, const bVector3 &n, const bVector3 &v, float mag) {
     mParams.position = p;
     mParams.normal = n;
@@ -247,7 +253,9 @@ AudioEvent *CollisionEvent::PlayScrape(const AudioEventParams &params) {
 
     if (stateObj == nullptr) {
         if (bang != nullptr) {
-            delete bang;
+            AudioEventVirtualFunction *destroy =
+                reinterpret_cast<AudioEventVirtualFunction *>(static_cast<char *>(bang->mVTableAudioEvent) + 8);
+            destroy->Function(reinterpret_cast<char *>(bang) + destroy->Delta, 3);
         }
         return nullptr;
     }
@@ -281,7 +289,9 @@ AudioEvent *CollisionEvent::Play(const AudioEventParams &params) {
     }
 
     if (stateObj == nullptr && bang != nullptr) {
-        delete bang;
+        AudioEventVirtualFunction *destroy =
+            reinterpret_cast<AudioEventVirtualFunction *>(static_cast<char *>(bang->mVTableAudioEvent) + 8);
+        destroy->Function(reinterpret_cast<char *>(bang) + destroy->Delta, 3);
     }
 
     return nullptr;
@@ -407,7 +417,9 @@ void CollisionEvent::Release() {
 
     mRefCount = mRefCount - 1;
     if (mRefCount == 0 && this) {
-        delete this;
+        AudioEventVirtualFunction *destroy =
+            reinterpret_cast<AudioEventVirtualFunction *>(static_cast<char *>(mVTableAudioEvent) + 8);
+        destroy->Function(reinterpret_cast<char *>(this) + destroy->Delta, 3);
     }
 }
 
