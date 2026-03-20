@@ -49,7 +49,7 @@ static inline UMath::Vector3 &bConvertToBond(UMath::Vector3 &dest, const bVector
 
 static int __tmp_14_27615;
 static bVector3 lcamPosInside_27614[2];
-static float dataBackup_27616[12][2];
+static float dataBackup_27616[2][12];
 static GenericRegion *regionB_27617[2];
 static unsigned int ticS_27592;
 
@@ -341,36 +341,36 @@ void DoTunnelBloom(eView *view) {
         float height = 0.0f;
         WCollisionMgr(0, 3).GetWorldHeightAtPointRigorous(usPoint, height, 0);
 
-        dataBackup_27616[kTunnelPoint0X][vIndex] = p0.x + camera_direction->x;
-        dataBackup_27616[kTunnelPoint0Y][vIndex] = p0.y + camera_direction->y;
-        dataBackup_27616[kTunnelPoint0Z][vIndex] = height + camera_direction->z;
-        dataBackup_27616[kTunnelPoint1X][vIndex] = p1.x + camera_direction->x;
-        dataBackup_27616[kTunnelPoint1Y][vIndex] = p1.y + camera_direction->y;
-        dataBackup_27616[kTunnelPoint1Z][vIndex] = height + camera_direction->z;
-        dataBackup_27616[kTunnelPoint2X][vIndex] = p0.x + camera_direction->x;
-        dataBackup_27616[kTunnelPoint2Y][vIndex] = p0.y + camera_direction->y;
-        dataBackup_27616[kTunnelPoint2Z][vIndex] = height + TUNHEIGHT + camera_direction->z;
-        dataBackup_27616[kTunnelPoint3X][vIndex] = p1.x + camera_direction->x;
-        dataBackup_27616[kTunnelPoint3Y][vIndex] = p1.y + camera_direction->y;
-        dataBackup_27616[kTunnelPoint3Z][vIndex] = height + TUNHEIGHT + camera_direction->z;
+        dataBackup_27616[vIndex][kTunnelPoint0X] = p0.x + camera_direction->x;
+        dataBackup_27616[vIndex][kTunnelPoint0Y] = p0.y + camera_direction->y;
+        dataBackup_27616[vIndex][kTunnelPoint0Z] = height + camera_direction->z;
+        dataBackup_27616[vIndex][kTunnelPoint1X] = p1.x + camera_direction->x;
+        dataBackup_27616[vIndex][kTunnelPoint1Y] = p1.y + camera_direction->y;
+        dataBackup_27616[vIndex][kTunnelPoint1Z] = height + camera_direction->z;
+        dataBackup_27616[vIndex][kTunnelPoint2X] = p0.x + camera_direction->x;
+        dataBackup_27616[vIndex][kTunnelPoint2Y] = p0.y + camera_direction->y;
+        dataBackup_27616[vIndex][kTunnelPoint2Z] = height + TUNHEIGHT + camera_direction->z;
+        dataBackup_27616[vIndex][kTunnelPoint3X] = p1.x + camera_direction->x;
+        dataBackup_27616[vIndex][kTunnelPoint3Y] = p1.y + camera_direction->y;
+        dataBackup_27616[vIndex][kTunnelPoint3Z] = height + TUNHEIGHT + camera_direction->z;
 
         SE_def.r = 128.0f;
         SE_def.g = 128.0f;
         SE_def.b = 128.0f;
         SE_def.a = 128.0f;
         SE_def.UpdateFnc = 0;
-        SE_def.data[0] = dataBackup_27616[kTunnelPoint0X][vIndex];
-        SE_def.data[1] = dataBackup_27616[kTunnelPoint0Y][vIndex];
-        SE_def.data[2] = dataBackup_27616[kTunnelPoint0Z][vIndex];
-        SE_def.data[3] = dataBackup_27616[kTunnelPoint1X][vIndex];
-        SE_def.data[4] = dataBackup_27616[kTunnelPoint1Y][vIndex];
-        SE_def.data[5] = dataBackup_27616[kTunnelPoint1Z][vIndex];
-        SE_def.data[6] = dataBackup_27616[kTunnelPoint2X][vIndex];
-        SE_def.data[7] = dataBackup_27616[kTunnelPoint2Y][vIndex];
-        SE_def.data[8] = dataBackup_27616[kTunnelPoint2Z][vIndex];
-        SE_def.data[9] = dataBackup_27616[kTunnelPoint3X][vIndex];
-        SE_def.data[10] = dataBackup_27616[kTunnelPoint3Y][vIndex];
-        SE_def.data[11] = dataBackup_27616[kTunnelPoint3Z][vIndex];
+        SE_def.data[0] = dataBackup_27616[vIndex][kTunnelPoint0X];
+        SE_def.data[1] = dataBackup_27616[vIndex][kTunnelPoint0Y];
+        SE_def.data[2] = dataBackup_27616[vIndex][kTunnelPoint0Z];
+        SE_def.data[3] = dataBackup_27616[vIndex][kTunnelPoint1X];
+        SE_def.data[4] = dataBackup_27616[vIndex][kTunnelPoint1Y];
+        SE_def.data[5] = dataBackup_27616[vIndex][kTunnelPoint1Z];
+        SE_def.data[6] = dataBackup_27616[vIndex][kTunnelPoint2X];
+        SE_def.data[7] = dataBackup_27616[vIndex][kTunnelPoint2Y];
+        SE_def.data[8] = dataBackup_27616[vIndex][kTunnelPoint2Z];
+        SE_def.data[9] = dataBackup_27616[vIndex][kTunnelPoint3X];
+        SE_def.data[10] = dataBackup_27616[vIndex][kTunnelPoint3Y];
+        SE_def.data[11] = dataBackup_27616[vIndex][kTunnelPoint3Z];
 
         if (regionB_27617[vIndex] != end_tunnel) {
             view->ScreenEffects->SetDATA(SE_GLARE, 0.0f, 1);
@@ -421,17 +421,17 @@ void DoTunnelBloom(eView *view) {
     if (0.0f < view->ScreenEffects->GetIntensity(SE_GLARE)) {
         ScreenEffectDef SE_def;
         bVector3 midpoint(
-            dataBackup_27616[kTunnelPoint0X][vIndex],
-            dataBackup_27616[kTunnelPoint0Y][vIndex],
-            dataBackup_27616[kTunnelPoint0Z][vIndex]
+            dataBackup_27616[vIndex][kTunnelPoint0X],
+            dataBackup_27616[vIndex][kTunnelPoint0Y],
+            dataBackup_27616[vIndex][kTunnelPoint0Z]
         );
         bVector3 ToGlare;
         float BaseGlare = view->ScreenEffects->GetIntensity(SE_GLARE) - GlareFalloff;
 
         midpoint += bVector3(
-            dataBackup_27616[kTunnelPoint1X][vIndex],
-            dataBackup_27616[kTunnelPoint1Y][vIndex],
-            dataBackup_27616[kTunnelPoint1Z][vIndex]
+            dataBackup_27616[vIndex][kTunnelPoint1X],
+            dataBackup_27616[vIndex][kTunnelPoint1Y],
+            dataBackup_27616[vIndex][kTunnelPoint1Z]
         );
         midpoint *= 0.5f;
 
@@ -445,18 +445,18 @@ void DoTunnelBloom(eView *view) {
         ToGlare += *camera_direction;
 
         if (0.0f < BaseGlare) {
-            SE_def.data[0] = ToGlare.x + dataBackup_27616[kTunnelPoint0X][vIndex];
-            SE_def.data[1] = ToGlare.y + dataBackup_27616[kTunnelPoint0Y][vIndex];
-            SE_def.data[2] = ToGlare.z + dataBackup_27616[kTunnelPoint0Z][vIndex];
-            SE_def.data[3] = ToGlare.x + dataBackup_27616[kTunnelPoint1X][vIndex];
-            SE_def.data[4] = ToGlare.y + dataBackup_27616[kTunnelPoint1Y][vIndex];
-            SE_def.data[5] = ToGlare.z + dataBackup_27616[kTunnelPoint1Z][vIndex];
-            SE_def.data[6] = ToGlare.x + dataBackup_27616[kTunnelPoint2X][vIndex];
-            SE_def.data[7] = ToGlare.y + dataBackup_27616[kTunnelPoint2Y][vIndex];
-            SE_def.data[8] = ToGlare.z + dataBackup_27616[kTunnelPoint2Z][vIndex];
-            SE_def.data[9] = ToGlare.x + dataBackup_27616[kTunnelPoint3X][vIndex];
-            SE_def.data[10] = ToGlare.y + dataBackup_27616[kTunnelPoint3Y][vIndex];
-            SE_def.data[11] = ToGlare.z + dataBackup_27616[kTunnelPoint3Z][vIndex];
+            SE_def.data[0] = ToGlare.x + dataBackup_27616[vIndex][kTunnelPoint0X];
+            SE_def.data[1] = ToGlare.y + dataBackup_27616[vIndex][kTunnelPoint0Y];
+            SE_def.data[2] = ToGlare.z + dataBackup_27616[vIndex][kTunnelPoint0Z];
+            SE_def.data[3] = ToGlare.x + dataBackup_27616[vIndex][kTunnelPoint1X];
+            SE_def.data[4] = ToGlare.y + dataBackup_27616[vIndex][kTunnelPoint1Y];
+            SE_def.data[5] = ToGlare.z + dataBackup_27616[vIndex][kTunnelPoint1Z];
+            SE_def.data[6] = ToGlare.x + dataBackup_27616[vIndex][kTunnelPoint2X];
+            SE_def.data[7] = ToGlare.y + dataBackup_27616[vIndex][kTunnelPoint2Y];
+            SE_def.data[8] = ToGlare.z + dataBackup_27616[vIndex][kTunnelPoint2Z];
+            SE_def.data[9] = ToGlare.x + dataBackup_27616[vIndex][kTunnelPoint3X];
+            SE_def.data[10] = ToGlare.y + dataBackup_27616[vIndex][kTunnelPoint3Y];
+            SE_def.data[11] = ToGlare.z + dataBackup_27616[vIndex][kTunnelPoint3Z];
             view->ScreenEffects->AddScreenEffect(SE_GLARE, &SE_def, 1, SEC_FRAME);
             AccumulationBufferNeedsFlush = 1;
         }
