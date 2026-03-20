@@ -40,6 +40,7 @@ extern unsigned int FrameMallocFailAmount;
 extern float GlareFalloff;
 extern float GlareFallon;
 extern float TUNHEIGHT;
+extern int debugflash;
 extern TrackPathZone *zoneB[2];
 
 static inline UMath::Vector3 &bConvertToBond(UMath::Vector3 &dest, const bVector3 &v) {
@@ -495,10 +496,15 @@ void DoTinting(eView *view) {
 }
 
 void UpdateAllScreenEFX() {
-    for (int view_index = 1; view_index <= 2; view_index++) {
-        eView *view = eGetView(view_index, false);
-        DoTunnelBloom(view);
-        DoTinting(view);
+    for (int i = 1; i <= 2; i++) {
+        eView *view = eGetView(i, false);
+        if (view->IsActive()) {
+            eGetView(i, false)->ScreenEffects->Update(0.033333335f);
+            if (debugflash != 0) {
+                debugflash = 0;
+                eGetView(i, false)->ScreenEffects->AddPaletteEffect(EFX_CAMERA_FLASH);
+            }
+        }
     }
 }
 
