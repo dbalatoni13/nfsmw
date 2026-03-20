@@ -214,9 +214,9 @@ void RenderVisibleSectionBoundary(VisibleSectionBoundary *boundary, eView *view)
         return;
     }
 
-    bVector3 position(0.0f, 0.0f, 0.0f);
+    bVector3 position;
     TopologyCoordinate topology_coordinate;
-    float pos = static_cast<float>((static_cast<int>(WorldTimer.GetPackedTime() * 0.00025f * 262144.0f) & 0xffff)) * 6.1035156e-05f;
+    float pos = static_cast<float>((static_cast<int>(WorldTimer.GetSeconds() * 262144.0f) & 0xffff)) * 6.103515625e-05f;
     int point_number;
 
     for (point_number = 0; point_number < boundary->GetNumPoints(); point_number++) {
@@ -231,7 +231,8 @@ void RenderVisibleSectionBoundary(VisibleSectionBoundary *boundary, eView *view)
                 if (topology_coordinate.HasTopology(reinterpret_cast<bVector2 *>(&position))) {
                     position.z = 9999.0f;
                     position.z = topology_coordinate.GetElevation(&position, 0, 0, 0);
-                    if (view->GetPixelSize(&position, 1.0f) > 0) {
+                    int pixel_size = view->GetPixelSize(&position, 1.0f);
+                    if (pixel_size > 0) {
                         unsigned char *matrix_memory = CurrentBufferPos;
                         unsigned char *next_buffer_pos = matrix_memory + sizeof(bMatrix4);
                         if (next_buffer_pos >= CurrentBufferEnd) {
