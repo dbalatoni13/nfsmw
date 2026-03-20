@@ -366,7 +366,24 @@ EAX_CarState *GetClosestPlayerCar(const bVector3 *vPosition, bool CameraRelative
 }
 
 EAX_CarState *GetClosestCopCarToCamera() {
-    return nullptr;
+    EAX_CarState *closest = nullptr;
+    float closest_range = 32767.0f;
+    CSTATEMGR_Base *cops = EAXSound::GetStateMgr(eMM_COPCAR);
+
+    for (int n = 0; n < cops->GetStateObjCount(); n++) {
+        CSTATE_Base *cop = cops->GetStateObj(n);
+
+        if (cop->IsAttached()) {
+            EAX_CarState *copcar = cop->GetPhysCar();
+            float range = bDistBetween(SndCamera::GetWorldCarPos3(0), copcar->GetPosition());
+
+            if (range < closest_range) {
+                closest = copcar;
+            }
+        }
+    }
+
+    return closest;
 }
 
 EAX_CarState *GetPlayerCarInRadius(bVector3 &vPos, float fRadius) {
