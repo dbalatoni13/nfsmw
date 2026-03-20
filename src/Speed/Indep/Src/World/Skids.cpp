@@ -29,6 +29,8 @@ class eViewSkidRenderShim : public eView {
     void Render(ePoly *poly, TextureInfo *texture_info, bMatrix4 *matrix, int flags, float z_bias);
 };
 
+extern "C" void __5ePoly(ePoly *poly);
+
 SlotPool *SkidSetSlotPool = 0;
 int PlotSkidsInCaffeine = 0;
 int PlotSkidPointsInCaffeine = 0;
@@ -204,9 +206,11 @@ void SkidSet::Render(eView *view, unsigned char intensityReduction) {
         return;
     }
 
-    bMatrix4 *identity_matrix = eGetIdentityMatrix();
     ePoly poly;
+    __5ePoly(&poly);
+    bMatrix4 *identity_matrix = &eMathIdentityMatrix;
     float extra_height = 0.05f;
+    const unsigned int skid_colour = 0x80808080;
 
     for (int n = 0; n < NumSkidSegments - 1; n++) {
         SkidSegment *skid_segment = &SkidSegments[n];
@@ -221,8 +225,8 @@ void SkidSet::Render(eView *view, unsigned char intensityReduction) {
         poly.Vertices[2].z += extra_height;
         poly.Vertices[3].z += extra_height;
 
-        alpha0 = skid_segment->Intensity;
-        alpha1 = next_skid_segment->Intensity;
+        alpha0 = skid_segment->GetIntensity();
+        alpha1 = next_skid_segment->GetIntensity();
         if (alpha0 < intensityReduction) {
             alpha0 = 0;
         } else {
@@ -234,10 +238,14 @@ void SkidSet::Render(eView *view, unsigned char intensityReduction) {
             alpha1 -= intensityReduction;
         }
 
-        *reinterpret_cast<unsigned int *>(&poly.Colours[0][0]) = 0x80808000 | alpha0;
-        *reinterpret_cast<unsigned int *>(&poly.Colours[1][0]) = 0x80808000 | alpha1;
-        *reinterpret_cast<unsigned int *>(&poly.Colours[2][0]) = 0x80808000 | alpha1;
-        *reinterpret_cast<unsigned int *>(&poly.Colours[3][0]) = 0x80808000 | alpha0;
+        *reinterpret_cast<unsigned int *>(&poly.Colours[0][0]) = skid_colour;
+        *reinterpret_cast<unsigned int *>(&poly.Colours[1][0]) = skid_colour;
+        *reinterpret_cast<unsigned int *>(&poly.Colours[2][0]) = skid_colour;
+        *reinterpret_cast<unsigned int *>(&poly.Colours[3][0]) = skid_colour;
+        poly.Colours[0][3] = alpha0;
+        poly.Colours[1][3] = alpha1;
+        poly.Colours[2][3] = alpha1;
+        poly.Colours[3][3] = alpha0;
         reinterpret_cast<eViewSkidRenderShim *>(view)->Render(&poly, SkidTextureInfo[TheTerrainType], identity_matrix, 0,
                                                               0.05f);
     }
