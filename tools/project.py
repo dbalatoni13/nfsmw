@@ -1070,6 +1070,7 @@ def generate_build_ninja(
         link_steps: List[LinkStep] = []
         used_compiler_versions: Set[str] = set()
         source_inputs: List[Path] = []
+        report_inputs: List[Path] = []
         source_added: Set[Path] = set()
 
         if config.precompiled_headers:
@@ -1228,6 +1229,7 @@ def generate_build_ninja(
             src_path: Path,
             obj_path: Optional[Path],
             add_to_all: bool = True,
+            add_to_report: bool = False,
         ) -> Optional[Path]:
             if obj.options["asflags"] is None:
                 sys.exit("ProjectConfig.asflags missing")
@@ -1256,6 +1258,8 @@ def generate_build_ninja(
 
             if add_to_all and obj.options["add_to_all"]:
                 source_inputs.append(obj_path)
+            if add_to_report and obj.options["add_to_all"]:
+                report_inputs.append(obj_path)
 
             return obj_path
 
@@ -1287,6 +1291,7 @@ def generate_build_ninja(
                         asm_path,
                         obj_path,
                         add_to_all=False,
+                        add_to_report=True,
                     )
                 if file_is_c_cpp(obj.src_path):
                     # Add C/C++ build rule
@@ -1465,6 +1470,14 @@ def generate_build_ninja(
         )
         n.newline()
 
+        n.comment("Build all objdiff report inputs")
+        n.build(
+            outputs="all_report_inputs",
+            rule="phony",
+            inputs=report_inputs,
+        )
+        n.newline()
+
         ###
         # Check hash
         ###
@@ -1544,7 +1557,7 @@ def generate_build_ninja(
         n.build(
             outputs=report_path,
             rule="report",
-            implicit=[objdiff, "objdiff.json", "all_source"],
+            implicit=[objdiff, "objdiff.json", "all_source", "all_report_inputs"],
             variables={
                 "allow_missing_targets": (
                     "--allow-missing-targets"

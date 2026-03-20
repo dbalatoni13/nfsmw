@@ -83,9 +83,7 @@ struct eView : public eViewPlatInterface {
         this->Active = state;
     }
 
-    int IsActive() const {
-        return Active;
-    }
+    int IsActive() const;
 
     CameraMover *GetCameraMover() {
         if (!this->CameraMoverList.IsEmpty()) {
@@ -181,9 +179,7 @@ struct ScreenEffectDB {
     float GetDATA(ScreenEffectType type, int index);
     void SetDATA(ScreenEffectType type, float data, int index);
 
-    void SetController(ScreenEffectType type, ScreenEffectControl SEC) {
-        SE_inf[type].Controller = SEC;
-    }
+    void SetController(ScreenEffectType type, ScreenEffectControl SEC);
 
     void SetMyView(eView *view) {
         MyView = view;
@@ -311,9 +307,7 @@ struct Rain {
 
     float GetCloudIntensity();
 
-    float GetRoadDampness() {
-        return RoadDampness;
-    }
+    float GetRoadDampness();
 
     void GetPrecipFogColour(unsigned int *r, unsigned int *g, unsigned int *b);
 

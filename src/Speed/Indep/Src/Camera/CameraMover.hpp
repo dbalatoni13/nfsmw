@@ -40,9 +40,7 @@ enum CameraMoverTypes {
 // total size: 0x124
 class CameraAnchor {
   public:
-    bVector3 *GetGeometryPosition() {
-        return &mGeomPos;
-    }
+    bVector3 *GetGeometryPosition();
 
     unsigned int GetWorldID() const {
         return mWorldID;

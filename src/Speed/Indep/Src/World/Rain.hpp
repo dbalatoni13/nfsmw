@@ -11,18 +11,4 @@ int AmIinATunnel(eView *view, int CheckOverPass);
 int AmIinATunnelSlow(eView *view, int CheckOverPass);
 void SetRainBase();
 
-inline float Rain::GetCloudIntensity() {
-    return this->CloudIntensity;
-}
-
-inline float Rain::GetRainIntensity() {
-    return this->intensity;
-}
-
-inline void Rain::GetPrecipFogColour(unsigned int *r, unsigned int *g, unsigned int *b) {
-    *r = this->fogR;
-    *g = this->fogG;
-    *b = this->fogB;
-}
-
 #endif
