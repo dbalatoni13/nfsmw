@@ -1408,8 +1408,9 @@ int TrackStreamer::Loader(bChunk *chunk) {
             bMemCpy(section, src, sizeof(TrackStreamingSection));
             NumSectionsLoaded += 1;
             ActivateSection(section);
-            CurrentStreamingSections[NumCurrentStreamingSections] = section;
-            NumCurrentStreamingSections += 1;
+            int current_streaming_section = NumCurrentStreamingSections;
+            CurrentStreamingSections[current_streaming_section] = section;
+            NumCurrentStreamingSections = current_streaming_section + 1;
         }
 
         NumHibernatingSections = 0;
