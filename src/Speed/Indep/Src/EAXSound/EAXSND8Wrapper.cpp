@@ -274,7 +274,10 @@ void PF_Allocator::Free(void *pBlock, unsigned int size) {
 }
 
 int PF_Allocator::AddRef() {
-    return 1;
+    int *data = static_cast<int *>(static_cast<void *>(this));
+    int refCount = data[1] + 1;
+    data[1] = refCount;
+    return refCount;
 }
 
 int PF_Allocator::Release() {
