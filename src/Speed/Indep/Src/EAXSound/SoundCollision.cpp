@@ -376,6 +376,11 @@ void CollisionEvent::InitAsImpact(const Attrib::Gen::audioimpact &audioFx) {
             index = counter % levels[selected_level];
 
             switch (selected_level) {
+                default:
+                    stich_id = audioFx.STITCH_LEVEL_0(index);
+                    mVolume = static_cast<int>(audioFx.Volumes().Vol1);
+                    break;
+
                 case 1:
                     stich_id = audioFx.STITCH_LEVEL_1(index);
                     mVolume = static_cast<int>(audioFx.Volumes().Vol2);
@@ -389,11 +394,6 @@ void CollisionEvent::InitAsImpact(const Attrib::Gen::audioimpact &audioFx) {
                 case 3:
                     stich_id = audioFx.STITCH_LEVEL_3(index);
                     mVolume = static_cast<int>(audioFx.Volumes().Vol4);
-                    break;
-
-                default:
-                    stich_id = audioFx.STITCH_LEVEL_0(index);
-                    mVolume = static_cast<int>(audioFx.Volumes().Vol1);
                     break;
             }
             ImpactStich = &g_pEAXSound->GetStichPlayer()->GetStich(STICH_TYPE_COLLISION, stich_id);
