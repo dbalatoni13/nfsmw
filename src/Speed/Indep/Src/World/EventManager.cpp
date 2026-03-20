@@ -231,10 +231,9 @@ int LoaderEventManager(bChunk *bchunk) {
         case 0x36001: {
             trigger_pack = reinterpret_cast<EventTriggerPack *>(chunk->GetAlignedData(0x10));
             if (trigger_pack->EndianSwapped == 0) {
-                int *endian_swapped = &trigger_pack->EndianSwapped;
                 bPlatEndianSwap(&trigger_pack->ScenerySectionNumber);
                 bPlatEndianSwap(&trigger_pack->Version);
-                bPlatEndianSwap(endian_swapped);
+                bPlatEndianSwap(&trigger_pack->EndianSwapped);
             }
 
             if (trigger_pack->Version != 2) {
