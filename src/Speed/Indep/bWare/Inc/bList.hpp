@@ -128,7 +128,9 @@ struct bList {
     bNode *RemoveHead() {
         return this->GetHead()->Remove();
     }
-    bNode *RemoveTail();            // TODO
+    bNode *RemoveTail() {
+        return this->GetTail()->Remove();
+    }
     int GetNodeNumber(bNode *node); // TODO
 
     int IsInList(bNode *node) {
