@@ -28,8 +28,6 @@ GTrigger::GTrigger(const Attrib::Key &triggerKey)
     UMath::Vector3 posSwizzled;
     UMath::Vector3 dimSwizzled;
     float triggerRadius;
-    EventStaticData *pTriggerData = &mEventStaticData;
-    bool showIconBasedOnBin = true;
     const int *oneShot;
     bool hasDimensions;
 
@@ -138,6 +136,7 @@ GTrigger::GTrigger(const Attrib::Key &triggerKey)
     mEventList.fPad[0] = 0;
     mEventList.fPad[1] = 0;
     mEventList.fPad[2] = 0;
+    EventStaticData *pTriggerData = &mEventStaticData;
     pTriggerData->fEventID = 0xC34649C0u;
     pTriggerData->fEventSize = 8;
     pTriggerData->fDataOffset = 0x10;
@@ -145,6 +144,7 @@ GTrigger::GTrigger(const Attrib::Key &triggerKey)
     bMemSet(mTriggerEventData, 0, sizeof(mTriggerEventData));
     reinterpret_cast<unsigned int *>(mTriggerEventData)[1] = GetCollection();
 
+    bool showIconBasedOnBin = true;
     if (IsDerivedFromTemplate(0xF05931AB)) {
         SetFlag(0x200);
         const GCollectionKey &targetActivityKey = TargetActivity();
