@@ -15,6 +15,7 @@
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
 extern float lbl_803D726C;
+extern float lbl_803D7270;
 extern float lbl_803D72D0;
 extern float lbl_803D72D4;
 extern float lbl_803D72D8;
@@ -27,6 +28,7 @@ extern float lbl_803D72F0;
 extern float lbl_803D72F4;
 extern float lbl_803D72F8;
 extern Slope RedLineDelayPerGear;
+extern "C" int GetQ15FromHundredthsdB__11NFSMixShapei(int ndB);
 
 static const float REDLINE_ENG_FADE[2] = {450.0f, 50.0f};
 static const float REDLINE_REDSAMP_FADE[2] = {50.0f, 120.0f};
@@ -214,7 +216,29 @@ bool SFXCTL_Engine::ShouldTurnOnClutch() {
 }
 
 void SFXCTL_Engine::UpdateFilterFX() {
-    m_DistanceFltr = (m_p3DCarPosCtl != nullptr) ? 1 : 0;
+    float DistanceToUse;
+    float fdist;
+    float DistanceRolloffFilterFActor;
+    int DBResult;
+    int Q15Result;
+    int DistanceFilter;
+
+    fdist = static_cast<float>(m_p3DCarPosCtl->GetDMIX_InputValue(1));
+    DistanceRolloffFilterFActor = ((fdist * 0.01f) - 6.5f) / lbl_803D7270;
+    DistanceToUse = bClamp(DistanceRolloffFilterFActor, 0.0f, 1.0f);
+    DBResult = NFSMixShape::GetCurveOutput(
+        static_cast<NFSMixShape::eMIXTABLEID>(6), static_cast<int>(DistanceToUse * 32766.0f), true);
+    Q15Result = GetQ15FromHundredthsdB__11NFSMixShapei(DBResult);
+    m_DistanceFltr = static_cast<int>(static_cast<float>(Q15Result) * 0.7103183f + 725.0f);
+
+    DistanceFilter = 0;
+    if (m_DistanceFltr > 0) {
+        DistanceFilter = m_DistanceFltr;
+    }
+    if (DistanceFilter > 0x7FFF) {
+        DistanceFilter = 0x7FFF;
+    }
+    m_DistanceFltr = DistanceFilter;
 }
 
 void SFXCTL_Engine::UpdateCompression(float t) {
