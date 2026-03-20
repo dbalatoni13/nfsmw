@@ -418,30 +418,43 @@ void DoTunnelBloom(eView *view) {
 
     if (0.0f < view->ScreenEffects->GetIntensity(SE_GLARE)) {
         ScreenEffectDef SE_def;
-        bVector3 posScreen;
+        bVector3 midpoint(
+            dataBackup_27616[kTunnelPoint0X][vIndex],
+            dataBackup_27616[kTunnelPoint0Y][vIndex],
+            dataBackup_27616[kTunnelPoint0Z][vIndex]
+        );
+        bVector3 ToGlare;
+        float BaseGlare = view->ScreenEffects->GetIntensity(SE_GLARE) - GlareFalloff;
+
+        midpoint += bVector3(
+            dataBackup_27616[kTunnelPoint1X][vIndex],
+            dataBackup_27616[kTunnelPoint1Y][vIndex],
+            dataBackup_27616[kTunnelPoint1Z][vIndex]
+        );
+        midpoint *= 0.5f;
 
         bMemSet(&SE_def, 0, sizeof(SE_def));
         SE_def.r = 128.0f;
         SE_def.g = 128.0f;
         SE_def.b = 128.0f;
         SE_def.a = 128.0f;
-        SE_def.intensity = view->ScreenEffects->GetIntensity(SE_GLARE) - GlareFalloff;
-        posScreen = *camera_position - lcamPosInside_27614[vIndex];
-        posScreen += *camera_direction;
+        SE_def.intensity = BaseGlare;
+        ToGlare = *camera_position - lcamPosInside_27614[vIndex];
+        ToGlare += *camera_direction;
 
-        if (0.0f < SE_def.intensity) {
-            SE_def.data[0] = posScreen.x + dataBackup_27616[kTunnelPoint0X][vIndex];
-            SE_def.data[1] = posScreen.y + dataBackup_27616[kTunnelPoint0Y][vIndex];
-            SE_def.data[2] = posScreen.z + dataBackup_27616[kTunnelPoint0Z][vIndex];
-            SE_def.data[3] = posScreen.x + dataBackup_27616[kTunnelPoint1X][vIndex];
-            SE_def.data[4] = posScreen.y + dataBackup_27616[kTunnelPoint1Y][vIndex];
-            SE_def.data[5] = posScreen.z + dataBackup_27616[kTunnelPoint1Z][vIndex];
-            SE_def.data[6] = posScreen.x + dataBackup_27616[kTunnelPoint2X][vIndex];
-            SE_def.data[7] = posScreen.y + dataBackup_27616[kTunnelPoint2Y][vIndex];
-            SE_def.data[8] = posScreen.z + dataBackup_27616[kTunnelPoint2Z][vIndex];
-            SE_def.data[9] = posScreen.x + dataBackup_27616[kTunnelPoint3X][vIndex];
-            SE_def.data[10] = posScreen.y + dataBackup_27616[kTunnelPoint3Y][vIndex];
-            SE_def.data[11] = posScreen.z + dataBackup_27616[kTunnelPoint3Z][vIndex];
+        if (0.0f < BaseGlare) {
+            SE_def.data[0] = ToGlare.x + dataBackup_27616[kTunnelPoint0X][vIndex];
+            SE_def.data[1] = ToGlare.y + dataBackup_27616[kTunnelPoint0Y][vIndex];
+            SE_def.data[2] = ToGlare.z + dataBackup_27616[kTunnelPoint0Z][vIndex];
+            SE_def.data[3] = ToGlare.x + dataBackup_27616[kTunnelPoint1X][vIndex];
+            SE_def.data[4] = ToGlare.y + dataBackup_27616[kTunnelPoint1Y][vIndex];
+            SE_def.data[5] = ToGlare.z + dataBackup_27616[kTunnelPoint1Z][vIndex];
+            SE_def.data[6] = ToGlare.x + dataBackup_27616[kTunnelPoint2X][vIndex];
+            SE_def.data[7] = ToGlare.y + dataBackup_27616[kTunnelPoint2Y][vIndex];
+            SE_def.data[8] = ToGlare.z + dataBackup_27616[kTunnelPoint2Z][vIndex];
+            SE_def.data[9] = ToGlare.x + dataBackup_27616[kTunnelPoint3X][vIndex];
+            SE_def.data[10] = ToGlare.y + dataBackup_27616[kTunnelPoint3Y][vIndex];
+            SE_def.data[11] = ToGlare.z + dataBackup_27616[kTunnelPoint3Z][vIndex];
             view->ScreenEffects->AddScreenEffect(SE_GLARE, &SE_def, 1, SEC_FRAME);
             AccumulationBufferNeedsFlush = 1;
         }
