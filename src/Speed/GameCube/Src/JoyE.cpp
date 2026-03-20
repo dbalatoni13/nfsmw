@@ -128,28 +128,28 @@ int ActualReadJoystickData() {
 
             for (port = 0; port <= 3; port++) {
                 JoyData *joy_data = &PadRingData[port][JoystickRingBufferTop];
-                PadData *pad_data = &joy_data->ThePadData[0];
 
                 bMemSet(joy_data, 0xFF, sizeof(JoyData));
 
                 if (HardwarePadStatus[port].err == PAD_ERR_NONE) {
                     joy_data->padSTATUS = HardwarePadStatus[port];
-                    pad_data->Type = 0x41;
-                    pad_data->Error = 0;
-                    pad_data->DigitalButtons = ConvertPadButtons(joy_data->padSTATUS.button);
-                    pad_data->AnalogRightX = ClampAnalogValue(static_cast<int>(joy_data->padSTATUS.substickX * 2.15f) + 0x80);
-                    pad_data->AnalogRightY = ClampAnalogValue(0x80 - static_cast<int>(joy_data->padSTATUS.substickY * 2.15f));
-                    pad_data->AnalogLeftX = ClampAnalogValue(static_cast<int>(joy_data->padSTATUS.stickX * 1.75f) + 0x80);
-                    pad_data->AnalogLeftY = ClampAnalogValue(0x80 - static_cast<int>(joy_data->padSTATUS.stickY * 1.75f));
-                    pad_data->LTrigger = static_cast<unsigned char>(joy_data->padSTATUS.triggerL * 1.7f);
-                    pad_data->RTrigger = static_cast<unsigned char>(joy_data->padSTATUS.triggerR * 1.7f);
+                    joy_data->ThePadData[0].Type = 0x41;
+                    joy_data->ThePadData[0].Error = 0;
+                    joy_data->ThePadData[0].DigitalButtons = ConvertPadButtons(joy_data->padSTATUS.button);
+                    joy_data->ThePadData[0].AnalogRightX =
+                        ClampAnalogValue(static_cast<int>(joy_data->padSTATUS.substickX * 2.15f) + 0x80);
+                    joy_data->ThePadData[0].AnalogRightY =
+                        ClampAnalogValue(0x80 - static_cast<int>(joy_data->padSTATUS.substickY * 2.15f));
+                    joy_data->ThePadData[0].AnalogLeftX =
+                        ClampAnalogValue(static_cast<int>(joy_data->padSTATUS.stickX * 1.75f) + 0x80);
+                    joy_data->ThePadData[0].AnalogLeftY =
+                        ClampAnalogValue(0x80 - static_cast<int>(joy_data->padSTATUS.stickY * 1.75f));
+                    joy_data->ThePadData[0].LTrigger = static_cast<unsigned char>(joy_data->padSTATUS.triggerL * 1.7f);
+                    joy_data->ThePadData[0].RTrigger = static_cast<unsigned char>(joy_data->padSTATUS.triggerR * 1.7f);
                 } else if (plat_lgwheels->IsConnected(port)) {
                     const LGPosition *wheel_position;
-                    int wheel_connected;
-                    int pedals_connected;
 
-                    wheel_connected = wasWheelConnected[port];
-                    if (!wheel_connected) {
+                    if (!wasWheelConnected[port]) {
                         wasWheelConnected[port] = 1;
                         calibrationTimer[port] = 7.0f;
                         lastCalibTime[port] = RealTimer.GetSeconds();
@@ -170,28 +170,27 @@ int ActualReadJoystickData() {
                     wheel_position = &reinterpret_cast<LGPosition *>(plat_lgwheels)[port];
                     joy_data->padSTATUS.button = wheel_position->button;
                     HardwarePadStatus[port].button = wheel_position->button;
-                    pad_data->Error = 0;
-                    pedals_connected = plat_lgwheels->PedalsConnected(port);
-                    pad_data->Type = pedals_connected ? 0x51 : 0x50;
-                    pad_data->DigitalButtons = ConvertPadButtons(wheel_position->button);
-                    pad_data->AnalogRightX = 0;
-                    pad_data->AnalogLeftX = wheel_position->wheel + 0x80;
+                    joy_data->ThePadData[0].Error = 0;
+                    joy_data->ThePadData[0].Type = plat_lgwheels->PedalsConnected(port) ? 0x51 : 0x50;
+                    joy_data->ThePadData[0].DigitalButtons = ConvertPadButtons(wheel_position->button);
+                    joy_data->ThePadData[0].AnalogRightX = 0;
+                    joy_data->ThePadData[0].AnalogLeftX = wheel_position->wheel + 0x80;
 
-                    if (pedals_connected) {
-                        pad_data->AnalogRightY = wheel_position->accelerator;
-                        pad_data->AnalogLeftY = wheel_position->brake;
+                    if (plat_lgwheels->PedalsConnected(port)) {
+                        joy_data->ThePadData[0].AnalogRightY = wheel_position->accelerator;
+                        joy_data->ThePadData[0].AnalogLeftY = wheel_position->brake;
                     } else {
-                        pad_data->AnalogLeftY = 0;
-                        pad_data->AnalogRightY = 0;
+                        joy_data->ThePadData[0].AnalogLeftY = 0;
+                        joy_data->ThePadData[0].AnalogRightY = 0;
                     }
 
-                    pad_data->LTrigger = wheel_position->triggerLeft;
-                    pad_data->RTrigger = wheel_position->triggerRight;
+                    joy_data->ThePadData[0].LTrigger = wheel_position->triggerLeft;
+                    joy_data->ThePadData[0].RTrigger = wheel_position->triggerRight;
                 } else {
-                    pad_data->Type = 0xFF;
+                    joy_data->ThePadData[0].Type = 0xFF;
                     wasWheelConnected[port] = 0;
                     notYetCalibrating[port] = 1;
-                    pad_data->Error = 1;
+                    joy_data->ThePadData[0].Error = 1;
                     PADReset(PADMASKS[port]);
                     HardwarePadStatus[port].button = 0;
                 }
