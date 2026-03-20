@@ -45,22 +45,20 @@ inline void SkidSet::operator delete(void *ptr) {
 }
 
 void SkidSegment::SetPoints(bVector3 *position, bVector3 *delta_position) {
-    float delta_x;
-    float delta_y;
-    float delta_z;
-    float position_y = position->y;
-    float position_z = position->z;
+    const float scale_factor = kSkidSegmentScale_Skids;
+    float x = position->x;
+    float y = position->y;
+    float z = position->z;
+    int dx = static_cast<int>(delta_position->x * scale_factor);
+    int dy = static_cast<int>(delta_position->y * scale_factor);
+    int dz = static_cast<int>(delta_position->z * scale_factor);
 
-    delta_x = delta_position->x * kSkidSegmentScale_Skids;
-    delta_y = delta_position->y * kSkidSegmentScale_Skids;
-    delta_z = delta_position->z * kSkidSegmentScale_Skids;
-
-    Position[0] = position->x;
-    Position[1] = position_y;
-    Position[2] = position_z;
-    DeltaPosition[0] = static_cast<signed char>(delta_x);
-    DeltaPosition[1] = static_cast<signed char>(delta_y);
-    DeltaPosition[2] = static_cast<signed char>(delta_z);
+    Position[0] = x;
+    Position[1] = y;
+    Position[2] = z;
+    DeltaPosition[0] = static_cast<signed char>(dx);
+    DeltaPosition[1] = static_cast<signed char>(dy);
+    DeltaPosition[2] = static_cast<signed char>(dz);
 }
 
 void SkidSegment::GetPoints(bVector3 *position, bVector3 *delta_position) {
