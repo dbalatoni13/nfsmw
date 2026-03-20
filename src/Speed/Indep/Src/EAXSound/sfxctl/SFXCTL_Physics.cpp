@@ -595,13 +595,12 @@ void SFXCTL_Physics::UpdateNIS(float TotalTime, float deltaTime) {
                 if (PatternNumber == 12) {
                     goto L_Pattern12;
                 }
-            } else {
-                if (PatternNumber == 6) {
-                    goto L_Pattern6;
-                }
-                if (PatternNumber > 6) {
-                    goto L_Pattern7;
-                }
+            }
+            if (PatternNumber == 6) {
+                goto L_Pattern6;
+            }
+            if (PatternNumber > 6) {
+                goto L_Pattern7;
             }
             patternLength = 0x1B;
             patternData = RevPat5;
@@ -671,24 +670,25 @@ L_PatternDone:
             TimeIntoRev = TotalTime;
         }
 
-        if (TimeIntoRev <= pRevData[1].time) {
-InterpolatePattern:
-            if (eCurNisRevingState != NIS_OFF) {
-                Slope RPMSlope(static_cast<float>(pRevData->RPM), static_cast<float>(pRevData[1].RPM), pRevData->time, pRevData[1].time);
-                Slope TRQSlope(static_cast<float>(pRevData->Trq), static_cast<float>(pRevData[1].Trq), pRevData->time, pRevData[1].time);
-                NISRPM = RPMSlope.GetValue(TimeIntoRev);
-                NISTRQ = TRQSlope.GetValue(TimeIntoRev);
-            }
-        } else if (eCurNisRevingState != NIS_OFF) {
-            do {
+        if (TimeIntoRev > pRevData[1].time) {
+            while (eCurNisRevingState != NIS_OFF) {
                 NumDataPoints = NumDataPoints - 1;
                 if (NumDataPoints == 0) {
                     eCurNisRevingState = NIS_OFF;
                 } else {
                     pRevData = pRevData + 1;
                 }
-            } while (pRevData[1].time < TimeIntoRev && eCurNisRevingState != NIS_OFF);
-            goto InterpolatePattern;
+                if (TimeIntoRev <= pRevData[1].time) {
+                    break;
+                }
+            }
+        }
+
+        if (eCurNisRevingState != NIS_OFF) {
+            Slope RPMSlope(static_cast<float>(pRevData->RPM), static_cast<float>(pRevData[1].RPM), pRevData->time, pRevData[1].time);
+            Slope TRQSlope(static_cast<float>(pRevData->Trq), static_cast<float>(pRevData[1].Trq), pRevData->time, pRevData[1].time);
+            NISRPM = RPMSlope.GetValue(TimeIntoRev);
+            NISTRQ = TRQSlope.GetValue(TimeIntoRev);
         }
 
         timeLeft = -1.0f;
@@ -715,15 +715,15 @@ InterpolatePattern:
         NISRPM = smooth(m_pEAXCar->GetPhysRPM(), PhysicsRPM, 500.0f);
         goto ClampAndStore;
     default:
-        NISTRQ = NISTRQ - 15.0f;
         NISRPM = NISRPM - 500.0f;
+        NISTRQ = NISTRQ - 15.0f;
         goto ClampAndStore;
     }
 
 ClampAndStore:
     {
-        float clampedTRQ = bClamp(NISTRQ, 0.0f, 100.0f);
         float clampedRPM = bClamp(NISRPM, 1000.0f, 10000.0f);
+        float clampedTRQ = bClamp(NISTRQ, 0.0f, 100.0f);
 
         PhysicsRPM = clampedRPM;
         IsAccelerating = clampedTRQ > 30.0f;

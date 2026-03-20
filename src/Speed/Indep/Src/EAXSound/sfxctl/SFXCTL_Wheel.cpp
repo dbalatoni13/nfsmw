@@ -14,10 +14,23 @@ extern int PRINT_SKID_FX_DEBUG;
 void DebugPrintSkidBar(int Horz, int Vert, char *Str, int Value);
 
 SFXCTL_Wheel::SFXCTL_Wheel()
-    : LeftSideTerrain(static_cast< const Attrib::Collection * >(nullptr), 0, nullptr) //
+    : SFXCTL() //
+    , m_bvTotalRightWheelSlip(0.0f, 0.0f) //
+    , m_bvTotalLeftWheelSlip(0.0f, 0.0f) //
+    , LeftSideTerrain(static_cast< const Attrib::Collection * >(nullptr), 0, nullptr) //
     , RightSideTerrain(static_cast< const Attrib::Collection * >(nullptr), 0, nullptr) //
     , PrevLeftSideTerrain(static_cast< const Attrib::Collection * >(nullptr), 0, nullptr) //
-    , PrevRightSideTerrain(static_cast< const Attrib::Collection * >(nullptr), 0, nullptr) {}
+    , PrevRightSideTerrain(static_cast< const Attrib::Collection * >(nullptr), 0, nullptr) //
+    , v3NewPosLeft(0.0f, 0.0f, 0.0f) //
+    , v3NewPosRight(0.0f, 0.0f, 0.0f) //
+    , LeftSideTouchingGround(true) //
+    , RightSideTouchingGround(true) {
+    for (int i = 0; i < 4; i++) {
+        m_NormWheelSlip[i] = bVector2(0.0f, 0.0f);
+        m_fWheelTractionMag[i] = 0.0f;
+        m_fLoad[i] = 0.0f;
+    }
+}
 
 SFXCTL_Wheel::~SFXCTL_Wheel() {}
 
