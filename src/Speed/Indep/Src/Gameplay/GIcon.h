@@ -118,14 +118,10 @@ struct GIcon {
 
 inline void GIcon::Show() {
     SetFlag(kFlag_VisibleInWorld);
-    if (GetIsEnabled()) {
-        Enable();
-    }
 }
 
 inline void GIcon::Hide() {
     ClearFlag(kFlag_VisibleInWorld);
-    Disable();
 }
 
 inline void GIcon::HideUntilRespawn() {

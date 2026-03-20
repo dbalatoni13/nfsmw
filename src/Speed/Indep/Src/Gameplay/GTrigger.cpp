@@ -19,23 +19,15 @@
 GTrigger::GTrigger(const Attrib::Key &triggerKey)
     : GRuntimeInstance(triggerKey, kGameplayObjType_Trigger), //
       mWorldTrigger() {
-    const UMath::Vector3 &pos = Position(0);
+    const UMath::Vector3 &pos = Position();
     UMath::Vector3 dim;
-    const UMath::Vector3 *dimPtr = reinterpret_cast<const UMath::Vector3 *>(GetAttributePointer(0x6D9E21AD, 0));
-    bool hasDimensions = dimPtr != nullptr;
+    bool hasDimensions = Dimensions(dim);
     UMath::Vector3 posSwizzled = UMath::Vector3Make(-pos.y, pos.z, pos.x);
     UMath::Vector3 dimSwizzled;
     UMath::Matrix4 mat;
     float radius;
     EventStaticData *pTriggerData = &mEventStaticData;
     bool showIconBasedOnBin = true;
-    GIcon::Type iconType = GIcon::kType_Invalid;
-
-    if (!dimPtr) {
-        dimPtr = reinterpret_cast<const UMath::Vector3 *>(Attrib::DefaultDataArea(sizeof(UMath::Vector3)));
-    }
-
-    dim = *dimPtr;
     dimSwizzled = UMath::Vector3Make(dim.x, dim.z, dim.y);
     mTriggerEnabled = 0;
     mIcon = nullptr;
@@ -45,30 +37,26 @@ GTrigger::GTrigger(const Attrib::Key &triggerKey)
     mSimObjInside.reserve(8);
 
     {
-        UMath::Matrix4 rotMat = UMath::Matrix4::kIdentity;
-        UMath::Vector3 initialVec = UMath::Vector3Make(0.0f, 0.0f, 1.0f);
+        UMath::Matrix4 rotMat;
+        UMath::Vector3 initialVec = {0.0f, 0.0f, 1.0f};
 
-        MATRIX4_multyrot(&rotMat, -Rotation(0) * 0.00069444446f, &rotMat);
-        VU0_MATRIX3x4_vect3mult(initialVec, rotMat, mDirection);
+        UMath::Init(rotMat, 1.0f, 1.0f, 1.0f);
+        UMath::MultYRot(rotMat, -Rotation() * 0.00069444446f, rotMat);
+        UMath::Rotate(initialVec, rotMat, mDirection);
         mat = rotMat;
     }
 
     UMath::Set(mat, 3, UMath::Vector4Make(posSwizzled, 1.0f));
 
     if (hasDimensions) {
-        new (&mWorldTrigger) WTrigger(mat, dimSwizzled, &mEventList, OneShot(0) ? 2 : 0);
+        new (&mWorldTrigger) WTrigger(mat, dimSwizzled, &mEventList, OneShot() ? 2 : 0);
     } else {
-        const float *radiusPtr = reinterpret_cast<const float *>(GetAttributePointer(0x39BF8002, 0));
-
-        if (radiusPtr) {
-            radius = *radiusPtr;
-        } else {
-            float width = Width(0);
-
+        if (!Radius(radius)) {
+            float width = Width();
             radius = UMath::Sqrt(width * width + 1.0f);
         }
 
-        new (&mWorldTrigger) WTrigger(mat, radius, radius * 2.0f, &mEventList, OneShot(0) ? 2 : 0);
+        new (&mWorldTrigger) WTrigger(mat, radius, radius * 2.0f, &mEventList, OneShot() ? 2 : 0);
     }
 
     mEventList.fNumEvents = 1;
@@ -84,8 +72,11 @@ GTrigger::GTrigger(const Attrib::Key &triggerKey)
 
     if (IsDerivedFromTemplate(0xF05931AB)) {
         SetFlag(0x200);
-        GRaceParameters *parms = GRaceDatabase::Get().GetRaceFromKey(TargetActivity(0).GetCollectionKey());
+        const GCollectionKey &targetActivityKey = TargetActivity();
+        GRaceParameters *parms = GRaceDatabase::Get().GetRaceFromKey(targetActivityKey.GetCollectionKey());
         if (parms) {
+            GIcon::Type iconType = GIcon::kType_Invalid;
+
             if (parms->GetIsBossRace()) {
                 iconType = GIcon::kType_RaceRival;
             } else {
@@ -120,20 +111,20 @@ GTrigger::GTrigger(const Attrib::Key &triggerKey)
         }
     } else if (IsDerivedFromTemplate(0x73049919)) {
         SetFlag(0x2000);
-        iconType = GIcon::kType_GateCarLot;
+        mIcon = GManager::Get().AllocIcon(GIcon::kType_GateCarLot, posSwizzled, 0.0f, false);
     } else if (IsDerivedFromTemplate(0x4698966B)) {
         SetFlag(0x4000);
-        iconType = GIcon::kType_GateCustomShop;
+        mIcon = GManager::Get().AllocIcon(GIcon::kType_GateCustomShop, posSwizzled, 0.0f, false);
     } else if (IsDerivedFromTemplate(0x326427BB)) {
         SetFlag(0x8000);
-        iconType = GIcon::kType_GateSafehouse;
+        mIcon = GManager::Get().AllocIcon(GIcon::kType_GateSafehouse, posSwizzled, 0.0f, false);
     } else if (IsDerivedFromTemplate(0xB05871D3)) {
         SetFlag(0x100);
-        if (OpenWorldSpeedTrap(0)) {
-            iconType = GIcon::kType_SpeedTrap;
+        if (OpenWorldSpeedTrap()) {
+            mIcon = GManager::Get().AllocIcon(GIcon::kType_SpeedTrap, posSwizzled, 0.0f, false);
         } else {
-            iconType = GIcon::kType_SpeedTrapInRace;
             showIconBasedOnBin = false;
+            mIcon = GManager::Get().AllocIcon(GIcon::kType_SpeedTrapInRace, posSwizzled, 0.0f, false);
         }
     } else if (IsDerivedFromTemplate(0x45E28759)) {
         SetFlag(0x400);
@@ -142,22 +133,15 @@ GTrigger::GTrigger(const Attrib::Key &triggerKey)
     } else if (IsDerivedFromTemplate(0xA3E939E9)) {
         SetFlag(0x1000);
     } else if (IsDerivedFromTemplate(0x98217DBF)) {
-        iconType = GIcon::kType_AreaUnlock;
-    }
-
-    if (!mIcon && iconType != GIcon::kType_Invalid) {
-        mIcon = GManager::Get().AllocIcon(iconType, posSwizzled, 0.0f, false);
+        mIcon = GManager::Get().AllocIcon(GIcon::kType_AreaUnlock, posSwizzled, 0.0f, false);
     }
 
     if (showIconBasedOnBin && mIcon) {
-        int binIndex = BinIndex(0);
+        int binIndex = BinIndex();
 
-        if (binIndex > 0 && FEDatabase && FEDatabase->GetCareerSettings()->GetCurrentBin() <= binIndex) {
-            mIcon->SetFlag(1);
-            if (mIcon->GetIsEnabled()) {
-                mIcon->Enable();
-            }
-            mIcon->SetFlag(2);
+        if (binIndex > 0 && FEDatabase && FEDatabase->GetCareerSettings()->GetCurrentBin() <= BinIndex()) {
+            mIcon->Show();
+            mIcon->ShowOnMap();
         }
     }
 }
@@ -220,14 +204,11 @@ void GTrigger::CreateAllParticleEffects() {
         GetPosition(pos);
         flareSpacing = FlareSpacing(0);
         if (flareSpacing > 0.0f) {
-            UMath::Vector3 upVec;
+            const UMath::Vector3 upVec = {0.0f, 1.0f, 0.0f};
             UMath::Vector3 lateralVec;
             UMath::Vector3 posLeft;
             UMath::Vector3 posRight;
 
-            upVec.x = 0.0f;
-            upVec.y = 1.0f;
-            upVec.z = 0.0f;
             bCross(reinterpret_cast<bVector3 *>(&lateralVec), reinterpret_cast<const bVector3 *>(&upVec), reinterpret_cast<const bVector3 *>(&mDirection));
             bScale(reinterpret_cast<bVector3 *>(&lateralVec), reinterpret_cast<const bVector3 *>(&lateralVec), flareSpacing);
             bScaleAdd(reinterpret_cast<bVector3 *>(&posLeft), reinterpret_cast<const bVector3 *>(&pos), reinterpret_cast<const bVector3 *>(&lateralVec), -1.0f);
@@ -361,20 +342,16 @@ void GTrigger::Reset() {
 }
 
 void GTrigger::ShowIcon() {
-    GIcon *icon = mIcon;
-
-    if (icon) {
-        icon->SetFlag(1);
-        icon->SetFlag(2);
+    if (mIcon) {
+        mIcon->Show();
+        mIcon->ShowOnMap();
     }
 }
 
 void GTrigger::HideIcon() {
-    GIcon *icon = mIcon;
-
-    if (icon) {
-        icon->ClearFlag(1);
-        icon->ClearFlag(2);
+    if (mIcon) {
+        mIcon->Hide();
+        mIcon->HideOnMap();
     }
 }
 

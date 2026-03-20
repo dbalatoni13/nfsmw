@@ -282,6 +282,14 @@ struct gameplay : Instance {
         return *resultptr;
     }
 
+    const bool &OpenWorldSpeedTrap() const {
+        const bool *resultptr = reinterpret_cast<const bool *>(this->GetAttributePointer(0x1bb16f14, 0));
+        if (!resultptr) {
+            resultptr = reinterpret_cast<const bool *>(DefaultDataArea(sizeof(bool)));
+        }
+        return *resultptr;
+    }
+
     const bool &OpenWorldSpeedTrap(unsigned int index) const {
         const bool *resultptr = reinterpret_cast<const bool *>(this->GetAttributePointer(0x1bb16f14, index));
         if (!resultptr) {
@@ -338,6 +346,14 @@ struct gameplay : Instance {
         const int *resultptr = reinterpret_cast<const int *>(this->GetAttributePointer(0x26fd42b0, index));
         if (!resultptr) {
             resultptr = reinterpret_cast<const int *>(DefaultDataArea(sizeof(int)));
+        }
+        return *resultptr;
+    }
+
+    const GCollectionKey &TargetActivity() const {
+        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(this->GetAttributePointer(0x277566f3, 0));
+        if (!resultptr) {
+            resultptr = reinterpret_cast<const GCollectionKey *>(DefaultDataArea(sizeof(GCollectionKey)));
         }
         return *resultptr;
     }
@@ -424,6 +440,15 @@ struct gameplay : Instance {
             resultptr = reinterpret_cast<const bool *>(DefaultDataArea(sizeof(bool)));
         }
         return *resultptr;
+    }
+
+    bool Radius(float &result) const {
+        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x39bf8002, 0));
+        if (!resultptr) {
+            return false;
+        }
+        result = *resultptr;
+        return true;
     }
 
     const float &Radius(unsigned int index) const {
@@ -674,6 +699,14 @@ struct gameplay : Instance {
         return this->Get(0x56e1436d).GetLength();
     }
 
+    const float &Width() const {
+        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x5816c1fc, 0));
+        if (!resultptr) {
+            resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
+        }
+        return *resultptr;
+    }
+
     const float &Width(unsigned int index) const {
         const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x5816c1fc, index));
         if (!resultptr) {
@@ -710,6 +743,14 @@ struct gameplay : Instance {
         const EA::Reflection::Text *resultptr = reinterpret_cast<const EA::Reflection::Text *>(this->GetAttributePointer(0x5987fb25, index));
         if (!resultptr) {
             resultptr = reinterpret_cast<const EA::Reflection::Text *>(DefaultDataArea(sizeof(EA::Reflection::Text)));
+        }
+        return *resultptr;
+    }
+
+    const float &Rotation() const {
+        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x5a6a57c6, 0));
+        if (!resultptr) {
+            resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
@@ -846,6 +887,14 @@ struct gameplay : Instance {
         return *resultptr;
     }
 
+    const int &BinIndex() const {
+        const int *resultptr = reinterpret_cast<const int *>(this->GetAttributePointer(0x6ce23062, 0));
+        if (!resultptr) {
+            resultptr = reinterpret_cast<const int *>(DefaultDataArea(sizeof(int)));
+        }
+        return *resultptr;
+    }
+
     const int &BinIndex(unsigned int index) const {
         const int *resultptr = reinterpret_cast<const int *>(this->GetAttributePointer(0x6ce23062, index));
         if (!resultptr) {
@@ -864,6 +913,16 @@ struct gameplay : Instance {
 
     unsigned int Num_SpeedTrapsRequired() const {
         return this->Get(0x6d7e73c9).GetLength();
+    }
+
+    bool Dimensions(UMath::Vector3 &result) const {
+        const UMath::Vector3 *resultptr = reinterpret_cast<const UMath::Vector3 *>(this->GetAttributePointer(0x6d9e21ad, 0));
+        bool hasResult = resultptr != nullptr;
+        if (!resultptr) {
+            resultptr = reinterpret_cast<const UMath::Vector3 *>(DefaultDataArea(sizeof(UMath::Vector3)));
+        }
+        result = *resultptr;
+        return hasResult;
     }
 
     const UMath::Vector3 &Dimensions(unsigned int index) const {
@@ -1170,6 +1229,14 @@ struct gameplay : Instance {
         const bool *resultptr = reinterpret_cast<const bool *>(this->GetAttributePointer(0x9eb17c1e, index));
         if (!resultptr) {
             resultptr = reinterpret_cast<const bool *>(DefaultDataArea(sizeof(bool)));
+        }
+        return *resultptr;
+    }
+
+    const UMath::Vector3 &Position() const {
+        const UMath::Vector3 *resultptr = reinterpret_cast<const UMath::Vector3 *>(this->GetAttributePointer(0x9f743a0e, 0));
+        if (!resultptr) {
+            resultptr = reinterpret_cast<const UMath::Vector3 *>(DefaultDataArea(sizeof(UMath::Vector3)));
         }
         return *resultptr;
     }
@@ -1558,6 +1625,14 @@ struct gameplay : Instance {
 
     const bool &IconModelScale(unsigned int index) const {
         const bool *resultptr = reinterpret_cast<const bool *>(this->GetAttributePointer(0xcd41cd40, index));
+        if (!resultptr) {
+            resultptr = reinterpret_cast<const bool *>(DefaultDataArea(sizeof(bool)));
+        }
+        return *resultptr;
+    }
+
+    const bool &OneShot() const {
+        const bool *resultptr = reinterpret_cast<const bool *>(this->GetAttributePointer(0xce4261ac, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const bool *>(DefaultDataArea(sizeof(bool)));
         }
