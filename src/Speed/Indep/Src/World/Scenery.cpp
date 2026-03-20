@@ -798,7 +798,7 @@ void ScenerySectionHeader::TreeCull(SceneryCullInfo *scenery_cull_info) {
                 if (child_code >= 0) {
                     DrawAScenery(child_code, scenery_cull_info, visibility_state);
                 } else {
-                    int scenery_instance_number = -child_code;
+                    int scenery_instance_number = child_code * -1;
                     SceneryTreeNode *child_node;
 
                     child_node = reinterpret_cast<SceneryTreeNode *>(
