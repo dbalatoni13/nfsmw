@@ -16,9 +16,9 @@
 
 #include "Speed/Indep/Src/World/VisibleSection.cpp"
 
-#include "Speed/Indep/Src/World/EventManager.cpp"
-
 #include "Speed/Indep/Src/World/WeatherMan.cpp"
+
+#include "Speed/Indep/Src/World/EventManager.cpp"
 
 #include "Speed/Indep/Src/World/ParameterMaps.cpp"
 
