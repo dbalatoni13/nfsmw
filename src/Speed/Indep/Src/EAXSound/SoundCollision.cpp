@@ -232,7 +232,25 @@ void CollisionEvent::Update(const bVector3 &position, const bVector3 &normal, co
     (void)dt;
 }
 
-void CollisionEvent::InitAsScrape(const Attrib::Gen::audioscrape &) {}
+void CollisionEvent::InitAsScrape(const Attrib::Gen::audioscrape &audioFx) {
+    Attrib::StringKey effect(audioFx.CSIS_EFFECT());
+    const char *effectString = effect.GetString();
+    bool empty = true;
+
+    if (effectString) {
+        empty = *effectString == '\0';
+    }
+
+    if (!empty) {
+        if (!effectString) {
+            effectString = "";
+        }
+
+        *static_cast<int *>(static_cast<void *>(&mActive)) = 1;
+        mCSISEffect = effectString;
+        Description |= 0x200;
+    }
+}
 
 void CollisionEvent::InitAsImpact(const Attrib::Gen::audioimpact &audioFx) {
     int levels[5];
