@@ -66,10 +66,21 @@ void SFXCTL_HybridMotor::InitSFX() {
 
 void SFXCTL_HybridMotor::SetupSFX(CSTATE_Base *_StateBase) {
     SndBase::SetupSFX(_StateBase);
-    if (m_pEAXCar != nullptr) {
-        m_UGL = static_cast<eAemsUpgradeLevel>(m_pEAXCar->GetEngineUpgradeLevel());
-    }
-    m_AvgDeltaRPM.Reset(0.0f);
+    m_UGL = static_cast<eAemsUpgradeLevel>(m_pEAXCar->GetEngineUpgradeLevel());
+
+    int MaxMinDif = static_cast<int>(m_pEAXCar->GetAttributes().GINSU_Decel_MaxRPM()) -
+                    static_cast<int>(m_pEAXCar->GetAttributes().GINSU_Decel_MinRPM());
+
+    CrossFadesPoints[1].y = 0.0f;
+    CrossFadesPoints[1].x = static_cast<float>(m_pEAXCar->GetAttributes().GINSU_Decel_MinRPM());
+    CrossFadesPoints[2].y = 1.0f;
+    CrossFadesPoints[2].x = static_cast<float>(m_pEAXCar->GetAttributes().GINSU_Decel_MinRPM()) +
+                            static_cast<float>(MaxMinDif) * m_pEAXCar->GetAttributes().GINSU_DECEL_FADE_OUT();
+    CrossFadesPoints[3].y = 1.0f;
+    CrossFadesPoints[3].x = static_cast<float>(m_pEAXCar->GetAttributes().GINSU_Decel_MaxRPM()) -
+                            static_cast<float>(MaxMinDif) * m_pEAXCar->GetAttributes().GINSU_DECEL_FADE_IN();
+    CrossFadesPoints[4].y = 0.0f;
+    CrossFadesPoints[4].x = static_cast<float>(m_pEAXCar->GetAttributes().GINSU_Decel_MaxRPM());
 }
 
 void SFXCTL_HybridMotor::AttachController(SFXCTL *ctrl) {
