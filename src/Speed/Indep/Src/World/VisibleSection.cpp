@@ -100,7 +100,11 @@ bool VisibleSectionBoundary::IsPointInside(const bVector2 *point) {
         return false;
     }
 
-    return MyIsPointInPoly(point, Points, NumPoints) != 0;
+    if (MyIsPointInPoly(point, Points, NumPoints)) {
+        return true;
+    }
+
+    return false;
 }
 
 float VisibleSectionBoundary::GetDistanceOutside(const bVector2 *point, float max_distance) {
@@ -112,17 +116,18 @@ float VisibleSectionBoundary::GetDistanceOutside(const bVector2 *point, float ma
         return 0.0f;
     }
 
+    float closest_distance = max_distance;
     int i = 0;
     while (i < NumPoints) {
         int next = i + 1;
-        float distance = bDistToLine(point, &Points[i], &Points[next - (next / NumPoints) * NumPoints]);
-        if (distance < max_distance) {
-            max_distance = distance;
+        float distance = bDistToLine(point, GetPoint(i), GetPoint(next - (next / NumPoints) * NumPoints));
+        if (distance < closest_distance) {
+            closest_distance = distance;
         }
         i = next;
     }
 
-    return max_distance;
+    return closest_distance;
 }
 
 void DrivableScenerySection::AddVisibleSection(int section_number) {
