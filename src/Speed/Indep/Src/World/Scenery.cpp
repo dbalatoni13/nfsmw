@@ -774,33 +774,41 @@ void ScenerySectionHeader::TreeCull(SceneryCullInfo *scenery_cull_info) {
     const int max_depth = 64;
     SceneryTreeNode *node_stack[max_depth];
     unsigned char visibility_state_stack[max_depth];
-    int *section_header_words = reinterpret_cast<int *>(this);
     SceneryTreeNode **pnode = node_stack + 1;
     unsigned char *pvisibility_state = visibility_state_stack + 1;
 
-    node_stack[0] = reinterpret_cast<SceneryTreeNode *>(section_header_words[10]);
+    node_stack[0] = reinterpret_cast<SceneryTreeNode *>(reinterpret_cast<int *>(this)[10]);
     visibility_state_stack[0] = 1;
     while (pnode != node_stack) {
-        pvisibility_state -= 1;
-        unsigned char visibility_state = *pvisibility_state;
         pnode -= 1;
         SceneryTreeNode *node = *pnode;
+        pvisibility_state -= 1;
+        unsigned char visibility_state = *pvisibility_state;
         if (visibility_state == 1) {
-            bVector3 bbox_min(node->BoundingBox.BBoxMin[0], node->BoundingBox.BBoxMin[1], node->BoundingBox.BBoxMin[2]);
-            bVector3 bbox_max(node->BoundingBox.BBoxMax[0], node->BoundingBox.BBoxMax[1], node->BoundingBox.BBoxMax[2]);
+            bVector3 bbox_min;
+            bVector3 bbox_max;
+
+            node->BoundingBox.GetBBox(&bbox_min, &bbox_max);
             visibility_state = scenery_cull_info->pView->GetVisibleState(&bbox_min, &bbox_max, 0);
         }
 
         if (visibility_state != 0) {
             for (int child_number = 0; child_number < node->NumChildren; child_number++) {
                 short child_code = node->Children[child_number];
-                if (child_code < 0) {
-                    *pnode = reinterpret_cast<SceneryTreeNode *>(reinterpret_cast<char *>(section_header_words[10]) + -child_code * 0x24);
+                if (child_code >= 0) {
+                    DrawAScenery(child_code, scenery_cull_info, visibility_state);
+                } else {
+                    int scenery_instance_number = -child_code;
+                    SceneryTreeNode *child_node;
+
+                    child_node = reinterpret_cast<SceneryTreeNode *>(
+                        reinterpret_cast<char *>(reinterpret_cast<int *>(this)[10]) +
+                        static_cast<short>(scenery_instance_number) * 0x24);
+
+                    *pnode = child_node;
                     *pvisibility_state = visibility_state;
                     pnode += 1;
                     pvisibility_state += 1;
-                } else {
-                    DrawAScenery(child_code, scenery_cull_info, visibility_state);
                 }
             }
         }
