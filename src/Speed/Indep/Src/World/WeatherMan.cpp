@@ -201,9 +201,9 @@ int UnloaderWeatherMan(bChunk *bchunk) {
 
 void AddRegion(GenericRegion *region) {
     unsigned int region_type = static_cast<unsigned int>(region->Type);
-    if (region_type == 0 && region->Blend == 0) {
-        region_type = REGION_TUNNEL;
+    if (region_type == REGION_RAIN && region->Intensity == 0.0f) {
         region->Type = REGION_TUNNEL;
+        region_type = REGION_TUNNEL;
     }
 
     if (region_type < NUM_REGION_TYPES) {
