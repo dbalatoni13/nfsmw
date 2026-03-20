@@ -328,7 +328,7 @@ void DeleteThisSkid(SkidSet *skid_set) {
 
 void DeleteAllSkids() {
     while (!SkidSetList.IsEmpty()) {
-        DeleteThisSkid(SkidSetList.GetTail());
+        delete SkidSetList.RemoveTail();
     }
 }
 
