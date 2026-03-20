@@ -352,7 +352,6 @@ void DoTunnelBloom(eView *view) {
         dataBackup_27616[kTunnelPoint3Z][vIndex] = point3_z;
 
         ScreenEffectDef SE_def;
-        bMemSet(&SE_def, 0, sizeof(SE_def));
         SE_def.r = 128.0f;
         SE_def.g = 128.0f;
         SE_def.b = 128.0f;
@@ -433,7 +432,6 @@ void DoTunnelBloom(eView *view) {
         );
         midpoint *= 0.5f;
 
-        bMemSet(&SE_def, 0, sizeof(SE_def));
         SE_def.r = 128.0f;
         SE_def.g = 128.0f;
         SE_def.b = 128.0f;
