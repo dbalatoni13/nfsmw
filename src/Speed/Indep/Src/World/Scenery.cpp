@@ -1194,7 +1194,7 @@ int GrandSceneryCullInfo::WhatSectionsShouldWeDraw(short *sections_to_draw, int 
             }
         }
 
-        for (int i = 0; i < drivable_scenery_section->NumVisibleSections; i++) {
+        for (int i = 0; i < drivable_scenery_section->GetNumVisibleSections(); i++) {
             int section_number = drivable_scenery_section->GetVisibleSection(i);
             if (section_number >= 0 && GetScenerySectionHeader(section_number) && num_sections_to_draw < max_sections) {
                 sections[num_sections_to_draw] = static_cast<short>(section_number);
