@@ -3896,42 +3896,49 @@ float GRaceStatus::DetermineRaceSegmentLength(const UMath::Vector4 *positions, c
     UMath::Vector3 delta;
     float pathDistance;
     float segmentDistance = 0.0f;
+    UTL::Std::set<PathSegment, _type_ID_PATH_SET> pathSegments;
     char shortcutAllowed[32];
+    bool noShortcuts = true;
 
+    nav.SetNavType(WRoadNav::kTypeDirection);
+    nav.SetDecisionFilter(true);
     nav.SetPathType(WRoadNav::kPathChopper);
 
     VU0_v3sub(UMath::Vector4To3(positions[start]), UMath::Vector4To3(positions[end]), delta);
     pathDistance = VU0_sqrt(VU0_v3lengthsquare(delta));
 
     nav.InitAtPoint(UMath::Vector4To3(positions[start]), UMath::Vector4To3(directions[start]), true, 1.0f);
-    if (!nav.IsValid()) {
-        bRaceRouteError = true;
-        return pathDistance;
-    }
+    if (nav.IsValid()) {
+        if (start == end) {
+            short segment = nav.GetSegmentInd();
+            float segLenScale = static_cast<float>(nav.GetSegment()->nLength) * 0.015259022f;
 
-    if (start == end) {
-        short segment = nav.GetSegmentInd();
+            do {
+                float lengthDelta = segLenScale * (1.0f - nav.GetSegTime());
 
-        do {
-            float distance = static_cast<float>(nav.GetSegment()->nLength) * 0.015259022f * (1.0f - nav.GetSegTime());
+                if (lengthDelta < 0.01f) {
+                    lengthDelta = 0.01f;
+                }
 
-            distance = UMath::Max(distance, 0.01f);
-            segmentDistance += distance;
-            nav.IncNavPosition(distance, UMath::Vector4To3(directions[end]), 0.0f);
-        } while (segment == nav.GetSegmentInd());
-    }
+                segmentDistance += lengthDelta;
+                nav.IncNavPosition(lengthDelta, UMath::Vector4To3(directions[end]), 0.0f);
+            } while (segment == nav.GetSegmentInd());
+        }
 
-    bMemSet(shortcutAllowed, 1, sizeof(shortcutAllowed));
-    UTL::Std::set<PathSegment, _type_ID_PATH_SET> pathSegments;
+        bMemSet(shortcutAllowed, 1, sizeof(shortcutAllowed));
+        while (true) {
+            bool foundPath;
 
-    {
-        bool noShortcuts = true;
-
-        do {
-            PathSegment pathSegment;
-
+            nav.SetNavType(WRoadNav::kTypeDirection);
             nav.FindPathNow(&UMath::Vector4To3(positions[end]), &UMath::Vector4To3(directions[end]), shortcutAllowed);
-            if (nav.GetNavType() == WRoadNav::kTypePath) {
+            foundPath = nav.GetNavType() == WRoadNav::kTypePath;
+            if (!foundPath) {
+                break;
+            }
+
+            {
+                PathSegment pathSegment;
+
                 WRoadNetwork::Get().AddRaceSegments(&nav);
                 pathDistance = nav.GetPathDistanceRemaining();
 
@@ -3950,53 +3957,57 @@ float GRaceStatus::DetermineRaceSegmentLength(const UMath::Vector4 *positions, c
                     }
                 }
                 pathSegments.insert(pathSegment);
-            } else {
+            }
+
+            if (noShortcuts) {
                 break;
             }
-        } while (!noShortcuts);
+        }
 
         pathDistance += segmentDistance;
         if (noShortcuts && pathSegments.size() == 0) {
             bRaceRouteError = true;
         }
-    }
 
-    if (pathSegments.size() > 1) {
-        PathSegment *sortedPaths[32];
-        int count = 0;
+        if (noShortcuts && pathSegments.size() > 1) {
+            PathSegment *sortedPaths[32];
+            int count = 0;
 
-        for (UTL::Std::set<PathSegment, _type_ID_PATH_SET>::iterator it = pathSegments.begin(); it != pathSegments.end(); ++it) {
-            sortedPaths[count++] = const_cast<PathSegment *>(&*it);
-        }
-
-        for (int i = 1; i < count; ++i) {
-            PathSegment *current = sortedPaths[i];
-            PathSegment *previous = sortedPaths[i - 1];
-            UTL::Std::set<short, _type_ID_ROAD_SET> roadDiff;
-            float roadDiffLength = 0.0f;
-
-            std::set_difference(
-                previous->Roads.begin(),
-                previous->Roads.end(),
-                current->Roads.begin(),
-                current->Roads.end(),
-                std::insert_iterator<UTL::Std::set<short, _type_ID_ROAD_SET> >(roadDiff, roadDiff.begin()));
-
-            for (UTL::Std::set<short, _type_ID_ROAD_SET>::iterator it = roadDiff.begin(); it != roadDiff.end(); ++it) {
-                roadDiffLength += static_cast<float>(WRoadNetwork::Get().GetRoad(*it)->nLength) * 0.061036088f;
+            for (UTL::Std::set<PathSegment, _type_ID_PATH_SET>::iterator it = pathSegments.begin(); it != pathSegments.end(); ++it) {
+                sortedPaths[count++] = const_cast<PathSegment *>(&*it);
             }
 
-            if (roadDiffLength > 0.0f) {
-                float scale_ratio = ((current->Length - previous->Length) + roadDiffLength) / roadDiffLength;
+            for (int i = 1; i < count; ++i) {
+                PathSegment *current = sortedPaths[i];
+                PathSegment *previous = sortedPaths[i - 1];
+                UTL::Std::set<short, _type_ID_ROAD_SET> roadDiff;
+                float roadDiffLength = 0.0f;
+
+                std::set_difference(
+                    previous->Roads.begin(),
+                    previous->Roads.end(),
+                    current->Roads.begin(),
+                    current->Roads.end(),
+                    std::insert_iterator<UTL::Std::set<short, _type_ID_ROAD_SET> >(roadDiff, roadDiff.begin()));
 
                 for (UTL::Std::set<short, _type_ID_ROAD_SET>::iterator it = roadDiff.begin(); it != roadDiff.end(); ++it) {
-                    WRoad *road = const_cast<WRoad *>(WRoadNetwork::Get().GetRoad(*it));
-                    int scale = static_cast<int>(scale_ratio * 65536.0f);
+                    roadDiffLength += static_cast<float>(WRoadNetwork::Get().GetRoad(*it)->nLength) * 0.061036088f;
+                }
 
-                    road->nScale = static_cast<unsigned short>(scale >> 8);
+                if (roadDiffLength > 0.0f) {
+                    float scale_ratio = ((current->Length - previous->Length) + roadDiffLength) / roadDiffLength;
+
+                    for (UTL::Std::set<short, _type_ID_ROAD_SET>::iterator it = roadDiff.begin(); it != roadDiff.end(); ++it) {
+                        WRoad *road = const_cast<WRoad *>(WRoadNetwork::Get().GetRoad(*it));
+                        int scale = static_cast<int>(scale_ratio * 65536.0f);
+
+                        road->nScale = static_cast<unsigned short>(scale >> 8);
+                    }
                 }
             }
         }
+    } else {
+        bRaceRouteError = true;
     }
 
     return pathDistance;
