@@ -68,20 +68,24 @@ Clan *GetClan(bVector3 *position) {
 }
 
 void RenderClans(eView *view) {
-    Clan *next_clan = ClanList.GetHead();
-    while (next_clan != ClanList.EndOfList()) {
-        Clan *clan = next_clan;
-        next_clan = clan->GetNext();
+    ProfileNode profile_node("TODO", 0);
+    Clan *clan = ClanList.GetHead();
+    while (clan != ClanList.EndOfList()) {
+        Clan *next_clan = clan->GetNext();
+        int pixel_size = view->GetPixelSize(clan->GetBBoxMin(), clan->GetBBoxMax());
 
-        if (view->GetPixelSize(&clan->BBoxMin, &clan->BBoxMax) > 10 &&
-            view->GetVisibleState(&clan->BBoxMin, &clan->BBoxMax, 0) != 0) {
-            if (WorldTime - clan->LastUpdateTime > 300) {
-                clan->LastUpdateTime = WorldTime;
-                ClanList.Remove(clan);
-                ClanList.AddHead(clan);
+        if (pixel_size > 10) {
+            eVisibleState visibility = view->GetVisibleState(clan->GetBBoxMin(), clan->GetBBoxMax(), 0);
+            if (visibility != 0) {
+                if (WorldTime - clan->GetLastUpdateTime() > 300) {
+                    clan->SetLastUpdateTime(WorldTime);
+                    ClanList.Remove(clan);
+                    ClanList.AddHead(clan);
+                }
+                RenderSkids(view, clan);
             }
-            RenderSkids(view, clan);
         }
+        clan = next_clan;
     }
 }
 

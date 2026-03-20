@@ -27,6 +27,18 @@ struct Clan : public bTNode<Clan> {
 
     Clan(bVector3 *position, unsigned int hash);
     ~Clan();
+    bVector3 *GetBBoxMin() {
+        return &BBoxMin;
+    }
+    bVector3 *GetBBoxMax() {
+        return &BBoxMax;
+    }
+    int GetLastUpdateTime() {
+        return LastUpdateTime;
+    }
+    void SetLastUpdateTime(int time) {
+        LastUpdateTime = time;
+    }
     void ExpandBoundingBox(bVector3 *bbox_min, bVector3 *bbox_max) {
         bExpandBoundingBox(&BBoxMin, &BBoxMax, bbox_min, bbox_max);
     }
