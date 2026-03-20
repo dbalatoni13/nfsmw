@@ -855,7 +855,12 @@ int LoaderScenery(bChunk *chunk) {
             } else if (subchunk_id == 0x34107) {
                 int *section_header_words = reinterpret_cast<int *>(section_header);
                 section_header_words[12] = reinterpret_cast<int>(subchunk->GetData());
-                section_header_words[13] = static_cast<unsigned int>(subchunk->Size) >> 7;
+                int num_override_datas = static_cast<unsigned int>(subchunk->Size) >> 7;
+                section_header_words[13] = num_override_datas;
+                if (section_header_words[2] == 0) {
+                    for (int i = 0; i < num_override_datas; i++) {
+                    }
+                }
             }
         }
 
