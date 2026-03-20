@@ -124,8 +124,8 @@ RealmcIface::SaveInfo *MemoryCardImp::ConstructSaveInfo(MemoryCard::SaveType typ
     save_info->mGcInfo.mBannerDataInfo =
         *reinterpret_cast<RealmcIface::GCBannerDataInfo **>(reinterpret_cast<char *>(MemoryCard::s_pThis) + 0x14);
     this->m_SaveReq.mSaveInfo = save_info;
-    save_info->mContentName = MemoryCardImp::gContentName;
     save_info->mTypeName = MemoryCardImp::gEntryType[type];
+    save_info->mContentName = MemoryCardImp::gContentName;
     save_info->mHeaderSize = 8;
     save_info->mBodySize = aSize;
     return save_info;
