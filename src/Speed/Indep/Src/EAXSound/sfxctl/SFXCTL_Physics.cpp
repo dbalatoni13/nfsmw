@@ -582,18 +582,7 @@ void SFXCTL_Physics::UpdateNIS(float TotalTime, float deltaTime) {
                 goto L_Pattern8;
             }
             if (PatternNumber > 8) {
-                if (PatternNumber == 10) {
-                    goto L_Pattern10;
-                }
-                if (PatternNumber < 10) {
-                    goto L_Pattern9;
-                }
-                if (PatternNumber == 11) {
-                    goto L_Pattern11;
-                }
-                if (PatternNumber == 12) {
-                    goto L_Pattern12;
-                }
+                goto L_PatternGreaterThan8;
             }
             if (PatternNumber == 6) {
                 goto L_Pattern6;
@@ -601,6 +590,21 @@ void SFXCTL_Physics::UpdateNIS(float TotalTime, float deltaTime) {
             if (PatternNumber > 6) {
                 goto L_Pattern7;
             }
+            goto L_Pattern5;
+L_PatternGreaterThan8:
+            if (PatternNumber == 10) {
+                goto L_Pattern10;
+            }
+            if (PatternNumber < 10) {
+                goto L_Pattern9;
+            }
+            if (PatternNumber == 11) {
+                goto L_Pattern11;
+            }
+            if (PatternNumber == 12) {
+                goto L_Pattern12;
+            }
+L_Pattern5:
             patternLength = 0x1B;
             pRevData = RevPat5;
             goto L_PatternDone;

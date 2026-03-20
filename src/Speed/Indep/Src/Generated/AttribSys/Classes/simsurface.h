@@ -67,6 +67,8 @@ struct simsurface : Instance {
         unsigned char WheelEffectIntensity;   // offset 0xfa, size 0x1
     };
 
+    const simsurface &operator=(const Instance &rhs);
+
     void operator delete(void *ptr, size_t bytes) {
         Attrib::Free(ptr, bytes, "simsurface");
     }
@@ -90,9 +92,7 @@ struct simsurface : Instance {
         Change(FindCollection(ClassKey(), collectionkey));
     }
 
-    static Key ClassKey() {
-        return 0xfb111fef;
-    }
+    static Key ClassKey();
 
     const Instance &GetBase() {
         // return *mCollection;

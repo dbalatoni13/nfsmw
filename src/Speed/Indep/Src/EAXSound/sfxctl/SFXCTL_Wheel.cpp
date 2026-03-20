@@ -13,6 +13,15 @@ extern int PRINT_SKID_FX_DEBUG;
 
 void DebugPrintSkidBar(int Horz, int Vert, char *Str, int Value);
 
+const Attrib::Gen::simsurface &Attrib::Gen::simsurface::operator=(const Instance &rhs) {
+    Instance::operator=(rhs);
+    return *this;
+}
+
+Attrib::Key Attrib::Gen::simsurface::ClassKey() {
+    return 0xfb111fef;
+}
+
 SFXCTL_Wheel::SFXCTL_Wheel()
     : SFXCTL() //
     , m_bvTotalRightWheelSlip(0.0f, 0.0f) //
@@ -84,30 +93,24 @@ void SFXCTL_Wheel::GenerateWheelPosition() {
 }
 
 void SFXCTL_Wheel::GenerateTerrainTypes() {
-    EAX_CarState *car = m_pStateBase != nullptr ? m_pStateBase->GetPhysCar() : nullptr;
-    Sound::Wheel *wheels = car->mWheel;
+    Sound::Wheel *wheels = m_pStateBase->GetPhysCar()->mWheel;
 
-    const Attrib::Collection *col0 = wheels[0].mTerrainType.GetConstCollection();
-    const Attrib::Collection *col1 = wheels[1].mTerrainType.GetConstCollection();
-    const Attrib::Collection *col2 = wheels[2].mTerrainType.GetConstCollection();
-    const Attrib::Collection *col3 = wheels[3].mTerrainType.GetConstCollection();
-
-    Attrib::Instance FLTerrainType(col0, 0, nullptr);
+    Attrib::Instance FLTerrainType(wheels[0].mTerrainType.GetConstCollection(), 0, nullptr);
     FLTerrainType.SetDefaultLayout(0xFC);
     Attrib::Instance FRTerrainType(FLTerrainType);
     FRTerrainType.SetDefaultLayout(0xFC);
 
-    Attrib::Instance RRTerrainType(col1, 0, nullptr);
+    Attrib::Instance RRTerrainType(wheels[1].mTerrainType.GetConstCollection(), 0, nullptr);
     RRTerrainType.SetDefaultLayout(0xFC);
     Attrib::Instance FRTemp(RRTerrainType);
     FRTemp.SetDefaultLayout(0xFC);
 
-    Attrib::Instance RLTerrainType(col2, 0, nullptr);
+    Attrib::Instance RLTerrainType(wheels[2].mTerrainType.GetConstCollection(), 0, nullptr);
     RLTerrainType.SetDefaultLayout(0xFC);
     Attrib::Instance RRTemp(RLTerrainType);
     RRTemp.SetDefaultLayout(0xFC);
 
-    Attrib::Instance CurRightSrc(col3, 0, nullptr);
+    Attrib::Instance CurRightSrc(wheels[3].mTerrainType.GetConstCollection(), 0, nullptr);
     CurRightSrc.SetDefaultLayout(0xFC);
     Attrib::Instance RLTemp(CurRightSrc);
     RLTemp.SetDefaultLayout(0xFC);
@@ -117,27 +120,27 @@ void SFXCTL_Wheel::GenerateTerrainTypes() {
     Attrib::Instance CurLeft(FLTerrainType.GetCollection() == RLTemp.GetCollection() ? FLTerrainType : LeftSideTerrain);
     CurLeft.SetDefaultLayout(0xFC);
 
-    PrevRightSideTerrain.Attrib::Instance::operator=(RightSideTerrain);
-    PrevLeftSideTerrain.Attrib::Instance::operator=(LeftSideTerrain);
+    PrevRightSideTerrain.Attrib::Gen::simsurface::operator=(static_cast< const Attrib::Instance & >(RightSideTerrain));
+    PrevLeftSideTerrain.Attrib::Gen::simsurface::operator=(static_cast< const Attrib::Instance & >(LeftSideTerrain));
 
-    if (wheels[1].mBlownState == 2 || wheels[2].mBlownState == 2) {
+    if (m_pStateBase->GetPhysCar()->mWheel[1].mBlownState == 2 || m_pStateBase->GetPhysCar()->mWheel[2].mBlownState == 2) {
         const Attrib::Collection *blownTerrain =
             Attrib::FindCollection(Attrib::Gen::simsurface::ClassKey(), 0x8EE645B3);
         Attrib::Instance blown(blownTerrain, 0, nullptr);
         blown.SetDefaultLayout(0xFC);
-        RightSideTerrain.Attrib::Instance::operator=(blown);
+        RightSideTerrain.Attrib::Gen::simsurface::operator=(blown);
     } else {
-        RightSideTerrain.Attrib::Instance::operator=(CurRight);
+        RightSideTerrain.Attrib::Gen::simsurface::operator=(CurRight);
     }
 
-    if (wheels[0].mBlownState == 2 || wheels[3].mBlownState == 2) {
+    if (m_pStateBase->GetPhysCar()->mWheel[0].mBlownState == 2 || m_pStateBase->GetPhysCar()->mWheel[3].mBlownState == 2) {
         const Attrib::Collection *blownTerrain =
             Attrib::FindCollection(Attrib::Gen::simsurface::ClassKey(), 0x8EE645B3);
         Attrib::Instance blown(blownTerrain, 0, nullptr);
         blown.SetDefaultLayout(0xFC);
-        LeftSideTerrain.Attrib::Instance::operator=(blown);
+        LeftSideTerrain.Attrib::Gen::simsurface::operator=(blown);
     } else {
-        LeftSideTerrain.Attrib::Instance::operator=(CurLeft);
+        LeftSideTerrain.Attrib::Gen::simsurface::operator=(CurLeft);
     }
 }
 
