@@ -2712,8 +2712,9 @@ void GRaceStatus::SetRacing() {
         }
 
         {
+            const IPlayer *currentPlayer = player;
             IPlayer::List::const_iterator iter =
-                std::find(IPlayer::GetList(PLAYER_ALL).begin(), IPlayer::GetList(PLAYER_ALL).end(), player);
+                std::find(IPlayer::GetList(PLAYER_ALL).begin(), IPlayer::GetList(PLAYER_ALL).end(), currentPlayer);
             IPlayer::List::const_iterator end = IPlayer::GetList(PLAYER_ALL).end();
 
             if (iter == end) {
@@ -2740,7 +2741,7 @@ void GRaceStatus::SetRacing() {
     }
 
     if ((!mRaceParms || !mRaceParms->GetIsDDayRace() || bStrCmp(mRaceParms->GetEventID(), "16.1.0") == 0) &&
-        (!FEDatabase || !FEDatabase->IsFinalEpicChase())) {
+        !FEDatabase->IsFinalEpicChase()) {
         new EAutoSave();
     }
 
