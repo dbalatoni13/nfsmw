@@ -321,7 +321,20 @@ struct Rain {
 
     bVector3 *GetWind() {}
 
-    void AttachRainCurtain(float in0x, float in0y, float in0z, float in1x, float in1y, float in1z, float out0x, float out0y);
+    void AttachRainCurtain(
+        float x0,
+        float y0,
+        float z0,
+        float x1,
+        float y1,
+        float z1,
+        float x2,
+        float y2,
+        float z2,
+        float x3,
+        float y3,
+        float z3
+    );
 };
 
 struct FacePixelation {

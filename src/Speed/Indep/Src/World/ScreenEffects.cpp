@@ -399,7 +399,18 @@ void DoTunnelBloom(eView *view) {
         if (view->Precipitation && 0.0f < view->Precipitation->GetRainIntensity()) {
             view->Precipitation->IsValidRainCurtainPos = CT_OVERIDE;
             view->Precipitation->AttachRainCurtain(
-                point2_x, point2_y, point2_z, point3_x, point3_y, point3_z, point0_x, point0_y
+                SE_def.data[6],
+                SE_def.data[7],
+                SE_def.data[8],
+                SE_def.data[9],
+                SE_def.data[10],
+                SE_def.data[11],
+                SE_def.data[0],
+                SE_def.data[1],
+                SE_def.data[2],
+                SE_def.data[3],
+                SE_def.data[4],
+                SE_def.data[5]
             );
         }
         return;
