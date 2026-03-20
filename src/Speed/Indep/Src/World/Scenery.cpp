@@ -184,7 +184,10 @@ extern unsigned int FrameMallocFailAmount;
 extern float EnvMapShadowExtraHeight;
 extern eModel *pDebugModel;
 extern PrecullerBooBooManager gPrecullerBooBooManager;
-extern float EnablePrecullingSpeed;
+static float InitEnablePrecullingSpeed() {
+    return 40.0f * 0.4470272660255432f;
+}
+static const float EnablePrecullingSpeed = InitEnablePrecullingSpeed();
 extern int PrecullerMode;
 extern int DisablePrecullerCounter;
 extern int RealTimeFrames;
