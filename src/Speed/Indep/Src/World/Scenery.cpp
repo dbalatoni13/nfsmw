@@ -664,9 +664,9 @@ void ScenerySectionHeader::DrawAScenery(int scenery_instance_number, SceneryCull
         }
 
         scenery_cull_info->pCurrentDrawInfo = draw_info + 1;
-        draw_info->SceneryInst = instance;
         draw_info->pModel = reinterpret_cast<eModel *>(reinterpret_cast<int>(model) + visibility_state);
         draw_info->pMatrix = 0;
+        draw_info->SceneryInst = instance;
         return;
     }
 
