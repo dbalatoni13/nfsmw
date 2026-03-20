@@ -85,6 +85,7 @@ struct emEvent : public bTNode<emEvent> {
     int Parameter0;
     int Parameter1;
     int Parameter2;
+
 };
 
 typedef void (*EVENT_HANDLER_FUNC)(emEvent *);
@@ -395,7 +396,9 @@ void emProcessAllEvents() {
         event->Remove();
         CurrentlyHandlingEvent = 0;
         if (event->ReferenceCount == 0) {
-            delete event;
+            if (event) {
+                bFree(EventSlotPool, event);
+            }
         } else {
             locked_event_queue.AddTail(event);
         }
@@ -411,9 +414,15 @@ void emProcessAllEvents() {
     CurrentEventQueue = &MasterEventQueue;
 
     while (!locked_event_queue.IsEmpty()) {
-        delete locked_event_queue.RemoveHead();
+        emEvent *locked_event = locked_event_queue.RemoveHead();
+        if (locked_event) {
+            bFree(EventSlotPool, locked_event);
+        }
     }
     while (!temp_event_queue.IsEmpty()) {
-        delete temp_event_queue.RemoveHead();
+        emEvent *temp_event = temp_event_queue.RemoveHead();
+        if (temp_event) {
+            bFree(EventSlotPool, temp_event);
+        }
     }
 }
