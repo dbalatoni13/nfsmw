@@ -56,6 +56,9 @@ GC_SYMBOLS = os.path.join(ROOT_DIR, "config", "GOWE69", "symbols.txt")
 PS2_SYMBOLS = os.path.join(ROOT_DIR, "config", "SLES-53558-A124", "symbols.txt")
 GC_DWARF = os.path.join(ROOT_DIR, "symbols", "Dwarf")
 DEBUG_LINES = os.path.join(ROOT_DIR, "symbols", "debug_lines.txt")
+X360_COMPILER_DIR = os.path.join(ROOT_DIR, "build", "compilers", "X360", "14.00.2110")
+PS2_COMPILER_DIR = os.path.join(ROOT_DIR, "build", "compilers", "PS2", "ee-gcc2.9-991111")
+MIPS_BINUTILS_DIR = os.path.join(ROOT_DIR, "build", "mips_binutils")
 
 DEFAULT_SMOKE_UNIT = "main/Speed/Indep/SourceLists/zCamera"
 DEBUG_SYMBOL_PROBE_MANGLED = "UpdateAll__6Cameraf"
@@ -70,8 +73,30 @@ VERY_HIGH_MATCH_CLEANUP_THRESHOLD = 95.0
 SHARED_ASSET_REQUIREMENTS = [
     (os.path.join("build", "tools"), "downloaded tooling"),
     (os.path.join("orig", "GOWE69", "NFSMWRELEASE.ELF"), "GameCube original ELF"),
+    (
+        os.path.join("orig", "EUROPEGERMILESTONE", "NfsMWEuropeGerMilestone.xex"),
+        "Xbox original XEX",
+    ),
     (os.path.join("orig", "SLES-53558-A124", "NFS.ELF"), "PS2 original ELF"),
     (os.path.join("symbols", "Dwarf"), "DWARF dump"),
+]
+
+PLATFORM_BUILD_REQUIREMENTS = [
+    (
+        "x360-compiler",
+        X360_COMPILER_DIR,
+        "missing (seed build/compilers in this worktree for Xbox builds)",
+    ),
+    (
+        "ps2-compiler",
+        PS2_COMPILER_DIR,
+        "missing (seed build/compilers in this worktree for PS2 builds)",
+    ),
+    (
+        "ps2-binutils",
+        MIPS_BINUTILS_DIR,
+        "missing (seed build/mips_binutils in this worktree for PS2 builds)",
+    ),
 ]
 
 
@@ -402,6 +427,14 @@ def command_health(args: argparse.Namespace) -> None:
         report(True, "ghidra", "GC + PS2 programs available")
     except WorkflowError as e:
         report(False, "ghidra", str(e))
+
+    print_section("Platform Build Inputs")
+    for label, abs_path, missing_detail in PLATFORM_BUILD_REQUIREMENTS:
+        report(
+            os.path.exists(abs_path),
+            label,
+            describe_path(abs_path) if os.path.exists(abs_path) else missing_detail,
+        )
 
     print_section("Debug Symbol Checks")
     try:
@@ -944,7 +977,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     health = subparsers.add_parser(
         "health",
-        help="Check whether the current worktree is ready for GC and PS2 decomp work",
+        help="Check whether the current worktree is ready for GC, Xbox, and PS2 work",
     )
     health.add_argument(
         "--full",
