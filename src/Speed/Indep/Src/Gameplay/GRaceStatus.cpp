@@ -3205,6 +3205,10 @@ GRacerInfo &GRaceStatus::AddSimablePlayer(ISimable *isim) {
     return info;
 }
 
+inline void GRacerInfo::ClearAll() {
+    ClearRaceStats();
+}
+
 void GRaceStatus::AddRacer(GRuntimeInstance *racer) {
     GRacerInfo &info = mRacerInfo[mRacerCount];
 
