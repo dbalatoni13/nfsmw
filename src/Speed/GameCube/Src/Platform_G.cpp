@@ -175,6 +175,7 @@ void InitPlatform() {
 
     opts.size = 0x38;
     FILE_getopts(&opts);
+    opts.DiscType = 1;
     opts.allocator = &gMemoryAllocator;
     opts.MaxOpenFiles = 0x20;
     opts.MaxFileOps = 0x40;
