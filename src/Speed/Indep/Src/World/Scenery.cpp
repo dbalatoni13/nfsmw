@@ -988,30 +988,27 @@ int LoaderScenery(bChunk *chunk) {
         bChunk *last_chunk = chunk->GetLastChunk();
         for (bChunk *subchunk = chunk->GetFirstChunk(); subchunk != last_chunk; subchunk = subchunk->GetNext()) {
             ModelHeirarchy *mH = reinterpret_cast<ModelHeirarchy *>(subchunk->GetData());
+            ModelHeirarchy::Node *node = reinterpret_cast<ModelHeirarchy::Node *>(mH + 1);
             bEndianSwap32(&mH->mNameHash);
 
             unsigned int num_models = mH->mNumNodes;
             for (unsigned int i = 0; i < num_models; i++) {
-                ModelHeirarchy::Node *node =
-                    reinterpret_cast<ModelHeirarchy::Node *>(reinterpret_cast<char *>(mH) + 8) + i;
-                bEndianSwap32(&node->mNodeName);
-                bEndianSwap32(&node->mModelHash);
+                bEndianSwap32(&node[i].mNodeName);
+                bEndianSwap32(&node[i].mModelHash);
             }
 
             HeirarchyMap[mH->mNameHash] = mH;
             for (unsigned int i = 0; i < num_models; i++) {
-                ModelHeirarchy::Node *node =
-                    reinterpret_cast<ModelHeirarchy::Node *>(reinterpret_cast<char *>(mH) + 8) + i;
                 eModel *model = 0;
-                if (node->mModelHash != 0) {
+                if (node[i].mModelHash != 0) {
                     model = reinterpret_cast<eModel *>(bOMalloc(eModelSlotPool));
                     if (model) {
                         model->NameHash = 0;
                         model->Solid = 0;
-                        model->Init(node->mModelHash);
+                        model->Init(node[i].mModelHash);
                     }
                 }
-                node->mModel = model;
+                node[i].mModel = model;
             }
         }
         return 1;
