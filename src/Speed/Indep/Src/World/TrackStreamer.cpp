@@ -1768,11 +1768,9 @@ TrackStreamingSection *TrackStreamer::ChooseSectionToJettison() {
 }
 
 void TrackStreamer::UnJettisonSections() {
-    for (int i = 0; i < NumJettisonedSections; i++) {
-        int num_current_streaming_sections = NumCurrentStreamingSections;
-        TrackStreamingSection *section = JettisonedSections[i];
-        CurrentStreamingSections[num_current_streaming_sections] = section;
-        NumCurrentStreamingSections = num_current_streaming_sections + 1;
+    for (int n = 0; n < NumJettisonedSections; n++) {
+        TrackStreamingSection *section = JettisonedSections[n];
+        CurrentStreamingSections[NumCurrentStreamingSections++] = section;
         section->CurrentlyVisible = true;
     }
     NumJettisonedSections = 0;
