@@ -207,7 +207,9 @@ CollisionEvent::CollisionEvent(const AudioEventParams &aep, bool impact)
     }
 }
 
-CollisionEvent::~CollisionEvent() {}
+CollisionEvent::~CollisionEvent() {
+    mTarget.Set(0);
+}
 
 void CollisionEvent::SetOwner(CSTATE_Base *owner) {
     Owner = owner;
