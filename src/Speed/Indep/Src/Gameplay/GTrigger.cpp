@@ -246,12 +246,12 @@ void GTrigger::ClearParticleEffects() {
 }
 
 void GTrigger::EnableParticleEffects(bool enabled) {
-    for (int i = 0; i < 2; i++) {
-        if (mParticleEffect[i]) {
+    for (unsigned int onEffect = 0; onEffect < 2; onEffect++) {
+        if (mParticleEffect[onEffect]) {
             if (enabled) {
-                mParticleEffect[i]->Enable();
+                mParticleEffect[onEffect]->Enable();
             } else {
-                mParticleEffect[i]->Disable();
+                mParticleEffect[onEffect]->Disable();
             }
         }
     }
