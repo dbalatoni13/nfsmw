@@ -1531,16 +1531,27 @@ def generate_build_ninja(
         ###
         # Generate progress report
         ###
+        report_helper = config.tools_dir / "generate_objdiff_report.py"
         n.comment("Generate progress report")
         n.rule(
             name="report",
-            command=f"{objdiff} report generate $objdiff_report_args -o $out",
+            command=(
+                f"$python {report_helper} --objdiff {objdiff} --objdiff-json objdiff.json "
+                f'--report-args "$objdiff_report_args" $allow_missing_targets --out $out'
+            ),
             description="REPORT",
         )
         n.build(
             outputs=report_path,
             rule="report",
             implicit=[objdiff, "objdiff.json", "all_source"],
+            variables={
+                "allow_missing_targets": (
+                    "--allow-missing-targets"
+                    if config.platform == Platform.PS2
+                    else ""
+                )
+            },
             order_only="post-build",
         )
 
@@ -2244,6 +2255,34 @@ def calculate_progress(config: ProjectConfig) -> None:
     report_data: Dict[str, Any] = {}
     with open(report_path, "r", encoding="utf-8") as f:
         report_data = json.load(f)
+
+    if report_data.get("status") == "unavailable":
+        summary_path = os.getenv("GITHUB_STEP_SUMMARY")
+        summary_file: Optional[IO[str]] = None
+        if summary_path:
+            summary_file = open(summary_path, "a", encoding="utf-8")
+            summary_file.write("```\n")
+
+        def progress_print(s: str) -> None:
+            print(s)
+            if summary_file:
+                summary_file.write(s + "\n")
+
+        progress_print("Progress:")
+        progress_print(f"  unavailable: {report_data.get('reason', 'report unavailable')}")
+        metadata = report_data.get("metadata", {})
+        missing_target_count = metadata.get("missing_target_count")
+        if missing_target_count:
+            progress_print(
+                f"  Missing original target objects: {missing_target_count}"
+            )
+        for target_path in metadata.get("missing_target_examples", [])[:5]:
+            progress_print(f"    {target_path}")
+
+        if summary_file:
+            summary_file.write("```\n")
+            summary_file.close()
+        return
 
     # Convert string numbers (u64) to int
     def convert_numbers(data: Dict[str, Any]) -> None:
