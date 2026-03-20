@@ -163,7 +163,8 @@ single_player_mix:
 
         float dx = m_v2ObjPosCopy.x - m_pv2AzimRefPos->x;
         float dy = m_v2ObjPosCopy.y - m_pv2AzimRefPos->y;
-        float fDistToObj = bSqrt(dx * dx + dy * dy);
+        float distSqr = dx * dx + dy * dy;
+        float fDistToObj = bSqrt(distSqr);
         SetDMIX_Input(1, static_cast<int>(fDistToObj * 100.0f));
 
         dir = SndCamera::GetNormCarDir(m_PlayerRef);
@@ -175,7 +176,8 @@ single_player_mix:
 
         dx = m_v2ObjPosCopy.x - m_pv2AzimRefPos->x;
         dy = m_v2ObjPosCopy.y - m_pv2AzimRefPos->y;
-        fDistToObj = bSqrt(dx * dx + dy * dy);
+        distSqr = dx * dx + dy * dy;
+        fDistToObj = bSqrt(distSqr);
         outVol = fDistToObj * 100.0f;
         goto store_mix;
     }
@@ -191,7 +193,8 @@ ave_cam_mix:
 
         float dx = m_v2ObjPosCopy.x - m_pv2AzimRefPos->x;
         float dy = m_v2ObjPosCopy.y - m_pv2AzimRefPos->y;
-        float fDistToObj = bSqrt(dx * dx + dy * dy);
+        float distSqr = dx * dx + dy * dy;
+        float fDistToObj = bSqrt(distSqr);
         SetDMIX_Input(1, static_cast<int>(fDistToObj * 100.0f));
 
         dir = SndCamera::GetNormCarDir(m_PlayerRef);
@@ -203,7 +206,8 @@ ave_cam_mix:
 
         dx = m_v2ObjPosCopy.x - m_pv2AzimRefPos->x;
         dy = m_v2ObjPosCopy.y - m_pv2AzimRefPos->y;
-        fDistToObj = bSqrt(dx * dx + dy * dy);
+        distSqr = dx * dx + dy * dy;
+        fDistToObj = bSqrt(distSqr);
         outVol = fDistToObj * 100.0f;
         goto store_mix;
     }
@@ -219,7 +223,8 @@ centered_car_mix:
 
         float dx = m_v2ObjPosCopy.x - m_pv2AzimRefPos->x;
         float dy = m_v2ObjPosCopy.y - m_pv2AzimRefPos->y;
-        float fDistToObj = bSqrt(dx * dx + dy * dy);
+        float distSqr = dx * dx + dy * dy;
+        float fDistToObj = bSqrt(distSqr);
         outVol = fDistToObj * 100.0f;
         goto store_mix;
     }
