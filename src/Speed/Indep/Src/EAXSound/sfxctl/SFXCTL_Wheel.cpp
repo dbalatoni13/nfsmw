@@ -115,9 +115,9 @@ void SFXCTL_Wheel::GenerateTerrainTypes() {
     Attrib::Instance RLTemp(CurRightSrc);
     RLTemp.SetDefaultLayout(0xFC);
 
-    Attrib::Instance CurRight(FRTemp.GetCollection() == RRTemp.GetCollection() ? FRTemp : RightSideTerrain);
+    Attrib::Instance CurRight(FRTemp.GetCollection() != RRTemp.GetCollection() ? RightSideTerrain : FRTemp);
     CurRight.SetDefaultLayout(0xFC);
-    Attrib::Instance CurLeft(FLTerrainType.GetCollection() == RLTemp.GetCollection() ? FLTerrainType : LeftSideTerrain);
+    Attrib::Instance CurLeft(FLTerrainType.GetCollection() != RLTemp.GetCollection() ? LeftSideTerrain : FLTerrainType);
     CurLeft.SetDefaultLayout(0xFC);
 
     PrevRightSideTerrain.Attrib::Gen::simsurface::operator=(static_cast< const Attrib::Instance & >(RightSideTerrain));

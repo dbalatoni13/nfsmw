@@ -461,7 +461,6 @@ int EAXAemsManager::InitiateLoad() {
             goto HaveAsyncBuffer;
         }
         m_AsyncBuffLocation = TMP_ALLOC_AUDIO;
-        bLargestMalloc(AudioMemoryPool);
         {
             int nlargestbuff = bLargestMalloc(0);
             if (nlargestbuff <= 0x20000) {
