@@ -152,8 +152,8 @@ emEvent *TriggerEventArray[41];
 SlotPool *EventSlotPool = 0;
 SlotPool *EventHandlerSlotPool = 0;
 int EventManagerStats[5];
-bList EmptyEventTriggerPackList;
-bList EventTriggerPackList;
+bTList<EventTriggerPack> EmptyEventTriggerPackList;
+bTList<EventTriggerPack> EventTriggerPackList;
 bTList<emEventHandler> EventHandlerList;
 bTList<emEvent> MasterEventQueue;
 bTList<emEvent> *CurrentEventQueue = &MasterEventQueue;
@@ -231,9 +231,10 @@ int LoaderEventManager(bChunk *bchunk) {
         case 0x36001: {
             trigger_pack = reinterpret_cast<EventTriggerPack *>(chunk->GetAlignedData(0x10));
             if (trigger_pack->EndianSwapped == 0) {
+                int *endian_swapped = &trigger_pack->EndianSwapped;
                 bPlatEndianSwap(&trigger_pack->ScenerySectionNumber);
                 bPlatEndianSwap(&trigger_pack->Version);
-                bPlatEndianSwap(&trigger_pack->EndianSwapped);
+                bPlatEndianSwap(endian_swapped);
             }
 
             if (trigger_pack->Version != 2) {
@@ -252,7 +253,7 @@ int LoaderEventManager(bChunk *bchunk) {
                 trigger_pack->EventTree = tree;
                 tree->NodeArray = reinterpret_cast<vAABB *>(reinterpret_cast<int *>(tree) + 4);
                 if (trigger_pack->EndianSwapped == 0) {
-                    SwapEndian(tree);
+                    SwapEndian(trigger_pack->EventTree);
                 }
             }
             break;
@@ -261,7 +262,7 @@ int LoaderEventManager(bChunk *bchunk) {
             if (trigger_pack) {
                 trigger_pack->EventTriggerArray = reinterpret_cast<EventTrigger *>(chunk->GetAlignedData(0x10));
                 if (trigger_pack->EndianSwapped == 0) {
-                    int num_triggers = chunk->GetAlignedSize(0x10) >> 5;
+                    int num_triggers = static_cast<unsigned int>(chunk->GetAlignedSize(0x10)) >> 5;
                     for (int n = 0; n < num_triggers; n++) {
                         EventTrigger *event_trigger = &trigger_pack->EventTriggerArray[n];
                         bPlatEndianSwap(&event_trigger->NameHash);
