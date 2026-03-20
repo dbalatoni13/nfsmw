@@ -100,11 +100,7 @@ bool VisibleSectionBoundary::IsPointInside(const bVector2 *point) {
         return false;
     }
 
-    if (MyIsPointInPoly(point, Points, NumPoints)) {
-        return true;
-    }
-
-    return false;
+    return MyIsPointInPoly(point, Points, NumPoints);
 }
 
 float VisibleSectionBoundary::GetDistanceOutside(const bVector2 *point, float max_distance) {
