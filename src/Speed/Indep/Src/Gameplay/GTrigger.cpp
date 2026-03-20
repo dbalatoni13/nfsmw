@@ -1,6 +1,7 @@
 #include "Speed/Indep/Src/Gameplay/GTrigger.h"
 
 #include "Speed/Indep/Src/Ecstasy/EmitterSystem.h"
+#include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
 #include "Speed/Indep/Src/Ecstasy/eMath.hpp"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Generated/Messages/MTriggerEnter.h"
@@ -191,22 +192,22 @@ void GTrigger::RemoveActivationReference() {
 }
 
 EmitterGroup *GTrigger::CreateParticleEffect(const char *effectName, UMath::Vector3 &pos) {
-    Attrib::StringKey effectKey(effectName);
-    EmitterGroup *group = gEmitterSystem.CreateEmitterGroup(effectKey, 0x8040000);
+    EmitterGroup *effect = gEmitterSystem.CreateEmitterGroup(Attrib::StringKey(effectName), 0x8040000);
 
-    if (group) {
-        bMatrix4 localWorld;
-        bVector3 translation(pos.z, pos.y, -pos.x);
+    if (effect) {
+        bMatrix4 mat;
+        bVector3 posSwizzled;
 
-        eCreateTranslationMatrix(&localWorld, translation);
-        group->SetLocalWorld(&localWorld);
-        group->SetAutoUpdate(true);
-        group->SubscribeToDeletion(this, NotifyEmitterGroupDelete);
-        group->Disable();
-        gEmitterSystem.AddEmitterGroup(group);
+        eSwizzleWorldVector(reinterpret_cast<const bVector3 &>(pos), posSwizzled);
+        eCreateTranslationMatrix(&mat, posSwizzled);
+        effect->SetLocalWorld(&mat);
+        effect->SetAutoUpdate(true);
+        effect->SubscribeToDeletion(this, NotifyEmitterGroupDelete);
+        effect->Disable();
+        gEmitterSystem.AddEmitterGroup(effect);
     }
 
-    return group;
+    return effect;
 }
 
 void GTrigger::CreateAllParticleEffects() {
