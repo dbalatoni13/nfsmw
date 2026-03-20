@@ -656,16 +656,16 @@ void ScenerySectionHeader::DrawAScenery(int scenery_instance_number, SceneryCull
         return;
     }
 
-    if (scenery_cull_info->pCurrentDrawInfo == scenery_cull_info->pTopDrawInfo) {
-        return;
-    }
-
-    SceneryDrawInfo *draw_info = scenery_cull_info->pCurrentDrawInfo;
     if ((instance->ExcludeFlags & 0x200) != 0) {
+        SceneryDrawInfo *draw_info = scenery_cull_info->pCurrentDrawInfo;
+        if (draw_info == scenery_cull_info->pTopDrawInfo) {
+            return;
+        }
+
+        scenery_cull_info->pCurrentDrawInfo = draw_info + 1;
+        draw_info->SceneryInst = instance;
         draw_info->pModel = reinterpret_cast<eModel *>(reinterpret_cast<int>(model) + visibility_state);
         draw_info->pMatrix = 0;
-        draw_info->SceneryInst = instance;
-        scenery_cull_info->pCurrentDrawInfo = draw_info + 1;
         return;
     }
 
@@ -685,9 +685,14 @@ void ScenerySectionHeader::DrawAScenery(int scenery_instance_number, SceneryCull
         matrix->v2.z = -matrix->v2.z;
     }
 
+    SceneryDrawInfo *draw_info = scenery_cull_info->pCurrentDrawInfo;
+    if (draw_info == scenery_cull_info->pTopDrawInfo) {
+        return;
+    }
+
+    draw_info->SceneryInst = instance;
     draw_info->pModel = reinterpret_cast<eModel *>(reinterpret_cast<int>(model) + visibility_state);
     draw_info->pMatrix = matrix;
-    draw_info->SceneryInst = instance;
     scenery_cull_info->pCurrentDrawInfo = draw_info + 1;
 }
 
