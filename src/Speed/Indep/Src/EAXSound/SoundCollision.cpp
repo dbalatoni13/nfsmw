@@ -386,8 +386,17 @@ EAX_CarState *GetClosestCopCarToCamera() {
     return closest;
 }
 
-EAX_CarState *GetPlayerCarInRadius(bVector3 &vPos, float fRadius) {
-    (void)vPos;
-    (void)fRadius;
+EAXCar *GetPlayerCarInRadius(bVector3 &objectpos, float distance) {
+    for (int n = 0; n < SndCamera::NumPlayers; n++) {
+        bVector3 m_pPlayerPosition(*SndCamera::GetWorldCarPos3(n));
+        bVector3 vPlayerDirection;
+        bSub(&vPlayerDirection, &m_pPlayerPosition, &objectpos);
+        float playerdist = bLength(&vPlayerDirection);
+
+        if (playerdist < distance) {
+            return SndCamera::GetPlayerCar(n);
+        }
+    }
+
     return nullptr;
 }
