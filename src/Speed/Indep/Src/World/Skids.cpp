@@ -259,7 +259,8 @@ SkidSet *CreateNewSkidSet(SkidMaker *skid_maker, bVector3 *position, bVector3 *d
 }
 
 void SkidMaker::MakeSkid(Car *pCar, bVector3 *position, bVector3 *delta_position, int terrain_type, float intensity) {
-    if (pCar && bLength(delta_position) > 4.0f) {
+    bVector3 origin(0.0f, 0.0f, 0.0f);
+    if (pCar && bDistBetween(&origin, delta_position) > 4.0f) {
         return;
     }
 
