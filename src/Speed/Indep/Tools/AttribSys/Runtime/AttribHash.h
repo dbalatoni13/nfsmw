@@ -53,12 +53,7 @@ class StringKey {
     }
 
     bool IsEmpty() const {
-        bool empty = true;
-
-        if (mString != nullptr) {
-            empty = *mString == '\0';
-        }
-        return empty;
+        return mString == nullptr ? true : *mString == '\0';
     }
 
     bool IsValid() const {
