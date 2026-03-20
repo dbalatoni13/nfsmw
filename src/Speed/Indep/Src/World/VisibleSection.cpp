@@ -593,8 +593,9 @@ int VisibleSectionManager::Loader(bChunk *chunk) {
                         DrivableSectionList.AddTail(section);
                         section->EndianSwap();
                         section->pBoundary = FindBoundary(section->GetSectionNumber());
+                        int section_size = 0xA4 - (0x48 - section->MaxVisibleSections) * sizeof(short);
                         section = reinterpret_cast<DrivableScenerySection *>(
-                            reinterpret_cast<char *>(section) + 0xA4 - (0x48 - section->MaxVisibleSections) * sizeof(short));
+                            reinterpret_cast<char *>(section) + section_size);
                     } while (section < last_section);
                 }
 
