@@ -1,8 +1,23 @@
 #include "Track.hpp"
 
+#include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include "Speed/Indep/bWare/Inc/bChunk.hpp"
 
 void bEndianSwap32(void *value);
+
+// total size: 0x60
+struct TrackOBB {
+    inline void EndianSwap() {
+        bPlatEndianSwap(&TypeNameHash);
+        bPlatEndianSwap(&Matrix);
+        bPlatEndianSwap(&Dims);
+    }
+
+    unsigned int TypeNameHash;
+    unsigned int Pad[3];
+    bMatrix4 Matrix;
+    bVector3 Dims;
+};
 
 static char *TrackOBBTable = 0;
 static int NumTrackOBBs = 0;
@@ -23,13 +38,11 @@ int LoaderTrackOBB(bChunk *chunk) {
         return 0;
     }
 
+    NumTrackOBBs = static_cast<unsigned int>(chunk->GetAlignedSize(16)) / 0x60u;
     TrackOBBTable = chunk->GetAlignedData(16);
-    NumTrackOBBs = chunk->GetAlignedSize(16) / 0x60;
-    for (int i = 0; i < NumTrackOBBs; i++) {
-        int *obb_words = reinterpret_cast<int *>(TrackOBBTable + i * 0x60);
-        for (int j = 0; j < 24; j++) {
-            bEndianSwap32(&obb_words[j]);
-        }
+    for (int n = 0; n < NumTrackOBBs; n++) {
+        TrackOBB *track_obb = reinterpret_cast<TrackOBB *>(TrackOBBTable + n * 0x60);
+        track_obb->EndianSwap();
     }
 
     return 1;
