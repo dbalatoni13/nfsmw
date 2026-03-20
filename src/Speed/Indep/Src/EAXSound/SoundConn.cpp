@@ -1,5 +1,6 @@
 #include "Speed/Indep/Src/EAXSound/SoundConn.h"
 #include "Speed/Indep/Src/EAXSound/EAXCarState.hpp"
+#include "Speed/Indep/Src/EAXSound/SimStates/EAX_HeliState.hpp"
 #include "Speed/Indep/Src/Generated/Events/ECommitAudioAssets.hpp"
 #include "Speed/Indep/Src/World/WorldConn.h"
 
@@ -170,10 +171,13 @@ HeliSoundConn::HeliSoundConn(const Sim::ConnectionData &data)
 
 HeliSoundConn::~HeliSoundConn() {
     mTarget.Set(0);
-    if (g_pEAXSound != nullptr && mState != nullptr) {
+    if (g_pEAXSound != nullptr) {
         g_pEAXSound->DestroyEAXHeli(mState);
     }
-    delete mState;
+    if (mState != nullptr) {
+        mState->~EAX_HeliState();
+        __builtin_delete(mState);
+    }
     mState = nullptr;
 }
 

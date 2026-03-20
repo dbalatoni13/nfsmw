@@ -157,6 +157,7 @@ struct EAX_HeliState : public UTL::Collections::Listable<EAX_HeliState, 10> {
     unsigned int mWorldID; // offset 0x9C
 
     EAX_HeliState(const Attrib::Collection *atr, unsigned int wuid);
+    ~EAX_HeliState();
 
     bool IsSimUpdating();
     bVector3 *GetPosition();

@@ -5,6 +5,8 @@
 #pragma once
 #endif
 
+inline EAX_HeliState::~EAX_HeliState() {}
+
 inline bool EAX_HeliState::IsSimUpdating() {
     return *(int *)&mSimUpdating == 1;
 }
