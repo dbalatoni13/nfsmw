@@ -1,6 +1,7 @@
 #include "TrackPositionMarker.hpp"
 
 #include "TrackInfo.hpp"
+#include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include "Speed/Indep/bWare/Inc/bChunk.hpp"
 
 bTList<TrackPositionMarker> TrackPositionMarkerList;
@@ -18,15 +19,25 @@ void ForEachTrackPositionMarker(bool (*callback)(TrackPositionMarker *, unsigned
 }
 
 int LoaderTrackPositionMarkers(bChunk *chunk) {
-    int count = chunk->Size / sizeof(TrackPositionMarker);
-    TrackPositionMarker *marker = reinterpret_cast<TrackPositionMarker *>(chunk->GetData());
+    if (chunk->GetID() == 0x34146) {
+        TrackPositionMarker *marker_table = reinterpret_cast<TrackPositionMarker *>(chunk->GetAlignedData(0x10));
+        int num_markers = chunk->GetAlignedSize(0x10) / sizeof(TrackPositionMarker);
 
-    for (int i = 0; i < count; i++) {
-        TrackPositionMarkerList.AddTail(&marker[i]);
+        for (int n = 0; n < num_markers; n++) {
+            TrackPositionMarker *marker = &marker_table[n];
+            bPlatEndianSwap(&marker->NameHash);
+            bPlatEndianSwap(&marker->Param);
+            bPlatEndianSwap(&marker->Position);
+            bPlatEndianSwap(&marker->Angle);
+            bPlatEndianSwap(&marker->TrackNumber);
+            TrackPositionMarkerList.AddTail(marker);
+        }
+
+        NotifyTrackMarkersChanged();
+        return 1;
     }
 
-    NotifyTrackMarkersChanged();
-    return 1;
+    return 0;
 }
 
 int UnloaderTrackPositionMarkers(bChunk *chunk) {
