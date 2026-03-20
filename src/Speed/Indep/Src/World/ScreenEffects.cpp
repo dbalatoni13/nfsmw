@@ -145,12 +145,9 @@ float TopologyCoordinate::GetElevation(const bVector3 *position, TerrainType *ty
 }
 
 bool TopologyCoordinate::HasTopology(const bVector2 *position) {
-    bVector3 test_position;
+    bVector3 test_position(position->x, position->y, 99999.1015625f);
     bool valid;
 
-    test_position.x = position->x;
-    test_position.y = position->y;
-    test_position.z = 99999.1015625f;
     GetElevation(&test_position, 0, 0, &valid);
     return valid;
 }

@@ -529,9 +529,9 @@ void TrackStreamer::UnloadSection(TrackStreamingSection *section) {
 
         section->UnactivatedFrameCount = 0;
         bFree(section->pMemory);
-        section->Status = TrackStreamingSection::UNLOADED;
-        section->pMemory = 0;
         section->LoadedTime = 0;
+        section->pMemory = 0;
+        section->Status = TrackStreamingSection::UNLOADED;
         NumSectionsLoaded -= 1;
     }
 }
@@ -1435,7 +1435,7 @@ int TrackStreamer::Loader(bChunk *chunk) {
     } else if (chunk_id == 0x34111) {
         pInfo = reinterpret_cast<TrackStreamingInfo *>(chunk->GetData());
         for (int i = 0; i < 2; i++) {
-            bEndianSwap32(pInfo->FileSize + i);
+            bEndianSwap32(i + pInfo->FileSize);
         }
         return 1;
     } else if (chunk_id == 0x34112) {
