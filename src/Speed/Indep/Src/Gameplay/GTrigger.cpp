@@ -20,46 +20,108 @@ GTrigger::GTrigger(const Attrib::Key &triggerKey)
     : GRuntimeInstance(triggerKey, kGameplayObjType_Trigger), //
       mWorldTrigger() {
     UMath::Matrix4 mat;
+    UMath::Vector3 initialVec;
+    const float *rotation;
+    const UMath::Vector3 *position;
+    const UMath::Vector3 *dimensions;
+    const float *radius;
+    UMath::Vector3 posSwizzled;
+    UMath::Vector3 dimSwizzled;
+    float triggerRadius;
+    EventStaticData *pTriggerData = &mEventStaticData;
+    bool showIconBasedOnBin = true;
+    const int *oneShot;
+
     mTriggerEnabled = 0;
     mIcon = nullptr;
     mEnabled = false;
     mActivationReferences = 0;
     bMemSet(mParticleEffect, 0, 8);
-    mSimObjInside.reserve(8);
 
-    {
-        UMath::Matrix4 rotMat;
-        UMath::Vector3 initialVec;
+    UMath::Copy(UMath::Matrix4::kIdentity, mat);
+    initialVec.x = 0.0f;
+    initialVec.y = 0.0f;
+    initialVec.z = 1.0f;
 
-        UMath::Init(rotMat, 1.0f, 1.0f, 1.0f);
-        initialVec.x = 0.0f;
-        initialVec.y = 0.0f;
-        initialVec.z = 1.0f;
-        UMath::MultYRot(rotMat, -Rotation() * 0.00069444446f, rotMat);
-        UMath::Rotate(initialVec, rotMat, mDirection);
-        mat = rotMat;
+    rotation = reinterpret_cast<const float *>(GetAttributePointer(0x5A6A57C6, 0));
+    if (!rotation) {
+        rotation = reinterpret_cast<const float *>(Attrib::DefaultDataArea(sizeof(float)));
     }
 
-    const UMath::Vector3 &pos = Position();
-    UMath::Vector3 dim;
-    bool hasDimensions = Dimensions(dim);
-    UMath::Vector3 posSwizzled = UMath::Vector3Make(-pos.y, pos.z, pos.x);
-    UMath::Vector3 dimSwizzled = UMath::Vector3Make(dim.x, dim.z, dim.y);
-    float radius;
-    EventStaticData *pTriggerData = &mEventStaticData;
-    bool showIconBasedOnBin = true;
+    MATRIX4_multyrot(&mat, -*rotation * 0.00069444446f, &mat);
+    VU0_MATRIX3x4_vect3mult(initialVec, mat, mDirection);
+    mSimObjInside.reserve(8);
 
-    UMath::Set(mat, 3, UMath::Vector4Make(posSwizzled, 1.0f));
+    position = reinterpret_cast<const UMath::Vector3 *>(GetAttributePointer(0x9F743A0E, 0));
+    if (!position) {
+        position = reinterpret_cast<const UMath::Vector3 *>(Attrib::DefaultDataArea(sizeof(UMath::Vector3)));
+    }
 
-    if (hasDimensions) {
-        new (&mWorldTrigger) WTrigger(mat, dimSwizzled, &mEventList, OneShot() ? 2 : 0);
+    dimensions = reinterpret_cast<const UMath::Vector3 *>(GetAttributePointer(0x6D9E21AD, 0));
+    posSwizzled.x = -position->y;
+    posSwizzled.y = position->z;
+    posSwizzled.z = position->x;
+    triggerRadius = 0.0f;
+
+    if (dimensions) {
+        dimSwizzled.x = dimensions->x;
+        dimSwizzled.y = dimensions->z;
+        dimSwizzled.z = dimensions->y;
+        mWorldTrigger.fShape = 1;
+        mWorldTrigger.fMatRow0Width.w = dimSwizzled.z;
+        mWorldTrigger.fHeight = dimSwizzled.y * 2.0f;
+        mWorldTrigger.fMatRow2Length.w = dimSwizzled.x;
     } else {
-        if (!Radius(radius)) {
-            float width = Width();
-            radius = UMath::Sqrt(width * width + 1.0f);
-        }
+        radius = reinterpret_cast<const float *>(GetAttributePointer(0x39BF8002, 0));
+        if (radius) {
+            triggerRadius = *radius;
+            mWorldTrigger.fShape = 3;
+            mWorldTrigger.fMatRow0Width.w = triggerRadius * 2.0f;
+            mWorldTrigger.fHeight = triggerRadius * 4.0f;
+            mWorldTrigger.fMatRow2Length.w = triggerRadius * 2.0f;
+        } else {
+            const float *width = reinterpret_cast<const float *>(GetAttributePointer(0x5816C1FC, 0));
+            float halfWidth;
 
-        new (&mWorldTrigger) WTrigger(mat, radius, radius * 2.0f, &mEventList, OneShot() ? 2 : 0);
+            if (!width) {
+                width = reinterpret_cast<const float *>(Attrib::DefaultDataArea(sizeof(float)));
+            }
+
+            halfWidth = *width;
+            mWorldTrigger.fShape = 1;
+            mWorldTrigger.fMatRow0Width.w = halfWidth;
+            mWorldTrigger.fHeight = 2.0f;
+            mWorldTrigger.fMatRow2Length.w = 0.0f;
+            triggerRadius = UMath::Sqrt(halfWidth * halfWidth + 1.0f);
+        }
+    }
+
+    UMath::Copy(UMath::Matrix4::kIdentity, mat);
+    MATRIX4_multyrot(&mat, -*rotation * 0.00069444446f, &mat);
+
+    mWorldTrigger.fType = 1;
+    mWorldTrigger.fEvents = &mEventList;
+    mWorldTrigger.fIterStamp = 0;
+    mWorldTrigger.fFingerprint = 0;
+    mWorldTrigger.fMatRow0Width.x = mat[0][0];
+    mWorldTrigger.fMatRow0Width.y = mat[0][1];
+    mWorldTrigger.fMatRow0Width.z = mat[0][2];
+    mWorldTrigger.fMatRow2Length.x = mat[2][0];
+    mWorldTrigger.fMatRow2Length.y = mat[2][1];
+    mWorldTrigger.fMatRow2Length.z = mat[2][2];
+    mWorldTrigger.fPosRadius.x = posSwizzled.x;
+    mWorldTrigger.fPosRadius.y = posSwizzled.y;
+    mWorldTrigger.fPosRadius.z = posSwizzled.z;
+    mWorldTrigger.fPosRadius.w = triggerRadius;
+    mWorldTrigger.fFlags = 0x4810D;
+
+    oneShot = reinterpret_cast<const int *>(GetAttributePointer(0xCE4261AC, 0));
+    if (!oneShot) {
+        oneShot = reinterpret_cast<const int *>(Attrib::DefaultDataArea(sizeof(int)));
+    }
+
+    if (*oneShot) {
+        mWorldTrigger.fFlags |= 2;
     }
 
     mEventList.fNumEvents = 1;
