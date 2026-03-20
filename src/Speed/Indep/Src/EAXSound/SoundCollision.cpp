@@ -312,7 +312,18 @@ void CollisionEvent::InitAsImpact(const Attrib::Gen::audioimpact &audioFx) {
     }
 }
 
-void CollisionEvent::Release() {}
+void CollisionEvent::Release() {
+    *static_cast<int *>(static_cast<void *>(&mActive)) = 0;
+
+    if (Owner) {
+        Owner->Detach();
+    }
+
+    mRefCount = mRefCount - 1;
+    if (mRefCount == 0 && this) {
+        delete this;
+    }
+}
 
 } // namespace Sound
 
