@@ -287,16 +287,19 @@ void GTrigger::Enable(bool setEnabled) {
     }
 
     {
-        unsigned char *triggerBytes = reinterpret_cast<unsigned char *>(&mWorldTrigger);
+        WTrigger *trigger = &mWorldTrigger;
+        unsigned char *triggerBytes = reinterpret_cast<unsigned char *>(trigger);
         unsigned int word = *reinterpret_cast<unsigned int *>(triggerBytes + 0x10);
-        unsigned int flags = static_cast<unsigned int>(triggerBytes[0x13]) |
-                             (static_cast<unsigned int>(triggerBytes[0x12]) << 8) |
-                             (static_cast<unsigned int>(triggerBytes[0x11]) << 16);
+        unsigned int flags;
 
         if (setEnabled) {
-            flags |= 1;
+            flags = static_cast<unsigned int>(triggerBytes[0x13]) |
+                    (static_cast<unsigned int>(triggerBytes[0x12]) << 8) |
+                    (static_cast<unsigned int>(triggerBytes[0x11]) << 16) | 1;
         } else {
-            flags &= 0xFFFFFE;
+            flags = (static_cast<unsigned int>(triggerBytes[0x13]) & 0xFFFFFE) |
+                    (static_cast<unsigned int>(triggerBytes[0x12]) << 8) |
+                    (static_cast<unsigned int>(triggerBytes[0x11]) << 16);
         }
 
         *reinterpret_cast<unsigned int *>(triggerBytes + 0x10) = (word & 0xFF000000) | flags;
