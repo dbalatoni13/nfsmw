@@ -8,6 +8,8 @@
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
 struct bChunk;
+class TrackInfo;
+extern TrackInfo *LoadedTrackInfo;
 
 enum eLocationName {
     UPPER_CLASS = 0,
@@ -82,12 +84,16 @@ class TrackInfo {
     static int LoaderTrackInfo(bChunk *chunk);
     static int UnloaderTrackInfo(bChunk *chunk);
     static TrackInfo *GetTrackInfo(int track_number);
+    static int GetLoadedTrackNumber() {
+        if (LoadedTrackInfo) {
+            return LoadedTrackInfo->TrackNumber;
+        }
+        return 0;
+    }
 
     const char *GetLoadedTrackInfo() {
         return this->RegionName;
     }
 };
-
-extern TrackInfo *LoadedTrackInfo;
 
 #endif

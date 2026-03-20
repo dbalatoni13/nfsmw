@@ -85,10 +85,7 @@ TrackPositionMarker *GetTrackPositionMarker(int track_number, unsigned int name_
 }
 
 TrackPositionMarker *GetTrackPositionMarker(unsigned int name_hash, int index) {
-    int track_number = 0;
-    if (LoadedTrackInfo) {
-        track_number = LoadedTrackInfo->TrackNumber;
-    }
+    int track_number = TrackInfo::GetLoadedTrackNumber();
 
     return GetTrackPositionMarker(track_number, name_hash, index);
 }
