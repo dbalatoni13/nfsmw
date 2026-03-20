@@ -25,7 +25,6 @@ GTrigger::GTrigger(const Attrib::Key &triggerKey)
     const float *rotation;
     const UMath::Vector3 *position;
     const UMath::Vector3 *dimensions;
-    const float *radius;
     UMath::Vector3 posSwizzled;
     UMath::Vector3 dimSwizzled;
     float triggerRadius;
@@ -79,9 +78,7 @@ GTrigger::GTrigger(const Attrib::Key &triggerKey)
 
     UMath::Copy(UMath::Matrix4::kIdentity, mat);
 
-    radius = reinterpret_cast<const float *>(GetAttributePointer(0x39BF8002, 0));
-    if (radius) {
-        triggerRadius = *radius;
+    if (Radius(triggerRadius)) {
         dimSwizzled.x = triggerRadius + triggerRadius;
         dimSwizzled.y = dimSwizzled.x;
         dimSwizzled.z = dimSwizzled.x;
