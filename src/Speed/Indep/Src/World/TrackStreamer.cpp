@@ -1208,61 +1208,63 @@ void TrackStreamer::AddCurrentStreamingSections(short *section_numbers, int num_
 void TrackStreamer::DetermineStreamingSections() {
     const int max_sections_to_load = 0x180;
     short sections_to_load[384];
-    short *sections_to_load_ptr = sections_to_load;
     int num_sections_to_load = 3;
     short section_number;
 
     RemoveCurrentStreamingSections();
 
-    sections_to_load_ptr[0] = GetScenerySectionNumber_TrackStreamer('Y', 0);
-    sections_to_load_ptr[1] = GetScenerySectionNumber_TrackStreamer('X', 0);
-    sections_to_load_ptr[2] = GetScenerySectionNumber_TrackStreamer('Z', 0);
-    if (SeeulatorToolActive && ScenerySectionToBlink != 0) {
-        num_sections_to_load = 4;
-        sections_to_load_ptr[3] = static_cast<short>(ScenerySectionToBlink);
-    }
-
-    for (int n = 0; n < 4; n++) {
-        section_number = KeepSectionTable[n];
-        if (section_number != 0) {
-            sections_to_load_ptr[num_sections_to_load] = section_number;
-            num_sections_to_load += 1;
+    {
+        short *sections_to_load_ptr = sections_to_load;
+        sections_to_load_ptr[0] = GetScenerySectionNumber_TrackStreamer('Y', 0);
+        sections_to_load_ptr[1] = GetScenerySectionNumber_TrackStreamer('X', 0);
+        sections_to_load_ptr[2] = GetScenerySectionNumber_TrackStreamer('Z', 0);
+        if (SeeulatorToolActive && ScenerySectionToBlink != 0) {
+            num_sections_to_load = 4;
+            sections_to_load_ptr[3] = static_cast<short>(ScenerySectionToBlink);
         }
-    }
 
-    AddCurrentStreamingSections(sections_to_load_ptr, num_sections_to_load, 0);
-    AddCurrentStreamingSections(sections_to_load_ptr, num_sections_to_load, 1);
-    int position_number = 0;
-    do {
-        {
-            StreamingPositionEntry *position_entry = &StreamingPositionEntries[position_number];
-            if (position_entry->CurrentZone > 0) {
-                {
-                    LoadingSection *loading_section = TheVisibleSectionManager.FindLoadingSection(position_entry->CurrentZone);
-                    if (!loading_section) {
-                        {
-                            DrivableScenerySection *drivable_section =
-                                TheVisibleSectionManager.FindDrivableSection(position_entry->CurrentZone);
-                            num_sections_to_load = 0;
-                            for (int i = 0; i < drivable_section->GetNumVisibleSections(); i++) {
-                                {
-                                    int section_number = drivable_section->GetVisibleSection(i);
-                                    sections_to_load_ptr[num_sections_to_load] = section_number;
-                                    num_sections_to_load += 1;
-                                }
-                            }
-                        }
-                    } else {
-                        num_sections_to_load = TheVisibleSectionManager.GetSectionsToLoad(
-                            loading_section, sections_to_load_ptr, max_sections_to_load);
-                    }
-                }
-
-                AddCurrentStreamingSections(sections_to_load_ptr, num_sections_to_load, position_number);
+        for (int n = 0; n < 4; n++) {
+            section_number = KeepSectionTable[n];
+            if (section_number != 0) {
+                sections_to_load_ptr[num_sections_to_load] = section_number;
+                num_sections_to_load += 1;
             }
         }
-        position_number += 1;
-    } while (position_number < 2);
+
+        AddCurrentStreamingSections(sections_to_load_ptr, num_sections_to_load, 0);
+        AddCurrentStreamingSections(sections_to_load_ptr, num_sections_to_load, 1);
+        int position_number = 0;
+        do {
+            {
+                StreamingPositionEntry *position_entry = &StreamingPositionEntries[position_number];
+                if (position_entry->CurrentZone > 0) {
+                    {
+                        LoadingSection *loading_section = TheVisibleSectionManager.FindLoadingSection(position_entry->CurrentZone);
+                        if (!loading_section) {
+                            {
+                                DrivableScenerySection *drivable_section =
+                                    TheVisibleSectionManager.FindDrivableSection(position_entry->CurrentZone);
+                                num_sections_to_load = 0;
+                                for (int i = 0; i < drivable_section->GetNumVisibleSections(); i++) {
+                                    {
+                                        int section_number = drivable_section->GetVisibleSection(i);
+                                        sections_to_load_ptr[num_sections_to_load] = section_number;
+                                        num_sections_to_load += 1;
+                                    }
+                                }
+                            }
+                        } else {
+                            num_sections_to_load = TheVisibleSectionManager.GetSectionsToLoad(
+                                loading_section, sections_to_load_ptr, max_sections_to_load);
+                        }
+                    }
+
+                    AddCurrentStreamingSections(sections_to_load_ptr, num_sections_to_load, position_number);
+                }
+            }
+            position_number += 1;
+        } while (position_number < 2);
+    }
 }
 
 void TrackStreamer::InitRegion(const char *region_stream_filename, bool split_screen) {
