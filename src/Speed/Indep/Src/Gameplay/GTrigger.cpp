@@ -29,6 +29,7 @@ GTrigger::GTrigger(const Attrib::Key &triggerKey)
     UMath::Vector3 posSwizzled;
     UMath::Vector3 dimSwizzled;
     float triggerRadius;
+    float triggerRadiusSquared;
     float triggerWidth;
     float triggerLength;
     float triggerHeight;
@@ -71,6 +72,7 @@ GTrigger::GTrigger(const Attrib::Key &triggerKey)
     posSwizzled.z = position->x;
     hasDimensions = false;
     triggerRadius = 0.0f;
+    triggerRadiusSquared = 0.0f;
     triggerWidth = 0.0f;
     triggerLength = 0.0f;
     triggerHeight = 0.0f;
@@ -96,6 +98,8 @@ GTrigger::GTrigger(const Attrib::Key &triggerKey)
         triggerWidth = dimSwizzled.z;
         triggerHeight = dimSwizzled.y;
         triggerLength = dimSwizzled.x;
+        triggerRadiusSquared = triggerWidth * triggerWidth + triggerLength * triggerLength;
+        triggerRadius = UMath::Sqrt(triggerRadiusSquared);
         mWorldTrigger.fShape = 1;
     } else {
         const float *width = reinterpret_cast<const float *>(GetAttributePointer(0x5816C1FC, 0));
@@ -107,7 +111,8 @@ GTrigger::GTrigger(const Attrib::Key &triggerKey)
         triggerWidth = *width;
         triggerHeight = 1.0f;
         triggerLength = 0.0f;
-        triggerRadius = UMath::Sqrt(triggerWidth * triggerWidth + 1.0f);
+        triggerRadiusSquared = triggerWidth * triggerWidth + 1.0f;
+        triggerRadius = UMath::Sqrt(triggerRadiusSquared);
         mWorldTrigger.fShape = 1;
     }
 
