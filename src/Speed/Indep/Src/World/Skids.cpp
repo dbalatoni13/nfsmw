@@ -104,9 +104,9 @@ void SkidSegment::GetEndPoints(bVector3 *left_point, bVector3 *right_point) {
     y = Position[1];
     z = Position[2];
     dy = static_cast<float>(DeltaPosition[1]) * scale_factor;
+    dz = static_cast<float>(DeltaPosition[2]) * scale_factor;
     left_point->x = x + dx;
     left_point->y = y + dy;
-    dz = static_cast<float>(DeltaPosition[2]) * scale_factor;
     left_point->z = z + dz;
     right_point->x = x - dx;
     right_point->y = y - dy;
