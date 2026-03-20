@@ -287,10 +287,7 @@ void SndAIStateManager::Update(float t) {
         return;
     }
 
-    EAX_CarState *car = *static_cast<EAX_CarState **>(
-        static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pPhysicsCTL->GetStateBase())) + 0x34));
-
-    float steering = static_cast< float >(car->mSteering) * 0.005493248f;
+    float steering = static_cast< float >(m_pPhysicsCTL->GetPhysCar()->GetSteering()) * 0.005493248f;
     if (180.0f < steering) {
         steering -= 360.0f;
     }
@@ -298,12 +295,12 @@ void SndAIStateManager::Update(float t) {
     SteeringMonitorLeft.Update(steering, t);
     SteeringMonitorRight.Update(steering, t);
 
-    float vel0Length = bSqrt(car->mVel0.x * car->mVel0.x + car->mVel0.y * car->mVel0.y + car->mVel0.z * car->mVel0.z);
-    float vel1Length = bSqrt(car->mVel1.x * car->mVel1.x + car->mVel1.y * car->mVel1.y + car->mVel1.z * car->mVel1.z);
+    float vel0Length = m_pPhysicsCTL->GetPhysCar()->GetVelocityMagnitude();
+    float vel1Length = bLength(m_pPhysicsCTL->GetPhysCar()->GetOldVel());
     AccelMonitor.Update(vel0Length - vel1Length, t);
 
-    vel0Length = bSqrt(car->mVel0.x * car->mVel0.x + car->mVel0.y * car->mVel0.y + car->mVel0.z * car->mVel0.z);
-    vel1Length = bSqrt(car->mVel1.x * car->mVel1.x + car->mVel1.y * car->mVel1.y + car->mVel1.z * car->mVel1.z);
+    vel0Length = m_pPhysicsCTL->GetPhysCar()->GetVelocityMagnitude();
+    vel1Length = bLength(m_pPhysicsCTL->GetPhysCar()->GetOldVel());
     DeccelMonitor.Update(vel0Length - vel1Length, t);
 
     ThrottleMonitor.Update(m_pPhysicsCTL->m_fThrottle, t);
