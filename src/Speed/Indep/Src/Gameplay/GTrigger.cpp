@@ -85,7 +85,6 @@ GTrigger::GTrigger(const Attrib::Key &triggerKey)
     }
 
     UMath::Copy(UMath::Matrix4::kIdentity, mat);
-    MATRIX4_multyrot(&mat, -*rotation * 0.00069444446f, &mat);
 
     radius = reinterpret_cast<const float *>(GetAttributePointer(0x39BF8002, 0));
     if (radius) {
@@ -116,6 +115,12 @@ GTrigger::GTrigger(const Attrib::Key &triggerKey)
         mWorldTrigger.fShape = 1;
     }
 
+    rotation = reinterpret_cast<const float *>(GetAttributePointer(0x5A6A57C6, 0));
+    if (!rotation) {
+        rotation = reinterpret_cast<const float *>(Attrib::DefaultDataArea(sizeof(float)));
+    }
+
+    MATRIX4_multyrot(&mat, -*rotation * 0.00069444446f, &mat);
     mWorldTrigger.fType = 1;
     mWorldTrigger.fEvents = &mEventList;
     mWorldTrigger.fIterStamp = 0;
