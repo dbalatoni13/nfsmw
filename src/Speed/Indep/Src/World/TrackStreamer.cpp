@@ -1584,10 +1584,10 @@ void TrackStreamer::ActivateSection(TrackStreamingSection *section) {
     int sizeof_chunks = section->LoadedSize;
     LoadTempPermChunks(&chunks, &sizeof_chunks, 0x2087, section->SectionName);
 
-    section->LoadedTime = 0;
     section->pMemory = chunks;
     section->LoadedSize = sizeof_chunks;
     section->Status = TrackStreamingSection::ACTIVATED;
+    section->LoadedTime = 0;
     AllowDuplicateSolids -= 1;
     SetDuplicateTextureWarning(true);
 }
