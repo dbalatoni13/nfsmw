@@ -233,7 +233,7 @@ void UnloadSpline(QuickSpline *pSplineToRemove) {
     unsigned int hash_to_remove = pSplineToRemove->GetHash();
 
     for (bPNode *pNode = LoadedSplineList.GetHead(); pNode != LoadedSplineList.EndOfList(); pNode = pNode->GetNext()) {
-        QuickSpline *pSpline = reinterpret_cast<QuickSpline *>(pNode->GetObject());
+        QuickSpline *pSpline = reinterpret_cast<QuickSpline *>(pNode->GetpObject());
         if (hash_to_remove == pSpline->GetHash()) {
             LoadedSplineList.Remove(pNode);
             return;

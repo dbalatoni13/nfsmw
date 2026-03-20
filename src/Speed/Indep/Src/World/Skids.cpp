@@ -240,7 +240,7 @@ void SkidSet::Render(eView *view, unsigned char intensityReduction) {
 
 SkidSet *CreateNewSkidSet(SkidMaker *skid_maker, bVector3 *position, bVector3 *delta_position, int terrain_type, float intensity) {
     if (bIsSlotPoolFull(SkidSetSlotPool)) {
-        SkidSet *oldest_skid_set = SkidSetList.RemoveTail();
+        SkidSet *oldest_skid_set = static_cast<SkidSet *>(SkidSetList.GetTail()->Remove());
         if (oldest_skid_set) {
             delete oldest_skid_set;
         }
@@ -318,7 +318,7 @@ void DeleteThisSkid(SkidSet *skid_set) {
 
 void DeleteAllSkids() {
     while (!SkidSetList.IsEmpty()) {
-        delete SkidSetList.RemoveTail();
+        delete static_cast<SkidSet *>(SkidSetList.GetTail()->Remove());
     }
 }
 
@@ -326,7 +326,7 @@ void RenderSkids(eView *view, Clan *clan) {
     ProfileNode profile_node("TODO", 0);
 
     for (bPNode *p = clan->SkidSetList.GetHead(); p != clan->SkidSetList.EndOfList(); p = p->GetNext()) {
-        SkidSet *skid_set = reinterpret_cast<SkidSet *>(p->GetObject());
+        SkidSet *skid_set = reinterpret_cast<SkidSet *>(p->GetpObject());
         eVisibleState visibility = view->GetVisibleState(skid_set->GetBBoxMin(), skid_set->GetBBoxMax(), 0);
         if (visibility != EVISIBLESTATE_NOT) {
             int pixel_size = view->GetPixelSize(bDistBetween(skid_set->GetBBoxCentre(), view->GetCamera()->GetPosition()), 1.0f);

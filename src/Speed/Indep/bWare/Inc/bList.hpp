@@ -35,8 +35,8 @@ class bNode {
     }
 
     bNode *AddAfter(bNode *insert_point) {
-        bNode *new_prev = this->Prev; // unused
         bNode *new_next = insert_point->Next;
+        bNode *new_prev = this->Prev; // unused
         insert_point->Next = this;
         new_next->Prev = this;
         this->Prev = insert_point;
@@ -128,9 +128,7 @@ struct bList {
     bNode *RemoveHead() {
         return this->GetHead()->Remove();
     }
-    bNode *RemoveTail() {
-        return this->GetTail()->Remove();
-    }
+    bNode *RemoveTail();            // TODO
     int GetNodeNumber(bNode *node); // TODO
 
     int IsInList(bNode *node) {
@@ -154,7 +152,11 @@ template <typename T> class bTList : public bList {
 
     bTList() {}
 
-    ~bTList() {}
+    ~bTList() {
+        while (!this->IsEmpty()) {
+            delete this->RemoveHead();
+        }
+    }
 
     T *AddSorted(SortFuncT check_flip, T *node);
 
@@ -297,8 +299,8 @@ class bPNode : public bTNode<bPNode> {
         this->Object = object;
     }
 
-    void *GetObject() {
-        return Object;
+    bPNode *GetObject() {
+        return reinterpret_cast<bPNode *>(Object);
     }
 
     void *GetpObject() {
