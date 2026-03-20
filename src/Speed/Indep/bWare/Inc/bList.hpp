@@ -152,11 +152,7 @@ template <typename T> class bTList : public bList {
 
     bTList() {}
 
-    ~bTList() {
-        while (!this->IsEmpty()) {
-            delete this->RemoveHead();
-        }
-    }
+    ~bTList() {}
 
     T *AddSorted(SortFuncT check_flip, T *node);
 
