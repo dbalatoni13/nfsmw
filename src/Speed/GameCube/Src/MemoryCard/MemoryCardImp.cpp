@@ -132,9 +132,13 @@ RealmcIface::SaveInfo *MemoryCardImp::ConstructSaveInfo(MemoryCard::SaveType typ
 }
 
 void MemoryCardImp::DestructSaveInfo() {
-    if (this->m_SaveReq.mSaveInfo) {
-        delete this->m_SaveReq.mSaveInfo;
-        this->m_SaveReq.mSaveInfo = 0;
+    RealmcIface::SaveInfo *pInfo;
+
+    pInfo = this->m_SaveReq.mSaveInfo;
+    if (pInfo) {
+        delete pInfo;
+        pInfo = 0;
+        this->m_SaveReq.mSaveInfo = pInfo;
     }
 }
 
