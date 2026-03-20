@@ -1203,7 +1203,7 @@ int GrandSceneryCullInfo::WhatSectionsShouldWeDraw(short *sections_to_draw, int 
         }
     }
 
-    if (iViewID == EVIEW_PLAYER1) {
+    if (cull_info->pView->GetID() == EVIEW_PLAYER1) {
         int current_zone_number = -1;
         if (drivable_scenery_section) {
             current_zone_number = drivable_scenery_section->GetSectionNumber();
