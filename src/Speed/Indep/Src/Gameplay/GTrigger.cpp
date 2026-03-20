@@ -220,11 +220,14 @@ void GTrigger::CreateAllParticleEffects() {
         GetPosition(pos);
         flareSpacing = FlareSpacing(0);
         if (flareSpacing > 0.0f) {
-            UMath::Vector3 upVec = UMath::Vector3Make(0.0f, 1.0f, 0.0f);
+            UMath::Vector3 upVec;
             UMath::Vector3 lateralVec;
             UMath::Vector3 posLeft;
             UMath::Vector3 posRight;
 
+            upVec.x = 0.0f;
+            upVec.y = 1.0f;
+            upVec.z = 0.0f;
             bCross(reinterpret_cast<bVector3 *>(&lateralVec), reinterpret_cast<const bVector3 *>(&upVec), reinterpret_cast<const bVector3 *>(&mDirection));
             bScale(reinterpret_cast<bVector3 *>(&lateralVec), reinterpret_cast<const bVector3 *>(&lateralVec), flareSpacing);
             bScaleAdd(reinterpret_cast<bVector3 *>(&posLeft), reinterpret_cast<const bVector3 *>(&pos), reinterpret_cast<const bVector3 *>(&lateralVec), -1.0f);
