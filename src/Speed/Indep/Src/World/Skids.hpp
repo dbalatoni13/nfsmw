@@ -9,11 +9,13 @@
 #include "Car.hpp"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
+#include "Speed/Indep/bWare/Inc/bWare.hpp"
 
 struct SlotPool;
 struct TextureInfo;
 struct SkidMaker;
 struct eView;
+extern SlotPool *SkidSetSlotPool;
 
 struct SkidSegment {
     // total size: 0x10
@@ -58,8 +60,12 @@ struct SkidSet : public bTNode<SkidSet> {
     int NumSkidSegments;         // offset 0xDC, size 0x4
     bVector3 BBoxCentre;         // offset 0xE0, size 0x10
 
-    void *operator new(size_t size);
-    void operator delete(void *ptr);
+    void *operator new(size_t size) {
+        return bMalloc(SkidSetSlotPool);
+    }
+    void operator delete(void *ptr) {
+        bFree(SkidSetSlotPool, ptr);
+    }
 
     SkidSet(SkidMaker *skid_maker, bVector3 *position, bVector3 *delta_position, int terrain_type, float intensity);
     ~SkidSet();

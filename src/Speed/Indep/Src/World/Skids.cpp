@@ -36,14 +36,6 @@ int PlotSkidPointsInCaffeine = 0;
 bTList<SkidSet> SkidSetList;
 TextureInfo *SkidTextureInfo[kNumSkidTextures_Skids];
 
-inline void *SkidSet::operator new(size_t) {
-    return bMalloc(SkidSetSlotPool);
-}
-
-inline void SkidSet::operator delete(void *ptr) {
-    bFree(SkidSetSlotPool, ptr);
-}
-
 void SkidSegment::SetPoints(bVector3 *position, bVector3 *delta_position) {
     const float scale_factor = kSkidSegmentScale_Skids;
     float x = position->x;
@@ -248,9 +240,9 @@ void SkidSet::Render(eView *view, unsigned char intensityReduction) {
 
 SkidSet *CreateNewSkidSet(SkidMaker *skid_maker, bVector3 *position, bVector3 *delta_position, int terrain_type, float intensity) {
     if (bIsSlotPoolFull(SkidSetSlotPool)) {
-        SkidSet *oldest_skid_set = SkidSetList.GetTail();
-        if (oldest_skid_set != SkidSetList.EndOfList()) {
-            DeleteThisSkid(oldest_skid_set);
+        SkidSet *oldest_skid_set = SkidSetList.RemoveTail();
+        if (oldest_skid_set) {
+            delete oldest_skid_set;
         }
     }
 
