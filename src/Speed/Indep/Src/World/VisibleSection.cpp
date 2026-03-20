@@ -113,14 +113,18 @@ float VisibleSectionBoundary::GetDistanceOutside(const bVector2 *point, float ma
     }
 
     float closest_distance = max_distance;
-    int i = 0;
-    while (i < NumPoints) {
-        int next = i + 1;
-        float distance = bDistToLine(point, GetPoint(i), GetPoint(next - (next / NumPoints) * NumPoints));
-        if (distance < closest_distance) {
-            closest_distance = distance;
+    {
+        int point_number = 0;
+        while (point_number < NumPoints) {
+            int next = point_number + 1;
+            bVector2 *point1 = GetPoint(point_number);
+            bVector2 *point2 = GetPoint(next - (next / NumPoints) * NumPoints);
+            float distance = bDistToLine(point, point1, point2);
+            if (distance < closest_distance) {
+                closest_distance = distance;
+            }
+            point_number = next;
         }
-        i = next;
     }
 
     return closest_distance;
