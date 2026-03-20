@@ -296,6 +296,7 @@ void DoTunnelBloom(eView *view) {
 
     TrackPathZone *zone = 0;
     bVector3 endVector;
+    bVector3 posScreen;
     TrackPathZone *zoneBP = zoneB[vIndex];
     if (zoneBP && zoneBP->IsPointInside(twoDpos_ptr)) {
         zone = zoneB[vIndex];
