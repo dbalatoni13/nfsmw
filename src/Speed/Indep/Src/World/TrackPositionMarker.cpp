@@ -57,16 +57,16 @@ int UnloaderTrackPositionMarkers(bChunk *chunk) {
 }
 
 int GetNumTrackPositionMarkers(int track_number, unsigned int name_hash) {
-    int count = 0;
+    int num_markers = 0;
 
-    for (TrackPositionMarker *marker = TrackPositionMarkerList.GetHead(); marker != TrackPositionMarkerList.EndOfList();
-         marker = marker->GetNext()) {
-        if (marker->TrackNumber == track_number && marker->NameHash == name_hash) {
-            count += 1;
+    for (TrackPositionMarker *p = TrackPositionMarkerList.GetHead(); p != TrackPositionMarkerList.EndOfList();
+         p = p->GetNext()) {
+        if (p->NameHash == name_hash && (track_number == 0 || p->TrackNumber == track_number)) {
+            num_markers += 1;
         }
     }
 
-    return count;
+    return num_markers;
 }
 
 TrackPositionMarker *GetTrackPositionMarker(int track_number, unsigned int name_hash, int index) {
