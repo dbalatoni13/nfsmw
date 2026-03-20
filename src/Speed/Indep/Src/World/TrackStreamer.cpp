@@ -1571,8 +1571,8 @@ void TrackStreamer::UnloadEverything() {
         ServiceResourceLoading();
     }
 
-    for (int i = 0; i < NumTrackStreamingSections; i++) {
-        TrackStreamingSection *section = &pTrackStreamingSections[i];
+    for (int n = 0; n < NumTrackStreamingSections; n++) {
+        TrackStreamingSection *section = &pTrackStreamingSections[n];
         if (static_cast<unsigned int>(section->Status - TrackStreamingSection::LOADED) < 2U) {
             UnloadSection(section);
         }
