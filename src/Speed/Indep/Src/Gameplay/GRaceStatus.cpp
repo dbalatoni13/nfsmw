@@ -827,92 +827,99 @@ void GRacerInfo::UpdateSplits() {
 }
 
 void GRacerInfo::FinalizeRaceStats() {
-    GRaceParameters *raceParms = GRaceStatus::Get().GetRaceParameters();
-    float adjustedRaceTime;
-    float pctRaceComplete = mPctRaceComplete;
+    float currentTime;
+    float time_now;
+    float pctComplete;
 
     if (mFinishedRacing) {
         return;
     }
 
-    adjustedRaceTime = GetRaceTime();
-    if (0.1f < pctRaceComplete) {
-        adjustedRaceTime = GetRaceTime() / pctRaceComplete;
+    time_now = GetRaceTime();
+    pctComplete = GetPctRaceComplete();
+    currentTime = time_now;
+    if (0.1f < pctComplete) {
+        currentTime = currentTime / (pctComplete * 0.01f);
     }
 
-#ifndef EA_BUILD_A124
-    mDNF = false;
-#endif
-
-    if (raceParms && raceParms->GetRaceType() == GRace::kRaceType_Drag &&
-        (mTotalled || mEngineBlown || pctRaceComplete < 1.0f)) {
-        adjustedRaceTime = 0.0f;
+    if (GRaceStatus::Get().GetRaceType() == GRace::kRaceType_Drag &&
+        (GetIsTotalled() || GetIsEngineBlown() || pctComplete < 1.0f)) {
+        currentTime = 0.0f;
 #ifndef EA_BUILD_A124
         mDNF = true;
 #endif
     }
 
-    if (raceParms && raceParms->GetRaceType() == GRace::kRaceType_SpeedTrap && mGameCharacter) {
-        const unsigned int *pointPenalty =
-            reinterpret_cast<const unsigned int *>(raceParms->GetGameplayObj()->GetAttributePointer(0x26FD42B0, 0));
+    if (GRaceStatus::Get().GetRaceType() == GRace::kRaceType_SpeedTrap && mGameCharacter) {
+        GRaceParameters *parameters = GRaceStatus::Get().GetRaceParameters();
+        float time_left = currentTime - time_now;
+        int penalty = parameters->GetGameplayObj()->OvertimePenaltyPerSec(0);
 
-        if (!pointPenalty) {
-            pointPenalty = reinterpret_cast<const unsigned int *>(Attrib::DefaultDataArea(sizeof(unsigned int)));
-        }
-
-        if (0.0f < adjustedRaceTime - GetRaceTime()) {
-            AddToPointTotal(-((adjustedRaceTime - GetRaceTime()) * static_cast<float>(*pointPenalty)));
+        if (0.0f < time_left) {
+            AddToPointTotal(-(time_left * static_cast<float>(penalty)));
         }
     }
 
-    if (raceParms && raceParms->GetIsLoopingRace() && mGameCharacter) {
-        int numLaps = raceParms->GetNumLaps();
-        float totalLapTime = 0.0f;
+    if (GRaceStatus::Get().GetRaceParameters() &&
+        GRaceStatus::Get().GetRaceParameters()->GetIsLoopingRace()) {
+        if (mGameCharacter) {
+            int totalLaps = GRaceStatus::Get().GetRaceParameters()->GetNumLaps();
+            int completedLaps = GetLapsCompleted();
+            float elapsedTime = 0.0f;
+            int onLap = 0;
 
-        for (int i = 0; i < numLaps; ++i) {
-            float lapTime = GRaceStatus::Get().GetLapTime(i, GetIndex(), false);
+            if (onLap < totalLaps) {
+                do {
+                    float lapTime = GRaceStatus::Get().GetLapTime(onLap, GetIndex(), false);
 
-            if (lapTime == 0.0f) {
-                break;
+                    if (lapTime == 0.0f) {
+                        completedLaps = onLap;
+                        break;
+                    }
+
+                    onLap++;
+                    elapsedTime += lapTime;
+                } while (onLap < totalLaps);
             }
 
-            totalLapTime += lapTime;
+            GRaceStatus::Get().SetLapTime(completedLaps, GetIndex(), currentTime - elapsedTime);
         }
-
-        GRaceStatus::Get().SetLapTime(mLapsCompleted, GetIndex(), adjustedRaceTime - totalLapTime);
     }
 
 #ifndef EA_BUILD_A124
     if (mGameCharacter) {
-        static const float splitPct[4] = {
-            0.25f,
-            0.5f,
-            0.75f,
-            1.0f,
-        };
-        float effectivePct = mDNF ? pctRaceComplete : 1.0f;
+        float effectivePct = mDNF ? pctComplete : 1.0f;
+        float pct[4];
+        int onSplit;
 
-        for (int i = 0; i < 4; ++i) {
-            if (mSplitTimes[i] == 0.0f) {
-                if (effectivePct < splitPct[i]) {
-                    mSplitTimes[i] = 0.0f;
+        pct[0] = 0.25f;
+        pct[1] = 0.5f;
+        pct[2] = 0.75f;
+        pct[3] = 1.0f;
+
+        for (onSplit = 0; onSplit <= 3; ++onSplit) {
+            bool wasAliveAtPct = effectivePct >= pct[onSplit];
+
+            if (mSplitTimes[onSplit] == 0.0f) {
+                if (wasAliveAtPct) {
+                    mSplitTimes[onSplit] = currentTime * pct[onSplit];
                 } else {
-                    mSplitTimes[i] = adjustedRaceTime * splitPct[i];
+                    mSplitTimes[onSplit] = 0.0f;
                 }
             }
 
-            if (mSplitRankings[i] == 0) {
-                mSplitRankings[i] = mRanking;
+            if (mSplitRankings[onSplit] == 0) {
+                mSplitRankings[onSplit] = mRanking;
             }
         }
     }
 
     if (!mDNF) {
-        mRaceTimer.SetTime(adjustedRaceTime);
+        mRaceTimer.SetTime(currentTime);
         FinishRace();
     }
 #else
-    mRaceTimer.SetTime(adjustedRaceTime);
+    mRaceTimer.SetTime(currentTime);
     FinishRace();
 #endif
 }
