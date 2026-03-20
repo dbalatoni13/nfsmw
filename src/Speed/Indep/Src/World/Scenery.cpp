@@ -120,6 +120,19 @@ struct SceneryTreeNode {
 };
 
 struct eLightContext;
+struct eSceneryLightContext : public eLightContext {
+    char Name[34];
+    short LightingContextNumber;
+    bMatrix4 *LocalLights;
+    unsigned int NumLights;
+
+    void EndianSwap() {
+        bPlatEndianSwap(&Type);
+        bPlatEndianSwap(&NumLights);
+        bEndianSwap16(&LightingContextNumber);
+    }
+};
+
 struct PrecullerBooBooManager {
     unsigned char Data[0x800];
 
@@ -198,9 +211,9 @@ bChunkLoader bChunkLoaderSceneryLighting(0x80034115, LoaderScenery, UnloaderScen
 SceneryDetailLevel ForceAllSceneryDetailLevels = SCENERY_DETAIL_NONE;
 SceneryOverrideInfo *SceneryOverrideInfoTable = 0;
 int NumSceneryOverrideInfos = 0;
-void *LightTable = 0;
+eLight *LightTable = 0;
 int MaxSceneryLightContexts = 0;
-void **SceneryLightContextTable = 0;
+eSceneryLightContext **SceneryLightContextTable = 0;
 void (*ModelConnectionCallback)(ScenerySectionHeader *, int, eModel *) = 0;
 void (*ModelDisconnectionCallback)(ScenerySectionHeader *, int, eModel *) = 0;
 void (*SectionConnectionCallback)(ScenerySectionHeader *) = 0;
@@ -925,17 +938,15 @@ int LoaderScenery(bChunk *chunk) {
 
         if (!AreChunksBeingMoved()) {
             int *section_header_words = reinterpret_cast<int *>(section_header);
-            unsigned char *scenery_infos = reinterpret_cast<unsigned char *>(section_header_words[6]);
-            for (int i = 0; i < section_header_words[7]; i++) {
-                unsigned char *scenery_info = scenery_infos + i * 0x48;
-                unsigned int *name_hashes = reinterpret_cast<unsigned int *>(scenery_info + 0x18);
-                eModel **models = reinterpret_cast<eModel **>(scenery_info + 0x28);
-                for (int j = 0; j < 4; j++) {
-                    unsigned int name_hash = name_hashes[j];
+            SceneryInfo *scenery_infos = reinterpret_cast<SceneryInfo *>(section_header_words[6]);
+            for (int n = 0; n < section_header_words[7]; n++) {
+                SceneryInfo *scenery_info = &scenery_infos[n];
+                for (int detail_level = 0; detail_level < 4; detail_level++) {
+                    unsigned int name_hash = scenery_info->NameHash[detail_level];
                     if (name_hash != 0 && name_hash != 0xBE43EDBB && name_hash != 0x90F70174) {
                         eModel *model = 0;
-                        for (int n = 0; n < j; n++) {
-                            model = models[n];
+                        for (int i = 0; i < detail_level; i++) {
+                            model = scenery_info->pModel[i];
                             if (model && model->NameHash == name_hash) {
                                 break;
                             }
@@ -948,18 +959,19 @@ int LoaderScenery(bChunk *chunk) {
                             model->Solid = 0;
                             model->Init(name_hash);
                             if (ModelConnectionCallback) {
-                                ModelConnectionCallback(section_header, i, model);
+                                ModelConnectionCallback(section_header, n, model);
                             }
                         }
-                        models[j] = model;
+                        scenery_info->pModel[detail_level] = model;
                     }
                 }
 
-                if (models[2] == 0 && models[1] != 0) {
-                    models[2] = models[1];
+                eModel *lowest_detail_model = scenery_info->pModel[1];
+                if (scenery_info->pModel[2] == 0 && lowest_detail_model != 0) {
+                    scenery_info->pModel[2] = lowest_detail_model;
                 }
-                if (models[0] == 0 && models[1] != 0) {
-                    models[0] = models[1];
+                if (scenery_info->pModel[0] == 0 && lowest_detail_model != 0) {
+                    scenery_info->pModel[0] = lowest_detail_model;
                 }
             }
 
@@ -975,27 +987,31 @@ int LoaderScenery(bChunk *chunk) {
     if (chunk->GetID() == 0x8003410B) {
         bChunk *last_chunk = chunk->GetLastChunk();
         for (bChunk *subchunk = chunk->GetFirstChunk(); subchunk != last_chunk; subchunk = subchunk->GetNext()) {
-            unsigned int *entry_words = reinterpret_cast<unsigned int *>(subchunk->GetData());
-            bEndianSwap32(&entry_words[0]);
+            ModelHeirarchy *mH = reinterpret_cast<ModelHeirarchy *>(subchunk->GetData());
+            bEndianSwap32(&mH->mNameHash);
 
-            unsigned int num_models = *reinterpret_cast<unsigned char *>(&entry_words[1]);
+            unsigned int num_models = mH->mNumNodes;
             for (unsigned int i = 0; i < num_models; i++) {
-                bEndianSwap32(&entry_words[i * 4 + 2]);
-                bEndianSwap32(&entry_words[i * 4 + 3]);
+                ModelHeirarchy::Node *node =
+                    reinterpret_cast<ModelHeirarchy::Node *>(reinterpret_cast<char *>(mH) + 8) + i;
+                bEndianSwap32(&node->mNodeName);
+                bEndianSwap32(&node->mModelHash);
             }
 
-            HeirarchyMap[entry_words[0]] = reinterpret_cast<ModelHeirarchy *>(entry_words);
+            HeirarchyMap[mH->mNameHash] = mH;
             for (unsigned int i = 0; i < num_models; i++) {
+                ModelHeirarchy::Node *node =
+                    reinterpret_cast<ModelHeirarchy::Node *>(reinterpret_cast<char *>(mH) + 8) + i;
                 eModel *model = 0;
-                if (entry_words[i * 4 + 3] != 0) {
+                if (node->mModelHash != 0) {
                     model = reinterpret_cast<eModel *>(bOMalloc(eModelSlotPool));
                     if (model) {
                         model->NameHash = 0;
                         model->Solid = 0;
-                        model->Init(entry_words[i * 4 + 3]);
+                        model->Init(node->mModelHash);
                     }
                 }
-                entry_words[i * 4 + 4] = reinterpret_cast<unsigned int>(model);
+                node->mModel = model;
             }
         }
         return 1;
@@ -1004,34 +1020,20 @@ int LoaderScenery(bChunk *chunk) {
     if (chunk->GetID() == 0x80034115) {
         bChunk *last_chunk = chunk->GetLastChunk();
         for (bChunk *subchunk = chunk->GetFirstChunk(); subchunk != last_chunk; subchunk = subchunk->GetNext()) {
-            switch (subchunk->GetID()) {
-                case 0x34116:
-                    LightTable = subchunk->GetData();
-                    break;
-                case 0x34117:
-                    SceneryLightContextTable = reinterpret_cast<void **>(subchunk->GetData());
-                    MaxSceneryLightContexts = (subchunk->Size + 3) >> 2;
-                    break;
-                case 0x34118: {
-                    unsigned char *light_context = reinterpret_cast<unsigned char *>(subchunk->GetAlignedData(0x10));
-                    bEndianSwap32(light_context + 0x00);
-                    bEndianSwap32(light_context + 0x2C);
-                    bEndianSwap16(light_context + 0x26);
-                    *reinterpret_cast<unsigned int *>(light_context + 0x28) = reinterpret_cast<unsigned int>(light_context + 0x30);
-                    unsigned int num_vectors = *reinterpret_cast<unsigned int *>(light_context + 0x2C);
-                    for (unsigned int i = 0; i < num_vectors; i++) {
-                        bPlatEndianSwap(reinterpret_cast<bVector4 *>(light_context + 0x30 + i * 0x40 + 0x00));
-                        bPlatEndianSwap(reinterpret_cast<bVector4 *>(light_context + 0x30 + i * 0x40 + 0x10));
-                        bPlatEndianSwap(reinterpret_cast<bVector4 *>(light_context + 0x30 + i * 0x40 + 0x20));
-                        bPlatEndianSwap(reinterpret_cast<bVector4 *>(light_context + 0x30 + i * 0x40 + 0x30));
-                    }
-                    if (SceneryLightContextTable) {
-                        SceneryLightContextTable[*reinterpret_cast<short *>(light_context + 0x26)] = light_context;
-                    }
-                    break;
+            if (subchunk->GetID() == 0x34116) {
+                LightTable = reinterpret_cast<eLight *>(subchunk->GetData());
+            } else if (subchunk->GetID() == 0x34117) {
+                SceneryLightContextTable = reinterpret_cast<eSceneryLightContext **>(subchunk->GetData());
+                MaxSceneryLightContexts = (subchunk->Size + 3) >> 2;
+            } else if (subchunk->GetID() == 0x34118) {
+                eSceneryLightContext *light_context =
+                    reinterpret_cast<eSceneryLightContext *>(subchunk->GetAlignedData(0x10));
+                light_context->EndianSwap();
+                light_context->LocalLights = reinterpret_cast<bMatrix4 *>(light_context + 1);
+                for (unsigned int i = 0; i < light_context->NumLights; i++) {
+                    bPlatEndianSwap(&light_context->LocalLights[i]);
                 }
-                default:
-                    break;
+                SceneryLightContextTable[light_context->LightingContextNumber] = light_context;
             }
         }
         return 1;
