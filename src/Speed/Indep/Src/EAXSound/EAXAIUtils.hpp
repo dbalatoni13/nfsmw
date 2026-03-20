@@ -40,6 +40,9 @@ struct SndAITrigger {
     ~SndAITrigger();
     void Initialize(int AvgSize);
     void Update(float UpdateVal, float t);
+    bool IsTriggering() {
+        return bTrigger;
+    }
 };
 
 struct SndAIStateManager : public AudioMemBase {
@@ -61,7 +64,7 @@ struct SndAIStateManager : public AudioMemBase {
     void Initialize(SFXCTL_Physics *pPhys);
     void Update(float t);
     void UpdateState(float t);
-    void GeneratePotentialStates(bool *pPotentialStates);
+    void GeneratePotentialStates(bool *ArrayList);
     SND_AI_STATE GetState() {
         return CurState;
     }

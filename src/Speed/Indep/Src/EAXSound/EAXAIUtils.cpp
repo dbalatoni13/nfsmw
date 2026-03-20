@@ -7,6 +7,16 @@
 extern "C" void Average_Record(Average *avg, float value) asm("Record__7Averagef");
 extern "C" void AverageBase_Recalculate(AverageBase *avg) asm("Recalculate__11AverageBase");
 
+static const float MIN_StateSustainTime[MAX_NUM_SND_AI_STATE] = {
+    1.0f,
+    1.0f,
+    1.0f,
+    1.0f,
+    0.5f,
+    0.5f,
+    0.5f,
+};
+
 void SndAITrigger::BeginTrigger() {
     bTrigger = true;
     CurTriggerLength = t_TriggerLength;
@@ -141,43 +151,103 @@ void SndAIStateManager::Initialize(SFXCTL_Physics *pPhys) {
     m_tLastSwitch = 0.0f;
 }
 
-void SndAIStateManager::GeneratePotentialStates(bool *pPotentialStates) {
-    for (int i = 0; i < MAX_NUM_SND_AI_STATE; i++) {
-        pPotentialStates[i] = false;
-    }
-
-    pPotentialStates[SND_AI_STATE_IDLE] = true;
-    pPotentialStates[SND_AI_STATE_ACCEL] = AccelMonitor.bTrigger || ThrottleMonitor.bTrigger;
-    pPotentialStates[SND_AI_STATE_DECEL] = DeccelMonitor.bTrigger;
-    pPotentialStates[SND_AI_STATE_CORNER_LEFT] = SteeringMonitorLeft.bTrigger;
-    pPotentialStates[SND_AI_STATE_CORNER_RIGHT] = SteeringMonitorRight.bTrigger;
-
-    if (m_pPhysicsCTL != nullptr && m_pPhysicsCTL->eCurNisRevingState != NIS_DISABLED) {
-        pPotentialStates[SND_AI_STATE_PRERACE] = true;
-    }
+void SndAIStateManager::GeneratePotentialStates(bool *ArrayList) {
+    ArrayList[SND_AI_STATE_PRERACE] = false;
+    ArrayList[SND_AI_STATE_IDLE] = m_pPhysicsCTL->GetStateBase()->GetPhysCar()->GetVelocityMagnitudeMPH() < 5.0f;
+    ArrayList[SND_AI_STATE_ACCEL] = AccelMonitor.IsTriggering();
+    ArrayList[SND_AI_STATE_DECEL] = DeccelMonitor.IsTriggering();
+    ArrayList[SND_AI_STATE_CORNER_LEFT] = DeccelMonitor.IsTriggering() && SteeringMonitorLeft.IsTriggering();
+    ArrayList[SND_AI_STATE_CORNER_RIGHT] = DeccelMonitor.IsTriggering() && SteeringMonitorRight.IsTriggering();
 }
 
 void SndAIStateManager::UpdateState(float t) {
-    bool potentialStates[MAX_NUM_SND_AI_STATE];
-    GeneratePotentialStates(potentialStates);
+    bool PossibleState[MAX_NUM_SND_AI_STATE];
 
-    SND_AI_STATE newState = SND_AI_STATE_IDLE;
-    if (potentialStates[SND_AI_STATE_PRERACE]) {
-        newState = SND_AI_STATE_PRERACE;
-    } else if (potentialStates[SND_AI_STATE_CORNER_LEFT]) {
-        newState = SND_AI_STATE_CORNER_LEFT;
-    } else if (potentialStates[SND_AI_STATE_CORNER_RIGHT]) {
-        newState = SND_AI_STATE_CORNER_RIGHT;
-    } else if (potentialStates[SND_AI_STATE_ACCEL]) {
-        newState = SND_AI_STATE_ACCEL;
-    } else if (potentialStates[SND_AI_STATE_DECEL]) {
-        newState = SND_AI_STATE_DECEL;
-    }
+    static_cast<void>(t);
+    bTransition = 0;
+    GeneratePotentialStates(PossibleState);
 
-    if (newState != CurState) {
-        SwitchState(newState);
-    } else if (bTransition && (SndBase::m_fRunningTime - m_tLastSwitch > t)) {
-        bTransition = 0;
+    switch (CurState) {
+    case SND_AI_STATE_UNKNOWN:
+        if (!PossibleState[SND_AI_STATE_PRERACE]) {
+            SwitchState(SND_AI_STATE_ACCEL);
+            return;
+        }
+
+        SwitchState(SND_AI_STATE_PRERACE);
+        return;
+    case SND_AI_STATE_PRERACE:
+        if (!PossibleState[SND_AI_STATE_PRERACE]) {
+            SwitchState(SND_AI_STATE_ACCEL);
+        }
+        return;
+    case SND_AI_STATE_IDLE:
+        if (PossibleState[SND_AI_STATE_ACCEL]) {
+            SwitchState(SND_AI_STATE_ACCEL);
+        }
+        return;
+    case SND_AI_STATE_ACCEL:
+        if (m_tLastSwitch > SndBase::m_fRunningTime - MIN_StateSustainTime[SND_AI_STATE_ACCEL]) {
+            return;
+        }
+
+        if (PossibleState[SND_AI_STATE_CORNER_LEFT]) {
+            SwitchState(SND_AI_STATE_CORNER_LEFT);
+            return;
+        }
+
+        if (PossibleState[SND_AI_STATE_CORNER_RIGHT]) {
+            SwitchState(SND_AI_STATE_CORNER_RIGHT);
+            return;
+        }
+
+        if (PossibleState[SND_AI_STATE_DECEL]) {
+            SwitchState(SND_AI_STATE_DECEL);
+            return;
+        }
+
+        if (PossibleState[SND_AI_STATE_IDLE]) {
+            SwitchState(SND_AI_STATE_IDLE);
+        }
+        return;
+    case SND_AI_STATE_DECEL:
+        if (m_tLastSwitch > SndBase::m_fRunningTime - MIN_StateSustainTime[SND_AI_STATE_DECEL]) {
+            return;
+        }
+
+        if (PossibleState[SND_AI_STATE_CORNER_LEFT]) {
+            SwitchState(SND_AI_STATE_CORNER_LEFT);
+            return;
+        }
+
+        if (PossibleState[SND_AI_STATE_CORNER_RIGHT]) {
+            SwitchState(SND_AI_STATE_CORNER_RIGHT);
+            return;
+        }
+
+        if (PossibleState[SND_AI_STATE_ACCEL] && !PossibleState[SND_AI_STATE_DECEL]) {
+            SwitchState(SND_AI_STATE_ACCEL);
+        }
+        return;
+    case SND_AI_STATE_CORNER_LEFT:
+    case SND_AI_STATE_CORNER_RIGHT:
+        if (m_tLastSwitch > SndBase::m_fRunningTime - MIN_StateSustainTime[CurState]) {
+            return;
+        }
+
+        if (PossibleState[SND_AI_STATE_ACCEL]) {
+            if (!PossibleState[SND_AI_STATE_DECEL]) {
+                SwitchState(SND_AI_STATE_ACCEL);
+                return;
+            }
+        } else if (!PossibleState[SND_AI_STATE_DECEL]) {
+            return;
+        }
+
+        SwitchState(SND_AI_STATE_DECEL);
+        return;
+    default:
+        return;
     }
 }
 
