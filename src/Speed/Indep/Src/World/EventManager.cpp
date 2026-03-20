@@ -225,8 +225,9 @@ int LoaderEventManager(bChunk *bchunk) {
     }
 
     EventTriggerPack *trigger_pack = 0;
+    bChunk *chunk = bchunk->GetFirstChunk();
     bChunk *last_chunk = bchunk->GetLastChunk();
-    for (bChunk *chunk = bchunk->GetFirstChunk(); chunk != last_chunk; chunk = chunk->GetNext()) {
+    for (; chunk != last_chunk; chunk = chunk->GetNext()) {
         switch (chunk->GetID()) {
         case 0x36001: {
             trigger_pack = reinterpret_cast<EventTriggerPack *>(chunk->GetAlignedData(0x10));
@@ -248,9 +249,9 @@ int LoaderEventManager(bChunk *bchunk) {
 
         case 0x36002:
             if (trigger_pack) {
-                vAABBTree *tree = reinterpret_cast<vAABBTree *>(chunk->GetAlignedData(0x10));
-                trigger_pack->EventTree = tree;
-                tree->NodeArray = reinterpret_cast<vAABB *>(reinterpret_cast<int *>(tree) + 4);
+                trigger_pack->EventTree = reinterpret_cast<vAABBTree *>(chunk->GetAlignedData(0x10));
+                trigger_pack->EventTree->NodeArray =
+                    reinterpret_cast<vAABB *>(reinterpret_cast<int *>(trigger_pack->EventTree) + 4);
                 if (trigger_pack->EndianSwapped == 0) {
                     SwapEndian(trigger_pack->EventTree);
                 }
