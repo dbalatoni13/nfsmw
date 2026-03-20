@@ -1210,11 +1210,10 @@ int GrandSceneryCullInfo::WhatSectionsShouldWeDraw(short *sections_to_draw, int 
         }
 
         if (current_zone_number != CurrentZoneNumber) {
+            CurrentZoneNumber = current_zone_number;
             if (!SeeulatorToolActive) {
-                CurrentZoneNumber = current_zone_number;
                 return num_sections_to_draw;
             }
-            CurrentZoneNumber = current_zone_number;
             if (drivable_scenery_section) {
                 bFunkCallASync("Seeulator", 1, &CurrentZoneNumber, 4);
             }
