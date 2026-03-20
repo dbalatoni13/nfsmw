@@ -295,6 +295,7 @@ void DoTunnelBloom(eView *view) {
     }
 
     TrackPathZone *zone = 0;
+    bVector3 endVector;
     TrackPathZone *zoneBP = zoneB[vIndex];
     if (zoneBP && zoneBP->IsPointInside(twoDpos_ptr)) {
         zone = zoneB[vIndex];
@@ -305,7 +306,6 @@ void DoTunnelBloom(eView *view) {
     if (zone && zone->GetElevation() > my_car_pos->z) {
         lcamPosInside_27614[vIndex] = *camera_position;
         float angleCos = 0.0f;
-        bVector3 endVector;
         GenericRegion *end_tunnel = GetClosestRegionInView(view, &endVector, &angleCos);
         if (!end_tunnel) {
             return;
