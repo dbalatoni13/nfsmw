@@ -19,6 +19,7 @@
 GTrigger::GTrigger(const Attrib::Key &triggerKey)
     : GRuntimeInstance(triggerKey, kGameplayObjType_Trigger), //
       mWorldTrigger() {
+    UMath::Matrix4 directionMat;
     UMath::Matrix4 mat;
     UMath::Vector3 initialVec;
     const float *rotation;
@@ -42,7 +43,7 @@ GTrigger::GTrigger(const Attrib::Key &triggerKey)
     mActivationReferences = 0;
     bMemSet(mParticleEffect, 0, 8);
 
-    UMath::Copy(UMath::Matrix4::kIdentity, mat);
+    UMath::Copy(UMath::Matrix4::kIdentity, directionMat);
     initialVec.x = 0.0f;
     initialVec.y = 0.0f;
     initialVec.z = 1.0f;
@@ -52,8 +53,8 @@ GTrigger::GTrigger(const Attrib::Key &triggerKey)
         rotation = reinterpret_cast<const float *>(Attrib::DefaultDataArea(sizeof(float)));
     }
 
-    MATRIX4_multyrot(&mat, -*rotation * 0.00069444446f, &mat);
-    VU0_MATRIX3x4_vect3mult(initialVec, mat, initialVec);
+    MATRIX4_multyrot(&directionMat, -*rotation * 0.00069444446f, &directionMat);
+    VU0_MATRIX3x4_vect3mult(initialVec, directionMat, initialVec);
     mDirection.x = initialVec.x;
     mDirection.y = initialVec.y;
     mDirection.z = initialVec.z;
