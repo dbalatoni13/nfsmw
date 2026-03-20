@@ -377,92 +377,58 @@ void SFXCTL_Engine::UpdateTorque(float t) {
 
 void SFXCTL_Engine::UpdateEngineLFO_FX(float t) {
     SFXCTL_Shifting *shiftCtl = m_pShiftCtl;
-    int volLfoAmp = 0;
-    int volLfoFreq = 0;
-    int trqLfoAmp = 0;
-    int trqLfoFreq = 0;
-    int rpmLfoAmp = 0;
-    int rpmLfoFreq = 0;
-    float updateTime = t;
+    int tmp_VOL_LFO_AMP = 0;
+    int tmp_VOL_LFO_FRQ = 0;
+    int tmp_TRQ_LFO_AMP = 0;
+    int tmp_TRQ_LFO_FRQ = 0;
+    int tmp_RPM_LFO_AMP = 0;
+    int tmp_RPM_LFO_FRQ = 0;
 
-    if (shiftCtl != nullptr) {
-        int hasShiftData = 1;
-        if (shiftCtl->eShiftState == SHFT_NONE) {
-            hasShiftData = 0;
-        }
-        if (hasShiftData != 0) {
-            rpmLfoFreq = shiftCtl->m_RPM_LFO_FRQ;
-            volLfoAmp = shiftCtl->m_VOL_LFO_AMP;
-            volLfoFreq = shiftCtl->m_VOL_LFO_FRQ;
-            trqLfoAmp = shiftCtl->m_TRQ_LFO_AMP;
-            trqLfoFreq = shiftCtl->m_TRQ_LFO_FRQ;
-            rpmLfoAmp = shiftCtl->m_RPM_LFO_AMP;
-        } else {
-            m_aglTRQ_LFO = 0x4097;
-            m_TRQ_LFO = 0.0f;
-            m_VOL_LFO = 0.0f;
-            m_aglVOL_LFO = 0x4097;
-            m_RPM_LFO = 0.0f;
-            m_aglRPM_LFO = 0x4097;
-        }
-    } else {
+    if (shiftCtl == nullptr || !shiftCtl->IsActive()) {
         m_aglTRQ_LFO = 0x4097;
         m_TRQ_LFO = 0.0f;
         m_VOL_LFO = 0.0f;
         m_aglVOL_LFO = 0x4097;
         m_RPM_LFO = 0.0f;
         m_aglRPM_LFO = 0x4097;
+    } else {
+        tmp_RPM_LFO_FRQ = shiftCtl->m_RPM_LFO_FRQ;
+        tmp_VOL_LFO_AMP = shiftCtl->m_VOL_LFO_AMP;
+        tmp_VOL_LFO_FRQ = shiftCtl->m_VOL_LFO_FRQ;
+        tmp_TRQ_LFO_AMP = shiftCtl->m_TRQ_LFO_AMP;
+        tmp_TRQ_LFO_FRQ = shiftCtl->m_TRQ_LFO_FRQ;
+        tmp_RPM_LFO_AMP = shiftCtl->m_RPM_LFO_AMP;
     }
 
-    int rpmFreq = 1;
-    if (rpmLfoFreq > 1) {
-        rpmFreq = rpmLfoFreq;
-    }
-    if (rpmFreq > 10000) {
-        rpmFreq = 10000;
-    }
+    unsigned int rpmFreq = bClamp(tmp_RPM_LFO_FRQ, 1, 10000);
+    unsigned int trqFreq = bClamp(tmp_TRQ_LFO_FRQ, 1, 10000);
+    unsigned int volFreq = bClamp(tmp_VOL_LFO_FRQ, 1, 10000);
 
-    int trqFreq = 1;
-    if (trqLfoFreq > 1) {
-        trqFreq = trqLfoFreq;
-    }
-    if (trqFreq > 10000) {
-        trqFreq = 10000;
-    }
-
-    int volFreq = 1;
-    if (volLfoFreq > 1) {
-        volFreq = volLfoFreq;
-    }
-    if (volFreq > 10000) {
-        volFreq = 10000;
-    }
-
-    if (rpmLfoAmp != 0) {
+    if (tmp_RPM_LFO_AMP != 0) {
         unsigned int angle = static_cast<unsigned int>(m_aglRPM_LFO) +
-                             static_cast<unsigned int>((updateTime / (static_cast<float>(rpmFreq) * 0.001f)) * 65535.0f);
-        angle = static_cast<unsigned short>(angle);
-        angle = angle % 0xFFFF;
-        m_aglRPM_LFO = static_cast<unsigned short>(angle);
-        m_RPM_LFO = static_cast<float>(rpmLfoAmp) * bSin(m_aglRPM_LFO);
+                             static_cast<int>((t / (static_cast<float>(rpmFreq) * 0.001f)) * 65535.0f);
+        unsigned short newAngle =
+            static_cast<short>(angle) + static_cast<short>((angle & 0xFFFF) / 0xFFFF);
+        m_aglRPM_LFO = newAngle;
+        m_RPM_LFO = static_cast<float>(tmp_RPM_LFO_AMP) * bSin(newAngle);
     }
 
-    if (trqLfoAmp != 0) {
+    if (tmp_TRQ_LFO_AMP != 0) {
         unsigned int angle = static_cast<unsigned int>(m_aglTRQ_LFO) +
-                             static_cast<unsigned int>((updateTime / (static_cast<float>(trqFreq) * 0.001f)) * 65535.0f);
-        angle = static_cast<unsigned short>(angle);
-        angle = angle % 0xFFFF;
-        m_aglTRQ_LFO = static_cast<unsigned short>(angle);
-        m_TRQ_LFO = static_cast<float>(trqLfoAmp) * bSin(m_aglTRQ_LFO);
+                             static_cast<int>((t / (static_cast<float>(trqFreq) * 0.001f)) * 65535.0f);
+        unsigned short newAngle =
+            static_cast<short>(angle) + static_cast<short>((angle & 0xFFFF) / 0xFFFF);
+        m_aglTRQ_LFO = newAngle;
+        m_TRQ_LFO = static_cast<float>(tmp_TRQ_LFO_AMP) * bSin(newAngle);
     }
 
-    if (volLfoAmp != 0) {
+    if (tmp_VOL_LFO_AMP != 0) {
         unsigned int angle = static_cast<unsigned int>(m_aglVOL_LFO) +
-                             static_cast<unsigned int>((updateTime / (static_cast<float>(volFreq) * 0.001f)) * 65535.0f);
-        angle = static_cast<unsigned short>(angle);
-        angle = angle % 0xFFFF;
-        m_aglVOL_LFO = static_cast<unsigned short>(angle);
-        m_VOL_LFO = static_cast<float>(volLfoAmp) * bSin(m_aglVOL_LFO);
+                             static_cast<int>((t / (static_cast<float>(volFreq) * 0.001f)) * 65535.0f);
+        unsigned short newAngle =
+            static_cast<short>(angle) + static_cast<short>((angle & 0xFFFF) / 0xFFFF);
+        m_aglVOL_LFO = newAngle;
+        m_VOL_LFO = static_cast<float>(tmp_VOL_LFO_AMP) * bSin(newAngle);
     }
 }
 

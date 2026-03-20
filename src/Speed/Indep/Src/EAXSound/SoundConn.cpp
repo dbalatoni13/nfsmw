@@ -170,13 +170,15 @@ HeliSoundConn::HeliSoundConn(const Sim::ConnectionData &data)
 }
 
 HeliSoundConn::~HeliSoundConn() {
+    register EAX_HeliState *ptr;
     mTarget.Set(0);
     if (g_pEAXSound != nullptr) {
         g_pEAXSound->DestroyEAXHeli(mState);
     }
-    if (mState != nullptr) {
-        mState->~EAX_HeliState();
-        __builtin_delete(mState);
+    ptr = mState;
+    if (ptr != nullptr) {
+        ptr->~EAX_HeliState();
+        __builtin_delete(ptr);
     }
     mState = nullptr;
 }
