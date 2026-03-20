@@ -1028,10 +1028,15 @@ int LoaderScenery(bChunk *chunk) {
             } else if (subchunk->GetID() == 0x34118) {
                 eSceneryLightContext *light_context =
                     reinterpret_cast<eSceneryLightContext *>(subchunk->GetAlignedData(0x10));
-                light_context->EndianSwap();
+                bPlatEndianSwap(&light_context->Type);
+                bPlatEndianSwap(&light_context->NumLights);
+                bPlatEndianSwap(&light_context->LightingContextNumber);
                 light_context->LocalLights = reinterpret_cast<bMatrix4 *>(light_context + 1);
                 for (unsigned int i = 0; i < light_context->NumLights; i++) {
-                    bPlatEndianSwap(&light_context->LocalLights[i]);
+                    bPlatEndianSwap(reinterpret_cast<bVector4 *>(reinterpret_cast<char *>(light_context->LocalLights) + i * 0x40 + 0x00));
+                    bPlatEndianSwap(reinterpret_cast<bVector4 *>(reinterpret_cast<char *>(light_context->LocalLights) + i * 0x40 + 0x10));
+                    bPlatEndianSwap(reinterpret_cast<bVector4 *>(reinterpret_cast<char *>(light_context->LocalLights) + i * 0x40 + 0x20));
+                    bPlatEndianSwap(reinterpret_cast<bVector4 *>(reinterpret_cast<char *>(light_context->LocalLights) + i * 0x40 + 0x30));
                 }
                 SceneryLightContextTable[light_context->LightingContextNumber] = light_context;
             }
