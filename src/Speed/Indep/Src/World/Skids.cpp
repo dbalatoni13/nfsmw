@@ -63,11 +63,11 @@ void SkidSegment::GetPoints(bVector3 *position, bVector3 *delta_position) {
     float dz;
 
     dx = static_cast<float>(DeltaPosition[0]) * scale_factor;
-    x = Position[0];
     dy = static_cast<float>(DeltaPosition[1]) * scale_factor;
+    y = Position[1];
     dz = static_cast<float>(DeltaPosition[2]) * scale_factor;
     z = Position[2];
-    y = Position[1];
+    x = Position[0];
 
     position->x = x;
     position->y = y;
