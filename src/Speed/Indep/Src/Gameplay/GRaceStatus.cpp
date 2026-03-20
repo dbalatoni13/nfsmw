@@ -739,7 +739,7 @@ void GRacerInfo::Update(float dT) {
     mTotalUpdateTime += dT;
     mDistanceDriven = distance;
 
-#ifndef EA_BUILD_A124
+    #ifndef EA_BUILD_A124
     if (mQuarterMileTime == 0.0f) {
         static const float quarterMileInMeters = 402.335f;
 
@@ -3898,11 +3898,7 @@ float GRaceStatus::DetermineRaceSegmentLength(const UMath::Vector4 *positions, c
             float segLenScale = static_cast<float>(nav.GetSegment()->nLength) * 0.015259022f;
 
             do {
-                float lengthDelta = segLenScale * (1.0f - nav.GetSegTime());
-
-                if (lengthDelta < 0.01f) {
-                    lengthDelta = 0.01f;
-                }
+                float lengthDelta = UMath::Max(segLenScale * (1.0f - nav.GetSegTime()), 0.01f);
 
                 segmentDistance += lengthDelta;
                 nav.IncNavPosition(lengthDelta, UMath::Vector4To3(directions[end]), 0.0f);
