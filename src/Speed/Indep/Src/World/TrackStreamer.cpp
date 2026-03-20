@@ -968,8 +968,6 @@ int TrackStreamer::BuildHoleMovements(HoleMovement *hole_movements, int max_move
 }
 
 TrackStreamer::TrackStreamer() {
-    reinterpret_cast<bBitTableLayout_TrackStreamer *>(&CurrentVisibleSectionTable)->Bits = 0;
-    reinterpret_cast<bBitTableLayout_TrackStreamer *>(&CurrentVisibleSectionTable)->NumBits = 0;
     pTrackStreamingSections = 0;
     NumTrackStreamingSections = 0;
     pDiscBundleSections = 0;
@@ -1003,9 +1001,7 @@ TrackStreamer::TrackStreamer() {
     UserMemoryAllocationSize = 0;
     pMemoryPool = 0;
 
-    bBitTableLayout_TrackStreamer *layout = reinterpret_cast<bBitTableLayout_TrackStreamer *>(&CurrentVisibleSectionTable);
-    layout->Bits = CurrentVisibleSectionTableMem.Bits;
-    layout->NumBits = 0xAF0;
+    CurrentVisibleSectionTable.Init(CurrentVisibleSectionTableMem.Bits, 0xAF0);
     CurrentVisibleSectionTable.ClearTable();
     bMemSet(KeepSectionTable, 0, sizeof(KeepSectionTable));
     pCallback = 0;

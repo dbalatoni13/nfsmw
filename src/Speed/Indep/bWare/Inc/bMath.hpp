@@ -952,11 +952,19 @@ struct bQuaternion {
 
 class bBitTable {
   public:
-    // bBitTable() {}
+    bBitTable() {
+        Bits = 0;
+        NumBits = 0;
+    }
 
-    // bBitTable(void *mem, int num_bits) {}
+    bBitTable(void *mem, int num_bits) {
+        Init(mem, num_bits);
+    }
 
-    // void Init(void *mem, int num_bits) {}
+    void Init(void *mem, int num_bits) {
+        Bits = reinterpret_cast<uint8 *>(mem);
+        NumBits = num_bits;
+    }
 
     void ClearTable();
 
