@@ -153,6 +153,7 @@ class OptionsSettings {
 // total size: 0x4
 struct SMSMessage {
   public:
+    bool IsVoice();
   private:
     unsigned char Handle;     // offset 0x0, size 0x1
     unsigned char Flags;      // offset 0x1, size 0x1
@@ -169,6 +170,9 @@ class CareerSettings {
     unsigned char GetCurrentBin() {
         return CurrentBin;
     }
+
+    SMSMessage *GetSMSMessage(unsigned int index);
+    unsigned short GetSMSSortOrder();
 
     void SetAdaptiveDifficulty(float difficulty) {
         AdaptiveDifficulty = static_cast<int16>(difficulty * 32767.0f);

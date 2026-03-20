@@ -2095,11 +2095,33 @@ void GManager::AddSMS(int smsID) {
 }
 
 int GManager::PushSMSToInbox() {
+    CareerSettings *careerSettings;
+    PendingSMSList::iterator it;
     int smsID;
 
     smsID = -1;
-    if (!mPendingSMS.empty()) {
-        smsID = mPendingSMS.front();
+    careerSettings = FEDatabase->GetCareerSettings();
+    for (it = mPendingSMS.begin(); it != mPendingSMS.end(); ++it) {
+        SMSMessage *smsMessage = careerSettings->GetSMSMessage(*it);
+
+        if (smsMessage) {
+            if (smsMessage->IsVoice() && smsID == -1) {
+                smsID = *it;
+            }
+            reinterpret_cast<unsigned char *>(smsMessage)[1] = 2;
+            *reinterpret_cast<unsigned short *>(reinterpret_cast<unsigned char *>(smsMessage) + 2) = careerSettings->GetSMSSortOrder();
+        }
+    }
+
+    if (smsID == -1) {
+        int numSMS = 0;
+
+        for (it = mPendingSMS.begin(); it != mPendingSMS.end(); ++it) {
+            ++numSMS;
+        }
+        if (numSMS != 0) {
+            smsID = mPendingSMS.front();
+        }
     }
 
     mPendingSMS.clear();
