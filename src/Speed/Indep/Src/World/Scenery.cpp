@@ -714,12 +714,11 @@ void ScenerySectionHeader::DrawAScenery(int scenery_instance_number, SceneryCull
 
                 eLightFlare *light_flare = eGetNextLightFlareInPool(exclude_view_ids);
                 if (light_flare) {
-                    bVector4 ps(
-                        position_marker->Matrix.v3.x - model->GetSolid()->PivotMatrix.v3.x,
-                        position_marker->Matrix.v3.y - model->GetSolid()->PivotMatrix.v3.y,
-                        position_marker->Matrix.v3.z - model->GetSolid()->PivotMatrix.v3.z,
-                        1.0f
-                    );
+                    bVector4 ps;
+                    ps.x = position_marker->Matrix.v3.x - model->GetSolid()->PivotMatrix.v3.x;
+                    ps.y = position_marker->Matrix.v3.y - model->GetSolid()->PivotMatrix.v3.y;
+                    ps.z = position_marker->Matrix.v3.z - model->GetSolid()->PivotMatrix.v3.z;
+                    ps.w = 1.0f;
                     eMulVector(&ps, draw_info->pMatrix, &ps);
 
                     if (scenery_cull_info->pView->Precipitation && 0.0f < scenery_cull_info->pView->Precipitation->GetRoadDampness() &&

@@ -309,7 +309,9 @@ struct Rain {
 
     float GetCloudIntensity();
 
-    float GetRoadDampness() {}
+    float GetRoadDampness() {
+        return RoadDampness;
+    }
 
     void GetPrecipFogColour(unsigned int *r, unsigned int *g, unsigned int *b);
 
