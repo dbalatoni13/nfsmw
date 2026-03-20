@@ -46,6 +46,7 @@ char *bStrIStr(const char *s1, const char *s2);
 void bCloseMemoryPool(int pool_num);
 bool bSetMemoryPoolDebugTracing(int pool_num, bool on_off);
 void ApplyTimeOfDayTickOver();
+unsigned int GameplayClassKey() __asm__("ClassKey__Q36Attrib3Gen8gameplay");
 void SetOverRideRainIntensity(float intensity);
 void ForEachTrackPositionMarker(bool (*callback)(TrackPositionMarker *marker, unsigned int tag), unsigned int tag);
 void LZByteSwapHeader(LZHeader *header);
@@ -82,6 +83,12 @@ struct GManagerRaceStatusCompat {
     bool mPlayerPursuitInCooldown;
     unsigned char _padRefresh[0x33];
     bool mRefreshBinAfterRace;
+};
+
+struct GManagerSpeedTrapCompat {
+    unsigned char _pad[0xB8];
+    unsigned int mNumSpeedTraps;
+    GSpeedTrap *mSpeedTraps;
 };
 
 class GCopMgrCompat : public UTL::COM::IUnknown {
@@ -1212,8 +1219,12 @@ void GManager::LoadMilestoneInfo(MilestoneTypeInfo *savedInfo, unsigned int coun
 
     ResetMilestoneTrackingInfo();
     for (i = 0; i < count; ++i) {
-        MilestoneTypeInfo &info = savedInfo[i];
-        mMilestoneTypeInfo[info.mTypeKey] = info;
+        MilestoneInfoMap::iterator it = mMilestoneTypeInfo.find(savedInfo[i].mTypeKey);
+
+        if (it != mMilestoneTypeInfo.end()) {
+            it->second.mLastKnownValue = savedInfo[i].mLastKnownValue;
+            it->second.mBestValue = savedInfo[i].mBestValue;
+        }
     }
 }
 
@@ -1278,15 +1289,15 @@ void *GManager::GetObjectStateBlock(unsigned int key) {
 
 void GManager::ClearObjectStateBlock(unsigned int key) {
     unsigned int shiftedKey = key >> mCollectionKeyShiftTo32;
-    ObjectStateMap::iterator it = mSessionStateBlocks.find(shiftedKey);
+    ObjectStateMap *blocks = &mSessionStateBlocks;
+    unsigned int i;
 
-    if (it != mSessionStateBlocks.end()) {
-        mSessionStateBlocks.erase(it);
-    }
+    for (i = 0; i < 2; ++i, --blocks) {
+        ObjectStateMap::iterator it = blocks->find(shiftedKey);
 
-    it = mPersistentStateBlocks.find(shiftedKey);
-    if (it != mPersistentStateBlocks.end()) {
-        mPersistentStateBlocks.erase(it);
+        if (it != blocks->end()) {
+            blocks->erase(it);
+        }
     }
 }
 
@@ -1301,12 +1312,20 @@ unsigned int GManager::SaveMilestoneInfo(MilestoneTypeInfo *dest) {
 }
 
 void GManager::ResetMilestones() {
-    if (!mMilestones) {
+    if (!mNumMilestones) {
         return;
     }
 
-    for (unsigned int i = 0; i < mNumMilestones; ++i) {
-        mMilestones[i].Reset();
+    Attrib::Gen::gameplay gameplay(Attrib::FindCollection(Attrib::Gen::gameplay::ClassKey(), 0x1D975142), 0, nullptr);
+    AttribKeyList keys;
+    AttribKeyList::iterator it;
+    GMilestone *milestone = mMilestones;
+
+    GatherInstanceKeys(gameplay, keys, 0xA3D34781);
+
+    for (it = keys.begin(); it != keys.end(); ++it) {
+        milestone->Init(*it);
+        milestone++;
     }
 }
 
@@ -1358,12 +1377,24 @@ void GManager::AllocateSpeedTraps() {
 }
 
 void GManager::ResetSpeedTraps() {
-    if (!mSpeedTraps) {
+    GManagerSpeedTrapCompat *compat = reinterpret_cast<GManagerSpeedTrapCompat *>(this);
+
+    if (compat->mNumSpeedTraps == 0) {
         return;
     }
 
-    for (unsigned int i = 0; i < mNumSpeedTraps; ++i) {
-        mSpeedTraps[i].Reset();
+    unsigned int gameplayKey = GameplayClassKey();
+    Attrib::Gen::gameplay gameplay(Attrib::FindCollection(gameplayKey, 0x49511906), 0, nullptr);
+    AttribKeyList keys;
+    AttribKeyList::iterator it;
+    GSpeedTrap *speedTrap;
+
+    GatherInstanceKeys(gameplay, keys, 0xB05871D3);
+
+    speedTrap = compat->mSpeedTraps;
+    for (it = keys.begin(); it != keys.end(); ++it) {
+        speedTrap->Init(*it);
+        speedTrap++;
     }
 }
 
@@ -2300,9 +2331,11 @@ bool GManager::LoadGameplayData(unsigned char *src, unsigned int maxSize) {
 void GManager::DefragObjectStateStorage() {
     unsigned int count;
     unsigned int index;
+    ObjectStateBlockHeader *stackBlocks[0x100];
     ObjectStateBlockHeader **blocks;
     ObjectStateMap::iterator it;
     unsigned char *freePtr;
+    ObjectStateMap *stateBlocks;
 
     count = mPersistentStateBlocks.size() + mSessionStateBlocks.size();
     if (count == 0) {
@@ -2310,13 +2343,19 @@ void GManager::DefragObjectStateStorage() {
         return;
     }
 
-    blocks = new ObjectStateBlockHeader *[count];
+    blocks = stackBlocks;
+    if (count > 0x100) {
+        blocks = new ObjectStateBlockHeader *[count];
+    }
+
     index = 0;
     for (it = mPersistentStateBlocks.begin(); it != mPersistentStateBlocks.end(); ++it) {
-        blocks[index++] = it->second;
+        blocks[index] = it->second;
+        index++;
     }
     for (it = mSessionStateBlocks.begin(); it != mSessionStateBlocks.end(); ++it) {
-        blocks[index++] = it->second;
+        blocks[index] = it->second;
+        index++;
     }
 
     std::sort(blocks, blocks + count);
@@ -2326,23 +2365,26 @@ void GManager::DefragObjectStateStorage() {
         unsigned int blockSize = (block->mSize + 0x17U) & ~0xFU;
 
         if (reinterpret_cast<unsigned char *>(block) != freePtr) {
+            unsigned int shiftedKey = block->mKey >> mCollectionKeyShiftTo32;
+
             bOverlappedMemCpy(freePtr, block, blockSize);
 
-            it = mPersistentStateBlocks.find(block->mKey);
-            if (it != mPersistentStateBlocks.end()) {
-                it->second = reinterpret_cast<ObjectStateBlockHeader *>(freePtr);
-            }
-
-            it = mSessionStateBlocks.find(block->mKey);
-            if (it != mSessionStateBlocks.end()) {
-                it->second = reinterpret_cast<ObjectStateBlockHeader *>(freePtr);
+            stateBlocks = &mSessionStateBlocks;
+            for (unsigned int i = 0; i < 2; ++i, --stateBlocks) {
+                it = stateBlocks->find(shiftedKey);
+                if (it != stateBlocks->end()) {
+                    (*stateBlocks)[shiftedKey] = reinterpret_cast<ObjectStateBlockHeader *>(freePtr);
+                }
             }
         }
 
         freePtr += blockSize;
     }
 
-    delete[] blocks;
+    if (blocks != stackBlocks) {
+        delete[] blocks;
+    }
+
     mObjectStateBufferFree = freePtr;
 }
 
