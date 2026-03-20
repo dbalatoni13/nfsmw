@@ -4055,42 +4055,38 @@ void GRaceStatus::DetermineRaceLength() {
         fRaceLength = fSubsequentLapLength * static_cast<float>(race_parameters->GetNumLaps() - 1) + fFirstLapLength;
     }
 
-    {
-        WRoadNav nav;
+    WRoadNav nav;
 
-        nav.SetPathType(WRoadNav::kPathRaceRoute);
-        nav.InitAtPoint(UMath::Vector4To3(positions[numCheckpoints + 1]), UMath::Vector4To3(directions[numCheckpoints + 1]), true, 1.0f);
-        if (nav.IsValid()) {
-            for (int i = 0; i < 100; ++i) {
-                int segmentNumber;
-                WRoadSegment *segment;
+    nav.SetPathType(static_cast<WRoadNav::EPathType>(6));
+    nav.InitAtPoint(UMath::Vector4To3(positions[numCheckpoints + 1]), UMath::Vector4To3(directions[numCheckpoints + 1]), true, 1.0f);
+    if (nav.IsValid()) {
+        for (int i = 0; i < 100; ++i) {
+            int segmentNumber;
+            WRoadSegment *segment;
 
-                nav.IncNavPosition(1.0f, UMath::Vector3::kZero, 0.0f);
-                segmentNumber = nav.GetSegmentInd();
-                segment = rn.GetSegmentNonConst(segmentNumber);
-                segment->SetInRace(true);
-                segment->SetRaceRouteForward(nav.GetNodeInd() == 1);
-            }
+            nav.IncNavPosition(1.0f, UMath::Vector3::kZero, 0.0f);
+            segmentNumber = nav.GetSegmentInd();
+            segment = rn.GetSegmentNonConst(segmentNumber);
+            segment->SetInRace(true);
+            segment->SetRaceRouteForward(nav.GetNodeInd() == 1);
         }
     }
 
-    {
-        GObjectIterator<GTrigger> iter(0x100);
-        int numSpeedTraps = 0;
+    GObjectIterator<GTrigger> iter(0x100);
+    int numSpeedTraps = 0;
 
-        while (iter.IsValid()) {
-            GTrigger *trigger = iter.GetInstance();
+    while (iter.IsValid()) {
+        GTrigger *trigger = iter.GetInstance();
 
-            if (!trigger->OpenWorldSpeedTrap(0)) {
-                aSpeedTraps[numSpeedTraps] = trigger;
-                ++numSpeedTraps;
-            }
-
-            iter.Advance();
+        if (!trigger->OpenWorldSpeedTrap(0)) {
+            aSpeedTraps[numSpeedTraps] = trigger;
+            ++numSpeedTraps;
         }
 
-        nSpeedTraps = numSpeedTraps;
+        iter.Advance();
     }
+
+    nSpeedTraps = numSpeedTraps;
 }
 
 template void GRaceCustom::SetAttribute<int>(unsigned int key, const int &value, unsigned int index);
