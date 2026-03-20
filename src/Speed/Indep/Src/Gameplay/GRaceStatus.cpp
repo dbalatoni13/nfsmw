@@ -326,7 +326,7 @@ IVehicle *GRacerInfo::CreateVehicle(unsigned int default_key) {
     IVehicleCache *cache;
     UMath::Vector3 direction = {0.0f, 0.0f, 1.0f};
     ISimable *result;
-    IVehicle *vehicle = nullptr;
+    IVehicle *vehicle;
 
     if (!racerChar) {
         return nullptr;
@@ -396,7 +396,7 @@ IVehicle *GRacerInfo::CreateVehicle(unsigned int default_key) {
         }
     }
 
-    return vehicle;
+    return nullptr;
 }
 
 void GRacerInfo::KnockOut() {
