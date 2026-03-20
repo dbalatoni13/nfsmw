@@ -1465,7 +1465,8 @@ int TrackStreamer::Unloader(bChunk *chunk) {
     }
 
     if (chunk_id == 0x34111) {
-            return 1;
+        pInfo = 0;
+        return 1;
     }
 
     if (chunk_id == 0x34112) {
