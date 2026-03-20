@@ -40,15 +40,15 @@ class GCharacter : public GRuntimeInstance, public UTL::COM::Object, public IAtt
     }
 
     bool Attach(IUnknown *pOther) override {
-        return false;
+        return mAttachments->Attach(pOther);
     }
 
     bool Detach(IUnknown *pOther) override {
-        return false;
+        return mAttachments->Detach(pOther);
     }
 
     bool IsAttached(const IUnknown *pOther) const override {
-        return false;
+        return mAttachments->IsAttached(pOther);
     }
 
     const IAttachable::List *GetAttachments() const override {
