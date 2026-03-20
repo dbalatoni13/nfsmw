@@ -32,6 +32,17 @@ struct EAXCop;
 
 namespace Speech {
 
+struct ScheduledSpeechEvent;
+
+struct SPCHSampleRequest {
+    SPCHType_SampleRequestData data;
+    ScheduledSpeechEvent *owner;
+    unsigned int offset;
+    unsigned char sample_index;
+
+    bool operator<(const SPCHSampleRequest &from) const;
+};
+
 struct History {
     Timer time;
     unsigned short count;
@@ -103,37 +114,44 @@ class EventHistory : public UTL::FixedVector<HistoryPair, 264, 16>, public Audio
 
 struct SpeechSampleData {
     unsigned int size;
+    bool ready;
+    int age;
     int speakerID;
     SPCHType_1_EventID eventID;
     int HSTRM;
-    int lock;
-    int cached;
-    int ready;
-    unsigned int age;
-    unsigned int dataoffset;
+    bool lock;
+    bool cached;
     Timer t_req;
     Timer t_load;
     Timer t_play;
+    unsigned int dataoffset;
+
+    void Lock();
+    void Unlock();
 
     static void Destruct(SpeechSampleData *ptr);
     static SpeechSampleData *Construct(SPCHType_SampleRequestData *data, unsigned int key, bool is_cached);
 };
 
+DECLARE_CONTAINER_TYPE(SampleReqList);
+
+struct SampleReqList : public UTL::Std::vector<SPCHSampleRequest, _type_SampleReqList>, public AudioMemBase {};
+
 struct ScheduledSpeechEvent {
-    SPCHType_1_EventID ID;
     void *iid;
     void *fh;
+    SPCHType_1_EventID ID;
     void *actor;
     Timer entry_time;
     Timer playback_time;
     Timer finish_time;
     SpeechSampleData *assoc_samples[7];
-    short frameindex;
-    unsigned short flags;
     unsigned char assoc_samples_count;
     unsigned char assoc_samples_prep;
     unsigned char curndx;
     unsigned char priority;
+    short frameindex;
+    short flags;
 
     ScheduledSpeechEvent();
     ~ScheduledSpeechEvent();
@@ -299,6 +317,12 @@ void SpeechSampleData::Destruct(SpeechSampleData *ptr) {
     ::operator delete(ptr);
 }
 
+void SpeechSampleData::Lock() { *reinterpret_cast<int *>(&lock) = 1; }
+
+void SpeechSampleData::Unlock() { *reinterpret_cast<int *>(&lock) = 0; }
+
+SampleReqList &Manager::GetSampleRequests() { return mSampleRequests; }
+
 SpeechSampleData *SpeechSampleData::Construct(SPCHType_SampleRequestData *data, unsigned int key, bool is_cached) {
     (void)key;
     unsigned int total = 0x40;
@@ -309,17 +333,17 @@ SpeechSampleData *SpeechSampleData::Construct(SPCHType_SampleRequestData *data, 
     SpeechSampleData *sample = static_cast<SpeechSampleData *>(::operator new(total));
     if (sample != nullptr) {
         sample->size = data->numBytes;
+        sample->ready = false;
         sample->age = 0;
         sample->speakerID = data->subID;
         sample->eventID = static_cast<SPCHType_1_EventID>(data->eventSpec.eventID);
         sample->HSTRM = -1;
-        sample->lock = 1;
-        sample->cached = is_cached ? 1 : 0;
-        sample->ready = 0;
-        sample->dataoffset = 0;
+        sample->Lock();
+        sample->cached = is_cached;
         sample->t_req = WorldTimer;
         sample->t_load = Timer(0);
         sample->t_play = Timer(0);
+        sample->dataoffset = 0;
     }
 
     return sample;
@@ -347,16 +371,26 @@ ScheduledSpeechEvent::ScheduledSpeechEvent() {
 }
 
 ScheduledSpeechEvent::~ScheduledSpeechEvent() {
-    for (int i = 0; i < 7; ++i) {
-        SpeechSampleData *sample = assoc_samples[i];
-        if (sample != nullptr && sample->lock == 1) {
-            sample->lock = 0;
+    for (short i = 0; i < 7; ++i) {
+        SpeechSampleData *stitch = assoc_samples[i];
+        if (stitch != nullptr && *reinterpret_cast<int *>(&stitch->lock) == 1) {
+            stitch->Unlock();
         }
         assoc_samples[i] = nullptr;
     }
 
     curndx = 0;
     assoc_samples_prep = 0;
+    SampleReqList &requests = Manager::GetSampleRequests();
+    if (requests.size() != 0) {
+        for (SPCHSampleRequest *i = requests.begin(); i != requests.end();) {
+            if (i->owner == this) {
+                requests.erase(i);
+            } else {
+                ++i;
+            }
+        }
+    }
 }
 
 void *ScheduledSpeechEvent::operator new(unsigned int base_size, unsigned int xtra) {
@@ -382,7 +416,7 @@ bool ScheduledSpeechEvent::sort_nested_priority(const ScheduledSpeechEvent *lhs,
 }
 
 void ScheduledSpeechEvent::AddSample(SpeechSampleData *sample, unsigned char specific_index) {
-    sample->lock = 1;
+    sample->Lock();
     if (specific_index != 0xFF) {
         assoc_samples[specific_index] = sample;
         return;

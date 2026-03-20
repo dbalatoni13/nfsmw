@@ -45,6 +45,8 @@ enum eSFXOBJ_MAIN_TYPES {
 };
 
 namespace Speech {
+struct SampleReqList;
+
 struct Cache {
     void Dump();
     void Init(int size);
@@ -80,6 +82,9 @@ struct Manager {
     static void Update(float dt);
     static Module *GetSpeechModule(int id);
     static void AttachSFXOBJ(SpeechModuleIndex module, SFX_Base *psb, eSFXOBJ_MAIN_TYPES type);
+    static SampleReqList &GetSampleRequests();
+
+    static SampleReqList mSampleRequests;
 };
 } // namespace Speech
 
