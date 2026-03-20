@@ -228,7 +228,8 @@ int LoaderEventManager(bChunk *chunk) {
     void *event_trigger_pack = 0;
     for (bChunk *child = chunk->GetFirstChunk(); child != last_chunk; child = child->GetNext()) {
         int child_id = child->GetID();
-        if (child_id == 0x36002) {
+        switch (child_id) {
+        case 0x36002:
             if (event_trigger_pack) {
                 void *tree = child->GetAlignedData(0x10);
                 SetEventTriggerPackTree_EventManager(event_trigger_pack, tree);
@@ -237,7 +238,9 @@ int LoaderEventManager(bChunk *chunk) {
                     SwapEndian(reinterpret_cast<vAABBTree *>(tree));
                 }
             }
-        } else if (child_id == 0x36001) {
+            break;
+
+        case 0x36001: {
             event_trigger_pack = child->GetAlignedData(0x10);
             if (GetEventTriggerPackEndianSwapped_EventManager(event_trigger_pack) == 0) {
                 int *event_trigger_pack_words = GetEventTriggerPackWords_EventManager(event_trigger_pack);
@@ -253,7 +256,10 @@ int LoaderEventManager(bChunk *chunk) {
             VisibleSectionUserInfo *user_info =
                 TheVisibleSectionManager.AllocateUserInfo(GetEventTriggerPackSectionNumber_EventManager(event_trigger_pack));
             user_info->pEventTriggerPack = reinterpret_cast<EventTriggerPack *>(event_trigger_pack);
-        } else if (child_id == 0x36003) {
+            break;
+        }
+
+        case 0x36003:
             if (event_trigger_pack) {
                 int *event_data = reinterpret_cast<int *>(child->GetAlignedData(0x10));
                 SetEventTriggerPackData_EventManager(event_trigger_pack, event_data);
@@ -276,6 +282,7 @@ int LoaderEventManager(bChunk *chunk) {
                     }
                 }
             }
+            break;
         }
     }
 
