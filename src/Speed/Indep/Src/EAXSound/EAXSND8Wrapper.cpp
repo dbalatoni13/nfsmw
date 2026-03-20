@@ -278,7 +278,18 @@ int PF_Allocator::AddRef() {
 }
 
 int PF_Allocator::Release() {
-    return 0;
+    int *data = static_cast<int *>(static_cast<void *>(this));
+    int refCount = data[1] - 1;
+    data[1] = refCount;
+
+    if (refCount < 1) {
+        if (this) {
+            delete this;
+        }
+        refCount = 0;
+    }
+
+    return refCount;
 }
 
 void *CSISCoreAllocator::Alloc(unsigned int size, const char *name, unsigned int flags) {
