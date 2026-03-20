@@ -50,7 +50,12 @@ void SFXCTL_Helicopter::SetupSFX(CSTATE_Base *_StateBase) {
     m_pHeliState = nullptr;
 }
 
-void SFXCTL_Helicopter::InitSFX() {}
+void SFXCTL_Helicopter::InitSFX() {
+    m_pHeliState = static_cast<EAX_HeliState *>(m_pStateBase->m_pAttachment);
+    m_p3DHeliPosCtl->AssignPositionVector(&vHeliPos);
+    m_p3DHeliPosCtl->AssignVelocityVector(&vHeliVel);
+    m_p3DHeliPosCtl->AssignDirectionVector(&vHeliFwd);
+}
 
 void SFXCTL_Helicopter::UpdateParams(float t) {
     float dot;
