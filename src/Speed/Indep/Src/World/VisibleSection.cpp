@@ -604,6 +604,7 @@ int VisibleSectionManager::Loader(bChunk *chunk) {
                 pInfo = reinterpret_cast<VisibleSectionManagerInfo *>(current_chunk->GetData());
                 pInfo->EndianSwap();
                 ScenerySectionLODOffset = pInfo->LODOffset;
+            } else if (current_chunk_id == 0x34154) {
             } else if (current_chunk_id == 0x34155) {
                 LoadingSection *loading_sections = reinterpret_cast<LoadingSection *>(current_chunk->GetData());
                 int num_loading_sections = current_chunk->Size / sizeof(LoadingSection);
