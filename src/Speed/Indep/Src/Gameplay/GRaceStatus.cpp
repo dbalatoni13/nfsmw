@@ -2801,7 +2801,7 @@ void GRaceStatus::SetRoaming() {
 
     mPlayMode = kPlayMode_Roaming;
     SetRaceContext(GRace::kRaceContext_Career);
-    SetIsLoading(false);
+    mIsLoading = false;
     mRaceParms = nullptr;
     WRoadNetwork::Get().ResetShortcuts();
 
