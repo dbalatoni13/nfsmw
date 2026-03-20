@@ -226,10 +226,16 @@ AudioEvent *CollisionEvent::Play(const AudioEventParams &params) {
 }
 
 void CollisionEvent::Update(const bVector3 &position, const bVector3 &normal, const bVector3 &velocity, float dt) {
-    (void)position;
-    (void)normal;
-    (void)velocity;
-    (void)dt;
+    float magnitude;
+
+    mParams.position = position;
+    mParams.normal = normal;
+    mParams.velocity = velocity;
+    mParams.magnitude = dt;
+    magnitude = UMath::Clamp(dt, 0.0f, 1.0f);
+    Intensity = static_cast<int>(magnitude * 1023.0f);
+    CurrentContactPoint = position;
+    CollisionTime = WorldTimer;
 }
 
 void CollisionEvent::InitAsScrape(const Attrib::Gen::audioscrape &audioFx) {
