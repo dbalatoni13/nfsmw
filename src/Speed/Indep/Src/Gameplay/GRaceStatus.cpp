@@ -2783,11 +2783,11 @@ void GRaceStatus::SetRoaming() {
     bool dDay = false;
 
     if (mRaceParms) {
+        lastDDay = bStrCmp(mRaceParms->GetEventID(), "16.2.1") == 0;
         const Attrib::Gen::gameplay *gameplayObj = mRaceParms->GetGameplayObj();
         const unsigned int *startNewGame =
             reinterpret_cast<const unsigned int *>(gameplayObj->GetAttributePointer(0x64273C71, 0));
 
-        lastDDay = bStrCmp(mRaceParms->GetEventID(), "16.2.1") == 0;
         if (!startNewGame) {
             startNewGame = reinterpret_cast<const unsigned int *>(Attrib::DefaultDataArea(sizeof(unsigned int)));
         }
