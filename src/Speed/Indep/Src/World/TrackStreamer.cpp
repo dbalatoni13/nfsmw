@@ -1254,9 +1254,9 @@ void TrackStreamer::InitRegion(const char *region_stream_filename, bool split_sc
         SplitScreen = split_screen;
         flush_hibernating_sections = true;
     }
-    if (!bStrEqual(StreamFilenames[0], region_stream_filename)) {
-        bStrCpy(StreamFilenames[0], region_stream_filename);
+    if (!bStrEqual(StreamFilenames[1], region_stream_filename)) {
         flush_hibernating_sections = true;
+        bStrCpy(StreamFilenames[1], region_stream_filename);
     }
     if (flush_hibernating_sections) {
         FlushHibernatingSections();
@@ -1273,7 +1273,7 @@ void TrackStreamer::InitRegion(const char *region_stream_filename, bool split_sc
         do {
             StreamingPositionEntry *position_entry = &StreamingPositionEntries[position_number];
 
-            position_entry->AudioBlockingPosition.y = 0.0f;
+            position_entry->AudioBlockingPosition.x = 0.0f;
             position_entry->PredictedZone = 0;
             position_entry->PredictedZoneValidTime = 0;
             position_entry->AudioReading = false;
@@ -1282,21 +1282,19 @@ void TrackStreamer::InitRegion(const char *region_stream_filename, bool split_sc
             position_entry->AudioReadingPosition.y = 0.0f;
             position_entry->AudioBlocking = false;
             position_entry->AudioBlockingTime = 0.0f;
-            position_entry->AudioBlockingPosition.x = 0.0f;
+            position_entry->AudioBlockingPosition.y = 0.0f;
             position_number += 1;
         } while (position_number < 2);
     }
 
-    if (NumTrackStreamingSections > 0) {
-        int n = 0;
-        do {
-            TrackStreamingSection *section = &pTrackStreamingSections[n];
-            int boundary_section_number = GetBoundarySectionNumber(static_cast<int>(section->SectionNumber), bGetPlatformName());
-            VisibleSectionBoundary *boundary = TheVisibleSectionManager.FindBoundary(boundary_section_number);
+    int n = 0;
+    while (n < NumTrackStreamingSections) {
+        TrackStreamingSection *section = &pTrackStreamingSections[n];
+        int boundary_section_number = GetBoundarySectionNumber(static_cast<int>(section->SectionNumber), bGetPlatformName());
+        VisibleSectionBoundary *boundary = TheVisibleSectionManager.FindBoundary(boundary_section_number);
 
-            section->pBoundary = boundary;
-            n += 1;
-        } while (n < NumTrackStreamingSections);
+        section->pBoundary = boundary;
+        n += 1;
     }
 
     EmptyCaffeineLayers();
