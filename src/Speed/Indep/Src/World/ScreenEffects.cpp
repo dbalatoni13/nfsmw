@@ -246,7 +246,7 @@ void RenderVisibleSectionBoundary(VisibleSectionBoundary *boundary, eView *view)
                             bMatrix4 *matrix = reinterpret_cast<bMatrix4 *>(matrix_memory);
                             bIdentity(matrix);
                             bCopy(&matrix->v3, &position, 1.0f);
-                            reinterpret_cast<eViewRenderShim *>(view)->Render(pVisibleZoneBoundaryModel, matrix, 0, 0, 0, 0);
+                            reinterpret_cast<eViewPlatInterface *>(view)->Render(pVisibleZoneBoundaryModel, matrix, 0, 0, 0);
                         }
                     }
                 }
