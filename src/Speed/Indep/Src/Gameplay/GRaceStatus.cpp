@@ -3920,9 +3920,6 @@ float GRaceStatus::DetermineRaceSegmentLength(const UMath::Vector4 *positions, c
     UMath::Vector3 delta;
     float pathDistance;
     float segmentDistance = 0.0f;
-    UTL::Std::set<PathSegment, _type_ID_PATH_SET> pathSegments;
-    char shortcutAllowed[32];
-    bool noShortcuts = true;
 
     nav.SetNavType(WRoadNav::kTypeDirection);
     nav.SetDecisionFilter(true);
@@ -3948,6 +3945,10 @@ float GRaceStatus::DetermineRaceSegmentLength(const UMath::Vector4 *positions, c
                 nav.IncNavPosition(lengthDelta, UMath::Vector4To3(directions[end]), 0.0f);
             } while (segment == nav.GetSegmentInd());
         }
+
+        UTL::Std::set<PathSegment, _type_ID_PATH_SET> pathSegments;
+        char shortcutAllowed[32];
+        bool noShortcuts = true;
 
         bMemSet(shortcutAllowed, 1, sizeof(shortcutAllowed));
         while (true) {
