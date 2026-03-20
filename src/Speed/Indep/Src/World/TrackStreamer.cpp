@@ -2005,7 +2005,8 @@ int TrackStreamer::GetLoadingPriority(TrackStreamingSection *section, StreamingP
     }
 
     bVector2 v = section->Centre - predict_pos;
-    float dot = bDot(&direction, &bNormalize(v));
+    v = bNormalize(v);
+    float dot = bDot(&direction, &v);
     float speed_factor = bMin(speed * 0.016666668f, 1.0f);
     float angle = bAngToDeg(bACos(dot));
     float angle_factor = bClamp(angle, 20.0f, 90.0f);
