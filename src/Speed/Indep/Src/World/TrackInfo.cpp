@@ -81,12 +81,10 @@ TrackInfo *TrackInfo::GetTrackInfo(int track_number) {
 }
 
 int TrackInfo::UnloaderTrackInfo(bChunk *chunk) {
-    if (chunk->GetID() != 0x34201) {
-        return 0;
+    if (chunk->GetID() == 0x34201) {
+        TrackInfoTable = 0;
+        NumTrackInfo = 0;
+        return 1;
     }
-
-    TrackInfoTable = 0;
-    NumTrackInfo = 0;
-    LoadedTrackInfo = 0;
-    return 1;
+    return 0;
 }
