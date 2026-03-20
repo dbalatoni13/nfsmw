@@ -156,7 +156,7 @@ extern EA::Allocator::IAllocator &gMemoryAllocator;
 
 void *arenaLo;
 unsigned int g_GC_Disk_GameName;
-int snProfilerEnable;
+int snProfilerEnable = 0;
 
 void InitPlatform() {
     static char profdata[0x2000];
