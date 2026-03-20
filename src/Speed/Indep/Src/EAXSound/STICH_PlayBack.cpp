@@ -549,12 +549,12 @@ void cSampleWarpper::Play(const SND_Params *Params) {
 
         AEMS_ActiveSampleCol = sample;
         if (AEMS_ActiveSampleCol != nullptr) {
-            int refCount0 = 0;
+            int refCount = 0;
             Csis::Class *cls = AEMS_ActiveSampleCol->mpClass;
             if (cls != nullptr) {
-                cls->GetRefCount(&refCount0);
+                cls->GetRefCount(&refCount);
             }
-            if (refCount0 < 3) {
+            if (refCount < 3) {
                 m_eIsPlaying = eSTITCH_PLAY_STATUS_OFF;
             } else {
                 m_eIsPlaying = eSTITCH_PLAY_STATUS_PLAYING;
@@ -637,12 +637,12 @@ void cSampleWarpper::Play(const SND_Params *Params) {
 
         AEMS_ActiveSampleWsh = sample;
         if (AEMS_ActiveSampleWsh != nullptr) {
-            int refCount1 = 0;
+            int refCount = 0;
             Csis::Class *cls = AEMS_ActiveSampleWsh->mpClass;
             if (cls != nullptr) {
-                cls->GetRefCount(&refCount1);
+                cls->GetRefCount(&refCount);
             }
-            if (refCount1 < 3) {
+            if (refCount < 3) {
                 m_eIsPlaying = eSTITCH_PLAY_STATUS_OFF;
             } else {
                 m_eIsPlaying = eSTITCH_PLAY_STATUS_PLAYING;
@@ -725,12 +725,12 @@ void cSampleWarpper::Play(const SND_Params *Params) {
 
         AEMS_ActiveSampleStatic = sample;
         if (AEMS_ActiveSampleStatic != nullptr) {
-            int refCount2 = 0;
+            int refCount = 0;
             Csis::Class *cls = AEMS_ActiveSampleStatic->mpClass;
             if (cls != nullptr) {
-                cls->GetRefCount(&refCount2);
+                cls->GetRefCount(&refCount);
             }
-            if (refCount2 < 3) {
+            if (refCount < 3) {
                 m_eIsPlaying = eSTITCH_PLAY_STATUS_OFF;
             } else {
                 m_eIsPlaying = eSTITCH_PLAY_STATUS_PLAYING;

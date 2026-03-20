@@ -68,14 +68,6 @@ class Pkt_Car_Service : public Sim::Packet {
         , mTimeSinceSeen(0.0f) //
         , mDesiredSpeed(0.0f) //
         , mControlSource(0) {
-        const Attrib::Collection *const nullSpec = SimSurface::kNull.GetConstCollection();
-        if (nullSpec != nullptr) {
-            mWheelTerrain[0].Change(nullSpec);
-            mWheelTerrain[1].Change(nullSpec);
-            mWheelTerrain[2].Change(nullSpec);
-            mWheelTerrain[3].Change(nullSpec);
-        }
-
         mTractionPct[0] = 1.0f;
         mTractionPct[1] = 1.0f;
         mTractionPct[2] = 1.0f;
