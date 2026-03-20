@@ -76,6 +76,15 @@ struct SkidSet : public bTNode<SkidSet> {
     int GetTerrainType() {
         return TheTerrainType;
     }
+    bVector3 *GetBBoxMax() {
+        return &BBoxMax;
+    }
+    bVector3 *GetBBoxMin() {
+        return &BBoxMin;
+    }
+    bVector3 *GetBBoxCentre() {
+        return &BBoxCentre;
+    }
     void GetLastPoints(bVector3 *position, bVector3 *delta_position) {
         SkidSegments[NumSkidSegments - 1].GetPoints(position, delta_position);
     }

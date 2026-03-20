@@ -297,8 +297,8 @@ class bPNode : public bTNode<bPNode> {
         this->Object = object;
     }
 
-    bPNode *GetObject() {
-        return reinterpret_cast<bPNode *>(Object);
+    void *GetObject() {
+        return Object;
     }
 
     void *GetpObject() {

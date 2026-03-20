@@ -327,13 +327,16 @@ void RenderSkids(eView *view, Clan *clan) {
 
     for (bPNode *p = clan->SkidSetList.GetHead(); p != clan->SkidSetList.EndOfList(); p = p->GetNext()) {
         SkidSet *skid_set = reinterpret_cast<SkidSet *>(p->GetObject());
-        eVisibleState visibility = view->GetVisibleState(&skid_set->BBoxMin, &skid_set->BBoxMax, 0);
+        eVisibleState visibility = view->GetVisibleState(skid_set->GetBBoxMin(), skid_set->GetBBoxMax(), 0);
         if (visibility != EVISIBLESTATE_NOT) {
-            int pixel_size = view->GetPixelSize(1.0f, bDistBetween(&skid_set->BBoxCentre, view->GetCamera()->GetPosition()));
+            int pixel_size = view->GetPixelSize(bDistBetween(skid_set->GetBBoxCentre(), view->GetCamera()->GetPosition()), 1.0f);
             if (4.0f < static_cast<float>(pixel_size)) {
-                unsigned char intensityReduction = 0;
-                if (static_cast<float>(pixel_size) <= 10.0f) {
-                    intensityReduction = static_cast<unsigned char>(static_cast<int>(256.0f - (pixel_size - 4.0f) * 42.666668f) & 0xff);
+                unsigned char intensityReduction;
+                if (10.0f < static_cast<float>(pixel_size)) {
+                    intensityReduction = 0;
+                } else {
+                    intensityReduction =
+                        static_cast<unsigned char>(static_cast<int>(256.0f - (pixel_size - 4.0f) * 42.666668f) & 0xff);
                 }
 
                 skid_set->Render(view, intensityReduction);
