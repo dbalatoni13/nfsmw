@@ -547,8 +547,8 @@ void TrackStreamer::UnloadSection(TrackStreamingSection *section) {
 int TrackStreamer::UnloadLeastRecentlyUsedSection() {
     TrackStreamingSection *best_section = 0;
 
-    for (int i = 0; i < NumTrackStreamingSections; i++) {
-        TrackStreamingSection *section = &pTrackStreamingSections[i];
+    for (int n = 0; n < NumTrackStreamingSections; n++) {
+        TrackStreamingSection *section = &pTrackStreamingSections[n];
         if (section->Status == TrackStreamingSection::LOADED && !section->CurrentlyVisible &&
             (!best_section || section->LastNeededTimestamp < best_section->LastNeededTimestamp)) {
             best_section = section;
@@ -695,8 +695,8 @@ int TrackStreamer::AllocateSectionMemory(int *ptotal_needing_allocation) {
 }
 
 TrackStreamingSection *TrackStreamer::FindSection(int section_number) {
-    for (int i = 0; i < NumTrackStreamingSections; i++) {
-        TrackStreamingSection *section = &pTrackStreamingSections[i];
+    for (int n = 0; n < NumTrackStreamingSections; n++) {
+        TrackStreamingSection *section = &pTrackStreamingSections[n];
         if (section->SectionNumber == static_cast<short>(section_number)) {
             return section;
         }
@@ -1524,8 +1524,8 @@ bool TrackStreamer::NeedsGameStateActivation(TrackStreamingSection *section) {
 
 void TrackStreamer::FreeSectionMemory() {
     NumSectionsOutOfMemory = 0;
-    for (int i = 0; i < NumTrackStreamingSections; i++) {
-        TrackStreamingSection *section = &pTrackStreamingSections[i];
+    for (int n = 0; n < NumTrackStreamingSections; n++) {
+        TrackStreamingSection *section = &pTrackStreamingSections[n];
         if (section->Status == TrackStreamingSection::ALLOCATED) {
             bFree(section->pMemory);
             section->pDiscBundle = 0;
