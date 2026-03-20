@@ -960,11 +960,12 @@ int TrackStreamer::BuildHoleMovements(HoleMovement *hole_movements, int max_move
 }
 
 TrackStreamer::TrackStreamer() {
+    reinterpret_cast<bBitTableLayout_TrackStreamer *>(&CurrentVisibleSectionTable)->Bits = 0;
+    reinterpret_cast<bBitTableLayout_TrackStreamer *>(&CurrentVisibleSectionTable)->NumBits = 0;
     pTrackStreamingSections = 0;
     NumTrackStreamingSections = 0;
     pDiscBundleSections = 0;
     pLastDiscBundleSection = 0;
-    pInfo = 0;
     NumSectionsLoaded = 0;
     NumSectionsLoading = 0;
     NumSectionsActivated = 0;
@@ -1464,8 +1465,7 @@ int TrackStreamer::Unloader(bChunk *chunk) {
     }
 
     if (chunk_id == 0x34111) {
-        pInfo = 0;
-        return 1;
+            return 1;
     }
 
     if (chunk_id == 0x34112) {
