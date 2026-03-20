@@ -341,19 +341,20 @@ VisibleSectionManager::VisibleSectionManager() {
     bMemSet(EnabledGroups, 0, sizeof(EnabledGroups));
 }
 
-void GetScenerySectionName(char *name, int section_number) {
+char *GetScenerySectionName(char *name, int section_number) {
     if (section_number < 1) {
         bStrCpy(name, "--");
     } else {
         bSPrintf(name, "%c%d", GetScenerySectionLetter(section_number), section_number % 100);
     }
+
+    return name;
 }
 
 char *GetScenerySectionName(int section_number) {
     unsigned int index = static_cast<unsigned int>(counter_VisibleSection) & 3;
     counter_VisibleSection += 1;
-    GetScenerySectionName(text_VisibleSection[index], section_number);
-    return text_VisibleSection[index];
+    return GetScenerySectionName(text_VisibleSection[index], section_number);
 }
 
 static inline bool PointInBBox(const bVector2 *point, const bVector2 *bbox_min, const bVector2 *bbox_max) {
@@ -594,8 +595,12 @@ DrivableScenerySection *VisibleSectionManager::FindDrivableSection(int section_n
 LoadingSection *VisibleSectionManager::FindLoadingSection(int section_number) {
     for (LoadingSection *loading_section = LoadingSectionList.GetHead(); loading_section != LoadingSectionList.EndOfList();
          loading_section = loading_section->GetNext()) {
-        for (int i = 0; i < loading_section->NumDrivableSections; i++) {
-            if (loading_section->DrivableSections[i] == section_number) {
+        short target_section_number = static_cast<short>(section_number);
+        short *drivable_sections = loading_section->DrivableSections;
+        int num_drivable_sections = loading_section->NumDrivableSections;
+
+        for (int i = 0; i < num_drivable_sections; i++) {
+            if (drivable_sections[i] == target_section_number) {
                 return loading_section;
             }
         }

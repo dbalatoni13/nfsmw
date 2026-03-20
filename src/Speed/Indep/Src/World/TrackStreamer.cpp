@@ -33,7 +33,7 @@ extern int WaitUntilRenderingDoneDisabled;
 extern int TrackStreamerRemoteCaffeinating;
 extern unsigned int eFrameCounter;
 int Get2PlayerSectionNumber(int section_number);
-void GetScenerySectionName(char *name, int section_number);
+char *GetScenerySectionName(char *name, int section_number);
 char *GetScenerySectionName(int section_number);
 void PostLoadFixup();
 void SetDuplicateTextureWarning(BOOL enabled);
