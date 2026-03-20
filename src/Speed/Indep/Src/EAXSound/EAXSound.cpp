@@ -786,15 +786,13 @@ void EAXSound::StartNewGamePlay() {
         }
 
         for (int i = 0; i < 13; i++) {
-            if (i == 1) {
-                if (m_pStateMgr[i] != nullptr) {
-                    m_pStateMgr[i]->DisconnectMixMap();
-                }
-            } else {
+            if (i != 1) {
                 CSTATEMGR_Base *mgr = m_pStateMgr[i];
                 if (mgr != nullptr) {
                     mgr->ExitWorld();
                 }
+            } else if (m_pStateMgr[i] != nullptr) {
+                m_pStateMgr[i]->DisconnectMixMap();
             }
         }
 
@@ -821,37 +819,50 @@ void EAXSound::StartNewGamePlay() {
         GRaceParameters *race = nullptr;
         if (GRaceStatus::Exists()) {
             race = GRaceStatus::Get().GetRaceParameters();
-        } else if (GRaceDatabase::Exists()) {
+        } else {
             GRaceCustom *startupRace = GRaceDatabase::Get().GetStartupRace();
             race = startupRace;
         }
 
-        if (race == nullptr) {
-            m_prevSndGameMode = m_eSndGameMode;
-            m_eSndGameMode = SND_FREEROAM;
-            if (Sim::GetUserMode() == Sim::USER_SPLIT_SCREEN) {
-                m_pNFSMixMaster->CreateMainMainMap(eRACE_TWOCIRC);
-            } else {
-                m_pNFSMixMaster->CreateMainMainMap(eRACE_CIRCUIT);
-            }
-        } else {
+        if (race != nullptr) {
             GRace::Type raceType = race->GetRaceType();
             if (raceType == GRace::kRaceType_Drag) {
-                m_prevSndGameMode = m_eSndGameMode;
+                eSndGameMode oldMode = m_eSndGameMode;
                 m_eSndGameMode = SND_DRAGRACE;
+                m_prevSndGameMode = oldMode;
                 if (Sim::GetUserMode() == Sim::USER_SPLIT_SCREEN) {
                     m_pNFSMixMaster->CreateMainMainMap(eRACE_TWODRG);
                 } else {
                     m_pNFSMixMaster->CreateMainMainMap(eRACE_DRAG);
                 }
             } else {
-                m_prevSndGameMode = m_eSndGameMode;
-                m_eSndGameMode = (raceType == GRace::kRaceType_Challenge) ? SND_CHALLENGERACE : SND_STREETRACE;
-                if (Sim::GetUserMode() == Sim::USER_SPLIT_SCREEN) {
-                    m_pNFSMixMaster->CreateMainMainMap(eRACE_TWOCIRC);
-                } else {
-                    m_pNFSMixMaster->CreateMainMainMap(eRACE_CIRCUIT);
+                SFXObj_PFEATrax *track = static_cast<SFXObj_PFEATrax *>(GetSFXBase_Object(0x40010010));
+                if (track != nullptr) {
+                    track->RestartRace();
                 }
+                eSndGameMode oldMode = m_eSndGameMode;
+                eSndGameMode gameMode;
+                if (raceType == GRace::kRaceType_Challenge) {
+                    gameMode = SND_CHALLENGERACE;
+                } else {
+                    gameMode = SND_STREETRACE;
+                }
+                m_eSndGameMode = gameMode;
+                m_prevSndGameMode = oldMode;
+                if (Sim::GetUserMode() != Sim::USER_SPLIT_SCREEN) {
+                    m_pNFSMixMaster->CreateMainMainMap(eRACE_CIRCUIT);
+                } else {
+                    m_pNFSMixMaster->CreateMainMainMap(eRACE_TWOCIRC);
+                }
+            }
+        } else {
+            eSndGameMode oldMode = m_eSndGameMode;
+            m_eSndGameMode = SND_FREEROAM;
+            m_prevSndGameMode = oldMode;
+            if (Sim::GetUserMode() != Sim::USER_SPLIT_SCREEN) {
+                m_pNFSMixMaster->CreateMainMainMap(eRACE_CIRCUIT);
+            } else {
+                m_pNFSMixMaster->CreateMainMainMap(eRACE_TWOCIRC);
             }
         }
     }
