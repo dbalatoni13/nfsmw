@@ -137,13 +137,11 @@ SkidSet::~SkidSet() {
 int SkidSet::AddSegment(bVector3 *position, bVector3 *delta_position, bool skid_is_flaming, float intensity) {
     (void)skid_is_flaming;
 
-    bVector3 new_segment_normal;
     bVector3 new_segment_forward;
-    bVector3 new_segment_delta;
     float length = 0.0f;
     if (NumSkidSegments > 0) {
-        new_segment_normal = *position - *SkidSegments[NumSkidSegments - 1].GetPosition();
-        new_segment_delta = new_segment_normal;
+        bVector3 new_segment_normal = *position - *SkidSegments[NumSkidSegments - 1].GetPosition();
+        bVector3 new_segment_delta(new_segment_normal);
         length = bLength(&new_segment_delta);
         bNormalize(&new_segment_forward, &new_segment_delta);
     }
