@@ -875,10 +875,12 @@ int LoaderScenery(bChunk *chunk) {
                         bEndianSwap16(instance + 0x3E);
                         bEndianSwap32(instance + 0x18);
                         for (int n = 0; n < 3; n++) {
-                            bEndianSwap32(instance + 0x20 + n * 4);
+                            unsigned char *swap = instance + n * 4;
+                            bEndianSwap32(swap + 0x20);
                         }
                         for (int n = 0; n < 9; n++) {
-                            bEndianSwap16(instance + 0x2C + n * 2);
+                            unsigned char *swap = instance + n * 2;
+                            bEndianSwap16(swap + 0x2C);
                         }
                         bEndianSwap32(instance + 0x00);
                         bEndianSwap32(instance + 0x04);
