@@ -1335,7 +1335,7 @@ void TrackStreamer::SwitchZones(short *current_zones) {
             }
 
             position_entry->CurrentZone = zone_number;
-            bCopy(&position_entry->BeginLoadingPosition, &position_entry->Position);
+            position_entry->BeginLoadingPosition = position_entry->Position;
             position_entry->BeginLoadingTime = GetDebugRealTime();
             position_entry->NumSectionsToLoad = 0;
             position_entry->NumSectionsLoaded = 0;

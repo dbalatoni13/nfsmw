@@ -243,7 +243,7 @@ struct bVector2 {
 
     int operator==(const bVector2 &v);
 
-    // bVector2 &operator=(const bVector2 &v) {} // compiler generated? shown in dwarf
+    bVector2 &operator=(const bVector2 &v);
 
     // bVector2(const bVector2 &v) {} // compiler generated
 
@@ -267,6 +267,11 @@ inline bVector2 *bCopy(bVector2 *dest, const bVector2 *v) {
     float y = v->y;
     bFill(dest, x, y);
     return dest;
+}
+
+inline bVector2 &bVector2::operator=(const bVector2 &v) {
+    bCopy(this, &v);
+    return *this;
 }
 
 inline bVector2::bVector2(float _x, float _y) {
