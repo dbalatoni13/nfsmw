@@ -137,15 +137,19 @@ bool GCharacter::AttemptSpawn() {
 
             if (mVehicle->QueryInterface(&isimable)) {
                 IVehicleAI *vehicleAI;
+                ITrafficAI *itv;
 
                 if (isimable->QueryInterface(&vehicleAI)) {
-                    AITarget *target = vehicleAI->GetTarget();
+                    AITarget *target;
+                    WRoadNav *road_nav;
+
+                    target = vehicleAI->GetTarget();
 
                     if (target) {
                         target->Aquire(mTargetPos, mTargetDir);
                     }
 
-                    WRoadNav *road_nav = vehicleAI->GetCurrentRoad();
+                    road_nav = vehicleAI->GetCurrentRoad();
 
                     if (road_nav) {
                         road_nav->ResetCookieTrail();
@@ -155,7 +159,6 @@ bool GCharacter::AttemptSpawn() {
                     vehicleAI->ResetVehicleToRoadPos(mSpawnPos, mSpawnDir);
 
                     if (0.0f < mSpawnSpeed) {
-                        ITrafficAI *itv;
                         float speedMph;
 
                         mVehicle->Activate();
