@@ -452,7 +452,7 @@ int EAXAemsManager::InitiateLoad() {
     bStrCat(m_csTemp1, g_DataPaths[m_pCurLoadSDLP->AssetDescription.DataPath], fileString);
     result = bFileSize(m_csTemp1);
     m_pCurLoadSDLP->nSize = result;
-    if (result < 1) {
+    if (m_pCurLoadSDLP->nSize < 1) {
         return -1;
     }
 
@@ -461,6 +461,7 @@ int EAXAemsManager::InitiateLoad() {
             goto HaveAsyncBuffer;
         }
         m_AsyncBuffLocation = TMP_ALLOC_AUDIO;
+        bLargestMalloc(AudioMemoryPool);
         {
             int nlargestbuff = bLargestMalloc(0);
             if (nlargestbuff <= 0x20000) {
@@ -526,7 +527,7 @@ int EAXAemsManager::InitiateLoad() {
             if (m_pCurLoadSDLP->AssetDescription.eDataType == EAXSND_DT_GENERIC_DATA &&
                 (pBankSlot = m_pCurLoadSDLP->mBankSlot, pBankSlot != nullptr)) {
                 result = m_pCurLoadSDLP->nSize;
-                if (pBankSlot->MAINmemSize < result) {
+                if (result > pBankSlot->MAINmemSize) {
                     return -4;
                 }
                 fileString = pBankSlot->MAINmemLocation;
