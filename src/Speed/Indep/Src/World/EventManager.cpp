@@ -365,38 +365,55 @@ emEvent **emTriggerEventsInSection(bVector3 *position, int section_number) {
 }
 
 void emProcessAllEvents() {
-    bTList<emEvent> queued_events;
-    bTList<emEvent> referenced_events;
+    bTList<emEvent> temp_event_queue;
+    bTList<emEvent> locked_event_queue;
+    emEvent *event;
 
-    CurrentEventQueue = &queued_events;
-    while (!MasterEventQueue.IsEmpty()) {
-        emEvent *event = MasterEventQueue.GetHead();
+    CurrentEventQueue = &temp_event_queue;
+    emEvent *next_event;
+
+    for (event = MasterEventQueue.GetHead(); event != MasterEventQueue.EndOfList(); event = next_event) {
+        next_event = event->GetNext();
+        int event_id = event->ID;
+        int event_handled = 0;
+
         CurrentlyHandlingEvent = event;
 
         for (emEventHandler *handler = EventHandlerList.GetHead(); handler != EventHandlerList.EndOfList();
              handler = handler->GetNext()) {
-            if ((event->ID & handler->StreamMask) != 0) {
+            int handler_stream_mask = handler->StreamMask;
+
+            if ((event_id & handler_stream_mask) != 0) {
                 unsigned int start_ticks = bGetTicker();
+
                 handler->HandlerFunction(event);
                 handler->TotalTime += bGetTickerDifference(start_ticks, bGetTicker());
+                event_handled = 1;
             }
         }
 
-        MasterEventQueue.Remove(event);
+        event->Remove();
         CurrentlyHandlingEvent = 0;
         if (event->ReferenceCount == 0) {
-            bFree(EventSlotPool, event);
+            delete event;
         } else {
-            referenced_events.AddTail(event);
+            locked_event_queue.AddTail(event);
         }
     }
 
-    while (!referenced_events.IsEmpty()) {
-        MasterEventQueue.AddTail(referenced_events.RemoveHead());
+    while (!locked_event_queue.IsEmpty()) {
+        MasterEventQueue.AddTail(locked_event_queue.RemoveHead());
     }
-    while (!queued_events.IsEmpty()) {
-        MasterEventQueue.AddTail(queued_events.RemoveHead());
+    while (!temp_event_queue.IsEmpty()) {
+        MasterEventQueue.AddTail(temp_event_queue.RemoveHead());
     }
 
     CurrentEventQueue = &MasterEventQueue;
+
+    while (!locked_event_queue.IsEmpty()) {
+        delete locked_event_queue.RemoveHead();
+    }
+    while (!temp_event_queue.IsEmpty()) {
+        delete temp_event_queue.RemoveHead();
+    }
 }
