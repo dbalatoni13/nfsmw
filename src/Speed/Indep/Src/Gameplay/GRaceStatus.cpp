@@ -60,10 +60,6 @@ void FECustomizationRecordWriteRideIntoRecord(FECustomizationRecord *self, const
 void RideInfoSetRandomParts(RideInfo *self) __asm__("SetRandomParts__8RideInfo");
 CarType CarPartDatabaseGetCarType(CarPartDatabase *self, unsigned int key) __asm__("GetCarType__15CarPartDatabaseUi");
 
-static unsigned int GetPresetVehicleKey(PresetCar *preset) {
-    return *reinterpret_cast<unsigned int *>(reinterpret_cast<unsigned char *>(preset) + 0x54);
-}
-
 #ifndef DECLARE_GAMEPLAY_MINIMAP_CLASS
 #define DECLARE_GAMEPLAY_MINIMAP_CLASS
 class Minimap {
@@ -351,7 +347,7 @@ IVehicle *GRacerInfo::CreateVehicle(unsigned int default_key) {
 
         if (preset) {
             FECustomizationRecordBecomePreset(&customizations, preset);
-            vehicle_key = GetPresetVehicleKey(preset);
+            vehicle_key = *reinterpret_cast<unsigned int *>(reinterpret_cast<unsigned char *>(preset) + 0x54);
         }
     }
 
@@ -385,8 +381,12 @@ IVehicle *GRacerInfo::CreateVehicle(unsigned int default_key) {
     }
 
     cache = nullptr;
-    if (GRaceStatus::Exists()) {
-        cache = static_cast<IVehicleCache *>(&GRaceStatus::Get());
+    bool raceStatusExists = GRaceStatus::Exists();
+
+    if (raceStatusExists) {
+        GRaceStatus *raceStatus = &GRaceStatus::Get();
+
+        cache = reinterpret_cast<IVehicleCache *>(reinterpret_cast<unsigned char *>(raceStatus) + 0x10);
     }
 
     VehicleParams params(cache, DRIVER_RACER, vehicle_key, direction, UMath::Vector3::kZero, 0, &customizations, &ai_performance);
