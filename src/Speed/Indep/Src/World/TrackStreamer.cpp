@@ -108,7 +108,7 @@ static inline short GetScenerySectionNumber_TrackStreamer(char section_letter, i
     return static_cast<short>((section_letter - 'A' + 1) * 100 + subsection_number);
 }
 
-static inline void espEmptyLayer(const char *layername) {}
+inline void espEmptyLayer(const char *layername) {}
 
 static inline bool IsLODScenerySectionNumber(int section_number) {
     int subsection_number = GetScenerySubsectionNumber(section_number);
@@ -2037,11 +2037,13 @@ void TrackStreamer::AssignLoadingPriority() {
         TrackStreamingSection *section = CurrentStreamingSections[n];
         int best_priority = 99;
         for (int position_number = 0; position_number < 2; position_number++) {
-            if (((section->CurrentlyVisible >> (position_number & 0x1f)) & 1U) != 0) {
-                StreamingPositionEntry *position_entry = &StreamingPositionEntries[position_number];
-                int priority = GetLoadingPriority(section, position_entry, false);
-                if (priority < best_priority) {
-                    best_priority = priority;
+            StreamingPositionEntry *position_entry = &StreamingPositionEntries[position_number];
+            if (((section->CurrentlyVisible >> position_number) & 1U) != 0) {
+                {
+                    int priority = GetLoadingPriority(section, position_entry, false);
+                    if (priority < best_priority) {
+                        best_priority = priority;
+                    }
                 }
             }
         }
