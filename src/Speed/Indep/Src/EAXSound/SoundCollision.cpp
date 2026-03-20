@@ -312,14 +312,9 @@ void CollisionEvent::Update(const bVector3 &position, const bVector3 &normal, co
 
 void CollisionEvent::InitAsScrape(const Attrib::Gen::audioscrape &audioFx) {
     Attrib::StringKey effect(audioFx.CSIS_EFFECT());
-    const char *effectString = effect.GetString();
-    bool empty = true;
+    if (!effect.IsEmpty()) {
+        const char *effectString = effect.GetString();
 
-    if (effectString) {
-        empty = *effectString == '\0';
-    }
-
-    if (!empty) {
         if (!effectString) {
             effectString = "";
         }
