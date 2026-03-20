@@ -1322,7 +1322,8 @@ void TrackStreamer::SwitchZones(short *current_zones) {
             VisibleSectionBoundary *new_boundary = TheVisibleSectionManager.FindBoundary(current_zone);
             float distance_to_boundary = kMaxDistance_TrackStreamer;
             if (old_boundary && new_boundary) {
-                for (int n = 0; n < old_boundary->NumPoints; n++) {
+                int num_points = old_boundary->NumPoints;
+                for (int n = 0; n < num_points; n++) {
                     float boundary_distance =
                         new_boundary->GetDistanceOutside(&old_boundary->Points[n], kMaxDistance_TrackStreamer);
                     distance_to_boundary = bMin(distance_to_boundary, boundary_distance);
