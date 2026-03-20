@@ -12,7 +12,15 @@ ninja all_source       # build all objects
 ninja                  # build all objects, hash check and progress report
 ninja baseline         # generates baseline report for regression checking
 ninja changes          # check for regressions after code changes (empty = no regressions)
+python tools/build_matrix.py              # sequential full `ninja` across GC/Xbox/PS2, then restore GOWE69
+python tools/build_matrix.py --all-source # sequential compile-only smoke check across GC/Xbox/PS2
 ```
+
+Use `python tools/build_matrix.py` when you want one command that verifies the current
+worktree across all supported platforms. It runs `configure.py --version ...` and the
+selected ninja target sequentially, writes per-platform logs under `build/<VERSION>/logs/`,
+prints failure tails with the exact failing command, and restores the worktree to
+`GOWE69` by default when it finishes.
 
 ## Project Layout
 
