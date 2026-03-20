@@ -53,6 +53,10 @@ class GTrigger : public GRuntimeInstance {
         return mEnabled;
     }
 
+    bool GetTriggerEnabled() const {
+        return mTriggerEnabled != 0;
+    }
+
     GIcon *GetIcon() const {
         return mIcon;
     }

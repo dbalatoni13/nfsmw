@@ -2700,20 +2700,47 @@ void GRaceStatus::EnterBin(unsigned int binNumber) {
 }
 
 void GRaceStatus::SetRacing() {
+    IPlayer *player;
+
     mPlayMode = kPlayMode_Racing;
     ClearTimes();
 
-    for (IPlayer::List::const_iterator iter = IPlayer::GetList(PLAYER_ALL).begin(); iter != IPlayer::GetList(PLAYER_ALL).end(); ++iter) {
-        IPlayer *player = *iter;
-
+    player = IPlayer::First(PLAYER_ALL);
+    while (player) {
         if (player->InGameBreaker()) {
             player->ResetGameBreaker(true);
+        }
+
+        {
+            IPlayer::List::const_iterator iter =
+                std::find(IPlayer::GetList(PLAYER_ALL).begin(), IPlayer::GetList(PLAYER_ALL).end(), player);
+            IPlayer::List::const_iterator end = IPlayer::GetList(PLAYER_ALL).end();
+
+            if (iter == end) {
+                player = nullptr;
+            } else {
+                ++iter;
+                player = iter == end ? nullptr : *iter;
+            }
         }
     }
 
     mNumTollbooths = 0;
 
-    if ((!mRaceParms || !mRaceParms->GetIsDDayRace() || bStrCmp(mRaceParms->GetEventID(), "16.1.0") == 0) && !IsFinalEpicPursuit()) {
+    {
+        GObjectIterator<GTrigger> iter(0x800);
+
+        while (iter.IsValid()) {
+            if (iter.GetInstance()->GetTriggerEnabled()) {
+                mNumTollbooths++;
+            }
+
+            iter.Advance();
+        }
+    }
+
+    if ((!mRaceParms || !mRaceParms->GetIsDDayRace() || bStrCmp(mRaceParms->GetEventID(), "16.1.0") == 0) &&
+        (!FEDatabase || !FEDatabase->IsFinalEpicChase())) {
         new EAutoSave();
     }
 
