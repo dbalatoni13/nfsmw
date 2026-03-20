@@ -813,8 +813,13 @@ int Get1PlayerSectionNumber(int section_number_2p, const char *build_platform) {
 int GetBoundarySectionNumber(int section_number, const char *platform_name) {
     int boundary_section_number = Get1PlayerSectionNumber(section_number, platform_name);
     int subsection_number = boundary_section_number % 100;
+    int is_boundary_section = 0;
 
-    if (ScenerySectionLODOffset <= subsection_number && subsection_number < ScenerySectionLODOffset * 2) {
+    if (subsection_number >= ScenerySectionLODOffset) {
+        is_boundary_section = subsection_number < ScenerySectionLODOffset * 2;
+    }
+
+    if (is_boundary_section) {
         boundary_section_number -= ScenerySectionLODOffset;
     }
 
