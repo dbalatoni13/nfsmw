@@ -350,9 +350,6 @@ void GTrigger::NotifySimableTrigger(ISimable *isim, int triggerStimulus) {
 
 void GTrigger::Reset() {
     mSimObjInside.clear();
-    mTriggerEnabled = 0;
-    mActivationReferences = 0;
-    Enable(false);
 }
 
 void GTrigger::ShowIcon() {
