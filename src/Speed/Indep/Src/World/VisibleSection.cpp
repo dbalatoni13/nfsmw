@@ -594,7 +594,7 @@ int VisibleSectionManager::Loader(bChunk *chunk) {
                         section->EndianSwap();
                         section->pBoundary = FindBoundary(section->GetSectionNumber());
                         section = reinterpret_cast<DrivableScenerySection *>(
-                            reinterpret_cast<char *>(section) + 0x14 + section->MaxVisibleSections * sizeof(short));
+                            reinterpret_cast<char *>(section) + 0xA4 - (0x48 - section->MaxVisibleSections) * sizeof(short));
                     } while (section < last_section);
                 }
 
