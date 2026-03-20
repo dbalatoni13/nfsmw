@@ -896,97 +896,92 @@ int STREAM_queuemem(int sndstreamhandle, void *address, int length, int holdtime
 }
 
 void STREAM_cancelrequest(int sndstreamhandle, int requesthandle) {
-    STREAMHEADERtag *streamRaw;
-    TAPSTRUCTtag *tapRaw;
-    STREAMHEADER *stream;
-    TAPSTRUCT *tap;
-    REQUESTSTRUCT *request;
-    REQUESTSTRUCT *nextRequest;
+    STREAMHEADERtag *strm;
+    TAPSTRUCTtag *tap;
+    REQUESTSTRUCTtag *req;
     STREAMCHUNKHDR *chunk;
-    unsigned int amount;
-    int status = validatehandle(sndstreamhandle, &streamRaw, &tapRaw);
     char *dataStart = nullptr;
+    int lockstate = validatehandle(sndstreamhandle, &strm, &tap);
     char *requestStart = nullptr;
     char *requestEnd = nullptr;
-    if (status == 0) {
-        stream = reinterpret_cast<STREAMHEADER *>(streamRaw);
-        MUTEX_lock(&stream->mutex);
-        request = reinterpret_cast<REQUESTSTRUCT *>(locaterequest(streamRaw, requesthandle));
-        bool finished;
-        if (request == nullptr || request->state == STREAMREQUEST_CANCELED) {
+    int chunksize;
+    int chunktap;
+    int finished;
+    int i;
+    int next;
+
+    if (lockstate == 0) {
+        MUTEX_lock(&strm->mutex);
+        req = locaterequest(strm, requesthandle);
+        if (req == nullptr || req->state == STREAMREQUEST_CANCELED) {
             finished = true;
-        } else if (request->state == STREAMREQUEST_PENDING) {
+        } else if (req->state == STREAMREQUEST_PENDING) {
             finished = true;
-            freerequest(streamRaw, reinterpret_cast<REQUESTSTRUCTtag *>(request));
+            freerequest(strm, req);
         } else {
-            request->state = STREAMREQUEST_CANCELED;
-            dataStart = stream->datastart;
+            req->state = STREAMREQUEST_CANCELED;
+            dataStart = strm->datastart;
             requestStart = dataStart;
-            if (request != stream->firstreq) {
-                requestStart = request->datastart;
+            if (req != strm->firstreq) {
+                requestStart = req->datastart;
             }
-            nextRequest = request->next;
-            if (nextRequest == nullptr || nextRequest->state == STREAMREQUEST_PENDING) {
-                requestEnd = stream->datatail;
+            req = req->next;
+            if (req == nullptr || req->state == STREAMREQUEST_PENDING) {
+                requestEnd = strm->datatail;
             } else {
-                requestEnd = nextRequest->datastart;
+                requestEnd = req->datastart;
             }
             finished = false;
         }
-        MUTEX_unlock(&stream->mutex);
-        if ((!finished) && (status = 0, stream->taps > 0)) {
+        MUTEX_unlock(&strm->mutex);
+        if ((!finished) && (i = 0, i < strm->taps)) {
             do {
-                tap = stream->tap + status;
+                next = i + 1;
+                tap = strm->tap + i;
                 if (tap->gettable > 0) {
-                    int inRange = inbetween(dataStart, requestStart, tap->getptr);
-                    if (inRange == 0) {
-                        inRange = inbetween(requestStart, requestEnd, tap->getptr);
-                        while (inRange != 0) {
+                    lockstate = inbetween(dataStart, requestStart, tap->getptr);
+                    if (lockstate == 0) {
+                        while ((lockstate = inbetween(requestStart, requestEnd, tap->getptr)) != 0) {
                             chunk = STREAM_get(reinterpret_cast<int>(tap));
                             STREAM_release(reinterpret_cast<int>(tap), chunk);
                             if (tap->gettable < 1) {
                                 break;
                             }
-                            inRange = inbetween(requestStart, requestEnd, tap->getptr);
                         }
                     } else {
-                        int tapNumber = tap->tapnum;
+                        chunktap = tap->tapnum;
                         if (requestStart != requestEnd) {
-                            int *cursor = reinterpret_cast<int *>(requestStart);
-                            int type = *cursor;
-                            while (true) {
-                                if (type == -1) {
-                                    cursor = reinterpret_cast<int *>(stream->bufferstart);
+                            finished = reinterpret_cast<int>(requestStart);
+                            while (reinterpret_cast<char *>(finished) != requestEnd) {
+                                if (ReadChunkWord(reinterpret_cast<const int *>(finished)) == -1) {
+                                    finished = reinterpret_cast<int>(strm->bufferstart);
                                 } else {
-                                    amount = static_cast<unsigned int>(cursor[1]) & 0xFFFFFF;
-                                    if ((static_cast<unsigned int>(cursor[1]) & 0xFF000000U) ==
-                                        (static_cast<unsigned int>(tapNumber) << 24)) {
-                                        MUTEX_lock(&stream->mutex);
-                                        tap->gettable -= static_cast<int>(amount);
-                                        MUTEX_unlock(&stream->mutex);
-                                        decbufferusage(streamRaw, static_cast<int>(amount));
-                                        cursor[1] = static_cast<int>(amount);
-                                        cursor[0] = -2;
-                                        cursor = static_cast<int *>(
-                                            static_cast<void *>(static_cast<char *>(static_cast<void *>(cursor)) + amount));
-                                    } else {
-                                        cursor = static_cast<int *>(
-                                            static_cast<void *>(static_cast<char *>(static_cast<void *>(cursor)) + amount));
+                                    unsigned char *bytes =
+                                        static_cast<unsigned char *>(static_cast<void *>(reinterpret_cast<int *>(finished)));
+                                    chunksize = ReadChunkWord(reinterpret_cast<const int *>(finished + 4)) & 0xFFFFFF;
+                                    if ((ReadChunkWord(reinterpret_cast<const int *>(finished + 4)) & 0xFF000000U) ==
+                                        (static_cast<unsigned int>(chunktap) << 24)) {
+                                        MUTEX_lock(&strm->mutex);
+                                        tap->gettable -= chunksize;
+                                        MUTEX_unlock(&strm->mutex);
+                                        decbufferusage(strm, chunksize);
+                                        bytes[5] = static_cast<unsigned char>(static_cast<unsigned int>(chunksize) >> 8);
+                                        bytes[6] = static_cast<unsigned char>(static_cast<unsigned int>(chunksize) >> 16);
+                                        bytes[7] = 0;
+                                        bytes[0] = 0xFE;
+                                        bytes[1] = 0xFF;
+                                        bytes[2] = 0xFF;
+                                        bytes[3] = 0xFF;
+                                        bytes[4] = static_cast<unsigned char>(chunksize);
                                     }
+                                    finished += chunksize;
                                 }
-                                if (reinterpret_cast<char *>(cursor) == requestEnd) {
-                                    break;
-                                }
-                                type = *cursor;
                             }
                         }
                     }
                 }
-                status += 1;
-                if (stream->taps <= status) {
-                    return;
-                }
-            } while (true);
+                i = next;
+            } while (next < strm->taps);
         }
     }
 }

@@ -1791,25 +1791,31 @@ void SetSoundControlState(bool on, eSNDCTLSTATE state, const char *caller) {
         return;
     }
 
-    bool turningOff = !on;
-    bool pauseMainFNG = g_pEAXSound->IsPauseMainFNG();
-    if (pauseMainFNG && turningOff && state != SNDSTATE_MINILOAD && !(state > SNDSTATE_FE_SMS_MESSAGE && state < SNDSTATE_FMV)) {
-        return;
+    on ^= 1;
+    if (g_pEAXSound->IsPauseMainFNG()) {
+        if (on) {
+            if (state != SNDSTATE_MINILOAD) {
+                unsigned int fngState = state - 6;
+                if (fngState > 4) {
+                    return;
+                }
+            }
+        }
     }
 
     unsigned int stateBit = 1u << (state & 0x1F);
-    if ((g_ActiveCtlStates & stateBit) == 0) {
-        if (turningOff) {
+    if ((g_ActiveCtlStates & stateBit) != 0) {
+        if (!on) {
             return;
         }
-    } else if (!turningOff) {
+    } else if (on) {
         return;
     }
 
     g_PrevActiveCtlStates = g_ActiveCtlStates;
     g_PrevActiveSFXStates = g_ActiveSFXStates;
 
-    if (turningOff) {
+    if (on) {
         g_ActiveCtlStates &= ~stateBit;
     } else {
         g_ActiveCtlStates |= stateBit;
@@ -1817,7 +1823,7 @@ void SetSoundControlState(bool on, eSNDCTLSTATE state, const char *caller) {
 
     g_ActiveSFXStates = 0;
     for (int n = 0; n < 18; n++) {
-        if ((g_ActiveCtlStates & (1u << (n & 0x1F))) != 0) {
+        if (((g_ActiveCtlStates >> (n & 0x1F)) & 1) != 0) {
             g_ActiveSFXStates |= g_CtlStateActions[n];
         }
     }
@@ -1831,24 +1837,28 @@ void SetSoundControlState(bool on, eSNDCTLSTATE state, const char *caller) {
             continue;
         }
 
-        int channel = -1;
-        if (s == 1) {
-            channel = 0;
-        } else if (s == 0) {
-            channel = 1;
-        } else if (s == 2) {
-            channel = 2;
-        }
-
-        if (channel >= 0) {
-            EAXS_StreamChannel *streamChannel = streamManager->GetStreamChannel(channel);
-            if (streamChannel != nullptr) {
-                if (cur != 0) {
-                    streamChannel->Pause();
-                } else {
-                    streamChannel->Resume();
+        if (cur != 0) {
+            if (s == 1) {
+                if (streamManager->GetStreamChannel(0)) {
+                    streamManager->GetStreamChannel(0)->Pause();
                 }
+            } else if (s == 0) {
+                if (streamManager->GetStreamChannel(1)) {
+                    streamManager->GetStreamChannel(1)->Pause();
+                }
+            } else if (s == 2 && streamManager->GetStreamChannel(2)) {
+                streamManager->GetStreamChannel(2)->Pause();
             }
+        } else if (s == 1) {
+            if (streamManager->GetStreamChannel(0)) {
+                streamManager->GetStreamChannel(0)->Resume();
+            }
+        } else if (s == 0) {
+            if (streamManager->GetStreamChannel(1)) {
+                streamManager->GetStreamChannel(1)->Resume();
+            }
+        } else if (s == 2 && streamManager->GetStreamChannel(2)) {
+            streamManager->GetStreamChannel(2)->Resume();
         }
     }
 
