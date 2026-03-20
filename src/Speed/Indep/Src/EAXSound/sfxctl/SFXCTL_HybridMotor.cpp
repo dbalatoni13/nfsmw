@@ -358,23 +358,22 @@ void SFXCTL_HybridMotor::UpdateMixerOutputs() {
     float AvgDeltaRPM;
     float PercentOfThreshold;
     int output;
-    EAX_CarState *physCar = m_pStateBase->GetPhysCar();
     float speedMph = m_pEAXCar->GetVelocityMagnitudeMPH();
 
     if (speedMph <= 30.0f || 30.0f <= bAbs(m_AvgDeltaRPM.GetValue())) {
         tSteadyDuration = SndBase::m_fRunningTime;
-    } else if (tSteadyDuration + 3.0f < SndBase::m_fRunningTime) {
-        bOutputOn = true;
+    } else {
+        bOutputOn = tSteadyDuration + 3.0f < SndBase::m_fRunningTime;
     }
 
-    if (bOutputOn) {
+    if (!bOutputOn) {
+        tSteadyDuration = SndBase::m_fRunningTime;
+    } else {
         if (SteadyFrameCnt == 0) {
             SteadyFrameCnt = static_cast< unsigned short >(g_pEAXSound->Random(0x96) + 0x3C);
             *static_cast<int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pEngineCtl)) + 0x14C)) = 1;
         }
         SteadyFrameCnt = static_cast< unsigned short >(SteadyFrameCnt - 1);
-    } else {
-        tSteadyDuration = SndBase::m_fRunningTime;
     }
 
     output = smooth(GetDMIX_InputValue(0), bOutputOn ? 0x7FFF : 0, 0x3D7, 0xC4);
@@ -391,17 +390,26 @@ void SFXCTL_HybridMotor::UpdateMixerOutputs() {
         mPrevDeltaRPM = output / 2;
     }
 
-    if (m_pShiftingCtl->eShiftState == SHFT_NONE) {
-        unsigned int wheelsOnGround = 0;
+    {
+        int shiftActive = 1;
 
-        for (int i = 0; i < 4; i++) {
-            if (physCar->mWheel[i].mWheelOnGround != 0) {
-                wheelsOnGround++;
-            }
+        if (m_pShiftingCtl->eShiftState == SHFT_NONE) {
+            shiftActive = 0;
         }
 
-        if (0.0f < static_cast<float>(wheelsOnGround)) {
-            SetDMIX_Input(1, output);
+        if (shiftActive == 0) {
+        EAX_CarState *physCar = m_pStateBase->GetPhysCar();
+        int wheelsOnGround = 0;
+
+            for (int i = 0; i < 4; i++) {
+                if (physCar->mWheel[i].mWheelOnGround != 0) {
+                    wheelsOnGround++;
+                }
+            }
+
+            if (0.0f < static_cast<float>(wheelsOnGround)) {
+                SetDMIX_Input(1, output);
+            }
         }
     }
 
