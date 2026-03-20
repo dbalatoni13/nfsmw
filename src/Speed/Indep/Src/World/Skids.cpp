@@ -274,8 +274,9 @@ void SkidMaker::MakeSkid(Car *pCar, bVector3 *position, bVector3 *delta_position
         pSkidSet->GetLastPoints(&last_position, &last_delta_position);
         last_intensity = pSkidSet->GetLastIntensity();
         pSkidSet->FinishedAddingSkids();
-        pSkidSet = CreateNewSkidSet(this, &last_position, &last_delta_position, terrain_type, last_intensity);
-        pSkidSet->AddSegment(position, delta_position, false, intensity);
+        SkidSet *new_skid_set = CreateNewSkidSet(this, &last_position, &last_delta_position, terrain_type, last_intensity);
+        new_skid_set->AddSegment(position, delta_position, false, intensity);
+        pSkidSet = new_skid_set;
     }
 }
 
