@@ -923,10 +923,26 @@ void GRacerInfo::FinalizeRaceStats() {
 }
 
 GRaceParameters::GRaceParameters(unsigned int collectionKey, GRaceIndexData *index)
-    : mIndex(index), //
+    : mIndex(nullptr), //
       mRaceRecord(new Attrib::Gen::gameplay(collectionKey, 0, nullptr)), //
       mParentVault(nullptr), //
-      mChildVault(nullptr) {}
+      mChildVault(nullptr) {
+    const char *childVaultName;
+
+    GenerateIndex(index);
+    mIndex = index;
+
+    childVaultName = mRaceRecord->gameplayvault(0);
+    if (childVaultName) {
+        mChildVault = GManager::Get().FindVault(childVaultName);
+        mRaceRecord->Num_Children();
+    }
+
+    mParentVault = GManager::Get().FindVaultContaining(mRaceRecord->GetCollection());
+    if (mParentVault) {
+        mParentVault->IsTransient();
+    }
+}
 
 GRaceParameters::~GRaceParameters() {
     delete mRaceRecord;
