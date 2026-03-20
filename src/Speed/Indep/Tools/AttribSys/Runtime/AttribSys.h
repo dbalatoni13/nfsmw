@@ -666,6 +666,7 @@ class Attribute {
     bool SetLength(unsigned int);
     void SendChangeMsg() const;
     // TODO
+    template <typename T> const T &Get(unsigned int index) const;
     template <typename T> const T &Get(unsigned int index, T &result) const;
     template <typename T> bool Set(unsigned int index, const T &input) {
         T *resultptr = reinterpret_cast<T *>(GetElementPointer(index));

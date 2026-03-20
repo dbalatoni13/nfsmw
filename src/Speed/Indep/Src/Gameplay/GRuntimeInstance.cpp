@@ -235,6 +235,16 @@ template GCharacter *GRuntimeInstance::FindObject<GCharacter>(unsigned int key);
 template GMarker *GRuntimeInstance::FindObject<GMarker>(unsigned int key);
 template GTrigger *GRuntimeInstance::FindObject<GTrigger>(unsigned int key);
 
+template <> const GCollectionKey &Attrib::Attribute::Get<GCollectionKey>(unsigned int index) const {
+    const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(GetElementPointer(index));
+
+    if (!resultptr) {
+        resultptr = reinterpret_cast<const GCollectionKey *>(Attrib::DefaultDataArea(sizeof(GCollectionKey)));
+    }
+
+    return *resultptr;
+}
+
 GCollectionKey::GCollectionKey(GRuntimeInstance *inst) {
     if (inst) {
         mCollectionKey = inst->GetCollection();
