@@ -219,63 +219,59 @@ emEvent *emAddEvent(EVENT_ID event_id) {
     return event;
 }
 
-int LoaderEventManager(bChunk *chunk) {
-    if (chunk->GetID() != 0x80036000) {
+int LoaderEventManager(bChunk *bchunk) {
+    if (bchunk->GetID() != 0x80036000) {
         return false;
     }
 
-    bChunk *last_chunk = chunk->GetLastChunk();
-    void *event_trigger_pack = 0;
-    for (bChunk *child = chunk->GetFirstChunk(); child != last_chunk; child = child->GetNext()) {
-        switch (child->GetID()) {
-        case 0x36002:
-            if (event_trigger_pack) {
-                void *tree = child->GetAlignedData(0x10);
-                SetEventTriggerPackTree_EventManager(event_trigger_pack, tree);
-                *reinterpret_cast<int *>(tree) = reinterpret_cast<int>(reinterpret_cast<int *>(tree) + 4);
-                if (GetEventTriggerPackEndianSwapped_EventManager(event_trigger_pack) == 0) {
-                    SwapEndian(reinterpret_cast<vAABBTree *>(tree));
-                }
-            }
-            break;
-
+    EventTriggerPack *trigger_pack = 0;
+    bChunk *last_chunk = bchunk->GetLastChunk();
+    for (bChunk *chunk = bchunk->GetFirstChunk(); chunk != last_chunk; chunk = chunk->GetNext()) {
+        switch (chunk->GetID()) {
         case 0x36001: {
-            event_trigger_pack = child->GetAlignedData(0x10);
-            if (GetEventTriggerPackEndianSwapped_EventManager(event_trigger_pack) == 0) {
-                int *event_trigger_pack_words = GetEventTriggerPackWords_EventManager(event_trigger_pack);
-                bEndianSwap32(&event_trigger_pack_words[3]);
-                bEndianSwap32(&event_trigger_pack_words[2]);
-                bEndianSwap32(&event_trigger_pack_words[4]);
+            trigger_pack = reinterpret_cast<EventTriggerPack *>(chunk->GetAlignedData(0x10));
+            if (trigger_pack->EndianSwapped == 0) {
+                bPlatEndianSwap(&trigger_pack->ScenerySectionNumber);
+                bPlatEndianSwap(&trigger_pack->Version);
+                bPlatEndianSwap(&trigger_pack->EndianSwapped);
             }
 
-            if (GetEventTriggerPackType_EventManager(event_trigger_pack) != 2) {
+            if (trigger_pack->Version != 2) {
                 return true;
             }
 
             VisibleSectionUserInfo *user_info =
-                TheVisibleSectionManager.AllocateUserInfo(GetEventTriggerPackSectionNumber_EventManager(event_trigger_pack));
-            user_info->pEventTriggerPack = reinterpret_cast<EventTriggerPack *>(event_trigger_pack);
+                TheVisibleSectionManager.AllocateUserInfo(trigger_pack->ScenerySectionNumber);
+            user_info->pEventTriggerPack = trigger_pack;
             break;
         }
 
-        case 0x36003:
-            if (event_trigger_pack) {
-                int *event_data = reinterpret_cast<int *>(child->GetAlignedData(0x10));
-                SetEventTriggerPackData_EventManager(event_trigger_pack, event_data);
+        case 0x36002:
+            if (trigger_pack) {
+                vAABBTree *tree = reinterpret_cast<vAABBTree *>(chunk->GetAlignedData(0x10));
+                trigger_pack->EventTree = tree;
+                tree->NodeArray = reinterpret_cast<vAABB *>(reinterpret_cast<int *>(tree) + 4);
+                if (trigger_pack->EndianSwapped == 0) {
+                    SwapEndian(tree);
+                }
+            }
+            break;
 
-                if (GetEventTriggerPackEndianSwapped_EventManager(event_trigger_pack) == 0) {
-                    int num_event_words =
-                        (child->GetSize() - (reinterpret_cast<char *>(event_data) - child->GetData())) >> 5;
-                    for (int i = 0; i < num_event_words; i++) {
-                        int *event_words = reinterpret_cast<int *>(reinterpret_cast<char *>(event_data) + i * 0x20);
-                        bEndianSwap32(&event_words[0]);
-                        bEndianSwap32(&event_words[1]);
-                        bEndianSwap32(&event_words[2]);
-                        bEndianSwap32(&event_words[3]);
-                        bEndianSwap32(&event_words[4]);
-                        bEndianSwap32(&event_words[5]);
-                        bEndianSwap32(&event_words[6]);
-                        bEndianSwap32(&event_words[7]);
+        case 0x36003:
+            if (trigger_pack) {
+                trigger_pack->EventTriggerArray = reinterpret_cast<EventTrigger *>(chunk->GetAlignedData(0x10));
+                if (trigger_pack->EndianSwapped == 0) {
+                    int num_triggers = chunk->GetAlignedSize(0x10) >> 5;
+                    for (int n = 0; n < num_triggers; n++) {
+                        EventTrigger *event_trigger = &trigger_pack->EventTriggerArray[n];
+                        bPlatEndianSwap(&event_trigger->NameHash);
+                        bPlatEndianSwap(&event_trigger->EventID);
+                        bPlatEndianSwap(&event_trigger->Parameter);
+                        bPlatEndianSwap(&event_trigger->TrackDirectionMask);
+                        bPlatEndianSwap(&event_trigger->PositionX);
+                        bPlatEndianSwap(&event_trigger->PositionY);
+                        bPlatEndianSwap(&event_trigger->PositionZ);
+                        bPlatEndianSwap(&event_trigger->Radius);
                     }
                 }
             }
@@ -283,25 +279,12 @@ int LoaderEventManager(bChunk *chunk) {
         }
     }
 
-    GetEventTriggerPackWords_EventManager(event_trigger_pack)[5] = 1;
-    if (event_trigger_pack) {
-        if (GetEventTriggerPackNumEvents_EventManager(event_trigger_pack) != 0 && GetEventTriggerPackTree_EventManager(event_trigger_pack) &&
-            GetEventTriggerPackData_EventManager(event_trigger_pack)) {
-            bList *event_trigger_pack_list = &EventTriggerPackList;
-            bNode *node = GetEventTriggerPackNode_EventManager(event_trigger_pack);
-            bNode *new_prev = event_trigger_pack_list->HeadNode.Prev;
-            new_prev->Next = node;
-            event_trigger_pack_list->HeadNode.Prev = node;
-            node->Prev = new_prev;
-            node->Next = &event_trigger_pack_list->HeadNode;
+    trigger_pack->EndianSwapped = 1;
+    if (trigger_pack) {
+        if (trigger_pack->NumEventTriggers != 0 && trigger_pack->EventTree && trigger_pack->EventTriggerArray) {
+            EventTriggerPackList.AddTail(trigger_pack);
         } else {
-            bList *event_trigger_pack_list = &EmptyEventTriggerPackList;
-            bNode *node = GetEventTriggerPackNode_EventManager(event_trigger_pack);
-            bNode *new_prev = event_trigger_pack_list->HeadNode.Prev;
-            new_prev->Next = node;
-            event_trigger_pack_list->HeadNode.Prev = node;
-            node->Prev = new_prev;
-            node->Next = &event_trigger_pack_list->HeadNode;
+            EmptyEventTriggerPackList.AddTail(trigger_pack);
         }
     }
 
