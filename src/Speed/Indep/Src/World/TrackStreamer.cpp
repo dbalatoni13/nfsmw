@@ -108,6 +108,8 @@ static inline short GetScenerySectionNumber_TrackStreamer(char section_letter, i
     return static_cast<short>((section_letter - 'A' + 1) * 100 + subsection_number);
 }
 
+static inline void espEmptyLayer(const char *layername) {}
+
 static inline bool IsLODScenerySectionNumber(int section_number) {
     int subsection_number = GetScenerySubsectionNumber(section_number);
     return subsection_number >= ScenerySectionLODOffset && subsection_number < ScenerySectionLODOffset * 2;
@@ -2021,19 +2023,30 @@ int TrackStreamer::GetLoadingPriority(TrackStreamingSection *section, StreamingP
 }
 
 void TrackStreamer::AssignLoadingPriority() {
-    for (int i = 0; i < NumCurrentStreamingSections; i++) {
-        TrackStreamingSection *section = CurrentStreamingSections[i];
-        int loading_priority = 99;
-        for (unsigned int position_number = 0; position_number < 2; position_number++) {
+    {
+        int priority;
+
+        {
+            char layer_name[32];
+
+            espEmptyLayer(layer_name);
+        }
+    }
+
+    for (int n = 0; n < NumCurrentStreamingSections; n++) {
+        TrackStreamingSection *section = CurrentStreamingSections[n];
+        int best_priority = 99;
+        for (int position_number = 0; position_number < 2; position_number++) {
             if (((section->CurrentlyVisible >> (position_number & 0x1f)) & 1U) != 0) {
-                int position_priority = GetLoadingPriority(section, &StreamingPositionEntries[position_number], false);
-                if (position_priority < loading_priority) {
-                    loading_priority = position_priority;
+                StreamingPositionEntry *position_entry = &StreamingPositionEntries[position_number];
+                int priority = GetLoadingPriority(section, position_entry, false);
+                if (priority < best_priority) {
+                    best_priority = priority;
                 }
             }
         }
 
-        section->LoadingPriority = loading_priority * 100000 + section->SectionPriority;
+        section->LoadingPriority = best_priority * 100000 + section->SectionPriority;
     }
 }
 
