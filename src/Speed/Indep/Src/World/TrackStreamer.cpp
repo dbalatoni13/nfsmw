@@ -1567,7 +1567,7 @@ void TrackStreamer::HandleSectionActivation() {
 }
 
 void TrackStreamer::UnloadEverything() {
-    while (NumSectionsLoaded != 0) {
+    while (NumSectionsLoading != 0) {
         ServiceResourceLoading();
     }
 
