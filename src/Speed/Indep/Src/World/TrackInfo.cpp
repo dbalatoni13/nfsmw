@@ -1,10 +1,7 @@
 #include "TrackInfo.hpp"
 
 #include "Speed/Indep/bWare/Inc/bChunk.hpp"
-
-void bEndianSwap16(void *value);
-void bEndianSwap32(void *value);
-void bPlatEndianSwap(bVector2 *value);
+#include "Speed/Indep/bWare/Inc/bWare.hpp"
 
 static TrackInfo *TrackInfoTable = 0;
 static unsigned int NumTrackInfo = 0;
@@ -12,56 +9,74 @@ TrackInfo *LoadedTrackInfo = 0;
 bChunkLoader bChunkLoaderTrackInfo(0x34201, TrackInfo::LoaderTrackInfo, TrackInfo::UnloaderTrackInfo);
 
 int TrackInfo::LoaderTrackInfo(bChunk *chunk) {
+    int i;
+    int j;
+
     if (chunk->GetID() == 0x34201) {
         TrackInfoTable = reinterpret_cast<TrackInfo *>(chunk->GetData());
-        NumTrackInfo = chunk->Size / sizeof(TrackInfo);
+        NumTrackInfo = chunk->GetSize() / sizeof(TrackInfo);
 
-        for (unsigned int i = 0; i < NumTrackInfo; i++) {
-            TrackInfo *info = &TrackInfoTable[i];
-            bEndianSwap32(&info->LocationNumber);
-            bEndianSwap32(&info->LocationName);
-            bEndianSwap32(&info->DriftType);
-            bEndianSwap16(&info->TrackNumber);
-            bEndianSwap16(&info->SameAsTrackNumber);
-            bEndianSwap32(&info->TimeToBeatForwards_ms);
-            bEndianSwap32(&info->TimeToBeatReverse_ms);
-            bEndianSwap32(&info->ScoreToBeatForwards_DriftOnly);
-            bEndianSwap32(&info->ScoreToBeatReverse_DriftOnly);
-            bEndianSwap32(&info->SunInfoNameHash);
-            bEndianSwap32(&info->UsageFlags);
+        for (int n = 0; n < static_cast<int>(NumTrackInfo); n++) {
+            TrackInfo *info = &TrackInfoTable[n];
+            bPlatEndianSwap(&info->LocationNumber);
+            bPlatEndianSwap(reinterpret_cast<int *>(&info->LocationName));
+            bPlatEndianSwap(reinterpret_cast<int *>(&info->DriftType));
+            bPlatEndianSwap(&info->TrackNumber);
+            bPlatEndianSwap(&info->SameAsTrackNumber);
+            bPlatEndianSwap(&info->TimeToBeatForwards_ms);
+            bPlatEndianSwap(&info->TimeToBeatReverse_ms);
+            bPlatEndianSwap(&info->ScoreToBeatForwards_DriftOnly);
+            bPlatEndianSwap(&info->ScoreToBeatReverse_DriftOnly);
+            bPlatEndianSwap(&info->SunInfoNameHash);
+            bPlatEndianSwap(&info->UsageFlags);
             bPlatEndianSwap(&info->TrackMapCalibrationUpperLeft);
-            bEndianSwap32(&info->TrackMapCalibrationMapWidthMetres);
-            bEndianSwap16(&info->TrackMapCalibrationRotation);
-            bEndianSwap16(&info->TrackMapStartLineAngle);
-            bEndianSwap16(&info->TrackMapFinishLineAngle);
-            bEndianSwap32(&info->ForwardDifficulty);
-            bEndianSwap32(&info->ReverseDifficulty);
-            bEndianSwap16(&info->NumSecondsBeforeShortcutsAllowed);
-            bEndianSwap16(&info->nDriftSecondsMin);
-            bEndianSwap16(&info->nDriftSecondsMax);
+            bPlatEndianSwap(&info->TrackMapCalibrationMapWidthMetres);
+            bPlatEndianSwap(&info->TrackMapCalibrationRotation);
+            bPlatEndianSwap(&info->TrackMapStartLineAngle);
+            bPlatEndianSwap(&info->TrackMapFinishLineAngle);
+            bPlatEndianSwap(reinterpret_cast<int *>(&info->ForwardDifficulty));
+            bPlatEndianSwap(reinterpret_cast<int *>(&info->ReverseDifficulty));
+            bPlatEndianSwap(&info->NumSecondsBeforeShortcutsAllowed);
+            bPlatEndianSwap(&info->nDriftSecondsMin);
+            bPlatEndianSwap(&info->nDriftSecondsMax);
 
-            int n = 0;
+            i = 0;
             do {
-                short *override_starting_route_for_ai = &info->OverrideStartingRouteForAI[n][0];
-                int m = 0;
+                j = 0;
                 do {
-                    bEndianSwap16(&override_starting_route_for_ai[m]);
-                    m += 1;
-                } while (m <= 3);
-                n += 1;
-            } while (n <= 1);
+                    bPlatEndianSwap(&info->OverrideStartingRouteForAI[i][j]);
+                    j += 1;
+                } while (j < 4);
+                i += 1;
+            } while (i < 2);
 
-            n = 0;
+            i = 0;
             do {
-                bEndianSwap32(&info->TrafficMinInitialDistanceBetweenCars[n]);
-                n += 1;
-            } while (n <= 1);
+                j = 0;
+                do {
+                    bPlatEndianSwap(&info->MaxTrafficCars[i][j]);
+                    j += 1;
+                } while (j < 2);
+                i += 1;
+            } while (i < 4);
 
-            n = 0;
+            i = 0;
             do {
-                bEndianSwap32(&info->TrafficMinInitialDistanceFromStartLine[n]);
-                n += 1;
-            } while (n <= 1);
+                bPlatEndianSwap(&info->TrafficAllowedNearStartLine[i]);
+                i += 1;
+            } while (i < 2);
+
+            i = 0;
+            do {
+                bPlatEndianSwap(&info->TrafficMinInitialDistanceBetweenCars[i]);
+                i += 1;
+            } while (i < 2);
+
+            i = 0;
+            do {
+                bPlatEndianSwap(&info->TrafficMinInitialDistanceFromStartLine[i]);
+                i += 1;
+            } while (i < 2);
         }
 
         return 1;
