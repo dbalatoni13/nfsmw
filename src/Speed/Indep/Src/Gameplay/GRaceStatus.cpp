@@ -3276,15 +3276,34 @@ void GRaceStatus::AddCheckpoint(GRuntimeInstance *trigger) {
 }
 
 void GRaceStatus::SetNextCheckpointPos(GRuntimeInstance *trigger) {
-    bool checkpointsVisible = false;
+    GTrigger *gtrigger = static_cast<GTrigger *>(trigger);
+    bool checkpointVisible = false;
 
-    mNextCheckpoint = static_cast<GTrigger *>(trigger);
+    mNextCheckpoint = gtrigger;
 
     if (mRaceParms) {
-        checkpointsVisible = mRaceParms->GetCheckpointsVisible();
+        checkpointVisible = mRaceParms->GetCheckpointsVisible();
     }
 
-    if (!trigger || !checkpointsVisible) {
+    if (gtrigger && checkpointVisible) {
+        UMath::Vector3 triggerPos;
+        bVector3 triggerPosSwiz;
+        bMatrix4 mat;
+
+        if (!mCheckpointModel) {
+            mCheckpointModel = new WorldModel(0x738B1F9B, nullptr, false);
+        }
+
+        gtrigger->GetPosition(triggerPos);
+        eSwizzleWorldVector(reinterpret_cast<const bVector3 &>(triggerPos), triggerPosSwiz);
+        bIdentity(&mat);
+        bCopy(&mat.v3, &triggerPosSwiz, 1.0f);
+        mCheckpointModel->SetMatrix(&mat);
+
+        if (mCheckpointEmitter) {
+            mCheckpointEmitter->SetLocalWorld(&mat);
+        }
+    } else {
         if (mCheckpointModel) {
             delete mCheckpointModel;
         }
@@ -3295,24 +3314,6 @@ void GRaceStatus::SetNextCheckpointPos(GRuntimeInstance *trigger) {
             delete mCheckpointEmitter;
             mCheckpointEmitter = nullptr;
         }
-
-        return;
-    }
-
-    if (!mCheckpointModel) {
-        mCheckpointModel = new WorldModel(0x738B1F9B, nullptr, false);
-    }
-
-    UMath::Vector3 position;
-    bMatrix4 matrix;
-
-    trigger->GetPosition(position);
-    bIdentity(&matrix);
-    eSwizzleWorldVector(reinterpret_cast<const bVector3 &>(position), reinterpret_cast<bVector3 &>(matrix.v3));
-    mCheckpointModel->SetMatrix(&matrix);
-
-    if (mCheckpointEmitter) {
-        mCheckpointEmitter->SetLocalWorld(&matrix);
     }
 }
 
