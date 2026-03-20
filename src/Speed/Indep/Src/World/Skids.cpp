@@ -204,8 +204,8 @@ void SkidSet::Render(eView *view, unsigned char intensityReduction) {
         return;
     }
 
-    ePoly poly;
     bMatrix4 *identity_matrix = &eMathIdentityMatrix;
+    ePoly poly;
     float extra_height = 0.05f;
     const unsigned int skid_colour = 0x80808080;
 
