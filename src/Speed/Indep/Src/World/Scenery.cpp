@@ -180,7 +180,7 @@ extern int ScenerySectionToBlink;
 extern int SeeulatorRefreshTrackStreamer;
 extern int ShowSectionBoarder;
 void RefreshTrackStreamer();
-void CreateWindRotMatrix(eView *view, bMatrix4 *matrix, int x, const bMatrix4 *world, int y);
+void CreateWindRotMatrix(eView *view, bMatrix4 *matrix, int x, const bMatrix4 *world);
 void RenderVisibleSectionBoundary(VisibleSectionBoundary *boundary, eView *view);
 ScenerySectionHeader *GetScenerySectionHeader(int section_number);
 int IsInTable(short *section_numbers, int num_sections, int section_number);
@@ -690,10 +690,17 @@ void ScenerySectionHeader::DrawAScenery(int scenery_instance_number, SceneryCull
         return;
     }
 
-    draw_info->SceneryInst = instance;
-    draw_info->pModel = reinterpret_cast<eModel *>(reinterpret_cast<int>(model) + visibility_state);
-    draw_info->pMatrix = matrix;
     scenery_cull_info->pCurrentDrawInfo = draw_info + 1;
+    draw_info->pModel = reinterpret_cast<eModel *>(reinterpret_cast<int>(model) + visibility_state);
+    if ((scenery_cull_info->ExcludeFlags & 0x4000) != 0 && model->GetSolid() && (model->GetSolid()->Flags & 0x80) != 0) {
+        bMatrix4 windrot;
+        int offset = static_cast<int>(matrix->v3.x * 60.0f) % 0x168;
+        CreateWindRotMatrix(scenery_cull_info->pView, &windrot, offset, matrix);
+        bMulMatrix(matrix, matrix, &windrot);
+    }
+
+    draw_info->pMatrix = matrix;
+    draw_info->SceneryInst = instance;
 }
 
 void ScenerySectionHeader::TreeCull(SceneryCullInfo *scenery_cull_info) {
