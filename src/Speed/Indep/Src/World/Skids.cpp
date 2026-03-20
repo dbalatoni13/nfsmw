@@ -261,8 +261,11 @@ SkidSet *CreateNewSkidSet(SkidMaker *skid_maker, bVector3 *position, bVector3 *d
 
 void SkidMaker::MakeSkid(Car *pCar, bVector3 *position, bVector3 *delta_position, int terrain_type, float intensity) {
     bool make_flaming_skids = false;
-    if (pCar && bDistBetween(&ZeroVector, delta_position) > 4.0f) {
-        return;
+    if (pCar) {
+        float distance_from_car = bDistBetween(&ZeroVector, delta_position);
+        if (distance_from_car > 4.0f) {
+            return;
+        }
     }
 
     if (!pSkidSet) {
