@@ -1215,15 +1215,17 @@ void GManager::ResetMilestoneTrackingInfo() {
 }
 
 void GManager::LoadMilestoneInfo(MilestoneTypeInfo *savedInfo, unsigned int count) {
-    unsigned int i;
+    unsigned int onMilestone;
 
     ResetMilestoneTrackingInfo();
-    for (i = 0; i < count; ++i) {
-        MilestoneInfoMap::iterator it = mMilestoneTypeInfo.find(savedInfo[i].mTypeKey);
+    for (onMilestone = 0; onMilestone < count; ++onMilestone) {
+        MilestoneTypeInfo &saved = savedInfo[onMilestone];
+        MilestoneInfoMap::iterator iterCurrent;
 
-        if (it != mMilestoneTypeInfo.end()) {
-            it->second.mLastKnownValue = savedInfo[i].mLastKnownValue;
-            it->second.mBestValue = savedInfo[i].mBestValue;
+        iterCurrent = mMilestoneTypeInfo.find(saved.mTypeKey);
+        if (iterCurrent != mMilestoneTypeInfo.end()) {
+            iterCurrent->second.mBestValue = saved.mBestValue;
+            iterCurrent->second.mLastKnownValue = saved.mLastKnownValue;
         }
     }
 }
@@ -1287,18 +1289,20 @@ void *GManager::GetObjectStateBlock(unsigned int key) {
     return it->second + 1;
 }
 
-void GManager::ClearObjectStateBlock(unsigned int key) {
-    unsigned int shiftedKey = key >> mCollectionKeyShiftTo32;
-    ObjectStateMap *blocks = &mSessionStateBlocks;
-    unsigned int i;
+void GManager::ClearObjectStateBlock(unsigned int collectionKey) {
+    unsigned int key32 = collectionKey >> mCollectionKeyShiftTo32;
+    unsigned int persistent = 0;
 
-    for (i = 0; i < 2; ++i, --blocks) {
-        ObjectStateMap::iterator it = blocks->find(shiftedKey);
+    do {
+        ObjectStateMap &stateMap = persistent ? mPersistentStateBlocks : mSessionStateBlocks;
+        ObjectStateMap::iterator existing = stateMap.find(key32);
 
-        if (it != blocks->end()) {
-            blocks->erase(it);
+        if (existing != stateMap.end()) {
+            stateMap.erase(existing);
         }
-    }
+
+        persistent++;
+    } while (persistent <= 1);
 }
 
 unsigned int GManager::SaveMilestoneInfo(MilestoneTypeInfo *dest) {
@@ -1316,15 +1320,15 @@ void GManager::ResetMilestones() {
         return;
     }
 
-    Attrib::Gen::gameplay gameplay(Attrib::FindCollection(Attrib::Gen::gameplay::ClassKey(), 0x1D975142), 0, nullptr);
+    Attrib::Gen::gameplay milestoneRoot(0x1D975142, 0, nullptr);
     AttribKeyList keys;
-    AttribKeyList::iterator it;
-    GMilestone *milestone = mMilestones;
+    GMilestone *milestone;
 
-    GatherInstanceKeys(gameplay, keys, 0xA3D34781);
+    GatherInstanceKeys(milestoneRoot, keys, 0xA3D34781);
 
-    for (it = keys.begin(); it != keys.end(); ++it) {
-        milestone->Init(*it);
+    milestone = mMilestones;
+    for (AttribKeyList::iterator iter = keys.begin(); iter != keys.end(); ++iter) {
+        milestone->Init(*iter);
         milestone++;
     }
 }
@@ -2764,13 +2768,18 @@ bool GManager::WarpToMarker(unsigned int markerKey, bool startPursuit) {
 
 unsigned int GManager::GetRespawnMarker() {
     unsigned int markerKey = mOverrideFreeRoamStartMarker;
-    const Attrib::Collection *collection = Attrib::FindCollection(Attrib::Gen::gameplay::ClassKey(), markerKey);
+    Attrib::Gen::gameplay marker(markerKey, 0, nullptr);
 
-    if (!collection) {
-        markerKey = mStartFreeRoamFromSafeHouse ? mFreeRoamFromSafeHouseStartMarker : mFreeRoamStartMarker;
-        collection = Attrib::FindCollection(Attrib::Gen::gameplay::ClassKey(), markerKey);
+    if (!marker.IsValid()) {
+        if (mStartFreeRoamFromSafeHouse) {
+            markerKey = mFreeRoamFromSafeHouseStartMarker;
+        } else {
+            markerKey = mFreeRoamStartMarker;
+        }
 
-        if (!collection) {
+        Attrib::Gen::gameplay defaultMarker(markerKey, 0, nullptr);
+
+        if (!defaultMarker.IsValid()) {
             char markerName[32];
 
             bSPrintf(markerName, "career_start_%s", LoadedTrackInfo->GetLoadedTrackInfo());
