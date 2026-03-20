@@ -574,11 +574,10 @@ void SFXCTL_Physics::UpdateNIS(float TotalTime, float deltaTime) {
 
     if (eCurNisRevingState == NIS_OFF) {
         if (*static_cast<int *>(static_cast<void *>(&PattternPlay)) != 0) {
-            EngRevDataPoint *patternData;
             int patternLength;
 
-            pRevData = nullptr;
             *static_cast<int *>(static_cast<void *>(&PattternPlay)) = 0;
+            pRevData = nullptr;
             if (PatternNumber == 8) {
                 goto L_Pattern8;
             }
@@ -603,39 +602,38 @@ void SFXCTL_Physics::UpdateNIS(float TotalTime, float deltaTime) {
                 goto L_Pattern7;
             }
             patternLength = 0x1B;
-            patternData = RevPat5;
+            pRevData = RevPat5;
             goto L_PatternDone;
 L_Pattern6:
             patternLength = 0x16;
-            patternData = RevPat6;
+            pRevData = RevPat6;
             goto L_PatternDone;
 L_Pattern7:
             patternLength = 0x13;
-            patternData = RevPat7;
+            pRevData = RevPat7;
             goto L_PatternDone;
 L_Pattern8:
             patternLength = 0x43;
-            patternData = RevPat8;
+            pRevData = RevPat8;
             goto L_PatternDone;
 L_Pattern9:
             patternLength = 0x38;
-            patternData = RevPat9;
+            pRevData = RevPat9;
             goto L_PatternDone;
 L_Pattern10:
             patternLength = 0x22;
-            patternData = RevPat10;
+            pRevData = RevPat10;
             goto L_PatternDone;
 L_Pattern11:
             patternLength = 0x1E;
-            patternData = RevPat11;
+            pRevData = RevPat11;
             goto L_PatternDone;
 L_Pattern12:
             patternLength = 0x1D;
-            patternData = RevPat12;
+            pRevData = RevPat12;
 
 L_PatternDone:
             NumDataPoints = patternLength;
-            pRevData = patternData;
             if (pRevData != nullptr) {
                 eCurNisRevingState = NIS_PATTERN_ON;
                 Slope RPMSlope(static_cast<float>(pRevData->RPM), static_cast<float>(pRevData[1].RPM), pRevData->time, pRevData[1].time);
@@ -708,10 +706,7 @@ L_PatternDone:
         }
         break;
     case NIS_MERGE_WITH_PHYSICS:
-        NISTRQ = 0.0f;
-        if (m_pEAXCar->GetPhysRPM() < PhysicsRPM) {
-            NISTRQ = 100.0f;
-        }
+        NISTRQ = m_pEAXCar->GetPhysRPM() < PhysicsRPM ? 100.0f : 0.0f;
         NISRPM = smooth(m_pEAXCar->GetPhysRPM(), PhysicsRPM, 500.0f);
         goto ClampAndStore;
     default:
