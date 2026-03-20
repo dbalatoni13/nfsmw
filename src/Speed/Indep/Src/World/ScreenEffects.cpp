@@ -288,9 +288,9 @@ void DoTunnelBloom(eView *view) {
 
     if (!__tmp_14_27615) {
         int i = 1;
-        while (i != 0) {
+        do {
             i -= 1;
-        }
+        } while (i != 0);
         __tmp_14_27615 = 1;
     }
 
@@ -311,6 +311,7 @@ void DoTunnelBloom(eView *view) {
             return;
         }
 
+        ScreenEffectDef SE_def;
         bVector2 endP(endVector.x, endVector.y);
         bVector2 p0;
         bVector2 p1;
@@ -319,11 +320,11 @@ void DoTunnelBloom(eView *view) {
             return;
         }
 
+        bVector3 p3(endVector);
         UMath::Vector3 usPoint;
-        bConvertToBond(usPoint, endVector);
+        bConvertToBond(usPoint, p3);
         float height = 0.0f;
-        WCollisionMgr collision_mgr(0, 3);
-        collision_mgr.GetWorldHeightAtPointRigorous(usPoint, height, 0);
+        WCollisionMgr(0, 3).GetWorldHeightAtPointRigorous(usPoint, height, 0);
 
         float point0_x = p0.x + camera_direction->x;
         float point0_y = p0.y + camera_direction->y;
@@ -351,7 +352,6 @@ void DoTunnelBloom(eView *view) {
         dataBackup_27616[kTunnelPoint3Y][vIndex] = point3_y;
         dataBackup_27616[kTunnelPoint3Z][vIndex] = point3_z;
 
-        ScreenEffectDef SE_def;
         SE_def.r = 128.0f;
         SE_def.g = 128.0f;
         SE_def.b = 128.0f;
