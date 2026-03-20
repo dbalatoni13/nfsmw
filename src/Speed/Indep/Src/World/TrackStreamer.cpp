@@ -482,8 +482,13 @@ TSMemoryNode *TSMemoryPool::GetNextAllocatedNode(bool start_from_top, TSMemoryNo
 }
 
 void TSMemoryPool::DebugPrint() {
-    for (TSMemoryNode *node = reinterpret_cast<TSMemoryNode *>(NodeList.GetHead());
-         node != reinterpret_cast<TSMemoryNode *>(&NodeList); node = reinterpret_cast<TSMemoryNode *>(node->GetNext())) {
+    TSMemoryNode *end = reinterpret_cast<TSMemoryNode *>(&NodeList);
+    TSMemoryNode *node = reinterpret_cast<TSMemoryNode *>(NodeList.GetHead());
+    while (1) {
+        if (node == end) {
+            return;
+        }
+        node = reinterpret_cast<TSMemoryNode *>(node->GetNext());
     }
 }
 
