@@ -393,8 +393,8 @@ void emProcessAllEvents() {
             }
         }
 
-        event->Remove();
         CurrentlyHandlingEvent = 0;
+        event->Remove();
         if (event->ReferenceCount == 0) {
             if (event) {
                 bFree(EventSlotPool, event);
