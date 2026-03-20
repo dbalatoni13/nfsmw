@@ -39,6 +39,26 @@ SFXCTL_Wheel::SFXCTL_Wheel()
         m_fWheelTractionMag[i] = 0.0f;
         m_fLoad[i] = 0.0f;
     }
+
+    {
+        Attrib::Gen::simsurface terrain(static_cast< const Attrib::Collection * >(nullptr), 0, nullptr);
+        LeftSideTerrain.Attrib::Gen::simsurface::operator=(static_cast< const Attrib::Instance & >(terrain));
+    }
+
+    {
+        Attrib::Gen::simsurface terrain(static_cast< const Attrib::Collection * >(nullptr), 0, nullptr);
+        RightSideTerrain.Attrib::Gen::simsurface::operator=(static_cast< const Attrib::Instance & >(terrain));
+    }
+
+    {
+        Attrib::Gen::simsurface terrain(static_cast< const Attrib::Collection * >(nullptr), 0, nullptr);
+        PrevLeftSideTerrain.Attrib::Gen::simsurface::operator=(static_cast< const Attrib::Instance & >(terrain));
+    }
+
+    {
+        Attrib::Gen::simsurface terrain(static_cast< const Attrib::Collection * >(nullptr), 0, nullptr);
+        PrevRightSideTerrain.Attrib::Gen::simsurface::operator=(static_cast< const Attrib::Instance & >(terrain));
+    }
 }
 
 SFXCTL_Wheel::~SFXCTL_Wheel() {}
