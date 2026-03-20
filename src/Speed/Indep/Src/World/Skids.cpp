@@ -56,11 +56,11 @@ void SkidSegment::SetPoints(bVector3 *position, bVector3 *delta_position) {
     delta_z = delta_position->z * kSkidSegmentScale_Skids;
 
     Position[0] = position->x;
-    DeltaPosition[2] = static_cast<signed char>(delta_z);
     Position[1] = position_y;
     Position[2] = position_z;
     DeltaPosition[0] = static_cast<signed char>(delta_x);
     DeltaPosition[1] = static_cast<signed char>(delta_y);
+    DeltaPosition[2] = static_cast<signed char>(delta_z);
 }
 
 void SkidSegment::GetPoints(bVector3 *position, bVector3 *delta_position) {
