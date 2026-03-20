@@ -65,6 +65,26 @@ char *SFXCTL_Wheel::GetTypeName() const { return s_TypeInfo.typeName; }
 
 void SFXCTL_Wheel::InitSFX() {
     SFXCTL::InitSFX();
+
+    {
+        Attrib::Gen::simsurface terrain(static_cast< const Attrib::Collection * >(nullptr), 0, nullptr);
+        LeftSideTerrain.Attrib::Gen::simsurface::operator=(static_cast< const Attrib::Instance & >(terrain));
+    }
+
+    {
+        Attrib::Gen::simsurface terrain(static_cast< const Attrib::Collection * >(nullptr), 0, nullptr);
+        RightSideTerrain.Attrib::Gen::simsurface::operator=(static_cast< const Attrib::Instance & >(terrain));
+    }
+
+    {
+        Attrib::Gen::simsurface terrain(static_cast< const Attrib::Collection * >(nullptr), 0, nullptr);
+        PrevLeftSideTerrain.Attrib::Gen::simsurface::operator=(static_cast< const Attrib::Instance & >(terrain));
+    }
+
+    {
+        Attrib::Gen::simsurface terrain(static_cast< const Attrib::Collection * >(nullptr), 0, nullptr);
+        PrevRightSideTerrain.Attrib::Gen::simsurface::operator=(static_cast< const Attrib::Instance & >(terrain));
+    }
 }
 
 void SFXCTL_Wheel::UpdateParams(float t) {
