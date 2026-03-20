@@ -1864,32 +1864,35 @@ done:
 }
 
 void TrackStreamer::StartLoadingSections() {
-    bool keep_loading = true;
-    while (NumSectionsLoading < 2 && keep_loading) {
-        TrackStreamingSection *section_to_load = 0;
-        int best_loading_priority = 0x7FFFFFFF;
+    bool something_to_load = true;
+    while (NumSectionsLoading < 2 && something_to_load) {
+        int best_priority = 0x7FFFFFFF;
+        TrackStreamingSection *best_section = 0;
         for (int i = 0; i < NumCurrentStreamingSections; i++) {
             TrackStreamingSection *section = CurrentStreamingSections[i];
             if (section->Status == TrackStreamingSection::ALLOCATED) {
-                int loading_priority = section->LoadingPriority;
+                int priority = section->LoadingPriority;
                 if (section->pDiscBundle) {
-                    loading_priority = -1;
+                    priority = -1;
                 }
-                if (loading_priority < best_loading_priority) {
-                    section_to_load = section;
-                    best_loading_priority = loading_priority;
+                if (priority < best_priority) {
+                    best_priority = priority;
+                    best_section = section;
                 }
             } else if (section->Status == TrackStreamingSection::LOADED && !NeedsGameStateActivation(section)) {
-                ActivateSection(section);
+                TheTrackStreamer.ActivateSection(section);
             }
         }
 
-        if (!section_to_load) {
-            keep_loading = false;
-        } else if (!section_to_load->pDiscBundle) {
-            LoadSection(section_to_load);
+        if (!best_section) {
+            something_to_load = false;
         } else {
-            LoadDiscBundle(section_to_load->pDiscBundle);
+            if (best_section->pDiscBundle) {
+                DiscBundleSection *disc_bundle = best_section->pDiscBundle;
+                LoadDiscBundle(disc_bundle);
+            } else {
+                LoadSection(best_section);
+            }
         }
     }
 }
