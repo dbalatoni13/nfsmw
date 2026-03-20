@@ -1439,6 +1439,10 @@ struct gameplay : Instance {
         return *resultptr;
     }
 
+    const bool &FireOnExit() const {
+        return FireOnExit(0);
+    }
+
     const bool &AvailableQR(unsigned int index) const {
         const bool *resultptr = reinterpret_cast<const bool *>(this->GetAttributePointer(0xb39ed8c3, index));
         if (!resultptr) {

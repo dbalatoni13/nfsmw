@@ -328,11 +328,14 @@ void GTrigger::NotifySimableTrigger(ISimable *isim, int triggerStimulus) {
     bool triggerExited = triggerStimulus == 2;
     bool triggerInside = triggerStimulus == 1;
     bool wasInside = IsInside(isim);
+
     if (triggerExited) {
         MarkAsOutside(isim);
-        if (FireOnExit(0)) {
+        if (FireOnExit()) {
             UCrc32 triggerMessage(0x20D60DBF);
-            MTriggerExit msg(GCollectionKey(this), isim->GetInstanceHandle());
+            HSIMABLE handle = isim->GetInstanceHandle();
+            GCollectionKey sender(this);
+            MTriggerExit msg(sender, handle);
             msg.Post(triggerMessage);
         }
     }
@@ -341,11 +344,16 @@ void GTrigger::NotifySimableTrigger(ISimable *isim, int triggerStimulus) {
         if (!wasInside) {
             MarkAsInside(isim);
             UCrc32 triggerMessage(0x20D60DBF);
-            MTriggerEnter enterMsg(GCollectionKey(this), isim->GetInstanceHandle());
+            HSIMABLE handle = isim->GetInstanceHandle();
+            GCollectionKey sender(this);
+            MTriggerEnter enterMsg(sender, handle);
             enterMsg.Post(triggerMessage);
         }
+
         UCrc32 triggerMessage(0x20D60DBF);
-        MTriggerInside insideMsg(GCollectionKey(this), isim->GetInstanceHandle());
+        HSIMABLE handle = isim->GetInstanceHandle();
+        GCollectionKey sender(this);
+        MTriggerInside insideMsg(sender, handle);
         insideMsg.Post(triggerMessage);
     }
 }
