@@ -53,6 +53,18 @@ static float dataBackup_27616[12][2];
 static GenericRegion *regionB_27617[2];
 static unsigned int ticS_27592;
 
+class WWorldPosTopologyShim : public WWorldPos {
+  public:
+    WWorldPosTopologyShim(float yOffset)
+        : WWorldPos(yOffset) {
+        fFace.fPt0 = UMath::Vector3::kZero;
+        fFace.fPt1 = UMath::Vector3::kZero;
+        fFace.fPt2 = UMath::Vector3::kZero;
+        fFace.fSurface.fSurface = 0;
+        fFace.fSurface.fFlags = 0;
+    }
+};
+
 void InitScreenEFX() {}
 
 enum TunnelBloomDataIndex {
@@ -120,12 +132,7 @@ float TopologyCoordinate::GetElevation(const bVector3 *position, TerrainType *ty
     (void)normal;
 
     bConvertToBond(bond_pos, *position);
-    WWorldPos world_pos(0.025f);
-    world_pos.fFace.fPt0 = UMath::Vector3::kZero;
-    world_pos.fFace.fPt1 = UMath::Vector3::kZero;
-    world_pos.fFace.fPt2 = UMath::Vector3::kZero;
-    world_pos.fFace.fSurface.fSurface = 0;
-    world_pos.fFace.fSurface.fFlags = 0;
+    WWorldPosTopologyShim world_pos(0.025f);
     world_pos.Update(bond_pos, dummy_normal, true, 0, true);
     if (point_valid) {
         *point_valid = world_pos.OnValidFace();
