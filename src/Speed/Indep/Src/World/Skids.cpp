@@ -156,7 +156,7 @@ int SkidSet::AddSegment(bVector3 *position, bVector3 *delta_position, bool skid_
             return 0;
         }
 
-        if (error < kSkidDirectionMergeThreshold_Skids || new_segment_length < kSkidLengthMergeThreshold_Skids) {
+        if (new_segment_length < kSkidLengthMergeThreshold_Skids || error < kSkidDirectionMergeThreshold_Skids) {
             expand_last_skid_segment = 1;
         }
         if (new_segment_length > kSkidLengthSplitThreshold_Skids) {
@@ -168,11 +168,9 @@ int SkidSet::AddSegment(bVector3 *position, bVector3 *delta_position, bool skid_
     if (expand_last_skid_segment) {
         skid_segment = &SkidSegments[NumSkidSegments - 1];
         LastSegmentLength += length;
+    } else if (NumSkidSegments == kNumSkidSegments_Skids) {
+        return 1;
     } else {
-        if (NumSkidSegments == kNumSkidSegments_Skids) {
-            return 1;
-        }
-
         skid_segment = &SkidSegments[NumSkidSegments];
         NumSkidSegments += 1;
         if (NumSkidSegments > 1) {
@@ -185,9 +183,7 @@ int SkidSet::AddSegment(bVector3 *position, bVector3 *delta_position, bool skid_
     skid_segment->SetIntensity(static_cast<unsigned char>(intensity * kSkidIntensityScale_Skids));
 
     bExpandBoundingBox(&BBoxMin, &BBoxMax, position, length);
-    if (pClan) {
-        pClan->ExpandBoundingBox(&BBoxMin, &BBoxMax);
-    }
+    pClan->ExpandBoundingBox(&BBoxMin, &BBoxMax);
 
     BBoxCentre.x = (BBoxMin.x + BBoxMax.x) * 0.5f;
     BBoxCentre.y = (BBoxMin.y + BBoxMax.y) * 0.5f;
