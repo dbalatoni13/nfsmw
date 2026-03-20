@@ -42,27 +42,31 @@ void CloseClans() {
 }
 
 Clan *GetClan(bVector3 *position) {
-    int hash = (static_cast<int>(position->x * 65536.0f) >> 22) & 0xffff;
-    hash += (static_cast<int>(position->y * 65536.0f) >> 22) * 0x10000;
+    int cx = (static_cast<int>(position->x * 65536.0f) >> 22) & 0xffff;
+    int cy = (static_cast<int>(position->y * 65536.0f) >> 22) * 0x10000;
+    unsigned int hash = static_cast<unsigned int>(cx + cy);
     Clan *clan = ClanList.GetHead();
-    if (clan != ClanList.EndOfList() && clan->Hash != static_cast<unsigned int>(hash)) {
+
+    if (clan != ClanList.EndOfList() && clan->GetHash() != hash) {
         do {
             clan = clan->GetNext();
-        } while (clan != ClanList.EndOfList() && clan->Hash != static_cast<unsigned int>(hash));
+        } while (clan != ClanList.EndOfList() && clan->GetHash() != hash);
     }
+
     if (clan != ClanList.EndOfList()) {
+        clan->SetLastUpdateTime(WorldTime);
         ClanList.Remove(clan);
-        clan->LastUpdateTime = WorldTime;
         ClanList.AddHead(clan);
         return clan;
     }
-    if (ClanSlotPool->IsFull()) {
-        Clan *last_clan = ClanList.GetTail();
-        ClanList.Remove(last_clan);
-        delete last_clan;
+
+    if (bIsSlotPoolFull(ClanSlotPool)) {
+        clan = ClanList.GetTail();
+        ClanList.Remove(clan);
+        delete clan;
     }
 
-    clan = new Clan(position, static_cast<unsigned int>(hash));
+    clan = new Clan(position, hash);
     ClanList.AddHead(clan);
     return clan;
 }

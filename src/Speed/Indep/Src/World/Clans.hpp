@@ -36,6 +36,9 @@ struct Clan : public bTNode<Clan> {
     int GetLastUpdateTime() {
         return LastUpdateTime;
     }
+    unsigned int GetHash() {
+        return Hash;
+    }
     void SetLastUpdateTime(int time) {
         LastUpdateTime = time;
     }
