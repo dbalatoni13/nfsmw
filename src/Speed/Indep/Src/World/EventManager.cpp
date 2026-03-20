@@ -233,7 +233,7 @@ int LoaderEventManager(bChunk *bchunk) {
             if (trigger_pack->EndianSwapped == 0) {
                 bPlatEndianSwap(&trigger_pack->ScenerySectionNumber);
                 bPlatEndianSwap(&trigger_pack->Version);
-                bPlatEndianSwap(&trigger_pack->EndianSwapped);
+                bPlatEndianSwap(&trigger_pack->NumEventTriggers);
             }
 
             if (trigger_pack->Version != 2) {
