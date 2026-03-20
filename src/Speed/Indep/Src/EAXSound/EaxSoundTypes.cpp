@@ -317,11 +317,11 @@ void SpeechSampleData::Destruct(SpeechSampleData *ptr) {
     ::operator delete(ptr);
 }
 
-void SpeechSampleData::Lock() { *reinterpret_cast<int *>(&lock) = 1; }
+inline void SpeechSampleData::Lock() { *reinterpret_cast<int *>(&lock) = 1; }
 
-void SpeechSampleData::Unlock() { *reinterpret_cast<int *>(&lock) = 0; }
+inline void SpeechSampleData::Unlock() { *reinterpret_cast<int *>(&lock) = 0; }
 
-SampleReqList &Manager::GetSampleRequests() { return mSampleRequests; }
+inline SampleReqList &Manager::GetSampleRequests() { return mSampleRequests; }
 
 SpeechSampleData *SpeechSampleData::Construct(SPCHType_SampleRequestData *data, unsigned int key, bool is_cached) {
     (void)key;
@@ -379,8 +379,8 @@ ScheduledSpeechEvent::~ScheduledSpeechEvent() {
         assoc_samples[i] = nullptr;
     }
 
-    curndx = 0;
     assoc_samples_prep = 0;
+    curndx = 0;
     SampleReqList &requests = Manager::GetSampleRequests();
     if (requests.size() != 0) {
         for (SPCHSampleRequest *i = requests.begin(); i != requests.end();) {
