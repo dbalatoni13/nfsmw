@@ -361,7 +361,7 @@ IVehicle *GRacerInfo::CreateVehicle(unsigned int default_key) {
         }
     }
 
-    Attrib::Gen::pvehicle attributes(Attrib::FindCollection(Attrib::Gen::pvehicle::ClassKey(), vehicle_key), 0, nullptr);
+    Attrib::Gen::pvehicle attributes(vehicle_key, 0, nullptr);
 
     if (!attributes.IsValid()) {
         return nullptr;
