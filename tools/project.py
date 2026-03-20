@@ -814,13 +814,13 @@ def generate_build_ninja(
 
     if os.name != "nt":
         transform_dep = config.tools_dir / "transform_dep.py"
-        mwcc_cmd += f" && $python {transform_dep} $basefile.d $basefile.d"
-        mwcc_sjis_cmd += f" && $python {transform_dep} $basefile.d $basefile.d"
+        mwcc_cmd += f" && $python {transform_dep} $basefile.d $basefile.d $out"
+        mwcc_sjis_cmd += f" && $python {transform_dep} $basefile.d $basefile.d $out"
         mwcc_implicit.append(transform_dep)
         mwcc_sjis_implicit.append(transform_dep)
-        ngccc_cmd += f" && $python {transform_dep} $basefile.d $basefile.d"
+        ngccc_cmd += f" && $python {transform_dep} $basefile.d $basefile.d $out"
         ngccc_implicit.append(transform_dep)
-        ee_gcc_cmd += f" && $python {transform_dep} $basefile.d $basefile.d"
+        ee_gcc_cmd += f" && $python {transform_dep} $basefile.d $basefile.d $out"
         ee_gcc_implicit.append(transform_dep)
 
     n.comment("Link ELF file")
