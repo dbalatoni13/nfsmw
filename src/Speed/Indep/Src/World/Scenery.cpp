@@ -597,7 +597,7 @@ SceneryInstance *FindSceneryInstance(unsigned int name_hash) {
 void ScenerySectionHeader::DrawAScenery(int scenery_instance_number, SceneryCullInfo *scenery_cull_info, int visibility_state) {
     int *section_header_words = reinterpret_cast<int *>(this);
     SceneryInstance *instance = GetSceneryInstance(scenery_instance_number);
-    if (scenery_cull_info->PrecullerSectionNumber >= 0 && instance->PrecullerInfoIndex >= 0) {
+    if (scenery_cull_info->PrecullerSectionNumber >= 0) {
         tPrecullerInfo *preculler_info = GetPrecullerInfo(instance->PrecullerInfoIndex);
         if (preculler_info->IsVisible(scenery_cull_info->PrecullerSectionNumber)) {
             return;
