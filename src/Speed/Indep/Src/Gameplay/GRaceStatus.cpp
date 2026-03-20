@@ -322,11 +322,6 @@ IVehicle *GRacerInfo::CreateVehicle(unsigned int default_key) {
     const char *presetRide;
     FECustomizationRecord customizations;
     unsigned int vehicle_key;
-    Physics::Info::Performance ai_performance(1.0f, 1.0f, 1.0f);
-    IVehicleCache *cache;
-    UMath::Vector3 direction = {0.0f, 0.0f, 1.0f};
-    ISimable *result;
-    IVehicle *vehicle;
 
     if (!racerChar) {
         return nullptr;
@@ -380,16 +375,20 @@ IVehicle *GRacerInfo::CreateVehicle(unsigned int default_key) {
         FECustomizationRecordWriteRideIntoRecord(&customizations, &ride);
     }
 
-    cache = nullptr;
+    Physics::Info::Performance ai_performance(1.0f, 1.0f, 1.0f);
+    IVehicleCache *cache = nullptr;
     if (GRaceStatus::Exists()) {
         GRaceStatus *raceStatus = &GRaceStatus::Get();
 
         cache = reinterpret_cast<IVehicleCache *>(reinterpret_cast<unsigned char *>(raceStatus) + 0x10);
     }
 
+    UMath::Vector3 direction = {0.0f, 0.0f, 1.0f};
     VehicleParams params(cache, DRIVER_RACER, vehicle_key, direction, UMath::Vector3::kZero, 0, &customizations, &ai_performance);
-    result = UTL::COM::Factory<Sim::Param, ISimable, UCrc32>::CreateInstance("PVehicle", params);
+    ISimable *result = UTL::COM::Factory<Sim::Param, ISimable, UCrc32>::CreateInstance("PVehicle", params);
     if (result) {
+        IVehicle *vehicle;
+
         if (result->QueryInterface(&vehicle)) {
             SetSimable(result);
             return vehicle;
