@@ -9,7 +9,7 @@
 
 #include <algorithm>
 
-GRuntimeInstance *GRuntimeInstance::sRingListHead[6];
+GRuntimeInstance *GRuntimeInstance::sRingListHead[6] = {0};
 
 GRuntimeInstance::GRuntimeInstance(const Attrib::Key &key, GameplayObjType type)
     : Attrib::Gen::gameplay(key, 0, nullptr) //
