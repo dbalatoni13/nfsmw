@@ -208,7 +208,6 @@ inline void VisibleSectionBoundary::EndianSwap() {
     bPlatEndianSwap(reinterpret_cast<signed char *>(&PanoramaBoundary));
     bPlatEndianSwap(&BBoxMin);
     bPlatEndianSwap(&BBoxMax);
-    bPlatEndianSwap(&Centre);
     for (int i = 0; i < NumPoints; i++) {
         bPlatEndianSwap(&Points[i]);
     }
