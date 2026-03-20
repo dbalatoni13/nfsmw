@@ -226,8 +226,8 @@ int LoaderEventManager(bChunk *bchunk) {
     }
 
     EventTriggerPack *trigger_pack = 0;
-    bChunk *chunk = bchunk->GetFirstChunk();
-    bChunk *last_chunk = bchunk->GetLastChunk();
+    bChunk *chunk = &bchunk[1];
+    bChunk *last_chunk = reinterpret_cast<bChunk *>(reinterpret_cast<char *>(bchunk) + bchunk->Size) + 1;
     for (; chunk != last_chunk; chunk = chunk->GetNext()) {
         switch (chunk->GetID()) {
         case 0x36001: {
@@ -293,26 +293,29 @@ int LoaderEventManager(bChunk *bchunk) {
     return true;
 }
 
-int UnloaderEventManager(bChunk *chunk) {
-    if (chunk->GetID() != 0x80036000) {
+int UnloaderEventManager(bChunk *bchunk) {
+    if (bchunk->GetID() != 0x80036000) {
         return false;
     }
 
-    for (bChunk *child = chunk->GetFirstChunk(); child < chunk->GetLastChunk(); child = child->GetNext()) {
-        if (child->GetID() == 0x36001) {
-            void *event_trigger_pack = child->GetAlignedData(0x10);
-            if (GetEventTriggerPackType_EventManager(event_trigger_pack) == 2) {
-                GetEventTriggerPackNode_EventManager(event_trigger_pack)->Remove();
+    bChunk *chunk = bchunk->GetFirstChunk();
+    bChunk *last_chunk = bchunk->GetLastChunk();
+    if (chunk != last_chunk) {
+        do {
+            if (chunk->GetID() == 0x36001) {
+                EventTriggerPack *trigger_pack = reinterpret_cast<EventTriggerPack *>(bchunk->GetAlignedData(0x10));
+                if (trigger_pack->Version == 2) {
+                    trigger_pack->Remove();
+                }
+
+                VisibleSectionUserInfo *user_info = TheVisibleSectionManager.GetUserInfo(trigger_pack->ScenerySectionNumber);
+                user_info->pEventTriggerPack = 0;
+                TheVisibleSectionManager.UnallocateUserInfo(trigger_pack->ScenerySectionNumber);
+                break;
             }
 
-            int section_number = GetEventTriggerPackSectionNumber_EventManager(event_trigger_pack);
-            VisibleSectionUserInfo *user_info = GetUserInfoTable_EventManager()[section_number];
-            if (user_info) {
-                user_info->pEventTriggerPack = 0;
-            }
-            TheVisibleSectionManager.UnallocateUserInfo(section_number);
-            break;
-        }
+            chunk = reinterpret_cast<bChunk *>(reinterpret_cast<char *>(chunk) + chunk->Size) + 1;
+        } while (chunk != last_chunk);
     }
 
     return true;
