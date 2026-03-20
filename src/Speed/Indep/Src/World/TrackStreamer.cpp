@@ -1212,12 +1212,12 @@ void TrackStreamer::DetermineStreamingSections() {
     short section_number;
 
     RemoveCurrentStreamingSections();
+    sections_to_load[0] = GetScenerySectionNumber_TrackStreamer('Y', 0);
+    sections_to_load[1] = GetScenerySectionNumber_TrackStreamer('X', 0);
+    sections_to_load[2] = GetScenerySectionNumber_TrackStreamer('Z', 0);
 
     {
         short *sections_to_load_ptr = sections_to_load;
-        sections_to_load_ptr[0] = GetScenerySectionNumber_TrackStreamer('Y', 0);
-        sections_to_load_ptr[1] = GetScenerySectionNumber_TrackStreamer('X', 0);
-        sections_to_load_ptr[2] = GetScenerySectionNumber_TrackStreamer('Z', 0);
         if (SeeulatorToolActive && ScenerySectionToBlink != 0) {
             num_sections_to_load = 4;
             sections_to_load_ptr[3] = static_cast<short>(ScenerySectionToBlink);
