@@ -296,7 +296,6 @@ void DoTunnelBloom(eView *view) {
     bVector3 *camera_position = view_camera->GetPosition();
     bVector3 *camera_direction = view_camera->GetDirection();
     bVector2 twoDpos(camera_position->x, camera_position->y);
-    bVector2 *twoDpos_ptr = &twoDpos;
 
     if (!__tmp_14_27615) {
         int i = 1;
@@ -310,10 +309,10 @@ void DoTunnelBloom(eView *view) {
     bVector3 endVector;
     bVector3 posScreen;
     TrackPathZone *zoneBP = zoneB[vIndex];
-    if (zoneBP && zoneBP->IsPointInside(twoDpos_ptr)) {
+    if (zoneBP && zoneBP->IsPointInside(&twoDpos)) {
         zone = zoneB[vIndex];
     } else {
-        zone = TheTrackPathManager.FindZone(twoDpos_ptr, TRACK_PATH_ZONE_TUNNEL, 0);
+        zone = TheTrackPathManager.FindZone(&twoDpos, TRACK_PATH_ZONE_TUNNEL, 0);
     }
 
     if (zone && zone->GetElevation() > my_car_pos->z) {
