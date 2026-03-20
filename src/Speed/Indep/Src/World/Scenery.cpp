@@ -329,7 +329,6 @@ static inline bMatrix4 *eFrameMallocMatrix(int num_matrices) {
     if (CurrentBufferEnd <= next_buffer_pos) {
         FrameMallocFailed = 1;
         FrameMallocFailAmount += size;
-        next_buffer_pos = CurrentBufferPos;
         address = 0;
     }
     CurrentBufferPos = next_buffer_pos;
