@@ -27,9 +27,7 @@ GTrigger::GTrigger(const Attrib::Key &triggerKey)
     const UMath::Vector3 *dimensions;
     const float *radius;
     UMath::Vector3 posSwizzled;
-    UMath::Vector3 dimSwizzled;
     float triggerRadius;
-    float triggerRadiusSquared;
     float triggerWidth;
     float triggerLength;
     float triggerHeight;
@@ -56,9 +54,7 @@ GTrigger::GTrigger(const Attrib::Key &triggerKey)
 
     MATRIX4_multyrot(&directionMat, -*rotation * 0.00069444446f, &directionMat);
     VU0_MATRIX3x4_vect3mult(initialVec, directionMat, initialVec);
-    mDirection.x = initialVec.x;
-    mDirection.y = initialVec.y;
-    mDirection.z = initialVec.z;
+    mDirection = initialVec;
     mSimObjInside.reserve(8);
 
     position = reinterpret_cast<const UMath::Vector3 *>(GetAttributePointer(0x9F743A0E, 0));
@@ -72,15 +68,14 @@ GTrigger::GTrigger(const Attrib::Key &triggerKey)
     posSwizzled.z = position->x;
     hasDimensions = false;
     triggerRadius = 0.0f;
-    triggerRadiusSquared = 0.0f;
     triggerWidth = 0.0f;
     triggerLength = 0.0f;
     triggerHeight = 0.0f;
 
     if (dimensions) {
-        dimSwizzled.x = dimensions->x;
-        dimSwizzled.y = dimensions->z;
-        dimSwizzled.z = dimensions->y;
+        triggerWidth = dimensions->y;
+        triggerHeight = dimensions->z;
+        triggerLength = dimensions->x;
         hasDimensions = true;
     }
 
@@ -94,11 +89,7 @@ GTrigger::GTrigger(const Attrib::Key &triggerKey)
         triggerHeight = triggerWidth;
         mWorldTrigger.fShape = 3;
     } else if (hasDimensions) {
-        triggerWidth = dimSwizzled.z;
-        triggerHeight = dimSwizzled.y;
-        triggerLength = dimSwizzled.x;
-        triggerRadiusSquared = triggerWidth * triggerWidth + triggerLength * triggerLength;
-        triggerRadius = UMath::Sqrt(triggerRadiusSquared);
+        triggerRadius = UMath::Sqrt(triggerWidth * triggerWidth + triggerLength * triggerLength);
         mWorldTrigger.fShape = 1;
     } else {
         const float *width = reinterpret_cast<const float *>(GetAttributePointer(0x5816C1FC, 0));
@@ -110,8 +101,7 @@ GTrigger::GTrigger(const Attrib::Key &triggerKey)
         triggerWidth = *width;
         triggerHeight = 1.0f;
         triggerLength = 0.0f;
-        triggerRadiusSquared = triggerWidth * triggerWidth + 1.0f;
-        triggerRadius = UMath::Sqrt(triggerRadiusSquared);
+        triggerRadius = UMath::Sqrt(triggerWidth * triggerWidth + 1.0f);
         mWorldTrigger.fShape = 1;
     }
 
