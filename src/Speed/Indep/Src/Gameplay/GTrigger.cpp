@@ -27,10 +27,8 @@ GTrigger::GTrigger(const Attrib::Key &triggerKey)
     const UMath::Vector3 *dimensions;
     const float *radius;
     UMath::Vector3 posSwizzled;
+    UMath::Vector3 dimSwizzled;
     float triggerRadius;
-    float triggerWidth;
-    float triggerLength;
-    float triggerHeight;
     EventStaticData *pTriggerData = &mEventStaticData;
     bool showIconBasedOnBin = true;
     const int *oneShot;
@@ -66,16 +64,16 @@ GTrigger::GTrigger(const Attrib::Key &triggerKey)
     posSwizzled.x = -position->y;
     posSwizzled.y = position->z;
     posSwizzled.z = position->x;
+    dimSwizzled.x = 0.0f;
+    dimSwizzled.y = 0.0f;
+    dimSwizzled.z = 0.0f;
     hasDimensions = false;
     triggerRadius = 0.0f;
-    triggerWidth = 0.0f;
-    triggerLength = 0.0f;
-    triggerHeight = 0.0f;
 
     if (dimensions) {
-        triggerWidth = dimensions->y;
-        triggerHeight = dimensions->z;
-        triggerLength = dimensions->x;
+        dimSwizzled.x = dimensions->y;
+        dimSwizzled.y = dimensions->z;
+        dimSwizzled.z = dimensions->x;
         hasDimensions = true;
     }
 
@@ -84,12 +82,12 @@ GTrigger::GTrigger(const Attrib::Key &triggerKey)
     radius = reinterpret_cast<const float *>(GetAttributePointer(0x39BF8002, 0));
     if (radius) {
         triggerRadius = *radius;
-        triggerWidth = triggerRadius + triggerRadius;
-        triggerLength = triggerWidth;
-        triggerHeight = triggerWidth;
+        dimSwizzled.x = triggerRadius + triggerRadius;
+        dimSwizzled.y = dimSwizzled.x;
+        dimSwizzled.z = dimSwizzled.x;
         mWorldTrigger.fShape = 3;
     } else if (hasDimensions) {
-        triggerRadius = UMath::Sqrt(triggerWidth * triggerWidth + triggerLength * triggerLength);
+        triggerRadius = UMath::Sqrt(dimSwizzled.x * dimSwizzled.x + dimSwizzled.z * dimSwizzled.z);
         mWorldTrigger.fShape = 1;
     } else {
         const float *width = reinterpret_cast<const float *>(GetAttributePointer(0x5816C1FC, 0));
@@ -98,10 +96,10 @@ GTrigger::GTrigger(const Attrib::Key &triggerKey)
             width = reinterpret_cast<const float *>(Attrib::DefaultDataArea(sizeof(float)));
         }
 
-        triggerWidth = *width;
-        triggerHeight = 1.0f;
-        triggerLength = 0.0f;
-        triggerRadius = UMath::Sqrt(triggerWidth * triggerWidth + 1.0f);
+        dimSwizzled.x = *width;
+        dimSwizzled.y = 1.0f;
+        dimSwizzled.z = 0.0f;
+        triggerRadius = UMath::Sqrt(dimSwizzled.x * dimSwizzled.x + 1.0f);
         mWorldTrigger.fShape = 1;
     }
 
@@ -118,12 +116,12 @@ GTrigger::GTrigger(const Attrib::Key &triggerKey)
     mWorldTrigger.fMatRow0Width.x = mat[0][0];
     mWorldTrigger.fMatRow0Width.y = mat[0][1];
     mWorldTrigger.fMatRow0Width.z = mat[0][2];
-    mWorldTrigger.fMatRow0Width.w = triggerWidth;
-    mWorldTrigger.fHeight = triggerHeight + triggerHeight;
+    mWorldTrigger.fMatRow0Width.w = dimSwizzled.x;
+    mWorldTrigger.fHeight = dimSwizzled.y + dimSwizzled.y;
     mWorldTrigger.fMatRow2Length.x = mat[2][0];
     mWorldTrigger.fMatRow2Length.y = mat[2][1];
     mWorldTrigger.fMatRow2Length.z = mat[2][2];
-    mWorldTrigger.fMatRow2Length.w = triggerLength;
+    mWorldTrigger.fMatRow2Length.w = dimSwizzled.z;
     mWorldTrigger.fPosRadius.x = posSwizzled.x;
     mWorldTrigger.fPosRadius.y = posSwizzled.y;
     mWorldTrigger.fPosRadius.z = posSwizzled.z;
