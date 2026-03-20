@@ -1420,7 +1420,7 @@ int TrackStreamer::Loader(bChunk *chunk) {
         pLastDiscBundleSection = reinterpret_cast<DiscBundleSection *>(reinterpret_cast<char *>(pDiscBundleSections) + chunk->Size);
         for (DiscBundleSection *disc_bundle = pDiscBundleSections; disc_bundle < pLastDiscBundleSection;
              disc_bundle = reinterpret_cast<DiscBundleSection *>(
-                 reinterpret_cast<char *>(disc_bundle) + disc_bundle->NumMembers * sizeof(DiscBundleSectionMember) + 0x14)) {
+                 reinterpret_cast<char *>(disc_bundle) + (disc_bundle->NumMembers * sizeof(DiscBundleSectionMember) + 0x14))) {
             bEndianSwap32(&disc_bundle->FileOffset);
             bEndianSwap32(&disc_bundle->FileSize);
             for (int i = 0; i < disc_bundle->NumMembers; i++) {
@@ -1434,7 +1434,7 @@ int TrackStreamer::Loader(bChunk *chunk) {
     } else if (chunk_id == 0x34111) {
         pInfo = reinterpret_cast<TrackStreamingInfo *>(chunk->GetData());
         for (int i = 0; i < 2; i++) {
-            bEndianSwap32(&pInfo->FileSize[i]);
+            bEndianSwap32(pInfo->FileSize + i);
         }
         return 1;
     } else if (chunk_id == 0x34112) {
