@@ -23,6 +23,7 @@
 #include "Speed/Indep/Src/Misc/QueuedFile.hpp"
 #include "Speed/Indep/Src/Sim/Simulation.h"
 #include "Speed/Indep/Src/World/WorldConn.h"
+#include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 #include "Speed/Indep/bWare/Inc/bDebug.hpp"
 #include <new>
@@ -48,6 +49,7 @@ namespace Speech {
 struct SampleReqList;
 
 struct Cache {
+    SlotPool *GetEventPool();
     void Dump();
     void Init(int size);
     void Validate();

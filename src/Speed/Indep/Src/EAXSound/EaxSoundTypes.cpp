@@ -26,6 +26,8 @@ struct SPCHType_SampleRequestData {
     int interruptFlag;
 };
 
+extern void *NullPointer;
+
 struct EAXCop;
 
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/speech.h"
@@ -355,12 +357,12 @@ ScheduledSpeechEvent::ScheduledSpeechEvent() {
     fh = nullptr;
     actor = nullptr;
     entry_time = WorldTimer;
-    playback_time = WorldTimer;
-    finish_time = Timer(0);
     assoc_samples_count = 0;
     assoc_samples_prep = 0;
     curndx = 0;
     priority = 0;
+    playback_time = WorldTimer;
+    finish_time = Timer(0);
     flags = 0;
     frameindex = sSpeechFrameIndex;
     sSpeechFrameIndex = static_cast<short>(sSpeechFrameIndex + 1);
@@ -394,11 +396,20 @@ ScheduledSpeechEvent::~ScheduledSpeechEvent() {
 }
 
 void *ScheduledSpeechEvent::operator new(unsigned int base_size, unsigned int xtra) {
-    return ::operator new(base_size + xtra);
+    (void)base_size;
+    (void)xtra;
+    SlotPool *pool = gSpeechCache.GetEventPool();
+
+    if (pool != nullptr && ((pool = gSpeechCache.GetEventPool()) == nullptr ||
+                            !gSpeechCache.GetEventPool()->IsFull())) {
+        return gSpeechCache.GetEventPool()->Malloc(1, nullptr);
+    }
+
+    return NullPointer;
 }
 
 void ScheduledSpeechEvent::operator delete(void *ptr) {
-    ::operator delete(ptr);
+    gSpeechCache.GetEventPool()->Free(ptr);
 }
 
 bool ScheduledSpeechEvent::sort_nested_priority(const ScheduledSpeechEvent *lhs, const ScheduledSpeechEvent *rhs) {
