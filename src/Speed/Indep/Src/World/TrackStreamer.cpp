@@ -1743,9 +1743,10 @@ TrackStreamingSection *TrackStreamer::ChooseSectionToJettison() {
 
 void TrackStreamer::UnJettisonSections() {
     for (int i = 0; i < NumJettisonedSections; i++) {
+        int num_current_streaming_sections = NumCurrentStreamingSections;
         TrackStreamingSection *section = JettisonedSections[i];
-        CurrentStreamingSections[NumCurrentStreamingSections] = section;
-        NumCurrentStreamingSections += 1;
+        CurrentStreamingSections[num_current_streaming_sections] = section;
+        NumCurrentStreamingSections = num_current_streaming_sections + 1;
         section->CurrentlyVisible = true;
     }
     NumJettisonedSections = 0;
@@ -2319,8 +2320,9 @@ void TrackStreamer::PredictStreamingPosition(
     position_entry->Velocity.x = velocity->x;
     position_entry->Velocity.y = velocity->y;
     position_entry->Direction.x = direction->x;
+    float direction_y = direction->y;
     position_entry->FollowingCar = following_car;
-    position_entry->Direction.y = direction->y;
+    position_entry->Direction.y = direction_y;
     position_entry->PositionSet = true;
 }
 
