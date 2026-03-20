@@ -1330,7 +1330,10 @@ void TrackStreamer::InitRegion(const char *region_stream_filename, bool split_sc
     EmptyCaffeineLayers();
 }
 
-void TrackStreamer::PlotLoadingMarker(StreamingPositionEntry *streaming_position) {}
+void TrackStreamer::PlotLoadingMarker(StreamingPositionEntry *streaming_position) {
+    char stack[0x20];
+    (void)stack;
+}
 
 void TrackStreamer::SwitchZones(short *current_zones) {
     StartLoadingTime = GetDebugRealTime();
