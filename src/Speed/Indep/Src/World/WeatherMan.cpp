@@ -68,14 +68,14 @@ int RegionQuery::CalculateRegionInfo(eView *view, RegionType regionKind, int InF
 
             if (distanceSq < region->Radius * region->Radius) {
                 float distance = DAT_80409c34;
-                if (BaseFogFalloffX < distanceSq) {
-                    float ratio = 1.0f / bSqrt(distanceSq);
-                    ratio = -(distanceSq * ratio * ratio - DAT_80409c44) * ratio * DAT_80409c40 + ratio;
-                    distance = ratio * distanceSq;
+                if (DAT_80409c3c < distanceSq) {
+                    distance = bSqrt(distanceSq);
                 }
 
-                float blend = DAT_80409c34;
-                if (region->FarFalloffStart <= distance) {
+                float blend;
+                if (distance < region->FarFalloffStart) {
+                    blend = DAT_80409c34;
+                } else {
                     blend = (distance - region->FarFalloffStart) / (region->Radius - region->FarFalloffStart);
                 }
 
@@ -108,16 +108,16 @@ int RegionQuery::CalculateRegionInfo(eView *view, RegionType regionKind, int InF
             }
 
             if (region->effect != DAT_80409c34) {
-                unsigned int fog_colour = region->FogColour;
-                unsigned int fog_colour_r = static_cast<unsigned char>(fog_colour);
-                unsigned int fog_colour_g = static_cast<unsigned char>(fog_colour >> 8);
-                unsigned int fog_colour_b = static_cast<unsigned char>(fog_colour >> 16);
-
                 FogFalloff += region->FogFalloff * region->effect;
                 FogFalloffX += region->FogFalloffX * region->effect;
                 FogFalloffY += region->FogFalloffY * region->effect;
                 DistFogStart += region->FogStart * region->effect;
                 DistFogPower += region->Intensity * region->effect;
+
+                unsigned int fog_colour = region->FogColour;
+                unsigned int fog_colour_r = static_cast<unsigned char>(fog_colour);
+                unsigned int fog_colour_g = static_cast<unsigned char>(fog_colour >> 8);
+                unsigned int fog_colour_b = static_cast<unsigned char>(fog_colour >> 16);
 
                 colr_r += static_cast<unsigned int>(fog_colour_r * region->effect);
                 colr_g += static_cast<unsigned int>(fog_colour_g * region->effect);
