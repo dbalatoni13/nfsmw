@@ -12,6 +12,7 @@ void bInitializeBoundingBox(bVector3 *bbox_min, bVector3 *bbox_max, const bVecto
 void bExpandBoundingBox(bVector3 *bbox_min, bVector3 *bbox_max, const bVector3 *point, float extra_width);
 void bExpandBoundingBox(bVector3 *bbox_min, bVector3 *bbox_max, const bVector3 *bbox2_min, const bVector3 *bbox2_max);
 int bIsSlotPoolFull(SlotPool *slot_pool);
+extern bVector3 ZeroVector;
 
 static const int kNumSkidSegments_Skids = 8;
 static const int kNumSkidTextures_Skids = 29;
@@ -260,8 +261,7 @@ SkidSet *CreateNewSkidSet(SkidMaker *skid_maker, bVector3 *position, bVector3 *d
 
 void SkidMaker::MakeSkid(Car *pCar, bVector3 *position, bVector3 *delta_position, int terrain_type, float intensity) {
     bool make_flaming_skids = false;
-    bVector3 origin(0.0f, 0.0f, 0.0f);
-    if (pCar && bDistBetween(&origin, delta_position) > 4.0f) {
+    if (pCar && bDistBetween(&ZeroVector, delta_position) > 4.0f) {
         return;
     }
 
