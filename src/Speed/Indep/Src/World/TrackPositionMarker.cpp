@@ -41,15 +41,19 @@ int LoaderTrackPositionMarkers(bChunk *chunk) {
 }
 
 int UnloaderTrackPositionMarkers(bChunk *chunk) {
-    int count = chunk->Size / sizeof(TrackPositionMarker);
-    TrackPositionMarker *marker = reinterpret_cast<TrackPositionMarker *>(chunk->GetData());
+    if (chunk->GetID() == 0x34146) {
+        TrackPositionMarker *marker_table = reinterpret_cast<TrackPositionMarker *>(chunk->GetAlignedData(0x10));
+        int num_markers = chunk->GetAlignedSize(0x10) / sizeof(TrackPositionMarker);
 
-    for (int i = 0; i < count; i++) {
-        TrackPositionMarkerList.Remove(&marker[i]);
+        for (int n = 0; n < num_markers; n++) {
+            TrackPositionMarkerList.Remove(&marker_table[n]);
+        }
+
+        NotifyTrackMarkersChanged();
+        return 1;
     }
 
-    NotifyTrackMarkersChanged();
-    return 1;
+    return 0;
 }
 
 int GetNumTrackPositionMarkers(int track_number, unsigned int name_hash) {
