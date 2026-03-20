@@ -448,25 +448,24 @@ void cSampleWarpper::Play(const SND_Params *Params) {
         return;
     }
 
-    STICH_TYPE stichType = static_cast<STICH_TYPE>(SampleRefData->eStichType);
-    cSampleListSet::List &samplelist = const_cast<cSampleListSet::List &>(cSampleListSet::GetList(stichType));
-    samplelist.push_back(this);
+    STICH_TYPE stichType = static_cast<STICH_TYPE>(GetData().eStichType);
+    AddToSampleList(this, stichType);
 
-    if (SampleRefData->RND_Vol != 0) {
-        m_nLocalVolume = static_cast<int>(SampleRefData->Volume - g_pEAXSound->Random(SampleRefData->RND_Vol));
+    if (GetData().RND_Vol != 0) {
+        m_nLocalVolume = static_cast<int>(GetData().Volume - g_pEAXSound->Random(GetData().RND_Vol));
     } else {
-        m_nLocalVolume = SampleRefData->Volume;
+        m_nLocalVolume = GetData().Volume;
     }
 
     int TempVol = m_nLocalVolume * Params->Vol >> 0xF;
-    int randomPitchRange = SampleRefData->RND_Pitch;
+    int randomPitchRange = GetData().RND_Pitch;
     if (randomPitchRange != 0) {
         if (randomPitchRange < 0) {
             randomPitchRange = -randomPitchRange;
         }
-        m_nLocalPitch = static_cast<int>(SampleRefData->Pitch - g_pEAXSound->Random(randomPitchRange));
+        m_nLocalPitch = static_cast<int>(GetData().Pitch - g_pEAXSound->Random(randomPitchRange));
     } else {
-        m_nLocalPitch = SampleRefData->Pitch;
+        m_nLocalPitch = GetData().Pitch;
     }
 
     float PitchScale = static_cast<float>(0x1000 - Params->Pitch) * (1.0f / 4096.0f);
@@ -474,7 +473,7 @@ void cSampleWarpper::Play(const SND_Params *Params) {
     int TempAz = Params->Az;
     m_eIsPlaying = eSTITCH_PLAY_STATUS_OFF;
 
-    if (SampleRefData->eStichType == STICH_TYPE_COLLISION) {
+    if (GetData().eStichType == STICH_TYPE_COLLISION) {
         g_pEAXSound->SetCsisName(GetStichTypeName(STICH_TYPE_COLLISION));
         AEMS_StichCollision *sample = static_cast<AEMS_StichCollision *>(Csis::System::Alloc(0x2C));
 
@@ -562,7 +561,7 @@ void cSampleWarpper::Play(const SND_Params *Params) {
         }
     }
 
-    if (SampleRefData->eStichType == STICH_TYPE_WOOSH) {
+    if (GetData().eStichType == STICH_TYPE_WOOSH) {
         g_pEAXSound->SetCsisName(GetStichTypeName(STICH_TYPE_WOOSH));
         AEMS_StichWoosh *sample = static_cast<AEMS_StichWoosh *>(Csis::System::Alloc(0x2C));
 
@@ -650,7 +649,7 @@ void cSampleWarpper::Play(const SND_Params *Params) {
         }
     }
 
-    if (SampleRefData->eStichType == STICH_TYPE_STATIC) {
+    if (GetData().eStichType == STICH_TYPE_STATIC) {
         g_pEAXSound->SetCsisName(GetStichTypeName(STICH_TYPE_STATIC));
         AEMS_StichStatic *sample = static_cast<AEMS_StichStatic *>(Csis::System::Alloc(0x2C));
 
