@@ -34,6 +34,7 @@ compile_commands.json
 /*.txt
 *.exe
 /*.d
+*.TMP
 
 symbols/
 src/Speed/Indep/Src/Generated/Hashes
