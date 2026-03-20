@@ -237,12 +237,16 @@ void GTrigger::CreateAllParticleEffects() {
 }
 
 void GTrigger::ClearParticleEffects() {
-    for (int i = 0; i < 2; i++) {
-        if (mParticleEffect[i]) {
-            delete mParticleEffect[i];
-            mParticleEffect[i] = nullptr;
+    for (unsigned int onEffect = 0; onEffect < 2; onEffect++) {
+        if (mParticleEffect[onEffect]) {
+            mParticleEffect[onEffect]->UnSubscribe();
+            if (mParticleEffect[onEffect]) {
+                delete mParticleEffect[onEffect];
+            }
         }
     }
+
+    bMemSet(mParticleEffect, 0, sizeof(mParticleEffect));
 }
 
 void GTrigger::EnableParticleEffects(bool enabled) {
