@@ -3600,7 +3600,9 @@ bool GRaceStatus::ComputeCatchUpSkill(GRacerInfo *racer_info, PidError *pid, flo
     if (off_world) {
         glue_level = 1.0f;
     } else {
-        if (GetRaceContext() == GRace::kRaceContext_QuickRace) {
+        GRace::Context raceContext = GetRaceContext();
+
+        if (raceContext == GRace::kRaceContext_QuickRace) {
             if (!mRaceParms) {
                 return false;
             }
@@ -3610,11 +3612,7 @@ bool GRaceStatus::ComputeCatchUpSkill(GRacerInfo *racer_info, PidError *pid, flo
             }
 
             glue_level = Tweak_QuickRaceGlue[mRaceParms->GetDifficulty()];
-        } else {
-            if (GetRaceContext() != GRace::kRaceContext_Career) {
-                return false;
-            }
-
+        } else if (raceContext == GRace::kRaceContext_Career) {
             glue_level = UMath::Clamp((GetAdaptiveDifficutly() + 1.0f) * 0.5f, 0.0f, 1.0f);
             if (mRaceParms) {
                 use_race_override = mRaceParms->GetCatchUpOverride();
@@ -3623,6 +3621,8 @@ bool GRaceStatus::ComputeCatchUpSkill(GRacerInfo *racer_info, PidError *pid, flo
                     glue_level = UMath::Lerp(glue_level, 1.0f, 0.5f);
                 }
             }
+        } else {
+            return false;
         }
     }
 
