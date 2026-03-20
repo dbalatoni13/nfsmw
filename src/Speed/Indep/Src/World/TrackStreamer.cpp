@@ -584,10 +584,12 @@ void TrackStreamer::JettisonSection(TrackStreamingSection *section) {
 
 bool TrackStreamer::JettisonLeastImportantSection() {
     TrackStreamingSection *section = ChooseSectionToJettison();
+    bool jettisoned = false;
     if (section) {
         JettisonSection(section);
+        jettisoned = true;
     }
-    return section != 0;
+    return jettisoned;
 }
 
 int TrackStreamer::AllocateSectionMemory(int *ptotal_needing_allocation) {
