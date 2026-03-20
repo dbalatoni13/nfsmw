@@ -1357,8 +1357,8 @@ void TrackStreamer::SwitchZones(short *current_zones) {
         TrackStreamingSection *section = &pTrackStreamingSections[n];
         if (section->Status == TrackStreamingSection::ACTIVATED && !section->CurrentlyVisible) {
             if (!IsTextureSection(section->SectionNumber) && !IsLibrarySection(section->SectionNumber)) {
-                num_sections_unactivated += 1;
                 UnactivateSection(section);
+                num_sections_unactivated += 1;
             }
         }
     }
