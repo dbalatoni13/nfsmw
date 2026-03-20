@@ -863,7 +863,7 @@ int LoaderScenery(bChunk *chunk) {
             }
         }
 
-        if (ChunkMovementOffset == 0 && section_header) {
+        if (section_header && ChunkMovementOffset == 0) {
             int *section_header_words = reinterpret_cast<int *>(section_header);
             unsigned char *scenery_infos = reinterpret_cast<unsigned char *>(section_header_words[6]);
             for (int i = 0; i < section_header_words[7]; i++) {
@@ -914,6 +914,36 @@ int LoaderScenery(bChunk *chunk) {
         return 1;
     }
 
+    if (chunk->GetID() == 0x8003410B) {
+        bChunk *last_chunk = chunk->GetLastChunk();
+        for (bChunk *subchunk = chunk->GetFirstChunk(); subchunk != last_chunk; subchunk = subchunk->GetNext()) {
+            unsigned int *entry_words = reinterpret_cast<unsigned int *>(subchunk->GetData());
+            bEndianSwap32(&entry_words[0]);
+
+            unsigned int num_models = *reinterpret_cast<unsigned char *>(&entry_words[1]);
+            for (unsigned int i = 0; i < num_models; i++) {
+                bEndianSwap32(&entry_words[i * 4 + 2]);
+                bEndianSwap32(&entry_words[i * 4 + 3]);
+            }
+
+            HeirarchyMap[entry_words[0]] = reinterpret_cast<ModelHeirarchy *>(entry_words);
+            for (unsigned int i = 0; i < num_models; i++) {
+                eModel *model = 0;
+                if (entry_words[i * 4 + 3] != 0) {
+                    model = reinterpret_cast<eModel *>(bOMalloc(eModelSlotPool));
+                    if (model) {
+                        model->Solid = 0;
+                        model->pReplacementTextureTable = 0;
+                        model->NumReplacementTextures = 0;
+                        model->Init(entry_words[i * 4 + 3]);
+                    }
+                }
+                entry_words[i * 4 + 4] = reinterpret_cast<unsigned int>(model);
+            }
+        }
+        return 1;
+    }
+
     if (chunk->GetID() == 0x80034115) {
         bChunk *last_chunk = chunk->GetLastChunk();
         for (bChunk *subchunk = chunk->GetFirstChunk(); subchunk != last_chunk; subchunk = subchunk->GetNext()) {
@@ -945,36 +975,6 @@ int LoaderScenery(bChunk *chunk) {
                 }
                 default:
                     break;
-            }
-        }
-        return 1;
-    }
-
-    if (chunk->GetID() == 0x8003410B) {
-        bChunk *last_chunk = chunk->GetLastChunk();
-        for (bChunk *subchunk = chunk->GetFirstChunk(); subchunk != last_chunk; subchunk = subchunk->GetNext()) {
-            unsigned int *entry_words = reinterpret_cast<unsigned int *>(subchunk->GetData());
-            bEndianSwap32(&entry_words[0]);
-
-            unsigned int num_models = *reinterpret_cast<unsigned char *>(&entry_words[1]);
-            for (unsigned int i = 0; i < num_models; i++) {
-                bEndianSwap32(&entry_words[i * 4 + 2]);
-                bEndianSwap32(&entry_words[i * 4 + 3]);
-            }
-
-            HeirarchyMap[entry_words[0]] = reinterpret_cast<ModelHeirarchy *>(entry_words);
-            for (unsigned int i = 0; i < num_models; i++) {
-                eModel *model = 0;
-                if (entry_words[i * 4 + 3] != 0) {
-                    model = reinterpret_cast<eModel *>(bOMalloc(eModelSlotPool));
-                    if (model) {
-                        model->Solid = 0;
-                        model->pReplacementTextureTable = 0;
-                        model->NumReplacementTextures = 0;
-                        model->Init(entry_words[i * 4 + 3]);
-                    }
-                }
-                entry_words[i * 4 + 4] = reinterpret_cast<unsigned int>(model);
             }
         }
         return 1;
