@@ -29,8 +29,6 @@ class eViewSkidRenderShim : public eView {
     void Render(ePoly *poly, TextureInfo *texture_info, bMatrix4 *matrix, int flags, float z_bias);
 };
 
-extern "C" void __5ePoly(ePoly *poly);
-
 SlotPool *SkidSetSlotPool = 0;
 int PlotSkidsInCaffeine = 0;
 int PlotSkidPointsInCaffeine = 0;
@@ -207,7 +205,6 @@ void SkidSet::Render(eView *view, unsigned char intensityReduction) {
     }
 
     ePoly poly;
-    __5ePoly(&poly);
     bMatrix4 *identity_matrix = &eMathIdentityMatrix;
     float extra_height = 0.05f;
     const unsigned int skid_colour = 0x80808080;

@@ -199,6 +199,8 @@ struct ePoly {
     unsigned char flags;         // offset 0x90, size 0x1
     unsigned char Flailer;       // offset 0x91, size 0x1
 
+    ePoly();
+
     void *operator new(size_t size) {}
 
     void operator delete(void *ptr) {}
