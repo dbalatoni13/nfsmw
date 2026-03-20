@@ -779,8 +779,8 @@ void EAXSound::StartNewGamePlay() {
             for (int i = 0; i < 4; i++) {
                 EAXS_StreamChannel *channel = m_pStreamManager->GetStreamChannel(i);
                 if (channel != nullptr && i != 1) {
-                    channel->Stop();
-                    channel->PurgeStream();
+                    m_pStreamManager->GetStreamChannel(i)->Stop();
+                    m_pStreamManager->GetStreamChannel(i)->PurgeStream();
                 }
             }
         }
@@ -790,12 +790,15 @@ void EAXSound::StartNewGamePlay() {
                 if (m_pStateMgr[i] != nullptr) {
                     m_pStateMgr[i]->DisconnectMixMap();
                 }
-            } else if (m_pStateMgr[i] != nullptr) {
-                m_pStateMgr[i]->ExitWorld();
+            } else {
+                CSTATEMGR_Base *mgr = m_pStateMgr[i];
+                if (mgr != nullptr) {
+                    mgr->ExitWorld();
+                }
             }
         }
 
-        if (m_pNFSMixMaster != nullptr && m_pNFSMixMaster->m_bMapReady) {
+        if (m_pNFSMixMaster->m_bMapReady) {
             m_pNFSMixMaster->DestroyMainMainMap();
         }
 
@@ -808,7 +811,9 @@ void EAXSound::StartNewGamePlay() {
 
     CSTATEMGR_AICar::QueueSlots();
     gAEMSMgr.InitializeSlots(!bHasStartNewGameOccured);
+    g_ShiftInfo = nullptr;
     bHasStartNewGameOccured = true;
+    g_TurboInfo = nullptr;
 
     if (!bIsMapInQueuedFileLoad) {
         bIsMapInQueuedFileLoad = true;
@@ -824,44 +829,35 @@ void EAXSound::StartNewGamePlay() {
         if (race == nullptr) {
             m_prevSndGameMode = m_eSndGameMode;
             m_eSndGameMode = SND_FREEROAM;
-            if (m_pNFSMixMaster != nullptr) {
-                if (Sim::GetUserMode() == Sim::USER_SPLIT_SCREEN) {
-                    m_pNFSMixMaster->CreateMainMainMap(eRACE_TWOCIRC);
-                } else {
-                    m_pNFSMixMaster->CreateMainMainMap(eRACE_CIRCUIT);
-                }
+            if (Sim::GetUserMode() == Sim::USER_SPLIT_SCREEN) {
+                m_pNFSMixMaster->CreateMainMainMap(eRACE_TWOCIRC);
+            } else {
+                m_pNFSMixMaster->CreateMainMainMap(eRACE_CIRCUIT);
             }
         } else {
             GRace::Type raceType = race->GetRaceType();
             if (raceType == GRace::kRaceType_Drag) {
                 m_prevSndGameMode = m_eSndGameMode;
                 m_eSndGameMode = SND_DRAGRACE;
-                if (m_pNFSMixMaster != nullptr) {
-                    if (Sim::GetUserMode() == Sim::USER_SPLIT_SCREEN) {
-                        m_pNFSMixMaster->CreateMainMainMap(eRACE_TWODRG);
-                    } else {
-                        m_pNFSMixMaster->CreateMainMainMap(eRACE_DRAG);
-                    }
+                if (Sim::GetUserMode() == Sim::USER_SPLIT_SCREEN) {
+                    m_pNFSMixMaster->CreateMainMainMap(eRACE_TWODRG);
+                } else {
+                    m_pNFSMixMaster->CreateMainMainMap(eRACE_DRAG);
                 }
             } else {
                 m_prevSndGameMode = m_eSndGameMode;
                 m_eSndGameMode = (raceType == GRace::kRaceType_Challenge) ? SND_CHALLENGERACE : SND_STREETRACE;
-                if (m_pNFSMixMaster != nullptr) {
-                    if (Sim::GetUserMode() == Sim::USER_SPLIT_SCREEN) {
-                        m_pNFSMixMaster->CreateMainMainMap(eRACE_TWOCIRC);
-                    } else {
-                        m_pNFSMixMaster->CreateMainMainMap(eRACE_CIRCUIT);
-                    }
+                if (Sim::GetUserMode() == Sim::USER_SPLIT_SCREEN) {
+                    m_pNFSMixMaster->CreateMainMainMap(eRACE_TWOCIRC);
+                } else {
+                    m_pNFSMixMaster->CreateMainMainMap(eRACE_CIRCUIT);
                 }
             }
         }
     }
 
     InitializeInGame();
-
-    if (m_pNFSMixMaster != nullptr) {
-        m_pNFSMixMaster->InitMixMap(0);
-    }
+    m_pNFSMixMaster->InitMixMap(0);
 
     SFXObj_Pathfinder *ppf = static_cast<SFXObj_Pathfinder *>(GetSFXBase_Object(0x40010010));
     if (ppf != nullptr) {
