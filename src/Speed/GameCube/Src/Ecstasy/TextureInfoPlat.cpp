@@ -125,13 +125,13 @@ unsigned char TextureInfoPlatInfo::HasClut() {
 unsigned char TextureInfoPlatInfo::SetImage(TextureInfo *texture_info) {
     TextureInfoPlatInfo *plat_info = texture_info->GetPlatInfo();
 
-    if (!plat_info) {
-        return 0;
+    if (plat_info) {
+        plat_info->SetImage(texture_info->Width, texture_info->Height, texture_info->NumMipMapLevels, plat_info->Format,
+                            texture_info->ImageData, texture_info->PaletteData, texture_info->AlphaUsageType, texture_info->TilableUV);
+        return 1;
     }
 
-    plat_info->SetImage(texture_info->Width, texture_info->Height, texture_info->NumMipMapLevels, plat_info->Format, texture_info->ImageData,
-                        texture_info->PaletteData, texture_info->AlphaUsageType, texture_info->TilableUV);
-    return 1;
+    return 0;
 }
 
 unsigned char TextureInfoPlatInfo::SetImage(int width, int height, int mip, int format, void *imageData, void *imagePal,

@@ -42,7 +42,7 @@ class TextureInfoPlatInterface {
     void *LockPalette(TextureLockType lock);
     void UnlockPalette(void *palette_lock);
 
-    TextureInfoPlatInfo *GetPlatInfo() {
+    TextureInfoPlatInfo *GetPlatInfo() const {
         return this->PlatInfo;
     }
 };
