@@ -381,9 +381,7 @@ IVehicle *GRacerInfo::CreateVehicle(unsigned int default_key) {
     }
 
     cache = nullptr;
-    bool raceStatusExists = GRaceStatus::Exists();
-
-    if (raceStatusExists) {
+    if (GRaceStatus::Exists()) {
         GRaceStatus *raceStatus = &GRaceStatus::Get();
 
         cache = reinterpret_cast<IVehicleCache *>(reinterpret_cast<unsigned char *>(raceStatus) + 0x10);
@@ -394,6 +392,7 @@ IVehicle *GRacerInfo::CreateVehicle(unsigned int default_key) {
     if (result) {
         if (result->QueryInterface(&vehicle)) {
             SetSimable(result);
+            return vehicle;
         }
     }
 
