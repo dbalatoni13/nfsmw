@@ -677,7 +677,9 @@ void ScenerySectionHeader::DrawAScenery(int scenery_instance_number, SceneryCull
     }
 
     instance->GetRotation(matrix);
-    instance->GetPosition(&matrix->v3);
+    matrix->v3.x = instance->Position[0];
+    matrix->v3.y = instance->Position[1];
+    matrix->v3.z = instance->Position[2];
 
     if ((instance->ExcludeFlags & scenery_cull_info->ExcludeFlags & 0x100) != 0) {
         matrix->v3.z += EnvMapShadowExtraHeight;
