@@ -237,7 +237,7 @@ void InitDisplaySystem() {
 
 void FinishedRenderingFEngLayer() {}
 
-int bDoWithStack(void *function, void *stack_pointer, int arg1, int arg2) {
+extern "C" int bDoWithStack(void *function, void *stack_pointer, int arg1, int arg2) {
     return 0;
 }
 

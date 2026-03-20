@@ -148,20 +148,35 @@ LGWheels::LGWheels() {
 
 void LGWheels::InitVars(long channel) {
     int ii;
+    int channelOffset = channel * 4;
+    int forceOffset = channel * 0x20;
+    char *isAirborne = reinterpret_cast<char *>(this) + 0x166C;
+    char *damperWasPlaying = reinterpret_cast<char *>(this) + 0x15AC;
+    char *springWasPlaying = reinterpret_cast<char *>(this) + 0x15BC;
+    char *conditionEffectID = reinterpret_cast<char *>(this) + 0x1228;
+    char *conditionPlaying = reinterpret_cast<char *>(this) + 0x11A8;
+    char *constantEffectID = reinterpret_cast<char *>(this) + 0x1328;
+    char *constantPlaying = reinterpret_cast<char *>(this) + 0x12A8;
+    char *periodicEffectID = reinterpret_cast<char *>(this) + 0x1428;
+    char *periodicPlaying = reinterpret_cast<char *>(this) + 0x13A8;
+    char *rampEffectID = reinterpret_cast<char *>(this) + 0x1528;
+    char *rampPlaying = reinterpret_cast<char *>(this) + 0x14A8;
 
-    LGWheelsGetIsAirborne(this, channel) = 0;
-    LGWheelsGetDamperWasPlaying(this, channel) = 0;
-    LGWheelsGetSpringWasPlaying(this, channel) = 0;
+    *reinterpret_cast<int *>(isAirborne + channelOffset) = 0;
+    *reinterpret_cast<int *>(damperWasPlaying + channelOffset) = 0;
+    *reinterpret_cast<int *>(springWasPlaying + channelOffset) = 0;
 
     for (ii = 0; ii < 8; ii++) {
-        LGWheelsGetEffectID(LGWheelsGetCondition(this), channel, ii) = static_cast<unsigned long>(-1);
-        LGWheelsGetPlaying(LGWheelsGetCondition(this), channel, ii) = 0;
-        LGWheelsGetEffectID(LGWheelsGetConstant(this), channel, ii) = static_cast<unsigned long>(-1);
-        LGWheelsGetPlaying(LGWheelsGetConstant(this), channel, ii) = 0;
-        LGWheelsGetEffectID(LGWheelsGetPeriodic(this), channel, ii) = static_cast<unsigned long>(-1);
-        LGWheelsGetPlaying(LGWheelsGetPeriodic(this), channel, ii) = 0;
-        LGWheelsGetEffectID(LGWheelsGetRamp(this), channel, ii) = static_cast<unsigned long>(-1);
-        LGWheelsGetPlaying(LGWheelsGetRamp(this), channel, ii) = 0;
+        int offset = ii * 4 + forceOffset;
+
+        *reinterpret_cast<unsigned long *>(conditionEffectID + offset) = static_cast<unsigned long>(-1);
+        *reinterpret_cast<int *>(conditionPlaying + offset) = 0;
+        *reinterpret_cast<unsigned long *>(constantEffectID + offset) = static_cast<unsigned long>(-1);
+        *reinterpret_cast<int *>(constantPlaying + offset) = 0;
+        *reinterpret_cast<unsigned long *>(periodicEffectID + offset) = static_cast<unsigned long>(-1);
+        *reinterpret_cast<int *>(periodicPlaying + offset) = 0;
+        *reinterpret_cast<unsigned long *>(rampEffectID + offset) = static_cast<unsigned long>(-1);
+        *reinterpret_cast<int *>(rampPlaying + offset) = 0;
     }
 }
 
