@@ -44,7 +44,6 @@ void MoveChunks(bChunk *dest_chunks, bChunk *source_chunks, int sizeof_chunks, c
 void bSetMemoryPoolOverrideInfo(int pool_num, MemoryPoolOverrideInfo *override_info);
 void UnloadChunks(bChunk *chunks, int sizeof_chunks, const char *debug_name);
 void SetQueuedFileMinPriority(int priority);
-void SetDelayedResourceCallback(void (*callback)(int), int param);
 void NotifySkyLoader();
 void BlockWhileQueuedFileBusy();
 int GetBoundarySectionNumber(int section_number, const char *platform_name);
@@ -1063,11 +1062,11 @@ int TrackStreamer::CountUserAllocations(const char **pfragmented_user_allocation
 
 int TrackStreamer::DoHoleFilling(int largest_free) {
     ProfileNode profile_node("TODO", 0);
-    const char *debug_name;
-    HoleMovement hole_movements[128];
+    const char *fragmented_user_allocation;
+    HoleMovement hole_movement_table[128];
 
-    CountUserAllocations(&debug_name);
-    if (debug_name) {
+    CountUserAllocations(&fragmented_user_allocation);
+    if (fragmented_user_allocation) {
         pMemoryPool->DebugPrint();
         return 0;
     }
@@ -1075,18 +1074,19 @@ int TrackStreamer::DoHoleFilling(int largest_free) {
     int best_method = -1;
     int forced_hole_filler_method = ForceHoleFillerMethod;
     if (forced_hole_filler_method >= 0) {
-        int num_movements =
-            BuildHoleMovements(hole_movements, 0x80, forced_hole_filler_method, largest_free, 0, 0x7FFFFFFF);
-        if (num_movements > 0) {
+        int num_hole_movements =
+            BuildHoleMovements(hole_movement_table, 0x80, forced_hole_filler_method, largest_free, 0, 0x7FFFFFFF);
+        if (num_hole_movements > 0) {
             best_method = forced_hole_filler_method;
         }
     } else {
         int best_amount_moved = 0x7FFFFFFF;
         for (int filler_method = 1; filler_method < 6; filler_method++) {
             int amount_moved;
-            int num_movements =
-                BuildHoleMovements(hole_movements, 0x80, filler_method, largest_free, &amount_moved, best_amount_moved);
-            if (num_movements > 0 && amount_moved < best_amount_moved) {
+            int num_hole_movements = BuildHoleMovements(
+                hole_movement_table, 0x80, filler_method, largest_free, &amount_moved, best_amount_moved
+            );
+            if (num_hole_movements > 0 && amount_moved < best_amount_moved) {
                 best_method = filler_method;
                 best_amount_moved = amount_moved;
             }
@@ -1097,13 +1097,13 @@ int TrackStreamer::DoHoleFilling(int largest_free) {
         return 0;
     }
 
-    int num_movements = BuildHoleMovements(hole_movements, 0x80, best_method, largest_free, 0, 0x7FFFFFFF);
-    for (int i = 0; i < num_movements; i++) {
+    int num_hole_movements = BuildHoleMovements(hole_movement_table, 0x80, best_method, largest_free, 0, 0x7FFFFFFF);
+    for (int n = 0; n < num_hole_movements; n++) {
         ProfileNode profile_node("TODO", 0);
-        HoleMovement *movement = &hole_movements[i];
+        HoleMovement *movement = &hole_movement_table[n];
         TrackStreamingSection *section = FindSectionByAddress(movement->Address);
         if (LastWaitUntilRenderingDoneFrameCount != eGetFrameCounter()) {
-            unsigned int start_ticks = bGetTicker();
+            int start_ticks = bGetTicker();
             DisableWaitForFrameBufferSwap();
             eWaitUntilRenderingDone();
             LastWaitUntilRenderingDoneFrameCount = eGetFrameCounter();
@@ -1112,7 +1112,7 @@ int TrackStreamer::DoHoleFilling(int largest_free) {
             (void)time;
         }
 
-        unsigned int start_ticks = bGetTicker();
+        int start_ticks = bGetTicker();
         void *new_memory = reinterpret_cast<void *>(movement->NewAddress);
         pMemoryPool->Free(reinterpret_cast<void *>(movement->Address));
         pMemoryPool->Malloc(movement->Size, section->SectionName, false, false, movement->NewAddress);
