@@ -3442,7 +3442,7 @@ void GRaceStatus::UpdateAdaptiveDifficulty(eAdaptiveGainReason reason, ISimable 
             }
         }
 
-        if (percent_human_complete < percent_ai_complete && percent_human_complete > 0.0f) {
+        if (percent_ai_complete > percent_human_complete && percent_human_complete > 0.0f) {
             float lose_margin = ((percent_ai_complete - percent_human_complete) * (GetRaceLength() * 0.01f)) / 300.0f;
             float t = UMath::Ramp(lose_margin, 0.0f, 1.0f);
             float bonus = UMath::Lerp(0.0f, -0.4f, t);
@@ -3466,7 +3466,7 @@ void GRaceStatus::UpdateAdaptiveDifficulty(eAdaptiveGainReason reason, ISimable 
             }
         }
 
-        if (percent_human_complete < percent_ai_complete && percent_human_complete > 0.0f) {
+        if (percent_ai_complete > percent_human_complete && percent_human_complete > 0.0f) {
             float lose_margin = ((percent_ai_complete - percent_human_complete) * (GetRaceLength() * 0.01f)) / 300.0f;
             float t = UMath::Ramp(lose_margin, 0.0f, 1.0f);
             float bonus = UMath::Lerp(0.0f, -0.4f, t);
@@ -3495,16 +3495,16 @@ void GRaceStatus::UpdateAdaptiveDifficulty(eAdaptiveGainReason reason, ISimable 
         if (total_points > 0.0f && player_points > 0.0f && ai_points > 0.0f) {
             float point_spread_ratio = (player_points - ai_points) / total_points;
 
-            if (point_spread_ratio <= 0.0f) {
-                float win_margin = -point_spread_ratio;
-                float t = UMath::Ramp(win_margin, 0.0f, 0.2f);
-                float bonus = UMath::Lerp(0.0f, -0.2f, t);
-
-                difficulty = bClamp(difficulty + bonus, -1.0f, 1.0f);
-            } else {
+            if (point_spread_ratio > 0.0f) {
                 float lose_margin = point_spread_ratio;
                 float t = UMath::Ramp(lose_margin, 0.05f, 0.2f);
                 float bonus = UMath::Lerp(0.0f, 0.2f, t);
+
+                difficulty = bClamp(difficulty + bonus, -1.0f, 1.0f);
+            } else {
+                float win_margin = -point_spread_ratio;
+                float t = UMath::Ramp(win_margin, 0.0f, 0.2f);
+                float bonus = UMath::Lerp(0.0f, -0.2f, t);
 
                 difficulty = bClamp(difficulty + bonus, -1.0f, 1.0f);
             }
