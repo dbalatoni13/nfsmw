@@ -608,14 +608,12 @@ int VisibleSectionManager::Loader(bChunk *chunk) {
             } else if (current_chunk_id == 0x34155) {
                 LoadingSection *loading_sections = reinterpret_cast<LoadingSection *>(current_chunk->GetData());
                 int num_loading_sections = current_chunk->Size / sizeof(LoadingSection);
-                if (num_loading_sections > 0) {
-                    int n = 0;
-                    do {
-                        LoadingSection *section = &loading_sections[n];
-                        LoadingSectionList.AddTail(section);
-                        section->EndianSwap();
-                        n += 1;
-                    } while (n < num_loading_sections);
+                int n = 0;
+                while (n < num_loading_sections) {
+                    LoadingSection *section = &loading_sections[n];
+                    LoadingSectionList.AddTail(section);
+                    section->EndianSwap();
+                    n += 1;
                 }
             }
 
