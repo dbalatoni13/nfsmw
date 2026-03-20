@@ -62,6 +62,15 @@ When running under WSL, [objdiff](#diffing) is unable to get filesystem notifica
   python -m pip install -r requirements.txt
   ```
 
+- Seed the PS2 toolchain (PS2 only)
+
+  PS2 builds also need the non-redistributable EE GCC toolchain under
+  `build/compilers/PS2/ee-gcc2.9-991111`. Bootstrap it from a local zip with:
+
+  ```sh
+  python tools/share_worktree_assets.py bootstrap --version SLES-53558-A124 --ps2-toolchain-zip /path/to/PS2.zip
+  ```
+
 - Configure:
 
   ```sh

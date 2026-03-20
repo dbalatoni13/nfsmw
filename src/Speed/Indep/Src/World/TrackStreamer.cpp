@@ -13,8 +13,10 @@
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 #include "Speed/Indep/bWare/Inc/bFunk.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
+#ifdef EA_PLATFORM_GAMECUBE
 #include "dolphin/PPCArch.h"
 #include "dolphin/os/OSCache.h"
+#endif
 
 #include <algorithm>
 
@@ -499,7 +501,11 @@ unsigned int TSMemoryPool::GetPoolChecksum() {
 }
 
 void *TrackStreamer::AllocateMemory(TrackStreamingSection *section, int allocation_params) {
+#ifdef MILESTONE_OPT
+    void *memory = bMalloc(section->Size, section->SectionName, 0, allocation_params | 0x2007);
+#else
     void *memory = bMalloc(section->Size, allocation_params | 0x2007);
+#endif
     if (!memory) {
         bBreak();
     }
@@ -1023,7 +1029,11 @@ void RefreshTrackStreamer() {
 
 void TrackStreamer::InitMemoryPool(int size) {
     MemoryPoolSize = size;
+#ifdef MILESTONE_OPT
+    pMemoryPoolMem = bMalloc(size, "Track Streaming", 0, 0x2000);
+#else
     pMemoryPoolMem = bMalloc(size, 0x2000);
+#endif
     pMemoryPool = new TSMemoryPool(reinterpret_cast<int>(pMemoryPoolMem), MemoryPoolSize, "Track Streaming", 7);
 }
 
@@ -1115,7 +1125,9 @@ int TrackStreamer::DoHoleFilling(int largest_free) {
             SetDuplicateTextureWarning(false);
             MoveChunks(reinterpret_cast<bChunk *>(new_memory), reinterpret_cast<bChunk *>(section->pMemory),
                        section->LoadedSize, section->SectionName);
+#ifdef EA_PLATFORM_GAMECUBE
             DCStoreRangeNoSync(new_memory, section->LoadedSize);
+#endif
             eAllowDuplicateSolids(false);
             SetDuplicateTextureWarning(true);
         } else {
@@ -1126,7 +1138,9 @@ int TrackStreamer::DoHoleFilling(int largest_free) {
         float move_time = bGetTickerDifference(start_ticks);
         (void)move_time;
         NumSectionsMoved += 1;
+#ifdef EA_PLATFORM_GAMECUBE
         PPCSync();
+#endif
     }
 
     return 1;
@@ -1696,7 +1710,9 @@ void TrackStreamer::SectionLoadedCallback(TrackStreamingSection *section) {
     }
 
     CalculateLoadingBacklog();
+#ifdef EA_PLATFORM_GAMECUBE
     DCStoreRange(section->pMemory, section->LoadedSize);
+#endif
 }
 
 TrackStreamingSection *TrackStreamer::ChooseSectionToJettison() {
@@ -2172,7 +2188,9 @@ bool TrackStreamer::CheckLoadingBar() {
 }
 
 void *TrackStreamer::AllocateUserMemory(int size, const char *debug_name, int offset) {
+#ifndef MILESTONE_OPT
     (void)debug_name;
+#endif
 
     int allocation_params;
     if (bLargestMalloc(7) < size) {
@@ -2180,7 +2198,11 @@ void *TrackStreamer::AllocateUserMemory(int size, const char *debug_name, int of
     } else {
         allocation_params = (offset & 0x1FFC) << 17 | 0x2047;
     }
+#ifdef MILESTONE_OPT
+    return bMalloc(size, debug_name, 0, allocation_params);
+#else
     return bMalloc(size, allocation_params);
+#endif
 }
 
 void TrackStreamer::FreeUserMemory(void *mem) {

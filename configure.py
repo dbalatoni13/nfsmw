@@ -163,6 +163,28 @@ config.objdiff_tag = "v3.7.0"
 config.sjiswrap_tag = "v1.2.0"
 config.wibo_tag = "1.1.0"
 
+if config.platform == Platform.PS2:
+    ps2_toolchain_dir = Path("build") / "compilers"
+    if config.compilers_path is None:
+        config.compilers_path = ps2_toolchain_dir
+
+    ps2_ee_gcc = (
+        config.compilers_path
+        / "PS2"
+        / "ee-gcc2.9-991111"
+        / "bin"
+        / "ee-gcc.exe"
+    )
+    if not ps2_ee_gcc.is_file():
+        sys.exit(
+            "PS2 builds require "
+            f"{ps2_ee_gcc}. "
+            "Seed it with "
+            "`python tools/share_worktree_assets.py bootstrap --version "
+            "SLES-53558-A124 --ps2-toolchain-zip /path/to/PS2.zip` "
+            "or pass `--compilers`."
+        )
+
 # Project
 config.config_path = Path("config") / config.version / "config.yml"
 config.check_sha_path = Path("config") / config.version / "build.sha1"

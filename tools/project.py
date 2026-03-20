@@ -1224,7 +1224,10 @@ def generate_build_ninja(
             return obj.src_obj_path
 
         def asm_build(
-            obj: Object, src_path: Path, obj_path: Optional[Path]
+            obj: Object,
+            src_path: Path,
+            obj_path: Optional[Path],
+            add_to_all: bool = True,
         ) -> Optional[Path]:
             if obj.options["asflags"] is None:
                 sys.exit("ProjectConfig.asflags missing")
@@ -1251,7 +1254,7 @@ def generate_build_ninja(
             )
             n.newline()
 
-            if obj.options["add_to_all"]:
+            if add_to_all and obj.options["add_to_all"]:
                 source_inputs.append(obj_path)
 
             return obj_path
@@ -1279,7 +1282,12 @@ def generate_build_ninja(
                         ).replace("src", "asm")
                     )
                     obj_path = Path(str(obj.src_obj_path).replace("src", "obj"))
-                    built_obj_path = asm_build(obj, asm_path, obj_path)
+                    built_obj_path = asm_build(
+                        obj,
+                        asm_path,
+                        obj_path,
+                        add_to_all=False,
+                    )
                 if file_is_c_cpp(obj.src_path):
                     # Add C/C++ build rule
                     built_obj_path = c_build(obj, obj.src_path)
