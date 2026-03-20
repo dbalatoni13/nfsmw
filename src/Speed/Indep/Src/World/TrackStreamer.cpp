@@ -1314,53 +1314,49 @@ void TrackStreamer::SwitchZones(short *current_zones) {
     StartLoadingTime = GetDebugRealTime();
     CurrentZoneNeedsRefreshing = false;
 
-    for (int i = 0; i < 2; i++) {
-        short current_zone = current_zones[i];
-        StreamingPositionEntry *streaming_position = &StreamingPositionEntries[i];
-        if (streaming_position->CurrentZone != current_zone) {
-            PlotLoadingMarker(streaming_position);
+    for (int position_number = 0; position_number < 2; position_number++) {
+        StreamingPositionEntry *position_entry = &StreamingPositionEntries[position_number];
+        int zone_number = current_zones[position_number];
+        if (position_entry->CurrentZone != zone_number) {
+            PlotLoadingMarker(position_entry);
 
-            VisibleSectionBoundary *old_boundary = TheVisibleSectionManager.FindBoundary(streaming_position->CurrentZone);
-            VisibleSectionBoundary *new_boundary = TheVisibleSectionManager.FindBoundary(current_zone);
-            float distance_to_boundary = kMaxDistance_TrackStreamer;
-            if (old_boundary && new_boundary) {
-                int num_points = old_boundary->NumPoints;
-                for (int n = 0; n < num_points; n++) {
-                    float boundary_distance =
-                        new_boundary->GetDistanceOutside(&old_boundary->Points[n], kMaxDistance_TrackStreamer);
-                    distance_to_boundary = bMin(distance_to_boundary, boundary_distance);
+            VisibleSectionBoundary *boundary1 = TheVisibleSectionManager.FindBoundary(position_entry->CurrentZone);
+            VisibleSectionBoundary *boundary2 = TheVisibleSectionManager.FindBoundary(zone_number);
+            float best_distance = kMaxDistance_TrackStreamer;
+            if (boundary1 && boundary2) {
+                for (int n = 0; n < boundary1->GetNumPoints(); n++) {
+                    float distance = boundary2->GetDistanceOutside(boundary1->GetPoint(n), kMaxDistance_TrackStreamer);
+                    best_distance = bMin(best_distance, distance);
                 }
             }
 
-            if (kSwitchZoneFarLoadThreshold_TrackStreamer < distance_to_boundary) {
+            if (kSwitchZoneFarLoadThreshold_TrackStreamer < best_distance) {
                 CurrentZoneFarLoad = true;
             }
 
-            streaming_position->CurrentZone = current_zone;
-            streaming_position->BeginLoadingPosition.x = streaming_position->Position.x;
-            streaming_position->BeginLoadingPosition.y = streaming_position->Position.y;
-            streaming_position->BeginLoadingTime = GetDebugRealTime();
-            streaming_position->NumSectionsToLoad = 0;
-            streaming_position->NumSectionsLoaded = 0;
-            streaming_position->AmountToLoad = 0;
-            streaming_position->AmountLoaded = 0;
+            position_entry->CurrentZone = zone_number;
+            bCopy(&position_entry->BeginLoadingPosition, &position_entry->Position);
+            position_entry->BeginLoadingTime = GetDebugRealTime();
+            position_entry->NumSectionsToLoad = 0;
+            position_entry->NumSectionsLoaded = 0;
+            position_entry->AmountToLoad = 0;
+            position_entry->AmountLoaded = 0;
         }
 
-        if (i == 0) {
-            GetScenerySectionName(CurrentZoneName, current_zone);
-        } else if (current_zone > 0) {
-            bSPrintf(CurrentZoneName, "%s - %s", CurrentZoneName, GetScenerySectionName(current_zone));
+        if (position_number == 0) {
+            GetScenerySectionName(CurrentZoneName, zone_number);
+        } else if (zone_number > 0) {
+            bSPrintf(CurrentZoneName, "%s - %s", CurrentZoneName, GetScenerySectionName(zone_number));
         }
     }
 
     int num_sections_unactivated = 0;
     DetermineStreamingSections();
     PostLoadFixupDisabled = true;
-    for (int i = 0; i < NumTrackStreamingSections; i++) {
-        TrackStreamingSection *section = &pTrackStreamingSections[i];
+    for (int n = 0; n < NumTrackStreamingSections; n++) {
+        TrackStreamingSection *section = &pTrackStreamingSections[n];
         if (section->Status == TrackStreamingSection::ACTIVATED && !section->CurrentlyVisible) {
-            char section_letter = GetScenerySectionLetter_TrackStreamer(section->SectionNumber);
-            if (section_letter != 'Y' && section_letter != 'W' && section_letter != 'X' && section_letter != 'U') {
+            if (!IsTextureSection(section->SectionNumber) && !IsLibrarySection(section->SectionNumber)) {
                 num_sections_unactivated += 1;
                 UnactivateSection(section);
             }
