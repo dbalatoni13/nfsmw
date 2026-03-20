@@ -343,7 +343,9 @@ VisibleSectionManager::VisibleSectionManager() {
 
 char *GetScenerySectionName(char *name, int section_number) {
     if (section_number < 1) {
-        bStrCpy(name, "--");
+        name[0] = '-';
+        name[1] = '-';
+        name[2] = '\0';
     } else {
         bSPrintf(name, "%c%d", GetScenerySectionLetter(section_number), section_number % 100);
     }
