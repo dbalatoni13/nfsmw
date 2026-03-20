@@ -76,11 +76,13 @@ bool GCharacter::AttemptSpawn() {
         const char *carTypeLowMem = CarTypeLowMem(0);
         const char *spawnCarType = carType;
         bool isCop = bStrCmp(carType, "copmidsize") == 0;
-        DriverClass driverClass = DRIVER_TRAFFIC;
+        DriverClass driverClass;
         bool spawn_ok = true;
 
         if (isCop) {
             driverClass = DRIVER_COP;
+        } else {
+            driverClass = DRIVER_TRAFFIC;
         }
 
         if (carTypeLowMem && *carTypeLowMem) {
@@ -88,13 +90,11 @@ bool GCharacter::AttemptSpawn() {
         }
 
         if (SkipFE) {
-            int disable = SkipFEDisableTraffic;
-
             if (isCop) {
-                disable = SkipFEDisableCops;
+                spawn_ok = SkipFEDisableCops == 0;
+            } else {
+                spawn_ok = SkipFEDisableTraffic == 0;
             }
-
-            spawn_ok = disable == 0;
         }
 
         if (spawn_ok) {
