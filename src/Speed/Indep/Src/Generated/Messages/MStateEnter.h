@@ -14,11 +14,7 @@ class MStateEnter : public Hermes::Message {
         return sizeof(MStateEnter);
     }
 
-    static UCrc32 _GetKind() {
-        static UCrc32 k("MStateEnter");
-
-        return k;
-    }
+    static UCrc32 _GetKind();
 
     MStateEnter() : Hermes::Message(_GetKind(), _GetSize(), 0) {}
 

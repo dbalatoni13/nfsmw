@@ -49,6 +49,10 @@ unsigned int bStringHashUpper(const char *text);
 struct PresetCar;
 struct CarPartDatabase;
 
+HINTERFACE IAudible::_IHandle() {
+    return (HINTERFACE)_IHandle;
+}
+
 extern CarPartDatabase CarPartDB;
 
 FECustomizationRecord *FECustomizationRecordCtor(FECustomizationRecord *self) __asm__("__21FECustomizationRecord");

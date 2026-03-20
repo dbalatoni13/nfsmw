@@ -14,11 +14,7 @@ class MStateExit : public Hermes::Message {
         return sizeof(MStateExit);
     }
 
-    static UCrc32 _GetKind() {
-        static UCrc32 k("MStateExit");
-
-        return k;
-    }
+    static UCrc32 _GetKind();
 
     MStateExit() : Hermes::Message(_GetKind(), _GetSize(), 0) {}
 

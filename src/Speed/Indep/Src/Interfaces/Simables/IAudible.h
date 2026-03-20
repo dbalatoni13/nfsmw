@@ -9,9 +9,7 @@
 
 class IAudible : public UTL::COM::IUnknown {
   public:
-    static HINTERFACE _IHandle() {
-        return (HINTERFACE)_IHandle;
-    }
+    static HINTERFACE _IHandle();
 
     IAudible(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
 
