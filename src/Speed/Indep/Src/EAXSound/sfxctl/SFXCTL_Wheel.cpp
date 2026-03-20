@@ -24,18 +24,28 @@ Attrib::Key Attrib::Gen::simsurface::ClassKey() {
 
 SFXCTL_Wheel::SFXCTL_Wheel()
     : SFXCTL() //
-    , m_bvTotalRightWheelSlip(0.0f, 0.0f) //
-    , m_bvTotalLeftWheelSlip(0.0f, 0.0f) //
     , LeftSideTerrain(static_cast< const Attrib::Collection * >(nullptr), 0, nullptr) //
     , RightSideTerrain(static_cast< const Attrib::Collection * >(nullptr), 0, nullptr) //
     , PrevLeftSideTerrain(static_cast< const Attrib::Collection * >(nullptr), 0, nullptr) //
-    , PrevRightSideTerrain(static_cast< const Attrib::Collection * >(nullptr), 0, nullptr) //
-    , v3NewPosLeft(0.0f, 0.0f, 0.0f) //
-    , v3NewPosRight(0.0f, 0.0f, 0.0f) //
-    , LeftSideTouchingGround(true) //
-    , RightSideTouchingGround(true) {
+    , PrevRightSideTerrain(static_cast< const Attrib::Collection * >(nullptr), 0, nullptr) {
+    m_bvTotalRightWheelSlip.x = 0.0f;
+    m_bvTotalRightWheelSlip.y = 0.0f;
+    m_bvTotalLeftWheelSlip.x = 0.0f;
+    m_bvTotalLeftWheelSlip.y = 0.0f;
+
+    v3NewPosLeft.x = 0.0f;
+    v3NewPosLeft.y = 0.0f;
+    v3NewPosLeft.z = 0.0f;
+    v3NewPosRight.x = 0.0f;
+    v3NewPosRight.y = 0.0f;
+    v3NewPosRight.z = 0.0f;
+
+    LeftSideTouchingGround = true;
+    RightSideTouchingGround = true;
+
     for (int i = 0; i < 4; i++) {
-        m_NormWheelSlip[i] = bVector2(0.0f, 0.0f);
+        m_NormWheelSlip[i].x = 0.0f;
+        m_NormWheelSlip[i].y = 0.0f;
         m_fWheelTractionMag[i] = 0.0f;
         m_fLoad[i] = 0.0f;
     }
