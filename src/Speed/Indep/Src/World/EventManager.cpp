@@ -227,8 +227,7 @@ int LoaderEventManager(bChunk *chunk) {
     bChunk *last_chunk = chunk->GetLastChunk();
     void *event_trigger_pack = 0;
     for (bChunk *child = chunk->GetFirstChunk(); child != last_chunk; child = child->GetNext()) {
-        int child_id = child->GetID();
-        switch (child_id) {
+        switch (child->GetID()) {
         case 0x36002:
             if (event_trigger_pack) {
                 void *tree = child->GetAlignedData(0x10);
