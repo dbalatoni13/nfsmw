@@ -218,11 +218,71 @@ void CollisionEvent::Pause(bool pause) {
 }
 
 AudioEvent *CollisionEvent::PlayScrape(const AudioEventParams &params) {
-    return new CollisionEvent(params, false);
+    CollisionEvent *bang;
+    CSTATE_Base *stateObj;
+
+    if (DistanceToView(&params.position) > 100.0f) {
+        return nullptr;
+    }
+
+    if (IsSoundEnabled == 0) {
+        return nullptr;
+    }
+
+    if (params.attributes.GetCollectionKey() == 0) {
+        return nullptr;
+    }
+
+    bang = new ("Sound::CollisionEvent", 0) CollisionEvent(params, false);
+    stateObj = nullptr;
+    if (bang->mCSISEffect != nullptr && g_pEAXSound != nullptr && EAXSound::GetStateMgr(eMM_COLLISION) != nullptr) {
+        stateObj = EAXSound::GetStateMgr(eMM_COLLISION)->GetFreeState(bang);
+        if (stateObj != nullptr) {
+            stateObj->Attach(bang);
+            bang->mRefCount = bang->mRefCount + 1;
+        }
+    }
+
+    if (stateObj == nullptr) {
+        if (bang != nullptr) {
+            delete bang;
+        }
+        return nullptr;
+    }
+
+    return bang;
 }
 
 AudioEvent *CollisionEvent::Play(const AudioEventParams &params) {
-    return new CollisionEvent(params, true);
+    CollisionEvent *bang;
+    CSTATE_Base *stateObj;
+
+    if (IsSoundEnabled == 0) {
+        return nullptr;
+    }
+
+    if (DistanceToView(&params.position) > 100.0f) {
+        return nullptr;
+    }
+
+    if (params.attributes.GetCollectionKey() == 0) {
+        return nullptr;
+    }
+
+    stateObj = nullptr;
+    bang = new ("Sound::CollisionEvent", 0) CollisionEvent(params, true);
+    if (bang->ImpactStich != nullptr && g_pEAXSound != nullptr && EAXSound::GetStateMgr(eMM_COLLISION) != nullptr) {
+        stateObj = EAXSound::GetStateMgr(eMM_COLLISION)->GetFreeState(bang);
+        if (stateObj != nullptr) {
+            stateObj->Attach(bang);
+        }
+    }
+
+    if (stateObj == nullptr && bang != nullptr) {
+        delete bang;
+    }
+
+    return nullptr;
 }
 
 void CollisionEvent::Update(const bVector3 &position, const bVector3 &normal, const bVector3 &velocity, float dt) {
