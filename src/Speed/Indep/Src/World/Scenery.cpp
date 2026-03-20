@@ -4,6 +4,7 @@
 #include "VisibleSection.hpp"
 #include "Speed/Indep/Src/Camera/Camera.hpp"
 #include "Speed/Indep/Src/Ecstasy/eMath.hpp"
+#include "Speed/Indep/Src/Ecstasy/eLight.hpp"
 #include "Speed/Indep/Src/Ecstasy/eModel.hpp"
 #include "Speed/Indep/Src/Ecstasy/eSolid.hpp"
 #include "Speed/Indep/Src/Misc/Profiler.hpp"
@@ -701,6 +702,49 @@ void ScenerySectionHeader::DrawAScenery(int scenery_instance_number, SceneryCull
 
     draw_info->pMatrix = matrix;
     draw_info->SceneryInst = instance;
+
+    if (scenery_cull_info->pView == eGetView(1, false) || scenery_cull_info->pView == eGetView(2, false)) {
+        ePositionMarker *position_marker = 0;
+        while ((position_marker = model->GetPostionMarker(position_marker)) != 0) {
+            if (model->GetSolid()) {
+                unsigned int exclude_view_ids = 2;
+                if (scenery_cull_info->pView == eGetView(1, false)) {
+                    exclude_view_ids = 1;
+                }
+
+                eLightFlare *light_flare = eGetNextLightFlareInPool(exclude_view_ids);
+                if (light_flare) {
+                    bVector4 ps(
+                        position_marker->Matrix.v3.x - model->GetSolid()->PivotMatrix.v3.x,
+                        position_marker->Matrix.v3.y - model->GetSolid()->PivotMatrix.v3.y,
+                        position_marker->Matrix.v3.z - model->GetSolid()->PivotMatrix.v3.z,
+                        1.0f
+                    );
+                    eMulVector(&ps, draw_info->pMatrix, &ps);
+
+                    if (scenery_cull_info->pView->Precipitation && 0.0f < scenery_cull_info->pView->Precipitation->GetRoadDampness() &&
+                        (light_flare->PositionX != ps.x || light_flare->PositionY != ps.y || light_flare->PositionZ != ps.z)) {
+                        light_flare->ReflectPosZ = 999.0f;
+                    }
+
+                    light_flare->PositionX = ps.x;
+                    light_flare->PositionY = ps.y;
+                    light_flare->PositionZ = ps.z;
+                    light_flare->Type = position_marker->iParam0 + 14;
+                    if (static_cast<unsigned int>(position_marker->iParam0 - 3) < 3) {
+                        bVector2 dr(ps.x - draw_info->pMatrix->v3.x, ps.y - draw_info->pMatrix->v3.y);
+                        light_flare->Flags = 4;
+                        bNormalize(&dr, &dr);
+                        light_flare->DirectionX = dr.x;
+                        light_flare->DirectionY = dr.y;
+                        light_flare->DirectionZ = 0.0f;
+                    } else {
+                        light_flare->Flags = 2;
+                    }
+                }
+            }
+        }
+    }
 }
 
 void ScenerySectionHeader::TreeCull(SceneryCullInfo *scenery_cull_info) {
