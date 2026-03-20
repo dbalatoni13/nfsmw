@@ -674,18 +674,24 @@ void cSampleWarpper::Play(const SND_Params *Params) {
         sample->mData.iD = sampleIndex;
 
         if (TempVol < 0) {
-            TempVol = 0;
-        } else if (TempVol > 0x7FFF) {
-            TempVol = 0x7FFF;
+            sampleType = 0;
+        } else {
+            sampleType = TempVol;
+            if (TempVol > 0x7FFF) {
+                sampleType = 0x7FFF;
+            }
         }
-        sample->mData.vol = TempVol;
+        sample->mData.vol = sampleType;
 
         if (TempPitch < 0) {
-            TempPitch = 0;
-        } else if (TempPitch > 0x2000) {
-            TempPitch = 0x2000;
+            sampleType = 0;
+        } else {
+            sampleType = TempPitch;
+            if (TempPitch > 0x2000) {
+                sampleType = 0x2000;
+            }
         }
-        sample->mData.pitch = TempPitch;
+        sample->mData.pitch = sampleType;
 
         if (sampleAz < 0) {
             sampleAz = 0;

@@ -128,10 +128,7 @@ void SFXCTL_HybridMotor::UpdateDualMixEng(float t) {
         if (m_pStateBase->GetPhysCar()->IsShifting() || m_pShiftingCtl->IsActive()) {
             UseAccelMix = m_pShiftingCtl->eShiftState == SHFT_UP_ENGAGING;
         } else {
-            UseAccelMix = m_pAccelTranCtl->eAccelTransFxState != FX_ACCEL_STATE_NONE;
-            if (UseAccelMix) {
-                UseAccelMix = m_pAccelTranCtl->eAccelTransFxState == FX_ACCEL_STATE_ATTACK;
-            }
+            UseAccelMix = m_pAccelTranCtl->eAccelTransFxState == FX_ACCEL_STATE_ATTACK;
         }
         if (UseAccelMix) {
             USE_SMOOTHING = false;
@@ -163,16 +160,16 @@ void SFXCTL_HybridMotor::UpdateDualMixEng(float t) {
     newmix.DecelGinsu = (AccelMix.DecelGinsu - DecelMix.DecelGinsu) * AccelDecelMix + DecelMix.DecelGinsu;
     newmix.AccelGinsu = (AccelMix.AccelGinsu - DecelMix.AccelGinsu) * AccelDecelMix + DecelMix.AccelGinsu;
 
-    if (!USE_SMOOTHING) {
-        m_EngineMix.Aems = newmix.Aems;
-        m_EngineMix.AccelGinsu = newmix.AccelGinsu;
-        m_EngineMix.DecelGinsu = newmix.DecelGinsu;
-        m_EngineMix.Cutoff = newmix.Cutoff;
-    } else {
+    if (USE_SMOOTHING) {
         m_EngineMix.Aems = smooth(m_EngineMix.Aems, newmix.Aems, 0.2f);
         m_EngineMix.AccelGinsu = smooth(m_EngineMix.AccelGinsu, newmix.AccelGinsu, 0.2f);
         m_EngineMix.DecelGinsu = smooth(m_EngineMix.DecelGinsu, newmix.DecelGinsu, 0.2f);
         m_EngineMix.Cutoff = smooth(m_EngineMix.Cutoff, newmix.Cutoff, 6000);
+    } else {
+        m_EngineMix.Aems = newmix.Aems;
+        m_EngineMix.AccelGinsu = newmix.AccelGinsu;
+        m_EngineMix.DecelGinsu = newmix.DecelGinsu;
+        m_EngineMix.Cutoff = newmix.Cutoff;
     }
 
     int curveOutput = NFSMixShape::GetCurveOutput(static_cast<NFSMixShape::eMIXTABLEID>(7), m_EngineMix.Cutoff, true);
@@ -191,14 +188,14 @@ void SFXCTL_HybridMotor::UpdateDualMixEng(float t) {
     VolAccelGinsu = static_cast<int>(m_EngineMix.AccelGinsu * static_cast<float>(engineInfo.GINSUAccelVol()) * EngineCtlVolFactor);
     VolDecelGinsu = static_cast<int>(m_EngineMix.DecelGinsu * static_cast<float>(engineInfo.GinsuDecelVol()) * EngineCtlVolFactor);
 
-    if (!USE_SMOOTHING) {
-        m_EngVolAEMS = VolAEMS;
-        m_EngVolAccelGinsu = VolAccelGinsu;
-        m_EngVolDecelGinsu = VolDecelGinsu;
-    } else {
+    if (USE_SMOOTHING) {
         m_EngVolAEMS = smooth(m_EngVolAEMS, VolAEMS, 7000);
         m_EngVolAccelGinsu = smooth(m_EngVolAccelGinsu, VolAccelGinsu, 7000);
         m_EngVolDecelGinsu = smooth(m_EngVolDecelGinsu, VolDecelGinsu, 7000);
+    } else {
+        m_EngVolAEMS = VolAEMS;
+        m_EngVolAccelGinsu = VolAccelGinsu;
+        m_EngVolDecelGinsu = VolDecelGinsu;
     }
 
     m_EngVolRedLine = static_cast<int>(static_cast<float>(engineInfo.AEMSVol()) * EngineCtlVolFactor);

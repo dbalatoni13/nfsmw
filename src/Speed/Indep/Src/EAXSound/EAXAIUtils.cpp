@@ -153,11 +153,42 @@ void SndAIStateManager::Initialize(SFXCTL_Physics *pPhys) {
 
 void SndAIStateManager::GeneratePotentialStates(bool *ArrayList) {
     ArrayList[SND_AI_STATE_PRERACE] = false;
-    ArrayList[SND_AI_STATE_IDLE] = m_pPhysicsCTL->GetStateBase()->GetPhysCar()->GetVelocityMagnitudeMPH() < 5.0f;
-    ArrayList[SND_AI_STATE_ACCEL] = AccelMonitor.IsTriggering();
-    ArrayList[SND_AI_STATE_DECEL] = DeccelMonitor.IsTriggering();
-    ArrayList[SND_AI_STATE_CORNER_LEFT] = DeccelMonitor.IsTriggering() && SteeringMonitorLeft.IsTriggering();
-    ArrayList[SND_AI_STATE_CORNER_RIGHT] = DeccelMonitor.IsTriggering() && SteeringMonitorRight.IsTriggering();
+    if (m_pPhysicsCTL->GetStateBase()->GetPhysCar()->GetVelocityMagnitudeMPH() < 5.0f) {
+        ArrayList[SND_AI_STATE_IDLE] = true;
+    } else {
+        ArrayList[SND_AI_STATE_IDLE] = false;
+    }
+
+    if (AccelMonitor.IsTriggering()) {
+        ArrayList[SND_AI_STATE_ACCEL] = true;
+    } else {
+        ArrayList[SND_AI_STATE_ACCEL] = false;
+    }
+
+    if (DeccelMonitor.IsTriggering()) {
+        ArrayList[SND_AI_STATE_DECEL] = true;
+    } else {
+        ArrayList[SND_AI_STATE_DECEL] = false;
+    }
+
+    if (DeccelMonitor.IsTriggering()) {
+        if (SteeringMonitorLeft.IsTriggering()) {
+            ArrayList[SND_AI_STATE_CORNER_LEFT] = true;
+        } else {
+            ArrayList[SND_AI_STATE_CORNER_LEFT] = false;
+        }
+    } else {
+        ArrayList[SND_AI_STATE_CORNER_LEFT] = false;
+    }
+
+    if (DeccelMonitor.IsTriggering()) {
+        if (SteeringMonitorRight.IsTriggering()) {
+            ArrayList[SND_AI_STATE_CORNER_RIGHT] = true;
+            return;
+        }
+    }
+
+    ArrayList[SND_AI_STATE_CORNER_RIGHT] = false;
 }
 
 void SndAIStateManager::UpdateState(float t) {
