@@ -659,7 +659,7 @@ void ScenerySectionHeader::DrawAScenery(int scenery_instance_number, SceneryCull
 
     if ((instance->ExcludeFlags & 0x200) != 0) {
         SceneryDrawInfo *draw_info = scenery_cull_info->pCurrentDrawInfo;
-        if (draw_info == scenery_cull_info->pTopDrawInfo) {
+        if (draw_info >= scenery_cull_info->pTopDrawInfo) {
             return;
         }
 
