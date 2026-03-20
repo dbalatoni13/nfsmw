@@ -224,12 +224,12 @@ void SkidSet::Render(eView *view, unsigned char intensityReduction) {
 
         alpha0 = skid_segment->GetIntensity();
         alpha1 = next_skid_segment->GetIntensity();
-        if (alpha0 < intensityReduction) {
+        if (intensityReduction > alpha0) {
             alpha0 = 0;
         } else {
             alpha0 -= intensityReduction;
         }
-        if (alpha1 < intensityReduction) {
+        if (intensityReduction > alpha1) {
             alpha1 = 0;
         } else {
             alpha1 -= intensityReduction;
