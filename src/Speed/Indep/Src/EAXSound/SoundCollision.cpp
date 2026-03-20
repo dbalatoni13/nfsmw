@@ -326,10 +326,43 @@ UTL::COM::Factory<Sound::AudioEventParams const &, Sound::AudioEvent, unsigned i
     Attrib::Gen::audioimpact::ClassKey(), Sound::CollisionEvent::Play);
 
 EAX_CarState *GetClosestPlayerCar(const bVector3 *vPosition, bool CameraRelative, int &CarID) {
-    (void)vPosition;
-    (void)CameraRelative;
-    CarID = -1;
-    return nullptr;
+    float Dist[2] = {-1.0f, -1.0f};
+
+    if (SndCamera::NumPlayers == 0) {
+        return nullptr;
+    }
+
+    {
+        int n = 0;
+
+        if (SndCamera::NumPlayers > 0) {
+            do {
+                bVector3 *pPlayerPos;
+
+                if (!CameraRelative) {
+                    pPlayerPos = SndCamera::GetWorldCarPos3(n);
+                } else {
+                    pPlayerPos = SndCamera::GetCamPos3(n);
+                }
+
+                Dist[n] = bDistBetween(pPlayerPos, vPosition);
+                n++;
+            } while (n < SndCamera::NumPlayers);
+        }
+    }
+
+    if (Dist[0] < Dist[1] || Dist[1] < 0.0f) {
+        CarID = 0;
+        return SndCamera::GetPlayerCar(0)->GetPhysCar();
+    }
+
+    if (Dist[1] < Dist[0]) {
+        CarID = 1;
+        return SndCamera::GetPlayerCar(1)->GetPhysCar();
+    }
+
+    CarID = 0;
+    return SndCamera::GetPlayerCar(0)->GetPhysCar();
 }
 
 EAX_CarState *GetClosestCopCarToCamera() {
