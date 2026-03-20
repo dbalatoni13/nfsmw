@@ -233,13 +233,13 @@ void RenderVisibleSectionBoundary(VisibleSectionBoundary *boundary, eView *view)
                     position.z = topology_coordinate.GetElevation(&position, 0, 0, 0);
                     if (view->GetPixelSize(&position, 1.0f) > 0) {
                         unsigned char *matrix_memory = CurrentBufferPos;
-                        unsigned char *next_buffer_pos = CurrentBufferPos + sizeof(bMatrix4);
-                        if (CurrentBufferEnd > next_buffer_pos) {
-                            CurrentBufferPos = next_buffer_pos;
-                        } else {
+                        unsigned char *next_buffer_pos = matrix_memory + sizeof(bMatrix4);
+                        if (next_buffer_pos >= CurrentBufferEnd) {
                             FrameMallocFailed = 1;
                             FrameMallocFailAmount += sizeof(bMatrix4);
                             matrix_memory = 0;
+                        } else {
+                            CurrentBufferPos = next_buffer_pos;
                         }
 
                         if (matrix_memory) {
