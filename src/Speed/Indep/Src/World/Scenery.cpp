@@ -1079,8 +1079,7 @@ int UnloaderScenery(bChunk *chunk) {
     if (chunk_id == 0x80034100) {
         ScenerySectionHeader *section_header = reinterpret_cast<ScenerySectionHeader *>(chunk->GetAlignedData(0x10));
         int *section_header_words = reinterpret_cast<int *>(section_header);
-        VisibleSectionUserInfo *user_info = TheVisibleSectionManager.GetUserInfo(section_header_words[3]);
-        user_info->pScenerySectionHeader = 0;
+        TheVisibleSectionManager.GetUserInfo(section_header_words[3])->pScenerySectionHeader = 0;
         TheVisibleSectionManager.UnallocateUserInfo(section_header_words[3]);
         section_header->Remove();
 
@@ -1187,12 +1186,19 @@ int GrandSceneryCullInfo::WhatSectionsShouldWeDraw(short *sections_to_draw, int 
             }
         }
     } else {
-        for (int section_number = 0xA28; section_number < 0xA8C; section_number++) {
+        int section_number = 0xA28;
+    section_number_loop:
+        if (section_number >= 0xA8C) {
+            goto end_section_number_loop;
+        }
+
             if (GetScenerySectionHeader(section_number) && num_sections_to_draw < max_sections) {
                 sections[num_sections_to_draw] = static_cast<short>(section_number);
                 num_sections_to_draw += 1;
-            }
         }
+        section_number += 1;
+        goto section_number_loop;
+    end_section_number_loop:
 
         for (int i = 0; i < drivable_scenery_section->GetNumVisibleSections(); i++) {
             int section_number = drivable_scenery_section->GetVisibleSection(i);
