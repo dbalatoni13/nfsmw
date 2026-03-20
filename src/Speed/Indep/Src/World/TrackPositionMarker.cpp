@@ -70,14 +70,16 @@ int GetNumTrackPositionMarkers(int track_number, unsigned int name_hash) {
 }
 
 TrackPositionMarker *GetTrackPositionMarker(int track_number, unsigned int name_hash, int index) {
-    for (TrackPositionMarker *marker = TrackPositionMarkerList.GetHead(); marker != TrackPositionMarkerList.EndOfList();
-         marker = marker->GetNext()) {
-        if (marker->TrackNumber == track_number && marker->NameHash == name_hash) {
-            if (index == 0) {
-                return marker;
+    int num_markers = 0;
+
+    for (TrackPositionMarker *p = TrackPositionMarkerList.GetHead(); p != TrackPositionMarkerList.EndOfList();
+         p = p->GetNext()) {
+        if (p->NameHash == name_hash && (p->TrackNumber == 0 || p->TrackNumber == track_number)) {
+            if (num_markers == index) {
+                return p;
             }
 
-            index -= 1;
+            num_markers += 1;
         }
     }
 
