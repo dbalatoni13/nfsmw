@@ -214,6 +214,19 @@ void RenderVisibleSectionBoundary(VisibleSectionBoundary *boundary, eView *view)
         return;
     }
 
+    float perimeter;
+    {
+        int n;
+
+        for (n = 0; n < boundary->GetNumPoints(); n++) {
+            bVector2 *v1 = boundary->GetPoint(n);
+            bVector2 *v2 = boundary->GetPoint((n + 1) % boundary->GetNumPoints());
+            float x = v1->x - v2->x;
+            float y = v1->y - v2->y;
+            perimeter = bSqrt(x * x + y * y);
+        }
+    }
+
     bVector3 position;
     TopologyCoordinate topology_coordinate;
     float pos = static_cast<float>((static_cast<int>(WorldTimer.GetSeconds() * 262144.0f) & 0xffff)) * 6.103515625e-05f;
