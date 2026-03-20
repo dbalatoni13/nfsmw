@@ -88,12 +88,42 @@ void SFXCTL_HybridMotor::AttachController(SFXCTL *ctrl) {
 }
 
 void SFXCTL_HybridMotor::UpdateDeltaRPM() {
-    if (m_pEngineCtl == nullptr) {
-        m_AvgDeltaRPM.Reset(0.0f);
-        return;
+    mPrevPhyDeltaRPM = m_CurPhyDeltaRPMVal;
+
+    float PhyDeltaRPM = GetPhysRPM() - PrevRPM;
+    m_CurPhyDeltaRPMVal = PhyDeltaRPM;
+
+    float AudDeltaRPM = m_pEngineCtl->m_fEng_RPM - m_pEngineCtl->m_fPrevRPM;
+    m_CurAudDeltaRPMVal = AudDeltaRPM;
+    PrevRPM = GetPhysRPM();
+
+    if (m_pEAXCar->GetPhysicsCTL()->NISRevingEnabled) {
+        m_AvgDeltaRPM.Record(AudDeltaRPM);
+    } else if (m_pAccelTranCtl->IsActive()) {
+        if (m_pAccelTranCtl->eAccelTransFxState == FX_ACCEL_STATE_ATTACK) {
+            m_AvgDeltaRPM.Flush(PhyDeltaRPM);
+        } else {
+            m_AvgDeltaRPM.Flush(AudDeltaRPM);
+        }
+    } else if (m_pShiftingCtl->IsActive()) {
+        SHIFT_STAGE ShiftState = m_pShiftingCtl->eShiftState;
+
+        if (ShiftState == SHFT_DOWN_ENGAGING_RISE) {
+            m_AvgDeltaRPM.Flush(AudDeltaRPM);
+        } else if (m_pShiftingCtl->eShiftStageChanged == SHFT_UP_ENGAGING) {
+            m_AvgDeltaRPM.Flush(bAbs(PhyDeltaRPM));
+        } else {
+            if (static_cast<unsigned int>(ShiftState - SHFT_UP_ENGAGING) < 2u) {
+                m_AvgDeltaRPM.Record(bAbs(AudDeltaRPM));
+            } else {
+                m_AvgDeltaRPM.Record(AudDeltaRPM);
+            }
+        }
+    } else {
+        m_AvgDeltaRPM.Record(PhyDeltaRPM);
     }
-    float deltaRPM = m_pEngineCtl->m_fEng_RPM - m_pEngineCtl->m_fPrevRPM;
-    m_AvgDeltaRPM.Reset(deltaRPM);
+
+    m_AvgDeltaRPM.Recalculate();
 }
 
 void SFXCTL_HybridMotor::UpdateParams(float t) {
