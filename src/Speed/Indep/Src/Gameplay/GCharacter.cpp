@@ -74,6 +74,13 @@ bool GCharacter::AttemptSpawn() {
     if (mState == kCharState_Unspawned) {
         const char *carType = CarType(0);
         const char *carTypeLowMem = CarTypeLowMem(0);
+
+        if (carTypeLowMem) {
+            if (*carTypeLowMem) {
+                carType = carTypeLowMem;
+            }
+        }
+
         bool isCop = bStrCmp(carType, "copmidsize") == 0;
         DriverClass driverClass = DRIVER_TRAFFIC;
         bool spawn_ok = true;
@@ -91,12 +98,6 @@ bool GCharacter::AttemptSpawn() {
         }
 
         if (spawn_ok) {
-            if (carTypeLowMem) {
-                if (*carTypeLowMem) {
-                    carType = carTypeLowMem;
-                }
-            }
-
             ISimable *isimable = GManager::Get().GetStockCar(carType);
 
             if (!isimable) {
