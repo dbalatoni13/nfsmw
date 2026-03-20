@@ -106,18 +106,19 @@ bool GCharacter::AttemptSpawn() {
 
                 if (!isimable) {
                     isimable = GManager::Get().GetRandomEmergencyStockCar();
-                    if (!isimable) {
-                        return false;
+                    if (isimable) {
+                        SetFlag(kCharFlag_UsingStockCar);
                     }
-                    SetFlag(kCharFlag_UsingStockCar);
                 }
             } else {
                 SetFlag(kCharFlag_UsingStockCar);
             }
 
-            mAttachments->Attach(isimable);
-            mVehicle->SetDriverClass(driverClass);
-            mState = kCharState_Spawning_WaitingForModel;
+            if (isimable) {
+                Attach(isimable);
+                mVehicle->SetDriverClass(driverClass);
+                mState = kCharState_Spawning_WaitingForModel;
+            }
         }
     }
 
@@ -139,11 +140,12 @@ bool GCharacter::AttemptSpawn() {
 
                 if (isimable->QueryInterface(&vehicleAI)) {
                     AITarget *target = vehicleAI->GetTarget();
-                    WRoadNav *road_nav = vehicleAI->GetCurrentRoad();
 
                     if (target) {
                         target->Aquire(mTargetPos, mTargetDir);
                     }
+
+                    WRoadNav *road_nav = vehicleAI->GetCurrentRoad();
 
                     if (road_nav) {
                         road_nav->ResetCookieTrail();
