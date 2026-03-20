@@ -6,8 +6,10 @@
 #include "Speed/Indep/Src/Generated/Events/EAutoSave.hpp"
 #include "Speed/Indep/Src/Generated/Events/EFadeScreenOff.hpp"
 #include "Speed/Indep/Src/Generated/Events/EFadeScreenOn.hpp"
+#include "Speed/Indep/Src/Generated/Events/EShowSMS.hpp"
 #include "Speed/Indep/Src/Generated/Messages/MEnteringGameplay.h"
 #include "Speed/Indep/Src/Generated/Messages/MNotifyMilestoneProgress.h"
+#include "Speed/Indep/Src/Frontend/HUD/FeMenuZoneTrigger.hpp"
 #include "Speed/Indep/Src/Gameplay/GMarker.h"
 #include "Speed/Indep/Src/Gameplay/GVault.h"
 #include "Speed/Indep/Src/Interfaces/SimActivities/ICopMgr.h"
@@ -2164,8 +2166,24 @@ int GManager::PushSMSToInbox() {
 }
 
 void GManager::UpdatePendingSMS() {
-    if (GetHasPendingSMS() && CanPlaySMS()) {
-        PushSMSToInbox();
+    if (mPendingSMS.size() && CanPlaySMS()) {
+        int smsToShow = PushSMSToInbox();
+        if (smsToShow != -1) {
+            new EShowSMS(smsToShow);
+        }
+
+        IPlayer *player = IPlayer::First(PLAYER_LOCAL);
+        if (player) {
+            IHud *ihud = player->GetHud();
+            if (ihud) {
+                IMenuZoneTrigger *izone;
+                if (ihud->QueryInterface(&izone)) {
+                    if (izone) {
+                        izone->ExitTrigger();
+                    }
+                }
+            }
+        }
     }
 }
 
