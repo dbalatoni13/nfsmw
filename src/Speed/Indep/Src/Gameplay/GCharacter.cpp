@@ -74,12 +74,17 @@ bool GCharacter::AttemptSpawn() {
     if (mState == kCharState_Unspawned) {
         const char *carType = CarType(0);
         const char *carTypeLowMem = CarTypeLowMem(0);
+        const char *spawnCarType = carType;
         bool isCop = bStrCmp(carType, "copmidsize") == 0;
-        DriverClass driverClass = isCop ? DRIVER_COP : DRIVER_TRAFFIC;
+        DriverClass driverClass = DRIVER_TRAFFIC;
         bool spawn_ok = true;
 
+        if (isCop) {
+            driverClass = DRIVER_COP;
+        }
+
         if (carTypeLowMem && *carTypeLowMem) {
-            carType = carTypeLowMem;
+            spawnCarType = carTypeLowMem;
         }
 
         if (SkipFE) {
@@ -93,10 +98,10 @@ bool GCharacter::AttemptSpawn() {
         }
 
         if (spawn_ok) {
-            ISimable *isimable = GManager::Get().GetStockCar(carType);
+            ISimable *isimable = GManager::Get().GetStockCar(spawnCarType);
 
             if (!isimable) {
-                VehicleParams params(&GManager::Get(), driverClass, Attrib::StringToKey(carType), mSpawnDir, mSpawnPos, 0, nullptr, 0);
+                VehicleParams params(&GManager::Get(), driverClass, Attrib::StringToKey(spawnCarType), mSpawnDir, mSpawnPos, 0, nullptr, 0);
                 isimable = UTL::COM::Factory<Sim::Param, ISimable, UCrc32>::CreateInstance("PVehicle", params);
 
                 if (!isimable) {
