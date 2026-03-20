@@ -1403,8 +1403,9 @@ int TrackStreamer::Loader(bChunk *chunk) {
         }
 
         for (int i = 0; i < NumHibernatingSections; i++) {
-            TrackStreamingSection *section = FindSection(HibernatingSections[i].SectionNumber);
-            bMemCpy(section, &HibernatingSections[i], sizeof(TrackStreamingSection));
+            TrackStreamingSection *src = &HibernatingSections[i];
+            TrackStreamingSection *section = FindSection(src->SectionNumber);
+            bMemCpy(section, src, sizeof(TrackStreamingSection));
             NumSectionsLoaded += 1;
             ActivateSection(section);
             JettisonedSections[NumJettisonedSections] = section;
@@ -1432,11 +1433,7 @@ int TrackStreamer::Loader(bChunk *chunk) {
         for (int i = 0; i < 2; i++) {
             bEndianSwap32(&pInfo->FileSize[i]);
         }
-    } else {
-        if (chunk_id != 0x34112) {
-            return 0;
-        }
-
+    } else if (chunk_id == 0x34112) {
         pBarriers = reinterpret_cast<TrackStreamingBarrier *>(chunk->GetData());
         NumBarriers = chunk->Size / sizeof(TrackStreamingBarrier);
         for (int i = 0; i < NumBarriers; i++) {
@@ -1444,6 +1441,8 @@ int TrackStreamer::Loader(bChunk *chunk) {
             bPlatEndianSwap(&barrier->Points[0]);
             bPlatEndianSwap(&barrier->Points[1]);
         }
+    } else {
+        return 0;
     }
 
     return 1;
