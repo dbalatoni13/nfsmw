@@ -367,7 +367,7 @@ IVehicle *GRacerInfo::CreateVehicle(unsigned int default_key) {
         return nullptr;
     }
 
-    if (customizations.Preset == 0) {
+    if (!customizations.IsPreset()) {
         RideInfo ride;
         const char *modelName = attributes.MODEL().GetString();
 
