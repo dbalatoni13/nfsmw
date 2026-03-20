@@ -3484,10 +3484,10 @@ void GRaceStatus::UpdateAdaptiveDifficulty(eAdaptiveGainReason reason, ISimable 
                 return;
             }
 
-            if (!GetRacerInfo(i).GetGameCharacter()) {
-                player_points = GetRacerInfo(i).GetPointTotal();
-            } else {
+            if (GetRacerInfo(i).GetGameCharacter()) {
                 ai_points = UMath::Max(ai_points, GetRacerInfo(i).GetPointTotal());
+            } else {
+                player_points = GetRacerInfo(i).GetPointTotal();
             }
         }
 
