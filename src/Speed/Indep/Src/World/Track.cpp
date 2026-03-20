@@ -49,7 +49,10 @@ int LoaderTrackOBB(bChunk *chunk) {
 }
 
 int UnloaderTrackOBB(bChunk *chunk) {
-    chunk = chunk;
+    if (chunk->GetID() != 0x34191) {
+        return 0;
+    }
+
     NumTrackOBBs = 0;
     TrackOBBTable = 0;
     return 1;
