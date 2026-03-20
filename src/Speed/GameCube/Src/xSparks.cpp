@@ -236,16 +236,19 @@ void CGEmitter::SpawnParticles(float dt, float intensity) {
         int g = static_cast<int>(mEmitterDef.Colour1().y * 255.0f);
         int b = static_cast<int>(mEmitterDef.Colour1().z * 255.0f);
         int a = static_cast<int>(mEmitterDef.Colour1().w * 255.0f);
-        float num_particles = intensity * mEmitterDef.NumParticles();
         float life = mEmitterDef.Life();
-        float num_particles_variance = num_particles - num_particles * mEmitterDef.NumParticlesVariance() * 100.0f;
-        float particle_age_factor = life - life * mEmitterDef.LifeVariance();
+        float life_variance = life * mEmitterDef.LifeVariance();
+        float num_particles = intensity * mEmitterDef.NumParticles();
+        float num_particles_variance = num_particles * mEmitterDef.NumParticlesVariance() * 100.0f;
+        float particle_age_factor;
         float current_particle_age = 0.0f;
         unsigned int particleColor = a << 24 | b << 16 | g << 8 | r;
+        life -= life_variance;
+        num_particles -= num_particles_variance;
 
-        if (num_particles_variance != 0.0f) {
-            float particle_step = dt / num_particles_variance;
-            while (num_particles_variance != 0.0f) {
+        if (num_particles != 0.0f) {
+            particle_age_factor = dt / num_particles;
+            while (num_particles != 0.0f) {
                 NGParticle *particle;
                 float sparkLength;
                 float ld;
@@ -255,7 +258,7 @@ void CGEmitter::SpawnParticles(float dt, float intensity) {
                 float gravity;
                 UMath::Vector4 ppos;
 
-                num_particles_variance -= 1.0f;
+                num_particles -= 1.0f;
                 particle = gParticleList.GetNextParticle();
                 if (!particle) {
                     break;
@@ -286,19 +289,18 @@ void CGEmitter::SpawnParticles(float dt, float intensity) {
                 ppos.w = 1.0f;
 
                 UMath::RotateTranslate(ppos, local_world, ppos);
-                VU0_v3scaleadd(UMath::Vector4To3(pvel), current_particle_age, UMath::Vector4To3(ppos),
-                               particle->initialPos);
+                UMath::ScaleAdd(UMath::Vector4To3(pvel), current_particle_age, UMath::Vector4To3(ppos), particle->initialPos);
 
                 particle->initialPos.z += gravity * current_particle_age * current_particle_age;
                 particle->vel = UMath::Vector4To3(pvel);
                 particle->age = current_particle_age;
                 particle->gravity = gravity;
-                particle->life = static_cast<uint16>(particle_age_factor * 65535.0f);
+                particle->life = static_cast<uint16>(life * 65535.0f);
                 particle->color = particleColor;
                 particle->length = static_cast<uint8>(ld * 255.0f);
                 particle->width = static_cast<uint8>(mEmitterDef.HeightStart());
 
-                current_particle_age += particle_step;
+                current_particle_age += particle_age_factor;
             }
         }
 
