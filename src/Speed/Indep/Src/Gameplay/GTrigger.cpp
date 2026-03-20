@@ -150,7 +150,17 @@ GTrigger::GTrigger(const Attrib::Key &triggerKey)
 }
 
 GTrigger::~GTrigger() {
-    ClearParticleEffects();
+    Disable();
+
+    for (unsigned int onEffect = 0; onEffect < 2; onEffect++) {
+        if (mParticleEffect[onEffect]) {
+            mParticleEffect[onEffect]->UnSubscribe();
+            if (mParticleEffect[onEffect]) {
+                delete mParticleEffect[onEffect];
+            }
+        }
+    }
+
     if (mIcon) {
         GManager::Get().FreeIcon(mIcon);
         mIcon = nullptr;

@@ -5,6 +5,7 @@
 #pragma once
 #endif
 
+#include "Speed/Indep/Libs/Support/Utility/FastMem.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/gameplay.h"
 
 class GMarker;
@@ -27,6 +28,13 @@ class GRuntimeInstance : public Attrib::Gen::gameplay {
     GRuntimeInstance(const Attrib::Key &key, GameplayObjType type);
 
     virtual ~GRuntimeInstance();
+
+    static void operator delete(void *mem, unsigned int size) {
+        if (mem) {
+            gFastMem.Free(mem, size, nullptr);
+        }
+    }
+
 
     void SetConnectionBuffer(ConnectedInstance *destBuffer, unsigned int numEntries);
 
