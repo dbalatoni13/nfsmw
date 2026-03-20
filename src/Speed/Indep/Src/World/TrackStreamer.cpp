@@ -1390,8 +1390,8 @@ int TrackStreamer::Loader(bChunk *chunk) {
         for (int i = 0; i < NumTrackStreamingSections; i++) {
             TrackStreamingSection *section = &pTrackStreamingSections[i];
             bEndianSwap16(&section->SectionNumber);
-            bEndianSwap32(&section->Status);
             bEndianSwap32(&section->FileType);
+            bEndianSwap32(&section->Status);
             bEndianSwap32(&section->FileOffset);
             bEndianSwap32(&section->Size);
             bEndianSwap32(&section->CompressedSize);
@@ -1413,6 +1413,7 @@ int TrackStreamer::Loader(bChunk *chunk) {
         }
 
         NumHibernatingSections = 0;
+        return 1;
     } else if (chunk_id == 0x34113) {
         pDiscBundleSections = reinterpret_cast<DiscBundleSection *>(chunk->GetData());
         pLastDiscBundleSection = reinterpret_cast<DiscBundleSection *>(reinterpret_cast<char *>(pDiscBundleSections) + chunk->Size);
@@ -1428,11 +1429,13 @@ int TrackStreamer::Loader(bChunk *chunk) {
                 member->pSection = FindSection(member->SectionNumber);
             }
         }
+        return 1;
     } else if (chunk_id == 0x34111) {
         pInfo = reinterpret_cast<TrackStreamingInfo *>(chunk->GetData());
         for (int i = 0; i < 2; i++) {
             bEndianSwap32(&pInfo->FileSize[i]);
         }
+        return 1;
     } else if (chunk_id == 0x34112) {
         pBarriers = reinterpret_cast<TrackStreamingBarrier *>(chunk->GetData());
         NumBarriers = chunk->Size / sizeof(TrackStreamingBarrier);
@@ -1441,11 +1444,10 @@ int TrackStreamer::Loader(bChunk *chunk) {
             bPlatEndianSwap(&barrier->Points[0]);
             bPlatEndianSwap(&barrier->Points[1]);
         }
+        return 1;
     } else {
         return 0;
     }
-
-    return 1;
 }
 
 int TrackStreamer::Unloader(bChunk *chunk) {
