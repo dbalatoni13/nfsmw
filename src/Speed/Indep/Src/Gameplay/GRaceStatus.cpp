@@ -3933,7 +3933,9 @@ float GRaceStatus::DetermineRaceSegmentLength(const UMath::Vector4 *positions, c
                     shortcutAllowed[shortcut] = 0;
                 }
                 pathSegment.Length = pathDistance;
-                for (int i = 0; i < nav.GetNumPathSegments(); ++i) {
+                int numSegments = nav.GetNumPathSegments();
+
+                for (int i = 0; i < numSegments; ++i) {
                     const WRoadSegment *roadSegment = WRoadNetwork::Get().GetSegment(nav.GetPathSegment(i));
 
                     if ((roadSegment->fFlags & 1) == 0) {
