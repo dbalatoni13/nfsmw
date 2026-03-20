@@ -2158,10 +2158,11 @@ void TrackStreamer::FreeUserMemory(void *mem) {
 
 bool TrackStreamer::IsUserMemory(void *mem) {
     int pos = static_cast<char *>(mem) - static_cast<char *>(pMemoryPoolMem);
+    bool ret = false;
     if (pMemoryPoolMem && pos >= 0) {
-        return pos < MemoryPoolSize;
+        ret = pos < MemoryPoolSize;
     }
-    return false;
+    return ret;
 }
 
 bool TrackStreamer::MakeSpaceInPool(int size, bool force_unloading) {
