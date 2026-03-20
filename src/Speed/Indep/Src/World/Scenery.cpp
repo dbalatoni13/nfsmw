@@ -864,52 +864,53 @@ int LoaderScenery(bChunk *chunk) {
             }
         }
 
-        if (section_header && ChunkMovementOffset == 0) {
-            int *section_header_words = reinterpret_cast<int *>(section_header);
-            unsigned char *scenery_infos = reinterpret_cast<unsigned char *>(section_header_words[6]);
-            for (int i = 0; i < section_header_words[7]; i++) {
-                unsigned char *scenery_info = scenery_infos + i * 0x48;
-                unsigned int *name_hashes = reinterpret_cast<unsigned int *>(scenery_info + 0x18);
-                eModel **models = reinterpret_cast<eModel **>(scenery_info + 0x28);
-                for (int j = 0; j < 4; j++) {
-                    unsigned int name_hash = name_hashes[j];
-                    if (name_hash != 0 && name_hash != 0xBE43EDBB && name_hash != 0x90F70174) {
-                        eModel *model = 0;
-                        for (int n = 0; n < j; n++) {
-                            model = models[n];
-                            if (model && model->NameHash == name_hash) {
-                                break;
+        if (section_header) {
+            if (ChunkMovementOffset == 0) {
+                int *section_header_words = reinterpret_cast<int *>(section_header);
+                unsigned char *scenery_infos = reinterpret_cast<unsigned char *>(section_header_words[6]);
+                for (int i = 0; i < section_header_words[7]; i++) {
+                    unsigned char *scenery_info = scenery_infos + i * 0x48;
+                    unsigned int *name_hashes = reinterpret_cast<unsigned int *>(scenery_info + 0x18);
+                    eModel **models = reinterpret_cast<eModel **>(scenery_info + 0x28);
+                    for (int j = 0; j < 4; j++) {
+                        unsigned int name_hash = name_hashes[j];
+                        if (name_hash != 0 && name_hash != 0xBE43EDBB && name_hash != 0x90F70174) {
+                            eModel *model = 0;
+                            for (int n = 0; n < j; n++) {
+                                model = models[n];
+                                if (model && model->NameHash == name_hash) {
+                                    break;
+                                }
+                                model = 0;
                             }
-                            model = 0;
-                        }
-                        if (!model) {
-                            model = reinterpret_cast<eModel *>(bOMalloc(eModelSlotPool));
-                            model->Solid = 0;
-                            model->pReplacementTextureTable = 0;
-                            model->NumReplacementTextures = 0;
-                            model->Init(name_hash);
-                            if (ModelConnectionCallback) {
-                                ModelConnectionCallback(section_header, i, model);
+
+                            if (!model) {
+                                model = reinterpret_cast<eModel *>(bOMalloc(eModelSlotPool));
+                                model->Solid = 0;
+                                model->pReplacementTextureTable = 0;
+                                model->NumReplacementTextures = 0;
+                                model->Init(name_hash);
+                                if (ModelConnectionCallback) {
+                                    ModelConnectionCallback(section_header, i, model);
+                                }
                             }
+                            models[j] = model;
                         }
-                        models[j] = model;
+                    }
+
+                    if (models[2] == 0 && models[1] != 0) {
+                        models[2] = models[1];
+                    }
+                    if (models[0] == 0 && models[1] != 0) {
+                        models[0] = models[1];
                     }
                 }
 
-                if (models[2] == 0 && models[1] != 0) {
-                    models[2] = models[1];
-                }
-                if (models[0] == 0 && models[1] != 0) {
-                    models[0] = models[1];
+                if (SectionConnectionCallback) {
+                    SectionConnectionCallback(section_header);
                 }
             }
 
-            if (SectionConnectionCallback) {
-                SectionConnectionCallback(section_header);
-            }
-        }
-
-        if (section_header) {
             reinterpret_cast<int *>(section_header)[2] = 1;
         }
         return 1;
