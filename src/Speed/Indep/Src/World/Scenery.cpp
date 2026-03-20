@@ -1158,19 +1158,19 @@ int UnloaderScenery(bChunk *chunk) {
 
 int GrandSceneryCullInfo::WhatSectionsShouldWeDraw(short *sections_to_draw, int max_sections_to_draw,
                                                    SceneryCullInfo *scenery_cull_info) {
+    short *sections = sections_to_draw;
+    int max_sections = max_sections_to_draw;
+    SceneryCullInfo *cull_info = scenery_cull_info;
     DrivableScenerySection *drivable_scenery_section;
-    int iViewID = scenery_cull_info->pView->GetID();
+    int iViewID = cull_info->pView->GetID();
     if (iViewID == EVIEW_SHADOWMAP1 || iViewID == EVIEW_SHADOWMAP2) {
-        int iViewPlayer = EVIEW_PLAYER1;
-        if (iViewID == EVIEW_SHADOWMAP2) {
-            iViewPlayer = EVIEW_PLAYER2;
-        }
+        int iViewPlayer = iViewID - 12;
         drivable_scenery_section = TheVisibleSectionManager.FindDrivableSection(
-            reinterpret_cast<const bVector2 *>(eGetView(iViewPlayer, false)->GetCamera()->GetPosition())
+            reinterpret_cast<const bVector2 *>(eViews[iViewPlayer].GetCamera()->GetPosition())
         );
     } else {
         drivable_scenery_section = TheVisibleSectionManager.FindDrivableSection(
-            reinterpret_cast<const bVector2 *>(scenery_cull_info->pView->GetCamera()->GetPosition())
+            reinterpret_cast<const bVector2 *>(cull_info->pView->GetCamera()->GetPosition())
         );
     }
 
@@ -1181,23 +1181,23 @@ int GrandSceneryCullInfo::WhatSectionsShouldWeDraw(short *sections_to_draw, int 
              section_header = section_header->GetNext()) {
             int section_number = section_header->GetSectionNumber();
             int subsection_number = section_number % 100;
-            if (subsection_number < 10 && num_sections_to_draw < max_sections_to_draw) {
-                sections_to_draw[num_sections_to_draw] = static_cast<short>(section_number);
+            if (subsection_number < 10 && num_sections_to_draw < max_sections) {
+                sections[num_sections_to_draw] = static_cast<short>(section_number);
                 num_sections_to_draw += 1;
             }
         }
     } else {
         for (int section_number = 0xA28; section_number < 0xA8C; section_number++) {
-            if (GetScenerySectionHeader(section_number) && num_sections_to_draw < max_sections_to_draw) {
-                sections_to_draw[num_sections_to_draw] = static_cast<short>(section_number);
+            if (GetScenerySectionHeader(section_number) && num_sections_to_draw < max_sections) {
+                sections[num_sections_to_draw] = static_cast<short>(section_number);
                 num_sections_to_draw += 1;
             }
         }
 
         for (int i = 0; i < drivable_scenery_section->NumVisibleSections; i++) {
             int section_number = drivable_scenery_section->GetVisibleSection(i);
-            if (section_number > -1 && GetScenerySectionHeader(section_number) && num_sections_to_draw < max_sections_to_draw) {
-                sections_to_draw[num_sections_to_draw] = static_cast<short>(section_number);
+            if (section_number >= 0 && GetScenerySectionHeader(section_number) && num_sections_to_draw < max_sections) {
+                sections[num_sections_to_draw] = static_cast<short>(section_number);
                 num_sections_to_draw += 1;
             }
         }
@@ -1223,7 +1223,7 @@ int GrandSceneryCullInfo::WhatSectionsShouldWeDraw(short *sections_to_draw, int 
         if (SeeulatorToolActive) {
             if (ScenerySectionToBlink != 0 && ((RealTimeFrames / 5) & 1U) != 0) {
                 num_sections_to_draw =
-                    ToggleIsInTable(sections_to_draw, num_sections_to_draw, max_sections_to_draw, ScenerySectionToBlink);
+                    ToggleIsInTable(sections, num_sections_to_draw, max_sections, ScenerySectionToBlink);
             }
             if (SeeulatorToolActive && SeeulatorRefreshTrackStreamer != 0) {
                 RefreshTrackStreamer();
