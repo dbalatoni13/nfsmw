@@ -146,7 +146,7 @@ int SkidSet::AddSegment(bVector3 *position, bVector3 *delta_position, bool skid_
         bNormalize(&new_segment_forward, &new_segment_forward);
     }
 
-    bool expand_last_skid_segment = false;
+    int expand_last_skid_segment = 0;
     if (NumSkidSegments > 1) {
         float error = 1.0f - bDot(&new_segment_forward, &LastNormal);
         float new_segment_length = LastSegmentLength + length;
@@ -156,10 +156,10 @@ int SkidSet::AddSegment(bVector3 *position, bVector3 *delta_position, bool skid_
         }
 
         if (error < kSkidDirectionMergeThreshold_Skids || new_segment_length < kSkidLengthMergeThreshold_Skids) {
-            expand_last_skid_segment = true;
+            expand_last_skid_segment = 1;
         }
         if (new_segment_length > kSkidLengthSplitThreshold_Skids) {
-            expand_last_skid_segment = false;
+            expand_last_skid_segment = 0;
         }
     }
 
