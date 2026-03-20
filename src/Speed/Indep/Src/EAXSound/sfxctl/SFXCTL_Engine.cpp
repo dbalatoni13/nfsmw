@@ -242,7 +242,19 @@ void SFXCTL_Engine::UpdateFilterFX() {
 }
 
 void SFXCTL_Engine::UpdateCompression(float t) {
-    (void)t;
+    SetDMIX_Input(1, 0);
+    m_ComppressionRPM.Update(t);
+
+    if (*static_cast<int *>(static_cast<void *>(&bPlayCompression)) != 0) {
+        int CompDuration = g_pEAXSound->Random(100) + 0x19;
+        float DeltaRPM = g_pEAXSound->Random(100.0f) + 25.0f;
+
+        m_ComppressionRPM.ClearStages();
+        m_ComppressionRPM.AddStage(0.0f, DeltaRPM, CompDuration, EQ_PWR_SQ);
+        m_ComppressionRPM.AddStage(DeltaRPM, 0.0f, CompDuration, EQ_PWR_SQ);
+        *static_cast<int *>(static_cast<void *>(&bPlayCompression)) = 0;
+        SetDMIX_Input(1, 0x7fff);
+    }
 }
 
 void SFXCTL_Engine::UpdateRedlining(float t) {
