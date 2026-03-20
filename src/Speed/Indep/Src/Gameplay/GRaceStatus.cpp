@@ -3599,9 +3599,23 @@ bool GRaceStatus::ComputeCatchUpSkill(GRacerInfo *racer_info, PidError *pid, flo
     if (off_world) {
         glue_level = 1.0f;
     } else {
-        GRace::Context raceContext = GetRaceContext();
+        if (GetRaceContext() != GRace::kRaceContext_QuickRace) {
+            if (GetRaceContext() != GRace::kRaceContext_Career) {
+                return false;
+            }
 
-        if (raceContext == GRace::kRaceContext_QuickRace) {
+            glue_level = UMath::Clamp((GetAdaptiveDifficutly() + 1.0f) * 0.5f, 0.0f, 1.0f);
+            if (mRaceParms) {
+                if (mRaceParms->GetCatchUpOverride()) {
+                    use_race_override = true;
+                }
+
+                if (mRaceParms->GetIsBossRace()) {
+                    is_boss = true;
+                    glue_level = UMath::Lerp(glue_level, 1.0f, 0.5f);
+                }
+            }
+        } else {
             if (!mRaceParms) {
                 return false;
             }
@@ -3611,17 +3625,6 @@ bool GRaceStatus::ComputeCatchUpSkill(GRacerInfo *racer_info, PidError *pid, flo
             }
 
             glue_level = Tweak_QuickRaceGlue[mRaceParms->GetDifficulty()];
-        } else if (raceContext == GRace::kRaceContext_Career) {
-            glue_level = UMath::Clamp((GetAdaptiveDifficutly() + 1.0f) * 0.5f, 0.0f, 1.0f);
-            if (mRaceParms) {
-                use_race_override = mRaceParms->GetCatchUpOverride();
-                if (mRaceParms->GetIsBossRace()) {
-                    is_boss = true;
-                    glue_level = UMath::Lerp(glue_level, 1.0f, 0.5f);
-                }
-            }
-        } else {
-            return false;
         }
     }
 
