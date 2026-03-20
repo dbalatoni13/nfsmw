@@ -2510,21 +2510,19 @@ GRaceStatus::GRaceStatus()
 
     currentBin = FEDatabase->GetCareerSettings()->GetCurrentBin();
 
-    mRacerCount = 0;
-    mIsLoading = false;
-    mPlayMode = kPlayMode_Racing;
-    mRaceContext = GRace::kRaceContext_Career;
-    mRaceParms = nullptr;
+    mNextCheckpoint = nullptr;
     mCheckpointModel = nullptr;
     mCheckpointEmitter = nullptr;
+    mIsLoading = false;
     mActivelyRacing = false;
-    mNumTollbooths = 0;
+    mRaceParms = nullptr;
+    mRacerCount = 0;
+    nSpeedTraps = 0;
+    mRaceContext = GRace::kRaceContext_Career;
     mRaceBin = GRaceDatabase::Get().GetBinNumber(currentBin);
-    mScriptWaitingForLoad = false;
-    mHasBeenWon = false;
-    fRaceLength = 0.0f;
-    fFirstLapLength = 0.0f;
-    fSubsequentLapLength = 0.0f;
+    mCaluclatedAdaptiveGain = false;
+    mQueueBinChange = false;
+    mNumTollbooths = 0;
 #ifndef EA_BUILD_A124
     mPlayerPursuitInCooldown = false;
 #endif
@@ -2533,19 +2531,20 @@ GRaceStatus::GRaceStatus()
     mSuddenDeathMode = false;
     mTimeExpiredMsgSent = false;
     mLastSecondTickSent = 0;
-    mQueueBinChange = false;
 #ifndef EA_BUILD_A124
+    mRefreshBinAfterRace = false;
     mWarpWhenInFreeRoam = 0;
 #endif
-    mNextCheckpoint = nullptr;
-    nSpeedTraps = 0;
     mVehicleCacheLocked = false;
     bRaceRouteError = false;
     mTrafficDensity = 0;
     mTrafficPattern = 0;
-#ifndef EA_BUILD_A124
-    mRefreshBinAfterRace = false;
-#endif
+    mScriptWaitingForLoad = false;
+    mHasBeenWon = false;
+    fSubsequentLapLength = 0.0f;
+    mPlayMode = kPlayMode_Racing;
+    fRaceLength = 0.0f;
+    fFirstLapLength = 0.0f;
     fObj = this;
 
     ClearTimes();
