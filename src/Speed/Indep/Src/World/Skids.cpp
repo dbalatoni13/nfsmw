@@ -259,6 +259,7 @@ SkidSet *CreateNewSkidSet(SkidMaker *skid_maker, bVector3 *position, bVector3 *d
 }
 
 void SkidMaker::MakeSkid(Car *pCar, bVector3 *position, bVector3 *delta_position, int terrain_type, float intensity) {
+    bool make_flaming_skids = false;
     bVector3 origin(0.0f, 0.0f, 0.0f);
     if (pCar && bDistBetween(&origin, delta_position) > 4.0f) {
         return;
@@ -266,7 +267,8 @@ void SkidMaker::MakeSkid(Car *pCar, bVector3 *position, bVector3 *delta_position
 
     if (!pSkidSet) {
         pSkidSet = CreateNewSkidSet(this, position, delta_position, terrain_type, intensity);
-    } else if (pSkidSet->GetTerrainType() != terrain_type || pSkidSet->AddSegment(position, delta_position, false, intensity) != 0) {
+    } else if (pSkidSet->GetTerrainType() != terrain_type ||
+               pSkidSet->AddSegment(position, delta_position, make_flaming_skids, intensity) != 0) {
         bVector3 last_position;
         bVector3 last_delta_position;
         float last_intensity;
@@ -275,7 +277,7 @@ void SkidMaker::MakeSkid(Car *pCar, bVector3 *position, bVector3 *delta_position
         last_intensity = pSkidSet->GetLastIntensity();
         pSkidSet->FinishedAddingSkids();
         SkidSet *new_skid_set = CreateNewSkidSet(this, &last_position, &last_delta_position, terrain_type, last_intensity);
-        new_skid_set->AddSegment(position, delta_position, false, intensity);
+        new_skid_set->AddSegment(position, delta_position, make_flaming_skids, intensity);
         pSkidSet = new_skid_set;
     }
 }
