@@ -35,6 +35,10 @@ struct gameplay : Instance {
         unsigned int message_id; // offset 0x4, size 0x4
     };
 
+    void *operator new(size_t bytes) {
+        return Attrib::Alloc(bytes, "gameplay");
+    }
+
     void operator delete(void *ptr, size_t bytes) {
         Attrib::Free(ptr, bytes, "gameplay");
     }

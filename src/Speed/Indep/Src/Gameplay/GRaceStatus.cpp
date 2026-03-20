@@ -1086,6 +1086,9 @@ void GRaceParameters::NotifyParentVaultUnloading() {
 }
 
 void GRaceParameters::NotifyParentVaultLoaded() {
+    if (!mRaceRecord) {
+        mRaceRecord = new Attrib::Gen::gameplay(reinterpret_cast<unsigned int *>(mIndex)[0], 0, nullptr);
+    }
 }
 
 const Attrib::Gen::gameplay *GRaceParameters::GetGameplayObj() const {
