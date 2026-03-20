@@ -566,71 +566,56 @@ int VisibleSectionManager::Loader(bChunk *chunk) {
         bChunk *last_chunk = chunk->GetLastChunk();
 
         while (current_chunk < last_chunk) {
-            switch (current_chunk->GetID()) {
-                case 0x34152: {
-                    VisibleSectionBoundary *boundary = reinterpret_cast<VisibleSectionBoundary *>(current_chunk->GetData());
-                    VisibleSectionBoundary *last_boundary = reinterpret_cast<VisibleSectionBoundary *>(current_chunk->GetLastChunk());
+            unsigned int current_chunk_id = current_chunk->GetID();
+            if (current_chunk_id == 0x34152) {
+                VisibleSectionBoundary *boundary = reinterpret_cast<VisibleSectionBoundary *>(current_chunk->GetData());
+                VisibleSectionBoundary *last_boundary = reinterpret_cast<VisibleSectionBoundary *>(current_chunk->GetLastChunk());
 
-                    if (boundary < last_boundary) {
-                        do {
-                            boundary->EndianSwap();
-                            if (IsScenerySectionDrivable(boundary->GetSectionNumber())) {
-                                DrivableBoundaryList.AddTail(boundary);
-                            } else {
-                                NonDrivableBoundaryList.AddTail(boundary);
-                            }
+                if (boundary < last_boundary) {
+                    do {
+                        boundary->EndianSwap();
+                        if (IsScenerySectionDrivable(boundary->GetSectionNumber())) {
+                            DrivableBoundaryList.AddTail(boundary);
+                        } else {
+                            NonDrivableBoundaryList.AddTail(boundary);
+                        }
 
-                            boundary = reinterpret_cast<VisibleSectionBoundary *>(
-                                reinterpret_cast<char *>(boundary) + boundary->GetMemoryImageSize());
-                        } while (boundary < last_boundary);
-                    }
-                    break;
+                        boundary = reinterpret_cast<VisibleSectionBoundary *>(
+                            reinterpret_cast<char *>(boundary) + boundary->GetMemoryImageSize());
+                    } while (boundary < last_boundary);
+                }
+            } else if (current_chunk_id == 0x34153) {
+                DrivableScenerySection *section = reinterpret_cast<DrivableScenerySection *>(current_chunk->GetData());
+                DrivableScenerySection *last_section = reinterpret_cast<DrivableScenerySection *>(current_chunk->GetLastChunk());
+
+                if (section < last_section) {
+                    do {
+                        DrivableSectionList.AddTail(section);
+                        section->EndianSwap();
+                        section->pBoundary = FindBoundary(section->GetSectionNumber());
+                        section = reinterpret_cast<DrivableScenerySection *>(
+                            reinterpret_cast<char *>(section) + section->GetMemoryImageSize());
+                    } while (section < last_section);
                 }
 
-                case 0x34153: {
-                    DrivableScenerySection *section = reinterpret_cast<DrivableScenerySection *>(current_chunk->GetData());
-                    DrivableScenerySection *last_section = reinterpret_cast<DrivableScenerySection *>(current_chunk->GetLastChunk());
-
-                    if (section < last_section) {
-                        do {
-                            DrivableSectionList.AddTail(section);
-                            section->EndianSwap();
-                            section->pBoundary = FindBoundary(section->GetSectionNumber());
-                            section = reinterpret_cast<DrivableScenerySection *>(
-                                reinterpret_cast<char *>(section) + section->GetMemoryImageSize());
-                        } while (section < last_section);
-                    }
-
-                    pSectionD9 = FindDrivableSection(0x199);
-                    pSectionC14 = FindDrivableSection(0x13A);
-                    break;
+                pSectionD9 = FindDrivableSection(0x199);
+                pSectionC14 = FindDrivableSection(0x13A);
+            } else if (current_chunk_id == 0x34151) {
+                pInfo = reinterpret_cast<VisibleSectionManagerInfo *>(current_chunk->GetData());
+                pInfo->EndianSwap();
+                ScenerySectionLODOffset = pInfo->LODOffset;
+            } else if (current_chunk_id == 0x34155) {
+                LoadingSection *loading_sections = reinterpret_cast<LoadingSection *>(current_chunk->GetData());
+                int num_loading_sections = current_chunk->Size / sizeof(LoadingSection);
+                if (num_loading_sections > 0) {
+                    int n = 0;
+                    do {
+                        LoadingSection *section = &loading_sections[n];
+                        LoadingSectionList.AddTail(section);
+                        section->EndianSwap();
+                        n += 1;
+                    } while (n < num_loading_sections);
                 }
-
-                case 0x34151: {
-                    pInfo = reinterpret_cast<VisibleSectionManagerInfo *>(current_chunk->GetData());
-                    pInfo->EndianSwap();
-                    ScenerySectionLODOffset = pInfo->LODOffset;
-                    break;
-                }
-
-                case 0x34155: {
-                    LoadingSection *loading_sections = reinterpret_cast<LoadingSection *>(current_chunk->GetData());
-                    int num_loading_sections = current_chunk->Size / sizeof(LoadingSection);
-                    if (num_loading_sections > 0) {
-                        int n = 0;
-                        do {
-                            LoadingSection *section = &loading_sections[n];
-                            LoadingSectionList.AddTail(section);
-                            section->EndianSwap();
-                            n += 1;
-                        } while (n < num_loading_sections);
-                    }
-                    break;
-                }
-
-                case 0x34154:
-                default:
-                    break;
             }
 
             current_chunk = current_chunk->GetNext();
