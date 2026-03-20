@@ -343,6 +343,7 @@ void DoTunnelBloom(eView *view) {
         SE_def.g = 128.0f;
         SE_def.b = 128.0f;
         SE_def.a = 128.0f;
+        SE_def.UpdateFnc = 0;
         SE_def.data[0] = dataBackup_27616[kTunnelPoint0X][vIndex];
         SE_def.data[1] = dataBackup_27616[kTunnelPoint0Y][vIndex];
         SE_def.data[2] = dataBackup_27616[kTunnelPoint0Z][vIndex];
@@ -423,6 +424,7 @@ void DoTunnelBloom(eView *view) {
         SE_def.g = 128.0f;
         SE_def.b = 128.0f;
         SE_def.a = 128.0f;
+        SE_def.UpdateFnc = 0;
         SE_def.intensity = BaseGlare;
         ToGlare = *camera_position - lcamPosInside_27614[vIndex];
         ToGlare += *camera_direction;
