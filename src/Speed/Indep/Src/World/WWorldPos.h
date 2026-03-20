@@ -33,6 +33,11 @@ class WWorldPos {
     }
 
     WWorldPos(float yOffset) {
+        this->fFace.fPt0 = UMath::Vector3::kZero;
+        this->fFace.fPt1 = UMath::Vector3::kZero;
+        this->fFace.fPt2 = UMath::Vector3::kZero;
+        this->fFace.fSurface.fSurface = 0;
+        this->fFace.fSurface.fFlags = 0;
         this->fFaceValid = 0;
         this->fMissCount = 0;
         this->fUsageCount = 0;
