@@ -598,8 +598,13 @@ void ScenerySectionHeader::DrawAScenery(int scenery_instance_number, SceneryCull
     int *section_header_words = reinterpret_cast<int *>(this);
     SceneryInstance *instance = GetSceneryInstance(scenery_instance_number);
     tPrecullerInfo *preculler_info = GetPrecullerInfo(instance->PrecullerInfoIndex);
-    if (scenery_cull_info->PrecullerSectionNumber >= 0) {
-        if (preculler_info->IsVisible(scenery_cull_info->PrecullerSectionNumber)) {
+    int preculler_section_number = scenery_cull_info->PrecullerSectionNumber;
+    if (preculler_section_number >= 0) {
+        int byte_number = preculler_section_number >> 3;
+        int bit_number = preculler_section_number & 7;
+        unsigned char visibility_bits = preculler_info->VisibilityBits[byte_number];
+        int visibility_mask = 1 << bit_number;
+        if ((visibility_bits & visibility_mask) != 0) {
             return;
         }
     }
