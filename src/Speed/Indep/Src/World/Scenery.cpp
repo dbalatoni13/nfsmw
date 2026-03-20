@@ -731,8 +731,10 @@ void ScenerySectionHeader::DrawAScenery(int scenery_instance_number, SceneryCull
                     light_flare->PositionZ = ps.z;
                     light_flare->Type = position_marker->iParam0 + 14;
                     if (static_cast<unsigned int>(position_marker->iParam0 - 3) < 3) {
-                        bVector2 dr(ps.x - draw_info->pMatrix->v3.x, ps.y - draw_info->pMatrix->v3.y);
+                        bVector2 dr;
                         light_flare->Flags = 4;
+                        dr.x = ps.x - draw_info->pMatrix->v3.x;
+                        dr.y = ps.y - draw_info->pMatrix->v3.y;
                         bNormalize(&dr, &dr);
                         light_flare->DirectionX = dr.x;
                         light_flare->DirectionY = dr.y;
