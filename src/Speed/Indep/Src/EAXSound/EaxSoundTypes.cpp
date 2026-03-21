@@ -459,4 +459,7 @@ namespace _STL {
 template Speech::SpeechEventPair *__lower_bound<Speech::SpeechEventPair *, Speech::SpeechEventPair,
                                                 _STL::less<Speech::SpeechEventPair>, int>(
     Speech::SpeechEventPair *, Speech::SpeechEventPair *, Speech::SpeechEventPair const &, _STL::less<Speech::SpeechEventPair>, int *);
+
+template _STL::_List_iterator<int, _STL::_Nonconst_traits<int> > find<_STL::_List_iterator<int, _STL::_Nonconst_traits<int> >, int>(
+    _STL::_List_iterator<int, _STL::_Nonconst_traits<int> >, _STL::_List_iterator<int, _STL::_Nonconst_traits<int> >, int const &);
 }
