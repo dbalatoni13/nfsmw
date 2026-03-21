@@ -142,9 +142,9 @@ class GameplaySettings {
     bool IsMapItemEnabled(eWorldMapItemType type);
     void SetMapItem(eWorldMapItemType type, bool enabled);
 
-    bool AutoSaveOn;                    // offset 0x0, size 0x1
-    bool RearviewOn;                    // offset 0x4, size 0x1
-    bool Damage;                        // offset 0x8, size 0x1
+    int AutoSaveOn;                     // offset 0x0, size 0x1
+    int RearviewOn;                     // offset 0x4, size 0x1
+    int Damage;                         // offset 0x8, size 0x1
     unsigned char SpeedoUnits;          // offset 0xC, size 0x1
     unsigned char RacingMiniMapMode;    // offset 0xD, size 0x1
     unsigned char ExploringMiniMapMode; // offset 0xE, size 0x1
@@ -152,7 +152,7 @@ class GameplaySettings {
     unsigned char LastMapZoom;          // offset 0x14, size 0x1
     unsigned char LastPursuitMapZoom;   // offset 0x15, size 0x1
     unsigned char LastMapView;          // offset 0x16, size 0x1
-    bool JumpCam;                       // offset 0x18, size 0x1
+    int JumpCam;                        // offset 0x18, size 0x1
     float HighlightCam;                 // offset 0x1C, size 0x4
 };
 
@@ -165,14 +165,14 @@ class PlayerSettings {
     unsigned int GetControllerAttribs(eControllerAttribs type, bool wheel_connected) const;
     void ScrollDriveCam(int dir);
 
-    bool GaugesOn;
-    bool PositionOn;
-    bool LapInfoOn;
-    bool ScoreOn;
-    bool Rumble;
-    bool LeaderboardOn;
-    bool TransmissionPromptOn;
-    bool DriveWithAnalog;
+    int GaugesOn;
+    int PositionOn;
+    int LapInfoOn;
+    int ScoreOn;
+    int Rumble;
+    int LeaderboardOn;
+    int TransmissionPromptOn;
+    int DriveWithAnalog;
     eControllerConfig Config;
     ePlayerSettingsCameras CurCam;
     unsigned char SplitTimeType;
@@ -189,7 +189,7 @@ class VideoSettings {
     float FEScale;       // offset 0x0, size 0x4
     float ScreenOffsetX; // offset 0x4, size 0x4
     float ScreenOffsetY; // offset 0x8, size 0x4
-    bool WideScreen;     // offset 0xC, size 0x1
+    int WideScreen;      // offset 0xC, size 0x1
 };
 
 // total size: 0x34
