@@ -3,6 +3,7 @@
 #include "Speed/Indep/Src/Interfaces/ITaskable.h"
 #include "Speed/Indep/Src/Interfaces/SimActivities/IVehicleCache.h"
 #include "Speed/Indep/Src/Physics/Bounds.h"
+#include "Speed/Indep/Src/Physics/PVehicle.h"
 #include "Speed/Indep/Src/Physics/Dynamics.h"
 #include "rbvehicle.h"
 
@@ -153,7 +154,36 @@ void RBTractor::PlaceObject(const UMath::Matrix4 &orientMat, const UMath::Vector
     }
 }
 
-// RBTractor::RBTractor(const BehaviorParams &bp, const RBComplexParams &params) {}
+RBTractor::RBTractor(const BehaviorParams &bp, const RBComplexParams &params)
+    : RBVehicle(bp, params), //
+      IArticulatedVehicle(bp.fowner), //
+      IVehicleCache(this), //
+      mTrailer(nullptr), //
+      mIInput(nullptr), //
+      mTrailerTask(nullptr), //
+      mHitched(false), //
+      m5thWheel(UMath::Vector3::kZero), //
+      mTrailer5thWheel(UMath::Vector3::kZero), //
+      mDetachTimer(0.0f) {
+    GetOwner()->QueryInterface(&mIInput);
+
+    const Attrib::RefSpec &trailerRef = GetVehicle()->GetVehicleAttributes().Trailer();
+    if (trailerRef.GetCollectionKey() != 0) {
+        UMath::Vector3 initialVec;
+        UMath::Vector3 initialPos;
+        GetForwardVector(initialVec);
+        initialPos = GetPosition();
+
+        VehicleParams trailerParams(this, DRIVER_NONE, trailerRef.GetCollectionKey(), initialVec, initialPos, 4, nullptr, nullptr);
+        ISimable *isimable = UTL::COM::Factory<Sim::Param, ISimable, UCrc32>::CreateInstance("PVehicle", trailerParams);
+        if (isimable) {
+            GetOwner()->Attach(isimable);
+            if (isimable->QueryInterface(&mTrailer)) {
+                SetHitch(true);
+            }
+        }
+    }
+}
 
 bool RBTractor::Pose() {
     if (!mTrailer || !mHitched) {
