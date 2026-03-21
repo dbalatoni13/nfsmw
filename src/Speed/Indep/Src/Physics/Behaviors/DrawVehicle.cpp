@@ -7,6 +7,12 @@ struct Pkt_VehicleFragment_Open : Sim::Packet {
     WUID mWorldID;
     UCrc32 mPartName;
     UCrc32 mColName;
+
+    Pkt_VehicleFragment_Open(WUID vehicleWorldID, WUID worldID, UCrc32 partName, UCrc32 colName)
+        : mVehicleWorldID(vehicleWorldID), //
+          mWorldID(worldID),               //
+          mPartName(partName),             //
+          mColName(colName) {}
 };
 
 struct Pkt_VehicleFragment_Service : Sim::Packet {
@@ -181,12 +187,10 @@ void DrawVehicle::Part::OnBeginSimulation() {
         mTrigger->Disable();
     }
 
-    RenderConn::Pkt_VehicleFragment_Open pkt;
-    *reinterpret_cast<WUID *>(reinterpret_cast<char *>(&pkt) + 0x4) = mVehicleID;
-    *reinterpret_cast<WUID *>(reinterpret_cast<char *>(&pkt) + 0x8) = static_cast<IModel *>(this)->GetWorldID();
-    *reinterpret_cast<UCrc32 *>(reinterpret_cast<char *>(&pkt) + 0xC) = static_cast<IModel *>(this)->GetPartName();
-    *reinterpret_cast<UCrc32 *>(reinterpret_cast<char *>(&pkt) + 0x10) =
-        static_cast<IModel *>(this)->GetCollisionGeometry()->fNameHash;
+    RenderConn::Pkt_VehicleFragment_Open pkt(mVehicleID,
+                                             static_cast<IModel *>(this)->GetWorldID(),
+                                             static_cast<IModel *>(this)->GetPartName(),
+                                             static_cast<IModel *>(this)->GetCollisionGeometry()->fNameHash);
     BeginDraw(UCrc32(0x804c146e), &pkt);
 
     if (!mOffScreenTask) {
