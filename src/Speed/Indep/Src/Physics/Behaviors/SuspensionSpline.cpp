@@ -114,7 +114,9 @@ class SuspensionSpline : public Chassis, public INISCarControl {
     void MatchSpeed(float speed) override;
     UMath::Vector3 GetWheelCenterPos(unsigned int i) const override;
     float GetWheelLoad(unsigned int i) const override;
+    void ApplyVehicleEntryForces(bool enteringVehicle, const UMath::Vector3 &pos, bool calledfromEvent) override;
     const float GetWheelRoadHeight(unsigned int i) const override;
+    bool IsWheelOnGround(unsigned int i) const override;
     float GetCompression(unsigned int i) const override;
     float GetWheelSlip(unsigned int idx) const override;
     float GetToleratedSlip(unsigned int idx) const override;
@@ -763,6 +765,8 @@ const UMath::Vector3 &SuspensionSpline::GetWheelLocalPos(unsigned int i) const {
     return mTires[i]->GetLocalArm();
 }
 
+void SuspensionSpline::ApplyVehicleEntryForces(bool enteringVehicle, const UMath::Vector3 &pos, bool calledfromEvent) {}
+
 float SuspensionSpline::GetWheelLoad(unsigned int i) const {
     return mTires[i]->GetLoad();
 }
@@ -773,6 +777,10 @@ const float SuspensionSpline::GetWheelRoadHeight(unsigned int i) const {
 
 float SuspensionSpline::GetCompression(unsigned int i) const {
     return mTires[i]->GetCompression();
+}
+
+bool SuspensionSpline::IsWheelOnGround(unsigned int i) const {
+    return mTires[i]->IsOnGround();
 }
 
 void SuspensionSpline::MatchSpeed(float speed) {
