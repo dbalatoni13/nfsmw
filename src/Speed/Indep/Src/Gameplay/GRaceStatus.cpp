@@ -2775,28 +2775,31 @@ const char *GRaceStatus::GetCacheName() const {
 }
 
 bool GRaceStatus::CanUnspawnRoamer(const IVehicle *roamer) const {
-    const GRacerInfo *info = nullptr;
+    const GRacerInfo *info;
 
-    if (roamer->IsActive()) {
-        for (int onRacer = 0; onRacer < GetRacerCount(); ++onRacer) {
-            const GRacerInfo &racerInfo = mRacerInfo[onRacer];
+    if (!roamer->IsActive()) {
+        return true;
+    }
 
-            if (UTL::COM::ComparePtr(racerInfo.GetSimable(), roamer)) {
-                info = &racerInfo;
-                break;
-            }
-        }
+    info = nullptr;
+    for (int onRacer = 0; onRacer < GetRacerCount(); ++onRacer) {
+        const GRacerInfo &racerInfo = mRacerInfo[onRacer];
 
-        if (info) {
-            if (roamer->GetOffscreenTime() >= 4.0f) {
-                return Sim::DistanceToCamera(roamer->GetPosition()) >= 100.0f;
-            }
-
-            return false;
+        if (UTL::COM::ComparePtr(racerInfo.GetSimable(), roamer)) {
+            info = &racerInfo;
+            break;
         }
     }
 
-    return true;
+    if (!info) {
+        return true;
+    }
+
+    if (roamer->GetOffscreenTime() < 4.0f) {
+        return false;
+    }
+
+    return Sim::DistanceToCamera(roamer->GetPosition()) >= 100.0f;
 }
 
 eVehicleCacheResult GRaceStatus::OnQueryVehicleCache(const IVehicle *removethis, const IVehicleCache *whosasking) const {
