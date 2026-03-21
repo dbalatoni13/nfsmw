@@ -149,9 +149,11 @@ void TuningSlider::Draw() {
 void TuningSlider::Position() {}
 
 void TuningSlider::SetFocus(const char *parent_pkg) {
-    FEngSetCurrentButton(parent_pkg, GetTitleObject()->NameHash);
+    FEngSetCurrentButton(parent_pkg, GetTitleObject());
     if (bActive) {
-        FEngSetScript(GetTitleObject(), 0x7AB5521A, true);
+        const unsigned long FEObj_Init = 0x7AB5521A;
+
+        FEngSetScript(GetTitleObject(), FEObj_Init, true);
         FEngSetScript(pSliderGroup, 0x001744B3, true);
     }
 }

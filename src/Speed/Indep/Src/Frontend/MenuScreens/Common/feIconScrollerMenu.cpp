@@ -81,8 +81,7 @@ void IconOption::SetFEngObject(FEObject *obj) {
     if (obj) {
         FEngObject = obj;
         FEngGetSize(obj, OrigWidth, OrigHeight);
-        FEColor color = FEngGetObjectColor(obj);
-        OriginalColor = static_cast<unsigned long>(color);
+        OriginalColor = FEngGetColor(obj);
     }
 }
 
