@@ -160,8 +160,8 @@ void FEStatWidget::Position() {
 void FEStatWidget::Show() {
     FEngSetVisible(reinterpret_cast<FEObject*>(pTitle));
     FEngSetVisible(reinterpret_cast<FEObject*>(pData));
-    if (pBacking) {
-        FEngSetVisible(pBacking);
+    if (GetBacking()) {
+        FEngSetVisible(GetBacking());
     }
 }
 
@@ -218,14 +218,14 @@ void FEToggleWidget::CheckMouse(const char* parent_pkg, const float mouse_x, con
 void FEToggleWidget::BlinkArrows(unsigned int data) {}
 
 void FEToggleWidget::Enable() {
-    DisableScript = FEHashUpper("NORMAL");
-    bEnabled = true;
+    SetDisableScript(FEHashUpper("NORMAL"));
+    FEWidget::Enable();
     SetScript(EnableScript);
 }
 
 void FEToggleWidget::Disable() {
-    DisableScript = FEHashUpper("GREY");
-    bEnabled = false;
+    SetDisableScript(FEHashUpper("GREY"));
+    FEWidget::Disable();
     SetScript(DisableScript);
 }
 
@@ -260,7 +260,7 @@ void FEToggleWidget::Hide() {
 }
 
 void FEToggleWidget::SetFocus(const char* parent_pkg) {
-    FEngSetCurrentButton(parent_pkg, reinterpret_cast< FEObject* >(pTitle)->NameHash);
+    FEngSetCurrentButton(parent_pkg, GetTitleObject());
     SetScript(0x249DB7B7);
 }
 

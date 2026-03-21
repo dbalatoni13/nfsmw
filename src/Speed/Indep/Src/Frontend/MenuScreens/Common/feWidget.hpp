@@ -173,8 +173,8 @@ public:
     }
     unsigned int GetEnableScript();
     unsigned int GetDisableScript();
-    void SetEnableScript(unsigned int script);
-    void SetDisableScript(unsigned int script);
+    void SetEnableScript(unsigned int script) { EnableScript = script; }
+    void SetDisableScript(unsigned int script) { DisableScript = script; }
     void SetScript(unsigned int script);
 };
 
