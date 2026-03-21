@@ -273,20 +273,18 @@ void CheckReset(int resetMode) {
 }
 
 int DVDValidErrorState(int error) {
+    int errorstate;
+
     switch (error) {
-        case 5:
-            return 5;
-        case 4:
-            return 4;
-        case 6:
-            return 6;
-        case 11:
-            return 11;
-        case -1:
-            return -1;
-        default:
-            return 0;
+        case 5: errorstate = 5; break;
+        case 4: errorstate = 4; break;
+        case 6: errorstate = 6; break;
+        case 11: errorstate = 11; break;
+        case -1: errorstate = -1; break;
+        default: errorstate = 0; break;
     }
+
+    return errorstate;
 }
 
 void DVDErrorTask(void *, int) {
