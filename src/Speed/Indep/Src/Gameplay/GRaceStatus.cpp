@@ -720,7 +720,6 @@ void GRacerInfo::ForceStartPosition(const UMath::Vector3 &pos, const UMath::Vect
 void GRacerInfo::Update(float dT) {
     ISimable *simable;
     IVehicleAI *vehicleAI;
-    GRaceStatus &raceStatus = GRaceStatus::Get();
     IEngine *engine;
     IPlayer *player;
     UMath::Vector3 linearVelocity;
@@ -736,6 +735,8 @@ void GRacerInfo::Update(float dT) {
     if (!simable) {
         return;
     }
+
+    GRaceStatus &raceStatus = GRaceStatus::Get();
 
     engine = nullptr;
     if (simable->QueryInterface(&engine) && engine->IsNOSEngaged()) {
