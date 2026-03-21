@@ -3301,13 +3301,21 @@ float GRaceStatus::GetRaceTimeElapsed() const {
 }
 
 float GRaceStatus::GetRaceTimeRemaining() const {
-    float limit = mRaceParms ? mRaceParms->GetTimeLimit() : 0.0f;
+    float totalTime = mRaceParms ? mRaceParms->GetTimeLimit() : 0.0f;
 
-    if (limit <= 0.0f) {
+    totalTime += mBonusTime;
+    if (totalTime <= 0.0f) {
         return 0.0f;
     }
 
-    return limit + mBonusTime - GetRaceTimeElapsed();
+    {
+        float timeRemaining = totalTime - mRaceMasterTimer.GetTime();
+        if (timeRemaining < 0.0f) {
+            return 0.0f;
+        }
+
+        return timeRemaining;
+    }
 }
 
 void GRaceStatus::ClearRacers() {
