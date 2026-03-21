@@ -45,6 +45,7 @@ struct AudioEvent {
         return mAttributes;
     }
 
+    ~AudioEvent();
     void Update(const bVector3 &p, const bVector3 &n, const bVector3 &v, float mag);
 };
 

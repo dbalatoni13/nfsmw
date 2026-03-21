@@ -50,6 +50,8 @@ struct AudioEventVirtualFunction {
     void (*Function)(void *, int);
 };
 
+AudioEvent::~AudioEvent() {}
+
 void AudioEvent::Update(const bVector3 &p, const bVector3 &n, const bVector3 &v, float mag) {
     mParams.position = p;
     mParams.normal = n;
