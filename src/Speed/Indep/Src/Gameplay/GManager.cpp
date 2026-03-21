@@ -2882,29 +2882,19 @@ unsigned int GManager::GetRespawnMarker() {
 
 void GManager::GetRespawnLocation(UMath::Vector3 &startLoc, UMath::Vector3 &initialVec) {
     Attrib::Gen::gameplay gameplayObj(GetRespawnMarker(), 0, nullptr);
-    const UMath::Vector3 *position = reinterpret_cast<const UMath::Vector3 *>(gameplayObj.GetAttributePointer(0x9F743A0E, 0));
     UMath::Matrix4 rotMat;
     UMath::Vector3 respawnLoc;
     UMath::Vector3 forwardVec;
-    const float *rotation;
+    const UMath::Vector3 &position = gameplayObj.Position();
 
-    if (!position) {
-        position = reinterpret_cast<const UMath::Vector3 *>(Attrib::DefaultDataArea(sizeof(UMath::Vector3)));
-    }
-
-    respawnLoc = UMath::Vector3Make(-position->y, position->z, position->x);
+    respawnLoc = UMath::Vector3Make(-position.y, position.z, position.x);
     startLoc = respawnLoc;
 
-    UMath::Copy(UMath::Matrix4::kIdentity, rotMat);
+    rotMat = UMath::Matrix4::kIdentity;
 
     forwardVec = UMath::Vector3Make(0.0f, 0.0f, 1.0f);
     initialVec = forwardVec;
 
-    rotation = reinterpret_cast<const float *>(gameplayObj.GetAttributePointer(0x5A6A57C6, 0));
-    if (!rotation) {
-        rotation = reinterpret_cast<const float *>(Attrib::DefaultDataArea(sizeof(float)));
-    }
-
-    MATRIX4_multyrot(&rotMat, -*rotation * 0.0027777778f, &rotMat);
+    MATRIX4_multyrot(&rotMat, -gameplayObj.Rotation() * 0.0027777778f, &rotMat);
     VU0_MATRIX3x4_vect3mult(initialVec, rotMat, initialVec);
 }
