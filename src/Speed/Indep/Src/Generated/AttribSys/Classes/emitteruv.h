@@ -33,19 +33,19 @@ struct emitteruv : Instance {
 
     emitteruv(Key collectionKey, unsigned int msgPort, UTL::COM::IUnknown *owner)
         : Instance(FindCollection(ClassKey(), collectionKey), msgPort, owner) {
-        SetDefaultLayout(sizeof(_LayoutStruct));
+        static_cast<const Instance *>(this)->SetDefaultLayout(sizeof(_LayoutStruct));
     }
 
     emitteruv(const Collection *collection, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(collection, msgPort, owner) {
-        SetDefaultLayout(sizeof(_LayoutStruct));
+        static_cast<const Instance *>(this)->SetDefaultLayout(sizeof(_LayoutStruct));
     }
 
     emitteruv(const emitteruv &src) : Instance(src) {
-        SetDefaultLayout(sizeof(_LayoutStruct));
+        static_cast<const Instance *>(this)->SetDefaultLayout(sizeof(_LayoutStruct));
     }
 
     emitteruv(const RefSpec &refspec, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(refspec, msgPort, owner) {
-        SetDefaultLayout(sizeof(_LayoutStruct));
+        static_cast<const Instance *>(this)->SetDefaultLayout(sizeof(_LayoutStruct));
     }
 
     ~emitteruv() {}

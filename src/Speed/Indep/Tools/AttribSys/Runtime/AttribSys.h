@@ -779,6 +779,12 @@ class Instance {
         }
     }
 
+    void SetDefaultLayout(unsigned int bytes) const {
+        if (mLayoutPtr == nullptr) {
+            const_cast<Instance *>(this)->mLayoutPtr = const_cast<void *>(DefaultDataArea(bytes));
+        }
+    }
+
     bool IsValid() const {
         return mCollection != nullptr;
     }

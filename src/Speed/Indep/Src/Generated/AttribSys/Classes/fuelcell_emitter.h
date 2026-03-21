@@ -48,19 +48,19 @@ struct fuelcell_emitter : Instance {
 
     fuelcell_emitter(Key collectionKey, unsigned int msgPort, UTL::COM::IUnknown *owner)
         : Instance(FindCollection(ClassKey(), collectionKey), msgPort, owner) {
-        SetDefaultLayout(sizeof(_LayoutStruct));
+        static_cast<const Instance *>(this)->SetDefaultLayout(sizeof(_LayoutStruct));
     }
 
     fuelcell_emitter(const Collection *collection, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(collection, msgPort, owner) {
-        SetDefaultLayout(sizeof(_LayoutStruct));
+        static_cast<const Instance *>(this)->SetDefaultLayout(sizeof(_LayoutStruct));
     }
 
     fuelcell_emitter(const fuelcell_emitter &src) : Instance(src) {
-        SetDefaultLayout(sizeof(_LayoutStruct));
+        static_cast<const Instance *>(this)->SetDefaultLayout(sizeof(_LayoutStruct));
     }
 
     fuelcell_emitter(const RefSpec &refspec, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(refspec, msgPort, owner) {
-        SetDefaultLayout(sizeof(_LayoutStruct));
+        static_cast<const Instance *>(this)->SetDefaultLayout(sizeof(_LayoutStruct));
     }
 
     ~fuelcell_emitter() {}

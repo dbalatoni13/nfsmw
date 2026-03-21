@@ -250,13 +250,20 @@ void CGEmitter::SpawnParticles(float dt, float intensity) {
 
 NGEffect::NGEffect(const XenonEffectDef &eDef)
     : mEffectDef(eDef.spec, 0, nullptr) {
+    int numEmitters;
+
     if (mEffectDef.IsValid()) {
-        int i = 0;
-        int length = mEffectDef.Num_NGEmitter();
-        while (i < length) {
-            CGEmitter emitter(mEffectDef.NGEmitter(i).GetCollection(), eDef);
-            emitter.SpawnParticles(1.0f / 30.0f, 1.0f);
-            i++;
+        numEmitters = mEffectDef.Num_NGEmitter();
+        {
+            int i = 0;
+
+            while (i < numEmitters) {
+                const Attrib::Collection *emspec = mEffectDef.NGEmitter(i).GetCollection();
+                CGEmitter anEmitter(emspec, eDef);
+
+                anEmitter.SpawnParticles(1.0f / 30.0f, 1.0f);
+                i++;
+            }
         }
     }
 }
