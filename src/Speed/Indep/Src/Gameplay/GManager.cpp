@@ -2873,16 +2873,12 @@ void GManager::GetRespawnLocation(UMath::Vector3 &startLoc, UMath::Vector3 &init
         position = reinterpret_cast<const UMath::Vector3 *>(Attrib::DefaultDataArea(sizeof(UMath::Vector3)));
     }
 
-    respawnLoc.x = -position->y;
-    respawnLoc.y = position->z;
-    respawnLoc.z = position->x;
+    respawnLoc = UMath::Vector3Make(-position->y, position->z, position->x);
     startLoc = respawnLoc;
 
     UMath::Copy(UMath::Matrix4::kIdentity, rotMat);
 
-    forwardVec.x = 0.0f;
-    forwardVec.y = 0.0f;
-    forwardVec.z = 1.0f;
+    forwardVec = UMath::Vector3Make(0.0f, 0.0f, 1.0f);
     initialVec = forwardVec;
 
     rotation = reinterpret_cast<const float *>(gameplayObj.GetAttributePointer(0x5A6A57C6, 0));
