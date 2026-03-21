@@ -33,7 +33,6 @@ void DrawHeli::OnService(RenderConn::Pkt_Heli_Service &pkt) {
     mInView = pkt.mInView;
     mDistanceToView = pkt.mDistanceToView;
     if (mIVehicle) {
-        mIAIHelicopter = nullptr;
         mIVehicle->QueryInterface(&mIAIHelicopter);
         if (mIAIHelicopter) {
             pkt.mShadowScale = mIAIHelicopter->GetShadowScale();
@@ -44,7 +43,7 @@ void DrawHeli::OnService(RenderConn::Pkt_Heli_Service &pkt) {
 
 bool DrawHeli::OnService(HSIMSERVICE hCon, Sim::Packet *pkt) {
     if (hCon == mRenderService) {
-        if (!GetParentModel()) {
+        if (!static_cast<IModel *>(this)->GetParentModel()) {
             OnService(*static_cast<RenderConn::Pkt_Heli_Service *>(pkt));
             return true;
         }
