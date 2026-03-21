@@ -1024,7 +1024,37 @@ void RigidBody::DoWorldCollisions(const float dT) {
     }
 }
 
-void RigidBody::DoBarrierCollision(float dT) {}
+void RigidBody::DoBarrierCollision(float dT) {
+    if (mWCollider->fBarrierList.empty()) {
+        return;
+    }
+
+    const Volatile &data = *mData;
+    const WCollisionBarrierList &barriers = mWCollider->fBarrierList;
+    Dynamics::Collision::Geometry thisGeom;
+    bool test_primitives = true;
+
+    if (mPrimitives.Size() > 1) {
+        UMath::Vector3 velocity;
+        UMath::Vector3 dim;
+        float radius = mPrimitives.GetRadius();
+
+        UMath::Scale(data.linearVel, dT, velocity);
+        dim.x = radius;
+        dim.y = radius;
+        dim.z = radius;
+        thisGeom.Set(data.bodyMatrix, data.position, dim, Dynamics::Collision::Geometry::SPHERE, velocity);
+        test_primitives = WCollisionMgr(mCollisionMask, 3).Collide(&thisGeom, &barriers, this, nullptr, false);
+    }
+
+    if (test_primitives) {
+        for (Primitive *collider = mPrimitives.GetHead(); collider != mPrimitives.EndOfList(); collider = collider->GetNext()) {
+            if ((((collider->GetFlags() ^ 1) & 1) == 0) && !(collider->GetFlags() & 8) && collider->SetCollision(data, thisGeom)) {
+                WCollisionMgr(mCollisionMask, 3).Collide(&thisGeom, &barriers, this, collider, (collider->GetFlags() & Primitive::ONESIDED) != 0);
+            }
+        }
+    }
+}
 
 void RigidBody::DoInstanceCollision(float dT) {
     if (!mSpecs.INSTANCE_COLLISIONS_3D()) {
