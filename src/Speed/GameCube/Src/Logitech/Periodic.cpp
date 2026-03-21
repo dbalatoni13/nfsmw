@@ -22,9 +22,13 @@ Periodic::Periodic() : Force() {}
 int Periodic::DownloadForce(long channel, long forceNumber, unsigned long & handle, unsigned char type, unsigned long duration, unsigned long startDelay, unsigned char magnitude, unsigned short direction, unsigned short period, unsigned short phase, short offset, unsigned long attackTime, unsigned long fadeTime, unsigned char attackLevel, unsigned char fadeLevel) {
     LGForceEffect force;
     int ret;
+    int slot;
+    unsigned long *effectId;
 
+    slot = forceNumber * 4 + channel * 32;
+    effectId = reinterpret_cast<unsigned long *>(reinterpret_cast<char *>(this) + 0x80 + slot);
     ret = 0;
-    if (PeriodicGetEffectID(this, channel, forceNumber) != static_cast<unsigned long>(-1)) {
+    if (*effectId != static_cast<unsigned long>(-1)) {
         Destroy(channel, forceNumber);
     }
 
@@ -43,10 +47,10 @@ int Periodic::DownloadForce(long channel, long forceNumber, unsigned long & hand
         force.p.periodic.envelope.attackLevel = attackLevel;
         force.p.periodic.envelope.fadeLevel = fadeLevel;
 
-        ret = LGDownloadForceEffect(handle, &PeriodicGetEffectID(this, channel, forceNumber), &force);
+        ret = LGDownloadForceEffect(handle, effectId, &force);
         if (ret < 0) {
             OSReport(kDownloadPeriodicForceError, channel, ret);
-            PeriodicGetEffectID(this, channel, forceNumber) = static_cast<unsigned long>(-1);
+            *effectId = static_cast<unsigned long>(-1);
         }
     } else {
         OSReport(kDownloadPeriodicForceInvalidWheel, channel);
