@@ -11,6 +11,15 @@
 
 #include <new>
 
+struct LoggingAttribAllocatorLayout {
+    void *vfptr;
+    unsigned int mChecksum;
+    unsigned int mAllocCount;
+    unsigned int mAllocBytes;
+    unsigned int mFreeCount;
+    unsigned int mFreeBytes;
+};
+
 void *LoggingAttribAllocator::operator new(std::size_t size) {
     return gFastMem.Alloc(size, nullptr);
 }
@@ -147,25 +156,28 @@ void GVault::LoadResident(AttribVaultPackImage *packImage) {
 }
 
 void GVault::PreloadTransient(AttribVaultPackImage *packImage, int pool_num) {
-    unsigned char *binBlock = reinterpret_cast<unsigned char *>(packImage) + mBinOffset;
-    unsigned char *vltBlock = reinterpret_cast<unsigned char *>(packImage) + mVltOffset;
+    unsigned char *binBlock;
+    unsigned char *vltBlock = reinterpret_cast<unsigned char *>(packImage);
     char binFileName[128];
     char vltFileName[128];
     PreloadingAttribAllocator *preloadingAllocator;
     IAttribAllocator *oldAllocator;
 
+    binBlock = vltBlock + mBinOffset;
+    vltBlock += mVltOffset;
+
     bSPrintf(binFileName, "%s.bin", GetName());
     bSPrintf(vltFileName, "%s.vlt", GetName());
 
-    preloadingAllocator = static_cast<PreloadingAttribAllocator *>(LoggingAttribAllocator::operator new(sizeof(PreloadingAttribAllocator)));
+    preloadingAllocator = static_cast<PreloadingAttribAllocator *>(gFastMem.Alloc(sizeof(PreloadingAttribAllocator), nullptr));
     ::new (static_cast<void *>(preloadingAllocator)) PreloadingAttribAllocator(pool_num);
     oldAllocator = AttribAlloc::OverrideAllocator(preloadingAllocator);
 
     AddDepFile(binFileName, binBlock, mBinSize);
     mVault = AddVault(vltFileName, vltBlock, mVltSize);
     mAttribAllocator = preloadingAllocator;
-    mAttribAllocChecksum = preloadingAllocator->GetChecksum();
-    mAttribObjSize = preloadingAllocator->GetByteCount();
+    mAttribAllocChecksum = reinterpret_cast<LoggingAttribAllocatorLayout *>(preloadingAllocator)->mChecksum;
+    mAttribObjSize = reinterpret_cast<LoggingAttribAllocatorLayout *>(preloadingAllocator)->mAllocBytes;
 
     AttribAlloc::OverrideAllocator(oldAllocator);
     mGameObjSize = (GObjectBlock::CalcSpaceRequired(this, &mGameObjCount) + 0x5FU) & ~15U;
