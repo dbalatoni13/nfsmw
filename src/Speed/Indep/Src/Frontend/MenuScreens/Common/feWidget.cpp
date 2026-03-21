@@ -74,15 +74,15 @@ void FEButtonWidget::Position() {
 
 void FEButtonWidget::Show() {
     FEngSetVisible(reinterpret_cast<FEObject*>(pTitle));
-    if (pBacking) {
-        FEngSetVisible(pBacking);
+    if (GetBacking()) {
+        FEngSetVisible(GetBacking());
     }
 }
 
 void FEButtonWidget::Hide() {
     FEngSetInvisible(reinterpret_cast<FEObject*>(pTitle));
-    if (pBacking) {
-        FEngSetInvisible(pBacking);
+    if (GetBacking()) {
+        FEngSetInvisible(GetBacking());
     }
 }
 
@@ -97,9 +97,9 @@ void FEButtonWidget::SetFocus(const char* parent_pkg) {
 }
 
 void FEButtonWidget::UnsetFocus() {
-    FEngSetScript(reinterpret_cast<FEObject*>(pTitle), 0x7AB5521A, true);
-    if (pBacking) {
-        FEngSetScript(pBacking, 0x7AB5521A, true);
+    FEngSetScript(GetTitleObject(), 0x7AB5521A, true);
+    if (GetBacking()) {
+        FEngSetScript(GetBacking(), 0x7AB5521A, true);
     }
 }
 
@@ -168,8 +168,8 @@ void FEStatWidget::Show() {
 void FEStatWidget::Hide() {
     FEngSetInvisible(reinterpret_cast<FEObject*>(pTitle));
     FEngSetInvisible(reinterpret_cast<FEObject*>(pData));
-    if (pBacking) {
-        FEngSetInvisible(pBacking);
+    if (GetBacking()) {
+        FEngSetInvisible(GetBacking());
     }
 }
 
