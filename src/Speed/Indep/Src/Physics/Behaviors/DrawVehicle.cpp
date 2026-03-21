@@ -101,8 +101,9 @@ const Attrib::Instance &DrawVehicle::Part::GetAttributes() const {
 }
 
 void DrawVehicle::Part::GetTransform(UMath::Matrix4 &transform) const {
-    if (static_cast<const IModel *>(this)->GetSimable()) {
-        static_cast<const IModel *>(this)->GetSimable()->GetTransform(transform);
+    ISimable *isimable = static_cast<const IModel *>(this)->GetSimable();
+    if (isimable) {
+        isimable->GetTransform(transform);
     } else if (mTrigger != nullptr) {
         mTrigger->GetObjectMatrix(transform);
     } else {
