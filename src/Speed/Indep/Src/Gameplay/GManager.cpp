@@ -42,6 +42,7 @@
 
 extern int SkipFE;
 extern int TWEAK_ShowAllGameplayIcons;
+extern int TWEAK_ShowGameplayMilestoneValues;
 extern int gVerboseTesterOutput;
 
 char *bStrIStr(const char *s1, const char *s2);
@@ -2523,6 +2524,17 @@ void GManager::UpdatePursuit() {
     bool challengeRace;
     bool cooldown;
     bool epicPursuitRace;
+    static const char *milestoneNames[] = {
+        "cops_damaged",
+        "cops_destroyed_in_pursuit",
+        "cost_to_state_in_pursuit",
+        "pursuit_evasion_time",
+        "pursuit_length",
+        "roadblocks_dodged",
+        "tire_spikes_dodged",
+        "total_infractions",
+        "bounty_in_pursuit",
+    };
 
     roaming = GRaceStatus::Get().GetPlayMode() == GRaceStatus::kPlayMode_Roaming;
     pursuit = nullptr;
@@ -2566,6 +2578,12 @@ void GManager::UpdatePursuit() {
         }
     } else if (pursuit && !cooldown) {
         mPursuitBreakerIconsShown = true;
+    }
+
+    if (TWEAK_ShowGameplayMilestoneValues != 0) {
+        for (int i = 0; i <= 8; ++i) {
+            GetValue(milestoneNames[i]);
+        }
     }
 }
 
