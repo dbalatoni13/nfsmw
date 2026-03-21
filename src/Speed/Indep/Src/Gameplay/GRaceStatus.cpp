@@ -4285,10 +4285,10 @@ void GRaceStatus::DetermineRaceLength() {
     bMemSet(mSegmentLengths, 0, sizeof(mSegmentLengths));
     bRaceRouteError = false;
 
-    WRoadNetwork *roadNetwork = &WRoadNetwork::Get();
-    GRaceParameters *race_parameters = mRaceParms;
+    WRoadNetwork &rn = WRoadNetwork::Get();
+    GRaceParameters *race_parameters = GetRaceParameters();
 
-    roadNetwork->ResolveShortcuts();
+    rn.ResolveShortcuts();
 
     if (!race_parameters || !race_parameters->HasFinishLine()) {
         return;
@@ -4306,7 +4306,7 @@ void GRaceStatus::DetermineRaceLength() {
         const bool forceCentreLane = true;
         const float directionWeight = 1.0f;
 
-        roadNetwork->SetRaceFilterValid(true);
+        rn.SetRaceFilterValid(true);
         numCheckpoints = race_parameters->GetNumCheckpoints();
         numPathPoints = numCheckpoints + 2;
         race_parameters->GetStartPosition(UMath::Vector4To3(positions[0]));
@@ -4349,7 +4349,9 @@ void GRaceStatus::DetermineRaceLength() {
 
         WRoadNav nav;
 
-        nav.SetPathType(static_cast<WRoadNav::EPathType>(6));
+        nav.SetDecisionFilter(true);
+        nav.SetNavType(WRoadNav::kTypeDirection);
+        nav.SetPathType(WRoadNav::kPathChopper);
         nav.InitAtPoint(UMath::Vector4To3(positions[numPathPoints - 1]), UMath::Vector4To3(directions[numPathPoints - 1]), forceCentreLane, directionWeight);
         if (nav.IsValid()) {
             for (int i = 0; i < 100; ++i) {
@@ -4358,7 +4360,7 @@ void GRaceStatus::DetermineRaceLength() {
 
                 nav.IncNavPosition(1.0f, UMath::Vector3::kZero, 0.0f);
                 segmentNumber = nav.GetSegmentInd();
-                segment = roadNetwork->GetSegmentNonConst(segmentNumber);
+                segment = rn.GetSegmentNonConst(segmentNumber);
                 segment->SetInRace(true);
                 segment->SetRaceRouteForward(nav.GetNodeInd() == 1);
             }
