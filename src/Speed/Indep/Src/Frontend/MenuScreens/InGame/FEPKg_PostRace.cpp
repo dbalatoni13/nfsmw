@@ -1777,13 +1777,13 @@ void PostRacePursuitScreen::SetupInfractions() {
 }
 
 void PostRacePursuitScreen::SetupPursuit() {
-    AddDatum(new PursuitResultsDatum(PursuitResultsDatum::PursuitResultsDatumType_Time, 0x4d64888d, mPursuitData.mPursuitLength, 0.0f, PursuitResultsDatum::PursuitResultsDatumCheckType_Off));
-    AddDatum(new PursuitResultsDatum(PursuitResultsDatum::PursuitResultsDatumType_Number, 0xa999f6e2, static_cast<float>(mPursuitData.mNumCopsDamaged), 0.0f, PursuitResultsDatum::PursuitResultsDatumCheckType_Off));
-    AddDatum(new PursuitResultsDatum(PursuitResultsDatum::PursuitResultsDatumType_Number, 0x23f6e732, static_cast<float>(mPursuitData.mNumCopsDestroyed), 0.0f, PursuitResultsDatum::PursuitResultsDatumCheckType_Off));
-    AddDatum(new PursuitResultsDatum(PursuitResultsDatum::PursuitResultsDatumType_Number, 0x0291c816, static_cast<float>(mPursuitData.mNumSpikeStripsDodged), 0.0f, PursuitResultsDatum::PursuitResultsDatumCheckType_Off));
-    AddDatum(new PursuitResultsDatum(PursuitResultsDatum::PursuitResultsDatumType_Number, 0x29daba15, static_cast<float>(mPursuitData.mNumRoadblocksDodged), 0.0f, PursuitResultsDatum::PursuitResultsDatumCheckType_Off));
-    AddDatum(new PursuitResultsDatum(PursuitResultsDatum::PursuitResultsDatumType_Number, 0xd9bb7d2d, static_cast<float>(mPursuitData.mCostToStateAchieved), 0.0f, PursuitResultsDatum::PursuitResultsDatumCheckType_Off));
-    AddDatum(new PursuitResultsDatum(PursuitResultsDatum::PursuitResultsDatumType_Number, 0xb7dfff96, static_cast<float>(GInfractionManager::Get().GetNumInfractions()), 0.0f, PursuitResultsDatum::PursuitResultsDatumCheckType_Off));
+    AddDatum(new(__FILE__, __LINE__) PursuitResultsDatum(PursuitResultsDatum::PursuitResultsDatumType_Time, 0x4d64888d, mPursuitData.mPursuitLength, 0.0f, PursuitResultsDatum::PursuitResultsDatumCheckType_Off));
+    AddDatum(new(__FILE__, __LINE__) PursuitResultsDatum(PursuitResultsDatum::PursuitResultsDatumType_Number, 0xa999f6e2, static_cast<float>(mPursuitData.mNumCopsDamaged), 0.0f, PursuitResultsDatum::PursuitResultsDatumCheckType_Off));
+    AddDatum(new(__FILE__, __LINE__) PursuitResultsDatum(PursuitResultsDatum::PursuitResultsDatumType_Number, 0x23f6e732, static_cast<float>(mPursuitData.mNumCopsDestroyed), 0.0f, PursuitResultsDatum::PursuitResultsDatumCheckType_Off));
+    AddDatum(new(__FILE__, __LINE__) PursuitResultsDatum(PursuitResultsDatum::PursuitResultsDatumType_Number, 0x0291c816, static_cast<float>(mPursuitData.mNumSpikeStripsDodged), 0.0f, PursuitResultsDatum::PursuitResultsDatumCheckType_Off));
+    AddDatum(new(__FILE__, __LINE__) PursuitResultsDatum(PursuitResultsDatum::PursuitResultsDatumType_Number, 0x29daba15, static_cast<float>(mPursuitData.mNumRoadblocksDodged), 0.0f, PursuitResultsDatum::PursuitResultsDatumCheckType_Off));
+    AddDatum(new(__FILE__, __LINE__) PursuitResultsDatum(PursuitResultsDatum::PursuitResultsDatumType_Number, 0xd9bb7d2d, static_cast<float>(mPursuitData.mCostToStateAchieved), 0.0f, PursuitResultsDatum::PursuitResultsDatumCheckType_Off));
+    AddDatum(new(__FILE__, __LINE__) PursuitResultsDatum(PursuitResultsDatum::PursuitResultsDatumType_Number, 0xb7dfff96, static_cast<float>(GInfractionManager::Get().GetNumInfractions()), 0.0f, PursuitResultsDatum::PursuitResultsDatumCheckType_Off));
 }
 
 void PostRacePursuitScreen::SetupMilestones() {
