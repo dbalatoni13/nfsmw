@@ -2798,7 +2798,7 @@ done:
 }
 
 bool GManager::WarpToMarker(unsigned int markerKey, bool startPursuit) {
-    if (GRaceStatus::Exists() && GRaceStatus::Get().GetPlayMode() == GRaceStatus::kPlayMode_Racing) {
+    if (!GRaceStatus::Exists() || GRaceStatus::Get().GetPlayMode() != GRaceStatus::kPlayMode_Roaming) {
         return false;
     }
 
@@ -2811,24 +2811,24 @@ bool GManager::WarpToMarker(unsigned int markerKey, bool startPursuit) {
         return false;
     }
 
-    new EFadeScreenOn(false);
-    Sim::SetStream(const_cast<UMath::Vector3 &>(marker->GetPosition()), false);
+    const UMath::Vector3 &markerPos = marker->GetPosition();
+    const UMath::Vector3 &markerDir = marker->GetDirection();
 
-    IPlayer *player = IPlayer::First(PLAYER_LOCAL);
-    ISimable *simable = player ? player->GetSimable() : nullptr;
+    new EFadeScreenOn(false);
+    TheTrackStreamer.EnableZoneSwitching();
+    Sim::SetStream(const_cast<UMath::Vector3 &>(markerPos), false);
+
+    ISimable *player = IPlayer::First(PLAYER_LOCAL)->GetSimable();
     IVehicle *vehicle = nullptr;
 
-    if (simable) {
-        simable->QueryInterface(&vehicle);
+    if (player->QueryInterface(&vehicle)) {
+        vehicle->SetVehicleOnGround(markerPos, markerDir);
+        vehicle->Deactivate();
     }
 
-    if (vehicle) {
-        vehicle->SetVehicleOnGround(marker->GetPosition(), marker->GetDirection());
-    }
-
-    mWarpStartPursuit = startPursuit;
     mWarping = true;
     mWarpTargetMarker = markerKey;
+    mWarpStartPursuit = startPursuit;
     return true;
 }
 
