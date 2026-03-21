@@ -39,11 +39,11 @@ int ChoppedMiniMapManager::Loader(bChunk *chunk) {
 }
 
 int ChoppedMiniMapManager::Unloader(bChunk *chunk) {
-    if (*reinterpret_cast<int *>(chunk) == 0x3A100) {
+    if (chunk->GetID() == 0x3A100) {
         LoadingChopNum = LoadingChopNum - 1;
         CompressedMiniMaps[LoadingChopNum] = nullptr;
         if (LoadingChopNum == 0) {
-            UncompressMaps(nullptr, 0);
+            RemoveUncompressedMaps();
         }
         return 1;
     }
