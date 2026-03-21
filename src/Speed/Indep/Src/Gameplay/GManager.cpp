@@ -1379,24 +1379,19 @@ void GManager::ReleaseIcons() {
 }
 
 void GManager::AllocateSpeedTraps() {
-    Attrib::Gen::gameplay gameplay(Attrib::FindCollection(Attrib::Gen::gameplay::ClassKey(), 0x49511906), 0, nullptr);
+    Attrib::Gen::gameplay speedTrapRoot(0x49511906, 0, nullptr);
     AttribKeyList keys;
-    AttribKeyList::iterator it;
-    unsigned int i;
+    GSpeedTrap *speedTrap;
 
-    GatherInstanceKeys(gameplay, keys, 0xB05871D3);
+    GatherInstanceKeys(speedTrapRoot, keys, 0xB05871D3);
 
-    mNumSpeedTraps = 0;
-    for (it = keys.begin(); it != keys.end(); ++it) {
-        mNumSpeedTraps++;
-    }
-
+    mNumSpeedTraps = keys.size();
     mSpeedTraps = new GSpeedTrap[mNumSpeedTraps];
+    speedTrap = mSpeedTraps;
 
-    i = 0;
-    for (it = keys.begin(); it != keys.end(); ++it) {
-        mSpeedTraps[i].Init(*it);
-        i++;
+    for (AttribKeyList::iterator iter = keys.begin(); iter != keys.end(); ++iter) {
+        speedTrap->Init(*iter);
+        ++speedTrap;
     }
 }
 
