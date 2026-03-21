@@ -4060,11 +4060,13 @@ int GRaceStatus::GetLapsLed(int racerIndex) {
 }
 
 float GRaceStatus::GetRaceSpeedTrapSpeed(int trapIndex, int racerIndex) {
-    return mRacerInfo[racerIndex].GetSpeedTrapSpeed(trapIndex);
+    GRacerInfo &info = GetRacerInfo(racerIndex);
+    return info.mSpeedTrapSpeed[trapIndex];
 }
 
 int GRaceStatus::GetRaceSpeedTrapPosition(int trapIndex, int racerIndex) {
-    return mRacerInfo[racerIndex].GetSpeedTrapPosition(trapIndex);
+    GRacerInfo &info = GetRacerInfo(racerIndex);
+    return info.mSpeedTrapPosition[trapIndex];
 }
 
 float GRaceStatus::GetBestSpeedTrapSpeed(int racerIndex) {
@@ -4096,7 +4098,8 @@ float GRaceStatus::GetWorstSpeedTrapSpeed(int racerIndex) {
 }
 
 float GRaceStatus::GetRaceTollboothTime(int boothIndex, int racerIndex) {
-    return mRacerInfo[racerIndex].GetTollboothTime(boothIndex);
+    GRacerInfo &info = GetRacerInfo(racerIndex);
+    return info.mTimeRemainingToBooth[boothIndex];
 }
 
 void GRaceStatus::RaceAbandoned() {
