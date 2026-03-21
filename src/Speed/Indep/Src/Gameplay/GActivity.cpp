@@ -266,15 +266,20 @@ bool GActivity::CollectionIsHandlerForState(GState *state, GHandler *handler) {
 }
 
 void GActivity::Run() {
-    if (mRunning) {
-        return;
-    }
+    if (!mRunning) {
+        if (mStateHandlers.empty()) {
+            GatherStatesAndHandlers();
+        }
 
-    mRunning = true;
-    if (mCurrentState) {
-        RegisterMessageHandlers(mCurrentState);
+        mRunning = true;
+        ActivateReferencedTriggers(true, this);
+        if (!mCurrentState) {
+            GState *initialState = GetStateByName("initial");
+            new EChangeState(GetCollection(), initialState->GetCollection());
+        } else {
+            RegisterMessageHandlers(mCurrentState);
+        }
     }
-    ActivateReferencedTriggers(true, this);
 }
 
 void GActivity::Suspend() {
