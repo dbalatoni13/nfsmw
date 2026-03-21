@@ -1445,10 +1445,12 @@ void GManager::EnableBinMilestones(unsigned int binNumber) {
 }
 
 void GManager::NotifyPursuitStarted() {
-    for (MilestoneInfoMap::iterator it = mMilestoneTypeInfo.begin(); it != mMilestoneTypeInfo.end(); ++it) {
-        if ((it->second.mFlags & GMilestone::kFlag_CompletionFaked) != 0) {
-            it->second.mLastKnownValue = -1.0f;
-            it->second.mBestValue = -1.0f;
+    for (MilestoneInfoMap::iterator iterMile = mMilestoneTypeInfo.begin(); iterMile != mMilestoneTypeInfo.end(); ++iterMile) {
+        MilestoneTypeInfo &info = iterMile->second;
+
+        if ((info.mFlags & GMilestone::kFlag_CompletionFaked) != 0) {
+            info.mBestValue = -1.0f;
+            info.mLastKnownValue = -1.0f;
         }
     }
 }
