@@ -13,6 +13,7 @@
 #include "Speed/Indep/Src/Interfaces/Simables/ICollisionBody.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IINput.h"
 #include "Speed/Indep/Src/Physics/Behavior.h"
+#include "Speed/Indep/Src/Physics/PhysicsInfo.hpp"
 #include "Speed/Indep/Src/Physics/Wheel.h"
 #include "Speed/Indep/Src/Sim/Collision.h"
 #include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
@@ -128,6 +129,7 @@ class SuspensionSimple : public Chassis, public Sim::Collision::IListener, publi
     static Behavior *Construct(const BehaviorParams &params);
 
     SuspensionSimple(const struct BehaviorParams &bp, const SuspensionParams &sp);
+    void CreateTires();
     void DoAerobatics(State &state);
     void DoSteering(State &state, UMath::Vector3 &right, UMath::Vector3 &left);
     void DoWallSteer(State &state);
@@ -361,7 +363,71 @@ Behavior *SuspensionSimple::Construct(const BehaviorParams &params) {
     return new SuspensionSimple(params, sp);
 }
 
+SuspensionSimple::SuspensionSimple(const BehaviorParams &bp, const SuspensionParams &sp)
+    : Chassis(bp),                //
+      mBrakeInfo(this, 0),        //
+      mTireInfo(this, 0),         //
+      mSuspensionInfo(this, 0),   //
+      mDrivetrainInfo(this, 0),   //
+      mRB(0),                     //
+      mRBComplex(0),              //
+      mInput(0),                  //
+      mTrany(0),                  //
+      mCheater(0),                //
+      mFrictionBoost(1.0f),       //
+      mDraft(1.0f),               //
+      mPowerSliding(false),       //
+      mYawControlMultiplier(1.0f), //
+      mNumWheelsOnGround(0),       //
+      mAgainstWall(0.0f),          //
+      mMaxSteering(45.0f),         //
+      mTimeInAir(0.0f),            //
+      mSleepTime(0.0f),            //
+      mDriftPhysics(false) {
+    GetOwner()->QueryInterface(&mRB);
+    GetOwner()->QueryInterface(&mRBComplex);
+    GetOwner()->QueryInterface(&mInput);
+    GetOwner()->QueryInterface(&mTrany);
+    GetOwner()->QueryInterface(&mCheater);
+    Sim::Collision::AddListener(this, GetOwner(), "SuspensionSimple");
+
+    mWheelSteer[0] = 0.0f;
+    mWheelSteer[1] = 0.0f;
+
+    for (int i = 0; i < 4; ++i) {
+        mTires[i] = 0;
+    }
+
+    CreateTires();
+}
+
 void SuspensionSimple::OnAttributeChange(const Attrib::Collection *aspec, unsigned int attribkey) {}
+
+void SuspensionSimple::CreateTires() {
+    for (int i = 0; i < 4; ++i) {
+        delete mTires[i];
+        float diameter = Physics::Info::WheelDiameter(mTireInfo, i < 2);
+        mTires[i] = new Tire(diameter * 0.5f, i, mTireInfo, mBrakeInfo);
+    }
+
+    UMath::Vector3 dimension;
+    GetOwner()->GetRigidBody()->GetDimension(dimension);
+
+    float wheelbase = mSuspensionInfo.WHEEL_BASE();
+    float axle_width_f = mSuspensionInfo.TRACK_WIDTH().At(0) - mTireInfo.SECTION_WIDTH().At(0) * 0.001f;
+    float axle_width_r = mSuspensionInfo.TRACK_WIDTH().At(1) - mTireInfo.SECTION_WIDTH().At(1) * 0.001f;
+    float front_axle = mSuspensionInfo.FRONT_AXLE();
+
+    UVector3 fl(-axle_width_f * 0.5f, -dimension.y, front_axle);
+    UVector3 fr(axle_width_f * 0.5f, -dimension.y, front_axle);
+    UVector3 rl(-axle_width_r * 0.5f, -dimension.y, front_axle - wheelbase);
+    UVector3 rr(axle_width_r * 0.5f, -dimension.y, front_axle - wheelbase);
+
+    GetWheel(0).SetLocalArm(fl);
+    GetWheel(1).SetLocalArm(fr);
+    GetWheel(2).SetLocalArm(rl);
+    GetWheel(3).SetLocalArm(rr);
+}
 
 void SuspensionSimple::MatchSpeed(float speed) {
     for (int i = 0; i < 4; ++i) {
