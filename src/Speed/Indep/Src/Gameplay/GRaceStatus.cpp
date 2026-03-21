@@ -788,7 +788,7 @@ void GRacerInfo::Update(float dT) {
     if (raceLength > 0.0f) {
         float raceDistanceCompleted = 0.0f;
         int lapsCompleted = GetLapsCompleted();
-        float lapDistanceCompleted = 0.0f;
+        float lapDistanceCompleted;
         int checkpointsCompleted;
         float distanceToNextCheckpoint;
         float currentSegmentLength;
@@ -802,6 +802,7 @@ void GRacerInfo::Update(float dT) {
         }
 
         checkpointsCompleted = GetChecksHitThisLap();
+        lapDistanceCompleted = 0.0f;
         for (int i = 0; i < checkpointsCompleted; ++i) {
             lapDistanceCompleted += raceStatus.GetSegmentLength(i, lapsCompleted);
         }
@@ -813,7 +814,8 @@ void GRacerInfo::Update(float dT) {
             float lapLength;
 
             lapDistanceCompleted += currentSegmentLength - distanceToNextCheckpoint;
-            currentDistanceCompleted = raceDistanceCompleted + lapDistanceCompleted;
+            raceDistanceCompleted += lapDistanceCompleted;
+            currentDistanceCompleted = raceDistanceCompleted;
             lapLength = raceStatus.GetLapLength(lapsCompleted);
             if (lapLength > 0.0f) {
                 mPctLapComplete = bClamp(lapDistanceCompleted / lapLength, 0.0f, 1.0f);
@@ -821,7 +823,7 @@ void GRacerInfo::Update(float dT) {
                 mPctLapComplete = 1.0f;
             }
 
-            mPctRaceComplete = bClamp(currentDistanceCompleted / raceLength, 0.0f, 1.0f);
+            mPctRaceComplete = bClamp(raceDistanceCompleted / raceLength, 0.0f, 1.0f);
         }
     }
 }
