@@ -498,7 +498,8 @@ void LGWheels::StopDamperForce(long channel) {
 }
 
 bool LGWheels::SameDamperForceParams(long channel, short coefficient) {
-    return LGWheelsGetDamperForceParams(this)[channel].coefficient == coefficient;
+    const short *channelCoefficient = &LGWheelsGetDamperForceParams(this)[channel].coefficient;
+    return *channelCoefficient == coefficient;
 }
 
 void LGWheels::PlayFrontalCollisionForce(long channel, unsigned char magnitude) {
@@ -535,7 +536,8 @@ void LGWheels::PlayFrontalCollisionForce(long channel, unsigned char magnitude) 
 }
 
 bool LGWheels::SameFrontalCollisionForceParams(long channel, short magnitude) {
-    return LGWheelsGetFrontalCollisionParams(this)[channel].magnitude == magnitude;
+    const short *channelMagnitude = &LGWheelsGetFrontalCollisionParams(this)[channel].magnitude;
+    return *channelMagnitude == magnitude;
 }
 
 void LGWheels::PlayDirtRoadEffect(long channel, unsigned char magnitude) {
@@ -587,7 +589,8 @@ void LGWheels::StopDirtRoadEffect(long channel) {
 }
 
 bool LGWheels::SameDirtRoadEffectParams(long channel, short magnitude) {
-    return LGWheelsGetDirtRoadParams(this)[channel].magnitude == magnitude;
+    const short *channelMagnitude = &LGWheelsGetDirtRoadParams(this)[channel].magnitude;
+    return *channelMagnitude == magnitude;
 }
 
 void LGWheels::PlayBumpyRoadEffect(long channel, unsigned char magnitude) {
@@ -639,7 +642,8 @@ void LGWheels::StopBumpyRoadEffect(long channel) {
 }
 
 bool LGWheels::SameBumpyRoadEffectParams(long channel, short magnitude) {
-    return LGWheelsGetBumpyRoadParams(this)[channel].magnitude == magnitude;
+    const short *channelMagnitude = &LGWheelsGetBumpyRoadParams(this)[channel].magnitude;
+    return *channelMagnitude == magnitude;
 }
 
 void LGWheels::PlaySlipperyRoadEffect(long channel, short magnitude) {
@@ -701,7 +705,8 @@ void LGWheels::StopSlipperyRoadEffect(long channel) {
 }
 
 bool LGWheels::SameSlipperyRoadEffectParams(long channel, short magnitude) {
-    return LGWheelsGetSlipperyRoadParams(this)[channel].magnitude == magnitude;
+    const short *channelMagnitude = &LGWheelsGetSlipperyRoadParams(this)[channel].magnitude;
+    return *channelMagnitude == magnitude;
 }
 
 void LGWheels::PlaySurfaceEffect(long channel, unsigned char type, unsigned char magnitude, unsigned short period) {
