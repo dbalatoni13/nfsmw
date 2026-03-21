@@ -9,8 +9,6 @@
 #include "Speed/Indep/Src/Misc/AttribAlloc.h"
 #include "Speed/Indep/Src/Misc/AttribAsset.h"
 
-#include <new>
-
 struct LoggingAttribAllocatorLayout {
     void *vfptr;
     unsigned int mChecksum;
@@ -19,6 +17,12 @@ struct LoggingAttribAllocatorLayout {
     unsigned int mFreeCount;
     unsigned int mFreeBytes;
 };
+
+struct PreloadingAttribAllocatorLayout : LoggingAttribAllocatorLayout {
+    int mPoolNum;
+};
+
+extern void *PreloadingAttribAllocator_vtable __asm__("_vt.25PreloadingAttribAllocator");
 
 void *LoggingAttribAllocator::operator new(std::size_t size) {
     return gFastMem.Alloc(size, nullptr);
@@ -170,7 +174,19 @@ void GVault::PreloadTransient(AttribVaultPackImage *packImage, int pool_num) {
     bSPrintf(vltFileName, "%s.vlt", GetName());
 
     preloadingAllocator = static_cast<PreloadingAttribAllocator *>(gFastMem.Alloc(sizeof(PreloadingAttribAllocator), nullptr));
-    ::new (static_cast<void *>(preloadingAllocator)) PreloadingAttribAllocator(pool_num);
+    {
+        PreloadingAttribAllocatorLayout *allocator = reinterpret_cast<PreloadingAttribAllocatorLayout *>(preloadingAllocator);
+        void *vfptr = &PreloadingAttribAllocator_vtable;
+        unsigned int checksum = 0xEA0FF1CE;
+
+        allocator->mPoolNum = pool_num;
+        allocator->vfptr = vfptr;
+        allocator->mFreeBytes = 0;
+        allocator->mChecksum = checksum;
+        allocator->mAllocCount = 0;
+        allocator->mAllocBytes = 0;
+        allocator->mFreeCount = 0;
+    }
     oldAllocator = AttribAlloc::OverrideAllocator(preloadingAllocator);
 
     AddDepFile(binFileName, binBlock, mBinSize);
