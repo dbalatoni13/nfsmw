@@ -3938,18 +3938,15 @@ float GRaceStatus::DetermineRaceSegmentLength(const UMath::Vector4 *positions, c
         bool noShortcuts = true;
         WRoadNetwork *roadNetwork = &WRoadNetwork::Get();
 
+        bool foundPath;
+
         bMemSet(shortcutAllowed, 1, sizeof(shortcutAllowed));
-        while (true) {
+        do {
             nav.SetNavType(WRoadNav::kTypeDirection);
             nav.FindPathNow(&UMath::Vector4To3(positions[end]), &UMath::Vector4To3(directions[end]), shortcutAllowed);
-            bool foundPath;
 
             foundPath = nav.GetNavType() == WRoadNav::kTypePath;
-            if (!foundPath) {
-                break;
-            }
-
-            {
+            if (foundPath) {
                 roadNetwork->AddRaceSegments(&nav);
                 pathDistance = nav.GetPathDistanceRemaining();
 
@@ -3973,11 +3970,7 @@ float GRaceStatus::DetermineRaceSegmentLength(const UMath::Vector4 *positions, c
                 }
                 pathSegments.insert(pathSegment);
             }
-
-            if (noShortcuts) {
-                break;
-            }
-        }
+        } while (foundPath && !noShortcuts);
 
         int numPaths = 0;
 
