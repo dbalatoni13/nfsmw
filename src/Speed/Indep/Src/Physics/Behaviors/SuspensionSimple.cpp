@@ -95,8 +95,19 @@ class SuspensionSimple : public Chassis, public Sim::Collision::IListener, publi
             mTractionBoost *= scale;
         }
 
+        void SetTractionBoost(float boost) {
+            mTractionBoost = boost;
+        }
+
         void AllowSlip(bool b) {
             mAllowSlip = b;
+        }
+
+        void Stop() {
+            mAV = 0.0f;
+            mSlip = 0.0f;
+            mRoadSpeed = 0.0f;
+            mSlipAngle = 0.0f;
         }
 
       private:
@@ -149,6 +160,7 @@ class SuspensionSimple : public Chassis, public Sim::Collision::IListener, publi
 
     // Behavior
     void OnBehaviorChange(const UCrc32 &mechanic) override;
+    void OnTaskSimulate(float dT) override;
     void Reset() override;
 
     // IListener
@@ -822,4 +834,86 @@ void SuspensionSimple::DoWheelForces(State &state) {
     }
 
     mNumWheelsOnGround = wheelsOnGround;
+}
+
+void SuspensionSimple::OnTaskSimulate(float dT) {
+    if (!mInput || !mRBComplex || !mRB) {
+        return;
+    }
+
+    float ride_extra = 0.0f;
+    if (mNumWheelsOnGround == 0) {
+        ride_extra = -10.0f;
+    } else if (mNumWheelsOnGround >= 2) {
+        ride_extra = 2.0f;
+    }
+    SetCOG(0.0f, ride_extra);
+
+    State state;
+    ComputeState(dT, state);
+
+    if (mSleepTime > 3.0f && DoSleep(state) == SS_ALL) {
+        return;
+    }
+
+    float max_slip = ComputeMaxSlip(state);
+    float grip_scale = ComputeLateralGripScale(state);
+    float traction_scale = ComputeTractionScale(state);
+    for (unsigned int i = 0; i < 4; ++i) {
+        mTires[i]->BeginFrame(max_slip, grip_scale, traction_scale);
+    }
+
+    float traction_boost = UMath::Abs(GetVehicle()->GetSlipAngle() - mRB->GetDimension().y * 0.25f * RAD2ANGLE(1.0f));
+    traction_boost = UMath::Clamp(traction_boost / DEG2ANGLE(35.0f), 0.0f, 1.0f);
+
+    float speed_scale = UMath::Clamp(state.speed / 20.0f, 0.0f, 1.0f);
+    traction_boost = traction_boost * speed_scale * 0.15f;
+    if (state.gear == 6) {
+        traction_boost = 0.0f;
+    }
+    mTires[2]->SetTractionBoost(traction_boost + 1.0f);
+    mTires[3]->SetTractionBoost(traction_boost + 1.0f);
+
+    float drag_pct = 1.0f;
+    float aero_pct = 1.0f;
+    if (mCheater) {
+        float catchup = mCheater->GetCatchupCheat();
+        drag_pct = 1.0f - catchup;
+        aero_pct = catchup * (1.5f - 1.0f) + 1.0f;
+    }
+    if (state.driver_class == 1) {
+        aero_pct = UMath::Max(1.5f, aero_pct);
+    }
+
+    DoAerodynamics(state, drag_pct, aero_pct, mTires[0]->GetLocalArm().z, mTires[2]->GetLocalArm().z, 0);
+    DoDriveForces(state);
+    DoWheelForces(state);
+
+    for (unsigned int i = 0; i < 4; ++i) {
+        mTires[i]->UpdateTime(dT);
+    }
+
+    mAgainstWall = 0.0f;
+
+    for (unsigned int i = 0; i < 4; ++i) {
+        mTires[i]->EndFrame(dT);
+    }
+
+    if (GetNumWheelsOnGround() == 0) {
+        mTimeInAir += dT;
+    } else {
+        mTimeInAir = 0.0f;
+    }
+
+    DoAerobatics(state);
+    if (DoSleep(state) == SS_ALL) {
+        for (unsigned int i = 0; i < 4; ++i) {
+            mTires[i]->Stop();
+        }
+        mSleepTime += dT;
+    } else {
+        mSleepTime = 0.0f;
+    }
+
+    Chassis::OnTaskSimulate(dT);
 }
