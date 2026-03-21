@@ -38,6 +38,26 @@ class SuspensionTrailer : public Chassis {
             return mRadius;
         }
 
+        float GetAngularVelocity() const {
+            return mAV;
+        }
+
+        float GetLoad() const {
+            return mLoad;
+        }
+
+        float GetSlip() const {
+            return mSlip;
+        }
+
+        float GetLateralSpeed() const {
+            return mLateralSpeed;
+        }
+
+        float GetTraction() const {
+            return mEBrake > 0.0f ? 0.0f : 1.0f;
+        }
+
         void SetAngularVelocity(float av) {
             mAV = av;
         }
@@ -96,8 +116,69 @@ class SuspensionTrailer : public Chassis {
     void Reset() override;
 
     // ISuspension
-    void MatchSpeed(float speed) override;
+    float GetWheelTraction(unsigned int index) const override {
+        return mTires[index]->GetTraction();
+    }
+    unsigned int GetNumWheels() const override {
+        return 4;
+    }
+    const UMath::Vector3 &GetWheelPos(unsigned int i) const override {
+        return mTires[i]->GetPosition();
+    }
+    const UMath::Vector3 &GetWheelLocalPos(unsigned int i) const override {
+        return mTires[i]->GetLocalArm();
+    }
     UMath::Vector3 GetWheelCenterPos(unsigned int i) const override;
+    float GetWheelLoad(unsigned int i) const override {
+        return mTires[i]->GetLoad();
+    }
+    void ApplyVehicleEntryForces(bool enteringVehicle, const UMath::Vector3 &pos, bool calledfromEvent) override {}
+    const float GetWheelRoadHeight(unsigned int i) const override {
+        return mTires[i]->GetNormal().w;
+    }
+    bool IsWheelOnGround(unsigned int i) const override {
+        return mTires[i]->IsOnGround();
+    }
+    float GetCompression(unsigned int i) const override {
+        return mTires[i]->GetCompression();
+    }
+    float GetWheelSlip(unsigned int idx) const override {
+        return mTires[idx]->GetSlip();
+    }
+    float GetToleratedSlip(unsigned int idx) const override {
+        return 1.0f;
+    }
+    float GetWheelSkid(unsigned int idx) const override {
+        return mTires[idx]->GetLateralSpeed();
+    }
+    const UMath::Vector4 &GetWheelRoadNormal(unsigned int i) const override {
+        return mTires[i]->GetNormal();
+    }
+    const SimSurface &GetWheelRoadSurface(unsigned int i) const override {
+        return mTires[i]->GetSurface();
+    }
+    const UMath::Vector3 &GetWheelVelocity(unsigned int i) const override {
+        return mTires[i]->GetVelocity();
+    }
+    int GetNumWheelsOnGround() const override {
+        return mNumWheelsOnGround;
+    }
+    Radians GetWheelAngularVelocity(int index) const override {
+        return mTires[index]->GetAngularVelocity();
+    }
+    void SetWheelAngularVelocity(int wheel, float w) override {
+        mTires[wheel]->SetAngularVelocity(w);
+    }
+    float GetWheelSteer(unsigned int wheel) const override {
+        return 0.0f;
+    }
+    float GetWheelRadius(unsigned int index) const override {
+        return mTires[index]->GetRadius();
+    }
+    float GetMaxSteering() const override {
+        return 0.0f;
+    }
+    void MatchSpeed(float speed) override;
 
     Tire &GetWheel(unsigned int i) {
         return *mTires[i];
