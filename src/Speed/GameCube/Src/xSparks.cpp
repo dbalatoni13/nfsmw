@@ -203,7 +203,6 @@ void CGEmitter::SpawnParticles(float dt, float intensity) {
                 rand.x = 1.0f - (mEmitterDef.VelocityDelta().x - bRandom(mEmitterDef.VelocityDelta().x, &random_seed) * 2.0f);
                 rand.y = 1.0f - (mEmitterDef.VelocityDelta().y - bRandom(mEmitterDef.VelocityDelta().y, &random_seed) * 2.0f);
                 rand.z = 1.0f - (mEmitterDef.VelocityDelta().z - bRandom(mEmitterDef.VelocityDelta().z, &random_seed) * 2.0f);
-                rand.w = 1.0f;
 
                 Scalexyz(mEmitterDef.VelocityInherit(), mVel, pvel);
                 UMath::Rotate(mEmitterDef.VelocityStart(), local_orientation, rotatedVel);
