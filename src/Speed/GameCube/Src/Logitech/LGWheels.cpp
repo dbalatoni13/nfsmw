@@ -641,49 +641,50 @@ void LGWheels::PlaySlipperyRoadEffect(long channel, short magnitude) {
 
     if (IsPlaying(channel, 2)) {
         StopDamperForce(channel);
-        LGWheelsGetPlaying(LGWheelsGetCondition(this), channel, 1) = 0;
-        LGWheelsGetDamperWasPlaying(this, channel) = 1;
+        *reinterpret_cast<int *>(reinterpret_cast<char *>(this) + channel * 0x20 + 0x11AC) = 0;
+        *reinterpret_cast<int *>(reinterpret_cast<char *>(this) + channel * 4 + 0x15AC) = 1;
     }
 
     if (IsPlaying(channel, 0)) {
         StopSpringForce(channel);
-        LGWheelsGetPlaying(LGWheelsGetCondition(this), channel, 0) = 0;
-        LGWheelsGetSpringWasPlaying(this, channel) = 1;
+        *reinterpret_cast<int *>(reinterpret_cast<char *>(this) + channel * 0x20 + 0x11A8) = 0;
+        *reinterpret_cast<int *>(reinterpret_cast<char *>(this) + channel * 4 + 0x15BC) = 1;
     }
 
-    if (LGWheelsGetWheels(this)->IsConnected(channel)) {
-        if (LGWheelsGetIsAirborne(this, channel)) {
+    if (reinterpret_cast<Wheels *>(reinterpret_cast<char *>(this) + 0x828)->IsConnected(channel)) {
+        if (*reinterpret_cast<int *>(reinterpret_cast<char *>(this) + channel * 4 + 0x166C) != 0) {
             return;
         }
 
-        if (LGWheelsGetPlaying(LGWheelsGetCondition(this), channel, 2) != 0) {
+        if (*reinterpret_cast<int *>(reinterpret_cast<char *>(this) + channel * 0x20 + 0x11B0) != 0) {
             if (SameSlipperyRoadEffectParams(channel, magnitude)) {
                 return;
             }
 
-            ret = LGWheelsGetCondition(this)->UpdateForce(channel, 2, 8, static_cast<unsigned long>(-1), 0, 0, 0xFF, 0xFF, 0xFF, -magnitude, -magnitude);
+            ret = reinterpret_cast<Condition *>(reinterpret_cast<char *>(this) + 0x11A8)->UpdateForce(channel, 2, 8, static_cast<unsigned long>(-1), 0, 0, 0, 0xFF, 0xFF, -magnitude, -magnitude);
             if (ret < 0) {
                 return;
             }
 
-            LGWheelsGetSlipperyRoadParams(this)[channel].magnitude = magnitude;
+            *reinterpret_cast<short *>(reinterpret_cast<char *>(this) + channel * 2 + 0x16CC) = magnitude;
             return;
         }
 
-        if (LGWheelsGetEffectID(LGWheelsGetCondition(this), channel, 2) == static_cast<unsigned long>(-1)) {
-            ret = LGWheelsGetCondition(this)->DownloadForce(channel, 2, LGWheelsGetWheelHandle(this, channel), 8, static_cast<unsigned long>(-1), 0, 0, 0xFF, 0xFF, 0xFF, -magnitude, -magnitude);
+        if (*reinterpret_cast<unsigned long *>(reinterpret_cast<char *>(this) + channel * 0x20 + 0x1230) == static_cast<unsigned long>(-1)) {
+            ret = reinterpret_cast<Condition *>(reinterpret_cast<char *>(this) + 0x11A8)
+                      ->DownloadForce(channel, 2, *reinterpret_cast<unsigned long *>(reinterpret_cast<char *>(this) + channel * 4 + 0x1050), 8, static_cast<unsigned long>(-1), 0, 0, 0, 0xFF, 0xFF, -magnitude, -magnitude);
         } else if (SameSlipperyRoadEffectParams(channel, magnitude)) {
-            LGWheelsGetCondition(this)->Start(channel, 2);
+            reinterpret_cast<Condition *>(reinterpret_cast<char *>(this) + 0x11A8)->Start(channel, 2);
             return;
         } else {
-            ret = LGWheelsGetCondition(this)->UpdateForce(channel, 2, 8, static_cast<unsigned long>(-1), 0, 0, 0xFF, 0xFF, 0xFF, -magnitude, -magnitude);
+            ret = reinterpret_cast<Condition *>(reinterpret_cast<char *>(this) + 0x11A8)->UpdateForce(channel, 2, 8, static_cast<unsigned long>(-1), 0, 0, 0, 0xFF, 0xFF, -magnitude, -magnitude);
         }
 
         if (ret >= 0) {
-            LGWheelsGetSlipperyRoadParams(this)[channel].magnitude = magnitude;
+            *reinterpret_cast<short *>(reinterpret_cast<char *>(this) + channel * 2 + 0x16CC) = magnitude;
         }
 
-        LGWheelsGetCondition(this)->Start(channel, 2);
+        reinterpret_cast<Condition *>(reinterpret_cast<char *>(this) + 0x11A8)->Start(channel, 2);
     } else {
         OSReport(kPlayForceError, channel);
     }
