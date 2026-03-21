@@ -40,4 +40,6 @@
 
 #include "Speed/Indep/Src/Physics/Behaviors/EngineTraffic.cpp"
 
+#include "Speed/Indep/Src/Physics/Behaviors/SimpleChopper.cpp"
+
 #include "Speed/Indep/Src/Physics/Behaviors/SoundHeli.cpp"
