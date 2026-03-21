@@ -75,10 +75,10 @@ int Periodic::UpdateForce(long channel, long forceNumber, unsigned char type, un
     force.p.periodic.envelope.fadeLevel = fadeLevel;
 
     effectIDBase = reinterpret_cast<char *>(this) + 0x80;
-    ret = LGUpdateForceEffect(*reinterpret_cast<unsigned long *>(effectIDBase + channel * 32 + forceNumber * 4), &force);
+    ret = LGUpdateForceEffect(*reinterpret_cast<unsigned long *>(effectIDBase + forceNumber * 4 + channel * 32), &force);
     if (ret < 0) {
         OSReport(kUpdatePeriodicForceError, channel, ret);
-        *reinterpret_cast<unsigned long *>(effectIDBase + channel * 32 + forceNumber * 4) =
+        *reinterpret_cast<unsigned long *>(effectIDBase + forceNumber * 4 + channel * 32) =
             static_cast<unsigned long>(-1);
     }
 
