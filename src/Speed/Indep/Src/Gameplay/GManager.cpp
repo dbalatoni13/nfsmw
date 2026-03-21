@@ -2371,6 +2371,8 @@ bool GManager::LoadGameplayData(unsigned char *src, unsigned int maxSize) {
     src = reinterpret_cast<unsigned char *>((reinterpret_cast<unsigned int>(src) + 0xFU) & ~0xFU);
 
     bMemCpy(&respawnMarker, src, sizeof(respawnMarker));
+    src += sizeof(respawnMarker);
+    AlignPointer(src, 0x10);
     {
         Attrib::Gen::gameplay testInstance(respawnMarker, 0, nullptr);
 
@@ -2379,7 +2381,7 @@ bool GManager::LoadGameplayData(unsigned char *src, unsigned int maxSize) {
         }
     }
 
-    bMemCpy(&respawnMarker, src + 0x10, sizeof(respawnMarker));
+    bMemCpy(&respawnMarker, src, sizeof(respawnMarker));
     {
         Attrib::Gen::gameplay testInstance2(respawnMarker, 0, nullptr);
 
