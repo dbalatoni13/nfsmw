@@ -148,7 +148,7 @@ void SFXCTL_3DObjPos::GenerateSinglePlayerMix() {
         goto centered_car_mix;
     }
     if (POSMIXTYPE == TPMIX_AVE_CAM_CAR) {
-        goto centered_car_mix;
+        goto centered_car_cam_mix;
     }
     goto done_mix;
 
@@ -205,6 +205,21 @@ ave_cam_mix:
     }
 
 centered_car_mix:
+    {
+        m_pv2AzimRefPos = SndCamera::GetCenteredCarPos(m_PlayerRef);
+        m_pv2AzimRefDir = SndCamera::GetNormCamDir(m_PlayerRef);
+        SetCameraAngle();
+        SetDMIX_Input(2, static_cast<unsigned int>(m_CameraAngle));
+
+        float dx = m_v2ObjPosCopy.x - m_pv2AzimRefPos->x;
+        float dy = m_v2ObjPosCopy.y - m_pv2AzimRefPos->y;
+        float distSqr = dx * dx + dy * dy;
+        float fDistToObj = bSqrt(distSqr);
+        outVol = fDistToObj * 100.0f;
+        goto store_mix;
+    }
+
+centered_car_cam_mix:
     {
         m_pv2AzimRefPos = SndCamera::GetCenteredCarPos(m_PlayerRef);
         m_pv2AzimRefDir = SndCamera::GetNormCamDir(m_PlayerRef);
