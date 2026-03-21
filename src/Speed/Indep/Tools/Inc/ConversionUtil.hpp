@@ -67,6 +67,10 @@ inline float INCH2METERS(const float _inches_) {
     return _inches_ * 0.0254f;
 }
 
+inline float MILE2METERS(const float _mi_) {
+    return _mi_ * 1609.34f;
+}
+
 inline Rpm RPS2RPM(const float _rps_) {
     return _rps_ * 9.549296f; // TODO problems on PS2
 }

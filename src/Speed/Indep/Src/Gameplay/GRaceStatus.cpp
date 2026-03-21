@@ -761,9 +761,9 @@ void GRacerInfo::Update(float dT) {
 
     #ifndef EA_BUILD_A124
     if (mQuarterMileTime == 0.0f) {
-        static float quarterMileInMeters = 1609.34f * 0.25f;
+        static float quarterMileInMeters = MILE2METERS(0.25f);
 
-        if (quarterMileInMeters <= distance) {
+        if (distance >= quarterMileInMeters) {
             mQuarterMileTime = GetRaceTime();
         }
     }
@@ -771,7 +771,7 @@ void GRacerInfo::Update(float dT) {
     if (mZeroToSixtyTime == 0.0f) {
         static float sixtyMphInMetersPerSec = MPH2MPS(60.0f);
 
-        if (sixtyMphInMetersPerSec <= mTopSpeed) {
+        if (mTopSpeed >= sixtyMphInMetersPerSec) {
             mZeroToSixtyTime = GetRaceTime();
         }
     }
