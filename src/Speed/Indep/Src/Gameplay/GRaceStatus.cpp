@@ -3031,7 +3031,9 @@ void GRaceStatus::Update(float dT) {
         } else {
             isTimeLimited = false;
         }
-        MNotifyRaceTime(elapsed, isTimeLimited, GetRaceTimeRemaining()).Post(gameplayMessage);
+        float timeRemaining = GetRaceTimeRemaining();
+
+        MNotifyRaceTime(elapsed, isTimeLimited, timeRemaining).Post(gameplayMessage);
 
         elapsed = GetRaceTimeElapsed();
         elapsedSec = static_cast<int>(elapsed);
