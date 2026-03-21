@@ -114,6 +114,10 @@ void DrawVehicle::ReleaseChildModels() {
     mAttachments = new Sim::Attachments(static_cast<IAttachable *>(this));
 }
 
+UCrc32 DrawVehicle::GetName() const {
+    return GetVehicle()->GetVehicleAttributes().GetCollection();
+}
+
 void DrawVehicle::StopEffects() {
     for (EffectList::iterator iter = mEffects.begin(); iter != mEffects.end(); ++iter) {
         delete *iter;
