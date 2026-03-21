@@ -755,7 +755,8 @@ void GRacerInfo::Update(float dT) {
         mTopSpeed = speed;
     }
 
-    distance = mDistanceDriven + speed * dT;
+    distance = mDistanceDriven;
+    distance += speed * dT;
     mTotalUpdateTime += dT;
     mDistanceDriven = distance;
 
@@ -780,10 +781,11 @@ void GRacerInfo::Update(float dT) {
     raceLength = raceStatus.GetRaceLength();
     vehicleAI = nullptr;
     if (simable->QueryInterface(&vehicleAI)) {
-        mDistToNextCheckpoint = vehicleAI->GetPathDistanceRemaining();
+        distance = vehicleAI->GetPathDistanceRemaining();
     } else {
-        mDistToNextCheckpoint = 0.0f;
+        distance = 0.0f;
     }
+    mDistToNextCheckpoint = distance;
 
     if (raceLength > 0.0f) {
         float raceDistanceCompleted = 0.0f;
