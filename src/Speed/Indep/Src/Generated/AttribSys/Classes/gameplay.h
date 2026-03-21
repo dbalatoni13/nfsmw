@@ -31,7 +31,7 @@ namespace Gen {
 
 struct gameplay : Instance {
     struct _LayoutStruct {
-        char CollectionName[4];  // offset 0x0, size 0x4
+        const char *CollectionName;  // offset 0x0, size 0x4
         unsigned int message_id; // offset 0x4, size 0x4
     };
 
@@ -1205,7 +1205,7 @@ struct gameplay : Instance {
         return this->Get(0x9c19e56f).GetLength();
     }
 
-    const char *CollectionName() const {
+    const char * const &CollectionName() const {
         return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->CollectionName;
     }
 
