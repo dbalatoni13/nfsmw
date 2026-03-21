@@ -1,6 +1,7 @@
 #include "DamageRacer.h"
 #include "Speed/Indep/Src/Generated/Events/ETireBlown.hpp"
 #include "Speed/Indep/Src/Generated/Events/ETirePunctured.hpp"
+#include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Interfaces/Simables/IDamageable.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ISpikeable.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
@@ -77,8 +78,10 @@ DamageZone::Info DamageRacer::GetZoneDamage() const {
 }
 
 bool DamageRacer::CanDamageVisuals() const {
-    // TODO
-    return true;
+    if (!FEDatabase) {
+        return true;
+    }
+    return FEDatabase->CurrentUserProfiles[0]->GetOptions()->TheGameplaySettings.Damage;
 }
 
 void DamageRacer::OnTaskSimulate(float dT) {
