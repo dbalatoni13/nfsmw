@@ -517,6 +517,7 @@ int EAXAemsManager::InitiateLoad() {
         queuedFileParams.BlockSize = 0x7FFFFFF;
         queuedFileParams.Priority = QueuedFileDefaultPriority - 2;
         queuedFileParams.Compressed = false;
+        QueuedFileParams *pQueuedFileParams = &queuedFileParams;
         memLocation = m_pCurLoadSDLP->MemLocation;
         switch (memLocation) {
         case TMP_ALLOC_MAIN:
@@ -527,7 +528,7 @@ int EAXAemsManager::InitiateLoad() {
             }
             m_pCurLoadSDLP->pmem = bMalloc(m_pCurLoadSDLP->nSize, 0x1040);
             AddQueuedFile(m_pCurLoadSDLP->pmem, m_csTemp1, 0, m_pCurLoadSDLP->nSize, DataLoadCB,
-                          reinterpret_cast<int>(m_pCurLoadSDLP), &queuedFileParams);
+                          reinterpret_cast<int>(m_pCurLoadSDLP), pQueuedFileParams);
         SetWaitingState:
             m_IsWaitingForFileCB = memLocation != TMP_ALLOC_NONE;
             break;
@@ -549,7 +550,7 @@ int EAXAemsManager::InitiateLoad() {
             }
             result = m_pCurLoadSDLP->nSize;
             AddQueuedFile(fileString, m_csTemp1, 0, result, DataLoadCB,
-                          reinterpret_cast<int>(m_pCurLoadSDLP), &queuedFileParams);
+                          reinterpret_cast<int>(m_pCurLoadSDLP), pQueuedFileParams);
             m_IsWaitingForFileCB = 1;
             break;
         case TMP_ALLOC_AUDIO:
@@ -575,7 +576,7 @@ int EAXAemsManager::InitiateLoad() {
                 result = m_pCurLoadSDLP->nSize;
             }
             AddQueuedFile(fileString, m_csTemp1, 0, result, DataLoadCB,
-                          reinterpret_cast<int>(m_pCurLoadSDLP), &queuedFileParams);
+                          reinterpret_cast<int>(m_pCurLoadSDLP), pQueuedFileParams);
             m_IsWaitingForFileCB = 1;
             break;
         default:
