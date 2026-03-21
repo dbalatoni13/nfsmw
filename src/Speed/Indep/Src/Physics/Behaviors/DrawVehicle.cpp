@@ -1,7 +1,7 @@
 #include "DrawVehicle.h"
 
 HMODEL DrawVehicle::GetModelHandle() const {
-    return GetModel()->GetInstanceHandle();
+    return static_cast<const IModel *>(this)->GetInstanceHandle();
 }
 
 const IModel *DrawVehicle::GetModel() const {
@@ -83,5 +83,5 @@ void DrawVehicle::OnAttached(IAttachable *pOther) {}
 void DrawVehicle::OnDetached(IAttachable *pOther) {}
 
 const IAttachable::List *DrawVehicle::GetAttachments() const {
-    return &mAttachments->GetList();
+    return reinterpret_cast<const IAttachable::List *>(mAttachments);
 }
