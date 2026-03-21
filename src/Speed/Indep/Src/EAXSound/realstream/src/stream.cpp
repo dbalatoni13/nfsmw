@@ -187,11 +187,7 @@ int inbetween(char *startptr, char *endptr, char *ptr) {
     return 1;
 }
 
-int decbufferusage(STREAMHEADERtag *stream, int amount) {
-    if (!stream) {
-        return -1;
-    }
-
+void decbufferusage(STREAMHEADERtag *stream, int amount) {
     int oldbufferusage;
     int bufferusage;
 
@@ -201,13 +197,10 @@ int decbufferusage(STREAMHEADERtag *stream, int amount) {
     stream->bufferusage = bufferusage;
     MUTEX_unlock(&stream->mutex);
 
-    if (stream->greedylevel <= oldbufferusage && bufferusage < stream->greedylevel) {
-        stream->greedystate = 1;
-        if (stream->state == STREAM_RUNNING_STATE) {
-            FILESYS_priorityop(stream->fop, stream->priorityhigh);
-        }
+    if (oldbufferusage >= stream->greedylevel && bufferusage < stream->greedylevel &&
+        (stream->greedystate = 1, stream->state == STREAM_RUNNING_STATE)) {
+        FILESYS_priorityop(stream->fop, stream->priorityhigh);
     }
-    return stream->bufferusage;
 }
 
 REQUESTSTRUCTtag *getfreerequest(STREAMHEADERtag *stream) {
