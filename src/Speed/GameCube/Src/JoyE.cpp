@@ -50,10 +50,10 @@ static inline unsigned short ConvertPadButtons(unsigned short buttons) {
     result |= (buttons >> 8) & 8;
     result |= buttons & 0x10;
     result |= (buttons >> 7) & 0x20;
-    result |= (buttons << 5) & 0x100;
-    result |= (buttons << 7) & 0x200;
+    result |= (buttons & 8) << 5;
+    result |= (buttons & 4) << 7;
     result |= (buttons & 1) << 10;
-    result |= (buttons << 10) & 0x800;
+    result |= (buttons & 2) << 10;
     return ~result;
 }
 
@@ -142,8 +142,7 @@ int ActualReadJoystickData() {
                         ClampAnalogValue(0x80 - static_cast<int>(joy_data->padSTATUS.substickY * 2.15f));
                     joy_data->ThePadData[0].AnalogLeftX =
                         ClampAnalogValue(static_cast<int>(joy_data->padSTATUS.stickX * 1.75f) + 0x80);
-                    joy_data->ThePadData[0].AnalogLeftY =
-                        ClampAnalogValue(0x80 - static_cast<int>(joy_data->padSTATUS.stickY * 1.75f));
+                    joy_data->ThePadData[0].AnalogLeftY = 0x80 - static_cast<int>(joy_data->padSTATUS.stickY * 1.75f);
                     joy_data->ThePadData[0].LTrigger = static_cast<unsigned char>(joy_data->padSTATUS.triggerL * 1.7f);
                     joy_data->ThePadData[0].RTrigger = static_cast<unsigned char>(joy_data->padSTATUS.triggerR * 1.7f);
                 } else if (plat_lgwheels->IsConnected(port)) {
