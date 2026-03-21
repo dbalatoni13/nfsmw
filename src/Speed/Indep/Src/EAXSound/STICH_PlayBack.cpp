@@ -478,9 +478,9 @@ void cSampleWarpper::Play(const SND_Params *Params) {
         AEMS_StichCollision *sample = static_cast<AEMS_StichCollision *>(Csis::System::Alloc(0x2C));
 
         SND_SampleRef *ref = SampleRefData;
-        unsigned int sampleIndex = static_cast<unsigned int>(ref->SampleIndex);
+        int sampleIndex = static_cast<int>(ref->SampleIndex);
         int sampleType = static_cast<int>(ref->eStichType);
-        unsigned int sampleOffset = static_cast<unsigned int>(ref->Offset);
+        int sampleOffset = static_cast<int>(ref->Offset);
         int sampleAz = (TempAz + static_cast<unsigned short>(ref->Az) + 0x10000) % 0x10000;
         int wetFX = Params->RVerb;
 
@@ -562,9 +562,9 @@ void cSampleWarpper::Play(const SND_Params *Params) {
         AEMS_StichWoosh *sample = static_cast<AEMS_StichWoosh *>(Csis::System::Alloc(0x2C));
 
         SND_SampleRef *ref = SampleRefData;
-        unsigned int sampleIndex = static_cast<unsigned int>(ref->SampleIndex);
+        int sampleIndex = static_cast<int>(ref->SampleIndex);
         int sampleType = static_cast<int>(ref->eStichType);
-        unsigned int sampleOffset = static_cast<unsigned int>(ref->Offset);
+        int sampleOffset = static_cast<int>(ref->Offset);
         int sampleAz = (TempAz + static_cast<unsigned short>(ref->Az) + 0x10000) % 0x10000;
         int wetFX = Params->RVerb;
 
@@ -646,9 +646,9 @@ void cSampleWarpper::Play(const SND_Params *Params) {
         AEMS_StichStatic *sample = static_cast<AEMS_StichStatic *>(Csis::System::Alloc(0x2C));
 
         SND_SampleRef *ref = SampleRefData;
-        unsigned int sampleIndex = static_cast<unsigned int>(ref->SampleIndex);
+        int sampleIndex = static_cast<int>(ref->SampleIndex);
         int sampleType = static_cast<int>(ref->eStichType);
-        unsigned int sampleOffset = static_cast<unsigned int>(ref->Offset);
+        int sampleOffset = static_cast<int>(ref->Offset);
         int sampleAz = (TempAz + static_cast<unsigned short>(ref->Az) + 0x10000) % 0x10000;
         int wetFX = Params->RVerb;
 
