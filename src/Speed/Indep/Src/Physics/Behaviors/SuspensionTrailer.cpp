@@ -262,6 +262,12 @@ SuspensionTrailer::SuspensionTrailer(const BehaviorParams &bp, const SuspensionP
     GetWheel(3).SetLocalArm(rr);
 }
 
+SuspensionTrailer::~SuspensionTrailer() {
+    for (int i = 0; i < 4; ++i) {
+        delete mTires[i];
+    }
+}
+
 void SuspensionTrailer::OnBehaviorChange(const UCrc32 &mechanic) {
     Chassis::OnBehaviorChange(mechanic);
     if (mechanic == BEHAVIOR_MECHANIC_RIGIDBODY) {

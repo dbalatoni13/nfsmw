@@ -401,6 +401,13 @@ SuspensionSimple::SuspensionSimple(const BehaviorParams &bp, const SuspensionPar
     CreateTires();
 }
 
+SuspensionSimple::~SuspensionSimple() {
+    for (int i = 0; i < 4; ++i) {
+        delete mTires[i];
+    }
+    Sim::Collision::RemoveListener(this);
+}
+
 void SuspensionSimple::OnAttributeChange(const Attrib::Collection *aspec, unsigned int attribkey) {}
 
 void SuspensionSimple::CreateTires() {
