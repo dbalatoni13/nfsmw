@@ -294,20 +294,22 @@ void UIWidgetMenu::Reposition() {
     unsigned int index = 1;
     unsigned int view_index = GetWidgetIndex(pViewTop);
     float pos = vWidgetStartPos.y;
-    FEWidget *w = Options.GetHead();
-    while (w != Options.EndOfList()) {
-        if (index >= view_index && index < view_index + iMaxWidgetsOnScreen) {
-            w->Show();
-            w->SetPosY(pos);
-            w->Draw();
-            w->Position();
-            pos += vWidgetSize.y;
-        } else {
-            w->SetPosY(6969.0f);
-            w->Hide();
+    {
+        FEWidget *w = Options.GetHead();
+        while (w != Options.EndOfList()) {
+            if (index >= view_index && index < view_index + iMaxWidgetsOnScreen) {
+                w->Show();
+                w->SetPosY(pos);
+                w->Draw();
+                w->Position();
+                pos += vWidgetSize.y;
+            } else {
+                w->SetPosY(6969.0f);
+                w->Hide();
+            }
+            index++;
+            w = w->GetNext();
         }
-        index++;
-        w = w->GetNext();
     }
     UpdateCursorPos();
 }
