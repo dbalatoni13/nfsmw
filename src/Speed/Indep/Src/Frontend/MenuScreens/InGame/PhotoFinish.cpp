@@ -175,11 +175,6 @@ void SillyTextureStreamerManager::UnloadAll() {
     }
 }
 
-void SillyTextureStreamerManager::LoadCallbackBridge(unsigned int param) {
-    SillyTextureStreamerManager *mgr = reinterpret_cast<SillyTextureStreamerManager *>(param);
-    mgr->LoadCallback();
-}
-
 bool PhotoFinishScreen::mRestartSelected = false;
 float PhotoFinishScreen::mSpeedtrapSpeed = 0.0f;
 float PhotoFinishScreen::mSpeedtrapBounty = 0.0f;

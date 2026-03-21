@@ -32,7 +32,9 @@ class SillyTextureStreamerManager {
         reinterpret_cast<SillyTextureStreamerManager *>(param)->MakeSpaceInPoolCallback();
     }
     void MakeSpaceInPoolCallback();
-    static void LoadCallbackBridge(unsigned int param);
+    static void LoadCallbackBridge(unsigned int param) {
+        reinterpret_cast<SillyTextureStreamerManager *>(param)->LoadCallback();
+    }
     void LoadCallback();
 
     char BundleFileName[256];
