@@ -2034,10 +2034,11 @@ bool GRaceParameters::GetIsSunsetRace() const {
 }
 
 bool GRaceParameters::GetIsMiddayRace() const {
-    float timeOfDay;
+    if (mIndex) {
+        return (*reinterpret_cast<const unsigned int *>(reinterpret_cast<const char *>(mIndex) + 0x18) >> 17) & 1;
+    }
 
-    timeOfDay = GetTimeOfDay();
-    return timeOfDay >= 0.0f && timeOfDay < 0.8f;
+    return GetTimeOfDay() >= 0.0f && GetTimeOfDay() < 0.8f;
 }
 
 void GRaceParameters::SetupTimeOfDay() {
