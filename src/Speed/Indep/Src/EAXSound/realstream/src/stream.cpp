@@ -436,10 +436,44 @@ int closecallback(int sndstreamhandle, int status, void *userdata) {
 }
 
 int readcallback(int sndstreamhandle, int status, void *userdata) {
+    (void)sndstreamhandle;
     (void)status;
-    (void)userdata;
-    STREAMHEADERtag *stream = GetHeader(sndstreamhandle);
-    return parsechunks(stream);
+
+    STREAMHEADERtag *stream = static_cast<STREAMHEADERtag *>(userdata);
+    REQUESTSTRUCTtag *req = stream->curreq;
+    int endoffile;
+    int bytesread;
+    int endchunk;
+
+    *(int *)&bReadCallbackToggle = 1;
+    if (req->type == 1) {
+        bytesread = stream->readsize;
+        endoffile = req->parm <= stream->foffset + bytesread;
+    } else {
+        long long readresult = FILESYS_completeop64(stream->fop);
+
+        bytesread = static_cast<int>(readresult);
+        endoffile = bytesread < stream->readsize;
+    }
+
+    stream->foffset += bytesread;
+    stream->dataend += bytesread;
+    endchunk = parsechunks(stream);
+    if (req->state != STREAMREQUEST_CANCELED) {
+        if (!endoffile && endchunk == 0) {
+            restartstream(stream, stream->priorityhigh - 1);
+            return 0;
+        }
+
+        MUTEX_lock(&stream->mutex);
+        if (req->state != STREAMREQUEST_CANCELED) {
+            req->state = STREAMREQUEST_COMPLETED;
+        }
+        MUTEX_unlock(&stream->mutex);
+    }
+
+    startnextrequest(stream, stream->priorityhigh);
+    return 0;
 }
 
 void startnextrequest(STREAMHEADERtag *stream, int priority) {
