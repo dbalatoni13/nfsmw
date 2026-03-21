@@ -58,26 +58,29 @@ int Periodic::DownloadForce(long channel, long forceNumber, unsigned long & hand
 int Periodic::UpdateForce(long channel, long forceNumber, unsigned char type, unsigned long duration, unsigned long startDelay, unsigned char magnitude, unsigned short direction, unsigned short period, unsigned short phase, short offset, unsigned long attackTime, unsigned long fadeTime, unsigned char attackLevel, unsigned char fadeLevel) {
     LGForceEffect force;
     int ret;
+    int slot;
+    unsigned long *base;
 
     memset(&force, 0, sizeof(force));
+    slot = forceNumber * 4 + channel * 32;
+    base = reinterpret_cast<unsigned long *>(reinterpret_cast<char *>(this) + 0x80);
     force.type = type;
+    force.p.periodic.offset = offset;
     force.duration = duration;
     force.startDelay = startDelay;
     force.p.periodic.magnitude = magnitude;
     force.p.periodic.direction = direction;
     force.p.periodic.period = period;
     force.p.periodic.phase = phase;
-    force.p.periodic.offset = offset;
     force.p.periodic.envelope.attackTime = attackTime;
     force.p.periodic.envelope.fadeTime = fadeTime;
     force.p.periodic.envelope.attackLevel = attackLevel;
     force.p.periodic.envelope.fadeLevel = fadeLevel;
 
-    ret = LGUpdateForceEffect(*reinterpret_cast<unsigned long *>(reinterpret_cast<char *>(this) + 0x80 + forceNumber * 4 + channel * 32), &force);
+    ret = LGUpdateForceEffect(*reinterpret_cast<unsigned long *>(reinterpret_cast<char *>(base) + slot), &force);
     if (ret < 0) {
         OSReport(kUpdatePeriodicForceError, channel, ret);
-        *reinterpret_cast<unsigned long *>(reinterpret_cast<char *>(this) + 0x80 + forceNumber * 4 + channel * 32) =
-            static_cast<unsigned long>(-1);
+        *reinterpret_cast<unsigned long *>(reinterpret_cast<char *>(base) + slot) = static_cast<unsigned long>(-1);
     }
 
     return ret;
