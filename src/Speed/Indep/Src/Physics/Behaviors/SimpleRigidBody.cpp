@@ -156,9 +156,30 @@ void SimpleRigidBody::ResolveForce(const UMath::Vector3 &force, const UMath::Vec
 
 void SimpleRigidBody::ResolveTorque(const UMath::Vector3 &torque) {}
 
-// TODO
 unsigned int SimpleRigidBody::GetTriggerFlags() const {
-    return 0;
+    if (!CanHitTrigger()) {
+        return 0;
+    }
+
+    ISimable *owner = GetOwner();
+    unsigned int flags = 0x40;
+
+    if (owner->GetSimableType() == SIMABLE_EXPLOSION) {
+        flags = 0x50;
+    }
+
+    if (owner->GetSimableType() == SIMABLE_HUMAN) {
+        flags |= 0x10000;
+        if (!owner->IsPlayer()) {
+            flags |= 8;
+        }
+    }
+
+    if (owner->IsPlayer()) {
+        flags |= 4;
+    }
+
+    return flags;
 }
 
 void SimpleRigidBody::Update(const float dT, void *workspace) {
