@@ -202,7 +202,7 @@ int ActualReadJoystickData() {
                           (data & 2) << 10);
                     joy_data->ThePadData[0].AnalogRightX = 0;
                     joy_data->ThePadData[0].AnalogLeftX =
-                        reinterpret_cast<LGPosition *>(plat_lgwheels)[port].wheel + 0x80;
+                        reinterpret_cast<LGPosition *>(plat_lgwheels)[port].wheel - 0x80;
 
                     if (plat_lgwheels->PedalsConnected(port)) {
                         joy_data->ThePadData[0].AnalogRightY =
