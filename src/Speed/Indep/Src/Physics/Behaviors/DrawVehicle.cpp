@@ -102,3 +102,29 @@ bool DrawVehicle::IsHidden() const {
 void DrawVehicle::HideModel() {
     GetVehicle()->Deactivate();
 }
+
+void DrawVehicle::ReleaseModel() {
+    delete this;
+}
+
+void DrawVehicle::ReleaseChildModels() {
+    if (mAttachments) {
+        delete mAttachments;
+    }
+    mAttachments = new Sim::Attachments(static_cast<IAttachable *>(this));
+}
+
+void DrawVehicle::StopEffects() {
+    mEffects.clear();
+}
+
+void DrawVehicle::StopEffect(UCrc32 identifire) {
+    for (EffectList::iterator iter = mEffects.begin(); iter != mEffects.end(); ++iter) {
+        Effect *effect = *iter;
+        if (effect->Identifire == identifire) {
+            delete effect;
+            mEffects.erase(iter);
+            break;
+        }
+    }
+}
