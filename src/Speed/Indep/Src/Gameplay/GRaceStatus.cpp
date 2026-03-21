@@ -876,15 +876,16 @@ void GRacerInfo::FinalizeRaceStats() {
 
     if (GRaceStatus::Get().GetRaceType() == GRace::kRaceType_SpeedTrap && mGameCharacter) {
         GRaceParameters *parameters = GRaceStatus::Get().GetRaceParameters();
-        float time_left;
         float penalty;
+        float point_loss;
 
         if (parameters) {
-            time_left = currentTime - time_now;
             penalty = static_cast<float>(parameters->GetGameplayObj()->OvertimePenaltyPerSec(0));
+            point_loss = currentTime - time_now;
 
-            if (0.0f < time_left) {
-                AddToPointTotal(-(time_left * penalty));
+            if (0.0f < point_loss) {
+                point_loss *= penalty;
+                AddToPointTotal(-point_loss);
             }
         }
     }
@@ -893,41 +894,36 @@ void GRacerInfo::FinalizeRaceStats() {
         GRaceParameters *parameters = GRaceStatus::Get().GetRaceParameters();
 
         if (parameters->GetIsLoopingRace()) {
-        if (mGameCharacter) {
-            int totalLaps = parameters->GetNumLaps();
-            int completedLaps = GetLapsCompleted();
-            float elapsedTime = 0.0f;
-            int onLap = 0;
+            if (mGameCharacter) {
+                int totalLaps = GRaceStatus::Get().GetRaceParameters()->GetNumLaps();
+                int completedLaps = GetLapsCompleted();
+                float elapsedTime = 0.0f;
+                int onLap = 0;
 
-            if (onLap < totalLaps) {
-                do {
-                    float lapTime = GRaceStatus::Get().GetLapTime(onLap, GetIndex(), false);
+                if (onLap < totalLaps) {
+                    do {
+                        float lapTime = GRaceStatus::Get().GetLapTime(onLap, GetIndex(), false);
 
-                    if (lapTime == 0.0f) {
-                        completedLaps = onLap;
-                        break;
-                    }
+                        if (lapTime == 0.0f) {
+                            completedLaps = onLap;
+                            break;
+                        }
 
-                    onLap++;
-                    elapsedTime += lapTime;
-                } while (onLap < totalLaps);
+                        onLap++;
+                        elapsedTime += lapTime;
+                    } while (onLap < totalLaps);
+                }
+
+                GRaceStatus::Get().SetLapTime(completedLaps, GetIndex(), currentTime - elapsedTime);
             }
-
-            GRaceStatus::Get().SetLapTime(completedLaps, GetIndex(), currentTime - elapsedTime);
         }
-    }
     }
 
 #ifndef EA_BUILD_A124
     if (mGameCharacter) {
         float effectivePct = mDNF ? pctComplete : 1.0f;
-        float pct[4];
+        float pct[4] = {0.25f, 0.5f, 0.75f, 1.0f};
         int onSplit;
-
-        pct[0] = 0.25f;
-        pct[1] = 0.5f;
-        pct[2] = 0.75f;
-        pct[3] = 1.0f;
 
         for (onSplit = 0; onSplit <= 3; ++onSplit) {
             bool wasAliveAtPct = effectivePct >= pct[onSplit];
