@@ -559,17 +559,16 @@ void MemoryCard::CheckCard(int iSlot) {
 }
 
 void MemoryCard::Save(const char* entryName) {
-    unsigned int saveSize = FEDatabase->GetUserProfileSaveSize(false);
-    SetExtraParam(ST_PROFILE, entryName, nullptr, saveSize);
+    SetExtraParam(ST_PROFILE, entryName, nullptr, FEDatabase->GetUserProfileSaveSize(false));
     if (m_pImp->GetSaveInfo() == nullptr) {
-        m_pImp->ConstructSaveInfo(ST_PROFILE, entryName, m_DataSize);
+        m_pImp->ConstructSaveInfo(ST_PROFILE, entryName, GetSize());
         bStrCat(m_Filename, m_pImp->GetPrefix(), entryName);
     }
     bStrNCpy(MemoryCardImp::gContentName, entryName, 16);
-    m_pBuffer = static_cast< char* >(bMalloc(m_DataSize, 0x40));
-    FEDatabase->SaveUserProfileToBuffer(m_pBuffer, m_DataSize);
+    m_pBuffer = static_cast< char* >(bMalloc(GetSize(), nullptr, 0, 0x40));
+    FEDatabase->SaveUserProfileToBuffer(GetData(), GetSize());
     m_Header[0] = 0x10d;
-    m_Header[1] = m_DataSize;
+    m_Header[1] = GetSize();
     InitCommand(MO_Save);
     if (!Joylog::IsReplaying())
         m_pIMemcard->Save(m_Filename, GetHeader(), GetData(),
@@ -589,15 +588,12 @@ void MemoryCard::List(const char* filter, RealmcIface::TitleInfo* titleInfo) {
 }
 
 void MemoryCard::Load(const char* filename) {
-    unsigned int saveSize = FEDatabase->GetUserProfileSaveSize(false);
-    SetExtraParam(ST_PROFILE, filename, nullptr, saveSize);
+    SetExtraParam(ST_PROFILE, filename, nullptr, FEDatabase->GetUserProfileSaveSize(false));
     FEDatabase->AllocBackupDB(true);
-    m_pBuffer = static_cast< char* >(bMalloc(m_DataSize, 0x40));
+    m_pBuffer = static_cast< char* >(bMalloc(m_DataSize, nullptr, 0, 0x40));
     if (filename != nullptr) {
         bStrNCpy(MemoryCardImp::gContentName, filename, 16);
-        char* filename_buf = m_Filename;
-        const char* prefix = m_pImp->GetPrefix();
-        bStrCat(filename_buf, prefix, filename);
+        bStrCat(m_Filename, m_pImp->GetPrefix(), filename);
     }
     InitCommand(MO_Load);
     if (!Joylog::IsReplaying()) {
