@@ -56,7 +56,7 @@
 
 #include "Speed/Indep/Src/Frontend/HUD/FeInfractions.cpp"
 
-#include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/Career/uiInfractions.cpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiInfractions.cpp"
 
 #include "Speed/Indep/Src/Frontend/MenuScreens/InGame/FeFadeScreen.cpp"
 
@@ -98,9 +98,9 @@
 
 #include "Speed/Indep/Src/Frontend/RaceStarter.cpp"
 
-#include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEDialogBox.cpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/feDialogBox.cpp"
 
-#include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEKeyboardInput.cpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/feKeyboardInput.cpp"
 
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/Slider.cpp"
 
@@ -124,7 +124,7 @@
 
 #include "Speed/Indep/Src/Frontend/FEngFrontend.cpp"
 
-#include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEScrollerina.cpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/feScrollerina.cpp"
 
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/feIconScrollerMenu.cpp"
 
