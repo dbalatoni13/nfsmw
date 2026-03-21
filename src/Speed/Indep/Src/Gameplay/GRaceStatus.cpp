@@ -26,6 +26,7 @@
 #include "Speed/Indep/Src/Misc/Table.hpp"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 #include "Speed/Indep/Src/Sim/Simulation.h"
+#include "Speed/Indep/Src/World/WCollisionAssets.h"
 #include "Speed/Indep/Src/World/WRoadNetwork.h"
 #include "Speed/Indep/Src/World/TrackInfo.hpp"
 #include "Speed/Indep/Src/World/WorldModel.hpp"
@@ -43,6 +44,8 @@ void SetOverRideRainIntensity(float intensity);
 bool DoesStringExist(unsigned int hash);
 const char *GetLocalizedString(unsigned int hash);
 extern int UnlockAllThings;
+
+void EnableBarrierSceneryGroup(const char *name, bool flipped);
 extern int SkipFE;
 extern const char *SkipFEOpponentPresetRide;
 unsigned int bStringHashUpper(const char *text);
@@ -3486,8 +3489,18 @@ void GRaceStatus::SetRaceActivity(GActivity *activity) {
 }
 
 void GRaceStatus::EnableBarriers() {
-    if (mRaceBin) {
-        mRaceBin->EnableBarriers();
+    if (mRaceParms) {
+        for (unsigned int onBarrier = 0; onBarrier < mRaceParms->GetBarrierCount(); onBarrier++) {
+            {
+                const char *barrierName = mRaceParms->GetBarrierName(onBarrier);
+                bool flipFlag = mRaceParms->GetBarrierIsFlipped(onBarrier);
+
+                EnableBarrierSceneryGroup(barrierName, flipFlag);
+            }
+        }
+
+        WCollisionAssets::Get().SetExclusionFlags();
+        WRoadNetwork::Get().ResolveBarriers();
     }
 }
 
