@@ -46,6 +46,8 @@ class SimpleRigidBody : public Behavior, public IRigidBody, public ISimpleBody, 
     float GetScalarVelocity() const;
     void ApplyFriction();
     void DoIntegration(const float dT);
+    void DoRBCollisions(const float dT);
+    void DoSRBCollisions(SimpleRigidBody *other);
     void RecalcOrientMat(UMath::Matrix4 &resultMat4) const;
 
     // Virtual methods

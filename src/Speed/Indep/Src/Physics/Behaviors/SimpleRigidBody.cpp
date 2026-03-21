@@ -162,7 +162,31 @@ unsigned int SimpleRigidBody::GetTriggerFlags() const {
 }
 
 void SimpleRigidBody::Update(const float dT, void *workspace) {
-    // TODO really ugly output
+    ScratchPtr<Volatile>::Push(workspace);
+
+    for (SimpleRigidBody *body = TheSimpleBodies.GetHead(); body != TheSimpleBodies.EndOfList(); body = body->GetNext()) {
+        body->DoIntegration(dT);
+    }
+
+    for (unsigned int i = 0; i < SIMPLE_RIGID_BODY_MAX; ++i) {
+        mCollisionMap[i].Clear();
+    }
+
+    for (SimpleRigidBody *body = TheSimpleBodies.GetHead(); body != TheSimpleBodies.EndOfList(); body = body->GetNext()) {
+        if (body->CanCollideWithRB()) {
+            body->DoRBCollisions(dT);
+        }
+
+        if (body->CanCollideWithSRB()) {
+            for (SimpleRigidBody *other = body->GetNext(); other != TheSimpleBodies.EndOfList(); other = other->GetNext()) {
+                if (other->CanCollideWithSRB()) {
+                    body->DoSRBCollisions(other);
+                }
+            }
+        }
+    }
+
+    ScratchPtr<Volatile>::Pop();
 }
 
 IRigidBody *SimpleRigidBody::Get(unsigned int index) {
