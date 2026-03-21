@@ -126,6 +126,50 @@ Behavior *SuspensionTrailer::Construct(const BehaviorParams &params) {
     return new SuspensionTrailer(params, sp);
 }
 
+SuspensionTrailer::SuspensionTrailer(const BehaviorParams &bp, const SuspensionParams &sp)
+    : Chassis(bp),              //
+      mTireInfo(this, 0),       //
+      mBrakeInfo(this, 0),      //
+      mSuspensionInfo(this, 0), //
+      mRB(0),                   //
+      mIDynamicsEntity(0),      //
+      mRBComplex(0),            //
+      mIDamage(0),              //
+      mPowerSliding(false),     //
+      mNumWheelsOnGround(0),    //
+      mMotionDampingFactor(0.0f), //
+      mSteeringControl(1.1f),     //
+      mTimeInAir(0.0f),           //
+      mDriftPhysics(false) {
+    GetOwner()->QueryInterface(&mRB);
+    GetOwner()->QueryInterface(&mRBComplex);
+    GetOwner()->QueryInterface(&mIDynamicsEntity);
+    GetOwner()->QueryInterface(&mIDamage);
+
+    for (int i = 0; i < 4; ++i) {
+        float diameter = Physics::Info::WheelDiameter(mTireInfo, i < 2);
+        mTires[i] = new Tire(diameter * 0.5f, i, mTireInfo, mBrakeInfo);
+    }
+
+    UMath::Vector3 dimension;
+    GetOwner()->GetRigidBody()->GetDimension(dimension);
+
+    float axle_width_f = mSuspensionInfo.TRACK_WIDTH().At(0) - INCH2METERS(mTireInfo.SECTION_WIDTH().At(0));
+    float axle_width_r = mSuspensionInfo.TRACK_WIDTH().At(1) - INCH2METERS(mTireInfo.SECTION_WIDTH().At(1));
+    float front_axle = mSuspensionInfo.FRONT_AXLE();
+    float rear_axle = front_axle - mSuspensionInfo.WHEEL_BASE();
+
+    UVector3 fl(-axle_width_f * 0.5f, -dimension.y, front_axle);
+    UVector3 fr(axle_width_f * 0.5f, -dimension.y, front_axle);
+    UVector3 rl(-axle_width_r * 0.5f, -dimension.y, rear_axle);
+    UVector3 rr(axle_width_r * 0.5f, -dimension.y, rear_axle);
+
+    GetWheel(0).SetLocalArm(fl);
+    GetWheel(1).SetLocalArm(fr);
+    GetWheel(2).SetLocalArm(rl);
+    GetWheel(3).SetLocalArm(rr);
+}
+
 void SuspensionTrailer::OnBehaviorChange(const UCrc32 &mechanic) {
     Chassis::OnBehaviorChange(mechanic);
     if (mechanic == BEHAVIOR_MECHANIC_RIGIDBODY) {
