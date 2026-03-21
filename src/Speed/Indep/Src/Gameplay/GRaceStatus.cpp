@@ -2727,24 +2727,16 @@ GRaceStatus::GRaceStatus()
     mCaluclatedAdaptiveGain = false;
     mQueueBinChange = false;
     mNumTollbooths = 0;
-#ifndef EA_BUILD_A124
-    mPlayerPursuitInCooldown = false;
-#endif
-    mBonusTime = 0.0f;
-    mTaskTime = 0.0f;
-    mSuddenDeathMode = false;
-    mTimeExpiredMsgSent = false;
-    mLastSecondTickSent = 0;
-#ifndef EA_BUILD_A124
-    mRefreshBinAfterRace = false;
-    mWarpWhenInFreeRoam = 0;
-#endif
     mVehicleCacheLocked = false;
     bRaceRouteError = false;
     mTrafficDensity = 0;
     mTrafficPattern = 0;
     mScriptWaitingForLoad = false;
     mHasBeenWon = false;
+#ifndef EA_BUILD_A124
+    mRefreshBinAfterRace = false;
+    mWarpWhenInFreeRoam = 0;
+#endif
     fSubsequentLapLength = 0.0f;
     mPlayMode = kPlayMode_Racing;
     fRaceLength = 0.0f;
