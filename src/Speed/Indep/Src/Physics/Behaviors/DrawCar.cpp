@@ -75,6 +75,21 @@ void DrawRaceCar::OnBehaviorChange(const UCrc32 &mechanic) {
     DrawPerformanceCar::OnBehaviorChange(mechanic);
 }
 
+void DrawCar::OnBehaviorChange(const UCrc32 &mechanic) {
+    if (mechanic == BEHAVIOR_MECHANIC_SUSPENSION) {
+        GetOwner()->QueryInterface(&mSuspension);
+        GetOwner()->QueryInterface(&mNIS);
+    }
+    if (mechanic == BEHAVIOR_MECHANIC_RIGIDBODY) {
+        GetOwner()->QueryInterface(&mRBVehicle);
+    }
+    if (mechanic == BEHAVIOR_MECHANIC_DAMAGE) {
+        GetOwner()->QueryInterface(&mDamage);
+        GetOwner()->QueryInterface(&mVehicleDamage);
+        GetOwner()->QueryInterface(&mSpikeDamage);
+    }
+}
+
 bool DrawCar::IsHidden() const {
     return mHidden || DrawVehicle::IsHidden() || mRenderService;
 }
@@ -96,6 +111,33 @@ void DrawCar::ReleaseChildModels() {
     DrawVehicle::ReleaseChildModels();
     if (!mParts.empty()) {
         mParts.clear();
+    }
+}
+
+bool DrawCar::IsPartVisible(const UCrc32 &name) const {
+    return mParts.find(name) == mParts.end();
+}
+
+void DrawCar::HidePart(const UCrc32 &name) {
+    Parts::iterator iter = mParts.find(name);
+    if (iter == mParts.end()) {
+        Parts::iterator lower = mParts.lower_bound(name);
+        if (lower == mParts.end() || name < lower->first) {
+            lower = mParts.insert(lower, Parts::value_type(name, 0));
+        }
+        lower->second = 1;
+    } else {
+        iter->second = iter->second + 1;
+    }
+}
+
+void DrawCar::ShowPart(const UCrc32 &name) {
+    Parts::iterator iter = mParts.find(name);
+    if (iter != mParts.end()) {
+        iter->second = iter->second - 1;
+        if (iter->second < 1) {
+            mParts.erase(iter);
+        }
     }
 }
 
