@@ -174,12 +174,14 @@ RBTractor::RBTractor(const BehaviorParams &bp, const RBComplexParams &params)
         GetForwardVector(initialVec);
         initialPos = GetPosition();
 
-        VehicleParams trailerParams(this, DRIVER_NONE, trailerRef.GetCollectionKey(), initialVec, initialPos, 4, nullptr, nullptr);
-        ISimable *isimable = UTL::COM::Factory<Sim::Param, ISimable, UCrc32>::CreateInstance("PVehicle", trailerParams);
+        ISimable *isimable = UTL::COM::Factory<Sim::Param, ISimable, UCrc32>::CreateInstance(
+            UCrc32("PVehicle"), VehicleParams(this, DRIVER_NONE, trailerRef.GetCollectionKey(), initialVec, initialPos, 4, nullptr, nullptr));
         if (isimable) {
-            GetOwner()->Attach(isimable);
             if (isimable->QueryInterface(&mTrailer)) {
+                GetOwner()->Attach(isimable);
                 SetHitch(true);
+            } else {
+                delete isimable;
             }
         }
     }
