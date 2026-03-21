@@ -114,7 +114,7 @@ void GObjectBlock::DeleteObjects() {
 
 template <typename T>
 unsigned int GObjectBlock::CreateObjects(GVault *vault, unsigned char *buffer) {
-    const unsigned int type = GetGameplayType<T>();
+    const GameplayObjType type = static_cast<GameplayObjType>(GetGameplayType<T>());
     AttribKeyList keys;
     unsigned int objSize;
     unsigned int objCount;
@@ -124,12 +124,12 @@ unsigned int GObjectBlock::CreateObjects(GVault *vault, unsigned char *buffer) {
 
     FindInstances<T>(vault, &keys, nullptr, nullptr);
 
-    objSize = GetPaddedObjectSize<T>();
     objCount = 0;
+    objSize = ::GetPaddedObjectSize<T>();
     connectionBase = reinterpret_cast<GRuntimeInstance::ConnectedInstance *>(buffer + objSize * keys.size());
     connectionDest = connectionBase;
 
-    for (AttribKeyList::iterator iterObj = keys.begin(); iterObj != keys.end(); ++iterObj) {
+    for (AttribKeyList::const_iterator iterObj = keys.begin(); iterObj != keys.end(); ++iterObj) {
         unsigned int collectionKey = *iterObj;
         T *pMem = ::new (buffer + objCount * objSize) T(collectionKey);
         T *newObj = pMem;
