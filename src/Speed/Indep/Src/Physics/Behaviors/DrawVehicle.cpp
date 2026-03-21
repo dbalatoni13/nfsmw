@@ -2,6 +2,13 @@
 #include "Speed/Indep/Src/Physics/SmackableTrigger.h"
 
 namespace RenderConn {
+struct Pkt_VehicleFragment_Open : Sim::Packet {
+    WUID mVehicleWorldID;
+    WUID mWorldID;
+    UCrc32 mPartName;
+    UCrc32 mColName;
+};
+
 struct Pkt_VehicleFragment_Service : Sim::Packet {
     int mInView;
     float mDistanceToView;
@@ -167,6 +174,33 @@ void DrawVehicle::Part::OnProcessFrame(float dT) {
             }
         }
     }
+}
+
+void DrawVehicle::Part::OnBeginSimulation() {
+    if (mTrigger != nullptr) {
+        mTrigger->Disable();
+    }
+
+    RenderConn::Pkt_VehicleFragment_Open pkt;
+    *reinterpret_cast<WUID *>(reinterpret_cast<char *>(&pkt) + 0x4) = mVehicleID;
+    *reinterpret_cast<WUID *>(reinterpret_cast<char *>(&pkt) + 0x8) = static_cast<IModel *>(this)->GetWorldID();
+    *reinterpret_cast<UCrc32 *>(reinterpret_cast<char *>(&pkt) + 0xC) = static_cast<IModel *>(this)->GetPartName();
+    *reinterpret_cast<UCrc32 *>(reinterpret_cast<char *>(&pkt) + 0x10) =
+        static_cast<IModel *>(this)->GetCollisionGeometry()->fNameHash;
+    BeginDraw(UCrc32(0x804c146e), &pkt);
+
+    if (!mOffScreenTask) {
+        const float *offscreen_allow_ptr = reinterpret_cast<const float *>(mAttributes.GetAttributePointer(0xc141f7f8, 0));
+        if (!offscreen_allow_ptr) {
+            offscreen_allow_ptr = reinterpret_cast<const float *>(Attrib::DefaultDataArea(sizeof(float)));
+        }
+        if (0.0f < *offscreen_allow_ptr) {
+            mOffScreenTime = 0.0f;
+            mOffScreenTask = true;
+        }
+    }
+
+    StartSequencer(UCrc32(mAttributes.EventSequencer()));
 }
 
 void DrawVehicle::SetCausality(HCAUSE from, float time) {
