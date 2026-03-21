@@ -2166,7 +2166,14 @@ GCharacter *GRaceParameters::GetOpponentChar(unsigned int index) const {
 }
 
 int GRaceParameters::GetNumOpponents() const {
-    EnsureLoaded();
+    if (mParentVault && !mParentVault->IsLoaded()) {
+        mParentVault->LoadSyncTransient();
+    }
+
+    if (mChildVault && !mChildVault->IsLoaded()) {
+        mChildVault->LoadSyncTransient();
+    }
+
     return mRaceRecord->Num_Opponents();
 }
 
