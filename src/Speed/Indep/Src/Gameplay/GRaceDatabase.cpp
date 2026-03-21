@@ -378,7 +378,7 @@ unsigned int GRaceDatabase::StoreBinList(GRaceBin *dest) {
 
 void GRaceDatabase::BuildBinList() {
     mBinCount = StoreBinList(nullptr);
-    mBins = static_cast<GRaceBin *>(bMalloc(mBinCount * 0x1C, 0));
+    mBins = reinterpret_cast<GRaceBin *>(new unsigned char[mBinCount * 0x1C]);
     StoreBinList(mBins);
 }
 
