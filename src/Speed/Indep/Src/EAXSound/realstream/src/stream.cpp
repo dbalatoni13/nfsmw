@@ -401,16 +401,15 @@ int opencallback(int sndstreamhandle, int status, void *userdata) {
     stream->fhandle = static_cast<int>(openresult);
     if (static_cast<int>(openresult) == 0) {
         stream->state = STREAM_IDLE_STATE;
-        freerequest(stream, stream->curreq);
-        if (stream->greedystate == 0) {
-            startnextrequest(stream, stream->prioritylow);
-        } else {
+        freerequest(stream, stream->firstreq);
+        if (stream->greedystate != 0) {
             startnextrequest(stream, stream->priorityhigh);
+        } else {
+            startnextrequest(stream, stream->prioritylow);
         }
     } else {
         restartstream(stream, stream->priorityhigh);
     }
-    return 0;
 }
 
 int closecallback(int sndstreamhandle, int status, void *userdata) {
