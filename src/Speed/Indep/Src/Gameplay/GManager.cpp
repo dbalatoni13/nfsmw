@@ -1278,17 +1278,21 @@ ObjectStateBlockHeader *GManager::AllocObjectStateBlock(unsigned int key, unsign
 }
 
 void *GManager::GetObjectStateBlock(unsigned int key) {
+    unsigned int persistent = 0;
     unsigned int shiftedKey = key >> mCollectionKeyShiftTo32;
-    ObjectStateMap::iterator it = mSessionStateBlocks.find(shiftedKey);
 
-    if (it == mSessionStateBlocks.end()) {
-        it = mPersistentStateBlocks.find(shiftedKey);
-        if (it == mPersistentStateBlocks.end()) {
-            return nullptr;
+    do {
+        ObjectStateMap &stateMap = persistent ? mPersistentStateBlocks : mSessionStateBlocks;
+        ObjectStateMap::iterator existing = stateMap.find(shiftedKey);
+
+        if (existing != stateMap.end()) {
+            return existing->second + 1;
         }
-    }
 
-    return it->second + 1;
+        persistent++;
+    } while (persistent <= 1);
+
+    return nullptr;
 }
 
 void GManager::ClearObjectStateBlock(unsigned int collectionKey) {
