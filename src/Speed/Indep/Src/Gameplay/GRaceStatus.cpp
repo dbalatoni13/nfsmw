@@ -3221,7 +3221,7 @@ void GRaceStatus::Update(float dT) {
                     for (int idx = 0; idx < mRacerCount; ++idx) {
                         GRacerInfo &info = mRacerInfo[idx];
 
-                        if (!info.GetIsHuman() && !info.IsFinishedRacing()) {
+                        if (!info.GetGameCharacter() && !info.IsFinishedRacing()) {
                             info.ForceStop();
                         }
                     }
@@ -3231,16 +3231,24 @@ void GRaceStatus::Update(float dT) {
     }
 
     if (mScriptWaitingForLoad) {
-        bool racersLoading = IsLoading();
-        bool trackLoading = TheTrackStreamer.IsLoadingInProgress();
-        bool copsSpawning = false;
-        ICopMgr *copMgr = ICopMgr::Get();
+        bool racersLoading;
+        bool trackLoading;
+        bool copsSpawning;
+        ICopMgr *copMgr;
+
+        racersLoading = IsLoading();
+        trackLoading = true;
+        if (!TheTrackStreamer.IsLoadingInProgress()) {
+            trackLoading = false;
+        }
+        copsSpawning = false;
+        copMgr = ICopMgr::Get();
 
         if (copMgr && copMgr->IsCopSpawnPending()) {
             copsSpawning = true;
         }
 
-        if (!racersLoading && !trackLoading && !copsSpawning) {
+        if (!trackLoading && !racersLoading && !copsSpawning) {
             MLoadingComplete().Post(UCrc32(0x20D60DBF));
             mScriptWaitingForLoad = false;
         }
