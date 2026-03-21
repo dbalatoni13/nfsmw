@@ -143,8 +143,8 @@ GManager::GManager(const char *vaultPackName)
       mTempLoadData(nullptr), //
       mTransientPoolNumber(0), //
       mTransientPoolMemory(nullptr), //
-      mGameplayClass(Attrib::Database::Get().GetClass(0x5CEA9D46)), //
-      mMilestoneClass(Attrib::Database::Get().GetClass(0xE4C3D904)), //
+      mGameplayClass(nullptr), //
+      mMilestoneClass(nullptr), //
       mAttributeKeyShiftTo24(0), //
       mCollectionKeyShiftTo32(0), //
       mMaxObjects(0), //
@@ -174,7 +174,6 @@ GManager::GManager(const char *vaultPackName)
       mPersistentStateBlocks(), //
       mSessionStateBlocks(), //
       mPendingSMS(), //
-      mLastCouldSendTime(0.0f), //
       mWarping(false), //
       mWarpStartPursuit(false), //
       mWarpTargetMarker(0), //
@@ -191,12 +190,13 @@ GManager::GManager(const char *vaultPackName)
       mAllowEngageSafehouse(false), //
       mAllowMenuGates(false), //
       mRestartEventHash(0) {
-    mObj = this;
+    mGameplayClass = Attrib::Database::Get().GetClass(Attrib::Gen::gameplay::ClassKey());
+    mMilestoneClass = Attrib::Database::Get().GetClass(Attrib::Gen::milestonetypes::ClassKey());
 
     bMemSet(mBinVaultInSlot, 0, sizeof(mBinVaultInSlot));
     bMemSet(mRaceVaultInSlot, 0, sizeof(mRaceVaultInSlot));
-    bMemSet(mBountySpawnPoint, 0, sizeof(mBountySpawnPoint));
     bMemSet(mHidingSpotFound, 0, sizeof(mHidingSpotFound));
+    bMemSet(mBountySpawnPoint, 0, sizeof(mBountySpawnPoint));
 
     mActiveCharacters.reserve(0x10);
     AllocateObjectStateStorage();
