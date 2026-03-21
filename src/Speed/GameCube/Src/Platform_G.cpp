@@ -233,10 +233,14 @@ int eSetDisplaySystem(int video_mode);
 
 void InitDisplaySystem() {
     if (bEURGB60) {
-        SetVideoMode(MODE_PAL60);
+        int video_mode = MODE_PAL60;
+
+        SetVideoMode(static_cast<VIDEO_MODE>(video_mode));
         eSetDisplaySystem(GetVideoMode());
     } else {
-        SetVideoMode(GetBuildRegionVideoMode());
+        int video_mode = GetBuildRegionVideoMode();
+
+        SetVideoMode(static_cast<VIDEO_MODE>(video_mode));
         eSetDisplaySystem(GetVideoMode());
     }
 }
