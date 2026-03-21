@@ -13,6 +13,14 @@ DrawPerformanceCar::DrawPerformanceCar(const BehaviorParams &params, CarRenderUs
     GetOwner()->QueryInterface(&mEngine);
 }
 
+void DrawPerformanceCar::OnBehaviorChange(const UCrc32 &mechanic) {
+    if (mechanic == BEHAVIOR_MECHANIC_ENGINE) {
+        GetOwner()->QueryInterface(&mTransmission);
+        GetOwner()->QueryInterface(&mEngine);
+    }
+    DrawCar::OnBehaviorChange(mechanic);
+}
+
 Behavior *DrawNISCar::Construct(const BehaviorParams &params) {
     return new DrawNISCar(params);
 }
@@ -58,6 +66,13 @@ Behavior *DrawRaceCar::Construct(const BehaviorParams &params) {
 DrawRaceCar::DrawRaceCar(const BehaviorParams &params, CarRenderUsage usage)
     : DrawPerformanceCar(params, usage) {
     GetOwner()->QueryInterface(&mEngineDamage);
+}
+
+void DrawRaceCar::OnBehaviorChange(const UCrc32 &mechanic) {
+    if (mechanic == BEHAVIOR_MECHANIC_ENGINE) {
+        GetOwner()->QueryInterface(&mEngineDamage);
+    }
+    DrawPerformanceCar::OnBehaviorChange(mechanic);
 }
 
 bool DrawCar::InView() const {
