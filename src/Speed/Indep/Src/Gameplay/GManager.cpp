@@ -2448,7 +2448,7 @@ eVehicleCacheResult GManager::OnQueryVehicleCache(const IVehicle *removethis, co
     for (StockCarMap::iterator it = self->mStockCars.begin(); it != self->mStockCars.end(); ++it) {
         IVehicle *stockCar = nullptr;
 
-        if (it->second && it->second->QueryInterface(&stockCar) && UTL::COM::ComparePtr(stockCar, vehicleToRemove)) {
+        if (it->second && it->second->QueryInterface(&stockCar) && stockCar == vehicleToRemove) {
             if (!UTL::COM::ComparePtr(cache, INIS::Get())) {
                 return VCR_WANT;
             }
@@ -2462,11 +2462,17 @@ eVehicleCacheResult GManager::OnQueryVehicleCache(const IVehicle *removethis, co
         GCharacter *character = *it;
         IVehicle *vehicle = character->GetSpawnedVehicle();
 
-        if (!UTL::COM::ComparePtr(vehicle, vehicleToRemove)) {
+        if (vehicle != vehicleToRemove) {
             continue;
         }
 
-        if (vehicle && character->HasStockCar()) {
+        bool hasStockCar = false;
+
+        if (vehicle) {
+            hasStockCar = character->IsFlagSet(GCharacter::kCharFlag_UsingStockCar);
+        }
+
+        if (hasStockCar) {
             return VCR_DONTCARE;
         }
 
@@ -2474,7 +2480,12 @@ eVehicleCacheResult GManager::OnQueryVehicleCache(const IVehicle *removethis, co
             return VCR_DONTCARE;
         }
 
-        return character == mActiveCharacters.front() ? VCR_DONTCARE : VCR_WANT;
+        GCharacter *firstCharacter = nullptr;
+        if (mActiveCharacters.begin() != mActiveCharacters.end()) {
+            firstCharacter = *mActiveCharacters.begin();
+        }
+
+        return character == firstCharacter ? VCR_DONTCARE : VCR_WANT;
     }
 
     return VCR_DONTCARE;
