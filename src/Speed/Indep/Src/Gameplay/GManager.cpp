@@ -1077,7 +1077,7 @@ void GManager::ConnectChildren(GRuntimeInstance *runtimeInstance) {
         GRuntimeInstance *child = FindInstance(runtimeInstance->Children(i).GetCollectionKey());
 
         if (child) {
-            runtimeInstance->ConnectToInstance(GetStrippedNameKey(child->CollectionName()), 0, child);
+            runtimeInstance->ConnectToInstance(GetStrippedNameKey(*reinterpret_cast<const char *const *>(child->GetLayoutPointer())), 0, child);
         }
     }
 }
