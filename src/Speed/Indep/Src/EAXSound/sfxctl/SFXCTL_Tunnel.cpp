@@ -567,9 +567,7 @@ void SFXCTL_Tunnel::EndTunnelVerb() {
 
 void SFXCTL_Tunnel::UpdateDriveBySnds(float t) {
     bool InTunnel = m_bIsInTunnel;
-    eTrackPathZoneType PrevFutureZoneType = FutureZoneType;
     TrackPathZone *zone;
-    const bVector2 *CurCarPos;
     bVector2 UnNormalCurCarDir;
     bVector2 CurCarDir;
     bVector2 FutureCarDir;
@@ -588,16 +586,14 @@ void SFXCTL_Tunnel::UpdateDriveBySnds(float t) {
         tTimeToWaitBeforeAnotherExitDriveBy = 0.0f;
     }
 
-    (void)PrevFutureZoneType;
     FutureZoneType = TRACK_PATH_ZONE_RESET;
 
-    CurCarPos = m_pEAXCar->GetPhysCar()->GetPosition2D();
     UnNormalCurCarDir = bVector2(
         m_pEAXCar->GetPhysCar()->GetForwardVector()->x,
         m_pEAXCar->GetPhysCar()->GetForwardVector()->y);
     CurCarDir = bNormalize(UnNormalCurCarDir);
     FutureCarDir = bScale(CurCarDir, m_pEAXCar->GetPhysCar()->GetForwardSpeed() * 0.4f);
-    FutureCar2dPos = bAdd(*CurCarPos, FutureCarDir);
+    FutureCar2dPos = bAdd(*m_pEAXCar->GetPhysCar()->GetPosition2D(), FutureCarDir);
     FutureCarPos = bVector3(
         FutureCar2dPos.x,
         FutureCar2dPos.y,
