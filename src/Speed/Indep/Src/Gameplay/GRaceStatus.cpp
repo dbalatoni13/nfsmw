@@ -2869,8 +2869,9 @@ void GRaceStatus::SetTaskTime(float time) {
 void GRaceStatus::Shutdown() {
     if (fObj) {
         delete fObj;
-        fObj = nullptr;
     }
+
+    fObj = nullptr;
 }
 
 void GRaceStatus::EnableBinBarriers() {
