@@ -2461,7 +2461,6 @@ void GRaceCustom::GetCheckpointDirection(unsigned int index, UMath::Vector3 &dir
         index = GetNumCheckpoints() - (index + 1);
     }
 
-    EnsureLoaded();
     checkDir = UMath::Vector3::kZero;
     {
         const GCollectionKey &raceCheckSpec = mRaceRecord->Checkpoint(index);
