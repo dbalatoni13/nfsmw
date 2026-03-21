@@ -3992,21 +3992,21 @@ float GRaceStatus::GetCheckpointTime(int lapIndex, int checkIndex, int racerInde
 }
 
 int GRaceStatus::GetLapPosition(int lapIndex, int racerIndex, bool bOverallPosition) {
-    float racerTime = GetLapTime(lapIndex, racerIndex, bOverallPosition);
-    int position = 1;
+    float lapTime = GetLapTime(lapIndex, racerIndex, bOverallPosition);
+    int numFaster = 0;
 
-    for (int i = 0; i < mRacerCount; ++i) {
-        if (i == racerIndex) {
+    for (int onRacer = 0; onRacer < mRacerCount; ++onRacer) {
+        if (onRacer == racerIndex) {
             continue;
         }
 
-        float otherTime = GetLapTime(lapIndex, i, bOverallPosition);
-        if (otherTime > 0.0f && (racerTime <= 0.0f || otherTime < racerTime)) {
-            ++position;
+        float onRacerLapTime = GetLapTime(lapIndex, onRacer, bOverallPosition);
+        if (onRacerLapTime < lapTime && onRacerLapTime > 0.0f) {
+            ++numFaster;
         }
     }
 
-    return position;
+    return numFaster + 1;
 }
 
 float GRaceStatus::GetBestLapTime(int racerIndex) {
