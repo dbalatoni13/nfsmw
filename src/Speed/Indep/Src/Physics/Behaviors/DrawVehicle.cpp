@@ -114,13 +114,12 @@ DrawVehicle::Effect::~Effect() {}
 DrawVehicle::Part::Part(IModel *parent, WUID vehicleID, const CollisionGeometry::Bounds *geoms, const Attrib::Collection *spec, UCrc32 partname)
     : Sim::Model(parent, geoms, partname, 2), //
       ITriggerableModel(this),                //
-      mState(S_NONE),                         //
       mTrigger(nullptr),                      //
-      mAttributes(spec, 0, nullptr),          //
-      mOffScreenTask(false),                  //
-      mOffScreenTime(0.0f),                   //
-      mVehicleID(vehicleID) {
+      mAttributes(spec, 0, nullptr) {
     mAttributes.SetDefaultLayout(0x28);
+    mOffScreenTask = false;
+    mOffScreenTime = 0.0f;
+    mVehicleID = vehicleID;
     Vehicle_Part_Count = Vehicle_Part_Count + 1;
 }
 
