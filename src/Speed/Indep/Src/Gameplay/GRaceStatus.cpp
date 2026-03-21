@@ -3864,7 +3864,21 @@ void GRaceStatus::RaceAbandoned() {
         return;
     }
 
-    GManager::Get().SuspendAllActivities();
+    if (mRaceBin) {
+        GRaceParameters *parms = GetRaceParameters();
+
+        if (parms && parms->GetIsBossRace() && !parms->GetIsEpicPursuitRace()) {
+            unsigned int numBossRaces = mRaceBin->GetBossRaceCount();
+
+            for (unsigned int index = 0; index < numBossRaces; ++index) {
+                unsigned int raceHash = mRaceBin->GetBossRaceHash(index);
+
+                GRaceDatabase::Get().ResetCareerCompleteFlag(raceHash);
+            }
+        }
+    }
+
+    GManager::Get().RefreshEngageTriggerIcons();
 }
 
 void GRaceStatus::EndStopAll() {

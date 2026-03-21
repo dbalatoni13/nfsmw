@@ -164,6 +164,8 @@ class GRaceDatabase {
         return GetRaceFromHash(Attrib::StringHash32(name));
     }
 
+    void ResetCareerCompleteFlag(unsigned int hash);
+
   private:
     void BuildBinList();
     unsigned int StoreBinList(GRaceBin *dest);
@@ -177,7 +179,6 @@ class GRaceDatabase {
     void LoadBestScores(struct GRaceSaveInfo *scores, unsigned int count);
     struct GRaceSaveInfo *GetScoreInfo(unsigned int hash);
     bool CheckRaceScoreFlags(unsigned int hash, ScoreFlags flags);
-    void ResetCareerCompleteFlag(unsigned int hash);
     void ClearStartupRace();
 
     unsigned int mRaceCountStatic;           // offset 0x0, size 0x4
