@@ -2704,19 +2704,21 @@ bool GManager::CalcMapCoordsForMarker(unsigned int markerKey, bVector2 &outPos, 
         return false;
     }
 
-    const UMath::Vector3 *pos = reinterpret_cast<const UMath::Vector3 *>(marker.GetAttributePointer(0x9F743A0E, 0));
+    const bVector2 *pos = reinterpret_cast<const bVector2 *>(marker.GetAttributePointer(0x9F743A0E, 0));
     bVector2 worldPos;
     UMath::Matrix4 rotMat;
     UMath::Vector3 forwardVec;
     const float *rotation;
+    TrackInfo *trackInfo;
 
     if (!pos) {
-        pos = reinterpret_cast<const UMath::Vector3 *>(Attrib::DefaultDataArea(sizeof(UMath::Vector3)));
+        pos = reinterpret_cast<const bVector2 *>(Attrib::DefaultDataArea(sizeof(UMath::Vector3)));
     }
 
+    trackInfo = TrackInfo::GetTrackInfo(2000);
     worldPos.x = pos->x;
     worldPos.y = pos->y;
-    Minimap::ConvertPos(worldPos, outPos, TrackInfo::GetTrackInfo(2000));
+    Minimap::ConvertPos(worldPos, outPos, trackInfo);
 
     rotMat = UMath::Matrix4::kIdentity;
     forwardVec.x = 0.0f;
