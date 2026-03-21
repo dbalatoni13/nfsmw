@@ -749,7 +749,7 @@ void GRacerInfo::Update(float dT) {
 
     simable->GetLinearVelocity(linearVelocity);
     speed = UMath::Length(linearVelocity);
-    if (mTopSpeed < speed) {
+    if (speed > mTopSpeed) {
         mTopSpeed = speed;
     }
 
@@ -759,17 +759,13 @@ void GRacerInfo::Update(float dT) {
 
     #ifndef EA_BUILD_A124
     if (mQuarterMileTime == 0.0f) {
-        static const float quarterMileInMeters = 402.335f;
-
-        if (quarterMileInMeters <= distance) {
+        if (402.335f <= distance) {
             mQuarterMileTime = GetRaceTime();
         }
     }
 
     if (mZeroToSixtyTime == 0.0f) {
-        static const float sixtyMphInMetersPerSec = 26.8218f;
-
-        if (sixtyMphInMetersPerSec <= mTopSpeed) {
+        if (26.8218f <= mTopSpeed) {
             mZeroToSixtyTime = GetRaceTime();
         }
     }
