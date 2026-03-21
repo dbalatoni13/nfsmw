@@ -2586,10 +2586,8 @@ void GRaceCustom::CreateRaceActivity() {
         {
             Attrib::Attribute attribute(mRaceRecord->Get(0x5839FA1A));
 
-            if (mNumOpponents != 0) {
-                for (unsigned int onSet = 0; onSet < mNumOpponents; onSet++) {
-                    attribute.Set(onSet, GCollectionKey(opponentKey[onSet]));
-                }
+            for (unsigned int onSet = 0; onSet < mNumOpponents; onSet++) {
+                attribute.Set(onSet, GCollectionKey(opponentKey[onSet]));
             }
         }
     }
