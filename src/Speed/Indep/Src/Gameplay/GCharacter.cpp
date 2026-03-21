@@ -87,7 +87,7 @@ void GCharacter::Spawn(const UMath::Vector3 &pos, const UMath::Vector3 &dir, GMa
 }
 
 bool GCharacter::SpawnPending() const {
-    return mState - kCharState_Spawning_WaitingForModel < 2;
+    return static_cast<unsigned int>(mState - kCharState_Spawning_WaitingForModel) < 2;
 }
 
 bool GCharacter::AttemptSpawn() {
@@ -202,7 +202,7 @@ bool GCharacter::AttemptSpawn() {
 }
 
 bool GCharacter::IsSpawned() const {
-    return mState == kCharState_Spawned;
+    return static_cast<unsigned int>(mState - kCharState_Spawned) < 2;
 }
 
 void GCharacter::ReleaseVehicle() {
