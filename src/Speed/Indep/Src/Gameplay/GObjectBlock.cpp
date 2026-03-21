@@ -189,23 +189,22 @@ void GObjectBlock::Initialize(unsigned int bufferSize) {
 }
 
 unsigned int GObjectBlock::CalcSpaceRequired(GVault *vault, unsigned int *outObjCount) {
-    unsigned int objCount;
-    unsigned int spaceRequired;
+    unsigned int bytesUsed = 0;
+    unsigned int objCount = bytesUsed;
 
-    objCount = 0;
-    spaceRequired = FindInstances<GHandler>(vault, nullptr, &objCount, nullptr);
+    bytesUsed = FindInstances<GHandler>(vault, nullptr, &objCount, nullptr);
 
-    spaceRequired += FindInstances<GState>(vault, nullptr, &objCount, nullptr);
-    spaceRequired += FindInstances<GActivity>(vault, nullptr, &objCount, nullptr);
-    spaceRequired += FindInstances<GCharacter>(vault, nullptr, &objCount, nullptr);
-    spaceRequired += FindInstances<GMarker>(vault, nullptr, &objCount, nullptr);
-    spaceRequired += FindInstances<GTrigger>(vault, nullptr, &objCount, nullptr);
+    bytesUsed += FindInstances<GState>(vault, nullptr, &objCount, nullptr);
+    bytesUsed += FindInstances<GActivity>(vault, nullptr, &objCount, nullptr);
+    bytesUsed += FindInstances<GCharacter>(vault, nullptr, &objCount, nullptr);
+    bytesUsed += FindInstances<GMarker>(vault, nullptr, &objCount, nullptr);
+    bytesUsed += FindInstances<GTrigger>(vault, nullptr, &objCount, nullptr);
 
     if (outObjCount) {
         *outObjCount = objCount;
     }
 
-    return spaceRequired;
+    return bytesUsed;
 }
 
 bool GObjectBlock::CollectionIsInstanceOfTemplate(Attrib::Gen::gameplay &instanceObj, Attrib::Gen::gameplay &templateObj) {
