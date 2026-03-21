@@ -3,6 +3,7 @@
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/pvehicle.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ICollisionBody.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IDamageable.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IEngine.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IHelicopter.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
 #include "Speed/Indep/Src/Physics/Behavior.h"
@@ -116,6 +117,11 @@ void SimpleChopper::GetDesiredFacingVector(UMath::Vector3 &facingDir) {
     facingDir.x = mDesiredFacingVector.x;
     facingDir.z = mDesiredFacingVector.z;
     facingDir.y = mDesiredFacingVector.y;
+}
+
+Behavior *SimpleChopper::Construct(const BehaviorParams &params) {
+    const EngineParams ep(params.fparams.Fetch<EngineParams>(UCrc32(0xa6b47fac)));
+    return new SimpleChopper(params, ep);
 }
 
 void SimpleChopper::Reset() {}
