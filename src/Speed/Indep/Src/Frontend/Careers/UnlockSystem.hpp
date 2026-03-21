@@ -112,6 +112,7 @@ struct FEMarkerManager {
     void AwardMarker(Attrib::Gen::gameplay &inst, bool immediate_reward);
     char *SaveToBuffer(char *buffer);
     char *LoadFromBuffer(char *buffer);
+    int GetSaveBufferSize() { return 0x2F4; }
 
     inline int GetNumTempMarkers() { return iNumTempMarkers; }
     inline bool HasMarker(ePossibleMarker marker, int param) {

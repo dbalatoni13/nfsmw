@@ -511,13 +511,15 @@ int FEMarkerManager::GetNumMarkers(ePossibleMarker marker, int param) {
 }
 
 char *FEMarkerManager::SaveToBuffer(char *buffer) {
-    bMemCpy(buffer, this, 0x2F4);
-    return buffer + 0x2F4;
+    int nSize = GetSaveBufferSize();
+    bMemCpy(buffer, this, nSize);
+    return buffer + nSize;
 }
 
 char *FEMarkerManager::LoadFromBuffer(char *buffer) {
-    bMemCpy(this, buffer, 0x2F4);
-    return buffer + 0x2F4;
+    int nSize = GetSaveBufferSize();
+    bMemCpy(this, buffer, nSize);
+    return buffer + nSize;
 }
 
 // ============================================================
