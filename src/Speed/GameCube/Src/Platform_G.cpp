@@ -470,14 +470,16 @@ void DVDErrorTask(void *, int) {
             if (driveStatus != 0) {
                 /* Scrolling text display */
                 char the_loading_text[16];
-                int scrollLen = (signed char)bStrLen(
-                    s_OpenCover_ErrorText[language][errorIndex]);
-                int buttonMask = 0x10;
+                int scrollLen;
+                int buttonMask;
                 int to_copy;
                 char copy_length;
 
+                scrollLen = (signed char)bStrLen(
+                    s_OpenCover_ErrorText[language][errorIndex]);
                 bMemSet(the_loading_text, 0, 16);
 
+                buttonMask = 0x10;
                 if (IsGameFlowInGame()) {
                     buttonMask = 0x40;
                 }
@@ -525,12 +527,12 @@ void DVDErrorTask(void *, int) {
                 }
 
                 bool wasMovieActive = false;
-                cFEng *feng = cFEng::Get();
                 if (gMoviePlayer != 0) {
                     wasMovieActive = true;
                     gMoviePlayer->Stop();
                 }
 
+                cFEng *feng = cFEng::Get();
                 feng->MakeLoadedPackagesDirty();
                 if (feng->IsPackagePushed("DiscError.fng")) {
                     feng->PopErrorPackage();
