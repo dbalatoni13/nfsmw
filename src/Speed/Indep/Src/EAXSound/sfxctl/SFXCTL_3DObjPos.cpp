@@ -154,8 +154,8 @@ void SFXCTL_3DObjPos::GenerateSinglePlayerMix() {
 
 single_player_mix:
     {
-        bVector2 *pos = SndCamera::GetWorldCamPos(m_PlayerRef);
         bVector2 *dir = SndCamera::GetAvgCamDir(m_PlayerRef);
+        bVector2 *pos = SndCamera::GetWorldCamPos(m_PlayerRef);
         m_pv2AzimRefDir = dir;
         m_pv2AzimRefPos = pos;
         SetCameraAngle();
@@ -184,8 +184,8 @@ single_player_mix:
 
 ave_cam_mix:
     {
-        bVector2 *pos = SndCamera::GetAveragedCamPos(m_PlayerRef);
         bVector2 *dir = SndCamera::GetNormCamDir(m_PlayerRef);
+        bVector2 *pos = SndCamera::GetAveragedCamPos(m_PlayerRef);
         m_pv2AzimRefDir = dir;
         m_pv2AzimRefPos = pos;
         SetCameraAngle();
@@ -214,8 +214,8 @@ ave_cam_mix:
 
 centered_car_mix:
     {
-        bVector2 *pos = SndCamera::GetCenteredCarPos(m_PlayerRef);
         bVector2 *dir = SndCamera::GetNormCamDir(m_PlayerRef);
+        bVector2 *pos = SndCamera::GetCenteredCarPos(m_PlayerRef);
         m_pv2AzimRefDir = dir;
         m_pv2AzimRefPos = pos;
         SetCameraAngle();
