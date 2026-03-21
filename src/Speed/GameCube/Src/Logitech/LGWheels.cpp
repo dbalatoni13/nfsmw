@@ -699,7 +699,7 @@ bool LGWheels::SameSlipperyRoadEffectParams(long channel, short magnitude) {
 }
 
 void LGWheels::PlaySurfaceEffect(long channel, unsigned char type, unsigned char magnitude, unsigned short period) {
-    int ret;
+    int ret = 0;
 
     if (reinterpret_cast<Wheels *>(reinterpret_cast<char *>(this) + 0x828)->IsConnected(channel)) {
         if (*reinterpret_cast<int *>(reinterpret_cast<char *>(this) + channel * 4 + 0x166C) != 0) {
