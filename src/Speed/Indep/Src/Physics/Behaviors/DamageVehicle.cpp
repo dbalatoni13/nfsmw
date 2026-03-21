@@ -1,11 +1,19 @@
 #include "DamageVehicle.h"
 #include "Speed/Indep/Src/Generated/Events/EVehicleDestroyed.hpp"
+#include "Speed/Indep/Src/Generated/AttribSys/GenericAccessor.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IArticulatedVehicle.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IDamageable.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IEngineDamage.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
 #include "Speed/Indep/Src/Sim/Simulation.h"
 #include "Speed/Indep/Src/World/Damagezones.h"
+
+namespace DamageZone {
+UCrc32 GetSystemName(DamageZone::ID zone);
+UCrc32 GetDamageStimulus(unsigned int level);
+UCrc32 GetImpactStimulus(unsigned int level);
+} // namespace DamageZone
 
 Behavior *DamageVehicle::Construct(const BehaviorParams &params) {
     const DamageParams dp(params.fparams.Fetch<DamageParams>(UCrc32(0xa6b47fac)));
@@ -135,4 +143,122 @@ void DamageVehicle::SetInShock(float scale) {
         return;
     }
     mShockTimer = UMath::Min(UMath::Max(mShockTimer, scale), 1.0f);
+}
+
+void DamageVehicle::OnImpact(const UMath::Vector3 &arm, const UMath::Vector3 &normal, float force, float speed, const SimSurface &,
+                             ISimable *iother) {
+    if (0.0f < mSpecs.SUPPRESS_DIST() && mRB && mSpecs.SUPPRESS_DIST() < Sim::DistanceToCamera(mRB->GetPosition())) {
+        return;
+    }
+
+    if (iother && iother->GetSimableType() == SIMABLE_VEHICLE) {
+        bool no_car_effect = false;
+        if (iother->GetAttributes()->NO_CAR_EFFECT(no_car_effect, 0) && no_car_effect) {
+            return;
+        }
+    }
+
+    const float scaled_force = mSpecs.FORCE() * 1000.0f;
+    if (!(0.0f < scaled_force) || !mRB) {
+        return;
+    }
+
+    UMath::Vector3 dimension;
+    mRB->GetDimension(dimension);
+
+    UMath::Vector3 local_normal = normal;
+    mRB->ConvertWorldToLocal(local_normal, false);
+
+    DamageZone::ID zone;
+    if (arm.z <= dimension.z * 0.5f) {
+        if (-dimension.z * 0.5f <= arm.z) {
+            if (arm.y <= dimension.y * 0.5f || -0.8f <= local_normal.y) {
+                if (-dimension.y * 0.5f <= arm.y || local_normal.y <= 0.8f) {
+                    zone = arm.x <= 0.0f ? DamageZone::DZ_LEFT : DamageZone::DZ_RIGHT;
+                } else {
+                    zone = DamageZone::DZ_BOTTOM;
+                }
+            } else {
+                zone = DamageZone::DZ_TOP;
+            }
+        } else if (arm.x <= dimension.x * 0.5f || -0.8f <= local_normal.x) {
+            zone = DamageZone::DZ_REAR;
+            if (arm.x < -dimension.x * 0.5f && 0.8f < local_normal.x) {
+                zone = DamageZone::DZ_LREAR;
+            }
+        } else {
+            zone = DamageZone::DZ_RREAR;
+        }
+    } else if (arm.x <= dimension.x * 0.5f || -0.8f <= local_normal.x) {
+        zone = DamageZone::DZ_FRONT;
+        if (arm.x < -dimension.x * 0.5f) {
+            zone = 0.8f < local_normal.x ? DamageZone::DZ_LFRONT : DamageZone::DZ_FRONT;
+        }
+    } else {
+        zone = DamageZone::DZ_RFRONT;
+    }
+
+    const DamageScaleRecord &record = GetDamageRecord(zone);
+    const float intensity = force / scaled_force;
+    unsigned int impact_level = static_cast<unsigned int>(intensity * record.VisualScale);
+    if (6 < impact_level) {
+        impact_level = 6;
+    }
+
+    unsigned int damage_level = static_cast<unsigned int>(intensity * record.VisualScale);
+    if (2 < damage_level) {
+        damage_level = 2;
+    }
+
+    const float hit_points = mSpecs.HIT_POINTS();
+    if (0.0f < hit_points && mDamageTotal < 1.0f) {
+        float damage = (intensity * record.HitPointScale) / hit_points;
+        if (mSpecs.HP_THRESHOLD() / hit_points < damage) {
+            mDamageTotal += damage;
+            if (1.0f < mDamageTotal) {
+                mDamageTotal = 1.0f;
+                new EVehicleDestroyed(GetOwner()->GetInstanceHandle());
+            }
+        }
+    }
+
+    EventSequencer::System *system = nullptr;
+    EventSequencer::IEngine *engine = GetOwner()->GetEventSequencer();
+    if (engine) {
+        system = engine->FindSystem(DamageZone::GetSystemName(zone).GetValue());
+    }
+
+    if (system) {
+        const float time = Sim::GetTime();
+        system->ProcessStimulus(0x1ea131b8, time, this, EventSequencer::QUEUE_ALLOW);
+
+        IVehicle *ivehicle = nullptr;
+        if (iother && iother->QueryInterface(&ivehicle)) {
+            system->ProcessStimulus(0x1e3a3751, time, this, EventSequencer::QUEUE_ALLOW);
+            if (ivehicle->GetDriverClass() == DRIVER_COP) {
+                system->ProcessStimulus(0xe8d20c6b, time, this, EventSequencer::QUEUE_ALLOW);
+            }
+            system->ProcessStimulus(0xb13e6c7e, time, this, EventSequencer::QUEUE_ALLOW);
+        }
+
+        for (unsigned int i = 0; i < impact_level; ++i) {
+            system->ProcessStimulus(DamageZone::GetImpactStimulus(i).GetValue(), time, this, EventSequencer::QUEUE_ALLOW);
+        }
+
+        if (0 < damage_level && CanDamageVisuals()) {
+            unsigned int current = mZoneDamage.Get(zone);
+            if (current < 6 && current < damage_level) {
+                while (current < damage_level) {
+                    system->ProcessStimulus(DamageZone::GetDamageStimulus(current).GetValue(), time, this, EventSequencer::QUEUE_ALLOW);
+                    ++current;
+                }
+                mZoneDamage.Set(zone, damage_level);
+            }
+        }
+    } else if (0 < damage_level && CanDamageVisuals()) {
+        unsigned int current = mZoneDamage.Get(zone);
+        if (current < damage_level) {
+            mZoneDamage.Set(zone, damage_level);
+        }
+    }
 }
