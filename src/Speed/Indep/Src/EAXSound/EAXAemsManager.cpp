@@ -468,7 +468,16 @@ int EAXAemsManager::InitiateLoad() {
                 m_pAsyncBuff = static_cast<char *>(TheTrackStreamer.AllocateUserMemory(0x10000, "EAXAemsManager::m_pAsyncBuff", 0));
                 m_AsyncBuffLocation = TMP_ALLOC_TRACKSTREAMER;
                 if (m_pAsyncBuff != nullptr) {
-                    goto HaveAsyncBuffer;
+                    {
+                        stSndDataLoadParams *curLoad = m_pCurLoadSDLP;
+                        pBankSlot = curLoad->mBankSlot;
+                        if (pBankSlot != nullptr) {
+                            pBankSlot->LoadFailed = 0;
+                        }
+                        curLoad->MemLocation = TMP_ALLOC_NONE;
+                        curLoad->AssetDescription.eDataType = EAXSND_DT_AEMS_ASYNCSPU;
+                    }
+                    goto HaveQueueParams;
                 }
             } else {
                 m_AsyncBuffLocation = TMP_ALLOC_MAIN;
