@@ -85,3 +85,20 @@ void DrawVehicle::OnDetached(IAttachable *pOther) {}
 const IAttachable::List *DrawVehicle::GetAttachments() const {
     return reinterpret_cast<const IAttachable::List *>(mAttachments);
 }
+
+void DrawVehicle::SetCausality(HCAUSE from, float time) {
+    mCausalityTime = time;
+    mCausality = from;
+}
+
+HCAUSE DrawVehicle::GetCausality() const {
+    return mCausality;
+}
+
+bool DrawVehicle::IsHidden() const {
+    return !GetVehicle()->IsActive();
+}
+
+void DrawVehicle::HideModel() {
+    GetVehicle()->Deactivate();
+}
