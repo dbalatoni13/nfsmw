@@ -43,6 +43,7 @@
 #include "Speed/Indep/Src/Camera/ICE/ICEManager.hpp"
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
+#include "Speed/Indep/Src/Frontend/FEJoyInput.hpp"
 #include "Speed/Indep/Src/Frontend/FEManager.hpp"
 #include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/engine.h"
@@ -1275,7 +1276,7 @@ void FEngHud::JoyEnable() {
 }
 
 void FEngHud::JoyDisable() {
-    pPlayer->GetControllerPort();
+    JoystickPort port = static_cast<JoystickPort>(pPlayer->GetControllerPort());
     if (mActionQ.IsEnabled()) {
         mActionQ.Enable(false);
         mActionQ.Flush();

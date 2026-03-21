@@ -165,12 +165,16 @@ FEWidget *UIWidgetMenu::GetWidget(unsigned int id) {
 }
 
 unsigned int UIWidgetMenu::GetWidgetIndex(FEWidget *opt) {
-    FEWidget *node = Options.GetHead();
     unsigned int index = 1;
-    while (node != Options.EndOfList()) {
-        if (opt == node) return index;
-        index++;
-        node = node->GetNext();
+    {
+        FEWidget *w = Options.GetHead();
+        while (w != Options.EndOfList()) {
+            if (opt == w) {
+                return index;
+            }
+            index++;
+            w = w->GetNext();
+        }
     }
     return 0;
 }
