@@ -239,7 +239,7 @@ class GManager : public UTL::COM::Object, public IVehicleCache {
     }
 
     unsigned int Get32BitCollectionKey(unsigned int collectionKey) const {
-        return collectionKey << mCollectionKeyShiftTo32;
+        return collectionKey >> mCollectionKeyShiftTo32;
     }
 
     void SetFreeRoamStartMarker(unsigned int markerKey) {

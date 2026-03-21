@@ -921,20 +921,20 @@ void GManager::UnregisterInstance(GRuntimeInstance *instance) {
 
 GRuntimeInstance *GManager::FindInstance(Attrib::Key key) const {
     unsigned int key32;
-    unsigned int collisions;
-    unsigned int slot;
+    unsigned int index;
 
-    collisions = 0;
-    key32 = key >> (mCollectionKeyShiftTo32 & 0x1F);
-    slot = key32 & mInstanceHashTableMask;
-    do {
-        if (mKeyToInstanceMap[slot].mKey32 == key32) {
-            return mKeyToInstanceMap[slot].mInstance;
+    key32 = Get32BitCollectionKey(key);
+    index = key32 & mInstanceHashTableMask;
+
+    for (unsigned int onElem = 0; onElem <= mWorstHashCollision; onElem++) {
+        HashEntry *entry = mKeyToInstanceMap + index;
+
+        if (entry->mKey32 == key32) {
+            return entry->mInstance;
         }
 
-        collisions++;
-        slot = (slot + 1) & mInstanceHashTableMask;
-    } while (collisions <= mWorstHashCollision);
+        index = (index + 1) & mInstanceHashTableMask;
+    }
 
     return nullptr;
 }
