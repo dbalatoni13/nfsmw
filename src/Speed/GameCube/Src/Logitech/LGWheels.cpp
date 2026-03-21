@@ -339,47 +339,48 @@ void LGWheels::PlayAutoCalibAndSpringForce(long channel) {
 void LGWheels::PlaySpringForce(long channel, signed char offset, unsigned char saturation, short coefficient) {
     int ret;
 
-    if (LGWheelsGetPlaying(LGWheelsGetCondition(this), channel, 2) != 0) {
+    if (*reinterpret_cast<int *>(reinterpret_cast<char *>(this) + channel * 0x20 + 0x11B0) != 0) {
         return;
     }
 
-    if (LGWheelsGetWheels(this)->IsConnected(channel)) {
-        if (LGWheelsGetIsAirborne(this, channel)) {
+    if (reinterpret_cast<Wheels *>(reinterpret_cast<char *>(this) + 0x828)->IsConnected(channel)) {
+        if (*reinterpret_cast<int *>(reinterpret_cast<char *>(this) + channel * 4 + 0x166C) != 0) {
             return;
         }
 
-        if (LGWheelsGetPlaying(LGWheelsGetCondition(this), channel, 0) != 0) {
+        if (reinterpret_cast<Condition *>(reinterpret_cast<char *>(this) + 0x11A8)->Playing[channel][0] != 0) {
             if (SameSpringForceParams(channel, offset, saturation, coefficient)) {
                 return;
             }
 
-            ret = LGWheelsGetCondition(this)->UpdateForce(channel, 0, 7, static_cast<unsigned long>(-1), 0, offset, 0, saturation, saturation, coefficient, coefficient);
+            ret = reinterpret_cast<Condition *>(reinterpret_cast<char *>(this) + 0x11A8)->UpdateForce(channel, 0, 7, static_cast<unsigned long>(-1), 0, offset, 0, saturation, saturation, coefficient, coefficient);
             if (ret < 0) {
                 return;
             }
 
-            LGWheelsGetSpringForceParams(this)[channel].offset = offset;
-            LGWheelsGetSpringForceParams(this)[channel].saturation = saturation;
-            LGWheelsGetSpringForceParams(this)[channel].coefficient = coefficient;
+            reinterpret_cast<SpringForceParams *>(reinterpret_cast<char *>(this) + 0x167C)[channel].offset = offset;
+            reinterpret_cast<SpringForceParams *>(reinterpret_cast<char *>(this) + 0x167C)[channel].saturation = saturation;
+            reinterpret_cast<SpringForceParams *>(reinterpret_cast<char *>(this) + 0x167C)[channel].coefficient = coefficient;
             return;
         }
 
-        if (LGWheelsGetEffectID(LGWheelsGetCondition(this), channel, 0) == static_cast<unsigned long>(-1)) {
-            ret = LGWheelsGetCondition(this)->DownloadForce(channel, 0, LGWheelsGetWheelHandle(this, channel), 7, static_cast<unsigned long>(-1), 0, offset, 0, saturation, saturation, coefficient, coefficient);
+        if (reinterpret_cast<Condition *>(reinterpret_cast<char *>(this) + 0x11A8)->EffectID[channel][0] == static_cast<unsigned long>(-1)) {
+            ret = reinterpret_cast<Condition *>(reinterpret_cast<char *>(this) + 0x11A8)
+                      ->DownloadForce(channel, 0, reinterpret_cast<unsigned long *>(reinterpret_cast<char *>(this) + 0x1050)[channel], 7, static_cast<unsigned long>(-1), 0, offset, 0, saturation, saturation, coefficient, coefficient);
         } else if (SameSpringForceParams(channel, offset, saturation, coefficient)) {
-            LGWheelsGetCondition(this)->Start(channel, 0);
+            reinterpret_cast<Condition *>(reinterpret_cast<char *>(this) + 0x11A8)->Start(channel, 0);
             return;
         } else {
-            ret = LGWheelsGetCondition(this)->UpdateForce(channel, 0, 7, static_cast<unsigned long>(-1), 0, offset, 0, saturation, saturation, coefficient, coefficient);
+            ret = reinterpret_cast<Condition *>(reinterpret_cast<char *>(this) + 0x11A8)->UpdateForce(channel, 0, 7, static_cast<unsigned long>(-1), 0, offset, 0, saturation, saturation, coefficient, coefficient);
         }
 
         if (ret >= 0) {
-            LGWheelsGetSpringForceParams(this)[channel].offset = offset;
-            LGWheelsGetSpringForceParams(this)[channel].saturation = saturation;
-            LGWheelsGetSpringForceParams(this)[channel].coefficient = coefficient;
+            reinterpret_cast<SpringForceParams *>(reinterpret_cast<char *>(this) + 0x167C)[channel].offset = offset;
+            reinterpret_cast<SpringForceParams *>(reinterpret_cast<char *>(this) + 0x167C)[channel].saturation = saturation;
+            reinterpret_cast<SpringForceParams *>(reinterpret_cast<char *>(this) + 0x167C)[channel].coefficient = coefficient;
         }
 
-        LGWheelsGetCondition(this)->Start(channel, 0);
+        reinterpret_cast<Condition *>(reinterpret_cast<char *>(this) + 0x11A8)->Start(channel, 0);
     } else {
         OSReport(kPlayForceError, channel);
     }
