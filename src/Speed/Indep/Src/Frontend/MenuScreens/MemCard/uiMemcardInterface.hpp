@@ -20,6 +20,10 @@ struct MemoryCardSetup {
 
     MemoryCardSetup() { Clear(); }
 
+    unsigned int GetCommand() {
+        return mOp & 0xf;
+    }
+
     unsigned int GetCommand() const {
         return mOp & 0xf;
     }

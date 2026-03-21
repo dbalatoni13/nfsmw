@@ -447,7 +447,10 @@ bool MemoryCard::ShouldDoAutoSave(bool bForce) {
 void MemoryCard::StartAutoSave(bool bForce) {
     if (!ShouldDoAutoSave(bForce)) return;
     if (!FEDatabase->bProfileLoaded) return;
-    if (gMemcardSetup.GetMethod() != 0xb0) { ShowAutoSaveIcon(); gMemcardSetup.mOp = 0; }
+    if ((((void)gMemcardSetup.GetCommand()), gMemcardSetup.mOp & 0xf0) != 0xb0) {
+        ShowAutoSaveIcon();
+        gMemcardSetup.mOp = 0;
+    }
     if (m_bCardRemoved) { HandleAutoSaveError(); }
     else {
         m_bInAutoSave = true;
@@ -460,12 +463,11 @@ void MemoryCard::StartAutoSave(bool bForce) {
 
 void MemoryCard::DoAutoSave() {
     m_bCheckingCardForAutoSave = false;
-    if (gMemcardSetup.GetMethod() == 0xb0) {
+    if ((((void)gMemcardSetup.GetCommand()), gMemcardSetup.mOp & 0xf0) == 0xb0) {
         ShowMessages(true);
         m_pIMemcard->SetMessage(RealmcIface::MESSAGE_HIDE, 0x100);
     } else { ShowOnlyAutoSaveMessages(); }
-    const char* name = FEDatabase->CurrentUserProfiles[0]->GetProfileName();
-    Save(name);
+    Save(FEDatabase->GetUserProfile(0)->GetProfileName());
 }
 
 void MemoryCard::EndAutoSave() {
@@ -634,7 +636,7 @@ void MemoryCard::ReleasePendingMessage() {
 
 void MemoryCard::HandleAutoSaveError() {
     UIMemcardBase* pScreen = GetScreen();
-    if (gMemcardSetup.GetMethod() == 0xb0 || pScreen != nullptr)
+    if ((((void)gMemcardSetup.GetCommand()), gMemcardSetup.mOp & 0xf0) == 0xb0 || pScreen != nullptr)
         pScreen->HandleAutoSaveError();
     else
         MemcardEnter(nullptr, nullptr, 0x91, nullptr, nullptr, 0, 0);
@@ -642,7 +644,7 @@ void MemoryCard::HandleAutoSaveError() {
 
 void MemoryCard::HandleAutoSaveOverwriteMessage() {
     UIMemcardBase* pScreen = GetScreen();
-    if (gMemcardSetup.GetMethod() == 0xb0 || pScreen != nullptr)
+    if ((((void)gMemcardSetup.GetCommand()), gMemcardSetup.mOp & 0xf0) == 0xb0 || pScreen != nullptr)
         pScreen->HandleAutoSaveOverwriteMessage();
     else
         MemcardEnter(nullptr, nullptr, 0xd1, nullptr, nullptr, 0, 0);
