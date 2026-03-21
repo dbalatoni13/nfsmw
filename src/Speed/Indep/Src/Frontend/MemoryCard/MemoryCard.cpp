@@ -251,12 +251,11 @@ bool MemoryCard::IsCardAvailable() {
 }
 
 void MemoryCard::SetExtraParam(SaveType t, const char* filename, void* buf, unsigned int size) {
-    MemoryCard* mc = GetInstance();
-    if (mc == nullptr) return;
-    mc->m_ReqFilename = filename;
-    mc->m_Type = t;
-    mc->m_pBuffer = static_cast< char* >(buf);
-    mc->m_DataSize = size;
+    if (GetInstance() == nullptr) return;
+    GetInstance()->m_ReqFilename = filename;
+    GetInstance()->m_Type = t;
+    GetInstance()->m_pBuffer = static_cast< char* >(buf);
+    GetInstance()->m_DataSize = size;
 }
 
 void MemoryCard::InitCommand(int op) {
@@ -625,7 +624,7 @@ void MemoryCard::ListOldSaveFilesNGC() {
         0,
         static_cast< RealmcIface::NameType >(0),
         static_cast< RealmcIface::DataFormat >(0));
-    s_pThis->ShowMessages(false);
+    GetInstance()->ShowMessages(false);
     List("NFSMW*", &titleInfo);
 }
 
