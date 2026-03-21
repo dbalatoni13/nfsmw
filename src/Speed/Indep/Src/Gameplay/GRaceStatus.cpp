@@ -3947,15 +3947,32 @@ void GRaceStatus::SetLapTime(int lapIndex, int racerIndex, float time) {
 }
 
 float GRaceStatus::GetLapTime(int lapIndex, int racerIndex, bool bCumulativeTimeAtLap) {
-    float time = mLapTimes[lapIndex][racerIndex];
-
     if (bCumulativeTimeAtLap) {
-        for (int i = 0; i < lapIndex; ++i) {
-            time += mLapTimes[i][racerIndex];
+        float totalTime = 0.0f;
+
+        {
+            int i = 0;
+
+            if (i > lapIndex) {
+                return totalTime;
+            }
+
+            do {
+                float time = mLapTimes[i][racerIndex];
+
+                if (time <= 0.0f) {
+                    return 0.0f;
+                }
+
+                totalTime += time;
+                ++i;
+            } while (i <= lapIndex);
         }
+
+        return totalTime;
     }
 
-    return time;
+    return mLapTimes[lapIndex][racerIndex];
 }
 
 void GRaceStatus::SetCheckpointTime(int lapIndex, int checkIndex, int racerIndex, float time) {
