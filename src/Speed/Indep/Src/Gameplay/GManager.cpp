@@ -2524,17 +2524,6 @@ void GManager::UpdatePursuit() {
     bool challengeRace;
     bool cooldown;
     bool epicPursuitRace;
-    static const char *milestoneNames[] = {
-        "cops_damaged",
-        "cops_destroyed_in_pursuit",
-        "cost_to_state_in_pursuit",
-        "pursuit_evasion_time",
-        "pursuit_length",
-        "roadblocks_dodged",
-        "tire_spikes_dodged",
-        "total_infractions",
-        "bounty_in_pursuit",
-    };
 
     roaming = GRaceStatus::Get().GetPlayMode() == GRaceStatus::kPlayMode_Roaming;
     pursuit = nullptr;
@@ -2581,8 +2570,29 @@ void GManager::UpdatePursuit() {
     }
 
     if (TWEAK_ShowGameplayMilestoneValues != 0) {
-        for (int i = 0; i <= 8; ++i) {
-            GetValue(milestoneNames[i]);
+        static volatile int xLeft = -130;
+        static volatile int yTop = -230;
+        static volatile int tab = 220;
+        static volatile int line = 16;
+        static const char *milestoneNames[] = {
+            "cops_damaged",
+            "cops_destroyed_in_pursuit",
+            "cost_to_state_in_pursuit",
+            "pursuit_evasion_time",
+            "pursuit_length",
+            "roadblocks_dodged",
+            "tire_spikes_dodged",
+            "total_infractions",
+            "bounty_in_pursuit",
+        };
+        int x = xLeft;
+        int y = yTop;
+
+        for (int printMilestone = 0; printMilestone <= 8; ++printMilestone) {
+            const char *name = milestoneNames[printMilestone];
+            float val = GetValue(name);
+
+            y = line;
         }
     }
 }
