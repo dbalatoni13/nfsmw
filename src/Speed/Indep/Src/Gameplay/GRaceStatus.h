@@ -618,6 +618,10 @@ class GRaceStatus : public UTL::COM::Object, public IVehicleCache {
 
     int GetRaceSpeedTrapPosition(int trapIndex, int racerIndex);
 
+    int GetNumRaceSpeedTraps() {
+        return nSpeedTraps;
+    }
+
     float GetBestSpeedTrapSpeed(int racerIndex);
 
     float GetWorstSpeedTrapSpeed(int racerIndex);

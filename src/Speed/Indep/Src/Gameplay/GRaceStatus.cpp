@@ -4068,28 +4068,31 @@ int GRaceStatus::GetRaceSpeedTrapPosition(int trapIndex, int racerIndex) {
 }
 
 float GRaceStatus::GetBestSpeedTrapSpeed(int racerIndex) {
-    float best = 0.0f;
+    float bestSpeedtrapSpeed = GetRaceSpeedTrapSpeed(0, racerIndex);
 
-    for (int i = 0; i < 16; ++i) {
-        best = UMath::Max(best, GetRaceSpeedTrapSpeed(i, racerIndex));
-    }
+    for (int onSpeedtrap = 1; onSpeedtrap < GetNumRaceSpeedTraps(); ++onSpeedtrap) {
+        float speedtrapSpeed = GetRaceSpeedTrapSpeed(onSpeedtrap, racerIndex);
 
-    return best;
-}
-
-float GRaceStatus::GetWorstSpeedTrapSpeed(int racerIndex) {
-    float worst = 0.0f;
-    bool found = false;
-
-    for (int i = 0; i < 16; ++i) {
-        float speed = GetRaceSpeedTrapSpeed(i, racerIndex);
-        if (speed > 0.0f && (!found || speed < worst)) {
-            worst = speed;
-            found = true;
+        if (speedtrapSpeed > 0.0f && speedtrapSpeed > bestSpeedtrapSpeed) {
+            bestSpeedtrapSpeed = speedtrapSpeed;
         }
     }
 
-    return worst;
+    return bestSpeedtrapSpeed;
+}
+
+float GRaceStatus::GetWorstSpeedTrapSpeed(int racerIndex) {
+    float worstSpeedtrapSpeed = GetRaceSpeedTrapSpeed(0, racerIndex);
+
+    for (int onSpeedtrap = 1; onSpeedtrap < GetNumRaceSpeedTraps(); ++onSpeedtrap) {
+        float speedtrapSpeed = GetRaceSpeedTrapSpeed(onSpeedtrap, racerIndex);
+
+        if (speedtrapSpeed > 0.0f && speedtrapSpeed < worstSpeedtrapSpeed) {
+            worstSpeedtrapSpeed = speedtrapSpeed;
+        }
+    }
+
+    return worstSpeedtrapSpeed;
 }
 
 float GRaceStatus::GetRaceTollboothTime(int boothIndex, int racerIndex) {
