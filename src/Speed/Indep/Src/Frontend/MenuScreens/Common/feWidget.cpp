@@ -15,6 +15,9 @@ void FEngSetCenter(FEObject* object, float x, float y);
 void FEngGetTopLeft(FEObject* object, float& x, float& y);
 void FEngSetTopLeft(FEObject* object, float x, float y);
 void FEngSetCurrentButton(const char* pkg_name, unsigned int hash);
+inline void FEngSetCurrentButton(const char* pkg_name, FEObject* obj) {
+    FEngSetCurrentButton(pkg_name, obj->NameHash);
+}
 
 FEWidget::FEWidget(FEObject* backing, bool enabled, bool hidden)
     : vTopLeft(0.0f, 0.0f) //
@@ -86,10 +89,10 @@ void FEButtonWidget::Hide() {
 void FEButtonWidget::CheckMouse(const char* parent_pkg, float mouse_x, float mouse_y) {}
 
 void FEButtonWidget::SetFocus(const char* parent_pkg) {
-    FEngSetCurrentButton(parent_pkg, reinterpret_cast< FEObject* >(pTitle)->NameHash);
-    FEngSetScript(reinterpret_cast<FEObject*>(pTitle), 0x249DB7B7, true);
-    if (pBacking) {
-        FEngSetScript(pBacking, 0x249DB7B7, true);
+    FEngSetCurrentButton(parent_pkg, GetTitleObject());
+    FEngSetScript(GetTitleObject(), 0x249DB7B7, true);
+    if (GetBacking()) {
+        FEngSetScript(GetBacking(), 0x249DB7B7, true);
     }
 }
 
@@ -237,22 +240,22 @@ void FEToggleWidget::SetScript(unsigned int script) {
 }
 
 void FEToggleWidget::Show() {
-    FEngSetVisible(reinterpret_cast<FEObject*>(pTitle));
-    FEngSetVisible(reinterpret_cast<FEObject*>(pData));
-    FEngSetVisible(reinterpret_cast<FEObject*>(pLeftImage));
-    FEngSetVisible(reinterpret_cast<FEObject*>(pRightImage));
-    if (pBacking) {
-        FEngSetVisible(pBacking);
+    FEngSetVisible(GetTitleObject());
+    FEngSetVisible(GetDataObject());
+    FEngSetVisible(GetLeftImage());
+    FEngSetVisible(GetRightImage());
+    if (GetBacking()) {
+        FEngSetVisible(GetBacking());
     }
 }
 
 void FEToggleWidget::Hide() {
-    FEngSetInvisible(reinterpret_cast<FEObject*>(pTitle));
-    FEngSetInvisible(reinterpret_cast<FEObject*>(pData));
-    FEngSetInvisible(reinterpret_cast<FEObject*>(pLeftImage));
-    FEngSetInvisible(reinterpret_cast<FEObject*>(pRightImage));
-    if (pBacking) {
-        FEngSetInvisible(pBacking);
+    FEngSetInvisible(GetTitleObject());
+    FEngSetInvisible(GetDataObject());
+    FEngSetInvisible(GetLeftImage());
+    FEngSetInvisible(GetRightImage());
+    if (GetBacking()) {
+        FEngSetInvisible(GetBacking());
     }
 }
 
@@ -339,11 +342,11 @@ void FESliderWidget::Disable() {
 }
 
 void FESliderWidget::SetFocus(const char* parent_pkg) {
-    FEngSetCurrentButton(parent_pkg, reinterpret_cast< FEObject* >(pTitle)->NameHash);
-    FEngSetScript(reinterpret_cast<FEObject*>(pTitle), 0x249DB7B7, true);
+    FEngSetCurrentButton(parent_pkg, GetTitleObject());
+    FEngSetScript(GetTitleObject(), 0x249DB7B7, true);
     Slider.Highlight();
-    if (pBacking) {
-        FEngSetScript(pBacking, 0x249DB7B7, true);
+    if (GetBacking()) {
+        FEngSetScript(GetBacking(), 0x249DB7B7, true);
     }
 }
 
