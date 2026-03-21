@@ -3950,12 +3950,13 @@ float GRaceStatus::DetermineRaceSegmentLength(const UMath::Vector4 *positions, c
             }
         }
 
-        pathDistance += segmentDistance;
         int numPaths = 0;
 
         if (noShortcuts) {
             numPaths = pathSegments.size();
         }
+
+        pathDistance += segmentDistance;
 
         if (numPaths == 0) {
             bRaceRouteError = true;
