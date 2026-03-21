@@ -46,8 +46,8 @@ GenericMessage_Priority GenericMessage::GetCurrentGenericMessagePriority() {
 }
 
 void GenericMessage::RequestGenericMessageZoomOut(unsigned int fengHash) {
-    if (!FEngIsScriptSet(pPackageName, 0xe0ba07ec, 0xe1c034fc)) {
-        FEngSetScript(pPackageName, 0xe0ba07ec, 0xe1c034fc, true);
+    if (!FEngIsScriptSet(GetPackageName(), 0xe0ba07ec, 0xe1c034fc)) {
+        FEngSetScript(GetPackageName(), 0xe0ba07ec, 0xe1c034fc, true);
     }
 }
 

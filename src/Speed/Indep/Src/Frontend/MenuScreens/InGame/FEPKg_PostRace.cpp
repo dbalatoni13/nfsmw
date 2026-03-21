@@ -273,11 +273,7 @@ void StatsPanel::Draw(unsigned int numPlayers) {
 
 void StatsPanel::AddStat(RaceStat *stat) {
     FEngSetScript(ParentPkg, FEngHashString(lbl_803E5DB0, iWidgetToAdd), 0x001744B3, true);
-    bNode *tail = TheStats.HeadNode.Prev;
-    tail->Next = stat;
-    TheStats.HeadNode.Prev = stat;
-    stat->Prev = tail;
-    stat->Next = reinterpret_cast<bNode *>(this);
+    TheStats.AddTail(stat);
     ++iWidgetToAdd;
 }
 

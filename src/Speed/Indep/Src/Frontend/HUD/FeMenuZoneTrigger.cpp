@@ -112,6 +112,7 @@ void MenuZoneTrigger::RequestDoAction() {
 }
 
 void MenuZoneTrigger::HideDPadButton() {
+    FEObject *objectPtr;
     if (!FEngIsScriptSet(mEventIcon, 0x33113AC) && !FEngIsScriptSet(mEventIcon, 0x16A259)) {
         FEngSetScript(mEventIcon, 0x33113AC, true);
     }
@@ -120,28 +121,28 @@ void MenuZoneTrigger::HideDPadButton() {
             FEngSetScript(mCingularIcon, 0x33113AC, true);
         }
     }
-    FEObject *leftRight = FEngFindObject(pPackageName, 0xA729B1B);
-    if (leftRight) {
-        if (!FEngIsScriptSet(leftRight, 0x33113AC) && !FEngIsScriptSet(leftRight, 0x1744B3)) {
-            FEngSetScript(leftRight, 0x33113AC, true);
+    objectPtr = FEngFindObject(GetPackageName(), 0xA729B1B);
+    if (objectPtr) {
+        if (!FEngIsScriptSet(objectPtr, 0x33113AC) && !FEngIsScriptSet(objectPtr, 0x1744B3)) {
+            FEngSetScript(objectPtr, 0x33113AC, true);
         }
     }
-    FEObject *downBtn = FEngFindObject(pPackageName, 0x717C82AE);
-    if (downBtn) {
-        if (!FEngIsScriptSet(downBtn, 0x33113AC) && !FEngIsScriptSet(downBtn, 0x1744B3)) {
-            FEngSetScript(downBtn, 0x33113AC, true);
+    objectPtr = FEngFindObject(GetPackageName(), 0x717C82AE);
+    if (objectPtr) {
+        if (!FEngIsScriptSet(objectPtr, 0x33113AC) && !FEngIsScriptSet(objectPtr, 0x1744B3)) {
+            FEngSetScript(objectPtr, 0x33113AC, true);
         }
     }
-    FEObject *obj3 = FEngFindObject(pPackageName, 0xA206A0B4);
-    if (obj3) {
-        if (!FEngIsScriptSet(obj3, 0x33113AC) && !FEngIsScriptSet(obj3, 0x1744B3)) {
-            FEngSetScript(obj3, 0x33113AC, true);
+    objectPtr = FEngFindObject(GetPackageName(), 0xA206A0B4);
+    if (objectPtr) {
+        if (!FEngIsScriptSet(objectPtr, 0x33113AC) && !FEngIsScriptSet(objectPtr, 0x1744B3)) {
+            FEngSetScript(objectPtr, 0x33113AC, true);
         }
     }
-    FEObject *obj4 = FEngFindObject(pPackageName, 0x7180B901);
-    if (obj4) {
-        if (!FEngIsScriptSet(obj4, 0x33113AC) && !FEngIsScriptSet(obj4, 0x1744B3)) {
-            FEngSetScript(obj4, 0x33113AC, true);
+    objectPtr = FEngFindObject(GetPackageName(), 0x7180B901);
+    if (objectPtr) {
+        if (!FEngIsScriptSet(objectPtr, 0x33113AC) && !FEngIsScriptSet(objectPtr, 0x1744B3)) {
+            FEngSetScript(objectPtr, 0x33113AC, true);
         }
     }
     if (FEngIsScriptSet(mEngageMechanic, 0x5079C8F8)) {
