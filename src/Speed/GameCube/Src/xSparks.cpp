@@ -304,8 +304,8 @@ void UpdateXenonEmitters(float dt) {
     iter = reinterpret_cast<XenonEffectStdVector &>(gNGEffectList.lists[XenonEffectLists::ACTIVE]).begin();
     while (iter != reinterpret_cast<XenonEffectStdVector &>(gNGEffectList.lists[XenonEffectLists::ACTIVE]).end()) {
         eDef = *iter;
-        reinterpret_cast<XenonEffectStdVector &>(gNGEffectList.lists[XenonEffectLists::STAGING]).push_back(eDef);
         ++iter;
+        reinterpret_cast<XenonEffectStdVector &>(gNGEffectList.lists[XenonEffectLists::STAGING]).push_back(eDef);
     }
 
     reinterpret_cast<XenonEffectStdVector &>(gNGEffectList.lists[XenonEffectLists::ACTIVE]).clear();
@@ -313,8 +313,10 @@ void UpdateXenonEmitters(float dt) {
     iter = reinterpret_cast<XenonEffectStdVector &>(gNGEffectList.lists[XenonEffectLists::STAGING]).begin();
     while (iter != reinterpret_cast<XenonEffectStdVector &>(gNGEffectList.lists[XenonEffectLists::STAGING]).end()) {
         eDef = *iter;
-        NGEffect anEffect(eDef);
         ++iter;
+        if (!eDef.piggyback_effect || eDef.piggyback_effect->IsEnabled()) {
+            NGEffect anEffect(eDef);
+        }
     }
 
     reinterpret_cast<XenonEffectStdVector &>(gNGEffectList.lists[XenonEffectLists::STAGING]).clear();
