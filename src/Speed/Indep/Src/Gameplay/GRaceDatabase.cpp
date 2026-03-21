@@ -251,39 +251,39 @@ void GRaceBin::SetRacesWon(int numRaces) {
 }
 
 void GRaceBin::RefreshProgress() {
-    unsigned int racesWon;
-    int completedChallenges;
-    unsigned int binNumber;
-    GMilestone *milestone;
-    GSpeedTrap *speedTrap;
+    int numRaces;
+    int numChallenges;
+    GMilestone *binMilestone;
+    GSpeedTrap *binSpeedTrap;
 
-    racesWon = 0;
-    for (binNumber = 0; binNumber < GetWorldRaceCount(); binNumber++) {
-        if (GRaceDatabase::Get().CheckRaceScoreFlags(GetWorldRaceHash(binNumber), GRaceDatabase::kCompleted_ContextCareer)) {
-            racesWon++;
+    numRaces = 0;
+    for (unsigned int onRace = 0; onRace < GetWorldRaceCount(); onRace++) {
+        unsigned int raceHash = GetWorldRaceHash(onRace);
+
+        if (GRaceDatabase::Get().IsCareerRaceComplete(raceHash)) {
+            numRaces++;
         }
     }
 
-    completedChallenges = 0;
-    binNumber = GetBinNumber();
-    milestone = GManager::Get().GetFirstMilestone(false, binNumber);
-    while (milestone) {
-        if (milestone->GetIsAwarded()) {
-            completedChallenges++;
+    numChallenges = 0;
+    binMilestone = GManager::Get().GetFirstMilestone(false, GetBinNumber());
+    while (binMilestone) {
+        if (binMilestone->GetIsAwarded()) {
+            numChallenges++;
         }
-        milestone = GManager::Get().GetNextMilestone(milestone, false, binNumber);
+        binMilestone = GManager::Get().GetNextMilestone(binMilestone, false, GetBinNumber());
     }
 
-    speedTrap = GManager::Get().GetFirstSpeedTrap(false, binNumber);
-    while (speedTrap) {
-        if (speedTrap->IsFlagSet(4)) {
-            completedChallenges++;
+    binSpeedTrap = GManager::Get().GetFirstSpeedTrap(false, GetBinNumber());
+    while (binSpeedTrap) {
+        if (binSpeedTrap->GetIsCompleted()) {
+            numChallenges++;
         }
-        speedTrap = GManager::Get().GetNextSpeedTrap(speedTrap, false, binNumber);
+        binSpeedTrap = GManager::Get().GetNextSpeedTrap(binSpeedTrap, false, GetBinNumber());
     }
 
-    SetRacesWon(racesWon);
-    SetCompletedChallenges(completedChallenges);
+    SetRacesWon(numRaces);
+    SetCompletedChallenges(numChallenges);
 }
 
 void GRaceDatabase::Init() {
