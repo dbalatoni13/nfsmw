@@ -129,3 +129,5 @@ void SimpleChopper::OnBehaviorChange(const UCrc32 &mechanic) {
         GetOwner()->QueryInterface(&mIdamage);
     }
 }
+
+SimpleChopper::~SimpleChopper() {}
