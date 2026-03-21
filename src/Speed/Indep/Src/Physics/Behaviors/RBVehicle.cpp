@@ -30,6 +30,8 @@ RBVehicle::RBVehicle(const BehaviorParams &bp, const RBComplexParams &params)
     mGeoms = params.fgeoms ? params.fgeoms->fCollection : nullptr;
 }
 
+RBVehicle::~RBVehicle() {}
+
 unsigned int RBVehicle::GetNumContactPoints() const {
     unsigned int numpoints = RigidBody::GetNumContactPoints();
     if (mSuspension) {
