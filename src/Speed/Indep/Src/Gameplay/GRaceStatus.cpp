@@ -3862,8 +3862,26 @@ GTrigger *GRaceStatus::GetNextCheckpoint() {
 }
 
 void GRaceStatus::ClearTimes() {
+    GRaceParameters *race_parameters;
+    float start_time;
+
     bMemSet(mLapTimes, 0, sizeof(mLapTimes));
     bMemSet(mCheckTimes, 0, sizeof(mCheckTimes));
+
+    race_parameters = GetRaceParameters();
+    if (race_parameters) {
+        start_time = race_parameters->GetStartTime();
+    } else {
+        start_time = 0.0f;
+    }
+
+    mRaceMasterTimer.Stop();
+    mRaceMasterTimer.Reset(start_time);
+    mLastSecondTickSent = 0;
+    mBonusTime = 0.0f;
+    mTaskTime = 0.0f;
+    mSuddenDeathMode = false;
+    mTimeExpiredMsgSent = false;
 }
 
 void GRaceStatus::SetLapTime(int lapIndex, int racerIndex, float time) {
