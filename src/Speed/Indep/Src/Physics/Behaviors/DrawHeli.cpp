@@ -33,8 +33,7 @@ void DrawHeli::OnService(RenderConn::Pkt_Heli_Service &pkt) {
     mInView = pkt.mInView;
     mDistanceToView = pkt.mDistanceToView;
     if (mIVehicle) {
-        mIVehicle->QueryInterface(&mIAIHelicopter);
-        if (mIAIHelicopter) {
+        if (mIVehicle->QueryInterface(&mIAIHelicopter)) {
             pkt.mShadowScale = mIAIHelicopter->GetShadowScale();
             pkt.mDustStorm = mIAIHelicopter->GetDustStormIntensity();
         }
@@ -42,14 +41,16 @@ void DrawHeli::OnService(RenderConn::Pkt_Heli_Service &pkt) {
 }
 
 bool DrawHeli::OnService(HSIMSERVICE hCon, Sim::Packet *pkt) {
+    bool result = false;
     if (hCon == mRenderService) {
-        if (!static_cast<IModel *>(this)->GetParentModel()) {
+        if (!static_cast<IModel *>(this)->IsHidden()) {
             OnService(*static_cast<RenderConn::Pkt_Heli_Service *>(pkt));
-            return true;
+            result = true;
+        } else {
+            mInView = false;
         }
-        mInView = false;
     }
-    return false;
+    return result;
 }
 
 void DrawHeli::HidePart(const UCrc32 &name) {}
