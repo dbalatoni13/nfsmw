@@ -2308,7 +2308,6 @@ bool GManager::LoadGameplayData(unsigned char *src, unsigned int maxSize) {
     unsigned int spotBytes;
     unsigned int binBytesRead;
     unsigned int respawnMarker;
-    unsigned int onBlock;
 
     if (maxSize < 0x80) {
         return false;
@@ -2331,7 +2330,7 @@ bool GManager::LoadGameplayData(unsigned char *src, unsigned int maxSize) {
     ResetAllGameplayData();
 
     src += 0x80;
-    for (onBlock = 0; onBlock < gameplayHeader->mNumPersistent; ++onBlock) {
+    for (unsigned int onBlock = 0; onBlock < gameplayHeader->mNumPersistent; ++onBlock) {
         ObjectStateBlockHeader *header = reinterpret_cast<ObjectStateBlockHeader *>(src);
         unsigned int allocSize = header->mSize;
         unsigned char *newBlock = reinterpret_cast<unsigned char *>(AllocObjectStateBlock(header->mKey, allocSize, true));
