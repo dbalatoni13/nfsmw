@@ -22,14 +22,11 @@ Wheels::Wheels() {
     int channel;
 
     for (channel = 0; channel < 4; channel++) {
-        LGPosition *channelPosition;
-
-        WheelsGetWheelHandles(this)[channel] = static_cast<unsigned long>(-1);
-        channelPosition = &reinterpret_cast<LGPosition *>(this)[channel];
-        channelPosition->err = -1;
+        WheelHandles[channel] = static_cast<unsigned long>(-1);
+        Position[channel].err = -1;
     }
 
-    memset(WheelsGetPositionLast(this), 0, sizeof(LGPosition) * 4);
+    memset(PositionLast, 0, sizeof(LGPosition) * 4);
 }
 
 short Wheels::ReadAll() {
