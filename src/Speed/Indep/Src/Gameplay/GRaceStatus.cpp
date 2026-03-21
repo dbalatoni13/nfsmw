@@ -3164,8 +3164,19 @@ float GRaceStatus::GetRaceTimeRemaining() const {
 }
 
 void GRaceStatus::ClearRacers() {
-    for (int i = 0; i < mRacerCount; ++i) {
-        mRacerInfo[i].ClearAll();
+    const IVehicle::List &list = IVehicle::GetList(VEHICLE_RACERS);
+
+    for (IVehicle *const *iter = list.begin(); iter != list.end(); ++iter) {
+        IVehicle *vehicle = *iter;
+        ISimable *simable = vehicle->GetSimable();
+
+        if (simable) {
+            GRacerInfo *racerInfo = GetRacerInfo(simable);
+
+            if (racerInfo) {
+                racerInfo->ClearAll();
+            }
+        }
     }
 
     mRacerCount = 0;
