@@ -108,27 +108,34 @@ const char *MemoryCardImp::GetPrefix() {
 }
 
 RealmcIface::SaveInfo *MemoryCardImp::ConstructSaveInfo(MemoryCard::SaveType type, const char *DisplayName, int aSize) {
+    RealmcIface::SaveInfo *pInfo;
     static char sDisplayName[32];
-    RealmcIface::SaveInfo *save_info = new RealmcIface::SaveInfo;
+
+    pInfo = ::new (__FILE__, __LINE__) RealmcIface::SaveInfo;
 
     if (type == MemoryCard::ST_PROFILE) {
         bStrCpy(sDisplayName, DisplayName);
     }
 
-    save_info->mGcInfo.mComment1 = gComment1;
-    save_info->mGcInfo.mComment1Size = bStrLen(gComment1);
-    save_info->mGcInfo.mComment2 = sDisplayName;
-    save_info->mGcInfo.mComment2Size = bStrLen(sDisplayName);
-    save_info->mGcInfo.mIconDataInfo =
-        *reinterpret_cast<RealmcIface::GCIconDataInfo **>(reinterpret_cast<char *>(MemoryCard::s_pThis) + 0x10);
-    save_info->mGcInfo.mBannerDataInfo =
-        *reinterpret_cast<RealmcIface::GCBannerDataInfo **>(reinterpret_cast<char *>(MemoryCard::s_pThis) + 0x14);
-    this->m_SaveReq.mSaveInfo = save_info;
-    save_info->mTypeName = MemoryCardImp::gEntryType[type];
-    save_info->mContentName = MemoryCardImp::gContentName;
-    save_info->mHeaderSize = 8;
-    save_info->mBodySize = aSize;
-    return save_info;
+    {
+        int len;
+
+        pInfo->mGcInfo.mComment1 = gComment1;
+        len = bStrLen(gComment1);
+        pInfo->mGcInfo.mComment1Size = len;
+        pInfo->mGcInfo.mComment2 = sDisplayName;
+        len = bStrLen(sDisplayName);
+        pInfo->mGcInfo.mComment2Size = len;
+    }
+
+    pInfo->mGcInfo.mIconDataInfo = MemoryCard::GetInstance()->GetSaveIcon();
+    pInfo->mGcInfo.mBannerDataInfo = MemoryCard::GetInstance()->GetSaveBanner();
+    this->m_SaveReq.mSaveInfo = pInfo;
+    pInfo->mTypeName = MemoryCardImp::gEntryType[type];
+    pInfo->mContentName = MemoryCardImp::gContentName;
+    pInfo->mHeaderSize = 8;
+    pInfo->mBodySize = aSize;
+    return pInfo;
 }
 
 void MemoryCardImp::DestructSaveInfo() {
