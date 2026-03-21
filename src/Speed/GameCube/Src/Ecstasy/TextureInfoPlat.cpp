@@ -108,12 +108,11 @@ void TextureInfoPlatInterface::ReleaseAnimData(void *anim_data) {
 }
 
 void TextureInfoPlatInterface::SetAnimData(void *anim_data) {
-    TextureInfo *info = static_cast<TextureInfo *>(this);
     TextureInfoPlatInfo *plat_info = this->GetPlatInfo();
-    unsigned int *val = reinterpret_cast<unsigned int *>(anim_data);
+    TextureInfo *info = static_cast<TextureInfo *>(this);
 
-    info->ImageData = reinterpret_cast<void *>(val[0]);
-    info->PaletteData = reinterpret_cast<void *>(val[1]);
+    info->ImageData = reinterpret_cast<void *>(reinterpret_cast<unsigned int *>(anim_data)[0]);
+    info->PaletteData = reinterpret_cast<void *>(reinterpret_cast<unsigned int *>(anim_data)[1]);
     plat_info->SetImage(info);
 }
 
