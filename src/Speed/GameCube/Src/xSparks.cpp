@@ -9,6 +9,25 @@
 #include "Speed/Indep/Libs/Support/Utility/UTypes.h"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
+inline void Scalexyz(const UMath::Vector4 &a, const UMath::Vector4 &b, UMath::Vector4 &r) {
+    VU0_v4scalexyz(a, b, r);
+}
+
+namespace UMath {
+inline void Rotate(const Vector4 &a, const Matrix4 &m, Vector4 &r) {
+    VU0_MATRIX3x4_vect4mult(a, m, r);
+}
+
+inline void Add(Vector4 &r, const Vector4 &b) {
+    VU0_v4add(r, b, r);
+}
+} // namespace UMath
+
+inline void Scalexyz(UMath::Vector4 &r, const UMath::Vector4 &b) {
+    VU0_v4scalexyz(r, b, r);
+}
+
+
 DECLARE_CONTAINER_TYPE(XenonEffectDef);
 
 struct XenonEffectDef {
@@ -135,8 +154,6 @@ void CGEmitter::SpawnParticles(float dt, float intensity) {
     float particle_age_factor;
     float current_particle_age;
 
-    random_seed = randomSeed;
-
     if (intensity > 0.0f) {
         local_world = mLocalWorld;
         local_orientation = local_world;
@@ -144,6 +161,7 @@ void CGEmitter::SpawnParticles(float dt, float intensity) {
         local_orientation.v3.y = 0.0f;
         local_orientation.v3.z = 0.0f;
         local_orientation.v3.w = 1.0f;
+        random_seed = randomSeed;
         r = static_cast<int>(mEmitterDef.Colour1().x * 255.0f);
         g = static_cast<int>(mEmitterDef.Colour1().y * 255.0f);
         b = static_cast<int>(mEmitterDef.Colour1().z * 255.0f);
@@ -187,10 +205,10 @@ void CGEmitter::SpawnParticles(float dt, float intensity) {
                 rand.z = 1.0f - (mEmitterDef.VelocityDelta().z - bRandom(mEmitterDef.VelocityDelta().z, &random_seed) * 2.0f);
                 rand.w = 1.0f;
 
-                VU0_v4scalexyz(mEmitterDef.VelocityInherit(), mVel, pvel);
-                VU0_MATRIX3x4_vect4mult(mEmitterDef.VelocityStart(), local_orientation, rotatedVel);
-                VU0_v4add(pvel, rotatedVel, pvel);
-                VU0_v4scalexyz(pvel, rand, pvel);
+                Scalexyz(mEmitterDef.VelocityInherit(), mVel, pvel);
+                UMath::Rotate(mEmitterDef.VelocityStart(), local_orientation, rotatedVel);
+                UMath::Add(pvel, rotatedVel);
+                Scalexyz(pvel, rand);
 
                 gravity = (mEmitterDef.GravityStart() - mEmitterDef.GravityDelta()) + bRandom(mEmitterDef.GravityDelta(), &random_seed) * 2.0f;
 
