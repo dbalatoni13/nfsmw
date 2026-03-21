@@ -3,6 +3,7 @@
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/brakes.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/tires.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/transmission.h"
+#include "Speed/Indep/Src/Physics/PhysicsInfo.hpp"
 #include "Speed/Indep/Src/Physics/Wheel.h"
 #include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
 
@@ -32,6 +33,10 @@ class SuspensionTraffic : public Chassis {
 
         float GetRadius() const {
             return mRadius;
+        }
+
+        float GetAngularVelocity() const {
+            return mAV;
         }
 
         void SetAngularVelocity(float av) {
@@ -83,6 +88,8 @@ class SuspensionTraffic : public Chassis {
 
     // ISuspension
     UMath::Vector3 GetWheelCenterPos(unsigned int i) const override;
+    Radians GetWheelAngularVelocity(int index) const override;
+    float GetWheelRadius(unsigned int index) const override;
     void MatchSpeed(float speed) override;
 
     Tire &GetWheel(unsigned int i) {
@@ -152,6 +159,58 @@ Behavior *SuspensionTraffic::Construct(const BehaviorParams &params) {
     return new SuspensionTraffic(params, sp);
 }
 
+SuspensionTraffic::SuspensionTraffic(const BehaviorParams &bp, const SuspensionParams &sp)
+    : Chassis(bp),              //
+      mTireInfo(this, 0),       //
+      mBrakeInfo(this, 0),      //
+      mSuspensionInfo(this, 0), //
+      mDrivetrainInfo(this, 0), //
+      mRB(0),                   //
+      mRBComplex(0),            //
+      mInput(0),                //
+      mTransmission(0),         //
+      mLastSteer(0.0f),         //
+      mNumWheelsOnGround(0),    //
+      mMaxSteering(45.0f) {
+    for (int i = 0; i < 4; ++i) {
+        mTires[i] = 0;
+    }
+
+    GetOwner()->QueryInterface(&mRB);
+    GetOwner()->QueryInterface(&mRBComplex);
+    GetOwner()->QueryInterface(&mInput);
+    GetOwner()->QueryInterface(&mTransmission);
+
+    for (int i = 0; i < 4; ++i) {
+        float diameter = Physics::Info::WheelDiameter(mTireInfo, i < 2);
+        mTires[i] = new Tire(diameter * 0.5f, i, mTireInfo, mBrakeInfo);
+    }
+
+    UMath::Vector3 dimension;
+    GetOwner()->GetRigidBody()->GetDimension(dimension);
+
+    float wheelbase = mSuspensionInfo.WHEEL_BASE();
+    float axle_width_f = mSuspensionInfo.TRACK_WIDTH().At(0) - mTireInfo.SECTION_WIDTH().At(0) * 0.001f;
+    float axle_width_r = mSuspensionInfo.TRACK_WIDTH().At(1) - mTireInfo.SECTION_WIDTH().At(1) * 0.001f;
+    float front_axle = mSuspensionInfo.FRONT_AXLE();
+
+    UVector3 fl(-axle_width_f * 0.5f, -dimension.y, front_axle);
+    UVector3 fr(axle_width_f * 0.5f, -dimension.y, front_axle);
+    UVector3 rl(-axle_width_r * 0.5f, -dimension.y, front_axle - wheelbase);
+    UVector3 rr(axle_width_r * 0.5f, -dimension.y, front_axle - wheelbase);
+
+    GetWheel(0).SetLocalArm(fl);
+    GetWheel(1).SetLocalArm(fr);
+    GetWheel(2).SetLocalArm(rl);
+    GetWheel(3).SetLocalArm(rr);
+}
+
+SuspensionTraffic::~SuspensionTraffic() {
+    for (int i = 0; i < 4; ++i) {
+        delete mTires[i];
+    }
+}
+
 void SuspensionTraffic::OnBehaviorChange(const UCrc32 &mechanic) {
     Chassis::OnBehaviorChange(mechanic);
 
@@ -203,6 +262,14 @@ UMath::Vector3 SuspensionTraffic::GetWheelCenterPos(unsigned int i) const {
     }
     UMath::ScaleAdd(mRBComplex->GetUpVector(), GetWheelRadius(i), pos, pos);
     return pos;
+}
+
+Radians SuspensionTraffic::GetWheelAngularVelocity(int index) const {
+    return mTires[index]->GetAngularVelocity();
+}
+
+float SuspensionTraffic::GetWheelRadius(unsigned int index) const {
+    return mTires[index]->GetRadius();
 }
 
 void SuspensionTraffic::MatchSpeed(float speed) {
