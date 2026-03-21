@@ -151,10 +151,7 @@ unsigned int GRaceBin::GetBaselineUnlock(unsigned int index) const {
 }
 
 unsigned int GRaceBin::GetBarrierCount() const {
-    Attrib::Attribute barriers;
-
-    barriers = mBinRecord.Get(0xE244F26B);
-    return barriers.GetLength();
+    return mBinRecord.Num_Barriers();
 }
 
 void GRaceBin::EnableBarriers() {
