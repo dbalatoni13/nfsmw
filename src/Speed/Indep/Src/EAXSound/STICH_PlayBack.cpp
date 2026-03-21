@@ -514,12 +514,13 @@ void cSampleWarpper::Play(const SND_Params *Params) {
         }
         sample->mData.pitch = pitch;
 
-        if (sampleAz < 0) {
-            sampleAz = 0;
-        } else if (sampleAz > 0x10000) {
-            sampleAz = 0x10000;
+        int az = sampleAz;
+        if (az < 0) {
+            az = 0;
+        } else if (az > 0x10000) {
+            az = 0x10000;
         }
-        sample->mData.az = sampleAz;
+        sample->mData.az = az;
 
         int offset = sampleOffset;
         if (offset > 4000) {
@@ -602,12 +603,13 @@ void cSampleWarpper::Play(const SND_Params *Params) {
         }
         sample->mData.pitch = pitch;
 
-        if (sampleAz < 0) {
-            sampleAz = 0;
-        } else if (sampleAz > 0x10000) {
-            sampleAz = 0x10000;
+        int az = sampleAz;
+        if (az < 0) {
+            az = 0;
+        } else if (az > 0x10000) {
+            az = 0x10000;
         }
-        sample->mData.az = sampleAz;
+        sample->mData.az = az;
 
         int offset = sampleOffset;
         if (offset > 4000) {
@@ -690,12 +692,13 @@ void cSampleWarpper::Play(const SND_Params *Params) {
         }
         sample->mData.pitch = pitch;
 
-        if (sampleAz < 0) {
-            sampleAz = 0;
-        } else if (sampleAz > 0x10000) {
-            sampleAz = 0x10000;
+        int az = sampleAz;
+        if (az < 0) {
+            az = 0;
+        } else if (az > 0x10000) {
+            az = 0x10000;
         }
-        sample->mData.az = sampleAz;
+        sample->mData.az = az;
 
         int offset = sampleOffset;
         if (offset > 4000) {
