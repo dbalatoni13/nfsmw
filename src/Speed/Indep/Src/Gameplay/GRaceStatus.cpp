@@ -3022,13 +3022,14 @@ void GRaceStatus::Update(float dT) {
         }
 #endif
 
+        UCrc32 gameplayMessage(0x20D60DBF);
         elapsed = GetRaceTimeElapsed();
-        MNotifyRaceTime(elapsed, GetIsTimeLimited(), GetRaceTimeRemaining()).Post(UCrc32(0x20D60DBF));
+        MNotifyRaceTime(elapsed, GetIsTimeLimited(), GetRaceTimeRemaining()).Post(gameplayMessage);
 
         elapsedSec = static_cast<int>(elapsed);
         if (elapsedSec > mLastSecondTickSent) {
             mLastSecondTickSent = elapsedSec;
-            MNotifyRaceTimeSecTick(elapsed).Post(UCrc32(0x20D60DBF));
+            MNotifyRaceTimeSecTick(elapsed).Post(gameplayMessage);
         }
 
         if (GetIsTimeLimited()) {
@@ -3045,7 +3046,7 @@ void GRaceStatus::Update(float dT) {
             }
 
             if (!mTimeExpiredMsgSent && GetRaceTimeRemaining() <= 0.0f) {
-                MNotifyRaceTimeExpired().Post(UCrc32(0x20D60DBF));
+                MNotifyRaceTimeExpired().Post(gameplayMessage);
                 mTimeExpiredMsgSent = true;
 
                 for (int idx = 0; idx < mRacerCount; ++idx) {
