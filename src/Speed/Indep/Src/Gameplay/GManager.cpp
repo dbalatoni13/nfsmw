@@ -2194,6 +2194,9 @@ void GManager::UpdatePendingSMS() {
 bool GManager::SaveGameplayData(unsigned char *dest, unsigned int maxSize) {
     SavedGameplayDataHeader *header;
     unsigned char *cursor;
+    unsigned char *end;
+    unsigned int freeRoamStartMarker;
+    unsigned int freeRoamFromSafeHouseStartMarker;
     ObjectStateMap::iterator it;
 
     bMemSet(dest, 0, maxSize);
@@ -2209,6 +2212,7 @@ bool GManager::SaveGameplayData(unsigned char *dest, unsigned int maxSize) {
     }
 
     header = reinterpret_cast<SavedGameplayDataHeader *>(dest);
+    end = dest + maxSize;
     header->mMagic = 0x656D6147;
     header->mVersion = 8;
     header->mNumPersistent = mPersistentStateBlocks.size();
@@ -2217,13 +2221,14 @@ bool GManager::SaveGameplayData(unsigned char *dest, unsigned int maxSize) {
     for (it = mPersistentStateBlocks.begin(); it != mPersistentStateBlocks.end(); ++it) {
         ObjectStateBlockHeader *block = it->second;
         unsigned int blockSize = (block->mSize + 0x17U) & ~0xFU;
+        unsigned char *nextCursor = cursor + blockSize;
 
-        if (static_cast<unsigned int>(cursor - dest) + blockSize > maxSize) {
+        if (nextCursor > end) {
             return false;
         }
 
         bMemCpy(cursor, block, blockSize);
-        cursor += blockSize;
+        cursor = nextCursor;
     }
 
     cursor = reinterpret_cast<unsigned char *>((reinterpret_cast<unsigned int>(cursor) + 0xFU) & ~0xFU);
@@ -2253,8 +2258,10 @@ bool GManager::SaveGameplayData(unsigned char *dest, unsigned int maxSize) {
     cursor += header->mNumPendingSMS * sizeof(int);
     cursor = reinterpret_cast<unsigned char *>((reinterpret_cast<unsigned int>(cursor) + 0xFU) & ~0xFU);
 
-    bMemCpy(cursor, &mFreeRoamStartMarker, sizeof(mFreeRoamStartMarker));
-    bMemCpy(cursor + 0x10, &mFreeRoamFromSafeHouseStartMarker, sizeof(mFreeRoamFromSafeHouseStartMarker));
+    freeRoamStartMarker = mFreeRoamStartMarker;
+    bMemCpy(cursor, &freeRoamStartMarker, sizeof(freeRoamStartMarker));
+    freeRoamFromSafeHouseStartMarker = mFreeRoamFromSafeHouseStartMarker;
+    bMemCpy(cursor + 0x10, &freeRoamFromSafeHouseStartMarker, sizeof(freeRoamFromSafeHouseStartMarker));
     MD5 md5;
     md5.Reset();
     md5.Update(dest + 0x10, maxSize - 0x10);
