@@ -100,8 +100,8 @@ unsigned int ReadLGWheelButtonsForProgressiveMenu(int ix) {
 
     wheel_buttons = 0;
     if (plat_lgwheels && plat_lgwheels->IsConnected(ix)) {
-        const LGPosition *wheel = &reinterpret_cast<const LGPosition *>(plat_lgwheels)[ix];
-        wheel_buttons = wheel->button;
+        const LGPosition *wheels = reinterpret_cast<const LGPosition *>(plat_lgwheels);
+        wheel_buttons = wheels[ix].button;
     }
     return wheel_buttons;
 }
