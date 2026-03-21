@@ -2192,26 +2192,50 @@ int GRaceParameters::GetNumOpponents() const {
 }
 
 void GRaceParameters::GetStartPosition(UMath::Vector3 &pos) const {
-    unsigned int collectionKey;
+    const GCollectionKey *raceStartSpec;
 
-    EnsureLoaded();
+    if (mParentVault && !mParentVault->IsLoaded()) {
+        mParentVault->LoadSyncTransient();
+    }
+
+    if (mChildVault && !mChildVault->IsLoaded()) {
+        mChildVault->LoadSyncTransient();
+    }
+
     pos = UMath::Vector3::kZero;
-    collectionKey = mRaceRecord->racestart(0).GetCollectionKey();
-    if (collectionKey) {
-        Attrib::Gen::gameplay raceStart(collectionKey, 0, nullptr);
+
+    raceStartSpec = reinterpret_cast<const GCollectionKey *>(mRaceRecord->GetAttributePointer(0xE43B2CCC, 0));
+    if (!raceStartSpec) {
+        raceStartSpec = reinterpret_cast<const GCollectionKey *>(Attrib::DefaultDataArea(sizeof(GCollectionKey)));
+    }
+
+    if (raceStartSpec->GetCollectionKey()) {
+        Attrib::Gen::gameplay raceStart(raceStartSpec->GetCollectionKey(), 0, nullptr);
 
         ExtractPosition(raceStart, pos);
     }
 }
 
 void GRaceParameters::GetStartDirection(UMath::Vector3 &dir) const {
-    unsigned int collectionKey;
+    const GCollectionKey *raceStartSpec;
 
-    EnsureLoaded();
+    if (mParentVault && !mParentVault->IsLoaded()) {
+        mParentVault->LoadSyncTransient();
+    }
+
+    if (mChildVault && !mChildVault->IsLoaded()) {
+        mChildVault->LoadSyncTransient();
+    }
+
     dir = UMath::Vector3::kZero;
-    collectionKey = mRaceRecord->racestart(0).GetCollectionKey();
-    if (collectionKey) {
-        Attrib::Gen::gameplay raceStart(collectionKey, 0, nullptr);
+
+    raceStartSpec = reinterpret_cast<const GCollectionKey *>(mRaceRecord->GetAttributePointer(0xE43B2CCC, 0));
+    if (!raceStartSpec) {
+        raceStartSpec = reinterpret_cast<const GCollectionKey *>(Attrib::DefaultDataArea(sizeof(GCollectionKey)));
+    }
+
+    if (raceStartSpec->GetCollectionKey()) {
+        Attrib::Gen::gameplay raceStart(raceStartSpec->GetCollectionKey(), 0, nullptr);
 
         ExtractDirection(raceStart, dir, 0.0f);
     }
@@ -2230,52 +2254,100 @@ bool GRaceParameters::HasFinishLine() const {
 }
 
 void GRaceParameters::GetFinishPosition(UMath::Vector3 &pos) const {
-    unsigned int collectionKey;
+    const GCollectionKey *raceFinishSpec;
 
-    EnsureLoaded();
+    if (mParentVault && !mParentVault->IsLoaded()) {
+        mParentVault->LoadSyncTransient();
+    }
+
+    if (mChildVault && !mChildVault->IsLoaded()) {
+        mChildVault->LoadSyncTransient();
+    }
+
     pos = UMath::Vector3::kZero;
-    collectionKey = mRaceRecord->racefinish(0).GetCollectionKey();
-    if (collectionKey) {
-        Attrib::Gen::gameplay raceFinish(collectionKey, 0, nullptr);
+
+    raceFinishSpec = reinterpret_cast<const GCollectionKey *>(mRaceRecord->GetAttributePointer(0xB0A24ADC, 0));
+    if (!raceFinishSpec) {
+        raceFinishSpec = reinterpret_cast<const GCollectionKey *>(Attrib::DefaultDataArea(sizeof(GCollectionKey)));
+    }
+
+    if (raceFinishSpec->GetCollectionKey()) {
+        Attrib::Gen::gameplay raceFinish(raceFinishSpec->GetCollectionKey(), 0, nullptr);
 
         ExtractPosition(raceFinish, pos);
     }
 }
 
 void GRaceParameters::GetFinishDirection(UMath::Vector3 &dir) const {
-    unsigned int collectionKey;
+    const GCollectionKey *raceFinishSpec;
 
-    EnsureLoaded();
+    if (mParentVault && !mParentVault->IsLoaded()) {
+        mParentVault->LoadSyncTransient();
+    }
+
+    if (mChildVault && !mChildVault->IsLoaded()) {
+        mChildVault->LoadSyncTransient();
+    }
+
     dir = UMath::Vector3::kZero;
-    collectionKey = mRaceRecord->racefinish(0).GetCollectionKey();
-    if (collectionKey) {
-        Attrib::Gen::gameplay raceFinish(collectionKey, 0, nullptr);
+
+    raceFinishSpec = reinterpret_cast<const GCollectionKey *>(mRaceRecord->GetAttributePointer(0xB0A24ADC, 0));
+    if (!raceFinishSpec) {
+        raceFinishSpec = reinterpret_cast<const GCollectionKey *>(Attrib::DefaultDataArea(sizeof(GCollectionKey)));
+    }
+
+    if (raceFinishSpec->GetCollectionKey()) {
+        Attrib::Gen::gameplay raceFinish(raceFinishSpec->GetCollectionKey(), 0, nullptr);
 
         ExtractDirection(raceFinish, dir, 0.0f);
     }
 }
 
 void GRaceParameters::GetCheckpointPosition(unsigned int index, UMath::Vector3 &pos) const {
-    unsigned int collectionKey;
+    const GCollectionKey *raceCheckSpec;
 
-    EnsureLoaded();
+    if (mParentVault && !mParentVault->IsLoaded()) {
+        mParentVault->LoadSyncTransient();
+    }
+
+    if (mChildVault && !mChildVault->IsLoaded()) {
+        mChildVault->LoadSyncTransient();
+    }
+
     pos = UMath::Vector3::kZero;
-    collectionKey = mRaceRecord->Checkpoint(index).GetCollectionKey();
-    if (collectionKey) {
-        Attrib::Gen::gameplay checkpoint(collectionKey, 0, nullptr);
+
+    raceCheckSpec = reinterpret_cast<const GCollectionKey *>(mRaceRecord->GetAttributePointer(0x34AAE3FC, index));
+    if (!raceCheckSpec) {
+        raceCheckSpec = reinterpret_cast<const GCollectionKey *>(Attrib::DefaultDataArea(sizeof(GCollectionKey)));
+    }
+
+    if (raceCheckSpec->GetCollectionKey()) {
+        Attrib::Gen::gameplay checkpoint(raceCheckSpec->GetCollectionKey(), 0, nullptr);
 
         ExtractPosition(checkpoint, pos);
     }
 }
 
 void GRaceParameters::GetCheckpointDirection(unsigned int index, UMath::Vector3 &dir) const {
-    unsigned int collectionKey;
+    const GCollectionKey *raceCheckSpec;
 
-    EnsureLoaded();
+    if (mParentVault && !mParentVault->IsLoaded()) {
+        mParentVault->LoadSyncTransient();
+    }
+
+    if (mChildVault && !mChildVault->IsLoaded()) {
+        mChildVault->LoadSyncTransient();
+    }
+
     dir = UMath::Vector3::kZero;
-    collectionKey = mRaceRecord->Checkpoint(index).GetCollectionKey();
-    if (collectionKey) {
-        Attrib::Gen::gameplay checkpoint(collectionKey, 0, nullptr);
+
+    raceCheckSpec = reinterpret_cast<const GCollectionKey *>(mRaceRecord->GetAttributePointer(0x34AAE3FC, index));
+    if (!raceCheckSpec) {
+        raceCheckSpec = reinterpret_cast<const GCollectionKey *>(Attrib::DefaultDataArea(sizeof(GCollectionKey)));
+    }
+
+    if (raceCheckSpec->GetCollectionKey()) {
+        Attrib::Gen::gameplay checkpoint(raceCheckSpec->GetCollectionKey(), 0, nullptr);
 
         ExtractDirection(checkpoint, dir, 0.0f);
     }
