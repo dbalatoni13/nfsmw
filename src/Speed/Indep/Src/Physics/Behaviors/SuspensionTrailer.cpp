@@ -54,6 +54,10 @@ class SuspensionTrailer : public Chassis {
             return mLongitudeForce;
         }
 
+        float GetLateralForce() const {
+            return mLateralForce;
+        }
+
       private:
         const float mRadius;          // offset 0xC4, size 0x4
         float mBrake;                 // offset 0xC8, size 0x4
@@ -359,4 +363,142 @@ void SuspensionTrailer::DoSimpleAero(State &state) {
     UVector3 drag_vector = state.linear_vel;
     drag_vector *= drag;
     mRB->ResolveForce(drag_vector);
+}
+
+void SuspensionTrailer::DoWheelForces(State &state) {
+    for (unsigned int i = 0; i < 4; ++i) {
+        mTires[i]->SetBrake(state.brake_input);
+        mTires[i]->SetEBrake(state.ebrake_input);
+    }
+
+    UMath::Vector3 world_cog;
+    UMath::RotateTranslate(state.cog, state.matrix, world_cog);
+
+    float shock_specs[2];
+    float spring_specs[2];
+    float sway_specs[2];
+    float travel_specs[2];
+    float rideheight_specs[2];
+    float progression[2];
+
+    for (unsigned int i = 0; i < 2; ++i) {
+        shock_specs[i] = LBIN2NM(mSuspensionInfo.SHOCK_STIFFNESS().At(i));
+        spring_specs[i] = LBIN2NM(mSuspensionInfo.SPRING_STIFFNESS().At(i));
+        sway_specs[i] = LBIN2NM(mSuspensionInfo.SWAYBAR_STIFFNESS().At(i));
+        travel_specs[i] = INCH2METERS(mSuspensionInfo.TRAVEL().At(i));
+        rideheight_specs[i] = INCH2METERS(mSuspensionInfo.RIDE_HEIGHT().At(i));
+        progression[i] = mSuspensionInfo.SPRING_PROGRESSION().At(i);
+    }
+
+    float sway_stiffness[4];
+    sway_stiffness[0] = (mTires[0]->GetCompression() - mTires[1]->GetCompression()) * sway_specs[0];
+    sway_stiffness[1] = -sway_stiffness[0];
+    sway_stiffness[2] = (mTires[2]->GetCompression() - mTires[3]->GetCompression()) * sway_specs[1];
+    sway_stiffness[3] = -sway_stiffness[2];
+
+    const UMath::Vector3 &vUp = state.GetUpVector();
+    const UMath::Vector3 &forward = state.GetForwardVector();
+    unsigned int wheels_on_ground = 0;
+    float max_delta = 0.0f;
+    bool resolve = false;
+
+    for (unsigned int i = 0; i < 4; ++i) {
+        const unsigned int axle = i / 2;
+        Tire &wheel = GetWheel(i);
+        wheel.UpdatePosition(state.angular_vel, state.linear_vel, state.matrix, world_cog, state.time, wheel.GetRadius(), true, state.collider,
+                             state.dimension.y * 2.0f);
+
+        const UMath::Vector3 &ground_normal = UMath::Vector4To3(wheel.GetNormal());
+        UMath::Vector3 lateral_normal;
+        UMath::UnitCross(ground_normal, forward, lateral_normal);
+
+        const float upness = UMath::Clamp(UMath::Dot(vUp, ground_normal), 0.0f, 1.0f);
+        const float old_compression = wheel.GetCompression();
+        float new_compression = rideheight_specs[axle] * upness + wheel.GetNormal().w;
+        const float max_compression = travel_specs[axle];
+
+        if (old_compression == 0.0f) {
+            max_delta = UMath::Max(max_delta, new_compression - max_compression);
+        }
+
+        new_compression = UMath::Max(new_compression, 0.0f);
+        if (max_compression < new_compression) {
+            max_delta = UMath::Max(max_delta, new_compression - max_compression);
+            new_compression = max_compression;
+        }
+
+        if (new_compression <= 0.0f || upness <= VehicleSystem::ENABLE_ROLL_STOPS_THRESHOLD) {
+            wheel.SetForce(UMath::Vector3::kZero);
+            wheel.UpdateFree(state.time);
+        } else {
+            ++wheels_on_ground;
+
+            float damp = ((new_compression - old_compression) / state.time) * shock_specs[axle];
+            if (mSuspensionInfo.SHOCK_BLOWOUT() * state.mass * 9.81f < damp) {
+                damp = 0.0f;
+            }
+
+            float vertical_load =
+                damp + (new_compression * spring_specs[axle]) * (new_compression * progression[axle] + 1.0f) + sway_stiffness[i];
+            vertical_load = UMath::Max(vertical_load, 0.0f);
+
+            const float load_scale = UMath::Max(0.3f, upness * 4.0f - 3.0f);
+            const UMath::Vector3 &point_velocity = wheel.GetVelocity();
+            const float lat_speed = UMath::Dot(point_velocity, lateral_normal);
+            const float fwd_speed = UMath::Dot(point_velocity, forward);
+            wheel.UpdateLoaded(lat_speed, fwd_speed, load_scale * vertical_load, state.time);
+
+            float max_lateral = (lat_speed / state.time) * (0.25f * state.mass);
+            if (max_lateral < 0.0f) {
+                max_lateral = -max_lateral;
+            }
+
+            const float lateral_force = UMath::Clamp(wheel.GetLateralForce(), -max_lateral, max_lateral);
+
+            UMath::Vector3 force;
+            UMath::Scale(lateral_normal, lateral_force, force);
+
+            UMath::Vector3 drive_force;
+            UMath::UnitCross(lateral_normal, ground_normal, drive_force);
+            UMath::ScaleAdd(drive_force, wheel.GetLongitudeForce(), force, force);
+            UMath::ScaleAdd(vUp, vertical_load, force, force);
+
+            wheel.SetForce(force);
+            resolve = true;
+        }
+
+        if (new_compression == 0.0f) {
+            wheel.IncAirTime(state.time);
+        } else {
+            wheel.SetAirTime(0.0f);
+        }
+        wheel.SetCompression(new_compression);
+    }
+
+    if (resolve) {
+        for (unsigned int i = 0; i < 4; ++i) {
+            Tire &wheel = GetWheel(i);
+            UMath::Vector3 p = wheel.GetLocalArm();
+            p.y = (p.y + wheel.GetCompression()) - rideheight_specs[i / 2];
+            UMath::RotateTranslate(p, state.matrix, p);
+            wheel.SetPosition(p);
+
+            UMath::Vector3 r;
+            UMath::Sub(p, world_cog, r);
+
+            UMath::Vector3 torque;
+            UMath::Cross(r, wheel.GetForce(), torque);
+            mRB->Resolve(wheel.GetForce(), torque);
+        }
+    }
+
+    if (0.0f < max_delta) {
+        for (unsigned int i = 0; i < 4; ++i) {
+            Tire &wheel = GetWheel(i);
+            wheel.SetY(wheel.GetPosition().y + max_delta);
+        }
+        mRB->ModifyYPos(max_delta);
+    }
+
+    mNumWheelsOnGround = wheels_on_ground;
 }
