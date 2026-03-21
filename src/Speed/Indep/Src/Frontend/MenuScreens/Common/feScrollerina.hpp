@@ -116,7 +116,7 @@ struct Scrollerina {
     bool IsAtTail() { return SelectedDatum == Data.GetTail(); }
     bool IsWrapped() { return bWrapped; }
     bool HasActiveSelection();
-    unsigned int GetSelectedNodeIndex();
+    unsigned int GetSelectedNodeIndex() { return GetNodeIndex(GetSelectedDatum()); }
     unsigned int GetSelectedSlotIndex();
     void SetSelectedDatum(ScrollerDatum* datum) { SelectedDatum = datum; }
 

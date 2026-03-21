@@ -143,7 +143,7 @@ ScrollerDatum* Scrollerina::FindDatumInSlot(ScrollerSlot* to_find) {
 
 void Scrollerina::DrawScrollBar() {
     if (bHasScrollBar) {
-        ScrollBar.Update(iNumSlots, iNumData, iViewHeadDataIndex, GetNodeIndex(SelectedDatum));
+        ScrollBar.Update(iNumSlots, iNumData, iViewHeadDataIndex, GetSelectedNodeIndex());
     }
 }
 
