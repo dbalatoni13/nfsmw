@@ -3902,6 +3902,7 @@ float GRaceStatus::DetermineRaceSegmentLength(const UMath::Vector4 *positions, c
     nav.SetDecisionFilter(true);
     nav.SetPathType(WRoadNav::kPathChopper);
 
+    mRaceParms->GetNumCheckpoints();
     VU0_v3sub(UMath::Vector4To3(positions[start]), UMath::Vector4To3(positions[end]), delta);
     pathDistance = VU0_sqrt(VU0_v3lengthsquare(delta));
 
@@ -4016,6 +4017,7 @@ float GRaceStatus::DetermineRaceSegmentLength(const UMath::Vector4 *positions, c
         }
     } else {
         bRaceRouteError = true;
+        mRaceParms->GetNumCheckpoints();
     }
 
     return pathDistance;
