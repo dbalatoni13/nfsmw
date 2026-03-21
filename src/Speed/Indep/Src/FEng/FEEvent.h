@@ -21,6 +21,7 @@ class FEEventList {
     inline FEEventList() : Count(0), pEvent(nullptr) {}
     void operator=(FEEventList& rhs);
     void SetCount(long NewCount);
+    inline unsigned long GetCount() { return Count; }
     inline FEEvent& operator[](int Index) { return pEvent[Index]; }
 };
 

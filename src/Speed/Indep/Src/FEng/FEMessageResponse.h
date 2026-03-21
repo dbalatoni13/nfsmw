@@ -22,8 +22,8 @@ struct FEResponse {
         return FEngMalloc(size, nullptr, 0);
     }
 
-    static inline bool HasString(unsigned long ID) {
-        return (ID - 0x200u < 5) && (ID != 0x203);
+    static inline bool HasString(unsigned long ResponseID) {
+        return (ResponseID - 0x200u < 5) && (ResponseID != 0x203);
     }
 
     inline bool HasString() const { return HasString(ResponseID); }

@@ -3,7 +3,7 @@
 #include "types.h"
 
 void FEEventList::operator=(FEEventList& Src) {
-    SetCount(Src.Count);
+    SetCount(Src.GetCount());
     FEngMemCpy(pEvent, Src.pEvent, Count * sizeof(FEEvent));
 }
 

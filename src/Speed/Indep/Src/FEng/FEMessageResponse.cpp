@@ -45,7 +45,7 @@ void FEResponse::SetParam(const char* pString) {
 }
 
 void FEResponse::ReleaseParam() {
-    if (FEResponse::HasString(ResponseID) && ResponseParam) {
+    if (HasString() && ResponseParam) {
         delete[] reinterpret_cast<char*>(ResponseParam);
     }
     ResponseParam = 0;

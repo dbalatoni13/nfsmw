@@ -154,8 +154,7 @@ void FEPackage::SetCurrentButton(FEObject* pNewButton, bool bSendMsgs) {
 }
 
 bool PackageInitStateCB::Callback(FEObject* pObj) {
-    FEScript* pScript = pObj->FindScript(0x1744b3);
-    pObj->SetCurrentScript(pScript);
+    pObj->SetCurrentScript(pObj->FindScript(0x1744b3));
     pObj->pCurrentScript->CurTime = 0;
     pObj->Flags |= 0x3c00000;
     return true;
