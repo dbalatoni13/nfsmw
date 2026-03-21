@@ -38,7 +38,7 @@ GameTipInfo *LoadingTips::GetGameTip(eGameTips tip) {
 }
 
 void LoadingTips::InitLoadingTipsScreen() {
-    mLoadingTipsScreenPtr = bMalloc(0x3C, 0);
+    mLoadingTipsScreenPtr = bMalloc(0x3C, nullptr, 0, 0);
 }
 
 void LoadingTips::FinishLoadingTexCallback(unsigned int p) {

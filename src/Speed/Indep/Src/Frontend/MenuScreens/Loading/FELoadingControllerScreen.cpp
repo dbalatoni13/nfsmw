@@ -65,7 +65,7 @@ void FinishLoadingControllerTextureCallbackBridge(unsigned int p) {
 }
 
 void LoadingControllerScreen::InitLoadingControllerScreen() {
-    mLoadingControllerScreenPtr = bMalloc(0x38, 0);
+    mLoadingControllerScreenPtr = bMalloc(0x38, nullptr, 0, 0);
 }
 
 MenuScreen *CreateLoadingControllerScreen(ScreenConstructorData *sd) {
