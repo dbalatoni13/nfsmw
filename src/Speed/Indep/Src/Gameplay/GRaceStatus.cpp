@@ -2531,8 +2531,8 @@ void GRaceCustom::CreateRaceActivity() {
 
     if (mReversed) {
         if (GetCanBeReversed()) {
-            GCollectionKey startReverse = mRaceRecord->racestartReverse(0);
-            GCollectionKey finishReverse = mRaceRecord->racefinishReverse(0);
+            GCollectionKey startReverse = mRaceRecord->racestartReverse();
+            GCollectionKey finishReverse = mRaceRecord->racefinishReverse();
 
             mRaceRecord->Set_racestart(startReverse);
             mRaceRecord->Set_racefinish(finishReverse);
@@ -2981,19 +2981,10 @@ void GRaceStatus::NotifyScriptWhenLoaded() {
 void GRaceStatus::SetRoaming() {
     bool lastDDay = false;
     IPlayer *player;
-    bool dDay = false;
 
     if (mRaceParms) {
-        lastDDay = bStrCmp(mRaceParms->GetEventID(), "16.2.1") == 0;
-        const Attrib::Gen::gameplay *gameplayObj = mRaceParms->GetGameplayObj();
-        const unsigned int *startNewGame =
-            reinterpret_cast<const unsigned int *>(gameplayObj->GetAttributePointer(0x64273C71, 0));
-
-        if (!startNewGame) {
-            startNewGame = reinterpret_cast<const unsigned int *>(Attrib::DefaultDataArea(sizeof(unsigned int)));
-        }
-
-        if (!*startNewGame) {
+        lastDDay = bStrCmp(mRaceParms->GetEventID(), GRaceDatabase::Get().GetDDayEndRace()) == 0;
+        if (!mRaceParms->GetGameplayObj()->PostRaceActivity().GetCollectionKey()) {
             g_pEAXSound->StartNewGamePlay();
         }
     } else {
@@ -3029,18 +3020,7 @@ void GRaceStatus::SetRoaming() {
             }
         }
 
-        {
-            IPlayer::List::const_iterator iter =
-                std::find(IPlayer::GetList(PLAYER_ALL).begin(), IPlayer::GetList(PLAYER_ALL).end(), player);
-            IPlayer::List::const_iterator end = IPlayer::GetList(PLAYER_ALL).end();
-
-            if (iter == end) {
-                player = nullptr;
-            } else {
-                ++iter;
-                player = iter == end ? nullptr : *iter;
-            }
-        }
+        player = player->Next(PLAYER_ALL);
     }
 
     if (!lastDDay && !GManager::Get().GetHasPendingRestartEvent()) {
@@ -3048,8 +3028,11 @@ void GRaceStatus::SetRoaming() {
     }
 
     new EAutoSave();
+    bool dDay = false;
     if (mRaceParms) {
-        dDay = mRaceParms->GetIsDDayRace();
+        if (mRaceParms->GetIsDDayRace()) {
+            dDay = true;
+        }
     }
 
     if (!dDay) {

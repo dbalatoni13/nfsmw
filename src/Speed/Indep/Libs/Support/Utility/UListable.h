@@ -141,7 +141,21 @@ template <typename T, int ListSize, typename Enum, std::size_t EnumMax> class Li
         UnList();
     }
 
-    iterator Next(Enum idx) {}
+    iterator Next(Enum idx) {
+        const List &list = GetList(idx);
+        const pointer *iter = std::find(list.begin(), list.end(), static_cast<const_pointer>(this));
+
+        if (iter == list.end()) {
+            return nullptr;
+        }
+
+        ++iter;
+        if (iter == list.end()) {
+            return nullptr;
+        }
+
+        return *iter;
+    }
 
     void AddToList(Enum to) {
         _mLists._add(static_cast<iterator>(this), to);

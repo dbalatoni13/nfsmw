@@ -827,7 +827,7 @@ struct gameplay : Instance {
         return *resultptr;
     }
 
-    const GCollectionKey &PostRaceActivity(unsigned int index) const {
+    const GCollectionKey &PostRaceActivity(unsigned int index = 0) const {
         const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(this->GetAttributePointer(0x64273c71, index));
         if (!resultptr) {
             resultptr = reinterpret_cast<const GCollectionKey *>(DefaultDataArea(sizeof(GCollectionKey)));
@@ -1041,7 +1041,7 @@ struct gameplay : Instance {
         return *resultptr;
     }
 
-    const GCollectionKey &racefinishReverse(unsigned int index) const {
+    const GCollectionKey &racefinishReverse(unsigned int index = 0) const {
         const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(this->GetAttributePointer(0x7c7cf20f, index));
         if (!resultptr) {
             resultptr = reinterpret_cast<const GCollectionKey *>(DefaultDataArea(sizeof(GCollectionKey)));
@@ -2001,7 +2001,7 @@ struct gameplay : Instance {
         return *resultptr;
     }
 
-    const GCollectionKey &racestartReverse(unsigned int index) const {
+    const GCollectionKey &racestartReverse(unsigned int index = 0) const {
         const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(this->GetAttributePointer(0xfd945479, index));
         if (!resultptr) {
             resultptr = reinterpret_cast<const GCollectionKey *>(DefaultDataArea(sizeof(GCollectionKey)));
