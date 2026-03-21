@@ -326,7 +326,7 @@ void RenderSkids(eView *view, Clan *clan) {
     ProfileNode profile_node("TODO", 0);
 
     for (bPNode *p = clan->SkidSetList.GetHead(); p != clan->SkidSetList.EndOfList(); p = p->GetNext()) {
-        SkidSet *skid_set = reinterpret_cast<SkidSet *>(p->GetpObject());
+        SkidSet *skid_set = reinterpret_cast<SkidSet *>(p->GetObject());
         eVisibleState visibility = view->GetVisibleState(skid_set->GetBBoxMin(), skid_set->GetBBoxMax(), 0);
         if (visibility != EVISIBLESTATE_NOT) {
             int pixel_size = view->GetPixelSize(bDistBetween(skid_set->GetBBoxCentre(), view->GetCamera()->GetPosition()), 1.0f);
