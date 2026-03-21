@@ -2313,10 +2313,10 @@ bool GManager::LoadGameplayData(unsigned char *src, unsigned int maxSize) {
         return false;
     }
 
-    srcStart = src;
-    gameplayHeader = reinterpret_cast<SavedGameplayDataHeader *>(srcStart);
-    startChecksum = srcStart + 0x10;
+    gameplayHeader = reinterpret_cast<SavedGameplayDataHeader *>(src);
     bytesToChecksum = maxSize - 0x10;
+    srcStart = reinterpret_cast<unsigned char *>(gameplayHeader);
+    startChecksum = srcStart + 0x10;
     MD5 md5;
 
     md5.Reset();
@@ -2333,13 +2333,14 @@ bool GManager::LoadGameplayData(unsigned char *src, unsigned int maxSize) {
     for (unsigned int onBlock = 0; onBlock < gameplayHeader->mNumPersistent; ++onBlock) {
         ObjectStateBlockHeader *header = reinterpret_cast<ObjectStateBlockHeader *>(src);
         unsigned int allocSize = header->mSize;
+        unsigned int blockBytes = (allocSize + 0x17U) & ~0xFU;
         unsigned char *newBlock = reinterpret_cast<unsigned char *>(AllocObjectStateBlock(header->mKey, allocSize, true));
 
         if (newBlock) {
             bMemCpy(newBlock, header + 1, header->mSize);
         }
 
-        src += (allocSize + 0x17U) & ~0xFU;
+        src += blockBytes;
     }
 
     src = reinterpret_cast<unsigned char *>((reinterpret_cast<unsigned int>(src) + 0xFU) & ~0xFU);
