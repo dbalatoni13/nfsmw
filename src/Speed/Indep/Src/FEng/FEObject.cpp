@@ -198,14 +198,14 @@ void FEObject::SetupMoveToTracks() {
 }
 
 FEMessageResponse* FEObject::FindResponse(unsigned long MsgID) const {
-    FEMessageResponse* pResp = static_cast<FEMessageResponse*>(Responses.GetHead());
-    while (pResp) {
-        if (pResp->MsgID == MsgID) {
-            return pResp;
+    FEMessageResponse* pNode = GetFirstResponse();
+    while (pNode) {
+        if (pNode->GetMsgID() == MsgID) {
+            return pNode;
         }
-        pResp = pResp->GetNext();
+        pNode = pNode->GetNext();
     }
-    return pResp;
+    return pNode;
 }
 
 void FEObject::SetScript(unsigned long ID, bool bForce) {

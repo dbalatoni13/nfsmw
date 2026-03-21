@@ -82,7 +82,7 @@ struct FEObject : public FEMinNode {
     inline FEScript* GetFirstScript() const { return reinterpret_cast<FEScript*>(Scripts.GetHead()); }
     inline unsigned long GetNumScripts() const;
     inline FEScript* GetScript(unsigned long Index) const;
-    inline FEMessageResponse* GetFirstResponse() const;
+    inline FEMessageResponse* GetFirstResponse() const { return reinterpret_cast<FEMessageResponse*>(Responses.GetHead()); }
     inline unsigned long GetNumResponses() const;
     inline FEMessageResponse* GetResponse(unsigned long Index) const;
     inline void SetNameHash(const unsigned long nameHash);
