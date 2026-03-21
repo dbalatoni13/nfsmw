@@ -15,6 +15,12 @@ UCrc32 GetDamageStimulus(unsigned int level);
 UCrc32 GetImpactStimulus(unsigned int level);
 } // namespace DamageZone
 
+IDamageable::~IDamageable() {}
+
+IDamageableVehicle::~IDamageableVehicle() {}
+
+template BehaviorSpecsPtr<Attrib::Gen::damagespecs>::~BehaviorSpecsPtr();
+
 Behavior *DamageVehicle::Construct(const BehaviorParams &params) {
     const DamageParams dp(params.fparams.Fetch<DamageParams>(UCrc32(0xa6b47fac)));
     return new DamageVehicle(params, dp);
