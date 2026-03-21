@@ -46,6 +46,7 @@ const char *GetLocalizedString(unsigned int hash);
 extern int UnlockAllThings;
 
 void EnableBarrierSceneryGroup(const char *name, bool flipped);
+void RedoTopologyAndSceneryGroups();
 extern int SkipFE;
 extern const char *SkipFEOpponentPresetRide;
 unsigned int bStringHashUpper(const char *text);
@@ -3505,9 +3506,9 @@ void GRaceStatus::EnableBarriers() {
 }
 
 void GRaceStatus::DisableBarriers() {
-    if (mRaceBin) {
-        mRaceBin->DisableBarriers();
-    }
+    RedoTopologyAndSceneryGroups();
+    WRoadNetwork::Get().ResetBarriers();
+    WRoadNetwork::Get().ResetRaceSegments();
 }
 
 void GRaceStatus::AddAvailableEventToMap(GRuntimeInstance *trigger, GRuntimeInstance *activity) {}
