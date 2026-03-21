@@ -206,8 +206,20 @@ bool GCharacter::IsSpawned() const {
 }
 
 void GCharacter::ReleaseVehicle() {
+    ISimable *simableToKill;
+
     if (mVehicle) {
-        mAttachments->Detach(mVehicle);
+        simableToKill = nullptr;
+
+        if (IsFlagClear(kCharFlag_UsingStockCar)) {
+            mVehicle->QueryInterface(&simableToKill);
+        }
+
+        Detach(mVehicle);
+
+        if (simableToKill) {
+            simableToKill->Kill();
+        }
     }
 }
 
