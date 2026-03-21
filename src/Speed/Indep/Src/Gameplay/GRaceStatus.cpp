@@ -3050,44 +3050,51 @@ void GRaceStatus::SetRoaming() {
 }
 
 void GRaceStatus::CalculateRankings() {
-    GRacerInfo *rankings[16];
-    bool rankPlayersByPoints = mRaceParms->GetRankPlayersByPoints();
-    int aiRacers = 0;
+    GRacerInfo *sortedRacers[16];
+    bool sortByPoints;
+    int players_encountered = 0;
 
-    for (int i = 0; i < mRacerCount; ++i) {
-        rankings[i] = &mRacerInfo[i];
+    for (int idx = 0; idx < mRacerCount; ++idx) {
+        sortedRacers[idx] = &mRacerInfo[idx];
     }
 
-    for (int i = mRacerCount - 1; i > 0; --i) {
-        for (int j = 0; j < i; ++j) {
+    sortByPoints = mRaceParms->GetRankPlayersByPoints();
+    for (int sort1 = mRacerCount - 1; sort1 > 0; --sort1) {
+        for (int sort2 = 0; sort2 < sort1; ++sort2) {
             bool swap;
 
-            if (!rankPlayersByPoints) {
-                swap = rankings[j]->IsBehind(*rankings[i]);
-            } else if (rankings[i]->GetPointTotal() + rankings[j]->GetPointTotal() <= 0.0f) {
-                swap = rankings[j]->IsBehind(*rankings[i]);
+            if (sortByPoints) {
+                float p1 = sortedRacers[sort1]->GetPointTotal();
+                float p2 = sortedRacers[sort2]->GetPointTotal();
+
+                if (p1 + p2 <= 0.0f) {
+                    swap = sortedRacers[sort2]->IsBehind(*sortedRacers[sort1]);
+                } else {
+                    swap = p2 < p1;
+                }
             } else {
-                swap = rankings[j]->GetPointTotal() < rankings[i]->GetPointTotal();
+                swap = sortedRacers[sort2]->IsBehind(*sortedRacers[sort1]);
             }
 
             if (swap) {
-                GRacerInfo *info = rankings[i];
+                GRacerInfo *temp = sortedRacers[sort1];
 
-                rankings[i] = rankings[j];
-                rankings[j] = info;
+                sortedRacers[sort1] = sortedRacers[sort2];
+                sortedRacers[sort2] = temp;
             }
         }
     }
 
-    for (int i = 0; i < mRacerCount; ++i) {
-        GRacerInfo *info = rankings[i];
+    for (int onSetRank = 0; onSetRank < mRacerCount; ++onSetRank) {
+        int ranking = onSetRank + 1;
+        GRacerInfo *info = sortedRacers[onSetRank];
 
-        info->SetRanking(i + 1);
-        if (!info->GetGameCharacter()) {
+        info->SetRanking(ranking);
+        if (!info->GetIsHuman()) {
             info->mAiRanking = 0;
-            ++aiRacers;
+            ++players_encountered;
         } else {
-            info->mAiRanking = (i + 1) - aiRacers;
+            info->mAiRanking = ranking - players_encountered;
         }
     }
 }
