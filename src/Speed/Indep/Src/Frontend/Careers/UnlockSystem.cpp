@@ -1391,18 +1391,6 @@ void cFrontendDatabase::DefaultRaceSettings() {
     TheQuickRaceSettings[4].NumLaps = 1;
 }
 
-void cFrontendDatabase::NotifyDeleteCar(unsigned int handle) {
-    unsigned int default_car = GetDefaultCar();
-    for (unsigned int i = 0; i < 11; i++) {
-        RaceSettings &settings = TheQuickRaceSettings[i];
-        if (settings.GetSelectedCar(0) == handle) {
-            settings.SetSelectedCar(default_car, 0);
-        }
-        if (settings.GetSelectedCar(1) == handle) {
-            settings.SetSelectedCar(default_car, 0);
-        }
-    }
-}
 
 void cFrontendDatabase::RestoreFromBackupDB() {
     if (m_pDBBackup) {

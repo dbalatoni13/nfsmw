@@ -1035,6 +1035,19 @@ void cFrontendDatabase::Default() {
     }
 }
 
+void cFrontendDatabase::NotifyDeleteCar(unsigned int handle) {
+    unsigned int default_car = GetDefaultCar();
+    for (unsigned int i = 0; i < 11; i++) {
+        RaceSettings &settings = TheQuickRaceSettings[i];
+        if (settings.SelectedCar[0] == handle) {
+            settings.SelectedCar[0] = default_car;
+        }
+        if (settings.SelectedCar[1] == handle) {
+            settings.SelectedCar[0] = default_car;
+        }
+    }
+}
+
 unsigned int cFrontendDatabase::GetMilestoneIconHash(unsigned int type, bool isMilestone) {
     unsigned int hash = 0;
     switch (type) {
