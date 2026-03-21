@@ -11,6 +11,38 @@
 
 #include <algorithm>
 
+namespace {
+HINTERFACE (*const kForceIEntityHandle)() = &Sim::IEntity::_IHandle;
+}
+
+extern "C" HINTERFACE _IHandle__Q23Sim7IEntity() asm("_IHandle__Q23Sim7IEntity");
+HINTERFACE _IHandle__Q23Sim7IEntity() {
+    return (HINTERFACE)_IHandle__Q23Sim7IEntity;
+}
+
+HINTERFACE IBody::_IHandle() {
+    return (HINTERFACE)_IHandle;
+}
+
+IBody::~IBody() {}
+
+UCrc32 WorldConn::Pkt_Body_Open::ConnectionClass() {
+    return UCrc32(0x998c21c0);
+}
+
+unsigned int WorldConn::Pkt_Body_Open::Size() {
+    return sizeof(*this);
+}
+
+unsigned int WorldConn::Pkt_Body_Open::Type() {
+    return SType();
+}
+
+unsigned int WorldConn::Pkt_Body_Open::SType() {
+    static UCrc32 hash = "Pkt_Body_Open";
+    return hash.GetValue();
+}
+
 void PhysicsObject::Behaviors::Add(Behavior *beh) {
     int pri = beh->GetPriority();
     iterator iter;
@@ -458,3 +490,5 @@ void PhysicsObject::Behaviors::Reset() {
 template void UTL::Vector<Sim::IEntity *, 16>::reserve(UTL::Vector<Sim::IEntity *, 16>::size_type);
 template void UTL::Vector<IPlayer *, 16>::reserve(UTL::Vector<IPlayer *, 16>::size_type);
 template void UTL::Vector<IModel *, 16>::push_back(IModel *const &);
+template void UTL::Vector<IRigidBody *, 16>::push_back(IRigidBody *const &);
+template const Attrib::RefSpec &Attrib::Attribute::Get<Attrib::RefSpec>(unsigned int) const;

@@ -11,11 +11,11 @@
 // total size: 0x8
 class IPlaceableScenery : public UTL::COM::IUnknown, public UTL::Collections::Countable<IPlaceableScenery> {
   public:
-    static HINTERFACE _IHandle() {
-        return (HINTERFACE)_IHandle;
-    }
+    static HINTERFACE _IHandle();
 
     IPlaceableScenery(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
+
+    virtual ~IPlaceableScenery();
 
     virtual void Destroy();
     virtual void PickUp();

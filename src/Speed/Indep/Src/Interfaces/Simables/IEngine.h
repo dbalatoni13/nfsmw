@@ -66,9 +66,7 @@ class IDragEngine : public UTL::COM::IUnknown {
 
 class IRaceEngine : public UTL::COM::IUnknown {
   public:
-    static HINTERFACE _IHandle() {
-        return (HINTERFACE)_IHandle;
-    }
+    static HINTERFACE _IHandle();
 
     IRaceEngine(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
 

@@ -116,6 +116,14 @@ class Pkt_Body_Open : public Sim::Packet {
     Pkt_Body_Open(unsigned int id, const UMath::Matrix4 &matrix) : mMatrix(matrix), mID(id) {}
     ~Pkt_Body_Open() override {}
 
+    UCrc32 ConnectionClass() override;
+
+    unsigned int Size() override;
+
+    unsigned int Type() override;
+
+    static unsigned int SType();
+
     UMath::Matrix4 mMatrix; // offset 0x4, size 0x40
     WUID mID;               // offset 0x44, size 0x4
 };

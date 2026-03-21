@@ -10,6 +10,7 @@
 #include "Speed/Indep/Src/Generated/Messages/MJumpCut.h"
 #include "Speed/Indep/Src/Interfaces/ITaskable.h"
 #include "Speed/Indep/Src/Interfaces/SimActivities/INIS.h"
+#include "Speed/Indep/Src/Interfaces/SimActivities/ITrafficCenter.h"
 #include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IAudible.h"
@@ -23,6 +24,7 @@
 #include "Speed/Indep/Src/Interfaces/Simables/IRecordablePlayer.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRenderable.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
+#include "Speed/Indep/Src/Interfaces/Simables/ISpikeable.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ISuspension.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ITransmission.h"
 #include "Speed/Indep/Src/Misc/Config.h"
@@ -40,6 +42,21 @@
 #include "Speed/Indep/Src/World/WCollisionMgr.h"
 #include "Speed/Indep/Src/World/WWorldPos.h"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
+
+namespace {
+HINTERFACE (*const kForceIRaceEngineHandle)() = &IRaceEngine::_IHandle;
+HINTERFACE (*const kForceIEffectsHandle)() = &IEffects::_IHandle;
+}
+
+extern "C" HINTERFACE _IHandle__11IRaceEngine() asm("_IHandle__11IRaceEngine");
+HINTERFACE _IHandle__11IRaceEngine() {
+    return (HINTERFACE)_IHandle__11IRaceEngine;
+}
+
+extern "C" HINTERFACE _IHandle__8IEffects() asm("_IHandle__8IEffects");
+HINTERFACE _IHandle__8IEffects() {
+    return (HINTERFACE)_IHandle__8IEffects;
+}
 
 class OnlineRacer;
 
@@ -1237,12 +1254,11 @@ ISimable *PVehicle::Construct(Sim::Param params) {
     const FECustomizationRecord *customizations = vp.customization;
     if (customizations == nullptr) {
         const char *vehicle_name = attributes.DefaultPresetRide();
-        if (vehicle_name != nullptr) {
+        if (vehicle_name[0] != '\0') {
             unsigned int hash = bStringHashUpper(vehicle_name);
             PresetCar *preset = FindFEPresetCar(hash);
             if (preset != nullptr) {
                 static FECustomizationRecord temp_record;
-                temp_record.Default();
                 temp_record.BecomePreset(preset);
                 customizations = &temp_record;
             }
@@ -1544,3 +1560,7 @@ bool PVehicle::MakeRoom(IVehicleCache *whosasking, const UTL::Std::list<Resource
 template void UTL::Vector<ICollisionBody *, 16>::push_back(ICollisionBody *const &);
 template void UTL::Vector<IInputPlayer *, 16>::push_back(IInputPlayer *const &);
 template void UTL::Vector<IRecordablePlayer *, 16>::push_back(IRecordablePlayer *const &);
+template void UTL::Vector<ISpikeable *, 16>::push_back(ISpikeable *const &);
+template UTL::Collections::Listable<ITrafficCenter, 8>::List::~List();
+template UTL::Collections::Listable<ISpikeable, 10>::List::~List();
+template Behavior *UTL::COM::Factory<const BehaviorParams &, Behavior, UCrc32>::CreateInstance(UCrc32, const BehaviorParams &);

@@ -23,6 +23,14 @@ class Pkt_Smackable_Open : public Sim::Packet {
         , mHeirarchy(heirarchy) //
         , mRenderNode(rendernode) {}
 
+    UCrc32 ConnectionClass() override;
+
+    unsigned int Size() override;
+
+    unsigned int Type() override;
+
+    static unsigned int SType();
+
     // total size: 0x18
     bHash32 mModelHash;                              // offset 0x4, size 0x4
     unsigned int mObjectWUID;                        // offset 0x8, size 0x4

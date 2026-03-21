@@ -682,7 +682,9 @@ class Attribute {
         return result;
     }
 
-    template <typename T> const T &Get(unsigned int index) const;
+    template <typename T> const T &Get(unsigned int index) const {
+        return *reinterpret_cast<const T *>(GetElementPointer(index));
+    }
 
     template <typename T> bool Set(unsigned int index, const T &input) {
         T *resultptr = reinterpret_cast<T *>(GetElementPointer(index));

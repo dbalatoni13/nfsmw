@@ -425,9 +425,8 @@ bool PerfStats::Fetch(const Attrib::Gen::pvehicle &vehicle, bVector2 *graph_data
     float shift_up[12];
     float shift_down[12];
 
-    bool result = Physics::Info::ShiftPoints(trans, eng, ind, shift_up, shift_down, 12);
-
-    if (!result || wheel_radius <= 0.0f || final_gear <= 0.0f) {
+    if (!Physics::Info::ShiftPoints(trans, eng, ind, shift_up, shift_down, 12) ||
+        wheel_radius <= 0.0f || final_gear <= 0.0f) {
         return false;
     }
 
@@ -469,7 +468,10 @@ bool PerfStats::Fetch(const Attrib::Gen::pvehicle &vehicle, bVector2 *graph_data
         float accel = (force / wheel_radius) / mass;
 
         if (graph_data != nullptr) {
-            int idx = bMin(data_index, max_data_index);
+            int idx = data_index;
+            if (max_data_index < idx) {
+                idx = max_data_index;
+            }
             graph_data[idx].y = accel;
             graph_data[idx].x = speed;
             data_index++;
@@ -484,12 +486,10 @@ bool PerfStats::Fetch(const Attrib::Gen::pvehicle &vehicle, bVector2 *graph_data
         }
 
         if (speed_limiter <= 0.0f || speed < speed_limiter) {
-            if (gear == last_gear) {
-                float top = TopSpeed;
-                if ((accel < drag || redline_rpm <= rpm) && top <= 0.0f) {
-                    TopSpeed = speed;
-                    top = speed;
-                }
+            if (gear == last_gear &&
+                (accel < drag || redline_rpm <= rpm) &&
+                TopSpeed <= 0.0f) {
+                TopSpeed = speed;
             }
         } else {
             TopSpeed = speed_limiter;
@@ -497,19 +497,20 @@ bool PerfStats::Fetch(const Attrib::Gen::pvehicle &vehicle, bVector2 *graph_data
 
         time += dT;
 
-        if (TopSpeed > 0.0f && Time0To100 > 0.0f) break;
+        if (TopSpeed > 0.0f) {
+            if (Time0To100 > 0.0f) break;
+        }
 
-        if (shift_up[gear + G_FIRST] <= rpm) {
-            gear++;
-            if (last_gear <= gear) {
-                gear = last_gear;
+        if (rpm >= shift_up[gear + G_FIRST]) {
+            unsigned int next_gear = gear + 1;
+            gear = last_gear;
+            if (next_gear < last_gear) {
+                gear = next_gear;
             }
         }
     } while (time < 120.0f);
 
-    if (gear == last_gear) {
-        TopSpeed = speed;
-    } else if (TopSpeed <= 0.0f) {
+    if (gear == last_gear || TopSpeed <= 0.0f) {
         TopSpeed = speed;
     }
 
@@ -539,8 +540,8 @@ bool PerfStats::Fetch(const Attrib::Gen::pvehicle &vehicle, bVector2 *graph_data
     }
 
     bool success = false;
-    if (TopSpeed > 0.0f && Time0To100 > 0.0f) {
-        success = true;
+    if (TopSpeed > 0.0f) {
+        success = Time0To100 > 0.0f;
     }
     return success;
 }

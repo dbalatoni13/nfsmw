@@ -88,9 +88,7 @@ struct smackable : Instance {
         Instance::Change(refspec);
     }
 
-    static Key ClassKey() {
-        return 0xce70d7db;
-    }
+    static Key ClassKey();
 
     Instance &GetBase() {
         return *this;

@@ -205,58 +205,67 @@ bool Collection::AddNode(IBoundable *iboundable, const Bounds *geom, const SimSu
     UMath::Vector3 dim;
     UMath::Vector4 orientation;
     UMath::Matrix4 invmat;
-    SimSurface surface(defsurface);
 
     geom->GetHalfDimensions(dim);
     geom->GetPosition(offset);
     geom->GetOrientation(orientation);
 
     invmat = UMath::Matrix4::kIdentity;
+    SimSurface surface(defsurface);
+    unsigned short flags = geom->fFlags;
 
     if (geom->fSurface.GetValue() != 0) {
         const Attrib::Collection *surfcol = SimSurface::Lookup(geom->fSurface);
         SimSurface found(surfcol);
-        surface = found;
+        surface.Change(found.GetConstCollection());
         if (surface.GetConstCollection() == SimSurface::kNull.GetConstCollection()) {
-            surface = defsurface;
+            surface.Change(defsurface.GetConstCollection());
         }
     }
 
-    if (ischild && (geom->fFlags & kBounds_Internal)) {
+    if (ischild && (flags & kBounds_Internal)) {
         result = false;
     } else {
         if (!ischild) {
             UMath::QuaternionToMatrix4(orientation, invmat);
-            invmat[3] = UMath::Vector4Make(offset, 1.0f);
+            invmat[3].x = offset.x;
+            invmat[3].y = offset.y;
+            invmat[3].z = offset.z;
+            invmat[3].w = 1.0f;
             OrthoInverse(invmat);
             offset = UMath::Vector3::kZero;
             orientation = UMath::Vector4::kIdentity;
         }
 
-        if (geom->fFlags & (kBounds_PrimVsWorld | kBounds_PrimVsObjects | kBounds_PrimVsGround)) {
-            result = iboundable->AddCollisionPrimitive(
-                geom->fNameHash, dim, geom->fRadius, offset, surface, orientation,
-                static_cast< BoundFlags >(geom->fFlags));
+        if (flags & (kBounds_PrimVsWorld | kBounds_PrimVsObjects | kBounds_PrimVsGround)) {
+            if (iboundable->AddCollisionPrimitive(
+                    geom->fNameHash, dim, geom->fRadius, offset, surface, orientation,
+                    static_cast< BoundFlags >(flags))) {
+                result = true;
+            }
         }
 
-        if (geom->fFlags & kBounds_MeshVsGround) {
-            const PCloud *pcloud = GetPointCloud(geom);
-            if (pcloud != nullptr && pcloud->fNumVerts > 0) {
-                if (ischild) {
-                    iboundable->AddCollisionMesh(
-                        geom->fNameHash, pcloud->fPList, pcloud->fNumVerts, surface,
-                        static_cast< BoundFlags >(geom->fFlags), true);
-                } else {
-                    UMath::Vector4 tmp[16];
-                    for (int i = 0; i < pcloud->fNumVerts; i++) {
-                        UMath::Vector4 in = pcloud->fPList[i];
-                        UMath::RotateTranslate(in, invmat, tmp[i]);
-                    }
-                    iboundable->AddCollisionMesh(
-                        geom->fNameHash, tmp, pcloud->fNumVerts, surface,
-                        static_cast< BoundFlags >(geom->fFlags), false);
-                }
+        const PCloud *pcloud;
+        if ((flags & kBounds_MeshVsGround) &&
+            (pcloud = GetPointCloud(geom)) != nullptr &&
+            pcloud->fNumVerts > 0) {
+            if (ischild) {
+                iboundable->AddCollisionMesh(
+                    geom->fNameHash, pcloud->fPList, pcloud->fNumVerts, surface,
+                    static_cast< BoundFlags >(flags), true);
+            } else {
+                UMath::Vector4 tmp[16];
+                int i = 0;
+                do {
+                    UMath::Vector4 in = pcloud->fPList[i];
+                    UMath::RotateTranslate(in, invmat, tmp[i]);
+                    i++;
+                } while (i < pcloud->fNumVerts);
+                iboundable->AddCollisionMesh(
+                    geom->fNameHash, tmp, pcloud->fNumVerts, surface,
+                    static_cast< BoundFlags >(flags), false);
             }
+            result = true;
         }
     }
 
