@@ -709,6 +709,10 @@ class GRaceStatus : public UTL::COM::Object, public IVehicleCache {
         return GRaceStatus::Exists() && GRaceStatus::Get().GetRaceParameters() && GRaceStatus::Get().GetRaceParameters()->GetIsEpicPursuitRace();
     }
 
+    void PlayerPursuitInCoolDown(bool c) {
+        mPlayerPursuitInCooldown = c;
+    }
+
     float GetBinBaseHeat() const {
         return mRaceBin->GetBaseOpenWorldHeat();
     }

@@ -2525,53 +2525,51 @@ void GManager::SuspendAllBinActivities() {
 
 void GManager::UpdatePursuit() {
     IPursuit *pursuit;
-    IPerpetrator *perpetrator;
     bool roaming;
+    IPerpetrator *perp;
+    bool inPursuit;
+    bool inCooldown;
+    GRaceParameters *raceParms;
     bool challengeRace;
-    bool cooldown;
-    bool epicPursuitRace;
 
-    roaming = GRaceStatus::Get().GetPlayMode() == GRaceStatus::kPlayMode_Roaming;
+    roaming = !GRaceStatus::Get().GetPlayMode();
     pursuit = nullptr;
-    perpetrator = nullptr;
-    GetPlayerPursuitInterfaces(pursuit, perpetrator);
+    perp = nullptr;
+    inPursuit = false;
+    GetPlayerPursuitInterfaces(pursuit, perp);
 
-    cooldown = false;
+    inCooldown = false;
     if (pursuit) {
-        TrackValue("cost_to_state_in_pursuit", static_cast<float>(pursuit->CalcTotalCostToState()));
-        cooldown = pursuit->GetPursuitStatus() == 2;
+        inPursuit = true;
+        mObj->TrackValue("cost_to_state_in_pursuit", static_cast<int>(pursuit->CalcTotalCostToState()));
+        inCooldown = pursuit->GetPursuitStatus() == 2;
     }
-    reinterpret_cast<GManagerRaceStatusCompat &>(GRaceStatus::Get()).mPlayerPursuitInCooldown = cooldown;
+    GRaceStatus::Get().PlayerPursuitInCoolDown(inCooldown);
 
-    if (perpetrator) {
-        TrackValue("cost_to_state", static_cast<float>(perpetrator->GetCostToState()));
-        TrackValue("bounty_in_pursuit",
-                   static_cast<float>(perpetrator->GetPendingRepPointsNormal() +
-                                      perpetrator->GetPendingRepPointsFromCopDestruction()));
+    if (perp) {
+        mObj->TrackValue("cost_to_state", static_cast<int>(perp->GetCostToState()));
+        mObj->TrackValue("bounty_in_pursuit",
+                         static_cast<int>(perp->GetPendingRepPointsNormal() +
+                                          perp->GetPendingRepPointsFromCopDestruction()));
     }
 
+    raceParms = GRaceStatus::Get().GetRaceParameters();
     challengeRace = false;
-    if (GRaceStatus::Get().GetRaceParameters() && GRaceStatus::Get().GetRaceParameters()->GetIsChallengeSeriesRace()) {
+    if (raceParms && raceParms->GetIsChallengeSeriesRace()) {
         challengeRace = true;
     }
 
     mHidingSpotIconsShown = false;
-    if ((roaming || challengeRace) && pursuit && cooldown) {
+    if ((roaming || challengeRace) && inPursuit && inCooldown) {
         mHidingSpotIconsShown = true;
     }
 
     mPursuitBreakerIconsShown = false;
     if (!roaming && !challengeRace) {
-        epicPursuitRace = false;
-        if (GRaceStatus::Exists() && GRaceStatus::Get().GetRaceParameters() &&
-            GRaceStatus::Get().GetRaceParameters()->GetIsEpicPursuitRace()) {
-            epicPursuitRace = true;
-        }
-
-        if (epicPursuitRace && pursuit && !cooldown) {
+        if (GRaceStatus::IsFinalEpicPursuit() && inPursuit && !inCooldown) {
             mPursuitBreakerIconsShown = true;
         }
-    } else if (pursuit && !cooldown) {
+    } else if (inPursuit && !inCooldown) {
         mPursuitBreakerIconsShown = true;
     }
 
