@@ -154,10 +154,10 @@ void SFXCTL_3DObjPos::GenerateSinglePlayerMix() {
 
 single_player_mix:
     {
-        bVector2 *dir = SndCamera::GetAvgCamDir(m_PlayerRef);
         bVector2 *pos = SndCamera::GetWorldCamPos(m_PlayerRef);
-        m_pv2AzimRefPos = pos;
+        bVector2 *dir = SndCamera::GetAvgCamDir(m_PlayerRef);
         m_pv2AzimRefDir = dir;
+        m_pv2AzimRefPos = pos;
         SetCameraAngle();
         SetDMIX_Input(3, static_cast<unsigned int>(m_CameraAngle));
 
@@ -167,10 +167,10 @@ single_player_mix:
         float fDistToObj = bSqrt(distSqr);
         SetDMIX_Input(1, static_cast<int>(fDistToObj * 100.0f));
 
-        dir = SndCamera::GetNormCarDir(m_PlayerRef);
         pos = SndCamera::GetWorldCarPos(m_PlayerRef);
-        m_pv2AzimRefPos = pos;
+        dir = SndCamera::GetNormCarDir(m_PlayerRef);
         m_pv2AzimRefDir = dir;
+        m_pv2AzimRefPos = pos;
         SetCameraAngle();
         SetDMIX_Input(2, static_cast<unsigned int>(m_CameraAngle));
 
@@ -184,10 +184,10 @@ single_player_mix:
 
 ave_cam_mix:
     {
-        bVector2 *dir = SndCamera::GetNormCamDir(m_PlayerRef);
         bVector2 *pos = SndCamera::GetAveragedCamPos(m_PlayerRef);
-        m_pv2AzimRefPos = pos;
+        bVector2 *dir = SndCamera::GetNormCamDir(m_PlayerRef);
         m_pv2AzimRefDir = dir;
+        m_pv2AzimRefPos = pos;
         SetCameraAngle();
         SetDMIX_Input(3, static_cast<unsigned int>(m_CameraAngle));
 
@@ -197,10 +197,10 @@ ave_cam_mix:
         float fDistToObj = bSqrt(distSqr);
         SetDMIX_Input(1, static_cast<int>(fDistToObj * 100.0f));
 
-        dir = SndCamera::GetNormCarDir(m_PlayerRef);
         pos = SndCamera::GetWorldCarPos(m_PlayerRef);
-        m_pv2AzimRefPos = pos;
+        dir = SndCamera::GetNormCarDir(m_PlayerRef);
         m_pv2AzimRefDir = dir;
+        m_pv2AzimRefPos = pos;
         SetCameraAngle();
         SetDMIX_Input(2, static_cast<unsigned int>(m_CameraAngle));
 
@@ -214,10 +214,10 @@ ave_cam_mix:
 
 centered_car_mix:
     {
-        bVector2 *dir = SndCamera::GetNormCamDir(m_PlayerRef);
         bVector2 *pos = SndCamera::GetCenteredCarPos(m_PlayerRef);
-        m_pv2AzimRefPos = pos;
+        bVector2 *dir = SndCamera::GetNormCamDir(m_PlayerRef);
         m_pv2AzimRefDir = dir;
+        m_pv2AzimRefPos = pos;
         SetCameraAngle();
         SetDMIX_Input(2, static_cast<unsigned int>(m_CameraAngle));
 
