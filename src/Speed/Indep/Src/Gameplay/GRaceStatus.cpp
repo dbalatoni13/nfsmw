@@ -3026,7 +3026,7 @@ void GRaceStatus::Update(float dT) {
         MNotifyRaceTime(elapsed, GetIsTimeLimited(), GetRaceTimeRemaining()).Post(UCrc32(0x20D60DBF));
 
         elapsedSec = static_cast<int>(elapsed);
-        if (mLastSecondTickSent < elapsedSec) {
+        if (elapsedSec > mLastSecondTickSent) {
             mLastSecondTickSent = elapsedSec;
             MNotifyRaceTimeSecTick(elapsed).Post(UCrc32(0x20D60DBF));
         }
