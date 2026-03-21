@@ -29,7 +29,7 @@ void FEButtonMap::SetCount(unsigned long NewCount) {
     }
     pList = nullptr;
     if (NewCount != 0) {
-        pList = static_cast<FEObject**>(FEngMalloc(NewCount * 4, nullptr, 0));
+        pList = reinterpret_cast<FEObject**>(FENG_NEW char[NewCount * sizeof(FEObject*)]);
     }
     Count = NewCount;
 }
