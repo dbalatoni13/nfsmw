@@ -208,7 +208,7 @@ public:
     void Increment() { Slider.Increment(); }
     void Decrement() { Slider.Decrement(); }
     void DrawSlider() { Slider.Draw(); }
-    void ToggleSlider(bool on);
+    void ToggleSlider(bool on) { Slider.ToggleVisible(on); }
     void UpdateSlider(unsigned int msg);
     float GetVertOffset();
     void SetVertOffset(bool vertOffset);

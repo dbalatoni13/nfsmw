@@ -318,22 +318,22 @@ void FESliderWidget::Position() {
 }
 
 void FESliderWidget::Show() {
-    FEngSetVisible(reinterpret_cast<FEObject*>(pTitle));
-    FEngSetVisible(reinterpret_cast<FEObject*>(pLeftImage));
-    FEngSetVisible(reinterpret_cast<FEObject*>(pRightImage));
-    Slider.ToggleVisible(true);
-    if (pBacking) {
-        FEngSetVisible(pBacking);
+    FEngSetVisible(reinterpret_cast<FEObject*>(GetTitleObject()));
+    FEngSetVisible(reinterpret_cast<FEObject*>(GetLeftImage()));
+    FEngSetVisible(reinterpret_cast<FEObject*>(GetRightImage()));
+    ToggleSlider(true);
+    if (GetBacking()) {
+        FEngSetVisible(GetBacking());
     }
 }
 
 void FESliderWidget::Hide() {
-    FEngSetInvisible(reinterpret_cast<FEObject*>(pTitle));
-    FEngSetInvisible(reinterpret_cast<FEObject*>(pLeftImage));
-    FEngSetInvisible(reinterpret_cast<FEObject*>(pRightImage));
-    Slider.ToggleVisible(false);
-    if (pBacking) {
-        FEngSetInvisible(pBacking);
+    FEngSetInvisible(reinterpret_cast<FEObject*>(GetTitleObject()));
+    FEngSetInvisible(reinterpret_cast<FEObject*>(GetLeftImage()));
+    FEngSetInvisible(reinterpret_cast<FEObject*>(GetRightImage()));
+    ToggleSlider(false);
+    if (GetBacking()) {
+        FEngSetInvisible(GetBacking());
     }
 }
 
