@@ -2263,7 +2263,14 @@ void GRaceParameters::GetCheckpointDirection(unsigned int index, UMath::Vector3 
 GMarker *GRaceParameters::GetShortcut(unsigned int index) const {
     unsigned int collectionKey;
 
-    EnsureLoaded();
+    if (mParentVault && !mParentVault->IsLoaded()) {
+        mParentVault->LoadSyncTransient();
+    }
+
+    if (mChildVault && !mChildVault->IsLoaded()) {
+        mChildVault->LoadSyncTransient();
+    }
+
     collectionKey = mRaceRecord->Shortcuts(index).GetCollectionKey();
     return static_cast<GMarker *>(GManager::Get().FindInstance(collectionKey));
 }
@@ -2271,7 +2278,14 @@ GMarker *GRaceParameters::GetShortcut(unsigned int index) const {
 GMarker *GRaceParameters::GetBarrierExemption(unsigned int index) const {
     unsigned int collectionKey;
 
-    EnsureLoaded();
+    if (mParentVault && !mParentVault->IsLoaded()) {
+        mParentVault->LoadSyncTransient();
+    }
+
+    if (mChildVault && !mChildVault->IsLoaded()) {
+        mChildVault->LoadSyncTransient();
+    }
+
     collectionKey = mRaceRecord->BarrierExemptions(index).GetCollectionKey();
     return static_cast<GMarker *>(GManager::Get().FindInstance(collectionKey));
 }
