@@ -226,15 +226,17 @@ GVault *GManager::FindVault(const char *vaultName) {
     int upper = mVaultCount - 1;
 
     while (lower <= upper) {
-        int middle = (lower + upper) / 2;
-        int cmp = bStrCmp(vaultName, mVaults[middle].GetName());
+        int middle = (lower + upper) >> 1;
+        int compare = bStrCmp(vaultName, mVaults[middle].GetName());
 
-        if (cmp < 0) {
-            upper = middle - 1;
-        } else if (cmp > 0) {
+        if (compare > 0) {
             lower = middle + 1;
         } else {
-            return &mVaults[middle];
+            if (compare < 0) {
+                upper = middle - 1;
+            } else {
+                return &mVaults[middle];
+            }
         }
     }
 
