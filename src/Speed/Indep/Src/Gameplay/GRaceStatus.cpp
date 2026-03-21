@@ -2030,6 +2030,18 @@ int GRaceParameters::GetTrafficDensity() const {
 }
 
 bool GRaceParameters::GetIsSunsetRace() const {
+    if (mIndex) {
+        return (*reinterpret_cast<const unsigned int *>(reinterpret_cast<const char *>(mIndex) + 0x18) >> 13) & 1;
+    }
+
+    if (mParentVault && !mParentVault->IsLoaded()) {
+        mParentVault->LoadSyncTransient();
+    }
+
+    if (mChildVault && !mChildVault->IsLoaded()) {
+        mChildVault->LoadSyncTransient();
+    }
+
     return GetTimeOfDay() >= 0.8f;
 }
 
