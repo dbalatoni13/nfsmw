@@ -585,17 +585,15 @@ void EAXAemsManager::SetupNextLoad() {
         m_nCurLoadedBankIndex++;
         m_pCurLoadSDLP = g_SndAssetList + m_nCurLoadedBankIndex;
         if (InitiateLoad() < 0) {
-            struct {
-                unsigned int Hash32;
-                const char *String;
-            } FileName;
+            unsigned int Hash32;
+            const char *String;
             SndBase *SfxToDel[32];
             SndAssetQueue::iterator i;
             int deleteCount = 0;
 
-            FileName.Hash32 =
+            Hash32 =
                 *static_cast<unsigned int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pCurLoadSDLP)) + 8));
-            FileName.String =
+            String =
                 *static_cast<const char **>(static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pCurLoadSDLP)) + 0xC));
             bMemSet(SfxToDel, '\0', 0x80);
             while (true) {
@@ -607,9 +605,9 @@ void EAXAemsManager::SetupNextLoad() {
                 while (true) {
                     stSndAssetQueue currequst = *i;
                     if (*static_cast<unsigned int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(&currequst)) + 8)) ==
-                            FileName.Hash32 &&
+                            Hash32 &&
                         *static_cast<const char **>(static_cast<void *>(static_cast<char *>(static_cast<void *>(&currequst)) + 0xC)) ==
-                            FileName.String) {
+                            String) {
                         mWaitForResolve.remove(currequst);
                         SfxToDel[deleteCount] = currequst.pThis;
                         deleteCount++;
