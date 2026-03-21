@@ -2820,12 +2820,12 @@ bool GRaceStatus::CanUnspawnRoamer(const IVehicle *roamer) const {
 
 eVehicleCacheResult GRaceStatus::OnQueryVehicleCache(const IVehicle *removethis, const IVehicleCache *whosasking) const {
     if (GetPlayMode() != kPlayMode_Racing && !mVehicleCacheLocked) {
-        if (!UTL::COM::ComparePtr(whosasking, ICopMgr::Get()) && !UTL::COM::ComparePtr(whosasking, ITrafficMgr::Get())) {
-            return VCR_DONTCARE;
-        }
+        if (UTL::COM::ComparePtr(whosasking, ICopMgr::Get()) || UTL::COM::ComparePtr(whosasking, ITrafficMgr::Get())) {
+            if (!CanUnspawnRoamer(removethis)) {
+                return VCR_WANT;
+            }
 
-        if (!CanUnspawnRoamer(removethis)) {
-            return VCR_WANT;
+            return VCR_DONTCARE;
         }
 
         return VCR_DONTCARE;
