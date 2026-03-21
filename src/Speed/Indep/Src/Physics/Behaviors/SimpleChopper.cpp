@@ -124,6 +124,30 @@ Behavior *SimpleChopper::Construct(const BehaviorParams &params) {
     return new SimpleChopper(params, ep);
 }
 
+SimpleChopper::SimpleChopper(const BehaviorParams &bp, const EngineParams &ep)
+    : VehicleBehavior(bp, 0), //
+      ISimpleChopper(bp.fowner), //
+      mChopperSpecs(this, 0), //
+      mVehicleSpecs(this, 0) {
+    (void)ep;
+
+    mIrigidBody = nullptr;
+    mIrbComplex = nullptr;
+    mIdamage = nullptr;
+    mMaxDecelFlag = false;
+
+    GetOwner()->QueryInterface(&mIrigidBody);
+    GetOwner()->QueryInterface(&mIrbComplex);
+    GetOwner()->QueryInterface(&mIdamage);
+
+    mLastBodyOffset = UMath::Vector3::kZero;
+    mLastAngVelocity = UMath::Vector3::kZero;
+    mLastAccelVector = UMath::Vector3::kZero;
+    mDesiredVelocity = UMath::Vector3::kZero;
+    mPreviousVelocity = UMath::Vector3::kZero;
+    mDesiredFacingVector = UMath::Vector3::kZero;
+}
+
 void SimpleChopper::Reset() {}
 
 void SimpleChopper::OnBehaviorChange(const UCrc32 &mechanic) {
