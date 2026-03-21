@@ -1630,10 +1630,10 @@ void GManager::RefreshEngageTriggerIcons() {
             bool complete = GRaceDatabase::Get().IsCareerRaceComplete(raceParms->GetEventHash());
             bool unlocked = GRaceDatabase::Get().IsCareerRaceUnlocked(raceParms->GetEventHash());
 
-            if (!unlocked || complete) {
-                trigger->HideIcon();
-            } else {
+            if (unlocked && !complete) {
                 trigger->ShowIcon();
+            } else {
+                trigger->HideIcon();
             }
         }
 
