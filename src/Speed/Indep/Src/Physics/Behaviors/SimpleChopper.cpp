@@ -131,7 +131,6 @@ SimpleChopper::SimpleChopper(const BehaviorParams &bp, const EngineParams &ep)
       mVehicleSpecs(this, 0) {
     (void)ep;
 
-    mMaxDecelFlag = false;
     mIrigidBody = nullptr;
     mIrbComplex = nullptr;
     mIdamage = nullptr;
@@ -140,30 +139,14 @@ SimpleChopper::SimpleChopper(const BehaviorParams &bp, const EngineParams &ep)
     GetOwner()->QueryInterface(&mIrbComplex);
     GetOwner()->QueryInterface(&mIdamage);
 
-    mDesiredFacingVector.y = 0.0f;
-
-    mLastBodyOffset.x = 0.0f;
-    mLastBodyOffset.z = 0.0f;
-    mLastBodyOffset.y = 0.0f;
-
-    mLastAngVelocity.x = 0.0f;
-    mLastAngVelocity.z = 0.0f;
-    mLastAngVelocity.y = 0.0f;
-
-    mLastAccelVector.x = 0.0f;
-    mLastAccelVector.z = 0.0f;
-    mLastAccelVector.y = 0.0f;
-
-    mDesiredVelocity.x = 0.0f;
-    mDesiredVelocity.z = 0.0f;
-    mDesiredVelocity.y = 0.0f;
-
-    mPreviousVelocity.x = 0.0f;
-    mPreviousVelocity.z = 0.0f;
-    mPreviousVelocity.y = 0.0f;
-
-    mDesiredFacingVector.x = 0.0f;
-    mDesiredFacingVector.z = 0.0f;
+    *reinterpret_cast<uint32 *>(&mDesiredFacingVector.z) = 0;
+    UMath::Clear(mLastBodyOffset);
+    UMath::Clear(mLastAngVelocity);
+    UMath::Clear(mLastAccelVector);
+    UMath::Clear(mDesiredVelocity);
+    UMath::Clear(mPreviousVelocity);
+    *reinterpret_cast<uint32 *>(&mDesiredFacingVector.x) = 0;
+    *reinterpret_cast<uint32 *>(&mDesiredFacingVector.y) = 0;
 }
 
 void SimpleChopper::Reset() {}
