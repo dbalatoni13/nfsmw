@@ -232,7 +232,7 @@ void GCDrawMovie() {
 
 void PlatSetFirstMovieFrame(TextureInfo *texture_info, RealShape::Shape *yuv_shape, bool isVP6Movie) {
     if (!gGCVD) {
-        gGCVD = new GCHW_VD(yuv_shape, isVP6Movie);
+        gGCVD = ::new (__FILE__, __LINE__) GCHW_VD(yuv_shape, isVP6Movie);
     }
 }
 
