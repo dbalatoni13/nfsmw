@@ -228,7 +228,7 @@ void SFXCTL_Shifting::UpdateGearShiftState(float t) {
                 float currpm = bClamp(static_cast<float>(RPMOffset) + m_RPMGraph.GetValue(t_CurStage), 1000.0f, 10000.0f);
                 m_InterpShiftRPM.Initialize(currpm, currpm, 0, LINEAR);
 
-                int CurGear = bClamp(static_cast<int>(m_pEAXCar->GetCurGear()) + Sound::SPORT_SHIFT, 0, 3);
+                int CurGear = bClamp(m_pEAXCar->CurGear + Sound::SPORT_SHIFT, 0, 3);
                 m_InterpShiftTorque.Initialize(kUpShiftTrqAttachInitialPercent[CurGear] * m_pEngineCtl->m_pPhysicsCtl->GetPhysTRQ(),
                                                m_pEngineCtl->m_pPhysicsCtl->GetPhysTRQ(), kUpShiftTrqAttackTime[CurGear],
                                                LINEAR);
