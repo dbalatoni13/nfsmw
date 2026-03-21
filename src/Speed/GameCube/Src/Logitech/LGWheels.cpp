@@ -323,13 +323,13 @@ bool LGWheels::PedalsConnected(long channel) {
 }
 
 void LGWheels::PlayAutoCalibAndSpringForce(long channel) {
-    if (LGWheelsGetWheels(this)->IsConnected(channel) && !LGWheelsGetIsAirborne(this, channel)) {
-        if (LGWheelsGetEffectID(LGWheelsGetPeriodic(this), channel, 4) == static_cast<unsigned long>(-1)) {
+    if (LGWheelsGetWheels(this)->IsConnected(channel) && *reinterpret_cast<int *>(reinterpret_cast<char *>(this) + channel * 4 + 0x166C) == 0) {
+        if (*reinterpret_cast<unsigned long *>(reinterpret_cast<char *>(this) + channel * 0x20 + 0x1438) == static_cast<unsigned long>(-1)) {
             LGWheelsGetPeriodic(this)->DownloadForce(channel, 4, LGWheelsGetWheelHandle(this, channel), 3, 2200, 0, 180, 90, 2200, 0, 0, 0, 0, 0, 0);
             LGWheelsGetPeriodic(this)->Start(channel, 4);
         }
 
-        if (LGWheelsGetEffectID(LGWheelsGetCondition(this), channel, 0) == static_cast<unsigned long>(-1)) {
+        if (*reinterpret_cast<unsigned long *>(reinterpret_cast<char *>(this) + channel * 0x20 + 0x1228) == static_cast<unsigned long>(-1)) {
             LGWheelsGetCondition(this)->DownloadForce(channel, 0, LGWheelsGetWheelHandle(this, channel), 7, static_cast<unsigned long>(-1), 2200, 0, 0, 180, 180, 180, 180);
             LGWheelsGetCondition(this)->Start(channel, 0);
         }
