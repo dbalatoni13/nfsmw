@@ -370,14 +370,21 @@ unsigned int ClipBottom(bVector3 *pDst, bVector2 *pDstUVs, bVector4 *pDstColors,
 unsigned int FERenderObject::ClipAligned(FEClipInfo *pClipInfo, bVector3 *v, bVector2 *uv,
                                          bVector4 *colors, bVector3 *nv, bVector2 *nuv,
                                          bVector4 *ncolors) {
-    unsigned int num_verts;
-    num_verts = ClipLeft(nv, nuv, ncolors, v, uv, colors, 4, pClipInfo->constants[3]);
+    bVector3 *pDst = nv;
+    bVector2 *pDstUVs = nuv;
+    bVector4 *pDstColors = ncolors;
+    bVector3 *pSrc = v;
+    bVector2 *pSrcUVs = uv;
+    bVector4 *pSrcColors = colors;
+    unsigned long num_verts;
+
+    num_verts = ClipLeft(pDst, pDstUVs, pDstColors, pSrc, pSrcUVs, pSrcColors, 4, pClipInfo->constants[3]);
     if (!num_verts) return 0;
-    num_verts = ClipTop(v, uv, colors, nv, nuv, ncolors, num_verts, pClipInfo->constants[0]);
+    num_verts = ClipTop(pSrc, pSrcUVs, pSrcColors, pDst, pDstUVs, pDstColors, num_verts, pClipInfo->constants[0]);
     if (!num_verts) return 0;
-    num_verts = ClipRight(nv, nuv, ncolors, v, uv, colors, num_verts, pClipInfo->constants[1]);
+    num_verts = ClipRight(pDst, pDstUVs, pDstColors, pSrc, pSrcUVs, pSrcColors, num_verts, pClipInfo->constants[1]);
     if (!num_verts) return 0;
-    num_verts = ClipBottom(v, uv, colors, nv, nuv, ncolors, num_verts, pClipInfo->constants[2]);
+    num_verts = ClipBottom(pSrc, pSrcUVs, pSrcColors, pDst, pDstUVs, pDstColors, num_verts, pClipInfo->constants[2]);
     if (!num_verts) return 0;
     return num_verts;
 }
