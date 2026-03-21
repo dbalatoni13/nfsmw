@@ -640,8 +640,8 @@ bool GRacerInfo::IsBehind(const GRacerInfo &rhs) const {
 
 #ifndef EA_BUILD_A124
     if (GetDNF()) {
-        if (rhs.GetDNF()) {
-            return rhs.GetPctRaceComplete() < GetPctRaceComplete();
+        if (!rhs.GetDNF()) {
+            return GetPctRaceComplete() > rhs.GetPctRaceComplete();
         }
     }
 #endif
