@@ -260,16 +260,14 @@ void ClearXenonEmitters() {
 
 void AddXenonEffect(EmitterGroup *piggyback_fx, const Attrib::Collection *spec, const UMath::Matrix4 *mat, const UMath::Vector4 *vel) {
     XenonEffectDef eDef;
-    XenonEffectStdVector &active = gNGEffectList.lists[XenonEffectLists::ACTIVE];
-    XenonEffectStdVector &staging = gNGEffectList.lists[XenonEffectLists::STAGING];
 
-    if (active.size() < 20) {
-        if (active.capacity() < 20) {
-            active.reserve(20);
+    if (gNGEffectList.lists[XenonEffectLists::ACTIVE].size() < 20) {
+        if (gNGEffectList.lists[XenonEffectLists::ACTIVE].capacity() < 20) {
+            gNGEffectList.lists[XenonEffectLists::ACTIVE].reserve(20);
         }
 
-        if (staging.capacity() < 20) {
-            staging.reserve(20);
+        if (gNGEffectList.lists[XenonEffectLists::STAGING].capacity() < 20) {
+            gNGEffectList.lists[XenonEffectLists::STAGING].reserve(20);
         }
 
         eDef.mat = UMath::Matrix4::kIdentity;
@@ -278,7 +276,7 @@ void AddXenonEffect(EmitterGroup *piggyback_fx, const Attrib::Collection *spec, 
         eDef.spec = spec;
         eDef.vel = *vel;
 
-        active.push_back(eDef);
+        gNGEffectList.lists[XenonEffectLists::ACTIVE].push_back(eDef);
     }
 }
 
