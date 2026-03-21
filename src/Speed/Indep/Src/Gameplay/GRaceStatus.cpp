@@ -4087,7 +4087,7 @@ float GRaceStatus::GetBestSpeedTrapSpeed(int racerIndex) {
     for (int onSpeedtrap = 1; onSpeedtrap < GetNumRaceSpeedTraps(); ++onSpeedtrap) {
         float speedtrapSpeed = GetRaceSpeedTrapSpeed(onSpeedtrap, racerIndex);
 
-        if (speedtrapSpeed > 0.0f && speedtrapSpeed > bestSpeedtrapSpeed) {
+        if (speedtrapSpeed > 0.0f && speedtrapSpeed < bestSpeedtrapSpeed) {
             bestSpeedtrapSpeed = speedtrapSpeed;
         }
     }
@@ -4101,7 +4101,7 @@ float GRaceStatus::GetWorstSpeedTrapSpeed(int racerIndex) {
     for (int onSpeedtrap = 1; onSpeedtrap < GetNumRaceSpeedTraps(); ++onSpeedtrap) {
         float speedtrapSpeed = GetRaceSpeedTrapSpeed(onSpeedtrap, racerIndex);
 
-        if (speedtrapSpeed > 0.0f && speedtrapSpeed < worstSpeedtrapSpeed) {
+        if (speedtrapSpeed > 0.0f && speedtrapSpeed > worstSpeedtrapSpeed) {
             worstSpeedtrapSpeed = speedtrapSpeed;
         }
     }
