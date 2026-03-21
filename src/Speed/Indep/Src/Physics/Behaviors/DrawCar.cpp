@@ -75,6 +75,30 @@ void DrawRaceCar::OnBehaviorChange(const UCrc32 &mechanic) {
     DrawPerformanceCar::OnBehaviorChange(mechanic);
 }
 
+bool DrawCar::IsHidden() const {
+    return mHidden || DrawVehicle::IsHidden() || mRenderService;
+}
+
+void DrawCar::HideModel() {
+    DrawVehicle::HideModel();
+    mHidden = true;
+}
+
+void DrawCar::ReleaseModel() {
+    DrawVehicle::ReleaseModel();
+    if (mRenderService) {
+        CloseService(mRenderService);
+        mRenderService = 0;
+    }
+}
+
+void DrawCar::ReleaseChildModels() {
+    DrawVehicle::ReleaseChildModels();
+    if (!mParts.empty()) {
+        mParts.clear();
+    }
+}
+
 bool DrawCar::InView() const {
     return mInView;
 }
