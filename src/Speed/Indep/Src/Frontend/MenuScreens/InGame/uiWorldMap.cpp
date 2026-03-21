@@ -375,7 +375,11 @@ WorldMap::~WorldMap() {
 
 void WorldMap::NotificationMessage(unsigned long msg, FEObject* obj, unsigned long param1,
                                    unsigned long param2) {
+#ifdef EA_PLATFORM_PLAYSTATION2
+    unsigned long message = msg;
+#else
     register unsigned long message asm("r30") = msg;
+#endif
     UMath::Vector3 pos;
 
     if (!bInToggleMode) {

@@ -397,42 +397,94 @@ void FEPackageReader::ProcessStringTag(FETag* pTag) {
     }
 }
 
+#ifndef EA_BUILD_A124
+static void FEPackageReaderInitializeCodeList(FECodeListBox* pList, FETag* pTag) {
+    pList->Initialize(pTag->Getu32(0), pTag->Getu32(1));
+}
+
+static void FEPackageReaderSetCodeListViewDimensions(FECodeListBox* pList, FETag* pTag) {
+    FEPoint pt;
+    pt.h = pTag->Getf32(0);
+    pt.v = pTag->Getf32(1);
+    pList->mstViewDimensions.h = pt.h;
+    pList->mstViewDimensions.v = pt.v;
+}
+
+static void FEPackageReaderAllocateCodeListStrings(FECodeListBox* pList, FETag* pTag) {
+    pList->AllocateStrings(pTag->Getu32(0), pTag->Getu32(1));
+}
+
+static void FEPackageReaderSetCodeListFlags(FECodeListBox* pList, FETag* pTag) {
+    pList->mulFlags &= 1;
+    pList->mulFlags |= pTag->Getu32(0) & 0xFFFFFFFE;
+}
+
+static void FEPackageReaderSetCodeListJustification(FECodeListBox* pList, FETag* pTag) {
+    unsigned long justification = pTag->Getu32(0);
+    unsigned long num_visible_columns = pList->mulNumVisibleColumns;
+    unsigned long num_visible_rows = pList->mulNumVisibleRows;
+    pList->SetCellJustification(0, 0, justification, num_visible_columns, num_visible_rows);
+}
+
+static void FEPackageReaderSetCodeListColor(FECodeListBox* pList, FETag* pTag) {
+    unsigned long color = pTag->Getu32(0);
+    unsigned long num_visible_columns = pList->mulNumVisibleColumns;
+    unsigned long num_visible_rows = pList->mulNumVisibleRows;
+    pList->SetCellColor(0, 0, color, num_visible_columns, num_visible_rows);
+}
+
+static void FEPackageReaderSetCodeListScale(FECodeListBox* pList, FETag* pTag) {
+    FEPoint scale;
+    unsigned long num_visible_columns = pList->mulNumVisibleColumns;
+    unsigned long num_visible_rows = pList->mulNumVisibleRows;
+    scale.h = pTag->Getf32(0);
+    scale.v = pTag->Getf32(1);
+    pList->SetCellScale(0, 0, scale, num_visible_columns, num_visible_rows);
+}
+#endif
+
 void FEPackageReader::ProcessCodeListBoxTag(FETag* pTag) {
+#ifdef EA_BUILD_A124
+    (void)pTag;
+    return;
+#else
     FECodeListBox* pList = static_cast<FECodeListBox*>(pObj);
     unsigned short tagID = pTag->GetID();
-    switch (tagID) {
-        case 0x444c:
-            pList->Initialize(pTag->Getu32(0), pTag->Getu32(1));
-            break;
-        case 0x764c: {
-            FEPoint pt;
-            pt.h = pTag->Getf32(0);
-            pt.v = pTag->Getf32(1);
-            pList->mstViewDimensions.h = pt.h;
-            pList->mstViewDimensions.v = pt.v;
-            break;
-        }
-        case 0x4953:
-            pList->AllocateStrings(pTag->Getu32(0), pTag->Getu32(1));
-            break;
-        case 0x744c:
-            pList->mulFlags &= 1;
-            pList->mulFlags |= pTag->Getu32(0) & 0xFFFFFFFE;
-            break;
-        case 0x6a4c:
-            pList->SetCellJustification(0, 0, pTag->Getu32(0), pList->mulNumVisibleColumns, pList->mulNumVisibleRows);
-            break;
-        case 0x6343:
-            pList->SetCellColor(0, 0, pTag->Getu32(0), pList->mulNumVisibleColumns, pList->mulNumVisibleRows);
-            break;
-        case 0x7343: {
-            FEPoint scale;
-            scale.h = pTag->Getf32(0);
-            scale.v = pTag->Getf32(1);
-            pList->SetCellScale(0, 0, scale, pList->mulNumVisibleColumns, pList->mulNumVisibleRows);
-            break;
-        }
+    if (tagID == 0x444c) {
+        FEPackageReaderInitializeCodeList(pList, pTag);
+        return;
     }
+
+    if (tagID == 0x764c) {
+        FEPackageReaderSetCodeListViewDimensions(pList, pTag);
+        return;
+    }
+
+    if (tagID == 0x4953) {
+        FEPackageReaderAllocateCodeListStrings(pList, pTag);
+        return;
+    }
+
+    if (tagID == 0x744c) {
+        FEPackageReaderSetCodeListFlags(pList, pTag);
+        return;
+    }
+
+    if (tagID == 0x6a4c) {
+        FEPackageReaderSetCodeListJustification(pList, pTag);
+        return;
+    }
+
+    if (tagID == 0x6343) {
+        FEPackageReaderSetCodeListColor(pList, pTag);
+        return;
+    }
+
+    if (tagID == 0x7343) {
+        FEPackageReaderSetCodeListScale(pList, pTag);
+        return;
+    }
+#endif
 }
 
 bool FEPackageReader::ReadMessageResponseTags(FETag* pTag, unsigned long Length, bool bPackage) {
@@ -521,6 +573,10 @@ bool FEPackageReader::ReadMessageTargetListChunk() {
 }
 
 void FEPackageReader::ProcessListBoxTag(FETag* pTag) {
+#ifdef EA_BUILD_A124
+    (void)pTag;
+    return;
+#else
     FEListBox* pList = static_cast<FEListBox*>(pObj);
     int idx;
     unsigned short tagID = pTag->GetID();
@@ -625,6 +681,7 @@ void FEPackageReader::ProcessListBoxTag(FETag* pTag) {
         default:
             return;
     }
+#endif
 }
 
 bool FEPackageReader::ReadObjectChunk() {

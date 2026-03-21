@@ -878,8 +878,13 @@ void PostRaceResultsScreen::SetupLapStats(int racerIndex, GRacerInfo *racer_info
     switch (mRaceType) {
     case GRace::kRaceType_P2P:
     case GRace::kRaceType_Drag: {
+#ifdef EA_BUILD_A124
+        const float split_times[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+        const int split_rankings[4] = {0, 0, 0, 0};
+#else
         const float *split_times = racer_info->GetSplitTimes();
         const int *split_rankings = racer_info->GetSplitRankings();
+#endif
 
         for (int i = 0; i < 4; ++i) {
             RacerStats[racerIndex].AddStat(new ("", 0)

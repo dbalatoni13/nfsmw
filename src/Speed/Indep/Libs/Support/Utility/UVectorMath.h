@@ -658,7 +658,6 @@ inline void VU0_v4unitxyz(const UMath::Vector4 &a, UMath::Vector4 &result) {
 inline float IntAsFloat(const int &i) {
     return *reinterpret_cast<const float *>(&i);
 }
-#endif
 
 inline float V3DistanceSquared(const UMath::Vector3 &a, const UMath::Vector3 &b) {
     float dx = a.x - b.x;
@@ -671,5 +670,6 @@ inline float V3DistanceSquared(const UMath::Vector3 &a, const UMath::Vector3 &b)
 // TODO where to put these? TODO only one of them uses IntAsFloat actually
 static const float kFloatScaleUp = IntAsFloat(0x00800000);
 static const float kFloatScaleDown = 1.0f / kFloatScaleUp;
+#endif
 
 #endif

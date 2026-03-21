@@ -655,7 +655,11 @@ class cFrontendDatabase {
     }
 
     static void *operator new(unsigned int size, unsigned int alloc_params) {
+#ifdef MILESTONE_OPT
+        return bMalloc(size, __FILE__, __LINE__, alloc_params);
+#else
         return bMalloc(size, alloc_params);
+#endif
     }
 
     cFrontendDatabase();

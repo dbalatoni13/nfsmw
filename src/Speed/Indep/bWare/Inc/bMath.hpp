@@ -247,7 +247,7 @@ struct bVector2 {
 
     int operator==(const bVector2 &v);
 
-    // bVector2 &operator=(const bVector2 &v) {} // compiler generated? shown in dwarf
+    bVector2 &operator=(const bVector2 &v);
 
     // bVector2(const bVector2 &v) {} // compiler generated
 
@@ -331,17 +331,7 @@ inline bVector2 &bVector2::operator*=(float scale) {
     return *this;
 }
 
-inline bVector2 bVector2::operator+(const bVector2 &v) {
-    float x1 = this->x;
-    float y1 = this->y;
-    float x2 = v.x;
-    float y2 = v.y;
-    float _x = x1 + x2;
-    float _y = y1 + y2;
-    return bVector2(_x, _y);
-}
-
-inline bVector2 bVector2::operator*(float f) {
+inline bVector2 bVector2::operator*(float f) const {
     return bScale(*this, f);
 }
 

@@ -12,6 +12,10 @@
 
 #ifdef MILESTONE_OPT
 void *bMalloc(int size, const char *debug_text, int debug_line, int allocation_params);
+
+inline void *bMalloc(int size, int allocation_params) {
+    return bMalloc(size, nullptr, 0, allocation_params);
+}
 #else
 void *bMalloc(int size, int allocation_params);
 

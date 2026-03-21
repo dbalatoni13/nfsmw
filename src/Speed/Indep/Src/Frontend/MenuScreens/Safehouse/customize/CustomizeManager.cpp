@@ -58,6 +58,7 @@ struct CarPart {
 
 // These wrappers are header-inlined in the repo, but the original overlay still emits
 // standalone copies that zFeOverlay compares against.
+#ifndef EA_PLATFORM_PLAYSTATION2
 asm(
     ".globl GetCarTypeInfo__F7CarType\n"
     "GetCarTypeInfo__F7CarType:\n"
@@ -98,6 +99,7 @@ asm(
     "IsJunkmanPart__14SelectablePart:\n"
     "lwz 3, 0x24(3)\n"
     "blr\n");
+#endif
 
 int CarCustomizeManager::GetNumPackages(Physics::Upgrades::Type type) {
     return Physics::Upgrades::GetMaxLevel(ThePVehicle, type);

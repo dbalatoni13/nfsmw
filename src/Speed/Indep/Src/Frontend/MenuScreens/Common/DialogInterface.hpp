@@ -47,14 +47,14 @@ struct DialogInterface {
     static void DismissDialog(int handle);
 
     static int ShowOk(const char *from_pkg, const char *dlg_pkg, eDialogTitle title,
-                      const char *fmt, __va_list_tag *arg_list);
+                      const char *fmt, va_list *arg_list);
     static int ShowOk(const char *from_pkg, const char *dlg_pkg, eDialogTitle title,
                       unsigned int message_hash, ...);
 
     static int ShowOneButton(const char *from_pkg, const char *dlg_pkg, eDialogTitle title,
                              unsigned int button_text_hash, unsigned int button_pressed_message,
                              unsigned int cancel_message, bool dismissable,
-                             const char *fmt, __va_list_tag *arg_list);
+                             const char *fmt, va_list *arg_list);
     static int ShowOneButton(const char *from_pkg, const char *dlg_pkg, eDialogTitle title,
                              unsigned int button_text_hash, unsigned int button_pressed_message,
                              unsigned int cancel_message, unsigned int blurb_fmt, ...);
@@ -67,7 +67,7 @@ struct DialogInterface {
                               unsigned int button1_pressed_message, unsigned int button2_pressed_message,
                               unsigned int cancel_message, bool dismissable,
                               eDialogFirstButtons first_button,
-                              const char *fmt, __va_list_tag *arg_list);
+                              const char *fmt, va_list *arg_list);
     static int ShowTwoButtons(const char *from_pkg, const char *dlg_pkg, eDialogTitle title,
                               unsigned int button1_text_hash, unsigned int button2_text_hash,
                               unsigned int button1_pressed_message, unsigned int button2_pressed_message,
@@ -89,7 +89,7 @@ struct DialogInterface {
                                 unsigned int button1_pressed_message, unsigned int button2_pressed_message,
                                 unsigned int button3_pressed_message, unsigned int cancel_message,
                                 eDialogFirstButtons first_button,
-                                const char *fmt, __va_list_tag *arg_list);
+                                 const char *fmt, va_list *arg_list);
     static int ShowThreeButtons(const char *from_pkg, const char *dlg_pkg, eDialogTitle title,
                                 unsigned int button1_text_hash, unsigned int button2_text_hash,
                                 unsigned int button3_text_hash,
