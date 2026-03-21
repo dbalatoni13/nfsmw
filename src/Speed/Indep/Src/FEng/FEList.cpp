@@ -136,13 +136,13 @@ FEMinNode* FEMinList::RemHead() {
 }
 
 FEMinNode* FEMinList::FindNode(unsigned long ordinalnumber) const {
-    FEMinNode* node = head;
     unsigned long i = 0;
-    while (node && i != ordinalnumber) {
-        node = node->next;
+    FEMinNode* n = GetHead();
+    while (n && i != ordinalnumber) {
+        n = n->GetNext();
         i++;
     }
-    return node;
+    return n;
 }
 
 FENode* FEList::FindNode(const char* pName, FENode* node) const {
