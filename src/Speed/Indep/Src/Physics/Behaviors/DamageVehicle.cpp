@@ -4,6 +4,7 @@
 #include "Speed/Indep/Src/Interfaces/Simables/IArticulatedVehicle.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IDamageable.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IEngineDamage.h"
+#include "Speed/Indep/Src/Interfaces/SimModels/IModel.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
 #include "Speed/Indep/Src/Sim/Simulation.h"
@@ -14,6 +15,12 @@ UCrc32 GetSystemName(DamageZone::ID zone);
 UCrc32 GetDamageStimulus(unsigned int level);
 UCrc32 GetImpactStimulus(unsigned int level);
 } // namespace DamageZone
+
+HINTERFACE IModel::_IHandle() {
+    return (HINTERFACE)_IHandle;
+}
+
+IModel::~IModel() {}
 
 IDamageable::~IDamageable() {}
 

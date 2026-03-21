@@ -1,7 +1,9 @@
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/chopperspecs.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/engine.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/induction.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/nos.h"
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/pvehicle.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/tires.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/transmission.h"
 #include "Speed/Indep/Src/Generated/Events/EEngineBlown.hpp"
@@ -409,6 +411,8 @@ EngineRacer::~EngineRacer() {
 template BehaviorSpecsPtr<Attrib::Gen::nos>::~BehaviorSpecsPtr();
 template BehaviorSpecsPtr<Attrib::Gen::induction>::~BehaviorSpecsPtr();
 template BehaviorSpecsPtr<Attrib::Gen::engine>::~BehaviorSpecsPtr();
+template BehaviorSpecsPtr<Attrib::Gen::chopperspecs>::~BehaviorSpecsPtr();
+template BehaviorSpecsPtr<Attrib::Gen::pvehicle>::~BehaviorSpecsPtr();
 
 float EngineRacer::GetHorsePower() const {
     float engine_torque = GetEngineTorque(mRPM);

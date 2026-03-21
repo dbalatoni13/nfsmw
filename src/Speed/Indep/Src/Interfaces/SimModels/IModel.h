@@ -27,13 +27,11 @@ class IModel : public UTL::COM::IUnknown, public UTL::Collections::Instanceable<
         virtual bool OnModel(IModel *model);
     };
 
-    static HINTERFACE _IHandle() {
-        return (HINTERFACE)_IHandle;
-    }
+    static HINTERFACE _IHandle();
 
     IModel(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
 
-    virtual ~IModel() {}
+    virtual ~IModel();
 
     virtual void OnProcessFrame(float dT);
     virtual UCrc32 GetPartName() const;
