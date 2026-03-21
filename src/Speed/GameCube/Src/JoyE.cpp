@@ -209,8 +209,8 @@ int ActualReadJoystickData() {
                             reinterpret_cast<LGPosition *>(plat_lgwheels)[port].accelerator;
                         joy_data->ThePadData[0].AnalogLeftY = reinterpret_cast<LGPosition *>(plat_lgwheels)[port].brake;
                     } else {
-                        joy_data->ThePadData[0].AnalogLeftY = 0;
                         joy_data->ThePadData[0].AnalogRightY = 0;
+                        joy_data->ThePadData[0].AnalogLeftY = 0;
                     }
 
                     joy_data->ThePadData[0].LTrigger = reinterpret_cast<LGPosition *>(plat_lgwheels)[port].triggerLeft;
