@@ -500,6 +500,20 @@ def filter_dwarf_scan_rows(
     return [row for row in rows if row["dwarf_status"] == dwarf_status]
 
 
+def filter_dwarf_signature_rows(
+    rows: Sequence[Dict[str, Any]], signature_status: str
+) -> List[Dict[str, Any]]:
+    if signature_status == "all":
+        return list(rows)
+    want_match = signature_status == "match"
+    return [
+        row
+        for row in rows
+        if row.get("signature_match") is not None
+        and bool(row["signature_match"]) == want_match
+    ]
+
+
 def sort_dwarf_scan_rows(rows: List[Dict[str, Any]]) -> None:
     status_rank = {"error": 0, "mismatch": 1, "exact": 2}
     rows.sort(
@@ -508,6 +522,11 @@ def sort_dwarf_scan_rows(rows: List[Dict[str, Any]]) -> None:
             row["dwarf_match_percent"]
             if row["dwarf_match_percent"] is not None
             else -1.0,
+            0
+            if row.get("signature_match") is True
+            else 1
+            if row.get("signature_match") is False
+            else 2,
             -(row["changed_groups"] or 0),
             -(row["unmatched_bytes_est"] or 0),
             row["objdiff_match_percent"]
@@ -581,9 +600,15 @@ def command_dwarf_scan(args: argparse.Namespace) -> None:
                 if row["objdiff_status"] == "match"
                 and row["dwarf_status"] in ("mismatch", "error")
             ),
+            "signature_mismatch_functions": sum(
+                1 for row in scan_rows if row.get("signature_match") is False
+            ),
         }
 
         filtered_rows = filter_dwarf_scan_rows(scan_rows, args.dwarf_status)
+        filtered_rows = filter_dwarf_signature_rows(
+            filtered_rows, args.signature_status
+        )
         sort_dwarf_scan_rows(filtered_rows)
         if args.limit is not None:
             filtered_rows = filtered_rows[: args.limit]
@@ -611,6 +636,10 @@ def command_dwarf_scan(args: argparse.Namespace) -> None:
             "Byte-matched but DWARF-problem functions: "
             f"{summary['byte_matched_dwarf_problems']}"
         )
+        print(
+            "Signature-mismatch functions: "
+            f"{summary['signature_mismatch_functions']}"
+        )
 
         if not filtered_rows:
             print("No functions match the given filters.")
@@ -618,7 +647,7 @@ def command_dwarf_scan(args: argparse.Namespace) -> None:
 
         print()
         print(
-            f"{'DSTAT':<8} {'DWARF':>7} {'CHG':>4} {'OBJ':>7} {'OSTAT':<10} {'UNM':>6} FUNCTION"
+            f"{'DSTAT':<8} {'DWARF':>7} {'SIG':>3} {'CHG':>4} {'OBJ':>7} {'OSTAT':<10} {'UNM':>6} FUNCTION"
         )
         print("-" * 120)
         for row in filtered_rows:
@@ -635,8 +664,15 @@ def command_dwarf_scan(args: argparse.Namespace) -> None:
             changed_groups = (
                 str(row["changed_groups"]) if row["changed_groups"] is not None else "-"
             )
+            signature_state = (
+                "yes"
+                if row.get("signature_match") is True
+                else "no"
+                if row.get("signature_match") is False
+                else "-"
+            )
             print(
-                f"{row['dwarf_status']:<8} {dwarf_percent:>7} {changed_groups:>4} "
+                f"{row['dwarf_status']:<8} {dwarf_percent:>7} {signature_state:>3} {changed_groups:>4} "
                 f"{objdiff_percent:>7} {row['objdiff_status']:<10} "
                 f"{row['unmatched_bytes_est']:>5}B {row['function']}"
             )
@@ -650,6 +686,11 @@ def command_dwarf_scan(args: argparse.Namespace) -> None:
             "`python tools/decomp-workflow.py dwarf-scan "
             f"-u {shlex.quote(args.unit)} --objdiff-status match`"
         )
+        if summary["signature_mismatch_functions"]:
+            print(
+                "Tip: add `--signature-status match` to focus body/local DWARF mismatches "
+                "instead of signature-only trouble."
+            )
     finally:
         if cleanup_rebuilt_dwarf:
             maybe_remove(rebuilt_dwarf_path)
@@ -1547,6 +1588,12 @@ def build_parser() -> argparse.ArgumentParser:
         choices=["all", "problem", "exact", "mismatch", "error"],
         default="problem",
         help="Filter scan results by DWARF outcome after scanning (default: problem)",
+    )
+    dwarf_scan.add_argument(
+        "--signature-status",
+        choices=["all", "match", "mismatch"],
+        default="all",
+        help="Filter scan results by whether the DWARF signature already matches (default: all)",
     )
     dwarf_scan.add_argument(
         "--limit",
