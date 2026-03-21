@@ -432,83 +432,63 @@ template GObjectIterator<GActivity>::GObjectIterator(unsigned int flagMask);
 template void GObjectIterator<GActivity>::Advance();
 
 void GActivity::SerializeVars(bool abandonLuaTable) {
-    SerializedHeader header;
-    ObjectStateBlockHeader *block;
+    const char *activityName;
     const char *stateName;
-    bool isDoneState;
+    unsigned int stateNameLen;
+    bool terminalState;
+    SerializedHeader header;
+    lua_State *luaState;
+    int prevStackTop;
+    unsigned int footprint;
+    unsigned char *buffer;
 
     if (!mVarsInLuaVM) {
         return;
     }
 
+    activityName = CollectionName();
     stateName = "";
     if (mCurrentState) {
-        const char *const *stateNamePtr = reinterpret_cast<const char *const *>(mCurrentState->GetAttributePointer(0x3E225EC1, 0));
-
-        if (!stateNamePtr) {
-            stateNamePtr = reinterpret_cast<const char *const *>(Attrib::DefaultDataArea(sizeof(const char *)));
-        }
-
-        stateName = *stateNamePtr;
+        stateName = mCurrentState->Name(0);
     }
 
-    isDoneState = false;
+    terminalState = false;
+    stateNameLen = bStrLen(stateName);
     if (mCurrentState) {
-        const char *const *stateNamePtr = reinterpret_cast<const char *const *>(mCurrentState->GetAttributePointer(0x3E225EC1, 0));
-
-        if (!stateNamePtr) {
-            stateNamePtr = reinterpret_cast<const char *const *>(Attrib::DefaultDataArea(sizeof(const char *)));
-        }
-
-        if (bStrCmp(*stateNamePtr, "done") == 0) {
-            isDoneState = true;
-        }
+        terminalState = bStrCmp(mCurrentState->Name(0), "done") == 0;
     }
 
-    header.mStateNameHash = *stateName ? stringhash32(stateName) : 0;
+    header.mStateNameHash = stateNameLen ? stringhash32(stateName) : 0;
     header.mFlags = static_cast<unsigned short>(mRunning != 0);
     header.mTableBytes = 0;
 
-    if (isDoneState) {
+    if (terminalState) {
         header.mFlags = header.mFlags | 2;
     }
 
-    lua_State *luaState = LuaRuntime::Get().GetState();
-    int top = lua_gettop(luaState);
+    luaState = LuaRuntime::Get().GetState();
+    prevStackTop = lua_gettop(luaState);
 
-    if (!isDoneState) {
-        lua_pushstring(luaState, *reinterpret_cast<const char *const *>(GetLayoutPointer()));
+    if (!terminalState) {
+        lua_pushstring(luaState, activityName);
         lua_gettable(luaState, LUA_REGISTRYINDEX);
         if (lua_type(luaState, -1) == LUA_TTABLE) {
-            const bool *persistent = reinterpret_cast<const bool *>(GetAttributePointer(0xE4542E9B, 0));
-
-            if (!persistent) {
-                persistent = reinterpret_cast<const bool *>(Attrib::DefaultDataArea(sizeof(bool)));
-            }
-
-            header.mTableBytes = SerializeTable(luaState, nullptr, !*persistent);
+            header.mTableBytes = SerializeTable(luaState, nullptr, !Persistent(0));
         }
     }
 
-    block = GManager::Get().AllocObjectStateBlock(
-        GetCollection(), header.mTableBytes + sizeof(header),
-        *reinterpret_cast<const bool *>(GetAttributePointer(0xE4542E9B, 0) ? GetAttributePointer(0xE4542E9B, 0)
-                                                                            : Attrib::DefaultDataArea(sizeof(bool))));
+    footprint = header.mTableBytes + sizeof(header);
+    buffer = reinterpret_cast<unsigned char *>(GManager::Get().AllocObjectStateBlock(GetCollection(), footprint, Persistent(0)));
 
-    if (block) {
-        bMemCpy(block, &header, sizeof(header));
+    if (buffer) {
+        bMemCpy(buffer, &header, sizeof(header));
         if (header.mTableBytes != 0) {
-            const bool *persistent = reinterpret_cast<const bool *>(GetAttributePointer(0xE4542E9B, 0));
-
-            if (!persistent) {
-                persistent = reinterpret_cast<const bool *>(Attrib::DefaultDataArea(sizeof(bool)));
-            }
-
-            SerializeTable(luaState, reinterpret_cast<unsigned char *>(block) + sizeof(header), !*persistent);
+            unsigned int writtenBytes = SerializeTable(luaState, buffer + sizeof(header), !Persistent(0));
+            (void)writtenBytes;
         }
     }
 
-    lua_settop(luaState, top);
+    lua_settop(luaState, prevStackTop);
 
     if (abandonLuaTable) {
         ClearActivityVars(luaState);
