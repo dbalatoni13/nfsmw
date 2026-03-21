@@ -104,7 +104,7 @@ void DrawVehicle::HideModel() {
 }
 
 void DrawVehicle::ReleaseModel() {
-    delete this;
+    delete static_cast<IModel *>(this);
 }
 
 void DrawVehicle::ReleaseChildModels() {
@@ -115,14 +115,16 @@ void DrawVehicle::ReleaseChildModels() {
 }
 
 void DrawVehicle::StopEffects() {
+    for (EffectList::iterator iter = mEffects.begin(); iter != mEffects.end(); ++iter) {
+        delete *iter;
+    }
     mEffects.clear();
 }
 
 void DrawVehicle::StopEffect(UCrc32 identifire) {
     for (EffectList::iterator iter = mEffects.begin(); iter != mEffects.end(); ++iter) {
-        Effect *effect = *iter;
-        if (effect->Identifire == identifire) {
-            delete effect;
+        if ((*iter)->Identifire == identifire) {
+            delete *iter;
             mEffects.erase(iter);
             break;
         }
