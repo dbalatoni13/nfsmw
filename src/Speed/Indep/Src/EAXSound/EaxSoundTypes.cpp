@@ -454,3 +454,9 @@ unsigned char ScheduledSpeechEvent::ReserveSample() {
 }
 
 } // namespace Speech
+
+namespace _STL {
+template Speech::SpeechEventPair *__lower_bound<Speech::SpeechEventPair *, Speech::SpeechEventPair,
+                                                _STL::less<Speech::SpeechEventPair>, int>(
+    Speech::SpeechEventPair *, Speech::SpeechEventPair *, Speech::SpeechEventPair const &, _STL::less<Speech::SpeechEventPair>, int *);
+}
