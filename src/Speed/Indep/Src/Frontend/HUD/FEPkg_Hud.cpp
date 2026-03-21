@@ -1284,16 +1284,23 @@ void FEngHud::JoyDisable() {
 }
 
 void FEngHud::SetWideScreenMode() {
-    int widescreen = FEDatabase->GetVideoSettings()->WideScreen;
-    if (mCurrentWidescreenSetting != widescreen) {
-        mCurrentWidescreenSetting = widescreen;
-        if (widescreen != 0) {
-            cFEng::Get()->QueuePackageMessage(0x62ED04EC, pPackageName, nullptr);
+    if (mCurrentWidescreenSetting != FEDatabase->GetVideoSettings()->WideScreen) {
+        mCurrentWidescreenSetting = FEDatabase->GetVideoSettings()->WideScreen;
+        if (mCurrentWidescreenSetting != 0) {
+            {
+                const unsigned long FEObj_WIDESCREENMODE = 0x62ED04EC;
+
+                cFEng::Get()->QueuePackageMessage(FEObj_WIDESCREENMODE, pPackageName, nullptr);
+            }
             if (pMinimap) {
                 static_cast< Minimap * >(pMinimap)->AdjustForWidescreen(true);
             }
         } else {
-            cFEng::Get()->QueuePackageMessage(0x53EC068C, pPackageName, nullptr);
+            {
+                const unsigned long FEObj_NORMAL_MODE = 0x53EC068C;
+
+                cFEng::Get()->QueuePackageMessage(FEObj_NORMAL_MODE, pPackageName, nullptr);
+            }
             if (pMinimap) {
                 static_cast< Minimap * >(pMinimap)->AdjustForWidescreen(false);
             }

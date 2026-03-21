@@ -198,7 +198,11 @@ struct StatsPanel {
         RacerName = name;
     }
 
-    FEString *GetCurrentString(const char *name);
+    FEString *GetCurrentString(const char *name) {
+        extern const char lbl_803E5088[];
+
+        return FEngFindString(ParentPkg, FEngHashString(lbl_803E5088, name, iWidgetToAdd));
+    }
     int GetNumStats() {
         return TheStats.CountElements();
     }
