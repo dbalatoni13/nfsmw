@@ -86,6 +86,8 @@ const IAttachable::List *DrawVehicle::GetAttachments() const {
     return reinterpret_cast<const IAttachable::List *>(mAttachments);
 }
 
+DrawVehicle::Effect::~Effect() {}
+
 void DrawVehicle::SetCausality(HCAUSE from, float time) {
     mCausality = from;
     mCausalityTime = time;

@@ -36,7 +36,7 @@ struct DrawVehicle : public VehicleBehavior, public IRenderable, public IModel, 
             : Sim::Effect(owner, parent), //
               Identifire(id) {}
 
-        ~Effect() override {}
+        ~Effect() override;
 
         const UCrc32 Identifire; // offset 0x5C, size 0x4
     };
