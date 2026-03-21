@@ -10,6 +10,7 @@
 #include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ICollisionBody.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IDamageable.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IEngine.h"
 #include "Speed/Indep/Src/Interfaces/Simables/INISCarControl.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRBVehicle.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRenderable.h"
@@ -168,6 +169,31 @@ struct DrawTraffic : public DrawCar {
     static Behavior *Construct(const BehaviorParams &params);
 
     DrawTraffic(const BehaviorParams &params);
+};
+
+// total size: 0xCC
+struct DrawPerformanceCar : public DrawCar {
+    DrawPerformanceCar(const BehaviorParams &params, CarRenderUsage usage);
+    void OnBehaviorChange(const UCrc32 &mechanic) override;
+    void OnService(RenderConn::Pkt_Car_Service &pkt) override;
+
+  private:
+    ITransmission *mTransmission; // offset 0xC4, size 0x4
+    IEngine *mEngine;             // offset 0xC8, size 0x4
+};
+
+// total size: 0xCC
+struct DrawNISCar : public DrawPerformanceCar {
+    static Behavior *Construct(const BehaviorParams &params);
+
+    DrawNISCar(const BehaviorParams &params);
+};
+
+// total size: 0xCC
+struct DrawCopCar : public DrawPerformanceCar {
+    static Behavior *Construct(const BehaviorParams &params);
+
+    DrawCopCar(const BehaviorParams &params);
 };
 
 #endif
