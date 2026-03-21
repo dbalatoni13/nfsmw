@@ -3370,7 +3370,7 @@ void GRaceStatus::ClearRacers() {
         ISimable *simable = vehicle->GetSimable();
 
         if (simable) {
-            if (!simable->GetPlayer()) {
+            if (!simable->IsPlayer()) {
                 simable->Kill();
             }
         }
