@@ -2098,39 +2098,26 @@ bool GManager::CanPlaySMS() const {
     }
 
     player = IPlayer::First(PLAYER_LOCAL);
-    if (!player) {
-        return false;
+    if (player) {
+        ISimable *simable = player->GetSimable();
+        if (simable) {
+            IHud *ihud = player->GetHud();
+            if (ihud && ihud->IsHudVisible()) {
+                IVehicle *ivehicle;
+
+                if (simable->QueryInterface(&ivehicle) && ivehicle) {
+                    if (!ivehicle->IsAnimating() && !ivehicle->IsStaging() && !ivehicle->IsLoading()) {
+                        IVehicleAI *ivehicleai = ivehicle->GetAIVehiclePtr();
+                        if (ivehicleai) {
+                            return !ivehicleai->GetPursuit();
+                        }
+                    }
+                }
+            }
+        }
     }
 
-    ISimable *simable = player->GetSimable();
-    if (!simable) {
-        return false;
-    }
-
-    IHud *ihud = player->GetHud();
-    if (!ihud) {
-        return false;
-    }
-
-    if (!ihud->AreResourcesLoaded()) {
-        return false;
-    }
-
-    IVehicle *ivehicle;
-    if (!simable->QueryInterface(&ivehicle) || !ivehicle) {
-        return false;
-    }
-
-    if (ivehicle->IsAnimating() || ivehicle->IsStaging() || ivehicle->IsLoading()) {
-        return false;
-    }
-
-    IVehicleAI *ivehicleai = ivehicle->GetAIVehiclePtr();
-    if (!ivehicleai) {
-        return false;
-    }
-
-    return !ivehicleai->GetPursuit();
+    return false;
 }
 
 void GManager::DispatchSMSMessage(int smsID) {
