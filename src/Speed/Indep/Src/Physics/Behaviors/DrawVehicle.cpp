@@ -1,4 +1,12 @@
 #include "DrawVehicle.h"
+#include "Speed/Indep/Src/Physics/SmackableTrigger.h"
+
+namespace RenderConn {
+struct Pkt_VehicleFragment_Service : Sim::Packet {
+    int mInView;
+    float mDistanceToView;
+};
+}
 
 HMODEL DrawVehicle::GetModelHandle() const {
     return static_cast<const IModel *>(this)->GetInstanceHandle();
@@ -87,6 +95,25 @@ const IAttachable::List *DrawVehicle::GetAttachments() const {
 }
 
 DrawVehicle::Effect::~Effect() {}
+
+const Attrib::Instance &DrawVehicle::Part::GetAttributes() const {
+    return mAttributes;
+}
+
+void DrawVehicle::Part::RemoveTrigger() {
+    if (mTrigger) {
+        delete mTrigger;
+        mTrigger = nullptr;
+    }
+}
+
+bool DrawVehicle::Part::OnDraw(Sim::Packet *service) {
+    RenderConn::Pkt_VehicleFragment_Service *pkt = static_cast<RenderConn::Pkt_VehicleFragment_Service *>(service);
+    UpdateVisibility(pkt->mInView, pkt->mDistanceToView);
+    return true;
+}
+
+void DrawVehicle::Part::OnBeginDraw() {}
 
 void DrawVehicle::SetCausality(HCAUSE from, float time) {
     mCausality = from;

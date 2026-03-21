@@ -7,6 +7,8 @@
 
 #include "Speed/Indep/Libs/Support/Utility/UStandard.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/effects.h"
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/smackable.h"
+#include "Speed/Indep/Src/Interfaces/SimModels/ITriggerableModel.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ICollisionBody.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IDamageable.h"
@@ -26,10 +28,10 @@ class Pkt_Car_Service;
 class Pkt_Heli_Service;
 }
 
+struct SmackableTrigger;
+
 // total size: 0x88
 struct DrawVehicle : public VehicleBehavior, public IRenderable, public IModel, public IAttachable {
-    struct Part;
-
     // total size: 0x60
     struct Effect : public Sim::Effect {
         Effect(UCrc32 id, unsigned int owner, const Attrib::Collection *parent)
@@ -39,6 +41,41 @@ struct DrawVehicle : public VehicleBehavior, public IRenderable, public IModel, 
         ~Effect() override;
 
         const UCrc32 Identifire; // offset 0x5C, size 0x4
+    };
+
+    // total size: 0xCC
+    class Part : public Sim::Model, public ITriggerableModel {
+      public:
+        enum State {
+            S_NONE = 0,
+            S_DRAW = 1,
+            S_HIDE = 2,
+            S_TRIGGER = 3
+        };
+
+        Part(IModel *parent, WUID vehicleID, const CollisionGeometry::Bounds *geoms, const Attrib::Collection *spec, UCrc32 partname);
+        ~Part() override;
+        void GetTransform(UMath::Matrix4 &transform) const override;
+        void OnProcessFrame(float dT) override;
+        void PlaceTrigger(const UMath::Matrix4 &mat, bool retrigger) override;
+        const Attrib::Instance &GetAttributes() const override;
+
+      protected:
+        void OnBeginSimulation() override;
+        bool OnDraw(Sim::Packet *service) override;
+        void OnBeginDraw() override;
+        void OnEndDraw() override;
+
+      private:
+        void CreateTrigger(const UMath::Matrix4 &matrix);
+        void RemoveTrigger();
+
+        State mState;                       // offset 0xA4, size 0x4
+        SmackableTrigger *mTrigger;         // offset 0xA8, size 0x4
+        Attrib::Gen::smackable mAttributes; // offset 0xAC, size 0x14
+        bool mOffScreenTask;                // offset 0xC0, size 0x1
+        float mOffScreenTime;               // offset 0xC4, size 0x4
+        WUID mVehicleID;                    // offset 0xC8, size 0x4
     };
 
     typedef UTL::Std::list<DrawVehicle::Effect *, _type_list> EffectList;
