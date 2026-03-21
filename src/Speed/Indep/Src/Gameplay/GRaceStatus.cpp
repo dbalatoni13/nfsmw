@@ -2455,13 +2455,14 @@ void GRaceCustom::GetCheckpointPosition(unsigned int index, UMath::Vector3 &pos)
 }
 
 void GRaceCustom::GetCheckpointDirection(unsigned int index, UMath::Vector3 &dir) const {
-    UMath::Vector3 checkDir = UMath::Vector3::kZero;
+    UMath::Vector3 checkDir;
 
     if (mReversed) {
         index = GetNumCheckpoints() - (index + 1);
     }
 
     EnsureLoaded();
+    checkDir = UMath::Vector3::kZero;
     {
         const GCollectionKey &raceCheckSpec = mRaceRecord->Checkpoint(index);
 
