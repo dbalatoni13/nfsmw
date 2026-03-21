@@ -26,6 +26,22 @@ struct XenonEffectVec {
     XenonEffectDef *finish;         // offset 0x4, size 0x4
     void *unused;                   // offset 0x8, size 0x4
     XenonEffectDef *end_of_storage; // offset 0xC, size 0x4
+
+    XenonEffectDef *begin() {
+        return start;
+    }
+
+    XenonEffectDef *end() {
+        return finish;
+    }
+
+    void push_back(const XenonEffectDef &eDef) {
+        reinterpret_cast<XenonEffectStdVector &>(*this).push_back(eDef);
+    }
+
+    void clear() {
+        reinterpret_cast<XenonEffectStdVector &>(*this).clear();
+    }
 };
 
 struct XenonEffectLists {
@@ -269,8 +285,8 @@ void ParticleList::GeneratePolys() {
 void DrawXenonEmitters(eView *view) {}
 
 void ClearXenonEmitters() {
-    reinterpret_cast<XenonEffectStdVector &>(gNGEffectList.lists[XenonEffectLists::ACTIVE]).clear();
-    reinterpret_cast<XenonEffectStdVector &>(gNGEffectList.lists[XenonEffectLists::STAGING]).clear();
+    gNGEffectList.lists[XenonEffectLists::ACTIVE].clear();
+    gNGEffectList.lists[XenonEffectLists::STAGING].clear();
 }
 
 void AddXenonEffect(EmitterGroup *piggyback_fx, const Attrib::Collection *spec, const UMath::Matrix4 *mat, const UMath::Vector4 *vel) {
@@ -296,29 +312,36 @@ void AddXenonEffect(EmitterGroup *piggyback_fx, const Attrib::Collection *spec, 
 }
 
 void UpdateXenonEmitters(float dt) {
-    XenonEffectDef *iter;
-    XenonEffectDef eDef;
-
     gParticleList.AgeParticles(dt);
 
-    iter = reinterpret_cast<XenonEffectStdVector &>(gNGEffectList.lists[XenonEffectLists::ACTIVE]).begin();
-    while (iter != reinterpret_cast<XenonEffectStdVector &>(gNGEffectList.lists[XenonEffectLists::ACTIVE]).end()) {
-        eDef = *iter;
-        ++iter;
-        reinterpret_cast<XenonEffectStdVector &>(gNGEffectList.lists[XenonEffectLists::STAGING]).push_back(eDef);
-    }
+    {
+        XenonEffectDef *iter;
+        XenonEffectDef eDef;
 
-    reinterpret_cast<XenonEffectStdVector &>(gNGEffectList.lists[XenonEffectLists::ACTIVE]).clear();
-
-    iter = reinterpret_cast<XenonEffectStdVector &>(gNGEffectList.lists[XenonEffectLists::STAGING]).begin();
-    while (iter != reinterpret_cast<XenonEffectStdVector &>(gNGEffectList.lists[XenonEffectLists::STAGING]).end()) {
-        eDef = *iter;
-        ++iter;
-        if (!eDef.piggyback_effect || eDef.piggyback_effect->IsEnabled()) {
-            NGEffect anEffect(eDef);
+        iter = gNGEffectList.lists[XenonEffectLists::ACTIVE].begin();
+        while (iter != gNGEffectList.lists[XenonEffectLists::ACTIVE].end()) {
+            eDef = *iter;
+            gNGEffectList.lists[XenonEffectLists::STAGING].push_back(eDef);
+            ++iter;
         }
     }
 
-    reinterpret_cast<XenonEffectStdVector &>(gNGEffectList.lists[XenonEffectLists::STAGING]).clear();
+    gNGEffectList.lists[XenonEffectLists::ACTIVE].clear();
+
+    {
+        XenonEffectDef *iter;
+        XenonEffectDef eDef;
+
+        iter = gNGEffectList.lists[XenonEffectLists::STAGING].begin();
+        while (iter != gNGEffectList.lists[XenonEffectLists::STAGING].end()) {
+            eDef = *iter;
+            ++iter;
+            if (!eDef.piggyback_effect || eDef.piggyback_effect->IsEnabled()) {
+                NGEffect anEffect(eDef);
+            }
+        }
+    }
+
+    gNGEffectList.lists[XenonEffectLists::STAGING].clear();
     gParticleList.GeneratePolys();
 }
