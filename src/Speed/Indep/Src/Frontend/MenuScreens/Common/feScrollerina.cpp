@@ -379,21 +379,11 @@ void FEScrollBar::SetInvisible(FEObject *obj) {
 }
 
 void FEScrollBar::SetArrow1Dim(bool dim) {
-    FEObject *arrow = pFirstArrow;
-    unsigned int hash = 0x6EBBFB68;
-    if (dim) {
-        hash = 0x9E99;
-    }
-    FEngSetScript(arrow, hash, true);
+    FEngSetScript(pFirstArrow, dim ? 0x9E99 : 0x6EBBFB68, true);
 }
 
 void FEScrollBar::SetArrow2Dim(bool dim) {
-    FEObject *arrow = pSecondArrow;
-    unsigned int hash = 0x6EBBFB68;
-    if (dim) {
-        hash = 0x9E99;
-    }
-    FEngSetScript(arrow, hash, true);
+    FEngSetScript(pSecondArrow, dim ? 0x9E99 : 0x6EBBFB68, true);
 }
 
 inline void FEngSetSizeY(FEObject *obj, float y) {
