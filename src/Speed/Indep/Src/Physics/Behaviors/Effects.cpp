@@ -149,7 +149,40 @@ void Effects::OnHitGround(const SimSurface &othersurface, float impulse, const U
 }
 
 void Effects::OnCollision(const COLLISION_INFO &cinfo) {
-    // TODO annoying virtuals
+    if (IsPaused()) {
+        return;
+    }
+
+    if (cinfo.Type() == COLLISION_INFO::WORLD) {
+        SimSurface othersurface(cinfo.objBsurface);
+        OnHitWorld(othersurface, cinfo.impulseA, cinfo.position, cinfo.closingVel, cinfo.normal);
+        OnScrapeWorld(othersurface, cinfo.position, cinfo.slidingVel, cinfo.normal);
+        return;
+    }
+
+    if (cinfo.Type() == COLLISION_INFO::OBJECT) {
+        UMath::Vector3 normal = cinfo.normal;
+        SimSurface othersurface(cinfo.objBsurface);
+        HSIMABLE hother = cinfo.objB;
+        float impulse = cinfo.impulseA;
+
+        if (cinfo.objB == GetOwner()->GetInstanceHandle()) {
+            UMath::Scale(normal, -1.0f, normal);
+            othersurface.Change(cinfo.objAsurface);
+            impulse = cinfo.impulseB;
+            hother = cinfo.objA;
+        }
+
+        OnHitObject(othersurface, impulse, cinfo.position, cinfo.closingVel, normal, hother);
+        OnScrapeObject(othersurface, cinfo.position, cinfo.slidingVel, normal, hother);
+        return;
+    }
+
+    if (cinfo.Type() == COLLISION_INFO::GROUND) {
+        SimSurface othersurface(cinfo.objBsurface);
+        OnHitGround(othersurface, cinfo.impulseA, cinfo.position, cinfo.closingVel, cinfo.normal);
+        OnScrapeGround(othersurface, cinfo.position, cinfo.slidingVel, cinfo.normal);
+    }
 }
 
 EffectsVehicle::EffectsVehicle(const BehaviorParams &bp) : Effects(bp) {}
