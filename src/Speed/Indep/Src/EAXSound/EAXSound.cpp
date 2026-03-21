@@ -1762,9 +1762,7 @@ void FESoundControl(bool bOn, const char *name) {
                     Speech::Module *pMVar3 = Speech::Manager::GetSpeechModule(1);
                     if (pMVar3 != nullptr) {
                         pMVar3 = Speech::Manager::GetSpeechModule(1);
-                        if (pMVar3 != nullptr) {
-                            pMVar3->PurgeSpeech();
-                        }
+                        pMVar3->PurgeSpeech();
                     }
                 }
                 goto FE_UPSCREEN;
