@@ -3001,7 +3001,7 @@ void GRaceStatus::Update(float dT) {
         for (int idx = 0; idx < numRacers; ++idx) {
             GRacerInfo &info = GetRacerInfo(idx);
 
-            if (info.GetGameCharacter()) {
+            if (!info.GetIsHuman()) {
                 ++numAiRacers;
             }
         }
@@ -3015,7 +3015,7 @@ void GRaceStatus::Update(float dT) {
             if (simable) {
                 float weight = 1.0f;
 
-                if (!info.GetGameCharacter()) {
+                if (info.GetIsHuman()) {
                     weight = bMax(1.0f, static_cast<float>(numAiRacers));
                 }
 
@@ -3056,7 +3056,7 @@ void GRaceStatus::Update(float dT) {
         if (GetIsTimeLimited()) {
             if (IsChallengeRace()) {
 #ifndef EA_BUILD_A124
-                if (mPlayerPursuitInCooldown) {
+                if (mPlayerPursuitInCooldown == 1) {
                     if (mRaceMasterTimer.IsRunning()) {
                         mRaceMasterTimer.Stop();
                     }
