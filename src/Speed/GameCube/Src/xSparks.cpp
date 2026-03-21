@@ -233,6 +233,7 @@ void CGEmitter::SpawnParticles(float dt, float intensity) {
                 particle->color = particleColor;
                 particle->length = static_cast<uint8>(ld * 255.0f);
                 particle->width = static_cast<uint8>(mEmitterDef.HeightStart());
+                particle->uv[0] = static_cast<uint8>(mTextureUVs.StartU() * 255.0f);
 
                 current_particle_age += particle_age_factor;
             }
