@@ -3926,6 +3926,7 @@ float GRaceStatus::DetermineRaceSegmentLength(const UMath::Vector4 *positions, c
         UTL::Std::set<PathSegment, _type_ID_PATH_SET> pathSegments;
         char shortcutAllowed[32];
         bool noShortcuts = true;
+        WRoadNetwork *roadNetwork = &WRoadNetwork::Get();
 
         bMemSet(shortcutAllowed, 1, sizeof(shortcutAllowed));
         while (true) {
@@ -3939,7 +3940,7 @@ float GRaceStatus::DetermineRaceSegmentLength(const UMath::Vector4 *positions, c
             }
 
             {
-                WRoadNetwork::Get().AddRaceSegments(&nav);
+                roadNetwork->AddRaceSegments(&nav);
                 pathDistance = nav.GetPathDistanceRemaining();
 
                 unsigned char shortcut = nav.FirstShortcutInPath();
@@ -3954,7 +3955,7 @@ float GRaceStatus::DetermineRaceSegmentLength(const UMath::Vector4 *positions, c
                 int numSegments = nav.GetNumPathSegments();
 
                 for (int i = 0; i < numSegments; ++i) {
-                    const WRoadSegment *roadSegment = WRoadNetwork::Get().GetSegment(nav.GetPathSegment(i));
+                    const WRoadSegment *roadSegment = roadNetwork->GetSegment(nav.GetPathSegment(i));
 
                     if ((roadSegment->fFlags & 1) == 0) {
                         pathSegment.Roads.insert(roadSegment->fRoadID);
@@ -4000,17 +4001,17 @@ float GRaceStatus::DetermineRaceSegmentLength(const UMath::Vector4 *positions, c
                     shorter_path->Roads.end(),
                     longer_path->Roads.begin(),
                     longer_path->Roads.end(),
-                    std::insert_iterator<UTL::Std::set<short, _type_ID_ROAD_SET> >(unique_roads, unique_roads.begin()));
+                std::insert_iterator<UTL::Std::set<short, _type_ID_ROAD_SET> >(unique_roads, unique_roads.begin()));
 
                 for (UTL::Std::set<short, _type_ID_ROAD_SET>::iterator it = unique_roads.begin(); it != unique_roads.end(); ++it) {
-                    unique_length += static_cast<float>(WRoadNetwork::Get().GetRoad(*it)->nLength) * 0.061036088f;
+                    unique_length += static_cast<float>(roadNetwork->GetRoad(*it)->nLength) * 0.061036088f;
                 }
 
                 if (unique_length > 0.0f) {
                     float road_scale = (longer_by + unique_length) / unique_length;
 
                     for (UTL::Std::set<short, _type_ID_ROAD_SET>::iterator it = unique_roads.begin(); it != unique_roads.end(); ++it) {
-                        WRoad *road = const_cast<WRoad *>(WRoadNetwork::Get().GetRoad(*it));
+                        WRoad *road = const_cast<WRoad *>(roadNetwork->GetRoad(*it));
                         int scale = static_cast<int>(road_scale * 65536.0f);
 
                         road->nScale = static_cast<unsigned short>(scale >> 8);
