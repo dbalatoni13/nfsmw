@@ -1403,7 +1403,11 @@ struct gameplay : Instance {
         if (attr.IsValid() && attr.GetCollection() != this->GetConstCollection()) {
             unsigned int len = attr.GetLength();
 
-            if (this->Add(attributeKey, len)) {
+            if (!this->Add(attributeKey, len)) {
+                return attr;
+            }
+
+            {
                 TAttrib<GCollectionKey> localattr(this->Get(attributeKey));
 
                 for (unsigned int i = 0; i < len; i++) {
