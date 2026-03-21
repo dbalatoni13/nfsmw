@@ -84,23 +84,27 @@ BootFlowManager::BootFlowManager() {
 }
 
 BootFlowScreen *BootFlowManager::FindScreen(const char *name) {
-    BootFlowScreen *screen = BootFlowScreens.GetHead();
-    while (screen != BootFlowScreens.EndOfList()) {
-        if (bStrICmp(screen->Name, name) == 0) {
-            return screen;
+    {
+        BootFlowScreen *s = BootFlowScreens.GetHead();
+        while (s != BootFlowScreens.EndOfList()) {
+            if (bStrICmp(s->Name, name) == 0) {
+                return s;
+            }
+            s = s->GetNext();
         }
-        screen = screen->GetNext();
     }
     return nullptr;
 }
 
 BootFlowScreen *BootFlowManager::FindScreenSubStr(const char *name) {
-    BootFlowScreen *screen = BootFlowScreens.GetHead();
-    while (screen != BootFlowScreens.EndOfList()) {
-        if (bStrStr(screen->Name, name) != nullptr) {
-            return screen;
+    {
+        BootFlowScreen *s = BootFlowScreens.GetHead();
+        while (s != BootFlowScreens.EndOfList()) {
+            if (bStrStr(s->Name, name) != nullptr) {
+                return s;
+            }
+            s = s->GetNext();
         }
-        screen = screen->GetNext();
     }
     return nullptr;
 }
