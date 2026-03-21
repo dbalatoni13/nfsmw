@@ -15,6 +15,15 @@ Behavior *DamageRacer::Construct(const BehaviorParams &params) {
     return new DamageRacer(params, dp);
 }
 
+DamageRacer::DamageRacer(const BehaviorParams &bp, const DamageParams &dp)
+    : DamageVehicle(bp, dp), //
+      ISpikeable(bp.fowner), //
+      mSuspension(nullptr) {
+    GetOwner()->QueryInterface(&mSuspension);
+    bMemSet(mBlowOutTimes, 0, sizeof(mBlowOutTimes));
+    bMemSet(mDamage, 0, sizeof(mDamage));
+}
+
 DamageRacer::~DamageRacer() {
     // TODO
 }
