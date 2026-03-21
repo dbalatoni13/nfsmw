@@ -3171,10 +3171,8 @@ void GRaceStatus::ClearRacers() {
         ISimable *simable = vehicle->GetSimable();
 
         if (simable) {
-            GRacerInfo *racerInfo = GetRacerInfo(simable);
-
-            if (racerInfo) {
-                racerInfo->ClearAll();
+            if (!simable->GetPlayer()) {
+                simable->Kill();
             }
         }
     }
