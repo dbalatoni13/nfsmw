@@ -54,6 +54,10 @@ class SuspensionTrailer : public Chassis {
             return mLateralSpeed;
         }
 
+        float GetRoadSpeed() const {
+            return mRoadSpeed;
+        }
+
         float GetTraction() const {
             return mEBrake > 0.0f ? 0.0f : 1.0f;
         }
@@ -150,6 +154,9 @@ class SuspensionTrailer : public Chassis {
     }
     float GetWheelSkid(unsigned int idx) const override {
         return mTires[idx]->GetLateralSpeed();
+    }
+    float GetWheelSlipAngle(unsigned int idx) const override {
+        return GetVehicle()->GetSlipAngle();
     }
     const UMath::Vector4 &GetWheelRoadNormal(unsigned int i) const override {
         return mTires[i]->GetNormal();
