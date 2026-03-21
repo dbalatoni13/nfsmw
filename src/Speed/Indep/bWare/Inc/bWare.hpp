@@ -10,7 +10,7 @@
 #include "bMemory.hpp"
 #include "bSlotPool.hpp"
 
-#if MILESTONE_OPT
+#ifdef MILESTONE_OPT
 void *bMalloc(int size, const char *debug_text, int debug_line, int allocation_params);
 #else
 void *bMalloc(int size, int allocation_params);
@@ -119,6 +119,10 @@ inline int bIsCodeineConnected() {
 #else
     return false;
 #endif
+}
+
+inline int bIsBFunkAvailable() {
+    return bIsCodeineConnected();
 }
 
 #endif

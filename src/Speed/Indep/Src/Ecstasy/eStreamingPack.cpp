@@ -331,7 +331,7 @@ void eStreamPackLoader::InternalLoadedStreamingEntryCallback(void *callback_para
 
 void eStreamPackLoader::InternalLoadStreamingEntry(eStreamingPackLoadTable *loading_table, eStreamingPack *streaming_pack,
                                                    eStreamingEntry *streaming_entry) {
-    unsigned int name_hash = streaming_entry->NameHash;
+    uint32 name_hash = streaming_entry->NameHash;
 
     if (!loading_table || !streaming_pack || !streaming_entry)
         return;
