@@ -3262,21 +3262,37 @@ GRacerInfo *GRaceStatus::GetRacerInfo(ISimable *isim) {
 }
 
 GRacerInfo *GRaceStatus::GetWinningPlayerInfo() {
-    GRacerInfo *winner = nullptr;
+    IPlayer *player;
 
-    for (int i = 0; i < mRacerCount; ++i) {
-        GRacerInfo &info = mRacerInfo[i];
+    player = IPlayer::First(PLAYER_ALL);
+    while (player) {
+        ISimable *sim;
+        GRacerInfo *info;
 
-        if (!info.GetIsHuman()) {
-            continue;
+        sim = player->GetSimable();
+        info = GetRacerInfo(sim);
+        if (info && info->IsFinishedRacing()) {
+            if (info->GetRanking() == 1) {
+                return info;
+            }
         }
 
-        if (!winner || info.GetRanking() < winner->GetRanking()) {
-            winner = &info;
+        {
+            const IPlayer *currentPlayer = player;
+            IPlayer::List::const_iterator iter =
+                std::find(IPlayer::GetList(PLAYER_ALL).begin(), IPlayer::GetList(PLAYER_ALL).end(), currentPlayer);
+            IPlayer::List::const_iterator end = IPlayer::GetList(PLAYER_ALL).end();
+
+            if (iter == end) {
+                player = nullptr;
+            } else {
+                ++iter;
+                player = iter == end ? nullptr : *iter;
+            }
         }
     }
 
-    return winner;
+    return nullptr;
 }
 
 void GRaceStatus::StartMasterTimer() {
