@@ -322,6 +322,9 @@ class CareerSettings {
     bool HasBeatenCareer() {
         return SpecialFlags & 0x4000;
     }
+    void SetHasBeatenCareer() {
+        SpecialFlags |= 0x4000;
+    }
     bool HasBeenBustedOnce() {
         return SpecialFlags & 0x1000;
     }

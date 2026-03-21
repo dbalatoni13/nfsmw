@@ -206,7 +206,7 @@ void CareerSettings::AwardOneTimeCashBonus(bool bOldSaveExists) {
 }
 
 void CareerSettings::SetPlayerHasBeatenTheGame() {
-    SpecialFlags = SpecialFlags | 0x4000;
+    SetHasBeatenCareer();
 }
 
 int CareerSettings::GetSaveBufferSize(bool bExcludeGameplay) {
