@@ -1769,14 +1769,14 @@ void GManager::RefreshTrackMarkerIcons() {
 }
 
 void GManager::FindBountySpawnPoints() {
-    Attrib::Gen::gameplay gameplay(Attrib::FindCollection(Attrib::Gen::gameplay::ClassKey(), 0x3D48E303), 0, nullptr);
+    Attrib::Gen::gameplay jumpRoot(0x3D48E303, 0, nullptr);
     AttribKeyList keys;
-    AttribKeyList::iterator it;
 
-    GatherInstanceKeys(gameplay, keys, 0xA7BCCF63);
+    GatherInstanceKeys(jumpRoot, keys, 0xA7BCCF63);
     mNumBountySpawnPoints = 0;
-    for (it = keys.begin(); it != keys.end(); ++it) {
-        mBountySpawnPoint[mNumBountySpawnPoints++] = *it;
+
+    for (AttribKeyList::iterator iter = keys.begin(); iter != keys.end(); ++iter) {
+        mBountySpawnPoint[mNumBountySpawnPoints++] = *iter;
         if (mNumBountySpawnPoints > 0x13) {
             break;
         }
