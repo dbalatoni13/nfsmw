@@ -1,5 +1,9 @@
 #include "DrawVehicle.h"
 
+Behavior *DrawHeli::Construct(const BehaviorParams &params) {
+    return new DrawHeli(params);
+}
+
 void DrawHeli::HidePart(const UCrc32 &name) {}
 
 void DrawHeli::ShowPart(const UCrc32 &name) {}

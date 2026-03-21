@@ -163,4 +163,11 @@ struct DrawCar : public DrawVehicle {
     bool mHidden;                        // offset 0xC0, size 0x1
 };
 
+// total size: 0xC4
+struct DrawTraffic : public DrawCar {
+    static Behavior *Construct(const BehaviorParams &params);
+
+    DrawTraffic(const BehaviorParams &params);
+};
+
 #endif

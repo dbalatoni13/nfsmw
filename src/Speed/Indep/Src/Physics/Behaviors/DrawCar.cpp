@@ -1,5 +1,12 @@
 #include "DrawVehicle.h"
 
+Behavior *DrawTraffic::Construct(const BehaviorParams &params) {
+    return new DrawTraffic(params);
+}
+
+DrawTraffic::DrawTraffic(const BehaviorParams &params)
+    : DrawCar(params, CarRenderUsage_AITraffic) {}
+
 bool DrawCar::InView() const {
     return mInView;
 }
