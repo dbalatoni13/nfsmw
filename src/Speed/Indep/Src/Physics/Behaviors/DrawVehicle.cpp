@@ -115,7 +115,7 @@ void DrawVehicle::ReleaseChildModels() {
 }
 
 UCrc32 DrawVehicle::GetName() const {
-    return GetVehicle()->GetVehicleAttributes().GetCollection();
+    return GetVehicle()->GetVehicleAttributes().MODEL();
 }
 
 void DrawVehicle::StopEffects() {
