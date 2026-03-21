@@ -2862,20 +2862,20 @@ unsigned int GManager::GetRespawnMarker() {
 }
 
 void GManager::GetRespawnLocation(UMath::Vector3 &startLoc, UMath::Vector3 &initialVec) {
-    Attrib::Gen::gameplay gameplayObj(Attrib::FindCollection(Attrib::Gen::gameplay::ClassKey(), GetRespawnMarker()), 0, nullptr);
-    const float *position = reinterpret_cast<const float *>(gameplayObj.GetAttributePointer(0x9F743A0E, 0));
+    Attrib::Gen::gameplay gameplayObj(GetRespawnMarker(), 0, nullptr);
+    const UMath::Vector3 *position = reinterpret_cast<const UMath::Vector3 *>(gameplayObj.GetAttributePointer(0x9F743A0E, 0));
     UMath::Matrix4 rotMat;
     UMath::Vector3 respawnLoc;
     UMath::Vector3 forwardVec;
     const float *rotation;
 
     if (!position) {
-        position = reinterpret_cast<const float *>(Attrib::DefaultDataArea(sizeof(UMath::Vector3)));
+        position = reinterpret_cast<const UMath::Vector3 *>(Attrib::DefaultDataArea(sizeof(UMath::Vector3)));
     }
 
-    respawnLoc.x = -position[1];
-    respawnLoc.y = position[2];
-    respawnLoc.z = position[0];
+    respawnLoc.x = -position->y;
+    respawnLoc.y = position->z;
+    respawnLoc.z = position->x;
     startLoc = respawnLoc;
 
     UMath::Copy(UMath::Matrix4::kIdentity, rotMat);
