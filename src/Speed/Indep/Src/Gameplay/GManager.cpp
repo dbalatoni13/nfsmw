@@ -1191,24 +1191,19 @@ void GManager::ReleaseMilestones() {
 }
 
 void GManager::AllocateMilestones() {
-    Attrib::Gen::gameplay gameplay(Attrib::FindCollection(Attrib::Gen::gameplay::ClassKey(), 0x1D975142), 0, nullptr);
+    Attrib::Gen::gameplay milestoneRoot(0x1D975142, 0, nullptr);
     AttribKeyList keys;
-    AttribKeyList::iterator it;
-    unsigned int i;
+    GMilestone *milestone;
 
-    GatherInstanceKeys(gameplay, keys, 0xA3D34781);
+    GatherInstanceKeys(milestoneRoot, keys, 0xA3D34781);
 
-    mNumMilestones = 0;
-    for (it = keys.begin(); it != keys.end(); ++it) {
-        mNumMilestones++;
-    }
-
+    mNumMilestones = keys.size();
     mMilestones = new GMilestone[mNumMilestones];
+    milestone = mMilestones;
 
-    i = 0;
-    for (it = keys.begin(); it != keys.end(); ++it) {
-        mMilestones[i].Init(*it);
-        i++;
+    for (AttribKeyList::iterator iter = keys.begin(); iter != keys.end(); ++iter) {
+        milestone->Init(*iter);
+        ++milestone;
     }
 }
 
