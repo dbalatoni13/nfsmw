@@ -620,11 +620,10 @@ void GRacerInfo::FinishRace() {
 
 bool GRacerInfo::IsBehind(const GRacerInfo &rhs) const {
     if (IsFinishedRacing()) {
-        if (!rhs.IsFinishedRacing()) {
-            return false;
+        if (rhs.IsFinishedRacing()) {
+            return GetRaceTime() > rhs.GetRaceTime();
         }
-
-        return GetRaceTime() > rhs.GetRaceTime();
+        return false;
     }
 
     if (rhs.IsFinishedRacing()) {
