@@ -21,7 +21,7 @@ template <typename T>
 static unsigned int FindInstances(GVault *vault, AttribKeyList *attribKeyList, unsigned int *outObjCount, unsigned int *outConnCount) {
     static unsigned int kObjectTemplateKey = 0x7FCB7ABA;
     int numConnections = 0;
-    Attrib::Gen::gameplay objectTemplate(Attrib::FindCollection(Attrib::Gen::gameplay::ClassKey(), kObjectTemplateKey), 0, nullptr);
+    Attrib::Gen::gameplay objectTemplate(kObjectTemplateKey, 0, nullptr);
     int numObjects = 0;
     Attrib::Vault *attribVault = vault->GetAttribVault();
     unsigned int exportIndex = 0;
@@ -33,7 +33,7 @@ static unsigned int FindInstances(GVault *vault, AttribKeyList *attribKeyList, u
         do {
             if (attribVault->GetExportType(exportIndex) == collectionType) {
                 unsigned int collectionKey = Attrib::GetCollectionKey(reinterpret_cast<Attrib::Collection *>(attribVault->GetExportData(exportIndex)));
-                Attrib::Gen::gameplay instanceObj(Attrib::FindCollection(Attrib::Gen::gameplay::ClassKey(), collectionKey), 0, nullptr);
+                Attrib::Gen::gameplay instanceObj(collectionKey, 0, nullptr);
 
                 if (GObjectBlock::CollectionIsInstanceOfTemplate(instanceObj, objectTemplate)) {
                     if (attribKeyList) {
