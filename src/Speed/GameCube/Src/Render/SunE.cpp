@@ -265,21 +265,22 @@ void eCalcSunVisibility(eView *view, float x, float y) {
 
 void eRenderSun(eView *view) {
     SunChunkInfo *sun_info = SunInfo;
+    Camera *camera;
+    bMatrix4 *world_view;
+    bVector4 position3d;
+    bVector4 position2d;
+    bVector4 view3d;
+    float screen_widthf;
+    float screen_heightf;
+    float x;
+    float y;
+    float max_size;
 
     SetCurrentSunInfo();
 
     if (IsGameFlowInGame()) {
-        Camera *camera = view->GetCamera();
-        bMatrix4 *world_view = camera->GetCameraMatrix();
-        bVector4 position3d;
-        bVector4 position2d;
-        bVector4 view3d;
-        float screen_widthf;
-        float screen_heightf;
-        float x;
-        float y;
-        float max_size;
-
+        camera = view->GetCamera();
+        world_view = camera->GetCameraMatrix();
         position3d.x = sun_info->PositionX;
         position3d.y = sun_info->PositionY;
         position3d.z = sun_info->PositionZ;
@@ -299,11 +300,15 @@ void eRenderSun(eView *view) {
 
         max_size = 0.0f;
 
-        for (int i = 0; i < 4; i++) {
-            SunLayer *layer = &sun_info->SunLayers[i];
+        {
+            int i;
 
-            if (layer->IntensityScale > 0.0f && layer->Texture == SUNTEX_CENTER && layer->Size > max_size) {
-                max_size = layer->Size;
+            for (i = 0; i < 4; i++) {
+                SunLayer *layer = &sun_info->SunLayers[i];
+
+                if (layer->IntensityScale > 0.0f && layer->Texture == SUNTEX_CENTER && layer->Size > max_size) {
+                    max_size = layer->Size;
+                }
             }
         }
 
@@ -314,15 +319,19 @@ void eRenderSun(eView *view) {
             eRecalculateOthographicProjection(1, 0.0f);
             eSetOrthographicMatrixToHW();
 
-            for (int i = 0; i < 4; i++) {
-                SunLayer *layer = &sun_info->SunLayers[i];
-                TextureInfo *texture_info = SunTextures[layer->Texture];
+            {
+                int i;
 
-                if (texture_info) {
-                    ePoly sun_poly;
+                for (i = 0; i < 4; i++) {
+                    SunLayer *layer = &sun_info->SunLayers[i];
+                    TextureInfo *texture_info = SunTextures[layer->Texture];
 
-                    eBuildSunPoly(&sun_poly, layer, max_size, x, y);
-                    RenderViewPoly(view, &sun_poly, texture_info, 0);
+                    if (texture_info) {
+                        ePoly sun_poly;
+
+                        eBuildSunPoly(&sun_poly, layer, max_size, x, y);
+                        RenderViewPoly(view, &sun_poly, texture_info, 0);
+                    }
                 }
             }
         }
