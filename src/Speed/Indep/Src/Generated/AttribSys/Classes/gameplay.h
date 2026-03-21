@@ -1085,7 +1085,7 @@ struct gameplay : Instance {
         return *resultptr;
     }
 
-    const GCollectionKey &handler_owner(unsigned int index) const {
+    const GCollectionKey &handler_owner(unsigned int index = 0) const {
         const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(this->GetAttributePointer(0x857fe432, index));
         if (!resultptr) {
             resultptr = reinterpret_cast<const GCollectionKey *>(DefaultDataArea(sizeof(GCollectionKey)));
@@ -1161,7 +1161,7 @@ struct gameplay : Instance {
         return this->Get(0x916e0e78).GetLength();
     }
 
-    const GCollectionKey &stateref(unsigned int index) const {
+    const GCollectionKey &stateref(unsigned int index = 0) const {
         const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(this->GetAttributePointer(0x918c796e, index));
         if (!resultptr) {
             resultptr = reinterpret_cast<const GCollectionKey *>(DefaultDataArea(sizeof(GCollectionKey)));

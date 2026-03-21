@@ -227,54 +227,37 @@ void GActivity::ActivateReferencedTriggers(bool activate, GRuntimeInstance *inst
 }
 
 bool GActivity::CollectionIsHandlerForState(GState *state, GHandler *handler) {
-    const Attrib::Key *handlerState = reinterpret_cast<const Attrib::Key *>(handler->GetAttributePointer(0x918c796e, 0));
+    const GCollectionKey &stateRef = handler->stateref();
 
-    if (!handlerState) {
-        handlerState = reinterpret_cast<const Attrib::Key *>(Attrib::DefaultDataArea(sizeof(Attrib::Key)));
+    if (stateRef.GetCollectionKey() != state->GetCollection()) {
+        return false;
     }
 
-    if (*handlerState == state->GetCollection()) {
-        const Attrib::Key *handlerActivity = reinterpret_cast<const Attrib::Key *>(handler->GetAttributePointer(0x857fe432, 0));
+    {
+        const GCollectionKey &handlerOwner = handler->handler_owner();
 
-        if (!handlerActivity) {
-            handlerActivity = reinterpret_cast<const Attrib::Key *>(Attrib::DefaultDataArea(sizeof(Attrib::Key)));
+        if (handlerOwner.GetCollectionKey() == GetCollection()) {
+            return true;
         }
 
-        if (*handlerActivity == GetCollection()) {
-            return true;
-        } else {
-            Attrib::Instance activity(Attrib::FindCollection(Attrib::Gen::gameplay::ClassKey(), *handlerActivity), 0, nullptr);
-            const Attrib::Gen::gameplay::_LayoutStruct *layout =
-                reinterpret_cast<const Attrib::Gen::gameplay::_LayoutStruct *>(activity.GetLayoutPointer());
+        Attrib::Gen::gameplay handlerOwnerObj(handlerOwner.GetCollectionKey(), 0, nullptr);
 
-            if (!layout) {
-                layout = reinterpret_cast<const Attrib::Gen::gameplay::_LayoutStruct *>(
-                    Attrib::DefaultDataArea(sizeof(Attrib::Gen::gameplay::_LayoutStruct)));
+        if (bStrCmp(
+                *reinterpret_cast<const char *const *>(handlerOwnerObj.GetLayoutPointer()),
+                *reinterpret_cast<const char *const *>(GetLayoutPointer())) == 0) {
+            return true;
+        }
+
+        unsigned int validOwnerKey = GetCollection();
+
+        while (validOwnerKey) {
+            if (validOwnerKey == handlerOwner.GetCollectionKey()) {
+                return true;
             }
 
-            if (bStrCmp(layout->CollectionName, CollectionName()) == 0) {
-                return true;
-            } else {
-                Attrib::Key collection = GetCollection();
-
-                if (collection) {
-                    do {
-                        if (collection == *handlerActivity) {
-                            return true;
-                        }
-
-                        Attrib::Instance parent(Attrib::FindCollection(Attrib::Gen::gameplay::ClassKey(), collection), 0, nullptr);
-                        const Attrib::Gen::gameplay::_LayoutStruct *parentLayout =
-                            reinterpret_cast<const Attrib::Gen::gameplay::_LayoutStruct *>(parent.GetLayoutPointer());
-
-                        if (!parentLayout) {
-                            parentLayout = reinterpret_cast<const Attrib::Gen::gameplay::_LayoutStruct *>(
-                                Attrib::DefaultDataArea(sizeof(Attrib::Gen::gameplay::_LayoutStruct)));
-                        }
-
-                        collection = parent.GetParent();
-                    } while (collection != 0);
-                }
+            {
+                Attrib::Gen::gameplay validOwnerObj(validOwnerKey, 0, nullptr);
+                validOwnerKey = validOwnerObj.GetParent();
             }
         }
     }
