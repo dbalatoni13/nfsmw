@@ -378,51 +378,40 @@ void SFXCTL_Shifting::UpdateRPM(float t) {
 void SFXCTL_Shifting::BeginUpShift() {
     CleanUpShiftFX();
 
-    SFXCTL_Engine *engine = m_pEngineCtl;
-    if (3000.0f <= engine->m_pPhysicsCtl->GetPhysRPM()) {
+    if (3000.0f <= m_pEngineCtl->m_pPhysicsCtl->GetPhysRPM()) {
         eShiftStageChanged = SHFT_UP_DISENGAGE;
         eShiftState = SHFT_UP_DISENGAGE;
 
-        float runningTime = SndBase::m_fRunningTime;
-        float prevRpm = engine->m_fPrevRPM;
-        RPM_AtShift = prevRpm;
-        float curRpm = engine->m_fEng_RPM;
-        engine->m_fPrevRPM = curRpm;
-        engine->SetEngRPM(prevRpm);
-        engine->m_fSmoothedEng_RPM = engine->m_fSmoothedEng_RPM * 0.95f + prevRpm * 0.05f;
-        t_Last_Shift = runningTime;
+        RPM_AtShift = m_pEngineCtl->m_fPrevRPM;
+        m_pEngineCtl->m_fPrevRPM = m_pEngineCtl->m_fEng_RPM;
+        m_pEngineCtl->SetEngRPM(RPM_AtShift);
+        m_pEngineCtl->m_fSmoothedEng_RPM = m_pEngineCtl->m_fSmoothedEng_RPM * 0.95f + RPM_AtShift * 0.05f;
+        t_Last_Shift = SndBase::m_fRunningTime;
 
-        Attrib::Gen::shiftpattern *shiftPattern = m_pShiftingPatternData;
-        const UMath::Matrix4 &curvespline = shiftPattern->Up_DisengageFall_Curve(0);
-        const stShiftPair &pair = shiftPattern->Up_DisengageFall(0);
-        const stShiftPair &pair2 = shiftPattern->Up_DisengageFall(0);
+        const UMath::Matrix4 &curvespline = m_pShiftingPatternData->Up_DisengageFall_Curve(0);
+        FillGraphFromSpline(curvespline, m_RPMPoints, 7,
+                            static_cast<float>(m_pShiftingPatternData->Up_DisengageFall(0).Time),
+                            static_cast<float>(m_pShiftingPatternData->Up_DisengageFall(0).RPM));
 
-        FillGraphFromSpline(curvespline, m_RPMPoints, 7, static_cast<float>(pair.Time), static_cast<float>(pair2.RPM));
-
-        float shiftRpm = RPM_AtShift;
         m_CurStage = 0;
         t_CurStage = 0.0f;
-        RPMOffset = static_cast<unsigned short>(static_cast<int>(shiftRpm));
+        RPMOffset = static_cast<unsigned short>(static_cast<int>(RPM_AtShift));
 
-        m_InterpShiftRPM.Initialize(shiftRpm, shiftRpm, 0, LINEAR);
+        m_InterpShiftRPM.Initialize(RPM_AtShift, RPM_AtShift, 0, LINEAR);
         m_InterpShiftVol.Initialize(0.0f, 0.0f, 1, LINEAR);
-        float physTrq = engine->m_pPhysicsCtl->GetPhysTRQ();
-        m_InterpShiftTorque.Initialize(physTrq, 0.0f, 100, LINEAR);
+        m_InterpShiftTorque.Initialize(m_pEngineCtl->m_pPhysicsCtl->GetPhysTRQ(), 0.0f, 100, LINEAR);
 
-        float totalDuration;
-        unsigned int numDisengage = shiftPattern->Num_Up_DisengageFall();
-        if (numDisengage == 1) {
-            const stShiftPair &first = shiftPattern->Up_DisengageFall(0);
-            totalDuration = static_cast<float>(first.Time);
+        float TotalDuration;
+        if (m_pShiftingPatternData->Num_Up_DisengageFall() == 1) {
+            TotalDuration = static_cast<float>(m_pShiftingPatternData->Up_DisengageFall(0).Time);
         } else {
-            const stShiftPair &first = shiftPattern->Up_DisengageFall(0);
-            const stShiftPair &second = shiftPattern->Up_DisengageFall(1);
-            totalDuration = static_cast<float>(first.Time) + static_cast<float>(second.Time);
+            TotalDuration = static_cast<float>(m_pShiftingPatternData->Up_DisengageFall(0).Time) +
+                            static_cast<float>(m_pShiftingPatternData->Up_DisengageFall(1).Time);
         }
 
-        const stShiftPair &upEngage = shiftPattern->Up_Engage();
-        int visualLength = static_cast<int>(totalDuration + static_cast<float>(upEngage.Time));
-        m_VisualRPM.Initialize(RPM_AtShift, RPM_AtShift - 500.0f, visualLength, EQ_PWR_SQ);
+        m_VisualRPM.Initialize(RPM_AtShift, RPM_AtShift - 500.0f,
+                               static_cast<int>(TotalDuration + static_cast<float>(m_pShiftingPatternData->Up_Engage().Time)),
+                               EQ_PWR_SQ);
 
         *static_cast<int *>(static_cast<void *>(&m_bNeed_DisengageSnd)) = 1;
         *static_cast<int *>(static_cast<void *>(&m_bPendingNeedShiftSound)) = 1;
