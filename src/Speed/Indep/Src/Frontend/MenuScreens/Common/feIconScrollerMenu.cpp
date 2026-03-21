@@ -920,14 +920,16 @@ IconOption *IconPanel::GetOption(int to_find) {
     if (to_find < 1) {
         return nullptr;
     }
-    IconOption *node = Options.GetHead();
-    int i = 1;
-    while (node != Options.EndOfList()) {
-        if (to_find == i) {
-            return node;
+    int index = 1;
+    {
+        IconOption *opt = Options.GetHead();
+        while (opt != Options.EndOfList()) {
+            if (to_find == index) {
+                return opt;
+            }
+            index++;
+            opt = opt->GetNext();
         }
-        i++;
-        node = node->GetNext();
     }
     return nullptr;
 }
@@ -936,14 +938,16 @@ int IconPanel::GetOptionIndex(IconOption *to_find) {
     if (!to_find) {
         return -1;
     }
-    IconOption *node = Options.GetHead();
-    int i = 1;
-    while (node != Options.EndOfList()) {
-        if (node == to_find) {
-            return i;
+    int index = 1;
+    {
+        IconOption *opt = Options.GetHead();
+        while (opt != Options.EndOfList()) {
+            if (opt == to_find) {
+                return index;
+            }
+            index++;
+            opt = opt->GetNext();
         }
-        i++;
-        node = node->GetNext();
     }
     return -1;
 }
