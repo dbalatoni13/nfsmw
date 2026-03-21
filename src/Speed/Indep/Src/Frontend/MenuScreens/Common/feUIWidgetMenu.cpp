@@ -210,10 +210,12 @@ FEObject *UIWidgetMenu::GetCurrentFEObject(const char *name) {
 }
 
 void UIWidgetMenu::RefreshWidgets() {
-    FEWidget *w = Options.GetHead();
-    while (w != Options.EndOfList()) {
-        w->Draw();
-        w = w->GetNext();
+    {
+        FEWidget *w = Options.GetHead();
+        while (w != Options.EndOfList()) {
+            w->Draw();
+            w = w->GetNext();
+        }
     }
 }
 
@@ -595,4 +597,3 @@ void UIWidgetMenu::ScrollWrapped(eScrollDir dir) {
         }
     }
 }
-

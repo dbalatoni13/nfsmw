@@ -263,11 +263,12 @@ void StatsPanel::Draw(unsigned int numPlayers) {
         FEngSetScript(ParentPkg, 0x8A41F5B9, 0x0016A259, true);
     }
 
-    FEWidget *widget = TheStats.GetHead();
-
-    while (widget != TheStats.EndOfList()) {
-        widget->Draw();
-        widget = widget->GetNext();
+    {
+        FEWidget *widgey = TheStats.GetHead();
+        while (widgey != TheStats.EndOfList()) {
+            widgey->Draw();
+            widgey = widgey->GetNext();
+        }
     }
 }
 
