@@ -68,12 +68,16 @@ struct XenonEffectLists {
     XenonEffectVec lists[2]; // [0]=active, [1]=staging
 
     XenonEffectLists() {
-        for (int i = ACTIVE; i <= STAGING; i++) {
-            lists[i].start = 0;
-            lists[i].finish = 0;
-            lists[i].end_of_storage = 0;
-            reinterpret_cast<XenonEffectStdVector &>(lists[i]).reserve(20);
-        }
+        int i = STAGING;
+        XenonEffectVec *list = lists;
+
+        do {
+            list->start = 0;
+            list->finish = 0;
+            list->end_of_storage = 0;
+            reinterpret_cast<XenonEffectStdVector &>(*list).reserve(20);
+            list++;
+        } while (i-- != 0);
     }
 };
 
