@@ -141,10 +141,10 @@ void InGameAnyTutorialScreen::LaunchMovie(const char *filename, const char *pack
     if (packageName) {
         SetPackageName(packageName);
     }
-    if (cFEng::mInstance->IsPackageInControl(GetLoadingScreenPackageName())) {
-        cFEng::mInstance->QueuePackageSwitch(InGameTutorialScreenName, 0, 0, false);
+    if (cFEng::Get()->IsPackageInControl(GetLoadingScreenPackageName())) {
+        cFEng::Get()->QueuePackageSwitch(InGameTutorialScreenName, 0, 0, false);
     } else {
-        cFEng::mInstance->QueuePackagePush(InGameTutorialScreenName, 0, 0, false);
+        cFEng::Get()->QueuePackagePush(InGameTutorialScreenName, 0, 0, false);
     }
 }
 

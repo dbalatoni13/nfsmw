@@ -113,10 +113,10 @@ void InGameAnyMovieScreen::NotificationMessage(unsigned long msg, FEObject *obj,
 void InGameAnyMovieScreen::LaunchMovie(const char *filename) {
     InGameAnyMovieScreen::SetMovieName(filename);
     gInGameMoviePlaying = true;
-    if (cFEng::mInstance->IsPackageInControl(GetLoadingScreenPackageName())) {
-        cFEng::mInstance->QueuePackageSwitch(GetFEngPackageName(), 0, 0, false);
+    if (cFEng::Get()->IsPackageInControl(GetLoadingScreenPackageName())) {
+        cFEng::Get()->QueuePackageSwitch(GetFEngPackageName(), 0, 0, false);
     } else {
-        cFEng::mInstance->QueuePackagePush(GetFEngPackageName(), 0, 0, false);
+        cFEng::Get()->QueuePackagePush(GetFEngPackageName(), 0, 0, false);
     }
 }
 
