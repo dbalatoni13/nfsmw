@@ -2160,7 +2160,14 @@ bool GRaceParameters::GetCanBeReversed() const {
 GCharacter *GRaceParameters::GetOpponentChar(unsigned int index) const {
     unsigned int characterKey;
 
-    EnsureLoaded();
+    if (mParentVault && !mParentVault->IsLoaded()) {
+        mParentVault->LoadSyncTransient();
+    }
+
+    if (mChildVault && !mChildVault->IsLoaded()) {
+        mChildVault->LoadSyncTransient();
+    }
+
     if (GetIsBossRace() && GRaceStatus::Get().GetRaceContext() != GRace::kRaceContext_Career) {
         characterKey = Attrib::StringToLowerCaseKey("character_smart");
     } else {
@@ -2298,7 +2305,14 @@ GMarker *GRaceParameters::GetBarrierExemption(unsigned int index) const {
 const char *GRaceParameters::GetBarrierName(unsigned int index) const {
     const char *barrierName;
 
-    EnsureLoaded();
+    if (mParentVault && !mParentVault->IsLoaded()) {
+        mParentVault->LoadSyncTransient();
+    }
+
+    if (mChildVault && !mChildVault->IsLoaded()) {
+        mChildVault->LoadSyncTransient();
+    }
+
     barrierName = mRaceRecord->Barriers(index);
     if (barrierName && *barrierName == '*') {
         return barrierName + 1;
