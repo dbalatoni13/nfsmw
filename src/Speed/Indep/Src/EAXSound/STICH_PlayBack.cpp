@@ -484,17 +484,19 @@ void cSampleWarpper::Play(const SND_Params *Params) {
         int sampleAz = (TempAz + static_cast<unsigned short>(ref->Az) + 0x10000) % 0x10000;
         int wetFX = Params->RVerb;
 
-        if (sampleType < 0) {
-            sampleType = 0;
-        } else if (sampleType > 0x10) {
-            sampleType = 0x10;
+        int type = sampleType;
+        if (type < 0) {
+            type = 0;
+        } else if (type > 0x10) {
+            type = 0x10;
         }
-        sample->mData.type = sampleType;
+        sample->mData.type = type;
 
-        if (sampleIndex > 0x3FF) {
-            sampleIndex = 0x3FF;
+        int id = sampleIndex;
+        if (id > 0x3FF) {
+            id = 0x3FF;
         }
-        sample->mData.iD = sampleIndex;
+        sample->mData.iD = id;
 
         int vol = TempVol;
         if (vol < 0) {
@@ -519,10 +521,11 @@ void cSampleWarpper::Play(const SND_Params *Params) {
         }
         sample->mData.az = sampleAz;
 
-        if (sampleOffset > 4000) {
-            sampleOffset = 4000;
+        int offset = sampleOffset;
+        if (offset > 4000) {
+            offset = 4000;
         }
-        sample->mData.offset = sampleOffset;
+        sample->mData.offset = offset;
 
         sample->mData.filter_DryFX = 0x7FFF;
 
@@ -568,17 +571,19 @@ void cSampleWarpper::Play(const SND_Params *Params) {
         int sampleAz = (TempAz + static_cast<unsigned short>(ref->Az) + 0x10000) % 0x10000;
         int wetFX = Params->RVerb;
 
-        if (sampleType < 0) {
-            sampleType = 0;
-        } else if (sampleType > 0x10) {
-            sampleType = 0x10;
+        int type = sampleType;
+        if (type < 0) {
+            type = 0;
+        } else if (type > 0x10) {
+            type = 0x10;
         }
-        sample->mData.type = sampleType;
+        sample->mData.type = type;
 
-        if (sampleIndex > 0x3FF) {
-            sampleIndex = 0x3FF;
+        int id = sampleIndex;
+        if (id > 0x3FF) {
+            id = 0x3FF;
         }
-        sample->mData.iD = sampleIndex;
+        sample->mData.iD = id;
 
         int vol = TempVol;
         if (vol < 0) {
@@ -603,10 +608,11 @@ void cSampleWarpper::Play(const SND_Params *Params) {
         }
         sample->mData.az = sampleAz;
 
-        if (sampleOffset > 4000) {
-            sampleOffset = 4000;
+        int offset = sampleOffset;
+        if (offset > 4000) {
+            offset = 4000;
         }
-        sample->mData.offset = sampleOffset;
+        sample->mData.offset = offset;
 
         sample->mData.filter_DryFX = 0x7FFF;
 
@@ -652,17 +658,19 @@ void cSampleWarpper::Play(const SND_Params *Params) {
         int sampleAz = (TempAz + static_cast<unsigned short>(ref->Az) + 0x10000) % 0x10000;
         int wetFX = Params->RVerb;
 
-        if (sampleType < 0) {
-            sampleType = 0;
-        } else if (sampleType > 0x10) {
-            sampleType = 0x10;
+        int type = sampleType;
+        if (type < 0) {
+            type = 0;
+        } else if (type > 0x10) {
+            type = 0x10;
         }
-        sample->mData.type = sampleType;
+        sample->mData.type = type;
 
-        if (sampleIndex > 0x3FF) {
-            sampleIndex = 0x3FF;
+        int id = sampleIndex;
+        if (id > 0x3FF) {
+            id = 0x3FF;
         }
-        sample->mData.iD = sampleIndex;
+        sample->mData.iD = id;
 
         int vol = TempVol;
         if (vol < 0) {
@@ -687,10 +695,11 @@ void cSampleWarpper::Play(const SND_Params *Params) {
         }
         sample->mData.az = sampleAz;
 
-        if (sampleOffset > 4000) {
-            sampleOffset = 4000;
+        int offset = sampleOffset;
+        if (offset > 4000) {
+            offset = 4000;
         }
-        sample->mData.offset = sampleOffset;
+        sample->mData.offset = offset;
 
         sample->mData.filter_DryFX = 0x7FFF;
 
