@@ -41,16 +41,14 @@ void DrawHeli::OnService(RenderConn::Pkt_Heli_Service &pkt) {
 }
 
 bool DrawHeli::OnService(HSIMSERVICE hCon, Sim::Packet *pkt) {
-    bool result = false;
     if (hCon == mRenderService) {
         if (!static_cast<IModel *>(this)->IsHidden()) {
             OnService(*static_cast<RenderConn::Pkt_Heli_Service *>(pkt));
-            result = true;
-        } else {
-            mInView = false;
+            return true;
         }
+        mInView = false;
     }
-    return result;
+    return false;
 }
 
 void DrawHeli::HidePart(const UCrc32 &name) {}
