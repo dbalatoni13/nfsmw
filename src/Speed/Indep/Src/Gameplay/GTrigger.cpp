@@ -29,7 +29,6 @@ GTrigger::GTrigger(const Attrib::Key &triggerKey)
     UMath::Vector3 dimSwizzled;
     float triggerRadius;
     const int *oneShot;
-    bool hasDimensions;
 
     mTriggerEnabled = 0;
     mIcon = nullptr;
@@ -51,7 +50,6 @@ GTrigger::GTrigger(const Attrib::Key &triggerKey)
     VU0_MATRIX3x4_vect3mult(initialVec, directionMat, initialVec);
     mDirection = initialVec;
     mSimObjInside.reserve(8);
-
     position = reinterpret_cast<const UMath::Vector3 *>(GetAttributePointer(0x9F743A0E, 0));
     if (!position) {
         position = reinterpret_cast<const UMath::Vector3 *>(Attrib::DefaultDataArea(sizeof(UMath::Vector3)));
@@ -64,7 +62,7 @@ GTrigger::GTrigger(const Attrib::Key &triggerKey)
     dimSwizzled.x = 0.0f;
     dimSwizzled.y = 0.0f;
     dimSwizzled.z = 0.0f;
-    hasDimensions = false;
+    bool hasDimensions = false;
     triggerRadius = 0.0f;
 
     if (dimensions) {
