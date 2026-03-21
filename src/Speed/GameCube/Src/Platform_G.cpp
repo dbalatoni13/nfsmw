@@ -38,6 +38,11 @@ class FEObject;
 class cFEng {
 public:
     static cFEng *mInstance;
+
+    static cFEng *Get() {
+        return mInstance;
+    }
+
     void MakeLoadedPackagesDirty();
     int IsPackagePushed(const char *);
     void PushErrorPackage(const char *, int, unsigned long);
@@ -302,15 +307,7 @@ void DVDErrorTask(void *, int) {
     int errorState = 0;
     unsigned int nextFrame;
     int driveStatus;
-    int movieWasPlaying;
-    long ch;
-    int textLen;
-    int scrollLen;
-    int buttonMask;
-    cFEng *feng;
     const char *pkgName;
-    char textBuf[16];
-    PADStatus padBuf[4];
 
     do {
         IOModule::GetIOModule().Update();
@@ -353,37 +350,40 @@ void DVDErrorTask(void *, int) {
             }
 
             nextFrame = frame + 1;
-            if (MemoryCard::s_pThis != 0) {
-                MemoryCard::s_pThis->Tick(16);
+            if (MemoryCard::GetInstance() != 0) {
+                MemoryCard::GetInstance()->Tick(16);
             }
             goto loop_end;
         }
 
         if (errorState != 0) {
+            unsigned long MotorRumble[4];
+            long port;
+
             /* Error state active - run sync tasks and handle input */
             bSyncTaskRun();
-            if (MemoryCard::s_pThis != 0) {
-                MemoryCard::s_pThis->Tick(16);
+            if (MemoryCard::GetInstance() != 0) {
+                MemoryCard::GetInstance()->Tick(16);
             }
             DVDCheckDisk();
 
-            bMemSet(textBuf, 0, 16);
-            *(u32 *)&textBuf[0] = 2;
-            *(u32 *)&textBuf[4] = 2;
-            *(u32 *)&textBuf[8] = 2;
-            *(u32 *)&textBuf[12] = 2;
-            PADControlAllMotors((const u32 *)textBuf);
+            bMemSet(MotorRumble, 0, 16);
+            MotorRumble[0] = 2;
+            MotorRumble[1] = 2;
+            MotorRumble[2] = 2;
+            MotorRumble[3] = 2;
+            PADControlAllMotors(MotorRumble);
 
             LGWheels_ReadAll(plat_lgwheels);
-            for (ch = 0; ch <= 3; ch++) {
-                if (LGWheels_IsConnected(plat_lgwheels, ch)) {
-                    LGWheels_StopConstantForce(plat_lgwheels, ch);
-                    LGWheels_StopSurfaceEffect(plat_lgwheels, ch);
-                    LGWheels_StopDamperForce(plat_lgwheels, ch);
-                    LGWheels_StopCarAirborne(plat_lgwheels, ch);
-                    LGWheels_StopSlipperyRoadEffect(plat_lgwheels, ch);
-                    LGWheels_PlaySpringForce(plat_lgwheels, ch,
-                        *(signed char *)((char *)plat_lgwheels + ch * 10 + 3),
+            for (port = 0; port <= 3; port++) {
+                if (LGWheels_IsConnected(plat_lgwheels, port)) {
+                    LGWheels_StopConstantForce(plat_lgwheels, port);
+                    LGWheels_StopSurfaceEffect(plat_lgwheels, port);
+                    LGWheels_StopDamperForce(plat_lgwheels, port);
+                    LGWheels_StopCarAirborne(plat_lgwheels, port);
+                    LGWheels_StopSlipperyRoadEffect(plat_lgwheels, port);
+                    LGWheels_PlaySpringForce(plat_lgwheels, port,
+                        *(signed char *)((char *)plat_lgwheels + port * 10 + 3),
                         0xb4, 0xb4);
                 }
             }
@@ -401,9 +401,9 @@ void DVDErrorTask(void *, int) {
         driveStatus = DVDGetDriveStatus();
 
         if (driveStatus != -1 && resetMode != -1) {
-            int mode = resetMode;
+            int reset_mode = resetMode;
             resetMode = -1;
-            CheckReset(mode);
+            CheckReset(reset_mode);
         }
 
         /* Map drive status to error index */
@@ -444,9 +444,10 @@ void DVDErrorTask(void *, int) {
                 g_pEAXSound->Update(0.1f);
             }
 
+            cFEng *feng = cFEng::Get();
             pkgName = "DiscError.fng";
-            if (!cFEng::mInstance->IsPackagePushed(pkgName)) {
-                cFEng::mInstance->PushErrorPackage(pkgName, 0, 0xff);
+            if (!feng->IsPackagePushed(pkgName)) {
+                feng->PushErrorPackage(pkgName, 0, 0xff);
             }
 
             nextFrame = frame + 1;
@@ -459,8 +460,7 @@ void DVDErrorTask(void *, int) {
             /* Disc error was active, check if we should service streaming */
             nextFrame = frame + 1;
 
-            if (!(TheTrackStreamer.UserMemoryAllocationSize > 0) &&
-                (TheTrackStreamer.LoadingPhase != TrackStreamer::LOADING_IDLE)) {
+            if (!TheTrackStreamer.HasUserMemoryAllocations() && TheTrackStreamer.IsLoadingInProgressNonRepeatable()) {
                 ServiceResourceLoading();
                 driveStatus = 1;
                 TheTrackStreamer.ServiceNonGameState();
@@ -469,13 +469,16 @@ void DVDErrorTask(void *, int) {
 
             if (driveStatus != 0) {
                 /* Scrolling text display */
-                scrollLen = (signed char)bStrLen(
+                char the_loading_text[16];
+                int scrollLen = (signed char)bStrLen(
                     s_OpenCover_ErrorText[language][errorIndex]);
+                int buttonMask = 0x10;
+                int to_copy;
+                char copy_length;
 
-                bMemSet(textBuf, 0, 16);
+                bMemSet(the_loading_text, 0, 16);
 
-                buttonMask = 0x10;
-                if (TheGameFlowManager.GetState() == GAMEFLOW_STATE_RACING) {
+                if (IsGameFlowInGame()) {
                     buttonMask = 0x40;
                 }
 
@@ -491,21 +494,22 @@ void DVDErrorTask(void *, int) {
                     scrollIndex = scrollIndex + 1;
                 }
 
-                bStrNCpy(textBuf,
+                to_copy = scrollLen - scrollOffset;
+                bStrNCpy(the_loading_text,
                     s_OpenCover_ErrorText[language][errorIndex],
-                    scrollLen - scrollOffset);
+                    to_copy);
 
                 nextFrame = frame + 1;
-                textLen = bStrLen(textBuf);
-                while (textLen <= scrollLen) {
-                    bStrCat(textBuf, textBuf, " ");
-                    textLen = textLen + 1;
+                copy_length = static_cast<char>(bStrLen(the_loading_text));
+                while (copy_length <= scrollLen) {
+                    bStrCat(the_loading_text, the_loading_text, " ");
+                    copy_length = copy_length + 1;
                 }
 
-                FEPrintf("DiscError.fng", 0xEEFFD04F, textBuf);
+                FEPrintf("DiscError.fng", 0xEEFFD04F, the_loading_text);
 
-                if (MemoryCard::s_pThis != 0) {
-                    MemoryCard::s_pThis->Tick(16);
+                if (MemoryCard::GetInstance() != 0) {
+                    MemoryCard::GetInstance()->Tick(16);
                 }
             } else {
                 /* Error resolved */
@@ -519,19 +523,20 @@ void DVDErrorTask(void *, int) {
                     g_pEAXSound->Update(0.1f);
                 }
 
-                movieWasPlaying = 0;
+                bool wasMovieActive = false;
+                cFEng *feng = cFEng::Get();
                 if (gMoviePlayer != 0) {
-                    movieWasPlaying = 1;
+                    wasMovieActive = true;
                     gMoviePlayer->Stop();
                 }
 
-                cFEng::mInstance->MakeLoadedPackagesDirty();
-                if (cFEng::mInstance->IsPackagePushed("DiscError.fng")) {
-                    cFEng::mInstance->PopErrorPackage();
+                feng->MakeLoadedPackagesDirty();
+                if (feng->IsPackagePushed("DiscError.fng")) {
+                    feng->PopErrorPackage();
                 }
                 nextFrame = frame + 1;
-                if (movieWasPlaying) {
-                    cFEng::mInstance->QueueGameMessage(0xC3960EB9, 0, 0xff);
+                if (wasMovieActive) {
+                    feng->QueueGameMessage(0xC3960EB9, 0, 0xff);
                 }
             }
         }
@@ -550,12 +555,16 @@ void DVDErrorTask(void *, int) {
                 HardwarePadStatus[0].button = *(u16 *)((char *)plat_lgwheels);
                 HardwarePadStatus[1].button = *(u16 *)((char *)plat_lgwheels + 10);
             } else {
-                PADRead(padBuf);
-                if (padBuf[0].err == 0) {
-                    bMemCpy(&HardwarePadStatus[0], &padBuf[0], 0xc);
+                PADStatus LocalHardwarePadStatus[4];
+                int pad_state_0;
+
+                PADRead(LocalHardwarePadStatus);
+                pad_state_0 = LocalHardwarePadStatus[0].err;
+                if (pad_state_0 == 0) {
+                    bMemCpy(&HardwarePadStatus[0], &LocalHardwarePadStatus[0], 0xc);
                 }
-                if (padBuf[1].err == 0) {
-                    bMemCpy(&HardwarePadStatus[1], &padBuf[1], 0xc);
+                if (LocalHardwarePadStatus[1].err == 0) {
+                    bMemCpy(&HardwarePadStatus[1], &LocalHardwarePadStatus[1], 0xc);
                 }
             }
         }

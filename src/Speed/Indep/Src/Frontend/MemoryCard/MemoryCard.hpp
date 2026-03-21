@@ -16,6 +16,10 @@ class MemoryCard {
 
     void Tick(int);
 
+    static MemoryCard *GetInstance() {
+        return s_pThis;
+    }
+
     static MemoryCard *s_pThis;
     static int IsCardBusy();
 };
