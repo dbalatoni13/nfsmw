@@ -2441,19 +2441,17 @@ void GManager::OnRemovedVehicleCache(IVehicle *ivehicle) {
 }
 
 eVehicleCacheResult GManager::OnQueryVehicleCache(const IVehicle *removethis, const IVehicleCache *whosasking) const {
-    const IVehicleCache *cache = whosasking;
-    const IVehicle *vehicleToRemove = removethis;
-    GManager *self = const_cast<GManager *>(this);
-
-    for (StockCarMap::iterator it = self->mStockCars.begin(); it != self->mStockCars.end(); ++it) {
+    for (StockCarMap::iterator it = const_cast<GManager *>(this)->mStockCars.begin();
+         it != const_cast<GManager *>(this)->mStockCars.end();
+         ++it) {
         IVehicle *stockCar = nullptr;
 
-        if (it->second && it->second->QueryInterface(&stockCar) && stockCar == vehicleToRemove) {
-            if (!UTL::COM::ComparePtr(cache, INIS::Get())) {
+        if (it->second->QueryInterface(&stockCar) && stockCar == removethis) {
+            if (!UTL::COM::ComparePtr(whosasking, INIS::Get())) {
                 return VCR_WANT;
             }
 
-            self->mStockCars.erase(it);
+            const_cast<GManager *>(this)->mStockCars.erase(it);
             return VCR_DONTCARE;
         }
     }
@@ -2462,7 +2460,7 @@ eVehicleCacheResult GManager::OnQueryVehicleCache(const IVehicle *removethis, co
         GCharacter *character = *it;
         IVehicle *vehicle = character->GetSpawnedVehicle();
 
-        if (vehicle != vehicleToRemove) {
+        if (vehicle != removethis) {
             continue;
         }
 
@@ -2476,7 +2474,7 @@ eVehicleCacheResult GManager::OnQueryVehicleCache(const IVehicle *removethis, co
             return VCR_DONTCARE;
         }
 
-        if (UTL::COM::ComparePtr(cache, ITrafficMgr::Get()) || vehicle->GetOffscreenTime() == 0.0f) {
+        if (UTL::COM::ComparePtr(whosasking, ITrafficMgr::Get()) || vehicle->GetOffscreenTime() == 0.0f) {
             return VCR_DONTCARE;
         }
 
