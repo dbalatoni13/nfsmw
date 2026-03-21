@@ -419,8 +419,8 @@ bool ScheduledSpeechEvent::sort_nested_priority(const ScheduledSpeechEvent *lhs,
         return rhs->priority < lhs->priority;
     }
 
-    int lhsEntryTime = const_cast<Timer &>(lhs->entry_time).GetPackedTime();
-    int rhsEntryTime = const_cast<Timer &>(rhs->entry_time).GetPackedTime();
+    int lhsEntryTime = *reinterpret_cast<const int *>(&lhs->entry_time);
+    int rhsEntryTime = *reinterpret_cast<const int *>(&rhs->entry_time);
     if (lhsEntryTime == rhsEntryTime) {
         return lhs->frameindex < rhs->frameindex;
     }

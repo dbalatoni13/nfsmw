@@ -156,28 +156,30 @@ int STREAM_overhead(int requests, int filters, int taps) {
 }
 
 int validatehandle(int sndstreamhandle, STREAMHEADERtag **stream, TAPSTRUCTtag **tap) {
-    STREAMHEADERtag *header = GetHeader(sndstreamhandle);
-    if (!header) {
-        if (stream != nullptr) {
-            *stream = nullptr;
-        }
-        if (tap != nullptr) {
-            *tap = nullptr;
-        }
-        return -1;
+    if (sndstreamhandle == 0) {
+        return 1;
     }
 
-    if (stream != nullptr) {
-        *stream = header;
+    STREAMHEADERtag *strm = *reinterpret_cast<STREAMHEADERtag **>(sndstreamhandle);
+    if (strm->id == 0x4D525453) {
+        *tap = reinterpret_cast<TAPSTRUCTtag *>(sndstreamhandle);
+        *stream = strm;
+        return 0;
     }
-    if (tap != nullptr) {
-        *tap = &header->tap[0];
-    }
-    return 0;
+    return 1;
 }
 
-int inbetween(char *value, char *low, char *high) {
-    return value >= low && value < high;
+int inbetween(char *startptr, char *endptr, char *ptr) {
+    if (startptr <= endptr) {
+        if (ptr < startptr) {
+            return 0;
+        }
+        return ptr < endptr;
+    }
+    if (ptr < startptr && endptr <= ptr) {
+        return 0;
+    }
+    return 1;
 }
 
 int decbufferusage(STREAMHEADERtag *stream, int amount) {
@@ -277,8 +279,20 @@ void freerequest(STREAMHEADERtag *stream, REQUESTSTRUCTtag *reqRaw) {
 }
 
 int filterchunk(STREAMHEADERtag *stream, STREAMCHUNKHDR *chunk) {
-    (void)stream;
-    return (chunk != nullptr);
+    int i = 0;
+
+    if (stream->filters > 0) {
+        FILTERSTRUCTtag *filt = stream->filter;
+        int chunktype = ReadChunkWord(&chunk->type);
+
+        do {
+            if ((chunktype & filt[i].mask) == filt[i].value) {
+                return filt[i].tapnum;
+            }
+            i++;
+        } while (i < stream->filters);
+    }
+    return -2;
 }
 
 int parsechunks(STREAMHEADERtag *stream) {
