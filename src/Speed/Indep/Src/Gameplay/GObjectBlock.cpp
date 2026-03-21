@@ -169,8 +169,8 @@ GObjectBlock::~GObjectBlock() {
     DeleteObjects<GState>();
     DeleteObjects<GHandler>();
 
-    mObjectBuffer = nullptr;
     mVault = nullptr;
+    mObjectBuffer = nullptr;
 
     if (WTriggerManager::Exists()) {
         WTriggerManager::Get().ClearAllFireOnExit();
