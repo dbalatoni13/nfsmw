@@ -2373,21 +2373,17 @@ bool GManager::LoadGameplayData(unsigned char *src, unsigned int maxSize) {
     bMemCpy(&respawnMarker, src, sizeof(respawnMarker));
     src += sizeof(respawnMarker);
     AlignPointer(src, 0x10);
-    {
-        Attrib::Gen::gameplay testInstance(respawnMarker, 0, nullptr);
+    Attrib::Gen::gameplay testInstance(respawnMarker, 0, nullptr);
 
-        if (testInstance.IsValid()) {
-            Get().SetFreeRoamStartMarker(respawnMarker);
-        }
+    if (testInstance.IsValid()) {
+        Get().SetFreeRoamStartMarker(respawnMarker);
     }
 
     bMemCpy(&respawnMarker, src, sizeof(respawnMarker));
-    {
-        Attrib::Gen::gameplay testInstance2(respawnMarker, 0, nullptr);
+    Attrib::Gen::gameplay testInstance2(respawnMarker, 0, nullptr);
 
-        if (testInstance2.IsValid()) {
-            Get().SetFreeRoamFromSafeHouseStartMarker(respawnMarker);
-        }
+    if (testInstance2.IsValid()) {
+        Get().SetFreeRoamFromSafeHouseStartMarker(respawnMarker);
     }
 
     return true;
