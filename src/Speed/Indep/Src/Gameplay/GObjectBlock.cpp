@@ -208,26 +208,21 @@ unsigned int GObjectBlock::CalcSpaceRequired(GVault *vault, unsigned int *outObj
 }
 
 bool GObjectBlock::CollectionIsInstanceOfTemplate(Attrib::Gen::gameplay &instanceObj, Attrib::Gen::gameplay &templateObj) {
-    const int *isObject = reinterpret_cast<const int *>(instanceObj.GetAttributePointer(0x3E9156CA, 0));
     unsigned int parentKey;
 
-    if (!isObject) {
-        isObject = reinterpret_cast<const int *>(Attrib::DefaultDataArea(sizeof(int)));
-    }
-
-    if (*isObject != 0) {
+    if (instanceObj.Template(0)) {
         return false;
     }
 
     parentKey = instanceObj.GetParent();
     while (parentKey != 0) {
-        Attrib::Gen::gameplay parent(Attrib::FindCollection(Attrib::Gen::gameplay::ClassKey(), parentKey), 0, nullptr);
+        Attrib::Gen::gameplay parentObj(parentKey, 0, nullptr);
 
-        if (parent.GetCollection() == templateObj.GetCollection()) {
+        if (parentObj.GetCollection() == templateObj.GetCollection()) {
             return true;
         }
 
-        parentKey = parent.GetParent();
+        parentKey = parentObj.GetParent();
     }
 
     return false;
