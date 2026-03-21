@@ -203,13 +203,9 @@ void GActivity::UnregisterMessageHandlers() {
 }
 
 void GActivity::ActivateReferencedTriggers(bool activate, GRuntimeInstance *instance) {
-    unsigned int i = 0;
-
-    while (true) {
-        if (instance->GetConnectionCount() <= i) {
-            break;
-        }
-        GTrigger *trigger = GRuntimeInstance::FindObject<GTrigger>(instance->GetConnectionAt(i)->GetCollection());
+    for (unsigned int onConnection = 0; onConnection < instance->GetConnectionCount(); onConnection++) {
+        GRuntimeInstance *target = instance->GetConnectionAt(onConnection);
+        GTrigger *trigger = GRuntimeInstance::FindObject<GTrigger>(target->GetCollection());
 
         if (trigger) {
             if (activate) {
@@ -218,34 +214,15 @@ void GActivity::ActivateReferencedTriggers(bool activate, GRuntimeInstance *inst
                 trigger->RemoveActivationReference();
             }
         }
-        i++;
     }
 
-    i = 0;
-    while (true) {
-        unsigned int childCount;
+    for (unsigned int onChild = 0; onChild < instance->Num_Children(); onChild++) {
+        const GCollectionKey &childSpec = instance->Children(onChild);
+        GRuntimeInstance *child = GManager::Get().FindInstance(childSpec.GetCollectionKey());
 
-        {
-            Attrib::Attribute children = instance->Get(0x916E0E78);
-
-            childCount = children.GetLength();
-        }
-
-        if (childCount <= i) {
-            break;
-        }
-
-        const unsigned int *childKey = reinterpret_cast<const unsigned int *>(instance->GetAttributePointer(0x916E0E78, i));
-
-        if (!childKey) {
-            childKey = reinterpret_cast<const unsigned int *>(Attrib::DefaultDataArea(sizeof(unsigned int)));
-        }
-
-        GRuntimeInstance *child = GManager::Get().FindInstance(*childKey);
         if (child) {
             ActivateReferencedTriggers(activate, child);
         }
-        i++;
     }
 }
 
