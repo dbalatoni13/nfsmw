@@ -3024,7 +3024,14 @@ void GRaceStatus::Update(float dT) {
 
         UCrc32 gameplayMessage(0x20D60DBF);
         elapsed = GetRaceTimeElapsed();
-        MNotifyRaceTime(elapsed, GetIsTimeLimited(), GetRaceTimeRemaining()).Post(gameplayMessage);
+        bool isTimeLimited;
+
+        if (mRaceParms) {
+            isTimeLimited = mRaceParms->GetTimeLimit() > 0.0f;
+        } else {
+            isTimeLimited = false;
+        }
+        MNotifyRaceTime(elapsed, isTimeLimited, GetRaceTimeRemaining()).Post(gameplayMessage);
 
         elapsed = GetRaceTimeElapsed();
         elapsedSec = static_cast<int>(elapsed);
