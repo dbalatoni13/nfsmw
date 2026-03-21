@@ -1199,11 +1199,7 @@ static MenuScreen *CreatePostRaceResultsScreen(ScreenConstructorData *sd) {
 
 // Range: 0x80155F40 -> 0x801560EC
 void PursuitData::PopulateData(IPursuit *ipursuit, IPerpetrator *iperpetrator, int exitToSafehouse) {
-    bool pursuitActive = false;
-    if (ipursuit) {
-        pursuitActive = ipursuit->IsPursuitBailed() == false;
-    }
-    mPursuitIsActive = pursuitActive;
+    mPursuitIsActive = ipursuit && ipursuit->IsPursuitBailed() == false;
 
     if (ipursuit) {
         mPursuitLength = ipursuit->GetPursuitDuration();
@@ -1215,12 +1211,10 @@ void PursuitData::PopulateData(IPursuit *ipursuit, IPerpetrator *iperpetrator, i
     }
 
     if (iperpetrator) {
-        int repNormal = iperpetrator->GetPendingRepPointsNormal();
-        if (repNormal > 0) {
+        if (iperpetrator->GetPendingRepPointsNormal() > 0) {
             mRepAchievedNormal = iperpetrator->GetPendingRepPointsNormal();
         }
-        int repCopDestruction = iperpetrator->GetPendingRepPointsFromCopDestruction();
-        if (repCopDestruction > 0) {
+        if (iperpetrator->GetPendingRepPointsFromCopDestruction() > 0) {
             mRepAchievedCopDestruction = iperpetrator->GetPendingRepPointsFromCopDestruction();
         }
     }

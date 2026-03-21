@@ -105,10 +105,12 @@ int UnloaderFEngFont(bChunk *chunk) {
 }
 
 void FEngFontNotifyTextureLoading(TexturePack *texture_pack, bool loading) {
-    FEngFont *font = FEngFonts.GetHead();
-    while (font != FEngFonts.EndOfList()) {
-        font->NotifyTextureLoading(texture_pack, loading);
-        font = font->GetNext();
+    {
+        FEngFont *font = FEngFonts.GetHead();
+        while (font != FEngFonts.EndOfList()) {
+            font->NotifyTextureLoading(texture_pack, loading);
+            font = font->GetNext();
+        }
     }
 }
 
