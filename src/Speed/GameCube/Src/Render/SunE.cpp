@@ -77,11 +77,13 @@ void eBuildSunPoly(ePoly *poly, SunLayer *layer, float max_size, float x, float 
 
     diagonal1 = half_size * sin_angle;
     diagonal0 = half_size * cos_angle;
+    sum = diagonal1 + diagonal0;
+    diff = diagonal0 - diagonal1;
     intensity = layer->IntensityScale * SunVisibility * SunMaxIntensity;
-    center_x = x + layer->OffsetX;
-    center_y = y + layer->OffsetY;
     c0 = layer->Colour[0];
+    center_x = x + layer->OffsetX;
     c1 = layer->Colour[1];
+    center_y = y + layer->OffsetY;
     c2 = layer->Colour[2];
 
     if (intensity < 28.0f) {
@@ -89,9 +91,6 @@ void eBuildSunPoly(ePoly *poly, SunLayer *layer, float max_size, float x, float 
     } else {
         alpha = static_cast<unsigned char>(static_cast<int>(intensity - 28.0f));
     }
-
-    sum = diagonal1 + diagonal0;
-    diff = diagonal0 - diagonal1;
 
     poly->Vertices[3].x = center_x - diff;
     poly->Vertices[0].x = center_x - sum;
