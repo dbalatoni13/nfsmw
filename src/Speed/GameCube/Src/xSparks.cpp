@@ -288,13 +288,15 @@ void ParticleList::AgeParticles(float dt) {
 }
 
 void ParticleList::GeneratePolys() {
+    NGParticle *particle;
+
     if (mNumParticles != 0) {
         if (!mContrail_tex) {
             mContrail_tex = GetTextureInfo(bStringHash("PS2_CONTRAIL"), 0, 0);
             mSparks_tex = GetTextureInfo(bStringHash("PS2_SPARKS"), 0, 0);
         }
 
-        NGParticle *particle = mParticles;
+        particle = mParticles;
         for (unsigned int i = 0; i < mNumParticles; i++) {
             if (particle->uv[0] == 0x7f) {
                 mCurrentTexture = mContrail_tex;
