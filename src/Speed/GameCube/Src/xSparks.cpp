@@ -262,26 +262,29 @@ NGEffect::NGEffect(const XenonEffectDef &eDef)
 }
 
 void ParticleList::AgeParticles(float dt) {
-    int alive = 0;
-    int i = 0;
+    int numOutParticles = 0;
+    NGParticle *inParticle = mParticles;
+    NGParticle *outParticle = mParticles;
 
-    if (static_cast<int>(mNumParticles) > 0) {
-        NGParticle *src = mParticles;
-        NGParticle *dst = mParticles;
-        do {
-            if (dt * 8191.0f <= static_cast<float>(src->life)) {
-                alive++;
-                *dst = *src;
-                dst->age += dt;
-                dst->life = static_cast<uint16>(static_cast<float>(src->life) - dt * 8191.0f);
-                dst++;
-            }
-            src++;
-            i++;
-        } while (i < static_cast<int>(mNumParticles));
+    {
+        int i = 0;
+
+        if (i < static_cast<int>(mNumParticles)) {
+            do {
+                if (static_cast<float>(inParticle->life) >= dt * 8191.0f) {
+                    numOutParticles++;
+                    *outParticle = *inParticle;
+                    outParticle->age += dt;
+                    outParticle->life = static_cast<uint16>(static_cast<float>(inParticle->life) - dt * 8191.0f);
+                    outParticle++;
+                }
+                inParticle++;
+                i++;
+            } while (i < static_cast<int>(mNumParticles));
+        }
     }
 
-    mNumParticles = alive;
+    mNumParticles = numOutParticles;
 }
 
 void ParticleList::GeneratePolys() {
