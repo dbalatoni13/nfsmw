@@ -200,6 +200,9 @@ class GManager : public UTL::COM::Object, public IVehicleCache {
     unsigned int SaveSMSInfo(int *saveInfo);
     void LoadSMSInfo(int *loadInfo, unsigned int count);
     bool GetHasPendingSMS() const;
+    bool GetHasPendingRestartEvent() const {
+        return mRestartEventHash != 0;
+    }
     bool CanPlaySMS() const;
     void AddSMS(int smsID);
     void DispatchSMSMessage(int smsID);

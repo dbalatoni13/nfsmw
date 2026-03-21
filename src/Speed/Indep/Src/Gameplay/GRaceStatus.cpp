@@ -3032,7 +3032,7 @@ void GRaceStatus::SetRoaming() {
         }
     }
 
-    if (!lastDDay && reinterpret_cast<GManagerRestartCompat *>(&GManager::Get())->mRestartEventHash == 0) {
+    if (!lastDDay && !GManager::Get().GetHasPendingRestartEvent()) {
         new EReloadHud();
     }
 
