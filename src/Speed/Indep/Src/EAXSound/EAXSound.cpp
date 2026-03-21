@@ -1695,7 +1695,7 @@ void FESoundControl(bool bOn, const char *name) {
         if (index != 10 && index < 14) {
             return;
         }
-        SetSoundControlState(bOn, SNDSTATE_FMV, "name");
+        SetSoundControlState(bOn, SNDSTATE_FMV, name);
         return;
     }
 
