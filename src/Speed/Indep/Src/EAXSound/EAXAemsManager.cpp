@@ -458,7 +458,16 @@ int EAXAemsManager::InitiateLoad() {
 
     if (m_pCurLoadSDLP->AssetDescription.eDataType < EAXSND_DT_GENERIC_DATA) {
         if (m_pAsyncBuff != nullptr) {
-            goto HaveAsyncBuffer;
+            {
+                stSndDataLoadParams *curLoad = m_pCurLoadSDLP;
+                pBankSlot = curLoad->mBankSlot;
+                if (pBankSlot != nullptr) {
+                    pBankSlot->LoadFailed = 0;
+                }
+                curLoad->MemLocation = TMP_ALLOC_NONE;
+                curLoad->AssetDescription.eDataType = EAXSND_DT_AEMS_ASYNCSPU;
+            }
+            goto HaveQueueParams;
         }
         m_AsyncBuffLocation = TMP_ALLOC_AUDIO;
         bLargestMalloc(AudioMemoryPool);
