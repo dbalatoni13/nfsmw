@@ -11,6 +11,7 @@
 #include "Speed/Indep/Src/Generated/Messages/MNotifyMilestoneProgress.h"
 #include "Speed/Indep/Src/Frontend/HUD/FeMenuZoneTrigger.hpp"
 #include "Speed/Indep/Src/Gameplay/GMarker.h"
+#include "Speed/Indep/Src/Gameplay/GUtility.h"
 #include "Speed/Indep/Src/Gameplay/GVault.h"
 #include "Speed/Indep/Src/Interfaces/SimActivities/ICopMgr.h"
 #include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
@@ -2204,81 +2205,98 @@ void GManager::UpdatePendingSMS() {
 }
 
 bool GManager::SaveGameplayData(unsigned char *dest, unsigned int maxSize) {
-    SavedGameplayDataHeader *header;
-    unsigned char *cursor;
-    unsigned char *end;
-    unsigned int freeRoamStartMarker;
-    unsigned int freeRoamFromSafeHouseStartMarker;
-    ObjectStateMap::iterator it;
+    unsigned char *destStart = dest;
+    SavedGameplayDataHeader *gameplayHeader;
+    unsigned int spotBytes;
+    unsigned int respawnMarker;
+    unsigned int respawnSafeHouseMarker;
+    unsigned char *startChecksum;
+    unsigned int bytesToChecksum;
 
-    bMemSet(dest, 0, maxSize);
+    bMemSet(destStart, 0, maxSize);
 
-    GObjectIterator<GActivity> activityIterator(0xFFFFFFFF);
-    while (activityIterator.IsValid()) {
-        activityIterator.GetInstance()->SerializeVars(false);
-        activityIterator.Advance();
+    {
+        GObjectIterator<GActivity> iter(0xFFFFFFFF);
+
+        while (iter.IsValid()) {
+            GActivity *activity = iter.GetInstance();
+
+            activity->SerializeVars(false);
+            iter.Advance();
+        }
     }
 
     if (maxSize < 0x80) {
         return false;
     }
 
-    header = reinterpret_cast<SavedGameplayDataHeader *>(dest);
-    end = dest + maxSize;
-    header->mMagic = 0x656D6147;
-    header->mVersion = 8;
-    header->mNumPersistent = mPersistentStateBlocks.size();
+    gameplayHeader = reinterpret_cast<SavedGameplayDataHeader *>(destStart);
+    gameplayHeader->mVersion = 8;
+    gameplayHeader->mMagic = 0x656D6147;
+    gameplayHeader->mNumPersistent = mPersistentStateBlocks.size();
 
-    cursor = dest + 0x80;
-    for (it = mPersistentStateBlocks.begin(); it != mPersistentStateBlocks.end(); ++it) {
-        ObjectStateBlockHeader *block = it->second;
-        unsigned int blockSize = (block->mSize + 0x17U) & ~0xFU;
-        unsigned char *nextCursor = cursor + blockSize;
+    startChecksum = destStart + 0x80;
+    {
+        ObjectStateMap::iterator iter = mPersistentStateBlocks.begin();
 
-        if (nextCursor > end) {
-            return false;
+        while (iter != mPersistentStateBlocks.end()) {
+            ObjectStateBlockHeader *header = iter->second;
+            unsigned int allocSize = (header->mSize + 0x17U) & ~0xFU;
+
+            if (startChecksum + allocSize > destStart + maxSize) {
+                return false;
+            }
+
+            bMemCpy(startChecksum, header, allocSize);
+            startChecksum += allocSize;
+            ++iter;
         }
-
-        bMemCpy(cursor, block, blockSize);
-        cursor = nextCursor;
     }
 
-    cursor = reinterpret_cast<unsigned char *>((reinterpret_cast<unsigned int>(cursor) + 0xFU) & ~0xFU);
-    header->mNumSavedTimers = SaveTimerInfo(reinterpret_cast<SavedTimerInfo *>(cursor));
-    cursor += header->mNumSavedTimers * 0x20;
+    AlignPointer(startChecksum, 0x10);
+    gameplayHeader->mNumSavedTimers = SaveTimerInfo(reinterpret_cast<SavedTimerInfo *>(startChecksum));
+    startChecksum += gameplayHeader->mNumSavedTimers * 0x20;
 
-    header->mNumMilestoneTypes = SaveMilestoneInfo(reinterpret_cast<MilestoneTypeInfo *>(cursor));
-    cursor += header->mNumMilestoneTypes * 0x10;
+    gameplayHeader->mNumMilestoneTypes = SaveMilestoneInfo(reinterpret_cast<MilestoneTypeInfo *>(startChecksum));
+    startChecksum += gameplayHeader->mNumMilestoneTypes * 0x10;
 
-    header->mNumMilestoneRecords = SaveMilestones(reinterpret_cast<GMilestone *>(cursor));
-    cursor += header->mNumMilestoneRecords * 0x14;
-    cursor = reinterpret_cast<unsigned char *>((reinterpret_cast<unsigned int>(cursor) + 0xFU) & ~0xFU);
+    gameplayHeader->mNumMilestoneRecords = SaveMilestones(reinterpret_cast<GMilestone *>(startChecksum));
+    startChecksum += gameplayHeader->mNumMilestoneRecords * 0x14;
+    AlignPointer(startChecksum, 0x10);
 
-    header->mNumSpeedTrapRecords = SaveSpeedTraps(reinterpret_cast<GSpeedTrap *>(cursor));
-    cursor += header->mNumSpeedTrapRecords * 0x14;
-    cursor = reinterpret_cast<unsigned char *>((reinterpret_cast<unsigned int>(cursor) + 0xFU) & ~0xFU);
+    gameplayHeader->mNumSpeedTrapRecords = SaveSpeedTraps(reinterpret_cast<GSpeedTrap *>(startChecksum));
+    startChecksum += gameplayHeader->mNumSpeedTrapRecords * 0x14;
+    AlignPointer(startChecksum, 0x10);
 
-    header->mNumHidingSpotFlags = 0x200;
-    bMemCpy(cursor, mHidingSpotFound, sizeof(mHidingSpotFound));
-    cursor += sizeof(mHidingSpotFound);
+    gameplayHeader->mNumHidingSpotFlags = 0x200;
+    spotBytes = sizeof(mHidingSpotFound);
+    bMemCpy(startChecksum, mHidingSpotFound, spotBytes);
+    startChecksum += spotBytes;
+    AlignPointer(startChecksum, 0x10);
 
-    header->mNumBytesBinStats = GRaceDatabase::Get().SerializeBins(cursor);
-    cursor += header->mNumBytesBinStats;
-    cursor = reinterpret_cast<unsigned char *>((reinterpret_cast<unsigned int>(cursor) + 0xFU) & ~0xFU);
+    gameplayHeader->mNumBytesBinStats = GRaceDatabase::Get().SerializeBins(startChecksum);
+    startChecksum += gameplayHeader->mNumBytesBinStats;
+    AlignPointer(startChecksum, 0x10);
 
-    header->mNumPendingSMS = SaveSMSInfo(reinterpret_cast<int *>(cursor));
-    cursor += header->mNumPendingSMS * sizeof(int);
-    cursor = reinterpret_cast<unsigned char *>((reinterpret_cast<unsigned int>(cursor) + 0xFU) & ~0xFU);
+    gameplayHeader->mNumPendingSMS = SaveSMSInfo(reinterpret_cast<int *>(startChecksum));
+    startChecksum += gameplayHeader->mNumPendingSMS * sizeof(int);
+    AlignPointer(startChecksum, 0x10);
 
-    freeRoamStartMarker = mFreeRoamStartMarker;
-    bMemCpy(cursor, &freeRoamStartMarker, sizeof(freeRoamStartMarker));
-    freeRoamFromSafeHouseStartMarker = mFreeRoamFromSafeHouseStartMarker;
-    bMemCpy(cursor + 0x10, &freeRoamFromSafeHouseStartMarker, sizeof(freeRoamFromSafeHouseStartMarker));
+    respawnMarker = GManager::Get().GetFreeRoamStartMarker();
+    bMemCpy(startChecksum, &respawnMarker, sizeof(respawnMarker));
+    startChecksum += sizeof(respawnMarker);
+    AlignPointer(startChecksum, 0x10);
+    respawnSafeHouseMarker = GManager::Get().GetFreeRoamFromSafeHouseStartMarker();
+    bMemCpy(startChecksum, &respawnSafeHouseMarker, sizeof(respawnSafeHouseMarker));
+
     MD5 md5;
+
+    startChecksum = destStart + 0x10;
+    bytesToChecksum = maxSize - static_cast<unsigned int>(startChecksum - destStart);
     md5.Reset();
-    md5.Update(dest + 0x10, maxSize - 0x10);
+    md5.Update(startChecksum, bytesToChecksum);
     md5.GetRaw();
-    bMemCpy(dest, md5.GetRaw(), md5.GetRawLength());
+    bMemCpy(destStart, md5.GetRaw(), md5.GetRawLength());
     return true;
 }
 

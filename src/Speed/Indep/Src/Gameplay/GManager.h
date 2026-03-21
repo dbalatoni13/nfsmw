@@ -250,6 +250,14 @@ class GManager : public UTL::COM::Object, public IVehicleCache {
         mFreeRoamFromSafeHouseStartMarker = markerKey;
     }
 
+    unsigned int GetFreeRoamStartMarker() const {
+        return mFreeRoamStartMarker;
+    }
+
+    unsigned int GetFreeRoamFromSafeHouseStartMarker() const {
+        return mFreeRoamFromSafeHouseStartMarker;
+    }
+
     void TrackValue(const char *valueName, int value) {
         TrackValue(valueName, static_cast<float>(value));
     }
