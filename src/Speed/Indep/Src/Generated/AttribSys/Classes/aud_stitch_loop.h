@@ -47,9 +47,7 @@ struct aud_stitch_loop : Instance {
         Instance::Change(refspec);
     }
 
-    static Key ClassKey() {
-        return 0x3473edcd;
-    }
+    static Key ClassKey();
 
     const STICH_COLLISION_TYPE &stitch() const {
         const STICH_COLLISION_TYPE *resultptr = reinterpret_cast<const STICH_COLLISION_TYPE *>(GetAttributePointer(0x1553cd23, 0));

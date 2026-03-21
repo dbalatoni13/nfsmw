@@ -1,8 +1,13 @@
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/aud_stitch_loop.h"
 #include "Speed/Indep/bWare/Inc/bChunk.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 
 int GlobalStichSizes = 0;
+
+Attrib::Key Attrib::Gen::aud_stitch_loop::ClassKey() {
+    return 0x3473edcd;
+}
 
 struct cStitchLoop {
     unsigned int m_StitchAttribKey;
@@ -24,7 +29,7 @@ cStitchLoop::cStitchLoop(unsigned int attrib)
     m_Stitch[0] = nullptr;
     m_Stitch[1] = nullptr;
 
-    Attrib::Instance loopdata(Attrib::FindCollection(0x3473edcd, attrib), 0, nullptr);
+    Attrib::Instance loopdata(Attrib::FindCollection(Attrib::Gen::aud_stitch_loop::ClassKey(), attrib), 0, nullptr);
     cSTICH_PlayBack *playback = nullptr;
     if (g_pEAXSound != nullptr) {
         playback = g_pEAXSound->GetSTICHPlayback();
