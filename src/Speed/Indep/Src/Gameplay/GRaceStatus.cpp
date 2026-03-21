@@ -2456,13 +2456,9 @@ void GRaceCustom::GetCheckpointPosition(unsigned int index, UMath::Vector3 &pos)
 
 void GRaceCustom::GetCheckpointDirection(unsigned int index, UMath::Vector3 &dir) const {
     UMath::Vector3 checkDir = UMath::Vector3::kZero;
-    float rotate;
 
     if (mReversed) {
         index = GetNumCheckpoints() - (index + 1);
-        rotate = 180.0f;
-    } else {
-        rotate = 0.0f;
     }
 
     EnsureLoaded();
@@ -2472,7 +2468,11 @@ void GRaceCustom::GetCheckpointDirection(unsigned int index, UMath::Vector3 &dir
         if (raceCheckSpec.GetCollectionKey()) {
             Attrib::Gen::gameplay checkpoint(raceCheckSpec.GetCollectionKey(), 0, nullptr);
 
-            ExtractDirection(checkpoint, checkDir, rotate);
+            if (mReversed) {
+                ExtractDirection(checkpoint, checkDir, 180.0f);
+            } else {
+                ExtractDirection(checkpoint, checkDir, 0.0f);
+            }
         }
     }
     dir = checkDir;
