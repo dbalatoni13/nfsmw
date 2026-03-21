@@ -68,10 +68,10 @@ class Pkt_Car_Service : public Sim::Packet {
         , mTimeSinceSeen(0.0f) //
         , mDesiredSpeed(0.0f) //
         , mControlSource(0) {
-        mTractionPct[0] = 1.0f;
-        mTractionPct[1] = 1.0f;
-        mTractionPct[2] = 1.0f;
         mTractionPct[3] = 1.0f;
+        mTractionPct[2] = 1.0f;
+        mTractionPct[1] = 1.0f;
+        mTractionPct[0] = 1.0f;
 
         mWheelSlip[0] = bVector2(0.0f, 0.0f);
         mWheelSlip[1] = bVector2(0.0f, 0.0f);
@@ -88,10 +88,10 @@ class Pkt_Car_Service : public Sim::Packet {
         mWheelZforce[2] = 0.0f;
         mWheelZforce[3] = 0.0f;
 
-        mWheelOnGround[0] = false;
-        mWheelOnGround[1] = false;
-        mWheelOnGround[2] = false;
         mWheelOnGround[3] = false;
+        mWheelOnGround[2] = false;
+        mWheelOnGround[1] = false;
+        mWheelOnGround[0] = false;
 
         mBlownTires[0] = 0;
         mBlownTires[1] = 0;
