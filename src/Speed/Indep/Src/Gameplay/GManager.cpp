@@ -2733,30 +2733,20 @@ bool GManager::CalcMapCoordsForMarker(unsigned int markerKey, bVector2 &outPos, 
         return false;
     }
 
-    const bVector2 *pos = reinterpret_cast<const bVector2 *>(marker.GetAttributePointer(0x9F743A0E, 0));
+    const UMath::Vector3 &pos = marker.Position();
     UMath::Matrix4 rotMat;
     UMath::Vector3 forwardVec;
-    const float *rotation;
     TrackInfo *trackInfo;
 
-    if (!pos) {
-        pos = reinterpret_cast<const bVector2 *>(Attrib::DefaultDataArea(sizeof(UMath::Vector3)));
-    }
-
     trackInfo = TrackInfo::GetTrackInfo(2000);
-    bVector2 worldPos(pos->x, pos->y);
+    bVector2 worldPos(pos.x, pos.y);
     Minimap::ConvertPos(worldPos, outPos, trackInfo);
 
     rotMat = UMath::Matrix4::kIdentity;
     forwardVec.x = 0.0f;
     forwardVec.y = 0.0f;
     forwardVec.z = 1.0f;
-    rotation = reinterpret_cast<const float *>(marker.GetAttributePointer(0x5A6A57C6, 0));
-    if (!rotation) {
-        rotation = reinterpret_cast<const float *>(Attrib::DefaultDataArea(sizeof(float)));
-    }
-
-    MATRIX4_multyrot(&rotMat, -*rotation * 0.0027777778f, &rotMat);
+    MATRIX4_multyrot(&rotMat, -marker.Rotation() * 0.0027777778f, &rotMat);
     VU0_MATRIX3x4_vect3mult(forwardVec, rotMat, forwardVec);
     outRotDeg = bAngToDeg(bATan(-forwardVec.x, forwardVec.z));
     return true;
