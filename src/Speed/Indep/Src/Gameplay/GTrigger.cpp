@@ -80,8 +80,8 @@ GTrigger::GTrigger(const Attrib::Key &triggerKey)
         dimSwizzled.z = dimSwizzled.x;
         mWorldTrigger.fShape = 3;
     } else if (hasDimensions) {
-        triggerRadius = UMath::Sqrt(dimSwizzled.x * dimSwizzled.x * 0.25f + dimSwizzled.z * dimSwizzled.z * 0.25f);
         mWorldTrigger.fShape = 1;
+        triggerRadius = UMath::Sqrt(dimSwizzled.x * dimSwizzled.x * 0.25f + dimSwizzled.z * dimSwizzled.z * 0.25f);
     } else {
         const float *width = reinterpret_cast<const float *>(GetAttributePointer(0x5816C1FC, 0));
 
@@ -92,8 +92,8 @@ GTrigger::GTrigger(const Attrib::Key &triggerKey)
         dimSwizzled.x = *width;
         dimSwizzled.y = 50.0f;
         dimSwizzled.z = 1.0f;
-        triggerRadius = UMath::Sqrt(dimSwizzled.x * dimSwizzled.x * 0.25f + 0.25f);
         mWorldTrigger.fShape = 1;
+        triggerRadius = UMath::Sqrt(dimSwizzled.x * dimSwizzled.x * 0.25f + 0.25f);
     }
 
     rotation = reinterpret_cast<const float *>(GetAttributePointer(0x5A6A57C6, 0));
