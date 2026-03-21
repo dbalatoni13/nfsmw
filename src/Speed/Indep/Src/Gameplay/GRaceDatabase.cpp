@@ -207,15 +207,13 @@ unsigned int GRaceBin::GetBarrierHash(unsigned int index) const {
 
 bool GRaceBin::GetBarrierIsFlipped(unsigned int index) const {
     const char *barrierName;
-    const EA::Reflection::Text *barrierText;
 
-    barrierText = reinterpret_cast<const EA::Reflection::Text *>(mBinRecord.GetAttributePointer(0xE244F26B, index));
-    if (!barrierText) {
-        barrierText = reinterpret_cast<const EA::Reflection::Text *>(Attrib::DefaultDataArea(sizeof(EA::Reflection::Text)));
+    barrierName = mBinRecord.Barriers(index);
+    if (barrierName) {
+        return *barrierName == '*';
     }
 
-    barrierName = *barrierText;
-    return barrierName && *barrierName == '*';
+    return false;
 }
 
 int GRaceBin::GetRequiredBounty() const {
