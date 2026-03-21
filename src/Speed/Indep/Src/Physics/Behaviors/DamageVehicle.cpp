@@ -40,7 +40,39 @@ void DamageVehicle::OnBehaviorChange(const UCrc32 &mechanic) {
     }
 }
 
-void DamageVehicle::OnCollision(const COLLISION_INFO &cinfo) {}
+void DamageVehicle::OnCollision(const COLLISION_INFO &cinfo) {
+    float closing_speed = UMath::Length(cinfo.closingVel);
+    if (closing_speed < 1.0f) {
+        return;
+    }
+
+    IRigidBody *body = GetOwner()->GetRigidBody();
+    float force = cinfo.impulseA * body->GetMass();
+
+    if (cinfo.Type() == COLLISION_INFO::OBJECT) {
+        SetShockForce(cinfo.force);
+        if (cinfo.objB == GetOwner()->GetInstanceHandle()) {
+            force = cinfo.impulseB * body->GetMass();
+        }
+        force += force;
+    }
+
+    HSIMABLE my_handle = GetOwner()->GetInstanceHandle();
+    if (cinfo.objA == my_handle) {
+        UMath::Vector3 normal = cinfo.normal;
+        mLastImpactSpeed = cinfo.objAVel;
+        SimSurface surface(cinfo.objAsurface);
+        ISimable *other = cinfo.objB ? ISimable::FindInstance(cinfo.objB) : nullptr;
+        OnImpact(cinfo.armA, normal, force, UMath::Length(cinfo.objAVel), surface, other);
+    } else if (cinfo.objB == my_handle) {
+        UMath::Vector3 normal;
+        UMath::Scale(cinfo.normal, -1.0f, normal);
+        mLastImpactSpeed = cinfo.objBVel;
+        SimSurface surface(cinfo.objBsurface);
+        ISimable *other = cinfo.objA ? ISimable::FindInstance(cinfo.objA) : nullptr;
+        OnImpact(cinfo.armB, normal, force, UMath::Length(cinfo.objBVel), surface, other);
+    }
+}
 
 bool DamageVehicle::SetDynamicData(const EventSequencer::System *system, EventDynamicData *data) {
     data->fVelocity = UMath::Vector4Make(mLastImpactSpeed, 1.0f);
@@ -151,7 +183,7 @@ void DamageVehicle::OnImpact(const UMath::Vector3 &arm, const UMath::Vector3 &no
         return;
     }
 
-    if (iother && iother->GetSimableType() == SIMABLE_VEHICLE) {
+    if (iother && iother->GetSimableType() == SIMABLE_SMACKABLE) {
         bool no_car_effect = false;
         if (iother->GetAttributes()->NO_CAR_EFFECT(no_car_effect, 0) && no_car_effect) {
             return;
