@@ -22,82 +22,9 @@ struct XenonEffectDef {
 
 typedef UTL::Std::vector<XenonEffectDef, _type_XenonEffectDef> XenonEffectStdVector;
 
-struct XenonEffectVec;
-
-extern "C" void reserve__Q24_STLt6vector2Z14XenonEffectDefZQ33UTL3Stdt9Allocator2Z14XenonEffectDefZ20_type_XenonEffectDefUi(
-    XenonEffectVec *vec, unsigned int count);
-
-struct XenonEffectVec {
-    XenonEffectDef *start;          // offset 0x0, size 0x4
-    XenonEffectDef *finish;         // offset 0x4, size 0x4
-    void *unused;                   // offset 0x8, size 0x4
-    XenonEffectDef *end_of_storage; // offset 0xC, size 0x4
-
-    XenonEffectVec() : start(0), finish(0), end_of_storage(0) {
-        reserve__Q24_STLt6vector2Z14XenonEffectDefZQ33UTL3Stdt9Allocator2Z14XenonEffectDefZ20_type_XenonEffectDefUi(this, 20);
-    }
-
-    void clear() {
-        XenonEffectDef *p = start;
-        while (p != finish) {
-            p->~XenonEffectDef();
-            p++;
-        }
-        finish = start;
-    }
-
-    void push_back(const XenonEffectDef &value) {
-        if (finish != end_of_storage) {
-            if (finish != 0) {
-                *finish = value;
-            }
-            finish++;
-        } else {
-            unsigned int size = finish - start;
-            unsigned int old_capacity = end_of_storage - start;
-            unsigned int new_capacity = size + (size == 0 ? 1 : size);
-            unsigned int new_bytes;
-            XenonEffectDef *new_start;
-            XenonEffectDef *src;
-            XenonEffectDef *dst;
-
-            if (new_capacity != 0) {
-                new_bytes = new_capacity * sizeof(XenonEffectDef);
-                new_start = static_cast<XenonEffectDef *>(gFastMem.Alloc(new_bytes, 0));
-            } else {
-                new_start = 0;
-                new_bytes = 0;
-            }
-
-            src = start;
-            dst = new_start;
-            while (src != finish) {
-                if (dst != 0) {
-                    *dst = *src;
-                }
-                src++;
-                dst++;
-            }
-
-            if (dst != 0) {
-                *dst = value;
-            }
-            dst++;
-
-            if (start != 0) {
-                gFastMem.Free(start, old_capacity * sizeof(XenonEffectDef), 0);
-            }
-
-            start = new_start;
-            finish = dst;
-            end_of_storage = reinterpret_cast<XenonEffectDef *>(reinterpret_cast<char *>(new_start) + new_bytes);
-        }
-    }
-};
-
 struct XenonEffectLists {
     enum { ACTIVE = 0, STAGING = 1 };
-    XenonEffectVec lists[2]; // [0]=active, [1]=staging
+    XenonEffectStdVector lists[2]; // [0]=active, [1]=staging
 };
 
 struct CGEmitter {
@@ -141,67 +68,6 @@ XenonEffectLists gNGEffectList;
 extern ParticleList gParticleList;
 extern XSpriteManager NGSpriteManager;
 extern unsigned int randomSeed;
-
-static inline void reserveXenonEffectVecImpl(XenonEffectVec *vec, unsigned int count) {
-    reserve__Q24_STLt6vector2Z14XenonEffectDefZQ33UTL3Stdt9Allocator2Z14XenonEffectDefZ20_type_XenonEffectDefUi(vec, count);
-}
-
-extern "C" void reserve__Q24_STLt6vector2Z14XenonEffectDefZQ33UTL3Stdt9Allocator2Z14XenonEffectDefZ20_type_XenonEffectDefUi(
-    XenonEffectVec *vec, unsigned int count) {
-    unsigned int capacity = vec->end_of_storage - vec->start;
-    if (capacity >= count) {
-        return;
-    }
-
-    unsigned int size = vec->finish - vec->start;
-    XenonEffectDef *old_start = vec->start;
-
-    XenonEffectDef *new_buf;
-    unsigned int new_bytes;
-    if (old_start != 0) {
-        if (count != 0) {
-            new_bytes = count * sizeof(XenonEffectDef);
-            new_buf = static_cast<XenonEffectDef *>(gFastMem.Alloc(new_bytes, 0));
-        } else {
-            new_buf = 0;
-            new_bytes = 0;
-        }
-
-        XenonEffectDef *src = old_start;
-        XenonEffectDef *dst = new_buf;
-        while (src != vec->finish) {
-            if (dst != 0) {
-                *dst = *src;
-            }
-            src++;
-            dst++;
-        }
-
-        XenonEffectDef *old_iter = vec->start;
-        XenonEffectDef *old_finish = vec->finish;
-        while (old_iter != old_finish) {
-            old_iter->~XenonEffectDef();
-            old_iter++;
-        }
-
-        unsigned int old_capacity = vec->end_of_storage - vec->start;
-        if (vec->start != 0) {
-            gFastMem.Free(vec->start, old_capacity * sizeof(XenonEffectDef), 0);
-        }
-    } else {
-        if (count != 0) {
-            new_bytes = count * sizeof(XenonEffectDef);
-            new_buf = static_cast<XenonEffectDef *>(gFastMem.Alloc(new_bytes, 0));
-        } else {
-            new_buf = 0;
-            new_bytes = 0;
-        }
-    }
-
-    vec->end_of_storage = reinterpret_cast<XenonEffectDef *>(reinterpret_cast<char *>(new_buf) + new_bytes);
-    vec->start = new_buf;
-    vec->finish = reinterpret_cast<XenonEffectDef *>(reinterpret_cast<char *>(new_buf) + size * sizeof(XenonEffectDef));
-}
 float bRandom(float range, unsigned int *seed);
 unsigned int bStringHash(const char *str);
 TextureInfo *GetTextureInfo(unsigned int name_hash, int allow_default, int force_local);
@@ -223,28 +89,42 @@ NGParticle *ParticleList::GetNextParticle() {
 }
 
 void CGEmitter::SpawnParticles(float dt, float intensity) {
-    unsigned int random_seed = randomSeed;
+    UMath::Matrix4 local_world;
+    UMath::Matrix4 local_orientation;
+    unsigned int random_seed;
+    float life_variance;
+    float life;
+    int r;
+    int g;
+    int b;
+    int a;
+    unsigned int particleColor;
+    float num_particles_variance;
+    float num_particles;
+    float particle_age_factor;
+    float current_particle_age;
+
+    random_seed = randomSeed;
 
     if (intensity > 0.0f) {
-        UMath::Matrix4 local_world = mLocalWorld;
-        UMath::Matrix4 local_orientation = local_world;
+        local_world = mLocalWorld;
+        local_orientation = local_world;
         local_orientation.v3.x = 0.0f;
         local_orientation.v3.y = 0.0f;
         local_orientation.v3.z = 0.0f;
         local_orientation.v3.w = 1.0f;
-        int r = static_cast<int>(mEmitterDef.Colour1().x * 255.0f);
-        int g = static_cast<int>(mEmitterDef.Colour1().y * 255.0f);
-        int b = static_cast<int>(mEmitterDef.Colour1().z * 255.0f);
-        int a = static_cast<int>(mEmitterDef.Colour1().w * 255.0f);
-        float life = mEmitterDef.Life();
-        float life_variance = life * mEmitterDef.LifeVariance();
-        float num_particles = intensity * mEmitterDef.NumParticles();
-        float num_particles_variance = num_particles * mEmitterDef.NumParticlesVariance() * 100.0f;
-        float particle_age_factor;
-        float current_particle_age = 0.0f;
-        unsigned int particleColor = a << 24 | b << 16 | g << 8 | r;
-        life -= life_variance;
+        r = static_cast<int>(mEmitterDef.Colour1().x * 255.0f);
+        g = static_cast<int>(mEmitterDef.Colour1().y * 255.0f);
+        b = static_cast<int>(mEmitterDef.Colour1().z * 255.0f);
+        a = static_cast<int>(mEmitterDef.Colour1().w * 255.0f);
+        life = mEmitterDef.Life();
+        life_variance = life * mEmitterDef.LifeVariance();
+        num_particles = intensity * mEmitterDef.NumParticles();
+        num_particles_variance = num_particles * mEmitterDef.NumParticlesVariance() * 100.0f;
+        current_particle_age = 0.0f;
+        particleColor = a << 24 | b << 16 | g << 8 | r;
         num_particles -= num_particles_variance;
+        life -= life_variance;
 
         if (num_particles != 0.0f) {
             particle_age_factor = dt / num_particles;
@@ -289,10 +169,16 @@ void CGEmitter::SpawnParticles(float dt, float intensity) {
                 ppos.w = 1.0f;
 
                 UMath::RotateTranslate(ppos, local_world, ppos);
-                UMath::ScaleAdd(UMath::Vector4To3(pvel), current_particle_age, UMath::Vector4To3(ppos), particle->initialPos);
+                UMath::ScaleAdd(
+                    reinterpret_cast<const UMath::Vector3 &>(pvel),
+                    current_particle_age,
+                    reinterpret_cast<const UMath::Vector3 &>(ppos),
+                    particle->initialPos);
 
                 particle->initialPos.z += gravity * current_particle_age * current_particle_age;
-                particle->vel = UMath::Vector4To3(pvel);
+                particle->vel.x = pvel.x;
+                particle->vel.y = pvel.y;
+                particle->vel.z = pvel.z;
                 particle->age = current_particle_age;
                 particle->gravity = gravity;
                 particle->life = static_cast<uint16>(life * 65535.0f);
@@ -373,27 +259,26 @@ void ClearXenonEmitters() {
 }
 
 void AddXenonEffect(EmitterGroup *piggyback_fx, const Attrib::Collection *spec, const UMath::Matrix4 *mat, const UMath::Vector4 *vel) {
-    unsigned int size = gNGEffectList.lists[XenonEffectLists::ACTIVE].finish - gNGEffectList.lists[XenonEffectLists::ACTIVE].start;
+    XenonEffectDef eDef;
+    XenonEffectStdVector &active = gNGEffectList.lists[XenonEffectLists::ACTIVE];
+    XenonEffectStdVector &staging = gNGEffectList.lists[XenonEffectLists::STAGING];
 
-    if (size < 20) {
-        unsigned int active_capacity = gNGEffectList.lists[XenonEffectLists::ACTIVE].end_of_storage - gNGEffectList.lists[XenonEffectLists::ACTIVE].start;
-        if (active_capacity < 20) {
-            reserveXenonEffectVecImpl(&gNGEffectList.lists[XenonEffectLists::ACTIVE], 20);
+    if (active.size() < 20) {
+        if (active.capacity() < 20) {
+            active.reserve(20);
         }
 
-        unsigned int staging_capacity = gNGEffectList.lists[XenonEffectLists::STAGING].end_of_storage - gNGEffectList.lists[XenonEffectLists::STAGING].start;
-        if (staging_capacity < 20) {
-            reserveXenonEffectVecImpl(&gNGEffectList.lists[XenonEffectLists::STAGING], 20);
+        if (staging.capacity() < 20) {
+            staging.reserve(20);
         }
 
-        XenonEffectDef effect;
-        effect.mat = UMath::Matrix4::kIdentity;
-        effect.mat.v3 = mat->v3;
-        effect.piggyback_effect = piggyback_fx;
-        effect.spec = spec;
-        effect.vel = *vel;
+        eDef.mat = UMath::Matrix4::kIdentity;
+        eDef.mat.v3 = mat->v3;
+        eDef.piggyback_effect = piggyback_fx;
+        eDef.spec = spec;
+        eDef.vel = *vel;
 
-        gNGEffectList.lists[XenonEffectLists::ACTIVE].push_back(effect);
+        active.push_back(eDef);
     }
 }
 
@@ -403,22 +288,22 @@ void UpdateXenonEmitters(float dt) {
 
     gParticleList.AgeParticles(dt);
 
-    iter = reinterpret_cast<XenonEffectStdVector &>(gNGEffectList.lists[XenonEffectLists::ACTIVE]).begin();
-    while (iter != reinterpret_cast<XenonEffectStdVector &>(gNGEffectList.lists[XenonEffectLists::ACTIVE]).end()) {
+    iter = gNGEffectList.lists[XenonEffectLists::ACTIVE].begin();
+    while (iter != gNGEffectList.lists[XenonEffectLists::ACTIVE].end()) {
         eDef = *iter;
-        reinterpret_cast<XenonEffectStdVector &>(gNGEffectList.lists[XenonEffectLists::STAGING]).push_back(eDef);
+        gNGEffectList.lists[XenonEffectLists::STAGING].push_back(eDef);
         ++iter;
     }
 
-    reinterpret_cast<XenonEffectStdVector &>(gNGEffectList.lists[XenonEffectLists::ACTIVE]).clear();
+    gNGEffectList.lists[XenonEffectLists::ACTIVE].clear();
 
-    iter = reinterpret_cast<XenonEffectStdVector &>(gNGEffectList.lists[XenonEffectLists::STAGING]).begin();
-    while (iter != reinterpret_cast<XenonEffectStdVector &>(gNGEffectList.lists[XenonEffectLists::STAGING]).end()) {
+    iter = gNGEffectList.lists[XenonEffectLists::STAGING].begin();
+    while (iter != gNGEffectList.lists[XenonEffectLists::STAGING].end()) {
         eDef = *iter;
         NGEffect anEffect(eDef);
         ++iter;
     }
 
-    reinterpret_cast<XenonEffectStdVector &>(gNGEffectList.lists[XenonEffectLists::STAGING]).clear();
+    gNGEffectList.lists[XenonEffectLists::STAGING].clear();
     gParticleList.GeneratePolys();
 }
