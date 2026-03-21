@@ -94,8 +94,8 @@ void TextureInfoPlatInterface::UnlockPalette(void *palette_lock) {
 }
 
 void *TextureInfoPlatInterface::CreateAnimData() {
-    TextureInfo *info = static_cast<TextureInfo *>(this);
     TextureInfoPlatInfo *plat_info = this->GetPlatInfo();
+    TextureInfo *info = static_cast<TextureInfo *>(this);
     unsigned int *val = reinterpret_cast<unsigned int *>(bOMalloc(eAnimTextureSlotPool));
 
     val[0] = reinterpret_cast<unsigned int>(info->ImageData);
