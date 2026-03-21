@@ -3970,7 +3970,7 @@ float GRaceStatus::GetBestLapTime(int racerIndex) {
 
     bestLapTime = GetLapTime(0, racerIndex, false);
     onLap = 1;
-    while (onLap < (mRaceParms ? mRaceParms->GetNumLaps() : 10) && onLap <= 9) {
+    while (onLap < mRaceParms->GetNumLaps()) {
         float lapTime = GetLapTime(onLap, racerIndex, false);
         if (lapTime > 0.0f && (bestLapTime <= 0.0f || lapTime < bestLapTime)) {
             bestLapTime = lapTime;
@@ -3988,7 +3988,7 @@ float GRaceStatus::GetWorstLapTime(int racerIndex) {
 
     worstLapTime = GetLapTime(0, racerIndex, false);
     onLap = 1;
-    while (onLap < (mRaceParms ? mRaceParms->GetNumLaps() : 10) && onLap <= 9) {
+    while (onLap < mRaceParms->GetNumLaps()) {
         float lapTime = GetLapTime(onLap, racerIndex, false);
         if (lapTime > 0.0f && lapTime > worstLapTime) {
             worstLapTime = lapTime;
