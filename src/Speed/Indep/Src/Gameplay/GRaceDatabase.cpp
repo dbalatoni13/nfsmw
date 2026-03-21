@@ -490,12 +490,12 @@ void GRaceDatabase::DestroyCustomRace(GRaceCustom *custom) {
 }
 
 void GRaceDatabase::ClearStartupRace() {
-    if (mStartupRace && !mStartupRace->GetFreedByOwner()) {
+    if (mStartupRace && mStartupRace->GetFreedByOwner()) {
         DestroyCustomRace(mStartupRace);
     }
 
-    mStartupRaceContext = GRace::kRaceContext_QuickRace;
     mStartupRace = nullptr;
+    mStartupRaceContext = GRace::kRaceContext_QuickRace;
 }
 
 void GRaceDatabase::SetStartupRace(GRaceCustom *custom, GRace::Context context) {
