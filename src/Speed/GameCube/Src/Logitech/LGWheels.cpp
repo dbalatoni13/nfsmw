@@ -706,7 +706,7 @@ void LGWheels::PlaySurfaceEffect(long channel, unsigned char type, unsigned char
             return;
         }
 
-        if (reinterpret_cast<Periodic *>(reinterpret_cast<char *>(this) + 0x13A8)->Playing[channel][3] != 0) {
+        if (*reinterpret_cast<int *>(reinterpret_cast<char *>(this) + channel * 0x20 + 0x13B4) != 0) {
             if (SameSurfaceEffectParams(channel, type, magnitude, period)) {
                 return;
             }
@@ -729,7 +729,7 @@ void LGWheels::PlaySurfaceEffect(long channel, unsigned char type, unsigned char
             return;
         }
 
-        if (reinterpret_cast<Periodic *>(reinterpret_cast<char *>(this) + 0x13A8)->EffectID[channel][3] == static_cast<unsigned long>(-1)) {
+        if (*reinterpret_cast<unsigned long *>(reinterpret_cast<char *>(this) + channel * 0x20 + 0x1434) == static_cast<unsigned long>(-1)) {
             ret = reinterpret_cast<Periodic *>(reinterpret_cast<char *>(this) + 0x13A8)
                       ->DownloadForce(channel, 3, reinterpret_cast<unsigned long *>(reinterpret_cast<char *>(this) + 0x1050)[channel], type, static_cast<unsigned long>(-1), 0, magnitude, 90, period, 0, 0, 0, 0, 0, 0);
             if (ret >= 0) {
