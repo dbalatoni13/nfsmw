@@ -198,13 +198,6 @@ const char *GRaceBin::GetBarrierName(unsigned int index) const {
     return barrierName;
 }
 
-unsigned int GRaceBin::GetBarrierHash(unsigned int index) const {
-    const char *barrierName;
-
-    barrierName = GetBarrierName(index);
-    return barrierName ? Attrib::StringToKey(barrierName) : 0;
-}
-
 bool GRaceBin::GetBarrierIsFlipped(unsigned int index) const {
     const char *barrierName;
 
@@ -498,8 +491,8 @@ void GRaceDatabase::SetStartupRace(GRaceCustom *custom, GRace::Context context) 
         ClearStartupRace();
     }
 
-    mStartupRaceContext = context;
     mStartupRace = custom;
+    mStartupRaceContext = context;
 
     if (custom && mStartupRaceContext == GRace::kRaceContext_Career) {
         custom->SetupTimeOfDay();
