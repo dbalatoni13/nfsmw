@@ -117,3 +117,15 @@ void SimpleChopper::GetDesiredFacingVector(UMath::Vector3 &facingDir) {
     facingDir.z = mDesiredFacingVector.z;
     facingDir.y = mDesiredFacingVector.y;
 }
+
+void SimpleChopper::Reset() {}
+
+void SimpleChopper::OnBehaviorChange(const UCrc32 &mechanic) {
+    if (mechanic == BEHAVIOR_MECHANIC_RIGIDBODY) {
+        GetOwner()->QueryInterface(&mIrigidBody);
+        GetOwner()->QueryInterface(&mIrbComplex);
+    }
+    if (mechanic == BEHAVIOR_MECHANIC_DAMAGE) {
+        GetOwner()->QueryInterface(&mIdamage);
+    }
+}
