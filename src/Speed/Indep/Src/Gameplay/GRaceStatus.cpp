@@ -469,7 +469,8 @@ void GRacerInfo::BlowEngine() {
 }
 
 void GRacerInfo::AddToPointTotal(float points) {
-    mPointTotal = UMath::Max(mPointTotal + points, 0.0f);
+    mPointTotal += points;
+    mPointTotal = UMath::Max(0.0f, mPointTotal);
 }
 
 float GRacerInfo::CalcAverageSpeed() const {
