@@ -98,12 +98,20 @@ bool GHandler::MessagePassesFilters(LuaMessageDeliveryInfo *deliveryInfo) {
             return true;
         }
 
-        const Attrib::Blob *blobPtr = reinterpret_cast<const Attrib::Blob *>(GetAttributePointer(0x56e1436d, onFilter));
+        Attrib::Blob blob;
 
+        reinterpret_cast<BlobView &>(blob).mSize = 0;
+        reinterpret_cast<BlobView &>(blob).mData = nullptr;
+
+        const Attrib::Blob *blobPtr = reinterpret_cast<const Attrib::Blob *>(GetAttributePointer(0x56e1436d, onFilter));
         if (blobPtr) {
-            Attrib::Blob blob = *blobPtr;
-            const BlobView &blobView = reinterpret_cast<const BlobView &>(blob);
-            unsigned char *blockData = reinterpret_cast<unsigned char *>(const_cast<void *>(blobView.mData));
+            blob = *blobPtr;
+        }
+
+        unsigned char *blockData =
+            reinterpret_cast<unsigned char *>(const_cast<void *>(reinterpret_cast<const BlobView &>(blob).mData));
+
+        if (blockData) {
             MessageFilterHeader *filter = reinterpret_cast<MessageFilterHeader *>(blockData);
             bool filterPassed = true;
 
@@ -123,12 +131,12 @@ bool GHandler::MessagePassesFilters(LuaMessageDeliveryInfo *deliveryInfo) {
                 filter->mQuery(filterContext, 0, filter->mQueryStaticData, 1, &filterPassed);
             }
 
-            if (!FilterModePassAll(0)) {
-                if (filterPassed) {
-                    return true;
+            if (FilterModePassAll(0)) {
+                if (!filterPassed) {
+                    return false;
                 }
-            } else if (!filterPassed) {
-                return false;
+            } else if (filterPassed) {
+                return true;
             }
         }
     }
