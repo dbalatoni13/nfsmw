@@ -130,19 +130,21 @@ static inline SurfaceEffectParams *LGWheelsGetSurfaceEffectParams(LGWheels *self
 }
 
 LGWheels::LGWheels() {
-    int ii;
+    {
+        int ii;
 
-    Wheels_Ctor(LGWheelsGetWheels(this));
-    Force_Ctor(LGWheelsGetForce(this));
-    Condition_Ctor(LGWheelsGetCondition(this));
-    Constant_Ctor(LGWheelsGetConstant(this));
-    Periodic_Ctor(LGWheelsGetPeriodic(this));
-    Ramp_Ctor(LGWheelsGetRamp(this));
-    LGInit();
-    LGWheelsGetOverallGain(this) = 0xFF;
+        Wheels_Ctor(reinterpret_cast<Wheels *>(reinterpret_cast<char *>(this) + 0x828));
+        Force_Ctor(reinterpret_cast<Force *>(reinterpret_cast<char *>(this) + 0x10A8));
+        Condition_Ctor(reinterpret_cast<Condition *>(reinterpret_cast<char *>(this) + 0x11A8));
+        Constant_Ctor(reinterpret_cast<Constant *>(reinterpret_cast<char *>(this) + 0x12A8));
+        Periodic_Ctor(reinterpret_cast<Periodic *>(reinterpret_cast<char *>(this) + 0x13A8));
+        Ramp_Ctor(reinterpret_cast<Ramp *>(reinterpret_cast<char *>(this) + 0x14A8));
+        LGInit();
+        *reinterpret_cast<unsigned char *>(reinterpret_cast<char *>(this) + 0x15A8) = 0xFF;
 
-    for (ii = 0; ii < 4; ii++) {
-        InitVars(ii);
+        for (ii = 0; ii < 4; ii++) {
+            InitVars(ii);
+        }
     }
 }
 

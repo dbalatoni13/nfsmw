@@ -68,12 +68,14 @@ static inline unsigned char ClampAnalogValue(int value) {
 }
 
 void PlatformInitJoystick() {
-    int i;
+    {
+        int i;
 
-    plat_lgwheels = ::new (__FILE__, __LINE__) LGWheels;
-    for (i = 0; i < 4; i++) {
-        notYetCalibrating[i] = 1;
-        wasWheelConnected[i] = 0;
+        plat_lgwheels = ::new (__FILE__, __LINE__) LGWheels;
+        for (i = 0; i < 4; i++) {
+            notYetCalibrating[i] = 1;
+            wasWheelConnected[i] = 0;
+        }
     }
     PADRead(HardwarePadStatus);
     JoystickInitialized = 1;
