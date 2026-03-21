@@ -598,8 +598,7 @@ void CTextScroller::AddLine(short *pText, int numChars) {
 
 void CTextScroller::UpdateScrollBar() {
     if (m_pScrollBar) {
-        int pos = m_TopLine + 1;
-        m_pScrollBar->Update(m_ViewVisibleLines, m_NumAddedLines, pos, pos);
+        m_pScrollBar->Update(GetNumVisibleLines(), GetNumLines(), GetTopLine() + 1, GetTopLine() + 1);
     }
 }
 

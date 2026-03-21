@@ -41,6 +41,9 @@ struct CTextScroller {
     int WordWrapAddLines(short* pTextStart, short* pTextEnd, bool bCountOnly, int* pNumCharsOut);
     short* FindCR(short* pText);
     short *FindEND(short *pText);
+    int GetNumVisibleLines() { return m_ViewVisibleLines; }
+    int GetNumLines() { return m_NumAddedLines; }
+    int GetTopLine() { return m_TopLine; }
     void UpdateScrollBar();
 };
 
