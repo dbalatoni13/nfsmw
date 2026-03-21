@@ -49,6 +49,11 @@ void eBuildSunPoly(ePoly *poly, SunLayer *layer, float max_size, float x, float 
     float center_y;
     unsigned char alpha;
     unsigned short angle;
+    unsigned char c0;
+    unsigned char c1;
+    unsigned char c2;
+    float sum;
+    float diff;
 
     eGetScreenHeight();
 
@@ -74,6 +79,9 @@ void eBuildSunPoly(ePoly *poly, SunLayer *layer, float max_size, float x, float 
     intensity = layer->IntensityScale * SunVisibility * SunMaxIntensity;
     center_x = x + layer->OffsetX;
     center_y = y + layer->OffsetY;
+    c0 = layer->Colour[0];
+    c1 = layer->Colour[1];
+    c2 = layer->Colour[2];
 
     if (intensity < 28.0f) {
         alpha = static_cast<unsigned char>(static_cast<int>(intensity));
@@ -81,8 +89,8 @@ void eBuildSunPoly(ePoly *poly, SunLayer *layer, float max_size, float x, float 
         alpha = static_cast<unsigned char>(static_cast<int>(intensity - 28.0f));
     }
 
-    float sum = diagonal1 + diagonal0;
-    float diff = diagonal0 - diagonal1;
+    sum = diagonal1 + diagonal0;
+    diff = diagonal0 - diagonal1;
 
     poly->Vertices[3].x = center_x - diff;
     poly->Vertices[0].x = center_x - sum;
@@ -92,10 +100,6 @@ void eBuildSunPoly(ePoly *poly, SunLayer *layer, float max_size, float x, float 
     poly->Vertices[1].x = center_x + diff;
     poly->Vertices[2].x = center_x + sum;
     poly->Vertices[2].y = center_y + diff;
-
-    unsigned char c0 = layer->Colour[0];
-    unsigned char c1 = layer->Colour[1];
-    unsigned char c2 = layer->Colour[2];
 
     poly->Colours[3][3] = alpha;
     poly->Colours[3][0] = c0;
