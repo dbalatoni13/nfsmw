@@ -351,10 +351,10 @@ void FESliderWidget::SetFocus(const char* parent_pkg) {
 }
 
 void FESliderWidget::UnsetFocus() {
-    FEngSetScript(reinterpret_cast<FEObject*>(pTitle), 0x7AB5521A, true);
+    FEngSetScript(GetTitleObject(), 0x7AB5521A, true);
     Slider.UnHighlight();
-    if (pBacking) {
-        FEngSetScript(pBacking, 0x7AB5521A, true);
+    if (GetBacking()) {
+        FEngSetScript(GetBacking(), 0x7AB5521A, true);
     }
 }
 

@@ -158,11 +158,13 @@ void TuningSlider::SetFocus(const char *parent_pkg) {
 
 void TuningSlider::UnsetFocus() {
     if (bActive) {
-        FEngSetScript(GetTitleObject(), 0x7AB5521A, true);
+        const unsigned long FEObj_Init = 0x7AB5521A;
+        FEngSetScript(GetTitleObject(), FEObj_Init, true);
         FEngSetScript(pSliderGroup, 0x001744B3, true);
     } else {
-        FEngSetScript(GetTitleObject(), 0x00163C76, true);
-        FEngSetScript(pSliderGroup, 0x00163C76, true);
+        const unsigned long FEObj_GREY = 0x00163C76;
+        FEngSetScript(GetTitleObject(), FEObj_GREY, true);
+        FEngSetScript(pSliderGroup, FEObj_GREY, true);
     }
 }
 
