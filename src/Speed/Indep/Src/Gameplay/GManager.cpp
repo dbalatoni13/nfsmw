@@ -2407,11 +2407,11 @@ void GManager::DefragObjectStateStorage() {
     }
 
     index = 0;
-    for (it = mPersistentStateBlocks.begin(); it != mPersistentStateBlocks.end(); ++it) {
+    for (ObjectStateMap::iterator it = mPersistentStateBlocks.begin(); it != mPersistentStateBlocks.end(); ++it) {
         blocks[index] = it->second;
         index++;
     }
-    for (it = mSessionStateBlocks.begin(); it != mSessionStateBlocks.end(); ++it) {
+    for (ObjectStateMap::iterator it = mSessionStateBlocks.begin(); it != mSessionStateBlocks.end(); ++it) {
         blocks[index] = it->second;
         index++;
     }
