@@ -1140,6 +1140,7 @@ bool GRaceParameters::GetIsLoaded() const {
 }
 
 void GRaceParameters::NotifyParentVaultUnloading() {
+    delete mRaceRecord;
     mRaceRecord = nullptr;
 }
 
