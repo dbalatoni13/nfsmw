@@ -165,7 +165,7 @@ void SFXCTL_Shifting::UpdateGearShiftState(float t) {
 
     *static_cast<int *>(static_cast<void *>(&m_bShouldBeWhining)) = (static_cast<int>(GetCurGear()) == 0);
 
-    EAX_CarState *carstate = m_pStateBase->GetPhysCar();
+    EAX_CarState *carstate = m_pEAXCar->GetPhysCar();
     if (carstate->IsLocalPlayerCar()) {
         float t_last_mashed = (WorldTimer - m_timeBrakeLastMashed).GetSeconds();
 
