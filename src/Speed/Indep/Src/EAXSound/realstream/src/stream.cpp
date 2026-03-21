@@ -161,12 +161,12 @@ int validatehandle(int sndstreamhandle, STREAMHEADERtag **stream, TAPSTRUCTtag *
     }
 
     STREAMHEADERtag *strm = *reinterpret_cast<STREAMHEADERtag **>(sndstreamhandle);
-    if (strm->id == 0x4D525453) {
-        *tap = reinterpret_cast<TAPSTRUCTtag *>(sndstreamhandle);
-        *stream = strm;
-        return 0;
+    if (strm->id != 0x4D525453) {
+        return 1;
     }
-    return 1;
+    *tap = reinterpret_cast<TAPSTRUCTtag *>(sndstreamhandle);
+    *stream = strm;
+    return 0;
 }
 
 int inbetween(char *startptr, char *endptr, char *ptr) {
@@ -176,8 +176,10 @@ int inbetween(char *startptr, char *endptr, char *ptr) {
         }
         return ptr < endptr;
     }
-    if (ptr < startptr && endptr <= ptr) {
-        return 0;
+    if (ptr < startptr) {
+        if (endptr <= ptr) {
+            return 0;
+        }
     }
     return 1;
 }
@@ -279,18 +281,19 @@ void freerequest(STREAMHEADERtag *stream, REQUESTSTRUCTtag *reqRaw) {
 }
 
 int filterchunk(STREAMHEADERtag *stream, STREAMCHUNKHDR *chunk) {
+    int chunktype = ReadChunkWord(&chunk->type);
     int i = 0;
 
-    if (stream->filters > 0) {
+    if (i < stream->filters) {
         FILTERSTRUCTtag *filt = stream->filter;
-        int chunktype = ReadChunkWord(&chunk->type);
+        int filters = stream->filters;
 
         do {
             if ((chunktype & filt[i].mask) == filt[i].value) {
                 return filt[i].tapnum;
             }
             i++;
-        } while (i < stream->filters);
+        } while (i < filters);
     }
     return -2;
 }

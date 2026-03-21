@@ -87,10 +87,11 @@ void SndAITrigger::Update(float UpdateVal, float t) {
 
 void SndAIStateManager::SwitchState(SND_AI_STATE NewState) {
     float tLastSwitch = SndBase::m_fRunningTime;
+    SND_AI_STATE OldState = CurState;
 
     *(int *)&bTransition = 1;
     m_tLastSwitch = tLastSwitch;
-    PrevState = CurState;
+    PrevState = OldState;
     CurState = NewState;
 }
 
