@@ -100,6 +100,16 @@ const Attrib::Instance &DrawVehicle::Part::GetAttributes() const {
     return mAttributes;
 }
 
+void DrawVehicle::Part::GetTransform(UMath::Matrix4 &transform) const {
+    if (static_cast<const IModel *>(this)->GetSimable()) {
+        static_cast<const IModel *>(this)->GetSimable()->GetTransform(transform);
+    } else if (mTrigger != nullptr) {
+        mTrigger->GetObjectMatrix(transform);
+    } else {
+        transform = UMath::Matrix4::kIdentity;
+    }
+}
+
 void DrawVehicle::Part::RemoveTrigger() {
     if (mTrigger) {
         delete mTrigger;
@@ -109,11 +119,19 @@ void DrawVehicle::Part::RemoveTrigger() {
 
 bool DrawVehicle::Part::OnDraw(Sim::Packet *service) {
     RenderConn::Pkt_VehicleFragment_Service *pkt = static_cast<RenderConn::Pkt_VehicleFragment_Service *>(service);
-    UpdateVisibility(pkt->mInView, pkt->mDistanceToView);
+    *reinterpret_cast<float *>(reinterpret_cast<char *>(this) + 0x68) = pkt->mDistanceToView;
+    *reinterpret_cast<int *>(reinterpret_cast<char *>(this) + 0x6C) = pkt->mInView;
     return true;
 }
 
 void DrawVehicle::Part::OnBeginDraw() {}
+
+void DrawVehicle::Part::PlaceTrigger(const UMath::Matrix4 &matrix, bool enable) {
+    CreateTrigger(matrix);
+    if (!enable && mTrigger != nullptr) {
+        mTrigger->Disable();
+    }
+}
 
 void DrawVehicle::SetCausality(HCAUSE from, float time) {
     mCausality = from;
