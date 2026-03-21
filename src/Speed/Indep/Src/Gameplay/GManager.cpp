@@ -2349,6 +2349,7 @@ bool GManager::LoadGameplayData(unsigned char *src, unsigned int maxSize) {
 
     LoadMilestoneInfo(reinterpret_cast<MilestoneTypeInfo *>(src), gameplayHeader->mNumMilestoneTypes);
     src += gameplayHeader->mNumMilestoneTypes * 0x10;
+    AlignPointer(src, 0x10);
 
     LoadMilestones(reinterpret_cast<GMilestone *>(src), gameplayHeader->mNumMilestoneRecords);
     src += gameplayHeader->mNumMilestoneRecords * 0x14;
