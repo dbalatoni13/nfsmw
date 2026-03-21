@@ -1,4 +1,5 @@
 #include "DrawVehicle.h"
+#include "Speed/Indep/Src/Physics/SmokeableInfo.hpp"
 #include "Speed/Indep/Src/Physics/SmackableTrigger.h"
 
 namespace RenderConn {
@@ -22,6 +23,32 @@ struct Pkt_VehicleFragment_Service : Sim::Packet {
 }
 
 static int Vehicle_Part_Count;
+
+DrawVehicle::DrawVehicle(const BehaviorParams &bp)
+    : VehicleBehavior(bp, 2), //
+      IRenderable(bp.fowner), //
+      IModel(bp.fowner), //
+      IAttachable(bp.fowner), //
+      mGeometry(nullptr), //
+      mAttachments(nullptr), //
+      mCausality(nullptr), //
+      mCausalityTime(0.0f) {
+    mAttachments = new Sim::Attachments(static_cast<IAttachable *>(this));
+
+    CollisionGeometry::IBoundable *boundable = nullptr;
+    if (GetOwner()->QueryInterface(&boundable)) {
+        mGeometry = boundable->GetGeometryNode();
+    }
+}
+
+DrawVehicle::~DrawVehicle() {
+    if (mAttachments) {
+        delete mAttachments;
+    }
+    for (EffectList::iterator iter = mEffects.begin(); iter != mEffects.end(); ++iter) {
+        delete *iter;
+    }
+}
 
 HMODEL DrawVehicle::GetModelHandle() const {
     return static_cast<const IModel *>(this)->GetInstanceHandle();
@@ -237,6 +264,53 @@ void DrawVehicle::SetCausality(HCAUSE from, float time) {
 
 HCAUSE DrawVehicle::GetCausality() const {
     return mCausality;
+}
+
+IModel::Enumerator *DrawVehicle::EnumerateChildren(Enumerator *enumerator) const {
+    const IAttachable::List *attachments = static_cast<const IAttachable *>(this)->GetAttachments();
+    if (attachments) {
+        IModel *model = static_cast< IModel * >(const_cast< DrawVehicle * >(this));
+        for (IAttachable::List::const_iterator iter = attachments->begin(); iter != attachments->end(); ++iter) {
+            IModel *imodel = nullptr;
+            if ((*iter)->QueryInterface(&imodel) && imodel->GetParentModel() == model) {
+                if (!enumerator->OnModel(imodel)) {
+                    return enumerator;
+                }
+            }
+        }
+    }
+    return enumerator;
+}
+
+IModel *DrawVehicle::GetChildModel(UCrc32 name) const {
+    if (name != UCrc32::kNull) {
+        const IAttachable::List *attachments = static_cast<const IAttachable *>(this)->GetAttachments();
+        if (attachments) {
+            for (IAttachable::List::const_iterator iter = attachments->begin(); iter != attachments->end(); ++iter) {
+                IModel *imodel = nullptr;
+                if ((*iter)->QueryInterface(&imodel) && imodel->GetPartName() == name) {
+                    return imodel;
+                }
+            }
+        }
+    }
+    return nullptr;
+}
+
+IModel *DrawVehicle::SpawnModel(UCrc32 name, UCrc32 collisionnode, UCrc32 attributes) {
+    if (Vehicle_Part_Count < 61 && UTL::Collections::Listable< IModel, 434 >::Count() < 435 && mGeometry) {
+        const CollisionGeometry::Bounds *bounds = mGeometry->GetChild(collisionnode);
+        if (bounds) {
+            const Attrib::Collection *attribs = SmokeableSpawner::FindAttributes(attributes);
+            if (attribs) {
+                Part *part = new Part(static_cast< IModel * >(this), static_cast< IModel * >(this)->GetWorldID(), bounds, attribs, name);
+                if (part) {
+                    return part;
+                }
+            }
+        }
+    }
+    return nullptr;
 }
 
 bool DrawVehicle::IsHidden() const {

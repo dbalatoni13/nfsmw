@@ -18,6 +18,12 @@
 
 static char RBGrid_Memory[6912]; // size: 0x1B00, address: 0x8048A1A8
 
+template <>
+SAP::Grid<RigidBody>::Node *SAP::Grid<RigidBody>::mRootX = nullptr;
+
+template <>
+SAP::Grid<RigidBody>::Node *SAP::Grid<RigidBody>::mRootZ = nullptr;
+
 bTList<RigidBody> TheRigidBodies;
 
 static bool CollisionPacketSort(const CollisionPacket &a, const CollisionPacket &b) {
@@ -32,6 +38,57 @@ struct MeshAccess {
     const Attrib::Collection *mMaterial;
     UCrc32 mName;
 };
+
+struct SAPNodeAccess {
+    SAPNodeAccess *mHead;
+    SAPNodeAccess *mTail;
+    float mPosition;
+    float mSort;
+    void *mAxis;
+    SAPNodeAccess **mRoot;
+};
+
+struct SAPAxisAccess {
+    SAPNodeAccess mMin;
+    SAPNodeAccess mMax;
+    void *mGrid;
+};
+
+struct RBGridAccess {
+    SAPAxisAccess mX;
+    SAPAxisAccess mZ;
+    RigidBody *mOwner;
+};
+
+static inline void InitGridNode(SAPNodeAccess &node, void *axis, SAPNodeAccess **root, float position) {
+    node.mHead = nullptr;
+    node.mTail = nullptr;
+    node.mPosition = position;
+    node.mSort = position;
+    node.mAxis = axis;
+    node.mRoot = root;
+}
+
+static inline void InsertGridNode(SAPNodeAccess *&root, SAPNodeAccess *node) {
+    SAPNodeAccess *tail = root;
+    SAPNodeAccess *head = nullptr;
+
+    while (tail && tail->mPosition < node->mPosition) {
+        head = tail;
+        tail = tail->mTail;
+    }
+
+    node->mHead = head;
+    node->mTail = tail;
+    if (head) {
+        head->mTail = node;
+    } else {
+        root = node;
+    }
+    if (tail) {
+        tail->mHead = node;
+    }
+}
 
 // TODO clear the magic numbers in Volatile::state and status
 
@@ -134,6 +191,40 @@ bool RigidBody::Primitive::SetCollision(const Volatile &data, Dynamics::Collisio
 void RigidBody::InitRigidBodySystem() {}
 
 void RigidBody::ShutdownRigidBodySystem() {}
+
+RBGrid *RBGrid::Add(unsigned int index, RigidBody &owner, const UMath::Vector3 &position, float radius) {
+    if (index > 0x3F) {
+        return nullptr;
+    }
+
+    RBGridAccess *grid = reinterpret_cast<RBGridAccess *>(RBGrid_Memory + index * sizeof(RBGrid));
+    if (!grid) {
+        return nullptr;
+    }
+
+    SAPNodeAccess *&rootX = reinterpret_cast<SAPNodeAccess *&>(SAP::Grid<RigidBody>::mRootX);
+    SAPNodeAccess *&rootZ = reinterpret_cast<SAPNodeAccess *&>(SAP::Grid<RigidBody>::mRootZ);
+
+    const float minX = position.x - radius;
+    const float maxX = position.x + radius;
+    const float minZ = position.z - radius;
+    const float maxZ = position.z + radius;
+
+    grid->mX.mGrid = grid;
+    InitGridNode(grid->mX.mMin, &grid->mX, &rootX, minX);
+    InsertGridNode(rootX, &grid->mX.mMin);
+    InitGridNode(grid->mX.mMax, &grid->mX, &rootX, maxX);
+    InsertGridNode(rootX, &grid->mX.mMax);
+
+    grid->mZ.mGrid = grid;
+    InitGridNode(grid->mZ.mMin, &grid->mZ, &rootZ, minZ);
+    InsertGridNode(rootZ, &grid->mZ.mMin);
+    InitGridNode(grid->mZ.mMax, &grid->mZ, &rootZ, maxZ);
+    InsertGridNode(rootZ, &grid->mZ.mMax);
+
+    grid->mOwner = &owner;
+    return reinterpret_cast<RBGrid *>(grid);
+}
 
 void RBGrid::Remove(RBGrid *grid) {
     if (grid) {
