@@ -2400,13 +2400,8 @@ void GManager::DefragObjectStateStorage() {
     unsigned char *freePtr;
     ObjectStateMap *stateBlocks;
 
-    count = mPersistentStateBlocks.size() + mSessionStateBlocks.size();
-    if (count == 0) {
-        mObjectStateBufferFree = mObjectStateBuffer;
-        return;
-    }
-
     blocks = stackBlocks;
+    count = mPersistentStateBlocks.size() + mSessionStateBlocks.size();
     if (count > 0x100) {
         blocks = new ObjectStateBlockHeader *[count];
     }
