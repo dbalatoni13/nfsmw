@@ -45,10 +45,30 @@ void GCharacter::OnAttached(IAttachable *pOther) {
 }
 
 void GCharacter::OnDetached(IAttachable *pOther) {
-    IVehicle *vehicle;
+    IVehicle *ivehicle;
 
-    if (pOther->QueryInterface(&vehicle) && mVehicle == vehicle) {
+    if (pOther->QueryInterface(&ivehicle)) {
+        ISimable *isimable;
+        IVehicleAI *vai;
+
+        mVehicle->QueryInterface(&isimable);
+
+        if (isimable->QueryInterface(&vai)) {
+            WRoadNav *driveTo = vai->GetDriveToNav();
+
+            if (driveTo) {
+                driveTo->CancelPathFinding();
+            }
+        }
+
+        if (IsFlagSet(kCharFlag_UsingStockCar)) {
+            mVehicle->Deactivate();
+            GManager::Get().ReleaseStockCar(isimable);
+            ClearFlag(kCharFlag_UsingStockCar);
+        }
+
         mVehicle = nullptr;
+        Unspawn();
     }
 }
 
