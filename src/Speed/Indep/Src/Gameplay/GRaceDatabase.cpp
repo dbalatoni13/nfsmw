@@ -198,6 +198,13 @@ const char *GRaceBin::GetBarrierName(unsigned int index) const {
     return barrierName;
 }
 
+unsigned int GRaceBin::GetBarrierHash(unsigned int index) const {
+    const char *barrierName;
+
+    barrierName = GetBarrierName(index);
+    return barrierName ? Attrib::StringToKey(barrierName) : 0;
+}
+
 bool GRaceBin::GetBarrierIsFlipped(unsigned int index) const {
     const char *barrierName;
 
