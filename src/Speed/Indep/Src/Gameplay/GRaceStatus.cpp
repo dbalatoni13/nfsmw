@@ -670,10 +670,10 @@ bool GRacerInfo::AreStatsReady() const {
 }
 
 void GRacerInfo::SaveStartPosition() {
-    mSavedPosition = UMath::Vector3::kZero;
     mSavedHeatLevel = 0.0f;
-    mSavedDirection = UMath::Vector3::kZero;
     mSavedSpeed = 0.0f;
+    mSavedPosition = UMath::Vector3::kZero;
+    mSavedDirection = UMath::Vector3::kZero;
 
     ISimable *simable = GetSimable();
 
@@ -681,17 +681,17 @@ void GRacerInfo::SaveStartPosition() {
         return;
     }
 
-    IRigidBody *rigidBody = simable->GetRigidBody();
-    if (rigidBody) {
-        mSavedPosition = rigidBody->GetPosition();
-        mSavedSpeed = rigidBody->GetSpeed();
-        rigidBody->GetForwardVector(mSavedDirection);
-        if (mSavedSpeed == 0.0f) {
-            mSavedSpeed = GRaceStatus::Get().GetRaceParameters()->GetInitialPlayerSpeed();
-        }
-    }
-
     {
+        IRigidBody *rigidBody = simable->GetRigidBody();
+
+        if (rigidBody) {
+            mSavedPosition = rigidBody->GetPosition();
+            mSavedSpeed = rigidBody->GetSpeed();
+            rigidBody->GetForwardVector(mSavedDirection);
+            if (mSavedSpeed == 0.0f) {
+                mSavedSpeed = GRaceStatus::Get().GetRaceParameters()->GetInitialPlayerSpeed();
+            }
+        }
         IPerpetrator *perp;
 
         if (simable->QueryInterface(&perp)) {
