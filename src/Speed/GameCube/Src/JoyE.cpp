@@ -182,10 +182,8 @@ int ActualReadJoystickData() {
                     }
 
                     if (calibrationTimer[port] > 0.0f) {
-                        float now = RealTimer.GetSeconds();
-                        float elapsed = now - lastCalibTime[port];
-                        lastCalibTime[port] = now;
-                        calibrationTimer[port] -= elapsed;
+                        calibrationTimer[port] -= RealTimer.GetSeconds() - lastCalibTime[port];
+                        lastCalibTime[port] = RealTimer.GetSeconds();
                     }
 
                     joy_data->padSTATUS.button = reinterpret_cast<LGPosition *>(plat_lgwheels)[port].button;
