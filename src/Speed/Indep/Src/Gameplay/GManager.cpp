@@ -2019,12 +2019,12 @@ ISimable *GManager::GetRandomEmergencyStockCar() {
 }
 
 void GManager::ReleaseStockCar(ISimable *stockCar) {
-    if (!stockCar) {
-        return;
-    }
+    const Attrib::Instance &carAttrib = stockCar->GetAttributes();
+    unsigned int carHash;
 
-    stockCar->Kill();
-    mStockCars[stockCar->GetAttributes().GetCollection()] = stockCar;
+    carHash = carAttrib.GetCollection();
+    StockCarMap::iterator iterExisting = mStockCars.find(carHash);
+    mStockCars[carHash] = stockCar;
 }
 
 void GManager::AttachCharacter(GCharacter *character) {
