@@ -834,8 +834,8 @@ void GManager::ReleaseInstanceMap() {
         mKeyToInstanceMap = nullptr;
     }
 
-    mInstanceHashTableMask = 0;
     mInstanceHashTableSize = 0;
+    mInstanceHashTableMask = 0;
 }
 
 void GManager::ReleaseStreamingBuffers() {
@@ -1180,8 +1180,8 @@ void GManager::ReleaseMilestones() {
         delete[] mMilestones;
     }
 
-    mNumMilestones = 0;
     mMilestones = nullptr;
+    mNumMilestones = 0;
 }
 
 void GManager::AllocateMilestones() {
@@ -1357,8 +1357,8 @@ void GManager::ReleaseSpeedTraps() {
         delete[] mSpeedTraps;
     }
 
-    mNumSpeedTraps = 0;
     mSpeedTraps = nullptr;
+    mNumSpeedTraps = 0;
 }
 
 void GManager::AllocateIcons() {
@@ -1372,9 +1372,9 @@ void GManager::ReleaseIcons() {
         delete[] mIcons;
     }
 
-    mIcons = nullptr;
     mNumIcons = 0;
     mNumVisibleIcons = 0;
+    mIcons = nullptr;
 }
 
 void GManager::AllocateSpeedTraps() {
