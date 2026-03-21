@@ -116,12 +116,12 @@ unsigned int IsWheelActiveForProgressiveMenu(int ix) {
 }
 
 int ActualReadJoystickData() {
-    int nNewTop;
-    int port;
-
     if (JoystickInitialized) {
-        nNewTop = (JoystickRingBufferTop + 1) & 0x1F;
+        int nNewTop = (JoystickRingBufferTop + 1) & 0x1F;
+
         if (nNewTop != JoystickRingBufferBottom) {
+            int port;
+
             PADRead(HardwarePadStatus);
             PADClamp(HardwarePadStatus);
             plat_lgwheels->ReadAll();
