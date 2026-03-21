@@ -1714,22 +1714,22 @@ int GManager::GatherVisibleIcons(GIcon **iconArray, IPlayer *player) {
         }
 
         if (show) {
-            iconSort[count].mIcon = icon;
+            iconSort[count].icon = icon;
             if (!simable) {
-                iconSort[count].mDist = 0;
+                iconSort[count].distance = 0;
             } else {
-                iconSort[count].mDist = static_cast<int>(VU0_v3distancesquarexz(icon->GetPosition(), playerPos));
+                iconSort[count].distance = static_cast<int>(VU0_v3distancesquarexz(icon->GetPosition(), playerPos));
             }
             count++;
         }
     }
 
     if (simable) {
-        qsort(iconSort, count, sizeof(IconSort), IconSort::Compare);
+        qsort(iconSort, count, sizeof(IconSort), CompareVisibleIcons);
     }
 
     for (int i = 0; i < count; i++) {
-        iconArray[i] = iconSort[i].mIcon;
+        iconArray[i] = iconSort[i].icon;
     }
 
     return count;
