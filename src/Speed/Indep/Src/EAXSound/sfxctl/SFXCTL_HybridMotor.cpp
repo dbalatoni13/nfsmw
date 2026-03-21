@@ -341,16 +341,14 @@ void SFXCTL_HybridMotor::UpdateSingleMixEng(float t) {
 }
 
 void SFXCTL_HybridMotor::UpdateVolumeRedlining() {
-    int redlineVol = 0;
-    if (m_pEngineCtl != nullptr) {
-        redlineVol = static_cast<int>(m_pEngineCtl->m_fEng_RPM * (1.0f / 16.0f));
-        if (redlineVol < 0) {
-            redlineVol = 0;
-        } else if (redlineVol > 32767) {
-            redlineVol = 32767;
-        }
-    }
-    m_EngVolAEMS = smooth(m_EngVolAEMS, redlineVol, 4096);
+    m_EngVolRedLine =
+        static_cast<int>(static_cast<float>(m_EngVolRedLine) * m_pEngineCtl->RedLineSampFactor.GetValue());
+    m_EngVolAEMS =
+        static_cast<int>(static_cast<float>(m_EngVolAEMS) * m_pEngineCtl->RedLineEngFactor.GetValue());
+    m_EngVolAccelGinsu =
+        static_cast<int>(static_cast<float>(m_EngVolAccelGinsu) * m_pEngineCtl->RedLineEngFactor.GetValue());
+    m_EngVolDecelGinsu =
+        static_cast<int>(static_cast<float>(m_EngVolDecelGinsu) * m_pEngineCtl->RedLineEngFactor.GetValue());
 }
 
 void SFXCTL_HybridMotor::UpdateMixerOutputs() {

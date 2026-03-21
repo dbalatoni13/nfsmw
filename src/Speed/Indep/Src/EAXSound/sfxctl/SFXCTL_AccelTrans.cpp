@@ -2,6 +2,7 @@
 #include "Speed/Indep/Src/EAXSound/EAXCar.hpp"
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Engine.hpp"
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Shifting.hpp"
+#include "Speed/Indep/Src/Interfaces/SimActivities/INIS.h"
 
 inline float SFXCTL::GetPhysRPM() { return m_pEAXCar->GetPhysRPM(); }
 
@@ -166,7 +167,25 @@ void SFXCTL_AccelTrans::BeginAccelTrans_Idle() {
 }
 
 bool SFXCTL_AccelTrans::ShouldBeginAccelTrans_Idle() {
-    return !IsAccelerating && OldIsAccelerating;
+    EAXCar *car = m_pEAXCar;
+    if (car->GetVelocityMagnitudeMPH() <= 15.0f &&
+        30.0f <= car->GetThrottle() - m_pEngineCtl->m_pPhysicsCtl->m_OldThrottle &&
+        !car->GetPhysicsCTL()->NISRevingEnabled) {
+        if (eAccelTransFxState != FX_ACCEL_STATE_NONE) {
+            return false;
+        }
+
+        if ((!m_pShiftCtl || !m_pShiftCtl->IsActive()) &&
+            car->GetCurGear() == Sound::FIRST_GEAR && GetPhysRPM() <= 1500.0f) {
+            if (INIS::Get() != nullptr && INIS::Get()->IsPlaying()) {
+                return false;
+            }
+
+            return true;
+        }
+    }
+
+    return false;
 }
 
 bool SFXCTL_AccelTrans::ShouldBeginAccelTrans() {
