@@ -227,12 +227,12 @@ void FEToggleWidget::Disable() {
 }
 
 void FEToggleWidget::SetScript(unsigned int script) {
-    FEngSetScript(reinterpret_cast<FEObject*>(pTitle), script, true);
-    FEngSetScript(reinterpret_cast<FEObject*>(pData), script, true);
-    FEngSetScript(reinterpret_cast<FEObject*>(pLeftImage), script, true);
-    FEngSetScript(reinterpret_cast<FEObject*>(pRightImage), script, true);
-    if (pBacking) {
-        FEngSetScript(pBacking, script, true);
+    FEngSetScript(GetTitleObject(), script, true);
+    FEngSetScript(GetDataObject(), script, true);
+    FEngSetScript(GetLeftImage(), script, true);
+    FEngSetScript(GetRightImage(), script, true);
+    if (GetBacking()) {
+        FEngSetScript(GetBacking(), script, true);
     }
 }
 
