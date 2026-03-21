@@ -876,18 +876,25 @@ void GRacerInfo::FinalizeRaceStats() {
 
     if (GRaceStatus::Get().GetRaceType() == GRace::kRaceType_SpeedTrap && mGameCharacter) {
         GRaceParameters *parameters = GRaceStatus::Get().GetRaceParameters();
-        float time_left = currentTime - time_now;
-        int penalty = parameters->GetGameplayObj()->OvertimePenaltyPerSec(0);
+        float time_left;
+        float penalty;
 
-        if (0.0f < time_left) {
-            AddToPointTotal(-(time_left * static_cast<float>(penalty)));
+        if (parameters) {
+            time_left = currentTime - time_now;
+            penalty = static_cast<float>(parameters->GetGameplayObj()->OvertimePenaltyPerSec(0));
+
+            if (0.0f < time_left) {
+                AddToPointTotal(-(time_left * penalty));
+            }
         }
     }
 
-    if (GRaceStatus::Get().GetRaceParameters() &&
-        GRaceStatus::Get().GetRaceParameters()->GetIsLoopingRace()) {
+    {
+        GRaceParameters *parameters = GRaceStatus::Get().GetRaceParameters();
+
+        if (parameters->GetIsLoopingRace()) {
         if (mGameCharacter) {
-            int totalLaps = GRaceStatus::Get().GetRaceParameters()->GetNumLaps();
+            int totalLaps = parameters->GetNumLaps();
             int completedLaps = GetLapsCompleted();
             float elapsedTime = 0.0f;
             int onLap = 0;
@@ -908,6 +915,7 @@ void GRacerInfo::FinalizeRaceStats() {
 
             GRaceStatus::Get().SetLapTime(completedLaps, GetIndex(), currentTime - elapsedTime);
         }
+    }
     }
 
 #ifndef EA_BUILD_A124
