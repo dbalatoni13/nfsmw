@@ -68,7 +68,7 @@ void GEventTimer::SetInterval(float value) {
 }
 
 void GEventTimer::SetName(const char *name) {
-    bSafeStrCpy(mName, name, sizeof(mName));
+    bSafeStrCpy(mName, name, sizeof(mName) - 1);
     mNameHash = bStringHash(mName);
 }
 
@@ -86,7 +86,7 @@ void GEventTimer::Serialize(SavedTimerInfo *saveInfo) {
     saveInfo->mElapsed = mElapsed;
     saveInfo->mInterval = mInterval;
     saveInfo->mRunning = mRunning;
-    bSafeStrCpy(saveInfo->mName, mName, sizeof(saveInfo->mName));
+    bSafeStrCpy(saveInfo->mName, mName, sizeof(saveInfo->mName) - 1);
 }
 
 void GEventTimer::Deserialize(SavedTimerInfo *saveInfo) {
