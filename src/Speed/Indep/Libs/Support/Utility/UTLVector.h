@@ -9,7 +9,7 @@
 #include <cstddef>
 
 namespace UTL {
-template <typename T, unsigned int Alignment = 16> class Vector {
+template <typename T, int Alignment = 16> class Vector {
   public:
     typedef T value_type;
     typedef value_type *pointer;
@@ -170,7 +170,7 @@ template <typename T, unsigned int Alignment = 16> class Vector {
     size_type mSize;     // offset 0x8, size 0x4
 };
 
-template <typename T, std::size_t Size, unsigned int Alignment = 16> class FixedVector : public Vector<T, Alignment> {
+template <typename T, int Size, int Alignment = 16> class FixedVector : public Vector<T, Alignment> {
   public:
     FixedVector() {}
 

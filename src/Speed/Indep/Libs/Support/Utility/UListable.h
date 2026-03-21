@@ -77,6 +77,12 @@ template <typename T, int U> class Listable {
 template <typename T, int N>
 typename Listable<T, N>::List Listable<T, N>::_mTable;
 
+template <typename T, int U>
+Listable<T, U>::List::List() {}
+
+template <typename T, int U>
+Listable<T, U>::List::~List() {}
+
 template <typename T, int ListSize, typename Enum, std::size_t EnumMax> class ListableSet {
   public:
     typedef T value_type;
@@ -88,8 +94,8 @@ template <typename T, int ListSize, typename Enum, std::size_t EnumMax> class Li
     class List : public _Storage<pointer, ListSize> {
       public:
         // List(const List &);
-        List() {}
-        ~List() override {}
+        List();
+        ~List() override;
 
         // List &operator=(List &);
     };
@@ -158,6 +164,18 @@ template <typename T, int ListSize, typename Enum, std::size_t EnumMax> class Li
   private:
     static _ListSet _mLists;
 };
+
+template <typename T, int ListSize, typename Enum, std::size_t EnumMax>
+ListableSet<T, ListSize, Enum, EnumMax>::List::List() {}
+
+template <typename T, int ListSize, typename Enum, std::size_t EnumMax>
+ListableSet<T, ListSize, Enum, EnumMax>::List::~List() {}
+
+template <typename T, int ListSize, typename Enum, std::size_t EnumMax>
+ListableSet<T, ListSize, Enum, EnumMax>::_ListSet::_ListSet() {}
+
+template <typename T, int ListSize, typename Enum, std::size_t EnumMax>
+ListableSet<T, ListSize, Enum, EnumMax>::_ListSet::~_ListSet() {}
 
 template <typename T> class Countable {
     static int _mCount;

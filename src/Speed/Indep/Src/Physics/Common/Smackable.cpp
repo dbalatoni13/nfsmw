@@ -57,6 +57,8 @@ Attrib::StringKey Smackable::CONE;
 Attrib::StringKey Smackable::SPHERE;
 static float Smackable_ManagementRate = 0.125f;
 
+IDisposable::~IDisposable() {}
+
 static float GetDropTimer(const Attrib::Gen::smackable &attributes) {
     float result;
     result = attributes.DROPOUT(0);
