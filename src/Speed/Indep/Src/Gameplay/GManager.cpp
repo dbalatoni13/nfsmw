@@ -1048,13 +1048,24 @@ void GManager::ConnectInstanceReferences(GRuntimeInstance *runtimeInstance, cons
 }
 
 void GManager::ConnectRuntimeInstances() {
-    for (unsigned int i = 0; i < mInstanceHashTableSize; ++i) {
-        GRuntimeInstance *instance = mKeyToInstanceMap[i].mInstance;
+    for (unsigned int onEntry = 0; onEntry < mInstanceHashTableSize; ++onEntry) {
+        GRuntimeInstance *targetInstance = mKeyToInstanceMap[onEntry].mInstance;
+        unsigned int collectionKey;
 
-        if (instance) {
-            instance->ResetConnections();
-            ConnectChildren(instance);
-            instance->LockConnections();
+        if (targetInstance) {
+            targetInstance->ResetConnections();
+            ConnectInstanceReferences(targetInstance, *targetInstance);
+
+            collectionKey = targetInstance->GetParent();
+            while (collectionKey) {
+                Attrib::Gen::gameplay collection(collectionKey, 0, nullptr);
+
+                ConnectInstanceReferences(targetInstance, collection);
+                collectionKey = collection.GetParent();
+            }
+
+            ConnectChildren(targetInstance);
+            targetInstance->LockConnections();
         }
     }
 }
