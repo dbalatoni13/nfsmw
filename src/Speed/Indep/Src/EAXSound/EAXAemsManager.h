@@ -141,7 +141,7 @@ struct BankSlotSystem : public UTL::Std::list<stBankSlot, _type_BankSlotSystem> 
 
 struct SndAssetQueue : public UTL::Std::list<stSndAssetQueue, _type_SndAssetQueue> {};
 
-struct AsyncQueue : public std::deque<stSndDataLoadParams *, UTL::Std::Allocator<stSndDataLoadParams *, _type_AsyncQueue> > {};
+struct AsyncQueue : public UTL::Std::deque<stSndDataLoadParams *, _type_AsyncQueue> {};
 
 struct EvtSystems : public UTL::Std::vector<char *, _type_EvtSystems> {};
 
