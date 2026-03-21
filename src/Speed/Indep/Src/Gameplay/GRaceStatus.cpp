@@ -2038,6 +2038,14 @@ bool GRaceParameters::GetIsMiddayRace() const {
         return (*reinterpret_cast<const unsigned int *>(reinterpret_cast<const char *>(mIndex) + 0x18) >> 17) & 1;
     }
 
+    if (mParentVault && !mParentVault->IsLoaded()) {
+        mParentVault->LoadSyncTransient();
+    }
+
+    if (mChildVault && !mChildVault->IsLoaded()) {
+        mChildVault->LoadSyncTransient();
+    }
+
     return GetTimeOfDay() >= 0.0f && GetTimeOfDay() < 0.8f;
 }
 
