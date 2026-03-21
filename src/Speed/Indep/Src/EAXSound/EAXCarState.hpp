@@ -95,7 +95,7 @@ struct Wheel {
     inline void Reset() {
         mWheelOnGround = 1;
         mWheelForceZ = 0.0f;
-        mWheelSlip = bVector2(mWheelForceZ, 0.0f);
+        mWheelSlip = bVector2(0.0f, 0.0f);
         mTerrainType = SimSurface::kNull;
         mPrevBlownState = 0;
         mPercentFsFkTransfer = 0.0f;
