@@ -2872,20 +2872,17 @@ unsigned int GManager::GetRespawnMarker() {
 }
 
 void GManager::GetRespawnLocation(UMath::Vector3 &startLoc, UMath::Vector3 &initialVec) {
-    Attrib::Gen::gameplay gameplayObj(GetRespawnMarker(), 0, nullptr);
+    unsigned int markerKey = GetRespawnMarker();
+    Attrib::Gen::gameplay marker(markerKey, 0, nullptr);
     UMath::Matrix4 rotMat;
-    UMath::Vector3 respawnLoc;
-    UMath::Vector3 forwardVec;
-    const UMath::Vector3 &position = gameplayObj.Position();
+    const UMath::Vector3 &pos = marker.Position();
 
-    respawnLoc = UMath::Vector3Make(-position.y, position.z, position.x);
-    startLoc = respawnLoc;
+    startLoc = UMath::Vector3Make(-pos.y, pos.z, pos.x);
 
     rotMat = UMath::Matrix4::kIdentity;
 
-    forwardVec = UMath::Vector3Make(0.0f, 0.0f, 1.0f);
-    initialVec = forwardVec;
+    initialVec = UMath::Vector3Make(0.0f, 0.0f, 1.0f);
 
-    MATRIX4_multyrot(&rotMat, -gameplayObj.Rotation() * 0.0027777778f, &rotMat);
+    MATRIX4_multyrot(&rotMat, -marker.Rotation() * 0.0027777778f, &rotMat);
     VU0_MATRIX3x4_vect3mult(initialVec, rotMat, initialVec);
 }
