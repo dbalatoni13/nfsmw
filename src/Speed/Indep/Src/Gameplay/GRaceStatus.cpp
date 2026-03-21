@@ -3275,9 +3275,15 @@ GRacerInfo &GRaceStatus::GetRacerInfo(int index) {
 }
 
 GRacerInfo *GRaceStatus::GetRacerInfo(ISimable *isim) {
-    for (int i = 0; i < mRacerCount; ++i) {
-        if (mRacerInfo[i].GetSimable() == isim) {
-            return &mRacerInfo[i];
+    {
+        int idx = 0;
+
+        for (; idx < mRacerCount; ++idx) {
+            GRacerInfo &info = mRacerInfo[idx];
+
+            if (info.GetSimable() == isim) {
+                return &info;
+            }
         }
     }
 
