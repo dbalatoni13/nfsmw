@@ -3296,16 +3296,18 @@ GRacerInfo *GRaceStatus::GetWinningPlayerInfo() {
 }
 
 void GRaceStatus::StartMasterTimer() {
-    float startTime = 0.0f;
+    GRaceParameters *race_parameters;
+    float start_time;
 
-    if (mRaceParms) {
-        startTime = mRaceParms->GetStartTime();
+    race_parameters = GetRaceParameters();
+    if (race_parameters) {
+        start_time = race_parameters->GetStartTime();
+    } else {
+        start_time = 0.0f;
     }
 
-    mRaceMasterTimer.Reset(-startTime);
+    mRaceMasterTimer.Reset(start_time);
     mRaceMasterTimer.Start();
-    mLastSecondTickSent = static_cast<int>(GetRaceTimeElapsed());
-    mTimeExpiredMsgSent = false;
 }
 
 void GRaceStatus::StopMasterTimer() {
@@ -3313,6 +3315,10 @@ void GRaceStatus::StopMasterTimer() {
 }
 
 float GRaceStatus::GetRaceTimeElapsed() const {
+    if (!mRaceParms) {
+        return 0.0f;
+    }
+
     return mRaceMasterTimer.GetTime();
 }
 
