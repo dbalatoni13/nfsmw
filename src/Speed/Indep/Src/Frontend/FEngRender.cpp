@@ -7,6 +7,7 @@
 #include "Speed/Indep/Src/Frontend/FERenderObject.hpp"
 #include "Speed/Indep/Src/Frontend/FEngFont.hpp"
 #include "Speed/Indep/Src/Frontend/MoviePlayer/MoviePlayer.hpp"
+#include "Speed/Indep/Src/Misc/Profiler.hpp"
 #include "Speed/Indep/Src/Ecstasy/Texture.hpp"
 #include "Speed/Indep/Src/FEng/FETypes.h"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
@@ -517,6 +518,41 @@ void cFEngRender::GenerateRenderContext(unsigned short ctx, FEObject *obj) {
         FEMinNode *child =
             *reinterpret_cast<FEMinNode **>(reinterpret_cast<char *>(obj) + 0x60);
         for (; child; child = child->GetNext()) {
+        }
+    }
+}
+
+void cFEngRender::RenderObject(FEObject *object, FEPackageRenderInfo *pkg_render_info) {
+    if (object->Flags & 8) {
+        return;
+    }
+    if (object->Type == 7) {
+        object->Flags |= 0x2000000;
+    }
+    ProfileNode profile_node("TODO", 0);
+    FERenderObject *cached = FindCachedRender(object);
+    if (cached && cached->IsReadyToRender() && !(object->Flags & 0x2000000)) {
+        cached->Render();
+    } else {
+        switch (object->Type) {
+            case 1:
+                RenderImage(reinterpret_cast<FEImage *>(object), cached, pkg_render_info);
+                break;
+            case 9:
+                RenderCBVImage(reinterpret_cast<FEColoredImage *>(object), cached, pkg_render_info);
+                break;
+            case 2:
+                RenderString(reinterpret_cast<FEString *>(object), cached, pkg_render_info);
+                break;
+            case 3:
+                RenderModel(reinterpret_cast<FEModel *>(object), cached);
+                break;
+            case 7:
+                RenderMovie(reinterpret_cast<FEMovie *>(object), cached, pkg_render_info);
+                break;
+            case 12:
+                RenderMultiImage(reinterpret_cast<FEMultiImage *>(object), cached, pkg_render_info);
+                break;
         }
     }
 }

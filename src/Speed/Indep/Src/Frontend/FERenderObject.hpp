@@ -65,6 +65,10 @@ class FERenderObject : public bTNode<FERenderObject> {
         mulFlags |= 2;
     }
 
+    bool IsReadyToRender() {
+        return (mulFlags & 2) != 0;
+    }
+
     void SetTexture(TextureInfo *texture) {
         mpobTexture = texture;
     }
