@@ -384,8 +384,8 @@ void MemoryCard::Tick(int TickCount) {
         StartAutoSave(false);
     }
     if (Joylog::IsReplaying()) {
-        int result;
-        do { result = ReplayJoyOp(); } while (result != 0);
+        MemoryCardJoyLoggableEvents l_JoyOp;
+        do { l_JoyOp = static_cast< MemoryCardJoyLoggableEvents >(ReplayJoyOp()); } while (l_JoyOp != 0);
     } else {
         m_pIMemcard->Update(TickCount);
         if (Joylog::IsCapturing()) CaptureJoyOp(MJ_None);
@@ -395,7 +395,7 @@ void MemoryCard::Tick(int TickCount) {
     if (cFEng::Get()->IsPackagePushed("ScreenPrintf")
         || cFEng::Get()->IsPackagePushed("MemoryCard.fng")
         || IsAutoSaveIconVisible()) {
-        if (!FEManager::Get()->IsAllowingControllerError() && TheGameFlowManager.GetState() != 6) return;
+        if (!FEManager::Get()->IsAllowingControllerError() && !TheGameFlowManager.IsInGame()) return;
         if (cFEng::Get()->IsPackagePushed("IG_Pause.fng") || cFEng::Get()->IsPackagePushed("AutoSaveIcon.fng"))
             m_bNonSilentAutoSave = true;
         m_bNeedToAllowControllerErrors = true;
@@ -613,17 +613,13 @@ void MemoryCard::Load(const char* filename) {
 }
 
 void MemoryCard::Delete(const char* filename) {
-    MemoryCard* pThis = this;
-    pThis->InitCommand(MO_Delete);
+    InitCommand(MO_Delete);
     if (filename != nullptr) {
         bStrNCpy(MemoryCardImp::gContentName, filename, 16);
-        char* filename_buf = pThis->m_Filename;
-        const char* prefix = pThis->m_pImp->GetPrefix();
-        bStrCat(filename_buf, prefix, filename);
+        bStrCat(m_Filename, m_pImp->GetPrefix(), filename);
     }
     if (!Joylog::IsReplaying())
-        pThis->m_pIMemcard->Delete(pThis->m_Filename,
-                                   reinterpret_cast< const wchar_t* >(MemoryCardImp::gContentName));
+        m_pIMemcard->Delete(m_Filename, reinterpret_cast< const wchar_t* >(MemoryCardImp::gContentName));
 }
 
 void MemoryCard::ListOldSaveFilesNGC() {
