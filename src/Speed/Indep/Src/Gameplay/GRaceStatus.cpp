@@ -1993,21 +1993,26 @@ bool GRaceParameters::GetIsAvailable(GRace::Context context) const {
     }
 
     switch (context) {
-    case GRace::kRaceContext_QuickRace:
-        return !GetNeverInQuickRace() &&
-               GRaceDatabase::Get().CheckRaceScoreFlags(GetEventHash(), GRaceDatabase::kUnlocked_QuickRace);
-
     case GRace::kRaceContext_TimeTrial:
         return GRaceDatabase::Get().CheckRaceScoreFlags(GetEventHash(), GRaceDatabase::kUnlocked_Online);
+
+    case GRace::kRaceContext_QuickRace:
+        if (GetNeverInQuickRace()) {
+            return false;
+        }
+
+        return GRaceDatabase::Get().CheckRaceScoreFlags(GetEventHash(), GRaceDatabase::kUnlocked_QuickRace);
 
     case GRace::kRaceContext_Career:
         if (!GRaceDatabase::Get().CheckRaceScoreFlags(GetEventHash(), GRaceDatabase::kUnlocked_Career)) {
             return false;
         }
-        return !GRaceDatabase::Get().CheckRaceScoreFlags(GetEventHash(), GRaceDatabase::kCompleted_ContextCareer);
-    }
 
-    return false;
+        return !GRaceDatabase::Get().CheckRaceScoreFlags(GetEventHash(), GRaceDatabase::kCompleted_ContextCareer);
+
+    default:
+        return false;
+    }
 }
 
 int GRaceParameters::GetTrafficDensity() const {
