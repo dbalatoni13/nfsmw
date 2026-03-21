@@ -191,8 +191,8 @@ float CWorldAnimEntity::GetNumSecondsUntilThisFrame(float frame_number) {}
 float CWorldAnimEntity::GetNumSecondsBetweenFrames(float start_frame, float end_frame) {}
 
 int CompareParentIndex(bPNode *node_before, bPNode *node_after) {
-    WorldAnimEntityInfo *entity_before = reinterpret_cast<WorldAnimEntityInfo *>(node_before->GetpObject());
-    WorldAnimEntityInfo *entity_after = reinterpret_cast<WorldAnimEntityInfo *>(node_after->GetpObject());
+    WorldAnimEntityInfo *entity_before = reinterpret_cast<WorldAnimEntityInfo *>(node_before->GetObject());
+    WorldAnimEntityInfo *entity_after = reinterpret_cast<WorldAnimEntityInfo *>(node_after->GetObject());
     int res = entity_before->mParentIndex >= entity_after->mParentIndex;
 
     return res;
@@ -203,7 +203,7 @@ WorldAnimEntityTreeInfo::WorldAnimEntityTreeInfo(unsigned int treenamehash, bPLi
 
     while (!temp_list.IsEmpty()) {
         bPNode *node = temp_list.GetTail();
-        WorldAnimEntityInfo *waei = reinterpret_cast<WorldAnimEntityInfo *>(node->GetpObject());
+        WorldAnimEntityInfo *waei = reinterpret_cast<WorldAnimEntityInfo *>(node->GetObject());
         node->Remove();
         delete node;
 
@@ -223,7 +223,7 @@ CWorldAnimEntityTree::CWorldAnimEntityTree() {
 CWorldAnimEntityTree::~CWorldAnimEntityTree() {
     while (!instantiated_world_anim_entities.IsEmpty()) {
         bPNode *entity_node = instantiated_world_anim_entities.GetTail();
-        CWorldAnimEntity *entity = reinterpret_cast<CWorldAnimEntity *>(entity_node->GetpObject());
+        CWorldAnimEntity *entity = reinterpret_cast<CWorldAnimEntity *>(entity_node->GetObject());
 
         entity_node->Remove();
         delete entity_node;
@@ -276,14 +276,14 @@ int LoaderWorldAnimTreeMarker(bChunk *chunk) {
         int ix = 0;
         for (bPNode *node = temp_loaded_world_anim_entity_chunks.GetHead(); node != temp_loaded_world_anim_entity_chunks.EndOfList();
              node = node->GetNext()) {
-            WorldAnimEntityInfo *waei = reinterpret_cast<WorldAnimEntityInfo *>(node->GetpObject());
+            WorldAnimEntityInfo *waei = reinterpret_cast<WorldAnimEntityInfo *>(node->GetObject());
             arr_of_ptrs[ix] = waei;
             ix++;
         }
 
         for (bPNode *node = temp_loaded_world_anim_entity_chunks.GetHead(); node != temp_loaded_world_anim_entity_chunks.EndOfList();
              node = node->GetNext()) {
-            WorldAnimEntityInfo *waei = reinterpret_cast<WorldAnimEntityInfo *>(node->GetpObject());
+            WorldAnimEntityInfo *waei = reinterpret_cast<WorldAnimEntityInfo *>(node->GetObject());
             if (waei->mParentIndex >= 0) {
                 waei->mParentEntityInfo = arr_of_ptrs[waei->mParentIndex];
             } else {
@@ -297,7 +297,7 @@ int LoaderWorldAnimTreeMarker(bChunk *chunk) {
         TheWorldAnimInstanceDirectory.AddLoadedAnimTreeInfo(anim_tree);
         for (bPNode *node = temp_loaded_world_anim_entity_chunks.GetHead(); node != temp_loaded_world_anim_entity_chunks.EndOfList();
              node = node->GetNext()) {
-            WorldAnimEntityInfo *waei = reinterpret_cast<WorldAnimEntityInfo *>(node->GetpObject());
+            WorldAnimEntityInfo *waei = reinterpret_cast<WorldAnimEntityInfo *>(node->GetObject());
             TheWorldAnimInstanceDirectory.AddLoadedAnimEntityInfo(waei);
         }
 
@@ -425,14 +425,14 @@ CWorldAnimEntity *CWorldAnimEntityTree::GetEntityByNameHash(unsigned int namehas
 
 void CWorldAnimEntityTree::SetTime(float time) {
     for (bPNode *node = instantiated_world_anim_entities.GetHead(); node != instantiated_world_anim_entities.EndOfList(); node = node->GetNext()) {
-        CWorldAnimEntity *entity = reinterpret_cast<CWorldAnimEntity *>(node->GetpObject());
+        CWorldAnimEntity *entity = reinterpret_cast<CWorldAnimEntity *>(node->GetObject());
         entity->SetTime(time);
     }
 }
 
 void CWorldAnimEntityTree::Pause() {
     for (bPNode *node = instantiated_world_anim_entities.GetHead(); node != instantiated_world_anim_entities.EndOfList(); node = node->GetNext()) {
-        CWorldAnimEntity *entity = reinterpret_cast<CWorldAnimEntity *>(node->GetpObject());
+        CWorldAnimEntity *entity = reinterpret_cast<CWorldAnimEntity *>(node->GetObject());
         entity->Pause();
         if (entity->GetWorldModel()) {
             entity->GetWorldModel()->SetEnabledFlag(true);
@@ -442,7 +442,7 @@ void CWorldAnimEntityTree::Pause() {
 
 void CWorldAnimEntityTree::Play() {
     for (bPNode *node = instantiated_world_anim_entities.GetHead(); node != instantiated_world_anim_entities.EndOfList(); node = node->GetNext()) {
-        CWorldAnimEntity *entity = reinterpret_cast<CWorldAnimEntity *>(node->GetpObject());
+        CWorldAnimEntity *entity = reinterpret_cast<CWorldAnimEntity *>(node->GetObject());
         if (!entity->IsPlaying()) {
             entity->Play();
         }
@@ -454,7 +454,7 @@ void CWorldAnimEntityTree::Play() {
 
 void CWorldAnimEntityTree::Stop() {
     for (bPNode *node = instantiated_world_anim_entities.GetHead(); node != instantiated_world_anim_entities.EndOfList(); node = node->GetNext()) {
-        CWorldAnimEntity *entity = reinterpret_cast<CWorldAnimEntity *>(node->GetpObject());
+        CWorldAnimEntity *entity = reinterpret_cast<CWorldAnimEntity *>(node->GetObject());
         entity->Stop();
         if (entity->GetWorldModel()) {
             entity->GetWorldModel()->SetEnabledFlag(false);
