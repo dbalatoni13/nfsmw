@@ -450,9 +450,9 @@ void DVDErrorTask(void *, int) {
                 feng->PushErrorPackage(pkgName, 0, 0xff);
             }
 
-            nextFrame = frame + 1;
             FEPrintf(pkgName, 0xEEFFD04F,
                 s_OpenCover_ErrorText[language][errorIndex]);
+            nextFrame = frame + 1;
         } else if (g_discErrorOccured == 0) {
             nextFrame = frame + 1;
             goto loop_end;
