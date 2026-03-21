@@ -12,6 +12,17 @@ Behavior *RBTractor::Construct(const struct BehaviorParams &params) {
     return new RBTractor(params, rp);
 }
 
+RBTractor::~RBTractor() {
+    if (mHitched) {
+        Dynamics::Articulation::Release(this);
+        mHitched = false;
+    }
+    if (mTrailerTask) {
+        RemoveTask(mTrailerTask);
+        mTrailerTask = nullptr;
+    }
+}
+
 void RBTractor::SetHitch(bool hitched) {
     if (hitched) {
         float YAW_LIMIT;
