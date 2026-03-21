@@ -547,10 +547,11 @@ void cSampleWarpper::Play(const SND_Params *Params) {
             Csis::Class::CreateInstance(&Csis::gAEMS_StichCollisionHandle, &sample->mData, &sample->mpClass);
         }
 
-        AEMS_ActiveSampleCol = sample;
-        if (AEMS_ActiveSampleCol != nullptr) {
+        AEMS_StichCollision **activeSample = &AEMS_ActiveSampleCol;
+        *activeSample = sample;
+        if (*activeSample != nullptr) {
             int refCount = 0;
-            Csis::Class *cls = AEMS_ActiveSampleCol->mpClass;
+            Csis::Class *cls = (*activeSample)->mpClass;
             if (cls != nullptr) {
                 cls->GetRefCount(&refCount);
             }
@@ -636,10 +637,11 @@ void cSampleWarpper::Play(const SND_Params *Params) {
             Csis::Class::CreateInstance(&Csis::gAEMS_StichWooshHandle, &sample->mData, &sample->mpClass);
         }
 
-        AEMS_ActiveSampleWsh = sample;
-        if (AEMS_ActiveSampleWsh != nullptr) {
+        AEMS_StichWoosh **activeSample = &AEMS_ActiveSampleWsh;
+        *activeSample = sample;
+        if (*activeSample != nullptr) {
             int refCount = 0;
-            Csis::Class *cls = AEMS_ActiveSampleWsh->mpClass;
+            Csis::Class *cls = (*activeSample)->mpClass;
             if (cls != nullptr) {
                 cls->GetRefCount(&refCount);
             }
@@ -725,10 +727,11 @@ void cSampleWarpper::Play(const SND_Params *Params) {
             Csis::Class::CreateInstance(&Csis::gAEMS_StichStaticHandle, &sample->mData, &sample->mpClass);
         }
 
-        AEMS_ActiveSampleStatic = sample;
-        if (AEMS_ActiveSampleStatic != nullptr) {
+        AEMS_StichStatic **activeSample = &AEMS_ActiveSampleStatic;
+        *activeSample = sample;
+        if (*activeSample != nullptr) {
             int refCount = 0;
-            Csis::Class *cls = AEMS_ActiveSampleStatic->mpClass;
+            Csis::Class *cls = (*activeSample)->mpClass;
             if (cls != nullptr) {
                 cls->GetRefCount(&refCount);
             }
