@@ -2328,7 +2328,6 @@ bool GManager::LoadGameplayData(unsigned char *src, unsigned int maxSize) {
     }
 
     ResetAllGameplayData();
-
     src += 0x80;
     for (unsigned int onBlock = 0; onBlock < gameplayHeader->mNumPersistent; ++onBlock) {
         ObjectStateBlockHeader *header = reinterpret_cast<ObjectStateBlockHeader *>(src);
@@ -2337,7 +2336,8 @@ bool GManager::LoadGameplayData(unsigned char *src, unsigned int maxSize) {
         unsigned char *newBlock = reinterpret_cast<unsigned char *>(AllocObjectStateBlock(header->mKey, allocSize, true));
 
         if (newBlock) {
-            bMemCpy(newBlock, header + 1, header->mSize);
+            unsigned char *data = reinterpret_cast<unsigned char *>(header + 1);
+            bMemCpy(newBlock, data, header->mSize);
         }
 
         src += blockBytes;
