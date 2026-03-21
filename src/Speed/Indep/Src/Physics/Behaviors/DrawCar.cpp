@@ -138,6 +138,17 @@ void DrawRaceCar::OnService(RenderConn::Pkt_Car_Service &pkt) {
     }
 }
 
+bool DrawCar::OnService(HSIMSERVICE hCon, Sim::Packet *pkt) {
+    if (hCon == mRenderService) {
+        if (!static_cast<IModel *>(this)->IsHidden()) {
+            OnService(*static_cast<RenderConn::Pkt_Car_Service *>(pkt));
+            return true;
+        }
+        mInView = false;
+    }
+    return false;
+}
+
 void DrawCar::OnBehaviorChange(const UCrc32 &mechanic) {
     if (mechanic == BEHAVIOR_MECHANIC_SUSPENSION) {
         GetOwner()->QueryInterface(&mSuspension);
