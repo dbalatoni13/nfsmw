@@ -141,12 +141,30 @@ int ActualReadJoystickData() {
                         ~((data >> 8) & 1 | (data >> 8) & 2 | (data >> 8) & 4 | (data >> 8) & 8 | data & 0x10 |
                           (data >> 7) & 0x20 | (data & 8) << 5 | (data & 4) << 7 | (data & 1) << 10 |
                           (data & 2) << 10);
-                    joy_data->ThePadData[0].AnalogRightX =
-                        ClampAnalogValue(static_cast<int>(joy_data->padSTATUS.substickX * 2.15f) + 0x80);
-                    joy_data->ThePadData[0].AnalogRightY =
-                        ClampAnalogValue(0x80 - static_cast<int>(joy_data->padSTATUS.substickY * 2.15f));
-                    joy_data->ThePadData[0].AnalogLeftX =
-                        ClampAnalogValue(static_cast<int>(joy_data->padSTATUS.stickX * 1.75f) + 0x80);
+                    data = static_cast<int>(joy_data->padSTATUS.substickX * 2.15f) + 0x80;
+                    if (data & 0x8000) {
+                        data = 0;
+                    }
+                    if (data > 0xFF) {
+                        data = 0xFF;
+                    }
+                    joy_data->ThePadData[0].AnalogRightX = data;
+                    data = 0x80 - static_cast<int>(joy_data->padSTATUS.substickY * 2.15f);
+                    if (data & 0x8000) {
+                        data = 0;
+                    }
+                    if (data > 0xFF) {
+                        data = 0xFF;
+                    }
+                    joy_data->ThePadData[0].AnalogRightY = data;
+                    data = static_cast<int>(joy_data->padSTATUS.stickX * 1.75f) + 0x80;
+                    if (data & 0x8000) {
+                        data = 0;
+                    }
+                    if (data > 0xFF) {
+                        data = 0xFF;
+                    }
+                    joy_data->ThePadData[0].AnalogLeftX = data;
                     joy_data->ThePadData[0].AnalogLeftY = 0x80 - static_cast<int>(joy_data->padSTATUS.stickY * 1.75f);
                     joy_data->ThePadData[0].LTrigger = static_cast<unsigned char>(joy_data->padSTATUS.triggerL * 1.7f);
                     joy_data->ThePadData[0].RTrigger = static_cast<unsigned char>(joy_data->padSTATUS.triggerR * 1.7f);
