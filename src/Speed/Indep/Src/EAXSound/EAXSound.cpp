@@ -1782,7 +1782,8 @@ FMV_STATE:
         return;
     }
     SetSoundControlState(false, SNDSTATE_FMV, name);
-    bOn = true;
+    SetSoundControlState(true, SNDSTATE_STOP_MUSIC, name);
+    return;
 
 STOP_MUSIC:
     SetSoundControlState(bOn, SNDSTATE_STOP_MUSIC, name);
