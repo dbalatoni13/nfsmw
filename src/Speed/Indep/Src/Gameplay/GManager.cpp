@@ -1925,6 +1925,12 @@ void GManager::PreloadStockCarsForActivity(GActivity *activity) {
 }
 
 void GManager::ClearStockCars() {
+    for (StockCarMap::iterator iter = mStockCars.begin(); iter != mStockCars.end(); ++iter) {
+        ISimable *simable = iter->second;
+
+        simable->Kill();
+    }
+
     mStockCars.clear();
 }
 
