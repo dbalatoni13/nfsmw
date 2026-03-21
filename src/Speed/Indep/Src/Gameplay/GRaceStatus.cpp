@@ -2455,6 +2455,7 @@ void GRaceCustom::GetCheckpointPosition(unsigned int index, UMath::Vector3 &pos)
 }
 
 void GRaceCustom::GetCheckpointDirection(unsigned int index, UMath::Vector3 &dir) const {
+    UMath::Vector3 checkDir = UMath::Vector3::kZero;
     float rotate;
 
     if (mReversed) {
@@ -2465,17 +2466,16 @@ void GRaceCustom::GetCheckpointDirection(unsigned int index, UMath::Vector3 &dir
     }
 
     EnsureLoaded();
-    dir = UMath::Vector3::kZero;
     {
-        unsigned int collectionKey;
+        const GCollectionKey &raceCheckSpec = mRaceRecord->Checkpoint(index);
 
-        collectionKey = mRaceRecord->Checkpoint(index).GetCollectionKey();
-        if (collectionKey) {
-            Attrib::Gen::gameplay checkpoint(collectionKey, 0, nullptr);
+        if (raceCheckSpec.GetCollectionKey()) {
+            Attrib::Gen::gameplay checkpoint(raceCheckSpec.GetCollectionKey(), 0, nullptr);
 
-            ExtractDirection(checkpoint, dir, rotate);
+            ExtractDirection(checkpoint, checkDir, rotate);
         }
     }
+    dir = checkDir;
 }
 
 void GRaceCustom::SetReversed(bool isReverseDir) {
