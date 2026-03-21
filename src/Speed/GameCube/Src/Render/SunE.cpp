@@ -140,11 +140,13 @@ void eBuildSunPolyFix(ePoly *poly, SunLayer *layer, float max_size, float x, flo
 
     eGetScreenHeight();
 
-    if (layer->Texture == SUNTEX_CENTER && layer->Size > max_size) {
-        max_size = layer->Size;
+    half_size = layer->Size;
+
+    if (layer->Texture == SUNTEX_CENTER && half_size > max_size) {
+        max_size = half_size;
     }
 
-    half_size = layer->Size * 0.5f;
+    half_size *= 0.5f;
     angle = static_cast<unsigned short>(
         layer->Angle +
         static_cast<int>(layer->SweepAngleAmount * (((x + max_size) / ((screen_width + max_size) + max_size)) * 65536.0f))
