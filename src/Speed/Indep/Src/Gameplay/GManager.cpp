@@ -2397,7 +2397,6 @@ void GManager::DefragObjectStateStorage() {
     ObjectStateBlockHeader *stackBlocks[0x100];
     ObjectStateBlockHeader **blocks;
     unsigned char *freePtr;
-    ObjectStateMap *stateBlocks;
 
     blocks = stackBlocks;
     count = mPersistentStateBlocks.size() + mSessionStateBlocks.size();
@@ -2423,17 +2422,19 @@ void GManager::DefragObjectStateStorage() {
 
         if (reinterpret_cast<unsigned char *>(block) != freePtr) {
             unsigned int shiftedKey = block->mKey >> mCollectionKeyShiftTo32;
+            unsigned int persistent = 0;
 
             bOverlappedMemCpy(freePtr, block, blockSize);
 
-            ObjectStateMap::iterator it;
-            stateBlocks = &mSessionStateBlocks;
-            for (unsigned int i = 0; i < 2; ++i, --stateBlocks) {
-                it = stateBlocks->find(shiftedKey);
-                if (it != stateBlocks->end()) {
-                    (*stateBlocks)[shiftedKey] = reinterpret_cast<ObjectStateBlockHeader *>(freePtr);
+            do {
+                ObjectStateMap &stateMap = persistent ? mPersistentStateBlocks : mSessionStateBlocks;
+
+                if (stateMap.find(shiftedKey) != stateMap.end()) {
+                    stateMap[shiftedKey] = reinterpret_cast<ObjectStateBlockHeader *>(freePtr);
                 }
-            }
+
+                persistent++;
+            } while (persistent <= 1);
         }
 
         freePtr += blockSize;
