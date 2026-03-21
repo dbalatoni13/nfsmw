@@ -74,53 +74,45 @@ void PlatEndParticleRender() {
 
 void PlatAddParticle(const EmitterParticle &particle, const UMath::Vector3 &upVec, const UMath::Vector3 &rightVec,
                      unsigned int hack_flags, bVector4 *x_constrain_basis, bVector4 *y_constrain_basis) {
-    unsigned int uv_start_u = particle.mUVStart >> 16;
-    unsigned int uv_start_v = particle.mUVStart & 0xFFFF;
-    unsigned int uv_end_u = particle.mUVEnd >> 16;
-    unsigned int uv_end_v = particle.mUVEnd & 0xFFFF;
-
-    float size = particle.mSize;
-    UMath::Vector3 bx;
-    bx.x = BillboardedParticleBasisX.x * size;
-    bx.y = BillboardedParticleBasisX.y * size;
-    bx.z = BillboardedParticleBasisX.z * size;
-    UMath::Vector3 by;
-    by.x = BillboardedParticleBasisY.x * size;
-    by.y = BillboardedParticleBasisY.y * size;
-    by.z = BillboardedParticleBasisY.z * size;
-
-    float u0 = static_cast<float>(uv_start_u) * (1.0f / 65535.0f);
-    float v0 = static_cast<float>(uv_start_v) * (1.0f / 65535.0f);
-    float u1 = static_cast<float>(uv_end_u) * (1.0f / 65535.0f);
-    float v1 = static_cast<float>(uv_end_v) * (1.0f / 65535.0f);
-
-    unsigned int color = particle.mColour;
+    float particle_scale_factor = particle.mSize;
+    bVector3 bx(BillboardedParticleBasisX.x * particle_scale_factor,
+                BillboardedParticleBasisX.y * particle_scale_factor,
+                BillboardedParticleBasisX.z * particle_scale_factor);
+    bVector3 by(BillboardedParticleBasisY.x * particle_scale_factor,
+                BillboardedParticleBasisY.y * particle_scale_factor,
+                BillboardedParticleBasisY.z * particle_scale_factor);
+    unsigned int colour = particle.mColour;
+    const float fs0 = static_cast<float>(particle.mUVStart >> 16) * (1.0f / 65535.0f);
+    const float ft0 = static_cast<float>(particle.mUVStart & 0xFFFF) * (1.0f / 65535.0f);
+    const float fs1 = static_cast<float>(particle.mUVEnd >> 16) * (1.0f / 65535.0f);
+    const float ft1 = static_cast<float>(particle.mUVEnd & 0xFFFF) * (1.0f / 65535.0f);
 
     GXBegin(GX_QUADS, static_cast<GXVtxFmt>(crtVtxFmt), 4);
 
     GXPosition3f32(particle.mPosX + bx.x + by.x,
                    particle.mPosY + bx.y + by.y,
                    particle.mPosZ + bx.z + by.z);
-    GXColor1u32(color);
-    GXTexCoord2f32(u1, v1);
+    GXColor1u32(colour);
+    GXTexCoord2f32(fs1, ft1);
 
     GXPosition3f32(particle.mPosX - bx.x + by.x,
                    particle.mPosY - bx.y + by.y,
                    particle.mPosZ - bx.z + by.z);
-    GXColor1u32(color);
-    GXTexCoord2f32(u0, v1);
+    GXColor1u32(colour);
+    GXTexCoord2f32(fs0, ft1);
 
     GXPosition3f32(particle.mPosX - bx.x - by.x,
                    particle.mPosY - bx.y - by.y,
                    particle.mPosZ - bx.z - by.z);
-    GXColor1u32(color);
-    GXTexCoord2f32(u0, v0);
+    GXColor1u32(colour);
+    GXTexCoord2f32(fs0, ft0);
 
     GXPosition3f32(particle.mPosX + bx.x - by.x,
                    particle.mPosY + bx.y - by.y,
                    particle.mPosZ + bx.z - by.z);
-    GXColor1u32(color);
-    GXTexCoord2f32(u1, v0);
+    GXColor1u32(colour);
+    GXTexCoord2f32(fs1, ft0);
+    GXEnd();
 }
 
 void PlatGetViewVectors(eView *view, UMath::Vector3 &right, UMath::Vector3 &up, UMath::Vector3 &forward) {
