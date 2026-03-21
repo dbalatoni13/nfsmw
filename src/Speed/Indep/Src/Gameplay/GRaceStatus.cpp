@@ -2969,8 +2969,6 @@ void GRaceStatus::SortCheckPointRankings() {
 }
 
 void GRaceStatus::Update(float dT) {
-    int numRacers = mRacerCount;
-
 #ifndef EA_BUILD_A124
     if (GetPlayMode() == kPlayMode_Racing && mRefreshBinAfterRace) {
         RefreshBinWhileInGame();
@@ -2991,90 +2989,94 @@ void GRaceStatus::Update(float dT) {
 #endif
     }
 
-    if (GetPlayMode() == kPlayMode_Racing && numRacers > 0) {
-        int numAiRacers = 0;
-        float floatRacers = 0.0f;
-        float percentComplete = 0.0f;
-        float elapsed;
-        int elapsedSec;
+    if (GetPlayMode() == kPlayMode_Racing) {
+        int numRacers = mRacerCount;
 
-        for (int idx = 0; idx < numRacers; ++idx) {
-            GRacerInfo &info = GetRacerInfo(idx);
+        if (numRacers > 0) {
+            int numAiRacers = 0;
+            float floatRacers = 0.0f;
+            float percentComplete = 0.0f;
+            float elapsed;
+            int elapsedSec;
 
-            if (!info.GetIsHuman()) {
-                ++numAiRacers;
-            }
-        }
+            for (int idx = 0; idx < numRacers; ++idx) {
+                GRacerInfo &info = GetRacerInfo(idx);
 
-        for (int idx = 0; idx < numRacers; ++idx) {
-            GRacerInfo &info = GetRacerInfo(idx);
-
-            info.Update(dT);
-            ISimable *simable = info.GetSimable();
-
-            if (simable) {
-                float weight = 1.0f;
-
-                if (info.GetIsHuman()) {
-                    weight = bMax(1.0f, static_cast<float>(numAiRacers));
+                if (!info.GetIsHuman()) {
+                    ++numAiRacers;
                 }
-
-                floatRacers += weight;
-                percentComplete += weight * info.GetPctRaceComplete();
             }
-        }
 
-        fAveragePercentComplete = percentComplete / bMax(1.0f, floatRacers);
-        CalculateRankings();
+            for (int idx = 0; idx < numRacers; ++idx) {
+                GRacerInfo &info = GetRacerInfo(idx);
 
-#ifndef EA_BUILD_A124
-        for (int idx = 0; idx < numRacers; ++idx) {
-            GetRacerInfo(idx).UpdateSplits();
-        }
-#endif
+                info.Update(dT);
+                ISimable *simable = info.GetSimable();
 
-        UCrc32 gameplayMessage(0x20D60DBF);
-        elapsed = GetRaceTimeElapsed();
-        bool isTimeLimited;
+                if (simable) {
+                    float weight = 1.0f;
 
-        if (mRaceParms) {
-            isTimeLimited = mRaceParms->GetTimeLimit() > 0.0f;
-        } else {
-            isTimeLimited = false;
-        }
-        float timeRemaining = GetRaceTimeRemaining();
-
-        MNotifyRaceTime(elapsed, isTimeLimited, timeRemaining).Post(gameplayMessage);
-
-        elapsed = GetRaceTimeElapsed();
-        elapsedSec = static_cast<int>(elapsed);
-        if (elapsedSec > mLastSecondTickSent) {
-            mLastSecondTickSent = elapsedSec;
-            MNotifyRaceTimeSecTick(elapsed).Post(gameplayMessage);
-        }
-
-        if (GetIsTimeLimited()) {
-            if (IsChallengeRace()) {
-#ifndef EA_BUILD_A124
-                if (mPlayerPursuitInCooldown == 1) {
-                    if (mRaceMasterTimer.IsRunning()) {
-                        mRaceMasterTimer.Stop();
+                    if (info.GetIsHuman()) {
+                        weight = bMax(1.0f, static_cast<float>(numAiRacers));
                     }
-                } else if (!mRaceMasterTimer.IsRunning()) {
-                    mRaceMasterTimer.Start();
+
+                    floatRacers += weight;
+                    percentComplete += weight * info.GetPctRaceComplete();
                 }
-#endif
             }
 
-            if (!mTimeExpiredMsgSent && GetRaceTimeRemaining() <= 0.0f) {
-                MNotifyRaceTimeExpired().Post(gameplayMessage);
-                mTimeExpiredMsgSent = true;
+            fAveragePercentComplete = percentComplete / bMax(1.0f, floatRacers);
+            CalculateRankings();
 
-                for (int idx = 0; idx < mRacerCount; ++idx) {
-                    GRacerInfo &info = mRacerInfo[idx];
+#ifndef EA_BUILD_A124
+            for (int idx = 0; idx < numRacers; ++idx) {
+                GetRacerInfo(idx).UpdateSplits();
+            }
+#endif
 
-                    if (!info.GetIsHuman() && !info.IsFinishedRacing()) {
-                        info.ForceStop();
+            UCrc32 gameplayMessage(0x20D60DBF);
+            elapsed = GetRaceTimeElapsed();
+            bool isTimeLimited;
+
+            if (mRaceParms) {
+                isTimeLimited = mRaceParms->GetTimeLimit() > 0.0f;
+            } else {
+                isTimeLimited = false;
+            }
+            float timeRemaining = GetRaceTimeRemaining();
+
+            MNotifyRaceTime(elapsed, isTimeLimited, timeRemaining).Post(gameplayMessage);
+
+            elapsed = GetRaceTimeElapsed();
+            elapsedSec = static_cast<int>(elapsed);
+            if (elapsedSec > mLastSecondTickSent) {
+                mLastSecondTickSent = elapsedSec;
+                MNotifyRaceTimeSecTick(elapsed).Post(gameplayMessage);
+            }
+
+            if (GetIsTimeLimited()) {
+                if (IsChallengeRace()) {
+#ifndef EA_BUILD_A124
+                    if (mPlayerPursuitInCooldown == 1) {
+                        if (mRaceMasterTimer.IsRunning()) {
+                            mRaceMasterTimer.Stop();
+                        }
+                    } else if (!mRaceMasterTimer.IsRunning()) {
+                        mRaceMasterTimer.Start();
+                    }
+#endif
+                }
+
+                if (!mTimeExpiredMsgSent && GetRaceTimeRemaining() <= 0.0f) {
+                    MNotifyRaceTimeExpired().Post(gameplayMessage);
+                    mTimeExpiredMsgSent = true;
+
+                    for (int idx = 0; idx < mRacerCount; ++idx) {
+                        GRacerInfo &info = mRacerInfo[idx];
+
+                        if (!info.GetIsHuman() && !info.IsFinishedRacing()) {
+                            info.ForceStop();
+                        }
                     }
                 }
             }
