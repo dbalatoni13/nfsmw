@@ -148,6 +148,7 @@ class SuspensionSimple : public Chassis, public Sim::Collision::IListener, publi
     UMath::Vector3 GetWheelCenterPos(unsigned int i) const override;
 
     // Behavior
+    void OnBehaviorChange(const UCrc32 &mechanic) override;
     void Reset() override;
 
     // IListener
@@ -180,6 +181,33 @@ class SuspensionSimple : public Chassis, public Sim::Collision::IListener, publi
     bool mDriftPhysics;                                          // offset 0x130, size 0x1
     Tire *mTires[4];                                             // offset 0x134, size 0x10
 };
+
+SuspensionSimple::Tire::Tire(float radius, int index, const Attrib::Gen::tires *specs, const Attrib::Gen::brakes *brakes)
+    : Wheel(1), //
+      mRadius(UMath::Max(radius, 0.1f)), //
+      mBrake(0.0f), //
+      mEBrake(0.0f), //
+      mAV(0.0f), //
+      mLoad(0.0f), //
+      mLateralForce(0.0f), //
+      mLongitudeForce(0.0f), //
+      mAppliedTorque(0.0f), //
+      mTractionBoost(1.0f), //
+      mSlip(0.0f), //
+      mLateralSpeed(0.0f), //
+      mWheelIndex(index), //
+      mRoadSpeed(0.0f), //
+      mSpecs(specs), //
+      mBrakes(brakes), //
+      mSlipAngle(0.0f), //
+      mAxleIndex(index >> 1), //
+      mTraction(1.0f), //
+      mBrakeLocked(false), //
+      mAllowSlip(false), //
+      mLastTorque(0.0f), //
+      mAngularAcc(0.0f), //
+      mMaxSlip(0.5f), //
+      mGripBoost(1.0f) {}
 
 void SuspensionSimple::Tire::BeginFrame(float max_slip, float grip_scale, float traction_boost) {
     mMaxSlip = max_slip;
@@ -409,6 +437,21 @@ SuspensionSimple::~SuspensionSimple() {
 }
 
 void SuspensionSimple::OnAttributeChange(const Attrib::Collection *aspec, unsigned int attribkey) {}
+
+void SuspensionSimple::OnBehaviorChange(const UCrc32 &mechanic) {
+    Chassis::OnBehaviorChange(mechanic);
+
+    if (mechanic == BEHAVIOR_MECHANIC_INPUT) {
+        GetOwner()->QueryInterface(&mInput);
+    } else if (mechanic == BEHAVIOR_MECHANIC_RIGIDBODY) {
+        GetOwner()->QueryInterface(&mRBComplex);
+        GetOwner()->QueryInterface(&mRB);
+    } else if (mechanic == BEHAVIOR_MECHANIC_ENGINE) {
+        GetOwner()->QueryInterface(&mTrany);
+    } else if (mechanic == BEHAVIOR_MECHANIC_AI) {
+        GetOwner()->QueryInterface(&mCheater);
+    }
+}
 
 void SuspensionSimple::CreateTires() {
     for (int i = 0; i < 4; ++i) {

@@ -120,6 +120,27 @@ class SuspensionTrailer : public Chassis {
     Tire *mTires[4];                                        // offset 0xF8, size 0x10
 };
 
+SuspensionTrailer::Tire::Tire(float radius, int index, const Attrib::Gen::tires *specs, const Attrib::Gen::brakes *brakes)
+    : Wheel(0), //
+      mRadius(UMath::Max(radius, 0.1f)), //
+      mBrake(0.0f), //
+      mEBrake(0.0f), //
+      mAV(0.0f), //
+      mLoad(0.0f), //
+      mLateralForce(0.0f), //
+      mLongitudeForce(0.0f), //
+      mAppliedTorque(0.0f), //
+      mSlip(0.0f), //
+      mLastTorque(0.0f), //
+      mWheelIndex(index), //
+      mRoadSpeed(0.0f), //
+      mSpecs(specs), //
+      mBrakes(brakes), //
+      mAxleIndex(index >> 1), //
+      mSlipping(false), //
+      mLateralSpeed(0.0f), //
+      mLastSign(WAS_ZERO) {}
+
 void SuspensionTrailer::Tire::BeginFrame() {
     mAppliedTorque = 0.0f;
     SetForce(UMath::Vector3::kZero);
