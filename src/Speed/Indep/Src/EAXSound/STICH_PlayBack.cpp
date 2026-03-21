@@ -529,13 +529,14 @@ void cSampleWarpper::Play(const SND_Params *Params) {
 
         sample->mData.filter_DryFX = 0x7FFF;
 
-        if (wetFX < 0) {
-            wetFX = 0;
-        } else if (wetFX > 0x7FFF) {
-            wetFX = 0x7FFF;
+        int wet = wetFX;
+        if (wet < 0) {
+            wet = 0;
+        } else if (wet > 0x7FFF) {
+            wet = 0x7FFF;
         }
 
-        sample->mData.filter_WetFX = wetFX;
+        sample->mData.filter_WetFX = wet;
         sample->mData.filter_LoPass = 25000;
         sample->mData.filter_HiPass = 0;
 
@@ -616,13 +617,14 @@ void cSampleWarpper::Play(const SND_Params *Params) {
 
         sample->mData.filter_DryFX = 0x7FFF;
 
-        if (wetFX < 0) {
-            wetFX = 0;
-        } else if (wetFX > 0x7FFF) {
-            wetFX = 0x7FFF;
+        int wet = wetFX;
+        if (wet < 0) {
+            wet = 0;
+        } else if (wet > 0x7FFF) {
+            wet = 0x7FFF;
         }
 
-        sample->mData.filter_WetFX = wetFX;
+        sample->mData.filter_WetFX = wet;
         sample->mData.filter_LoPass = 25000;
         sample->mData.filter_HiPass = 0;
 
@@ -703,13 +705,14 @@ void cSampleWarpper::Play(const SND_Params *Params) {
 
         sample->mData.filter_DryFX = 0x7FFF;
 
-        if (wetFX < 0) {
-            wetFX = 0;
-        } else if (wetFX > 0x7FFF) {
-            wetFX = 0x7FFF;
+        int wet = wetFX;
+        if (wet < 0) {
+            wet = 0;
+        } else if (wet > 0x7FFF) {
+            wet = 0x7FFF;
         }
 
-        sample->mData.filter_WetFX = wetFX;
+        sample->mData.filter_WetFX = wet;
         sample->mData.filter_LoPass = 25000;
         sample->mData.filter_HiPass = 0;
 
