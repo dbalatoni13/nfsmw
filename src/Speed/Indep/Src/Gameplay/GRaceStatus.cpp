@@ -4270,16 +4270,17 @@ float GRaceStatus::DetermineRaceSegmentLength(const UMath::Vector4 *positions, c
 }
 
 void GRaceStatus::DetermineRaceLength() {
-    WRoadNetwork &rn = WRoadNetwork::Get();
-    GRaceParameters *race_parameters = mRaceParms;
-
     nSpeedTraps = 0;
     fSubsequentLapLength = 0.0f;
     fRaceLength = 0.0f;
     fFirstLapLength = 0.0f;
     bMemSet(mSegmentLengths, 0, sizeof(mSegmentLengths));
     bRaceRouteError = false;
-    rn.ResolveShortcuts();
+
+    WRoadNetwork *roadNetwork = &WRoadNetwork::Get();
+    GRaceParameters *race_parameters = mRaceParms;
+
+    roadNetwork->ResolveShortcuts();
 
     if (!race_parameters || !race_parameters->HasFinishLine()) {
         return;
@@ -4297,7 +4298,7 @@ void GRaceStatus::DetermineRaceLength() {
         const bool forceCentreLane = true;
         const float directionWeight = 1.0f;
 
-        rn.SetRaceFilterValid(true);
+        roadNetwork->SetRaceFilterValid(true);
         numCheckpoints = race_parameters->GetNumCheckpoints();
         numPathPoints = numCheckpoints + 2;
         race_parameters->GetStartPosition(UMath::Vector4To3(positions[0]));
@@ -4329,9 +4330,9 @@ void GRaceStatus::DetermineRaceLength() {
         }
 
         if (!raceLoops) {
-            fSubsequentLapLength = totalDistance;
             fRaceLength = totalDistance;
             fFirstLapLength = totalDistance;
+            fSubsequentLapLength = totalDistance;
         } else {
             fSubsequentLapLength = totalDistance - mSegmentLengths[0];
             fFirstLapLength = totalDistance - mSegmentLengths[numPathPoints - 1];
@@ -4349,7 +4350,7 @@ void GRaceStatus::DetermineRaceLength() {
 
                 nav.IncNavPosition(1.0f, UMath::Vector3::kZero, 0.0f);
                 segmentNumber = nav.GetSegmentInd();
-                segment = rn.GetSegmentNonConst(segmentNumber);
+                segment = roadNetwork->GetSegmentNonConst(segmentNumber);
                 segment->SetInRace(true);
                 segment->SetRaceRouteForward(nav.GetNodeInd() == 1);
             }
