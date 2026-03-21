@@ -359,10 +359,11 @@ void GManager::UnloadTransientVaults() {
 
 void GManager::PreBeginGameplay() {
     if (mRestartEventHash) {
-        GRaceCustom *customRace = GRaceDatabase::Get().AllocCustomRace(GRaceDatabase::Get().GetRaceFromHash(mRestartEventHash));
+        GRaceParameters *parms = GRaceDatabase::Get().GetRaceFromHash(mRestartEventHash);
+        GRaceCustom *race = GRaceDatabase::Get().AllocCustomRace(parms);
 
-        GRaceDatabase::Get().SetStartupRace(customRace, GRace::kRaceContext_Career);
-        GRaceDatabase::Get().FreeCustomRace(customRace);
+        GRaceDatabase::Get().SetStartupRace(race, GRace::kRaceContext_Career);
+        GRaceDatabase::Get().FreeCustomRace(race);
         mRestartEventHash = 0;
     }
 }
