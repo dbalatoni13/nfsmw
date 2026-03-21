@@ -42,8 +42,6 @@ void eBuildSunPoly(ePoly *poly, SunLayer *layer, float max_size, float x, float 
     float half_size;
     float sin_angle;
     float cos_angle;
-    float diagonal0;
-    float diagonal1;
     float intensity;
     float center_x;
     float center_y;
@@ -75,10 +73,10 @@ void eBuildSunPoly(ePoly *poly, SunLayer *layer, float max_size, float x, float 
     poly->Vertices[2].z = 1.0f;
     poly->Vertices[3].z = 1.0f;
 
-    diagonal1 = half_size * sin_angle;
-    diagonal0 = half_size * cos_angle;
-    sum = diagonal1 + diagonal0;
-    diff = diagonal0 - diagonal1;
+    sin_angle *= half_size;
+    cos_angle *= half_size;
+    sum = sin_angle + cos_angle;
+    diff = cos_angle - sin_angle;
     intensity = layer->IntensityScale * SunVisibility * SunMaxIntensity;
     c0 = layer->Colour[0];
     center_x = x + layer->OffsetX;
