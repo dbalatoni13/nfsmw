@@ -2913,7 +2913,7 @@ void GRaceStatus::SetRacing() {
     player = IPlayer::First(PLAYER_ALL);
     while (player) {
         if (player->InGameBreaker()) {
-            player->ResetGameBreaker(true);
+            player->ToggleGameBreaker();
         }
 
         {
@@ -2945,11 +2945,17 @@ void GRaceStatus::SetRacing() {
         }
     }
 
-    if ((!mRaceParms || !mRaceParms->GetIsDDayRace() || bStrCmp(mRaceParms->GetEventID(), "16.1.0") == 0) &&
-        !FEDatabase->IsFinalEpicChase()) {
+    if (!mRaceParms || !mRaceParms->GetIsDDayRace() || bStrCmp(mRaceParms->GetEventID(), "16.1.0") == 0) {
+        if (!FEDatabase->IsFinalEpicChase()) {
+            goto skipAutoSave;
+        }
+    }
+
+    {
         new EAutoSave();
     }
 
+skipAutoSave:
     new EReloadHud();
 
 #ifndef EA_BUILD_A124
