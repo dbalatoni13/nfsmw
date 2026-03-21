@@ -118,6 +118,8 @@ extern FILEOPERATION *FILESYS_read(int fhandle, int foffset, void *buffer, int s
 extern FILEOPERATION *FILESYS_open(const char *filename, unsigned int mode, int priority, void *userdata);
 extern FILEOPERATION *FILESYS_close(int fhandle, int priority, void *userdata);
 extern void FILESYS_callbackop(FILEOPERATION *op, int (*cb)(int, int, void *));
+extern int FILESYS_completeop(int fop);
+extern long long FILESYS_completeop64(int fop);
 extern int FILESYS_closesync(int fhandle, int priority);
 extern int FILESYS_priorityop(int fop, int priority);
 extern bool IsWorldDataStreaming(unsigned int strmhandle);
@@ -136,6 +138,7 @@ void STREAM_release(int sndstreamhandle, STREAMCHUNKHDR *chunk);
 void STREAM_kill(int sndstreamhandle);
 void STREAM_setgreedystate(int sndstreamhandle, int greedystate);
 void restartstream(STREAMHEADERtag *stream, int priority);
+void startnextrequest(STREAMHEADERtag *stream, int priority);
 
 static STREAMHEADERtag *GetHeader(int handle) {
     if (handle <= 0 || handle >= 64) {
@@ -189,9 +192,20 @@ int decbufferusage(STREAMHEADERtag *stream, int amount) {
         return -1;
     }
 
-    stream->bufferusage -= amount;
-    if (stream->bufferusage < 0) {
-        stream->bufferusage = 0;
+    int oldbufferusage;
+    int bufferusage;
+
+    MUTEX_lock(&stream->mutex);
+    oldbufferusage = stream->bufferusage;
+    bufferusage = oldbufferusage - amount;
+    stream->bufferusage = bufferusage;
+    MUTEX_unlock(&stream->mutex);
+
+    if (stream->greedylevel <= oldbufferusage && bufferusage < stream->greedylevel) {
+        stream->greedystate = 1;
+        if (stream->state == STREAM_RUNNING_STATE) {
+            FILESYS_priorityop(stream->fop, stream->priorityhigh);
+        }
     }
     return stream->bufferusage;
 }
@@ -385,16 +399,40 @@ int parsechunks(STREAMHEADERtag *stream) {
 }
 
 int opencallback(int sndstreamhandle, int status, void *userdata) {
+    (void)sndstreamhandle;
     (void)status;
-    (void)userdata;
-    STREAMHEADERtag *stream = GetHeader(sndstreamhandle);
-    return parsechunks(stream);
+
+    STREAMHEADERtag *stream = static_cast<STREAMHEADERtag *>(userdata);
+    long long openresult = FILESYS_completeop64(stream->fop);
+
+    stream->fhandle = static_cast<int>(openresult);
+    if (static_cast<int>(openresult) == 0) {
+        stream->state = STREAM_IDLE_STATE;
+        freerequest(stream, stream->curreq);
+        if (stream->greedystate == 0) {
+            startnextrequest(stream, stream->prioritylow);
+        } else {
+            startnextrequest(stream, stream->priorityhigh);
+        }
+    } else {
+        restartstream(stream, stream->priorityhigh);
+    }
+    return 0;
 }
 
 int closecallback(int sndstreamhandle, int status, void *userdata) {
+    (void)sndstreamhandle;
     (void)status;
-    (void)userdata;
-    return (GetHeader(sndstreamhandle) != nullptr) ? 0 : -1;
+
+    STREAMHEADERtag *stream = static_cast<STREAMHEADERtag *>(userdata);
+    FILESYS_completeop(stream->fop);
+    FILEOPERATION *fop = FILESYS_open(stream->fname, 1, stream->priorityhigh, stream);
+
+    stream->fop = reinterpret_cast<int>(fop);
+    if (fop) {
+        FILESYS_callbackop(fop, opencallback);
+    }
+    return 0;
 }
 
 int readcallback(int sndstreamhandle, int status, void *userdata) {
