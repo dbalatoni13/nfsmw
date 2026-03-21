@@ -3940,11 +3940,11 @@ void GRaceStatus::ClearTimes() {
 
     mRaceMasterTimer.Stop();
     mRaceMasterTimer.Reset(start_time);
-    mLastSecondTickSent = 0;
     mBonusTime = 0.0f;
     mTaskTime = 0.0f;
-    mSuddenDeathMode = false;
     mTimeExpiredMsgSent = false;
+    mSuddenDeathMode = false;
+    mLastSecondTickSent = 0;
 }
 
 void GRaceStatus::SetLapTime(int lapIndex, int racerIndex, float time) {
