@@ -37,6 +37,46 @@ void PInput::ClearInput() {
     mControls = InputControls();
 }
 
+InputControls &PInput::GetControls() const {
+    return const_cast<InputControls &>(mControls);
+}
+
+float PInput::GetControlHandBrake() const {
+    return mControls.fHandBrake;
+}
+
+bool PInput::GetControlActionButton() const {
+    return mControls.fActionButton;
+}
+
+void PInput::SetControlSteering(float steer) {
+    mControls.fSteering = steer;
+}
+
+void PInput::SetControlGas(float gas) {
+    mControls.fGas = gas;
+}
+
+void PInput::SetControlBrake(float brake) {
+    mControls.fBrake = brake;
+}
+
+void PInput::SetControlNOS(bool nos_on) {
+    mControls.fNOS = nos_on;
+}
+
+void PInput::SetControlHandBrake(float hbrake) {
+    mControls.fHandBrake = hbrake;
+}
+
+void PInput::SetControlActionButton(bool hAction) {
+    mControls.fActionButton = hAction;
+}
+
+void PInput::SetControlSteeringVertical(float steer) {
+    mControls.fSteeringVertical = steer;
+}
+
 Behavior *InputPlayer::Construct(const BehaviorParams &params) {
     return new InputPlayer(params);
 }
@@ -107,6 +147,18 @@ void InputPlayer::BlockInput(bool block) {
             mActionQ.Enable(true);
         }
     }
+}
+
+bool InputPlayer::IsBlocked() const {
+    return mBlocked;
+}
+
+bool InputPlayer::IsLookBackButtonPressed() const {
+    return mLookBackButton > 0.0f;
+}
+
+bool InputPlayer::IsPullBackButtonPressed() const {
+    return mPullBackButton > 0.0f;
 }
 
 void InputPlayer::FetchInput() {
