@@ -704,20 +704,24 @@ void Scrollerina::CountListIndices() {
     iNumSlots = 0;
     iViewHeadDataIndex = 1;
     iNumData = 0;
-    ScrollerSlot *slot = Slots.GetHead();
-    while (slot != Slots.EndOfList()) {
-        iNumSlots++;
-        slot = slot->GetNext();
-    }
-    ScrollerDatum *datum = Data.GetHead();
-    while (datum != Data.EndOfList()) {
-        iNumData++;
-        if (!found_view && datum != TopDatum) {
-            iViewHeadDataIndex++;
-        } else {
-            found_view = true;
+    {
+        ScrollerSlot *slot = Slots.GetHead();
+        while (slot != Slots.EndOfList()) {
+            iNumSlots++;
+            slot = slot->GetNext();
         }
-        datum = datum->GetNext();
+    }
+    {
+        ScrollerDatum *datum = Data.GetHead();
+        while (datum != Data.EndOfList()) {
+            iNumData++;
+            if (!found_view && datum != TopDatum) {
+                iViewHeadDataIndex++;
+            } else {
+                found_view = true;
+            }
+            datum = datum->GetNext();
+        }
     }
 }
 
