@@ -371,9 +371,11 @@ void GManager::PreBeginGameplay() {
 }
 
 void GManager::BeginGameplay() {
-    for (unsigned int i = 0; i < mVaultCount; ++i) {
-        if (mVaults[i].IsLoaded()) {
-            mVaults[i].CreateGameplayObjects();
+    for (unsigned int onVault = 0; onVault < mVaultCount; ++onVault) {
+        GVault &vault = mVaults[onVault];
+
+        if (vault.IsLoaded()) {
+            vault.CreateGameplayObjects();
         }
     }
 
