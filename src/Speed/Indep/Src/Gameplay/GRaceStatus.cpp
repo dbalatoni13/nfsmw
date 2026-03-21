@@ -2562,13 +2562,11 @@ void GRaceCustom::CreateRaceActivity() {
         unsigned int currOpponents = 0;
 
         if (!bossINQuickRace) {
-            currOpponents = mRaceRecord->Num_Opponents();
             unsigned int onOpp = 0;
 
-            if (currOpponents) {
-                for (; onOpp < currOpponents; onOpp++) {
-                    opponentKey[onOpp] = mRaceRecord->Opponents(onOpp).GetCollectionKey();
-                }
+            currOpponents = mRaceRecord->Num_Opponents();
+            for (; onOpp < currOpponents; onOpp++) {
+                opponentKey[onOpp] = mRaceRecord->Opponents(onOpp).GetCollectionKey();
             }
         }
 
