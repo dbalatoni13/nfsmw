@@ -2305,7 +2305,6 @@ bool GManager::LoadGameplayData(unsigned char *src, unsigned int maxSize) {
     SavedGameplayDataHeader *gameplayHeader;
     unsigned char *startChecksum;
     unsigned int bytesToChecksum;
-    MD5 md5;
     unsigned int spotBytes;
     unsigned int binBytesRead;
     unsigned int respawnMarker;
@@ -2319,6 +2318,8 @@ bool GManager::LoadGameplayData(unsigned char *src, unsigned int maxSize) {
     gameplayHeader = reinterpret_cast<SavedGameplayDataHeader *>(srcStart);
     startChecksum = srcStart + 0x10;
     bytesToChecksum = maxSize - 0x10;
+    MD5 md5;
+
     md5.Reset();
     md5.Update(startChecksum, bytesToChecksum);
     md5.GetRaw();
