@@ -78,6 +78,9 @@ struct GRacerInfo {
     float GetPointTotal() const { return mPointTotal; }
     float GetZeroToSixtyTime() const { return mZeroToSixtyTime; }
     float GetQuarterMileTime() const { return mQuarterMileTime; }
+#ifndef EA_BUILD_A124
+    bool GetDNF() const { return mDNF; }
+#endif
 
     void SetName(const char *name);
     void SetIndex(int n);

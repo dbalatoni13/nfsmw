@@ -615,25 +615,34 @@ void GRacerInfo::FinishRace() {
 
 bool GRacerInfo::IsBehind(const GRacerInfo &rhs) const {
     if (IsFinishedRacing()) {
-        if (rhs.IsFinishedRacing()) {
-            return GetRaceTime() > rhs.GetRaceTime();
+        if (!rhs.IsFinishedRacing()) {
+            return false;
         }
 
-        return false;
+        return GetRaceTime() > rhs.GetRaceTime();
     }
 
     if (rhs.IsFinishedRacing()) {
         return true;
     }
 
-    if ((GetIsKnockedOut() && rhs.GetIsKnockedOut()) || (GetIsEngineBlown() && rhs.GetIsEngineBlown()) ||
-        (GetIsTotalled() && rhs.GetIsTotalled())) {
-        return GetRaceTime() > rhs.GetRaceTime();
+    if (GetIsKnockedOut() && rhs.GetIsKnockedOut()) {
+        return GetRaceTime() < rhs.GetRaceTime();
+    }
+
+    if (GetIsEngineBlown() && rhs.GetIsEngineBlown()) {
+        return GetRaceTime() < rhs.GetRaceTime();
+    }
+
+    if (GetIsTotalled() && rhs.GetIsTotalled()) {
+        return GetRaceTime() < rhs.GetRaceTime();
     }
 
 #ifndef EA_BUILD_A124
-    if (mDNF && rhs.mDNF) {
-        return GetPctRaceComplete() < rhs.GetPctRaceComplete();
+    if (GetDNF()) {
+        if (rhs.GetDNF()) {
+            return GetPctRaceComplete() < rhs.GetPctRaceComplete();
+        }
     }
 #endif
 
