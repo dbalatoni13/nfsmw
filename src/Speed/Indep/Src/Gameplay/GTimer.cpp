@@ -75,7 +75,7 @@ void GEventTimer::SetName(const char *name) {
 void GEventTimer::Update(float dT) {
     if (mRunning != 0) {
         mElapsed += dT;
-        if (mInterval <= mElapsed) {
+        if (mElapsed >= mInterval) {
             MNotifyTimer(mName).Post(UCrc32(0x20D60DBF));
             mElapsed -= mInterval;
         }
