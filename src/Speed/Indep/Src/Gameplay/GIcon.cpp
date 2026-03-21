@@ -6,6 +6,14 @@
 #include "Speed/Indep/Src/World/WCollisionMgr.h"
 #include "Speed/Indep/Src/World/WorldModel.hpp"
 
+extern void *gWGrid __asm__("_5WGrid.fgGrid");
+
+struct WGrid {
+    static bool Initialized() {
+        return gWGrid != nullptr;
+    }
+};
+
 static int sNumSpawned;
 
 GIcon::EffectInfo GIcon::kEffectInfo[GIcon::kType_Count] = {
@@ -94,18 +102,28 @@ void GIcon::FindSection() {
 }
 
 void GIcon::SnapToGround() {
-    UMath::Vector3 posSwiz = mPosition;
     float worldHeight;
     bool heightValid;
+
+    if (!WGrid::Initialized()) {
+        return;
+    }
 
     if (IsFlagSet(kFlag_Snapped)) {
         return;
     }
 
+    if (mPosition.z != 0.0f) {
+        return;
+    }
+
+    UMath::Vector3 posSwiz = UMath::Vector3Make(-mPosition.y, mPosition.z, mPosition.x);
+    worldHeight = 0.0f;
     heightValid = WCollisionMgr(0, 3).GetWorldHeightAtPointRigorous(posSwiz, worldHeight, nullptr);
     if (heightValid) {
-        mPosition.y = worldHeight;
         SetFlag(kFlag_Snapped);
+        mPosition.z = worldHeight;
+        SetPosition();
     }
 }
 
