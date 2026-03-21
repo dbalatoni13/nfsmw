@@ -75,12 +75,12 @@ void PlatEndParticleRender() {
 void PlatAddParticle(const EmitterParticle &particle, const UMath::Vector3 &upVec, const UMath::Vector3 &rightVec,
                      unsigned int hack_flags, bVector4 *x_constrain_basis, bVector4 *y_constrain_basis) {
     float particle_scale_factor = particle.mSize;
-    bVector3 bx(BillboardedParticleBasisX.x * particle_scale_factor,
-                BillboardedParticleBasisX.y * particle_scale_factor,
-                BillboardedParticleBasisX.z * particle_scale_factor);
-    bVector3 by(BillboardedParticleBasisY.x * particle_scale_factor,
-                BillboardedParticleBasisY.y * particle_scale_factor,
-                BillboardedParticleBasisY.z * particle_scale_factor);
+    bVector3 bx(BillboardedParticleBasisX.x * particle.mSize,
+                BillboardedParticleBasisX.y * particle.mSize,
+                BillboardedParticleBasisX.z * particle.mSize);
+    bVector3 by(BillboardedParticleBasisY.x * particle.mSize,
+                BillboardedParticleBasisY.y * particle.mSize,
+                BillboardedParticleBasisY.z * particle.mSize);
     unsigned int colour = particle.mColour;
     const float fs0 = static_cast<float>(particle.mUVStart >> 16) * (1.0f / 65535.0f);
     const float ft0 = static_cast<float>(particle.mUVStart & 0xFFFF) * (1.0f / 65535.0f);
