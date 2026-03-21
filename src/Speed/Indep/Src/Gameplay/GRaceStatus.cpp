@@ -3582,7 +3582,6 @@ void GRaceStatus::SyncronizeAdaptiveBonus() {
 }
 
 void GRaceStatus::UpdateAdaptiveDifficulty(eAdaptiveGainReason reason, ISimable *who) {
-    int num_racers;
     bool update;
     GRacerInfo *winning_player;
     GRacerInfo *winning_ai;
@@ -3595,7 +3594,7 @@ void GRaceStatus::UpdateAdaptiveDifficulty(eAdaptiveGainReason reason, ISimable 
     }
 
     difficulty = fCatchUpAdaptiveBonus;
-    num_racers = GetRacerCount();
+    const int num_racers = GetRacerCount();
     update = false;
     winning_player = nullptr;
     winning_ai = nullptr;
