@@ -3595,7 +3595,11 @@ void GRaceStatus::SetNextCheckpointPos(GRuntimeInstance *trigger) {
 }
 
 float GRaceStatus::GetAdaptiveDifficutly() const {
-    return fCatchUpAdaptiveBonus;
+    if (GetRaceContext() == GRace::kRaceContext_Career) {
+        return fCatchUpAdaptiveBonus;
+    }
+
+    return 0.0f;
 }
 
 void GRaceStatus::SyncronizeAdaptiveBonus() {
