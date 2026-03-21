@@ -242,8 +242,8 @@ MemoryCard::MemoryCard() {
 }
 
 bool MemoryCard::IsCardAvailable() {
-    if (s_pThis) {
-        if (s_pThis->m_LastError == 0 || s_pThis->m_LastError == 11)
+    if (GetInstance()) {
+        if (GetInstance()->m_LastError == 0 || GetInstance()->m_LastError == 11)
             return true;
         return false;
     }
@@ -291,10 +291,10 @@ void MemoryCard::ProcessTask() {
 }
 
 bool MemoryCard::IsCardBusy() {
-    if (s_pThis != nullptr
-        && (!s_pThis->m_pIMemcard->IsResettable()
-            || s_pThis->IsAutoSaveIconVisible()
-            || (s_pThis->m_bInAutoSave && !s_pThis->m_bWaitingForResponse)))
+    if (GetInstance() != nullptr
+        && (!GetInstance()->m_pIMemcard->IsResettable()
+            || GetInstance()->IsAutoSaveIconVisible()
+            || (GetInstance()->IsAutoSaving() && !GetInstance()->IsWaitingForResponse())))
         return true;
     return false;
 }
@@ -369,11 +369,11 @@ void MemoryCard::LoadLocale(eLanguages eLang) {
 
 int MemoryCard::GetPrefixLength() { return bStrLen(m_pImp->GetPrefix()); }
 const char* MemoryCard::GetPrefix() { return m_pImp->GetPrefix(); }
-const char* MemoryCard::GetLocaleString(int strID) { return LOCALE_getstrA(s_pThis->m_pLocaleFileHandler, strID); }
+const char* MemoryCard::GetLocaleString(int strID) { return LOCALE_getstrA(GetInstance()->m_pLocaleFileHandler, strID); }
 
 void MemoryCard::SetMessageMode(unsigned int msg, bool flag) {
-    if (s_pThis != nullptr)
-        s_pThis->m_pIMemcard->SetMessage(flag ? RealmcIface::MESSAGE_SHOW : RealmcIface::MESSAGE_HIDE, msg);
+    if (GetInstance() != nullptr)
+        GetInstance()->m_pIMemcard->SetMessage(flag ? RealmcIface::MESSAGE_SHOW : RealmcIface::MESSAGE_HIDE, msg);
 }
 
 void MemoryCard::Tick(int TickCount) {
@@ -690,12 +690,8 @@ queue:
 void MemoryCard::HideAutoSaveIcon() {
     if (m_bAutoSaveIconShowing) {
         m_bAutoSaveIconShowing = false;
-        cFEng* eng = cFEng::Get();
-        unsigned int msg = FEHashUpper("FadeOut");
-        eng->QueuePackageMessage(msg, "AutoSaveIcon.fng", nullptr);
-        eng = cFEng::Get();
-        msg = FEHashUpper("ShowSMSIcon");
-        eng->QueuePackageMessage(msg, nullptr, nullptr);
+        cFEng::Get()->QueuePackageMessage(FEHashUpper("FadeOut"), "AutoSaveIcon.fng", nullptr);
+        cFEng::Get()->QueuePackageMessage(FEHashUpper("ShowSMSIcon"), nullptr, nullptr);
     }
 }
 
