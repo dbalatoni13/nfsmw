@@ -109,7 +109,8 @@ void UnlockUnlockableThing(eUnlockableEntity entity, unsigned int filter, int le
 // ============================================================
 
 bool QuickRaceUnlocker::IsBackroomAvailable(eUnlockFilters filter, eUnlockableEntity ent, int level, int player) {
-    return false;
+    bool answer = false;
+    return answer;
 }
 
 int QuickRaceUnlocker::IsUnlockableUnlocked(eUnlockFilters filter, eUnlockableEntity ent, int level, int player, bool backroom) {
@@ -182,7 +183,8 @@ bool OnlineUnlocker::IsCarUnlocked(eUnlockFilters filter, unsigned int car) {
 }
 
 bool OnlineUnlocker::IsBackroomAvailable(eUnlockFilters filter, eUnlockableEntity ent, int level) {
-    return QuickRaceUnlocker::IsBackroomAvailable(filter, ent, level, 0);
+    bool answer = QuickRaceUnlocker::IsBackroomAvailable(filter, ent, level, 0);
+    return answer;
 }
 
 // ============================================================
