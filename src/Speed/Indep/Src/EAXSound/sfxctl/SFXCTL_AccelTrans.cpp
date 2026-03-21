@@ -167,16 +167,15 @@ void SFXCTL_AccelTrans::BeginAccelTrans_Idle() {
 }
 
 bool SFXCTL_AccelTrans::ShouldBeginAccelTrans_Idle() {
-    EAXCar *car = m_pEAXCar;
-    if (car->GetVelocityMagnitudeMPH() <= 15.0f &&
-        30.0f <= car->GetThrottle() - m_pEngineCtl->m_pPhysicsCtl->m_OldThrottle &&
-        !car->GetPhysicsCTL()->NISRevingEnabled) {
+    if (m_pEAXCar->GetVelocityMagnitudeMPH() <= 15.0f &&
+        30.0f <= m_pEAXCar->GetThrottle() - m_pEngineCtl->m_pPhysicsCtl->m_OldThrottle &&
+        !m_pEAXCar->GetPhysicsCTL()->NISRevingEnabled) {
         if (eAccelTransFxState != FX_ACCEL_STATE_NONE) {
             return false;
         }
 
         if ((!m_pShiftCtl || !m_pShiftCtl->IsActive()) &&
-            car->GetCurGear() == Sound::FIRST_GEAR && GetPhysRPM() <= 1500.0f) {
+            m_pEAXCar->GetCurGear() == Sound::FIRST_GEAR && m_pEAXCar->GetPhysRPM() <= 1500.0f) {
             if (INIS::Get() != nullptr && INIS::Get()->IsPlaying()) {
                 return false;
             }
