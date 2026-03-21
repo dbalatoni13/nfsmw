@@ -2705,7 +2705,6 @@ bool GManager::CalcMapCoordsForMarker(unsigned int markerKey, bVector2 &outPos, 
     }
 
     const bVector2 *pos = reinterpret_cast<const bVector2 *>(marker.GetAttributePointer(0x9F743A0E, 0));
-    bVector2 worldPos;
     UMath::Matrix4 rotMat;
     UMath::Vector3 forwardVec;
     const float *rotation;
@@ -2716,8 +2715,7 @@ bool GManager::CalcMapCoordsForMarker(unsigned int markerKey, bVector2 &outPos, 
     }
 
     trackInfo = TrackInfo::GetTrackInfo(2000);
-    worldPos.x = pos->x;
-    worldPos.y = pos->y;
+    bVector2 worldPos(pos->x, pos->y);
     Minimap::ConvertPos(worldPos, outPos, trackInfo);
 
     rotMat = UMath::Matrix4::kIdentity;
