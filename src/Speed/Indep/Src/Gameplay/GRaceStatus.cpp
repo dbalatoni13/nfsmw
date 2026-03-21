@@ -3994,17 +3994,23 @@ int GRaceStatus::GetLapPosition(int lapIndex, int racerIndex, bool bOverallPosit
 
 float GRaceStatus::GetBestLapTime(int racerIndex) {
     float bestLapTime;
-    int onLap;
 
-    bestLapTime = GetLapTime(0, racerIndex, false);
-    onLap = 1;
-    while (onLap < mRaceParms->GetNumLaps()) {
-        float lapTime = GetLapTime(onLap, racerIndex, false);
-        if (lapTime > 0.0f && lapTime < bestLapTime) {
-            bestLapTime = lapTime;
+    {
+        int onLap;
+
+        bestLapTime = GetLapTime(0, racerIndex, false);
+        onLap = 1;
+        while (onLap < mRaceParms->GetNumLaps()) {
+            {
+                float lapTime = GetLapTime(onLap, racerIndex, false);
+
+                if (lapTime > 0.0f && lapTime < bestLapTime) {
+                    bestLapTime = lapTime;
+                }
+            }
+
+            onLap++;
         }
-
-        onLap++;
     }
 
     return bestLapTime;
@@ -4012,17 +4018,23 @@ float GRaceStatus::GetBestLapTime(int racerIndex) {
 
 float GRaceStatus::GetWorstLapTime(int racerIndex) {
     float worstLapTime;
-    int onLap;
 
-    worstLapTime = GetLapTime(0, racerIndex, false);
-    onLap = 1;
-    while (onLap < mRaceParms->GetNumLaps()) {
-        float lapTime = GetLapTime(onLap, racerIndex, false);
-        if (lapTime > 0.0f && lapTime > worstLapTime) {
-            worstLapTime = lapTime;
+    {
+        int onLap;
+
+        worstLapTime = GetLapTime(0, racerIndex, false);
+        onLap = 1;
+        while (onLap < mRaceParms->GetNumLaps()) {
+            {
+                float lapTime = GetLapTime(onLap, racerIndex, false);
+
+                if (lapTime > 0.0f && lapTime > worstLapTime) {
+                    worstLapTime = lapTime;
+                }
+            }
+
+            onLap++;
         }
-
-        onLap++;
     }
 
     return worstLapTime;
@@ -4321,7 +4333,6 @@ void GRaceStatus::DetermineRaceLength() {
 
     WRoadNetwork &rn = WRoadNetwork::Get();
     GRaceParameters *race_parameters = GetRaceParameters();
- 
     rn.ResolveShortcuts();
 
     if (!race_parameters || !race_parameters->HasFinishLine()) {
