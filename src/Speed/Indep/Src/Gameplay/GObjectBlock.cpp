@@ -20,15 +20,13 @@ static unsigned int GetPaddedObjectSize() {
 template <typename T>
 static unsigned int FindInstances(GVault *vault, AttribKeyList *attribKeyList, unsigned int *outObjCount, unsigned int *outConnCount) {
     static unsigned int kObjectTemplateKey = 0x7FCB7ABA;
-    int numConnections = 0;
     Attrib::Gen::gameplay objectTemplate(kObjectTemplateKey, 0, nullptr);
-    int numObjects = 0;
     Attrib::Vault *attribVault = vault->GetAttribVault();
-    unsigned int exportIndex = 0;
-    unsigned int exportCount;
     int collectionType = Attrib::StringToTypeID("Attrib::CollectionLoadData");
-
-    exportCount = attribVault->CountExports();
+    unsigned int exportCount = attribVault->CountExports();
+    int numObjects = 0;
+    int numConnections = 0;
+    unsigned int exportIndex = 0;
     if (exportCount != 0) {
         do {
             if (attribVault->GetExportType(exportIndex) == collectionType) {
