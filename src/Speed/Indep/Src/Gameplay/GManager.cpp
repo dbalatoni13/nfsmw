@@ -2475,16 +2475,16 @@ eVehicleCacheResult GManager::OnQueryVehicleCache(const IVehicle *removethis, co
             return VCR_DONTCARE;
         }
 
-        if (UTL::COM::ComparePtr(whosasking, ITrafficMgr::Get()) || vehicle->GetOffscreenTime() == 0.0f) {
-            return VCR_DONTCARE;
+        if (!UTL::COM::ComparePtr(whosasking, ITrafficMgr::Get()) && vehicle->GetOffscreenTime() != 0.0f) {
+            GCharacter *firstCharacter = nullptr;
+            if ((mActiveCharacters.end() - mActiveCharacters.begin()) != 0) {
+                firstCharacter = *mActiveCharacters.begin();
+            }
+
+            return character == firstCharacter ? VCR_DONTCARE : VCR_WANT;
         }
 
-        GCharacter *firstCharacter = nullptr;
-        if ((mActiveCharacters.end() - mActiveCharacters.begin()) != 0) {
-            firstCharacter = *mActiveCharacters.begin();
-        }
-
-        return character == firstCharacter ? VCR_DONTCARE : VCR_WANT;
+        return VCR_DONTCARE;
     }
 
     return VCR_DONTCARE;
