@@ -722,8 +722,8 @@ void LGWheels::PlaySurfaceEffect(long channel, unsigned char type, unsigned char
             }
 
             if (ret >= 0) {
-                reinterpret_cast<SurfaceEffectParams *>(reinterpret_cast<char *>(this) + 0x16D4)[channel].type = type;
                 reinterpret_cast<SurfaceEffectParams *>(reinterpret_cast<char *>(this) + 0x16D4)[channel].magnitude = magnitude;
+                reinterpret_cast<SurfaceEffectParams *>(reinterpret_cast<char *>(this) + 0x16D4)[channel].type = type;
                 reinterpret_cast<SurfaceEffectParams *>(reinterpret_cast<char *>(this) + 0x16D4)[channel].period = period;
             }
             return;
@@ -733,8 +733,8 @@ void LGWheels::PlaySurfaceEffect(long channel, unsigned char type, unsigned char
             ret = reinterpret_cast<Periodic *>(reinterpret_cast<char *>(this) + 0x13A8)
                       ->DownloadForce(channel, 3, reinterpret_cast<unsigned long *>(reinterpret_cast<char *>(this) + 0x1050)[channel], type, static_cast<unsigned long>(-1), 0, magnitude, 90, period, 0, 0, 0, 0, 0, 0);
             if (ret >= 0) {
-                reinterpret_cast<SurfaceEffectParams *>(reinterpret_cast<char *>(this) + 0x16D4)[channel].type = type;
                 reinterpret_cast<SurfaceEffectParams *>(reinterpret_cast<char *>(this) + 0x16D4)[channel].magnitude = magnitude;
+                reinterpret_cast<SurfaceEffectParams *>(reinterpret_cast<char *>(this) + 0x16D4)[channel].type = type;
                 reinterpret_cast<SurfaceEffectParams *>(reinterpret_cast<char *>(this) + 0x16D4)[channel].period = period;
             }
             reinterpret_cast<Periodic *>(reinterpret_cast<char *>(this) + 0x13A8)->Start(channel, 3);
@@ -756,8 +756,8 @@ void LGWheels::PlaySurfaceEffect(long channel, unsigned char type, unsigned char
         }
 
         if (ret >= 0) {
-            reinterpret_cast<SurfaceEffectParams *>(reinterpret_cast<char *>(this) + 0x16D4)[channel].type = type;
             reinterpret_cast<SurfaceEffectParams *>(reinterpret_cast<char *>(this) + 0x16D4)[channel].magnitude = magnitude;
+            reinterpret_cast<SurfaceEffectParams *>(reinterpret_cast<char *>(this) + 0x16D4)[channel].type = type;
             reinterpret_cast<SurfaceEffectParams *>(reinterpret_cast<char *>(this) + 0x16D4)[channel].period = period;
         }
 
