@@ -33,6 +33,7 @@ class SuspensionSimple : public Chassis, public Sim::Collision::IListener, publi
         void BeginFrame(float max_slip, float grip_scale, float traction_boost);
         void EndFrame(float dT);
         void UpdateFree(float dT);
+        float UpdateLoaded(float lat_vel, float fwd_vel, float body_speed, float load, float dT, float drag_reduction);
 
         void MatchSpeed(float speed) {
             mAV = speed / mRadius;
@@ -198,6 +199,147 @@ void SuspensionSimple::Tire::UpdateFree(float dT) {
     mLongitudeForce = 0.0f;
     mLastTorque = 0.0f;
     mAngularAcc = 0.0f;
+}
+
+float SuspensionSimple::Tire::UpdateLoaded(float lat_vel, float fwd_vel, float body_speed, float load, float dT, float drag_reduction) {
+    if (mLoad <= 0.0f && !mBrakeLocked) {
+        mAV = fwd_vel / mRadius;
+    }
+
+    const float fwd_acc = (fwd_vel - mRoadSpeed) / dT;
+    mRoadSpeed = fwd_vel;
+    mLateralSpeed = lat_vel;
+    mLoad = UMath::Max(load, 0.0f);
+    mTraction = 1.0f;
+
+    const bool noBrake = mBrake + mEBrake <= 0.0f;
+    if (!noBrake) {
+        const float abs_fwd = UMath::Abs(fwd_vel);
+        if (abs_fwd >= 1.0f) {
+            float brake_torque = mBrake * FTLB2NM(mBrakes->BRAKES().At(mAxleIndex)) * 10.0f +
+                                 mEBrake * FTLB2NM(mBrakes->EBRAKE()) * 10.0f;
+            if (mAV <= 0.0f) {
+                brake_torque = mAppliedTorque + brake_torque;
+            } else {
+                brake_torque = mAppliedTorque - brake_torque;
+            }
+            mAppliedTorque = brake_torque;
+        } else {
+            mAppliedTorque = mAppliedTorque + ((-mBrake * load) * fwd_vel) / mRadius + ((-mEBrake * load) * fwd_vel) / mRadius;
+        }
+    }
+
+    mSlipAngle = UMath::Atan2a(lat_vel, UMath::Abs(fwd_vel));
+    if (!mBrakeLocked && !mAllowSlip) {
+        mSlip = 0.0f;
+    } else {
+        mSlip = mAV * mRadius - fwd_vel;
+    }
+
+    const float abs_slip = UMath::Abs(mSlip);
+    bool clippedSlip = false;
+    float slipRatio = 1.0f;
+    if (mAllowSlip && mMaxSlip < abs_slip) {
+        slipRatio = mMaxSlip / abs_slip;
+        clippedSlip = true;
+        mTraction = mTraction * slipRatio;
+    }
+
+    const float skid_speed = UMath::Sqrt(mSlip * mSlip + lat_vel * lat_vel);
+    float slip_scale = UMath::Abs(mSlipAngle) / (1.54f * 1.5f);
+    if (slip_scale > 1.0f) {
+        slip_scale = 1.0f;
+    } else if (slip_scale < 0.0f) {
+        slip_scale = 0.0f;
+    }
+
+    float lateralForce = ((mGripBoost * slip_scale) * mLoad) * 0.85f * mSpecs->GRIP_SCALE().At(mAxleIndex) * mTractionBoost;
+    mLateralForce = lateralForce;
+    if (mSlipAngle > 0.0f) {
+        mLateralForce = -lateralForce;
+    }
+
+    if (mBrakeLocked && skid_speed > 1.0f) {
+        const float dynamicGrip = mSpecs->DYNAMIC_GRIP().At(mAxleIndex);
+        mLongitudeForce = ((mSlip * mLoad) * mTractionBoost * dynamicGrip) / (skid_speed * 1.5f);
+        mLateralForce = (((-lat_vel * mLoad) * mTractionBoost) * dynamicGrip * 1.5f) / skid_speed;
+    } else {
+        float longitudeForce = mAppliedTorque / mRadius;
+        if (clippedSlip) {
+            float speedRatio = (body_speed - 30.0f * 0.44703f) / (50.0f * 0.44703f - 30.0f * 0.44703f);
+            if (speedRatio > 1.0f) {
+                speedRatio = 1.0f;
+            } else if (speedRatio < 0.0f) {
+                speedRatio = 0.0f;
+            }
+
+            float dynamicGrip =
+                ((((mLoad * mSpecs->DYNAMIC_GRIP().At(mAxleIndex)) * mTractionBoost) * (speedRatio * 0.5f + 0.5f)) / skid_speed) * mSlip;
+            mLongitudeForce = dynamicGrip;
+            if (dynamicGrip * longitudeForce <= 0.0f) {
+                longitudeForce = dynamicGrip;
+            } else if (dynamicGrip <= 0.0f) {
+                if (longitudeForce < dynamicGrip) {
+                    longitudeForce = dynamicGrip;
+                }
+            } else if (dynamicGrip < longitudeForce) {
+                longitudeForce = dynamicGrip;
+            }
+        }
+        mLongitudeForce = longitudeForce;
+    }
+
+    if (mAllowSlip && !clippedSlip && !mBrakeLocked) {
+        mLongitudeForce = mLongitudeForce + (((mLastTorque * mRadius - fwd_acc) * 10.0f) / mRadius);
+    }
+
+    const float max_force =
+        ((mLoad * mSpecs->STATIC_GRIP().At(mAxleIndex)) * mTractionBoost) * (mBrake * 0.5f + 1.0f);
+    const float force_sq = mLongitudeForce * mLongitudeForce + mLateralForce * mLateralForce;
+    if (max_force * max_force < force_sq && 1.0e-6f < force_sq) {
+        const float forceScale = max_force / UMath::Sqrt(force_sq);
+        mTraction = mTraction * forceScale;
+        mLateralForce = mLateralForce * forceScale;
+        mLongitudeForce = mLongitudeForce * forceScale;
+        slipRatio = slipRatio * forceScale * forceScale;
+    }
+
+    if (UMath::Abs(fwd_vel) <= 1.0f) {
+        float lateralScale = 1.0f;
+        const float abs_lat = UMath::Abs(lat_vel);
+        if (abs_lat < 1.0f) {
+            lateralScale = abs_lat;
+        }
+        mLateralForce = mLateralForce * lateralScale;
+    } else {
+        mLongitudeForce =
+            mLongitudeForce - ((sinf(mSlipAngle * 6.2831855f) * mLateralForce) * drag_reduction) / mSpecs->GRIP_SCALE().At(mAxleIndex);
+    }
+
+    if (noBrake && mWheelIndex > 1) {
+        mLongitudeForce = mLongitudeForce * mSurface.DRIVE_GRIP();
+        mLateralForce = mLateralForce * mSurface.LATERAL_GRIP();
+    }
+
+    if (!mBrakeLocked) {
+        if (!mAllowSlip || slipRatio >= 1.0f) {
+            mAV = mRoadSpeed / mRadius;
+        } else {
+            const float radius = mRadius;
+            float lastTorque = ((mAppliedTorque - mLongitudeForce * radius) + mLastTorque) * 0.5f;
+            mLastTorque = lastTorque;
+            float angularAcc =
+                ((lastTorque - mAV * (mSurface.ROLLING_RESISTANCE() * 2.5f)) * 50.0f) - (slipRatio * mSlip) / (radius * dT);
+            angularAcc = ((fwd_acc / radius) - angularAcc) * slipRatio + angularAcc;
+            mAngularAcc = angularAcc;
+            mAV = mAV + angularAcc * dT;
+        }
+    } else {
+        mAV = 0.0f;
+        mAngularAcc = 0.0f;
+    }
+
+    return mLateralForce;
 }
 
 Behavior *SuspensionSimple::Construct(const BehaviorParams &params) {
