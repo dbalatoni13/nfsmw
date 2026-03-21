@@ -293,7 +293,8 @@ bool MemoryCard::IsCardBusy() {
     if (GetInstance() != nullptr
         && (!GetInstance()->m_pIMemcard->IsResettable()
             || GetInstance()->IsAutoSaveIconVisible()
-            || (GetInstance()->IsAutoSaving() && !GetInstance()->IsWaitingForResponse())))
+            || ((((void)GetInstance()->IsAutoSaving()), GetInstance()->IsAutoSaving())
+                && !GetInstance()->IsWaitingForResponse())))
         return true;
     return false;
 }
@@ -500,16 +501,12 @@ void MemoryCard::SetMonitor(bool bEnabled) {
 
 void MemoryCard::SetAutoSaveEnabled(bool bEnabled) {
     char entryname[16];
-    char* filename = m_Filename;
-    const char* name = FEDatabase->CurrentUserProfiles[0]->GetProfileName();
-    bStrCpy(entryname, name);
-    unsigned int saveSize = FEDatabase->GetUserProfileSaveSize(false);
-    SetExtraParam(ST_PROFILE, entryname, nullptr, saveSize);
-    const char* prefix = m_pImp->GetPrefix();
-    bStrCat(filename, prefix, entryname);
+    bStrCpy(entryname, FEDatabase->GetMultiplayerProfile(0)->GetProfileName());
+    SetExtraParam(ST_PROFILE, entryname, nullptr, FEDatabase->GetUserProfileSaveSize(false));
+    bStrCat(m_Filename, m_pImp->GetPrefix(), entryname);
     bStrNCpy(MemoryCardImp::gContentName, entryname, 16);
-    if (m_pFEScreen && gMemcardSetup.GetMethod() == 0xa0) {
-        m_pFEScreen->SetStringCheckingCard();
+    if (GetScreen() && ((((void)gMemcardSetup.GetCommand()), gMemcardSetup.mOp & 0xf0) == 0xa0)) {
+        GetScreen()->SetStringCheckingCard();
         ShowMessages(true);
     } else {
         ShowMessages(false);
