@@ -253,49 +253,51 @@ void GCharacter::UnspawnWhenOffscreen() {
 }
 
 bool GCharacter::IsNoLongerUseful() const {
-    IVehicle *vehicle = mVehicle;
-
     if (!IsSpawned()) {
         return false;
     }
 
-    if (vehicle->GetOffscreenTime() < 0.5f) {
+    if (mVehicle->GetOffscreenTime() < 0.5f) {
         return false;
     }
 
-    IVehicle *otherVehicle = IVehicle::First(VEHICLE_RACERS);
-    for (int i = 0; i < IVehicle::Count(VEHICLE_RACERS); ++i) {
-        ISimable *simable = otherVehicle ? otherVehicle->GetSimable() : nullptr;
+    IVehicle *racerVehicle = IVehicle::First(VEHICLE_RACERS);
+    for (int racerIdx = 0; racerIdx < IVehicle::Count(VEHICLE_RACERS); ++racerIdx) {
+        ISimable *racerSimable = racerVehicle ? racerVehicle->GetSimable() : nullptr;
 
-        if (!otherVehicle->IsDestroyed() && simable) {
-            const IRigidBody *rigidBody = simable->GetRigidBody();
+        if (!racerVehicle->IsDestroyed() && racerSimable) {
+            IRigidBody *rigidBody = racerSimable->GetRigidBody();
 
             if (rigidBody) {
-                UMath::Vector3 direction;
-                UMath::Vector3 forward;
-                float distance;
+                UMath::Vector3 charPos;
+                UMath::Vector3 dirToChar;
+                UMath::Vector3 humanPos;
+                UMath::Vector3 humanForward;
+                float distToChar;
 
-                UMath::Sub(vehicle->GetPosition(), otherVehicle->GetPosition(), direction);
-                distance = UMath::Normalize(direction);
-                if (distance < 100.0f) {
+                charPos = mVehicle->GetPosition();
+                humanPos = racerVehicle->GetPosition();
+                UMath::Sub(charPos, humanPos, dirToChar);
+                distToChar = UMath::Normalize(dirToChar);
+                if (distToChar < 100.0f) {
                     return false;
                 }
 
-                rigidBody->GetForwardVector(forward);
-                if (UMath::Dot(direction, forward) >= 0.0f) {
+                rigidBody->GetForwardVector(humanForward);
+                if (UMath::Dot(dirToChar, humanForward) >= 0.0f) {
                     return false;
                 }
             }
         }
 
         {
-            const IVehicle::List &vehicles = IVehicle::GetList(VEHICLE_RACERS);
-            IVehicle::List::const_iterator found = std::find(vehicles.begin(), vehicles.end(), otherVehicle);
+            const IVehicle::List &list = IVehicle::GetList(VEHICLE_RACERS);
+            IVehicle *const *iter = std::find(list.begin(), list.end(), racerVehicle);
 
-            if (found == vehicles.end() || ++found == vehicles.end()) {
-                otherVehicle = nullptr;
+            if (iter == list.end() || ++iter == list.end()) {
+                racerVehicle = nullptr;
             } else {
-                otherVehicle = *found;
+                racerVehicle = *iter;
             }
         }
     }
