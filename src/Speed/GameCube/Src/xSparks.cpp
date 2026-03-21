@@ -193,7 +193,8 @@ void CGEmitter::SpawnParticles(float dt, float intensity) {
                     break;
                 }
 
-                sparkLength = mEmitterDef.LengthStart() + bRandom(mEmitterDef.LengthDelta(), &random_seed);
+                sparkLength = mEmitterDef.LengthStart();
+                sparkLength += bRandom(mEmitterDef.LengthDelta(), &random_seed);
                 if (sparkLength < 0.0f) {
                     break;
                 }
