@@ -2448,7 +2448,7 @@ GActivity *GRaceCustom::GetRaceActivity() const {
 
 void GRaceCustom::GetCheckpointPosition(unsigned int index, UMath::Vector3 &pos) const {
     if (mReversed) {
-        index = GetNumCheckpoints() - (index + 1);
+        index = GetNumCheckpoints() - 1 - index;
     }
 
     GRaceParameters::GetCheckpointPosition(index, pos);
@@ -2458,7 +2458,7 @@ void GRaceCustom::GetCheckpointDirection(unsigned int index, UMath::Vector3 &dir
     UMath::Vector3 checkDir;
 
     if (mReversed) {
-        index = GetNumCheckpoints() - (index + 1);
+        index = GetNumCheckpoints() - 1 - index;
     }
 
     checkDir = UMath::Vector3::kZero;
