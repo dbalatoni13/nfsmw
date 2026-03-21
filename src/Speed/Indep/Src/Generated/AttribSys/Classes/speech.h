@@ -65,9 +65,7 @@ struct speech : Instance {
         Instance::Change(refspec);
     }
 
-    static Key ClassKey() {
-        return 0xc593dd47;
-    }
+    static Key ClassKey();
 
     const float &MinPlayerSpeed() const {
         const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0x0994e624, 0));

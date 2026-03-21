@@ -169,6 +169,10 @@ struct ScheduledSpeechEvent {
 
 static short sSpeechFrameIndex = 0;
 
+Attrib::Key Attrib::Gen::speech::ClassKey() {
+    return 0xc593dd47;
+}
+
 void copMap::Add(HSIMABLE__ *hsimable, EAXCop *cop) {
     copPair pair;
     pair.hsimable = hsimable;
