@@ -29,6 +29,7 @@ struct SPCHType_SampleRequestData {
 extern void *NullPointer;
 
 struct EAXCop;
+struct ISndAttachable;
 
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/speech.h"
 
@@ -462,4 +463,7 @@ template Speech::SpeechEventPair *__lower_bound<Speech::SpeechEventPair *, Speec
 
 template _STL::_List_iterator<int, _STL::_Nonconst_traits<int> > find<_STL::_List_iterator<int, _STL::_Nonconst_traits<int> >, int>(
     _STL::_List_iterator<int, _STL::_Nonconst_traits<int> >, _STL::_List_iterator<int, _STL::_Nonconst_traits<int> >, int const &);
+
+template ISndAttachable **find<ISndAttachable **, ISndAttachable *>(
+    ISndAttachable **, ISndAttachable **, ISndAttachable * const &);
 }
