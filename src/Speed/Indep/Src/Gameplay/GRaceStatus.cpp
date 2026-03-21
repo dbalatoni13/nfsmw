@@ -2872,11 +2872,9 @@ void GRaceStatus::Shutdown() {
 }
 
 void GRaceStatus::EnableBinBarriers() {
-    EnableBarriers();
-}
-
-void GRaceStatus::DisableBinBarriers() {
-    DisableBarriers();
+    if (mRaceBin) {
+        mRaceBin->EnableBarriers();
+    }
 }
 
 void GRaceStatus::RefreshBinWhileInGame() {
