@@ -665,39 +665,36 @@ void GRaceDatabase::BuildScoreList() {
 }
 
 void GRaceDatabase::ClearRaceScores() {
-    unsigned int i;
-
     if (!mRaceScoreInfo) {
         return;
     }
 
     bMemSet(mRaceScoreInfo, 0, mRaceCountStatic << 4);
-    for (i = 0; i < mRaceCountStatic; i++) {
-        GRaceParameters *race;
+    for (unsigned int onRace = 0; onRace < mRaceCountStatic; onRace++) {
+        GRaceParameters *parms;
+        bool unlockedQR;
+        bool unlockedOnline;
+        bool unlockedChallenge;
 
-        race = &mRaceParameters[i];
-        if (!race->GetIsDDayRace()) {
-            bool unlockedQuick;
-            bool unlockedOnline;
-            bool unlockedChallenge;
+        parms = &mRaceParameters[onRace];
+        if (!parms->GetIsDDayRace()) {
+            unlockedQR = parms->GetInitiallyUnlockedQuickRace();
+            unlockedOnline = parms->GetInitiallyUnlockedOnline();
+            unlockedChallenge = parms->GetInitiallyUnlockedChallenge();
 
-            unlockedQuick = race->GetInitiallyUnlockedQuickRace();
-            unlockedOnline = race->GetInitiallyUnlockedOnline();
-            unlockedChallenge = race->GetInitiallyUnlockedChallenge();
-
-            if (race->GetIsBossRace()) {
+            if (parms->GetIsBossRace()) {
                 unlockedChallenge = false;
             }
 
-            if (unlockedQuick || unlockedOnline || unlockedChallenge) {
-                unsigned int *flags;
+            if (unlockedQR || unlockedOnline || unlockedChallenge) {
+                GRaceSaveInfo *info;
 
-                flags = &reinterpret_cast<unsigned int *>(GetScoreInfo(race->GetEventHash()))[1];
-                if (unlockedQuick || unlockedChallenge) {
-                    *flags |= kUnlocked_QuickRace;
+                info = GetScoreInfo(parms->GetEventHash());
+                if (unlockedQR || unlockedChallenge) {
+                    reinterpret_cast<unsigned int *>(info)[1] |= kUnlocked_QuickRace;
                 }
                 if (unlockedOnline) {
-                    *flags |= kUnlocked_Online;
+                    reinterpret_cast<unsigned int *>(info)[1] |= kUnlocked_Online;
                 }
             }
         }
