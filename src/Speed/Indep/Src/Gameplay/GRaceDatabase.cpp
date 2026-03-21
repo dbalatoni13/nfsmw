@@ -551,7 +551,7 @@ void GRaceDatabase::NotifyVaultUnloading(GVault *vault) {
         }
     }
 
-    if (mStartupRace && mStartupRace->GetParentVault() == vault) {
+    if (mStartupRace && vault == mStartupRace->GetParentVault()) {
         ClearStartupRace();
     }
 }
