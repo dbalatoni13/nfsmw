@@ -47,6 +47,7 @@ void XSpriteManager::AddSpark(const NGParticle &particle, TextureInfo *CurrentTe
         UMath::ScaleAdd(particle.vel, particle.age, particle.initialPos, startPos);
         startPos.z += particle.gravity * particle.age * particle.age;
         float endAge = static_cast<float>(static_cast<int>(particle.length)) * (1.0f / 2048.0f) + particle.age;
+        float width = static_cast<float>(static_cast<int>(particle.width)) * (1.0f / 2048.0f);
 
         UMath::ScaleAdd(particle.vel, endAge, particle.initialPos, endPos);
 
@@ -58,9 +59,7 @@ void XSpriteManager::AddSpark(const NGParticle &particle, TextureInfo *CurrentTe
             particle.color >> 24 | particle.color >> 8 & 0xFF00 | (particle.color & 0xFF00) << 8 | particle.color << 24;
         XSpriteBufferP->startPos = startPos;
         XSpriteBufferP->EndPosPos = endPos;
-
-        float width = static_cast<float>(static_cast<int>(particle.width)) * (1.0f / 2048.0f);
-        XSpriteBufferP->width = width;
+        XSpriteBufferP->width = static_cast<float>(static_cast<int>(particle.width)) * (1.0f / 2048.0f);
         this->position++;
     }
 }
