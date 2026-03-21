@@ -202,7 +202,7 @@ unsigned int HighScoresDatabase::GetPreviouslyPursuedCarNameHash() const {
 void HighScoresDatabase::GetCareerCST(RAP_CTS_ITEM item, int &quantity, unsigned int &value) const {
     switch (item) {
     case RAP_CTS_HELI_SPAWN:
-        quantity = CareerPursuitDetails.GetValue(static_cast< ePursuitDetailTypes >(6));
+        quantity = GetCareerPursuitScore(static_cast< ePursuitDetailTypes >(6));
         value = quantity * 2000;
         return;
     case RAP_CTS_SUPPORT_VEHICLE_DEPLOYED:
@@ -214,11 +214,11 @@ void HighScoresDatabase::GetCareerCST(RAP_CTS_ITEM item, int &quantity, unsigned
         value = quantity * 0xFA;
         return;
     case RAP_CTS_COP_DESTROYED:
-        quantity = CareerPursuitDetails.GetValue(static_cast< ePursuitDetailTypes >(3));
+        quantity = GetCareerPursuitScore(static_cast< ePursuitDetailTypes >(3));
         value = quantity * 5000;
         return;
     case RAP_CTS_COP_DAMAGED:
-        quantity = CareerPursuitDetails.GetValue(static_cast< ePursuitDetailTypes >(2));
+        quantity = GetCareerPursuitScore(static_cast< ePursuitDetailTypes >(2));
         value = quantity * 0xFA;
         return;
     case RAP_CTS_ROADBLOCK_DEPLOYED:

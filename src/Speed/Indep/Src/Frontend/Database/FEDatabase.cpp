@@ -210,10 +210,11 @@ void CareerSettings::SetPlayerHasBeatenTheGame() {
 }
 
 int CareerSettings::GetSaveBufferSize(bool bExcludeGameplay) {
-    if (bExcludeGameplay) {
-        return 0x735;
+    int size = TheFEMarkerManager.GetSaveBufferSize() + 0x441;
+    if (!bExcludeGameplay) {
+        size += 0x52C4;
     }
-    return 0x59F9;
+    return size;
 }
 
 bool GameplaySettings::IsMapItemEnabled(eWorldMapItemType type) {
