@@ -641,7 +641,7 @@ bool GRacerInfo::IsBehind(const GRacerInfo &rhs) const {
 #ifndef EA_BUILD_A124
     if (GetDNF()) {
         if (rhs.GetDNF()) {
-            return GetPctRaceComplete() < rhs.GetPctRaceComplete();
+            return rhs.GetPctRaceComplete() < GetPctRaceComplete();
         }
     }
 #endif
@@ -3929,10 +3929,10 @@ float GRaceStatus::DetermineRaceSegmentLength(const UMath::Vector4 *positions, c
 
         bMemSet(shortcutAllowed, 1, sizeof(shortcutAllowed));
         while (true) {
-            bool foundPath;
-
             nav.SetNavType(WRoadNav::kTypeDirection);
             nav.FindPathNow(&UMath::Vector4To3(positions[end]), &UMath::Vector4To3(directions[end]), shortcutAllowed);
+            bool foundPath;
+
             foundPath = nav.GetNavType() == WRoadNav::kTypePath;
             if (!foundPath) {
                 break;
