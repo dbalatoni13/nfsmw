@@ -2760,10 +2760,10 @@ void GManager::ResetAllGameplayData() {
     ResetSpeedTraps();
     bMemSet(mHidingSpotFound, 0, sizeof(mHidingSpotFound));
     ResetTimers();
-    mStartFreeRoamFromSafeHouse = false;
     mFreeRoamStartMarker = 0;
     mOverrideFreeRoamStartMarker = 0;
     mFreeRoamFromSafeHouseStartMarker = 0;
+    mStartFreeRoamFromSafeHouse = false;
     mPendingSMS.clear();
 }
 
