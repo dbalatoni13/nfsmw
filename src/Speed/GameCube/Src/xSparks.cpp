@@ -17,7 +17,6 @@ struct XenonEffectDef {
     UMath::Matrix4 mat;                 // offset 0x10, size 0x40
     const Attrib::Collection *spec;     // offset 0x50, size 0x4
     EmitterGroup *piggyback_effect;     // offset 0x54, size 0x4
-    ~XenonEffectDef() {}
 };
 
 typedef UTL::Std::vector<XenonEffectDef, _type_XenonEffectDef> XenonEffectStdVector;
