@@ -185,8 +185,8 @@ void LGWheels::InitVars(long channel) {
 void LGWheels::ReadAll() {
     short wheelUnplugged;
 
-    wheelUnplugged = LGWheelsGetWheels(this)->ReadAll();
-    memcpy(this, LGWheelsGetWheels(this), sizeof(LGPosition) * 4);
+    wheelUnplugged = reinterpret_cast<Wheels *>(reinterpret_cast<char *>(this) + 0x828)->ReadAll();
+    memcpy(this, reinterpret_cast<Wheels *>(reinterpret_cast<char *>(this) + 0x828), sizeof(LGPosition) * 4);
     if (wheelUnplugged != -1) {
         InitVars(wheelUnplugged);
     }
