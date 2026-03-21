@@ -450,43 +450,44 @@ bool LGWheels::SameConstantForceParams(long channel, short magnitude, unsigned s
 void LGWheels::PlayDamperForce(long channel, short coefficient) {
     int ret;
 
-    if (LGWheelsGetPlaying(LGWheelsGetCondition(this), channel, 2) != 0) {
+    if (*reinterpret_cast<int *>(reinterpret_cast<char *>(this) + channel * 0x20 + 0x11B0) != 0) {
         return;
     }
 
-    if (LGWheelsGetWheels(this)->IsConnected(channel)) {
-        if (LGWheelsGetIsAirborne(this, channel)) {
+    if (reinterpret_cast<Wheels *>(reinterpret_cast<char *>(this) + 0x828)->IsConnected(channel)) {
+        if (*reinterpret_cast<int *>(reinterpret_cast<char *>(this) + channel * 4 + 0x166C) != 0) {
             return;
         }
 
-        if (LGWheelsGetPlaying(LGWheelsGetCondition(this), channel, 1) != 0) {
+        if (*reinterpret_cast<int *>(reinterpret_cast<char *>(this) + channel * 0x20 + 0x11AC) != 0) {
             if (SameDamperForceParams(channel, coefficient)) {
                 return;
             }
 
-            ret = LGWheelsGetCondition(this)->UpdateForce(channel, 1, 8, static_cast<unsigned long>(-1), 0, 0, 0xFF, 0xFF, 0xFF, coefficient, coefficient);
+            ret = reinterpret_cast<Condition *>(reinterpret_cast<char *>(this) + 0x11A8)->UpdateForce(channel, 1, 8, static_cast<unsigned long>(-1), 0, 0, 0xFF, 0xFF, 0xFF, coefficient, coefficient);
             if (ret < 0) {
                 return;
             }
 
-            LGWheelsGetDamperForceParams(this)[channel].coefficient = coefficient;
+            *reinterpret_cast<short *>(reinterpret_cast<char *>(this) + channel * 2 + 0x169C) = coefficient;
             return;
         }
 
-        if (LGWheelsGetEffectID(LGWheelsGetCondition(this), channel, 1) == static_cast<unsigned long>(-1)) {
-            ret = LGWheelsGetCondition(this)->DownloadForce(channel, 1, LGWheelsGetWheelHandle(this, channel), 8, static_cast<unsigned long>(-1), 0, 0, 0xFF, 0xFF, 0xFF, coefficient, coefficient);
+        if (*reinterpret_cast<unsigned long *>(reinterpret_cast<char *>(this) + channel * 0x20 + 0x122C) == static_cast<unsigned long>(-1)) {
+            ret = reinterpret_cast<Condition *>(reinterpret_cast<char *>(this) + 0x11A8)
+                      ->DownloadForce(channel, 1, *reinterpret_cast<unsigned long *>(reinterpret_cast<char *>(this) + channel * 4 + 0x1050), 8, static_cast<unsigned long>(-1), 0, 0, 0xFF, 0xFF, 0xFF, coefficient, coefficient);
         } else if (SameDamperForceParams(channel, coefficient)) {
-            LGWheelsGetCondition(this)->Start(channel, 1);
+            reinterpret_cast<Condition *>(reinterpret_cast<char *>(this) + 0x11A8)->Start(channel, 1);
             return;
         } else {
-            ret = LGWheelsGetCondition(this)->UpdateForce(channel, 1, 8, static_cast<unsigned long>(-1), 0, 0, 0xFF, 0xFF, 0xFF, coefficient, coefficient);
+            ret = reinterpret_cast<Condition *>(reinterpret_cast<char *>(this) + 0x11A8)->UpdateForce(channel, 1, 8, static_cast<unsigned long>(-1), 0, 0, 0xFF, 0xFF, 0xFF, coefficient, coefficient);
         }
 
         if (ret >= 0) {
-            LGWheelsGetDamperForceParams(this)[channel].coefficient = coefficient;
+            *reinterpret_cast<short *>(reinterpret_cast<char *>(this) + channel * 2 + 0x169C) = coefficient;
         }
 
-        LGWheelsGetCondition(this)->Start(channel, 1);
+        reinterpret_cast<Condition *>(reinterpret_cast<char *>(this) + 0x11A8)->Start(channel, 1);
     } else {
         OSReport(kPlayForceError, channel);
     }
