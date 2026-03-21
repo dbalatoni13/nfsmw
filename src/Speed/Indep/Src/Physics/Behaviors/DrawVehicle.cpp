@@ -87,8 +87,8 @@ const IAttachable::List *DrawVehicle::GetAttachments() const {
 }
 
 void DrawVehicle::SetCausality(HCAUSE from, float time) {
-    mCausalityTime = time;
     mCausality = from;
+    mCausalityTime = time;
 }
 
 HCAUSE DrawVehicle::GetCausality() const {
