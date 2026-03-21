@@ -15,6 +15,8 @@
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include <cmath>
 
+extern float gNIS_AeroDynamics;
+
 // total size: 0x198
 class SuspensionSpline : public Chassis, public INISCarControl {
   public:
@@ -93,6 +95,7 @@ class SuspensionSpline : public Chassis, public INISCarControl {
     SuspensionSpline(const struct BehaviorParams &bp, const SuspensionParams &sp);
     void DoSteering(State &state, UMath::Vector3 &right, UMath::Vector3 &left);
     void GetWheelBase(float *width, float *length);
+    void DoWheelForces(State &state);
 
     // Overrides
     // IUnknown
@@ -309,6 +312,78 @@ void SuspensionSpline::OnBehaviorChange(const UCrc32 &mechanic) {
     } else if (mechanic == BEHAVIOR_MECHANIC_ENGINE) {
         GetOwner()->QueryInterface(&mIEngine);
     }
+}
+
+void SuspensionSpline::OnTaskSimulate(float dT) {
+    if (!mInput || !mCollisionBody || !mRB) {
+        return;
+    }
+
+    SetCOG(0.0f, 0.0f);
+
+    State state;
+    ComputeState(dT, state);
+
+    for (unsigned int i = 0; i < 4; ++i) {
+        mTires[i]->BeginFrame();
+        if (i > 1) {
+            mTires[i]->SetLocked(mBrakeLockRear);
+            if (mDrivetrainInfo->TORQUE_SPLIT() != 1.0f) {
+                mTires[i]->SetBurnout(mBurnout);
+            }
+        } else {
+            mTires[i]->SetLocked(mBrakeLockFront);
+            if (mDrivetrainInfo->TORQUE_SPLIT() != 0.0f) {
+                mTires[i]->SetBurnout(mBurnout);
+            }
+        }
+    }
+
+    if (mBurnout != 0.0f) {
+        mInput->SetControlGas(1.0f);
+    } else {
+        mInput->SetControlGas(0.5f);
+    }
+
+    if (mBrakeLockFront) {
+        if (mBrakeLockRear) {
+            mInput->SetControlBrake(1.0f);
+            mInput->SetControlHandBrake(0.0f);
+        } else {
+            mInput->SetControlBrake(0.0f);
+            mInput->SetControlHandBrake(0.0f);
+        }
+    } else {
+        if (mBrakeLockRear) {
+            mInput->SetControlHandBrake(1.0f);
+            mInput->SetControlBrake(0.0f);
+        } else {
+            mInput->SetControlBrake(0.0f);
+            mInput->SetControlHandBrake(0.0f);
+        }
+    }
+
+    DoWheelForces(state);
+
+    for (unsigned int i = 0; i < 4; ++i) {
+        mTires[i]->UpdateTime(dT);
+    }
+
+    for (unsigned int i = 0; i < 4; ++i) {
+        mTires[i]->EndFrame(dT);
+    }
+
+    if (GetNumWheelsOnGround() != 0) {
+        mTimeInAir = 0.0f;
+    } else {
+        mTimeInAir += dT;
+    }
+
+    if (gNIS_AeroDynamics > 0.0f) {
+        DoAerodynamics(state, 0.0f, gNIS_AeroDynamics, GetWheel(0).GetLocalArm().z, GetWheel(2).GetLocalArm().z, 0);
+    }
+
+    Chassis::OnTaskSimulate(dT);
 }
 
 void SuspensionSpline::RestoreState() {
