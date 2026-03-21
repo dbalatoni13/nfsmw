@@ -7,10 +7,14 @@
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/tires.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ICollisionBody.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IDamageable.h"
+#include "Speed/Indep/Src/Misc/Table.hpp"
 #include "Speed/Indep/Src/Physics/Behavior.h"
 #include "Speed/Indep/Src/Physics/Dynamics.h"
+#include "Speed/Indep/Src/Physics/PhysicsInfo.hpp"
 #include "Speed/Indep/Src/Physics/Wheel.h"
 #include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
+
+extern Table TrailerCorneringForce;
 
 // total size: 0x108
 class SuspensionTrailer : public Chassis {
@@ -38,6 +42,18 @@ class SuspensionTrailer : public Chassis {
             mAV = av;
         }
 
+        void SetBrake(float brake) {
+            mBrake = brake;
+        }
+
+        void SetEBrake(float ebrake) {
+            mEBrake = ebrake;
+        }
+
+        float GetLongitudeForce() const {
+            return mLongitudeForce;
+        }
+
       private:
         const float mRadius;          // offset 0xC4, size 0x4
         float mBrake;                 // offset 0xC8, size 0x4
@@ -51,8 +67,8 @@ class SuspensionTrailer : public Chassis {
         float mLastTorque;            // offset 0xE8, size 0x4
         const int mWheelIndex;        // offset 0xEC, size 0x4
         float mRoadSpeed;             // offset 0xF0, size 0x4
-        const struct tires *mSpecs;   // offset 0xF4, size 0x4
-        const struct brakes *mBrakes; // offset 0xF8, size 0x4
+        const Attrib::Gen::tires *mSpecs;   // offset 0xF4, size 0x4
+        const Attrib::Gen::brakes *mBrakes; // offset 0xF8, size 0x4
         const int mAxleIndex;         // offset 0xFC, size 0x4
         bool mSlipping;               // offset 0x100, size 0x1
         float mLateralSpeed;          // offset 0x104, size 0x4
@@ -118,6 +134,78 @@ void SuspensionTrailer::Tire::UpdateFree(float dT) {
     }
     mLateralForce = 0.0f;
     mLongitudeForce = 0.0f;
+}
+
+void SuspensionTrailer::Tire::UpdateLoaded(float lat_vel, float fwd_vel, float load, float dT) {
+    const Attrib::Gen::brakes::_LayoutStruct *brakes =
+        reinterpret_cast<Attrib::Gen::brakes::_LayoutStruct *>(mBrakes->GetLayoutPointer());
+    const Attrib::Gen::tires::_LayoutStruct *tires =
+        reinterpret_cast<Attrib::Gen::tires::_LayoutStruct *>(mSpecs->GetLayoutPointer());
+
+    const float brake_torque = brakes->BRAKES.At(mAxleIndex) * FTLB2NM(4.0f);
+    const float ebrake_torque = brakes->EBRAKE * FTLB2NM(10.0f);
+    const float dynamic_grip = tires->DYNAMIC_GRIP.At(mAxleIndex);
+    const float static_grip = tires->STATIC_GRIP.At(mAxleIndex);
+    const float grip_scale = tires->GRIP_SCALE.At(mAxleIndex);
+
+    mRoadSpeed = fwd_vel;
+    mLateralSpeed = lat_vel;
+    mLoad = UMath::Max(load, 0.0f);
+
+    float brake = mBrake * brake_torque;
+    float ebrake = mEBrake * ebrake_torque;
+    if (0.0f < fwd_vel) {
+        brake = -brake;
+        ebrake = -ebrake;
+    }
+
+    mAppliedTorque += brake;
+    mAppliedTorque += ebrake;
+
+    const float slip_angle = UMath::Atan2a(lat_vel, UMath::Abs(fwd_vel));
+    mLongitudeForce = mAppliedTorque / mRadius;
+    mSlip = mAV * mRadius - fwd_vel;
+
+    float lateral_force = (mLoad * grip_scale) * TrailerCorneringForce.GetValue(UMath::Abs(slip_angle));
+    if (0.0f < lat_vel) {
+        lateral_force = -lateral_force;
+    }
+    mLateralForce = lateral_force;
+
+    if (mEBrake <= 0.5f) {
+        if (mAxleIndex == 1) {
+            mLateralForce *= 1.5f;
+        }
+        mAV = fwd_vel / mRadius;
+    } else {
+        if (mAxleIndex == 1) {
+            mLateralForce *= 0.75f;
+        }
+        mAV = 0.0f;
+        mSlipping = true;
+    }
+
+    const float grip_mag = UMath::Sqrt(mLateralForce * mLateralForce + mLongitudeForce * mLongitudeForce);
+    if (mLoad * static_grip < grip_mag && 0.001f < grip_mag) {
+        const float grip_ratio = (mLoad * dynamic_grip) / grip_mag;
+        mLateralForce *= grip_ratio;
+        mLongitudeForce *= grip_ratio;
+    }
+
+    if (UMath::Abs(fwd_vel) <= 1.0f) {
+        float speed_scale = 1.0f;
+        if (UMath::Abs(lat_vel) < 1.0f) {
+            speed_scale = UMath::Abs(lat_vel);
+        }
+        mLateralForce *= speed_scale;
+    } else {
+        mLongitudeForce -= UMath::Sina(slip_angle * 6.2831855f) * mLateralForce * 0.5f;
+    }
+
+    if (0.0f < mEBrake) {
+        mAV = 0.0f;
+        mSlip = -fwd_vel;
+    }
 }
 
 Behavior *SuspensionTrailer::Construct(const BehaviorParams &params) {
