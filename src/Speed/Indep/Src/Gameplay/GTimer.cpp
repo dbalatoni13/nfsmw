@@ -93,6 +93,6 @@ void GEventTimer::Deserialize(SavedTimerInfo *saveInfo) {
     mElapsed = saveInfo->mElapsed;
     mInterval = saveInfo->mInterval;
     mRunning = saveInfo->mRunning;
-    bSafeStrCpy(mName, saveInfo->mName, sizeof(mName));
+    bSafeStrCpy(mName, saveInfo->mName, sizeof(mName) - 1);
     mNameHash = bStringHash(mName);
 }
