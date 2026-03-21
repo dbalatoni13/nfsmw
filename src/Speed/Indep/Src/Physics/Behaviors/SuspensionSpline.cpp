@@ -1,5 +1,6 @@
 
 #include "Chassis.h"
+#include "Speed/Indep/Libs/Support/Utility/UEALibs.hpp"
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #include "Speed/Indep/Libs/Support/Utility/UTypes.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/brakes.h"
@@ -604,6 +605,80 @@ void SuspensionSpline::SetConstraintAngle(float angle) {
 void SuspensionSpline::SetSteering(float angle, float weight) {
     mNISSteering = UMath::Clamp(angle, -mMaxSteering, mMaxSteering);
     mNISSteeringWeight = UMath::Clamp(weight, 0.0f, 1.0f);
+}
+
+bool SuspensionSpline::SetNISPosition(const UMath::Matrix4 &position, bool initial, float dT) {
+    bool success = true;
+
+    GetVehicle()->Activate();
+
+    if (!initial) {
+        UMath::Vector3 linear_velocity_xz = UMath::Vector3::kZero;
+        float angular_velocity_y = 0.0f;
+
+        if (dT > 1.0e-6f) {
+            UMath::Sub(UMath::ExtractAxis(position, 3), UMath::ExtractAxis(mNISPosition, 3), linear_velocity_xz);
+            UMath::Scale(linear_velocity_xz, 1.0f / dT, linear_velocity_xz);
+
+            const float last_rotation = UMath::Atan2r(UMath::ExtractAxis(mNISPosition, 2).z, -UMath::ExtractAxis(mNISPosition, 2).x);
+            const float new_rotation = UMath::Atan2r(UMath::ExtractAxis(position, 2).z, -UMath::ExtractAxis(position, 2).x);
+            angular_velocity_y = (new_rotation - last_rotation) / dT;
+        }
+
+        mNISPosition = position;
+
+        UMath::Vector3 pos = UMath::ExtractAxis(position, 3);
+        pos.y = mRB->GetPosition().y;
+        mRB->SetPosition(pos);
+
+        UMath::Vector3 vel = mRB->GetLinearVelocity();
+        vel.x = linear_velocity_xz.x;
+        vel.z = linear_velocity_xz.z;
+        mRB->SetLinearVelocity(vel);
+
+        UMath::Vector3 avel = mRB->GetAngularVelocity();
+        avel.y = angular_velocity_y;
+        mRB->SetAngularVelocity(avel);
+
+        UMath::Matrix4 matrix;
+        mRB->GetMatrix4(matrix);
+
+        UMath::Vector3 cross;
+        UMath::Cross(UMath::ExtractAxis(matrix, 1), UMath::ExtractAxis(mNISPosition, 1), cross);
+
+        const float pitch = asinf(UMath::Clamp(cross.x, -1.0f, 1.0f)) * 0.15915494f;
+        const float roll = asinf(UMath::Clamp(cross.z, -1.0f, 1.0f)) * 0.15915494f;
+        const float max_angle = mConstraint * 0.5f * 0.0027777778f;
+        const float newroll = UMath::Clamp(roll, -max_angle, max_angle);
+        const float newpitch = UMath::Clamp(pitch, -max_angle, max_angle);
+
+        if (newroll != roll) {
+            MATRIX4_multzrot(&matrix, roll - newroll, &matrix);
+        }
+
+        if (newpitch != pitch) {
+            MATRIX4_multxrot(&matrix, pitch - newpitch, &matrix);
+        }
+
+        UMath::Matrix4 invorient;
+        UMath::Matrix4 localmatrix;
+        UMath::Transpose(matrix, invorient);
+        UMath::Mult(invorient, mNISPosition, localmatrix);
+
+        const float newdelta = UMath::Atan2a(UMath::ExtractAxis(localmatrix, 2).z, -UMath::ExtractAxis(localmatrix, 2).x);
+        UMath::SetYRot(localmatrix, newdelta);
+        UMath::Mult(localmatrix, matrix, matrix);
+        mRB->SetOrientation(matrix);
+    } else {
+        success = GetVehicle()->SetVehicleOnGround(UMath::ExtractAxis(position, 3), UMath::ExtractAxis(position, 2));
+        GetVehicle()->SetSpeed(0.0f);
+        mNISPosition = position;
+        mRB->SetLinearVelocity(UMath::Vector3::kZero);
+        mRB->SetAngularVelocity(UMath::Vector3::kZero);
+        mInput->ClearInput();
+    }
+
+    return success;
 }
 
 void SuspensionSpline::SetAnimPitch(float dip, float time) {
