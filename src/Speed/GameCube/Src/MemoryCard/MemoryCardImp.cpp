@@ -100,7 +100,7 @@ MemoryCard *GetMemcard();
 extern const char *gComment1;
 
 MemoryCard *GetMemcard() {
-    return MemoryCard::s_pThis;
+    return MemoryCard::GetInstance();
 }
 
 const char *MemoryCardImp::GetPrefix() {
