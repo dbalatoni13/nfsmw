@@ -21,6 +21,8 @@ struct Pkt_VehicleFragment_Service : Sim::Packet {
 };
 }
 
+static int Vehicle_Part_Count;
+
 HMODEL DrawVehicle::GetModelHandle() const {
     return static_cast<const IModel *>(this)->GetInstanceHandle();
 }
@@ -108,6 +110,28 @@ const IAttachable::List *DrawVehicle::GetAttachments() const {
 }
 
 DrawVehicle::Effect::~Effect() {}
+
+DrawVehicle::Part::Part(IModel *parent, WUID vehicleID, const CollisionGeometry::Bounds *geoms, const Attrib::Collection *spec, UCrc32 partname)
+    : Sim::Model(parent, geoms, partname, 2), //
+      ITriggerableModel(this),                //
+      mState(S_NONE),                         //
+      mTrigger(nullptr),                      //
+      mAttributes(spec, 0, nullptr),          //
+      mOffScreenTask(false),                  //
+      mOffScreenTime(0.0f),                   //
+      mVehicleID(vehicleID) {
+    mAttributes.SetDefaultLayout(0x28);
+    Vehicle_Part_Count = Vehicle_Part_Count + 1;
+}
+
+DrawVehicle::Part::~Part() {
+    RemoveTrigger();
+    if (mOffScreenTask) {
+        mOffScreenTask = false;
+        mOffScreenTime = 0.0f;
+    }
+    Vehicle_Part_Count = Vehicle_Part_Count - 1;
+}
 
 const Attrib::Instance &DrawVehicle::Part::GetAttributes() const {
     return mAttributes;
