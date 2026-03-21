@@ -3971,11 +3971,11 @@ float GRaceStatus::DetermineRaceSegmentLength(const UMath::Vector4 *positions, c
             }
 
             for (int i = 1; i < count; ++i) {
-                PathSegment *shorter_path = sortedPaths[i - 1];
                 PathSegment *longer_path = sortedPaths[i];
+                PathSegment *shorter_path = sortedPaths[i - 1];
+                float longer_by = longer_path->Length - shorter_path->Length;
                 UTL::Std::set<short, _type_ID_ROAD_SET> unique_roads;
                 float unique_length = 0.0f;
-                float longer_by = longer_path->Length - shorter_path->Length;
 
                 std::set_difference(
                     shorter_path->Roads.begin(),
