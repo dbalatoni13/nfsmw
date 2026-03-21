@@ -505,7 +505,7 @@ void MemoryCard::SetAutoSaveEnabled(bool bEnabled) {
     SetExtraParam(ST_PROFILE, entryname, nullptr, FEDatabase->GetUserProfileSaveSize(false));
     bStrCat(m_Filename, m_pImp->GetPrefix(), entryname);
     bStrNCpy(MemoryCardImp::gContentName, entryname, 16);
-    if (GetScreen() && ((((void)gMemcardSetup.GetCommand()), gMemcardSetup.mOp & 0xf0) == 0xa0)) {
+    if (GetScreen() && gMemcardSetup.GetCommand() == 0xa0) {
         GetScreen()->SetStringCheckingCard();
         ShowMessages(true);
     } else {
@@ -514,8 +514,8 @@ void MemoryCard::SetAutoSaveEnabled(bool bEnabled) {
     m_pIMemcard->SetMessage(RealmcIface::MESSAGE_SHOW, 1);
     if (bEnabled) {
         gMemcardSetup.mPreviousCommand = gMemcardSetup.mOp & 0xf0;
-        gMemcardSetup.ClearMethod();
-        gMemcardSetup.SetMethod(0xa0);
+        gMemcardSetup.ClearCommand();
+        gMemcardSetup.SetCommand(0xa0);
     } else {
         m_bDisablingAutoSaveForSave = true;
     }

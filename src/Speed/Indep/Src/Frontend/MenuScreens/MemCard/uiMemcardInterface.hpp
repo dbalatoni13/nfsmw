@@ -21,7 +21,7 @@ struct MemoryCardSetup {
     MemoryCardSetup() { Clear(); }
 
     unsigned int GetCommand() {
-        return mOp & 0xf;
+        return mOp & 0xf0;
     }
 
     unsigned int GetCommand() const {
@@ -41,7 +41,7 @@ struct MemoryCardSetup {
     }
 
     void SetCommand(int command) {
-        mOp = (mOp & ~0xf) | (command & 0xf);
+        mOp = (mOp & ~0xf0) | (command & 0xf0);
     }
 
     void SetMethod(int method) {
@@ -57,7 +57,7 @@ struct MemoryCardSetup {
     }
 
     void ClearCommand() {
-        mOp = mOp & ~0xf;
+        mOp = mOp & ~0xf0;
     }
 
     void ClearMethod() {
