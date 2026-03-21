@@ -17,6 +17,8 @@
 #include "Speed/Indep/Src/Physics/PhysicsObject.h"
 #include "Speed/Indep/Src/Physics/PhysicsTypes.h"
 
+IInputPlayer::~IInputPlayer() {}
+
 Behavior *PInput::Construct(const BehaviorParams &params) {
     return new PInput(params);
 }

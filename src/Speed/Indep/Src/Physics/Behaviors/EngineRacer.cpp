@@ -29,6 +29,13 @@
 #include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
+IEngine::~IEngine() {}
+IDragEngine::~IDragEngine() {}
+IRaceEngine::~IRaceEngine() {}
+IInductable::~IInductable() {}
+ITiptronic::~ITiptronic() {}
+ITransmission::~ITransmission() {}
+
 // total size: 0x1B0
 class EngineRacer : protected VehicleBehavior,
                     protected ITransmission,
@@ -398,6 +405,10 @@ EngineRacer::EngineRacer(const BehaviorParams &bp)
 EngineRacer::~EngineRacer() {
     IAttributeable::UnRegister(this);
 }
+
+template BehaviorSpecsPtr<Attrib::Gen::nos>::~BehaviorSpecsPtr();
+template BehaviorSpecsPtr<Attrib::Gen::induction>::~BehaviorSpecsPtr();
+template BehaviorSpecsPtr<Attrib::Gen::engine>::~BehaviorSpecsPtr();
 
 float EngineRacer::GetHorsePower() const {
     float engine_torque = GetEngineTorque(mRPM);

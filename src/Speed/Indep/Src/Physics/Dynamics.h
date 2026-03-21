@@ -64,7 +64,7 @@ class IDynamicsEntity : public UTL::COM::IUnknown, public Dynamics::IEntity {
 
     IDynamicsEntity(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
 
-    virtual ~IDynamicsEntity() {}
+    virtual ~IDynamicsEntity();
 };
 
 #endif

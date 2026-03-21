@@ -18,7 +18,7 @@ class IEngine : public UTL::COM::IUnknown {
 
     IEngine(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
 
-    virtual ~IEngine() {}
+    virtual ~IEngine();
 
   public:
     virtual float GetRPM() const;
@@ -57,7 +57,7 @@ class IDragEngine : public UTL::COM::IUnknown {
 
     IDragEngine(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
 
-    virtual ~IDragEngine() {}
+    virtual ~IDragEngine();
 
   public:
     virtual float GetOverRev() const;
@@ -70,7 +70,7 @@ class IRaceEngine : public UTL::COM::IUnknown {
 
     IRaceEngine(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
 
-    virtual ~IRaceEngine() {}
+    virtual ~IRaceEngine();
 
   public:
     virtual float GetPerfectLaunchRange(float &range);

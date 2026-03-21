@@ -8,6 +8,8 @@
 #include "Speed/Indep/Src/Physics/PhysicsObject.h"
 #include "Speed/Indep/Src/Sim/Simulation.h"
 
+ISimpleBody::~ISimpleBody() {}
+
 SimpleRigidBody::SimpleRigidBody(const BehaviorParams &bp, const RBSimpleParams &params)
     : Behavior(bp, 0), IRigidBody(bp.fowner), ISimpleBody(bp.fowner) {
     TheSimpleBodies.AddTail(this);

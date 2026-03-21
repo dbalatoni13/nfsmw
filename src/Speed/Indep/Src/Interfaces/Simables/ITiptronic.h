@@ -17,7 +17,7 @@ class ITiptronic : public UTL::COM::IUnknown {
 
     ITiptronic(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
 
-    virtual ~ITiptronic() {}
+    virtual ~ITiptronic();
 
   public:
     virtual bool SportShift(GearID gear);

@@ -11,6 +11,8 @@
 #include "Speed/Indep/Src/Physics/PhysicsTypes.h"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 
+ISpikeable::~ISpikeable() {}
+
 Behavior *DamageRacer::Construct(const BehaviorParams &params) {
     const DamageParams dp(params.fparams.Fetch<DamageParams>(UCrc32(0xa6b47fac)));
     return new DamageRacer(params, dp);

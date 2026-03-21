@@ -23,6 +23,11 @@
 #include "Speed/Indep/Src/Sim/Simulation.h"
 #include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
 
+template BehaviorSpecsPtr<Attrib::Gen::tires>::~BehaviorSpecsPtr();
+template BehaviorSpecsPtr<Attrib::Gen::brakes>::~BehaviorSpecsPtr();
+template BehaviorSpecsPtr<Attrib::Gen::chassis>::~BehaviorSpecsPtr();
+template BehaviorSpecsPtr<Attrib::Gen::transmission>::~BehaviorSpecsPtr();
+
 // Credits: Brawltendo
 class SuspensionRacer : public Chassis, public Sim::Collision::IListener, public IAttributeable, Debugable {
   public:

@@ -19,6 +19,8 @@ IDamageable::~IDamageable() {}
 
 IDamageableVehicle::~IDamageableVehicle() {}
 
+IArticulatedVehicle::~IArticulatedVehicle() {}
+
 template BehaviorSpecsPtr<Attrib::Gen::damagespecs>::~BehaviorSpecsPtr();
 
 Behavior *DamageVehicle::Construct(const BehaviorParams &params) {

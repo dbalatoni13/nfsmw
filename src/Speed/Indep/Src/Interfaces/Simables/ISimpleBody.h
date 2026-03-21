@@ -15,7 +15,7 @@ class ISimpleBody : public UTL::COM::IUnknown, public UTL::Collections::Listable
 
     ISimpleBody(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
 
-    virtual ~ISimpleBody() {}
+    virtual ~ISimpleBody();
 
   public:
     virtual void ModifyFlags(unsigned int uRemove, unsigned int uAdd);
