@@ -20,16 +20,23 @@ void FixDot(char *buf, int size) {
 unsigned int GetFECarNameHashFromFEKey(unsigned int fekey);
 
 int CareerPursuitScores::GetValue(ePursuitDetailTypes type) const {
+    int val;
     switch (static_cast<int>(type)) {
     case 8: {
-        FEPlayerCarDB *carDB = &FEDatabase->CurrentUserProfiles[0]->PlayersCarStable;
-        return carDB->GetTotalNumInfractions(true) + carDB->GetTotalNumInfractions(false);
+        FEPlayerCarDB *stable = FEDatabase->GetPlayerCarStable(0);
+        val = stable->GetTotalNumInfractions(true) + stable->GetTotalNumInfractions(false);
+        break;
     }
-    case 9:
-        return FEDatabase->CurrentUserProfiles[0]->PlayersCarStable.GetTotalBounty();
+    case 9: {
+        FEPlayerCarDB *stable = FEDatabase->GetPlayerCarStable(0);
+        val = stable->GetTotalBounty();
+        break;
+    }
     default:
-        return Value[type];
+        val = Value[type];
+        break;
     }
+    return val;
 }
 
 void CareerPursuitScores::IncValue(ePursuitDetailTypes type, int amount) {
