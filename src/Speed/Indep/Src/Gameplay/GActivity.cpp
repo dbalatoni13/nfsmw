@@ -203,7 +203,12 @@ void GActivity::UnregisterMessageHandlers() {
 }
 
 void GActivity::ActivateReferencedTriggers(bool activate, GRuntimeInstance *instance) {
-    for (unsigned int i = 0; i < instance->GetConnectionCount(); i++) {
+    unsigned int i = 0;
+
+    while (true) {
+        if (instance->GetConnectionCount() <= i) {
+            break;
+        }
         GTrigger *trigger = GRuntimeInstance::FindObject<GTrigger>(instance->GetConnectionAt(i)->GetCollection());
 
         if (trigger) {
@@ -213,9 +218,23 @@ void GActivity::ActivateReferencedTriggers(bool activate, GRuntimeInstance *inst
                 trigger->RemoveActivationReference();
             }
         }
+        i++;
     }
 
-    for (unsigned int i = 0; i < instance->Get(0x916E0E78).GetLength(); i++) {
+    i = 0;
+    while (true) {
+        unsigned int childCount;
+
+        {
+            Attrib::Attribute children = instance->Get(0x916E0E78);
+
+            childCount = children.GetLength();
+        }
+
+        if (childCount <= i) {
+            break;
+        }
+
         const unsigned int *childKey = reinterpret_cast<const unsigned int *>(instance->GetAttributePointer(0x916E0E78, i));
 
         if (!childKey) {
@@ -226,6 +245,7 @@ void GActivity::ActivateReferencedTriggers(bool activate, GRuntimeInstance *inst
         if (child) {
             ActivateReferencedTriggers(activate, child);
         }
+        i++;
     }
 }
 
