@@ -308,11 +308,13 @@ const char* FEngine::RecallPackageMarker() {
 }
 
 void FEngine::ClearPackageMarkers() {
-    unsigned long i = 0;
-    do {
-        RecordedPackageNames[i][0] = '\0';
-        i++;
-    } while (i < 16);
+    {
+        unsigned long i = 0;
+        do {
+            RecordedPackageNames[i][0] = '\0';
+            i++;
+        } while (i < 16);
+    }
     CurrentPackageRecordIndex = 0;
 }
 
