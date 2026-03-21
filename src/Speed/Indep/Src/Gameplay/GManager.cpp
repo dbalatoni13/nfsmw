@@ -344,15 +344,17 @@ void GManager::InitializeRaceStreaming() {
 
 void GManager::UnloadTransientVaults() {
     for (unsigned int i = 0; i < mVaultCount; ++i) {
-        if (mVaults[i].IsTransient()) {
-            mVaults[i].Unload();
+        GVault &vault = mVaults[i];
+
+        if (vault.IsTransient()) {
+            vault.Unload();
         }
     }
 
     bCloseMemoryPool(mTransientPoolNumber);
     bFree(mTransientPoolMemory);
-    mTransientPoolNumber = 0;
     mTransientPoolMemory = nullptr;
+    mTransientPoolNumber = 0;
 }
 
 void GManager::PreBeginGameplay() {
