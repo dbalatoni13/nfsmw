@@ -4,6 +4,17 @@ Behavior *DrawHeli::Construct(const BehaviorParams &params) {
     return new DrawHeli(params);
 }
 
+void DrawHeli::OnBehaviorChange(const UCrc32 &mechanic) {
+    if (mechanic == BEHAVIOR_MECHANIC_RIGIDBODY) {
+        GetOwner()->QueryInterface(&mCollisionBody);
+    }
+}
+
+DrawHeli::~DrawHeli() {
+    RemoveTask(mWashTask);
+    CloseService(mRenderService);
+}
+
 void DrawHeli::HidePart(const UCrc32 &name) {}
 
 void DrawHeli::ShowPart(const UCrc32 &name) {}
