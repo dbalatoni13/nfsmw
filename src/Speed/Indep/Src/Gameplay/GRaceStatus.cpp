@@ -566,7 +566,6 @@ void GRacerInfo::StartRace() {
     GRaceParameters *raceParameters = GRaceStatus::Get().GetRaceParameters();
     float startTime = raceParameters ? raceParameters->GetStartTime() : 0.0f;
 
-    mFinishedRacing = false;
     mRaceTimer.Reset(startTime);
     mRaceTimer.Start();
     StartLap(1);
