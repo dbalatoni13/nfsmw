@@ -37,10 +37,10 @@ FEResponse& FEResponse::operator=(FEResponse& rhs) {
 void FEResponse::SetParam(const char* pString) {
     ReleaseParam();
     if (pString) {
-        int len = FEngStrLen(pString);
-        char* pCopy = static_cast<char*>(FEngMalloc(len + 1, 0, 0));
-        FEngStrCpy(pCopy, pString);
-        ResponseParam = reinterpret_cast<unsigned long>(pCopy);
+        unsigned long Len = FEngStrLen(pString);
+        char* pPathCopy = FENG_NEW char[Len + 1];
+        FEngStrCpy(pPathCopy, pString);
+        ResponseParam = reinterpret_cast<unsigned long>(pPathCopy);
     }
 }
 
