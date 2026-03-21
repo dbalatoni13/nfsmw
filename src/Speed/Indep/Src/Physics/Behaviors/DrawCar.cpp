@@ -37,24 +37,42 @@ void DrawPerformanceCar::OnService(RenderConn::Pkt_Car_Service &pkt) {
         *reinterpret_cast<unsigned int *>(reinterpret_cast<char *>(&pkt) + 0x74) = mEngine->IsNOSEngaged();
 
         if (mTransmission->GetGear() < 2 || GetVehicle()->GetDriverClass() != DRIVER_HUMAN) {
-            float engineSpeed = 0.0f;
-            float engineSpeedRange = mEngine->GetMaxRPM() - mEngine->GetMinRPM();
-            if (engineSpeedRange > 1e-06f) {
-                engineSpeed = (mEngine->GetRPM() - mEngine->GetMinRPM()) / engineSpeedRange;
-                engineSpeed = UMath::Min(engineSpeed, 1.0f);
-                engineSpeed = UMath::Max(engineSpeed, 0.0f);
+            float rpm_ratio = 0.0f;
+            float rev = mEngine->GetRPM();
+            float amin = mEngine->GetMinRPM();
+            float amax = mEngine->GetMaxRPM();
+            float arange = amax - amin;
+            if (arange > 1e-06f) {
+                float result = (rev - amin) / arange;
+                rpm_ratio = 1.0f;
+                if (result < 1.0f) {
+                    rpm_ratio = result;
+                }
+                if (rpm_ratio < 0.0f) {
+                    rpm_ratio = 0.0f;
+                }
             }
 
-            float enginePower = 0.0f;
-            float enginePowerRange = mEngine->GetMaxHorsePower() - mEngine->GetMinHorsePower();
-            if (enginePowerRange > 1e-06f) {
-                enginePower = (mEngine->GetHorsePower() - mEngine->GetMinHorsePower()) / enginePowerRange;
-                enginePower = UMath::Min(enginePower, 1.0f);
-                enginePower = UMath::Max(enginePower, 0.0f);
+            float vib = 0.0f;
+            {
+                float rev = mEngine->GetHorsePower();
+                Hp min_power = mEngine->GetMinHorsePower();
+                Hp max_power = mEngine->GetMaxHorsePower();
+                float arange = max_power - min_power;
+                if (arange > 1e-06f) {
+                    float result = (rev - min_power) / arange;
+                    vib = 1.0f;
+                    if (result < 1.0f) {
+                        vib = result;
+                    }
+                    if (vib < 0.0f) {
+                        vib = 0.0f;
+                    }
+                }
             }
 
-            *reinterpret_cast<float *>(reinterpret_cast<char *>(&pkt) + 0x88) = engineSpeed;
-            *reinterpret_cast<float *>(reinterpret_cast<char *>(&pkt) + 0x84) = enginePower;
+            *reinterpret_cast<float *>(reinterpret_cast<char *>(&pkt) + 0x88) = rpm_ratio;
+            *reinterpret_cast<float *>(reinterpret_cast<char *>(&pkt) + 0x84) = vib;
         }
     }
 }
