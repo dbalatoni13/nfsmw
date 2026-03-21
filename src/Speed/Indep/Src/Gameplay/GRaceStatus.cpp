@@ -1369,8 +1369,10 @@ float GRaceParameters::GetRivalBestTime() const {
     const float *rivalBestTime;
 
     if (mIndex) {
-        return static_cast<float>(*reinterpret_cast<const unsigned short *>(reinterpret_cast<const char *>(mIndex) + 0x26)) /
-               static_cast<float>(FixedPoint<unsigned short, 10, 2>::GetScale());
+        const unsigned short value = *reinterpret_cast<const unsigned short *>(reinterpret_cast<const char *>(mIndex) + 0x26);
+        const int scale = FixedPoint<unsigned short, 10, 2>::GetScale();
+
+        return static_cast<float>(value) / static_cast<float>(scale);
     }
 
     EnsureLoaded();
