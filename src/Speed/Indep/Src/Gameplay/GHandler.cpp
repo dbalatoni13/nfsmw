@@ -83,6 +83,7 @@ void GHandler::Detach(lua_State *luaState) {
 }
 
 void GHandler::HandleMessage(LuaMessageDeliveryInfo *deliveryInfo) {
+    IsScripted();
     ExecuteScriptedHandler(deliveryInfo);
 }
 
