@@ -147,7 +147,7 @@ void DrawVehicle::Part::OnProcessFrame(float dT) {
             } else {
                 mOffScreenTime = 0.0f;
             }
-            if (offscreen_allow < mOffScreenTime) {
+            if (mOffScreenTime > offscreen_allow) {
                 static_cast<IModel *>(this)->ReleaseModel();
             }
         }
