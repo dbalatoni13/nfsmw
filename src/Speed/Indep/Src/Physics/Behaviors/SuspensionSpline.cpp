@@ -96,6 +96,7 @@ class SuspensionSpline : public Chassis, public INISCarControl {
     void DoSteering(State &state, UMath::Vector3 &right, UMath::Vector3 &left);
     void GetWheelBase(float *width, float *length);
     void DoWheelForces(State &state);
+    void NISCarTweaks(float dT);
 
     // Overrides
     // IUnknown
@@ -478,6 +479,72 @@ void SuspensionSpline::SetAnimShake(float dip, float cycleRate, float cycleRamp,
 
 float SuspensionSpline::GetAnimShake() const {
     return mAnimatedShake;
+}
+
+void SuspensionSpline::NISCarTweaks(float dT) {
+    if (mAnimatedPitchLength != 0.0f) {
+        float time = mAnimatedPitchTime + dT;
+        mAnimatedPitchTime = time;
+        if (mAnimatedPitchLength <= time) {
+            mAnimatedPitchLength = 0.0f;
+            mAnimatedPitch = 0.0f;
+        } else {
+            float halfLength = mAnimatedPitchLength * 0.5f;
+            if (halfLength < time) {
+                time = halfLength - time * 0.5f;
+            } else {
+                time *= 0.5f;
+            }
+            mAnimatedPitch = (time / halfLength) * mAnimatedPitchDelta;
+        }
+    }
+
+    if (mAnimatedRollLength != 0.0f) {
+        float time = mAnimatedRollTime + dT;
+        mAnimatedRollTime = time;
+        if (mAnimatedRollLength <= time) {
+            mAnimatedRollLength = 0.0f;
+            mAnimatedRoll = 0.0f;
+        } else {
+            float halfLength = mAnimatedRollLength * 0.5f;
+            if (halfLength < time) {
+                time = halfLength - time * 0.5f;
+            } else {
+                time *= 0.5f;
+            }
+            mAnimatedRoll = (time / halfLength) * mAnimatedRollDelta;
+        }
+    }
+
+    if (mAnimatedShakeLength != 0.0f && mAnimatedShakeCycleRate != 0.0f) {
+        float time = mAnimatedShakeTime + dT;
+        mAnimatedShakeTime = time;
+        if (mAnimatedShakeLength <= time) {
+            mAnimatedShakeLength = 0.0f;
+            mAnimatedShake = 0.0f;
+            mAnimatedShakeDelta = 0.0f;
+            mAnimatedShakeRamp = 0.0f;
+        } else {
+            float totalCycles = static_cast<float>(static_cast<int>(mAnimatedShakeLength / mAnimatedShakeCycleRate));
+            float cycle = static_cast<float>(static_cast<int>(time / mAnimatedShakeCycleRate));
+            float ramp = static_cast<float>(static_cast<int>(mAnimatedShakeRamp / mAnimatedShakeCycleRate + 0.99f));
+            float scale = 1.0f;
+
+            if (ramp > 0.0f) {
+                if (ramp <= cycle) {
+                    if (totalCycles - ramp < cycle) {
+                        scale = (totalCycles - cycle) / ramp;
+                    }
+                } else {
+                    scale = cycle / ramp;
+                }
+            }
+
+            unsigned short angle =
+                static_cast<unsigned short>(static_cast<int>(((time - mAnimatedShakeCycleRate * cycle) / mAnimatedShakeCycleRate) * 360.0f * 65536.0f) / 0x168);
+            mAnimatedShake = mAnimatedShakeDelta * bCos(angle) * scale;
+        }
+    }
 }
 
 void SuspensionSpline::GetWheelBase(float *width, float *length) {
