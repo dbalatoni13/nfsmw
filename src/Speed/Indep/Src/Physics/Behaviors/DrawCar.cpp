@@ -34,12 +34,22 @@ Behavior *DrawRaceCar::Construct(const BehaviorParams &params) {
         return nullptr;
     }
 
-    CarRenderUsage usage = CarRenderUsage_AIRacer;
     DriverClass driverClass = vehicle->GetDriverClass();
-    if (driverClass == DRIVER_HUMAN) {
-        usage = CarRenderUsage_Player;
-    } else if (driverClass == DRIVER_REMOTE) {
-        usage = CarRenderUsage_RemotePlayer;
+    CarRenderUsage usage;
+    if (driverClass != DRIVER_RACER) {
+        if (driverClass < DRIVER_NONE) {
+            if (driverClass == DRIVER_HUMAN) {
+                usage = CarRenderUsage_Player;
+            } else {
+                usage = CarRenderUsage_AIRacer;
+            }
+        } else if (driverClass == DRIVER_REMOTE) {
+            usage = CarRenderUsage_RemotePlayer;
+        } else {
+            usage = CarRenderUsage_AIRacer;
+        }
+    } else {
+        usage = CarRenderUsage_AIRacer;
     }
 
     return new DrawRaceCar(params, usage);
