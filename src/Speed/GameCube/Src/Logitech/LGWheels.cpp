@@ -358,9 +358,9 @@ void LGWheels::PlaySpringForce(long channel, signed char offset, unsigned char s
                 return;
             }
 
-            reinterpret_cast<SpringForceParams *>(reinterpret_cast<char *>(this) + 0x167C)[channel].offset = offset;
-            reinterpret_cast<SpringForceParams *>(reinterpret_cast<char *>(this) + 0x167C)[channel].saturation = saturation;
-            reinterpret_cast<SpringForceParams *>(reinterpret_cast<char *>(this) + 0x167C)[channel].coefficient = coefficient;
+            reinterpret_cast< ::SpringForceParams *>(reinterpret_cast<char *>(this) + 0x167C)[channel].offset = offset;
+            reinterpret_cast< ::SpringForceParams *>(reinterpret_cast<char *>(this) + 0x167C)[channel].saturation = saturation;
+            reinterpret_cast< ::SpringForceParams *>(reinterpret_cast<char *>(this) + 0x167C)[channel].coefficient = coefficient;
             return;
         }
 
@@ -375,9 +375,9 @@ void LGWheels::PlaySpringForce(long channel, signed char offset, unsigned char s
         }
 
         if (ret >= 0) {
-            reinterpret_cast<SpringForceParams *>(reinterpret_cast<char *>(this) + 0x167C)[channel].offset = offset;
-            reinterpret_cast<SpringForceParams *>(reinterpret_cast<char *>(this) + 0x167C)[channel].saturation = saturation;
-            reinterpret_cast<SpringForceParams *>(reinterpret_cast<char *>(this) + 0x167C)[channel].coefficient = coefficient;
+            reinterpret_cast< ::SpringForceParams *>(reinterpret_cast<char *>(this) + 0x167C)[channel].offset = offset;
+            reinterpret_cast< ::SpringForceParams *>(reinterpret_cast<char *>(this) + 0x167C)[channel].saturation = saturation;
+            reinterpret_cast< ::SpringForceParams *>(reinterpret_cast<char *>(this) + 0x167C)[channel].coefficient = coefficient;
         }
 
         reinterpret_cast<Condition *>(reinterpret_cast<char *>(this) + 0x11A8)->Start(channel, 0);
@@ -445,7 +445,7 @@ void LGWheels::StopConstantForce(long channel) {
 }
 
 bool LGWheels::SameConstantForceParams(long channel, short magnitude, unsigned short direction) {
-    const ConstantForceParams &params = LGWheelsGetConstantForceParams(this)[channel];
+    const ::ConstantForceParams &params = LGWheelsGetConstantForceParams(this)[channel];
     return params.magnitude == magnitude && params.direction == direction;
 }
 
@@ -724,7 +724,7 @@ void LGWheels::PlaySurfaceEffect(long channel, unsigned char type, unsigned char
                 return;
             }
 
-            if (type != reinterpret_cast<SurfaceEffectParams *>(reinterpret_cast<char *>(this) + 0x16D4)[channel].type) {
+            if (type != reinterpret_cast< ::SurfaceEffectParams *>(reinterpret_cast<char *>(this) + 0x16D4)[channel].type) {
                 reinterpret_cast<Periodic *>(reinterpret_cast<char *>(this) + 0x13A8)->Destroy(channel, 3);
                 ret = reinterpret_cast<Periodic *>(reinterpret_cast<char *>(this) + 0x13A8)
                           ->DownloadForce(channel, 3, reinterpret_cast<unsigned long *>(reinterpret_cast<char *>(this) + 0x1050)[channel], type, static_cast<unsigned long>(-1), 0, magnitude, 90, period, 0, 0, 0, 0, 0, 0);
@@ -735,9 +735,9 @@ void LGWheels::PlaySurfaceEffect(long channel, unsigned char type, unsigned char
             }
 
             if (ret >= 0) {
-                reinterpret_cast<SurfaceEffectParams *>(reinterpret_cast<char *>(this) + 0x16D4)[channel].magnitude = magnitude;
-                reinterpret_cast<SurfaceEffectParams *>(reinterpret_cast<char *>(this) + 0x16D4)[channel].type = type;
-                reinterpret_cast<SurfaceEffectParams *>(reinterpret_cast<char *>(this) + 0x16D4)[channel].period = period;
+                reinterpret_cast< ::SurfaceEffectParams *>(reinterpret_cast<char *>(this) + 0x16D4)[channel].magnitude = magnitude;
+                reinterpret_cast< ::SurfaceEffectParams *>(reinterpret_cast<char *>(this) + 0x16D4)[channel].type = type;
+                reinterpret_cast< ::SurfaceEffectParams *>(reinterpret_cast<char *>(this) + 0x16D4)[channel].period = period;
             }
             return;
         }
@@ -746,9 +746,9 @@ void LGWheels::PlaySurfaceEffect(long channel, unsigned char type, unsigned char
             ret = reinterpret_cast<Periodic *>(reinterpret_cast<char *>(this) + 0x13A8)
                       ->DownloadForce(channel, 3, reinterpret_cast<unsigned long *>(reinterpret_cast<char *>(this) + 0x1050)[channel], type, static_cast<unsigned long>(-1), 0, magnitude, 90, period, 0, 0, 0, 0, 0, 0);
             if (ret >= 0) {
-                reinterpret_cast<SurfaceEffectParams *>(reinterpret_cast<char *>(this) + 0x16D4)[channel].magnitude = magnitude;
-                reinterpret_cast<SurfaceEffectParams *>(reinterpret_cast<char *>(this) + 0x16D4)[channel].type = type;
-                reinterpret_cast<SurfaceEffectParams *>(reinterpret_cast<char *>(this) + 0x16D4)[channel].period = period;
+                reinterpret_cast< ::SurfaceEffectParams *>(reinterpret_cast<char *>(this) + 0x16D4)[channel].magnitude = magnitude;
+                reinterpret_cast< ::SurfaceEffectParams *>(reinterpret_cast<char *>(this) + 0x16D4)[channel].type = type;
+                reinterpret_cast< ::SurfaceEffectParams *>(reinterpret_cast<char *>(this) + 0x16D4)[channel].period = period;
             }
             reinterpret_cast<Periodic *>(reinterpret_cast<char *>(this) + 0x13A8)->Start(channel, 3);
             return;
@@ -759,7 +759,7 @@ void LGWheels::PlaySurfaceEffect(long channel, unsigned char type, unsigned char
             return;
         }
 
-        if (type != reinterpret_cast<SurfaceEffectParams *>(reinterpret_cast<char *>(this) + 0x16D4)[channel].type) {
+        if (type != reinterpret_cast< ::SurfaceEffectParams *>(reinterpret_cast<char *>(this) + 0x16D4)[channel].type) {
             reinterpret_cast<Periodic *>(reinterpret_cast<char *>(this) + 0x13A8)->Destroy(channel, 3);
             ret = reinterpret_cast<Periodic *>(reinterpret_cast<char *>(this) + 0x13A8)
                       ->DownloadForce(channel, 3, reinterpret_cast<unsigned long *>(reinterpret_cast<char *>(this) + 0x1050)[channel], type, static_cast<unsigned long>(-1), 0, magnitude, 90, period, 0, 0, 0, 0, 0, 0);
@@ -769,9 +769,9 @@ void LGWheels::PlaySurfaceEffect(long channel, unsigned char type, unsigned char
         }
 
         if (ret >= 0) {
-            reinterpret_cast<SurfaceEffectParams *>(reinterpret_cast<char *>(this) + 0x16D4)[channel].magnitude = magnitude;
-            reinterpret_cast<SurfaceEffectParams *>(reinterpret_cast<char *>(this) + 0x16D4)[channel].type = type;
-            reinterpret_cast<SurfaceEffectParams *>(reinterpret_cast<char *>(this) + 0x16D4)[channel].period = period;
+            reinterpret_cast< ::SurfaceEffectParams *>(reinterpret_cast<char *>(this) + 0x16D4)[channel].magnitude = magnitude;
+            reinterpret_cast< ::SurfaceEffectParams *>(reinterpret_cast<char *>(this) + 0x16D4)[channel].type = type;
+            reinterpret_cast< ::SurfaceEffectParams *>(reinterpret_cast<char *>(this) + 0x16D4)[channel].period = period;
         }
 
         reinterpret_cast<Periodic *>(reinterpret_cast<char *>(this) + 0x13A8)->Start(channel, 3);

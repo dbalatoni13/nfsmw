@@ -71,24 +71,42 @@ struct LGForceEffect {
 };
 
 struct Wheels {
+    // total size: 0x880
     Wheels();
     ~Wheels();
 
+    void InitLGDevLibrary();
     short ReadAll();
+    int FirstConnectedPort();
     bool ButtonIsPressed(long channel, unsigned long buttonMask);
+    bool ButtonTriggered(long channel, unsigned long buttonMask);
+    bool ButtonReleased(long channel, unsigned long buttonMask);
     bool IsConnected(long channel);
     bool PedalsConnected(long channel);
+    bool PowerConnected(long channel);
+    void GenerateNonLinValues(long channel, unsigned char nonLinCoeff);
+    float CalculateNonLinValue(int inputValue, unsigned char nonLinearCoeff, short nonLinMinOutput, short nonLinMaxOutput);
+
+    LGPosition Position[4];            // offset 0x0, size 0x28
+    short NonLinearWheel[256][4];      // offset 0x28, size 0x800
+    unsigned long WheelHandles[4];     // offset 0x828, size 0x10
+    unsigned long type[4];             // offset 0x838, size 0x10
+    unsigned long WheelHandle[4];      // offset 0x848, size 0x10
+    LGPosition PositionLast[4];        // offset 0x858, size 0x28
 };
 
 struct Force {
+    // total size: 0x100
     Force();
     void InitVars();
     int Start(long channel, long forceNumber);
     int Stop(long channel, long forceNumber);
     int Destroy(long channel, long forceNumber);
+    void SetOverallForceGain(unsigned long &handle, int value);
+    int GetOverallForceGain(unsigned long &handle);
 
-    bool Playing[8][4];
-    unsigned long EffectID[8][4];
+    bool Playing[8][4];                // offset 0x0, size 0x20
+    unsigned long EffectID[8][4];      // offset 0x20, size 0x80
 };
 
 struct Condition : public Force {
@@ -110,10 +128,13 @@ struct Periodic : public Force {
 };
 
 struct Ramp : public Force {
+    // total size: 0x100
     Ramp();
 };
 
-struct LGWheels {
+class LGWheels {
+    // total size: 0x16E4
+  public:
     LGWheels();
     ~LGWheels();
 
@@ -150,6 +171,54 @@ struct LGWheels {
     bool SameSurfaceEffectParams(long channel, unsigned char type, unsigned char magnitude, unsigned short period);
     void PlayCarAirborne(long channel);
     void StopCarAirborne(long channel);
+
+  private:
+    LGPosition Position[4];                    // offset 0x0, size 0x28
+    short NonLinearWheel[256][4];             // offset 0x28, size 0x800
+    unsigned char wheels[0x880];              // offset 0x828, size 0x880
+    unsigned char force[0x100];               // offset 0x10A8, size 0x100
+    unsigned char condition[0x100];           // offset 0x11A8, size 0x100
+    unsigned char constant[0x100];            // offset 0x12A8, size 0x100
+    unsigned char periodic[0x100];            // offset 0x13A8, size 0x100
+    unsigned char ramp[0x100];                // offset 0x14A8, size 0x100
+    unsigned char OverallGain;                // offset 0x15A8, size 0x1
+    bool damperWasPlaying[4];                 // offset 0x15AC, size 0x4
+    bool springWasPlaying[4];                 // offset 0x15BC, size 0x4
+    bool wasPlayingBeforeAirborne[10][4];     // offset 0x15CC, size 0x28
+    bool IsAirborne[4];                       // offset 0x166C, size 0x4
+    struct {
+        char offset;                          // offset 0x0, size 0x1
+        unsigned char saturation;             // offset 0x1, size 0x1
+        short coefficient;                    // offset 0x2, size 0x2
+    } SpringForceParams[4];                   // offset 0x167C, size 0x10
+    struct {
+        short magnitude;                      // offset 0x0, size 0x2
+        unsigned short direction;             // offset 0x2, size 0x2
+    } ConstantForceParams[4];                 // offset 0x168C, size 0x10
+    struct {
+        short coefficient;                    // offset 0x0, size 0x2
+    } DamperForceParams[4];                   // offset 0x169C, size 0x8
+    struct {
+        short magnitude;                      // offset 0x0, size 0x2
+        unsigned short direction;             // offset 0x2, size 0x2
+    } SideCollisionParams[4];                 // offset 0x16A4, size 0x10
+    struct {
+        short magnitude;                      // offset 0x0, size 0x2
+    } FrontalCollisionParams[4];              // offset 0x16B4, size 0x8
+    struct {
+        short magnitude;                      // offset 0x0, size 0x2
+    } DirtRoadParams[4];                      // offset 0x16BC, size 0x8
+    struct {
+        short magnitude;                      // offset 0x0, size 0x2
+    } BumpyRoadParams[4];                     // offset 0x16C4, size 0x8
+    struct {
+        short magnitude;                      // offset 0x0, size 0x2
+    } SlipperyRoadParams[4];                  // offset 0x16CC, size 0x8
+    struct {
+        unsigned char type;                   // offset 0x0, size 0x1
+        unsigned char magnitude;              // offset 0x1, size 0x1
+        unsigned short period;                // offset 0x2, size 0x2
+    } SurfaceEffectParams[4];                 // offset 0x16D4, size 0x10
 };
 
 extern LGWheels *plat_lgwheels;
