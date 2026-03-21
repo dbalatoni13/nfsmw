@@ -1,11 +1,36 @@
 #include "Effects.h"
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/effects.h"
 #include "Speed/Indep/Src/Interfaces/IListener.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
 #include "Speed/Indep/Src/Physics/Behavior.h"
 #include "Speed/Indep/Src/Physics/Common/VehicleSystem.h"
 #include "Speed/Indep/Src/Sim/Collision.h"
 #include "Speed/Indep/Src/Sim/SimSurface.h"
+
+Attrib::Key Attrib::Gen::effects::ClassKey() {
+    return 0xebcee74c;
+}
+
+Behavior *EffectsVehicle::Construct(const BehaviorParams &params) {
+    return new EffectsVehicle(params);
+}
+
+Behavior *EffectsCar::Construct(const BehaviorParams &params) {
+    return new EffectsCar(params);
+}
+
+Behavior *EffectsPlayer::Construct(const BehaviorParams &params) {
+    return new EffectsPlayer(params);
+}
+
+Behavior *EffectsSmackable::Construct(const BehaviorParams &params) {
+    return new EffectsSmackable(params);
+}
+
+Behavior *EffectsFragment::Construct(const BehaviorParams &params) {
+    return new EffectsFragment(params);
+}
 
 Effects::Effects(const struct BehaviorParams &bp)
     : Behavior(bp, 0), //

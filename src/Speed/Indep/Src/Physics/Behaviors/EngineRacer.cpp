@@ -37,6 +37,13 @@ IRaceEngine::~IRaceEngine() {}
 IInductable::~IInductable() {}
 ITiptronic::~ITiptronic() {}
 ITransmission::~ITransmission() {}
+HINTERFACE IDragTransmission::_IHandle() {
+    return (HINTERFACE)_IHandle;
+}
+
+Attrib::Key Attrib::Gen::chopperspecs::ClassKey() {
+    return 0x5d898ee7;
+}
 
 // total size: 0x1B0
 class EngineRacer : protected VehicleBehavior,

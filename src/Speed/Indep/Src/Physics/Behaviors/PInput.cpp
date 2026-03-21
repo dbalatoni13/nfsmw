@@ -432,3 +432,7 @@ bool InputPlayerDrag::OnAction(const ActionRef &a) {
 }
 
 InputNIS::InputNIS(const BehaviorParams &bp) : PInput(bp) {}
+
+Behavior *InputNIS::Construct(const BehaviorParams &params) {
+    return new InputNIS(params);
+}
