@@ -42,4 +42,10 @@
 
 #include "Speed/Indep/Src/Physics/Behaviors/SimpleChopper.cpp"
 
+#include "Speed/Indep/Src/Physics/Behaviors/DrawVehicle.cpp"
+
+#include "Speed/Indep/Src/Physics/Behaviors/DrawHeli.cpp"
+
+#include "Speed/Indep/Src/Physics/Behaviors/DrawCar.cpp"
+
 #include "Speed/Indep/Src/Physics/Behaviors/SoundHeli.cpp"
