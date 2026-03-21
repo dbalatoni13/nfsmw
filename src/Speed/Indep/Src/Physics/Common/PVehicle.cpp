@@ -20,6 +20,7 @@
 #include "Speed/Indep/Src/Interfaces/Simables/IEngine.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IExplosion.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IINput.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IRecordablePlayer.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRenderable.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ISuspension.h"
@@ -1539,3 +1540,7 @@ bool PVehicle::MakeRoom(IVehicleCache *whosasking, const UTL::Std::list<Resource
 
     return true;
 }
+
+template void UTL::Vector<ICollisionBody *, 16>::push_back(ICollisionBody *const &);
+template void UTL::Vector<IInputPlayer *, 16>::push_back(IInputPlayer *const &);
+template void UTL::Vector<IRecordablePlayer *, 16>::push_back(IRecordablePlayer *const &);
