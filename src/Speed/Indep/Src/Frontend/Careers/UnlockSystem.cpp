@@ -1403,10 +1403,8 @@ void cFrontendDatabase::NotifyDeleteCar(unsigned int handle) {
 }
 
 void cFrontendDatabase::RestoreFromBackupDB() {
-    char *backup = m_pDBBackup;
-    if (backup) {
-        int size = GetUserProfileSaveSize(false);
-        LoadUserProfileFromBuffer(backup, size, 0);
+    if (m_pDBBackup) {
+        LoadUserProfileFromBuffer(m_pDBBackup, GetUserProfileSaveSize(false), 0);
         DeallocBackupDB();
     }
 }

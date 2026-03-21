@@ -676,6 +676,9 @@ GameCompletionStats cFrontendDatabase::GetGameCompletionStats() {
 }
 
 void cFrontendDatabase::NotifyExitRaceToFrontend(eExitRacePlaces from_where) {
+    {
+        int is_split = IsSplitScreenMode();
+    }
     PostRaceOptionChosen = static_cast<ePostRaceOptions>(1);
     if (from_where == EXIT_RACE_FROM_PAUSE) {
         CurrentUserProfiles[0]->CommitHighScoresPauseQuit();
