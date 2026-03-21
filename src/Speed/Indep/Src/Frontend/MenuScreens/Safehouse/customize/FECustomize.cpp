@@ -59,6 +59,9 @@ extern void FEngSetScript(const char *pkg, unsigned int hash, unsigned int scrip
 extern void FEngSetScript(FEObject *obj, unsigned int script, bool b);
 extern void FEngSetLanguageHash(const char *pkg, unsigned int obj_hash, unsigned int lang_hash);
 extern void FEngSetCurrentButton(const char *pkg, unsigned int hash);
+inline void FEngSetCurrentButton(const char *pkg_name, FEObject *obj) {
+    FEngSetCurrentButton(pkg_name, obj->NameHash);
+}
 extern void FEngSetTopLeft(FEObject *obj, float x, float y);
 extern void FEngGetTopLeft(FEObject *obj, float &x, float &y);
 extern void FEngGetSize(FEObject *obj, float &x, float &y);
@@ -323,13 +326,13 @@ CustomizePartOption *CustomizationScreen::FindMatchingOption(SelectablePart *to_
 // --- FEShoppingCartItem ---
 
 void FEShoppingCartItem::SetFocus(const char *parent_pkg) {
-    FEngSetCurrentButton(parent_pkg, pTitle->NameHash);
-    FEngSetScript(pTitle, 0x249db7b7, true);
-    FEngSetScript(pData, 0x249db7b7, true);
+    FEngSetCurrentButton(parent_pkg, GetTitleObject());
+    FEngSetScript(GetTitleObject(), 0x249db7b7, true);
+    FEngSetScript(GetDataObject(), 0x249db7b7, true);
     FEngSetScript(pTradeInPrice, 0x249db7b7, true);
-    if (pBacking) {
-        FEngSetVisible(pBacking);
-        FEngSetScript(pBacking, 0x249db7b7, true);
+    if (GetBacking()) {
+        FEngSetVisible(GetBacking());
+        FEngSetScript(GetBacking(), 0x249db7b7, true);
     }
 }
 
@@ -1273,11 +1276,11 @@ void CustomizeShoppingCart::ShowShoppingCart(const char *pkg) {
 }
 
 void CustomizeShoppingCart::ExitShoppingCart() {
-    if (CustomizeIsInBackRoom()) {
-        CustomizeSetInBackRoom(false);
+    if (gCarCustomizeManager.IsInBackRoom()) {
+        gCarCustomizeManager.SetInBackRoom(false);
         FEManager::Get()->SetGarageType(GARAGETYPE_CUSTOMIZATION_SHOP);
     }
-    cFEng_mInstance->QueuePackageSwitch(g_pCustomizeMainPkg, 0, 0, false);
+    cFEng::Get()->QueuePackageSwitch(g_pCustomizeMainPkg, 0, 0, false);
 }
 
 bool CustomizeShoppingCart::IsSlotIDNumberDecal(int slot_id) {
