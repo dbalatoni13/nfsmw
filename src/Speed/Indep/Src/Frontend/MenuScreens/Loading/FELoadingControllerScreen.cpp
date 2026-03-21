@@ -59,8 +59,10 @@ void LoadingControllerScreen::PrepToShowControllerConfig() {
 }
 
 void FinishLoadingControllerTextureCallbackBridge(unsigned int p) {
+    LoadingControllerScreen *ls;
     if (p != 0) {
-        reinterpret_cast<LoadingControllerScreen *>(p)->FinishLoadingControllerTextureCallback(0);
+        ls = reinterpret_cast<LoadingControllerScreen *>(p);
+        ls->FinishLoadingControllerTextureCallback(0);
     }
 }
 
