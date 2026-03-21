@@ -20,6 +20,33 @@ Behavior *DamageVehicle::Construct(const BehaviorParams &params) {
     return new DamageVehicle(params, dp);
 }
 
+DamageVehicle::DamageVehicle(const BehaviorParams &bp, const DamageParams &)
+    : VehicleBehavior(bp, 2), //
+      IDamageable(bp.fowner), //
+      Sim::Collision::IListener(), //
+      IDamageableVehicle(bp.fowner), //
+      EventSequencer::IContext(this), //
+      mShockTimer(0.0f), //
+      mSpecs(this, 0), //
+      mDamageTotal(0.0f), //
+      mIRBComplex(nullptr), //
+      mRB(nullptr), //
+      mRenderable(nullptr), //
+      mZoneDamage(), //
+      mLastImpactSpeed(UMath::Vector3::kZero), //
+      mBrokenParts(), //
+      mLightDamage(0) {
+    GetOwner()->QueryInterface(&mIRBComplex);
+    GetOwner()->QueryInterface(&mRB);
+    GetOwner()->QueryInterface(&mRenderable);
+    Sim::Collision::AddListener(this, GetOwner(), "DamageVehicle");
+}
+
+DamageVehicle::~DamageVehicle() {
+    Sim::Collision::RemoveListener(this);
+    ResetParts();
+}
+
 void DamageVehicle::ResetParts() {
     IRenderable *irenderable;
     if (GetOwner()->QueryInterface(&irenderable)) {
