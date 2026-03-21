@@ -496,25 +496,21 @@ void cSampleWarpper::Play(const SND_Params *Params) {
         }
         sample->mData.iD = sampleIndex;
 
-        if (TempVol < 0) {
-            sampleType = 0;
-        } else {
-            sampleType = TempVol;
-            if (TempVol > 0x7FFF) {
-                sampleType = 0x7FFF;
-            }
+        int vol = TempVol;
+        if (vol < 0) {
+            vol = 0;
+        } else if (vol > 0x7FFF) {
+            vol = 0x7FFF;
         }
-        sample->mData.vol = sampleType;
+        sample->mData.vol = vol;
 
-        if (TempPitch < 0) {
-            sampleType = 0;
-        } else {
-            sampleType = TempPitch;
-            if (TempPitch > 0x2000) {
-                sampleType = 0x2000;
-            }
+        int pitch = TempPitch;
+        if (pitch < 0) {
+            pitch = 0;
+        } else if (pitch > 0x2000) {
+            pitch = 0x2000;
         }
-        sample->mData.pitch = sampleType;
+        sample->mData.pitch = pitch;
 
         if (sampleAz < 0) {
             sampleAz = 0;
@@ -584,25 +580,21 @@ void cSampleWarpper::Play(const SND_Params *Params) {
         }
         sample->mData.iD = sampleIndex;
 
-        if (TempVol < 0) {
-            sampleType = 0;
-        } else {
-            sampleType = TempVol;
-            if (TempVol > 0x7FFF) {
-                sampleType = 0x7FFF;
-            }
+        int vol = TempVol;
+        if (vol < 0) {
+            vol = 0;
+        } else if (vol > 0x7FFF) {
+            vol = 0x7FFF;
         }
-        sample->mData.vol = sampleType;
+        sample->mData.vol = vol;
 
-        if (TempPitch < 0) {
-            sampleType = 0;
-        } else {
-            sampleType = TempPitch;
-            if (TempPitch > 0x2000) {
-                sampleType = 0x2000;
-            }
+        int pitch = TempPitch;
+        if (pitch < 0) {
+            pitch = 0;
+        } else if (pitch > 0x2000) {
+            pitch = 0x2000;
         }
-        sample->mData.pitch = sampleType;
+        sample->mData.pitch = pitch;
 
         if (sampleAz < 0) {
             sampleAz = 0;
@@ -672,25 +664,21 @@ void cSampleWarpper::Play(const SND_Params *Params) {
         }
         sample->mData.iD = sampleIndex;
 
-        if (TempVol < 0) {
-            sampleType = 0;
-        } else {
-            sampleType = TempVol;
-            if (TempVol > 0x7FFF) {
-                sampleType = 0x7FFF;
-            }
+        int vol = TempVol;
+        if (vol < 0) {
+            vol = 0;
+        } else if (vol > 0x7FFF) {
+            vol = 0x7FFF;
         }
-        sample->mData.vol = sampleType;
+        sample->mData.vol = vol;
 
-        if (TempPitch < 0) {
-            sampleType = 0;
-        } else {
-            sampleType = TempPitch;
-            if (TempPitch > 0x2000) {
-                sampleType = 0x2000;
-            }
+        int pitch = TempPitch;
+        if (pitch < 0) {
+            pitch = 0;
+        } else if (pitch > 0x2000) {
+            pitch = 0x2000;
         }
-        sample->mData.pitch = sampleType;
+        sample->mData.pitch = pitch;
 
         if (sampleAz < 0) {
             sampleAz = 0;
