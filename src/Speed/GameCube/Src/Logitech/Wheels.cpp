@@ -22,8 +22,11 @@ Wheels::Wheels() {
     int channel;
 
     for (channel = 0; channel < 4; channel++) {
+        LGPosition *channelPosition;
+
         WheelsGetWheelHandles(this)[channel] = static_cast<unsigned long>(-1);
-        reinterpret_cast<LGPosition *>(this)[channel].err = -1;
+        channelPosition = &reinterpret_cast<LGPosition *>(this)[channel];
+        channelPosition->err = -1;
     }
 
     memset(WheelsGetPositionLast(this), 0, sizeof(LGPosition) * 4);
@@ -62,16 +65,16 @@ short Wheels::ReadAll() {
 }
 
 bool Wheels::ButtonIsPressed(long channel, unsigned long buttonMask) {
-    const LGPosition *position = reinterpret_cast<const LGPosition *>(this);
-    return (position[channel].button & buttonMask) != 0;
+    const LGPosition *channelPosition = &reinterpret_cast<const LGPosition *>(this)[channel];
+    return (channelPosition->button & buttonMask) != 0;
 }
 
 bool Wheels::IsConnected(long channel) {
-    const LGPosition *position = reinterpret_cast<const LGPosition *>(this);
-    return !position[channel].err;
+    const LGPosition *channelPosition = &reinterpret_cast<const LGPosition *>(this)[channel];
+    return !channelPosition->err;
 }
 
 bool Wheels::PedalsConnected(long channel) {
-    const LGPosition *position = reinterpret_cast<const LGPosition *>(this);
-    return (position[channel].misc >> 3) & 1;
+    const LGPosition *channelPosition = &reinterpret_cast<const LGPosition *>(this)[channel];
+    return (channelPosition->misc >> 3) & 1;
 }
