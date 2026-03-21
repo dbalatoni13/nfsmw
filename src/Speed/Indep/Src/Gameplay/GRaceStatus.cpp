@@ -2570,7 +2570,7 @@ void GRaceCustom::CreateRaceActivity() {
             }
         }
 
-        if (currOpponents < mNumOpponents) {
+        if (mNumOpponents > currOpponents) {
             if (currOpponents == 0) {
                 for (unsigned int onSet = 0; onSet < mNumOpponents; onSet++) {
                     opponentKey[onSet] = 0x9F3B88C5;
@@ -2583,10 +2583,12 @@ void GRaceCustom::CreateRaceActivity() {
         }
 
         mRaceRecord->Add(0x5839FA1A, mNumOpponents);
+        unsigned int onSet;
+
         {
             Attrib::Attribute attribute(mRaceRecord->Get(0x5839FA1A));
 
-            for (unsigned int onSet = 0; onSet < mNumOpponents; onSet++) {
+            for (onSet = 0; onSet < mNumOpponents; onSet++) {
                 attribute.Set(onSet, GCollectionKey(opponentKey[onSet]));
             }
         }
