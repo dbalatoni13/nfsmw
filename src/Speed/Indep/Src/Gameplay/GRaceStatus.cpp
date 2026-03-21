@@ -2216,7 +2216,14 @@ void GRaceParameters::GetStartDirection(UMath::Vector3 &dir) const {
 }
 
 bool GRaceParameters::HasFinishLine() const {
-    EnsureLoaded();
+    if (mParentVault && !mParentVault->IsLoaded()) {
+        mParentVault->LoadSyncTransient();
+    }
+
+    if (mChildVault && !mChildVault->IsLoaded()) {
+        mChildVault->LoadSyncTransient();
+    }
+
     return mRaceRecord->racefinish(0).GetCollectionKey() != 0;
 }
 
