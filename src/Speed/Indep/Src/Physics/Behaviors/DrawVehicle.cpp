@@ -136,7 +136,7 @@ void DrawVehicle::Part::PlaceTrigger(const UMath::Matrix4 &matrix, bool enable) 
 
 void DrawVehicle::Part::OnProcessFrame(float dT) {
     if (mOffScreenTask) {
-        const float &offscreen_allow = mAttributes.DROPOUT(0);
+        const float &offscreen_allow = mAttributes.KILL_OFF_SCREEN();
         if (0.0f < offscreen_allow) {
             if (!static_cast<IModel *>(this)->InView()) {
                 mOffScreenTime = mOffScreenTime + dT;
