@@ -30,6 +30,7 @@
 #include "Speed/Indep/Src/World/TrackInfo.hpp"
 #include "Speed/Indep/Src/World/WorldModel.hpp"
 #include "Speed/Indep/Src/World/TrackStreamer.hpp"
+#include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/bWare/Inc/bPrintf.hpp"
@@ -760,13 +761,17 @@ void GRacerInfo::Update(float dT) {
 
     #ifndef EA_BUILD_A124
     if (mQuarterMileTime == 0.0f) {
-        if (402.335f <= distance) {
+        static float quarterMileInMeters = 1609.34f * 0.25f;
+
+        if (quarterMileInMeters <= distance) {
             mQuarterMileTime = GetRaceTime();
         }
     }
 
     if (mZeroToSixtyTime == 0.0f) {
-        if (26.8218f <= mTopSpeed) {
+        static float sixtyMphInMetersPerSec = MPH2MPS(60.0f);
+
+        if (sixtyMphInMetersPerSec <= mTopSpeed) {
             mZeroToSixtyTime = GetRaceTime();
         }
     }
