@@ -320,8 +320,8 @@ void ParticleList::GeneratePolys() {
 void DrawXenonEmitters(eView *view) {}
 
 void ClearXenonEmitters() {
-    gNGEffectList.lists[XenonEffectLists::ACTIVE].clear();
-    gNGEffectList.lists[XenonEffectLists::STAGING].clear();
+    reinterpret_cast<XenonEffectStdVector &>(gNGEffectList.lists[XenonEffectLists::ACTIVE]).clear();
+    reinterpret_cast<XenonEffectStdVector &>(gNGEffectList.lists[XenonEffectLists::STAGING]).clear();
 }
 
 void AddXenonEffect(EmitterGroup *piggyback_fx, const Attrib::Collection *spec, const UMath::Matrix4 *mat, const UMath::Vector4 *vel) {
