@@ -425,7 +425,6 @@ int closecallback(int sndstreamhandle, int status, void *userdata) {
     if (fop) {
         FILESYS_callbackop(fop, opencallback);
     }
-    return 0;
 }
 
 int readcallback(int sndstreamhandle, int status, void *userdata) {
@@ -441,7 +440,7 @@ int readcallback(int sndstreamhandle, int status, void *userdata) {
     *(int *)&bReadCallbackToggle = 1;
     if (req->type == 1) {
         bytesread = stream->readsize;
-        endoffile = req->parm <= stream->foffset + bytesread;
+        endoffile = stream->foffset + bytesread >= req->parm;
     } else {
         long long readresult = FILESYS_completeop64(stream->fop);
 
@@ -453,20 +452,19 @@ int readcallback(int sndstreamhandle, int status, void *userdata) {
     stream->dataend += bytesread;
     endchunk = parsechunks(stream);
     if (req->state != STREAMREQUEST_CANCELED) {
-        if (!endoffile && endchunk == 0) {
+        if (endoffile || endchunk != 0) {
+            MUTEX_lock(&stream->mutex);
+            if (req->state != STREAMREQUEST_CANCELED) {
+                req->state = STREAMREQUEST_COMPLETED;
+            }
+            MUTEX_unlock(&stream->mutex);
+        } else {
             restartstream(stream, stream->priorityhigh - 1);
             return 0;
         }
-
-        MUTEX_lock(&stream->mutex);
-        if (req->state != STREAMREQUEST_CANCELED) {
-            req->state = STREAMREQUEST_COMPLETED;
-        }
-        MUTEX_unlock(&stream->mutex);
     }
 
     startnextrequest(stream, stream->priorityhigh);
-    return 0;
 }
 
 void startnextrequest(STREAMHEADERtag *stream, int priority) {
