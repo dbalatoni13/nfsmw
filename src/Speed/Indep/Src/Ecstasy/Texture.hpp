@@ -5,17 +5,10 @@
 #pragma once
 #endif
 
-#ifdef EA_PLATFORM_GAMECUBE
-#include "Speed/GameCube/Src/Ecstasy/TextureInfoPlat.hpp"
-#elif defined(EA_PLATFORM_XENON)
-#include "Speed/Xenon/Src/Ecstasy/TextureInfoPlat.hpp"
-#elif defined(EA_PLATFORM_PLAYSTATION2)
-#include "Speed/PSX2/Src/Ecstasy/TextureInfoPlat.hpp"
-#endif
-
 #include "Speed/Indep/bWare/Inc/bChunk.hpp"
 #include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
+#include "TextureTypes.hpp"
 
 extern SlotPool *TexturePackSlotPool;
 
@@ -24,12 +17,6 @@ enum TextureScrollType {
     TEXSCROLL_SNAP = 2,
     TEXSCROLL_SMOOTH = 1,
     TEXSCROLL_NONE = 0,
-};
-
-enum TextureLockType {
-    TEXLOCK_READWRITE = 2,
-    TEXLOCK_WRITE = 1,
-    TEXLOCK_READ = 0,
 };
 
 enum TextureCompressionType {
@@ -68,6 +55,14 @@ enum TextureAlphaBlendType {
     TEXBLEND_BLEND = 1,
     TEXBLEND_SRCCOPY = 0,
 };
+
+#ifdef EA_PLATFORM_GAMECUBE
+#include "Speed/GameCube/Src/Ecstasy/TextureInfoPlat.hpp"
+#elif defined(EA_PLATFORM_XENON)
+#include "Speed/Xenon/Src/Ecstasy/TextureInfoPlat.hpp"
+#elif defined(EA_PLATFORM_PLAYSTATION2)
+#include "Speed/PSX2/Src/Ecstasy/TextureInfoPlat.hpp"
+#endif
 
 struct TextureIndexEntry {
     // total size: 0x8

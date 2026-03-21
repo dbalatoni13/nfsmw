@@ -12,7 +12,15 @@ ninja all_source       # build all objects
 ninja                  # build all objects, hash check and progress report
 ninja baseline         # generates baseline report for regression checking
 ninja changes          # check for regressions after code changes (empty = no regressions)
+python tools/build_matrix.py              # sequential full `ninja` across GC/Xbox/PS2, then restore GOWE69
+python tools/build_matrix.py --all-source # sequential compile-only smoke check across GC/Xbox/PS2
 ```
+
+Use `python tools/build_matrix.py` when you want one command that verifies the current
+worktree across all supported platforms. It runs `configure.py --version ...` and the
+selected ninja target sequentially, writes per-platform logs under `build/<VERSION>/logs/`,
+prints failure tails with the exact failing command, and restores the worktree to
+`GOWE69` by default when it finishes.
 
 ## Project Layout
 
@@ -31,16 +39,7 @@ objdiff.json           Generated build/diff configuration
 
 ## Sub-Agent Usage
 
-Sub-agents are allowed only for **read-only exploration** tasks such as:
-
-- searching the codebase for symbols, call sites, or include relationships
-- inspecting decomp output, assembly, DWARF, PS2 dumps, or line mappings
-- gathering context from Ghidra, `tools/decomp-workflow.py`, `lookup.py`, `decomp-diff.py`, or similar tools
-- summarizing findings that help the main worker decide what to change
-
-Sub-agents must **not** write or edit code files, headers, configs, or other repository files.
-All persistent file changes, decomp implementations, scaffolding, and follow-up fixes must be
-done by the main worker after reviewing the read-only findings.
+Sub-agents are **strictly prohibited**. Do not use sub-agents for any tasks (whether read-only exploration or editing). All work must be performed by the main worker directly.
 
 ## Forbidden Changes
 
@@ -354,47 +353,39 @@ This is a **C++98** codebase compiled with ProDG GC 3.9.3 (GCC 2.95 under the ho
 
 ## Committing Progress
 
-After each meaningful percentage-point improvement in objdiff match score, commit your changes. Check the current unit match percentage with:
+After each meaningful improvement in objdiff match score or DWARF progress, commit your changes. Check the current unit match percentage with:
 
 ```sh
 python tools/decomp-status.py --unit main/Path/To/TU
 ```
 
-Commit whenever the match percentage increases (e.g. you matched a new function). Use this format for the commit message:
+Commit whenever the match percentage increases or you achieve a milestone (e.g. you matched a new function or improved an existing one). Use this format for the commit message:
 
 ```
-n.n%: short description of what was matched or changed
+n.n[n]%: [action] [Subject]::[Function]
 ```
+
+- **match+**: used when a function or object achieves 100% byte-match status AND 100% DWARF match.
+- **match**: used when a function achieves 100% byte-match status but DWARF is still missing/mismatched.
+- **improve**: used when the instruction match percentage increases.
+- **dwarf match**: used when the normalized DWARF achieves 100% match.
+- **dwarf improve**: used when DWARF issues are resolved but it's not yet 100% DWARF-matched.
 
 Examples:
 
-- `42.1%: match UpdateCamera`
-- `78.5%: match PlayerController constructor and destructor`
+- `42.1%: match+ UpdateCamera`
+- `76.7%: match+ TrackStreamer::HibernateStreamingSections`
+- `76.7%: match TrackStreamer::WillUnloadBlock`
+- `76.5%: dwarf match TrackStreamer::HandleLoading`
+- `76.5%: improve TrackStreamer::LoadSection`
+- `76.5%: dwarf improve TrackStreamer::CountUserAllocations`
 - `100.0%: full match for zAnim`
 
-Do not batch up multiple percentage milestones into one commit — commit as each improvement lands.
-
-## Parallel Sub-Agent Matching
-
-When working on a translation unit with multiple non-matching functions, use sub-agents selectively for **read-only exploration** around individual functions. Each sub-agent should focus on **exactly one function** — do not assign a sub-agent more than one function at a time.
-
-**Limit: never run more than 5 sub-agents concurrently.** Spawning too many at once causes resource contention and makes it harder to reason about progress.
-
-Guidelines:
-
-- Prefer solving difficult matching work in the main worker. Use sub-agents to inspect one function's context, diff, DWARF, or related call paths without editing files.
-- Spawn a sub-agent per function only when the functions are independent (no shared edits to the same source lines).
-- Sub-agents stay read-only. Let them inspect existing diff/context output rather than compiling or rebuilding.
-- Do not sit idle waiting for sub-agents to finish. Continue with other independent investigation while they run.
-- After a useful result lands and you make a real improvement, check the updated match percentage and commit if it improved.
+Do not batch up multiple unrelated improvements into one commit — commit as each logical piece of work lands.
 
 ## Matching Philosophy
 
 You should take the Ghidra decompiler output for the initial translation step, get it to compile, make sure that the dwarf of the function matches and only then look for binary matching problems in the assembly. Be aware Ghidra usually gets the order of branches incorrect in if statements (it inverts the logic and the two bodies are swapped), this needs to be fixed to achieve bytematching status.
-
-You may use sub-agents to gather read-only context during this process, but they must not
-edit files. Treat their output as analysis input for the main worker, not as a path to
-delegate source changes.
 
 A function is only done when both objdiff and normalized DWARF are exact. Treat a
 100% instruction match with a DWARF mismatch as unfinished work, not a near-complete

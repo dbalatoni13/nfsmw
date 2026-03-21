@@ -264,45 +264,10 @@ class DatabaseLoadData {
 // total size: 0x4C
 class DatabasePrivate : public Database {
   public:
-    static void QueueForDelete(const Collection *obj, std::list<const Collection *> &bag) {
-        obj->IsReferenced();
-        if (std::find(bag.begin(), bag.end(), obj) == bag.end()) {
-            bag.push_back(obj);
-        }
-    }
-
-    static void QueueForDelete(const Class *obj, std::list<const Class *> &bag) {
-        obj->IsReferenced();
-        if (std::find(bag.begin(), bag.end(), obj) == bag.end()) {
-            bag.push_back(obj);
-        }
-    }
-
-    static void CollectGarbageBag(std::list<const Collection *> &bag) {
-        std::list<const Collection *>::iterator iter = bag.begin();
-
-        while (iter != bag.end()) {
-            const Collection *obj = *iter;
-            if (!obj->IsReferenced()) {
-                obj->Delete();
-            }
-            bag.pop_front();
-            iter = bag.begin();
-        }
-    }
-
-    static void CollectGarbageBag(std::list<const Class *> &bag) {
-        std::list<const Class *>::iterator iter = bag.begin();
-
-        while (iter != bag.end()) {
-            const Class *obj = *iter;
-            if (!obj->IsReferenced()) {
-                obj->Delete();
-            }
-            bag.pop_front();
-            iter = bag.begin();
-        }
-    }
+    static void QueueForDelete(const Collection *obj, std::list<const Collection *> &bag);
+    static void QueueForDelete(const Class *obj, std::list<const Class *> &bag);
+    static void CollectGarbageBag(std::list<const Collection *> &bag);
+    static void CollectGarbageBag(std::list<const Class *> &bag);
 
     void *operator new(std::size_t bytes) {
         return Alloc(bytes, "Attrib::DatabasePrivate");
@@ -312,28 +277,8 @@ class DatabasePrivate : public Database {
         Free(ptr, bytes, "Attrib::DatabasePrivate");
     }
 
-    DatabasePrivate(const DatabaseLoadData &loadData) : Database(*this), mClasses(loadData.mNumClasses) {
-        mClasses.Reserve(loadData.mNumClasses);
-        mNumCompiledTypes = loadData.mNumTypes + 1;
-        mCompiledTypes.reserve(mNumCompiledTypes);
-        DefaultDataArea(loadData.mDefaultDataSize);
-        mCompiledTypes.push_back(&*mTypes.insert(TypeDesc()).first);
-
-        const unsigned int *sizes = loadData.GetTypeSizes();
-        const char *name = loadData.mTypenames;
-
-        for (unsigned int i = 0; i < loadData.mNumTypes; i++) {
-            TypeTable::iterator iter = mTypes.insert(TypeDesc(name, sizes[i], mCompiledTypes.size())).first;
-            mCompiledTypes.push_back(&*iter);
-            name += strlen(name) + 1;
-        }
-    }
-
-    ~DatabasePrivate() {
-        mClasses.Size();
-        mTypes.clear();
-        mCompiledTypes.clear();
-    }
+    DatabasePrivate(const DatabaseLoadData &loadData);
+    ~DatabasePrivate();
 
     ClassTable mClasses;                // offset 0x8, size 0x10
     unsigned int mNumCompiledTypes;     // offset 0x18, size 0x4

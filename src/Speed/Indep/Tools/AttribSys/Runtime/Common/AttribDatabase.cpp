@@ -135,6 +135,69 @@ class CollectionExportPolicy : public IExportPolicy {
     }
 };
 
+void DatabasePrivate::QueueForDelete(const Collection *obj, std::list<const Collection *> &bag) {
+    obj->IsReferenced();
+    if (std::find(bag.begin(), bag.end(), obj) == bag.end()) {
+        bag.push_back(obj);
+    }
+}
+
+void DatabasePrivate::QueueForDelete(const Class *obj, std::list<const Class *> &bag) {
+    obj->IsReferenced();
+    if (std::find(bag.begin(), bag.end(), obj) == bag.end()) {
+        bag.push_back(obj);
+    }
+}
+
+void DatabasePrivate::CollectGarbageBag(std::list<const Collection *> &bag) {
+    std::list<const Collection *>::iterator iter = bag.begin();
+
+    while (iter != bag.end()) {
+        const Collection *obj = *iter;
+        if (!obj->IsReferenced()) {
+            obj->Delete();
+        }
+        bag.pop_front();
+        iter = bag.begin();
+    }
+}
+
+void DatabasePrivate::CollectGarbageBag(std::list<const Class *> &bag) {
+    std::list<const Class *>::iterator iter = bag.begin();
+
+    while (iter != bag.end()) {
+        const Class *obj = *iter;
+        if (!obj->IsReferenced()) {
+            obj->Delete();
+        }
+        bag.pop_front();
+        iter = bag.begin();
+    }
+}
+
+DatabasePrivate::DatabasePrivate(const DatabaseLoadData &loadData) : Database(*this), mClasses(loadData.mNumClasses) {
+    mClasses.Reserve(loadData.mNumClasses);
+    mNumCompiledTypes = loadData.mNumTypes + 1;
+    mCompiledTypes.reserve(mNumCompiledTypes);
+    DefaultDataArea(loadData.mDefaultDataSize);
+    mCompiledTypes.push_back(&*mTypes.insert(TypeDesc()).first);
+
+    const unsigned int *sizes = loadData.GetTypeSizes();
+    const char *name = loadData.mTypenames;
+
+    for (unsigned int i = 0; i < loadData.mNumTypes; i++) {
+        TypeTable::iterator iter = mTypes.insert(TypeDesc(name, sizes[i], mCompiledTypes.size())).first;
+        mCompiledTypes.push_back(&*iter);
+        name += strlen(name) + 1;
+    }
+}
+
+DatabasePrivate::~DatabasePrivate() {
+    mClasses.Size();
+    mTypes.clear();
+    mCompiledTypes.clear();
+}
+
 Database *Database::sThis = nullptr;
 
 static unsigned int gDatabaseType = StringToTypeID("Attrib::DatabaseLoadData");

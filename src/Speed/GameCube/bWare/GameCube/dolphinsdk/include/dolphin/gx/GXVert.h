@@ -126,8 +126,8 @@ static inline void GXNormal3f32(const f32 x, const f32 y, const f32 z) {
   GXWGFifo.f32 = z;
 }
 
-static inline void GXColor1u32(const u32 v) {
-  GXWGFifo.u32 = v;
+static inline void GXColor1u32(const u32 x) {
+  GXWGFifo.u32 = x;
 }
 
 static inline void GXColor3u8(const u8 r, const u8 g, const u8 b) {
@@ -148,9 +148,9 @@ static inline void GXTexCoord2s16(const s16 u, const s16 v) {
   GXWGFifo.s16 = v;
 }
 
-static inline void GXTexCoord2f32(const f32 u, const f32 v) {
-  GXWGFifo.f32 = u;
-  GXWGFifo.f32 = v;
+static inline void GXTexCoord2f32(const f32 x, const f32 y) {
+  GXWGFifo.f32 = x;
+  GXWGFifo.f32 = y;
 }
 
 static inline void GXPosition1x8(u8 index) {

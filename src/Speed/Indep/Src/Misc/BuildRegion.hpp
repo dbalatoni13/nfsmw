@@ -8,6 +8,9 @@
 namespace BuildRegion {
 
 bool IsAmerica();
+bool IsEuropeFr();
+bool IsEuropeGer();
+bool IsJapan();
 
 }; // namespace BuildRegion
 
