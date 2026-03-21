@@ -2291,7 +2291,14 @@ const char *GRaceParameters::GetBarrierName(unsigned int index) const {
 bool GRaceParameters::GetBarrierIsFlipped(unsigned int index) const {
     const char *barrierName;
 
-    EnsureLoaded();
+    if (mParentVault && !mParentVault->IsLoaded()) {
+        mParentVault->LoadSyncTransient();
+    }
+
+    if (mChildVault && !mChildVault->IsLoaded()) {
+        mChildVault->LoadSyncTransient();
+    }
+
     barrierName = mRaceRecord->Barriers(index);
     return barrierName && *barrierName == '*';
 }
