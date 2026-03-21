@@ -72,6 +72,18 @@ class SuspensionSimple : public Chassis, public Sim::Collision::IListener, publi
             return mRadius;
         }
 
+        void SetBrake(float brake) {
+            mBrake = brake;
+        }
+
+        void SetEBrake(float ebrake) {
+            mEBrake = ebrake;
+        }
+
+        float GetLongitudeForce() const {
+            return mLongitudeForce;
+        }
+
         void ApplyTorque(float torque) {
             if (!mBrakeLocked) {
                 mAppliedTorque += torque;
@@ -120,6 +132,7 @@ class SuspensionSimple : public Chassis, public Sim::Collision::IListener, publi
     void DoSteering(State &state, UMath::Vector3 &right, UMath::Vector3 &left);
     void DoWallSteer(State &state);
     void DoDriveForces(State &state);
+    void DoWheelForces(State &state);
 
     // Overrides
     // IUnknown
@@ -498,4 +511,199 @@ void SuspensionSimple::DoDriveForces(State &state) {
             }
         }
     }
+}
+
+void SuspensionSimple::DoWheelForces(State &state) {
+    const float dT = state.time;
+
+    UMath::Vector3 steerR;
+    UMath::Vector3 steerL;
+    DoSteering(state, steerR, steerL);
+
+    for (unsigned int i = 2; i < 4; ++i) {
+        mTires[i]->SetEBrake(state.ebrake_input);
+    }
+
+    for (unsigned int i = 0; i < 4; ++i) {
+        mTires[i]->SetBrake(state.brake_input);
+    }
+
+    float catchup_cheat = 0.5f;
+    if (state.driver_style == 3 && state.driver_class != 1) {
+        if (!mCheater) {
+            catchup_cheat = 1.0f;
+        } else {
+            catchup_cheat = mCheater->GetCatchupCheat();
+        }
+        catchup_cheat = catchup_cheat * (0.5f - 0.23f) + 0.23f;
+    }
+
+    float shock_specs[2];
+    float shock_ext_specs[2];
+    float shock_valving[2];
+    float shock_digression[2];
+    float spring_specs[2];
+    float sway_specs[2];
+    float travel_specs[2];
+    float rideheight_specs[2];
+    float progression[2];
+
+    for (unsigned int i = 0; i < 2; ++i) {
+        shock_specs[i] = LBIN2NM(mSuspensionInfo.SHOCK_STIFFNESS().At(i));
+        shock_ext_specs[i] = LBIN2NM(mSuspensionInfo.SHOCK_EXT_STIFFNESS().At(i));
+        shock_valving[i] = INCH2METERS(mSuspensionInfo.SHOCK_VALVING().At(i));
+        shock_digression[i] = 1.0f - mSuspensionInfo.SHOCK_DIGRESSION().At(i);
+        spring_specs[i] = LBIN2NM(mSuspensionInfo.SPRING_STIFFNESS().At(i));
+        sway_specs[i] = LBIN2NM(mSuspensionInfo.SWAYBAR_STIFFNESS().At(i));
+        travel_specs[i] = INCH2METERS(mSuspensionInfo.TRAVEL().At(i));
+        rideheight_specs[i] = INCH2METERS(mSuspensionInfo.RIDE_HEIGHT().At(i));
+        progression[i] = mSuspensionInfo.SPRING_PROGRESSION().At(i);
+    }
+
+    float sway_stiffness[4];
+    sway_stiffness[0] = (mTires[0]->GetCompression() - mTires[1]->GetCompression()) * sway_specs[0];
+    sway_stiffness[1] = -sway_stiffness[0];
+    sway_stiffness[2] = (mTires[2]->GetCompression() - mTires[3]->GetCompression()) * sway_specs[1];
+    sway_stiffness[3] = -sway_stiffness[2];
+
+    UMath::Vector3 steering_normals[4];
+    steering_normals[0] = steerL;
+    steering_normals[1] = steerR;
+    steering_normals[2] = state.GetForwardVector();
+    steering_normals[3] = state.GetForwardVector();
+
+    unsigned int wheelsOnGround = 0;
+    float maxDelta = 0.0f;
+    bool resolve = false;
+
+    const UMath::Vector3 &vUp = state.GetUpVector();
+    const float maxShockForce = mSuspensionInfo.SHOCK_BLOWOUT() * state.mass * 0.25f * 9.81f;
+
+    for (unsigned int i = 0; i < 4; ++i) {
+        const unsigned int axle = i / 2;
+        Tire &wheel = GetWheel(i);
+        wheel.UpdatePosition(state.angular_vel, state.linear_vel, state.matrix, state.world_cog, state.time, wheel.GetRadius(), true, state.collider,
+                             state.dimension.y * 2.0f);
+
+        const UMath::Vector3 &groundNormal = UMath::Vector4To3(wheel.GetNormal());
+        const UMath::Vector3 &forwardNormal = steering_normals[i];
+        UMath::Vector3 lateralNormal;
+        UMath::UnitCross(groundNormal, forwardNormal, lateralNormal);
+
+        const float upness = UMath::Clamp(UMath::Dot(groundNormal, vUp), 0.0f, 1.0f);
+        const float oldCompression = wheel.GetCompression();
+        float newCompression = rideheight_specs[axle] * upness + wheel.GetNormal().w;
+        const float maxCompression = travel_specs[axle];
+
+        if (oldCompression == 0.0f) {
+            maxDelta = UMath::Max(maxDelta, newCompression - maxCompression);
+        }
+
+        newCompression = UMath::Max(newCompression, 0.0f);
+        if (maxCompression < newCompression) {
+            maxDelta = UMath::Max(maxDelta, newCompression - maxCompression);
+            newCompression = maxCompression;
+        }
+
+        if (newCompression <= FLOAT_EPSILON || upness <= VehicleSystem::ENABLE_ROLL_STOPS_THRESHOLD) {
+            wheel.SetForce(UMath::Vector3::kZero);
+            wheel.UpdateFree(dT);
+        } else {
+            ++wheelsOnGround;
+
+            float rise = (newCompression - oldCompression) / dT;
+            if (FLOAT_EPSILON < shock_valving[axle] && shock_digression[axle] < 1.0f) {
+                const float abs_rise = UMath::Abs(rise);
+                if (shock_valving[axle] < abs_rise) {
+                    float digressed = shock_valving[axle] * UMath::Pow(abs_rise / shock_valving[axle], shock_digression[axle]);
+                    rise = rise < 0.0f ? -digressed : digressed;
+                }
+            }
+
+            float damp = rise * (rise <= 0.0f ? shock_ext_specs[axle] : shock_specs[axle]);
+            if (maxShockForce < damp) {
+                damp = 0.0f;
+            }
+
+            float verticalLoad = damp + (newCompression * spring_specs[axle]) * (newCompression * progression[axle] + 1.0f) + sway_stiffness[i];
+            verticalLoad = UMath::Max(verticalLoad, 0.0f);
+
+            const UMath::Vector3 &pointVelocity = wheel.GetVelocity();
+            const float xspeed = UMath::Dot(pointVelocity, lateralNormal);
+            const float zspeed = UMath::Dot(pointVelocity, forwardNormal);
+            float traction_force = wheel.UpdateLoaded(xspeed, state.local_vel.z, state.local_vel.z, verticalLoad, dT, catchup_cheat);
+
+            float max_traction = (xspeed / dT) * 9.81f * (state.mass * 0.25f);
+            if (max_traction < 0.0f) {
+                max_traction = -max_traction;
+            }
+            traction_force = UMath::Clamp(traction_force, -max_traction, max_traction);
+
+            UMath::Vector3 lateralForce;
+            UMath::Scale(lateralNormal, traction_force, lateralForce);
+
+            UMath::Vector3 driveForce;
+            UMath::UnitCross(lateralNormal, groundNormal, driveForce);
+            UMath::Scale(driveForce, wheel.GetLongitudeForce(), driveForce);
+
+            UMath::Vector3 verticalForce;
+            UMath::Scale(vUp, verticalLoad, verticalForce);
+
+            UMath::Vector3 force;
+            UMath::Add(lateralForce, driveForce, force);
+            UMath::Add(force, verticalForce, force);
+            wheel.SetForce(force);
+            resolve = true;
+        }
+
+        if (newCompression == 0.0f) {
+            wheel.IncAirTime(dT);
+        } else {
+            wheel.SetAirTime(0.0f);
+        }
+        wheel.SetCompression(newCompression);
+    }
+
+    if (resolve) {
+        UMath::Vector3 total_force = UMath::Vector3::kZero;
+        UMath::Vector3 total_torque = UMath::Vector3::kZero;
+
+        for (unsigned int i = 0; i < 4; ++i) {
+            Tire &wheel = GetWheel(i);
+            UMath::Vector3 p = wheel.GetLocalArm();
+            p.y += wheel.GetCompression();
+            p.y -= rideheight_specs[i / 2];
+            UMath::RotateTranslate(p, state.matrix, p);
+            wheel.SetPosition(p);
+
+            UMath::Vector3 r;
+            UMath::Sub(p, state.world_cog, r);
+            UMath::Sub(r, state.GetPosition(), r);
+
+            UMath::Vector3 torque;
+            UMath::Cross(r, wheel.GetForce(), torque);
+            UMath::Add(total_force, wheel.GetForce(), total_force);
+            UMath::Add(total_torque, torque, total_torque);
+        }
+
+        const float yaw = UMath::Dot(vUp, total_torque);
+        UMath::ScaleAdd(vUp, yaw * mYawControlMultiplier - yaw, total_torque, total_torque);
+        mRB->Resolve(total_force, total_torque);
+    }
+
+    if (0.0f < maxDelta) {
+        for (unsigned int i = 0; i < 4; ++i) {
+            Tire &wheel = GetWheel(i);
+            wheel.SetY(wheel.GetPosition().y + maxDelta);
+        }
+        mRB->ModifyYPos(maxDelta);
+    }
+
+    if (wheelsOnGround != 0 && !mNumWheelsOnGround) {
+        state.local_angular_vel.y *= 0.5f;
+        UMath::Rotate(state.local_angular_vel, state.matrix, state.angular_vel);
+        mRB->SetAngularVelocity(state.angular_vel);
+    }
+
+    mNumWheelsOnGround = wheelsOnGround;
 }
