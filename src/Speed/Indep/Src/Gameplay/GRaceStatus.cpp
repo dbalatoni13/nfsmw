@@ -859,9 +859,9 @@ void GRacerInfo::FinalizeRaceStats() {
         return;
     }
 
-    time_now = GetRaceTime();
+    currentTime = GetRaceTime();
+    time_now = currentTime;
     pctComplete = GetPctRaceComplete();
-    currentTime = time_now;
     if (0.1f < pctComplete) {
         currentTime = currentTime / (pctComplete * 0.01f);
     }
