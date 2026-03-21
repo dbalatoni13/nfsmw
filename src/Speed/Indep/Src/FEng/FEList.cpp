@@ -60,21 +60,24 @@ FENode::~FENode() {
 }
 
 bool FENode::SetName(const char* theName) {
-    bool result = false;
+    bool retval = false;
+    int Len;
+
     if (name) {
         delete[] name;
         name = nullptr;
     }
     if (theName) {
-        int len = FEngStrLen(theName);
-        name = static_cast<char*>(FEngMalloc(len + 1, 0, 0));
+        Len = FEngStrLen(theName);
+
+        name = FENG_NEW char[Len + 1];
         if (name) {
-            result = true;
+            retval = true;
             FEngStrCpy(name, theName);
         }
     }
     nameHash = FEHashUpper(name);
-    return result;
+    return retval;
 }
 
 void FEMinList::AddNode(FEMinNode* insertpoint, FEMinNode* node) {

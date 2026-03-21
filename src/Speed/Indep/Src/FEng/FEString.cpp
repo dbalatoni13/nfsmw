@@ -29,7 +29,9 @@ void FEString::SetLabel(const char* pString) {
 
     pLabelName = 0;
     if (pString) {
-        pLabelName = static_cast<char*>(FEngMalloc(FEngStrLen(pString) + 1, 0, 0));
+        unsigned long Len = FEngStrLen(pString) + 1;
+
+        pLabelName = FENG_NEW char[Len];
         FEngStrCpy(pLabelName, pString);
     }
 

@@ -114,8 +114,9 @@ void FEObject::SetName(const char* pNewName) {
     }
     NameHash = -1;
     if (pNewName) {
-        int len = FEngStrLen(pNewName);
-        pName = static_cast<char*>(FEngMalloc(len + 1, nullptr, 0));
+        int Len = FEngStrLen(pNewName);
+
+        pName = FENG_NEW char[Len + 1];
         FEngStrCpy(pName, pNewName);
         NameHash = FEHashUpper(pName);
     }

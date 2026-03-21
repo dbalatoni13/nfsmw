@@ -502,7 +502,8 @@ void FEPackage::SetFilename(const char* pName) {
     pFilename = nullptr;
     if (pName) {
         int Len = FEngStrLen(pName);
-        pFilename = static_cast<char*>(FEngMalloc(Len + 1, nullptr, 0));
+
+        pFilename = FENG_NEW char[Len + 1];
         FEngStrCpy(pFilename, pName);
     }
 }

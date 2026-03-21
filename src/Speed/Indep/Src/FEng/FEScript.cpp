@@ -70,7 +70,9 @@ void FEScript::SetName(const char* pNewName) {
 
     ID = 0xFFFFFFFF;
     if (pNewName) {
-        pName = static_cast<char*>(FEngMalloc(FEngStrLen(pNewName) + 1, nullptr, 0));
+        int Len = FEngStrLen(pNewName) + 1;
+
+        pName = FENG_NEW char[Len];
         FEngStrCpy(pName, pNewName);
         ID = FEHashUpper(pName);
     }
