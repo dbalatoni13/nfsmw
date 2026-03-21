@@ -478,10 +478,10 @@ void cSampleWarpper::Play(const SND_Params *Params) {
         AEMS_StichCollision *sample = static_cast<AEMS_StichCollision *>(Csis::System::Alloc(0x2C));
 
         SND_SampleRef *ref = SampleRefData;
-        int sampleIndex = static_cast<int>(ref->SampleIndex);
         int sampleType = static_cast<int>(ref->eStichType);
-        int sampleOffset = static_cast<int>(ref->Offset);
+        int sampleIndex = static_cast<int>(ref->SampleIndex);
         int sampleAz = (TempAz + static_cast<unsigned short>(ref->Az) + 0x10000) % 0x10000;
+        int sampleOffset = static_cast<int>(ref->Offset);
         int wetFX = Params->RVerb;
 
         int type = sampleType;
@@ -568,10 +568,10 @@ void cSampleWarpper::Play(const SND_Params *Params) {
         AEMS_StichWoosh *sample = static_cast<AEMS_StichWoosh *>(Csis::System::Alloc(0x2C));
 
         SND_SampleRef *ref = SampleRefData;
-        int sampleIndex = static_cast<int>(ref->SampleIndex);
         int sampleType = static_cast<int>(ref->eStichType);
-        int sampleOffset = static_cast<int>(ref->Offset);
+        int sampleIndex = static_cast<int>(ref->SampleIndex);
         int sampleAz = (TempAz + static_cast<unsigned short>(ref->Az) + 0x10000) % 0x10000;
+        int sampleOffset = static_cast<int>(ref->Offset);
         int wetFX = Params->RVerb;
 
         int type = sampleType;
@@ -658,10 +658,10 @@ void cSampleWarpper::Play(const SND_Params *Params) {
         AEMS_StichStatic *sample = static_cast<AEMS_StichStatic *>(Csis::System::Alloc(0x2C));
 
         SND_SampleRef *ref = SampleRefData;
-        int sampleIndex = static_cast<int>(ref->SampleIndex);
         int sampleType = static_cast<int>(ref->eStichType);
-        int sampleOffset = static_cast<int>(ref->Offset);
+        int sampleIndex = static_cast<int>(ref->SampleIndex);
         int sampleAz = (TempAz + static_cast<unsigned short>(ref->Az) + 0x10000) % 0x10000;
+        int sampleOffset = static_cast<int>(ref->Offset);
         int wetFX = Params->RVerb;
 
         int type = sampleType;
