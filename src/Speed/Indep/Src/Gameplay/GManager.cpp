@@ -823,7 +823,6 @@ void GManager::ReleaseObjectStateStorage() {
         bFree(mObjectStateBuffer);
     }
 
-    mObjectStateBuffer = nullptr;
     mObjectStateBufferFree = nullptr;
     mObjectStateBufferSize = 0;
 }
