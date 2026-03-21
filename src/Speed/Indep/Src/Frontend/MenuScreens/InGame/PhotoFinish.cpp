@@ -175,11 +175,6 @@ void SillyTextureStreamerManager::UnloadAll() {
     }
 }
 
-void SillyTextureStreamerManager::MakeSpaceInPoolCallbackBridge(int param) {
-    SillyTextureStreamerManager *mgr = reinterpret_cast<SillyTextureStreamerManager *>(param);
-    mgr->MakeSpaceInPoolCallback();
-}
-
 void SillyTextureStreamerManager::LoadCallbackBridge(unsigned int param) {
     SillyTextureStreamerManager *mgr = reinterpret_cast<SillyTextureStreamerManager *>(param);
     mgr->LoadCallback();

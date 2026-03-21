@@ -568,8 +568,7 @@ void IconScroller::ScrollWrapped(eScrollDir dir) {
 }
 
 void IconScroller::ClipEdges(IconOption *option, float pos) {
-    float half = fWidth * 0.5f;
-    if (pos < fXCenter - half || pos > fXCenter + half) {
+    if (pos < fXCenter - fWidth * 0.5f || pos > fXCenter + fWidth * 0.5f) {
         FEngSetInvisible(option->FEngObject);
     } else {
         FEngSetVisible(option->FEngObject);

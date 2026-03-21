@@ -28,7 +28,9 @@ class SillyTextureStreamerManager {
     bool IsBusyLoading();
 
   private:
-    static void MakeSpaceInPoolCallbackBridge(int param);
+    static void MakeSpaceInPoolCallbackBridge(int param) {
+        reinterpret_cast<SillyTextureStreamerManager *>(param)->MakeSpaceInPoolCallback();
+    }
     void MakeSpaceInPoolCallback();
     static void LoadCallbackBridge(unsigned int param);
     void LoadCallback();
