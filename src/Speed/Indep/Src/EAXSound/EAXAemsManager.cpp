@@ -457,26 +457,29 @@ int EAXAemsManager::InitiateLoad() {
     }
 
     if (m_pCurLoadSDLP->AssetDescription.eDataType < EAXSND_DT_GENERIC_DATA) {
-        if (m_pAsyncBuff != nullptr) {
+        if (m_pAsyncBuff == nullptr) {
+            m_AsyncBuffLocation = TMP_ALLOC_AUDIO;
+            bLargestMalloc(AudioMemoryPool);
             {
-                stSndDataLoadParams *curLoad = m_pCurLoadSDLP;
-                pBankSlot = curLoad->mBankSlot;
-                if (pBankSlot != nullptr) {
-                    pBankSlot->LoadFailed = 0;
-                }
-                curLoad->MemLocation = TMP_ALLOC_NONE;
-                curLoad->AssetDescription.eDataType = EAXSND_DT_AEMS_ASYNCSPU;
-            }
-            goto HaveQueueParams;
-        }
-        m_AsyncBuffLocation = TMP_ALLOC_AUDIO;
-        bLargestMalloc(AudioMemoryPool);
-        {
-            int nlargestbuff = bLargestMalloc(0);
-            if (nlargestbuff <= 0x20000) {
-                m_pAsyncBuff = static_cast<char *>(TheTrackStreamer.AllocateUserMemory(0x10000, "EAXAemsManager::m_pAsyncBuff", 0));
-                m_AsyncBuffLocation = TMP_ALLOC_TRACKSTREAMER;
-                if (m_pAsyncBuff != nullptr) {
+                int nlargestbuff = bLargestMalloc(0);
+                if (nlargestbuff <= 0x20000) {
+                    m_pAsyncBuff = static_cast<char *>(TheTrackStreamer.AllocateUserMemory(0x10000, "EAXAemsManager::m_pAsyncBuff", 0));
+                    m_AsyncBuffLocation = TMP_ALLOC_TRACKSTREAMER;
+                    if (m_pAsyncBuff != nullptr) {
+                        {
+                            stSndDataLoadParams *curLoad = m_pCurLoadSDLP;
+                            pBankSlot = curLoad->mBankSlot;
+                            if (pBankSlot != nullptr) {
+                                pBankSlot->LoadFailed = 0;
+                            }
+                            curLoad->MemLocation = TMP_ALLOC_NONE;
+                            curLoad->AssetDescription.eDataType = EAXSND_DT_AEMS_ASYNCSPU;
+                        }
+                        goto HaveQueueParams;
+                    }
+                } else {
+                    m_AsyncBuffLocation = TMP_ALLOC_MAIN;
+                    m_pAsyncBuff = static_cast<char *>(bMalloc(0x10000, 0));
                     {
                         stSndDataLoadParams *curLoad = m_pCurLoadSDLP;
                         pBankSlot = curLoad->mBankSlot;
@@ -488,26 +491,24 @@ int EAXAemsManager::InitiateLoad() {
                     }
                     goto HaveQueueParams;
                 }
-            } else {
-                m_AsyncBuffLocation = TMP_ALLOC_MAIN;
-                m_pAsyncBuff = static_cast<char *>(bMalloc(0x10000, 0));
-                {
-                    stSndDataLoadParams *curLoad = m_pCurLoadSDLP;
-                    pBankSlot = curLoad->mBankSlot;
-                    if (pBankSlot != nullptr) {
-                        pBankSlot->LoadFailed = 0;
-                    }
-                    curLoad->MemLocation = TMP_ALLOC_NONE;
-                    curLoad->AssetDescription.eDataType = EAXSND_DT_AEMS_ASYNCSPU;
-                }
-                goto HaveQueueParams;
             }
+            pBankSlot = m_pCurLoadSDLP->mBankSlot;
+            if (pBankSlot != nullptr) {
+                pBankSlot->LoadFailed = 1;
+            }
+            result = -2;
+        } else {
+            {
+                stSndDataLoadParams *curLoad = m_pCurLoadSDLP;
+                pBankSlot = curLoad->mBankSlot;
+                if (pBankSlot != nullptr) {
+                    pBankSlot->LoadFailed = 0;
+                }
+                curLoad->MemLocation = TMP_ALLOC_NONE;
+                curLoad->AssetDescription.eDataType = EAXSND_DT_AEMS_ASYNCSPU;
+            }
+            goto HaveQueueParams;
         }
-        pBankSlot = m_pCurLoadSDLP->mBankSlot;
-        if (pBankSlot != nullptr) {
-            pBankSlot->LoadFailed = 1;
-        }
-        result = -2;
     } else {
         m_pCurLoadSDLP->MemLocation = TMP_ALLOC_AUDIO;
     HaveQueueParams:
