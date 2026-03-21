@@ -70,7 +70,7 @@ static inline unsigned char ClampAnalogValue(int value) {
 void PlatformInitJoystick() {
     int i;
 
-    plat_lgwheels = new LGWheels;
+    plat_lgwheels = ::new (__FILE__, __LINE__) LGWheels;
     for (i = 0; i < 4; i++) {
         notYetCalibrating[i] = 1;
         wasWheelConnected[i] = 0;
