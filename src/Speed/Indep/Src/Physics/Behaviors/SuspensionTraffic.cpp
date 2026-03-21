@@ -172,10 +172,6 @@ SuspensionTraffic::SuspensionTraffic(const BehaviorParams &bp, const SuspensionP
       mLastSteer(0.0f),         //
       mNumWheelsOnGround(0),    //
       mMaxSteering(45.0f) {
-    for (int i = 0; i < 4; ++i) {
-        mTires[i] = 0;
-    }
-
     GetOwner()->QueryInterface(&mRB);
     GetOwner()->QueryInterface(&mRBComplex);
     GetOwner()->QueryInterface(&mInput);

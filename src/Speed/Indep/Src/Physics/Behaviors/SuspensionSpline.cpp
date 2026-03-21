@@ -40,6 +40,34 @@ class SuspensionSpline : public Chassis, public INISCarControl {
             return mRadius;
         }
 
+        float GetAngularVelocity() const {
+            return mAV;
+        }
+
+        float GetCurrentSlip() const {
+            return mSlip;
+        }
+
+        float GetLateralSpeed() const {
+            return mLateralSpeed;
+        }
+
+        float GetLoad() const {
+            return mLoad;
+        }
+
+        float GetSlipAngle() const {
+            return mSlipAngle;
+        }
+
+        float GetTraction() const {
+            return mLocked ? 0.0f : 1.0f;
+        }
+
+        void SetAngularVelocity(float av) {
+            mAV = av;
+        }
+
         void SetLocked(bool locked) {
             mLocked = locked;
         }
@@ -71,8 +99,28 @@ class SuspensionSpline : public Chassis, public INISCarControl {
     ~SuspensionSpline() override;
 
     // ISuspension
+    float GetWheelTraction(unsigned int index) const override;
+    unsigned int GetNumWheels() const override;
+    const UMath::Vector3 &GetWheelPos(unsigned int i) const override;
+    const UMath::Vector3 &GetWheelLocalPos(unsigned int i) const override;
     void MatchSpeed(float speed) override;
     UMath::Vector3 GetWheelCenterPos(unsigned int i) const override;
+    float GetWheelLoad(unsigned int i) const override;
+    const float GetWheelRoadHeight(unsigned int i) const override;
+    float GetCompression(unsigned int i) const override;
+    float GetWheelSlip(unsigned int idx) const override;
+    float GetToleratedSlip(unsigned int idx) const override;
+    float GetWheelSkid(unsigned int idx) const override;
+    float GetWheelSlipAngle(unsigned int idx) const override;
+    const UMath::Vector4 &GetWheelRoadNormal(unsigned int i) const override;
+    const SimSurface &GetWheelRoadSurface(unsigned int i) const override;
+    const UMath::Vector3 &GetWheelVelocity(unsigned int i) const override;
+    int GetNumWheelsOnGround() const override;
+    Radians GetWheelAngularVelocity(int index) const override;
+    void SetWheelAngularVelocity(int wheel, float w) override;
+    float GetWheelSteer(unsigned int wheel) const override;
+    float GetWheelRadius(unsigned int index) const override;
+    float GetMaxSteering() const override;
 
     // Behavior
     void OnTaskSimulate(float dT) override;
@@ -378,10 +426,90 @@ UMath::Vector3 SuspensionSpline::GetWheelCenterPos(unsigned int i) const {
     }
 }
 
+float SuspensionSpline::GetWheelTraction(unsigned int index) const {
+    return mTires[index]->GetTraction();
+}
+
+unsigned int SuspensionSpline::GetNumWheels() const {
+    return 4;
+}
+
+const UMath::Vector3 &SuspensionSpline::GetWheelPos(unsigned int i) const {
+    return mTires[i]->GetPosition();
+}
+
+const UMath::Vector3 &SuspensionSpline::GetWheelLocalPos(unsigned int i) const {
+    return mTires[i]->GetLocalArm();
+}
+
+float SuspensionSpline::GetWheelLoad(unsigned int i) const {
+    return mTires[i]->GetLoad();
+}
+
+const float SuspensionSpline::GetWheelRoadHeight(unsigned int i) const {
+    return mTires[i]->GetNormal().w;
+}
+
+float SuspensionSpline::GetCompression(unsigned int i) const {
+    return mTires[i]->GetCompression();
+}
+
 void SuspensionSpline::MatchSpeed(float speed) {
     for (int i = 0; i < 4; ++i) {
         mTires[i]->MatchSpeed(speed);
     }
+}
+
+float SuspensionSpline::GetWheelSlip(unsigned int idx) const {
+    return mTires[idx]->GetCurrentSlip();
+}
+
+float SuspensionSpline::GetToleratedSlip(unsigned int idx) const {
+    return 0.0f;
+}
+
+float SuspensionSpline::GetWheelSkid(unsigned int idx) const {
+    return mTires[idx]->GetLateralSpeed();
+}
+
+float SuspensionSpline::GetWheelSlipAngle(unsigned int idx) const {
+    return mTires[idx]->GetSlipAngle();
+}
+
+const UMath::Vector4 &SuspensionSpline::GetWheelRoadNormal(unsigned int i) const {
+    return mTires[i]->GetNormal();
+}
+
+const SimSurface &SuspensionSpline::GetWheelRoadSurface(unsigned int i) const {
+    return mTires[i]->GetSurface();
+}
+
+const UMath::Vector3 &SuspensionSpline::GetWheelVelocity(unsigned int i) const {
+    return mTires[i]->GetVelocity();
+}
+
+int SuspensionSpline::GetNumWheelsOnGround() const {
+    return mNumWheelsOnGround;
+}
+
+Radians SuspensionSpline::GetWheelAngularVelocity(int index) const {
+    return mTires[index]->GetAngularVelocity();
+}
+
+void SuspensionSpline::SetWheelAngularVelocity(int wheel, float w) {
+    mTires[wheel]->SetAngularVelocity(w);
+}
+
+float SuspensionSpline::GetWheelSteer(unsigned int wheel) const {
+    return wheel < 2 ? mSteering : 0.0f;
+}
+
+float SuspensionSpline::GetWheelRadius(unsigned int index) const {
+    return mTires[index]->GetRadius();
+}
+
+float SuspensionSpline::GetMaxSteering() const {
+    return mMaxSteering;
 }
 
 void SuspensionSpline::Reset() {
