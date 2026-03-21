@@ -2999,7 +2999,9 @@ void GRaceStatus::Update(float dT) {
             GRacerInfo &info = GetRacerInfo(idx);
 
             info.Update(dT);
-            if (info.GetSimable()) {
+            ISimable *simable = info.GetSimable();
+
+            if (simable) {
                 float weight = 1.0f;
 
                 if (!info.GetGameCharacter()) {
