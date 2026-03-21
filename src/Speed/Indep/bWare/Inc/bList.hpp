@@ -113,8 +113,15 @@ struct bList {
     bNode *AddTail(bNode *node) {
         return node->AddBefore(&this->HeadNode);
     }
-    bNode *AddBefore(bNode *insert_point, bNode *node);
-    bNode *AddAfter(bNode *insert_point, bNode *node); // TODO
+
+    bNode *AddBefore(bNode *insert_point, bNode *node) {
+        return node->AddBefore(insert_point);
+    }
+
+    bNode *AddAfter(bNode *insert_point, bNode *node) {
+        return node->AddAfter(insert_point);
+    }
+
     bNode *Remove(bNode *node) {
         return node->Remove();
     }

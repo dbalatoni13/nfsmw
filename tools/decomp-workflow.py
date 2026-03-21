@@ -16,12 +16,15 @@ most common agent flows:
   python tools/decomp-workflow.py function -u main/Speed/Indep/SourceLists/zCamera -f UpdateAll --no-source
   python tools/decomp-workflow.py diff -u main/Speed/Indep/SourceLists/zCamera -d UpdateAll --reloc-diffs all
   python tools/decomp-workflow.py dwarf -u main/Speed/Indep/SourceLists/zCamera -f UpdateAll
+  python tools/decomp-workflow.py dwarf-scan -u main/Speed/Indep/SourceLists/zCamera
+  python tools/decomp-workflow.py dwarf-scan -u main/Speed/Indep/SourceLists/zCamera --objdiff-status match
   python tools/decomp-workflow.py dwarf -u main/Speed/Indep/SourceLists/zAttribSys -f 'Attrib::Class::RemoveCollection(Attrib::Collection *)' --full-diff
   python tools/decomp-workflow.py verify -u main/Speed/Indep/SourceLists/zCamera -f UpdateAll
   python tools/decomp-workflow.py unit -u main/Speed/Indep/SourceLists/zCamera
 """
 
 import argparse
+import difflib
 import json
 import re
 import os
@@ -45,6 +48,8 @@ from _common import (
     make_abs,
     run_objdiff_json,
 )
+from lookup import _candidate_func_names, _sig_contains_name, read_text, split_functions
+from split_dwarf_info import apply_umath_fixups
 
 
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -56,22 +61,49 @@ GC_SYMBOLS = os.path.join(ROOT_DIR, "config", "GOWE69", "symbols.txt")
 PS2_SYMBOLS = os.path.join(ROOT_DIR, "config", "SLES-53558-A124", "symbols.txt")
 GC_DWARF = os.path.join(ROOT_DIR, "symbols", "Dwarf")
 DEBUG_LINES = os.path.join(ROOT_DIR, "symbols", "debug_lines.txt")
+X360_COMPILER_DIR = os.path.join(ROOT_DIR, "build", "compilers", "X360", "14.00.2110")
+PS2_COMPILER_DIR = os.path.join(ROOT_DIR, "build", "compilers", "PS2", "ee-gcc2.9-991111")
+MIPS_BINUTILS_DIR = os.path.join(ROOT_DIR, "build", "mips_binutils")
 
 DEFAULT_SMOKE_UNIT = "main/Speed/Indep/SourceLists/zCamera"
 DEBUG_SYMBOL_PROBE_MANGLED = "UpdateAll__6Cameraf"
 DEBUG_SYMBOL_PROBE_DEMANGLED = "Camera::UpdateAll(float)"
 DEBUG_SYMBOL_PROBE_GC_ADDR = "0x80065A84"
 REBUILT_DEBUG_LINE_RE = re.compile(r"^\s*([0-9A-Fa-f]+)\s*:")
+DWARF_HEX_RE = re.compile(r"0x[0-9A-Fa-f]+")
 LOW_MATCH_PRIORITY_THRESHOLD = 60.0
 VERY_LOW_MATCH_PRIORITY_THRESHOLD = 40.0
 HIGH_MATCH_CLEANUP_THRESHOLD = 85.0
 VERY_HIGH_MATCH_CLEANUP_THRESHOLD = 95.0
+FunctionBlock = Tuple[str, str, str, str]
 
 SHARED_ASSET_REQUIREMENTS = [
     (os.path.join("build", "tools"), "downloaded tooling"),
     (os.path.join("orig", "GOWE69", "NFSMWRELEASE.ELF"), "GameCube original ELF"),
+    (
+        os.path.join("orig", "EUROPEGERMILESTONE", "NfsMWEuropeGerMilestone.xex"),
+        "Xbox original XEX",
+    ),
     (os.path.join("orig", "SLES-53558-A124", "NFS.ELF"), "PS2 original ELF"),
     (os.path.join("symbols", "Dwarf"), "DWARF dump"),
+]
+
+PLATFORM_BUILD_REQUIREMENTS = [
+    (
+        "x360-compiler",
+        X360_COMPILER_DIR,
+        "missing (seed build/compilers in this worktree for Xbox builds)",
+    ),
+    (
+        "ps2-compiler",
+        PS2_COMPILER_DIR,
+        "missing (seed build/compilers in this worktree for PS2 builds)",
+    ),
+    (
+        "ps2-binutils",
+        MIPS_BINUTILS_DIR,
+        "missing (seed build/mips_binutils in this worktree for PS2 builds)",
+    ),
 ]
 
 
@@ -292,6 +324,14 @@ def choose_objdiff_row(unit_name: str, function_name: str, reloc_diffs: str = "n
     return matches[0]
 
 
+def resolve_exact_function_name(
+    unit_name: str, function_name: str, reloc_diffs: str = "none"
+) -> str:
+    return str(
+        choose_objdiff_row(unit_name, function_name, reloc_diffs=reloc_diffs)["name"]
+    )
+
+
 def load_dwarf_report(
     unit_name: str,
     function_name: str,
@@ -305,6 +345,355 @@ def load_dwarf_report(
         return json.loads(result.stdout)
     except json.JSONDecodeError as e:
         raise WorkflowError(f"dwarf-compare.py returned invalid JSON: {e}")
+
+
+def load_dwarf_blocks(
+    path: str, folder_mode: bool, apply_split_fixups_in_ram: bool = False
+) -> List[FunctionBlock]:
+    if folder_mode:
+        text = read_text(os.path.join(path, "functions.nothpp"))
+    else:
+        text = read_text(path)
+    if apply_split_fixups_in_ram:
+        text = apply_umath_fixups(text)
+    return split_functions(text)
+
+
+def find_dwarf_function_blocks(
+    funcs: Sequence[FunctionBlock], query: str
+) -> List[FunctionBlock]:
+    candidates = _candidate_func_names(query)
+    exact_matches: List[FunctionBlock] = []
+    fuzzy_matches: List[FunctionBlock] = []
+
+    for func in funcs:
+        sig_line = func[2]
+        if sig_line == query:
+            exact_matches.append(func)
+        elif any(_sig_contains_name(sig_line, candidate) for candidate in candidates):
+            fuzzy_matches.append(func)
+
+    if exact_matches:
+        return exact_matches
+    return fuzzy_matches
+
+
+def choose_dwarf_function_block(
+    funcs: Sequence[FunctionBlock], query: str, label: str
+) -> FunctionBlock:
+    matches = find_dwarf_function_blocks(funcs, query)
+    if not matches:
+        raise WorkflowError(f"{label}: function '{query}' not found.")
+    if len(matches) > 1:
+        preview = "\n".join(f"  - {match[2]}" for match in matches[:8])
+        extra = ""
+        if len(matches) > 8:
+            extra = f"\n  ... {len(matches) - 8} more"
+        raise WorkflowError(
+            f"{label}: function query '{query}' matched multiple DWARF blocks.\n"
+            f"Use a more specific function name.\n{preview}{extra}"
+        )
+    return matches[0]
+
+
+def normalize_dwarf_line(line: str) -> str:
+    stripped = line.rstrip("\n").rstrip()
+    if stripped.startswith("// Range:"):
+        return "// Range: <range>"
+    return DWARF_HEX_RE.sub("0xADDR", stripped)
+
+
+def normalize_dwarf_block(block: str) -> List[str]:
+    return [normalize_dwarf_line(line) for line in block.splitlines()]
+
+
+def count_dwarf_opcodes(
+    opcodes: Sequence[Tuple[str, int, int, int, int]]
+) -> Dict[str, int]:
+    matching = 0
+    original_only = 0
+    rebuilt_only = 0
+    changed_groups = 0
+    for tag, i1, i2, j1, j2 in opcodes:
+        if tag == "equal":
+            matching += i2 - i1
+            continue
+        changed_groups += 1
+        if tag in ("replace", "delete"):
+            original_only += i2 - i1
+        if tag in ("replace", "insert"):
+            rebuilt_only += j2 - j1
+    return {
+        "matching_lines": matching,
+        "original_only_lines": original_only,
+        "rebuilt_only_lines": rebuilt_only,
+        "changed_groups": changed_groups,
+    }
+
+
+def build_dwarf_scan_row(
+    row: Dict[str, Any],
+    original_funcs: Sequence[FunctionBlock],
+    rebuilt_funcs: Sequence[FunctionBlock],
+) -> Dict[str, Any]:
+    function_name = str(row["name"])
+    result: Dict[str, Any] = {
+        "function": function_name,
+        "symbol_name": row["symbol_name"],
+        "objdiff_status": row["status"],
+        "objdiff_match_percent": row["match_percent"],
+        "unmatched_bytes_est": row["unmatched_bytes_est"],
+        "size": row["size"],
+    }
+
+    try:
+        original_block = choose_dwarf_function_block(
+            original_funcs, function_name, "original DWARF"
+        )
+        rebuilt_block = choose_dwarf_function_block(
+            rebuilt_funcs, function_name, "rebuilt DWARF"
+        )
+        original_lines = normalize_dwarf_block(original_block[3])
+        rebuilt_lines = normalize_dwarf_block(rebuilt_block[3])
+        matcher = difflib.SequenceMatcher(a=original_lines, b=rebuilt_lines)
+        counts = count_dwarf_opcodes(matcher.get_opcodes())
+        total_lines = max(len(original_lines), len(rebuilt_lines), 1)
+        result.update(
+            {
+                "dwarf_status": "exact"
+                if original_lines == rebuilt_lines
+                else "mismatch",
+                "dwarf_match_percent": 100.0 * counts["matching_lines"] / total_lines,
+                "changed_groups": counts["changed_groups"],
+                "matching_lines": counts["matching_lines"],
+                "total_lines": total_lines,
+                "original_line_count": len(original_lines),
+                "rebuilt_line_count": len(rebuilt_lines),
+                "signature_match": normalize_dwarf_line(original_block[2])
+                == normalize_dwarf_line(rebuilt_block[2]),
+            }
+        )
+    except WorkflowError as e:
+        result.update(
+            {
+                "dwarf_status": "error",
+                "dwarf_match_percent": None,
+                "changed_groups": None,
+                "matching_lines": None,
+                "total_lines": None,
+                "original_line_count": None,
+                "rebuilt_line_count": None,
+                "signature_match": None,
+                "error": str(e),
+            }
+        )
+    return result
+
+
+def filter_dwarf_scan_rows(
+    rows: Sequence[Dict[str, Any]], dwarf_status: str
+) -> List[Dict[str, Any]]:
+    if dwarf_status == "all":
+        return list(rows)
+    if dwarf_status == "problem":
+        return [row for row in rows if row["dwarf_status"] in ("mismatch", "error")]
+    return [row for row in rows if row["dwarf_status"] == dwarf_status]
+
+
+def filter_dwarf_signature_rows(
+    rows: Sequence[Dict[str, Any]], signature_status: str
+) -> List[Dict[str, Any]]:
+    if signature_status == "all":
+        return list(rows)
+    want_match = signature_status == "match"
+    return [
+        row
+        for row in rows
+        if row.get("signature_match") is not None
+        and bool(row["signature_match"]) == want_match
+    ]
+
+
+def sort_dwarf_scan_rows(rows: List[Dict[str, Any]]) -> None:
+    status_rank = {"error": 0, "mismatch": 1, "exact": 2}
+    rows.sort(
+        key=lambda row: (
+            status_rank.get(str(row["dwarf_status"]), 3),
+            row["dwarf_match_percent"]
+            if row["dwarf_match_percent"] is not None
+            else -1.0,
+            0
+            if row.get("signature_match") is True
+            else 1
+            if row.get("signature_match") is False
+            else 2,
+            -(row["changed_groups"] or 0),
+            -(row["unmatched_bytes_est"] or 0),
+            row["objdiff_match_percent"]
+            if row["objdiff_match_percent"] is not None
+            else -1.0,
+            row["function"].lower(),
+        )
+    )
+
+
+def command_dwarf_scan(args: argparse.Namespace) -> None:
+    ensure_decomp_prereqs()
+    if not args.json:
+        print_section(f"DWARF Scan: {args.unit}")
+    ensure_shared_unit_output(args.unit)
+
+    rebuilt_dwarf_path = (
+        os.path.abspath(args.rebuilt_dwarf_file) if args.rebuilt_dwarf_file else None
+    )
+    cleanup_rebuilt_dwarf = False
+    try:
+        if not rebuilt_dwarf_path:
+            rebuilt_dwarf_path = dtk_dwarf_dump(get_unit_build_output(args.unit))
+            cleanup_rebuilt_dwarf = True
+
+        data = run_objdiff_json(
+            OBJDIFF_CLI,
+            args.unit,
+            reloc_diffs=args.reloc_diffs,
+            root_dir=ROOT_DIR,
+        )
+        rows = [
+            row
+            for row in build_objdiff_symbol_rows(data)
+            if row["type"] == "function" and row["side"] == "left"
+        ]
+        if args.objdiff_status != "all":
+            rows = [row for row in rows if row["status"] == args.objdiff_status]
+        if args.search:
+            rows = [
+                row
+                for row in rows
+                if fuzzy_match(args.search, row["name"])
+                or fuzzy_match(args.search, row["symbol_name"])
+            ]
+        if not rows:
+            raise WorkflowError("No functions match the given filters.")
+
+        original_funcs = load_dwarf_blocks(GC_DWARF, folder_mode=True)
+        rebuilt_funcs = load_dwarf_blocks(
+            rebuilt_dwarf_path, folder_mode=False, apply_split_fixups_in_ram=True
+        )
+        scan_rows = [
+            build_dwarf_scan_row(row, original_funcs, rebuilt_funcs) for row in rows
+        ]
+
+        summary = {
+            "scanned_functions": len(scan_rows),
+            "exact_functions": sum(
+                1 for row in scan_rows if row["dwarf_status"] == "exact"
+            ),
+            "mismatch_functions": sum(
+                1 for row in scan_rows if row["dwarf_status"] == "mismatch"
+            ),
+            "error_functions": sum(
+                1 for row in scan_rows if row["dwarf_status"] == "error"
+            ),
+            "byte_matched_dwarf_problems": sum(
+                1
+                for row in scan_rows
+                if row["objdiff_status"] == "match"
+                and row["dwarf_status"] in ("mismatch", "error")
+            ),
+            "signature_mismatch_functions": sum(
+                1 for row in scan_rows if row.get("signature_match") is False
+            ),
+        }
+
+        filtered_rows = filter_dwarf_scan_rows(scan_rows, args.dwarf_status)
+        filtered_rows = filter_dwarf_signature_rows(
+            filtered_rows, args.signature_status
+        )
+        sort_dwarf_scan_rows(filtered_rows)
+        if args.limit is not None:
+            filtered_rows = filtered_rows[: args.limit]
+
+        if args.json:
+            print(
+                json.dumps(
+                    {
+                        "unit": args.unit,
+                        "summary": summary,
+                        "rows": filtered_rows,
+                    },
+                    indent=2,
+                )
+            )
+            return
+
+        print(
+            f"Scanned {summary['scanned_functions']} function(s): "
+            f"{summary['exact_functions']} exact, "
+            f"{summary['mismatch_functions']} mismatched, "
+            f"{summary['error_functions']} errors."
+        )
+        print(
+            "Byte-matched but DWARF-problem functions: "
+            f"{summary['byte_matched_dwarf_problems']}"
+        )
+        print(
+            "Signature-mismatch functions: "
+            f"{summary['signature_mismatch_functions']}"
+        )
+
+        if not filtered_rows:
+            print("No functions match the given filters.")
+            return
+
+        print()
+        print(
+            f"{'DSTAT':<8} {'DWARF':>7} {'SIG':>3} {'CHG':>4} {'OBJ':>7} {'OSTAT':<10} {'UNM':>6} FUNCTION"
+        )
+        print("-" * 120)
+        for row in filtered_rows:
+            dwarf_percent = (
+                f"{row['dwarf_match_percent']:.1f}%"
+                if row["dwarf_match_percent"] is not None
+                else "ERR"
+            )
+            objdiff_percent = (
+                f"{row['objdiff_match_percent']:.1f}%"
+                if row["objdiff_match_percent"] is not None
+                else "-"
+            )
+            changed_groups = (
+                str(row["changed_groups"]) if row["changed_groups"] is not None else "-"
+            )
+            signature_state = (
+                "yes"
+                if row.get("signature_match") is True
+                else "no"
+                if row.get("signature_match") is False
+                else "-"
+            )
+            print(
+                f"{row['dwarf_status']:<8} {dwarf_percent:>7} {signature_state:>3} {changed_groups:>4} "
+                f"{objdiff_percent:>7} {row['objdiff_status']:<10} "
+                f"{row['unmatched_bytes_est']:>5}B {row['function']}"
+            )
+            if args.show_errors and row.get("error"):
+                first_line = str(row["error"]).splitlines()[0]
+                print(f"  error: {first_line}")
+
+        print()
+        print(
+            "Tip: focus matched-byte functions first with "
+            "`python tools/decomp-workflow.py dwarf-scan "
+            f"-u {shlex.quote(args.unit)} --objdiff-status match`"
+        )
+        if summary["signature_mismatch_functions"]:
+            print(
+                "Tip: add `--signature-status match` to focus body/local DWARF mismatches "
+                "instead of signature-only trouble."
+            )
+    finally:
+        if cleanup_rebuilt_dwarf:
+            maybe_remove(rebuilt_dwarf_path)
 
 
 def lookup_symbol_address(symbols_file: str, mangled_name: str) -> Optional[str]:
@@ -394,6 +783,14 @@ def command_health(args: argparse.Namespace) -> None:
         report(True, "ghidra", "GC + PS2 programs available")
     except WorkflowError as e:
         report(False, "ghidra", str(e))
+
+    print_section("Platform Build Inputs")
+    for label, abs_path, missing_detail in PLATFORM_BUILD_REQUIREMENTS:
+        report(
+            os.path.exists(abs_path),
+            label,
+            describe_path(abs_path) if os.path.exists(abs_path) else missing_detail,
+        )
 
     print_section("Debug Symbol Checks")
     try:
@@ -642,6 +1039,9 @@ def command_function(args: argparse.Namespace) -> None:
     ensure_decomp_prereqs()
     print_section(f"Function Workflow: {args.function}")
     ensure_shared_unit_output(args.unit)
+    resolved_function_name = resolve_exact_function_name(
+        args.unit, args.function, reloc_diffs=args.reloc_diffs
+    )
     cmd = python_tool("decomp-context.py", "-u", args.unit, "-f", args.function)
     if args.no_source:
         cmd.append("--no-source")
@@ -661,9 +1061,14 @@ def command_function(args: argparse.Namespace) -> None:
     print(flush=True)
     print(
         "Required completion check: python tools/decomp-workflow.py verify "
-        f"-u {shlex.quote(args.unit)} -f {shlex.quote(args.function)}",
+        f"-u {shlex.quote(args.unit)} -f {shlex.quote(resolved_function_name)}",
         flush=True,
     )
+    if resolved_function_name != args.function:
+        print(
+            f"(Resolved exact function name for DWARF-safe follow-up: {resolved_function_name})",
+            flush=True,
+        )
 
 
 def command_unit(args: argparse.Namespace) -> None:
@@ -810,8 +1215,11 @@ def command_dwarf(args: argparse.Namespace) -> None:
     print_section(f"DWARF Workflow: {args.unit} / {args.function}")
     if not args.rebuilt_dwarf_file:
         ensure_shared_unit_output(args.unit)
+    resolved_function_name = resolve_exact_function_name(args.unit, args.function)
 
-    cmd: List[str] = python_tool("dwarf-compare.py", "-u", args.unit, "-f", args.function)
+    cmd: List[str] = python_tool(
+        "dwarf-compare.py", "-u", args.unit, "-f", resolved_function_name
+    )
     if args.summary:
         cmd.append("--summary")
     if args.json:
@@ -833,18 +1241,24 @@ def command_verify(args: argparse.Namespace) -> None:
     ensure_shared_unit_output(args.unit)
 
     objdiff_row = choose_objdiff_row(args.unit, args.function, reloc_diffs=args.reloc_diffs)
-    dwarf_report = load_dwarf_report(
-        args.unit,
-        args.function,
-        rebuilt_dwarf_file=args.rebuilt_dwarf_file,
-    )
+    resolved_function_name = str(objdiff_row["name"])
+    dwarf_load_error: Optional[str] = None
+    dwarf_report: Optional[Dict[str, Any]] = None
+    try:
+        dwarf_report = load_dwarf_report(
+            args.unit,
+            resolved_function_name,
+            rebuilt_dwarf_file=args.rebuilt_dwarf_file,
+        )
+    except WorkflowError as e:
+        dwarf_load_error = str(e)
 
     objdiff_exact = (
         objdiff_row["status"] == "match"
         and objdiff_row["match_percent"] is not None
         and float(objdiff_row["match_percent"]) >= 100.0
     )
-    dwarf_exact = bool(dwarf_report["normalized_exact_match"])
+    dwarf_exact = bool(dwarf_report["normalized_exact_match"]) if dwarf_report else False
     overall_ok = objdiff_exact and dwarf_exact
 
     objdiff_percent = (
@@ -852,34 +1266,56 @@ def command_verify(args: argparse.Namespace) -> None:
         if objdiff_row["match_percent"] is not None
         else "-"
     )
-    dwarf_percent = f"{float(dwarf_report['match_percent']):.1f}%"
+    dwarf_percent = (
+        f"{float(dwarf_report['match_percent']):.1f}%" if dwarf_report else "-"
+    )
 
     print(
         f"objdiff: {'PASS' if objdiff_exact else 'FAIL'} | "
         f"{objdiff_percent} | status={objdiff_row['status']} | "
         f"unmatched~{objdiff_row['unmatched_bytes_est']}B"
     )
-    print(
-        f"DWARF:  {'PASS' if dwarf_exact else 'FAIL'} | "
-        f"{dwarf_percent} | normalized exact={'yes' if dwarf_exact else 'no'} | "
-        f"change groups={dwarf_report['changed_groups']}"
-    )
+    if dwarf_report:
+        print(
+            f"DWARF:  {'PASS' if dwarf_exact else 'FAIL'} | "
+            f"{dwarf_percent} | normalized exact={'yes' if dwarf_exact else 'no'} | "
+            f"change groups={dwarf_report['changed_groups']}"
+        )
+    else:
+        print("DWARF:  FAIL | unable to compare rebuilt vs original DWARF", flush=True)
+    if resolved_function_name != args.function:
+        print(f"Resolved DWARF symbol: {resolved_function_name}")
     print(f"Overall: {'PASS' if overall_ok else 'FAIL'}")
     print("Done means both objdiff and normalized DWARF are exact for the function.")
 
     if overall_ok:
         return
 
+    if dwarf_load_error:
+        print(flush=True)
+        print("DWARF compare could not complete:", flush=True)
+        print(dwarf_load_error, flush=True)
+        if (
+            objdiff_row["status"] == "missing"
+            and "rebuilt DWARF: function" in dwarf_load_error
+            and "not found" in dwarf_load_error
+        ):
+            print(
+                "Hint: the rebuilt object does not contain this function yet. "
+                "Implement the function or fix its ownership/signature first, then rerun verify.",
+                flush=True,
+            )
+
     print(flush=True)
     print("Follow-up commands:", flush=True)
     print(
         f"  python tools/decomp-workflow.py diff -u {shlex.quote(args.unit)} "
-        f"-d {shlex.quote(args.function)}",
+        f"-d {shlex.quote(resolved_function_name)}",
         flush=True,
     )
     print(
         f"  python tools/decomp-workflow.py dwarf -u {shlex.quote(args.unit)} "
-        f"-f {shlex.quote(args.function)}",
+        f"-f {shlex.quote(resolved_function_name)}",
         flush=True,
     )
     raise WorkflowError(
@@ -897,7 +1333,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     health = subparsers.add_parser(
         "health",
-        help="Check whether the current worktree is ready for GC and PS2 decomp work",
+        help="Check whether the current worktree is ready for GC, Xbox, and PS2 work",
     )
     health.add_argument(
         "--full",
@@ -941,7 +1377,12 @@ def build_parser() -> argparse.ArgumentParser:
         help="Run decomp-context.py for one function",
     )
     function.add_argument("-u", "--unit", required=True, help="Translation unit name")
-    function.add_argument("-f", "--function", required=True, help="Function name to inspect")
+    function.add_argument(
+        "-f",
+        "--function",
+        required=True,
+        help="Function name to inspect (full name or a unique substring)",
+    )
     function.add_argument(
         "--no-source",
         action="store_true",
@@ -1086,7 +1527,12 @@ def build_parser() -> argparse.ArgumentParser:
         help="Compare original vs rebuilt DWARF for one function",
     )
     dwarf.add_argument("-u", "--unit", required=True, help="Translation unit name")
-    dwarf.add_argument("-f", "--function", required=True, help="Function name to compare")
+    dwarf.add_argument(
+        "-f",
+        "--function",
+        required=True,
+        help="Function name to compare (full name or a unique substring)",
+    )
     dwarf.add_argument(
         "--summary",
         action="store_true",
@@ -1122,12 +1568,72 @@ def build_parser() -> argparse.ArgumentParser:
     )
     dwarf.set_defaults(func=command_dwarf)
 
+    dwarf_scan = subparsers.add_parser(
+        "dwarf-scan",
+        help="Scan one translation unit and rank per-function DWARF problem areas",
+    )
+    dwarf_scan.add_argument("-u", "--unit", required=True, help="Translation unit name")
+    dwarf_scan.add_argument(
+        "--search",
+        help="Only include functions whose name or symbol contains this text",
+    )
+    dwarf_scan.add_argument(
+        "--objdiff-status",
+        choices=["all", "match", "nonmatching", "missing"],
+        default="all",
+        help="Filter functions by objdiff status before scanning (default: all)",
+    )
+    dwarf_scan.add_argument(
+        "--dwarf-status",
+        choices=["all", "problem", "exact", "mismatch", "error"],
+        default="problem",
+        help="Filter scan results by DWARF outcome after scanning (default: problem)",
+    )
+    dwarf_scan.add_argument(
+        "--signature-status",
+        choices=["all", "match", "mismatch"],
+        default="all",
+        help="Filter scan results by whether the DWARF signature already matches (default: all)",
+    )
+    dwarf_scan.add_argument(
+        "--limit",
+        type=int,
+        default=20,
+        help="Maximum rows to print after sorting (default: 20)",
+    )
+    dwarf_scan.add_argument(
+        "--json",
+        action="store_true",
+        help="Print the scan summary and rows as JSON",
+    )
+    dwarf_scan.add_argument(
+        "--show-errors",
+        action="store_true",
+        help="Print one-line error details under rows that could not be compared",
+    )
+    dwarf_scan.add_argument(
+        "--reloc-diffs",
+        choices=RELOC_DIFF_CHOICES,
+        default="none",
+        help="Pass through objdiff relocation diff mode when loading unit symbols",
+    )
+    dwarf_scan.add_argument(
+        "--rebuilt-dwarf-file",
+        help="Use an existing rebuilt DWARF dump instead of dumping the unit object",
+    )
+    dwarf_scan.set_defaults(func=command_dwarf_scan)
+
     verify = subparsers.add_parser(
         "verify",
         help="Fail unless one function matches in both objdiff and DWARF",
     )
     verify.add_argument("-u", "--unit", required=True, help="Translation unit name")
-    verify.add_argument("-f", "--function", required=True, help="Function name to verify")
+    verify.add_argument(
+        "-f",
+        "--function",
+        required=True,
+        help="Function name to verify (full name or a unique substring)",
+    )
     verify.add_argument(
         "--reloc-diffs",
         choices=RELOC_DIFF_CHOICES,
