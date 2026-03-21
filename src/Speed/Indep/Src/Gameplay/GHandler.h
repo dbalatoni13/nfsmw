@@ -21,7 +21,7 @@ class GHandler : public GRuntimeInstance {
         return kGameplayObjType_Handler;
     }
 
-    bool IsScripted() const {
+    bool IsScripted() {
         return mAttached;
     }
 

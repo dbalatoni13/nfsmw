@@ -395,28 +395,32 @@ int GActivity::BuildActivityTables(lua_State *luaState) {
 }
 
 void GActivity::HandleMessage(LuaMessageDeliveryInfo *deliveryInfo) {
-    bool builtActivityTables = false;
-    int top = 0;
-    StateToHandlers::iterator iter = mStateHandlers.find(mCurrentState);
+    lua_State *luaState = deliveryInfo->GetLuaState();
+    int luaStackPreviousTop = 0;
+    bool activityTablesBuilt = false;
+    StateToHandlers::const_iterator iterState = mStateHandlers.find(mCurrentState);
+    const UTL::Std::vector<GHandler *, _type_ID_GHandlerVector> &handlerVec = iterState->second;
 
-    for (UTL::Std::vector<GHandler *, _type_ID_GHandlerVector>::iterator handler = iter->second.begin();
-         handler != iter->second.end(); ++handler) {
-        if ((*handler)->GetCollection() == deliveryInfo->GetMessageKind()) {
+    for (GHandler *const *iterHandler = handlerVec.begin(); iterHandler != handlerVec.end(); ++iterHandler) {
+        GHandler *handler = *iterHandler;
+
+        if (handler->message_id() == deliveryInfo->GetMessageKind()) {
             deliveryInfo->SetActivityContext(this);
-            deliveryInfo->SetHandlerContext(*handler);
-            if ((*handler)->MessagePassesFilters(deliveryInfo)) {
+            deliveryInfo->SetHandlerContext(handler);
+            handler->IsScripted();
+            if (handler->MessagePassesFilters(deliveryInfo)) {
                 deliveryInfo->BuildMessageTable();
-                if (!builtActivityTables) {
-                    top = BuildActivityTables(deliveryInfo->GetLuaState());
-                    builtActivityTables = true;
+                if (!activityTablesBuilt) {
+                    luaStackPreviousTop = BuildActivityTables(luaState);
+                    activityTablesBuilt = true;
                 }
-                (*handler)->HandleMessage(deliveryInfo);
+                handler->HandleMessage(deliveryInfo);
             }
         }
     }
 
-    if (builtActivityTables) {
-        lua_settop(deliveryInfo->GetLuaState(), top);
+    if (activityTablesBuilt) {
+        lua_settop(luaState, luaStackPreviousTop);
     }
 }
 
