@@ -10,7 +10,7 @@
 
 #include "Speed/Indep/Src/Frontend/HUD/FeReputation.cpp"
 
-#include "Speed/Indep/Src/Frontend/HUD/FeMiniMapStreamer.cpp"
+#include "Speed/Indep/Src/Frontend/HUD/FeMinimapStreamer.cpp"
 
 #include "Speed/Indep/Src/Frontend/HUD/FeMinimap.cpp"
 
