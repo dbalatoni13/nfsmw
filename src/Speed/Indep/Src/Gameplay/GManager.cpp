@@ -1396,24 +1396,20 @@ void GManager::AllocateSpeedTraps() {
 }
 
 void GManager::ResetSpeedTraps() {
-    GManagerSpeedTrapCompat *compat = reinterpret_cast<GManagerSpeedTrapCompat *>(this);
-
-    if (compat->mNumSpeedTraps == 0) {
+    if (!mNumSpeedTraps) {
         return;
     }
 
-    unsigned int gameplayKey = GameplayClassKey();
-    Attrib::Gen::gameplay gameplay(Attrib::FindCollection(gameplayKey, 0x49511906), 0, nullptr);
+    Attrib::Gen::gameplay speedTrapRoot(0x49511906, 0, nullptr);
     AttribKeyList keys;
-    AttribKeyList::iterator it;
     GSpeedTrap *speedTrap;
 
-    GatherInstanceKeys(gameplay, keys, 0xB05871D3);
+    GatherInstanceKeys(speedTrapRoot, keys, 0xB05871D3);
 
-    speedTrap = compat->mSpeedTraps;
-    for (it = keys.begin(); it != keys.end(); ++it) {
-        speedTrap->Init(*it);
-        speedTrap++;
+    speedTrap = mSpeedTraps;
+    for (AttribKeyList::iterator iter = keys.begin(); iter != keys.end(); ++iter) {
+        speedTrap->Init(*iter);
+        ++speedTrap;
     }
 }
 
