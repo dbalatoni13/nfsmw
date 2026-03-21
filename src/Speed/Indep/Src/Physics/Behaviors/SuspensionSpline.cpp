@@ -10,7 +10,9 @@
 #include "Speed/Indep/Src/Interfaces/Simables/IINput.h"
 #include "Speed/Indep/Src/Interfaces/Simables/INISCarControl.h"
 #include "Speed/Indep/Src/Physics/Behavior.h"
+#include "Speed/Indep/Src/Physics/PhysicsInfo.hpp"
 #include "Speed/Indep/Src/Physics/Wheel.h"
+#include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include <cmath>
 
 // total size: 0x198
@@ -19,7 +21,7 @@ class SuspensionSpline : public Chassis, public INISCarControl {
     // total size: 0x124
     class Tire : public Wheel {
       public:
-        Tire(float radius, int index, const Attrib::Gen::tires *specs, const Attrib::Gen::brakes *brakes);
+        Tire(float radius);
         void BeginFrame();
         void EndFrame(float dT);
         void UpdateFree(float dT);
@@ -38,20 +40,13 @@ class SuspensionSpline : public Chassis, public INISCarControl {
             return mRadius;
         }
 
-        // TODO do these exist?
-        // void ApplyTorque(float torque) {
-        //     if (!mBrakeLocked) {
-        //         mAppliedTorque += torque;
-        //     }
-        // }
+        void SetLocked(bool locked) {
+            mLocked = locked;
+        }
 
-        // void ScaleTractionBoost(float scale) {
-        //     mTractionBoost *= scale;
-        // }
-
-        // void AllowSlip(bool b) {
-        //     mAllowSlip = b;
-        // }
+        void SetBurnout(float speed) {
+            mBurnout = speed;
+        }
 
       private:
         bool mLocked;        // offset 0xC4, size 0x1
@@ -80,11 +75,24 @@ class SuspensionSpline : public Chassis, public INISCarControl {
     UMath::Vector3 GetWheelCenterPos(unsigned int i) const override;
 
     // Behavior
+    void OnTaskSimulate(float dT) override;
     void Reset() override;
     void OnBehaviorChange(const UCrc32 &mechanic) override;
 
     // INISCarControl
+    float GetBurnout() const override;
+    void SetBurnout(float speed) override;
+    void SetBrakeLock(bool front, bool rear) override;
+    void SetConstraintAngle(float angle) override;
+    void SetSteering(float angle, float weight) override;
+    bool SetNISPosition(const UMath::Matrix4 &position, bool initial, float dT) override;
     void RestoreState() override;
+    void SetAnimPitch(float dip, float time) override;
+    void SetAnimRoll(float dip, float time) override;
+    void SetAnimShake(float dip, float cycleRate, float cycleRamp, float time) override;
+    float GetAnimPitch() const override;
+    float GetAnimRoll() const override;
+    float GetAnimShake() const override;
 
     Tire &GetWheel(unsigned int i) {
         return *mTires[i];
@@ -126,6 +134,18 @@ class SuspensionSpline : public Chassis, public INISCarControl {
     Tire *mTires[4];                                             // offset 0x188, size 0x10
 };
 
+SuspensionSpline::Tire::Tire(float radius)
+    : Wheel(0),                          //
+      mLocked(false),                    //
+      mBurnout(0.0f),                    //
+      mRadius(UMath::Max(radius, 0.1f)), //
+      mAV(0.0f),                         //
+      mSlip(0.0f),                       //
+      mRoadSpeed(0.0f),                  //
+      mSlipAngle(0.0f),                  //
+      mLateralSpeed(0.0f),               //
+      mLoad(0.0f) {}
+
 void SuspensionSpline::Tire::BeginFrame() {
     SetForce(UMath::Vector3::kZero);
     mLoad = 0.0f;
@@ -145,6 +165,77 @@ Behavior *SuspensionSpline::Construct(const BehaviorParams &params) {
     // "BASE"
     SuspensionParams sp(params.fparams.Fetch<SuspensionParams>(UCrc32(0xa6b47fac)));
     return new SuspensionSpline(params, sp);
+}
+
+SuspensionSpline::SuspensionSpline(const BehaviorParams &bp, const SuspensionParams &sp)
+    : Chassis(bp),              //
+      INISCarControl(this),     //
+      mTireInfo(this, 0),       //
+      mSuspensionInfo(this, 0), //
+      mDrivetrainInfo(this, 0), //
+      mRB(0),                   //
+      mCollisionBody(0),        //
+      mInput(0),                //
+      mIEngine(0),              //
+      mNumWheelsOnGround(0),    //
+      mMaxSteering(0.125f),     //
+      mSteering(0.0f),          //
+      mNISSteering(0.0f),       //
+      mNISSteeringWeight(0.0f), //
+      mTimeInAir(0.0f),         //
+      mBurnout(0.0f),           //
+      mBrakeLockFront(false),   //
+      mBrakeLockRear(false),    //
+      mConstraint(60.0f),       //
+      mAnimatedPitchLength(0.0f), //
+      mAnimatedPitch(0.0f),       //
+      mAnimatedPitchDelta(0.0f),  //
+      mAnimatedPitchTime(0.0f),   //
+      mAnimatedRollLength(0.0f),  //
+      mAnimatedRoll(0.0f),        //
+      mAnimatedRollDelta(0.0f),   //
+      mAnimatedRollTime(0.0f),    //
+      mAnimatedShakeLength(0.0f), //
+      mAnimatedShakeCycleRate(0.0f), //
+      mAnimatedShakeRamp(0.0f),      //
+      mAnimatedShake(0.0f),          //
+      mAnimatedShakeDelta(0.0f),     //
+      mAnimatedShakeTime(0.0f) {
+    mNISPosition = UMath::Matrix4::kIdentity;
+
+    GetOwner()->QueryInterface(&mRB);
+    GetOwner()->QueryInterface(&mCollisionBody);
+    GetOwner()->QueryInterface(&mInput);
+    GetOwner()->QueryInterface(&mIEngine);
+
+    for (int i = 0; i < 4; ++i) {
+        float diameter = Physics::Info::WheelDiameter(mTireInfo, i < 2);
+        mTires[i] = new Tire(diameter * 0.5f);
+    }
+
+    UMath::Vector3 dimension;
+    GetOwner()->GetRigidBody()->GetDimension(dimension);
+
+    float wheelbase = mSuspensionInfo.WHEEL_BASE();
+    float axle_width_f = mSuspensionInfo.TRACK_WIDTH().At(0) - mTireInfo.SECTION_WIDTH().At(0) * 0.001f;
+    float axle_width_r = mSuspensionInfo.TRACK_WIDTH().At(1) - mTireInfo.SECTION_WIDTH().At(1) * 0.001f;
+    float front_axle = mSuspensionInfo.FRONT_AXLE();
+
+    UVector3 fl(-axle_width_f * 0.5f, -dimension.y, front_axle);
+    UVector3 fr(axle_width_f * 0.5f, -dimension.y, front_axle);
+    UVector3 rl(-axle_width_r * 0.5f, -dimension.y, front_axle - wheelbase);
+    UVector3 rr(axle_width_r * 0.5f, -dimension.y, front_axle - wheelbase);
+
+    GetWheel(0).SetLocalArm(fl);
+    GetWheel(1).SetLocalArm(fr);
+    GetWheel(2).SetLocalArm(rl);
+    GetWheel(3).SetLocalArm(rr);
+}
+
+SuspensionSpline::~SuspensionSpline() {
+    for (int i = 0; i < 4; ++i) {
+        delete mTires[i];
+    }
 }
 
 void SuspensionSpline::Tire::UpdateLoaded(float lat_vel, float fwd_vel, float load, float dT) {
@@ -186,6 +277,84 @@ void SuspensionSpline::RestoreState() {
     if (GetOwner()->QueryInterface(&iengine)) {
         iengine->RestoreState();
     }
+}
+
+float SuspensionSpline::GetBurnout() const {
+    return mBurnout;
+}
+
+void SuspensionSpline::SetBurnout(float speed) {
+    mBurnout = speed;
+}
+
+void SuspensionSpline::SetBrakeLock(bool front, bool rear) {
+    mBrakeLockFront = front;
+    mBrakeLockRear = rear;
+}
+
+void SuspensionSpline::SetConstraintAngle(float angle) {
+    mConstraint = UMath::Clamp(angle, 0.0f, 80.0f);
+}
+
+void SuspensionSpline::SetSteering(float angle, float weight) {
+    mNISSteering = UMath::Clamp(angle, -mMaxSteering, mMaxSteering);
+    mNISSteeringWeight = UMath::Clamp(weight, 0.0f, 1.0f);
+}
+
+void SuspensionSpline::SetAnimPitch(float dip, float time) {
+    mAnimatedPitchLength = time;
+    mAnimatedPitchTime = 0.0f;
+    mAnimatedPitch = 0.0f;
+
+    float length;
+    GetWheelBase(0, &length);
+    if (dip < 0.0f) {
+        mAnimatedPitchDelta = -static_cast<float>(bATan(length * 0.5f, -dip)) * 3.0517578e-05f;
+    } else {
+        mAnimatedPitchDelta = static_cast<float>(bATan(length * 0.5f, dip)) * 3.0517578e-05f;
+    }
+}
+
+float SuspensionSpline::GetAnimPitch() const {
+    return mAnimatedPitch;
+}
+
+void SuspensionSpline::SetAnimRoll(float dip, float time) {
+    mAnimatedRollLength = time;
+    mAnimatedRollTime = 0.0f;
+    mAnimatedRoll = 0.0f;
+
+    float width;
+    GetWheelBase(&width, 0);
+    if (dip < 0.0f) {
+        mAnimatedRollDelta = -static_cast<float>(bATan(width * 0.5f, -dip)) * 3.0517578e-05f;
+    } else {
+        mAnimatedRollDelta = static_cast<float>(bATan(width * 0.5f, dip)) * 3.0517578e-05f;
+    }
+}
+
+float SuspensionSpline::GetAnimRoll() const {
+    return mAnimatedRoll;
+}
+
+void SuspensionSpline::SetAnimShake(float dip, float cycleRate, float cycleRamp, float time) {
+    mAnimatedShakeLength = time;
+    mAnimatedShakeTime = 0.0f;
+    mAnimatedShake = 0.0f;
+    mAnimatedShakeCycleRate = cycleRate;
+    mAnimatedShakeRamp = cycleRamp;
+
+    float width;
+    GetWheelBase(&width, 0);
+    if (dip < 0.0f) {
+        mAnimatedShakeDelta = -static_cast<float>(bATan(width * 0.5f, -dip)) * 3.0517578e-05f;
+    } else {
+        mAnimatedShakeDelta = static_cast<float>(bATan(width * 0.5f, dip)) * 3.0517578e-05f;
+    }
+}
+
+float SuspensionSpline::GetAnimShake() const {
+    return mAnimatedShake;
 }
 
 void SuspensionSpline::GetWheelBase(float *width, float *length) {
