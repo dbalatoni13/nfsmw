@@ -170,11 +170,11 @@ void SFXCTL_Shifting::UpdateGearShiftState(float t) {
         float t_last_mashed = (WorldTimer - m_timeBrakeLastMashed).GetSeconds();
 
         if (_brakeInit == 0) {
-            _prevBrakeState = carstate->GetBrake();
+            _prevBrakeState = carstate->mBrake;
             _brakeInit = 1;
         }
 
-        if (carstate->GetBrake() >= 1.0f &&
+        if (carstate->mBrake >= 1.0f &&
             *static_cast<int *>(static_cast<void *>(&m_bBrakePedalMashed)) == 0 &&
             t_last_mashed > 1.0f &&
             _prevBrakeState == 0.0f &&
@@ -184,12 +184,12 @@ void SFXCTL_Shifting::UpdateGearShiftState(float t) {
 
         if (*static_cast<int *>(static_cast<void *>(&m_bBrakePedalMashed)) != 0) {
             m_timeBrakeLastMashed = WorldTimer;
-            if (carstate->GetBrake() == 0.0f) {
+            if (carstate->mBrake == 0.0f) {
                 *static_cast<int *>(static_cast<void *>(&m_bBrakePedalMashed)) = 0;
             }
         }
 
-        _prevBrakeState = carstate->GetBrake();
+        _prevBrakeState = carstate->mBrake;
     }
 
     eShiftStageChanged = SHFT_NONE;
@@ -201,7 +201,7 @@ void SFXCTL_Shifting::UpdateGearShiftState(float t) {
     UpdateTorque(t);
     m_InterpShiftVol.Update(t);
     PostShiftFX_Update(t);
-    t_CurStage = t_CurStage + 1000.0f * t;
+    t_CurStage += 1000.0f * t;
 
     switch (eShiftState) {
     case SHFT_UP_DISENGAGE: {
@@ -228,7 +228,7 @@ void SFXCTL_Shifting::UpdateGearShiftState(float t) {
                 float currpm = bClamp(static_cast<float>(RPMOffset) + m_RPMGraph.GetValue(t_CurStage), 1000.0f, 10000.0f);
                 m_InterpShiftRPM.Initialize(currpm, currpm, 0, LINEAR);
 
-                int CurGear = bClamp(static_cast<int>(m_pEAXCar->GetCurGear()) - 1, 0, 3);
+                int CurGear = bClamp(static_cast<int>(m_pEAXCar->GetCurGear()) + Sound::SPORT_SHIFT, 0, 3);
                 m_InterpShiftTorque.Initialize(kUpShiftTrqAttachInitialPercent[CurGear] * m_pEngineCtl->m_pPhysicsCtl->GetPhysTRQ(),
                                                m_pEngineCtl->m_pPhysicsCtl->GetPhysTRQ(), kUpShiftTrqAttackTime[CurGear],
                                                LINEAR);
@@ -273,7 +273,7 @@ void SFXCTL_Shifting::UpdateGearShiftState(float t) {
         eShiftStageChanged = SHFT_DOWN_ENGAGING_RISE;
 
         int Length = static_cast<int>(m_pShiftingPatternData->Down_Engaging_Rise_T());
-        if (m_pEngineCtl->m_pPhysicsCtl->m_CurGear < static_cast<Gear>(2)) {
+        if (m_pEngineCtl->m_pPhysicsCtl->m_CurGear < Sound::SECOND_GEAR) {
             Length = static_cast<int>(static_cast<float>(Length) * 0.7f);
         }
 
@@ -295,7 +295,7 @@ void SFXCTL_Shifting::UpdateGearShiftState(float t) {
         eShiftStageChanged = SHFT_DOWN_ENGAGING_FALL;
 
         int Length = static_cast<int>(m_pShiftingPatternData->Down_Engaging_Fall_T());
-        if (GetCurGear() < static_cast<Gear>(2) && m_UGL < AEMS_LEVEL2) {
+        if (GetCurGear() < Sound::SECOND_GEAR && m_UGL < AEMS_LEVEL2) {
             Length = static_cast<int>(static_cast<float>(Length) * 0.7f);
         }
 
