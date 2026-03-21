@@ -3957,31 +3957,39 @@ int GRaceStatus::GetLapPosition(int lapIndex, int racerIndex, bool bOverallPosit
 }
 
 float GRaceStatus::GetBestLapTime(int racerIndex) {
-    float best = 0.0f;
-    int lapCount = mRaceParms ? mRaceParms->GetNumLaps() : 10;
+    float bestLapTime;
+    int onLap;
 
-    for (int i = 0; i < lapCount && i < 10; ++i) {
-        float time = GetLapTime(i, racerIndex, false);
-        if (time > 0.0f && (best <= 0.0f || time < best)) {
-            best = time;
+    bestLapTime = GetLapTime(0, racerIndex, false);
+    onLap = 1;
+    while (onLap < (mRaceParms ? mRaceParms->GetNumLaps() : 10) && onLap <= 9) {
+        float lapTime = GetLapTime(onLap, racerIndex, false);
+        if (lapTime > 0.0f && (bestLapTime <= 0.0f || lapTime < bestLapTime)) {
+            bestLapTime = lapTime;
         }
+
+        onLap++;
     }
 
-    return best;
+    return bestLapTime;
 }
 
 float GRaceStatus::GetWorstLapTime(int racerIndex) {
-    float worst = 0.0f;
-    int lapCount = mRaceParms ? mRaceParms->GetNumLaps() : 10;
+    float worstLapTime;
+    int onLap;
 
-    for (int i = 0; i < lapCount && i < 10; ++i) {
-        float time = GetLapTime(i, racerIndex, false);
-        if (time > worst) {
-            worst = time;
+    worstLapTime = GetLapTime(0, racerIndex, false);
+    onLap = 1;
+    while (onLap < (mRaceParms ? mRaceParms->GetNumLaps() : 10) && onLap <= 9) {
+        float lapTime = GetLapTime(onLap, racerIndex, false);
+        if (lapTime > 0.0f && lapTime > worstLapTime) {
+            worstLapTime = lapTime;
         }
+
+        onLap++;
     }
 
-    return worst;
+    return worstLapTime;
 }
 
 float GRaceStatus::GetFinishTimeBehind(int racerIndex) {
