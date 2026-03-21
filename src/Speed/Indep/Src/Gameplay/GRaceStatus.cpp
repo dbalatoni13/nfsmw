@@ -1150,7 +1150,7 @@ GVault *GRaceParameters::GetParentVault() const {
 }
 
 GActivity *GRaceParameters::GetActivity() const {
-    return static_cast<GActivity *>(GManager::Get().FindInstance(GetCollectionKey()));
+    return GRuntimeInstance::FindObject<GActivity>(GetCollectionKey());
 }
 
 unsigned int GRaceParameters::GetCollectionKey() const {
@@ -2176,7 +2176,7 @@ GCharacter *GRaceParameters::GetOpponentChar(unsigned int index) const {
         characterKey = mRaceRecord->Opponents(index).GetCollectionKey();
     }
 
-    return static_cast<GCharacter *>(GManager::Get().FindInstance(characterKey));
+    return GRuntimeInstance::FindObject<GCharacter>(characterKey);
 }
 
 int GRaceParameters::GetNumOpponents() const {
@@ -2201,8 +2201,6 @@ void GRaceParameters::GetStartPosition(UMath::Vector3 &pos) const {
     if (mChildVault && !mChildVault->IsLoaded()) {
         mChildVault->LoadSyncTransient();
     }
-
-    pos = UMath::Vector3::kZero;
 
     raceStartSpec = reinterpret_cast<const GCollectionKey *>(mRaceRecord->GetAttributePointer(0xE43B2CCC, 0));
     if (!raceStartSpec) {
@@ -2365,7 +2363,7 @@ GMarker *GRaceParameters::GetShortcut(unsigned int index) const {
     }
 
     collectionKey = mRaceRecord->Shortcuts(index).GetCollectionKey();
-    return static_cast<GMarker *>(GManager::Get().FindInstance(collectionKey));
+    return GRuntimeInstance::FindObject<GMarker>(collectionKey);
 }
 
 GMarker *GRaceParameters::GetBarrierExemption(unsigned int index) const {
@@ -2380,7 +2378,7 @@ GMarker *GRaceParameters::GetBarrierExemption(unsigned int index) const {
     }
 
     collectionKey = mRaceRecord->BarrierExemptions(index).GetCollectionKey();
-    return static_cast<GMarker *>(GManager::Get().FindInstance(collectionKey));
+    return GRuntimeInstance::FindObject<GMarker>(collectionKey);
 }
 
 const char *GRaceParameters::GetBarrierName(unsigned int index) const {
