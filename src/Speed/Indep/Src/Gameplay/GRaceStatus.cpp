@@ -3584,8 +3584,8 @@ void GRaceStatus::SyncronizeAdaptiveBonus() {
 void GRaceStatus::UpdateAdaptiveDifficulty(eAdaptiveGainReason reason, ISimable *who) {
     bool update;
     GRacerInfo *winning_player;
-    GRacerInfo *winning_ai;
     GRacerInfo *eliminated_player;
+    GRacerInfo *winning_ai;
     float difficulty;
 
     if (mCaluclatedAdaptiveGain || GetRaceContext() != GRace::kRaceContext_Career || GetRacerCount() <= 1 || Sim::GetUserMode() != 0 || GetPlayMode() != kPlayMode_Racing ||
@@ -3597,8 +3597,8 @@ void GRaceStatus::UpdateAdaptiveDifficulty(eAdaptiveGainReason reason, ISimable 
     const int num_racers = GetRacerCount();
     update = false;
     winning_player = nullptr;
-    winning_ai = nullptr;
     eliminated_player = nullptr;
+    winning_ai = nullptr;
 
     for (int i = 0; i < num_racers; ++i) {
         GRacerInfo &info = GetRacerInfo(i);
