@@ -2819,16 +2819,16 @@ bool GRaceStatus::CanUnspawnRoamer(const IVehicle *roamer) const {
 }
 
 eVehicleCacheResult GRaceStatus::OnQueryVehicleCache(const IVehicle *removethis, const IVehicleCache *whosasking) const {
-    if (mPlayMode != kPlayMode_Racing && !mVehicleCacheLocked) {
-        if (!UTL::COM::ComparePtr(whosasking, ICopMgr::Get())) {
-            if (!UTL::COM::ComparePtr(whosasking, ITrafficMgr::Get())) {
-                return VCR_DONTCARE;
-            }
+    if (GetPlayMode() != kPlayMode_Racing && !mVehicleCacheLocked) {
+        if (!UTL::COM::ComparePtr(whosasking, ICopMgr::Get()) && !UTL::COM::ComparePtr(whosasking, ITrafficMgr::Get())) {
+            return VCR_DONTCARE;
         }
 
         if (!CanUnspawnRoamer(removethis)) {
             return VCR_WANT;
         }
+
+        return VCR_DONTCARE;
     } else {
         for (int onRacer = 0; onRacer < GetRacerCount(); ++onRacer) {
             const GRacerInfo &racerInfo = mRacerInfo[onRacer];
