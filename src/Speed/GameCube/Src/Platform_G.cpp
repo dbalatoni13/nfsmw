@@ -484,12 +484,13 @@ void DVDErrorTask(void *, int) {
 
                 if ((frame & buttonMask) != (prevButtons & buttonMask)) {
                     int rem;
-                    prevButtons = frame;
+
                     rem = scrollIndex;
                     if (scrollIndex < 0) {
                         rem = scrollIndex + 3;
                     }
                     rem = rem & ~3;
+                    prevButtons = frame;
                     scrollOffset = (signed char)(3 - (scrollIndex - rem));
                     scrollIndex = scrollIndex + 1;
                 }
@@ -502,8 +503,8 @@ void DVDErrorTask(void *, int) {
                 nextFrame = frame + 1;
                 copy_length = static_cast<char>(bStrLen(the_loading_text));
                 while (copy_length <= scrollLen) {
-                    bStrCat(the_loading_text, the_loading_text, " ");
                     copy_length = copy_length + 1;
+                    bStrCat(the_loading_text, the_loading_text, " ");
                 }
 
                 FEPrintf("DiscError.fng", 0xEEFFD04F, the_loading_text);
