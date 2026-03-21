@@ -134,6 +134,22 @@ void DrawVehicle::Part::PlaceTrigger(const UMath::Matrix4 &matrix, bool enable) 
     }
 }
 
+void DrawVehicle::Part::OnProcessFrame(float dT) {
+    if (mOffScreenTask) {
+        const float &offscreen_allow = mAttributes.DROPOUT(0);
+        if (0.0f < offscreen_allow) {
+            if (!static_cast<IModel *>(this)->InView()) {
+                mOffScreenTime = mOffScreenTime + dT;
+            } else {
+                mOffScreenTime = 0.0f;
+            }
+            if (offscreen_allow < mOffScreenTime) {
+                static_cast<IModel *>(this)->ReleaseModel();
+            }
+        }
+    }
+}
+
 void DrawVehicle::SetCausality(HCAUSE from, float time) {
     mCausality = from;
     mCausalityTime = time;
