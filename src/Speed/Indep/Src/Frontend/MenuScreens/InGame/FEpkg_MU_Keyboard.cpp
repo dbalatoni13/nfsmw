@@ -99,8 +99,7 @@ bool FEKeyboard::IsEmailSymbol(char character) {
 }
 
 void FEKeyboard::AppendLetter(int nButton) {
-    char letter = GetLetterMap(nButton);
-    AppendChar(letter);
+    AppendChar(GetLetterMap(nButton));
 }
 
 void FEKeyboard::AppendBackspace() {

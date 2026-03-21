@@ -709,7 +709,7 @@ unsigned int GetFECarNameHashFromFEKey(unsigned int feKey) {
 
 void cFrontendDatabase::AllocBackupDB(bool bForce) {
     if (!m_pDBBackup && bForce) {
-        m_pDBBackup = static_cast<char *>(bMalloc(GetUserProfileSaveSize(false), 0x40));
+        m_pDBBackup = static_cast<char *>(bMalloc(GetUserProfileSaveSize(false), nullptr, 0, 0x40));
         SaveUserProfileToBuffer(m_pDBBackup, GetUserProfileSaveSize(false));
     }
 }

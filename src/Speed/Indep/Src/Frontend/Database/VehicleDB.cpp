@@ -430,10 +430,8 @@ bool FEImpoundData::CanAddMaxBusted() {
 }
 
 void FEImpoundData::AddMaxBusted() {
-    unsigned char maxBusted = MaxBusted;
-
-    MaxBusted = maxBusted + 1;
-    if (static_cast< int >(static_cast< unsigned char >(maxBusted + 1)) > g_MaximumMaximumTimesBusted) {
+    MaxBusted++;
+    if (static_cast< int >(MaxBusted) > g_MaximumMaximumTimesBusted) {
         MaxBusted = static_cast< unsigned char >(g_MaximumMaximumTimesBusted);
     }
 }
