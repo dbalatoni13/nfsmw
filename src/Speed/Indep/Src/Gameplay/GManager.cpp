@@ -2396,7 +2396,6 @@ void GManager::DefragObjectStateStorage() {
     unsigned int index;
     ObjectStateBlockHeader *stackBlocks[0x100];
     ObjectStateBlockHeader **blocks;
-    ObjectStateMap::iterator it;
     unsigned char *freePtr;
     ObjectStateMap *stateBlocks;
 
@@ -2407,12 +2406,12 @@ void GManager::DefragObjectStateStorage() {
     }
 
     index = 0;
-    for (ObjectStateMap::iterator it = mPersistentStateBlocks.begin(); it != mPersistentStateBlocks.end(); ++it) {
-        blocks[index] = it->second;
+    for (ObjectStateMap::iterator iter = mPersistentStateBlocks.begin(); iter != mPersistentStateBlocks.end(); ++iter) {
+        blocks[index] = iter->second;
         index++;
     }
-    for (ObjectStateMap::iterator it = mSessionStateBlocks.begin(); it != mSessionStateBlocks.end(); ++it) {
-        blocks[index] = it->second;
+    for (ObjectStateMap::iterator iter = mSessionStateBlocks.begin(); iter != mSessionStateBlocks.end(); ++iter) {
+        blocks[index] = iter->second;
         index++;
     }
 
@@ -2427,6 +2426,7 @@ void GManager::DefragObjectStateStorage() {
 
             bOverlappedMemCpy(freePtr, block, blockSize);
 
+            ObjectStateMap::iterator it;
             stateBlocks = &mSessionStateBlocks;
             for (unsigned int i = 0; i < 2; ++i, --stateBlocks) {
                 it = stateBlocks->find(shiftedKey);
