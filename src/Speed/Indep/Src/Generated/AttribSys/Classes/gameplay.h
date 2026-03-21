@@ -62,6 +62,14 @@ struct gameplay : Instance {
         Change(FindCollection(ClassKey(), collectionkey));
     }
 
+    bool Modify(Key dynamicCollectionKey, unsigned int spaceForAdditionalAttributes) {
+        return ModifyInternal(ClassKey(), dynamicCollectionKey, LocalAttribCount() + spaceForAdditionalAttributes);
+    }
+
+    Key GenerateUniqueKey(const char *name, bool registerName) const {
+        return GUKeyInternal(ClassKey(), name, registerName);
+    }
+
     static Key ClassKey() {
         return 0x5cea9d46;
     }
