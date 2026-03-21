@@ -25,14 +25,13 @@ ChoppedMiniMapManager::ChoppedMiniMapManager(int numSections) {
 }
 
 int ChoppedMiniMapManager::Loader(bChunk *chunk) {
-    int id = *reinterpret_cast<int *>(chunk);
-    if (id == 0x3A100) {
-        LZHeader *lzh = reinterpret_cast<LZHeader *>(reinterpret_cast<char *>(chunk) + 8);
-        bEndianSwap32(lzh);
-        bEndianSwap16(reinterpret_cast<char *>(chunk) + 0xE);
-        bEndianSwap32(reinterpret_cast<char *>(lzh) + 8);
-        bEndianSwap32(reinterpret_cast<char *>(chunk) + 0x14);
-        CompressedMiniMaps[LoadingChopNum++] = lzh;
+    if (chunk->GetID() == 0x3A100) {
+        LZHeader *header = reinterpret_cast<LZHeader *>(chunk->GetData());
+        bPlatEndianSwap(reinterpret_cast<unsigned int *>(header));
+        bPlatEndianSwap(reinterpret_cast<unsigned short *>(reinterpret_cast<char *>(chunk) + 0xE));
+        bPlatEndianSwap(reinterpret_cast<unsigned int *>(reinterpret_cast<char *>(header) + 8));
+        bPlatEndianSwap(reinterpret_cast<unsigned int *>(reinterpret_cast<char *>(chunk) + 0x14));
+        CompressedMiniMaps[LoadingChopNum++] = header;
         return 1;
     }
     return 0;

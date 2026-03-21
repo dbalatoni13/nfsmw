@@ -1166,11 +1166,17 @@ extern const char lbl_803E572C[];
 
 void FEngHud::FadeAll(bool fadeIn) {
     if (fadeIn) {
-        cFEng::Get()->QueuePackageMessage(0xBCC00F05, pPackageName, nullptr);
-        cFEng::Get()->QueuePackageMessage(FEHashUpper(lbl_803E572C), pPackageName, nullptr);
+        {
+            const unsigned long FEObj_FADEIN = 0xBCC00F05;
+            cFEng::Get()->QueuePackageMessage(FEObj_FADEIN, pPackageName, nullptr);
+            cFEng::Get()->QueuePackageMessage(FEHashUpper(lbl_803E572C), pPackageName, nullptr);
+        }
     } else {
-        cFEng::Get()->QueuePackageMessage(0x54C20A66, pPackageName, nullptr);
-        cFEng::Get()->QueuePackageMessage(FEHashUpper(lbl_803E4E0C), pPackageName, nullptr);
+        {
+            const unsigned long FEObj_FADEOUT = 0x54C20A66;
+            cFEng::Get()->QueuePackageMessage(FEObj_FADEOUT, pPackageName, nullptr);
+            cFEng::Get()->QueuePackageMessage(FEHashUpper(lbl_803E4E0C), pPackageName, nullptr);
+        }
     }
 }
 
