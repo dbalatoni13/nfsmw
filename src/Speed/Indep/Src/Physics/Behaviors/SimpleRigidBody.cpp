@@ -1,12 +1,28 @@
 #include "SimpleRigidBody.h"
+#include "RigidBody.h"
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #include "Speed/Indep/Libs/Support/Utility/UTypes.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ISimpleBody.h"
 #include "Speed/Indep/Src/Main/ScratchPtr.h"
 #include "Speed/Indep/Src/Physics/Behavior.h"
+#include "Speed/Indep/Src/Physics/Dynamics/Collision.h"
 #include "Speed/Indep/Src/Physics/PhysicsObject.h"
+#include "Speed/Indep/Src/Sim/OBB.h"
 #include "Speed/Indep/Src/Sim/Simulation.h"
+
+namespace {
+
+struct CollisionMapAccess {
+    unsigned long long fBitMap[3];
+};
+
+static void SetCollisionMapBit(SimCollisionMap &map, unsigned int index) {
+    CollisionMapAccess &access = reinterpret_cast<CollisionMapAccess &>(map);
+    access.fBitMap[index / 64] |= 1ULL << (index % 64);
+}
+
+} // namespace
 
 ISimpleBody::~ISimpleBody() {}
 
@@ -182,6 +198,130 @@ unsigned int SimpleRigidBody::GetTriggerFlags() const {
     }
 
     return flags;
+}
+
+void SimpleRigidBody::RecalcOrientMat(UMath::Matrix4 &resultMat4) const {
+    UMath::QuaternionToMatrix4(mData->orientation, resultMat4);
+}
+
+void SimpleRigidBody::DoRBCollisions(const float dT) {
+    Volatile &data = *mData;
+    Dynamics::Collision::Geometry simpleGeom;
+    const bool useCollisionGeometry = (data.flags & 0x8040) != 0;
+    float radius = data.radius;
+
+    if (radius < 0.25f) {
+        radius = 0.25f;
+    }
+
+    if (useCollisionGeometry) {
+        UMath::Vector3 delta;
+        UMath::Vector3 dim;
+        dim.x = radius;
+        dim.y = radius;
+        dim.z = radius;
+        UMath::Scale(data.linearVel, dT, delta);
+
+        if (data.flags & 0x8000) {
+            simpleGeom.Set(UMath::Matrix4::kIdentity, data.position, dim, Dynamics::Collision::Geometry::SPHERE, delta);
+        } else {
+            UMath::Matrix4 orientation;
+            RecalcOrientMat(orientation);
+            simpleGeom.Set(orientation, data.position, dim, Dynamics::Collision::Geometry::BOX, delta);
+        }
+    }
+
+    for (RigidBody *body = TheRigidBodies.GetHead(); body != TheRigidBodies.EndOfList(); body = body->GetNext()) {
+        if (!body->CanCollideWithObjects()) {
+            continue;
+        }
+
+        float padding = 0.0f;
+        if (useCollisionGeometry) {
+            UMath::Vector3 relativeVelocity;
+            UMath::Sub(data.linearVel, body->GetLinearVelocity(), relativeVelocity);
+            padding = UMath::Length(relativeVelocity) * dT;
+        }
+
+        UMath::Vector3 deltaPosition;
+        UMath::Sub(data.position, body->GetPosition(), deltaPosition);
+
+        const float collisionRadius = radius + body->GetRadius() + padding;
+        if (UMath::LengthSquare(deltaPosition) >= collisionRadius * collisionRadius) {
+            continue;
+        }
+
+        if (useCollisionGeometry) {
+            UMath::Matrix4 bodyMatrix;
+            UMath::Vector3 bodyDimension;
+            UMath::Vector3 bodyDelta;
+            body->GetMatrix4(bodyMatrix);
+            body->GetDimension(bodyDimension);
+            UMath::Scale(body->GetLinearVelocity(), dT, bodyDelta);
+
+            Dynamics::Collision::Geometry bodyGeom(bodyMatrix, body->GetPosition(), bodyDimension, Dynamics::Collision::Geometry::BOX, bodyDelta);
+            if (!Dynamics::Collision::Geometry::FindIntersection(&bodyGeom, &simpleGeom, &simpleGeom)) {
+                continue;
+            }
+        }
+
+        SetCollisionMapBit(mCollisionMap[data.index], body->GetIndex());
+    }
+}
+
+void SimpleRigidBody::DoSRBCollisions(SimpleRigidBody *other) {
+    Volatile &data = *mData;
+    Volatile &otherData = *other->mData;
+
+    if (((data.flags | otherData.flags) & 0x4000) && GetOwner() == other->GetOwner()) {
+        return;
+    }
+
+    float radius = data.radius;
+    if (radius < 0.25f) {
+        radius = 0.25f;
+    }
+
+    float otherRadius = otherData.radius;
+    if (otherRadius < 0.25f) {
+        otherRadius = 0.25f;
+    }
+
+    UMath::Vector3 deltaPosition;
+    UMath::Sub(data.position, otherData.position, deltaPosition);
+    const float collisionRadius = radius + otherRadius;
+
+    if (UMath::LengthSquare(deltaPosition) >= collisionRadius * collisionRadius) {
+        return;
+    }
+
+    if ((data.flags & 0x80) && (otherData.flags & 0x80)) {
+        UMath::Matrix4 orientation;
+        UMath::Matrix4 otherOrientation;
+        UMath::Vector3 dimension;
+        UMath::Vector3 otherDimension;
+        UMath::QuaternionToMatrix4(data.orientation, orientation);
+        UMath::QuaternionToMatrix4(otherData.orientation, otherOrientation);
+
+        dimension.x = radius;
+        dimension.y = radius;
+        dimension.z = radius * GetScalarVelocity();
+        otherDimension.x = otherRadius;
+        otherDimension.y = otherRadius;
+        otherDimension.z = otherRadius * other->GetScalarVelocity();
+
+        OBB thisObb;
+        OBB otherObb;
+        thisObb.Reset(orientation, data.position, dimension);
+        otherObb.Reset(otherOrientation, otherData.position, otherDimension);
+
+        if (!thisObb.CheckOBBOverlap(&otherObb)) {
+            return;
+        }
+    }
+
+    SetCollisionMapBit(mCollisionMap[data.index], RIGID_BODY_MAX + otherData.index);
+    SetCollisionMapBit(mCollisionMap[otherData.index], RIGID_BODY_MAX + data.index);
 }
 
 void SimpleRigidBody::Update(const float dT, void *workspace) {
