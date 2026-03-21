@@ -23,6 +23,7 @@ class SuspensionTraffic : public Chassis {
         void BeginFrame();
         void EndFrame(float dT);
         void UpdateFree(float dT);
+        void UpdateLoaded(float lat_vel, float fwd_vel, float load, float dT);
 
         void Stop() {
             mAV = 0.0f;
@@ -41,6 +42,22 @@ class SuspensionTraffic : public Chassis {
 
         void SetAngularVelocity(float av) {
             mAV = av;
+        }
+
+        void SetBrake(float brake) {
+            mBrake = brake;
+        }
+
+        void SetEBrake(float ebrake) {
+            mEBrake = ebrake;
+        }
+
+        float GetLongitudeForce() const {
+            return mLongitudeForce;
+        }
+
+        float GetLateralForce() const {
+            return mLateralForce;
         }
 
         void ApplyTorque(float torque) {
@@ -151,6 +168,72 @@ void SuspensionTraffic::Tire::UpdateFree(float dT) {
     }
     mLateralForce = 0.0f;
     mLongitudeForce = 0.0f;
+}
+
+void SuspensionTraffic::Tire::UpdateLoaded(float lat_vel, float fwd_vel, float load, float dT) {
+    const Attrib::Gen::brakes::_LayoutStruct *brakes =
+        reinterpret_cast<Attrib::Gen::brakes::_LayoutStruct *>(mBrakes->GetLayoutPointer());
+    const Attrib::Gen::tires::_LayoutStruct *tires =
+        reinterpret_cast<Attrib::Gen::tires::_LayoutStruct *>(mSpecs->GetLayoutPointer());
+
+    if (mLoad <= 0.0f) {
+        mAV = fwd_vel / mRadius;
+    }
+
+    mRoadSpeed = fwd_vel;
+    mLateralSpeed = lat_vel;
+    mLoad = UMath::Max(load, 0.0f);
+
+    if (0.0f < mBrake) {
+        float brake = mBrake * (FTLB2NM(brakes->BRAKES.At(mAxleIndex)) * BrakingTorque);
+        if (0.0f < mAV) {
+            brake = -brake;
+        }
+        mAppliedTorque += brake;
+    }
+
+    if (0.0f < mEBrake) {
+        float ebrake = mEBrake * FTLB2NM(brakes->EBRAKE) * EBrakingTorque;
+        if (0.0f < mAV) {
+            ebrake = -ebrake;
+        }
+        mAppliedTorque += ebrake;
+    }
+
+    const float slip_angle = UMath::Atan2a(lat_vel, UMath::Abs(fwd_vel));
+    const float slip = mAV * mRadius - fwd_vel;
+    mSlipAngle = slip_angle;
+
+    if (0.0f < mEBrake && 1.0f < UMath::Abs(fwd_vel)) {
+        mSlip = slip;
+    } else {
+        mSlip = 0.0f;
+    }
+
+    const float slip_mag = UMath::Sqrt(slip * slip + lat_vel * lat_vel);
+    if (mEBrake <= 0.5f || slip_mag <= 1.0f) {
+        mLongitudeForce = mAppliedTorque / mRadius;
+    } else {
+        mSlipping = true;
+        mLongitudeForce = ((-fwd_vel + -fwd_vel) * mLoad * tires->GRIP_SCALE.At(mAxleIndex)) / slip_mag;
+    }
+
+    mLateralForce = (-lat_vel + -lat_vel) * mLoad * tires->GRIP_SCALE.At(mAxleIndex);
+    if (1.0f < slip_mag) {
+        mLateralForce /= slip_mag;
+    }
+
+    if (UMath::Abs(fwd_vel) <= 1.0f) {
+        float speed_scale = 1.0f;
+        if (UMath::Abs(lat_vel) < 1.0f) {
+            speed_scale = UMath::Abs(lat_vel);
+        }
+        mLateralForce *= speed_scale;
+    } else {
+        mLongitudeForce -= UMath::Sina(mSlipAngle * 6.2831855f) * mLateralForce * 0.5f;
+    }
+
+    mAV = ((1.0f - mEBrake) * fwd_vel) / mRadius;
 }
 
 Behavior *SuspensionTraffic::Construct(const BehaviorParams &params) {
