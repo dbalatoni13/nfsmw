@@ -500,7 +500,7 @@ int EAXAemsManager::InitiateLoad() {
             AddQueuedFile(m_pCurLoadSDLP->pmem, m_csTemp1, 0, m_pCurLoadSDLP->nSize, DataLoadCB,
                           reinterpret_cast<int>(m_pCurLoadSDLP), &queuedFileParams);
         SetWaitingState:
-            m_IsWaitingForFileCB = memLocation;
+            m_IsWaitingForFileCB = memLocation != TMP_ALLOC_NONE;
             break;
         case TMP_ALLOC_NONE:
             goto SetWaitingState;
@@ -555,10 +555,10 @@ int EAXAemsManager::InitiateLoad() {
     CheckAsyncSpuLoad:
         if (m_pCurLoadSDLP->AssetDescription.eDataType == EAXSND_DT_AEMS_ASYNCSPU) {
             pBankSlot = m_pCurLoadSDLP->mBankSlot;
-            if (pBankSlot == nullptr) {
-                SNDmemlimits(-1, gAEMSMgr.m_SPUMainAllocsEnd);
-            } else {
+            if (pBankSlot != nullptr) {
                 SNDmemlimits(pBankSlot->BANKmemLocation, pBankSlot->BANKmemLocation + pBankSlot->BANKMemSize);
+            } else {
+                SNDmemlimits(-1, gAEMSMgr.m_SPUMainAllocsEnd);
             }
             result = SNDAEMS_asyncloadmodulebank(m_csTemp1, 0, nullptr, 0, m_pAsyncBuff, mAsyncBuffSize,
                                                  AsyncResidentAllocCB);
