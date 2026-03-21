@@ -186,7 +186,7 @@ void FEngine::SetProcessInput(FEPackage* pkg, bool bProcess) {
     if (!pkg) {
         return;
     }
-    pkg->bInputEnabled = bProcess;
+    pkg->SetInputEnabled(bProcess);
 }
 
 FEPackage* FEngine::GetFirstLibrary() const {
@@ -304,9 +304,7 @@ const char* FEngine::RecallPackageMarker() {
     if (CurrentPackageRecordIndex == 0) {
         return nullptr;
     }
-    int idx = CurrentPackageRecordIndex - 1;
-    CurrentPackageRecordIndex = idx;
-    return RecordedPackageNames[idx];
+    return RecordedPackageNames[--CurrentPackageRecordIndex];
 }
 
 void FEngine::ClearPackageMarkers() {

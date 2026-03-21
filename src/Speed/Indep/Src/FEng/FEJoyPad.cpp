@@ -28,21 +28,11 @@ void FEJoyPad::Update(unsigned long NewMask, unsigned long tDelta) {
 }
 
 bool FEJoyPad::WasPressed(unsigned long Mask) {
-    bool result = false;
-    unsigned long cur = CurMask & Mask;
-    if (cur == Mask && (LastMask & cur) != cur) {
-        result = true;
-    }
-    return result;
+    return (CurMask & Mask) == Mask && (LastMask & Mask) != Mask;
 }
 
 bool FEJoyPad::WasHeld(unsigned long Mask) {
-    bool result = false;
-    unsigned long cur = CurMask & Mask;
-    if (cur == Mask && (LastMask & cur) == cur) {
-        result = true;
-    }
-    return result;
+    return (CurMask & Mask) == Mask && (LastMask & Mask) == Mask;
 }
 
 unsigned long FEJoyPad::HeldFor(unsigned long Mask) {
@@ -60,11 +50,7 @@ unsigned long FEJoyPad::HeldFor(unsigned long Mask) {
 }
 
 bool FEJoyPad::WasReleased(unsigned long Mask) {
-    bool result = false;
-    if ((CurMask & Mask) != Mask && (LastMask & Mask) == Mask) {
-        result = true;
-    }
-    return result;
+    return (CurMask & Mask) != Mask && (LastMask & Mask) == Mask;
 }
 
 void FEJoyPad::DecrementHold(unsigned long Mask, unsigned long Amount) {
