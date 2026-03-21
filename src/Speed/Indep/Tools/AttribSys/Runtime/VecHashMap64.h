@@ -87,10 +87,12 @@ template <typename KeyType, typename T, typename Policy, bool Unk2, std::size_t 
     }
 
     void Clear() {
-        for (std::size_t i = 0; i < mTableSize && mNumEntries != 0; i++) {
-            if (mTable[i].IsValid()) {
-                delete mTable[i].Get();
-                mNumEntries--;
+        if (Unk2) {
+            for (std::size_t i = 0; i < mTableSize && mNumEntries != 0; i++) {
+                if (mTable[i].IsValid()) {
+                    delete mTable[i].Get();
+                    mNumEntries--;
+                }
             }
         }
         if (mFixedAlloc == 0) {
@@ -232,10 +234,7 @@ template <typename KeyType, typename T, typename Policy, bool Unk2, std::size_t 
             Policy::KeyIndex(mTable[worstIndex].Key(), mTableSize, 0);
         }
 
-        // useless but necessary to match, TODO probably some debug stuff going on
-        if (mTable[freeIndex].IsValid()) {
-        }
-        if (mTable[freeIndex].IsValid() && freeIndex != worstIndex) {
+        if (freeIndex != worstIndex && mTable[freeIndex].IsValid()) {
             mTable[freeIndex].Move(mTable[worstIndex]);
         }
         if (mTable[worstIndex].IsValid()) {

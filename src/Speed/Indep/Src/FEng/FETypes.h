@@ -241,13 +241,4 @@ struct FEMatrix4 {
 void FEMultMatrix(FEMatrix4* dest, const FEMatrix4* a, const FEMatrix4* b);
 void FEMultMatrix(FEVector3* dest, const FEMatrix4* m, const FEVector3* v);
 
-#ifndef SUPPORT_UTILITY_UVECTOR_MATH_H
-inline float IntAsFloat(const int& i) {
-    return *reinterpret_cast<const float*>(&i);
-}
-
-static const float kFloatScaleUp = IntAsFloat(0x00800000);
-static const float kFloatScaleDown = 1.0f / kFloatScaleUp;
-#endif
-
 #endif
