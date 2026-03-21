@@ -2427,7 +2427,11 @@ bool GRaceParameters::GetBarrierIsFlipped(unsigned int index) const {
     }
 
     barrierName = mRaceRecord->Barriers(index);
-    return barrierName && *barrierName == '*';
+    if (barrierName) {
+        return *barrierName == '*';
+    }
+
+    return false;
 }
 
 float GRaceParameters::GetStartTime() const {
