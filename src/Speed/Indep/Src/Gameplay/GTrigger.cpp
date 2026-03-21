@@ -47,7 +47,7 @@ GTrigger::GTrigger(const Attrib::Key &triggerKey)
         rotation = reinterpret_cast<const float *>(Attrib::DefaultDataArea(sizeof(float)));
     }
 
-    MATRIX4_multyrot(&directionMat, -*rotation * 0.00069444446f, &directionMat);
+    MATRIX4_multyrot(&directionMat, -*rotation * 0.0027777778f, &directionMat);
     VU0_MATRIX3x4_vect3mult(initialVec, directionMat, initialVec);
     mDirection = initialVec;
     mSimObjInside.reserve(8);
@@ -82,7 +82,7 @@ GTrigger::GTrigger(const Attrib::Key &triggerKey)
         dimSwizzled.z = dimSwizzled.x;
         mWorldTrigger.fShape = 3;
     } else if (hasDimensions) {
-        triggerRadius = UMath::Sqrt(dimSwizzled.x * dimSwizzled.x + dimSwizzled.z * dimSwizzled.z);
+        triggerRadius = UMath::Sqrt(dimSwizzled.x * dimSwizzled.x * 0.25f + dimSwizzled.z * dimSwizzled.z * 0.25f);
         mWorldTrigger.fShape = 1;
     } else {
         const float *width = reinterpret_cast<const float *>(GetAttributePointer(0x5816C1FC, 0));
@@ -92,9 +92,9 @@ GTrigger::GTrigger(const Attrib::Key &triggerKey)
         }
 
         dimSwizzled.x = *width;
-        dimSwizzled.y = 1.0f;
-        dimSwizzled.z = 0.0f;
-        triggerRadius = UMath::Sqrt(dimSwizzled.x * dimSwizzled.x + 1.0f);
+        dimSwizzled.y = 50.0f;
+        dimSwizzled.z = 1.0f;
+        triggerRadius = UMath::Sqrt(dimSwizzled.x * dimSwizzled.x * 0.25f + 0.25f);
         mWorldTrigger.fShape = 1;
     }
 
@@ -103,7 +103,7 @@ GTrigger::GTrigger(const Attrib::Key &triggerKey)
         rotation = reinterpret_cast<const float *>(Attrib::DefaultDataArea(sizeof(float)));
     }
 
-    MATRIX4_multyrot(&mat, -*rotation * 0.00069444446f, &mat);
+    MATRIX4_multyrot(&mat, -*rotation * 0.0027777778f, &mat);
     mWorldTrigger.fType = 1;
     mWorldTrigger.fEvents = &mEventList;
     mWorldTrigger.fIterStamp = 0;
