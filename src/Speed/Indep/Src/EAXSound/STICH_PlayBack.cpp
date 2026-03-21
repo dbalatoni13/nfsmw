@@ -475,6 +475,7 @@ void cSampleWarpper::Play(const SND_Params *Params) {
 
     if (GetData().eStichType == STICH_TYPE_COLLISION) {
         g_pEAXSound->SetCsisName(GetStichTypeName(STICH_TYPE_COLLISION));
+        AEMS_StichCollision **activeSample = &AEMS_ActiveSampleCol;
         AEMS_StichCollision *sample = static_cast<AEMS_StichCollision *>(Csis::System::Alloc(0x2C));
 
         SND_SampleRef *ref = SampleRefData;
@@ -547,7 +548,6 @@ void cSampleWarpper::Play(const SND_Params *Params) {
             Csis::Class::CreateInstance(&Csis::gAEMS_StichCollisionHandle, &sample->mData, &sample->mpClass);
         }
 
-        AEMS_StichCollision **activeSample = &AEMS_ActiveSampleCol;
         *activeSample = sample;
         if (*activeSample != nullptr) {
             int refCount = 0;
@@ -565,6 +565,7 @@ void cSampleWarpper::Play(const SND_Params *Params) {
 
     if (GetData().eStichType == STICH_TYPE_WOOSH) {
         g_pEAXSound->SetCsisName(GetStichTypeName(STICH_TYPE_WOOSH));
+        AEMS_StichWoosh **activeSample = &AEMS_ActiveSampleWsh;
         AEMS_StichWoosh *sample = static_cast<AEMS_StichWoosh *>(Csis::System::Alloc(0x2C));
 
         SND_SampleRef *ref = SampleRefData;
@@ -637,7 +638,6 @@ void cSampleWarpper::Play(const SND_Params *Params) {
             Csis::Class::CreateInstance(&Csis::gAEMS_StichWooshHandle, &sample->mData, &sample->mpClass);
         }
 
-        AEMS_StichWoosh **activeSample = &AEMS_ActiveSampleWsh;
         *activeSample = sample;
         if (*activeSample != nullptr) {
             int refCount = 0;
@@ -655,6 +655,7 @@ void cSampleWarpper::Play(const SND_Params *Params) {
 
     if (GetData().eStichType == STICH_TYPE_STATIC) {
         g_pEAXSound->SetCsisName(GetStichTypeName(STICH_TYPE_STATIC));
+        AEMS_StichStatic **activeSample = &AEMS_ActiveSampleStatic;
         AEMS_StichStatic *sample = static_cast<AEMS_StichStatic *>(Csis::System::Alloc(0x2C));
 
         SND_SampleRef *ref = SampleRefData;
@@ -727,7 +728,6 @@ void cSampleWarpper::Play(const SND_Params *Params) {
             Csis::Class::CreateInstance(&Csis::gAEMS_StichStaticHandle, &sample->mData, &sample->mpClass);
         }
 
-        AEMS_StichStatic **activeSample = &AEMS_ActiveSampleStatic;
         *activeSample = sample;
         if (*activeSample != nullptr) {
             int refCount = 0;
