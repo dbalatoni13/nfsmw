@@ -164,14 +164,14 @@ void CGEmitter::SpawnParticles(float dt, float intensity) {
         random_seed = randomSeed;
         life = mEmitterDef.Life();
         life_variance = life * mEmitterDef.LifeVariance();
-        num_particles = intensity * mEmitterDef.NumParticles();
-        num_particles_variance = num_particles * mEmitterDef.NumParticlesVariance() * 100.0f;
-        current_particle_age = 0.0f;
         r = static_cast<int>(mEmitterDef.Colour1().x * 255.0f);
         g = static_cast<int>(mEmitterDef.Colour1().y * 255.0f);
         b = static_cast<int>(mEmitterDef.Colour1().z * 255.0f);
         a = static_cast<int>(mEmitterDef.Colour1().w * 255.0f);
         particleColor = a << 24 | b << 16 | g << 8 | r;
+        num_particles = intensity * mEmitterDef.NumParticles();
+        num_particles_variance = num_particles * mEmitterDef.NumParticlesVariance() * 100.0f;
+        current_particle_age = 0.0f;
         life -= life_variance;
         num_particles -= num_particles_variance;
 
