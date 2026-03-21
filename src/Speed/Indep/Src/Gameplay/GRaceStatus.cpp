@@ -4107,10 +4107,10 @@ void GRaceStatus::RaceAbandoned() {
 
                 GRaceDatabase::Get().ResetCareerCompleteFlag(raceHash);
             }
+
+            GManager::Get().RefreshEngageTriggerIcons();
         }
     }
-
-    GManager::Get().RefreshEngageTriggerIcons();
 }
 
 void GRaceStatus::EndStopAll() {
