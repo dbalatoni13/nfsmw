@@ -43,4 +43,8 @@ SoundHeli::SoundHeli(const BehaviorParams &params) : VehicleBehavior(params, 0),
     mSoundService = OpenService(0xa3f44e2e, &pkt);
 }
 
-SoundHeli::~SoundHeli() {}
+SoundHeli::~SoundHeli() {
+    if (mSoundService) {
+        CloseService(mSoundService);
+    }
+}
