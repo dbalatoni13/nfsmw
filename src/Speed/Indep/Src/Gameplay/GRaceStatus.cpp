@@ -2516,15 +2516,12 @@ GRaceCustom::GRaceCustom(const GRaceParameters &other)
       mReversed(false), //
       mFreedByOwner(false), //
       mHeatLevel(-1) {
-    Attrib::Attribute opponents;
     unsigned int customKey;
 
     customKey = mRaceRecord->GenerateUniqueKey("GRaceCustom", true);
     mRaceRecord->Modify(customKey, 0);
     mRaceRecord->SetParent(other.GetGameplayObj()->GetCollection());
-
-    opponents = mRaceRecord->Get(0x5839FA1A);
-    mNumOpponents = opponents.GetLength();
+    mNumOpponents = mRaceRecord->Num_Opponents();
 }
 
 GRaceCustom::~GRaceCustom() {
