@@ -2447,12 +2447,12 @@ eVehicleCacheResult GManager::OnQueryVehicleCache(const IVehicle *removethis, co
         IVehicle *stockCar = nullptr;
 
         if (it->second->QueryInterface(&stockCar) && stockCar == removethis) {
-            if (!UTL::COM::ComparePtr(whosasking, INIS::Get())) {
-                return VCR_WANT;
+            if (UTL::COM::ComparePtr(whosasking, INIS::Get())) {
+                const_cast<GManager *>(this)->mStockCars.erase(it);
+                return VCR_DONTCARE;
             }
 
-            const_cast<GManager *>(this)->mStockCars.erase(it);
-            return VCR_DONTCARE;
+            return VCR_WANT;
         }
     }
 
@@ -2465,9 +2465,10 @@ eVehicleCacheResult GManager::OnQueryVehicleCache(const IVehicle *removethis, co
         }
 
         bool hasStockCar = false;
-
         if (vehicle) {
-            hasStockCar = character->IsFlagSet(GCharacter::kCharFlag_UsingStockCar);
+            if (character->HasStockCar()) {
+                hasStockCar = true;
+            }
         }
 
         if (hasStockCar) {
@@ -2479,7 +2480,7 @@ eVehicleCacheResult GManager::OnQueryVehicleCache(const IVehicle *removethis, co
         }
 
         GCharacter *firstCharacter = nullptr;
-        if (mActiveCharacters.begin() != mActiveCharacters.end()) {
+        if ((mActiveCharacters.end() - mActiveCharacters.begin()) != 0) {
             firstCharacter = *mActiveCharacters.begin();
         }
 
