@@ -1619,25 +1619,25 @@ void GManager::RefreshWorldParticleEffects() {
 }
 
 void GManager::RefreshEngageTriggerIcons() {
-    for (unsigned int i = 0; i < mInstanceHashTableSize; ++i) {
-        GRuntimeInstance *instance = mKeyToInstanceMap[i].mInstance;
+    GObjectIterator<GTrigger> iter(0x200);
 
-        if (instance && instance->GetType() == kGameplayObjType_Trigger) {
-            GTrigger *trigger = static_cast<GTrigger *>(instance);
-            GActivity *activity = trigger->GetTargetActivity();
+    while (iter.IsValid()) {
+        GTrigger *trigger = iter.GetInstance();
+        GActivity *activity = trigger->GetTargetActivity();
 
-            if (activity) {
-                GRaceParameters *race = GRaceDatabase::Get().GetRaceFromActivity(activity);
+        if (activity) {
+            GRaceParameters *raceParms = GRaceDatabase::Get().GetRaceFromActivity(activity);
+            bool complete = GRaceDatabase::Get().IsCareerRaceComplete(raceParms->GetEventHash());
+            bool unlocked = GRaceDatabase::Get().IsCareerRaceUnlocked(raceParms->GetEventHash());
 
-                if (race) {
-                    if (!race->GetIsAvailable(GRace::kRaceContext_Career)) {
-                        trigger->HideIcon();
-                    } else {
-                        trigger->ShowIcon();
-                    }
-                }
+            if (!unlocked || complete) {
+                trigger->HideIcon();
+            } else {
+                trigger->ShowIcon();
             }
         }
+
+        iter.Advance();
     }
 }
 
@@ -1687,16 +1687,16 @@ void GManager::FreeIconAt(unsigned int index) {
     mNumIcons--;
 }
 
-struct IconSort {
-    GIcon *icon;
-    int distance;
-};
-
-static int CompareVisibleIcons(const void *lhs, const void *rhs) {
-    return reinterpret_cast<const IconSort *>(lhs)->distance - reinterpret_cast<const IconSort *>(rhs)->distance;
-}
-
 int GManager::GatherVisibleIcons(GIcon **iconArray, IPlayer *player) {
+    struct IconSort {
+        GIcon *mIcon;
+        int mDist;
+
+        static int Compare(const void *lhs, const void *rhs) {
+            return reinterpret_cast<const IconSort *>(lhs)->mDist - reinterpret_cast<const IconSort *>(rhs)->mDist;
+        }
+    };
+
     UMath::Vector3 playerPos = UMath::Vector3::kZero;
     IconSort iconSort[200];
     ISimable *simable = nullptr;
@@ -1725,22 +1725,22 @@ int GManager::GatherVisibleIcons(GIcon **iconArray, IPlayer *player) {
         }
 
         if (show) {
-            iconSort[count].icon = icon;
+            iconSort[count].mIcon = icon;
             if (!simable) {
-                iconSort[count].distance = 0;
+                iconSort[count].mDist = 0;
             } else {
-                iconSort[count].distance = static_cast<int>(VU0_v3distancesquarexz(icon->GetPosition(), playerPos));
+                iconSort[count].mDist = static_cast<int>(VU0_v3distancesquarexz(icon->GetPosition(), playerPos));
             }
             count++;
         }
     }
 
     if (simable) {
-        qsort(iconSort, count, sizeof(IconSort), CompareVisibleIcons);
+        qsort(iconSort, count, sizeof(IconSort), IconSort::Compare);
     }
 
     for (int i = 0; i < count; i++) {
-        iconArray[i] = iconSort[i].icon;
+        iconArray[i] = iconSort[i].mIcon;
     }
 
     return count;

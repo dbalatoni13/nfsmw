@@ -152,6 +152,14 @@ class GRaceDatabase {
     const char *GetNextDDayRace();
     void UpdateRaceScore(bool raceCompleted);
 
+    bool IsCareerRaceComplete(unsigned int eventHash) {
+        return CheckRaceScoreFlags(eventHash, kCompleted_ContextCareer);
+    }
+
+    bool IsCareerRaceUnlocked(unsigned int eventHash) {
+        return CheckRaceScoreFlags(eventHash, kUnlocked_Career);
+    }
+
     static GRaceDatabase &Get() {
         return *mObj;
     }
