@@ -3145,47 +3145,46 @@ void GRaceStatus::Update(float dT) {
 #endif
     }
 
-    if (GetPlayMode() == kPlayMode_Racing) {
-        int numRacers = mRacerCount;
+    {
+        int num_racers = mRacerCount;
 
-        if (numRacers > 0) {
-            int numAiRacers = 0;
-            float floatRacers = 0.0f;
-            float percentComplete = 0.0f;
+        if (GetPlayMode() == kPlayMode_Racing && num_racers > 0) {
+            int num_ai_racers = 0;
+            float float_racers = 0.0f;
+            float percent_complete = 0.0f;
             float elapsed;
             int elapsedSec;
 
-            for (int idx = 0; idx < numRacers; ++idx) {
+            for (int idx = 0; idx < num_racers; ++idx) {
                 GRacerInfo &info = GetRacerInfo(idx);
 
-                if (!info.GetIsHuman()) {
-                    ++numAiRacers;
+                if (info.mGameCharacter) {
+                    ++num_ai_racers;
                 }
             }
 
-            for (int idx = 0; idx < numRacers; ++idx) {
+            for (int idx = 0; idx < num_racers; ++idx) {
                 GRacerInfo &info = GetRacerInfo(idx);
 
                 info.Update(dT);
-                ISimable *simable = info.GetSimable();
 
-                if (simable) {
+                if (info.mhSimable) {
                     float weight = 1.0f;
 
-                    if (info.GetIsHuman()) {
-                        weight = bMax(1.0f, static_cast<float>(numAiRacers));
+                    if (!info.mGameCharacter) {
+                        weight = bMax(1.0f, static_cast<float>(num_ai_racers));
                     }
 
-                    floatRacers += weight;
-                    percentComplete += weight * info.GetPctRaceComplete();
+                    float_racers += weight;
+                    percent_complete += weight * info.mPctRaceComplete;
                 }
             }
 
-            fAveragePercentComplete = percentComplete / bMax(1.0f, floatRacers);
+            fAveragePercentComplete = percent_complete / bMax(1.0f, float_racers);
             CalculateRankings();
 
 #ifndef EA_BUILD_A124
-            for (int idx = 0; idx < numRacers; ++idx) {
+            for (int idx = 0; idx < num_racers; ++idx) {
                 GetRacerInfo(idx).UpdateSplits();
             }
 #endif
@@ -3227,7 +3226,7 @@ void GRaceStatus::Update(float dT) {
                     MNotifyRaceTimeExpired().Post(gameplayMessage);
                     mTimeExpiredMsgSent = true;
 
-                    for (int idx = 0; idx < mRacerCount; ++idx) {
+                    for (int idx = 0; idx < num_racers; ++idx) {
                         GRacerInfo &info = mRacerInfo[idx];
 
                         if (!info.GetGameCharacter() && !info.IsFinishedRacing()) {
