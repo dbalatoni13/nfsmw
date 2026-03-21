@@ -432,7 +432,6 @@ template GObjectIterator<GActivity>::GObjectIterator(unsigned int flagMask);
 template void GObjectIterator<GActivity>::Advance();
 
 void GActivity::SerializeVars(bool abandonLuaTable) {
-    const char *activityName;
     const char *stateName;
     unsigned int stateNameLen;
     bool terminalState;
@@ -446,7 +445,6 @@ void GActivity::SerializeVars(bool abandonLuaTable) {
         return;
     }
 
-    activityName = CollectionName();
     stateName = "";
     if (mCurrentState) {
         stateName = mCurrentState->Name(0);
@@ -455,12 +453,18 @@ void GActivity::SerializeVars(bool abandonLuaTable) {
     terminalState = false;
     stateNameLen = bStrLen(stateName);
     if (mCurrentState) {
-        terminalState = bStrCmp(mCurrentState->Name(0), "done") == 0;
+        if (bStrCmp(mCurrentState->Name(0), "done") == 0) {
+            terminalState = true;
+        }
     }
 
     header.mStateNameHash = stateNameLen ? stringhash32(stateName) : 0;
-    header.mFlags = static_cast<unsigned short>(mRunning != 0);
+    header.mFlags = 0;
     header.mTableBytes = 0;
+
+    if (mRunning) {
+        header.mFlags = header.mFlags | 1;
+    }
 
     if (terminalState) {
         header.mFlags = header.mFlags | 2;
@@ -470,7 +474,7 @@ void GActivity::SerializeVars(bool abandonLuaTable) {
     prevStackTop = lua_gettop(luaState);
 
     if (!terminalState) {
-        lua_pushstring(luaState, activityName);
+        lua_pushstring(luaState, *reinterpret_cast<const char *const *>(GetLayoutPointer()));
         lua_gettable(luaState, LUA_REGISTRYINDEX);
         if (lua_type(luaState, -1) == LUA_TTABLE) {
             header.mTableBytes = SerializeTable(luaState, nullptr, !Persistent(0));
@@ -482,8 +486,9 @@ void GActivity::SerializeVars(bool abandonLuaTable) {
 
     if (buffer) {
         bMemCpy(buffer, &header, sizeof(header));
+        buffer += sizeof(header);
         if (header.mTableBytes != 0) {
-            unsigned int writtenBytes = SerializeTable(luaState, buffer + sizeof(header), !Persistent(0));
+            unsigned int writtenBytes = SerializeTable(luaState, buffer, !Persistent(0));
             (void)writtenBytes;
         }
     }
