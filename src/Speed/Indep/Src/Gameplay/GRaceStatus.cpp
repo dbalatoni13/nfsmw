@@ -4222,20 +4222,25 @@ void GRaceStatus::EnterSuddenDeath() {
 
 float GRaceStatus::DetermineRaceSegmentLength(const UMath::Vector4 *positions, const UMath::Vector4 *directions, int start, int end) {
     WRoadNav nav;
-    UMath::Vector3 delta;
     float pathDistance;
-    float segmentDistance = 0.0f;
+    float segmentDistance;
 
     nav.SetNavType(WRoadNav::kTypeDirection);
     nav.SetDecisionFilter(true);
     nav.SetPathType(WRoadNav::kPathChopper);
 
     mRaceParms->GetNumCheckpoints();
-    VU0_v3sub(UMath::Vector4To3(positions[start]), UMath::Vector4To3(positions[end]), delta);
-    pathDistance = VU0_sqrt(VU0_v3lengthsquare(delta));
+    {
+        UMath::Vector3 delta;
+
+        VU0_v3sub(UMath::Vector4To3(positions[start]), UMath::Vector4To3(positions[end]), delta);
+        pathDistance = VU0_sqrt(VU0_v3lengthsquare(delta));
+    }
 
     nav.InitAtPoint(UMath::Vector4To3(positions[start]), UMath::Vector4To3(directions[start]), true, 1.0f);
     if (nav.IsValid()) {
+        segmentDistance = 0.0f;
+
         if (start == end) {
             short segment = nav.GetSegmentInd();
             float segLenScale = static_cast<float>(nav.GetSegment()->nLength) * 0.015259022f;
