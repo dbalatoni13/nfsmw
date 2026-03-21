@@ -566,7 +566,6 @@ void SFXCTL_Tunnel::EndTunnelVerb() {
 }
 
 void SFXCTL_Tunnel::UpdateDriveBySnds(float t) {
-    bool InTunnel = m_bIsInTunnel;
     TrackPathZone *zone;
     bVector2 UnNormalCurCarDir;
     bVector2 CurCarDir;
@@ -613,6 +612,7 @@ void SFXCTL_Tunnel::UpdateDriveBySnds(float t) {
         }
     }
 
+    bool InTunnel = m_bIsInTunnel;
     if (!InTunnel) {
         if (FutureZoneType != TRACK_PATH_ZONE_RESET &&
             ((tTimeToWaitBeforeAnotherDriveBy < 0.01f && pLastZoneWePlayedWooshFor == zone) ||
