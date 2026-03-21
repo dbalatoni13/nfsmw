@@ -2562,9 +2562,7 @@ void GRaceCustom::CreateRaceActivity() {
         unsigned int currOpponents = 0;
 
         if (!bossINQuickRace) {
-            Attrib::Attribute attribute(mRaceRecord->Get(0x5839FA1A));
-
-            currOpponents = attribute.GetLength();
+            currOpponents = mRaceRecord->Num_Opponents();
             if (currOpponents != 0) {
                 for (unsigned int onOpp = 0; onOpp < currOpponents; onOpp++) {
                     opponentKey[onOpp] = mRaceRecord->Opponents(onOpp).GetCollectionKey();
@@ -4305,7 +4303,7 @@ void GRaceStatus::DetermineRaceLength() {
 
     WRoadNetwork &rn = WRoadNetwork::Get();
     GRaceParameters *race_parameters = GetRaceParameters();
-
+ 
     rn.ResolveShortcuts();
 
     if (!race_parameters || !race_parameters->HasFinishLine()) {
@@ -4370,7 +4368,8 @@ void GRaceStatus::DetermineRaceLength() {
         nav.SetDecisionFilter(true);
         nav.SetNavType(WRoadNav::kTypeDirection);
         nav.SetPathType(WRoadNav::kPathChopper);
-        nav.InitAtPoint(UMath::Vector4To3(positions[numPathPoints - 1]), UMath::Vector4To3(directions[numPathPoints - 1]), forceCentreLane, directionWeight);
+        nav.InitAtPoint(UMath::Vector4To3(positions[numPathPoints - 1]), UMath::Vector4To3(directions[numPathPoints - 1]), forceCentreLane,
+                        directionWeight);
         if (nav.IsValid()) {
             for (int i = 0; i < 100; ++i) {
                 int segmentNumber;
