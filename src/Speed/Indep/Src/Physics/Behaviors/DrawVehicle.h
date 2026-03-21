@@ -11,6 +11,7 @@
 #include "Speed/Indep/Src/Interfaces/Simables/ICollisionBody.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IDamageable.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IEngine.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IEngineDamage.h"
 #include "Speed/Indep/Src/Interfaces/Simables/INISCarControl.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRBVehicle.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRenderable.h"
@@ -194,6 +195,18 @@ struct DrawCopCar : public DrawPerformanceCar {
     static Behavior *Construct(const BehaviorParams &params);
 
     DrawCopCar(const BehaviorParams &params);
+};
+
+// total size: 0xD0
+struct DrawRaceCar : public DrawPerformanceCar {
+    static Behavior *Construct(const BehaviorParams &params);
+
+    DrawRaceCar(const BehaviorParams &params, CarRenderUsage usage);
+    void OnBehaviorChange(const UCrc32 &mechanic) override;
+    void OnService(RenderConn::Pkt_Car_Service &pkt) override;
+
+  private:
+    IEngineDamage *mEngineDamage; // offset 0xCC, size 0x4
 };
 
 #endif
