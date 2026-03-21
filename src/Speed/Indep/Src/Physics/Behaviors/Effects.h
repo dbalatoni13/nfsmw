@@ -24,6 +24,14 @@ struct EffectLinkageRecord {
 // TODO here or in SimEffect.h?
 class EffectLookup {
   public:
+    EffectLookup()
+        : mEffect(), //
+          mSourceKey(0), //
+          mDataKey(0), //
+          mSurfaceKey(0), //
+          mMinSpeed(0.0f), //
+          mMaxSpeed(0.0f) {}
+
     const Attrib::Collection *GetEffect() {
         return mEffect.GetCollection();
     }

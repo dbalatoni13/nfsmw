@@ -7,8 +7,15 @@
 #include "Speed/Indep/Src/Sim/Collision.h"
 #include "Speed/Indep/Src/Sim/SimSurface.h"
 
-Effects::Effects(const struct BehaviorParams &bp) : Behavior(bp, 0) {
-    // TODO
+Effects::Effects(const struct BehaviorParams &bp)
+    : Behavior(bp, 0), //
+      Sim::Collision::IListener(), //
+      mIRBComplex(nullptr), //
+      mHitEffects(), //
+      mScrapeEffects(), //
+      mScrape(bp.fowner->GetWorldID(), bp.fowner->GetAttributes().GetConstCollection()) {
+    mScrapeTimeOut = 0.0f;
+    Sim::Collision::AddListener(this, GetOwner(), "Effects");
 }
 
 Effects::~Effects() {
