@@ -97,6 +97,40 @@ class Pkt_Car_Open : public Sim::Packet {
 // total size: 0x108
 class Pkt_Car_Service : public Sim::Packet {
   public:
+    void SetSlipAngle(float sa) {
+        mSlipAngle = sa;
+    }
+
+    void SetTraction(Sound::WheelConfig id, float pct) {
+        mTractionPct[id] = pct;
+    }
+
+    void SetWheelTerrain(int idx, SimSurface s, bool onground) {
+        mWheelTerrain[idx] = s;
+        mWheelOnGround[idx] = onground;
+    }
+
+    void SetOversteer(float factor) {
+        mOversteer = factor;
+    }
+
+    void SetUndersteer(float factor) {
+        mUndersteer = factor;
+    }
+
+    void SetWheelSlip(int idx, float fwd, float lateral) {
+        mWheelSlip[idx].x = fwd;
+        mWheelSlip[idx].y = lateral;
+    }
+
+    void SetWheelLoad(Sound::WheelConfig id, float load) {
+        mWheelLoad[id] = load;
+    }
+
+    void SetWheelZForce(Sound::WheelConfig id, float load) {
+        mWheelCompression[id] = load;
+    }
+
     void SetSiren(SirenState s) {
         mSirenState = s;
     }
@@ -302,18 +336,14 @@ bool SoundCar::OnService(HSIMSERVICE hCon, Sim::Packet *pkt) {
 
 void SoundCar::OnService(SoundConn::Pkt_Car_Service &svc) {
     if (mEngine && mTransmission) {
+        float rpm = mEngine->GetRPM();
         float idle = mEngineInfo->IDLE();
         float redLineRange = mEngineInfo->RED_LINE() - idle;
         float rpmPercent = 0.0f;
 
         if (redLineRange > 0.0f) {
-            rpmPercent = (mEngine->GetRPM() - idle) / redLineRange;
-            if (rpmPercent > 1.0f) {
-                rpmPercent = 1.0f;
-            }
-            if (rpmPercent < 0.0f) {
-                rpmPercent = 0.0f;
-            }
+            rpmPercent = UMath::Min((rpm - idle) / redLineRange, 1.0f);
+            rpmPercent = UMath::Max(0.0f, rpmPercent);
         }
 
         mSoundRPM = svc.mAudibleRPMPct * redLineRange + idle;
@@ -324,36 +354,17 @@ void SoundCar::OnService(SoundConn::Pkt_Car_Service &svc) {
     }
 
     if (mInput) {
-        InputControls &controls = mInput->GetControls();
-        float throttle = controls.fGas;
-        float brake = controls.fBrake;
-        float eBrake = controls.fHandBrake;
-        float steering = controls.fSteering;
+        float throttle = UMath::Min(mInput->GetControls().fGas, 1.0f);
+        throttle = UMath::Max(0.0f, throttle);
 
-        if (throttle > 1.0f) {
-            throttle = 1.0f;
-        }
-        if (throttle < 0.0f) {
-            throttle = 0.0f;
-        }
-        if (brake > 1.0f) {
-            brake = 1.0f;
-        }
-        if (brake < 0.0f) {
-            brake = 0.0f;
-        }
-        if (eBrake > 1.0f) {
-            eBrake = 1.0f;
-        }
-        if (eBrake < 0.0f) {
-            eBrake = 0.0f;
-        }
-        if (steering > 1.0f) {
-            steering = 1.0f;
-        }
-        if (steering < -1.0f) {
-            steering = -1.0f;
-        }
+        float brake = UMath::Min(mInput->GetControls().fBrake, 1.0f);
+        brake = UMath::Max(0.0f, brake);
+
+        float eBrake = UMath::Min(mInput->GetControls().fHandBrake, 1.0f);
+        eBrake = UMath::Max(0.0f, eBrake);
+
+        float steering = UMath::Min(mInput->GetControls().fSteering, 1.0f);
+        steering = UMath::Max(-1.0f, steering);
 
         svc.mThrottlePercent = throttle;
         svc.mBrakePercent = brake;
@@ -362,7 +373,7 @@ void SoundCar::OnService(SoundConn::Pkt_Car_Service &svc) {
 
         if (mNIS) {
             svc.mControlSource = CONTROL_NIS;
-        } else if (GetVehicle() && GetVehicle()->GetDriverClass() == DRIVER_REMOTE) {
+        } else if (GetVehicle()->GetDriverClass() == DRIVER_REMOTE) {
             svc.mControlSource = CONTROL_ONLINE;
         } else if (mHumanAI && !mHumanAI->GetAiControl()) {
             svc.mControlSource = CONTROL_HUMAN;
@@ -380,18 +391,23 @@ void SoundCar::OnService(SoundConn::Pkt_Car_Service &svc) {
         }
     }
 
-    if (GetVehicle()) {
-        svc.mSlipAngle = GetVehicle()->GetSlipAngle() * 6.2831855f;
-    }
+    svc.SetSlipAngle(GetVehicle()->GetSlipAngle() * 6.2831855f);
 
     if (mSuspension) {
         for (unsigned int wheelid = 0; wheelid < mSuspension->GetNumWheels(); ++wheelid) {
             Sound::WheelConfig packetWheel;
+            const UMath::Vector3 &vel = mSuspension->GetWheelVelocity(wheelid);
+            float pos_x = mSuspension->GetWheelLocalPos(wheelid).x;
+            float pct = mSuspension->GetWheelTraction(wheelid);
             float slip;
             float toleratedSlip;
+            SimSurface roadsurf = mSuspension->GetWheelRoadSurface(wheelid);
 
             if (wheelid < 2) {
-                packetWheel = static_cast<Sound::WheelConfig>(wheelid & 1);
+                packetWheel = Sound::EAX4WD_FL;
+                if ((wheelid & 1) != 0) {
+                    packetWheel = Sound::EAX4WD_FR;
+                }
             } else if ((wheelid & 1) != 0) {
                 packetWheel = Sound::EAX4WD_RR;
             } else {
@@ -408,15 +424,13 @@ void SoundCar::OnService(SoundConn::Pkt_Car_Service &svc) {
                 slip = 0.0f;
             }
 
-            svc.mTractionPct[packetWheel] = mSuspension->GetWheelTraction(wheelid);
-            svc.mWheelTerrain[packetWheel] = mSuspension->GetWheelRoadSurface(wheelid);
-            svc.mWheelOnGround[packetWheel] = mSuspension->IsWheelOnGround(wheelid);
-            svc.mWheelLoad[packetWheel] = mSuspension->GetWheelLoad(wheelid);
-            svc.mWheelCompression[packetWheel] = mSuspension->GetCompression(wheelid);
-            svc.mOversteer = mSuspension->CalculateOversteerFactor();
-            svc.mUndersteer = mSuspension->CalculateUndersteerFactor();
-            svc.mWheelSlip[packetWheel].x = slip;
-            svc.mWheelSlip[packetWheel].y = -mSuspension->GetWheelSkid(wheelid);
+            svc.SetWheelTerrain(packetWheel, roadsurf, mSuspension->IsWheelOnGround(wheelid));
+            svc.SetTraction(packetWheel, pct);
+            svc.SetOversteer(mSuspension->CalculateOversteerFactor());
+            svc.SetUndersteer(mSuspension->CalculateUndersteerFactor());
+            svc.SetWheelSlip(packetWheel, slip, -mSuspension->GetWheelSkid(wheelid));
+            svc.SetWheelLoad(packetWheel, mSuspension->GetWheelLoad(wheelid));
+            svc.SetWheelZForce(packetWheel, mSuspension->GetCompression(wheelid));
 
             OnServiceTire(svc, wheelid, packetWheel);
         }
