@@ -10,6 +10,18 @@ extern SlotPool *VehiclePartDamageZoneSlotPool;
 extern unsigned int unitTestDelay;
 extern unsigned int uniTestLevel;
 extern "C" void PSMTX44Copy(const Mtx44 src, Mtx44 dst);
+extern const char lbl_8040BC8C[] asm("lbl_8040BC8C");
+extern const char lbl_8040D09C[] asm("lbl_8040D09C");
+extern const char lbl_8040D0A4[] asm("lbl_8040D0A4");
+extern const char lbl_8040D0B0[] asm("lbl_8040D0B0");
+extern const char lbl_8040D0BC[] asm("lbl_8040D0BC");
+extern const char lbl_8040D0CC[] asm("lbl_8040D0CC");
+extern const char lbl_8040D0DC[] asm("lbl_8040D0DC");
+extern float lbl_8040D0E8;
+extern float lbl_8040D0EC;
+extern float lbl_8040D0F0;
+extern float lbl_8040D0F4;
+extern float lbl_8040D0F8;
 
 extern VehicleDamagePart *VehicleDamagePart_ctor(VehicleDamagePart *part, CarRenderInfo *carRenderInfo, int slotId)
     asm("__17VehicleDamagePartP13CarRenderInfoi");
@@ -158,6 +170,58 @@ void VehiclePartDamageBehaviour::HidePart(unsigned int slotId) {
     }
 
     *reinterpret_cast<int *>(reinterpret_cast<unsigned char *>(this->mDamagePartList[slotId]) + 0x60) = 1;
+}
+
+void VehiclePartDamageBehaviour::Init() {
+    float *pivot;
+
+    this->InitAnimationPivot(CARSLOTID_DAMAGE_HOOD, lbl_8040BC8C);
+    this->InitAnimationPivot(CARSLOTID_DAMAGE_TRUNK, lbl_8040D09C);
+    this->InitAnimationPivot(CARSLOTID_DAMAGE_LEFT_DOOR, lbl_8040D0A4);
+    this->InitAnimationPivot(CARSLOTID_DAMAGE_RIGHT_DOOR, lbl_8040D0B0);
+    this->InitAnimationPivot(CARSLOTID_DAMAGE_LEFT_REAR_DOOR, lbl_8040D0BC);
+    this->InitAnimationPivot(CARSLOTID_DAMAGE_RIGHT_REAR_DOOR, lbl_8040D0CC);
+    this->InitAnimationPivot(CARSLOTID_DAMAGE_REAR_BUMPER, lbl_8040D0DC);
+
+    pivot = reinterpret_cast<float *>(reinterpret_cast<unsigned char *>(this->mDamagePartList[CARSLOTID_DAMAGE_TRUNK]) + 0x10);
+    pivot[0] = lbl_8040D0E8;
+    pivot[1] = lbl_8040D0EC;
+    pivot[2] = lbl_8040D0F0;
+
+    pivot = reinterpret_cast<float *>(reinterpret_cast<unsigned char *>(this->mDamagePartList[CARSLOTID_DAMAGE_HOOD]) + 0x10);
+    pivot[0] = lbl_8040D0F4;
+    pivot[1] = lbl_8040D0F8;
+    pivot[2] = lbl_8040D0F0;
+}
+
+void VehiclePartDamageBehaviour::ManageGlassDamage() {
+    int windowIx;
+
+    for (windowIx = 0; windowIx < 5; windowIx++) {
+        const BreakableWindowInfoDataType &windowInfo = mBreakableWindowInfoList[windowIx];
+        VehicleDamagePart *damagePart = this->mDamagePartList[windowInfo.mPartSlotId];
+
+        if (this->mCarRenderInfo != 0) {
+            eReplacementTextureTable *replacementTexture =
+                &this->mCarRenderInfo->MasterReplacementTextureTable[windowInfo.mReplaceTexId];
+
+            if (bMin(static_cast<int>(*reinterpret_cast<unsigned short *>(damagePart)), 1) == 0) {
+                if (replacementTexture->GetNewNameHash() != windowInfo.mOriginalHash) {
+                    replacementTexture->SetNewNameHash(windowInfo.mOriginalHash);
+                }
+            } else {
+                unsigned int damageHash = 0x0A155545;
+
+                if (replacementTexture->GetNewNameHash() != damageHash) {
+                    replacementTexture->SetNewNameHash(damageHash);
+                }
+
+                if (this->mCarRenderInfo->MasterReplacementTextureTable[CarRenderInfo::REPLACETEX_WINDOW_REAR_DEFOST].GetNewNameHash() != damageHash) {
+                    this->mCarRenderInfo->MasterReplacementTextureTable[CarRenderInfo::REPLACETEX_WINDOW_REAR_DEFOST].SetNewNameHash(damageHash);
+                }
+            }
+        }
+    }
 }
 
 void VehiclePartDamageBehaviour::InitAnimationPivot(unsigned int slotId, const char * markerName) {
