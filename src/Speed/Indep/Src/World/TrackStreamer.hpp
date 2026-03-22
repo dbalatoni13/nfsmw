@@ -136,6 +136,7 @@ class TSMemoryPool {
         return GetNextFreeNode(start_from_top, 0);
     }
     TSMemoryNode *GetNextAllocatedNode(bool start_from_top, TSMemoryNode *node = 0);
+    TSMemoryNode *GetFirstAllocatedNode(bool start_from_top);
     bool IsUpdated() {
         bool updated = Updated;
         Updated = false;

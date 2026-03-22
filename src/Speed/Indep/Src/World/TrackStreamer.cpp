@@ -481,6 +481,10 @@ TSMemoryNode *TSMemoryPool::GetNextAllocatedNode(bool start_from_top, TSMemoryNo
     return 0;
 }
 
+inline TSMemoryNode *TSMemoryPool::GetFirstAllocatedNode(bool start_from_top) {
+    return GetNextAllocatedNode(start_from_top, 0);
+}
+
 void TSMemoryPool::DebugPrint() {
     TSMemoryNode *end = reinterpret_cast<TSMemoryNode *>(&NodeList);
     TSMemoryNode *node = reinterpret_cast<TSMemoryNode *>(NodeList.GetHead());
@@ -1036,24 +1040,32 @@ int TrackStreamer::GetMemoryPoolSize() {
 }
 
 int TrackStreamer::CountUserAllocations(const char **pfragmented_user_allocation) {
+    int num_fragmented_user_allocations;
+
     if (pfragmented_user_allocation) {
         *pfragmented_user_allocation = 0;
     }
 
-    int total = 0;
+    num_fragmented_user_allocations = 0;
+    int user_allocation_size = 0;
     bool start_from_top = false;
-    for (TSMemoryNode *node = pMemoryPool->GetNextAllocatedNode(start_from_top, 0); node;
-         node = pMemoryPool->GetNextAllocatedNode(start_from_top, node)) {
-        if (!FindSectionByAddress(node->Address)) {
-            total += node->Size;
+    TSMemoryNode *node = pMemoryPool->GetFirstAllocatedNode(start_from_top);
+    while (node) {
+        TrackStreamingSection *section = FindSectionByAddress(node->Address);
+        if (!section) {
+            user_allocation_size += node->Size;
             if (pMemoryPool->GetNextFreeNode(start_from_top, node) && pMemoryPool->GetNextFreeNode(!start_from_top, node) &&
                 pfragmented_user_allocation) {
                 *pfragmented_user_allocation = node->DebugName;
+                num_fragmented_user_allocations += 1;
             }
         }
+
+        node = pMemoryPool->GetNextAllocatedNode(start_from_top, node);
     }
 
-    return total;
+    (void)num_fragmented_user_allocations;
+    return user_allocation_size;
 }
 
 int TrackStreamer::DoHoleFilling(int largest_free) {
