@@ -31,6 +31,8 @@
 
 #include "Speed/Indep/Src/World/NeuQuant.cpp"
 
+#include "Speed/Indep/Src/World/HeliSheet.cpp"
+
 #include "Speed/Indep/Src/World/ParameterMaps.cpp"
 
 #include "Speed/Indep/Src/World/VisualTreatment.cpp"
