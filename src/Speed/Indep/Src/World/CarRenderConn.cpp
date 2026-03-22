@@ -4,6 +4,7 @@
 #include "Speed/Indep/Src/Ecstasy/EcstasyData.hpp"
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
 
+struct Car;
 struct CarPartDatabase;
 extern void *gINISInstance asm("_Q33UTL11Collectionst9Singleton1Z4INIS_mInstance");
 extern CarPartDatabase CarPartDB;
@@ -11,7 +12,12 @@ extern CarType GetCarType__15CarPartDatabaseUi(CarPartDatabase *database, unsign
     asm("GetCarType__15CarPartDatabaseUi");
 extern int GetAppliedAttributeIParam__7CarPartUii(const CarPart *part, unsigned int key, int default_value)
     asm("GetAppliedAttributeIParam__7CarPartUii");
+extern void bRotateVector(bVector3 *dest, const bMatrix4 *m, bVector3 *v);
 extern void KillSkids__9TireState(TireState *state) asm("KillSkids__9TireState");
+extern void MakeNoSkid__9SkidMaker(void *skid_maker) asm("MakeNoSkid__9SkidMaker");
+extern void MakeSkid__9SkidMakerP3CarP8bVector3T2if(void *skid_maker, Car *car, bVector3 *skid_centre, bVector3 *skid_direction,
+                                                    int terrain, float intensity)
+    asm("MakeSkid__9SkidMakerP3CarP8bVector3T2if");
 extern void TireState_ctor(TireState *state) asm("__9TireState");
 extern void TireState_dtor(TireState *state, int in_chrg) asm("_._9TireState");
 extern int PhysicsUpgrades_GetLevel(const Attrib::Gen::pvehicle &pvehicle, int type)
@@ -28,6 +34,20 @@ extern RoadNoiseRecord Tweak_BlowOutNoise asm("Tweak_BlowOutNoise");
 extern CameraAnchor *RVManchor;
 extern void AddXenonEffect(EmitterGroup *piggyback_fx, const Attrib::Collection *spec, const bMatrix4 *mat, const bVector4 *vel)
     asm("AddXenonEffect__FP12EmitterGroupPCQ26Attrib10CollectionPCQ25UMath7Matrix4PCQ25UMath7Vector4");
+
+struct TireState {
+    void KillSkids();
+    void DoSkids(float intensity, const bVector3 *deltaPos, const bMatrix4 *tirematrix, const bMatrix4 *bodymatrix, float skidWidth);
+    void DoFX(float slip, float skid, float speed, const bVector3 *car_velocity, const bMatrix4 *car_matrix, float dT);
+    void UpdateWorld(const WCollider *wc, bool rain, bool flat);
+
+    unsigned char _pad0[0x8];
+    bVector4 mPrevTirePos;
+    unsigned char _pad18[0x40];
+    bVector4 mTirePos;
+    bVector4 mGroundPos;
+    float mRoll;
+};
 
 namespace {
 
@@ -81,6 +101,55 @@ short &CarRenderInfoS16(CarRenderInfo *info, unsigned int offset) {
 }
 
 } // namespace
+
+void TireState::DoSkids(float intensity, const bVector3 *deltaPos, const bMatrix4 *tirematrix, const bMatrix4 *bodymatrix, float SkidWidth) {
+    WWorldPos *world_pos = reinterpret_cast<WWorldPos *>(reinterpret_cast<unsigned char *>(this) + 0x18);
+    void *skid_maker = reinterpret_cast<unsigned char *>(this) + 0x54;
+
+    if (!world_pos->OnValidFace() || intensity <= 0.3f || SkidWidth <= 0.0f) {
+        MakeNoSkid__9SkidMaker(skid_maker);
+    } else {
+        bMatrix4 world_matrix;
+        bVector3 skid_direction(-deltaPos->y, deltaPos->x, 0.0f);
+        bVector3 tire_direction;
+        bVector3 up(0.0f, 1.0f, 0.0f);
+
+        bMulMatrix(&world_matrix, bodymatrix, tirematrix);
+        bNormalize(&skid_direction, &skid_direction);
+        bRotateVector(&tire_direction, &world_matrix, &up);
+
+        float skid_dot = bAbs(bDot(&tire_direction, &skid_direction));
+        if (skid_dot < 0.5f) {
+            skid_dot = 0.5f;
+        }
+
+        float half_skid_width = SkidWidth * skid_dot * 0.5f;
+        bNormalize(&skid_direction, &skid_direction, half_skid_width);
+
+        bVector3 tire_position(this->mTirePos.x, this->mTirePos.y, this->mTirePos.z);
+        bVector3 right_point = tire_position + skid_direction;
+        bVector3 left_point = tire_position - skid_direction;
+        UMath::Vector3 right_point_l;
+        UMath::Vector3 left_point_l;
+
+        bConvertToBond(right_point_l, right_point);
+        bConvertToBond(left_point_l, left_point);
+
+        float right_elevation = world_pos->HeightAtPoint(right_point_l);
+        float left_elevation = world_pos->HeightAtPoint(left_point_l);
+        bVector3 skid_centre(tire_position.x, tire_position.y, (right_elevation + left_elevation) * 0.5f);
+
+        skid_direction.z = right_elevation * 0.5f - left_elevation * 0.5f;
+        bNormalize(&skid_direction, &skid_direction, half_skid_width);
+
+        float skid_intensity_scale = skid_dot * intensity;
+        if (skid_intensity_scale < 0.3f) {
+            skid_intensity_scale = 0.3f;
+        }
+
+        MakeSkid__9SkidMakerP3CarP8bVector3T2if(skid_maker, 0, &skid_centre, &skid_direction, 1, skid_intensity_scale);
+    }
+}
 
 Sim::Connection *CarRenderConn::Construct(const Sim::ConnectionData &data) {
     const RenderPktCarOpen *open = reinterpret_cast<const RenderPktCarOpen *>(data.pkt);
@@ -573,6 +642,141 @@ void CarRenderConn::BuildRenderMatrix(float dT) {
     this->mRenderMatrix.v3.x -= rotOffset.x;
     this->mRenderMatrix.v3.y -= rotOffset.y;
     this->mRenderMatrix.v3.z -= rotOffset.z;
+}
+
+void CarRenderConn::UpdateTires(float dT, float carspeed, const RenderConn::Pkt_Car_Service &data) {
+    float wheel_hop_roll = 0.0f;
+    float wheel_hop_pitch = 0.0f;
+    float tire_hop = 0.0f;
+    bool hop_wheels = false;
+    bool flatten_tires = false;
+    bool can_do_fx;
+    CarRenderInfo *car_render_info = this->GetRenderInfo();
+
+    this->mFlatTireAngle = UMath::Vector3::kZero;
+
+    if (this->TestVisibility(renderModifier * 30.0f)) {
+        const float &hop_scale = this->GetAttributes().WheelHopScale(0);
+
+        flatten_tires = true;
+        if (0.0f < data.mExtraBodyPitch && 0.0f < hop_scale) {
+            float pitch_scale = hop_scale * hop_scale;
+
+            wheel_hop_roll =
+                pitch_scale * data.mExtraBodyPitch * 0.00261795f * UMath::Abs(bSin(this->mAnimTime + 37.699112f));
+            wheel_hop_pitch =
+                pitch_scale * data.mExtraBodyPitch * 0.0034906f * UMath::Abs(bSin(this->mAnimTime * 150.79645f));
+            tire_hop =
+                pitch_scale * data.mExtraBodyPitch * 0.0052359f * UMath::Abs(bSin((this->mAnimTime + 0.5f) * 150.79645f));
+            hop_wheels = true;
+        }
+    }
+
+    this->mWheelHop = UMath::Vector3::kZero;
+    (void)this->IsViewAnchor();
+    can_do_fx = this->TestVisibility(renderModifier * 80.0f);
+
+    for (unsigned int i = 0; i < 4; i++) {
+        const unsigned int axle = i >> 1;
+        const bool onground = ((data.mGroundState >> i) & 1U) != 0;
+        const bool is_flat = ((data.mBlowOuts >> i) & 1U) != 0;
+        TireState *state = this->mTireState[i];
+        float compression = data.mCompressions[i] + (this->mTireRadius[i] - this->mPhysicsRadius[i]);
+        float wheel_delta = UMath::Clamp((data.mWheelSpeed[i] / this->mTireRadius[i]) * dT, -this->mMaxWheelRenderDeltaAngle,
+                                         this->mMaxWheelRenderDeltaAngle);
+
+        PSMTX44Identity(*reinterpret_cast<Mtx44 *>(&this->mTireMatrices[i]));
+        PSMTX44Identity(*reinterpret_cast<Mtx44 *>(&this->mBrakeMatrices[i]));
+
+        state->mRoll += wheel_delta;
+        if (6.2831855f <= state->mRoll) {
+            state->mRoll -= 6.2831855f;
+        } else if (state->mRoll <= -6.2831855f) {
+            state->mRoll += 6.2831855f;
+        }
+
+        eRotateY(&this->mTireMatrices[i], &this->mTireMatrices[i], static_cast<unsigned short>(state->mRoll * 10430.378f));
+        if (i < 2) {
+            unsigned short steer_angle = static_cast<unsigned short>(this->mSteering[i] * 10430.378f);
+
+            eRotateZ(&this->mTireMatrices[i], &this->mTireMatrices[i], steer_angle);
+            eRotateZ(&this->mBrakeMatrices[i], &this->mBrakeMatrices[i], steer_angle);
+        }
+
+        if (flatten_tires && is_flat) {
+            float x_angle = UMath::Atan2r(0.12f, UMath::Abs(this->mTirePositions[i].y)) * -3.1415927f;
+            float y_angle = UMath::Atan2r(0.12f, UMath::Abs(this->mTirePositions[i].x)) * 3.1415927f;
+
+            compression -= 0.12f;
+            if (this->mTirePositions[i].y < 0.0f) {
+                x_angle = -x_angle;
+            }
+            if (this->mTirePositions[i].x < 0.0f) {
+                y_angle = -y_angle;
+            }
+
+            this->mFlatTireAngle.x += x_angle;
+            this->mFlatTireAngle.y += y_angle;
+            this->mFlatTireAngle.z -= 0.03f;
+        }
+
+        if (i > 1 && onground && hop_wheels) {
+            float hop_speed_scale;
+
+            if (0.0f < data.mTireSlip[i]) {
+                hop_speed_scale = (data.mTireSlip[i] - 1.0f) / 4.0f;
+            } else {
+                hop_speed_scale = (-data.mTireSlip[i] - 5.0f) / 15.0f;
+            }
+
+            hop_speed_scale = UMath::Ramp(hop_speed_scale, 0.0f, 1.0f);
+            this->mWheelHop.y = wheel_hop_pitch * hop_speed_scale;
+            this->mWheelHop.z =
+                UMath::Max(this->mWheelHop.z, this->mTirePositions[0].x * UMath::Sinr(wheel_hop_pitch * hop_speed_scale));
+            this->mWheelHop.x = wheel_hop_roll * hop_speed_scale;
+            compression += bSin(tire_hop * hop_speed_scale) * (this->mTirePositions[0].x - this->mTirePositions[i].x);
+        }
+
+        this->mBrakeMatrices[i].v3.x = this->mTirePositions[i].x;
+        this->mBrakeMatrices[i].v3.z += this->mTirePositions[i].z + compression;
+        this->mBrakeMatrices[i].v3.y = this->mTirePositions[i].y;
+
+        this->mTireMatrices[i].v3.x = this->mTirePositions[i].x;
+        this->mTireMatrices[i].v3.z += this->mTirePositions[i].z + compression;
+        this->mTireMatrices[i].v3.y = this->mTirePositions[i].y;
+
+        if (can_do_fx) {
+            CarRenderInfoU32(car_render_info, 0x177C + i * 4) = is_flat ? 1U : 0U;
+        }
+
+        eMulVector(&state->mTirePos, &this->mRenderMatrix, &this->mTireMatrices[i].v3);
+        state->UpdateWorld(this->GetWCollider(), this->GetFlag(CF_ISRAINING), is_flat);
+
+        if (!onground || !can_do_fx) {
+            state->KillSkids();
+        } else {
+            float skid = UMath::Max(UMath::Abs(data.mTireSkid[i] * 0.05f) - 0.1f, 0.0f);
+            float slip = UMath::Max(UMath::Abs(data.mTireSlip[i] * 0.2f) - 0.1f, 0.0f);
+            float intensity = UMath::Sqrt(skid * skid + slip * slip);
+
+            if (0.0f < intensity) {
+                bVector3 delta_pos;
+
+                delta_pos.x = state->mTirePos.x - state->mPrevTirePos.x;
+                delta_pos.y = state->mTirePos.y - state->mPrevTirePos.y;
+                delta_pos.z = state->mTirePos.z - state->mPrevTirePos.z;
+                state->DoSkids(intensity, &delta_pos, &this->mTireMatrices[i], &this->mRenderMatrix,
+                               this->GetAttributes().TireSkidWidth(i));
+            } else {
+                state->KillSkids();
+            }
+
+            state->DoFX(data.mTireSlip[i] * this->GetAttributes().SlipFX(axle), data.mTireSkid[i] * this->GetAttributes().SkidFX(axle),
+                        carspeed, this->GetVelocity(), &this->mRenderMatrix, dT);
+        }
+
+        state->mPrevTirePos = state->mTirePos;
+    }
 }
 
 void CarRenderConn::UpdateRenderMatrix(float dT) {
