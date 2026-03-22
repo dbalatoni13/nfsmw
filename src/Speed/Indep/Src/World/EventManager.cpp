@@ -327,7 +327,7 @@ int UnloaderEventManager(bChunk *bchunk) {
 
 emEvent **emTriggerEventsInSection(bVector3 *position, int section_number) {
     emEvent **current_event = TriggerEventArray;
-    emEvent **last_event = &TriggerEventArray[40];
+    emEvent **sentinel_event = &TriggerEventArray[40];
     float x = position->x;
     float y = position->y;
     float z = position->z;
@@ -335,16 +335,20 @@ emEvent **emTriggerEventsInSection(bVector3 *position, int section_number) {
 
     if (user_info && user_info->pEventTriggerPack) {
         EventTriggerPack *trigger_pack = user_info->pEventTriggerPack;
-        vAABB *aabb = trigger_pack->EventTree->QueryLeaf(x, y, z);
+        vAABBTree *tree = trigger_pack->EventTree;
+        vAABB *aabb = tree->QueryLeaf(x, y, z);
         if (aabb) {
             EventTrigger *root_event = trigger_pack->EventTriggerArray;
             int num_hits = -aabb->NumChildren;
 
-            for (int i = 0; i < num_hits && current_event < last_event; i++) {
+            for (int i = 0; i < num_hits && current_event < sentinel_event; i++) {
                 EventTrigger *event = &root_event[aabb->ChildrenIndicies[i]];
-                float dz = bAbs(z - event->PositionZ);
-                float dy = bAbs(y - event->PositionY);
-                float dx = bAbs(x - event->PositionX);
+                float event_x = event->PositionX;
+                float event_z = event->PositionZ;
+                float event_y = event->PositionY;
+                float dz = bAbs(z - event_z);
+                float dy = bAbs(y - event_y);
+                float dx = bAbs(x - event_x);
                 float r2 = event->GetRadius();
                 float dist2 = dz * dz + dx * dx + dy * dy;
 
