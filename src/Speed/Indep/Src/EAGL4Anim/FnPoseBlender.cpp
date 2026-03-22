@@ -219,30 +219,61 @@ bool FnPoseBlender::EvalSQT(float currentTime, float *sqtBuffer, const BoneMask 
         return false;
     }
 
-    if (!mAnim[1]->EvalSQT(currentTime - mTimeOffset[1], sqtBuffer, boneMask)) {
+    if (!mAnim[1]->EvalSQT(currentTime - mTimeOffset[1], mPose[1], boneMask)) {
         return false;
     }
 
-    if (mAlignRootBoneIdx >= 0 && (!boneMask || boneMask->GetBone(mAlignRootBoneIdx))) {
-        EAGL4::Transform rootTransform;
-        ApplyAlignedRootTransform(rootTransform, mAlignMatrix, sqtBuffer, mAlignRootBoneIdx);
-    }
-
     int numBones = mpSkel->GetNumBones();
-    int transBoneIdx = mAlignRootBoneIdx < 0 ? 0 : mAlignRootBoneIdx;
+    if (!boneMask) {
+        if (mAlignRootBoneIdx < 0) {
+            for (int boneIdx = numBones - 1; boneIdx >= 0; --boneIdx) {
+                int poseIdx = boneIdx * 12;
 
-    for (int boneIdx = numBones - 1; boneIdx >= 0; --boneIdx) {
-        if (boneMask && !boneMask->GetBone(boneIdx)) {
-            continue;
+                FastQuatBlendF4(w, &mPose[0][poseIdx + 4], &mPose[1][poseIdx + 4], &sqtBuffer[poseIdx + 4]);
+            }
+
+            BlendRootTranslation(w, mPose[0], mPose[1], sqtBuffer, 0);
+        } else {
+            for (int boneIdx = numBones - 1; boneIdx >= 0; --boneIdx) {
+                if (boneIdx == mAlignRootBoneIdx) {
+                    EAGL4::Transform rootTransform;
+
+                    ApplyAlignedRootTransform(rootTransform, mAlignMatrix, mPose[1], boneIdx);
+                    BlendRootTranslation(w, mPose[0], mPose[1], sqtBuffer, boneIdx);
+                }
+
+                int poseIdx = boneIdx * 12;
+
+                FastQuatBlendF4(w, &mPose[0][poseIdx + 4], &mPose[1][poseIdx + 4], &sqtBuffer[poseIdx + 4]);
+            }
+        }
+    } else if (mAlignRootBoneIdx < 0) {
+        for (int boneIdx = numBones - 1; boneIdx >= 0; --boneIdx) {
+            if (boneMask->GetBone(boneIdx)) {
+                int poseIdx = boneIdx * 12;
+
+                FastQuatBlendF4(w, &mPose[0][poseIdx + 4], &mPose[1][poseIdx + 4], &sqtBuffer[poseIdx + 4]);
+            }
         }
 
-        int poseIdx = boneIdx * 12;
+        if (boneMask->GetBone(0)) {
+            BlendRootTranslation(w, mPose[0], mPose[1], sqtBuffer, 0);
+        }
+    } else {
+        for (int boneIdx = numBones - 1; boneIdx >= 0; --boneIdx) {
+            if (boneMask->GetBone(boneIdx)) {
+                if (boneIdx == mAlignRootBoneIdx) {
+                    EAGL4::Transform rootTransform;
 
-        FastQuatBlendF4(w, &mPose[0][poseIdx + 4], &sqtBuffer[poseIdx + 4], &sqtBuffer[poseIdx + 4]);
-    }
+                    ApplyAlignedRootTransform(rootTransform, mAlignMatrix, mPose[1], boneIdx);
+                    BlendRootTranslation(w, mPose[0], mPose[1], sqtBuffer, boneIdx);
+                }
 
-    if (!boneMask || boneMask->GetBone(transBoneIdx)) {
-        BlendRootTranslation(w, mPose[0], sqtBuffer, sqtBuffer, transBoneIdx);
+                int poseIdx = boneIdx * 12;
+
+                FastQuatBlendF4(w, &mPose[0][poseIdx + 4], &mPose[1][poseIdx + 4], &sqtBuffer[poseIdx + 4]);
+            }
+        }
     }
 
     return true;
