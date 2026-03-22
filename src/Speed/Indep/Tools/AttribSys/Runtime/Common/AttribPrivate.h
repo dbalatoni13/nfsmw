@@ -315,7 +315,6 @@ class DatabasePrivate : public Database {
     DatabasePrivate(const DatabaseLoadData &loadData) : Database(*this), mClasses(loadData.mNumClasses) {
         mClasses.Reserve(loadData.mNumClasses);
         mNumCompiledTypes = loadData.mNumTypes + 1;
-        mCompiledTypes.reserve(mNumCompiledTypes);
         DefaultDataArea(loadData.mDefaultDataSize);
         mCompiledTypes.push_back(&*mTypes.insert(TypeDesc()).first);
 
