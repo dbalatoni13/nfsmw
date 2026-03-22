@@ -127,9 +127,7 @@ bool FnStatelessQ::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask)
 
     mPrevKey = static_cast<unsigned short>(floorKey);
 
-    if (boneMask) {
-        EvalSQTMask(currTime, sqt, boneMask, slerpReqd, floorKey, scale);
-    } else {
+    if (!boneMask) {
         if (mBoneMask) {
             mBoneMask = nullptr;
         }
@@ -139,17 +137,7 @@ bool FnStatelessQ::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask)
         unsigned char *boneIdxs = statelessQ->mBoneIdxs;
         int nBones = statelessQ->mNumBones;
 
-        if (!slerpReqd) {
-            for (int ibone = 0; ibone < nBones; ibone++) {
-                float *q = GetStatelessQOutput(sqt, boneIdxs[ibone]);
-
-                q[0] = UncompressStatelessQValue(frameData[0]);
-                q[1] = UncompressStatelessQValue(frameData[1]);
-                q[2] = UncompressStatelessQValue(frameData[2]);
-                q[3] = UncompressStatelessQValue(frameData[3]);
-                frameData += 4;
-            }
-        } else {
+        if (slerpReqd) {
             unsigned short *nextFrameData = statelessQ->GetFrameData(dataBuf, floorKey + 1);
 
             for (int ibone = 0; ibone < nBones; ibone++) {
@@ -168,6 +156,16 @@ bool FnStatelessQ::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask)
                 frameData += 4;
                 nextFrameData += 4;
             }
+        } else {
+            for (int ibone = 0; ibone < nBones; ibone++) {
+                float *q = GetStatelessQOutput(sqt, boneIdxs[ibone]);
+
+                q[0] = UncompressStatelessQValue(frameData[0]);
+                q[1] = UncompressStatelessQValue(frameData[1]);
+                q[2] = UncompressStatelessQValue(frameData[2]);
+                q[3] = UncompressStatelessQValue(frameData[3]);
+                frameData += 4;
+            }
         }
 
         if (statelessQ->mNumConstBones != 0) {
@@ -184,6 +182,8 @@ bool FnStatelessQ::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask)
                 constBuf += 4;
             }
         }
+    } else {
+        EvalSQTMask(currTime, sqt, boneMask, slerpReqd, floorKey, scale);
     }
 
     if (statelessQ->mF3Ptr) {
