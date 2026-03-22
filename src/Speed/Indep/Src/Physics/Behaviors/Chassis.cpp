@@ -20,7 +20,8 @@ Chassis::Chassis(const BehaviorParams &bp)
     GetOwner()->QueryInterface(&mInput);
     GetOwner()->QueryInterface(&mEngine);
     GetOwner()->QueryInterface(&mTransmission);
-    GetOwner()->QueryInterface(&mDragTrany);
+    mDragTrany =
+        (IDragTransmission *)(*reinterpret_cast<UTL::COM::Object **>(GetOwner()))->_mInterfaces.Find((HINTERFACE)IDragTransmission::_IHandle);
     GetOwner()->QueryInterface(&mEngineDamage);
     GetOwner()->QueryInterface(&mSpikeDamage);
 }
@@ -182,7 +183,8 @@ void Chassis::OnBehaviorChange(const UCrc32 &mechanic) {
     if (mechanic == BEHAVIOR_MECHANIC_ENGINE) {
         GetOwner()->QueryInterface(&mTransmission);
         GetOwner()->QueryInterface(&mEngine);
-        GetOwner()->QueryInterface(&mDragTrany);
+        mDragTrany =
+            (IDragTransmission *)(*reinterpret_cast<UTL::COM::Object **>(GetOwner()))->_mInterfaces.Find((HINTERFACE)IDragTransmission::_IHandle);
         GetOwner()->QueryInterface(&mEngineDamage);
     } else if (mechanic == BEHAVIOR_MECHANIC_INPUT) {
         GetOwner()->QueryInterface(&mInput);
