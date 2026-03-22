@@ -180,10 +180,11 @@ void SFXCTL_Shifting::UpdateGearShiftState(float t) {
             t_last_mashed > 1.0f &&
             _prevBrakeState == 0.0f &&
             carstate->GetVelocityMagnitudeMPH() > 5.0f) {
+            BrakePedalMashed = 1;
             *static_cast<int *>(static_cast<void *>(&m_bBrakePedalMashed)) = 1;
         }
 
-        if (*static_cast<int *>(static_cast<void *>(&m_bBrakePedalMashed)) != 0) {
+        if (BrakePedalMashed != 0) {
             m_timeBrakeLastMashed = WorldTimer;
             if (carstate->mBrake == 0.0f) {
                 *static_cast<int *>(static_cast<void *>(&m_bBrakePedalMashed)) = 0;
