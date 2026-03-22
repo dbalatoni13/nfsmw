@@ -122,6 +122,8 @@ LoadedTexturePack *LoadedTexturePack_Construct(LoadedTexturePack *loaded_texture
 void LoadedTexturePack_Destruct(LoadedTexturePack *loaded_texture_pack, int in_chrg) asm("_._17LoadedTexturePack");
 LoadedSolidPack *LoadedSolidPack_Construct(LoadedSolidPack *loaded_solid_pack, const char *filename) asm("__15LoadedSolidPackPCc");
 LoadedSkinLayer *LoadedSkinLayer_Construct(LoadedSkinLayer *loaded_skin_layer, unsigned int name_hash) asm("__15LoadedSkinLayerUi");
+int GatherModelHashes(RideInfo *ride_info, unsigned int *model_hashes, int num_hashes, int max_model_hashes, int first, int last)
+    asm("GatherModelHashes__FP8RideInfoPUiiiii");
 int LoadedCar_GetModelHashes(LoadedCar *loaded_car, unsigned int *name_hashes, int max_hashes)
     asm("GetModelHashes__9LoadedCarPUii");
 int LoadedSkin_GetTextureHashes(LoadedSkin *loaded_skin, unsigned int *name_hashes, int max_hashes, int load_perm_layers)
@@ -195,6 +197,88 @@ int LoadedSkin::GetTextureHashes(unsigned int *texture_hashes, int max_texture_h
 
     bMemCpy(texture_hashes, hashes, num_hashes << 2);
     return num_hashes;
+}
+
+int LoadedCar::GetModelHashes(unsigned int *model_hashes, int max_model_hashes) {
+    RideInfo *ride_info = this->pRideInfo;
+    RideInfoLayout *ride_layout = reinterpret_cast<RideInfoLayout *>(ride_info);
+
+    bMemSet(model_hashes, 0, max_model_hashes << 2);
+
+    CARPART_LOD minimum_lod = ride_layout->mMinLodLevel;
+    CARPART_LOD maximum_lod = ride_layout->mMaxLodLevel;
+
+    if (this->InFrontEnd != 0) {
+        minimum_lod = ride_layout->mMinFELodLevel;
+        maximum_lod = ride_layout->mMaxFELodLevel;
+    }
+
+    int num_hashes = 0;
+
+    for (int slot_id = 0; slot_id < 0x4c; slot_id++) {
+        CarPart *car_part = ride_info->GetPart(slot_id);
+        CARPART_LOD current_slot_minimum = minimum_lod;
+        CARPART_LOD current_slot_maximum = maximum_lod;
+
+        ride_info->GetSpecialLODRangeForCarSlot(slot_id, &current_slot_minimum, &current_slot_maximum, this->InFrontEnd != 0);
+
+        for (int model = 0; model < 1; model++) {
+            for (int lod = current_slot_minimum; lod <= current_slot_maximum; lod++) {
+                if (car_part != 0) {
+                    unsigned int model_name_hash = car_part->GetModelNameHash(model, lod);
+
+                    if (model_name_hash != 0) {
+                        if (num_hashes < max_model_hashes) {
+                            model_hashes[num_hashes] = model_name_hash;
+                        }
+                        num_hashes++;
+                    }
+                }
+            }
+        }
+    }
+
+    num_hashes = GatherModelHashes(ride_info, model_hashes, num_hashes, max_model_hashes, 0x2e, 0x33);
+    num_hashes = GatherModelHashes(ride_info, model_hashes, num_hashes, max_model_hashes, 1, 0x17);
+
+    if (max_model_hashes < num_hashes) {
+        num_hashes = max_model_hashes;
+    }
+
+    unsigned char bitfield[512];
+
+    bMemSet(bitfield, 0, 0x200);
+
+    int num_unique_hashes = 0;
+
+    for (int i = 0; i < num_hashes; i++) {
+        unsigned int hash = model_hashes[i];
+        int bit = (hash >> 3) & 0x1ff;
+        bool duplicate = false;
+
+        if (((bitfield[bit] >> (hash & 7)) & 1U) == 0) {
+            bitfield[bit] |= 1 << (hash & 7);
+        } else {
+            int n = 0;
+
+            if (num_unique_hashes > 0) {
+                while (n < num_unique_hashes && model_hashes[n] != hash) {
+                    n++;
+                }
+            }
+
+            if (n != num_unique_hashes) {
+                duplicate = true;
+            }
+        }
+
+        if (!duplicate) {
+            model_hashes[num_unique_hashes] = hash;
+            num_unique_hashes++;
+        }
+    }
+
+    return num_unique_hashes;
 }
 
 LoadedWheel::LoadedWheel(RideInfo *ride_info, bool in_fe) {
