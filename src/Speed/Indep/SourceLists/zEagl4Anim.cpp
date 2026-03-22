@@ -70,4 +70,6 @@
 
 #include "Speed/Indep/Src/EAGL4Anim/StatelessQ.cpp"
 
+#include "Speed/Indep/Src/EAGL4Anim/SystemCmn.cpp"
+
 #include "Speed/Indep/Src/EAGL4Anim/system.cpp"

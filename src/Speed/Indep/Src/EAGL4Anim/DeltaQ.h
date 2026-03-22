@@ -108,25 +108,9 @@ struct DeltaQ : public AnimMemoryMap {
 
     DeltaQDelta *GetDelta(unsigned char *binData, int deltaIdx) {}
 
-    unsigned short *GetConstBoneIdx() {
-        unsigned int binLen = GetBinLength();
-        const int binSize = GetBinSize();
-        // TODO it's out of line
-        // int numBins = mNumFrames >> GetBinLengthPower(); // r8
-        // // get to the end of the bins
-        // unsigned char *s = &GetBin(0)[binSize * numBins]; // r11
-        // int r = mNumFrames & GetBinLengthModMask();       // r31
+    unsigned short *GetConstBoneIdx();
 
-        // if (r > 0) {
-        //     s = reinterpret_cast<unsigned char *>(AlignSize2((intptr_t)s + mNumBones * 2 + (r - 1) * GetFrameDeltaSize()));
-        // }
-
-        return reinterpret_cast<unsigned short *>(nullptr);
-    }
-
-    float *GetConstPhysical() {
-        // return reinterpret_cast<float *>(AlignSize4(reinterpret_cast<intptr_t>(&GetConstBoneIdx()[mNumConstBones])));
-    }
+    float *GetConstPhysical();
 
     unsigned short mNumKeys;       // offset 0x4, size 0x2
     unsigned char mNumBones;       // offset 0x6, size 0x1

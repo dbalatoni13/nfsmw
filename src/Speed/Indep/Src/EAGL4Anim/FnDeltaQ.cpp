@@ -6,6 +6,24 @@
 
 namespace EAGL4Anim {
 
+unsigned short *DeltaQ::GetConstBoneIdx() {
+    const int binSize = GetBinSize();
+    int numBins = mNumKeys >> GetBinLengthPower();
+    unsigned char *s = &GetBin(0)[binSize * numBins];
+    int r = mNumKeys & GetBinLengthModMask();
+
+    if (r > 0) {
+        s = reinterpret_cast<unsigned char *>(
+            AlignSize2(reinterpret_cast<intptr_t>(s + mNumBones * sizeof(DeltaQPhysical) + ((r - 1) * mNumBones * sizeof(DeltaQDelta)))));
+    }
+
+    return reinterpret_cast<unsigned short *>(s);
+}
+
+float *DeltaQ::GetConstPhysical() {
+    return reinterpret_cast<float *>(AlignSize2(reinterpret_cast<intptr_t>(&GetConstBoneIdx()[mNumConstBones])));
+}
+
 namespace {
 
 static const float kFloatZero = 0.0f;

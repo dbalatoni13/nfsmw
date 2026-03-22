@@ -108,26 +108,9 @@ struct DeltaQFast : public AnimMemoryMap {
         return reinterpret_cast<DeltaQFastDelta *>(&binData[mNumBones * 6 + deltaIdx * mNumBones * 3]);
     }
 
-    unsigned short *GetConstBoneIdx() {
-        const int binSize = GetBinSize();
-        int numFrames = GetNumFrames();
-        int numBins = numFrames >> GetBinLengthPower();
-        unsigned char *s = &GetBin(0)[binSize * numBins];
-        int r = numFrames & GetBinLengthModMask();
+    unsigned short *GetConstBoneIdx();
 
-        if (r > 0) {
-            s = reinterpret_cast<unsigned char *>(AlignSize2(reinterpret_cast<intptr_t>(s + mNumBones * 6 + ((r - 1) * mNumBones * 3))));
-        }
-        if (mNumBones == 0) {
-            s = reinterpret_cast<unsigned char *>(AlignSize2(reinterpret_cast<intptr_t>(s)));
-        }
-
-        return reinterpret_cast<unsigned short *>(s);
-    }
-
-    void *GetConstPhysical() {
-        return reinterpret_cast<void *>(AlignSize2(reinterpret_cast<intptr_t>(&GetConstBoneIdx()[mNumConstBones])));
-    }
+    void *GetConstPhysical();
 
     unsigned short mNumKeys;       // offset 0x4, size 0x2
     unsigned char mNumBones;       // offset 0x6, size 0x1

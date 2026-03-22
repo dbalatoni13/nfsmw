@@ -32,6 +32,24 @@ void QuatMultQxZ(const UMath::Vector4 &a, const UMath::Vector4 &b, UMath::Vector
 
 namespace EAGL4Anim {
 
+unsigned short *DeltaQFast::GetConstBoneIdx() {
+    const int binSize = GetBinSize();
+    int numFrames = GetNumFrames();
+    int numBins = numFrames >> GetBinLengthPower();
+    unsigned char *s = &GetBin(0)[binSize * numBins];
+    int r = numFrames & GetBinLengthModMask();
+
+    if (r > 0) {
+        s = reinterpret_cast<unsigned char *>(AlignSize2(reinterpret_cast<intptr_t>(s + mNumBones * 6 + ((r - 1) * mNumBones * 3))));
+    }
+
+    return reinterpret_cast<unsigned short *>(s);
+}
+
+void *DeltaQFast::GetConstPhysical() {
+    return reinterpret_cast<void *>(AlignSize2(reinterpret_cast<intptr_t>(&GetConstBoneIdx()[mNumConstBones])));
+}
+
 namespace {
 
 static const float kQFastMinScale16 = 3.0518044e-5f;
