@@ -9,6 +9,7 @@
 #include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
 #include "Speed/Indep/Src/Misc/bFile.hpp"
 #include "Speed/Indep/bWare/Inc/bDebug.hpp"
+#include "Speed/Indep/bWare/Inc/Espresso.hpp"
 #include "Speed/Indep/bWare/Inc/bPrintf.hpp"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 #include "Speed/Indep/bWare/Inc/bFunk.hpp"
@@ -96,12 +97,6 @@ static inline bool IsLibrarySection_TrackStreamer(int section_number) {
 
 static inline short GetScenerySectionNumber_TrackStreamer(char section_letter, int subsection_number) {
     return static_cast<short>((section_letter - 'A' + 1) * 100 + subsection_number);
-}
-
-inline void espEmptyLayer(const char *layername) {}
-
-inline int espGetLayerState(const char *layername) {
-    return 0;
 }
 
 static inline bool IsLODScenerySectionNumber(int section_number) {
