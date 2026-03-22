@@ -1708,24 +1708,21 @@ TrackStreamingSection *TrackStreamer::ChooseSectionToJettison() {
         short section_number = section->SectionNumber;
         int discard_priority = 0;
 
-        if (IsTextureSection_TrackStreamer(section_number) || IsLibrarySection_TrackStreamer(section_number)) {
+        if (IsTextureSection(section_number) || IsLibrarySection(section_number)) {
             discard_priority = 2;
-            if (section_number == GetScenerySectionNumber_TrackStreamer('Y', 0) ||
-                section_number == GetScenerySectionNumber_TrackStreamer('W', 0) ||
-                section_number == GetScenerySectionNumber_TrackStreamer('X', 0)) {
+            if (section_number == GetScenerySectionNumber('Y', 0) || section_number == GetScenerySectionNumber('W', 0) ||
+                section_number == GetScenerySectionNumber('X', 0)) {
                 discard_priority = 1;
             } else if (LoadingPhase == ALLOCATING_TEXTURE_SECTIONS) {
-                if (IsTextureSection_TrackStreamer(section_number) && section->Status == TrackStreamingSection::ACTIVATED &&
-                    !SplitScreen) {
+                if (IsTextureSection(section_number) && section->Status == TrackStreamingSection::ACTIVATED && !SplitScreen) {
                     discard_priority = 10000;
                 }
             } else if (LoadingPhase == ALLOCATING_GEOMETRY_SECTIONS) {
-                if (IsLibrarySection_TrackStreamer(section_number) && section->Status == TrackStreamingSection::ACTIVATED &&
-                    !SplitScreen) {
+                if (IsLibrarySection(section_number) && section->Status == TrackStreamingSection::ACTIVATED && !SplitScreen) {
                     discard_priority = 10000;
                 }
             }
-        } else if (IsRegularScenerySection_TrackStreamer(section_number)) {
+        } else if (IsRegularScenerySection(section_number)) {
             int loading_priority = GetLoadingPriority(section, &StreamingPositionEntries[0], true);
             if (SplitScreen) {
                 int loading_priority2 = GetLoadingPriority(section, &StreamingPositionEntries[1], true);
