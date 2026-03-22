@@ -1,5 +1,6 @@
 #include "Speed/Indep/Src/World/CarRenderConn.h"
 #include "Speed/Indep/Src/Physics/PhysicsInfo.hpp"
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/simsurface.h"
 
 struct CarPartDatabase;
 extern void *gINISInstance asm("_Q33UTL11Collectionst9Singleton1Z4INIS_mInstance");
@@ -15,12 +16,19 @@ extern int PhysicsUpgrades_GetMaxLevel(const Attrib::Gen::pvehicle &pvehicle, in
     asm("GetMaxLevel__Q27Physics8UpgradesRCQ36Attrib3Gen8pvehicleQ37Physics8Upgrades4Type");
 extern float RealTimeElapsed;
 extern float renderModifier;
+extern int Tweak_DisableRoadNoise;
+extern RoadNoiseRecord Tweak_BlowOutNoise asm("Tweak_BlowOutNoise");
 
 namespace {
 
 struct RenderPktCarOpen {
     void *vtable;
     unsigned int mModelHash;
+};
+
+struct TireStateRoadNoiseMirror {
+    unsigned char _pad0[0x84];
+    Attrib::Gen::simsurface mSurface;
 };
 
 void StopEffect(VehicleRenderConn::Effect *effect) {
@@ -261,6 +269,99 @@ void CarRenderConn::UpdateParts(float dT, const RenderConn::Pkt_Car_Service &dat
         for (i = 0; i < 3; i++) {
             this->mPartState[i] = data.mPartState[i];
         }
+    }
+}
+
+void CarRenderConn::AddRoadNoise(float speed, unsigned int tires, const RoadNoiseRecord &noise) {
+    if (noise.Frequency * noise.Amplitude * noise.MaxSpeed > 0.0f) {
+        float fade = 0.0f;
+        float speed_range = noise.MaxSpeed - noise.MinSpeed;
+
+        if (1e-6f < speed_range) {
+            fade = (speed - noise.MinSpeed) / speed_range;
+            if (1.0f < fade) {
+                fade = 1.0f;
+            }
+            if (fade < 0.0f) {
+                fade = 0.0f;
+            }
+        }
+
+        float scale = this->VehicleRenderConn::mAttributes.RoadNoise(0) * noise.Amplitude * 0.017453f * fade;
+        float pitch = 0.0f;
+        if ((tires & 0xf) != 0) {
+            pitch = scale * sinf(this->mAnimTime * noise.Frequency * fade) * 0.5f;
+            if ((tires & 3) == 0) {
+                pitch = bAbs(pitch);
+            }
+            if ((tires & 0xc) == 0) {
+                pitch = -bAbs(pitch);
+            }
+        }
+
+        float roll = 0.0f;
+        if ((tires & 0xf) != 0) {
+            roll = scale * sinf((this->mAnimTime + 0.33f) * noise.Frequency * fade);
+            if ((tires & 9) == 0) {
+                roll = bAbs(roll);
+            }
+            if ((tires & 6) == 0) {
+                roll = -bAbs(roll);
+            }
+        }
+
+        this->mRoadNoise.y += pitch;
+        this->mRoadNoise.x += roll;
+    }
+}
+
+void CarRenderConn::UpdateRoadNoise(float dT, float carspeed, const RenderConn::Pkt_Car_Service &data) {
+    this->mRoadNoise.z = 0.0f;
+    this->mRoadNoise.x = 0.0f;
+    this->mRoadNoise.y = 0.0f;
+
+    if (this->TestVisibility(renderModifier * 30.0f) && Tweak_DisableRoadNoise == 0) {
+        RoadNoiseRecord road_noise = {0.0f, 0.0f, 0.0f, 0.0f};
+
+        for (unsigned int i = 0; i < 4; i++) {
+            if (((data.mGroundState >> i) & 1U) != 0) {
+                const RoadNoiseRecord &tire_noise =
+                    reinterpret_cast<TireStateRoadNoiseMirror *>(this->mTireState[i])->mSurface.RenderNoise();
+
+                if (road_noise.Frequency * road_noise.Amplitude < tire_noise.Frequency * tire_noise.Amplitude) {
+                    road_noise = tire_noise;
+                }
+            }
+        }
+
+        this->AddRoadNoise(carspeed, static_cast<unsigned int>(data.mGroundState), road_noise);
+        this->AddRoadNoise(carspeed, static_cast<unsigned int>(data.mGroundState & data.mBlowOuts), Tweak_BlowOutNoise);
+
+        float pitch = sinf(this->mRoadNoise.y);
+        float roll = sinf(this->mRoadNoise.x);
+        float body_noise = 0.0f;
+        float candidate = this->mTirePositions[0].x * pitch;
+
+        if (body_noise < candidate) {
+            body_noise = candidate;
+        }
+
+        candidate = this->mTirePositions[3].x * pitch;
+        if (body_noise < candidate) {
+            body_noise = candidate;
+        }
+
+        candidate = this->mTirePositions[0].y * roll;
+        if (body_noise < candidate) {
+            body_noise = candidate;
+        }
+
+        candidate = this->mTirePositions[1].y * roll;
+        if (body_noise < candidate) {
+            body_noise = candidate;
+        }
+
+        this->mRoadNoise.z = body_noise;
     }
 }
 
