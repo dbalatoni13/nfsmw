@@ -131,6 +131,35 @@ class ParameterAccessor : public bTNode<ParameterAccessor> {
     void *CurrentParameterData;       // offset 0x14, size 0x4
 };
 
+class ParameterAccessorBlend : public ParameterAccessor {
+  public:
+    ParameterAccessorBlend(const char *layer_name = 0);
+    ~ParameterAccessorBlend() override;
+
+    virtual void CaptureData(float x, float y, float ratio);
+
+    void ClearData() override;
+    void SetUpForNewLayer() override;
+    void CaptureData(float x, float y) override;
+
+    void *LastData;  // offset 0x1C, size 0x4
+    int HaveLastData; // offset 0x20, size 0x4
+};
+
+class ParameterAccessorBlendByDistance : public ParameterAccessorBlend {
+  public:
+    ParameterAccessorBlendByDistance(const char *layer_name = 0);
+    ~ParameterAccessorBlendByDistance() override;
+
+    void CaptureData(float x, float y, float full_blend_distance) override;
+    void SetUpForNewLayer() override;
+    void CaptureData(float x, float y) override;
+
+    float last_x;          // offset 0x24, size 0x4
+    float last_y;          // offset 0x28, size 0x4
+    int HaveLastPosition;  // offset 0x2C, size 0x4
+};
+
 class ParameterMapsManager {
   public:
     ParameterMapsManager();

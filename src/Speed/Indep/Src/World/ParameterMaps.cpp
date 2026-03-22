@@ -1,6 +1,8 @@
 #include "./ParameterMaps.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 
+#include <cstring>
+
 namespace {
 
 enum ParameterMapChunkID {
@@ -348,4 +350,101 @@ int ParameterMapsManager::GetDataForLayer(unsigned int layer_name_hash, Paramete
 
 int ParameterMapsManager::GetDataForLayer(const char *layer_name, ParameterAccessor *accessor, int warning_if_not_found) {
     return this->GetDataForLayer(UCrc32(layer_name).GetValue(), accessor, warning_if_not_found);
+}
+
+ParameterAccessorBlend::ParameterAccessorBlend(const char *layer_name)
+    : ParameterAccessor(layer_name), //
+      LastData(0), //
+      HaveLastData(0) {}
+
+ParameterAccessorBlend::~ParameterAccessorBlend() {
+    this->ClearData();
+}
+
+void ParameterAccessorBlend::CaptureData(float x, float y, float ratio) {
+    if (this->Layer == 0 || this->LastData == 0) {
+        this->CurrentParameterData = 0;
+        return;
+    }
+
+    void *current_data = this->Layer->GetParameterData(x, y);
+    if (this->HaveLastData == 0) {
+        std::memcpy(this->LastData, current_data, this->Layer->GetSizeOfParameterSet());
+        this->HaveLastData = 1;
+    } else {
+        for (int i = 0; i < this->Layer->GetNumberOfFields(); i++) {
+            int field_type = this->Layer->GetFieldType(i);
+            int field_offset = this->Layer->GetFieldOffset(i);
+            char *last_data = reinterpret_cast<char *>(this->LastData) + field_offset;
+            char *new_data = reinterpret_cast<char *>(current_data) + field_offset;
+
+            if (field_type == 0) {
+                *reinterpret_cast<float *>(last_data) =
+                    *reinterpret_cast<float *>(new_data) * ratio + *reinterpret_cast<float *>(last_data) * (1.0f - ratio);
+            } else if (field_type == 1) {
+                *reinterpret_cast<int *>(last_data) = static_cast<int>(static_cast<float>(*reinterpret_cast<int *>(new_data)) * ratio +
+                                                                       static_cast<float>(*reinterpret_cast<int *>(last_data)) * (1.0f - ratio));
+            }
+        }
+    }
+
+    this->CurrentParameterData = this->LastData;
+}
+
+void ParameterAccessorBlend::ClearData() {
+    if (this->LastData != 0) {
+        delete[] reinterpret_cast<char *>(this->LastData);
+        this->LastData = 0;
+    }
+    this->HaveLastData = 0;
+    ParameterAccessor::ClearData();
+}
+
+void ParameterAccessorBlend::SetUpForNewLayer() {
+    if (this->Layer != 0 && this->Layer->GetSizeOfParameterSet() > 0) {
+        this->LastData = new char[this->Layer->GetSizeOfParameterSet()];
+    }
+}
+
+void ParameterAccessorBlend::CaptureData(float x, float y) {
+    (void)x;
+    (void)y;
+}
+
+ParameterAccessorBlendByDistance::ParameterAccessorBlendByDistance(const char *layer_name)
+    : ParameterAccessorBlend(layer_name), //
+      last_x(0.0f), //
+      last_y(0.0f), //
+      HaveLastPosition(0) {}
+
+ParameterAccessorBlendByDistance::~ParameterAccessorBlendByDistance() {}
+
+void ParameterAccessorBlendByDistance::CaptureData(float x, float y, float full_blend_distance) {
+    float ratio = 1.0f;
+
+    if (this->HaveLastPosition != 0 && full_blend_distance != 0.0f) {
+        float dx = x - this->last_x;
+        float dy = y - this->last_y;
+        float distance = bSqrt(dx * dx + dy * dy);
+        if (distance < full_blend_distance) {
+            ratio = distance / full_blend_distance;
+        }
+    }
+
+    ParameterAccessorBlend::CaptureData(x, y, ratio);
+    this->last_x = x;
+    this->last_y = y;
+    this->HaveLastPosition = 1;
+}
+
+void ParameterAccessorBlendByDistance::SetUpForNewLayer() {
+    this->last_x = 0.0f;
+    this->last_y = 0.0f;
+    this->HaveLastPosition = 0;
+    ParameterAccessorBlend::SetUpForNewLayer();
+}
+
+void ParameterAccessorBlendByDistance::CaptureData(float x, float y) {
+    (void)x;
+    (void)y;
 }
