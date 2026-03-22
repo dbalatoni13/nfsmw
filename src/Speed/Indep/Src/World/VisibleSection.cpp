@@ -419,26 +419,32 @@ int DrivableScenerySection::IsSectionVisible(int section_number) {
 }
 
 void DrivableScenerySection::RemoveVisibleSection(int section_number) {
-    if (NumVisibleSections < 1) {
-        return;
-    }
-
-    short *visible_sections = VisibleSections;
-    for (int i = 0; i < NumVisibleSections; i++) {
-        if (visible_sections[i] == section_number) {
-            if (i < NumVisibleSections - 1) {
-                do {
-                    int next = i + 1;
-                    visible_sections[i] = visible_sections[next];
-                    i = next;
-                } while (i < NumVisibleSections - 1);
-            }
-
-            short num_visible_sections = NumVisibleSections - 1;
-            NumVisibleSections = num_visible_sections;
-            visible_sections[num_visible_sections] = 0;
+    {
+        int n = 0;
+        if (n >= NumVisibleSections) {
             return;
         }
+
+        do {
+            if (VisibleSections[n] == section_number) {
+                {
+                    int i = n;
+
+                    if (i < NumVisibleSections - 1) {
+                        do {
+                            VisibleSections[i] = VisibleSections[i + 1];
+                            i++;
+                        } while (i < NumVisibleSections - 1);
+                    }
+                }
+
+                NumVisibleSections--;
+                VisibleSections[NumVisibleSections] = 0;
+                return;
+            }
+
+            n++;
+        } while (n < NumVisibleSections);
     }
 }
 
