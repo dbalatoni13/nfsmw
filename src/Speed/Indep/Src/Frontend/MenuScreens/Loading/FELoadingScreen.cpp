@@ -17,18 +17,24 @@ static bool bSawLoadingScreen;
 void *LoadingScreen::mLoadingScreenPtr;
 
 LoadingScreen::LoadingScreen(ScreenConstructorData *sd) : MenuScreen(sd) {
+    const unsigned long FEObj_LoadingBlinker = 0xCF281D29;
+
     if (FEManager::Get()->IsFirstBoot()) {
         if (BuildRegion::ShowLanguageSelect()) {
-            FEngSetScript(GetPackageName(), 0xcf281d29, 0x5d7c6a21, true);
+            FEngSetScript(PackageFilename, FEObj_LoadingBlinker, 0x5D7C6A21, true);
         }
     }
 
     bSawLoadingScreen = true;
 
-    FEngSetVisible(FEngFindObject(GetPackageName(), 0x06d91704));
+    {
+        const unsigned long FEObj_LOADINGGROUP = 0x06D91704;
+
+        FEngSetVisible(GetPackageName(), FEObj_LOADINGGROUP);
+    }
 
     if (eIsWidescreen()) {
-        cFEng::mInstance->QueuePackageMessage(bStringHash("CURRENT_GEN_WIDESCREEN"), GetPackageName(), nullptr);
+        cFEng::Get()->QueuePackageMessage(bStringHash("CURRENT_GEN_WIDESCREEN"), GetPackageName(), nullptr);
     }
 
     new ESndGameState(10, true);
