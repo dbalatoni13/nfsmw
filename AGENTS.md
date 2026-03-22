@@ -507,6 +507,12 @@ register assignments but does NOT affect integer register assignments (and vice 
   them as normal function bodies; their presence in source is controlled by `#include`.
 - If an inline appears in the DWARF but does not exist in `src/`, deduce its body and add
   it to the correct header (use `line-lookup` skill to find the header file).
+- In jumbo/source-list TUs, treat DWARF file ownership on tiny helpers as a strong signal.
+  If a function is still using near-identical local helper clones (`*_TrackStreamer`, local
+  `GetScenerySectionNumber`, raw pointer walkers, etc.) but the DWARF points to a shared
+  header or sibling owner file, move or reuse the shared helper instead of polishing the
+  local clone. Re-homing the helper can improve both objdiff and DWARF without changing
+  the high-level logic.
 
 ---
 
