@@ -30,6 +30,16 @@ extern float lbl_8040D110;
 extern float lbl_8040D114;
 extern float lbl_8040D118;
 extern float lbl_8040D11C;
+extern float lbl_8040D120;
+extern float lbl_8040D124;
+extern float lbl_8040D128;
+extern float lbl_8040D12C;
+extern float lbl_8040D130;
+extern float lbl_8040D134;
+extern float lbl_8040D138;
+extern float lbl_8040D13C;
+extern float lbl_8040D140;
+extern float lbl_8040D144;
 extern float lbl_8040D14C;
 
 extern VehicleDamagePart *VehicleDamagePart_ctor(VehicleDamagePart *part, CarRenderInfo *carRenderInfo, int slotId)
@@ -305,6 +315,99 @@ void VehiclePartDamageBehaviour::Update(bMatrix4 *worldMatrix) {
             lbl_8040D10C,
             lbl_8040D110);
     }
+}
+
+float VehiclePartDamageBehaviour::CalcPartRotation(bMatrix4 *worldMatrix, float maxAngle, float spring, float damper, float inertia) {
+    static float tCs;
+    static float tCd;
+    static float tI;
+    static bool tCsInited = false;
+    static bool tCdInited = false;
+    static bool tIInited = false;
+
+    bMatrix4 localInverse;
+    bMatrix4 localMatrix;
+
+    PSMTX44Copy(*reinterpret_cast<const Mtx44 *>(worldMatrix), *reinterpret_cast<Mtx44 *>(&localInverse));
+    bInvertMatrix(&localInverse, &localInverse);
+    eMulMatrix(&localMatrix, worldMatrix, &localInverse);
+
+    eMulVector(&this->angularVel_ch, &localMatrix, &this->mCarRenderInfo->mAngularVelocity);
+    eMulVector(&this->linearVel_ch, &localMatrix, &this->mCarRenderInfo->mVelocity);
+    eMulVector(&this->linearAcc_ch, &localMatrix, &this->mCarRenderInfo->mAcceleration);
+
+    this->angularVel_ch.x *= lbl_8040D120;
+    this->angularVel_ch.y *= lbl_8040D120;
+    this->angularVel_ch.z *= lbl_8040D120;
+
+    if (lbl_8040D124 < maxAngle) {
+        float dT = this->mCarRenderInfo->mDeltaTime;
+        float desttheta = lbl_8040D124;
+        float acc;
+        float absValue;
+
+        if (worldMatrix->v2.z * lbl_8040D128 < lbl_8040D124) {
+            desttheta = worldMatrix->v2.z * lbl_8040D128;
+        }
+
+        if (!tCsInited) {
+            tCs = spring;
+            tCsInited = true;
+        }
+
+        if (!tCdInited) {
+            tCd = damper;
+            tCdInited = true;
+        }
+
+        if (!tIInited) {
+            tI = inertia;
+            tIInited = true;
+        }
+
+        acc = tCs * (-desttheta - this->mTrunkAngle) + tCd * (-this->mTrunkVel);
+
+        absValue = this->linearAcc_ch.x;
+        if (absValue < lbl_8040D124) {
+            absValue = -absValue;
+        }
+        if (lbl_8040D12C < absValue) {
+            acc -= this->linearAcc_ch.x / tI;
+        }
+
+        absValue = this->linearVel_ch.z;
+        if (absValue < lbl_8040D124) {
+            absValue = -absValue;
+        }
+        if (lbl_8040D130 < absValue) {
+            acc += (-this->linearVel_ch.z * lbl_8040D134) / tI;
+        }
+
+        absValue = -this->angularVel_ch.y;
+        if (absValue < lbl_8040D124) {
+            absValue = this->angularVel_ch.y;
+        }
+        if (lbl_8040D138 < absValue) {
+            acc += -this->angularVel_ch.y * lbl_8040D13C;
+        }
+
+        this->mTrunkVel = acc * dT + this->mTrunkVel;
+        this->mTrunkAngle = this->mTrunkVel * dT + this->mTrunkAngle;
+
+        if (lbl_8040D124 <= this->mTrunkAngle) {
+            if (this->mTrunkAngle > maxAngle) {
+                this->mTrunkAngle = maxAngle;
+                this->mTrunkVel = -this->mTrunkVel * lbl_8040D144;
+            }
+        } else {
+            this->mTrunkAngle = lbl_8040D124;
+            this->mTrunkVel = -this->mTrunkVel * lbl_8040D140;
+        }
+    } else {
+        this->mTrunkAngle = lbl_8040D124;
+    }
+
+    return this->mTrunkAngle;
 }
 
 void VehiclePartDamageBehaviour::AnimatePart(unsigned int slotId, const bVector3 &rotation, bMatrix4 *worldMatrix) {
