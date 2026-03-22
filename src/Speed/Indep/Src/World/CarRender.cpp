@@ -67,7 +67,20 @@ extern float copoffsetw;
 extern float enX;
 extern float enY;
 extern float enZ;
+extern float hOffX;
+extern float hOffY;
+extern float hRad1x;
+extern float hRad2x;
+extern float hRad1y;
+extern float hRad2y;
+extern float hRad0x;
+extern float hRad3x;
+extern float hRad0y;
+extern float hRad3y;
 extern unsigned int TireFaceIt;
+extern unsigned int hcL;
+extern unsigned int FrameMallocFailed;
+extern unsigned int FrameMallocFailAmount;
 extern int ForceBrakelightsOn;
 extern int counter_31665 asm("counter.31665");
 extern int counter_31669 asm("counter.31669");
@@ -81,6 +94,7 @@ namespace {
 
 void Render(eViewPlatInterface *view, eModel *model, bMatrix4 *local_to_world, eLightContext *light_context, unsigned int flags,
             unsigned int exc_flag);
+void Render(eViewPlatInterface *view, ePoly *poly, TextureInfo *texture_info, bMatrix4 *matrix, int accurate, float z_bias);
 
 template <typename T> struct bSNodeLayout {
     T *Next;
@@ -934,6 +948,51 @@ void CarRenderInfo::CreateCarLightFlares() {
                 }
             }
         }
+    }
+}
+
+void CarRenderInfo::RenderTextureHeadlights(eView *view, bMatrix4 *l_w, unsigned int) {
+    bMatrix4 *matrix = reinterpret_cast<bMatrix4 *>(CurrentBufferPos);
+
+    if (CurrentBufferEnd <= CurrentBufferPos + sizeof(bMatrix4)) {
+        FrameMallocFailed = 1;
+        FrameMallocFailAmount += sizeof(bMatrix4);
+        matrix = 0;
+    } else {
+        CurrentBufferPos += sizeof(bMatrix4);
+        *matrix = *l_w;
+    }
+
+    if (matrix != 0 && matrix->v2.z >= 0.707f) {
+        ePoly poly;
+        TextureInfo *texture_info = GetTextureInfo(bStringHash("2PLAYERHEADLIGHT1"), 1, 0);
+
+        bMemSet(&poly, 0, sizeof(poly));
+
+        poly.Vertices[0].x = hOffX - hRad0x;
+        poly.Vertices[0].y = hOffY - hRad0y;
+        poly.Vertices[1].x = hRad1x + hOffX;
+        poly.Vertices[1].y = hOffY - hRad1y;
+        poly.Vertices[2].x = hRad2x + hOffX;
+        poly.Vertices[2].y = hRad2y + hOffY;
+        poly.Vertices[3].x = hOffX - hRad3x;
+        poly.Vertices[3].y = hRad3y + hOffY;
+
+        poly.UVs[0][0] = 0.0f;
+        poly.UVs[1][0] = 0.0f;
+        poly.UVs[0][1] = 1.0f;
+        poly.UVs[1][1] = 0.0f;
+        poly.UVs[0][2] = 1.0f;
+        poly.UVs[1][2] = 1.0f;
+        poly.UVs[0][3] = 0.0f;
+        poly.UVs[1][3] = 1.0f;
+
+        reinterpret_cast<unsigned int *>(poly.Colours)[0] = hcL;
+        reinterpret_cast<unsigned int *>(poly.Colours)[1] = hcL;
+        reinterpret_cast<unsigned int *>(poly.Colours)[2] = hcL;
+        reinterpret_cast<unsigned int *>(poly.Colours)[3] = hcL;
+
+        ::Render(view, &poly, texture_info, matrix, 0, 0.0f);
     }
 }
 
