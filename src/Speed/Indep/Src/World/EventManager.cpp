@@ -175,17 +175,19 @@ int emAddHandler(EVENT_HANDLER_FUNC function, unsigned int stream_mask) {
         }
 
         emEventHandler *handler = reinterpret_cast<emEventHandler *>(bOMalloc(EventHandlerSlotPool));
-        if (handler) {
-            handler->HandlerFunction = function;
-            handler->StreamMask = stream_mask;
-            handler->ReferenceCount = 1;
-            EventHandlerList.AddTail(handler);
-            EventManagerStats[1] += 1;
-            if (EventManagerStats[4] < EventManagerStats[1]) {
-                EventManagerStats[4] = EventManagerStats[1];
-            }
-            return 1;
+        if (!handler) {
+            return 0;
         }
+
+        handler->HandlerFunction = function;
+        handler->StreamMask = stream_mask;
+        handler->ReferenceCount = 1;
+        EventHandlerList.AddTail(handler);
+        EventManagerStats[1] += 1;
+        if (EventManagerStats[1] > EventManagerStats[4]) {
+            EventManagerStats[4] = EventManagerStats[1];
+        }
+        return 1;
     }
 
     return 0;
@@ -325,6 +327,7 @@ int UnloaderEventManager(bChunk *bchunk) {
 
 emEvent **emTriggerEventsInSection(bVector3 *position, int section_number) {
     emEvent **current_event = TriggerEventArray;
+    emEvent **last_event = &TriggerEventArray[40];
     float x = position->x;
     float y = position->y;
     float z = position->z;
@@ -332,31 +335,25 @@ emEvent **emTriggerEventsInSection(bVector3 *position, int section_number) {
 
     if (user_info && user_info->pEventTriggerPack) {
         EventTriggerPack *trigger_pack = user_info->pEventTriggerPack;
-        vAABBTree *tree = trigger_pack->EventTree;
-        if (tree) {
-            vAABB *aabb = tree->QueryLeaf(x, y, z);
-            if (aabb) {
-                EventTrigger *root_event = trigger_pack->EventTriggerArray;
-                int num_hits = -aabb->NumChildren;
+        vAABB *aabb = trigger_pack->EventTree->QueryLeaf(x, y, z);
+        if (aabb) {
+            EventTrigger *root_event = trigger_pack->EventTriggerArray;
+            int num_hits = -aabb->NumChildren;
 
-                for (int i = 0; i < num_hits && current_event < &TriggerEventArray[40]; i++) {
-                    EventTrigger *event = &root_event[aabb->ChildrenIndicies[i]];
-                    float event_x = event->PositionX;
-                    float event_y = event->PositionY;
-                    float event_z = event->PositionZ;
-                    float dx = bAbs(x - event_x);
-                    float dy = bAbs(y - event_y);
-                    float dz = bAbs(z - event_z);
-                    float r2 = event->GetRadius();
-                    float dist2 = dz * dz + dx * dx + dy * dy;
+            for (int i = 0; i < num_hits && current_event < last_event; i++) {
+                EventTrigger *event = &root_event[aabb->ChildrenIndicies[i]];
+                float dz = bAbs(z - event->PositionZ);
+                float dy = bAbs(y - event->PositionY);
+                float dx = bAbs(x - event->PositionX);
+                float r2 = event->GetRadius();
+                float dist2 = dz * dz + dx * dx + dy * dy;
 
-                    r2 *= r2;
-                    if (dist2 < r2) {
-                        emEvent *new_event = emAddEvent(static_cast<EVENT_ID>(event->GetEventID()));
-                        new_event->pEventTrigger = event;
-                        *current_event = new_event;
-                        current_event++;
-                    }
+                r2 *= r2;
+                if (dist2 < r2) {
+                    emEvent *new_event = emAddEvent(static_cast<EVENT_ID>(event->GetEventID()));
+                    new_event->pEventTrigger = event;
+                    *current_event = new_event;
+                    current_event++;
                 }
             }
         }
