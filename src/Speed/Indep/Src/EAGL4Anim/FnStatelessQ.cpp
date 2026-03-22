@@ -199,6 +199,7 @@ bool FnStatelessQ::EvalSQTMask(float, float *sqt, const BoneMask *boneMask, bool
     }
 
     StatelessQ *statelessQ = reinterpret_cast<StatelessQ *>(mpAnim);
+    sqt += 4;
     unsigned short *dataBuf = statelessQ->GetData();
     unsigned short *frameData = statelessQ->GetFrameData(dataBuf, floorKey);
     unsigned char *boneIdxs = statelessQ->mBoneIdxs;
@@ -213,7 +214,7 @@ bool FnStatelessQ::EvalSQTMask(float, float *sqt, const BoneMask *boneMask, bool
             if (boneMask->GetBone(boneIdx)) {
                 UMath::Vector4 prevQ;
                 UMath::Vector4 nextQ;
-                float *q = GetStatelessQOutput(sqt, boneIdx);
+                float *q = &sqt[boneIdx * 12];
 
                 LoadStatelessQ(frameData, prevQ);
                 LoadStatelessQ(nextFrameData, nextQ);
@@ -231,7 +232,7 @@ bool FnStatelessQ::EvalSQTMask(float, float *sqt, const BoneMask *boneMask, bool
             unsigned char boneIdx = boneIdxs[ibone];
 
             if (boneMask->GetBone(boneIdx)) {
-                float *q = GetStatelessQOutput(sqt, boneIdx);
+                float *q = &sqt[boneIdx * 12];
 
                 q[0] = UncompressStatelessQValue(frameData[0]);
                 q[1] = UncompressStatelessQValue(frameData[1]);
@@ -250,7 +251,7 @@ bool FnStatelessQ::EvalSQTMask(float, float *sqt, const BoneMask *boneMask, bool
             unsigned char boneIdx = constIdxs[ibone];
 
             if (boneMask->GetBone(boneIdx)) {
-                float *q = GetStatelessQOutput(sqt, boneIdx);
+                float *q = &sqt[boneIdx * 12];
 
                 q[0] = UncompressStatelessQValue(constBuf[0]);
                 q[1] = UncompressStatelessQValue(constBuf[1]);
