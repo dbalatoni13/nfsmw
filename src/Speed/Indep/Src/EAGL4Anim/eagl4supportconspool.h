@@ -22,7 +22,7 @@ struct DestructorEntry {
     void *data;   // offset 0x4, size 0x4
 };
 
-typedef void *(*RuntimeAllocConstructor)(const char *, class DynamicLoader *, int &, bool &, const char *);
+typedef void *(*RuntimeAllocConstructor)(const char *, class EAGL4::DynamicLoader *, int &, bool &, const char *);
 typedef void (*RuntimeAllocDestructor)(void *, int);
 
 // TODO wrong namespace
