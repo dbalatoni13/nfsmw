@@ -58,6 +58,18 @@ const int MAX_CAR_PART_MODELS = 250;
 SlotPool *CarPartModelPool = nullptr;
 
 void GetUsedCarTextureInfo(UsedCarTextureInfo *used_texture_info, RideInfo *ride_info, int front_end_only);
+extern float copm;
+extern float copt;
+extern int copModulo;
+extern float copoffsetr;
+extern float copoffsetb;
+extern float copoffsetw;
+extern float enX;
+extern float enY;
+extern float enZ;
+extern unsigned int TireFaceIt;
+extern int counter_31665 asm("counter.31665");
+extern int counter_31669 asm("counter.31669");
 
 class VehicleFragmentConn {
   public:
@@ -116,6 +128,13 @@ struct CarRenderUsedCarTextureInfoLayout {
 struct FrontEndRenderingCarLayout {
     bNode Node;
     RideInfo mRideInfo;
+};
+
+struct CameraPositionAccess {
+    char pad[0x50];
+    float x;
+    float y;
+    float z;
 };
 
 template <typename T> void InitSList(bSList<T> &list) {
@@ -743,6 +762,64 @@ int cmpl(const void *a, const void *b) {
 
 int cmph(const void *a, const void *b) {
     return cmpl(b, a);
+}
+
+void bRotateVector(bVector3 *dest, const bMatrix4 *m, bVector3 *v) {
+    dest->x = m->v0.x * v->x + m->v1.x * v->y + m->v2.x * v->z;
+    dest->y = m->v0.y * v->x + m->v1.y * v->y + m->v2.y * v->z;
+    dest->z = m->v0.z * v->x + m->v1.z * v->y + m->v2.z * v->z;
+}
+
+float coplightflicker(float time, int offset) {
+    counter_31665 = (counter_31665 + 1) % copModulo;
+
+    return bSin((time + copt * static_cast<float>(offset)) * copm + 1.5707964f);
+}
+
+float coplightflicker2(float time, int whichColor, int flarecount) {
+    float offset = 0.0f;
+    float flicker;
+
+    counter_31669 = (counter_31669 + 1) % copModulo;
+
+    if (whichColor == 1) {
+        offset = copoffsetb;
+    } else if (whichColor == 0) {
+        offset = copoffsetr;
+    } else if (whichColor == 2) {
+        offset = copoffsetw;
+    }
+
+    flicker = bSin(time * 24.0f + 1.5707964f);
+    flicker *= flicker;
+
+    if (whichColor == 2) {
+        return flicker * coplightflicker(time, flarecount);
+    }
+
+    if (bSin(time * 8.0f + offset + 1.5707964f) > 0.2f) {
+        return flicker;
+    }
+
+    return 0.0f;
+}
+
+float TireFace(bMatrix4 *matrix, eView *view) {
+    float face = 1.0f;
+
+    if (TireFaceIt != 0) {
+        CameraPositionAccess *camera = reinterpret_cast<CameraPositionAccess *>(view->pCamera);
+        bMatrix4 local_matrix = *matrix;
+        bVector3 normal;
+
+        normal.x = enX;
+        normal.y = enY;
+        normal.z = enZ;
+        eMulVector(&normal, &local_matrix, &normal);
+        face = normal.x * camera->x + normal.y * camera->y + normal.z * camera->z;
+    }
+
+    return face;
 }
 
 void CarRenderInfo::UpdateCarReplacementTextures() {
