@@ -101,13 +101,33 @@ extern bVector3 EnvMapCamOffset;
 extern float lbl_8040AD70;
 extern float lbl_8040AD74;
 extern float lbl_8040AD78;
+extern float lbl_8040AD98;
+extern float lbl_8040AD9C;
+extern float lbl_8040ADA0;
+extern float lbl_8040ADA4;
+extern float lbl_8040ADA8;
+extern float lbl_8040ADAC;
+extern float lbl_8040ADB0;
+extern float lbl_8040ADB4;
+extern float lbl_8040ADB8;
+extern float lbl_8040ADBC;
 extern bVector3 hull_Origin asm("hull_Origin");
 extern bVector3 hull_Normal asm("hull_Normal");
+extern bVector3 hullVertArray1[16] asm("hullVertArray1");
 extern bVector3 hullVertArray2[16] asm("hullVertArray2");
+extern bVector3 hullVertArray3[48] asm("hullVertArray3");
+extern bVector4 PointCloud[16] asm("PointCloud");
 extern bVector3 *P[17] asm("P");
 extern int ch2d(bVector3 **P, int n) asm("ch2d__FPPfi");
+extern float FancyCarShadowEdgeMult;
+extern float car_elevation_scale;
+extern int dshad;
+extern bVector3 cs_lightV asm("cs_lightV");
+extern float cs_OneOverZ asm("cs_OneOverZ");
 extern int counter_31665 asm("counter.31665");
 extern int counter_31669 asm("counter.31669");
+extern void sh_Setup(bVector3 *car_pos) asm("sh_Setup__FP8bVector3");
+extern int smooth_shadow_corners(int nVerts) asm("smooth_shadow_corners__Fi");
 
 namespace {
 
@@ -116,6 +136,16 @@ void Render(eViewPlatInterface *view, eModel *model, bMatrix4 *local_to_world, e
 void Render(eViewPlatInterface *view, ePoly *poly, TextureInfo *texture_info, bMatrix4 *matrix, int accurate, float z_bias);
 eEnvMap *eGetEnvMap();
 void bExpandBoundingBox(bVector3 *bbox_min, bVector3 *bbox_max, const bVector3 *bbox2_min, const bVector3 *bbox2_max);
+bool eBeginStrip(TextureInfo *a, int b, bMatrix4 *c);
+bool eEndStrip(eView *view);
+void eAddVertex(const bVector3 &v);
+void eAddColour(unsigned int colour);
+void eAddUV(float u, float v);
+bool exBeginStrip(TextureInfo *tex, int a, bMatrix4 *mat);
+void exAddVertex(const bVector3 &v);
+void exAddColour(unsigned int colour);
+void exAddUV(float u, float v);
+bool exEndStrip(eView *view);
 int CarPart_GetAppliedAttributeIParam(CarPart *part, unsigned int namehash, int default_value) asm("GetAppliedAttributeIParam__7CarPartUii");
 int CarPart_HasAppliedAttribute(CarPart *part, unsigned int namehash) asm("HasAppliedAttribute__7CarPartUi");
 unsigned int CarPart_GetAppliedAttributeUParam(CarPart *part, unsigned int namehash, unsigned int default_value)
@@ -1707,6 +1737,172 @@ void CarRenderInfo::convex_hull(bVector3 *p, const WCollider *wcoll, int &n, flo
         }
 
         n -= dec;
+    }
+}
+
+void CarRenderInfo::DrawKeithProjShadow(eView *view, const bVector3 *position, bMatrix4 *localWorld, bMatrix4 *worldLocal, bMatrix4 *biasedIdentity,
+                                        int body_lod) {
+    if (body_lod < 3) {
+        int n = 16;
+        bVector3 *shadowVertices = hullVertArray1;
+        float shadowZ;
+        bVector3 lightV;
+        bVector3 scale;
+        int i;
+
+        sh_Setup(const_cast<bVector3 *>(position));
+        shadowZ = position->z;
+        if (iRam8047ff04 == 6) {
+            bVector3 worldPosition;
+
+            worldPosition.x = position->x;
+            worldPosition.y = -position->y;
+            worldPosition.z = position->z;
+            this->mWorldPos.FindClosestFace(this->mWCollider, reinterpret_cast<const UMath::Vector3 &>(worldPosition), false);
+            if (!this->mWorldPos.OnValidFace()) {
+                shadowZ = this->mWorldPos.HeightAtPoint(reinterpret_cast<const UMath::Vector3 &>(worldPosition));
+            }
+        }
+
+        lightV = cs_lightV;
+        scale.x = lbl_8040AD98;
+        scale.y = lbl_8040AD9C;
+        scale.z = lbl_8040ADA0;
+        for (i = 0; i < n; i++) {
+            bVector3 localPoint;
+            bVector3 worldPoint;
+            float scaleToGround;
+
+            localPoint.x = PointCloud[i].x * scale.x;
+            localPoint.y = PointCloud[i].y * scale.y;
+            localPoint.z = PointCloud[i].z * scale.z;
+            eMulVector(&worldPoint, localWorld, &localPoint);
+            scaleToGround = (shadowZ - worldPoint.z) * cs_OneOverZ;
+            shadowVertices[i].x = scaleToGround * lightV.x + worldPoint.x;
+            shadowVertices[i].y = scaleToGround * lightV.y + worldPoint.y;
+            shadowVertices[i].z = scaleToGround * lightV.z + worldPoint.z;
+        }
+
+        this->convex_hull(hullVertArray1, this->mWCollider, n, shadowZ, lbl_8040ADA4, body_lod != this->mMinLodLevel);
+        if (body_lod == this->mMinLodLevel) {
+            n = smooth_shadow_corners(n);
+            shadowVertices = hullVertArray3;
+        } else {
+            shadowVertices = hullVertArray2;
+        }
+
+        if (n > 2) {
+            int centerIndex = ((((n - (n >> 31)) * 8) & ~0xF) >> 4);
+            bVector3 shadowCenter = shadowVertices[0] + shadowVertices[centerIndex];
+            int alpha = static_cast<int>((lbl_8040ADA0 - car_elevation_scale) * lbl_8040ADB0);
+            unsigned int colour;
+
+            shadowCenter *= lbl_8040ADA8;
+            FancyCarShadowEdgeMult = car_elevation_scale * lbl_8040ADB4 + lbl_8040ADB8;
+            if (alpha < 0) {
+                alpha = 0;
+            }
+            if (alpha > 0xFE) {
+                alpha = 0xFE;
+            }
+            colour = static_cast<unsigned int>(alpha << 24) | 0x00808080;
+
+            if (dshad != 0) {
+                int start = 0;
+                int stop = (n & ~1) - 1;
+
+                while (start < stop) {
+                    int next = start + 2;
+
+                    if (eBeginStrip(this->ShadowRampTexture, 4, biasedIdentity)) {
+                        eAddVertex(shadowVertices[start]);
+                        eAddVertex(shadowCenter);
+                        eAddVertex(shadowVertices[start + 1]);
+                        eAddVertex(shadowVertices[next - (next / n) * n]);
+                        eAddColour(colour);
+                        eAddColour(colour);
+                        eAddColour(colour);
+                        eAddColour(colour);
+                        eAddUV(lbl_8040ADBC, lbl_8040ADAC);
+                        eAddUV(lbl_8040ADAC, lbl_8040ADAC);
+                        eAddUV(lbl_8040ADBC, lbl_8040ADAC);
+                        eAddUV(lbl_8040ADBC, lbl_8040ADAC);
+                        eEndStrip(view);
+                    }
+
+                    start = next;
+                }
+
+                if ((n & 1) != 0 && eBeginStrip(this->ShadowRampTexture, 3, biasedIdentity)) {
+                    eAddVertex(shadowVertices[n - 1]);
+                    eAddVertex(shadowCenter);
+                    eAddVertex(shadowVertices[0]);
+                    eAddColour(colour);
+                    eAddColour(colour);
+                    eAddColour(colour);
+                    eAddUV(lbl_8040ADBC, lbl_8040ADAC);
+                    eAddUV(lbl_8040ADAC, lbl_8040ADAC);
+                    eAddUV(lbl_8040ADBC, lbl_8040ADAC);
+                    eEndStrip(view);
+                }
+
+                {
+                    int nStart = n / 3;
+                    int section = 0;
+                    int startIndex = 0;
+
+                    do {
+                        int nSubVerts = nStart;
+                        int nextStart = startIndex + nStart;
+
+                        section++;
+                        if (section > 2) {
+                            nSubVerts = n - startIndex;
+                        }
+
+                        if (exBeginStrip(this->ShadowRampTexture, (nSubVerts + 1) * 2, biasedIdentity)) {
+                            int endIndex = startIndex + nSubVerts;
+                            int loopIndex = startIndex;
+
+                            for (; loopIndex < endIndex; loopIndex++) {
+                                bVector3 *edge = &shadowVertices[loopIndex];
+                                bVector3 inner(*edge);
+
+                                inner.x = FancyCarShadowEdgeMult * (edge->x - shadowCenter.x) + shadowCenter.x;
+                                inner.y = FancyCarShadowEdgeMult * (edge->y - shadowCenter.y) + shadowCenter.y;
+                                exAddVertex(*edge);
+                                exAddVertex(inner);
+                                exAddColour(colour);
+                                exAddColour(colour);
+                                exAddUV(lbl_8040ADBC, lbl_8040ADAC);
+                                exAddUV(lbl_8040ADA0, lbl_8040ADAC);
+                            }
+
+                            if (n <= loopIndex) {
+                                loopIndex = 0;
+                            }
+
+                            {
+                                bVector3 *edge = &shadowVertices[loopIndex];
+                                bVector3 inner(*edge);
+
+                                inner.x = FancyCarShadowEdgeMult * (edge->x - shadowCenter.x) + shadowCenter.x;
+                                inner.y = FancyCarShadowEdgeMult * (edge->y - shadowCenter.y) + shadowCenter.y;
+                                exAddVertex(*edge);
+                                exAddVertex(inner);
+                                exAddColour(colour);
+                                exAddColour(colour);
+                                exAddUV(lbl_8040ADBC, lbl_8040ADAC);
+                                exAddUV(lbl_8040ADA0, lbl_8040ADAC);
+                                exEndStrip(view);
+                            }
+                        }
+
+                        startIndex = nextStart;
+                    } while (section < 3);
+                }
+            }
+        }
     }
 }
 
