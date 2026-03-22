@@ -3,11 +3,14 @@
 #include "Speed/Indep/Src/Interfaces/SimActivities/INIS.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IAudible.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IArticulatedVehicle.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ICarAudio.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IDamageable.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IEngine.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IEngineDamage.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IInput.h"
 #include "Speed/Indep/Src/Interfaces/Simables/INISCarControl.h"
+#include "Speed/Indep/Src/Interfaces/Simables/ISpikeable.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ISuspension.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ITransmission.h"
 #include "Speed/Indep/Src/Physics/VehicleBehaviors.h"
@@ -43,6 +46,9 @@ enum ControlSource {
     CONTROL_NIS = 3,
     CONTROL_ONLINE = 4,
 };
+
+extern "C" UCrc32 VehicleClass_TRAILER asm("_12VehicleClass.TRAILER");
+extern "C" UCrc32 VehicleClass_TRACTOR asm("_12VehicleClass.TRACTOR");
 
 namespace SoundConn {
 
@@ -85,6 +91,30 @@ class Pkt_Car_Open : public Sim::Packet {
 // total size: 0x108
 class Pkt_Car_Service : public Sim::Packet {
   public:
+    void SetSiren(SirenState s) {
+        mSirenState = s;
+    }
+
+    void SetTimeSinceSeen(float seconds) {
+        mTimeSinceSeen = seconds;
+    }
+
+    void SetHotPursuit(bool h) {
+        mHotPursuit = h;
+    }
+
+    void SetEngineBlown(int b) {
+        mEngineBlown = b;
+    }
+
+    void SetTrailer(WUID trailer) {
+        mTrailer = trailer;
+    }
+
+    void SetTireBlown(Sound::WheelConfig id, eTireDamage state) {
+        mBlownTires[id] = state;
+    }
+
     float mRPMPercent;           // offset 0x4, size 0x4
     float mThrottlePercent;      // offset 0x8, size 0x4
     float mBrakePercent;         // offset 0xC, size 0x4
@@ -104,7 +134,7 @@ class Pkt_Car_Service : public Sim::Packet {
     float mWheelLoad[4];         // offset 0xB8, size 0x10
     float mWheelCompression[4];  // offset 0xC8, size 0x10
     bool mWheelOnGround[4];      // offset 0xD8, size 0x4
-    bool mEngineBlown;           // offset 0xE8, size 0x1
+    int mEngineBlown;            // offset 0xE8, size 0x4
     bool mNOSFlag;               // offset 0xEC, size 0x1
     float mNOSCapacity;          // offset 0xF0, size 0x4
     WUID mTrailer;               // offset 0xF4, size 0x4
@@ -144,6 +174,55 @@ class SoundCar : public VehicleBehavior, public ICarAudio, public IAudible {
     Rpm mSoundRPM;                                   // offset 0x80, size 0x4
     INISCarControl *mNIS;                            // offset 0x84, size 0x4
     BehaviorSpecsPtr<Attrib::Gen::engine> mEngineInfo; // offset 0x88, size 0x14
+};
+
+// total size: 0xA0
+class SoundTraffic : public SoundCar {
+  public:
+    SoundTraffic(const BehaviorParams &params, Sound::Context ctx);
+    ~SoundTraffic() override {}
+
+    static Behavior *Construct(const BehaviorParams &params);
+
+    void LocateTrailer();
+    void OnBehaviorChange(const UCrc32 &mechanic) override;
+    void OnService(SoundConn::Pkt_Car_Service &svc) override;
+
+  private:
+    WUID mTrailer; // offset 0x9C, size 0x4
+};
+
+// total size: 0xA4
+class SoundCop : public SoundCar {
+  public:
+    SoundCop(const BehaviorParams &params);
+    ~SoundCop() override {}
+
+    static Behavior *Construct(const BehaviorParams &params);
+
+    void OnBehaviorChange(const UCrc32 &mechanic) override;
+    void OnService(SoundConn::Pkt_Car_Service &svc) override;
+
+  private:
+    IPursuitAI *mPursuitAI;                 // offset 0x9C, size 0x4
+    IDamageableVehicle *mVehicleDamage;    // offset 0xA0, size 0x4
+};
+
+// total size: 0xA4
+class SoundRacer : public SoundCar {
+  public:
+    SoundRacer(const BehaviorParams &params, Sound::Context ctx);
+    ~SoundRacer() override {}
+
+    static Behavior *Construct(const BehaviorParams &params);
+
+    void OnServiceTire(SoundConn::Pkt_Car_Service &pkt, unsigned int wheelid, Sound::WheelConfig sndId) override;
+    void OnService(SoundConn::Pkt_Car_Service &svc) override;
+    void OnBehaviorChange(const UCrc32 &mechanic) override;
+
+  private:
+    IEngineDamage *mEngineDamage; // offset 0x9C, size 0x4
+    ISpikeable *mSpikeDamage;     // offset 0xA0, size 0x4
 };
 
 SoundCar::SoundCar(const BehaviorParams &params, Sound::Context ctx)
@@ -339,3 +418,135 @@ void SoundCar::OnService(SoundConn::Pkt_Car_Service &svc) {
 }
 
 void SoundCar::OnServiceTire(SoundConn::Pkt_Car_Service &pkt, unsigned int wheelid, Sound::WheelConfig sndId) {}
+
+SoundTraffic::SoundTraffic(const BehaviorParams &params, Sound::Context ctx)
+    : SoundCar(params, ctx), //
+      mTrailer(0) {
+    LocateTrailer();
+}
+
+Behavior *SoundTraffic::Construct(const BehaviorParams &params) {
+    IVehicle *vehicle = nullptr;
+    static_cast<ISimable *>(params.fowner)->QueryInterface(&vehicle);
+    if (!vehicle) {
+        return nullptr;
+    }
+
+    const UCrc32 &vehicleClass = vehicle->GetVehicleClass();
+    Sound::Context ctx = Sound::CONTEXT_TRAFFIC;
+    if (vehicleClass == VehicleClass_TRACTOR) {
+        ctx = Sound::CONTEXT_TRACTOR;
+    } else if (vehicleClass == VehicleClass_TRAILER) {
+        ctx = Sound::CONTEXT_TRAILER;
+    }
+
+    return new SoundTraffic(params, ctx);
+}
+
+void SoundTraffic::LocateTrailer() {
+    IArticulatedVehicle *iarticulation = nullptr;
+
+    mTrailer = 0;
+    if (GetOwner()->QueryInterface(&iarticulation) && iarticulation) {
+        IVehicle *trailer = iarticulation->GetTrailer();
+        if (trailer) {
+            mTrailer = trailer->GetSimable()->GetWorldID();
+        }
+    }
+}
+
+void SoundTraffic::OnBehaviorChange(const UCrc32 &mechanic) {
+    SoundCar::OnBehaviorChange(mechanic);
+    if (mechanic == BEHAVIOR_MECHANIC_RIGIDBODY) {
+        LocateTrailer();
+    }
+}
+
+void SoundTraffic::OnService(SoundConn::Pkt_Car_Service &svc) {
+    SoundCar::OnService(svc);
+    svc.SetTrailer(mTrailer);
+}
+
+SoundCop::SoundCop(const BehaviorParams &params)
+    : SoundCar(params, Sound::CONTEXT_COP) {
+    GetOwner()->QueryInterface(&mPursuitAI);
+    GetOwner()->QueryInterface(&mVehicleDamage);
+}
+
+Behavior *SoundCop::Construct(const BehaviorParams &params) {
+    return new SoundCop(params);
+}
+
+void SoundCop::OnBehaviorChange(const UCrc32 &mechanic) {
+    SoundCar::OnBehaviorChange(mechanic);
+    if (mechanic == BEHAVIOR_MECHANIC_AI) {
+        GetOwner()->QueryInterface(&mPursuitAI);
+    } else if (mechanic == BEHAVIOR_MECHANIC_DAMAGE) {
+        GetOwner()->QueryInterface(&mVehicleDamage);
+    }
+}
+
+void SoundCop::OnService(SoundConn::Pkt_Car_Service &svc) {
+    SoundCar::OnService(svc);
+
+    if (mPursuitAI) {
+        svc.SetSiren(mPursuitAI->GetSirenState());
+        if (mPursuitAI->GetInPursuit()) {
+            svc.SetHotPursuit(true);
+        }
+        svc.SetTimeSinceSeen(mPursuitAI->GetTimeSinceTargetSeen());
+    }
+
+    if (mVehicleDamage && mVehicleDamage->IsLightDamaged(VehicleFX::LIGHT_COPS)) {
+        svc.SetSiren(SIREN_DIE);
+    }
+}
+
+SoundRacer::SoundRacer(const BehaviorParams &params, Sound::Context ctx)
+    : SoundCar(params, ctx) {
+    GetOwner()->QueryInterface(&mEngineDamage);
+    GetOwner()->QueryInterface(&mSpikeDamage);
+}
+
+Behavior *SoundRacer::Construct(const BehaviorParams &params) {
+    IVehicle *vehicle = nullptr;
+    static_cast<ISimable *>(params.fowner)->QueryInterface(&vehicle);
+    if (!vehicle) {
+        return nullptr;
+    }
+
+    Sound::Context ctx = Sound::CONTEXT_PLAYER;
+    if (vehicle->GetDriverClass() != DRIVER_HUMAN) {
+        ctx = Sound::CONTEXT_AIRACER;
+    }
+    return new SoundRacer(params, ctx);
+}
+
+void SoundRacer::OnServiceTire(SoundConn::Pkt_Car_Service &pkt, unsigned int wheelid, Sound::WheelConfig sndId) {
+    SoundCar::OnServiceTire(pkt, wheelid, sndId);
+    if (mSpikeDamage) {
+        pkt.SetTireBlown(sndId, mSpikeDamage->GetTireDamage(wheelid));
+    }
+}
+
+void SoundRacer::OnService(SoundConn::Pkt_Car_Service &svc) {
+    SoundCar::OnService(svc);
+
+    if (mEngineDamage) {
+        if (mEngineDamage->IsBlown()) {
+            svc.SetEngineBlown(1);
+        }
+        if (mEngineDamage->IsSabotaged()) {
+            svc.SetEngineBlown(2);
+        }
+    }
+}
+
+void SoundRacer::OnBehaviorChange(const UCrc32 &mechanic) {
+    SoundCar::OnBehaviorChange(mechanic);
+    if (mechanic == BEHAVIOR_MECHANIC_ENGINE) {
+        GetOwner()->QueryInterface(&mEngineDamage);
+    } else if (mechanic == BEHAVIOR_MECHANIC_DAMAGE) {
+        GetOwner()->QueryInterface(&mSpikeDamage);
+    }
+}
