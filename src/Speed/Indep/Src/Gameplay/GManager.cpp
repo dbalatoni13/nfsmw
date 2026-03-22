@@ -2570,14 +2570,16 @@ void GManager::UpdatePursuit() {
 
     mHidingSpotIconsShown = (roaming || challengeRace) && inPursuit && inCooldown;
 
-    mPursuitBreakerIconsShown = false;
+    bool pursuitBreakerIconsShown = false;
+
     if (!roaming && !challengeRace) {
         if (GRaceStatus::IsFinalEpicPursuit() && inPursuit && !inCooldown) {
-            mPursuitBreakerIconsShown = true;
+            pursuitBreakerIconsShown = true;
         }
     } else if (inPursuit && !inCooldown) {
-        mPursuitBreakerIconsShown = true;
+        pursuitBreakerIconsShown = true;
     }
+    mPursuitBreakerIconsShown = pursuitBreakerIconsShown;
 
     if (TWEAK_ShowGameplayMilestoneValues != 0) {
         static volatile int xLeft = -130;
