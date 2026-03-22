@@ -140,6 +140,11 @@ class CarLoader {
     void SetLoadingMode(eLoadingMode mode, int two_player_flag);
     LoadedSolidPack *AllocateSolidPack(const char *filename);
     LoadedTexturePack *AllocateTexturePack(const char *filename, int max_header_size);
+    void UnallocateTexturePack(LoadedTexturePack *loaded_texture_pack);
+    int GetMemoryEntries(LoadedTexturePack *loaded_texture_pack, void **memory_entries, int num_memory_entries);
+    int LoadTexturePack(LoadedTexturePack *loaded_texture_pack, int use_memory_pool);
+    void LoadedTexturePackCallback(LoadedTexturePack *loaded_texture_pack);
+    int UnloadTexturePack(LoadedTexturePack *loaded_texture_pack);
     LoadedSolidPack *FindLoadedSolidPack(const char *filename);
     LoadedTexturePack *FindLoadedTexturePack(const char *filename);
     LoadedSkinLayer *FindLoadedSkinLayer(unsigned int name_hash);

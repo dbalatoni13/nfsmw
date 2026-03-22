@@ -111,6 +111,7 @@ void TrackStreamer_MakeSpaceInPool(TrackStreamer *track_streamer, int size, bool
     asm("MakeSpaceInPool__13TrackStreamerib");
 LoadedTexturePack *LoadedTexturePack_Construct(LoadedTexturePack *loaded_texture_pack, const char *filename, int max_header_size)
     asm("__17LoadedTexturePackPCci");
+void LoadedTexturePack_Destruct(LoadedTexturePack *loaded_texture_pack, int in_chrg) asm("_._17LoadedTexturePack");
 LoadedSolidPack *LoadedSolidPack_Construct(LoadedSolidPack *loaded_solid_pack, const char *filename) asm("__15LoadedSolidPackPCc");
 int LoadedCar_GetModelHashes(LoadedCar *loaded_car, unsigned int *name_hashes, int max_hashes)
     asm("GetModelHashes__9LoadedCarPUii");
@@ -140,6 +141,7 @@ void LoadedSolidPackCallbackBridge(void *param) asm("LoadedSolidPackCallbackBrid
 void LoadedWheelModelsCallbackBridge(void *param) asm("LoadedWheelModelsCallbackBridge__9CarLoaderUi");
 void LoadedWheelTexturesCallbackBridge(void *param) asm("LoadedWheelTexturesCallbackBridge__9CarLoaderUi");
 void LoadedAllTexturesFromPackCallbackBridge(void *param) asm("LoadedAllTexturesFromPackCallbackBridge__9CarLoaderUi");
+void LoadedTexturePackCallbackBridge(unsigned int param) asm("LoadedTexturePackCallbackBridge__9CarLoaderUi");
 void bCloseMemoryPool(int pool_num);
 bool bSetMemoryPoolDebugFill(int pool_num, bool on_off);
 void bSetMemoryPoolTopDirection(int pool_num, bool top_means_larger_address);
@@ -147,7 +149,9 @@ void eLoadStreamingSolid(unsigned int *name_hash_table, int num_hashes, void (*c
 int eLoadStreamingSolidPack(const char *filename, void (*callback_function)(void *), void *callback_param, int memory_pool_num);
 void eLoadStreamingTexture(unsigned int *name_hash_table, int num_hashes, void (*callback)(void *), void *param0,
                            int memory_pool_num);
+int eLoadStreamingTexturePack(const char *filename, void (*callback_func)(unsigned int), unsigned int callback_param, int memory_pool_num);
 void eUnloadStreamingTexture(unsigned int *name_hash_table, int num_hashes);
+void eUnloadStreamingTexturePack(const char *filename);
 
 CarLoader::CarLoader()
     : StartLoadingTime(0.0f) {
@@ -508,6 +512,53 @@ LoadedTexturePack *CarLoader::AllocateTexturePack(const char *filename, int max_
 
     loaded_texture_pack->NumInstances++;
     return loaded_texture_pack;
+}
+
+void CarLoader::UnallocateTexturePack(LoadedTexturePack *loaded_texture_pack) {
+    loaded_texture_pack->NumInstances--;
+}
+
+int CarLoader::GetMemoryEntries(LoadedTexturePack *loaded_texture_pack, void **memory_entries, int num_memory_entries) {
+    if (loaded_texture_pack->pStreamingPack != 0) {
+        return loaded_texture_pack->pStreamingPack->GetHeaderMemoryEntries(memory_entries, num_memory_entries);
+    }
+
+    return 0;
+}
+
+int CarLoader::LoadTexturePack(LoadedTexturePack *loaded_texture_pack, int use_memory_pool) {
+    int memory_pool_num = 0;
+
+    if (use_memory_pool != 0) {
+        CarLoader_MakeSpaceInCarMemoryPool(this, loaded_texture_pack->MaxHeaderSize, 0, true);
+        memory_pool_num = CarLoaderMemoryPoolNumber;
+    }
+
+    this->LoadingInProgress = 1;
+    loaded_texture_pack->LoadState = CARLOADSTATE_LOADING;
+    eLoadStreamingTexturePack(loaded_texture_pack->Filename, LoadedTexturePackCallbackBridge,
+                              reinterpret_cast<unsigned int>(loaded_texture_pack), memory_pool_num);
+    loaded_texture_pack->pStreamingPack = StreamingTexturePackLoader.GetLoadedStreamingPack(loaded_texture_pack->Filename);
+    return 1;
+}
+
+void CarLoader::LoadedTexturePackCallback(LoadedTexturePack *loaded_texture_pack) {
+    loaded_texture_pack->LoadState = CARLOADSTATE_LOADED;
+    this->LoadingDoneCallback();
+}
+
+int CarLoader::UnloadTexturePack(LoadedTexturePack *loaded_texture_pack) {
+    if (loaded_texture_pack->NumInstances == 0) {
+        if (loaded_texture_pack->LoadState == CARLOADSTATE_LOADED && loaded_texture_pack->pStreamingPack != 0) {
+            eUnloadStreamingTexturePack(loaded_texture_pack->Filename);
+        }
+
+        loaded_texture_pack->Remove();
+        LoadedTexturePack_Destruct(loaded_texture_pack, 3);
+        return 1;
+    }
+
+    return 0;
 }
 
 LoadedSolidPack *CarLoader::FindLoadedSolidPack(const char *filename) {
