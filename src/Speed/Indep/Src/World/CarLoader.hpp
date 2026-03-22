@@ -155,6 +155,7 @@ class CarLoader {
     int GetMemoryEntries(LoadedSkin *loaded_skin, void **memory_entries, int num_memory_entries);
     int GetMemoryEntries(LoadedSkinLayer *loaded_skin_layer, void **memory_entries, int num_memory_entries);
     int GetMemoryEntries(LoadedCar *loaded_car, void **memory_entries, int num_memory_entries);
+    void PrintMemoryUsage(bool on_screen);
     int LoadTexturePack(LoadedTexturePack *loaded_texture_pack, int use_memory_pool);
     void LoadedTexturePackCallback(LoadedTexturePack *loaded_texture_pack);
     int UnloadTexturePack(LoadedTexturePack *loaded_texture_pack);
@@ -198,8 +199,10 @@ class CarLoader {
     int LoadAllWheelTextures();
     void LoadSolidPack(LoadedSolidPack *loaded_solid_pack, int stream_solids);
     int LoadAllTexturesFromPack(const char *filename, int load_perm_layers);
+    bool MakeSpaceInPool(int size);
+    int MakeSpaceInCarMemoryPool(int largest_malloc_needed, int amount_free_needed, bool allocating_stream_header_chunks);
     int RemoveSomethingFromCarMemoryPool(bool force_unload);
-    void DefragmentPool();
+    int DefragmentPool();
 
     void (*pCallback)(unsigned int);                 // offset 0x0, size 0x4
     unsigned int Param;                              // offset 0x4, size 0x4

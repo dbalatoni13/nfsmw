@@ -116,6 +116,9 @@ extern SlotPool *LoadedSolidPackSlotPool;
 extern SlotPool *LoadedSkinLayerSlotPool;
 extern SlotPool *LoadedRideInfoSlotPool;
 extern int UsePrecompositeVinyls;
+int bGetMallocPool(void *ptr);
+void eFixupReplacementTextureTables();
+void RefreshAllRenderInfo(CarType car_type);
 void TrackStreamer_FlushHibernatingSections(TrackStreamer *track_streamer) asm("FlushHibernatingSections__13TrackStreamer");
 void TrackStreamer_MakeSpaceInPool(TrackStreamer *track_streamer, int size, bool use_callback)
     asm("MakeSpaceInPool__13TrackStreamerib");
@@ -579,6 +582,119 @@ void CarLoader::UnloadAllSkinTemporaries() {
             this->UnloadSkinTemporaries(loaded_skin, 1);
         }
     }
+}
+
+bool CarLoader::MakeSpaceInPool(int size) {
+    while (this->LoadingInProgress != 0) {
+        ServiceResourceLoading();
+    }
+
+    return this->MakeSpaceInCarMemoryPool(size, 0, false) != 0;
+}
+
+int CarLoader::MakeSpaceInCarMemoryPool(int largest_malloc_needed, int amount_free_needed, bool allocating_stream_header_chunks) {
+    if (amount_free_needed == 0) {
+        amount_free_needed = largest_malloc_needed;
+    }
+
+    int free_memory = bCountFreeMemory(CarLoaderMemoryPoolNumber);
+    int largest_malloc = bLargestMalloc((CarLoaderMemoryPoolNumber & 0xF) | 0x2000);
+
+    while ((free_memory < amount_free_needed || largest_malloc < largest_malloc_needed) &&
+           this->RemoveSomethingFromCarMemoryPool(true) != 0) {
+        free_memory = bCountFreeMemory(CarLoaderMemoryPoolNumber);
+        largest_malloc = bLargestMalloc((CarLoaderMemoryPoolNumber & 0xF) | 0x2000);
+    }
+
+    if (free_memory < amount_free_needed || largest_malloc < largest_malloc_needed) {
+        return 0;
+    }
+
+    if (allocating_stream_header_chunks) {
+        unsigned int lowest_header_chunks = 0;
+
+        for (int i = 0; i < 2; i++) {
+            eStreamPackLoader *loader = &StreamingTexturePackLoader;
+
+            if (i == 1) {
+                loader = &StreamingSolidPackLoader;
+            }
+
+            for (eStreamingPack *streaming_pack = loader->LoadedStreamingPackList.GetHead();
+                 streaming_pack != loader->LoadedStreamingPackList.EndOfList(); streaming_pack = streaming_pack->GetNext()) {
+                if (streaming_pack->HeaderChunks != 0 && bGetMallocPool(streaming_pack->HeaderChunks) == CarLoaderMemoryPoolNumber &&
+                    (lowest_header_chunks == 0 ||
+                     reinterpret_cast<unsigned int>(streaming_pack->HeaderChunks) < lowest_header_chunks)) {
+                    lowest_header_chunks = reinterpret_cast<unsigned int>(streaming_pack->HeaderChunks);
+                }
+            }
+        }
+
+        void *allocated_memory = bMalloc(largest_malloc_needed, (CarLoaderMemoryPoolNumber & 0xF) | 0x2040);
+
+        bFree(allocated_memory);
+
+        if (lowest_header_chunks != 0 && allocated_memory != 0) {
+            int distance = reinterpret_cast<unsigned int>(allocated_memory) + largest_malloc_needed - lowest_header_chunks;
+
+            if (distance < 0) {
+                distance = -distance;
+            }
+
+            if (distance > 0x100) {
+                this->DefragmentPool();
+            }
+        }
+    }
+
+    return 1;
+}
+
+int CarLoader::RemoveSomethingFromCarMemoryPool(bool force_unload) {
+    for (LoadedRideInfo *loaded_ride_info = this->LoadedRideInfoList.GetHead();
+         loaded_ride_info != this->LoadedRideInfoList.EndOfList(); loaded_ride_info = loaded_ride_info->GetNext()) {
+        if (this->UnloadRideInfo(loaded_ride_info, 0) != 0) {
+            return 1;
+        }
+    }
+
+    if (force_unload != 0) {
+        if (this->DefragmentPool() != 0) {
+            return 1;
+        }
+
+        if (this->NumSpongeAllocations == 0) {
+            for (int pass = 0; pass < 2; pass++) {
+                for (LoadedRideInfo *loaded_ride_info = this->LoadedRideInfoList.GetHead();
+                     loaded_ride_info != this->LoadedRideInfoList.EndOfList(); loaded_ride_info = loaded_ride_info->GetNext()) {
+                    if (loaded_ride_info->HighPriority == 0 || pass == 1) {
+                        LoadedSkin *loaded_skin = loaded_ride_info->pLoadedSkin;
+
+                        if (loaded_skin->LoadStatePerm == CARLOADSTATE_LOADED && this->UnloadSkinPerms(loaded_skin) != 0) {
+                            if (this->LoadingMode == MODE_FRONT_END) {
+                                bBreak();
+                            }
+
+                            eFixupReplacementTextureTables();
+                            RefreshAllRenderInfo(loaded_skin->pRideInfo->Type);
+                            return 1;
+                        }
+                    }
+                }
+            }
+
+            this->PrintMemoryUsage(false);
+            bBreak();
+            return 0;
+        }
+
+        this->NumSpongeAllocations--;
+        bFree(this->SpongeAllocations[this->NumSpongeAllocations]);
+        this->MayNeedDefragmentation++;
+        return 1;
+    }
+
+    return 0;
 }
 
 LoadedWheel::LoadedWheel(RideInfo *ride_info, bool in_fe) {
