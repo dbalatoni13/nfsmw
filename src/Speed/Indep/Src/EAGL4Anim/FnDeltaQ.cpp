@@ -491,7 +491,17 @@ bool FnDeltaQ::EvalSQTMasked(float currTime, const BoneMask *boneMask, float *sq
         int ceilBinIdx = ceilKey >> binLenPower;
         DeltaQPhysical *ceilPhys = GetPhysical(GetBin(deltaQ, ceilBinIdx));
 
-        if (ceilBinIdx == floorBinIdx) {
+        if (ceilBinIdx != floorBinIdx) {
+            for (int ibone = 0; ibone < deltaQ->mNumBones; ibone++) {
+                if (boneMask->GetBone(boneIdxs[ibone])) {
+                    UMath::Vector4 ceilq;
+
+                    DecodePhysical(ceilPhys[ibone], ceilq);
+                    FastQuatBlendF4(scale, reinterpret_cast<float *>(&mPrevQs[ibone]), reinterpret_cast<float *>(&ceilq),
+                                    GetOutputQuat(sqt, boneIdxs[ibone]));
+                }
+            }
+        } else {
             DeltaQDelta *ceilDelta = GetDelta(deltaQ, binData, floorDeltaIdx);
 
             for (int ibone = 0; ibone < deltaQ->mNumBones; ibone++) {
@@ -505,16 +515,6 @@ bool FnDeltaQ::EvalSQTMasked(float currTime, const BoneMask *boneMask, float *sq
                     ceilq.z = mPrevQs[ibone].z + delta.z;
                     RecoverW(ceilDelta[ibone].mW, ceilq);
 
-                    FastQuatBlendF4(scale, reinterpret_cast<float *>(&mPrevQs[ibone]), reinterpret_cast<float *>(&ceilq),
-                                    GetOutputQuat(sqt, boneIdxs[ibone]));
-                }
-            }
-        } else {
-            for (int ibone = 0; ibone < deltaQ->mNumBones; ibone++) {
-                if (boneMask->GetBone(boneIdxs[ibone])) {
-                    UMath::Vector4 ceilq;
-
-                    DecodePhysical(ceilPhys[ibone], ceilq);
                     FastQuatBlendF4(scale, reinterpret_cast<float *>(&mPrevQs[ibone]), reinterpret_cast<float *>(&ceilq),
                                     GetOutputQuat(sqt, boneIdxs[ibone]));
                 }
