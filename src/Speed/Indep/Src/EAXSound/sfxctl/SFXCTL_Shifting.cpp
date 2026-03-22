@@ -277,7 +277,8 @@ void SFXCTL_Shifting::UpdateGearShiftState(float t) {
         CleanUpShiftFX();
         break;
     case SHFT_DOWN_DISENGAGE: {
-        if (!m_InterpShiftRPM.IsFinished()) {
+        cInterpLine *InterpShiftRPM = &m_InterpShiftRPM;
+        if (!InterpShiftRPM->IsFinished()) {
             return;
         }
 
@@ -294,7 +295,7 @@ void SFXCTL_Shifting::UpdateGearShiftState(float t) {
                                        static_cast<float>(m_pShiftingPatternData->Down_Engaging_Rise_RPM()) *
                                            LowRPMScale,
                                  1000.0f, 10000.0f);
-        m_InterpShiftRPM.Initialize(m_pEngineCtl->GetEngRPM(), TargetRPM, Length, EQ_PWR_SQ);
+        InterpShiftRPM->Initialize(m_pEngineCtl->GetEngRPM(), TargetRPM, Length, EQ_PWR_SQ);
         m_InterpShiftTorque.Initialize(0.0f, m_pEngineCtl->GetEngTorque(), kDownShiftingRevRampTime, LINEAR);
         break;
     }
