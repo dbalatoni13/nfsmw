@@ -7,6 +7,8 @@ typedef float Mtx44[4][4];
 
 extern SlotPool *VehicleDamagePartSlotPool;
 extern SlotPool *VehiclePartDamageZoneSlotPool;
+extern unsigned int unitTestDelay;
+extern unsigned int uniTestLevel;
 extern "C" void PSMTX44Copy(const Mtx44 src, Mtx44 dst);
 
 extern VehicleDamagePart *VehicleDamagePart_ctor(VehicleDamagePart *part, CarRenderInfo *carRenderInfo, int slotId)
@@ -187,4 +189,24 @@ void VehiclePartDamageBehaviour::DamageVehicle(const DamageZone::Info &damageInf
     }
 
     this->ApplyDamage();
+}
+
+void VehiclePartDamageBehaviour::UnitTest() {
+    unitTestDelay--;
+
+    if (unitTestDelay == 0) {
+        unsigned int zoneIx;
+
+        unitTestDelay = 0x1E;
+        uniTestLevel++;
+        if (uniTestLevel > 1) {
+            uniTestLevel = 0;
+        }
+
+        for (zoneIx = 0; zoneIx < this->mDamageZoneNum; zoneIx++) {
+            this->DamageZone(static_cast<int>(zoneIx), static_cast<int>(uniTestLevel));
+        }
+
+        this->ApplyDamage();
+    }
 }
