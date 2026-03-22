@@ -108,6 +108,23 @@ python tools/elf_lookup.py 0x002F1234 --game ps2
 This is the preferred replacement for ad-hoc Python snippets that manually parse the ELF
 to chase `@stringBase0` or other rodata/data references.
 
+### check_tu_strings.py — Compare TU string refs against the original object
+
+When you want to verify that a translation unit's string literals still match the
+original object after source cleanup, use:
+
+```sh
+python tools/check_tu_strings.py -u main/Speed/Indep/SourceLists/zTrack
+python tools/check_tu_strings.py -u main/Speed/Indep/SourceLists/zTrack --all
+python tools/check_tu_strings.py -u main/Speed/Indep/SourceLists/zTrack --search CODEINE
+```
+
+It compares printable string-like `.text` relocation targets between the rebuilt and
+original objects for one unit, collapses PPC hi/lo relocation pairs into one callsite,
+and reports content/count mismatches by string value. Use it before and after changing
+debug/profiler/network string literals, and when you suspect a TU still has ownership
+or static-init issues that only show up as string relocation drift.
+
 ### code-style — Repo-local style guidance
 
 When you are writing code, polishing code you already touched, or doing a style-review pass,
