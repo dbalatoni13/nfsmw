@@ -175,36 +175,40 @@ FnDeltaQFast::~FnDeltaQFast() {
 
 void FnDeltaQFast::SetAnimMemoryMap(AnimMemoryMap *anim) {
     DeltaQFast *deltaQ = reinterpret_cast<DeltaQFast *>(anim);
-    int numBones = deltaQ->mNumBones;
+    unsigned char numBones = deltaQ->mNumBones;
 
     mpAnim = anim;
-    mBins = reinterpret_cast<unsigned char *>(deltaQ->GetMinRange()) + numBones * sizeof(DeltaQFastMinRange);
+    mBins = reinterpret_cast<unsigned char *>(deltaQ) + 0x14 + (numBones << 4);
     mConstBoneIdxs = reinterpret_cast<unsigned char *>(deltaQ->GetConstBoneIdx());
     mConstPhysical = reinterpret_cast<DeltaQFastPhysical *>(deltaQ->GetConstPhysical());
-    mBinSize = AlignSize2(numBones * (6 + ((deltaQ->GetBinLength() - 1) * 3)));
-    mPrevKey = -1;
-    mNextKey = -1;
+    mBinSize = AlignSize2(numBones * (((1 << deltaQ->mBinLengthPower) - 1) * 3 + 6));
     mBoneMask = nullptr;
+    mNextKey = -1;
+    mPrevKey = -1;
 
     if (numBones != 0) {
-        unsigned char *block = reinterpret_cast<unsigned char *>(MemoryPoolManager::NewBlock(numBones * 0x40));
-        DeltaQFastMinRange *minRange = deltaQ->GetMinRange();
+        unsigned char *block = reinterpret_cast<unsigned char *>(MemoryPoolManager::NewBlock(numBones << 6));
+        unsigned char *qBlock = block + (numBones << 5);
+        DeltaQFastMinRange *minRange = reinterpret_cast<DeltaQFastMinRange *>(deltaQ + 1);
 
         mMinRangesf = reinterpret_cast<DeltaQFastMinRangef *>(block);
-        mPrevQBlock = block + numBones * sizeof(DeltaQFastMinRangef);
-        mPrevQs = reinterpret_cast<UMath::Vector4 *>(mPrevQBlock);
-        mNextQBlock = reinterpret_cast<unsigned char *>(mPrevQs) + numBones * sizeof(*mPrevQs);
+        mPrevQBlock = qBlock;
+        mPrevQs = reinterpret_cast<UMath::Vector4 *>(qBlock);
+        mNextQBlock = qBlock + (numBones << 4);
         mNextQs = reinterpret_cast<UMath::Vector4 *>(mNextQBlock);
 
         for (int ibone = 0; ibone < numBones; ibone++) {
-            mMinRangesf[ibone].mMin.x = minRange[ibone].mMin[0] * kQFastMinScale16 - 1.0f;
-            mMinRangesf[ibone].mMin.y = minRange[ibone].mMin[1] * kQFastMinScale16 - 1.0f;
-            mMinRangesf[ibone].mMin.z = minRange[ibone].mMin[2] * kQFastMinScale16 - 1.0f;
-            mMinRangesf[ibone].mMin.w = minRange[ibone].mMin[3] * kQFastMinScale16 - 1.0f;
-            mMinRangesf[ibone].mRange.x = minRange[ibone].mRange[0] * kQFastMinScale16;
-            mMinRangesf[ibone].mRange.y = minRange[ibone].mRange[1] * kQFastMinScale16;
-            mMinRangesf[ibone].mRange.z = minRange[ibone].mRange[2] * kQFastMinScale16;
-            mMinRangesf[ibone].mRange.w = minRange[ibone].mRange[3] * kQFastMinScale16;
+            unsigned short *minRangeValues = reinterpret_cast<unsigned short *>(&minRange[ibone]);
+            float *minRangefValues = reinterpret_cast<float *>(&mMinRangesf[ibone]);
+
+            minRangefValues[0] = minRangeValues[0] * kQFastMinScale16 - 1.0f;
+            minRangefValues[1] = minRangeValues[1] * kQFastMinScale16 - 1.0f;
+            minRangefValues[2] = minRangeValues[2] * kQFastMinScale16 - 1.0f;
+            minRangefValues[3] = minRangeValues[3] * kQFastMinScale16 - 1.0f;
+            minRangefValues[4] = minRangeValues[4] * kQFastMinScale16;
+            minRangefValues[5] = minRangeValues[5] * kQFastMinScale16;
+            minRangefValues[6] = minRangeValues[6] * kQFastMinScale16;
+            minRangefValues[7] = minRangeValues[7] * kQFastMinScale16;
         }
     }
 }
@@ -267,26 +271,43 @@ void FnDeltaQFast::UpdateNextQs(DeltaQFast *deltaQ, int ceilKey, int floorBinIdx
         return;
     }
 
-    int ceilBinIdx = ceilKey >> deltaQ->GetBinLengthPower();
-    unsigned char *binData = GetQFastBin(mBins, mBinSize, ceilBinIdx);
+    int ceilBinIdx = ceilKey >> (deltaQ->mBinLengthPower & 0x3F);
+    unsigned char *binData = &mBins[ceilBinIdx * mBinSize];
 
     if (ceilBinIdx == floorBinIdx) {
-        unsigned char *deltaData = GetQFastDeltaData(deltaQ, binData, floorDeltaIdx);
+        unsigned int numBones = deltaQ->mNumBones;
+        unsigned char *deltaData = &binData[numBones * 6 + floorDeltaIdx * numBones * 3];
 
-        for (int ibone = 0; ibone < deltaQ->mNumBones; ibone++) {
-            UMath::Vector4 delta;
+        for (int ibone = 0; ibone < static_cast<int>(numBones); ibone++) {
+            float *prevQ = reinterpret_cast<float *>(&mPrevQs[ibone]);
+            float *nextQ = reinterpret_cast<float *>(&mNextQs[ibone]);
+            float *minRange = reinterpret_cast<float *>(&mMinRangesf[ibone]);
+            unsigned char b0 = deltaData[0];
+            unsigned char b1 = deltaData[1];
+            unsigned char b2 = deltaData[2];
 
-            DecodeQFastDelta(mMinRangesf[ibone], &deltaData[ibone * 3], delta);
-            mNextQs[ibone].x = mPrevQs[ibone].x + delta.x;
-            mNextQs[ibone].y = mPrevQs[ibone].y + delta.y;
-            mNextQs[ibone].z = mPrevQs[ibone].z + delta.z;
-            mNextQs[ibone].w = mPrevQs[ibone].w + delta.w;
+            nextQ[0] = minRange[4] * static_cast<float>(b0 >> 2) * kQFastDeltaScale6 + minRange[0] + prevQ[0];
+            nextQ[1] = minRange[5] * static_cast<float>(b1 >> 2) * kQFastDeltaScale6 + minRange[1] + prevQ[1];
+            nextQ[2] = minRange[6] * static_cast<float>(b2 >> 2) * kQFastDeltaScale6 + minRange[2] + prevQ[2];
+            nextQ[3] =
+                minRange[7] * static_cast<float>(static_cast<unsigned char>(((b0 & 3) * 0x10) + ((b1 & 3) * 4) | (b2 & 3))) * kQFastDeltaScale6 +
+                minRange[3] + prevQ[3];
+            deltaData += 3;
         }
     } else {
-        DeltaQFastPhysical *physical = GetQFastPhysical(binData);
+        unsigned int numBones = deltaQ->mNumBones;
+        unsigned short *physical = reinterpret_cast<unsigned short *>(binData);
 
-        for (int ibone = 0; ibone < deltaQ->mNumBones; ibone++) {
-            DecodeQFastPhysical(physical[ibone], mNextQs[ibone]);
+        for (int ibone = 0; ibone < static_cast<int>(numBones); ibone++) {
+            float *nextQ = reinterpret_cast<float *>(&mNextQs[ibone]);
+
+            nextQ[0] = static_cast<float>(physical[0] >> 4) * kQFastPhysicalScale12 - kQFastPhysicalBias12;
+            nextQ[1] = static_cast<float>(physical[1] >> 4) * kQFastPhysicalScale12 - kQFastPhysicalBias12;
+            nextQ[2] = static_cast<float>(physical[2] >> 4) * kQFastPhysicalScale12 - kQFastPhysicalBias12;
+            nextQ[3] = static_cast<float>(static_cast<unsigned char>((physical[2] & 0xF) | ((physical[0] & 0xF) * 0x100) + ((physical[1] & 0xF) * 0x10))) *
+                           kQFastPhysicalScale12 -
+                       kQFastPhysicalBias12;
+            physical += 3;
         }
     }
 
@@ -344,34 +365,55 @@ void FnDeltaQFast::UpdateNextQsMask(DeltaQFast *deltaQ, int ceilKey, int floorBi
         return;
     }
 
-    int ceilBinIdx = ceilKey >> deltaQ->GetBinLengthPower();
-    unsigned char *binData = GetQFastBin(mBins, mBinSize, ceilBinIdx);
+    int ceilBinIdx = ceilKey >> (deltaQ->mBinLengthPower & 0x3F);
+    unsigned char *binData = &mBins[ceilBinIdx * mBinSize];
 
     if (ceilBinIdx == floorBinIdx) {
-        unsigned char *deltaData = GetQFastDeltaData(deltaQ, binData, floorDeltaIdx);
+        unsigned int numBones = deltaQ->mNumBones;
+        unsigned char *deltaData = &binData[numBones * 6 + floorDeltaIdx * numBones * 3];
 
-        for (int ibone = 0; ibone < deltaQ->mNumBones; ibone++) {
-            if (!boneMask->GetBone(deltaQ->mBoneIdxs[ibone])) {
+        for (int ibone = 0; ibone < static_cast<int>(numBones); ibone++) {
+            unsigned char boneIdx = deltaQ->mBoneIdxs[ibone];
+            if (!boneMask->GetBone(boneIdx)) {
                 continue;
             }
 
-            UMath::Vector4 delta;
+            float *prevQ = reinterpret_cast<float *>(&mPrevQs[ibone]);
+            float *nextQ = reinterpret_cast<float *>(&mNextQs[ibone]);
+            float *minRange = reinterpret_cast<float *>(&mMinRangesf[ibone]);
+            unsigned char b0 = deltaData[0];
+            unsigned char b1 = deltaData[1];
+            unsigned char b2 = deltaData[2];
 
-            DecodeQFastDelta(mMinRangesf[ibone], &deltaData[ibone * 3], delta);
-            mNextQs[ibone].x = mPrevQs[ibone].x + delta.x;
-            mNextQs[ibone].y = mPrevQs[ibone].y + delta.y;
-            mNextQs[ibone].z = mPrevQs[ibone].z + delta.z;
-            mNextQs[ibone].w = mPrevQs[ibone].w + delta.w;
+            nextQ[0] = minRange[4] * static_cast<float>(b0 >> 2) * kQFastDeltaScale6 + minRange[0] + prevQ[0];
+            nextQ[1] = minRange[5] * static_cast<float>(b1 >> 2) * kQFastDeltaScale6 + minRange[1] + prevQ[1];
+            nextQ[2] = minRange[6] * static_cast<float>(b2 >> 2) * kQFastDeltaScale6 + minRange[2] + prevQ[2];
+            nextQ[3] =
+                minRange[7] * static_cast<float>(static_cast<unsigned char>(((b0 & 3) * 0x10) + ((b1 & 3) * 4) | (b2 & 3))) * kQFastDeltaScale6 +
+                minRange[3] + prevQ[3];
+            numBones = deltaQ->mNumBones;
+            deltaData += 3;
         }
     } else {
-        DeltaQFastPhysical *physical = GetQFastPhysical(binData);
+        unsigned int numBones = deltaQ->mNumBones;
+        unsigned short *physical = reinterpret_cast<unsigned short *>(binData);
 
-        for (int ibone = 0; ibone < deltaQ->mNumBones; ibone++) {
-            if (!boneMask->GetBone(deltaQ->mBoneIdxs[ibone])) {
+        for (int ibone = 0; ibone < static_cast<int>(numBones); ibone++) {
+            unsigned char boneIdx = deltaQ->mBoneIdxs[ibone];
+            if (!boneMask->GetBone(boneIdx)) {
+                physical += 3;
                 continue;
             }
 
-            DecodeQFastPhysical(physical[ibone], mNextQs[ibone]);
+            float *nextQ = reinterpret_cast<float *>(&mNextQs[ibone]);
+
+            nextQ[0] = static_cast<float>(physical[0] >> 4) * kQFastPhysicalScale12 - kQFastPhysicalBias12;
+            nextQ[1] = static_cast<float>(physical[1] >> 4) * kQFastPhysicalScale12 - kQFastPhysicalBias12;
+            nextQ[2] = static_cast<float>(physical[2] >> 4) * kQFastPhysicalScale12 - kQFastPhysicalBias12;
+            nextQ[3] = static_cast<float>(static_cast<unsigned char>((physical[2] & 0xF) | ((physical[0] & 0xF) * 0x100) + ((physical[1] & 0xF) * 0x10))) *
+                           kQFastPhysicalScale12 -
+                       kQFastPhysicalBias12;
+            physical += 3;
         }
     }
 
@@ -395,67 +437,269 @@ bool FnDeltaQFast::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask)
     }
 
     DeltaQFast *deltaQ = reinterpret_cast<DeltaQFast *>(mpAnim);
-    int floorKey = FindQFastFloorKey(mPrevKey, deltaQ, currTime);
-    int floorBinIdx = floorKey >> deltaQ->GetBinLengthPower();
-    int floorDeltaIdx = floorKey & deltaQ->GetBinLengthModMask();
-    int prevBinIdx = mPrevKey >> deltaQ->GetBinLengthPower();
-    bool preventReverse = floorKey < mPrevKey && !IsReverseDeltaSumEnabled();
-    unsigned char *binData = GetQFastBin(mBins, mBinSize, floorBinIdx);
-    DeltaQFastPhysical *floorPhys = GetQFastPhysical(binData);
-    int prevDeltaIdx;
+    float *quatBase = sqt + 4;
+    unsigned char *boneIdxs = deltaQ->mBoneIdxs;
 
-    if (mPrevKey == -1 || floorBinIdx != prevBinIdx || floorDeltaIdx == 0 || preventReverse) {
-        for (int ibone = 0; ibone < deltaQ->mNumBones; ibone++) {
-            DecodeQFastPhysical(floorPhys[ibone], mPrevQs[ibone]);
+    if (deltaQ->mNumBones) {
+        unsigned int floorTime = static_cast<unsigned int>(currTime);
+        unsigned short *times = deltaQ->mTimes;
+        unsigned int floorKey;
+        int prevKey = mPrevKey;
+        unsigned int binLengthPower;
+        unsigned int floorDeltaIdx;
+        int floorBinIdx;
+        unsigned int binLengthMask;
+
+        if (!times) {
+            if (static_cast<int>(floorTime) < 0) {
+                floorKey = 0;
+            } else {
+                floorKey = floorTime;
+                if (static_cast<int>(deltaQ->mNumKeys) <= static_cast<int>(floorTime)) {
+                    floorKey = deltaQ->mNumKeys - 1;
+                }
+            }
+        } else {
+            if (static_cast<int>(floorTime) < static_cast<int>(times[0])) {
+                floorKey = 0;
+            } else {
+                int timeIndex = prevKey - 1;
+                if (prevKey < 1) {
+                    timeIndex = 0;
+                }
+
+                if (static_cast<int>(floorTime) < static_cast<int>(times[timeIndex])) {
+                    if (timeIndex > 0) {
+                        do {
+                            timeIndex--;
+                            if (timeIndex < 1) {
+                                break;
+                            }
+                        } while (static_cast<int>(floorTime) < static_cast<int>(times[timeIndex]));
+                    }
+                } else {
+                    int lastTimeIndex = deltaQ->mNumKeys - 2;
+                    if (timeIndex < lastTimeIndex) {
+                        unsigned int nextTime = times[timeIndex + 1];
+                        int nextIndex = timeIndex;
+
+                        while (((timeIndex = nextIndex), static_cast<int>(nextTime) <= static_cast<int>(floorTime) &&
+                                ((timeIndex = nextIndex + 1), timeIndex < lastTimeIndex))) {
+                            nextTime = times[nextIndex + 2];
+                            nextIndex = timeIndex;
+                        }
+                    }
+                }
+
+                floorKey = timeIndex + 1;
+            }
         }
-        prevDeltaIdx = 0;
-    } else {
-        prevDeltaIdx = mPrevKey & deltaQ->GetBinLengthModMask();
-    }
 
-    if (prevDeltaIdx < floorDeltaIdx) {
-        AddDelta(floorPhys, deltaQ, prevDeltaIdx, floorDeltaIdx, mPrevQs);
-    } else if (prevDeltaIdx > floorDeltaIdx) {
-        SubDelta(floorPhys, deltaQ, prevDeltaIdx, floorDeltaIdx, mPrevQs);
-    }
+        binLengthPower = deltaQ->mBinLengthPower;
+        floorBinIdx = static_cast<int>(floorKey) >> (binLengthPower & 0x3F);
+        binLengthMask = 0x7FFFFFFFU >> ((0x1F - binLengthPower) & 0x3F);
+        floorDeltaIdx = floorKey & binLengthMask;
 
-    int ceilKey = floorKey + 1;
+        if (static_cast<unsigned int>(mNextKey) == floorKey) {
+            UMath::Vector4 *swapQs = mPrevQs;
 
-    if (ceilKey >= deltaQ->mNumKeys) {
-        ceilKey = floorKey;
-    }
+            mPrevQs = mNextQs;
+            mNextQs = swapQs;
+            mNextKey = prevKey;
+        } else {
+            int binData = reinterpret_cast<int>(mBins) + floorBinIdx * mBinSize;
+            unsigned int prevDeltaIdx = static_cast<unsigned int>(mPrevKey);
 
-    if (ceilKey > floorKey) {
-        UpdateNextQs(deltaQ, ceilKey, floorBinIdx, floorDeltaIdx);
-        float t = ComputeQFastBlendT(deltaQ, floorKey, ceilKey, currTime);
+            if (prevKey == static_cast<int>(floorKey + 1)) {
+                for (int ibone = 0; ibone < static_cast<int>(deltaQ->mNumBones); ibone++) {
+                    float *prevQ = reinterpret_cast<float *>(&mPrevQs[ibone]);
+                    float *nextQ = reinterpret_cast<float *>(&mNextQs[ibone]);
 
-        for (int ibone = 0; ibone < deltaQ->mNumBones; ibone++) {
-            FastQuatBlendF4(t, reinterpret_cast<float *>(&mPrevQs[ibone]), reinterpret_cast<float *>(&mNextQs[ibone]),
-                            GetQFastOutputQuat(sqt, deltaQ->mBoneIdxs[ibone]));
+                    prevQ[0] = nextQ[0];
+                    prevQ[1] = nextQ[1];
+                    prevQ[2] = nextQ[2];
+                    prevQ[3] = nextQ[3];
+                }
+
+                mNextKey = prevKey;
+            }
+
+            if (prevDeltaIdx == 0xFFFFFFFFU || floorBinIdx != (prevKey >> (binLengthPower & 0x3F)) || floorDeltaIdx == 0 ||
+                (static_cast<int>(floorKey) < prevKey && !IsReverseDeltaSumEnabled())) {
+                for (int ibone = 0; ibone < static_cast<int>(deltaQ->mNumBones); ibone++) {
+                    float *prevQ = reinterpret_cast<float *>(&mPrevQs[ibone]);
+                    unsigned short *physical = reinterpret_cast<unsigned short *>(binData + ibone * 6);
+
+                    prevQ[0] = static_cast<float>(physical[0] >> 4) * kQFastPhysicalScale12 - kQFastPhysicalBias12;
+                    prevQ[1] = static_cast<float>(physical[1] >> 4) * kQFastPhysicalScale12 - kQFastPhysicalBias12;
+                    prevQ[2] = static_cast<float>(physical[2] >> 4) * kQFastPhysicalScale12 - kQFastPhysicalBias12;
+                    prevQ[3] =
+                        static_cast<float>(static_cast<unsigned char>((physical[2] & 0xF) | ((physical[0] & 0xF) << 8) | ((physical[1] & 0xF) << 4))) *
+                            kQFastPhysicalScale12 -
+                        kQFastPhysicalBias12;
+                }
+
+                prevDeltaIdx = 0;
+            } else {
+                prevDeltaIdx &= binLengthMask;
+            }
+
+            if (static_cast<int>(prevDeltaIdx) < static_cast<int>(floorDeltaIdx)) {
+                unsigned char *deltaData =
+                    reinterpret_cast<unsigned char *>(binData + deltaQ->mNumBones * 6 + prevDeltaIdx * deltaQ->mNumBones * 3);
+
+                do {
+                    for (int ibone = 0; ibone < static_cast<int>(deltaQ->mNumBones); ibone++) {
+                        float *prevQ = reinterpret_cast<float *>(&mPrevQs[ibone]);
+                        float *minRange = reinterpret_cast<float *>(&mMinRangesf[ibone]);
+                        unsigned char b0 = deltaData[0];
+                        unsigned char b1 = deltaData[1];
+                        unsigned char b2 = deltaData[2];
+
+                        prevQ[0] = prevQ[0] + minRange[4] * static_cast<float>(b0 >> 2) * kQFastDeltaScale6 + minRange[0];
+                        prevQ[1] = prevQ[1] + minRange[5] * static_cast<float>(b1 >> 2) * kQFastDeltaScale6 + minRange[1];
+                        prevQ[2] = prevQ[2] + minRange[6] * static_cast<float>(b2 >> 2) * kQFastDeltaScale6 + minRange[2];
+                        prevQ[3] = prevQ[3] +
+                                   minRange[7] * static_cast<float>(static_cast<unsigned char>(((b0 & 3) * 0x10) + ((b1 & 3) * 4) | (b2 & 3))) *
+                                       kQFastDeltaScale6 +
+                                   minRange[3];
+                        deltaData += 3;
+                    }
+                    prevDeltaIdx++;
+                } while (static_cast<int>(prevDeltaIdx) < static_cast<int>(floorDeltaIdx));
+            } else if (static_cast<int>(floorDeltaIdx) < static_cast<int>(prevDeltaIdx)) {
+                unsigned char *deltaData = reinterpret_cast<unsigned char *>(
+                    binData + deltaQ->mNumBones * 6 + prevDeltaIdx * deltaQ->mNumBones * 3 - 3);
+
+                while ((prevDeltaIdx--), static_cast<int>(floorDeltaIdx) <= static_cast<int>(prevDeltaIdx)) {
+                    for (int ibone = deltaQ->mNumBones - 1; ibone >= 0; ibone--) {
+                        float *prevQ = reinterpret_cast<float *>(&mPrevQs[ibone]);
+                        float *minRange = reinterpret_cast<float *>(&mMinRangesf[ibone]);
+                        unsigned char b0 = deltaData[0];
+                        unsigned char b1 = deltaData[1];
+                        unsigned char b2 = deltaData[2];
+
+                        prevQ[0] = prevQ[0] - (minRange[4] * static_cast<float>(b0 >> 2) * kQFastDeltaScale6 + minRange[0]);
+                        prevQ[1] = prevQ[1] - (minRange[5] * static_cast<float>(b1 >> 2) * kQFastDeltaScale6 + minRange[1]);
+                        prevQ[2] = prevQ[2] - (minRange[6] * static_cast<float>(b2 >> 2) * kQFastDeltaScale6 + minRange[2]);
+                        prevQ[3] = prevQ[3] -
+                                   (minRange[7] * static_cast<float>(static_cast<unsigned char>(((b0 & 3) * 0x10) + ((b1 & 3) * 4) | (b2 & 3))) *
+                                        kQFastDeltaScale6 +
+                                    minRange[3]);
+                        deltaData -= 3;
+                    }
+                }
+            }
         }
-    } else {
-        for (int ibone = 0; ibone < deltaQ->mNumBones; ibone++) {
-            float *out = GetQFastOutputQuat(sqt, deltaQ->mBoneIdxs[ibone]);
 
-            out[0] = mPrevQs[ibone].x;
-            out[1] = mPrevQs[ibone].y;
-            out[2] = mPrevQs[ibone].z;
-            out[3] = mPrevQs[ibone].w;
+        mPrevKey = floorKey;
+        times = deltaQ->mTimes;
+
+        if (!times) {
+            float floorTimef = static_cast<float>(static_cast<int>(currTime));
+
+            if (currTime != floorTimef && static_cast<int>(floorKey) < deltaQ->mNumKeys - 1) {
+                float t = currTime - floorTimef;
+
+                UpdateNextQs(deltaQ, floorKey + 1, floorBinIdx, floorDeltaIdx);
+
+                for (int ibone = 0; ibone < static_cast<int>(deltaQ->mNumBones); ibone++) {
+                    float *prevQ = reinterpret_cast<float *>(&mPrevQs[ibone]);
+                    float *nextQ = reinterpret_cast<float *>(&mNextQs[ibone]);
+                    float x = t * (nextQ[0] - prevQ[0]) + prevQ[0];
+                    unsigned char boneIdx = boneIdxs[ibone];
+                    float y = t * (nextQ[1] - prevQ[1]) + prevQ[1];
+                    float z = t * (nextQ[2] - prevQ[2]) + prevQ[2];
+                    float w = t * (nextQ[3] - prevQ[3]) + prevQ[3];
+                    float *out = reinterpret_cast<float *>(boneIdx * 0x30 + reinterpret_cast<int>(quatBase));
+                    float invNorm = 1.0f / sqrtf(x * x + y * y + z * z + w * w);
+
+                    out[0] = x * invNorm;
+                    out[1] = y * invNorm;
+                    out[2] = z * invNorm;
+                    out[3] = w * invNorm;
+                }
+
+                goto finish_const_bones;
+            }
+        } else if (floorKey == 0) {
+            if (currTime != 0.0f && static_cast<int>(floorKey) < deltaQ->mNumKeys - 1) {
+                float t = currTime / static_cast<float>(times[0]);
+
+                UpdateNextQs(deltaQ, floorKey + 1, floorBinIdx, floorDeltaIdx);
+
+                for (int ibone = 0; ibone < static_cast<int>(deltaQ->mNumBones); ibone++) {
+                    float *prevQ = reinterpret_cast<float *>(&mPrevQs[ibone]);
+                    float *nextQ = reinterpret_cast<float *>(&mNextQs[ibone]);
+                    float x = t * (nextQ[0] - prevQ[0]) + prevQ[0];
+                    unsigned char boneIdx = boneIdxs[ibone];
+                    float y = t * (nextQ[1] - prevQ[1]) + prevQ[1];
+                    float z = t * (nextQ[2] - prevQ[2]) + prevQ[2];
+                    float w = t * (nextQ[3] - prevQ[3]) + prevQ[3];
+                    float *out = reinterpret_cast<float *>(boneIdx * 0x30 + reinterpret_cast<int>(quatBase));
+                    float invNorm = 1.0f / sqrtf(x * x + y * y + z * z + w * w);
+
+                    out[0] = x * invNorm;
+                    out[1] = y * invNorm;
+                    out[2] = z * invNorm;
+                    out[3] = w * invNorm;
+                }
+
+                goto finish_const_bones;
+            }
+        } else {
+            float floorTimef = static_cast<float>(times[floorKey - 1]);
+
+            if (currTime != floorTimef && static_cast<int>(floorKey) < deltaQ->mNumKeys - 1) {
+                float t = (currTime - floorTimef) / (static_cast<float>(times[floorKey]) - floorTimef);
+
+                UpdateNextQs(deltaQ, floorKey + 1, floorBinIdx, floorDeltaIdx);
+
+                for (int ibone = 0; ibone < static_cast<int>(deltaQ->mNumBones); ibone++) {
+                    float *prevQ = reinterpret_cast<float *>(&mPrevQs[ibone]);
+                    float *nextQ = reinterpret_cast<float *>(&mNextQs[ibone]);
+                    float x = t * (nextQ[0] - prevQ[0]) + prevQ[0];
+                    unsigned char boneIdx = boneIdxs[ibone];
+                    float y = t * (nextQ[1] - prevQ[1]) + prevQ[1];
+                    float z = t * (nextQ[2] - prevQ[2]) + prevQ[2];
+                    float w = t * (nextQ[3] - prevQ[3]) + prevQ[3];
+                    float *out = reinterpret_cast<float *>(boneIdx * 0x30 + reinterpret_cast<int>(quatBase));
+                    float invNorm = 1.0f / sqrtf(x * x + y * y + z * z + w * w);
+
+                    out[0] = x * invNorm;
+                    out[1] = y * invNorm;
+                    out[2] = z * invNorm;
+                    out[3] = w * invNorm;
+                }
+
+                goto finish_const_bones;
+            }
+        }
+
+        for (int ibone = 0; ibone < static_cast<int>(deltaQ->mNumBones); ibone++) {
+            float *prevQ = reinterpret_cast<float *>(&mPrevQs[ibone]);
+            float *out = reinterpret_cast<float *>(boneIdxs[ibone] * 0x30 + reinterpret_cast<int>(quatBase));
+
+            out[0] = prevQ[0];
+            out[1] = prevQ[1];
+            out[2] = prevQ[2];
+            out[3] = prevQ[3];
         }
     }
 
-    for (int ibone = 0; ibone < deltaQ->mNumConstBones; ibone++) {
-        UMath::Vector4 q;
-        float *out = GetQFastOutputQuat(sqt, mConstBoneIdxs[ibone]);
+finish_const_bones:
+    for (int ibone = 0; ibone < static_cast<int>(deltaQ->mNumConstBones); ibone++) {
+        unsigned short *physical = reinterpret_cast<unsigned short *>(reinterpret_cast<unsigned char *>(mConstPhysical) + ibone * 6);
+        float *out = reinterpret_cast<float *>(mConstBoneIdxs[ibone] * 0x30 + reinterpret_cast<int>(quatBase));
 
-        DecodeQFastPhysical(mConstPhysical[ibone], q);
-        out[0] = q.x;
-        out[1] = q.y;
-        out[2] = q.z;
-        out[3] = q.w;
+        out[0] = static_cast<float>(physical[0] >> 4) * kQFastPhysicalScale12 - kQFastPhysicalBias12;
+        out[1] = static_cast<float>(physical[1] >> 4) * kQFastPhysicalScale12 - kQFastPhysicalBias12;
+        out[2] = static_cast<float>(physical[2] >> 4) * kQFastPhysicalScale12 - kQFastPhysicalBias12;
+        out[3] = static_cast<float>(static_cast<unsigned char>((physical[2] & 0xF) | ((physical[0] & 0xF) << 8) | ((physical[1] & 0xF) << 4))) *
+                     kQFastPhysicalScale12 -
+                 kQFastPhysicalBias12;
     }
 
-    mPrevKey = floorKey;
     return true;
 }
 
@@ -549,7 +793,6 @@ bool FnDeltaQFast::EvalSQTMask(float currTime, float *sqt, const BoneMask *boneM
         out[3] = q.w;
     }
 
-    mPrevKey = floorKey;
     return true;
 }
 
