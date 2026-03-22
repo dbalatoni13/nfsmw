@@ -1,7 +1,9 @@
 #include "Speed/Indep/Src/World/CarRenderConn.h"
 #include "Speed/Indep/Src/Physics/PhysicsInfo.hpp"
+#include "Speed/Indep/Src/Sim/SimSurface.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/simsurface.h"
 #include "Speed/Indep/Src/Ecstasy/EcstasyData.hpp"
+#include "Speed/Indep/Src/Ecstasy/EmitterSystem.h"
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
 
 struct Car;
@@ -20,6 +22,7 @@ extern void MakeSkid__9SkidMakerP3CarP8bVector3T2if(void *skid_maker, Car *car, 
     asm("MakeSkid__9SkidMakerP3CarP8bVector3T2if");
 extern void TireState_ctor(TireState *state) asm("__9TireState");
 extern void TireState_dtor(TireState *state, int in_chrg) asm("_._9TireState");
+extern bTList<TireState> gTireStateList;
 extern int PhysicsUpgrades_GetLevel(const Attrib::Gen::pvehicle &pvehicle, int type)
     asm("GetLevel__Q27Physics8UpgradesRCQ36Attrib3Gen8pvehicleQ37Physics8Upgrades4Type");
 extern int PhysicsUpgrades_GetMaxLevel(const Attrib::Gen::pvehicle &pvehicle, int type)
@@ -34,19 +37,53 @@ extern RoadNoiseRecord Tweak_BlowOutNoise asm("Tweak_BlowOutNoise");
 extern CameraAnchor *RVManchor;
 extern void AddXenonEffect(EmitterGroup *piggyback_fx, const Attrib::Collection *spec, const bMatrix4 *mat, const bVector4 *vel)
     asm("AddXenonEffect__FP12EmitterGroupPCQ26Attrib10CollectionPCQ25UMath7Matrix4PCQ25UMath7Vector4");
+void NotifyTireStateEffectOfEmitterDelete(void *tire_state_effect, EmitterGroup *grp);
 
-struct TireState {
+struct TireState : public bTNode<TireState> {
+    struct Effect {
+        Effect()
+            : mNeedsLazyInit(false), //
+              mEmitterKey(0), //
+              mGroup(0), //
+              mMinVel(0.0f), //
+              mMaxVel(0.0f), //
+              mZeroParticleFrameCount(0) {}
+
+        void FreeUpFX();
+        void LazyInit();
+        void Set(const TireEffectRecord &record);
+        void Update(float speed, const bVector3 *car_velocity, const bMatrix4 *car_matrix, float dT, const bVector4 &pos);
+
+        bool mNeedsLazyInit;
+        unsigned char _pad1[3];
+        unsigned int mEmitterKey;
+        EmitterGroup *mGroup;
+        float mMinVel;
+        float mMaxVel;
+        int mZeroParticleFrameCount;
+    };
+
+    TireState();
     void KillSkids();
     void DoSkids(float intensity, const bVector3 *deltaPos, const bMatrix4 *tirematrix, const bMatrix4 *bodymatrix, float skidWidth);
     void DoFX(float slip, float skid, float speed, const bVector3 *car_velocity, const bMatrix4 *car_matrix, float dT);
+    void SetSurface(const SimSurface &surface);
     void UpdateWorld(const WCollider *wc, bool rain, bool flat);
 
-    unsigned char _pad0[0x8];
     bVector4 mPrevTirePos;
-    unsigned char _pad18[0x40];
+    WWorldPos mWPos;
+    unsigned int mSkidMaker;
     bVector4 mTirePos;
     bVector4 mGroundPos;
     float mRoll;
+    bool mRaining;
+    unsigned char _pad7D[3];
+    bool mFlat;
+    unsigned char _pad81[3];
+    SimSurface mSurface;
+    Effect mSlipFX;
+    Effect mSkidFX;
+    Effect mDriveFX;
 };
 
 namespace {
@@ -77,6 +114,10 @@ void StopEffect(VehicleRenderConn::Effect *effect) {
     effect->Stop();
 }
 
+void EmitterGroupSetOldSurfaceEffectFlag(EmitterGroup *group) {
+    *reinterpret_cast<unsigned int *>(reinterpret_cast<unsigned char *>(group) + 0x18) |= 0x80000;
+}
+
 TireState *CreateTireState() {
     TireState *state = reinterpret_cast<TireState *>(gFastMem.Alloc(0xe0, 0));
 
@@ -101,6 +142,17 @@ short &CarRenderInfoS16(CarRenderInfo *info, unsigned int offset) {
 }
 
 } // namespace
+
+void NotifyTireStateEffectOfEmitterDelete(void *tire_state_effect, EmitterGroup *grp) {
+    TireState::Effect *effect = static_cast<TireState::Effect *>(tire_state_effect);
+
+    effect->mGroup = 0;
+    effect->mEmitterKey = 0;
+    effect->mNeedsLazyInit = true;
+    effect->mMinVel = 0.0f;
+    effect->mMaxVel = 0.0f;
+    effect->mZeroParticleFrameCount = 0;
+}
 
 void TireState::DoSkids(float intensity, const bVector3 *deltaPos, const bMatrix4 *tirematrix, const bMatrix4 *bodymatrix, float SkidWidth) {
     WWorldPos *world_pos = reinterpret_cast<WWorldPos *>(reinterpret_cast<unsigned char *>(this) + 0x18);
@@ -149,6 +201,150 @@ void TireState::DoSkids(float intensity, const bVector3 *deltaPos, const bMatrix
 
         MakeSkid__9SkidMakerP3CarP8bVector3T2if(skid_maker, 0, &skid_centre, &skid_direction, 1, skid_intensity_scale);
     }
+}
+
+void TireState::Effect::FreeUpFX() {
+    if (this->mGroup != 0) {
+        EmitterGroupSetOldSurfaceEffectFlag(this->mGroup);
+        this->mGroup->UnSubscribe();
+    }
+
+    this->mZeroParticleFrameCount = 0;
+    this->mNeedsLazyInit = true;
+    this->mGroup = 0;
+}
+
+void TireState::Effect::LazyInit() {
+    if (this->mGroup != 0) {
+        EmitterGroupSetOldSurfaceEffectFlag(this->mGroup);
+        this->mGroup->UnSubscribe();
+    }
+
+    this->mGroup = 0;
+    if (this->mEmitterKey != 0 && this->mEmitterKey != 0xeec2271a) {
+        Attrib::Gen::emittergroup emitter_group_spec(this->mEmitterKey, 0, 0);
+
+        if (emitter_group_spec.IsValid()) {
+            this->mGroup = gEmitterSystem.CreateEmitterGroup(emitter_group_spec.GetConstCollection(), 0x40000000);
+            if (this->mGroup != 0) {
+                this->mGroup->Enable();
+                this->mGroup->SubscribeToDeletion(this, NotifyTireStateEffectOfEmitterDelete);
+            }
+            this->mZeroParticleFrameCount = 0;
+            this->mNeedsLazyInit = false;
+        }
+    }
+}
+
+void TireState::Effect::Set(const TireEffectRecord &record) {
+    unsigned int emitter_key = record.EmitterClass;
+
+    this->mMinVel = record.MinSpeed;
+    this->mMaxVel = record.MaxSpeed;
+    if (this->mEmitterKey != emitter_key) {
+        this->mZeroParticleFrameCount = 0;
+        this->mEmitterKey = emitter_key;
+        this->mNeedsLazyInit = true;
+    }
+}
+
+TireState::TireState()
+    : mPrevTirePos(0.0f, 0.0f, 0.0f, 0.0f), //
+      mWPos(0.025f), //
+      mSkidMaker(0), //
+      mTirePos(0.0f, 0.0f, 0.0f, 0.0f), //
+      mGroundPos(0.0f, 0.0f, 0.0f, 0.0f), //
+      mRoll(0.0f), //
+      mRaining(false), //
+      mFlat(false), //
+      mSurface(), //
+      mSlipFX(), //
+      mSkidFX(), //
+      mDriveFX() {
+    this->SetSurface(SimSurface::kNull);
+    gTireStateList.AddTail(reinterpret_cast<bNode *>(this));
+}
+
+void TireState::Effect::Update(float speed, const bVector3 *car_velocity, const bMatrix4 *car_matrix, float dT, const bVector4 &pos) {
+    float intensity = 0.0f;
+    float speed_range = this->mMaxVel - this->mMinVel;
+
+    if (1e-6f < speed_range) {
+        intensity = UMath::Ramp((speed - this->mMinVel) / speed_range, 0.0f, 1.0f);
+    }
+
+    if (0.0f < intensity) {
+        if (this->mNeedsLazyInit) {
+            this->LazyInit();
+        }
+
+        if (this->mGroup != 0) {
+            bMatrix4 emitter_world = *car_matrix;
+
+            emitter_world.v3 = pos;
+            emitter_world.v3.w = 1.0f;
+            this->mGroup->SetLocalWorld(&emitter_world);
+            this->mGroup->SetInheritVelocity(car_velocity);
+            this->mGroup->SetIntensity(intensity);
+            this->mGroup->Update(dT);
+
+            if (this->mGroup->GetNumParticles() == 0) {
+                this->mZeroParticleFrameCount++;
+            }
+
+            if (this->mZeroParticleFrameCount < 11) {
+                return;
+            }
+        } else {
+            return;
+        }
+    } else if (this->mGroup == 0) {
+        return;
+    }
+
+    EmitterGroupSetOldSurfaceEffectFlag(this->mGroup);
+    this->mGroup->UnSubscribe();
+    this->mZeroParticleFrameCount = 0;
+    this->mNeedsLazyInit = true;
+    this->mGroup = 0;
+}
+
+void TireState::SetSurface(const SimSurface &surface) {
+    unsigned int slip_index;
+    unsigned int slide_index;
+    unsigned int drive_index;
+
+    if (!this->mFlat || surface.Num_TireSlipEffects() < 3) {
+        slip_index = 0;
+        if (this->mRaining) {
+            slip_index = surface.Num_TireSlipEffects() > 1;
+        }
+    } else {
+        slip_index = 2;
+    }
+
+    if (!this->mFlat || surface.Num_TireSlideEffects() < 3) {
+        slide_index = 0;
+        if (this->mRaining) {
+            slide_index = surface.Num_TireSlideEffects() > 1;
+        }
+    } else {
+        slide_index = 2;
+    }
+
+    if (!this->mFlat || surface.Num_TireDriveEffects() < 3) {
+        drive_index = 0;
+        if (this->mRaining) {
+            drive_index = surface.Num_TireDriveEffects() > 1;
+        }
+    } else {
+        drive_index = 2;
+    }
+
+    this->mSurface = surface;
+    this->mSlipFX.Set(surface.TireSlipEffects(slip_index));
+    this->mDriveFX.Set(surface.TireDriveEffects(drive_index));
+    this->mSkidFX.Set(surface.TireSlideEffects(slide_index));
 }
 
 Sim::Connection *CarRenderConn::Construct(const Sim::ConnectionData &data) {

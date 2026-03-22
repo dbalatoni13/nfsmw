@@ -15,6 +15,7 @@
 #include "Speed/Indep/Src/Main/AttribSupport.h"
 #include "Speed/Indep/Src/Misc/GameFlow.hpp"
 #include "Speed/Indep/Src/Misc/Profiler.hpp"
+#include "Speed/Indep/Src/Sim/Simulation.h"
 #include "Speed/Indep/Src/World/CarInfo.hpp"
 #include "Speed/Indep/Src/World/Sun.hpp"
 #include "Speed/Indep/Src/World/VehicleFragmentConn.h"
@@ -63,6 +64,7 @@ static const CarFXPosInfo FXMarkerNameHashMappings[28] = {
 SlotPool *CarEmitterPositionSlotPool = nullptr;
 const int MAX_CAR_PART_MODELS = 250;
 SlotPool *CarPartModelPool = nullptr;
+extern void *gINISInstance asm("_Q33UTL11Collectionst9Singleton1Z4INIS_mInstance");
 
 struct eEnvMap {
     void UpdateCameras(bVector3 *viewer_world_position, bVector3 *envmap_world_position);
@@ -72,6 +74,9 @@ void GetUsedCarTextureInfo(UsedCarTextureInfo *used_texture_info, RideInfo *ride
 extern float copm;
 extern float copt;
 extern int copModulo;
+extern float cpr;
+extern float cpb;
+extern float cpw;
 extern float copoffsetr;
 extern float copoffsetb;
 extern float copoffsetw;
@@ -96,6 +101,7 @@ extern unsigned int FrameMallocFailAmount;
 extern int TweakKitWheelOffsetFront;
 extern int TweakKitWheelOffsetRear;
 extern int ForceBrakelightsOn;
+extern int ForceHeadlightsOn;
 extern int iRam8047ff04;
 extern bVector3 EnvMapEyeOffset;
 extern bVector3 EnvMapCamOffset;
@@ -125,6 +131,15 @@ extern float lbl_8040ADEC;
 extern float lbl_8040ADF0;
 extern float lbl_8040ADF4;
 extern float lbl_8040ADF8;
+extern float copWhitemul;
+extern int gTWEAKER_NISLightEnabled;
+extern float gTWEAKER_NISLightIntensity;
+extern float gTWEAKER_NISLightPosX;
+extern float gTWEAKER_NISLightPosY;
+extern float gTWEAKER_NISLightPosZ;
+extern unsigned int Lightslot;
+extern eShaperLightRig ShaperLightsCharacters;
+extern eShaperLightRig ShaperLightsCharactersBackup;
 extern bVector3 hull_Origin asm("hull_Origin");
 extern bVector3 hull_Normal asm("hull_Normal");
 extern bVector3 hullVertArray1[16] asm("hullVertArray1");
@@ -141,6 +156,8 @@ extern float cs_OneOverZ asm("cs_OneOverZ");
 extern int counter_31665 asm("counter.31665");
 extern int counter_31669 asm("counter.31669");
 extern float heliScale;
+extern void RestoreShaperRig(eShaperLightRig *ShaperRigP, unsigned int slot, eShaperLightRig *ShaperRigBP);
+extern void AddQuickDynamicLight(eShaperLightRig *ShaperRigP, unsigned int slot, float r, float g, float b, float intensity, bVector3 *position);
 extern void sh_Setup(bVector3 *car_pos) asm("sh_Setup__FP8bVector3");
 
 namespace {
@@ -1519,6 +1536,192 @@ void CarRenderInfo::RenderTextureHeadlights(eView *view, bMatrix4 *l_w, unsigned
         reinterpret_cast<unsigned int *>(poly.Colours)[3] = hcL;
 
         ::Render(view, &poly, texture_info, matrix, 0, 0.0f);
+    }
+}
+
+void CarRenderInfo::RenderFlaresOnCar(eView *view, const bVector3 *position, const bMatrix4 *body_matrix, int force_light_state, int reflexion,
+                                      int renderFlareFlags) {
+    ProfileNode profile_node("RenderFlaresOnCar", 0);
+    float Ftime = Sim::GetTime() + this->CarTimebaseStart;
+    bMatrix4 *local_world = reinterpret_cast<bMatrix4 *>(CurrentBufferPos);
+
+    if (CurrentBufferEnd <= CurrentBufferPos + sizeof(bMatrix4)) {
+        FrameMallocFailed = 1;
+        FrameMallocFailAmount += sizeof(bMatrix4);
+        local_world = 0;
+    } else {
+        CurrentBufferPos += sizeof(bMatrix4);
+        *local_world = *body_matrix;
+    }
+
+    if (local_world == 0) {
+        return;
+    }
+
+    local_world->v3.x = position->x;
+    local_world->v3.y = position->y;
+    local_world->v3.z = position->z;
+    local_world->v3.w = 1.0f;
+
+    if (!reflexion) {
+        this->RenderTextureHeadlights(view, local_world, 0);
+    }
+
+    int car_pixel_size = view->GetPixelSize(position, this->mRadius);
+    if (eGetCurrentViewMode() == EVIEWMODE_TWOH) {
+        car_pixel_size = static_cast<int>(static_cast<float>(car_pixel_size) * 0.5f);
+    }
+
+    if (view->PixelMinSize > car_pixel_size || view->GetVisibleState(&this->AABBMin, &this->AABBMax, local_world) == EVISIBLESTATE_NOT) {
+        return;
+    }
+
+    if (ForceHeadlightsOn != 0) {
+        force_light_state |= 1;
+    }
+    if (ForceBrakelightsOn != 0) {
+        force_light_state |= 2;
+    }
+
+    float headlight_base = gINISInstance != 0 ? 0.5f : 0.0f;
+    float headlight_left_intensity = ((force_light_state & 1) || (this->mOnLights & 1)) ? headlight_base + 1.0f : headlight_base;
+    float headlight_right_intensity = ((force_light_state & 1) || (this->mOnLights & 2)) ? headlight_base + 1.0f : headlight_base;
+    float brakelight_left_intensity = ((force_light_state & 2) || (this->mOnLights & 8)) ? 1.0f : 0.0f;
+    float brakelight_centre_intensity = ((force_light_state & 2) || (this->mOnLights & 0x20)) ? 1.0f : 0.0f;
+    float brakelight_right_intensity = ((force_light_state & 2) || (this->mOnLights & 0x10)) ? 1.0f : 0.0f;
+    float reverselight_left_intensity = (this->mOnLights & 0x40) ? 1.0f : 0.0f;
+    float reverselight_right_intensity = (this->mOnLights & 0x80) ? 1.0f : 0.0f;
+    float coplight_intensityR = (this->mOnLights & 0x1000) ? cpr : 0.0f;
+    float coplight_intensityB = (this->mOnLights & 0x2000) ? cpb : 0.0f;
+    float coplight_intensityW = (this->mOnLights & 0x4000) ? cpw : 0.0f;
+    unsigned int flashHeadlights = this->mOnLights & 0x4000;
+
+    if (this->mBrokenLights & 1) {
+        headlight_left_intensity = 0.0f;
+    }
+    if (this->mBrokenLights & 2) {
+        headlight_right_intensity = 0.0f;
+    }
+    if (this->mBrokenLights & 8) {
+        brakelight_left_intensity = 0.0f;
+    }
+    if (this->mBrokenLights & 0x10) {
+        brakelight_right_intensity = 0.0f;
+    }
+    if (this->mBrokenLights & 0x20) {
+        brakelight_centre_intensity = 0.0f;
+    }
+    if (this->mBrokenLights & 0x40) {
+        reverselight_left_intensity = 0.0f;
+    }
+    if (this->mBrokenLights & 0x80) {
+        reverselight_right_intensity = 0.0f;
+    }
+    if (this->mBrokenLights & 0x1000) {
+        coplight_intensityR = 0.0f;
+    }
+    if (this->mBrokenLights & 0x2000) {
+        coplight_intensityB = 0.0f;
+    }
+    if (this->mBrokenLights & 0x4000) {
+        coplight_intensityW = 0.0f;
+    }
+
+    float constFlicker = coplightflicker(Ftime, 0);
+    int FlareCount = 0;
+    bool copOnly = (renderFlareFlags & 1) != 0;
+
+    for (eLightFlare *light_flare = this->LightFlareList.GetHead(); light_flare != this->LightFlareList.EndOfList();
+         light_flare = light_flare->GetNext()) {
+        float intensity = 0.0f;
+        float sizescale = 1.0f;
+
+        if ((renderFlareFlags & 2) != 0 && light_flare->Flags != 1) {
+            continue;
+        }
+        if (copOnly) {
+            if (light_flare->Type < 5 || light_flare->Type > 12) {
+                continue;
+            }
+            sizescale = 0.75f;
+        }
+
+        switch (light_flare->NameHash) {
+            case 0x9DB90133:
+                intensity = headlight_left_intensity;
+                if (flashHeadlights != 0) {
+                    intensity *= constFlicker;
+                }
+                break;
+            case 0xD09091C6:
+                intensity = headlight_right_intensity;
+                if (flashHeadlights != 0) {
+                    intensity *= 1.0f - constFlicker;
+                }
+                break;
+            case 0x31A66786:
+                intensity = brakelight_left_intensity;
+                break;
+            case 0xBF700A79:
+                intensity = brakelight_right_intensity;
+                break;
+            case 0xA2A2FC7C:
+                intensity = brakelight_centre_intensity;
+                break;
+            case 0x7A5B2F25:
+                intensity = reverselight_left_intensity;
+                break;
+            case 0x7ADF7EF8:
+                intensity = reverselight_right_intensity;
+                break;
+            case 0x1E4150B4:
+            case 0x41489594:
+                intensity = coplight_intensityR * coplightflicker2(Ftime, 0, FlareCount);
+                break;
+            case 0x6A52A241:
+            case 0xE662C161:
+                intensity = coplight_intensityB * coplightflicker2(Ftime, 1, FlareCount);
+                break;
+            case 0xB4348DBA:
+                intensity = bSin(coplight_intensityW * coplightflicker2(Ftime, 2, FlareCount) * copWhitemul);
+                break;
+            default:
+                intensity = 0.0f;
+                break;
+        }
+
+        if (intensity > 1.0f) {
+            intensity = 1.0f;
+        }
+
+        if (intensity > 0.0f) {
+            if (!reflexion) {
+                eRenderLightFlare(view, light_flare, local_world, intensity, REF_NONE, copOnly ? FLARE_ENV : FLARE_NORM, 0.0f, 0, sizescale);
+            } else {
+                eRenderLightFlare(view, light_flare, local_world, intensity, REF_TOPO, FLARE_REFLECT, 0.0f, 0, 1.0f);
+            }
+        }
+
+        FlareCount++;
+    }
+
+    if (view->GetID() == EVIEW_FIRST_PLAYER && !reflexion) {
+        bVector3 NisLightPosition(position->x + gTWEAKER_NISLightPosX, position->y + gTWEAKER_NISLightPosY, position->z + gTWEAKER_NISLightPosZ);
+        bVector3 *lightPosition = const_cast<bVector3 *>(position);
+        float extraIntensity = 1.0f;
+
+        if (gTWEAKER_NISLightEnabled != 0) {
+            lightPosition = &NisLightPosition;
+            extraIntensity = gTWEAKER_NISLightIntensity;
+        }
+
+        if (coplight_intensityR > 0.0f) {
+            AddQuickDynamicLight(&ShaperLightsCharacters, Lightslot, 1.0f, 0.0f, 0.0f, coplight_intensityR * extraIntensity, lightPosition);
+        } else if (coplight_intensityB > 0.0f) {
+            AddQuickDynamicLight(&ShaperLightsCharacters, Lightslot, 0.0f, 0.0f, 1.0f, coplight_intensityB * extraIntensity, lightPosition);
+        } else {
+            RestoreShaperRig(&ShaperLightsCharacters, Lightslot, &ShaperLightsCharactersBackup);
+        }
     }
 }
 
