@@ -1211,8 +1211,7 @@ void TrackStreamer::AddCurrentStreamingSections(short *section_numbers, int num_
 
             section->LastNeededTimestamp = RealTimeFrames;
             if (!section->CurrentlyVisible) {
-                CurrentStreamingSections[NumCurrentStreamingSections] = section;
-                NumCurrentStreamingSections += 1;
+                CurrentStreamingSections[NumCurrentStreamingSections++] = section;
             }
 
             if ((((static_cast<char>(section->CurrentlyVisible) >> position_number) ^ 1U) & 1) != 0) {
