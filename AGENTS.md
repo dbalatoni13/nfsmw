@@ -462,6 +462,20 @@ register assignments but does NOT affect integer register assignments (and vice 
   Every local that is NOT in the DWARF is a spurious temporary — remove it.
 - Every local that IS in the DWARF must exist in the source, even if you don't use the name.
   Name it exactly as the DWARF shows.
+- When objdiff is already exact but a local only differs by lexical scope, try an equivalent
+  loop form that keeps the temporary inside the same block as the original DWARF. In practice,
+  changing a `for (...; ...; x = next)` into a `while (...) { T *next = ...; ...; x = next; }`
+  can fix DWARF-only scope mismatches without changing codegen.
+
+### Slot-pooled delete paths
+
+- If a recovered local/project type participates in `delete` paths or container/list teardown,
+  check whether the original type exposed inline `operator new` / `operator delete`. Missing
+  slot-pool-backed operators often makes GCC emit `__builtin_delete` instead of the original
+  allocator/free path and can also move destructor/delete DWARF ownership out of the TU.
+- This applies even when the TU mostly allocates the type manually through `bOMalloc` or a
+  pool helper. Restoring the inline operators can still be necessary so `delete` expressions
+  and synthesized cleanup paths match the original code and DWARF.
 
 ### Virtual vs direct calls
 
