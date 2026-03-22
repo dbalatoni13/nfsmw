@@ -269,17 +269,21 @@ enum CarRenderUsage {
 };
 
 // total size: 0x310
+struct FECarRecord;
 class RideInfo {
   public:
     void Init(CarType type, CarRenderUsage usage, int has_dash, int can_be_vertex_damaged);
     struct CarPart *SetPart(int car_slot_id, struct CarPart *car_part, bool update_enabled);
     void SetStockParts();
     void SetRandomPart(CAR_SLOT_ID slot, int upgrade_level);
+    void SetRandomPaint();
     void SetRandomParts();
     void SetUpgradePart(CAR_SLOT_ID car_slot_id, int upg_level);
     void UpdatePartsEnabled();
     struct CarPart *GetPart(int car_slot_id) const;
     int IsPartEnabled(int car_part_id);
+    void DumpForPreset(FECarRecord *car);
+    void FillWithPreset(unsigned int preset_name_hash);
     int GetSpecialLODRangeForCarSlot(int slot_id, CARPART_LOD *special_minimum, CARPART_LOD *special_maximum, bool in_front_end);
     unsigned int GetSkinNameHash();
     void SetCompositeNameHash(int skin_number);

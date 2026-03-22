@@ -48,6 +48,8 @@ class LoadedSkinLayer : public bTNode<LoadedSkinLayer> {
 // total size: 0x7C
 class LoadedWheel : public bTNode<LoadedWheel> {
   public:
+    LoadedWheel(RideInfo *ride_info, bool in_fe);
+
     CarLoadState LoadState;                   // offset 0x8, size 0x4
     CarLoadState LoadStateSkinPerm;           // offset 0xC, size 0x4
     CarLoadState LoadStateSkinTemp;           // offset 0x10, size 0x4
@@ -66,6 +68,8 @@ class LoadedWheel : public bTNode<LoadedWheel> {
 // total size: 0x2E0
 class LoadedSkin : public bTNode<LoadedSkin> {
   public:
+    LoadedSkin(RideInfo *ride_info, int in_front_end, int is_player_skin);
+
     RideInfo *pRideInfo;                       // offset 0x8, size 0x4
     char LoadStatePerm;                        // offset 0xC, size 0x1
     char LoadStateTemp;                        // offset 0xD, size 0x1
@@ -83,6 +87,8 @@ class LoadedSkin : public bTNode<LoadedSkin> {
 // total size: 0x20
 class LoadedCar : public bTNode<LoadedCar> {
   public:
+    LoadedCar(RideInfo *ride_info, int in_front_end, int is_two_player);
+
     CarType Type;                      // offset 0x8, size 0x4
     struct RideInfo *pRideInfo;        // offset 0xC, size 0x4
     int InFrontEnd;                    // offset 0x10, size 0x4
@@ -94,6 +100,8 @@ class LoadedCar : public bTNode<LoadedCar> {
 // total size: 0x6D4
 class LoadedRideInfo : public bTNode<LoadedRideInfo> {
   public:
+    LoadedRideInfo(RideInfo *ride_info, int in_front_end, int is_two_player, int is_player_car);
+
     int NumInstances;           // offset 0x8, size 0x4
     CarLoadState LoadState;     // offset 0xC, size 0x4
     int HighPriority;           // offset 0x10, size 0x4
@@ -109,6 +117,8 @@ class LoadedRideInfo : public bTNode<LoadedRideInfo> {
     LoadedWheel TheLoadedWheel; // offset 0x374, size 0x7C
     LoadedSkin TheLoadedSkin;   // offset 0x3F0, size 0x2E0
     int ID;                     // offset 0x6D0, size 0x4
+
+    static int sNextID;
 };
 
 // total size: 0x8B0

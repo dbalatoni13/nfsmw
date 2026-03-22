@@ -1,11 +1,16 @@
 #include "./CarInfo.hpp"
 #include "./CarRender.hpp"
+#include "Speed/Indep/Src/FEng/FEList.h"
+#include "Speed/Indep/Src/Sim/Simulation.h"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 #include "Speed/Indep/bWare/Inc/bPrintf.hpp"
 #include <cstring>
 
 struct CarPart {
+    char *GetName();
     unsigned int GetTextureNameHash();
+    unsigned int GetCarTypeNameHash();
+    unsigned int GetModelNameHash(int model, int lod);
     unsigned int GetAppliedAttributeUParam(unsigned int namehash, unsigned int default_value);
     int GetAppliedAttributeIParam(unsigned int namehash, int default_value);
     int HasAppliedAttribute(unsigned int namehash);
@@ -22,6 +27,11 @@ struct MissingCarPart {
     short Slot;
     unsigned int PartNameHash;
 };
+struct PresetCar {
+    char pad0[8];
+    char CarTypeName[0x58];
+    unsigned int PartNameHashes[139];
+};
 
 CarTypeInfo *CarTypeInfoArray;
 CarPartDatabase CarPartDB;
@@ -35,9 +45,12 @@ CAR_PART_ID GetCarPartFromSlot(CAR_SLOT_ID slot);
 CarPart *FindPartWithLevel(CarType type, CAR_SLOT_ID slot, int upg_level);
 int GetNumCarSlotIDNames();
 const char *GetCarTypeName(CarType car_type);
+CarTypeInfo *GetCarTypeInfoFromHash(unsigned int car_type_hash);
 int NewGetNumCarParts(CarPartDatabase *database, CarType type, int slot, unsigned int name_hash, int upgrade_level);
 CarPart *NewGetCarPart(CarPartDatabase *database, CarType type, int slot, unsigned int name_hash, CarPart *start_part, int upgrade_level);
 CarPart *NewGetNextCarPart(CarPartDatabase *database, CarPart *part, CarType type, int slot, unsigned int name_hash, int upgrade_level);
+PresetCar *FindFEPresetCar(unsigned int preset_name_hash);
+const char *GetCarSlotNameFromID(int car_slot_id);
 
 struct UsedCarTextureInfoLayout {
     unsigned int TexturesToLoadPerm[87];
@@ -85,6 +98,94 @@ unsigned int RideInfo::GetSkinNameHash() {
     }
 
     return skin_base->GetAppliedAttributeUParam(0x10C98090, 0);
+}
+
+void RideInfo::Init(CarType type, CarRenderUsage usage, int has_dash, int can_be_vertex_damaged) {
+    this->Type = type;
+    this->HasDash = has_dash;
+    this->CanBeVertexDamaged = can_be_vertex_damaged;
+    this->SkinType = 0;
+    this->mSpecialLODBehavior = 0;
+    this->InstanceIndex = 0;
+    this->mCompositeSkinHash = 0;
+    this->mMyCarLoaderHandle = 0;
+    this->mMyCarRenderUsage = usage;
+
+    if (usage < 2) {
+        this->mMinLodLevel = CARPART_LOD_A;
+        this->mMaxLodLevel = CARPART_LOD_A;
+        this->mMinFELodLevel = CARPART_LOD_A;
+        this->mMaxFELodLevel = CARPART_LOD_A;
+    } else {
+        this->mMinLodLevel = CARPART_LOD_B;
+        this->mMaxLodLevel = CARPART_LOD_D;
+        this->mMinFELodLevel = CARPART_LOD_A;
+        this->mMaxFELodLevel = CARPART_LOD_D;
+    }
+
+    if (this->Type != CARTYPE_NONE && CarTypeInfoArray != 0) {
+        CarTypeInfo *info = &CarTypeInfoArray[this->Type];
+
+        if (info != 0 && info->UsageType == CAR_USAGE_TYPE_TRAFFIC) {
+            this->mMinFELodLevel = CARPART_LOD_A;
+            this->mMaxFELodLevel = CARPART_LOD_D;
+            this->mMinLodLevel = CARPART_LOD_B;
+            this->mMaxLodLevel = CARPART_LOD_D;
+        }
+    }
+
+    if (Sim::GetUserMode() == Sim::USER_SPLIT_SCREEN) {
+        this->mMaxLodLevel = CARPART_LOD_B;
+        this->mMinLodLevel = CARPART_LOD_B;
+    }
+
+    this->mMaxBrakeLodLevel = CARPART_LOD_C;
+    this->mMinReflectionLodLevel = CARPART_LOD_D;
+    this->mMaxLicenseLodLevel = CARPART_LOD_C;
+    this->mMinTrafficDiffuseLodLevel = CARPART_LOD_C;
+    this->mMinShadowLodLevel = CARPART_LOD_B;
+    this->mMaxShadowLodLevel = CARPART_LOD_C;
+    this->mMaxTireLodLevel = CARPART_LOD_C;
+    this->mMaxSpoilerLodLevel = CARPART_LOD_D;
+    this->mMaxRoofScoopLodLevel = CARPART_LOD_D;
+
+    if (usage == carRenderUsage_NISCar) {
+        this->mSpecialLODBehavior = 2;
+        this->mMaxTireLodLevel = CARPART_LOD_OFF;
+        this->mMinLodLevel = CARPART_LOD_OFF;
+        this->mMaxLodLevel = CARPART_LOD_OFF;
+    }
+
+    bMemSet(this->mPartsTable, 0, sizeof(this->mPartsTable));
+    bMemSet(this->mPartsEnabled, 1, sizeof(this->mPartsEnabled));
+    this->PreviewPart = 0;
+}
+
+int RideInfo::GetSpecialLODRangeForCarSlot(int slot_id, CARPART_LOD *special_minimum, CARPART_LOD *special_maximum, bool in_front_end) {
+    if (slot_id == CARSLOTID_DRIVER || slot_id == CARSLOTID_INTERIOR) {
+        if (this->mSpecialLODBehavior == 2) {
+            *special_minimum = CARPART_LOD_OFF;
+            *special_maximum = CARPART_LOD_OFF;
+        } else {
+            if (this->mSpecialLODBehavior == 1) {
+                *special_minimum = CARPART_LOD_OFF;
+            } else {
+                *special_minimum = in_front_end ? CARPART_LOD_A : CARPART_LOD_B;
+            }
+
+            *special_maximum = slot_id == CARSLOTID_DRIVER ? CARPART_LOD_B : CARPART_LOD_D;
+        }
+
+        return 1;
+    }
+
+    if (slot_id > 0x47 && slot_id < 0x4C) {
+        *special_minimum = CARPART_LOD_OFF;
+        *special_maximum = CARPART_LOD_OFF;
+        return 1;
+    }
+
+    return 0;
 }
 
 void RideInfo::SetCompositeNameHash(int skin_number) {
@@ -295,6 +396,24 @@ void RideInfo::SetRandomParts() {
     }
 }
 
+void RideInfo::SetRandomPaint() {
+    int num_paints;
+    CarPart *paint_part;
+    int paint_number;
+
+    paint_part = 0;
+    num_paints = NewGetNumCarParts(&CarPartDB, this->Type, CARSLOTID_BASE_PAINT, 0, -1);
+    paint_number = bRandom(num_paints);
+    for (int i = 0; i < paint_number + 1; i++) {
+        paint_part = NewGetNextCarPart(&CarPartDB, paint_part, this->Type, CARSLOTID_BASE_PAINT, 0, -1);
+    }
+
+    this->SetPart(CARSLOTID_BASE_PAINT, paint_part, true);
+    for (int i = CARSLOTID_VINYL_LAYER0; i < CARSLOTID_PAINT_RIM; i++) {
+        this->SetPart(i, 0, true);
+    }
+}
+
 CarPart *RideInfo::GetPart(int car_slot_id) const {
     return this->mPartsTable[car_slot_id];
 }
@@ -396,6 +515,47 @@ void RideInfo::UpdatePartsEnabled() {
 
 int RideInfo::IsPartEnabled(int car_part_id) {
     return this->mPartsEnabled[car_part_id];
+}
+
+void RideInfo::DumpForPreset(FECarRecord *car) {
+    (void)car;
+
+    for (int i = 0; i < CARSLOTID_NUM; i++) {
+        const char *slot_name = GetCarSlotNameFromID(i);
+        CarPart *part = this->mPartsTable[i];
+
+        (void)slot_name;
+        if (part != 0) {
+            const char *display_name = part->GetName();
+            (void)display_name;
+        }
+    }
+}
+
+void RideInfo::FillWithPreset(unsigned int preset_name_hash) {
+    PresetCar *preset = FindFEPresetCar(preset_name_hash);
+
+    if (preset != 0) {
+        this->SkinType = 1;
+        CarTypeInfo *cti = GetCarTypeInfoFromHash(FEHashUpper(preset->CarTypeName));
+        CarType type = cti->Type;
+
+        if (type != this->Type) {
+            this->Init(type, CarRenderUsage_Player, 0, 0);
+            this->SetStockParts();
+        }
+
+        for (int i = 0; i < CARSLOTID_NUM; i++) {
+            unsigned int part_name_hash = preset->PartNameHashes[i];
+
+            if (part_name_hash == 0) {
+                this->SetPart(i, 0, true);
+            } else if (part_name_hash != 1) {
+                CarPart *part = NewGetCarPart(&CarPartDB, type, i, part_name_hash, 0, -1);
+                this->SetPart(i, part, true);
+            }
+        }
+    }
 }
 
 void GetUsedCarTextureInfo(UsedCarTextureInfo *used_texture_info, RideInfo *ride_info, int front_end_only) {
