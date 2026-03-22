@@ -18,17 +18,6 @@
 static unsigned int AccumulationBufferNeedsFlush = 0;
 ScreenEffectPaletteDef SE_PaletteFile[EFX_NUMBER];
 
-struct TerrainType;
-
-struct TopologyCoordinate {
-  public:
-    bool HasTopology(const bVector2 *point);
-    float GetElevation(const bVector3 *point, TerrainType *terrain_type, bVector3 *normal, bool *valid);
-
-  private:
-    int mData[2];
-};
-
 class eViewRenderShim : public eView {
   public:
     void Render(eModel *model, bMatrix4 *matrix, eLightContext *light_context, unsigned int a4, unsigned int a5, unsigned int a6);
@@ -124,7 +113,7 @@ void ScreenEffectDB::Update(float deltatime) {
     }
 }
 
-float TopologyCoordinate::GetElevation(const bVector3 *position, TerrainType *type, bVector3 *normal, bool *point_valid) {
+float TopologyCoordinate::GetElevation(const bVector3 *position, enum TerrainType *type, bVector3 *normal, bool *point_valid) {
     UMath::Vector3 bond_pos;
     UMath::Vector4 dummy_normal;
 
@@ -141,13 +130,6 @@ float TopologyCoordinate::GetElevation(const bVector3 *position, TerrainType *ty
         return world_pos.HeightAtPoint(bond_pos);
     }
     return position->z;
-}
-bool TopologyCoordinate::HasTopology(const bVector2 *position) {
-    bVector3 test_position(position->x, position->y, 99999.1015625f);
-    bool valid;
-
-    GetElevation(&test_position, 0, 0, &valid);
-    return valid;
 }
 
 void ScreenEffectDB::AddScreenEffect(ScreenEffectType type, float intensity, float r, float g, float b) {

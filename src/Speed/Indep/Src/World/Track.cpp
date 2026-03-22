@@ -5,6 +5,47 @@
 
 void bEndianSwap32(void *value);
 
+enum TerrainType {
+    TERRAIN_TYPE_NONE = 0,
+    TERRAIN_TYPE_ROAD = 1,
+    TERRAIN_TYPE_ROAD_WET = 2,
+    TERRAIN_TYPE_ROAD_DRIFT = 3,
+    TERRAIN_TYPE_ROAD_SMOKE_1 = 4,
+    TERRAIN_TYPE_ROAD_SMOKE_2 = 5,
+    TERRAIN_TYPE_ROAD_SMOKE_3 = 6,
+    TERRAIN_TYPE_BRIDGE = 7,
+    TERRAIN_TYPE_DIRT = 8,
+    TERRAIN_TYPE_GRAVEL = 9,
+    TERRAIN_TYPE_ROUGH_ROAD = 10,
+    TERRAIN_TYPE_COBBLESTONE = 11,
+    TERRAIN_TYPE_STAIRS = 12,
+    TERRAIN_TYPE_PUDDLE = 13,
+    TERRAIN_TYPE_DEEP_WATER = 14,
+    TERRAIN_TYPE_GRASS = 15,
+    TERRAIN_TYPE_SIDEWALK = 16,
+    TERRAIN_TYPE_WOOD = 17,
+    TERRAIN_TYPE_PLASTIC = 18,
+    TERRAIN_TYPE_GLASS = 19,
+    TERRAIN_TYPE_SOLID_WALL = 20,
+    TERRAIN_TYPE_SEE_THROUGH_WALL = 21,
+    TERRAIN_TYPE_PLANT = 22,
+    TERRAIN_TYPE_POST = 23,
+    TERRAIN_TYPE_PILLAR = 24,
+    TERRAIN_TYPE_METAL_GRATE = 25,
+    TERRAIN_TYPE_METAL = 26,
+    TERRAIN_TYPE_CHAINLINK = 27,
+    TERRAIN_TYPE_CAR = 28,
+    NUM_TERRAIN_TYPES = 29,
+};
+
+struct TopologyCoordinate {
+    int HasTopology(const bVector2 *position);
+    float GetElevation(const bVector3 *position, enum TerrainType *type, bVector3 *normal, bool *point_valid);
+
+  private:
+    int mData[2];
+};
+
 // total size: 0x60
 struct TrackOBB {
     inline void EndianSwap() {
@@ -56,4 +97,14 @@ int UnloaderTrackOBB(bChunk *chunk) {
     NumTrackOBBs = 0;
     TrackOBBTable = 0;
     return 1;
+}
+
+int TopologyCoordinate::HasTopology(const bVector2 *position) {
+    float test_elevation;
+    bVector3 test_position(position->x, position->y, 99999.1015625f);
+    bool point_valid;
+
+    test_elevation = GetElevation(&test_position, 0, 0, &point_valid);
+    (void)test_elevation;
+    return point_valid;
 }
