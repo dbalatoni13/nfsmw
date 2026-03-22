@@ -27,6 +27,19 @@ static void SetCollisionMapBit(SimCollisionMap &map, unsigned int index) {
 
 ISimpleBody::~ISimpleBody() {}
 
+template <>
+void *ScratchPtr<SimpleRigidBody::Volatile>::mWorkSpace = nullptr;
+
+template <>
+SimpleRigidBody::Volatile *ScratchPtr<SimpleRigidBody::Volatile>::mPointer[64] = { nullptr };
+
+template <>
+SimpleRigidBody::Volatile ScratchPtr<SimpleRigidBody::Volatile>::mRAMBuffer[64];
+
+template <> ScratchPtr<SimpleRigidBody::Volatile>::~ScratchPtr() {
+    *mRef = nullptr;
+}
+
 SimpleRigidBody::SimpleRigidBody(const BehaviorParams &bp, const RBSimpleParams &params)
     : Behavior(bp, 0), IRigidBody(bp.fowner), ISimpleBody(bp.fowner) {
     TheSimpleBodies.AddTail(this);

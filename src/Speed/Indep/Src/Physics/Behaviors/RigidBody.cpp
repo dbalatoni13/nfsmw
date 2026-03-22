@@ -33,11 +33,26 @@ SAP::Grid<RigidBody>::Node *SAP::Grid<RigidBody>::mRootX = nullptr;
 template <>
 SAP::Grid<RigidBody>::Node *SAP::Grid<RigidBody>::mRootZ = nullptr;
 
+template <>
+void *ScratchPtr<RigidBody::Volatile>::mWorkSpace = nullptr;
+
+template <>
+RigidBody::Volatile *ScratchPtr<RigidBody::Volatile>::mPointer[64] = { nullptr };
+
+template <>
+RigidBody::Volatile ScratchPtr<RigidBody::Volatile>::mRAMBuffer[64];
+
 bTList<RigidBody> TheRigidBodies;
 
-static bool CollisionPacketSort(const CollisionPacket &a, const CollisionPacket &b) {
+inline bool operator<(const CollisionPacket &a, const CollisionPacket &b) {
     return a.penetration > b.penetration;
 }
+
+template <> ScratchPtr<RigidBody::Volatile>::~ScratchPtr() {
+    *mRef = nullptr;
+}
+
+IDynamicsEntity::~IDynamicsEntity() {}
 
 struct MeshAccess {
     char pad[8];
@@ -1789,7 +1804,7 @@ void RigidBody::DoInstanceCollision2d(float dT) {
     if (packetCount != 0) {
         data.leversInContact = static_cast<char>(packetCount);
         if (packetCount > 1) {
-            std::sort(packets, packets + packetCount, CollisionPacketSort);
+            std::sort(packets, packets + packetCount);
         }
 
         ResolveGroundCollision(packets, packetCount);

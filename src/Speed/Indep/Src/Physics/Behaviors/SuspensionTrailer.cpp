@@ -173,9 +173,7 @@ class SuspensionTrailer : public Chassis {
     Radians GetWheelAngularVelocity(int index) const override {
         return mTires[index]->GetAngularVelocity();
     }
-    void SetWheelAngularVelocity(int wheel, float w) override {
-        mTires[wheel]->SetAngularVelocity(w);
-    }
+    void SetWheelAngularVelocity(int wheel, float w) override {}
     float GetWheelSteer(unsigned int wheel) const override {
         return 0.0f;
     }

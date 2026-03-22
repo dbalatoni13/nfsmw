@@ -23,6 +23,16 @@ RBTractor::~RBTractor() {
     }
 }
 
+void RBTractor::SetInvulnerability(eInvulnerablitiy state, float time) {
+    if (mTrailer && IsHitched()) {
+        IRBVehicle *irbv = nullptr;
+        if (mTrailer->QueryInterface(&irbv)) {
+            irbv->SetInvulnerability(state, time);
+        }
+    }
+    RBVehicle::SetInvulnerability(state, time);
+}
+
 void RBTractor::SetHitch(bool hitched) {
     if (hitched) {
         float YAW_LIMIT;

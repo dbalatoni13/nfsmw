@@ -1,4 +1,6 @@
+#define COLLISIONREACTIONS_INSTANCE_ASSIGN_OWNER
 #include "RBVehicle.h"
+#undef COLLISIONREACTIONS_INSTANCE_ASSIGN_OWNER
 #include "RigidBody.h"
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
@@ -14,6 +16,11 @@
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 
 #include <types.h>
+
+const Attrib::Gen::collisionreactions &Attrib::Gen::collisionreactions::operator=(const Attrib::Instance &rhs) {
+    Instance::operator=(rhs);
+    return *this;
+}
 
 Behavior *RBVehicle::Construct(const BehaviorParams &params) {
     const RBComplexParams rp(params.fparams.Fetch<RBComplexParams>(UCrc32(0xa6b47fac)));

@@ -26,6 +26,7 @@ class RBTractor : public RBVehicle, public IArticulatedVehicle, public IVehicleC
 
     // IRigidBody
     void PlaceObject(const UMath::Matrix4 &orientMat, const UMath::Vector3 &initPos) override;
+    void SetInvulnerability(eInvulnerablitiy state, float time) override;
 
     // RigidBody
     void ModifyCollision(const RigidBody &other, const Dynamics::Collision::Plane &plane, Dynamics::Collision::Moment &myMoment) override;

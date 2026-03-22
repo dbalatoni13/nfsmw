@@ -901,7 +901,6 @@ Radians SuspensionSpline::GetWheelAngularVelocity(int index) const {
 }
 
 void SuspensionSpline::SetWheelAngularVelocity(int wheel, float w) {
-    mTires[wheel]->SetAngularVelocity(w);
 }
 
 float SuspensionSpline::GetWheelSteer(unsigned int wheel) const {

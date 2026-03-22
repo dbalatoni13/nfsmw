@@ -10,13 +10,11 @@
 
 // total size: 0x8
 struct ICarAudio : public UTL::COM::IUnknown {
-    static HINTERFACE _IHandle() {
-        return (HINTERFACE)_IHandle;
-    }
+    static HINTERFACE _IHandle();
 
     ICarAudio(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
 
-    virtual ~ICarAudio() {}
+    virtual ~ICarAudio();
 
     virtual Rpm GetRPM() const;
 };

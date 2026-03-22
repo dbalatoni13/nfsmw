@@ -39,6 +39,12 @@ enum WheelConfig {
 
 }; // namespace Sound
 
+HINTERFACE ICarAudio::_IHandle() {
+    return (HINTERFACE)_IHandle;
+}
+
+ICarAudio::~ICarAudio() {}
+
 enum ControlSource {
     CONTROL_NONE = 0,
     CONTROL_HUMAN = 1,
@@ -428,11 +434,12 @@ SoundTraffic::SoundTraffic(const BehaviorParams &params, Sound::Context ctx)
 Behavior *SoundTraffic::Construct(const BehaviorParams &params) {
     IVehicle *vehicle = nullptr;
     static_cast<ISimable *>(params.fowner)->QueryInterface(&vehicle);
-    if (!vehicle) {
+    bool haveVehicle = vehicle;
+    if (!haveVehicle) {
         return nullptr;
     }
 
-    const UCrc32 &vehicleClass = vehicle->GetVehicleClass();
+    UCrc32 vehicleClass = vehicle->GetVehicleClass();
     Sound::Context ctx = Sound::CONTEXT_TRAFFIC;
     if (vehicleClass == VehicleClass_TRACTOR) {
         ctx = Sound::CONTEXT_TRACTOR;
@@ -447,10 +454,13 @@ void SoundTraffic::LocateTrailer() {
     IArticulatedVehicle *iarticulation = nullptr;
 
     mTrailer = 0;
-    if (GetOwner()->QueryInterface(&iarticulation) && iarticulation) {
-        IVehicle *trailer = iarticulation->GetTrailer();
-        if (trailer) {
-            mTrailer = trailer->GetSimable()->GetWorldID();
+    bool haveArticulation = GetOwner()->QueryInterface(&iarticulation);
+    if (haveArticulation) {
+        if (iarticulation) {
+            IVehicle *trailer = iarticulation->GetTrailer();
+            if (trailer) {
+                mTrailer = trailer->GetSimable()->GetWorldID();
+            }
         }
     }
 }
@@ -511,19 +521,19 @@ SoundRacer::SoundRacer(const BehaviorParams &params, Sound::Context ctx)
 Behavior *SoundRacer::Construct(const BehaviorParams &params) {
     IVehicle *vehicle = nullptr;
     static_cast<ISimable *>(params.fowner)->QueryInterface(&vehicle);
-    if (!vehicle) {
+    bool haveVehicle = vehicle;
+    if (!haveVehicle) {
         return nullptr;
     }
 
-    Sound::Context ctx = Sound::CONTEXT_PLAYER;
-    if (vehicle->GetDriverClass() != DRIVER_HUMAN) {
-        ctx = Sound::CONTEXT_AIRACER;
+    Sound::Context ctx = Sound::CONTEXT_AIRACER;
+    if (vehicle->GetDriverClass() == DRIVER_HUMAN) {
+        ctx = Sound::CONTEXT_PLAYER;
     }
     return new SoundRacer(params, ctx);
 }
 
 void SoundRacer::OnServiceTire(SoundConn::Pkt_Car_Service &pkt, unsigned int wheelid, Sound::WheelConfig sndId) {
-    SoundCar::OnServiceTire(pkt, wheelid, sndId);
     if (mSpikeDamage) {
         pkt.SetTireBlown(sndId, mSpikeDamage->GetTireDamage(wheelid));
     }

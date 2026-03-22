@@ -12,6 +12,26 @@ Attrib::Key Attrib::Gen::effects::ClassKey() {
     return 0xebcee74c;
 }
 
+template <> const EffectLinkageRecord &Attrib::Attribute::Get<EffectLinkageRecord>(unsigned int index) const {
+    const EffectLinkageRecord *resultptr = reinterpret_cast<const EffectLinkageRecord *>(GetElementPointer(index));
+    if (!resultptr) {
+        resultptr = reinterpret_cast<const EffectLinkageRecord *>(DefaultDataArea(sizeof(EffectLinkageRecord)));
+    }
+    return *resultptr;
+}
+
+const EffectLinkageRecord *EffectLookup::Find(unsigned int surfacekey, const Attrib::Attribute &list) const {
+    unsigned int i = 0;
+    while (i < list.GetLength()) {
+        const EffectLinkageRecord &record = list.Get<EffectLinkageRecord>(i);
+        if (record.mSurface.GetCollectionKey() == surfacekey) {
+            return &record;
+        }
+        ++i;
+    }
+    return nullptr;
+}
+
 Behavior *EffectsVehicle::Construct(const BehaviorParams &params) {
     return new EffectsVehicle(params);
 }

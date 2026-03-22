@@ -139,9 +139,7 @@ class SuspensionTraffic : public Chassis {
     float GetWheelLoad(unsigned int i) const override {
         return mTires[i]->GetLoad();
     }
-    void SetWheelAngularVelocity(int wheel, float w) override {
-        mTires[wheel]->SetAngularVelocity(w);
-    }
+    void SetWheelAngularVelocity(int wheel, float w) override {}
     unsigned int GetNumWheels() const override {
         return 4;
     }

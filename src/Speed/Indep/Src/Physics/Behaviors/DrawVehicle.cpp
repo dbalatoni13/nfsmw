@@ -14,6 +14,24 @@ struct Pkt_VehicleFragment_Open : Sim::Packet {
           mWorldID(worldID),               //
           mPartName(partName),             //
           mColName(colName) {}
+
+    UCrc32 ConnectionClass() override {
+        static UCrc32 hash = "VehicleFragmentConn";
+        return hash;
+    }
+
+    unsigned int Size() override {
+        return sizeof(*this);
+    }
+
+    unsigned int Type() override {
+        return SType();
+    }
+
+    static unsigned int SType() {
+        static UCrc32 hash = "VehicleFragment_Open";
+        return hash.GetValue();
+    }
 };
 
 struct Pkt_VehicleFragment_Service : Sim::Packet {
@@ -183,8 +201,9 @@ void DrawVehicle::Part::RemoveTrigger() {
 
 bool DrawVehicle::Part::OnDraw(Sim::Packet *service) {
     RenderConn::Pkt_VehicleFragment_Service *pkt = static_cast<RenderConn::Pkt_VehicleFragment_Service *>(service);
+    int inView = pkt->mInView;
     *reinterpret_cast<float *>(reinterpret_cast<char *>(this) + 0x68) = pkt->mDistanceToView;
-    *reinterpret_cast<int *>(reinterpret_cast<char *>(this) + 0x6C) = pkt->mInView;
+    *reinterpret_cast<int *>(reinterpret_cast<char *>(this) + 0x6C) = inView;
     return true;
 }
 
@@ -196,6 +215,7 @@ void DrawVehicle::Part::OnEndDraw() {
         mOffScreenTask = false;
     }
     ReleaseSequencer();
+    static_cast<IModel *>(this)->ReleaseModel();
 }
 
 void DrawVehicle::Part::PlaceTrigger(const UMath::Matrix4 &matrix, bool enable) {
@@ -345,8 +365,11 @@ UCrc32 DrawVehicle::GetName() const {
 }
 
 void DrawVehicle::StopEffects() {
-    for (EffectList::iterator iter = mEffects.begin(); iter != mEffects.end(); ++iter) {
-        delete *iter;
+    EffectList::iterator iter = mEffects.begin();
+    while (iter != mEffects.end()) {
+        Effect *effect = *iter;
+        ++iter;
+        delete effect;
     }
     mEffects.clear();
 }
@@ -374,11 +397,14 @@ void DrawVehicle::PlayEffect(UCrc32 identifire, const Attrib::Collection *effect
 }
 
 void DrawVehicle::StopEffect(UCrc32 identifire) {
-    for (EffectList::iterator iter = mEffects.begin(); iter != mEffects.end(); ++iter) {
-        if ((*iter)->Identifire == identifire) {
-            delete *iter;
+    EffectList::iterator iter = mEffects.begin();
+    while (iter != mEffects.end()) {
+        Effect *effect = *iter;
+        if (effect->Identifire == identifire) {
+            delete effect;
             mEffects.erase(iter);
-            break;
+            return;
         }
+        ++iter;
     }
 }

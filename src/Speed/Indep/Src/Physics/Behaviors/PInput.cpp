@@ -46,7 +46,10 @@ float PInput::GetControlHandBrake() const {
 }
 
 bool PInput::GetControlActionButton() const {
-    return mControls.fActionButton;
+    if (!mControls.fActionButton) {
+        return false;
+    }
+    return true;
 }
 
 void PInput::SetControlSteering(float steer) {

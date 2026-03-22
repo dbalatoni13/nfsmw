@@ -70,10 +70,7 @@ class EffectLookup {
         }
     }
 
-    const EffectLinkageRecord *Find(unsigned int surfacekey, const Attrib::Attribute &list) {
-        // TODO
-        return nullptr;
-    }
+    const EffectLinkageRecord *Find(unsigned int surfacekey, const Attrib::Attribute &list) const;
 
     float GetMinSpeed() {
         return mMinSpeed;
