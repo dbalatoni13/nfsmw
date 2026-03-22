@@ -78,6 +78,7 @@ extern float hRad3x;
 extern float hRad0y;
 extern float hRad3y;
 extern unsigned int TireFaceIt;
+extern unsigned int CarReplacementDecalHash[CarRenderInfo::REPLACETEX_DECAL_NUM];
 extern unsigned int hcL;
 extern unsigned int FrameMallocFailed;
 extern unsigned int FrameMallocFailAmount;
@@ -98,6 +99,9 @@ void Render(eViewPlatInterface *view, eModel *model, bMatrix4 *local_to_world, e
             unsigned int exc_flag);
 void Render(eViewPlatInterface *view, ePoly *poly, TextureInfo *texture_info, bMatrix4 *matrix, int accurate, float z_bias);
 int CarPart_GetAppliedAttributeIParam(CarPart *part, unsigned int namehash, int default_value) asm("GetAppliedAttributeIParam__7CarPartUii");
+int CarPart_HasAppliedAttribute(CarPart *part, unsigned int namehash) asm("HasAppliedAttribute__7CarPartUi");
+unsigned int CarPart_GetAppliedAttributeUParam(CarPart *part, unsigned int namehash, unsigned int default_value)
+    asm("GetAppliedAttributeUParam__7CarPartUiUi");
 
 template <typename T> struct bSNodeLayout {
     T *Next;
@@ -790,6 +794,90 @@ void CarRenderInfo::UpdateWheelYRenderOffset() {
             this->WheelRadiusScales[wheel] = 1.0f;
         } else {
             this->WheelRadiusScales[wheel] = desired_radius / model_radius;
+        }
+    }
+}
+
+void CarRenderInfo::UpdateDecalTextures(RideInfo *ride_info) {
+    unsigned int alpha_hash;
+    unsigned int decal_hashes[8];
+    CarPart *hood_decals;
+    unsigned int size_hash;
+    unsigned int shape_hash;
+    unsigned int size_hashes[3];
+    unsigned int shape_hashes[3];
+
+    alpha_hash = bStringHash("DEFAULTALPHA");
+
+    for (int i = REPLACETEX_DECAL_START; i <= REPLACETEX_DECAL_END; i++) {
+        this->MasterReplacementTextureTable[i].SetOldNameHash(CarReplacementDecalHash[i - REPLACETEX_DECAL_START]);
+        if (alpha_hash != this->MasterReplacementTextureTable[i].GetNewNameHash()) {
+            this->MasterReplacementTextureTable[i].SetNewNameHash(alpha_hash);
+        }
+    }
+
+    decal_hashes[0] = bStringHash("DUMMY_DECAL1");
+    decal_hashes[1] = bStringHash("DUMMY_DECAL2");
+    decal_hashes[2] = bStringHash("DUMMY_DECAL3");
+    decal_hashes[3] = bStringHash("DUMMY_DECAL4");
+    decal_hashes[4] = bStringHash("DUMMY_DECAL5");
+    decal_hashes[5] = bStringHash("DUMMY_DECAL6");
+    decal_hashes[6] = bStringHash("DUMMY_NUMBER_LEFT");
+    decal_hashes[7] = bStringHash("DUMMY_NUMBER_RIGHT");
+
+    for (int i = 0; i < 48; i++) {
+        this->DecalReplacementTextureTable[i].SetOldNameHash(decal_hashes[i % 8]);
+        if (alpha_hash != this->DecalReplacementTextureTable[i].GetNewNameHash()) {
+            this->DecalReplacementTextureTable[i].SetNewNameHash(alpha_hash);
+        }
+    }
+
+    hood_decals = ride_info->GetPart(CARSLOTID_HOOD);
+    size_hash = bStringHash("SIZE");
+    shape_hash = bStringHash("SHAPE");
+    size_hashes[0] = bStringHash("SMALL");
+    size_hashes[1] = bStringHash("MEDIUM");
+    size_hashes[2] = bStringHash("LARGE");
+    shape_hashes[0] = bStringHash("SQUARE");
+    shape_hashes[1] = bStringHash("RECT");
+    shape_hashes[2] = bStringHash("WIDE");
+
+    for (int i = CARSLOTID_DECAL_FRONT_WINDOW; i < CARSLOTID_BASE_PAINT; i++) {
+        CarPart *decal_model_part = ride_info->GetPart(i);
+        int decal_index = i - CARSLOTID_DECAL_FRONT_WINDOW;
+
+        if (decal_model_part != 0 && hood_decals != 0 && CarPart_HasAppliedAttribute(decal_model_part, size_hash) != 0 &&
+            CarPart_HasAppliedAttribute(decal_model_part, shape_hash) != 0) {
+            unsigned int decal_size = CarPart_GetAppliedAttributeUParam(decal_model_part, size_hash, 0);
+            unsigned int decal_shape = CarPart_GetAppliedAttributeUParam(decal_model_part, shape_hash, 0);
+            eReplacementTextureTable *replace_table = &this->DecalReplacementTextureTable[decal_index * 8];
+            int first_tex_part = CARSLOTID_DECAL_FRONT_WINDOW_TEX0 + decal_index * 8;
+
+            (void)decal_size;
+            (void)size_hashes;
+
+            for (int j = 0; j < 8; j++) {
+                CarPart *decal_texture_part = ride_info->GetPart(first_tex_part + j);
+
+                if (decal_texture_part != 0) {
+                    char buf[128];
+                    unsigned int base_hash = CarPart_GetAppliedAttributeUParam(decal_texture_part, bStringHash("NAME"), 0);
+                    unsigned int decal_texture_hash;
+
+                    if (decal_shape == shape_hashes[0]) {
+                        bStrCpy(buf, "_SQUARE");
+                    } else if (decal_shape == shape_hashes[1]) {
+                        bStrCpy(buf, "_RECT");
+                    } else if (decal_shape == shape_hashes[2]) {
+                        bStrCpy(buf, "_WIDE");
+                    }
+
+                    decal_texture_hash = bStringHash(buf, base_hash);
+                    if (decal_texture_hash != replace_table[j].GetNewNameHash()) {
+                        replace_table[j].SetNewNameHash(decal_texture_hash);
+                    }
+                }
+            }
         }
     }
 }
