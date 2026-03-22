@@ -493,6 +493,13 @@ void TSMemoryPool::DebugPrint() {
 }
 
 unsigned int TSMemoryPool::GetPoolChecksum() {
+    unsigned int checksum;
+
+    (void)checksum;
+    if (0) {
+        for (TSMemoryNode *node = NodeList.GetHead(); node != NodeList.EndOfList(); node = node->GetNext()) {
+        }
+    }
     return 0;
 }
 
