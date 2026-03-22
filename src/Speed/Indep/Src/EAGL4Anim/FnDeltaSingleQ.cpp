@@ -343,7 +343,23 @@ bool FnDeltaSingleQ::EvalSQT(float currTime, float *sqt, const BoneMask *boneMas
         int ceilBinIdx = ceilKey >> binLenPower;
         DeltaSingleQPhysical *ceilPhys = GetSingleQPhysical(GetSingleQBin(deltaQ, ceilBinIdx));
 
-        if (ceilBinIdx == floorBinIdx) {
+        if (ceilBinIdx != floorBinIdx) {
+            for (int ibone = 0; ibone < deltaQ->mNumBones; ibone++) {
+                UMath::Vector4 ceilq;
+                UMath::Vector4 interpq;
+                UMath::Vector4 outq;
+
+                DecodeSingleQPhysical(ceilPhys[ibone], mMinRanges[ibone].mIndex, ceilq);
+                interpq.x = mPrevQs[ibone].x + (ceilq.x - mPrevQs[ibone].x) * scale;
+                interpq.y = mPrevQs[ibone].y + (ceilq.y - mPrevQs[ibone].y) * scale;
+                interpq.z = mPrevQs[ibone].z + (ceilq.z - mPrevQs[ibone].z) * scale;
+                interpq.w = mPrevQs[ibone].w + (ceilq.w - mPrevQs[ibone].w) * scale;
+                NormalizeSingleQQuat(interpq);
+
+                ComposeSingleQQuat(mMinRanges[ibone].mIndex, mPreMultQs[ibone], interpq, mPostMultQs[ibone], outq);
+                *reinterpret_cast<UMath::Vector4 *>(GetSingleQOutputQuat(sqt, boneIdxs[ibone])) = outq;
+            }
+        } else {
             DeltaSingleQDelta *ceilDelta = GetSingleQDelta(deltaQ, binData, floorDeltaIdx);
 
             for (int ibone = 0; ibone < deltaQ->mNumBones; ibone++) {
@@ -357,22 +373,6 @@ bool FnDeltaSingleQ::EvalSQT(float currTime, float *sqt, const BoneMask *boneMas
                 ceilq.z += mPrevQs[ibone].z;
                 ceilq.w += mPrevQs[ibone].w;
 
-                interpq.x = mPrevQs[ibone].x + (ceilq.x - mPrevQs[ibone].x) * scale;
-                interpq.y = mPrevQs[ibone].y + (ceilq.y - mPrevQs[ibone].y) * scale;
-                interpq.z = mPrevQs[ibone].z + (ceilq.z - mPrevQs[ibone].z) * scale;
-                interpq.w = mPrevQs[ibone].w + (ceilq.w - mPrevQs[ibone].w) * scale;
-                NormalizeSingleQQuat(interpq);
-
-                ComposeSingleQQuat(mMinRanges[ibone].mIndex, mPreMultQs[ibone], interpq, mPostMultQs[ibone], outq);
-                *reinterpret_cast<UMath::Vector4 *>(GetSingleQOutputQuat(sqt, boneIdxs[ibone])) = outq;
-            }
-        } else {
-            for (int ibone = 0; ibone < deltaQ->mNumBones; ibone++) {
-                UMath::Vector4 ceilq;
-                UMath::Vector4 interpq;
-                UMath::Vector4 outq;
-
-                DecodeSingleQPhysical(ceilPhys[ibone], mMinRanges[ibone].mIndex, ceilq);
                 interpq.x = mPrevQs[ibone].x + (ceilq.x - mPrevQs[ibone].x) * scale;
                 interpq.y = mPrevQs[ibone].y + (ceilq.y - mPrevQs[ibone].y) * scale;
                 interpq.z = mPrevQs[ibone].z + (ceilq.z - mPrevQs[ibone].z) * scale;
@@ -554,7 +554,25 @@ bool FnDeltaSingleQ::EvalSQTMasked(float currTime, const BoneMask *boneMask, flo
         int ceilBinIdx = ceilKey >> binLenPower;
         DeltaSingleQPhysical *ceilPhys = GetSingleQPhysical(GetSingleQBin(deltaQ, ceilBinIdx));
 
-        if (ceilBinIdx == floorBinIdx) {
+        if (ceilBinIdx != floorBinIdx) {
+            for (int ibone = 0; ibone < deltaQ->mNumBones; ibone++) {
+                if (boneMask->GetBone(boneIdxs[ibone])) {
+                    UMath::Vector4 ceilq;
+                    UMath::Vector4 interpq;
+                    UMath::Vector4 outq;
+
+                    DecodeSingleQPhysical(ceilPhys[ibone], mMinRanges[ibone].mIndex, ceilq);
+                    interpq.x = mPrevQs[ibone].x + (ceilq.x - mPrevQs[ibone].x) * scale;
+                    interpq.y = mPrevQs[ibone].y + (ceilq.y - mPrevQs[ibone].y) * scale;
+                    interpq.z = mPrevQs[ibone].z + (ceilq.z - mPrevQs[ibone].z) * scale;
+                    interpq.w = mPrevQs[ibone].w + (ceilq.w - mPrevQs[ibone].w) * scale;
+                    NormalizeSingleQQuat(interpq);
+
+                    ComposeSingleQQuat(mMinRanges[ibone].mIndex, mPreMultQs[ibone], interpq, mPostMultQs[ibone], outq);
+                    *reinterpret_cast<UMath::Vector4 *>(GetSingleQOutputQuat(sqt, boneIdxs[ibone])) = outq;
+                }
+            }
+        } else {
             DeltaSingleQDelta *ceilDelta = GetSingleQDelta(deltaQ, binData, floorDeltaIdx);
 
             for (int ibone = 0; ibone < deltaQ->mNumBones; ibone++) {
@@ -569,24 +587,6 @@ bool FnDeltaSingleQ::EvalSQTMasked(float currTime, const BoneMask *boneMask, flo
                     ceilq.z += mPrevQs[ibone].z;
                     ceilq.w += mPrevQs[ibone].w;
 
-                    interpq.x = mPrevQs[ibone].x + (ceilq.x - mPrevQs[ibone].x) * scale;
-                    interpq.y = mPrevQs[ibone].y + (ceilq.y - mPrevQs[ibone].y) * scale;
-                    interpq.z = mPrevQs[ibone].z + (ceilq.z - mPrevQs[ibone].z) * scale;
-                    interpq.w = mPrevQs[ibone].w + (ceilq.w - mPrevQs[ibone].w) * scale;
-                    NormalizeSingleQQuat(interpq);
-
-                    ComposeSingleQQuat(mMinRanges[ibone].mIndex, mPreMultQs[ibone], interpq, mPostMultQs[ibone], outq);
-                    *reinterpret_cast<UMath::Vector4 *>(GetSingleQOutputQuat(sqt, boneIdxs[ibone])) = outq;
-                }
-            }
-        } else {
-            for (int ibone = 0; ibone < deltaQ->mNumBones; ibone++) {
-                if (boneMask->GetBone(boneIdxs[ibone])) {
-                    UMath::Vector4 ceilq;
-                    UMath::Vector4 interpq;
-                    UMath::Vector4 outq;
-
-                    DecodeSingleQPhysical(ceilPhys[ibone], mMinRanges[ibone].mIndex, ceilq);
                     interpq.x = mPrevQs[ibone].x + (ceilq.x - mPrevQs[ibone].x) * scale;
                     interpq.y = mPrevQs[ibone].y + (ceilq.y - mPrevQs[ibone].y) * scale;
                     interpq.z = mPrevQs[ibone].z + (ceilq.z - mPrevQs[ibone].z) * scale;
