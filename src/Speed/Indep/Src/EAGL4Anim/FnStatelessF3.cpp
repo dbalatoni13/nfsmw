@@ -119,7 +119,55 @@ bool FnStatelessF3::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask
         if (mBoneMask) {
             mBoneMask = nullptr;
         }
-        EvalSQTfast(currTime, sqt, nullptr, slerpReqd, floorKey, scale);
+
+        short *dataBuf = statelessF3->GetData();
+        StatelessF3::DofInfo *dofInfos = statelessF3->GetDofInfo();
+        unsigned short *dofIdxs = statelessF3->mDofIdxs;
+        short *frameData = statelessF3->GetFrameData(dataBuf, floorKey);
+        int nBones = statelessF3->mNumBones;
+
+        if (!slerpReqd) {
+            for (int ibone = 0; ibone < nBones; ibone++) {
+                int index = dofIdxs[ibone];
+
+                sqt[index + 0] = dofInfos[ibone].mRange[0] * frameData[0];
+                sqt[index + 1] = dofInfos[ibone].mRange[1] * frameData[1];
+                sqt[index + 2] = dofInfos[ibone].mRange[2] * frameData[2];
+                frameData += 3;
+            }
+        } else {
+            short *nextFrameData = statelessF3->GetFrameData(dataBuf, floorKey + 1);
+
+            for (int ibone = 0; ibone < nBones; ibone++) {
+                UMath::Vector3 prev;
+                UMath::Vector3 next;
+                int index = dofIdxs[ibone];
+
+                UnquantizeStatelessF3(dofInfos[ibone], frameData, prev);
+                UnquantizeStatelessF3(dofInfos[ibone], nextFrameData, next);
+
+                sqt[index + 0] = prev.x + (next.x - prev.x) * scale;
+                sqt[index + 1] = prev.y + (next.y - prev.y) * scale;
+                sqt[index + 2] = prev.z + (next.z - prev.z) * scale;
+
+                frameData += 3;
+                nextFrameData += 3;
+            }
+        }
+
+        if (statelessF3->mNumConstBones != 0) {
+            unsigned short *constIdxs = statelessF3->GetConstBoneIdx();
+            float *constBuf = statelessF3->GetConstData(dataBuf);
+
+            for (int ibone = 0; ibone < statelessF3->mNumConstBones; ibone++) {
+                int index = constIdxs[ibone];
+
+                sqt[index + 0] = constBuf[0];
+                sqt[index + 1] = constBuf[1];
+                sqt[index + 2] = constBuf[2];
+                constBuf += 3;
+            }
+        }
     } else {
         EvalSQTMask(currTime, sqt, boneMask, slerpReqd, floorKey, scale);
     }
