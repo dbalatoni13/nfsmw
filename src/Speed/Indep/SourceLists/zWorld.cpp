@@ -14,6 +14,8 @@
 
 #include "Speed/Indep/Src/World/VehicleRenderConn.cpp"
 
+#include "Speed/Indep/Src/World/CarRenderConn.cpp"
+
 #include "Speed/Indep/Src/World/CarInfo.cpp"
 
 #include "Speed/Indep/Src/World/CarLoader.cpp"
