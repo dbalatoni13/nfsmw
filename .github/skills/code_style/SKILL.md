@@ -117,6 +117,8 @@ Foo::Foo()
 
 - Prefer including the owning repo header over adding a local forward declaration for a project type.
 - If the repo already has a header declaration/definition for a type, include that header instead of redeclaring the type locally.
+- Treat `audit` include-owner warnings as advisory when the suggested header would create a circular include or would drag a heavy owner header into another recovered owner just to replace a harmless pointer/reference forward declaration.
+- In those cycle-prone cases, keep the forward declaration, but still fix the declaration kind (`class` vs `struct`) when you have verified it from the repo or PS2 dump.
 - If the repo only has an empty or stub owner header, and line info / surrounding source clearly points at that header's subsystem, prefer populating that owner header over leaving a recovered project type declaration inside a `.cpp`.
 - Only keep a local forward declaration when no canonical repo header exists yet and you have verified that the ownership is still unresolved.
 - Likewise for project free functions: if a declaration is shared across translation units, move it into the owning header instead of leaving ad-hoc local prototypes in `.cpp` files.
@@ -198,6 +200,12 @@ python tools/decomp-workflow.py build -u main/Path/To/OtherTU
 ```
 
 Keep the cleanup only if the build succeeds and the relevant match status is unchanged.
+
+If the current branch makes `ninja` / `configure.py` restart repeatedly, validate the
+affected TU with the raw `rule prodg` command from `build.ninja` instead of waiting on
+the generator. Compile the TU directly, run `tools/transform_dep.py` on the emitted
+depfile, and then check the affected function/unit with `decomp-workflow.py diff` or
+`decomp-status.py`.
 
 ## Branch Patterns Confirmed So Far
 

@@ -22,6 +22,13 @@ selected ninja target sequentially, writes per-platform logs under `build/<VERSI
 prints failure tails with the exact failing command, and restores the worktree to
 `GOWE69` by default when it finishes.
 
+If a branch touching build generation makes `ninja` restart `configure.py` in a loop,
+fall back to a direct single-TU ProDG compile for validation instead of fighting the
+generator. Copy the `rule prodg` command and the TU's `cflags` from `build.ninja`,
+compile the affected `SourceLists/z*.cpp` straight to `build/GOWE69/src/.../*.o`, run
+`python tools/transform_dep.py` on the emitted depfile, and then use
+`decomp-workflow.py diff|verify` against the rebuilt object.
+
 ## Project Layout
 
 ```
