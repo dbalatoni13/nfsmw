@@ -22,6 +22,14 @@ extern float lbl_8040D0EC;
 extern float lbl_8040D0F0;
 extern float lbl_8040D0F4;
 extern float lbl_8040D0F8;
+extern float lbl_8040D100;
+extern float lbl_8040D104;
+extern float lbl_8040D108;
+extern float lbl_8040D10C;
+extern float lbl_8040D110;
+extern float lbl_8040D114;
+extern float lbl_8040D118;
+extern float lbl_8040D11C;
 
 extern VehicleDamagePart *VehicleDamagePart_ctor(VehicleDamagePart *part, CarRenderInfo *carRenderInfo, int slotId)
     asm("__17VehicleDamagePartP13CarRenderInfoi");
@@ -253,6 +261,49 @@ void VehiclePartDamageBehaviour::DamageVehicle(const DamageZone::Info &damageInf
     }
 
     this->ApplyDamage();
+}
+
+void VehiclePartDamageBehaviour::Update(bMatrix4 *worldMatrix) {
+    this->Pose(worldMatrix);
+
+    if (*reinterpret_cast<unsigned short *>(this->mDamagePartList[CARSLOTID_DAMAGE_TRUNK]) == 1) {
+        bVector3 rotation;
+
+        rotation.x = this->CalcPartRotation(
+                         worldMatrix,
+                         lbl_8040D100 * lbl_8040D104,
+                         lbl_8040D108,
+                         lbl_8040D10C,
+                         lbl_8040D110) *
+                     lbl_8040D114;
+        rotation.y = lbl_8040D118;
+        rotation.z = lbl_8040D118;
+        this->AnimatePart(CARSLOTID_DAMAGE_TRUNK, rotation, worldMatrix);
+    }
+
+    if (*reinterpret_cast<unsigned short *>(this->mDamagePartList[CARSLOTID_DAMAGE_HOOD]) == 1) {
+        bVector3 rotation;
+
+        rotation.x = -this->CalcPartRotation(
+                          worldMatrix,
+                          lbl_8040D100 * lbl_8040D104,
+                          lbl_8040D108,
+                          lbl_8040D10C,
+                          lbl_8040D11C) *
+                     lbl_8040D114;
+        rotation.y = lbl_8040D118;
+        rotation.z = lbl_8040D118;
+        this->AnimatePart(CARSLOTID_DAMAGE_HOOD, rotation, worldMatrix);
+    }
+
+    if (*reinterpret_cast<unsigned short *>(this->mDamagePartList[CARSLOTID_DAMAGE_REAR_BUMPER]) == 1) {
+        this->CalcPartRotation(
+            worldMatrix,
+            lbl_8040D100 * lbl_8040D104,
+            lbl_8040D108,
+            lbl_8040D10C,
+            lbl_8040D110);
+    }
 }
 
 void VehiclePartDamageBehaviour::UnitTest() {
