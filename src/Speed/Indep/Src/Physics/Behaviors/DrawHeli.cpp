@@ -1,8 +1,39 @@
 #include "DrawVehicle.h"
 
 #include "Speed/Indep/Src/Sim/SimConn.h"
+#include "Speed/Indep/Src/Sim/Simulation.h"
 
 namespace RenderConn {
+
+class Pkt_Heli_Open : public Sim::Packet {
+  public:
+    Pkt_Heli_Open(const char *modelname, WUID worldid, bool spool_load)
+        : mModelHash(bStringHash(modelname)), //
+          mWorldID(worldid),                  //
+          mSpoolLoad(spool_load) {}
+
+    UCrc32 ConnectionClass() override {
+        return UCrc32(0x804c146e);
+    }
+
+    unsigned int Size() override {
+        return sizeof(*this);
+    }
+
+    unsigned int Type() override {
+        return SType();
+    }
+
+    static unsigned int SType() {
+        static UCrc32 hash = "Pkt_Heli_Open";
+        return hash.GetValue();
+    }
+
+  private:
+    unsigned int mModelHash; // offset 0x4, size 0x4
+    WUID mWorldID;           // offset 0x8, size 0x4
+    bool mSpoolLoad;         // offset 0xC, size 0x1
+};
 
 class Pkt_Heli_Service : public Sim::Packet {
   public:
@@ -16,6 +47,33 @@ class Pkt_Heli_Service : public Sim::Packet {
 
 Behavior *DrawHeli::Construct(const BehaviorParams &params) {
     return new DrawHeli(params);
+}
+
+DrawHeli::DrawHeli(const BehaviorParams &params)
+    : DrawVehicle(params), //
+      mRenderService(nullptr), //
+      mEffect(0, nullptr), //
+      mWash(Attrib::FindCollection(Attrib::Gen::effects::ClassKey(), Attrib::StringToKey("heliwash")), 0, nullptr), //
+      mWashTask(nullptr), //
+      mInView(false), //
+      mDistanceToView(0.0f), //
+      mIAIHelicopter(nullptr), //
+      mIVehicle(nullptr), //
+      mCollisionBody(nullptr) {
+    mWash.SetDefaultLayout(0x10);
+
+    const char *model = GetVehicle()->GetVehicleAttributes().MODEL().GetString();
+    if (!model) {
+        model = "";
+    }
+
+    RenderConn::Pkt_Heli_Open pkt(model, GetOwner()->GetWorldID(), GetVehicle()->IsSpooled());
+    mWashTask = AddTask(UCrc32(stringhash32("Physics")), 1.0f, 0.0f, Sim::TASK_FRAME_FIXED);
+    Sim::ProfileTask(mWashTask, "HeliWash");
+    mRenderService = OpenService(UCrc32(0x804c146e), &pkt);
+
+    GetOwner()->QueryInterface(&mIVehicle);
+    GetOwner()->QueryInterface(&mCollisionBody);
 }
 
 void DrawHeli::OnBehaviorChange(const UCrc32 &mechanic) {
@@ -74,3 +132,34 @@ float DrawHeli::DistanceToView() const {
 void DrawHeli::Reset() {}
 
 void DrawHeli::OnTaskSimulate(float dT) {}
+
+bool DrawHeli::OnTask(HSIMTASK hTask, float dT) {
+    if (hTask != mWashTask) {
+        return false;
+    }
+
+    if (static_cast<IModel *>(this)->IsHidden() || !mCollisionBody) {
+        mEffect.Stop();
+        return true;
+    }
+
+    WWorldPos wpos = GetOwner()->GetWPos();
+    if (wpos.OnValidFace()) {
+        UMath::Vector3 position = GetVehicle()->GetPosition();
+        float new_y = wpos.HeightAtPoint(position);
+        float altitude = position.y - new_y;
+        UMath::Vector3 normal = UMath::Vector4To3(mCollisionBody->GetGroundNormal());
+        float intensity = 1.0f - UMath::Ramp(altitude, 5.0f, 30.0f);
+
+        position.y = new_y;
+        if (intensity > 0.0f) {
+            UMath::Scale(normal, intensity);
+            mEffect.Pause(false);
+            mEffect.Set(mWash.GetConstCollection(), position, normal, nullptr, false, 0);
+            return true;
+        }
+    }
+
+    mEffect.Pause(true);
+    return true;
+}
