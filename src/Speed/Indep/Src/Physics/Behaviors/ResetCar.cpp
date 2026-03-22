@@ -41,6 +41,14 @@ static inline bool RaceRouteForward(const WRoadSegment &seg) {
     return seg.fFlags & (1 << 2);
 }
 
+struct ResetCookieTrailLayout {
+    int mCount;
+    int mLast;
+    const int mCapacity;
+    int pad;
+    ResetCookie mData[4];
+};
+
 static inline int CookieCount(const CookieTrail<ResetCookie, 4> &cookies) {
     return *reinterpret_cast<const int *>(&cookies);
 }
@@ -49,6 +57,15 @@ static inline void ClearCookies(CookieTrail<ResetCookie, 4> &cookies) {
     int *data = reinterpret_cast<int *>(&cookies);
     data[0] = 0;
     data[1] = -1;
+}
+
+static inline void AddCookie(CookieTrail<ResetCookie, 4> &cookies, const ResetCookie &cookie) {
+    ResetCookieTrailLayout &layout = reinterpret_cast<ResetCookieTrailLayout &>(cookies);
+    layout.mLast = (layout.mLast + 1) % layout.mCapacity;
+    if (layout.mCount < layout.mCapacity) {
+        layout.mCount++;
+    }
+    layout.mData[layout.mLast] = cookie;
 }
 
 Behavior *ResetCar::Construct(const BehaviorParams &params) {
@@ -76,12 +93,34 @@ ResetCar::~ResetCar() {
     }
 }
 
+void ResetCar::OnBehaviorChange(const UCrc32 &mechanic) {
+    if (mechanic == BEHAVIOR_MECHANIC_SUSPENSION) {
+        GetOwner()->QueryInterface(&mSuspension);
+    }
+    if (mechanic == BEHAVIOR_MECHANIC_RIGIDBODY) {
+        GetOwner()->QueryInterface(&mCollisionBody);
+        GetOwner()->QueryInterface(&mVehicleBody);
+    }
+    Behavior::OnBehaviorChange(mechanic);
+}
+
 void ResetCar::Reset() {
     ClearCookies(mCookies);
 }
 
 bool ResetCar::HasResetPosition() {
-    return CookieCount(mCookies) > 0;
+    return CookieCount(mCookies) != 0;
+}
+
+void ResetCar::SetResetPosition(const UMath::Vector3 &position, const UMath::Vector3 &direction) {
+    ResetCookie cookie;
+
+    ClearCookies(mCookies);
+    cookie.position = position;
+    cookie.flags = 0;
+    cookie.direction = direction;
+    cookie.time = Sim::GetTime();
+    AddCookie(mCookies, cookie);
 }
 
 void ResetCar::ClearResetPosition() {
