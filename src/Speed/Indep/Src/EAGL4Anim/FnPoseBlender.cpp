@@ -3,6 +3,136 @@
 #include "AnimUtil.h"
 
 
+namespace EAGL4 {
+
+void MultMatrix(const UMath::Matrix4 *pm1, const UMath::Matrix4 *pm2, UMath::Matrix4 *presult) {
+    const float *m1 = pm1->GetElements();
+    const float *m2 = pm2->GetElements();
+    float *result = presult->GetElements();
+
+    result[0] = m1[0] * m2[0] + m1[1] * m2[4] + m1[2] * m2[8] + m1[3] * m2[12];
+    result[1] = m1[0] * m2[1] + m1[1] * m2[5] + m1[2] * m2[9] + m1[3] * m2[13];
+    result[2] = m1[0] * m2[2] + m1[1] * m2[6] + m1[2] * m2[10] + m1[3] * m2[14];
+    result[3] = m1[0] * m2[3] + m1[1] * m2[7] + m1[2] * m2[11] + m1[3] * m2[15];
+    result[4] = m1[4] * m2[0] + m1[5] * m2[4] + m1[6] * m2[8] + m1[7] * m2[12];
+    result[5] = m1[4] * m2[1] + m1[5] * m2[5] + m1[6] * m2[9] + m1[7] * m2[13];
+    result[6] = m1[4] * m2[2] + m1[5] * m2[6] + m1[6] * m2[10] + m1[7] * m2[14];
+    result[7] = m1[4] * m2[3] + m1[5] * m2[7] + m1[6] * m2[11] + m1[7] * m2[15];
+    result[8] = m1[8] * m2[0] + m1[9] * m2[4] + m1[10] * m2[8] + m1[11] * m2[12];
+    result[9] = m1[8] * m2[1] + m1[9] * m2[5] + m1[10] * m2[9] + m1[11] * m2[13];
+    result[10] = m1[8] * m2[2] + m1[9] * m2[6] + m1[10] * m2[10] + m1[11] * m2[14];
+    result[11] = m1[8] * m2[3] + m1[9] * m2[7] + m1[10] * m2[11] + m1[11] * m2[15];
+    result[12] = m1[12] * m2[0] + m1[13] * m2[4] + m1[14] * m2[8] + m1[15] * m2[12];
+    result[13] = m1[12] * m2[1] + m1[13] * m2[5] + m1[14] * m2[9] + m1[15] * m2[13];
+    result[14] = m1[12] * m2[2] + m1[13] * m2[6] + m1[14] * m2[10] + m1[15] * m2[14];
+    result[15] = m1[12] * m2[3] + m1[13] * m2[7] + m1[14] * m2[11] + m1[15] * m2[15];
+}
+
+void Transform::PostMult(const Transform &second, Transform *pOutput) const {
+    MultMatrix(&m, &second.m, &pOutput->m);
+}
+
+void Transform::PostMult(const Transform &second) {
+    Transform result;
+
+    MultMatrix(&m, &second.m, &result.m);
+    m = result.m;
+}
+
+void Transform::ExtractQuatTrans(UMath::Vector4 *retQuat, UMath::Vector4 *retTrans) const {
+    const float *mat = m.GetElements();
+    float xx = mat[0];
+    float yy = mat[5];
+    float zz = mat[10];
+    float xy = mat[1];
+    float xz = mat[2];
+    float yx = mat[4];
+    float yz = mat[6];
+    float zx = mat[8];
+    float zy = mat[9];
+    float trace = xx + yy + zz;
+
+    if (trace > 0.0f) {
+        float s = EAGL4Anim::FastSqrt(trace + 1.0f);
+        float invS = 0.5f / s;
+
+        retQuat->w = s * 0.5f;
+        retQuat->z = (xy - yx) * invS;
+        retQuat->x = (yz - zy) * invS;
+        retQuat->y = (zx - xz) * invS;
+    } else {
+        float maxDiag = yy;
+
+        if (xx >= yy) {
+            maxDiag = xx;
+        }
+
+        if (zz > maxDiag) {
+            float s = EAGL4Anim::FastSqrt((zz - (xx + yy)) + 1.0f);
+
+            retQuat->z = s * 0.5f;
+            if (s != 0.0f) {
+                s = 0.5f / s;
+            }
+            retQuat->w = (xy - yx) * s;
+            retQuat->y = (zy + yz) * s;
+            retQuat->x = (zx + xz) * s;
+        } else if (xx >= yy) {
+            float s = EAGL4Anim::FastSqrt((xx - (yy + zz)) + 1.0f);
+
+            retQuat->x = s * 0.5f;
+            if (s != 0.0f) {
+                s = 0.5f / s;
+            }
+            retQuat->w = (yz - zy) * s;
+            retQuat->y = (xy + yx) * s;
+            retQuat->z = (xz + zx) * s;
+        } else {
+            float s = EAGL4Anim::FastSqrt((yy - (zz + xx)) + 1.0f);
+
+            retQuat->y = s * 0.5f;
+            if (s != 0.0f) {
+                s = 0.5f / s;
+            }
+            retQuat->w = (zx - xz) * s;
+            retQuat->x = (yx + xy) * s;
+            retQuat->z = (yz + zy) * s;
+        }
+    }
+
+    retTrans->x = mat[12];
+    retTrans->y = mat[13];
+    retTrans->z = mat[14];
+    retTrans->w = mat[15];
+}
+
+void Transform::BuildSQT(float sx, float sy, float sz, float qx, float qy, float qz, float qw, float tx, float ty, float tz) {
+    float *mat = m.GetElements();
+    float qy2 = qy + qy;
+    float qz2 = qz + qz;
+    float qx2qx = qx * (qx + qx);
+    float qw2qx = qw * (qx + qx);
+
+    mat[12] = tx;
+    mat[13] = ty;
+    mat[15] = 1.0f;
+    mat[11] = 0.0f;
+    mat[3] = 0.0f;
+    mat[7] = 0.0f;
+    mat[14] = tz;
+    mat[2] = sx * (qw * qz2 - qw * qy2);
+    mat[6] = sy * (qy * qz2 + qw2qx);
+    mat[10] = sz * (1.0f - (qx2qx + qy * qy2));
+    mat[0] = sx * (1.0f - (qy * qy2 + qz * qz2));
+    mat[4] = sy * (qw * qy2 - qz * qz2);
+    mat[8] = sz * (qw * qz2 + qz * qy2);
+    mat[1] = sx * (qw * qy2 + qz * qz2);
+    mat[5] = sy * (1.0f - (qx2qx + qz * qz2));
+    mat[9] = sz * (qy * qz2 - qw2qx);
+}
+
+}; // namespace EAGL4
+
 namespace EAGL4Anim {
 
 namespace {
