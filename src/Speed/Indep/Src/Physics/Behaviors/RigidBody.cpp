@@ -8,6 +8,7 @@
 #include "Speed/Indep/Src/Main/EventSequencer.h"
 #include "Speed/Indep/Src/Physics/Dynamics.h"
 #include "Speed/Indep/Src/Physics/Dynamics/Collision.h"
+#include "Speed/Indep/Src/Physics/PhysicsObject.h"
 #include "Speed/Indep/Src/Sim/Collision.h"
 #include "Speed/Indep/Src/Sim/Simulation.h"
 #include "Speed/Indep/Src/World/WCollisionTri.h"
@@ -230,6 +231,90 @@ void RBGrid::Remove(RBGrid *grid) {
     if (grid) {
         grid->~RBGrid();
     }
+}
+
+RigidBody::RigidBody(const BehaviorParams &bp, const RBComplexParams &params)
+    : Behavior(bp, 0),                  //
+      IRigidBody(bp.fowner),            //
+      ICollisionBody(bp.fowner),        //
+      IDynamicsEntity(bp.fowner),       //
+      IBoundable(bp.fowner),            //
+      mData(),                          //
+      mSpecs(this, 0),                  //
+      mWCollider(nullptr),              //
+      mCOG(UMath::Vector3::kZero),      //
+      mGeoms(params.fgeoms),            //
+      mGrid(nullptr),                   //
+      mCollisionMask(params.fCollisionMask), //
+      mSimableType(GetOwner()->GetSimableType()), //
+      mDetachForce(0.0f) {
+    unsigned int world_id;
+
+    UMath::Copy(UMath::Matrix4::kIdentity, mInvWorldTensor);
+    mGroundNormal.x = 0.0f;
+    mGroundNormal.y = 1.0f;
+    mGroundNormal.z = 0.0f;
+    mGroundNormal.w = 0.0f;
+    mDimension.x = UMath::Max(params.fdimension.x, 0.1f);
+    mDimension.y = UMath::Max(params.fdimension.y, 0.1f);
+    mDimension.z = UMath::Max(params.fdimension.z, 0.1f);
+
+    TheRigidBodies.AddTail(this);
+    MakeDebugable(DBG_RIGIDBODY);
+
+    UMath::Clear(mData->force);
+    UMath::Clear(mData->torque);
+    mData->index = AssignSlot();
+    mData->mass = params.finitMass;
+    mData->status = 0;
+    mData->statusPrev = 0;
+    mData->position = params.finitPos;
+    if (params.factive) {
+        mData->linearVel = params.finitVel;
+    } else {
+        mData->linearVel = UMath::Vector3::kZero;
+    }
+    if (params.factive) {
+        mData->angularVel = params.finitAngVel;
+    } else {
+        mData->angularVel = UMath::Vector3::kZero;
+    }
+    UMath::Copy(UMath::Matrix4::kIdentity, mData->bodyMatrix);
+    mData->inertiaTensor = params.finitMoment;
+    mData->leversInContact = 0;
+    mData->oom = 1.0f / mData->mass;
+    mData->state = 0;
+    mData->radius = UMath::Length(params.fdimension);
+    SetOrientation(params.finitMat);
+    mGrid = RBGrid::Add(mData->index, *this, params.finitPos, UMath::Length(params.fdimension));
+
+    mCOG = UMath::Vector4To3(mSpecs->CG());
+    if (!params.factive) {
+        mData->state = 1;
+    }
+
+    if (UMath::LengthSquare(UMath::Vector4To3(mSpecs->DRAG())) > 0.0f) {
+        mData->status |= 0x20;
+    } else {
+        mData->status &= ~0x20;
+    }
+
+    if (UMath::LengthSquare(UMath::Vector4To3(mSpecs->DRAG_ANGULAR())) > 0.0f) {
+        mData->status |= 0x800;
+    } else {
+        mData->status &= ~0x800;
+    }
+
+    if (mSimableType == SIMABLE_VEHICLE) {
+        mData->status |= 0x40;
+    }
+
+    world_id = GetOwner()->GetWorldID();
+    mWCollider = WCollider::Create(world_id, WCollider::kColliderShape_Cylinder, 0x1C, mCollisionMask);
+    CreateGeometries();
+    mCount++;
+    mMaps[mData->index] = this;
+    mData->status |= 0x200;
 }
 
 RigidBody::~RigidBody() {

@@ -83,25 +83,8 @@ class Pkt_Car_Open : public Sim::Packet {
 };
 
 // total size: 0x108
-// TODO(GC): packet tail after mWheelOnGround still needs exact field names from DWARF.
 class Pkt_Car_Service : public Sim::Packet {
   public:
-    bool &NOSFlag() {
-        return *reinterpret_cast<bool *>(mTail + 0x10);
-    }
-
-    float &NOSCapacity() {
-        return *reinterpret_cast<float *>(mTail + 0x14);
-    }
-
-    float &DesiredSpeed() {
-        return *reinterpret_cast<float *>(mTail + 0x24);
-    }
-
-    ControlSource &GetControlSource() {
-        return *reinterpret_cast<ControlSource *>(mTail + 0x28);
-    }
-
     float mRPMPercent;           // offset 0x4, size 0x4
     float mThrottlePercent;      // offset 0x8, size 0x4
     float mBrakePercent;         // offset 0xC, size 0x4
@@ -121,57 +104,17 @@ class Pkt_Car_Service : public Sim::Packet {
     float mWheelLoad[4];         // offset 0xB8, size 0x10
     float mWheelCompression[4];  // offset 0xC8, size 0x10
     bool mWheelOnGround[4];      // offset 0xD8, size 0x4
-
-  private:
-    unsigned char mTail[0x2C];   // offset 0xDC, size 0x2C
+    bool mEngineBlown;           // offset 0xE8, size 0x1
+    bool mNOSFlag;               // offset 0xEC, size 0x1
+    float mNOSCapacity;          // offset 0xF0, size 0x4
+    WUID mTrailer;               // offset 0xF4, size 0x4
+    unsigned char mBlownTires[4]; // offset 0xF8, size 0x4
+    float mTimeSinceSeen;        // offset 0xFC, size 0x4
+    float mDesiredSpeed;         // offset 0x100, size 0x4
+    ControlSource mControlSource; // offset 0x104, size 0x4
 };
 
 }; // namespace SoundConn
-
-namespace {
-
-float ClampZeroOne(float value) {
-    if (value > 1.0f) {
-        return 1.0f;
-    }
-    if (value < 0.0f) {
-        return 0.0f;
-    }
-    return value;
-}
-
-float ClampSignedOne(float value) {
-    if (value > 1.0f) {
-        return 1.0f;
-    }
-    if (value < -1.0f) {
-        return -1.0f;
-    }
-    return value;
-}
-
-float ApplySlipDeadzone(float slip, float tolerated) {
-    float deadzone = tolerated * 0.2f;
-    if (deadzone < slip) {
-        return slip - deadzone;
-    }
-    if (slip < -deadzone) {
-        return slip + deadzone;
-    }
-    return 0.0f;
-}
-
-Sound::WheelConfig GetPacketWheel(unsigned int wheelid) {
-    if (wheelid < 2) {
-        return static_cast<Sound::WheelConfig>(wheelid & 1);
-    }
-    if ((wheelid & 1) != 0) {
-        return Sound::EAX4WD_RR;
-    }
-    return Sound::EAX4WD_RL;
-}
-
-}; // namespace
 
 // total size: 0x9C
 class SoundCar : public VehicleBehavior, public ICarAudio, public IAudible {
@@ -208,15 +151,7 @@ SoundCar::SoundCar(const BehaviorParams &params, Sound::Context ctx)
       ICarAudio(params.fowner), //
       IAudible(params.fowner), //
       mSoundService(nullptr), //
-      mEngine(nullptr), //
-      mInput(nullptr), //
-      mTransmission(nullptr), //
-      mSuspension(nullptr), //
-      mAI(nullptr), //
-      mHumanAI(nullptr), //
-      mDamage(nullptr), //
       mSoundRPM(0.0f), //
-      mNIS(nullptr), //
       mEngineInfo(params.fowner, 0) {
     GetOwner()->QueryInterface(&mEngine);
     GetOwner()->QueryInterface(&mInput);
@@ -287,35 +222,68 @@ void SoundCar::OnService(SoundConn::Pkt_Car_Service &svc) {
         float rpmPercent = 0.0f;
 
         if (redLineRange > 0.0f) {
-            rpmPercent = ClampZeroOne((mEngine->GetRPM() - idle) / redLineRange);
+            rpmPercent = (mEngine->GetRPM() - idle) / redLineRange;
+            if (rpmPercent > 1.0f) {
+                rpmPercent = 1.0f;
+            }
+            if (rpmPercent < 0.0f) {
+                rpmPercent = 0.0f;
+            }
         }
 
         mSoundRPM = svc.mAudibleRPMPct * redLineRange + idle;
         svc.mRPMPercent = rpmPercent;
-        svc.NOSFlag() = mEngine->IsNOSEngaged();
-        svc.NOSCapacity() = mEngine->GetNOSCapacity();
+        svc.mNOSFlag = mEngine->IsNOSEngaged();
+        svc.mNOSCapacity = mEngine->GetNOSCapacity();
         svc.mGear = static_cast<int>(mTransmission->GetGear());
     }
 
     if (mInput) {
         InputControls &controls = mInput->GetControls();
+        float throttle = controls.fGas;
+        float brake = controls.fBrake;
+        float eBrake = controls.fHandBrake;
+        float steering = controls.fSteering;
 
-        svc.mThrottlePercent = ClampZeroOne(controls.fGas);
-        svc.mBrakePercent = ClampZeroOne(controls.fBrake);
-        svc.mEBrakePercent = ClampZeroOne(controls.fHandBrake);
-        svc.mSteering = ClampSignedOne(controls.fSteering);
+        if (throttle > 1.0f) {
+            throttle = 1.0f;
+        }
+        if (throttle < 0.0f) {
+            throttle = 0.0f;
+        }
+        if (brake > 1.0f) {
+            brake = 1.0f;
+        }
+        if (brake < 0.0f) {
+            brake = 0.0f;
+        }
+        if (eBrake > 1.0f) {
+            eBrake = 1.0f;
+        }
+        if (eBrake < 0.0f) {
+            eBrake = 0.0f;
+        }
+        if (steering > 1.0f) {
+            steering = 1.0f;
+        }
+        if (steering < -1.0f) {
+            steering = -1.0f;
+        }
+
+        svc.mThrottlePercent = throttle;
+        svc.mBrakePercent = brake;
+        svc.mEBrakePercent = eBrake;
+        svc.mSteering = steering;
 
         if (mNIS) {
-            svc.GetControlSource() = CONTROL_NIS;
+            svc.mControlSource = CONTROL_NIS;
         } else if (GetVehicle() && GetVehicle()->GetDriverClass() == DRIVER_REMOTE) {
-            svc.GetControlSource() = CONTROL_ONLINE;
+            svc.mControlSource = CONTROL_ONLINE;
         } else if (mHumanAI && !mHumanAI->GetAiControl()) {
-            svc.GetControlSource() = CONTROL_HUMAN;
+            svc.mControlSource = CONTROL_HUMAN;
         } else if (mAI) {
-            svc.GetControlSource() = CONTROL_AI;
-            svc.DesiredSpeed() = mAI->GetDriveSpeed();
-        } else {
-            svc.GetControlSource() = CONTROL_NONE;
+            svc.mControlSource = CONTROL_AI;
+            svc.mDesiredSpeed = mAI->GetDriveSpeed();
         }
     }
 
@@ -333,7 +301,27 @@ void SoundCar::OnService(SoundConn::Pkt_Car_Service &svc) {
 
     if (mSuspension) {
         for (unsigned int wheelid = 0; wheelid < mSuspension->GetNumWheels(); ++wheelid) {
-            Sound::WheelConfig packetWheel = GetPacketWheel(wheelid);
+            Sound::WheelConfig packetWheel;
+            float slip;
+            float toleratedSlip;
+
+            if (wheelid < 2) {
+                packetWheel = static_cast<Sound::WheelConfig>(wheelid & 1);
+            } else if ((wheelid & 1) != 0) {
+                packetWheel = Sound::EAX4WD_RR;
+            } else {
+                packetWheel = Sound::EAX4WD_RL;
+            }
+
+            slip = mSuspension->GetWheelSlip(wheelid);
+            toleratedSlip = mSuspension->GetToleratedSlip(wheelid) * 0.2f;
+            if (toleratedSlip < slip) {
+                slip -= toleratedSlip;
+            } else if (slip < -toleratedSlip) {
+                slip += toleratedSlip;
+            } else {
+                slip = 0.0f;
+            }
 
             svc.mTractionPct[packetWheel] = mSuspension->GetWheelTraction(wheelid);
             svc.mWheelTerrain[packetWheel] = mSuspension->GetWheelRoadSurface(wheelid);
@@ -342,7 +330,7 @@ void SoundCar::OnService(SoundConn::Pkt_Car_Service &svc) {
             svc.mWheelCompression[packetWheel] = mSuspension->GetCompression(wheelid);
             svc.mOversteer = mSuspension->CalculateOversteerFactor();
             svc.mUndersteer = mSuspension->CalculateUndersteerFactor();
-            svc.mWheelSlip[packetWheel].x = ApplySlipDeadzone(mSuspension->GetWheelSlip(wheelid), mSuspension->GetToleratedSlip(wheelid));
+            svc.mWheelSlip[packetWheel].x = slip;
             svc.mWheelSlip[packetWheel].y = -mSuspension->GetWheelSkid(wheelid);
 
             OnServiceTire(svc, wheelid, packetWheel);
