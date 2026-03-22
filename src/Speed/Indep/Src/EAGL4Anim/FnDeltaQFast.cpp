@@ -323,17 +323,16 @@ void FnDeltaQFast::AddDeltaMask(DeltaQFastPhysical *floorPhys, DeltaQFast *delta
         unsigned char *deltaData = GetQFastDeltaData(deltaQ, binData, iframe);
 
         for (int ibone = 0; ibone < deltaQ->mNumBones; ibone++) {
-            if (!boneMask->GetBone(boneIdxs[ibone])) {
-                continue;
+            if (boneMask->GetBone(boneIdxs[ibone])) {
+                UMath::Vector4 delta;
+
+                DecodeQFastDelta(mMinRangesf[ibone], deltaData, delta);
+                prevQs[ibone].x += delta.x;
+                prevQs[ibone].y += delta.y;
+                prevQs[ibone].z += delta.z;
+                prevQs[ibone].w += delta.w;
             }
-
-            UMath::Vector4 delta;
-
-            DecodeQFastDelta(mMinRangesf[ibone], &deltaData[ibone * 3], delta);
-            prevQs[ibone].x += delta.x;
-            prevQs[ibone].y += delta.y;
-            prevQs[ibone].z += delta.z;
-            prevQs[ibone].w += delta.w;
+            deltaData += 3;
         }
     }
 }
@@ -347,17 +346,16 @@ void FnDeltaQFast::SubDeltaMask(DeltaQFastPhysical *floorPhys, DeltaQFast *delta
         unsigned char *deltaData = GetQFastDeltaData(deltaQ, binData, iframe);
 
         for (int ibone = 0; ibone < deltaQ->mNumBones; ibone++) {
-            if (!boneMask->GetBone(boneIdxs[ibone])) {
-                continue;
+            if (boneMask->GetBone(boneIdxs[ibone])) {
+                UMath::Vector4 delta;
+
+                DecodeQFastDelta(mMinRangesf[ibone], deltaData, delta);
+                prevQs[ibone].x -= delta.x;
+                prevQs[ibone].y -= delta.y;
+                prevQs[ibone].z -= delta.z;
+                prevQs[ibone].w -= delta.w;
             }
-
-            UMath::Vector4 delta;
-
-            DecodeQFastDelta(mMinRangesf[ibone], &deltaData[ibone * 3], delta);
-            prevQs[ibone].x -= delta.x;
-            prevQs[ibone].y -= delta.y;
-            prevQs[ibone].z -= delta.z;
-            prevQs[ibone].w -= delta.w;
+            deltaData += 3;
         }
     }
 }
