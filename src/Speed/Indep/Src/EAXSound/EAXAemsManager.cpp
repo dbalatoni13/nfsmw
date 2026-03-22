@@ -304,19 +304,21 @@ void BankSlotSystem::DestroySlots() {
 
 EAXAemsManager::EAXAemsManager() {
     m_pAsyncBuff = nullptr;
+    mAsyncBuffSize = 0x10000;
+    m_nCallbackEvtSys = -1;
     m_ExternalLoadCallback = nullptr;
     m_NumEvtSysLoaded = 0;
-    mAsyncBuffSize = 0x10000;
     mNumEvtSys = -1;
-    m_nCallbackEvtSys = -1;
     m_pCurLoadSDLP = nullptr;
-    m_pCurUNLOADSDLP = nullptr;
     m_pAsyncLoadSDLP = nullptr;
     m_ItemsPendingAsyncResolve = 0;
-    m_bBulkLoad = false;
-    m_IsWaitingForFileCB = false;
-    m_SPUMainAllocsEnd = 0;
+    *static_cast<unsigned int *>(static_cast<void *>(&m_bBulkLoad)) = 0;
+    m_pEvtSystems.clear();
+    mWaitForResolve.clear();
+    mBankSlots.clear();
+    mPFBankSlot.clear();
     m_SPU_UpperAddress = 0;
+    m_SPUMainAllocsEnd = 0;
 }
 
 EAXAemsManager::~EAXAemsManager() {
@@ -530,7 +532,7 @@ int EAXAemsManager::InitiateLoad() {
             AddQueuedFile(m_pCurLoadSDLP->pmem, m_csTemp1, 0, m_pCurLoadSDLP->nSize, DataLoadCB,
                           reinterpret_cast<int>(m_pCurLoadSDLP), pQueuedFileParams);
         SetWaitingState:
-            m_IsWaitingForFileCB = memLocation != TMP_ALLOC_NONE;
+            *static_cast<int *>(static_cast<void *>(&m_IsWaitingForFileCB)) = memLocation;
             break;
         case TMP_ALLOC_NONE:
             goto SetWaitingState;
@@ -551,7 +553,7 @@ int EAXAemsManager::InitiateLoad() {
             result = m_pCurLoadSDLP->nSize;
             AddQueuedFile(fileString, m_csTemp1, 0, result, DataLoadCB,
                           reinterpret_cast<int>(m_pCurLoadSDLP), pQueuedFileParams);
-            m_IsWaitingForFileCB = 1;
+            *static_cast<int *>(static_cast<void *>(&m_IsWaitingForFileCB)) = 1;
             break;
         case TMP_ALLOC_AUDIO:
             if (m_pCurLoadSDLP->AssetDescription.eDataType == EAXSND_DT_GENERIC_DATA &&
@@ -577,7 +579,7 @@ int EAXAemsManager::InitiateLoad() {
             }
             AddQueuedFile(fileString, m_csTemp1, 0, result, DataLoadCB,
                           reinterpret_cast<int>(m_pCurLoadSDLP), pQueuedFileParams);
-            m_IsWaitingForFileCB = 1;
+            *static_cast<int *>(static_cast<void *>(&m_IsWaitingForFileCB)) = 1;
             break;
         default:
             break;
