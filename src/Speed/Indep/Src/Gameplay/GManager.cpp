@@ -1861,13 +1861,13 @@ void GManager::RecursivePreloadCharacterCars(GRuntimeInstance *instance, bool fo
         }
 
         stockCarName = *stockCarNamePtr;
+        if (stockCarName && *stockCarName) {
+            carName = stockCarName;
+        }
+
         preloadPtr = reinterpret_cast<const int *>(instance->GetAttributePointer(0x9652AF0F, 0));
         if (!preloadPtr) {
             preloadPtr = reinterpret_cast<const int *>(Attrib::DefaultDataArea(sizeof(int)));
-        }
-
-        if (stockCarName && *stockCarName) {
-            carName = stockCarName;
         }
 
         if (*preloadPtr != 0 || forcePreload) {
