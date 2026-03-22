@@ -401,7 +401,6 @@ void SoundCar::OnService(SoundConn::Pkt_Car_Service &svc) {
             float pct = mSuspension->GetWheelTraction(wheelid);
             float slip;
             float toleratedSlip;
-            SimSurface roadsurf = mSuspension->GetWheelRoadSurface(wheelid);
 
             if (wheelid < 2) {
                 packetWheel = Sound::EAX4WD_FL;
@@ -424,6 +423,7 @@ void SoundCar::OnService(SoundConn::Pkt_Car_Service &svc) {
                 slip = 0.0f;
             }
 
+            SimSurface roadsurf = mSuspension->GetWheelRoadSurface(wheelid);
             svc.SetWheelTerrain(packetWheel, roadsurf, mSuspension->IsWheelOnGround(wheelid));
             svc.SetTraction(packetWheel, pct);
             svc.SetOversteer(mSuspension->CalculateOversteerFactor());
