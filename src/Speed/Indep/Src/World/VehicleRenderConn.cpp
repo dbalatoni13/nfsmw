@@ -23,6 +23,7 @@ extern CarTypeInfo *CarTypeInfoArray;
 extern eView eViews[];
 extern EmitterSystem gEmitterSystem;
 extern int UsePrecompositeVinyls;
+extern int FlareDiv;
 int CarInfo_IsSkinned(CarType car_type) asm("CarInfo_IsSkinned__F7CarType");
 
 struct RideInfoLoaderMirror {
@@ -457,6 +458,84 @@ void VehicleRenderConn::RenderAll(eView *view, int reflection) {
 
     for (; it != end; ++it) {
         (*it)->OnRender(view, reflection);
+    }
+}
+
+void VehicleRenderConn::RenderFlares(eView *view, int reflection, int renderFlareFlags) {
+    const UTL::Collections::Listable<VehicleRenderConn, 10>::List &loader_list = VehicleRenderConn::GetList();
+    UTL::Collections::Listable<VehicleRenderConn, 10>::List::const_iterator it = loader_list.begin();
+    UTL::Collections::Listable<VehicleRenderConn, 10>::List::const_iterator end = loader_list.end();
+
+    for (; it != end; ++it) {
+        VehicleRenderConn *vehicle_render_conn = *it;
+        CarRenderInfo *render_info = vehicle_render_conn->mRenderInfo;
+
+        if (vehicle_render_conn->CanRender() && render_info != 0) {
+            const ReferenceMirror *world_ref = reinterpret_cast<const ReferenceMirror *>(&vehicle_render_conn->mWorldRef);
+            bMatrix4 matrix;
+            bVector3 position;
+            CameraMover *camera_mover = view->GetCameraMover();
+            CameraAnchor *anchor = 0;
+
+            vehicle_render_conn->GetRenderMatrix(&matrix);
+            position.x = matrix.v3.x;
+            position.y = matrix.v3.y;
+            position.z = matrix.v3.z;
+
+            if (camera_mover != 0 && !camera_mover->RenderCarPOV()) {
+                anchor = camera_mover->GetAnchor();
+            }
+
+            if (camera_mover == 0 || camera_mover->RenderCarPOV() || anchor == 0 || anchor->GetWorldID() != world_ref->mWorldID) {
+                render_info->RenderFlaresOnCar(view, &position, &matrix, 0, reflection, renderFlareFlags);
+
+                if (reflection == 0) {
+                    if (view->GetID() == 1 || view->GetID() == 2) {
+                        if (render_info->matrixIndex < 0) {
+                            render_info->matrixIndex = 0;
+                        }
+                        render_info->matrixIndex++;
+                        if (render_info->matrixIndex > 2) {
+                            render_info->matrixIndex = 0;
+                        }
+                        bCopy(&render_info->LastFewMatrices[render_info->matrixIndex], &matrix);
+                        render_info->LastFewPositions[render_info->matrixIndex] = position;
+                    }
+
+                    {
+                        const bVector3 *velocity = world_ref->mVelocity;
+                        float speed_sq = velocity->x * velocity->x + velocity->y * velocity->y + velocity->z * velocity->z;
+                        float speed = 0.0f;
+
+                        if (0.0f < speed_sq) {
+                            speed = bSqrt(speed_sq);
+                        }
+
+                        if (0.1f < speed && render_info->NOSstate != 0) {
+                            for (int streak = 2; streak > 0; --streak) {
+                                int current_index = (render_info->matrixIndex + streak) % 3;
+                                int next_index = (current_index + 1) % 3;
+                                bVector3 delta;
+
+                                delta.x = render_info->LastFewPositions[current_index].x - render_info->LastFewPositions[next_index].x;
+                                delta.y = render_info->LastFewPositions[current_index].y - render_info->LastFewPositions[next_index].y;
+                                delta.z = render_info->LastFewPositions[current_index].z - render_info->LastFewPositions[next_index].z;
+
+                                for (int div = 1; div < FlareDiv; div++) {
+                                    float t = static_cast<float>(div) / static_cast<float>(FlareDiv);
+                                    bVector3 flare_position;
+
+                                    flare_position.x = delta.x * t + render_info->LastFewPositions[next_index].x;
+                                    flare_position.y = delta.y * t + render_info->LastFewPositions[next_index].y;
+                                    flare_position.z = delta.z * t + render_info->LastFewPositions[next_index].z;
+                                    render_info->RenderFlaresOnCar(view, &flare_position, &render_info->LastFewMatrices[next_index], 8, 0, 2);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
