@@ -35,6 +35,7 @@ PRINTABLE_BYTES = set(string.printable.encode("ascii")) - set(b"\x0b\x0c")
 class StringRef:
     reloc_section: str
     reloc_offset: int
+    owner_name: Optional[str]
     symbol_name: str
     target_section: str
     target_offset: int
@@ -45,6 +46,7 @@ class StringRef:
 class RefGroup:
     reloc_section: str
     offsets: Tuple[int, ...]
+    owner_names: Tuple[str, ...]
     symbol_name: str
     target_section: str
     target_offset: int
@@ -141,6 +143,7 @@ def resolve_ref(
     reloc_section: RelocationSection,
     reloc,
     min_length: int,
+    function_ranges: Sequence[Tuple[int, int, str]],
 ) -> Optional[StringRef]:
     symtab = elf.get_section(reloc_section["sh_link"])
     symbol = symtab.get_symbol(reloc["r_info_sym"])
@@ -167,11 +170,37 @@ def resolve_ref(
     return StringRef(
         reloc_section=reloc_section.name,
         reloc_offset=int(reloc["r_offset"]),
+        owner_name=find_owner_name(int(reloc["r_offset"]), function_ranges),
         symbol_name=symbol_name,
         target_section=target_section.name,
         target_offset=int(target_offset),
         value=value,
     )
+
+
+def get_function_ranges(elf: ELFFile, target_section_index: int) -> List[Tuple[int, int, str]]:
+    symtab = elf.get_section_by_name(".symtab")
+    if symtab is None:
+        return []
+    ranges: List[Tuple[int, int, str]] = []
+    for symbol in symtab.iter_symbols():
+        if symbol["st_info"]["type"] != "STT_FUNC":
+            continue
+        if symbol["st_shndx"] != target_section_index:
+            continue
+        size = int(symbol["st_size"])
+        if size <= 0:
+            continue
+        start = int(symbol["st_value"])
+        ranges.append((start, start + size, symbol.name))
+    return ranges
+
+
+def find_owner_name(offset: int, function_ranges: Sequence[Tuple[int, int, str]]) -> Optional[str]:
+    for start, end, name in function_ranges:
+        if start <= offset < end:
+            return name
+    return None
 
 
 def load_string_refs(path: str, min_length: int) -> Dict[int, StringRef]:
@@ -183,8 +212,9 @@ def load_string_refs(path: str, min_length: int) -> Dict[int, StringRef]:
                 continue
             if not section.name.startswith(".rela.text") and not section.name.startswith(".rel.text"):
                 continue
+            function_ranges = get_function_ranges(elf, int(section["sh_info"]))
             for reloc in section.iter_relocations():
-                ref = resolve_ref(elf, section, reloc, min_length)
+                ref = resolve_ref(elf, section, reloc, min_length, function_ranges)
                 if ref is not None:
                     refs[ref.reloc_offset] = ref
     return refs
@@ -214,6 +244,9 @@ def group_refs(refs: Iterable[StringRef]) -> List[RefGroup]:
             RefGroup(
                 reloc_section=current[0].reloc_section,
                 offsets=tuple(item.reloc_offset for item in current),
+                owner_names=tuple(
+                    owner for owner in dict.fromkeys(item.owner_name for item in current if item.owner_name)
+                ),
                 symbol_name=current[0].symbol_name,
                 target_section=current[0].target_section,
                 target_offset=current[0].target_offset,
@@ -227,6 +260,9 @@ def group_refs(refs: Iterable[StringRef]) -> List[RefGroup]:
             RefGroup(
                 reloc_section=current[0].reloc_section,
                 offsets=tuple(item.reloc_offset for item in current),
+                owner_names=tuple(
+                    owner for owner in dict.fromkeys(item.owner_name for item in current if item.owner_name)
+                ),
                 symbol_name=current[0].symbol_name,
                 target_section=current[0].target_section,
                 target_offset=current[0].target_offset,
@@ -257,9 +293,12 @@ def print_group_list(label: str, groups: Sequence[RefGroup]) -> None:
         return
     print(f"  {label}: {len(groups)} callsite(s)")
     for group in groups:
+        owner_suffix = ""
+        if group.owner_names:
+            owner_suffix = " owner=" + ", ".join(group.owner_names)
         print(
             f"    - [{group.reloc_section} @ {format_offsets(group.offsets)} -> "
-            f"{group.target_section}+0x{group.target_offset:X}]"
+            f"{group.target_section}+0x{group.target_offset:X}{owner_suffix}]"
         )
 
 

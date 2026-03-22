@@ -121,9 +121,10 @@ python tools/check_tu_strings.py -u main/Speed/Indep/SourceLists/zTrack --search
 
 It compares printable string-like `.text` relocation targets between the rebuilt and
 original objects for one unit, collapses PPC hi/lo relocation pairs into one callsite,
-and reports content/count mismatches by string value. Use it before and after changing
-debug/profiler/network string literals, and when you suspect a TU still has ownership
-or static-init issues that only show up as string relocation drift.
+reports the owning function for each callsite, and surfaces content/count mismatches by
+string value. Use it before and after changing debug/profiler/network string literals,
+and when you suspect a TU still has ownership or static-init issues that only show up as
+string relocation drift.
 
 ### code-style — Repo-local style guidance
 
