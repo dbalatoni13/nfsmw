@@ -135,6 +135,10 @@ class CarLoader {
     }
 
   private:
+    void CompositeSkin(LoadedSkin *loaded_skin);
+    int RemoveSomethingFromCarMemoryPool(bool force_unload);
+    void DefragmentPool();
+
     void (*pCallback)(unsigned int);                 // offset 0x0, size 0x4
     unsigned int Param;                              // offset 0x4, size 0x4
     eLoadingMode LoadingMode;                        // offset 0x8, size 0x4

@@ -2,6 +2,7 @@
 #include "Speed/Indep/bWare/Inc/bPrintf.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include "Speed/Indep/bWare/Inc/bChunk.hpp"
+#include "Speed/Indep/bWare/Inc/bMemory.hpp"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 
 struct RideInfoLayout {
@@ -96,6 +97,9 @@ CarPartModelTable *CarPartModelsTable;
 CarPartPack *MasterCarPartPack;
 
 int ConvertVinylGroupNumberToVinylType(int vinyl_group_number);
+int CarInfo_GetMaxCompositingBufferSize();
+extern int CarLoaderMemoryPoolNumber;
+int CompositeSkin(RideInfo *ride_info);
 
 LoadedWheel::LoadedWheel(RideInfo *ride_info, bool in_fe) {
     RideInfoLayout *ride_layout = reinterpret_cast<RideInfoLayout *>(ride_info);
@@ -409,4 +413,26 @@ int LoaderCarInfo(bChunk *chunk) {
     }
 
     return 1;
+}
+
+void CarLoader::CompositeSkin(LoadedSkin *loaded_skin) {
+    if (loaded_skin->pRideInfo->IsUsingCompositeSkin() != 0) {
+        if (this->LoadingMode == MODE_IN_GAME) {
+            int required_size = CarInfo_GetMaxCompositingBufferSize();
+
+            if (bCountFreeMemory(CarLoaderMemoryPoolNumber) < required_size) {
+                do {
+                    if (required_size <= bCountFreeMemory(CarLoaderMemoryPoolNumber)) {
+                        break;
+                    }
+                } while (this->RemoveSomethingFromCarMemoryPool(false) != 0);
+
+                this->DefragmentPool();
+            }
+        }
+
+        ::CompositeSkin(loaded_skin->pRideInfo);
+    }
+
+    loaded_skin->DoneComposite = 1;
 }
