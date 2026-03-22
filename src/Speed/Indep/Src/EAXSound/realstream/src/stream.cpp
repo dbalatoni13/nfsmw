@@ -535,6 +535,7 @@ void restartstream(STREAMHEADERtag *stream, int priority) {
     int lockstate;
     int largestread;
     int tailsize;
+    FILEOPERATION *op;
 
     while (strm->datastart != strm->datatail) {
         chunk = reinterpret_cast<STREAMCHUNKHDR *>(strm->datastart);
@@ -560,7 +561,7 @@ void restartstream(STREAMHEADERtag *stream, int priority) {
     }
     MUTEX_unlock(&strm->mutex);
 
-    if (strm->dataend < strm->datastart) {
+    if (strm->datastart > strm->dataend) {
         largestread = strm->datastart - strm->dataend - 0x21;
     } else {
         largestread = strm->bufferend - strm->dataend - 0x20;
@@ -575,12 +576,10 @@ void restartstream(STREAMHEADERtag *stream, int priority) {
             }
 
             if ((count & 0x1F) == 0 || strm->curreq->type == 1) {
-                reqend = strm->actualbufferstart;
+                strm->bufferstart = strm->actualbufferstart;
             } else {
-                reqend = strm->actualbufferstart - (static_cast<int>(count) % 0x20 - 0x20);
+                strm->bufferstart = strm->actualbufferstart - (static_cast<int>(count) % 0x20 - 0x20);
             }
-
-            strm->bufferstart = reqend;
             MEM_copy(strm->bufferstart, strm->datatail, count);
 
             reqend = strm->datatail;
@@ -623,37 +622,39 @@ void restartstream(STREAMHEADERtag *stream, int priority) {
     }
     gbWorldDataBlocksAudioRead = false;
 
-    if (strm->readblocksize <= largestread) {
-        req = strm->curreq;
-        if (req->type == 1) {
-            if (req->parm < largestread + strm->foffset) {
-                strm->readsize = req->parm - strm->foffset;
-            } else {
-                strm->readsize = largestread;
-            }
+    if (largestread < strm->readblocksize) {
+        goto stream_stop;
+    }
 
-            MEM_copy(strm->dataend, req->address, strm->readsize);
-            req->address = req->address + strm->readsize;
-            readcallback(0, 0, stream);
-            return;
-        }
-
-        if (strm->readblocksize < largestread) {
-            strm->readsize = (largestread / strm->readblocksize) * strm->readblocksize;
+    req = strm->curreq;
+    if (req->type == 1) {
+        if (largestread + strm->foffset > req->parm) {
+            strm->readsize = req->parm - strm->foffset;
         } else {
-            strm->readsize = strm->readblocksize;
+            strm->readsize = largestread;
         }
 
-        bReadCallbackToggle = false;
-        FILEOPERATION *op = FILESYS_read(strm->fhandle, strm->foffset, strm->dataend, strm->readsize, priority, stream);
-        strm->fop = reinterpret_cast<int>(op);
-        if (op == nullptr) {
-            return;
-        }
-
-        FILESYS_callbackop(op, readcallback);
+        MEM_copy(strm->dataend, req->address, strm->readsize);
+        req->address = req->address + strm->readsize;
+        readcallback(0, 0, stream);
         return;
     }
+
+    if (largestread > strm->readblocksize) {
+        strm->readsize = (largestread / strm->readblocksize) * strm->readblocksize;
+    } else {
+        strm->readsize = strm->readblocksize;
+    }
+
+    bReadCallbackToggle = false;
+    op = FILESYS_read(strm->fhandle, strm->foffset, strm->dataend, strm->readsize, priority, stream);
+    strm->fop = reinterpret_cast<int>(op);
+    if (op == nullptr) {
+        return;
+    }
+
+    FILESYS_callbackop(op, readcallback);
+    return;
 
 stream_stop:
     strm->state = 2;
