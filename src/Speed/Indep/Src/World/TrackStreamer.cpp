@@ -2000,7 +2000,7 @@ int TrackStreamer::GetLoadingPriority(TrackStreamingSection *section, StreamingP
         return 0;
     }
 
-    float speed = bLength(&position_entry->Velocity);
+    float speed = bLength(position_entry->Velocity);
     if (calculating_jettison) {
         speed = 100.0f;
     }
@@ -2009,7 +2009,7 @@ int TrackStreamer::GetLoadingPriority(TrackStreamingSection *section, StreamingP
         return 0;
     }
 
-    bVector2 predict_pos = position_entry->Position + position_entry->Velocity;
+    bVector2 predict_pos = position_entry->Position + position_entry->Velocity * 1.0f;
     float distance = boundary->GetDistanceOutside(&predict_pos, 999.0f);
 
     bVector2 direction;

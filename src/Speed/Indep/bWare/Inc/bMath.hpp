@@ -323,6 +323,10 @@ inline float bLength(const bVector2 *v) {
     return bSqrt(x * x + y * y);
 }
 
+inline float bLength(const bVector2 &v) {
+    return bLength(&v);
+}
+
 inline bVector2 bNormalize(const bVector2 &v) {
     bVector2 dest;
     bNormalize(&dest, &v);
