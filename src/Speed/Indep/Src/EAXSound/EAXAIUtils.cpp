@@ -17,6 +17,42 @@ static const float MIN_StateSustainTime[MAX_NUM_SND_AI_STATE] = {
     0.5f,
 };
 
+static const float TWK_SND_SteeringMonitor[6] = {
+    15.0f,
+    1.0f,
+    3.0f,
+    0.5f,
+    0.5f,
+    1.0f,
+};
+
+static const float TWK_SND_AccelMonitor[6] = {
+    3.0f,
+    0.0f,
+    1.0f,
+    0.4f,
+    0.5f,
+    1.0f,
+};
+
+static const float TWK_SND_DeccelMonitor[6] = {
+    3.0f,
+    -0.1f,
+    -1.0f,
+    0.1f,
+    0.5f,
+    -1.0f,
+};
+
+static const float TWK_SND_ThrottleMonitor[6] = {
+    2.0f,
+    80.0f,
+    30.0f,
+    0.2f,
+    0.5f,
+    -1.0f,
+};
+
 void SndAITrigger::BeginTrigger() {
     bTrigger = true;
     CurTriggerLength = t_TriggerLength;
@@ -113,40 +149,40 @@ SndAIStateManager::~SndAIStateManager() {}
 void SndAIStateManager::Initialize(SFXCTL_Physics *pPhys) {
     m_pPhysicsCTL = pPhys;
 
-    SteeringMonitorLeft.Initialize(8);
-    SteeringMonitorLeft.fSign = 1.0f;
-    SteeringMonitorLeft.m_fThreshold = 0.25f;
-    SteeringMonitorLeft.m_fAutoTrigger = 0.65f;
-    SteeringMonitorLeft.t_fSustain = 0.2f;
-    SteeringMonitorLeft.t_TriggerLength = 0.4f;
+    SteeringMonitorLeft.m_fThreshold = TWK_SND_SteeringMonitor[1];
+    SteeringMonitorLeft.m_fAutoTrigger = TWK_SND_SteeringMonitor[2];
+    SteeringMonitorLeft.fSign = TWK_SND_SteeringMonitor[5];
+    SteeringMonitorLeft.t_fSustain = TWK_SND_SteeringMonitor[3];
+    SteeringMonitorLeft.t_TriggerLength = TWK_SND_SteeringMonitor[4];
+    SteeringMonitorLeft.Initialize(static_cast< int >(TWK_SND_SteeringMonitor[0]));
 
-    SteeringMonitorRight.Initialize(8);
-    SteeringMonitorRight.fSign = 1.0f;
-    SteeringMonitorRight.m_fThreshold = 0.25f;
-    SteeringMonitorRight.m_fAutoTrigger = 0.65f;
-    SteeringMonitorRight.t_fSustain = 0.2f;
-    SteeringMonitorRight.t_TriggerLength = 0.4f;
+    SteeringMonitorRight.m_fThreshold = -TWK_SND_SteeringMonitor[1];
+    SteeringMonitorRight.m_fAutoTrigger = -TWK_SND_SteeringMonitor[2];
+    SteeringMonitorRight.fSign = -TWK_SND_SteeringMonitor[5];
+    SteeringMonitorRight.t_fSustain = TWK_SND_SteeringMonitor[3];
+    SteeringMonitorRight.t_TriggerLength = TWK_SND_SteeringMonitor[4];
+    SteeringMonitorRight.Initialize(static_cast< int >(TWK_SND_SteeringMonitor[0]));
 
-    AccelMonitor.Initialize(8);
-    AccelMonitor.fSign = 1.0f;
-    AccelMonitor.m_fThreshold = 0.2f;
-    AccelMonitor.m_fAutoTrigger = 0.6f;
-    AccelMonitor.t_fSustain = 0.1f;
-    AccelMonitor.t_TriggerLength = 0.4f;
+    AccelMonitor.m_fThreshold = TWK_SND_AccelMonitor[1];
+    AccelMonitor.m_fAutoTrigger = TWK_SND_AccelMonitor[2];
+    AccelMonitor.t_fSustain = TWK_SND_AccelMonitor[3];
+    AccelMonitor.t_TriggerLength = TWK_SND_AccelMonitor[4];
+    AccelMonitor.fSign = TWK_SND_AccelMonitor[5];
+    AccelMonitor.Initialize(static_cast< int >(TWK_SND_AccelMonitor[0]));
 
-    DeccelMonitor.Initialize(8);
-    DeccelMonitor.fSign = 1.0f;
-    DeccelMonitor.m_fThreshold = 0.2f;
-    DeccelMonitor.m_fAutoTrigger = 0.6f;
-    DeccelMonitor.t_fSustain = 0.1f;
-    DeccelMonitor.t_TriggerLength = 0.4f;
+    DeccelMonitor.m_fThreshold = TWK_SND_DeccelMonitor[1];
+    DeccelMonitor.m_fAutoTrigger = TWK_SND_DeccelMonitor[2];
+    DeccelMonitor.t_fSustain = TWK_SND_DeccelMonitor[3];
+    DeccelMonitor.t_TriggerLength = TWK_SND_DeccelMonitor[4];
+    DeccelMonitor.fSign = TWK_SND_DeccelMonitor[5];
+    DeccelMonitor.Initialize(static_cast< int >(TWK_SND_DeccelMonitor[0]));
 
-    ThrottleMonitor.Initialize(8);
-    ThrottleMonitor.fSign = 1.0f;
-    ThrottleMonitor.m_fThreshold = 0.2f;
-    ThrottleMonitor.m_fAutoTrigger = 0.55f;
-    ThrottleMonitor.t_fSustain = 0.15f;
-    ThrottleMonitor.t_TriggerLength = 0.4f;
+    ThrottleMonitor.m_fThreshold = TWK_SND_ThrottleMonitor[1];
+    ThrottleMonitor.m_fAutoTrigger = TWK_SND_ThrottleMonitor[2];
+    ThrottleMonitor.t_fSustain = TWK_SND_ThrottleMonitor[3];
+    ThrottleMonitor.t_TriggerLength = TWK_SND_ThrottleMonitor[4];
+    ThrottleMonitor.fSign = TWK_SND_ThrottleMonitor[5];
+    ThrottleMonitor.Initialize(static_cast< int >(TWK_SND_ThrottleMonitor[0]));
 
     CurState = SND_AI_STATE_IDLE;
     PrevState = SND_AI_STATE_UNKNOWN;
