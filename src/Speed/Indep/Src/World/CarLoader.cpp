@@ -117,6 +117,11 @@ extern SlotPool *LoadedSkinLayerSlotPool;
 extern SlotPool *LoadedRideInfoSlotPool;
 extern int UsePrecompositeVinyls;
 int bGetMallocPool(void *ptr);
+float GetDebugRealTime();
+extern int QueuedFileDefaultPriority;
+extern int CarLoaderServiceLoadingDepth;
+void SetDelayedResourceCallback(void (*callback)(void *), void *param);
+void CarLoader_CallUserCallback(void *param) asm("CallUserCallback__9CarLoaderi");
 void eFixupReplacementTextureTables();
 void RefreshAllRenderInfo(CarType car_type);
 void TrackStreamer_FlushHibernatingSections(TrackStreamer *track_streamer) asm("FlushHibernatingSections__13TrackStreamer");
@@ -149,7 +154,6 @@ int CarLoader_MakeSpaceInCarMemoryPool(CarLoader *car_loader, int required_size,
     asm("MakeSpaceInCarMemoryPool__9CarLoaderiib");
 void CarLoader_UnloadUnallocatedRideInfos(CarLoader *car_loader, int num_ride_infos)
     asm("UnloadUnallocatedRideInfos__9CarLoaderi");
-void CarLoader_ServiceLoading(CarLoader *car_loader) asm("ServiceLoading__9CarLoader");
 void CarLoader_LoadedSolidPackCallback(CarLoader *car_loader, LoadedSolidPack *loaded_solid_pack)
     asm("LoadedSolidPackCallback__9CarLoaderP15LoadedSolidPack");
 void CarLoader_LoadedCarCallback(CarLoader *car_loader, LoadedCar *loaded_car) asm("LoadedCarCallback__9CarLoaderP9LoadedCar");
@@ -290,6 +294,13 @@ int LoadedCar::GetModelHashes(unsigned int *model_hashes, int max_model_hashes) 
     }
 
     return num_unique_hashes;
+}
+
+LoadedSkinLayer::LoadedSkinLayer(unsigned int name_hash) {
+    this->NameHash = name_hash;
+    this->NumInstances = 0;
+    this->LoadState = 0;
+    this->pad0 = 0;
 }
 
 int CarLoader::Load(RideInfo *ride_info) {
@@ -788,6 +799,13 @@ LoadedRideInfo::LoadedRideInfo(RideInfo *ride_info, int in_front_end, int is_two
     this->pLoadedWheel = &this->TheLoadedWheel;
     this->pLoadedSkin = &this->TheLoadedSkin;
     bSPrintf(this->Name, "%s(%d)", this->pCarTypeInfo->CarTypeName, this->ID);
+}
+
+void InitCarLoader() {
+    LoadedTexturePackSlotPool = bNewSlotPool(0x18, 0x1e, "CarLoadedTexturePackSlotPool", 0);
+    LoadedSolidPackSlotPool = bNewSlotPool(0x18, 0x1e, "CarLoadedSolidPackSlotPool", 0);
+    LoadedSkinLayerSlotPool = bNewSlotPool(0x10, 0x2ee, "CarLoadedSkinLayerSlotPool", 0);
+    LoadedRideInfoSlotPool = bNewSlotPool(0x6d4, 0x14, "CarLoadedRideInfoSlotPool", 0);
 }
 
 static int ClampUpgradeLevel(int level) {
@@ -1340,7 +1358,126 @@ LoadedRideInfo *CarLoader::FindLoadedRideInfo(RideInfo *ride_info) {
 
 void CarLoader::LoadingDoneCallback() {
     this->LoadingInProgress = 0;
-    CarLoader_ServiceLoading(this);
+    this->ServiceLoading();
+}
+
+void CarLoader::BeginLoading(void (*callback)(unsigned int), unsigned int param) {
+    if (this->LoadingInProgress == 0) {
+        this->StartLoadingTime = GetDebugRealTime();
+
+        if (callback != 0) {
+            this->pCallback = callback;
+            this->Param = param;
+        }
+
+        if (this->LoadingInProgress == 0) {
+            this->ServiceLoading();
+        }
+    } else if (this->LoadingInProgress == 2) {
+        this->LoadingInProgress = 1;
+    }
+}
+
+void CarLoader::ServiceLoading() {
+    int num_unallocated_ride_infos = this->NumLoadedRideInfos - this->NumAllocatedRideInfos;
+
+    if (num_unallocated_ride_infos > 0) {
+        int free_slots = bCountFreeSlots(LoadedRideInfoSlotPool);
+
+        if (free_slots < 10) {
+            int slots_to_leave = 10 - free_slots;
+
+            if (num_unallocated_ride_infos < slots_to_leave) {
+                slots_to_leave = num_unallocated_ride_infos;
+            }
+
+            this->UnloadUnallocatedRideInfos(num_unallocated_ride_infos - slots_to_leave);
+        }
+    }
+
+    int queued_file_default_priority = QueuedFileDefaultPriority;
+
+    CarLoaderServiceLoadingDepth++;
+    QueuedFileDefaultPriority = 4;
+
+    if (this->LoadAllWheelModels() == 0 && this->LoadAllWheelTextures() == 0 &&
+        this->LoadAllTexturesFromPack("CARS\\TEXTURES.BIN", 1) == 0) {
+        for (LoadedRideInfo *loaded_ride_info = this->LoadedRideInfoList.GetHead();
+             loaded_ride_info != this->LoadedRideInfoList.EndOfList(); loaded_ride_info = loaded_ride_info->GetNext()) {
+            if (loaded_ride_info->NumInstances > 0 && loaded_ride_info->LoadState != CARLOADSTATE_LOADED) {
+                loaded_ride_info->LoadState = CARLOADSTATE_LOADING;
+
+                if (loaded_ride_info->PrintedLoading == 0) {
+                    loaded_ride_info->PrintedLoading = 1;
+                }
+
+                LoadedCar *loaded_car = loaded_ride_info->pLoadedCar;
+
+                if (loaded_car->pLoadedSolidPack->LoadState == CARLOADSTATE_QUEUED) {
+                    this->LoadSolidPack(loaded_car->pLoadedSolidPack, CarTypeInfoArray[loaded_car->Type].UsageType != 2);
+                    CarLoaderServiceLoadingDepth--;
+                    QueuedFileDefaultPriority = queued_file_default_priority;
+                    return;
+                }
+
+                if (loaded_car->LoadState == CARLOADSTATE_QUEUED && this->LoadCar(loaded_car) != 0) {
+                    CarLoaderServiceLoadingDepth--;
+                    QueuedFileDefaultPriority = queued_file_default_priority;
+                    return;
+                }
+
+                LoadedSkin *loaded_skin = loaded_ride_info->pLoadedSkin;
+
+                if (loaded_skin->LoadStatePerm == CARLOADSTATE_QUEUED &&
+                    ((loaded_skin->pLoadedTexturesPack->LoadState == CARLOADSTATE_QUEUED &&
+                      this->LoadTexturePack(loaded_skin->pLoadedTexturesPack, 1) != 0) ||
+                     this->LoadSkin(loaded_skin, 1) != 0)) {
+                    CarLoaderServiceLoadingDepth--;
+                    QueuedFileDefaultPriority = queued_file_default_priority;
+                    return;
+                }
+
+                if (loaded_skin->LoadStateTemp == CARLOADSTATE_QUEUED) {
+                    if (this->LoadingMode == MODE_FRONT_END) {
+                        this->UnloadAllSkinTemporaries();
+                    }
+
+                    LoadedTexturePack *loaded_vinyls_pack = loaded_skin->pLoadedVinylsPack;
+
+                    if (loaded_vinyls_pack != 0 && loaded_vinyls_pack->LoadState == CARLOADSTATE_QUEUED) {
+                        this->LoadTexturePack(loaded_vinyls_pack, this->LoadingMode == MODE_IN_GAME);
+                        CarLoaderServiceLoadingDepth--;
+                        QueuedFileDefaultPriority = queued_file_default_priority;
+                        return;
+                    }
+
+                    if (this->LoadSkin(loaded_skin, 0) != 0) {
+                        CarLoaderServiceLoadingDepth--;
+                        QueuedFileDefaultPriority = queued_file_default_priority;
+                        return;
+                    }
+                }
+
+                if (loaded_skin->DoneComposite == 0) {
+                    this->CompositeSkin(loaded_skin);
+                }
+
+                if (this->LoadingMode != MODE_FRONT_END) {
+                    this->UnloadSkinTemporaries(loaded_skin, 0);
+                }
+
+                loaded_ride_info->LoadState = CARLOADSTATE_LOADED;
+            }
+        }
+
+        if (this->pCallback != 0) {
+            this->LoadingInProgress = 2;
+            SetDelayedResourceCallback(CarLoader_CallUserCallback, this);
+        }
+    }
+
+    CarLoaderServiceLoadingDepth--;
+    QueuedFileDefaultPriority = queued_file_default_priority;
 }
 
 void CarLoader::LoadedSolidPackCallback(LoadedSolidPack *loaded_solid_pack) {

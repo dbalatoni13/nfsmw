@@ -39,6 +39,8 @@ struct LoadedTexturePack : public bTNode<LoadedTexturePack> {
 // total size: 0x10
 class LoadedSkinLayer : public bTNode<LoadedSkinLayer> {
   public:
+    LoadedSkinLayer(unsigned int name_hash);
+
     unsigned int NameHash; // offset 0x8, size 0x4
     short NumInstances;    // offset 0xC, size 0x2
     char LoadState;        // offset 0xE, size 0x1
@@ -172,6 +174,7 @@ class CarLoader {
     void Unload(int handle);
     int IsLoaded(int handle);
     int IsLoaded(LoadedRideInfo *loaded_ride_info);
+    void BeginLoading(void (*callback)(unsigned int), unsigned int param);
     void UnloadEverything();
     void UnloadOverflowedResources();
     void UnloadUnallocatedRideInfos(int max_left_unloaded);
@@ -199,6 +202,7 @@ class CarLoader {
     int LoadAllWheelTextures();
     void LoadSolidPack(LoadedSolidPack *loaded_solid_pack, int stream_solids);
     int LoadAllTexturesFromPack(const char *filename, int load_perm_layers);
+    void ServiceLoading();
     bool MakeSpaceInPool(int size);
     int MakeSpaceInCarMemoryPool(int largest_malloc_needed, int amount_free_needed, bool allocating_stream_header_chunks);
     int RemoveSomethingFromCarMemoryPool(bool force_unload);
