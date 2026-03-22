@@ -29,6 +29,8 @@
 
 #include "Speed/Indep/Src/World/CarSkin.cpp"
 
+#include "Speed/Indep/Src/World/NeuQuant.cpp"
+
 #include "Speed/Indep/Src/World/ParameterMaps.cpp"
 
 #include "Speed/Indep/Src/World/VisualTreatment.cpp"
