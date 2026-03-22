@@ -52,6 +52,7 @@ class ScratchBuffer {
 
 class ScratchBufferHelper {
   private:
+    friend class ScratchBuffer;
     static ScratchBuffer mScratchBuffers[3]; // size: 0x24
 };
 

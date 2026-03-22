@@ -5,6 +5,10 @@
 #include "PhaseChan.h"
 #include "ScratchBuffer.h"
 
+float length(float *v) {
+    return sqrtf(v[0] * v[0] + v[1] * v[1]);
+}
+
 
 namespace EAGL4Anim {
 

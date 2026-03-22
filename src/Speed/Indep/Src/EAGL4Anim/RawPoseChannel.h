@@ -19,33 +19,55 @@ class RawPoseChannel : public AnimMemoryMap {
         TRAN = 2,
     };
 
-    int GetSigSize() const {}
+    int GetSigSize() const {
+        return mSigSize;
+    }
 
     void SetSigSize(int s) {}
 
-    int GetFrameSize() const {}
+    int GetFrameSize() const {
+        return mFrameSize;
+    }
 
     void SetFrameSize(int s) {}
 
-    int GetNumFrames() const {}
+    int GetNumFrames() const {
+        return mNumFrames;
+    }
 
     void SetNumFrames(int n) {}
 
-    int *GetNonInterpSig() {}
+    int *GetNonInterpSig() {
+        return reinterpret_cast<int *>(&this[1]);
+    }
 
-    const int *GetNonInterpSig() const {}
+    const int *GetNonInterpSig() const {
+        return reinterpret_cast<const int *>(&this[1]);
+    }
 
-    int *GetInterpSig() {}
+    int *GetInterpSig() {
+        return GetNonInterpSig() + mSigSize;
+    }
 
-    const int *GetInterpSig() const {}
+    const int *GetInterpSig() const {
+        return GetNonInterpSig() + mSigSize;
+    }
 
-    float *GetAnimData() {}
+    float *GetAnimData() {
+        return reinterpret_cast<float *>(GetInterpSig() + mSigSize);
+    }
 
-    const float *GetAnimData() const {}
+    const float *GetAnimData() const {
+        return reinterpret_cast<const float *>(GetInterpSig() + mSigSize);
+    }
 
-    float *GetFrame(int i) {}
+    float *GetFrame(int i) {
+        return &GetAnimData()[i * mFrameSize];
+    }
 
-    const float *GetFrame(int i) const {}
+    const float *GetFrame(int i) const {
+        return &GetAnimData()[i * mFrameSize];
+    }
 
     int GetSize() const {}
 

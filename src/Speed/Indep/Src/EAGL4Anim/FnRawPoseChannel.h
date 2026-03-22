@@ -5,6 +5,7 @@
 #pragma once
 #endif
 
+#include "eagl4supportdef.h"
 #include "FnAnimMemoryMap.h"
 #include "RawPoseChannel.h"
 
@@ -24,7 +25,9 @@ class FnRawPoseChannel : public FnAnimMemoryMap {
 
     // void *operator new(size_t size, const char *msg) {}
 
-    // void operator delete(void *ptr, size_t size) {}
+    void operator delete(void *ptr, size_t size) {
+        EAGL4Internal::EAGL4Free(ptr, size);
+    }
 
     // void *operator new[](size_t size) {}
 

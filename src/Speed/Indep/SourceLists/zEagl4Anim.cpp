@@ -34,6 +34,8 @@
 
 #include "Speed/Indep/Src/EAGL4Anim/FnDeltaSingleQ.cpp"
 
+#include "Speed/Indep/Src/EAGL4Anim/FnEventBlender.cpp"
+
 #include "Speed/Indep/Src/EAGL4Anim/FnPoseAnim.cpp"
 
 #include "Speed/Indep/Src/EAGL4Anim/FnPoseBlender.cpp"
