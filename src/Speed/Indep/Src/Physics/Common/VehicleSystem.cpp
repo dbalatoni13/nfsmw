@@ -1,6 +1,7 @@
 #include "VehicleSystem.h"
 
 #include "Speed/Indep/Src/Main/stubs.h"
+#include "Speed/Indep/Src/Physics/Behaviors/ResetCar.h"
 #include "Speed/Indep/Src/Physics/Behaviors/SimpleRigidBody.h"
 #include "Speed/Indep/Src/Sim/SimSubSystem.h"
 
@@ -73,10 +74,6 @@ class SoundCop {
     static Behavior *Construct(const BehaviorParams &params);
 };
 class SoundRacer {
-  public:
-    static Behavior *Construct(const BehaviorParams &params);
-};
-class ResetCar {
   public:
     static Behavior *Construct(const BehaviorParams &params);
 };
