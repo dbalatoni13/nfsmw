@@ -1963,11 +1963,16 @@ void GManager::ReserveStockCar(const char *carName) {
 }
 
 bool GManager::StockCarsLoaded() {
-    StockCarMap::iterator it;
+    {
+        StockCarMap::iterator iter = mStockCars.begin();
 
-    for (it = mStockCars.begin(); it != mStockCars.end(); ++it) {
-        if (!it->second) {
-            return false;
+        for (; iter != mStockCars.end(); ++iter) {
+            ISimable *simable = iter->second;
+            IVehicle *vehicle;
+
+            if (simable->QueryInterface(&vehicle) && vehicle->IsLoading()) {
+                return false;
+            }
         }
     }
 
