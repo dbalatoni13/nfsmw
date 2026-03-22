@@ -103,6 +103,7 @@ int ConvertVinylGroupNumberToVinylType(int vinyl_group_number);
 int CarInfo_GetMaxCompositingBufferSize();
 extern int CarLoaderMemoryPoolNumber;
 int CompositeSkin(RideInfo *ride_info);
+extern SlotPool *LoadedSkinLayerSlotPool;
 void TrackStreamer_FlushHibernatingSections(TrackStreamer *track_streamer) asm("FlushHibernatingSections__13TrackStreamer");
 void TrackStreamer_MakeSpaceInPool(TrackStreamer *track_streamer, int size, bool use_callback)
     asm("MakeSpaceInPool__13TrackStreamerib");
@@ -122,6 +123,13 @@ int CarLoader_MakeSpaceInCarMemoryPool(CarLoader *car_loader, int required_size,
     asm("MakeSpaceInCarMemoryPool__9CarLoaderiib");
 void CarLoader_UnloadUnallocatedRideInfos(CarLoader *car_loader, int num_ride_infos)
     asm("UnloadUnallocatedRideInfos__9CarLoaderi");
+void CarLoader_ServiceLoading(CarLoader *car_loader) asm("ServiceLoading__9CarLoader");
+void CarLoader_LoadedSolidPackCallback(CarLoader *car_loader, LoadedSolidPack *loaded_solid_pack)
+    asm("LoadedSolidPackCallback__9CarLoaderP15LoadedSolidPack");
+void CarLoader_LoadedCarCallback(CarLoader *car_loader, LoadedCar *loaded_car) asm("LoadedCarCallback__9CarLoaderP9LoadedCar");
+void CarLoader_LoadedWheelModelsCallback(CarLoader *car_loader) asm("LoadedWheelModelsCallback__9CarLoader");
+void CarLoader_LoadedWheelTexturesCallback(CarLoader *car_loader) asm("LoadedWheelTexturesCallback__9CarLoader");
+void CarLoader_LoadedAllTexturesFromPackCallback(CarLoader *car_loader) asm("LoadedAllTexturesFromPackCallback__9CarLoader");
 void LoadedCarCallbackBridge(void *param) asm("LoadedCarCallbackBridge__9CarLoaderUi");
 void LoadedSolidPackCallbackBridge(void *param) asm("LoadedSolidPackCallbackBridge__9CarLoaderUi");
 void LoadedWheelModelsCallbackBridge(void *param) asm("LoadedWheelModelsCallbackBridge__9CarLoaderUi");
@@ -134,6 +142,7 @@ void eLoadStreamingSolid(unsigned int *name_hash_table, int num_hashes, void (*c
 int eLoadStreamingSolidPack(const char *filename, void (*callback_function)(void *), void *callback_param, int memory_pool_num);
 void eLoadStreamingTexture(unsigned int *name_hash_table, int num_hashes, void (*callback)(void *), void *param0,
                            int memory_pool_num);
+void eUnloadStreamingTexture(unsigned int *name_hash_table, int num_hashes);
 
 LoadedWheel::LoadedWheel(RideInfo *ride_info, bool in_fe) {
     RideInfoLayout *ride_layout = reinterpret_cast<RideInfoLayout *>(ride_info);
@@ -447,6 +456,98 @@ int LoaderCarInfo(bChunk *chunk) {
     }
 
     return 1;
+}
+
+void CarLoader::LoadingDoneCallback() {
+    this->LoadingInProgress = 0;
+    CarLoader_ServiceLoading(this);
+}
+
+void CarLoader::LoadedSolidPackCallback(LoadedSolidPack *loaded_solid_pack) {
+    loaded_solid_pack->LoadState = CARLOADSTATE_LOADED;
+    this->LoadingDoneCallback();
+}
+
+void CarLoader::LoadedCarCallback(LoadedCar *loaded_car) {
+    loaded_car->LoadState = CARLOADSTATE_LOADED;
+    this->LoadingDoneCallback();
+}
+
+void CarLoader::LoadedWheelModelsCallback() {
+    for (LoadedRideInfo *loaded_ride_info = this->LoadedRideInfoList.GetHead();
+         loaded_ride_info != this->LoadedRideInfoList.EndOfList(); loaded_ride_info = loaded_ride_info->GetNext()) {
+        if (loaded_ride_info->pLoadedWheel->LoadState == CARLOADSTATE_LOADING) {
+            loaded_ride_info->pLoadedWheel->LoadState = CARLOADSTATE_LOADED;
+        }
+    }
+
+    this->LoadingDoneCallback();
+}
+
+void CarLoader::LoadedWheelTexturesCallback() {
+    for (LoadedRideInfo *loaded_ride_info = this->LoadedRideInfoList.GetHead();
+         loaded_ride_info != this->LoadedRideInfoList.EndOfList(); loaded_ride_info = loaded_ride_info->GetNext()) {
+        LoadedWheel *loaded_wheel = loaded_ride_info->pLoadedWheel;
+
+        if (loaded_wheel->LoadStateSkinPerm == CARLOADSTATE_LOADING) {
+            loaded_wheel->LoadStateSkinPerm = CARLOADSTATE_LOADED;
+            this->LoadedSkinLayers(loaded_wheel->LoadedSkinLayersPerm, 4);
+        }
+
+        if (loaded_wheel->LoadStateSkinTemp == CARLOADSTATE_LOADING) {
+            loaded_wheel->LoadStateSkinTemp = CARLOADSTATE_LOADED;
+            this->LoadedSkinLayers(loaded_wheel->LoadedSkinLayersTemp, 4);
+        }
+    }
+
+    this->LoadingDoneCallback();
+}
+
+void CarLoader::LoadedAllTexturesFromPackCallback() {
+    unsigned int name_hashes[512];
+
+    this->LoadedSkinLayers(this->LoadingSkinLayers, this->NumLoadingSkinLayers);
+    CarLoader_UnallocateSkinLayers(this, this->LoadingSkinLayers, this->NumLoadingSkinLayers);
+
+    int unloaded_hashes = this->UnloadSkinLayers(name_hashes, 0x200, this->LoadingSkinLayers, this->NumLoadingSkinLayers);
+
+    if (unloaded_hashes != 0) {
+        eUnloadStreamingTexture(name_hashes, unloaded_hashes);
+    }
+
+    this->NumLoadingSkinLayers = 0;
+    this->LoadingDoneCallback();
+}
+
+void CarLoader::LoadedSkinLayers(LoadedSkinLayer **loaded_skin_layer_table, int num_loaded_skin_layers) {
+    for (int i = 0; i < num_loaded_skin_layers; i++) {
+        LoadedSkinLayer *loaded_skin_layer = loaded_skin_layer_table[i];
+
+        if (loaded_skin_layer != 0 && loaded_skin_layer->LoadState == CARLOADSTATE_LOADING) {
+            loaded_skin_layer->LoadState = CARLOADSTATE_LOADED;
+        }
+    }
+}
+
+int CarLoader::UnloadSkinLayers(unsigned int *name_hash_table, int max_name_hashes, LoadedSkinLayer **loaded_skin_layer_table,
+                                int num_loaded_skin_layers) {
+    int num_name_hashes = 0;
+
+    for (int i = 0; i < num_loaded_skin_layers; i++) {
+        LoadedSkinLayer *loaded_skin_layer = loaded_skin_layer_table[i];
+
+        if (loaded_skin_layer != 0 && loaded_skin_layer->NumInstances == 0) {
+            if (loaded_skin_layer->LoadState == CARLOADSTATE_LOADED) {
+                name_hash_table[num_name_hashes] = loaded_skin_layer->NameHash;
+                num_name_hashes++;
+            }
+
+            loaded_skin_layer->Remove();
+            bFree(LoadedSkinLayerSlotPool, loaded_skin_layer);
+        }
+    }
+
+    return num_name_hashes;
 }
 
 void CarLoader::SetMemoryPoolSize(int size) {

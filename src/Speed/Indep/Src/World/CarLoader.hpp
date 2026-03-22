@@ -136,6 +136,15 @@ class CarLoader {
 
   private:
     void CompositeSkin(LoadedSkin *loaded_skin);
+    void LoadingDoneCallback();
+    void LoadedSolidPackCallback(LoadedSolidPack *loaded_solid_pack);
+    void LoadedCarCallback(LoadedCar *loaded_car);
+    void LoadedWheelModelsCallback();
+    void LoadedWheelTexturesCallback();
+    void LoadedAllTexturesFromPackCallback();
+    void LoadedSkinLayers(LoadedSkinLayer **loaded_skin_layer_table, int num_loaded_skin_layers);
+    int UnloadSkinLayers(unsigned int *name_hash_table, int max_name_hashes, LoadedSkinLayer **loaded_skin_layer_table,
+                         int num_loaded_skin_layers);
     void SetMemoryPoolSize(int size);
     int LoadCar(LoadedCar *loaded_car);
     int LoadAllWheelModels();
