@@ -610,8 +610,7 @@ int TrackStreamer::AllocateSectionMemory(int *ptotal_needing_allocation) {
             }
 
             if (i == disc_bundle->NumMembers) {
-                int largest_free_block = pMemoryPool->GetLargestFreeBlock();
-                if (disc_bundle->FileSize <= largest_free_block) {
+                if (disc_bundle->FileSize <= pMemoryPool->GetLargestFreeBlock()) {
                     unsigned char *pmemory =
                         static_cast<unsigned char *>(pMemoryPool->Malloc(disc_bundle->FileSize, disc_bundle->SectionName, true, false, 0));
                     pMemoryPool->Free(pmemory);
