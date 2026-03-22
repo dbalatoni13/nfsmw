@@ -1995,8 +1995,7 @@ void TrackStreamer::HandleLoading() {
 }
 
 int TrackStreamer::GetLoadingPriority(TrackStreamingSection *section, StreamingPositionEntry *position_entry, bool calculating_jettison) {
-    VisibleSectionBoundary *boundary = section->pBoundary;
-    if (!boundary) {
+    if (!section->pBoundary) {
         return 0;
     }
 
@@ -2010,6 +2009,7 @@ int TrackStreamer::GetLoadingPriority(TrackStreamingSection *section, StreamingP
     }
 
     bVector2 predict_pos = position_entry->Position + position_entry->Velocity * 1.0f;
+    VisibleSectionBoundary *boundary = section->pBoundary;
     float distance = boundary->GetDistanceOutside(&predict_pos, 999.0f);
 
     bVector2 direction;
