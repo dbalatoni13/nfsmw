@@ -57,6 +57,8 @@ struct EventTriggerPack : public bTNode<EventTriggerPack> {
     EventTrigger *EventTriggerArray;
 };
 
+extern SlotPool *EventSlotPool;
+
 enum EVENT_ID {
     TRIGGER_EVENT_CAR_ON_FERN = 65539,
     TRIGGER_EVENT_VIEW_DRIVING_LINE = 65541,
@@ -78,6 +80,14 @@ enum EVENT_ID {
 };
 
 struct emEvent : public bTNode<emEvent> {
+    static void *operator new(size_t size) {
+        return bOMalloc(EventSlotPool);
+    }
+
+    static void operator delete(void *ptr) {
+        bFree(EventSlotPool, ptr);
+    }
+
     int ReferenceCount;
     unsigned int ID;
     void *pEventTrigger;
@@ -382,7 +392,6 @@ void emProcessAllEvents() {
     for (event = MasterEventQueue.GetHead(); event != MasterEventQueue.EndOfList(); event = next_event) {
         next_event = event->GetNext();
         int event_id = event->ID;
-        int event_handled = 0;
 
         CurrentlyHandlingEvent = event;
 
@@ -395,7 +404,6 @@ void emProcessAllEvents() {
 
                 handler->HandlerFunction(event);
                 handler->TotalTime += bGetTickerDifference(start_ticks, bGetTicker());
-                event_handled = 1;
             }
         }
 
@@ -418,17 +426,4 @@ void emProcessAllEvents() {
     }
 
     CurrentEventQueue = &MasterEventQueue;
-
-    while (!locked_event_queue.IsEmpty()) {
-        emEvent *locked_event = locked_event_queue.RemoveHead();
-        if (locked_event) {
-            bFree(EventSlotPool, locked_event);
-        }
-    }
-    while (!temp_event_queue.IsEmpty()) {
-        emEvent *temp_event = temp_event_queue.RemoveHead();
-        if (temp_event) {
-            bFree(EventSlotPool, temp_event);
-        }
-    }
 }
