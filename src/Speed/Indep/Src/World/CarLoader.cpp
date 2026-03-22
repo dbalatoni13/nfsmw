@@ -1,5 +1,7 @@
 #include "./CarLoader.hpp"
 #include "Speed/Indep/bWare/Inc/bPrintf.hpp"
+#include "Speed/Indep/bWare/Inc/bWare.hpp"
+#include "Speed/Indep/bWare/Inc/bChunk.hpp"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 
 struct RideInfoLayout {
@@ -13,6 +15,87 @@ struct RideInfoLayout {
     CARPART_LOD mMinFELodLevel;
     CARPART_LOD mMaxFELodLevel;
 };
+struct CarPartAttributeTable {
+    short NumAttributes;
+    short AttributeOffsetTable[1];
+
+    unsigned int GetByteSize() {
+        return static_cast<unsigned int>((this->NumAttributes + 1) * sizeof(short));
+    }
+};
+struct CarPartAttribute {
+    unsigned int NameHash;
+    union {
+        float fParam;
+        int iParam;
+        unsigned int uParam;
+    } Params;
+};
+struct CarPartModelTable {
+    char TemplatedNameHashes;
+    char pad;
+    unsigned short MiddleStringOffset;
+    const char *ModelNames[5][1];
+};
+struct CarPartPack : public bTNode<CarPartPack> {
+    unsigned int Version;
+    const char *StringTable;
+    unsigned int StringTableSize;
+    CarPartAttributeTable *AttributeTableTable;
+    unsigned int NumAttributeTables;
+    CarPartAttribute *AttributesTable;
+    unsigned int NumAttributes;
+    unsigned int *TypeNameTable;
+    unsigned int NumTypeNames;
+    CarPartModelTable *ModelTable;
+    unsigned int NumModelTables;
+    CarPart *PartsTable;
+    unsigned int NumParts;
+};
+struct CarPartIndex {
+    CarPart *Part;
+    int NumParts;
+};
+struct CarSlotTypeOverride {
+    unsigned int CarType;
+    unsigned int SlotId;
+    unsigned int LookupType[2];
+};
+struct CarPartDatabaseLayout {
+    bTList<CarPartPack> CarPartPackList;
+    int NumPacks;
+    int NumParts;
+    int NumBytes;
+    CarPartIndex PaintPart_Gloss[3];
+    CarPartIndex PaintPart_Metallic[3];
+    CarPartIndex PaintPart_Pearl[3];
+    CarPartIndex PaintPart_Vinyl[3];
+    CarPartIndex PaintPart_Rims[3];
+    CarPartIndex PaintPart_Caliper[3];
+    CarPartIndex VinylPart_All[3];
+    CarPartIndex VinylPart_Body[3];
+    CarPartIndex VinylPart_Hood[3];
+    CarPartIndex VinylPart_Side[3];
+    CarPartIndex VinylPart_Manufacturer[3];
+};
+
+extern CarPartDatabase CarPartDB;
+extern CarTypeInfo *CarTypeInfoArray;
+signed char *CarSlotAnimHookupTable;
+unsigned int *CarSlotAnimHideOpenTable;
+unsigned int *CarSlotAnimHideClosedTable;
+unsigned int *DefaultSlotTypeNameTable;
+CarSlotTypeOverride *SlotTypeOverrideTable;
+int NumSlotTypeOverrides;
+const char *CarPartStringTable;
+unsigned int CarPartStringTableSize;
+unsigned int *CarPartTypeNameHashTable;
+unsigned int CarPartTypeNameHashTableSize;
+CarPart *CarPartPartsTable;
+CarPartModelTable *CarPartModelsTable;
+CarPartPack *MasterCarPartPack;
+
+int ConvertVinylGroupNumberToVinylType(int vinyl_group_number);
 
 LoadedWheel::LoadedWheel(RideInfo *ride_info, bool in_fe) {
     RideInfoLayout *ride_layout = reinterpret_cast<RideInfoLayout *>(ride_info);
@@ -105,4 +188,225 @@ LoadedRideInfo::LoadedRideInfo(RideInfo *ride_info, int in_front_end, int is_two
     this->pLoadedWheel = &this->TheLoadedWheel;
     this->pLoadedSkin = &this->TheLoadedSkin;
     bSPrintf(this->Name, "%s(%d)", this->pCarTypeInfo->CarTypeName, this->ID);
+}
+
+static int ClampUpgradeLevel(int level) {
+    if (level < 0) {
+        return 0;
+    }
+
+    if (level > 2) {
+        return 2;
+    }
+
+    return level;
+}
+
+int LoaderCarInfo(bChunk *chunk) {
+    unsigned int chunk_id = chunk->GetID();
+
+    if (chunk_id == 0x34600) {
+        CarTypeInfoArray = reinterpret_cast<CarTypeInfo *>(chunk->GetAlignedData(16));
+
+        for (int j = 0; j < 0x54; j++) {
+            CarTypeInfo *pCarInfo = &CarTypeInfoArray[j];
+
+            bEndianSwap32(&pCarInfo->CarTypeNameHash);
+            bEndianSwap32(&pCarInfo->HeadlightFOV);
+            bPlatEndianSwap(&pCarInfo->HeadlightPosition);
+            bPlatEndianSwap(&pCarInfo->DriverRenderingOffset);
+            bPlatEndianSwap(&pCarInfo->InCarSteeringWheelRenderingOffset);
+            bEndianSwap32(&pCarInfo->DefaultBasePaint);
+            bEndianSwap32(&pCarInfo->Type);
+            bEndianSwap32(&pCarInfo->UsageType);
+            bEndianSwap32(&pCarInfo->CarMemTypeHash);
+
+            for (int i = 0; i < 5; i++) {
+                bEndianSwap32(&pCarInfo->MinTimeBetweenUses[i]);
+            }
+        }
+    } else if (chunk_id == 0x34608) {
+        CarSlotAnimHookupTable = reinterpret_cast<signed char *>(chunk->GetData());
+    } else if (chunk_id == 0x34609) {
+        CarSlotAnimHideOpenTable = reinterpret_cast<unsigned int *>(chunk->GetData());
+        CarSlotAnimHideClosedTable = reinterpret_cast<unsigned int *>(chunk->GetData()) + 0x20;
+        return 1;
+    } else if (chunk_id == 0x34607) {
+        DefaultSlotTypeNameTable = reinterpret_cast<unsigned int *>(chunk->GetData());
+        SlotTypeOverrideTable = reinterpret_cast<CarSlotTypeOverride *>(reinterpret_cast<unsigned int *>(chunk->GetData()) + 0x116);
+        NumSlotTypeOverrides = (chunk->GetSize() - 0x458) >> 4;
+
+        for (int i = 0; i < 0x116; i++) {
+            bEndianSwap32(&DefaultSlotTypeNameTable[i]);
+        }
+
+        for (int i = 0; i < NumSlotTypeOverrides; i++) {
+            bEndianSwap32(&SlotTypeOverrideTable[i].CarType);
+            bEndianSwap32(&SlotTypeOverrideTable[i].SlotId);
+            bEndianSwap32(&SlotTypeOverrideTable[i].LookupType[0]);
+            bEndianSwap32(&SlotTypeOverrideTable[i].LookupType[1]);
+        }
+    } else {
+        if (chunk_id != 0x34602) {
+            return 0;
+        }
+
+        int *chunk_words = reinterpret_cast<int *>(chunk);
+        int string_table_offset = chunk_words[3];
+        CarPartPack *car_part_pack = reinterpret_cast<CarPartPack *>(chunk_words + 4);
+        int attribute_table_table_offset =
+            *reinterpret_cast<int *>(reinterpret_cast<char *>(chunk_words) + string_table_offset + 0x14) + string_table_offset + 0x10;
+        int attributes_table_offset =
+            *reinterpret_cast<int *>(reinterpret_cast<char *>(chunk_words) + attribute_table_table_offset + 0xC) + attribute_table_table_offset + 8;
+        int model_table_offset =
+            *reinterpret_cast<int *>(reinterpret_cast<char *>(chunk_words) + attributes_table_offset + 0xC) + attributes_table_offset + 8;
+        int typename_table_offset =
+            *reinterpret_cast<int *>(reinterpret_cast<char *>(chunk_words) + model_table_offset + 0xC) + model_table_offset + 8;
+        int parts_table_offset = *reinterpret_cast<int *>(reinterpret_cast<char *>(chunk_words) + typename_table_offset + 0xC);
+
+        bEndianSwap32(&car_part_pack->Version);
+        bEndianSwap32(&car_part_pack->NumParts);
+        bEndianSwap32(&car_part_pack->NumAttributes);
+        bEndianSwap32(&car_part_pack->NumTypeNames);
+        bEndianSwap32(&car_part_pack->NumModelTables);
+        bEndianSwap32(&car_part_pack->NumAttributeTables);
+
+        car_part_pack->AttributeTableTable =
+            reinterpret_cast<CarPartAttributeTable *>(reinterpret_cast<char *>(chunk_words) + attribute_table_table_offset + 0x10);
+        CarPartPartsTable = reinterpret_cast<CarPart *>(reinterpret_cast<char *>(chunk_words) + typename_table_offset + parts_table_offset + 0x18);
+        CarPartTypeNameHashTable = reinterpret_cast<unsigned int *>(reinterpret_cast<char *>(chunk_words) + typename_table_offset + 0x10);
+        CarPartModelsTable = reinterpret_cast<CarPartModelTable *>(reinterpret_cast<char *>(chunk_words) + model_table_offset + 0x10);
+        CarPartStringTable = reinterpret_cast<const char *>(reinterpret_cast<char *>(chunk_words) + string_table_offset + 0x18);
+        car_part_pack->AttributesTable = reinterpret_cast<CarPartAttribute *>(reinterpret_cast<char *>(chunk_words) + attributes_table_offset + 0x10);
+        car_part_pack->Next = car_part_pack;
+        car_part_pack->Prev = car_part_pack;
+        car_part_pack->StringTable = CarPartStringTable;
+        car_part_pack->PartsTable = CarPartPartsTable;
+        car_part_pack->TypeNameTable = CarPartTypeNameHashTable;
+        car_part_pack->ModelTable = CarPartModelsTable;
+        CarPartTypeNameHashTableSize = car_part_pack->NumTypeNames;
+        car_part_pack->StringTableSize = *reinterpret_cast<int *>(reinterpret_cast<char *>(chunk_words) + string_table_offset + 0x14);
+        CarPartStringTableSize = *reinterpret_cast<int *>(reinterpret_cast<char *>(chunk_words) + string_table_offset + 0x14);
+
+        short *attribute_offset_table = reinterpret_cast<short *>(reinterpret_cast<char *>(chunk_words) + attribute_table_table_offset + 0x10);
+        short *attribute_offset_table_end = reinterpret_cast<short *>(
+            reinterpret_cast<char *>(attribute_offset_table) +
+            *reinterpret_cast<int *>(reinterpret_cast<char *>(chunk_words) + attribute_table_table_offset + 0xC));
+
+        while (attribute_offset_table < attribute_offset_table_end) {
+            bEndianSwap16(attribute_offset_table);
+            for (int i = 0; i < *attribute_offset_table; i++) {
+                bEndianSwap16(attribute_offset_table + i + 1);
+            }
+            attribute_offset_table += *attribute_offset_table + 1;
+        }
+
+        for (unsigned int i = 0; i < car_part_pack->NumAttributes; i++) {
+            bEndianSwap32(&car_part_pack->AttributesTable[i].NameHash);
+            bEndianSwap32(&car_part_pack->AttributesTable[i].Params.iParam);
+        }
+
+        for (unsigned int i = 0; i < car_part_pack->NumTypeNames; i++) {
+            bEndianSwap32(&CarPartTypeNameHashTable[i]);
+        }
+
+        for (unsigned int model_table_index = 0; model_table_index < car_part_pack->NumModelTables; model_table_index++) {
+            CarPartModelTable *model_table = reinterpret_cast<CarPartModelTable *>(reinterpret_cast<char *>(CarPartModelsTable) + model_table_index * 0x18);
+
+            bEndianSwap16(&model_table->MiddleStringOffset);
+            for (int model_number = 0; model_number < 1; model_number++) {
+                for (int model_lod = 0; model_lod < 5; model_lod++) {
+                    bEndianSwap32(const_cast<const char **>(&model_table->ModelNames[model_number][model_lod]));
+                }
+            }
+
+            if (model_table->TemplatedNameHashes != 0) {
+                for (int model_number = 0; model_number < 1; model_number++) {
+                    for (int model_lod = 0; model_lod < 5; model_lod++) {
+                        if (reinterpret_cast<int>(model_table->ModelNames[model_number][model_lod]) != -1) {
+                            model_table->ModelNames[model_number][model_lod] = reinterpret_cast<const char *>(
+                                const_cast<char *>(CarPartStringTable) + reinterpret_cast<int>(model_table->ModelNames[model_number][model_lod]) * 4);
+                        }
+                    }
+                }
+            }
+        }
+
+        CarPartDatabaseLayout *database = reinterpret_cast<CarPartDatabaseLayout *>(&CarPartDB);
+        for (unsigned int i = 0; i < car_part_pack->NumParts; i++) {
+            char *car_part_bytes = reinterpret_cast<char *>(CarPartPartsTable) + i * 0xE;
+            CarPart *car_part = reinterpret_cast<CarPart *>(car_part_bytes);
+            CarPartIndex *index0 = 0;
+            CarPartIndex *index1 = 0;
+
+            bEndianSwap16(car_part_bytes);
+            bEndianSwap16(car_part_bytes + 2);
+            bEndianSwap16(car_part_bytes + 8);
+            bEndianSwap16(car_part_bytes + 10);
+            bEndianSwap16(car_part_bytes + 12);
+
+            int part_id = car_part_bytes[4];
+            unsigned int brand_name = car_part->GetAppliedAttributeUParam(0xEBB03E66, 0);
+            int upgrade_level = ClampUpgradeLevel((static_cast<unsigned char>(car_part_bytes[5]) >> 5) - 1);
+            int group_number = static_cast<unsigned char>(car_part_bytes[5]) & 0x1F;
+
+            if (part_id == 'L') {
+                if (brand_name == 0x03437A52) {
+                    index0 = &database->PaintPart_Metallic[upgrade_level];
+                } else if (brand_name < 0x03437A53) {
+                    if (brand_name == 0x0000DA27) {
+                        index0 = &database->PaintPart_Rims[upgrade_level];
+                    } else if (brand_name == 0x02DAAB07) {
+                        index0 = &database->PaintPart_Gloss[upgrade_level];
+                    }
+                } else if (brand_name == 0x03E871F1) {
+                    index0 = &database->PaintPart_Vinyl[upgrade_level];
+                } else if (brand_name < 0x03E871F2) {
+                    if (brand_name == 0x03797533) {
+                        index0 = &database->PaintPart_Pearl[upgrade_level];
+                    }
+                } else if (brand_name == 0xD6640DFF) {
+                    index0 = &database->PaintPart_Caliper[upgrade_level];
+                }
+            } else if (part_id == 'O') {
+                int vinyl_type = ConvertVinylGroupNumberToVinylType(group_number);
+
+                if (vinyl_type == 1) {
+                    index0 = &database->VinylPart_Hood[upgrade_level];
+                } else if (vinyl_type < 2) {
+                    if (vinyl_type == 0) {
+                        index0 = &database->VinylPart_Side[upgrade_level];
+                    }
+                } else if (vinyl_type == 2) {
+                    index0 = &database->VinylPart_Body[upgrade_level];
+                } else if (vinyl_type == 3) {
+                    index0 = &database->VinylPart_Manufacturer[upgrade_level];
+                }
+
+                index1 = &database->VinylPart_All[upgrade_level];
+            }
+
+            if (index0 != 0) {
+                if (index0->Part == 0) {
+                    index0->Part = car_part;
+                }
+                index0->NumParts++;
+            }
+
+            if (index1 != 0) {
+                if (index1->Part == 0) {
+                    index1->Part = car_part;
+                }
+                index1->NumParts++;
+            }
+        }
+
+        MasterCarPartPack = car_part_pack;
+        database->CarPartPackList.AddTail(car_part_pack);
+        database->NumPacks += 1;
+        database->NumParts += car_part_pack->NumParts;
+        database->NumBytes += chunk->GetSize();
+    }
+
+    return 1;
 }
