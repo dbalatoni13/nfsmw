@@ -146,6 +146,8 @@ struct CollisionEvent : public AudioEvent {
     void InitAsScrape(const Attrib::Gen::audioscrape &);
     void InitAsImpact(const Attrib::Gen::audioimpact &);
     virtual void Release();
+    const char *GetCSISEffect() const { return mCSISEffect; }
+    SND_Stich *GetImpactStich() const { return ImpactStich; }
 };
 
 CollisionEvent::CollisionEvent(const AudioEventParams &aep, bool impact)
@@ -219,11 +221,11 @@ void CollisionEvent::Pause(bool pause) {
     (void)pause;
 }
 
-AudioEvent *CollisionEvent::PlayScrape(const AudioEventParams &params) {
+AudioEvent *CollisionEvent::PlayScrape(const AudioEventParams &aep) {
     CollisionEvent *bang;
-    CSTATE_Base *stateObj;
+    CSTATE_Base *StateObj;
 
-    if (DistanceToView(&params.position) > 100.0f) {
+    if (DistanceToView(&aep.position) > 100.0f) {
         return nullptr;
     }
 
@@ -231,56 +233,54 @@ AudioEvent *CollisionEvent::PlayScrape(const AudioEventParams &params) {
         return nullptr;
     }
 
-    if (params.attributes.GetCollectionKey() == 0) {
+    if (aep.attributes.GetCollectionKey() == 0) {
         return nullptr;
     }
 
-    bang = new ("Sound::CollisionEvent", 0) CollisionEvent(params, false);
-    stateObj = nullptr;
-    if (bang->mCSISEffect != nullptr && g_pEAXSound != nullptr && EAXSound::GetStateMgr(eMM_COLLISION) != nullptr) {
-        stateObj = EAXSound::GetStateMgr(eMM_COLLISION)->GetFreeState(bang);
-        if (stateObj != nullptr) {
-            stateObj->Attach(bang);
+    bang = new ("Sound::CollisionEvent", 0) CollisionEvent(aep, false);
+    if (bang->GetCSISEffect() != nullptr && ((StateObj = nullptr), g_pEAXSound != nullptr) &&
+        EAXSound::GetStateMgr(eMM_COLLISION) != nullptr) {
+        CSTATEMGR_Base *CollisionMgr = EAXSound::GetStateMgr(eMM_COLLISION);
+        if ((StateObj = CollisionMgr->GetFreeState(bang)) != nullptr) {
+            StateObj->Attach(bang);
             bang->mRefCount = bang->mRefCount + 1;
         }
     }
-
-    if (stateObj == nullptr) {
+    if (StateObj == nullptr) {
         if (bang != nullptr) {
             delete bang;
         }
         return nullptr;
     }
-
     return bang;
 }
 
-AudioEvent *CollisionEvent::Play(const AudioEventParams &params) {
+AudioEvent *CollisionEvent::Play(const AudioEventParams &aep) {
     CollisionEvent *bang;
-    CSTATE_Base *stateObj;
+    CSTATE_Base *StateObj;
 
     if (IsSoundEnabled == 0) {
         return nullptr;
     }
 
-    if (DistanceToView(&params.position) > 100.0f) {
+    if (DistanceToView(&aep.position) > 100.0f) {
         return nullptr;
     }
 
-    if (params.attributes.GetCollectionKey() == 0) {
+    if (aep.attributes.GetCollectionKey() == 0) {
         return nullptr;
     }
 
-    stateObj = nullptr;
-    bang = new ("Sound::CollisionEvent", 0) CollisionEvent(params, true);
-    if (bang->ImpactStich != nullptr && g_pEAXSound != nullptr && EAXSound::GetStateMgr(eMM_COLLISION) != nullptr) {
-        stateObj = EAXSound::GetStateMgr(eMM_COLLISION)->GetFreeState(bang);
-        if (stateObj != nullptr) {
-            stateObj->Attach(bang);
+    bang = new ("Sound::CollisionEvent", 0) CollisionEvent(aep, true);
+    StateObj = nullptr;
+    if (bang->GetImpactStich() != nullptr && g_pEAXSound != nullptr && EAXSound::GetStateMgr(eMM_COLLISION) != nullptr) {
+        CSTATEMGR_Base *CollisionMgr = EAXSound::GetStateMgr(eMM_COLLISION);
+        if ((StateObj = CollisionMgr->GetFreeState(bang)) != nullptr) {
+            StateObj->Attach(bang);
         }
     }
 
-    if (stateObj == nullptr && bang != nullptr) {
+    if (StateObj == nullptr && bang != nullptr) {
         delete bang;
     }
 
