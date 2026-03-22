@@ -12,7 +12,7 @@
 struct ICarAudio : public UTL::COM::IUnknown {
     static HINTERFACE _IHandle();
 
-    ICarAudio(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
+    ICarAudio(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, (HINTERFACE)_IHandle) {}
 
     virtual ~ICarAudio();
 

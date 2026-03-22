@@ -271,7 +271,7 @@ SoundCar::SoundCar(const BehaviorParams &params, Sound::Context ctx)
       IAudible(params.fowner), //
       mSoundService(nullptr), //
       mSoundRPM(0.0f), //
-      mEngineInfo(params.fowner, 0) {
+      mEngineInfo(GetOwner(), 0) {
     GetOwner()->QueryInterface(&mEngine);
     GetOwner()->QueryInterface(&mInput);
     GetOwner()->QueryInterface(&mTransmission);
