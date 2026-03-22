@@ -5,6 +5,20 @@
 #pragma once
 #endif
 
+#include "Speed/Indep/Libs/Support/Utility/UCOM.h"
+#include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
 
+// total size: 0x8
+struct ICarAudio : public UTL::COM::IUnknown {
+    static HINTERFACE _IHandle() {
+        return (HINTERFACE)_IHandle;
+    }
+
+    ICarAudio(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
+
+    virtual ~ICarAudio() {}
+
+    virtual Rpm GetRPM() const;
+};
 
 #endif
