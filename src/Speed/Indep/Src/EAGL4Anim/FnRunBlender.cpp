@@ -5,6 +5,8 @@
 #include "PhaseChan.h"
 #include "ScratchBuffer.h"
 
+#include <stdio.h>
+
 float length(float *v) {
     return sqrtf(v[0] * v[0] + v[1] * v[1]);
 }
@@ -121,32 +123,75 @@ void FnRunBlender::SetWeight(float w) {
     mWeight = w - static_cast<float>(idx);
 
     if (idx == mIdx) {
-        float denom = mWeight / mCycles[1] + (1.0f - mWeight) / mCycles[0];
+        float prevFreq = mFreq;
 
-        if (denom != 0.0f) {
-            float prevFreq = mFreq;
-
-            mFreq = denom;
-            mOffset = (prevFreq / mFreq) * (mPrevTime + mOffset) - mPrevTime;
-        }
+        mFreq = mWeight / mCycles[1] + (1.0f - mWeight) / mCycles[0];
+        mOffset = (prevFreq / mFreq) * (mPrevTime + mOffset) - mPrevTime;
         return;
     }
 
-    if (idx >= 0 && idx < mNumAnims) {
+    if (idx == mIdx + 1) {
+        MemoryPoolManager::DeleteFnAnim(mFnAnims[0]);
+        mFnAnims[0] = mFnAnims[1];
+        mFnAnims[1] = reinterpret_cast<FnAnim *>(MemoryPoolManager::NewFnAnim(const_cast<AnimMemoryMap *>(mAnims[idx + 1])));
+    } else if (idx == mIdx - 1) {
+        MemoryPoolManager::DeleteFnAnim(mFnAnims[1]);
+        mFnAnims[1] = mFnAnims[0];
+        mFnAnims[0] = reinterpret_cast<FnAnim *>(MemoryPoolManager::NewFnAnim(const_cast<AnimMemoryMap *>(mAnims[idx])));
+    } else {
+        if (mFnAnims[0]) {
+            MemoryPoolManager::DeleteFnAnim(mFnAnims[0]);
+        }
+        if (mFnAnims[1]) {
+            MemoryPoolManager::DeleteFnAnim(mFnAnims[1]);
+        }
+
         mFnAnims[0] = reinterpret_cast<FnAnim *>(MemoryPoolManager::NewFnAnim(const_cast<AnimMemoryMap *>(mAnims[idx])));
         mFnAnims[1] = reinterpret_cast<FnAnim *>(MemoryPoolManager::NewFnAnim(const_cast<AnimMemoryMap *>(mAnims[idx + 1])));
+    }
 
-        if (mVels) {
+    if (mVels) {
+        if (idx == mIdx + 1) {
+            MemoryPoolManager::DeleteFnAnim(mFnVelAnims[0]);
+            mFnVelAnims[0] = mFnVelAnims[1];
+            mFnVelAnims[1] = reinterpret_cast<FnAnim *>(MemoryPoolManager::NewFnAnim(const_cast<AnimMemoryMap *>(mVels[idx + 1])));
+        } else if (idx == mIdx - 1) {
+            MemoryPoolManager::DeleteFnAnim(mFnVelAnims[1]);
+            mFnVelAnims[1] = mFnVelAnims[0];
+            mFnVelAnims[0] = reinterpret_cast<FnAnim *>(MemoryPoolManager::NewFnAnim(const_cast<AnimMemoryMap *>(mVels[idx])));
+        } else {
+            if (mFnVelAnims[0]) {
+                MemoryPoolManager::DeleteFnAnim(mFnVelAnims[0]);
+            }
+            if (mFnVelAnims[1]) {
+                MemoryPoolManager::DeleteFnAnim(mFnVelAnims[1]);
+            }
+
             mFnVelAnims[0] = reinterpret_cast<FnAnim *>(MemoryPoolManager::NewFnAnim(const_cast<AnimMemoryMap *>(mVels[idx])));
             mFnVelAnims[1] = reinterpret_cast<FnAnim *>(MemoryPoolManager::NewFnAnim(const_cast<AnimMemoryMap *>(mVels[idx + 1])));
         }
-
-        mIdx = idx;
-        mCycles[0] = 1.0f;
-        mCycles[1] = 1.0f;
-        mFreq = 1.0f;
-        mOffset = 0.0f;
     }
+
+    const PhaseChan *phase0 = mPhases[idx];
+    const PhaseChan *phase1 = mPhases[idx + 1];
+    float prevFreq = mFreq;
+
+    if (!phase0->StartWithRight()) {
+        mAlignFrame[0] = static_cast<float>(phase0->mStartTime + phase0->mCycles[0]);
+    } else {
+        mAlignFrame[0] = static_cast<float>(phase0->mStartTime);
+    }
+
+    mAlignFrame[1] = static_cast<float>(phase1->mStartTime);
+    if (!phase1->StartWithRight()) {
+        mAlignFrame[1] += static_cast<float>(phase1->mCycles[0]);
+    }
+
+    mIdx = idx;
+    mCycles[0] = static_cast<float>(phase0->mCycles[0] + phase0->mCycles[1]) * 0.5f;
+    mCycles[1] = static_cast<float>(phase1->mCycles[0] + phase1->mCycles[1]) * 0.5f;
+    mFreq = mWeight / mCycles[1] + (1.0f - mWeight) / mCycles[0];
+    mOffset = (prevFreq / mFreq) * (mPrevTime + mOffset) - mPrevTime;
 }
 
 bool FnRunBlender::EvalPhase(float currTime, PhaseValue &phase) {
@@ -211,9 +256,14 @@ bool FnRunBlender::BlendFacing(float t0, float t1, float *f) const {
         return false;
     }
 
-    f[0] = 0.0f;
-    f[1] = 0.0f;
-    return false;
+    UMath::Vector4 q;
+
+    ComputeRootQ(t0, t1, q);
+
+    f[0] = 2.0f * (q.w * q.z - q.x * q.y);
+    f[1] = 2.0f * (q.y * q.z + q.x * q.w);
+    printf("Facing: %g %g\n", f[0], f[1]);
+    return true;
 }
 
 float FnRunBlender::GetFrequency() const {
@@ -221,24 +271,39 @@ float FnRunBlender::GetFrequency() const {
 }
 
 void FnRunBlender::ComputeBeginRootQ(UMath::Vector4 &q) const {
-    q.x = 0.0f;
-    q.y = 0.0f;
-    q.z = 0.0f;
-    q.w = 1.0f;
+    ComputeRootQ(0.0f, 0.0f, q);
 }
 
 void FnRunBlender::ComputeEndRootQ(UMath::Vector4 &q) const {
-    q.x = 0.0f;
-    q.y = 0.0f;
-    q.z = 0.0f;
-    q.w = 1.0f;
+    int idx = mIdx * 4;
+    float t0 = static_cast<float>(mPhases[mIdx]->mNumFrames - 1);
+    float t1 = static_cast<float>(mPhases[mIdx + 1]->mNumFrames - 1);
+
+    ComputeRootQ(t0, t1, q);
 }
 
 void FnRunBlender::ComputeRootQ(float t0, float t1, UMath::Vector4 &q) const {
-    q.x = 0.0f;
-    q.y = 0.0f;
-    q.z = 0.0f;
-    q.w = 1.0f;
+    ScratchBuffer &scratch = ScratchBuffer::GetScratchBuffer(0);
+    float *pose = reinterpret_cast<float *>(scratch.GetBuffer());
+
+    if (!mFnAnims[0] || !mFnAnims[0]->EvalSQT(t0, pose, 0)) {
+        return;
+    }
+
+    UMath::Vector4 q0 = *reinterpret_cast<UMath::Vector4 *>(&pose[4]);
+
+    if (mWeight == 0.0f) {
+        q = q0;
+        return;
+    }
+
+    mSkeleton->GetStillPose(pose, 0);
+    if (!mFnAnims[1] || !mFnAnims[1]->EvalSQT(t1, pose, 0)) {
+        return;
+    }
+
+    UMath::Vector4 q1 = *reinterpret_cast<UMath::Vector4 *>(&pose[4]);
+    FastQuatBlendF4(mWeight, reinterpret_cast<float *>(&q0), reinterpret_cast<float *>(&q1), reinterpret_cast<float *>(&q));
 }
 
 float FnRunBlender::CycleTime(float t, float startTime, float endTime) const {

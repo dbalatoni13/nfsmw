@@ -1,7 +1,11 @@
 #include "FnTurnBlender.h"
 
+#include "AnimUtil.h"
 #include "FnPoseBlender.h"
+#include "FnRunBlender.h"
 #include "ScratchBuffer.h"
+
+#include <stdio.h>
 
 
 namespace EAGL4Anim {
@@ -198,9 +202,18 @@ bool FnTurnBlender::BlendBeginFacing(float *f) const {
         return false;
     }
 
-    f[0] = 0.0f;
-    f[1] = 0.0f;
-    return false;
+    UMath::Vector4 q0;
+    UMath::Vector4 q1;
+    UMath::Vector4 q;
+
+    reinterpret_cast<const FnRunBlender *>(mFnAnims[0])->ComputeBeginRootQ(q0);
+    reinterpret_cast<const FnRunBlender *>(mFnAnims[1])->ComputeBeginRootQ(q1);
+    FastQuatBlendF4(mWeight, reinterpret_cast<float *>(&q0), reinterpret_cast<float *>(&q1), reinterpret_cast<float *>(&q));
+
+    f[0] = 2.0f * (q.w * q.z - q.x * q.y);
+    f[1] = 2.0f * (q.y * q.z + q.x * q.w);
+    printf("Facing: %g %g\n", f[0], f[1]);
+    return true;
 }
 
 bool FnTurnBlender::BlendEndFacing(float *f) const {
@@ -208,9 +221,18 @@ bool FnTurnBlender::BlendEndFacing(float *f) const {
         return false;
     }
 
-    f[0] = 0.0f;
-    f[1] = 0.0f;
-    return false;
+    UMath::Vector4 q0;
+    UMath::Vector4 q1;
+    UMath::Vector4 q;
+
+    reinterpret_cast<const FnRunBlender *>(mFnAnims[0])->ComputeEndRootQ(q0);
+    reinterpret_cast<const FnRunBlender *>(mFnAnims[1])->ComputeEndRootQ(q1);
+    FastQuatBlendF4(mWeight, reinterpret_cast<float *>(&q0), reinterpret_cast<float *>(&q1), reinterpret_cast<float *>(&q));
+
+    f[0] = 2.0f * (q.w * q.z - q.x * q.y);
+    f[1] = 2.0f * (q.y * q.z + q.x * q.w);
+    printf("Facing: %g %g\n", f[0], f[1]);
+    return true;
 }
 
 }; // namespace EAGL4Anim
