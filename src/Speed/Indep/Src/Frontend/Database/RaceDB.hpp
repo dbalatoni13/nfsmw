@@ -5,7 +5,16 @@
 #pragma once
 #endif
 
+enum ePursuitDetailTypes {
+    ePDT_CostToState = 0,
+    ePDT_Bounty = 1,
+    ePDT_Infractions = 2,
+    ePDT_SpeedingTotalFine = 3,
+};
+
 #include "Speed/Indep/Src/Misc/Timer.hpp"
+
+class IPursuit;
 
 // total size: 0x8
 struct TrackHighScore {
@@ -23,6 +32,8 @@ struct RaceTypeHighScores {
 
 // total size: 0x38
 struct TopEvadedPursuitDetail {
+    void GeneratePursuitID();
+
     char PursuitName[12];     // offset 0x0, size 0xC
     unsigned int CarFEKey;    // offset 0xC, size 0x4
     int Bounty;               // offset 0x10, size 0x4
@@ -39,6 +50,9 @@ struct TopEvadedPursuitDetail {
 
 // total size: 0x20
 struct CareerPursuitScores {
+    int GetValue(ePursuitDetailTypes type) const;
+    void IncValue(ePursuitDetailTypes type, int amount);
+
     int Value[8]; // offset 0x0, size 0x20
 };
 
@@ -60,9 +74,19 @@ struct CostToStateScores {
     int mNumPropertiesDamaged;       // offset 0x1C, size 0x4
 };
 
+enum RAP_CTS_ITEM { RAP_CTS_HELI_SPAWN=0,RAP_CTS_SUPPORT_VEHICLE_DEPLOYED=1,RAP_CTS_COP_CAR_DEPLOYED=2,RAP_CTS_COP_DESTROYED=3,RAP_CTS_COP_DAMAGED=4,RAP_CTS_ROADBLOCK_DEPLOYED=5,RAP_CTS_SPIKE_STRIP_DEPLOYED=6,RAP_CTS_HELI_SPIKE_STRIP_DEPLOYED=7,RAP_CTS_TRAFFIC_CAR_HIT=8,RAP_CTS_PROPERTY_DAMAGE=9 };
 // total size: 0xBD8
 class HighScoresDatabase {
   public:
+    void Default();
+    int GetCareerPursuitScore(ePursuitDetailTypes type) const { return CareerPursuitDetails.GetValue(type); }
+    const TopEvadedPursuitDetail &GetTopEvadedPursuitScores(unsigned short index) const { return TopEvadedPursuitScores[index]; }
+    const PursuitScore &GetBestPursuitScore(ePursuitDetailTypes type) const { return BestPursuitRankings[type]; }
+    int CalcPursuitRank(ePursuitDetailTypes type, bool career_rank);
+    unsigned int GetPreviouslyPursuedCarNameHash() const;
+    void GetCareerCST(RAP_CTS_ITEM item, int &quantity, unsigned int &value) const;
+    void CommitHighScoresPauseQuit();
+    void CommitPursuitInfo(IPursuit *iPursuit, unsigned int car_FEKey, int bounty, unsigned int num_infractions);
     TrackHighScore TrackHighScoreTable[320];          // offset 0x0, size 0xA00
     float TotalOdometer;                              // offset 0xA00, size 0x4
     int TotalStarts;                                  // offset 0xA04, size 0x4
@@ -80,6 +104,19 @@ class HighScoresDatabase {
 
 // total size: 0xC0
 struct FinishedRaceStatsEntry {
+    FinishedRaceStatsEntry() {
+        RaceTime.ResetLow();
+        BestLapTime.ResetLow();
+        for (int i = 0; i < 11; i++) {
+            LapTimes[i].ResetLow();
+        }
+        for (int i = 0; i < 11; i++) {
+            LapRunningTimes[i].ResetLow();
+        }
+        ZeroToSixtyTime.ResetLow();
+        QuarterMileTime.ResetLow();
+    }
+
     int FinishPosition;          // offset 0x0, size 0x4
     int DriverNumber;            // offset 0x4, size 0x4
     int FinishReason;            // offset 0x8, size 0x4
@@ -105,8 +142,11 @@ struct FinishedRaceStatsEntry {
 
 // total size: 0x604
 struct cFinishedRaceStats {
+    inline cFinishedRaceStats() {}
+
     FinishedRaceStatsEntry RaceStats[8]; // offset 0x0, size 0x600
     int NumStats;                        // offset 0x600, size 0x4
 };
+
 
 #endif

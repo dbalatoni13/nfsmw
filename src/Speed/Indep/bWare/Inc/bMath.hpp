@@ -46,7 +46,11 @@ inline float bTan(unsigned short angle) {
 inline float bSqrt(float x) {
     const float bSqrtEPS = 5e-11f;
 
-    float y0;
+    float y0
+#ifdef _MSC_VER
+        = 0.0f
+#endif
+        ;
     float y1;
     float t0;
     float t1;
@@ -199,7 +203,7 @@ inline float bDegToRad(float degrees) {
 }
 
 inline float bAngToDeg(unsigned short angle) {
-    return static_cast<unsigned int>(angle) * (65536.0f / 360.0f);
+    return static_cast<unsigned int>(angle) * (360.0f / 65536.0f);
 }
 
 inline float bCos(float angle) {
@@ -243,7 +247,7 @@ struct bVector2 {
 
     int operator==(const bVector2 &v);
 
-    // bVector2 &operator=(const bVector2 &v) {} // compiler generated? shown in dwarf
+    bVector2 &operator=(const bVector2 &v);
 
     // bVector2(const bVector2 &v) {} // compiler generated
 
@@ -260,6 +264,19 @@ inline bVector2 *bFill(bVector2 *dest, float x, float y) {
     dest->x = x;
     dest->y = y;
     return dest;
+}
+
+inline bVector2 *bSub(bVector2 *dest, const bVector2 *v1, const bVector2 *v2) {
+    float x1 = v1->x;
+    float y1 = v1->y;
+    float x2 = v2->x;
+    float y2 = v2->y;
+    return bFill(dest, x1 - x2, y1 - y2);
+}
+
+inline bVector2 &bVector2::operator-=(const bVector2 &v) {
+    bSub(this, this, &v);
+    return *this;
 }
 
 inline bVector2::bVector2(float _x, float _y) {
@@ -284,6 +301,38 @@ inline bVector2 bVector2::operator-(const bVector2 &v) const {
     float _x = x1 - x2;
     float _y = y1 - y2;
     return bVector2(_x, _y);
+}
+
+inline bVector2 *bCopy(bVector2 *dest, const bVector2 *v) {
+    float x = v->x;
+    float y = v->y;
+    return bFill(dest, x, y);
+}
+
+inline bVector2 &bVector2::operator=(const bVector2 &v) {
+    bCopy(this, &v);
+    return *this;
+}
+
+inline bVector2 *bScale(bVector2 *dest, const bVector2 *v, float scale) {
+    float x = v->x * scale;
+    float y = v->y * scale;
+    return bFill(dest, x, y);
+}
+
+inline bVector2 bScale(const bVector2 &v, float scale) {
+    bVector2 dest;
+    bScale(&dest, &v, scale);
+    return dest;
+}
+
+inline bVector2 &bVector2::operator*=(float scale) {
+    bScale(this, this, scale);
+    return *this;
+}
+
+inline bVector2 bVector2::operator*(float f) const {
+    return bScale(*this, f);
 }
 
 inline float bLength(const bVector2 *v) {
@@ -556,18 +605,20 @@ struct bVector4 {
 
     bVector4 operator+(const bVector4 &v) {
         bVector4 *pv;
-        float x1;
-        float y1;
-        float z1;
-        float w1;
-        float x2;
-        float y2;
-        float z2;
-        float w2;
-        float _x;
-        float _y;
-        float _z;
-        float _w;
+        float x1 = x;
+        float y1 = y;
+        float z1 = z;
+        float w1 = w;
+        float x2 = v.x;
+        float y2 = v.y;
+        float z2 = v.z;
+        float w2 = v.w;
+        float _x = x1 + x2;
+        float _y = y1 + y2;
+        float _z = z1 + z2;
+        float _w = w1 + w2;
+
+        return bVector4(_x, _y, _z, _w);
     }
 
     bVector4 operator-() {
@@ -915,6 +966,9 @@ struct bQuaternion {
         this->z = _z;
         this->w = _w;
     }
+
+    void GetMatrix(bMatrix4 &mat) const;
+    inline void GetMatrix(bMatrix4 *mat) const { GetMatrix(*mat); }
 
     bQuaternion &Slerp(bQuaternion &r, const bQuaternion &target, float t) const;
 };

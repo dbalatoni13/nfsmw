@@ -78,8 +78,14 @@ class ResourceFile : public bTNode<ResourceFile> {
     // int GetAddress() {}
 
     // void BeginLoading(ASYNCFILE_CALLBACK *callback, int callback_param) {}
+    void BeginLoading(void (*callback)(int), int callback_param) {
+        BeginLoading(reinterpret_cast<void (*)(void *)>(callback),
+                     reinterpret_cast<void *>(callback_param));
+    }
 
-    // void BeginLoading() {}
+    void BeginLoading() {
+        BeginLoading(static_cast<void (*)(void *)>(nullptr), nullptr);
+    }
 
     int IsFinishedLoading() {
         return LoadingFinishedFlag;
@@ -142,7 +148,14 @@ void EndianSwapChunkHeadersRecursive(bChunk *first_chunk, bChunk *last_chunk);
 
 int ServiceResourceLoading();
 ResourceFile *CreateResourceFile(const char *filename, ResourceFileType type, int flags, int flag_offset, int file_size);
+ResourceFile *LoadResourceFile(const char *filename, ResourceFileType type, int flags,
+                               void (*callback)(void *), void *callback_param,
+                               int file_offset, int file_size);
 void UnloadResourceFile(ResourceFile *resource_file);
+
+inline ResourceFile *LoadResourceFile(const char *filename, ResourceFileType type, int flags) {
+    return LoadResourceFile(filename, type, flags, nullptr, nullptr, 0, 0);
+}
 
 extern int ChunkMovementOffset; // size: 0x4
 

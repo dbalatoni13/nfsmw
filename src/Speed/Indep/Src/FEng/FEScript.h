@@ -5,9 +5,12 @@
 #pragma once
 #endif
 
+#include "FEObject.h"
 #include "FEEvent.h"
 #include "FEKeyTrack.h"
 #include "FEList.h"
+
+template <class T, int N> struct ObjectPool;
 
 // total size: 0x34
 class FEScript : public FEMinNode {
@@ -21,6 +24,23 @@ class FEScript : public FEMinNode {
     FEEventList Events;       // offset 0x24, size 0x8
     char *pName;              // offset 0x2C, size 0x4
     unsigned long ID;         // offset 0x30, size 0x4
+
+    inline const char* GetName() const { return pName; }
+    inline FEScript* GetNext() const { return static_cast<FEScript*>(FEMinNode::GetNext()); }
+    inline FEScript* GetPrev() const { return static_cast<FEScript*>(FEMinNode::GetPrev()); }
+
+    inline FEScript() { Init(); }
+    static void* operator new(unsigned int);
+    static void operator delete(void* pNode);
+
+    void Init();
+    ~FEScript() override;
+    FEScript(FEScript& Src, bool bReference);
+    void SetTrackCount(long Count);
+    FEKeyTrack* FindTrack(FEKeyTrack_Indices TrackIndex) const;
+    void SetName(const char* pNewName);
+
+    static ObjectPool<FEScript, 32> NodePool;
 };
 
 #endif

@@ -124,6 +124,11 @@ class CarLoader {
         return LoadingInProgress;
     }
 
+    int Load(RideInfo *ride_info);
+    void Unload(int handle);
+    void BeginLoading(void (*callback)(unsigned int), unsigned int param);
+    int IsLoaded(int handle);
+
   private:
     void (*pCallback)(unsigned int);                 // offset 0x0, size 0x4
     unsigned int Param;                              // offset 0x4, size 0x4

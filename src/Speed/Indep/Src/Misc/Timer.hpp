@@ -8,12 +8,10 @@
 // total size: 0x4
 class Timer {
   public:
-    Timer() {
-        this->PackedTime = 0;
-    }
+    Timer() {}
 
     Timer(float seconds) {
-        this->PackedTime = static_cast<int>(seconds * 4000);
+        SetTime(seconds);
     }
 
     Timer(int packed_time) {
@@ -22,7 +20,9 @@ class Timer {
 
     int operator=(const Timer &t) const {}
 
-    int operator!=(const Timer &t) const {}
+    int operator!=(const Timer &t) const {
+        return PackedTime != t.PackedTime;
+    }
 
     Timer &operator=(const Timer &t) {
         this->PackedTime = t.PackedTime;
@@ -47,6 +47,10 @@ class Timer {
 
     Timer operator+(const Timer &t) const {}
 
+    Timer operator-(const Timer &t) const {
+        return Timer(PackedTime - t.PackedTime);
+    }
+
     Timer operator*(const Timer &t) const {}
 
     Timer &operator+=(const Timer &t) {}
@@ -59,13 +63,15 @@ class Timer {
         this->PackedTime = 0;
     }
 
-    void ResetHigh() {}
+    void ResetHigh() { PackedTime = 0x7fffffff; }
 
-    void UnSet() {}
+    void UnSet() { PackedTime = 0; }
 
-    int IsSet() {}
+    int IsSet() { return PackedTime != 0 && PackedTime != 0x7fffffff; }
 
-    void SetTime(float seconds) {}
+    void SetTime(float seconds) {
+        PackedTime = static_cast<int>(seconds * 4000.0f + 0.5f);
+    }
 
     float GetSeconds() {
         return this->PackedTime / 4000.0f;
@@ -75,7 +81,9 @@ class Timer {
         return this->PackedTime;
     }
 
-    void SetPackedTime(int packed_time) {}
+    void SetPackedTime(int packed_time) { PackedTime = packed_time; }
+
+    void PrintToString(char*, int);
 
   private:
     int PackedTime; // offset 0x0, size 0x4

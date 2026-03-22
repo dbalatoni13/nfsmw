@@ -21,12 +21,47 @@ enum ePlayerHudType {
     PHT_DRAG_SPLIT2 = 6,
 };
 
+enum CAR_SLOT_ID {
+    CARSLOTID_BASE = 0,
+};
+
+#include "Speed/Indep/Src/World/CarPart.hpp"
+
+class Minimap;
+class OnlineHUDSupport;
+class AutoSaveIcon;
+
+void FEngSetAllObjectsInPackageVisibility(const char *pPackageName, bool visible);
+void FEngSetInvisible(FEObject *pObject);
+
 // total size: 0x348
 class FEngHud : public UTL::COM::Object, public IHud {
   public:
     FEngHud(ePlayerHudType ht, const char *pkg_name, IPlayer *player, int player_number);
+    ~FEngHud();
+    void Release() override;
+    void Update(IPlayer *player, float dt) override;
+    void JoyEnable();
+    void JoyDisable();
+    void JoyHandle(IPlayer *player);
+    bool AreResourcesLoaded();
+    bool IsHudVisible();
+    void HideAll();
+    void FadeAll(bool fadeIn);
+    void SetInPursuit(bool inPursuit);
+    bool IsInPursuit();
+    void SetHasTurbo(bool hasTurbo);
+    bool DoesHaveTurbo();
+    bool IsSplitScreen();
+    void RefreshMiniMapItems();
+    OnlineHUDSupport *GetOnlineHUDSupport();
+    static float ChooseMaxRpmTextureNumber(float rpm);
+    static bool ShouldRearViewMirrorBeVisible(EVIEW_ID viewId);
 
   private:
+    void SetHudFeatures(unsigned long long features);
+    unsigned long long DetermineHudFeatures(IPlayer *player);
+    void SetWideScreenMode();
     unsigned long long CurrentHudFeatures; // offset 0x20, size 0x8
     ePlayerHudType mPlayerHudType;         // offset 0x28, size 0x4
     const char *pPackageName;              // offset 0x2C, size 0x4
@@ -63,7 +98,7 @@ class FEngHud : public UTL::COM::Object, public IHud {
     HudElement *pGetAwayMeter;             // offset 0x338, size 0x4
     HudElement *pMenuZoneTrigger;          // offset 0x33C, size 0x4
     HudElement *pInfractions;              // offset 0x340, size 0x4
-    bool mCurrentWidescreenSetting;        // offset 0x344, size 0x1
+        int mCurrentWidescreenSetting;        // offset 0x344, size 0x4
 };
 
 // total size: 0xC
@@ -76,11 +111,62 @@ class HudResourceManager {
         HRM_UNLOADING_IN_PROGRESS = 3,
     };
 
+    HudResourceManager();
+    virtual ~HudResourceManager() {}
+
+    const char *GetHudTexPackFilename(ePlayerHudType ht);
     static const char *GetHudFengName(ePlayerHudType ht);
+    void LoadRequiredResources(ePlayerHudType ht, const char *pkg_name);
+    void UnloadRequiredResources(ePlayerHudType ht);
+    bool AreResourcesLoaded(ePlayerHudType ht);
+
+    void LoadingCompleteCallback();
+    void LoadedCustomHudTexturePackCallback();
+    void LoadedCustomHudTexturesCallback();
+
+    static void LoadingCompleteCallbackBridge(int param);
+    static void LoadingCompleteCallbackBridge(unsigned int param);
+    static void LoadedCustomHudTexturePackCallbackBridge(unsigned int param);
+    static void LoadedCustomHudTexturesCallbackBridge(unsigned int param);
+
+    static CarPart *GetCarPart(ePlayerHudType ht, CAR_SLOT_ID carSlotId);
+    static int GetCustomHudColour(ePlayerHudType ht, CAR_SLOT_ID carSlotId);
+    static bool GetCustomHudTexPackFilename(ePlayerHudType ht, char *hudTexturePackName);
+    static bool ChooseMinimapTextureName(ePlayerHudType hudType, char *texture_name,
+                                         unsigned int texture_name_size,
+                                         char *minimap_texture_name,
+                                         unsigned int minimap_texture_name_size);
+
+    static void ChooseLoadableTextures(ePlayerHudType hudType, int &textureHash,
+                                       float &redlineRotation);
+
+    static ePlayerHudType LoadingResourcesForHudType;
+    static int mCustIndex;
+    static int mPhase;
+    static int mTachLinesHash;
+    static ResourceFile *pMiniMapTexture;
+    static const char *mPackageName;
+    static char mCustHudTexPackName[32];
+    static unsigned int mCustomizeHUDTexTextureResources[5];
 
   private:
     HudResourceLoadStates mHudResourcesState; // offset 0x0, size 0x4
     ResourceFile *pHudTextures;               // offset 0x4, size 0x4
 };
+
+extern HudResourceManager TheHudResourceManager;
+
+inline void HudResourceManager::LoadingCompleteCallbackBridge(int param) {
+    reinterpret_cast<HudResourceManager *>(param)->LoadingCompleteCallback();
+}
+inline void HudResourceManager::LoadingCompleteCallbackBridge(unsigned int param) {
+    reinterpret_cast<HudResourceManager *>(param)->LoadingCompleteCallback();
+}
+inline void HudResourceManager::LoadedCustomHudTexturePackCallbackBridge(unsigned int param) {
+    reinterpret_cast<HudResourceManager *>(param)->LoadedCustomHudTexturePackCallback();
+}
+inline void HudResourceManager::LoadedCustomHudTexturesCallbackBridge(unsigned int param) {
+    reinterpret_cast<HudResourceManager *>(param)->LoadedCustomHudTexturesCallback();
+}
 
 #endif

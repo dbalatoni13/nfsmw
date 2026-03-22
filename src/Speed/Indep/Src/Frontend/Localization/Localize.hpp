@@ -5,6 +5,7 @@
 #pragma once
 #endif
 
+const char *GetLocalizedString(unsigned int string_label);
 char *GetTranslatedString(int label_hash);
 
 #endif

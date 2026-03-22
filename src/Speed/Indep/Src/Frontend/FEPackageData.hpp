@@ -8,40 +8,61 @@
 #include "Speed/Indep/bWare/Inc/bChunk.hpp"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 
+struct SlotPool;
+
+// total size: 0x8
+struct FEPackageRenderInfo {
+    SlotPool *EpolySlotPool; // offset 0x0, size 0x4
+    bool AllowOverflows;     // offset 0x4, size 0x1
+};
+
 // total size: 0x38
 class FEPackageData : public bTNode<FEPackageData> {
   public:
-    // static int IsInScreenConstructor() {}
+    static int IsInScreenConstructor() { return mInScreenConstructor > 0; }
 
-    // bChunk *GetChunk() {}
+    bChunk *GetChunk() { return MyChunk; }
 
-    // struct FEPackage *GetPackage() {}
+    struct FEPackage *GetPackage() { return pPackage; }
 
-    // bool IsCompressedChunk() {}
+    bool IsCompressedChunk() { return DataChunk != nullptr; }
 
-    // bool IsActive() {}
+    void *GetDataChunk();
 
-    // void SetPermanent(int flag) {}
+    unsigned int GetNameHash();
 
-    // int GetPermanent() {}
+    bool IsActive() { return pScreen != nullptr; }
 
-    // void SetArgument(int pArg) {}
+    FEPackageData(bChunk *chunk);
+    virtual ~FEPackageData();
+    void Activate(struct FEPackage *pkg, int arg);
+    void Close();
 
-    // int GetArgument() {}
+    void SetPermanent(int flag) { IsPermanent = flag; }
 
-    // bool GetVisibility() {}
+    int GetPermanent() { return IsPermanent; }
 
-    // void SetVisibility(bool visible) {}
+    void SetArgument(int pArg) { mArg = pArg; }
 
-    // int GetLastKnownControlMask() {}
+    int GetArgument() { return mArg; }
 
-    // bool WasSetupForHotchunk() {}
+    bool GetVisibility() { return IsVisible; }
 
-    // void SetupForHotchunk() {}
+    void SetVisibility(bool visible) { IsVisible = visible; }
 
-    // void ClearHotchunk() {}
+    int GetLastKnownControlMask() { return LastKnownControlMask; }
 
-    // struct MenuScreen *GetScreen() {}
+    bool WasSetupForHotchunk() { return bWasSetupForHotchunk; }
+
+    void SetupForHotchunk() { bWasSetupForHotchunk = true; }
+
+    void ClearHotchunk() { bWasSetupForHotchunk = false; }
+
+    struct MenuScreen *GetScreen() { return pScreen; }
+
+    void NotificationMessage(unsigned long Message, struct FEObject *pObject, unsigned long Param1, unsigned long Param2);
+    void NotifySoundMessage(unsigned long msg, struct FEObject *obj, unsigned long control_mask, unsigned long pkg_ptr);
+    void UnActivate();
 
     // struct FEPackageRenderInfo *GetRenderInfo() {}
 
@@ -58,8 +79,7 @@ class FEPackageData : public bTNode<FEPackageData> {
     int16 IsPermanent;                     // offset 0x20, size 0x2
     int16 IsVisible;                       // offset 0x22, size 0x2
     struct ScreenFactoryDatum *CreateData; // offset 0x24, size 0x4
-    // TODO
-    // struct FEPackageRenderInfo RenderInfo; // offset 0x28, size 0x8
+    struct FEPackageRenderInfo RenderInfo; // offset 0x28, size 0x8
     int mArg; // offset 0x30, size 0x4
 };
 

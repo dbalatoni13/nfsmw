@@ -12,6 +12,7 @@
 
 // total size: 0x14
 struct FECarRecord {
+    FECarRecord();
     unsigned int Handle;         // offset 0x0, size 0x4
     unsigned int FEKey;          // offset 0x4, size 0x4
     unsigned int VehicleKey;     // offset 0x8, size 0x4
@@ -19,16 +20,41 @@ struct FECarRecord {
     unsigned char Customization; // offset 0x10, size 0x1
     unsigned char CareerHandle;  // offset 0x11, size 0x1
     unsigned short Padd;         // offset 0x12, size 0x2
+    bool IsValid() { return Handle != 0xFFFFFFFF; }
+    bool IsCustomized() { return Customization != 0xFF; }
+    bool IsCareer() { return CareerHandle != 0xFF; }
+    FECarRecord &operator=(const FECarRecord &other_record);
+    void Default();
+    bool MatchesFilter(int theFilter);
+    unsigned int GetCost();
+    const char *GetDebugName();
+    unsigned int GetNameHash();
+    const char *GetManufacturerName();
+    unsigned int GetLogoHash();
+    unsigned int GetManuLogoHash();
+    unsigned int GetReleaseFromImpoundCost();
+    CarType GetType();
 };
+
+struct PresetCar;
 
 // total size: 0x198
 struct FECustomizationRecord {
+    FECustomizationRecord();
     short InstalledPartIndices[139];             // offset 0x0, size 0x116
     Physics::Upgrades::Package InstalledPhysics; // offset 0x118, size 0x20
     Physics::Tunings Tunings[3];                 // offset 0x138, size 0x54
     Physics::eCustomTuningType ActiveTuning;     // offset 0x18C, size 0x4
     int Preset;                                  // offset 0x190, size 0x4
     unsigned char Handle;                        // offset 0x194, size 0x1
+    void BecomePreset(PresetCar *preset);
+    void Default();
+    bool WriteRecordIntoPhysics(Attrib::Gen::pvehicle &attributes) const;
+    void WriteRideIntoRecord(const RideInfo *ride);
+    struct CarPart *GetInstalledPart(CarType cartype, int carslotid) const;
+    void SetInstalledPart(int carslotid, struct CarPart *part);
+    void WriteRecordIntoRide(RideInfo *ride) const;
+    void WritePhysicsIntoRecord(const Attrib::Gen::pvehicle &attributes);
 };
 
 // total size: 0x8
@@ -47,6 +73,16 @@ struct FEImpoundData {
     char EvadeCount;                 // offset 0x4, size 0x1
     char Pad1;                       // offset 0x5, size 0x1
     short Pad2;                      // offset 0x6, size 0x2
+    void Default();
+    void BecomeImpounded(eImpoundReasons reason);
+    void NotifyPlayerPaidToRelease();
+    void NotifyPlayerUsedMarkerToRelease();
+    bool NotifyWin();
+    bool NotifyBusted();
+    bool NotifyEvade();
+    bool CanAddMaxBusted();
+    void AddMaxBusted();
+    bool IsImpounded() const { return ImpoundedState != 0; }
 };
 
 // total size: 0x10
@@ -59,6 +95,13 @@ struct FEInfractionsData {
     unsigned short Damage;    // offset 0xA, size 0x2
     unsigned short Resist;    // offset 0xC, size 0x2
     unsigned short OffRoad;   // offset 0xE, size 0x2
+    FEInfractionsData() { bMemSet(this, 0, sizeof(FEInfractionsData)); }
+    FEInfractionsData(unsigned int infractions);
+    void operator+=(const FEInfractionsData &rhs);
+    unsigned short GetValue(GInfractionManager::InfractionType type) const;
+    unsigned short NumInfractions() const;
+    unsigned int GetFineValue() const;
+    unsigned short GetTotalInfractions() const { return NumInfractions(); }
 };
 
 // total size: 0x38
@@ -68,13 +111,24 @@ class FECareerRecord {
         return Bounty;
     }
 
-    // unsigned int GetNumEvadedPursuits() const {}
+    unsigned int GetNumEvadedPursuits() const {
+        return NumEvadedPursuits;
+    }
 
-    // unsigned int GetNumBustedPursuits() const {}
+    unsigned int GetNumBustedPursuits() const {
+        return NumBustedPursuits;
+    }
 
-    // int GetTimesBusted() {}
+    int GetTimesBusted() { return TheImpoundData.TimesBusted; }
 
-    // const FEInfractionsData &GetInfractions(bool get_unserved) const {}
+    int GetMaxBusted() { return TheImpoundData.MaxBusted; }
+
+    const FEInfractionsData& GetInfractions(bool get_unserved) const {
+        if (get_unserved) {
+            return UnservedInfractions;
+        }
+        return ServedInfractions;
+    }
 
     // void TweakBounty(unsigned int bounty) {}
 
@@ -100,7 +154,7 @@ class FECareerRecord {
     void CommitPursuitCarData(unsigned int infractions, unsigned int accumulated_bounty, bool pursuit_evaded);
     void WaiveIncractions(unsigned int infractions);
     void ServeAllIncractions();
-    // unsigned int GetNumInfraction(InfractionType type, bool get_unserved) const;
+    unsigned int GetNumInfraction(GInfractionManager::InfractionType type, bool get_unserved) const;
 
     unsigned char Handle;         // offset 0x0, size 0x1
     FEImpoundData TheImpoundData; // offset 0x2, size 0x8
@@ -118,8 +172,14 @@ class FECareerRecord {
 class FEPlayerCarDB {
   public:
     // total size: 0x4
-    class MyCallback {};
+    class MyCallback {
+      public:
+        virtual ~MyCallback() {}
+        virtual unsigned int Callback(const FECareerRecord &record) const = 0;
+    };
 
+    FEPlayerCarDB();
+    ~FEPlayerCarDB();
     void BuildRideForPlayer(unsigned int car, int player, RideInfo *ride);
     FECarRecord *GetCarRecordByHandle(unsigned int handle);
     FECustomizationRecord *GetCustomizationRecordByHandle(unsigned char handle);

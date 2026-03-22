@@ -14,6 +14,31 @@ struct MilestoneTypeInfo {
 
 // total size: 0x14
 class GMilestone {
+  public:
+    bool GetIsLocked() const { return mState == 1; }
+    bool GetIsAvailable() const { return mState == 2; }
+    bool GetIsDonePendingEscape() const { return mState == 3; }
+    bool GetIsAwarded() const { return mState == 4; }
+    unsigned int GetTypeKey() const { return mTypeKey; }
+    unsigned int GetChallengeKey() const { return mChallengeKey; }
+    unsigned int GetBinNumber() const { return mBinNumber; }
+    float GetRequiredValue() const { return mRequiredValue; }
+    float GetRecordedPassValue() const { return mRecordedValue; }
+
+    GMilestone();
+    float GetCurrentValue() const;
+    float GetBounty() const;
+    int GetLocalizationTag() const;
+    unsigned int GetJumpMarkerKey() const;
+    void DebugForceComplete();
+    void Init(unsigned int challengeKey);
+    void Reset();
+    void Unlock();
+    void SetGoal(float required);
+    bool ValueMeetsGoal(float value);
+    void NotifyProgress(float value);
+    void NotifyPursuitOver(bool escaped);
+
   private:
     unsigned int mTypeKey;      // offset 0x0, size 0x4
     unsigned int mChallengeKey; // offset 0x4, size 0x4

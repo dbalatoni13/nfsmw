@@ -12,6 +12,10 @@
 
 #ifdef MILESTONE_OPT
 void *bMalloc(int size, const char *debug_text, int debug_line, int allocation_params);
+
+inline void *bMalloc(int size, int allocation_params) {
+    return bMalloc(size, nullptr, 0, allocation_params);
+}
 #else
 void *bMalloc(int size, int allocation_params);
 
@@ -47,6 +51,24 @@ inline void *operator new[](size_t size, const char *file, int line) {
     return new char[size];
 #endif
 }
+
+#ifdef _MSC_VER
+inline void operator delete(void *ptr, const char *, int) {
+#if MILESTONE_OPT
+    bFree(ptr);
+#else
+    delete[] reinterpret_cast<char *>(ptr);
+#endif
+}
+
+inline void operator delete[](void *ptr, const char *, int) {
+#if MILESTONE_OPT
+    bFree(ptr);
+#else
+    delete[] reinterpret_cast<char *>(ptr);
+#endif
+}
+#endif
 
 void bEndianSwap64(void *value);
 void bEndianSwap32(void *value);

@@ -129,7 +129,9 @@ struct bList {
         return this->GetHead()->Remove();
     }
     bNode *RemoveTail();            // TODO
-    int GetNodeNumber(bNode *node); // TODO
+    int GetNodeNumber(bNode *node) {
+        return this->TraversebList(node);
+    }
 
     int IsInList(bNode *node) {
         return this->TraversebList(node);

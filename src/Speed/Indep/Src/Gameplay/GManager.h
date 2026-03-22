@@ -76,6 +76,9 @@ class GManager : public UTL::COM::Object, public IVehicleCache {
     void TrackValue(const char *valueName, float value);
     void IncValue(const char *valueName);
     float GetValue(const char *valueName);
+    float GetValue(unsigned int valueKey);
+    float GetBestValue(const char *valueName);
+    float GetBestValue(unsigned int valueKey);
 
     void RegisterInstance(GRuntimeInstance *instance);
     void UnregisterInstance(GRuntimeInstance *instance);
@@ -170,6 +173,9 @@ class GManager : public UTL::COM::Object, public IVehicleCache {
 
     unsigned int SaveSMSInfo(int *saveInfo);
     void LoadSMSInfo(int *loadInfo, unsigned int count);
+    void SaveGameplayData(unsigned char *buf, unsigned int size);
+    void LoadGameplayData(unsigned char *buf, unsigned int size);
+    void ResetAllGameplayData();
     bool GetHasPendingSMS() const;
     bool CanPlaySMS() const;
     void AddSMS(int smsID);
@@ -193,6 +199,19 @@ class GManager : public UTL::COM::Object, public IVehicleCache {
         return mStartFreeRoamPursuit;
     }
 
+    void SetStartingFreeRoamFromSafeHouse() {
+        mStartFreeRoamFromSafeHouse = true;
+    }
+
+    void OverrideFreeRoamStartMarker(unsigned int markerKey) {
+        mOverrideFreeRoamStartMarker = markerKey;
+    }
+
+    void QueueFreeRoamPursuit(float minHeat) {
+        mStartFreeRoamPursuit = true;
+        mQueuedPursuitMinHeat = minHeat;
+    }
+
     void TrackValue(const char *valueName, int value) {
         TrackValue(valueName, static_cast<float>(value));
     }
@@ -200,8 +219,10 @@ class GManager : public UTL::COM::Object, public IVehicleCache {
   private:
     GManager(const char *vaultPackName);
 
+  public:
     static GManager *mObj;
 
+  private:
     const char *mVaultPackFileName;                 // offset 0x1C, size 0x4
     bFile *mVaultPackFile;                          // offset 0x20, size 0x4
     unsigned int mVaultCount;                       // offset 0x24, size 0x4
