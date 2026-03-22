@@ -27,6 +27,10 @@ enum GameplayObjType {
 };
 
 namespace Attrib {
+
+template <>
+const GCollectionKey &TAttrib<GCollectionKey>::Get(unsigned int index) const;
+
 namespace Gen {
 
 struct gameplay : Instance {

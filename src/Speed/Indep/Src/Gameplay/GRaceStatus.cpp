@@ -91,6 +91,17 @@ template <> struct GObjectIteratorTraits<GTrigger> {
     enum { kType = kGameplayObjType_Trigger };
 };
 
+template <>
+const GCollectionKey &Attrib::TAttrib<GCollectionKey>::Get(unsigned int index) const {
+    const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(GetElementPointer(index));
+
+    if (!resultptr) {
+        resultptr = reinterpret_cast<const GCollectionKey *>(Attrib::DefaultDataArea(sizeof(GCollectionKey)));
+    }
+
+    return *resultptr;
+}
+
 GRaceStatus *GRaceStatus::fObj = nullptr;
 
 DECLARE_CONTAINER_TYPE(ID_ROAD_SET);
