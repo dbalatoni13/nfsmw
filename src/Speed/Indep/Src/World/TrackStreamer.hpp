@@ -107,6 +107,8 @@ class TSMemoryNode : public bTNode<TSMemoryNode> {
     bool Allocated;     // offset 0x10, size 0x1
     char DebugName[32]; // offset 0x14, size 0x20
 
+    bool IsAllocated();
+
     bool IsFree();
 
     bool Contains(int address);

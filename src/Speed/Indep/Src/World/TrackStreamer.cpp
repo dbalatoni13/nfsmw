@@ -240,6 +240,10 @@ inline bool TSMemoryNode::IsFree() {
     return !Allocated;
 }
 
+inline bool TSMemoryNode::IsAllocated() {
+    return Allocated;
+}
+
 inline bool TSMemoryNode::Contains(int address) {
     return address >= Address && address < Address + Size;
 }
@@ -485,13 +489,10 @@ inline TSMemoryNode *TSMemoryPool::GetFirstAllocatedNode(bool start_from_top) {
 }
 
 void TSMemoryPool::DebugPrint() {
-    TSMemoryNode *end = reinterpret_cast<TSMemoryNode *>(&NodeList);
-    TSMemoryNode *node = reinterpret_cast<TSMemoryNode *>(NodeList.GetHead());
-    while (1) {
-        if (node == end) {
-            return;
-        }
-        node = reinterpret_cast<TSMemoryNode *>(node->GetNext());
+    for (TSMemoryNode *node = NodeList.GetHead(); node != NodeList.EndOfList(); node = node->GetNext()) {
+        const char *name = node->DebugName;
+        node->IsAllocated();
+        (void)name;
     }
 }
 
