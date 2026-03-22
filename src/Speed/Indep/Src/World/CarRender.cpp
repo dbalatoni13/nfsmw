@@ -7,6 +7,7 @@
 #include "Speed/Indep/Src/Ecstasy/Texture.hpp"
 #include "Speed/Indep/Src/Ecstasy/eMath.hpp"
 #include "Speed/Indep/Src/Ecstasy/eModel.hpp"
+#include "Speed/Indep/Src/Ecstasy/eSolid.hpp"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/ecar.h"
 #include "Speed/Indep/Src/Main/AttribSupport.h"
 #include "Speed/Indep/Src/Misc/GameFlow.hpp"
@@ -20,6 +21,7 @@
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/bWare/Inc/bMemory.hpp"
 #include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
+#include "Speed/Indep/bWare/Inc/bVector.hpp"
 
 float culldiv = 12000.0f;
 static const CarFXPosInfo FXMarkerNameHashMappings[28] = {
@@ -85,6 +87,7 @@ extern unsigned int FrameMallocFailAmount;
 extern int TweakKitWheelOffsetFront;
 extern int TweakKitWheelOffsetRear;
 extern int ForceBrakelightsOn;
+extern int iRam8047ff04;
 extern int counter_31665 asm("counter.31665");
 extern int counter_31669 asm("counter.31669");
 
@@ -98,10 +101,12 @@ namespace {
 void Render(eViewPlatInterface *view, eModel *model, bMatrix4 *local_to_world, eLightContext *light_context, unsigned int flags,
             unsigned int exc_flag);
 void Render(eViewPlatInterface *view, ePoly *poly, TextureInfo *texture_info, bMatrix4 *matrix, int accurate, float z_bias);
+void bExpandBoundingBox(bVector3 *bbox_min, bVector3 *bbox_max, const bVector3 *bbox2_min, const bVector3 *bbox2_max);
 int CarPart_GetAppliedAttributeIParam(CarPart *part, unsigned int namehash, int default_value) asm("GetAppliedAttributeIParam__7CarPartUii");
 int CarPart_HasAppliedAttribute(CarPart *part, unsigned int namehash) asm("HasAppliedAttribute__7CarPartUi");
 unsigned int CarPart_GetAppliedAttributeUParam(CarPart *part, unsigned int namehash, unsigned int default_value)
     asm("GetAppliedAttributeUParam__7CarPartUiUi");
+unsigned int CarPart_GetModelNameHash(CarPart *part, int model_num, int lod) asm("GetModelNameHash__7CarPartii");
 
 template <typename T> struct bSNodeLayout {
     T *Next;
@@ -705,6 +710,191 @@ unsigned int CarRenderInfo::HideCarPart(int slotId, bool hide) {
     }
 
     return model_namehash;
+}
+
+struct CarPartMetaLayout {
+    unsigned short PartNameHashBot;
+    unsigned short PartNameHashTop;
+    char PartID;
+    unsigned char GroupNumber_UpgradeLevel;
+    char BaseModelNameHashSelector;
+    unsigned char CarTypeNameHashIndex;
+    unsigned short NameOffset;
+    unsigned short AttributeTableOffset;
+    unsigned short ModelNameHashTableOffset;
+};
+
+void CarRenderInfo::UpdateCarParts() {
+    RideInfo *ride_info = this->pRideInfo;
+    bVector3 bbox_min;
+    bVector3 bbox_max;
+
+    bInitializeBoundingBox(&this->AABBMin, &this->AABBMax);
+
+    for (int slot_id = 0; slot_id < 0x4C; slot_id++) {
+        for (int model_number = 0; model_number < 1; model_number++) {
+            for (int lod = this->mMinLodLevel; lod <= this->mMaxLodLevel; lod++) {
+                CarPartModel *car_part_model = &this->mCarPartModels[slot_id][model_number][lod];
+                eModel *model = car_part_model->GetModel();
+
+                if (model != 0 && model->GetSolid() != 0) {
+                    model->UnInit();
+                    CarPartModelPool->Free(model);
+                    car_part_model->SetModel(0);
+                    car_part_model->Clear();
+                }
+            }
+        }
+    }
+
+    for (int slot_id = 0; slot_id < 0x4C; slot_id++) {
+        CarPart *car_part = ride_info->GetPart(slot_id);
+
+        if (car_part == 0) {
+            continue;
+        }
+
+        for (int model_number = 0; model_number < 1; model_number++) {
+            for (int lod = this->mMinLodLevel; lod <= this->mMaxLodLevel; lod++) {
+                CARPART_LOD special_minimum;
+                CARPART_LOD special_maximum;
+                CARPART_LOD model_lod = static_cast<CARPART_LOD>(lod);
+
+                if (ride_info->GetSpecialLODRangeForCarSlot(slot_id, &special_minimum, &special_maximum, iRam8047ff04 == 3)) {
+                    if (model_lod < special_minimum) {
+                        model_lod = special_minimum;
+                    }
+                    if (special_maximum < model_lod) {
+                        model_lod = special_maximum;
+                    }
+                }
+
+                unsigned int model_name_hash = CarPart_GetModelNameHash(car_part, model_number, model_lod);
+
+                if (model_name_hash == 0) {
+                    continue;
+                }
+
+                CarPartModel *car_part_model = &this->mCarPartModels[slot_id][model_number][lod];
+                eModel *model = static_cast<eModel *>(CarPartModelPool->Malloc());
+
+                car_part_model->SetModel(model);
+                model->Init(model_name_hash);
+
+                if (model->GetSolid() == 0) {
+                    model->UnInit();
+                    CarPartModelPool->Free(model);
+                    car_part_model->SetModel(0);
+                    continue;
+                }
+
+                if (slot_id >= CARSLOTID_DECAL_FRONT_WINDOW && slot_id <= CARSLOTID_DECAL_RIGHT_QUARTER) {
+                    model->AttachReplacementTextureTable(&this->DecalReplacementTextureTable[(slot_id - CARSLOTID_DECAL_FRONT_WINDOW) * 8], 8, 0);
+                } else if (slot_id == CARSLOTID_HOOD) {
+                    if (CarPart_GetAppliedAttributeIParam(car_part, 0x721AFF7C, 0) == 0) {
+                        model->AttachReplacementTextureTable(this->MasterReplacementTextureTable, REPLACETEX_NUM, 0);
+                        this->CarbonHood = 0;
+                    } else {
+                        model->AttachReplacementTextureTable(this->CarbonReplacementTextureTable, REPLACETEX_NUM, 0);
+                        this->CarbonHood = 1;
+                    }
+                } else {
+                    model->AttachReplacementTextureTable(this->MasterReplacementTextureTable, REPLACETEX_NUM, 0);
+                }
+            }
+
+            eModel *model = this->mCarPartModels[slot_id][model_number][this->mMinLodLevel].GetModel();
+
+            if (model != 0) {
+                model->GetBoundingBox(&bbox_min, &bbox_max);
+                bExpandBoundingBox(&this->AABBMin, &this->AABBMax, &bbox_min, &bbox_max);
+            }
+        }
+    }
+
+    for (int model_number = 0; model_number < 1; model_number++) {
+        for (int lod = this->mMinLodLevel; lod <= this->mMaxLodLevel; lod++) {
+            eModel *front_wheel_model = this->mCarPartModels[CARSLOTID_FRONT_WHEEL][model_number][lod].GetModel();
+            eModel *rear_wheel_model = this->mCarPartModels[CARSLOTID_REAR_WHEEL][model_number][lod].GetModel();
+
+            if (front_wheel_model != 0 && rear_wheel_model == 0) {
+                rear_wheel_model = static_cast<eModel *>(CarPartModelPool->Malloc());
+                this->mCarPartModels[CARSLOTID_REAR_WHEEL][model_number][lod].SetModel(rear_wheel_model);
+                rear_wheel_model->Init(front_wheel_model->GetNameHash());
+
+                if (rear_wheel_model->GetSolid() == 0) {
+                    rear_wheel_model->UnInit();
+                    CarPartModelPool->Free(rear_wheel_model);
+                    this->mCarPartModels[CARSLOTID_REAR_WHEEL][model_number][lod].SetModel(0);
+                } else {
+                    rear_wheel_model->AttachReplacementTextureTable(this->MasterReplacementTextureTable, REPLACETEX_NUM, 0);
+                }
+            }
+
+            eModel *front_brake_model = this->mCarPartModels[CARSLOTID_FRONT_BRAKE][model_number][lod].GetModel();
+            eModel *rear_brake_model = this->mCarPartModels[CARSLOTID_REAR_BRAKE][model_number][lod].GetModel();
+
+            if (front_brake_model != 0 && rear_brake_model == 0) {
+                rear_brake_model = static_cast<eModel *>(CarPartModelPool->Malloc());
+                this->mCarPartModels[CARSLOTID_REAR_BRAKE][model_number][lod].SetModel(rear_brake_model);
+                rear_brake_model->Init(front_brake_model->GetNameHash());
+
+                if (rear_brake_model->GetSolid() == 0) {
+                    rear_brake_model->UnInit();
+                    CarPartModelPool->Free(rear_brake_model);
+                    this->mCarPartModels[CARSLOTID_REAR_BRAKE][model_number][lod].SetModel(0);
+                } else {
+                    rear_brake_model->AttachReplacementTextureTable(this->MasterReplacementTextureTable, REPLACETEX_NUM, 0);
+                }
+            }
+        }
+    }
+
+    eModel *front_wheel_model = this->mCarPartModels[CARSLOTID_FRONT_WHEEL][0][this->mMinLodLevel].GetModel();
+    eModel *rear_wheel_model = this->mCarPartModels[CARSLOTID_REAR_WHEEL][0][this->mMinLodLevel].GetModel();
+
+    if (front_wheel_model != 0) {
+        front_wheel_model->GetBoundingBox(&bbox_min, &bbox_max);
+        this->WheelWidths[0] = fabsf(bbox_max.y - bbox_min.y);
+        this->WheelRadius[0] = fabsf(bbox_max.z - bbox_min.z) * 0.5f;
+    }
+
+    if (rear_wheel_model != 0) {
+        rear_wheel_model->GetBoundingBox(&bbox_min, &bbox_max);
+        this->WheelWidths[1] = fabsf(bbox_max.y - bbox_min.y);
+        this->WheelRadius[1] = fabsf(bbox_max.z - bbox_min.z) * 0.5f;
+    }
+
+    this->ModelOffset.x = (this->AABBMax.x + this->AABBMin.x) * 0.5f;
+    this->ModelOffset.y = (this->AABBMax.y + this->AABBMin.y) * 0.5f;
+    this->ModelOffset.z = (this->AABBMax.z + this->AABBMin.z) * 0.5f;
+
+    CarPart *base_part = ride_info->GetPart(CARSLOTID_BASE);
+    if (base_part == 0) {
+        this->RoofScoopPositionMarker = 0;
+        this->SpoilerPositionMarker = 0;
+        this->SpoilerPositionMarker2 = 0;
+    } else {
+        eSolid *solid = eFindSolid(CarPart_GetModelNameHash(base_part, 0, this->mMinLodLevel), 0);
+
+        if (solid == 0) {
+            this->RoofScoopPositionMarker = 0;
+            this->SpoilerPositionMarker = 0;
+            this->SpoilerPositionMarker2 = 0;
+        } else {
+            this->SpoilerPositionMarker = solid->GetPostionMarker(0xC93B73FD);
+            this->SpoilerPositionMarker2 = solid->GetPostionMarker(0xF0A9F3CF);
+            this->RoofScoopPositionMarker = solid->GetPostionMarker(0x90C81258);
+        }
+    }
+
+    CarPart *spoiler_part = ride_info->GetPart(CARSLOTID_SPOILER);
+    this->mMirrorLeftWheels = true;
+    if (spoiler_part != 0) {
+        this->mMirrorLeftWheels = (reinterpret_cast<CarPartMetaLayout *>(spoiler_part)->GroupNumber_UpgradeLevel >> 5) == 0;
+    }
+
+    this->SetCarDamageState(false, 0x2E, 0x33);
 }
 
 void CarRenderInfo::UpdateWheelYRenderOffset() {
