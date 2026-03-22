@@ -7,6 +7,10 @@
 
 #include <stdio.h>
 
+float turnLength(float *v) {
+    return sqrtf(v[0] * v[0] + v[1] * v[1]);
+}
+
 
 namespace EAGL4Anim {
 
@@ -178,10 +182,17 @@ int FnTurnBlender::ComputeCycleIdx(float t, float startTime, float endTime) cons
 }
 
 void FnTurnBlender::ComputeAlignQ(float *v1, float *v2, UMath::Vector4 &q) const {
+    float dot = v1[0] * v2[0] + v1[1] * v2[1];
+    float norm = turnLength(v1) * turnLength(v2);
+    float w = ((dot / norm) + 1.0f) * 0.5f;
+
     q.x = 0.0f;
-    q.y = 0.0f;
     q.z = 0.0f;
-    q.w = 1.0f;
+    q.y = sqrtf(1.0f - w);
+    q.w = sqrtf(w);
+    if (0.0f < v1[0] * v2[1] - v1[1] * v2[0]) {
+        q.y = -q.y;
+    }
 }
 
 void FnTurnBlender::AlignCycleBeginEnd(int cIdx) {
@@ -193,9 +204,38 @@ void FnTurnBlender::AlignCycleBeginEnd(int cIdx) {
     mAlignQ.w = 1.0f;
 }
 
-void FnTurnBlender::AlignRootQ(float *sqt) const {}
+void FnTurnBlender::AlignRootQ(float *sqt) const {
+    float x = sqt[4];
+    float y = sqt[5];
+    float z = sqt[6];
+    float w = sqt[7];
+    float newX = w * mAlignQ.x + z * mAlignQ.y + (x * mAlignQ.w - y * mAlignQ.z);
+    float newY = w * mAlignQ.y + (x * mAlignQ.z + y * mAlignQ.w) - z * mAlignQ.x;
+    float newZ = w * mAlignQ.z + z * mAlignQ.w - x * mAlignQ.y + y * mAlignQ.x;
+    float newW = w * mAlignQ.w - x * mAlignQ.x - y * mAlignQ.y - z * mAlignQ.z;
 
-void FnTurnBlender::AlignVel(float *vel) const {}
+    sqt[4] = newX;
+    sqt[5] = newY;
+    sqt[6] = newZ;
+    sqt[7] = newW;
+}
+
+void FnTurnBlender::AlignVel(float *vel) const {
+    float x = mAlignQ.x;
+    float y = mAlignQ.y;
+    float z = mAlignQ.z;
+    float w = mAlignQ.w;
+    float doubleY = y + y;
+    float doubleZ = z + z;
+    float oldX = vel[0];
+    float oldY = vel[1];
+    float y2 = y * doubleY;
+    float xz = x * doubleZ;
+    float wy = w * doubleY;
+
+    vel[0] = oldX * (1.0f - (z * doubleZ + y2)) + oldY * (xz + wy);
+    vel[1] = oldX * (xz - wy) + oldY * (1.0f - (x * (x + x) + y2));
+}
 
 bool FnTurnBlender::BlendBeginFacing(float *f) const {
     if (!f) {
