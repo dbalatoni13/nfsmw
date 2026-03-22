@@ -3812,9 +3812,7 @@ void GRaceStatus::UpdateAdaptiveDifficulty(eAdaptiveGainReason reason, ISimable 
         mCaluclatedAdaptiveGain = true;
         difficulty = bClamp(difficulty, -1.0f, 1.0f);
 
-        if (FEDatabase) {
-            FEDatabase->GetCareerSettings()->SetAdaptiveDifficulty(difficulty);
-        }
+        FEDatabase->GetCareerSettings()->SetAdaptiveDifficulty(difficulty);
 
         fCatchUpAdaptiveBonus = difficulty;
     }
