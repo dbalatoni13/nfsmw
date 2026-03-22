@@ -41,33 +41,6 @@ static inline bool RaceRouteForward(const WRoadSegment &seg) {
     return seg.fFlags & (1 << 2);
 }
 
-struct ResetCookieTrailLayout {
-    int mCount;
-    int mLast;
-    const int mCapacity;
-    int pad;
-    ResetCookie mData[4];
-};
-
-static inline int CookieCount(const CookieTrail<ResetCookie, 4> &cookies) {
-    return *reinterpret_cast<const int *>(&cookies);
-}
-
-static inline void ClearCookies(CookieTrail<ResetCookie, 4> &cookies) {
-    int *data = reinterpret_cast<int *>(&cookies);
-    data[0] = 0;
-    data[1] = -1;
-}
-
-static inline void AddCookie(CookieTrail<ResetCookie, 4> &cookies, const ResetCookie &cookie) {
-    ResetCookieTrailLayout &layout = reinterpret_cast<ResetCookieTrailLayout &>(cookies);
-    layout.mLast = (layout.mLast + 1) % layout.mCapacity;
-    if (layout.mCount < layout.mCapacity) {
-        layout.mCount++;
-    }
-    layout.mData[layout.mLast] = cookie;
-}
-
 Behavior *ResetCar::Construct(const BehaviorParams &params) {
     return new ResetCar(params);
 }
@@ -105,26 +78,48 @@ void ResetCar::OnBehaviorChange(const UCrc32 &mechanic) {
 }
 
 void ResetCar::Reset() {
-    ClearCookies(mCookies);
+    mCookies.Clear();
 }
 
 bool ResetCar::HasResetPosition() {
-    return CookieCount(mCookies) != 0;
+    return mCookies.Count() != 0;
 }
 
 void ResetCar::SetResetPosition(const UMath::Vector3 &position, const UMath::Vector3 &direction) {
     ResetCookie cookie;
 
-    ClearCookies(mCookies);
+    mCookies.Clear();
     cookie.position = position;
     cookie.flags = 0;
     cookie.direction = direction;
     cookie.time = Sim::GetTime();
-    AddCookie(mCookies, cookie);
+    mCookies.AddNew(cookie);
 }
 
 void ResetCar::ClearResetPosition() {
-    ClearCookies(mCookies);
+    mCookies.Clear();
+}
+
+bool ResetCar::ResetVehicle(bool manual) {
+    ResetCookie cookie;
+
+    if (manual && CheckZone(TRACK_PATH_ZONE_GUIDED_RESET)) {
+        return true;
+    }
+
+    if (HasResetPosition() && (!manual || !mVehicleBody || !mVehicleBody->GetInvulnerability())) {
+        cookie = mCookies.Oldest();
+        if (cookie.flags & 1) {
+            FindNearestRoad(&cookie);
+        }
+        if (ResetTo(cookie.position, cookie.direction, manual)) {
+            mCookies.Clear();
+            mCookies.AddNew(cookie);
+            return true;
+        }
+    }
+
+    return false;
 }
 
 bool ResetCar::OnTask(HSIMTASK htask, float dT) {
