@@ -2003,9 +2003,7 @@ ISimable *GManager::GetRandomEmergencyStockCar() {
 
         validCars.reserve(mStockCars.size());
         for (StockCarMap::iterator it = mStockCars.begin(); it != mStockCars.end(); ++it) {
-            IArticulatedVehicle *iarticulation;
-
-            if (!it->second || !it->second->QueryInterface(&iarticulation)) {
+            if (!UTL::COM::QueryInterface<IArticulatedVehicle>(it->second)) {
                 validCars.push_back(it);
             }
         }
