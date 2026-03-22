@@ -1417,6 +1417,7 @@ struct gameplay : Instance {
 
             {
                 TAttrib<GCollectionKey> localattr(this->Get(attributeKey));
+                localattr.GetCollection();
 
                 for (unsigned int i = 0; i < len; i++) {
                     localattr.Set(i, attr.Get(i));
