@@ -911,73 +911,76 @@ int CarPartDatabase::NewGetNumCarParts(CarType car_type, int car_slot_id, unsign
 
 CarPart *CarPartDatabase::NewGetCarPart(CarType car_type, int car_slot_id, unsigned int car_part_namehash, CarPart *prev_part, int upgrade_level) {
     unsigned int *car_type_namehashes = GetTypesFromSlot(static_cast<CAR_SLOT_ID>(car_slot_id), car_type);
-    int car_type_index = 0;
+    int previous_type_index = 0;
     CAR_PART_ID car_part_id = GetCarPartFromSlot(static_cast<CAR_SLOT_ID>(car_slot_id));
-    int previous_type_index;
+    int car_type_index;
+    unsigned int car_type_namehash;
+    CarPartPackLayout *car_part_pack;
+    int num_parts;
+    CarPart *part;
+    CarPart *end_part;
+    unsigned char car_type_key;
 
-    if (prev_part == 0) {
-        car_type_index = 0;
-        previous_type_index = car_type_index;
-    } else {
-        while (car_type_index < 2 && prev_part->GetCarTypeNameHash() != car_type_namehashes[car_type_index]) {
-            car_type_index++;
+    if (prev_part != 0) {
+        while (previous_type_index < 2 && prev_part->GetCarTypeNameHash() != car_type_namehashes[previous_type_index]) {
+            previous_type_index++;
         }
 
-        previous_type_index = car_type_index;
-        if (car_type_index == 2) {
+        if (previous_type_index == 2) {
             return 0;
         }
     }
 
-    while (true) {
-        if (car_type_index > 1) {
-            return 0;
-        }
+    for (car_type_index = previous_type_index; car_type_index <= 1; car_type_index++) {
+        car_type_namehash = car_type_namehashes[car_type_index];
 
-        if (car_type_namehashes[car_type_index] != 0) {
-            for (CarPartPackLayout *car_part_pack = reinterpret_cast<CarPartPackLayout *>(this->CarPartPackList.Next);
-                 car_part_pack != reinterpret_cast<CarPartPackLayout *>(&this->CarPartPackList); car_part_pack = car_part_pack->Next) {
-                int num_parts = car_part_pack->NumParts;
-                CarPart *part = car_part_pack->PartsTable;
-                CarPart *end_part = reinterpret_cast<CarPart *>(reinterpret_cast<unsigned char *>(part) + num_parts * 0xE);
+        if (car_type_namehash != 0) {
+            car_part_pack = reinterpret_cast<CarPartPackLayout *>(this->CarPartPackList.Next);
+            while (car_part_pack != reinterpret_cast<CarPartPackLayout *>(&this->CarPartPackList)) {
+                num_parts = car_part_pack->NumParts;
+                part = car_part_pack->PartsTable;
+                end_part = reinterpret_cast<CarPart *>(reinterpret_cast<unsigned char *>(part) + num_parts * 0xE);
 
-                if (prev_part == 0 || car_type_index != previous_type_index) {
-                    unsigned char car_type_key = MapCarTypeNameHashToIndex(car_type_namehashes[car_type_index]);
-
-                    part = static_cast<CarPart *>(ScanHashTableKey8(car_type_key, part, num_parts, 7, 0xE));
-                    if (part == 0) {
+                if (prev_part != 0 && car_type_index == previous_type_index) {
+                    if (prev_part < part || prev_part >= end_part) {
+                        car_part_pack = car_part_pack->Next;
                         continue;
                     }
-                } else if (part <= prev_part && prev_part < end_part) {
+
                     part = reinterpret_cast<CarPart *>(reinterpret_cast<unsigned char *>(prev_part) + 0xE);
                 } else {
-                    continue;
+                    car_type_key = MapCarTypeNameHashToIndex(car_type_namehash);
+                    part = static_cast<CarPart *>(ScanHashTableKey8(car_type_key, part, num_parts, 7, 0xE));
+                    if (part == 0) {
+                        car_part_pack = car_part_pack->Next;
+                        continue;
+                    }
                 }
 
-                if (part < end_part) {
-                    do {
-                        if (static_cast<int>(static_cast<signed char>(reinterpret_cast<unsigned char *>(part)[4])) == car_part_id &&
-                            part->GetCarTypeNameHash() == car_type_namehashes[car_type_index] &&
-                            (car_part_namehash == 0 ||
-                             (static_cast<unsigned int>(reinterpret_cast<unsigned short *>(part)[1]) << 16 |
-                              static_cast<unsigned int>(reinterpret_cast<unsigned short *>(part)[0])) == car_part_namehash)) {
-                            if ((reinterpret_cast<unsigned char *>(part)[5] >> 5) == static_cast<unsigned int>(upgrade_level)) {
-                                return part;
-                            }
-
-                            if (upgrade_level == -1) {
-                                return part;
-                            }
+                while (part < end_part) {
+                    if (static_cast<int>(static_cast<signed char>(reinterpret_cast<unsigned char *>(part)[4])) == car_part_id &&
+                        part->GetCarTypeNameHash() == car_type_namehash &&
+                        (car_part_namehash == 0 ||
+                         (static_cast<unsigned int>(reinterpret_cast<unsigned short *>(part)[1]) << 16 |
+                          static_cast<unsigned int>(reinterpret_cast<unsigned short *>(part)[0])) == car_part_namehash)) {
+                        if ((reinterpret_cast<unsigned char *>(part)[5] >> 5) == static_cast<unsigned int>(upgrade_level)) {
+                            return part;
                         }
 
-                        part = reinterpret_cast<CarPart *>(reinterpret_cast<unsigned char *>(part) + 0xE);
-                    } while (part < end_part);
+                        if (upgrade_level == -1) {
+                            return part;
+                        }
+                    }
+
+                    part = reinterpret_cast<CarPart *>(reinterpret_cast<unsigned char *>(part) + 0xE);
                 }
+
+                car_part_pack = car_part_pack->Next;
             }
         }
-
-        car_type_index++;
     }
+
+    return 0;
 }
 
 CarPart *CarPartDatabase::NewGetFirstCarPart(CarType car_type, int car_slot_id, unsigned int car_part_namehash, int upgrade_level) {
