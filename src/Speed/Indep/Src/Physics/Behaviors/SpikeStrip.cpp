@@ -4,15 +4,24 @@
 #include "Speed/Indep/Src/Interfaces/Simables/ISpikeable.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ISuspension.h"
 
+static inline ISimpleBody *FindSimpleBody(ISimable *owner) {
+    return reinterpret_cast<ISimpleBody *>(
+        (*reinterpret_cast<UTL::COM::Object **>(owner))->_mInterfaces.Find((HINTERFACE)ISimpleBody::_IHandle)
+    );
+}
+
 Behavior *SpikeStrip::Construct(const BehaviorParams &params) {
     return new SpikeStrip(params);
 }
 
 SpikeStrip::SpikeStrip(const BehaviorParams &params)
     : Behavior(params, 0) {
-    GetOwner()->QueryInterface(&mBody);
+    bool hasbody;
 
-    if (mBody) {
+    mBody = FindSimpleBody(GetOwner());
+    hasbody = mBody != nullptr;
+
+    if (hasbody) {
         SetupBody();
     }
 }
@@ -21,9 +30,12 @@ SpikeStrip::~SpikeStrip() {}
 
 void SpikeStrip::OnBehaviorChange(const UCrc32 &mechanic) {
     if (mechanic == UCrc32(BEHAVIOR_MECHANIC_RIGIDBODY)) {
-        GetOwner()->QueryInterface(&mBody);
+        bool hasbody;
 
-        if (mBody) {
+        mBody = FindSimpleBody(GetOwner());
+        hasbody = mBody != nullptr;
+
+        if (hasbody) {
             SetupBody();
         }
     }
@@ -40,39 +52,40 @@ void SpikeStrip::OnCollide(const Dynamics::Collision::Geometry &mygeometry, IRig
     ISuspension *isuspension;
     unsigned int num_tires;
 
-    if (irb->QueryInterface(&ispikeable) && irb->QueryInterface(&isuspension)) {
-        num_tires = isuspension->GetNumWheels();
+    if (!irb->QueryInterface(&ispikeable)) {
+        return;
+    }
 
-        for (unsigned int i = 0; i < num_tires; i++) {
-            if (isuspension->IsWheelOnGround(i) && ispikeable->GetTireDamage(i) == TIRE_DAMAGE_NONE) {
-                UMath::Vector3 dP;
-                UMath::Matrix4 matrix;
-                UMath::Vector3 position;
-                UMath::Vector3 dim;
-                Dynamics::Collision::Geometry tirebox;
+    if (!irb->QueryInterface(&isuspension)) {
+        return;
+    }
 
-                UMath::Scale(irb->GetLinearVelocity(), dT, dP);
-                irb->GetMatrix4(matrix);
-                position = isuspension->GetWheelCenterPos(i);
+    num_tires = isuspension->GetNumWheels();
 
-                {
-                    const float radius = isuspension->GetWheelRadius(i);
+    for (unsigned int i = 0; i < num_tires; i++) {
+        if (isuspension->IsWheelOnGround(i) && ispikeable->GetTireDamage(i) == TIRE_DAMAGE_NONE) {
+            UMath::Vector3 dP;
+            UMath::Matrix4 matrix;
 
-                    dim.x = 0.15f;
-                    dim.y = radius;
-                    dim.z = radius;
-                }
+            UMath::Scale(irb->GetLinearVelocity(), dT, dP);
+            irb->GetMatrix4(matrix);
 
-                tirebox = Dynamics::Collision::Geometry(
-                    matrix, //
-                    position, //
-                    dim, //
-                    Dynamics::Collision::Geometry::BOX, //
-                    dP
-                );
-                if (Dynamics::Collision::Geometry::FindIntersection(&mygeometry, &tirebox, &tirebox)) {
-                    ispikeable->Puncture(i);
-                }
+            UMath::Vector3 dim;
+            UMath::Vector3 position = isuspension->GetWheelCenterPos(i);
+
+            dim.y = isuspension->GetWheelRadius(i);
+            dim.z = dim.y;
+            dim.x = 0.15f;
+
+            Dynamics::Collision::Geometry tirebox(
+                matrix, //
+                position, //
+                dim, //
+                Dynamics::Collision::Geometry::BOX, //
+                dP
+            );
+            if (Dynamics::Collision::Geometry::FindIntersection(&mygeometry, &tirebox, &tirebox)) {
+                ispikeable->Puncture(i);
             }
         }
     }
@@ -82,54 +95,64 @@ void SpikeStrip::OnTaskSimulate(float dT) {
     IModel *model;
     const CollisionGeometry::Bounds *geometry;
 
-    if (mBody) {
-        model = GetOwner()->GetModel();
+    if (!mBody) {
+        return;
+    }
 
-        if (model) {
-            geometry = model->GetCollisionGeometry();
+    model = GetOwner()->GetModel();
+    if (!model) {
+        return;
+    }
 
-            if (geometry) {
-                SimCollisionMap *cmap = mBody->GetCollisionMap();
+    geometry = model->GetCollisionGeometry();
+    if (!geometry) {
+        return;
+    }
 
-                if (cmap) {
-                    if (cmap->CollisionWithAny()) {
-                        UMath::Matrix4 matrix;
-                        UMath::Vector3 position;
-                        UMath::Vector3 dim;
-                        Dynamics::Collision::Geometry mygeometry;
+    if (!mBody) {
+        return;
+    }
 
-                        model->GetTransform(matrix);
-                        position = UMath::Vector4To3(matrix.v3);
-                        matrix.v3 = UMath::Vector4::kIdentity;
-                        geometry->GetHalfDimensions(dim);
-                        mygeometry = Dynamics::Collision::Geometry(
-                            matrix, //
-                            position, //
-                            dim, //
-                            Dynamics::Collision::Geometry::BOX, //
-                            UMath::Vector3::kZero
-                        );
+    {
+        SimCollisionMap *cmap = mBody->GetCollisionMap();
 
-                        for (int i = 0; i < 0xA0; i++) {
-                            if (cmap->CollisionWithOrderedBody(i)) {
-                                IRigidBody *irb = cmap->GetOrderedBody(i);
+        if (cmap) {
+            if (cmap->CollisionWithAny()) {
+                UMath::Matrix4 matrix;
+                UMath::Vector3 position;
+                UMath::Vector3 dim;
 
-                                if (irb) {
-                                    OnCollide(mygeometry, irb, dT);
-                                }
-                            }
-                        }
-                    } else {
-                        ITriggerableModel *itrigger;
+                model->GetTransform(matrix);
+                position = UMath::Vector4To3(matrix.v3);
+                matrix.v3 = UMath::Vector4::kIdentity;
+                geometry->GetHalfDimensions(dim);
 
-                        if (model->QueryInterface(&itrigger)) {
-                            UMath::Matrix4 mat;
+                Dynamics::Collision::Geometry mygeometry(
+                    matrix, //
+                    position, //
+                    dim, //
+                    Dynamics::Collision::Geometry::BOX, //
+                    UMath::Vector3::kZero
+                );
 
-                            GetOwner()->GetTransform(mat);
-                            itrigger->PlaceTrigger(mat, true);
-                            GetOwner()->Detach(model);
+                for (unsigned int i = 0; i < 0xA0; i++) {
+                    if (cmap->CollisionWithOrderedBody(i)) {
+                        IRigidBody *irb = cmap->GetOrderedBody(i);
+
+                        if (irb) {
+                            OnCollide(mygeometry, irb, dT);
                         }
                     }
+                }
+            } else {
+                ITriggerableModel *itrigger;
+
+                if (model->QueryInterface(&itrigger)) {
+                    UMath::Matrix4 mat;
+
+                    GetOwner()->GetTransform(mat);
+                    itrigger->PlaceTrigger(mat, true);
+                    GetOwner()->DetachEntity();
                 }
             }
         }
