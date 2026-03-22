@@ -1996,10 +1996,11 @@ ISimable *GManager::GetRandomEmergencyStockCar() {
     typedef UTL::Std::vector<StockCarMap::iterator, _type_vector> CandidateCars;
 
     GRaceParameters *parms = GRaceStatus::Get().GetRaceParameters();
-    CandidateCars validCars;
-    int numValid;
 
     if (!parms || parms->GetRaceType() == 2) {
+        CandidateCars validCars;
+        int numValid;
+
         validCars.reserve(mStockCars.size());
         for (StockCarMap::iterator it = mStockCars.begin(); it != mStockCars.end(); ++it) {
             IArticulatedVehicle *iarticulation;
