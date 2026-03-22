@@ -383,7 +383,7 @@ int TSMemoryPool::GetLargestFreeBlock() {
     if (NeedToRecalcLargestFree) {
         int largest_free = 0;
         for (TSMemoryNode *node = NodeList.GetHead(); node != NodeList.EndOfList(); node = node->GetNext()) {
-            if (node->Allocated != 1 && node->Size > largest_free) {
+            if (node->IsFree() && node->Size > largest_free) {
                 largest_free = node->Size;
             }
         }
@@ -393,7 +393,7 @@ int TSMemoryPool::GetLargestFreeBlock() {
 
     int largest_free = 0;
     for (TSMemoryNode *node = NodeList.GetHead(); node != NodeList.EndOfList(); node = node->GetNext()) {
-        if (node->Allocated != 1 && node->Size > largest_free) {
+        if (node->IsFree() && node->Size > largest_free) {
             largest_free = node->Size;
         }
     }
