@@ -3,6 +3,7 @@
 #include "Speed/Indep/Src/FE/FECustomizationRecord.h"
 #include "Speed/Indep/Src/Physics/Dynamics.h"
 #include "Speed/Indep/Src/Sim/SimConn.h"
+#include "Speed/Indep/Tools/AttribSys/Runtime/AttribHash.h"
 
 namespace RenderConn {
 
@@ -85,39 +86,22 @@ class Pkt_Car_Service : public Sim::Packet {
 
 } // namespace RenderConn
 
+namespace VehicleFX {
+
+struct Maps {
+    ID id;
+    Attrib::StringKey name;
+    unsigned int marker;
+};
+
+const Maps *GetMaps();
+
+} // namespace VehicleFX
+
 namespace {
-
-struct VehicleLightInfo {
-    VehicleFX::ID Light;
-};
-
-static const VehicleLightInfo kVehicleLights[] = {
-    {VehicleFX::LIGHT_LHEAD},
-    {VehicleFX::LIGHT_RHEAD},
-    {VehicleFX::LIGHT_CHEAD},
-    {VehicleFX::LIGHT_LBRAKE},
-    {VehicleFX::LIGHT_RBRAKE},
-    {VehicleFX::LIGHT_CBRAKE},
-    {VehicleFX::LIGHT_LREVERSE},
-    {VehicleFX::LIGHT_RREVERSE},
-    {VehicleFX::LIGHT_LRSIGNAL},
-    {VehicleFX::LIGHT_RRSIGNAL},
-    {VehicleFX::LIGHT_LFSIGNAL},
-    {VehicleFX::LIGHT_RFSIGNAL},
-    {VehicleFX::LIGHT_COPRED},
-    {VehicleFX::LIGHT_COPBLUE},
-    {VehicleFX::LIGHT_COPWHITE},
-};
 
 static float AbsFloat(float value) {
     return value < 0.0f ? -value : value;
-}
-
-static unsigned int GetPacketWheelIndex(unsigned int wheel) {
-    if (wheel < 2) {
-        return wheel & 1;
-    }
-    return (wheel & 1) ? 2 : 3;
 }
 
 } // namespace
@@ -405,28 +389,29 @@ void DrawCar::OnService(RenderConn::Pkt_Car_Service &pkt) {
         }
     }
 
-    pkt.mLights = 0;
-    pkt.mBrokenLights = 0;
-    if (mVehicle) {
-        for (unsigned int i = 0; i < sizeof(kVehicleLights) / sizeof(kVehicleLights[0]); ++i) {
-            VehicleFX::ID light = kVehicleLights[i].Light;
-            if (mVehicleDamage && mVehicleDamage->IsLightDamaged(light)) {
-                pkt.mBrokenLights |= light;
-            } else if (mVehicle->IsGlareOn(light)) {
-                pkt.mLights |= light;
+    const VehicleFX::Maps *fx = VehicleFX::GetMaps();
+    if (fx->id != VehicleFX::LIGHT_NONE) {
+        do {
+            if (fx->marker != 0) {
+                if (mVehicleDamage && mVehicleDamage->IsLightDamaged(fx->id)) {
+                    pkt.mBrokenLights |= fx->id;
+                } else if (mVehicle->IsGlareOn(fx->id)) {
+                    pkt.mLights |= fx->id;
+                } else {
+                    pkt.mLights &= ~fx->id;
+                }
             }
-        }
+            ++fx;
+        } while (fx->id != VehicleFX::LIGHT_NONE);
     }
 
-    IDynamicsEntity *dynamicsEntity = nullptr;
-    GetOwner()->QueryInterface(&dynamicsEntity);
+    IDynamicsEntity *dynamicsEntity = UTL::COM::QueryInterface<IDynamicsEntity>(GetOwner());
     if (dynamicsEntity && Dynamics::Articulation::IsJoined(dynamicsEntity)) {
         pkt.mExtraBodyRoll = 0.0f;
         pkt.mExtraBodyPitch = 0.0f;
     } else if (mSuspension) {
         float renderMotion = mSuspension->GetRenderMotion();
-        pkt.mExtraBodyRoll = renderMotion;
-        pkt.mExtraBodyPitch = renderMotion;
+        pkt.mExtraBodyPitch = pkt.mExtraBodyRoll = renderMotion;
     }
 
     if (mDamage) {
@@ -441,41 +426,56 @@ void DrawCar::OnService(RenderConn::Pkt_Car_Service &pkt) {
     pkt.mGroundState = 0;
     pkt.mBlowOuts = 0;
     if (mSuspension) {
+        GetOwner()->GetWPos();
+
         for (unsigned int wheel = 0; wheel < mSuspension->GetNumWheels(); ++wheel) {
-            unsigned int packetWheel = GetPacketWheelIndex(wheel);
+            mSuspension->GetWheelVelocity(wheel);
+            mSuspension->GetWheelLocalPos(wheel);
+
             float steering = mSuspension->GetWheelSteer(wheel) * 6.2831855f;
             if (steering > 3.1415927f) {
                 steering = 3.1415927f;
             } else if (steering < -3.1415927f) {
                 steering = -3.1415927f;
             }
-            if (wheel < 2) {
-                pkt.mSteering[packetWheel] = -steering;
-            }
 
-            bool onGround = mSuspension->IsWheelOnGround(wheel);
             float skid = 0.0f;
+            bool onGround = false;
             float slip = 0.0f;
-            if (onGround) {
+            float compression = mSuspension->GetCompression(wheel) - mSuspension->GetRideHeight(wheel) + mSuspension->GetWheelRadius(wheel);
+            float wheelSpeed = mSuspension->GetWheelAngularVelocity(wheel) * mSuspension->GetWheelRadius(wheel);
+
+            if (mSuspension->IsWheelOnGround(wheel)) {
                 skid = AbsFloat(mSuspension->GetWheelSkid(wheel));
                 float absSlip = AbsFloat(mSuspension->GetWheelSlip(wheel));
-                float tolerated = AbsFloat(mSuspension->GetToleratedSlip(wheel));
-                if (absSlip > tolerated) {
+                float tolerated = mSuspension->GetToleratedSlip(wheel);
+                if (tolerated < absSlip) {
                     slip = absSlip - tolerated;
                 }
-                pkt.mGroundState |= 1 << packetWheel;
-            } else {
-                pkt.mGroundState &= ~(1 << packetWheel);
+                onGround = true;
             }
 
-            pkt.mCompressions[packetWheel] =
-                mSuspension->GetCompression(wheel) - mSuspension->GetRideHeight(wheel) + mSuspension->GetWheelRadius(wheel);
-            pkt.mWheelSpeed[packetWheel] = mSuspension->GetWheelAngularVelocity(wheel) * mSuspension->GetWheelRadius(wheel);
-            pkt.mTireSkid[packetWheel] = skid;
-            pkt.mTireSlip[packetWheel] = slip;
+            unsigned int packetWheel = 0;
+            if (wheel < 2) {
+                packetWheel = (wheel & 1) != 0;
+                pkt.mSteering[packetWheel] = -steering;
+            } else {
+                packetWheel = (wheel & 1) ? 2 : 3;
+            }
 
             if (mSpikeDamage && mSpikeDamage->GetTireDamage(wheel) == TIRE_DAMAGE_BLOWN) {
                 pkt.mBlowOuts |= 1 << packetWheel;
+            }
+
+            pkt.mTireSlip[packetWheel] = slip;
+            pkt.mWheelSpeed[packetWheel] = wheelSpeed;
+            pkt.mCompressions[packetWheel] = compression;
+            pkt.mTireSkid[packetWheel] = skid;
+
+            if (onGround) {
+                pkt.mGroundState |= 1 << packetWheel;
+            } else {
+                pkt.mGroundState &= ~(1 << packetWheel);
             }
         }
     }
