@@ -349,19 +349,20 @@ void *TSMemoryPool::Malloc(int size, const char *debug_name, bool best_fit, bool
     return reinterpret_cast<void *>(address);
 }
 
-void *TSMemoryPool::OverrideMalloc(void *pool, int size, const char *debug_text, int debug_line, int allocation_params) {
-    TSMemoryPool *memory_pool = static_cast<TSMemoryPool *>(pool);
-    unsigned int align_offset = static_cast<unsigned int>(allocation_params >> 17) & 0x1FFC;
-    bool best_fit = (allocation_params & 0x80) != 0;
-    bool allocate_from_top = (allocation_params & 0x40) != 0;
+inline void *TSMemoryPool::OverrideMalloc(void *pool, int size, const char *debug_text, int debug_line, int allocation_params) {
+    register int user_alignment_offset;
     (void)debug_line;
+    user_alignment_offset = bMemoryGetAlignmentOffset(allocation_params);
 
-    if (align_offset == 0) {
-        return memory_pool->Malloc(size, debug_text, best_fit, allocate_from_top, 0);
+    if (user_alignment_offset != 0) {
+        char *p = reinterpret_cast<char *>(
+            static_cast<TSMemoryPool *>(pool)->Malloc(
+                size + 0x80, debug_text, bMemoryGetBestFit(allocation_params), bMemoryGetTopBit(allocation_params), 0));
+        return &p[0x80 - user_alignment_offset];
     }
 
-    int memory = reinterpret_cast<int>(memory_pool->Malloc(size + 0x80, debug_text, best_fit, allocate_from_top, 0));
-    return reinterpret_cast<void *>((memory + 0x80) - align_offset);
+    return static_cast<TSMemoryPool *>(pool)->Malloc(
+        size, debug_text, bMemoryGetBestFit(allocation_params), bMemoryGetTopBit(allocation_params), 0);
 }
 
 void TSMemoryPool::OverrideFree(void *pool, void *ptr) {

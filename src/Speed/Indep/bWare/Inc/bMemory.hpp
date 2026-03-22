@@ -267,6 +267,14 @@ inline int bMemoryGetAlignment(int allocation_params) {
     return alignment;
 }
 
+inline int bMemoryGetBestFit(int allocation_params) {
+    return allocation_params & 0x80;
+}
+
+inline int bMemoryGetTopBit(int allocation_params) {
+    return allocation_params & 0x40;
+}
+
 inline int bMemoryGetAlignmentOffset(int allocation_params) {
     return (allocation_params >> 17) & 0x1ffc;
 }
