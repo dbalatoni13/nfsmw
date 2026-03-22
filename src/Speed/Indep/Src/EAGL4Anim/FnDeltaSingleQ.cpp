@@ -350,10 +350,10 @@ bool FnDeltaSingleQ::EvalSQT(float currTime, float *sqt, const BoneMask *boneMas
                 UMath::Vector4 outq;
 
                 DecodeSingleQPhysical(ceilPhys[ibone], mMinRanges[ibone].mIndex, ceilq);
-                interpq.x = mPrevQs[ibone].x + (ceilq.x - mPrevQs[ibone].x) * scale;
-                interpq.y = mPrevQs[ibone].y + (ceilq.y - mPrevQs[ibone].y) * scale;
-                interpq.z = mPrevQs[ibone].z + (ceilq.z - mPrevQs[ibone].z) * scale;
-                interpq.w = mPrevQs[ibone].w + (ceilq.w - mPrevQs[ibone].w) * scale;
+                interpq.x = scale * (ceilq.x - mPrevQs[ibone].x) + mPrevQs[ibone].x;
+                interpq.y = scale * (ceilq.y - mPrevQs[ibone].y) + mPrevQs[ibone].y;
+                interpq.z = scale * (ceilq.z - mPrevQs[ibone].z) + mPrevQs[ibone].z;
+                interpq.w = scale * (ceilq.w - mPrevQs[ibone].w) + mPrevQs[ibone].w;
                 NormalizeSingleQQuat(interpq);
 
                 ComposeSingleQQuat(mMinRanges[ibone].mIndex, mPreMultQs[ibone], interpq, mPostMultQs[ibone], outq);
@@ -373,10 +373,10 @@ bool FnDeltaSingleQ::EvalSQT(float currTime, float *sqt, const BoneMask *boneMas
                 ceilq.z += mPrevQs[ibone].z;
                 ceilq.w += mPrevQs[ibone].w;
 
-                interpq.x = mPrevQs[ibone].x + (ceilq.x - mPrevQs[ibone].x) * scale;
-                interpq.y = mPrevQs[ibone].y + (ceilq.y - mPrevQs[ibone].y) * scale;
-                interpq.z = mPrevQs[ibone].z + (ceilq.z - mPrevQs[ibone].z) * scale;
-                interpq.w = mPrevQs[ibone].w + (ceilq.w - mPrevQs[ibone].w) * scale;
+                interpq.x = scale * (ceilq.x - mPrevQs[ibone].x) + mPrevQs[ibone].x;
+                interpq.y = scale * (ceilq.y - mPrevQs[ibone].y) + mPrevQs[ibone].y;
+                interpq.z = scale * (ceilq.z - mPrevQs[ibone].z) + mPrevQs[ibone].z;
+                interpq.w = scale * (ceilq.w - mPrevQs[ibone].w) + mPrevQs[ibone].w;
                 NormalizeSingleQQuat(interpq);
 
                 ComposeSingleQQuat(mMinRanges[ibone].mIndex, mPreMultQs[ibone], interpq, mPostMultQs[ibone], outq);
@@ -562,10 +562,10 @@ bool FnDeltaSingleQ::EvalSQTMasked(float currTime, const BoneMask *boneMask, flo
                     UMath::Vector4 outq;
 
                     DecodeSingleQPhysical(ceilPhys[ibone], mMinRanges[ibone].mIndex, ceilq);
-                    interpq.x = mPrevQs[ibone].x + (ceilq.x - mPrevQs[ibone].x) * scale;
-                    interpq.y = mPrevQs[ibone].y + (ceilq.y - mPrevQs[ibone].y) * scale;
-                    interpq.z = mPrevQs[ibone].z + (ceilq.z - mPrevQs[ibone].z) * scale;
-                    interpq.w = mPrevQs[ibone].w + (ceilq.w - mPrevQs[ibone].w) * scale;
+                    interpq.x = scale * (ceilq.x - mPrevQs[ibone].x) + mPrevQs[ibone].x;
+                    interpq.y = scale * (ceilq.y - mPrevQs[ibone].y) + mPrevQs[ibone].y;
+                    interpq.z = scale * (ceilq.z - mPrevQs[ibone].z) + mPrevQs[ibone].z;
+                    interpq.w = scale * (ceilq.w - mPrevQs[ibone].w) + mPrevQs[ibone].w;
                     NormalizeSingleQQuat(interpq);
 
                     ComposeSingleQQuat(mMinRanges[ibone].mIndex, mPreMultQs[ibone], interpq, mPostMultQs[ibone], outq);
@@ -587,10 +587,10 @@ bool FnDeltaSingleQ::EvalSQTMasked(float currTime, const BoneMask *boneMask, flo
                     ceilq.z += mPrevQs[ibone].z;
                     ceilq.w += mPrevQs[ibone].w;
 
-                    interpq.x = mPrevQs[ibone].x + (ceilq.x - mPrevQs[ibone].x) * scale;
-                    interpq.y = mPrevQs[ibone].y + (ceilq.y - mPrevQs[ibone].y) * scale;
-                    interpq.z = mPrevQs[ibone].z + (ceilq.z - mPrevQs[ibone].z) * scale;
-                    interpq.w = mPrevQs[ibone].w + (ceilq.w - mPrevQs[ibone].w) * scale;
+                    interpq.x = scale * (ceilq.x - mPrevQs[ibone].x) + mPrevQs[ibone].x;
+                    interpq.y = scale * (ceilq.y - mPrevQs[ibone].y) + mPrevQs[ibone].y;
+                    interpq.z = scale * (ceilq.z - mPrevQs[ibone].z) + mPrevQs[ibone].z;
+                    interpq.w = scale * (ceilq.w - mPrevQs[ibone].w) + mPrevQs[ibone].w;
                     NormalizeSingleQQuat(interpq);
 
                     ComposeSingleQQuat(mMinRanges[ibone].mIndex, mPreMultQs[ibone], interpq, mPostMultQs[ibone], outq);
