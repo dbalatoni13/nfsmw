@@ -2,6 +2,7 @@
 
 #include "TrackPath.hpp"
 #include "VisibleSection.hpp"
+#include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
 #include "Speed/Indep/Src/Misc/Profiler.hpp"
 #include "Speed/Indep/Src/Misc/QueuedFile.hpp"
 #include "Speed/Indep/Src/Misc/ResourceLoader.hpp"
@@ -497,13 +498,6 @@ void TSMemoryPool::DebugPrint() {
 }
 
 unsigned int TSMemoryPool::GetPoolChecksum() {
-    unsigned int checksum;
-
-    (void)checksum;
-    if (0) {
-        for (TSMemoryNode *node = NodeList.GetHead(); node != NodeList.EndOfList(); node = node->GetNext()) {
-        }
-    }
     return 0;
 }
 
@@ -1032,11 +1026,6 @@ void TrackStreamer::InitMemoryPool(int size) {
     pMemoryPoolMem = bMalloc(size, 0x2000);
 #endif
     pMemoryPool = new TSMemoryPool(reinterpret_cast<int>(pMemoryPoolMem), MemoryPoolSize, "Track Streaming", 7);
-
-    if (0) {
-        bMalloc(size, "Track Streaming", 0, 0x2000);
-        new ("Track Streaming", 0) TSMemoryPool(reinterpret_cast<int>(pMemoryPoolMem), MemoryPoolSize, "Track Streaming", 7);
-    }
 }
 
 int TrackStreamer::GetMemoryPoolSize() {
@@ -1521,30 +1510,17 @@ int TrackStreamer::Unloader(bChunk *chunk) {
 
 void TrackStreamer::HibernateStreamingSections() {
     int sections_to_hibernate[5];
+    int n;
+    int section_number;
+    TrackStreamingSection *section;
+    TrackStreamingSection *hibernating_section;
 
+    (void)sections_to_hibernate;
+    (void)n;
+    (void)section_number;
+    (void)section;
+    (void)hibernating_section;
     return;
-
-    volatile char unused[0x18];
-    (void)unused;
-
-    sections_to_hibernate[0] = GetScenerySectionNumber('Y', 0);
-    sections_to_hibernate[1] = GetScenerySectionNumber('X', 0);
-    sections_to_hibernate[2] = GetScenerySectionNumber('W', 0);
-    sections_to_hibernate[3] = GetScenerySectionNumber('U', 0);
-    sections_to_hibernate[4] = GetScenerySectionNumber('Z', 0);
-    for (int n = 0; n < 5; n++) {
-        int section_number = sections_to_hibernate[n];
-        {
-            TrackStreamingSection *section;
-            {
-                TrackStreamingSection *hibernating_section;
-
-                (void)hibernating_section;
-            }
-            (void)section;
-        }
-        (void)section_number;
-    }
 }
 
 void TrackStreamer::FlushHibernatingSections() {
@@ -1612,9 +1588,12 @@ int TrackStreamer::GetCombinedSectionNumber(int section_number) {
 }
 
 void TrackStreamer::HandleSectionActivation() {
-    short section_number = static_cast<short>(GetSectionToActivate(0));
-    if (section_number != 0) {
-        TrackStreamingSection *section = FindSection(section_number);
+    ProfileNode profile_node("TODO", 0);
+    int activation_delay;
+    short section_to_activate = static_cast<short>(GetSectionToActivate(0));
+    (void)activation_delay;
+    if (section_to_activate != 0) {
+        TrackStreamingSection *section = FindSection(section_to_activate);
         if (section->Status != TrackStreamingSection::ACTIVATED) {
             if (section->Status != TrackStreamingSection::LOADED) {
                 if (!section->CurrentlyVisible) {
@@ -1648,28 +1627,31 @@ void TrackStreamer::UnloadEverything() {
 }
 
 void TrackStreamer::ActivateSection(TrackStreamingSection *section) {
+    ProfileNode profile_node(section->SectionName, 0);
+    int allocation_params = 0x2087;
     NumSectionsActivated += 1;
-    AllowDuplicateSolids += 1;
+    eAllowDuplicateSolids(true);
     SetDuplicateTextureWarning(false);
 
     bChunk *chunks = reinterpret_cast<bChunk *>(section->pMemory);
     int sizeof_chunks = section->LoadedSize;
-    LoadTempPermChunks(&chunks, &sizeof_chunks, 0x2087, section->SectionName);
+    LoadTempPermChunks(&chunks, &sizeof_chunks, allocation_params, section->SectionName);
 
     section->pMemory = chunks;
     section->LoadedSize = sizeof_chunks;
     section->Status = TrackStreamingSection::ACTIVATED;
     section->LoadedTime = 0;
-    AllowDuplicateSolids -= 1;
+    eAllowDuplicateSolids(false);
     SetDuplicateTextureWarning(true);
 }
 
 void TrackStreamer::UnactivateSection(TrackStreamingSection *section) {
+    ProfileNode profile_node(section->SectionName, 0);
     section->UnactivatedFrameCount = 0;
-    WaitUntilRenderingDoneDisabled = 1;
-    section->UnactivatedFrameCount = eFrameCounter;
+    DisableWaitUntilRenderingDone();
+    section->UnactivatedFrameCount = eGetFrameCounter();
     UnloadChunks(reinterpret_cast<bChunk *>(section->pMemory), section->LoadedSize, section->SectionName);
-    WaitUntilRenderingDoneDisabled = 0;
+    EnableWaitUntilRenderingDone();
     NumSectionsActivated -= 1;
     section->Status = TrackStreamingSection::LOADED;
 }
@@ -1993,16 +1975,6 @@ void TrackStreamer::FinishedLoading() {
 
 void TrackStreamer::EmptyCaffeineLayers() {
     TrackStreamerRemoteCaffeinating = 0;
-
-    return;
-
-    espEmptyLayer("A");
-    espEmptyLayer("B");
-    espEmptyLayer("C");
-    espEmptyLayer("D");
-    espEmptyLayer("E");
-    espEmptyLayer("F");
-    espGetLayerState("A");
 }
 
 void TrackStreamer::HandleLoading() {

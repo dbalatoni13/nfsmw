@@ -400,6 +400,8 @@ result.
 
 The dwarf of your structs doesn't have to neccessarily match the original due to various reasons, just make sure that you copied everything correctly.
 
+Do **not** add unreachable/dead code (`if (0)`, code after unconditional `return`, fake unused stack buffers, or similar) purely to inflate DWARF matches. If a function only "matches" because of dead-code padding that a human would not have written, treat it as unfinished and keep searching for the real live source shape.
+
 Never dismiss a diff as "close enough" or "just register allocation." Every mismatched
 instruction is a signal that the source doesn't perfectly represent the original. Even
 the most stubborn mismatches can be resolved through careful analysis, lateral thinking, and
@@ -557,13 +559,3 @@ If an STL node insertion path refuses to match, check whether the element type i
 
 TU: zAttribSys | Function: Class::RemoveCollection / Database::RemoveClass
 If two near-matching functions differ only because the same inlined helper chain lands `mTableSize` in `r6` in the original but `r7` in the rebuild, treat it as a likely ProDG/GCC 2.95 register-allocation tie-break, not a normal source mismatch. In `zAttribSys`, `VecHashMap::FindIndex` inlined through `Remove -> RemoveIndex -> UpdateSearchLength` produced a stable `lwz r6, 4(r3)` vs `lwz r7, 4(r3)` split, which then propagated into later `UpdateSearchLength` control-flow differences. This survived 300+ source experiments: loop-form changes, adding/removing temporaries, splitting/merging expressions, helper inline/outline changes, declaration-order tweaks, member type changes, access-control changes, template method reorderings, and inline vs out-of-line ctor/dtor placement. Once the diff has collapsed to this kind of isolated register swap and DWARF locals/inlining already match, stop attacking each caller separately. Document the functions as `NON_MATCHING`, note the shared inlined root cause, and only consider flag permutation or compiler-level investigation as a last resort.
-
-### DeadBlockDwarfRecoveryWithIfZero
-
-TU: zTrack | Function: TSMemoryPool::GetPoolChecksum
-When original DWARF shows a dead local/loop skeleton but objdiff proves the final code is still a tiny stub, try wrapping the recovered block in `if (0) { ... }` instead of leaving the function empty or relying on fake stack buffers. In `GetPoolChecksum`, a plain empty `for` loop over `NodeList` recovered almost all DWARF but emitted real traversal code; keeping `unsigned int checksum;`, `(void)checksum;`, and the recovered `for (TSMemoryNode *node = NodeList.GetHead(); node != NodeList.EndOfList(); node = node->GetNext()) {}` inside `if (0)` preserved the original DWARF locals/inlines while still compiling to the exact `return 0;` stub.
-
-### DeadInlineWrapperRecoveryAfterLiveCode
-
-TU: zTrack | Function: TrackStreamer::InitMemoryPool
-When a function already byte-matches in a stripped-down form but original DWARF still wants inline allocator wrappers such as `bMalloc(size, "Name", 0, flags)` or `new ("Name", 0) Type(...)`, prefer keeping the proven live code and adding the wrapper calls back inside an unreachable `if (0) { ... }` block. In `InitMemoryPool`, switching the live code to the debug-name `bMalloc` and debug `new` forms achieved exact DWARF but badly regressed objdiff; restoring the minimal live code and placing those two wrapper expressions in a dead block recovered the missing inline ranges while preserving the 100% text match.

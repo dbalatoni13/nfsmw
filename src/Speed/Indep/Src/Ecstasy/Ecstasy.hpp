@@ -477,9 +477,18 @@ int eInitEngine();
 void eFixUpTables();
 
 extern unsigned int eFrameCounter;
+extern int WaitUntilRenderingDoneDisabled;
 
 inline unsigned int eGetFrameCounter() {
     return eFrameCounter;
+}
+
+inline void DisableWaitUntilRenderingDone() {
+    WaitUntilRenderingDoneDisabled = 1;
+}
+
+inline void EnableWaitUntilRenderingDone() {
+    WaitUntilRenderingDoneDisabled = 0;
 }
 
 #endif
