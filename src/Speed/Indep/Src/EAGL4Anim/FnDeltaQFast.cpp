@@ -717,6 +717,8 @@ bool FnDeltaQFast::EvalSQTMask(float currTime, float *sqt, const BoneMask *boneM
     }
 
     DeltaQFast *deltaQ = reinterpret_cast<DeltaQFast *>(mpAnim);
+    float *quatBase = sqt + 4;
+    unsigned char *boneIdxs = deltaQ->mBoneIdxs;
     int floorKey = FindQFastFloorKey(mPrevKey, deltaQ, currTime);
     int floorBinIdx = floorKey >> deltaQ->GetBinLengthPower();
     int floorDeltaIdx = floorKey & deltaQ->GetBinLengthModMask();
@@ -728,7 +730,7 @@ bool FnDeltaQFast::EvalSQTMask(float currTime, float *sqt, const BoneMask *boneM
 
     if (mPrevKey == -1 || floorBinIdx != prevBinIdx || floorDeltaIdx == 0 || preventReverse) {
         for (int ibone = 0; ibone < deltaQ->mNumBones; ibone++) {
-            if (!boneMask->GetBone(deltaQ->mBoneIdxs[ibone])) {
+            if (!boneMask->GetBone(boneIdxs[ibone])) {
                 continue;
             }
 
@@ -756,20 +758,23 @@ bool FnDeltaQFast::EvalSQTMask(float currTime, float *sqt, const BoneMask *boneM
         float t = ComputeQFastBlendT(deltaQ, floorKey, ceilKey, currTime);
 
         for (int ibone = 0; ibone < deltaQ->mNumBones; ibone++) {
-            if (!boneMask->GetBone(deltaQ->mBoneIdxs[ibone])) {
+            unsigned char boneIdx = boneIdxs[ibone];
+
+            if (!boneMask->GetBone(boneIdx)) {
                 continue;
             }
 
-            FastQuatBlendF4(t, reinterpret_cast<float *>(&mPrevQs[ibone]), reinterpret_cast<float *>(&mNextQs[ibone]),
-                            GetQFastOutputQuat(sqt, deltaQ->mBoneIdxs[ibone]));
+            FastQuatBlendF4(t, reinterpret_cast<float *>(&mPrevQs[ibone]), reinterpret_cast<float *>(&mNextQs[ibone]), &quatBase[boneIdx * 12]);
         }
     } else {
         for (int ibone = 0; ibone < deltaQ->mNumBones; ibone++) {
-            if (!boneMask->GetBone(deltaQ->mBoneIdxs[ibone])) {
+            unsigned char boneIdx = boneIdxs[ibone];
+
+            if (!boneMask->GetBone(boneIdx)) {
                 continue;
             }
 
-            float *out = GetQFastOutputQuat(sqt, deltaQ->mBoneIdxs[ibone]);
+            float *out = &quatBase[boneIdx * 12];
 
             out[0] = mPrevQs[ibone].x;
             out[1] = mPrevQs[ibone].y;
@@ -779,12 +784,14 @@ bool FnDeltaQFast::EvalSQTMask(float currTime, float *sqt, const BoneMask *boneM
     }
 
     for (int ibone = 0; ibone < deltaQ->mNumConstBones; ibone++) {
-        if (!boneMask->GetBone(mConstBoneIdxs[ibone])) {
+        unsigned char boneIdx = mConstBoneIdxs[ibone];
+
+        if (!boneMask->GetBone(boneIdx)) {
             continue;
         }
 
         UMath::Vector4 q;
-        float *out = GetQFastOutputQuat(sqt, mConstBoneIdxs[ibone]);
+        float *out = &quatBase[boneIdx * 12];
 
         DecodeQFastPhysical(mConstPhysical[ibone], q);
         out[0] = q.x;
