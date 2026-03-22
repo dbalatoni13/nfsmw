@@ -77,6 +77,58 @@ void ResetCar::OnBehaviorChange(const UCrc32 &mechanic) {
     Behavior::OnBehaviorChange(mechanic);
 }
 
+bool ResetCar::CanRecord() const {
+    if (mCookies.Count() != 0) {
+        const ResetCookie &cookie = mCookies.Newest();
+        if (UMath::DistanceSquare(cookie.position, GetOwner()->GetPosition()) < 4.0f) {
+            return false;
+        }
+    }
+
+    if (!ValidTerrain(0)) {
+        return false;
+    }
+
+    if (mSuspension) {
+        if (mSuspension->GetNumWheelsOnGround() != mSuspension->GetNumWheels()) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool ResetCar::ShouldReset() const {
+    bool should_reset = false;
+
+    if (mCookies.Count() != 0) {
+        if (!mCollisionBody->IsSleeping() && !ValidTerrain(2)) {
+            return true;
+        }
+        should_reset = 4.0f < mFlippedOver;
+    }
+
+    return should_reset;
+}
+
+void ResetCar::TrackState(float dT) {
+    bool upside_down = false;
+
+    if (mSuspension) {
+        if (mSuspension->GetNumWheelsOnGround() != mSuspension->GetNumWheels() && mCollisionBody && mCollisionBody->HasHadCollision()) {
+            if (UMath::Dot(mCollisionBody->GetUpVector(), UMath::Vector4To3(mCollisionBody->GetGroundNormal())) < 0.5f) {
+                upside_down = mCollisionBody->GetUpVector().y < 0.5f;
+            }
+        }
+    }
+
+    if (upside_down) {
+        mFlippedOver += dT;
+    } else {
+        mFlippedOver = 0.0f;
+    }
+}
+
 void ResetCar::Reset() {
     mCookies.Clear();
 }
