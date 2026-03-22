@@ -199,8 +199,8 @@ bool FnDeltaSingleQ::EvalSQT(float currTime, float *sqt, const BoneMask *boneMas
         if (deltaQ->mNumBones != 0) {
             float eul[3];
 
-            mPrevQs = reinterpret_cast<UMath::Vector4 *>(MemoryPoolManager::NewBlock(deltaQ->mNumBones * sizeof(*mPrevQs)));
-            mPrevQBlock = mPrevQs;
+            mPrevQBlock = MemoryPoolManager::NewBlock(deltaQ->mNumBones * sizeof(*mPrevQs));
+            mPrevQs = reinterpret_cast<UMath::Vector4 *>(mPrevQBlock);
             mPreMultQs =
                 reinterpret_cast<UMath::Vector4 *>(MemoryPoolManager::NewBlock(deltaQ->mNumBones * sizeof(*mPreMultQs)));
             mPostMultQs =
@@ -403,8 +403,8 @@ bool FnDeltaSingleQ::EvalSQTMasked(float currTime, const BoneMask *boneMask, flo
         if (deltaQ->mNumBones != 0) {
             float eul[3];
 
-            mPrevQs = reinterpret_cast<UMath::Vector4 *>(MemoryPoolManager::NewBlock(deltaQ->mNumBones * sizeof(*mPrevQs)));
-            mPrevQBlock = mPrevQs;
+            mPrevQBlock = MemoryPoolManager::NewBlock(deltaQ->mNumBones * sizeof(*mPrevQs));
+            mPrevQs = reinterpret_cast<UMath::Vector4 *>(mPrevQBlock);
             mPreMultQs =
                 reinterpret_cast<UMath::Vector4 *>(MemoryPoolManager::NewBlock(deltaQ->mNumBones * sizeof(*mPreMultQs)));
             mPostMultQs =
