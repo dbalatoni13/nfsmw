@@ -1,12 +1,15 @@
 #include "Speed/Indep/Src/World/CarRenderConn.h"
 #include "Speed/Indep/Src/Physics/PhysicsInfo.hpp"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/simsurface.h"
+#include "Speed/Indep/Src/Ecstasy/EcstasyData.hpp"
 
 struct CarPartDatabase;
 extern void *gINISInstance asm("_Q33UTL11Collectionst9Singleton1Z4INIS_mInstance");
 extern CarPartDatabase CarPartDB;
 extern CarType GetCarType__15CarPartDatabaseUi(CarPartDatabase *database, unsigned int model_hash)
     asm("GetCarType__15CarPartDatabaseUi");
+extern int GetAppliedAttributeIParam__7CarPartUii(const CarPart *part, unsigned int key, int default_value)
+    asm("GetAppliedAttributeIParam__7CarPartUii");
 extern void KillSkids__9TireState(TireState *state) asm("KillSkids__9TireState");
 extern void TireState_ctor(TireState *state) asm("__9TireState");
 extern void TireState_dtor(TireState *state, int in_chrg) asm("_._9TireState");
@@ -468,6 +471,78 @@ void CarRenderConn::OnFetch(float dT) {
     } else {
         this->Hide(false);
         this->Update(pkt, dT);
+    }
+}
+
+void CarRenderConn::OnLoaded(CarRenderInfo *carrender_info) {
+    this->VehicleRenderConn::OnLoaded(carrender_info);
+    if (carrender_info == 0) {
+        return;
+    }
+
+    if (carrender_info->pRideInfo != 0) {
+        CarPart *wheel = carrender_info->pRideInfo->GetPart(0x42);
+        if (wheel != 0) {
+            int num_spokes = GetAppliedAttributeIParam__7CarPartUii(wheel, 0x1b0ea1a9, 0);
+
+            if (num_spokes < 0) {
+                num_spokes = -num_spokes;
+            }
+
+            if (num_spokes == 0) {
+                num_spokes = this->VehicleRenderConn::mAttributes.WheelSpokeCount();
+                if (num_spokes < 0) {
+                    num_spokes = -num_spokes;
+                }
+            }
+
+            if (num_spokes != 0) {
+                float spoke_count = static_cast<float>(num_spokes + num_spokes);
+                this->mMaxWheelRenderDeltaAngle = (360.0f / spoke_count - 1.0f) * 0.017453f;
+            }
+        }
+    }
+
+    carrender_info->InitEmitterPositions(this->mTirePositions);
+
+    if (this->mPipeEffects.IsEmpty()) {
+        for (CarEmitterPosition *position = carrender_info->EmitterPositionList[10].GetHead();
+             position != carrender_info->EmitterPositionList[10].EndOfList(); position = position->GetNext()) {
+            bMatrix4 emitter_matrix;
+            const bMatrix4 *effect_matrix = 0;
+
+            if (position->PositionMarker == 0) {
+                PSMTX44Identity(*reinterpret_cast<Mtx44 *>(&emitter_matrix));
+                emitter_matrix.v3.x = position->X;
+                emitter_matrix.v3.y = position->Y;
+                emitter_matrix.v3.z = position->Z;
+                effect_matrix = &emitter_matrix;
+            } else {
+                effect_matrix = &position->PositionMarker->Matrix;
+            }
+
+            this->mPipeEffects.AddTail(new VehicleRenderConn::Effect(effect_matrix));
+        }
+    }
+
+    if (this->mEngineEffects.IsEmpty()) {
+        for (CarEmitterPosition *position = carrender_info->EmitterPositionList[9].GetHead();
+             position != carrender_info->EmitterPositionList[9].EndOfList(); position = position->GetNext()) {
+            bMatrix4 emitter_matrix;
+            const bMatrix4 *effect_matrix = 0;
+
+            if (position->PositionMarker == 0) {
+                PSMTX44Identity(*reinterpret_cast<Mtx44 *>(&emitter_matrix));
+                emitter_matrix.v3.x = position->X;
+                emitter_matrix.v3.y = position->Y;
+                emitter_matrix.v3.z = position->Z;
+                effect_matrix = &emitter_matrix;
+            } else {
+                effect_matrix = &position->PositionMarker->Matrix;
+            }
+
+            this->mEngineEffects.AddTail(new VehicleRenderConn::Effect(effect_matrix));
+        }
     }
 }
 
