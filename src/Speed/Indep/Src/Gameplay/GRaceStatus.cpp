@@ -3771,10 +3771,10 @@ void GRaceStatus::UpdateAdaptiveDifficulty(eAdaptiveGainReason reason, ISimable 
 
             if (!info->GetGameCharacter() && !info->IsFinishedRacing()) {
                 float percent_human_complete = info->GetPctRaceComplete();
-                float lose_margin = (GetRaceLength() * (100.0f - percent_human_complete)) * 0.01f;
+                float lose_margin = GetRaceLength() * ((100.0f - percent_human_complete) * 0.01f);
 
                 if (lose_margin > 0.0f) {
-                    float t = UMath::Ramp(lose_margin / 300.0f, 0.0f, 1.0f);
+                    float t = UMath::Ramp(lose_margin, 0.0f, 300.0f);
                     float bonus = UMath::Lerp(-0.1f, -0.4f, t);
 
                     difficulty = bClamp(difficulty + ((bonus * percent_human_complete) * 0.01f), -1.0f, 1.0f);
