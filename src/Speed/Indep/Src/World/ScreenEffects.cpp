@@ -5,6 +5,7 @@
 #include "Speed/Indep/Src/Camera/CameraMover.hpp"
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
 #include "Speed/Indep/Src/Ecstasy/EcstasyE.hpp"
+#include "Speed/Indep/Src/Ecstasy/eLight.hpp"
 #include "Speed/Indep/Src/Misc/GameFlow.hpp"
 #include "Speed/Indep/Src/World/TrackPath.hpp"
 #include "Speed/Indep/Src/World/Rain.hpp"
@@ -18,9 +19,8 @@ static unsigned int AccumulationBufferNeedsFlush = 0;
 ScreenEffectPaletteDef SE_PaletteFile[EFX_NUMBER];
 
 struct TerrainType;
-struct eLightContext;
 
-class TopologyCoordinate {
+struct TopologyCoordinate {
   public:
     bool HasTopology(const bVector2 *point);
     float GetElevation(const bVector3 *point, TerrainType *terrain_type, bVector3 *normal, bool *valid);

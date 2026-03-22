@@ -119,7 +119,6 @@ struct SceneryTreeNode {
     short Children[5];
 };
 
-struct eLightContext;
 struct eSceneryLightContext : public eLightContext {
     char Name[34];
     short LightingContextNumber;
@@ -133,9 +132,11 @@ struct eSceneryLightContext : public eLightContext {
     }
 };
 
-struct PrecullerBooBooManager {
-    unsigned char Data[0x800];
+class PrecullerBooBooManager {
+  private:
+    unsigned char BitField[0x800];
 
+  public:
     void Reset() {
         bMemSet(this, 0, 0x800);
     }
@@ -233,7 +234,7 @@ static inline int GetPrecullerSectionNumber(float x, float y) {
 }
 
 unsigned char *PrecullerBooBooManager::GetByte(int section_number) {
-    return Data + (section_number >> 3);
+    return BitField + (section_number >> 3);
 }
 
 unsigned char PrecullerBooBooManager::GetBit(int section_number) {

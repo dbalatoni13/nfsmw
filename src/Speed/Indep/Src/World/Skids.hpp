@@ -9,9 +9,9 @@
 #include "Car.hpp"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
+#include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 
-struct SlotPool;
 class eView;
 extern SlotPool *SkidSetSlotPool;
 
