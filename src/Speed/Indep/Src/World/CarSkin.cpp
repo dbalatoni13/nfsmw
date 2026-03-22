@@ -6,18 +6,17 @@ SkinCompositeParams SkinCompositeParameterCache[4];
 
 SkinCompositeParams *GetSkinCompositeParams(unsigned int dest_name_hash) {
     SkinCompositeParams *cache_params = 0;
-    char *cache_base = reinterpret_cast<char *>(SkinCompositeParameterCache);
 
     if (dest_name_hash == 0x530B82B1) {
-        cache_params = reinterpret_cast<SkinCompositeParams *>(cache_base + 0x50);
+        cache_params = &SkinCompositeParameterCache[1];
     } else if (dest_name_hash < 0x530B82B2) {
         if (dest_name_hash == 0x530B82B0) {
-            cache_params = reinterpret_cast<SkinCompositeParams *>(cache_base);
+            cache_params = &SkinCompositeParameterCache[0];
         }
     } else if (dest_name_hash == 0x530B82B2) {
-        cache_params = reinterpret_cast<SkinCompositeParams *>(cache_base + 0xA0);
+        cache_params = &SkinCompositeParameterCache[2];
     } else if (dest_name_hash == 0x530B82B3) {
-        cache_params = reinterpret_cast<SkinCompositeParams *>(cache_base + 0xF0);
+        cache_params = &SkinCompositeParameterCache[3];
     }
 
     return cache_params;
