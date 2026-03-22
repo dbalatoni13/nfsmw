@@ -422,11 +422,12 @@ bool FnDeltaQ::EvalSQTMasked(float currTime, const BoneMask *boneMask, float *sq
                 if (boneMask->GetBone(boneIdxs[ibone])) {
                     UMath::Vector4 delta;
 
-                    DecodeDelta(mMinRanges[ibone], floorDelta[ibone], delta);
+                    DecodeDelta(mMinRanges[ibone], *floorDelta, delta);
                     mPrevQs[ibone].x += delta.x;
                     mPrevQs[ibone].y += delta.y;
                     mPrevQs[ibone].z += delta.z;
                 }
+                floorDelta++;
             }
         }
     } else if (prevDeltaIdx > floorDeltaIdx) {
@@ -437,11 +438,12 @@ bool FnDeltaQ::EvalSQTMasked(float currTime, const BoneMask *boneMask, float *sq
                 if (boneMask->GetBone(boneIdxs[ibone])) {
                     UMath::Vector4 delta;
 
-                    DecodeDelta(mMinRanges[ibone], floorDelta[ibone], delta);
+                    DecodeDelta(mMinRanges[ibone], *floorDelta, delta);
                     mPrevQs[ibone].x -= delta.x;
                     mPrevQs[ibone].y -= delta.y;
                     mPrevQs[ibone].z -= delta.z;
                 }
+                floorDelta++;
             }
         }
     }
@@ -457,8 +459,9 @@ bool FnDeltaQ::EvalSQTMasked(float currTime, const BoneMask *boneMask, float *sq
 
         for (int ibone = 0; ibone < deltaQ->mNumBones; ibone++) {
             if (boneMask->GetBone(boneIdxs[ibone])) {
-                RecoverW(floorDelta[ibone].mW, mPrevQs[ibone]);
+                RecoverW(floorDelta->mW, mPrevQs[ibone]);
             }
+            floorDelta++;
         }
     }
     mPrevKey = floorKey;
@@ -509,15 +512,16 @@ bool FnDeltaQ::EvalSQTMasked(float currTime, const BoneMask *boneMask, float *sq
                     UMath::Vector4 delta;
                     UMath::Vector4 ceilq;
 
-                    DecodeDelta(mMinRanges[ibone], ceilDelta[ibone], delta);
+                    DecodeDelta(mMinRanges[ibone], *ceilDelta, delta);
                     ceilq.x = mPrevQs[ibone].x + delta.x;
                     ceilq.y = mPrevQs[ibone].y + delta.y;
                     ceilq.z = mPrevQs[ibone].z + delta.z;
-                    RecoverW(ceilDelta[ibone].mW, ceilq);
+                    RecoverW(ceilDelta->mW, ceilq);
 
                     FastQuatBlendF4(scale, reinterpret_cast<float *>(&mPrevQs[ibone]), reinterpret_cast<float *>(&ceilq),
                                     GetOutputQuat(sqt, boneIdxs[ibone]));
                 }
+                ceilDelta++;
             }
         }
     } else {
