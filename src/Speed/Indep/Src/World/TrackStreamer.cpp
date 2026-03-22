@@ -68,7 +68,6 @@ static const float kPredictedZoneScale_TrackStreamer = 1.5f;
 static const float kPredictedZoneMaxDistance_TrackStreamer = 100.0f;
 static const float kPredictedZoneStopProjectSpeed_TrackStreamer = 178.81091f;
 static const float kPredictedZoneEqualEpsilon_TrackStreamer = 0.001f;
-static int last_jettison_print = 0;
 static VisibleSectionBitTable CurrentVisibleSectionTableMem;
 TrackStreamer TheTrackStreamer;
 bChunkLoader bChunkLoaderTrackStreamingSection(0x34110, LoaderTrackStreamer, UnloaderTrackStreamer);
@@ -1701,6 +1700,7 @@ void TrackStreamer::SectionLoadedCallback(TrackStreamingSection *section) {
 TrackStreamingSection *TrackStreamer::ChooseSectionToJettison() {
     TrackStreamingSection *best_section = 0;
     int best_discard_priority = 0;
+    static int last_jettison_print;
     bool print_jettison_this_frame = false;
 
     last_jettison_print = RealLoopCounter;
