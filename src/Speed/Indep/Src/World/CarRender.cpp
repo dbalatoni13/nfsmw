@@ -56,6 +56,46 @@ SlotPool *CarEmitterPositionSlotPool = nullptr;
 const int MAX_CAR_PART_MODELS = 250;
 SlotPool *CarPartModelPool = nullptr;
 
+namespace {
+
+void Render(eViewPlatInterface *view, eModel *model, bMatrix4 *local_to_world, eLightContext *light_context, unsigned int flags,
+            unsigned int exc_flag);
+
+template <typename T> struct bSNodeLayout {
+    T *Next;
+};
+
+template <typename T> struct bSListLayout {
+    T *Head;
+    T *Tail;
+};
+
+template <typename T> void InitSList(bSList<T> &list) {
+    bSListLayout<T> &layout = reinterpret_cast<bSListLayout<T> &>(list);
+    T *end = list.EndOfList();
+
+    layout.Head = end;
+    layout.Tail = end;
+}
+
+CarEmitterPosition *AddTailEmitterPosition(bSList<CarEmitterPosition> &list, CarEmitterPosition *node) {
+    bSListLayout<CarEmitterPosition> &layout = reinterpret_cast<bSListLayout<CarEmitterPosition> &>(list);
+    bSNodeLayout<CarEmitterPosition> &node_layout = reinterpret_cast<bSNodeLayout<CarEmitterPosition> &>(*node);
+    CarEmitterPosition *end = list.EndOfList();
+
+    node_layout.Next = end;
+    if (layout.Head == end) {
+        layout.Head = node;
+    } else {
+        reinterpret_cast<bSNodeLayout<CarEmitterPosition> &>(*layout.Tail).Next = node;
+    }
+    layout.Tail = node;
+
+    return node;
+}
+
+} // namespace
+
 bool GetNumCarEffectMarkerHashes(CarEffectPosition fx_pos, int &count_out) {
     bool position_marker_based_fxpos = false;
     count_out = 0;
@@ -576,4 +616,56 @@ unsigned int CarRenderInfo::HideCarPart(int slotId, bool hide) {
     }
 
     return model_namehash;
+}
+
+void CarRenderInfo::RenderPart(eView *view, CarPartModel *carPart, bMatrix4 *local_to_world, eDynamicLightContext *light_context,
+                               unsigned int flags) {
+    if (carPart != nullptr) {
+        eModel *model = carPart->GetModel();
+
+        if (model == nullptr) {
+            model = &StandardDebugModel;
+        }
+
+        ::Render(view, model, local_to_world, light_context, flags, 0);
+    }
+}
+
+int CarRenderInfo::GetEmitterPositions(bSList<CarEmitterPosition> &markers_out, const unsigned int *position_name_hashes,
+                                       int num_pos_name_hashes) {
+    int count = 0;
+
+    InitSList(markers_out);
+
+    if (this->pCarTypeInfo == nullptr) {
+        return 0;
+    }
+
+    for (int slot_model_index = 0; slot_model_index < 0x4C; slot_model_index++) {
+        eModel *model = this->mCarPartModels[slot_model_index][0][this->mMinLodLevel].GetModel();
+        ePositionMarker *position_marker = nullptr;
+
+        if (model == nullptr) {
+            continue;
+        }
+
+        while ((position_marker = model->GetPostionMarker(position_marker)) != nullptr) {
+            unsigned int position_marker_namehash = position_marker->NameHash;
+
+            for (int i = 0; i < num_pos_name_hashes; i++) {
+                if (position_marker_namehash == position_name_hashes[i]) {
+                    CarEmitterPosition *empos = static_cast<CarEmitterPosition *>(bOMalloc(CarEmitterPositionSlotPool));
+
+                    empos->X = position_marker->Matrix.v3.x;
+                    empos->Y = position_marker->Matrix.v3.y;
+                    empos->Z = position_marker->Matrix.v3.z;
+                    empos->PositionMarker = position_marker;
+                    AddTailEmitterPosition(markers_out, empos);
+                    count++;
+                }
+            }
+        }
+    }
+
+    return count;
 }
