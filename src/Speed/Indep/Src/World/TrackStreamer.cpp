@@ -1513,8 +1513,31 @@ int TrackStreamer::Unloader(bChunk *chunk) {
 }
 
 void TrackStreamer::HibernateStreamingSections() {
-    volatile char unused[0x30];
+    int sections_to_hibernate[5];
+
+    return;
+
+    volatile char unused[0x18];
     (void)unused;
+
+    sections_to_hibernate[0] = GetScenerySectionNumber('Y', 0);
+    sections_to_hibernate[1] = GetScenerySectionNumber('X', 0);
+    sections_to_hibernate[2] = GetScenerySectionNumber('W', 0);
+    sections_to_hibernate[3] = GetScenerySectionNumber('U', 0);
+    sections_to_hibernate[4] = GetScenerySectionNumber('Z', 0);
+    for (int n = 0; n < 5; n++) {
+        int section_number = sections_to_hibernate[n];
+        {
+            TrackStreamingSection *section;
+            {
+                TrackStreamingSection *hibernating_section;
+
+                (void)hibernating_section;
+            }
+            (void)section;
+        }
+        (void)section_number;
+    }
 }
 
 void TrackStreamer::FlushHibernatingSections() {
