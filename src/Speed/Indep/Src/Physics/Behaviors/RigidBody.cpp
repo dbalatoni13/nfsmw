@@ -28,12 +28,6 @@ void Resolve();
 static char RBGrid_Memory[6912]; // size: 0x1B00, address: 0x8048A1A8
 
 template <>
-SAP::Grid<RigidBody>::Node *SAP::Grid<RigidBody>::mRootX = nullptr;
-
-template <>
-SAP::Grid<RigidBody>::Node *SAP::Grid<RigidBody>::mRootZ = nullptr;
-
-template <>
 void *ScratchPtr<RigidBody::Volatile>::mWorkSpace = nullptr;
 
 template <>
@@ -41,6 +35,12 @@ RigidBody::Volatile *ScratchPtr<RigidBody::Volatile>::mPointer[64] = { nullptr }
 
 template <>
 RigidBody::Volatile ScratchPtr<RigidBody::Volatile>::mRAMBuffer[64];
+
+template <>
+SAP::Grid<RigidBody>::Node *SAP::Grid<RigidBody>::mRootX = nullptr;
+
+template <>
+SAP::Grid<RigidBody>::Node *SAP::Grid<RigidBody>::mRootZ = nullptr;
 
 bTList<RigidBody> TheRigidBodies;
 
