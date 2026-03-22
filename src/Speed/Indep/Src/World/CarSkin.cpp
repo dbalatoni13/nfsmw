@@ -22,9 +22,15 @@ void unbiasnet();
 void nqGetPaletteEntry(int i, unsigned char &r, unsigned char &g, unsigned char &b, unsigned char &a);
 void inxbuild();
 int inxsearch(int b, int g, int r, int aa);
+int UsedCarTextureAddToTable(unsigned int *table, int num_used, int max_textures, unsigned int texture_hash);
 unsigned int GetWheelTextureHash(RideInfo *ride_info);
 unsigned int GetWheelTextureMaskHash(RideInfo *ride_info);
 unsigned int GetVinylLayerHash(RideInfo *ride_info, int layer);
+unsigned int GetVinylLayerMaskHash(RideInfo *ride_info, int layer);
+unsigned int GetHoodSpoilerHash(RideInfo *ride_info);
+unsigned int GetHoodSpoilerMaskHash(RideInfo *ride_info);
+unsigned int GetSpinnerTextureHash(RideInfo *ride_info);
+unsigned int GetSpinnerTextureMaskHash(RideInfo *ride_info);
 int DumpPreComp(VinylLayerInfo *layer_info, TextureInfo *dest_texture);
 extern int UsePrecompositeVinyls;
 extern int swatch_offset_init;
@@ -37,6 +43,15 @@ int CompositeWheel(RideInfo *ride_info, unsigned int dest_namehash, unsigned int
 int CompositeRim(RideInfo *ride_info);
 
 SkinCompositeParams SkinCompositeParameterCache[4];
+
+struct CompColour {
+    unsigned char r;
+    unsigned char g;
+    unsigned char b;
+    unsigned char a;
+
+    CompColour() {}
+};
 
 SkinCompositeParams *GetSkinCompositeParams(unsigned int dest_name_hash) {
     SkinCompositeParams *cache_params = 0;
@@ -223,6 +238,70 @@ int CompositeSkin32(SkinCompositeParams *composite_params) {
     }
 
     return 0;
+}
+
+unsigned int ScaleColours(unsigned int a, unsigned int b) {
+    CompColour final_colour;
+
+    final_colour.g = static_cast<unsigned char>(static_cast<float>((a >> 8) & 0xFF) * 0.003921569f * static_cast<float>((b >> 8) & 0xFF));
+    final_colour.b = static_cast<unsigned char>(static_cast<float>((a >> 16) & 0xFF) * 0.003921569f * static_cast<float>((b >> 16) & 0xFF));
+    final_colour.a = static_cast<unsigned char>(static_cast<float>((a >> 24) & 0xFF) * 0.003921569f * static_cast<float>(b >> 24));
+    final_colour.r = static_cast<unsigned char>(static_cast<float>(a & 0xFF) * 0.003921569f * static_cast<float>(b & 0xFF));
+    return *reinterpret_cast<unsigned int *>(&final_colour);
+}
+
+unsigned int GetBlendColour(unsigned int *colours, float *weights, int num_colours, bool max_alpha_blend) {
+    CompColour *comp_colours;
+    CompColour final_colour;
+    int r = 0;
+    int g = 0;
+    int b = 0;
+    int a = 0;
+
+    for (int i = 0; i < num_colours; i++) {
+        float weight = weights[i];
+
+        if (weight > 0.003921569f) {
+            comp_colours = reinterpret_cast<CompColour *>(&colours[i]);
+            b += static_cast<int>(weight * static_cast<float>(comp_colours->b));
+            g += static_cast<int>(weight * static_cast<float>(comp_colours->g));
+            r += static_cast<int>(weight * static_cast<float>(comp_colours->r));
+
+            if (!max_alpha_blend) {
+                a += static_cast<int>(weight * static_cast<float>(comp_colours->a));
+            } else {
+                int tempa = static_cast<int>(weight * static_cast<float>(comp_colours->a)) & 0xFF;
+
+                if (a < tempa) {
+                    a = tempa;
+                }
+            }
+        }
+    }
+
+    if (b > 0xFF) {
+        b = 0xFF;
+    }
+
+    final_colour.b = static_cast<unsigned char>(b);
+
+    if (g > 0xFF) {
+        g = 0xFF;
+    }
+
+    if (r > 0xFF) {
+        r = 0xFF;
+    }
+
+    final_colour.r = static_cast<unsigned char>(r);
+    final_colour.g = static_cast<unsigned char>(g);
+
+    if (a > 0xFF) {
+        a = 0xFF;
+    }
+
+    final_colour.a = static_cast<unsigned char>(a);
+    return *reinterpret_cast<unsigned int *>(&final_colour);
 }
 
 int CompositeSkin(SkinCompositeParams *composite_params) {
@@ -861,4 +940,59 @@ int CompositeRim(RideInfo *ride_info) {
     unsigned int mask_namehash = GetWheelTextureMaskHash(ride_info);
 
     return CompositeWheel(ride_info, dest_namehash, src_namehash, mask_namehash, CARSLOTID_PAINT_RIM);
+}
+
+int GetTempCarSkinTextures(unsigned int *textures_to_load, int num_textures, int max_textures, RideInfo *ride) {
+    for (int car_part_id = CARSLOTID_VINYL_LAYER0; car_part_id < CARSLOTID_PAINT_RIM; car_part_id++) {
+        CarPart *part = ride->GetPart(static_cast<CAR_SLOT_ID>(car_part_id));
+
+        if (part != 0) {
+            const char *name = part->GetName();
+            unsigned int vinyl_hash = GetVinylLayerHash(ride, car_part_id - CARSLOTID_VINYL_LAYER0);
+            unsigned int mask_hash = GetVinylLayerMaskHash(ride, car_part_id - CARSLOTID_VINYL_LAYER0);
+            int added_vinyls = UsedCarTextureAddToTable(textures_to_load, num_textures, max_textures, vinyl_hash);
+            int added_masks = UsedCarTextureAddToTable(textures_to_load, num_textures + added_vinyls, max_textures, mask_hash);
+
+            num_textures += added_vinyls + added_masks;
+            (void)name;
+        }
+    }
+
+    {
+        unsigned int hood_spoiler_hash = GetHoodSpoilerHash(ride);
+        unsigned int hood_spoiler_mask_hash = GetHoodSpoilerMaskHash(ride);
+
+        if (hood_spoiler_hash != 0 && hood_spoiler_mask_hash != 0) {
+            int added_spoilers = UsedCarTextureAddToTable(textures_to_load, num_textures, max_textures, hood_spoiler_hash);
+            int added_masks = UsedCarTextureAddToTable(textures_to_load, num_textures + added_spoilers, max_textures, hood_spoiler_mask_hash);
+
+            num_textures += added_spoilers + added_masks;
+        }
+    }
+
+    {
+        unsigned int wheel_hash = GetWheelTextureHash(ride);
+        unsigned int wheel_mask_hash = GetWheelTextureMaskHash(ride);
+
+        if (wheel_hash != 0 && wheel_mask_hash != 0) {
+            int added_wheels = UsedCarTextureAddToTable(textures_to_load, num_textures, max_textures, wheel_hash);
+            int added_masks = UsedCarTextureAddToTable(textures_to_load, num_textures + added_wheels, max_textures, wheel_mask_hash);
+
+            num_textures += added_wheels + added_masks;
+        }
+    }
+
+    {
+        unsigned int spinner_hash = GetSpinnerTextureHash(ride);
+        unsigned int spinner_mask_hash = GetSpinnerTextureMaskHash(ride);
+
+        if (spinner_hash != 0 && spinner_mask_hash != 0) {
+            int added_spinners = UsedCarTextureAddToTable(textures_to_load, num_textures, max_textures, spinner_hash);
+            int added_masks = UsedCarTextureAddToTable(textures_to_load, num_textures + added_spinners, max_textures, spinner_mask_hash);
+
+            num_textures += added_spinners + added_masks;
+        }
+    }
+
+    return num_textures;
 }

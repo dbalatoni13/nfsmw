@@ -129,6 +129,8 @@ extern float lbl_8040ADC0;
 extern float lbl_8040ADC4;
 extern float lbl_8040ADC8;
 extern float lbl_8040ADCC;
+extern float lbl_8040ADD4;
+extern float lbl_8040ADD8;
 extern float lbl_8040ADDC;
 extern float lbl_8040ADE0;
 extern float lbl_8040ADE4;
@@ -165,6 +167,7 @@ extern bVector4 PointCloud[16] asm("PointCloud");
 extern bVector3 *P[17] asm("P");
 extern int ch2d(bVector3 **P, int n) asm("ch2d__FPPfi");
 extern float FancyCarShadowEdgeMult;
+extern float car_elevation;
 extern float car_elevation_scale;
 extern int dshad;
 extern bVector3 cs_lightV asm("cs_lightV");
@@ -839,6 +842,17 @@ static void ClearPackedCarPartModel(CarPartModel *car_part_model) {
     reinterpret_cast<CarPartModelLayout *>(car_part_model)->mModel &= 1;
 }
 
+static bool DotPassesTest(const bVector3 *point) {
+    bVector3 vec = *point - hull_Origin;
+    float dot = bDot(&vec, &hull_Normal);
+
+    if (dot < lbl_8040ADC0) {
+        dot = -dot;
+    }
+
+    return dot < lbl_8040ADEC;
+}
+
 static void *CarRenderFrameMalloc(unsigned int size) {
     unsigned char *address = CurrentBufferPos;
 
@@ -872,7 +886,7 @@ void CarRenderInfo::UpdateCarParts() {
                 CarPartModel *car_part_model = &this->mCarPartModels[slot_id][model_number][lod];
                 eModel *model = car_part_model->GetModel();
 
-                if (model != 0 && model->Solid != 0) {
+                if (model != 0 && model->GetNameHash() != 0) {
                     model->UnInit();
                     CarPartModelPool->Free(model);
                     reinterpret_cast<CarPartModelLayout *>(car_part_model)->mModel &= 1;
@@ -1367,7 +1381,7 @@ bool CarRenderInfo::Render(eView *view, const bVector3 *world_position, const bM
         return true;
     }
 
-    *local_world = *body_matrix;
+    PSMTX44Copy(*reinterpret_cast<const Mtx44 *>(body_matrix), *reinterpret_cast<Mtx44 *>(local_world));
     eMulMatrix(local_world, &CarScaleMatrix, local_world);
     local_world->v3.x = position.x;
     local_world->v3.y = position.y;
@@ -1378,7 +1392,7 @@ bool CarRenderInfo::Render(eView *view, const bVector3 *world_position, const bM
         return true;
     }
 
-    *world_local = *body_matrix;
+    PSMTX44Copy(*reinterpret_cast<const Mtx44 *>(body_matrix), *reinterpret_cast<Mtx44 *>(world_local));
     world_local->v3.x = position.x;
     world_local->v3.y = position.y;
     world_local->v3.z = position.z;
@@ -2401,124 +2415,262 @@ int smooth_shadow_corners(int nVerts) {
 
 void CarRenderInfo::DrawAmbientShadow(eView *view, const bVector3 *position, float shadow_scale, bMatrix4 *localWorld, bMatrix4 *worldLocal,
                                       bMatrix4 *biasedIdentity) {
-    bVector3 shadowVerts[16];
-    float rowV[4];
-    float colU[4];
-    int row;
-    int col;
-    float shadowZ;
+    const int N = 16;
+    int in_front_end;
+    float scaleW;
+    float scaleL;
+    bVector3 min;
+    bVector3 max;
+    float scale;
+    bVector3 SunCarVector;
+    bVector3 light_pos;
+    SunChunkInfo *sun_info;
+    float SunScale;
+    bVector3 sunpos_in_car_space;
+    float sunAdjX;
+    float sunAdjY;
+    float sunDX;
+    float sunDY;
+    float sunStartX;
+    float sunStartY;
+    int bad_points[4];
+    bVector3 p[16];
+    bVector3 *pp;
+    bVector2 uv[16];
+    bVector2 *puv;
+    float py;
+    float px;
+    float dy;
+    float dx;
+    float ps;
+    float pt;
+    float ds;
+    float dt;
+    float shadow_alpha_scale;
+    unsigned int shadow_colour;
+    float shadow_alpha_min;
+    float shadow_alpha_max;
+    float shadow_alpha;
+    int shadow_alphai;
+    TextureInfo *texture_info;
+    unsigned int colour;
 
     sh_Setup(const_cast<bVector3 *>(position));
-    shadowZ = position->z;
     if (iRam8047ff04 == 6) {
-        bVector3 worldPosition;
+        bVector3 usPoint;
 
-        worldPosition.x = position->x;
-        worldPosition.y = -position->y;
-        worldPosition.z = position->z;
-        this->mWorldPos.FindClosestFace(this->mWCollider, reinterpret_cast<const UMath::Vector3 &>(worldPosition), false);
-        if (!this->mWorldPos.OnValidFace()) {
-            shadowZ = this->mWorldPos.HeightAtPoint(reinterpret_cast<const UMath::Vector3 &>(worldPosition));
-        }
-
-        this->mCar_elevation = position->z - shadowZ;
-        if (this->mCar_elevation < lbl_8040ADC0) {
-            this->mCar_elevation = lbl_8040ADC0;
-        }
-        if (this->mCar_elevation > lbl_8040ADC4) {
-            this->mCar_elevation = lbl_8040ADC4;
-        }
-
-        car_elevation_scale = this->mCar_elevation * lbl_8040ADC8;
-        if (car_elevation_scale < lbl_8040ADC0) {
-            car_elevation_scale = lbl_8040ADC0;
-        }
-        if (car_elevation_scale > lbl_8040ADCC) {
-            car_elevation_scale = lbl_8040ADCC;
+        eUnSwizzleWorldVector(*position, usPoint);
+        this->mWorldPos.FindClosestFace(this->mWCollider, reinterpret_cast<const UMath::Vector3 &>(usPoint), false);
+        if (this->mWorldPos.OnValidFace()) {
+            this->mCar_elevation = this->mWorldPos.HeightAtPoint(reinterpret_cast<const UMath::Vector3 &>(usPoint));
+            car_elevation = position->z - this->mCar_elevation;
         }
     }
 
-    {
-        float scaleFactor = shadow_scale;
-        bVector3 scale;
-
-        if (this->pRideInfo != 0 && this->pRideInfo->Type == static_cast<CarType>(4)) {
-            scaleFactor *= heliScale;
-        }
-
-        scale.x = this->AABBMin.x * scaleFactor;
-        scale.y = this->AABBMin.y * scaleFactor;
-        scale.z = this->AABBMax.z * scaleFactor;
-
-        for (row = 0; row < 4; row++) {
-            rowV[row] = static_cast<float>(row) * (lbl_8040ADCC / 3.0f);
-            colU[row] = static_cast<float>(row) * (lbl_8040ADCC / 3.0f);
-        }
-
-        for (row = 0; row < 4; row++) {
-            for (col = 0; col < 4; col++) {
-                int i = row * 4 + col;
-                bVector3 localPoint;
-                bVector3 worldPoint;
-                float scaleToGround;
-
-                localPoint.x = PointCloud[i].x * scale.x + cs_lightV.x * lbl_8040ADE0;
-                localPoint.y = PointCloud[i].y * scale.y + cs_lightV.y * lbl_8040ADE0;
-                localPoint.z = PointCloud[i].z * scale.z;
-                eMulVector(&worldPoint, localWorld, &localPoint);
-                scaleToGround = (shadowZ - worldPoint.z) * cs_OneOverZ;
-                shadowVerts[i].x = scaleToGround * cs_lightV.x + worldPoint.x;
-                shadowVerts[i].y = scaleToGround * cs_lightV.y + worldPoint.y;
-                shadowVerts[i].z = scaleToGround * cs_lightV.z + worldPoint.z;
-            }
-        }
+    car_elevation_scale = lbl_8040ADC0;
+    if (car_elevation > lbl_8040ADC0 && car_elevation < lbl_8040ADC4) {
+        car_elevation_scale = car_elevation * lbl_8040ADC8;
+    } else if (car_elevation > lbl_8040ADC4) {
+        car_elevation_scale = lbl_8040ADCC;
     }
 
-    if (iRam8047ff04 != 3 && this->mWCollider != 0) {
-        for (int i = 0; i < 16; i++) {
-            bVector3 worldPoint;
-
-            worldPoint.x = shadowVerts[i].x;
-            worldPoint.y = -shadowVerts[i].y;
-            worldPoint.z = shadowVerts[i].z;
-            this->mWorldPos.FindClosestFace(this->mWCollider, reinterpret_cast<const UMath::Vector3 &>(worldPoint), i != 0);
-            if (!this->mWorldPos.OnValidFace()) {
-                shadowVerts[i].z = this->mWorldPos.HeightAtPoint(reinterpret_cast<const UMath::Vector3 &>(worldPoint));
-            } else {
-                shadowVerts[i].z = shadowZ;
-            }
-        }
+    scale = shadow_scale;
+    if (this->pRideInfo != 0 && this->pRideInfo->Type == static_cast<CarType>(4)) {
+        scale *= heliScale;
     }
 
-    {
-        int alpha = static_cast<int>((lbl_8040ADF8 - lbl_8040ADF4) * (lbl_8040ADCC - car_elevation_scale) + lbl_8040ADF4);
-        unsigned int colour;
+    min.x = this->AABBMin.x * scale;
+    min.y = this->AABBMin.y * scale;
+    min.z = this->AABBMin.z * scale;
+    max.x = this->AABBMax.x * scale;
+    max.y = this->AABBMax.y * scale;
+    max.z = this->AABBMax.z * scale;
 
-        if (alpha < 0) {
-            alpha = 0;
+    in_front_end = IsGameFlowInFrontEnd();
+    sun_info = SunInfo;
+    if (sun_info == 0) {
+        light_pos.x = lbl_8040ADD4;
+        light_pos.y = lbl_8040ADC0;
+        light_pos.z = lbl_8040ADD8;
+    } else {
+        light_pos.x = sun_info->CarShadowPositionX;
+        light_pos.y = sun_info->CarShadowPositionY;
+        light_pos.z = sun_info->CarShadowPositionZ;
+    }
+
+    SunCarVector = light_pos - *position;
+    bNormalize(&SunCarVector, &SunCarVector);
+    SunScale = (lbl_8040ADCC - SunCarVector.z) * lbl_8040ADDC;
+    bMulMatrix(&sunpos_in_car_space, worldLocal, &light_pos);
+    bNormalize(&sunpos_in_car_space, &sunpos_in_car_space);
+
+    sunAdjY = -sunpos_in_car_space.y * SunScale * lbl_8040ADE0;
+    sunAdjX = -sunpos_in_car_space.x * SunScale * lbl_8040ADE0;
+    sunDX = bAbs(sunAdjX);
+    sunDY = bAbs(sunAdjY);
+    sunStartX = sunAdjX;
+    if (sunAdjX > lbl_8040ADC0) {
+        sunStartX = lbl_8040ADC0;
+    }
+    sunStartY = sunAdjY;
+    if (sunAdjY > lbl_8040ADC0) {
+        sunStartY = lbl_8040ADC0;
+    }
+
+    pp = p;
+    puv = uv;
+    py = min.y + sunStartY;
+    scaleL = (max.x - min.x) * lbl_8040ADE0;
+    scaleW = (max.y - min.y) * lbl_8040ADE0;
+    dx = scaleL;
+    dy = scaleW;
+    ds = lbl_8040ADE0;
+    dt = lbl_8040ADE0;
+    pt = lbl_8040ADC0;
+
+    for (int y = 0; y < 4; y++) {
+        px = min.x + sunStartX;
+        ps = lbl_8040ADC0;
+        for (int x = 0; x < 4; x++) {
+            pp->x = px;
+            pp->y = py;
+            pp->z = lbl_8040ADC0;
+            puv->x = ps;
+            puv->y = pt;
+            eMulVector(pp, localWorld, pp);
+            px += sunDX;
+            ps += ds;
+            pp++;
+            puv++;
+            px += dx;
         }
-        if (alpha > 0xFE) {
-            alpha = 0xFE;
+        bad_points[y] = 0;
+        py += sunDY;
+        py += dy;
+        pt += dt;
+    }
+
+    if (in_front_end != 0) {
+        bVector3 *pz = p;
+
+        for (int x = 0; x < N; x++) {
+            pz->z = lbl_8040ADC0;
+            pz++;
         }
-        if (alpha == 0 || this->ShadowTexture == 0) {
-            return;
+    } else if (this->mWCollider != 0) {
+        bVector3 usCenter;
+        bVector3 sCenter;
+        bVector3 ref;
+        bool quitIfSameFace = true;
+
+        sCenter = *position;
+        eUnSwizzleWorldVector(sCenter, usCenter);
+        this->mWorldPos.SetTolerance(lbl_8040ADE4);
+        this->mWorldPos.FindClosestFace(this->mWCollider, reinterpret_cast<const UMath::Vector3 &>(usCenter), false);
+        if (this->mWorldPos.OnValidFace()) {
+            UMath::Vector4 worldNormal;
+
+            memset(&worldNormal, 0, sizeof(worldNormal));
+            worldNormal.y = lbl_8040ADCC;
+            this->mWorldPos.UNormal(&worldNormal);
+            UMath::Unitxyz(worldNormal, worldNormal);
+            eSwizzleWorldVector(reinterpret_cast<const bVector3 &>(UMath::Vector4To3(worldNormal)), hull_Normal);
+        } else {
+            hull_Normal.x = lbl_8040ADC0;
+            hull_Normal.y = lbl_8040ADC0;
+            hull_Normal.z = lbl_8040ADCC;
         }
 
-        colour = static_cast<unsigned int>(alpha << 24) | 0x00808080;
-        for (row = 0; row < 3; row++) {
-            if (exBeginStrip(this->ShadowTexture, 8, biasedIdentity)) {
-                for (col = 0; col < 4; col++) {
-                    int top = row * 4 + col;
-                    int bottom = top + 4;
+        ref = bVector3(lbl_8040ADC0, lbl_8040ADC0, lbl_8040ADC0);
+        eMulVector(&ref, localWorld, &ref);
+        this->mWorldPos.SetTolerance(lbl_8040ADE4);
+        for (int x = 0; x < N; x++) {
+            bVector3 sPoint;
+            bVector3 usPoint;
+            bool validFace;
 
-                    exAddVertex(shadowVerts[top]);
-                    exAddVertex(shadowVerts[bottom]);
-                    exAddColour(colour);
-                    exAddColour(colour);
-                    exAddUV(colU[col], rowV[row]);
-                    exAddUV(colU[col], rowV[row + 1]);
+            sPoint = p[x];
+            eUnSwizzleWorldVector(sPoint, usPoint);
+            this->mWorldPos.FindClosestFace(this->mWCollider, reinterpret_cast<const UMath::Vector3 &>(usPoint), quitIfSameFace);
+            validFace = this->mWorldPos.OnValidFace();
+            p[x].z = this->mWorldPos.HeightAtPoint(reinterpret_cast<const UMath::Vector3 &>(usPoint));
+            if (validFace) {
+                quitIfSameFace = DotPassesTest(&p[x]);
+                if (quitIfSameFace) {
+                    continue;
                 }
-                exEndStrip(view);
+            }
+
+            quitIfSameFace = false;
+
+            if (this->pRideInfo->Type == static_cast<CarType>(4)) {
+                p[x].z = lbl_8040ADCC;
+                bad_points[x / 4]++;
+            } else {
+                p[x].z = this->mCar_elevation;
+                ref.z = this->mCar_elevation;
+            }
+        }
+    }
+
+    shadow_alpha_scale = bAbs(localWorld->v2.z) * (lbl_8040ADCC - car_elevation_scale);
+    if (in_front_end != 0) {
+        shadow_alpha_min = lbl_8040ADF4;
+        shadow_alpha_max = lbl_8040ADF4;
+    } else {
+        shadow_alpha_min = lbl_8040ADC0;
+        shadow_alpha_max = lbl_8040ADF8;
+    }
+
+    shadow_alpha = (shadow_alpha_max - shadow_alpha_min) * shadow_alpha_scale + shadow_alpha_min;
+    shadow_alphai = static_cast<int>(shadow_alpha);
+    if (shadow_alphai < 0) {
+        shadow_alphai = 0;
+    }
+    if (shadow_alphai > 0xFE) {
+        shadow_alphai = 0xFE;
+    }
+
+    shadow_colour = static_cast<unsigned int>(shadow_alphai << 24) | 0x00808080;
+    texture_info = this->ShadowTexture;
+    if ((shadow_colour & 0xFF000000) == 0 || texture_info == 0) {
+        return;
+    }
+
+    colour = shadow_colour;
+    {
+        bVector3 *p0 = p;
+        bVector3 *p1 = p + 4;
+        bVector2 *u0 = uv;
+        bVector2 *u1 = uv + 4;
+
+        for (int y = 0; y < 3; y++) {
+            if (bad_points[y] + bad_points[y + 1] <= 3) {
+                if (exBeginStrip(texture_info, 8, biasedIdentity)) {
+                    for (int x = 0; x < 4; x++) {
+                        exAddVertex(*p0);
+                        p0++;
+                        exAddColour(colour);
+                        exAddUV(u0->x, u0->y);
+                        u0++;
+                        exAddVertex(*p1);
+                        p1++;
+                        exAddColour(colour);
+                        exAddUV(u1->x, u1->y);
+                        u1++;
+                    }
+                    exEndStrip(view);
+                } else {
+                    p0 += 4;
+                    p1 += 4;
+                    u0 += 4;
+                    u1 += 4;
+                }
+            } else {
+                p0 += 4;
+                p1 += 4;
+                u0 += 4;
+                u1 += 4;
             }
         }
     }
