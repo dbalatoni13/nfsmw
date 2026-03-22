@@ -319,14 +319,15 @@ bool g_EAXIsPaused() {
     return (g_ActiveCtlStates & 0x3483b) != 0;
 }
 
-void g_LoadSndAsset(Attrib::StringKey filename, eSNDDATAPATH path, eSNDDATATYPE type) {
-    stAssetDescription asset;
-    asset.Clear();
-    asset.eDataType = type;
-    asset.FileName = filename;
-    asset.DataPath = path;
-    asset.bLoadToTop = false;
-    gAEMSMgr.AddBankListing(asset);
+void g_LoadSndAsset(Attrib::StringKey filename, eSNDDATAPATH path, eSNDDATATYPE datatype) {
+    stSndAssetQueue requeststruct;
+    requeststruct.Asset.Clear();
+    requeststruct.Asset.eDataType = datatype;
+    requeststruct.Asset.FileName = filename;
+    requeststruct.Asset.DataPath = path;
+    requeststruct.pThis = nullptr;
+    requeststruct.pCar = nullptr;
+    gAEMSMgr.QueueFileLoad(requeststruct, eBANK_SLOT_NONE);
 }
 
 void EAXSound::START_321Countdown() {
@@ -1303,26 +1304,32 @@ void EAXSound::DestroyEAXCar(EAX_CarState *pCar) {
         return;
     }
     CSTATE_Base *attachedcar = nullptr;
-    CSTATEMGR_Base *pCVar2;
-    switch (pCar->mContext) {
+    switch (pCar->GetContext()) {
     case GRace::kRaceContext_QuickRace:
-        pCVar2 = m_pStateMgr[eMM_PLAYERCAR];
+        if (m_pStateMgr[eMM_PLAYERCAR] != nullptr) {
+            attachedcar = m_pStateMgr[eMM_PLAYERCAR]->GetStateObj(pCar);
+        }
         break;
     case GRace::kRaceContext_TimeTrial:
-        pCVar2 = m_pStateMgr[eMM_AIRACECAR];
+        if (m_pStateMgr[eMM_AIRACECAR] != nullptr) {
+            attachedcar = m_pStateMgr[eMM_AIRACECAR]->GetStateObj(pCar);
+        }
         break;
     case GRace::kRaceContext_Career:
-        pCVar2 = m_pStateMgr[eMM_COPCAR];
+        if (m_pStateMgr[eMM_COPCAR] != nullptr) {
+            attachedcar = m_pStateMgr[eMM_COPCAR]->GetStateObj(pCar);
+        }
         break;
     case GRace::kRaceContext_Count:
-        pCVar2 = m_pStateMgr[eMM_TRAFFIC];
+        if (m_pStateMgr[eMM_TRAFFIC] != nullptr) {
+            attachedcar = m_pStateMgr[eMM_TRAFFIC]->GetStateObj(pCar);
+        }
         break;
     default:
-        pCVar2 = m_pStateMgr[eMM_TRUCK];
+        if (m_pStateMgr[eMM_TRUCK] != nullptr) {
+            attachedcar = m_pStateMgr[eMM_TRUCK]->GetStateObj(pCar);
+        }
         break;
-    }
-    if (pCVar2 != nullptr) {
-        attachedcar = pCVar2->GetStateObj(pCar);
     }
     if (attachedcar != nullptr) {
         attachedcar->Detach();
