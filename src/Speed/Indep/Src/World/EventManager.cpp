@@ -88,6 +88,9 @@ struct emEvent : public bTNode<emEvent> {
         bFree(EventSlotPool, ptr);
     }
 
+    emEvent() {
+    }
+
     int ReferenceCount;
     unsigned int ID;
     void *pEventTrigger;
@@ -221,7 +224,7 @@ void emRemoveHandler(EVENT_HANDLER_FUNC function) {
 }
 
 emEvent *emAddEvent(EVENT_ID event_id) {
-    emEvent *event = reinterpret_cast<emEvent *>(bOMalloc(EventSlotPool));
+    emEvent *event = new emEvent;
     if (!event) {
         return 0;
     }
