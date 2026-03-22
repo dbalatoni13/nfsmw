@@ -414,12 +414,14 @@ void TSMemoryPool::Free(void *memory) {
             if (prev_node != NodeList.EndOfList() && prev_node->IsFree()) {
                 node->Address = address - prev_node->Size;
                 node->Size = size + prev_node->Size;
+                NodeList.Remove(prev_node);
                 RemoveNode(prev_node);
             }
 
             TSMemoryNode *next_node = node->GetNext();
             if (next_node != NodeList.EndOfList() && next_node->IsFree()) {
                 node->Size += next_node->Size;
+                NodeList.Remove(next_node);
                 RemoveNode(next_node);
             }
 
@@ -430,9 +432,9 @@ void TSMemoryPool::Free(void *memory) {
 
             if (TracingEnabled && bMemoryTracing) {
                 bMemoryTraceFreePacket packet;
-                bMemSet(&packet, 0, sizeof(packet));
+                memset(&packet, 0, sizeof(packet));
                 packet.PoolID = reinterpret_cast<uintptr_t>(this);
-                packet.MemoryAddress = static_cast<uintptr_t>(address);
+                packet.MemoryAddress = address;
                 packet.Size = size;
                 bFunkCallASync("CODEINE", 0x1b, &packet, sizeof(packet));
             }
