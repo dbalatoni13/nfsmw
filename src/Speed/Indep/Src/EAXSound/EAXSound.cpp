@@ -1798,7 +1798,7 @@ void SetSoundControlState(bool on, eSNDCTLSTATE state, const char *caller) {
         return;
     }
 
-    on ^= 1;
+    on = on == true ? false : true;
     if (g_pEAXSound->IsPauseMainFNG()) {
         if (!on) {
             if (state != SNDSTATE_MINILOAD) {
@@ -1810,7 +1810,7 @@ void SetSoundControlState(bool on, eSNDCTLSTATE state, const char *caller) {
         }
     }
 
-    unsigned int stateBit = 1u << (state & 0x1F);
+    unsigned int stateBit = 1u << state;
     if ((g_ActiveCtlStates & stateBit) != 0) {
         if (!on) {
             return;
@@ -1830,7 +1830,7 @@ void SetSoundControlState(bool on, eSNDCTLSTATE state, const char *caller) {
 
     g_ActiveSFXStates = 0;
     for (int n = 0; n < 18; n++) {
-        if (((g_ActiveCtlStates >> (n & 0x1F)) & 1) != 0) {
+        if ((g_ActiveCtlStates & (1u << n)) != 0) {
             g_ActiveSFXStates |= g_CtlStateActions[n];
         }
     }
