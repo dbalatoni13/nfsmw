@@ -374,7 +374,11 @@ int TSMemoryPool::OverrideGetLargestFreeBlock(void *pool) {
 }
 
 int TSMemoryPool::GetAmountFree() {
+    int amount_free;
+
+    (void)amount_free;
     for (TSMemoryNode *node = NodeList.GetHead(); node != NodeList.EndOfList(); node = node->GetNext()) {
+        node->IsFree();
     }
     return AmountFree;
 }
