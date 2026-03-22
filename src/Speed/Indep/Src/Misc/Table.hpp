@@ -29,6 +29,14 @@ class TableBase {
         IndexMultiplier = (NumEntries - 1) / (MaxArg - MinArg);
     }
 
+    int GetNumEntries() const {
+        return NumEntries;
+    }
+
+    float GetIndex(float f) const {
+        return IndexMultiplier * (f - MinArg);
+    }
+
   protected:
     int NumEntries;        // offset 0x0, size 0x4
     float MinArg;          // offset 0x4, size 0x4
@@ -56,6 +64,23 @@ template <typename T> class tTable : public TableBase {
     T *pTable;
 
   public:
+    tTable(T *table, int num, float min, float max) : TableBase(num, min, max), pTable(table) {}
+
+    void Blend(T *dest, T *a, T *b, float blend_a);
+
+    void GetValue(T *p, float arg) {
+        int entries = GetNumEntries();
+        float normarg = GetIndex(arg);
+        int index = static_cast<int>(normarg);
+        if (index < 0) {
+            bMemCpy(p, &pTable[0], sizeof(T));
+        } else if (index >= entries - 1) {
+            bMemCpy(p, &pTable[entries - 1], sizeof(T));
+        } else {
+            float blend = normarg - bFloor(normarg);
+            Blend(p, &pTable[index + 1], &pTable[index], blend);
+        }
+    }
 };
 
 class AverageBase {
@@ -94,11 +119,48 @@ class AverageBase {
 
     virtual void Recalculate() {}
 
-  protected:
     unsigned char nSize;
     unsigned char nSlots;
     unsigned char nSamples;
     unsigned char nCurrentSlot;
+};
+
+template <class T> class tAverage : public AverageBase {
+  public:
+    tAverage(int nSlots) : AverageBase(sizeof(T), nSlots) {
+        pData = new (__FILE__, __LINE__) T[nSlots];
+        bMemSet(pData, 0, sizeof(T) * nSlots);
+        Average = pData[0];
+        Total = pData[0];
+    }
+
+    virtual ~tAverage() {
+        if (pData) {
+            delete[] pData;
+        }
+    }
+
+    T *GetValue() {
+        return &Average;
+    }
+
+    void Record(T *pValue);
+
+    virtual void Recalculate() {
+        Total *= 0.0f;
+        for (int i = 0; i < nSamples; i++) {
+            Total += pData[i];
+        }
+        int n = static_cast<int>(nSamples);
+        if (n == 0) n = 1;
+        float fRecip = 1.0f / static_cast<float>(n);
+        bVector3 result = Total * fRecip;
+        Average = result;
+    }
+
+    T *pData;     // offset 0x8, size 0x4
+    T Total;      // offset 0xC
+    T Average;    // offset varies
 };
 
 class Average : public AverageBase {
@@ -194,7 +256,7 @@ template <typename T> class tGraph {
             } else {
                 for (int i = 0; i < NumEntries - 1; ++i) {
                     if (x >= GraphData[i].x && x < GraphData[i + 1].x) {
-                        const T blend = (x - GraphData[i].x) / (GraphData[i + 1].x - GraphData[i].x);
+                        T blend = (x - GraphData[i].x) / (GraphData[i + 1].x - GraphData[i].x);
                         Blend(pValue, &GraphData[i + 1].y, &GraphData[i].y, blend);
                         return;
                     }

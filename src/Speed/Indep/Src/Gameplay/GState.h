@@ -11,6 +11,14 @@
 class GState : public GRuntimeInstance {
   public:
     GState(const Attrib::Key &stateKey);
+
+    ~GState() override;
+
+    GameplayObjType GetType() const override {
+        return kGameplayObjType_State;
+    }
+
+    bool IsTerminalState() const;
 };
 
 #endif

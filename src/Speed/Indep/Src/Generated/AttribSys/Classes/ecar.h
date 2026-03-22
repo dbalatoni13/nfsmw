@@ -73,9 +73,11 @@ struct ecar : Instance {
         Change(FindCollection(ClassKey(), collectionkey));
     }
 
-    static Key ClassKey() {
-        return 0xa5b543b7;
+    void ChangeWithDefault(unsigned int collectionkey) {
+        Change(FindCollectionWithDefault(ClassKey(), collectionkey));
     }
+
+    static Key ClassKey();
 
     const RefSpec &CameraInfo_Close(unsigned int index) const {
         const RefSpec *resultptr = reinterpret_cast<const RefSpec *>(this->GetAttributePointer(0x0c2da793, index));

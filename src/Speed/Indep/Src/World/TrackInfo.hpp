@@ -77,6 +77,8 @@ class TrackInfo {
     float TrackMapZoomWidth;                         // offset 0x118, size 0x4
     char TrackMapStartZoomed;                        // offset 0x11C, size 0x1
 
+    static TrackInfo *GetTrackInfo(int trackNumber);
+
     const char *GetLoadedTrackInfo() {
         return this->RegionName;
     }

@@ -666,7 +666,18 @@ class Attribute {
     bool SetLength(unsigned int);
     void SendChangeMsg() const;
     // TODO
+    template <typename T> const T &Get(unsigned int index) const;
     template <typename T> const T &Get(unsigned int index, T &result) const;
+    template <typename T> bool Set(unsigned int index, const T &input) {
+        T *resultptr = reinterpret_cast<T *>(GetElementPointer(index));
+
+        if (resultptr) {
+            *resultptr = input;
+            return true;
+        }
+
+        return false;
+    }
 
     void operator delete(void *ptr, std::size_t bytes) {
         Free(ptr, bytes, "Attrib::Attribute");
@@ -911,7 +922,19 @@ template <typename t> class TAttrib : public Attribute {
     TAttrib(const Attribute &src) : Attribute(src) {}
     ~TAttrib() {}
 
-    bool &Get(unsigned int index) const;
+    const t &Get(unsigned int index) const {
+        const t *resultptr = reinterpret_cast<const t *>(GetElementPointer(index));
+
+        if (!resultptr) {
+            resultptr = reinterpret_cast<const t *>(DefaultDataArea(sizeof(t)));
+        }
+
+        return *resultptr;
+    }
+
+    bool Set(unsigned int index, const t &data) {
+        return Attribute::Set(index, data);
+    }
 };
 
 } // namespace Attrib

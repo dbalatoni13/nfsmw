@@ -1,0 +1,57 @@
+#include "Speed/Indep/Src/Camera/Camera.cpp"
+
+#include "Speed/Indep/Src/Camera/CameraMover.cpp"
+
+#include "Speed/Indep/Src/Camera/CameraAI.cpp"
+
+#include "Speed/Indep/Src/Camera/ChaseCamAI.cpp"
+
+#include "Speed/Indep/Src/Camera/Actions/CDActionDrive.cpp"
+
+#include "Speed/Indep/Src/Camera/Actions/CDActionTrackCar.cpp"
+
+#include "Speed/Indep/Src/Camera/Actions/CDActionTrackCop.cpp"
+
+#include "Speed/Indep/Src/Camera/Actions/CDActionShowcase.cpp"
+
+#include "Speed/Indep/Src/Camera/Actions/CDActionDebug.cpp"
+
+#include "Speed/Indep/Src/Camera/Actions/CDActionIce.cpp"
+
+#include "Speed/Indep/Src/Camera/Actions/CDActionDebugWatchCar.cpp"
+
+#include "Speed/Indep/Src/Camera/Movers/Cubic.cpp"
+
+#include "Speed/Indep/Src/Camera/Movers/TrackCar.cpp"
+
+#include "Speed/Indep/Src/Camera/Movers/TrackCop.cpp"
+
+#include "Speed/Indep/Src/Camera/Movers/Rearview.cpp"
+
+#include "Speed/Indep/Src/Camera/Movers/SelectCar.cpp"
+
+#include "Speed/Indep/Src/Camera/Movers/Showcase.cpp"
+
+#include "Speed/Indep/Src/Camera/Movers/DebugWorld.cpp"
+
+#include "Speed/Indep/Src/Camera/Movers/Still.cpp"
+
+#include "Speed/Indep/Src/Camera/Movers/CopView.cpp"
+
+#include "Speed/Indep/Src/Camera/ICE/ICEData.cpp"
+
+#include "Speed/Indep/Src/Camera/ICE/ICEAnchor.cpp"
+
+#include "Speed/Indep/Src/Camera/ICE/ICEAnimScene.cpp"
+
+#include "Speed/Indep/Src/Camera/ICE/ICEMover.cpp"
+
+#include "Speed/Indep/Src/Camera/ICE/ICEReplay.cpp"
+
+#include "Speed/Indep/Src/Camera/ICE/ICEPoint.cpp"
+
+#include "Speed/Indep/Src/Camera/ICE/ICERender.cpp"
+
+#include "Speed/Indep/Src/Camera/ICE/ICEOverlays.cpp"
+
+#include "Speed/Indep/Src/Camera/ICE/ICEManager.cpp"

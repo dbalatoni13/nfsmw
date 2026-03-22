@@ -9,8 +9,7 @@
 #include "Speed/Indep/Src/World/WCollisionTri.h"
 
 // total size: 0x3C
-class WWorldPos {
-  public:
+struct WWorldPos {
     void MakeFaceAtPoint(const UMath::Vector3 &inPoint);
     bool FindClosestFace(const WCollider *collider, const UMath::Vector3 &ptRaw, bool quitIfOnSameFace);
     bool FindClosestFace(const UMath::Vector3 &ptRaw, bool quitIfOnSameFace);
@@ -33,18 +32,18 @@ class WWorldPos {
     }
 
     WWorldPos(float yOffset) {
-        this->fFaceValid = 0;
-        this->fMissCount = 0;
-        this->fUsageCount = 0;
-        this->fYOffset = yOffset;
-        this->fSurface = nullptr;
+        fFaceValid = 0;
+        fMissCount = 0;
+        fUsageCount = 0;
+        fYOffset = yOffset;
+        fSurface = nullptr;
     }
 
     ~WWorldPos() {}
 
     // bool OffEdge() const {}
 
-    // bool OnValidFace() const {}
+    bool OnValidFace() const { return fFaceValid; }
 
     void ForceFaceValidity() {}
 
@@ -54,11 +53,15 @@ class WWorldPos {
         fYOffset = liftAmount;
     }
 
-    void UNormal(UMath::Vector3 *norm) const {}
+    void UNormal(UMath::Vector3 *norm) const {
+        fFace.GetNormal(norm);
+    }
 
     void UNormal(UMath::Vector4 *norm) const {}
 
-    // const UMath::Vector4 &FacePoint(int ptInd) const {}
+    const UMath::Vector4 &FacePoint(int ptInd) const {
+        return reinterpret_cast<const UMath::Vector4 *>(&fFace)[ptInd];
+    }
 
     const Attrib::Collection *GetSurface() const {
         return fSurface;

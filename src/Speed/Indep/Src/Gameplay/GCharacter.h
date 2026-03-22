@@ -13,7 +13,87 @@
 // total size: 0x80
 class GCharacter : public GRuntimeInstance, public UTL::COM::Object, public IAttachable {
   public:
+    enum State {
+        kCharState_Invalid = 0,
+        kCharState_Unspawned = 1,
+        kCharState_Spawning_WaitingForModel = 2,
+        kCharState_Spawning_WaitingForTrack = 3,
+        kCharState_Spawned = 4,
+        kCharState_Unspawning_WaitingUntilOffscreen = 5,
+    };
+
+    enum Flags {
+        kCharFlag_UsingStockCar = 1,
+        kCharFlag_AttachedToManager = 2,
+    };
+
     GCharacter(const Attrib::Key &triggerKey);
+
+    ~GCharacter() override;
+
+    GameplayObjType GetType() const override {
+        return kGameplayObjType_Character;
+    }
+
+    bool HasStockCar() const {
+        return IsFlagSet(kCharFlag_UsingStockCar);
+    }
+
+    bool Attach(IUnknown *pOther) override {
+        return mAttachments->Attach(pOther);
+    }
+
+    bool Detach(IUnknown *pOther) override {
+        return mAttachments->Detach(pOther);
+    }
+
+    bool IsAttached(const IUnknown *pOther) const override {
+        return mAttachments->IsAttached(pOther);
+    }
+
+    const IAttachable::List *GetAttachments() const override {
+        return &mAttachments->GetList();
+    }
+
+    void SetFlag(unsigned short flag) {
+        mFlags = mFlags | flag;
+    }
+
+    void ClearFlag(unsigned short flag) {
+        mFlags = mFlags & ~flag;
+    }
+
+    bool IsFlagSet(unsigned short flag) const {
+        return (mFlags & flag) != 0;
+    }
+
+    bool IsFlagClear(unsigned short flag) const {
+        return (mFlags & flag) == 0;
+    }
+
+    void OnAttached(IAttachable *pOther) override;
+
+    void OnDetached(IAttachable *pOther) override;
+
+    void Spawn(const UMath::Vector3 &pos, const UMath::Vector3 &dir, GMarker *targetPoint, float initialSpeed);
+
+    bool SpawnPending() const;
+
+    bool IsSpawned() const;
+
+    void ReleaseVehicle();
+
+    void Unspawn();
+
+    void UnspawnWhenOffscreen();
+
+    bool IsNoLongerUseful() const;
+
+    bool AttemptSpawn();
+
+    IVehicle *GetSpawnedVehicle() const;
+
+    unsigned int GetName() const;
 
   private:
     UMath::Vector3 mSpawnPos;           // offset 0x40, size 0xC

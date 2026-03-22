@@ -501,6 +501,8 @@ config.libs = [
             Object(NonMatching, "Speed/Indep/SourceLists/zAnim.cpp"),
             Object(NonMatching, "Speed/Indep/SourceLists/zAttribSys.cpp"),
             Object(NonMatching, "Speed/Indep/SourceLists/zBWare.cpp"),
+            # Keep zCamera on the real unity C++ source; do not point it at build/asm
+            # dumps to inflate progress.
             Object(NonMatching, "Speed/Indep/SourceLists/zCamera.cpp"),
             Object(NonMatching, "Speed/Indep/SourceLists/zComms.cpp"),
             Object(NonMatching, "Speed/Indep/SourceLists/zDebug.cpp"),

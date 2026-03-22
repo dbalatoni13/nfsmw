@@ -176,7 +176,13 @@ struct WRoadSegment {
 
     // bool RaceRouteForward() const {}
 
-    // void SetRaceRouteForward(bool forward) {}
+    void SetRaceRouteForward(bool forward) {
+        if (forward) {
+            fFlags = fFlags | 4;
+        } else {
+            fFlags = fFlags & static_cast<unsigned short>(~4);
+        }
+    }
 
     // bool ShouldChopperStayLow() const {}
 
@@ -198,7 +204,13 @@ struct WRoadSegment {
         return fFlags & (1 << 15);
     }
 
-    // void SetInRace(bool in_race) {}
+    void SetInRace(bool in_race) {
+        if (in_race) {
+            fFlags = fFlags | static_cast<unsigned short>(1 << 15);
+        } else {
+            fFlags = fFlags & static_cast<unsigned short>(~(1 << 15));
+        }
+    }
 
     // bool IsShortcut() const {}
 

@@ -29,6 +29,8 @@ class LuaRuntime {
 
     void TakeResetSnapshot();
 
+    static unsigned int DeserializeTable(lua_State *state, unsigned char *buffer, bool allowUserData);
+
     static LuaRuntime &Get() {
         return *mObj;
     }

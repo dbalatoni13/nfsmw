@@ -5,6 +5,7 @@
 #pragma once
 #endif
 
+#include "GRace.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/gameplay.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribHash.h"
 
@@ -16,12 +17,15 @@ enum Context {
 };
 
 class GVault;
+class GActivity;
 class GRaceCustom;
 class GRaceParameters;
 
 // total size: 0x1C
 class GRaceBin {
   public:
+    friend class GRaceDatabase;
+
     // total size: 0x4
     struct BinStats {
         uint16 mChallengesCompleted; // offset 0x0, size 0x2
@@ -107,6 +111,9 @@ class GRaceBin {
 // total size: 0x40
 class GRaceDatabase {
   public:
+    friend class GRaceBin;
+    friend class GRaceParameters;
+
     enum ScoreFlags {
         kCompleted_ContextQuickRace = 1 << 0,
         kCompleted_ContextCareer = 1 << 1,
@@ -116,13 +123,45 @@ class GRaceDatabase {
         kUnlocked_Online = 1 << 4,
     };
 
+    GRaceDatabase();
+
     static void Init();
 
     GRaceCustom *GetStartupRace();
-    void SetStartupRace(GRaceCustom *custom, Context context);
+    GRace::Context GetStartupRaceContext();
+    void SetStartupRace(GRaceCustom *custom, GRace::Context context);
     void FreeCustomRace(GRaceCustom *custom);
+    void DestroyCustomRace(GRaceCustom *custom);
     GRaceParameters *GetRaceFromHash(unsigned int hash);
+    GRaceParameters *GetRaceFromKey(unsigned int key);
+    GRaceParameters *GetRaceParameters(unsigned int index);
     GRaceCustom *AllocCustomRace(GRaceParameters *parms);
+
+    unsigned int GetBinCount();
+    GRaceBin *GetBin(unsigned int index);
+    GRaceBin *GetBinNumber(int number);
+    unsigned int GetRaceCount();
+
+    void SimulateDDayComplete();
+
+    void NotifyVaultLoaded(GVault *vault);
+    void NotifyVaultUnloading(GVault *vault);
+    unsigned int SerializeBins(unsigned char *dest);
+    unsigned int DeserializeBins(unsigned char *src);
+    GRaceParameters *GetRaceFromActivity(GActivity *activity);
+    const char *GetDDayEndRace() const {
+        return "16.2.1";
+    }
+    const char *GetNextDDayRace();
+    void UpdateRaceScore(bool raceCompleted);
+
+    bool IsCareerRaceComplete(unsigned int eventHash) {
+        return CheckRaceScoreFlags(eventHash, kCompleted_ContextCareer);
+    }
+
+    bool IsCareerRaceUnlocked(unsigned int eventHash) {
+        return CheckRaceScoreFlags(eventHash, kUnlocked_Career);
+    }
 
     static GRaceDatabase &Get() {
         return *mObj;
@@ -136,7 +175,23 @@ class GRaceDatabase {
         return GetRaceFromHash(Attrib::StringHash32(name));
     }
 
+    void ResetCareerCompleteFlag(unsigned int hash);
+
   private:
+    void BuildBinList();
+    unsigned int StoreBinList(GRaceBin *dest);
+    void RefreshBinProgress();
+    void BuildRaceList();
+    unsigned int StoreRaceList(GRaceParameters *dest);
+    bool CollectionIsRaceActivity(Attrib::Gen::gameplay &collection);
+    bool CollectionIsRaceBin(Attrib::Gen::gameplay &collection);
+    void BuildScoreList();
+    void ClearRaceScores();
+    void LoadBestScores(struct GRaceSaveInfo *scores, unsigned int count);
+    struct GRaceSaveInfo *GetScoreInfo(unsigned int hash);
+    bool CheckRaceScoreFlags(unsigned int hash, ScoreFlags flags);
+    void ClearStartupRace();
+
     unsigned int mRaceCountStatic;           // offset 0x0, size 0x4
     unsigned int mRaceCountDynamic;          // offset 0x4, size 0x4
     struct GRaceIndexData *mRaceIndex;       // offset 0x8, size 0x4
@@ -146,7 +201,7 @@ class GRaceDatabase {
     GRaceBin *mBins;                         // offset 0x24, size 0x4
     Attrib::Class *mGameplayClass;           // offset 0x28, size 0x4
     struct GRaceCustom *mStartupRace;        // offset 0x2C, size 0x4
-    Context mStartupRaceContext;             // offset 0x30, size 0x4
+    GRace::Context mStartupRaceContext;      // offset 0x30, size 0x4
     unsigned int mNumInitialUnlocks;         // offset 0x34, size 0x4
     unsigned int *mInitialUnlockHash;        // offset 0x38, size 0x4
     struct GRaceSaveInfo *mRaceScoreInfo;    // offset 0x3C, size 0x4

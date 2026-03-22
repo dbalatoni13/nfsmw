@@ -41,4 +41,12 @@ inline struct bMatrix4 *eGetZeroMatrix() {
     return &eMathZeroMatrix;
 }
 
+inline bMatrix4 *eTransposeMatrix(bMatrix4 *dest, bMatrix4 *m) {
+    bTransposeMatrix(dest, m);
+    dest->v0.w = 0.0f;
+    dest->v1.w = 0.0f;
+    dest->v2.w = 0.0f;
+    return dest;
+}
+
 #endif

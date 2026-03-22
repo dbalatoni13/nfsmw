@@ -18,6 +18,7 @@ namespace WorldConn {
 // total size: 0x10
 class Reference {
   public:
+    Reference() : mWorldID(0), mMatrix(nullptr), mVelocity(nullptr), mAcceleration(nullptr) {}
     Reference(unsigned int);
     ~Reference();
     void Set(unsigned int);
@@ -27,6 +28,18 @@ class Reference {
 
     const bMatrix4 *GetMatrix() const {
         return mMatrix;
+    }
+
+    const bVector3 *GetVelocity() const {
+        return mVelocity;
+    }
+
+    const bVector3 *GetAcceleration() const {
+        return mAcceleration;
+    }
+
+    unsigned int GetWorldID() const {
+        return mWorldID;
     }
 
   private:

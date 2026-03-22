@@ -15,6 +15,7 @@
 #include "types.h"
 
 extern class WRoadNetwork *fgRoadNetwork;
+class WRoadNav;
 
 // total size: 0x1
 class WRoadNetwork : public Debugable {
@@ -43,7 +44,9 @@ class WRoadNetwork : public Debugable {
 
     ~WRoadNetwork() {}
 
-    // void SetRaceFilterValid(bool b) {}
+    inline void SetRaceFilterValid(bool b) {
+        fValidRaceFilter = b;
+    }
 
     bool IsRaceFilterValid() {
         return fValidRaceFilter;
@@ -55,7 +58,9 @@ class WRoadNetwork : public Debugable {
 
     // const WRoadNode *GetNode(int index) {}
 
-    // const WRoad *GetRoad(int index) {}
+    const WRoad *GetRoad(int index) {
+        return &fRoads[index];
+    }
 
     // const WRoadProfile *GetProfile(int index) {}
 
@@ -67,7 +72,18 @@ class WRoadNetwork : public Debugable {
 
     // WRoad *GetRoadNonConst(int index) {}
 
-    // WRoadSegment *GetSegmentNonConst(int index) {}
+    WRoadSegment *GetSegmentNonConst(int index) {
+        return &fSegments[index];
+    }
+
+    void ResolveBarriers();
+    void ResolveShortcuts();
+
+    void ResetBarriers();
+    void ResetShortcuts();
+
+    void ResetRaceSegments();
+    void AddRaceSegments(class WRoadNav *road_nav);
 
     // unsigned int GetNumRoads() {}
 
@@ -191,6 +207,7 @@ class WRoadNav {
     bool FindPath(const UMath::Vector3 *goal_position, const UMath::Vector3 *goal_direction, char *shortcut_allowed);
     bool FindPathNow(const UMath::Vector3 *goal_position, const UMath::Vector3 *goal_direction, char *shortcut_allowed);
     bool FindingPath();
+    unsigned char FirstShortcutInPath();
     float GetPathDistanceRemaining();
     bool IsPointInCookieTrail(const UMath::Vector3 &position_3d, float margin);
     bool IsSegmentInCookieTrail(int segment_number, bool use_whole_path);
@@ -294,6 +311,30 @@ class WRoadNav {
 
     short GetSegmentInd() const {
         return fSegmentInd;
+    }
+
+    char GetNodeInd() const {
+        return fNodeInd;
+    }
+
+    unsigned short GetPathSegment(int n) {
+        return pPathSegments[n];
+    }
+
+    unsigned short *GetPathSegments() {
+        return pPathSegments;
+    }
+
+    void SetNumPathSegments(int n) {
+        nPathSegments = n;
+    }
+
+    int GetNumPathSegments() {
+        return nPathSegments;
+    }
+
+    float GetSegTime() const {
+        return fSegTime;
     }
 
     char HitDeadEnd() const {

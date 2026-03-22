@@ -149,13 +149,22 @@ class TrackStreamer {
     void ServiceGameState();
     void ServiceNonGameState();
     void SetStreamingPosition(int position_number, const bVector3 *position);
+    void PredictStreamingPosition(int position_number, const bVector3 *position, const bVector3 *velocity, const bVector3 *direction, bool following_car);
     void ClearStreamingPositions();
     void BlockUntilLoadingComplete();
+    int IsLoadingInProgress();
+    bool IsFarLoadingInProgress() {
+        return CurrentZoneFarLoad;
+    }
     void *AllocateUserMemory(int size, const char *debug_name, int offset);
     void FreeUserMemory(void *mem);
 
     void DisableZoneSwitching() {
         ZoneSwitchingDisabled = true;
+    }
+
+    void EnableZoneSwitching() {
+        ZoneSwitchingDisabled = false;
     }
 
     int IsSectionVisible(int section_number) {

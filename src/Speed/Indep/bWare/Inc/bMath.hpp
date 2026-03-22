@@ -194,6 +194,10 @@ inline float bAngToRad(unsigned short angle) {
     return ((float)angle) * 0.0000958738f;
 }
 
+inline float SignExtendAng(unsigned short angle) {
+    return static_cast<float>(static_cast<short>(angle));
+}
+
 inline float bDegToRad(float degrees) {
     return degrees * 0.017453292f;
 }
@@ -292,6 +296,10 @@ inline float bLength(const bVector2 *v) {
     return bSqrt(x * x + y * y);
 }
 
+inline float bLength(const bVector2 &v) {
+    return bLength(&v);
+}
+
 inline bVector2 bNormalize(const bVector2 &v) {
     bVector2 dest;
     bNormalize(&dest, &v);
@@ -330,14 +338,16 @@ struct ALIGN_16 bVector3 {
 
     bVector3 operator-() {}
 
-    bVector3 operator*(float f) {}
+    bVector3 operator*(float f) const;
 
-    bVector3 &operator-=(const bVector3 &v) {}
+    bVector3 &operator-=(const bVector3 &v);
 };
 
 bVector3 *bNormalize(bVector3 *dest, const bVector3 *v);
 bVector3 *bNormalize(bVector3 *dest, const bVector3 *v, float length);
 bVector3 *bScaleAdd(bVector3 *dest, const bVector3 *v1, const bVector3 *v2, float scale);
+bVector3 *bCross(bVector3 *dest, const bVector3 *v1, const bVector3 *v2);
+inline bVector3 bScale(const bVector3 &v, float scale);
 
 inline bVector3 *bFill(bVector3 *dest, float x, float y, float z) {
     dest->x = x;
@@ -424,6 +434,11 @@ inline bVector3 &bVector3::operator+=(const bVector3 &v) {
     return *this;
 }
 
+inline bVector3 &bVector3::operator-=(const bVector3 &v) {
+    bSub(this, this, &v);
+    return *this;
+}
+
 inline bVector3 bVector3::operator+(const bVector3 &v) const {
     return bAdd(*this, v);
 }
@@ -491,10 +506,18 @@ inline float bDistBetween(const bVector3 &v1, const bVector3 &v2) {
 
 inline bVector3 bScale(const bVector3 &v, float scale) {
     bVector3 dest;
+    bScale(&dest, &v, scale);
+    return dest;
+}
+
+inline bVector3 bVector3::operator*(float f) const {
+    return bScale(*this, f);
 }
 
 inline bVector3 bScale(const bVector3 &v1, const bVector3 &v2) {
     bVector3 dest;
+    bScale(&dest, &v1, &v2);
+    return dest;
 }
 
 inline bVector3 bScaleAdd(const bVector3 &v1, const bVector3 &v2, float scale) {
@@ -503,10 +526,14 @@ inline bVector3 bScaleAdd(const bVector3 &v1, const bVector3 &v2, float scale) {
 
 inline bVector3 bNormalize(const bVector3 &v) {
     bVector3 dest;
+    bNormalize(&dest, &v);
+    return dest;
 }
 
 inline bVector3 bNormalize(const bVector3 &v, float length) {
     bVector3 dest;
+    bNormalize(&dest, &v, length);
+    return dest;
 }
 
 inline bVector3 bMin(const bVector3 &v1, const bVector3 &v2) {
@@ -685,10 +712,15 @@ inline bVector4 *bScale(bVector4 *dest, const bVector4 *v, float scale) {
 }
 
 inline bVector4 *bScale(bVector4 *dest, const bVector4 *v1, const bVector4 *v2) {
-    float x;
-    float y;
-    float z;
-    float w;
+    float x = v1->x;
+    float y = v1->y;
+    float z = v1->z;
+    float w = v1->w;
+    dest->x = x * v2->x;
+    dest->y = y * v2->y;
+    dest->z = z * v2->z;
+    dest->w = w * v2->w;
+    return dest;
 }
 
 inline bVector4 *bMin(bVector4 *dest, const bVector4 *v1, const bVector4 *v2) {}
@@ -892,13 +924,21 @@ inline bMatrix4 &bMatrix4::operator=(const bMatrix4 &m) {
 // UNUSED
 inline bMatrix4 *bCopy(bMatrix4 *dest, const bMatrix4 *v, const struct bVector4 *position) {}
 
-inline bMatrix4 *bCopy(bMatrix4 *dest, const bMatrix4 *v, const struct bVector3 *position) {}
+inline bMatrix4 *bCopy(bMatrix4 *dest, const bMatrix4 *v, const struct bVector3 *position) {
+    dest->v0 = v->v0;
+    dest->v1 = v->v1;
+    dest->v2 = v->v2;
+    bCopy(&dest->v3, position, 1.0f);
+    return dest;
+}
 
 void bMulMatrix(bMatrix4 *dest, const bMatrix4 *a, const bMatrix4 *b);
+void bMulMatrix(bVector4 *dest, const bMatrix4 *a, const bVector4 *b);
 void bMulMatrix(bVector3 *dest, const bMatrix4 *a, const bVector3 *b);
 
 bMatrix4 *bTransposeMatrix(bMatrix4 *dest, const bMatrix4 *m);
 void bInvertMatrix(bMatrix4 *dest, const bMatrix4 *src);
+void bConvertFromBond(bMatrix4 &dest, const bMatrix4 &m);
 
 struct bQuaternion {
     // total size: 0x10
@@ -917,6 +957,8 @@ struct bQuaternion {
     }
 
     bQuaternion &Slerp(bQuaternion &r, const bQuaternion &target, float t) const;
+
+    void GetMatrix(bMatrix4 &mat) const;
 };
 
 class bBitTable {

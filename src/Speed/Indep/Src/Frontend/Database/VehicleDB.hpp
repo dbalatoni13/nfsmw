@@ -29,6 +29,10 @@ struct FECustomizationRecord {
     Physics::eCustomTuningType ActiveTuning;     // offset 0x18C, size 0x4
     int Preset;                                  // offset 0x190, size 0x4
     unsigned char Handle;                        // offset 0x194, size 0x1
+
+    bool IsPreset() const {
+        return Preset != 0;
+    }
 };
 
 // total size: 0x8
