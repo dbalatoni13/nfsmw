@@ -46,7 +46,7 @@ class Pkt_Car_Open : public Sim::Packet {
 
 class Pkt_Car_Service : public Sim::Packet {
   public:
-    void HidePart(const UCrc32 &partname) {}
+    void HidePart(const UCrc32 &partname);
 
     bool InView() const {
         return mInView;
@@ -54,6 +54,86 @@ class Pkt_Car_Service : public Sim::Packet {
 
     float DistanceToView() const {
         return mDistanceToView;
+    }
+
+    void SetFlashing(bool b) {
+        mFlashing = b;
+    }
+
+    void SetBrokenLightState(VehicleFX::ID idx, bool on) {
+        if (on) {
+            mBrokenLights |= idx;
+        } else {
+            mBrokenLights &= ~idx;
+        }
+    }
+
+    void SetLightState(VehicleFX::ID idx, bool on) {
+        if (on) {
+            mLights |= idx;
+        } else {
+            mLights &= ~idx;
+        }
+    }
+
+    void SetExtraBodyRoll(float amount) {
+        mExtraBodyRoll = amount;
+    }
+
+    void SetExtraBodyPitch(float amount) {
+        mExtraBodyPitch = amount;
+    }
+
+    void SetDamage(const DamageZone::Info &dmg) {
+        mDamageInfo = dmg;
+    }
+
+    void SetHealth(float amount) {
+        mHealth = amount;
+    }
+
+    void SetSteering(eTireIdx idx, float angle) {
+        mSteering[idx] = angle;
+    }
+
+    void SetTireBlowOut(eTireIdx idx) {
+        mBlowOuts |= 1 << idx;
+    }
+
+    void SetWheelSlip(eTireIdx idx, float slip) {
+        mTireSlip[idx] = slip;
+    }
+
+    void SetWheelSpeed(eTireIdx idx, float speed) {
+        mWheelSpeed[idx] = speed;
+    }
+
+    void SetWheelCompression(eTireIdx idx, float compression) {
+        mCompressions[idx] = compression;
+    }
+
+    void SetWheelSkid(eTireIdx idx, float skid) {
+        mTireSkid[idx] = skid;
+    }
+
+    void SetWheelOnGround(eTireIdx idx, bool b) {
+        if (b) {
+            mGroundState |= 1 << idx;
+        } else {
+            mGroundState &= ~(1 << idx);
+        }
+    }
+
+    void SetAnimatedPitch(float amount) {
+        mAnimatedCarPitch = amount;
+    }
+
+    void SetAnimatedRoll(float amount) {
+        mAnimatedCarRoll = amount;
+    }
+
+    void SetAnimatedShake(float amount) {
+        mAnimatedCarShake = amount;
     }
 
     float mCompressions[4];
@@ -100,8 +180,8 @@ const Maps *GetMaps();
 
 namespace {
 
-static float AbsFloat(float value) {
-    return value < 0.0f ? -value : value;
+static inline bool IsRight(unsigned int i) {
+    return (i & 1) != 0;
 }
 
 } // namespace
@@ -379,13 +459,13 @@ DrawCar::~DrawCar() {
 }
 
 void DrawCar::OnService(RenderConn::Pkt_Car_Service &pkt) {
-    mInView = pkt.mInView;
-    mDistanceToView = pkt.mDistanceToView;
+    mInView = pkt.InView();
+    mDistanceToView = pkt.DistanceToView();
 
     if (mRBVehicle) {
         eInvulnerablitiy invulnerability = mRBVehicle->GetInvulnerability();
         if (invulnerability > INVULNERABLE_NONE && invulnerability < INVULNERABLE_FROM_CONTROL_SWITCH) {
-            pkt.mFlashing = true;
+            pkt.SetFlashing(true);
         }
     }
 
@@ -394,95 +474,90 @@ void DrawCar::OnService(RenderConn::Pkt_Car_Service &pkt) {
         do {
             if (fx->marker != 0) {
                 if (mVehicleDamage && mVehicleDamage->IsLightDamaged(fx->id)) {
-                    pkt.mBrokenLights |= fx->id;
-                } else if (mVehicle->IsGlareOn(fx->id)) {
-                    pkt.mLights |= fx->id;
+                    pkt.SetBrokenLightState(fx->id, true);
                 } else {
-                    pkt.mLights &= ~fx->id;
+                    pkt.SetLightState(fx->id, mVehicle->IsGlareOn(fx->id));
                 }
             }
             ++fx;
         } while (fx->id != VehicleFX::LIGHT_NONE);
     }
 
-    IDynamicsEntity *dynamicsEntity = UTL::COM::QueryInterface<IDynamicsEntity>(GetOwner());
-    if (dynamicsEntity && Dynamics::Articulation::IsJoined(dynamicsEntity)) {
-        pkt.mExtraBodyRoll = 0.0f;
-        pkt.mExtraBodyPitch = 0.0f;
+    IDynamicsEntity *dynamicsEntity = nullptr;
+    if (GetOwner()->QueryInterface(&dynamicsEntity) && Dynamics::Articulation::IsJoined(dynamicsEntity)) {
+        pkt.SetExtraBodyRoll(0.0f);
+        pkt.SetExtraBodyPitch(0.0f);
     } else if (mSuspension) {
-        float renderMotion = mSuspension->GetRenderMotion();
-        pkt.mExtraBodyPitch = pkt.mExtraBodyRoll = renderMotion;
+        const float motion = mSuspension->GetRenderMotion();
+        pkt.SetExtraBodyPitch(motion);
+        pkt.SetExtraBodyRoll(motion);
     }
 
     if (mDamage) {
-        pkt.mDamageInfo = mDamage->GetZoneDamage();
-        pkt.mHealth = mDamage->GetHealth();
+        pkt.SetDamage(mDamage->GetZoneDamage());
+        pkt.SetHealth(mDamage->GetHealth());
     }
 
-    for (Parts::const_iterator iter = mParts.begin(); iter != mParts.end(); ++iter) {
-        pkt.HidePart(iter->first);
+    for (Parts::const_iterator iter = mParts.begin(); iter != mParts.end(); iter++) {
+        pkt.HidePart((*iter).first);
     }
 
     pkt.mGroundState = 0;
     pkt.mBlowOuts = 0;
     if (mSuspension) {
-        GetOwner()->GetWPos();
+        IRigidBody *irb = GetOwner()->GetRigidBody();
+        (void)irb;
 
-        for (unsigned int wheel = 0; wheel < mSuspension->GetNumWheels(); ++wheel) {
-            mSuspension->GetWheelVelocity(wheel);
-            mSuspension->GetWheelLocalPos(wheel);
-
-            float steering = mSuspension->GetWheelSteer(wheel) * 6.2831855f;
-            if (steering > 3.1415927f) {
-                steering = 3.1415927f;
-            } else if (steering < -3.1415927f) {
-                steering = -3.1415927f;
-            }
-
-            float skid = 0.0f;
-            bool onGround = false;
+        for (unsigned int i = 0; i < mSuspension->GetNumWheels(); ++i) {
+            const UMath::Vector3 &vel = mSuspension->GetWheelVelocity(i);
+            float pos_x = mSuspension->GetWheelLocalPos(i).x;
+            float steer = UMath::Clamp(ANGLE2RAD(mSuspension->GetWheelSteer(i)), -3.1415927f, 3.1415927f);
+            float compression = mSuspension->GetCompression(i) - mSuspension->GetRideHeight(i);
+            float av = mSuspension->GetWheelAngularVelocity(i);
+            float radius = mSuspension->GetWheelRadius(i);
             float slip = 0.0f;
-            float compression = mSuspension->GetCompression(wheel) - mSuspension->GetRideHeight(wheel) + mSuspension->GetWheelRadius(wheel);
-            float wheelSpeed = mSuspension->GetWheelAngularVelocity(wheel) * mSuspension->GetWheelRadius(wheel);
+            float skid = 0.0f;
+            bool onground = false;
+            eTireIdx idx;
 
-            if (mSuspension->IsWheelOnGround(wheel)) {
-                skid = AbsFloat(mSuspension->GetWheelSkid(wheel));
-                float absSlip = AbsFloat(mSuspension->GetWheelSlip(wheel));
-                float tolerated = mSuspension->GetToleratedSlip(wheel);
-                if (tolerated < absSlip) {
-                    slip = absSlip - tolerated;
+            (void)vel;
+            (void)pos_x;
+
+            compression += radius;
+            if (mSuspension->IsWheelOnGround(i)) {
+                skid = UMath::Abs(mSuspension->GetWheelSkid(i));
+                slip = UMath::Abs(mSuspension->GetWheelSlip(i));
+                float tolerance = mSuspension->GetToleratedSlip(i);
+                if (tolerance < slip) {
+                    slip -= tolerance;
+                } else {
+                    slip = 0.0f;
                 }
-                onGround = true;
+                onground = true;
             }
 
-            unsigned int packetWheel = 0;
-            if (wheel < 2) {
-                packetWheel = (wheel & 1) != 0;
-                pkt.mSteering[packetWheel] = -steering;
+            if (IsFront(i)) {
+                idx = IsRight(i) ? TIRE_FR : TIRE_FL;
+                pkt.SetSteering(idx, -steer);
             } else {
-                packetWheel = (wheel & 1) ? 2 : 3;
+                idx = IsRight(i) ? TIRE_RR : TIRE_RL;
             }
 
-            if (mSpikeDamage && mSpikeDamage->GetTireDamage(wheel) == TIRE_DAMAGE_BLOWN) {
-                pkt.mBlowOuts |= 1 << packetWheel;
+            if (mSpikeDamage && mSpikeDamage->GetTireDamage(i) == TIRE_DAMAGE_BLOWN) {
+                pkt.SetTireBlowOut(idx);
             }
 
-            pkt.mTireSlip[packetWheel] = slip;
-            pkt.mWheelSpeed[packetWheel] = wheelSpeed;
-            pkt.mCompressions[packetWheel] = compression;
-            pkt.mTireSkid[packetWheel] = skid;
-
-            if (onGround) {
-                pkt.mGroundState |= 1 << packetWheel;
-            } else {
-                pkt.mGroundState &= ~(1 << packetWheel);
-            }
+            pkt.SetWheelSlip(idx, slip);
+            pkt.SetWheelSpeed(idx, av * radius);
+            pkt.SetWheelCompression(idx, compression);
+            pkt.SetWheelSkid(idx, skid);
+            pkt.SetWheelOnGround(idx, onground);
         }
     }
 
     if (mNIS) {
-        pkt.mAnimatedCarPitch = mNIS->GetAnimPitch();
-        pkt.mAnimatedCarRoll = mNIS->GetAnimRoll();
-        pkt.mAnimatedCarShake = mNIS->GetAnimShake();
+        pkt.SetAnimatedPitch(mNIS->GetAnimPitch());
+        pkt.SetAnimatedRoll(mNIS->GetAnimRoll());
+        pkt.SetAnimatedShake(mNIS->GetAnimShake());
     }
 }
