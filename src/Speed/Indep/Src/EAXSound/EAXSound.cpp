@@ -1840,27 +1840,41 @@ void SetSoundControlState(bool on, eSNDCTLSTATE state, const char *caller) {
         unsigned int cur = g_ActiveSFXStates & sBit;
         if (cur != (g_PrevActiveSFXStates & sBit) && g_pEAXSound->GetStreamManager()) {
             if (cur != 0) {
-                if (s == 1) {
-                    if (g_pEAXSound->GetStreamManager()->GetStreamChannel(0)) {
-                        g_pEAXSound->GetStreamManager()->GetStreamChannel(0)->Pause();
-                    }
-                } else if (s == 0) {
-                    if (g_pEAXSound->GetStreamManager()->GetStreamChannel(1)) {
-                        g_pEAXSound->GetStreamManager()->GetStreamChannel(1)->Pause();
-                    }
-                } else if (s == 2 && g_pEAXSound->GetStreamManager()->GetStreamChannel(2)) {
-                    g_pEAXSound->GetStreamManager()->GetStreamChannel(2)->Pause();
+                switch (s) {
+                    case 1:
+                        if (g_pEAXSound->GetStreamManager()->GetStreamChannel(0)) {
+                            g_pEAXSound->GetStreamManager()->GetStreamChannel(0)->Pause();
+                        }
+                        break;
+                    case 0:
+                        if (g_pEAXSound->GetStreamManager()->GetStreamChannel(1)) {
+                            g_pEAXSound->GetStreamManager()->GetStreamChannel(1)->Pause();
+                        }
+                        break;
+                    case 2:
+                        if (g_pEAXSound->GetStreamManager()->GetStreamChannel(2)) {
+                            g_pEAXSound->GetStreamManager()->GetStreamChannel(2)->Pause();
+                        }
+                        break;
                 }
-            } else if (s == 1) {
-                if (g_pEAXSound->GetStreamManager()->GetStreamChannel(0)) {
-                    g_pEAXSound->GetStreamManager()->GetStreamChannel(0)->Resume();
+            } else {
+                switch (s) {
+                    case 1:
+                        if (g_pEAXSound->GetStreamManager()->GetStreamChannel(0)) {
+                            g_pEAXSound->GetStreamManager()->GetStreamChannel(0)->Resume();
+                        }
+                        break;
+                    case 0:
+                        if (g_pEAXSound->GetStreamManager()->GetStreamChannel(1)) {
+                            g_pEAXSound->GetStreamManager()->GetStreamChannel(1)->Resume();
+                        }
+                        break;
+                    case 2:
+                        if (g_pEAXSound->GetStreamManager()->GetStreamChannel(2)) {
+                            g_pEAXSound->GetStreamManager()->GetStreamChannel(2)->Resume();
+                        }
+                        break;
                 }
-            } else if (s == 0) {
-                if (g_pEAXSound->GetStreamManager()->GetStreamChannel(1)) {
-                    g_pEAXSound->GetStreamManager()->GetStreamChannel(1)->Resume();
-                }
-            } else if (s == 2 && g_pEAXSound->GetStreamManager()->GetStreamChannel(2)) {
-                g_pEAXSound->GetStreamManager()->GetStreamChannel(2)->Resume();
             }
         }
     }
