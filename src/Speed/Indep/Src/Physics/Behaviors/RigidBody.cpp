@@ -17,6 +17,14 @@
 #include <algorithm>
 #include <types.h>
 
+namespace Dynamics {
+namespace Articulation {
+
+void Resolve();
+
+} // namespace Articulation
+} // namespace Dynamics
+
 static char RBGrid_Memory[6912]; // size: 0x1B00, address: 0x8048A1A8
 
 template <>
@@ -1557,6 +1565,178 @@ void RigidBody::PushSP(void *workspace) {
 void RigidBody::PopSP() {
     mOnSP = 0;
     ScratchPtr<RigidBody::Volatile>::Pop();
+}
+
+void RigidBody::Update(const float dT) {
+    int overlapX = 0;
+    int overlapZ = 0;
+
+    for (RigidBody *body = TheRigidBodies.GetHead(); body != TheRigidBodies.EndOfList(); body = body->GetNext()) {
+        body->OnBeginFrame(dT);
+        body->UpdateGrid(overlapX, overlapZ);
+    }
+
+    for (SAPNodeAccess *nodeX = reinterpret_cast<SAPNodeAccess *>(SAP::Grid<RigidBody>::mRootX); nodeX;) {
+        SAPNodeAccess *next = nodeX->mTail;
+        const float position = nodeX->mPosition;
+        nodeX->mSort = position;
+
+        SAPNodeAccess *head = nullptr;
+        for (SAPNodeAccess *node = nodeX->mHead; node && position < node->mSort; node = node->mHead) {
+            head = node;
+        }
+
+        if (head) {
+            SAPNodeAccess *newHead = head->mHead;
+            if (*nodeX->mRoot == nodeX) {
+                *nodeX->mRoot = nodeX->mTail;
+            }
+            if (nodeX->mHead) {
+                nodeX->mHead->mTail = nodeX->mTail;
+            }
+            if (nodeX->mTail) {
+                nodeX->mTail->mHead = nodeX->mHead;
+            }
+            nodeX->mTail = head;
+            nodeX->mHead = newHead;
+            if (newHead) {
+                newHead->mTail = nodeX;
+            }
+            head->mHead = nodeX;
+            if (nodeX->mTail == *nodeX->mRoot) {
+                *nodeX->mRoot = nodeX;
+            }
+            nodeX = next;
+            continue;
+        }
+
+        SAPNodeAccess *tail = nullptr;
+        for (SAPNodeAccess *node = nodeX->mTail; node && node->mSort < position; node = node->mTail) {
+            tail = node;
+        }
+
+        if (tail) {
+            SAPNodeAccess *newTail = tail->mTail;
+            if (*nodeX->mRoot == nodeX) {
+                *nodeX->mRoot = nodeX->mTail;
+            }
+            if (nodeX->mHead) {
+                nodeX->mHead->mTail = nodeX->mTail;
+            }
+            if (nodeX->mTail) {
+                nodeX->mTail->mHead = nodeX->mHead;
+            }
+            nodeX->mHead = tail;
+            tail->mTail = nodeX;
+            if (newTail) {
+                nodeX->mTail = newTail;
+                newTail->mHead = nodeX;
+                if (nodeX->mTail == *nodeX->mRoot) {
+                    *nodeX->mRoot = nodeX;
+                }
+            } else {
+                nodeX->mTail = nullptr;
+            }
+        }
+        nodeX = next;
+    }
+
+    for (SAPNodeAccess *nodeZ = reinterpret_cast<SAPNodeAccess *>(SAP::Grid<RigidBody>::mRootZ); nodeZ;) {
+        SAPNodeAccess *next = nodeZ->mTail;
+        const float position = nodeZ->mPosition;
+        nodeZ->mSort = position;
+
+        SAPNodeAccess *head = nullptr;
+        for (SAPNodeAccess *node = nodeZ->mHead; node && position < node->mSort; node = node->mHead) {
+            head = node;
+        }
+
+        if (head) {
+            SAPNodeAccess *newHead = head->mHead;
+            if (*nodeZ->mRoot == nodeZ) {
+                *nodeZ->mRoot = nodeZ->mTail;
+            }
+            if (nodeZ->mHead) {
+                nodeZ->mHead->mTail = nodeZ->mTail;
+            }
+            if (nodeZ->mTail) {
+                nodeZ->mTail->mHead = nodeZ->mHead;
+            }
+            nodeZ->mTail = head;
+            nodeZ->mHead = newHead;
+            if (newHead) {
+                newHead->mTail = nodeZ;
+            }
+            head->mHead = nodeZ;
+            if (nodeZ->mTail == *nodeZ->mRoot) {
+                *nodeZ->mRoot = nodeZ;
+            }
+            nodeZ = next;
+            continue;
+        }
+
+        SAPNodeAccess *tail = nullptr;
+        for (SAPNodeAccess *node = nodeZ->mTail; node && node->mSort < position; node = node->mTail) {
+            tail = node;
+        }
+
+        if (tail) {
+            SAPNodeAccess *newTail = tail->mTail;
+            if (*nodeZ->mRoot == nodeZ) {
+                *nodeZ->mRoot = nodeZ->mTail;
+            }
+            if (nodeZ->mHead) {
+                nodeZ->mHead->mTail = nodeZ->mTail;
+            }
+            if (nodeZ->mTail) {
+                nodeZ->mTail->mHead = nodeZ->mHead;
+            }
+            nodeZ->mHead = tail;
+            tail->mTail = nodeZ;
+            if (newTail) {
+                nodeZ->mTail = newTail;
+                newTail->mHead = nodeZ;
+                if (nodeZ->mTail == *nodeZ->mRoot) {
+                    *nodeZ->mRoot = nodeZ;
+                }
+            } else {
+                nodeZ->mTail = nullptr;
+            }
+        }
+        nodeZ = next;
+    }
+
+    const bool useZ = overlapZ <= overlapX;
+    SAPNodeAccess *root = reinterpret_cast<SAPNodeAccess *>(useZ ? SAP::Grid<RigidBody>::mRootZ : SAP::Grid<RigidBody>::mRootX);
+    for (SAPNodeAccess *node = root; node; node = node->mTail) {
+        if (node == reinterpret_cast<SAPNodeAccess *>(node->mAxis)) {
+            SAPAxisAccess *axis = reinterpret_cast<SAPAxisAccess *>(node->mAxis);
+            RBGridAccess *grid = reinterpret_cast<RBGridAccess *>(axis->mGrid);
+            SAPAxisAccess *otherAxis = useZ ? &grid->mX : &grid->mZ;
+            const float max = otherAxis->mMax.mPosition;
+            const float min = otherAxis->mMin.mPosition;
+
+            for (SAPNodeAccess *test = node->mTail; test != &axis->mMax; test = test->mTail) {
+                if (test == reinterpret_cast<SAPNodeAccess *>(test->mAxis)) {
+                    SAPAxisAccess *testAxis = reinterpret_cast<SAPAxisAccess *>(test->mAxis);
+                    RBGridAccess *testGrid = reinterpret_cast<RBGridAccess *>(testAxis->mGrid);
+                    SAPAxisAccess *testOtherAxis = useZ ? &testGrid->mX : &testGrid->mZ;
+                    const float testMin = testOtherAxis->mMin.mPosition;
+                    const float testMax = testOtherAxis->mMax.mPosition;
+
+                    if (((min <= testMin) && (testMin <= max)) || ((min <= testMax) && (testMax <= max)) ||
+                        ((testMin < min) && (max < testMax))) {
+                        OnObjectOverlap(*grid->mOwner, *testGrid->mOwner, dT);
+                    }
+                }
+            }
+        }
+    }
+
+    for (RigidBody *body = TheRigidBodies.GetHead(); body != TheRigidBodies.EndOfList(); body = body->GetNext()) {
+        body->OnEndFrame(dT);
+    }
+    Dynamics::Articulation::Resolve();
 }
 
 void RigidBody::Damp(float amount) {
