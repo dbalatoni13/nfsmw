@@ -100,6 +100,17 @@ int ConvertVinylGroupNumberToVinylType(int vinyl_group_number);
 int CarInfo_GetMaxCompositingBufferSize();
 extern int CarLoaderMemoryPoolNumber;
 int CompositeSkin(RideInfo *ride_info);
+int LoadedCar_GetModelHashes(LoadedCar *loaded_car, unsigned int *name_hashes, int max_hashes)
+    asm("GetModelHashes__9LoadedCarPUii");
+int CarLoader_LoadSkinLayers(CarLoader *car_loader, unsigned int *name_hashes, int max_hashes,
+                             LoadedSkinLayer **loaded_skin_layers, int max_layers)
+    asm("LoadSkinLayers__9CarLoaderPUiiPP15LoadedSkinLayeri");
+void LoadedCarCallbackBridge(void *param) asm("LoadedCarCallbackBridge__9CarLoaderUi");
+void LoadedWheelModelsCallbackBridge(void *param) asm("LoadedWheelModelsCallbackBridge__9CarLoaderUi");
+void LoadedWheelTexturesCallbackBridge(void *param) asm("LoadedWheelTexturesCallbackBridge__9CarLoaderUi");
+void eLoadStreamingSolid(unsigned int *name_hash_table, int num_hashes, void (*callback)(void *), void *param0, int memory_pool_num);
+void eLoadStreamingTexture(unsigned int *name_hash_table, int num_hashes, void (*callback)(void *), void *param0,
+                           int memory_pool_num);
 
 LoadedWheel::LoadedWheel(RideInfo *ride_info, bool in_fe) {
     RideInfoLayout *ride_layout = reinterpret_cast<RideInfoLayout *>(ride_info);
@@ -412,6 +423,114 @@ int LoaderCarInfo(bChunk *chunk) {
         database->NumBytes += chunk->GetSize();
     }
 
+    return 1;
+}
+
+int CarLoader::LoadCar(LoadedCar *loaded_car) {
+    if (CarTypeInfoArray[loaded_car->Type].UsageType == 2) {
+        loaded_car->LoadState = CARLOADSTATE_LOADED;
+        return 0;
+    }
+
+    {
+        unsigned int name_hashes[800];
+        int num_hashes = LoadedCar_GetModelHashes(loaded_car, name_hashes, 800);
+
+        do {
+            if (StreamingSolidPackLoader.TestLoadStreamingEntry(name_hashes, num_hashes, CarLoaderMemoryPoolNumber, true) == 0) {
+                break;
+            }
+        } while (this->RemoveSomethingFromCarMemoryPool(true) != 0);
+
+        loaded_car->LoadState = CARLOADSTATE_LOADING;
+        this->LoadingInProgress = 1;
+        eLoadStreamingSolid(name_hashes, num_hashes, LoadedCarCallbackBridge, loaded_car, CarLoaderMemoryPoolNumber);
+    }
+
+    return 1;
+}
+
+int CarLoader::LoadAllWheelModels() {
+    unsigned int name_hashes[128];
+    int num_hashes = 0;
+
+    for (LoadedRideInfo *loaded_ride_info = this->LoadedRideInfoList.GetHead();
+         loaded_ride_info != this->LoadedRideInfoList.EndOfList(); loaded_ride_info = loaded_ride_info->GetNext()) {
+        if (loaded_ride_info->NumInstances != 0 && loaded_ride_info->pLoadedWheel != 0 &&
+            loaded_ride_info->pLoadedWheel->LoadState == CARLOADSTATE_QUEUED) {
+            LoadedWheel *loaded_wheel = loaded_ride_info->pLoadedWheel;
+
+            loaded_wheel->LoadState = CARLOADSTATE_LOADING;
+            loaded_ride_info->LoadState = CARLOADSTATE_LOADING;
+
+            for (int model = 0; model < 1; model++) {
+                for (int lod = loaded_wheel->mMinLodLevel; lod <= loaded_wheel->mMaxLodLevel; lod++) {
+                    unsigned int model_name_hash = loaded_wheel->ModelNameHashes[lod][model];
+
+                    if (model_name_hash != 0) {
+                        name_hashes[num_hashes] = model_name_hash;
+                        num_hashes++;
+                    }
+                }
+            }
+        }
+    }
+
+    if (num_hashes < 1) {
+        return 0;
+    }
+
+    do {
+        if (StreamingSolidPackLoader.TestLoadStreamingEntry(name_hashes, num_hashes, CarLoaderMemoryPoolNumber, true) == 0) {
+            break;
+        }
+    } while (this->RemoveSomethingFromCarMemoryPool(true) != 0);
+
+    this->LoadingInProgress = 1;
+    eLoadStreamingSolid(name_hashes, num_hashes, LoadedWheelModelsCallbackBridge, 0, CarLoaderMemoryPoolNumber);
+    return 1;
+}
+
+int CarLoader::LoadAllWheelTextures() {
+    unsigned int name_hashes[128];
+    int num_hashes = 0;
+
+    for (LoadedRideInfo *loaded_ride_info = this->LoadedRideInfoList.GetHead();
+         loaded_ride_info != this->LoadedRideInfoList.EndOfList(); loaded_ride_info = loaded_ride_info->GetNext()) {
+        if (loaded_ride_info->NumInstances != 0) {
+            LoadedWheel *loaded_wheel = loaded_ride_info->pLoadedWheel;
+
+            if (loaded_wheel->LoadStateSkinPerm == CARLOADSTATE_QUEUED) {
+                int loaded_hashes = CarLoader_LoadSkinLayers(this, &name_hashes[num_hashes], 0x80 - num_hashes,
+                                                             loaded_wheel->LoadedSkinLayersPerm, 4);
+
+                if (loaded_hashes == 0) {
+                    loaded_wheel->LoadStateSkinPerm = CARLOADSTATE_LOADED;
+                } else {
+                    loaded_wheel->LoadStateSkinPerm = CARLOADSTATE_LOADING;
+                }
+                loaded_ride_info->LoadState = CARLOADSTATE_LOADING;
+                num_hashes += loaded_hashes;
+            }
+
+            if (loaded_wheel->LoadStateSkinTemp == CARLOADSTATE_QUEUED) {
+                loaded_wheel->LoadStateSkinTemp = CARLOADSTATE_LOADED;
+            }
+        }
+    }
+
+    if (num_hashes < 1) {
+        return 0;
+    }
+
+    do {
+        if (StreamingTexturePackLoader.TestLoadStreamingEntry(name_hashes, num_hashes, CarLoaderMemoryPoolNumber, true) == 0) {
+            break;
+        }
+    } while (this->RemoveSomethingFromCarMemoryPool(true) != 0);
+
+    this->LoadingInProgress = 1;
+    eLoadStreamingTexture(name_hashes, num_hashes, LoadedWheelTexturesCallbackBridge, 0, CarLoaderMemoryPoolNumber);
     return 1;
 }
 

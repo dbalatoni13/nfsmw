@@ -136,6 +136,9 @@ class CarLoader {
 
   private:
     void CompositeSkin(LoadedSkin *loaded_skin);
+    int LoadCar(LoadedCar *loaded_car);
+    int LoadAllWheelModels();
+    int LoadAllWheelTextures();
     int RemoveSomethingFromCarMemoryPool(bool force_unload);
     void DefragmentPool();
 
