@@ -219,17 +219,247 @@ RBGrid *RBGrid::Add(unsigned int index, RigidBody &owner, const UMath::Vector3 &
     const float minZ = position.z - radius;
     const float maxZ = position.z + radius;
 
-    grid->mX.mGrid = grid;
-    InitGridNode(grid->mX.mMin, &grid->mX, &rootX, minX);
-    InsertGridNode(rootX, &grid->mX.mMin);
-    InitGridNode(grid->mX.mMax, &grid->mX, &rootX, maxX);
-    InsertGridNode(rootX, &grid->mX.mMax);
+    grid->mX.mMin.mHead = nullptr;
+    grid->mX.mMin.mTail = nullptr;
+    grid->mX.mMin.mPosition = minX;
+    grid->mX.mMin.mSort = minX;
+    grid->mX.mMin.mAxis = &grid->mX;
+    grid->mX.mMin.mRoot = &rootX;
 
+    SAPNodeAccess *tail = rootX;
+    if (!tail) {
+        rootX = &grid->mX.mMin;
+    } else {
+        bool before = minX < tail->mPosition;
+        bool equal = tail->mPosition == minX;
+        SAPNodeAccess *head = nullptr;
+        SAPNodeAccess *node = rootX;
+        while (!(before || equal) && (tail = node->mTail, head = node, tail)) {
+            before = grid->mX.mMin.mPosition < tail->mPosition;
+            equal = tail->mPosition == grid->mX.mMin.mPosition;
+            node = tail;
+        }
+        if (!head) {
+            SAPNodeAccess *oldHead = rootX;
+            if (rootX == &grid->mX.mMin) {
+                rootX = grid->mX.mMin.mTail;
+            }
+            if (grid->mX.mMin.mHead) {
+                grid->mX.mMin.mHead->mTail = grid->mX.mMin.mTail;
+            }
+            if (grid->mX.mMin.mTail) {
+                grid->mX.mMin.mTail->mHead = grid->mX.mMin.mHead;
+            }
+            grid->mX.mMin.mHead = oldHead;
+            grid->mX.mMin.mTail = nullptr;
+            if (oldHead) {
+                oldHead->mTail = &grid->mX.mMin;
+            }
+        } else {
+            SAPNodeAccess *newTail = head->mTail;
+            if (rootX == &grid->mX.mMin) {
+                rootX = grid->mX.mMin.mTail;
+            }
+            if (grid->mX.mMin.mHead) {
+                grid->mX.mMin.mHead->mTail = grid->mX.mMin.mTail;
+            }
+            if (grid->mX.mMin.mTail) {
+                grid->mX.mMin.mTail->mHead = grid->mX.mMin.mHead;
+            }
+            grid->mX.mMin.mHead = head;
+            grid->mX.mMin.mTail = nullptr;
+            head->mTail = &grid->mX.mMin;
+            if (newTail) {
+                grid->mX.mMin.mTail = newTail;
+                newTail->mHead = &grid->mX.mMin;
+                if (grid->mX.mMin.mTail == rootX) {
+                    rootX = &grid->mX.mMin;
+                }
+            }
+        }
+    }
+
+    grid->mX.mMax.mHead = nullptr;
+    grid->mX.mMax.mTail = nullptr;
+    grid->mX.mMax.mPosition = maxX;
+    grid->mX.mMax.mSort = maxX;
+    grid->mX.mMax.mAxis = &grid->mX;
+    grid->mX.mMax.mRoot = &rootX;
+    grid->mX.mGrid = grid;
+
+    tail = rootX;
+    if (!tail) {
+        rootX = &grid->mX.mMax;
+    } else {
+        bool before = maxX < tail->mPosition;
+        bool equal = tail->mPosition == maxX;
+        SAPNodeAccess *head = nullptr;
+        SAPNodeAccess *node = rootX;
+        while (!(before || equal) && (tail = node->mTail, head = node, tail)) {
+            before = grid->mX.mMax.mPosition < tail->mPosition;
+            equal = tail->mPosition == grid->mX.mMax.mPosition;
+            node = tail;
+        }
+        if (!head) {
+            SAPNodeAccess *oldHead = rootX;
+            if (rootX == &grid->mX.mMax) {
+                rootX = grid->mX.mMax.mTail;
+            }
+            if (grid->mX.mMax.mHead) {
+                grid->mX.mMax.mHead->mTail = grid->mX.mMax.mTail;
+            }
+            if (grid->mX.mMax.mTail) {
+                grid->mX.mMax.mTail->mHead = grid->mX.mMax.mHead;
+            }
+            grid->mX.mMax.mHead = oldHead;
+            grid->mX.mMax.mTail = nullptr;
+            if (oldHead) {
+                oldHead->mTail = &grid->mX.mMax;
+            }
+        } else {
+            SAPNodeAccess *newTail = head->mTail;
+            if (rootX == &grid->mX.mMax) {
+                rootX = grid->mX.mMax.mTail;
+            }
+            if (grid->mX.mMax.mHead) {
+                grid->mX.mMax.mHead->mTail = grid->mX.mMax.mTail;
+            }
+            if (grid->mX.mMax.mTail) {
+                grid->mX.mMax.mTail->mHead = grid->mX.mMax.mHead;
+            }
+            grid->mX.mMax.mHead = head;
+            grid->mX.mMax.mTail = nullptr;
+            head->mTail = &grid->mX.mMax;
+            if (newTail) {
+                grid->mX.mMax.mTail = newTail;
+                newTail->mHead = &grid->mX.mMax;
+                if (grid->mX.mMax.mTail == rootX) {
+                    rootX = &grid->mX.mMax;
+                }
+            }
+        }
+    }
+
+    grid->mZ.mMin.mHead = nullptr;
+    grid->mZ.mMin.mTail = nullptr;
+    grid->mZ.mMin.mPosition = minZ;
+    grid->mZ.mMin.mSort = minZ;
+    grid->mZ.mMin.mAxis = &grid->mZ;
+    grid->mZ.mMin.mRoot = &rootZ;
+
+    tail = rootZ;
+    if (!tail) {
+        rootZ = &grid->mZ.mMin;
+    } else {
+        bool before = minZ < tail->mPosition;
+        bool equal = tail->mPosition == minZ;
+        SAPNodeAccess *head = nullptr;
+        SAPNodeAccess *node = rootZ;
+        while (!(before || equal) && (tail = node->mTail, head = node, tail)) {
+            before = grid->mZ.mMin.mPosition < tail->mPosition;
+            equal = tail->mPosition == grid->mZ.mMin.mPosition;
+            node = tail;
+        }
+        if (!head) {
+            SAPNodeAccess *oldHead = rootZ;
+            if (rootZ == &grid->mZ.mMin) {
+                rootZ = grid->mZ.mMin.mTail;
+            }
+            if (grid->mZ.mMin.mHead) {
+                grid->mZ.mMin.mHead->mTail = grid->mZ.mMin.mTail;
+            }
+            if (grid->mZ.mMin.mTail) {
+                grid->mZ.mMin.mTail->mHead = grid->mZ.mMin.mHead;
+            }
+            grid->mZ.mMin.mHead = oldHead;
+            grid->mZ.mMin.mTail = nullptr;
+            if (oldHead) {
+                oldHead->mTail = &grid->mZ.mMin;
+            }
+        } else {
+            SAPNodeAccess *newTail = head->mTail;
+            if (rootZ == &grid->mZ.mMin) {
+                rootZ = grid->mZ.mMin.mTail;
+            }
+            if (grid->mZ.mMin.mHead) {
+                grid->mZ.mMin.mHead->mTail = grid->mZ.mMin.mTail;
+            }
+            if (grid->mZ.mMin.mTail) {
+                grid->mZ.mMin.mTail->mHead = grid->mZ.mMin.mHead;
+            }
+            grid->mZ.mMin.mHead = head;
+            grid->mZ.mMin.mTail = nullptr;
+            head->mTail = &grid->mZ.mMin;
+            if (newTail) {
+                grid->mZ.mMin.mTail = newTail;
+                newTail->mHead = &grid->mZ.mMin;
+                if (grid->mZ.mMin.mTail == rootZ) {
+                    rootZ = &grid->mZ.mMin;
+                }
+            }
+        }
+    }
+
+    grid->mZ.mMax.mHead = nullptr;
+    grid->mZ.mMax.mTail = nullptr;
+    grid->mZ.mMax.mPosition = maxZ;
+    grid->mZ.mMax.mSort = maxZ;
+    grid->mZ.mMax.mAxis = &grid->mZ;
+    grid->mZ.mMax.mRoot = &rootZ;
     grid->mZ.mGrid = grid;
-    InitGridNode(grid->mZ.mMin, &grid->mZ, &rootZ, minZ);
-    InsertGridNode(rootZ, &grid->mZ.mMin);
-    InitGridNode(grid->mZ.mMax, &grid->mZ, &rootZ, maxZ);
-    InsertGridNode(rootZ, &grid->mZ.mMax);
+
+    tail = rootZ;
+    if (!tail) {
+        rootZ = &grid->mZ.mMax;
+    } else {
+        bool before = maxZ < tail->mPosition;
+        bool equal = tail->mPosition == maxZ;
+        SAPNodeAccess *head = nullptr;
+        SAPNodeAccess *node = rootZ;
+        while (!(before || equal) && (tail = node->mTail, head = node, tail)) {
+            before = grid->mZ.mMax.mPosition < tail->mPosition;
+            equal = tail->mPosition == grid->mZ.mMax.mPosition;
+            node = tail;
+        }
+        if (!head) {
+            SAPNodeAccess *oldHead = rootZ;
+            if (rootZ == &grid->mZ.mMax) {
+                rootZ = grid->mZ.mMax.mTail;
+            }
+            if (grid->mZ.mMax.mHead) {
+                grid->mZ.mMax.mHead->mTail = grid->mZ.mMax.mTail;
+            }
+            if (grid->mZ.mMax.mTail) {
+                grid->mZ.mMax.mTail->mHead = grid->mZ.mMax.mHead;
+            }
+            grid->mZ.mMax.mHead = oldHead;
+            grid->mZ.mMax.mTail = nullptr;
+            if (oldHead) {
+                oldHead->mTail = &grid->mZ.mMax;
+            }
+        } else {
+            SAPNodeAccess *newTail = head->mTail;
+            if (rootZ == &grid->mZ.mMax) {
+                rootZ = grid->mZ.mMax.mTail;
+            }
+            if (grid->mZ.mMax.mHead) {
+                grid->mZ.mMax.mHead->mTail = grid->mZ.mMax.mTail;
+            }
+            if (grid->mZ.mMax.mTail) {
+                grid->mZ.mMax.mTail->mHead = grid->mZ.mMax.mHead;
+            }
+            grid->mZ.mMax.mHead = head;
+            grid->mZ.mMax.mTail = nullptr;
+            head->mTail = &grid->mZ.mMax;
+            if (newTail) {
+                grid->mZ.mMax.mTail = newTail;
+                newTail->mHead = &grid->mZ.mMax;
+                if (grid->mZ.mMax.mTail == rootZ) {
+                    rootZ = &grid->mZ.mMax;
+                }
+            }
+        }
+    }
 
     grid->mOwner = &owner;
     return reinterpret_cast<RBGrid *>(grid);
