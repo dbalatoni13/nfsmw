@@ -536,6 +536,11 @@ TU: <translation-unit-name> | Function: <FunctionName>
 TU: zTrack | Function: TrackStreamer::GetLoadingPriority
 If GC DWARF shows `bVector2::operator*`, `bScale`, and the default `bVector2()` inlines ahead of a predict-position add, keep the source's identity multiply instead of "simplifying" it away. In `TrackStreamer::GetLoadingPriority`, adding the missing `bLength(const bVector2&)` wrapper to `bMath.hpp`, calling that wrapper, and writing `position_entry->Position + position_entry->Velocity * 1.0f` recovered the expected `operator*`/temporary chain and gave a large objdiff + DWARF improvement.
 
+### CombinedPhaseConditionsPreserveFallbackCompare
+
+TU: zTrack | Function: TrackStreamer::ChooseSectionToJettison
+When assembly shows a phase compare, then a helper/status subcondition, then a second phase compare on failure, prefer combined conditions like `if (phase == A && condA) ... else if (phase == B && condB) ...` over nested `if (phase == A) { if (condA) ... } else if (phase == B) { ... }`. In `ChooseSectionToJettison`, rewriting the texture/geometry jettison tests into combined `else if` conditions preserved the fallback compare against the second phase and turned a `90.4%` function into full `match+`.
+
 ### ExplicitInlineSpecialMembersForSTLElements
 
 TU: zAttribSys | Function: \_STL::\_Rb_tree<Attrib::TypeDesc, ...>::\_M_insert
