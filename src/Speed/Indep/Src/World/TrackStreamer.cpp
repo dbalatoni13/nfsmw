@@ -1703,7 +1703,7 @@ void TrackStreamer::LoadSection(TrackStreamingSection *section) {
                       reinterpret_cast<int>(section), 0);
     } else {
         QueuedFileParams params;
-        params.BlockSize = 0x7fffffff;
+        params.BlockSize = 0x7ffffff;
         params.Priority = QueuedFileDefaultPriority;
         params.Compressed = false;
         params.Compressed = true;
