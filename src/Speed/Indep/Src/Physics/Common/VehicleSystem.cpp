@@ -3,6 +3,7 @@
 #include "Speed/Indep/Src/Main/stubs.h"
 #include "Speed/Indep/Src/Physics/Behaviors/ResetCar.h"
 #include "Speed/Indep/Src/Physics/Behaviors/SimpleRigidBody.h"
+#include "Speed/Indep/Src/Physics/Behaviors/SpikeStrip.h"
 #include "Speed/Indep/Src/Sim/SimSubSystem.h"
 
 class SuspensionRacer {
@@ -81,12 +82,6 @@ class SoundHeli {
   public:
     static Behavior *Construct(const BehaviorParams &params);
 };
-class SpikeStrip {
-  public:
-    static Behavior *Construct(const BehaviorParams &params);
-};
-
-
 namespace VehicleSystem {
 
 float ENABLE_ROLL_STOPS_THRESHOLD = 0.2f;

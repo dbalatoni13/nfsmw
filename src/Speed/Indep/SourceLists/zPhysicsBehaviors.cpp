@@ -50,6 +50,8 @@
 
 #include "Speed/Indep/Src/Physics/Behaviors/ResetCar.cpp"
 
+#include "Speed/Indep/Src/Physics/Behaviors/SpikeStrip.cpp"
+
 #include "Speed/Indep/Src/Physics/Behaviors/SoundHeli.cpp"
 
 #include "Speed/Indep/Src/Physics/Behaviors/SoundCar.cpp"
