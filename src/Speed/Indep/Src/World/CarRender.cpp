@@ -56,6 +56,8 @@ SlotPool *CarEmitterPositionSlotPool = nullptr;
 const int MAX_CAR_PART_MODELS = 250;
 SlotPool *CarPartModelPool = nullptr;
 
+void GetUsedCarTextureInfo(UsedCarTextureInfo *used_texture_info, RideInfo *ride_info, int front_end_only);
+
 namespace {
 
 void Render(eViewPlatInterface *view, eModel *model, bMatrix4 *local_to_world, eLightContext *light_context, unsigned int flags,
@@ -68,6 +70,41 @@ template <typename T> struct bSNodeLayout {
 template <typename T> struct bSListLayout {
     T *Head;
     T *Tail;
+};
+
+struct CarRenderUsedCarTextureInfoLayout {
+    unsigned int TexturesToLoadPerm[87];
+    unsigned int TexturesToLoadTemp[87];
+    int NumTexturesToLoadPerm;
+    int NumTexturesToLoadTemp;
+    unsigned int MappedSkinHash;
+    unsigned int MappedSkinBHash;
+    unsigned int MappedGlobalHash;
+    unsigned int MappedWheelHash;
+    unsigned int MappedSpinnerHash;
+    unsigned int MappedBadging;
+    unsigned int MappedSpoilerHash;
+    unsigned int MappedRoofScoopHash;
+    unsigned int MappedDashSkinHash;
+    unsigned int MappedLightHash[11];
+    unsigned int MappedTireHash;
+    unsigned int MappedRimHash;
+    unsigned int MappedRimBlurHash;
+    unsigned int MappedLicensePlateHash;
+    unsigned int ReplaceSkinHash;
+    unsigned int ReplaceSkinBHash;
+    unsigned int ReplaceGlobalHash;
+    unsigned int ReplaceWheelHash;
+    unsigned int ReplaceSpinnerHash;
+    unsigned int ReplaceSpoilerHash;
+    unsigned int ReplaceRoofScoopHash;
+    unsigned int ReplaceDashSkinHash;
+    unsigned int ReplaceHeadlightHash[3];
+    unsigned int ReplaceHeadlightGlassHash[3];
+    unsigned int ReplaceBrakelightHash[3];
+    unsigned int ReplaceBrakelightGlassHash[3];
+    unsigned int ReplaceReverselightHash[3];
+    unsigned int ShadowHash;
 };
 
 template <typename T> void InitSList(bSList<T> &list) {
@@ -668,4 +705,39 @@ int CarRenderInfo::GetEmitterPositions(bSList<CarEmitterPosition> &markers_out, 
     }
 
     return count;
+}
+
+void CarRenderInfo::UpdateCarReplacementTextures() {
+    CarRenderUsedCarTextureInfoLayout *used_texture_info =
+        reinterpret_cast<CarRenderUsedCarTextureInfoLayout *>(&this->mUsedTextureInfos);
+
+    bMemCpy(this->CarbonReplacementTextureTable, this->MasterReplacementTextureTable, sizeof(this->CarbonReplacementTextureTable));
+
+    this->CarbonReplacementTextureTable[REPLACETEX_CARSKIN].SetNewNameHash(bStringHash("CARBONFIBRE"));
+    this->CarbonReplacementTextureTable[REPLACETEX_CARSKINB].SetNewNameHash(used_texture_info->ReplaceGlobalHash);
+    this->CarbonReplacementTextureTable[REPLACETEX_GLOBALSKIN].SetNewNameHash(used_texture_info->ReplaceGlobalHash);
+    this->CarbonReplacementTextureTable[REPLACETEX_CARBONSKIN].SetNewNameHash(bStringHash("CARBONFIBRE"));
+    this->CarbonReplacementTextureTable[REPLACETEX_GLOBALCARBONSKIN].SetNewNameHash(bStringHash("CARBONFIBRE"));
+}
+
+void CarRenderInfo::SwitchSkin(RideInfo *ride_info) {
+    CarRenderUsedCarTextureInfoLayout *used_texture_info =
+        reinterpret_cast<CarRenderUsedCarTextureInfoLayout *>(&this->mUsedTextureInfos);
+
+    this->pRideInfo = ride_info;
+    GetUsedCarTextureInfo(&this->mUsedTextureInfos, ride_info, 0);
+
+    this->MasterReplacementTextureTable[REPLACETEX_CARSKIN].SetNewNameHash(used_texture_info->ReplaceSkinHash);
+    this->MasterReplacementTextureTable[REPLACETEX_CARSKINB].SetNewNameHash(used_texture_info->ReplaceSkinBHash);
+    this->MasterReplacementTextureTable[REPLACETEX_WHEEL].SetNewNameHash(used_texture_info->ReplaceWheelHash);
+    this->MasterReplacementTextureTable[REPLACETEX_SPINNER].SetNewNameHash(used_texture_info->ReplaceSpinnerHash);
+    this->MasterReplacementTextureTable[REPLACETEX_SPOILER].SetNewNameHash(used_texture_info->ReplaceSpoilerHash);
+    this->MasterReplacementTextureTable[REPLACETEX_ROOF_SCOOP].SetNewNameHash(used_texture_info->ReplaceRoofScoopHash);
+    this->MasterReplacementTextureTable[REPLACETEX_GLOBALSKIN].SetNewNameHash(used_texture_info->ReplaceGlobalHash);
+    this->MasterReplacementTextureTable[REPLACETEX_CARBONSKIN].SetNewNameHash(used_texture_info->ReplaceGlobalHash);
+    this->MasterReplacementTextureTable[REPLACETEX_GLOBALCARBONSKIN].SetNewNameHash(used_texture_info->ReplaceGlobalHash);
+
+    this->UpdateCarReplacementTextures();
+    this->BrakeLeftReplacementTextureTable[1].SetNewNameHash(used_texture_info->ReplaceGlobalHash);
+    this->BrakeRightReplacementTextureTable[1].SetNewNameHash(used_texture_info->ReplaceGlobalHash);
 }
