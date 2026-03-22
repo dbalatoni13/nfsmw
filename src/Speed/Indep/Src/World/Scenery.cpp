@@ -51,7 +51,8 @@ struct SceneryOverrideInfo {
 };
 
 struct ModelHeirarchy {
-    struct Node {
+    class Node {
+      public:
         unsigned int mNodeName;
         unsigned int mModelHash;
         eModel *mModel;
@@ -101,9 +102,8 @@ struct SceneryGroup : public bTNode<SceneryGroup> {
 struct _type_map;
 typedef UTL::Std::map<unsigned int, ModelHeirarchy *, _type_map> ModelHeirarchyMap;
 
-struct tPrecullerInfo {
-    unsigned char VisibilityBits[0x80];
-
+class tPrecullerInfo {
+  public:
     bool IsVisible(int preculler_section_number) {
         return (VisibilityBits[preculler_section_number >> 3] & (1 << (preculler_section_number & 7))) != 0;
     }
@@ -111,6 +111,13 @@ struct tPrecullerInfo {
     bool IsNotVisible(int preculler_section_number) {
         return !IsVisible(preculler_section_number);
     }
+
+    unsigned char *GetBits() {
+        return VisibilityBits;
+    }
+
+  private:
+    unsigned char VisibilityBits[0x80];
 };
 
 struct SceneryTreeNode {
@@ -600,7 +607,7 @@ void ScenerySectionHeader::DrawAScenery(int scenery_instance_number, SceneryCull
     if (preculler_section_number >= 0) {
         int byte_number = preculler_section_number >> 3;
         int bit_number = preculler_section_number & 7;
-        unsigned char visibility_bits = preculler_info->VisibilityBits[byte_number];
+        unsigned char visibility_bits = preculler_info->GetBits()[byte_number];
         int visibility_mask = 1 << bit_number;
         if ((visibility_bits & visibility_mask) != 0) {
             return;
