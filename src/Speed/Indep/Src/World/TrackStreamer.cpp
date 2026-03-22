@@ -68,7 +68,7 @@ static const float kPredictedZoneScale_TrackStreamer = 1.5f;
 static const float kPredictedZoneMaxDistance_TrackStreamer = 100.0f;
 static const float kPredictedZoneStopProjectSpeed_TrackStreamer = 178.81091f;
 static const float kPredictedZoneEqualEpsilon_TrackStreamer = 0.001f;
-static unsigned int last_jettison_print_26154 = 0;
+static int last_jettison_print = 0;
 static VisibleSectionBitTable CurrentVisibleSectionTableMem;
 TrackStreamer TheTrackStreamer;
 bChunkLoader bChunkLoaderTrackStreamingSection(0x34110, LoaderTrackStreamer, UnloaderTrackStreamer);
@@ -1701,28 +1701,29 @@ void TrackStreamer::SectionLoadedCallback(TrackStreamingSection *section) {
 TrackStreamingSection *TrackStreamer::ChooseSectionToJettison() {
     TrackStreamingSection *best_section = 0;
     int best_discard_priority = 0;
+    bool print_jettison_this_frame = false;
 
-    last_jettison_print_26154 = RealLoopCounter;
+    last_jettison_print = RealLoopCounter;
     for (int i = 0; i < NumCurrentStreamingSections; i++) {
-        TrackStreamingSection *section = CurrentStreamingSections[i];
-        short section_number = section->SectionNumber;
         int discard_priority = 0;
+        TrackStreamingSection *section = CurrentStreamingSections[i];
 
-        if (IsTextureSection(section_number) || IsLibrarySection(section_number)) {
+        if (IsTextureSection(section->SectionNumber) || IsLibrarySection(section->SectionNumber)) {
             discard_priority = 2;
-            if (section_number == GetScenerySectionNumber('Y', 0) || section_number == GetScenerySectionNumber('W', 0) ||
-                section_number == GetScenerySectionNumber('X', 0)) {
+            if (section->SectionNumber == GetScenerySectionNumber('Y', 0) ||
+                section->SectionNumber == GetScenerySectionNumber('W', 0) ||
+                section->SectionNumber == GetScenerySectionNumber('X', 0)) {
                 discard_priority = 1;
             } else if (LoadingPhase == ALLOCATING_TEXTURE_SECTIONS) {
-                if (IsTextureSection(section_number) && section->Status == TrackStreamingSection::ACTIVATED && !SplitScreen) {
+                if (IsTextureSection(section->SectionNumber) && section->Status == TrackStreamingSection::ACTIVATED && !SplitScreen) {
                     discard_priority = 10000;
                 }
             } else if (LoadingPhase == ALLOCATING_GEOMETRY_SECTIONS) {
-                if (IsLibrarySection(section_number) && section->Status == TrackStreamingSection::ACTIVATED && !SplitScreen) {
+                if (IsLibrarySection(section->SectionNumber) && section->Status == TrackStreamingSection::ACTIVATED && !SplitScreen) {
                     discard_priority = 10000;
                 }
             }
-        } else if (IsRegularScenerySection(section_number)) {
+        } else if (IsRegularScenerySection(section->SectionNumber)) {
             int loading_priority = GetLoadingPriority(section, &StreamingPositionEntries[0], true);
             if (SplitScreen) {
                 int loading_priority2 = GetLoadingPriority(section, &StreamingPositionEntries[1], true);
