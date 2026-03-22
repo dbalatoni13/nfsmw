@@ -73,7 +73,7 @@ class FnDeltaQ : public FnAnimMemoryMap {
   protected:
     virtual bool EvalSQTMasked(float currTime, const BoneMask *boneMask, float *sqt);
 
-    void InitBuffersAsRequired() {}
+    void InitBuffersAsRequired();
 
     DeltaQMinRange *mMinRanges;     // offset 0x10, size 0x4
     unsigned char *mBins;           // offset 0x14, size 0x4
