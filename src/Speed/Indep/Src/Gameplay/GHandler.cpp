@@ -36,38 +36,59 @@ void GHandler::NotifyBytecodeFlushed() {
 }
 
 void GHandler::Attach(lua_State *luaState) {
+    struct BlobView {
+        unsigned int mSize;
+        const void *mData;
+    };
+
     if (!mAttached) {
-        const unsigned int *bytecode = reinterpret_cast<const unsigned int *>(GetAttributePointer(0x9a4a020a, 0));
+        Attrib::Blob blob;
+        bool hasBytecode;
 
-        if (bytecode) {
-            unsigned int size = bytecode[0];
-            LZHeader *header = reinterpret_cast<LZHeader *>(bytecode[1]);
+        reinterpret_cast<BlobView &>(blob).mSize = 0;
+        reinterpret_cast<BlobView &>(blob).mData = nullptr;
+        hasBytecode = false;
 
-            if (size != 0) {
-                int result;
+        if (const Attrib::Blob *blobPtr = reinterpret_cast<const Attrib::Blob *>(GetAttributePointer(0x9a4a020a, 0))) {
+            blob = *blobPtr;
+            hasBytecode = true;
+        }
 
-                LZByteSwapHeader(header);
-                if (!LZValidHeader(header)) {
-                    result = lua_dobuffer(luaState, reinterpret_cast<const char *>(header), size, "Handler");
-                } else {
-                    unsigned char stackBuffer[0x1000];
-                    unsigned char *buffer = stackBuffer;
-                    unsigned char *allocated = nullptr;
+        if (hasBytecode && reinterpret_cast<const BlobView &>(blob).mSize != 0) {
+            int dobuffer_status;
+            unsigned char *compressedBlock =
+                reinterpret_cast<unsigned char *>(const_cast<void *>(reinterpret_cast<const BlobView &>(blob).mData));
+            LZHeader *lzHeader = reinterpret_cast<LZHeader *>(compressedBlock);
 
-                    if (header->UncompressedSize > sizeof(stackBuffer)) {
-                        allocated = new unsigned char[header->UncompressedSize];
-                        buffer = allocated;
-                    }
+            LZByteSwapHeader(lzHeader);
+            if (!LZValidHeader(lzHeader)) {
+                dobuffer_status =
+                    lua_dobuffer(luaState, reinterpret_cast<const char *>(compressedBlock), reinterpret_cast<const BlobView &>(blob).mSize, "Handler");
+            } else {
+                const unsigned int kStackBufferSize = 0x1000;
+                unsigned char stackBuffer[kStackBufferSize];
+                unsigned char *decompressionBuffer = stackBuffer;
+                unsigned char *heapBuffer = nullptr;
 
-                    LZDecompress(reinterpret_cast<uint8 *>(header), buffer);
-                    result = lua_dobuffer(luaState, reinterpret_cast<const char *>(buffer), header->UncompressedSize, "Handler");
-                    delete[] allocated;
+                if (lzHeader->UncompressedSize > kStackBufferSize) {
+                    heapBuffer = new unsigned char[lzHeader->UncompressedSize];
+                    decompressionBuffer = heapBuffer;
                 }
-                LZByteSwapHeader(header);
 
-                if (result == 0) {
-                    mAttached = true;
+                LZDecompress(reinterpret_cast<uint8 *>(lzHeader), decompressionBuffer);
+                dobuffer_status = lua_dobuffer(
+                    luaState,
+                    reinterpret_cast<const char *>(decompressionBuffer),
+                    lzHeader->UncompressedSize,
+                    "Handler");
+                if (heapBuffer) {
+                    delete[] heapBuffer;
                 }
+            }
+            LZByteSwapHeader(lzHeader);
+
+            if (dobuffer_status == 0) {
+                mAttached = true;
             }
         }
     }
