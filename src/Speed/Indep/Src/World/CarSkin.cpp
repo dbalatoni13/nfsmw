@@ -1,5 +1,6 @@
 #include "./Car.hpp"
 #include "Speed/Indep/Src/Ecstasy/Texture.hpp"
+#include "Speed/Indep/bWare/Inc/bMemory.hpp"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 
@@ -15,6 +16,12 @@ unsigned int ScaleColours(unsigned int a, unsigned int b);
 unsigned int GetBlendColour(unsigned int *colours, float *weights, int num_colours, bool max_alpha_blend);
 unsigned int RemapColour(unsigned int colour, unsigned int *remap_colours);
 char *bStrCat(char *dest, const char *source1, const char *source2);
+void initnet(unsigned char *thepic, int len, int num_colours, int sample);
+void learn();
+void unbiasnet();
+void nqGetPaletteEntry(int i, unsigned char &r, unsigned char &g, unsigned char &b, unsigned char &a);
+void inxbuild();
+int inxsearch(int b, int g, int r, int aa);
 unsigned int GetWheelTextureHash(RideInfo *ride_info);
 unsigned int GetWheelTextureMaskHash(RideInfo *ride_info);
 unsigned int GetVinylLayerHash(RideInfo *ride_info, int layer);
@@ -212,6 +219,261 @@ int CompositeSkin32(SkinCompositeParams *composite_params) {
         }
 
         TextureInfo_UnlockImage(dest_texture, dest_image_data);
+        return 1;
+    }
+
+    return 0;
+}
+
+int CompositeSkin(SkinCompositeParams *composite_params) {
+    struct SemiTransPixel {
+        short x;
+        short y;
+    };
+
+    TextureInfo *dest_texture = composite_params->DestTexture;
+    unsigned int base_colour = composite_params->BaseColour;
+    int num_layers = composite_params->NumLayers;
+
+    if (dest_texture == 0) {
+        return 0;
+    }
+
+    if (dest_texture->ImageCompressionType == TEXCOMP_8BIT) {
+        unsigned char *dest_image_data = static_cast<unsigned char *>(TextureInfo_LockImage(dest_texture, TEXLOCK_WRITE));
+        unsigned int *dest_palette_data = static_cast<unsigned int *>(TextureInfo_LockPalette(dest_texture, TEXLOCK_WRITE));
+        short dest_width = dest_texture->Width;
+        short dest_height = dest_texture->Height;
+        int allocation_params = (GetVirtualMemoryPoolNumber() & 0xF) | 0x40;
+        SemiTransPixel *semi_trans_pixels = static_cast<SemiTransPixel *>(bMalloc(0x30000, allocation_params));
+        unsigned int *semi_trans_colours = static_cast<unsigned int *>(bMalloc(0x30000, allocation_params));
+        unsigned char *dest_end = dest_image_data + dest_width * dest_height;
+        unsigned char *image_src[1];
+        unsigned char *mask_src[1];
+        int max_semi_trans_pixels = 0xC000;
+        int cur_semi_trans_pixel = 0;
+        int current_palette_base;
+
+        eUnSwizzle8bitPalette(dest_palette_data);
+
+        for (int i = 0; i < num_layers; i++) {
+            VinylLayerInfo *info = &composite_params->VinylLayerInfos[i];
+
+            if (info->m_LayerHash != 0) {
+                eUnSwizzle8bitPalette(info->m_LayerImagePaletteData);
+                eUnSwizzle8bitPalette(info->m_LayerMaskPaletteData);
+                image_src[i] = info->m_LayerImageData;
+                mask_src[i] = info->m_LayerMaskData;
+            }
+        }
+
+        if (swatch_offset_init == 0) {
+            unsigned int swatch_lookup_colours[4];
+            int swatch_indices[4];
+
+            swatch_lookup_colours[0] = 0xA00000F0;
+            swatch_lookup_colours[1] = 0xA000F000;
+            swatch_lookup_colours[2] = 0xA0F00000;
+            swatch_lookup_colours[3] = 0xA0F000F0;
+            swatch_indices[0] = -1;
+            swatch_indices[1] = -1;
+            swatch_indices[2] = -1;
+            swatch_indices[3] = -1;
+
+            for (int i = 0; i < 4; i++) {
+                for (int j = 0; j < 0x100; j++) {
+                    if (dest_palette_data[j] == swatch_lookup_colours[i]) {
+                        swatch_indices[i] = j;
+                        break;
+                    }
+                }
+            }
+
+            bMemSet(swatch_offset_cache, 0, sizeof(swatch_offset_cache));
+
+            for (unsigned char *dest = dest_image_data; dest < dest_end; dest++) {
+                int i = 0;
+
+                do {
+                    if (static_cast<unsigned int>(*dest) == static_cast<unsigned int>(swatch_indices[i])) {
+                        int count = swatch_offset_count[i];
+
+                        *dest = static_cast<unsigned char>(i + 1);
+                        swatch_offset_count[i] = count + 1;
+                        swatch_offset_cache[count + i * 16] = dest - dest_image_data;
+                        break;
+                    }
+
+                    i++;
+                } while (i < 4);
+
+                if (i == 4) {
+                    *dest = 0;
+                }
+            }
+
+            swatch_offset_init = 1;
+        } else {
+            bMemSet(dest_image_data, 0, dest_width * dest_height);
+        }
+
+        dest_palette_data[0] = base_colour;
+        current_palette_base = 1;
+        for (int i = 0; i < 4; i++) {
+            dest_palette_data[current_palette_base] = composite_params->SwatchColours[i];
+            current_palette_base++;
+        }
+
+        for (unsigned char *dest = dest_image_data; dest < dest_end; dest++) {
+            unsigned int dest_colour = dest_palette_data[*dest];
+
+            for (int i = 0; i < num_layers; i++) {
+                VinylLayerInfo *info = &composite_params->VinylLayerInfos[i];
+
+                if (info->m_LayerHash != 0) {
+                    unsigned int mask_colour = info->m_LayerMaskPaletteData[*mask_src[i]];
+                    unsigned int blend_value = mask_colour & 0xFF;
+                    unsigned int src_colour = info->m_LayerImagePaletteData[*image_src[i]];
+
+                    if (info->m_RemapPalette != 0 && blend_value != 0) {
+                        src_colour = RemapColour(src_colour, info->m_RemapColours);
+                    }
+
+                    if (blend_value < 0x80) {
+                        if (blend_value != 0) {
+                            unsigned int blend_colours[2];
+                            float weights[2];
+                            float blend = static_cast<float>(blend_value) / 255.0f;
+                            int next_semi_trans_pixel = cur_semi_trans_pixel + 1;
+                            int pixel_offset = dest - dest_image_data;
+
+                            if (blend > 1.0f) {
+                                blend = 1.0f;
+                            }
+
+                            weights[0] = blend;
+                            weights[1] = 1.0f - blend;
+                            blend_colours[0] = src_colour;
+                            blend_colours[1] = dest_colour;
+                            semi_trans_colours[cur_semi_trans_pixel] = GetBlendColour(blend_colours, weights, 2, false);
+                            semi_trans_pixels[cur_semi_trans_pixel].x = pixel_offset - (pixel_offset / dest_width) * dest_width;
+                            semi_trans_pixels[cur_semi_trans_pixel].y = pixel_offset / dest_width;
+
+                            if (max_semi_trans_pixels <= next_semi_trans_pixel) {
+                                next_semi_trans_pixel = cur_semi_trans_pixel;
+                            }
+
+                            *dest = 0xFF;
+                            cur_semi_trans_pixel = next_semi_trans_pixel;
+                        }
+                    } else {
+                        *dest = static_cast<unsigned char>(*image_src[i] + current_palette_base);
+                        dest_colour = src_colour;
+                    }
+
+                    image_src[i]++;
+                    mask_src[i]++;
+                }
+            }
+        }
+
+        for (int i = 0; i < num_layers; i++) {
+            VinylLayerInfo *info = &composite_params->VinylLayerInfos[i];
+
+            if (info->m_RemapPalette == 0) {
+                for (int j = 0; j < info->m_NumColours; j++) {
+                    dest_palette_data[current_palette_base + j] = info->m_LayerImagePaletteData[j];
+                }
+            } else {
+                for (int j = 0; j < info->m_NumColours; j++) {
+                    dest_palette_data[current_palette_base + j] =
+                        RemapColour(info->m_LayerImagePaletteData[j], info->m_RemapColours);
+                }
+            }
+
+            eSwizzle8bitPalette(info->m_LayerImagePaletteData);
+            eSwizzle8bitPalette(info->m_LayerMaskPaletteData);
+            current_palette_base += info->m_NumColours;
+        }
+
+        if (cur_semi_trans_pixel != 0) {
+            int remaining_palette_slots = 0xFF - current_palette_base;
+            unsigned char *quantized_colours;
+
+            if (bLargestMalloc(0) < (cur_semi_trans_pixel << 2)) {
+                cur_semi_trans_pixel = 0;
+            }
+
+            quantized_colours = static_cast<unsigned char *>(bMalloc(cur_semi_trans_pixel << 2, 0x40));
+
+            for (int i = 0; i < cur_semi_trans_pixel; i++) {
+                unsigned int colour = semi_trans_colours[i];
+
+                quantized_colours[i * 4] = static_cast<unsigned char>(colour);
+                quantized_colours[i * 4 + 3] = static_cast<unsigned char>(colour >> 24);
+                quantized_colours[i * 4 + 1] = static_cast<unsigned char>(colour >> 8);
+                quantized_colours[i * 4 + 2] = static_cast<unsigned char>(colour >> 16);
+            }
+
+            if (cur_semi_trans_pixel < remaining_palette_slots) {
+                for (int i = 0; i < cur_semi_trans_pixel; i++) {
+                    int palette_index = current_palette_base + i;
+
+                    dest_image_data[semi_trans_pixels[i].x + semi_trans_pixels[i].y * dest_width] =
+                        static_cast<unsigned char>(palette_index);
+                    dest_palette_data[palette_index] = semi_trans_colours[i];
+                }
+            } else {
+                initnet(quantized_colours, cur_semi_trans_pixel << 2, remaining_palette_slots, 0x14);
+                learn();
+                unbiasnet();
+
+                for (int i = 0; i < remaining_palette_slots; i++) {
+                    unsigned char r;
+                    unsigned char g;
+                    unsigned char b;
+                    unsigned char a;
+
+                    nqGetPaletteEntry(i, r, g, b, a);
+                    dest_palette_data[current_palette_base + i] =
+                        (static_cast<unsigned int>(a) << 24) | (static_cast<unsigned int>(b) << 16) |
+                        (static_cast<unsigned int>(g) << 8) | r;
+                }
+
+                inxbuild();
+
+                for (int i = 0; i < cur_semi_trans_pixel; i++) {
+                    int offset = semi_trans_pixels[i].x + semi_trans_pixels[i].y * dest_width;
+
+                    if (dest_image_data[offset] == 0xFF) {
+                        unsigned int colour = semi_trans_colours[i];
+                        int palette_index = inxsearch(colour & 0xFF, (colour >> 8) & 0xFF, (colour >> 16) & 0xFF,
+                                                      colour >> 24);
+
+                        if (palette_index < remaining_palette_slots) {
+                            dest_image_data[offset] = static_cast<unsigned char>(palette_index + current_palette_base);
+                        } else {
+                            dest_image_data[offset] = 0;
+                        }
+                    }
+                }
+            }
+
+            bFree(quantized_colours);
+        }
+
+        bFree(semi_trans_pixels);
+        bFree(semi_trans_colours);
+
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < swatch_offset_count[i]; j++) {
+                dest_image_data[swatch_offset_cache[j + i * 16]] = static_cast<unsigned char>(i + 1);
+            }
+        }
+
+        eSwizzle8bitPalette(dest_palette_data);
+        TextureInfo_UnlockImage(dest_texture, dest_image_data);
+        TextureInfo_UnlockPalette(dest_texture, dest_palette_data);
         return 1;
     }
 
