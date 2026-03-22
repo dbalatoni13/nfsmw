@@ -11,17 +11,33 @@ namespace EAGL4Anim {
 
 // total size: 0x18
 struct StatelessQ : public AnimMemoryMap {
-    const AttributeBlock *GetAttributeBlock() const {}
+    const AttributeBlock *GetAttributeBlock() const {
+        return mAttributeBlock;
+    }
 
-    int GetNumFrames() const {}
+    int GetNumFrames() const {
+        if (!mTimes) {
+            return mNumKeys;
+        } else {
+            return mTimes[mNumKeys - 2] + 1;
+        }
+    }
 
-    unsigned short *GetData() {}
+    unsigned short *GetData() {
+        return reinterpret_cast<unsigned short *>(&this[1]);
+    }
 
-    unsigned short *GetFrameData(unsigned short *dataBuf, int frameIdx) {}
+    unsigned short *GetFrameData(unsigned short *dataBuf, int frameIdx) {
+        return &dataBuf[frameIdx * 4 * mNumBones];
+    }
 
-    unsigned short *GetConstData(unsigned short *dataBuf) {}
+    unsigned short *GetConstData(unsigned short *dataBuf) {
+        return &dataBuf[mNumKeys * 4 * mNumBones];
+    }
 
-    unsigned char *GetConstBoneIdx() {}
+    unsigned char *GetConstBoneIdx() {
+        return &mBoneIdxs[mNumBones];
+    }
 
     static int ComputeSize(int numKeys, int numBones, int numConstBones, bool useKeyFrames) {}
 

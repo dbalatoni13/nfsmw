@@ -53,10 +53,10 @@ class FnStatelessQ : public FnAnimMemoryMap {
     unsigned char GetFPS() const;
 
     // Overrides: FnAnim
-    unsigned short GetTargetCheckSum() const override {}
+    unsigned short GetTargetCheckSum() const override;
 
     // Overrides: FnAnim
-    const AttributeBlock *GetAttributes() const override {}
+    const AttributeBlock *GetAttributes() const override;
 
   protected:
     // Overrides: FnAnim
