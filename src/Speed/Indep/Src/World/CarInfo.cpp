@@ -20,8 +20,42 @@ struct CarPart {
     unsigned int GetPartNameHash();
 };
 
+struct CarPartPackListCtor {
+    CarPartPackListCtor *Next;
+    CarPartPackListCtor *Prev;
+
+    CarPartPackListCtor()
+        : Next(this), //
+          Prev(this) {}
+};
+
+struct CarPartIndexCtor {
+    CarPart *Part;
+    int NumParts;
+
+    CarPartIndexCtor()
+        : Part(0), //
+          NumParts(0) {}
+};
+
 struct CarPartDatabase {
-    char pad[0x11C];
+    CarPartPackListCtor CarPartPackList;
+    int NumPacks;
+    int NumParts;
+    int NumBytes;
+    CarPartIndexCtor PaintPart_Gloss[3];
+    CarPartIndexCtor PaintPart_Metallic[3];
+    CarPartIndexCtor PaintPart_Pearl[3];
+    CarPartIndexCtor PaintPart_Vinyl[3];
+    CarPartIndexCtor PaintPart_Rims[3];
+    CarPartIndexCtor PaintPart_Caliper[3];
+    CarPartIndexCtor VinylPart_All[3];
+    CarPartIndexCtor VinylPart_Body[3];
+    CarPartIndexCtor VinylPart_Hood[3];
+    CarPartIndexCtor VinylPart_Side[3];
+    CarPartIndexCtor VinylPart_Manufacturer[3];
+
+    CarPartDatabase();
 };
 struct MissingCarPart {
     short CarType;
@@ -87,6 +121,8 @@ struct UsedCarTextureInfoLayout {
     unsigned int ReplaceReverselightHash[3];
     unsigned int ShadowHash;
 };
+
+CarPartDatabase::CarPartDatabase() {}
 
 unsigned int RideInfo::GetSkinNameHash() {
     if (this->IsUsingCompositeSkin() != 0) {
