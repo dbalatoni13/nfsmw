@@ -1141,6 +1141,95 @@ int CarRenderInfo::GetEmitterPositions(bSList<CarEmitterPosition> &markers_out, 
     return count;
 }
 
+void CarRenderInfo::InitEmitterPositions(bVector4 *tire_positions) {
+    if (this->pCarTypeInfo != nullptr && !this->mEmitterPositionsInitialized) {
+        for (int i = 0; i < NUM_CARFXPOS; i++) {
+            int num_pos_name_hashes = 0;
+            bSList<CarEmitterPosition> &markers = this->EmitterPositionList[i];
+
+            InitSList(markers);
+
+            if (GetNumCarEffectMarkerHashes(static_cast<CarEffectPosition>(i), num_pos_name_hashes)) {
+                if (num_pos_name_hashes > 0) {
+                    this->GetEmitterPositions(markers, GetCarEffectMarkerHashes(static_cast<CarEffectPosition>(i)), num_pos_name_hashes);
+                }
+                continue;
+            }
+
+            CarEmitterPosition *empos = nullptr;
+            switch (i) {
+                case CARFXPOS_NONE:
+                    empos = static_cast<CarEmitterPosition *>(bOMalloc(CarEmitterPositionSlotPool));
+                    empos->X = 0.0f;
+                    empos->Y = 0.0f;
+                    empos->Z = 0.0f;
+                    break;
+                case CARFXPOS_FRONT_TIRES:
+                    empos = static_cast<CarEmitterPosition *>(bOMalloc(CarEmitterPositionSlotPool));
+                    empos->X = (tire_positions[0].x + tire_positions[1].x) * 0.5f;
+                    empos->Y = (tire_positions[0].y + tire_positions[1].y) * 0.5f;
+                    empos->Z = (tire_positions[0].z + tire_positions[1].z) * 0.5f;
+                    break;
+                case CARFXPOS_REAR_TIRES:
+                    empos = static_cast<CarEmitterPosition *>(bOMalloc(CarEmitterPositionSlotPool));
+                    empos->X = (tire_positions[2].x + tire_positions[3].x) * 0.5f;
+                    empos->Y = (tire_positions[2].y + tire_positions[3].y) * 0.5f;
+                    empos->Z = (tire_positions[2].z + tire_positions[3].z) * 0.5f;
+                    break;
+                case CARFXPOS_LEFT_TIRES:
+                    empos = static_cast<CarEmitterPosition *>(bOMalloc(CarEmitterPositionSlotPool));
+                    empos->X = (tire_positions[0].x + tire_positions[3].x) * 0.5f;
+                    empos->Y = (tire_positions[0].y + tire_positions[3].y) * 0.5f;
+                    empos->Z = (tire_positions[0].z + tire_positions[3].z) * 0.5f;
+                    break;
+                case CARFXPOS_RIGHT_TIRES:
+                    empos = static_cast<CarEmitterPosition *>(bOMalloc(CarEmitterPositionSlotPool));
+                    empos->X = (tire_positions[1].x + tire_positions[2].x) * 0.5f;
+                    empos->Y = (tire_positions[1].y + tire_positions[2].y) * 0.5f;
+                    empos->Z = (tire_positions[1].z + tire_positions[2].z) * 0.5f;
+                    break;
+                case CARFXPOS_TIRE_FL:
+                    empos = static_cast<CarEmitterPosition *>(bOMalloc(CarEmitterPositionSlotPool));
+                    empos->X = tire_positions[0].x;
+                    empos->Y = tire_positions[0].y;
+                    empos->Z = tire_positions[0].z;
+                    break;
+                case CARFXPOS_TIRE_FR:
+                    empos = static_cast<CarEmitterPosition *>(bOMalloc(CarEmitterPositionSlotPool));
+                    empos->X = tire_positions[1].x;
+                    empos->Y = tire_positions[1].y;
+                    empos->Z = tire_positions[1].z;
+                    break;
+                case CARFXPOS_TIRE_RR:
+                    empos = static_cast<CarEmitterPosition *>(bOMalloc(CarEmitterPositionSlotPool));
+                    empos->X = tire_positions[2].x;
+                    empos->Y = tire_positions[2].y;
+                    empos->Z = tire_positions[2].z;
+                    break;
+                case CARFXPOS_TIRE_RL:
+                    empos = static_cast<CarEmitterPosition *>(bOMalloc(CarEmitterPositionSlotPool));
+                    empos->X = tire_positions[3].x;
+                    empos->Y = tire_positions[3].y;
+                    empos->Z = tire_positions[3].z;
+                    break;
+                case CARFXPOS_ENGINE:
+                    empos = static_cast<CarEmitterPosition *>(bOMalloc(CarEmitterPositionSlotPool));
+                    empos->X = (tire_positions[0].x + tire_positions[1].x) * 0.5f;
+                    empos->Y = (tire_positions[0].y + tire_positions[1].y) * 0.5f;
+                    empos->Z = (tire_positions[0].z + tire_positions[1].z) * 0.5f + (tire_positions[0].y - tire_positions[1].y) * 0.2f;
+                    break;
+            }
+
+            if (empos != nullptr) {
+                empos->PositionMarker = nullptr;
+                AddTailEmitterPosition(markers, empos);
+            }
+        }
+
+        this->mEmitterPositionsInitialized = true;
+    }
+}
+
 int cmpl(const void *a, const void *b) {
     const float *pa = *reinterpret_cast<const float *const *>(a);
     const float *pb = *reinterpret_cast<const float *const *>(b);
