@@ -1841,14 +1841,14 @@ void SetSoundControlState(bool on, eSNDCTLSTATE state, const char *caller) {
         if (cur != (g_PrevActiveSFXStates & sBit) && g_pEAXSound->GetStreamManager()) {
             if (cur != 0) {
                 switch (s) {
-                    case 1:
-                        if (g_pEAXSound->GetStreamManager()->GetStreamChannel(0)) {
-                            g_pEAXSound->GetStreamManager()->GetStreamChannel(0)->Pause();
-                        }
-                        break;
                     case 0:
                         if (g_pEAXSound->GetStreamManager()->GetStreamChannel(1)) {
                             g_pEAXSound->GetStreamManager()->GetStreamChannel(1)->Pause();
+                        }
+                        break;
+                    case 1:
+                        if (g_pEAXSound->GetStreamManager()->GetStreamChannel(0)) {
+                            g_pEAXSound->GetStreamManager()->GetStreamChannel(0)->Pause();
                         }
                         break;
                     case 2:
@@ -1859,14 +1859,14 @@ void SetSoundControlState(bool on, eSNDCTLSTATE state, const char *caller) {
                 }
             } else {
                 switch (s) {
-                    case 1:
-                        if (g_pEAXSound->GetStreamManager()->GetStreamChannel(0)) {
-                            g_pEAXSound->GetStreamManager()->GetStreamChannel(0)->Resume();
-                        }
-                        break;
                     case 0:
                         if (g_pEAXSound->GetStreamManager()->GetStreamChannel(1)) {
                             g_pEAXSound->GetStreamManager()->GetStreamChannel(1)->Resume();
+                        }
+                        break;
+                    case 1:
+                        if (g_pEAXSound->GetStreamManager()->GetStreamChannel(0)) {
+                            g_pEAXSound->GetStreamManager()->GetStreamChannel(0)->Resume();
                         }
                         break;
                     case 2:
