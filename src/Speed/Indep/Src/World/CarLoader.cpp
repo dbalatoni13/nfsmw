@@ -4,6 +4,9 @@
 #include "Speed/Indep/bWare/Inc/bChunk.hpp"
 #include "Speed/Indep/bWare/Inc/bMemory.hpp"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
+#include "Speed/Indep/Src/Misc/ResourceLoader.hpp"
+#include "Speed/Indep/Src/Misc/bFile.hpp"
+#include "Speed/Indep/Src/World/TrackStreamer.hpp"
 
 struct RideInfoLayout {
     CarType Type;
@@ -100,15 +103,35 @@ int ConvertVinylGroupNumberToVinylType(int vinyl_group_number);
 int CarInfo_GetMaxCompositingBufferSize();
 extern int CarLoaderMemoryPoolNumber;
 int CompositeSkin(RideInfo *ride_info);
+void TrackStreamer_FlushHibernatingSections(TrackStreamer *track_streamer) asm("FlushHibernatingSections__13TrackStreamer");
+void TrackStreamer_MakeSpaceInPool(TrackStreamer *track_streamer, int size, bool use_callback)
+    asm("MakeSpaceInPool__13TrackStreamerib");
 int LoadedCar_GetModelHashes(LoadedCar *loaded_car, unsigned int *name_hashes, int max_hashes)
     asm("GetModelHashes__9LoadedCarPUii");
+int LoadedSkin_GetTextureHashes(LoadedSkin *loaded_skin, unsigned int *name_hashes, int max_hashes, int load_perm_layers)
+    asm("GetTextureHashes__10LoadedSkinPUiii");
+int CarLoader_AllocateSkinLayers(CarLoader *car_loader, unsigned int *name_hashes, int num_hashes,
+                                 LoadedSkinLayer **loaded_skin_layers, int max_layers, const char *filename)
+    asm("AllocateSkinLayers__9CarLoaderPUiiPP15LoadedSkinLayeriPCc");
 int CarLoader_LoadSkinLayers(CarLoader *car_loader, unsigned int *name_hashes, int max_hashes,
                              LoadedSkinLayer **loaded_skin_layers, int max_layers)
     asm("LoadSkinLayers__9CarLoaderPUiiPP15LoadedSkinLayeri");
+void CarLoader_UnallocateSkinLayers(CarLoader *car_loader, LoadedSkinLayer **loaded_skin_layers, int num_layers)
+    asm("UnallocateSkinLayers__9CarLoaderPP15LoadedSkinLayeri");
+int CarLoader_MakeSpaceInCarMemoryPool(CarLoader *car_loader, int required_size, int max_allocations, bool stream_textures)
+    asm("MakeSpaceInCarMemoryPool__9CarLoaderiib");
+void CarLoader_UnloadUnallocatedRideInfos(CarLoader *car_loader, int num_ride_infos)
+    asm("UnloadUnallocatedRideInfos__9CarLoaderi");
 void LoadedCarCallbackBridge(void *param) asm("LoadedCarCallbackBridge__9CarLoaderUi");
+void LoadedSolidPackCallbackBridge(void *param) asm("LoadedSolidPackCallbackBridge__9CarLoaderUi");
 void LoadedWheelModelsCallbackBridge(void *param) asm("LoadedWheelModelsCallbackBridge__9CarLoaderUi");
 void LoadedWheelTexturesCallbackBridge(void *param) asm("LoadedWheelTexturesCallbackBridge__9CarLoaderUi");
+void LoadedAllTexturesFromPackCallbackBridge(void *param) asm("LoadedAllTexturesFromPackCallbackBridge__9CarLoaderUi");
+void bCloseMemoryPool(int pool_num);
+bool bSetMemoryPoolDebugFill(int pool_num, bool on_off);
+void bSetMemoryPoolTopDirection(int pool_num, bool top_means_larger_address);
 void eLoadStreamingSolid(unsigned int *name_hash_table, int num_hashes, void (*callback)(void *), void *param0, int memory_pool_num);
+int eLoadStreamingSolidPack(const char *filename, void (*callback_function)(void *), void *callback_param, int memory_pool_num);
 void eLoadStreamingTexture(unsigned int *name_hash_table, int num_hashes, void (*callback)(void *), void *param0,
                            int memory_pool_num);
 
@@ -426,6 +449,42 @@ int LoaderCarInfo(bChunk *chunk) {
     return 1;
 }
 
+void CarLoader::SetMemoryPoolSize(int size) {
+    if (this->MemoryPoolSize != size) {
+        if (this->MemoryPoolSize != 0) {
+            for (int i = 0; i < this->NumSpongeAllocations; i++) {
+                bFree(this->SpongeAllocations[i]);
+            }
+
+            this->NumSpongeAllocations = 0;
+            CarLoader_UnloadUnallocatedRideInfos(this, 0);
+
+            if (this->LoadedRideInfoList.GetHead() != this->LoadedRideInfoList.EndOfList()) {
+                return;
+            }
+
+            bCloseMemoryPool(CarLoaderMemoryPoolNumber);
+            bFree(this->MemoryPoolMem);
+            this->MemoryPoolSize = 0;
+            this->MemoryPoolMem = 0;
+        }
+
+        if (size != 0) {
+            TrackStreamer_FlushHibernatingSections(&TheTrackStreamer);
+            TrackStreamer_MakeSpaceInPool(&TheTrackStreamer, size, true);
+
+            this->MemoryPoolMem = bMalloc(size, 7);
+            this->MemoryPoolSize = size;
+            CarLoaderMemoryPoolNumber = bGetFreeMemoryPoolNum();
+
+            bInitMemoryPool(CarLoaderMemoryPoolNumber, this->MemoryPoolMem, this->MemoryPoolSize, "Cars");
+            bSetMemoryPoolDebugFill(CarLoaderMemoryPoolNumber, false);
+            bSetMemoryPoolTopDirection(CarLoaderMemoryPoolNumber, true);
+            this->NumSpongeAllocations = 0;
+        }
+    }
+}
+
 int CarLoader::LoadCar(LoadedCar *loaded_car) {
     if (CarTypeInfoArray[loaded_car->Type].UsageType == 2) {
         loaded_car->LoadState = CARLOADSTATE_LOADED;
@@ -532,6 +591,78 @@ int CarLoader::LoadAllWheelTextures() {
     this->LoadingInProgress = 1;
     eLoadStreamingTexture(name_hashes, num_hashes, LoadedWheelTexturesCallbackBridge, 0, CarLoaderMemoryPoolNumber);
     return 1;
+}
+
+void CarLoader::LoadSolidPack(LoadedSolidPack *loaded_solid_pack, int stream_solids) {
+    if (stream_solids == 0) {
+        loaded_solid_pack->pResourceFile = CreateResourceFile(loaded_solid_pack->Filename, RESOURCE_FILE_CAR, 0, 0, 0);
+
+        int allocation_params = 0;
+
+        if (CarLoader_MakeSpaceInCarMemoryPool(this, bFileSize(loaded_solid_pack->Filename), 0, false) != 0) {
+            allocation_params = CarLoaderMemoryPoolNumber;
+        }
+
+        loaded_solid_pack->pResourceFile->SetAllocationParams((allocation_params & 0xF) | 0x2000, loaded_solid_pack->Filename);
+        loaded_solid_pack->LoadState = CARLOADSTATE_LOADING;
+        this->LoadingInProgress = 1;
+        loaded_solid_pack->pResourceFile->BeginLoading(LoadedSolidPackCallbackBridge, loaded_solid_pack);
+    } else {
+        CarLoader_MakeSpaceInCarMemoryPool(this, 0x8000, 0, true);
+        loaded_solid_pack->LoadState = CARLOADSTATE_LOADING;
+        this->LoadingInProgress = 1;
+        eLoadStreamingSolidPack(loaded_solid_pack->Filename, LoadedSolidPackCallbackBridge, loaded_solid_pack,
+                                CarLoaderMemoryPoolNumber);
+        loaded_solid_pack->pStreamingPack = StreamingSolidPackLoader.GetLoadedStreamingPack(loaded_solid_pack->Filename);
+
+        if (loaded_solid_pack->pStreamingPack == 0) {
+            LoadedSolidPackCallbackBridge(loaded_solid_pack);
+        }
+    }
+}
+
+int CarLoader::LoadAllTexturesFromPack(const char *filename, int load_perm_layers) {
+    unsigned int allocated_name_hashes[128];
+    unsigned int name_hashes[512];
+
+    for (LoadedRideInfo *loaded_ride_info = this->LoadedRideInfoList.GetHead();
+         loaded_ride_info != this->LoadedRideInfoList.EndOfList(); loaded_ride_info = loaded_ride_info->GetNext()) {
+        if (loaded_ride_info->NumInstances > 0 && loaded_ride_info->LoadState == CARLOADSTATE_QUEUED) {
+            int num_hashes = LoadedSkin_GetTextureHashes(loaded_ride_info->pLoadedSkin, allocated_name_hashes, 0x80, load_perm_layers);
+            int allocated_skin_layers = CarLoader_AllocateSkinLayers(this, allocated_name_hashes, num_hashes,
+                                                                     &this->LoadingSkinLayers[this->NumLoadingSkinLayers],
+                                                                     0x200 - this->NumLoadingSkinLayers, filename);
+
+            this->NumLoadingSkinLayers += allocated_skin_layers;
+        }
+    }
+
+    int loaded_hashes = CarLoader_LoadSkinLayers(this, name_hashes, 0x200, this->LoadingSkinLayers, this->NumLoadingSkinLayers);
+    int memory_pool_num = CarLoaderMemoryPoolNumber;
+
+    if (loaded_hashes == 0) {
+        CarLoader_UnallocateSkinLayers(this, this->LoadingSkinLayers, this->NumLoadingSkinLayers);
+        this->NumLoadingSkinLayers = 0;
+        memory_pool_num = 0;
+    } else {
+        if (load_perm_layers != 0 || this->LoadingMode == MODE_IN_GAME) {
+            do {
+                memory_pool_num = CarLoaderMemoryPoolNumber;
+
+                if (StreamingTexturePackLoader.TestLoadStreamingEntry(name_hashes, loaded_hashes, CarLoaderMemoryPoolNumber, true) == 0) {
+                    break;
+                }
+            } while (this->RemoveSomethingFromCarMemoryPool(true) != 0);
+        } else {
+            memory_pool_num = 0;
+        }
+
+        this->LoadingInProgress = 1;
+        eLoadStreamingTexture(name_hashes, loaded_hashes, LoadedAllTexturesFromPackCallbackBridge, 0, memory_pool_num);
+        return 1;
+    }
+
+    return memory_pool_num;
 }
 
 void CarLoader::CompositeSkin(LoadedSkin *loaded_skin) {
