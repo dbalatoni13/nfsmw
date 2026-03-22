@@ -390,6 +390,8 @@ void SFXCTL_Shifting::UpdateRPM(float t) {
 }
 
 void SFXCTL_Shifting::BeginUpShift() {
+    float TotalDuration;
+
     CleanUpShiftFX();
 
     if (3000.0f <= m_pEngineCtl->m_pPhysicsCtl->GetPhysRPM()) {
@@ -415,7 +417,6 @@ void SFXCTL_Shifting::BeginUpShift() {
         m_InterpShiftVol.Initialize(0.0f, 0.0f, 1, LINEAR);
         m_InterpShiftTorque.Initialize(m_pEngineCtl->m_pPhysicsCtl->GetPhysTRQ(), 0.0f, 100, LINEAR);
 
-        float TotalDuration;
         if (m_pShiftingPatternData->Num_Up_DisengageFall() == 1) {
             TotalDuration = static_cast<float>(m_pShiftingPatternData->Up_DisengageFall(0).Time);
         } else {
@@ -424,10 +425,8 @@ void SFXCTL_Shifting::BeginUpShift() {
         }
 
         float TargetRPM = RPM_AtShift - 500.0f;
-        float EngageDuration = static_cast<float>(m_pShiftingPatternData->Up_Engage().Time);
-        m_VisualRPM.Initialize(RPM_AtShift, TargetRPM,
-                               static_cast<int>(TotalDuration + EngageDuration),
-                               EQ_PWR_SQ);
+        TotalDuration += static_cast<float>(m_pShiftingPatternData->Up_Engage().Time);
+        m_VisualRPM.Initialize(RPM_AtShift, TargetRPM, static_cast<int>(TotalDuration), EQ_PWR_SQ);
 
         *static_cast<int *>(static_cast<void *>(&m_bNeed_DisengageSnd)) = 1;
         *static_cast<int *>(static_cast<void *>(&m_bPendingNeedShiftSound)) = 1;
