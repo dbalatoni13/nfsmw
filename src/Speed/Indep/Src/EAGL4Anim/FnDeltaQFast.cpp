@@ -432,8 +432,8 @@ bool FnDeltaQFast::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask)
     }
     if (mBoneMask) {
         mBoneMask = nullptr;
-        mPrevKey = -1;
         mNextKey = -1;
+        mPrevKey = -1;
     }
 
     DeltaQFast *deltaQ = reinterpret_cast<DeltaQFast *>(mpAnim);
@@ -441,9 +441,9 @@ bool FnDeltaQFast::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask)
     unsigned char *boneIdxs = deltaQ->mBoneIdxs;
 
     if (deltaQ->mNumBones) {
-        unsigned int floorTime = static_cast<unsigned int>(currTime);
+        int floorTime = FloatToInt(currTime);
         unsigned short *times = deltaQ->mTimes;
-        unsigned int floorKey;
+        int floorKey;
         int prevKey = mPrevKey;
         unsigned int binLengthPower;
         unsigned int floorDeltaIdx;
@@ -451,16 +451,16 @@ bool FnDeltaQFast::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask)
         unsigned int binLengthMask;
 
         if (!times) {
-            if (static_cast<int>(floorTime) < 0) {
+            if (floorTime < 0) {
                 floorKey = 0;
             } else {
                 floorKey = floorTime;
-                if (static_cast<int>(deltaQ->mNumKeys) <= static_cast<int>(floorTime)) {
+                if (deltaQ->mNumKeys <= floorTime) {
                     floorKey = deltaQ->mNumKeys - 1;
                 }
             }
         } else {
-            if (static_cast<int>(floorTime) < static_cast<int>(times[0])) {
+            if (floorTime < times[0]) {
                 floorKey = 0;
             } else {
                 int timeIndex = prevKey - 1;
@@ -468,14 +468,14 @@ bool FnDeltaQFast::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask)
                     timeIndex = 0;
                 }
 
-                if (static_cast<int>(floorTime) < static_cast<int>(times[timeIndex])) {
+                if (floorTime < times[timeIndex]) {
                     if (timeIndex > 0) {
                         do {
                             timeIndex--;
                             if (timeIndex < 1) {
                                 break;
                             }
-                        } while (static_cast<int>(floorTime) < static_cast<int>(times[timeIndex]));
+                        } while (floorTime < times[timeIndex]);
                     }
                 } else {
                     int lastTimeIndex = deltaQ->mNumKeys - 2;
@@ -483,7 +483,7 @@ bool FnDeltaQFast::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask)
                         unsigned int nextTime = times[timeIndex + 1];
                         int nextIndex = timeIndex;
 
-                        while (((timeIndex = nextIndex), static_cast<int>(nextTime) <= static_cast<int>(floorTime) &&
+                        while (((timeIndex = nextIndex), static_cast<int>(nextTime) <= floorTime &&
                                 ((timeIndex = nextIndex + 1), timeIndex < lastTimeIndex))) {
                             nextTime = times[nextIndex + 2];
                             nextIndex = timeIndex;
@@ -500,7 +500,7 @@ bool FnDeltaQFast::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask)
         binLengthMask = 0x7FFFFFFFU >> ((0x1F - binLengthPower) & 0x3F);
         floorDeltaIdx = floorKey & binLengthMask;
 
-        if (static_cast<unsigned int>(mNextKey) == floorKey) {
+        if (mNextKey == floorKey) {
             UMath::Vector4 *swapQs = mPrevQs;
 
             mPrevQs = mNextQs;
@@ -508,7 +508,7 @@ bool FnDeltaQFast::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask)
             mNextKey = prevKey;
         } else {
             int binData = reinterpret_cast<int>(mBins) + floorBinIdx * mBinSize;
-            unsigned int prevDeltaIdx = static_cast<unsigned int>(mPrevKey);
+            int prevDeltaIdx = mPrevKey;
 
             if (prevKey == static_cast<int>(floorKey + 1)) {
                 for (int ibone = 0; ibone < static_cast<int>(deltaQ->mNumBones); ibone++) {
@@ -524,8 +524,8 @@ bool FnDeltaQFast::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask)
                 mNextKey = prevKey;
             }
 
-            if (prevDeltaIdx == 0xFFFFFFFFU || floorBinIdx != (prevKey >> (binLengthPower & 0x3F)) || floorDeltaIdx == 0 ||
-                (static_cast<int>(floorKey) < prevKey && !IsReverseDeltaSumEnabled())) {
+            if (prevDeltaIdx == -1 || floorBinIdx != (prevKey >> (binLengthPower & 0x3F)) || floorDeltaIdx == 0 ||
+                (floorKey < prevKey && !IsReverseDeltaSumEnabled())) {
                 for (int ibone = 0; ibone < static_cast<int>(deltaQ->mNumBones); ibone++) {
                     float *prevQ = reinterpret_cast<float *>(&mPrevQs[ibone]);
                     unsigned short *physical = reinterpret_cast<unsigned short *>(binData + ibone * 6);
@@ -541,10 +541,10 @@ bool FnDeltaQFast::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask)
 
                 prevDeltaIdx = 0;
             } else {
-                prevDeltaIdx &= binLengthMask;
+                prevDeltaIdx &= static_cast<int>(binLengthMask);
             }
 
-            if (static_cast<int>(prevDeltaIdx) < static_cast<int>(floorDeltaIdx)) {
+            if (prevDeltaIdx < static_cast<int>(floorDeltaIdx)) {
                 unsigned char *deltaData =
                     reinterpret_cast<unsigned char *>(binData + deltaQ->mNumBones * 6 + prevDeltaIdx * deltaQ->mNumBones * 3);
 
@@ -566,12 +566,12 @@ bool FnDeltaQFast::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask)
                         deltaData += 3;
                     }
                     prevDeltaIdx++;
-                } while (static_cast<int>(prevDeltaIdx) < static_cast<int>(floorDeltaIdx));
-            } else if (static_cast<int>(floorDeltaIdx) < static_cast<int>(prevDeltaIdx)) {
+                } while (prevDeltaIdx < static_cast<int>(floorDeltaIdx));
+            } else if (static_cast<int>(floorDeltaIdx) < prevDeltaIdx) {
                 unsigned char *deltaData = reinterpret_cast<unsigned char *>(
                     binData + deltaQ->mNumBones * 6 + prevDeltaIdx * deltaQ->mNumBones * 3 - 3);
 
-                while ((prevDeltaIdx--), static_cast<int>(floorDeltaIdx) <= static_cast<int>(prevDeltaIdx)) {
+                while ((prevDeltaIdx--), static_cast<int>(floorDeltaIdx) <= prevDeltaIdx) {
                     for (int ibone = deltaQ->mNumBones - 1; ibone >= 0; ibone--) {
                         float *prevQ = reinterpret_cast<float *>(&mPrevQs[ibone]);
                         float *minRange = reinterpret_cast<float *>(&mMinRangesf[ibone]);
@@ -596,7 +596,7 @@ bool FnDeltaQFast::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask)
         times = deltaQ->mTimes;
 
         if (!times) {
-            float floorTimef = static_cast<float>(static_cast<int>(currTime));
+            float floorTimef = static_cast<float>(floorTime);
 
             if (currTime != floorTimef && static_cast<int>(floorKey) < deltaQ->mNumKeys - 1) {
                 float t = currTime - floorTimef;
