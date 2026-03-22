@@ -582,15 +582,9 @@ void restartstream(STREAMHEADERtag *stream, int priority) {
             }
             MEM_copy(strm->bufferstart, strm->datatail, count);
 
-            reqend = strm->datatail;
-            reqend[7] = '\0';
-            reqend[3] = static_cast<char>(-1);
-            reqend[4] = '\b';
-            reqend[0] = static_cast<char>(-1);
-            reqend[1] = static_cast<char>(-1);
-            reqend[2] = static_cast<char>(-1);
-            reqend[5] = '\0';
-            reqend[6] = '\0';
+            chunk = reinterpret_cast<STREAMCHUNKHDR *>(strm->datatail);
+            WriteChunkWord(&chunk->type, -1);
+            WriteChunkWord(&chunk->size, 8);
 
             reqend = strm->bufferstart + count;
             strm->datatail = strm->bufferstart;
