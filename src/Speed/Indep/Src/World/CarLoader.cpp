@@ -996,12 +996,73 @@ void CarLoader::UnallocateTexturePack(LoadedTexturePack *loaded_texture_pack) {
     loaded_texture_pack->NumInstances--;
 }
 
+int CarLoader::GetMemoryEntries(LoadedSolidPack *loaded_solid_pack, void **memory_entries, int num_memory_entries) {
+    if (loaded_solid_pack->pStreamingPack != 0) {
+        num_memory_entries = loaded_solid_pack->pStreamingPack->GetHeaderMemoryEntries(memory_entries, num_memory_entries);
+    }
+
+    if (loaded_solid_pack->pResourceFile != 0) {
+        memory_entries[num_memory_entries] = loaded_solid_pack->pResourceFile->GetMemory();
+        num_memory_entries++;
+    }
+
+    return num_memory_entries;
+}
+
 int CarLoader::GetMemoryEntries(LoadedTexturePack *loaded_texture_pack, void **memory_entries, int num_memory_entries) {
     if (loaded_texture_pack->pStreamingPack != 0) {
         return loaded_texture_pack->pStreamingPack->GetHeaderMemoryEntries(memory_entries, num_memory_entries);
     }
 
     return 0;
+}
+
+int CarLoader::GetMemoryEntries(LoadedWheel *loaded_wheel, void **memory_entries, int num_memory_entries) {
+    for (int i = 0; i < 4; i++) {
+        num_memory_entries = this->GetMemoryEntries(loaded_wheel->LoadedSkinLayersPerm[i], memory_entries, num_memory_entries);
+    }
+
+    for (int i = 0; i < 4; i++) {
+        num_memory_entries = this->GetMemoryEntries(loaded_wheel->LoadedSkinLayersTemp[i], memory_entries, num_memory_entries);
+    }
+
+    return StreamingSolidPackLoader.GetMemoryEntries(reinterpret_cast<unsigned int *>(loaded_wheel->ModelNameHashes), 5, memory_entries,
+                                                     num_memory_entries);
+}
+
+int CarLoader::GetMemoryEntries(LoadedSkin *loaded_skin, void **memory_entries, int num_memory_entries) {
+    num_memory_entries = this->GetMemoryEntries(loaded_skin->pLoadedTexturesPack, memory_entries, num_memory_entries);
+
+    for (int i = 0; i < loaded_skin->NumLoadedSkinLayersPerm; i++) {
+        num_memory_entries = this->GetMemoryEntries(loaded_skin->LoadedSkinLayersPerm[i], memory_entries, num_memory_entries);
+    }
+
+    for (int i = 0; i < loaded_skin->NumLoadedSkinLayersTemp; i++) {
+        num_memory_entries = this->GetMemoryEntries(loaded_skin->LoadedSkinLayersTemp[i], memory_entries, num_memory_entries);
+    }
+
+    return num_memory_entries;
+}
+
+int CarLoader::GetMemoryEntries(LoadedSkinLayer *loaded_skin_layer, void **memory_entries, int num_memory_entries) {
+    if (loaded_skin_layer != 0 && loaded_skin_layer->LoadState == CARLOADSTATE_LOADED) {
+        eStreamingEntry *streaming_entry = StreamingTexturePackLoader.GetStreamingEntry(loaded_skin_layer->NameHash);
+
+        if (streaming_entry != 0 && streaming_entry->ChunkData != 0) {
+            memory_entries[num_memory_entries] = streaming_entry->ChunkData;
+            num_memory_entries++;
+        }
+    }
+
+    return num_memory_entries;
+}
+
+int CarLoader::GetMemoryEntries(LoadedCar *loaded_car, void **memory_entries, int num_memory_entries) {
+    unsigned int name_hashes[800];
+    int num_used_entries = this->GetMemoryEntries(loaded_car->pLoadedSolidPack, memory_entries, num_memory_entries);
+    int num_hashes = loaded_car->GetModelHashes(name_hashes, 800);
+
+    return StreamingSolidPackLoader.GetMemoryEntries(name_hashes, num_hashes, memory_entries, num_used_entries);
 }
 
 int CarLoader::LoadTexturePack(LoadedTexturePack *loaded_texture_pack, int use_memory_pool) {

@@ -149,7 +149,12 @@ class CarLoader {
     int LoadSkinLayers(unsigned int *name_hash_table, int max_name_hashes, LoadedSkinLayer **loaded_skin_layer_table,
                        int num_loaded_skin_layers);
     void UnallocateTexturePack(LoadedTexturePack *loaded_texture_pack);
+    int GetMemoryEntries(LoadedSolidPack *loaded_solid_pack, void **memory_entries, int num_memory_entries);
     int GetMemoryEntries(LoadedTexturePack *loaded_texture_pack, void **memory_entries, int num_memory_entries);
+    int GetMemoryEntries(LoadedWheel *loaded_wheel, void **memory_entries, int num_memory_entries);
+    int GetMemoryEntries(LoadedSkin *loaded_skin, void **memory_entries, int num_memory_entries);
+    int GetMemoryEntries(LoadedSkinLayer *loaded_skin_layer, void **memory_entries, int num_memory_entries);
+    int GetMemoryEntries(LoadedCar *loaded_car, void **memory_entries, int num_memory_entries);
     int LoadTexturePack(LoadedTexturePack *loaded_texture_pack, int use_memory_pool);
     void LoadedTexturePackCallback(LoadedTexturePack *loaded_texture_pack);
     int UnloadTexturePack(LoadedTexturePack *loaded_texture_pack);
