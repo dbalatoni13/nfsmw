@@ -136,8 +136,7 @@ int CarInfo_GetResourceCost(CarType car_type, bool is_player_car, bool two_playe
 float GetDebugRealTime();
 extern int QueuedFileDefaultPriority;
 extern int CarLoaderServiceLoadingDepth;
-void SetDelayedResourceCallback(void (*callback)(void *), void *param);
-void CarLoader_CallUserCallback(void *param) asm("CallUserCallback__9CarLoaderi");
+void SetDelayedResourceCallback(void (*callback)(int), int param);
 void eFixupReplacementTextureTables();
 void RefreshAllRenderInfo(CarType car_type);
 void TrackStreamer_FlushHibernatingSections(TrackStreamer *track_streamer) asm("FlushHibernatingSections__13TrackStreamer");
@@ -176,19 +175,13 @@ void CarLoader_LoadedCarCallback(CarLoader *car_loader, LoadedCar *loaded_car) a
 void CarLoader_LoadedWheelModelsCallback(CarLoader *car_loader) asm("LoadedWheelModelsCallback__9CarLoader");
 void CarLoader_LoadedWheelTexturesCallback(CarLoader *car_loader) asm("LoadedWheelTexturesCallback__9CarLoader");
 void CarLoader_LoadedAllTexturesFromPackCallback(CarLoader *car_loader) asm("LoadedAllTexturesFromPackCallback__9CarLoader");
-void LoadedCarCallbackBridge(void *param) asm("LoadedCarCallbackBridge__9CarLoaderUi");
-void LoadedSolidPackCallbackBridge(void *param) asm("LoadedSolidPackCallbackBridge__9CarLoaderUi");
-void LoadedWheelModelsCallbackBridge(void *param) asm("LoadedWheelModelsCallbackBridge__9CarLoaderUi");
-void LoadedWheelTexturesCallbackBridge(void *param) asm("LoadedWheelTexturesCallbackBridge__9CarLoaderUi");
-void LoadedAllTexturesFromPackCallbackBridge(void *param) asm("LoadedAllTexturesFromPackCallbackBridge__9CarLoaderUi");
-void LoadedSkinCallbackBridge(void *param) asm("LoadedSkinCallbackBridge__9CarLoaderUi");
-void LoadedTexturePackCallbackBridge(unsigned int param) asm("LoadedTexturePackCallbackBridge__9CarLoaderUi");
 void bCloseMemoryPool(int pool_num);
 bool bSetMemoryPoolDebugFill(int pool_num, bool on_off);
 void bSetMemoryPoolTopDirection(int pool_num, bool top_means_larger_address);
-void eLoadStreamingSolid(unsigned int *name_hash_table, int num_hashes, void (*callback)(void *), void *param0, int memory_pool_num);
-int eLoadStreamingSolidPack(const char *filename, void (*callback_function)(void *), void *callback_param, int memory_pool_num);
-void eLoadStreamingTexture(unsigned int *name_hash_table, int num_hashes, void (*callback)(void *), void *param0,
+void eLoadStreamingSolid(unsigned int *name_hash_table, int num_hashes, void (*callback)(unsigned int), unsigned int param0,
+                         int memory_pool_num);
+int eLoadStreamingSolidPack(const char *filename, void (*callback_function)(int), int callback_param, int memory_pool_num);
+void eLoadStreamingTexture(unsigned int *name_hash_table, int num_hashes, void (*callback)(unsigned int), unsigned int param0,
                            int memory_pool_num);
 int eLoadStreamingTexturePack(const char *filename, void (*callback_func)(unsigned int), unsigned int callback_param, int memory_pool_num);
 void eUnloadStreamingTexture(unsigned int *name_hash_table, int num_hashes);
@@ -1546,7 +1539,8 @@ int CarLoader::LoadSkin(LoadedSkin *loaded_skin, int load_perm_layers) {
         }
 
         this->LoadingInProgress = 1;
-        eLoadStreamingTexture(name_hashes, loaded_hashes, LoadedSkinCallbackBridge, loaded_skin, memory_pool_num);
+        eLoadStreamingTexture(name_hashes, loaded_hashes, LoadedSkinCallbackBridge, reinterpret_cast<unsigned int>(loaded_skin),
+                              memory_pool_num);
         return 1;
     }
 
@@ -1758,12 +1752,58 @@ void CarLoader::ServiceLoading() {
 
         if (this->pCallback != 0) {
             this->LoadingInProgress = 2;
-            SetDelayedResourceCallback(CarLoader_CallUserCallback, this);
+            SetDelayedResourceCallback(CallUserCallback, reinterpret_cast<int>(this));
         }
     }
 
     CarLoaderServiceLoadingDepth--;
     QueuedFileDefaultPriority = queued_file_default_priority;
+}
+
+void CarLoader::CallUserCallback(int param) {
+    CarLoader *car_loader = reinterpret_cast<CarLoader *>(param);
+
+    if (car_loader->LoadingInProgress == 1) {
+        car_loader->LoadingDoneCallback();
+    } else {
+        void (*callback)(unsigned int) = car_loader->pCallback;
+
+        car_loader->pCallback = 0;
+        car_loader->LoadingInProgress = 0;
+        callback(car_loader->Param);
+    }
+}
+
+void CarLoader::LoadedSolidPackCallbackBridge(unsigned int param) {
+    TheCarLoader.LoadedSolidPackCallback(reinterpret_cast<LoadedSolidPack *>(param));
+}
+
+void CarLoader::LoadedSolidPackCallbackBridge(int param) {
+    TheCarLoader.LoadedSolidPackCallback(reinterpret_cast<LoadedSolidPack *>(param));
+}
+
+void CarLoader::LoadedTexturePackCallbackBridge(unsigned int param) {
+    TheCarLoader.LoadedTexturePackCallback(reinterpret_cast<LoadedTexturePack *>(param));
+}
+
+void CarLoader::LoadedCarCallbackBridge(unsigned int param) {
+    TheCarLoader.LoadedCarCallback(reinterpret_cast<LoadedCar *>(param));
+}
+
+void CarLoader::LoadedWheelModelsCallbackBridge(unsigned int) {
+    TheCarLoader.LoadedWheelModelsCallback();
+}
+
+void CarLoader::LoadedWheelTexturesCallbackBridge(unsigned int) {
+    TheCarLoader.LoadedWheelTexturesCallback();
+}
+
+void CarLoader::LoadedAllTexturesFromPackCallbackBridge(unsigned int) {
+    TheCarLoader.LoadedAllTexturesFromPackCallback();
+}
+
+void CarLoader::LoadedSkinCallbackBridge(unsigned int param) {
+    TheCarLoader.LoadedSkinCallback(reinterpret_cast<LoadedSkin *>(param));
 }
 
 void CarLoader::LoadedSolidPackCallback(LoadedSolidPack *loaded_solid_pack) {
@@ -1907,7 +1947,8 @@ int CarLoader::LoadCar(LoadedCar *loaded_car) {
 
         loaded_car->LoadState = CARLOADSTATE_LOADING;
         this->LoadingInProgress = 1;
-        eLoadStreamingSolid(name_hashes, num_hashes, LoadedCarCallbackBridge, loaded_car, CarLoaderMemoryPoolNumber);
+        eLoadStreamingSolid(name_hashes, num_hashes, LoadedCarCallbackBridge, reinterpret_cast<unsigned int>(loaded_car),
+                           CarLoaderMemoryPoolNumber);
     }
 
     return 1;
@@ -2010,17 +2051,18 @@ void CarLoader::LoadSolidPack(LoadedSolidPack *loaded_solid_pack, int stream_sol
         loaded_solid_pack->pResourceFile->SetAllocationParams((allocation_params & 0xF) | 0x2000, loaded_solid_pack->Filename);
         loaded_solid_pack->LoadState = CARLOADSTATE_LOADING;
         this->LoadingInProgress = 1;
-        loaded_solid_pack->pResourceFile->BeginLoading(LoadedSolidPackCallbackBridge, loaded_solid_pack);
+        loaded_solid_pack->pResourceFile->BeginLoading(
+            reinterpret_cast<void (*)(void *)>(static_cast<void (*)(int)>(LoadedSolidPackCallbackBridge)), loaded_solid_pack);
     } else {
         CarLoader_MakeSpaceInCarMemoryPool(this, 0x8000, 0, true);
         loaded_solid_pack->LoadState = CARLOADSTATE_LOADING;
         this->LoadingInProgress = 1;
-        eLoadStreamingSolidPack(loaded_solid_pack->Filename, LoadedSolidPackCallbackBridge, loaded_solid_pack,
+        eLoadStreamingSolidPack(loaded_solid_pack->Filename, LoadedSolidPackCallbackBridge, reinterpret_cast<int>(loaded_solid_pack),
                                 CarLoaderMemoryPoolNumber);
         loaded_solid_pack->pStreamingPack = StreamingSolidPackLoader.GetLoadedStreamingPack(loaded_solid_pack->Filename);
 
         if (loaded_solid_pack->pStreamingPack == 0) {
-            LoadedSolidPackCallbackBridge(loaded_solid_pack);
+            LoadedSolidPackCallbackBridge(reinterpret_cast<int>(loaded_solid_pack));
         }
     }
 }

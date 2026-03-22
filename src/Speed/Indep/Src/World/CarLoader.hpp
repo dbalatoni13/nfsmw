@@ -206,6 +206,15 @@ class CarLoader {
     void LoadSolidPack(LoadedSolidPack *loaded_solid_pack, int stream_solids);
     int LoadAllTexturesFromPack(const char *filename, int load_perm_layers);
     void ServiceLoading();
+    static void CallUserCallback(int param);
+    static void LoadedSolidPackCallbackBridge(unsigned int param);
+    static void LoadedSolidPackCallbackBridge(int param);
+    static void LoadedTexturePackCallbackBridge(unsigned int param);
+    static void LoadedCarCallbackBridge(unsigned int param);
+    static void LoadedWheelModelsCallbackBridge(unsigned int param);
+    static void LoadedWheelTexturesCallbackBridge(unsigned int param);
+    static void LoadedAllTexturesFromPackCallbackBridge(unsigned int param);
+    static void LoadedSkinCallbackBridge(unsigned int param);
     bool MakeSpaceInPool(int size);
     int MakeSpaceInCarMemoryPool(int largest_malloc_needed, int amount_free_needed, bool allocating_stream_header_chunks);
     int RemoveSomethingFromCarMemoryPool(bool force_unload);
