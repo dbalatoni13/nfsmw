@@ -423,8 +423,10 @@ void SFXCTL_Shifting::BeginUpShift() {
                             static_cast<float>(m_pShiftingPatternData->Up_DisengageFall(1).Time);
         }
 
-        m_VisualRPM.Initialize(RPM_AtShift, RPM_AtShift - 500.0f,
-                               static_cast<int>(TotalDuration + static_cast<float>(m_pShiftingPatternData->Up_Engage().Time)),
+        float TargetRPM = RPM_AtShift - 500.0f;
+        float EngageDuration = static_cast<float>(m_pShiftingPatternData->Up_Engage().Time);
+        m_VisualRPM.Initialize(RPM_AtShift, TargetRPM,
+                               static_cast<int>(TotalDuration + EngageDuration),
                                EQ_PWR_SQ);
 
         *static_cast<int *>(static_cast<void *>(&m_bNeed_DisengageSnd)) = 1;
