@@ -304,8 +304,8 @@ void CloseSkids() {
         SkidSetSlotPool = 0;
     }
 
-    for (int i = 0; i < kNumSkidTextures_Skids; i++) {
-        SkidTextureInfo[i] = 0;
+    for (int n = 0; n < kNumSkidTextures_Skids; n++) {
+        SkidTextureInfo[n] = 0;
     }
 }
 
