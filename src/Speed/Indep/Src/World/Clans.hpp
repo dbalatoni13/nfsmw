@@ -9,19 +9,23 @@
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
 struct SkidSet;
-struct eView;
+class eView;
 
 void bExpandBoundingBox(bVector3 *bbox_min, bVector3 *bbox_max, const bVector3 *bbox2_min, const bVector3 *bbox2_max);
 
-struct Clan : public bTNode<Clan> {
+class Clan : public bTNode<Clan> {
+  public:
     // total size: 0x48
     bPList<SkidSet> SkidSetList; // offset 0x8, size 0x8
+
+  private:
     unsigned int Hash;           // offset 0x10, size 0x4
     int LastUpdateTime;          // offset 0x14, size 0x4
     bVector3 Position;           // offset 0x18, size 0x10
     bVector3 BBoxMin;            // offset 0x28, size 0x10
     bVector3 BBoxMax;            // offset 0x38, size 0x10
 
+  public:
     void *operator new(size_t size);
     void operator delete(void *ptr);
 

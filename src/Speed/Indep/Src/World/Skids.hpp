@@ -12,29 +12,29 @@
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 
 struct SlotPool;
-struct TextureInfo;
-struct SkidMaker;
-struct eView;
+class eView;
 extern SlotPool *SkidSetSlotPool;
 
-struct SkidSegment {
+class SkidSegment {
+  private:
     // total size: 0x10
     float Position[3];          // offset 0x0, size 0xC
     signed char DeltaPosition[3]; // offset 0xC, size 0x3
     unsigned char Intensity;    // offset 0xF, size 0x1
 
-    void SetPoints(bVector3 *position, bVector3 *delta_position);
-    void GetPoints(bVector3 *position, bVector3 *delta_position);
-    void GetEndPoints(bVector3 *left_point, bVector3 *right_point);
+  public:
     bVector3 *GetPosition() {
         return reinterpret_cast<bVector3 *>(Position);
-    }
-    unsigned char GetIntensity() {
-        return Intensity;
     }
     void SetIntensity(unsigned char intensity) {
         Intensity = intensity;
     }
+    unsigned char GetIntensity() {
+        return Intensity;
+    }
+    void SetPoints(bVector3 *position, bVector3 *delta_position);
+    void GetPoints(bVector3 *position, bVector3 *delta_position);
+    void GetEndPoints(bVector3 *left_point, bVector3 *right_point);
 };
 
 struct SkidMaker {
