@@ -363,7 +363,7 @@ void SuspensionSpline::DoWheelForces(State &state) {
     steering_normals[3] = state.GetForwardVector();
 
     UMath::Vector3 world_cog;
-    UMath::RotateTranslate(state.cog, state.matrix, world_cog);
+    UMath::Rotate(state.cog, state.matrix, world_cog);
 
     const UMath::Vector3 &vUp = state.GetUpVector();
     const float max_shock_force = mSuspensionInfo->SHOCK_BLOWOUT() * state.mass * 9.81f;

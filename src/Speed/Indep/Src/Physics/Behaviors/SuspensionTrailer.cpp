@@ -485,7 +485,7 @@ void SuspensionTrailer::DoWheelForces(State &state) {
     }
 
     UMath::Vector3 world_cog;
-    UMath::RotateTranslate(state.cog, state.matrix, world_cog);
+    UMath::Rotate(state.cog, state.matrix, world_cog);
 
     float shock_specs[2];
     float spring_specs[2];

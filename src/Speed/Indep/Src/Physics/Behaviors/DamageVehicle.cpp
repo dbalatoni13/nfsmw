@@ -1,4 +1,5 @@
 #include "DamageVehicle.h"
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/smackable.h"
 #include "Speed/Indep/Src/Generated/Events/EVehicleDestroyed.hpp"
 #include "Speed/Indep/Src/Generated/AttribSys/GenericAccessor.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IArticulatedVehicle.h"
@@ -221,24 +222,26 @@ void DamageVehicle::SetInShock(float scale) {
 
 void DamageVehicle::OnImpact(const UMath::Vector3 &arm, const UMath::Vector3 &normal, float force, float speed, const SimSurface &,
                              ISimable *iother) {
-    if (0.0f < mSpecs.SUPPRESS_DIST() && mRB && mSpecs.SUPPRESS_DIST() < Sim::DistanceToCamera(mRB->GetPosition())) {
-        return;
+    const float suppress_dist = mSpecs.SUPPRESS_DIST();
+    if (0.0f < suppress_dist) {
+        if (Sim::DistanceToCamera(mRB->GetPosition()) > suppress_dist) {
+            return;
+        }
     }
 
     if (iother && iother->GetSimableType() == SIMABLE_SMACKABLE) {
-        bool no_car_effect = false;
-        if (iother->GetAttributes()->NO_CAR_EFFECT(no_car_effect, 0) && no_car_effect) {
+        Attrib::Gen::smackable smackable(iother->GetAttributes());
+        if (smackable.NO_CAR_EFFECT()) {
             return;
         }
     }
 
     const float scaled_force = mSpecs.FORCE() * 1000.0f;
-    if (!(0.0f < scaled_force) || !mRB) {
+    if (!(0.0f < scaled_force)) {
         return;
     }
 
-    UMath::Vector3 dimension;
-    mRB->GetDimension(dimension);
+    UMath::Vector3 dimension = mRB->GetDimension();
 
     UMath::Vector3 local_normal = normal;
     mRB->ConvertWorldToLocal(local_normal, false);
@@ -248,28 +251,33 @@ void DamageVehicle::OnImpact(const UMath::Vector3 &arm, const UMath::Vector3 &no
         if (-dimension.z * 0.5f <= arm.z) {
             if (arm.y <= dimension.y * 0.5f || -0.8f <= local_normal.y) {
                 if (-dimension.y * 0.5f <= arm.y || local_normal.y <= 0.8f) {
-                    zone = arm.x <= 0.0f ? DamageZone::DZ_LEFT : DamageZone::DZ_RIGHT;
+                    zone = DamageZone::DZ_LEFT;
+                    if (0.0f < arm.x) {
+                        zone = DamageZone::DZ_RIGHT;
+                    }
                 } else {
                     zone = DamageZone::DZ_BOTTOM;
                 }
             } else {
                 zone = DamageZone::DZ_TOP;
             }
-        } else if (arm.x <= dimension.x * 0.5f || -0.8f <= local_normal.x) {
-            zone = DamageZone::DZ_REAR;
-            if (arm.x < -dimension.x * 0.5f && 0.8f < local_normal.x) {
-                zone = DamageZone::DZ_LREAR;
-            }
         } else {
             zone = DamageZone::DZ_RREAR;
-        }
-    } else if (arm.x <= dimension.x * 0.5f || -0.8f <= local_normal.x) {
-        zone = DamageZone::DZ_FRONT;
-        if (arm.x < -dimension.x * 0.5f) {
-            zone = 0.8f < local_normal.x ? DamageZone::DZ_LFRONT : DamageZone::DZ_FRONT;
+            if (arm.x <= dimension.x * 0.5f || -0.8f <= local_normal.x) {
+                zone = DamageZone::DZ_REAR;
+                if (arm.x < -dimension.x * 0.5f && 0.8f < local_normal.x) {
+                    zone = DamageZone::DZ_LREAR;
+                }
+            }
         }
     } else {
         zone = DamageZone::DZ_RFRONT;
+        if (arm.x <= dimension.x * 0.5f || -0.8f <= local_normal.x) {
+            zone = DamageZone::DZ_FRONT;
+            if (arm.x < -dimension.x * 0.5f && 0.8f < local_normal.x) {
+                zone = DamageZone::DZ_LFRONT;
+            }
+        }
     }
 
     const DamageScaleRecord &record = GetDamageRecord(zone);
@@ -312,7 +320,9 @@ void DamageVehicle::OnImpact(const UMath::Vector3 &arm, const UMath::Vector3 &no
             if (ivehicle->GetDriverClass() == DRIVER_COP) {
                 system->ProcessStimulus(0xe8d20c6b, time, this, EventSequencer::QUEUE_ALLOW);
             }
-            system->ProcessStimulus(0xb13e6c7e, time, this, EventSequencer::QUEUE_ALLOW);
+            if (iother->IsPlayer()) {
+                system->ProcessStimulus(0xb13e6c7e, time, this, EventSequencer::QUEUE_ALLOW);
+            }
         }
 
         for (unsigned int i = 0; i < impact_level; ++i) {

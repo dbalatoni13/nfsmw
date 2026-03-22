@@ -1608,11 +1608,14 @@ void RigidBody::DoObbCollision(float dT) {
     Dynamics::Collision::Geometry thisGeom;
     Dynamics::Collision::Geometry otherGeom;
 
-    for (std::size_t i = 0; i < mWCollider->fObbList.size(); ++i) {
+    const WCollisionObject *const *obb = mWCollider->fObbList.begin();
+    const WCollisionObject *const *obbEnd = mWCollider->fObbList.end();
+    while (obb != obbEnd) {
         UMath::Vector3 otherVelocity = UMath::Vector3::kZero;
         WSurface otherSurface;
+        const WCollisionObject *object = *obb++;
 
-        mgr.BuildGeomFromWorldObb(*mWCollider->fObbList[i], dT, otherGeom, otherVelocity, otherSurface);
+        mgr.BuildGeomFromWorldObb(*object, dT, otherGeom, otherVelocity, otherSurface);
         for (Primitive *collider = mPrimitives.GetHead(); collider != mPrimitives.EndOfList(); collider = collider->GetNext()) {
             if (!(collider->GetFlags() & Primitive::VSWORLD) || (collider->GetFlags() & Primitive::DISABLED) ||
                 !collider->SetCollision(data, thisGeom) || !Dynamics::Collision::Geometry::FindIntersection(&thisGeom, &otherGeom, &thisGeom)) {
