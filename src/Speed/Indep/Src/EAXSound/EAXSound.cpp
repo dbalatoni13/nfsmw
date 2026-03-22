@@ -1830,7 +1830,8 @@ void SetSoundControlState(bool on, eSNDCTLSTATE state, const char *caller) {
 
     g_ActiveSFXStates = 0;
     for (int n = 0; n < 18; n++) {
-        if ((g_ActiveCtlStates & (1u << n)) != 0) {
+        unsigned int activeCtlStateBit = 1u << n;
+        if ((g_ActiveCtlStates & activeCtlStateBit) != 0) {
             g_ActiveSFXStates |= g_CtlStateActions[n];
         }
     }
