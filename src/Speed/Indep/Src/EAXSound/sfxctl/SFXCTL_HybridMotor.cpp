@@ -18,7 +18,7 @@ SFXCTL_HybridMotor::SFXCTL_HybridMotor()
     , DecelCrossfadeMix(CrossFadesPoints, 5) //
     , m_EngVolRedLine(0) //
     , mPrevDeltaRPM(0) //
-    , m_GinsuLPFVal(0.0f) //
+    , m_GinsuLPFVal(24000.0f) //
     , m_bAEMSLPF(false) //
     , SteadyFrameCnt(0) //
     , m_AvgDeltaRPM(4) {
