@@ -124,17 +124,14 @@ bool GHandler::MessagePassesFilters(LuaMessageDeliveryInfo *deliveryInfo) {
         reinterpret_cast<BlobView &>(blob).mSize = 0;
         reinterpret_cast<BlobView &>(blob).mData = nullptr;
 
-        const Attrib::Blob *blobPtr = reinterpret_cast<const Attrib::Blob *>(GetAttributePointer(0x56e1436d, onFilter));
-        if (blobPtr) {
+        if (const Attrib::Blob *blobPtr =
+                reinterpret_cast<const Attrib::Blob *>(GetAttributePointer(0x56e1436d, onFilter))) {
             blob = *blobPtr;
         }
 
-        unsigned char *blockData =
-            reinterpret_cast<unsigned char *>(const_cast<void *>(reinterpret_cast<const BlobView &>(blob).mData));
-
-        if (blockData) {
+        if (unsigned char *blockData =
+                reinterpret_cast<unsigned char *>(const_cast<void *>(reinterpret_cast<const BlobView &>(blob).mData))) {
             MessageFilterHeader *filter = reinterpret_cast<MessageFilterHeader *>(blockData);
-            bool filterPassed = true;
 
             if (!filter->mInitialized) {
                 ByteSwapStaticData(filter->mQueryStaticData);
@@ -142,22 +139,29 @@ bool GHandler::MessagePassesFilters(LuaMessageDeliveryInfo *deliveryInfo) {
                 filter->mInitialized = 1;
             }
 
-            IMessageFilterContext *filterContext = deliveryInfo;
-            const unsigned char *source = reinterpret_cast<const unsigned char *>(filterContext->GetMessage()) + sizeof(Hermes::Message) + filter->mSourceOffset;
-            unsigned char *dest = blockData + filter->mDestOffset + 0xC;
+            {
+                const unsigned char *source =
+                    reinterpret_cast<const unsigned char *>(reinterpret_cast<const Hermes::Message *>(deliveryInfo->GetMessage()) + 1) +
+                    filter->mSourceOffset;
+                unsigned char *dest = blockData + filter->mDestOffset + 0xC;
 
-            bMemCpy(dest, source, filter->mSize);
+                bMemCpy(dest, source, filter->mSize);
+            }
+
+            bool filterPassed = true;
 
             if (filter->mQuery) {
-                filter->mQuery(filterContext, 0, filter->mQueryStaticData, 1, &filterPassed);
+                filter->mQuery(deliveryInfo, 0, filter->mQueryStaticData, 1, &filterPassed);
             }
 
             if (FilterModePassAll(0)) {
                 if (!filterPassed) {
                     return false;
                 }
-            } else if (filterPassed) {
-                return true;
+            } else {
+                if (filterPassed) {
+                    return true;
+                }
             }
         }
     }
