@@ -5,6 +5,7 @@
 #pragma once
 #endif
 
+#include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
@@ -24,17 +25,13 @@ struct CollisionDescription {
     int _pad;
 };
 
-struct AudioEvent {
-    unsigned int mFactoryPad;
+struct AudioEvent : public UTL::COM::Factory<const AudioEventParams &, AudioEvent, unsigned int> {
     AudioEventParams mParams;
     Attrib::Instance mAttributes;
-    void *mVTableAudioEvent;
 
     AudioEvent(const AudioEventParams &params)
-        : mFactoryPad(0) //
-        , mParams(params) //
-        , mAttributes(params.attributes, 0, nullptr) //
-        , mVTableAudioEvent(nullptr)
+        : mParams(params) //
+        , mAttributes(params.attributes, 0, nullptr)
     {}
 
     const AudioEventParams &GetParameters() const {
@@ -45,8 +42,10 @@ struct AudioEvent {
         return mAttributes;
     }
 
-    ~AudioEvent();
-    void Update(const bVector3 &p, const bVector3 &n, const bVector3 &v, float mag);
+    virtual ~AudioEvent() {}
+    virtual void Release() {}
+    virtual void Pause(bool) {}
+    virtual void Update(const bVector3 &p, const bVector3 &n, const bVector3 &v, float mag);
 };
 
 } // namespace Sound

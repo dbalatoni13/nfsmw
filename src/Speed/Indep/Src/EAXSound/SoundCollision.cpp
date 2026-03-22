@@ -44,14 +44,6 @@ struct audioimpact;
 
 namespace Sound {
 
-struct AudioEventVirtualFunction {
-    short Delta;
-    unsigned short Unknown;
-    void (*Function)(void *, int);
-};
-
-AudioEvent::~AudioEvent() {}
-
 void AudioEvent::Update(const bVector3 &p, const bVector3 &n, const bVector3 &v, float mag) {
     mParams.position = p;
     mParams.normal = n;
@@ -145,15 +137,15 @@ struct CollisionEvent : public AudioEvent {
     unsigned int mActee;
 
     CollisionEvent(const AudioEventParams &params, bool isScrape);
-    ~CollisionEvent();
+    virtual ~CollisionEvent();
     void SetOwner(CSTATE_Base *owner);
-    void Pause(bool pause);
+    virtual void Pause(bool pause);
     static AudioEvent *PlayScrape(const AudioEventParams &params);
     static AudioEvent *Play(const AudioEventParams &params);
-    void Update(const bVector3 &position, const bVector3 &normal, const bVector3 &velocity, float dt);
+    virtual void Update(const bVector3 &position, const bVector3 &normal, const bVector3 &velocity, float dt);
     void InitAsScrape(const Attrib::Gen::audioscrape &);
     void InitAsImpact(const Attrib::Gen::audioimpact &);
-    void Release();
+    virtual void Release();
 };
 
 CollisionEvent::CollisionEvent(const AudioEventParams &aep, bool impact)
@@ -255,9 +247,7 @@ AudioEvent *CollisionEvent::PlayScrape(const AudioEventParams &params) {
 
     if (stateObj == nullptr) {
         if (bang != nullptr) {
-            AudioEventVirtualFunction *destroy =
-                reinterpret_cast<AudioEventVirtualFunction *>(static_cast<char *>(bang->mVTableAudioEvent) + 8);
-            destroy->Function(reinterpret_cast<char *>(bang) + destroy->Delta, 3);
+            delete bang;
         }
         return nullptr;
     }
@@ -291,9 +281,7 @@ AudioEvent *CollisionEvent::Play(const AudioEventParams &params) {
     }
 
     if (stateObj == nullptr && bang != nullptr) {
-        AudioEventVirtualFunction *destroy =
-            reinterpret_cast<AudioEventVirtualFunction *>(static_cast<char *>(bang->mVTableAudioEvent) + 8);
-        destroy->Function(reinterpret_cast<char *>(bang) + destroy->Delta, 3);
+        delete bang;
     }
 
     return nullptr;
@@ -412,9 +400,7 @@ void CollisionEvent::Release() {
 
     mRefCount = mRefCount - 1;
     if (mRefCount == 0 && this) {
-        AudioEventVirtualFunction *destroy =
-            reinterpret_cast<AudioEventVirtualFunction *>(static_cast<char *>(mVTableAudioEvent) + 8);
-        destroy->Function(reinterpret_cast<char *>(this) + destroy->Delta, 3);
+        delete this;
     }
 }
 
