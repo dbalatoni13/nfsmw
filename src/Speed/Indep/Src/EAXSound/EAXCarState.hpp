@@ -214,6 +214,10 @@ struct EAX_CarState : public UTL::Collections::Listable<EAX_CarState, 10> {
         return mBrake;
     }
 
+    Attrib::Gen::engineaudio *GetEngineInfo() {
+        return &mEngineInfo;
+    }
+
     Sound::Gear GetGear() {
         return mDriveline.mGear;
     }

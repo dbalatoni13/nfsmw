@@ -180,6 +180,8 @@ struct HeliSoundConn : public Sim::Connection, public UTL::Collections::Listable
 };
 
 struct CSTATEMGR_CarState : public CSTATEMGR_Base {
+    static UTL::FixedVector<unsigned int, 8, 16> FinalCopV8Engines;
+
     static void ResolveCarBanks();
     static void ResetCarBanks();
     static void DestroyCar(EAX_CarState *pCar);

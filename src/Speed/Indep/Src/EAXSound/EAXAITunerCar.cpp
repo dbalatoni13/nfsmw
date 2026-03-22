@@ -219,7 +219,11 @@ CSTATE_Base *EAXCopCar::CreateState(unsigned int allocator) {
 }
 
 void EAXCopCar::Attach(void *pAttachment) {
-    EAXAITunerCar::Attach(pAttachment);
+    EAX_CarState *pCar = static_cast<EAX_CarState *>(pAttachment);
+    if (CSTATEMGR_CarState::FinalCopV8Engines.size() != 0) {
+        pCar->GetEngineInfo()->ChangeWithDefault(CSTATEMGR_CarState::FinalCopV8Engines[0]);
+    }
+    EAXCar::Attach(pAttachment);
 }
 
 struct EAXTruck : public EAXAITunerCar {
