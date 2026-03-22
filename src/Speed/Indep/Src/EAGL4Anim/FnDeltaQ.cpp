@@ -15,37 +15,37 @@ static const float kRangeScale15Bit = 6.1037019e-5f;
 static const float kRangeScale8Bit = 7.8431377e-3f;
 static const float kRangeScale7Bit = 1.5748032e-2f;
 
-static int GetFrameDeltaSize(const DeltaQ *deltaQ) {
+static inline int GetFrameDeltaSize(const DeltaQ *deltaQ) {
     return deltaQ->mNumBones * sizeof(DeltaQDelta);
 }
 
-static int GetBinSize(const DeltaQ *deltaQ) {
+static inline int GetBinSize(const DeltaQ *deltaQ) {
     return static_cast<int>(AlignSize2((deltaQ->mNumBones * sizeof(DeltaQPhysical)) +
                                        ((deltaQ->GetBinLength() - 1) * GetFrameDeltaSize(deltaQ))));
 }
 
-static DeltaQMinRange *GetMinRanges(DeltaQ *deltaQ) {
+static inline DeltaQMinRange *GetMinRanges(DeltaQ *deltaQ) {
     return deltaQ->GetMinRange();
 }
 
-static unsigned char *GetBinStart(DeltaQ *deltaQ) {
+static inline unsigned char *GetBinStart(DeltaQ *deltaQ) {
     return &reinterpret_cast<unsigned char *>(GetMinRanges(deltaQ))[deltaQ->mNumBones * sizeof(DeltaQMinRange)];
 }
 
-static unsigned char *GetBin(DeltaQ *deltaQ, int binIdx) {
+static inline unsigned char *GetBin(DeltaQ *deltaQ, int binIdx) {
     return &GetBinStart(deltaQ)[binIdx * GetBinSize(deltaQ)];
 }
 
-static DeltaQPhysical *GetPhysical(unsigned char *binData) {
+static inline DeltaQPhysical *GetPhysical(unsigned char *binData) {
     return reinterpret_cast<DeltaQPhysical *>(binData);
 }
 
-static DeltaQDelta *GetDelta(DeltaQ *deltaQ, unsigned char *binData, int deltaIdx) {
+static inline DeltaQDelta *GetDelta(DeltaQ *deltaQ, unsigned char *binData, int deltaIdx) {
     return reinterpret_cast<DeltaQDelta *>(&binData[deltaQ->mNumBones * sizeof(DeltaQPhysical) +
                                                      (deltaIdx * GetFrameDeltaSize(deltaQ))]);
 }
 
-static unsigned char *GetConstBoneIdx(DeltaQ *deltaQ) {
+static inline unsigned char *GetConstBoneIdx(DeltaQ *deltaQ) {
     const int binSize = GetBinSize(deltaQ);
     int numBins = deltaQ->mNumKeys >> deltaQ->GetBinLengthPower();
     unsigned char *s = &GetBin(deltaQ, 0)[binSize * numBins];
@@ -63,11 +63,11 @@ static unsigned char *GetConstBoneIdx(DeltaQ *deltaQ) {
     return s;
 }
 
-static DeltaQPhysical *GetConstPhysical(DeltaQ *deltaQ) {
+static inline DeltaQPhysical *GetConstPhysical(DeltaQ *deltaQ) {
     return reinterpret_cast<DeltaQPhysical *>(AlignSize2(reinterpret_cast<intptr_t>(&GetConstBoneIdx(deltaQ)[deltaQ->mNumConstBones])));
 }
 
-static void RecoverW(int signBit, UMath::Vector4 &q) {
+static inline void RecoverW(int signBit, UMath::Vector4 &q) {
     float ndotn = q.x * q.x + q.y * q.y + q.z * q.z;
 
     if (ndotn <= kFloatOne) {
@@ -85,14 +85,14 @@ static void RecoverW(int signBit, UMath::Vector4 &q) {
     }
 }
 
-static void DecodePhysical(const DeltaQPhysical &physical, UMath::Vector4 &q) {
+static inline void DecodePhysical(const DeltaQPhysical &physical, UMath::Vector4 &q) {
     q.x = physical.mX * kRangeScale15Bit - kFloatOne;
     q.y = physical.mY * kRangeScale16Bit - kFloatOne;
     q.z = physical.mZ * kRangeScale16Bit - kFloatOne;
     RecoverW(physical.mW, q);
 }
 
-static void DecodeMinRange(const DeltaQMinRange &minRange, DeltaQMinRangef &minRangef) {
+static inline void DecodeMinRange(const DeltaQMinRange &minRange, DeltaQMinRangef &minRangef) {
     minRangef.mMin.x = minRange.mMin[0] * kRangeScale16Bit - kFloatOne;
     minRangef.mMin.y = minRange.mMin[1] * kRangeScale16Bit - kFloatOne;
     minRangef.mMin.z = minRange.mMin[2] * kRangeScale16Bit - kFloatOne;
@@ -102,7 +102,7 @@ static void DecodeMinRange(const DeltaQMinRange &minRange, DeltaQMinRangef &minR
     minRangef.mRange.z = 2.0f * (minRange.mRange[2] * kRangeScale16Bit) * kRangeScale8Bit;
 }
 
-static void DecodeDelta(const DeltaQMinRange &minRange, const DeltaQDelta &delta, UMath::Vector4 &q) {
+static inline void DecodeDelta(const DeltaQMinRange &minRange, const DeltaQDelta &delta, UMath::Vector4 &q) {
     DeltaQMinRangef minRangef;
 
     DecodeMinRange(minRange, minRangef);
@@ -113,7 +113,7 @@ static void DecodeDelta(const DeltaQMinRange &minRange, const DeltaQDelta &delta
     RecoverW(delta.mW, q);
 }
 
-static float *GetOutputQuat(float *sqt, unsigned char boneIdx) {
+static inline float *GetOutputQuat(float *sqt, unsigned char boneIdx) {
     return &sqt[boneIdx * 12 + 4];
 }
 

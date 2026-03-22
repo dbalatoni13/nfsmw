@@ -17,37 +17,37 @@ static const float kSingleQRangeScale16Bit = 3.0518044e-5f;
 static const float kSingleQRangeScale8Bit = 7.8431377e-3f;
 static const float kSingleQRangeScale4Bit = 0.13333334f;
 
-static int GetSingleQFrameDeltaSize(const DeltaSingleQ *deltaQ) {
+static inline int GetSingleQFrameDeltaSize(const DeltaSingleQ *deltaQ) {
     return deltaQ->mNumBones * sizeof(DeltaSingleQDelta);
 }
 
-static int GetSingleQBinSize(const DeltaSingleQ *deltaQ) {
+static inline int GetSingleQBinSize(const DeltaSingleQ *deltaQ) {
     return static_cast<int>(AlignSize2((deltaQ->mNumBones * sizeof(DeltaSingleQPhysical)) +
                                        ((deltaQ->GetBinLength() - 1) * GetSingleQFrameDeltaSize(deltaQ))));
 }
 
-static DeltaSingleQMinRange *GetSingleQMinRanges(DeltaSingleQ *deltaQ) {
+static inline DeltaSingleQMinRange *GetSingleQMinRanges(DeltaSingleQ *deltaQ) {
     return deltaQ->GetMinRange();
 }
 
-static unsigned char *GetSingleQBinStart(DeltaSingleQ *deltaQ) {
+static inline unsigned char *GetSingleQBinStart(DeltaSingleQ *deltaQ) {
     return &reinterpret_cast<unsigned char *>(GetSingleQMinRanges(deltaQ))[deltaQ->mNumBones * sizeof(DeltaSingleQMinRange)];
 }
 
-static unsigned char *GetSingleQBin(DeltaSingleQ *deltaQ, int binIdx) {
+static inline unsigned char *GetSingleQBin(DeltaSingleQ *deltaQ, int binIdx) {
     return &GetSingleQBinStart(deltaQ)[binIdx * GetSingleQBinSize(deltaQ)];
 }
 
-static DeltaSingleQPhysical *GetSingleQPhysical(unsigned char *binData) {
+static inline DeltaSingleQPhysical *GetSingleQPhysical(unsigned char *binData) {
     return reinterpret_cast<DeltaSingleQPhysical *>(binData);
 }
 
-static DeltaSingleQDelta *GetSingleQDelta(DeltaSingleQ *deltaQ, unsigned char *binData, int deltaIdx) {
+static inline DeltaSingleQDelta *GetSingleQDelta(DeltaSingleQ *deltaQ, unsigned char *binData, int deltaIdx) {
     return reinterpret_cast<DeltaSingleQDelta *>(&binData[deltaQ->mNumBones * sizeof(DeltaSingleQPhysical) +
                                                                (deltaIdx * GetSingleQFrameDeltaSize(deltaQ))]);
 }
 
-static void NormalizeSingleQQuat(UMath::Vector4 &q) {
+static inline void NormalizeSingleQQuat(UMath::Vector4 &q) {
     float s = kSingleQFloatOne / FastSqrt(q.x * q.x + q.y * q.y + q.z * q.z + q.w * q.w);
 
     q.x *= s;
@@ -56,7 +56,7 @@ static void NormalizeSingleQQuat(UMath::Vector4 &q) {
     q.w *= s;
 }
 
-static void SingleQEulToQuat(const float *eulData, float *quatData) {
+static inline void SingleQEulToQuat(const float *eulData, float *quatData) {
     float ti = eulData[0] * kSingleQHalf;
     float tj = eulData[1] * kSingleQHalf;
     float th = eulData[2] * kSingleQHalf;
@@ -77,7 +77,7 @@ static void SingleQEulToQuat(const float *eulData, float *quatData) {
     quatData[3] = cc * ch + ss * sh;
 }
 
-static void SingleQQuatMultXxYxZ(const UMath::Vector4 &a, const UMath::Vector4 &b, const UMath::Vector4 &c, UMath::Vector4 &result) {
+static inline void SingleQQuatMultXxYxZ(const UMath::Vector4 &a, const UMath::Vector4 &b, const UMath::Vector4 &c, UMath::Vector4 &result) {
     float awby = a.w * b.y;
     float axbw = a.x * b.w;
     float awbw = a.w * b.w;
@@ -89,21 +89,21 @@ static void SingleQQuatMultXxYxZ(const UMath::Vector4 &a, const UMath::Vector4 &
     result.w = -naxby * c.z + awbw * c.w;
 }
 
-static void SingleQQuatMultXxQ(const UMath::Vector4 &a, const UMath::Vector4 &b, UMath::Vector4 &result) {
+static inline void SingleQQuatMultXxQ(const UMath::Vector4 &a, const UMath::Vector4 &b, UMath::Vector4 &result) {
     result.x = a.w * b.x + a.x * b.w;
     result.y = a.w * b.y + a.x * b.z;
     result.z = -(a.x * b.y) + a.w * b.z;
     result.w = -(a.x * b.x) + a.w * b.w;
 }
 
-static void SingleQQuatMultQxZ(const UMath::Vector4 &a, const UMath::Vector4 &b, UMath::Vector4 &result) {
+static inline void SingleQQuatMultQxZ(const UMath::Vector4 &a, const UMath::Vector4 &b, UMath::Vector4 &result) {
     result.x = a.x * b.w - a.y * b.z;
     result.y = a.x * b.z + a.y * b.w;
     result.z = a.z * b.w + a.w * b.z;
     result.w = -(a.z * b.z) + a.w * b.w;
 }
 
-static void DecodeSingleQMinRange(const DeltaSingleQMinRange &minRange, DeltaSingleQMinRangef &minRangef) {
+static inline void DecodeSingleQMinRange(const DeltaSingleQMinRange &minRange, DeltaSingleQMinRangef &minRangef) {
     minRangef.mConst0 = minRange.mConst0 * kSingleQAngleScale16Bit - kSingleQPi;
     minRangef.mConst1 = minRange.mConst1 * kSingleQAngleScale16Bit - kSingleQPi;
     minRangef.mMin[0] = minRange.mMin[0] * kSingleQRangeScale16Bit - kSingleQFloatOne;
@@ -113,7 +113,7 @@ static void DecodeSingleQMinRange(const DeltaSingleQMinRange &minRange, DeltaSin
     minRangef.mIndex = static_cast<unsigned char>(minRange.mIndex);
 }
 
-static void DecodeSingleQPhysical(const DeltaSingleQPhysical &physical, int index, UMath::Vector4 &q) {
+static inline void DecodeSingleQPhysical(const DeltaSingleQPhysical &physical, int index, UMath::Vector4 &q) {
     q.x = kSingleQFloatZero;
     q.y = kSingleQFloatZero;
     q.z = kSingleQFloatZero;
@@ -128,7 +128,7 @@ static void DecodeSingleQPhysical(const DeltaSingleQPhysical &physical, int inde
     }
 }
 
-static void DecodeSingleQDelta(const DeltaSingleQMinRange &minRange, const DeltaSingleQDelta &delta, UMath::Vector4 &q) {
+static inline void DecodeSingleQDelta(const DeltaSingleQMinRange &minRange, const DeltaSingleQDelta &delta, UMath::Vector4 &q) {
     DeltaSingleQMinRangef minRangef;
     float v = minRangef.mMin[0];
     float w = minRangef.mMin[1];
@@ -152,7 +152,7 @@ static void DecodeSingleQDelta(const DeltaSingleQMinRange &minRange, const Delta
     }
 }
 
-static void ComposeSingleQQuat(unsigned short index, const UMath::Vector4 &pre, const UMath::Vector4 &mid,
+static inline void ComposeSingleQQuat(unsigned short index, const UMath::Vector4 &pre, const UMath::Vector4 &mid,
                                const UMath::Vector4 &post, UMath::Vector4 &result) {
     if (index == 1) {
         SingleQQuatMultXxYxZ(pre, mid, post, result);
@@ -163,7 +163,7 @@ static void ComposeSingleQQuat(unsigned short index, const UMath::Vector4 &pre, 
     }
 }
 
-static float *GetSingleQOutputQuat(float *sqt, unsigned char boneIdx) {
+static inline float *GetSingleQOutputQuat(float *sqt, unsigned char boneIdx) {
     return &sqt[boneIdx * 12 + 4];
 }
 

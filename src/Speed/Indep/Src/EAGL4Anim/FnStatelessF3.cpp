@@ -6,11 +6,11 @@ namespace EAGL4Anim {
 
 namespace {
 
-static unsigned char GetStatelessF3BoneIndex(unsigned short dofIdx) {
+static inline unsigned char GetStatelessF3BoneIndex(unsigned short dofIdx) {
     return static_cast<unsigned char>(dofIdx / 12);
 }
 
-static void UnquantizeStatelessF3(const StatelessF3::DofInfo &dofInfo, const short *frameBuf, UMath::Vector3 &result) {
+static inline void UnquantizeStatelessF3(const StatelessF3::DofInfo &dofInfo, const short *frameBuf, UMath::Vector3 &result) {
     result.x = dofInfo.mRange[0] * frameBuf[0];
     result.y = dofInfo.mRange[1] * frameBuf[1];
     result.z = dofInfo.mRange[2] * frameBuf[2];

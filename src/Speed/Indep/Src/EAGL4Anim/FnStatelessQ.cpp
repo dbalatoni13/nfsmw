@@ -7,7 +7,7 @@ namespace EAGL4Anim {
 
 namespace {
 
-static float UncompressStatelessQValue(unsigned short value) {
+static inline float UncompressStatelessQValue(unsigned short value) {
     union {
         unsigned int u;
         float f;
@@ -17,11 +17,11 @@ static float UncompressStatelessQValue(unsigned short value) {
     return bits.f;
 }
 
-static float *GetStatelessQOutput(float *sqt, unsigned char boneIdx) {
+static inline float *GetStatelessQOutput(float *sqt, unsigned char boneIdx) {
     return &sqt[boneIdx * 12 + 4];
 }
 
-static void LoadStatelessQ(unsigned short *frameData, UMath::Vector4 &q) {
+static inline void LoadStatelessQ(unsigned short *frameData, UMath::Vector4 &q) {
     q.x = UncompressStatelessQValue(frameData[0]);
     q.y = UncompressStatelessQValue(frameData[1]);
     q.z = UncompressStatelessQValue(frameData[2]);
