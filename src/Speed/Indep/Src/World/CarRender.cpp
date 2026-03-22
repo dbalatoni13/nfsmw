@@ -13,6 +13,7 @@
 #include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
 #include "Speed/Indep/Src/Main/AttribSupport.h"
+#include "Speed/Indep/Src/Frontend/FEManager.hpp"
 #include "Speed/Indep/Src/Misc/GameFlow.hpp"
 #include "Speed/Indep/Src/Misc/Profiler.hpp"
 #include "Speed/Indep/Src/Sim/Simulation.h"
@@ -98,6 +99,8 @@ extern unsigned int CarReplacementDecalHash[CarRenderInfo::REPLACETEX_DECAL_NUM]
 extern unsigned int hcL;
 extern unsigned int FrameMallocFailed;
 extern unsigned int FrameMallocFailAmount;
+extern int DrawCars;
+extern int DrawCarShadow;
 extern int TweakKitWheelOffsetFront;
 extern int TweakKitWheelOffsetRear;
 extern int ForceBrakelightsOn;
@@ -138,8 +141,18 @@ extern float gTWEAKER_NISLightPosX;
 extern float gTWEAKER_NISLightPosY;
 extern float gTWEAKER_NISLightPosZ;
 extern unsigned int Lightslot;
+extern int PrintLightQuery;
+extern int PrintQueryLightMat;
+extern int EnableEnvMap;
+extern eShaperLightRig ShaperLightsBackRoom;
+extern eShaperLightRig ShaperLightsCarLot;
+extern eShaperLightRig ShaperLightsCarsInGame;
+extern eShaperLightRig ShaperLightsCShop;
 extern eShaperLightRig ShaperLightsCharacters;
 extern eShaperLightRig ShaperLightsCharactersBackup;
+extern eShaperLightRig ShaperLightsQRace;
+extern eShaperLightRig ShaperLightsSafehouse;
+extern bMatrix4 hack_man_matrix;
 extern bVector3 hull_Origin asm("hull_Origin");
 extern bVector3 hull_Normal asm("hull_Normal");
 extern bVector3 hullVertArray1[16] asm("hullVertArray1");
@@ -251,13 +264,10 @@ CarEmitterPosition *AddTailEmitterPosition(bSList<CarEmitterPosition> &list, Car
     bSListLayout<CarEmitterPosition> &layout = reinterpret_cast<bSListLayout<CarEmitterPosition> &>(list);
     bSNodeLayout<CarEmitterPosition> &node_layout = reinterpret_cast<bSNodeLayout<CarEmitterPosition> &>(*node);
     CarEmitterPosition *end = list.EndOfList();
+    CarEmitterPosition *tail = layout.Tail;
 
     node_layout.Next = end;
-    if (layout.Head == end) {
-        layout.Head = node;
-    } else {
-        reinterpret_cast<bSNodeLayout<CarEmitterPosition> &>(*layout.Tail).Next = node;
-    }
+    reinterpret_cast<bSNodeLayout<CarEmitterPosition> &>(*tail).Next = node;
     layout.Tail = node;
 
     return node;
@@ -806,6 +816,44 @@ struct CameraAnchorLayout {
     bVector3 mGeomPos;
 };
 
+struct CarPartModelLayout {
+    unsigned int mModel;
+};
+
+static eModel *GetPackedCarPartModel(CarPartModel *car_part_model) {
+    return reinterpret_cast<eModel *>(reinterpret_cast<CarPartModelLayout *>(car_part_model)->mModel & ~0x3);
+}
+
+static void SetPackedCarPartModel(CarPartModel *car_part_model, eModel *model) {
+    unsigned int &packed_model = reinterpret_cast<CarPartModelLayout *>(car_part_model)->mModel;
+
+    packed_model = reinterpret_cast<unsigned int>(model) | (packed_model & 1);
+}
+
+static void ClearPackedCarPartModel(CarPartModel *car_part_model) {
+    reinterpret_cast<CarPartModelLayout *>(car_part_model)->mModel &= 1;
+}
+
+static void *CarRenderFrameMalloc(unsigned int size) {
+    unsigned char *address = CurrentBufferPos;
+
+    if (CurrentBufferEnd <= CurrentBufferPos + size) {
+        FrameMallocFailed = 1;
+        FrameMallocFailAmount += size;
+        address = 0;
+    } else {
+        CurrentBufferPos += size;
+    }
+
+    return address;
+}
+
+void elResetLightContext(eDynamicLightContext *light_context);
+int elSetupLights(eDynamicLightContext *light_context, eShaperLightRig *shaper_lights, bVector3 *local_pos, bMatrix4 *local_world, bMatrix4 *world_view,
+                  eView *view);
+int elCloneLightContext(eDynamicLightContext *light_context, bMatrix4 *local_world, bMatrix4 *world_view, bVector4 *camera_world_position, eView *view,
+                        eDynamicLightContext *old_context);
+
 void CarRenderInfo::UpdateCarParts() {
     RideInfo *ride_info = this->pRideInfo;
     bVector3 bbox_min;
@@ -817,13 +865,12 @@ void CarRenderInfo::UpdateCarParts() {
         for (int model_number = 0; model_number < 1; model_number++) {
             for (int lod = this->mMinLodLevel; lod <= this->mMaxLodLevel; lod++) {
                 CarPartModel *car_part_model = &this->mCarPartModels[slot_id][model_number][lod];
-                eModel *model = car_part_model->GetModel();
+                eModel *model = GetPackedCarPartModel(car_part_model);
 
-                if (model != 0 && model->GetSolid() != 0) {
+                if (model != 0 && model->Solid != 0) {
                     model->UnInit();
                     CarPartModelPool->Free(model);
-                    car_part_model->SetModel(0);
-                    car_part_model->Clear();
+                    ClearPackedCarPartModel(car_part_model);
                 }
             }
         }
@@ -860,13 +907,13 @@ void CarRenderInfo::UpdateCarParts() {
                 CarPartModel *car_part_model = &this->mCarPartModels[slot_id][model_number][lod];
                 eModel *model = static_cast<eModel *>(CarPartModelPool->Malloc());
 
-                car_part_model->SetModel(model);
+                SetPackedCarPartModel(car_part_model, model);
                 model->Init(model_name_hash);
 
-                if (model->GetSolid() == 0) {
+                if (model->Solid == 0) {
                     model->UnInit();
                     CarPartModelPool->Free(model);
-                    car_part_model->SetModel(0);
+                    ClearPackedCarPartModel(car_part_model);
                     continue;
                 }
 
@@ -897,34 +944,34 @@ void CarRenderInfo::UpdateCarParts() {
     for (int model_number = 0; model_number < 1; model_number++) {
         for (int lod = this->mMinLodLevel; lod <= this->mMaxLodLevel; lod++) {
             eModel *front_wheel_model = this->mCarPartModels[CARSLOTID_FRONT_WHEEL][model_number][lod].GetModel();
-            eModel *rear_wheel_model = this->mCarPartModels[CARSLOTID_REAR_WHEEL][model_number][lod].GetModel();
+            eModel *rear_wheel_model = GetPackedCarPartModel(&this->mCarPartModels[CARSLOTID_REAR_WHEEL][model_number][lod]);
 
             if (front_wheel_model != 0 && rear_wheel_model == 0) {
                 rear_wheel_model = static_cast<eModel *>(CarPartModelPool->Malloc());
-                this->mCarPartModels[CARSLOTID_REAR_WHEEL][model_number][lod].SetModel(rear_wheel_model);
+                SetPackedCarPartModel(&this->mCarPartModels[CARSLOTID_REAR_WHEEL][model_number][lod], rear_wheel_model);
                 rear_wheel_model->Init(front_wheel_model->GetNameHash());
 
-                if (rear_wheel_model->GetSolid() == 0) {
+                if (rear_wheel_model->Solid == 0) {
                     rear_wheel_model->UnInit();
                     CarPartModelPool->Free(rear_wheel_model);
-                    this->mCarPartModels[CARSLOTID_REAR_WHEEL][model_number][lod].SetModel(0);
+                    ClearPackedCarPartModel(&this->mCarPartModels[CARSLOTID_REAR_WHEEL][model_number][lod]);
                 } else {
                     rear_wheel_model->AttachReplacementTextureTable(this->MasterReplacementTextureTable, REPLACETEX_NUM, 0);
                 }
             }
 
             eModel *front_brake_model = this->mCarPartModels[CARSLOTID_FRONT_BRAKE][model_number][lod].GetModel();
-            eModel *rear_brake_model = this->mCarPartModels[CARSLOTID_REAR_BRAKE][model_number][lod].GetModel();
+            eModel *rear_brake_model = GetPackedCarPartModel(&this->mCarPartModels[CARSLOTID_REAR_BRAKE][model_number][lod]);
 
             if (front_brake_model != 0 && rear_brake_model == 0) {
                 rear_brake_model = static_cast<eModel *>(CarPartModelPool->Malloc());
-                this->mCarPartModels[CARSLOTID_REAR_BRAKE][model_number][lod].SetModel(rear_brake_model);
+                SetPackedCarPartModel(&this->mCarPartModels[CARSLOTID_REAR_BRAKE][model_number][lod], rear_brake_model);
                 rear_brake_model->Init(front_brake_model->GetNameHash());
 
-                if (rear_brake_model->GetSolid() == 0) {
+                if (rear_brake_model->Solid == 0) {
                     rear_brake_model->UnInit();
                     CarPartModelPool->Free(rear_brake_model);
-                    this->mCarPartModels[CARSLOTID_REAR_BRAKE][model_number][lod].SetModel(0);
+                    ClearPackedCarPartModel(&this->mCarPartModels[CARSLOTID_REAR_BRAKE][model_number][lod]);
                 } else {
                     rear_brake_model->AttachReplacementTextureTable(this->MasterReplacementTextureTable, REPLACETEX_NUM, 0);
                 }
@@ -1154,6 +1201,241 @@ void CarRenderInfo::UpdateDecalTextures(RideInfo *ride_info) {
     }
 }
 
+bool CarRenderInfo::Render(eView *view, const bVector3 *world_position, const bMatrix4 *body_matrix, bMatrix4 *tire_matrices,
+                           bMatrix4 *brake_matrices, bMatrix4 *, unsigned int extra_render_flags, int force_light_state,
+                           int reflexion, float shadow_scale, enum CARPART_LOD tireLOD, enum CARPART_LOD carLOD) {
+    ProfileNode profile_node;
+    bVector3 position = *world_position;
+    int car_pixel_size;
+
+    if (this->pCarTypeInfo != 0 && this->pCarTypeInfo->UsageType == CAR_USAGE_TYPE_COP) {
+        view->NumCopsTotal++;
+    }
+    car_pixel_size = view->GetPixelSize(&position, this->mRadius);
+    if (eGetCurrentViewMode() == EVIEWMODE_TWOH && iRam8047ff04 != 3) {
+        car_pixel_size = static_cast<int>(static_cast<float>(car_pixel_size) * 0.5f);
+    }
+    if (car_pixel_size < view->PixelMinSize) {
+        if (static_cast<unsigned int>(view->GetID() - 13) > 1) {
+            return true;
+        }
+    }
+    if (DrawCars == 0) {
+        return true;
+    }
+
+    eDynamicLightContext light_context_storage;
+    eDynamicLightContext *light_context = static_cast<eDynamicLightContext *>(CarRenderFrameMalloc(0x130));
+    bMatrix4 *local_world = static_cast<bMatrix4 *>(CarRenderFrameMalloc(sizeof(bMatrix4)));
+    bMatrix4 *world_local = static_cast<bMatrix4 *>(CarRenderFrameMalloc(sizeof(bMatrix4)));
+    bVector4 *camera_world_position = static_cast<bVector4 *>(CarRenderFrameMalloc(sizeof(bVector4)));
+    eShaperLightRig *shaper_lights = &ShaperLightsCarsInGame;
+    Camera *camera = view->GetCamera();
+    bool print_query_light_mat;
+    unsigned short steering = this->mSteeringR;
+    unsigned short left_steering = this->mSteeringL;
+    int body_lod = static_cast<int>(carLOD);
+    int tire_lod = static_cast<int>(tireLOD);
+
+    if (left_steering > 0x8000) {
+        left_steering = static_cast<unsigned short>(-left_steering);
+    }
+    if (steering > 0x8000) {
+        steering = static_cast<unsigned short>(-steering);
+    }
+    if (steering < left_steering) {
+        steering = this->mSteeringL;
+    }
+    if (body_lod < static_cast<int>(this->mMinLodLevel)) {
+        body_lod = static_cast<int>(this->mMinLodLevel);
+    }
+    if (body_lod > static_cast<int>(this->mMaxLodLevel)) {
+        body_lod = static_cast<int>(this->mMaxLodLevel);
+    }
+    if (tire_lod < static_cast<int>(this->mMinLodLevel)) {
+        tire_lod = static_cast<int>(this->mMinLodLevel);
+    }
+    if (tire_lod > static_cast<int>(this->mMaxLodLevel)) {
+        tire_lod = static_cast<int>(this->mMaxLodLevel);
+    }
+    if (light_context == 0 || local_world == 0 || world_local == 0 || camera_world_position == 0) {
+        return true;
+    }
+
+    *local_world = *body_matrix;
+    eMulMatrix(local_world, &CarScaleMatrix, local_world);
+    local_world->v3.x = position.x;
+    local_world->v3.y = position.y;
+    local_world->v3.z = position.z;
+    local_world->v3.w = 1.0f;
+
+    if (view->GetVisibleState(&this->AABBMin, &this->AABBMax, local_world) == EVISIBLESTATE_NOT) {
+        return true;
+    }
+
+    *world_local = *body_matrix;
+    world_local->v3.x = position.x;
+    world_local->v3.y = position.y;
+    world_local->v3.z = position.z;
+    world_local->v3.w = 1.0f;
+    if (camera != 0) {
+        camera_world_position->x = camera->GetPosition()->x;
+        camera_world_position->y = camera->GetPosition()->y;
+        camera_world_position->z = camera->GetPosition()->z;
+    } else {
+        camera_world_position->x = position.x;
+        camera_world_position->y = position.y;
+        camera_world_position->z = position.z;
+    }
+    camera_world_position->w = 1.0f;
+    print_query_light_mat = PrintQueryLightMat != 0;
+    if (print_query_light_mat) {
+        PrintLightQuery = 1;
+    }
+    if (iRam8047ff04 != 6) {
+        FEManager *fe_manager = FEManager::Get();
+
+        if (fe_manager != 0) {
+            switch (fe_manager->GetGarageType()) {
+            case GARAGETYPE_CAREER_SAFEHOUSE:
+                shaper_lights = &ShaperLightsSafehouse;
+                break;
+            case GARAGETYPE_CUSTOMIZATION_SHOP:
+                shaper_lights = &ShaperLightsCShop;
+                break;
+            case GARAGETYPE_CUSTOMIZATION_SHOP_BACKROOM:
+                shaper_lights = &ShaperLightsBackRoom;
+                break;
+            case GARAGETYPE_CAR_LOT:
+                shaper_lights = &ShaperLightsCarLot;
+                break;
+            case GARAGETYPE_MAIN_FE:
+            default:
+                shaper_lights = &ShaperLightsQRace;
+                break;
+            }
+        }
+    }
+    elResetLightContext(&light_context_storage);
+    elSetupLights(&light_context_storage, shaper_lights, &position, 0, &hack_man_matrix, view);
+    elCloneLightContext(light_context, world_local, &hack_man_matrix, camera_world_position, view, &light_context_storage);
+    this->CarFrame = eFrameCounter;
+    if (print_query_light_mat) {
+        PrintLightQuery = 0;
+    }
+    this->UpdateLightStateTextures();
+
+    if (!IsGameFlowInFrontEnd()) {
+        if (camera != 0) {
+            this->TheCarPartCuller.CullParts(camera->GetPosition(), steering);
+        }
+    }
+
+    for (int slot_id = 0; slot_id < 0x4C; slot_id++) {
+        if (slot_id == CARSLOTID_FRONT_WHEEL || slot_id == CARSLOTID_REAR_WHEEL || slot_id == CARSLOTID_FRONT_BRAKE ||
+            slot_id == CARSLOTID_REAR_BRAKE) {
+            continue;
+        }
+
+        CarPartModel *car_part_model = &this->mCarPartModels[slot_id][0][body_lod];
+        eModel *model = car_part_model->GetModel();
+
+        if (model != 0) {
+            eLightMaterial *paint_material = this->LightMaterial_CarSkin;
+
+            if (slot_id == CARSLOTID_SPOILER || slot_id == CARSLOTID_UNIVERSAL_SPOILER_BASE) {
+                if (this->LightMaterial_Spoiler != 0) {
+                    paint_material = this->LightMaterial_Spoiler;
+                }
+            } else if (slot_id == CARSLOTID_ROOF) {
+                if (this->LightMaterial_Roof != 0) {
+                    paint_material = this->LightMaterial_Roof;
+                }
+            } else if (slot_id == CARSLOTID_HOOD && this->CarbonHood != 0 && this->LightMaterial_Carbon != 0) {
+                paint_material = this->LightMaterial_Carbon;
+            }
+
+            if (paint_material != 0) {
+                model->ReplaceLightMaterial(0xD6D6080A, paint_material);
+            }
+            if (this->LightMaterial_WindowTint != 0) {
+                model->ReplaceLightMaterial(0x471A1DCA, this->LightMaterial_WindowTint);
+            }
+        }
+
+        this->RenderPart(view, car_part_model, local_world, light_context, extra_render_flags);
+    }
+
+    if (tire_matrices != 0) {
+        CarPartModel *front_tire = &this->mCarPartModels[CARSLOTID_FRONT_WHEEL][0][tire_lod];
+        CarPartModel *rear_tire = &this->mCarPartModels[CARSLOTID_REAR_WHEEL][0][tire_lod];
+
+        for (int wheel = 0; wheel < 4; wheel++) {
+            bMatrix4 tire_local_world = tire_matrices[wheel];
+
+            if ((wheel == 0 || wheel == 3) && this->mMirrorLeftWheels) {
+                eMulMatrix(&tire_local_world, &tire_local_world, &LeftTireMirrorMatrix);
+            }
+
+            eMulMatrix(&tire_local_world, &tire_local_world, local_world);
+            CarPartModel *wheel_part_model = wheel < 2 ? front_tire : rear_tire;
+            eModel *wheel_model = wheel_part_model->GetModel();
+
+            if (wheel_model != 0) {
+                if (this->LightMaterial_WheelRim != 0) {
+                    wheel_model->ReplaceLightMaterial(0xD6640DFF, this->LightMaterial_WheelRim);
+                }
+                if (this->LightMaterial_Spinner != 0) {
+                    wheel_model->ReplaceLightMaterial(0xA3186E2B, this->LightMaterial_Spinner);
+                }
+            }
+
+            this->RenderPart(view, wheel_part_model, &tire_local_world, light_context, extra_render_flags);
+        }
+    }
+
+    if (brake_matrices != 0) {
+        CarPartModel *front_brake = &this->mCarPartModels[CARSLOTID_FRONT_BRAKE][0][body_lod];
+        CarPartModel *rear_brake = &this->mCarPartModels[CARSLOTID_REAR_BRAKE][0][body_lod];
+
+        for (int wheel = 0; wheel < 4; wheel++) {
+            bMatrix4 brake_local_world = brake_matrices[wheel];
+
+            eMulMatrix(&brake_local_world, &brake_local_world, local_world);
+            CarPartModel *brake_part_model = wheel < 2 ? front_brake : rear_brake;
+            eModel *brake_model = brake_part_model->GetModel();
+
+            if (brake_model != 0 && this->LightMaterial_Caliper != 0) {
+                brake_model->ReplaceLightMaterial(0xD6640DFF, this->LightMaterial_Caliper);
+                brake_model->ReplaceLightMaterial(0xA3186E2B, this->LightMaterial_Caliper);
+            }
+
+            this->RenderPart(view, brake_part_model, &brake_local_world, light_context, extra_render_flags);
+        }
+    }
+
+    if (tire_matrices != 0 && !this->mEmitterPositionsInitialized) {
+        bVector4 tire_positions[4];
+
+        for (int wheel = 0; wheel < 4; wheel++) {
+            tire_positions[wheel] = tire_matrices[wheel].v3;
+        }
+
+        this->InitEmitterPositions(tire_positions);
+    }
+
+    this->RenderFlaresOnCar(view, &position, body_matrix, force_light_state, reflexion, static_cast<int>(extra_render_flags));
+
+    if (!reflexion && DrawCarShadow != 0 && shadow_scale > 0.0f) {
+        bMatrix4 biased_identity = *local_world;
+
+        view->BiasMatrixForZSorting(&biased_identity, 0.0f);
+        this->DrawAmbientShadow(view, &position, shadow_scale, local_world, world_local, &biased_identity);
+    }
+
+    return true;
+}
+
 void CarRenderInfo::RenderPart(eView *view, CarPartModel *carPart, bMatrix4 *local_to_world, eDynamicLightContext *light_context,
                                unsigned int flags) {
     if (carPart != nullptr) {
@@ -1171,7 +1453,8 @@ int CarRenderInfo::GetEmitterPositions(bSList<CarEmitterPosition> &markers_out, 
                                        int num_pos_name_hashes) {
     int count = 0;
 
-    InitSList(markers_out);
+    reinterpret_cast<bSListLayout<CarEmitterPosition> &>(markers_out).Head = markers_out.EndOfList();
+    reinterpret_cast<bSListLayout<CarEmitterPosition> &>(markers_out).Tail = markers_out.EndOfList();
 
     if (this->pCarTypeInfo == nullptr) {
         return 0;
@@ -1186,17 +1469,23 @@ int CarRenderInfo::GetEmitterPositions(bSList<CarEmitterPosition> &markers_out, 
         }
 
         while ((position_marker = model->GetPostionMarker(position_marker)) != nullptr) {
-            unsigned int position_marker_namehash = position_marker->NameHash;
-
             for (int i = 0; i < num_pos_name_hashes; i++) {
-                if (position_marker_namehash == position_name_hashes[i]) {
+                if (position_marker->NameHash == position_name_hashes[i]) {
                     CarEmitterPosition *empos = static_cast<CarEmitterPosition *>(bOMalloc(CarEmitterPositionSlotPool));
+                    bSListLayout<CarEmitterPosition> &layout =
+                        reinterpret_cast<bSListLayout<CarEmitterPosition> &>(markers_out);
+                    bSNodeLayout<CarEmitterPosition> &node_layout =
+                        reinterpret_cast<bSNodeLayout<CarEmitterPosition> &>(*empos);
+                    CarEmitterPosition *end = markers_out.EndOfList();
+                    CarEmitterPosition *tail = layout.Tail;
 
                     empos->X = position_marker->Matrix.v3.x;
                     empos->Y = position_marker->Matrix.v3.y;
                     empos->Z = position_marker->Matrix.v3.z;
                     empos->PositionMarker = position_marker;
-                    AddTailEmitterPosition(markers_out, empos);
+                    node_layout.Next = end;
+                    reinterpret_cast<bSNodeLayout<CarEmitterPosition> &>(*tail).Next = empos;
+                    layout.Tail = empos;
                     count++;
                 }
             }
@@ -1212,8 +1501,6 @@ void CarRenderInfo::InitEmitterPositions(bVector4 *tire_positions) {
             int num_pos_name_hashes = 0;
             bSList<CarEmitterPosition> &markers = this->EmitterPositionList[i];
 
-            InitSList(markers);
-
             if (GetNumCarEffectMarkerHashes(static_cast<CarEffectPosition>(i), num_pos_name_hashes)) {
                 if (num_pos_name_hashes > 0) {
                     this->GetEmitterPositions(markers, GetCarEffectMarkerHashes(static_cast<CarEffectPosition>(i)), num_pos_name_hashes);
@@ -1225,69 +1512,115 @@ void CarRenderInfo::InitEmitterPositions(bVector4 *tire_positions) {
             switch (i) {
                 case CARFXPOS_NONE:
                     empos = static_cast<CarEmitterPosition *>(bOMalloc(CarEmitterPositionSlotPool));
+                    empos->PositionMarker = nullptr;
                     empos->X = 0.0f;
                     empos->Y = 0.0f;
                     empos->Z = 0.0f;
                     break;
                 case CARFXPOS_FRONT_TIRES:
-                    empos = static_cast<CarEmitterPosition *>(bOMalloc(CarEmitterPositionSlotPool));
-                    empos->X = (tire_positions[0].x + tire_positions[1].x) * 0.5f;
-                    empos->Y = (tire_positions[0].y + tire_positions[1].y) * 0.5f;
-                    empos->Z = (tire_positions[0].z + tire_positions[1].z) * 0.5f;
+                    {
+                        float x = (tire_positions[0].x + tire_positions[1].x) * 0.5f;
+                        float y = (tire_positions[0].y + tire_positions[1].y) * 0.5f;
+                        float z = (tire_positions[0].z + tire_positions[1].z) * 0.5f;
+
+                        empos = static_cast<CarEmitterPosition *>(bOMalloc(CarEmitterPositionSlotPool));
+                        empos->PositionMarker = nullptr;
+                        empos->X = x;
+                        empos->Y = y;
+                        empos->Z = z;
+                    }
                     break;
                 case CARFXPOS_REAR_TIRES:
-                    empos = static_cast<CarEmitterPosition *>(bOMalloc(CarEmitterPositionSlotPool));
-                    empos->X = (tire_positions[2].x + tire_positions[3].x) * 0.5f;
-                    empos->Y = (tire_positions[2].y + tire_positions[3].y) * 0.5f;
-                    empos->Z = (tire_positions[2].z + tire_positions[3].z) * 0.5f;
+                    {
+                        float x = (tire_positions[2].x + tire_positions[3].x) * 0.5f;
+                        float y = (tire_positions[2].y + tire_positions[3].y) * 0.5f;
+                        float z = (tire_positions[2].z + tire_positions[3].z) * 0.5f;
+
+                        empos = static_cast<CarEmitterPosition *>(bOMalloc(CarEmitterPositionSlotPool));
+                        empos->PositionMarker = nullptr;
+                        empos->X = x;
+                        empos->Y = y;
+                        empos->Z = z;
+                    }
                     break;
                 case CARFXPOS_LEFT_TIRES:
-                    empos = static_cast<CarEmitterPosition *>(bOMalloc(CarEmitterPositionSlotPool));
-                    empos->X = (tire_positions[0].x + tire_positions[3].x) * 0.5f;
-                    empos->Y = (tire_positions[0].y + tire_positions[3].y) * 0.5f;
-                    empos->Z = (tire_positions[0].z + tire_positions[3].z) * 0.5f;
+                    {
+                        float x = (tire_positions[0].x + tire_positions[3].x) * 0.5f;
+                        float y = (tire_positions[0].y + tire_positions[3].y) * 0.5f;
+                        float z = (tire_positions[0].z + tire_positions[3].z) * 0.5f;
+
+                        empos = static_cast<CarEmitterPosition *>(bOMalloc(CarEmitterPositionSlotPool));
+                        empos->PositionMarker = nullptr;
+                        empos->X = x;
+                        empos->Y = y;
+                        empos->Z = z;
+                    }
                     break;
                 case CARFXPOS_RIGHT_TIRES:
-                    empos = static_cast<CarEmitterPosition *>(bOMalloc(CarEmitterPositionSlotPool));
-                    empos->X = (tire_positions[1].x + tire_positions[2].x) * 0.5f;
-                    empos->Y = (tire_positions[1].y + tire_positions[2].y) * 0.5f;
-                    empos->Z = (tire_positions[1].z + tire_positions[2].z) * 0.5f;
+                    {
+                        float x = (tire_positions[1].x + tire_positions[2].x) * 0.5f;
+                        float y = (tire_positions[1].y + tire_positions[2].y) * 0.5f;
+                        float z = (tire_positions[1].z + tire_positions[2].z) * 0.5f;
+
+                        empos = static_cast<CarEmitterPosition *>(bOMalloc(CarEmitterPositionSlotPool));
+                        empos->PositionMarker = nullptr;
+                        empos->X = x;
+                        empos->Y = y;
+                        empos->Z = z;
+                    }
                     break;
                 case CARFXPOS_TIRE_FL:
                     empos = static_cast<CarEmitterPosition *>(bOMalloc(CarEmitterPositionSlotPool));
+                    empos->PositionMarker = nullptr;
                     empos->X = tire_positions[0].x;
                     empos->Y = tire_positions[0].y;
                     empos->Z = tire_positions[0].z;
                     break;
                 case CARFXPOS_TIRE_FR:
                     empos = static_cast<CarEmitterPosition *>(bOMalloc(CarEmitterPositionSlotPool));
+                    empos->PositionMarker = nullptr;
                     empos->X = tire_positions[1].x;
                     empos->Y = tire_positions[1].y;
                     empos->Z = tire_positions[1].z;
                     break;
                 case CARFXPOS_TIRE_RR:
                     empos = static_cast<CarEmitterPosition *>(bOMalloc(CarEmitterPositionSlotPool));
+                    empos->PositionMarker = nullptr;
                     empos->X = tire_positions[2].x;
                     empos->Y = tire_positions[2].y;
                     empos->Z = tire_positions[2].z;
                     break;
                 case CARFXPOS_TIRE_RL:
                     empos = static_cast<CarEmitterPosition *>(bOMalloc(CarEmitterPositionSlotPool));
+                    empos->PositionMarker = nullptr;
                     empos->X = tire_positions[3].x;
                     empos->Y = tire_positions[3].y;
                     empos->Z = tire_positions[3].z;
                     break;
                 case CARFXPOS_ENGINE:
-                    empos = static_cast<CarEmitterPosition *>(bOMalloc(CarEmitterPositionSlotPool));
-                    empos->X = (tire_positions[0].x + tire_positions[1].x) * 0.5f;
-                    empos->Y = (tire_positions[0].y + tire_positions[1].y) * 0.5f;
-                    empos->Z = (tire_positions[0].z + tire_positions[1].z) * 0.5f + (tire_positions[0].y - tire_positions[1].y) * 0.2f;
+                    {
+                        float x = (tire_positions[0].x + tire_positions[1].x) * 0.5f;
+                        float y = (tire_positions[0].y + tire_positions[1].y) * 0.5f;
+                        float z = (tire_positions[0].z + tire_positions[1].z) * 0.5f + (tire_positions[0].y - tire_positions[1].y) * 0.2f;
+
+                        empos = static_cast<CarEmitterPosition *>(bOMalloc(CarEmitterPositionSlotPool));
+                        empos->PositionMarker = nullptr;
+                        empos->X = x;
+                        empos->Y = y;
+                        empos->Z = z;
+                    }
                     break;
             }
 
             if (empos != nullptr) {
-                empos->PositionMarker = nullptr;
-                AddTailEmitterPosition(markers, empos);
+                bSListLayout<CarEmitterPosition> &layout = reinterpret_cast<bSListLayout<CarEmitterPosition> &>(markers);
+                bSNodeLayout<CarEmitterPosition> &node_layout = reinterpret_cast<bSNodeLayout<CarEmitterPosition> &>(*empos);
+                CarEmitterPosition *end = markers.EndOfList();
+                CarEmitterPosition *tail = layout.Tail;
+
+                node_layout.Next = end;
+                reinterpret_cast<bSNodeLayout<CarEmitterPosition> &>(*tail).Next = empos;
+                layout.Tail = empos;
             }
         }
 
