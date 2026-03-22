@@ -959,11 +959,10 @@ int TrackStreamer::BuildHoleMovements(HoleMovement *hole_movements, int max_move
         pMemoryPool->Malloc(movement->Size, debug_name, false, false, movement->Address);
     }
 
+    pMemoryPool->EnableTracing(true);
     if (pamount_moved) {
         *pamount_moved = amount_moved;
     }
-
-    pMemoryPool->EnableTracing(true);
     if (failed) {
         return -1;
     }
