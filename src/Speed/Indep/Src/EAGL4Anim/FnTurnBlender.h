@@ -45,7 +45,7 @@ class FnTurnBlender : public FnAnim {
     void SetAnims(Skeleton *s, int numAnims, FnAnim **anims);
 
     // Overrides: FnAnim
-    bool EvalPhase(float) override;
+    bool EvalPhase(float currTime, PhaseValue &phase) override;
 
     // Overrides: FnAnim
     bool EvalVel2D(float currTime, float *vel) override;
