@@ -1231,7 +1231,7 @@ void TrackStreamer::DetermineStreamingSections() {
     const int max_sections_to_load = 0x180;
     short sections_to_load[384];
     int num_sections_to_load = 3;
-    short section_number;
+    unsigned short section_number;
 
     RemoveCurrentStreamingSections();
     sections_to_load[0] = GetScenerySectionNumber_TrackStreamer('Y', 0);
@@ -1253,8 +1253,8 @@ void TrackStreamer::DetermineStreamingSections() {
             }
         }
 
-        AddCurrentStreamingSections(sections_to_load_ptr, num_sections_to_load, 0);
-        AddCurrentStreamingSections(sections_to_load_ptr, num_sections_to_load, 1);
+        AddCurrentStreamingSections(sections_to_load, num_sections_to_load, 0);
+        AddCurrentStreamingSections(sections_to_load, num_sections_to_load, 1);
         int position_number = 0;
         do {
             {
@@ -1281,7 +1281,7 @@ void TrackStreamer::DetermineStreamingSections() {
                         }
                     }
 
-                    AddCurrentStreamingSections(sections_to_load_ptr, num_sections_to_load, position_number);
+                    AddCurrentStreamingSections(sections_to_load, num_sections_to_load, position_number);
                 }
             }
             position_number += 1;
