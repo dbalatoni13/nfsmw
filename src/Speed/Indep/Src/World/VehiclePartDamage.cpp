@@ -30,6 +30,7 @@ extern float lbl_8040D110;
 extern float lbl_8040D114;
 extern float lbl_8040D118;
 extern float lbl_8040D11C;
+extern float lbl_8040D14C;
 
 extern VehicleDamagePart *VehicleDamagePart_ctor(VehicleDamagePart *part, CarRenderInfo *carRenderInfo, int slotId)
     asm("__17VehicleDamagePartP13CarRenderInfoi");
@@ -303,6 +304,43 @@ void VehiclePartDamageBehaviour::Update(bMatrix4 *worldMatrix) {
             lbl_8040D108,
             lbl_8040D10C,
             lbl_8040D110);
+    }
+}
+
+void VehiclePartDamageBehaviour::AnimatePart(unsigned int slotId, const bVector3 &rotation, bMatrix4 *worldMatrix) {
+    if (slotId < 0x18) {
+        int lod = this->mCarRenderInfo->mMinLodLevel;
+        VehicleDamagePart *damagePart = this->mDamagePartList[slotId];
+        bMatrix4 *partMatrix = reinterpret_cast<bMatrix4 *>(reinterpret_cast<unsigned char *>(damagePart) + 0x1C);
+
+        while (lod <= this->mCarRenderInfo->mMaxLodLevel &&
+               ((reinterpret_cast<unsigned int *>(reinterpret_cast<unsigned char *>(this->mCarRenderInfo) + 0xB78 + slotId * 0x14)[lod] & 1) == 0)) {
+            if (damagePart != 0) {
+                bMatrix4 localInverse;
+                bVector3 pivot;
+                bVector3 offset;
+
+                PSMTX44Copy(*reinterpret_cast<const Mtx44 *>(worldMatrix), *reinterpret_cast<Mtx44 *>(&localInverse));
+                bInvertMatrix(&localInverse, &localInverse);
+                eMulMatrix(partMatrix, worldMatrix, &localInverse);
+
+                pivot.x = *reinterpret_cast<float *>(reinterpret_cast<unsigned char *>(damagePart) + 0x10);
+                pivot.y = *reinterpret_cast<float *>(reinterpret_cast<unsigned char *>(damagePart) + 0x14);
+                pivot.z = *reinterpret_cast<float *>(reinterpret_cast<unsigned char *>(damagePart) + 0x18);
+                offset = pivot;
+                eTranslate(partMatrix, partMatrix, &offset);
+                eRotateX(partMatrix, partMatrix, static_cast<unsigned short>(static_cast<int>(rotation.x * lbl_8040D14C) / 0x168));
+                eRotateY(partMatrix, partMatrix, static_cast<unsigned short>(static_cast<int>(rotation.y * lbl_8040D14C) / 0x168));
+                eRotateZ(partMatrix, partMatrix, static_cast<unsigned short>(static_cast<int>(rotation.z * lbl_8040D14C) / 0x168));
+                offset.x = -pivot.x;
+                offset.y = -pivot.y;
+                offset.z = -pivot.z;
+                eTranslate(partMatrix, partMatrix, &offset);
+                eMulMatrix(partMatrix, partMatrix, worldMatrix);
+            }
+
+            lod++;
+        }
     }
 }
 
