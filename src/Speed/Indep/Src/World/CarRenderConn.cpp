@@ -2,6 +2,7 @@
 #include "Speed/Indep/Src/Physics/PhysicsInfo.hpp"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/simsurface.h"
 #include "Speed/Indep/Src/Ecstasy/EcstasyData.hpp"
+#include "Speed/Indep/Libs/Support/Utility/UMath.h"
 
 struct CarPartDatabase;
 extern void *gINISInstance asm("_Q33UTL11Collectionst9Singleton1Z4INIS_mInstance");
@@ -17,6 +18,8 @@ extern int PhysicsUpgrades_GetLevel(const Attrib::Gen::pvehicle &pvehicle, int t
     asm("GetLevel__Q27Physics8UpgradesRCQ36Attrib3Gen8pvehicleQ37Physics8Upgrades4Type");
 extern int PhysicsUpgrades_GetMaxLevel(const Attrib::Gen::pvehicle &pvehicle, int type)
     asm("GetMaxLevel__Q27Physics8UpgradesRCQ36Attrib3Gen8pvehicleQ37Physics8Upgrades4Type");
+extern void VU0_Matrix4ToEuler(const UMath::Matrix4 &m, UMath::Vector3 &e)
+    asm("VU0_Matrix4ToEuler__FRCQ25UMath7Matrix4RQ25UMath7Vector3");
 extern float RealTimeElapsed;
 extern float renderModifier;
 extern int Tweak_DisableRoadNoise;
@@ -442,6 +445,186 @@ void CarRenderConn::UpdateEngineAnimation(float dT, const RenderConn::Pkt_Car_Se
     } else {
         this->mEngineVibrationAngle = data.mAnimatedCarShake;
     }
+}
+
+void CarRenderConn::UpdateBodyAnimation(float dT, const RenderConn::Pkt_Car_Service &data) {
+    if (!this->TestVisibility(renderModifier * 80.0f)) {
+        this->mExtraBodyAngle.x = UMath::Vector2::kZero.x;
+        this->mExtraBodyAngle.y = UMath::Vector2::kZero.y;
+        return;
+    }
+
+    const bVector3 *acceleration = this->GetAcceleration();
+    float longitudinalGs =
+        bDot(*acceleration, *reinterpret_cast<const bVector3 *>(&this->mRenderMatrix.v0)) * 0.10204081f;
+    float lateralGs = bDot(*acceleration, *reinterpret_cast<const bVector3 *>(&this->mRenderMatrix.v1)) * 0.10204081f;
+
+    const CarBodyMotion &bodyRoll = this->GetAttributes().BodyRoll();
+    const CarBodyMotion *bodyPitch = &this->GetAttributes().BodySquat();
+    if (longitudinalGs < 0.0f) {
+        bodyPitch = &this->GetAttributes().BodyDive();
+    }
+
+    float rollTarget = data.mExtraBodyRoll * bodyRoll.DegPerG * 0.017453f;
+    float pitchTarget = data.mExtraBodyPitch * bodyPitch->DegPerG * 0.017453f;
+    float rollDelta = bodyRoll.DegPerSec * 0.017453f * dT;
+    float pitchDelta = bodyPitch->DegPerSec * 0.017453f * dT;
+
+    if (bAbs(lateralGs) < 0.2f) {
+        lateralGs = 0.0f;
+    }
+    if (bAbs(longitudinalGs) < 0.2f) {
+        longitudinalGs = 0.0f;
+    }
+
+    float rollBlend = 0.0f;
+    float rollMin = -bodyRoll.MaxGs;
+    float rollRange = bodyRoll.MaxGs - rollMin;
+    if (1e-6f < rollRange) {
+        rollBlend = (lateralGs - rollMin) / rollRange;
+        rollBlend = bClamp(rollBlend, 0.0f, 1.0f);
+    }
+
+    float pitchBlend = 0.0f;
+    float pitchMin = -bodyPitch->MaxGs;
+    float pitchRange = bodyPitch->MaxGs - pitchMin;
+    if (1e-6f < pitchRange) {
+        pitchBlend = ((-longitudinalGs * 0.10204081f) - pitchMin) / pitchRange;
+        pitchBlend = bClamp(pitchBlend, 0.0f, 1.0f);
+    }
+
+    rollTarget = (rollTarget + rollTarget) * (rollBlend - 0.5f);
+    pitchTarget = (pitchTarget + pitchTarget) * (pitchBlend - 0.5f);
+
+    if (bLength(*this->GetVelocity()) < 1.0f) {
+        rollTarget = 0.0f;
+        pitchTarget = 0.0f;
+    }
+
+    if (this->mExtraBodyAngle.x < rollTarget) {
+        float current = this->mExtraBodyAngle.x + rollDelta;
+        this->mExtraBodyAngle.x = current < rollTarget ? current : rollTarget;
+    } else if (rollTarget < this->mExtraBodyAngle.x) {
+        float current = this->mExtraBodyAngle.x - rollDelta;
+        this->mExtraBodyAngle.x = rollTarget < current ? current : rollTarget;
+    }
+
+    if (this->mExtraBodyAngle.y < pitchTarget) {
+        float current = this->mExtraBodyAngle.y + pitchDelta;
+        this->mExtraBodyAngle.y = current < pitchTarget ? current : pitchTarget;
+    } else if (pitchTarget < this->mExtraBodyAngle.y) {
+        float current = this->mExtraBodyAngle.y - pitchDelta;
+        this->mExtraBodyAngle.y = pitchTarget < current ? current : pitchTarget;
+    }
+}
+
+void CarRenderConn::BuildRenderMatrix(float dT) {
+    bVector4 offset(this->GetModelOffset());
+    CarRenderInfo *carRenderInfo = this->GetRenderInfo();
+
+    if (0.0f < dT) {
+        UMath::Vector3 e0;
+        UMath::Vector3 e1;
+        UMath::Vector3 v;
+        UMath::Vector3 v0;
+        UMath::Vector3 v1;
+
+        VU0_Matrix4ToEuler(reinterpret_cast<const UMath::Matrix4 &>(this->mRenderMatrix), e0);
+        VU0_Matrix4ToEuler(reinterpret_cast<const UMath::Matrix4 &>(*this->GetBodyMatrix()), e1);
+        UMath::Sub(e1, e0, v);
+        UMath::Scale(v, (1.0f / dT) * 6.2831855f);
+        CarRenderInfoF32(carRenderInfo, 0x14) = v.x;
+        CarRenderInfoF32(carRenderInfo, 0x18) = v.y;
+        CarRenderInfoF32(carRenderInfo, 0x1C) = v.z;
+
+        v0.x = CarRenderInfoF32(carRenderInfo, 0x4);
+        v0.y = CarRenderInfoF32(carRenderInfo, 0x8);
+        v0.z = CarRenderInfoF32(carRenderInfo, 0xC);
+        v1 = reinterpret_cast<const UMath::Vector3 &>(*this->GetVelocity());
+        UMath::Sub(v1, v0, v);
+        UMath::Scale(v, 1.0f / dT);
+        CarRenderInfoF32(carRenderInfo, 0x24) = v.x;
+        CarRenderInfoF32(carRenderInfo, 0x28) = v.y;
+        CarRenderInfoF32(carRenderInfo, 0x2C) = v.z;
+        CarRenderInfoF32(carRenderInfo, 0x4) = v1.x;
+        CarRenderInfoF32(carRenderInfo, 0x8) = v1.y;
+        CarRenderInfoF32(carRenderInfo, 0xC) = v1.z;
+    }
+
+    this->mRenderMatrix = *this->GetBodyMatrix();
+
+    bVector4 rotOffset;
+    eMulVector(&rotOffset, this->GetBodyMatrix(), &offset);
+    this->mRenderMatrix.v3.x -= rotOffset.x;
+    this->mRenderMatrix.v3.y -= rotOffset.y;
+    this->mRenderMatrix.v3.z -= rotOffset.z;
+}
+
+void CarRenderConn::UpdateRenderMatrix(float dT) {
+    if (!this->TestVisibility(renderModifier * 80.0f)) {
+        return;
+    }
+
+    bMatrix4 tire_matrices[4];
+    bMatrix4 brake_matrices[4];
+    for (int i = 0; i < 4; i++) {
+        eMulMatrix(&tire_matrices[i], &this->mTireMatrices[i], &this->mRenderMatrix);
+        eMulMatrix(&brake_matrices[i], &this->mBrakeMatrices[i], &this->mRenderMatrix);
+    }
+
+    float rotate_x =
+        this->mExtraBodyAngle.x + this->mWheelHop.x + this->mFlatTireAngle.x + this->mRoadNoise.y + this->mEngineTorqueAngle + this->mEngineVibrationAngle;
+    float rotate_y = this->GetAttributes().ExtraPitch(0) * 0.017453f + this->mExtraBodyAngle.y + this->mWheelHop.y + this->mFlatTireAngle.y +
+                     this->mRoadNoise.x + this->mEnginePitchAngle + this->mShiftPitchAngle;
+    float ride_height = this->GetAttributes().RideHeight() * 0.0254f + this->mWheelHop.z + this->mRoadNoise.z + this->mFlatTireAngle.z;
+
+    bMatrix4 identity;
+    bMatrix4 x_rotation;
+    bMatrix4 y_rotation;
+    bMatrix4 rotation;
+    bMatrix4 old_render_matrix;
+    bMatrix4 inverse_matrix;
+    PSMTX44Identity(*reinterpret_cast<Mtx44 *>(&identity));
+    eRotateX(&x_rotation, &identity, static_cast<unsigned short>(rotate_x * 10430.378f));
+    eRotateY(&y_rotation, &identity, static_cast<unsigned short>(rotate_y * 10430.378f));
+    eMulMatrix(&rotation, &x_rotation, &y_rotation);
+
+    PSMTX44Copy(*reinterpret_cast<Mtx44 *>(&this->mRenderMatrix), *reinterpret_cast<Mtx44 *>(&old_render_matrix));
+    eMulMatrix(&this->mRenderMatrix, &rotation, &old_render_matrix);
+
+    this->mRenderMatrix.v3.x += this->mRenderMatrix.v2.x * ride_height;
+    this->mRenderMatrix.v3.y += this->mRenderMatrix.v2.y * ride_height;
+    this->mRenderMatrix.v3.z += this->mRenderMatrix.v2.z * ride_height;
+
+    bInvertMatrix(&inverse_matrix, &this->mRenderMatrix);
+    for (int i = 0; i < 4; i++) {
+        eMulMatrix(&this->mTireMatrices[i], &tire_matrices[i], &inverse_matrix);
+        eMulMatrix(&this->mBrakeMatrices[i], &brake_matrices[i], &inverse_matrix);
+    }
+
+    float wheel_well = this->GetAttributes().WheelWell(0) * 0.0254f;
+    if (0.0f < wheel_well) {
+        float max_wheel = this->mTireMatrices[0].v3.y + this->mTireRadius[0];
+        for (int i = 1; i < 4; i++) {
+            float wheel_height = this->mTireMatrices[i].v3.y + this->mTireRadius[i];
+            if (max_wheel < wheel_height) {
+                max_wheel = wheel_height;
+            }
+        }
+
+        if (wheel_well < max_wheel) {
+            float delta = max_wheel - wheel_well;
+            this->mRenderMatrix.v3.x += this->mRenderMatrix.v2.x * delta;
+            this->mRenderMatrix.v3.y += this->mRenderMatrix.v2.y * delta;
+            this->mRenderMatrix.v3.z += this->mRenderMatrix.v2.z * delta;
+            for (int i = 0; i < 4; i++) {
+                this->mTireMatrices[i].v3.y -= delta;
+                this->mBrakeMatrices[i].v3.y -= delta;
+            }
+        }
+    }
+
+    (void)dT;
 }
 
 void CarRenderConn::Update(const RenderConn::Pkt_Car_Service &data, float dT) {

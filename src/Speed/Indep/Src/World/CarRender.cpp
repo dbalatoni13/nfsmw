@@ -16,6 +16,7 @@
 #include "Speed/Indep/Src/Misc/GameFlow.hpp"
 #include "Speed/Indep/Src/Misc/Profiler.hpp"
 #include "Speed/Indep/Src/World/CarInfo.hpp"
+#include "Speed/Indep/Src/World/VehicleFragmentConn.h"
 #include "Speed/Indep/Src/World/VehicleRenderConn.h"
 #include "Speed/Indep/Src/World/World.hpp"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
@@ -99,11 +100,6 @@ extern bVector3 EnvMapEyeOffset;
 extern bVector3 EnvMapCamOffset;
 extern int counter_31665 asm("counter.31665");
 extern int counter_31669 asm("counter.31669");
-
-class VehicleFragmentConn {
-  public:
-    static void FetchData(float dT);
-};
 
 namespace {
 

@@ -82,6 +82,11 @@ class WorldModel : public bTNode<WorldModel> {
 
     void AttachReplacementTextureTable(eReplacementTextureTable *replacement_texture_table, int num_textures);
 
+    void AttachLightMaterial(eLightMaterial *lm, unsigned int toskin) {
+        this->mLightMaterial = lm;
+        this->mLightMaterialSkinHash = toskin;
+    }
+
     unsigned int GetNameHash();
 
     const char *GetName();
