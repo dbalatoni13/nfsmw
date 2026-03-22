@@ -29,6 +29,14 @@ struct CarPartPackListCtor {
           Prev(this) {}
 };
 
+struct CarPartPackLayout {
+    CarPartPackLayout *Next;
+    CarPartPackLayout *Prev;
+    char pad[0x2C];
+    CarPart *PartsTable;
+    int NumParts;
+};
+
 struct CarPartIndexCtor {
     CarPart *Part;
     int NumParts;
@@ -56,6 +64,10 @@ struct CarPartDatabase {
     CarPartIndexCtor VinylPart_Manufacturer[3];
 
     CarPartDatabase();
+    int NewGetNumCarParts(CarType car_type, int car_slot_id, unsigned int car_part_namehash, int upgrade_level);
+    CarPart *NewGetCarPart(CarType car_type, int car_slot_id, unsigned int car_part_namehash, CarPart *prev_part, int upgrade_level);
+    CarPart *NewGetFirstCarPart(CarType car_type, int car_slot_id, unsigned int car_part_namehash, int upgrade_level);
+    CarPart *NewGetNextCarPart(CarPart *car_part, CarType car_type, int car_slot_id, unsigned int car_part_namehash, int upgrade_level);
 };
 struct MissingCarPart {
     short CarType;
@@ -76,14 +88,14 @@ extern MissingCarPart MissingCarPartTable[0x14A];
 int UsedCarTextureAddToTable(unsigned int *table, int num_used, int max_textures, unsigned int texture_hash = 0);
 int GetTempCarSkinTextures(unsigned int *table, int num_used, int max_textures, RideInfo *ride_info);
 int GetIsCollectorsEdition();
+unsigned int *GetTypesFromSlot(CAR_SLOT_ID slot, CarType car_type);
+unsigned char MapCarTypeNameHashToIndex(unsigned int car_type_namehash);
+void *ScanHashTableKey8(unsigned char key_value, void *table_start, int table_length, int entry_key_offset, int entry_size);
 CAR_PART_ID GetCarPartFromSlot(CAR_SLOT_ID slot);
 CarPart *FindPartWithLevel(CarType type, CAR_SLOT_ID slot, int upg_level);
 int GetNumCarSlotIDNames();
 const char *GetCarTypeName(CarType car_type);
 CarTypeInfo *GetCarTypeInfoFromHash(unsigned int car_type_hash);
-int NewGetNumCarParts(CarPartDatabase *database, CarType type, int slot, unsigned int name_hash, int upgrade_level);
-CarPart *NewGetCarPart(CarPartDatabase *database, CarType type, int slot, unsigned int name_hash, CarPart *start_part, int upgrade_level);
-CarPart *NewGetNextCarPart(CarPartDatabase *database, CarPart *part, CarType type, int slot, unsigned int name_hash, int upgrade_level);
 PresetCar *FindFEPresetCar(unsigned int preset_name_hash);
 const char *GetCarSlotNameFromID(int car_slot_id);
 
@@ -304,21 +316,21 @@ void RideInfo::SetStockParts() {
         if (((this->Type != static_cast<CarType>(4)) || (car_slot_id != CARSLOTID_ATTACHMENT6)) && car_slot_id != CARSLOTID_VINYL_LAYER0 &&
             (static_cast<unsigned int>(car_slot_id - CARSLOTID_DECAL_FRONT_WINDOW_TEX0) > 0x2F)) {
             if (car_slot_id == CARSLOTID_HUD_BACKING_COLOUR) {
-                CarPart *hud_part = NewGetCarPart(&CarPartDB, this->Type, car_slot_id, bStringHash("ORANGE"), 0, -1);
+                CarPart *hud_part = CarPartDB.NewGetCarPart(this->Type, car_slot_id, bStringHash("ORANGE"), 0, -1);
                 if (hud_part == 0) {
                     this->SetUpgradePart(static_cast<CAR_SLOT_ID>(car_slot_id), 0);
                 } else {
                     this->SetPart(car_slot_id, hud_part, true);
                 }
             } else if (car_slot_id == CARSLOTID_HUD_NEEDLE_COLOUR) {
-                CarPart *hud_part = NewGetCarPart(&CarPartDB, this->Type, car_slot_id, bStringHash("ORANGE"), 0, -1);
+                CarPart *hud_part = CarPartDB.NewGetCarPart(this->Type, car_slot_id, bStringHash("ORANGE"), 0, -1);
                 if (hud_part == 0) {
                     this->SetUpgradePart(static_cast<CAR_SLOT_ID>(car_slot_id), 0);
                 } else {
                     this->SetPart(car_slot_id, hud_part, true);
                 }
             } else if (car_slot_id == CARSLOTID_HUD_CHARACTER_COLOUR) {
-                CarPart *hud_part = NewGetCarPart(&CarPartDB, this->Type, car_slot_id, bStringHash("WHITE"), 0, -1);
+                CarPart *hud_part = CarPartDB.NewGetCarPart(this->Type, car_slot_id, bStringHash("WHITE"), 0, -1);
                 if (hud_part == 0) {
                     this->SetUpgradePart(static_cast<CAR_SLOT_ID>(car_slot_id), 0);
                 } else {
@@ -327,7 +339,7 @@ void RideInfo::SetStockParts() {
             } else if (car_slot_id == CARSLOTID_BASE_PAINT) {
                 CarTypeInfo *type_info = &CarTypeInfoArray[this->Type];
                 CarPart *paint_part =
-                    NewGetCarPart(&CarPartDB, this->Type, car_slot_id, static_cast<unsigned int>(type_info->DefaultBasePaint), 0, -1);
+                    CarPartDB.NewGetCarPart(this->Type, car_slot_id, static_cast<unsigned int>(type_info->DefaultBasePaint), 0, -1);
                 if (paint_part != 0) {
                     this->SetPart(car_slot_id, paint_part, true);
                 }
@@ -344,14 +356,14 @@ void RideInfo::SetStockParts() {
 
     for (int j = 0; j < 4; j++) {
         int car_slot_id = j + CARSLOTID_VINYL_COLOUR0_0;
-        CarPart *vinyl_paint_part = NewGetCarPart(&CarPartDB, this->Type, car_slot_id, stock_vinyl_colours[j], 0, -1);
+        CarPart *vinyl_paint_part = CarPartDB.NewGetCarPart(this->Type, car_slot_id, stock_vinyl_colours[j], 0, -1);
 
         this->SetPart(car_slot_id, vinyl_paint_part, true);
     }
 }
 
 void RideInfo::SetRandomPart(CAR_SLOT_ID slot, int upgrade_level) {
-    int num_parts = NewGetNumCarParts(&CarPartDB, this->Type, slot, 0, upgrade_level);
+    int num_parts = CarPartDB.NewGetNumCarParts(this->Type, slot, 0, upgrade_level);
     CarPart *part = 0;
     bool foundModel = false;
 
@@ -359,7 +371,7 @@ void RideInfo::SetRandomPart(CAR_SLOT_ID slot, int upgrade_level) {
         int part_number = bRandom(num_parts);
 
         for (int i = 0; i < part_number + 1; i++) {
-            part = NewGetNextCarPart(&CarPartDB, part, this->Type, slot, 0, upgrade_level);
+            part = CarPartDB.NewGetNextCarPart(part, this->Type, slot, 0, upgrade_level);
         }
 
         if (part != 0) {
@@ -439,10 +451,10 @@ void RideInfo::SetRandomPaint() {
     int paint_number;
 
     paint_part = 0;
-    num_paints = NewGetNumCarParts(&CarPartDB, this->Type, CARSLOTID_BASE_PAINT, 0, -1);
+    num_paints = CarPartDB.NewGetNumCarParts(this->Type, CARSLOTID_BASE_PAINT, 0, -1);
     paint_number = bRandom(num_paints);
     for (int i = 0; i < paint_number + 1; i++) {
-        paint_part = NewGetNextCarPart(&CarPartDB, paint_part, this->Type, CARSLOTID_BASE_PAINT, 0, -1);
+        paint_part = CarPartDB.NewGetNextCarPart(paint_part, this->Type, CARSLOTID_BASE_PAINT, 0, -1);
     }
 
     this->SetPart(CARSLOTID_BASE_PAINT, paint_part, true);
@@ -483,32 +495,32 @@ CarPart *RideInfo::SetPart(int car_slot_id, CarPart *car_part, bool update_enabl
                 bSPrintf(buffer, "%s_KIT%02d_", GetCarTypeName(this->Type), kit_number);
                 base_hash = bStringHash(buffer);
                 this->mPartsTable[CARSLOTID_DAMAGE0_FRONT] =
-                    NewGetCarPart(&CarPartDB, this->Type, CARSLOTID_DAMAGE0_FRONT, bStringHash("DAMAGE0_FRONT", base_hash), 0, -1);
+                    CarPartDB.NewGetCarPart(this->Type, CARSLOTID_DAMAGE0_FRONT, bStringHash("DAMAGE0_FRONT", base_hash), 0, -1);
                 this->mPartsTable[CARSLOTID_DAMAGE0_REAR] =
-                    NewGetCarPart(&CarPartDB, this->Type, CARSLOTID_DAMAGE0_REAR, bStringHash("DAMAGE0_REAR", base_hash), 0, -1);
+                    CarPartDB.NewGetCarPart(this->Type, CARSLOTID_DAMAGE0_REAR, bStringHash("DAMAGE0_REAR", base_hash), 0, -1);
                 this->mPartsTable[CARSLOTID_DAMAGE0_FRONTLEFT] =
-                    NewGetCarPart(&CarPartDB, this->Type, CARSLOTID_DAMAGE0_FRONTLEFT, bStringHash("DAMAGE0_FRONTLEFT", base_hash), 0, -1);
+                    CarPartDB.NewGetCarPart(this->Type, CARSLOTID_DAMAGE0_FRONTLEFT, bStringHash("DAMAGE0_FRONTLEFT", base_hash), 0, -1);
                 this->mPartsTable[CARSLOTID_DAMAGE0_FRONTRIGHT] =
-                    NewGetCarPart(&CarPartDB, this->Type, CARSLOTID_DAMAGE0_FRONTRIGHT, bStringHash("DAMAGE0_FRONTRIGHT", base_hash), 0, -1);
+                    CarPartDB.NewGetCarPart(this->Type, CARSLOTID_DAMAGE0_FRONTRIGHT, bStringHash("DAMAGE0_FRONTRIGHT", base_hash), 0, -1);
                 this->mPartsTable[CARSLOTID_DAMAGE0_REARLEFT] =
-                    NewGetCarPart(&CarPartDB, this->Type, CARSLOTID_DAMAGE0_REARLEFT, bStringHash("DAMAGE0_REARLEFT", base_hash), 0, -1);
+                    CarPartDB.NewGetCarPart(this->Type, CARSLOTID_DAMAGE0_REARLEFT, bStringHash("DAMAGE0_REARLEFT", base_hash), 0, -1);
                 this->mPartsTable[CARSLOTID_DAMAGE0_REARRIGHT] =
-                    NewGetCarPart(&CarPartDB, this->Type, CARSLOTID_DAMAGE0_REARRIGHT, bStringHash("DAMAGE0_REARRIGHT", base_hash), 0, -1);
+                    CarPartDB.NewGetCarPart(this->Type, CARSLOTID_DAMAGE0_REARRIGHT, bStringHash("DAMAGE0_REARRIGHT", base_hash), 0, -1);
 
                 kit_number = car_part->GetAppliedAttributeIParam(0x796C0CB0, 0);
                 bSPrintf(buffer, "%s_KIT%02d_", GetCarTypeName(this->Type), kit_number);
                 base_hash = bStringHash(buffer);
                 this->mPartsTable[CARSLOTID_DECAL_LEFT_DOOR] =
-                    NewGetCarPart(&CarPartDB, this->Type, CARSLOTID_DECAL_LEFT_DOOR, bStringHash("DECAL_LEFT_DOOR_RECT_MEDIUM", base_hash), 0,
+                    CarPartDB.NewGetCarPart(this->Type, CARSLOTID_DECAL_LEFT_DOOR, bStringHash("DECAL_LEFT_DOOR_RECT_MEDIUM", base_hash), 0,
                                   -1);
                 this->mPartsTable[CARSLOTID_DECAL_RIGHT_DOOR] =
-                    NewGetCarPart(&CarPartDB, this->Type, CARSLOTID_DECAL_RIGHT_DOOR, bStringHash("DECAL_RIGHT_DOOR_RECT_MEDIUM", base_hash), 0,
+                    CarPartDB.NewGetCarPart(this->Type, CARSLOTID_DECAL_RIGHT_DOOR, bStringHash("DECAL_RIGHT_DOOR_RECT_MEDIUM", base_hash), 0,
                                   -1);
                 this->mPartsTable[CARSLOTID_DECAL_LEFT_QUARTER] =
-                    NewGetCarPart(&CarPartDB, this->Type, CARSLOTID_DECAL_LEFT_QUARTER, bStringHash("DECAL_LEFT_QUARTER_RECT_MEDIUM", base_hash),
+                    CarPartDB.NewGetCarPart(this->Type, CARSLOTID_DECAL_LEFT_QUARTER, bStringHash("DECAL_LEFT_QUARTER_RECT_MEDIUM", base_hash),
                                   0, -1);
                 this->mPartsTable[CARSLOTID_DECAL_RIGHT_QUARTER] =
-                    NewGetCarPart(&CarPartDB, this->Type, CARSLOTID_DECAL_RIGHT_QUARTER,
+                    CarPartDB.NewGetCarPart(this->Type, CARSLOTID_DECAL_RIGHT_QUARTER,
                                   bStringHash("DECAL_RIGHT_QUARTER_RECT_MEDIUM", base_hash), 0, -1);
             }
         }
@@ -588,7 +600,7 @@ void RideInfo::FillWithPreset(unsigned int preset_name_hash) {
             if (part_name_hash == 0) {
                 this->SetPart(i, 0, true);
             } else if (part_name_hash != 1) {
-                CarPart *part = NewGetCarPart(&CarPartDB, type, i, part_name_hash, 0, -1);
+                CarPart *part = CarPartDB.NewGetCarPart(type, i, part_name_hash, 0, -1);
                 this->SetPart(i, part, true);
             }
         }
@@ -879,4 +891,98 @@ void GetUsedCarTextureInfo(UsedCarTextureInfo *used_texture_info, RideInfo *ride
 
     info->NumTexturesToLoadTemp = num_temp_textures;
     info->NumTexturesToLoadPerm = num_perm_textures;
+}
+
+int CarPartDatabase::NewGetNumCarParts(CarType car_type, int car_slot_id, unsigned int car_part_namehash, int upgrade_level) {
+    CarPart *part = 0;
+    int num_parts = 0;
+
+    while (true) {
+        part = this->NewGetCarPart(car_type, car_slot_id, car_part_namehash, part, upgrade_level);
+        if (part == 0) {
+            break;
+        }
+
+        num_parts++;
+    }
+
+    return num_parts;
+}
+
+CarPart *CarPartDatabase::NewGetCarPart(CarType car_type, int car_slot_id, unsigned int car_part_namehash, CarPart *prev_part, int upgrade_level) {
+    unsigned int *car_type_namehashes = GetTypesFromSlot(static_cast<CAR_SLOT_ID>(car_slot_id), car_type);
+    int car_type_index = 0;
+    CAR_PART_ID car_part_id = GetCarPartFromSlot(static_cast<CAR_SLOT_ID>(car_slot_id));
+    int previous_type_index;
+
+    if (prev_part == 0) {
+        car_type_index = 0;
+        previous_type_index = car_type_index;
+    } else {
+        while (car_type_index < 2 && prev_part->GetCarTypeNameHash() != car_type_namehashes[car_type_index]) {
+            car_type_index++;
+        }
+
+        previous_type_index = car_type_index;
+        if (car_type_index == 2) {
+            return 0;
+        }
+    }
+
+    while (true) {
+        if (car_type_index > 1) {
+            return 0;
+        }
+
+        if (car_type_namehashes[car_type_index] != 0) {
+            for (CarPartPackLayout *car_part_pack = reinterpret_cast<CarPartPackLayout *>(this->CarPartPackList.Next);
+                 car_part_pack != reinterpret_cast<CarPartPackLayout *>(&this->CarPartPackList); car_part_pack = car_part_pack->Next) {
+                int num_parts = car_part_pack->NumParts;
+                CarPart *part = car_part_pack->PartsTable;
+                CarPart *end_part = reinterpret_cast<CarPart *>(reinterpret_cast<unsigned char *>(part) + num_parts * 0xE);
+
+                if (prev_part == 0 || car_type_index != previous_type_index) {
+                    unsigned char car_type_key = MapCarTypeNameHashToIndex(car_type_namehashes[car_type_index]);
+
+                    part = static_cast<CarPart *>(ScanHashTableKey8(car_type_key, part, num_parts, 7, 0xE));
+                    if (part == 0) {
+                        continue;
+                    }
+                } else if (part <= prev_part && prev_part < end_part) {
+                    part = reinterpret_cast<CarPart *>(reinterpret_cast<unsigned char *>(prev_part) + 0xE);
+                } else {
+                    continue;
+                }
+
+                if (part < end_part) {
+                    do {
+                        if (reinterpret_cast<unsigned char *>(part)[4] == static_cast<unsigned char>(car_part_id) &&
+                            part->GetCarTypeNameHash() == car_type_namehashes[car_type_index] &&
+                            (car_part_namehash == 0 || *reinterpret_cast<unsigned int *>(part) == car_part_namehash)) {
+                            if ((reinterpret_cast<unsigned char *>(part)[5] >> 5) == static_cast<unsigned int>(upgrade_level)) {
+                                return part;
+                            }
+
+                            if (upgrade_level == -1) {
+                                return part;
+                            }
+                        }
+
+                        part = reinterpret_cast<CarPart *>(reinterpret_cast<unsigned char *>(part) + 0xE);
+                    } while (part < end_part);
+                }
+            }
+        }
+
+        car_type_index++;
+    }
+}
+
+CarPart *CarPartDatabase::NewGetFirstCarPart(CarType car_type, int car_slot_id, unsigned int car_part_namehash, int upgrade_level) {
+    return this->NewGetCarPart(car_type, car_slot_id, car_part_namehash, 0, upgrade_level);
+}
+
+CarPart *CarPartDatabase::NewGetNextCarPart(CarPart *car_part, CarType car_type, int car_slot_id, unsigned int car_part_namehash,
+                                            int upgrade_level) {
+    return this->NewGetCarPart(car_type, car_slot_id, car_part_namehash, car_part, upgrade_level);
 }
