@@ -3,8 +3,11 @@
 #include "Speed/Indep/Src/World/CarInfo.hpp"
 #include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
 
+typedef float Mtx44[4][4];
+
 extern SlotPool *VehicleDamagePartSlotPool;
 extern SlotPool *VehiclePartDamageZoneSlotPool;
+extern "C" void PSMTX44Copy(const Mtx44 src, Mtx44 dst);
 
 extern VehicleDamagePart *VehicleDamagePart_ctor(VehicleDamagePart *part, CarRenderInfo *carRenderInfo, int slotId)
     asm("__17VehicleDamagePartP13CarRenderInfoi");
@@ -153,4 +156,35 @@ void VehiclePartDamageBehaviour::HidePart(unsigned int slotId) {
     }
 
     *reinterpret_cast<int *>(reinterpret_cast<unsigned char *>(this->mDamagePartList[slotId]) + 0x60) = 1;
+}
+
+void VehiclePartDamageBehaviour::InitAnimationPivot(unsigned int slotId, const char * markerName) {
+    if (this->FindPositionMarker(markerName) != 0) {
+        VehicleDamagePart *damagePart = this->mDamagePartList[slotId];
+        float *pivot = reinterpret_cast<float *>(reinterpret_cast<unsigned char *>(damagePart) + 0x10);
+
+        pivot[0] = 0.0f;
+        pivot[1] = 0.0f;
+        pivot[2] = 0.0f;
+    }
+}
+
+void VehiclePartDamageBehaviour::Pose(bMatrix4 *worldMatrix) {
+    unsigned int partIx;
+
+    for (partIx = 0; partIx < 0x17; partIx++) {
+        PSMTX44Copy(
+            *reinterpret_cast<const Mtx44 *>(worldMatrix),
+            *reinterpret_cast<Mtx44 *>(reinterpret_cast<unsigned char *>(this->mDamagePartList[partIx]) + 0x1C));
+    }
+}
+
+void VehiclePartDamageBehaviour::DamageVehicle(const DamageZone::Info &damageInfo) {
+    unsigned int zoneIx;
+
+    for (zoneIx = 0; zoneIx < this->mDamageZoneNum; zoneIx++) {
+        this->DamageZone(static_cast<int>(zoneIx), static_cast<int>(damageInfo.Get(static_cast<DamageZone::ID>(zoneIx))));
+    }
+
+    this->ApplyDamage();
 }
