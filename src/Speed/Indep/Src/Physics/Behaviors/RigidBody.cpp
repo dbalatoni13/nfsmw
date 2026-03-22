@@ -99,6 +99,80 @@ static inline void InsertGridNode(SAPNodeAccess *&root, SAPNodeAccess *node) {
     }
 }
 
+template <typename T>
+SAP::Grid<T>::~Grid() {
+    struct NodeAccess {
+        NodeAccess *mHead;
+        NodeAccess *mTail;
+        float mPosition;
+        float mSort;
+        void *mAxis;
+        NodeAccess **mRoot;
+    };
+
+    struct AxisAccess {
+        NodeAccess mMin;
+        NodeAccess mMax;
+        void *mGrid;
+    };
+
+    struct GridAccess {
+        AxisAccess mX;
+        AxisAccess mZ;
+        void *mOwner;
+    };
+
+    GridAccess &grid = *reinterpret_cast<GridAccess *>(this);
+
+    if (*grid.mZ.mMax.mRoot == &grid.mZ.mMax) {
+        *grid.mZ.mMax.mRoot = grid.mZ.mMax.mTail;
+    }
+    if (grid.mZ.mMax.mHead) {
+        grid.mZ.mMax.mHead->mTail = grid.mZ.mMax.mTail;
+    }
+    if (grid.mZ.mMax.mTail) {
+        grid.mZ.mMax.mTail->mHead = grid.mZ.mMax.mHead;
+    }
+    grid.mZ.mMax.mTail = nullptr;
+    grid.mZ.mMax.mHead = nullptr;
+
+    if (*grid.mZ.mMin.mRoot == &grid.mZ.mMin) {
+        *grid.mZ.mMin.mRoot = grid.mZ.mMin.mTail;
+    }
+    if (grid.mZ.mMin.mHead) {
+        grid.mZ.mMin.mHead->mTail = grid.mZ.mMin.mTail;
+    }
+    if (grid.mZ.mMin.mTail) {
+        grid.mZ.mMin.mTail->mHead = grid.mZ.mMin.mHead;
+    }
+    grid.mZ.mMin.mTail = nullptr;
+    grid.mZ.mMin.mHead = nullptr;
+
+    if (*grid.mX.mMax.mRoot == &grid.mX.mMax) {
+        *grid.mX.mMax.mRoot = grid.mX.mMax.mTail;
+    }
+    if (grid.mX.mMax.mHead) {
+        grid.mX.mMax.mHead->mTail = grid.mX.mMax.mTail;
+    }
+    if (grid.mX.mMax.mTail) {
+        grid.mX.mMax.mTail->mHead = grid.mX.mMax.mHead;
+    }
+    grid.mX.mMax.mTail = nullptr;
+    grid.mX.mMax.mHead = nullptr;
+
+    if (*grid.mX.mMin.mRoot == &grid.mX.mMin) {
+        *grid.mX.mMin.mRoot = grid.mX.mMin.mTail;
+    }
+    if (grid.mX.mMin.mHead) {
+        grid.mX.mMin.mHead->mTail = grid.mX.mMin.mTail;
+    }
+    if (grid.mX.mMin.mTail) {
+        grid.mX.mMin.mTail->mHead = grid.mX.mMin.mHead;
+    }
+    grid.mX.mMin.mTail = nullptr;
+    grid.mX.mMin.mHead = nullptr;
+}
+
 // TODO clear the magic numbers in Volatile::state and status
 
 Behavior *RigidBody::Construct(const BehaviorParams &params) {
