@@ -682,16 +682,15 @@ void GManager::LoadMilestones(GMilestone *src, unsigned int count) {
 }
 
 GSpeedTrap *GManager::GetNextSpeedTrap(GSpeedTrap *current, bool activeOnly, unsigned int binNumber) {
-    GSpeedTrap *next = current + 1;
-    GSpeedTrap *end = mSpeedTraps + mNumSpeedTraps;
+    current++;
 
-    while (next < end) {
-        if ((!activeOnly || next->IsFlagSet(GSpeedTrap::kFlag_Active)) &&
-            (binNumber == 0 || next->GetBinNumber() == binNumber)) {
-            return next;
+    while (current < mSpeedTraps + mNumSpeedTraps) {
+        if ((!activeOnly || current->GetIsActive()) &&
+            (binNumber == 0 || current->GetBinNumber() == binNumber)) {
+            return current;
         }
 
-        next++;
+        current++;
     }
 
     return nullptr;
