@@ -3758,7 +3758,7 @@ void GRaceStatus::UpdateAdaptiveDifficulty(eAdaptiveGainReason reason, ISimable 
         for (int i = 0; i < num_racers; ++i) {
             GRacerInfo *info = &GetRacerInfo(i);
 
-            if (info->GetGameCharacter() && !info->IsFinishedRacing()) {
+            if (!info->GetGameCharacter() && !info->IsFinishedRacing()) {
                 float percent_human_complete = info->GetPctRaceComplete();
                 float lose_margin = (GetRaceLength() * (100.0f - percent_human_complete)) * 0.01f;
 
