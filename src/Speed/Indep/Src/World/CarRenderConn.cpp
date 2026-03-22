@@ -20,6 +20,7 @@ extern int PhysicsUpgrades_GetMaxLevel(const Attrib::Gen::pvehicle &pvehicle, in
 extern float RealTimeElapsed;
 extern float renderModifier;
 extern int Tweak_DisableRoadNoise;
+extern int NumTimesRenderTestPlayerCar;
 extern RoadNoiseRecord Tweak_BlowOutNoise asm("Tweak_BlowOutNoise");
 
 namespace {
@@ -548,4 +549,59 @@ void CarRenderConn::OnLoaded(CarRenderInfo *carrender_info) {
 
 void CarRenderConn::GetRenderMatrix(bMatrix4 *matrix) {
     PSMTX44Copy(*reinterpret_cast<const Mtx44 *>(&this->mRenderMatrix), *reinterpret_cast<Mtx44 *>(matrix));
+}
+
+void CarRenderConn::OnRender(eView *view, int reflection) {
+    if (!this->CanRender()) {
+        return;
+    }
+
+    if (this->mLastRenderFrame != eFrameCounter) {
+        this->mDistanceToView = 1000000.0f;
+    }
+    this->mLastRenderFrame = eFrameCounter;
+
+    CameraMover *camera_mover = view->GetCameraMover();
+    if (camera_mover != nullptr && view->GetID() - 1U < 3) {
+        bVector3 delta;
+        delta.x = camera_mover->GetPosition()->x - this->mRenderMatrix.v3.x;
+        delta.y = camera_mover->GetPosition()->y - this->mRenderMatrix.v3.y;
+        delta.z = camera_mover->GetPosition()->z - this->mRenderMatrix.v3.z;
+
+        float distance_squared = delta.x * delta.x + delta.y * delta.y + delta.z * delta.z;
+        float distance = 0.0f;
+        if (0.0f < distance_squared) {
+            distance = bSqrt(distance_squared);
+        }
+        if (distance > this->mDistanceToView) {
+            distance = this->mDistanceToView;
+        }
+        this->mDistanceToView = distance;
+    }
+
+    CarRenderInfo *render_info = this->mRenderInfo;
+    if (render_info == 0) {
+        return;
+    }
+
+    eGetCurrentViewMode();
+
+    bMatrix4 body_matrix;
+    PSMTX44Copy(*reinterpret_cast<Mtx44 *>(&this->mRenderMatrix), *reinterpret_cast<Mtx44 *>(&body_matrix));
+
+    unsigned int extra_render_flags = 0;
+    if (reflection != 0) {
+        render_info->RenderTextureHeadlights(view, &body_matrix, 0);
+        extra_render_flags = 0x401;
+        body_matrix.v2.x = -body_matrix.v2.x;
+        body_matrix.v2.y = -body_matrix.v2.y;
+        body_matrix.v2.z = -body_matrix.v2.z;
+    }
+
+    bVector3 world_position(body_matrix.v3.x, body_matrix.v3.y, body_matrix.v3.z);
+    if (render_info->Render(view, &world_position, &body_matrix, this->mTireMatrices, this->mBrakeMatrices, this->mTireMatrices,
+                            extra_render_flags, 0, reflection, 1.0f, render_info->mMinLodLevel, render_info->mMinLodLevel) &&
+        view->GetID() < 4) {
+        this->mLastVisibleFrame = eFrameCounter;
+    }
 }
