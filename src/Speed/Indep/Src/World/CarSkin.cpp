@@ -13,9 +13,21 @@ void eUnSwizzle8bitPalette(unsigned int *palette);
 void eSwizzle8bitPalette(unsigned int *palette);
 unsigned int ScaleColours(unsigned int a, unsigned int b);
 unsigned int GetBlendColour(unsigned int *colours, float *weights, int num_colours, bool max_alpha_blend);
+unsigned int RemapColour(unsigned int colour, unsigned int *remap_colours);
+char *bStrCat(char *dest, const char *source1, const char *source2);
 unsigned int GetWheelTextureHash(RideInfo *ride_info);
 unsigned int GetWheelTextureMaskHash(RideInfo *ride_info);
+unsigned int GetVinylLayerHash(RideInfo *ride_info, int layer);
+int DumpPreComp(VinylLayerInfo *layer_info, TextureInfo *dest_texture);
+extern int UsePrecompositeVinyls;
+extern int swatch_offset_init;
+extern int swatch_offset_count[4];
+extern int swatch_offset_cache[64];
+int CompositeSkin(SkinCompositeParams *composite_params);
+int CompositeSkin32(SkinCompositeParams *composite_params);
+int IsInSkinCompositeCache(SkinCompositeParams *skin_composite_params);
 int CompositeWheel(RideInfo *ride_info, unsigned int dest_namehash, unsigned int src_namehash, unsigned int mask_namehash, CAR_SLOT_ID paint_slot);
+int CompositeRim(RideInfo *ride_info);
 
 SkinCompositeParams SkinCompositeParameterCache[4];
 
@@ -79,6 +91,348 @@ void FlushFromSkinCompositeCache(unsigned int texture_name_hash) {
     if (cache_params != 0) {
         bMemSet(cache_params, 0, sizeof(*cache_params));
     }
+}
+
+int IsInSkinCompositeCache(SkinCompositeParams *skin_composite_params) {
+    SkinCompositeParams *cache_params = GetSkinCompositeParams(skin_composite_params->DestTexture->NameHash);
+
+    if (cache_params != 0 && cache_params->DestTexture != 0) {
+        return CompareCompositeParams(cache_params, skin_composite_params);
+    }
+
+    return 0;
+}
+
+int CompositeSkin32(SkinCompositeParams *composite_params) {
+    TextureInfo *dest_texture = composite_params->DestTexture;
+    int num_layers = composite_params->NumLayers;
+    unsigned int base_colour = composite_params->BaseColour;
+
+    if (dest_texture == 0) {
+        return 0;
+    }
+
+    if (dest_texture->ImageCompressionType == TEXCOMP_32BIT) {
+        unsigned int *dest_image_data = static_cast<unsigned int *>(TextureInfo_LockImage(dest_texture, TEXLOCK_WRITE));
+        short dest_width = dest_texture->Width;
+        short dest_height = dest_texture->Height;
+        int num_pixels = dest_width * dest_height;
+
+        if (swatch_offset_init == 0) {
+            unsigned int swatch_lookup_colours[4];
+            unsigned int *dest_pixel = dest_image_data;
+
+            swatch_lookup_colours[0] = 0xBF0000FF;
+            swatch_lookup_colours[1] = 0xBF00FF00;
+            swatch_lookup_colours[2] = 0xBFFF0000;
+            swatch_lookup_colours[3] = 0xBFFF00FF;
+            bMemSet(swatch_offset_cache, 0, sizeof(swatch_offset_cache));
+
+            while (dest_pixel < dest_image_data + num_pixels) {
+                int pixel_offset = dest_pixel - dest_image_data;
+                int i = 0;
+
+                do {
+                    if (*dest_pixel == swatch_lookup_colours[i]) {
+                        int count = swatch_offset_count[i];
+
+                        swatch_offset_count[i] = count + 1;
+                        swatch_offset_cache[count + i * 16] = pixel_offset;
+                        break;
+                    }
+
+                    i++;
+                } while (i < 4);
+
+                dest_pixel++;
+            }
+
+            swatch_offset_init = 1;
+        }
+
+        {
+            unsigned int *dest_pixel = dest_image_data;
+
+            for (; dest_pixel < dest_image_data + num_pixels; dest_pixel++) {
+                *dest_pixel = base_colour;
+            }
+        }
+
+        for (int i = 0; i < num_layers; i++) {
+            VinylLayerInfo *info = &composite_params->VinylLayerInfos[i];
+
+            if (info->m_LayerMaskData != 0) {
+                unsigned int *src_pixel = reinterpret_cast<unsigned int *>(info->m_LayerImageData);
+                unsigned int *dest_pixel = dest_image_data;
+                unsigned int *src_mask_pixel = reinterpret_cast<unsigned int *>(info->m_LayerMaskData);
+                unsigned int *src_end = src_pixel + num_pixels;
+
+                for (; src_pixel < src_end; src_pixel++, src_mask_pixel++, dest_pixel++) {
+                    unsigned int src_colour = *src_pixel;
+                    unsigned int dest_colour = *dest_pixel;
+                    unsigned int blend_value = reinterpret_cast<unsigned char *>(src_mask_pixel)[2];
+
+                    if (info->m_RemapPalette != 0 && blend_value != 0) {
+                        src_colour = RemapColour(src_colour, info->m_RemapColours);
+                    }
+
+                    if (blend_value < 0x80) {
+                        if (blend_value != 0) {
+                            unsigned int blend_colours[2];
+                            float weights[2];
+                            float blend = static_cast<float>(blend_value) / 255.0f;
+
+                            if (blend > 1.0f) {
+                                blend = 1.0f;
+                            }
+
+                            weights[0] = blend;
+                            weights[1] = 1.0f - blend;
+
+                            if (weights[1] < 0.0f) {
+                                weights[1] = 0.0f;
+                            }
+
+                            blend_colours[0] = src_colour;
+                            blend_colours[1] = dest_colour;
+                            src_colour = GetBlendColour(blend_colours, weights, 2, false);
+                            *dest_pixel = src_colour;
+                        }
+                    } else {
+                        *dest_pixel = src_colour;
+                    }
+                }
+            }
+        }
+
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < swatch_offset_count[i]; j++) {
+                dest_image_data[swatch_offset_cache[j + i * 16]] = composite_params->SwatchColours[i];
+            }
+        }
+
+        TextureInfo_UnlockImage(dest_texture, dest_image_data);
+        return 1;
+    }
+
+    return 0;
+}
+
+int CompositeSkin(RideInfo *ride_info) {
+    if (ride_info->IsUsingCompositeSkin() != 0) {
+        TextureInfo *dest_texture = GetTextureInfo(ride_info->GetCompositeSkinNameHash(), false, false);
+
+        if (dest_texture != 0) {
+            bool use_palette = dest_texture->ImageCompressionType != TEXCOMP_32BIT;
+            CarPart *base_paint = ride_info->GetPart(CARSLOTID_BASE_PAINT);
+
+            if (base_paint != 0) {
+                unsigned int base_colour = base_paint->GetAppliedAttributeIParam(bStringHash("RED"), 0);
+                int green = base_paint->GetAppliedAttributeIParam(bStringHash("GREEN"), 0);
+                int blue = base_paint->GetAppliedAttributeIParam(bStringHash("BLUE"), 0);
+                int gloss = base_paint->GetAppliedAttributeIParam(bStringHash("GLOSS"), 0);
+                SkinCompositeParams composite_params;
+                VinylLayerInfo *info = &composite_params.VinylLayerInfos[0];
+                CarPart *vinyl_part;
+
+                base_colour |= green << 8;
+                base_colour |= blue << 16;
+                base_colour |= gloss << 24;
+
+                for (int i = 0; i < 4; i++) {
+                    composite_params.SwatchColours[i] = base_colour;
+                }
+
+                bMemSet(&composite_params, 0, sizeof(composite_params));
+                composite_params.DestTexture = dest_texture;
+                composite_params.BaseColour = base_colour;
+
+                for (int i = 0; i < 4; i++) {
+                    composite_params.SwatchColours[i] = base_colour;
+                }
+
+                vinyl_part = ride_info->GetPart(CARSLOTID_VINYL_LAYER0);
+                if (vinyl_part != 0) {
+                    info->m_LayerHash = GetVinylLayerHash(ride_info, 0);
+                    info->m_NumColours = vinyl_part->GetAppliedAttributeIParam(bStringHash("NUMCOLOURS"), 0);
+                    if (info->m_NumColours == 0) {
+                        return 0;
+                    }
+                }
+
+                if (info->m_LayerHash != 0) {
+                    info->m_LayerTexture = GetTextureInfo(info->m_LayerHash, false, false);
+
+                    if (info->m_LayerTexture == 0) {
+                        info->m_LayerHash = 0;
+                    } else {
+                        info->m_LayerImageData = static_cast<unsigned char *>(TextureInfo_LockImage(info->m_LayerTexture, TEXLOCK_READ));
+
+                        if (use_palette) {
+                            info->m_LayerImagePaletteData = static_cast<unsigned int *>(TextureInfo_LockPalette(info->m_LayerTexture, TEXLOCK_READ));
+                        }
+
+                        if (info->m_LayerImageData == 0) {
+                            info->m_LayerHash = 0;
+                        } else {
+                            if (UsePrecompositeVinyls != 0 || ride_info->SkinType == 2) {
+                                DumpPreComp(info, dest_texture);
+                                return 1;
+                            }
+
+                            info->m_LayerMaskTexture = GetTextureInfo(bStringHash("_MASK", info->m_LayerHash), false, false);
+                            if (info->m_LayerMaskTexture == 0) {
+                                info->m_LayerHash = 0;
+                            } else {
+                                info->m_LayerMaskData = static_cast<unsigned char *>(TextureInfo_LockImage(info->m_LayerMaskTexture, TEXLOCK_READ));
+
+                                if (use_palette) {
+                                    info->m_LayerMaskPaletteData =
+                                        static_cast<unsigned int *>(TextureInfo_LockPalette(info->m_LayerMaskTexture, TEXLOCK_READ));
+                                }
+
+                                if (info->m_LayerMaskData != 0) {
+                                    composite_params.NumLayers = 1;
+                                    if (vinyl_part != 0 && vinyl_part->HasAppliedAttribute(bStringHash("REMAP")) != 0) {
+                                        info->m_RemapPalette = vinyl_part->GetAppliedAttributeIParam(bStringHash("REMAP"), 0);
+                                        if (info->m_RemapPalette != 0) {
+                                            for (int i = 0; i < 4; i++) {
+                                                CarPart *vinyl_colour = ride_info->GetPart(CARSLOTID_VINYL_COLOUR0_0 + i);
+
+                                                if (vinyl_colour == 0) {
+                                                    info->m_RemapColours[i] = 0xFFu << ((i & 3) << 3);
+                                                } else {
+                                                    unsigned int remap_colour =
+                                                        vinyl_colour->GetAppliedAttributeIParam(bStringHash("RED"), 0);
+                                                    int remap_green =
+                                                        vinyl_colour->GetAppliedAttributeIParam(bStringHash("GREEN"), 0);
+                                                    int remap_blue =
+                                                        vinyl_colour->GetAppliedAttributeIParam(bStringHash("BLUE"), 0);
+                                                    int remap_gloss =
+                                                        vinyl_colour->GetAppliedAttributeIParam(bStringHash("GLOSS"), 0);
+
+                                                    remap_colour |= remap_green << 8;
+                                                    remap_colour |= remap_blue << 16;
+                                                    remap_colour |= remap_gloss << 24;
+                                                    info->m_RemapColours[i] = remap_colour;
+                                                }
+                                            }
+                                        }
+                                    }
+                                } else {
+                                    info->m_LayerHash = 0;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                eWaitUntilRenderingDone();
+                CompositeRim(ride_info);
+                if (IsInSkinCompositeCache(&composite_params) == 0) {
+                    UpdateSkinCompositeCache(&composite_params);
+                    if (dest_texture->ImageCompressionType == TEXCOMP_32BIT) {
+                        CompositeSkin32(&composite_params);
+                    } else {
+                        CompositeSkin(&composite_params);
+                    }
+                }
+
+                if (info->m_LayerImageData != 0) {
+                    TextureInfo_UnlockImage(info->m_LayerTexture, info->m_LayerImageData);
+                }
+
+                if (info->m_LayerImagePaletteData != 0) {
+                    TextureInfo_UnlockPalette(info->m_LayerTexture, info->m_LayerImagePaletteData);
+                }
+
+                if (info->m_LayerMaskData != 0) {
+                    TextureInfo_UnlockImage(info->m_LayerMaskTexture, info->m_LayerMaskData);
+                }
+
+                if (info->m_LayerMaskPaletteData != 0) {
+                    TextureInfo_UnlockPalette(info->m_LayerMaskTexture, info->m_LayerMaskPaletteData);
+                }
+            }
+        }
+    }
+
+    return 1;
+}
+
+int DumpPreComp(VinylLayerInfo *info, TextureInfo *dest_texture) {
+    void *dest_image_data = TextureInfo_LockImage(dest_texture, TEXLOCK_WRITE);
+    int pixel_size = 1;
+
+    if (dest_texture->ImageCompressionType == TEXCOMP_32BIT) {
+        pixel_size = 4;
+    }
+
+    bMemCpy(dest_image_data, info->m_LayerImageData, dest_texture->Width * dest_texture->Height * pixel_size);
+
+    if (dest_texture->ImageCompressionType == TEXCOMP_8BIT) {
+        unsigned int *dest_palette_data = static_cast<unsigned int *>(TextureInfo_LockPalette(dest_texture, TEXLOCK_WRITE));
+
+        eUnSwizzle8bitPalette(dest_palette_data);
+        eUnSwizzle8bitPalette(info->m_LayerImagePaletteData);
+        bMemCpy(dest_palette_data, info->m_LayerImagePaletteData, info->m_NumColours << 2);
+        eSwizzle8bitPalette(info->m_LayerImagePaletteData);
+        eSwizzle8bitPalette(dest_palette_data);
+        TextureInfo_UnlockPalette(dest_texture, dest_palette_data);
+    }
+
+    TextureInfo_UnlockImage(dest_texture, dest_image_data);
+    return 1;
+}
+
+unsigned int GetWheelTextureHash(RideInfo *ride_info) {
+    CarPart *wheel = ride_info->GetPart(CARSLOTID_FRONT_WHEEL);
+
+    if (wheel == 0) {
+        return 0;
+    }
+
+    return bStringHash("_WHEEL", wheel->GetAppliedAttributeUParam(0x10C98090, 0));
+}
+
+unsigned int GetWheelTextureMaskHash(RideInfo *ride_info) {
+    CarPart *wheel = ride_info->GetPart(CARSLOTID_FRONT_WHEEL);
+
+    if (wheel == 0) {
+        return 0;
+    }
+
+    return bStringHash("_WHEEL_INNER_MASK", wheel->GetAppliedAttributeUParam(0x10C98090, 0));
+}
+
+unsigned int GetVinylLayerHash(CarPart *car_part, CarType car_type, int skin_type) {
+    CarTypeInfo *type_info = &CarTypeInfoArray[car_type];
+    const char *texture_name = car_part->GetAppliedAttributeString(bStringHash("TEXTURE"), 0);
+
+    if (texture_name != 0) {
+        char final_name[68];
+
+        bStrCpy(final_name, type_info->BaseModelName);
+        if (UsePrecompositeVinyls == 0 && skin_type != 2) {
+            bStrCat(final_name, final_name, "_");
+        } else {
+            bStrCat(final_name, final_name, "_PRECOM_");
+        }
+        bStrCat(final_name, final_name, texture_name);
+        return bStringHash(final_name);
+    }
+
+    return 0;
+}
+
+unsigned int GetVinylLayerHash(RideInfo *ride_info, int layer) {
+    CarPart *vinyl = ride_info->GetPart(CARSLOTID_VINYL_LAYER0 + layer);
+
+    if (vinyl == 0) {
+        return 0;
+    }
+
+    return GetVinylLayerHash(vinyl, ride_info->Type, ride_info->SkinType);
 }
 
 int CompositeWheel32(TextureInfo *dest_texture, TextureInfo *src_texture, TextureInfo *src_mask, unsigned int remap_colour) {

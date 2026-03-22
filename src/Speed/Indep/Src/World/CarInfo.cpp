@@ -13,6 +13,7 @@ struct CarPart {
     unsigned int GetModelNameHash(int model, int lod);
     unsigned int GetAppliedAttributeUParam(unsigned int namehash, unsigned int default_value);
     int GetAppliedAttributeIParam(unsigned int namehash, int default_value);
+    const char *GetAppliedAttributeString(unsigned int namehash, const char *default_string);
     int HasAppliedAttribute(unsigned int namehash);
     char GetGroupNumber();
     unsigned int GetBrandNameHash();
