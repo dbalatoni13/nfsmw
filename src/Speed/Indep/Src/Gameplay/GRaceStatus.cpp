@@ -3853,15 +3853,11 @@ bool GRaceStatus::ComputeCatchUpSkill(GRacerInfo *racer_info, PidError *pid, flo
                 }
             }
         } else {
-            if (!mRaceParms) {
+            if (mRaceParms && mRaceParms->GetCatchUp()) {
+                glue_level = Tweak_QuickRaceGlue[mRaceParms->GetDifficulty()];
+            } else {
                 return false;
             }
-
-            if (!mRaceParms->GetCatchUp()) {
-                return false;
-            }
-
-            glue_level = Tweak_QuickRaceGlue[mRaceParms->GetDifficulty()];
         }
     }
 
