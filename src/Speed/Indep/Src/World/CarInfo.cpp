@@ -7,14 +7,37 @@
 struct CarPart {
     unsigned int GetTextureNameHash();
     unsigned int GetAppliedAttributeUParam(unsigned int namehash, unsigned int default_value);
+    int GetAppliedAttributeIParam(unsigned int namehash, int default_value);
     int HasAppliedAttribute(unsigned int namehash);
+    char GetGroupNumber();
+    unsigned int GetBrandNameHash();
+    unsigned int GetPartNameHash();
+};
+
+struct CarPartDatabase {
+    char pad[0x11C];
+};
+struct MissingCarPart {
+    short CarType;
+    short Slot;
+    unsigned int PartNameHash;
 };
 
 CarTypeInfo *CarTypeInfoArray;
+CarPartDatabase CarPartDB;
 extern int iRam8047ff04;
+extern MissingCarPart MissingCarPartTable[0x14A];
 
 int UsedCarTextureAddToTable(unsigned int *table, int num_used, int max_textures, unsigned int texture_hash = 0);
 int GetTempCarSkinTextures(unsigned int *table, int num_used, int max_textures, RideInfo *ride_info);
+int GetIsCollectorsEdition();
+CAR_PART_ID GetCarPartFromSlot(CAR_SLOT_ID slot);
+CarPart *FindPartWithLevel(CarType type, CAR_SLOT_ID slot, int upg_level);
+int GetNumCarSlotIDNames();
+const char *GetCarTypeName(CarType car_type);
+int NewGetNumCarParts(CarPartDatabase *database, CarType type, int slot, unsigned int name_hash, int upgrade_level);
+CarPart *NewGetCarPart(CarPartDatabase *database, CarType type, int slot, unsigned int name_hash, CarPart *start_part, int upgrade_level);
+CarPart *NewGetNextCarPart(CarPartDatabase *database, CarPart *part, CarType type, int slot, unsigned int name_hash, int upgrade_level);
 
 struct UsedCarTextureInfoLayout {
     unsigned int TexturesToLoadPerm[87];
@@ -123,6 +146,256 @@ void RideInfo::SetCompositeSpinnerNameHash(unsigned int namehash) {
 
 int RideInfo::IsUsingCompositeSkin() {
     return this->GetCompositeSkinNameHash() != 0;
+}
+
+void RideInfo::SetUpgradePart(CAR_SLOT_ID car_slot_id, int upg_level) {
+    CAR_PART_ID car_part_id = GetCarPartFromSlot(car_slot_id);
+    CarPart *part;
+
+    (void)car_part_id;
+    part = FindPartWithLevel(this->Type, car_slot_id, upg_level);
+    if (part != 0) {
+        this->SetPart(car_slot_id, part, true);
+    }
+}
+
+void RideInfo::SetStockParts() {
+    unsigned int stock_vinyl_colours[4];
+
+    for (int car_slot_id = 0; car_slot_id <= CARSLOTID_MISC; car_slot_id++) {
+        if (((this->Type != static_cast<CarType>(4)) || (car_slot_id != CARSLOTID_ATTACHMENT6)) && car_slot_id != CARSLOTID_VINYL_LAYER0 &&
+            (static_cast<unsigned int>(car_slot_id - CARSLOTID_DECAL_FRONT_WINDOW_TEX0) > 0x2F)) {
+            if (car_slot_id == CARSLOTID_HUD_BACKING_COLOUR) {
+                CarPart *hud_part = NewGetCarPart(&CarPartDB, this->Type, car_slot_id, bStringHash("ORANGE"), 0, -1);
+                if (hud_part == 0) {
+                    this->SetUpgradePart(static_cast<CAR_SLOT_ID>(car_slot_id), 0);
+                } else {
+                    this->SetPart(car_slot_id, hud_part, true);
+                }
+            } else if (car_slot_id == CARSLOTID_HUD_NEEDLE_COLOUR) {
+                CarPart *hud_part = NewGetCarPart(&CarPartDB, this->Type, car_slot_id, bStringHash("ORANGE"), 0, -1);
+                if (hud_part == 0) {
+                    this->SetUpgradePart(static_cast<CAR_SLOT_ID>(car_slot_id), 0);
+                } else {
+                    this->SetPart(car_slot_id, hud_part, true);
+                }
+            } else if (car_slot_id == CARSLOTID_HUD_CHARACTER_COLOUR) {
+                CarPart *hud_part = NewGetCarPart(&CarPartDB, this->Type, car_slot_id, bStringHash("WHITE"), 0, -1);
+                if (hud_part == 0) {
+                    this->SetUpgradePart(static_cast<CAR_SLOT_ID>(car_slot_id), 0);
+                } else {
+                    this->SetPart(car_slot_id, hud_part, true);
+                }
+            } else if (car_slot_id == CARSLOTID_BASE_PAINT) {
+                CarTypeInfo *type_info = &CarTypeInfoArray[this->Type];
+                CarPart *paint_part =
+                    NewGetCarPart(&CarPartDB, this->Type, car_slot_id, static_cast<unsigned int>(type_info->DefaultBasePaint), 0, -1);
+                if (paint_part != 0) {
+                    this->SetPart(car_slot_id, paint_part, true);
+                }
+            } else {
+                this->SetUpgradePart(static_cast<CAR_SLOT_ID>(car_slot_id), 0);
+            }
+        }
+    }
+
+    stock_vinyl_colours[0] = bStringHash("VINYL_L1_COLOR01");
+    stock_vinyl_colours[1] = bStringHash("VINYL_L1_COLOR03");
+    stock_vinyl_colours[2] = bStringHash("VINYL_L2_COLOR11");
+    stock_vinyl_colours[3] = bStringHash("VINYL_L1_COLOR01");
+
+    for (int j = 0; j < 4; j++) {
+        int car_slot_id = j + CARSLOTID_VINYL_COLOUR0_0;
+        CarPart *vinyl_paint_part = NewGetCarPart(&CarPartDB, this->Type, car_slot_id, stock_vinyl_colours[j], 0, -1);
+
+        this->SetPart(car_slot_id, vinyl_paint_part, true);
+    }
+}
+
+void RideInfo::SetRandomPart(CAR_SLOT_ID slot, int upgrade_level) {
+    int num_parts = NewGetNumCarParts(&CarPartDB, this->Type, slot, 0, upgrade_level);
+    CarPart *part = 0;
+    bool foundModel = false;
+
+    for (int attempt = 1; (foundModel == false) && (attempt <= 0xF); attempt++) {
+        int part_number = bRandom(num_parts);
+
+        for (int i = 0; i < part_number + 1; i++) {
+            part = NewGetNextCarPart(&CarPartDB, part, this->Type, slot, 0, upgrade_level);
+        }
+
+        if (part != 0) {
+            if (slot == CARSLOTID_VINYL_LAYER0) {
+                if (part->GetGroupNumber() != 8) {
+                    unsigned int brand_name_hash = part->GetBrandNameHash();
+                    if (brand_name_hash != bStringHash("CEO") || GetIsCollectorsEdition() != 0) {
+                        goto found_part;
+                    }
+                }
+            } else {
+            found_part:
+                if (slot != CARSLOTID_BASE_PAINT || this->SkinType != 2 || part->GetBrandNameHash() != 0x03797533) {
+                    bool part_missing = false;
+
+                    for (int n = 0; n < 0x14A; n++) {
+                        MissingCarPart *missing_part = &MissingCarPartTable[n];
+
+                        if (missing_part->CarType == this->Type && missing_part->Slot == slot &&
+                            missing_part->PartNameHash == part->GetPartNameHash()) {
+                            part_missing = true;
+                            break;
+                        }
+                    }
+
+                    if (!part_missing) {
+                        foundModel = true;
+                        this->SetPart(slot, part, true);
+                    }
+                }
+            }
+        }
+    }
+}
+
+void RideInfo::SetRandomParts() {
+    int randomset;
+
+    this->SetStockParts();
+    randomset = bRandom(3);
+
+    if (randomset == 1) {
+        this->SetRandomPart(CARSLOTID_BASE_PAINT, -1);
+        this->SetRandomPart(CARSLOTID_VINYL_LAYER0, -1);
+        this->SetRandomPart(CARSLOTID_VINYL_COLOUR0_0, -1);
+        this->SetRandomPart(CARSLOTID_VINYL_COLOUR0_1, -1);
+        this->SetRandomPart(CARSLOTID_VINYL_COLOUR0_2, -1);
+        this->SetRandomPart(CARSLOTID_VINYL_COLOUR0_3, -1);
+    } else if (randomset > 1) {
+        if (randomset == 2) {
+            this->SetRandomPart(CARSLOTID_BODY, -1);
+            this->SetRandomPart(CARSLOTID_SPOILER, -1);
+            this->SetRandomPart(CARSLOTID_FRONT_WHEEL, -1);
+            this->SetRandomPart(CARSLOTID_PAINT_RIM, -1);
+            this->SetRandomPart(CARSLOTID_DECAL_FRONT_WINDOW_TEX0, -1);
+            this->SetRandomPart(CARSLOTID_HEADLIGHT, -1);
+            this->SetRandomPart(CARSLOTID_BRAKELIGHT, -1);
+            this->SetRandomPart(CARSLOTID_BASE_PAINT, -1);
+            this->SetRandomPart(CARSLOTID_VINYL_LAYER0, -1);
+            this->SetRandomPart(CARSLOTID_VINYL_COLOUR0_0, -1);
+            this->SetRandomPart(CARSLOTID_VINYL_COLOUR0_1, -1);
+            this->SetRandomPart(CARSLOTID_VINYL_COLOUR0_2, -1);
+            this->SetRandomPart(CARSLOTID_VINYL_COLOUR0_3, -1);
+        }
+    } else if (randomset == 0) {
+        this->SetRandomPart(CARSLOTID_BODY, -1);
+        this->SetRandomPart(CARSLOTID_SPOILER, -1);
+        this->SetRandomPart(CARSLOTID_BASE_PAINT, -1);
+        this->SetRandomPart(CARSLOTID_FRONT_WHEEL, -1);
+        this->SetRandomPart(CARSLOTID_PAINT_RIM, -1);
+    }
+}
+
+CarPart *RideInfo::GetPart(int car_slot_id) const {
+    return this->mPartsTable[car_slot_id];
+}
+
+CarPart *RideInfo::SetPart(int car_slot_id, CarPart *car_part, bool update_enabled) {
+    CarPart *previous_part;
+
+    if (car_slot_id < 0x34) {
+        if (car_slot_id > 0x2D) {
+            return this->mPartsTable[car_slot_id];
+        }
+
+        if (car_slot_id == CARSLOTID_BODY) {
+            if (car_part == 0) {
+                this->mPartsTable[CARSLOTID_DAMAGE0_FRONT] = 0;
+                this->mPartsTable[CARSLOTID_DAMAGE0_REAR] = 0;
+                this->mPartsTable[CARSLOTID_DAMAGE0_FRONTLEFT] = 0;
+                this->mPartsTable[CARSLOTID_DAMAGE0_FRONTRIGHT] = 0;
+                this->mPartsTable[CARSLOTID_DAMAGE0_REARLEFT] = 0;
+                this->mPartsTable[CARSLOTID_DAMAGE0_REARRIGHT] = 0;
+                this->mPartsTable[CARSLOTID_DECAL_LEFT_DOOR] = 0;
+                this->mPartsTable[CARSLOTID_DECAL_RIGHT_DOOR] = 0;
+                this->mPartsTable[CARSLOTID_DECAL_LEFT_QUARTER] = 0;
+                this->mPartsTable[CARSLOTID_DECAL_RIGHT_QUARTER] = 0;
+            } else {
+                int kit_number = car_part->GetAppliedAttributeIParam(0x796C0CB0, 0);
+                char buffer[64];
+                unsigned int base_hash;
+
+                bSPrintf(buffer, "%s_KIT%02d_", GetCarTypeName(this->Type), kit_number);
+                base_hash = bStringHash(buffer);
+                this->mPartsTable[CARSLOTID_DAMAGE0_FRONT] =
+                    NewGetCarPart(&CarPartDB, this->Type, CARSLOTID_DAMAGE0_FRONT, bStringHash("DAMAGE0_FRONT", base_hash), 0, -1);
+                this->mPartsTable[CARSLOTID_DAMAGE0_REAR] =
+                    NewGetCarPart(&CarPartDB, this->Type, CARSLOTID_DAMAGE0_REAR, bStringHash("DAMAGE0_REAR", base_hash), 0, -1);
+                this->mPartsTable[CARSLOTID_DAMAGE0_FRONTLEFT] =
+                    NewGetCarPart(&CarPartDB, this->Type, CARSLOTID_DAMAGE0_FRONTLEFT, bStringHash("DAMAGE0_FRONTLEFT", base_hash), 0, -1);
+                this->mPartsTable[CARSLOTID_DAMAGE0_FRONTRIGHT] =
+                    NewGetCarPart(&CarPartDB, this->Type, CARSLOTID_DAMAGE0_FRONTRIGHT, bStringHash("DAMAGE0_FRONTRIGHT", base_hash), 0, -1);
+                this->mPartsTable[CARSLOTID_DAMAGE0_REARLEFT] =
+                    NewGetCarPart(&CarPartDB, this->Type, CARSLOTID_DAMAGE0_REARLEFT, bStringHash("DAMAGE0_REARLEFT", base_hash), 0, -1);
+                this->mPartsTable[CARSLOTID_DAMAGE0_REARRIGHT] =
+                    NewGetCarPart(&CarPartDB, this->Type, CARSLOTID_DAMAGE0_REARRIGHT, bStringHash("DAMAGE0_REARRIGHT", base_hash), 0, -1);
+
+                kit_number = car_part->GetAppliedAttributeIParam(0x796C0CB0, 0);
+                bSPrintf(buffer, "%s_KIT%02d_", GetCarTypeName(this->Type), kit_number);
+                base_hash = bStringHash(buffer);
+                this->mPartsTable[CARSLOTID_DECAL_LEFT_DOOR] =
+                    NewGetCarPart(&CarPartDB, this->Type, CARSLOTID_DECAL_LEFT_DOOR, bStringHash("DECAL_LEFT_DOOR_RECT_MEDIUM", base_hash), 0,
+                                  -1);
+                this->mPartsTable[CARSLOTID_DECAL_RIGHT_DOOR] =
+                    NewGetCarPart(&CarPartDB, this->Type, CARSLOTID_DECAL_RIGHT_DOOR, bStringHash("DECAL_RIGHT_DOOR_RECT_MEDIUM", base_hash), 0,
+                                  -1);
+                this->mPartsTable[CARSLOTID_DECAL_LEFT_QUARTER] =
+                    NewGetCarPart(&CarPartDB, this->Type, CARSLOTID_DECAL_LEFT_QUARTER, bStringHash("DECAL_LEFT_QUARTER_RECT_MEDIUM", base_hash),
+                                  0, -1);
+                this->mPartsTable[CARSLOTID_DECAL_RIGHT_QUARTER] =
+                    NewGetCarPart(&CarPartDB, this->Type, CARSLOTID_DECAL_RIGHT_QUARTER,
+                                  bStringHash("DECAL_RIGHT_QUARTER_RECT_MEDIUM", base_hash), 0, -1);
+            }
+        }
+    } else if (car_slot_id == CARSLOTID_REAR_WHEEL || (car_slot_id > 0x47 && car_slot_id < 0x4C)) {
+        return this->mPartsTable[car_slot_id];
+    }
+
+    previous_part = this->mPartsTable[car_slot_id];
+    this->mPartsTable[car_slot_id] = car_part;
+
+    if (update_enabled) {
+        this->UpdatePartsEnabled();
+    }
+
+    return previous_part;
+}
+
+void RideInfo::UpdatePartsEnabled() {
+    int num_car_slot_names;
+
+    bMemSet(this->mPartsEnabled, 1, 0x8B);
+    num_car_slot_names = GetNumCarSlotIDNames();
+    for (int i = 0; i < num_car_slot_names; i++) {
+        if (i == CARSLOTID_FRONT_WHEEL) {
+            const unsigned int brake_paint_hash = bStringHash("CALIPER");
+            bool is_part_brake_paint = false;
+            CarPart *part = this->PreviewPart;
+
+            if (part != 0) {
+                if (part->GetGroupNumber() == 'L') {
+                    is_part_brake_paint = part->GetBrandNameHash() == brake_paint_hash;
+                }
+
+                if (part->GetGroupNumber() == 'B' || is_part_brake_paint) {
+                    this->mPartsEnabled[i] = 0;
+                }
+            }
+        }
+    }
+}
+
+int RideInfo::IsPartEnabled(int car_part_id) {
+    return this->mPartsEnabled[car_part_id];
 }
 
 void GetUsedCarTextureInfo(UsedCarTextureInfo *used_texture_info, RideInfo *ride_info, int front_end_only) {
