@@ -12,6 +12,7 @@
 #include "Speed/Indep/Src/Misc/GameFlow.hpp"
 #include "Speed/Indep/Src/Misc/Profiler.hpp"
 #include "Speed/Indep/Src/World/CarInfo.hpp"
+#include "Speed/Indep/Src/World/VehicleRenderConn.h"
 #include "Speed/Indep/Src/World/World.hpp"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/Common/AttribPrivate.h"
@@ -57,6 +58,11 @@ const int MAX_CAR_PART_MODELS = 250;
 SlotPool *CarPartModelPool = nullptr;
 
 void GetUsedCarTextureInfo(UsedCarTextureInfo *used_texture_info, RideInfo *ride_info, int front_end_only);
+
+class VehicleFragmentConn {
+  public:
+    static void FetchData(float dT);
+};
 
 namespace {
 
@@ -105,6 +111,11 @@ struct CarRenderUsedCarTextureInfoLayout {
     unsigned int ReplaceBrakelightGlassHash[3];
     unsigned int ReplaceReverselightHash[3];
     unsigned int ShadowHash;
+};
+
+struct FrontEndRenderingCarLayout {
+    bNode Node;
+    RideInfo mRideInfo;
 };
 
 template <typename T> void InitSList(bSList<T> &list) {
@@ -707,6 +718,33 @@ int CarRenderInfo::GetEmitterPositions(bSList<CarEmitterPosition> &markers_out, 
     return count;
 }
 
+int cmpl(const void *a, const void *b) {
+    const float *pa = *reinterpret_cast<const float *const *>(a);
+    const float *pb = *reinterpret_cast<const float *const *>(b);
+    float delta = pa[0] - pb[0];
+
+    if (0.0f < delta) {
+        return 1;
+    }
+    if (delta < 0.0f) {
+        return -1;
+    }
+
+    delta = pb[1] - pa[1];
+    if (0.0f < delta) {
+        return 1;
+    }
+    if (delta < 0.0f) {
+        return -1;
+    }
+
+    return 0;
+}
+
+int cmph(const void *a, const void *b) {
+    return cmpl(b, a);
+}
+
 void CarRenderInfo::UpdateCarReplacementTextures() {
     CarRenderUsedCarTextureInfoLayout *used_texture_info =
         reinterpret_cast<CarRenderUsedCarTextureInfoLayout *>(&this->mUsedTextureInfos);
@@ -740,4 +778,46 @@ void CarRenderInfo::SwitchSkin(RideInfo *ride_info) {
     this->UpdateCarReplacementTextures();
     this->BrakeLeftReplacementTextureTable[1].SetNewNameHash(used_texture_info->ReplaceGlobalHash);
     this->BrakeRightReplacementTextureTable[1].SetNewNameHash(used_texture_info->ReplaceGlobalHash);
+}
+
+void RefreshAllFrontEndCarRenderInfos(CarType type) {
+    for (FrontEndRenderingCar *front_end_car = FrontEndRenderingCarList.GetHead(); front_end_car != FrontEndRenderingCarList.EndOfList();
+         front_end_car = front_end_car->GetNext()) {
+        RideInfo *ride_info = &reinterpret_cast<FrontEndRenderingCarLayout *>(front_end_car)->mRideInfo;
+
+        if ((type == static_cast<CarType>(-1) || ride_info->Type == type) && front_end_car->RenderInfo != 0) {
+            front_end_car->RenderInfo->Refresh();
+        }
+    }
+}
+
+void RefreshAllRenderInfo(CarType type) {
+    const UTL::Collections::Listable<VehicleRenderConn, 10>::List &loader_list = VehicleRenderConn::GetList();
+    UTL::Collections::Listable<VehicleRenderConn, 10>::List::const_iterator it = loader_list.begin();
+    UTL::Collections::Listable<VehicleRenderConn, 10>::List::const_iterator end = loader_list.end();
+
+    for (; it != end; ++it) {
+        VehicleRenderConn *vehicle_render_conn = *it;
+
+        if ((type == static_cast<CarType>(-1) || vehicle_render_conn->mCarType == type) && vehicle_render_conn->mState > 1) {
+            vehicle_render_conn->RefreshRenderInfo();
+        }
+    }
+
+    RefreshAllFrontEndCarRenderInfos(type);
+}
+
+void RenderFEFlares(eView *, int) {}
+
+void RenderVehicleFlares(eView *view, int reflection, int renderFlareFlags) {
+    VehicleRenderConn::RenderFlares(view, reflection, renderFlareFlags);
+}
+
+void DrawTestCars(eView *view, int reflection) {
+    VehicleRenderConn::RenderAll(view, reflection);
+}
+
+void CarRender_Service(float dT) {
+    VehicleRenderConn::FetchData(dT);
+    VehicleFragmentConn::FetchData(dT);
 }
