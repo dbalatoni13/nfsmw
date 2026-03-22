@@ -1800,7 +1800,7 @@ void SetSoundControlState(bool on, eSNDCTLSTATE state, const char *caller) {
 
     on ^= 1;
     if (g_pEAXSound->IsPauseMainFNG()) {
-        if (on) {
+        if (!on) {
             if (state != SNDSTATE_MINILOAD) {
                 unsigned int fngState = state - 6;
                 if (fngState > 4) {
