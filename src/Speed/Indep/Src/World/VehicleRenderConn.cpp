@@ -3,14 +3,19 @@
 #include "./CarInfo.hpp"
 #include "./WCollider.h"
 #include "Speed/Indep/Libs/Support/Utility/UCrc.h"
+#include "Speed/Indep/Src/Camera/CameraMover.hpp"
+#include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
 #include "Speed/Indep/Src/Ecstasy/eMath.hpp"
 #include "Speed/Indep/Src/Generated/Events/ECommitRenderAssets.hpp"
 #include "Speed/Indep/Src/Physics/Bounds.h"
 
 int CarLoader_Load(CarLoader *car_loader, RideInfo *ride_info) asm("Load__9CarLoaderP8RideInfo");
+int CarLoader_IsLoaded(CarLoader *car_loader, int handle) asm("IsLoaded__9CarLoaderi");
+unsigned int CameraMover_GetAnchorID() asm("GetAnchorID__11CameraMover");
 const CollisionGeometry::Bounds *CollisionGeometry_Collection_GetRoot(const CollisionGeometry::Collection *collection)
     asm("GetRoot__CQ217CollisionGeometry10Collection");
 extern CarTypeInfo *CarTypeInfoArray;
+extern eView eViews[];
 
 struct RideInfoLoaderMirror {
     CarType Type;
@@ -41,6 +46,28 @@ void VehicleRenderConn::OnClose() {
 
 Sim::ConnStatus VehicleRenderConn::OnStatusCheck() {
     return this->mState > S_Loading ? Sim::CONNSTATUS_READY : Sim::CONNSTATUS_CONNECTING;
+}
+
+bool VehicleRenderConn::IsViewAnchor(eView *view) const {
+    CameraMover *camera_mover;
+    CameraAnchor *anchor;
+    const ReferenceMirror *world_ref = reinterpret_cast<const ReferenceMirror *>(&this->mWorldRef);
+
+    if (view != 0) {
+        camera_mover = view->GetCameraMover();
+        if (camera_mover != 0) {
+            anchor = camera_mover->GetAnchor();
+            if (anchor != 0 && anchor->GetWorldID() == world_ref->mWorldID) {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+bool VehicleRenderConn::IsViewAnchor() const {
+    return this->IsViewAnchor(&eViews[0]) || this->IsViewAnchor(&eViews[1]);
 }
 
 bool VehicleRenderConn::CanRender() const {
@@ -92,8 +119,81 @@ void VehicleRenderConn::ShowPart(CAR_PART_ID slot) {
     }
 }
 
+bool VehicleRenderConn::CheckForRain(eView *view) const {
+    const ReferenceMirror *world_ref = reinterpret_cast<const ReferenceMirror *>(&this->mWorldRef);
+    Rain *precipitation;
+    CameraMover *camera_mover;
+    bVector3 *camera_position;
+    float dx;
+    float dy;
+    float dz;
+    float distance_squared;
+    float distance;
+
+    if (view != 0) {
+        precipitation = view->Precipitation;
+        if (precipitation != 0 && 0.0f < precipitation->GetRainIntensity()) {
+            camera_mover = view->GetCameraMover();
+            if (camera_mover != 0) {
+                camera_position = camera_mover->GetPosition();
+                dx = camera_position->y - world_ref->mMatrix->v3.y;
+                dy = camera_position->x - world_ref->mMatrix->v3.x;
+                dz = camera_position->z - world_ref->mMatrix->v3.z;
+                distance_squared = dz * dz + dy * dy + dx * dx;
+                distance = 0.0f;
+                if (0.0f < distance_squared) {
+                    distance = bSqrt(distance_squared);
+                }
+                if (distance < 60.0f) {
+                    if (10.0f <= distance && CameraMover_GetAnchorID() != world_ref->mWorldID) {
+                        return precipitation->NoRainAhead == 0;
+                    }
+                    return precipitation->NoRain == 0;
+                }
+            }
+        }
+    }
+
+    return false;
+}
+
+bool VehicleRenderConn::CheckForRain() const {
+    return this->CheckForRain(&eViews[0]) || this->CheckForRain(&eViews[1]);
+}
+
 bool VehicleRenderConn::CanUpdate() const {
     return this->mState > S_Loading;
+}
+
+void VehicleRenderConn::HandleEvent(EventID id) {
+    if (this->CanUpdate()) {
+        this->OnEvent(id);
+    }
+}
+
+void VehicleRenderConn::FetchData(float dT) {
+    const UTL::Collections::Listable<VehicleRenderConn, 10>::List &loader_list = VehicleRenderConn::GetList();
+    UTL::Collections::Listable<VehicleRenderConn, 10>::List::const_iterator it = loader_list.begin();
+    UTL::Collections::Listable<VehicleRenderConn, 10>::List::const_iterator end = loader_list.end();
+
+    for (; it != end; ++it) {
+        (*it)->OnFetch(dT);
+    }
+}
+
+void VehicleRenderConn::UpdateLoading() {
+    const UTL::Collections::Listable<VehicleRenderConn, 10>::List &loader_list = VehicleRenderConn::GetList();
+    UTL::Collections::Listable<VehicleRenderConn, 10>::List::const_iterator it = loader_list.begin();
+    UTL::Collections::Listable<VehicleRenderConn, 10>::List::const_iterator end = loader_list.end();
+
+    for (; it != end; ++it) {
+        VehicleRenderConn *vehicle_render_conn = *it;
+        RideInfoLoaderMirror *ride_info = reinterpret_cast<RideInfoLoaderMirror *>(vehicle_render_conn->mRideInfo);
+
+        if (vehicle_render_conn->mState == S_Loading && CarLoader_IsLoaded(&TheCarLoader, ride_info->mMyCarLoaderHandle)) {
+            vehicle_render_conn->OnLoaded(new CarRenderInfo(vehicle_render_conn->mRideInfo));
+        }
+    }
 }
 
 void VehicleRenderConn::Update(float) {
