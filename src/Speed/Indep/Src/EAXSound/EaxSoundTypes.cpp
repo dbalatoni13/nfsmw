@@ -78,7 +78,7 @@ struct copPair {
     EAXCop *cop;
 
     bool operator<(const copPair &rhs) const {
-        return hsimable < rhs.hsimable || (hsimable == rhs.hsimable && cop < rhs.cop);
+        return hsimable < rhs.hsimable;
     }
 };
 
