@@ -18,8 +18,101 @@ struct TireState;
 typedef unsigned int PartState[3];
 
 namespace RenderConn {
-class Pkt_Car_Open;
-class Pkt_Car_Service;
+class Pkt_Car_Open : public Sim::Packet {
+  public:
+    unsigned int mModelHash;                         // offset 0x4, size 0x4
+    unsigned int mWorldID;                           // offset 0x8, size 0x4
+    CarRenderUsage mUsage;                           // offset 0xC, size 0x4
+    const FECustomizationRecord *mCustomizations;    // offset 0x10, size 0x4
+    unsigned int mPhysicsKey;                        // offset 0x14, size 0x4
+    bool mSpoolLoad;                                 // offset 0x18, size 0x1
+    unsigned char _pad19[3];                         // offset 0x19, size 0x3
+};
+
+class Pkt_Car_Service : public Sim::Packet {
+  public:
+    Pkt_Car_Service(bool inview, float distancetoview)
+        : mGroundState(0), //
+          mDamageInfo(0), //
+          mLights(0), //
+          mBrokenLights(0), //
+          mInView(inview), //
+          mDistanceToView(distancetoview), //
+          mFlashing(false), //
+          mNos(false), //
+          mEngineBlown(false), //
+          mShift(1), //
+          mGear(1), //
+          mEnginePower(0.0f), //
+          mEngineSpeed(0.0f), //
+          mExtraBodyRoll(0.0f), //
+          mExtraBodyPitch(0.0f), //
+          mBlowOuts(0), //
+          mHealth(1.0f), //
+          mAnimatedCarPitch(0.0f), //
+          mAnimatedCarRoll(0.0f), //
+          mAnimatedCarShake(0.0f) {
+        int i;
+
+        for (i = 0; i < 4; i++) {
+            this->mCompressions[i] = 0.0f;
+            this->mWheelSpeed[i] = 0.0f;
+            this->mTireSkid[i] = 0.0f;
+            this->mTireSlip[i] = 0.0f;
+        }
+
+        this->mSteering[0] = 0.0f;
+        this->mSteering[1] = 0.0f;
+
+        for (i = 0; i < 3; i++) {
+            this->mPartState[i] = 0;
+        }
+
+        this->_pad69[0] = 0;
+        this->_pad69[1] = 0;
+        this->_pad69[2] = 0;
+        this->_pad71[0] = 0;
+        this->_pad71[1] = 0;
+        this->_pad71[2] = 0;
+        this->_pad75[0] = 0;
+        this->_pad75[1] = 0;
+        this->_pad75[2] = 0;
+        this->_pad79[0] = 0;
+        this->_pad79[1] = 0;
+        this->_pad79[2] = 0;
+    }
+
+    float mCompressions[4];              // offset 0x4, size 0x10
+    float mWheelSpeed[4];                // offset 0x14, size 0x10
+    float mTireSkid[4];                  // offset 0x24, size 0x10
+    float mTireSlip[4];                  // offset 0x34, size 0x10
+    float mSteering[2];                  // offset 0x44, size 0x8
+    int mGroundState;                    // offset 0x4C, size 0x4
+    unsigned int mDamageInfo;            // offset 0x50, size 0x4
+    PartState mPartState;                // offset 0x54, size 0xC
+    unsigned int mLights;                // offset 0x60, size 0x4
+    unsigned int mBrokenLights;          // offset 0x64, size 0x4
+    bool mInView;                        // offset 0x68, size 0x1
+    unsigned char _pad69[3];             // offset 0x69, size 0x3
+    float mDistanceToView;               // offset 0x6C, size 0x4
+    bool mFlashing;                      // offset 0x70, size 0x1
+    unsigned char _pad71[3];             // offset 0x71, size 0x3
+    bool mNos;                           // offset 0x74, size 0x1
+    unsigned char _pad75[3];             // offset 0x75, size 0x3
+    bool mEngineBlown;                   // offset 0x78, size 0x1
+    unsigned char _pad79[3];             // offset 0x79, size 0x3
+    int mShift;                          // offset 0x7C, size 0x4
+    int mGear;                           // offset 0x80, size 0x4
+    float mEnginePower;                  // offset 0x84, size 0x4
+    float mEngineSpeed;                  // offset 0x88, size 0x4
+    float mExtraBodyRoll;                // offset 0x8C, size 0x4
+    float mExtraBodyPitch;               // offset 0x90, size 0x4
+    int mBlowOuts;                       // offset 0x94, size 0x4
+    float mHealth;                       // offset 0x98, size 0x4
+    float mAnimatedCarPitch;             // offset 0x9C, size 0x4
+    float mAnimatedCarRoll;              // offset 0xA0, size 0x4
+    float mAnimatedCarShake;             // offset 0xA4, size 0x4
+};
 }
 
 class CarRenderConn : public VehicleRenderConn, public IAttributeable {

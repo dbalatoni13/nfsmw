@@ -6,6 +6,8 @@ extern CarPartDatabase CarPartDB;
 extern CarType GetCarType__15CarPartDatabaseUi(CarPartDatabase *database, unsigned int model_hash)
     asm("GetCarType__15CarPartDatabaseUi");
 extern void KillSkids__9TireState(TireState *state) asm("KillSkids__9TireState");
+extern float RealTimeElapsed;
+extern float renderModifier;
 
 namespace {
 
@@ -16,6 +18,22 @@ struct RenderPktCarOpen {
 
 void StopEffect(VehicleRenderConn::Effect *effect) {
     effect->Stop();
+}
+
+float &CarRenderInfoF32(CarRenderInfo *info, unsigned int offset) {
+    return *reinterpret_cast<float *>(reinterpret_cast<unsigned char *>(info) + offset);
+}
+
+unsigned int &CarRenderInfoU32(CarRenderInfo *info, unsigned int offset) {
+    return *reinterpret_cast<unsigned int *>(reinterpret_cast<unsigned char *>(info) + offset);
+}
+
+int &CarRenderInfoI32(CarRenderInfo *info, unsigned int offset) {
+    return *reinterpret_cast<int *>(reinterpret_cast<unsigned char *>(info) + offset);
+}
+
+short &CarRenderInfoS16(CarRenderInfo *info, unsigned int offset) {
+    return *reinterpret_cast<short *>(reinterpret_cast<unsigned char *>(info) + offset);
 }
 
 } // namespace
@@ -69,6 +87,144 @@ void CarRenderConn::OnEvent(EventID id) {
     }
 }
 
+void CarRenderConn::UpdateSteering(float dT, const RenderConn::Pkt_Car_Service &data) {
+    if (!this->TestVisibility(renderModifier * 100.0f)) {
+        this->mSteering[0] = 0.0f;
+        this->mSteering[1] = 0.0f;
+        return;
+    }
+
+    const float *max_steering = reinterpret_cast<const float *>(this->VehicleRenderConn::mAttributes.GetAttributePointer(0xa9633fde, 0));
+    if (max_steering == 0) {
+        max_steering = reinterpret_cast<const float *>(Attrib::DefaultDataArea(sizeof(float)));
+    }
+
+    const float *steering_speed =
+        reinterpret_cast<const float *>(this->VehicleRenderConn::mAttributes.GetAttributePointer(0x79356463, 0));
+    if (steering_speed == 0) {
+        steering_speed = reinterpret_cast<const float *>(Attrib::DefaultDataArea(sizeof(float)));
+    }
+
+    float steering_limit = *max_steering * 0.017453f;
+    float steering_delta = *steering_speed * 0.017453f * dT;
+
+    for (int i = 0; i < 2; i++) {
+        float target = data.mSteering[i];
+        float current = this->mSteering[i];
+
+        if (current < target - steering_delta) {
+            current += steering_delta;
+        } else if (target + steering_delta < current) {
+            current -= steering_delta;
+        } else {
+            current = target;
+        }
+
+        if (steering_limit < current) {
+            current = steering_limit;
+        }
+        if (current < -steering_limit) {
+            current = -steering_limit;
+        }
+
+        this->mSteering[i] = current;
+    }
+}
+
+void CarRenderConn::UpdateParts(float dT, const RenderConn::Pkt_Car_Service &data) {
+    bool changed = false;
+    int i;
+
+    for (i = 0; i < 3; i++) {
+        if (this->mPartState[i] != data.mPartState[i]) {
+            changed = true;
+            break;
+        }
+    }
+
+    if (changed) {
+        unsigned int part_id = 0;
+
+        while (part_id < 0x4c) {
+            unsigned int word_index = part_id >> 5;
+            unsigned int shift = part_id & 0x1f;
+            bool hide_part = ((data.mPartState[word_index] >> shift) & 1) != 0;
+
+            if (hide_part != (((this->mPartState[word_index] >> shift) & 1) != 0)) {
+                if (hide_part) {
+                    this->HidePart(static_cast<CAR_PART_ID>(part_id));
+                } else {
+                    this->ShowPart(static_cast<CAR_PART_ID>(part_id));
+                }
+            }
+
+            part_id++;
+        }
+
+        for (i = 0; i < 3; i++) {
+            this->mPartState[i] = data.mPartState[i];
+        }
+    }
+}
+
+void CarRenderConn::Update(const RenderConn::Pkt_Car_Service &data, float dT) {
+    if (this->CanUpdate() && this->mRenderInfo != 0) {
+        this->mRenderInfo->SetDamageInfo(*reinterpret_cast<const DamageZone::Info *>(&data.mDamageInfo));
+        CarRenderInfoF32(this->mRenderInfo, 0x1754) = dT;
+        CarRenderInfoU32(this->mRenderInfo, 0x1608) = data.mLights;
+        CarRenderInfoU32(this->mRenderInfo, 0x160C) = data.mBrokenLights;
+        CarRenderInfoI32(this->mRenderInfo, 0x1770) = data.mBlowOuts;
+        if (data.mBlowOuts != 0) {
+            float blown_timer = CarRenderInfoF32(this->mRenderInfo, 0x1774) + RealTimeElapsed;
+
+            CarRenderInfoF32(this->mRenderInfo, 0x1774) = blown_timer;
+            if (0.05f < blown_timer) {
+                CarRenderInfoF32(this->mRenderInfo, 0x1774) = blown_timer - 0.12f;
+            }
+        }
+
+        CarRenderInfoU32(this->mRenderInfo, 0x1170) = data.mNos ? 1 : 0;
+        CarRenderInfoS16(this->mRenderInfo, 0x1174) = static_cast<short>(this->mSteering[0] * 10430.378f);
+        CarRenderInfoS16(this->mRenderInfo, 0x1176) = static_cast<short>(this->mSteering[1] * 10430.378f);
+
+        const bVector3 *velocity = this->mWorldRef.GetVelocity();
+        float carspeed = bSqrt(velocity->x * velocity->x + velocity->y * velocity->y + velocity->z * velocity->z);
+
+        this->mAnimTime += dT;
+        if (10.0f <= this->mAnimTime) {
+            this->mAnimTime -= 10.0f;
+        }
+
+        CarRenderInfoF32(this->mRenderInfo, 0x0) = this->mAnimTime;
+        this->UpdateParts(dT, data);
+        this->BuildRenderMatrix(dT);
+        this->SetFlag(CF_ISRAINING, this->CheckForRain());
+        this->UpdateSteering(dT, data);
+        this->UpdateTires(dT, carspeed, data);
+        this->UpdateRoadNoise(dT, carspeed, data);
+        this->UpdateBodyAnimation(dT, data);
+        this->UpdateEngineAnimation(dT, data);
+        if (this->GetFlag(CF_ISPLAYER)) {
+            this->UpdateContrails(data, dT);
+        }
+        this->UpdateRenderMatrix(dT);
+        this->UpdateEffects(data, dT);
+        this->VehicleRenderConn::Update(dT);
+    }
+}
+
+void CarRenderConn::UpdateContrails(const RenderConn::Pkt_Car_Service &data, float dT) {
+    const bVector3 *velocity = this->mWorldRef.GetVelocity();
+    float speed = bSqrt(velocity->x * velocity->x + velocity->y * velocity->y + velocity->z * velocity->z);
+
+    if ((data.mNos || 44.0f <= speed) && gINISInstance == 0) {
+        this->mDoContrailEffect = true;
+        return;
+    }
+
+    this->mDoContrailEffect = false;
+}
+
 void CarRenderConn::Hide(bool b) {
     unsigned int flags = this->mFlags;
 
@@ -98,6 +254,22 @@ void CarRenderConn::Hide(bool b) {
                 StopEffect(effect);
             }
         }
+    }
+}
+
+void CarRenderConn::OnFetch(float dT) {
+    bool in_view = false;
+
+    if ((this->mLastRenderFrame <= this->mLastVisibleFrame && this->mLastVisibleFrame != 0) || this->IsViewAnchor()) {
+        in_view = true;
+    }
+
+    RenderConn::Pkt_Car_Service pkt(in_view, this->mDistanceToView);
+    if (!this->Service(&pkt)) {
+        this->Hide(true);
+    } else {
+        this->Hide(false);
+        this->Update(pkt, dT);
     }
 }
 
