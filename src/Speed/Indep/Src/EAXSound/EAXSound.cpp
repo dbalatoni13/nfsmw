@@ -1835,37 +1835,33 @@ void SetSoundControlState(bool on, eSNDCTLSTATE state, const char *caller) {
         }
     }
 
-    EAXS_StreamManager *streamManager = g_pEAXSound->GetStreamManager();
-
     for (unsigned int s = 0; s < 13; s++) {
         unsigned int sBit = 1u << (s & 0x1F);
         unsigned int cur = g_ActiveSFXStates & sBit;
-        if (cur == (g_PrevActiveSFXStates & sBit) || streamManager == nullptr) {
-            continue;
-        }
-
-        if (cur != 0) {
-            if (s == 1) {
-                if (streamManager->GetStreamChannel(0)) {
-                    streamManager->GetStreamChannel(0)->Pause();
+        if (cur != (g_PrevActiveSFXStates & sBit) && g_pEAXSound->GetStreamManager()) {
+            if (cur != 0) {
+                if (s == 1) {
+                    if (g_pEAXSound->GetStreamManager()->GetStreamChannel(0)) {
+                        g_pEAXSound->GetStreamManager()->GetStreamChannel(0)->Pause();
+                    }
+                } else if (s == 0) {
+                    if (g_pEAXSound->GetStreamManager()->GetStreamChannel(1)) {
+                        g_pEAXSound->GetStreamManager()->GetStreamChannel(1)->Pause();
+                    }
+                } else if (s == 2 && g_pEAXSound->GetStreamManager()->GetStreamChannel(2)) {
+                    g_pEAXSound->GetStreamManager()->GetStreamChannel(2)->Pause();
+                }
+            } else if (s == 1) {
+                if (g_pEAXSound->GetStreamManager()->GetStreamChannel(0)) {
+                    g_pEAXSound->GetStreamManager()->GetStreamChannel(0)->Resume();
                 }
             } else if (s == 0) {
-                if (streamManager->GetStreamChannel(1)) {
-                    streamManager->GetStreamChannel(1)->Pause();
+                if (g_pEAXSound->GetStreamManager()->GetStreamChannel(1)) {
+                    g_pEAXSound->GetStreamManager()->GetStreamChannel(1)->Resume();
                 }
-            } else if (s == 2 && streamManager->GetStreamChannel(2)) {
-                streamManager->GetStreamChannel(2)->Pause();
+            } else if (s == 2 && g_pEAXSound->GetStreamManager()->GetStreamChannel(2)) {
+                g_pEAXSound->GetStreamManager()->GetStreamChannel(2)->Resume();
             }
-        } else if (s == 1) {
-            if (streamManager->GetStreamChannel(0)) {
-                streamManager->GetStreamChannel(0)->Resume();
-            }
-        } else if (s == 0) {
-            if (streamManager->GetStreamChannel(1)) {
-                streamManager->GetStreamChannel(1)->Resume();
-            }
-        } else if (s == 2 && streamManager->GetStreamChannel(2)) {
-            streamManager->GetStreamChannel(2)->Resume();
         }
     }
 
