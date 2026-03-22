@@ -508,15 +508,11 @@ unsigned int TSMemoryPool::GetPoolChecksum() {
 }
 
 void *TrackStreamer::AllocateMemory(TrackStreamingSection *section, int allocation_params) {
-#ifdef MILESTONE_OPT
-    void *memory = bMalloc(section->Size, section->SectionName, 0, allocation_params | 0x2007);
-#else
-    void *memory = bMalloc(section->Size, allocation_params | 0x2007);
-#endif
-    if (!memory) {
+    void *buf = bMalloc(section->Size, section->SectionName, 0, allocation_params | 0x2007);
+    if (!buf) {
         bBreak();
     }
-    return memory;
+    return buf;
 }
 
 bool TrackStreamer::WillUnloadBlock(TrackStreamingSection *section) {
@@ -704,19 +700,25 @@ TrackStreamingSection *TrackStreamer::FindSection(int section_number) {
 }
 
 TrackStreamingSection *TrackStreamer::FindSectionByAddress(int address) {
-    void *memory = reinterpret_cast<void *>(address);
+    int n;
 
-    for (int i = 0; i < NumCurrentStreamingSections; i++) {
-        TrackStreamingSection *section = CurrentStreamingSections[i];
-        if (section->pMemory == memory) {
-            return section;
+    {
+        TrackStreamingSection *section;
+        for (n = 0; n < NumCurrentStreamingSections; n++) {
+            section = CurrentStreamingSections[n];
+            if (section->pMemory == reinterpret_cast<void *>(address)) {
+                return section;
+            }
         }
     }
 
-    for (int i = 0; i < NumTrackStreamingSections; i++) {
-        TrackStreamingSection *section = &pTrackStreamingSections[i];
-        if (section->pMemory == memory) {
-            return section;
+    {
+        TrackStreamingSection *section;
+        for (n = 0; n < NumTrackStreamingSections; n++) {
+            section = &pTrackStreamingSections[n];
+            if (section->pMemory == reinterpret_cast<void *>(address)) {
+                return section;
+            }
         }
     }
 
