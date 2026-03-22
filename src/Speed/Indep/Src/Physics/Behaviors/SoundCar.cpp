@@ -415,7 +415,7 @@ void SoundCar::OnService(SoundConn::Pkt_Car_Service &svc) {
 
             slip = mSuspension->GetWheelSlip(wheelid);
             toleratedSlip = mSuspension->GetToleratedSlip(wheelid) * 0.2f;
-            if (toleratedSlip < slip) {
+            if (slip > toleratedSlip) {
                 slip -= toleratedSlip;
             } else if (slip < -toleratedSlip) {
                 slip += toleratedSlip;
