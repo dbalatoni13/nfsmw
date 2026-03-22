@@ -957,28 +957,23 @@ void EAXSound::MixMapReadyCallback() {
 }
 
 void EAXSound::AttachPlayerCars() {
-    if (m_pStateMgr[eMM_PLAYERCAR] == nullptr) {
-        return;
-    }
-
-    int attachedCount = 0;
-    for (int n = 0; n < 32; n++) {
-        CSTATE_Base *state = m_pStateMgr[eMM_PLAYERCAR]->GetStateObj(n);
-        if (state == nullptr) {
-            continue;
-        }
-
-        if (!state->IsAttached()) {
-            continue;
-        }
-
-        attachedCount++;
-        if (Sim::GetUserMode() == Sim::USER_SPLIT_SCREEN) {
-            if (attachedCount >= 2) {
-                return;
+    int num_attached = 0;
+    for (int n = 0; n < UTL::Collections::Listable<EAX_CarState, 10>::Count(); n++) {
+        if (UTL::Collections::Listable<EAX_CarState, 10>::GetList()[n]->GetContext() == Sound::CONTEXT_PLAYER) {
+            num_attached++;
+            CSTATE_Base *newcar =
+                m_pStateMgr[eMM_PLAYERCAR]->GetFreeState(UTL::Collections::Listable<EAX_CarState, 10>::GetList()[n]);
+            if (newcar != nullptr) {
+                newcar->Attach(UTL::Collections::Listable<EAX_CarState, 10>::GetList()[n]);
+                if (Sim::GetUserMode() == Sim::USER_SPLIT_SCREEN) {
+                    if (num_attached == 2) {
+                        return;
+                    }
+                }
+                if (Sim::GetUserMode() != Sim::USER_SPLIT_SCREEN && num_attached == 1) {
+                    return;
+                }
             }
-        } else if (attachedCount >= 1) {
-            return;
         }
     }
 }
