@@ -151,16 +151,16 @@ void SndAIStateManager::Initialize(SFXCTL_Physics *_m_pPhysicsCTL) {
 
     SteeringMonitorLeft.m_fThreshold = TWK_SND_SteeringMonitor[1];
     SteeringMonitorLeft.m_fAutoTrigger = TWK_SND_SteeringMonitor[2];
-    SteeringMonitorLeft.fSign = TWK_SND_SteeringMonitor[5];
     SteeringMonitorLeft.t_fSustain = TWK_SND_SteeringMonitor[3];
     SteeringMonitorLeft.t_TriggerLength = TWK_SND_SteeringMonitor[4];
+    SteeringMonitorLeft.fSign = TWK_SND_SteeringMonitor[5];
     SteeringMonitorLeft.Initialize(static_cast< int >(TWK_SND_SteeringMonitor[0]));
 
     SteeringMonitorRight.m_fThreshold = -TWK_SND_SteeringMonitor[1];
     SteeringMonitorRight.m_fAutoTrigger = -TWK_SND_SteeringMonitor[2];
-    SteeringMonitorRight.fSign = -TWK_SND_SteeringMonitor[5];
     SteeringMonitorRight.t_fSustain = TWK_SND_SteeringMonitor[3];
     SteeringMonitorRight.t_TriggerLength = TWK_SND_SteeringMonitor[4];
+    SteeringMonitorRight.fSign = -TWK_SND_SteeringMonitor[5];
     SteeringMonitorRight.Initialize(static_cast< int >(TWK_SND_SteeringMonitor[0]));
 
     AccelMonitor.m_fThreshold = TWK_SND_AccelMonitor[1];
