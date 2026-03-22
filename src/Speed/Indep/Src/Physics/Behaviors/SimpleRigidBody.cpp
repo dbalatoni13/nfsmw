@@ -255,58 +255,58 @@ void SimpleRigidBody::DoRBCollisions(const float dT) {
 }
 
 void SimpleRigidBody::DoSRBCollisions(SimpleRigidBody *other) {
+    IRigidBody &thisBody = *this;
+    IRigidBody &otherBody = *other;
     Volatile &data = *mData;
     Volatile &otherData = *other->mData;
 
-    if (((data.flags | otherData.flags) & 0x4000) && GetOwner() == other->GetOwner()) {
-        return;
-    }
-
-    float radius = data.radius;
-    if (radius < 0.25f) {
-        radius = 0.25f;
-    }
-
-    float otherRadius = otherData.radius;
-    if (otherRadius < 0.25f) {
-        otherRadius = 0.25f;
-    }
-
-    UMath::Vector3 deltaPosition;
-    UMath::Sub(data.position, otherData.position, deltaPosition);
-    const float collisionRadius = radius + otherRadius;
-
-    if (UMath::LengthSquare(deltaPosition) >= collisionRadius * collisionRadius) {
-        return;
-    }
-
-    if ((data.flags & 0x80) && (otherData.flags & 0x80)) {
-        UMath::Matrix4 orientation;
-        UMath::Matrix4 otherOrientation;
-        UMath::Vector3 dimension;
-        UMath::Vector3 otherDimension;
-        UMath::QuaternionToMatrix4(data.orientation, orientation);
-        UMath::QuaternionToMatrix4(otherData.orientation, otherOrientation);
-
-        dimension.x = radius;
-        dimension.y = radius;
-        dimension.z = radius * GetScalarVelocity();
-        otherDimension.x = otherRadius;
-        otherDimension.y = otherRadius;
-        otherDimension.z = otherRadius * other->GetScalarVelocity();
-
-        OBB thisObb;
-        OBB otherObb;
-        thisObb.Reset(orientation, data.position, dimension);
-        otherObb.Reset(otherOrientation, otherData.position, otherDimension);
-
-        if (!thisObb.CheckOBBOverlap(&otherObb)) {
+    if ((data.flags | otherData.flags) & 0x4000) {
+        ISimable *ownerOther = otherBody.GetOwner();
+        ISimable *ownerThis = thisBody.GetOwner();
+        if (ownerOther == ownerThis) {
             return;
         }
     }
 
-    SetCollisionMapBit(mCollisionMap[data.index], RIGID_BODY_MAX + otherData.index);
-    SetCollisionMapBit(mCollisionMap[otherData.index], RIGID_BODY_MAX + data.index);
+    SimCollisionMap &cmap = mCollisionMap[thisBody.GetIndex()];
+    SimCollisionMap &cmapother = mCollisionMap[otherBody.GetIndex()];
+    UMath::Vector3 posSRB = otherBody.GetPosition();
+    const float radiusSRB = UMath::Max(otherBody.GetRadius(), 0.25f);
+    const float thisRadius = UMath::Max(thisBody.GetRadius(), 0.25f);
+    UMath::Vector3 vec;
+    UMath::Sub(thisBody.GetPosition(), posSRB, vec);
+    const float distSquared = UMath::LengthSquare(vec);
+    const float testRadius = thisRadius + radiusSRB;
+    if (distSquared >= testRadius * testRadius) {
+        return;
+    }
+
+    if (((data.flags & 0x80) == 0) || ((otherData.flags & 0x80) == 0)) {
+        SetCollisionMapBit(cmap, RIGID_BODY_MAX + otherBody.GetIndex());
+        SetCollisionMapBit(cmapother, RIGID_BODY_MAX + thisBody.GetIndex());
+        return;
+    }
+
+    OBB obbThis;
+    OBB obbOther;
+    UMath::Matrix4 orientThis;
+    UMath::Matrix4 orientOther;
+    UMath::Vector3 dimThis;
+    UMath::Vector3 dimOther;
+    dimThis.x = thisRadius;
+    dimThis.y = thisRadius;
+    dimThis.z = thisRadius * GetScalarVelocity();
+    dimOther.x = radiusSRB;
+    dimOther.y = radiusSRB;
+    dimOther.z = radiusSRB * other->GetScalarVelocity();
+    UMath::QuaternionToMatrix4(data.orientation, orientThis);
+    UMath::QuaternionToMatrix4(otherData.orientation, orientOther);
+    obbThis.Reset(orientThis, thisBody.GetPosition(), dimThis);
+    obbOther.Reset(orientOther, posSRB, dimOther);
+    if (obbThis.CheckOBBOverlap(&obbOther)) {
+        SetCollisionMapBit(cmap, RIGID_BODY_MAX + otherBody.GetIndex());
+        SetCollisionMapBit(cmapother, RIGID_BODY_MAX + thisBody.GetIndex());
+    }
 }
 
 void SimpleRigidBody::Update(const float dT, void *workspace) {
