@@ -300,13 +300,13 @@ RBGrid *RBGrid::Add(unsigned int index, RigidBody &owner, const UMath::Vector3 &
         return nullptr;
     }
 
-    SAPNodeAccess *&rootX = reinterpret_cast<SAPNodeAccess *&>(SAP::Grid<RigidBody>::mRootX);
-    SAPNodeAccess *&rootZ = reinterpret_cast<SAPNodeAccess *&>(SAP::Grid<RigidBody>::mRootZ);
-
     const float minX = position.x - radius;
     const float maxX = position.x + radius;
-    const float minZ = position.z - radius;
     const float maxZ = position.z + radius;
+    const float minZ = position.z - radius;
+
+    SAPNodeAccess *&rootX = reinterpret_cast<SAPNodeAccess *&>(SAP::Grid<RigidBody>::mRootX);
+    SAPNodeAccess *&rootZ = reinterpret_cast<SAPNodeAccess *&>(SAP::Grid<RigidBody>::mRootZ);
 
     grid->mX.mMin.mHead = nullptr;
     grid->mX.mMin.mTail = nullptr;
