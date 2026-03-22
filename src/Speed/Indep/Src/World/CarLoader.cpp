@@ -103,10 +103,15 @@ int ConvertVinylGroupNumberToVinylType(int vinyl_group_number);
 int CarInfo_GetMaxCompositingBufferSize();
 extern int CarLoaderMemoryPoolNumber;
 int CompositeSkin(RideInfo *ride_info);
+extern SlotPool *LoadedTexturePackSlotPool;
+extern SlotPool *LoadedSolidPackSlotPool;
 extern SlotPool *LoadedSkinLayerSlotPool;
 void TrackStreamer_FlushHibernatingSections(TrackStreamer *track_streamer) asm("FlushHibernatingSections__13TrackStreamer");
 void TrackStreamer_MakeSpaceInPool(TrackStreamer *track_streamer, int size, bool use_callback)
     asm("MakeSpaceInPool__13TrackStreamerib");
+LoadedTexturePack *LoadedTexturePack_Construct(LoadedTexturePack *loaded_texture_pack, const char *filename, int max_header_size)
+    asm("__17LoadedTexturePackPCci");
+LoadedSolidPack *LoadedSolidPack_Construct(LoadedSolidPack *loaded_solid_pack, const char *filename) asm("__15LoadedSolidPackPCc");
 int LoadedCar_GetModelHashes(LoadedCar *loaded_car, unsigned int *name_hashes, int max_hashes)
     asm("GetModelHashes__9LoadedCarPUii");
 int LoadedSkin_GetTextureHashes(LoadedSkin *loaded_skin, unsigned int *name_hashes, int max_hashes, int load_perm_layers)
@@ -480,6 +485,31 @@ void CarLoader::SetLoadingMode(eLoadingMode mode, int two_player_flag) {
     this->LoadingMode = mode;
 }
 
+LoadedSolidPack *CarLoader::AllocateSolidPack(const char *filename) {
+    LoadedSolidPack *loaded_solid_pack = this->FindLoadedSolidPack(filename);
+
+    if (loaded_solid_pack == 0) {
+        loaded_solid_pack = LoadedSolidPack_Construct(static_cast<LoadedSolidPack *>(bOMalloc(LoadedSolidPackSlotPool)), filename);
+        this->LoadedSolidPackList.AddTail(loaded_solid_pack);
+    }
+
+    loaded_solid_pack->NumInstances++;
+    return loaded_solid_pack;
+}
+
+LoadedTexturePack *CarLoader::AllocateTexturePack(const char *filename, int max_header_size) {
+    LoadedTexturePack *loaded_texture_pack = this->FindLoadedTexturePack(filename);
+
+    if (loaded_texture_pack == 0) {
+        loaded_texture_pack = LoadedTexturePack_Construct(static_cast<LoadedTexturePack *>(bOMalloc(LoadedTexturePackSlotPool)),
+                                                         filename, max_header_size);
+        this->LoadedTexturePackList.AddTail(loaded_texture_pack);
+    }
+
+    loaded_texture_pack->NumInstances++;
+    return loaded_texture_pack;
+}
+
 LoadedSolidPack *CarLoader::FindLoadedSolidPack(const char *filename) {
     for (LoadedSolidPack *loaded_solid_pack = this->LoadedSolidPackList.GetHead();
          loaded_solid_pack != this->LoadedSolidPackList.EndOfList(); loaded_solid_pack = loaded_solid_pack->GetNext()) {
@@ -510,6 +540,21 @@ LoadedSkinLayer *CarLoader::FindLoadedSkinLayer(unsigned int name_hash) {
         }
     }
 
+    return 0;
+}
+
+LoadedRideInfo *CarLoader::FindLoadedRideInfo(int handle) {
+    for (LoadedRideInfo *loaded_ride_info = this->LoadedRideInfoList.GetHead();
+         loaded_ride_info != this->LoadedRideInfoList.EndOfList(); loaded_ride_info = loaded_ride_info->GetNext()) {
+        if (loaded_ride_info->ID == handle) {
+            return loaded_ride_info;
+        }
+    }
+
+    return 0;
+}
+
+LoadedRideInfo *CarLoader::FindLoadedRideInfo(RideInfo *ride_info) {
     return 0;
 }
 

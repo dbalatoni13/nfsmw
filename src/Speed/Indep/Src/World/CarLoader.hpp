@@ -138,9 +138,13 @@ class CarLoader {
 
   private:
     void SetLoadingMode(eLoadingMode mode, int two_player_flag);
+    LoadedSolidPack *AllocateSolidPack(const char *filename);
+    LoadedTexturePack *AllocateTexturePack(const char *filename, int max_header_size);
     LoadedSolidPack *FindLoadedSolidPack(const char *filename);
     LoadedTexturePack *FindLoadedTexturePack(const char *filename);
     LoadedSkinLayer *FindLoadedSkinLayer(unsigned int name_hash);
+    LoadedRideInfo *FindLoadedRideInfo(int handle);
+    LoadedRideInfo *FindLoadedRideInfo(RideInfo *ride_info);
     void CompositeSkin(LoadedSkin *loaded_skin);
     void LoadingDoneCallback();
     void LoadedSolidPackCallback(LoadedSolidPack *loaded_solid_pack);
