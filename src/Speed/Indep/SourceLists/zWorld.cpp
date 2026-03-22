@@ -21,3 +21,5 @@
 #include "Speed/Indep/Src/World/CarLoader.cpp"
 
 #include "Speed/Indep/Src/World/CarSkin.cpp"
+
+#include "Speed/Indep/Src/World/VisualTreatment.cpp"
