@@ -176,6 +176,10 @@ bool FnStatelessF3::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask
 }
 
 bool FnStatelessF3::EvalSQTMask(float, float *sqt, const BoneMask *boneMask, bool slerpReqd, int floorKey, float scale) {
+    if (boneMask != mBoneMask) {
+        mBoneMask = boneMask;
+    }
+
     StatelessF3 *statelessF3 = reinterpret_cast<StatelessF3 *>(mpAnim);
     short *dataBuf = statelessF3->GetData();
     StatelessF3::DofInfo *dofInfos = statelessF3->GetDofInfo();
@@ -184,28 +188,11 @@ bool FnStatelessF3::EvalSQTMask(float, float *sqt, const BoneMask *boneMask, boo
     int nBones = statelessF3->mNumBones;
     unsigned char boneIdxs[120];
 
-    if (boneMask != mBoneMask) {
-        mBoneMask = boneMask;
-    }
-
     for (int ibone = 0; ibone < nBones; ibone++) {
         boneIdxs[ibone] = GetStatelessF3BoneIndex(dofIdxs[ibone]);
     }
 
-    if (!slerpReqd) {
-        for (int ibone = 0; ibone < nBones; ibone++) {
-            if (boneMask->GetBone(boneIdxs[ibone])) {
-                UMath::Vector3 value;
-                int index = dofIdxs[ibone];
-
-                UnquantizeStatelessF3(dofInfos[ibone], frameData, value);
-                sqt[index + 0] = value.x;
-                sqt[index + 1] = value.y;
-                sqt[index + 2] = value.z;
-            }
-            frameData += 3;
-        }
-    } else {
+    if (slerpReqd) {
         short *nextFrameData = statelessF3->GetFrameData(dataBuf, floorKey + 1);
 
         for (int ibone = 0; ibone < nBones; ibone++) {
@@ -223,6 +210,19 @@ bool FnStatelessF3::EvalSQTMask(float, float *sqt, const BoneMask *boneMask, boo
             }
             frameData += 3;
             nextFrameData += 3;
+        }
+    } else {
+        for (int ibone = 0; ibone < nBones; ibone++) {
+            if (boneMask->GetBone(boneIdxs[ibone])) {
+                UMath::Vector3 value;
+                int index = dofIdxs[ibone];
+
+                UnquantizeStatelessF3(dofInfos[ibone], frameData, value);
+                sqt[index + 0] = value.x;
+                sqt[index + 1] = value.y;
+                sqt[index + 2] = value.z;
+            }
+            frameData += 3;
         }
     }
 

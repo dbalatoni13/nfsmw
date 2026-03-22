@@ -194,31 +194,17 @@ bool FnStatelessQ::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask)
 }
 
 bool FnStatelessQ::EvalSQTMask(float, float *sqt, const BoneMask *boneMask, bool slerpReqd, int floorKey, float scale) {
+    if (boneMask != mBoneMask) {
+        mBoneMask = boneMask;
+    }
+
     StatelessQ *statelessQ = reinterpret_cast<StatelessQ *>(mpAnim);
     unsigned short *dataBuf = statelessQ->GetData();
     unsigned short *frameData = statelessQ->GetFrameData(dataBuf, floorKey);
     unsigned char *boneIdxs = statelessQ->mBoneIdxs;
     int nBones = statelessQ->mNumBones;
 
-    if (boneMask != mBoneMask) {
-        mBoneMask = boneMask;
-    }
-
-    if (!slerpReqd || floorKey >= statelessQ->mNumKeys - 1) {
-        for (int ibone = 0; ibone < nBones; ibone++) {
-            unsigned char boneIdx = boneIdxs[ibone];
-
-            if (boneMask->GetBone(boneIdx)) {
-                float *q = GetStatelessQOutput(sqt, boneIdx);
-
-                q[0] = UncompressStatelessQValue(frameData[0]);
-                q[1] = UncompressStatelessQValue(frameData[1]);
-                q[2] = UncompressStatelessQValue(frameData[2]);
-                q[3] = UncompressStatelessQValue(frameData[3]);
-            }
-            frameData += 4;
-        }
-    } else {
+    if (slerpReqd && floorKey < statelessQ->mNumKeys - 1) {
         unsigned short *nextFrameData = statelessQ->GetFrameData(dataBuf, floorKey + 1);
 
         for (int ibone = 0; ibone < nBones; ibone++) {
@@ -239,6 +225,20 @@ bool FnStatelessQ::EvalSQTMask(float, float *sqt, const BoneMask *boneMask, bool
             }
             frameData += 4;
             nextFrameData += 4;
+        }
+    } else {
+        for (int ibone = 0; ibone < nBones; ibone++) {
+            unsigned char boneIdx = boneIdxs[ibone];
+
+            if (boneMask->GetBone(boneIdx)) {
+                float *q = GetStatelessQOutput(sqt, boneIdx);
+
+                q[0] = UncompressStatelessQValue(frameData[0]);
+                q[1] = UncompressStatelessQValue(frameData[1]);
+                q[2] = UncompressStatelessQValue(frameData[2]);
+                q[3] = UncompressStatelessQValue(frameData[3]);
+            }
+            frameData += 4;
         }
     }
 
