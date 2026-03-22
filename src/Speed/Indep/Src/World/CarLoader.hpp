@@ -160,6 +160,7 @@ class CarLoader {
     LoadedSkinLayer *FindLoadedSkinLayer(unsigned int name_hash);
     LoadedRideInfo *FindLoadedRideInfo(int handle);
     LoadedRideInfo *FindLoadedRideInfo(RideInfo *ride_info);
+    LoadedRideInfo *AllocateRideInfo(RideInfo *ride_info, int is_player_car);
     void CompositeSkin(LoadedSkin *loaded_skin);
     void LoadingDoneCallback();
     void LoadedSolidPackCallback(LoadedSolidPack *loaded_solid_pack);
@@ -171,6 +172,7 @@ class CarLoader {
     int UnloadSkinLayers(unsigned int *name_hash_table, int max_name_hashes, LoadedSkinLayer **loaded_skin_layer_table,
                          int num_loaded_skin_layers);
     void SetMemoryPoolSize(int size);
+    int Load(RideInfo *ride_info);
     int LoadCar(LoadedCar *loaded_car);
     int LoadAllWheelModels();
     int LoadAllWheelTextures();

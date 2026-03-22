@@ -114,6 +114,8 @@ int CompositeSkin(RideInfo *ride_info);
 extern SlotPool *LoadedTexturePackSlotPool;
 extern SlotPool *LoadedSolidPackSlotPool;
 extern SlotPool *LoadedSkinLayerSlotPool;
+extern SlotPool *LoadedRideInfoSlotPool;
+extern int UsePrecompositeVinyls;
 void TrackStreamer_FlushHibernatingSections(TrackStreamer *track_streamer) asm("FlushHibernatingSections__13TrackStreamer");
 void TrackStreamer_MakeSpaceInPool(TrackStreamer *track_streamer, int size, bool use_callback)
     asm("MakeSpaceInPool__13TrackStreamerib");
@@ -122,6 +124,9 @@ LoadedTexturePack *LoadedTexturePack_Construct(LoadedTexturePack *loaded_texture
 void LoadedTexturePack_Destruct(LoadedTexturePack *loaded_texture_pack, int in_chrg) asm("_._17LoadedTexturePack");
 LoadedSolidPack *LoadedSolidPack_Construct(LoadedSolidPack *loaded_solid_pack, const char *filename) asm("__15LoadedSolidPackPCc");
 LoadedSkinLayer *LoadedSkinLayer_Construct(LoadedSkinLayer *loaded_skin_layer, unsigned int name_hash) asm("__15LoadedSkinLayerUi");
+LoadedRideInfo *LoadedRideInfo_Construct(LoadedRideInfo *loaded_ride_info, RideInfo *ride_info, int in_front_end, int is_two_player,
+                                         int is_player_car)
+    asm("__14LoadedRideInfoP8RideInfoiii");
 int GatherModelHashes(RideInfo *ride_info, unsigned int *model_hashes, int num_hashes, int max_model_hashes, int first, int last)
     asm("GatherModelHashes__FP8RideInfoPUiiiii");
 int LoadedCar_GetModelHashes(LoadedCar *loaded_car, unsigned int *name_hashes, int max_hashes)
@@ -279,6 +284,83 @@ int LoadedCar::GetModelHashes(unsigned int *model_hashes, int max_model_hashes) 
     }
 
     return num_unique_hashes;
+}
+
+int CarLoader::Load(RideInfo *ride_info) {
+    char filename[128];
+    bool is_player_car = ride_info->SkinType == 0;
+
+    bSPrintf(filename, "CARS\\%s\\TEXTURES.BIN", CarTypeInfoArray[ride_info->Type].CarTypeName);
+
+    if (!bFileExists(filename)) {
+        bBreak();
+    }
+
+    LoadedRideInfo *loaded_ride_info = this->AllocateRideInfo(ride_info, is_player_car);
+
+    loaded_ride_info->IsPlayerCar = is_player_car;
+    this->LoadedRideInfoList.AddTail(loaded_ride_info);
+    return loaded_ride_info->ID;
+}
+
+LoadedRideInfo *CarLoader::AllocateRideInfo(RideInfo *ride_info, int is_player_car) {
+    LoadedRideInfo *loaded_ride_info = this->FindLoadedRideInfo(ride_info);
+
+    if (loaded_ride_info == 0) {
+        while (bIsSlotPoolFull(LoadedRideInfoSlotPool)) {
+            while (this->LoadingInProgress != 0) {
+                ServiceResourceLoading();
+            }
+
+            this->RemoveSomethingFromCarMemoryPool(true);
+        }
+
+        loaded_ride_info = LoadedRideInfo_Construct(static_cast<LoadedRideInfo *>(bOMalloc(LoadedRideInfoSlotPool)), ride_info,
+                                                    this->InFrontEndFlag, this->TwoPlayerFlag, is_player_car);
+        this->NumLoadedRideInfos++;
+        loaded_ride_info->pLoadedCar->pLoadedSolidPack = this->AllocateSolidPack(loaded_ride_info->pCarTypeInfo->GeometryFilename);
+        this->AllocateSkinLayers(loaded_ride_info->pLoadedWheel->SkinNameHashesPerm, 4,
+                                 loaded_ride_info->pLoadedWheel->LoadedSkinLayersPerm, 4, 0);
+
+        char texture_filename[72];
+
+        bSPrintf(texture_filename, "CARS\\%s\\TEXTURES.BIN", loaded_ride_info->pCarTypeInfo->CarTypeName);
+        loaded_ride_info->pLoadedSkin->pLoadedTexturesPack = this->AllocateTexturePack(texture_filename, 0x8000);
+
+        if (ride_info->SkinType != 0) {
+            char vinyl_filename[72];
+
+            if (UsePrecompositeVinyls == 0 && ride_info->SkinType != 2) {
+                bSPrintf(vinyl_filename, "CARS\\%s\\VINYLS.BIN", loaded_ride_info->pCarTypeInfo->CarTypeName);
+            } else {
+                bSPrintf(vinyl_filename, "CARS\\%s\\PREVINYL.BIN", loaded_ride_info->pCarTypeInfo->CarTypeName);
+            }
+
+            if (bFileExists(vinyl_filename)) {
+                loaded_ride_info->pLoadedSkin->pLoadedVinylsPack = this->AllocateTexturePack(vinyl_filename, 0x19000);
+            }
+        }
+
+        unsigned int texture_hashes[129];
+        int num_perm_hashes = loaded_ride_info->pLoadedSkin->GetTextureHashes(texture_hashes, 0x80, true);
+
+        loaded_ride_info->pLoadedSkin->NumLoadedSkinLayersPerm = num_perm_hashes;
+        this->AllocateSkinLayers(texture_hashes, num_perm_hashes, loaded_ride_info->pLoadedSkin->LoadedSkinLayersPerm,
+                                 num_perm_hashes, 0);
+
+        int num_temp_hashes = loaded_ride_info->pLoadedSkin->GetTextureHashes(texture_hashes, 0x80, false);
+
+        loaded_ride_info->pLoadedSkin->NumLoadedSkinLayersTemp = num_temp_hashes;
+        this->AllocateSkinLayers(texture_hashes, num_temp_hashes, loaded_ride_info->pLoadedSkin->LoadedSkinLayersTemp,
+                                 num_temp_hashes, 0);
+    }
+
+    if (loaded_ride_info->NumInstances == 0) {
+        this->NumAllocatedRideInfos++;
+    }
+
+    loaded_ride_info->NumInstances++;
+    return loaded_ride_info;
 }
 
 LoadedWheel::LoadedWheel(RideInfo *ride_info, bool in_fe) {
