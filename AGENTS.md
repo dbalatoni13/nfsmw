@@ -531,6 +531,11 @@ TU: <translation-unit-name> | Function: <FunctionName>
 
 <!-- Add new entries below this line -->
 
+### IdentityScaleRestoresbVector2InlineChains
+
+TU: zTrack | Function: TrackStreamer::GetLoadingPriority
+If GC DWARF shows `bVector2::operator*`, `bScale`, and the default `bVector2()` inlines ahead of a predict-position add, keep the source's identity multiply instead of "simplifying" it away. In `TrackStreamer::GetLoadingPriority`, adding the missing `bLength(const bVector2&)` wrapper to `bMath.hpp`, calling that wrapper, and writing `position_entry->Position + position_entry->Velocity * 1.0f` recovered the expected `operator*`/temporary chain and gave a large objdiff + DWARF improvement.
+
 ### ExplicitInlineSpecialMembersForSTLElements
 
 TU: zAttribSys | Function: \_STL::\_Rb_tree<Attrib::TypeDesc, ...>::\_M_insert
