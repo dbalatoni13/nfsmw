@@ -3,6 +3,11 @@
 #include "Speed/Indep/Src/World/CarLoader.hpp"
 #include "Speed/Indep/Src/World/TrackStreamer.hpp"
 
+extern "C" void *__builtin_vec_new(unsigned int size);
+extern "C" EAXS_StreamChannel *EAXS_StreamChannel_Ctor(EAXS_StreamChannel *self) asm("__18EAXS_StreamChannel");
+extern int INCREASE_MUSICSTREAM_BLOCKS;
+extern int INCREASE_NISSFXSTRM_BLOCKS;
+
 EAXS_StreamManager *gpEAXS_StrmMgr = nullptr;
 
 bool IsWorldDataStreaming(unsigned int strmhandle) {
@@ -40,23 +45,34 @@ EAXS_StreamManager::~EAXS_StreamManager() {
 
 void EAXS_StreamManager::InitializeStreams(eGAMEMODE gamemode) {
     gpEAXS_StrmMgr = this;
+    EAXS_StreamChannel *channel;
 
-    if (static_cast<int>(gamemode) < 0 || static_cast<int>(gamemode) < 3 || gamemode != SNDGM_SPLITSCREEN) {
-        EAXS_StreamChannel *speech = new EAXS_StreamChannel();
-        m_pStrmCh[0] = speech;
-        speech->InitParams(this);
-        speech->InitChannel(8, 0x20, 0xC000, STYPE_COPSPEECH);
+    if (static_cast<int>(gamemode) >= 0 && static_cast<int>(gamemode) > 2 && gamemode == SNDGM_SPLITSCREEN) {
+        channel = EAXS_StreamChannel_Ctor(static_cast<EAXS_StreamChannel *>(__builtin_vec_new(0x178)));
+        m_pStrmCh[1] = channel;
+        channel->InitParams(this);
+        m_pStrmCh[1]->InitChannel(8, 0x20, INCREASE_MUSICSTREAM_BLOCKS * 0x8000 + 0x18000, STYPE_MUSIC);
+
+        channel = EAXS_StreamChannel_Ctor(static_cast<EAXS_StreamChannel *>(__builtin_vec_new(0x178)));
+        m_pStrmCh[2] = channel;
+        channel->InitParams(this);
+        m_pStrmCh[2]->InitChannel(8, 0x20, INCREASE_NISSFXSTRM_BLOCKS * 0x8000 + 0x10000, STYPE_NISSFX);
+    } else {
+        channel = EAXS_StreamChannel_Ctor(static_cast<EAXS_StreamChannel *>(__builtin_vec_new(0x178)));
+        m_pStrmCh[0] = channel;
+        channel->InitParams(this);
+        m_pStrmCh[0]->InitChannel(8, 0x20, 0xC000, STYPE_COPSPEECH);
+
+        channel = EAXS_StreamChannel_Ctor(static_cast<EAXS_StreamChannel *>(__builtin_vec_new(0x178)));
+        m_pStrmCh[1] = channel;
+        channel->InitParams(this);
+        m_pStrmCh[1]->InitChannel(8, 0x20, INCREASE_MUSICSTREAM_BLOCKS * 0x8000 + 0x18000, STYPE_MUSIC);
+
+        channel = EAXS_StreamChannel_Ctor(static_cast<EAXS_StreamChannel *>(__builtin_vec_new(0x178)));
+        m_pStrmCh[2] = channel;
+        channel->InitParams(this);
+        m_pStrmCh[2]->InitChannel(8, 0x20, INCREASE_NISSFXSTRM_BLOCKS * 0x8000 + 0x10000, STYPE_NISSFX);
     }
-
-    EAXS_StreamChannel *music = new EAXS_StreamChannel();
-    m_pStrmCh[1] = music;
-    music->InitParams(this);
-    music->InitChannel(8, 0x20, 0x28000, STYPE_MUSIC);
-
-    EAXS_StreamChannel *nissfx = new EAXS_StreamChannel();
-    m_pStrmCh[2] = nissfx;
-    nissfx->InitParams(this);
-    nissfx->InitChannel(8, 0x20, 0x20000, STYPE_NISSFX);
 }
 
 EAXS_StreamChannel *EAXS_StreamManager::GetStreamChannel(int nchannel) {
