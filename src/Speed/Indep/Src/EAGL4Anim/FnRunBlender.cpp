@@ -2,6 +2,7 @@
 
 #include "FnPoseBlender.h"
 #include "MemoryPoolManager.h"
+#include "PhaseChan.h"
 #include "ScratchBuffer.h"
 
 
@@ -142,6 +143,151 @@ void FnRunBlender::SetWeight(float w) {
         mFreq = 1.0f;
         mOffset = 0.0f;
     }
+}
+
+bool FnRunBlender::EvalPhase(float currTime, PhaseValue &phase) {
+    if (!mFnAnims[0]) {
+        SetWeight(0.0f);
+    }
+
+    if (mPhases && mIdx >= 0 && mIdx < mNumAnims) {
+        FnPhaseChan phaseChan;
+
+        phaseChan.SetAnimMemoryMap(const_cast<PhaseChan *>(mPhases[mIdx]));
+        phaseChan.Eval(0.0f, currTime, &phase.mAngle);
+        return true;
+    }
+
+    return false;
+}
+
+bool FnRunBlender::EvalVel2D(float currTime, float *vel) {
+    if (!mFnAnims[0]) {
+        SetWeight(0.0f);
+    }
+
+    float evalTime = currTime + mOffset;
+    float t0 = CycleTime(mFreq * mCycles[0] * evalTime + mAlignFrame[0], 0.0f, mCycles[0]);
+    float t1 = CycleTime(mFreq * mCycles[1] * evalTime + mAlignFrame[1], 0.0f, mCycles[1]);
+
+    if (mWeight != 0.0f && mFnVelAnims[0] && mFnVelAnims[1]) {
+        if (!BlendVel(t0, t1, vel)) {
+            return false;
+        }
+    } else if (mFnVelAnims[0]) {
+        if (!mFnVelAnims[0]->EvalVel2D(t0, vel)) {
+            return false;
+        }
+    } else {
+        return false;
+    }
+
+    AlignVel(vel);
+    return true;
+}
+
+bool FnRunBlender::BlendVel(float t0, float t1, float *vel) const {
+    float vel0[2];
+    float vel1[2];
+
+    if (!mFnVelAnims[0] || !mFnVelAnims[1]) {
+        return false;
+    }
+    if (!mFnVelAnims[0]->EvalVel2D(t0, vel0) || !mFnVelAnims[1]->EvalVel2D(t1, vel1)) {
+        return false;
+    }
+
+    vel[0] = vel0[0] + mWeight * (vel1[0] - vel0[0]);
+    vel[1] = vel0[1] + mWeight * (vel1[1] - vel0[1]);
+    return true;
+}
+
+bool FnRunBlender::BlendFacing(float t0, float t1, float *f) const {
+    if (!f) {
+        return false;
+    }
+
+    f[0] = 0.0f;
+    f[1] = 0.0f;
+    return false;
+}
+
+float FnRunBlender::GetFrequency() const {
+    return mFreq;
+}
+
+void FnRunBlender::ComputeBeginRootQ(UMath::Vector4 &q) const {
+    q.x = 0.0f;
+    q.y = 0.0f;
+    q.z = 0.0f;
+    q.w = 1.0f;
+}
+
+void FnRunBlender::ComputeEndRootQ(UMath::Vector4 &q) const {
+    q.x = 0.0f;
+    q.y = 0.0f;
+    q.z = 0.0f;
+    q.w = 1.0f;
+}
+
+void FnRunBlender::ComputeRootQ(float t0, float t1, UMath::Vector4 &q) const {
+    q.x = 0.0f;
+    q.y = 0.0f;
+    q.z = 0.0f;
+    q.w = 1.0f;
+}
+
+float FnRunBlender::CycleTime(float t, float startTime, float endTime) const {
+    float length = endTime - startTime;
+
+    if (length <= 0.0f) {
+        return startTime;
+    }
+    while (t < startTime) {
+        t += length;
+    }
+    while (t > endTime) {
+        t -= length;
+    }
+    return t;
+}
+
+int FnRunBlender::ComputeCycleIdx(float t, float startTime, float endTime) const {
+    float length = endTime - startTime;
+
+    if (length <= 0.0f) {
+        return 0;
+    }
+
+    return static_cast<int>((t - startTime) / length);
+}
+
+void FnRunBlender::ComputeAlignQ(float *v1, float *v2, UMath::Vector4 &q) const {
+    q.x = 0.0f;
+    q.y = 0.0f;
+    q.z = 0.0f;
+    q.w = 1.0f;
+}
+
+void FnRunBlender::AlignCycleBeginEnd(int cIdx) {
+    mCycleIdx = cIdx;
+    mInit = true;
+    mAlignQ.x = 0.0f;
+    mAlignQ.y = 0.0f;
+    mAlignQ.z = 0.0f;
+    mAlignQ.w = 1.0f;
+}
+
+void FnRunBlender::AlignRootQ(float *sqt) const {}
+
+void FnRunBlender::AlignVel(float *vel) const {}
+
+bool FnRunBlender::FindMatchTime(const MatchPhaseInput &input, float &time) const {
+    if (!mPhases || mNumAnims <= 0) {
+        return false;
+    }
+
+    return mPhases[0]->FindMatchTime(input, time);
 }
 
 }; // namespace EAGL4Anim

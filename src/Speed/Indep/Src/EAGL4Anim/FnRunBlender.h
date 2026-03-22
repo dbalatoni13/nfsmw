@@ -61,7 +61,7 @@ class FnRunBlender : public FnAnim {
     void SetAnims(Skeleton *s, int numAnims, const AnimMemoryMap **anims, const AnimMemoryMap **phases, const AnimMemoryMap **vels);
 
     // Overrides: FnAnim
-    bool EvalPhase(float) override;
+    bool EvalPhase(float currTime, PhaseValue &phase) override;
 
     // Overrides: FnAnim
     bool EvalVel2D(float currTime, float *vel) override;
