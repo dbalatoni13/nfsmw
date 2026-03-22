@@ -123,6 +123,7 @@ LoadedTexturePack *LoadedTexturePack_Construct(LoadedTexturePack *loaded_texture
     asm("__17LoadedTexturePackPCci");
 void LoadedTexturePack_Destruct(LoadedTexturePack *loaded_texture_pack, int in_chrg) asm("_._17LoadedTexturePack");
 LoadedSolidPack *LoadedSolidPack_Construct(LoadedSolidPack *loaded_solid_pack, const char *filename) asm("__15LoadedSolidPackPCc");
+void LoadedSolidPack_Destruct(LoadedSolidPack *loaded_solid_pack, int in_chrg) asm("_._15LoadedSolidPack");
 LoadedSkinLayer *LoadedSkinLayer_Construct(LoadedSkinLayer *loaded_skin_layer, unsigned int name_hash) asm("__15LoadedSkinLayerUi");
 LoadedRideInfo *LoadedRideInfo_Construct(LoadedRideInfo *loaded_ride_info, RideInfo *ride_info, int in_front_end, int is_two_player,
                                          int is_player_car)
@@ -168,6 +169,8 @@ void eLoadStreamingTexture(unsigned int *name_hash_table, int num_hashes, void (
                            int memory_pool_num);
 int eLoadStreamingTexturePack(const char *filename, void (*callback_func)(unsigned int), unsigned int callback_param, int memory_pool_num);
 void eUnloadStreamingTexture(unsigned int *name_hash_table, int num_hashes);
+void eUnloadStreamingSolid(unsigned int *name_hash_table, int num_hashes);
+int eUnloadStreamingSolidPack(const char *filename);
 void eUnloadStreamingTexturePack(const char *filename);
 
 CarLoader::CarLoader()
@@ -361,6 +364,86 @@ LoadedRideInfo *CarLoader::AllocateRideInfo(RideInfo *ride_info, int is_player_c
 
     loaded_ride_info->NumInstances++;
     return loaded_ride_info;
+}
+
+void CarLoader::UnallocateSolidPack(LoadedSolidPack *loaded_solid_pack) {
+    loaded_solid_pack->NumInstances--;
+}
+
+int CarLoader::UnloadSolidPack(LoadedSolidPack *loaded_solid_pack) {
+    if (loaded_solid_pack->NumInstances == 0) {
+        if (loaded_solid_pack->LoadState == CARLOADSTATE_LOADED) {
+            if (loaded_solid_pack->pResourceFile == 0) {
+                eUnloadStreamingSolidPack(loaded_solid_pack->Filename);
+            } else {
+                UnloadResourceFile(loaded_solid_pack->pResourceFile);
+                loaded_solid_pack->pResourceFile = 0;
+            }
+        }
+
+        loaded_solid_pack->Remove();
+        LoadedSolidPack_Destruct(loaded_solid_pack, 3);
+        return 1;
+    }
+
+    return 0;
+}
+
+int CarLoader::UnloadCar(LoadedCar *loaded_car) {
+    if (loaded_car->LoadState == CARLOADSTATE_LOADED && CarTypeInfoArray[loaded_car->Type].UsageType != 2) {
+        unsigned int name_hashes[800];
+        int num_hashes = loaded_car->GetModelHashes(name_hashes, 800);
+
+        eUnloadStreamingSolid(name_hashes, num_hashes);
+    }
+
+    this->UnallocateSolidPack(loaded_car->pLoadedSolidPack);
+    this->UnloadSolidPack(loaded_car->pLoadedSolidPack);
+    loaded_car->pLoadedSolidPack = 0;
+    return 1;
+}
+
+int CarLoader::UnloadWheel(LoadedWheel *loaded_wheel) {
+    unsigned int name_hashes[129];
+
+    this->UnallocateSkinLayers(loaded_wheel->LoadedSkinLayersPerm, 4);
+
+    int num_hashes = this->UnloadSkinLayers(name_hashes, 0x80, loaded_wheel->LoadedSkinLayersPerm, 4);
+
+    if (num_hashes != 0) {
+        eUnloadStreamingTexture(name_hashes, num_hashes);
+    }
+
+    if (loaded_wheel->LoadState == CARLOADSTATE_LOADED) {
+        eUnloadStreamingSolid(reinterpret_cast<unsigned int *>(loaded_wheel->ModelNameHashes), 5);
+    }
+
+    return 1;
+}
+
+int CarLoader::UnloadSkinPerms(LoadedSkin *loaded_skin) {
+    unsigned int name_hashes[89];
+
+    this->UnallocateSkinLayers(loaded_skin->LoadedSkinLayersPerm, loaded_skin->NumLoadedSkinLayersPerm);
+
+    int num_hashes =
+        this->UnloadSkinLayers(name_hashes, 0x57, loaded_skin->LoadedSkinLayersPerm, loaded_skin->NumLoadedSkinLayersPerm);
+
+    if (num_hashes != 0) {
+        eUnloadStreamingTexture(name_hashes, num_hashes);
+        loaded_skin->NumLoadedSkinLayersPerm = 0;
+    }
+
+    return num_hashes != 0;
+}
+
+int CarLoader::UnloadSkin(LoadedSkin *loaded_skin) {
+    this->UnloadSkinTemporaries(loaded_skin, 1);
+    this->UnloadSkinPerms(loaded_skin);
+    this->UnallocateTexturePack(loaded_skin->pLoadedTexturesPack);
+    this->UnloadTexturePack(loaded_skin->pLoadedTexturesPack);
+    loaded_skin->pLoadedTexturesPack = 0;
+    return 1;
 }
 
 LoadedWheel::LoadedWheel(RideInfo *ride_info, bool in_fe) {

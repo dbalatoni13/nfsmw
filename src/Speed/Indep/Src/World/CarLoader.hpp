@@ -142,6 +142,7 @@ class CarLoader {
     void SetLoadingMode(eLoadingMode mode, int two_player_flag);
     LoadedSolidPack *AllocateSolidPack(const char *filename);
     LoadedTexturePack *AllocateTexturePack(const char *filename, int max_header_size);
+    void UnallocateSolidPack(LoadedSolidPack *loaded_solid_pack);
     int AllocateSkinLayers(unsigned int *name_hash_table, int num_name_hashes, LoadedSkinLayer **loaded_skin_layer_table,
                            int max_loaded_skin_layers, const char *filename);
     void UnallocateSkinLayers(LoadedSkinLayer **loaded_skin_layer_table, int num_loaded_skin_layers);
@@ -154,7 +155,12 @@ class CarLoader {
     int UnloadTexturePack(LoadedTexturePack *loaded_texture_pack);
     int LoadSkin(LoadedSkin *loaded_skin, int load_perm_layers);
     void LoadedSkinCallback(LoadedSkin *loaded_skin);
+    int UnloadSolidPack(LoadedSolidPack *loaded_solid_pack);
+    int UnloadCar(LoadedCar *loaded_car);
+    int UnloadWheel(LoadedWheel *loaded_wheel);
+    int UnloadSkinPerms(LoadedSkin *loaded_skin);
     int UnloadSkinTemporaries(LoadedSkin *loaded_skin, int force_unload);
+    int UnloadSkin(LoadedSkin *loaded_skin);
     LoadedSolidPack *FindLoadedSolidPack(const char *filename);
     LoadedTexturePack *FindLoadedTexturePack(const char *filename);
     LoadedSkinLayer *FindLoadedSkinLayer(unsigned int name_hash);
