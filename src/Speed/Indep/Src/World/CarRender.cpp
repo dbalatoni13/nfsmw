@@ -98,6 +98,14 @@ extern int ForceBrakelightsOn;
 extern int iRam8047ff04;
 extern bVector3 EnvMapEyeOffset;
 extern bVector3 EnvMapCamOffset;
+extern float lbl_8040AD70;
+extern float lbl_8040AD74;
+extern float lbl_8040AD78;
+extern bVector3 hull_Origin asm("hull_Origin");
+extern bVector3 hull_Normal asm("hull_Normal");
+extern bVector3 hullVertArray2[16] asm("hullVertArray2");
+extern bVector3 *P[17] asm("P");
+extern int ch2d(bVector3 **P, int n) asm("ch2d__FPPfi");
 extern int counter_31665 asm("counter.31665");
 extern int counter_31669 asm("counter.31669");
 
@@ -1618,6 +1626,88 @@ void RenderVehicleFlares(eView *view, int reflection, int renderFlareFlags) {
 
 void DrawTestCars(eView *view, int reflection) {
     VehicleRenderConn::RenderAll(view, reflection);
+}
+
+void CarRenderInfo::convex_hull(bVector3 *p, const WCollider *wcoll, int &n, float Z, float zBias, int fast) {
+    int i;
+    int dec;
+    bool bPointValid;
+    bVector3 usPoint;
+
+    for (i = 0; i < n; i++) {
+        P[i] = &p[i];
+    }
+
+    n = ch2d(P, n);
+    if (wcoll != nullptr) {
+        bVector3 *vec;
+        float fastZ = lbl_8040AD74;
+
+        this->mWorldPos.SetTolerance(lbl_8040AD70);
+        if (fast == 0) {
+            vec = hullVertArray2;
+            dec = 0;
+            bPointValid = true;
+
+            for (i = 0; i < n; i++) {
+                vec->x = P[i]->x;
+                vec->y = P[i]->y;
+                vec->z = Z;
+
+                eUnSwizzleWorldVector(*vec, usPoint);
+                this->mWorldPos.FindClosestFace(wcoll, reinterpret_cast<const UMath::Vector3 &>(usPoint), bPointValid);
+                if (!this->mWorldPos.OnValidFace()) {
+                    vec->z = this->mWorldPos.HeightAtPoint(reinterpret_cast<const UMath::Vector3 &>(usPoint));
+                }
+
+                bVector3 dotVec = *vec - hull_Origin;
+                float dot = bDot(&dotVec, &hull_Normal);
+                if (dot < lbl_8040AD74) {
+                    dot = -dot;
+                }
+
+                if (lbl_8040AD78 <= dot) {
+                    dec++;
+                } else {
+                    vec++;
+                }
+
+                bPointValid = lbl_8040AD78 > dot;
+            }
+        } else {
+            vec = hullVertArray2;
+            vec->x = P[0]->x;
+            vec->y = P[0]->y;
+            vec->z = Z;
+
+            eUnSwizzleWorldVector(*vec, usPoint);
+            this->mWorldPos.FindClosestFace(wcoll, reinterpret_cast<const UMath::Vector3 &>(usPoint), true);
+            if (!this->mWorldPos.OnValidFace()) {
+                fastZ = this->mWorldPos.HeightAtPoint(reinterpret_cast<const UMath::Vector3 &>(usPoint));
+            }
+
+            dec = 0;
+            for (i = 0; i < n; i++) {
+                vec->x = P[i]->x;
+                vec->y = P[i]->y;
+                vec->z = fastZ;
+
+                bVector3 dotVec = *vec - hull_Origin;
+                float dot = bDot(&dotVec, &hull_Normal);
+                if (dot < lbl_8040AD74) {
+                    dot = -dot;
+                }
+
+                if (lbl_8040AD78 <= dot) {
+                    dec++;
+                } else {
+                    vec++;
+                }
+            }
+        }
+
+        n -= dec;
+    }
 }
 
 void CarRender_Service(float dT) {
