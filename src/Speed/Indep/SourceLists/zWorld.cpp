@@ -14,6 +14,8 @@
 
 #include "Speed/Indep/Src/World/WorldModel.cpp"
 
+#include "Speed/Indep/Src/World/SkyRender.cpp"
+
 #include "Speed/Indep/Src/World/VehicleFragmentConn.cpp"
 
 #include "Speed/Indep/Src/World/VehicleRenderConn.cpp"
