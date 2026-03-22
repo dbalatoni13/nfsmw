@@ -268,19 +268,19 @@ void SimpleRigidBody::DoRBCollisions(const float dT) {
 }
 
 void SimpleRigidBody::DoSRBCollisions(SimpleRigidBody *other) {
-    IRigidBody &thisBody = *this;
-    IRigidBody &otherBody = *other;
     Volatile &data = *mData;
     Volatile &otherData = *other->mData;
 
     if ((data.flags | otherData.flags) & 0x4000) {
-        ISimable *ownerOther = otherBody.GetOwner();
-        ISimable *ownerThis = thisBody.GetOwner();
+        ISimable *ownerOther = other->GetOwner();
+        ISimable *ownerThis = GetOwner();
         if (ownerOther == ownerThis) {
             return;
         }
     }
 
+    IRigidBody &thisBody = *this;
+    IRigidBody &otherBody = *other;
     SimCollisionMap &cmap = mCollisionMap[thisBody.GetIndex()];
     SimCollisionMap &cmapother = mCollisionMap[otherBody.GetIndex()];
     UMath::Vector3 posSRB = otherBody.GetPosition();
@@ -306,14 +306,14 @@ void SimpleRigidBody::DoSRBCollisions(SimpleRigidBody *other) {
     UMath::Matrix4 orientOther;
     UMath::Vector3 dimThis;
     UMath::Vector3 dimOther;
+    UMath::QuaternionToMatrix4(thisBody.GetOrientation(), orientThis);
+    UMath::QuaternionToMatrix4(otherBody.GetOrientation(), orientOther);
     dimThis.x = thisRadius;
     dimThis.y = thisRadius;
     dimThis.z = thisRadius * GetScalarVelocity();
     dimOther.x = radiusSRB;
     dimOther.y = radiusSRB;
     dimOther.z = radiusSRB * other->GetScalarVelocity();
-    UMath::QuaternionToMatrix4(data.orientation, orientThis);
-    UMath::QuaternionToMatrix4(otherData.orientation, orientOther);
     obbThis.Reset(orientThis, thisBody.GetPosition(), dimThis);
     obbOther.Reset(orientOther, posSRB, dimOther);
     if (obbThis.CheckOBBOverlap(&obbOther)) {

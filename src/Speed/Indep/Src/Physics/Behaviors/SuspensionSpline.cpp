@@ -17,6 +17,7 @@
 #include <cmath>
 
 extern float gNIS_AeroDynamics;
+void OrthoInverse(UMath::Matrix4 &m);
 
 // total size: 0x198
 class SuspensionSpline : public Chassis, public INISCarControl {
@@ -612,7 +613,14 @@ bool SuspensionSpline::SetNISPosition(const UMath::Matrix4 &position, bool initi
 
     GetVehicle()->Activate();
 
-    if (!initial) {
+    if (initial) {
+        success = GetVehicle()->SetVehicleOnGround(UMath::ExtractAxis(position, 3), UMath::ExtractAxis(position, 2));
+        GetVehicle()->SetSpeed(0.0f);
+        mNISPosition = position;
+        mRB->SetLinearVelocity(UMath::Vector3::kZero);
+        mRB->SetAngularVelocity(UMath::Vector3::kZero);
+        mInput->ClearInput();
+    } else {
         UMath::Vector3 linear_velocity_xz = UMath::Vector3::kZero;
         float angular_velocity_y = 0.0f;
 
@@ -662,20 +670,14 @@ bool SuspensionSpline::SetNISPosition(const UMath::Matrix4 &position, bool initi
 
         UMath::Matrix4 invorient;
         UMath::Matrix4 localmatrix;
-        UMath::Transpose(matrix, invorient);
+        invorient = matrix;
+        OrthoInverse(invorient);
         UMath::Mult(invorient, mNISPosition, localmatrix);
 
         const float newdelta = UMath::Atan2a(UMath::ExtractAxis(localmatrix, 2).z, -UMath::ExtractAxis(localmatrix, 2).x);
         UMath::SetYRot(localmatrix, newdelta);
         UMath::Mult(localmatrix, matrix, matrix);
         mRB->SetOrientation(matrix);
-    } else {
-        success = GetVehicle()->SetVehicleOnGround(UMath::ExtractAxis(position, 3), UMath::ExtractAxis(position, 2));
-        GetVehicle()->SetSpeed(0.0f);
-        mNISPosition = position;
-        mRB->SetLinearVelocity(UMath::Vector3::kZero);
-        mRB->SetAngularVelocity(UMath::Vector3::kZero);
-        mInput->ClearInput();
     }
 
     return success;

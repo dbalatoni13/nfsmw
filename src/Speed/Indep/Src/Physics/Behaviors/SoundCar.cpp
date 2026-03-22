@@ -456,11 +456,9 @@ void SoundTraffic::LocateTrailer() {
     mTrailer = 0;
     bool haveArticulation = GetOwner()->QueryInterface(&iarticulation);
     if (haveArticulation) {
-        if (iarticulation) {
-            IVehicle *trailer = iarticulation->GetTrailer();
-            if (trailer) {
-                mTrailer = trailer->GetSimable()->GetWorldID();
-            }
+        IVehicle *trailer = iarticulation->GetTrailer();
+        if (trailer) {
+            mTrailer = trailer->GetSimable()->GetWorldID();
         }
     }
 }
