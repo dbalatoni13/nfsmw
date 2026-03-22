@@ -45,6 +45,11 @@ class Pkt_Heli_Service : public Sim::Packet {
 
 } // namespace RenderConn
 
+static inline const Attrib::Collection *GetHeliWashCollection() {
+    unsigned int collectionKey = Attrib::StringToKey("heliwash");
+    return Attrib::FindCollection(Attrib::Gen::effects::ClassKey(), collectionKey);
+}
+
 Behavior *DrawHeli::Construct(const BehaviorParams &params) {
     return new DrawHeli(params);
 }
@@ -53,7 +58,7 @@ DrawHeli::DrawHeli(const BehaviorParams &params)
     : DrawVehicle(params), //
       mRenderService(nullptr), //
       mEffect(0, nullptr), //
-      mWash(Attrib::FindCollection(Attrib::Gen::effects::ClassKey(), Attrib::StringToKey("heliwash")), 0, nullptr), //
+      mWash(GetHeliWashCollection(), 0, nullptr), //
       mWashTask(nullptr), //
       mInView(false), //
       mDistanceToView(0.0f), //
@@ -105,6 +110,7 @@ bool DrawHeli::OnService(HSIMSERVICE hCon, Sim::Packet *pkt) {
             return true;
         }
         mInView = false;
+        return false;
     }
     return false;
 }
