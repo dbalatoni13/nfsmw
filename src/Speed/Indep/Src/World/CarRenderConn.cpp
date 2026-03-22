@@ -852,7 +852,7 @@ void CarRenderConn::UpdateTires(float dT, float carspeed, const RenderConn::Pkt_
     this->mFlatTireAngle = UMath::Vector3::kZero;
 
     if (this->TestVisibility(renderModifier * 30.0f)) {
-        const float &hop_scale = this->GetAttributes().WheelHopScale(0);
+        const float &hop_scale = this->VehicleRenderConn::mAttributes.WheelHopScale(0);
 
         flatten_tires = true;
         if (0.0f < data.mExtraBodyPitch && 0.0f < hop_scale) {
@@ -962,12 +962,13 @@ void CarRenderConn::UpdateTires(float dT, float carspeed, const RenderConn::Pkt_
                 delta_pos.y = state->mTirePos.y - state->mPrevTirePos.y;
                 delta_pos.z = state->mTirePos.z - state->mPrevTirePos.z;
                 state->DoSkids(intensity, &delta_pos, &this->mTireMatrices[i], &this->mRenderMatrix,
-                               this->GetAttributes().TireSkidWidth(i));
+                               this->VehicleRenderConn::mAttributes.TireSkidWidth(i));
             } else {
                 state->KillSkids();
             }
 
-            state->DoFX(data.mTireSlip[i] * this->GetAttributes().SlipFX(axle), data.mTireSkid[i] * this->GetAttributes().SkidFX(axle),
+            state->DoFX(data.mTireSlip[i] * this->VehicleRenderConn::mAttributes.SlipFX(axle),
+                        data.mTireSkid[i] * this->VehicleRenderConn::mAttributes.SkidFX(axle),
                         carspeed, this->GetVelocity(), &this->mRenderMatrix, dT);
         }
 

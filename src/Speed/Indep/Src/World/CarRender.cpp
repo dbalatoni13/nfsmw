@@ -11,6 +11,7 @@
 #include "Speed/Indep/Src/Camera/CameraMover.hpp"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/ecar.h"
 #include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
+#include "Speed/Indep/Src/Interfaces/SimActivities/INIS.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
 #include "Speed/Indep/Src/Main/AttribSupport.h"
 #include "Speed/Indep/Src/Frontend/FEManager.hpp"
@@ -101,6 +102,8 @@ extern unsigned int FrameMallocFailed;
 extern unsigned int FrameMallocFailAmount;
 extern int DrawCars;
 extern int DrawCarShadow;
+extern int ForceCarLOD;
+extern int ForceTireLOD;
 extern int TweakKitWheelOffsetFront;
 extern int TweakKitWheelOffsetRear;
 extern int ForceBrakelightsOn;
@@ -174,6 +177,8 @@ extern void AddQuickDynamicLight(eShaperLightRig *ShaperRigP, unsigned int slot,
 extern void sh_Setup(bVector3 *car_pos) asm("sh_Setup__FP8bVector3");
 
 namespace {
+float const CarBodyLodSwapSize[] = {120.0f, 25.0f, 20.0f, 10.0f, 0.0f};
+float const TrafficCarBodyLodSwapSize[] = {20.0f, 10.0f, 4.0f, 0.0f, 0.0f};
 
 void Render(eViewPlatInterface *view, eModel *model, bMatrix4 *local_to_world, eLightContext *light_context, unsigned int flags,
             unsigned int exc_flag);
@@ -865,12 +870,12 @@ void CarRenderInfo::UpdateCarParts() {
         for (int model_number = 0; model_number < 1; model_number++) {
             for (int lod = this->mMinLodLevel; lod <= this->mMaxLodLevel; lod++) {
                 CarPartModel *car_part_model = &this->mCarPartModels[slot_id][model_number][lod];
-                eModel *model = GetPackedCarPartModel(car_part_model);
+                eModel *model = car_part_model->GetModel();
 
                 if (model != 0 && model->Solid != 0) {
                     model->UnInit();
                     CarPartModelPool->Free(model);
-                    ClearPackedCarPartModel(car_part_model);
+                    reinterpret_cast<CarPartModelLayout *>(car_part_model)->mModel &= 1;
                 }
             }
         }
@@ -906,26 +911,27 @@ void CarRenderInfo::UpdateCarParts() {
 
                 CarPartModel *car_part_model = &this->mCarPartModels[slot_id][model_number][lod];
                 eModel *model = static_cast<eModel *>(CarPartModelPool->Malloc());
+                unsigned int &packed_model = reinterpret_cast<CarPartModelLayout *>(car_part_model)->mModel;
 
-                SetPackedCarPartModel(car_part_model, model);
+                packed_model = reinterpret_cast<unsigned int>(model) | (packed_model & 1);
                 model->Init(model_name_hash);
 
                 if (model->Solid == 0) {
                     model->UnInit();
                     CarPartModelPool->Free(model);
-                    ClearPackedCarPartModel(car_part_model);
+                    packed_model &= 1;
                     continue;
                 }
 
                 if (slot_id >= CARSLOTID_DECAL_FRONT_WINDOW && slot_id <= CARSLOTID_DECAL_RIGHT_QUARTER) {
                     model->AttachReplacementTextureTable(&this->DecalReplacementTextureTable[(slot_id - CARSLOTID_DECAL_FRONT_WINDOW) * 8], 8, 0);
                 } else if (slot_id == CARSLOTID_HOOD) {
-                    if (CarPart_GetAppliedAttributeIParam(car_part, 0x721AFF7C, 0) == 0) {
-                        model->AttachReplacementTextureTable(this->MasterReplacementTextureTable, REPLACETEX_NUM, 0);
-                        this->CarbonHood = 0;
-                    } else {
+                    if (CarPart_GetAppliedAttributeIParam(car_part, 0x721AFF7C, 0) != 0) {
                         model->AttachReplacementTextureTable(this->CarbonReplacementTextureTable, REPLACETEX_NUM, 0);
                         this->CarbonHood = 1;
+                    } else {
+                        model->AttachReplacementTextureTable(this->MasterReplacementTextureTable, REPLACETEX_NUM, 0);
+                        this->CarbonHood = 0;
                     }
                 } else {
                     model->AttachReplacementTextureTable(this->MasterReplacementTextureTable, REPLACETEX_NUM, 0);
@@ -934,9 +940,14 @@ void CarRenderInfo::UpdateCarParts() {
 
             eModel *model = this->mCarPartModels[slot_id][model_number][this->mMinLodLevel].GetModel();
 
-            if (model != 0) {
-                model->GetBoundingBox(&bbox_min, &bbox_max);
-                bExpandBoundingBox(&this->AABBMin, &this->AABBMax, &bbox_min, &bbox_max);
+            if (model != 0 &&
+                (slot_id == CARSLOTID_BASE || slot_id == CARSLOTID_DAMAGE_BODY || slot_id == CARSLOTID_DAMAGE_COP_LIGHTS ||
+                 (slot_id >= CARSLOTID_DAMAGE_HOOD && slot_id <= CARSLOTID_DAMAGE_FRONT_BUMPER) ||
+                 (slot_id >= CARSLOTID_DAMAGE_TRUNK && slot_id <= CARSLOTID_DAMAGE_REAR_BUMPER) || slot_id == CARSLOTID_BODY ||
+                 slot_id == CARSLOTID_LEFT_SIDE_MIRROR || slot_id == CARSLOTID_RIGHT_SIDE_MIRROR ||
+                 slot_id == CARSLOTID_SPOILER || (slot_id >= CARSLOTID_ROOF && slot_id <= CARSLOTID_HOOD))) {
+                    model->GetBoundingBox(&bbox_min, &bbox_max);
+                    bExpandBoundingBox(&this->AABBMin, &this->AABBMax, &bbox_min, &bbox_max);
             }
         }
     }
@@ -944,34 +955,38 @@ void CarRenderInfo::UpdateCarParts() {
     for (int model_number = 0; model_number < 1; model_number++) {
         for (int lod = this->mMinLodLevel; lod <= this->mMaxLodLevel; lod++) {
             eModel *front_wheel_model = this->mCarPartModels[CARSLOTID_FRONT_WHEEL][model_number][lod].GetModel();
-            eModel *rear_wheel_model = GetPackedCarPartModel(&this->mCarPartModels[CARSLOTID_REAR_WHEEL][model_number][lod]);
+            CarPartModel *rear_wheel_part_model = &this->mCarPartModels[CARSLOTID_REAR_WHEEL][model_number][lod];
+            unsigned int &rear_wheel_packed_model = reinterpret_cast<CarPartModelLayout *>(rear_wheel_part_model)->mModel;
+            eModel *rear_wheel_model = reinterpret_cast<eModel *>(rear_wheel_packed_model & ~0x3);
 
             if (front_wheel_model != 0 && rear_wheel_model == 0) {
                 rear_wheel_model = static_cast<eModel *>(CarPartModelPool->Malloc());
-                SetPackedCarPartModel(&this->mCarPartModels[CARSLOTID_REAR_WHEEL][model_number][lod], rear_wheel_model);
+                rear_wheel_packed_model = reinterpret_cast<unsigned int>(rear_wheel_model) | (rear_wheel_packed_model & 1);
                 rear_wheel_model->Init(front_wheel_model->GetNameHash());
 
                 if (rear_wheel_model->Solid == 0) {
                     rear_wheel_model->UnInit();
                     CarPartModelPool->Free(rear_wheel_model);
-                    ClearPackedCarPartModel(&this->mCarPartModels[CARSLOTID_REAR_WHEEL][model_number][lod]);
+                    rear_wheel_packed_model &= 1;
                 } else {
                     rear_wheel_model->AttachReplacementTextureTable(this->MasterReplacementTextureTable, REPLACETEX_NUM, 0);
                 }
             }
 
             eModel *front_brake_model = this->mCarPartModels[CARSLOTID_FRONT_BRAKE][model_number][lod].GetModel();
-            eModel *rear_brake_model = GetPackedCarPartModel(&this->mCarPartModels[CARSLOTID_REAR_BRAKE][model_number][lod]);
+            CarPartModel *rear_brake_part_model = &this->mCarPartModels[CARSLOTID_REAR_BRAKE][model_number][lod];
+            unsigned int &rear_brake_packed_model = reinterpret_cast<CarPartModelLayout *>(rear_brake_part_model)->mModel;
+            eModel *rear_brake_model = reinterpret_cast<eModel *>(rear_brake_packed_model & ~0x3);
 
             if (front_brake_model != 0 && rear_brake_model == 0) {
                 rear_brake_model = static_cast<eModel *>(CarPartModelPool->Malloc());
-                SetPackedCarPartModel(&this->mCarPartModels[CARSLOTID_REAR_BRAKE][model_number][lod], rear_brake_model);
+                rear_brake_packed_model = reinterpret_cast<unsigned int>(rear_brake_model) | (rear_brake_packed_model & 1);
                 rear_brake_model->Init(front_brake_model->GetNameHash());
 
                 if (rear_brake_model->Solid == 0) {
                     rear_brake_model->UnInit();
                     CarPartModelPool->Free(rear_brake_model);
-                    ClearPackedCarPartModel(&this->mCarPartModels[CARSLOTID_REAR_BRAKE][model_number][lod]);
+                    rear_brake_packed_model &= 1;
                 } else {
                     rear_brake_model->AttachReplacementTextureTable(this->MasterReplacementTextureTable, REPLACETEX_NUM, 0);
                 }
@@ -984,14 +999,28 @@ void CarRenderInfo::UpdateCarParts() {
 
     if (front_wheel_model != 0) {
         front_wheel_model->GetBoundingBox(&bbox_min, &bbox_max);
-        this->WheelWidths[0] = fabsf(bbox_max.y - bbox_min.y);
-        this->WheelRadius[0] = fabsf(bbox_max.z - bbox_min.z) * 0.5f;
+        this->WheelWidths[0] = bbox_max.y - bbox_min.y;
+        if (this->WheelWidths[0] < 0.0f) {
+            this->WheelWidths[0] = -this->WheelWidths[0];
+        }
+        this->WheelRadius[0] = bbox_max.z - bbox_min.z;
+        if (this->WheelRadius[0] < 0.0f) {
+            this->WheelRadius[0] = -this->WheelRadius[0];
+        }
+        this->WheelRadius[0] *= 0.5f;
     }
 
     if (rear_wheel_model != 0) {
         rear_wheel_model->GetBoundingBox(&bbox_min, &bbox_max);
-        this->WheelWidths[1] = fabsf(bbox_max.y - bbox_min.y);
-        this->WheelRadius[1] = fabsf(bbox_max.z - bbox_min.z) * 0.5f;
+        this->WheelWidths[1] = bbox_max.y - bbox_min.y;
+        if (this->WheelWidths[1] < 0.0f) {
+            this->WheelWidths[1] = -this->WheelWidths[1];
+        }
+        this->WheelRadius[1] = bbox_max.z - bbox_min.z;
+        if (this->WheelRadius[1] < 0.0f) {
+            this->WheelRadius[1] = -this->WheelRadius[1];
+        }
+        this->WheelRadius[1] *= 0.5f;
     }
 
     this->ModelOffset.x = (this->AABBMax.x + this->AABBMin.x) * 0.5f;
@@ -1000,16 +1029,16 @@ void CarRenderInfo::UpdateCarParts() {
 
     CarPart *base_part = ride_info->GetPart(CARSLOTID_BASE);
     if (base_part == 0) {
+        this->SpoilerPositionMarker2 = 0;
         this->RoofScoopPositionMarker = 0;
         this->SpoilerPositionMarker = 0;
-        this->SpoilerPositionMarker2 = 0;
     } else {
         eSolid *solid = eFindSolid(CarPart_GetModelNameHash(base_part, 0, this->mMinLodLevel), 0);
 
         if (solid == 0) {
+            this->SpoilerPositionMarker2 = 0;
             this->RoofScoopPositionMarker = 0;
             this->SpoilerPositionMarker = 0;
-            this->SpoilerPositionMarker2 = 0;
         } else {
             this->SpoilerPositionMarker = solid->GetPostionMarker(0xC93B73FD);
             this->SpoilerPositionMarker2 = solid->GetPostionMarker(0xF0A9F3CF);
@@ -1021,6 +1050,10 @@ void CarRenderInfo::UpdateCarParts() {
     this->mMirrorLeftWheels = true;
     if (spoiler_part != 0) {
         this->mMirrorLeftWheels = (reinterpret_cast<CarPartMetaLayout *>(spoiler_part)->GroupNumber_UpgradeLevel >> 5) == 0;
+    }
+
+    for (int lod = this->mMinLodLevel; lod <= this->mMaxLodLevel; lod++) {
+        this->mCarPartModels[CARSLOTID_UNIVERSAL_SPOILER_BASE][0][lod].Hide(this->mMirrorLeftWheels);
     }
 
     this->SetCarDamageState(false, 0x2E, 0x33);
@@ -1225,17 +1258,52 @@ bool CarRenderInfo::Render(eView *view, const bVector3 *world_position, const bM
     }
 
     eDynamicLightContext light_context_storage;
-    eDynamicLightContext *light_context = static_cast<eDynamicLightContext *>(CarRenderFrameMalloc(0x130));
-    bMatrix4 *local_world = static_cast<bMatrix4 *>(CarRenderFrameMalloc(sizeof(bMatrix4)));
-    bMatrix4 *world_local = static_cast<bMatrix4 *>(CarRenderFrameMalloc(sizeof(bMatrix4)));
-    bVector4 *camera_world_position = static_cast<bVector4 *>(CarRenderFrameMalloc(sizeof(bVector4)));
+    eDynamicLightContext *light_context;
+    bMatrix4 *local_world;
+    bMatrix4 *world_local;
+    bVector4 *camera_world_position;
     eShaperLightRig *shaper_lights = &ShaperLightsCarsInGame;
+    float pixel_size = static_cast<float>(car_pixel_size);
+    float const *body_lod_swap_size = CarBodyLodSwapSize;
     Camera *camera = view->GetCamera();
     bool print_query_light_mat;
     unsigned short steering = this->mSteeringR;
     unsigned short left_steering = this->mSteeringL;
-    int body_lod = static_cast<int>(carLOD);
-    int tire_lod = static_cast<int>(tireLOD);
+    int body_lod = static_cast<int>(this->mMinLodLevel);
+    int tire_lod = static_cast<int>(this->mMinLodLevel);
+
+    if (CurrentBufferEnd <= CurrentBufferPos + 0x130) {
+        FrameMallocFailed = 1;
+        FrameMallocFailAmount += 0x130;
+        light_context = 0;
+    } else {
+        light_context = reinterpret_cast<eDynamicLightContext *>(CurrentBufferPos);
+        CurrentBufferPos += 0x130;
+    }
+    if (CurrentBufferEnd <= CurrentBufferPos + sizeof(bMatrix4)) {
+        FrameMallocFailed = 1;
+        FrameMallocFailAmount += sizeof(bMatrix4);
+        local_world = 0;
+    } else {
+        local_world = reinterpret_cast<bMatrix4 *>(CurrentBufferPos);
+        CurrentBufferPos += sizeof(bMatrix4);
+    }
+    if (CurrentBufferEnd <= CurrentBufferPos + sizeof(bMatrix4)) {
+        FrameMallocFailed = 1;
+        FrameMallocFailAmount += sizeof(bMatrix4);
+        world_local = 0;
+    } else {
+        world_local = reinterpret_cast<bMatrix4 *>(CurrentBufferPos);
+        CurrentBufferPos += sizeof(bMatrix4);
+    }
+    if (CurrentBufferEnd <= CurrentBufferPos + sizeof(bVector4)) {
+        FrameMallocFailed = 1;
+        FrameMallocFailAmount += sizeof(bVector4);
+        camera_world_position = 0;
+    } else {
+        camera_world_position = reinterpret_cast<bVector4 *>(CurrentBufferPos);
+        CurrentBufferPos += sizeof(bVector4);
+    }
 
     if (left_steering > 0x8000) {
         left_steering = static_cast<unsigned short>(-left_steering);
@@ -1246,17 +1314,54 @@ bool CarRenderInfo::Render(eView *view, const bVector3 *world_position, const bM
     if (steering < left_steering) {
         steering = this->mSteeringL;
     }
-    if (body_lod < static_cast<int>(this->mMinLodLevel)) {
-        body_lod = static_cast<int>(this->mMinLodLevel);
+    if (reflexion != 0 || this->mMinLodLevel == 2) {
+        body_lod_swap_size = TrafficCarBodyLodSwapSize;
     }
+
+    if (pixel_size > body_lod_swap_size[0]) {
+        int lod_offset = 0;
+
+        do {
+            lod_offset++;
+            if (pixel_size < body_lod_swap_size[lod_offset]) {
+                continue;
+            }
+            break;
+        } while (lod_offset < 4);
+
+        body_lod += lod_offset;
+        tire_lod += lod_offset;
+    }
+
     if (body_lod > static_cast<int>(this->mMaxLodLevel)) {
         body_lod = static_cast<int>(this->mMaxLodLevel);
     }
-    if (tire_lod < static_cast<int>(this->mMinLodLevel)) {
-        tire_lod = static_cast<int>(this->mMinLodLevel);
-    }
     if (tire_lod > static_cast<int>(this->mMaxLodLevel)) {
         tire_lod = static_cast<int>(this->mMaxLodLevel);
+    }
+    if (ForceCarLOD != -1) {
+        body_lod = ForceCarLOD;
+        if (body_lod < static_cast<int>(this->mMinLodLevel)) {
+            body_lod = static_cast<int>(this->mMinLodLevel);
+        }
+        if (body_lod > static_cast<int>(this->mMaxLodLevel)) {
+            body_lod = static_cast<int>(this->mMaxLodLevel);
+        }
+    }
+    if (ForceTireLOD != -1) {
+        tire_lod = ForceTireLOD;
+        if (tire_lod < static_cast<int>(this->mMinLodLevel)) {
+            tire_lod = static_cast<int>(this->mMinLodLevel);
+        }
+        if (tire_lod > static_cast<int>(this->mMaxLodLevel)) {
+            tire_lod = static_cast<int>(this->mMaxLodLevel);
+        }
+    }
+    if (this->pRideInfo != 0 && this->pCarTypeInfo != 0 && this->pCarTypeInfo->UsageType != CAR_USAGE_TYPE_RACING) {
+        extra_render_flags |= 0x800;
+        if (INIS::Get() != 0) {
+            extra_render_flags |= 0x80000;
+        }
     }
     if (light_context == 0 || local_world == 0 || world_local == 0 || camera_world_position == 0) {
         return true;
@@ -1333,7 +1438,7 @@ bool CarRenderInfo::Render(eView *view, const bVector3 *world_position, const bM
 
     for (int slot_id = 0; slot_id < 0x4C; slot_id++) {
         if (slot_id == CARSLOTID_FRONT_WHEEL || slot_id == CARSLOTID_REAR_WHEEL || slot_id == CARSLOTID_FRONT_BRAKE ||
-            slot_id == CARSLOTID_REAR_BRAKE) {
+            slot_id == CARSLOTID_REAR_BRAKE || slot_id == CARSLOTID_SPOILER || slot_id == CARSLOTID_ROOF) {
             continue;
         }
 
@@ -1366,6 +1471,42 @@ bool CarRenderInfo::Render(eView *view, const bVector3 *world_position, const bM
         this->RenderPart(view, car_part_model, local_world, light_context, extra_render_flags);
     }
 
+    {
+        CarPartModel *spoiler_part_model = &this->mCarPartModels[CARSLOTID_SPOILER][0][body_lod];
+        eModel *spoiler_model = spoiler_part_model->GetModel();
+
+        if (spoiler_model != 0) {
+            eLightMaterial *spoiler_material = this->LightMaterial_Spoiler;
+
+            if (spoiler_material == 0) {
+                spoiler_material = this->LightMaterial_CarSkin;
+            }
+            if (spoiler_material != 0) {
+                spoiler_model->ReplaceLightMaterial(0xD6D6080A, spoiler_material);
+            }
+
+            ::Render(view, spoiler_model, local_world, light_context, extra_render_flags, 0);
+        }
+    }
+
+    {
+        CarPartModel *roof_part_model = &this->mCarPartModels[CARSLOTID_ROOF][0][body_lod];
+        eModel *roof_model = roof_part_model->GetModel();
+
+        if (roof_model != 0) {
+            eLightMaterial *roof_material = this->LightMaterial_Roof;
+
+            if (roof_material == 0) {
+                roof_material = this->LightMaterial_CarSkin;
+            }
+            if (roof_material != 0) {
+                roof_model->ReplaceLightMaterial(0xD6D6080A, roof_material);
+            }
+
+            ::Render(view, roof_model, local_world, light_context, extra_render_flags, 0);
+        }
+    }
+
     if (tire_matrices != 0) {
         CarPartModel *front_tire = &this->mCarPartModels[CARSLOTID_FRONT_WHEEL][0][tire_lod];
         CarPartModel *rear_tire = &this->mCarPartModels[CARSLOTID_REAR_WHEEL][0][tire_lod];
@@ -1382,6 +1523,10 @@ bool CarRenderInfo::Render(eView *view, const bVector3 *world_position, const bM
             eModel *wheel_model = wheel_part_model->GetModel();
 
             if (wheel_model != 0) {
+                eReplacementTextureTable *brake_replacement_table =
+                    (wheel == 0 || wheel == 3) ? this->BrakeLeftReplacementTextureTable : this->BrakeRightReplacementTextureTable;
+
+                wheel_model->AttachReplacementTextureTable(brake_replacement_table, 2, 0);
                 if (this->LightMaterial_WheelRim != 0) {
                     wheel_model->ReplaceLightMaterial(0xD6640DFF, this->LightMaterial_WheelRim);
                 }
@@ -1390,7 +1535,9 @@ bool CarRenderInfo::Render(eView *view, const bVector3 *world_position, const bM
                 }
             }
 
-            this->RenderPart(view, wheel_part_model, &tire_local_world, light_context, extra_render_flags);
+            if (wheel_model != 0) {
+                ::Render(view, wheel_model, &tire_local_world, light_context, extra_render_flags, 0);
+            }
         }
     }
 
@@ -1405,12 +1552,20 @@ bool CarRenderInfo::Render(eView *view, const bVector3 *world_position, const bM
             CarPartModel *brake_part_model = wheel < 2 ? front_brake : rear_brake;
             eModel *brake_model = brake_part_model->GetModel();
 
-            if (brake_model != 0 && this->LightMaterial_Caliper != 0) {
-                brake_model->ReplaceLightMaterial(0xD6640DFF, this->LightMaterial_Caliper);
-                brake_model->ReplaceLightMaterial(0xA3186E2B, this->LightMaterial_Caliper);
+            if (brake_model != 0) {
+                eReplacementTextureTable *brake_replacement_table =
+                    (wheel == 0 || wheel == 3) ? this->BrakeLeftReplacementTextureTable : this->BrakeRightReplacementTextureTable;
+
+                brake_model->AttachReplacementTextureTable(brake_replacement_table, 2, 0);
+                if (this->LightMaterial_Caliper != 0) {
+                    brake_model->ReplaceLightMaterial(0xD6640DFF, this->LightMaterial_Caliper);
+                    brake_model->ReplaceLightMaterial(0xA3186E2B, this->LightMaterial_Caliper);
+                }
             }
 
-            this->RenderPart(view, brake_part_model, &brake_local_world, light_context, extra_render_flags);
+            if (brake_model != 0) {
+                ::Render(view, brake_model, &brake_local_world, light_context, extra_render_flags, 0);
+            }
         }
     }
 
