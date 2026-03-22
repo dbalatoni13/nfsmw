@@ -210,13 +210,15 @@ void emRemoveHandler(EVENT_HANDLER_FUNC function) {
 
 emEvent *emAddEvent(EVENT_ID event_id) {
     emEvent *event = reinterpret_cast<emEvent *>(bOMalloc(EventSlotPool));
-    if (event) {
-        bMemSet(event, 0, sizeof(emEvent));
-        event->ReferenceCount = 0;
-        event->ID = event_id;
-        CurrentEventQueue->AddTail(event);
-        EventManagerStats[0] += 1;
+    if (!event) {
+        return 0;
     }
+
+    bMemSet(event, 0, sizeof(emEvent));
+    event->ReferenceCount = 0;
+    event->ID = event_id;
+    CurrentEventQueue->AddTail(event);
+    EventManagerStats[0] += 1;
     return event;
 }
 
