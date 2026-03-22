@@ -100,6 +100,10 @@ static inline short GetScenerySectionNumber_TrackStreamer(char section_letter, i
 
 inline void espEmptyLayer(const char *layername) {}
 
+inline int espGetLayerState(const char *layername) {
+    return 0;
+}
+
 static inline bool IsLODScenerySectionNumber(int section_number) {
     int subsection_number = GetScenerySubsectionNumber(section_number);
     return subsection_number >= ScenerySectionLODOffset && subsection_number < ScenerySectionLODOffset * 2;
@@ -1986,6 +1990,16 @@ void TrackStreamer::FinishedLoading() {
 
 void TrackStreamer::EmptyCaffeineLayers() {
     TrackStreamerRemoteCaffeinating = 0;
+
+    return;
+
+    espEmptyLayer("A");
+    espEmptyLayer("B");
+    espEmptyLayer("C");
+    espEmptyLayer("D");
+    espEmptyLayer("E");
+    espEmptyLayer("F");
+    espGetLayerState("A");
 }
 
 void TrackStreamer::HandleLoading() {
