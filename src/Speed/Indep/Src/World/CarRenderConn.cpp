@@ -25,6 +25,9 @@ extern float renderModifier;
 extern int Tweak_DisableRoadNoise;
 extern int NumTimesRenderTestPlayerCar;
 extern RoadNoiseRecord Tweak_BlowOutNoise asm("Tweak_BlowOutNoise");
+extern CameraAnchor *RVManchor;
+extern void AddXenonEffect(EmitterGroup *piggyback_fx, const Attrib::Collection *spec, const bMatrix4 *mat, const bVector4 *vel)
+    asm("AddXenonEffect__FP12EmitterGroupPCQ26Attrib10CollectionPCQ25UMath7Matrix4PCQ25UMath7Vector4");
 
 namespace {
 
@@ -36,6 +39,18 @@ struct RenderPktCarOpen {
 struct TireStateRoadNoiseMirror {
     unsigned char _pad0[0x84];
     Attrib::Gen::simsurface mSurface;
+};
+
+struct CameraAnchorPovMirror {
+    unsigned char _pad0[0xD8];
+    short mPOVType;
+};
+
+struct LocalReferenceMirror {
+    unsigned int mWorldID;
+    const bMatrix4 *mMatrix;
+    const bVector3 *mVelocity;
+    const bVector3 *mAcceleration;
 };
 
 void StopEffect(VehicleRenderConn::Effect *effect) {
@@ -863,6 +878,8 @@ void CarRenderConn::GetRenderMatrix(bMatrix4 *matrix) {
 }
 
 void CarRenderConn::OnRender(eView *view, int reflection) {
+    const LocalReferenceMirror *world_ref = reinterpret_cast<const LocalReferenceMirror *>(&this->mWorldRef);
+
     if (!this->CanRender()) {
         return;
     }
@@ -873,6 +890,44 @@ void CarRenderConn::OnRender(eView *view, int reflection) {
     this->mLastRenderFrame = eFrameCounter;
 
     CameraMover *camera_mover = view->GetCameraMover();
+
+    if (camera_mover != 0 && !camera_mover->RenderCarPOV()) {
+        CameraAnchor *anchor = camera_mover->GetAnchor();
+
+        if (anchor != 0 && anchor->GetWorldID() == world_ref->mWorldID) {
+            return;
+        }
+    }
+
+    if (view->GetID() > 0xF && view->GetID() < 0x16) {
+        CameraMover *rear_view_mover = eViews[1].GetCameraMover();
+
+        if (rear_view_mover != 0) {
+            CameraAnchor *anchor = rear_view_mover->GetAnchor();
+
+            if (anchor != 0 && anchor->GetWorldID() == world_ref->mWorldID) {
+                return;
+            }
+        }
+    }
+
+    if (this->mDoContrailEffect && camera_mover != 0 && camera_mover->IsHoodCamera() &&
+        (view->GetID() == 1 || view->GetID() == 2)) {
+        const Attrib::Collection *xenon_effect = Attrib::FindCollection(0x6F5943F1, 0x16AFDE7B);
+        AddXenonEffect(0, xenon_effect, world_ref->mMatrix, reinterpret_cast<const bVector4 *>(world_ref->mVelocity));
+    }
+
+    if (view->GetID() == 3) {
+        RVManchor = 0;
+        if (camera_mover != 0) {
+            RVManchor = camera_mover->GetAnchor();
+        }
+
+        if (RVManchor != 0 && RVManchor->GetWorldID() == world_ref->mWorldID) {
+            return;
+        }
+    }
+
     if (camera_mover != nullptr && view->GetID() - 1U < 3) {
         bVector3 delta;
         delta.x = camera_mover->GetPosition()->x - this->mRenderMatrix.v3.x;
@@ -899,6 +954,29 @@ void CarRenderConn::OnRender(eView *view, int reflection) {
 
     bMatrix4 body_matrix;
     PSMTX44Copy(*reinterpret_cast<Mtx44 *>(&this->mRenderMatrix), *reinterpret_cast<Mtx44 *>(&body_matrix));
+
+    if (reflection == 0 && this->IsViewAnchor(view)) {
+        CameraMover *anchor_mover = view->GetCameraMover();
+
+        if (anchor_mover != 0) {
+            CameraAnchor *anchor = anchor_mover->GetAnchor();
+
+            if (anchor != 0 && reinterpret_cast<const CameraAnchorPovMirror *>(anchor)->mPOVType == 1) {
+                const bMatrix4 *world_matrix = this->GetBodyMatrix();
+
+                if (world_matrix != 0) {
+                    bVector4 offset = this->GetModelOffset();
+                    bVector4 translated_offset;
+
+                    PSMTX44Copy(*reinterpret_cast<const Mtx44 *>(world_matrix), *reinterpret_cast<Mtx44 *>(&body_matrix));
+                    eMulVector(&translated_offset, &body_matrix, &offset);
+                    body_matrix.v3.x -= translated_offset.x;
+                    body_matrix.v3.y -= translated_offset.y;
+                    body_matrix.v3.z -= translated_offset.z;
+                }
+            }
+        }
+    }
 
     unsigned int extra_render_flags = 0;
     if (reflection != 0) {

@@ -112,6 +112,8 @@ class CameraMover : public bTNode<CameraMover>, public WCollisionMgr::ICollision
 
     virtual void ResetState() {}
 
+    virtual bool IsHoodCamera() {}
+
     // ICollisionHandler
     bool OnWCollide(const WCollisionMgr::WorldCollisionInfo &cInfo, const UMath::Vector3 &cPoint, void *userdata) override;
 
