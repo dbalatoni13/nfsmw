@@ -393,8 +393,8 @@ void SFXCTL_Shifting::BeginUpShift() {
     CleanUpShiftFX();
 
     if (3000.0f <= m_pEngineCtl->m_pPhysicsCtl->GetPhysRPM()) {
-        eShiftStageChanged = SHFT_UP_DISENGAGE;
         eShiftState = SHFT_UP_DISENGAGE;
+        eShiftStageChanged = SHFT_UP_DISENGAGE;
 
         RPM_AtShift = m_pEngineCtl->m_fPrevRPM;
         m_pEngineCtl->m_fPrevRPM = m_pEngineCtl->m_fEng_RPM;
