@@ -40,6 +40,8 @@ python tools/code_style.py audit --base origin/main
 - `audit` also checks touched `class` / `struct` declarations against known header declarations and, when no header exists, against the PS2 visibility rule.
 - `audit` warns on touched local forward declarations when the repo already has a header for that type.
 - `audit` warns on touched type members that look like invented padding or placeholder names such as `pad`, `unk`, or `field_1234`.
+- `audit` prefers real header definitions over conflicting forward declarations when resolving `class` / `struct` kind, so owner headers beat stray forward-decl noise.
+- `audit` suppresses placeholder-member warnings when Dwarf / PS2 already proves that names such as `pad`, `pad0`, or `pad1` are genuine recovered members.
 - `audit` also checks touched style-guide rules that clang-format cannot enforce for you, such as cast spacing, `using namespace`, `NULL`, bare `#if MACRO` presence checks, recovered layout members that still use raw `unsigned char` / `unsigned short`, and missing or misordered `EA_PRAGMA_ONCE_SUPPORTED` guard blocks when a header's prologue is touched.
 - `audit` groups repeated findings by file so branch-wide output stays readable.
 - Use `audit --category safe-cpp` when you want a smaller Frontend/FEng-focused subset and `audit --category match-sensitive-cpp` when you want a conservative review queue for decomp code.

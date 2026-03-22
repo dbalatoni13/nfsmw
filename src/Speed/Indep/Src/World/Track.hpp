@@ -5,7 +5,8 @@
 #pragma once
 #endif
 
-struct bChunk;
+#include "Speed/Indep/bWare/Inc/bChunk.hpp"
+
 struct TrackOBB;
 
 void EstablishRemoteCaffeineConnection();

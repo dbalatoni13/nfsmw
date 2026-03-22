@@ -5,9 +5,9 @@
 #pragma once
 #endif
 
+#include "Speed/Indep/bWare/Inc/bChunk.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
-struct bChunk;
 class TrackInfo;
 extern TrackInfo *LoadedTrackInfo;
 

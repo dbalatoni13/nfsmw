@@ -115,6 +115,7 @@ SUSPICIOUS_MEMBER_PATTERN = re.compile(
 
 _source_decl_cache: Optional[Dict[str, List[tuple]]] = None
 _ps2_kind_cache: Dict[str, Optional[str]] = {}
+_verified_member_cache: Dict[str, Set[str]] = {}
 
 
 def run_git(args: Sequence[str]) -> str:
@@ -235,7 +236,8 @@ def source_declaration_index() -> Dict[str, List[tuple]]:
                             continue
                         kind = match.group(1)
                         name = match.group(2)
-                        index.setdefault(name, []).append((kind, rel, lineno))
+                        is_forward_decl = FORWARD_DECL_PATTERN.match(line) is not None
+                        index.setdefault(name, []).append((kind, rel, lineno, is_forward_decl))
             except OSError:
                 continue
 
@@ -246,12 +248,18 @@ def source_declaration_index() -> Dict[str, List[tuple]]:
 def expected_kind_from_source(name: str, current_path: str, current_line: int) -> Optional[str]:
     candidates = source_declaration_index().get(name, [])
     filtered = []
-    for kind, rel, lineno in candidates:
+    full_definitions = []
+    for kind, rel, lineno, is_forward_decl in candidates:
         if rel == current_path and lineno == current_line:
             continue
         if os.path.splitext(rel)[1] not in {".h", ".hh", ".hpp"}:
             continue
         filtered.append(kind)
+        if not is_forward_decl:
+            full_definitions.append(kind)
+    unique_full = sorted(set(full_definitions))
+    if len(unique_full) == 1:
+        return unique_full[0]
     unique = sorted(set(filtered))
     if len(unique) == 1:
         return unique[0]
@@ -260,14 +268,47 @@ def expected_kind_from_source(name: str, current_path: str, current_line: int) -
 
 def header_declaration_paths(name: str, current_path: str, current_line: int) -> List[str]:
     candidates = source_declaration_index().get(name, [])
-    headers = set()
-    for _kind, rel, lineno in candidates:
+    definition_headers = set()
+    forward_decl_headers = set()
+    for _kind, rel, lineno, is_forward_decl in candidates:
         if rel == current_path and lineno == current_line:
             continue
         if os.path.splitext(rel)[1] not in {".h", ".hh", ".hpp"}:
             continue
-        headers.add(rel)
-    return sorted(headers)
+        if is_forward_decl:
+            forward_decl_headers.add(rel)
+        else:
+            definition_headers.add(rel)
+    return sorted(definition_headers) + sorted(forward_decl_headers)
+
+
+def verified_member_names(type_name: str) -> Set[str]:
+    cached = _verified_member_cache.get(type_name)
+    if cached is not None:
+        return cached
+
+    members: Set[str] = set()
+    commands = (
+        ["python", "tools/lookup.py", os.path.join(".", "symbols", "Dwarf"), "struct", type_name],
+        ["python", "tools/lookup.py", "--file", ps2_types_path, "struct", type_name],
+    )
+    for command in commands:
+        result = subprocess.run(
+            command,
+            cwd=root_dir,
+            capture_output=True,
+            text=True,
+        )
+        if result.returncode != 0:
+            continue
+        output = result.stdout
+        for line in output.splitlines():
+            member_name = extract_member_name(line)
+            if member_name is not None:
+                members.add(member_name)
+
+    _verified_member_cache[type_name] = members
+    return members
 
 
 def expected_kind_from_ps2(name: str) -> Optional[str]:
@@ -395,6 +436,8 @@ def audit_placeholder_members(
             if not ACCESS_SPECIFIER_PATTERN.match(line):
                 member_name = extract_member_name(line)
                 if member_name is not None and SUSPICIOUS_MEMBER_PATTERN.match(member_name):
+                    if member_name in verified_member_names(current_type):
+                        continue
                     findings.append(
                         Finding(
                             path,

@@ -5,10 +5,9 @@
 #pragma once
 #endif
 
+#include "Speed/Indep/bWare/Inc/bChunk.hpp"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
-
-struct bChunk;
 
 // total size: 0x30
 struct TrackPositionMarker : public bTNode<TrackPositionMarker> {
