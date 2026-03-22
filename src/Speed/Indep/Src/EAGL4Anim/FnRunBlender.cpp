@@ -370,11 +370,53 @@ void FnRunBlender::AlignRootQ(float *sqt) const {}
 void FnRunBlender::AlignVel(float *vel) const {}
 
 bool FnRunBlender::FindMatchTime(const MatchPhaseInput &input, float &time) const {
-    if (!mPhases || mNumAnims <= 0) {
-        return false;
+    PhaseValue phase;
+    float cycleLength = mWeight * (mCycles[1] - mCycles[0]) + mCycles[0];
+    int searchCount = static_cast<int>(cycleLength + cycleLength);
+
+    phase.mAngle = 0.0f;
+    if (0.0f < input.mSearchLength && input.mSearchLength < static_cast<float>(searchCount)) {
+        searchCount = static_cast<int>(input.mSearchLength) + 1;
     }
 
-    return mPhases[0]->FindMatchTime(input, time);
+    const_cast<FnRunBlender *>(this)->EvalPhase(0.0f, phase);
+
+    float bestDelta = input.mAngle - phase.mAngle;
+    if (bestDelta < 0.0f) {
+        bestDelta = -bestDelta;
+    }
+
+    int bestIdx = 0;
+    for (int i = 1; i < searchCount; i++) {
+        float prevAngle = phase.mAngle;
+
+        const_cast<FnRunBlender *>(this)->EvalPhase(static_cast<float>(i), phase);
+
+        if (prevAngle <= input.mAngle && input.mAngle <= phase.mAngle) {
+            float deltaAngle = phase.mAngle - prevAngle;
+
+            if (0.0f <= deltaAngle * input.mDAngle) {
+                if (deltaAngle == 0.0f) {
+                    time = static_cast<float>(i - 1) + 0.5f;
+                } else {
+                    time = (input.mAngle - prevAngle) / deltaAngle + static_cast<float>(i - 1);
+                }
+                return true;
+            }
+        }
+
+        float delta = input.mAngle - phase.mAngle;
+        if (delta < 0.0f) {
+            delta = -delta;
+        }
+        if (delta < bestDelta) {
+            bestIdx = i;
+            bestDelta = delta;
+        }
+    }
+
+    time = static_cast<float>(bestIdx);
+    return true;
 }
 
 }; // namespace EAGL4Anim
