@@ -146,8 +146,8 @@ SndAIStateManager::SndAIStateManager()
 
 SndAIStateManager::~SndAIStateManager() {}
 
-void SndAIStateManager::Initialize(SFXCTL_Physics *pPhys) {
-    m_pPhysicsCTL = pPhys;
+void SndAIStateManager::Initialize(SFXCTL_Physics *_m_pPhysicsCTL) {
+    m_pPhysicsCTL = _m_pPhysicsCTL;
 
     SteeringMonitorLeft.m_fThreshold = TWK_SND_SteeringMonitor[1];
     SteeringMonitorLeft.m_fAutoTrigger = TWK_SND_SteeringMonitor[2];
@@ -183,11 +183,6 @@ void SndAIStateManager::Initialize(SFXCTL_Physics *pPhys) {
     ThrottleMonitor.t_TriggerLength = TWK_SND_ThrottleMonitor[4];
     ThrottleMonitor.fSign = TWK_SND_ThrottleMonitor[5];
     ThrottleMonitor.Initialize(static_cast< int >(TWK_SND_ThrottleMonitor[0]));
-
-    CurState = SND_AI_STATE_IDLE;
-    PrevState = SND_AI_STATE_UNKNOWN;
-    bTransition = 0;
-    m_tLastSwitch = 0.0f;
 }
 
 void SndAIStateManager::GeneratePotentialStates(bool *ArrayList) {
