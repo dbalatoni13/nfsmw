@@ -1,4 +1,5 @@
 #include "./CarLoader.hpp"
+#include "Speed/Indep/Src/Ecstasy/DefragFixer.hpp"
 #include "Speed/Indep/bWare/Inc/bPrintf.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include "Speed/Indep/bWare/Inc/bChunk.hpp"
@@ -89,6 +90,16 @@ struct CarPartDatabaseLayout {
     CarPartIndex VinylPart_Side[3];
     CarPartIndex VinylPart_Manufacturer[3];
 };
+struct _DefragmentParams {
+    int NumCopyStorage;
+    int CopyStorageSize[8];
+    void *CopyStorageMem[8];
+    int LargestAllocationSize;
+    char LargestAllocationName[64];
+    void *pAllocation;
+    void *pNewAllocation;
+    char AllocationName[64];
+};
 
 extern CarPartDatabase CarPartDB;
 extern CarTypeInfo *CarTypeInfoArray;
@@ -116,7 +127,12 @@ extern SlotPool *LoadedSolidPackSlotPool;
 extern SlotPool *LoadedSkinLayerSlotPool;
 extern SlotPool *LoadedRideInfoSlotPool;
 extern int UsePrecompositeVinyls;
+extern _DefragmentParams DefragmentParams;
+int bMemoryGetAllocations(int pool_num, void **allocations, int max_allocations);
+int bGetMallocSize(const void *ptr);
+const char *bGetMallocName(void *ptr);
 int bGetMallocPool(void *ptr);
+int CarInfo_GetResourceCost(CarType car_type, bool is_player_car, bool two_player);
 float GetDebugRealTime();
 extern int QueuedFileDefaultPriority;
 extern int CarLoaderServiceLoadingDepth;
@@ -706,6 +722,276 @@ int CarLoader::RemoveSomethingFromCarMemoryPool(bool force_unload) {
     }
 
     return 0;
+}
+
+void CarLoader::PrintMemoryUsage(bool on_screen) {
+    static float lastTime;
+
+    if (2.5f <= GetDebugRealTime() - lastTime) {
+        void *allocations[1152];
+        char allocation_uses[1024];
+        void *memory_entries[256];
+        int total_unique_loaded_size = 0;
+        int num_allocations;
+
+        lastTime = GetDebugRealTime();
+        num_allocations = bMemoryGetAllocations(CarLoaderMemoryPoolNumber, allocations, 0x480);
+        bMemSet(allocation_uses, 0, 0x400);
+
+        for (LoadedRideInfo *loaded_ride_info = this->LoadedRideInfoList.GetHead();
+             loaded_ride_info != this->LoadedRideInfoList.EndOfList(); loaded_ride_info = loaded_ride_info->GetNext()) {
+            if (!on_screen) {
+                this->IsLoaded(loaded_ride_info);
+            }
+
+            int num_memory_entries = this->GetMemoryEntries(loaded_ride_info->pLoadedCar, memory_entries, 0);
+            int total_memory_size = 0;
+            int unique_memory_size = 0;
+
+            num_memory_entries = this->GetMemoryEntries(loaded_ride_info->pLoadedSkin, memory_entries, num_memory_entries);
+            num_memory_entries = this->GetMemoryEntries(loaded_ride_info->pLoadedWheel, memory_entries, num_memory_entries);
+
+            for (int i = 0; i < num_memory_entries; i++) {
+                void *memory_entry = memory_entries[i];
+                int allocation_size = bGetMallocSize(memory_entry);
+
+                for (int j = 0; j < num_allocations; j++) {
+                    if (memory_entry == allocations[j]) {
+                        total_memory_size += allocation_size;
+
+                        if (allocation_uses[j] == 0) {
+                            unique_memory_size += allocation_size;
+                        }
+
+                        allocation_uses[j]++;
+                        break;
+                    }
+                }
+            }
+
+            if (loaded_ride_info->NumInstances > 0) {
+                total_unique_loaded_size += unique_memory_size;
+            }
+
+            int resource_cost = CarInfo_GetResourceCost(loaded_ride_info->TheRideInfo.Type, loaded_ride_info->IsPlayerCar != 0,
+                                                        this->TwoPlayerFlag != 0);
+
+            if (on_screen && loaded_ride_info->NumInstances > 0) {
+                bReleasePrintf("%s: %dK %dK %dK\n", loaded_ride_info->Name, (total_memory_size + 0x3FF) >> 10,
+                               (unique_memory_size + 0x3FF) >> 10, (resource_cost + 0x3FF) >> 10);
+            }
+        }
+
+        if (on_screen) {
+            bReleasePrintf("Loaded cars: %dK %dK\n", (total_unique_loaded_size + 0x3FF) >> 10,
+                           (this->MemoryPoolSize + 0x3FF) >> 10);
+        }
+
+        if (num_allocations > 0) {
+            int num_sponge_allocations = this->NumSpongeAllocations;
+
+            for (int i = 0; i < num_allocations; i++) {
+                void *allocation = allocations[i];
+
+                for (int j = 0; j < num_sponge_allocations; j++) {
+                    if (this->SpongeAllocations[j] == allocation) {
+                        allocation_uses[i] = 1;
+                    }
+                }
+            }
+        }
+    }
+}
+
+bool CarLoader::DefragmentAllocation(void *allocation) {
+    static int last_result_was_textures;
+
+    for (int i = 0; i < this->NumSpongeAllocations; i++) {
+        if (this->SpongeAllocations[i] == allocation) {
+            this->SpongeAllocations[i] = MoveDefragmentAllocation(allocation);
+            return true;
+        }
+    }
+
+    for (LoadedRideInfo *loaded_ride_info = this->LoadedRideInfoList.GetHead();
+         loaded_ride_info != this->LoadedRideInfoList.EndOfList(); loaded_ride_info = loaded_ride_info->GetNext()) {
+        ResourceFile *resource_file = loaded_ride_info->pLoadedCar->pLoadedSolidPack->pResourceFile;
+
+        if (resource_file != 0 && resource_file->GetMemory() == allocation) {
+            resource_file->ManualUnload();
+            resource_file->ManualReload(reinterpret_cast<bChunk *>(MoveDefragmentAllocation(allocation)));
+            return true;
+        }
+    }
+
+    if (last_result_was_textures != 0 && StreamingTexturePackLoader.DefragmentAllocation(allocation)) {
+        return true;
+    }
+
+    if (StreamingSolidPackLoader.DefragmentAllocation(allocation)) {
+        last_result_was_textures = 0;
+        return true;
+    }
+
+    if (StreamingTexturePackLoader.DefragmentAllocation(allocation)) {
+        last_result_was_textures = 1;
+        return true;
+    }
+
+    return false;
+}
+
+bool CarLoader::AllocateDefragmentStorage() {
+    const char *memory_pool_names[5] = {
+        "Main Pool",
+        "Track Streaming",
+        "Audio Memory Pool",
+        "Speech Cache Memory Pool",
+        "FEngMemoryPool",
+    };
+    int total_size = 0;
+    int num_copy_storage = 0;
+
+    if (DefragmentParams.LargestAllocationSize > 0) {
+        while (true) {
+            int largest_malloc = 0;
+            int memory_pool_num = -1;
+            int required_size = DefragmentParams.LargestAllocationSize - total_size;
+
+            for (int i = 0; i < 5; i++) {
+                int pool_num = bGetMemoryPoolNum(memory_pool_names[i]);
+
+                if (pool_num > -1) {
+                    int pool_largest_malloc = bLargestMalloc(pool_num);
+
+                    if (largest_malloc < pool_largest_malloc) {
+                        memory_pool_num = pool_num;
+                        largest_malloc = pool_largest_malloc;
+                    }
+                }
+            }
+
+            if (largest_malloc == 0) {
+                break;
+            }
+
+            if (required_size < largest_malloc) {
+                largest_malloc = required_size;
+            }
+
+            DefragmentParams.CopyStorageSize[num_copy_storage] = largest_malloc;
+            DefragmentParams.CopyStorageMem[num_copy_storage] = bMalloc(largest_malloc, memory_pool_num & 0xF);
+            total_size += largest_malloc;
+            num_copy_storage++;
+
+            if (DefragmentParams.LargestAllocationSize <= total_size || num_copy_storage > 7) {
+                break;
+            }
+        }
+    }
+
+    DefragmentParams.NumCopyStorage = num_copy_storage;
+    return total_size == DefragmentParams.LargestAllocationSize;
+}
+
+void CarLoader::FreeDefragmentStorage() {
+    for (int i = 0; i < DefragmentParams.NumCopyStorage; i++) {
+        bFree(DefragmentParams.CopyStorageMem[i]);
+    }
+
+    DefragmentParams.NumCopyStorage = 0;
+}
+
+int CarLoader::DefragmentPool() {
+    static int loop_number;
+    void *allocations[1152];
+    void *probe_allocations[33];
+
+    if (this->MayNeedDefragmentation == 0) {
+        return 0;
+    }
+
+    bGetTicker();
+
+    int num_allocations = bMemoryGetAllocations(CarLoaderMemoryPoolNumber, allocations, 0x480);
+
+    bMemSet(&DefragmentParams, 0, sizeof(DefragmentParams));
+
+    if (num_allocations > 0) {
+        for (int i = 0; i < num_allocations; i++) {
+            void *allocation = allocations[i];
+            int allocation_size = bGetMallocSize(allocation);
+
+            if (DefragmentParams.LargestAllocationSize < allocation_size) {
+                DefragmentParams.LargestAllocationSize = allocation_size;
+                bSafeStrCpy(DefragmentParams.LargestAllocationName, bGetMallocName(allocation), 0x40);
+            }
+        }
+    }
+
+    if (!this->AllocateDefragmentStorage()) {
+        this->FreeDefragmentStorage();
+        return 0;
+    }
+
+    eWaitUntilRenderingDone();
+    gDefragFixer.NumRanges = 0;
+    gDefragFixer.MemLow = 0;
+    gDefragFixer.MemHigh = 0;
+
+    int num_probe_allocations = 0;
+    int upper_allocation = reinterpret_cast<int>(bMalloc(0x80, (CarLoaderMemoryPoolNumber & 0xF) | 0x2000));
+
+    bFree(reinterpret_cast<void *>(upper_allocation));
+
+    for (int i = 0; i < num_allocations; i++) {
+        void *allocation = allocations[i];
+        int movement_offset = 0;
+        int allocation_size = bGetMallocSize(allocation);
+
+        if (upper_allocation < reinterpret_cast<int>(allocation)) {
+            DefragmentParams.pAllocation = allocation;
+            bStrNCpy(DefragmentParams.AllocationName, bGetMallocName(allocation), 0x3F);
+
+            while (true) {
+                void *probe_allocation = bMalloc(1, (CarLoaderMemoryPoolNumber & 0xF) | 0x2000);
+
+                if (reinterpret_cast<int>(probe_allocation) >= upper_allocation - 0x80) {
+                    bFree(probe_allocation);
+                    movement_offset = reinterpret_cast<int>(probe_allocation) - reinterpret_cast<int>(allocation);
+                    ChunkMovementOffset = movement_offset;
+                    DefragmentParams.pNewAllocation = probe_allocation;
+
+                    if (!this->DefragmentAllocation(allocation)) {
+                        movement_offset = 0;
+                    }
+
+                    ChunkMovementOffset = 0;
+                    break;
+                }
+
+                probe_allocations[num_probe_allocations] = probe_allocation;
+                num_probe_allocations++;
+            }
+        }
+
+        gDefragFixer.Add(allocation, allocation_size, movement_offset);
+        loop_number++;
+    }
+
+    for (int i = 0; i < num_probe_allocations; i++) {
+        bFree(probe_allocations[i]);
+    }
+
+    this->FreeDefragmentStorage();
+    bMemSet(&DefragmentParams, 0, sizeof(DefragmentParams));
+    eFixupReplacementTextureTables();
+    RefreshAllRenderInfo(static_cast<CarType>(-1));
+    gDefragFixer.MemLow = 0;
+    gDefragFixer.NumRanges = 0;
+    gDefragFixer.MemHigh = 0;
+    this->MayNeedDefragmentation = 0;
+    return 1;
 }
 
 LoadedWheel::LoadedWheel(RideInfo *ride_info, bool in_fe) {

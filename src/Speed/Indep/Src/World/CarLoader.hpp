@@ -157,6 +157,9 @@ class CarLoader {
     int GetMemoryEntries(LoadedSkin *loaded_skin, void **memory_entries, int num_memory_entries);
     int GetMemoryEntries(LoadedSkinLayer *loaded_skin_layer, void **memory_entries, int num_memory_entries);
     int GetMemoryEntries(LoadedCar *loaded_car, void **memory_entries, int num_memory_entries);
+    bool AllocateDefragmentStorage();
+    void FreeDefragmentStorage();
+    bool DefragmentAllocation(void *allocation);
     void PrintMemoryUsage(bool on_screen);
     int LoadTexturePack(LoadedTexturePack *loaded_texture_pack, int use_memory_pool);
     void LoadedTexturePackCallback(LoadedTexturePack *loaded_texture_pack);
