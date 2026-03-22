@@ -8,7 +8,10 @@
 #include "Speed/Indep/Src/Ecstasy/eMath.hpp"
 #include "Speed/Indep/Src/Ecstasy/eModel.hpp"
 #include "Speed/Indep/Src/Ecstasy/eSolid.hpp"
+#include "Speed/Indep/Src/Camera/CameraMover.hpp"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/ecar.h"
+#include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
 #include "Speed/Indep/Src/Main/AttribSupport.h"
 #include "Speed/Indep/Src/Misc/GameFlow.hpp"
 #include "Speed/Indep/Src/Misc/Profiler.hpp"
@@ -59,6 +62,10 @@ SlotPool *CarEmitterPositionSlotPool = nullptr;
 const int MAX_CAR_PART_MODELS = 250;
 SlotPool *CarPartModelPool = nullptr;
 
+struct eEnvMap {
+    void UpdateCameras(bVector3 *viewer_world_position, bVector3 *envmap_world_position);
+};
+
 void GetUsedCarTextureInfo(UsedCarTextureInfo *used_texture_info, RideInfo *ride_info, int front_end_only);
 extern float copm;
 extern float copt;
@@ -88,6 +95,8 @@ extern int TweakKitWheelOffsetFront;
 extern int TweakKitWheelOffsetRear;
 extern int ForceBrakelightsOn;
 extern int iRam8047ff04;
+extern bVector3 EnvMapEyeOffset;
+extern bVector3 EnvMapCamOffset;
 extern int counter_31665 asm("counter.31665");
 extern int counter_31669 asm("counter.31669");
 
@@ -101,6 +110,7 @@ namespace {
 void Render(eViewPlatInterface *view, eModel *model, bMatrix4 *local_to_world, eLightContext *light_context, unsigned int flags,
             unsigned int exc_flag);
 void Render(eViewPlatInterface *view, ePoly *poly, TextureInfo *texture_info, bMatrix4 *matrix, int accurate, float z_bias);
+eEnvMap *eGetEnvMap();
 void bExpandBoundingBox(bVector3 *bbox_min, bVector3 *bbox_max, const bVector3 *bbox2_min, const bVector3 *bbox2_max);
 int CarPart_GetAppliedAttributeIParam(CarPart *part, unsigned int namehash, int default_value) asm("GetAppliedAttributeIParam__7CarPartUii");
 int CarPart_HasAppliedAttribute(CarPart *part, unsigned int namehash) asm("HasAppliedAttribute__7CarPartUi");
@@ -722,6 +732,13 @@ struct CarPartMetaLayout {
     unsigned short NameOffset;
     unsigned short AttributeTableOffset;
     unsigned short ModelNameHashTableOffset;
+};
+
+struct CameraAnchorLayout {
+    bVector3 mVelocity;
+    float mVelMag;
+    float mTopSpeed;
+    bVector3 mGeomPos;
 };
 
 void CarRenderInfo::UpdateCarParts() {
@@ -1428,6 +1445,57 @@ void CarRenderInfo::UpdateLightStateTextures() {
         .SetNewNameHash(used_texture_info->ReplaceBrakelightGlassHash[right_brakelight_on]);
     this->MasterReplacementTextureTable[REPLACETEX_OLD_BRAKELIGHT_GLASS_CENTRE]
         .SetNewNameHash(used_texture_info->ReplaceBrakelightGlassHash[center_brakelight_on]);
+}
+
+void UpdateEnvironmentMapCameras() {
+    bVector3 *car_world_position = nullptr;
+    eView *view = eGetView(1, false);
+
+    if (view->GetCameraMover() != nullptr) {
+        CameraAnchor *anchor = view->GetCameraMover()->GetAnchor();
+
+        if (anchor == nullptr) {
+            static bVector3 sCarWorldPosition_31751;
+            static int tmp_45_31752;
+
+            if (tmp_45_31752 == 0) {
+                tmp_45_31752 = 1;
+            }
+
+            IPlayer *first_player = IPlayer::First(PLAYER_LOCAL);
+            if (first_player != nullptr) {
+                ISimable *simable = first_player->GetSimable();
+                IRigidBody *player_rigid_body = simable != nullptr ? simable->GetRigidBody() : nullptr;
+
+                if (player_rigid_body != nullptr) {
+                    eSwizzleWorldVector(player_rigid_body->GetPosition(), sCarWorldPosition_31751);
+                    bSub(&sCarWorldPosition_31751, &sCarWorldPosition_31751, &EnvMapEyeOffset);
+                    car_world_position = &sCarWorldPosition_31751;
+                }
+            }
+        } else {
+            car_world_position = &reinterpret_cast<CameraAnchorLayout *>(anchor)->mGeomPos;
+        }
+    }
+
+    if (car_world_position == nullptr) {
+        FrontEndRenderingCar *fecar = nullptr;
+
+        if (FrontEndRenderingCarList.GetHead() != FrontEndRenderingCarList.EndOfList()) {
+            fecar = FrontEndRenderingCarList.GetHead();
+        }
+        if (fecar == nullptr) {
+            return;
+        }
+
+        car_world_position = &fecar->Position;
+    }
+
+    bVector3 camera_eye_position(*view->GetCamera()->GetPosition());
+    bVector3 envmap_position;
+    bAdd(&camera_eye_position, &camera_eye_position, &EnvMapCamOffset);
+    bAdd(&envmap_position, car_world_position, &EnvMapEyeOffset);
+    eGetEnvMap()->UpdateCameras(&camera_eye_position, &envmap_position);
 }
 
 void RefreshAllFrontEndCarRenderInfos(CarType type) {
