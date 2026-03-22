@@ -41,6 +41,15 @@ class RideInfo {
     void Init(CarType type, CarRenderUsage usage, int has_dash, int can_be_vertex_damaged);
     struct CarPart *GetPart(int car_slot_id) const;
     int GetSpecialLODRangeForCarSlot(int slot_id, CARPART_LOD *special_minimum, CARPART_LOD *special_maximum, bool in_front_end);
+    unsigned int GetSkinNameHash();
+    void SetCompositeNameHash(int skin_number);
+    unsigned int GetCompositeSkinNameHash();
+    void SetCompositeSkinNameHash(unsigned int namehash);
+    unsigned int GetCompositeWheelNameHash();
+    void SetCompositeWheelNameHash(unsigned int namehash);
+    unsigned int GetCompositeSpinnerNameHash();
+    void SetCompositeSpinnerNameHash(unsigned int namehash);
+    int IsUsingCompositeSkin();
 
     RideInfo() {
         Init(CARTYPE_NONE, CarRenderUsage_Player, 0, 0);

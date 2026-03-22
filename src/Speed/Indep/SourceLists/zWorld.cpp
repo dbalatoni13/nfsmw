@@ -11,3 +11,7 @@
 #include "Speed/Indep/Src/World/SmackableRender.cpp"
 
 #include "Speed/Indep/Src/World/CarRender.cpp"
+
+#include "Speed/Indep/Src/World/CarInfo.cpp"
+
+#include "Speed/Indep/Src/World/CarSkin.cpp"
