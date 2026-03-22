@@ -391,38 +391,31 @@ int parsechunks(STREAMHEADERtag *stream) {
     return 0;
 }
 
-int opencallback(int sndstreamhandle, int status, void *userdata) {
-    (void)sndstreamhandle;
-    (void)status;
+static void opencallback(int, int, void *userdata) {
+    STREAMHEADERtag *strm = static_cast<STREAMHEADERtag *>(userdata);
 
-    STREAMHEADERtag *stream = static_cast<STREAMHEADERtag *>(userdata);
-    long long openresult = FILESYS_completeop64(stream->fop);
-
-    stream->fhandle = static_cast<int>(openresult);
-    if (static_cast<int>(openresult) == 0) {
-        stream->state = STREAM_IDLE_STATE;
-        freerequest(stream, stream->firstreq);
-        if (stream->greedystate != 0) {
-            startnextrequest(stream, stream->priorityhigh);
+    strm->fhandle = static_cast<int>(FILESYS_completeop64(strm->fop));
+    if (strm->fhandle == 0) {
+        strm->state = STREAM_IDLE_STATE;
+        freerequest(strm, strm->firstreq);
+        if (strm->greedystate != 0) {
+            startnextrequest(strm, strm->priorityhigh);
         } else {
-            startnextrequest(stream, stream->prioritylow);
+            startnextrequest(strm, strm->prioritylow);
         }
     } else {
-        restartstream(stream, stream->priorityhigh);
+        restartstream(strm, strm->priorityhigh);
     }
 }
 
-int closecallback(int sndstreamhandle, int status, void *userdata) {
-    (void)sndstreamhandle;
-    (void)status;
+static void closecallback(int, int, void *userdata) {
+    STREAMHEADERtag *strm = static_cast<STREAMHEADERtag *>(userdata);
 
-    STREAMHEADERtag *stream = static_cast<STREAMHEADERtag *>(userdata);
-    FILESYS_completeop(stream->fop);
-    FILEOPERATION *fop = FILESYS_open(stream->fname, 1, stream->priorityhigh, stream);
-
-    stream->fop = reinterpret_cast<int>(fop);
-    if (fop) {
-        FILESYS_callbackop(fop, opencallback);
+    FILESYS_completeop(strm->fop);
+    strm->fop = reinterpret_cast<int>(FILESYS_open(strm->fname, 1, strm->priorityhigh, strm));
+    if (strm->fop) {
+        FILESYS_callbackop(reinterpret_cast<FILEOPERATION *>(strm->fop),
+            reinterpret_cast<int (*)(int, int, void *)>(opencallback));
     }
 }
 
@@ -505,7 +498,7 @@ void startnextrequest(STREAMHEADERtag *stream, int priority) {
                     if (fop == nullptr) {
                         return;
                     }
-                    FILESYS_callbackop(fop, opencallback);
+                    FILESYS_callbackop(fop, reinterpret_cast<int (*)(int, int, void *)>(opencallback));
                     return;
                 }
                 FILEOPERATION *fop = FILESYS_close(header->fhandle, priority, stream);
@@ -513,7 +506,7 @@ void startnextrequest(STREAMHEADERtag *stream, int priority) {
                 if (fop == nullptr) {
                     return;
                 }
-                FILESYS_callbackop(fop, closecallback);
+                FILESYS_callbackop(fop, reinterpret_cast<int (*)(int, int, void *)>(closecallback));
                 return;
             }
         }
