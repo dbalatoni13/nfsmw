@@ -2,6 +2,7 @@
 #include "RigidBody.h"
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #include "Speed/Indep/Libs/Support/Utility/UTypes.h"
+#include "Speed/Indep/Libs/Support/Utility/UVector.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ISimpleBody.h"
 #include "Speed/Indep/Src/Main/ScratchPtr.h"
@@ -205,30 +206,21 @@ void SimpleRigidBody::RecalcOrientMat(UMath::Matrix4 &resultMat4) const {
 }
 
 void SimpleRigidBody::DoRBCollisions(const float dT) {
+    IRigidBody *thisBody = this;
+    SimCollisionMap &cmap = mCollisionMap[thisBody->GetIndex()];
     Volatile &data = *mData;
-    Dynamics::Collision::Geometry simpleGeom;
-    const bool useCollisionGeometry = (data.flags & 0x8040) != 0;
-    float radius = data.radius;
+    Dynamics::Collision::Geometry geomSRB;
+    const float thisRadius = UMath::Max(thisBody->GetRadius(), 0.25f);
+    UVector3 dimSRB(thisRadius, thisRadius, thisRadius);
 
-    if (radius < 0.25f) {
-        radius = 0.25f;
-    }
-
-    if (useCollisionGeometry) {
-        UMath::Vector3 delta;
-        UMath::Vector3 dim;
-        dim.x = radius;
-        dim.y = radius;
-        dim.z = radius;
-        UMath::Scale(data.linearVel, dT, delta);
-
-        if (data.flags & 0x8000) {
-            simpleGeom.Set(UMath::Matrix4::kIdentity, data.position, dim, Dynamics::Collision::Geometry::SPHERE, delta);
-        } else {
-            UMath::Matrix4 orientation;
-            RecalcOrientMat(orientation);
-            simpleGeom.Set(orientation, data.position, dim, Dynamics::Collision::Geometry::BOX, delta);
-        }
+    if (data.flags & 0x8000) {
+        geomSRB.Set(UMath::Matrix4::kIdentity, thisBody->GetPosition(), dimSRB, Dynamics::Collision::Geometry::SPHERE,
+                    UVector3(thisBody->GetLinearVelocity()) * dT);
+    } else if (data.flags & 0x40) {
+        UMath::Matrix4 orientSimple;
+        UMath::QuaternionToMatrix4(data.orientation, orientSimple);
+        geomSRB.Set(orientSimple, thisBody->GetPosition(), dimSRB, Dynamics::Collision::Geometry::BOX,
+                    UVector3(thisBody->GetLinearVelocity()) * dT);
     }
 
     for (RigidBody *body = TheRigidBodies.GetHead(); body != TheRigidBodies.EndOfList(); body = body->GetNext()) {
@@ -236,36 +228,29 @@ void SimpleRigidBody::DoRBCollisions(const float dT) {
             continue;
         }
 
-        float padding = 0.0f;
-        if (useCollisionGeometry) {
-            UMath::Vector3 relativeVelocity;
-            UMath::Sub(data.linearVel, body->GetLinearVelocity(), relativeVelocity);
-            padding = UMath::Length(relativeVelocity) * dT;
+        const bool useObb = (data.flags & 0x8040) != 0;
+        float vdist = 0.0f;
+        if (useObb) {
+            vdist = UMath::Distance(thisBody->GetLinearVelocity(), body->GetLinearVelocity()) * dT;
         }
 
-        UMath::Vector3 deltaPosition;
-        UMath::Sub(data.position, body->GetPosition(), deltaPosition);
-
-        const float collisionRadius = radius + body->GetRadius() + padding;
-        if (UMath::LengthSquare(deltaPosition) >= collisionRadius * collisionRadius) {
+        const float distSquared = UMath::DistanceSquare(thisBody->GetPosition(), body->GetPosition());
+        const float testRadius = thisRadius + body->GetRadius() + vdist;
+        if (distSquared >= testRadius * testRadius) {
             continue;
         }
 
-        if (useCollisionGeometry) {
-            UMath::Matrix4 bodyMatrix;
+        if (useObb) {
             UMath::Vector3 bodyDimension;
-            UMath::Vector3 bodyDelta;
-            body->GetMatrix4(bodyMatrix);
             body->GetDimension(bodyDimension);
-            UMath::Scale(body->GetLinearVelocity(), dT, bodyDelta);
-
-            Dynamics::Collision::Geometry bodyGeom(bodyMatrix, body->GetPosition(), bodyDimension, Dynamics::Collision::Geometry::BOX, bodyDelta);
-            if (!Dynamics::Collision::Geometry::FindIntersection(&bodyGeom, &simpleGeom, &simpleGeom)) {
+            Dynamics::Collision::Geometry geomRB(body->GetMatrix4(), body->GetPosition(), bodyDimension, Dynamics::Collision::Geometry::BOX,
+                                                UVector3(body->GetLinearVelocity()) * dT);
+            if (!Dynamics::Collision::Geometry::FindIntersection(&geomRB, &geomSRB, &geomSRB)) {
                 continue;
             }
         }
 
-        SetCollisionMapBit(mCollisionMap[data.index], body->GetIndex());
+        SetCollisionMapBit(cmap, body->GetIndex());
     }
 }
 
