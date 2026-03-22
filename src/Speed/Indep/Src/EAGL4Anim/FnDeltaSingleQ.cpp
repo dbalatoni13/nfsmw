@@ -154,10 +154,10 @@ static inline void DecodeSingleQDelta(const DeltaSingleQMinRange &minRange, cons
 
 static inline void ComposeSingleQQuat(unsigned short index, const UMath::Vector4 &pre, const UMath::Vector4 &mid,
                                const UMath::Vector4 &post, UMath::Vector4 &result) {
-    if (index == 1) {
-        SingleQQuatMultXxYxZ(pre, mid, post, result);
-    } else if (index == 0) {
+    if (index == 0) {
         SingleQQuatMultXxQ(mid, post, result);
+    } else if (index == 1) {
+        SingleQQuatMultXxYxZ(pre, mid, post, result);
     } else {
         SingleQQuatMultQxZ(pre, mid, result);
     }
