@@ -1124,13 +1124,12 @@ void GManager::TrackValue(const char *valueName, float value) {
 }
 
 void GManager::IncValue(const char *valueName) {
-    float value;
-
-    value = GetValue(valueName);
-    if (value == -1.0f) {
+    unsigned int key = Attrib::StringToKey(valueName);
+    MilestoneInfoMap::iterator iterMile = mMilestoneTypeInfo.find(key);
+    if (iterMile->second.mLastKnownValue == -1.0f) {
         TrackValue(valueName, 1.0f);
     } else {
-        TrackValue(valueName, value + 1.0f);
+        TrackValue(valueName, iterMile->second.mLastKnownValue + 1.0f);
     }
 }
 
