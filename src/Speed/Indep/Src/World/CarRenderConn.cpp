@@ -685,6 +685,59 @@ void CarRenderConn::UpdateContrails(const RenderConn::Pkt_Car_Service &data, flo
     this->mDoContrailEffect = false;
 }
 
+void CarRenderConn::UpdateEffects(const RenderConn::Pkt_Car_Service &data, float dT) {
+    if (!this->TestVisibility(renderModifier * 80.0f)) {
+        for (VehicleRenderConn::Effect *effect = this->mPipeEffects.GetHead(); effect != this->mPipeEffects.EndOfList(); effect = effect->GetNext()) {
+            StopEffect(effect);
+        }
+
+        for (VehicleRenderConn::Effect *effect = this->mEngineEffects.GetHead(); effect != this->mEngineEffects.EndOfList(); effect = effect->GetNext()) {
+            StopEffect(effect);
+        }
+        return;
+    }
+
+    unsigned int damage_key = this->GetAttributes().DamageEffect(0).GetCollectionKey();
+    unsigned int death_key = this->GetAttributes().DeathEffect(0).GetCollectionKey();
+    unsigned int engine_key = this->GetAttributes().EngineBlownEffect(0).GetCollectionKey();
+    unsigned int missshift_key = this->GetAttributes().MissShiftEffect(0).GetCollectionKey();
+    unsigned int nos_key = this->GetAttributes().NOSEffect(0).GetCollectionKey();
+
+    for (VehicleRenderConn::Effect *pipe_effect = this->mPipeEffects.GetHead(); pipe_effect != this->mPipeEffects.EndOfList();
+         pipe_effect = pipe_effect->GetNext()) {
+        if (!data.mNos) {
+            if (!this->GetFlag(CF_MISSSHIFT)) {
+                if (this->GetFlag(CF_BLOWOFF) && this->mShifting != 0.0f) {
+                    pipe_effect->Update(&this->mRenderMatrix, nos_key, dT, 1.0f, this->GetVelocity());
+                } else {
+                    pipe_effect->Stop();
+                }
+            } else {
+                pipe_effect->Fire(&this->mRenderMatrix, missshift_key, 1.0f, this->GetVelocity());
+            }
+        } else {
+            pipe_effect->Update(&this->mRenderMatrix, nos_key, dT, 1.0f, this->GetVelocity());
+        }
+    }
+
+    for (VehicleRenderConn::Effect *engine_effect = this->mEngineEffects.GetHead(); engine_effect != this->mEngineEffects.EndOfList();
+         engine_effect = engine_effect->GetNext()) {
+        if (death_key == 0 || 0.0f < data.mHealth) {
+            if (damage_key != 0 && data.mHealth <= 1.0f) {
+                engine_effect->Update(&this->mRenderMatrix, damage_key, dT, 1.0f, this->GetVelocity());
+            } else if (data.mEngineBlown) {
+                engine_effect->Update(&this->mRenderMatrix, engine_key, dT, 1.0f, this->GetVelocity());
+            } else {
+                engine_effect->Stop();
+            }
+        } else {
+            engine_effect->Update(&this->mRenderMatrix, death_key, dT, 1.0f, this->GetVelocity());
+        }
+    }
+
+    this->SetFlag(CF_MISSSHIFT, false);
+}
+
 void CarRenderConn::Hide(bool b) {
     unsigned int flags = this->mFlags;
 
