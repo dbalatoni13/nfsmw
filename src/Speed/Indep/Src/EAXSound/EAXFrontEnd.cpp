@@ -37,7 +37,15 @@ EAXFrontEnd::EAXFrontEnd() {
 }
 
 EAXFrontEnd::~EAXFrontEnd() {
-    DestroyAllDriveOnSnds();
+    for (int k = 0; k < 4; k++) {
+        delete m_hydraulicsControls[k];
+        m_hydraulicsBounce[k] = nullptr;
+        delete m_hydraulicsControls[k];
+        m_hydraulicsControls[k] = nullptr;
+    }
+
+    delete m_pPlayRapSheet;
+    m_pPlayRapSheet = nullptr;
 }
 
 void EAXFrontEnd::AttachSFXOBJ(SFX_Base *psfx, eSFXOBJ_MAIN_TYPES sfxtype) {

@@ -20,6 +20,20 @@ struct FX_RadarStruct {
     int stop;
 };
 
+struct FX_Hydraulic {
+    Csis::Class *mpClass;
+
+    static void operator delete(void *ptr) {
+        Csis::System::Free(ptr);
+    }
+
+    ~FX_Hydraulic() {
+        if (mpClass) {
+            mpClass->Release();
+        }
+    }
+};
+
 struct FX_Radar {
     Csis::Class *mpClass;
     FX_RadarStruct mData;
