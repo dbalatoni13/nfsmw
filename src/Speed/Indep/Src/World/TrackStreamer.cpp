@@ -2494,9 +2494,12 @@ void TrackStreamer::RefreshLoading() {
 }
 
 void TrackStreamer::HandleZoneSwitching() {
+    ProfileNode profile_node("TODO", 0);
+    short current_zones[2];
+    bool current_zones_different;
     if (!ZoneSwitchingDisabled && pMemoryPoolMem) {
-        short current_zones[4];
-        if (DetermineCurrentZones(current_zones)) {
+        current_zones_different = DetermineCurrentZones(current_zones);
+        if (current_zones_different) {
             SwitchZones(current_zones);
         }
     }
