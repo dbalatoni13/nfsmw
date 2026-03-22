@@ -136,17 +136,22 @@ bool ResetCar::ShouldReset() const {
 }
 
 void ResetCar::TrackState(float dT) {
-    bool upside_down = false;
+    bool flippedover = false;
 
     if (mSuspension) {
-        if (mSuspension->GetNumWheelsOnGround() != mSuspension->GetNumWheels() && mCollisionBody && mCollisionBody->HasHadCollision()) {
-            if (UMath::Dot(mCollisionBody->GetUpVector(), UMath::Vector4To3(mCollisionBody->GetGroundNormal())) < 0.5f) {
-                upside_down = mCollisionBody->GetUpVector().y < 0.5f;
+        if (mSuspension->GetNumWheelsOnGround() != mSuspension->GetNumWheels() && mCollisionBody && mCollisionBody->IsModeling()) {
+            {
+                const UMath::Vector3 &vup = mCollisionBody->GetUpVector();
+                float ground_dot = UMath::Dot(vup, UMath::Vector4To3(mCollisionBody->GetGroundNormal()));
+
+                if (ground_dot < 0.5f) {
+                    flippedover = vup.y < 0.5f;
+                }
             }
         }
     }
 
-    if (upside_down) {
+    if (flippedover) {
         mFlippedOver += dT;
     } else {
         mFlippedOver = 0.0f;
@@ -193,21 +198,25 @@ void ResetCar::Check(float dT) {
 }
 
 void ResetCar::Reset() {
+    if (mVehicleBody) {
+        mVehicleBody->SetInvulnerability(INVULNERABLE_NONE, 0.0f);
+    }
     mCookies.Clear();
+    mFlippedOver = 0.0f;
 }
 
 bool ResetCar::HasResetPosition() {
     return mCookies.Count() != 0;
 }
 
-void ResetCar::SetResetPosition(const UMath::Vector3 &position, const UMath::Vector3 &direction) {
+inline void ResetCar::SetResetPosition(const UMath::Vector3 &position, const UMath::Vector3 &direction) {
     ResetCookie cookie;
 
     mCookies.Clear();
     cookie.position = position;
-    cookie.flags = 0;
     cookie.direction = direction;
     cookie.time = Sim::GetTime();
+    cookie.flags = 0;
     mCookies.AddNew(cookie);
 }
 
