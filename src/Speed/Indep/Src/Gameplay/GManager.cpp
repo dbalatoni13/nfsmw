@@ -2568,10 +2568,7 @@ void GManager::UpdatePursuit() {
         challengeRace = true;
     }
 
-    mHidingSpotIconsShown = false;
-    if ((roaming || challengeRace) && inPursuit && inCooldown) {
-        mHidingSpotIconsShown = true;
-    }
+    mHidingSpotIconsShown = (roaming || challengeRace) && inPursuit && inCooldown;
 
     mPursuitBreakerIconsShown = false;
     if (!roaming && !challengeRace) {
