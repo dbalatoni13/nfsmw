@@ -529,108 +529,86 @@ void startnextrequest(STREAMHEADERtag *stream, int priority) {
 
 void restartstream(STREAMHEADERtag *stream, int priority) {
     STREAMHEADER *strm = reinterpret_cast<STREAMHEADER *>(stream);
-    char *dataStart = strm->datastart;
-    char *dataTail = strm->datatail;
+    REQUESTSTRUCT *req;
+    STREAMCHUNKHDR *chunk;
+    char *reqend;
+    int lockstate;
+    int largestread;
+    int tailsize;
 
-    while (dataStart != dataTail) {
-        unsigned char *head = reinterpret_cast<unsigned char *>(dataStart);
-        int marker = (head[3] << 24) | (head[2] << 16) | (head[1] << 8) | head[0];
+    while (strm->datastart != strm->datatail) {
+        chunk = reinterpret_cast<STREAMCHUNKHDR *>(strm->datastart);
+        int marker = ReadChunkWord(&chunk->type);
         if (marker == -1) {
-            dataStart = strm->bufferstart;
+            strm->datastart = strm->bufferstart;
         } else {
             if (marker != -2) {
                 break;
             }
-            int skip = (head[7] << 24) | (head[6] << 16) | (head[5] << 8) | head[4];
-            dataStart += skip;
+            strm->datastart = reinterpret_cast<char *>(chunk) + ReadChunkWord(&chunk->size);
         }
-        strm->datastart = dataStart;
     }
 
-    RealSystem::Mutex *mutex = reinterpret_cast<RealSystem::Mutex *>(&strm->mutex);
-    mutex->Lock();
+    MUTEX_lock(&strm->mutex);
     while (true) {
-        REQUESTSTRUCT *req = strm->firstreq;
-        REQUESTSTRUCT *next = req != nullptr ? req->next : nullptr;
-        if (next == nullptr) {
+        req = strm->firstreq;
+        if (req->next == nullptr || req->next->state == STREAMREQUEST_PENDING ||
+            inbetween(strm->datastart, strm->dataend, req->next->datastart - 1)) {
             break;
         }
-
-        int nextState = next->state;
-        if (nextState != 1) {
-            char *nextDataStart = next->datastart;
-            char *dataEnd = strm->dataend;
-            if (!inbetween(dataStart, dataEnd, nextDataStart - 1)) {
-                freerequest(stream, reinterpret_cast<REQUESTSTRUCTtag *>(req));
-                continue;
-            }
-        }
-        break;
+        freerequest(stream, reinterpret_cast<REQUESTSTRUCTtag *>(req));
     }
-    mutex->Unlock();
+    MUTEX_unlock(&strm->mutex);
 
-    dataStart = strm->datastart;
-    char *dataEnd = strm->dataend;
-    unsigned char *bytesAvailable;
-    int readBlockSize = strm->readblocksize;
-    if (dataEnd < dataStart) {
-        bytesAvailable = reinterpret_cast<unsigned char *>(dataStart - dataEnd - 0x21);
+    if (strm->dataend < strm->datastart) {
+        largestread = strm->datastart - strm->dataend - 0x21;
     } else {
-        char *bufferEnd = strm->bufferend;
-        bytesAvailable = reinterpret_cast<unsigned char *>(bufferEnd - dataEnd - 0x20);
-        if (reinterpret_cast<int>(bytesAvailable) < readBlockSize) {
-            char *dataTailNow = strm->datatail;
-            int count = dataEnd - dataTailNow;
-            REQUESTSTRUCT *curReq = strm->curreq;
-            int reqType = curReq->type;
-            char *bufferStart = strm->bufferstart;
-
-            if (reqType == 1) {
-                if ((dataStart - bufferStart) < (count + 1)) {
+        largestread = strm->bufferend - strm->dataend - 0x20;
+        if (largestread < strm->readblocksize) {
+            unsigned int count = strm->dataend - strm->datatail;
+            if (strm->curreq->type == 1) {
+                if (strm->datastart - strm->bufferstart < static_cast<int>(count + 1)) {
                     goto stream_stop;
                 }
-            } else if ((dataStart - bufferStart - 0x20) < (count + 1)) {
+            } else if (strm->datastart - strm->bufferstart - 0x20 < static_cast<int>(count + 1)) {
                 goto stream_stop;
             }
 
-            char *actualBufferStart = strm->actualbufferstart;
-            if ((count & 0x1F) == 0 || reqType == 1) {
-                bufferStart = actualBufferStart;
+            if ((count & 0x1F) == 0 || strm->curreq->type == 1) {
+                reqend = strm->actualbufferstart;
             } else {
-                bufferStart = actualBufferStart - ((count % 0x20) - 0x20);
+                reqend = strm->actualbufferstart - (static_cast<int>(count) % 0x20 - 0x20);
             }
 
-            strm->bufferstart = bufferStart;
-            MEM_copy(bufferStart, dataTailNow, count);
+            strm->bufferstart = reqend;
+            MEM_copy(strm->bufferstart, strm->datatail, count);
 
-            dataTailNow[7] = '\0';
-            dataTailNow[3] = static_cast<char>(-1);
-            dataTailNow[4] = '\b';
-            dataTailNow[0] = static_cast<char>(-1);
-            dataTailNow[1] = static_cast<char>(-1);
-            dataTailNow[2] = static_cast<char>(-1);
-            dataTailNow[5] = '\0';
-            dataTailNow[6] = '\0';
+            reqend = strm->datatail;
+            reqend[7] = '\0';
+            reqend[3] = static_cast<char>(-1);
+            reqend[4] = '\b';
+            reqend[0] = static_cast<char>(-1);
+            reqend[1] = static_cast<char>(-1);
+            reqend[2] = static_cast<char>(-1);
+            reqend[5] = '\0';
+            reqend[6] = '\0';
 
-            char *newDataEnd = bufferStart + count;
-            strm->datatail = bufferStart;
-            strm->dataend = newDataEnd;
+            reqend = strm->bufferstart + count;
+            strm->datatail = strm->bufferstart;
+            strm->dataend = reqend;
 
-            unsigned char *check = reinterpret_cast<unsigned char *>(dataStart);
-            int marker = (check[3] << 24) | (check[2] << 16) | (check[1] << 8) | check[0];
-            if (marker == -1) {
-                strm->datastart = bufferStart;
-                char *bufferEnd2 = strm->bufferend;
-                bytesAvailable = reinterpret_cast<unsigned char *>(bufferEnd2 - newDataEnd - 0x20);
+            chunk = reinterpret_cast<STREAMCHUNKHDR *>(strm->datastart);
+            if (ReadChunkWord(&chunk->type) == -1) {
+                strm->datastart = strm->bufferstart;
+                largestread = strm->bufferend - reqend - 0x20;
             } else {
-                bytesAvailable = reinterpret_cast<unsigned char *>(dataStart - newDataEnd - 1);
+                largestread = reinterpret_cast<char *>(chunk) - reqend - 1;
             }
         }
     }
 
-    if (strm->greedystate == 0 &&
-        strm->prioritylow < priority &&
-        IsWorldDataStreaming(reinterpret_cast<unsigned int>(strm->actualbufferstart))) {
+    if (strm->greedystate == 0 && strm->priorityhigh < priority &&
+        IsWorldDataStreaming(reinterpret_cast<unsigned int>(strm->tap))) {
         bGetTickerDifference(utickreadcallback);
         gbWorldDataBlocksAudioRead = true;
         strm->state = 2;
@@ -645,31 +623,25 @@ void restartstream(STREAMHEADERtag *stream, int priority) {
     }
     gbWorldDataBlocksAudioRead = false;
 
-    if (reinterpret_cast<int>(bytesAvailable) >= readBlockSize) {
-        REQUESTSTRUCT *curReq = strm->curreq;
-        int reqType = curReq->type;
-        if (reqType == 1) {
-            int reqParm = curReq->parm;
-            int foffset = strm->foffset;
-            if (reqParm < reinterpret_cast<int>(bytesAvailable) + foffset) {
-                strm->readsize = reqParm - foffset;
+    if (strm->readblocksize <= largestread) {
+        req = strm->curreq;
+        if (req->type == 1) {
+            if (req->parm < largestread + strm->foffset) {
+                strm->readsize = req->parm - strm->foffset;
             } else {
-                strm->readsize = reinterpret_cast<int>(bytesAvailable);
+                strm->readsize = largestread;
             }
 
-            int readSize = strm->readsize;
-            char *dataEndNow = strm->dataend;
-            char *address = curReq->address;
-            MEM_copy(dataEndNow, address, readSize);
-            curReq->address = address + readSize;
+            MEM_copy(strm->dataend, req->address, strm->readsize);
+            req->address = req->address + strm->readsize;
             readcallback(0, 0, stream);
             return;
         }
 
-        if (readBlockSize < reinterpret_cast<int>(bytesAvailable)) {
-            strm->readsize = (reinterpret_cast<int>(bytesAvailable) / readBlockSize) * readBlockSize;
+        if (strm->readblocksize < largestread) {
+            strm->readsize = (largestread / strm->readblocksize) * strm->readblocksize;
         } else {
-            strm->readsize = readBlockSize;
+            strm->readsize = strm->readblocksize;
         }
 
         bReadCallbackToggle = false;
