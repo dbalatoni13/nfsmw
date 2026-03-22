@@ -135,11 +135,13 @@ SimpleChopper::SimpleChopper(const BehaviorParams &bp, const EngineParams &ep)
     mIrigidBody = nullptr;
     mIrbComplex = nullptr;
     mIdamage = nullptr;
+    *reinterpret_cast<uint32 *>(reinterpret_cast<char *>(this) + 0x48) = 0;
 
     GetOwner()->QueryInterface(&mIrigidBody);
     GetOwner()->QueryInterface(&mIrbComplex);
     GetOwner()->QueryInterface(&mIdamage);
 
+    *reinterpret_cast<uint32 *>(&mDesiredFacingVector.y) = 0;
     *reinterpret_cast<uint32 *>(&mDesiredFacingVector.z) = 0;
     UMath::Clear(mLastBodyOffset);
     UMath::Clear(mLastAngVelocity);
@@ -147,7 +149,6 @@ SimpleChopper::SimpleChopper(const BehaviorParams &bp, const EngineParams &ep)
     UMath::Clear(mDesiredVelocity);
     UMath::Clear(mPreviousVelocity);
     *reinterpret_cast<uint32 *>(&mDesiredFacingVector.x) = 0;
-    *reinterpret_cast<uint32 *>(&mDesiredFacingVector.y) = 0;
 }
 
 void SimpleChopper::Reset() {}
