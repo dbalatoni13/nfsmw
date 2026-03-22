@@ -446,6 +446,82 @@ int CarLoader::UnloadSkin(LoadedSkin *loaded_skin) {
     return 1;
 }
 
+int CarLoader::UnallocateRideInfo(LoadedRideInfo *loaded_ride_info) {
+    loaded_ride_info->NumInstances--;
+
+    if (loaded_ride_info->NumInstances != 0) {
+        return 0;
+    }
+
+    this->NumAllocatedRideInfos--;
+    return 1;
+}
+
+int CarLoader::UnloadRideInfo(LoadedRideInfo *loaded_ride_info, int leave_if_in_mempool) {
+    if (loaded_ride_info->NumInstances < 1) {
+        LoadedSkin *loaded_skin = loaded_ride_info->pLoadedSkin;
+
+        if (loaded_skin != 0 && loaded_skin->LoadStatePerm == CARLOADSTATE_LOADED &&
+            loaded_skin->LoadStateTemp == CARLOADSTATE_LOADED && loaded_skin->DoneComposite != 0) {
+            this->UnloadSkinTemporaries(loaded_skin, 0);
+        }
+
+        if (leave_if_in_mempool == 0 || !this->IsLoaded(loaded_ride_info)) {
+            this->UnloadSkin(loaded_ride_info->pLoadedSkin);
+            this->UnloadWheel(loaded_ride_info->pLoadedWheel);
+            this->UnloadCar(loaded_ride_info->pLoadedCar);
+            loaded_ride_info->Remove();
+            bFree(LoadedRideInfoSlotPool, loaded_ride_info);
+            this->NumLoadedRideInfos--;
+            this->MayNeedDefragmentation++;
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
+void CarLoader::Unload(int handle) {
+    LoadedRideInfo *loaded_ride_info = this->FindLoadedRideInfo(handle);
+
+    if (loaded_ride_info != 0 && loaded_ride_info->NumInstances != 0) {
+        if (loaded_ride_info->HighPriority != 0) {
+            loaded_ride_info->Remove();
+            this->LoadedRideInfoList.AddTail(loaded_ride_info);
+        }
+
+        this->UnallocateRideInfo(loaded_ride_info);
+
+        if (loaded_ride_info->NumInstances == 0 && loaded_ride_info->LoadState == CARLOADSTATE_QUEUED) {
+            this->UnloadRideInfo(loaded_ride_info, 0);
+        }
+    }
+}
+
+int CarLoader::IsLoaded(int handle) {
+    LoadedRideInfo *loaded_ride_info = this->FindLoadedRideInfo(handle);
+
+    if (loaded_ride_info == 0 || loaded_ride_info->NumInstances == 0) {
+        return 0;
+    }
+
+    return this->IsLoaded(loaded_ride_info);
+}
+
+int CarLoader::IsLoaded(LoadedRideInfo *loaded_ride_info) {
+    if (loaded_ride_info->pLoadedCar != 0 && loaded_ride_info->pLoadedCar->LoadState == CARLOADSTATE_LOADED &&
+        loaded_ride_info->pLoadedWheel != 0 && loaded_ride_info->pLoadedWheel->LoadState == CARLOADSTATE_LOADED) {
+        LoadedSkin *loaded_skin = loaded_ride_info->pLoadedSkin;
+
+        if (loaded_skin != 0 && loaded_skin->LoadStatePerm == CARLOADSTATE_LOADED &&
+            loaded_skin->LoadStateTemp == CARLOADSTATE_LOADED && loaded_skin->DoneComposite != 0) {
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
 LoadedWheel::LoadedWheel(RideInfo *ride_info, bool in_fe) {
     RideInfoLayout *ride_layout = reinterpret_cast<RideInfoLayout *>(ride_info);
 

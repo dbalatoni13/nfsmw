@@ -161,6 +161,11 @@ class CarLoader {
     int UnloadSkinPerms(LoadedSkin *loaded_skin);
     int UnloadSkinTemporaries(LoadedSkin *loaded_skin, int force_unload);
     int UnloadSkin(LoadedSkin *loaded_skin);
+    int UnallocateRideInfo(LoadedRideInfo *loaded_ride_info);
+    int UnloadRideInfo(LoadedRideInfo *loaded_ride_info, int leave_if_in_mempool);
+    void Unload(int handle);
+    int IsLoaded(int handle);
+    int IsLoaded(LoadedRideInfo *loaded_ride_info);
     LoadedSolidPack *FindLoadedSolidPack(const char *filename);
     LoadedTexturePack *FindLoadedTexturePack(const char *filename);
     LoadedSkinLayer *FindLoadedSkinLayer(unsigned int name_hash);
