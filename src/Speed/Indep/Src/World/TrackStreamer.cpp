@@ -1032,6 +1032,11 @@ void TrackStreamer::InitMemoryPool(int size) {
     pMemoryPoolMem = bMalloc(size, 0x2000);
 #endif
     pMemoryPool = new TSMemoryPool(reinterpret_cast<int>(pMemoryPoolMem), MemoryPoolSize, "Track Streaming", 7);
+
+    if (0) {
+        bMalloc(size, "Track Streaming", 0, 0x2000);
+        new ("Track Streaming", 0) TSMemoryPool(reinterpret_cast<int>(pMemoryPoolMem), MemoryPoolSize, "Track Streaming", 7);
+    }
 }
 
 int TrackStreamer::GetMemoryPoolSize() {
