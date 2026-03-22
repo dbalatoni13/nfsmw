@@ -95,16 +95,6 @@ static inline bool IsLibrarySection_TrackStreamer(int section_number) {
     return section_letter == 'X' || section_letter == 'U';
 }
 
-static inline bool IsTextureSection(int section_number) {
-    char section_letter = GetScenerySectionLetter(section_number);
-    return section_letter == 'Y' || section_letter == 'W';
-}
-
-static inline bool IsLibrarySection(int section_number) {
-    char section_letter = GetScenerySectionLetter(section_number);
-    return section_letter == 'X' || section_letter == 'U';
-}
-
 static inline short GetScenerySectionNumber_TrackStreamer(char section_letter, int subsection_number) {
     return static_cast<short>((section_letter - 'A' + 1) * 100 + subsection_number);
 }
@@ -599,41 +589,43 @@ bool TrackStreamer::JettisonLeastImportantSection() {
 }
 
 int TrackStreamer::AllocateSectionMemory(int *ptotal_needing_allocation) {
-    int total_out_of_memory = 0;
+    ProfileNode profile_node("TODO", 0);
+    int out_of_memory_size = 0;
     int total_needing_allocation = 0;
-    int total_sections_allocated = 0;
+    int num_sections_allocated = 0;
 
     if (LoadingPhase == ALLOCATING_REGULAR_SECTIONS && pDiscBundleSections < pLastDiscBundleSection) {
         for (DiscBundleSection *disc_bundle = pDiscBundleSections; disc_bundle < pLastDiscBundleSection;
-             disc_bundle = reinterpret_cast<DiscBundleSection *>(
-                 reinterpret_cast<char *>(disc_bundle) + disc_bundle->NumMembers * sizeof(DiscBundleSectionMember) + 0x14)) {
-            int member_index = 0;
+             disc_bundle = disc_bundle->GetMemoryImageNext()) {
+            int i = 0;
             if (disc_bundle->NumMembers > 0) {
                 do {
-                    TrackStreamingSection *section = disc_bundle->Members[member_index].pSection;
+                    DiscBundleSectionMember *member = &disc_bundle->Members[i];
+                    TrackStreamingSection *section = member->pSection;
                     if (!section->CurrentlyVisible || section->Status != TrackStreamingSection::UNLOADED) {
                         break;
                     }
-                    member_index += 1;
-                } while (member_index < disc_bundle->NumMembers);
+                    i += 1;
+                } while (i < disc_bundle->NumMembers);
             }
 
-            if (member_index == disc_bundle->NumMembers) {
+            if (i == disc_bundle->NumMembers) {
                 int largest_free_block = pMemoryPool->GetLargestFreeBlock();
                 if (disc_bundle->FileSize <= largest_free_block) {
-                    void *bundle_memory = pMemoryPool->Malloc(disc_bundle->FileSize, disc_bundle->SectionName, true, false, 0);
-                    pMemoryPool->Free(bundle_memory);
+                    unsigned char *pmemory =
+                        static_cast<unsigned char *>(pMemoryPool->Malloc(disc_bundle->FileSize, disc_bundle->SectionName, true, false, 0));
+                    pMemoryPool->Free(pmemory);
 
-                    for (int i = 0; i < disc_bundle->NumMembers; i++) {
+                    for (i = 0; i < disc_bundle->NumMembers; i++) {
                         DiscBundleSectionMember *member = &disc_bundle->Members[i];
                         TrackStreamingSection *section = member->pSection;
-                        char *section_memory = static_cast<char *>(bundle_memory) + member->FileOffset * 0x80;
+                        void *realloc_mem = pmemory + member->FileOffset * 0x80;
 
-                        total_sections_allocated += 1;
+                        num_sections_allocated += 1;
                         section->pDiscBundle = disc_bundle;
                         section->Status = TrackStreamingSection::ALLOCATED;
-                        section->pMemory = section_memory;
-                        pMemoryPool->Malloc(section->Size, disc_bundle->SectionName, false, false, reinterpret_cast<int>(section_memory));
+                        section->pMemory = realloc_mem;
+                        pMemoryPool->Malloc(section->Size, disc_bundle->SectionName, false, false, reinterpret_cast<int>(realloc_mem));
                     }
 
                     total_needing_allocation += disc_bundle->FileSize;
@@ -650,22 +642,15 @@ int TrackStreamer::AllocateSectionMemory(int *ptotal_needing_allocation) {
 
         bool should_allocate = true;
         int section_number = section->SectionNumber;
-        if (section_number != 0x9c4 && section_number != 0x960 && section_number != 0x8fc && section_number != 0x834 &&
-            section_number != 0xa28) {
+        if (section_number != GetScenerySectionNumber('Y', 0) && section_number != GetScenerySectionNumber('X', 0) &&
+            section_number != GetScenerySectionNumber('W', 0) && section_number != GetScenerySectionNumber('U', 0) &&
+            section_number != GetScenerySectionNumber('Z', 0)) {
             if (LoadingPhase == ALLOCATING_TEXTURE_SECTIONS) {
-                should_allocate = false;
-                char section_letter = GetScenerySectionLetter_TrackStreamer(section_number);
-                if (section_letter == 'Y' || section_letter == 'W') {
-                    should_allocate = true;
-                }
+                should_allocate = IsTextureSection(section_number);
             }
 
             if (LoadingPhase == ALLOCATING_GEOMETRY_SECTIONS) {
-                should_allocate = false;
-                char section_letter = GetScenerySectionLetter_TrackStreamer(section_number);
-                if (section_letter == 'X' || section_letter == 'U') {
-                    should_allocate = true;
-                }
+                should_allocate = IsLibrarySection(section_number);
             }
         }
 
@@ -675,22 +660,22 @@ int TrackStreamer::AllocateSectionMemory(int *ptotal_needing_allocation) {
 
         total_needing_allocation += section->Size;
         if (bLargestMalloc(7) < section->Size) {
-            total_out_of_memory += section->Size;
+            out_of_memory_size += section->Size;
             NumSectionsOutOfMemory += 1;
         } else {
-            total_sections_allocated += 1;
+            num_sections_allocated += 1;
             section->pMemory = AllocateMemory(section, 0x80);
             section->Status = TrackStreamingSection::ALLOCATED;
-            if (total_sections_allocated > 99999) {
+            if (num_sections_allocated > 99999) {
                 CurrentZoneAllocatedButIncomplete = true;
-                return total_out_of_memory;
+                return out_of_memory_size;
             }
         }
     }
 
     CurrentZoneAllocatedButIncomplete = false;
     *ptotal_needing_allocation = total_needing_allocation;
-    return total_out_of_memory;
+    return out_of_memory_size;
 }
 
 TrackStreamingSection *TrackStreamer::FindSection(int section_number) {

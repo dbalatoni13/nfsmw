@@ -25,6 +25,20 @@ static inline int GetScenerySubsectionNumber(int section_number) {
     return section_number % 100;
 }
 
+static inline short GetScenerySectionNumber(char section_letter, int subsection_number) {
+    return static_cast<short>((section_letter - 'A' + 1) * 100 + subsection_number);
+}
+
+static inline bool IsTextureSection(int section_number) {
+    char section_letter = GetScenerySectionLetter(section_number);
+    return section_letter == 'Y' || section_letter == 'W';
+}
+
+static inline bool IsLibrarySection(int section_number) {
+    char section_letter = GetScenerySectionLetter(section_number);
+    return section_letter == 'X' || section_letter == 'U';
+}
+
 static inline bool IsScenerySectionDrivable(int section_number) {
     if (!IsRegularScenerySection(section_number)) {
         return false;

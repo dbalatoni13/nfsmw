@@ -26,10 +26,6 @@ struct SectionRemapper {
     short SectionNumber2P;
 };
 
-static inline short GetScenerySectionNumber(char section_letter, int subsection_number) {
-    return static_cast<short>((section_letter - 'A' + 1) * 100 + subsection_number);
-}
-
 VisibleGroupInfo VisibleGroupInfoTable[5] = {
     {"BARRIER_", 1},
     {"BARRIERS_", 1},

@@ -24,6 +24,14 @@ struct DiscBundleSectionMember {
 };
 
 struct DiscBundleSection {
+    int GetMemoryImageSize() {
+        return NumMembers * sizeof(DiscBundleSectionMember) + 0x14;
+    }
+
+    DiscBundleSection *GetMemoryImageNext() {
+        return reinterpret_cast<DiscBundleSection *>(reinterpret_cast<char *>(this) + GetMemoryImageSize());
+    }
+
     // total size: 0x114
     int FileOffset;                      // offset 0x0, size 0x4
     int FileSize;                        // offset 0x4, size 0x4
