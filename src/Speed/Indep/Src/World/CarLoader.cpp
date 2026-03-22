@@ -522,6 +522,65 @@ int CarLoader::IsLoaded(LoadedRideInfo *loaded_ride_info) {
     return 0;
 }
 
+void CarLoader::UnloadEverything() {
+    LoadedRideInfo *high_priority_ride_info = 0;
+
+    for (LoadedRideInfo *loaded_ride_info = this->LoadedRideInfoList.GetHead();
+         loaded_ride_info != this->LoadedRideInfoList.EndOfList(); loaded_ride_info = loaded_ride_info->GetNext()) {
+        if (loaded_ride_info->NumInstances > 0) {
+            this->UnallocateRideInfo(loaded_ride_info);
+        }
+
+        if (loaded_ride_info->HighPriority != 0) {
+            high_priority_ride_info = loaded_ride_info;
+        }
+    }
+
+    if (high_priority_ride_info != 0) {
+        high_priority_ride_info->Remove();
+        this->LoadedRideInfoList.AddTail(high_priority_ride_info);
+    }
+
+    while (this->LoadingInProgress != 0) {
+        ServiceResourceLoading();
+    }
+
+    this->UnloadOverflowedResources();
+}
+
+void CarLoader::UnloadOverflowedResources() {
+    LoadedRideInfo *loaded_ride_info = this->LoadedRideInfoList.GetHead();
+
+    while (loaded_ride_info != this->LoadedRideInfoList.EndOfList()) {
+        LoadedRideInfo *next = loaded_ride_info->GetNext();
+
+        this->UnloadRideInfo(loaded_ride_info, 1);
+        loaded_ride_info = next;
+    }
+}
+
+void CarLoader::UnloadUnallocatedRideInfos(int max_left_unloaded) {
+    do {
+        if (this->NumLoadedRideInfos - this->NumAllocatedRideInfos < max_left_unloaded) {
+            return;
+        }
+    } while (this->RemoveSomethingFromCarMemoryPool(false) != 0);
+}
+
+void CarLoader::UnloadAllSkinTemporaries() {
+    for (LoadedRideInfo *loaded_ride_info = this->LoadedRideInfoList.GetHead();
+         loaded_ride_info != this->LoadedRideInfoList.EndOfList(); loaded_ride_info = loaded_ride_info->GetNext()) {
+        LoadedSkin *loaded_skin = loaded_ride_info->pLoadedSkin;
+
+        if (loaded_skin->LoadStatePerm == CARLOADSTATE_LOADED && loaded_skin->LoadStateTemp == CARLOADSTATE_LOADED &&
+            loaded_skin->DoneComposite != 0) {
+            this->UnloadSkinTemporaries(loaded_skin, 0);
+        } else if (loaded_ride_info->NumInstances == 0 && loaded_skin->LoadStateTemp == CARLOADSTATE_LOADED) {
+            this->UnloadSkinTemporaries(loaded_skin, 1);
+        }
+    }
+}
+
 LoadedWheel::LoadedWheel(RideInfo *ride_info, bool in_fe) {
     RideInfoLayout *ride_layout = reinterpret_cast<RideInfoLayout *>(ride_info);
 

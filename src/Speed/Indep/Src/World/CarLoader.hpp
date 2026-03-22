@@ -166,6 +166,10 @@ class CarLoader {
     void Unload(int handle);
     int IsLoaded(int handle);
     int IsLoaded(LoadedRideInfo *loaded_ride_info);
+    void UnloadEverything();
+    void UnloadOverflowedResources();
+    void UnloadUnallocatedRideInfos(int max_left_unloaded);
+    void UnloadAllSkinTemporaries();
     LoadedSolidPack *FindLoadedSolidPack(const char *filename);
     LoadedTexturePack *FindLoadedTexturePack(const char *filename);
     LoadedSkinLayer *FindLoadedSkinLayer(unsigned int name_hash);
