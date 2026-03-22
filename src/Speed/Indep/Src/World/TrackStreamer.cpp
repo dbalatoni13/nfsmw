@@ -2448,9 +2448,12 @@ void TrackStreamer::ServiceGameState() {
 }
 
 void TrackStreamer::ServiceNonGameState() {
-    GetDebugRealTime();
+    ProfileNode profile_node("TODO", 0);
+    float start_time = GetDebugRealTime();
     HandleLoading();
-    GetDebugRealTime();
+    float time = GetDebugRealTime();
+    (void)start_time;
+    (void)time;
 }
 
 void TrackStreamer::SetLoadingPhase(eLoadingPhase phase) {
