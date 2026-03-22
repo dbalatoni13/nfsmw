@@ -3776,7 +3776,13 @@ void GRaceStatus::UpdateAdaptiveDifficulty(eAdaptiveGainReason reason, ISimable 
         float race_lose_margin;
         float lose_margin;
 
-        num_laps = static_cast<float>(bMax(1, GetRaceParameters()->GetNumLaps()));
+        int laps = GetRaceParameters()->GetNumLaps();
+
+        if (laps <= 1) {
+            laps = 1;
+        }
+
+        num_laps = static_cast<float>(laps);
 
         lose_margin = (GetRaceLength() * (100.0f - eliminated_player->GetPctRaceComplete())) * 0.01f;
         race_lose_margin = GetRaceLength() / num_laps;
@@ -3792,16 +3798,14 @@ void GRaceStatus::UpdateAdaptiveDifficulty(eAdaptiveGainReason reason, ISimable 
     }
 
     if (update) {
-        float clamped_difficulty;
-
         mCaluclatedAdaptiveGain = true;
-        clamped_difficulty = bClamp(difficulty, -1.0f, 1.0f);
+        difficulty = bClamp(difficulty, -1.0f, 1.0f);
 
         if (FEDatabase) {
-            FEDatabase->GetCareerSettings()->SetAdaptiveDifficulty(clamped_difficulty);
+            FEDatabase->GetCareerSettings()->SetAdaptiveDifficulty(difficulty);
         }
 
-        fCatchUpAdaptiveBonus = clamped_difficulty;
+        fCatchUpAdaptiveBonus = difficulty;
     }
 }
 
