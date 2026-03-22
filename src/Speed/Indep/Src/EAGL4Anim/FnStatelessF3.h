@@ -54,10 +54,10 @@ class FnStatelessF3 : public FnAnimMemoryMap {
     unsigned char GetFPS() const;
 
     // Overrides: FnAnim
-    unsigned short GetTargetCheckSum() const override {}
+    unsigned short GetTargetCheckSum() const override;
 
     // Overrides: FnAnim
-    const AttributeBlock *GetAttributes() const override {}
+    const AttributeBlock *GetAttributes() const override;
 
   protected:
     bool EvalSQTMask(float currTime, float *sqt, const BoneMask *boneMask, bool slerpReqd, int floorKey, float scale);

@@ -6,6 +6,7 @@
 #endif
 
 #include "Speed/Indep/Src/EAGL4Anim/AnimMemoryMap.h"
+#include "Speed/Indep/Src/EAGL4Anim/AnimUtil.h"
 
 namespace EAGL4Anim {
 
@@ -17,25 +18,50 @@ struct StatelessF3 : public AnimMemoryMap {
         float mRange[4]; // offset 0x10, size 0x10
     };
 
-    const AttributeBlock *GetAttributeBlock() const {}
+    const AttributeBlock *GetAttributeBlock() const {
+        return mAttributeBlock;
+    }
 
     static int ComputeSize(int numBones, int numConst, int numKeys, bool useKeyFrames) {}
 
-    unsigned short GetNumFrames() const {}
+    unsigned short GetNumFrames() const {
+        if (!mTimes) {
+            return mNumKeys;
+        } else {
+            return mTimes[mNumKeys - 2] + 1;
+        }
+    }
 
-    void GetArrays(DofInfo *&dofInfo, short *&dataBuf) {}
+    void GetArrays(DofInfo *&dofInfo, short *&dataBuf) {
+        dofInfo = GetDofInfo();
+        dataBuf = GetData();
+    }
 
-    DofInfo *GetDofInfo() {}
+    DofInfo *GetDofInfo() {
+        return reinterpret_cast<DofInfo *>(&this[1]);
+    }
 
-    short *GetData() {}
+    short *GetData() {
+        return reinterpret_cast<short *>(&reinterpret_cast<unsigned char *>(GetDofInfo())[mNumBones * sizeof(DofInfo)]);
+    }
 
-    short *GetFrameData(short *dataBuf, int frameIdx) {}
+    short *GetFrameData(short *dataBuf, int frameIdx) {
+        return &dataBuf[frameIdx * 3 * mNumBones];
+    }
 
-    float *GetConstData(short *dataBuf) {}
+    float *GetConstData(short *dataBuf) {
+        return reinterpret_cast<float *>(AlignSize4(reinterpret_cast<intptr_t>(&dataBuf[mNumKeys * 3 * mNumBones])));
+    }
 
-    unsigned short *GetConstBoneIdx() {}
+    unsigned short *GetConstBoneIdx() {
+        return &mDofIdxs[mNumBones];
+    }
 
-    void UnQuantize(const DofInfo &dofInfo, const short *frameBuf, UMath::Vector3 &result) const {}
+    void UnQuantize(const DofInfo &dofInfo, const short *frameBuf, UMath::Vector3 &result) const {
+        result.x = dofInfo.mRange[0] * frameBuf[0];
+        result.y = dofInfo.mRange[1] * frameBuf[1];
+        result.z = dofInfo.mRange[2] * frameBuf[2];
+    }
 
     static int GetFnOffset() {
         return 24;
