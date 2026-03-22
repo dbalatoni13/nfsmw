@@ -174,8 +174,9 @@ void SFXCTL_Shifting::UpdateGearShiftState(float t) {
             _brakeInit = 1;
         }
 
+        int BrakePedalMashed = *static_cast<int *>(static_cast<void *>(&m_bBrakePedalMashed));
         if (carstate->mBrake >= 1.0f &&
-            *static_cast<int *>(static_cast<void *>(&m_bBrakePedalMashed)) == 0 &&
+            BrakePedalMashed == 0 &&
             t_last_mashed > 1.0f &&
             _prevBrakeState == 0.0f &&
             carstate->GetVelocityMagnitudeMPH() > 5.0f) {
