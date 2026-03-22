@@ -638,22 +638,20 @@ int TrackStreamer::AllocateSectionMemory(int *ptotal_needing_allocation) {
             continue;
         }
 
-        bool should_allocate = true;
-        int section_number = section->SectionNumber;
-        if (section_number != GetScenerySectionNumber('Y', 0) && section_number != GetScenerySectionNumber('X', 0) &&
-            section_number != GetScenerySectionNumber('W', 0) && section_number != GetScenerySectionNumber('U', 0) &&
-            section_number != GetScenerySectionNumber('Z', 0)) {
+        if (section->SectionNumber != GetScenerySectionNumber('Y', 0) && section->SectionNumber != GetScenerySectionNumber('X', 0) &&
+            section->SectionNumber != GetScenerySectionNumber('W', 0) && section->SectionNumber != GetScenerySectionNumber('U', 0) &&
+            section->SectionNumber != GetScenerySectionNumber('Z', 0)) {
             if (LoadingPhase == ALLOCATING_TEXTURE_SECTIONS) {
-                should_allocate = IsTextureSection(section_number);
+                if (!IsTextureSection(section->SectionNumber)) {
+                    continue;
+                }
             }
 
             if (LoadingPhase == ALLOCATING_GEOMETRY_SECTIONS) {
-                should_allocate = IsLibrarySection(section_number);
+                if (!IsLibrarySection(section->SectionNumber)) {
+                    continue;
+                }
             }
-        }
-
-        if (!should_allocate) {
-            continue;
         }
 
         total_needing_allocation += section->Size;
