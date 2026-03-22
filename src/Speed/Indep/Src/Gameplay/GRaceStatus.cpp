@@ -3870,6 +3870,8 @@ bool GRaceStatus::ComputeCatchUpSkill(GRacerInfo *racer_info, PidError *pid, flo
         glue_skill = UMath::Lerp(Tweak_GlueStrengthTable_Low.GetValue(percent_complete), Tweak_GlueStrengthTable_High.GetValue(percent_complete), glue_level);
         glue_integral = 5.0e-5f;
         glue_derivative = 0.01f;
+        glue_integral *= glue_p;
+        glue_derivative *= glue_error;
     } else {
         {
             Table glue_table(aCatchUpSkillData, nCatchUpSkillEntries, 0.0f, 100.0f);
@@ -3883,10 +3885,12 @@ bool GRaceStatus::ComputeCatchUpSkill(GRacerInfo *racer_info, PidError *pid, flo
         }
         glue_derivative = fCatchUpDerivative;
         glue_integral = fCatchUpIntegral;
+        glue_integral *= glue_p;
+        glue_derivative *= glue_error;
     }
 
     glue_spread = bMax(100.0f, glue_spread);
-    glue_output = bClamp((2.0f / glue_spread) * pid->GetError() + glue_p * glue_integral + glue_error * glue_derivative, -1.0f, 1.0f);
+    glue_output = bClamp((2.0f / glue_spread) * pid->GetError() + glue_integral + glue_derivative, -1.0f, 1.0f);
     *skill = glue_skill * glue_output;
 
     if (is_boss) {
