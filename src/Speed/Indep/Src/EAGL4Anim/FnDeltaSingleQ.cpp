@@ -186,11 +186,11 @@ void FnDeltaSingleQ::Eval(float prevTime, float currTime, float *sqt) {
 }
 
 bool FnDeltaSingleQ::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask) {
-    if (!mPrevQs) {
-        InitBuffersAsRequired();
-    }
     if (boneMask) {
         return EvalSQTMasked(currTime, boneMask, sqt);
+    }
+    if (!mPrevQs) {
+        InitBuffersAsRequired();
     }
 
     DeltaSingleQ *deltaQ = reinterpret_cast<DeltaSingleQ *>(mpAnim);

@@ -136,11 +136,11 @@ void FnDeltaQ::Eval(float prevTime, float currTime, float *sqt) {
 }
 
 bool FnDeltaQ::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask) {
-    if (!mBins) {
-        InitBuffersAsRequired();
-    }
     if (boneMask) {
         return EvalSQTMasked(currTime, boneMask, sqt);
+    }
+    if (!mBins) {
+        InitBuffersAsRequired();
     }
 
     DeltaQ *deltaQ = reinterpret_cast<DeltaQ *>(mpAnim);
@@ -499,7 +499,6 @@ bool FnDeltaQ::EvalSQTMasked(float currTime, const BoneMask *boneMask, float *sq
         }
     }
 
-    mPrevKey = -1;
     return true;
 }
 
