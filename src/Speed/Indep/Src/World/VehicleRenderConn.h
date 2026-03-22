@@ -7,6 +7,7 @@
 
 #include "Speed/Indep/Libs/Support/Utility/UListable.h"
 #include "Speed/Indep/Libs/Support/Utility/UStandard.h"
+#include "Speed/Indep/Libs/Support/Utility/FastMem.h"
 #include "Speed/Indep/Src/Frontend/Database/VehicleDB.hpp"
 #include "Speed/Indep/Src/Sim/SimServer.h"
 #include "Speed/Indep/Src/World/CarRender.hpp"
@@ -67,6 +68,16 @@ class VehicleRenderConn : public Sim::Connection, public UTL::Collections::Lista
                   const bVector3 *inherit_velocity) const;
         void Update(const bMatrix4 *worldmatrix, unsigned int emitterkey, float dT, float emitter_intensity,
                     const bVector3 *inherit_velocity);
+
+        void *operator new(unsigned int size) {
+            return gFastMem.Alloc(size, nullptr);
+        }
+
+        void operator delete(void *mem, unsigned int size) {
+            if (mem) {
+                gFastMem.Free(mem, size, nullptr);
+            }
+        }
 
         bMatrix4 mLocalMatrix;       // offset 0x8, size 0x40
         EmitterGroup *mEmitterGroup; // offset 0x48, size 0x4

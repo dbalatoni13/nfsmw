@@ -4,8 +4,10 @@
 #include "./WCollider.h"
 #include "Speed/Indep/Libs/Support/Utility/UCrc.h"
 #include "Speed/Indep/Src/Camera/CameraMover.hpp"
+#include "Speed/Indep/Src/Ecstasy/EmitterSystem.h"
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
 #include "Speed/Indep/Src/Ecstasy/eMath.hpp"
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/emittergroup.h"
 #include "Speed/Indep/Src/Generated/Events/ECommitRenderAssets.hpp"
 #include "Speed/Indep/Src/Physics/Bounds.h"
 
@@ -16,6 +18,7 @@ const CollisionGeometry::Bounds *CollisionGeometry_Collection_GetRoot(const Coll
     asm("GetRoot__CQ217CollisionGeometry10Collection");
 extern CarTypeInfo *CarTypeInfoArray;
 extern eView eViews[];
+extern EmitterSystem gEmitterSystem;
 
 struct RideInfoLoaderMirror {
     CarType Type;
@@ -34,10 +37,99 @@ struct ReferenceMirror {
     const bVector3 *mAcceleration;
 };
 
+static void HandleEmitterGroupDelete(void *subscriber, EmitterGroup *) {
+    VehicleRenderConn::Effect *effect = static_cast<VehicleRenderConn::Effect *>(subscriber);
+    effect->mEmitterGroup = 0;
+}
+
 UTL::Collections::Listable<VehicleRenderConn, 10>::List UTL::Collections::Listable<VehicleRenderConn, 10>::_mTable;
 
 int SkinSlotToMask(int slot) {
     return 1 << ((slot - 1U) & 0x3F);
+}
+
+VehicleRenderConn::Effect::Effect(const bMatrix4 *matrix) {
+    PSMTX44Copy(*reinterpret_cast<const Mtx44 *>(matrix), *reinterpret_cast<Mtx44 *>(&this->mLocalMatrix));
+    this->mKey = 0;
+    this->mEmitterGroup = 0;
+}
+
+VehicleRenderConn::Effect::~Effect() {
+    if (this->mEmitterGroup != 0) {
+        this->mEmitterGroup->UnSubscribe();
+        if (this->mEmitterGroup != 0) {
+            delete this->mEmitterGroup;
+        }
+        this->mEmitterGroup = 0;
+    }
+}
+
+void VehicleRenderConn::Effect::Stop() {
+    if (this->mEmitterGroup != 0) {
+        this->mEmitterGroup->Disable();
+    }
+}
+
+void VehicleRenderConn::Effect::Fire(const bMatrix4 *worldmatrix, unsigned int emitterkey, float emitter_intensity,
+                                     const bVector3 *inherit_velocity) const {
+    Attrib::Gen::emittergroup emitter_group_spec(emitterkey, 0, nullptr);
+
+    if (emitter_group_spec.IsValid()) {
+        EmitterGroup *emitter_group = gEmitterSystem.CreateEmitterGroup(emitter_group_spec.GetConstCollection(), 0x10c00000);
+        if (emitter_group != 0) {
+            emitter_group->SetIntensity(emitter_intensity);
+            emitter_group->MakeOneShot(true);
+            if (worldmatrix == 0) {
+                emitter_group->SetLocalWorld(&this->mLocalMatrix);
+            } else {
+                bMatrix4 local_world;
+                eMulMatrix(&local_world, const_cast<bMatrix4 *>(&this->mLocalMatrix), const_cast<bMatrix4 *>(worldmatrix));
+                emitter_group->SetLocalWorld(&local_world);
+            }
+            if (inherit_velocity != 0) {
+                emitter_group->SetInheritVelocity(inherit_velocity);
+            }
+        }
+    }
+}
+
+void VehicleRenderConn::Effect::Update(const bMatrix4 *worldmatrix, unsigned int emitterkey, float dT, float emitter_intensity,
+                                       const bVector3 *inherit_velocity) {
+    if (emitterkey != this->mKey) {
+        if (this->mEmitterGroup != 0) {
+            this->mEmitterGroup->UnSubscribe();
+            if (this->mEmitterGroup != 0) {
+                delete this->mEmitterGroup;
+            }
+            this->mEmitterGroup = 0;
+        }
+        this->mKey = emitterkey;
+        if (emitterkey != 0) {
+            Attrib::Gen::emittergroup emitter_group_spec(emitterkey, 0, nullptr);
+            if (emitter_group_spec.IsValid()) {
+                this->mEmitterGroup = gEmitterSystem.CreateEmitterGroup(emitter_group_spec.GetConstCollection(), 0x10800000);
+                if (this->mEmitterGroup != 0) {
+                    this->mEmitterGroup->SubscribeToDeletion(this, HandleEmitterGroupDelete);
+                }
+            }
+        }
+    }
+    if (this->mEmitterGroup != 0) {
+        if (worldmatrix == 0) {
+            this->mEmitterGroup->SetLocalWorld(&this->mLocalMatrix);
+        } else {
+            bMatrix4 local_world;
+            eMulMatrix(&local_world, const_cast<bMatrix4 *>(&this->mLocalMatrix), const_cast<bMatrix4 *>(worldmatrix));
+            this->mEmitterGroup->SetLocalWorld(&local_world);
+        }
+        this->mEmitterGroup->Enable();
+        this->mEmitterGroup->SetIntensity(emitter_intensity);
+        this->mEmitterGroup->MakeOneShot(false);
+        if (inherit_velocity != 0) {
+            this->mEmitterGroup->SetInheritVelocity(inherit_velocity);
+        }
+        this->mEmitterGroup->Update(dT);
+    }
 }
 
 void VehicleRenderConn::OnClose() {
