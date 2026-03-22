@@ -1,10 +1,17 @@
 #include "./WorldModel.hpp"
 #include "Speed/Indep/Src/Camera/Camera.hpp"
+#include "Speed/Indep/Src/Camera/CameraMover.hpp"
 #include "Speed/Indep/Src/Ecstasy/eLight.hpp"
 #include "Speed/Indep/Src/Ecstasy/eSolid.hpp"
 
 extern unsigned int FrameMallocFailed;
 extern unsigned int FrameMallocFailAmount;
+extern float lbl_8040CD80;
+extern float lbl_8040CD84;
+extern float lbl_8040CD88;
+extern float lbl_8040CD8C;
+extern float lbl_8040CD90;
+extern float lbl_8040CD94;
 extern eShaperLightRig ShaperLightsCarsInGame;
 extern eShaperLightRig ShaperLightsCharacters;
 
@@ -118,5 +125,99 @@ void WorldModel::RenderModel(eModel *render_model, eView *view, int exc_flag, bM
         }
 
         ::Render(view, render_model, frame_matrix, light_context, 0, flags);
+    }
+}
+
+void WorldModel::Render(eView *view, int exc_flag) {
+    if (this->mLastRenderFrame != eFrameCounter) {
+        this->mLastRenderFrame = eFrameCounter;
+        this->mDistanceToGameView = lbl_8040CD80;
+    }
+
+    CameraMover *camera_mover = 0;
+    if (!view->CameraMoverList.IsEmpty()) {
+        camera_mover = view->CameraMoverList.GetHead();
+    }
+
+    if (camera_mover != 0 && (view->GetID() - 1U) < 3U) {
+        const bMatrix4 *world_matrix = &this->mMatrix;
+
+        if (this->pSpaceNode != 0) {
+            world_matrix = this->pSpaceNode->GetWorldMatrix();
+        }
+
+        {
+            bVector3 *camera_position = camera_mover->GetPosition();
+            float dx = camera_position->x - world_matrix->v3.x;
+            float dy = camera_position->y - world_matrix->v3.y;
+            float dz = camera_position->z - world_matrix->v3.z;
+            float distance_sq = dx * dx + dy * dy + dz * dz;
+            float distance_scale = lbl_8040CD90;
+
+            if (lbl_8040CD84 < distance_sq) {
+                float inv_sqrt = 1.0f / bSqrt(distance_sq);
+
+                inv_sqrt = -(distance_sq * inv_sqrt * inv_sqrt - lbl_8040CD8C) * inv_sqrt * lbl_8040CD88 + inv_sqrt;
+                distance_scale = (-(distance_sq * inv_sqrt * inv_sqrt - lbl_8040CD8C) * inv_sqrt * lbl_8040CD88 + inv_sqrt) * distance_sq;
+            }
+
+            if (this->mDistanceToGameView < distance_scale) {
+                distance_scale = this->mDistanceToGameView;
+            }
+            this->mDistanceToGameView = distance_scale;
+        }
+    }
+
+    eModel *render_model = this->GetModel();
+    if ((static_cast<unsigned int>(exc_flag) & 0x800) != 0 && (render_model = this->pReflectionModel) == 0) {
+        return;
+    }
+    if (render_model == 0) {
+        return;
+    }
+
+    eSolid *solid = render_model->Solid;
+    if (solid == 0) {
+        return;
+    }
+
+    if ((static_cast<unsigned int>(exc_flag) & 0x200000) != 0) {
+        if (!this->mCastsShadow) {
+            return;
+        }
+        if ((static_cast<unsigned int>(exc_flag) & 0x2000) == 0) {
+            if (*reinterpret_cast<char *>(reinterpret_cast<unsigned char *>(solid) + 0x18) == '\0') {
+                return;
+            }
+        } else if (*reinterpret_cast<char *>(reinterpret_cast<unsigned char *>(solid) + 0x18) != '\0') {
+            return;
+        }
+    }
+
+    bMatrix4 world_matrix;
+    bMatrix4 *blended_matrices = 0;
+    const bMatrix4 *render_matrix = &this->mMatrix;
+    if (this->pSpaceNode != 0) {
+        this->pSpaceNode->Update();
+        render_matrix = this->pSpaceNode->GetWorldMatrix();
+        blended_matrices = this->pSpaceNode->GetBlendingMatrices();
+        if (blended_matrices != 0) {
+            bMulMatrix(&world_matrix, render_matrix, &blended_matrices[1]);
+            goto have_world_matrix;
+        }
+    }
+
+    PSMTX44Copy(*reinterpret_cast<const Mtx44 *>(render_matrix), *reinterpret_cast<Mtx44 *>(&world_matrix));
+
+have_world_matrix:
+    if (view->PixelMinSize <= view->GetPixelSize(reinterpret_cast<const bVector3 *>(&world_matrix.v3), lbl_8040CD94) &&
+        view->GetVisibleState(render_model, &world_matrix) != 0) {
+        if (this->mHeirarchy == 0) {
+            this->RenderModel(render_model, view, exc_flag, blended_matrices, render_matrix);
+        } else {
+            this->RenderNode(this->mHeirarchy, this->mHeirarchyIndex, view, exc_flag, blended_matrices, render_matrix);
+        }
+
+        this->mLastVisibleFrame = eFrameCounter;
     }
 }
