@@ -296,10 +296,6 @@ class WRoadNav {
         return fSegmentInd;
     }
 
-    char GetNodeInd() const {
-        return fNodeInd;
-    }
-
     char HitDeadEnd() const {
         return fDeadEnd;
     }

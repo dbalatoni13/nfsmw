@@ -174,9 +174,7 @@ struct WRoadSegment {
         return IsTrafficAllowed() ^ CopsXorTraffic();
     }
 
-    bool RaceRouteForward() const {
-        return fFlags & (1 << 2);
-    }
+    // bool RaceRouteForward() const {}
 
     // void SetRaceRouteForward(bool forward) {}
 

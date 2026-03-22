@@ -1,11 +1,91 @@
 #include "ResetCar.h"
 
 #include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
+#include "Speed/Indep/Src/Sim/Simulation.h"
 #include "Speed/Indep/Src/World/WCollisionMgr.h"
 #include "Speed/Indep/Src/World/WRoadNetwork.h"
 
+bool DoLinesIntersect(const bVector2 &a, const bVector2 &b, const bVector2 &c, const bVector2 &d);
+
+struct TrackPathBarrier {
+    bVector2 Points[2];
+    char Enabled;
+    char Pad;
+    char PlayerBarrier;
+    char LeftHanded;
+    unsigned int GroupHash;
+};
+
+static inline int GetNumBarriers() {
+    return *reinterpret_cast<int *>(reinterpret_cast<char *>(&TheTrackPathManager) + 0x484);
+}
+
+static inline TrackPathBarrier *GetBarrier(int n) {
+    TrackPathBarrier **barriers = reinterpret_cast<TrackPathBarrier **>(reinterpret_cast<char *>(&TheTrackPathManager) + 0x488);
+    return barriers[0] + n;
+}
+
+static inline bool IsBarrierEnabled(TrackPathBarrier *barrier) {
+    return barrier->Enabled != 0;
+}
+
+static inline bool BarrierIntersects(TrackPathBarrier *barrier, const bVector2 *pointa, const bVector2 *pointb) {
+    return DoLinesIntersect(barrier->Points[0], barrier->Points[1], *pointa, *pointb);
+}
+
+static inline char GetNodeInd(const WRoadNav &nav) {
+    return *reinterpret_cast<const char *>(reinterpret_cast<const char *>(&nav) + 0x98);
+}
+
+static inline bool RaceRouteForward(const WRoadSegment &seg) {
+    return seg.fFlags & (1 << 2);
+}
+
+static inline int CookieCount(const CookieTrail<ResetCookie, 4> &cookies) {
+    return *reinterpret_cast<const int *>(&cookies);
+}
+
+static inline void ClearCookies(CookieTrail<ResetCookie, 4> &cookies) {
+    int *data = reinterpret_cast<int *>(&cookies);
+    data[0] = 0;
+    data[1] = -1;
+}
+
 Behavior *ResetCar::Construct(const BehaviorParams &params) {
     return new ResetCar(params);
+}
+
+ResetCar::ResetCar(const BehaviorParams &params)
+    : VehicleBehavior(params, 0), //
+      IResetable(params.fowner),  //
+      mFlippedOver(0.0f),         //
+      mCookies() {
+    mCheckTask = AddTask("Physics", 1.0f, 0.0f, Sim::TASK_FRAME_VARIABLE);
+    Sim::ProfileTask(mCheckTask, "ResetCar");
+
+    GetOwner()->QueryInterface(&mCollisionBody);
+    GetOwner()->QueryInterface(&mSuspension);
+    GetOwner()->QueryInterface(&mVehicleBody);
+}
+
+ResetCar::~ResetCar() {
+    RemoveTask(mCheckTask);
+
+    if (mVehicleBody) {
+        mVehicleBody->SetInvulnerability(INVULNERABLE_NONE, 0.0f);
+    }
+}
+
+void ResetCar::Reset() {
+    ClearCookies(mCookies);
+}
+
+bool ResetCar::HasResetPosition() {
+    return CookieCount(mCookies) > 0;
+}
+
+void ResetCar::ClearResetPosition() {
+    ClearCookies(mCookies);
 }
 
 bool ResetCar::OnTask(HSIMTASK htask, float dT) {
@@ -42,11 +122,11 @@ bool ResetCar::FindNearestRoad(ResetCookie *cookie) const {
                 bool crosses_barrier = false;
                 bVector2 a(cookie->position.z, -cookie->position.x);
                 bVector2 b(nav.GetPosition().z, -nav.GetPosition().x);
-                int num_barriers = TheTrackPathManager.GetNumBarriers();
+                int num_barriers = GetNumBarriers();
 
                 for (int barrier_number = 0; barrier_number < num_barriers; barrier_number++) {
-                    TrackPathBarrier *barrier = TheTrackPathManager.GetBarrier(barrier_number);
-                    if (barrier->IsEnabled() && barrier->Intersects(&a, &b)) {
+                    TrackPathBarrier *barrier = GetBarrier(barrier_number);
+                    if (IsBarrierEnabled(barrier) && BarrierIntersects(barrier, &a, &b)) {
                         crosses_barrier = true;
                         break;
                     }
@@ -62,8 +142,8 @@ bool ResetCar::FindNearestRoad(ResetCookie *cookie) const {
 
                             const WRoadSegment *seg = nav.GetSegment();
                             if (seg && seg->IsInRace()) {
-                                char raceind = seg->RaceRouteForward();
-                                if (nav.GetNodeInd() != raceind) {
+                                char raceind = RaceRouteForward(*seg);
+                                if (GetNodeInd(nav) != raceind) {
                                     UMath::Negate(cookie->direction);
                                 }
                             }
