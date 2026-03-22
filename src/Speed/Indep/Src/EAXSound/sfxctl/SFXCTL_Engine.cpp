@@ -136,13 +136,14 @@ void SFXCTL_Engine::UpdateParams(float t) {
 
     const bVector3 *Cur3dPos = GetPhysCar()->GetPosition();
     const bVector2 *Cur2dPos = GetPhysCar()->GetPosition2D();
-    bVector3 vOffset = bNormalize(*GetPhysCar()->GetForwardVector());
+    bVector3 vOffset;
 
     SetDMIX_Input(2, static_cast<int>(m_pEAXCar->GetAttributes().Master_Vol()));
     m_p3DCarPosCtl->AssignDirectionVector(GetPhysCar()->GetForwardVector());
 
     (void)Cur2dPos;
     vCarPos = *Cur3dPos;
+    vOffset = bNormalize(*GetPhysCar()->GetForwardVector());
 
     if (m_pEAXCar->GetPOV() == 1) {
         vOffset = bScale(vOffset, 2.0f);
@@ -162,15 +163,13 @@ void SFXCTL_Engine::UpdateParams(float t) {
 
     GetPhysCar()->SetVisualRPM(m_pEAXCar->GetFinalAudioRPM());
 
-    int blownState = GetPhysCar()->mEngine.mBlownFlag;
-    if (blownState != 0 && !m_bIsEngineBlown) {
+    if ((GetPhysCar()->IsEngineBlown() || GetPhysCar()->IsEngineSabotaged()) && !m_bIsEngineBlown) {
         m_bIsEngineBlown = true;
-        unsigned int key = 0;
-        blownState = GetPhysCar()->mEngine.mBlownFlag;
-        if (blownState == 1) {
+        unsigned int key;
+        if (GetPhysCar()->IsEngineBlown()) {
             key = 0xbc2dfa2f;
         }
-        if (blownState == 2) {
+        if (GetPhysCar()->IsEngineSabotaged()) {
             key = 0xbae41d1b;
         }
         MGamePlayMoment moment(UMath::Vector4::kZero, UMath::Vector4::kZero, UMath::Vector4::kZero, 0, key);

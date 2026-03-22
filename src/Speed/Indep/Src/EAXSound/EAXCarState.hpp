@@ -290,6 +290,14 @@ struct EAX_CarState : public UTL::Collections::Listable<EAX_CarState, 10> {
         return MPS2MPH(GetVelocityMagnitude());
     }
 
+    bool IsEngineBlown() {
+        return mEngine.mBlownFlag == 1;
+    }
+
+    bool IsEngineSabotaged() {
+        return mEngine.mBlownFlag == 2;
+    }
+
     static EAX_CarState *Find(unsigned int objectid) {
         {
             EAX_CarState *const *iter = GetList().begin();
