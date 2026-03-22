@@ -324,13 +324,15 @@ SuspensionTraffic::SuspensionTraffic(const BehaviorParams &bp, const SuspensionP
       mBrakeInfo(this, 0),      //
       mSuspensionInfo(this, 0), //
       mDrivetrainInfo(this, 0), //
-      mRB(0),                   //
-      mRBComplex(0),            //
-      mInput(0),                //
-      mTransmission(0),         //
       mLastSteer(0.0f),         //
-      mNumWheelsOnGround(0),    //
       mMaxSteering(45.0f) {
+    mInput = nullptr;
+    mTransmission = nullptr;
+    *reinterpret_cast<uint32 *>(reinterpret_cast<char *>(this) + 0x48) = 0;
+    mNumWheelsOnGround = 0;
+    mRB = nullptr;
+    mRBComplex = nullptr;
+
     GetOwner()->QueryInterface(&mRB);
     GetOwner()->QueryInterface(&mRBComplex);
     GetOwner()->QueryInterface(&mInput);
