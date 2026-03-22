@@ -150,6 +150,7 @@ void LoadedSolidPackCallbackBridge(void *param) asm("LoadedSolidPackCallbackBrid
 void LoadedWheelModelsCallbackBridge(void *param) asm("LoadedWheelModelsCallbackBridge__9CarLoaderUi");
 void LoadedWheelTexturesCallbackBridge(void *param) asm("LoadedWheelTexturesCallbackBridge__9CarLoaderUi");
 void LoadedAllTexturesFromPackCallbackBridge(void *param) asm("LoadedAllTexturesFromPackCallbackBridge__9CarLoaderUi");
+void LoadedSkinCallbackBridge(void *param) asm("LoadedSkinCallbackBridge__9CarLoaderUi");
 void LoadedTexturePackCallbackBridge(unsigned int param) asm("LoadedTexturePackCallbackBridge__9CarLoaderUi");
 void bCloseMemoryPool(int pool_num);
 bool bSetMemoryPoolDebugFill(int pool_num, bool on_off);
@@ -652,6 +653,80 @@ int CarLoader::UnloadTexturePack(LoadedTexturePack *loaded_texture_pack) {
     }
 
     return 0;
+}
+
+int CarLoader::LoadSkin(LoadedSkin *loaded_skin, int load_perm_layers) {
+    unsigned int name_hashes[87];
+    int loaded_hashes;
+
+    if (load_perm_layers == 0) {
+        loaded_hashes = this->LoadSkinLayers(name_hashes, 0x57, loaded_skin->LoadedSkinLayersTemp, loaded_skin->NumLoadedSkinLayersTemp);
+        loaded_skin->LoadStateTemp = loaded_hashes != 0 ? CARLOADSTATE_LOADING : CARLOADSTATE_LOADED;
+    } else {
+        loaded_hashes = this->LoadSkinLayers(name_hashes, 0x57, loaded_skin->LoadedSkinLayersPerm, loaded_skin->NumLoadedSkinLayersPerm);
+        loaded_skin->LoadStatePerm = loaded_hashes != 0 ? CARLOADSTATE_LOADING : CARLOADSTATE_LOADED;
+    }
+
+    int memory_pool_num = CarLoaderMemoryPoolNumber;
+
+    if (loaded_hashes > 0) {
+        if (load_perm_layers == 0 && this->LoadingMode != MODE_IN_GAME) {
+            memory_pool_num = this->LoadingMode == MODE_LOADING_GAME ? 7 : 0;
+        } else {
+            do {
+                if (StreamingTexturePackLoader.TestLoadStreamingEntry(name_hashes, loaded_hashes, CarLoaderMemoryPoolNumber, true) == 0) {
+                    break;
+                }
+            } while (this->RemoveSomethingFromCarMemoryPool(true) != 0);
+        }
+
+        this->LoadingInProgress = 1;
+        eLoadStreamingTexture(name_hashes, loaded_hashes, LoadedSkinCallbackBridge, loaded_skin, memory_pool_num);
+        return 1;
+    }
+
+    return 0;
+}
+
+void CarLoader::LoadedSkinCallback(LoadedSkin *loaded_skin) {
+    if (loaded_skin->LoadStatePerm == CARLOADSTATE_LOADING) {
+        loaded_skin->LoadStatePerm = CARLOADSTATE_LOADED;
+        this->LoadedSkinLayers(loaded_skin->LoadedSkinLayersPerm, loaded_skin->NumLoadedSkinLayersPerm);
+    }
+
+    if (loaded_skin->LoadStateTemp == CARLOADSTATE_LOADING) {
+        loaded_skin->LoadStateTemp = CARLOADSTATE_LOADED;
+        this->LoadedSkinLayers(loaded_skin->LoadedSkinLayersTemp, loaded_skin->NumLoadedSkinLayersTemp);
+    }
+
+    this->LoadingDoneCallback();
+}
+
+int CarLoader::UnloadSkinTemporaries(LoadedSkin *loaded_skin, int force_unload) {
+    int unloaded = 0;
+
+    if ((loaded_skin->LoadStateTemp == CARLOADSTATE_LOADED && loaded_skin->DoneComposite != 0) || force_unload != 0) {
+        unsigned int name_hashes[87];
+
+        this->UnallocateSkinLayers(loaded_skin->LoadedSkinLayersTemp, loaded_skin->NumLoadedSkinLayersTemp);
+        int unloaded_hashes = this->UnloadSkinLayers(name_hashes, 0x57, loaded_skin->LoadedSkinLayersTemp,
+                                                     loaded_skin->NumLoadedSkinLayersTemp);
+        unloaded = unloaded_hashes != 0;
+        loaded_skin->NumLoadedSkinLayersTemp = 0;
+
+        if (unloaded != 0) {
+            eUnloadStreamingTexture(name_hashes, unloaded_hashes);
+        }
+
+        if (loaded_skin->pLoadedVinylsPack != 0) {
+            unloaded += 1;
+            this->UnallocateTexturePack(loaded_skin->pLoadedVinylsPack);
+            this->UnloadTexturePack(loaded_skin->pLoadedVinylsPack);
+            loaded_skin->pLoadedVinylsPack = 0;
+        }
+    }
+
+    return unloaded;
 }
 
 LoadedSolidPack *CarLoader::FindLoadedSolidPack(const char *filename) {

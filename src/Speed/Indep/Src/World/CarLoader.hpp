@@ -151,6 +151,9 @@ class CarLoader {
     int LoadTexturePack(LoadedTexturePack *loaded_texture_pack, int use_memory_pool);
     void LoadedTexturePackCallback(LoadedTexturePack *loaded_texture_pack);
     int UnloadTexturePack(LoadedTexturePack *loaded_texture_pack);
+    int LoadSkin(LoadedSkin *loaded_skin, int load_perm_layers);
+    void LoadedSkinCallback(LoadedSkin *loaded_skin);
+    int UnloadSkinTemporaries(LoadedSkin *loaded_skin, int force_unload);
     LoadedSolidPack *FindLoadedSolidPack(const char *filename);
     LoadedTexturePack *FindLoadedTexturePack(const char *filename);
     LoadedSkinLayer *FindLoadedSkinLayer(unsigned int name_hash);
