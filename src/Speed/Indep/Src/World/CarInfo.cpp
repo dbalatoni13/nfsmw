@@ -894,8 +894,8 @@ void GetUsedCarTextureInfo(UsedCarTextureInfo *used_texture_info, RideInfo *ride
 }
 
 int CarPartDatabase::NewGetNumCarParts(CarType car_type, int car_slot_id, unsigned int car_part_namehash, int upgrade_level) {
-    CarPart *part = 0;
     int num_parts = 0;
+    CarPart *part = 0;
 
     while (true) {
         part = this->NewGetCarPart(car_type, car_slot_id, car_part_namehash, part, upgrade_level);
@@ -956,9 +956,11 @@ CarPart *CarPartDatabase::NewGetCarPart(CarType car_type, int car_slot_id, unsig
 
                 if (part < end_part) {
                     do {
-                        if (reinterpret_cast<unsigned char *>(part)[4] == static_cast<unsigned char>(car_part_id) &&
+                        if (static_cast<int>(static_cast<signed char>(reinterpret_cast<unsigned char *>(part)[4])) == car_part_id &&
                             part->GetCarTypeNameHash() == car_type_namehashes[car_type_index] &&
-                            (car_part_namehash == 0 || *reinterpret_cast<unsigned int *>(part) == car_part_namehash)) {
+                            (car_part_namehash == 0 ||
+                             (static_cast<unsigned int>(reinterpret_cast<unsigned short *>(part)[1]) << 16 |
+                              static_cast<unsigned int>(reinterpret_cast<unsigned short *>(part)[0])) == car_part_namehash)) {
                             if ((reinterpret_cast<unsigned char *>(part)[5] >> 5) == static_cast<unsigned int>(upgrade_level)) {
                                 return part;
                             }
