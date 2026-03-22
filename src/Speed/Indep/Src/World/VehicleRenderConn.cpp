@@ -13,12 +13,17 @@
 
 int CarLoader_Load(CarLoader *car_loader, RideInfo *ride_info) asm("Load__9CarLoaderP8RideInfo");
 int CarLoader_IsLoaded(CarLoader *car_loader, int handle) asm("IsLoaded__9CarLoaderi");
+void CarLoader_Unload(CarLoader *car_loader, int handle) asm("Unload__9CarLoaderi");
+void FECustomizationRecord_WriteRecordIntoRide(const FECustomizationRecord *customizations, RideInfo *ride_info)
+    asm("WriteRecordIntoRide__C21FECustomizationRecordP8RideInfo");
 unsigned int CameraMover_GetAnchorID() asm("GetAnchorID__11CameraMover");
 const CollisionGeometry::Bounds *CollisionGeometry_Collection_GetRoot(const CollisionGeometry::Collection *collection)
     asm("GetRoot__CQ217CollisionGeometry10Collection");
 extern CarTypeInfo *CarTypeInfoArray;
 extern eView eViews[];
 extern EmitterSystem gEmitterSystem;
+extern int UsePrecompositeVinyls;
+int CarInfo_IsSkinned(CarType car_type) asm("CarInfo_IsSkinned__F7CarType");
 
 struct RideInfoLoaderMirror {
     CarType Type;
@@ -130,6 +135,37 @@ void VehicleRenderConn::Effect::Update(const bMatrix4 *worldmatrix, unsigned int
         }
         this->mEmitterGroup->Update(dT);
     }
+}
+
+VehicleRenderConn::VehicleRenderConn(const Sim::ConnectionData &data, CarType type)
+    : Sim::Connection(data), //
+      mAttributes(static_cast<const Attrib::Collection *>(0), 0, 0), //
+      mState(S_None), //
+      mCarType(type), //
+      mWorldRef(0)
+{
+    this->mSkinSlot = 0;
+    this->mRideInfo = 0;
+    this->mRenderInfo = 0;
+    *reinterpret_cast<int *>(&this->mHide) = 0;
+    this->mWCollider = 0;
+    this->mModelOffset.w = 0.0f;
+    this->mModelOffset.x = 0.0f;
+    this->mModelOffset.y = 0.0f;
+    this->mModelOffset.z = 0.0f;
+    this->mAttributes.Change(Attrib::FindCollectionWithDefault(
+        Attrib::Gen::ecar::ClassKey(), Attrib::StringToLowerCaseKey(CarTypeInfoArray[type].BaseModelName)));
+}
+
+VehicleRenderConn::~VehicleRenderConn() {
+    if (this->mRenderInfo != 0) {
+        this->mRenderInfo->SetCollider(0);
+    }
+    if (this->mWCollider != 0) {
+        WCollider::Destroy(this->mWCollider);
+        this->mWCollider = 0;
+    }
+    this->Unload();
 }
 
 void VehicleRenderConn::OnClose() {
@@ -288,6 +324,64 @@ void VehicleRenderConn::UpdateLoading() {
     }
 }
 
+bool VehicleRenderConn::Load(unsigned int worldID, CarRenderUsage usage, bool commit, const FECustomizationRecord *customizations) {
+    if (this->mRenderInfo != 0 || this->mCarType == CARTYPE_NONE) {
+        return false;
+    }
+
+    this->mWorldRef.Set(worldID);
+    this->mRideInfo = new RideInfo;
+    this->mRideInfo->Init(this->mCarType, usage, 0, 0);
+
+    if (CarInfo_IsSkinned(this->mCarType)) {
+        int skin_slot = UsePrecompositeVinyls == 0 ? 1 : 5;
+        int end_skin_slot = UsePrecompositeVinyls == 0 ? 5 : 13;
+
+        while (skin_slot < end_skin_slot) {
+            unsigned int skin_mask = SkinSlotToMask(skin_slot);
+            if (mOpenSkinSlots & skin_mask) {
+                mOpenSkinSlots &= ~skin_mask;
+                this->mSkinSlot = skin_slot;
+                break;
+            }
+            skin_slot++;
+        }
+
+        if (this->mSkinSlot != 0) {
+            this->mRideInfo->SetCompositeNameHash(this->mSkinSlot);
+        }
+    }
+
+    this->mRideInfo->SetStockParts();
+    if (customizations != 0) {
+        FECustomizationRecord_WriteRecordIntoRide(customizations, this->mRideInfo);
+    }
+    this->SetupLoading(commit);
+    return true;
+}
+
+void VehicleRenderConn::Unload() {
+    if (this->mState != S_None) {
+        if (this->mRideInfo != 0) {
+            RideInfoLoaderMirror *ride_info = reinterpret_cast<RideInfoLoaderMirror *>(this->mRideInfo);
+
+            CarLoader_Unload(&TheCarLoader, ride_info->mMyCarLoaderHandle);
+            delete this->mRideInfo;
+            this->mRideInfo = 0;
+            if (this->mSkinSlot != 0) {
+                mOpenSkinSlots |= SkinSlotToMask(this->mSkinSlot);
+                this->mSkinSlot = 0;
+            }
+        }
+        this->mWorldRef.Unlock();
+        if (this->mRenderInfo != 0) {
+            delete this->mRenderInfo;
+            this->mRenderInfo = 0;
+        }
+        this->mState = S_None;
+    }
+}
+
 void VehicleRenderConn::Update(float) {
     if (this->CanUpdate()) {
         *reinterpret_cast<int *>(&this->mHide) = 0;
@@ -354,6 +448,16 @@ void VehicleRenderConn::GetRenderMatrix(bMatrix4 *matrix) {
     matrix->v3.x -= transformed_offset.x;
     matrix->v3.y -= transformed_offset.y;
     matrix->v3.z -= transformed_offset.z;
+}
+
+void VehicleRenderConn::RenderAll(eView *view, int reflection) {
+    const UTL::Collections::Listable<VehicleRenderConn, 10>::List &loader_list = VehicleRenderConn::GetList();
+    UTL::Collections::Listable<VehicleRenderConn, 10>::List::const_iterator it = loader_list.begin();
+    UTL::Collections::Listable<VehicleRenderConn, 10>::List::const_iterator end = loader_list.end();
+
+    for (; it != end; ++it) {
+        (*it)->OnRender(view, reflection);
+    }
 }
 
 void VehicleRenderConn::RefreshRenderInfo() {
