@@ -638,9 +638,9 @@ void EAXAemsManager::SetupNextLoad() {
                 while (true) {
                     stSndAssetQueue currequst = *i;
                     if (*static_cast<unsigned int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(&currequst)) + 8)) ==
-                            Hash32 &&
+                            *(&Hash32) &&
                         *static_cast<const char **>(static_cast<void *>(static_cast<char *>(static_cast<void *>(&currequst)) + 0xC)) ==
-                            String) {
+                            *(&String)) {
                         mWaitForResolve.remove(currequst);
                         SfxToDel[deleteCount] = currequst.pThis;
                         deleteCount++;
@@ -667,7 +667,7 @@ void EAXAemsManager::SetupNextLoad() {
                     }
 
                     stSndAssetQueue currequst = *i;
-                    if (SfxToDel[deleteCount] == currequst.pThis) {
+                    if (*(&SfxToDel[deleteCount]) == currequst.pThis) {
                         mWaitForResolve.remove(currequst);
                         goto ContinueDeleting;
                     }
