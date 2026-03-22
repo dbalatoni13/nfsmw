@@ -320,12 +320,16 @@ void cFEngRender::RenderCBVImage(FEColoredImage *image, FERenderObject *cached, 
 
 void cFEngRender::RenderString(FEString *string, FERenderObject *cached, FEPackageRenderInfo *pkg_render_info) {
     FEngFont *font = FindFont(string->Handle);
-    if (!font || !font->pTextureInfo) {
+    if (!font) {
+        return;
+    }
+    TextureInfo *texture_info = font->GetTextureInfo();
+    if (!texture_info) {
         return;
     }
 
     if (!cached) {
-        cached = CreateCachedRender(reinterpret_cast<FEObject *>(string), font->pTextureInfo);
+        cached = CreateCachedRender(reinterpret_cast<FEObject *>(string), texture_info);
     } else {
         cached->Clear(pkg_render_info);
     }
