@@ -375,19 +375,17 @@ void FnDeltaQFast::UpdateNextQsMask(DeltaQFast *deltaQ, int ceilKey, int floorBi
 
         for (int ibone = 0; ibone < static_cast<int>(numBones); ibone++) {
             unsigned char boneIdx = boneIdxs[ibone];
-            if (!boneMask->GetBone(boneIdx)) {
-                physical += 3;
-                continue;
+            if (boneMask->GetBone(boneIdx)) {
+                float *nextQ = reinterpret_cast<float *>(&mNextQs[ibone]);
+
+                nextQ[0] = static_cast<float>(physical[0] >> 4) * kQFastPhysicalScale12 - kQFastPhysicalBias12;
+                nextQ[1] = static_cast<float>(physical[1] >> 4) * kQFastPhysicalScale12 - kQFastPhysicalBias12;
+                nextQ[2] = static_cast<float>(physical[2] >> 4) * kQFastPhysicalScale12 - kQFastPhysicalBias12;
+                nextQ[3] =
+                    static_cast<float>(static_cast<unsigned char>((physical[2] & 0xF) | ((physical[0] & 0xF) * 0x100) + ((physical[1] & 0xF) * 0x10))) *
+                        kQFastPhysicalScale12 -
+                    kQFastPhysicalBias12;
             }
-
-            float *nextQ = reinterpret_cast<float *>(&mNextQs[ibone]);
-
-            nextQ[0] = static_cast<float>(physical[0] >> 4) * kQFastPhysicalScale12 - kQFastPhysicalBias12;
-            nextQ[1] = static_cast<float>(physical[1] >> 4) * kQFastPhysicalScale12 - kQFastPhysicalBias12;
-            nextQ[2] = static_cast<float>(physical[2] >> 4) * kQFastPhysicalScale12 - kQFastPhysicalBias12;
-            nextQ[3] = static_cast<float>(static_cast<unsigned char>((physical[2] & 0xF) | ((physical[0] & 0xF) * 0x100) + ((physical[1] & 0xF) * 0x10))) *
-                           kQFastPhysicalScale12 -
-                       kQFastPhysicalBias12;
             physical += 3;
         }
     } else {
@@ -396,23 +394,21 @@ void FnDeltaQFast::UpdateNextQsMask(DeltaQFast *deltaQ, int ceilKey, int floorBi
 
         for (int ibone = 0; ibone < static_cast<int>(numBones); ibone++) {
             unsigned char boneIdx = boneIdxs[ibone];
-            if (!boneMask->GetBone(boneIdx)) {
-                continue;
+            if (boneMask->GetBone(boneIdx)) {
+                float *prevQ = reinterpret_cast<float *>(&mPrevQs[ibone]);
+                float *nextQ = reinterpret_cast<float *>(&mNextQs[ibone]);
+                float *minRange = reinterpret_cast<float *>(&mMinRangesf[ibone]);
+                unsigned char b0 = deltaData[0];
+                unsigned char b1 = deltaData[1];
+                unsigned char b2 = deltaData[2];
+
+                nextQ[0] = minRange[4] * static_cast<float>(b0 >> 2) * kQFastDeltaScale6 + minRange[0] + prevQ[0];
+                nextQ[1] = minRange[5] * static_cast<float>(b1 >> 2) * kQFastDeltaScale6 + minRange[1] + prevQ[1];
+                nextQ[2] = minRange[6] * static_cast<float>(b2 >> 2) * kQFastDeltaScale6 + minRange[2] + prevQ[2];
+                nextQ[3] =
+                    minRange[7] * static_cast<float>(static_cast<unsigned char>(((b0 & 3) * 0x10) + ((b1 & 3) * 4) | (b2 & 3))) * kQFastDeltaScale6 +
+                    minRange[3] + prevQ[3];
             }
-
-            float *prevQ = reinterpret_cast<float *>(&mPrevQs[ibone]);
-            float *nextQ = reinterpret_cast<float *>(&mNextQs[ibone]);
-            float *minRange = reinterpret_cast<float *>(&mMinRangesf[ibone]);
-            unsigned char b0 = deltaData[0];
-            unsigned char b1 = deltaData[1];
-            unsigned char b2 = deltaData[2];
-
-            nextQ[0] = minRange[4] * static_cast<float>(b0 >> 2) * kQFastDeltaScale6 + minRange[0] + prevQ[0];
-            nextQ[1] = minRange[5] * static_cast<float>(b1 >> 2) * kQFastDeltaScale6 + minRange[1] + prevQ[1];
-            nextQ[2] = minRange[6] * static_cast<float>(b2 >> 2) * kQFastDeltaScale6 + minRange[2] + prevQ[2];
-            nextQ[3] =
-                minRange[7] * static_cast<float>(static_cast<unsigned char>(((b0 & 3) * 0x10) + ((b1 & 3) * 4) | (b2 & 3))) * kQFastDeltaScale6 +
-                minRange[3] + prevQ[3];
             deltaData += 3;
         }
     }
