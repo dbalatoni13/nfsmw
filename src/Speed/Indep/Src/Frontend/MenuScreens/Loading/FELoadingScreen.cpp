@@ -30,7 +30,7 @@ LoadingScreen::LoadingScreen(ScreenConstructorData *sd) : MenuScreen(sd) {
     {
         const unsigned long FEObj_LOADINGGROUP = 0x06D91704;
 
-        FEngSetVisible(GetPackageName(), FEObj_LOADINGGROUP);
+        FEngSetVisible(FEngFindObject(GetPackageName(), FEObj_LOADINGGROUP));
     }
 
     if (eIsWidescreen()) {
