@@ -330,11 +330,15 @@ class CarRenderInfo {
 
     float GetDeltaTime() const {}
 
-    void SetRadius(float r) {}
+    void SetRadius(float r) {
+        this->mRadius = r;
+    }
 
     float GetRadius() const {}
 
-    void SetCollider(const WCollider *collider) {}
+    void SetCollider(const WCollider *collider) {
+        this->mWCollider = collider;
+    }
 
     void SetAnimationTime(float animationTime) {}
 
