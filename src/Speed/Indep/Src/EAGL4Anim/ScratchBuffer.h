@@ -28,9 +28,13 @@ class ScratchBuffer {
 
     // void *operator new(size_t, void *ptr) {}
 
-    void *GetBuffer() {}
+    void *GetBuffer() {
+        return mBuffer;
+    }
 
-    unsigned int GetSize() const {}
+    unsigned int GetSize() const {
+        return mSize;
+    }
 
     void AllocateBuffer(unsigned int bufferSize);
 

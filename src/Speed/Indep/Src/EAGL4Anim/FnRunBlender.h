@@ -30,11 +30,20 @@ class FnRunBlender : public FnAnim {
         return ptr;
     }
 
-    inline float GetOffset() const {}
+    inline float GetOffset() const {
+        return mOffset;
+    }
 
-    inline void GetAnims(int &numAnims, const AnimMemoryMap **&anims, const PhaseChan **&phases, const AnimMemoryMap **&vels) const {}
+    inline void GetAnims(int &numAnims, const AnimMemoryMap **&anims, const PhaseChan **&phases, const AnimMemoryMap **&vels) const {
+        numAnims = mNumAnims;
+        anims = mAnims;
+        phases = mPhases;
+        vels = mVels;
+    }
 
-    inline float GetWeight() const {}
+    inline float GetWeight() const {
+        return mWeight;
+    }
 
     FnRunBlender();
 
