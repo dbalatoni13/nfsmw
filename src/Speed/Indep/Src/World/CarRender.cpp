@@ -81,6 +81,8 @@ extern unsigned int TireFaceIt;
 extern unsigned int hcL;
 extern unsigned int FrameMallocFailed;
 extern unsigned int FrameMallocFailAmount;
+extern int TweakKitWheelOffsetFront;
+extern int TweakKitWheelOffsetRear;
 extern int ForceBrakelightsOn;
 extern int counter_31665 asm("counter.31665");
 extern int counter_31669 asm("counter.31669");
@@ -95,6 +97,7 @@ namespace {
 void Render(eViewPlatInterface *view, eModel *model, bMatrix4 *local_to_world, eLightContext *light_context, unsigned int flags,
             unsigned int exc_flag);
 void Render(eViewPlatInterface *view, ePoly *poly, TextureInfo *texture_info, bMatrix4 *matrix, int accurate, float z_bias);
+int CarPart_GetAppliedAttributeIParam(CarPart *part, unsigned int namehash, int default_value) asm("GetAppliedAttributeIParam__7CarPartUii");
 
 template <typename T> struct bSNodeLayout {
     T *Next;
@@ -698,6 +701,97 @@ unsigned int CarRenderInfo::HideCarPart(int slotId, bool hide) {
     }
 
     return model_namehash;
+}
+
+void CarRenderInfo::UpdateWheelYRenderOffset() {
+    CarPart *front_wheel = nullptr;
+    CarPart *rear_wheel = nullptr;
+    int front_upgrade_level = 0;
+    int rear_upgrade_level = 0;
+    UMath::Vector4 tire_offset;
+
+    if (this->pCarTypeInfo == nullptr) {
+        bMemSet(this->WheelYRenderOffset, 0, sizeof(this->WheelYRenderOffset));
+        return;
+    }
+
+    if (this->pRideInfo != nullptr) {
+        front_wheel = this->pRideInfo->GetPart(CARSLOTID_FRONT_WHEEL);
+        rear_wheel = this->pRideInfo->GetPart(CARSLOTID_REAR_WHEEL);
+    }
+
+    if (front_wheel != nullptr) {
+        front_upgrade_level = 0;
+    }
+    if (rear_wheel != nullptr) {
+        rear_upgrade_level = 0;
+    }
+
+    for (int wheel = 0; wheel < 4; wheel++) {
+        int wheel_end = (wheel > 1);
+        int kit_number = wheel_end ? rear_upgrade_level : front_upgrade_level;
+        CarPart *body_part = nullptr;
+        int kit_wheel_offset;
+        float kit_wheel_offset_float;
+        float model_width;
+        float model_radius;
+        float desired_width;
+        float desired_radius;
+
+        this->GetAttributes().TireOffsets(tire_offset, wheel);
+        this->WheelYRenderOffset[wheel] = -tire_offset.y;
+
+        if (this->pRideInfo != nullptr) {
+            body_part = this->pRideInfo->GetPart(CARSLOTID_BODY);
+        }
+
+        if (body_part != nullptr) {
+            kit_number = CarPart_GetAppliedAttributeIParam(body_part, 0x796C0CB0, 0);
+        }
+
+        if (wheel_end == 0) {
+            if (TweakKitWheelOffsetFront == 0) {
+                kit_wheel_offset = this->GetAttributes().KitWheelOffsetFront(kit_number);
+            } else {
+                kit_wheel_offset = TweakKitWheelOffsetFront;
+            }
+        } else if (TweakKitWheelOffsetRear == 0) {
+            kit_wheel_offset = this->GetAttributes().KitWheelOffsetRear(kit_number);
+        } else {
+            kit_wheel_offset = TweakKitWheelOffsetRear;
+        }
+
+        kit_wheel_offset_float = static_cast<float>(kit_wheel_offset) * 0.001f;
+        if (0.0f < this->WheelYRenderOffset[wheel]) {
+            this->WheelYRenderOffset[wheel] += kit_wheel_offset_float;
+        } else {
+            this->WheelYRenderOffset[wheel] -= kit_wheel_offset_float;
+        }
+
+        model_radius = this->WheelRadius[wheel_end];
+        model_width = this->WheelWidths[wheel_end];
+        desired_width = this->GetAttributes().TireSkidWidth(wheel);
+
+        if (wheel > 1) {
+            desired_width *= this->GetAttributes().TireSkidWidthKitScale(kit_number).y;
+        } else {
+            desired_width *= this->GetAttributes().TireSkidWidthKitScale(kit_number).x;
+        }
+
+        desired_radius = tire_offset.w;
+
+        if (model_width <= 0.0f || desired_width <= 0.0f) {
+            this->WheelWidthScales[wheel] = 1.0f;
+        } else {
+            this->WheelWidthScales[wheel] = desired_width / model_width;
+        }
+
+        if (model_radius <= 0.0f || desired_radius <= 0.0f) {
+            this->WheelRadiusScales[wheel] = 1.0f;
+        } else {
+            this->WheelRadiusScales[wheel] = desired_radius / model_radius;
+        }
+    }
 }
 
 void CarRenderInfo::RenderPart(eView *view, CarPartModel *carPart, bMatrix4 *local_to_world, eDynamicLightContext *light_context,
