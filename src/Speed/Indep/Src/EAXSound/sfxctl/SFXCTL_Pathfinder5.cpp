@@ -49,7 +49,7 @@ void SFXCTL_Pathfinder::AttachController(SFXCTL *psfxctl) {}
 void SFXCTL_Pathfinder::UpdateMixerOutputs() {}
 
 void SFXCTL_Pathfinder::SetupSFX(CSTATE_Base *_StateBase) {
-    SndBase::SetupSFX(_StateBase);
+    (void)_StateBase;
     g_pSFXCTL_Pathfinder = this;
 }
 

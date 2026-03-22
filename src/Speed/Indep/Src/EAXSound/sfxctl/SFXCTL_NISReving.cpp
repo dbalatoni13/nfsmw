@@ -151,6 +151,4 @@ void NIS_RevManager::Update(float t) {
     (void)t;
 }
 
-void NIS_RevManager::StartNISReving() {
-    Start321Reving();
-}
+void NIS_RevManager::StartNISReving() {}
