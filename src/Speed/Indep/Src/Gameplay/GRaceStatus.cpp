@@ -3784,7 +3784,7 @@ void GRaceStatus::UpdateAdaptiveDifficulty(eAdaptiveGainReason reason, ISimable 
 
         num_laps = static_cast<float>(laps);
 
-        lose_margin = (GetRaceLength() * (100.0f - eliminated_player->GetPctRaceComplete())) * 0.01f;
+        lose_margin = GetRaceLength() * ((100.0f - eliminated_player->GetPctRaceComplete()) * 0.01f);
         race_lose_margin = GetRaceLength() / num_laps;
         lose_margin = UMath::Mod(lose_margin, race_lose_margin);
 
