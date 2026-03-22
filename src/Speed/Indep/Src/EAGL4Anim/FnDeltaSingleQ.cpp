@@ -211,16 +211,11 @@ bool FnDeltaSingleQ::EvalSQT(float currTime, float *sqt, const BoneMask *boneMas
 
                 DecodeSingleQMinRange(mMinRanges[ibone], minRangef);
 
-                mPreMultQs[ibone].x = kSingleQFloatZero;
-                mPreMultQs[ibone].y = kSingleQFloatZero;
-                mPreMultQs[ibone].z = kSingleQFloatZero;
-                mPreMultQs[ibone].w = kSingleQFloatOne;
-                mPostMultQs[ibone].x = kSingleQFloatZero;
-                mPostMultQs[ibone].y = kSingleQFloatZero;
-                mPostMultQs[ibone].z = kSingleQFloatZero;
-                mPostMultQs[ibone].w = kSingleQFloatOne;
-
                 if (minRangef.mIndex == 0) {
+                    mPreMultQs[ibone].x = kSingleQFloatZero;
+                    mPreMultQs[ibone].y = kSingleQFloatZero;
+                    mPreMultQs[ibone].z = kSingleQFloatZero;
+                    mPreMultQs[ibone].w = kSingleQFloatOne;
                     eul[0] = kSingleQFloatZero;
                     eul[1] = minRangef.mConst0;
                     eul[2] = minRangef.mConst1;
@@ -236,6 +231,10 @@ bool FnDeltaSingleQ::EvalSQT(float currTime, float *sqt, const BoneMask *boneMas
                     eul[2] = minRangef.mConst1;
                     SingleQEulToQuat(eul, reinterpret_cast<float *>(&mPostMultQs[ibone]));
                 } else {
+                    mPostMultQs[ibone].x = kSingleQFloatZero;
+                    mPostMultQs[ibone].y = kSingleQFloatZero;
+                    mPostMultQs[ibone].z = kSingleQFloatZero;
+                    mPostMultQs[ibone].w = kSingleQFloatOne;
                     eul[0] = minRangef.mConst0;
                     eul[1] = minRangef.mConst1;
                     eul[2] = kSingleQFloatZero;
@@ -415,16 +414,11 @@ bool FnDeltaSingleQ::EvalSQTMasked(float currTime, const BoneMask *boneMask, flo
 
                 DecodeSingleQMinRange(mMinRanges[ibone], minRangef);
 
-                mPreMultQs[ibone].x = kSingleQFloatZero;
-                mPreMultQs[ibone].y = kSingleQFloatZero;
-                mPreMultQs[ibone].z = kSingleQFloatZero;
-                mPreMultQs[ibone].w = kSingleQFloatOne;
-                mPostMultQs[ibone].x = kSingleQFloatZero;
-                mPostMultQs[ibone].y = kSingleQFloatZero;
-                mPostMultQs[ibone].z = kSingleQFloatZero;
-                mPostMultQs[ibone].w = kSingleQFloatOne;
-
                 if (minRangef.mIndex == 0) {
+                    mPreMultQs[ibone].x = kSingleQFloatZero;
+                    mPreMultQs[ibone].y = kSingleQFloatZero;
+                    mPreMultQs[ibone].z = kSingleQFloatZero;
+                    mPreMultQs[ibone].w = kSingleQFloatOne;
                     eul[0] = kSingleQFloatZero;
                     eul[1] = minRangef.mConst0;
                     eul[2] = minRangef.mConst1;
@@ -440,6 +434,10 @@ bool FnDeltaSingleQ::EvalSQTMasked(float currTime, const BoneMask *boneMask, flo
                     eul[2] = minRangef.mConst1;
                     SingleQEulToQuat(eul, reinterpret_cast<float *>(&mPostMultQs[ibone]));
                 } else {
+                    mPostMultQs[ibone].x = kSingleQFloatZero;
+                    mPostMultQs[ibone].y = kSingleQFloatZero;
+                    mPostMultQs[ibone].z = kSingleQFloatZero;
+                    mPostMultQs[ibone].w = kSingleQFloatOne;
                     eul[0] = minRangef.mConst0;
                     eul[1] = minRangef.mConst1;
                     eul[2] = kSingleQFloatZero;
@@ -628,16 +626,11 @@ void FnDeltaSingleQ::InitBuffersAsRequired() {
 
             DecodeSingleQMinRange(mMinRanges[ibone], minRangef);
 
-            mPreMultQs[ibone].x = kSingleQFloatZero;
-            mPreMultQs[ibone].y = kSingleQFloatZero;
-            mPreMultQs[ibone].z = kSingleQFloatZero;
-            mPreMultQs[ibone].w = kSingleQFloatOne;
-            mPostMultQs[ibone].x = kSingleQFloatZero;
-            mPostMultQs[ibone].y = kSingleQFloatZero;
-            mPostMultQs[ibone].z = kSingleQFloatZero;
-            mPostMultQs[ibone].w = kSingleQFloatOne;
-
             if (minRangef.mIndex == 0) {
+                mPreMultQs[ibone].x = kSingleQFloatZero;
+                mPreMultQs[ibone].y = kSingleQFloatZero;
+                mPreMultQs[ibone].z = kSingleQFloatZero;
+                mPreMultQs[ibone].w = kSingleQFloatOne;
                 eul[0] = kSingleQFloatZero;
                 eul[1] = minRangef.mConst0;
                 eul[2] = minRangef.mConst1;
@@ -653,6 +646,10 @@ void FnDeltaSingleQ::InitBuffersAsRequired() {
                 eul[2] = minRangef.mConst1;
                 SingleQEulToQuat(eul, reinterpret_cast<float *>(&mPostMultQs[ibone]));
             } else {
+                mPostMultQs[ibone].x = kSingleQFloatZero;
+                mPostMultQs[ibone].y = kSingleQFloatZero;
+                mPostMultQs[ibone].z = kSingleQFloatZero;
+                mPostMultQs[ibone].w = kSingleQFloatOne;
                 eul[0] = minRangef.mConst0;
                 eul[1] = minRangef.mConst1;
                 eul[2] = kSingleQFloatZero;
