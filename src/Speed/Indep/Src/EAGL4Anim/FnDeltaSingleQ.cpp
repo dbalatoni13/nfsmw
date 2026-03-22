@@ -189,11 +189,61 @@ bool FnDeltaSingleQ::EvalSQT(float currTime, float *sqt, const BoneMask *boneMas
     if (boneMask) {
         return EvalSQTMasked(currTime, boneMask, sqt);
     }
-    if (!mPrevQs) {
-        InitBuffersAsRequired();
-    }
-
     DeltaSingleQ *deltaQ = reinterpret_cast<DeltaSingleQ *>(mpAnim);
+
+    if (!mPrevQs) {
+        mMinRanges = GetSingleQMinRanges(deltaQ);
+        mBins = GetSingleQBinStart(deltaQ);
+        mBinSize = GetSingleQBinSize(deltaQ);
+
+        if (deltaQ->mNumBones != 0) {
+            float eul[3];
+
+            mPrevQs = reinterpret_cast<UMath::Vector4 *>(MemoryPoolManager::NewBlock(deltaQ->mNumBones * sizeof(*mPrevQs)));
+            mPrevQBlock = mPrevQs;
+            mPreMultQs =
+                reinterpret_cast<UMath::Vector4 *>(MemoryPoolManager::NewBlock(deltaQ->mNumBones * sizeof(*mPreMultQs)));
+            mPostMultQs =
+                reinterpret_cast<UMath::Vector4 *>(MemoryPoolManager::NewBlock(deltaQ->mNumBones * sizeof(*mPostMultQs)));
+
+            for (int ibone = 0; ibone < deltaQ->mNumBones; ibone++) {
+                DeltaSingleQMinRangef minRangef;
+
+                DecodeSingleQMinRange(mMinRanges[ibone], minRangef);
+
+                mPreMultQs[ibone].x = kSingleQFloatZero;
+                mPreMultQs[ibone].y = kSingleQFloatZero;
+                mPreMultQs[ibone].z = kSingleQFloatZero;
+                mPreMultQs[ibone].w = kSingleQFloatOne;
+                mPostMultQs[ibone].x = kSingleQFloatZero;
+                mPostMultQs[ibone].y = kSingleQFloatZero;
+                mPostMultQs[ibone].z = kSingleQFloatZero;
+                mPostMultQs[ibone].w = kSingleQFloatOne;
+
+                if (minRangef.mIndex == 0) {
+                    eul[0] = kSingleQFloatZero;
+                    eul[1] = minRangef.mConst0;
+                    eul[2] = minRangef.mConst1;
+                    SingleQEulToQuat(eul, reinterpret_cast<float *>(&mPostMultQs[ibone]));
+                } else if (minRangef.mIndex == 1) {
+                    eul[0] = minRangef.mConst0;
+                    eul[1] = kSingleQFloatZero;
+                    eul[2] = kSingleQFloatZero;
+                    SingleQEulToQuat(eul, reinterpret_cast<float *>(&mPreMultQs[ibone]));
+
+                    eul[0] = kSingleQFloatZero;
+                    eul[1] = kSingleQFloatZero;
+                    eul[2] = minRangef.mConst1;
+                    SingleQEulToQuat(eul, reinterpret_cast<float *>(&mPostMultQs[ibone]));
+                } else {
+                    eul[0] = minRangef.mConst0;
+                    eul[1] = minRangef.mConst1;
+                    eul[2] = kSingleQFloatZero;
+                    SingleQEulToQuat(eul, reinterpret_cast<float *>(&mPreMultQs[ibone]));
+                }
+            }
+        }
+    }
     int floorTime = FloatToInt(currTime);
     int floorKey;
 
@@ -346,11 +396,61 @@ bool FnDeltaSingleQ::EvalSQT(float currTime, float *sqt, const BoneMask *boneMas
 }
 
 bool FnDeltaSingleQ::EvalSQTMasked(float currTime, const BoneMask *boneMask, float *sqt) {
-    if (!mPrevQs) {
-        InitBuffersAsRequired();
-    }
-
     DeltaSingleQ *deltaQ = reinterpret_cast<DeltaSingleQ *>(mpAnim);
+
+    if (!mPrevQs) {
+        mMinRanges = GetSingleQMinRanges(deltaQ);
+        mBins = GetSingleQBinStart(deltaQ);
+        mBinSize = GetSingleQBinSize(deltaQ);
+
+        if (deltaQ->mNumBones != 0) {
+            float eul[3];
+
+            mPrevQs = reinterpret_cast<UMath::Vector4 *>(MemoryPoolManager::NewBlock(deltaQ->mNumBones * sizeof(*mPrevQs)));
+            mPrevQBlock = mPrevQs;
+            mPreMultQs =
+                reinterpret_cast<UMath::Vector4 *>(MemoryPoolManager::NewBlock(deltaQ->mNumBones * sizeof(*mPreMultQs)));
+            mPostMultQs =
+                reinterpret_cast<UMath::Vector4 *>(MemoryPoolManager::NewBlock(deltaQ->mNumBones * sizeof(*mPostMultQs)));
+
+            for (int ibone = 0; ibone < deltaQ->mNumBones; ibone++) {
+                DeltaSingleQMinRangef minRangef;
+
+                DecodeSingleQMinRange(mMinRanges[ibone], minRangef);
+
+                mPreMultQs[ibone].x = kSingleQFloatZero;
+                mPreMultQs[ibone].y = kSingleQFloatZero;
+                mPreMultQs[ibone].z = kSingleQFloatZero;
+                mPreMultQs[ibone].w = kSingleQFloatOne;
+                mPostMultQs[ibone].x = kSingleQFloatZero;
+                mPostMultQs[ibone].y = kSingleQFloatZero;
+                mPostMultQs[ibone].z = kSingleQFloatZero;
+                mPostMultQs[ibone].w = kSingleQFloatOne;
+
+                if (minRangef.mIndex == 0) {
+                    eul[0] = kSingleQFloatZero;
+                    eul[1] = minRangef.mConst0;
+                    eul[2] = minRangef.mConst1;
+                    SingleQEulToQuat(eul, reinterpret_cast<float *>(&mPostMultQs[ibone]));
+                } else if (minRangef.mIndex == 1) {
+                    eul[0] = minRangef.mConst0;
+                    eul[1] = kSingleQFloatZero;
+                    eul[2] = kSingleQFloatZero;
+                    SingleQEulToQuat(eul, reinterpret_cast<float *>(&mPreMultQs[ibone]));
+
+                    eul[0] = kSingleQFloatZero;
+                    eul[1] = kSingleQFloatZero;
+                    eul[2] = minRangef.mConst1;
+                    SingleQEulToQuat(eul, reinterpret_cast<float *>(&mPostMultQs[ibone]));
+                } else {
+                    eul[0] = minRangef.mConst0;
+                    eul[1] = minRangef.mConst1;
+                    eul[2] = kSingleQFloatZero;
+                    SingleQEulToQuat(eul, reinterpret_cast<float *>(&mPreMultQs[ibone]));
+                }
+            }
+        }
+    }
     int floorTime = FloatToInt(currTime);
     int floorKey;
 
