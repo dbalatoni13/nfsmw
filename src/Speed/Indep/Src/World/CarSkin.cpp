@@ -45,10 +45,10 @@ int CompositeRim(RideInfo *ride_info);
 SkinCompositeParams SkinCompositeParameterCache[4];
 
 struct CompColour {
-    unsigned char r;
-    unsigned char g;
-    unsigned char b;
     unsigned char a;
+    unsigned char b;
+    unsigned char g;
+    unsigned char r;
 
     CompColour() {}
 };
@@ -241,12 +241,14 @@ int CompositeSkin32(SkinCompositeParams *composite_params) {
 }
 
 unsigned int ScaleColours(unsigned int a, unsigned int b) {
+    CompColour *colour_a = reinterpret_cast<CompColour *>(&a);
+    CompColour *colour_b = reinterpret_cast<CompColour *>(&b);
     CompColour final_colour;
 
-    final_colour.g = static_cast<unsigned char>(static_cast<float>((a >> 8) & 0xFF) * 0.003921569f * static_cast<float>((b >> 8) & 0xFF));
-    final_colour.b = static_cast<unsigned char>(static_cast<float>((a >> 16) & 0xFF) * 0.003921569f * static_cast<float>((b >> 16) & 0xFF));
-    final_colour.a = static_cast<unsigned char>(static_cast<float>((a >> 24) & 0xFF) * 0.003921569f * static_cast<float>(b >> 24));
-    final_colour.r = static_cast<unsigned char>(static_cast<float>(a & 0xFF) * 0.003921569f * static_cast<float>(b & 0xFF));
+    final_colour.g = static_cast<unsigned char>(static_cast<float>(colour_a->g) * 0.003921569f * static_cast<float>(colour_b->g));
+    final_colour.b = static_cast<unsigned char>(static_cast<float>(colour_a->b) * 0.003921569f * static_cast<float>(colour_b->b));
+    final_colour.a = static_cast<unsigned char>(static_cast<float>(colour_a->a) * 0.003921569f * static_cast<float>(colour_b->a));
+    final_colour.r = static_cast<unsigned char>(static_cast<float>(colour_a->r) * 0.003921569f * static_cast<float>(colour_b->r));
     return *reinterpret_cast<unsigned int *>(&final_colour);
 }
 
