@@ -1836,7 +1836,7 @@ void SetSoundControlState(bool on, eSNDCTLSTATE state, const char *caller) {
     }
 
     for (unsigned int s = 0; s < 13; s++) {
-        unsigned int sBit = 1u << (s & 0x1F);
+        unsigned int sBit = 1u << s;
         unsigned int cur = g_ActiveSFXStates & sBit;
         if (cur != (g_PrevActiveSFXStates & sBit) && g_pEAXSound->GetStreamManager()) {
             if (cur != 0) {
