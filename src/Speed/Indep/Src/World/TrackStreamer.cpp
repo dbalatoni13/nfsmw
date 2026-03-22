@@ -454,17 +454,24 @@ void TSMemoryPool::Free(void *memory) {
 }
 
 TSMemoryNode *TSMemoryPool::GetNextNode(bool start_from_top, TSMemoryNode *node) {
-    TSMemoryNode *next_node;
     if (start_from_top) {
-        next_node = node ? node->GetNext() : NodeList.GetHead();
+        if (node) {
+            node = node->GetNext();
+        } else {
+            node = NodeList.GetHead();
+        }
     } else {
-        next_node = node ? node->GetPrev() : NodeList.GetTail();
+        if (node) {
+            node = node->GetPrev();
+        } else {
+            node = NodeList.GetTail();
+        }
     }
 
-    if (next_node == NodeList.EndOfList()) {
+    if (node == NodeList.EndOfList()) {
         return 0;
     }
-    return next_node;
+    return node;
 }
 
 TSMemoryNode *TSMemoryPool::GetNextFreeNode(bool start_from_top, TSMemoryNode *node) {
