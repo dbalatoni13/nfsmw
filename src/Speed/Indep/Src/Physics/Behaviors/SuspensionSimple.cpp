@@ -946,12 +946,15 @@ void SuspensionSimple::OnTaskSimulate(float dT) {
     if (!mInput || !mRBComplex || !mRB) {
         return;
     }
+    if (!mRBComplex->IsModeling()) {
+        return;
+    }
 
     float ride_extra = 0.0f;
-    if (mNumWheelsOnGround == 0) {
-        ride_extra = -10.0f;
-    } else if (mNumWheelsOnGround >= 2) {
+    if (mNumWheelsOnGround > 1) {
         ride_extra = 2.0f;
+    } else if (mNumWheelsOnGround == 0) {
+        ride_extra = -10.0f;
     }
     SetCOG(0.0f, ride_extra);
 
@@ -985,7 +988,7 @@ void SuspensionSimple::OnTaskSimulate(float dT) {
     if (mCheater) {
         float catchup = mCheater->GetCatchupCheat();
         drag_pct = 1.0f - catchup;
-        aero_pct = catchup * (1.5f - 1.0f) + 1.0f;
+        aero_pct = catchup * (1.5f - aero_pct) + aero_pct;
     }
     if (state.driver_class == 1) {
         aero_pct = UMath::Max(1.5f, aero_pct);
@@ -1005,10 +1008,10 @@ void SuspensionSimple::OnTaskSimulate(float dT) {
         mTires[i]->EndFrame(dT);
     }
 
-    if (GetNumWheelsOnGround() == 0) {
-        mTimeInAir += dT;
-    } else {
+    if (GetNumWheelsOnGround() != 0) {
         mTimeInAir = 0.0f;
+    } else {
+        mTimeInAir += dT;
     }
 
     DoAerobatics(state);

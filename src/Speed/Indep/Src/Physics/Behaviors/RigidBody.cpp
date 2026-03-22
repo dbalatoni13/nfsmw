@@ -199,11 +199,11 @@ RigidBody::Volatile::Volatile() {}
 
 // UNSOLVED but functionally matching
 RigidBody::Mesh::Mesh(const SimSurface &material, const UMath::Vector4 *verts, unsigned int count, UCrc32 name, bool persistant)
-    : mVerts(nullptr),                          //
-      mNumVertices(count),                      //
+    : mNumVertices(count),                      //
       mFlags(0),                                //
       mMaterial(material.GetConstCollection()), //
       mName(name) {
+    mVerts = nullptr;
     if (persistant) {
         mVerts = const_cast<UMath::Vector4 *>(verts);
     } else {
