@@ -822,6 +822,45 @@ float TireFace(bMatrix4 *matrix, eView *view) {
     return face;
 }
 
+int GetCarLightFlareType(unsigned int name_hash, int slot_model_index, int &front_marker_slot, int &rear_marker_slot) {
+    switch (name_hash) {
+        case 0xD09091C6:
+        case 0x9DB90133:
+        case 0x7A5BCF69:
+            return 0;
+        case 0x31A66786:
+        case 0xA2A2FC7C:
+        case 0xBF700A79:
+            return 1;
+        case 0x1E4150B4:
+            return 5;
+        case 0xE662C161:
+            return 6;
+        case 0xB4348DBA:
+            return 7;
+        case 0x41489594:
+            return 10;
+        case 0x6A52A241:
+            return 11;
+        case 0x28CD78F5:
+            return 12;
+        case 0x7A5B2F25:
+            if (front_marker_slot == slot_model_index || front_marker_slot < 1) {
+                front_marker_slot = slot_model_index;
+                return 3;
+            }
+            return -1;
+        case 0x7ADF7EF8:
+            if (rear_marker_slot != slot_model_index && rear_marker_slot > 0) {
+                return -1;
+            }
+            rear_marker_slot = slot_model_index;
+            return 3;
+        default:
+            return -1;
+    }
+}
+
 void CarRenderInfo::UpdateCarReplacementTextures() {
     CarRenderUsedCarTextureInfoLayout *used_texture_info =
         reinterpret_cast<CarRenderUsedCarTextureInfoLayout *>(&this->mUsedTextureInfos);
@@ -855,6 +894,46 @@ void CarRenderInfo::SwitchSkin(RideInfo *ride_info) {
     this->UpdateCarReplacementTextures();
     this->BrakeLeftReplacementTextureTable[1].SetNewNameHash(used_texture_info->ReplaceGlobalHash);
     this->BrakeRightReplacementTextureTable[1].SetNewNameHash(used_texture_info->ReplaceGlobalHash);
+}
+
+void CarRenderInfo::CreateCarLightFlares() {
+    if (this->pCarTypeInfo != 0) {
+        int front_marker_slot = -1;
+        int rear_marker_slot = -1;
+
+        for (int slot_model_index = 0x4B; slot_model_index >= 0; slot_model_index--) {
+            eModel *model = this->mCarPartModels[slot_model_index][0][this->mMinLodLevel].GetModel();
+            ePositionMarker *position_marker = 0;
+
+            if (model == 0) {
+                continue;
+            }
+
+            while ((position_marker = model->GetPostionMarker(position_marker)) != 0) {
+                int flare_type =
+                    GetCarLightFlareType(position_marker->NameHash, slot_model_index, front_marker_slot, rear_marker_slot);
+
+                if (flare_type != -1) {
+                    eLightFlare *light_flare = static_cast<eLightFlare *>(gFastMem.Alloc(sizeof(eLightFlare), 0));
+
+                    bMemSet(light_flare, 0, sizeof(eLightFlare));
+                    light_flare->NameHash = position_marker->NameHash;
+                    light_flare->ColourTint = 0;
+                    light_flare->Type = static_cast<char>(flare_type);
+                    light_flare->Flags =
+                        static_cast<char>(((flare_type - 5U < 3) || flare_type == 10 || flare_type == 11 || flare_type == 12) ? 2 : 4);
+                    light_flare->PositionX = position_marker->Matrix.v3.x;
+                    light_flare->PositionY = position_marker->Matrix.v3.y;
+                    light_flare->PositionZ = position_marker->Matrix.v3.z;
+                    light_flare->ReflectPosZ = 0.0f;
+                    light_flare->DirectionX = position_marker->Matrix.v2.x;
+                    light_flare->DirectionY = position_marker->Matrix.v2.y;
+                    light_flare->DirectionZ = position_marker->Matrix.v2.z;
+                    this->LightFlareList.AddTail(light_flare);
+                }
+            }
+        }
+    }
 }
 
 void RefreshAllFrontEndCarRenderInfos(CarType type) {
