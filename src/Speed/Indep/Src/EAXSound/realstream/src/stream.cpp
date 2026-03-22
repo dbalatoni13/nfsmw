@@ -426,41 +426,37 @@ int closecallback(int sndstreamhandle, int status, void *userdata) {
     }
 }
 
-int readcallback(int sndstreamhandle, int status, void *userdata) {
-    (void)sndstreamhandle;
-    (void)status;
-
-    STREAMHEADERtag *stream = static_cast<STREAMHEADERtag *>(userdata);
-    REQUESTSTRUCTtag *req = stream->curreq;
-    int endoffile;
+static void readcallback(int, int, void *userdata) {
+    STREAMHEADERtag *strm = static_cast<STREAMHEADERtag *>(userdata);
+    REQUESTSTRUCTtag *req = strm->curreq;
+    int lockstate;
     int bytesread;
+    int endoffile;
     int endchunk;
 
     *(int *)&bReadCallbackToggle = 1;
     if (req->type == 1) {
-        bytesread = stream->readsize;
-        endoffile = stream->foffset + bytesread >= req->parm;
+        bytesread = strm->readsize;
+        endoffile = strm->foffset + bytesread >= req->parm;
     } else {
-        long long readresult = FILESYS_completeop64(stream->fop);
-
-        bytesread = static_cast<int>(readresult);
-        endoffile = bytesread < stream->readsize;
+        bytesread = static_cast<int>(FILESYS_completeop64(strm->fop));
+        endoffile = bytesread < strm->readsize;
     }
 
-    stream->foffset += bytesread;
-    stream->dataend += bytesread;
-    endchunk = parsechunks(stream);
+    strm->foffset += bytesread;
+    strm->dataend += bytesread;
+    endchunk = parsechunks(strm);
     if (req->state == STREAMREQUEST_CANCELED || endoffile || endchunk != 0) {
         if (req->state != STREAMREQUEST_CANCELED) {
-            MUTEX_lock(&stream->mutex);
+            MUTEX_lock(&strm->mutex);
             if (req->state != STREAMREQUEST_CANCELED) {
                 req->state = STREAMREQUEST_COMPLETED;
             }
-            MUTEX_unlock(&stream->mutex);
+            MUTEX_unlock(&strm->mutex);
         }
-        startnextrequest(stream, stream->priorityhigh);
+        startnextrequest(strm, strm->priorityhigh);
     } else {
-        restartstream(stream, stream->priorityhigh - 1);
+        restartstream(strm, strm->priorityhigh - 1);
     }
 }
 
@@ -645,7 +641,7 @@ void restartstream(STREAMHEADERtag *stream, int priority) {
         return;
     }
 
-    FILESYS_callbackop(op, readcallback);
+    FILESYS_callbackop(op, reinterpret_cast<int (*)(int, int, void *)>(readcallback));
     return;
 
 stream_stop:
