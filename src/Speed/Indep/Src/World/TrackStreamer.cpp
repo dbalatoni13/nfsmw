@@ -1714,14 +1714,14 @@ TrackStreamingSection *TrackStreamer::ChooseSectionToJettison() {
                 section->SectionNumber == GetScenerySectionNumber('W', 0) ||
                 section->SectionNumber == GetScenerySectionNumber('X', 0)) {
                 discard_priority = 1;
-            } else if (LoadingPhase == ALLOCATING_TEXTURE_SECTIONS) {
-                if (IsTextureSection(section->SectionNumber) && section->Status == TrackStreamingSection::ACTIVATED && !SplitScreen) {
-                    discard_priority = 10000;
-                }
-            } else if (LoadingPhase == ALLOCATING_GEOMETRY_SECTIONS) {
-                if (IsLibrarySection(section->SectionNumber) && section->Status == TrackStreamingSection::ACTIVATED && !SplitScreen) {
-                    discard_priority = 10000;
-                }
+            } else if (
+                LoadingPhase == ALLOCATING_TEXTURE_SECTIONS && IsTextureSection(section->SectionNumber) &&
+                section->Status == TrackStreamingSection::ACTIVATED && !SplitScreen) {
+                discard_priority = 10000;
+            } else if (
+                LoadingPhase == ALLOCATING_GEOMETRY_SECTIONS && IsLibrarySection(section->SectionNumber) &&
+                section->Status == TrackStreamingSection::ACTIVATED && !SplitScreen) {
+                discard_priority = 10000;
             }
         } else if (IsRegularScenerySection(section->SectionNumber)) {
             int loading_priority = GetLoadingPriority(section, &StreamingPositionEntries[0], true);
