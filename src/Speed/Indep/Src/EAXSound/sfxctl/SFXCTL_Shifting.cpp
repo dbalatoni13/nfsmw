@@ -429,7 +429,8 @@ void SFXCTL_Shifting::BeginUpShift() {
 
         *static_cast<int *>(static_cast<void *>(&m_bNeed_DisengageSnd)) = 1;
         *static_cast<int *>(static_cast<void *>(&m_bPendingNeedShiftSound)) = 1;
-        tShiftDelay = SndBase::m_fRunningTime + m_pShiftingPatternData->Up_Shift_Sound_Delay();
+        tShiftDelay = SndBase::m_fRunningTime;
+        tShiftDelay += m_pShiftingPatternData->Up_Shift_Sound_Delay();
         ShiftType = static_cast< AEMS_SHIFTING_SAMPLES >(1);
     }
 }
