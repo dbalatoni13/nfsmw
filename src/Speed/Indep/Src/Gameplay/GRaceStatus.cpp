@@ -3758,7 +3758,7 @@ void GRaceStatus::UpdateAdaptiveDifficulty(eAdaptiveGainReason reason, ISimable 
 
         win_margin = GetRaceLength() * ((100.0f - max_pct_complete) * 0.01f);
 
-        if (win_margin > 200.0f && max_pct_complete > 0.0f) {
+        if (win_margin > 0.0f && max_pct_complete > 0.0f) {
             float t = UMath::Ramp(win_margin, 200.0f, 750.0f);
             float bonus = UMath::Lerp(0.0f, 0.4f, t);
 
