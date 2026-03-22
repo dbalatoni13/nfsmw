@@ -365,11 +365,14 @@ float SuspensionSimple::Tire::UpdateLoaded(float lat_vel, float fwd_vel, float b
     mLateralSpeed = lat_vel;
     mLoad = UMath::Max(load, 0.0f);
     mTraction = 1.0f;
+    mBrakeLocked = mEBrake > 0.0f && mAxleIndex == 1;
 
     const bool noBrake = mBrake + mEBrake <= 0.0f;
     if (!noBrake) {
         const float abs_fwd = UMath::Abs(fwd_vel);
-        if (abs_fwd >= 1.0f) {
+        if (abs_fwd < 1.0f) {
+            mAppliedTorque = mAppliedTorque + ((-mBrake * load) * fwd_vel) / mRadius + ((-mEBrake * load) * fwd_vel) / mRadius;
+        } else {
             float brake_torque = mBrake * FTLB2NM(mBrakes->BRAKES().At(mAxleIndex)) * 10.0f +
                                  mEBrake * FTLB2NM(mBrakes->EBRAKE()) * 10.0f;
             if (mAV <= 0.0f) {
@@ -378,8 +381,6 @@ float SuspensionSimple::Tire::UpdateLoaded(float lat_vel, float fwd_vel, float b
                 brake_torque = mAppliedTorque - brake_torque;
             }
             mAppliedTorque = brake_torque;
-        } else {
-            mAppliedTorque = mAppliedTorque + ((-mBrake * load) * fwd_vel) / mRadius + ((-mEBrake * load) * fwd_vel) / mRadius;
         }
     }
 
@@ -444,7 +445,7 @@ float SuspensionSimple::Tire::UpdateLoaded(float lat_vel, float fwd_vel, float b
     }
 
     if (mAllowSlip && !clippedSlip && !mBrakeLocked) {
-        mLongitudeForce = mLongitudeForce + (((mLastTorque * mRadius - fwd_acc) * 10.0f) / mRadius);
+        mLongitudeForce = mLongitudeForce + (((mAngularAcc * mRadius - fwd_acc) * 10.0f) / mRadius);
     }
 
     const float max_force =
