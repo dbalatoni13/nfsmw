@@ -691,7 +691,7 @@ void SuspensionSpline::SetAnimPitch(float dip, float time) {
     float length;
     GetWheelBase(0, &length);
     if (dip < 0.0f) {
-        mAnimatedPitchDelta = -static_cast<float>(bATan(length * 0.5f, -dip)) * 3.0517578e-05f;
+        mAnimatedPitchDelta = -(static_cast<float>(bATan(length * 0.5f, -dip)) * 3.0517578e-05f);
     } else {
         mAnimatedPitchDelta = static_cast<float>(bATan(length * 0.5f, dip)) * 3.0517578e-05f;
     }
@@ -709,7 +709,7 @@ void SuspensionSpline::SetAnimRoll(float dip, float time) {
     float width;
     GetWheelBase(&width, 0);
     if (dip < 0.0f) {
-        mAnimatedRollDelta = -static_cast<float>(bATan(width * 0.5f, -dip)) * 3.0517578e-05f;
+        mAnimatedRollDelta = -(static_cast<float>(bATan(width * 0.5f, -dip)) * 3.0517578e-05f);
     } else {
         mAnimatedRollDelta = static_cast<float>(bATan(width * 0.5f, dip)) * 3.0517578e-05f;
     }
@@ -729,7 +729,7 @@ void SuspensionSpline::SetAnimShake(float dip, float cycleRate, float cycleRamp,
     float width;
     GetWheelBase(&width, 0);
     if (dip < 0.0f) {
-        mAnimatedShakeDelta = -static_cast<float>(bATan(width * 0.5f, -dip)) * 3.0517578e-05f;
+        mAnimatedShakeDelta = -(static_cast<float>(bATan(width * 0.5f, -dip)) * 3.0517578e-05f);
     } else {
         mAnimatedShakeDelta = static_cast<float>(bATan(width * 0.5f, dip)) * 3.0517578e-05f;
     }
