@@ -2196,7 +2196,7 @@ void *TrackStreamer::AllocateUserMemory(int size, const char *debug_name, int of
 #endif
 
     int allocation_params;
-    if (bLargestMalloc(7) < size) {
+    if (size > bLargestMalloc(7)) {
         allocation_params = (offset & 0x1FFC) << 17 | 0x2000;
     } else {
         allocation_params = (offset & 0x1FFC) << 17 | 0x2047;
