@@ -101,6 +101,7 @@ extern bVector3 EnvMapCamOffset;
 extern float lbl_8040AD70;
 extern float lbl_8040AD74;
 extern float lbl_8040AD78;
+extern float lbl_8040AD7C;
 extern float lbl_8040AD98;
 extern float lbl_8040AD9C;
 extern float lbl_8040ADA0;
@@ -127,7 +128,6 @@ extern float cs_OneOverZ asm("cs_OneOverZ");
 extern int counter_31665 asm("counter.31665");
 extern int counter_31669 asm("counter.31669");
 extern void sh_Setup(bVector3 *car_pos) asm("sh_Setup__FP8bVector3");
-extern int smooth_shadow_corners(int nVerts) asm("smooth_shadow_corners__Fi");
 
 namespace {
 
@@ -1656,6 +1656,42 @@ void RenderVehicleFlares(eView *view, int reflection, int renderFlareFlags) {
 
 void DrawTestCars(eView *view, int reflection) {
     VehicleRenderConn::RenderAll(view, reflection);
+}
+
+int smooth_shadow_corners(int nVerts) {
+    bVector3 v[2];
+    bVector3 vTemp;
+    int i;
+    int iNew;
+    int nCurr;
+    int nPrev;
+    int nNext;
+
+    iNew = 0;
+    nPrev = nVerts - 1;
+    v[0] = hullVertArray2[0] - hullVertArray2[nPrev];
+    v[0] *= lbl_8040AD7C;
+
+    for (i = 0; i < nVerts; i++) {
+        nCurr = i & 1;
+        nPrev = nCurr ^ 1;
+        nNext = i + 1;
+
+        if (nNext == nVerts) {
+            nNext = 0;
+        }
+
+        v[nCurr] = hullVertArray2[nNext] - hullVertArray2[i];
+        v[nCurr] *= lbl_8040AD7C;
+
+        hullVertArray3[iNew] = hullVertArray2[i] - v[nPrev];
+        hullVertArray3[iNew + 1] = hullVertArray2[i] + v[nCurr];
+        vTemp = v[nCurr] - v[nPrev];
+        bScaleAdd(&hullVertArray3[iNew + 2], &hullVertArray2[i], &vTemp, lbl_8040AD7C);
+        iNew += 3;
+    }
+
+    return iNew;
 }
 
 void CarRenderInfo::convex_hull(bVector3 *p, const WCollider *wcoll, int &n, float Z, float zBias, int fast) {
