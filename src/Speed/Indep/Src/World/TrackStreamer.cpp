@@ -1550,6 +1550,10 @@ void TrackStreamer::FlushHibernatingSections() {
 
 bool TrackStreamer::NeedsGameStateActivation(TrackStreamingSection *section) {
     return false;
+
+    if (IsRegularScenerySection(section->SectionNumber) && IsLODScenerySectionNumber(section->SectionNumber)) {
+        return true;
+    }
 }
 
 void TrackStreamer::FreeSectionMemory() {
