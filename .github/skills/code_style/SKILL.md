@@ -119,6 +119,7 @@ Foo::Foo()
 - If the repo already has a header declaration/definition for a type, include that header instead of redeclaring the type locally.
 - Treat `audit` include-owner warnings as advisory when the suggested header would create a circular include or would drag a heavy owner header into another recovered owner just to replace a harmless pointer/reference forward declaration.
 - In those cycle-prone cases, keep the forward declaration, but still fix the declaration kind (`class` vs `struct`) when you have verified it from the repo or PS2 dump.
+- If the repo already has the real type declaration, prefer that repo declaration's `class` / `struct` kind over a fallback audit heuristic when they disagree.
 - If the repo only has an empty or stub owner header, and line info / surrounding source clearly points at that header's subsystem, prefer populating that owner header over leaving a recovered project type declaration inside a `.cpp`.
 - Only keep a local forward declaration when no canonical repo header exists yet and you have verified that the ownership is still unresolved.
 - Likewise for project free functions: if a declaration is shared across translation units, move it into the owning header instead of leaving ad-hoc local prototypes in `.cpp` files.
@@ -140,6 +141,7 @@ Foo::Foo()
 - When a recovered type is a `class`, keep explicit access sections and put the method/accessor block before the member layout block unless existing repo evidence shows otherwise.
 - Preserve the member naming style that DWARF shows. Some types use `mMember`, others use `m_member`; do not normalize them.
 - Preserve recovered member names, types, order, and offset comments. Do not invent placeholder members named `pad`, `unk`, `unknown`, or `field_XXXX` for game code just to make a layout compile.
+- If Dwarf / PS2 already proves that a real member is literally named `pad`, `pad0`, `pad1`, etc., keep that verified name; only treat pad-like names as suspect when they were invented locally.
 - If a member is genuinely unknown, stop and verify it with `find-symbol.py`, GC Dwarf, and PS2 data. If the layout is still incomplete, add a short TODO above the type instead of burying uncertainty in fake member names.
 - Add offset / size comments when you are writing recovered type layouts from DWARF.
 - In recovered layouts, prefer explicit-width aliases such as `uint8` / `uint16` when the field width is known. Use plain `char` for text / byte buffers and `signed char` when the field is a signed 8-bit counter.
