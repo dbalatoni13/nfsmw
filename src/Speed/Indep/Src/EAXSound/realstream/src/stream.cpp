@@ -450,20 +450,18 @@ int readcallback(int sndstreamhandle, int status, void *userdata) {
     stream->foffset += bytesread;
     stream->dataend += bytesread;
     endchunk = parsechunks(stream);
-    if (req->state != STREAMREQUEST_CANCELED) {
-        if (endoffile || endchunk != 0) {
+    if (req->state == STREAMREQUEST_CANCELED || endoffile || endchunk != 0) {
+        if (req->state != STREAMREQUEST_CANCELED) {
             MUTEX_lock(&stream->mutex);
             if (req->state != STREAMREQUEST_CANCELED) {
                 req->state = STREAMREQUEST_COMPLETED;
             }
             MUTEX_unlock(&stream->mutex);
-        } else {
-            restartstream(stream, stream->priorityhigh - 1);
-            return 0;
         }
+        startnextrequest(stream, stream->priorityhigh);
+    } else {
+        restartstream(stream, stream->priorityhigh - 1);
     }
-
-    startnextrequest(stream, stream->priorityhigh);
 }
 
 void startnextrequest(STREAMHEADERtag *stream, int priority) {
