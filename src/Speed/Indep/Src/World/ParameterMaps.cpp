@@ -352,6 +352,36 @@ int ParameterMapsManager::GetDataForLayer(const char *layer_name, ParameterAcces
     return this->GetDataForLayer(UCrc32(layer_name).GetValue(), accessor, warning_if_not_found);
 }
 
+int LoaderParameterMaps(bChunk *chunk) {
+    bChunk *last_chunk = chunk->GetLastChunk();
+    bChunk *current_chunk = chunk->GetFirstChunk();
+
+    while (current_chunk < last_chunk) {
+        ParameterMapLayer *new_layer = new ParameterMapLayer;
+        new_layer->Load(&current_chunk);
+        GetParameterMapsManager()->AddLayer(new_layer);
+
+        for (ParameterAccessor *accessor = GetAutoParameterAccessors()->GetHead(); accessor != GetAutoParameterAccessors()->EndOfList();) {
+            ParameterAccessor *next_accessor = accessor->GetNext();
+            if (accessor->GetAutoAttachLayerNamehash() == new_layer->GetNameHash()) {
+                accessor->Remove();
+                accessor->SetLayer(new_layer);
+            }
+            accessor = next_accessor;
+        }
+    }
+
+    return 0;
+}
+
+int UnloaderParameterMaps(bChunk *chunk) {
+    (void)chunk;
+    GetParameterMapsManager()->UnloadAllLayers();
+    return 0;
+}
+
+void DumpAutoParameterAccessorsList() {}
+
 ParameterAccessorBlend::ParameterAccessorBlend(const char *layer_name)
     : ParameterAccessor(layer_name), //
       LastData(0), //

@@ -175,5 +175,8 @@ class ParameterMapsManager {
 
 ParameterMapsManager *GetParameterMapsManager();
 bTList<ParameterAccessor> *GetAutoParameterAccessors();
+int LoaderParameterMaps(bChunk *chunk);
+int UnloaderParameterMaps(bChunk *chunk);
+void DumpAutoParameterAccessorsList();
 
 #endif
