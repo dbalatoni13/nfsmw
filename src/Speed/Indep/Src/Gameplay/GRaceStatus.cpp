@@ -3735,6 +3735,7 @@ void GRaceStatus::UpdateAdaptiveDifficulty(eAdaptiveGainReason reason, ISimable 
         }
     } else if (winning_ai) {
         float max_pct_complete = 0.0f;
+        float win_margin;
 
         for (int i = 0; i < num_racers; ++i) {
             GRacerInfo *info = &GetRacerInfo(i);
@@ -3744,16 +3745,14 @@ void GRaceStatus::UpdateAdaptiveDifficulty(eAdaptiveGainReason reason, ISimable 
             }
         }
 
-        {
-            float win_margin = (GetRaceLength() * (100.0f - max_pct_complete)) * 0.01f;
+        win_margin = (GetRaceLength() * (100.0f - max_pct_complete)) * 0.01f;
 
-            if (win_margin > 200.0f && max_pct_complete > 0.0f) {
-                float t = UMath::Ramp(win_margin, 200.0f, 750.0f);
-                float bonus = UMath::Lerp(0.0f, 0.4f, t);
+        if (win_margin > 200.0f && max_pct_complete > 0.0f) {
+            float t = UMath::Ramp(win_margin, 200.0f, 750.0f);
+            float bonus = UMath::Lerp(0.0f, 0.4f, t);
 
-                difficulty = bClamp(difficulty + bonus, -1.0f, 1.0f);
-                update = true;
-            }
+            difficulty = bClamp(difficulty + bonus, -1.0f, 1.0f);
+            update = true;
         }
     } else if (winning_player) {
         for (int i = 0; i < num_racers; ++i) {
