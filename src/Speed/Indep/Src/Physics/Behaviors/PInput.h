@@ -29,7 +29,7 @@ class PInput : public Behavior, public IInput {
     // IInput
     void ClearInput() override;
     InputControls &GetControls() const override;
-    float GetControlHandBrake() const override;
+    bool GetControlHandBrake() const override;
     bool GetControlActionButton() const override;
     void SetControlSteering(float steer) override;
     void SetControlGas(float gas) override;

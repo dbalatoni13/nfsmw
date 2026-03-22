@@ -48,7 +48,7 @@ class IInput : public UTL::COM::IUnknown {
 
     virtual void ClearInput();
     virtual InputControls &GetControls() const;
-    virtual float GetControlHandBrake() const;
+    virtual bool GetControlHandBrake() const;
     virtual bool GetControlActionButton() const;
     virtual void SetControlSteering(float steer);
     virtual void SetControlGas(float gas);

@@ -41,8 +41,8 @@ InputControls &PInput::GetControls() const {
     return const_cast<InputControls &>(mControls);
 }
 
-float PInput::GetControlHandBrake() const {
-    return mControls.fHandBrake;
+bool PInput::GetControlHandBrake() const {
+    return mControls.fHandBrake != 0.0f;
 }
 
 bool PInput::GetControlActionButton() const {

@@ -244,10 +244,10 @@ class SuspensionSimple : public Chassis, public Sim::Collision::IListener, publi
         mTires[wheel]->SetAngularVelocity(w);
     }
     float GetWheelSteer(unsigned int wheel) const override {
-        if (wheel > 1) {
-            return 0.0f;
+        if (wheel < 2) {
+            return RAD2ANGLE(mWheelSteer[wheel]);
         }
-        return RAD2ANGLE(mWheelSteer[wheel]);
+        return 0.0f;
     }
     float GetWheelRadius(unsigned int index) const override {
         return mTires[index]->GetRadius();
