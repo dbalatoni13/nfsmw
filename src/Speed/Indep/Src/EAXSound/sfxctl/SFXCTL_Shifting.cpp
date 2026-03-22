@@ -201,7 +201,7 @@ void SFXCTL_Shifting::UpdateGearShiftState(float t) {
     UpdateTorque(t);
     m_InterpShiftVol.Update(t);
     PostShiftFX_Update(t);
-    t_CurStage += 1000.0f * t;
+    t_CurStage = t * 1000.0f + t_CurStage;
 
     switch (eShiftState) {
     case SHFT_UP_DISENGAGE: {
@@ -228,7 +228,13 @@ void SFXCTL_Shifting::UpdateGearShiftState(float t) {
                 float currpm = bClamp(static_cast<float>(RPMOffset) + m_RPMGraph.GetValue(t_CurStage), 1000.0f, 10000.0f);
                 m_InterpShiftRPM.Initialize(currpm, currpm, 0, LINEAR);
 
-                int CurGear = bClamp(m_pEAXCar->CurGear + Sound::SPORT_SHIFT, 0, 3);
+                int CurGear = m_pEAXCar->CurGear + Sound::SPORT_SHIFT;
+                if (CurGear < 0) {
+                    CurGear = 0;
+                }
+                if (CurGear > 3) {
+                    CurGear = 3;
+                }
                 m_InterpShiftTorque.Initialize(kUpShiftTrqAttachInitialPercent[CurGear] * m_pEngineCtl->m_pPhysicsCtl->GetPhysTRQ(),
                                                m_pEngineCtl->m_pPhysicsCtl->GetPhysTRQ(), kUpShiftTrqAttackTime[CurGear],
                                                LINEAR);
