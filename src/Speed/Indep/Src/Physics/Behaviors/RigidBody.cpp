@@ -582,30 +582,40 @@ RigidBody::RigidBody(const BehaviorParams &bp, const RBComplexParams &params)
     mGroundNormal.y = 1.0f;
     mGroundNormal.z = 0.0f;
     mGroundNormal.w = 0.0f;
-    mDimension.x = UMath::Max(params.fdimension.x, 0.1f);
-    mDimension.y = UMath::Max(params.fdimension.y, 0.1f);
-    mDimension.z = UMath::Max(params.fdimension.z, 0.1f);
+    {
+        float dimension = params.fdimension.x;
+        if (dimension < 0.1f) {
+            dimension = 0.1f;
+        }
+        mDimension.x = dimension;
+    }
+    {
+        float dimension = params.fdimension.y;
+        if (dimension < 0.1f) {
+            dimension = 0.1f;
+        }
+        mDimension.y = dimension;
+    }
+    {
+        float dimension = params.fdimension.z;
+        if (dimension < 0.1f) {
+            dimension = 0.1f;
+        }
+        mDimension.z = dimension;
+    }
 
     TheRigidBodies.AddTail(this);
     MakeDebugable(DBG_RIGIDBODY);
 
-    UMath::Clear(mData->force);
-    UMath::Clear(mData->torque);
+    mData->force = UMath::Vector3::kZero;
+    mData->torque = UMath::Vector3::kZero;
     mData->index = AssignSlot();
     mData->mass = params.finitMass;
     mData->status = 0;
     mData->statusPrev = 0;
     mData->position = params.finitPos;
-    if (params.factive) {
-        mData->linearVel = params.finitVel;
-    } else {
-        mData->linearVel = UMath::Vector3::kZero;
-    }
-    if (params.factive) {
-        mData->angularVel = params.finitAngVel;
-    } else {
-        mData->angularVel = UMath::Vector3::kZero;
-    }
+    mData->linearVel = params.factive ? params.finitVel : UMath::Vector3::kZero;
+    mData->angularVel = params.factive ? params.finitAngVel : UMath::Vector3::kZero;
     UMath::Copy(UMath::Matrix4::kIdentity, mData->bodyMatrix);
     mData->inertiaTensor = params.finitMoment;
     mData->leversInContact = 0;
@@ -623,13 +633,13 @@ RigidBody::RigidBody(const BehaviorParams &bp, const RBComplexParams &params)
     if (UMath::LengthSquare(UMath::Vector4To3(mSpecs->DRAG())) > 0.0f) {
         mData->status |= 0x20;
     } else {
-        mData->status &= ~0x20;
+        mData->status &= 0xFFDF;
     }
 
     if (UMath::LengthSquare(UMath::Vector4To3(mSpecs->DRAG_ANGULAR())) > 0.0f) {
         mData->status |= 0x800;
     } else {
-        mData->status &= ~0x800;
+        mData->status &= 0xF7FF;
     }
 
     if (mSimableType == SIMABLE_VEHICLE) {
