@@ -2073,6 +2073,8 @@ int TrackStreamer::GetLoadingPriority(TrackStreamingSection *section, StreamingP
 }
 
 void TrackStreamer::AssignLoadingPriority() {
+    espEmptyLayer(0);
+
     {
         int priority;
 
