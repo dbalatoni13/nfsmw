@@ -190,6 +190,14 @@ bool DrawVehicle::Part::OnDraw(Sim::Packet *service) {
 
 void DrawVehicle::Part::OnBeginDraw() {}
 
+void DrawVehicle::Part::OnEndDraw() {
+    RemoveTrigger();
+    if (mOffScreenTask) {
+        mOffScreenTask = false;
+    }
+    ReleaseSequencer();
+}
+
 void DrawVehicle::Part::PlaceTrigger(const UMath::Matrix4 &matrix, bool enable) {
     CreateTrigger(matrix);
     if (!enable && mTrigger != nullptr) {
@@ -341,6 +349,28 @@ void DrawVehicle::StopEffects() {
         delete *iter;
     }
     mEffects.clear();
+}
+
+void DrawVehicle::PlayEffect(UCrc32 identifire, const Attrib::Collection *effect, const UMath::Vector3 &position, const UMath::Vector3 &magnitude,
+                             bool tracking) {
+    if (identifire == UCrc32::kNull) {
+        return;
+    }
+
+    Effect *drawEffect = nullptr;
+    for (EffectList::iterator iter = mEffects.begin(); iter != mEffects.end(); ++iter) {
+        if ((*iter)->Identifire == identifire) {
+            drawEffect = *iter;
+            break;
+        }
+    }
+
+    if (!drawEffect) {
+        drawEffect = ::new ("DrawVehicle", 0) Effect(identifire, static_cast< IModel * >(this)->GetWorldID(), GetAttributes().GetConstCollection());
+        mEffects.push_back(drawEffect);
+    }
+
+    drawEffect->Set(effect, position, magnitude, nullptr, tracking, 0);
 }
 
 void DrawVehicle::StopEffect(UCrc32 identifire) {

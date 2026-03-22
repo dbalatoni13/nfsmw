@@ -1,12 +1,126 @@
 #include "DrawVehicle.h"
 
+#include "Speed/Indep/Src/FE/FECustomizationRecord.h"
+#include "Speed/Indep/Src/Physics/Dynamics.h"
 #include "Speed/Indep/Src/Sim/SimConn.h"
 
 namespace RenderConn {
 
-class Pkt_Car_Service : public Sim::Packet {};
+class Pkt_Car_Open : public Sim::Packet {
+  public:
+    Pkt_Car_Open(const char *modelname, WUID worldid, CarRenderUsage usage, const FECustomizationRecord *customizations, unsigned int physicskey,
+                 bool spool_load)
+        : mModelHash(bStringHash(modelname)), //
+          mWorldID(worldid),                  //
+          mUsage(usage),                      //
+          mCustomizations(customizations),    //
+          mPhysicsKey(physicskey),            //
+          mSpoolLoad(spool_load) {}
+
+    UCrc32 ConnectionClass() override {
+        return UCrc32(0x804c146e);
+    }
+
+    unsigned int Size() override {
+        return sizeof(*this);
+    }
+
+    unsigned int Type() override {
+        return SType();
+    }
+
+    static unsigned int SType() {
+        static UCrc32 hash = "Pkt_Car_Open";
+        return hash.GetValue();
+    }
+
+  private:
+    unsigned int mModelHash;
+    WUID mWorldID;
+    CarRenderUsage mUsage;
+    const FECustomizationRecord *mCustomizations;
+    unsigned int mPhysicsKey;
+    bool mSpoolLoad;
+};
+
+class Pkt_Car_Service : public Sim::Packet {
+  public:
+    void HidePart(const UCrc32 &partname) {}
+
+    bool InView() const {
+        return mInView;
+    }
+
+    float DistanceToView() const {
+        return mDistanceToView;
+    }
+
+    float mCompressions[4];
+    float mWheelSpeed[4];
+    float mTireSkid[4];
+    float mTireSlip[4];
+    float mSteering[2];
+    int mGroundState;
+    DamageZone::Info mDamageInfo;
+    unsigned int mPartState[3];
+    unsigned int mLights;
+    unsigned int mBrokenLights;
+    bool mInView;
+    float mDistanceToView;
+    bool mFlashing;
+    bool mNos;
+    bool mEngineBlown;
+    ShiftStatus mShift;
+    GearID mGear;
+    float mEnginePower;
+    float mEngineSpeed;
+    float mExtraBodyRoll;
+    float mExtraBodyPitch;
+    int mBlowOuts;
+    float mHealth;
+    float mAnimatedCarPitch;
+    float mAnimatedCarRoll;
+    float mAnimatedCarShake;
+};
 
 } // namespace RenderConn
+
+namespace {
+
+struct VehicleLightInfo {
+    VehicleFX::ID Light;
+};
+
+static const VehicleLightInfo kVehicleLights[] = {
+    {VehicleFX::LIGHT_LHEAD},
+    {VehicleFX::LIGHT_RHEAD},
+    {VehicleFX::LIGHT_CHEAD},
+    {VehicleFX::LIGHT_LBRAKE},
+    {VehicleFX::LIGHT_RBRAKE},
+    {VehicleFX::LIGHT_CBRAKE},
+    {VehicleFX::LIGHT_LREVERSE},
+    {VehicleFX::LIGHT_RREVERSE},
+    {VehicleFX::LIGHT_LRSIGNAL},
+    {VehicleFX::LIGHT_RRSIGNAL},
+    {VehicleFX::LIGHT_LFSIGNAL},
+    {VehicleFX::LIGHT_RFSIGNAL},
+    {VehicleFX::LIGHT_COPRED},
+    {VehicleFX::LIGHT_COPBLUE},
+    {VehicleFX::LIGHT_COPWHITE},
+};
+
+static float AbsFloat(float value) {
+    return value < 0.0f ? -value : value;
+}
+
+static unsigned int GetPacketWheelIndex(unsigned int wheel) {
+    if (wheel < 2) {
+        return wheel & 1;
+    }
+    return (wheel & 1) ? 2 : 3;
+}
+
+} // namespace
 
 Behavior *DrawTraffic::Construct(const BehaviorParams &params) {
     return new DrawTraffic(params);
@@ -19,6 +133,44 @@ DrawPerformanceCar::DrawPerformanceCar(const BehaviorParams &params, CarRenderUs
     : DrawCar(params, usage) {
     GetOwner()->QueryInterface(&mTransmission);
     GetOwner()->QueryInterface(&mEngine);
+}
+
+DrawCar::DrawCar(const BehaviorParams &params, CarRenderUsage usage)
+    : DrawVehicle(params), //
+      mRenderService(nullptr), //
+      mSuspension(nullptr), //
+      mDamage(nullptr), //
+      mVehicle(nullptr), //
+      mVehicleDamage(nullptr), //
+      mRBVehicle(nullptr), //
+      mNIS(nullptr), //
+      mSpikeDamage(nullptr), //
+      mParts(), //
+      mInView(false), //
+      mDistanceToView(0.0f), //
+      mHidden(false) {
+    GetOwner()->QueryInterface(&mVehicle);
+    GetOwner()->QueryInterface(&mSuspension);
+    GetOwner()->QueryInterface(&mDamage);
+    GetOwner()->QueryInterface(&mSpikeDamage);
+    GetOwner()->QueryInterface(&mVehicleDamage);
+    GetOwner()->QueryInterface(&mRBVehicle);
+    GetOwner()->QueryInterface(&mNIS);
+
+    if (mSuspension && mVehicle) {
+        const char *modelName = mVehicle->GetVehicleName();
+        if (!modelName) {
+            modelName = "";
+        }
+
+        RenderConn::Pkt_Car_Open pkt(modelName,
+                                     GetOwner()->GetWorldID(),
+                                     usage,
+                                     mVehicle->GetCustomizations(),
+                                     mVehicle->GetVehicleKey(),
+                                     mVehicle->IsSpooled());
+        mRenderService = OpenService(UCrc32(0x804c146e), &pkt);
+    }
 }
 
 void DrawPerformanceCar::OnBehaviorChange(const UCrc32 &mechanic) {
@@ -230,3 +382,107 @@ float DrawCar::DistanceToView() const {
 void DrawCar::Reset() {}
 
 void DrawCar::OnTaskSimulate(float dT) {}
+
+DrawCar::~DrawCar() {
+    if (mRenderService) {
+        CloseService(mRenderService);
+        mRenderService = 0;
+    }
+
+    if (!mParts.empty()) {
+        mParts.clear();
+    }
+}
+
+void DrawCar::OnService(RenderConn::Pkt_Car_Service &pkt) {
+    mInView = pkt.mInView;
+    mDistanceToView = pkt.mDistanceToView;
+
+    if (mRBVehicle) {
+        eInvulnerablitiy invulnerability = mRBVehicle->GetInvulnerability();
+        if (invulnerability > INVULNERABLE_NONE && invulnerability < INVULNERABLE_FROM_CONTROL_SWITCH) {
+            pkt.mFlashing = true;
+        }
+    }
+
+    pkt.mLights = 0;
+    pkt.mBrokenLights = 0;
+    if (mVehicle) {
+        for (unsigned int i = 0; i < sizeof(kVehicleLights) / sizeof(kVehicleLights[0]); ++i) {
+            VehicleFX::ID light = kVehicleLights[i].Light;
+            if (mVehicleDamage && mVehicleDamage->IsLightDamaged(light)) {
+                pkt.mBrokenLights |= light;
+            } else if (mVehicle->IsGlareOn(light)) {
+                pkt.mLights |= light;
+            }
+        }
+    }
+
+    IDynamicsEntity *dynamicsEntity = nullptr;
+    GetOwner()->QueryInterface(&dynamicsEntity);
+    if (dynamicsEntity && Dynamics::Articulation::IsJoined(dynamicsEntity)) {
+        pkt.mExtraBodyRoll = 0.0f;
+        pkt.mExtraBodyPitch = 0.0f;
+    } else if (mSuspension) {
+        float renderMotion = mSuspension->GetRenderMotion();
+        pkt.mExtraBodyRoll = renderMotion;
+        pkt.mExtraBodyPitch = renderMotion;
+    }
+
+    if (mDamage) {
+        pkt.mDamageInfo = mDamage->GetZoneDamage();
+        pkt.mHealth = mDamage->GetHealth();
+    }
+
+    for (Parts::const_iterator iter = mParts.begin(); iter != mParts.end(); ++iter) {
+        pkt.HidePart(iter->first);
+    }
+
+    pkt.mGroundState = 0;
+    pkt.mBlowOuts = 0;
+    if (mSuspension) {
+        for (unsigned int wheel = 0; wheel < mSuspension->GetNumWheels(); ++wheel) {
+            unsigned int packetWheel = GetPacketWheelIndex(wheel);
+            float steering = mSuspension->GetWheelSteer(wheel) * 6.2831855f;
+            if (steering > 3.1415927f) {
+                steering = 3.1415927f;
+            } else if (steering < -3.1415927f) {
+                steering = -3.1415927f;
+            }
+            if (wheel < 2) {
+                pkt.mSteering[packetWheel] = -steering;
+            }
+
+            bool onGround = mSuspension->IsWheelOnGround(wheel);
+            float skid = 0.0f;
+            float slip = 0.0f;
+            if (onGround) {
+                skid = AbsFloat(mSuspension->GetWheelSkid(wheel));
+                float absSlip = AbsFloat(mSuspension->GetWheelSlip(wheel));
+                float tolerated = AbsFloat(mSuspension->GetToleratedSlip(wheel));
+                if (absSlip > tolerated) {
+                    slip = absSlip - tolerated;
+                }
+                pkt.mGroundState |= 1 << packetWheel;
+            } else {
+                pkt.mGroundState &= ~(1 << packetWheel);
+            }
+
+            pkt.mCompressions[packetWheel] =
+                mSuspension->GetCompression(wheel) - mSuspension->GetRideHeight(wheel) + mSuspension->GetWheelRadius(wheel);
+            pkt.mWheelSpeed[packetWheel] = mSuspension->GetWheelAngularVelocity(wheel) * mSuspension->GetWheelRadius(wheel);
+            pkt.mTireSkid[packetWheel] = skid;
+            pkt.mTireSlip[packetWheel] = slip;
+
+            if (mSpikeDamage && mSpikeDamage->GetTireDamage(wheel) == TIRE_DAMAGE_BLOWN) {
+                pkt.mBlowOuts |= 1 << packetWheel;
+            }
+        }
+    }
+
+    if (mNIS) {
+        pkt.mAnimatedCarPitch = mNIS->GetAnimPitch();
+        pkt.mAnimatedCarRoll = mNIS->GetAnimRoll();
+        pkt.mAnimatedCarShake = mNIS->GetAnimShake();
+    }
+}
