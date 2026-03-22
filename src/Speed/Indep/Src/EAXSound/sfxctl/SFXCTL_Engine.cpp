@@ -134,21 +134,17 @@ void SFXCTL_Engine::InitSFX() {
 void SFXCTL_Engine::UpdateParams(float t) {
     SFXCTL::UpdateParams(t);
 
-    EAXCar *carOwner = m_pEAXCar;
-    EAX_CarState *car = carOwner->GetPhysCar();
+    const bVector3 *Cur3dPos = GetPhysCar()->GetPosition();
+    const bVector2 *Cur2dPos = GetPhysCar()->GetPosition2D();
+    bVector3 vOffset = bNormalize(*GetPhysCar()->GetForwardVector());
 
-    const Attrib::Gen::engineaudio &attributes = carOwner->GetAttributes();
-    SetDMIX_Input(2, static_cast<int>(attributes.Master_Vol()));
-    const bVector3 *forward = static_cast<const bVector3 *>(static_cast<const void *>(&car->mMatrix.v0));
-    m_p3DCarPosCtl->AssignDirectionVector(forward);
+    SetDMIX_Input(2, static_cast<int>(m_pEAXCar->GetAttributes().Master_Vol()));
+    m_p3DCarPosCtl->AssignDirectionVector(GetPhysCar()->GetForwardVector());
 
-    const bVector3 *cur3dPos = static_cast<const bVector3 *>(static_cast<const void *>(&car->mMatrix.v3));
-    const bVector2 *cur2dPos = static_cast<const bVector2 *>(static_cast<const void *>(cur3dPos));
-    (void)cur2dPos;
-    vCarPos = *cur3dPos;
+    (void)Cur2dPos;
+    vCarPos = *Cur3dPos;
 
-    bVector3 vOffset = bNormalize(*forward);
-    if (carOwner->m_PovType == 1) {
+    if (m_pEAXCar->GetPOV() == 1) {
         vOffset = bScale(vOffset, 2.0f);
     } else {
         vOffset = bScale(vOffset, lbl_803D726C);
@@ -156,20 +152,21 @@ void SFXCTL_Engine::UpdateParams(float t) {
     vCarPos = bAdd(vCarPos, vOffset);
 
     UpdateClutchState();
-    UpdateTorque(t);
+    UpdateEngineLFO_FX(t);
     UpdateCompression(t);
     UpdateRPM(t);
-    UpdateRedlining(t);
+    UpdateTorque(t);
     UpdateVolume(t);
     UpdateFilterFX();
-    UpdateEngineLFO_FX(t);
+    UpdateRedlining(t);
 
-    car->mVisualRPM = carOwner->m_fAudioRPM;
+    GetPhysCar()->SetVisualRPM(m_pEAXCar->GetFinalAudioRPM());
 
-    int blownState = car->mEngine.mBlownFlag;
-    if ((blownState == 1 || blownState == 2) && !m_bIsEngineBlown) {
+    int blownState = GetPhysCar()->mEngine.mBlownFlag;
+    if (blownState != 0 && !m_bIsEngineBlown) {
         m_bIsEngineBlown = true;
         unsigned int key = 0;
+        blownState = GetPhysCar()->mEngine.mBlownFlag;
         if (blownState == 1) {
             key = 0xbc2dfa2f;
         }
