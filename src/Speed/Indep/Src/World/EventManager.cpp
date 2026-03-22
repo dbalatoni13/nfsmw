@@ -387,11 +387,12 @@ void emProcessAllEvents() {
     emEvent *event;
 
     CurrentEventQueue = &temp_event_queue;
-    emEvent *next_event;
+    event = MasterEventQueue.GetHead();
 
-    for (event = MasterEventQueue.GetHead(); event != MasterEventQueue.EndOfList(); event = next_event) {
-        next_event = event->GetNext();
+    while (event != MasterEventQueue.EndOfList()) {
+        emEvent *next_event = event->GetNext();
         int event_id = event->ID;
+        int event_handled = 0;
 
         CurrentlyHandlingEvent = event;
 
@@ -400,22 +401,23 @@ void emProcessAllEvents() {
             int handler_stream_mask = handler->StreamMask;
 
             if ((event_id & handler_stream_mask) != 0) {
-                unsigned int start_ticks = bGetTicker();
+                unsigned int start_time = bGetTicker();
 
                 handler->HandlerFunction(event);
-                handler->TotalTime += bGetTickerDifference(start_ticks, bGetTicker());
+                handler->TotalTime += bGetTickerDifference(start_time, bGetTicker());
+                event_handled = 1;
             }
         }
 
         CurrentlyHandlingEvent = 0;
         event->Remove();
         if (event->ReferenceCount == 0) {
-            if (event) {
-                bFree(EventSlotPool, event);
-            }
+            delete event;
         } else {
             locked_event_queue.AddTail(event);
         }
+
+        event = next_event;
     }
 
     while (!locked_event_queue.IsEmpty()) {
