@@ -16,6 +16,7 @@
 #include "Speed/Indep/Src/Misc/GameFlow.hpp"
 #include "Speed/Indep/Src/Misc/Profiler.hpp"
 #include "Speed/Indep/Src/World/CarInfo.hpp"
+#include "Speed/Indep/Src/World/Sun.hpp"
 #include "Speed/Indep/Src/World/VehicleFragmentConn.h"
 #include "Speed/Indep/Src/World/VehicleRenderConn.h"
 #include "Speed/Indep/Src/World/World.hpp"
@@ -112,6 +113,18 @@ extern float lbl_8040ADB0;
 extern float lbl_8040ADB4;
 extern float lbl_8040ADB8;
 extern float lbl_8040ADBC;
+extern float lbl_8040ADC0;
+extern float lbl_8040ADC4;
+extern float lbl_8040ADC8;
+extern float lbl_8040ADCC;
+extern float lbl_8040ADDC;
+extern float lbl_8040ADE0;
+extern float lbl_8040ADE4;
+extern float lbl_8040ADE8;
+extern float lbl_8040ADEC;
+extern float lbl_8040ADF0;
+extern float lbl_8040ADF4;
+extern float lbl_8040ADF8;
 extern bVector3 hull_Origin asm("hull_Origin");
 extern bVector3 hull_Normal asm("hull_Normal");
 extern bVector3 hullVertArray1[16] asm("hullVertArray1");
@@ -127,6 +140,7 @@ extern bVector3 cs_lightV asm("cs_lightV");
 extern float cs_OneOverZ asm("cs_OneOverZ");
 extern int counter_31665 asm("counter.31665");
 extern int counter_31669 asm("counter.31669");
+extern float heliScale;
 extern void sh_Setup(bVector3 *car_pos) asm("sh_Setup__FP8bVector3");
 
 namespace {
@@ -1692,6 +1706,131 @@ int smooth_shadow_corners(int nVerts) {
     }
 
     return iNew;
+}
+
+void CarRenderInfo::DrawAmbientShadow(eView *view, const bVector3 *position, float shadow_scale, bMatrix4 *localWorld, bMatrix4 *worldLocal,
+                                      bMatrix4 *biasedIdentity) {
+    bVector3 shadowVerts[16];
+    float rowV[4];
+    float colU[4];
+    int row;
+    int col;
+    float shadowZ;
+
+    sh_Setup(const_cast<bVector3 *>(position));
+    shadowZ = position->z;
+    if (iRam8047ff04 == 6) {
+        bVector3 worldPosition;
+
+        worldPosition.x = position->x;
+        worldPosition.y = -position->y;
+        worldPosition.z = position->z;
+        this->mWorldPos.FindClosestFace(this->mWCollider, reinterpret_cast<const UMath::Vector3 &>(worldPosition), false);
+        if (!this->mWorldPos.OnValidFace()) {
+            shadowZ = this->mWorldPos.HeightAtPoint(reinterpret_cast<const UMath::Vector3 &>(worldPosition));
+        }
+
+        this->mCar_elevation = position->z - shadowZ;
+        if (this->mCar_elevation < lbl_8040ADC0) {
+            this->mCar_elevation = lbl_8040ADC0;
+        }
+        if (this->mCar_elevation > lbl_8040ADC4) {
+            this->mCar_elevation = lbl_8040ADC4;
+        }
+
+        car_elevation_scale = this->mCar_elevation * lbl_8040ADC8;
+        if (car_elevation_scale < lbl_8040ADC0) {
+            car_elevation_scale = lbl_8040ADC0;
+        }
+        if (car_elevation_scale > lbl_8040ADCC) {
+            car_elevation_scale = lbl_8040ADCC;
+        }
+    }
+
+    {
+        float scaleFactor = shadow_scale;
+        bVector3 scale;
+
+        if (this->pRideInfo != 0 && this->pRideInfo->Type == static_cast<CarType>(4)) {
+            scaleFactor *= heliScale;
+        }
+
+        scale.x = this->AABBMin.x * scaleFactor;
+        scale.y = this->AABBMin.y * scaleFactor;
+        scale.z = this->AABBMax.z * scaleFactor;
+
+        for (row = 0; row < 4; row++) {
+            rowV[row] = static_cast<float>(row) * (lbl_8040ADCC / 3.0f);
+            colU[row] = static_cast<float>(row) * (lbl_8040ADCC / 3.0f);
+        }
+
+        for (row = 0; row < 4; row++) {
+            for (col = 0; col < 4; col++) {
+                int i = row * 4 + col;
+                bVector3 localPoint;
+                bVector3 worldPoint;
+                float scaleToGround;
+
+                localPoint.x = PointCloud[i].x * scale.x + cs_lightV.x * lbl_8040ADE0;
+                localPoint.y = PointCloud[i].y * scale.y + cs_lightV.y * lbl_8040ADE0;
+                localPoint.z = PointCloud[i].z * scale.z;
+                eMulVector(&worldPoint, localWorld, &localPoint);
+                scaleToGround = (shadowZ - worldPoint.z) * cs_OneOverZ;
+                shadowVerts[i].x = scaleToGround * cs_lightV.x + worldPoint.x;
+                shadowVerts[i].y = scaleToGround * cs_lightV.y + worldPoint.y;
+                shadowVerts[i].z = scaleToGround * cs_lightV.z + worldPoint.z;
+            }
+        }
+    }
+
+    if (iRam8047ff04 != 3 && this->mWCollider != 0) {
+        for (int i = 0; i < 16; i++) {
+            bVector3 worldPoint;
+
+            worldPoint.x = shadowVerts[i].x;
+            worldPoint.y = -shadowVerts[i].y;
+            worldPoint.z = shadowVerts[i].z;
+            this->mWorldPos.FindClosestFace(this->mWCollider, reinterpret_cast<const UMath::Vector3 &>(worldPoint), i != 0);
+            if (!this->mWorldPos.OnValidFace()) {
+                shadowVerts[i].z = this->mWorldPos.HeightAtPoint(reinterpret_cast<const UMath::Vector3 &>(worldPoint));
+            } else {
+                shadowVerts[i].z = shadowZ;
+            }
+        }
+    }
+
+    {
+        int alpha = static_cast<int>((lbl_8040ADF8 - lbl_8040ADF4) * (lbl_8040ADCC - car_elevation_scale) + lbl_8040ADF4);
+        unsigned int colour;
+
+        if (alpha < 0) {
+            alpha = 0;
+        }
+        if (alpha > 0xFE) {
+            alpha = 0xFE;
+        }
+        if (alpha == 0 || this->ShadowTexture == 0) {
+            return;
+        }
+
+        colour = static_cast<unsigned int>(alpha << 24) | 0x00808080;
+        for (row = 0; row < 3; row++) {
+            if (exBeginStrip(this->ShadowTexture, 8, biasedIdentity)) {
+                for (col = 0; col < 4; col++) {
+                    int top = row * 4 + col;
+                    int bottom = top + 4;
+
+                    exAddVertex(shadowVerts[top]);
+                    exAddVertex(shadowVerts[bottom]);
+                    exAddColour(colour);
+                    exAddColour(colour);
+                    exAddUV(colU[col], rowV[row]);
+                    exAddUV(colU[col], rowV[row + 1]);
+                }
+                exEndStrip(view);
+            }
+        }
+    }
 }
 
 void CarRenderInfo::convex_hull(bVector3 *p, const WCollider *wcoll, int &n, float Z, float zBias, int fast) {
