@@ -2432,15 +2432,17 @@ bool TrackStreamer::DetermineCurrentZones(short *current_zones) {
 }
 
 void TrackStreamer::ServiceGameState() {
-    GetDebugRealTime();
+    float start_time = GetDebugRealTime();
     HandleZoneSwitching();
     HandleSectionActivation();
-    GetDebugRealTime();
+    float time = GetDebugRealTime();
+    (void)start_time;
+    (void)time;
 
     AmountNotRendered = 0;
-    for (int i = 0; i < NumCurrentStreamingSections; i++) {
-        TrackStreamingSection *section = CurrentStreamingSections[i];
-        if (!section->WasRendered && IsRegularScenerySection_TrackStreamer(section->SectionNumber)) {
+    for (int n = 0; n < NumCurrentStreamingSections; n++) {
+        TrackStreamingSection *section = CurrentStreamingSections[n];
+        if (!section->WasRendered && IsRegularScenerySection(section->SectionNumber)) {
             AmountNotRendered += section->Size;
         }
         section->WasRendered = 0;
