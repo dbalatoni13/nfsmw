@@ -215,6 +215,9 @@ void SFXCTL_Shifting::UpdateGearShiftState(float t) {
                                     static_cast<float>(m_pShiftingPatternData->Up_DisengageFall(m_CurStage).RPM));
                 t_CurStage = t * 1000.0f;
                 RPMOffset = static_cast<unsigned short>(static_cast<int>(m_InterpShiftRPM.GetValue()));
+                float currpm = bClamp(static_cast<float>(RPMOffset) + m_RPMGraph.GetValue(t_CurStage), 1000.0f, 10000.0f);
+                m_InterpShiftRPM.Initialize(currpm, currpm, 0, LINEAR);
+                break;
             } else {
                 eShiftState = SHFT_UP_ENGAGING;
                 eShiftStageChanged = SHFT_UP_ENGAGING;
