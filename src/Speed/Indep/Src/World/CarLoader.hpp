@@ -69,6 +69,7 @@ class LoadedWheel : public bTNode<LoadedWheel> {
 class LoadedSkin : public bTNode<LoadedSkin> {
   public:
     LoadedSkin(RideInfo *ride_info, int in_front_end, int is_player_skin);
+    int GetTextureHashes(unsigned int *texture_hashes, int max_texture_hashes, int perm);
 
     RideInfo *pRideInfo;                       // offset 0x8, size 0x4
     char LoadStatePerm;                        // offset 0xC, size 0x1
@@ -140,6 +141,11 @@ class CarLoader {
     void SetLoadingMode(eLoadingMode mode, int two_player_flag);
     LoadedSolidPack *AllocateSolidPack(const char *filename);
     LoadedTexturePack *AllocateTexturePack(const char *filename, int max_header_size);
+    int AllocateSkinLayers(unsigned int *name_hash_table, int num_name_hashes, LoadedSkinLayer **loaded_skin_layer_table,
+                           int max_loaded_skin_layers, const char *filename);
+    void UnallocateSkinLayers(LoadedSkinLayer **loaded_skin_layer_table, int num_loaded_skin_layers);
+    int LoadSkinLayers(unsigned int *name_hash_table, int max_name_hashes, LoadedSkinLayer **loaded_skin_layer_table,
+                       int num_loaded_skin_layers);
     void UnallocateTexturePack(LoadedTexturePack *loaded_texture_pack);
     int GetMemoryEntries(LoadedTexturePack *loaded_texture_pack, void **memory_entries, int num_memory_entries);
     int LoadTexturePack(LoadedTexturePack *loaded_texture_pack, int use_memory_pool);

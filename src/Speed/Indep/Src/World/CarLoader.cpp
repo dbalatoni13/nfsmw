@@ -6,6 +6,7 @@
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 #include "Speed/Indep/Src/Misc/ResourceLoader.hpp"
 #include "Speed/Indep/Src/Misc/bFile.hpp"
+#include "Speed/Indep/Src/World/CarRender.hpp"
 #include "Speed/Indep/Src/World/TrackStreamer.hpp"
 
 struct RideInfoLayout {
@@ -65,6 +66,12 @@ struct CarSlotTypeOverride {
     unsigned int SlotId;
     unsigned int LookupType[2];
 };
+struct UsedCarTextureInfoMirror {
+    unsigned int TexturesToLoadPerm[87];
+    unsigned int TexturesToLoadTemp[87];
+    int NumTexturesToLoadPerm;
+    int NumTexturesToLoadTemp;
+};
 struct CarPartDatabaseLayout {
     bTList<CarPartPack> CarPartPackList;
     int NumPacks;
@@ -101,6 +108,7 @@ CarPartPack *MasterCarPartPack;
 
 int ConvertVinylGroupNumberToVinylType(int vinyl_group_number);
 int CarInfo_GetMaxCompositingBufferSize();
+void GetUsedCarTextureInfo(UsedCarTextureInfo *used_texture_info, RideInfo *ride_info, int front_end_only);
 extern int CarLoaderMemoryPoolNumber;
 int CompositeSkin(RideInfo *ride_info);
 extern SlotPool *LoadedTexturePackSlotPool;
@@ -113,6 +121,7 @@ LoadedTexturePack *LoadedTexturePack_Construct(LoadedTexturePack *loaded_texture
     asm("__17LoadedTexturePackPCci");
 void LoadedTexturePack_Destruct(LoadedTexturePack *loaded_texture_pack, int in_chrg) asm("_._17LoadedTexturePack");
 LoadedSolidPack *LoadedSolidPack_Construct(LoadedSolidPack *loaded_solid_pack, const char *filename) asm("__15LoadedSolidPackPCc");
+LoadedSkinLayer *LoadedSkinLayer_Construct(LoadedSkinLayer *loaded_skin_layer, unsigned int name_hash) asm("__15LoadedSkinLayerUi");
 int LoadedCar_GetModelHashes(LoadedCar *loaded_car, unsigned int *name_hashes, int max_hashes)
     asm("GetModelHashes__9LoadedCarPUii");
 int LoadedSkin_GetTextureHashes(LoadedSkin *loaded_skin, unsigned int *name_hashes, int max_hashes, int load_perm_layers)
@@ -167,6 +176,24 @@ CarLoader::CarLoader()
     this->MemoryPoolSize = 0;
     this->NumSpongeAllocations = 0;
     this->NumLoadingSkinLayers = 0;
+}
+
+int LoadedSkin::GetTextureHashes(unsigned int *texture_hashes, int max_texture_hashes, int perm) {
+    UsedCarTextureInfoMirror used_texture_info;
+
+    bMemSet(texture_hashes, 0, max_texture_hashes << 2);
+    GetUsedCarTextureInfo(reinterpret_cast<UsedCarTextureInfo *>(&used_texture_info), this->pRideInfo, this->InFrontEnd);
+
+    int num_hashes = used_texture_info.NumTexturesToLoadTemp;
+    unsigned int *hashes = used_texture_info.TexturesToLoadTemp;
+
+    if (perm != 0) {
+        hashes = used_texture_info.TexturesToLoadPerm;
+        num_hashes = used_texture_info.NumTexturesToLoadPerm;
+    }
+
+    bMemCpy(texture_hashes, hashes, num_hashes << 2);
+    return num_hashes;
 }
 
 LoadedWheel::LoadedWheel(RideInfo *ride_info, bool in_fe) {
@@ -512,6 +539,72 @@ LoadedTexturePack *CarLoader::AllocateTexturePack(const char *filename, int max_
 
     loaded_texture_pack->NumInstances++;
     return loaded_texture_pack;
+}
+
+int CarLoader::AllocateSkinLayers(unsigned int *name_hash_table, int num_name_hashes, LoadedSkinLayer **loaded_skin_layer_table,
+                                  int max_loaded_skin_layers, const char *filename) {
+    eStreamingPack *streaming_pack = 0;
+
+    if (filename != 0) {
+        streaming_pack = StreamingTexturePackLoader.GetLoadedStreamingPack(filename);
+
+        if (streaming_pack == 0) {
+            return 0;
+        }
+    }
+
+    int num_skin_layers = 0;
+
+    for (int n = 0; n < num_name_hashes; n++) {
+        unsigned int name_hash = name_hash_table[n];
+
+        if (name_hash != 0 &&
+            (streaming_pack == 0 || StreamingTexturePackLoader.GetLoadedStreamingPack(name_hash) == streaming_pack)) {
+            LoadedSkinLayer *loaded_skin_layer = this->FindLoadedSkinLayer(name_hash);
+
+            if (loaded_skin_layer == 0) {
+                loaded_skin_layer = LoadedSkinLayer_Construct(static_cast<LoadedSkinLayer *>(bOMalloc(LoadedSkinLayerSlotPool)), name_hash);
+                this->LoadedSkinLayerList.AddTail(loaded_skin_layer);
+            }
+
+            loaded_skin_layer->NumInstances++;
+            loaded_skin_layer_table[num_skin_layers] = loaded_skin_layer;
+            num_skin_layers++;
+        }
+    }
+
+    for (int i = num_skin_layers; i < max_loaded_skin_layers; i++) {
+        loaded_skin_layer_table[i] = 0;
+    }
+
+    return num_skin_layers;
+}
+
+void CarLoader::UnallocateSkinLayers(LoadedSkinLayer **loaded_skin_layer_table, int num_loaded_skin_layers) {
+    for (int n = 0; n < num_loaded_skin_layers; n++) {
+        LoadedSkinLayer *loaded_skin_layer = loaded_skin_layer_table[n];
+
+        if (loaded_skin_layer != 0) {
+            loaded_skin_layer->NumInstances--;
+        }
+    }
+}
+
+int CarLoader::LoadSkinLayers(unsigned int *name_hash_table, int max_name_hashes, LoadedSkinLayer **loaded_skin_layer_table,
+                              int num_loaded_skin_layers) {
+    int num_name_hashes = 0;
+
+    for (int n = 0; n < num_loaded_skin_layers; n++) {
+        LoadedSkinLayer *loaded_skin_layer = loaded_skin_layer_table[n];
+
+        if (loaded_skin_layer != 0 && loaded_skin_layer->LoadState == CARLOADSTATE_QUEUED) {
+            loaded_skin_layer->LoadState = CARLOADSTATE_LOADING;
+            name_hash_table[num_name_hashes] = loaded_skin_layer->NameHash;
+            num_name_hashes++;
+        }
+    }
+
+    return num_name_hashes;
 }
 
 void CarLoader::UnallocateTexturePack(LoadedTexturePack *loaded_texture_pack) {
