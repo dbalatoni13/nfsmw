@@ -68,7 +68,7 @@ DrawHeli::DrawHeli(const BehaviorParams &params)
     }
 
     RenderConn::Pkt_Heli_Open pkt(model, GetOwner()->GetWorldID(), GetVehicle()->IsSpooled());
-    mWashTask = AddTask(UCrc32(stringhash32("Physics")), 1.0f, 0.0f, Sim::TASK_FRAME_FIXED);
+    mWashTask = AddTask(UCrc32(stringhash32("Physics")), 1.0f, 0.0f, Sim::TASK_FRAME_VARIABLE);
     Sim::ProfileTask(mWashTask, "HeliWash");
     mRenderService = OpenService(UCrc32(0x804c146e), &pkt);
 
@@ -134,32 +134,31 @@ void DrawHeli::Reset() {}
 void DrawHeli::OnTaskSimulate(float dT) {}
 
 bool DrawHeli::OnTask(HSIMTASK hTask, float dT) {
-    if (hTask != mWashTask) {
-        return false;
-    }
+    if (hTask == mWashTask) {
+        if (!static_cast<IModel *>(this)->IsHidden() && mCollisionBody) {
+            WWorldPos wpos = GetOwner()->GetWPos();
+            if (wpos.OnValidFace()) {
+                UMath::Vector3 position = GetVehicle()->GetPosition();
+                float altitude = position.y;
+                position.y = wpos.HeightAtPoint(position);
+                altitude -= position.y;
 
-    if (static_cast<IModel *>(this)->IsHidden() || !mCollisionBody) {
-        mEffect.Stop();
+                UMath::Vector3 normal = UMath::Vector4To3(mCollisionBody->GetGroundNormal());
+                float intensity = 1.0f - UMath::Ramp(altitude, 5.0f, 30.0f);
+                if (intensity > 0.0f) {
+                    UMath::Scale(normal, intensity);
+                    mEffect.Pause(false);
+                    mEffect.Set(mWash.GetConstCollection(), position, normal, nullptr, false, 0);
+                    return true;
+                }
+            }
+
+            mEffect.Pause(true);
+        } else {
+            mEffect.Stop();
+        }
+
         return true;
     }
-
-    WWorldPos wpos = GetOwner()->GetWPos();
-    if (wpos.OnValidFace()) {
-        UMath::Vector3 position = GetVehicle()->GetPosition();
-        float new_y = wpos.HeightAtPoint(position);
-        float altitude = position.y - new_y;
-        UMath::Vector3 normal = UMath::Vector4To3(mCollisionBody->GetGroundNormal());
-        float intensity = 1.0f - UMath::Ramp(altitude, 5.0f, 30.0f);
-
-        position.y = new_y;
-        if (intensity > 0.0f) {
-            UMath::Scale(normal, intensity);
-            mEffect.Pause(false);
-            mEffect.Set(mWash.GetConstCollection(), position, normal, nullptr, false, 0);
-            return true;
-        }
-    }
-
-    mEffect.Pause(true);
-    return true;
+    return false;
 }
