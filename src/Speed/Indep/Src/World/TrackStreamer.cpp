@@ -1193,37 +1193,37 @@ void TrackStreamer::RemoveCurrentStreamingSections() {
 }
 
 void TrackStreamer::AddCurrentStreamingSections(short *section_numbers, int num_sections, int position_number) {
-    if (num_sections <= 0) {
-        return;
-    }
-
-    StreamingPositionEntry *streaming_position = &StreamingPositionEntries[position_number];
-    for (int i = 0; i < num_sections; i++) {
-        short &section_number = section_numbers[i];
-        CurrentVisibleSectionTable.Set(section_number);
-        if (SplitScreen) {
-            section_number = static_cast<short>(Get2PlayerSectionNumber(section_number));
-        }
-
-        TrackStreamingSection *section = FindSection(section_number);
-        if (!section) {
-            continue;
-        }
-
-        section->LastNeededTimestamp = RealTimeFrames;
-        if (!section->CurrentlyVisible) {
-            CurrentStreamingSections[NumCurrentStreamingSections] = section;
-            NumCurrentStreamingSections += 1;
-        }
-
-        unsigned char position_bit = static_cast<unsigned char>(1 << (position_number & 0x1f));
-        if ((section->CurrentlyVisible & position_bit) == 0) {
-            section->CurrentlyVisible |= position_bit;
-            if (section->Status < TrackStreamingSection::LOADED) {
-                streaming_position->NumSectionsToLoad += 1;
-                streaming_position->AmountToLoad += section->Size;
+    int i = 0;
+    if (i < num_sections) {
+        StreamingPositionEntry *streaming_position = &StreamingPositionEntries[position_number];
+        unsigned int position_bit = 1 << position_number;
+        do {
+            short &section_number = section_numbers[i];
+            CurrentVisibleSectionTable.Set(section_number);
+            if (SplitScreen) {
+                section_number = static_cast<short>(Get2PlayerSectionNumber(section_number));
             }
-        }
+
+            TrackStreamingSection *section = FindSection(section_number);
+            if (!section) {
+                continue;
+            }
+
+            section->LastNeededTimestamp = RealTimeFrames;
+            if (!section->CurrentlyVisible) {
+                CurrentStreamingSections[NumCurrentStreamingSections] = section;
+                NumCurrentStreamingSections += 1;
+            }
+
+            if ((((static_cast<char>(section->CurrentlyVisible) >> position_number) ^ 1U) & 1) != 0) {
+                section->CurrentlyVisible |= static_cast<unsigned char>(position_bit);
+                if (section->Status < TrackStreamingSection::LOADED) {
+                    streaming_position->NumSectionsToLoad += 1;
+                    streaming_position->AmountToLoad += section->Size;
+                }
+            }
+            i += 1;
+        } while (i < num_sections);
     }
 }
 
