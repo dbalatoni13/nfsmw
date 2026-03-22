@@ -27,11 +27,17 @@ SFXCTL_HybridMotor::SFXCTL_HybridMotor()
     m_EngineMix.Cutoff = 0;
     m_AvgDeltaRPM.Flush(0.0f);
     m_GinsuLPFVal = 24000.0f;
-    bVector2 point0(0.0f, 0.0f);
-    bVector2 point1(0.0f, 0.0f);
-    bVector2 point2(0.0f, 0.0f);
-    bVector2 point3(0.0f, 0.0f);
-    bVector2 point4(0.0f, 0.0f);
+    bVector2 point0;
+    bVector2 point1;
+    bVector2 point2;
+    bVector2 point3;
+    bVector2 point4;
+
+    point0 = bVector2(0.0f, 0.0f);
+    point1 = bVector2(0.0f, 0.0f);
+    point2 = bVector2(0.0f, 0.0f);
+    point3 = bVector2(0.0f, 0.0f);
+    point4 = bVector2(0.0f, 0.0f);
 
     CrossFadesPoints[0] = point0;
     CrossFadesPoints[1] = point1;
