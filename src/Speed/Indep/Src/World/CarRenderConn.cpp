@@ -1,4 +1,5 @@
 #include "Speed/Indep/Src/World/CarRenderConn.h"
+#include "Speed/Indep/Src/Physics/PhysicsInfo.hpp"
 
 struct CarPartDatabase;
 extern void *gINISInstance asm("_Q33UTL11Collectionst9Singleton1Z4INIS_mInstance");
@@ -6,6 +7,12 @@ extern CarPartDatabase CarPartDB;
 extern CarType GetCarType__15CarPartDatabaseUi(CarPartDatabase *database, unsigned int model_hash)
     asm("GetCarType__15CarPartDatabaseUi");
 extern void KillSkids__9TireState(TireState *state) asm("KillSkids__9TireState");
+extern void TireState_ctor(TireState *state) asm("__9TireState");
+extern void TireState_dtor(TireState *state, int in_chrg) asm("_._9TireState");
+extern int PhysicsUpgrades_GetLevel(const Attrib::Gen::pvehicle &pvehicle, int type)
+    asm("GetLevel__Q27Physics8UpgradesRCQ36Attrib3Gen8pvehicleQ37Physics8Upgrades4Type");
+extern int PhysicsUpgrades_GetMaxLevel(const Attrib::Gen::pvehicle &pvehicle, int type)
+    asm("GetMaxLevel__Q27Physics8UpgradesRCQ36Attrib3Gen8pvehicleQ37Physics8Upgrades4Type");
 extern float RealTimeElapsed;
 extern float renderModifier;
 
@@ -18,6 +25,13 @@ struct RenderPktCarOpen {
 
 void StopEffect(VehicleRenderConn::Effect *effect) {
     effect->Stop();
+}
+
+TireState *CreateTireState() {
+    TireState *state = reinterpret_cast<TireState *>(gFastMem.Alloc(0xe0, 0));
+
+    TireState_ctor(state);
+    return state;
 }
 
 float &CarRenderInfoF32(CarRenderInfo *info, unsigned int offset) {
@@ -49,7 +63,90 @@ Sim::Connection *CarRenderConn::Construct(const Sim::ConnectionData &data) {
     return new CarRenderConn(data, static_cast<CarType>(car_type), reinterpret_cast<RenderConn::Pkt_Car_Open *>(data.pkt));
 }
 
+CarRenderConn::CarRenderConn(const Sim::ConnectionData &data, CarType ct, RenderConn::Pkt_Car_Open *oc)
+    : VehicleRenderConn(data, ct), //
+      IAttributeable(), //
+      mAttributes(static_cast<const Attrib::Collection *>(0), 0, 0), //
+      mPhysics(static_cast<const Attrib::Collection *>(0), 0, 0), //
+      mTirePhysics(static_cast<const Attrib::Collection *>(0), 0, 0), //
+      mExtraBodyAngle(UMath::Vector2::kZero), //
+      mFlatTireAngle(UMath::Vector3::kZero), //
+      mWheelHop(UMath::Vector3::kZero), //
+      mRoadNoise(UMath::Vector3::kZero), //
+      mEnginePower(0.0f), //
+      mAnimTime(0.0f), //
+      mShiftPitchAngle(0.0f), //
+      mEngineTorqueAngle(0.0f), //
+      mEngineVibrationAngle(0.0f), //
+      mEnginePitchAngle(0.0f), //
+      mPerfectLaunchTimer(0.0f), //
+      mMaxWheelRenderDeltaAngle(0.0f), //
+      mLastRenderFrame(0), //
+      mLastVisibleFrame(0), //
+      mDistanceToView(0.0f), //
+      mFlashTime(0.0f), //
+      mShifting(0.0f), //
+      mDoContrailEffect(false), //
+      mUsage(oc->mUsage), //
+      mFlags(0) {
+    int i;
+
+    PSMTX44Identity(*reinterpret_cast<Mtx44 *>(&this->mRenderMatrix));
+    this->mPhysics.Change(oc->mPhysicsKey);
+    this->mTirePhysics.Change(this->mPhysics.tires(0));
+    this->mSteering[0] = 0.0f;
+    this->mSteering[1] = 0.0f;
+
+    for (i = 0; i < 3; i++) {
+        this->mPartState[i] = 0;
+    }
+
+    for (i = 0; i < 4; i++) {
+        this->mTireState[i] = CreateTireState();
+        this->mTirePositions[i] = this->VehicleRenderConn::mAttributes.TireOffsets(i);
+        this->mTireRadius[i] = this->mTirePositions[i].w;
+        if (this->mTireRadius[i] < 0.1f) {
+            this->mTireRadius[i] = 0.1f;
+        }
+
+        this->mTirePositions[i].w = 0.0f;
+        this->mPhysicsRadius[i] = Physics::Info::WheelDiameter(this->mTirePhysics, i < 2) * 0.5f;
+    }
+
+    this->mMaxWheelRenderDeltaAngle = 0.017453f;
+    this->Load(oc->mWorldID, oc->mUsage, !oc->mSpoolLoad, oc->mCustomizations);
+    this->SetFlag(CF_ISPLAYER, oc->mUsage == 0);
+
+    if ((this->mUsage == 0 || this->mUsage == 2) &&
+        (PhysicsUpgrades_GetLevel(this->mPhysics, 4) != 0 || PhysicsUpgrades_GetMaxLevel(this->mPhysics, 4) == 0)) {
+        this->SetFlag(CF_BLOWOFF, true);
+    }
+}
+
 void CarRenderConn::OnAttributeChange(const Attrib::Collection *collection, unsigned int attribkey) {}
+
+CarRenderConn::~CarRenderConn() {
+    while (!this->mPipeEffects.IsEmpty()) {
+        VehicleRenderConn::Effect *effect = this->mPipeEffects.GetHead();
+
+        this->mPipeEffects.RemoveHead();
+        delete effect;
+    }
+
+    while (!this->mEngineEffects.IsEmpty()) {
+        VehicleRenderConn::Effect *effect = this->mEngineEffects.GetHead();
+
+        this->mEngineEffects.RemoveHead();
+        delete effect;
+    }
+
+    for (int i = 0; i < 4; i++) {
+        if (this->mTireState[i] != 0) {
+            TireState_dtor(this->mTireState[i], 3);
+            this->mTireState[i] = 0;
+        }
+    }
+}
 
 bool CarRenderConn::TestVisibility(float distance) {
     if (gINISInstance == 0 && !this->IsViewAnchor()) {
