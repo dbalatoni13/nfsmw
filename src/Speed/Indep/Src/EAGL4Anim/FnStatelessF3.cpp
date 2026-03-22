@@ -126,16 +126,7 @@ bool FnStatelessF3::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask
         short *frameData = statelessF3->GetFrameData(dataBuf, floorKey);
         int nBones = statelessF3->mNumBones;
 
-        if (!slerpReqd) {
-            for (int ibone = 0; ibone < nBones; ibone++) {
-                int index = dofIdxs[ibone];
-
-                sqt[index + 0] = dofInfos[ibone].mRange[0] * frameData[0];
-                sqt[index + 1] = dofInfos[ibone].mRange[1] * frameData[1];
-                sqt[index + 2] = dofInfos[ibone].mRange[2] * frameData[2];
-                frameData += 3;
-            }
-        } else {
+        if (slerpReqd) {
             short *nextFrameData = statelessF3->GetFrameData(dataBuf, floorKey + 1);
 
             for (int ibone = 0; ibone < nBones; ibone++) {
@@ -152,6 +143,15 @@ bool FnStatelessF3::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask
 
                 frameData += 3;
                 nextFrameData += 3;
+            }
+        } else {
+            for (int ibone = 0; ibone < nBones; ibone++) {
+                int index = dofIdxs[ibone];
+
+                sqt[index + 0] = dofInfos[ibone].mRange[0] * frameData[0];
+                sqt[index + 1] = dofInfos[ibone].mRange[1] * frameData[1];
+                sqt[index + 2] = dofInfos[ibone].mRange[2] * frameData[2];
+                frameData += 3;
             }
         }
 
