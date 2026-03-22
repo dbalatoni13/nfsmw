@@ -85,7 +85,6 @@ struct emEvent : public bTNode<emEvent> {
     int Parameter0;
     int Parameter1;
     int Parameter2;
-
 };
 
 typedef void (*EVENT_HANDLER_FUNC)(emEvent *);
@@ -196,11 +195,12 @@ void emRemoveHandler(EVENT_HANDLER_FUNC function) {
     for (emEventHandler *handler = EventHandlerList.GetHead(); handler != EventHandlerList.EndOfList();
          handler = handler->GetNext()) {
         if (handler->HandlerFunction == function) {
-            int ref_count = handler->ReferenceCount;
-            handler->ReferenceCount = ref_count - 1;
-            if (ref_count - 1 == 0) {
-                handler->Remove();
-                bFree(EventHandlerSlotPool, handler);
+            int ref_count = handler->ReferenceCount - 1;
+            handler->ReferenceCount = ref_count;
+            if (ref_count == 0) {
+                if (handler->Remove()) {
+                    bFree(EventHandlerSlotPool, handler);
+                }
                 EventManagerStats[1] -= 1;
             }
             return;
