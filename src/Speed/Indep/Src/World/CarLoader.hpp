@@ -124,6 +124,8 @@ class LoadedRideInfo : public bTNode<LoadedRideInfo> {
 // total size: 0x8B0
 class CarLoader {
   public:
+    CarLoader();
+
     enum eLoadingMode {
         MODE_FRONT_END = 0,
         MODE_LOADING_GAME = 1,
@@ -135,6 +137,10 @@ class CarLoader {
     }
 
   private:
+    void SetLoadingMode(eLoadingMode mode, int two_player_flag);
+    LoadedSolidPack *FindLoadedSolidPack(const char *filename);
+    LoadedTexturePack *FindLoadedTexturePack(const char *filename);
+    LoadedSkinLayer *FindLoadedSkinLayer(unsigned int name_hash);
     void CompositeSkin(LoadedSkin *loaded_skin);
     void LoadingDoneCallback();
     void LoadedSolidPackCallback(LoadedSolidPack *loaded_solid_pack);

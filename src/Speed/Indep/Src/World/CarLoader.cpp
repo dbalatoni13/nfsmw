@@ -144,6 +144,22 @@ void eLoadStreamingTexture(unsigned int *name_hash_table, int num_hashes, void (
                            int memory_pool_num);
 void eUnloadStreamingTexture(unsigned int *name_hash_table, int num_hashes);
 
+CarLoader::CarLoader()
+    : StartLoadingTime(0.0f) {
+    this->pCallback = 0;
+    this->LoadingMode = MODE_FRONT_END;
+    this->InFrontEndFlag = 0;
+    this->TwoPlayerFlag = 0;
+    this->LoadingInProgress = 0;
+    this->NumLoadedRideInfos = 0;
+    this->NumAllocatedRideInfos = 0;
+    this->MayNeedDefragmentation = 0;
+    this->MemoryPoolMem = 0;
+    this->MemoryPoolSize = 0;
+    this->NumSpongeAllocations = 0;
+    this->NumLoadingSkinLayers = 0;
+}
+
 LoadedWheel::LoadedWheel(RideInfo *ride_info, bool in_fe) {
     RideInfoLayout *ride_layout = reinterpret_cast<RideInfoLayout *>(ride_info);
 
@@ -456,6 +472,45 @@ int LoaderCarInfo(bChunk *chunk) {
     }
 
     return 1;
+}
+
+void CarLoader::SetLoadingMode(eLoadingMode mode, int two_player_flag) {
+    this->TwoPlayerFlag = two_player_flag;
+    this->InFrontEndFlag = mode == MODE_FRONT_END;
+    this->LoadingMode = mode;
+}
+
+LoadedSolidPack *CarLoader::FindLoadedSolidPack(const char *filename) {
+    for (LoadedSolidPack *loaded_solid_pack = this->LoadedSolidPackList.GetHead();
+         loaded_solid_pack != this->LoadedSolidPackList.EndOfList(); loaded_solid_pack = loaded_solid_pack->GetNext()) {
+        if (bStrCmp(loaded_solid_pack->Filename, filename) == 0) {
+            return loaded_solid_pack;
+        }
+    }
+
+    return 0;
+}
+
+LoadedTexturePack *CarLoader::FindLoadedTexturePack(const char *filename) {
+    for (LoadedTexturePack *loaded_texture_pack = this->LoadedTexturePackList.GetHead();
+         loaded_texture_pack != this->LoadedTexturePackList.EndOfList(); loaded_texture_pack = loaded_texture_pack->GetNext()) {
+        if (bStrCmp(loaded_texture_pack->Filename, filename) == 0) {
+            return loaded_texture_pack;
+        }
+    }
+
+    return 0;
+}
+
+LoadedSkinLayer *CarLoader::FindLoadedSkinLayer(unsigned int name_hash) {
+    for (LoadedSkinLayer *loaded_skin_layer = this->LoadedSkinLayerList.GetHead();
+         loaded_skin_layer != this->LoadedSkinLayerList.EndOfList(); loaded_skin_layer = loaded_skin_layer->GetNext()) {
+        if (loaded_skin_layer->NameHash == name_hash) {
+            return loaded_skin_layer;
+        }
+    }
+
+    return 0;
 }
 
 void CarLoader::LoadingDoneCallback() {
