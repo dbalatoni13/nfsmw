@@ -37,7 +37,7 @@ class IDragTransmission : public UTL::COM::IUnknown {
   public:
     static HINTERFACE _IHandle();
 
-    IDragTransmission(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
+    IDragTransmission(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, (HINTERFACE)_IHandle) {}
 
     virtual ~IDragTransmission() {}
 
