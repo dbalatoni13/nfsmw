@@ -68,6 +68,7 @@ extern float enX;
 extern float enY;
 extern float enZ;
 extern unsigned int TireFaceIt;
+extern int ForceBrakelightsOn;
 extern int counter_31665 asm("counter.31665");
 extern int counter_31669 asm("counter.31669");
 
@@ -934,6 +935,68 @@ void CarRenderInfo::CreateCarLightFlares() {
             }
         }
     }
+}
+
+void CarRenderInfo::UpdateLightStateTextures() {
+    CarRenderUsedCarTextureInfoLayout *used_texture_info =
+        reinterpret_cast<CarRenderUsedCarTextureInfoLayout *>(&this->mUsedTextureInfos);
+    unsigned int headlights_on = used_texture_info->ReplaceHeadlightHash[1];
+    unsigned int headlight_glass_on = used_texture_info->ReplaceHeadlightGlassHash[1];
+    unsigned int window_front = this->MasterReplacementTextureTable[REPLACETEX_WINDOW_FRONT].GetNewNameHash();
+    int left_brakelight_on = 0;
+    int right_brakelight_on = 0;
+    int center_brakelight_on = 0;
+
+    this->MasterReplacementTextureTable[REPLACETEX_HEADLIGHT_LEFT].SetNewNameHash(headlights_on);
+    this->MasterReplacementTextureTable[REPLACETEX_HEADLIGHT_RIGHT].SetNewNameHash(headlights_on);
+    this->MasterReplacementTextureTable[REPLACETEX_HEADLIGHT_GLASS_LEFT].SetNewNameHash(headlight_glass_on);
+    this->MasterReplacementTextureTable[REPLACETEX_HEADLIGHT_GLASS_RIGHT].SetNewNameHash(headlight_glass_on);
+    this->MasterReplacementTextureTable[REPLACETEX_OLD_HEADLIGHT_LEFT].SetNewNameHash(headlights_on);
+    this->MasterReplacementTextureTable[REPLACETEX_OLD_HEADLIGHT_RIGHT].SetNewNameHash(headlights_on);
+    this->MasterReplacementTextureTable[REPLACETEX_OLD_HEADLIGHT_GLASS_LEFT].SetNewNameHash(headlight_glass_on);
+    this->MasterReplacementTextureTable[REPLACETEX_OLD_HEADLIGHT_GLASS_RIGHT].SetNewNameHash(headlight_glass_on);
+    this->CarbonReplacementTextureTable[REPLACETEX_HEADLIGHT_LEFT].SetNewNameHash(headlights_on);
+    this->CarbonReplacementTextureTable[REPLACETEX_HEADLIGHT_RIGHT].SetNewNameHash(headlights_on);
+    this->CarbonReplacementTextureTable[REPLACETEX_HEADLIGHT_GLASS_LEFT].SetNewNameHash(headlight_glass_on);
+    this->CarbonReplacementTextureTable[REPLACETEX_HEADLIGHT_GLASS_RIGHT].SetNewNameHash(headlight_glass_on);
+    this->CarbonReplacementTextureTable[REPLACETEX_OLD_HEADLIGHT_LEFT].SetNewNameHash(headlights_on);
+    this->CarbonReplacementTextureTable[REPLACETEX_OLD_HEADLIGHT_RIGHT].SetNewNameHash(headlights_on);
+    this->CarbonReplacementTextureTable[REPLACETEX_OLD_HEADLIGHT_GLASS_LEFT].SetNewNameHash(headlight_glass_on);
+    this->CarbonReplacementTextureTable[REPLACETEX_OLD_HEADLIGHT_GLASS_RIGHT].SetNewNameHash(headlight_glass_on);
+    this->MasterReplacementTextureTable[REPLACETEX_HEADLIGHT_GLASS_LEFT].SetNewNameHash(window_front);
+    this->MasterReplacementTextureTable[REPLACETEX_HEADLIGHT_GLASS_RIGHT].SetNewNameHash(window_front);
+    this->MasterReplacementTextureTable[REPLACETEX_OLD_HEADLIGHT_GLASS_LEFT].SetNewNameHash(window_front);
+    this->MasterReplacementTextureTable[REPLACETEX_OLD_HEADLIGHT_GLASS_RIGHT].SetNewNameHash(window_front);
+
+    if (((this->mBrokenLights & 8) == 0) && ((this->mOnLights & 8) != 0)) {
+        left_brakelight_on = 1;
+    }
+    if (((this->mBrokenLights & 0x10) == 0) && ((this->mOnLights & 0x10) != 0)) {
+        right_brakelight_on = 1;
+    }
+    if (((this->mBrokenLights & 0x20) == 0) && ((this->mOnLights & 0x20) != 0)) {
+        center_brakelight_on = 1;
+    }
+    if (ForceBrakelightsOn != 0) {
+        left_brakelight_on = 1;
+        right_brakelight_on = 1;
+    }
+
+    this->MasterReplacementTextureTable[REPLACETEX_BRAKELIGHT_LEFT].SetNewNameHash(used_texture_info->ReplaceBrakelightHash[left_brakelight_on]);
+    this->MasterReplacementTextureTable[REPLACETEX_BRAKELIGHT_RIGHT].SetNewNameHash(used_texture_info->ReplaceBrakelightHash[right_brakelight_on]);
+    this->MasterReplacementTextureTable[REPLACETEX_BRAKELIGHT_CENTRE].SetNewNameHash(used_texture_info->ReplaceBrakelightHash[center_brakelight_on]);
+    this->MasterReplacementTextureTable[REPLACETEX_BRAKELIGHT_GLASS_LEFT].SetNewNameHash(used_texture_info->ReplaceBrakelightGlassHash[left_brakelight_on]);
+    this->MasterReplacementTextureTable[REPLACETEX_BRAKELIGHT_GLASS_RIGHT].SetNewNameHash(used_texture_info->ReplaceBrakelightGlassHash[right_brakelight_on]);
+    this->MasterReplacementTextureTable[REPLACETEX_BRAKELIGHT_GLASS_CENTRE].SetNewNameHash(used_texture_info->ReplaceBrakelightGlassHash[center_brakelight_on]);
+    this->MasterReplacementTextureTable[REPLACETEX_OLD_BRAKELIGHT_LEFT].SetNewNameHash(used_texture_info->ReplaceBrakelightHash[left_brakelight_on]);
+    this->MasterReplacementTextureTable[REPLACETEX_OLD_BRAKELIGHT_RIGHT].SetNewNameHash(used_texture_info->ReplaceBrakelightHash[right_brakelight_on]);
+    this->MasterReplacementTextureTable[REPLACETEX_OLD_BRAKELIGHT_CENTRE].SetNewNameHash(used_texture_info->ReplaceBrakelightHash[center_brakelight_on]);
+    this->MasterReplacementTextureTable[REPLACETEX_OLD_BRAKELIGHT_GLASS_LEFT]
+        .SetNewNameHash(used_texture_info->ReplaceBrakelightGlassHash[left_brakelight_on]);
+    this->MasterReplacementTextureTable[REPLACETEX_OLD_BRAKELIGHT_GLASS_RIGHT]
+        .SetNewNameHash(used_texture_info->ReplaceBrakelightGlassHash[right_brakelight_on]);
+    this->MasterReplacementTextureTable[REPLACETEX_OLD_BRAKELIGHT_GLASS_CENTRE]
+        .SetNewNameHash(used_texture_info->ReplaceBrakelightGlassHash[center_brakelight_on]);
 }
 
 void RefreshAllFrontEndCarRenderInfos(CarType type) {
