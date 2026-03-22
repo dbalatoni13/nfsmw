@@ -104,13 +104,13 @@ static inline void SingleQQuatMultQxZ(const UMath::Vector4 &a, const UMath::Vect
 }
 
 static inline void DecodeSingleQMinRange(const DeltaSingleQMinRange &minRange, DeltaSingleQMinRangef &minRangef) {
-    minRangef.mConst0 = minRange.mConst0 * kSingleQAngleScale16Bit - kSingleQPi;
-    minRangef.mConst1 = minRange.mConst1 * kSingleQAngleScale16Bit - kSingleQPi;
     minRangef.mMin[0] = minRange.mMin[0] * kSingleQRangeScale16Bit - kSingleQFloatOne;
     minRangef.mMin[1] = minRange.mMin[1] * kSingleQRangeScale16Bit - kSingleQFloatOne;
     minRangef.mRange[0] = 2.0f * (minRange.mRange[0] * kSingleQRangeScale16Bit) * kSingleQRangeScale4Bit;
     minRangef.mRange[1] = 2.0f * (minRange.mRange[1] * kSingleQRangeScale16Bit) * kSingleQRangeScale4Bit;
     minRangef.mIndex = static_cast<unsigned char>(minRange.mIndex);
+    minRangef.mConst0 = minRange.mConst0 * kSingleQAngleScale16Bit - kSingleQPi;
+    minRangef.mConst1 = minRange.mConst1 * kSingleQAngleScale16Bit - kSingleQPi;
 }
 
 static inline void DecodeSingleQPhysical(const DeltaSingleQPhysical &physical, int index, UMath::Vector4 &q) {
