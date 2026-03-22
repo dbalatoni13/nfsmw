@@ -312,7 +312,6 @@ SuspensionSimple::Tire::Tire(float radius, int index, const Attrib::Gen::tires *
       mBrakes(brakes), //
       mSlipAngle(0.0f), //
       mAxleIndex(index >> 1), //
-      mTraction(1.0f), //
       mBrakeLocked(false), //
       mAllowSlip(false), //
       mLastTorque(0.0f), //
