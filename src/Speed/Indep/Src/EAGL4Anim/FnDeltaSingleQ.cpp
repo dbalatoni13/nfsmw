@@ -114,17 +114,15 @@ static inline void DecodeSingleQMinRange(const DeltaSingleQMinRange &minRange, D
 }
 
 static inline void DecodeSingleQPhysical(const DeltaSingleQPhysical &physical, int index, UMath::Vector4 &q) {
+    q.x = kSingleQFloatZero;
+    q.y = kSingleQFloatZero;
+    q.z = kSingleQFloatZero;
+
     if (index == 0) {
         q.x = physical.mV * kSingleQRangeScale8Bit - kSingleQFloatOne;
-        q.y = kSingleQFloatZero;
-        q.z = kSingleQFloatZero;
     } else if (index == 1) {
-        q.x = kSingleQFloatZero;
         q.y = physical.mV * kSingleQRangeScale8Bit - kSingleQFloatOne;
-        q.z = kSingleQFloatZero;
     } else {
-        q.x = kSingleQFloatZero;
-        q.y = kSingleQFloatZero;
         q.z = physical.mV * kSingleQRangeScale8Bit - kSingleQFloatOne;
     }
     q.w = physical.mW * kSingleQRangeScale8Bit - kSingleQFloatOne;
