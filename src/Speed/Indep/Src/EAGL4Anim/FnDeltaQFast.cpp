@@ -480,16 +480,7 @@ bool FnDeltaQFast::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask)
                     timeIndex = 0;
                 }
 
-                if (floorTime < times[timeIndex]) {
-                    if (timeIndex > 0) {
-                        do {
-                            timeIndex--;
-                            if (timeIndex < 1) {
-                                break;
-                            }
-                        } while (floorTime < times[timeIndex]);
-                    }
-                } else {
+                if (floorTime >= times[timeIndex]) {
                     int lastTimeIndex = deltaQ->mNumKeys - 2;
                     if (timeIndex < lastTimeIndex) {
                         unsigned int nextTime = times[timeIndex + 1];
@@ -500,6 +491,15 @@ bool FnDeltaQFast::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask)
                             nextTime = times[nextIndex + 2];
                             nextIndex = timeIndex;
                         }
+                    }
+                } else {
+                    if (timeIndex > 0) {
+                        do {
+                            timeIndex--;
+                            if (timeIndex < 1) {
+                                break;
+                            }
+                        } while (floorTime < times[timeIndex]);
                     }
                 }
 
