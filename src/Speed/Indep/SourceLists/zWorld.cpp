@@ -20,6 +20,8 @@
 
 #include "Speed/Indep/Src/World/rain.cpp"
 
+#include "Speed/Indep/Src/World/FacePixelate.cpp"
+
 #include "Speed/Indep/Src/World/VehicleFragmentConn.cpp"
 
 #include "Speed/Indep/Src/World/VehicleRenderConn.cpp"
