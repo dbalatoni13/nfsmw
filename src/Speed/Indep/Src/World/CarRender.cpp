@@ -2441,13 +2441,13 @@ void CarRenderInfo::RenderFlaresOnCar(eView *view, const bVector3 *position, con
         local_world = 0;
     } else {
         CurrentBufferPos += sizeof(bMatrix4);
-        PSMTX44Copy(*reinterpret_cast<const Mtx44 *>(body_matrix), *reinterpret_cast<Mtx44 *>(local_world));
     }
 
     if (local_world == 0) {
         return;
     }
 
+    PSMTX44Copy(*reinterpret_cast<const Mtx44 *>(body_matrix), *reinterpret_cast<Mtx44 *>(local_world));
     local_world->v3.x = position->x;
     local_world->v3.y = position->y;
     local_world->v3.z = position->z;
@@ -2467,9 +2467,28 @@ void CarRenderInfo::RenderFlaresOnCar(eView *view, const bVector3 *position, con
         car_pixel_size = static_cast<int>(static_cast<float>(car_pixel_size) * 0.5f);
     }
 
-    if (view->PixelMinSize > car_pixel_size || view->GetVisibleState(&this->AABBMin, &this->AABBMax, local_world) == EVISIBLESTATE_NOT) {
+    if (car_pixel_size < view->PixelMinSize || view->GetVisibleState(&this->AABBMin, &this->AABBMax, local_world) == EVISIBLESTATE_NOT) {
         return;
     }
+
+    float headlight_left_intensity = 0.0f;
+    if (gINISInstance != 0) {
+        headlight_left_intensity = 0.5f;
+    }
+
+    float headlight_right_intensity = 0.0f;
+    if (gINISInstance != 0) {
+        headlight_right_intensity = 0.5f;
+    }
+
+    float brakelight_left_intensity = 0.0f;
+    float brakelight_right_intensity = 0.0f;
+    float brakelight_centre_intensity = 0.0f;
+    float reverselight_left_intensity = 0.0f;
+    float reverselight_right_intensity = 0.0f;
+    float coplight_intensityR = 0.0f;
+    float coplight_intensityB = 0.0f;
+    float coplight_intensityW = 0.0f;
 
     if (ForceHeadlightsOn != 0) {
         force_light_state |= 1;
@@ -2481,59 +2500,86 @@ void CarRenderInfo::RenderFlaresOnCar(eView *view, const bVector3 *position, con
         force_light_state |= 4;
     }
 
-    float headlight_base = gINISInstance != 0 ? 0.5f : 0.0f;
-    float headlight_left_intensity = headlight_base;
-    float headlight_right_intensity = headlight_base;
-
-    if ((force_light_state & 1) || (this->mOnLights & 1)) {
+    unsigned int onLights = this->mOnLights;
+    if (force_light_state & 1) {
         headlight_left_intensity += 1.0f;
-    }
-    if ((force_light_state & 1) || (this->mOnLights & 2)) {
         headlight_right_intensity += 1.0f;
     }
-    float brakelight_left_intensity = ((force_light_state & 2) || (this->mOnLights & 8)) ? 1.0f : 0.0f;
-    float brakelight_centre_intensity = ((force_light_state & 2) || (this->mOnLights & 0x20)) ? 1.0f : 0.0f;
-    float brakelight_right_intensity = ((force_light_state & 2) || (this->mOnLights & 0x10)) ? 1.0f : 0.0f;
-    float reverselight_left_intensity = ((force_light_state & 4) || (this->mOnLights & 0x40)) ? 1.0f : 0.0f;
-    float reverselight_right_intensity = ((force_light_state & 4) || (this->mOnLights & 0x80)) ? 1.0f : 0.0f;
-    float coplight_intensityR = (this->mOnLights & 0x1000) ? cpr : 0.0f;
-    float coplight_intensityB = (this->mOnLights & 0x2000) ? cpb : 0.0f;
-    float coplight_intensityW = (this->mOnLights & 0x4000) ? cpw : 0.0f;
-    unsigned int flashHeadlights = this->mOnLights & 0x4000;
+    if (onLights & 1) {
+        headlight_left_intensity += 1.0f;
+    }
+    if (onLights & 2) {
+        headlight_right_intensity += 1.0f;
+    }
+    if (force_light_state & 2) {
+        brakelight_left_intensity += 1.0f;
+        brakelight_right_intensity += 1.0f;
+        brakelight_centre_intensity += 1.0f;
+    }
+    if (onLights & 8) {
+        brakelight_left_intensity += 1.0f;
+    }
+    if (onLights & 0x10) {
+        brakelight_right_intensity += 1.0f;
+    }
+    if (onLights & 0x20) {
+        brakelight_centre_intensity += 1.0f;
+    }
+    if (force_light_state & 4) {
+        reverselight_left_intensity += 1.0f;
+        reverselight_right_intensity += 1.0f;
+    }
+    if (onLights & 0x40) {
+        reverselight_left_intensity += 1.0f;
+    }
+    if (onLights & 0x80) {
+        reverselight_right_intensity += 1.0f;
+    }
+    if (onLights & 0x1000) {
+        coplight_intensityR = cpr;
+    }
+    if (onLights & 0x2000) {
+        coplight_intensityB = cpb;
+    }
+    if (onLights & 0x4000) {
+        coplight_intensityW = cpw;
+    }
+    unsigned int flashHeadlights = onLights & 0x4000;
 
-    if ((force_light_state & 1) == 0 && (force_light_state & 8) != 0) {
+    if ((force_light_state & 9) == 8) {
         headlight_left_intensity = 0.0f;
         headlight_right_intensity = 0.0f;
     }
 
-    if (this->mBrokenLights & 1) {
+    unsigned int brokenLights = this->mBrokenLights;
+    if (brokenLights & 1) {
         headlight_left_intensity = 0.0f;
     }
-    if (this->mBrokenLights & 2) {
+    if (brokenLights & 2) {
         headlight_right_intensity = 0.0f;
     }
-    if (this->mBrokenLights & 8) {
+    if (brokenLights & 8) {
         brakelight_left_intensity = 0.0f;
     }
-    if (this->mBrokenLights & 0x10) {
+    if (brokenLights & 0x10) {
         brakelight_right_intensity = 0.0f;
     }
-    if (this->mBrokenLights & 0x20) {
+    if (brokenLights & 0x20) {
         brakelight_centre_intensity = 0.0f;
     }
-    if (this->mBrokenLights & 0x40) {
+    if (brokenLights & 0x40) {
         reverselight_left_intensity = 0.0f;
     }
-    if (this->mBrokenLights & 0x80) {
+    if (brokenLights & 0x80) {
         reverselight_right_intensity = 0.0f;
     }
-    if (this->mBrokenLights & 0x1000) {
+    if (brokenLights & 0x1000) {
         coplight_intensityR = 0.0f;
     }
-    if (this->mBrokenLights & 0x2000) {
+    if (brokenLights & 0x2000) {
         coplight_intensityB = 0.0f;
     }
-    if (this->mBrokenLights & 0x4000) {
+    if (brokenLights & 0x4000) {
         coplight_intensityW = 0.0f;
     }
 
