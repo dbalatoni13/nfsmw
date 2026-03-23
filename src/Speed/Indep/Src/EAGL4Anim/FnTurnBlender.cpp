@@ -191,7 +191,7 @@ int FnTurnBlender::ComputeCycleIdx(float t, float startTime, float endTime) cons
     if (t < startTime) {
         return static_cast<int>((startTime - t) / length);
     }
-    if (endTime <= t) {
+    if (t >= endTime) {
         return static_cast<int>((t - endTime) / length) + 1;
     }
     return 0;

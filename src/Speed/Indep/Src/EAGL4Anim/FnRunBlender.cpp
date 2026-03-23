@@ -193,18 +193,6 @@ void FnRunBlender::SetWeight(float w) {
 }
 
 bool FnRunBlender::EvalPhase(float currTime, PhaseValue &phase) {
-    if (!mFnAnims[0]) {
-        SetWeight(0.0f);
-    }
-
-    if (mPhases && mIdx >= 0 && mIdx < mNumAnims) {
-        FnPhaseChan phaseChan;
-
-        phaseChan.SetAnimMemoryMap(const_cast<PhaseChan *>(mPhases[mIdx]));
-        phaseChan.Eval(0.0f, currTime, &phase.mAngle);
-        return true;
-    }
-
     return false;
 }
 
@@ -343,7 +331,7 @@ int FnRunBlender::ComputeCycleIdx(float t, float startTime, float endTime) const
     if (t < startTime) {
         return static_cast<int>((startTime - t) / length);
     }
-    if (endTime <= t) {
+    if (t >= endTime) {
         return static_cast<int>((t - endTime) / length) + 1;
     }
     return 0;
