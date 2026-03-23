@@ -18,6 +18,8 @@
 
 #include "Speed/Indep/Src/World/SkyRender.cpp"
 
+#include "Speed/Indep/Src/World/rain.cpp"
+
 #include "Speed/Indep/Src/World/VehicleFragmentConn.cpp"
 
 #include "Speed/Indep/Src/World/VehicleRenderConn.cpp"

@@ -189,6 +189,8 @@ struct OnScreenRain {
     // total size: 0x4
     int NumOnScreen; // offset 0x0, size 0x4
 
+    OnScreenRain();
+
     int GetNumOnScreen() {
         return NumOnScreen;
     }
