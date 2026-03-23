@@ -1,5 +1,17 @@
 #include "Speed/Indep/Src/World/Rain.hpp"
 #include "Speed/Indep/Src/World/OnlineManager.hpp"
+#include "Speed/Indep/Src/Ecstasy/Texture.hpp"
+#include "Speed/Indep/bWare/Inc/Strings.hpp"
+
+extern float RAINRadiusX;
+extern float RAINRadiusY;
+extern float RAINRadiusZ;
+extern float RAINwindEffect;
+extern float RAINX;
+extern float RAINY;
+extern float RAINZ;
+extern float RAINZconstant;
+extern float twkCloudsMinAmount;
 
 float rainOverrideIntensity;
 extern bool EnableRainIn2P;
@@ -7,6 +19,35 @@ extern bool EnableRainIn2P;
 void TempInits() {}
 
 OnScreenRain::OnScreenRain() {}
+
+void Rain::Init(RainType type, float percent) {
+    int j;
+
+    TempInits();
+
+    this->texture_info[RAIN] = GetTextureInfo(bStringHash("RAINDROP"), 0, 0);
+    this->NumRainPoints = 350;
+
+    for (j = 0; j < 2; j++) {
+        this->NumOfType[j] = 0;
+        this->DesiredNumOfType[j] = 0;
+    }
+
+    this->NewSwapBuffer = 0;
+    this->OldSwapBuffer = 1;
+    this->NumOfType[type] = this->NumRainPoints;
+    this->CloudIntensity = twkCloudsMinAmount;
+    this->precipWindEffect[RAIN][0] = RAINwindEffect;
+    this->precipWindEffect[RAIN][1] = RAINwindEffect * 0.5f;
+    this->precipWindEffect[INACTIVE][0] = 1.0f;
+    this->precipWindEffect[INACTIVE][1] = 1.0f;
+    this->precipRadius[RAIN] = bVector3(RAINRadiusX, RAINRadiusY, RAINRadiusZ);
+    this->precipSpeedRange[RAIN] = bVector3(RAINX, RAINY, RAINZ);
+    this->precipZconstant[RAIN] = RAINZconstant;
+    this->windType[RAIN] = VECTOR_WIND;
+    this->windSpeed = bVector3(0.0f, 0.0f, 0.0f);
+    this->windTime = 0.0f;
+}
 
 void SetOverRideRainIntensity(float rov) {
     rainOverrideIntensity = rov;
