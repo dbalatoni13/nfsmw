@@ -970,11 +970,13 @@ void RideInfo::FillWithPreset(unsigned int preset_name_hash) {
         for (int i = 0; i < CARSLOTID_NUM; i++) {
             unsigned int part_name_hash = preset->PartNameHashes[i];
 
-            if (part_name_hash == 0) {
+            if (part_name_hash != 0) {
+                if (part_name_hash != 1) {
+                    CarPart *part = CarPartDB.NewGetCarPart(type, i, part_name_hash, 0, -1);
+                    this->SetPart(i, part, true);
+                }
+            } else {
                 this->SetPart(i, 0, true);
-            } else if (part_name_hash != 1) {
-                CarPart *part = CarPartDB.NewGetCarPart(type, i, part_name_hash, 0, -1);
-                this->SetPart(i, part, true);
             }
         }
     }
