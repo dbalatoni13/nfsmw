@@ -69,6 +69,7 @@ struct CarPartDatabase {
     CarPartIndexCtor VinylPart_Manufacturer[3];
 
     CarPartDatabase();
+    CarType GetCarType(unsigned int car_type_name_hash);
     int NewGetNumCarParts(CarType car_type, int car_slot_id, unsigned int car_part_namehash, int upgrade_level);
     CarPart *NewGetCarPart(CarType car_type, int car_slot_id, unsigned int car_part_namehash, CarPart *prev_part, int upgrade_level);
     CarPart *NewGetFirstCarPart(CarType car_type, int car_slot_id, unsigned int car_part_namehash, int upgrade_level);
@@ -89,6 +90,10 @@ CarTypeInfo *CarTypeInfoArray;
 CarPartDatabase CarPartDB;
 extern int iRam8047ff04;
 extern MissingCarPart MissingCarPartTable[0x14A];
+extern const char *CarPartStringTable;
+extern unsigned int *CarPartTypeNameHashTable;
+extern unsigned int CarPartTypeNameHashTableSize;
+extern CAR_PART_ID CarPartSlotMap[];
 
 int UsedCarTextureAddToTable(unsigned int *table, int num_used, int max_textures, unsigned int texture_hash = 0);
 int GetTempCarSkinTextures(unsigned int *table, int num_used, int max_textures, RideInfo *ride_info);
@@ -166,6 +171,50 @@ int GetNumCarPartIDNames() {
 
 int GetNumCarSlotIDNames() {
     return CARSLOTID_NUM;
+}
+
+char *CarPart::GetName() {
+    return const_cast<char *>(CarPartStringTable + *reinterpret_cast<unsigned short *>(reinterpret_cast<unsigned char *>(this) + 8) * 4);
+}
+
+unsigned int CarPart::GetCarTypeNameHash() {
+    return CarPartTypeNameHashTable[*reinterpret_cast<unsigned char *>(reinterpret_cast<unsigned char *>(this) + 7)];
+}
+
+CAR_PART_ID GetCarPartFromSlot(CAR_SLOT_ID slot) {
+    return CarPartSlotMap[slot];
+}
+
+unsigned char MapCarTypeNameHashToIndex(unsigned int namehash) {
+    unsigned int index = 0;
+
+    if (CarPartTypeNameHashTableSize != 0) {
+        do {
+            if (CarPartTypeNameHashTable[index] == namehash) {
+                return static_cast<unsigned char>(index);
+            }
+
+            index++;
+        } while (index < static_cast<unsigned int>(CarPartTypeNameHashTableSize));
+    }
+
+    return 0xFF;
+}
+
+CarType CarPartDatabase::GetCarType(unsigned int car_type_name_hash) {
+    int i = 0;
+
+    do {
+        CarTypeInfo *car_type_info = reinterpret_cast<CarTypeInfo *>(reinterpret_cast<unsigned char *>(CarTypeInfoArray) + i * sizeof(CarTypeInfo));
+
+        if (bStringHash(car_type_info->BaseModelName) != car_type_name_hash) {
+            i++;
+        } else {
+            return car_type_info->Type;
+        }
+    } while (i < 0x54);
+
+    return static_cast<CarType>(0x54);
 }
 
 const char *GetCarTypeName(CarType car_type) {
