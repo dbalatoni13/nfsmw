@@ -198,9 +198,9 @@ extern void AddQuickDynamicLight(eShaperLightRig *ShaperRigP, unsigned int slot,
 void sh_Setup(bVector3 *car_pos);
 
 void sh_Setup(bVector3 *car_pos) {
-    float horizontal_distance = lbl_8040AD84;
     bVector3 light_pos;
-    bVector3 light_vector;
+    bVector3 light_delta;
+    float light_length;
     unsigned short shadow_angle;
 
     if (SunInfo == 0) {
@@ -213,25 +213,31 @@ void sh_Setup(bVector3 *car_pos) {
         light_pos.z = SunInfo->CarShadowPositionZ;
     }
 
-    light_vector.x = car_pos->x - light_pos.x;
-    light_vector.y = car_pos->y - light_pos.y;
-    light_vector.z = car_pos->z - light_pos.z;
-    cs_lightV = light_vector;
+    light_delta.x = car_pos->x - light_pos.x;
+    light_delta.y = car_pos->y - light_pos.y;
+    light_delta.z = car_pos->z - light_pos.z;
 
+    bVector3 light_vector(light_delta);
+
+    cs_lightV.z = light_delta.z;
+    cs_lightV.x = light_vector.x;
+    cs_lightV.y = light_vector.y;
+
+    light_length = lbl_8040AD84;
     float xy_length_sq = light_vector.x * light_vector.x + light_vector.y * light_vector.y;
     if (lbl_8040AD8C < xy_length_sq) {
-        horizontal_distance = bSqrt(xy_length_sq);
+        light_length = bSqrt(xy_length_sq);
     }
 
-    shadow_angle = bATan(horizontal_distance, -light_vector.z);
+    shadow_angle = bATan(light_length, -cs_lightV.z);
     if (shadow_angle < 4000) {
-        float light_length = lbl_8040AD84;
         float sin_angle;
         float cos_angle;
         float abs_y;
 
         bSinCos(&sin_angle, &cos_angle, 4000);
         xy_length_sq = cs_lightV.z * cs_lightV.z + cs_lightV.x * cs_lightV.x + cs_lightV.y * cs_lightV.y;
+        light_length = lbl_8040AD84;
         if (lbl_8040AD8C < xy_length_sq) {
             light_length = bSqrt(xy_length_sq);
         }
