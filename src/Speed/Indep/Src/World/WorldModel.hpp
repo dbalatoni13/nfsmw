@@ -41,6 +41,10 @@ class WorldModel : public bTNode<WorldModel> {
         return bOMalloc(WorldModelSlotPool);
     }
 
+    void operator delete(void *ptr) {
+        bFree(WorldModelSlotPool, ptr);
+    }
+
     bool IsEnabled() {
         return this->mEnabled;
     }

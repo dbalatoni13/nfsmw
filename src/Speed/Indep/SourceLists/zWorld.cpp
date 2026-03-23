@@ -12,6 +12,8 @@
 
 #include "Speed/Indep/Src/World/CarRender.cpp"
 
+#include "Speed/Indep/Src/World/SpaceNode.cpp"
+
 #include "Speed/Indep/Src/World/WorldModel.cpp"
 
 #include "Speed/Indep/Src/World/SkyRender.cpp"

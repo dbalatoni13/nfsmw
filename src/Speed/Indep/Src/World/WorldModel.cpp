@@ -2,6 +2,7 @@
 #include "Speed/Indep/Src/Camera/Camera.hpp"
 #include "Speed/Indep/Src/Camera/CameraMover.hpp"
 #include "Speed/Indep/Src/Ecstasy/eLight.hpp"
+#include "Speed/Indep/Src/Ecstasy/eMath.hpp"
 #include "Speed/Indep/Src/Ecstasy/eSolid.hpp"
 
 extern unsigned int FrameMallocFailed;
@@ -14,6 +15,10 @@ extern float lbl_8040CD90;
 extern float lbl_8040CD94;
 extern eShaperLightRig ShaperLightsCarsInGame;
 extern eShaperLightRig ShaperLightsCharacters;
+extern int bBoundingBoxIsInside(const bVector3 *bbox_min, const bVector3 *bbox_max, const bVector3 *point, float extra_width);
+extern void RenderAnimSceneEffects(eView *view, int exc_flag) asm("RenderAnimSceneEffects__FP5eViewi");
+
+bTList<WorldModel> WorldModelList;
 
 int elSetupLightContext(eDynamicLightContext *light_context, eShaperLightRig *shaper_lights, bMatrix4 *local_world, bMatrix4 *world_view,
                         bVector4 *camera_world_position, eView *view);
@@ -74,6 +79,171 @@ struct AABBAdjustor {
 };
 
 } // namespace
+
+WorldModel::WorldModel(unsigned int name_hash, bMatrix4 *matrix, bool add_lighting) {
+    this->pModel = static_cast<eModel *>(bOMalloc(eModelSlotPool));
+    this->pModel->NameHash = 0;
+    this->pModel->Solid = 0;
+    this->pModel->Init(name_hash);
+    this->pReflectionModel = 0;
+    this->Construct(0, matrix, 0, 0, add_lighting);
+}
+
+WorldModel::WorldModel(SpaceNode *spacenode, unsigned int *lod_name_hash, bool add_lighting) {
+    this->pModel = static_cast<eModel *>(bOMalloc(eModelSlotPool));
+    this->pModel->Solid = 0;
+    this->pModel->NameHash = 0;
+    this->pModel->Init(*lod_name_hash);
+
+    if (lod_name_hash[3] == 0) {
+        this->pReflectionModel = 0;
+    } else {
+        this->pReflectionModel = static_cast<eModel *>(bOMalloc(eModelSlotPool));
+        this->pReflectionModel->NameHash = 0;
+        this->pReflectionModel->Solid = 0;
+        this->pReflectionModel->Init(lod_name_hash[3]);
+    }
+
+    this->Construct(spacenode, 0, 0, 0, add_lighting);
+}
+
+WorldModel::WorldModel(const ModelHeirarchy *heirarchy, unsigned int heirarchy_index, bool add_lighting) {
+    this->pModel = 0;
+    this->pReflectionModel = 0;
+    this->Construct(0, 0, heirarchy, heirarchy_index, add_lighting);
+}
+
+void WorldModel::Construct(SpaceNode *spacenode, bMatrix4 *matrix, const ModelHeirarchy *heirarchy, unsigned int rootnode, bool add_lighting) {
+    this->mDistanceToGameView = lbl_8040CD80;
+    this->mLightMaterialSkinHash = 0;
+    this->mLastRenderFrame = 0;
+    this->mLastVisibleFrame = 0;
+    this->mLightMaterial = 0;
+
+    if (heirarchy == 0 || reinterpret_cast<const unsigned char *>(heirarchy)[4] <= rootnode) {
+        this->mHeirarchy = 0;
+        this->mChildVisibility = 0;
+        this->mHeirarchyIndex = 0;
+    } else {
+        this->mHeirarchy = heirarchy;
+        this->mHeirarchyIndex = rootnode;
+        this->mChildVisibility = 0xFFFFFF;
+    }
+
+    this->mInvisibleInside = false;
+    this->mEnabled = true;
+    this->mRenderInSplitScreen = true;
+    this->mCastsShadow = 1;
+    this->pSpaceNode = spacenode;
+
+    if (spacenode != 0) {
+        spacenode->Lock();
+    }
+
+    if (matrix != 0) {
+        this->mEnabled = true;
+        if (this->pSpaceNode == 0) {
+            PSMTX44Copy(*reinterpret_cast<const Mtx44 *>(matrix), *reinterpret_cast<Mtx44 *>(&this->mMatrix));
+        } else {
+            PSMTX44Copy(*reinterpret_cast<const Mtx44 *>(matrix), *reinterpret_cast<Mtx44 *>(&this->pSpaceNode->GetLocalMatrix()[0]));
+            this->pSpaceNode->SetDirty();
+        }
+    }
+
+    this->mAddLighting = add_lighting;
+    WorldModelList.AddTail(this);
+}
+
+WorldModel::~WorldModel() {
+    if (this->pModel != 0) {
+        delete this->pModel;
+    }
+
+    if (this->pReflectionModel != 0) {
+        delete this->pReflectionModel;
+    }
+
+    if (this->pSpaceNode != 0) {
+        this->pSpaceNode->Unlock();
+    }
+
+    this->Remove();
+}
+
+eModel *WorldModel::GetModel() {
+    if (this->pModel != 0) {
+        return this->pModel;
+    }
+
+    if (this->mHeirarchy == 0) {
+        return 0;
+    }
+
+    return *reinterpret_cast<eModel *const *>(reinterpret_cast<const unsigned char *>(this->mHeirarchy) + this->mHeirarchyIndex * 0x10 + 0x10);
+}
+
+void WorldModel::AttachReplacementTextureTable(eReplacementTextureTable *replacement_texture_table, int num_textures) {
+    if (this->pModel != 0) {
+        this->pModel->AttachReplacementTextureTable(replacement_texture_table, num_textures, 0);
+    }
+
+    if (this->pReflectionModel != 0) {
+        this->pReflectionModel->AttachReplacementTextureTable(replacement_texture_table, num_textures, 0);
+    }
+}
+
+void WorldModel::GetLocalBoundingBox(bVector3 *min_ext, bVector3 *max_ext) {
+    eModel *model = this->GetModel();
+
+    if (model == 0) {
+        min_ext->x = 0.0f;
+        min_ext->y = 0.0f;
+        min_ext->z = 0.0f;
+
+        max_ext->x = 0.0f;
+        max_ext->y = 0.0f;
+        max_ext->z = 0.0f;
+    } else {
+        model->GetBoundingBox(min_ext, max_ext);
+    }
+}
+
+void InitWorldModels() {
+    WorldModelSlotPool = bNewSlotPool(0x88, 0x80, "WorldModelSlotPool", 0);
+}
+
+void CloseWorldModels() {
+    while (WorldModelList.GetHead() != WorldModelList.EndOfList()) {
+        delete WorldModelList.RemoveHead();
+    }
+
+    bDeleteSlotPool(WorldModelSlotPool);
+    WorldModelSlotPool = 0;
+}
+
+void WorldModel::RenderNode(const ModelHeirarchy *heirarchy, unsigned int nodeIndex, eView *view, int exc_flag, bMatrix4 *blended_matrices,
+                            const bMatrix4 *matrix) {
+    const unsigned char *node = reinterpret_cast<const unsigned char *>(heirarchy) + 8 + nodeIndex * 0x10;
+    eModel *model = *reinterpret_cast<eModel *const *>(node + 8);
+
+    if (model != 0 && model->Solid != 0) {
+        this->RenderModel(model, view, exc_flag, blended_matrices, matrix);
+    }
+
+    unsigned int child = 0;
+    if (node[0xE] != 0) {
+        do {
+            unsigned int child_index = node[0xF] + child;
+            const unsigned char *child_node = reinterpret_cast<const unsigned char *>(heirarchy) + 8 + child_index * 0x10;
+
+            if ((this->mHeirarchyIndex != nodeIndex || (this->mChildVisibility & (1U << (child & 0x3F))) != 0) && (child_node[0xC] & 1) == 0) {
+                this->RenderNode(heirarchy, child_index, view, exc_flag, blended_matrices, matrix);
+            }
+
+            child++;
+        } while (child < node[0xE]);
+    }
+}
 
 void WorldModel::RenderModel(eModel *render_model, eView *view, int exc_flag, bMatrix4 *blended_matrices, const bMatrix4 *matrix) {
     unsigned int flags = static_cast<unsigned int>(exc_flag);
@@ -220,4 +390,50 @@ have_world_matrix:
 
         this->mLastVisibleFrame = eFrameCounter;
     }
+}
+
+void RenderWorldModels(eView *view, int exc_flag) {
+    int view_mode = eGetCurrentViewMode();
+
+    for (WorldModel *world_model = WorldModelList.GetHead(); world_model != WorldModelList.EndOfList(); world_model = world_model->GetNext()) {
+        unsigned char *world_model_bytes = reinterpret_cast<unsigned char *>(world_model);
+
+        if (world_model_bytes[0x28] != 0 && (view_mode != 3 || world_model_bytes[0x2C] != 0)) {
+            if (world_model_bytes[0x30] != 0) {
+                const bMatrix4 *matrix = reinterpret_cast<const bMatrix4 *>(world_model_bytes + 0x40);
+                const bVector3 *position = reinterpret_cast<const bVector3 *>(world_model_bytes + 0x70);
+                SpaceNode *space_node = *reinterpret_cast<SpaceNode **>(world_model_bytes + 0x3C);
+
+                if (space_node != 0) {
+                    matrix = reinterpret_cast<const bMatrix4 *>(reinterpret_cast<const unsigned char *>(space_node) + 0x50);
+                    position = reinterpret_cast<const bVector3 *>(reinterpret_cast<const unsigned char *>(space_node) + 0x80);
+                }
+
+                bMatrix4 local_matrix;
+                bVector3 bbox_min;
+                bVector3 bbox_max;
+                bVector3 local_camera_position;
+
+                local_matrix.v0 = matrix->v0;
+                local_matrix.v1 = matrix->v1;
+                local_matrix.v2 = matrix->v2;
+                local_matrix.v3.x = position->x;
+                local_matrix.v3.y = position->y;
+                local_matrix.v3.z = position->z;
+                local_matrix.v3.w = 1.0f;
+
+                eInvertTransformationMatrix(&local_matrix, &local_matrix);
+                world_model->GetLocalBoundingBox(&bbox_min, &bbox_max);
+                eMulVector(&local_camera_position, &local_matrix, reinterpret_cast<const bVector3 *>(reinterpret_cast<const unsigned char *>(view->pCamera) + 0x40));
+
+                if (bBoundingBoxIsInside(&bbox_min, &bbox_max, &local_camera_position, 0.0f) != 0) {
+                    continue;
+                }
+            }
+
+            world_model->Render(view, exc_flag);
+        }
+    }
+
+    RenderAnimSceneEffects(view, exc_flag);
 }

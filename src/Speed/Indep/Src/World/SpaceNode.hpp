@@ -8,14 +8,21 @@
 #include "Speed/Indep/Src/Misc/Replay.hpp"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
+#include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
 
 #include <types.h>
 
+extern SlotPool *SpaceNodeSlotPool;
+
 class SpaceNode : public bTNode<SpaceNode> {
   public:
-    // void *operator new(unsigned int size) {}
+    void *operator new(unsigned int size) {
+        return bOMalloc(SpaceNodeSlotPool);
+    }
 
-    // void operator delete(void *ptr) {}
+    void operator delete(void *ptr) {
+        bFree(SpaceNodeSlotPool, ptr);
+    }
 
     void SetNameHash(unsigned int name_hash) {
         NameHash = name_hash;
