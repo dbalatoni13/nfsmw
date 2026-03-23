@@ -60,36 +60,40 @@ bool FnStatelessF3::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask
             floorKey = floorTime;
         }
 
-        slerpReqd = floorKey < statelessF3->mNumKeys - 1;
-        if (slerpReqd) {
-            slerpReqd = currTime != floorTime;
-            if (slerpReqd) {
-                scale = currTime - floorTime;
-            }
-        }
-    } else if (floorTime < statelessF3->mTimes[0]) {
-        floorKey = 0;
-        slerpReqd = currTime != 0.0f;
-        if (slerpReqd) {
-            scale = currTime / static_cast<float>(statelessF3->mTimes[0]);
+        slerpReqd = currTime != floorTime;
+        scale = currTime - floorTime;
+        if (floorKey >= statelessF3->mNumKeys - 1) {
+            slerpReqd = false;
         }
     } else {
-        int timeIndex = 0;
-
-        if (mPrevKey != 0) {
-            timeIndex = mPrevKey - 1;
-        }
-        if (floorTime < statelessF3->mTimes[timeIndex]) {
-            while (timeIndex > 0 && floorTime < statelessF3->mTimes[timeIndex]) {
-                timeIndex--;
-            }
+        if (floorTime < statelessF3->mTimes[0]) {
+            floorKey = 0;
         } else {
-            while (timeIndex < statelessF3->mNumKeys - 2 && floorTime >= statelessF3->mTimes[timeIndex + 1]) {
-                timeIndex++;
-            }
-        }
+            int timeIndex = 0;
 
-        floorKey = timeIndex + 1;
+            if (mPrevKey != 0) {
+                timeIndex = mPrevKey - 1;
+            }
+            if (statelessF3->mTimes[timeIndex] <= floorTime) {
+                if (timeIndex < statelessF3->mNumKeys - 2) {
+                    while (statelessF3->mTimes[timeIndex + 1] <= floorTime) {
+                        timeIndex++;
+                        if (timeIndex >= statelessF3->mNumKeys - 2) {
+                            break;
+                        }
+                    }
+                }
+            } else if (timeIndex > 0) {
+                do {
+                    timeIndex--;
+                    if (timeIndex < 1) {
+                        break;
+                    }
+                } while (statelessF3->mTimes[timeIndex] > floorTime);
+            }
+
+            floorKey = timeIndex + 1;
+        }
         if (floorKey == 0) {
             slerpReqd = currTime != 0.0f;
             if (slerpReqd) {

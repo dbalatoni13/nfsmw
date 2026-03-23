@@ -209,6 +209,7 @@ bool FnStatelessQ::EvalSQTMask(float, float *sqt, const BoneMask *boneMask, bool
     unsigned short *frameData = statelessQ->GetFrameData(dataBuf, floorKey);
     unsigned char *boneIdxs = statelessQ->mBoneIdxs;
     int nBones = statelessQ->mNumBones;
+    int index;
 
     if (slerpReqd && floorKey < statelessQ->mNumKeys - 1) {
         unsigned short *nextFrameData = statelessQ->GetFrameData(dataBuf, floorKey + 1);
@@ -219,51 +220,59 @@ bool FnStatelessQ::EvalSQTMask(float, float *sqt, const BoneMask *boneMask, bool
             if (boneMask->GetBone(boneIdx)) {
                 UMath::Vector4 prevQ;
                 UMath::Vector4 nextQ;
-                float *q = &sqt[boneIdx * 12];
+                int frameIndex = ibone * 4;
 
-                LoadStatelessQ(frameData, prevQ);
-                LoadStatelessQ(nextFrameData, nextQ);
+                prevQ.x = UncompressStatelessQValue(frameData[frameIndex + 0]);
+                prevQ.y = UncompressStatelessQValue(frameData[frameIndex + 1]);
+                prevQ.z = UncompressStatelessQValue(frameData[frameIndex + 2]);
+                prevQ.w = UncompressStatelessQValue(frameData[frameIndex + 3]);
+                nextQ.x = UncompressStatelessQValue(nextFrameData[frameIndex + 0]);
+                nextQ.y = UncompressStatelessQValue(nextFrameData[frameIndex + 1]);
+                nextQ.z = UncompressStatelessQValue(nextFrameData[frameIndex + 2]);
+                nextQ.w = UncompressStatelessQValue(nextFrameData[frameIndex + 3]);
+                index = boneIdx * 12;
 
-                q[0] = prevQ.x + (nextQ.x - prevQ.x) * scale;
-                q[1] = prevQ.y + (nextQ.y - prevQ.y) * scale;
-                q[2] = prevQ.z + (nextQ.z - prevQ.z) * scale;
-                q[3] = prevQ.w + (nextQ.w - prevQ.w) * scale;
+                sqt[index + 0] = prevQ.x + (nextQ.x - prevQ.x) * scale;
+                sqt[index + 1] = prevQ.y + (nextQ.y - prevQ.y) * scale;
+                sqt[index + 2] = prevQ.z + (nextQ.z - prevQ.z) * scale;
+                sqt[index + 3] = prevQ.w + (nextQ.w - prevQ.w) * scale;
             }
-            frameData += 4;
-            nextFrameData += 4;
         }
     } else {
         for (int ibone = 0; ibone < nBones; ibone++) {
             unsigned char boneIdx = boneIdxs[ibone];
 
             if (boneMask->GetBone(boneIdx)) {
-                float *q = &sqt[boneIdx * 12];
+                int frameIndex = ibone * 4;
 
-                q[0] = UncompressStatelessQValue(frameData[0]);
-                q[1] = UncompressStatelessQValue(frameData[1]);
-                q[2] = UncompressStatelessQValue(frameData[2]);
-                q[3] = UncompressStatelessQValue(frameData[3]);
+                index = boneIdx * 12;
+
+                sqt[index + 0] = UncompressStatelessQValue(frameData[frameIndex + 0]);
+                sqt[index + 1] = UncompressStatelessQValue(frameData[frameIndex + 1]);
+                sqt[index + 2] = UncompressStatelessQValue(frameData[frameIndex + 2]);
+                sqt[index + 3] = UncompressStatelessQValue(frameData[frameIndex + 3]);
             }
-            frameData += 4;
         }
     }
 
     if (statelessQ->mNumConstBones != 0) {
+        int numConsts = statelessQ->mNumConstBones;
         unsigned char *constIdxs = statelessQ->GetConstBoneIdx();
         unsigned short *constBuf = statelessQ->GetConstData(dataBuf);
 
-        for (int ibone = 0; ibone < statelessQ->mNumConstBones; ibone++) {
+        for (int ibone = 0; ibone < numConsts; ibone++) {
             unsigned char boneIdx = constIdxs[ibone];
 
             if (boneMask->GetBone(boneIdx)) {
-                float *q = &sqt[boneIdx * 12];
+                int frameIndex = ibone * 4;
 
-                q[0] = UncompressStatelessQValue(constBuf[0]);
-                q[1] = UncompressStatelessQValue(constBuf[1]);
-                q[2] = UncompressStatelessQValue(constBuf[2]);
-                q[3] = UncompressStatelessQValue(constBuf[3]);
+                index = boneIdx * 12;
+
+                sqt[index + 0] = UncompressStatelessQValue(constBuf[frameIndex + 0]);
+                sqt[index + 1] = UncompressStatelessQValue(constBuf[frameIndex + 1]);
+                sqt[index + 2] = UncompressStatelessQValue(constBuf[frameIndex + 2]);
+                sqt[index + 3] = UncompressStatelessQValue(constBuf[frameIndex + 3]);
             }
-            constBuf += 4;
         }
     }
 
