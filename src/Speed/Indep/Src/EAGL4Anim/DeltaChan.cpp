@@ -559,9 +559,34 @@ void TranF3(float *&data, float *output) {
 
 // TODO inline and move
 void QuatF4Interp(float w, float *&data0, float *&data1, float *output) {
-    QuatF4(data0, qt0);
-    QuatF4(data1, output);
-    FastQuatBlendF4(w, qt0, output, output);
+    qt0[0] = *data0++;
+    qt0[1] = *data0++;
+    qt0[2] = *data0++;
+    qt0[3] = *data0++;
+
+    output[0] = *data1++;
+    output[1] = *data1++;
+    output[2] = *data1++;
+    output[3] = *data1++;
+
+    if (qt0[0] * output[0] + qt0[1] * output[1] + qt0[2] * output[2] + qt0[3] * output[3] > 0.0f) {
+        output[0] = w * (output[0] - qt0[0]) + qt0[0];
+        output[1] = w * (output[1] - qt0[1]) + qt0[1];
+        output[2] = w * (output[2] - qt0[2]) + qt0[2];
+        output[3] = w * (output[3] - qt0[3]) + qt0[3];
+    } else {
+        output[0] = qt0[0] - w * (output[0] + qt0[0]);
+        output[1] = qt0[1] - w * (output[1] + qt0[1]);
+        output[2] = qt0[2] - w * (output[2] + qt0[2]);
+        output[3] = qt0[3] - w * (output[3] + qt0[3]);
+    }
+
+    float invNorm = 1.0f / sqrtf(output[0] * output[0] + output[1] * output[1] + output[2] * output[2] + output[3] * output[3]);
+
+    output[0] = output[0] * invNorm;
+    output[3] = output[3] * invNorm;
+    output[1] = output[1] * invNorm;
+    output[2] = output[2] * invNorm;
 }
 
 // TODO inline and move
