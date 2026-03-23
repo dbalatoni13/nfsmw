@@ -1213,13 +1213,25 @@ void CarRenderConn::UpdateContrails(const RenderConn::Pkt_Car_Service &data, flo
 void CarRenderConn::UpdateEffects(const RenderConn::Pkt_Car_Service &data, float dT) {
     if (!this->TestVisibility(renderModifier * 80.0f)) {
         void (*stop_effect)(VehicleRenderConn::Effect *) = StopEffect;
+        VehicleRenderConn::Effect *pipe_effect = this->mPipeEffects.GetHead();
+        VehicleRenderConn::Effect *pipe_effect_end = this->mPipeEffects.EndOfList();
 
-        for (VehicleRenderConn::Effect *effect = this->mPipeEffects.GetHead(); effect != this->mPipeEffects.EndOfList(); effect = effect->GetNext()) {
-            stop_effect(effect);
+        for (;;) {
+            if (pipe_effect == pipe_effect_end) {
+                break;
+            }
+            stop_effect(pipe_effect);
+            pipe_effect = pipe_effect->GetNext();
         }
 
-        for (VehicleRenderConn::Effect *effect = this->mEngineEffects.GetHead(); effect != this->mEngineEffects.EndOfList(); effect = effect->GetNext()) {
-            stop_effect(effect);
+        VehicleRenderConn::Effect *engine_effect = this->mEngineEffects.GetHead();
+        VehicleRenderConn::Effect *engine_effect_end = this->mEngineEffects.EndOfList();
+        for (;;) {
+            if (engine_effect == engine_effect_end) {
+                break;
+            }
+            stop_effect(engine_effect);
+            engine_effect = engine_effect->GetNext();
         }
         return;
     }
