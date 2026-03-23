@@ -3182,9 +3182,18 @@ void CarRenderInfo::DrawAmbientShadow(eView *view, const bVector3 *position, flo
             this->mWorldPos.FindClosestFace(this->mWCollider, reinterpret_cast<const UMath::Vector3 &>(usPoint), quitIfSameFace);
             validFace = this->mWorldPos.OnValidFace();
             p[x].z = this->mWorldPos.HeightAtPoint(reinterpret_cast<const UMath::Vector3 &>(usPoint));
-            if (validFace && DotPassesTest(&p[x])) {
-                quitIfSameFace = true;
-                continue;
+            if (validFace) {
+                bVector3 vec = p[x] - hull_Origin;
+                float dot = bDot(&vec, &hull_Normal);
+
+                if (dot < lbl_8040ADC0) {
+                    dot = -dot;
+                }
+
+                if (dot < lbl_8040ADEC) {
+                    quitIfSameFace = true;
+                    continue;
+                }
             }
 
             quitIfSameFace = false;
