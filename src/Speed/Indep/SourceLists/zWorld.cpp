@@ -42,6 +42,8 @@
 
 #include "Speed/Indep/Src/World/HeliSheet.cpp"
 
+#include "Speed/Indep/Src/World/SimpleModelAnim.cpp"
+
 #include "Speed/Indep/Src/World/ParameterMaps.cpp"
 
 #include "Speed/Indep/Src/World/VisualTreatment.cpp"
