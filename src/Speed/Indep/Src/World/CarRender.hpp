@@ -11,7 +11,6 @@
 #include "Interfaces/IVehicleDamageBehaviour.h"
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
 #include "Speed/Indep/Src/Ecstasy/eLight.hpp"
-#include "Speed/Indep/Src/Ecstasy/eModel.hpp"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/ecar.h"
 #include "Speed/Indep/Src/Physics/PhysicsTypes.h"
 #include "Speed/Indep/Src/Sim/Collision.h"
@@ -506,13 +505,13 @@ class CarRenderInfo {
     CARPART_LOD mMaxLodLevel;                                      // offset 0x1614, size 0x4
     CARPART_LOD mMinReflectionLodLevel;                            // offset 0x1618, size 0x4
     CarPartCuller TheCarPartCuller;                                // offset 0x161C, size 0x134
-    DamageZone::Info mDamageZoneInfo;                               // offset 0x1750, size 0x4
+    DamageZone::Info mDamageZoneInfo;                              // offset 0x1750, size 0x4
     float mDeltaTime;                                              // offset 0x1754, size 0x4
     float mRadius;                                                 // offset 0x1758, size 0x4
     Attrib::Gen::ecar mAttributes;                                 // offset 0x175C, size 0x14
     bool mFlashing;                                                // offset 0x1770, size 0x1
     float mFlashInterval;                                          // offset 0x1774, size 0x4
-    DamageZone::Info mDamageInfoCache;                              // offset 0x1778, size 0x4
+    DamageZone::Info mDamageInfoCache;                             // offset 0x1778, size 0x4
     bool mWheelWobbleEnabled[4];                                   // offset 0x177C, size 0x4
     bool mMirrorLeftWheels;                                        // offset 0x178C, size 0x1
 };
@@ -572,6 +571,8 @@ class FrontEndRenderingCar : public bTNode<FrontEndRenderingCar> {
     int LightsOn;              // offset 0x580, size 0x4
     int CopLightsOn;           // offset 0x584, size 0x4
 };
+
+extern bMatrix4 CarScaleMatrix;
 
 void InitCarRender();
 void InitCarEffects();

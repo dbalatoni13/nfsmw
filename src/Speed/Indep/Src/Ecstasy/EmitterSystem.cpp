@@ -1,6 +1,7 @@
 #include "EmitterSystem.h"
 #include "EcstasyE.hpp"
 #include "Speed/Indep/Libs/Support/Utility/UVector.h"
+#include "Speed/Indep/Src/Camera/Camera.hpp"
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
 #include "Speed/Indep/Src/Gameplay/GManager.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/emitterdata.h"
@@ -956,15 +957,15 @@ void EmitterSystem::UpdateParticles(float dt) {
     if (!EnableParticleSystem || this->mTotalNumParticles == 0) {
         return;
     }
-    int time_step = static_cast<int>(dt * 1024.0f); // r19
-    float ed_drag = 0.0f; // f26
-    float ed_gravity = 0.0f; // f27
-    float ed_life = 0.0f; // f24
-    const bMatrix4 *ExtraBasis = nullptr; // r14
-    const bMatrix4 *ColourBasis = nullptr; // 15
-    bool texture_animation = false; // r16
-    EffectParticleAnimation anim_type = ANIMATE_PARTICLE_NONE; // r18
-    float fAnimFPS = 0.0f; // f23
+    int time_step = static_cast<int>(dt * 1024.0f);              // r19
+    float ed_drag = 0.0f;                                        // f26
+    float ed_gravity = 0.0f;                                     // f27
+    float ed_life = 0.0f;                                        // f24
+    const bMatrix4 *ExtraBasis = nullptr;                        // r14
+    const bMatrix4 *ColourBasis = nullptr;                       // 15
+    bool texture_animation = false;                              // r16
+    EffectParticleAnimation anim_type = ANIMATE_PARTICLE_NONE;   // r18
+    float fAnimFPS = 0.0f;                                       // f23
     const EmitterDataAttribWrapper *last_emitter_data = nullptr; // sp68
 
     for (EmitterGroup *grp = this->mEmitterGroups.GetHead(); grp != this->mEmitterGroups.EndOfList(); grp = grp->GetNext()) {
@@ -1009,7 +1010,7 @@ void EmitterSystem::UpdateParticles(float dt) {
                         if (texture_animation) {
                             const uint32 i_num_frames = ((uint32)anim_type * (uint32)anim_type);
                             const float f_num_frames = dt * fAnimFPS;
-                            uint32 frame_index = (int32) ((f_num_frames / i_num_frames) * 65535.0f);
+                            uint32 frame_index = (int32)((f_num_frames / i_num_frames) * 65535.0f);
                             const float f_max_frame_index = (i_num_frames - 1.0f);
                             uint32 cur_frame = particle->mAnimFrame;
                             cur_frame += frame_index;
@@ -1068,7 +1069,7 @@ void EmitterSystem::UpdateParticles(float dt) {
                         uint32 b = bClamp(static_cast<int>(col.z), 0, 255);
                         uint32 a = bClamp(static_cast<int>(col.w), 0, 255);
                         particle->mColour = r << 24 | g << 16 | b << 8 | a;
-                        bool ignore_programmer_badness = em->GetAttributes().NoKillAtAlpha() ;
+                        bool ignore_programmer_badness = em->GetAttributes().NoKillAtAlpha();
                         unsigned int alpha_value_to_kill_at = em->GetAttributes().AlphaToKillAt();
                         if (ignore_programmer_badness || (a > alpha_value_to_kill_at)) {
                             particle = particle->GetNext();

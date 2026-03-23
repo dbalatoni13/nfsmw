@@ -7,7 +7,7 @@
 
 #include <types.h>
 
-#include "Speed/Indep/Libs/realcore/include/common/realcore/system.h"
+#include "Speed/Indep/Libs/realcore/6.24.00/include/common/realcore/system.h"
 
 struct bMutex {
     // total size: 0x20
@@ -28,6 +28,7 @@ void bInitTicker(float min_wraparound_time);
 void bBreak();
 int bDisableInterrupts();
 void bRestoreInterrupts(int previous_state);
+void bSetUserPutStringFunction(bool (*function)(int, const char *));
 
 extern int EnableReleasePrintf;
 

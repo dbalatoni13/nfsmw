@@ -18,7 +18,7 @@ bool DebugWorld::mOnOff = false;
 
 void DebugWorld::Init() {
     if (!mThis) {
-        mThis = ::new (__FILE__, __LINE__) DebugWorld();
+        mThis = ::new ("DebugWorld", 0) DebugWorld();
     }
 }
 
@@ -76,7 +76,7 @@ void DebugWorld::HandleSaveHotPosition() {
     if (SaveHotPosition == 0)
         return;
 
-    IVehicle *iplayer = UTL::Collections::ListableSet<IVehicle, 10, eVehicleList, 10>::First(VEHICLE_PLAYERS);
+    IVehicle *iplayer = IVehicle::First(VEHICLE_PLAYERS);
     if (!iplayer)
         return;
 
@@ -85,7 +85,7 @@ void DebugWorld::HandleSaveHotPosition() {
         return;
 
     char filename[80];
-    bSPrintf(filename, "TRACKS\\HotPosition%s.HOT", LoadedTrackInfo->GetLoadedTrackInfo());
+    bSPrintf(filename, "TRACKS\\HotPosition%s.HOT", TrackInfo::GetLoadedTrackInfo()->RegionName);
 
     SavedHotPosition hot_positions[5];
     int num_hot_positions = ReadHotPositionScript(filename, hot_positions, 5);
@@ -123,7 +123,7 @@ void DebugWorld::HandleJumpToHotPosition() {
         return;
 
     char filename[80];
-    bSPrintf(filename, "TRACKS\\HotPosition%s.HOT", LoadedTrackInfo->GetLoadedTrackInfo());
+    bSPrintf(filename, "TRACKS\\HotPosition%s.HOT", TrackInfo::GetLoadedTrackInfo()->RegionName);
 
     SavedHotPosition hot_positions[5];
     int num_hot_positions = ReadHotPositionScript(filename, hot_positions, 5);

@@ -8,6 +8,7 @@
 #include "Replay.hpp"
 #include "Speed/Indep/bWare/Inc/bChunk.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
+#include "Speed/Indep/Libs/Support/Utility/UMath.h"
 
 enum QuickSplineEndPointType {
     QUICKSPLINE_LOOP = 0,

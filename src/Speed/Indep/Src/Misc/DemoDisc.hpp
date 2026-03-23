@@ -18,16 +18,19 @@ enum DemoDiscEndReason {
 };
 
 // total size: 0x28
-struct DemoDiscManager {
+class DemoDiscManager {
+  public:
     DemoDiscManager();
     void Init(int argc, char **argv);
     bool IsAttractMode();
-    void SetEndReason(enum DemoDiscEndReason end_reason);
+    void SetEndReason(DemoDiscEndReason end_reason);
     void EndDemo();
     void AddExitJoyHandler();
     int GetDemoCarType();
 
-    // inline bool IsActive() {}
+    bool IsActive() {
+        return false;
+    }
 
     // inline bool IsStandAlone() {}
 
@@ -39,11 +42,16 @@ struct DemoDiscManager {
 
     // inline void SetAnyKeyPressed() {}
 
-    // inline enum DemoDiscEndReason GetEndReason() {}
+    DemoDiscEndReason GetEndReason() {
+        return nDemoDiscEndReason;
+    }
 
     // inline bool HasPlayTimeExpired() {}
 
-    // inline void StartPlayTimer() {}
+    void StartPlayTimer() {
+        StartPlayTime = RealTimer;
+        SuspendedPlayTime.UnSet();
+    }
 
     // inline bool IsPlayTimerSuspended() {}
 
@@ -53,11 +61,13 @@ struct DemoDiscManager {
 
     // inline void IncrementNumDemoLoops() {}
 
-    // inline unsigned short GetMasterVolumeScale() {}
+    unsigned short GetMasterVolumeScale() {
+        return MasterVolumeScale;
+    }
 
     // inline int GetLanguage() {}
 
-    // Members
+  private:
     Timer StartPlayTime;                       // offset 0x0, size 0x4
     Timer LastActivityTime;                    // offset 0x4, size 0x4
     Timer SuspendedPlayTime;                   // offset 0x8, size 0x4

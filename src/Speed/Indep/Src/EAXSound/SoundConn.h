@@ -41,6 +41,8 @@ class Pkt_Heli_Open : public Sim::Packet {
     WUID mWorldID;                           // offset 0x8, size 0x4
 };
 
+void InitServices();
+void RestoreServices();
 void UpdateServices(float dT);
 
 }; // namespace SoundConn

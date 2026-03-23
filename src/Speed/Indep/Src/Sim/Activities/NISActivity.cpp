@@ -11,6 +11,7 @@
 #include "Speed/Indep/Src/EAXSound/Stream/SpeechModule.hpp"
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_NISReving.hpp"
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
+#include "Speed/Indep/Src/Misc/Config.h"
 #include "Speed/Indep/Src/FEng/FEList.h"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Frontend/Database/VehicleDB.hpp"
@@ -710,9 +711,6 @@ bool NISActivity::OnTask(HSIMTASK task, float dT) {
     }
     return false;
 }
-
-// TODO move
-extern int SkipMovies;
 
 bool NISActivity::SkipOverNIS() {
     if (!TheICEManager.IsEditorOn()) {

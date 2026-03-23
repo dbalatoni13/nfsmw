@@ -153,6 +153,7 @@ Speed/Indep/SourceLists/zMisc.cpp:
 	.rodata     start:0x803F4878 end:0x803F6730
 	.data       start:0x8041E508 end:0x8041ED7C
 	.bss        start:0x8047F914 end:0x804801A4
+	.bss        start:0x804FE9CC end:0x804FEA4C align:4 common
 
 Speed/Indep/SourceLists/zMiscSmall.cpp:
 	.text       start:0x8020DC1C end:0x8020DF1C
