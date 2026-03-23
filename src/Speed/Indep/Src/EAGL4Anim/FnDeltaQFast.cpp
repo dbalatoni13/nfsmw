@@ -291,19 +291,19 @@ void FnDeltaQFast::UpdateNextQs(DeltaQFast *deltaQ, int ceilKey, int floorBinIdx
     unsigned char *binData = &mBins[ceilBinIdx * mBinSize];
 
     if (ceilBinIdx != floorBinIdx) {
-        unsigned int numBones = deltaQ->mNumBones;
-        unsigned short *physical = reinterpret_cast<unsigned short *>(binData);
+        unsigned char numBones = deltaQ->mNumBones;
+        DeltaQFastPhysical *physical = reinterpret_cast<DeltaQFastPhysical *>(binData);
 
-        for (int ibone = 0; ibone < static_cast<int>(numBones); ibone++) {
+        for (int ibone = 0; ibone < numBones; ibone++) {
             float *nextQ = reinterpret_cast<float *>(&mNextQs[ibone]);
 
-            nextQ[0] = static_cast<float>(physical[0] >> 4) * kQFastPhysicalScale12 - kQFastPhysicalBias12;
-            nextQ[1] = static_cast<float>(physical[1] >> 4) * kQFastPhysicalScale12 - kQFastPhysicalBias12;
-            nextQ[2] = static_cast<float>(physical[2] >> 4) * kQFastPhysicalScale12 - kQFastPhysicalBias12;
-            nextQ[3] = static_cast<float>(static_cast<unsigned short>(((physical[0] & 0xF) << 8) | ((physical[1] & 0xF) << 4) | (physical[2] & 0xF))) *
+            nextQ[0] = static_cast<float>(physical->mX) * kQFastPhysicalScale12 - kQFastPhysicalBias12;
+            nextQ[1] = static_cast<float>(physical->mY) * kQFastPhysicalScale12 - kQFastPhysicalBias12;
+            nextQ[2] = static_cast<float>(physical->mZ) * kQFastPhysicalScale12 - kQFastPhysicalBias12;
+            nextQ[3] = static_cast<float>(static_cast<unsigned short>((physical->mW0 << 8) | (physical->mW1 << 4) | physical->mW2)) *
                            kQFastPhysicalScale12 -
                        kQFastPhysicalBias12;
-            physical += 3;
+            physical++;
         }
     } else {
         unsigned int numBones = deltaQ->mNumBones;
