@@ -81,27 +81,32 @@ struct AABBAdjustor {
 } // namespace
 
 WorldModel::WorldModel(unsigned int name_hash, bMatrix4 *matrix, bool add_lighting) {
-    this->pModel = static_cast<eModel *>(bOMalloc(eModelSlotPool));
-    this->pModel->NameHash = 0;
-    this->pModel->Solid = 0;
-    this->pModel->Init(name_hash);
+    eModel *model = static_cast<eModel *>(bOMalloc(eModelSlotPool));
+    model->NameHash = 0;
+    model->Solid = 0;
+    model->Init(name_hash);
+    this->pModel = model;
     this->pReflectionModel = 0;
     this->Construct(0, matrix, 0, 0, add_lighting);
 }
 
 WorldModel::WorldModel(SpaceNode *spacenode, unsigned int *lod_name_hash, bool add_lighting) {
-    this->pModel = static_cast<eModel *>(bOMalloc(eModelSlotPool));
-    this->pModel->Solid = 0;
-    this->pModel->NameHash = 0;
-    this->pModel->Init(*lod_name_hash);
+    eModel *model = static_cast<eModel *>(bOMalloc(eModelSlotPool));
+    unsigned int model_name_hash = *lod_name_hash;
+    model->NameHash = 0;
+    model->Solid = 0;
+    model->Init(model_name_hash);
+    this->pModel = model;
 
-    if (lod_name_hash[3] == 0) {
-        this->pReflectionModel = 0;
+    if (lod_name_hash[3] != 0) {
+        eModel *reflection_model = static_cast<eModel *>(bOMalloc(eModelSlotPool));
+        unsigned int reflection_name_hash = lod_name_hash[3];
+        reflection_model->NameHash = 0;
+        reflection_model->Solid = 0;
+        reflection_model->Init(reflection_name_hash);
+        this->pReflectionModel = reflection_model;
     } else {
-        this->pReflectionModel = static_cast<eModel *>(bOMalloc(eModelSlotPool));
-        this->pReflectionModel->NameHash = 0;
-        this->pReflectionModel->Solid = 0;
-        this->pReflectionModel->Init(lod_name_hash[3]);
+        this->pReflectionModel = 0;
     }
 
     this->Construct(spacenode, 0, 0, 0, add_lighting);
