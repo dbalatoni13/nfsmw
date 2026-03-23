@@ -943,13 +943,12 @@ int LoaderFEPresetCars(bChunk *chunk) {
     if (chunk->GetID() == 0x30220) {
         int *chunk_words = reinterpret_cast<int *>(chunk);
         int *preset_words = chunk_words + 2;
-        int preset_count = static_cast<unsigned int>(chunk_words[1]) / 0x290;
+        int num_presets = static_cast<unsigned int>(chunk_words[1]) / 0x290;
+        int preset_count = num_presets - 1;
 
-        if (preset_count != 0) {
-            int i = preset_count - 1;
-
+        if (num_presets != 0) {
             do {
-                i--;
+                preset_count--;
 
                 int j = 0;
                 int k;
@@ -965,13 +964,14 @@ int LoaderFEPresetCars(bChunk *chunk) {
                 bEndianSwap32(preset_words + 0x16);
 
                 PresetCar *preset = reinterpret_cast<PresetCar *>(preset_words);
+                PresetCar *tail = PresetCarList.Prev;
 
-                PresetCarList.Prev->Next = preset;
-                preset->Prev = PresetCarList.Prev;
+                tail->Next = preset;
                 PresetCarList.Prev = preset;
+                preset->Prev = tail;
                 preset->Next = reinterpret_cast<PresetCar *>(&PresetCarList);
                 preset_words += 0xA4;
-            } while (i != -1);
+            } while (preset_count != -1);
         }
 
         return 1;
@@ -1009,11 +1009,12 @@ PresetCar *GetPresetCarAt(int index) {
 }
 
 PresetCar *FindFEPresetCar(unsigned int preset_name_hash) {
+    unsigned int hash = preset_name_hash;
     PresetCar *end = reinterpret_cast<PresetCar *>(&PresetCarList);
     PresetCar *preset = PresetCarList.Next;
 
     while (preset != end) {
-        if (preset_name_hash == FEHashUpper(preset->PresetName)) {
+        if (hash == FEHashUpper(preset->PresetName)) {
             return preset;
         }
         preset = preset->Next;
