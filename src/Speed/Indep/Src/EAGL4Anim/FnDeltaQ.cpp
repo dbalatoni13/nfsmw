@@ -186,8 +186,9 @@ bool FnDeltaQ::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask) {
         mConstPhysical = reinterpret_cast<DeltaQPhysical *>(deltaQ->GetConstPhysical());
         mBinSize = AlignSize2(numBones * ((((1 << deltaQ->mBinLengthPower) - 1) * 3) + 6));
 
-        if (numBones != 0) {
-            UMath::Vector4 *prevQs = reinterpret_cast<UMath::Vector4 *>(MemoryPoolManager::NewBlock(numBones * sizeof(*mPrevQs)));
+        if (deltaQ->mNumBones != 0) {
+            UMath::Vector4 *prevQs =
+                reinterpret_cast<UMath::Vector4 *>(MemoryPoolManager::NewBlock(deltaQ->mNumBones * sizeof(*mPrevQs)));
 
             mMinRanges = minRanges;
             mPrevQBlock = prevQs;
@@ -402,8 +403,9 @@ bool FnDeltaQ::EvalSQTMasked(float currTime, const BoneMask *boneMask, float *sq
         mConstPhysical = reinterpret_cast<DeltaQPhysical *>(deltaQ->GetConstPhysical());
         mBinSize = AlignSize2(numBones * ((((1 << deltaQ->mBinLengthPower) - 1) * 3) + 6));
 
-        if (numBones != 0) {
-            UMath::Vector4 *prevQs = reinterpret_cast<UMath::Vector4 *>(MemoryPoolManager::NewBlock(numBones * sizeof(*mPrevQs)));
+        if (deltaQ->mNumBones != 0) {
+            UMath::Vector4 *prevQs =
+                reinterpret_cast<UMath::Vector4 *>(MemoryPoolManager::NewBlock(deltaQ->mNumBones * sizeof(*mPrevQs)));
 
             mMinRanges = minRanges;
             mPrevQBlock = prevQs;
