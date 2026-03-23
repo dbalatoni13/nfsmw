@@ -229,7 +229,8 @@ void FnDeltaQFast::InitBuffers() {
     }
 }
 
-void FnDeltaQFast::AddDelta(DeltaQFastPhysical *floorPhys, DeltaQFast *deltaQ, int prevDeltaIdx, int floorDeltaIdx, UMath::Vector4 *prevQs) {
+inline void FnDeltaQFast::AddDelta(DeltaQFastPhysical *floorPhys, DeltaQFast *deltaQ, int prevDeltaIdx, int floorDeltaIdx,
+                                   UMath::Vector4 *prevQs) {
     unsigned char *binData = reinterpret_cast<unsigned char *>(floorPhys);
 
     for (int iframe = prevDeltaIdx; iframe < floorDeltaIdx; iframe++) {
@@ -247,7 +248,8 @@ void FnDeltaQFast::AddDelta(DeltaQFastPhysical *floorPhys, DeltaQFast *deltaQ, i
     }
 }
 
-void FnDeltaQFast::SubDelta(DeltaQFastPhysical *floorPhys, DeltaQFast *deltaQ, int prevDeltaIdx, int floorDeltaIdx, UMath::Vector4 *prevQs) {
+inline void FnDeltaQFast::SubDelta(DeltaQFastPhysical *floorPhys, DeltaQFast *deltaQ, int prevDeltaIdx, int floorDeltaIdx,
+                                   UMath::Vector4 *prevQs) {
     unsigned char *binData = reinterpret_cast<unsigned char *>(floorPhys);
 
     for (int iframe = prevDeltaIdx - 1; iframe >= floorDeltaIdx; iframe--) {
@@ -522,50 +524,9 @@ bool FnDeltaQFast::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask)
                 }
 
                 if (prevDeltaIdx < static_cast<int>(floorDeltaIdx)) {
-                    unsigned char *deltaData =
-                        reinterpret_cast<unsigned char *>(binData + deltaQ->mNumBones * 6 + prevDeltaIdx * deltaQ->mNumBones * 3);
-
-                    do {
-                        for (int ibone = 0; ibone < static_cast<int>(deltaQ->mNumBones); ibone++) {
-                            float *prevQ = reinterpret_cast<float *>(&mPrevQs[ibone]);
-                            float *minRange = reinterpret_cast<float *>(&mMinRangesf[ibone]);
-                            unsigned char b0 = deltaData[0];
-                            unsigned char b1 = deltaData[1];
-                            unsigned char b2 = deltaData[2];
-
-                            prevQ[0] = prevQ[0] + minRange[4] * static_cast<float>(b0 >> 2) * kQFastDeltaScale6 + minRange[0];
-                            prevQ[1] = prevQ[1] + minRange[5] * static_cast<float>(b1 >> 2) * kQFastDeltaScale6 + minRange[1];
-                            prevQ[2] = prevQ[2] + minRange[6] * static_cast<float>(b2 >> 2) * kQFastDeltaScale6 + minRange[2];
-                            prevQ[3] = prevQ[3] +
-                                       minRange[7] * static_cast<float>(static_cast<unsigned char>(((b0 & 3) * 0x10) + ((b1 & 3) * 4) | (b2 & 3))) *
-                                           kQFastDeltaScale6 +
-                                       minRange[3];
-                            deltaData += 3;
-                        }
-                        prevDeltaIdx++;
-                    } while (prevDeltaIdx < static_cast<int>(floorDeltaIdx));
+                    AddDelta(reinterpret_cast<DeltaQFastPhysical *>(binData), deltaQ, prevDeltaIdx, floorDeltaIdx, mPrevQs);
                 } else if (static_cast<int>(floorDeltaIdx) < prevDeltaIdx) {
-                    unsigned char *deltaData = reinterpret_cast<unsigned char *>(
-                        binData + deltaQ->mNumBones * 6 + prevDeltaIdx * deltaQ->mNumBones * 3 - 3);
-
-                    while ((prevDeltaIdx--), static_cast<int>(floorDeltaIdx) <= prevDeltaIdx) {
-                        for (int ibone = deltaQ->mNumBones - 1; ibone >= 0; ibone--) {
-                            float *prevQ = reinterpret_cast<float *>(&mPrevQs[ibone]);
-                            float *minRange = reinterpret_cast<float *>(&mMinRangesf[ibone]);
-                            unsigned char b0 = deltaData[0];
-                            unsigned char b1 = deltaData[1];
-                            unsigned char b2 = deltaData[2];
-
-                            prevQ[0] = prevQ[0] - (minRange[4] * static_cast<float>(b0 >> 2) * kQFastDeltaScale6 + minRange[0]);
-                            prevQ[1] = prevQ[1] - (minRange[5] * static_cast<float>(b1 >> 2) * kQFastDeltaScale6 + minRange[1]);
-                            prevQ[2] = prevQ[2] - (minRange[6] * static_cast<float>(b2 >> 2) * kQFastDeltaScale6 + minRange[2]);
-                            prevQ[3] = prevQ[3] -
-                                       (minRange[7] * static_cast<float>(static_cast<unsigned char>(((b0 & 3) * 0x10) + ((b1 & 3) * 4) | (b2 & 3))) *
-                                            kQFastDeltaScale6 +
-                                        minRange[3]);
-                            deltaData -= 3;
-                        }
-                    }
+                    SubDelta(reinterpret_cast<DeltaQFastPhysical *>(binData), deltaQ, prevDeltaIdx, floorDeltaIdx, mPrevQs);
                 }
             }
 
