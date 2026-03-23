@@ -7,6 +7,13 @@ description: Workflow for decompiling and iterating on a function.
 
 Your goal is to decompile a specific function: writing C++ source that compiles to byte-identical object code against the original retail binary, verified via `decomp-diff.py`.
 
+A function is not done until it is exact in both objdiff and normalized DWARF.
+
+Reviewers should not be spending their time rediscovering DWARF mismatches. Before you
+report progress, ask for review, hand the function off, or switch to another target, you
+must run the per-function verification gate yourself and treat any DWARF failure as your
+next task, not as review debt.
+
 ## Phase 1: Gather Context
 
 Collect data from **all** of these sources in parallel where possible.
@@ -23,6 +30,15 @@ functions unless the user explicitly wants a cleanup/refiner pass.
 
 Use the wrapper flow first throughout this skill. Drop to raw `decomp-context.py` or
 `decomp-diff.py` only when the wrapper is missing a specific flag or you are debugging.
+
+On a new, suspicious, or recently updated worktree, start with:
+
+```sh
+python tools/decomp-workflow.py health --full main/Path/To/TU
+```
+
+Add `--timings` when you need to understand why wrapper/tool startup or the shared build
+smoke is slow.
 
 ### 1a. decomp-context.py
 
@@ -70,6 +86,12 @@ Reference the skill for the usage. It gives info based on the virtual address of
 
 - Read the headers for class layout, member types, field offsets and the source files for existing implementations and includes (both are in `src/.../*.cpp`).
 - Check parent class headers for inherited members/methods used in the function
+- Before adding any new declaration, partial declaration, or forward declaration, check whether the type already exists with `python tools/find-symbol.py <TypeName>`.
+- If a repo header already exists for the type, include that header instead of introducing a local forward declaration.
+- Preserve the original `class` vs `struct` kind. If the existing header is missing or incomplete, verify the type kind from GC Dwarf and PS2 info before writing a local declaration.
+- Preserve real member names and field types too. Do not introduce `pad`, `unk`, or `field_XXXX` members as placeholders for guessed layout; verify the member list from GC Dwarf / PS2 data and leave a TODO when something is still uncertain.
+- When a type is missing or incomplete, dump the full class/struct body from GC DWARF and paste that as the starting point. Do not reconstruct the layout from one function's field accesses or from guessed semantics.
+- Preserve the dumped declaration order as well as the member order. Do not re-sort methods, group fields by guessed meaning, or otherwise "clean up" the layout unless an existing repo header or PS2 evidence proves a specific correction.
 
 ### 1e. Assembly reference
 
@@ -110,6 +132,8 @@ and assembly:
 
 Utilize the dwarf information that you get from the lookup skill heavily.
 
+For any recovered type you touch while implementing the function, treat the DWARF body as source material to copy, not prose to paraphrase. Start from the dumped layout in the canonical owner header, then make only the minimal verified fixes.
+
 Don't add explanatory comments during implementation unless you need to document a remaining DWARF mismatch.
 
 Don't use any temporary local variables that don't exist in the dwarf.
@@ -136,9 +160,20 @@ For a rebuild plus a standardized diff run, use:
 ```sh
 python tools/decomp-workflow.py build -u main/Path/To/TU
 python tools/decomp-workflow.py diff -u main/Path/To/TU -d FunctionName
+python tools/decomp-workflow.py verify -u main/Path/To/TU -f FunctionName
 ```
 
 If the build fails, fix compilation errors first.
+
+As soon as you have a compiling draft, run the combined verification gate immediately:
+
+```sh
+python tools/decomp-workflow.py verify -u main/Path/To/TU -f FunctionName
+```
+
+Do this before you spend a long time polishing late instruction mismatches. If `verify`
+already shows a DWARF failure, fix that first so you are not polishing code the reviewer
+will bounce anyway.
 
 ### Check the diff
 
@@ -163,7 +198,44 @@ Refer to the **Matching Tips** section in
 AGENTS.md for detailed patterns on resolving instruction mismatches, register allocation
 issues, stack frame differences, and symbol naming.
 
-After writing your code, occasionally run the dwarf dump on the compiled output and then query your output dump with lookup.py to compare your decompiled functions against the originals. Since the address of the function you're working on can keep changing
+After each meaningful edit/build iteration, run the combined verification gate first:
+
+Preferred shortcut:
+
+```sh
+python tools/decomp-workflow.py verify -u main/Path/To/TU -f FunctionName
+```
+
+This fails unless both the instruction diff and normalized DWARF are exact.
+
+If the verify gate fails because of DWARF, inspect the DWARF block diff directly:
+
+```sh
+python tools/decomp-workflow.py dwarf -u main/Path/To/TU -f FunctionName
+```
+
+This gives you a normalized DWARF match percentage plus a diff-like report of what still
+differs between the original and rebuilt DWARF blocks for that function.
+
+Pay attention to the `Range source ownership` summary there as well. It compares the
+debug-line owner files for each DWARF `// Range:` block, which makes it much easier to
+spot inlines that are coming from the wrong header or owner file. Exact line-number
+agreement is a useful secondary hint, but file ownership is the first thing to check.
+
+Use this as the default loop when the function compiles but `verify` is still failing:
+
+1. Run `verify`.
+2. If DWARF fails, run `dwarf`.
+3. Fix the structural issue the DWARF diff is pointing at first: missing/extra locals,
+   wrong qualifiers or parameter types, wrong inline ownership, wrong helper/header owner,
+   or a source shape that outlined something that should be inlined.
+4. Rebuild and rerun `verify`.
+5. Only return to instruction-by-instruction cleanup once the remaining failures are no
+   longer obvious DWARF-compare issues.
+
+Manual fallback:
+
+After writing your code, you can also run the dwarf dump on the compiled output and then query your output dump with lookup.py to compare your decompiled functions against the originals. Since the address of the function you're working on can keep changing
 due to work on other functions, query the unmangled name instead.
 
 ```bash
@@ -188,13 +260,18 @@ python tools/decomp-workflow.py diff -u main/Path/To/TU -d FunctionName
 ```
 
 Every mismatched instruction is a signal — don't settle for "close enough".
-Reaching 100% matching status is not enough, also make sure that the dwarf of the function matches the original.
+Reaching 100% instruction matching status is not enough. Stay in the loop until `verify`
+passes, which means the DWARF of the function also matches after normalization.
+
+Do not leave a function in a "review-ready" or "good enough for now" state with a known
+DWARF failure unless you are explicitly blocked and you document that blocker clearly.
 
 ## Phase 5: Report
 
 Summarize:
 
 - Final match status (percentage, instruction count)
+- Final DWARF status (exact or remaining mismatch summary)
 - What the function does (brief description)
 - Key decisions or tricky patterns used to achieve the match
 - If not fully matching, document remaining mismatches and theories

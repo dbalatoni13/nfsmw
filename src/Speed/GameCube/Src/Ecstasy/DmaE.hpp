@@ -5,6 +5,8 @@
 #pragma once
 #endif
 
-
+inline int FloatAsInteger(float x) {
+    return *reinterpret_cast<int *>(&x);
+}
 
 #endif

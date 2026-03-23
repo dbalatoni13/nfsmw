@@ -11,6 +11,7 @@ Usage:
   python tools/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim
   python tools/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim -s nonmatching
   python tools/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim -d __9CAnimBank
+  python tools/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim -d __9CAnimBank --reloc-diffs all
 """
 
 import argparse
@@ -19,6 +20,7 @@ import sys
 from typing import Any, Dict, List, Optional, Tuple
 from _common import (
     ROOT_DIR,
+    RELOC_DIFF_CHOICES,
     ToolError,
     build_objdiff_symbol_rows,
     fail,
@@ -29,13 +31,17 @@ root_dir = ROOT_DIR
 OBJDIFF_CLI = os.path.join(root_dir, "build", "tools", "objdiff-cli")
 
 
-def run_objdiff(unit: str, base_obj: Optional[str] = None) -> Dict[str, Any]:
+def run_objdiff(
+    unit: str, base_obj: Optional[str] = None, reloc_diffs: str = "none"
+) -> Dict[str, Any]:
     return run_objdiff_json(
         OBJDIFF_CLI,
         unit,
         base_obj=base_obj,
+        reloc_diffs=reloc_diffs,
         root_dir=root_dir,
     )
+
 
 def fuzzy_match(pattern: str, name: str) -> bool:
     """Case-insensitive substring match."""
@@ -114,9 +120,7 @@ def build_overview(data: Dict[str, Any], args) -> None:
     print("-" * 96)
     for row in rows:
         match_str = (
-            f"{row['match_percent']:.1f}%"
-            if row["match_percent"] is not None
-            else "-"
+            f"{row['match_percent']:.1f}%" if row["match_percent"] is not None else "-"
         )
         print(
             f"{row['status']:<10} {match_str:>7}  {row['unmatched_bytes_est']:>7}B  "
@@ -438,11 +442,22 @@ def main():
             "Use this .o file as the decomp base instead of the one from objdiff.json."
         ),
     )
+    parser.add_argument(
+        "--reloc-diffs",
+        choices=RELOC_DIFF_CHOICES,
+        default="none",
+        help=(
+            "Control relocation-only mismatches in objdiff "
+            "(default: none; use all to surface relocation diffs)"
+        ),
+    )
 
     args = parser.parse_args()
 
     try:
-        data = run_objdiff(args.unit, base_obj=args.base_obj)
+        data = run_objdiff(
+            args.unit, base_obj=args.base_obj, reloc_diffs=args.reloc_diffs
+        )
     except ToolError as e:
         fail(str(e))
 

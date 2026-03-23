@@ -20,6 +20,7 @@ class bNode {
     bNode *GetNext() {
         return Next;
     }
+
     bNode *GetPrev() {
         return Prev;
     }
@@ -31,7 +32,7 @@ class bNode {
         insert_point->Prev = this;
         this->Prev = new_prev;
         this->Next = insert_point;
-        return this; // TODO
+        return this;
     }
 
     bNode *AddAfter(bNode *insert_point) {
@@ -41,7 +42,7 @@ class bNode {
         new_next->Prev = this;
         this->Prev = insert_point;
         this->Next = new_next;
-        return this; // TODO
+        return this;
     }
 
     bNode *Remove() {
@@ -61,12 +62,15 @@ template <typename T> struct bTNode : public bNode {
     T *GetNext() {
         return (T *)bNode::GetNext();
     }
+
     T *GetPrev() {
         return (T *)bNode::GetPrev();
     }
+
     T *AddAfter(T *insert_point) {
         return (T *)bNode::AddAfter(insert_point);
     }
+
     T *Remove() {
         return (T *)bNode::Remove();
     }
@@ -93,35 +97,54 @@ struct bList {
         this->HeadNode.Next = &this->HeadNode;
         this->HeadNode.Prev = &this->HeadNode;
     }
+
     int IsEmpty() {
         return this->HeadNode.GetNext() == &this->HeadNode; // TODO
     }
+
     bNode *EndOfList() {
         return &this->HeadNode;
     }
+
     bNode *GetHead() {
         return this->HeadNode.GetNext();
     }
+
     bNode *GetTail() {
         return this->HeadNode.GetPrev();
     }
+
     bNode *GetNextCircular(bNode *node); // TODO
     bNode *GetPrevCircular(bNode *node); // TODO
+
     bNode *AddHead(bNode *node) {
         return node->AddAfter(&this->HeadNode);
     }
+
     bNode *AddTail(bNode *node) {
         return node->AddBefore(&this->HeadNode);
     }
-    bNode *AddBefore(bNode *insert_point, bNode *node);
-    bNode *AddAfter(bNode *insert_point, bNode *node); // TODO
+
+    bNode *AddBefore(bNode *insert_point, bNode *node) {
+        return node->AddBefore(insert_point);
+    }
+
+    bNode *AddAfter(bNode *insert_point, bNode *node) {
+        return node->AddAfter(insert_point);
+    }
+
     bNode *Remove(bNode *node) {
         return node->Remove();
     }
+
     bNode *RemoveHead() {
         return this->GetHead()->Remove();
     }
-    bNode *RemoveTail();            // TODO
+
+    bNode *RemoveTail() {
+        return GetTail()->Remove();
+    }
+
     int GetNodeNumber(bNode *node); // TODO
 
     int IsInList(bNode *node) {

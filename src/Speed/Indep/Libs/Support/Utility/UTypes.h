@@ -1,11 +1,11 @@
 #ifndef SUPPORT_UTILITY_UTYPES_H
 #define SUPPORT_UTILITY_UTYPES_H
 
-#include "types.h"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
 
+#include "types.h"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
 namespace UMath {

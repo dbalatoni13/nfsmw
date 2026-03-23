@@ -57,11 +57,42 @@ struct SceneryCullInfo {
     int PrecullerSectionNumber;               // offset 0xB8, size 0x4
 };
 
+// total size: 0x8014
+struct SceneryGroup : public bTNode<SceneryGroup> {
+    // SceneryGroup(unsigned int name_hash) {}
+
+    // int GetMemoryImageSize() {}
+
+    // int GetNumObjects() {}
+
+    // int GetOverrideInfoNumber(int index) {}
+
+    // struct SceneryOverrideInfo *GetOverrideInfo(int index) {}
+
+    // void EndianSwap() {}
+
+    // void EnableRendering(bool flip_artwork) {}
+
+    // void DisableRendering() {}
+
+    uint32 NameHash;                               // offset 0x8, size 0x4
+    int16 GroupNumber;                             // offset 0xC, size 0x2
+    int16 NumObjects;                              // offset 0xE, size 0x2
+    int8 BarrierFlag;                              // offset 0x10, size 0x1
+    int8 DriveThroughBarrierFlag;                  // offset 0x11, size 0x1
+    int16 Pad2;                                    // offset 0x12, size 0x2
+    short unsigned int OverrideInfoNumbers[16384]; // offset 0x14, size 0x8000
+};
+
 extern RegionQuery RegionInfo;
 extern SceneryDetailLevel ForceAllSceneryDetailLevels;
+extern bTList<SceneryGroup> SceneryGroupList;
 
 void InitVisibleZones();
 void CloseVisibleZones();
 void ServicePreculler();
+void LoadPrecullerBooBooScripts();
+void EnableSceneryGroup(unsigned int group_name_hash, bool flip_artwork);
+SceneryGroup *FindSceneryGroup(unsigned int name_hash); // TODO remove "class"
 
 #endif

@@ -53,8 +53,17 @@
 #include "Stomper.hpp"
 #include "bFile.hpp"
 
+int ExitTheGameFlag = false;
+static int last_frame_count = 0;
+int CurrentLoopCounter = 0;
+unsigned int TimeDifferenceInMicroseconds = 0;
+float TimeDifferenceInMiliseconds = 0.0f;
+float TimeDifferenceInSeconds = 0.0f;
+float MicrosecondsToMiliseconds = 0.001f;
+float MilisecondsToSeconds = 1000.0f;
+
+// TODO
 // OUTSIDE ZMISC //
-extern int ExitTheGameFlag;
 extern int frames_elapsed;
 extern int loop_ticker;
 
@@ -63,20 +72,18 @@ extern void (*UFoundation_AssertMessage)(const char *, ...);
 
 ////
 
-// IN ZMISC //
-void InitializeEverything(int argc, char *argv[]);
-
-void WriteFreekerBaseAddressBeacon();
-
 bool bInitDisculatorDriver(const char *dir_filename, const char *data_filename);
+
+#ifdef EA_PLATFORM_PLAYSTATION2
+void bMonitorService();
+#endif
 
 class RaceStarter {
   public:
     static void StartSkipFERace();
 };
-extern int SkipFE;
 
-Timer RealTimer;
+FastMem gFastMem;
 
 extern bool twkDumpProfileMarks;
 ////
@@ -198,17 +205,17 @@ void WriteFreekerBaseAddressBeacon() {}
 
 void DisplayDebugScreenPrints() {}
 
-int RealLoopCounter;
-
 void VerifyJoylogChecksum() {
     if (!Joylog::IsCapturing() && !Joylog::IsReplaying()) {
         return;
     }
+#ifndef EA_BUILD_A124
     if (Joylog::IsCapturing()) {
         Joylog::AddData(bDefaultSeed, 32, JOYLOG_CHANNEL_RANDOM);
     } else if (Joylog::IsReplaying()) {
         bDefaultSeed = Joylog::GetData(32, JOYLOG_CHANNEL_RANDOM);
     }
+#endif
     uint16 world_checksum = 0;
     {
         const IVehicle::List &vehicles = IVehicle::GetList(VEHICLE_ALL);
@@ -301,9 +308,8 @@ static float Main_AnimateFrame(float real_dT) {
 
 int gFramesToSkip = 0;
 
-// UNSOLVED
 void Main_SkipFrame(int numToSkip) {
-    gFramesToSkip = bMax(gFramesToSkip, numToSkip);
+    gFramesToSkip = bMax(numToSkip, gFramesToSkip);
 }
 
 int RenderTimingStart;
@@ -335,37 +341,41 @@ void CheckTweakerTriggers() {}
 
 void MainLoopCheckForFatalDiscError() {}
 
-float RealTimeElapsed;
-
 void MiniMainLoop() {
     static int recursion_checker = 0;
     static int previous_ticks = 0;
 
+    // TODO are these ifdefs right?
+#ifdef EA_BUILD_A124
+    bMonitorService();
+#endif
     bThreadYield(8);
+#ifndef EA_BUILD_A124
     Sim::Suspend();
+#endif
     float dt = bGetTickerDifference(previous_ticks);
     previous_ticks = bGetTicker();
     PrepareRealTimestep(dt * 0.001f);
     ServiceResourceLoading();
+#ifndef EA_BUILD_A124
     ServiceFileStats();
     MainLoopCheckForFatalDiscError();
+#endif
     IOModule::GetIOModule().Update();
     FEManager::Get()->Update();
     TheTrackStreamer.ServiceGameState();
     TheTrackStreamer.ServiceNonGameState();
+#ifndef EA_BUILD_A124
     if (g_pEAXSound) {
         g_pEAXSound->Update(RealTimeElapsed);
     }
+#endif
     eDisplayFrame();
     AdvanceRealTime();
     recursion_checker--;
 }
 
 extern bool Tweak_FullSpeedMode; // TODO
-
-static int last_frame_count;
-
-volatile int FrameCounter;
 
 void MainLoop(float hardware_ms) {
     int ticks;

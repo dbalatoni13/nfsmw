@@ -5,12 +5,17 @@
 #pragma once
 #endif
 
-#include "Speed/Indep/Src/World/World.hpp"
+enum eTimeOfDay {
+    eTOD_NUM_TIMES_OF_DAY = 2,
+    eTOD_SUNSET = 1,
+    eTOD_MIDDAY = 0,
+    eTOD_ERROR = -1,
+};
 
-void TickOverTimeOfday();
-void ApplyTimeOfDayTickOver();
-void SetCurrentTimeOfDay(float tod);
-const char* GetTimeOfDaySuffix(eTimeOfDay tod);
-bool NeedsSeperateTODStreamingFile(const char* platform_name);
+void TickOverTimeOfday() {}
+
+eTimeOfDay GetCurrentTimeOfDay();
+const char *GetTimeOfDaySuffix(eTimeOfDay tod);
+bool NeedsSeperateTODStreamingFile(const char *platform_name);
 
 #endif

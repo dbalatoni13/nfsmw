@@ -40,23 +40,13 @@ When running under WSL, [objdiff](#diffing) is unable to get filesystem notifica
   brew install ninja
   ```
 
-- Install [wine-crossover](https://github.com/Gcenx/homebrew-wine):
-
-  ```sh
-  brew install --cask --no-quarantine gcenx/wine/wine-crossover
-  ```
-
-After OS upgrades, if macOS complains about `Wine Crossover.app` being unverified, you can unquarantine it using:
-
-```sh
-sudo xattr -rd com.apple.quarantine '/Applications/Wine Crossover.app'
-```
+[wibo](https://github.com/decompals/wibo), a minimal 32-bit Windows binary wrapper, will be automatically downloaded and used.
 
 ## Linux
 
 - Install [ninja](https://github.com/ninja-build/ninja/wiki/Pre-built-Ninja-packages).
-- For non-x86(\_64) platforms: Install wine from your package manager.
-  - For x86(\_64), [wibo](https://github.com/decompals/wibo), a minimal 32-bit Windows binary wrapper, will be automatically downloaded and used.
+
+[wibo](https://github.com/decompals/wibo), a minimal 32-bit Windows binary wrapper, will be automatically downloaded and used.
 
 # Building
 
@@ -87,15 +77,15 @@ sudo xattr -rd com.apple.quarantine '/Applications/Wine Crossover.app'
   ```
 
 - Extracting the binaries
-  - GC: Extract `NFSMWRELEASE.ELF`, copy it into `orig/GOWE69` and convert it into a DOL using the following command:
+  - GC: Extract `NFSMWRELEASE.ELF`, copy it into `orig/GOWE69`, and convert it into a DOL using the following command:
 
     ```sh
-    ./build/tools/dtk elf2dol ./orig/GOWE69/NFSMWRELEASE.elf ./orig/GOWE69/sys/main.dol
+    ./build/tools/dtk elf2dol ./orig/GOWE69/NFSMWRELEASE.ELF ./orig/GOWE69/sys/main.dol
     ```
 
   - Xbox 360: simply rename `NfsMWEuropeGerMilestone.exe` to `NfsMWEuropeGerMilestone.xex` and copy it to `./orig/EUROPEGERMILESTONE/`
 
-  - PS2: Copy `NSF.ELF` to `./orig/SLES-53558-A124/`
+  - PS2: Copy `NFS.ELF` to `./orig/SLES-53558-A124/`
 
 - Sharing large assets across git worktrees
 
@@ -108,16 +98,20 @@ sudo xattr -rd com.apple.quarantine '/Applications/Wine Crossover.app'
   ```
 
   This shares the ignored debug/tool assets under the git common directory, including
-  extracted `orig/*` contents, `symbols/*`, root ELF / MAP files, and downloaded
-  tool binaries under `build/`. It intentionally does **not** share `build.ninja`,
+  extracted `orig/*` contents, `symbols/*`, and downloaded tool binaries under
+  `build/`. It intentionally does **not** share `build.ninja`,
   `objdiff.json`, `compile_commands.json`, or per-worktree object outputs.
 
-  After linking shared assets into a worktree, regenerate that worktree's local build
-  files with:
+  After creating a fresh worktree, bootstrap its local generated files with:
 
   ```sh
-  python configure.py
+  python tools/share_worktree_assets.py bootstrap
   ```
+
+  `bootstrap` links the shared assets for the current worktree, runs `configure.py`,
+  generates the local split config when needed, and reruns `configure.py` so fresh
+  worktrees end up with `build.ninja`, `objdiff.json`, and `compile_commands.json`
+  without manual copying.
 
 # Diffing
 
@@ -160,7 +154,7 @@ For PS2 binaries the deprecated version gives nicer results.
 ## symbols/mw_dwarfdump.nothpp
 
 ```
-./build/tools/dtk dwarf dump ./orig/NFSMWRELEASE.ELF -o ./symbols/mw_dwarfdump.nothpp
+./build/tools/dtk dwarf dump ./orig/GOWE69/NFSMWRELEASE.ELF -o ./symbols/mw_dwarfdump.nothpp
 ```
 
 This is the dwarf dump of the whole GC version of the game. The `.nothpp` extension is to make sure that the IDE doesn't parse it on weak laptops. This should be your main source of information. It even shows which inlines a function calls. Namespaces only show up in generics. For regular functions and variables you can search `symbols.txt` for the right name.
@@ -204,13 +198,19 @@ This file contains bChunk chunk IDs.
 - Run
 
   ```
-  ./build/tools/dtk dwarf dump ./orig/NFSMWRELEASE.ELF -o ./symbols/mw_dwarfdump.nothpp
+  ./build/tools/dtk dwarf dump ./orig/GOWE69/NFSMWRELEASE.ELF -o ./symbols/mw_dwarfdump.nothpp
   python ./tools/split_dwarf_info.py ./symbols/mw_dwarfdump.nothpp ./symbols/Dwarf
   ```
 
 - Set up the project and Ghidra as described above (take the Ghidra repo from the decomp.dev server, you'll have to request access).
 
-- In Ghidra, checkout `mw/GOWE69/NFSMWRELEASE.ELF` and `mw/SLES-53558/NFS.ELF.fixed` and copy them both into the root of the project. Rename `NFS.ELF.fixed` to `NFS.ELF`.
+- Import the ELF files from `orig/` into the Ghidra project so the program names stay
+  `NFSMWRELEASE.ELF` and `NFS.ELF`:
+
+  ```sh
+  ghidra import ./orig/GOWE69/NFSMWRELEASE.ELF
+  ghidra import ./orig/SLES-53558-A124/NFS.ELF
+  ```
 
 - Download [ghidra-cli](https://github.com/akiselev/ghidra-cli) and put it into your path.
 
@@ -240,6 +240,56 @@ This file contains bChunk chunk IDs.
 ## Workflow
 
 Just tell your favourite clanker to reference `AGENTS.md` to decompile a translation unit of your choice, for example `main/Speed/Indep/SourceLists/zEAXSound`.
+
+When introducing or forward-declaring a type, preserve the original `class` / `struct`
+kind. Check existing headers first with `python tools/find-symbol.py <TypeName>`, then use
+GC Dwarf and PS2 type info when the real declaration is missing or incomplete.
+
+Preserve real member names, types, order, and offset comments too. For recovered game
+types, do not invent `pad`, `unk`, or `field_XXXX` members to force a guessed layout; use
+the debug data and leave a short TODO when a field is still unresolved.
+
+If a project type already has a header in `src/`, include that header instead of adding a
+local forward declaration.
+
+## Style tooling
+
+The repo ships with a decomp-aware style helper:
+
+```sh
+python tools/code_style.py audit --base origin/main
+```
+
+Use `audit` to classify branch changes into safer vs match-sensitive buckets and to flag repo-specific issues such as jumbo include spacing, stray top-level declarations in `SourceLists` files, touched `class` / `struct` declarations that disagree with known headers or the PS2 visibility rule, touched project forward declarations that should be replaced by real includes, touched type members that look like invented padding or placeholder names, and touched style-guide issues that clang-format cannot fix for you (`using namespace`, `NULL`, bad cast spacing, or missing `EA_PRAGMA_ONCE_SUPPORTED` guard blocks).
+Repeated findings are grouped by file so large branch audits stay readable.
+
+Useful focused passes:
+
+```sh
+python tools/code_style.py audit --base origin/main --category safe-cpp
+python tools/code_style.py audit --base origin/main --category match-sensitive-cpp
+python tools/code_style.py format --check --base origin/main --category safe-cpp
+```
+
+If you have `clang-format` installed locally, you can also use:
+
+```sh
+python tools/code_style.py format --check --base origin/main
+python tools/code_style.py format --check src/Speed/Indep/Src/Frontend/FEManager.cpp
+```
+
+The formatter wrapper targets eligible changed C/C++ files by default, including match-sensitive code. If you want a smaller focused pass, restrict it with `--category safe-cpp`, which currently maps to `src/Speed/Indep/Src/Frontend/` and `src/Speed/Indep/Src/FEng/`.
+`format --check` now distinguishes whitespace-only formatter deltas from other non-whitespace output changes.
+Files that use the repo's initializer-list guard comments (`//`) are formatter targets too. If a formatting pass touches match-sensitive code, rebuild and verify the affected unit afterwards instead of assuming the change is automatically byte-stable.
+For declaration-kind checks, header declarations are treated as the repo source of truth; otherwise the helper falls back to the PS2 dump rule (`public:` / `private:` / `protected:` means `class`, no visibility labels means `struct`).
+
+`clang-format` is optional. Recommended installs:
+
+- macOS: `brew install clang-format`
+- Linux: `sudo apt install clang-format`
+- Windows: `winget install LLVM.LLVM`
+
+If your binary lives outside `PATH`, set `CLANG_FORMAT` to the executable path before running `tools/code_style.py format`.
 
 # Contributors
 

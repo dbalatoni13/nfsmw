@@ -53,7 +53,13 @@ class tShaker {
 
     ~tShaker() {}
 
-    inline void Reset();
+    void Reset() {
+        bFill(&vShake, 0.0f, 0.0f, 0.0f);
+        pAmplitude = nullptr;
+        fTime = 0.0f;
+        fDuration = 1.0f;
+        fFrequency = 11.74265f;
+    }
 
     // bool IsShaking() {}
 

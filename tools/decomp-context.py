@@ -25,6 +25,7 @@ import subprocess
 import sys
 from typing import Any, Dict, List, Optional, Tuple
 from _common import (
+    RELOC_DIFF_CHOICES,
     ROOT_DIR,
     ToolError,
     build_objdiff_symbol_rows,
@@ -50,9 +51,10 @@ SOURCE_CONTEXT_LINES = 5
 RELATED_SOURCE_LIMIT = 8
 BRIEF_RELATED_SOURCE_LIMIT = 3
 BRIEF_SUGGESTED_COMMAND_LIMIT = 2
-LOW_UNMATCHED_HINT_THRESHOLD = 96
-LARGER_TARGET_RATIO = 4
-LARGER_TARGET_MIN_BYTES = 256
+LOW_UNMATCHED_HINT_THRESHOLD = 192
+HIGH_MATCH_HINT_THRESHOLD = 85.0
+LARGER_TARGET_RATIO = 3
+LARGER_TARGET_MIN_BYTES = 192
 
 
 def load_project_config() -> Dict[str, Any]:
@@ -68,11 +70,16 @@ def find_unit(config: Dict[str, Any], unit_name: str) -> Optional[Dict[str, Any]
     return None
 
 
-def run_objdiff(unit_name: str, base_obj: Optional[str] = None) -> Optional[Dict[str, Any]]:
+def run_objdiff(
+    unit_name: str,
+    base_obj: Optional[str] = None,
+    reloc_diffs: str = "none",
+) -> Optional[Dict[str, Any]]:
     return run_objdiff_json(
         OBJDIFF_CLI,
         unit_name,
         base_obj=base_obj,
+        reloc_diffs=reloc_diffs,
         root_dir=root_dir,
     )
 
@@ -993,7 +1000,11 @@ def format_priority_guidance(
         return None
 
     current_unmatched = int(current_row["unmatched_bytes_est"])
-    if current_unmatched > LOW_UNMATCHED_HINT_THRESHOLD:
+    current_match = current_row.get("match_percent")
+    if (
+        current_unmatched > LOW_UNMATCHED_HINT_THRESHOLD
+        and (current_match is None or float(current_match) < HIGH_MATCH_HINT_THRESHOLD)
+    ):
         return None
 
     unit_top = function_rows[0]
@@ -1009,14 +1020,25 @@ def format_priority_guidance(
             break
 
     lines: List[str] = []
-    lines.append(
-        f"- Current function is already low-byte cleanup territory (~{current_unmatched}B remaining)."
-    )
+    if current_match is not None and float(current_match) >= HIGH_MATCH_HINT_THRESHOLD:
+        lines.append(
+            f"- Current function is already in cleanup/polish territory "
+            f"(~{current_unmatched}B remaining, {float(current_match):.1f}% matched)."
+        )
+    else:
+        lines.append(
+            f"- Current function is already low-byte cleanup territory (~{current_unmatched}B remaining)."
+        )
 
     if larger_unit_target is not None:
+        larger_match = larger_unit_target.get("match_percent")
+        larger_match_detail = ""
+        if larger_match is not None:
+            larger_match_detail = f", {float(larger_match):.1f}% matched"
         lines.append(
             f"- This unit still has a much larger target: "
-            f"{larger_unit_target['name']} (~{larger_unit_target['unmatched_bytes_est']}B remaining)."
+            f"{larger_unit_target['name']} "
+            f"(~{larger_unit_target['unmatched_bytes_est']}B remaining{larger_match_detail})."
         )
         lines.append(
             f"- Try: python tools/decomp-workflow.py function -u {unit_name} "
@@ -1089,6 +1111,15 @@ def main():
             "Use this .o file as the decomp base instead of the one from objdiff.json."
         ),
     )
+    parser.add_argument(
+        "--reloc-diffs",
+        choices=RELOC_DIFF_CHOICES,
+        default="none",
+        help=(
+            "Control relocation-only mismatches in objdiff "
+            "(default: none; use all to surface relocation diffs)"
+        ),
+    )
     args = parser.parse_args()
 
     if args.ghidra_check:
@@ -1108,7 +1139,9 @@ def main():
     source_path = meta.get("source_path", "")
 
     # === objdiff Status (run first so we have line numbers for source scoping) ===
-    diff_data = run_objdiff(args.unit, base_obj=args.base_obj)
+    diff_data = run_objdiff(
+        args.unit, base_obj=args.base_obj, reloc_diffs=args.reloc_diffs
+    )
     left_sym = right_sym = None
 
     if diff_data:
@@ -1253,6 +1286,8 @@ def main():
                     args.unit,
                     "-d",
                     args.function,
+                    "--reloc-diffs",
+                    args.reloc_diffs,
                 ]
                 if args.base_obj:
                     diff_cmd += ["--base-obj", args.base_obj]

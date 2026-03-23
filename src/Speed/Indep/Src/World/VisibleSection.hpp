@@ -6,6 +6,7 @@
 #endif
 
 #include "Speed/Indep/bWare/Inc/bChunk.hpp"
+#include "Speed/Indep/bWare/Inc/Strings.hpp"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
@@ -139,8 +140,30 @@ struct VisibleSectionUserInfo {
 
 struct UnallocatedVisibleSectionUserInfo {};
 
+struct VisibleGroupInfo {
+    char *SelectionSetName; // offset 0x0, size 0x4
+    bool UsedForTopology;   // offset 0x4, size 0x1
+};
+
+// total size: 0x6830
 class VisibleSectionManager {
-    // total size: 0x6830
+  public:
+    static VisibleGroupInfo *GetGroupInfo(const char *selection_set_name);
+
+    void UnallocateUserInfo(int section_number);
+    DrivableScenerySection *FindDrivableSection(const bVector2 *point);
+    DrivableScenerySection *FindDrivableSection(int section_number);
+    void EnableGroup(unsigned int group_name_hash);
+
+    void DisableAllGroups() {
+        bMemSet(EnabledGroups, 0, 0x400);
+    }
+
+    VisibleSectionUserInfo *GetUserInfo(int section_number) {
+        return this->UserInfoTable[section_number];
+    }
+
+  private:
     bTList<VisibleSectionBoundary> DrivableBoundaryList;               // offset 0x0, size 0x8
     bTList<VisibleSectionBoundary> NonDrivableBoundaryList;            // offset 0x8, size 0x8
     bTList<DrivableScenerySection> DrivableSectionList;                // offset 0x10, size 0x8
@@ -161,15 +184,6 @@ class VisibleSectionManager {
     bTList<UnallocatedVisibleSectionUserInfo> UnallocatedUserInfoList; // offset 0x6424, size 0x8
     VisibleSectionBitTable *VisibleBitTables;                          // offset 0x642C, size 0x4
     unsigned int EnabledGroups[256];                                   // offset 0x6430, size 0x40
-
-  public:
-    void UnallocateUserInfo(int section_number);
-    DrivableScenerySection *FindDrivableSection(const bVector2 *point);
-    DrivableScenerySection *FindDrivableSection(int section_number /* r4 */);
-
-    VisibleSectionUserInfo *GetUserInfo(int section_number) {
-        return this->UserInfoTable[section_number];
-    }
 };
 
 extern VisibleSectionManager TheVisibleSectionManager; // size: 0x6830

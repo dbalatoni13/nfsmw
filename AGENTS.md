@@ -12,7 +12,15 @@ ninja all_source       # build all objects
 ninja                  # build all objects, hash check and progress report
 ninja baseline         # generates baseline report for regression checking
 ninja changes          # check for regressions after code changes (empty = no regressions)
+python tools/build_matrix.py              # sequential full `ninja` across GC/Xbox/PS2, then restore GOWE69
+python tools/build_matrix.py --all-source # sequential compile-only smoke check across GC/Xbox/PS2
 ```
+
+Use `python tools/build_matrix.py` when you want one command that verifies the current
+worktree across all supported platforms. It runs `configure.py --version ...` and the
+selected ninja target sequentially, writes per-platform logs under `build/<VERSION>/logs/`,
+prints failure tails with the exact failing command, and restores the worktree to
+`GOWE69` by default when it finishes.
 
 ## Project Layout
 
@@ -31,16 +39,7 @@ objdiff.json           Generated build/diff configuration
 
 ## Sub-Agent Usage
 
-Sub-agents are allowed only for **read-only exploration** tasks such as:
-
-- searching the codebase for symbols, call sites, or include relationships
-- inspecting decomp output, assembly, DWARF, PS2 dumps, or line mappings
-- gathering context from Ghidra, `tools/decomp-workflow.py`, `lookup.py`, `decomp-diff.py`, or similar tools
-- summarizing findings that help the main worker decide what to change
-
-Sub-agents must **not** write or edit code files, headers, configs, or other repository files.
-All persistent file changes, decomp implementations, scaffolding, and follow-up fixes must be
-done by the main worker after reviewing the read-only findings.
+Sub-agents are **strictly prohibited**. Do not use sub-agents for any tasks (whether read-only exploration or editing). All work must be performed by the main worker directly.
 
 ## Forbidden Changes
 
@@ -83,6 +82,36 @@ originates from, use this script against the compiler-generated debug line mappi
 
 See `.github/skills/line_lookup/SKILL.md` for the full workflow.
 
+`line_lookup.py` now accepts both the original `0xADDR:` debug-line format and rebuilt
+object exports written as bare `ADDR:` lines, so you can point it at
+`symbols/debug_lines.txt` or at a rebuilt `debug_lines.txt` from
+`tools/dwarf1_gcc_line_info.py`.
+
+### elf_lookup.py — Resolve strings / rodata by virtual address
+
+When you have a virtual address inside the original ELF and need to know which string or
+rodata bytes live there, use:
+
+```sh
+python tools/elf_lookup.py 0x803E58F4
+python tools/elf_lookup.py 0x803E58F4 --mode bytes --length 32
+python tools/elf_lookup.py 0x002F1234 --game ps2
+```
+
+This is the preferred replacement for ad-hoc Python snippets that manually parse the ELF
+to chase `@stringBase0` or other rodata/data references.
+
+### code-style — Repo-local style guidance
+
+When you are writing code, polishing code you already touched, or doing a style-review pass,
+consult `.github/skills/code_style/SKILL.md` first. It captures repo-specific formatting and
+cleanup rules, including jumbo include spacing, initializer-list comment markers, declaration
+placement, pointer style, and how to keep style work safe in match-sensitive code.
+
+Use `python tools/code_style.py audit --base origin/main` before a branch-wide style pass.
+It classifies changed files, reports repo-specific findings, and can run clang-format
+across eligible changed C/C++ files by default.
+
 ### decomp-diff.py — Diff & symbol overview
 
 Overview mode lists all symbols in a translation unit with match status:
@@ -92,10 +121,12 @@ python tools/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim
 python tools/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim -s nonmatching -t function
 python tools/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim -s missing -t function
 python tools/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim --search RemoveIOWin
+python tools/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim -d FindIOWin --reloc-diffs all
 ```
 
 Filters: `-t function,object` (type), `-s missing|matching|nonmatching|extra` (status),
-`--section .text`, `--search <pattern>` (fuzzy name match).
+`--section .text`, `--search <pattern>` (fuzzy name match), `--reloc-diffs none|name_address|data_value|all`
+(surface relocation-only mismatches when needed; default: `none`).
 
 Diff mode shows side-by-side instruction comparison:
 
@@ -135,6 +166,8 @@ Prefer this wrapper for routine agent-driven flows instead of manually chaining
 
 ```sh
 python tools/decomp-workflow.py health
+python tools/decomp-workflow.py health --full main/Speed/Indep/SourceLists/zAnim
+python tools/decomp-workflow.py health --full main/Speed/Indep/SourceLists/zAnim --timings
 python tools/decomp-workflow.py health --smoke-build main/Speed/Indep/SourceLists/zAnim
 python tools/decomp-workflow.py health --smoke-dtk main/Speed/Indep/SourceLists/zAnim
 python tools/decomp-workflow.py next --category game --limit 10
@@ -143,6 +176,7 @@ python tools/decomp-workflow.py build -u main/Speed/Indep/SourceLists/zAnim
 python tools/decomp-workflow.py diff -u main/Speed/Indep/SourceLists/zAnim -d FindIOWin
 python tools/decomp-workflow.py function -u main/Speed/Indep/SourceLists/zAnim -f FindIOWin
 python tools/decomp-workflow.py function -u main/Speed/Indep/SourceLists/zAnim -f FindIOWin --brief
+python tools/decomp-workflow.py verify -u main/Speed/Indep/SourceLists/zAnim -f FindIOWin
 python tools/decomp-workflow.py function -u main/Speed/Indep/SourceLists/zAnim -f FindIOWin --ghidra-version gc
 python tools/decomp-workflow.py function -u main/Speed/Indep/SourceLists/zAnim -f FindIOWin --lookup-mode full
 python tools/decomp-workflow.py unit -u main/Speed/Indep/SourceLists/zAnim --search FindIOWin --limit 20
@@ -153,6 +187,12 @@ repeated command chaining and to standardize routine worktree preflight checks f
 `next --unit`, `function`, `unit`, and `diff` now also auto-build the unit's shared `.o`
 once when that output is missing, so wrapper-first inspection works more often on
 half-prepared worktrees.
+
+Use `health --full <unit>` when you want one end-to-end tooling smoke test for a worktree.
+It reuses a single shared build for the build smoke, DTK dump, rebuilt debug-line export,
+and rebuilt `line_lookup.py` check, so it is faster and more representative than chaining
+`--smoke-build` and `--smoke-dtk` separately. Add `--timings` when you are diagnosing a
+slow worktree or compiler/tool startup.
 
 In normal agent work, use the wrapper commands first. Drop to the raw backend tools only
 when you specifically need a backend-only flag, are debugging a wrapper/backend discrepancy,
@@ -166,8 +206,9 @@ instead of picking functions in raw objdiff order. `next` is the fastest way to 
   high-match cleanup work, de-prioritizes obvious init/setup sinkholes, and prefers
   targets with usable source context.
 - `--strategy impact` is the blunt "largest unmatched byte loss first" view.
-- `--strategy quick-wins` is a cleanup-oriented mode for deliberate polish passes on
-  already-implemented functions. Do not use it as the default scouting mode.
+- `--strategy quick-wins` biases toward low-match functions where getting the first
+  40-60% tends to be much faster than squeezing a polished function from 95% to 100%.
+  It should not be treated as a cleanup/polish mode.
 
 When choosing what to work on next, bias toward low-match, high-remaining functions.
 As a rule of thumb, getting a function from 0% to 80% is usually much faster and higher
@@ -182,6 +223,40 @@ falls back to the GC debug-line-mapped repo source file when that file exists an
 real content.
 Add `--brief` when you want to keep the helper sections compact; it trims suggested
 commands and related-source hints without hiding the core status/diff/source data.
+
+For every function you touch, treat DWARF as a first-class completion gate, not a
+secondary polish pass. After each meaningful code/build iteration, run the wrapper's
+combined verification flow:
+
+```sh
+python tools/decomp-workflow.py verify -u main/Path/To/TU -f FunctionName
+```
+
+`verify` fails unless **both** checks are exact for that function:
+
+- objdiff instruction match is 100%
+- normalized DWARF block match is exact
+
+Pass the normal demangled function name to `verify`. The objdiff side matches against both
+the demangled and symbol-name fields, and the DWARF side reuses the demangled-name lookup
+matching that also tolerates omitted leading namespaces when that information is inconsistent.
+
+If the combined check fails, then inspect the DWARF diff directly with:
+
+```sh
+python tools/decomp-workflow.py dwarf -u main/Path/To/TU -f FunctionName
+```
+
+It compares the original and rebuilt DWARF blocks for one function, prints a normalized
+DWARF match percentage, and shows a diff-like view of what still differs. Use it
+whenever `verify` says the function is still failing the DWARF gate. This is the
+fastest way to see whether you are still missing locals, have the wrong inline body, or
+changed signature/type details even when the instruction diff already looks good.
+
+It also compares the debug-line ownership of each `// Range:` block. Treat the
+`Range source ownership` summary as the fast inline-placement check: file mismatches are
+strong evidence that an inline body came from the wrong header or owner file. The exact
+file+line count is stricter and mainly useful as a secondary hint, not as the main gate.
 
 When working with these tools, do not just work around recurring friction silently. If you
 notice a clear, safe workflow or tooling improvement that would make future decomp work
@@ -261,11 +336,25 @@ This is a **C++98** codebase compiled with ProDG GC 3.9.3 (GCC 2.95 under the ho
 
 - No `auto`, range-for, `enum class`, lambdas, or any C++11+
 - Enum values use prefix: `enum EFoo { kF_Value1, kF_Value2 }` (not `enum class`)
-- Use C++ casts (`static_cast< T >(expr)`) instead of C-style casts
-- Header guards: `#ifndef _CLASSNAME` / `#define _CLASSNAME` (not `#pragma once`)
+- Use C++ casts (`static_cast<T>(expr)`) instead of C-style casts
+- Header guards should use `#ifndef` / `#define` together with the `EA_PRAGMA_ONCE_SUPPORTED` block when writing repo headers
 - Constructors use initializer list style with leading `, ` on each line, add empty comments at the end of these lines (except the last) to stop clang-format from putting them all on the same line
+- Inline assembly is acceptable when needed to reproduce dead code or compiler scheduling that source alone cannot express cleanly
+- Preserve the original `class` vs `struct` kind. Check existing headers first, then Dwarf / PS2 info when needed. Even forward declarations and local partial declarations should use the accurate keyword when known.
+- Prefer including the real repo header over introducing a local forward declaration for a project type. If a type already has a header in `src/`, include it instead of redeclaring it locally.
+- If a subsystem already has a stub or umbrella owner header and the debug line info points back at that subsystem, fill the owner header instead of keeping a recovered project type declaration in a `.cpp` or spinning up a one-off micro-header just for that type.
+- Apply the same owner-header rule to shared enums, globals, callback typedefs, and free functions. If multiple TUs need the declaration, put it in the canonical owner header once and include that header instead of duplicating enum bodies or `extern` blocks across `.cpp`s.
+- Preserve original member names, types, order, and proven layout comments. Do not invent `pad`, `unk`, or `field_XXXX` members just to satisfy a guessed size or offset; verify the real members with `find-symbol.py`, GC Dwarf, and PS2 data, and leave a short TODO if a layout detail is still uncertain.
+- When recovering a type, start by copying the GC DWARF struct/class body into the canonical owner header. Treat that dump as the source of truth for declaration order too; only apply targeted fixes that are backed by existing repo headers or PS2 data, such as visibility, virtual/function order, duplicate-inline cleanup, or owner-header placement.
+- Do not hand-reconstruct recovered layouts from scattered field accesses, guessed semantics, or a "cleaned up" reordering. If you do not have enough evidence to paste the type confidently, stop and gather more DWARF / PS2 info first.
+- Preserve the original scope and nesting of recovered declarations too. Keep class-owned enums/types nested when the original did, and move subsystem/global enums into their real owner header instead of flattening or duplicating them near one caller.
+- Use the narrowest correct home for recovered declarations: shared project-facing types in headers, TU-private helper structs/classes and allocator metadata in the `.cpp`. Do not dump implementation-only helpers into public headers just because they were convenient to write there.
+- Prefer real subsystem or vendor headers over ad-hoc local typedef/prototype blocks. If an external API is shared and the project is missing the proper header, add that header in the correct subtree instead of stashing declarations in an unrelated gameplay file.
+- Do not leave repeated `// TODO move`, `// TODO where should this go`, or "I just made this up" markers around declarations. Either move the declaration to its owner now or leave one short targeted TODO above the owner declaration if ownership is still genuinely unresolved.
+- Follow DWARF member naming exactly (`mMember` vs `m_member`) instead of normalizing names
 - Omit the `this` pointer.
 - Use `nullptr` and `override`. If they are missing, you need to include `types.h`.
+- Prefer `if (ptr)` / `if (!ptr)` over explicit `nullptr` comparisons. In match-sensitive translation units, if you choose to normalize many of them, do it as one mechanical TU-wide pass and then rebuild / re-check that unit instead of assuming a piecemeal cleanup is free.
 - Omit `struct` when declaring variables or parameters, we are not in C land.
 - Avoid using `using` directives at all cost. Since the game uses jumbo builds, they leak through files.
 
@@ -280,40 +369,26 @@ python tools/decomp-status.py --unit main/Path/To/TU
 Commit whenever the match percentage increases (e.g. you matched a new function). Use this format for the commit message:
 
 ```
-n.n%: short description of what was matched or changed
+n.n[n]%: short description of what was matched or changed
 ```
 
 Examples:
 
 - `42.1%: match UpdateCamera`
-- `78.5%: match PlayerController constructor and destructor`
+- `78.56%: match PlayerController constructor and destructor`
 - `100.0%: full match for zAnim`
 
 Do not batch up multiple percentage milestones into one commit — commit as each improvement lands.
-
-## Parallel Sub-Agent Matching
-
-When working on a translation unit with multiple non-matching functions, use sub-agents selectively for **read-only exploration** around individual functions. Each sub-agent should focus on **exactly one function** — do not assign a sub-agent more than one function at a time.
-
-**Limit: never run more than 5 sub-agents concurrently.** Spawning too many at once causes resource contention and makes it harder to reason about progress.
-
-Guidelines:
-
-- Prefer solving difficult matching work in the main worker. Use sub-agents to inspect one function's context, diff, DWARF, or related call paths without editing files.
-- Spawn a sub-agent per function only when the functions are independent (no shared edits to the same source lines).
-- Sub-agents stay read-only. Let them inspect existing diff/context output rather than compiling or rebuilding.
-- Do not sit idle waiting for sub-agents to finish. Continue with other independent investigation while they run.
-- After a useful result lands and you make a real improvement, check the updated match percentage and commit if it improved.
 
 ## Matching Philosophy
 
 You should take the Ghidra decompiler output for the initial translation step, get it to compile, make sure that the dwarf of the function matches and only then look for binary matching problems in the assembly. Be aware Ghidra usually gets the order of branches incorrect in if statements (it inverts the logic and the two bodies are swapped), this needs to be fixed to achieve bytematching status.
 
-You may use sub-agents to gather read-only context during this process, but they must not
-edit files. Treat their output as analysis input for the main worker, not as a path to
-delegate source changes.
+A function is only done when both objdiff and normalized DWARF are exact. Treat a
+100% instruction match with a DWARF mismatch as unfinished work, not a near-complete
+result.
 
-The dwarf of your structs doesn't have to neccessarily match the original due to various reasons, just make sure that you copied everything correctly.
+The DWARF of your structs does not always compare cleanly in every detail, but the recovery process still starts by copying the dumped layout correctly. Do not freehand-reconstruct a struct from call sites or guessed semantics; paste the DWARF body into the real owner header first, then make only the minimal PS2/header-backed fixes such as visibility, function order, vtable order, or duplicate-inline cleanup.
 
 Never dismiss a diff as "close enough" or "just register allocation." Every mismatched
 instruction is a signal that the source doesn't perfectly represent the original. Even
@@ -349,6 +424,8 @@ Virtual table layout is also missing from the dwarf but there on PS2. Be aware t
 
 The inline information in the dwarf is incredibly useful. When you encounter one, you should look up its body in the project. If it doesn't exist yet, deduce how the code should look like and add it to the correct header (you can use your address lookup skill or if that doesn't succeed and the inline is a member function, just find the corresponding class in the project).
 
+For recovered structs and classes, treat DWARF as copied source material rather than a loose sketch. Paste the dumped type into the owner header first and keep its declaration/member order unless PS2 or an existing repo header proves a specific correction.
+
 It's very important that you use math inlines from bMath and UMath as shown in the dwarf. UVector inlines use temporaries that the compiler couldn't optimize out. You can see in the dwarf on which stack address they are and deduce final destination they are copied to.
 
 ### Store instruction order hints
@@ -365,6 +442,8 @@ It's very important that you use math inlines from bMath and UMath as shown in t
 - When you have to use a constant that looks like an address, it's possible that the splitter thought it was
   an allocation and it shows up as a diff because the left side has a symbol and the right side has a constant.
   In this case you need to figure out the virtual address of the instruction and block the relocation in config.yml.
+- When you need to confirm what lives at a rodata/data address from the original ELF, use
+  `python tools/elf_lookup.py 0xADDR` instead of writing a one-off Python script.
 
 ### PPC EABI calling convention
 
@@ -392,6 +471,20 @@ register assignments but does NOT affect integer register assignments (and vice 
   Every local that is NOT in the DWARF is a spurious temporary — remove it.
 - Every local that IS in the DWARF must exist in the source, even if you don't use the name.
   Name it exactly as the DWARF shows.
+- When objdiff is already exact but a local only differs by lexical scope, try an equivalent
+  loop form that keeps the temporary inside the same block as the original DWARF. In practice,
+  changing a `for (...; ...; x = next)` into a `while (...) { T *next = ...; ...; x = next; }`
+  can fix DWARF-only scope mismatches without changing codegen.
+
+### Slot-pooled delete paths
+
+- If a recovered local/project type participates in `delete` paths or container/list teardown,
+  check whether the original type exposed inline `operator new` / `operator delete`. Missing
+  slot-pool-backed operators often makes GCC emit `__builtin_delete` instead of the original
+  allocator/free path and can also move destructor/delete DWARF ownership out of the TU.
+- This applies even when the TU mostly allocates the type manually through `bOMalloc` or a
+  pool helper. Restoring the inline operators can still be necessary so `delete` expressions
+  and synthesized cleanup paths match the original code and DWARF.
 
 ### Virtual vs direct calls
 

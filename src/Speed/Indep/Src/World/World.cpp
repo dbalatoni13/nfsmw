@@ -41,9 +41,11 @@ Sim::SubSystem _Physics_System_World = Sim::SubSystem(nullptr, World_Init, nullp
 float UglyTimestepHack = 0.016666668f;
 World *pCurrentWorld = nullptr;
 
+// TODO move
 extern int WorldLoopCounter;                  // zMisc
 extern bVector3 *SkipFEOverrideStartPosition; // zMiscSmall
 
+// TODO move
 extern void ResetWorldAnimations(); // zAnim
 extern void ResetPropTimers();      // zPhysics
 
@@ -84,7 +86,7 @@ void World::ResetTimeScale() {
 
 // UNSOLVED
 void World_DEBUGStartLocation(UMath::Vector3 &startLoc, UMath::Vector3 &initialVec) {
-    const char *regionName = LoadedTrackInfo->GetLoadedTrackInfo();
+    const char *regionName = TrackInfo::GetLoadedTrackInfo()->RegionName;
     float rotInitialVec = 0.0f;
 
     if (strcasecmp(regionName, "L2RA") == 0) {
