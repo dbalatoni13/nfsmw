@@ -325,8 +325,25 @@ bool FnTurnBlender::BlendBeginFacing(float *f) const {
     reinterpret_cast<const FnRunBlender *>(mFnAnims[1])->ComputeBeginRootQ(q1);
     FastQuatBlendF4(mWeight, reinterpret_cast<float *>(&q0), reinterpret_cast<float *>(&q1), reinterpret_cast<float *>(&q));
 
-    f[0] = 2.0f * (q.w * q.z - q.x * q.y);
-    f[1] = 2.0f * (q.y * q.z + q.x * q.w);
+    UMath::Vector4 oldF;
+    oldF.x = 0.0f;
+    oldF.y = 1.0f;
+    oldF.z = 0.0f;
+    oldF.w = 1.0f;
+
+    float doubleY = q.y + q.y;
+    float doubleZ = q.z + q.z;
+    float xx2 = q.x * (q.x + q.x);
+    float wx2 = q.w * (q.x + q.x);
+    float newY = oldF.x * (q.x * doubleZ - q.w * doubleY) + oldF.y * (q.y * doubleZ + wx2) +
+                 oldF.z * (oldF.w - (xx2 + q.y * doubleY));
+    float newX = oldF.x * (oldF.w - (q.y * doubleY + q.z * doubleZ)) + oldF.y * (q.x * doubleY - q.w * doubleZ) +
+                 oldF.z * (q.x * doubleZ + q.w * doubleY);
+    float newZ = oldF.x * (q.x * doubleY + q.w * doubleZ) + oldF.y * (oldF.w - (xx2 + q.z * doubleZ)) +
+                 oldF.z * (q.y * doubleZ - wx2);
+
+    f[1] = newY;
+    f[0] = newX;
     printf("Facing: %g %g\n", f[0], f[1]);
     return true;
 }
@@ -344,8 +361,25 @@ bool FnTurnBlender::BlendEndFacing(float *f) const {
     reinterpret_cast<const FnRunBlender *>(mFnAnims[1])->ComputeEndRootQ(q1);
     FastQuatBlendF4(mWeight, reinterpret_cast<float *>(&q0), reinterpret_cast<float *>(&q1), reinterpret_cast<float *>(&q));
 
-    f[0] = 2.0f * (q.w * q.z - q.x * q.y);
-    f[1] = 2.0f * (q.y * q.z + q.x * q.w);
+    UMath::Vector4 oldF;
+    oldF.x = 0.0f;
+    oldF.y = 1.0f;
+    oldF.z = 0.0f;
+    oldF.w = 1.0f;
+
+    float doubleY = q.y + q.y;
+    float doubleZ = q.z + q.z;
+    float xx2 = q.x * (q.x + q.x);
+    float wx2 = q.w * (q.x + q.x);
+    float newY = oldF.x * (q.x * doubleZ - q.w * doubleY) + oldF.y * (q.y * doubleZ + wx2) +
+                 oldF.z * (oldF.w - (xx2 + q.y * doubleY));
+    float newX = oldF.x * (oldF.w - (q.y * doubleY + q.z * doubleZ)) + oldF.y * (q.x * doubleY - q.w * doubleZ) +
+                 oldF.z * (q.x * doubleZ + q.w * doubleY);
+    float newZ = oldF.x * (q.x * doubleY + q.w * doubleZ) + oldF.y * (oldF.w - (xx2 + q.z * doubleZ)) +
+                 oldF.z * (q.y * doubleZ - wx2);
+
+    f[1] = newY;
+    f[0] = newX;
     printf("Facing: %g %g\n", f[0], f[1]);
     return true;
 }
