@@ -270,6 +270,7 @@ void StuffSkyLayer(eView *view, SKY_LAYER layer) {
             ReplaceSkyTextures(layer);
             if (layer == SKY_LAYER_BLUE) {
                 scale = lbl_8040B280;
+            } else if (layer == SKY_LAYER_CLOUDS) {
             } else if (layer == SKY_LAYER_OVERCAST) {
                 rotate = true;
                 scale = lbl_8040B284;
