@@ -108,7 +108,9 @@ class VehicleRenderConn : public Sim::Connection, public UTL::Collections::Lista
     static void RenderAll(eView *view, int reflection);
     static void RenderFlares(eView *view, int reflection, int renderFlareFlags);
 
-    CarRenderInfo *GetRenderInfo() const;
+    CarRenderInfo *GetRenderInfo() const {
+        return this->mRenderInfo;
+    }
     const bVector3 *GetPosition() const;
     const bMatrix4 *GetBodyMatrix() const;
     const bVector3 *GetVelocity() const;
@@ -130,7 +132,9 @@ class VehicleRenderConn : public Sim::Connection, public UTL::Collections::Lista
     virtual void GetRenderMatrix(bMatrix4 *matrix);
     virtual void OnEvent(EventID id);
     const bVector4 &GetModelOffset() const;
-    const Attrib::Gen::ecar &GetAttributes() const;
+    const Attrib::Gen::ecar &GetAttributes() const {
+        return this->mAttributes;
+    }
 
   public:
     static LoaderList sLoaderList; // size: 0x10
