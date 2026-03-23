@@ -11,6 +11,7 @@
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/tires.h"
 #include "Speed/Indep/Src/Interfaces/IAttributeable.h"
 #include "Speed/Indep/Src/World/VehicleRenderConn.h"
+#include "Speed/Indep/bWare/Inc/bWare.hpp"
 
 struct RoadNoiseRecord;
 struct TireState;
@@ -31,55 +32,39 @@ class Pkt_Car_Open : public Sim::Packet {
 
 class Pkt_Car_Service : public Sim::Packet {
   public:
-    Pkt_Car_Service(bool inview, float distancetoview)
-        : mGroundState(0), //
-          mDamageInfo(0), //
-          mLights(0), //
-          mBrokenLights(0), //
-          mInView(inview), //
-          mDistanceToView(distancetoview), //
-          mFlashing(false), //
-          mNos(false), //
-          mEngineBlown(false), //
-          mShift(1), //
-          mGear(1), //
-          mEnginePower(0.0f), //
-          mEngineSpeed(0.0f), //
-          mExtraBodyRoll(0.0f), //
-          mExtraBodyPitch(0.0f), //
-          mBlowOuts(0), //
-          mHealth(1.0f), //
-          mAnimatedCarPitch(0.0f), //
-          mAnimatedCarRoll(0.0f), //
-          mAnimatedCarShake(0.0f) {
+    Pkt_Car_Service(bool inview, float distancetoview) {
         int i;
 
-        for (i = 0; i < 4; i++) {
-            this->mCompressions[i] = 0.0f;
-            this->mWheelSpeed[i] = 0.0f;
-            this->mTireSkid[i] = 0.0f;
-            this->mTireSlip[i] = 0.0f;
-        }
-
-        this->mSteering[0] = 0.0f;
-        this->mSteering[1] = 0.0f;
+        this->mDamageInfo = 0;
 
         for (i = 0; i < 3; i++) {
             this->mPartState[i] = 0;
         }
 
-        this->_pad69[0] = 0;
-        this->_pad69[1] = 0;
-        this->_pad69[2] = 0;
-        this->_pad71[0] = 0;
-        this->_pad71[1] = 0;
-        this->_pad71[2] = 0;
-        this->_pad75[0] = 0;
-        this->_pad75[1] = 0;
-        this->_pad75[2] = 0;
-        this->_pad79[0] = 0;
-        this->_pad79[1] = 0;
-        this->_pad79[2] = 0;
+        *reinterpret_cast<unsigned int *>(&this->mFlashing) = 0;
+        bMemSet(this->mCompressions, 0, 0x10);
+        bMemSet(this->mSteering, 0, 8);
+        bMemSet(this->mWheelSpeed, 0, 0x10);
+        bMemSet(this->mTireSkid, 0, 0x10);
+        bMemSet(this->mTireSlip, 0, 0x10);
+        this->mAnimatedCarShake = 0.0f;
+        *reinterpret_cast<unsigned int *>(&this->mInView) = inview;
+        this->mDistanceToView = distancetoview;
+        this->mShift = 1;
+        this->mHealth = 1.0f;
+        this->mBlowOuts = 0;
+        this->mGroundState = 0;
+        this->mLights = 0;
+        this->mBrokenLights = 0;
+        *reinterpret_cast<unsigned int *>(&this->mNos) = 0;
+        *reinterpret_cast<unsigned int *>(&this->mEngineBlown) = 0;
+        this->mGear = 1;
+        this->mEnginePower = 0.0f;
+        this->mExtraBodyRoll = 0.0f;
+        this->mExtraBodyPitch = 0.0f;
+        this->mEngineSpeed = 0.0f;
+        this->mAnimatedCarPitch = 0.0f;
+        this->mAnimatedCarRoll = 0.0f;
     }
 
     float mCompressions[4];              // offset 0x4, size 0x10
