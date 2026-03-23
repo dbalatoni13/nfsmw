@@ -114,18 +114,20 @@ static inline void DecodeSingleQMinRange(const DeltaSingleQMinRange &minRange, D
 }
 
 static inline void DecodeSingleQPhysical(const DeltaSingleQPhysical &physical, int index, UMath::Vector4 &q) {
-    q.x = kSingleQFloatZero;
-    q.y = kSingleQFloatZero;
-    q.z = kSingleQFloatZero;
-    q.w = physical.mW * kSingleQRangeScale8Bit - kSingleQFloatOne;
-
     if (index == 0) {
         q.x = physical.mV * kSingleQRangeScale8Bit - kSingleQFloatOne;
+        q.y = kSingleQFloatZero;
+        q.z = kSingleQFloatZero;
     } else if (index == 1) {
+        q.x = kSingleQFloatZero;
         q.y = physical.mV * kSingleQRangeScale8Bit - kSingleQFloatOne;
+        q.z = kSingleQFloatZero;
     } else {
+        q.x = kSingleQFloatZero;
+        q.y = kSingleQFloatZero;
         q.z = physical.mV * kSingleQRangeScale8Bit - kSingleQFloatOne;
     }
+    q.w = physical.mW * kSingleQRangeScale8Bit - kSingleQFloatOne;
 }
 
 static inline void DecodeSingleQDelta(const DeltaSingleQMinRange &minRange, const DeltaSingleQDelta &delta, UMath::Vector4 &q) {
@@ -138,18 +140,20 @@ static inline void DecodeSingleQDelta(const DeltaSingleQMinRange &minRange, cons
     v = minRangef.mRange[0] * delta.mV + minRangef.mMin[0];
     w = minRangef.mRange[1] * delta.mW + minRangef.mMin[1];
 
-    q.x = kSingleQFloatZero;
-    q.y = kSingleQFloatZero;
-    q.z = kSingleQFloatZero;
-    q.w = w;
-
     if (minRangef.mIndex == 0) {
         q.x = v;
+        q.y = kSingleQFloatZero;
+        q.z = kSingleQFloatZero;
     } else if (minRangef.mIndex == 1) {
+        q.x = kSingleQFloatZero;
         q.y = v;
+        q.z = kSingleQFloatZero;
     } else {
+        q.x = kSingleQFloatZero;
+        q.y = kSingleQFloatZero;
         q.z = v;
     }
+    q.w = w;
 }
 
 static inline void ComposeSingleQQuat(unsigned short index, const UMath::Vector4 &pre, const UMath::Vector4 &mid,
