@@ -14,7 +14,6 @@ void Skeleton::PoseSQTToGlobal(float *pose, EAGL4::Transform *output, BoneMask *
 
         for (int i = 0; i < n; i++) {
             if (mask->GetBone(i)) {
-                int p = bones[i].mParentIdx;
                 float *mat = output[i].m.GetElements();
 
                 output[i].BuildSQT(poseData[0], poseData[1], poseData[2], poseData[4], poseData[5], poseData[6], poseData[7], poseData[8],
@@ -23,7 +22,8 @@ void Skeleton::PoseSQTToGlobal(float *pose, EAGL4::Transform *output, BoneMask *
                 mat[4] *= poseData[3];
                 mat[8] *= poseData[3];
 
-                if (p > -1) {
+                int p = bones[i].mParentIdx;
+                if (p >= 0) {
                     MatrixMultiply(&output[i], &output[p], &output[i]);
                 }
             }
@@ -36,7 +36,6 @@ void Skeleton::PoseSQTToGlobal(float *pose, EAGL4::Transform *output, BoneMask *
         int n = GetNumBones();
 
         for (int i = 0; i < n; i++) {
-            int p = bones[i].mParentIdx;
             float *mat = output[i].m.GetElements();
 
             output[i].BuildSQT(poseData[0], poseData[1], poseData[2], poseData[4], poseData[5], poseData[6], poseData[7], poseData[8],
@@ -45,7 +44,8 @@ void Skeleton::PoseSQTToGlobal(float *pose, EAGL4::Transform *output, BoneMask *
             mat[4] *= poseData[3];
             mat[8] *= poseData[3];
 
-            if (p > -1) {
+            int p = bones[i].mParentIdx;
+            if (p >= 0) {
                 MatrixMultiply(&output[i], &output[p], &output[i]);
             }
 
