@@ -5,6 +5,29 @@
 
 typedef float Mtx44[4][4];
 
+struct VehiclePartDamageZone {
+    int mZoneId;
+    unsigned short mDamageLevel;
+    unsigned short pad;
+    int *mSlotIdsStart;
+    int *mSlotIdsEnd;
+
+    void Reset();
+    int GetSlotNum() const;
+    int GetSlotID(int index) const;
+    void SetDamageLevel(unsigned short damageLevel);
+};
+
+struct VehicleDamagePart {
+    unsigned short mDamageLevel;
+    unsigned short pad;
+    char pad2[0x58];
+    int mAttached;
+    int mHidden;
+
+    void Reset();
+};
+
 extern SlotPool *VehicleDamagePartSlotPool;
 extern SlotPool *VehiclePartDamageZoneSlotPool;
 extern unsigned int unitTestDelay;
@@ -41,6 +64,8 @@ extern float lbl_8040D13C;
 extern float lbl_8040D140;
 extern float lbl_8040D144;
 extern float lbl_8040D14C;
+extern const char lbl_8040D154[] asm("lbl_8040D154");
+extern const char lbl_8040D170[] asm("lbl_8040D170");
 
 extern VehicleDamagePart *VehicleDamagePart_ctor(VehicleDamagePart *part, CarRenderInfo *carRenderInfo, int slotId)
     asm("__17VehicleDamagePartP13CarRenderInfoi");
@@ -58,6 +83,33 @@ extern int VehiclePartDamageZone_GetSlotNum(const VehiclePartDamageZone *zone) a
 extern int VehiclePartDamageZone_GetSlotID(const VehiclePartDamageZone *zone, int index) asm("GetSlotID__C21VehiclePartDamageZonei");
 extern void VehiclePartDamageZone_SetDamageLevel(VehiclePartDamageZone *zone, unsigned short damageLevel)
     asm("SetDamageLevel__21VehiclePartDamageZoneUs");
+
+void VehiclePartDamageZone::Reset() {
+    mDamageLevel = 0;
+}
+
+int VehiclePartDamageZone::GetSlotNum() const {
+    return mSlotIdsEnd - mSlotIdsStart;
+}
+
+int VehiclePartDamageZone::GetSlotID(int index) const {
+    return *reinterpret_cast<int *>(reinterpret_cast<unsigned char *>(mSlotIdsStart) + index * sizeof(int));
+}
+
+void VehiclePartDamageZone::SetDamageLevel(unsigned short damageLevel) {
+    mDamageLevel = damageLevel;
+}
+
+void VehicleDamagePart::Reset() {
+    mDamageLevel = 0;
+    mHidden = 0;
+    mAttached = 1;
+}
+
+void InitVehicleDamage() {
+    VehicleDamagePartSlotPool = bNewSlotPool(0x68, 0xF0, lbl_8040D154, 0);
+    VehiclePartDamageZoneSlotPool = bNewSlotPool(0x18, 100, lbl_8040D170, 0);
+}
 
 VehiclePartDamageBehaviour::VehiclePartDamageBehaviour(CarRenderInfo *carRenderInfo)
     : mCarRenderInfo(carRenderInfo), //
