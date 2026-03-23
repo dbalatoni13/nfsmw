@@ -8,6 +8,7 @@
 #include "Speed/Indep/Libs/Support/Utility/UListable.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ISimable.h"
+#include "Speed/Indep/Src/Physics/PhysicsTypes.h"
 #include "Speed/Indep/Src/Sim/SimSurface.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/engineaudio.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/pvehicle.h"
@@ -244,6 +245,14 @@ struct EAX_CarState : public UTL::Collections::Listable<EAX_CarState, 10> {
 
     float GetWheelLoad(int wheel_ndx) {
         return mWheel[wheel_ndx].mLoad;
+    }
+
+    SimSurface GetWheelTerrain(int w) {
+        return mWheel[w].mTerrainType;
+    }
+
+    eTireDamage TireState(int w) {
+        return static_cast<eTireDamage>(mWheel[w].mBlownState);
     }
 
     bool IsWheelTouchingGround(int w) {

@@ -124,54 +124,28 @@ void SFXCTL_Wheel::GenerateWheelPosition() {
 }
 
 void SFXCTL_Wheel::GenerateTerrainTypes() {
-    Sound::Wheel *wheels = m_pStateBase->GetPhysCar()->mWheel;
+    Attrib::Gen::simsurface FLTerrainType(GetPhysCar()->GetWheelTerrain(0));
+    Attrib::Gen::simsurface FRTerrainType(GetPhysCar()->GetWheelTerrain(1));
+    Attrib::Gen::simsurface RRTerrainType(GetPhysCar()->GetWheelTerrain(2));
+    Attrib::Gen::simsurface RLTerrainType(GetPhysCar()->GetWheelTerrain(3));
+    Attrib::Gen::simsurface CurRight(FRTerrainType.GetCollection() != RRTerrainType.GetCollection() ? RightSideTerrain : FRTerrainType);
+    Attrib::Gen::simsurface CurLeft(FLTerrainType.GetCollection() != RLTerrainType.GetCollection() ? LeftSideTerrain : FLTerrainType);
 
-    Attrib::Instance FLTerrainType(wheels[0].mTerrainType.GetConstCollection(), 0, nullptr);
-    FLTerrainType.SetDefaultLayout(0xFC);
-    Attrib::Instance FRTerrainType(FLTerrainType);
-    FRTerrainType.SetDefaultLayout(0xFC);
+    PrevRightSideTerrain = RightSideTerrain;
+    PrevLeftSideTerrain = LeftSideTerrain;
 
-    Attrib::Instance RRTerrainType(wheels[1].mTerrainType.GetConstCollection(), 0, nullptr);
-    RRTerrainType.SetDefaultLayout(0xFC);
-    Attrib::Instance FRTemp(RRTerrainType);
-    FRTemp.SetDefaultLayout(0xFC);
-
-    Attrib::Instance RLTerrainType(wheels[2].mTerrainType.GetConstCollection(), 0, nullptr);
-    RLTerrainType.SetDefaultLayout(0xFC);
-    Attrib::Instance RRTemp(RLTerrainType);
-    RRTemp.SetDefaultLayout(0xFC);
-
-    Attrib::Instance CurRightSrc(wheels[3].mTerrainType.GetConstCollection(), 0, nullptr);
-    CurRightSrc.SetDefaultLayout(0xFC);
-    Attrib::Instance RLTemp(CurRightSrc);
-    RLTemp.SetDefaultLayout(0xFC);
-
-    Attrib::Instance CurRight(FRTemp.GetCollection() != RRTemp.GetCollection() ? RightSideTerrain : FRTemp);
-    CurRight.SetDefaultLayout(0xFC);
-    Attrib::Instance CurLeft(FLTerrainType.GetCollection() != RLTemp.GetCollection() ? LeftSideTerrain : FLTerrainType);
-    CurLeft.SetDefaultLayout(0xFC);
-
-    PrevRightSideTerrain.Attrib::Gen::simsurface::operator=(static_cast< const Attrib::Instance & >(RightSideTerrain));
-    PrevLeftSideTerrain.Attrib::Gen::simsurface::operator=(static_cast< const Attrib::Instance & >(LeftSideTerrain));
-
-    if (m_pStateBase->GetPhysCar()->mWheel[1].mBlownState == 2 || m_pStateBase->GetPhysCar()->mWheel[2].mBlownState == 2) {
-        const Attrib::Collection *blownTerrain =
-            Attrib::FindCollection(Attrib::Gen::simsurface::ClassKey(), 0x8EE645B3);
-        Attrib::Instance blown(blownTerrain, 0, nullptr);
-        blown.SetDefaultLayout(0xFC);
-        RightSideTerrain.Attrib::Gen::simsurface::operator=(blown);
+    if (GetPhysCar()->TireState(1) == TIRE_DAMAGE_BLOWN || GetPhysCar()->TireState(2) == TIRE_DAMAGE_BLOWN) {
+        Attrib::Gen::simsurface blown(0x8EE645B3, 0, nullptr);
+        RightSideTerrain = blown;
     } else {
-        RightSideTerrain.Attrib::Gen::simsurface::operator=(CurRight);
+        RightSideTerrain = CurRight;
     }
 
-    if (m_pStateBase->GetPhysCar()->mWheel[0].mBlownState == 2 || m_pStateBase->GetPhysCar()->mWheel[3].mBlownState == 2) {
-        const Attrib::Collection *blownTerrain =
-            Attrib::FindCollection(Attrib::Gen::simsurface::ClassKey(), 0x8EE645B3);
-        Attrib::Instance blown(blownTerrain, 0, nullptr);
-        blown.SetDefaultLayout(0xFC);
-        LeftSideTerrain.Attrib::Gen::simsurface::operator=(blown);
+    if (GetPhysCar()->TireState(0) == TIRE_DAMAGE_BLOWN || GetPhysCar()->TireState(3) == TIRE_DAMAGE_BLOWN) {
+        Attrib::Gen::simsurface blown(0x8EE645B3, 0, nullptr);
+        LeftSideTerrain = blown;
     } else {
-        LeftSideTerrain.Attrib::Gen::simsurface::operator=(CurLeft);
+        LeftSideTerrain = CurLeft;
     }
 }
 
