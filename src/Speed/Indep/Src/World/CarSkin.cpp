@@ -584,143 +584,221 @@ int CompositeSkin(SkinCompositeParams *composite_params) {
 }
 
 int CompositeSkin(RideInfo *ride_info) {
-    if (ride_info->IsUsingCompositeSkin() != 0) {
-        TextureInfo *dest_texture = GetTextureInfo(ride_info->GetCompositeSkinNameHash(), false, false);
+    unsigned int dest_namehash;
+    TextureInfo *dest_texture;
+    int do_32bit_composite;
+    const int first_vinyl_layer = 0;
+    CarPart *base_paint_part;
+    unsigned int base_paint_colour;
+    int red;
+    int green;
+    int blue;
+    int gloss;
+    unsigned int swatch_colours[4];
+    VinylLayerInfo vinyl_layer_infos[1];
+    int total_layer_colours;
+    const int max_layer_colours = 1;
+    int cur_layer;
+    SkinCompositeParams composite_params;
+    int success = 1;
 
-        if (dest_texture != 0) {
-            bool use_palette = dest_texture->ImageCompressionType != TEXCOMP_32BIT;
-            CarPart *base_paint = ride_info->GetPart(CARSLOTID_BASE_PAINT);
+    if (ride_info->IsUsingCompositeSkin() == 0) {
+        return 1;
+    }
 
-            if (base_paint != 0) {
-                unsigned int base_colour = base_paint->GetAppliedAttributeIParam(bStringHash("RED"), 0);
-                int green = base_paint->GetAppliedAttributeIParam(bStringHash("GREEN"), 0);
-                int blue = base_paint->GetAppliedAttributeIParam(bStringHash("BLUE"), 0);
-                int gloss = base_paint->GetAppliedAttributeIParam(bStringHash("GLOSS"), 0);
-                SkinCompositeParams composite_params;
-                VinylLayerInfo *info = &composite_params.VinylLayerInfos[0];
-                CarPart *vinyl_part;
+    dest_namehash = ride_info->GetCompositeSkinNameHash();
+    dest_texture = GetTextureInfo(dest_namehash, false, false);
+    if (dest_texture == 0) {
+        return 1;
+    }
 
-                base_colour |= green << 8;
-                base_colour |= blue << 16;
-                base_colour |= gloss << 24;
+    do_32bit_composite = dest_texture->ImageCompressionType == TEXCOMP_32BIT;
+    base_paint_part = ride_info->GetPart(CARSLOTID_BASE_PAINT);
+    if (base_paint_part == 0) {
+        return 1;
+    }
 
-                for (int i = 0; i < 4; i++) {
-                    composite_params.SwatchColours[i] = base_colour;
-                }
+    red = base_paint_part->GetAppliedAttributeIParam(bStringHash("RED"), 0);
+    green = base_paint_part->GetAppliedAttributeIParam(bStringHash("GREEN"), 0);
+    blue = base_paint_part->GetAppliedAttributeIParam(bStringHash("BLUE"), 0);
+    gloss = base_paint_part->GetAppliedAttributeIParam(bStringHash("GLOSS"), 0);
 
-                bMemSet(&composite_params, 0, sizeof(composite_params));
-                composite_params.DestTexture = dest_texture;
-                composite_params.BaseColour = base_colour;
+    base_paint_colour = red;
+    base_paint_colour |= green << 8;
+    base_paint_colour |= blue << 16;
+    base_paint_colour |= gloss << 24;
 
-                for (int i = 0; i < 4; i++) {
-                    composite_params.SwatchColours[i] = base_colour;
-                }
+    {
+        int i = 3;
+        unsigned int *swatch_colour = &swatch_colours[3];
 
-                vinyl_part = ride_info->GetPart(CARSLOTID_VINYL_LAYER0);
-                if (vinyl_part != 0) {
-                    info->m_LayerHash = GetVinylLayerHash(ride_info, 0);
-                    info->m_NumColours = vinyl_part->GetAppliedAttributeIParam(bStringHash("NUMCOLOURS"), 0);
-                    if (info->m_NumColours == 0) {
-                        return 0;
-                    }
-                }
+        do {
+            *swatch_colour = base_paint_colour;
+            swatch_colour--;
+            i--;
+        } while (i > -1);
+    }
 
-                if (info->m_LayerHash != 0) {
-                    info->m_LayerTexture = GetTextureInfo(info->m_LayerHash, false, false);
+    total_layer_colours = 0;
+    bMemSet(vinyl_layer_infos, 0, sizeof(vinyl_layer_infos));
+    cur_layer = first_vinyl_layer;
 
-                    if (info->m_LayerTexture == 0) {
-                        info->m_LayerHash = 0;
-                    } else {
-                        info->m_LayerImageData = static_cast<unsigned char *>(TextureInfo_LockImage(info->m_LayerTexture, TEXLOCK_READ));
+    do {
+        VinylLayerInfo *info = &vinyl_layer_infos[cur_layer];
+        unsigned int mask_hash;
 
-                        if (use_palette) {
-                            info->m_LayerImagePaletteData = static_cast<unsigned int *>(TextureInfo_LockPalette(info->m_LayerTexture, TEXLOCK_READ));
-                        }
+        if (cur_layer == first_vinyl_layer) {
+            int car_part_id = CARSLOTID_VINYL_LAYER0 + cur_layer;
+            CarPart *car_part = ride_info->GetPart(car_part_id);
 
-                        if (info->m_LayerImageData == 0) {
-                            info->m_LayerHash = 0;
-                        } else {
-                            if (UsePrecompositeVinyls != 0 || ride_info->SkinType == 2) {
-                                DumpPreComp(info, dest_texture);
-                                return 1;
-                            }
-
-                            info->m_LayerMaskTexture = GetTextureInfo(bStringHash("_MASK", info->m_LayerHash), false, false);
-                            if (info->m_LayerMaskTexture == 0) {
-                                info->m_LayerHash = 0;
-                            } else {
-                                info->m_LayerMaskData = static_cast<unsigned char *>(TextureInfo_LockImage(info->m_LayerMaskTexture, TEXLOCK_READ));
-
-                                if (use_palette) {
-                                    info->m_LayerMaskPaletteData =
-                                        static_cast<unsigned int *>(TextureInfo_LockPalette(info->m_LayerMaskTexture, TEXLOCK_READ));
-                                }
-
-                                if (info->m_LayerMaskData != 0) {
-                                    composite_params.NumLayers = 1;
-                                    if (vinyl_part != 0 && vinyl_part->HasAppliedAttribute(bStringHash("REMAP")) != 0) {
-                                        info->m_RemapPalette = vinyl_part->GetAppliedAttributeIParam(bStringHash("REMAP"), 0);
-                                        if (info->m_RemapPalette != 0) {
-                                            for (int i = 0; i < 4; i++) {
-                                                CarPart *vinyl_colour = ride_info->GetPart(CARSLOTID_VINYL_COLOUR0_0 + i);
-
-                                                if (vinyl_colour == 0) {
-                                                    info->m_RemapColours[i] = 0xFFu << ((i & 3) << 3);
-                                                } else {
-                                                    unsigned int remap_colour =
-                                                        vinyl_colour->GetAppliedAttributeIParam(bStringHash("RED"), 0);
-                                                    int remap_green =
-                                                        vinyl_colour->GetAppliedAttributeIParam(bStringHash("GREEN"), 0);
-                                                    int remap_blue =
-                                                        vinyl_colour->GetAppliedAttributeIParam(bStringHash("BLUE"), 0);
-                                                    int remap_gloss =
-                                                        vinyl_colour->GetAppliedAttributeIParam(bStringHash("GLOSS"), 0);
-
-                                                    remap_colour |= remap_green << 8;
-                                                    remap_colour |= remap_blue << 16;
-                                                    remap_colour |= remap_gloss << 24;
-                                                    info->m_RemapColours[i] = remap_colour;
-                                                }
-                                            }
-                                        }
-                                    }
-                                } else {
-                                    info->m_LayerHash = 0;
-                                }
-                            }
-                        }
-                    }
-                }
-
-                eWaitUntilRenderingDone();
-                CompositeRim(ride_info);
-                if (IsInSkinCompositeCache(&composite_params) == 0) {
-                    UpdateSkinCompositeCache(&composite_params);
-                    if (dest_texture->ImageCompressionType == TEXCOMP_32BIT) {
-                        CompositeSkin32(&composite_params);
-                    } else {
-                        CompositeSkin(&composite_params);
-                    }
-                }
-
-                if (info->m_LayerImageData != 0) {
-                    TextureInfo_UnlockImage(info->m_LayerTexture, info->m_LayerImageData);
-                }
-
-                if (info->m_LayerImagePaletteData != 0) {
-                    TextureInfo_UnlockPalette(info->m_LayerTexture, info->m_LayerImagePaletteData);
-                }
-
-                if (info->m_LayerMaskData != 0) {
-                    TextureInfo_UnlockImage(info->m_LayerMaskTexture, info->m_LayerMaskData);
-                }
-
-                if (info->m_LayerMaskPaletteData != 0) {
-                    TextureInfo_UnlockPalette(info->m_LayerMaskTexture, info->m_LayerMaskPaletteData);
+            if (car_part != 0) {
+                info->m_LayerHash = GetVinylLayerHash(ride_info, cur_layer);
+                info->m_NumColours = car_part->GetAppliedAttributeIParam(bStringHash("NUMCOLOURS"), 0);
+                if (info->m_NumColours == 0) {
+                    return 0;
                 }
             }
         }
-    }
+
+        if (info->m_LayerHash == 0) {
+            cur_layer++;
+        } else {
+            info->m_LayerTexture = GetTextureInfo(info->m_LayerHash, false, false);
+            if (info->m_LayerTexture == 0) {
+                info->m_LayerHash = 0;
+                cur_layer++;
+            } else {
+                info->m_LayerImageData = static_cast<unsigned char *>(TextureInfo_LockImage(info->m_LayerTexture, TEXLOCK_READ));
+                if (do_32bit_composite == 0) {
+                    info->m_LayerImagePaletteData =
+                        static_cast<unsigned int *>(TextureInfo_LockPalette(info->m_LayerTexture, TEXLOCK_READ));
+                }
+
+                if (info->m_LayerImageData == 0) {
+                    info->m_LayerHash = 0;
+                    cur_layer++;
+                } else {
+                    if (UsePrecompositeVinyls != 0 || ride_info->SkinType == 2) {
+                        DumpPreComp(info, dest_texture);
+                        return 1;
+                    }
+
+                    mask_hash = bStringHash("_MASK", info->m_LayerHash);
+                    info->m_LayerMaskTexture = GetTextureInfo(mask_hash, false, false);
+                    if (info->m_LayerMaskTexture == 0) {
+                        info->m_LayerHash = 0;
+                        cur_layer++;
+                    } else {
+                        info->m_LayerMaskData =
+                            static_cast<unsigned char *>(TextureInfo_LockImage(info->m_LayerMaskTexture, TEXLOCK_READ));
+                        if (do_32bit_composite == 0) {
+                            info->m_LayerMaskPaletteData =
+                                static_cast<unsigned int *>(TextureInfo_LockPalette(info->m_LayerMaskTexture, TEXLOCK_READ));
+                        }
+
+                        if (info->m_LayerMaskData == 0) {
+                            info->m_LayerHash = 0;
+                            cur_layer++;
+                        } else {
+                            if (cur_layer == first_vinyl_layer) {
+                                CarPart *car_part = ride_info->GetPart(CARSLOTID_VINYL_LAYER0 + cur_layer);
+
+                                if (car_part == 0 || car_part->HasAppliedAttribute(bStringHash("REMAP")) == 0) {
+                                    cur_layer++;
+                                    total_layer_colours++;
+                                } else {
+                                    info->m_RemapPalette = car_part->GetAppliedAttributeIParam(bStringHash("REMAP"), 0);
+                                    if (info->m_RemapPalette == 0) {
+                                        cur_layer++;
+                                        total_layer_colours++;
+                                    } else {
+                                        int layer_id = 0;
+
+                                        total_layer_colours++;
+                                        cur_layer++;
+                                        for (int j = 0; j < 4; j++) {
+                                            CarPart *colour_part = ride_info->GetPart(CARSLOTID_VINYL_COLOUR0_0 + layer_id);
+
+                                            if (colour_part == 0) {
+                                                info->m_RemapColours[j] = 0xFFu << ((j & 3) << 3);
+                                            } else {
+                                                unsigned int remap_colour =
+                                                    colour_part->GetAppliedAttributeIParam(bStringHash("RED"), 0);
+                                                int remap_green =
+                                                    colour_part->GetAppliedAttributeIParam(bStringHash("GREEN"), 0);
+                                                int remap_blue =
+                                                    colour_part->GetAppliedAttributeIParam(bStringHash("BLUE"), 0);
+                                                int remap_gloss =
+                                                    colour_part->GetAppliedAttributeIParam(bStringHash("GLOSS"), 0);
+
+                                                remap_colour |= remap_green << 8;
+                                                remap_colour |= remap_blue << 16;
+                                                remap_colour |= remap_gloss << 24;
+                                                info->m_RemapColours[j] = remap_colour;
+                                            }
+
+                                            layer_id++;
+                                        }
+                                    }
+                                }
+                            } else {
+                                cur_layer++;
+                                total_layer_colours++;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        if (cur_layer >= max_layer_colours) {
+            eWaitUntilRenderingDone();
+            CompositeRim(ride_info);
+
+            composite_params.DestTexture = dest_texture;
+            composite_params.BaseColour = base_paint_colour;
+            composite_params.NumLayers = total_layer_colours;
+            bMemCpy(composite_params.SwatchColours, swatch_colours, sizeof(swatch_colours));
+            bMemCpy(composite_params.VinylLayerInfos, vinyl_layer_infos, sizeof(vinyl_layer_infos));
+
+            if (IsInSkinCompositeCache(&composite_params) == 0) {
+                UpdateSkinCompositeCache(&composite_params);
+                if (do_32bit_composite == 0) {
+                    success = CompositeSkin(&composite_params);
+                } else {
+                    success = CompositeSkin32(&composite_params);
+                }
+            }
+
+            {
+                int i = max_layer_colours - 1;
+
+                do {
+                    VinylLayerInfo *info = &vinyl_layer_infos[i];
+
+                    if (info->m_LayerImageData != 0) {
+                        TextureInfo_UnlockImage(info->m_LayerTexture, info->m_LayerImageData);
+                    }
+
+                    if (info->m_LayerImagePaletteData != 0) {
+                        TextureInfo_UnlockPalette(info->m_LayerTexture, info->m_LayerImagePaletteData);
+                    }
+
+                    if (info->m_LayerMaskData != 0) {
+                        TextureInfo_UnlockImage(info->m_LayerMaskTexture, info->m_LayerMaskData);
+                    }
+
+                    if (info->m_LayerMaskPaletteData != 0) {
+                        TextureInfo_UnlockPalette(info->m_LayerMaskTexture, info->m_LayerMaskPaletteData);
+                    }
+
+                    i--;
+                } while (i > -1);
+            }
+
+            return success;
+        }
+    } while (true);
 
     return 1;
 }
