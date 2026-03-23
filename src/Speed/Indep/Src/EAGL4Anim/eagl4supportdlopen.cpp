@@ -273,11 +273,11 @@ void DynamicLoader::Initialize(DynamicUserCallback pSearchFunction) {
     h->symbols_num = 0;
     h->symtab = nullptr;
     h->sections = nullptr;
+    h->isOriginal = nullptr;
+    h->pSearchFunction = pSearchFunction;
     h->e = reinterpret_cast<ELFHeader *>(mpData);
     h->chain = nullptr;
-    h->isOriginal = nullptr;
     h->mpDynamicLoader = this;
-    h->pSearchFunction = pSearchFunction;
 
     ELFHeader *e = h->e;
 
