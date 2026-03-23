@@ -309,7 +309,8 @@ void WorldModel::Render(eView *view, int exc_flag) {
         const bMatrix4 *world_matrix = &this->mMatrix;
 
         if (this->pSpaceNode != 0) {
-            world_matrix = this->pSpaceNode->GetWorldMatrix();
+            world_matrix =
+                reinterpret_cast<const bMatrix4 *>(reinterpret_cast<const unsigned char *>(this->pSpaceNode) + 0x50);
         }
 
         {
@@ -364,9 +365,13 @@ void WorldModel::Render(eView *view, int exc_flag) {
     bMatrix4 *blended_matrices = 0;
     const bMatrix4 *render_matrix = &this->mMatrix;
     if (this->pSpaceNode != 0) {
-        this->pSpaceNode->Update();
-        render_matrix = this->pSpaceNode->GetWorldMatrix();
-        blended_matrices = this->pSpaceNode->GetBlendingMatrices();
+        SpaceNode *space_node = this->pSpaceNode;
+
+        if (*reinterpret_cast<unsigned int *>(reinterpret_cast<unsigned char *>(space_node) + 0xE4) != 0) {
+            space_node->Update();
+        }
+        render_matrix = reinterpret_cast<const bMatrix4 *>(reinterpret_cast<const unsigned char *>(space_node) + 0x10);
+        blended_matrices = *reinterpret_cast<bMatrix4 **>(reinterpret_cast<unsigned char *>(this->pSpaceNode) + 0xE8);
         if (blended_matrices != 0) {
             bMulMatrix(&world_matrix, render_matrix, &blended_matrices[1]);
             goto have_world_matrix;
@@ -375,13 +380,13 @@ void WorldModel::Render(eView *view, int exc_flag) {
 
     PSMTX44Copy(*reinterpret_cast<const Mtx44 *>(render_matrix), *reinterpret_cast<Mtx44 *>(&world_matrix));
 
-have_world_matrix:
+    have_world_matrix:
     if (view->PixelMinSize <= view->GetPixelSize(reinterpret_cast<const bVector3 *>(&world_matrix.v3), lbl_8040CD94) &&
         view->GetVisibleState(render_model, &world_matrix) != 0) {
-        if (this->mHeirarchy == 0) {
-            this->RenderModel(render_model, view, exc_flag, blended_matrices, render_matrix);
-        } else {
+        if (this->mHeirarchy != 0) {
             this->RenderNode(this->mHeirarchy, this->mHeirarchyIndex, view, exc_flag, blended_matrices, render_matrix);
+        } else {
+            this->RenderModel(render_model, view, exc_flag, blended_matrices, render_matrix);
         }
 
         this->mLastVisibleFrame = eFrameCounter;
