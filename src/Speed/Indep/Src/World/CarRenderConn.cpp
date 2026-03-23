@@ -1521,25 +1521,29 @@ void CarRenderConn::OnRender(eView *view, int reflection) {
     body_matrix.v3.y = 0.0f;
     body_matrix.v3.z = 0.0f;
 
-    int num_times_render_test_player_car = 0;
     if (this->mFlags & CF_ISPLAYER) {
-        num_times_render_test_player_car = NumTimesRenderTestPlayerCar;
+        int num_times_render_test_player_car = NumTimesRenderTestPlayerCar;
+
+        if (num_times_render_test_player_car != 0) {
+            for (int i = 0; i < num_times_render_test_player_car; i++) {
+                if (render_info->Render(view, &world_position, &body_matrix, this->mTireMatrices, this->mBrakeMatrices, this->mTireMatrices,
+                                        extra_render_flags, 0, reflection, static_cast<float>(static_cast<int>(render_info->mMinLodLevel)),
+                                        render_info->mMinLodLevel, static_cast<CARPART_LOD>(0)) &&
+                    view->GetID() < 4) {
+                    this->mLastVisibleFrame = eGetFrameCounter();
+                }
+            }
+
+            goto render_done;
+        }
     }
 
-    if (num_times_render_test_player_car != 0) {
-        for (int i = 0; i < num_times_render_test_player_car; i++) {
-            if (render_info->Render(view, &world_position, &body_matrix, this->mTireMatrices, this->mBrakeMatrices, this->mTireMatrices,
-                                    extra_render_flags, 0, reflection, static_cast<float>(static_cast<int>(render_info->mMinLodLevel)),
-                                    render_info->mMinLodLevel, static_cast<CARPART_LOD>(0)) &&
-                view->GetID() < 4) {
-                this->mLastVisibleFrame = eGetFrameCounter();
-            }
-        }
-    } else {
-        if (render_info->Render(view, &world_position, &body_matrix, this->mTireMatrices, this->mBrakeMatrices, this->mTireMatrices,
-                                extra_render_flags, 0, reflection, 1.0f, render_info->mMinLodLevel, render_info->mMinLodLevel) &&
-            view->GetID() < 4) {
-            this->mLastVisibleFrame = eFrameCounter;
-        }
+    if (render_info->Render(view, &world_position, &body_matrix, this->mTireMatrices, this->mBrakeMatrices, this->mTireMatrices,
+                            extra_render_flags, 0, reflection, 1.0f, render_info->mMinLodLevel, render_info->mMinLodLevel) &&
+        view->GetID() < 4) {
+        this->mLastVisibleFrame = eFrameCounter;
     }
+
+render_done:
+    ;
 }
