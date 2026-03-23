@@ -133,19 +133,21 @@ static inline void DecodeSingleQDelta(const DeltaSingleQMinRange &minRange, cons
     DeltaSingleQMinRangef minRangef;
     float v = minRangef.mMin[0];
     float w = minRangef.mMin[1];
+    unsigned char index;
 
     DecodeSingleQMinRange(minRange, minRangef);
 
     v = minRangef.mRange[0] * delta.mV + minRangef.mMin[0];
     w = minRangef.mRange[1] * delta.mW + minRangef.mMin[1];
+    index = minRangef.mIndex;
 
     q.z = kSingleQFloatZero;
     q.y = kSingleQFloatZero;
     q.x = kSingleQFloatZero;
 
-    if (minRangef.mIndex == 0) {
+    if (index == 0) {
         q.x = v;
-    } else if (minRangef.mIndex == 1) {
+    } else if (index == 1) {
         q.y = v;
     } else {
         q.z = v;
