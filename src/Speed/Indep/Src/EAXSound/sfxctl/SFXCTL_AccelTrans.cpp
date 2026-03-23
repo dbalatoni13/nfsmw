@@ -22,16 +22,18 @@ inline const unsigned int &Attrib::Gen::acceltrans::AccelFromIdle_RESUME_T() con
 SFXCTL_AccelTrans::SFXCTL_AccelTrans()
     : m_pEngineCtl(nullptr) //
     , m_pShiftCtl(nullptr) //
-    , eAccelTransFxState(0) //
-    , t_LastAccelTrans(0.0f) //
-    , IsAccelerating(false) //
-    , OldIsAccelerating(false) //
-    , m_pAccelTransDataSet(nullptr) //
-    , PlayEngOffSweet(false) {}
+    , m_pAccelTransDataSet(nullptr) {}
 
 SndBase *SFXCTL_AccelTrans::CreateObject(unsigned int allocator) {
-    (void)allocator;
-    return new SFXCTL_AccelTrans();
+    if (allocator != 0) {
+        return new (static_cast< SFXCTL_AccelTrans * >(
+            gAudioMemoryManager.AllocateMemory(sizeof(SFXCTL_AccelTrans), SFXCTL_AccelTrans::s_TypeInfo.typeName, true)))
+            SFXCTL_AccelTrans();
+    } else {
+        return new (static_cast< SFXCTL_AccelTrans * >(
+            gAudioMemoryManager.AllocateMemory(sizeof(SFXCTL_AccelTrans), SFXCTL_AccelTrans::s_TypeInfo.typeName, false)))
+            SFXCTL_AccelTrans();
+    }
 }
 
 SFXCTL_AccelTrans::~SFXCTL_AccelTrans() {}
