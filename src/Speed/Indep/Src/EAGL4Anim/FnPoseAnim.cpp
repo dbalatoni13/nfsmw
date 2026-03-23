@@ -19,13 +19,9 @@ void FnPoseAnim::SetAnimMemoryMap(AnimMemoryMap *anim) {
 }
 
 bool FnPoseAnim::GetLength(float &timeLength) const {
-    const PoseAnim *poseAnim = reinterpret_cast<const PoseAnim *>(mpAnim);
+    int zero = 0;
 
-    if (!poseAnim->mTimes) {
-        timeLength = static_cast<float>(poseAnim->mNumKeys - 1);
-    } else {
-        timeLength = static_cast<float>(poseAnim->mTimes[poseAnim->mNumKeys - 1]);
-    }
+    timeLength = static_cast<float>(zero);
     return true;
 }
 
