@@ -40,6 +40,8 @@ class FnDeltaSingleQ : public FnAnimMemoryMap {
     ~FnDeltaSingleQ() override {
         if (mPrevQBlock) {
             MemoryPoolManager::DeleteBlock(mPrevQBlock);
+            MemoryPoolManager::DeleteBlock(mPreMultQs);
+            MemoryPoolManager::DeleteBlock(mPostMultQs);
         }
     }
 
