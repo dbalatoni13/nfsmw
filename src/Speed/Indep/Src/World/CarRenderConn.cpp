@@ -236,24 +236,28 @@ void TireState::Effect::FreeUpFX() {
 
 void TireState::Effect::LazyInit() {
     if (this->mGroup != 0) {
-        EmitterGroupSetOldSurfaceEffectFlag(this->mGroup);
+        *reinterpret_cast<unsigned int *>(reinterpret_cast<unsigned char *>(this->mGroup) + 0x18) |= 0x80000;
         this->mGroup->UnSubscribe();
     }
 
     this->mGroup = 0;
-    if (this->mEmitterKey != 0 && this->mEmitterKey != 0xeec2271a) {
-        Attrib::Gen::emittergroup emitter_group_spec(this->mEmitterKey, 0, 0);
-
-        if (emitter_group_spec.IsValid()) {
-            this->mGroup = gEmitterSystem.CreateEmitterGroup(emitter_group_spec.GetConstCollection(), 0x40000000);
-            if (this->mGroup != 0) {
-                this->mGroup->Enable();
-                this->mGroup->SubscribeToDeletion(this, NotifyTireStateEffectOfEmitterDelete);
-            }
-            this->mZeroParticleFrameCount = 0;
-            this->mNeedsLazyInit = false;
-        }
+    if (this->mEmitterKey == 0 || this->mEmitterKey == 0xeec2271a) {
+        return;
     }
+
+    Attrib::Gen::emittergroup emitter_group_spec(this->mEmitterKey, 0, 0);
+    if (!emitter_group_spec.IsValid()) {
+        return;
+    }
+
+    this->mGroup = gEmitterSystem.CreateEmitterGroup(emitter_group_spec.GetConstCollection(), 0x40000000);
+    if (this->mGroup != 0) {
+        this->mGroup->Enable();
+        this->mGroup->SubscribeToDeletion(this, NotifyTireStateEffectOfEmitterDelete);
+    }
+
+    this->mNeedsLazyInit = false;
+    this->mZeroParticleFrameCount = 0;
 }
 
 void TireState::Effect::Set(const TireEffectRecord &record) {
@@ -262,9 +266,9 @@ void TireState::Effect::Set(const TireEffectRecord &record) {
     this->mMinVel = record.MinSpeed;
     this->mMaxVel = record.MaxSpeed;
     if (this->mEmitterKey != emitter_key) {
-        this->mZeroParticleFrameCount = 0;
-        this->mEmitterKey = emitter_key;
         this->mNeedsLazyInit = true;
+        this->mEmitterKey = emitter_key;
+        this->mZeroParticleFrameCount = 0;
     }
 }
 
@@ -397,7 +401,7 @@ void TireState::UpdateWorld(const WCollider *wc, bool rain, bool flat) {
     tire_pos.z = this->mTirePos.x;
 
     this->mWPos.FindClosestFace(wc, tire_pos, true);
-    if (this->mWPos.GetSurface() != TireState_GetSurfaceCollection(this) || this->mRaining != rain || this->mFlat != flat) {
+    if (TireState_GetSurfaceCollection(this) != this->mWPos.GetSurface() || this->mRaining != rain || this->mFlat != flat) {
         this->mRaining = rain;
         this->mFlat = flat;
 
@@ -407,9 +411,9 @@ void TireState::UpdateWorld(const WCollider *wc, bool rain, bool flat) {
 
     ground_pos = tire_pos;
     ground_pos.y = this->mWPos.HeightAtPoint(ground_pos);
-    this->mGroundPos.z = ground_pos.y;
-    this->mGroundPos.x = ground_pos.z;
     this->mGroundPos.y = -ground_pos.x;
+    this->mGroundPos.x = ground_pos.z;
+    this->mGroundPos.z = ground_pos.y;
 }
 
 void TireState::DoFX(float slip, float skid, float speed, const bVector3 *car_velocity, const bMatrix4 *car_matrix, float dT) {
