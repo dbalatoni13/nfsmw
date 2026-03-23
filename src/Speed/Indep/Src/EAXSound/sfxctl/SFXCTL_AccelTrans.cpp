@@ -200,7 +200,22 @@ bool SFXCTL_AccelTrans::ShouldBeginAccelTrans_Idle() {
 }
 
 bool SFXCTL_AccelTrans::ShouldBeginAccelTrans() {
-    return IsAccelerating && !OldIsAccelerating;
+    if (!(30.0f <= m_pEAXCar->GetThrottle() - m_pEngineCtl->m_pPhysicsCtl->m_OldThrottle)) {
+        return false;
+    }
+    if (eAccelTransFxState != FX_ACCEL_STATE_NONE) {
+        return false;
+    }
+    if (m_pShiftCtl && m_pShiftCtl->IsActive()) {
+        return false;
+    }
+    if (GetPhysRPM() < 3000.0f || SndBase::m_fRunningTime - t_LastAccelTrans < 2.0f) {
+        return false;
+    }
+    if (!GetPhysCar()->IsAICar() && m_pEAXCar->GetCurGear() < Sound::SECOND_GEAR) {
+        return false;
+    }
+    return true;
 }
 
 bool SFXCTL_AccelTrans::ShouldPlayEngOffSweet() {

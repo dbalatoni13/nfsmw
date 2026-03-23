@@ -206,6 +206,10 @@ struct EAX_CarState : public UTL::Collections::Listable<EAX_CarState, 10> {
         return mContext == Sound::CONTEXT_PLAYER;
     }
 
+    bool IsAICar() {
+        return mContext == Sound::CONTEXT_AIRACER;
+    }
+
     unsigned short GetSteering() {
         return mSteering;
     }
