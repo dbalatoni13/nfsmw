@@ -1435,7 +1435,7 @@ void CarRenderConn::OnRender(eView *view, int reflection) {
     if (camera_mover != 0 && !camera_mover->RenderCarPOV()) {
         CameraAnchor *anchor = camera_mover->GetAnchor();
 
-        if (anchor != 0 && anchor->GetWorldID() == world_ref->mWorldID) {
+        if (anchor != 0 && anchor->GetWorldID() == this->GetWorldID()) {
             return;
         }
     }
@@ -1446,7 +1446,7 @@ void CarRenderConn::OnRender(eView *view, int reflection) {
         if (rear_view_mover != 0) {
             CameraAnchor *anchor = rear_view_mover->GetAnchor();
 
-            if (anchor != 0 && anchor->GetWorldID() == world_ref->mWorldID) {
+            if (anchor != 0 && anchor->GetWorldID() == this->GetWorldID()) {
                 return;
             }
         }
@@ -1464,29 +1464,20 @@ void CarRenderConn::OnRender(eView *view, int reflection) {
             RVManchor = camera_mover->GetAnchor();
         }
 
-        if (RVManchor != 0 && RVManchor->GetWorldID() == world_ref->mWorldID) {
+        if (RVManchor != 0 && RVManchor->GetWorldID() == this->GetWorldID()) {
             return;
         }
     }
 
     if (camera_mover != nullptr && view->GetID() - 1U < 3) {
-        bVector3 delta;
-        delta.x = camera_mover->GetPosition()->x - this->mRenderMatrix.v3.x;
-        delta.y = camera_mover->GetPosition()->y - this->mRenderMatrix.v3.y;
-        delta.z = camera_mover->GetPosition()->z - this->mRenderMatrix.v3.z;
-
-        float distance_squared = delta.x * delta.x + delta.y * delta.y + delta.z * delta.z;
-        float distance = 0.0f;
-        if (0.0f < distance_squared) {
-            distance = bSqrt(distance_squared);
-        }
+        float distance = camera_mover->GetDistanceTo(reinterpret_cast<bVector3 *>(&this->mRenderMatrix.v3));
         if (distance > this->mDistanceToView) {
             distance = this->mDistanceToView;
         }
         this->mDistanceToView = distance;
     }
 
-    CarRenderInfo *render_info = this->mRenderInfo;
+    CarRenderInfo *render_info = this->GetRenderInfo();
     if (render_info == 0) {
         return;
     }
