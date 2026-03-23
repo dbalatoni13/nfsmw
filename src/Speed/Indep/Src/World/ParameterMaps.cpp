@@ -27,6 +27,12 @@ bTList<ParameterAccessor> *GetAutoParameterAccessors() {
     return &gAutoParameterAccessors;
 }
 
+extern "C" void __tcf_1() {
+    while (gAutoParameterAccessors.GetHead() != gAutoParameterAccessors.EndOfList()) {
+        delete gAutoParameterAccessors.GetHead();
+    }
+}
+
 ParameterMapLayer::ParameterMapLayer()
     : Header(0), //
       FieldTypes(0), //
