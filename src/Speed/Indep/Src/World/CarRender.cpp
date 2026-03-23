@@ -3044,11 +3044,10 @@ void CarRenderInfo::DrawAmbientShadow(eView *view, const bVector3 *position, flo
     int shadow_alphai;
     TextureInfo *texture_info;
     unsigned int colour;
+    bVector3 usPoint;
 
     sh_Setup(const_cast<bVector3 *>(position));
     if (iRam8047ff04 == 6) {
-        bVector3 usPoint;
-
         eUnSwizzleWorldVector(*position, usPoint);
         this->mWorldPos.FindClosestFace(this->mWCollider, reinterpret_cast<const UMath::Vector3 &>(usPoint), false);
         if (this->mWorldPos.OnValidFace()) {
