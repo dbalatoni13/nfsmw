@@ -2516,13 +2516,17 @@ void CarRenderInfo::RenderFlaresOnCar(eView *view, const bVector3 *position, con
         return;
     }
 
-    float headlight_left_intensity = 0.0f;
-    if (gINISInstance != 0) {
+    float headlight_left_intensity;
+    if (gINISInstance == 0) {
+        headlight_left_intensity = 0.0f;
+    } else {
         headlight_left_intensity = 0.5f;
     }
 
-    float headlight_right_intensity = 0.0f;
-    if (gINISInstance != 0) {
+    float headlight_right_intensity;
+    if (gINISInstance == 0) {
+        headlight_right_intensity = 0.0f;
+    } else {
         headlight_right_intensity = 0.5f;
     }
 
