@@ -1242,7 +1242,7 @@ int LoaderCarInfo(bChunk *chunk) {
             bEndianSwap32(&SlotTypeOverrideTable[i].LookupType[1]);
         }
     } else {
-        if (chunk_id != 0x34602) {
+        if (chunk_id != 0x80034602) {
             return 0;
         }
 
@@ -1410,6 +1410,29 @@ int LoaderCarInfo(bChunk *chunk) {
     }
 
     return 1;
+}
+
+int UnloaderCarInfo(bChunk *chunk) {
+    unsigned int chunk_id = chunk->GetID();
+
+    if (chunk_id == 0x34600) {
+        CarTypeInfoArray = 0;
+        return 1;
+    }
+
+    if (chunk_id == 0x80034602) {
+        int *chunk_words = reinterpret_cast<int *>(chunk);
+        CarPartPack *car_part_pack = reinterpret_cast<CarPartPack *>(chunk_words + 4);
+        CarPartDatabaseLayout *database = reinterpret_cast<CarPartDatabaseLayout *>(&CarPartDB);
+
+        car_part_pack->Remove();
+        database->NumPacks -= 1;
+        database->NumParts -= car_part_pack->NumParts;
+        database->NumBytes -= chunk_words[1];
+        return 1;
+    }
+
+    return 0;
 }
 
 void CarLoader::SetLoadingMode(eLoadingMode mode, int two_player_flag) {
