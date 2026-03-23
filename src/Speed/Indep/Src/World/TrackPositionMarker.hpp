@@ -5,6 +5,7 @@
 #pragma once
 #endif
 
+#include "Speed/Indep/bWare/Inc/bChunk.hpp"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
@@ -20,7 +21,12 @@ struct TrackPositionMarker : public bTNode<TrackPositionMarker> {
     int Padding3;          // offset 0x2C, size 0x4
 };
 
+int LoaderTrackPositionMarkers(bChunk *chunk);
+int UnloaderTrackPositionMarkers(bChunk *chunk);
+void ForEachTrackPositionMarker(bool (*callback)(TrackPositionMarker *, unsigned int), unsigned int tag);
 int GetNumTrackPositionMarkers(int track_number, unsigned int name_hash);
+TrackPositionMarker *GetTrackPositionMarker(int track_number, unsigned int name_hash, int index);
+TrackPositionMarker *GetTrackPositionMarker(unsigned int name_hash, int index);
 
 extern bTList<TrackPositionMarker> TrackPositionMarkerList;
 
