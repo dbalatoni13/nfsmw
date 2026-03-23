@@ -266,6 +266,7 @@ void DynamicLoader::Resolve() {
 void DynamicLoader::Initialize(DynamicUserCallback pSearchFunction) {
     HashPointer *h = reinterpret_cast<HashPointer *>(EAGL4Internal::EAGL4Malloc(sizeof(HashPointer), nullptr));
 
+    h->pSearchFunction = pSearchFunction;
     h->next = nullptr;
     h->prev = nullptr;
     h->strtab = nullptr;
@@ -273,10 +274,9 @@ void DynamicLoader::Initialize(DynamicUserCallback pSearchFunction) {
     h->symbols_num = 0;
     h->symtab = nullptr;
     h->sections = nullptr;
-    h->isOriginal = nullptr;
-    h->pSearchFunction = pSearchFunction;
-    h->e = reinterpret_cast<ELFHeader *>(mpData);
     h->chain = nullptr;
+    h->isOriginal = nullptr;
+    h->e = reinterpret_cast<ELFHeader *>(mpData);
     h->mpDynamicLoader = this;
 
     ELFHeader *e = h->e;
