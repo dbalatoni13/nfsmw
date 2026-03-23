@@ -84,10 +84,11 @@ void Skeleton::GetStillPose(float *pose, const BoneMask *mask) const {
                 if (mask->GetBone(i)) {
                     const BoneData &bd = GetBoneData(i);
                     const float one = 1.0f;
-                    float z = bd.mS.z;
+                    float z;
 
                     pose[0] = bd.mS.x;
                     pose[1] = bd.mS.y;
+                    z = bd.mS.z;
                     pose[2] = (pose[3] = one, z);
                     pose[4] = bd.mQ.x;
                     pose[5] = bd.mQ.y;
@@ -123,10 +124,11 @@ void Skeleton::GetStillPose(float *pose, const BoneMask *mask) const {
         for (i = 0; i < n; i++) {
             const BoneData &bd = GetBoneData(i);
             const float one = 1.0f;
-            float z = bd.mS.z;
+            float z;
 
             pose[0] = bd.mS.x;
             pose[1] = bd.mS.y;
+            z = bd.mS.z;
             pose[2] = (pose[3] = one, z);
             pose[4] = bd.mQ.x;
             pose[5] = bd.mQ.y;
@@ -211,14 +213,12 @@ void Skeleton::MirrorPose(float *pose, float *mirrorPose, bool local, const Bone
         if (!local) {
             pd = mirrorPose;
             UMath::Vector4 quat = *reinterpret_cast<UMath::Vector4 *>(&pd[4]);
-            float v8 = pd[8];
-            float v10 = pd[10];
 
             pd[4] = quat.z;
             pd[5] = quat.w;
             pd[6] = -quat.x;
-            pd[10] = -v10;
-            pd[8] = -v8;
+            pd[8] = -pd[8];
+            pd[10] = -pd[10];
             pd[7] = -quat.y;
         }
     } else {
@@ -280,14 +280,12 @@ void Skeleton::MirrorPose(float *pose, float *mirrorPose, bool local, const Bone
         if (!local) {
             pd = mirrorPose;
             UMath::Vector4 quat = *reinterpret_cast<UMath::Vector4 *>(&pd[4]);
-            float v8 = pd[8];
-            float v10 = pd[10];
 
             pd[4] = quat.z;
             pd[5] = quat.w;
             pd[6] = -quat.x;
-            pd[10] = -v10;
-            pd[8] = -v8;
+            pd[8] = -pd[8];
+            pd[10] = -pd[10];
             pd[7] = -quat.y;
         }
     }

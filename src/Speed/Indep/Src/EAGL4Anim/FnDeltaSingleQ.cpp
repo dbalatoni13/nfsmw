@@ -4,9 +4,33 @@
 #include "Speed/Indep/Src/EAGL4Anim/AnimTypeId.h"
 #include "Speed/Indep/Src/EAGL4Anim/AnimUtil.h"
 
-void QuatMultXxYxZ(const UMath::Vector4 &a, const UMath::Vector4 &b, const UMath::Vector4 &c, UMath::Vector4 &result);
-void QuatMultXxQ(const UMath::Vector4 &a, const UMath::Vector4 &b, UMath::Vector4 &result);
-void QuatMultQxZ(const UMath::Vector4 &a, const UMath::Vector4 &b, UMath::Vector4 &result);
+static void QuatMultXxYxZ(const UMath::Vector4 &a, const UMath::Vector4 &b, const UMath::Vector4 &c, UMath::Vector4 &result) {
+    UMath::Vector4 q;
+
+    q.x = a.x * b.w;
+    q.y = a.w * b.y;
+    q.w = a.w * b.w;
+    q.z = -(a.x * b.y);
+
+    result.x = q.x * c.w - q.y * c.z;
+    result.y = q.x * c.z + q.y * c.w;
+    result.z = q.z * c.w + q.w * c.z;
+    result.w = -q.z * c.z + q.w * c.w;
+}
+
+static void QuatMultXxQ(const UMath::Vector4 &a, const UMath::Vector4 &b, UMath::Vector4 &result) {
+    result.x = a.x * b.w + a.w * b.x;
+    result.y = a.x * b.z + a.w * b.y;
+    result.z = (-a.x) * b.z + a.w * b.y;
+    result.w = (-a.x) * b.x + a.w * b.w;
+}
+
+static void QuatMultQxZ(const UMath::Vector4 &a, const UMath::Vector4 &b, UMath::Vector4 &result) {
+    result.x = a.x * b.w - a.y * b.z;
+    result.y = a.x * b.z + a.y * b.w;
+    result.z = a.z * b.w + a.w * b.z;
+    result.w = (-a.z) * b.z + a.w * b.w;
+}
 
 namespace EAGL4Anim {
 
