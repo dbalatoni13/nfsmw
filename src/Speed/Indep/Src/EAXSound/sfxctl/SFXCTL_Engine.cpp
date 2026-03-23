@@ -32,6 +32,9 @@ extern float lbl_803D7300;
 extern Slope RedLineDelayPerGear;
 extern "C" int GetQ15FromHundredthsdB__11NFSMixShapei(int ndB);
 
+inline float SFXCTL::GetPhysRPM() { return m_pEAXCar->GetPhysRPM(); }
+inline float SFXCTL::GetPhysTRQ() { return m_pEAXCar->GetPhysTRQ(); }
+
 static const float REDLINE_ENG_FADE[2] = {450.0f, 50.0f};
 static const float REDLINE_REDSAMP_FADE[2] = {50.0f, 120.0f};
 
@@ -199,6 +202,12 @@ float SFXCTL_Engine::GetSmoothedEngRPM() { return m_fSmoothedEng_RPM; }
 float SFXCTL_Engine::GetEngTorque() { return m_fEng_Trq; }
 
 float SFXCTL_Engine::GetSmoothedEngTorque() { return m_fSmoothedEng_Trq; }
+
+inline void SFXCTL_Engine::SetEngTorque(float _torque) {
+    _torque += m_TRQ_LFO;
+    m_fEng_Trq = _torque;
+    m_fSmoothedEng_Trq = m_fSmoothedEng_Trq * lbl_803D72FC + _torque * lbl_803D7300;
+}
 
 void SFXCTL_Engine::MsgCountdownDone(const MCountdownDone &message) {
     tMergeWithPhysicsOffStart = 0.7f;
@@ -413,8 +422,7 @@ void SFXCTL_Engine::UpdateTorque(float t) {
 
     Trq.Recalculate();
 
-    m_fEng_Trq = Trq.GetValue() + m_TRQ_LFO;
-    m_fSmoothedEng_Trq = m_fSmoothedEng_Trq * lbl_803D72FC + m_fEng_Trq * lbl_803D7300;
+    SetEngTorque(static_cast<const Average &>(Trq).GetValue());
 }
 
 void SFXCTL_Engine::UpdateEngineLFO_FX(float t) {

@@ -4,9 +4,6 @@
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Shifting.hpp"
 #include "Speed/Indep/Src/Interfaces/SimActivities/INIS.h"
 
-inline float SFXCTL::GetPhysRPM() { return m_pEAXCar->GetPhysRPM(); }
-inline float SFXCTL::GetPhysTRQ() { return m_pEAXCar->GetPhysTRQ(); }
-
 inline const unsigned int &Attrib::Gen::acceltrans::AccelFromIdle_INTERUPT_T() const {
     const unsigned int *resultptr = reinterpret_cast<const unsigned int *>(GetAttributePointer(0x49fb8ce5, 0));
     if (!resultptr) {
