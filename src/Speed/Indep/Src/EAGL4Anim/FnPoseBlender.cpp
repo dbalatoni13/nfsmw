@@ -176,19 +176,15 @@ void FnPoseBlender::operator delete(void *ptr, size_t size) {
 void FnPoseBlender::Blend(int numBones, float w, const float *pose0, const float *pose1, float *result,
                           const BoneMask *boneMask) {
     if (!boneMask) {
-        for (int boneIdx = numBones - 1; boneIdx >= 0; --boneIdx) {
-            int poseIdx = boneIdx * 12;
-
+        for (int boneIdx = 0, poseIdx = 0; boneIdx < numBones; ++boneIdx, poseIdx += 12) {
             FastQuatBlendF4(w, &pose0[poseIdx + 4], &pose1[poseIdx + 4], &result[poseIdx + 4]);
             result[poseIdx + 8] = pose0[poseIdx + 8] + w * (pose1[poseIdx + 8] - pose0[poseIdx + 8]);
             result[poseIdx + 9] = pose0[poseIdx + 9] + w * (pose1[poseIdx + 9] - pose0[poseIdx + 9]);
             result[poseIdx + 10] = pose0[poseIdx + 10] + w * (pose1[poseIdx + 10] - pose0[poseIdx + 10]);
         }
     } else {
-        for (int boneIdx = numBones - 1; boneIdx >= 0; --boneIdx) {
+        for (int boneIdx = 0, poseIdx = 0; boneIdx < numBones; ++boneIdx, poseIdx += 12) {
             if (boneMask->GetBone(boneIdx)) {
-                int poseIdx = boneIdx * 12;
-
                 FastQuatBlendF4(w, &pose0[poseIdx + 4], &pose1[poseIdx + 4], &result[poseIdx + 4]);
                 result[poseIdx + 8] = pose0[poseIdx + 8] + w * (pose1[poseIdx + 8] - pose0[poseIdx + 8]);
                 result[poseIdx + 9] = pose0[poseIdx + 9] + w * (pose1[poseIdx + 9] - pose0[poseIdx + 9]);
