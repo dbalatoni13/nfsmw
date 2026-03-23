@@ -303,7 +303,7 @@ void FnDeltaQFast::UpdateNextQs(DeltaQFast *deltaQ, int ceilKey, int floorBinIdx
             nextQ[2] = static_cast<float>(physical[2] >> 4) * kQFastPhysicalScale12 - kQFastPhysicalBias12;
             nextQ[3] = static_cast<float>(static_cast<unsigned char>((physical[2] & 0xF) | ((physical[0] & 0xF) * 0x100) + ((physical[1] & 0xF) * 0x10))) *
                            kQFastPhysicalScale12 -
-                       kQFastPhysicalBias12;
+                        kQFastPhysicalBias12;
             physical += 3;
         }
     } else {
@@ -601,86 +601,51 @@ bool FnDeltaQFast::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask)
 
         mPrevKey = floorKey;
         times = deltaQ->mTimes;
+        bool slerpReqd = false;
+        float t = 0.0f;
 
         if (!times) {
             float floorTimef = static_cast<float>(floorTime);
 
-            if (currTime != floorTimef && static_cast<int>(floorKey) < deltaQ->mNumKeys - 1) {
-                float t = currTime - floorTimef;
-
-                UpdateNextQs(deltaQ, floorKey + 1, floorBinIdx, floorDeltaIdx);
-
-                for (int ibone = 0; ibone < static_cast<int>(deltaQ->mNumBones); ibone++) {
-                    float *prevQ = reinterpret_cast<float *>(&mPrevQs[ibone]);
-                    float *nextQ = reinterpret_cast<float *>(&mNextQs[ibone]);
-                    float x = t * (nextQ[0] - prevQ[0]) + prevQ[0];
-                    unsigned char boneIdx = boneIdxs[ibone];
-                    float y = t * (nextQ[1] - prevQ[1]) + prevQ[1];
-                    float z = t * (nextQ[2] - prevQ[2]) + prevQ[2];
-                    float w = t * (nextQ[3] - prevQ[3]) + prevQ[3];
-                    float *out = reinterpret_cast<float *>(boneIdx * 0x30 + reinterpret_cast<int>(quatBase));
-                    float invNorm = 1.0f / sqrtf(x * x + y * y + z * z + w * w);
-
-                    out[0] = x * invNorm;
-                    out[1] = y * invNorm;
-                    out[2] = z * invNorm;
-                    out[3] = w * invNorm;
-                }
-
-                goto finish_const_bones;
+            slerpReqd = currTime != floorTimef;
+            if (slerpReqd) {
+                t = currTime - floorTimef;
             }
         } else if (floorKey == 0) {
-            if (currTime != 0.0f && static_cast<int>(floorKey) < deltaQ->mNumKeys - 1) {
-                float t = currTime / static_cast<float>(times[0]);
-
-                UpdateNextQs(deltaQ, floorKey + 1, floorBinIdx, floorDeltaIdx);
-
-                for (int ibone = 0; ibone < static_cast<int>(deltaQ->mNumBones); ibone++) {
-                    float *prevQ = reinterpret_cast<float *>(&mPrevQs[ibone]);
-                    float *nextQ = reinterpret_cast<float *>(&mNextQs[ibone]);
-                    float x = t * (nextQ[0] - prevQ[0]) + prevQ[0];
-                    unsigned char boneIdx = boneIdxs[ibone];
-                    float y = t * (nextQ[1] - prevQ[1]) + prevQ[1];
-                    float z = t * (nextQ[2] - prevQ[2]) + prevQ[2];
-                    float w = t * (nextQ[3] - prevQ[3]) + prevQ[3];
-                    float *out = reinterpret_cast<float *>(boneIdx * 0x30 + reinterpret_cast<int>(quatBase));
-                    float invNorm = 1.0f / sqrtf(x * x + y * y + z * z + w * w);
-
-                    out[0] = x * invNorm;
-                    out[1] = y * invNorm;
-                    out[2] = z * invNorm;
-                    out[3] = w * invNorm;
-                }
-
-                goto finish_const_bones;
+            slerpReqd = currTime != 0.0f;
+            if (slerpReqd) {
+                t = currTime / static_cast<float>(times[0]);
             }
         } else {
             float floorTimef = static_cast<float>(times[floorKey - 1]);
 
-            if (currTime != floorTimef && static_cast<int>(floorKey) < deltaQ->mNumKeys - 1) {
-                float t = (currTime - floorTimef) / (static_cast<float>(times[floorKey]) - floorTimef);
-
-                UpdateNextQs(deltaQ, floorKey + 1, floorBinIdx, floorDeltaIdx);
-
-                for (int ibone = 0; ibone < static_cast<int>(deltaQ->mNumBones); ibone++) {
-                    float *prevQ = reinterpret_cast<float *>(&mPrevQs[ibone]);
-                    float *nextQ = reinterpret_cast<float *>(&mNextQs[ibone]);
-                    float x = t * (nextQ[0] - prevQ[0]) + prevQ[0];
-                    unsigned char boneIdx = boneIdxs[ibone];
-                    float y = t * (nextQ[1] - prevQ[1]) + prevQ[1];
-                    float z = t * (nextQ[2] - prevQ[2]) + prevQ[2];
-                    float w = t * (nextQ[3] - prevQ[3]) + prevQ[3];
-                    float *out = reinterpret_cast<float *>(boneIdx * 0x30 + reinterpret_cast<int>(quatBase));
-                    float invNorm = 1.0f / sqrtf(x * x + y * y + z * z + w * w);
-
-                    out[0] = x * invNorm;
-                    out[1] = y * invNorm;
-                    out[2] = z * invNorm;
-                    out[3] = w * invNorm;
-                }
-
-                goto finish_const_bones;
+            slerpReqd = currTime != floorTimef;
+            if (slerpReqd) {
+                t = (currTime - floorTimef) / (static_cast<float>(times[floorKey]) - floorTimef);
             }
+        }
+
+        if (slerpReqd && static_cast<int>(floorKey) < deltaQ->mNumKeys - 1) {
+            UpdateNextQs(deltaQ, floorKey + 1, floorBinIdx, floorDeltaIdx);
+
+            for (int ibone = 0; ibone < static_cast<int>(deltaQ->mNumBones); ibone++) {
+                float *prevQ = reinterpret_cast<float *>(&mPrevQs[ibone]);
+                float *nextQ = reinterpret_cast<float *>(&mNextQs[ibone]);
+                float x = t * (nextQ[0] - prevQ[0]) + prevQ[0];
+                unsigned char boneIdx = boneIdxs[ibone];
+                float y = t * (nextQ[1] - prevQ[1]) + prevQ[1];
+                float z = t * (nextQ[2] - prevQ[2]) + prevQ[2];
+                float w = t * (nextQ[3] - prevQ[3]) + prevQ[3];
+                float *out = reinterpret_cast<float *>(boneIdx * 0x30 + reinterpret_cast<int>(quatBase));
+                float invNorm = 1.0f / sqrtf(x * x + y * y + z * z + w * w);
+
+                out[0] = x * invNorm;
+                out[1] = y * invNorm;
+                out[2] = z * invNorm;
+                out[3] = w * invNorm;
+            }
+
+            goto finish_const_bones;
         }
 
         for (int ibone = 0; ibone < static_cast<int>(deltaQ->mNumBones); ibone++) {
