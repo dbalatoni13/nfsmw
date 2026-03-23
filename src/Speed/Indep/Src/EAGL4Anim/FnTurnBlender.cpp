@@ -81,6 +81,7 @@ void FnTurnBlender::Eval(float prevTime, float currTime, float *pose) {
 
 void FnTurnBlender::SetWeight(float w) {
     int idx = static_cast<int>(w);
+    int oldIdx = mIdx;
 
     if (idx < 0) {
         idx = 0;
@@ -90,17 +91,35 @@ void FnTurnBlender::SetWeight(float w) {
     }
 
     mWeight = w - static_cast<float>(idx);
+    if (idx == oldIdx) {
+        float prevFreq = mFreq;
 
-    if (idx >= 0 && idx < mNumAnims) {
-        mFnAnims[0] = mAnims[idx];
-        mFnAnims[1] = mAnims[idx + 1];
+        mFreq = mWeight / mCycles[1] + (1.0f - mWeight) / mCycles[0];
+        mOffset = (prevFreq / mFreq) * (mPrevTime + mOffset) - mPrevTime;
+    } else {
+        if (idx == oldIdx + 1) {
+            mFnAnims[0] = mFnAnims[1];
+            mFnAnims[1] = mAnims[idx + 1];
+        } else if (idx == oldIdx - 1) {
+            mFnAnims[1] = mFnAnims[0];
+            mFnAnims[0] = mAnims[idx];
+        } else {
+            mFnAnims[0] = mAnims[idx];
+            mFnAnims[1] = mAnims[idx + 1];
+        }
+
         mIdx = idx;
-        mCycles[0] = 1.0f;
-        mCycles[1] = 1.0f;
-        mOffsets[0] = 0.0f;
-        mOffsets[1] = 0.0f;
-        mFreq = 1.0f;
-        mOffset = 0.0f;
+
+        FnRunBlender *anim0 = static_cast<FnRunBlender *>(mAnims[idx]);
+        FnRunBlender *anim1 = static_cast<FnRunBlender *>(mAnims[mIdx + 1]);
+        float prevFreq = mFreq;
+
+        mCycles[0] = 1.0f / anim0->GetFrequency();
+        mOffsets[0] = anim0->GetOffset();
+        mCycles[1] = 1.0f / anim1->GetFrequency();
+        mOffsets[1] = anim1->GetOffset();
+        mFreq = mWeight / mCycles[1] + (1.0f - mWeight) / mCycles[0];
+        mOffset = (prevFreq / mFreq) * (mPrevTime + mOffset) - mPrevTime;
     }
 }
 
