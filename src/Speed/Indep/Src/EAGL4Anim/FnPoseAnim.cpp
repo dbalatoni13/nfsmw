@@ -83,7 +83,7 @@ bool FnPoseAnim::EvalPose(float currTime, const PosePaletteBank *paletteBank, fl
         while (transIdx >= 0) {
             float *from = &poseData[src0];
             float *to = &poseData[src1];
-            float *out = &sqt[dofIndices[numQ + transIdx] * 4];
+            float *out = &sqt[dofIndices[numQ + transIdx]];
 
             out[0] = from[0] + (to[0] - from[0]) * t;
             out[1] = from[1] + (to[1] - from[1]) * t;
@@ -97,7 +97,7 @@ bool FnPoseAnim::EvalPose(float currTime, const PosePaletteBank *paletteBank, fl
         int quatIdx = static_cast<int>(numQ) - 1;
 
         while (quatIdx >= 0) {
-            FastQuatBlendF4(t, &poseData[src0], &poseData[src1], &sqt[dofIndices[quatIdx] * 4]);
+            FastQuatBlendF4(t, &poseData[src0], &poseData[src1], &sqt[dofIndices[quatIdx]]);
             src0 -= 4;
             src1 -= 4;
             quatIdx--;
@@ -108,7 +108,7 @@ bool FnPoseAnim::EvalPose(float currTime, const PosePaletteBank *paletteBank, fl
 
         while (transIdx >= 0) {
             float *from = &poseData[src];
-            float *out = &sqt[dofIndices[numQ + transIdx] * 4];
+            float *out = &sqt[dofIndices[numQ + transIdx]];
 
             out[0] = from[0];
             out[1] = from[1];
@@ -122,7 +122,7 @@ bool FnPoseAnim::EvalPose(float currTime, const PosePaletteBank *paletteBank, fl
 
         while (quatIdx >= 0) {
             float *from = &poseData[src];
-            float *out = &sqt[dofIndices[quatIdx] * 4];
+            float *out = &sqt[dofIndices[quatIdx]];
 
             out[0] = from[0];
             out[1] = from[1];
