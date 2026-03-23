@@ -3220,10 +3220,9 @@ void CarRenderInfo::DrawAmbientShadow(eView *view, const bVector3 *position, flo
 
     shadow_alpha = (shadow_alpha_max - shadow_alpha_min) * shadow_alpha_scale + shadow_alpha_min;
     shadow_alphai = static_cast<int>(shadow_alpha);
-    if (shadow_alphai < 0) {
+    if (shadow_alphai <= 0) {
         shadow_alphai = 0;
-    }
-    if (shadow_alphai > 0xFE) {
+    } else if (shadow_alphai > 0xFE) {
         shadow_alphai = 0xFE;
     }
 
