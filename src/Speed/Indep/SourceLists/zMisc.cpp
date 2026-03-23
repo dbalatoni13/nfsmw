@@ -30,8 +30,6 @@
 
 #include "Speed/Indep/Src/Misc/Joylog.cpp"
 
-#include "Speed/Indep/Src/Misc/Spline.cpp"
-
 #include "Speed/Indep/Src/Misc/QueuedFile.cpp"
 
 #include "Speed/Indep/Src/Misc/bFile.cpp"
@@ -40,9 +38,13 @@
 
 #include "Speed/Indep/Src/Misc/MD5.cpp"
 
-#include "Speed/Indep/Src/Misc/bMemoryOverloads.cpp"
+#include "Speed/Indep/Src/Misc/VolumeTree.cpp"
+
+#include "Speed/Indep/Src/Misc/Spline.cpp"
 
 #include "Speed/Indep/Src/Misc/Point.cpp"
+
+#include "Speed/Indep/Src/Misc/bMemoryOverloads.cpp"
 
 #include "Speed/Indep/Src/Misc/Stomper.cpp"
 
@@ -52,8 +54,4 @@
 
 #include "Speed/Indep/Src/Misc/Timer.cpp"
 
-#include "Speed/Indep/Src/Misc/Config.cpp"
-
 #include "Speed/Indep/Src/Misc/Hermes.cpp"
-
-#include "Speed/Indep/Src/Misc/HandyBreakpoint.cpp"

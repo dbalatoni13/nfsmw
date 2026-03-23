@@ -95,6 +95,7 @@ struct SlotPoolManager {
     bTList<SlotPool> SlotPoolList; // offset 0x4, size 0x8
 
     SlotPoolManager();
+    ~SlotPoolManager();
     SlotPool *NewSlotPool(int slot_size, int num_slots, const char *debug_name, int memory_pool);
     void DeleteSlotPool(SlotPool *slot_pool);
     void PrintAllSlotPools();
@@ -114,5 +115,7 @@ extern SlotPool *ePolySlotPool;
 extern unsigned char *CurrentBufferStart;
 extern unsigned char *CurrentBufferPos;
 extern unsigned char *CurrentBufferEnd;
+
+extern SlotPoolManager TheSlotPoolManager;
 
 #endif

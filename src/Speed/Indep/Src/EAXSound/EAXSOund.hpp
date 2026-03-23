@@ -6,6 +6,7 @@
 #endif
 
 #include "Speed/Indep/Src/EAXSound/AudioMemBase.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
 #include "Speed/Indep/Src/EAXSound/SFX_base.hpp"
 #include "Speed/Indep/Src/EAXSound/STICH_Playback.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/audiosystem.h"
@@ -106,6 +107,7 @@ class EAXSound : public AudioMemBase {
     virtual ~EAXSound(void);
 
     void Update(float t);
+    bool AreResourceLoadsPending();
 
     void START_321Countdown();
 
@@ -118,7 +120,7 @@ class EAXSound : public AudioMemBase {
     bool IsNISStreamQueued();
     void NISFinished();
 
-    void PlayUISoundFX(int trigger);
+    void PlayUISoundFX(eMenuSoundTriggers etriggertype);
 
   private:
     int ncompiletest;                            // offset 0x4, size 0x4

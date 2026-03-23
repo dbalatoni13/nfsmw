@@ -301,21 +301,21 @@ class EmitterGroup : public bTNode<EmitterGroup> {
     typedef void (*OnDeleteCallback)(void *, EmitterGroup *);
 
     // total size: 0x80
-    bTList<Emitter> mEmitters;                       // offset 0x8, size 0x8
-    uint32 mGroupKey;                                // offset 0x10, size 0x4
-    uint32 Padding;                                  // offset 0x14, size 0x4
-    uint32 mFlags;                                   // offset 0x18, size 0x4
-    uint16 mNumEmitters;                             // offset 0x1C, size 0x2
-    uint16 mSectionNumber;                           // offset 0x1E, size 0x2
-    bMatrix4 mLocalWorld;                            // offset 0x20, size 0x40
-    void *mSubscriber;                               // offset 0x60, size 0x4
-    float mFarClip;                                  // offset 0x64, size 0x4
-    float mIntensity;                                // offset 0x68, size 0x4
-    OnDeleteCallback mDeleteCallback;                // offset 0x6C, size 0x4
-    EmitterGroupAttribWrapper *mDynamicData;         // offset 0x70, size 0x4
-    uint32 mNumZeroParticleFrames;                   // offset 0x74, size 0x4
-    uint32 mCreationTimeStamp;                       // offset 0x78, size 0x4
-    uint32 pad;                                      // offset 0x7C, size 0x4
+    bTList<Emitter> mEmitters;               // offset 0x8, size 0x8
+    uint32 mGroupKey;                        // offset 0x10, size 0x4
+    uint32 Padding;                          // offset 0x14, size 0x4
+    uint32 mFlags;                           // offset 0x18, size 0x4
+    uint16 mNumEmitters;                     // offset 0x1C, size 0x2
+    uint16 mSectionNumber;                   // offset 0x1E, size 0x2
+    bMatrix4 mLocalWorld;                    // offset 0x20, size 0x40
+    void *mSubscriber;                       // offset 0x60, size 0x4
+    float mFarClip;                          // offset 0x64, size 0x4
+    float mIntensity;                        // offset 0x68, size 0x4
+    OnDeleteCallback mDeleteCallback;        // offset 0x6C, size 0x4
+    EmitterGroupAttribWrapper *mDynamicData; // offset 0x70, size 0x4
+    uint32 mNumZeroParticleFrames;           // offset 0x74, size 0x4
+    uint32 mCreationTimeStamp;               // offset 0x78, size 0x4
+    uint32 pad;                              // offset 0x7C, size 0x4
 
   public:
     EmitterGroup(const Attrib::Collection *spec, uint32 creation_context_flags);
@@ -571,5 +571,7 @@ class EmitterSystem {
     uint32 mNumEmitters;                   // offset 0x398, size 0x4
     LibList mLibs;                         // offset 0x39C, size 0x10
 };
+
+extern EmitterSystem gEmitterSystem;
 
 #endif

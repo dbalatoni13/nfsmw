@@ -43,9 +43,13 @@ class Table : public TableBase {
 
     Table(const float *table, int num, float min, float max) : TableBase(num, min, max), pTable(table) {}
 
-    const float *GetData() const {}
+    const float *GetData() const {
+        return pTable;
+    }
 
-    void SetData(const float *data, int num) {}
+    void SetData(const float *data, int num) {
+        // TODO
+    }
 
   private:
     // total size: 0x14
@@ -53,12 +57,13 @@ class Table : public TableBase {
 };
 
 template <typename T> class tTable : public TableBase {
-    T *pTable;
-
   public:
     tTable() : TableBase(0, 0.0f, 1.0f) {}
 
     void Blend(T *dest, T *a, T *b, float blend_a);
+
+  private:
+    T *pTable;
 };
 
 class AverageBase {

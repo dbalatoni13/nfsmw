@@ -1,9 +1,6 @@
 #include "AttribAsset.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribLoadAndGo.h"
 
-VaultMap::VaultMap() {}
-FileMap::FileMap() {}
-
 VaultMap gVaults;
 FileMap gFiles;
 

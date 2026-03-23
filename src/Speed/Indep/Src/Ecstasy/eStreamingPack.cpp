@@ -1,6 +1,7 @@
 #include "./eStreamingPack.hpp"
 #include "./EcstasyE.hpp"
 #include "Speed/Indep/Src/Misc/LZCompress.hpp"
+#include "Speed/Indep/Src/Misc/Platform.h"
 #include "Speed/Indep/Src/Misc/Profiler.hpp"
 #include "Speed/Indep/Src/Misc/QueuedFile.hpp"
 #include "Speed/Indep/Src/Misc/ResourceLoader.hpp"
@@ -688,9 +689,6 @@ bool eStreamPackLoader::DefragmentAllocation(void *allocation) {
 
     return 0;
 }
-
-extern void DVDErrorTask(void *, int);
-extern void bThreadYield(int);
 
 void eStreamPackLoader::WaitForLoadingToFinish(const char *filename) {
     while (this->IsLoading(filename)) {

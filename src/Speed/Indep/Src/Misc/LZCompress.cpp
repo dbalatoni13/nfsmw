@@ -2,9 +2,15 @@
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include <cstring>
 
-void HUFF_decode(void *dest, const void *src);
+static int Compare(unsigned char *a, unsigned char *b, int max) {
+    int Result = 0;
+    while (Result < max && a[Result] == b[Result]) {
+        Result++;
+    }
+    return Result;
+}
 
-static void ShortMove(unsigned char *pDest, unsigned char *pSrc, int Len) {
+static void ShortMove(unsigned char *pDest, uint8 *pSrc, int Len) {
     int Run = 0;
     do {
         pDest[Run] = pSrc[Run];
@@ -12,93 +18,83 @@ static void ShortMove(unsigned char *pDest, unsigned char *pSrc, int Len) {
     } while (Run < Len);
 }
 
-unsigned int LZGetMaxCompressedSize(unsigned int source_data_size) {
-    return source_data_size * 2 + 0x12;
-}
-
-static int GetTableHash(unsigned char *pData) {
-    return (((pData[2] << 8) ^ (pData[1] << 4) ^ pData[0]) * 0x9e5f) & 0x1fff;
-}
-
-static int Compare(unsigned char *a, unsigned char *b, int max) {
-    int i = 0;
-    while (i < max && a[i] == b[i]) {
-        i++;
-    }
-    return i;
-}
-
 // total size: 0x10
-struct JLZHash {
-    int Offset;
-    unsigned char *pData;
+class JLZHash {
+  public:
+    int32 Offset;
+    uint8 *pData;
     JLZHash *pPrev;
     JLZHash *pNext;
 };
 
 // total size: 0xC
 struct JLZHashPool {
-    JLZHash *pPool;
-    JLZHash **pHead;
-    int PoolSize;
-
+  public:
     JLZHashPool(int WindowSize);
     ~JLZHashPool();
-    void Update(unsigned char *pData, int Offset);
-    JLZHash *FindList(unsigned char *pData);
+    void Update(uint8 *pData, int32 Offset);
+    JLZHash *FindList(uint8 *pData);
+
+  private:
+    JLZHash *pPool;
+    JLZHash **pHead;
+    int32 PoolSize;
 };
 
 JLZHashPool::JLZHashPool(int WindowSize) {
     PoolSize = WindowSize;
-    pPool = new JLZHash[WindowSize];
-    pHead = new JLZHash*[0x2000];
+    pPool = new ("JLZHash", 0) JLZHash[WindowSize];
+    pHead = new ("JLZHash", 0) JLZHash *[0x2000];
     bMemSet(pPool, 0, PoolSize << 4);
     bMemSet(pHead, 0, 0x8000);
 }
 
 JLZHashPool::~JLZHashPool() {
-    if (pPool != nullptr) {
-        delete[] pPool;
-    }
-    if (pHead != nullptr) {
-        delete[] pHead;
-    }
+    delete[] pPool;
+    delete[] pHead;
 }
 
-JLZHash *JLZHashPool::FindList(unsigned char *pData) {
-    int hash = GetTableHash(pData);
-    return pHead[hash];
+static int32 GetTableHash(uint8 *pData) {
+    unsigned int Value = (((pData[2] << 8) ^ (pData[1] << 4) ^ pData[0]) * 0x9e5f);
+    return Value & 0x1fff;
 }
 
-void JLZHashPool::Update(unsigned char *pData, int Offset) {
-    JLZHash *entry = &pPool[Offset - (Offset / PoolSize) * PoolSize];
-    if (entry->pData != nullptr) {
-        if (entry->pNext != nullptr) {
+void JLZHashPool::Update(uint8 *pData, int32 Offset) {
+    int WindowPos = Offset - (Offset / PoolSize) * PoolSize;
+    JLZHash *entry = &pPool[WindowPos];
+    int TableNum;
+    if (entry->pData) {
+        if (entry->pNext) {
             entry->pNext->pPrev = entry->pPrev;
         }
-        if (entry->pPrev != nullptr) {
+        if (entry->pPrev) {
             entry->pPrev->pNext = entry->pNext;
         }
-        int hash = GetTableHash(entry->pData);
-        if (pHead[hash] == entry) {
-            pHead[hash] = entry->pNext;
+        TableNum = GetTableHash(entry->pData);
+        if (pHead[TableNum] == entry) {
+            pHead[TableNum] = entry->pNext;
         }
     }
     entry->Offset = Offset;
     entry->pData = pData;
-    int hash = GetTableHash(pData);
+    TableNum = GetTableHash(pData);
     entry->pPrev = nullptr;
-    entry->pNext = pHead[hash];
-    pHead[hash] = entry;
-    if (entry->pNext != nullptr) {
+    entry->pNext = pHead[TableNum];
+    pHead[TableNum] = entry;
+    if (entry->pNext) {
         entry->pNext->pPrev = entry;
     }
 }
 
-int JLZCompress(unsigned char *pSrc, int SrcSize, unsigned char *pDst) {
+JLZHash *JLZHashPool::FindList(unsigned char *pData) {
+    return pHead[GetTableHash(pData)];
+}
+
+// TODO really wrong
+int JLZCompress(uint8 *pSrc, int32 Size, uint8 *pDest) {
     unsigned int count = 0;
-    JLZHashPool pool(0x810);
-    unsigned int *header = reinterpret_cast<unsigned int *>(pDst);
+    JLZHashPool Pool(0x810);
+    unsigned int *header = reinterpret_cast<unsigned int *>(pDest);
     header[0] = 0x5a4c444a;
     int offset = 0;
     *reinterpret_cast<unsigned char *>(&header[1]) = 2;
@@ -106,19 +102,19 @@ int JLZCompress(unsigned char *pSrc, int SrcSize, unsigned char *pDst) {
     unsigned int flags1 = 0xff00;
     *reinterpret_cast<unsigned short *>(reinterpret_cast<unsigned char *>(header) + 6) = 0;
     unsigned int flags2 = 0xff00;
-    header[2] = SrcSize;
+    header[2] = Size;
     unsigned char *flag1_ptr = reinterpret_cast<unsigned char *>(&header[4]);
     header[3] = 0;
     unsigned char *flag2_ptr = reinterpret_cast<unsigned char *>(header) + 0x11;
     unsigned char *out = reinterpret_cast<unsigned char *>(header) + 0x12;
     int progress = 0;
-    int remaining = SrcSize;
+    int remaining = Size;
     while (remaining > -1) {
         int max_match = remaining;
         if (remaining > 0x1001) {
             max_match = 0x1002;
         }
-        JLZHash *list = pool.FindList(pSrc);
+        JLZHash *list = Pool.FindList(pSrc);
         flags1 = flags1 >> 1;
         count = count + 1;
         JLZHash *best = nullptr;
@@ -135,7 +131,7 @@ int JLZCompress(unsigned char *pSrc, int SrcSize, unsigned char *pDst) {
             } while (list != nullptr && best_len < 0x1002);
         }
         if (best_len < 3) {
-            pool.Update(pSrc, offset);
+            Pool.Update(pSrc, offset);
             flags1 = flags1 & 0x7f7f;
             remaining = remaining - 1;
             *out = *pSrc;
@@ -147,7 +143,7 @@ int JLZCompress(unsigned char *pSrc, int SrcSize, unsigned char *pDst) {
             if (dist < 0x10) {
                 flags2 = flags2 >> 1;
                 out[1] = static_cast<unsigned char>(best_len - 3);
-                byte0 = static_cast<unsigned char>((best_len - 3 >> 8) << 4) | static_cast<unsigned char>(dist);
+                byte0 = static_cast<unsigned char>(((best_len - 3) >> 8) << 4) | static_cast<unsigned char>(dist);
             } else {
                 if (best_len > 0x22) {
                     best_len = 0x22;
@@ -162,7 +158,7 @@ int JLZCompress(unsigned char *pSrc, int SrcSize, unsigned char *pDst) {
             remaining = remaining - best_len;
             do {
                 next_src = pSrc + 1;
-                pool.Update(pSrc, offset);
+                Pool.Update(pSrc, offset);
                 offset = offset + 1;
                 best_len = best_len - 1;
                 pSrc = next_src;
@@ -184,7 +180,7 @@ int JLZCompress(unsigned char *pSrc, int SrcSize, unsigned char *pDst) {
         }
         pSrc = next_src;
         if ((count & 0x1fff) == 0) {
-            int p = 10 - (remaining * 10) / SrcSize;
+            int p = 10 - (remaining * 10) / Size;
             if (p != progress) {
                 progress = p;
             }
@@ -200,253 +196,535 @@ int JLZCompress(unsigned char *pSrc, int SrcSize, unsigned char *pDst) {
     return reinterpret_cast<int>(out) - reinterpret_cast<int>(header);
 }
 
-int JLZDecompress(unsigned char *pSrc, unsigned char *pDst) {
-    int *header = reinterpret_cast<int *>(pSrc);
-    int remaining = header[3];
-    if (header[0] != 0x5a4c444a) {
-        return 0;
-    }
-    if (*reinterpret_cast<unsigned char *>(&header[1]) != 2) {
-        return 0;
-    }
-    remaining -= 0x12;
-    unsigned char *src = pSrc + 0x12;
-    unsigned char *end = pDst + header[2];
-    unsigned int flags1 = *(pSrc + 0x10) | 0x100;
-    unsigned int flags2 = *(pSrc + 0x11) | 0x100;
-    while (remaining != 0) {
-        if ((flags1 & 1) != 0) {
-            int len;
-            if ((flags2 & 1) != 0) {
-                len = ((*src & 0xf0) << 4 | static_cast<unsigned int>(src[1])) + 3;
-                ShortMove(pDst, pDst - ((*src & 0xf) + 1), len);
-            } else {
-                len = (*src & 0x1f) + 3;
-                ShortMove(pDst, pDst - (((*src & 0xe0) << 3 | static_cast<unsigned int>(src[1])) + 0x11), len);
-            }
-            pDst = pDst + len;
-            src = src + 2;
-            remaining = remaining - 2;
-            flags2 = static_cast<int>(flags2) >> 1;
-        } else {
-            if (pDst < end) {
-                *pDst = *src;
-                src = src + 1;
-                pDst = pDst + 1;
-            }
-            remaining = remaining - 1;
-        }
-        flags1 = static_cast<int>(flags1) >> 1;
-        if (flags1 == 1) {
-            unsigned char b = *src;
-            remaining = remaining - 1;
-            src = src + 1;
-            flags1 = b | 0x100;
-        }
-        if (flags2 == 1) {
-            unsigned char b = *src;
-            remaining = remaining - 1;
-            src = src + 1;
-            flags2 = b | 0x100;
-        }
-    }
-    return header[2];
-}
-
-int OldLZDecompress(unsigned char *pSrc, unsigned char *pDst) {
-    int *header = reinterpret_cast<int *>(pSrc);
-    if (header == nullptr || pDst == nullptr) {
-        return 0;
-    }
-    int packed_size = header[3];
-    if (header[0] != 0x504d4f43) {
-        return 0;
-    }
-    unsigned char *src_end = pSrc + packed_size;
-    unsigned char *src = reinterpret_cast<unsigned char *>(&header[4]);
-    unsigned char *threshold = src_end - 0x20;
-    unsigned char *dst = pDst;
-    unsigned int flags = 1;
-    if (*reinterpret_cast<unsigned short *>(pSrc + 6) == 1) {
-        packed_size -= 0x10;
-        memcpy(pDst, src, packed_size);
-        return packed_size;
-    }
-    while (src != src_end) {
-        if (flags == 1) {
-            unsigned char b0 = *src++;
-            unsigned char b1 = *src++;
-            flags = b0 | 0x10000 | static_cast<unsigned int>(b1) << 8;
-        }
-        int count = 1;
-        if (src <= threshold) {
-            count = 0x10;
-        }
-        int i = count - 1;
-        if (count != 0) {
-            do {
-                if ((flags & 1) != 0) {
-                    unsigned char byte0 = *src;
-                    unsigned char byte1 = *(src + 1);
-                    src += 2;
-                    unsigned char *ref = dst - (((byte0 & 0xf0) << 4) | static_cast<unsigned int>(byte1));
-                    unsigned int extra = byte0 & 0xf;
-                    *dst = *ref;
-                    ref++; dst++;
-                    *dst = *ref;
-                    ref++; dst++;
-                    *dst = *ref;
-                    ref++; dst++;
-                    if (extra != 0) {
-                        do {
-                            *dst = *ref;
-                            ref++;
-                            dst++;
-                            extra--;
-                        } while (extra != 0);
-                    }
-                } else {
-                    *dst = *src;
-                    src++;
-                    dst++;
-                }
-                flags >>= 1;
-                i--;
-            } while (i != -1);
-        }
-    }
-    return static_cast<int>(dst - pDst);
-}
-
-void LZByteSwapHeader(LZHeader *header) {
-    bEndianSwap32(&header->ID);
-    bEndianSwap16(&header->Flags);
-    bEndianSwap32(&header->UncompressedSize);
-    bEndianSwap32(&header->CompressedSize);
-}
-
-int LZValidHeader(LZHeader *header) {
-    switch (header->ID) {
-    case 0x504d4f43:
-    case 0x46465548:
-    case 0x57574152:
-        return header->Version == 1;
-    case 0x5a4c444a:
-        return header->Version == 2;
-    default:
-        return false;
-    }
-}
-
-int LZCompress(unsigned char *pSrc, unsigned int SrcSize, unsigned char *pDst) {
-    unsigned int huffSize = HUFFCompress(pSrc, SrcSize, pDst);
-    unsigned int jlzSize = JLZCompress(pSrc, SrcSize, pDst);
-    if (huffSize > jlzSize) {
-        return jlzSize;
-    }
-    if (huffSize > SrcSize + 0x10) {
-        return RAWCompress(pSrc, SrcSize, pDst);
-    }
-    return HUFFCompress(pSrc, SrcSize, pDst);
-}
-
-int HUFFDecompress(unsigned char *pSrc, unsigned char *pDst);
-int RAWDecompress(unsigned char *pSrc, unsigned char *pDst);
-
-unsigned int LZDecompress(uint8 *pSrc, uint8 *pDst) {
+// UNSOLVED
+int JLZDecompress(uint8 *pSrc, uint8 *pDst) {
+    uint8 *pOut = pDst;
+    uint8 *pEnd;
+    int Offset;
+    int Run;
+    short Control;
+    short RunType;
     LZHeader *header = reinterpret_cast<LZHeader *>(pSrc);
-    switch (header->ID) {
-    case 0x5a4c444a:
-        return JLZDecompress(pSrc, pDst);
-    case 0x504d4f43:
-        return OldLZDecompress(pSrc, pDst);
-    case 0x46465548:
-        return HUFFDecompress(pSrc, pDst);
-    case 0x57574152:
-        return RAWDecompress(pSrc, pDst);
-    default:
+    int Size = header->CompressedSize;
+
+    if (header->ID != 'ZLDJ') {
         return 0;
     }
+    if (header->Version != 2) {
+        return 0;
+    }
+    Size -= 0x12;
+    pEnd = pOut + header->UncompressedSize;
+    Control = pSrc[0x10] | 0x100;
+    RunType = pSrc[0x11] | 0x100;
+    pSrc += 0x12;
+    while (Size != 0) {
+        if ((Control & 1) != 0) {
+            if ((RunType & 1) != 0) {
+                Offset = *pSrc;
+                Run = ((Offset & 0xf0) << 4 | static_cast<unsigned int>(pSrc[1])) + 3;
+                ShortMove(pOut, pOut - ((Offset & 0xf) + 1), Run);
+            } else {
+                Offset = *pSrc;
+                Run = (Offset & 0x1f) + 3;
+                ShortMove(pOut, pOut - (((Offset & 0xe0) << 3 | static_cast<unsigned int>(pSrc[1])) + 0x11), Run);
+            }
+            pOut += Run;
+            pSrc += 2;
+            Size -= 2;
+            RunType >>= 1;
+        } else {
+            if (pOut < pEnd) {
+                *pOut = *pSrc++;
+                pOut++;
+            }
+            Size--;
+        }
+        Control >>= 1;
+        if (Control == 1) {
+            Size--;
+            Control = *pSrc++ | 0x100;
+        }
+        if (RunType == 1) {
+            Size--;
+            RunType = *pSrc++ | 0x100;
+        }
+    }
+    return header->UncompressedSize;
 }
 
-int RAWCompress(unsigned char *pSrc, int SrcSize, unsigned char *pDst) {
-    unsigned int *header = reinterpret_cast<unsigned int *>(pDst);
-    header[0] = 0x57574152;
-    *reinterpret_cast<unsigned char *>(&header[1]) = 1;
-    *(reinterpret_cast<unsigned char *>(header) + 5) = 0x10;
-    *reinterpret_cast<unsigned short *>(reinterpret_cast<unsigned char *>(header) + 6) = 0;
-    header[2] = SrcSize;
-    header[3] = SrcSize;
-    memcpy(&header[4], pSrc, SrcSize);
-    return header[3] + 0x10;
+static int ZERO = 0;
+
+#define HUFF_REFILL()                                                                                                                                \
+    if (bitsleft < 0) {                                                                                                                              \
+        bitsunshifted = (bitsunshifted << 8) | *qs;                                                                                                  \
+        bitsunshifted = (bitsunshifted << 8) | *(qs + 1);                                                                                            \
+        bits = bitsunshifted << static_cast<unsigned int>(-bitsleft);                                                                                \
+        qs += 2;                                                                                                                                     \
+        bitsleft += 16;                                                                                                                              \
+    }
+
+#define HUFF_READNUM(dest)                                                                                                                           \
+    if (static_cast<int>(bits) < 0) {                                                                                                                \
+        unsigned int t;                                                                                                                              \
+        t = bits >> 29;                                                                                                                              \
+        bitsleft -= 3;                                                                                                                               \
+        bits <<= 3;                                                                                                                                  \
+        HUFF_REFILL()                                                                                                                                \
+        dest = t - 4;                                                                                                                                \
+    } else {                                                                                                                                         \
+        int n;                                                                                                                                       \
+        unsigned int v1;                                                                                                                             \
+        if ((bits >> 16) == 0) {                                                                                                                     \
+            n = 2;                                                                                                                                   \
+            do {                                                                                                                                     \
+                dest = -(static_cast<int>(bits) >> 31);                                                                                              \
+                n++;                                                                                                                                 \
+                bits <<= 1;                                                                                                                          \
+                bitsleft--;                                                                                                                          \
+                HUFF_REFILL()                                                                                                                        \
+            } while (dest == 0);                                                                                                                     \
+        } else {                                                                                                                                     \
+            n = 2;                                                                                                                                   \
+            do {                                                                                                                                     \
+                v1 = bits;                                                                                                                           \
+                n++;                                                                                                                                 \
+                bits = v1 << 1;                                                                                                                      \
+            } while (static_cast<int>(bits) >= 0);                                                                                                   \
+            bitsleft = bitsleft + 1 - n;                                                                                                             \
+            bits = v1 << 2;                                                                                                                          \
+            if (ZERO != 0) {                                                                                                                         \
+                bitsleft -= ZERO;                                                                                                                    \
+                dest = bits >> (32 - ZERO);                                                                                                          \
+                bits <<= ZERO;                                                                                                                       \
+            }                                                                                                                                        \
+            HUFF_REFILL()                                                                                                                            \
+        }                                                                                                                                            \
+        if (n < 17) {                                                                                                                                \
+            if (n != 0) {                                                                                                                            \
+                bitsleft -= n;                                                                                                                       \
+                dest = bits >> (32 - n);                                                                                                             \
+                bits <<= n;                                                                                                                          \
+            }                                                                                                                                        \
+            HUFF_REFILL()                                                                                                                            \
+            dest = dest + (1 << n) - 4;                                                                                                              \
+        } else {                                                                                                                                     \
+            unsigned int _hi = bits >> (48 - n);                                                                                                     \
+            bits = bits << (n - 16);                                                                                                                 \
+            bitsleft = bitsleft + 16 - n;                                                                                                            \
+            HUFF_REFILL()                                                                                                                            \
+            unsigned int _mid = bits >> 16;                                                                                                          \
+            bitsleft -= 16;                                                                                                                          \
+            bits <<= 16;                                                                                                                             \
+            HUFF_REFILL()                                                                                                                            \
+            dest = (_mid | (_hi << 16)) + (1 << n) - 4;                                                                                              \
+        }                                                                                                                                            \
+    }
+
+// TODO UNSOLVED, mostly wrong
+static int HUFF_decompress(unsigned char *packbuf, unsigned char *unpackbuf) {
+    unsigned int type;
+    unsigned char clue;
+    int ulen = 0;
+    unsigned int cmp;
+    int bitnum = 0;
+    int cluelen = 0;
+    unsigned char *qs = packbuf;
+    unsigned char *qd = unpackbuf;
+    unsigned int bits = 0;
+    unsigned int bitsunshifted = 0;
+    int numbits;
+    int bitsleft;
+    unsigned int v = 0;
+
+    if (qs != 0) {
+
+        bitsleft = -16;
+        if (ZERO != 0) {
+            bitsleft = -16 - ZERO;
+        }
+        bits = 0;
+
+        // Read type (16 bits)
+        HUFF_REFILL()
+        type = bits >> 16;
+        bitsleft -= 16;
+        bits <<= 16;
+        HUFF_REFILL()
+
+        // Read cmp/v based on type flags
+        if (type & 0x8000) {
+            if (type & 0x100) {
+                bits <<= 16;
+                bitsleft -= 16;
+                HUFF_REFILL()
+                bits <<= 16;
+                bitsleft -= 16;
+                HUFF_REFILL()
+            }
+            v = bits >> 16;
+            type &= ~0x100u;
+            bits <<= 16;
+            bitsleft -= 16;
+        } else {
+            if (type & 0x100) {
+                bits <<= 8;
+                bitsleft -= 8;
+                HUFF_REFILL()
+                bits <<= 16;
+                bitsleft -= 16;
+                HUFF_REFILL()
+            }
+            v = bits >> 24;
+            type &= ~0x100u;
+            bits <<= 8;
+            bitsleft -= 8;
+        }
+        HUFF_REFILL()
+
+        // Read ulen (16 bits + upper from v)
+        ulen = bits >> 16;
+        bitsleft -= 16;
+        bits <<= 16;
+        HUFF_REFILL()
+        ulen |= v << 16;
+
+        // Read clue (8 bits)
+        v = bits >> 24;
+        bitsleft -= 8;
+        bits <<= 8;
+        HUFF_REFILL()
+        clue = static_cast<unsigned char>(v);
+
+        // Tree building
+        {
+            int mostbits;
+            int i;
+            int bitnumtbl[16];
+            unsigned int deltatbl[16];
+            unsigned int cmptbl[16];
+            unsigned char codetbl[256];
+            unsigned char quickcodetbl[256];
+            unsigned char quicklentbl[256];
+
+            int numchars = 0;
+            int basecmp = 0;
+            i = 1;
+            do {
+                mostbits = i;
+                bitnumtbl[mostbits] = basecmp * 2 - numchars;
+
+                HUFF_READNUM(bitnum)
+
+                numchars += bitnum;
+                deltatbl[mostbits] = bitnum;
+                basecmp = basecmp * 2 + bitnum;
+                cmp = 0;
+                if (bitnum != 0) {
+                    cmp = (basecmp << (16 - mostbits)) & 0xffff;
+                }
+                cmptbl[mostbits] = cmp;
+                i = mostbits + 1;
+            } while (bitnum == 0 || cmp != 0);
+
+            // Set sentinel
+            cmptbl[mostbits] = 0xffffffff;
+
+            // Code table building
+            {
+                signed char leap[256];
+                unsigned char nextchar;
+
+                // Zero leap array
+                {
+                    int loopI = 16;
+                    int intval = 0;
+                    int *lptr = reinterpret_cast<int *>(leap);
+                    do {
+                        lptr[0] = intval;
+                        lptr[1] = intval;
+                        lptr[2] = intval;
+                        lptr[3] = intval;
+                        lptr += 4;
+                        loopI--;
+                    } while (loopI != 0);
+                }
+
+                // Read code values
+                nextchar = 0xff;
+                int charIdx = 0;
+                if (numchars > 0) {
+                    do {
+                        int leapdelta;
+                        HUFF_READNUM(leapdelta)
+                        int count = leapdelta - 3;
+                        do {
+                            unsigned int nc = nextchar + 1;
+                            nextchar = nc & 0xff;
+                            if (leap[nextchar] == 0) {
+                                count--;
+                            }
+                        } while (count != 0);
+                        leap[nextchar] = 1;
+                        codetbl[charIdx] = nextchar;
+                        charIdx++;
+                    } while (charIdx < numchars);
+                }
+            }
+
+            // Fill quicklentbl with 0x40
+            {
+                int loopI = 16;
+                int intval = 0x40404040;
+                int *lptr = reinterpret_cast<int *>(quicklentbl);
+                do {
+                    lptr[0] = intval;
+                    lptr[1] = intval;
+                    lptr[2] = intval;
+                    lptr[3] = intval;
+                    lptr += 4;
+                    loopI--;
+                } while (loopI != 0);
+            }
+
+            // Fill quick decode tables
+            {
+                int bitsIdx = 1;
+                int numbitentries;
+                int nextcode;
+                int nextlen;
+                int idx;
+                unsigned char *codeptr = codetbl;
+                unsigned char *quickcodeptr = quickcodetbl;
+                unsigned char *quicklenptr = quicklentbl;
+                if (mostbits > 0) {
+                    numbitentries = deltatbl[1];
+                    do {
+                        nextcode = 1 << (8 - bitsIdx);
+                        nextlen = bitsIdx + 1;
+                        idx = numbitentries - 1;
+                        if (numbitentries != 0) {
+                            do {
+                                unsigned char code = *codeptr++;
+                                unsigned int len = bitsIdx;
+                                if (code == clue) {
+                                    cluelen = bitsIdx;
+                                    len = 0x60;
+                                }
+                                int j = 0;
+                                idx--;
+                                if (nextcode > 0) {
+                                    do {
+                                        *quickcodeptr++ = code;
+                                        *quicklenptr++ = static_cast<unsigned char>(len);
+                                        j++;
+                                    } while (j < nextcode);
+                                }
+                            } while (idx != -1);
+                        }
+                    } while (nextlen <= mostbits && (numbitentries = deltatbl[nextlen], bitsIdx = nextlen, nextlen < 9));
+                }
+            }
+
+            // Main decode loop
+            {
+                unsigned char *quickcodeptr;
+                unsigned char *quicklenptr;
+
+            nextloop:
+                unsigned int len = quicklentbl[bits >> 24];
+                unsigned char *dst = qd;
+                for (bitsleft = bitsleft - len; qd = dst, bitsleft > -1; bitsleft = bitsleft - len) {
+                    unsigned int idx = bits >> 24;
+                    bits <<= len;
+                    unsigned int idx2 = bits >> 24;
+                    *dst = quickcodetbl[idx];
+                    qd = dst + 1;
+                    len = quicklentbl[idx2];
+                    bitsleft -= len;
+                    if (bitsleft < 0)
+                        break;
+
+                    bits <<= len;
+                    idx = bits >> 24;
+                    *qd = quickcodetbl[idx2];
+                    qd = dst + 2;
+                    len = quicklentbl[idx];
+                    bitsleft -= len;
+                    if (bitsleft < 0)
+                        break;
+
+                    bits <<= len;
+                    idx2 = bits >> 24;
+                    *qd = quickcodetbl[idx];
+                    qd = dst + 3;
+                    len = quicklentbl[idx2];
+                    bitsleft -= len;
+                    if (bitsleft < 0)
+                        break;
+
+                    bits <<= len;
+                    *qd = quickcodetbl[idx2];
+                    dst = dst + 4;
+                    len = quicklentbl[bits >> 24];
+                }
+
+                // Refill after decode loop
+                bitsleft += 16;
+                if (bitsleft > -1) {
+                    *qd = quickcodetbl[bits >> 24];
+                    qd++;
+                    bitsunshifted = (bitsunshifted << 8) | *qs;
+                    bitsunshifted = (bitsunshifted << 8) | *(qs + 1);
+                    qs += 2;
+                    bits = bitsunshifted << static_cast<unsigned int>(16 - bitsleft);
+                    goto nextloop;
+                }
+
+                // Slow decode (len > 8 bits)
+                {
+                    unsigned char code;
+                    unsigned int slowlen;
+                    if (len != 0x60) {
+                        slowlen = 8;
+                        do {
+                            slowlen++;
+                        } while (cmptbl[slowlen] <= (bits >> 16));
+                    } else {
+                        slowlen = cluelen;
+                    }
+
+                    unsigned int codeIdx = bits >> (32 - slowlen);
+                    bits <<= slowlen;
+                    bitsleft = bitsleft + (len - 16) - slowlen;
+                    code = codetbl[codeIdx - bitnumtbl[slowlen]];
+
+                    if (code != clue) {
+                        if (bitsleft < 0) {
+                            HUFF_REFILL()
+                        }
+                        if (code != clue) {
+                            *qd = code;
+                            qd++;
+                            bitsleft = bitsleft;
+                            goto nextloop;
+                        }
+                    }
+
+                    // Escape code handling
+                    if (bitsleft < 0) {
+                        HUFF_REFILL()
+                    }
+
+                    // Read run length
+                    {
+                        int runlen;
+                        HUFF_READNUM(runlen)
+
+                        if (runlen != 0) {
+                            // RLE: copy previous byte
+                            unsigned char *d = qd;
+                            unsigned char *dest = qd + runlen;
+                            unsigned char prev = *(qd - 1);
+                            do {
+                                *qd = prev;
+                                qd++;
+                            } while (qd < dest);
+                            goto nextloop;
+                        }
+
+                        // End of data marker
+                        bitsleft--;
+                        int shiftedBits = bits << 1;
+                        if (bitsleft < 0) {
+                            bitsunshifted = (bitsunshifted << 8) | *qs;
+                            bitsunshifted = (bitsunshifted << 8) | *(qs + 1);
+                            qs += 2;
+                            shiftedBits = bitsunshifted << static_cast<unsigned int>(-bitsleft);
+                            bitsleft += 16;
+                        }
+                        if (static_cast<int>(bits) >= 0) {
+                            // Read raw byte
+                            unsigned int t;
+                            code = static_cast<unsigned char>(shiftedBits >> 24);
+                            bitsleft -= 8;
+                            bits = shiftedBits << 8;
+                            if (bitsleft < 0) {
+                                HUFF_REFILL()
+                            }
+                            *qd = code;
+                            qd++;
+                            goto nextloop;
+                        }
+                    }
+                }
+            }
+
+            // Post-processing
+            {
+                int i;
+                int nextchar;
+                if (type == 0x32fb || type == 0xb2fb) {
+                    unsigned char prev = 0;
+                    unsigned char *end = unpackbuf + ulen;
+                    for (; unpackbuf < end; unpackbuf++) {
+                        prev += *unpackbuf;
+                        *unpackbuf = prev;
+                    }
+                } else if (type == 0x34fb || type == 0xb4fb) {
+                    char delta = 0;
+                    unsigned char accum = 0;
+                    unsigned char *end = unpackbuf + ulen;
+                    for (; unpackbuf < end; unpackbuf++) {
+                        delta += *unpackbuf;
+                        accum += delta;
+                        *unpackbuf = accum;
+                    }
+                }
+            }
+        }
+    }
+
+    return ulen;
 }
 
-int RAWDecompress(unsigned char *pSrc, unsigned char *pDst) {
-    int *header = reinterpret_cast<int *>(pSrc);
-    if (header[0] != 0x57574152) goto done;
-    if (*reinterpret_cast<char *>(&header[1]) == '\x01') goto decode;
-done:
-    return 0;
-decode:
-    memcpy(pDst, &header[4], header[2]);
-    return header[2];
-}
+#undef HUFF_REFILL
+#undef HUFF_READNUM
 
-int HUFF_encode(void *dest, const void *src, int size);
-
-int HUFFDecompress(unsigned char *pSrc, unsigned char *pDst) {
-    int *header = reinterpret_cast<int *>(pSrc);
-    if (header[0] != 0x46465548) goto done;
-    if (*reinterpret_cast<char *>(&header[1]) == '\x01') goto decode;
-done:
-    return 0;
-decode:
-    HUFF_decode(pDst, &header[4]);
-    return header[2];
-}
-
-int HUFFCompress(unsigned char *pSrc, int SrcSize, unsigned char *pDst) {
-    unsigned int *header = reinterpret_cast<unsigned int *>(pDst);
-    header[0] = 0x46465548;
-    *reinterpret_cast<unsigned char *>(&header[1]) = 1;
-    *(reinterpret_cast<unsigned char *>(header) + 5) = 0x10;
-    *reinterpret_cast<unsigned short *>(reinterpret_cast<unsigned char *>(header) + 6) = 0;
-    header[2] = SrcSize;
-    int compressed = HUFF_encode(&header[4], pSrc, SrcSize);
-    header[3] = compressed;
-    return compressed + 0x10;
+void HUFF_decode(void *dest, const void *src) {
+    HUFF_decompress(static_cast<unsigned char *>(const_cast<void *>(src)), static_cast<unsigned char *>(dest));
 }
 
 // total size: 0x31EC
 struct HuffEncodeContext {
-    char qleapcode[256];
-    unsigned int count[768];
-    unsigned int bitnum[17];
-    unsigned int repbits[252];
-    unsigned int repbase[252];
-    unsigned int tree_left[520];
-    unsigned int tree_right[520];
-    unsigned int bitsarray[256];
-    unsigned int patternarray[256];
-    unsigned int masks[17];
-    unsigned int packbits;
-    unsigned int workpattern;
-    unsigned char *buffer;
-    unsigned char *bufptr;
-    int flen;
-    unsigned int csum;
-    unsigned int mostbits;
-    unsigned int codes;
-    unsigned int chainused;
-    unsigned int clue;
-    unsigned int dclue;
-    unsigned int clues;
-    unsigned int dclues;
-    int mindelta;
-    int maxdelta;
-    unsigned int plen;
-    unsigned int ulen;
-    unsigned int sortptr[256];
+    char qleapcode[256];            // offset 0x0, size 0x100
+    unsigned int count[768];        // offset 0x100, size 0xC00
+    unsigned int bitnum[17];        // offset 0xD00, size 0x44
+    unsigned int repbits[252];      // offset 0xD44, size 0x3F0
+    unsigned int repbase[252];      // offset 0x1134, size 0x3F0
+    unsigned int tree_left[520];    // offset 0x1524, size 0x820
+    unsigned int tree_right[520];   // offset 0x1D44, size 0x820
+    unsigned int bitsarray[256];    // offset 0x2564, size 0x400
+    unsigned int patternarray[256]; // offset 0x2964, size 0x400
+    unsigned int masks[17];         // offset 0x2D64, size 0x44
+    unsigned int packbits;          // offset 0x2DA8, size 0x4
+    unsigned int workpattern;       // offset 0x2DAC, size 0x4
+    unsigned char *buffer;          // offset 0x2DB0, size 0x4
+    unsigned char *bufptr;          // offset 0x2DB4, size 0x4
+    int flen;                       // offset 0x2DB8, size 0x4
+    unsigned int csum;              // offset 0x2DBC, size 0x4
+    unsigned int mostbits;          // offset 0x2DC0, size 0x4
+    unsigned int codes;             // offset 0x2DC4, size 0x4
+    unsigned int chainused;         // offset 0x2DC8, size 0x4
+    unsigned int clue;              // offset 0x2DCC, size 0x4
+    unsigned int dclue;             // offset 0x2DD0, size 0x4
+    unsigned int clues;             // offset 0x2DD4, size 0x4
+    unsigned int dclues;            // offset 0x2DD8, size 0x4
+    int mindelta;                   // offset 0x2DDC, size 0x4
+    int maxdelta;                   // offset 0x2DE0, size 0x4
+    unsigned int plen;              // offset 0x2DE4, size 0x4
+    unsigned int ulen;              // offset 0x2DE8, size 0x4
+    unsigned int sortptr[256];      // offset 0x2DEC, size 0x400
 };
 
 // total size: 0x8
@@ -460,17 +738,16 @@ static void HUFF_writebits(HuffEncodeContext *ctx, HUFFMemStruct *mem, unsigned 
         HUFF_writebits(ctx, mem, pattern >> 0x10, bits - 0x10);
         HUFF_writebits(ctx, mem, pattern, 0x10);
     } else {
-        unsigned int total = ctx->packbits + bits;
-        ctx->packbits = total;
-        ctx->workpattern = ctx->workpattern + ((pattern & ctx->masks[bits]) << (0x18 - total));
-        while (total > 7) {
+        ctx->packbits = ctx->packbits + bits;
+        ctx->workpattern = ctx->workpattern + ((pattern & ctx->masks[bits]) << (0x18 - ctx->packbits));
+        while (ctx->packbits > 7) {
+            // TODO get rid of temporary
             unsigned short hw = *reinterpret_cast<unsigned short *>(&ctx->workpattern);
             mem->ptr[mem->len] = static_cast<char>(hw);
             mem->len = mem->len + 1;
             ctx->workpattern = ctx->workpattern << 8;
-            total = ctx->packbits - 8;
+            ctx->packbits -= 8;
             ctx->plen = ctx->plen + 1;
-            ctx->packbits = total;
         }
     }
 }
@@ -484,21 +761,22 @@ static void HUFF_treechase(HuffEncodeContext *ctx, unsigned int node, unsigned i
     }
 }
 
+// TODO UNSOLVED, mostly wrong
 static void HUFF_maketree(HuffEncodeContext *ctx) {
-    unsigned int freq[258];
-    unsigned int index[259];
-
-    freq[0] = 0;
     unsigned int j = 0;
     unsigned int n = 1;
+    unsigned int list_count[258];
+    unsigned int list_ptr[258];
+
+    list_count[0] = 0;
     do {
         ctx->bitsarray[j] = 99;
         unsigned int c = ctx->count[j];
         unsigned int next = n;
         if (c != 0) {
-            freq[n] = c;
+            list_count[n] = c;
             next = n + 1;
-            index[n] = j;
+            list_ptr[n] = j;
         }
         j = j + 1;
         n = next;
@@ -506,21 +784,21 @@ static void HUFF_maketree(HuffEncodeContext *ctx) {
     ctx->codes = n - 1;
     unsigned int treeNode = 0x100;
     if (n < 3) {
-        HUFF_treechase(ctx, index[n - 1], 1);
+        HUFF_treechase(ctx, list_ptr[n - 1], 1);
     } else {
         unsigned int top;
         do {
             unsigned int prevTree = treeNode;
             top = n - 1;
             n = n - 2;
-            unsigned int topFreq = freq[top];
+            unsigned int topFreq = list_count[top];
             unsigned int topIdx = top;
-            unsigned int secFreq = freq[n];
+            unsigned int secFreq = list_count[n];
             unsigned int secIdx = n;
-            if (topFreq < freq[n]) {
-                topFreq = freq[n];
+            if (topFreq < list_count[n]) {
+                topFreq = list_count[n];
                 topIdx = n;
-                secFreq = freq[top];
+                secFreq = list_count[top];
                 secIdx = top;
             }
             unsigned int smallest = secFreq;
@@ -528,32 +806,33 @@ static void HUFF_maketree(HuffEncodeContext *ctx) {
                 while (true) {
                     secFreq = smallest;
                     n = n - 1;
-                    smallest = freq[n];
+                    smallest = list_count[n];
                     while (topFreq < smallest) {
                         n = n - 1;
-                        smallest = freq[n];
+                        smallest = list_count[n];
                     }
-                    if (n == 0) break;
+                    if (n == 0)
+                        break;
                     topIdx = n;
                     smallest = secFreq;
-                    topFreq = freq[n];
-                    if (freq[n] <= secFreq) {
+                    topFreq = list_count[n];
+                    if (list_count[n] <= secFreq) {
                         topIdx = secIdx;
-                        smallest = freq[n];
+                        smallest = list_count[n];
                         topFreq = secFreq;
                         secIdx = n;
                     }
                 }
             }
-            unsigned int leftNode = index[topIdx];
-            unsigned int rightNode = index[secIdx];
-            freq[topIdx] = topFreq + secFreq;
-            index[topIdx] = prevTree;
+            unsigned int leftNode = list_ptr[topIdx];
+            unsigned int rightNode = list_ptr[secIdx];
+            list_count[topIdx] = topFreq + secFreq;
+            list_ptr[topIdx] = prevTree;
             ctx->tree_left[prevTree] = leftNode;
-            unsigned int savedFreq = freq[top];
+            unsigned int savedFreq = list_count[top];
             ctx->tree_right[prevTree] = rightNode;
-            freq[secIdx] = savedFreq;
-            index[secIdx] = index[top];
+            list_count[secIdx] = savedFreq;
+            list_ptr[secIdx] = list_ptr[top];
             n = top;
             treeNode = prevTree + 1;
         } while (top > 2);
@@ -561,38 +840,92 @@ static void HUFF_maketree(HuffEncodeContext *ctx) {
     }
 }
 
+// UNSOLVED
+static int HUFF_minrep(HuffEncodeContext *ctx, unsigned int value, unsigned int level) {
+    int min;
+    int min1;
+    int use;
+    int newremaining;
+    if (level != 0) {
+        min = HUFF_minrep(ctx, value, level - 1);
+        if (ctx->count[ctx->clue + level] != 0) {
+            use = (value / level);
+            min1 = HUFF_minrep(ctx, value - (use * level), level - 1);
+            min1 += ctx->bitsarray[ctx->clue + level] * use;
+            if (min1 < min) {
+                min = min1;
+            }
+        }
+    } else {
+        min = 0;
+        if (value != 0) {
+            min = 0x14;
+            if (value < 0xfc) {
+                min = ctx->bitsarray[ctx->clue] + ctx->repbits[value] * 2 + 3;
+            }
+        }
+    }
+    return min;
+}
+
 static void HUFF_writenum(HuffEncodeContext *ctx, HUFFMemStruct *mem, unsigned int value) {
-    int bits;
-    int base;
+    int dphuf;
+    int dbase;
     if (value < 0xfc) {
-        bits = ctx->repbits[value];
-        base = ctx->repbase[value];
-    } else if (value < 0x1fc) { bits = 6; base = 0xfc; }
-    else if (value < 0x3fc) { bits = 7; base = 0x1fc; }
-    else if (value < 0x7fc) { bits = 8; base = 0x3fc; }
-    else if (value < 0xffc) { bits = 9; base = 0x7fc; }
-    else if (value < 0x1ffc) { bits = 10; base = 0xffc; }
-    else if (value < 0x3ffc) { bits = 0xb; base = 0x1ffc; }
-    else if (value < 0x7ffc) { bits = 0xc; base = 0x3ffc; }
-    else if (value < 0xfffc) { bits = 0xd; base = 0x7ffc; }
-    else if (value < 0x1fffc) { bits = 0xe; base = 0xfffc; }
-    else if (value < 0x3fffc) { bits = 0xf; base = 0x1fffc; }
-    else if (value < 0x80000) { bits = 0x10; base = 0x3fffc; }
-    else if (value < 0x100000) { bits = 0x11; base = 0x80000; }
-    else { bits = 0x12; base = 0x100000; }
-    HUFF_writebits(ctx, mem, 1, bits + 1);
-    HUFF_writebits(ctx, mem, value - base, bits + 2);
+        dphuf = ctx->repbits[value];
+        dbase = ctx->repbase[value];
+    } else if (value < 0x1fc) {
+        dphuf = 6;
+        dbase = 0xfc;
+    } else if (value < 0x3fc) {
+        dphuf = 7;
+        dbase = 0x1fc;
+    } else if (value < 0x7fc) {
+        dphuf = 8;
+        dbase = 0x3fc;
+    } else if (value < 0xffc) {
+        dphuf = 9;
+        dbase = 0x7fc;
+    } else if (value < 0x1ffc) {
+        dphuf = 10;
+        dbase = 0xffc;
+    } else if (value < 0x3ffc) {
+        dphuf = 0xb;
+        dbase = 0x1ffc;
+    } else if (value < 0x7ffc) {
+        dphuf = 0xc;
+        dbase = 0x3ffc;
+    } else if (value < 0xfffc) {
+        dphuf = 0xd;
+        dbase = 0x7ffc;
+    } else if (value < 0x1fffc) {
+        dphuf = 0xe;
+        dbase = 0xfffc;
+    } else if (value < 0x3fffc) {
+        dphuf = 0xf;
+        dbase = 0x1fffc;
+    } else if (value < 0x80000) {
+        dphuf = 0x10;
+        dbase = 0x3fffc;
+    } else if (value < 0x100000) {
+        dphuf = 0x11;
+        dbase = 0x80000;
+    } else {
+        dphuf = 0x12;
+        dbase = 0x100000;
+    }
+    HUFF_writebits(ctx, mem, 1, dphuf + 1);
+    HUFF_writebits(ctx, mem, value - dbase, dphuf + 2);
 }
 
 static void HUFF_writeexp(HuffEncodeContext *ctx, HUFFMemStruct *mem, unsigned int value) {
-    int idx = ctx->clue * 4;
     HUFF_writebits(ctx, mem, ctx->patternarray[ctx->clue], ctx->bitsarray[ctx->clue]);
     HUFF_writenum(ctx, mem, 0);
     HUFF_writebits(ctx, mem, value, 9);
 }
 
 static void HUFF_writecode(HuffEncodeContext *ctx, HUFFMemStruct *mem, unsigned int code) {
-    if (static_cast<int>(code) == static_cast<int>(ctx->clue)) {
+    if (code == ctx->clue) {
         HUFF_writeexp(ctx, mem, code);
     } else {
         HUFF_writebits(ctx, mem, ctx->patternarray[code], ctx->bitsarray[code]);
@@ -601,135 +934,46 @@ static void HUFF_writecode(HuffEncodeContext *ctx, HUFFMemStruct *mem, unsigned 
 
 static void HUFF_init(HuffEncodeContext *ctx) {
     unsigned int i = 0;
-    do {
+    for (; i < 4; i++) {
         ctx->repbits[i] = 0;
         ctx->repbase[i] = 0;
-        i = i + 1;
-    } while (i < 4);
-    for (; i < 0xc; i = i + 1) {
+    }
+    for (; i < 12; i++) {
         ctx->repbits[i] = 1;
         ctx->repbase[i] = 4;
     }
-    for (; i < 0x1c; i = i + 1) {
+    for (; i < 28; i++) {
         ctx->repbits[i] = 2;
         ctx->repbase[i] = 0xc;
     }
-    for (; i < 0x3c; i = i + 1) {
+    for (; i < 60; i++) {
         ctx->repbits[i] = 3;
         ctx->repbase[i] = 0x1c;
     }
-    for (; i < 0x7c; i = i + 1) {
+    for (; i < 124; i++) {
         ctx->repbits[i] = 4;
         ctx->repbase[i] = 0x3c;
     }
-    if (i < 0xfc) {
-        do {
-            ctx->repbits[i] = 5;
-            ctx->repbase[i] = 0x7c;
-            i = i + 1;
-        } while (i < 0xfc);
+    for (; i < 252; i++) {
+        ctx->repbits[i] = 5;
+        ctx->repbase[i] = 0x7c;
     }
 }
 
-static int HUFF_minrep(HuffEncodeContext *ctx, unsigned int value, unsigned int level) {
-    int result;
-    if (level != 0) {
-        result = HUFF_minrep(ctx, value, level - 1);
-        if (ctx->count[ctx->clue + level] != 0) {
-            int alt = HUFF_minrep(ctx, value - (value / level) * level, level - 1);
-            alt = alt + ctx->bitsarray[ctx->clue + level] * static_cast<int>(value / level);
-            if (alt < result) {
-                result = alt;
-            }
-        }
-    } else {
-        result = 0;
-        if (value != 0) {
-            result = 0x14;
-            if (value < 0xfc) {
-                result = ctx->bitsarray[ctx->clue] + ctx->repbits[value] * 2 + 3;
-            }
-        }
-    }
-    return result;
-}
-
-static void HUFF_analysis(HuffEncodeContext *EC, unsigned int opt, unsigned int chainsaw);
-static void HUFF_pack(HuffEncodeContext *EC, HUFFMemStruct *dest, unsigned int opt);
-
-static int HUFF_packfile(HuffEncodeContext *ctx, HUFFMemStruct *src, HUFFMemStruct *dst, int uncompressedSize) {
-    ctx->packbits = 0;
-    ctx->workpattern = 0;
-    ctx->masks[0] = 0;
-    unsigned int i = 1;
-    do {
-        int prev = i - 1;
-        ctx->masks[i] = ctx->masks[prev] * 2 + 1;
-        i = i + 1;
-    } while (i < 0x11);
-    HUFF_init(ctx);
-    int bufStart = *reinterpret_cast<int *>(&src->ptr);
-    ctx->buffer = reinterpret_cast<unsigned char *>(bufStart);
-    int bufLen = src->len;
-    ctx->flen = bufLen;
-    ctx->ulen = bufLen;
-    ctx->bufptr = reinterpret_cast<unsigned char *>(bufStart + bufLen);
-    dst->len = 0;
-    ctx->packbits = 0;
-    ctx->workpattern = 0;
-    ctx->plen = 0;
-    HUFF_analysis(ctx, 0x39, 0xf);
-    if (uncompressedSize >= 0x1000000) {
-        if (uncompressedSize == src->len) {
-            HUFF_writebits(ctx, dst, 0xb0fb, 0x10);
-            HUFF_writebits(ctx, dst, uncompressedSize, 0x20);
-        } else {
-            HUFF_writebits(ctx, dst, 0xb1fb, 0x10);
-            HUFF_writebits(ctx, dst, uncompressedSize, 0x20);
-            HUFF_writebits(ctx, dst, src->len, 0x20);
-        }
-    } else {
-        if (uncompressedSize == src->len) {
-            HUFF_writebits(ctx, dst, 0x30fb, 0x10);
-            HUFF_writebits(ctx, dst, src->len, 0x18);
-        } else {
-            HUFF_writebits(ctx, dst, 0x31fb, 0x10);
-            HUFF_writebits(ctx, dst, uncompressedSize, 0x18);
-            HUFF_writebits(ctx, dst, src->len, 0x18);
-        }
-    }
-    HUFF_pack(ctx, dst, 0x39);
-    return dst->len;
-}
-
-int HUFF_encode(void *dest, const void *src, int size) {
-    int result = 0;
-    HuffEncodeContext *ctx = static_cast<HuffEncodeContext *>(bMalloc(0x31ec, 0));
-    if (ctx != nullptr) {
-        HUFFMemStruct srcMem;
-        srcMem.ptr = const_cast<char *>(static_cast<const char *>(src));
-        srcMem.len = size;
-        HUFFMemStruct dstMem;
-        dstMem.ptr = static_cast<char *>(dest);
-        dstMem.len = size;
-        result = HUFF_packfile(ctx, &srcMem, &dstMem, size);
-        bFree(ctx);
-    }
-    return result;
-}
-
+// UNSOLVED, mostly wrong
 static void HUFF_analysis(HuffEncodeContext *EC, unsigned int opt, unsigned int chainsaw) {
+    unsigned char *bptr1;
+    unsigned char *bptr2;
     unsigned int count2[256];
     unsigned int dcount[256];
 
     unsigned int i = 0;
-    do {
+    for (; i < 0x300; i++) {
         EC->count[i] = 0;
-        i = i + 1;
-    } while (i < 0x300);
+    }
 
-    unsigned char *bptr1 = EC->buffer;
-    unsigned char *bptr2 = EC->bufptr;
+    bptr1 = EC->buffer;
+    bptr2 = EC->bufptr;
     unsigned int i1 = 0x100;
     int di = 0;
     unsigned int thres = ~opt;
@@ -748,7 +992,8 @@ static void HUFF_analysis(HuffEncodeContext *EC, unsigned int opt, unsigned int 
                     limit = bptr2;
                 }
                 do {
-                    if (limit <= nextBptr) break;
+                    if (limit <= nextBptr)
+                        break;
                     i2 = *nextBptr;
                     repn = repn + 1;
                     nextBptr = nextBptr + 1;
@@ -943,7 +1188,8 @@ static void HUFF_analysis(HuffEncodeContext *EC, unsigned int opt, unsigned int 
                 unsigned int cluesVal = EC->clues;
                 int iVar19 = i2 * 4;
                 do {
-                    if (limit <= nextBptr) break;
+                    if (limit <= nextBptr)
+                        break;
                     i2 = *nextBptr;
                     repn = repn + 1;
                     nextBptr = nextBptr + 1;
@@ -1047,20 +1293,23 @@ static void HUFF_analysis(HuffEncodeContext *EC, unsigned int opt, unsigned int 
             }
             i2 = i2 + 1;
         } while (i2 < 0x100);
-        if (maxBits <= chainsaw) break;
+        if (maxBits <= chainsaw)
+            break;
 
         unsigned int ncode = 0;
         unsigned int nbits = EC->bitsarray[0];
-        if (EC->count[0] == 0) goto find_next_nonzero;
+        if (EC->count[0] == 0)
+            goto find_next_nonzero;
         while (chainsaw <= nbits) {
-find_next_nonzero:
+        find_next_nonzero:
             do {
                 ncode = ncode + 1;
-                if (ncode > 0xff) goto find_best_below;
+                if (ncode > 0xff)
+                    goto find_best_below;
             } while (EC->count[ncode] == 0);
             nbits = EC->bitsarray[ncode];
         }
-find_best_below:
+    find_best_below:
         for (; ncode < 0x100; ncode = ncode + 1) {
             if (EC->count[ncode] != 0) {
                 unsigned int curBits = EC->bitsarray[ncode];
@@ -1138,23 +1387,22 @@ find_best_below:
     }
 }
 
+// UNSOLVED, mostly wrong
 static void HUFF_pack(HuffEncodeContext *EC, HUFFMemStruct *dest, unsigned int opt) {
+    unsigned char *bptr1; // r25
+    unsigned char *bptr2; // r0
     HUFF_writebits(EC, dest, EC->clue, 8);
     unsigned int i = 1;
     int curpc = 0;
-    if (EC->mostbits != 0) {
-        do {
-            HUFF_writenum(EC, dest, EC->bitnum[i]);
-            i = i + 1;
-        } while (i <= EC->mostbits);
+    for (; i <= EC->mostbits; i++) {
+        HUFF_writenum(EC, dest, EC->bitnum[i]);
     }
 
     unsigned int ncode = 0;
     unsigned int i1 = 0xff;
-    do {
+    for (; ncode < 256; ncode++) {
         EC->qleapcode[ncode] = 0;
-        ncode = ncode + 1;
-    } while (ncode < 0x100);
+    }
 
     unsigned int sortI = 0;
     ncode = 0xff;
@@ -1178,7 +1426,7 @@ static void HUFF_pack(HuffEncodeContext *EC, HUFFMemStruct *dest, unsigned int o
         EC->clue = 32000;
     }
 
-    unsigned char *bptr2 = EC->bufptr;
+    bptr2 = EC->bufptr;
     if (EC->buffer < bptr2) {
         i1 = 0x100;
         unsigned char *bptr1 = EC->buffer;
@@ -1195,7 +1443,8 @@ static void HUFF_pack(HuffEncodeContext *EC, HUFFMemStruct *dest, unsigned int o
                 unsigned int cluesVal = EC->clues;
                 int iVar5 = ncode * 4;
                 do {
-                    if (limit <= nextBptr) break;
+                    if (limit <= nextBptr)
+                        break;
                     ncode = *nextBptr;
                     repn = repn + 1;
                     nextBptr = nextBptr + 1;
@@ -1284,531 +1533,238 @@ static void HUFF_pack(HuffEncodeContext *EC, HUFFMemStruct *dest, unsigned int o
     HUFF_writebits(EC, dest, 0, 7);
 }
 
-static int ZERO;
+// TODO dwarf and branch merging
+static int HUFF_packfile(HuffEncodeContext *ctx, HUFFMemStruct *src, HUFFMemStruct *dst, int uncompressedSize) {
+    unsigned int i;
+    unsigned int uptype;
+    unsigned int chainsaw;
+    unsigned int opt;
 
-#define HUFF_REFILL() \
-    if (bitsleft < 0) { \
-        bitsunshifted = (bitsunshifted << 8) | *qs; \
-        bitsunshifted = (bitsunshifted << 8) | *(qs + 1); \
-        bits = bitsunshifted << static_cast<unsigned int>(-bitsleft); \
-        qs += 2; \
-        bitsleft += 16; \
+    ctx->packbits = 0;
+    ctx->workpattern = 0;
+    ctx->masks[0] = 0;
+    for (i = 1; i < 0x11; i++) {
+        ctx->masks[i] = (ctx->masks[i - 1] << 1) + 1;
     }
+    HUFF_init(ctx);
+    int bufStart = *reinterpret_cast<int *>(&src->ptr);
+    ctx->buffer = reinterpret_cast<unsigned char *>(bufStart);
 
-#define HUFF_READNUM(dest) \
-    if (static_cast<int>(bits) < 0) { \
-        unsigned int t; \
-        t = bits >> 29; \
-        bitsleft -= 3; \
-        bits <<= 3; \
-        HUFF_REFILL() \
-        dest = t - 4; \
-    } else { \
-        int n; \
-        unsigned int v1; \
-        if ((bits >> 16) == 0) { \
-            n = 2; \
-            do { \
-                dest = -(static_cast<int>(bits) >> 31); \
-                n++; \
-                bits <<= 1; \
-                bitsleft--; \
-                HUFF_REFILL() \
-            } while (dest == 0); \
-        } else { \
-            n = 2; \
-            do { \
-                v1 = bits; \
-                n++; \
-                bits = v1 << 1; \
-            } while (static_cast<int>(bits) >= 0); \
-            bitsleft = bitsleft + 1 - n; \
-            bits = v1 << 2; \
-            if (ZERO != 0) { \
-                bitsleft -= ZERO; \
-                dest = bits >> (32 - ZERO); \
-                bits <<= ZERO; \
-            } \
-            HUFF_REFILL() \
-        } \
-        if (n < 17) { \
-            if (n != 0) { \
-                bitsleft -= n; \
-                dest = bits >> (32 - n); \
-                bits <<= n; \
-            } \
-            HUFF_REFILL() \
-            dest = dest + (1 << n) - 4; \
-        } else { \
-            unsigned int _hi = bits >> (48 - n); \
-            bits = bits << (n - 16); \
-            bitsleft = bitsleft + 16 - n; \
-            HUFF_REFILL() \
-            unsigned int _mid = bits >> 16; \
-            bitsleft -= 16; \
-            bits <<= 16; \
-            HUFF_REFILL() \
-            dest = (_mid | (_hi << 16)) + (1 << n) - 4; \
-        } \
-    }
-
-static int HUFF_decompress(unsigned char *packbuf, unsigned char *unpackbuf) {
-    unsigned int type;
-    unsigned char clue;
-    int ulen = 0;
-    unsigned int cmp;
-    int bitnum = 0;
-    int cluelen = 0;
-    unsigned char *qs = packbuf;
-    unsigned char *qd = unpackbuf;
-    unsigned int bits = 0;
-    unsigned int bitsunshifted = 0;
-    int numbits;
-    int bitsleft;
-    unsigned int v = 0;
-
-    if (qs != 0) {
-
-    bitsleft = -16;
-    if (ZERO != 0) {
-        bitsleft = -16 - ZERO;
-    }
-    bits = 0;
-
-    // Read type (16 bits)
-    HUFF_REFILL()
-    type = bits >> 16;
-    bitsleft -= 16;
-    bits <<= 16;
-    HUFF_REFILL()
-
-    // Read cmp/v based on type flags
-    if (type & 0x8000) {
-        if (type & 0x100) {
-            bits <<= 16;
-            bitsleft -= 16;
-            HUFF_REFILL()
-            bits <<= 16;
-            bitsleft -= 16;
-            HUFF_REFILL()
+    uptype = src->len;
+    ctx->flen = uptype;
+    ctx->ulen = uptype;
+    ctx->bufptr = reinterpret_cast<unsigned char *>(bufStart + uptype);
+    dst->len = 0;
+    ctx->packbits = 0;
+    ctx->workpattern = 0;
+    ctx->plen = 0;
+    HUFF_analysis(ctx, 0x39, 0xf);
+    if (uncompressedSize >= 0x1000000) {
+        if (uncompressedSize == src->len) {
+            HUFF_writebits(ctx, dst, 0xb0fb, 0x10);
+            HUFF_writebits(ctx, dst, uncompressedSize, 0x20);
+        } else {
+            HUFF_writebits(ctx, dst, 0xb1fb, 0x10);
+            HUFF_writebits(ctx, dst, uncompressedSize, 0x20);
+            HUFF_writebits(ctx, dst, src->len, 0x20);
         }
-        v = bits >> 16;
-        type &= ~0x100u;
-        bits <<= 16;
-        bitsleft -= 16;
     } else {
-        if (type & 0x100) {
-            bits <<= 8;
-            bitsleft -= 8;
-            HUFF_REFILL()
-            bits <<= 16;
-            bitsleft -= 16;
-            HUFF_REFILL()
-        }
-        v = bits >> 24;
-        type &= ~0x100u;
-        bits <<= 8;
-        bitsleft -= 8;
-    }
-    HUFF_REFILL()
-
-    // Read ulen (16 bits + upper from v)
-    ulen = bits >> 16;
-    bitsleft -= 16;
-    bits <<= 16;
-    HUFF_REFILL()
-    ulen |= v << 16;
-
-    // Read clue (8 bits)
-    v = bits >> 24;
-    bitsleft -= 8;
-    bits <<= 8;
-    HUFF_REFILL()
-    clue = static_cast<unsigned char>(v);
-
-    // Tree building
-    {
-        int mostbits;
-        int i;
-        int bitnumtbl[16];
-        unsigned int deltatbl[16];
-        unsigned int cmptbl[16];
-        unsigned char codetbl[256];
-        unsigned char quickcodetbl[256];
-        unsigned char quicklentbl[256];
-
-        int numchars = 0;
-        int basecmp = 0;
-        i = 1;
-        do {
-            mostbits = i;
-            bitnumtbl[mostbits] = basecmp * 2 - numchars;
-
-            HUFF_READNUM(bitnum)
-
-            numchars += bitnum;
-            deltatbl[mostbits] = bitnum;
-            basecmp = basecmp * 2 + bitnum;
-            cmp = 0;
-            if (bitnum != 0) {
-                cmp = (basecmp << (16 - mostbits)) & 0xffff;
-            }
-            cmptbl[mostbits] = cmp;
-            i = mostbits + 1;
-        } while (bitnum == 0 || cmp != 0);
-
-        // Set sentinel
-        cmptbl[mostbits] = 0xffffffff;
-
-        // Code table building
-        {
-            signed char leap[256];
-            unsigned char nextchar;
-
-            // Zero leap array
-            {
-                int loopI = 16;
-                int intval = 0;
-                int *lptr = reinterpret_cast<int *>(leap);
-                do {
-                    lptr[0] = intval;
-                    lptr[1] = intval;
-                    lptr[2] = intval;
-                    lptr[3] = intval;
-                    lptr += 4;
-                    loopI--;
-                } while (loopI != 0);
-            }
-
-            // Read code values
-            nextchar = 0xff;
-            int charIdx = 0;
-            if (numchars > 0) {
-                do {
-                    int leapdelta;
-                    HUFF_READNUM(leapdelta)
-                    int count = leapdelta - 3;
-                    do {
-                        unsigned int nc = nextchar + 1;
-                        nextchar = nc & 0xff;
-                        if (leap[nextchar] == 0) {
-                            count--;
-                        }
-                    } while (count != 0);
-                    leap[nextchar] = 1;
-                    codetbl[charIdx] = nextchar;
-                    charIdx++;
-                } while (charIdx < numchars);
-            }
-        }
-
-        // Fill quicklentbl with 0x40
-        {
-            int loopI = 16;
-            int intval = 0x40404040;
-            int *lptr = reinterpret_cast<int *>(quicklentbl);
-            do {
-                lptr[0] = intval;
-                lptr[1] = intval;
-                lptr[2] = intval;
-                lptr[3] = intval;
-                lptr += 4;
-                loopI--;
-            } while (loopI != 0);
-        }
-
-        // Fill quick decode tables
-        {
-            int bitsIdx = 1;
-            int numbitentries;
-            int nextcode;
-            int nextlen;
-            int idx;
-            unsigned char *codeptr = codetbl;
-            unsigned char *quickcodeptr = quickcodetbl;
-            unsigned char *quicklenptr = quicklentbl;
-            if (mostbits > 0) {
-                numbitentries = deltatbl[1];
-                do {
-                    nextcode = 1 << (8 - bitsIdx);
-                    nextlen = bitsIdx + 1;
-                    idx = numbitentries - 1;
-                    if (numbitentries != 0) {
-                        do {
-                            unsigned char code = *codeptr++;
-                            unsigned int len = bitsIdx;
-                            if (code == clue) {
-                                cluelen = bitsIdx;
-                                len = 0x60;
-                            }
-                            int j = 0;
-                            idx--;
-                            if (nextcode > 0) {
-                                do {
-                                    *quickcodeptr++ = code;
-                                    *quicklenptr++ = static_cast<unsigned char>(len);
-                                    j++;
-                                } while (j < nextcode);
-                            }
-                        } while (idx != -1);
-                    }
-                } while (nextlen <= mostbits && (numbitentries = deltatbl[nextlen], bitsIdx = nextlen, nextlen < 9));
-            }
-        }
-
-        // Main decode loop
-        {
-            unsigned char *quickcodeptr;
-            unsigned char *quicklenptr;
-
-        nextloop:
-            unsigned int len = quicklentbl[bits >> 24];
-            unsigned char *dst = qd;
-            for (bitsleft = bitsleft - len; qd = dst, bitsleft > -1; bitsleft = bitsleft - len) {
-                unsigned int idx = bits >> 24;
-                bits <<= len;
-                unsigned int idx2 = bits >> 24;
-                *dst = quickcodetbl[idx];
-                qd = dst + 1;
-                len = quicklentbl[idx2];
-                bitsleft -= len;
-                if (bitsleft < 0) break;
-
-                bits <<= len;
-                idx = bits >> 24;
-                *qd = quickcodetbl[idx2];
-                qd = dst + 2;
-                len = quicklentbl[idx];
-                bitsleft -= len;
-                if (bitsleft < 0) break;
-
-                bits <<= len;
-                idx2 = bits >> 24;
-                *qd = quickcodetbl[idx];
-                qd = dst + 3;
-                len = quicklentbl[idx2];
-                bitsleft -= len;
-                if (bitsleft < 0) break;
-
-                bits <<= len;
-                *qd = quickcodetbl[idx2];
-                dst = dst + 4;
-                len = quicklentbl[bits >> 24];
-            }
-
-            // Refill after decode loop
-            bitsleft += 16;
-            if (bitsleft > -1) {
-                *qd = quickcodetbl[bits >> 24];
-                qd++;
-                bitsunshifted = (bitsunshifted << 8) | *qs;
-                bitsunshifted = (bitsunshifted << 8) | *(qs + 1);
-                qs += 2;
-                bits = bitsunshifted << static_cast<unsigned int>(16 - bitsleft);
-                goto nextloop;
-            }
-
-            // Slow decode (len > 8 bits)
-            {
-                unsigned char code;
-                unsigned int slowlen;
-                if (len != 0x60) {
-                    slowlen = 8;
-                    do {
-                        slowlen++;
-                    } while (cmptbl[slowlen] <= (bits >> 16));
-                } else {
-                    slowlen = cluelen;
-                }
-
-                unsigned int codeIdx = bits >> (32 - slowlen);
-                bits <<= slowlen;
-                bitsleft = bitsleft + (len - 16) - slowlen;
-                code = codetbl[codeIdx - bitnumtbl[slowlen]];
-
-                if (code != clue) {
-                    if (bitsleft < 0) {
-                        HUFF_REFILL()
-                    }
-                    if (code != clue) {
-                        *qd = code;
-                        qd++;
-                        bitsleft = bitsleft;
-                        goto nextloop;
-                    }
-                }
-
-                // Escape code handling
-                if (bitsleft < 0) {
-                    HUFF_REFILL()
-                }
-
-                // Read run length
-                {
-                    int runlen;
-                    HUFF_READNUM(runlen)
-
-                    if (runlen != 0) {
-                        // RLE: copy previous byte
-                        unsigned char *d = qd;
-                        unsigned char *dest = qd + runlen;
-                        unsigned char prev = *(qd - 1);
-                        do {
-                            *qd = prev;
-                            qd++;
-                        } while (qd < dest);
-                        goto nextloop;
-                    }
-
-                    // End of data marker
-                    bitsleft--;
-                    int shiftedBits = bits << 1;
-                    if (bitsleft < 0) {
-                        bitsunshifted = (bitsunshifted << 8) | *qs;
-                        bitsunshifted = (bitsunshifted << 8) | *(qs + 1);
-                        qs += 2;
-                        shiftedBits = bitsunshifted << static_cast<unsigned int>(-bitsleft);
-                        bitsleft += 16;
-                    }
-                    if (static_cast<int>(bits) >= 0) {
-                        // Read raw byte
-                        unsigned int t;
-                        code = static_cast<unsigned char>(shiftedBits >> 24);
-                        bitsleft -= 8;
-                        bits = shiftedBits << 8;
-                        if (bitsleft < 0) {
-                            HUFF_REFILL()
-                        }
-                        *qd = code;
-                        qd++;
-                        goto nextloop;
-                    }
-                }
-            }
-        }
-
-        // Post-processing
-        {
-            int i;
-            int nextchar;
-            if (type == 0x32fb || type == 0xb2fb) {
-                unsigned char prev = 0;
-                unsigned char *end = unpackbuf + ulen;
-                for (; unpackbuf < end; unpackbuf++) {
-                    prev += *unpackbuf;
-                    *unpackbuf = prev;
-                }
-            } else if (type == 0x34fb || type == 0xb4fb) {
-                char delta = 0;
-                unsigned char accum = 0;
-                unsigned char *end = unpackbuf + ulen;
-                for (; unpackbuf < end; unpackbuf++) {
-                    delta += *unpackbuf;
-                    accum += delta;
-                    *unpackbuf = accum;
-                }
-            }
+        if (uncompressedSize == src->len) {
+            HUFF_writebits(ctx, dst, 0x30fb, 0x10);
+            HUFF_writebits(ctx, dst, src->len, 0x18);
+        } else {
+            HUFF_writebits(ctx, dst, 0x31fb, 0x10);
+            HUFF_writebits(ctx, dst, uncompressedSize, 0x18);
+            HUFF_writebits(ctx, dst, src->len, 0x18);
         }
     }
-    }
-
-    return ulen;
+    HUFF_pack(ctx, dst, 0x39);
+    return dst->len;
 }
 
-#undef HUFF_REFILL
-#undef HUFF_READNUM
-
-void HUFF_decode(void *dest, const void *src) {
-    HUFF_decompress(static_cast<unsigned char *>(const_cast<void *>(src)),
-                    static_cast<unsigned char *>(dest));
+int HUFF_encode(void *dest, const void *src, int size) {
+    int plen = 0;
+    HUFFMemStruct infile;
+    HUFFMemStruct outfile;
+    HuffEncodeContext *EC = static_cast<HuffEncodeContext *>(bMalloc(sizeof(HuffEncodeContext), "HuffEncodeContext", 0, 0));
+    if (EC) {
+        infile.ptr = const_cast<char *>(static_cast<const char *>(src));
+        infile.len = size;
+        outfile.ptr = static_cast<char *>(dest);
+        outfile.len = size;
+        plen = HUFF_packfile(EC, &infile, &outfile, size);
+        bFree(EC);
+    }
+    return plen;
 }
 
-// VolumeTree types and functions (compiled as part of LZCompress TU)
-void bEndianSwap16(void *ptr);
-void bEndianSwap32(void *ptr);
-
-struct vAABB {
-    float PositionX;            // offset 0x0
-    float PositionY;            // offset 0x4
-    float PositionZ;            // offset 0x8
-    short ParentIndex;          // offset 0xC
-    short NumChildren;          // offset 0xE
-    float ExtentX;              // offset 0x10
-    float ExtentY;              // offset 0x14
-    float ExtentZ;              // offset 0x18
-    short ChildrenIndicies[10]; // offset 0x1C
-
-    int Contains(float x, float y, float z);
-};
-
-struct vAABBTree {
-    vAABB *NodeArray;   // offset 0x0
-    short NumLeafNodes; // offset 0x4
-    short NumParentNodes; // offset 0x6
-    short TotalNodes;   // offset 0x8
-    short Depth;        // offset 0xA
-    int pad1;           // offset 0xC
-
-    void SwapEndian();
-    vAABB *QueryLeafHelper(vAABB *aabb, float x, float y, float z);
-    vAABB *QueryLeaf(float x, float y, float z);
-};
-
-int vAABB::Contains(float x, float y, float z) {
-    float delta_x = x - PositionX;
-    float delta_y = y - PositionY;
-    float delta_z = z - PositionZ;
-    float ax = bAbs(delta_x);
-    float ex = ExtentX;
-    float ay = bAbs(delta_y);
-    float ey = ExtentY;
-    float az = bAbs(delta_z);
-    float ez = ExtentZ;
-    if (ax >= ex || ay >= ey || az >= ez) {
+int HUFFDecompress(uint8 *pSrc, uint8 *pDst) {
+    LZHeader *header = reinterpret_cast<LZHeader *>(pSrc);
+    unsigned int error;
+    if (header->ID != 0x46465548 || header->Version != 1) {
         return 0;
     }
-    return 1;
+    HUFF_decode(pDst, &header[1]);
+    return header->UncompressedSize;
 }
 
-void vAABBTree::SwapEndian() {
-    bEndianSwap16(&NumLeafNodes);
-    bEndianSwap16(&NumParentNodes);
-    bEndianSwap16(&TotalNodes);
-    bEndianSwap16(&Depth);
-    for (int i = 0; i < TotalNodes; i++) {
-        vAABB *node = &NodeArray[i];
-        bEndianSwap32(&node->PositionX);
-        bEndianSwap32(&node->PositionY);
-        bEndianSwap32(&node->PositionZ);
-        bEndianSwap16(&node->ParentIndex);
-        bEndianSwap16(&node->NumChildren);
-        bEndianSwap32(&node->ExtentX);
-        bEndianSwap32(&node->ExtentY);
-        bEndianSwap32(&node->ExtentZ);
-        for (int j = 0; j < 10; j++) {
-            bEndianSwap16(&node->ChildrenIndicies[j]);
+int HUFFCompress(uint8 *pSrc, int32 SrcSize, uint8 *pDst) {
+    LZHeader *header = reinterpret_cast<LZHeader *>(pDst);
+    header->ID = 0x46465548;
+    header->Version = 1;
+    header->HeaderSize = sizeof(*header);
+    header->Flags = 0;
+    header->UncompressedSize = SrcSize;
+    int compressed = HUFF_encode(&header[1], pSrc, SrcSize);
+    header->CompressedSize = compressed;
+    return compressed + sizeof(*header);
+}
+
+int RAWDecompress(uint8 *pSrc, uint8 *pDst) {
+    LZHeader *header = reinterpret_cast<LZHeader *>(pSrc);
+    if (header->ID != 0x57574152 || header->Version != 1) {
+        return 0;
+    }
+    memcpy(pDst, &header[1], header->UncompressedSize);
+    return header->UncompressedSize;
+}
+
+int RAWCompress(uint8 *pSrc, int32 SrcSize, uint8 *pDst) {
+    LZHeader *header = reinterpret_cast<LZHeader *>(pDst);
+    header->ID = 0x57574152;
+    header->Version = 1;
+    header->HeaderSize = sizeof(*header);
+    header->Flags = 0;
+    header->UncompressedSize = SrcSize;
+    header->CompressedSize = SrcSize;
+    memcpy(&header[1], pSrc, SrcSize);
+    return header->CompressedSize + sizeof(*header);
+}
+
+// UNSOLVED, mostly wrong
+uint32 OldLZDecompress(uint8 *pSrc, uint8 *pDst) {
+    LZHeader *header = reinterpret_cast<LZHeader *>(pSrc);
+    if (!header || !pDst) {
+        return 0;
+    }
+    int packed_size = header->CompressedSize;
+    if (header->ID != 0x504d4f43) {
+        return 0;
+    }
+    unsigned char *src_end = pSrc + packed_size;
+    unsigned char *src = reinterpret_cast<unsigned char *>(&header[1]);
+    unsigned char *threshold = src_end - 0x20;
+    unsigned char *dst = pDst;
+    unsigned int flags = 1;
+    if (*reinterpret_cast<unsigned short *>(pSrc + 6) == 1) {
+        packed_size -= 0x10;
+        memcpy(pDst, src, packed_size);
+        return packed_size;
+    }
+    while (src != src_end) {
+        if (flags == 1) {
+            unsigned char b0 = *src++;
+            unsigned char b1 = *src++;
+            flags = b0 | 0x10000 | static_cast<unsigned int>(b1) << 8;
         }
+        int count = 1;
+        if (src <= threshold) {
+            count = 0x10;
+        }
+        int i = count - 1;
+        if (count != 0) {
+            do {
+                if ((flags & 1) != 0) {
+                    unsigned char byte0 = *src;
+                    unsigned char byte1 = *(src + 1);
+                    src += 2;
+                    unsigned char *ref = dst - (((byte0 & 0xf0) << 4) | static_cast<unsigned int>(byte1));
+                    unsigned int extra = byte0 & 0xf;
+                    *dst = *ref;
+                    ref++;
+                    dst++;
+                    *dst = *ref;
+                    ref++;
+                    dst++;
+                    *dst = *ref;
+                    ref++;
+                    dst++;
+                    if (extra != 0) {
+                        do {
+                            *dst = *ref;
+                            ref++;
+                            dst++;
+                            extra--;
+                        } while (extra != 0);
+                    }
+                } else {
+                    *dst = *src;
+                    src++;
+                    dst++;
+                }
+                flags >>= 1;
+                i--;
+            } while (i != -1);
+        }
+    }
+    return static_cast<int>(dst - pDst);
+}
+
+unsigned int LZGetMaxCompressedSize(unsigned int source_data_size) {
+    return source_data_size * 2 + 0x12;
+}
+
+void LZByteSwapHeader(LZHeader *header) {
+    bPlatEndianSwap(&header->ID);
+    bPlatEndianSwap(&header->Version);
+    bPlatEndianSwap(&header->HeaderSize);
+    bPlatEndianSwap(&header->Flags);
+    bPlatEndianSwap(&header->UncompressedSize);
+    bPlatEndianSwap(&header->CompressedSize);
+}
+
+int32 LZValidHeader(LZHeader *header) {
+    // TODO magic
+    switch (header->ID) {
+        case 0x504d4f43:
+        case 0x46465548:
+        case 0x57574152:
+            return header->Version == 1;
+        case 0x5a4c444a:
+            return header->Version == 2;
+        default:
+            return false;
     }
 }
 
-vAABB *vAABBTree::QueryLeafHelper(vAABB *aabb, float x, float y, float z) {
-    int num_children = aabb->NumChildren;
-    vAABB *root = NodeArray;
-    for (int i = 0; i < num_children; i++) {
-        vAABB *child = &root[aabb->ChildrenIndicies[i]];
-        if (child->Contains(x, y, z)) {
-            if (child->NumChildren <= 0) return child;
-            child = QueryLeafHelper(child, x, y, z);
-            if (child != nullptr) return child;
-        }
+uint32 LZCompress(uint8 *pSrc, uint32 SrcSize, uint8 *pDst) {
+    unsigned int huffSize = HUFFCompress(pSrc, SrcSize, pDst);
+    unsigned int lzSize = JLZCompress(pSrc, SrcSize, pDst);
+    if (huffSize > lzSize) {
+        return lzSize;
     }
-    return nullptr;
+    if (huffSize > SrcSize + sizeof(LZHeader)) {
+        return RAWCompress(pSrc, SrcSize, pDst);
+    }
+    return HUFFCompress(pSrc, SrcSize, pDst);
 }
 
-vAABB *vAABBTree::QueryLeaf(float x, float y, float z) {
-    vAABB *root = NodeArray;
-    if (root == nullptr) return nullptr;
-    if (!root->Contains(x, y, z)) return nullptr;
-    if (root->NumChildren <= 0) return root;
-    return QueryLeafHelper(root, x, y, z);
+unsigned int LZDecompress(uint8 *pSrc, uint8 *pDst) {
+    LZHeader *header = reinterpret_cast<LZHeader *>(pSrc);
+    if (!header || !pDst) {
+        return 0;
+    }
+    // TODO magic
+    switch (header->ID) {
+        case 0x57574152:
+            return RAWDecompress(pSrc, pDst);
+        case 0x46465548:
+            return HUFFDecompress(pSrc, pDst);
+        case 0x5a4c444a:
+            return JLZDecompress(pSrc, pDst);
+        case 0x504d4f43:
+            return OldLZDecompress(pSrc, pDst);
+        default:
+            return 0;
+    }
 }
