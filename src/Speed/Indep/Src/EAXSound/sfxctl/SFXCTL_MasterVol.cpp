@@ -35,22 +35,30 @@ void SFXCTL_MasterVol::InitSFX() { SFXCTL::InitSFX(); }
 
 void SFXCTL_MasterVol::UpdateParams(float t) {
     (void)t;
-    const char *eaxSound = static_cast<const char *>(static_cast<const void *>(g_pEAXSound));
-    AudioSettings *audioSettings = *static_cast<AudioSettings *const *>(static_cast<const void *>(eaxSound + 0x34));
-
-    if (audioSettings != nullptr) {
-        float fMasterVol = audioSettings->MasterVol;
-        int nvolindex = static_cast<int>(fMasterVol * 32767.0f);
-        int nmastervol = NFSMixShape::GetCurveOutput(NFSMixShape::SHAPE_UP_EQPWR_SQ, nvolindex, false);
+    if (g_pEAXSound->GetCurrentAudioSettings() != nullptr) {
+        int nvolindex = static_cast<int>(g_pEAXSound->GetCurrentAudioSettings()->MasterVol * 32767.0f);
+        int nmastervol = NFSMixShape::GetCurveOutput(static_cast<NFSMixShape::eMIXTABLEID>(1), nvolindex, false);
         float fvol = static_cast<float>(nmastervol) * 3.051851e-05f;
         int nvol;
 
-        SetDMIX_Input(0, static_cast<int>((1.0f - audioSettings->MasterVol * audioSettings->FEMusicVol * fvol) * 32767.0f));
-        SetDMIX_Input(1, static_cast<int>((1.0f - audioSettings->MasterVol * audioSettings->IGMusicVol * fvol) * 32767.0f));
-        SetDMIX_Input(2, static_cast<int>((1.0f - audioSettings->MasterVol * audioSettings->SpeechVol * fvol) * 32767.0f));
-        SetDMIX_Input(3, static_cast<int>((1.0f - audioSettings->MasterVol * audioSettings->SoundEffectsVol * fvol) * 32767.0f));
-        SetDMIX_Input(4, static_cast<int>((1.0f - audioSettings->MasterVol * audioSettings->CarVol * fvol) * 32767.0f));
-        nvol = static_cast<int>((1.0f - audioSettings->MasterVol * audioSettings->CarVol * fvol) * 32767.0f);
+        SetDMIX_Input(0, static_cast<int>((1.0f - g_pEAXSound->GetCurrentAudioSettings()->MasterVol *
+                                                   g_pEAXSound->GetCurrentAudioSettings()->FEMusicVol * fvol) *
+                                          32767.0f));
+        SetDMIX_Input(1, static_cast<int>((1.0f - g_pEAXSound->GetCurrentAudioSettings()->MasterVol *
+                                                   g_pEAXSound->GetCurrentAudioSettings()->IGMusicVol * fvol) *
+                                          32767.0f));
+        SetDMIX_Input(2, static_cast<int>((1.0f - g_pEAXSound->GetCurrentAudioSettings()->MasterVol *
+                                                   g_pEAXSound->GetCurrentAudioSettings()->SpeechVol * fvol) *
+                                          32767.0f));
+        SetDMIX_Input(3, static_cast<int>((1.0f - g_pEAXSound->GetCurrentAudioSettings()->MasterVol *
+                                                   g_pEAXSound->GetCurrentAudioSettings()->SoundEffectsVol * fvol) *
+                                          32767.0f));
+        SetDMIX_Input(4, static_cast<int>((1.0f - g_pEAXSound->GetCurrentAudioSettings()->MasterVol *
+                                                   g_pEAXSound->GetCurrentAudioSettings()->CarVol * fvol) *
+                                          32767.0f));
+        nvol = static_cast<int>((1.0f - g_pEAXSound->GetCurrentAudioSettings()->MasterVol *
+                                          g_pEAXSound->GetCurrentAudioSettings()->CarVol * fvol) *
+                                32767.0f);
         SetDMIX_Input(5, nvol);
     }
 
