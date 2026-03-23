@@ -917,6 +917,7 @@ CarRenderInfo::CarRenderInfo(RideInfo *ride_info)
         for (int lod = this->mMinLodLevel; lod <= this->mMaxLodLevel; lod++) {
             eModel *smooth_normal_models[0x4C];
 
+            bMemSet(smooth_normal_models, 0, sizeof(smooth_normal_models));
             for (int slot = 0; slot < 0x4C; slot++) {
                 smooth_normal_models[slot] = this->mCarPartModels[slot][0][lod].GetModel();
             }
