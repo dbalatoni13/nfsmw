@@ -1,24 +1,35 @@
 #include "Sun.hpp"
 #include "Scenery.hpp"
+#include "World.hpp"
 #include "Speed/Indep/Src/Camera/Camera.hpp"
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
+#include "Speed/Indep/Src/Ecstasy/Texture.hpp"
 #include "Speed/Indep/Src/Ecstasy/eMath.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
+#include "Speed/Indep/bWare/Inc/bWare.hpp"
+#include "Speed/Indep/bWare/Inc/Strings.hpp"
 
 extern unsigned int FrameMallocFailed;
 extern unsigned int FrameMallocFailAmount;
 extern short SpecularOffset;
 extern unsigned short matAng_33578;
-extern int DrawSky;
-extern int DrawSkyEnvMap;
-extern int deblayer[5];
-extern eModel SkySpecularModel;
-extern eModel SkydomeModel;
+int DrawSky = 1;
+int DrawSkyEnvMap = 1;
+int deblayer[5] = {1, 1, 1, 1, 1};
+float skylayer[5][8] = {
+    {1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f},
+    {1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f},
+    {1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f},
+    {1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f},
+    {1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f},
+};
+eModel SkySpecularModel;
+eModel SkydomeModel;
 extern bVector3 SunPos;
 extern float SunPosY;
 extern float WorldTimeElapsed;
-extern float MainSkyScale;
+float MainSkyScale = 1.0f;
 extern float lbl_8040B278;
 extern float lbl_8040B27C;
 extern float lbl_8040B280;
@@ -29,6 +40,7 @@ extern float lbl_8040B290;
 extern float lbl_8040B294;
 extern float lbl_8040B298;
 extern float lbl_8040B29C;
+extern float lbl_8040B274;
 extern float lbl_8040B0FC;
 extern float lbl_8040B108;
 extern float lbl_8040B10C;
@@ -38,11 +50,48 @@ extern float lbl_8040B2A8;
 extern float lbl_8040B2AC;
 extern float lbl_8040B2B0;
 extern float lbl_8040B2B4;
+extern float lbl_8040B2B8;
+extern float lbl_8040B2BC;
+extern char lbl_8040B110[];
+extern char lbl_8040B128[];
+extern char lbl_8040B13C[];
+extern char lbl_8040B154[];
+extern char lbl_8040B170[];
+extern char lbl_8040B198[];
+
+float MinSkySpecular = 0.0f;
+float MaxSkySpecular = 1.0f;
+float SkyRenderForceOvercast = 0.0f;
+unsigned int BaseSkyHash[2];
+unsigned int SkyHash[10];
+TextureInfo *CurrentSkyTextures[10];
+void (*UserSkyLoadCallback)(int) = 0;
+int UserSkyLoadCallbackParam;
+int bSkyTexturesLoaded = 0;
+eReplacementTextureTable SKYtextable[2];
+
+static bMatrix4 MakeIdentityMatrix() {
+    bMatrix4 matrix;
+    PSMTX44Identity(*reinterpret_cast<Mtx44 *>(&matrix));
+    return matrix;
+}
+
+static bMatrix4 MakeReflectedIdentityMatrix() {
+    bMatrix4 matrix = MakeIdentityMatrix();
+    matrix.v2.z = -1.0f;
+    return matrix;
+}
+
+bMatrix4 SkydomeLocalWorld = MakeIdentityMatrix();
+bMatrix4 SkydomeLocalReflectedWorld = MakeReflectedIdentityMatrix();
+bMatrix4 SkySpecularLocalWorld = MakeReflectedIdentityMatrix();
 
 void GetSunPos(eView *view, float *x, float *y, float *z);
 eSolid *eFindSolid(unsigned int name_hash);
 SceneryInstance *FindSceneryInstance(unsigned int scenery_name_hash);
 void *FindSceneryInfo(unsigned int scenery_name_hash);
+void eLoadStreamingTexture(unsigned int *name_hash_table, int num_hashes, void (*callback)(unsigned int), unsigned int param0, int memory_pool_num);
+void eUnloadStreamingTexture(unsigned int *name_hash_table, int num_hashes);
 
 enum SKY_LAYER {
     SKY_LAYER_BLUE = 0,
@@ -53,6 +102,7 @@ enum SKY_LAYER {
     SKY_NUM_LAYERS = 5,
 };
 
+void SkyLoadCallback(unsigned int param);
 void ReplaceSkyTextures(SKY_LAYER layer);
 
 namespace {
@@ -271,4 +321,117 @@ void StuffSkyLayer(eView *view, SKY_LAYER layer) {
             }
         }
     }
+}
+
+void RefreshCurrentSkyTextures() {
+    for (int n = 0; n < 10; n++) {
+        CurrentSkyTextures[n] = GetTextureInfo(SkyHash[n], 1, 0);
+    }
+}
+
+void InitSkyHash(void (*callback)(int), int callback_param) {
+    if (bSkyTexturesLoaded == 0) {
+        eTimeOfDay time_of_day;
+
+        bSkyTexturesLoaded = 1;
+        UserSkyLoadCallback = callback;
+        UserSkyLoadCallbackParam = callback_param;
+        time_of_day = GetCurrentTimeOfDay();
+        bMemSet(SkyHash, 0, 0x28);
+        BaseSkyHash[0] = bStringHash(lbl_8040B110);
+        BaseSkyHash[1] = bStringHash(lbl_8040B128);
+
+        if (time_of_day == eTOD_MIDDAY) {
+            SkyHash[0] = bStringHash(lbl_8040B13C);
+            SkyHash[1] = bStringHash(lbl_8040B128);
+            SkyHash[2] = bStringHash(lbl_8040B110);
+            SkyHash[3] = bStringHash(lbl_8040B128);
+            SkyHash[4] = bStringHash(lbl_8040B154);
+            SkyHash[5] = bStringHash(lbl_8040B170);
+            SkyHash[6] = bStringHash(lbl_8040B198);
+            SkyHash[7] = bStringHash(lbl_8040B198 + 0x18);
+            SkyHash[8] = bStringHash(lbl_8040B198 + 0x30);
+            SkyHash[9] = bStringHash(lbl_8040B198 + 0x48);
+        } else {
+            SkyHash[0] = bStringHash(lbl_8040B198 + 0x60);
+            SkyHash[1] = bStringHash(lbl_8040B198 + 0x78);
+            SkyHash[2] = bStringHash(lbl_8040B198 + 0x90);
+            SkyHash[3] = bStringHash(lbl_8040B198 + 0x78);
+            SkyHash[4] = bStringHash(lbl_8040B198 + 0xA8);
+            SkyHash[5] = bStringHash(lbl_8040B198 + 0xC0);
+            SkyHash[6] = bStringHash(lbl_8040B198 + 0xC0);
+            SkyHash[7] = bStringHash(lbl_8040B198 + 0xC0);
+            SkyHash[8] = bStringHash(lbl_8040B198 + 0xC0);
+            SkyHash[9] = bStringHash(lbl_8040B198 + 0xC0);
+        }
+
+        eLoadStreamingTexture(SkyHash, 10, SkyLoadCallback, 0, 0);
+    }
+}
+
+void SkyLoadCallback(unsigned int param) {
+    RefreshCurrentSkyTextures();
+    UserSkyLoadCallback(UserSkyLoadCallbackParam);
+    UserSkyLoadCallback = 0;
+}
+
+void NotifySkyLoader() {
+    SkyInitModel(&SkydomeModel, &SkydomeLocalWorld, 0xBE43EDBB);
+    SkyInitModel(&SkySpecularModel, &SkySpecularLocalWorld, 0x90F70174);
+    SkySpecularLocalWorld.v2.z = -1.0f;
+    PSMTX44Copy(*reinterpret_cast<Mtx44 *>(&SkydomeLocalWorld), *reinterpret_cast<Mtx44 *>(&SkydomeLocalReflectedWorld));
+    SkydomeLocalReflectedWorld.v2.z = -1.0f;
+}
+
+void UnloadSkyTextures() {
+    if (bSkyTexturesLoaded != 0) {
+        eUnloadStreamingTexture(SkyHash, 10);
+        bSkyTexturesLoaded = 0;
+    }
+}
+
+void NotifySkyUnloader() {
+    SkydomeModel.UnInit();
+    PSMTX44Identity(*reinterpret_cast<Mtx44 *>(&SkydomeLocalWorld));
+    SkySpecularModel.UnInit();
+    PSMTX44Identity(*reinterpret_cast<Mtx44 *>(&SkySpecularLocalWorld));
+}
+
+void ReplaceSkyTextures(SKY_LAYER layer) {
+    SKYtextable[0].hOldNameHash = BaseSkyHash[0];
+    SKYtextable[1].hOldNameHash = BaseSkyHash[1];
+
+    if (SkyHash[layer * 2] != SKYtextable[0].hNewNameHash) {
+        SKYtextable[0].SetNewNameHash(SkyHash[layer * 2]);
+    }
+
+    if (SkyHash[layer * 2 + 1] != SKYtextable[1].hNewNameHash) {
+        SKYtextable[1].SetNewNameHash(SkyHash[layer * 2 + 1]);
+    }
+
+    SKYtextable[0].pTextureInfo = reinterpret_cast<TextureInfo *>(-1);
+    SKYtextable[1].pTextureInfo = reinterpret_cast<TextureInfo *>(-1);
+    SkydomeModel.AttachReplacementTextureTable(SKYtextable, 2, 0);
+}
+
+void GetLayerMod(eView *view, SKY_LAYER layer, float *r, float *g, float *b, float *a) {
+    float overcast = lbl_8040B2B8;
+    float clear = lbl_8040B2BC;
+    int env_map = *reinterpret_cast<int *>(reinterpret_cast<unsigned char *>(view) + 0x60);
+
+    if (env_map != 0) {
+        overcast = *reinterpret_cast<float *>(env_map + 0x50);
+        clear = lbl_8040B2BC - overcast;
+    }
+
+    if (lbl_8040B2B8 < SkyRenderForceOvercast) {
+        clear = lbl_8040B2BC - SkyRenderForceOvercast;
+        overcast = SkyRenderForceOvercast;
+    }
+
+    float *layer_mod = &skylayer[layer][0];
+    *r = layer_mod[0] * overcast + layer_mod[1] * clear;
+    *g = layer_mod[2] * overcast + layer_mod[3] * clear;
+    *b = layer_mod[4] * overcast + layer_mod[5] * clear;
+    *a = layer_mod[6] * overcast + layer_mod[7] * clear;
 }
