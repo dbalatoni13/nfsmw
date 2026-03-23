@@ -199,6 +199,7 @@ extern bVector4 feposoff;
 extern CarTypeInfo *CarTypeInfoArray;
 extern void RestoreShaperRig(eShaperLightRig *ShaperRigP, unsigned int slot, eShaperLightRig *ShaperRigBP);
 extern void AddQuickDynamicLight(eShaperLightRig *ShaperRigP, unsigned int slot, float r, float g, float b, float intensity, bVector3 *position);
+
 void sh_Setup(bVector3 *car_pos);
 
 void sh_Setup(bVector3 *car_pos) {
@@ -1252,6 +1253,14 @@ static void *CarRenderFrameMalloc(unsigned int size) {
     }
 
     return address;
+}
+
+inline bool CarRenderInfo::IsLightBroken(VehicleFX::ID id) const {
+    return (this->mBrokenLights & id) != 0;
+}
+
+inline bool CarRenderInfo::IsLightOn(VehicleFX::ID id) const {
+    return (this->mOnLights & id) != 0;
 }
 
 void elResetLightContext(eDynamicLightContext *light_context);
@@ -2515,10 +2524,16 @@ void CarRenderInfo::RenderFlaresOnCar(eView *view, const bVector3 *position, con
         this->RenderTextureHeadlights(view, local_world, 0);
     }
 
-    if (this->pCarTypeInfo != 0 && this->pCarTypeInfo->UsageType == CAR_USAGE_TYPE_COP) {
+    CarTypeInfo *car_type_info = this->pCarTypeInfo;
+    int is_traffic_car = 0;
+
+    if (car_type_info != 0 && car_type_info->GetCarUsageType() == CAR_USAGE_TYPE_COP) {
         if (this->IsLightOn(VehicleFX::LIGHT_COPRED)) {
             view->NumCopsCherry++;
         }
+    }
+    if (car_type_info != 0) {
+        is_traffic_car = car_type_info->GetCarUsageType() == CAR_USAGE_TYPE_TRAFFIC;
     }
 
     int car_pixel_size = view->GetPixelSize(position, this->mRadius);
@@ -2531,14 +2546,14 @@ void CarRenderInfo::RenderFlaresOnCar(eView *view, const bVector3 *position, con
     }
 
     float headlight_left_intensity;
-    if (gINISInstance == 0) {
+    if (UTL::Collections::Singleton<INIS>::Get() == 0) {
         headlight_left_intensity = 0.0f;
     } else {
         headlight_left_intensity = 0.5f;
     }
 
     float headlight_right_intensity;
-    if (gINISInstance == 0) {
+    if (UTL::Collections::Singleton<INIS>::Get() == 0) {
         headlight_right_intensity = 0.0f;
     } else {
         headlight_right_intensity = 0.5f;
@@ -2643,19 +2658,26 @@ void CarRenderInfo::RenderFlaresOnCar(eView *view, const bVector3 *position, con
         coplight_intensityW = 0.0f;
     }
 
+    CarPart *preview_part = this->pRideInfo->GetPreviewPart();
+    CAR_PART_ID preview_part_id =
+        preview_part != 0
+            ? static_cast<CAR_PART_ID>(*reinterpret_cast<signed char *>(reinterpret_cast<unsigned char *>(preview_part) + 4))
+            : CARPARTID_ATTACHMENT5;
     float constFlicker = coplightflicker(Ftime, 0);
     int FlareCount = 0;
-    bool copOnly = (renderFlareFlags & 1) != 0;
 
     for (eLightFlare *light_flare = this->LightFlareList.GetHead(); light_flare != this->LightFlareList.EndOfList();
          light_flare = light_flare->GetNext()) {
         float intensity = 0.0f;
         float sizescale = 1.0f;
 
+        if (is_traffic_car != 0 && light_flare->Type == 1) {
+            light_flare->Type = 2;
+        }
         if ((renderFlareFlags & 2) != 0 && light_flare->Type != 1) {
             continue;
         }
-        if (copOnly) {
+        if ((renderFlareFlags & 1) != 0) {
             if (light_flare->Type < 5 || light_flare->Type > 12) {
                 continue;
             }
@@ -2702,7 +2724,9 @@ void CarRenderInfo::RenderFlaresOnCar(eView *view, const bVector3 *position, con
                 intensity = bSin(coplight_intensityW * coplightflicker2(Ftime, 2, FlareCount) * copWhitemul);
                 break;
             case 0x28CD78F5:
-                intensity = 1.0f;
+                if (preview_part_id == CARPARTID_BRAKELIGHT || (preview_part_id == CARPARTID_HEADLIGHT && renderFlareFlags != 0)) {
+                    intensity = 1.0f;
+                }
                 break;
             default:
                 intensity = 0.0f;
@@ -2715,7 +2739,10 @@ void CarRenderInfo::RenderFlaresOnCar(eView *view, const bVector3 *position, con
 
         if (intensity > 0.0f) {
             if (!reflexion) {
-                eRenderLightFlare(view, light_flare, local_world, intensity, REF_NONE, copOnly ? FLARE_ENV : FLARE_NORM, 0.0f, 0, sizescale);
+                eRenderLightFlare(
+                    view, light_flare, local_world, intensity, REF_NONE, (renderFlareFlags & 1) != 0 ? FLARE_ENV : FLARE_NORM, 0.0f, 0,
+                    sizescale
+                );
             } else {
                 eRenderLightFlare(view, light_flare, local_world, intensity, REF_TOPO, FLARE_REFLECT, 0.0f, 0, 1.0f);
             }

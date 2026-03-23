@@ -294,6 +294,9 @@ class RideInfo {
     unsigned int GetCompositeSpinnerNameHash();
     void SetCompositeSpinnerNameHash(unsigned int namehash);
     int IsUsingCompositeSkin();
+    struct CarPart *GetPreviewPart() {
+        return this->PreviewPart;
+    }
 
     RideInfo() {
         Init(CARTYPE_NONE, CarRenderUsage_Player, 0, 0);
@@ -392,6 +395,9 @@ struct CarTypeInfo {
     int DefaultBasePaint;                       // offset 0xCC, size 0x4
 
     char *GetBaseModelName();
+    CarUsageType GetCarUsageType() {
+        return this->UsageType;
+    }
 };
 
 #endif

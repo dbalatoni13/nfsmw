@@ -375,13 +375,9 @@ class CarRenderInfo {
 
     void SetLights(unsigned int vehiclefx_ids) {}
 
-    bool IsLightBroken(enum VehicleFX::ID id) const {
-        return (this->mBrokenLights & id) != 0;
-    }
+    bool IsLightBroken(enum VehicleFX::ID id) const;
 
-    bool IsLightOn(enum VehicleFX::ID id) const {
-        return (this->mOnLights & id) != 0;
-    }
+    bool IsLightOn(enum VehicleFX::ID id) const;
 
     CarRenderInfo(RideInfo *ride_info);
 
