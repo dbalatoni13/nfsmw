@@ -18,6 +18,10 @@ struct EngRevDataPoint {
 struct EngRevDataSet {
     int NumPoints;               // offset 0x0, size 0x4
     EngRevDataPoint *DataPoints; // offset 0x4, size 0x4
+
+    EngRevDataSet()
+        : NumPoints(0) //
+        , DataPoints(nullptr) {}
 };
 
 // total size: 0x98

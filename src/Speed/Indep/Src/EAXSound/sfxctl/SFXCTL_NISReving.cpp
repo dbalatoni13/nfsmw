@@ -17,18 +17,14 @@ void *NIS_RevManager::operator new(unsigned int size, const char *debug_name) {
     return gAudioMemoryManager.AllocateMemory(size, debug_name, false);
 }
 
-NIS_RevManager::NIS_RevManager()
-    : pRevData(nullptr) //
-    , IsInitialized(false) //
-    , pBuffer(nullptr) //
-    , pCurEntry(nullptr) //
-    , RecordingCount(0) {
-    for (int i = 0; i < 16; ++i) {
-        m_EngineDataSet[i].NumPoints = 0;
-        m_EngineDataSet[i].DataPoints = nullptr;
-    }
+NIS_RevManager::NIS_RevManager() {
     g_pNISRevMgr = this;
+    pRevData = nullptr;
+    pBuffer = nullptr;
+    RecordingCount = 0;
+    *reinterpret_cast<int *>(&IsInitialized) = 0;
 }
+
 
 void SFXCTL_Physics::MsgRevOff(const MAIEngineRev &message) {
     (void)message;
