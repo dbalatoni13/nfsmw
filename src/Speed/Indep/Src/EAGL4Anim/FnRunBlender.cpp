@@ -351,10 +351,12 @@ int FnRunBlender::ComputeCycleIdx(float t, float startTime, float endTime) const
     float length = endTime - startTime;
 
     if (t < startTime) {
-        return static_cast<int>((startTime - t) / length);
+        t = startTime - t;
+        return static_cast<int>(t / length);
     }
     if (t >= endTime) {
-        return static_cast<int>((t - endTime) / length) + 1;
+        t -= endTime;
+        return static_cast<int>(t / length) + 1;
     }
     return 0;
 }
