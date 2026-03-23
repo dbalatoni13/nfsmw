@@ -200,7 +200,7 @@ void FnDeltaQFast::SetAnimMemoryMap(AnimMemoryMap *anim) {
     mConstPhysical = reinterpret_cast<DeltaQFastPhysical *>(deltaQ->GetConstPhysical());
     mBinSize = AlignSize2(numBones * (((1 << deltaQ->mBinLengthPower) - 1) * 3 + 6));
 
-    if (numBones != 0) {
+    if (deltaQ->mNumBones != 0) {
         unsigned int qBlockOffset = numBones << 5;
         unsigned int nextQBlockOffset = numBones << 4;
         unsigned char *block =
