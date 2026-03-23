@@ -323,7 +323,7 @@ int CarPart::GetAppliedAttributeIParam(unsigned int namehash, int default_value)
     CarPartAttributeLayout *attribute = reinterpret_cast<CarPartAttributeLayout *>(GetFirstAppliedAttribute(namehash));
 
     if (attribute != 0) {
-        default_value = attribute->Params.iParam;
+        return attribute->Params.iParam;
     }
 
     return default_value;
@@ -333,7 +333,7 @@ unsigned int CarPart::GetAppliedAttributeUParam(unsigned int namehash, unsigned 
     CarPartAttributeLayout *attribute = reinterpret_cast<CarPartAttributeLayout *>(GetFirstAppliedAttribute(namehash));
 
     if (attribute != 0) {
-        default_value = attribute->Params.uParam;
+        return attribute->Params.uParam;
     }
 
     return default_value;
@@ -358,34 +358,36 @@ CarType CarPartDatabase::GetCarType(unsigned int car_type_name_hash) {
 int CarPartDatabase::GetPartIndex(CarPart *car_part) {
     CarPartPackLayout *car_part_pack = reinterpret_cast<CarPartPackLayout *>(this->CarPartPackList.Next);
     int index = 0;
-    int part_index;
 
     while (true) {
         if (car_part_pack == reinterpret_cast<CarPartPackLayout *>(&this->CarPartPackList)) {
             return -1;
         }
 
-        part_index = (reinterpret_cast<unsigned char *>(car_part) - reinterpret_cast<unsigned char *>(car_part_pack->PartsTable)) / 0xE;
+        int part_index =
+            static_cast<int>(reinterpret_cast<unsigned char *>(car_part) - reinterpret_cast<unsigned char *>(car_part_pack->PartsTable)) * -0x49249249 >>
+            1;
+
         if (part_index > -1 && part_index < car_part_pack->NumParts) {
-            break;
+            return index + part_index;
         }
 
         index += car_part_pack->NumParts;
         car_part_pack = car_part_pack->Next;
     }
-
-    return index + part_index;
 }
 
 CarPart *CarPartDatabase::GetCarPartByIndex(int index) {
     if (index > -1) {
-        for (CarPartPackLayout *car_part_pack = reinterpret_cast<CarPartPackLayout *>(this->CarPartPackList.Next);
-             car_part_pack != reinterpret_cast<CarPartPackLayout *>(&this->CarPartPackList); car_part_pack = car_part_pack->Next) {
+        CarPartPackLayout *car_part_pack = reinterpret_cast<CarPartPackLayout *>(this->CarPartPackList.Next);
+
+        while (car_part_pack != reinterpret_cast<CarPartPackLayout *>(&this->CarPartPackList)) {
             if (index < car_part_pack->NumParts) {
                 return reinterpret_cast<CarPart *>(reinterpret_cast<unsigned char *>(car_part_pack->PartsTable) + index * 0xE);
             }
 
             index -= car_part_pack->NumParts;
+            car_part_pack = car_part_pack->Next;
         }
     }
 
