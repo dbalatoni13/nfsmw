@@ -547,10 +547,31 @@ bool FnDeltaQ::EvalSQTMasked(float currTime, const BoneMask *boneMask, float *sq
             for (int ibone = 0; ibone < deltaQ->mNumBones; ibone++) {
                 if (boneMask->GetBone(boneIdxs[ibone])) {
                     UMath::Vector4 ceilq;
+                    float *prevQ = reinterpret_cast<float *>(&mPrevQs[ibone]);
+                    float *ceilQ = reinterpret_cast<float *>(&ceilq);
+                    float *out = GetOutputQuat(sqt, boneIdxs[ibone]);
 
                     DecodePhysical(ceilPhys[ibone], ceilq);
-                    FastQuatBlendF4(scale, reinterpret_cast<float *>(&mPrevQs[ibone]), reinterpret_cast<float *>(&ceilq),
-                                    GetOutputQuat(sqt, boneIdxs[ibone]));
+                    if (prevQ[0] * ceilQ[0] + prevQ[1] * ceilQ[1] + prevQ[2] * ceilQ[2] + prevQ[3] * ceilQ[3] > 0.0f) {
+                        out[0] = scale * (ceilQ[0] - prevQ[0]) + prevQ[0];
+                        out[1] = scale * (ceilQ[1] - prevQ[1]) + prevQ[1];
+                        out[2] = scale * (ceilQ[2] - prevQ[2]) + prevQ[2];
+                        out[3] = scale * (ceilQ[3] - prevQ[3]) + prevQ[3];
+                    } else {
+                        out[0] = prevQ[0] - scale * (ceilQ[0] + prevQ[0]);
+                        out[1] = prevQ[1] - scale * (ceilQ[1] + prevQ[1]);
+                        out[2] = prevQ[2] - scale * (ceilQ[2] + prevQ[2]);
+                        out[3] = prevQ[3] - scale * (ceilQ[3] + prevQ[3]);
+                    }
+
+                    {
+                        float s = 1.0f / FastSqrt(out[0] * out[0] + out[1] * out[1] + out[2] * out[2] + out[3] * out[3]);
+
+                        out[0] *= s;
+                        out[1] *= s;
+                        out[2] *= s;
+                        out[3] *= s;
+                    }
                 }
             }
         } else {
