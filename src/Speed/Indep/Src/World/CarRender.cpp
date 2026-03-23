@@ -104,6 +104,7 @@ extern int DrawCars;
 extern int DrawCarShadow;
 extern int ForceCarLOD;
 extern int ForceTireLOD;
+extern int ForceReverselightsOn;
 extern int TweakKitWheelOffsetFront;
 extern int TweakKitWheelOffsetRear;
 extern int ForceBrakelightsOn;
@@ -2089,6 +2090,9 @@ void CarRenderInfo::RenderFlaresOnCar(eView *view, const bVector3 *position, con
     if (ForceBrakelightsOn != 0) {
         force_light_state |= 2;
     }
+    if (ForceReverselightsOn != 0) {
+        force_light_state |= 4;
+    }
 
     float headlight_base = gINISInstance != 0 ? 0.5f : 0.0f;
     float headlight_left_intensity = ((force_light_state & 1) || (this->mOnLights & 1)) ? headlight_base + 1.0f : headlight_base;
@@ -2096,8 +2100,8 @@ void CarRenderInfo::RenderFlaresOnCar(eView *view, const bVector3 *position, con
     float brakelight_left_intensity = ((force_light_state & 2) || (this->mOnLights & 8)) ? 1.0f : 0.0f;
     float brakelight_centre_intensity = ((force_light_state & 2) || (this->mOnLights & 0x20)) ? 1.0f : 0.0f;
     float brakelight_right_intensity = ((force_light_state & 2) || (this->mOnLights & 0x10)) ? 1.0f : 0.0f;
-    float reverselight_left_intensity = (this->mOnLights & 0x40) ? 1.0f : 0.0f;
-    float reverselight_right_intensity = (this->mOnLights & 0x80) ? 1.0f : 0.0f;
+    float reverselight_left_intensity = ((force_light_state & 4) || (this->mOnLights & 0x40)) ? 1.0f : 0.0f;
+    float reverselight_right_intensity = ((force_light_state & 4) || (this->mOnLights & 0x80)) ? 1.0f : 0.0f;
     float coplight_intensityR = (this->mOnLights & 0x1000) ? cpr : 0.0f;
     float coplight_intensityB = (this->mOnLights & 0x2000) ? cpb : 0.0f;
     float coplight_intensityW = (this->mOnLights & 0x4000) ? cpw : 0.0f;
