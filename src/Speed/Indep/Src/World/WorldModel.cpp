@@ -315,12 +315,14 @@ void WorldModel::Render(eView *view, int exc_flag) {
 
         {
             bVector3 *camera_position = camera_mover->GetPosition();
-            float dx = camera_position->x - world_matrix->v3.x;
-            float dy = camera_position->y - world_matrix->v3.y;
-            float dz = camera_position->z - world_matrix->v3.z;
-            float distance_sq = dx * dx + dy * dy + dz * dz;
+            bVector3 delta;
+            float distance_sq;
             float distance_scale = lbl_8040CD90;
 
+            delta.x = camera_position->x - world_matrix->v3.x;
+            delta.y = camera_position->y - world_matrix->v3.y;
+            delta.z = camera_position->z - world_matrix->v3.z;
+            distance_sq = delta.x * delta.x + delta.y * delta.y + delta.z * delta.z;
             if (lbl_8040CD84 < distance_sq) {
                 float inv_sqrt = 1.0f / bSqrt(distance_sq);
 
