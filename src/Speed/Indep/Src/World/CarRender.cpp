@@ -77,6 +77,7 @@ struct eEnvMap {
     void UpdateCameras(bVector3 *viewer_world_position, bVector3 *envmap_world_position);
 };
 
+eSolid *eFindSolid(unsigned int name_hash);
 void GetUsedCarTextureInfo(UsedCarTextureInfo *used_texture_info, RideInfo *ride_info, int front_end_only);
 extern float copm;
 extern float copt;
@@ -1474,7 +1475,7 @@ void CarRenderInfo::UpdateCarParts() {
         this->SpoilerPositionMarker = 0;
         this->SpoilerPositionMarker2 = 0;
     } else {
-        eSolid *solid = eFindSolid(CarPart_GetModelNameHash(base_part, 0, this->mMinLodLevel), 0);
+        eSolid *solid = eFindSolid(CarPart_GetModelNameHash(base_part, 0, this->mMinLodLevel));
 
         if (solid == 0) {
             this->RoofScoopPositionMarker = 0;
