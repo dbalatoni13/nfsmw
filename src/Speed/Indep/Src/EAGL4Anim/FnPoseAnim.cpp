@@ -8,8 +8,8 @@
 namespace EAGL4Anim {
 
 FnPoseAnim::FnPoseAnim() {
-    mPrevKey = 0;
     mType = AnimTypeId::ANIM_POSEANIM;
+    mPrevKey = 0;
 }
 
 FnPoseAnim::~FnPoseAnim() {}
