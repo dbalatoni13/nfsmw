@@ -1313,25 +1313,27 @@ void CarRenderInfo::UpdateCarParts() {
                     model->UnInit();
                     CarPartModelPool->Free(model);
                     packed_model &= 1;
-                    continue;
+                    model = 0;
                 }
 
-                if (slot_id < CARSLOTID_DECAL_FRONT_WINDOW || slot_id > CARSLOTID_DECAL_RIGHT_QUARTER) {
-                    if (slot_id == CARSLOTID_HOOD) {
-                        int carbon_hood = CarPart_GetAppliedAttributeIParam(ride_info->GetPart(CARSLOTID_HOOD), 0x721AFF7C, 0);
+                if (model != 0) {
+                    if (slot_id < CARSLOTID_DECAL_FRONT_WINDOW || slot_id > CARSLOTID_DECAL_RIGHT_QUARTER) {
+                        if (slot_id == CARSLOTID_HOOD) {
+                            int carbon_hood = CarPart_GetAppliedAttributeIParam(ride_info->GetPart(CARSLOTID_HOOD), 0x721AFF7C, 0);
 
-                        if (carbon_hood != 0) {
-                            model->AttachReplacementTextureTable(this->CarbonReplacementTextureTable, REPLACETEX_NUM, 0);
-                            this->CarbonHood = 1;
+                            if (carbon_hood != 0) {
+                                model->AttachReplacementTextureTable(this->CarbonReplacementTextureTable, REPLACETEX_NUM, 0);
+                                this->CarbonHood = 1;
+                            } else {
+                                model->AttachReplacementTextureTable(this->MasterReplacementTextureTable, REPLACETEX_NUM, 0);
+                                this->CarbonHood = carbon_hood;
+                            }
                         } else {
                             model->AttachReplacementTextureTable(this->MasterReplacementTextureTable, REPLACETEX_NUM, 0);
-                            this->CarbonHood = carbon_hood;
                         }
                     } else {
-                        model->AttachReplacementTextureTable(this->MasterReplacementTextureTable, REPLACETEX_NUM, 0);
+                        model->AttachReplacementTextureTable(&this->DecalReplacementTextureTable[(slot_id - CARSLOTID_DECAL_FRONT_WINDOW) * 8], 8, 0);
                     }
-                } else {
-                    model->AttachReplacementTextureTable(&this->DecalReplacementTextureTable[(slot_id - CARSLOTID_DECAL_FRONT_WINDOW) * 8], 8, 0);
                 }
             }
 
