@@ -224,6 +224,22 @@ void eUnloadStreamingSolid(unsigned int *name_hash_table, int num_hashes);
 int eUnloadStreamingSolidPack(const char *filename);
 void eUnloadStreamingTexturePack(const char *filename);
 
+struct QueuedFilePrioritySetter {
+    int SavedPriority;
+
+    QueuedFilePrioritySetter()
+        : SavedPriority(QueuedFileDefaultPriority)
+    {
+        CarLoaderServiceLoadingDepth++;
+        QueuedFileDefaultPriority = 4;
+    }
+
+    ~QueuedFilePrioritySetter() {
+        CarLoaderServiceLoadingDepth--;
+        QueuedFileDefaultPriority = SavedPriority;
+    }
+};
+
 CarLoader::CarLoader()
     : StartLoadingTime(0.0f) {
     this->pCallback = 0;
@@ -1755,10 +1771,7 @@ void CarLoader::ServiceLoading() {
         }
     }
 
-    int queued_file_default_priority = QueuedFileDefaultPriority;
-
-    CarLoaderServiceLoadingDepth++;
-    QueuedFileDefaultPriority = 4;
+    QueuedFilePrioritySetter queued_file_priority_setter;
 
     if (this->LoadAllWheelModels() == 0 && this->LoadAllWheelTextures() == 0 &&
         this->LoadAllTexturesFromPack("CARS\\TEXTURES.BIN", 1) == 0) {
@@ -1775,14 +1788,10 @@ void CarLoader::ServiceLoading() {
 
                 if (loaded_car->pLoadedSolidPack->LoadState == CARLOADSTATE_QUEUED) {
                     this->LoadSolidPack(loaded_car->pLoadedSolidPack, CarTypeInfoArray[loaded_car->Type].UsageType != 2);
-                    CarLoaderServiceLoadingDepth--;
-                    QueuedFileDefaultPriority = queued_file_default_priority;
                     return;
                 }
 
                 if (loaded_car->LoadState == CARLOADSTATE_QUEUED && this->LoadCar(loaded_car) != 0) {
-                    CarLoaderServiceLoadingDepth--;
-                    QueuedFileDefaultPriority = queued_file_default_priority;
                     return;
                 }
 
@@ -1792,8 +1801,6 @@ void CarLoader::ServiceLoading() {
                     ((loaded_skin->pLoadedTexturesPack->LoadState == CARLOADSTATE_QUEUED &&
                       this->LoadTexturePack(loaded_skin->pLoadedTexturesPack, 1) != 0) ||
                      this->LoadSkin(loaded_skin, 1) != 0)) {
-                    CarLoaderServiceLoadingDepth--;
-                    QueuedFileDefaultPriority = queued_file_default_priority;
                     return;
                 }
 
@@ -1806,14 +1813,10 @@ void CarLoader::ServiceLoading() {
 
                     if (loaded_vinyls_pack != 0 && loaded_vinyls_pack->LoadState == CARLOADSTATE_QUEUED) {
                         this->LoadTexturePack(loaded_vinyls_pack, this->LoadingMode == MODE_IN_GAME);
-                        CarLoaderServiceLoadingDepth--;
-                        QueuedFileDefaultPriority = queued_file_default_priority;
                         return;
                     }
 
                     if (this->LoadSkin(loaded_skin, 0) != 0) {
-                        CarLoaderServiceLoadingDepth--;
-                        QueuedFileDefaultPriority = queued_file_default_priority;
                         return;
                     }
                 }
@@ -1835,9 +1838,6 @@ void CarLoader::ServiceLoading() {
             SetDelayedResourceCallback(CallUserCallback, reinterpret_cast<int>(this));
         }
     }
-
-    CarLoaderServiceLoadingDepth--;
-    QueuedFileDefaultPriority = queued_file_default_priority;
 }
 
 void CarLoader::CallUserCallback(int param) {
