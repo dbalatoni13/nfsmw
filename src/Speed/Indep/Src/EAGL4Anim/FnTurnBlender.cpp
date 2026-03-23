@@ -60,14 +60,7 @@ bool FnTurnBlender::EvalSQT(float currTime, float *sqtBuffer, const BoneMask *bo
     }
 
     if (mWeight != 0.0f && mFnAnims[1]) {
-        ScratchBuffer &scratch = ScratchBuffer::GetScratchBuffer(1);
-        unsigned int bufferSize = static_cast<unsigned int>(mSkeleton->GetNumBones() * 12 * sizeof(float));
-
-        if (scratch.GetSize() < bufferSize) {
-            scratch.AllocateBuffer(bufferSize);
-        }
-
-        float *blendPose = reinterpret_cast<float *>(scratch.GetBuffer());
+        float *blendPose = reinterpret_cast<float *>(ScratchBuffer::GetScratchBuffer(1).GetBuffer());
 
         mSkeleton->GetStillPose(blendPose, 0);
         if (!mFnAnims[1]->EvalSQT(t1, blendPose, 0)) {

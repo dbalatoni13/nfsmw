@@ -76,14 +76,12 @@ bool FnRunBlender::EvalSQT(float currTime, float *sqtBuffer, const BoneMask *bon
         SetWeight(0.0f);
     }
 
-    const PhaseChan *phase0 = mPhases[mIdx];
-    const PhaseChan *phase1 = mPhases[mIdx + 1];
     float evalTime = currTime + mOffset;
     float evalTime0 = mFreq * mCycles[0] * evalTime + mAlignFrame[0];
     float evalTime1 = mFreq * mCycles[1] * evalTime + mAlignFrame[1];
-    int cycleIdx = ComputeCycleIdx(evalTime0, 0.0f, static_cast<float>(phase0->mNumFrames - 1));
-    float t0 = CycleTime(evalTime0, 0.0f, static_cast<float>(phase0->mNumFrames - 1));
-    float t1 = CycleTime(evalTime1, 0.0f, static_cast<float>(phase1->mNumFrames - 1));
+    int cycleIdx = ComputeCycleIdx(evalTime0, 0.0f, static_cast<float>(mPhases[mIdx]->mNumFrames - 1));
+    float t0 = CycleTime(evalTime0, 0.0f, static_cast<float>(mPhases[mIdx]->mNumFrames - 1));
+    float t1 = CycleTime(evalTime1, 0.0f, static_cast<float>(mPhases[mIdx + 1]->mNumFrames - 1));
 
     mSkeleton->GetStillPose(sqtBuffer, 0);
     if (!mFnAnims[0] || !mFnAnims[0]->EvalSQT(t0, sqtBuffer, 0)) {
@@ -91,14 +89,7 @@ bool FnRunBlender::EvalSQT(float currTime, float *sqtBuffer, const BoneMask *bon
     }
 
     if (mWeight != 0.0f && mFnAnims[1]) {
-        ScratchBuffer &scratch = ScratchBuffer::GetScratchBuffer(0);
-        unsigned int bufferSize = static_cast<unsigned int>(mSkeleton->GetNumBones() * 12 * sizeof(float));
-
-        if (scratch.GetSize() < bufferSize) {
-            scratch.AllocateBuffer(bufferSize);
-        }
-
-        float *blendPose = reinterpret_cast<float *>(scratch.GetBuffer());
+        float *blendPose = reinterpret_cast<float *>(ScratchBuffer::GetScratchBuffer(0).GetBuffer());
 
         mSkeleton->GetStillPose(blendPose, 0);
         if (!mFnAnims[1]->EvalSQT(t1, blendPose, 0)) {
