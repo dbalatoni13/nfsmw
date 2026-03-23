@@ -163,17 +163,19 @@ bool FnDeltaQ::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask) {
 
     if (!mBins) {
         unsigned char numBones = deltaQ->mNumBones;
+        DeltaQMinRange *minRanges = reinterpret_cast<DeltaQMinRange *>(reinterpret_cast<unsigned char *>(deltaQ) + 0x12);
 
-        mMinRanges = reinterpret_cast<DeltaQMinRange *>(reinterpret_cast<unsigned char *>(deltaQ) + 0x12);
-        mBins = reinterpret_cast<unsigned char *>(mMinRanges) + numBones * sizeof(DeltaQMinRange);
+        mBins = reinterpret_cast<unsigned char *>(minRanges) + numBones * sizeof(DeltaQMinRange);
         mConstBoneIdxs = reinterpret_cast<unsigned char *>(deltaQ->GetConstBoneIdx());
         mConstPhysical = reinterpret_cast<DeltaQPhysical *>(deltaQ->GetConstPhysical());
         mBinSize = AlignSize2(numBones * ((((1 << deltaQ->mBinLengthPower) - 1) * 3) + 6));
 
         if (numBones != 0) {
-            mPrevQs = reinterpret_cast<UMath::Vector4 *>(MemoryPoolManager::NewBlock(numBones * sizeof(*mPrevQs)));
-            mPrevQBlock = mPrevQs;
+            UMath::Vector4 *prevQs = reinterpret_cast<UMath::Vector4 *>(MemoryPoolManager::NewBlock(numBones * sizeof(*mPrevQs)));
+            mPrevQs = prevQs;
+            mPrevQBlock = prevQs;
         }
+        mMinRanges = minRanges;
     }
     int floorTime = FloatToInt(currTime);
     int floorKey;
@@ -351,17 +353,19 @@ bool FnDeltaQ::EvalSQTMasked(float currTime, const BoneMask *boneMask, float *sq
 
     if (!mBins) {
         unsigned char numBones = deltaQ->mNumBones;
+        DeltaQMinRange *minRanges = reinterpret_cast<DeltaQMinRange *>(reinterpret_cast<unsigned char *>(deltaQ) + 0x12);
 
-        mMinRanges = reinterpret_cast<DeltaQMinRange *>(reinterpret_cast<unsigned char *>(deltaQ) + 0x12);
-        mBins = reinterpret_cast<unsigned char *>(mMinRanges) + numBones * sizeof(DeltaQMinRange);
+        mBins = reinterpret_cast<unsigned char *>(minRanges) + numBones * sizeof(DeltaQMinRange);
         mConstBoneIdxs = reinterpret_cast<unsigned char *>(deltaQ->GetConstBoneIdx());
         mConstPhysical = reinterpret_cast<DeltaQPhysical *>(deltaQ->GetConstPhysical());
         mBinSize = AlignSize2(numBones * ((((1 << deltaQ->mBinLengthPower) - 1) * 3) + 6));
 
         if (numBones != 0) {
-            mPrevQs = reinterpret_cast<UMath::Vector4 *>(MemoryPoolManager::NewBlock(numBones * sizeof(*mPrevQs)));
-            mPrevQBlock = mPrevQs;
+            UMath::Vector4 *prevQs = reinterpret_cast<UMath::Vector4 *>(MemoryPoolManager::NewBlock(numBones * sizeof(*mPrevQs)));
+            mPrevQs = prevQs;
+            mPrevQBlock = prevQs;
         }
+        mMinRanges = minRanges;
     }
     int floorTime = FloatToInt(currTime);
     int floorKey;
