@@ -2587,28 +2587,60 @@ void CarRenderInfo::RenderFlaresOnCar(eView *view, const bVector3 *position, con
     if (headlight_right_on != 0) {
         headlight_right_intensity = 1.0f;
     }
-    if (onLights & 8) {
+    int brakelight_left_on = 1;
+    if ((onLights & 8) == 0) {
+        brakelight_left_on = 0;
+    }
+    if (brakelight_left_on != 0) {
         brakelight_left_intensity += 1.0f;
     }
-    if (onLights & 0x10) {
+    int brakelight_right_on = 1;
+    if ((onLights & 0x10) == 0) {
+        brakelight_right_on = 0;
+    }
+    if (brakelight_right_on != 0) {
         brakelight_right_intensity += 1.0f;
     }
-    if (onLights & 0x20) {
+    int brakelight_centre_on = 1;
+    if ((onLights & 0x20) == 0) {
+        brakelight_centre_on = 0;
+    }
+    if (brakelight_centre_on != 0) {
         brakelight_centre_intensity += 1.0f;
     }
-    if (onLights & 0x40) {
+    int reverselight_left_on = 1;
+    if ((onLights & 0x40) == 0) {
+        reverselight_left_on = 0;
+    }
+    if (reverselight_left_on != 0) {
         reverselight_left_intensity += 1.0f;
     }
-    if (onLights & 0x80) {
+    int reverselight_right_on = 1;
+    if ((onLights & 0x80) == 0) {
+        reverselight_right_on = 0;
+    }
+    if (reverselight_right_on != 0) {
         reverselight_right_intensity += 1.0f;
     }
-    if (onLights & 0x1000) {
+    int coplight_red_on = 1;
+    if ((onLights & 0x1000) == 0) {
+        coplight_red_on = 0;
+    }
+    if (coplight_red_on != 0) {
         coplight_intensityR = cpr;
     }
-    if (onLights & 0x2000) {
+    int coplight_blue_on = 1;
+    if ((onLights & 0x2000) == 0) {
+        coplight_blue_on = 0;
+    }
+    if (coplight_blue_on != 0) {
         coplight_intensityB = cpb;
     }
-    if (onLights & 0x4000) {
+    int coplight_white_on = 1;
+    if ((onLights & 0x4000) == 0) {
+        coplight_white_on = 0;
+    }
+    if (coplight_white_on != 0) {
         coplight_intensityW = cpw;
     }
     unsigned int flashHeadlights = onLights & 0x4000;
@@ -2627,28 +2659,60 @@ void CarRenderInfo::RenderFlaresOnCar(eView *view, const bVector3 *position, con
     if (headlight_right_broken != 0) {
         headlight_right_intensity = 0.0f;
     }
-    if (brokenLights & 8) {
+    int brakelight_left_broken = 1;
+    if ((brokenLights & 8) == 0) {
+        brakelight_left_broken = 0;
+    }
+    if (brakelight_left_broken != 0) {
         brakelight_left_intensity = 0.0f;
     }
-    if (brokenLights & 0x10) {
+    int brakelight_right_broken = 1;
+    if ((brokenLights & 0x10) == 0) {
+        brakelight_right_broken = 0;
+    }
+    if (brakelight_right_broken != 0) {
         brakelight_right_intensity = 0.0f;
     }
-    if (brokenLights & 0x20) {
+    int brakelight_centre_broken = 1;
+    if ((brokenLights & 0x20) == 0) {
+        brakelight_centre_broken = 0;
+    }
+    if (brakelight_centre_broken != 0) {
         brakelight_centre_intensity = 0.0f;
     }
-    if (brokenLights & 0x40) {
+    int reverselight_left_broken = 1;
+    if ((brokenLights & 0x40) == 0) {
+        reverselight_left_broken = 0;
+    }
+    if (reverselight_left_broken != 0) {
         reverselight_left_intensity = 0.0f;
     }
-    if (brokenLights & 0x80) {
+    int reverselight_right_broken = 1;
+    if ((brokenLights & 0x80) == 0) {
+        reverselight_right_broken = 0;
+    }
+    if (reverselight_right_broken != 0) {
         reverselight_right_intensity = 0.0f;
     }
-    if (brokenLights & 0x1000) {
+    int coplight_red_broken = 1;
+    if ((brokenLights & 0x1000) == 0) {
+        coplight_red_broken = 0;
+    }
+    if (coplight_red_broken != 0) {
         coplight_intensityR = 0.0f;
     }
-    if (brokenLights & 0x2000) {
+    int coplight_blue_broken = 1;
+    if ((brokenLights & 0x2000) == 0) {
+        coplight_blue_broken = 0;
+    }
+    if (coplight_blue_broken != 0) {
         coplight_intensityB = 0.0f;
     }
-    if (brokenLights & 0x4000) {
+    int coplight_white_broken = 1;
+    if ((brokenLights & 0x4000) == 0) {
+        coplight_white_broken = 0;
+    }
+    if (coplight_white_broken != 0) {
         coplight_intensityW = 0.0f;
     }
 
