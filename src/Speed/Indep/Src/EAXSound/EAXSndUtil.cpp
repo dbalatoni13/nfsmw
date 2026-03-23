@@ -71,7 +71,11 @@ int cPathLine::AddLinkedStage(float _Finish, int _Length, eCURVETYPE _Curve) {
 }
 
 void cPathLine::Update(float delta_time) {
-    if (*(int *)&bComplete != 0 || num_stages == 0) {
+    if (*(int *)&bComplete != 0) {
+        return;
+    }
+
+    if (num_stages == 0) {
         return;
     }
 
@@ -85,9 +89,8 @@ void cPathLine::Update(float delta_time) {
         if (stage < num_stages - 1) {
             length = Length[stage];
             cur_stage = stage + 1;
-            eCURVETYPE prevCurve = CurveTypes[stage - 5];
             ElapsedTime = elapsed - length;
-            if (prevCurve != LINEAR) {
+            if (IsLinked[stage + 1] != 0) {
                 Start[stage + 1] = Finish[stage];
             }
         } else {
@@ -98,38 +101,39 @@ void cPathLine::Update(float delta_time) {
 
     eCURVETYPE curve = CurveTypes[stage];
     if (curve == PARABOLIC) {
-        float start = Start[stage];
-        float scaled = (Finish[stage] - start) * (elapsed / length);
-        CurValue = start + scaled * (elapsed / length);
+        float t = elapsed / length;
+        float s = Finish[stage] - Start[stage];
+        float x = Start[stage];
+        CurValue = s * t * t + x;
         return;
     }
 
-    if (curve > 1) {
-        if (curve == INV_PARABOLIC) {
-            float ratio = elapsed / length - 1.0f;
-            CurValue = Start[stage] + (Finish[stage] - Start[stage]) * (-ratio * ratio + 1.0f);
-            return;
-        }
-
-        if (curve == EQ_PWR_SQ) {
-            float start = Start[stage];
-            float finish = Finish[stage];
-            int nQ15Ratio = static_cast<int>((elapsed * 32767.0f) / length);
-            if (nQ15Ratio < 0) {
-                nQ15Ratio = 0;
-            }
-            if (nQ15Ratio > 0x7fff) {
-                nQ15Ratio = 0x7fff;
-            }
-            int curveOutput = NFSMixShape::GetCurveOutput(NFSMixShape::SHAPE_UP_EQPWR_SQ, nQ15Ratio, false);
-            CurValue = Start[cur_stage] + (finish - start) * static_cast<float>(curveOutput) * 3.051851e-05f;
-            return;
-        }
+    if (curve <= 1) {
+        float t = elapsed / length;
+        float s = Finish[stage] - Start[stage];
+        float x = Start[stage];
+        CurValue = s * t + x;
+        return;
     }
 
-    float start = Start[stage];
-    float diff = Finish[stage] - start;
-    CurValue = start + diff * (elapsed / length);
+    if (curve == INV_PARABOLIC) {
+        float t = elapsed / length - 1.0f;
+        float s = Finish[stage] - Start[stage];
+        float x = Start[stage];
+        CurValue = s * (-t * t + 1.0f) + x;
+        return;
+    }
+
+    if (curve == EQ_PWR_SQ) {
+        float t = Start[stage];
+        float s = Finish[stage];
+        float x = Start[cur_stage];
+        int Delta = static_cast<int>((elapsed * 32767.0f) / length);
+        float Result = static_cast<float>(NFSMixShape::GetCurveOutput(
+            static_cast<NFSMixShape::eMIXTABLEID>(3), bClamp(Delta, 0, 0x7fff), false));
+        CurValue = (s - t) * Result * 3.051851e-05f + x;
+            return;
+    }
 }
 
 cInterpLine::cInterpLine()
