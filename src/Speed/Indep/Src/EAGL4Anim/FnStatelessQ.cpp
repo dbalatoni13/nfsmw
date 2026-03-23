@@ -73,12 +73,10 @@ bool FnStatelessQ::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask)
             floorKey = floorTime;
         }
 
-        slerpReqd = floorKey < statelessQ->mNumKeys - 1;
-        if (slerpReqd) {
-            slerpReqd = currTime != floorTime;
-            if (slerpReqd) {
-                scale = currTime - floorTime;
-            }
+        slerpReqd = currTime != floorTime;
+        scale = currTime - floorTime;
+        if (floorKey >= statelessQ->mNumKeys - 1) {
+            slerpReqd = false;
         }
     } else {
         if (floorTime < statelessQ->mTimes[0]) {
@@ -89,22 +87,22 @@ bool FnStatelessQ::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask)
             if (mPrevKey != 0) {
                 timeIndex = mPrevKey - 1;
             }
-            if (floorTime < statelessQ->mTimes[timeIndex]) {
-                if (timeIndex > 0) {
-                    do {
-                        timeIndex--;
-                        if (timeIndex < 1) {
+            if (statelessQ->mTimes[timeIndex] <= floorTime) {
+                if (timeIndex < statelessQ->mNumKeys - 2) {
+                    while (statelessQ->mTimes[timeIndex + 1] <= floorTime) {
+                        timeIndex++;
+                        if (timeIndex >= statelessQ->mNumKeys - 2) {
                             break;
                         }
-                    } while (floorTime < statelessQ->mTimes[timeIndex]);
-                }
-            } else if (timeIndex < statelessQ->mNumKeys - 2) {
-                while (statelessQ->mTimes[timeIndex + 1] <= floorTime) {
-                    timeIndex++;
-                    if (timeIndex >= statelessQ->mNumKeys - 2) {
-                        break;
                     }
                 }
+            } else if (timeIndex > 0) {
+                do {
+                    timeIndex--;
+                    if (timeIndex < 1) {
+                        break;
+                    }
+                } while (statelessQ->mTimes[timeIndex] > floorTime);
             }
 
             floorKey = timeIndex + 1;
@@ -143,8 +141,7 @@ bool FnStatelessQ::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask)
         int index;
 
         if (slerpReqd) {
-            int nextKey = floorKey + 1;
-            unsigned short *nextFrameData = statelessQ->GetFrameData(dataBuf, nextKey);
+            unsigned short *nextFrameData = statelessQ->GetFrameData(dataBuf, floorKey + 1);
 
             for (int ibone = 0; ibone < nBones; ibone++) {
                 UMath::Vector4 prevQ;
