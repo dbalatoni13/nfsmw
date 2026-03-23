@@ -153,8 +153,8 @@ int SkyInitModel(eModel *model, bMatrix4 *local_world, unsigned int scenery_name
         local_world->v2.y = static_cast<float>(rotation1) * rotation_scale;
         local_world->v2.z = static_cast<float>(rotation2) * rotation_scale;
         local_world->v2.w = row_w;
-        float matrix_w = lbl_8040B10C;
         local_world->v3 = *reinterpret_cast<bVector4 *>(scenery_instance->Position);
+        float matrix_w = lbl_8040B10C;
         local_world->v3.w = matrix_w;
 
         int *scenery_info_models = reinterpret_cast<int *>(reinterpret_cast<char *>(FindSceneryInfo(scenery_name_hash)) + 0x28);
@@ -252,9 +252,9 @@ void StuffSkyLayer(eView *view, SKY_LAYER layer) {
         float scaleZ = lbl_8040B27C;
         float scale = lbl_8040B278;
         bool rotate = false;
-        float z = cameraMatrix->v3.z;
         float x = cameraMatrix->v3.x;
         float y = cameraMatrix->v3.y;
+        float z = cameraMatrix->v3.z;
         int view_id = view->GetID();
 
         if (CurrentBufferEnd <= CurrentBufferPos + sizeof(bMatrix4)) {
