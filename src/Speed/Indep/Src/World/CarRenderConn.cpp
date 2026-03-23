@@ -15,7 +15,6 @@ extern CarType GetCarType__15CarPartDatabaseUi(CarPartDatabase *database, unsign
 extern int GetAppliedAttributeIParam__7CarPartUii(const CarPart *part, unsigned int key, int default_value)
     asm("GetAppliedAttributeIParam__7CarPartUii");
 extern void bRotateVector(bVector3 *dest, const bMatrix4 *m, bVector3 *v);
-extern void KillSkids__9TireState(TireState *state) asm("KillSkids__9TireState");
 extern void MakeNoSkid__9SkidMaker(void *skid_maker) asm("MakeNoSkid__9SkidMaker");
 extern void MakeSkid__9SkidMakerP3CarP8bVector3T2if(void *skid_maker, Car *car, bVector3 *skid_centre, bVector3 *skid_direction,
                                                     int terrain, float intensity)
@@ -265,6 +264,10 @@ TireState::TireState()
     gTireStateList.AddTail(reinterpret_cast<bNode *>(this));
 }
 
+void TireState::KillSkids() {
+    MakeNoSkid__9SkidMaker(&this->mSkidMaker);
+}
+
 void TireState::Effect::Update(float speed, const bVector3 *car_velocity, const bMatrix4 *car_matrix, float dT, const bVector4 &pos) {
     float intensity = 0.0f;
     float speed_range = this->mMaxVel - this->mMinVel;
@@ -345,6 +348,27 @@ void TireState::SetSurface(const SimSurface &surface) {
     this->mSlipFX.Set(surface.TireSlipEffects(slip_index));
     this->mDriveFX.Set(surface.TireDriveEffects(drive_index));
     this->mSkidFX.Set(surface.TireSlideEffects(slide_index));
+}
+
+void TireState::UpdateWorld(const WCollider *wc, bool rain, bool flat) {
+    UMath::Vector3 tire_pos;
+
+    tire_pos.x = -this->mTirePos.y;
+    tire_pos.y = this->mTirePos.z;
+    tire_pos.z = this->mTirePos.x;
+
+    this->mWPos.FindClosestFace(wc, tire_pos, true);
+    if (this->mWPos.GetSurface() != this->mSurface.GetConstCollection() || this->mRaining != rain || this->mFlat != flat) {
+        this->mRaining = rain;
+        this->mFlat = flat;
+
+        SimSurface surface(this->mWPos.GetSurface());
+        this->SetSurface(surface);
+    }
+
+    this->mGroundPos.z = this->mWPos.HeightAtPoint(tire_pos);
+    this->mGroundPos.x = tire_pos.z;
+    this->mGroundPos.y = -tire_pos.x;
 }
 
 Sim::Connection *CarRenderConn::Construct(const Sim::ConnectionData &data) {
@@ -1168,7 +1192,7 @@ void CarRenderConn::Hide(bool b) {
         if (b) {
             this->mAnimTime = 0.0f;
             for (int i = 0; i < 4; i++) {
-                KillSkids__9TireState(this->mTireState[i]);
+                this->mTireState[i]->KillSkids();
             }
 
             this->mHide = true;
