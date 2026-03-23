@@ -42,30 +42,53 @@ class FnCycle : public FnAnim {
         mpAnim = anim;
         mStartTime = startTime;
         mEndTime = endTime;
+        mLength = endTime - startTime;
     }
 
     FnAnim *GetAnim() {
         return mpAnim;
     }
 
-    float GetStartTime() const {}
+    float GetStartTime() const {
+        return mStartTime;
+    }
 
-    float GetEndTime() const {}
-
-    // Overrides: FnAnim
-    void Eval(float previousTime, float currentTime, float *dofs) override {}
-
-    // Overrides: FnAnim
-    bool EvalEvent(float previousTime, float currentTime, EventHandler **eventHandlers, void *extraData) override {}
+    float GetEndTime() const {
+        return mEndTime;
+    }
 
     // Overrides: FnAnim
-    bool EvalSQT(float currentTime, float *sqt, const BoneMask *boneMask) override {}
+    void Eval(float previousTime, float currentTime, float *dofs) override {
+        mpAnim->Eval(GetInRangeTime(previousTime), GetInRangeTime(currentTime), dofs);
+    }
 
     // Overrides: FnAnim
-    bool EvalPhase(float currentTime, PhaseValue &phase) override {}
+    bool EvalEvent(float previousTime, float currentTime, EventHandler **eventHandlers, void *extraData) override {
+        return mpAnim->EvalEvent(GetInRangeTime(previousTime), GetInRangeTime(currentTime), eventHandlers, extraData);
+    }
+
+    // Overrides: FnAnim
+    bool EvalSQT(float currentTime, float *sqt, const BoneMask *boneMask) override {
+        return mpAnim->EvalSQT(GetInRangeTime(currentTime), sqt, boneMask);
+    }
+
+    // Overrides: FnAnim
+    bool EvalPhase(float currentTime, PhaseValue &phase) override {
+        return mpAnim->EvalPhase(GetInRangeTime(currentTime), phase);
+    }
 
   private:
-    float GetInRangeTime(float t) const {}
+    float GetInRangeTime(float t) const {
+        if (t < mStartTime) {
+            return mEndTime - ((t - mStartTime) - static_cast<float>(static_cast<int>((t - mStartTime) / mLength)) * mLength);
+        } else {
+            if (t <= mEndTime) {
+                return t;
+            }
+            t = t - mEndTime;
+            return mStartTime + (t - static_cast<float>(static_cast<int>(t / mLength)) * mLength);
+        }
+    }
 
     float mStartTime; // offset 0xC, size 0x4
     float mEndTime;   // offset 0x10, size 0x4
