@@ -116,7 +116,8 @@ struct MissingCarPart {
 struct PresetCar {
     PresetCar *Next;
     PresetCar *Prev;
-    char CarTypeName[0x58];
+    char CarTypeName[0x20];
+    char PresetName[0x38];
     unsigned int PartNameHashes[139];
 };
 struct CarSlotTypeOverride;
@@ -939,19 +940,17 @@ void RideInfo::DumpForPreset(FECarRecord *car) {
 }
 
 PresetCar *FindFEPresetCar(unsigned int preset_name_hash) {
+    PresetCar *end = reinterpret_cast<PresetCar *>(&PresetCarList);
     PresetCar *preset = PresetCarList.Next;
 
-    while (true) {
-        if (preset == reinterpret_cast<PresetCar *>(&PresetCarList)) {
-            return 0;
-        }
-        if (preset_name_hash == FEHashUpper(preset->CarTypeName)) {
-            break;
+    while (preset != end) {
+        if (preset_name_hash == FEHashUpper(preset->PresetName)) {
+            return preset;
         }
         preset = preset->Next;
     }
 
-    return preset;
+    return 0;
 }
 
 void RideInfo::FillWithPreset(unsigned int preset_name_hash) {
