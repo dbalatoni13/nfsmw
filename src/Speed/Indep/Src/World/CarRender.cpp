@@ -2053,7 +2053,7 @@ void CarRenderInfo::RenderFlaresOnCar(eView *view, const bVector3 *position, con
         local_world = 0;
     } else {
         CurrentBufferPos += sizeof(bMatrix4);
-        *local_world = *body_matrix;
+        PSMTX44Copy(*reinterpret_cast<const Mtx44 *>(body_matrix), *reinterpret_cast<Mtx44 *>(local_world));
     }
 
     if (local_world == 0) {
@@ -2067,6 +2067,11 @@ void CarRenderInfo::RenderFlaresOnCar(eView *view, const bVector3 *position, con
 
     if (!reflexion) {
         this->RenderTextureHeadlights(view, local_world, 0);
+    }
+
+    if (this->pCarTypeInfo != 0 && this->pCarTypeInfo->UsageType == CAR_USAGE_TYPE_COP &&
+        (this->mOnLights & VehicleFX::LIGHT_COPRED) != 0) {
+        view->NumCopsCherry++;
     }
 
     int car_pixel_size = view->GetPixelSize(position, this->mRadius);
@@ -2138,7 +2143,7 @@ void CarRenderInfo::RenderFlaresOnCar(eView *view, const bVector3 *position, con
         float intensity = 0.0f;
         float sizescale = 1.0f;
 
-        if ((renderFlareFlags & 2) != 0 && light_flare->Flags != 1) {
+        if ((renderFlareFlags & 2) != 0 && light_flare->Type != 1) {
             continue;
         }
         if (copOnly) {
@@ -2186,6 +2191,9 @@ void CarRenderInfo::RenderFlaresOnCar(eView *view, const bVector3 *position, con
                 break;
             case 0xB4348DBA:
                 intensity = bSin(coplight_intensityW * coplightflicker2(Ftime, 2, FlareCount) * copWhitemul);
+                break;
+            case 0x28CD78F5:
+                intensity = 1.0f;
                 break;
             default:
                 intensity = 0.0f;
