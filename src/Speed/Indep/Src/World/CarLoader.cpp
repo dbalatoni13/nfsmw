@@ -259,6 +259,7 @@ int bMemoryGetAllocations(int pool_num, void **allocations, int max_allocations)
 int bGetMallocSize(const void *ptr);
 const char *bGetMallocName(void *ptr);
 int bGetMallocPool(void *ptr);
+void ScratchPadMemCpy(void *dest, const void *src, unsigned int numbytes);
 int CarInfo_GetResourceCost(CarType car_type, bool is_player_car, bool two_player);
 float GetDebugRealTime();
 extern int QueuedFileDefaultPriority;
@@ -360,6 +361,74 @@ int GatherModelHashes(RideInfo *ride_info, unsigned int *model_hashes, int num_h
     }
 
     return num_hashes;
+}
+
+void *MoveDefragmentAllocation(void *allocation) {
+    ProfileNode profile_node("MoveDefragmentAllocation", 0);
+    int allocation_size = bGetMallocSize(allocation);
+
+    if (allocation_size > DefragmentParams.LargestAllocationSize) {
+        return allocation;
+    }
+
+    bool use_copy_storage =
+        allocation_size + 0x480 > reinterpret_cast<unsigned int>(allocation) - reinterpret_cast<unsigned int>(DefragmentParams.pNewAllocation);
+    void *new_allocation = allocation;
+
+    if (use_copy_storage) {
+        int amount_copied = 0;
+        int n = 0;
+        if (allocation_size > 0) {
+            do {
+                int amount_to_copy = allocation_size - amount_copied;
+
+                if (DefragmentParams.CopyStorageSize[n] < amount_to_copy) {
+                    amount_to_copy = DefragmentParams.CopyStorageSize[n];
+                }
+
+                ScratchPadMemCpy(DefragmentParams.CopyStorageMem[n], reinterpret_cast<unsigned char *>(allocation) + amount_copied, amount_to_copy);
+                amount_copied += amount_to_copy;
+                n++;
+            } while (amount_copied < allocation_size);
+        }
+
+        bFree(allocation);
+        new_allocation = 0;
+        DefragmentParams.pAllocation = 0;
+    }
+
+    allocation = bMalloc(allocation_size, (CarLoaderMemoryPoolNumber & 0xF) | 0x2000);
+
+    if (allocation != DefragmentParams.pNewAllocation) {
+        bMemoryPrintAllocationsByAddress(CarLoaderMemoryPoolNumber, 0, 0x7FFFFFFF);
+        bBreak();
+    }
+
+    if (use_copy_storage) {
+        int amount_copied = 0;
+        int n = 0;
+        if (allocation_size > 0) {
+            do {
+                int amount_to_copy = allocation_size - amount_copied;
+
+                if (DefragmentParams.CopyStorageSize[n] < amount_to_copy) {
+                    amount_to_copy = DefragmentParams.CopyStorageSize[n];
+                }
+
+                ScratchPadMemCpy(reinterpret_cast<unsigned char *>(allocation) + amount_copied, DefragmentParams.CopyStorageMem[n], amount_to_copy);
+                amount_copied += amount_to_copy;
+                n++;
+            } while (amount_copied < allocation_size);
+        }
+    } else {
+        ScratchPadMemCpy(allocation, new_allocation, allocation_size);
+        bFree(new_allocation);
+        DefragmentParams.pAllocation = 0;
+    }
+
+    DCStoreRange(allocation, allocation_size);
+
+    return allocation;
 }
 
 CarLoader::CarLoader()
