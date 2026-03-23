@@ -314,13 +314,17 @@ unsigned int GetBlendColour(unsigned int *colours, float *weights, int num_colou
     return *reinterpret_cast<unsigned int *>(&final_colour);
 }
 
-unsigned int RemapColour(unsigned int colour, unsigned int *remap_colours) {
-    float weights[3];
+unsigned int RemapColour(unsigned int colour, unsigned int *colour_map) {
+    CompColour col = *reinterpret_cast<CompColour *>(&colour);
+    float weights[4];
+    unsigned int result;
 
-    weights[0] = static_cast<float>(colour & 0xFF) * 0.003921569f;
-    weights[1] = static_cast<float>((colour >> 8) & 0xFF) * 0.003921569f;
-    weights[2] = static_cast<float>((colour >> 16) & 0xFF) * 0.003921569f;
-    return GetBlendColour(remap_colours, weights, 3, true);
+    weights[0] = static_cast<float>(col.r) * 0.003921569f;
+    weights[1] = static_cast<float>(col.g) * 0.003921569f;
+    weights[2] = static_cast<float>(col.b) * 0.003921569f;
+    weights[3] = 0.0f;
+    result = GetBlendColour(colour_map, weights, 3, true);
+    return result;
 }
 
 
