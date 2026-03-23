@@ -167,12 +167,34 @@ bool FnTurnBlender::BlendVel(float t0, float t1, float *vel) const {
     if (!mFnAnims[0] || !mFnAnims[1]) {
         return false;
     }
-    if (!mFnAnims[0]->EvalVel2D(t0, vel0) || !mFnAnims[1]->EvalVel2D(t1, vel1)) {
+    if (!mFnAnims[0]->EvalVel2D(t0, vel0)) {
         return false;
     }
+    if (mWeight != 0.0f) {
+        if (!mFnAnims[1]->EvalVel2D(t1, vel1)) {
+            return false;
+        }
 
-    vel[0] = vel0[0] + mWeight * (vel1[0] - vel0[0]);
-    vel[1] = vel0[1] + mWeight * (vel1[1] - vel0[1]);
+        float weight1 = 1.0f - mWeight;
+
+        vel[0] = mWeight * vel1[0] + weight1 * vel0[0];
+        vel[1] = mWeight * vel1[1] + weight1 * vel0[1];
+
+        float velLength = length(vel);
+
+        if (velLength != 0.0f) {
+            float vel1Length = length(vel1);
+            float vel0Length = length(vel0);
+            float scale = (mWeight * vel1Length + weight1 * vel0Length) / velLength;
+
+            vel[1] = vel[1] * scale;
+            vel[0] = vel[0] * scale;
+        }
+    } else {
+        vel[1] = vel0[1];
+        vel[0] = vel0[0];
+    }
+
     return true;
 }
 
