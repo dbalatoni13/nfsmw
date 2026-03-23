@@ -1060,9 +1060,9 @@ void *EAXAemsManager::GetCallbackEventSys() {
 
 void SubscribeEventSys() {
     if (IsSoundEnabled == 1) {
-        void *system_desc = gAEMSMgr.GetCallbackEventSys();
-        if (system_desc != nullptr) {
-            Csis::System::Subscribe(system_desc);
+        if (gAEMSMgr.GetCallbackEventSys() != nullptr) {
+            Csis::System::Result status = Csis::System::Subscribe(gAEMSMgr.GetCallbackEventSys());
+            (void)status;
         }
     }
 }

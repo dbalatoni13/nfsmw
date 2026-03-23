@@ -24,7 +24,11 @@ struct Class {
 };
 
 namespace System {
-void Subscribe(void *desc);
+enum Result {
+    kResult_Ok = 0,
+};
+
+Result Subscribe(void *desc);
 void *Alloc(int bytes);
 void Free(void *memory);
 } // namespace System
