@@ -1,5 +1,7 @@
 #include "RawPoseChannel.h"
 
+#include <stdio.h>
+
 namespace EAGL4Anim {
 
 void QuatF4(float *&data, float *output);
@@ -14,19 +16,24 @@ void RawPoseChannel::InitAnimMemoryMap(AnimMemoryMap *anim) {
     int numSigs = rawPoseChannel->mSigSize;
     int *sig = rawPoseChannel->GetNonInterpSig();
 
-    for (int isig = 0; isig < numSigs; isig++) {
+    int isig = 0;
+    while (isig < numSigs) {
         int numChannels = *sig++;
+        isig++;
 
         for (int ichan = 0; ichan < numChannels; ichan++) {
             switch (*sig) {
-            case QUAT:
-                *sig = reinterpret_cast<int>(QuatF4);
-                break;
             case EUL:
                 *sig = reinterpret_cast<int>(EulF3);
                 break;
+            case QUAT:
+                *sig = reinterpret_cast<int>(QuatF4);
+                break;
             case TRAN:
                 *sig = reinterpret_cast<int>(TranF3);
+                break;
+            default:
+                printf("Bad signature channel type\n");
                 break;
             }
             sig++;
@@ -34,19 +41,24 @@ void RawPoseChannel::InitAnimMemoryMap(AnimMemoryMap *anim) {
     }
 
     sig = rawPoseChannel->GetInterpSig();
-    for (int isig = 0; isig < numSigs; isig++) {
+    isig = 0;
+    while (isig < numSigs) {
         int numChannels = *sig++;
+        isig++;
 
         for (int ichan = 0; ichan < numChannels; ichan++) {
             switch (*sig) {
-            case QUAT:
-                *sig = reinterpret_cast<int>(QuatF4Interp);
-                break;
             case EUL:
                 *sig = reinterpret_cast<int>(EulF3Interp);
                 break;
+            case QUAT:
+                *sig = reinterpret_cast<int>(QuatF4Interp);
+                break;
             case TRAN:
                 *sig = reinterpret_cast<int>(TranF3Interp);
+                break;
+            default:
+                printf("Bad signature channel type\n");
                 break;
             }
             sig++;
