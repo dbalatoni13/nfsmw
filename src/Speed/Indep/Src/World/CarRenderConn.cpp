@@ -1069,7 +1069,7 @@ void CarRenderConn::UpdateTires(float dT, float carspeed, const RenderConn::Pkt_
         this->mTireMatrices[i].v3.y = this->mTirePositions[i].y;
 
         if (can_do_fx) {
-            CarRenderInfoU32(this->GetRenderInfo(), 0x177C + i * 4) = (data.mBlowOuts >> i) & 1U;
+            this->GetRenderInfo()->SetWheelWobble(i, (data.mBlowOuts >> i) & 1U);
         }
 
         eMulVector(&state->mTirePos, &this->mRenderMatrix, &this->mTireMatrices[i].v3);

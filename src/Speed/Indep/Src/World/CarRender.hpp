@@ -341,7 +341,9 @@ class CarRenderInfo {
 
     void SetAnimationTime(float animationTime) {}
 
-    void SetWheelWobble(unsigned int wheelInd, bool enable) {}
+    void SetWheelWobble(unsigned int wheelInd, bool enable) {
+        this->mWheelWobbleEnabled[wheelInd] = enable;
+    }
 
     bool GetWheelWobble(unsigned int wheelInd) {}
 
