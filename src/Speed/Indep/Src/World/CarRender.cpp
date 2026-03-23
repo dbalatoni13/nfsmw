@@ -2107,6 +2107,11 @@ void CarRenderInfo::RenderFlaresOnCar(eView *view, const bVector3 *position, con
     float coplight_intensityW = (this->mOnLights & 0x4000) ? cpw : 0.0f;
     unsigned int flashHeadlights = this->mOnLights & 0x4000;
 
+    if ((force_light_state & 1) == 0 && (force_light_state & 8) != 0) {
+        headlight_left_intensity = 0.0f;
+        headlight_right_intensity = 0.0f;
+    }
+
     if (this->mBrokenLights & 1) {
         headlight_left_intensity = 0.0f;
     }
