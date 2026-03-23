@@ -42,6 +42,8 @@ struct CarPartModelTable {
     char pad;
     unsigned short MiddleStringOffset;
     const char *ModelNames[5][1];
+
+    unsigned int GetModelNameHash(unsigned int base_namehash, int model_num, int lod);
 };
 struct CarPartPack : public bTNode<CarPartPack> {
     unsigned int Version;
@@ -116,6 +118,31 @@ unsigned int CarPartTypeNameHashTableSize;
 CarPart *CarPartPartsTable;
 CarPartModelTable *CarPartModelsTable;
 CarPartPack *MasterCarPartPack;
+
+unsigned int CarPartModelTable::GetModelNameHash(unsigned int base_namehash, int model_num, int lod) {
+    const char *model_name = reinterpret_cast<const char *const *>(reinterpret_cast<unsigned char *>(this) + 4)[lod + model_num * 5];
+
+    if (reinterpret_cast<unsigned int>(model_name) == 0xFFFFFFFF) {
+        return 0;
+    }
+
+    if (TemplatedNameHashes != 0) {
+        char lod_suffix[3];
+
+        lod_suffix[0] = '_';
+        lod_suffix[1] = static_cast<char>(lod + 'A');
+        lod_suffix[2] = '\0';
+
+        if (MiddleStringOffset != 0xFFFF) {
+            base_namehash = bStringHash(MasterCarPartPack->StringTable + MiddleStringOffset * 4);
+        }
+
+        base_namehash = bStringHash(model_name, base_namehash);
+        return bStringHash(lod_suffix, base_namehash);
+    }
+
+    return reinterpret_cast<unsigned int>(model_name);
+}
 
 int ConvertVinylGroupNumberToVinylType(int vinyl_group_number);
 int CarInfo_GetMaxCompositingBufferSize();

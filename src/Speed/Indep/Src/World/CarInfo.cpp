@@ -11,7 +11,12 @@ static inline int CarLoader_GetMemoryPoolSize(CarLoader *car_loader) {
     return *reinterpret_cast<int *>(reinterpret_cast<unsigned char *>(car_loader) + 0x64);
 }
 
+struct CarPartAttribute;
+
 struct CarPart {
+    CarPartAttribute *GetAttribute(unsigned int namehash, CarPartAttribute *prev_attribute);
+    CarPartAttribute *GetFirstAppliedAttribute(unsigned int namehash);
+    CarPartAttribute *GetNextAppliedAttribute(unsigned int namehash, CarPartAttribute *prev_attribute);
     char *GetName();
     unsigned int GetTextureNameHash();
     unsigned int GetCarTypeNameHash();
@@ -37,9 +42,35 @@ struct CarPartPackListCtor {
 struct CarPartPackLayout {
     CarPartPackLayout *Next;
     CarPartPackLayout *Prev;
-    char pad[0x2C];
+    unsigned int Version;
+    const char *StringTable;
+    unsigned int StringTableSize;
+    short *AttributeTableTable;
+    unsigned int NumAttributeTables;
+    void *AttributesTable;
+    unsigned int NumAttributes;
+    unsigned int *TypeNameTable;
+    unsigned int NumTypeNames;
+    void *ModelTable;
+    unsigned int NumModelTables;
     CarPart *PartsTable;
     int NumParts;
+};
+
+struct CarPartAttributeLayout {
+    unsigned int NameHash;
+
+    union {
+        float fParam;
+        int iParam;
+        unsigned int uParam;
+    } Params;
+};
+
+struct CarPartModelTableLayout {
+    char TemplatedNameHashes;
+    char pad;
+    unsigned short MiddleStringOffset;
 };
 
 struct CarPartIndexCtor {
@@ -70,6 +101,8 @@ struct CarPartDatabase {
 
     CarPartDatabase();
     CarType GetCarType(unsigned int car_type_name_hash);
+    int GetPartIndex(CarPart *car_part);
+    CarPart *GetCarPartByIndex(int index);
     int NewGetNumCarParts(CarType car_type, int car_slot_id, unsigned int car_part_namehash, int upgrade_level);
     CarPart *NewGetCarPart(CarType car_type, int car_slot_id, unsigned int car_part_namehash, CarPart *prev_part, int upgrade_level);
     CarPart *NewGetFirstCarPart(CarType car_type, int car_slot_id, unsigned int car_part_namehash, int upgrade_level);
@@ -94,6 +127,7 @@ extern const char *CarPartStringTable;
 extern unsigned int *CarPartTypeNameHashTable;
 extern unsigned int CarPartTypeNameHashTableSize;
 extern CAR_PART_ID CarPartSlotMap[];
+extern CarPartPackLayout *MasterCarPartPackLayout asm("MasterCarPartPack");
 
 int UsedCarTextureAddToTable(unsigned int *table, int num_used, int max_textures, unsigned int texture_hash = 0);
 int GetTempCarSkinTextures(unsigned int *table, int num_used, int max_textures, RideInfo *ride_info);
@@ -101,6 +135,8 @@ int GetIsCollectorsEdition();
 unsigned int *GetTypesFromSlot(CAR_SLOT_ID slot, CarType car_type);
 unsigned char MapCarTypeNameHashToIndex(unsigned int car_type_namehash);
 void *ScanHashTableKey8(unsigned char key_value, void *table_start, int table_length, int entry_key_offset, int entry_size);
+unsigned int CarPartModelTable_GetModelNameHash(CarPartModelTableLayout *model_table, unsigned int base_namehash, int model_num, int lod)
+    asm("GetModelNameHash__17CarPartModelTableUiii");
 CAR_PART_ID GetCarPartFromSlot(CAR_SLOT_ID slot);
 CarPart *FindPartWithLevel(CarType type, CAR_SLOT_ID slot, int upg_level);
 int GetNumCarSlotIDNames();
@@ -173,6 +209,53 @@ int GetNumCarSlotIDNames() {
     return CARSLOTID_NUM;
 }
 
+CarPartAttribute *CarPart::GetAttribute(unsigned int namehash, CarPartAttribute *prev_attribute) {
+    unsigned short attribute_table_index = *reinterpret_cast<unsigned short *>(reinterpret_cast<unsigned char *>(this) + 0xA);
+
+    if (attribute_table_index == 0xFFFF) {
+        return 0;
+    }
+
+    short *attribute_table = MasterCarPartPackLayout->AttributeTableTable + attribute_table_index;
+    CarPartAttributeLayout *attributes = reinterpret_cast<CarPartAttributeLayout *>(MasterCarPartPackLayout->AttributesTable);
+    int num_attributes = static_cast<int>(attribute_table[0]);
+    int i = 0;
+
+    if (prev_attribute != 0) {
+        do {
+            if (num_attributes <= i) {
+                break;
+            }
+
+            i++;
+        } while (prev_attribute != reinterpret_cast<CarPartAttribute *>(attributes + attribute_table[i]));
+
+        if (i == num_attributes) {
+            return 0;
+        }
+    }
+
+    while (i < num_attributes) {
+        CarPartAttributeLayout *attribute = attributes + attribute_table[i + 1];
+
+        if (namehash == 0 || attribute->NameHash == namehash) {
+            return reinterpret_cast<CarPartAttribute *>(attribute);
+        }
+
+        i++;
+    }
+
+    return 0;
+}
+
+CarPartAttribute *CarPart::GetFirstAppliedAttribute(unsigned int namehash) {
+    return GetNextAppliedAttribute(namehash, 0);
+}
+
+CarPartAttribute *CarPart::GetNextAppliedAttribute(unsigned int namehash, CarPartAttribute *prev_attribute) {
+    return GetAttribute(namehash, prev_attribute);
+}
+
 char *CarPart::GetName() {
     return const_cast<char *>(CarPartStringTable + *reinterpret_cast<unsigned short *>(reinterpret_cast<unsigned char *>(this) + 8) * 4);
 }
@@ -201,6 +284,61 @@ unsigned char MapCarTypeNameHashToIndex(unsigned int namehash) {
     return 0xFF;
 }
 
+unsigned int CarPart::GetModelNameHash(int model_num, int lod) {
+    unsigned short model_table_index = *reinterpret_cast<unsigned short *>(reinterpret_cast<unsigned char *>(this) + 0xC);
+    unsigned int base_namehash;
+    char group = *reinterpret_cast<char *>(reinterpret_cast<unsigned char *>(this) + 6);
+
+    if (model_table_index == 0xFFFF) {
+        return 0;
+    }
+
+    if (group == 0) {
+        base_namehash = 0xFFFFFFFF;
+    } else if (group == 1) {
+        base_namehash = GetCarTypeNameHash();
+    } else {
+        base_namehash = GetAppliedAttributeUParam(0xEBB03E66, 0);
+    }
+
+    return CarPartModelTable_GetModelNameHash(reinterpret_cast<CarPartModelTableLayout *>(MasterCarPartPackLayout->ModelTable) + model_table_index,
+                                              base_namehash, model_num, lod);
+}
+
+int CarPart::HasAppliedAttribute(unsigned int namehash) {
+    return GetFirstAppliedAttribute(namehash) != 0;
+}
+
+const char *CarPart::GetAppliedAttributeString(unsigned int namehash, const char *default_string) {
+    CarPartAttributeLayout *attribute = reinterpret_cast<CarPartAttributeLayout *>(GetFirstAppliedAttribute(namehash));
+
+    if (attribute != 0) {
+        default_string = CarPartStringTable + attribute->Params.iParam * 4;
+    }
+
+    return default_string;
+}
+
+int CarPart::GetAppliedAttributeIParam(unsigned int namehash, int default_value) {
+    CarPartAttributeLayout *attribute = reinterpret_cast<CarPartAttributeLayout *>(GetFirstAppliedAttribute(namehash));
+
+    if (attribute != 0) {
+        default_value = attribute->Params.iParam;
+    }
+
+    return default_value;
+}
+
+unsigned int CarPart::GetAppliedAttributeUParam(unsigned int namehash, unsigned int default_value) {
+    CarPartAttributeLayout *attribute = reinterpret_cast<CarPartAttributeLayout *>(GetFirstAppliedAttribute(namehash));
+
+    if (attribute != 0) {
+        default_value = attribute->Params.uParam;
+    }
+
+    return default_value;
+}
+
 CarType CarPartDatabase::GetCarType(unsigned int car_type_name_hash) {
     int i = 0;
 
@@ -215,6 +353,43 @@ CarType CarPartDatabase::GetCarType(unsigned int car_type_name_hash) {
     } while (i < 0x54);
 
     return static_cast<CarType>(0x54);
+}
+
+int CarPartDatabase::GetPartIndex(CarPart *car_part) {
+    CarPartPackLayout *car_part_pack = reinterpret_cast<CarPartPackLayout *>(this->CarPartPackList.Next);
+    int index = 0;
+    int part_index;
+
+    while (true) {
+        if (car_part_pack == reinterpret_cast<CarPartPackLayout *>(&this->CarPartPackList)) {
+            return -1;
+        }
+
+        part_index = (reinterpret_cast<unsigned char *>(car_part) - reinterpret_cast<unsigned char *>(car_part_pack->PartsTable)) / 0xE;
+        if (part_index > -1 && part_index < car_part_pack->NumParts) {
+            break;
+        }
+
+        index += car_part_pack->NumParts;
+        car_part_pack = car_part_pack->Next;
+    }
+
+    return index + part_index;
+}
+
+CarPart *CarPartDatabase::GetCarPartByIndex(int index) {
+    if (index > -1) {
+        for (CarPartPackLayout *car_part_pack = reinterpret_cast<CarPartPackLayout *>(this->CarPartPackList.Next);
+             car_part_pack != reinterpret_cast<CarPartPackLayout *>(&this->CarPartPackList); car_part_pack = car_part_pack->Next) {
+            if (index < car_part_pack->NumParts) {
+                return reinterpret_cast<CarPart *>(reinterpret_cast<unsigned char *>(car_part_pack->PartsTable) + index * 0xE);
+            }
+
+            index -= car_part_pack->NumParts;
+        }
+    }
+
+    return 0;
 }
 
 const char *GetCarTypeName(CarType car_type) {
