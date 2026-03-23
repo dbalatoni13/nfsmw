@@ -1529,9 +1529,20 @@ void CarRenderConn::OnRender(eView *view, int reflection) {
     }
 
     bVector3 world_position(body_matrix.v3.x, body_matrix.v3.y, body_matrix.v3.z);
-    if (render_info->Render(view, &world_position, &body_matrix, this->mTireMatrices, this->mBrakeMatrices, this->mTireMatrices,
-                            extra_render_flags, 0, reflection, 1.0f, render_info->mMinLodLevel, render_info->mMinLodLevel) &&
-        view->GetID() < 4) {
-        this->mLastVisibleFrame = eFrameCounter;
+    if ((this->mFlags & CF_ISPLAYER) == 0 || NumTimesRenderTestPlayerCar == 0) {
+        if (render_info->Render(view, &world_position, &body_matrix, this->mTireMatrices, this->mBrakeMatrices, this->mTireMatrices,
+                                extra_render_flags, 0, reflection, 1.0f, render_info->mMinLodLevel, render_info->mMinLodLevel) &&
+            view->GetID() < 4) {
+            this->mLastVisibleFrame = eFrameCounter;
+        }
+    } else {
+        for (int i = 0; i < NumTimesRenderTestPlayerCar; i++) {
+            if (render_info->Render(view, &world_position, &body_matrix, this->mTireMatrices, this->mBrakeMatrices, this->mTireMatrices,
+                                    extra_render_flags, 0, reflection, static_cast<float>(render_info->mMinLodLevel),
+                                    render_info->mMinLodLevel, static_cast<CARPART_LOD>(0)) &&
+                view->GetID() < 4) {
+                this->mLastVisibleFrame = eFrameCounter;
+            }
+        }
     }
 }
