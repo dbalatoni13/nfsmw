@@ -1529,7 +1529,7 @@ void CarRenderConn::OnRender(eView *view, int reflection) {
     if (num_times_render_test_player_car != 0) {
         for (int i = 0; i < num_times_render_test_player_car; i++) {
             if (render_info->Render(view, &world_position, &body_matrix, this->mTireMatrices, this->mBrakeMatrices, this->mTireMatrices,
-                                    extra_render_flags, 0, reflection, static_cast<float>(render_info->mMinLodLevel),
+                                    extra_render_flags, 0, reflection, static_cast<float>(static_cast<int>(render_info->mMinLodLevel)),
                                     render_info->mMinLodLevel, static_cast<CARPART_LOD>(0)) &&
                 view->GetID() < 4) {
                 this->mLastVisibleFrame = eGetFrameCounter();
