@@ -103,30 +103,26 @@ Rain::Rain(eView *view, RainType StartType) {
 }
 
 void CreateWindRotMatrix(eView *view, bMatrix4 *windrot, int offset, bMatrix4 *l2w) {
-    bMatrix4 local2world;
-    bVector3 axis(1.0f, 0.0f, 0.0f);
-    unsigned short wind_angle = bDegToAng(windAng + static_cast<float>(offset));
-    float sway = bSin(wind_angle) * swayMax;
-    unsigned short sway_angle;
+    int index = offset;
+    bMatrix4 local2world(*l2w);
+    float sway = bSin(bDegToAng(windAng + static_cast<float>(index))) * swayMax;
 
-    bCopy(&local2world, l2w);
     bIdentity(windrot);
-    windAxis = axis;
+    windAxis = bVector3(1.0f, 0.0f, 0.0f);
 
     if (view->Precipitation != 0) {
-        bNormalize(&windAxis, reinterpret_cast<bVector3 *>(reinterpret_cast<unsigned char *>(view->Precipitation) + 0x300));
+        bNormalize(&windAxis, view->Precipitation->GetWind());
     }
 
-    local2world.v1.x = -local2world.v1.x;
     local2world.v0.y = -local2world.v0.y;
+    local2world.v1.x = -local2world.v1.x;
     local2world.v3.x = 0.0f;
     local2world.v3.y = 0.0f;
     local2world.v3.z = 0.0f;
     local2world.v3.w = 1.0f;
     eMulVector(&windAxis, &local2world, &windAxis);
-    sway_angle = bDegToAng(sway);
-    eCreateAxisRotationMatrix(windrot, windAxis, sway_angle);
-    eRotateZ(windrot, windrot, sway_angle);
+    eCreateAxisRotationMatrix(windrot, windAxis, bDegToAng(sway));
+    eRotateZ(windrot, windrot, bDegToAng(sway));
 }
 
 void Rain::Init(RainType type, float percent) {

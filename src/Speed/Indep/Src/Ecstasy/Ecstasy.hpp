@@ -403,7 +403,9 @@ struct Rain {
 
     void SetRoadDampness(float damp) {}
 
-    bVector3 *GetWind() {}
+    bVector3 *GetWind() {
+        return &this->PrevailingWindSpeed;
+    }
 };
 
 struct FacePixelation {
