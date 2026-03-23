@@ -764,9 +764,7 @@ void CarRenderConn::UpdateEngineAnimation(float dT, const RenderConn::Pkt_Car_Se
 
     const Attrib::Gen::ecar &attributes = this->VehicleRenderConn::mAttributes;
 
-    if (this->mShifting == 0.0f) {
-        this->mShiftPitchAngle = 0.0f;
-    } else {
+    if (this->mShifting != 0.0f) {
         float car_speed = bLength(*this->mWorldRef.GetVelocity());
         float shift_speed = attributes.ShiftSpeed(0) * 0.017453f;
         float max_pitch = attributes.ShiftAngle(0) * 0.017453f;
@@ -790,6 +788,8 @@ void CarRenderConn::UpdateEngineAnimation(float dT, const RenderConn::Pkt_Car_Se
                 this->mShifting = UMath::Max(this->mShifting - (dT * shift_speed) / max_pitch, 0.0f);
             }
         }
+    } else {
+        this->mShiftPitchAngle = 0.0f;
     }
 
     float delta = data.mEnginePower - this->mEnginePower;
