@@ -689,13 +689,13 @@ bool FnDeltaQFast::EvalSQTMask(float currTime, float *sqt, const BoneMask *boneM
                 continue;
             }
 
-            unsigned short *physical = reinterpret_cast<unsigned short *>(&floorPhys[ibone]);
+            DeltaQFastPhysical *physical = &floorPhys[ibone];
             float *prevQ = reinterpret_cast<float *>(&mPrevQs[ibone]);
 
-            prevQ[0] = static_cast<float>(physical[0] >> 4) * kQFastPhysicalScale12 - kQFastPhysicalBias12;
-            prevQ[1] = static_cast<float>(physical[1] >> 4) * kQFastPhysicalScale12 - kQFastPhysicalBias12;
-            prevQ[2] = static_cast<float>(physical[2] >> 4) * kQFastPhysicalScale12 - kQFastPhysicalBias12;
-            prevQ[3] = static_cast<float>(static_cast<unsigned short>(((physical[0] & 0xF) << 8) | ((physical[1] & 0xF) << 4) | (physical[2] & 0xF))) *
+            prevQ[0] = static_cast<float>(physical->mX) * kQFastPhysicalScale12 - kQFastPhysicalBias12;
+            prevQ[1] = static_cast<float>(physical->mY) * kQFastPhysicalScale12 - kQFastPhysicalBias12;
+            prevQ[2] = static_cast<float>(physical->mZ) * kQFastPhysicalScale12 - kQFastPhysicalBias12;
+            prevQ[3] = static_cast<float>(static_cast<unsigned short>((physical->mW0 << 8) | (physical->mW1 << 4) | physical->mW2)) *
                        kQFastPhysicalScale12 -
                        kQFastPhysicalBias12;
         }
