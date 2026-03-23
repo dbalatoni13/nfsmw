@@ -949,12 +949,15 @@ void CarRenderConn::UpdateTires(float dT, float carspeed, const RenderConn::Pkt_
     bool hop_wheels = false;
     bool flatten_tires = false;
     bool can_do_fx;
-    CarRenderInfo *car_render_info = this->GetRenderInfo();
+    const Attrib::Gen::ecar &attributes = this->VehicleRenderConn::mAttributes;
+    CarRenderInfo *car_render_info = this->mRenderInfo;
+    const LocalReferenceMirror *world_ref = reinterpret_cast<const LocalReferenceMirror *>(&this->mWorldRef);
+    WCollider *collider = this->mWCollider;
 
     this->mFlatTireAngle = UMath::Vector3::kZero;
 
     if (this->TestVisibility(renderModifier * 30.0f)) {
-        const float &hop_scale = this->VehicleRenderConn::mAttributes.WheelHopScale(0);
+        const float &hop_scale = attributes.WheelHopScale(0);
 
         flatten_tires = true;
         if (0.0f < data.mExtraBodyPitch && 0.0f < hop_scale) {
@@ -1048,7 +1051,7 @@ void CarRenderConn::UpdateTires(float dT, float carspeed, const RenderConn::Pkt_
         }
 
         eMulVector(&state->mTirePos, &this->mRenderMatrix, &this->mTireMatrices[i].v3);
-        state->UpdateWorld(this->GetWCollider(), this->GetFlag(CF_ISRAINING), is_flat);
+        state->UpdateWorld(collider, this->GetFlag(CF_ISRAINING), is_flat);
 
         if (!onground || !can_do_fx) {
             state->KillSkids();
@@ -1063,15 +1066,13 @@ void CarRenderConn::UpdateTires(float dT, float carspeed, const RenderConn::Pkt_
                 delta_pos.x = state->mTirePos.x - state->mPrevTirePos.x;
                 delta_pos.y = state->mTirePos.y - state->mPrevTirePos.y;
                 delta_pos.z = state->mTirePos.z - state->mPrevTirePos.z;
-                state->DoSkids(intensity, &delta_pos, &this->mTireMatrices[i], &this->mRenderMatrix,
-                               this->VehicleRenderConn::mAttributes.TireSkidWidth(i));
+                state->DoSkids(intensity, &delta_pos, &this->mTireMatrices[i], &this->mRenderMatrix, attributes.TireSkidWidth(i));
             } else {
                 state->KillSkids();
             }
 
-            state->DoFX(data.mTireSlip[i] * this->VehicleRenderConn::mAttributes.SlipFX(axle),
-                        data.mTireSkid[i] * this->VehicleRenderConn::mAttributes.SkidFX(axle),
-                        carspeed, this->GetVelocity(), &this->mRenderMatrix, dT);
+            state->DoFX(data.mTireSlip[i] * attributes.SlipFX(axle), data.mTireSkid[i] * attributes.SkidFX(axle), carspeed,
+                        world_ref->mVelocity, &this->mRenderMatrix, dT);
         }
 
         state->mPrevTirePos = state->mTirePos;
