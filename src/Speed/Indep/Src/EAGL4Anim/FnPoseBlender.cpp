@@ -44,12 +44,6 @@ void Transform::ExtractQuatTrans(UMath::Vector4 *retQuat, UMath::Vector4 *retTra
     float xx = mat[0];
     float yy = mat[5];
     float zz = mat[10];
-    float xy = mat[1];
-    float xz = mat[2];
-    float yx = mat[4];
-    float yz = mat[6];
-    float zx = mat[8];
-    float zy = mat[9];
     float trace = xx + yy + zz;
 
     if (trace > 0.0f) {
@@ -57,46 +51,54 @@ void Transform::ExtractQuatTrans(UMath::Vector4 *retQuat, UMath::Vector4 *retTra
         float invS = 0.5f / s;
 
         retQuat->w = s * 0.5f;
-        retQuat->z = (xy - yx) * invS;
-        retQuat->x = (yz - zy) * invS;
-        retQuat->y = (zx - xz) * invS;
+        retQuat->z = (mat[1] - mat[4]) * invS;
+        retQuat->x = (mat[6] - mat[9]) * invS;
+        retQuat->y = (mat[8] - mat[2]) * invS;
     } else {
-        float maxDiag = yy;
+        if (xx < yy) {
+            if (zz > yy) {
+                float s = EAGL4Anim::FastSqrt((zz - (xx + yy)) + 1.0f);
 
-        if (xx >= yy) {
-            maxDiag = xx;
-        }
+                retQuat->z = s * 0.5f;
+                if (s != 0.0f) {
+                    s = 0.5f / s;
+                }
+                retQuat->w = (mat[1] - mat[4]) * s;
+                retQuat->y = (mat[9] + mat[6]) * s;
+                retQuat->x = (mat[8] + mat[2]) * s;
+            } else {
+                float s = EAGL4Anim::FastSqrt((yy - (zz + xx)) + 1.0f);
 
-        if (zz > maxDiag) {
-            float s = EAGL4Anim::FastSqrt((zz - (xx + yy)) + 1.0f);
-
-            retQuat->z = s * 0.5f;
-            if (s != 0.0f) {
-                s = 0.5f / s;
+                retQuat->y = s * 0.5f;
+                if (s != 0.0f) {
+                    s = 0.5f / s;
+                }
+                retQuat->w = (mat[8] - mat[2]) * s;
+                retQuat->x = (mat[4] + mat[1]) * s;
+                retQuat->z = (mat[6] + mat[9]) * s;
             }
-            retQuat->w = (xy - yx) * s;
-            retQuat->y = (zy + yz) * s;
-            retQuat->x = (zx + xz) * s;
-        } else if (xx >= yy) {
-            float s = EAGL4Anim::FastSqrt((xx - (yy + zz)) + 1.0f);
-
-            retQuat->x = s * 0.5f;
-            if (s != 0.0f) {
-                s = 0.5f / s;
-            }
-            retQuat->w = (yz - zy) * s;
-            retQuat->y = (xy + yx) * s;
-            retQuat->z = (xz + zx) * s;
         } else {
-            float s = EAGL4Anim::FastSqrt((yy - (zz + xx)) + 1.0f);
+            if (zz > xx) {
+                float s = EAGL4Anim::FastSqrt((zz - (xx + yy)) + 1.0f);
 
-            retQuat->y = s * 0.5f;
-            if (s != 0.0f) {
-                s = 0.5f / s;
+                retQuat->z = s * 0.5f;
+                if (s != 0.0f) {
+                    s = 0.5f / s;
+                }
+                retQuat->w = (mat[1] - mat[4]) * s;
+                retQuat->y = (mat[9] + mat[6]) * s;
+                retQuat->x = (mat[8] + mat[2]) * s;
+            } else {
+                float s = EAGL4Anim::FastSqrt((xx - (yy + zz)) + 1.0f);
+
+                retQuat->x = s * 0.5f;
+                if (s != 0.0f) {
+                    s = 0.5f / s;
+                }
+                retQuat->w = (mat[6] - mat[9]) * s;
+                retQuat->y = (mat[1] + mat[4]) * s;
+                retQuat->z = (mat[2] + mat[8]) * s;
             }
-            retQuat->w = (zx - xz) * s;
-            retQuat->x = (yx + xy) * s;
-            retQuat->z = (yz + zy) * s;
         }
     }
 
