@@ -3172,18 +3172,19 @@ void CarRenderInfo::DrawAmbientShadow(eView *view, const bVector3 *position, flo
         ref = bVector3(lbl_8040ADC0, lbl_8040ADC0, lbl_8040ADC0);
         eMulVector(&ref, localWorld, &ref);
         this->mWorldPos.SetTolerance(lbl_8040ADE4);
-        for (int x = 0; x < N; x++) {
+        bVector3 *point = p;
+        for (int x = 0; x < N; x++, point++) {
             bVector3 sPoint;
             bVector3 usPoint;
             bool validFace;
 
-            sPoint = p[x];
+            sPoint = *point;
             eUnSwizzleWorldVector(sPoint, usPoint);
             this->mWorldPos.FindClosestFace(this->mWCollider, reinterpret_cast<const UMath::Vector3 &>(usPoint), quitIfSameFace);
             validFace = this->mWorldPos.OnValidFace();
-            p[x].z = this->mWorldPos.HeightAtPoint(reinterpret_cast<const UMath::Vector3 &>(usPoint));
+            point->z = this->mWorldPos.HeightAtPoint(reinterpret_cast<const UMath::Vector3 &>(usPoint));
             if (validFace) {
-                bVector3 vec = p[x] - hull_Origin;
+                bVector3 vec = *point - hull_Origin;
                 float dot = bDot(&vec, &hull_Normal);
 
                 if (dot < lbl_8040ADC0) {
@@ -3199,10 +3200,10 @@ void CarRenderInfo::DrawAmbientShadow(eView *view, const bVector3 *position, flo
             quitIfSameFace = false;
 
             if (this->pRideInfo->Type == static_cast<CarType>(4)) {
-                p[x].z = lbl_8040ADCC;
+                point->z = lbl_8040ADCC;
                 bad_points[x / 4]++;
             } else {
-                p[x].z = this->mCar_elevation;
+                point->z = this->mCar_elevation;
                 ref.z = this->mCar_elevation;
             }
         }
