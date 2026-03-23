@@ -1329,8 +1329,10 @@ int LoaderCarInfo(bChunk *chunk) {
         for (int i = 0; i < NumSlotTypeOverrides; i++) {
             bEndianSwap32(&SlotTypeOverrideTable[i].CarType);
             bEndianSwap32(&SlotTypeOverrideTable[i].SlotId);
-            bEndianSwap32(&SlotTypeOverrideTable[i].LookupType[0]);
-            bEndianSwap32(&SlotTypeOverrideTable[i].LookupType[1]);
+
+            for (int j = 0; j < 2; j++) {
+                bEndianSwap32(&SlotTypeOverrideTable[i].LookupType[j]);
+            }
         }
     } else if (chunk_id == 0x80034602) {
         bChunk *car_pack_chunk = chunk->GetFirstChunk();
