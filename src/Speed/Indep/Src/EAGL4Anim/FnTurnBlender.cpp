@@ -169,11 +169,13 @@ float FnTurnBlender::CycleTime(float t, float startTime, float endTime) const {
 int FnTurnBlender::ComputeCycleIdx(float t, float startTime, float endTime) const {
     float length = endTime - startTime;
 
-    if (length <= 0.0f) {
-        return 0;
+    if (t < startTime) {
+        return static_cast<int>((startTime - t) / length);
     }
-
-    return static_cast<int>((t - startTime) / length);
+    if (endTime <= t) {
+        return static_cast<int>((t - endTime) / length) + 1;
+    }
+    return 0;
 }
 
 void FnTurnBlender::ComputeAlignQ(float *v1, float *v2, UMath::Vector4 &q) const {
