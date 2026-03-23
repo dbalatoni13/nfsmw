@@ -159,9 +159,9 @@ VehicleDamagePart::VehicleDamagePart(CarRenderInfo *carRenderInfo, int slotId) {
     mSlotId = slotId;
     mAttached = 1;
     mHidden = 0;
-    mAnimationPivot[2] = 0.0f;
     mAnimationPivot[0] = 0.0f;
     mAnimationPivot[1] = 0.0f;
+    mAnimationPivot[2] = 0.0f;
     PSMTX44Identity(*reinterpret_cast<Mtx44 *>(&mMatrix));
 
     if (carRenderInfo != 0 && (rideInfo = carRenderInfo->pRideInfo) != 0) {
@@ -387,7 +387,7 @@ void VehiclePartDamageBehaviour::ManageGlassDamage() {
 }
 
 void VehiclePartDamageBehaviour::InitAnimationPivot(unsigned int slotId, const char * markerName) {
-    if (this->FindPositionMarker(markerName) != 0) {
+    if (this->FindPositionMarker(markerName)) {
         VehicleDamagePart *damagePart = this->mDamagePartList[slotId];
         float *pivot = reinterpret_cast<float *>(reinterpret_cast<unsigned char *>(damagePart) + 0x10);
 
