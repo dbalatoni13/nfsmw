@@ -5,6 +5,7 @@
 #include "Speed/Indep/bWare/Inc/bChunk.hpp"
 #include "Speed/Indep/bWare/Inc/bMemory.hpp"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
+#include "Speed/Indep/Src/Misc/Profiler.hpp"
 #include "Speed/Indep/Src/Misc/ResourceLoader.hpp"
 #include "Speed/Indep/Src/Misc/bFile.hpp"
 #include "Speed/Indep/Src/World/CarRender.hpp"
@@ -277,8 +278,7 @@ LoadedSkinLayer *LoadedSkinLayer_Construct(LoadedSkinLayer *loaded_skin_layer, u
 LoadedRideInfo *LoadedRideInfo_Construct(LoadedRideInfo *loaded_ride_info, RideInfo *ride_info, int in_front_end, int is_two_player,
                                          int is_player_car)
     asm("__14LoadedRideInfoP8RideInfoiii");
-int GatherModelHashes(RideInfo *ride_info, unsigned int *model_hashes, int num_hashes, int max_model_hashes, int first, int last)
-    asm("GatherModelHashes__FP8RideInfoPUiiiii");
+int GatherModelHashes(RideInfo *ride_info, unsigned int *model_hashes, int num_hashes, int max_model_hashes, int first, int last);
 int LoadedCar_GetModelHashes(LoadedCar *loaded_car, unsigned int *name_hashes, int max_hashes)
     asm("GetModelHashes__9LoadedCarPUii");
 int LoadedSkin_GetTextureHashes(LoadedSkin *loaded_skin, unsigned int *name_hashes, int max_hashes, int load_perm_layers)
@@ -330,6 +330,37 @@ struct QueuedFilePrioritySetter {
         QueuedFileDefaultPriority = SavedPriority;
     }
 };
+
+int GatherModelHashes(RideInfo *ride_info, unsigned int *model_hashes, int num_hashes, int max_model_hashes, int first, int last) {
+    ProfileNode profile_node("GatherModelHashes", 0);
+    CARPART_LOD minLodLevel = ride_info->GetMinLodLevel();
+    CARPART_LOD maxLodLevel = ride_info->GetMaxLodLevel();
+
+    for (int slotIx = first; slotIx < last; slotIx++) {
+        for (CarPart *part = CarPartDB.NewGetFirstCarPart(ride_info->Type, slotIx, 0, -1); part != 0;
+             part = CarPartDB.NewGetNextCarPart(part, ride_info->Type, slotIx, 0, -1)) {
+            for (int modelIx = 0; modelIx < 1; modelIx++) {
+                for (int lod = minLodLevel; lod <= maxLodLevel; lod++) {
+                    unsigned int model_name_hash = 0;
+
+                    if (part != 0) {
+                        model_name_hash = part->GetModelNameHash(modelIx, lod);
+                    }
+
+                    if (model_name_hash != 0) {
+                        if (num_hashes < max_model_hashes) {
+                            model_hashes[num_hashes] = model_name_hash;
+                        }
+
+                        num_hashes++;
+                    }
+                }
+            }
+        }
+    }
+
+    return num_hashes;
+}
 
 CarLoader::CarLoader()
     : StartLoadingTime(0.0f) {

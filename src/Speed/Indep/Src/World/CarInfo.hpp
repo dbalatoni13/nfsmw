@@ -302,6 +302,14 @@ class RideInfo {
         Init(CARTYPE_NONE, CarRenderUsage_Player, 0, 0);
     }
 
+    CARPART_LOD GetMinLodLevel() const {
+        return this->mMinLodLevel;
+    }
+
+    CARPART_LOD GetMaxLodLevel() const {
+        return this->mMaxLodLevel;
+    }
+
     CarType Type;            // offset 0x0, size 0x4
     char InstanceIndex;      // offset 0x4, size 0x1
     char HasDash;            // offset 0x5, size 0x1
