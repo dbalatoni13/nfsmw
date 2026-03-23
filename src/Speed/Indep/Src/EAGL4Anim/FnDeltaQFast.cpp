@@ -758,7 +758,19 @@ bool FnDeltaQFast::EvalSQTMask(float currTime, float *sqt, const BoneMask *boneM
                 continue;
             }
 
-            FastQuatBlendF4(t, reinterpret_cast<float *>(&mPrevQs[ibone]), reinterpret_cast<float *>(&mNextQs[ibone]), &quatBase[boneIdx * 12]);
+            float *prevQ = reinterpret_cast<float *>(&mPrevQs[ibone]);
+            float *nextQ = reinterpret_cast<float *>(&mNextQs[ibone]);
+            float *out = &quatBase[boneIdx * 12];
+            float x = t * (nextQ[0] - prevQ[0]) + prevQ[0];
+            float y = t * (nextQ[1] - prevQ[1]) + prevQ[1];
+            float z = t * (nextQ[2] - prevQ[2]) + prevQ[2];
+            float w = t * (nextQ[3] - prevQ[3]) + prevQ[3];
+            float invNorm = 1.0f / sqrtf(x * x + y * y + z * z + w * w);
+
+            out[0] = x * invNorm;
+            out[1] = y * invNorm;
+            out[2] = z * invNorm;
+            out[3] = w * invNorm;
         }
     } else {
         for (int ibone = 0; ibone < deltaQ->mNumBones; ibone++) {
