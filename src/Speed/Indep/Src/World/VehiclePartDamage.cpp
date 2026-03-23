@@ -18,16 +18,25 @@ struct VehiclePartDamageZone {
     void SetDamageLevel(unsigned short damageLevel);
 };
 
+struct CarPart;
+struct CarPartDatabase;
+
 struct VehicleDamagePart {
     unsigned short mDamageLevel;
     unsigned short pad;
-    char pad2[0x58];
+    int mSlotId;
+    CarPart *mReplacementParts[2];
+    float mAnimationPivot[3];
+    bMatrix4 mMatrix;
     int mAttached;
     int mHidden;
 
+    VehicleDamagePart(CarRenderInfo *carRenderInfo, int slotId);
+    ~VehicleDamagePart();
     void Reset();
 };
 
+extern CarPartDatabase CarPartDB;
 extern SlotPool *VehicleDamagePartSlotPool;
 extern SlotPool *VehiclePartDamageZoneSlotPool;
 extern unsigned int unitTestDelay;
@@ -66,6 +75,14 @@ extern float lbl_8040D144;
 extern float lbl_8040D14C;
 extern const char lbl_8040D154[] asm("lbl_8040D154");
 extern const char lbl_8040D170[] asm("lbl_8040D170");
+extern CarPart *CarPartDatabase_NewGetNextCarPart(
+    CarPartDatabase *carPartDB,
+    CarPart *car_part,
+    CarType car_type,
+    int car_slot_id,
+    unsigned int car_part_namehash,
+    int upgrade_level)
+    asm("NewGetNextCarPart__15CarPartDatabaseP7CarPart7CarTypeiUii");
 
 extern VehicleDamagePart *VehicleDamagePart_ctor(VehicleDamagePart *part, CarRenderInfo *carRenderInfo, int slotId)
     asm("__17VehicleDamagePartP13CarRenderInfoi");
@@ -98,6 +115,42 @@ int VehiclePartDamageZone::GetSlotID(int index) const {
 
 void VehiclePartDamageZone::SetDamageLevel(unsigned short damageLevel) {
     mDamageLevel = damageLevel;
+}
+
+VehicleDamagePart::VehicleDamagePart(CarRenderInfo *carRenderInfo, int slotId) {
+    int replacementIndex;
+    RideInfo *rideInfo;
+
+    mDamageLevel = 0;
+    mSlotId = slotId;
+    mAttached = 1;
+    mHidden = 0;
+    mAnimationPivot[2] = 0.0f;
+    mAnimationPivot[0] = 0.0f;
+    mAnimationPivot[1] = 0.0f;
+    PSMTX44Identity(*reinterpret_cast<Mtx44 *>(&mMatrix));
+
+    if (carRenderInfo != 0 && (rideInfo = carRenderInfo->pRideInfo) != 0) {
+        replacementIndex = 1;
+        mReplacementParts[0] = rideInfo->GetPart(mSlotId);
+        do {
+            if (mReplacementParts[replacementIndex - 1] != 0) {
+                mReplacementParts[replacementIndex] =
+                    CarPartDatabase_NewGetNextCarPart(&CarPartDB, mReplacementParts[replacementIndex - 1], rideInfo->Type, mSlotId, 0, -1);
+            }
+            replacementIndex++;
+        } while (replacementIndex < 2);
+    }
+}
+
+VehicleDamagePart::~VehicleDamagePart() {
+    int replacementIndex;
+
+    replacementIndex = 0;
+    do {
+        mReplacementParts[replacementIndex] = 0;
+        replacementIndex++;
+    } while (replacementIndex < 2);
 }
 
 void VehicleDamagePart::Reset() {
