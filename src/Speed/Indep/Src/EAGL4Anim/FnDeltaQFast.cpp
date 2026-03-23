@@ -454,7 +454,6 @@ bool FnDeltaQFast::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask)
         int floorTime = FloatToInt(currTime);
         unsigned short *times = deltaQ->mTimes;
         int floorKey;
-        unsigned int binLengthPower;
         unsigned int floorDeltaIdx;
         int floorBinIdx;
         unsigned int binLengthMask;
@@ -503,10 +502,9 @@ bool FnDeltaQFast::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask)
                 }
             }
 
-            binLengthPower = deltaQ->mBinLengthPower;
-            floorBinIdx = static_cast<int>(floorKey) >> binLengthPower;
-            binLengthMask = 0x7FFFFFFFU >> (0x1F - binLengthPower);
-            floorDeltaIdx = floorKey & binLengthMask;
+        floorBinIdx = static_cast<int>(floorKey) >> deltaQ->mBinLengthPower;
+        binLengthMask = 0x7FFFFFFFU >> (0x1F - deltaQ->mBinLengthPower);
+        floorDeltaIdx = floorKey & binLengthMask;
 
         if (mNextKey == floorKey) {
             UMath::Vector4 *swapQs = mNextQs;
@@ -526,7 +524,7 @@ bool FnDeltaQFast::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask)
                 mNextKey = mPrevKey;
             }
 
-            if (prevDeltaIdx == -1 || floorBinIdx != (mPrevKey >> binLengthPower) || floorDeltaIdx == 0 ||
+                if (prevDeltaIdx == -1 || floorBinIdx != (mPrevKey >> deltaQ->mBinLengthPower) || floorDeltaIdx == 0 ||
                 (floorKey < mPrevKey && !IsReverseDeltaSumEnabled())) {
                     for (int ibone = 0; ibone < static_cast<int>(deltaQ->mNumBones); ibone++) {
                         float *prevQ = reinterpret_cast<float *>(&mPrevQs[ibone]);
