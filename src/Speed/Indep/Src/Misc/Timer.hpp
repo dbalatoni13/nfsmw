@@ -5,6 +5,8 @@
 #pragma once
 #endif
 
+#include "Speed/Indep/Src/Ecstasy/EcstasyE.hpp"
+
 // total size: 0x4
 class Timer {
   public:
@@ -13,16 +15,20 @@ class Timer {
     }
 
     Timer(float seconds) {
-        this->PackedTime = static_cast<int>(seconds * 4000);
+        SetTime(seconds);
     }
 
     Timer(int packed_time) {
         this->PackedTime = packed_time;
     }
 
-    int operator=(const Timer &t) const {}
+    int operator==(const Timer &t) const {
+        return this->PackedTime == t.PackedTime;
+    }
 
-    int operator!=(const Timer &t) const {}
+    int operator!=(const Timer &t) const {
+        return this->PackedTime != t.PackedTime;
+    }
 
     Timer &operator=(const Timer &t) {
         this->PackedTime = t.PackedTime;
@@ -45,27 +51,40 @@ class Timer {
         return this->PackedTime <= t.PackedTime;
     }
 
-    Timer operator+(const Timer &t) const {}
+    Timer operator+(const Timer &t) const {
+        return Timer(PackedTime + t.PackedTime);
+    }
 
-    Timer operator*(const Timer &t) const {}
+    Timer &operator+=(const Timer &t) {
+        PackedTime += t.PackedTime;
+        return *this;
+    }
 
-    Timer &operator+=(const Timer &t) {}
+    Timer &operator-=(const Timer &t) {
+        PackedTime += t.PackedTime;
+        return *this;
+    }
 
-    Timer &operator-=(const Timer &t) {}
-
-    Timer &operator-() {}
+    // Timer &operator-() {}
 
     void ResetLow() {
         this->PackedTime = 0;
     }
+    void ResetHigh() {
+        this->PackedTime = 0x7fffffff;
+    }
 
-    void ResetHigh() {}
+    void UnSet() {
+        this->PackedTime = 0;
+    }
 
-    void UnSet() {}
+    int IsSet() {
+        return PackedTime != 0 && PackedTime != 0x7fffffff;
+    }
 
-    int IsSet() {}
-
-    void SetTime(float seconds) {}
+    void SetTime(float seconds) {
+        PackedTime = static_cast<int>(seconds * 4000.0f + 0.5f);
+    }
 
     float GetSeconds() {
         return this->PackedTime / 4000.0f;
@@ -75,7 +94,12 @@ class Timer {
         return this->PackedTime;
     }
 
-    void SetPackedTime(int packed_time) {}
+    void SetPackedTime(int packed_time) {
+        this->PackedTime = packed_time;
+    }
+
+    void GetHoursMinsSeconds(int *hours, int *minutes, int *seconds, int *thousandths_seconds);
+    void PrintToString(char *string, int flags);
 
   private:
     int PackedTime; // offset 0x0, size 0x4
@@ -85,11 +109,29 @@ extern int WorldTimeFrames;
 extern float WorldTimeElapsed;
 extern int RealTimeFrames;
 extern Timer WorldTimer;
+extern Timer RealTimer;
+extern float RealTimeElapsed;
+extern int RealLoopCounter;
+
+extern volatile int FrameCounter;
+extern volatile unsigned int LastFrameCounterTick;
 
 void PrepareRealTimestep(float video_time_elapsed);
 void PrepareWorldTimestep(float elapsed_time);
 void AdvanceRealTime();
 void AdvanceWorldTime();
 float GetDebugRealTime();
+VIDEO_MODE GetVideoMode();
+
+inline float GetVideoFrameTime(VIDEO_MODE video_mode) {
+    if (video_mode == MODE_PAL) {
+        return 1.0f / 50.0f;
+    }
+    return 1.0f / 60.0f;
+}
+
+inline float VideoFramesToSeconds(int num_frames) {
+    return static_cast<float>(num_frames) * GetVideoFrameTime(GetVideoMode());
+}
 
 #endif

@@ -4,19 +4,13 @@
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
 #include "Speed/Indep/Src/Ecstasy/EcstasyEx.hpp"
 #include "Speed/Indep/Src/Ecstasy/Texture.hpp"
+#include "Speed/Indep/Src/Misc/Timer.hpp"
 #include "Speed/Indep/Src/World/Car.hpp"
 #include "Speed/Indep/Src/World/Sun.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include "dolphin.h"
-
-enum VIDEO_MODE {
-    MODE_PAL = 0,
-    MODE_PAL60 = 1,
-    MODE_NTSC = 2,
-    NUM_VIDEO_MODES = 3,
-};
 
 // TODO put these in correct headers
 unsigned int bGetTicker();
@@ -101,8 +95,6 @@ Mtx44 Player1SpecularProjection;
 Mtx44 Player2ReflectionProjection;
 Mtx44 Player2SpecularProjection;
 
-volatile int FrameCounter = 0;
-volatile unsigned int LastFrameCounterTick = 0;
 VIDEO_MODE eCurrentVideoMode;
 int ScreenWidth;
 int ScreenHeight;
@@ -151,13 +143,13 @@ int efbWcrt;                                                        // size: 0x4
 int xfbWcrt;                                                        // size: 0x4
 bool IsPal50Mode = false;                                           // size: 0x1
 #ifdef EA_PLATFORM_GAMECUBE
-int xfbHcrt = 520;                                                  // size: 0x4
+int xfbHcrt = 520; // size: 0x4
 #else
-int xfbHcrt = 574;                                                  // size: 0x4
+int xfbHcrt = 574; // size: 0x4
 #endif
-int efbHcrt = 480;                                                  // size: 0x4
-float efbxfbRatio = 1.0f;                                           // size: 0x4
-GXRenderModeObj PalNFS01IntDfScale;                                 // size: 0x3C
+int efbHcrt = 480;                  // size: 0x4
+float efbxfbRatio = 1.0f;           // size: 0x4
+GXRenderModeObj PalNFS01IntDfScale; // size: 0x3C
 Bool bProgressiveScan = false;
 vu16 e_sync = 0;                         // size: 0x2
 vu16 e_endsync = 0;                      // size: 0x2
@@ -423,13 +415,13 @@ bool IsSunInFrustrum(eView *player_view) {
     if (!sun_info) {
         return false;
     }
-    const bVector2 sunpos_xy(sun_info->PositionX, sun_info->PositionY); // sp8
+    const bVector2 sunpos_xy(sun_info->PositionX, sun_info->PositionY);                                         // sp8
     bVector2 campos_xy(player_view->GetCamera()->GetPosition()->x, player_view->GetCamera()->GetPosition()->y); // sp10
 
     const bVector2 to_pt_xy_un = sunpos_xy - campos_xy;                                                                     // sp18
     const bVector2 cam_dir_xy_un(player_view->GetCamera()->GetDirection()->x, player_view->GetCamera()->GetDirection()->y); // sp20
-    bVector2 to_pt_xy = bNormalize(to_pt_xy_un); // sp38
-    bVector2 cam_dir_xy = bNormalize(cam_dir_xy_un); // sp40;
+    bVector2 to_pt_xy = bNormalize(to_pt_xy_un);                                                                            // sp38
+    bVector2 cam_dir_xy = bNormalize(cam_dir_xy_un);                                                                        // sp40;
 
     float dotp = bDot(&to_pt_xy, &cam_dir_xy);
 
@@ -580,7 +572,7 @@ void __InitRenderMode() {
 }
 
 void __InitMem() {
-#define ROUND_UP(x, round) (((x) + ((round) - 1)) & ~((round)-1))
+#define ROUND_UP(x, round) (((x) + ((round) - 1)) & ~((round) - 1))
 
     fbSize = (u16)ROUND_UP(_rmode->fbWidth, 16) * _rmode->xfbHeight * 2;
     void *pFB = bMalloc(fbSize * 2, "TODO", __LINE__, 0x800);
@@ -588,7 +580,6 @@ void __InitMem() {
     _currentBuffer = _frameBuffer2 = (u8 *)pFB + fbSize;
 #undef ROUND_UP
 }
-
 
 void __InitGXlite(void) {
     GXSetViewport(0.0f, 0.0f, _rmode->fbWidth, _rmode->xfbHeight, 0.0f, 1.0f);

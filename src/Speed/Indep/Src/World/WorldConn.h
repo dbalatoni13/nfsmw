@@ -108,7 +108,9 @@ class Pkt_Effect_Open : public Sim::Packet {
     unsigned int mActee;                        // offset 0x14, size 0x4
 };
 
+void InitServices();
 void UpdateServices(float dT);
+void RestoreServices();
 
 // total size: 0x60
 class Pkt_Body_Open : public Sim::Packet {

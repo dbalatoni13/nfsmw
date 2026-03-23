@@ -5,6 +5,7 @@
 #pragma once
 #endif
 
-
+void InitGarageCarLoaders();
+void CleanUpGarageCarLoaders();
 
 #endif

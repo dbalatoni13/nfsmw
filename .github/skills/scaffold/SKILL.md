@@ -29,7 +29,14 @@ Collect data from **all** of these sources in parallel where possible:
 
 ## Phase 2: Setup class
 
-Copy and cleanup the header that you got from running the `lookup` skill using the `symbols/Dwarf` folder. Fix visibility, function order and vtable related things based on using `lookup` on the PS2 types.
+Copy the header/type body that you got from running the `lookup` skill using the
+`symbols/Dwarf` folder into the canonical owner header first. Do not retype or
+reconstruct the layout from memory, from scattered callsites, or from guessed
+semantics.
+
+Then do the minimum cleanup backed by evidence: fix visibility, function order and
+vtable related things based on using `lookup` on the PS2 types, and clean up duplicated
+inline copies when the DWARF emitted both versions.
 
 For formatting and local cleanup while writing the header, consult
 `.github/skills/code_style/SKILL.md`. Use it for member-comment alignment, declaration
@@ -49,6 +56,11 @@ exists yet and you have verified that the ownership is still unresolved.
 Preserve real member names, types, order, and offset comments while scaffolding. Do not
 fill gaps with invented `pad`, `unk`, or `field_XXXX` members for game types; verify the
 layout from Dwarf / PS2 data and leave a TODO over the type if a field is still uncertain.
+
+Preserve the declaration order from the dumped type body as well, not just the member
+order. Do not regroup methods, fields, enums, or helper declarations for readability
+unless an existing repo header or PS2 evidence proves the original owner header used a
+different order.
 
 Keep the `// total size: 0x...` comment above the recovered type declaration. When the
 recovered type is a `class`, keep explicit access sections and prefer putting methods /
