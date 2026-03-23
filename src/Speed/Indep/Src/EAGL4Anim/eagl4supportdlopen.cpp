@@ -135,155 +135,178 @@ bool DynamicLoader::DoVersionCheck() {
 }
 
 void DynamicLoader::Resolve() {
-    HashPointer *h = reinterpret_cast<HashPointer *>(handle);
+    int i;
+    int j;
+    HashPointer *h;
+    ELFSectionHeader *sheader;
+    ELFHeader *e;
+    const int MAX_UNRESOLVED_ERRORS = 32;
+    bool unresolvedSymbolError;
+    char *unresolvedList[32];
+    int numUnresolved;
+
+    h = reinterpret_cast<HashPointer *>(handle);
     if (!h || h->resolved) {
         return;
     }
 
+    e = h->e;
     h->resolved = true;
+    sheader = h->sections;
+    unresolvedSymbolError = false;
+    numUnresolved = 0;
 
-    ELFSectionHeader *sections = h->sections;
-    int unresolvedCount = 0;
-    int unresolvedSeen[32];
-    int sectionCount = h->e->e_shnum;
+retry:
+    ;
 
-    for (int sectionIndex = 0; sectionIndex < sectionCount; sectionIndex++) {
-        ELFSectionHeader *section = &sections[sectionIndex];
-        if (section->sh_type != SHT_REL) {
+    for (i = 0; i < e->e_shnum; i++) {
+        int relocations;
+        char *patchbase;
+        ELF32_Rel *r;
+        ELF32_Sym *symtab;
+
+        if (sheader[i].sh_type != SHT_REL) {
             continue;
         }
 
-        ELF32_Rel *rel = reinterpret_cast<ELF32_Rel *>(section->sh_voffset);
-        int relCount = static_cast<int>(section->sh_size);
-        if (relCount < 0) {
-            relCount += 7;
+        relocations = static_cast<int>(sheader[i].sh_size);
+        if (relocations < 0) {
+            relocations += 7;
         }
-        relCount >>= 3;
+        patchbase = reinterpret_cast<char *>(sheader[i].sh_vinfo);
+        r = reinterpret_cast<ELF32_Rel *>(sheader[i].sh_voffset);
+        symtab = reinterpret_cast<ELF32_Sym *>(sheader[i].sh_vlink);
+        relocations >>= 3;
 
-        ELF32_Sym *symtab = reinterpret_cast<ELF32_Sym *>(section->sh_vlink);
-        char *targetBase = reinterpret_cast<char *>(section->sh_vinfo);
+        for (j = 0; j < relocations; j++) {
+            unsigned int baseaddr = 0;
+            int iIndex = j;
+            ELF32_Sym *sym;
+            unsigned int *patchaddr;
+            unsigned short *patchaddr16;
 
-        for (int relIndex = 0; relIndex < relCount; relIndex++) {
-            rel[relIndex].r_offset = ByteSwap32(rel[relIndex].r_offset);
-            rel[relIndex].r_info = ByteSwap32(rel[relIndex].r_info);
-
-            ELF32_Sym *sym = &symtab[rel[relIndex].r_info >> 8];
-            int symbolBase = 0;
+            r[j].r_offset = htotul(r[j].r_offset);
+            r[j].r_info = htotul(r[j].r_info);
+            sym = &symtab[r[j].r_info >> 8];
 
             while ((sym->st_info & 0xF) < STT_FILE) {
-                if (sym->st_shndx && sym->st_shndx < h->e->e_shnum) {
-                    symbolBase = reinterpret_cast<char *>(sections[sym->st_shndx].sh_voffset) - reinterpret_cast<char *>(nullptr);
+                if (sym->st_shndx && sym->st_shndx < e->e_shnum) {
+                    baseaddr = reinterpret_cast<unsigned int>(sheader[sym->st_shndx].sh_voffset);
                     break;
                 }
 
-                const char *name = &h->strtab[sym->st_name];
-                bool valid = false;
-                void *resolvedAddr = nullptr;
+                char *name = &h->strtab[sym->st_name];
+                HashPointer *hp;
 
-                for (HashPointer *other = hashhead; other; other = other->next) {
-                    if (other != h) {
-                        resolvedAddr = dlsym(other, name);
-                        if (resolvedAddr) {
+                for (hp = hashhead; hp; hp = hp->next) {
+                    if (hp != h) {
+                        void *addr = dlsym(hp, name);
+
+                        if (addr) {
                             sym->st_shndx = 1;
                             sym->st_other = 2;
-                            sym->st_value = reinterpret_cast<char *>(resolvedAddr) - reinterpret_cast<char *>(sections[1].sh_voffset);
-                            symbolBase = reinterpret_cast<char *>(sections[1].sh_voffset) - reinterpret_cast<char *>(nullptr);
+                            baseaddr = reinterpret_cast<unsigned int>(sheader[1].sh_voffset);
+                            sym->st_value = reinterpret_cast<unsigned int>(addr) - baseaddr;
                             break;
                         }
                     }
                 }
 
-                if (resolvedAddr) {
+                if (hp) {
                     break;
                 }
 
                 if (h->pSearchFunction) {
-                    resolvedAddr = h->pSearchFunction(name, valid);
+                    bool valid = false;
+                    void *addr = h->pSearchFunction(name, valid);
+
                     if (valid) {
                         sym->st_shndx = 1;
                         sym->st_other = 3;
-                        sym->st_value = reinterpret_cast<char *>(resolvedAddr) - reinterpret_cast<char *>(sections[1].sh_voffset);
-                        symbolBase = reinterpret_cast<char *>(sections[1].sh_voffset) - reinterpret_cast<char *>(nullptr);
+                        baseaddr = reinterpret_cast<unsigned int>(sheader[1].sh_voffset);
+                        sym->st_value = reinterpret_cast<unsigned int>(addr) - baseaddr;
                         break;
                     }
                 }
 
-                resolvedAddr = gSymbolPool.Search(name, valid);
-                if (valid) {
-                    sym->st_shndx = 1;
-                    sym->st_other = 4;
-                    sym->st_value = reinterpret_cast<char *>(resolvedAddr) - reinterpret_cast<char *>(sections[1].sh_voffset);
-                    symbolBase = reinterpret_cast<char *>(sections[1].sh_voffset) - reinterpret_cast<char *>(nullptr);
-                    break;
+                {
+                    bool valid = false;
+                    void *addr = gSymbolPool.Search(name, valid);
+
+                    if (valid) {
+                        sym->st_shndx = 1;
+                        sym->st_other = 4;
+                        baseaddr = reinterpret_cast<unsigned int>(sheader[1].sh_voffset);
+                        sym->st_value = reinterpret_cast<unsigned int>(addr) - baseaddr;
+                        break;
+                    }
                 }
 
                 const char *type = GetLoaderSymbolType(name);
                 if (strncmp(gRuntimeAllocType, name, strlen(gRuntimeAllocType)) == 0) {
-                    RuntimeAllocConstructor ctor = gRuntimeAllocConsPool.FindConstructor(type);
-                    if (ctor) {
-                        RuntimeAllocDestructor dtor = gRuntimeAllocConsPool.FindDestructor(type);
-                        int auxData = 0;
-                        bool createDestructor = false;
-                        void *runtimeAlloc =
-                            ctor(name + strlen(gRuntimeAllocType), reinterpret_cast<class DynamicLoader *>(this), auxData, createDestructor, name);
+                    const char *stripped_name = name + strlen(gRuntimeAllocType);
+                    RuntimeAllocConstructor c = gRuntimeAllocConsPool.FindConstructor(type);
 
-                        if (createDestructor && runtimeAlloc) {
-                            RuntimeAllocDestructorEntry *entry =
-                                reinterpret_cast<RuntimeAllocDestructorEntry *>(EAGL4Internal::EAGL4Malloc(sizeof(RuntimeAllocDestructorEntry), nullptr));
-                            entry->d = dtor;
-                            entry->data = runtimeAlloc;
-                            entry->auxData = auxData;
-                            entry->next = RuntimeAllocDestructors;
-                            RuntimeAllocDestructors = entry;
+                    if (c) {
+                        RuntimeAllocDestructor d = gRuntimeAllocConsPool.FindDestructor(type);
+                        int auxData = 0;
+                        bool bCallDestructor = false;
+                        void *addr = c(stripped_name, reinterpret_cast<class DynamicLoader *>(this), auxData, bCallDestructor, name);
+
+                        if (bCallDestructor && addr) {
+                            RuntimeAllocDestructorEntry *de = new RuntimeAllocDestructorEntry(d, addr, auxData);
+                            de->next = RuntimeAllocDestructors;
+                            RuntimeAllocDestructors = de;
                         }
 
                         sym->st_shndx = 1;
                         sym->st_other = 5;
-                        sym->st_value = reinterpret_cast<char *>(runtimeAlloc) - reinterpret_cast<char *>(sections[1].sh_voffset);
-                        symbolBase = reinterpret_cast<char *>(sections[1].sh_voffset) - reinterpret_cast<char *>(nullptr);
+                        baseaddr = reinterpret_cast<unsigned int>(sheader[1].sh_voffset);
+                        sym->st_value = reinterpret_cast<unsigned int>(addr) - baseaddr;
                         break;
                     }
                 }
 
-                bool alreadySeen = false;
-                if (unresolvedCount <= 0x1F) {
-                    for (int i = 0; i < unresolvedCount; i++) {
-                        if (name == reinterpret_cast<const char *>(unresolvedSeen[i])) {
-                            alreadySeen = true;
+                unresolvedSymbolError = true;
+                if (numUnresolved < MAX_UNRESOLVED_ERRORS) {
+                    bool found = false;
+
+                    for (int k = 0; k < numUnresolved; k++) {
+                        if (name == unresolvedList[k]) {
+                            found = true;
                             break;
                         }
                     }
-                    if (!alreadySeen) {
-                        unresolvedSeen[unresolvedCount++] = reinterpret_cast<int>(name);
+
+                    if (!found) {
+                        unresolvedList[numUnresolved++] = name;
                     }
                 }
                 break;
             }
 
-            int value = symbolBase + sym->st_value;
-            unsigned int *relTarget = reinterpret_cast<unsigned int *>(targetBase + rel[relIndex].r_offset);
-            unsigned int relValue = ByteSwap32(*relTarget);
+            baseaddr += sym->st_value;
+            patchaddr = reinterpret_cast<unsigned int *>(patchbase + r[j].r_offset);
+            *patchaddr = htotul(*patchaddr);
+            patchaddr16 = reinterpret_cast<unsigned short *>(patchaddr);
 
-            switch (rel[relIndex].r_info & 0xFF) {
+            switch (r[j].r_info & 0xFF) {
                 case R_MIPS_32:
-                    relValue += value;
+                    *patchaddr += baseaddr;
                     break;
 
                 case R_MIPS_26:
-                    relValue = (relValue & 0xFC000000) | ((value + ((relValue & 0x03FFFFFF) * 4) & 0x0FFFFFFF) >> 2);
+                    *patchaddr = (*patchaddr & 0xFC000000) | ((baseaddr + ((*patchaddr & 0x03FFFFFF) * 4) & 0x0FFFFFFF) >> 2);
                     break;
 
                 case R_MIPS_HI16:
-                    *reinterpret_cast<short *>(relTarget) =
-                        static_cast<short>(*reinterpret_cast<short *>(relTarget) + static_cast<short>(static_cast<unsigned int>(value) >> 16));
+                    *patchaddr16 = static_cast<unsigned short>(*patchaddr16 + static_cast<unsigned short>(baseaddr >> 16));
                     continue;
 
                 case R_MIPS_LO16:
-                    *reinterpret_cast<short *>(relTarget) = static_cast<short>(*reinterpret_cast<short *>(relTarget) + static_cast<short>(value));
+                    *patchaddr16 = static_cast<unsigned short>(*patchaddr16 + static_cast<unsigned short>(baseaddr));
                     continue;
             }
-
-            *relTarget = ByteSwap32(relValue);
         }
     }
 
