@@ -952,7 +952,6 @@ void CarRenderConn::UpdateTires(float dT, float carspeed, const RenderConn::Pkt_
     const Attrib::Gen::ecar &attributes = this->VehicleRenderConn::mAttributes;
     CarRenderInfo *car_render_info = this->mRenderInfo;
     const LocalReferenceMirror *world_ref = reinterpret_cast<const LocalReferenceMirror *>(&this->mWorldRef);
-    WCollider *collider = this->mWCollider;
 
     this->mFlatTireAngle = UMath::Vector3::kZero;
 
@@ -1051,7 +1050,7 @@ void CarRenderConn::UpdateTires(float dT, float carspeed, const RenderConn::Pkt_
         }
 
         eMulVector(&state->mTirePos, &this->mRenderMatrix, &this->mTireMatrices[i].v3);
-        state->UpdateWorld(collider, this->GetFlag(CF_ISRAINING), is_flat);
+        state->UpdateWorld(this->mWCollider, this->GetFlag(CF_ISRAINING), is_flat);
 
         if (!onground || !can_do_fx) {
             state->KillSkids();
