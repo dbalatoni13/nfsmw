@@ -2520,10 +2520,10 @@ void CarRenderInfo::RenderFlaresOnCar(eView *view, const bVector3 *position, con
 
     unsigned int onLights = this->mOnLights;
     if (onLights & 1) {
-        headlight_left_intensity += 1.0f;
+        headlight_left_intensity = 1.0f;
     }
     if (onLights & 2) {
-        headlight_right_intensity += 1.0f;
+        headlight_right_intensity = 1.0f;
     }
     if (onLights & 8) {
         brakelight_left_intensity += 1.0f;
@@ -2550,7 +2550,6 @@ void CarRenderInfo::RenderFlaresOnCar(eView *view, const bVector3 *position, con
         coplight_intensityW = cpw;
     }
     unsigned int flashHeadlights = onLights & 0x4000;
-
     unsigned int brokenLights = this->mBrokenLights;
     if (brokenLights & 1) {
         headlight_left_intensity = 0.0f;
