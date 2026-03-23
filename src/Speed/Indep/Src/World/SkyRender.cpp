@@ -1,4 +1,5 @@
 #include "Sun.hpp"
+#include "Scenery.hpp"
 #include "Speed/Indep/Src/Camera/Camera.hpp"
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
 #include "Speed/Indep/Src/Ecstasy/eMath.hpp"
@@ -28,6 +29,9 @@ extern float lbl_8040B290;
 extern float lbl_8040B294;
 extern float lbl_8040B298;
 extern float lbl_8040B29C;
+extern float lbl_8040B0FC;
+extern float lbl_8040B108;
+extern float lbl_8040B10C;
 extern float lbl_8040B2A0;
 extern float lbl_8040B2A4;
 extern float lbl_8040B2A8;
@@ -36,6 +40,9 @@ extern float lbl_8040B2B0;
 extern float lbl_8040B2B4;
 
 void GetSunPos(eView *view, float *x, float *y, float *z);
+eSolid *eFindSolid(unsigned int name_hash);
+SceneryInstance *FindSceneryInstance(unsigned int scenery_name_hash);
+void *FindSceneryInfo(unsigned int scenery_name_hash);
 
 enum SKY_LAYER {
     SKY_LAYER_BLUE = 0,
@@ -54,6 +61,53 @@ void Render(eViewPlatInterface *view, eModel *model, bMatrix4 *local_to_world, e
             unsigned int exc_flag) asm("Render__18eViewPlatInterfaceP6eModelP8bMatrix4P13eLightContextUiT2");
 
 } // namespace
+
+int SkyInitModel(eModel *model, bMatrix4 *local_world, unsigned int scenery_name_hash) {
+    int result = 1;
+
+    if (model->GetNameHash() == 0) {
+        if (eFindSolid(scenery_name_hash) == 0) {
+            result = 0;
+        } else {
+            model->Init(scenery_name_hash);
+            PSMTX44Identity(*reinterpret_cast<Mtx44 *>(local_world));
+
+            SceneryInstance *scenery_instance = FindSceneryInstance(scenery_name_hash);
+            if (scenery_instance != 0) {
+                unsigned int detail_level = 0;
+
+                local_world->v0.x = static_cast<float>(scenery_instance->Rotation[0]) * lbl_8040B0FC;
+                local_world->v0.y = static_cast<float>(scenery_instance->Rotation[1]) * lbl_8040B0FC;
+                local_world->v0.z = static_cast<float>(scenery_instance->Rotation[2]) * lbl_8040B0FC;
+                local_world->v0.w = lbl_8040B108;
+                local_world->v1.x = static_cast<float>(scenery_instance->Rotation[3]) * lbl_8040B0FC;
+                local_world->v1.y = static_cast<float>(scenery_instance->Rotation[4]) * lbl_8040B0FC;
+                local_world->v1.z = static_cast<float>(scenery_instance->Rotation[5]) * lbl_8040B0FC;
+                local_world->v1.w = lbl_8040B108;
+                local_world->v2.x = static_cast<float>(scenery_instance->Rotation[6]) * lbl_8040B0FC;
+                local_world->v2.y = static_cast<float>(scenery_instance->Rotation[7]) * lbl_8040B0FC;
+                local_world->v2.z = static_cast<float>(scenery_instance->Rotation[8]) * lbl_8040B0FC;
+                local_world->v2.w = lbl_8040B108;
+                local_world->v3.x = scenery_instance->Position[0];
+                local_world->v3.y = scenery_instance->Position[1];
+                local_world->v3.z = scenery_instance->Position[2];
+                local_world->v3.w = lbl_8040B10C;
+
+                int *scenery_info_models = reinterpret_cast<int *>(reinterpret_cast<char *>(FindSceneryInfo(scenery_name_hash)) + 0x28);
+
+                do {
+                    if (*scenery_info_models != 0) {
+                        model->UnInit();
+                    }
+                    detail_level++;
+                    scenery_info_models++;
+                } while (detail_level < 4);
+            }
+        }
+    }
+
+    return result;
+}
 
 void StuffSpecular(eView *view) {
     bMatrix4 *cameraMatrix = view->GetCamera()->GetCameraMatrix();
