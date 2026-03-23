@@ -1489,7 +1489,7 @@ void CarRenderInfo::UpdateCarParts() {
     }
 
     CarPart *spoiler_part = ride_info->GetPart(CARSLOTID_SPOILER);
-    int mirror_left_wheels = 1;
+    bool mirror_left_wheels = true;
 
     if (spoiler_part != 0) {
         mirror_left_wheels = (reinterpret_cast<CarPartMetaLayout *>(spoiler_part)->GroupNumber_UpgradeLevel >> 5) == 0;
