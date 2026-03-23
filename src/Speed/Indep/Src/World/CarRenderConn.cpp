@@ -144,19 +144,19 @@ TireState *CreateTireState() {
     return state;
 }
 
-float &CarRenderInfoF32(CarRenderInfo *info, unsigned int offset) {
+static inline float &CarRenderInfoF32(CarRenderInfo *info, unsigned int offset) {
     return *reinterpret_cast<float *>(reinterpret_cast<unsigned char *>(info) + offset);
 }
 
-unsigned int &CarRenderInfoU32(CarRenderInfo *info, unsigned int offset) {
+static inline unsigned int &CarRenderInfoU32(CarRenderInfo *info, unsigned int offset) {
     return *reinterpret_cast<unsigned int *>(reinterpret_cast<unsigned char *>(info) + offset);
 }
 
-int &CarRenderInfoI32(CarRenderInfo *info, unsigned int offset) {
+static inline int &CarRenderInfoI32(CarRenderInfo *info, unsigned int offset) {
     return *reinterpret_cast<int *>(reinterpret_cast<unsigned char *>(info) + offset);
 }
 
-short &CarRenderInfoS16(CarRenderInfo *info, unsigned int offset) {
+static inline short &CarRenderInfoS16(CarRenderInfo *info, unsigned int offset) {
     return *reinterpret_cast<short *>(reinterpret_cast<unsigned char *>(info) + offset);
 }
 
