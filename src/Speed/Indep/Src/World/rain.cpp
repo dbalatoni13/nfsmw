@@ -32,6 +32,73 @@ const tires &tires::operator=(const Instance &rhs) {
 } // namespace Gen
 } // namespace Attrib
 
+Rain::Rain(eView *view, RainType StartType) {
+    this->CloudIntensity = twkCloudsMinAmount;
+    this->RoadDampness = 0.0f;
+    this->intensity = 0.0f;
+    this->percentPrecip[RAIN] = 0.0f;
+    this->percentPrecip[INACTIVE] = 0.0f;
+    this->percentPrecip[StartType] = 1.0f;
+    this->NumRainPoints = -1;
+    this->MyView = view;
+    this->NoRain = 0;
+    this->NoRainAhead = 0;
+    this->PRECIPpoly[0].UVs[0][0] = 0.0f;
+    this->PRECIPpoly[0].UVs[0][1] = 1.0f;
+    this->PRECIPpoly[0].UVs[0][2] = 0.1f;
+    this->PRECIPpoly[0].UVs[0][3] = 1.0f;
+    this->PRECIPpoly[0].UVs[1][0] = 0.1f;
+    this->PRECIPpoly[0].UVs[1][1] = 0.0f;
+    this->PRECIPpoly[0].UVs[1][2] = 0.0f;
+    this->PRECIPpoly[0].UVs[1][3] = 0.0f;
+    this->PRECIPpoly[0].Colours[0][0] = 0x80;
+    this->PRECIPpoly[0].Colours[0][1] = 0x80;
+    this->PRECIPpoly[0].Colours[0][2] = 0x80;
+    this->PRECIPpoly[0].Colours[0][3] = 0x80;
+    this->PRECIPpoly[0].Colours[1][0] = 0x80;
+    this->PRECIPpoly[0].Colours[1][1] = 0x80;
+    this->PRECIPpoly[0].Colours[1][2] = 0x80;
+    this->PRECIPpoly[0].Colours[1][3] = 0x80;
+    this->PRECIPpoly[0].Colours[2][0] = 0x80;
+    this->PRECIPpoly[0].Colours[2][1] = 0x80;
+    this->PRECIPpoly[0].Colours[2][2] = 0x80;
+    this->PRECIPpoly[0].Colours[2][3] = 0x80;
+    this->PRECIPpoly[0].Colours[3][0] = 0x80;
+    this->PRECIPpoly[0].Colours[3][1] = 0x80;
+    this->PRECIPpoly[0].Colours[3][2] = 0x80;
+    this->PRECIPpoly[0].Colours[3][3] = 0x80;
+    this->PRECIPpoly[1].UVs[0][0] = 0.0f;
+    this->PRECIPpoly[1].UVs[0][1] = 1.0f;
+    this->PRECIPpoly[1].UVs[0][2] = 0.1f;
+    this->PRECIPpoly[1].UVs[0][3] = 1.0f;
+    this->PRECIPpoly[1].UVs[1][0] = 0.1f;
+    this->PRECIPpoly[1].UVs[1][1] = 0.0f;
+    this->PRECIPpoly[1].UVs[1][2] = 0.0f;
+    this->PRECIPpoly[1].UVs[1][3] = 0.0f;
+    this->PRECIPpoly[1].Colours[0][0] = 100;
+    this->PRECIPpoly[1].Colours[0][1] = 100;
+    this->PRECIPpoly[1].Colours[0][2] = 100;
+    this->PRECIPpoly[1].Colours[0][3] = 0x1C;
+    this->PRECIPpoly[1].Colours[1][0] = 100;
+    this->PRECIPpoly[1].Colours[1][1] = 100;
+    this->PRECIPpoly[1].Colours[1][2] = 100;
+    this->PRECIPpoly[1].Colours[1][3] = 0x1C;
+    this->PRECIPpoly[1].Colours[2][0] = 100;
+    this->PRECIPpoly[1].Colours[2][1] = 100;
+    this->PRECIPpoly[1].Colours[2][2] = 100;
+    this->PRECIPpoly[1].Colours[2][3] = 0x1C;
+    this->PRECIPpoly[1].Colours[3][0] = 100;
+    this->PRECIPpoly[1].Colours[3][1] = 100;
+    this->PRECIPpoly[1].Colours[3][2] = 100;
+    this->PRECIPpoly[1].Colours[3][3] = 0x1C;
+    this->fogR = 0;
+    this->fogG = 0;
+    this->fogB = 0;
+    this->inTunnel = 0;
+    this->inOverpass = 0;
+    this->IsValidRainCurtainPos = CT_INACTIVE;
+}
+
 void Rain::Init(RainType type, float percent) {
     int j;
 
