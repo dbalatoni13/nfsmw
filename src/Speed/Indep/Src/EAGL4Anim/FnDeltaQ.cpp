@@ -355,10 +355,12 @@ bool FnDeltaQ::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask) {
 
     if (deltaQ->mNumConstBones != 0) {
         for (int ibone = 0; ibone < deltaQ->mNumConstBones; ibone++) {
-            UMath::Vector4 constq;
+            float *out = GetOutputQuat(sqt, mConstBoneIdxs[ibone]);
 
-            DecodePhysical(mConstPhysical[ibone], constq);
-            *reinterpret_cast<UMath::Vector4 *>(GetOutputQuat(sqt, mConstBoneIdxs[ibone])) = constq;
+            out[0] = mConstPhysical[ibone].mX * kRangeScale15Bit - kFloatOne;
+            out[1] = mConstPhysical[ibone].mY * kRangeScale16Bit - kFloatOne;
+            out[2] = mConstPhysical[ibone].mZ * kRangeScale16Bit - kFloatOne;
+            RecoverW(mConstPhysical[ibone].mW, *reinterpret_cast<UMath::Vector4 *>(out));
         }
     }
 
