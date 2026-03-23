@@ -18,12 +18,8 @@ static inline void UnquantizeStatelessF3(const StatelessF3::DofInfo &dofInfo, co
 
 } // namespace
 
-FnStatelessF3::FnStatelessF3()
-    : mUseFPS(false), //
-      mFPS(0),        //
-      mBoneMask(nullptr) {
+FnStatelessF3::FnStatelessF3() {
     mType = AnimTypeId::ANIM_STATELESSF3;
-    mPrevKey = 0;
 }
 
 FnStatelessF3::~FnStatelessF3() {}

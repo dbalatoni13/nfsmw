@@ -30,10 +30,7 @@ static inline void LoadStatelessQ(unsigned short *frameData, UMath::Vector4 &q) 
 
 } // namespace
 
-FnStatelessQ::FnStatelessQ()
-    : mUseFPS(false), //
-      mFPS(0),        //
-      mBoneMask(nullptr) {
+FnStatelessQ::FnStatelessQ() {
     mType = AnimTypeId::ANIM_STATELESSQ;
     mPrevKey = 0;
 }
