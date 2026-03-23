@@ -10,24 +10,20 @@ SpaceNode *SpaceNode_Construct(SpaceNode *space_node, SpaceNode *parent) asm("__
 bTList<SpaceNode> SpaceNodeTrashList;
 
 SpaceNode::SpaceNode(SpaceNode *parent) {
+    bVector3 zero;
+
     this->ReferenceCount = 0;
     this->Dirty = 1;
 
     PSMTX44Identity(*reinterpret_cast<Mtx44 *>(&this->LocalMatrix));
 
     this->Parent = 0;
-
-    this->LocalVelocity.x = 0.0f;
-    this->LocalVelocity.y = 0.0f;
-    this->LocalVelocity.z = 0.0f;
-
-    this->WorldAngularVelocity.x = 0.0f;
-    this->WorldAngularVelocity.y = 0.0f;
-    this->WorldAngularVelocity.z = 0.0f;
-
-    this->LocalAngularVelocity.x = 0.0f;
-    this->LocalAngularVelocity.y = 0.0f;
-    this->LocalAngularVelocity.z = 0.0f;
+    zero.x = 0.0f;
+    zero.y = 0.0f;
+    zero.z = 0.0f;
+    this->LocalVelocity = zero;
+    this->WorldAngularVelocity = zero;
+    this->LocalAngularVelocity = zero;
 
     this->SetParent(parent);
     this->BlendingMatrices = 0;
