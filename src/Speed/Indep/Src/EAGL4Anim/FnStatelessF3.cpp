@@ -132,10 +132,11 @@ bool FnStatelessF3::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask
             for (int ibone = 0; ibone < nBones; ibone++) {
                 UMath::Vector3 prev;
                 UMath::Vector3 next;
-                int index = dofIdxs[ibone];
 
                 UnquantizeStatelessF3(dofInfos[ibone], frameData, prev);
                 UnquantizeStatelessF3(dofInfos[ibone], nextFrameData, next);
+
+                int index = dofIdxs[ibone];
 
                 sqt[index + 0] = prev.x + (next.x - prev.x) * scale;
                 sqt[index + 1] = prev.y + (next.y - prev.y) * scale;
@@ -247,7 +248,7 @@ bool FnStatelessF3::EvalSQTMask(float, float *sqt, const BoneMask *boneMask, boo
     return true;
 }
 
-bool FnStatelessF3::EvalSQTfast(float, float *sqt, const BoneMask *boneMask, bool slerpReqd, int floorKey, float scale) {
+bool FnStatelessF3::EvalSQTfast(float currTime, float *sqt, const BoneMask *boneMask, bool slerpReqd, int floorKey, float scale) {
     mPrevKey = static_cast<unsigned short>(floorKey);
 
     if (!boneMask) {
@@ -301,7 +302,7 @@ bool FnStatelessF3::EvalSQTfast(float, float *sqt, const BoneMask *boneMask, boo
             }
         }
     } else {
-        EvalSQTMask(0.0f, sqt, boneMask, slerpReqd, floorKey, scale);
+        EvalSQTMask(currTime, sqt, boneMask, slerpReqd, floorKey, scale);
     }
 
     return true;
