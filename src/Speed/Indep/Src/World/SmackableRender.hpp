@@ -15,8 +15,12 @@
 
 struct SmackableRenderConn : public Sim::Connection, public bTNode<SmackableRenderConn> {
 public:
+    static Sim::Connection *Construct(const Sim::ConnectionData &data);
+
     SmackableRenderConn(const Sim::ConnectionData &data);
     virtual ~SmackableRenderConn();
+    void OnClose() override;
+    Sim::ConnStatus OnStatusCheck() override;
     void Update(float dT);
     static void UpdateAll(float dT);
 

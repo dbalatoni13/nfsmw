@@ -31,12 +31,23 @@ SmackableRenderConn::SmackableRenderConn(const Sim::ConnectionData &data /* r27 
     bounds->GetPivot(pivot);
 }
 
+Sim::Connection *SmackableRenderConn::Construct(const Sim::ConnectionData &data) {
+    return new SmackableRenderConn(data);
+}
+
 SmackableRenderConn::~SmackableRenderConn() {
     if (this->mModel) {
         delete this->mModel;
     }
     this->mTarget.Set(0);
+}
+
+void SmackableRenderConn::OnClose() {
     delete this;
+}
+
+Sim::ConnStatus SmackableRenderConn::OnStatusCheck() {
+    return Sim::CONNSTATUS_READY;
 }
 
 SlotPool *SpaceNodeSlotPool = nullptr; // move elsewhere
