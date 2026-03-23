@@ -947,20 +947,13 @@ CarRenderInfo::CarRenderInfo(RideInfo *ride_info)
         CarPart *paint_rim_part = ride_info->GetPart(CARSLOTID_PAINT_RIM);
         CarPart *front_wheel_part = ride_info->GetPart(CARSLOTID_FRONT_WHEEL);
 
-        if (front_wheel_part == nullptr || (reinterpret_cast<unsigned char *>(front_wheel_part)[5] >> 5) == 0) {
-            paint_rim_part = nullptr;
-        }
-
         light_material_hash = 0;
-        if (paint_rim_part != nullptr) {
+        if (paint_rim_part != nullptr && front_wheel_part != nullptr &&
+            (reinterpret_cast<unsigned char *>(front_wheel_part)[5] >> 5) != 0) {
             light_material_hash = CarPart_GetAppliedAttributeUParam(paint_rim_part, 0x6BA02C05, 0);
         }
 
-        if (light_material_hash != 0) {
-            this->LightMaterial_WheelRim = elGetLightMaterial(light_material_hash);
-        } else {
-            this->LightMaterial_WheelRim = nullptr;
-        }
+        this->LightMaterial_WheelRim = light_material_hash != 0 ? elGetLightMaterial(light_material_hash) : nullptr;
 
         this->LightMaterial_Caliper = nullptr;
         this->LightMaterial_Spoiler = nullptr;
