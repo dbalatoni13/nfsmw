@@ -204,13 +204,17 @@ void FnDeltaQFast::SetAnimMemoryMap(AnimMemoryMap *anim) {
     mPrevKey = -1;
 
     if (numBones != 0) {
-        unsigned char *block = reinterpret_cast<unsigned char *>(MemoryPoolManager::NewBlock(numBones << 6));
-        unsigned char *qBlock = block + (numBones << 5);
+        unsigned int qBlockOffset = numBones << 5;
+        unsigned int nextQBlockOffset = numBones << 4;
+        unsigned char *block =
+            reinterpret_cast<unsigned char *>(MemoryPoolManager::NewBlock(qBlockOffset + nextQBlockOffset + nextQBlockOffset));
+        unsigned char *qBlock = block + qBlockOffset;
+        unsigned char *nextQBlock = qBlock + nextQBlockOffset;
 
         mMinRangesf = reinterpret_cast<DeltaQFastMinRangef *>(block);
         mPrevQBlock = qBlock;
         mPrevQs = reinterpret_cast<UMath::Vector4 *>(qBlock);
-        mNextQBlock = qBlock + (numBones << 4);
+        mNextQBlock = nextQBlock;
         mNextQs = reinterpret_cast<UMath::Vector4 *>(mNextQBlock);
 
         for (int ibone = 0; ibone < numBones; ibone++) {
