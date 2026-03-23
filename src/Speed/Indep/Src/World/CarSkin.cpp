@@ -600,7 +600,7 @@ int CompositeSkin(RideInfo *ride_info) {
     const int max_layer_colours = 1;
     int cur_layer;
     SkinCompositeParams composite_params;
-    int success = 1;
+    int success;
 
     if (ride_info->IsUsingCompositeSkin() == 0) {
         return 1;
@@ -628,15 +628,8 @@ int CompositeSkin(RideInfo *ride_info) {
     base_paint_colour |= blue << 16;
     base_paint_colour |= gloss << 24;
 
-    {
-        int i = 3;
-        unsigned int *swatch_colour = &swatch_colours[3];
-
-        do {
-            *swatch_colour = base_paint_colour;
-            swatch_colour--;
-            i--;
-        } while (i > -1);
+    for (int i = 0; i < 4; i++) {
+        swatch_colours[i] = base_paint_colour;
     }
 
     total_layer_colours = 0;
@@ -700,22 +693,16 @@ int CompositeSkin(RideInfo *ride_info) {
                             info->m_LayerHash = 0;
                             cur_layer++;
                         } else {
+                            int next_total_layer_colours = total_layer_colours + 1;
+
                             if (cur_layer == first_vinyl_layer) {
                                 CarPart *car_part = ride_info->GetPart(CARSLOTID_VINYL_LAYER0 + cur_layer);
 
-                                if (car_part == 0 || car_part->HasAppliedAttribute(bStringHash("REMAP")) == 0) {
-                                    cur_layer++;
-                                    total_layer_colours++;
-                                } else {
+                                if (car_part != 0 && car_part->HasAppliedAttribute(bStringHash("REMAP")) != 0) {
                                     info->m_RemapPalette = car_part->GetAppliedAttributeIParam(bStringHash("REMAP"), 0);
-                                    if (info->m_RemapPalette == 0) {
-                                        cur_layer++;
-                                        total_layer_colours++;
-                                    } else {
+                                    if (info->m_RemapPalette != 0) {
                                         int layer_id = 0;
 
-                                        total_layer_colours++;
-                                        cur_layer++;
                                         for (int j = 0; j < 4; j++) {
                                             CarPart *colour_part = ride_info->GetPart(CARSLOTID_VINYL_COLOUR0_0 + layer_id);
 
@@ -741,10 +728,10 @@ int CompositeSkin(RideInfo *ride_info) {
                                         }
                                     }
                                 }
-                            } else {
-                                cur_layer++;
-                                total_layer_colours++;
                             }
+
+                            total_layer_colours = next_total_layer_colours;
+                            cur_layer++;
                         }
                     }
                 }
@@ -752,18 +739,19 @@ int CompositeSkin(RideInfo *ride_info) {
         }
 
         if (cur_layer >= max_layer_colours) {
+            success = 1;
             eWaitUntilRenderingDone();
             CompositeRim(ride_info);
 
-            composite_params.DestTexture = dest_texture;
             composite_params.BaseColour = base_paint_colour;
             composite_params.NumLayers = total_layer_colours;
+            composite_params.DestTexture = dest_texture;
             bMemCpy(composite_params.SwatchColours, swatch_colours, sizeof(swatch_colours));
             bMemCpy(composite_params.VinylLayerInfos, vinyl_layer_infos, sizeof(vinyl_layer_infos));
 
             if (IsInSkinCompositeCache(&composite_params) == 0) {
                 UpdateSkinCompositeCache(&composite_params);
-                if (do_32bit_composite == 0) {
+                if (dest_texture->ImageCompressionType == TEXCOMP_8BIT) {
                     success = CompositeSkin(&composite_params);
                 } else {
                     success = CompositeSkin32(&composite_params);
@@ -771,7 +759,7 @@ int CompositeSkin(RideInfo *ride_info) {
             }
 
             {
-                int i = max_layer_colours - 1;
+                int i = 0;
 
                 do {
                     VinylLayerInfo *info = &vinyl_layer_infos[i];
@@ -792,8 +780,8 @@ int CompositeSkin(RideInfo *ride_info) {
                         TextureInfo_UnlockPalette(info->m_LayerMaskTexture, info->m_LayerMaskPaletteData);
                     }
 
-                    i--;
-                } while (i > -1);
+                    i++;
+                } while (i < max_layer_colours);
             }
 
             return success;
