@@ -940,17 +940,23 @@ void RideInfo::DumpForPreset(FECarRecord *car) {
 }
 
 int UnloaderFEPresetCars(bChunk *chunk) {
-    if (chunk->GetID() != 0x30220) {
-        return 0;
+    if (chunk->GetID() == 0x30220) {
+        PresetCar *end = reinterpret_cast<PresetCar *>(&PresetCarList);
+        PresetCar *preset = PresetCarList.Next;
+
+        while (preset != end) {
+            PresetCar *prev = preset->Prev;
+            PresetCar *next = preset->Next;
+
+            prev->Next = next;
+            next->Prev = prev;
+            preset = PresetCarList.Next;
+        }
+
+        return 1;
     }
 
-    bList *preset_car_list = reinterpret_cast<bList *>(&PresetCarList);
-
-    while (PresetCarList.Next != reinterpret_cast<PresetCar *>(&PresetCarList)) {
-        preset_car_list->RemoveHead();
-    }
-
-    return 1;
+    return 0;
 }
 
 int GetNumPresetCars() {
