@@ -447,10 +447,8 @@ int EAXAemsManager::InitiateLoad() {
     eTEMPALLOCLOCATION memLocation;
     QueuedFileParams queuedFileParams;
 
-    bStrCat(m_csTemp1, g_DataPaths[m_pCurLoadSDLP->AssetDescription.DataPath],
-            (fileString = const_cast<char *>(m_pCurLoadSDLP->AssetDescription.FileName.GetString())) != nullptr ?
-                fileString :
-                "");
+    fileString = const_cast<char *>(m_pCurLoadSDLP->AssetDescription.FileName.GetString());
+    bStrCat(m_csTemp1, g_DataPaths[m_pCurLoadSDLP->AssetDescription.DataPath], fileString != nullptr ? fileString : "");
     result = bFileSize(m_csTemp1);
     m_pCurLoadSDLP->nSize = result;
     if (m_pCurLoadSDLP->nSize < 1) {
