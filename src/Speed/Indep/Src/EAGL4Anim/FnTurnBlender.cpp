@@ -114,28 +114,29 @@ bool FnTurnBlender::EvalPhase(float currTime, PhaseValue &phase) {
 }
 
 bool FnTurnBlender::EvalVel2D(float currTime, float *vel) {
+    mPrevTime = currTime;
     if (!mFnAnims[0]) {
         SetWeight(0.0f);
     }
 
     float evalTime = currTime + mOffset;
-    float t0 = CycleTime(mFreq * mCycles[0] * evalTime + mOffsets[0], 0.0f, mCycles[0]);
-    float t1 = CycleTime(mFreq * mCycles[1] * evalTime + mOffsets[1], 0.0f, mCycles[1]);
+    int cycleIdx = ComputeCycleIdx(evalTime, 0.0f, 2.0f / mFreq);
 
-    if (mWeight != 0.0f && mFnAnims[0] && mFnAnims[1]) {
-        if (!BlendVel(t0, t1, vel)) {
-            return false;
-        }
-    } else if (mFnAnims[0]) {
-        if (!mFnAnims[0]->EvalVel2D(t0, vel)) {
-            return false;
-        }
-    } else {
-        return false;
+    printf("currTime: %g  offset: %g   cycle: %g\n", evalTime, mOffset, 1.0f / mFreq);
+    printf("offset0: %g  offset1: %g\n", mOffsets[0], mOffsets[1]);
+    printf("cycle0: %g  cycle1: %g\n", mCycles[0], mCycles[1]);
+
+    float t0 = mFreq * mCycles[0] * evalTime;
+    float t1 = mFreq * mCycles[1] * evalTime;
+
+    printf("before offset t0: %g  t1: %g\n", t0, t1);
+    if (BlendVel(CycleTime(t0, 0.0f, mCycles[0] + mCycles[0]) - mOffsets[0], CycleTime(t1, 0.0f, mCycles[1] + mCycles[1]) - mOffsets[1], vel)) {
+        AlignCycleBeginEnd(cycleIdx);
+        AlignVel(vel);
+        return true;
     }
 
-    AlignVel(vel);
-    return true;
+    return false;
 }
 
 bool FnTurnBlender::BlendVel(float t0, float t1, float *vel) const {
