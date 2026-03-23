@@ -152,7 +152,61 @@ unsigned int CarPartModelTable::GetModelNameHash(unsigned int base_namehash, int
     return reinterpret_cast<unsigned int>(model_name);
 }
 
-int ConvertVinylGroupNumberToVinylType(int vinyl_group_number);
+int ConvertVinylGroupNumberToVinylType(int vinyl_group_number) {
+    if (vinyl_group_number != 9) {
+        if (vinyl_group_number < 10) {
+            if (vinyl_group_number < 6) {
+                if (vinyl_group_number < 4) {
+                    if (vinyl_group_number == 1) {
+                        return 1;
+                    }
+
+                    if (vinyl_group_number < 2) {
+                        if (vinyl_group_number != 0) {
+                            return 0;
+                        }
+                    } else if (vinyl_group_number != 2) {
+                        if (vinyl_group_number != 3) {
+                            return 0;
+                        }
+
+                        return 1;
+                    }
+                }
+            } else if (vinyl_group_number != 7) {
+                return 1;
+            }
+        } else if (vinyl_group_number != 0xE) {
+            if (vinyl_group_number > 0xE) {
+                if (vinyl_group_number != 0x10) {
+                    if (vinyl_group_number < 0x10) {
+                        return 4;
+                    }
+
+                    if (vinyl_group_number == 0x11) {
+                        return 2;
+                    }
+
+                    if (vinyl_group_number != 0x12) {
+                        return 0;
+                    }
+                }
+
+                return 3;
+            }
+
+            if (vinyl_group_number > 0xC) {
+                return 1;
+            }
+
+            if (vinyl_group_number < 0xB) {
+                return 1;
+            }
+        }
+    }
+
+    return 0;
+}
 int CarInfo_GetMaxCompositingBufferSize();
 void GetUsedCarTextureInfo(UsedCarTextureInfo *used_texture_info, RideInfo *ride_info, int front_end_only);
 extern int CarLoaderMemoryPoolNumber;
