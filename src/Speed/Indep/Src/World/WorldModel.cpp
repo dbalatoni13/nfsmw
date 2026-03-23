@@ -213,8 +213,15 @@ void InitWorldModels() {
 }
 
 void CloseWorldModels() {
-    while (WorldModelList.GetHead() != WorldModelList.EndOfList()) {
-        delete WorldModelList.RemoveHead();
+    WorldModel *world_model = WorldModelList.GetHead();
+
+    if (world_model != WorldModelList.EndOfList()) {
+        do {
+            if (world_model != 0) {
+                delete world_model;
+            }
+            world_model = WorldModelList.GetHead();
+        } while (world_model != WorldModelList.EndOfList());
     }
 
     bDeleteSlotPool(WorldModelSlotPool);
@@ -397,9 +404,10 @@ void RenderWorldModels(eView *view, int exc_flag) {
 
     for (WorldModel *world_model = WorldModelList.GetHead(); world_model != WorldModelList.EndOfList(); world_model = world_model->GetNext()) {
         unsigned char *world_model_bytes = reinterpret_cast<unsigned char *>(world_model);
+        unsigned int *world_model_words = reinterpret_cast<unsigned int *>(world_model);
 
-        if (world_model_bytes[0x28] != 0 && (view_mode != 3 || world_model_bytes[0x2C] != 0)) {
-            if (world_model_bytes[0x30] != 0) {
+        if (world_model_words[10] != 0 && (view_mode != 3 || world_model_words[11] != 0)) {
+            if (world_model_words[12] != 0) {
                 const bMatrix4 *matrix = reinterpret_cast<const bMatrix4 *>(world_model_bytes + 0x40);
                 const bVector3 *position = reinterpret_cast<const bVector3 *>(world_model_bytes + 0x70);
                 SpaceNode *space_node = *reinterpret_cast<SpaceNode **>(world_model_bytes + 0x3C);

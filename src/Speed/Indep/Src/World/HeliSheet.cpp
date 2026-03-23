@@ -1,5 +1,11 @@
+#include "HeliSheet.hpp"
 #include "VisibleSection.hpp"
+#include "Speed/Indep/bWare/Inc/bChunk.hpp"
+#include "Speed/Indep/bWare/Inc/bWare.hpp"
 
+extern double lbl_8040CE80;
+extern float lbl_8040CE88;
+extern float lbl_8040CE8C;
 extern float lbl_8040CE90;
 extern double lbl_8040CE98;
 extern float lbl_8040CEA0;
@@ -14,6 +20,8 @@ struct HeliPoly {
     short VertexX[3];
     short VertexY[3];
     short VertexZ[3];
+
+    void GetVertices(bVector3 *vertices);
 
     bVector3 GetVertex(int n) {
         return bVector3(static_cast<float>(this->VertexX[n]) * lbl_8040CEA0, static_cast<float>(this->VertexY[n]) * lbl_8040CEA0,
@@ -34,13 +42,145 @@ struct HeliSection : public bTNode<HeliSection> {
     HeliPoly *GetPoly(int n) {
         return reinterpret_cast<HeliPoly *>(reinterpret_cast<unsigned char *>(this->PolyTable) + n * sizeof(HeliPoly));
     }
+
+    void EndianSwap();
 };
 
 struct HeliSheetManager {
     bTList<HeliSection> HeliSectionList;
 
+    HeliSheetManager();
+
+    int Loader(bChunk *chunk);
+
+    int Unloader(bChunk *chunk);
+
     HeliPoly *FindHeliPoly(const bVector2 &point);
 };
+
+int LoaderHeliSheet(bChunk *chunk);
+int UnloaderHeliSheet(bChunk *chunk);
+
+HeliSheetManager gHeliSheetManager;
+bChunkLoader bChunkLoaderHeliSheet(0x34159, LoaderHeliSheet, UnloaderHeliSheet);
+
+void HeliPoly::GetVertices(bVector3 *vertices) {
+    float xy_scale = lbl_8040CE88;
+    float z_scale = lbl_8040CE8C;
+    int n = 0;
+
+    do {
+        int short_offset = n * 2;
+        short y = *reinterpret_cast<short *>(reinterpret_cast<unsigned char *>(this) + 6 + short_offset);
+        short z = *reinterpret_cast<short *>(reinterpret_cast<unsigned char *>(this) + 0xc + short_offset);
+        int vertex_offset = n * 0x10;
+        bVector3 *vertex = reinterpret_cast<bVector3 *>(reinterpret_cast<unsigned char *>(vertices) + vertex_offset);
+
+        vertex->x = static_cast<float>(this->VertexX[n]) * xy_scale;
+        vertex->y = static_cast<float>(y) * xy_scale;
+        vertex->z = static_cast<float>(z) * z_scale;
+        n++;
+    } while (n < 3);
+}
+
+void HeliSection::EndianSwap() {
+    bEndianSwap32(&this->SectionNumber);
+    bEndianSwap32(&this->NumPolys);
+
+    for (int n = 0; n < this->NumPolys; n++) {
+        HeliPoly *heli_poly = reinterpret_cast<HeliPoly *>(reinterpret_cast<unsigned char *>(this->PolyTable) + n * sizeof(HeliPoly));
+
+        for (int i = 0; i < 3; i++) {
+            bEndianSwap16(&heli_poly->VertexX[i]);
+            bEndianSwap16(&heli_poly->VertexY[i]);
+            bEndianSwap16(&heli_poly->VertexZ[i]);
+        }
+    }
+
+    this->EndianSwapped = 1;
+}
+
+float HeliSheetCoordinate::GetElevation(const bVector2 &point, bVector3 *NormalOut, bool *ppoint_valid) {
+    if (*reinterpret_cast<unsigned int *>(&this->VertexValid) == 0 || !bIsPointInPoly(&point, this->Vertex, 3)) {
+        HeliPoly *heli_poly = gHeliSheetManager.FindHeliPoly(point);
+
+        if (heli_poly == 0) {
+            *reinterpret_cast<unsigned int *>(&this->VertexValid) = 0;
+            if (ppoint_valid != 0) {
+                *reinterpret_cast<unsigned int *>(ppoint_valid) = 0;
+            }
+            return this->PreviousElevation;
+        }
+
+        *reinterpret_cast<unsigned int *>(&this->VertexValid) = 1;
+        heli_poly->GetVertices(this->Vertex);
+    }
+
+    bVector3 edge0 = bVector3(this->Vertex[1].x - this->Vertex[0].x, this->Vertex[1].y - this->Vertex[0].y, this->Vertex[1].z - this->Vertex[0].z);
+    bVector3 edge1 = bVector3(this->Vertex[2].x - this->Vertex[0].x, this->Vertex[2].y - this->Vertex[0].y, this->Vertex[2].z - this->Vertex[0].z);
+    bVector3 normal = bNormalize(bCross(edge0, edge1));
+
+    float elevation = ((this->Vertex[0].z * normal.z + this->Vertex[0].x * normal.x + this->Vertex[0].y * normal.y) -
+                       (normal.x * point.x + normal.y * point.y)) /
+                      normal.z;
+
+    if (ppoint_valid != 0) {
+        *reinterpret_cast<unsigned int *>(ppoint_valid) = 1;
+    }
+
+    this->PreviousElevation = elevation;
+
+    if (NormalOut != 0) {
+        NormalOut->x = normal.x;
+        NormalOut->y = normal.y;
+        NormalOut->z = normal.z;
+    }
+
+    return elevation;
+}
+
+HeliSheetManager::HeliSheetManager() {}
+
+int HeliSheetManager::Loader(bChunk *chunk) {
+    if (chunk->ID != 0x34159) {
+        return 0;
+    }
+
+    int *heli_section = reinterpret_cast<int *>((reinterpret_cast<int>(chunk) + 0x17U) & 0xfffffff0);
+    heli_section[5] = reinterpret_cast<int>(heli_section + 6);
+    if (heli_section[4] == 0) {
+        reinterpret_cast<HeliSection *>(heli_section)->EndianSwap();
+    }
+
+    unsigned int *tail = reinterpret_cast<unsigned int *>(this->HeliSectionList.HeadNode.Prev);
+    *tail = reinterpret_cast<unsigned int>(heli_section);
+    this->HeliSectionList.HeadNode.Prev = reinterpret_cast<bNode *>(heli_section);
+    heli_section[0] = reinterpret_cast<int>(this);
+    heli_section[1] = reinterpret_cast<int>(tail);
+    return 1;
+}
+
+int HeliSheetManager::Unloader(bChunk *chunk) {
+    if (chunk->ID != 0x34159) {
+        return 0;
+    }
+
+    int *heli_section = reinterpret_cast<int *>((reinterpret_cast<int>(chunk) + 0x17U) & 0xfffffff0);
+    int *next = reinterpret_cast<int *>(heli_section[1]);
+    int prev = heli_section[0];
+
+    *next = prev;
+    *reinterpret_cast<int **>(prev + 4) = next;
+    return 1;
+}
+
+int LoaderHeliSheet(bChunk *chunk) {
+    return gHeliSheetManager.Loader(chunk);
+}
+
+int UnloaderHeliSheet(bChunk *chunk) {
+    return gHeliSheetManager.Unloader(chunk);
+}
 
 HeliPoly *HeliSheetManager::FindHeliPoly(const bVector2 &point) {
     int section_number;
