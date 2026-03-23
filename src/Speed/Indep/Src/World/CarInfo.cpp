@@ -1,10 +1,15 @@
 #include "./CarInfo.hpp"
+#include "./CarLoader.hpp"
 #include "./CarRender.hpp"
 #include "Speed/Indep/Src/FEng/FEList.h"
 #include "Speed/Indep/Src/Sim/Simulation.h"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 #include "Speed/Indep/bWare/Inc/bPrintf.hpp"
 #include <cstring>
+
+static inline int CarLoader_GetMemoryPoolSize(CarLoader *car_loader) {
+    return *reinterpret_cast<int *>(reinterpret_cast<unsigned char *>(car_loader) + 0x64);
+}
 
 struct CarPart {
     char *GetName();
@@ -183,6 +188,18 @@ CarTypeInfo *GetCarTypeInfoFromHash(unsigned int car_type_hash) {
     }
 
     return 0;
+}
+
+int CarInfo_GetMaxCompositingBufferSize() {
+    return 0;
+}
+
+unsigned int CarInfo_GetResourcePool(bool needs_compositing) {
+    if (needs_compositing != 0) {
+        return CarLoader_GetMemoryPoolSize(&TheCarLoader) - CarInfo_GetMaxCompositingBufferSize();
+    }
+
+    return CarLoader_GetMemoryPoolSize(&TheCarLoader);
 }
 
 unsigned int RideInfo::GetSkinNameHash() {
