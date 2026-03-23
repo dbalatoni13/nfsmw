@@ -200,10 +200,11 @@ bool FnStatelessF3::EvalSQTMask(float, float *sqt, const BoneMask *boneMask, boo
             if (boneMask->GetBone(boneIdxs[ibone])) {
                 UMath::Vector3 prev;
                 UMath::Vector3 next;
-                int index = dofIdxs[ibone];
 
                 UnquantizeStatelessF3(dofInfos[ibone], frameData, prev);
                 UnquantizeStatelessF3(dofInfos[ibone], nextFrameData, next);
+
+                int index = dofIdxs[ibone];
 
                 sqt[index + 0] = prev.x + (next.x - prev.x) * scale;
                 sqt[index + 1] = prev.y + (next.y - prev.y) * scale;
