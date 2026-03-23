@@ -1160,13 +1160,13 @@ void CarRenderConn::Update(const RenderConn::Pkt_Car_Service &data, float dT) {
         CarRenderInfoF32(render_info, 0x1754) = dT;
         CarRenderInfoU32(render_info, 0x1608) = data.mLights;
         CarRenderInfoU32(render_info, 0x160C) = data.mBrokenLights;
-        CarRenderInfoI32(render_info, 0x1770) = data.mBlowOuts;
-        if (data.mBlowOuts != 0) {
-            float blown_timer = CarRenderInfoF32(render_info, 0x1774) + RealTimeElapsed;
+        int flashing = data.mFlashing;
 
-            CarRenderInfoF32(render_info, 0x1774) = blown_timer;
-            if (0.05f < blown_timer) {
-                CarRenderInfoF32(render_info, 0x1774) = blown_timer - 0.12f;
+        CarRenderInfoI32(render_info, 0x1770) = flashing;
+        if (flashing != 0) {
+            CarRenderInfoF32(render_info, 0x1774) += RealTimeElapsed;
+            if (0.05f < CarRenderInfoF32(render_info, 0x1774)) {
+                CarRenderInfoF32(render_info, 0x1774) -= 0.12f;
             }
         }
 
