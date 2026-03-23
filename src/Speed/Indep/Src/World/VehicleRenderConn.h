@@ -155,7 +155,9 @@ class VehicleRenderConn : public Sim::Connection, public UTL::Collections::Lista
     virtual void OnLoaded(CarRenderInfo *render_info);
     virtual void GetRenderMatrix(bMatrix4 *matrix);
     virtual void OnEvent(EventID id);
-    const bVector4 &GetModelOffset() const;
+    const bVector4 &GetModelOffset() const {
+        return this->mModelOffset;
+    }
     const Attrib::Gen::ecar &GetAttributes() const {
         return this->mAttributes;
     }
