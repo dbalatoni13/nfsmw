@@ -434,9 +434,6 @@ void FnDeltaQFast::UpdateNextQsMask(DeltaQFast *deltaQ, int ceilKey, int floorBi
 
 bool FnDeltaQFast::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask) {
     if (!boneMask) {
-        if (!mpAnim) {
-            return false;
-        }
         if (mBoneMask) {
             mBoneMask = boneMask;
             mPrevKey = -1;
@@ -668,9 +665,6 @@ bool FnDeltaQFast::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask)
 }
 
 bool FnDeltaQFast::EvalSQTMask(float currTime, float *sqt, const BoneMask *boneMask) {
-    if (!mpAnim) {
-        return false;
-    }
     if (boneMask != mBoneMask) {
         mBoneMask = boneMask;
         mPrevKey = -1;
