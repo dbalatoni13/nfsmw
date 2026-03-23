@@ -993,12 +993,20 @@ void CarRenderConn::UpdateTires(float dT, float carspeed, const RenderConn::Pkt_
 
     for (unsigned int i = 0; i < 4; i++) {
         const unsigned int axle = i >> 1;
-        const bool onground = ((data.mGroundState >> i) & 1U) != 0;
-        const bool is_flat = ((data.mBlowOuts >> i) & 1U) != 0;
+        bool onground = false;
+        bool is_flat = false;
         TireState *state = this->mTireState[i];
         float compression = data.mCompressions[i] + (this->mTireRadius[i] - this->mPhysicsRadius[i]);
         float wheel_delta = UMath::Clamp((data.mWheelSpeed[i] / this->mTireRadius[i]) * dT, -this->mMaxWheelRenderDeltaAngle,
                                          this->mMaxWheelRenderDeltaAngle);
+
+        if (((data.mGroundState >> i) & 1U) != 0) {
+            onground = true;
+        }
+
+        if (((data.mBlowOuts >> i) & 1U) != 0) {
+            is_flat = true;
+        }
 
         PSMTX44Identity(*reinterpret_cast<Mtx44 *>(&this->mTireMatrices[i]));
         PSMTX44Identity(*reinterpret_cast<Mtx44 *>(&this->mBrakeMatrices[i]));
