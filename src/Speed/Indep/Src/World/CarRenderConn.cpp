@@ -1288,16 +1288,16 @@ void CarRenderConn::Hide(bool b) {
 void CarRenderConn::OnFetch(float dT) {
     bool in_view = false;
 
-    if ((this->mLastRenderFrame <= this->mLastVisibleFrame && this->mLastVisibleFrame != 0) || this->IsViewAnchor()) {
+    if ((this->mLastVisibleFrame >= this->mLastRenderFrame && this->mLastVisibleFrame != 0) || this->IsViewAnchor()) {
         in_view = true;
     }
 
     RenderConn::Pkt_Car_Service pkt(in_view, this->mDistanceToView);
-    if (!this->Service(&pkt)) {
-        this->Hide(true);
-    } else {
+    if (this->Service(&pkt)) {
         this->Hide(false);
         this->Update(pkt, dT);
+    } else {
+        this->Hide(true);
     }
 }
 

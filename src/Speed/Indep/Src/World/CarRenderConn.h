@@ -77,15 +77,11 @@ class Pkt_Car_Service : public Sim::Packet {
     PartState mPartState;                // offset 0x54, size 0xC
     unsigned int mLights;                // offset 0x60, size 0x4
     unsigned int mBrokenLights;          // offset 0x64, size 0x4
-    bool mInView;                        // offset 0x68, size 0x1
-    unsigned char _pad69[3];             // offset 0x69, size 0x3
+    bool mInView;                        // offset 0x68, size 0x4
     float mDistanceToView;               // offset 0x6C, size 0x4
-    bool mFlashing;                      // offset 0x70, size 0x1
-    unsigned char _pad71[3];             // offset 0x71, size 0x3
-    bool mNos;                           // offset 0x74, size 0x1
-    unsigned char _pad75[3];             // offset 0x75, size 0x3
-    bool mEngineBlown;                   // offset 0x78, size 0x1
-    unsigned char _pad79[3];             // offset 0x79, size 0x3
+    bool mFlashing;                      // offset 0x70, size 0x4
+    bool mNos;                           // offset 0x74, size 0x4
+    bool mEngineBlown;                   // offset 0x78, size 0x4
     int mShift;                          // offset 0x7C, size 0x4
     int mGear;                           // offset 0x80, size 0x4
     float mEnginePower;                  // offset 0x84, size 0x4
