@@ -720,14 +720,36 @@ bool FnDeltaQFast::EvalSQTMask(float currTime, float *sqt, const BoneMask *boneM
     }
 
     int ceilKey = floorKey + 1;
+    bool slerpReqd = false;
+    float t = 0.0f;
 
     if (ceilKey >= deltaQ->mNumKeys) {
         ceilKey = floorKey;
     }
 
-    if (ceilKey > floorKey) {
+    if (!deltaQ->mTimes) {
+        float floorTimef = static_cast<float>(floorKey);
+
+        slerpReqd = currTime != floorTimef;
+        if (slerpReqd) {
+            t = currTime - floorTimef;
+        }
+    } else if (floorKey == 0) {
+        slerpReqd = currTime != 0.0f;
+        if (slerpReqd) {
+            t = currTime / static_cast<float>(deltaQ->mTimes[0]);
+        }
+    } else {
+        float floorTimef = static_cast<float>(deltaQ->mTimes[floorKey - 1]);
+
+        slerpReqd = currTime != floorTimef;
+        if (slerpReqd) {
+            t = (currTime - floorTimef) / (static_cast<float>(deltaQ->mTimes[floorKey]) - floorTimef);
+        }
+    }
+
+    if (slerpReqd && ceilKey > floorKey) {
         UpdateNextQsMask(deltaQ, ceilKey, floorBinIdx, floorDeltaIdx, boneMask);
-        float t = ComputeQFastBlendT(deltaQ, floorKey, ceilKey, currTime);
 
         for (int ibone = 0; ibone < deltaQ->mNumBones; ibone++) {
             unsigned char boneIdx = boneIdxs[ibone];
