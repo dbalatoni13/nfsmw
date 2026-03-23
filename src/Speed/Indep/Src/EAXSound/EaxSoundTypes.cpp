@@ -66,10 +66,10 @@ struct SpeechEventPair {
     SPCHType_1_EventID id;
 
     bool operator<(const SpeechEventPair &rhs) const {
-        if (hash != rhs.hash) {
-            return hash < rhs.hash;
+        if (id != rhs.id) {
+            return id < rhs.id;
         }
-        return id < rhs.id;
+        return hash < rhs.hash;
     }
 };
 
@@ -234,10 +234,13 @@ SPCHType_1_EventID SpeechHashIDMap::GetID(unsigned int hash) {
 }
 
 unsigned int SpeechHashIDMap::GetHash(SPCHType_1_EventID id) {
-    for (iterator it = begin(); it != end(); ++it) {
-        if (it->id == id) {
-            return it->hash;
-        }
+    SpeechEventPair p;
+    p.hash = 0;
+    p.id = id;
+
+    const_iterator iter = std::lower_bound(begin(), end(), p);
+    if (iter != end() && iter->id == id) {
+        return iter->hash;
     }
 
     return 0;
