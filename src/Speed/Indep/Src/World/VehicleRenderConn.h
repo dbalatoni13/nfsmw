@@ -27,7 +27,9 @@ class Reference {
     void operator=(unsigned int id);
     unsigned int GetWorldID() const;
     const bMatrix4 *GetMatrix() const;
-    const bVector3 *GetVelocity() const;
+    const bVector3 *GetVelocity() const {
+        return this->mVelocity;
+    }
     const bVector3 *GetAcceleration() const;
 
     void Set(unsigned int worldid);
@@ -113,7 +115,9 @@ class VehicleRenderConn : public Sim::Connection, public UTL::Collections::Lista
     }
     const bVector3 *GetPosition() const;
     const bMatrix4 *GetBodyMatrix() const;
-    const bVector3 *GetVelocity() const;
+    const bVector3 *GetVelocity() const {
+        return this->mWorldRef.GetVelocity();
+    }
     const bVector3 *GetAcceleration() const;
     bool IsLoaded() const;
     eState GetState() const;
