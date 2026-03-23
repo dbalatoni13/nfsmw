@@ -967,14 +967,11 @@ void CarRenderConn::UpdateTires(float dT, float carspeed, const RenderConn::Pkt_
     bool hop_wheels = false;
     bool flatten_tires = false;
     bool can_do_fx;
-    const Attrib::Gen::ecar &attributes = this->VehicleRenderConn::mAttributes;
-    CarRenderInfo *car_render_info = this->mRenderInfo;
-    const LocalReferenceMirror *world_ref = reinterpret_cast<const LocalReferenceMirror *>(&this->mWorldRef);
 
     this->mFlatTireAngle = UMath::Vector3::kZero;
 
     if (this->TestVisibility(renderModifier * 30.0f)) {
-        const float &hop_scale = attributes.WheelHopScale(0);
+        const float &hop_scale = this->mAttributes.WheelHopScale(0);
 
         flatten_tires = true;
         if (0.0f < data.mExtraBodyPitch && 0.0f < hop_scale) {
@@ -1064,7 +1061,7 @@ void CarRenderConn::UpdateTires(float dT, float carspeed, const RenderConn::Pkt_
         this->mTireMatrices[i].v3.y = this->mTirePositions[i].y;
 
         if (can_do_fx) {
-            CarRenderInfoU32(car_render_info, 0x177C + i * 4) = is_flat ? 1U : 0U;
+            CarRenderInfoU32(this->mRenderInfo, 0x177C + i * 4) = is_flat ? 1U : 0U;
         }
 
         eMulVector(&state->mTirePos, &this->mRenderMatrix, &this->mTireMatrices[i].v3);
@@ -1083,13 +1080,13 @@ void CarRenderConn::UpdateTires(float dT, float carspeed, const RenderConn::Pkt_
                 delta_pos.x = state->mTirePos.x - state->mPrevTirePos.x;
                 delta_pos.y = state->mTirePos.y - state->mPrevTirePos.y;
                 delta_pos.z = state->mTirePos.z - state->mPrevTirePos.z;
-                state->DoSkids(intensity, &delta_pos, &this->mTireMatrices[i], &this->mRenderMatrix, attributes.TireSkidWidth(i));
+                state->DoSkids(intensity, &delta_pos, &this->mTireMatrices[i], &this->mRenderMatrix, this->mAttributes.TireSkidWidth(i));
             } else {
                 state->KillSkids();
             }
 
-            state->DoFX(data.mTireSlip[i] * attributes.SlipFX(axle), data.mTireSkid[i] * attributes.SkidFX(axle), carspeed,
-                        world_ref->mVelocity, &this->mRenderMatrix, dT);
+            state->DoFX(data.mTireSlip[i] * this->mAttributes.SlipFX(axle), data.mTireSkid[i] * this->mAttributes.SkidFX(axle), carspeed,
+                        reinterpret_cast<const LocalReferenceMirror *>(&this->mWorldRef)->mVelocity, &this->mRenderMatrix, dT);
         }
 
         state->mPrevTirePos = state->mTirePos;
