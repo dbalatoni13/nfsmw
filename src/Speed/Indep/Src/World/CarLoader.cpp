@@ -1398,7 +1398,7 @@ int LoaderCarInfo(bChunk *chunk) {
 
         CarPartDatabaseLayout *database = reinterpret_cast<CarPartDatabaseLayout *>(&CarPartDB);
         for (unsigned int i = 0; i < car_part_pack->NumParts; i++) {
-            char *car_part_bytes = reinterpret_cast<char *>(CarPartPartsTable) + i * 0xE;
+            char *car_part_bytes = reinterpret_cast<char *>(car_part_pack->PartsTable) + i * 0xE;
             CarPart *car_part = reinterpret_cast<CarPart *>(car_part_bytes);
             CarPartIndex *index0 = 0;
             CarPartIndex *index1 = 0;
