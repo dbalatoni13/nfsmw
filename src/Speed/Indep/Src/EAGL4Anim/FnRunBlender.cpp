@@ -211,28 +211,31 @@ bool FnRunBlender::EvalPhase(float currTime, PhaseValue &phase) {
 }
 
 bool FnRunBlender::EvalVel2D(float currTime, float *vel) {
-    if (!mFnAnims[0]) {
+    mPrevTime = currTime;
+    if (!mVels) {
+        return false;
+    }
+    if (!mFnVelAnims[0]) {
         SetWeight(0.0f);
     }
 
     float evalTime = currTime + mOffset;
-    float t0 = CycleTime(mFreq * mCycles[0] * evalTime + mAlignFrame[0], 0.0f, mCycles[0]);
-    float t1 = CycleTime(mFreq * mCycles[1] * evalTime + mAlignFrame[1], 0.0f, mCycles[1]);
+    float cycleTime0 = mFreq * mCycles[0] * evalTime + mAlignFrame[0];
+    int cycleIdx = ComputeCycleIdx(cycleTime0, 0.0f, static_cast<float>(mPhases[mIdx]->mNumFrames - 1));
+    float t0 = CycleTime(cycleTime0, 0.0f, static_cast<float>(mPhases[mIdx]->mNumFrames - 1));
+    float t1 = CycleTime(
+        mFreq * mCycles[1] * evalTime + mAlignFrame[1],
+        0.0f,
+        static_cast<float>(mPhases[mIdx + 1]->mNumFrames - 1)
+    );
 
-    if (mWeight != 0.0f && mFnVelAnims[0] && mFnVelAnims[1]) {
-        if (!BlendVel(t0, t1, vel)) {
-            return false;
-        }
-    } else if (mFnVelAnims[0]) {
-        if (!mFnVelAnims[0]->EvalVel2D(t0, vel)) {
-            return false;
-        }
-    } else {
-        return false;
+    if (BlendVel(t0, t1, vel)) {
+        AlignCycleBeginEnd(cycleIdx);
+        AlignVel(vel);
+        return true;
     }
 
-    AlignVel(vel);
-    return true;
+    return false;
 }
 
 bool FnRunBlender::BlendVel(float t0, float t1, float *vel) const {
