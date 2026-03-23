@@ -199,9 +199,12 @@ bool FnDeltaSingleQ::EvalSQT(float currTime, float *sqt, const BoneMask *boneMas
     DeltaSingleQ *deltaQ = reinterpret_cast<DeltaSingleQ *>(mpAnim);
 
     if (!mPrevQs) {
-        DeltaSingleQMinRange *minRanges = GetSingleQMinRanges(deltaQ);
-        mBins = GetSingleQBinStart(deltaQ);
-        mBinSize = GetSingleQBinSize(deltaQ);
+        unsigned char numBones = deltaQ->mNumBones;
+        DeltaSingleQMinRange *minRanges =
+            reinterpret_cast<DeltaSingleQMinRange *>(reinterpret_cast<unsigned char *>(deltaQ) + 0x10);
+
+        mBins = reinterpret_cast<unsigned char *>(minRanges) + numBones * sizeof(DeltaSingleQMinRange);
+        mBinSize = AlignSize2(numBones * ((1 << deltaQ->mBinLengthPower) + 1));
 
         if (deltaQ->mNumBones != 0) {
             float eul[3];
@@ -405,9 +408,12 @@ bool FnDeltaSingleQ::EvalSQTMasked(float currTime, const BoneMask *boneMask, flo
     DeltaSingleQ *deltaQ = reinterpret_cast<DeltaSingleQ *>(mpAnim);
 
     if (!mPrevQs) {
-        DeltaSingleQMinRange *minRanges = GetSingleQMinRanges(deltaQ);
-        mBins = GetSingleQBinStart(deltaQ);
-        mBinSize = GetSingleQBinSize(deltaQ);
+        unsigned char numBones = deltaQ->mNumBones;
+        DeltaSingleQMinRange *minRanges =
+            reinterpret_cast<DeltaSingleQMinRange *>(reinterpret_cast<unsigned char *>(deltaQ) + 0x10);
+
+        mBins = reinterpret_cast<unsigned char *>(minRanges) + numBones * sizeof(DeltaSingleQMinRange);
+        mBinSize = AlignSize2(numBones * ((1 << deltaQ->mBinLengthPower) + 1));
 
         if (deltaQ->mNumBones != 0) {
             float eul[3];
