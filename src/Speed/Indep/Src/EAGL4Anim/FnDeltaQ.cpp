@@ -108,7 +108,7 @@ static inline void RecoverW(int signBit, UMath::Vector4 &q) {
 
     if (ndotn <= kFloatOne) {
         q.w = FastSqrt(kFloatOne - ndotn);
-        if (signBit) {
+        if (signBit > 0) {
             q.w = -q.w;
         }
     } else {
