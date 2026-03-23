@@ -40,16 +40,18 @@ bool FnPoseAnim::EvalPose(float currTime, const PosePaletteBank *paletteBank, fl
             key = numKeys - 1;
         } else {
             key = mPrevKey;
-            if (times[key] > floorTime) {
-                if (key != 0) {
-                    do {
-                        key--;
-                    } while (key > 0 && times[key] > floorTime);
+            if (times[key] <= floorTime) {
+                if (key < numKeys - 1) {
+                    if (times[key + 1] <= floorTime) {
+                        do {
+                            key++;
+                        } while (key < numKeys - 2 && times[key + 1] <= floorTime);
+                    }
                 }
-            } else if (times[key + 1] <= floorTime) {
+            } else if (key != 0) {
                 do {
-                    key++;
-                } while (key < numKeys - 2 && times[key + 1] <= floorTime);
+                    key--;
+                } while (key > 0 && times[key] > floorTime);
             }
 
             if (numKeys != 0) {
