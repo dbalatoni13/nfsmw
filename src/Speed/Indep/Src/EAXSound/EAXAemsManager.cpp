@@ -1175,11 +1175,13 @@ void EAXAemsManager::UnloadSndData(Attrib::StringKey filename) {
 }
 
 void EAXAemsManager::AddAemsBank() {
-    stBankSlot *pBankSlot = gAEMSMgr.m_pCurLoadSDLP->mBankSlot;
-    if (pBankSlot == nullptr) {
-        SNDmemlimits(-1, gAEMSMgr.m_SPUMainAllocsEnd);
+    int Result;
+
+    if (gAEMSMgr.m_pCurLoadSDLP->mBankSlot != nullptr) {
+        SNDmemlimits(gAEMSMgr.m_pCurLoadSDLP->mBankSlot->BANKmemLocation,
+                     gAEMSMgr.m_pCurLoadSDLP->mBankSlot->BANKmemLocation + gAEMSMgr.m_pCurLoadSDLP->mBankSlot->BANKMemSize);
     } else {
-        SNDmemlimits(pBankSlot->BANKmemLocation, pBankSlot->BANKmemLocation + pBankSlot->BANKMemSize);
+        SNDmemlimits(-1, gAEMSMgr.m_SPUMainAllocsEnd);
     }
 
     int nhandle = SNDAEMS_addmodulebank(gAEMSMgr.m_pCurLoadSDLP->pmem, nullptr, 0, ResidentAllocCB);
