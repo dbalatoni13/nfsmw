@@ -120,6 +120,8 @@ extern int VehiclePartDamageZone_GetSlotID(const VehiclePartDamageZone *zone, in
 extern void VehiclePartDamageZone_SetDamageLevel(VehiclePartDamageZone *zone, unsigned short damageLevel)
     asm("SetDamageLevel__21VehiclePartDamageZoneUs");
 
+IVehiclePartDamageBehaviour::~IVehiclePartDamageBehaviour() {}
+
 VehiclePartDamageZone::VehiclePartDamageZone(int zoneId, DamageZoneSlotMapDataType *zoneSlotMappingDataList) {
     int zoneSlotIndex;
     int currentZoneId;

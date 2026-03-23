@@ -12,7 +12,7 @@ struct IVehiclePartDamageBehaviour {
     // Functions
     IVehiclePartDamageBehaviour() {}
 
-    virtual ~IVehiclePartDamageBehaviour() {}
+    virtual ~IVehiclePartDamageBehaviour();
 
     virtual void Init();
 
