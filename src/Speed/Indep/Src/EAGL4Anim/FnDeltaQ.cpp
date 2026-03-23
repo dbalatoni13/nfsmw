@@ -189,10 +189,13 @@ bool FnDeltaQ::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask) {
 
         if (numBones != 0) {
             UMath::Vector4 *prevQs = reinterpret_cast<UMath::Vector4 *>(MemoryPoolManager::NewBlock(numBones * sizeof(*mPrevQs)));
+
+            mMinRanges = minRanges;
             mPrevQs = prevQs;
             mPrevQBlock = prevQs;
+        } else {
+            mMinRanges = minRanges;
         }
-        mMinRanges = minRanges;
     }
     int floorTime = FloatToInt(currTime);
     int floorKey;
@@ -402,10 +405,13 @@ bool FnDeltaQ::EvalSQTMasked(float currTime, const BoneMask *boneMask, float *sq
 
         if (numBones != 0) {
             UMath::Vector4 *prevQs = reinterpret_cast<UMath::Vector4 *>(MemoryPoolManager::NewBlock(numBones * sizeof(*mPrevQs)));
+
+            mMinRanges = minRanges;
             mPrevQs = prevQs;
             mPrevQBlock = prevQs;
+        } else {
+            mMinRanges = minRanges;
         }
-        mMinRanges = minRanges;
     }
     int floorTime = FloatToInt(currTime);
     int floorKey;
