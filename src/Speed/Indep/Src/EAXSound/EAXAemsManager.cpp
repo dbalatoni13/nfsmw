@@ -474,13 +474,12 @@ int EAXAemsManager::InitiateLoad() {
                         result = -2;
                     } else {
                         {
-                            stSndDataLoadParams *curLoad = m_pCurLoadSDLP;
-                            pBankSlot = curLoad->mBankSlot;
+                            pBankSlot = m_pCurLoadSDLP->mBankSlot;
                             if (pBankSlot != nullptr) {
                                 pBankSlot->LoadFailed = 0;
                             }
-                            curLoad->MemLocation = TMP_ALLOC_NONE;
-                            curLoad->AssetDescription.eDataType = EAXSND_DT_AEMS_ASYNCSPU;
+                            m_pCurLoadSDLP->MemLocation = TMP_ALLOC_NONE;
+                            m_pCurLoadSDLP->AssetDescription.eDataType = EAXSND_DT_AEMS_ASYNCSPU;
                         }
                         goto HaveQueueParams;
                     }
@@ -488,26 +487,24 @@ int EAXAemsManager::InitiateLoad() {
                     m_AsyncBuffLocation = TMP_ALLOC_MAIN;
                     m_pAsyncBuff = static_cast<char *>(bMalloc(0x10000, 0));
                     {
-                        stSndDataLoadParams *curLoad = m_pCurLoadSDLP;
-                        pBankSlot = curLoad->mBankSlot;
+                        pBankSlot = m_pCurLoadSDLP->mBankSlot;
                         if (pBankSlot != nullptr) {
                             pBankSlot->LoadFailed = 0;
                         }
-                        curLoad->MemLocation = TMP_ALLOC_NONE;
-                        curLoad->AssetDescription.eDataType = EAXSND_DT_AEMS_ASYNCSPU;
+                        m_pCurLoadSDLP->MemLocation = TMP_ALLOC_NONE;
+                        m_pCurLoadSDLP->AssetDescription.eDataType = EAXSND_DT_AEMS_ASYNCSPU;
                     }
                     goto HaveQueueParams;
                 }
             }
         } else {
             {
-                stSndDataLoadParams *curLoad = m_pCurLoadSDLP;
-                pBankSlot = curLoad->mBankSlot;
+                pBankSlot = m_pCurLoadSDLP->mBankSlot;
                 if (pBankSlot != nullptr) {
                     pBankSlot->LoadFailed = 0;
                 }
-                curLoad->MemLocation = TMP_ALLOC_NONE;
-                curLoad->AssetDescription.eDataType = EAXSND_DT_AEMS_ASYNCSPU;
+                m_pCurLoadSDLP->MemLocation = TMP_ALLOC_NONE;
+                m_pCurLoadSDLP->AssetDescription.eDataType = EAXSND_DT_AEMS_ASYNCSPU;
             }
             goto HaveQueueParams;
         }
@@ -602,13 +599,12 @@ ReturnResult:
 
 HaveAsyncBuffer:
     {
-        stSndDataLoadParams *curLoad = m_pCurLoadSDLP;
-        pBankSlot = curLoad->mBankSlot;
+        pBankSlot = m_pCurLoadSDLP->mBankSlot;
         if (pBankSlot != nullptr) {
             pBankSlot->LoadFailed = 0;
         }
-        curLoad->MemLocation = TMP_ALLOC_NONE;
-        curLoad->AssetDescription.eDataType = EAXSND_DT_AEMS_ASYNCSPU;
+        m_pCurLoadSDLP->MemLocation = TMP_ALLOC_NONE;
+        m_pCurLoadSDLP->AssetDescription.eDataType = EAXSND_DT_AEMS_ASYNCSPU;
     }
     goto HaveQueueParams;
 }
