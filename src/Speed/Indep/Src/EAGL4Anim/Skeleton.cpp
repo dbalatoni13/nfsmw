@@ -7,14 +7,14 @@ namespace EAGL4Anim {
 extern void (*MatrixMultiply)(EAGL4::Transform *, const EAGL4::Transform *, const EAGL4::Transform *);
 
 void Skeleton::PoseSQTToGlobal(float *pose, EAGL4::Transform *output, BoneMask *mask) {
-    BoneData *bones = GetBoneData();
-    int n = GetNumBones();
-
     if (mask) {
+        float *poseData = pose;
+        BoneData *bones = GetBoneData();
+        int n = GetNumBones();
+
         for (int i = 0; i < n; i++) {
             if (mask->GetBone(i)) {
                 int p = bones[i].mParentIdx;
-                float *poseData = pose;
                 float *mat = output[i].m.GetElements();
 
                 output[i].BuildSQT(poseData[0], poseData[1], poseData[2], poseData[4], poseData[5], poseData[6], poseData[7], poseData[8],
@@ -28,12 +28,15 @@ void Skeleton::PoseSQTToGlobal(float *pose, EAGL4::Transform *output, BoneMask *
                 }
             }
 
-            pose += 12;
+            poseData += 12;
         }
     } else {
+        float *poseData = pose;
+        BoneData *bones = GetBoneData();
+        int n = GetNumBones();
+
         for (int i = 0; i < n; i++) {
             int p = bones[i].mParentIdx;
-            float *poseData = pose;
             float *mat = output[i].m.GetElements();
 
             output[i].BuildSQT(poseData[0], poseData[1], poseData[2], poseData[4], poseData[5], poseData[6], poseData[7], poseData[8],
@@ -46,7 +49,7 @@ void Skeleton::PoseSQTToGlobal(float *pose, EAGL4::Transform *output, BoneMask *
                 MatrixMultiply(&output[i], &output[p], &output[i]);
             }
 
-            pose += 12;
+            poseData += 12;
         }
     }
 }
