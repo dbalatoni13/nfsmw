@@ -1236,14 +1236,12 @@ void CarRenderConn::UpdateEffects(const RenderConn::Pkt_Car_Service &data, float
     for (VehicleRenderConn::Effect *pipe_effect = this->mPipeEffects.GetHead(); pipe_effect != this->mPipeEffects.EndOfList();
          pipe_effect = pipe_effect->GetNext()) {
         if (!data.mNos) {
-            if (!this->GetFlag(CF_MISSSHIFT)) {
-                if (this->GetFlag(CF_BLOWOFF) && this->mShifting != 0.0f) {
-                    pipe_effect->Update(&this->mRenderMatrix, nos_key, dT, 1.0f, velocity);
-                } else {
-                    pipe_effect->Stop();
-                }
-            } else {
+            if (this->GetFlag(CF_MISSSHIFT)) {
                 pipe_effect->Fire(&this->mRenderMatrix, missshift_key, 1.0f, velocity);
+            } else if (this->GetFlag(CF_BLOWOFF) && this->mShifting != 0.0f) {
+                pipe_effect->Update(&this->mRenderMatrix, nos_key, dT, 1.0f, velocity);
+            } else {
+                pipe_effect->Stop();
             }
         } else {
             pipe_effect->Update(&this->mRenderMatrix, nos_key, dT, 1.0f, velocity);
