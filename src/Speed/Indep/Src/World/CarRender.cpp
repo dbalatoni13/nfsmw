@@ -196,6 +196,7 @@ float const TrafficCarBodyLodSwapSize[] = {20.0f, 10.0f, 4.0f, 0.0f, 0.0f};
 void Render(eViewPlatInterface *view, eModel *model, bMatrix4 *local_to_world, eLightContext *light_context, unsigned int flags,
             unsigned int exc_flag);
 void Render(eViewPlatInterface *view, ePoly *poly, TextureInfo *texture_info, bMatrix4 *matrix, int accurate, float z_bias);
+int eSmoothNormals(eModel **model_table, int num_models);
 eEnvMap *eGetEnvMap();
 void bExpandBoundingBox(bVector3 *bbox_min, bVector3 *bbox_max, const bVector3 *bbox2_min, const bVector3 *bbox2_max);
 bool eBeginStrip(TextureInfo *a, int b, bMatrix4 *c);
@@ -787,6 +788,18 @@ CarRenderInfo::CarRenderInfo(RideInfo *ride_info)
     }
 
     this->CreateCarLightFlares();
+
+    {
+        for (int lod = this->mMinLodLevel; lod <= this->mMaxLodLevel; lod++) {
+            eModel *smooth_normal_models[0x4C];
+
+            for (int slot = 0; slot < 0x4C; slot++) {
+                smooth_normal_models[slot] = this->mCarPartModels[slot][0][lod].GetModel();
+            }
+
+            eSmoothNormals(smooth_normal_models, 0x4C);
+        }
+    }
 
     {
         unsigned int light_material_hash = 0;
