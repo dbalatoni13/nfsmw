@@ -1317,12 +1317,14 @@ void CarRenderInfo::UpdateCarParts() {
 
                 if (slot_id < CARSLOTID_DECAL_FRONT_WINDOW || slot_id > CARSLOTID_DECAL_RIGHT_QUARTER) {
                     if (slot_id == CARSLOTID_HOOD) {
-                        if (CarPart_GetAppliedAttributeIParam(ride_info->GetPart(CARSLOTID_HOOD), 0x721AFF7C, 0) == 0) {
-                            model->AttachReplacementTextureTable(this->MasterReplacementTextureTable, REPLACETEX_NUM, 0);
-                            this->CarbonHood = 0;
-                        } else {
+                        int carbon_hood = CarPart_GetAppliedAttributeIParam(ride_info->GetPart(CARSLOTID_HOOD), 0x721AFF7C, 0);
+
+                        if (carbon_hood != 0) {
                             model->AttachReplacementTextureTable(this->CarbonReplacementTextureTable, REPLACETEX_NUM, 0);
                             this->CarbonHood = 1;
+                        } else {
+                            model->AttachReplacementTextureTable(this->MasterReplacementTextureTable, REPLACETEX_NUM, 0);
+                            this->CarbonHood = carbon_hood;
                         }
                     } else {
                         model->AttachReplacementTextureTable(this->MasterReplacementTextureTable, REPLACETEX_NUM, 0);
