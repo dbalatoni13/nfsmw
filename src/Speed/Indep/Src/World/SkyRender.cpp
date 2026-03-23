@@ -104,9 +104,7 @@ int SkyInitModel(eModel *model, bMatrix4 *local_world, unsigned int scenery_name
         local_world->v2.y = static_cast<float>(rotation1) * rotation_scale;
         local_world->v2.z = static_cast<float>(rotation2) * rotation_scale;
         local_world->v2.w = row_w;
-        local_world->v3.x = scenery_instance->Position[0];
-        local_world->v3.y = scenery_instance->Position[1];
-        local_world->v3.z = scenery_instance->Position[2];
+        local_world->v3 = *reinterpret_cast<bVector4 *>(scenery_instance->Position);
         local_world->v3.w = matrix_w;
 
         int *scenery_info_models = reinterpret_cast<int *>(reinterpret_cast<char *>(FindSceneryInfo(scenery_name_hash)) + 0x28);
