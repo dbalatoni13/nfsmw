@@ -27,14 +27,14 @@ enum JoylogChannel {
 
 // total size: 0xC
 struct JoylogBufferEntry {
-    // Members
     int ChannelNumber; // offset 0x0, size 0x4
     int DataSize;      // offset 0x4, size 0x4
     uint32 Data;       // offset 0x8, size 0x4
 };
 
 // total size: 0x4118
-struct JoylogBuffer {
+class JoylogBuffer {
+  public:
     JoylogBuffer(const char *filename, int top_position);
 
     void SaveBuffer();
@@ -53,17 +53,25 @@ struct JoylogBuffer {
 
     void PrintNearbyJoylogEntries(int error_pos);
 
-    // char *GetFilename() {}
+    char *GetFilename() {
+        return Filename;
+    }
 
-    // int GetTotalSize() {}
+    int GetTotalSize() {
+        return TopPosition;
+    }
 
-    // int IsMoreData() {}
+    int IsMoreData() {
+        return CurrentPosition < TopPosition;
+    }
 
-    // int GetPosition() {}
+    int GetPosition() {
+        return CurrentPosition;
+    }
 
     void SetPosition(int position) {}
 
-    // Members
+  private:
     int32 CurrentPosition;       // offset 0x0, size 0x4
     int32 NumBytesInBuffer;      // offset 0x4, size 0x4
     int32 CurrentLoadPosition;   // offset 0x8, size 0x4
@@ -126,9 +134,14 @@ class Joylog {
 
     static int IsReplaying();
 
-    // static float GetData(JoylogChannel channel_number) {}
+    static float GetData(JoylogChannel channel_number) {
+        int data = static_cast<int>(GetData(32, channel_number));
+        return *reinterpret_cast<float *>(&data);
+    }
 
-    static void AddData(float data, JoylogChannel channel_number) {}
+    static void AddData(float data, JoylogChannel channel_number) {
+        AddData(*reinterpret_cast<int *>(&data), 32, channel_number);
+    }
 
     static void RewindReadAheadBuffer() {}
 
@@ -154,6 +167,12 @@ struct JoylogChannelInfo {
     char YieldRepeatCount;       // offset 0x8, size 0x1
     char ReadAheadOnly;          // offset 0x9, size 0x1
 };
+
+extern JoylogChannelInfo NFSJoylogChannelInfoTable[14];
+
+inline JoylogChannelInfo *GetJoylogChannelInfo(int channel_number) {
+    return &NFSJoylogChannelInfoTable[channel_number];
+}
 
 void InitJoylog();
 void ServiceJoylog();

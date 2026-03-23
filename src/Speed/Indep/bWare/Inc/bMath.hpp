@@ -304,6 +304,15 @@ inline float bDot(const bVector2 *v1, const bVector2 *v2) {
     return v1->x * v2->x + v1->y * v2->y;
 }
 
+inline bVector2 *bScale(bVector2 *dest, const bVector2 *v, float scale) {
+    float x = v->x;
+    float y = v->y;
+
+    dest->x = x * scale;
+    dest->y = y * scale;
+    return dest;
+}
+
 struct ALIGN_16 bVector3 {
     // total size: 0x10
     float x;   // offset 0x0, size 0x4

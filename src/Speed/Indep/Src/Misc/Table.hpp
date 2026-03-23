@@ -43,9 +43,13 @@ class Table : public TableBase {
 
     Table(const float *table, int num, float min, float max) : TableBase(num, min, max), pTable(table) {}
 
-    const float *GetData() const {}
+    const float *GetData() const {
+        return pTable;
+    }
 
-    void SetData(const float *data, int num) {}
+    void SetData(const float *data, int num) {
+        // TODO
+    }
 
   private:
     // total size: 0x14
@@ -53,9 +57,13 @@ class Table : public TableBase {
 };
 
 template <typename T> class tTable : public TableBase {
-    T *pTable;
-
   public:
+    tTable() : TableBase(0, 0.0f, 1.0f) {}
+
+    void Blend(T *dest, T *a, T *b, float blend_a);
+
+  private:
+    T *pTable;
 };
 
 class AverageBase {
@@ -83,8 +91,8 @@ class AverageBase {
     AverageBase(int size, int slots);
     virtual ~AverageBase() {}
 
-    void *Allocate(unsigned int size, const char *name);
-    void DeAllocate(void *ptr, unsigned int size, const char *name);
+    static void *Allocate(unsigned int size, const char *name);
+    static void DeAllocate(void *ptr, unsigned int size, const char *name);
 
     // bool FullySampled() {}
 
@@ -105,9 +113,13 @@ class Average : public AverageBase {
   public:
     Average();
     Average(int slots);
-    ~Average();
+    ~Average() override;
 
     void Init(int slots);
+    void Record(float fValue);
+    void Recalculate() override;
+    void Reset(float fValue);
+    void Flush(float fValue);
 
     float GetValue() {
         return fAverage;
@@ -116,6 +128,8 @@ class Average : public AverageBase {
     float GetTotal() {
         return fTotal;
     }
+
+    float GetLastRecordedValue() const;
 
   protected:
     float fTotal;
@@ -158,10 +172,7 @@ class Graph {
 
     static void operator delete(void *mem, std::size_t size) {}
 
-    Graph(bVector2 *points, int num_points) {
-        Points = points;
-        NumPoints = num_points;
-    }
+    Graph(bVector2 *points, int num_points);
 
     float GetValue(float x);
 
@@ -236,7 +247,11 @@ struct PidError {
         return gFastMem.Alloc(size, name);
     }
 
-    // void operator delete(void *mem, const char *name) {}
+    void operator delete(void *mem, const char *name) {
+        if (mem) {
+            gFastMem.Free(mem, sizeof(PidError), name);
+        }
+    }
 
     // void operator delete(void *mem, unsigned int size, const char *name) {}
 

@@ -20,6 +20,117 @@ void VMInit(size_t, uintptr_t, size_t);
 BOOL VMAlloc(uintptr_t, size_t);
 }
 
+// total size: 0x14
+class AllocationHeader : public bTNode<AllocationHeader> {
+  public:
+    void *GetBottomAddress() {
+        return reinterpret_cast<void *>(reinterpret_cast<char *>(this) - FrontPadding);
+    }
+
+    void *GetAllocAddress() {
+        return &this[1];
+    }
+
+    const char *GetDebugText() {
+        return "";
+    }
+
+    int GetAllocationNumber() {
+#ifdef MILESTONE_OPT
+        return *reinterpret_cast<uint16 *>(reinterpret_cast<char *>(this) - FrontPadding);
+#else
+        return 0;
+#endif
+    }
+
+    int GetDebugLine() {
+#ifdef MILESTONE_OPT
+        return *reinterpret_cast<uint16 *>(reinterpret_cast<char *>(this) - FrontPadding + 2);
+#else
+        return 0;
+#endif
+    }
+
+    uint8 PoolNum;       // offset 0x8, size 0x1
+    uint8 MagicNumber;   // offset 0x9, size 0x1
+    uint16 FrontPadding; // offset 0xA, size 0x2
+    int32 Size;          // offset 0xC, size 0x4
+    int32 RequestedSize; // offset 0x10, size 0x4
+};
+
+// total size: 0x60
+class MemoryPool {
+  public:
+    void Init(void *memory, int memory_size, const char *debug_name);
+    void Close();
+    void AddMemory(void *p, int size);
+    void RemoveMemory(void *p, int size);
+    void FreeMemory(void *p, int size, const char *debug_name);
+    void AddFreeMemory(void *p, int size, const char *debug_name);
+    void *AllocateMemory(int size, int alignment, int alignment_offset, int start_from_top, int use_best_fit, int *new_size);
+    int GetAmountFree();
+    int GetLargestFreeBlock();
+    void VerifyPoolIntegrity(bool verify_free_pattern);
+    int CountAllocations(const char *debug_text);
+    void PrintAllocationsByAddress(int from_allocation, int to_allocation);
+    void PrintAllocations(int from_allocation, int to_allocation);
+    AllocationHeader *FindAllocation(int allocation_num);
+    int GetAllocations(void **allocations, int max_allocations);
+    void SetFancyStompDetector(void *mem, int mem_size, const char *name);
+    bool CheckFancyStompDetector(const void *mem, int mem_size);
+    void TraceNewPool();
+    void TraceDeletePool();
+    void TraceFreeMemory(void *p, int size);
+    void TraceRemoveMemory(void *p, int size);
+    void TraceAllocateMemory(void *p, int size);
+    void UpdateTraceInformation();
+
+    const char *GetName() {
+        return this->pDebugName;
+    }
+
+    bool SetDebugFill(bool on_off) {
+        bool previous = this->DebugFillEnabled;
+        this->DebugFillEnabled = on_off;
+        return previous;
+    }
+
+    bool SetDebugTracing(bool on_off) {
+        bool previous = this->DebugTracingEnabled;
+        this->DebugTracingEnabled = on_off;
+        return previous;
+    }
+
+    bool IsInPool(intptr_t address) {
+        return address >= this->InitialAddress && address < this->InitialAddress + this->InitialSize;
+    }
+
+    void AddAllocationHeader(AllocationHeader *allocation_header) {
+        this->AllocationHeaderList.AddTail(allocation_header);
+    }
+
+    void RemoveAllocationHeader(AllocationHeader *allocation_header) {
+        this->AllocationHeaderList.Remove(allocation_header);
+    }
+
+  private:
+    const char *pDebugName;                        // offset 0x0, size 0x4
+    bTList<FreeBlock> FreeBlockList;               // offset 0x4, size 0x8
+    bTList<AllocationHeader> AllocationHeaderList; // offset 0xC, size 0x8
+    intptr_t InitialAddress;                       // offset 0x14, size 0x4
+    int InitialSize;                               // offset 0x18, size 0x4
+    int NumAllocations;                            // offset 0x1C, size 0x4
+    int TotalNumAllocations;                       // offset 0x20, size 0x4
+    int PoolSize;                                  // offset 0x24, size 0x4
+    int AmountAllocated;                           // offset 0x28, size 0x4
+    int MostAmountAllocated;                       // offset 0x2C, size 0x4
+    int AmountFree;                                // offset 0x30, size 0x4
+    int LeastAmountFree;                           // offset 0x34, size 0x4
+    bool DebugFillEnabled;                         // offset 0x38, size 0x1
+    bool DebugTracingEnabled;                      // offset 0x3C, size 0x1
+    bMutex Mutex;                                  // offset 0x40, size 0x20
+};
+
 int bMemoryAutomaticVerifyPoolIntegrity = 0;                                          // size: 0x4, address: 0x80416418
 int bMemoryRandomFillPattern = 0;                                                     // size: 0x4, address: 0x80416430
 BOOL bMemoryTracing = false;                                                          // size: 0x4, address: 0x80416438

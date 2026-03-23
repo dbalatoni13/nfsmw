@@ -2,6 +2,13 @@
 #include "Speed/Indep/Libs/Support/Utility/UCrc.h"
 #include "Speed/Indep/Src/Generated/Events/EDeliverMessage.hpp"
 
+namespace Hermes {
+
+unsigned int Handler::mKeyNext = 1;
+System *System::mObj = nullptr;
+
+}; // namespace Hermes
+
 int TotalNumHermesHandlers = 0;
 
 namespace Hermes {
@@ -29,7 +36,7 @@ void PortMessage::SetIDFilter(HHANDLER key, bool enabled) {
         Handler &handler = *i;
         if (handler.mKey == key) {
             handler.mNoFilter = !enabled;
-            break;
+            return;
         }
     }
 }

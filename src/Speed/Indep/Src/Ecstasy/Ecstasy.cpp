@@ -12,8 +12,6 @@
 #include "Texture.hpp"
 #include "eEnvMapE.hpp"
 #include "eLight.hpp"
-#include "eModel.hpp"
-#include "eSolid.hpp"
 
 // EAXSound2
 float renderModifier = 1.0f;

@@ -162,6 +162,8 @@ class CareerSettings {
         return CurrentCar;
     }
 
+    void TryAwardDemoMarker();
+
   private:
     uint32 CurrentCar;           // offset 0x0, size 0x4
     uint32 SpecialFlags;         // offset 0x4, size 0x4
@@ -271,7 +273,7 @@ class cFrontendDatabase {
     }
 
     bool IsSplitScreenMode() {
-        return FEGameMode & 4;
+        return FEGameMode & 4 && iNumPlayers == 2;
     }
 
     bool IsCareerMode() {

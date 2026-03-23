@@ -54,7 +54,10 @@ class TrackPathZone {
     }
 };
 
+// total size: 0x48C
+
 class TrackPathManager {
+  public:
     struct ZoneInfo {
         // total size: 0x4C
         int NumZones;
@@ -69,7 +72,18 @@ class TrackPathManager {
         TrackPathZone *CachedZones[8];
     };
 
-    // total size: 0x48C
+  public:
+    void EnableBarriers(const char *group_name);
+    void DisableAllBarriers();
+    void BuildZoneInfoTable();
+    TrackPathZone *FindZone(const bVector2 *position, eTrackPathZoneType zone_type, TrackPathZone *prev_zone);
+    void ResetZoneVisitInfos();
+
+    void Close() {}
+
+  private:
+    // TrackPathZone *GetLastZone() {}
+
     int NumZones;                       // offset 0x0, size 0x4
     int SizeofZones;                    // offset 0x4, size 0x4
     TrackPathZone *pZones;              // offset 0x8, size 0x4
@@ -77,12 +91,6 @@ class TrackPathManager {
     int MostCachedZones;                // offset 0x480, size 0x4
     int NumBarriers;                    // offset 0x484, size 0x4
     struct TrackPathBarrier *pBarriers; // offset 0x488, size 0x4
-
-  public:
-    void EnableBarriers(const char *group_name);
-    void BuildZoneInfoTable();
-    TrackPathZone *FindZone(const bVector2 *position, eTrackPathZoneType zone_type, TrackPathZone *prev_zone);
-    void ResetZoneVisitInfos();
 };
 
 extern TrackPathManager TheTrackPathManager;
