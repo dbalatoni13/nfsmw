@@ -551,7 +551,10 @@ bool FnDeltaQ::EvalSQTMasked(float currTime, const BoneMask *boneMask, float *sq
                     float *ceilQ = reinterpret_cast<float *>(&ceilq);
                     float *out = GetOutputQuat(sqt, boneIdxs[ibone]);
 
-                    DecodePhysical(ceilPhys[ibone], ceilq);
+                    ceilQ[0] = ceilPhys[ibone].mX * kRangeScale15Bit - kFloatOne;
+                    ceilQ[1] = ceilPhys[ibone].mY * kRangeScale16Bit - kFloatOne;
+                    ceilQ[2] = ceilPhys[ibone].mZ * kRangeScale16Bit - kFloatOne;
+                    RecoverW(ceilPhys[ibone].mW, ceilq);
                     if (prevQ[0] * ceilQ[0] + prevQ[1] * ceilQ[1] + prevQ[2] * ceilQ[2] + prevQ[3] * ceilQ[3] > 0.0f) {
                         out[0] = scale * (ceilQ[0] - prevQ[0]) + prevQ[0];
                         out[1] = scale * (ceilQ[1] - prevQ[1]) + prevQ[1];
