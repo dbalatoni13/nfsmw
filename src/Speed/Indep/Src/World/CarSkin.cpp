@@ -53,6 +53,14 @@ struct CompColour {
     CompColour() {}
 };
 
+inline CarTypeInfo *GetCarTypeInfo(CarType car_type) {
+    return &CarTypeInfoArray[car_type];
+}
+
+inline char *CarTypeInfo::GetBaseModelName() {
+    return BaseModelName;
+}
+
 SkinCompositeParams *GetSkinCompositeParams(unsigned int dest_name_hash) {
     SkinCompositeParams *cache_params = 0;
 
@@ -305,6 +313,16 @@ unsigned int GetBlendColour(unsigned int *colours, float *weights, int num_colou
     final_colour.a = static_cast<unsigned char>(a);
     return *reinterpret_cast<unsigned int *>(&final_colour);
 }
+
+unsigned int RemapColour(unsigned int colour, unsigned int *remap_colours) {
+    float weights[3];
+
+    weights[0] = static_cast<float>(colour & 0xFF) * 0.003921569f;
+    weights[1] = static_cast<float>((colour >> 8) & 0xFF) * 0.003921569f;
+    weights[2] = static_cast<float>((colour >> 16) & 0xFF) * 0.003921569f;
+    return GetBlendColour(remap_colours, weights, 3, true);
+}
+
 
 int CompositeSkin(SkinCompositeParams *composite_params) {
     struct SemiTransPixel {
@@ -809,6 +827,31 @@ unsigned int GetVinylLayerHash(RideInfo *ride_info, int layer) {
 
     return GetVinylLayerHash(vinyl, ride_info->Type, ride_info->SkinType);
 }
+
+unsigned int GetVinylLayerMaskHash(RideInfo *ride_info, int layer) {
+    CarPart *car_part = ride_info->GetPart(CARSLOTID_VINYL_LAYER0 + layer);
+    CarType car_type;
+    CarTypeInfo *car_type_info;
+    const char *texture_name;
+    char layer_name[64];
+
+    if (car_part != 0) {
+        car_type = ride_info->Type;
+        car_type_info = GetCarTypeInfo(car_type);
+        texture_name = car_part->GetAppliedAttributeString(bStringHash("TEXTURE"), 0);
+
+        if (texture_name != 0) {
+            bStrCpy(layer_name, car_type_info->GetBaseModelName());
+            bStrCat(layer_name, layer_name, "_");
+            bStrCat(layer_name, layer_name, texture_name);
+            bStrCat(layer_name, layer_name, "_MASK");
+            return bStringHash(layer_name);
+        }
+    }
+
+    return 0;
+}
+
 
 int CompositeWheel32(TextureInfo *dest_texture, TextureInfo *src_texture, TextureInfo *src_mask, unsigned int remap_colour) {
     unsigned int *dest_image_data = static_cast<unsigned int *>(TextureInfo_LockImage(dest_texture, TEXLOCK_WRITE));
