@@ -122,6 +122,7 @@ Foo::Foo()
 
 - Use the repo's header guard form when writing headers: `#ifndef` / `#define` plus the `#ifdef EA_PRAGMA_ONCE_SUPPORTED` / `#pragma once` block.
 - Keep member layout comments aligned and intact in decomp headers.
+- When writing a recovered layout, start from a pasted GC DWARF dump instead of hand-reconstructing a cleaner version. Treat the dump as source-of-truth data entry, then make only small verified fixes from PS2 or existing headers.
 - Preserve the original `class` / `struct` kind from existing headers or Dwarf / PS2 evidence; do not treat it as a cosmetic style choice.
 - Treat header declarations as the repo source of truth. If the repo only has local `.cpp` partial declarations, verify the kind with the PS2 dump instead of copying them blindly.
 - Even forward declarations and local partial declarations should use the accurate keyword when known.
@@ -129,6 +130,7 @@ Foo::Foo()
 - When a recovered type is a `class`, keep explicit access sections and put the method/accessor block before the member layout block unless existing repo evidence shows otherwise.
 - Preserve the member naming style that DWARF shows. Some types use `mMember`, others use `m_member`; do not normalize them.
 - Preserve recovered member names, types, order, and offset comments. Do not invent placeholder members named `pad`, `unk`, `unknown`, or `field_XXXX` for game code just to make a layout compile.
+- Preserve the dumped declaration order too. Do not regroup methods, helpers, enums, or fields for readability unless an existing repo header or PS2 evidence proves the original order differs.
 - If a member is genuinely unknown, stop and verify it with `find-symbol.py`, GC Dwarf, and PS2 data. If the layout is still incomplete, add a short TODO above the type instead of burying uncertainty in fake member names.
 - Add offset / size comments when you are writing recovered type layouts from DWARF.
 - In recovered layouts, prefer explicit-width aliases such as `uint8` / `uint16` when the field width is known. Use plain `char` for text / byte buffers and `signed char` when the field is a signed 8-bit counter.
@@ -200,6 +202,7 @@ Keep the cleanup only if the build succeeds and the relevant match status is unc
 - Header prologues should keep the `EA_PRAGMA_ONCE_SUPPORTED` block ahead of includes, not after them.
 - Bare `#if MACRO` presence checks are review bait; use `#ifdef` / `#ifndef` unless you are intentionally testing a numeric config value.
 - Reviewed recovered headers tend to keep total-size comments above the type, methods before fields, explicit access sections, and fixed-width aliases for width-known narrow integer members.
+- Recent `zMisc` review cleanup also showed that hand-reconstructed structs and reordered declarations create avoidable churn; copy recovered layouts from DWARF into the owner header first and keep the dumped order unless PS2/header evidence proves a correction.
 - Reviewed fixups also remove stale bare recovery markers or replace them with context, and prefer existing list/node helpers over hand-written pointer/link rewiring.
 - Some reviewed fixups improved readability without losing match by replacing opaque range-check arithmetic with explicit bounds and by moving repeated pointer/boundary math behind short named helpers.
 - Other recurring review churn came from plain-`int` address helpers, stray local `.cpp` prototypes for shared functions, and integer-coded parser states where named enums were clearer but still matched.

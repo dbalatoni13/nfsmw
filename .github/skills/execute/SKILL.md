@@ -91,6 +91,10 @@ definition does not yet exist in the project, follow the scaffold workflow in
 `.github/skills/scaffold/SKILL.md` to create the needed header/source definitions
 before moving on.
 
+Treat recovered types here as copied reference data, not as hand-designed headers. Copy
+the GC DWARF type body into the canonical owner header first and preserve its declaration
+order unless PS2 or existing repo-header evidence proves a specific correction.
+
 ## Phase 3: Implement Functions
 
 ### 3a. Get the updated function list
@@ -116,6 +120,9 @@ For each missing or nonmatching function, follow the implementation workflow in
 - **One at a time.** Keep the tree in a coherent state as you work through the list.
 - **Balance new vs fixing.** Don't get stuck on one stubborn function — sometimes
   implementing the next function reveals patterns that make the previous one click.
+- **Recovered types are not freeform.** If a function forces you to add or fix a type,
+  copy the DWARF layout into the owner header first. Do not sketch structs/classes from
+  use sites or reorder declarations just to make the header look nicer.
 - **Mismatch triage:**
   - `@stringBase0` offset mismatches often resolve as more string literals are added
     - If you need to inspect the original string or rodata at a virtual address, use `python tools/elf_lookup.py 0xADDR`

@@ -90,6 +90,8 @@ Reference the skill for the usage. It gives info based on the virtual address of
 - If a repo header already exists for the type, include that header instead of introducing a local forward declaration.
 - Preserve the original `class` vs `struct` kind. If the existing header is missing or incomplete, verify the type kind from GC Dwarf and PS2 info before writing a local declaration.
 - Preserve real member names and field types too. Do not introduce `pad`, `unk`, or `field_XXXX` members as placeholders for guessed layout; verify the member list from GC Dwarf / PS2 data and leave a TODO when something is still uncertain.
+- When a type is missing or incomplete, dump the full class/struct body from GC DWARF and paste that as the starting point. Do not reconstruct the layout from one function's field accesses or from guessed semantics.
+- Preserve the dumped declaration order as well as the member order. Do not re-sort methods, group fields by guessed meaning, or otherwise "clean up" the layout unless an existing repo header or PS2 evidence proves a specific correction.
 
 ### 1e. Assembly reference
 
@@ -129,6 +131,8 @@ and assembly:
 ### Placement in source file
 
 Utilize the dwarf information that you get from the lookup skill heavily.
+
+For any recovered type you touch while implementing the function, treat the DWARF body as source material to copy, not prose to paraphrase. Start from the dumped layout in the canonical owner header, then make only the minimal verified fixes.
 
 Don't add explanatory comments during implementation unless you need to document a remaining DWARF mismatch.
 
