@@ -120,19 +120,19 @@ WorldModel::WorldModel(const ModelHeirarchy *heirarchy, unsigned int heirarchy_i
 
 void WorldModel::Construct(SpaceNode *spacenode, bMatrix4 *matrix, const ModelHeirarchy *heirarchy, unsigned int rootnode, bool add_lighting) {
     this->mDistanceToGameView = lbl_8040CD80;
-    this->mLightMaterialSkinHash = 0;
     this->mLastRenderFrame = 0;
     this->mLastVisibleFrame = 0;
     this->mLightMaterial = 0;
+    this->mLightMaterialSkinHash = 0;
 
-    if (heirarchy == 0 || reinterpret_cast<const unsigned char *>(heirarchy)[4] <= rootnode) {
-        this->mHeirarchy = 0;
+    if (heirarchy != 0 && rootnode < heirarchy->mNumNodes) {
+        this->mHeirarchyIndex = rootnode;
+        this->mHeirarchy = heirarchy;
+        this->mChildVisibility = 0xFFFFFF;
+    } else {
         this->mChildVisibility = 0;
         this->mHeirarchyIndex = 0;
-    } else {
-        this->mHeirarchy = heirarchy;
-        this->mHeirarchyIndex = rootnode;
-        this->mChildVisibility = 0xFFFFFF;
+        this->mHeirarchy = 0;
     }
 
     this->mInvisibleInside = false;
@@ -146,17 +146,11 @@ void WorldModel::Construct(SpaceNode *spacenode, bMatrix4 *matrix, const ModelHe
     }
 
     if (matrix != 0) {
-        this->mEnabled = true;
-        if (this->pSpaceNode == 0) {
-            PSMTX44Copy(*reinterpret_cast<const Mtx44 *>(matrix), *reinterpret_cast<Mtx44 *>(&this->mMatrix));
-        } else {
-            PSMTX44Copy(*reinterpret_cast<const Mtx44 *>(matrix), *reinterpret_cast<Mtx44 *>(&this->pSpaceNode->GetLocalMatrix()[0]));
-            this->pSpaceNode->SetDirty();
-        }
+        this->SetMatrix(matrix);
     }
 
-    this->mAddLighting = add_lighting;
     WorldModelList.AddTail(this);
+    this->mAddLighting = add_lighting;
 }
 
 WorldModel::~WorldModel() {
