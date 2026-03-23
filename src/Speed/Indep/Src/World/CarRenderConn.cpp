@@ -38,6 +38,17 @@ extern void AddXenonEffect(EmitterGroup *piggyback_fx, const Attrib::Collection 
     asm("AddXenonEffect__FP12EmitterGroupPCQ26Attrib10CollectionPCQ25UMath7Matrix4PCQ25UMath7Vector4");
 void NotifyTireStateEffectOfEmitterDelete(void *tire_state_effect, EmitterGroup *grp);
 
+struct SkidMaker {
+    SkidMaker(unsigned int value)
+        : mValue(value) {}
+
+    ~SkidMaker() {
+        MakeNoSkid__9SkidMaker(this);
+    }
+
+    unsigned int mValue;
+} __attribute__((packed));
+
 struct TireState : public bTNode<TireState> {
     struct Effect {
         Effect()
@@ -63,15 +74,22 @@ struct TireState : public bTNode<TireState> {
     };
 
     TireState();
+    ~TireState();
     void KillSkids();
     void DoSkids(float intensity, const bVector3 *deltaPos, const bMatrix4 *tirematrix, const bMatrix4 *bodymatrix, float skidWidth);
     void DoFX(float slip, float skid, float speed, const bVector3 *car_velocity, const bMatrix4 *car_matrix, float dT);
     void SetSurface(const SimSurface &surface);
     void UpdateWorld(const WCollider *wc, bool rain, bool flat);
 
+    static void operator delete(void *mem, unsigned int size) {
+        if (mem) {
+            gFastMem.Free(mem, size, nullptr);
+        }
+    }
+
     bVector4 mPrevTirePos;
     WWorldPos mWPos;
-    unsigned int mSkidMaker;
+    SkidMaker mSkidMaker;
     bVector4 mTirePos;
     bVector4 mGroundPos;
     float mRoll;
@@ -85,6 +103,10 @@ struct TireState : public bTNode<TireState> {
     Effect mDriveFX;
 };
 
+static void StopEffect(VehicleRenderConn::Effect *effect) {
+    effect->Stop();
+}
+
 namespace {
 
 struct RenderPktCarOpen {
@@ -97,6 +119,10 @@ struct TireStateRoadNoiseMirror {
     Attrib::Gen::simsurface mSurface;
 };
 
+static inline const Attrib::Collection *TireState_GetSurfaceCollection(const TireState *state) {
+    return *reinterpret_cast<const Attrib::Collection * const *>(reinterpret_cast<const unsigned char *>(state) + 0x88);
+}
+
 struct CameraAnchorPovMirror {
     unsigned char _pad0[0xD8];
     short mPOVType;
@@ -108,10 +134,6 @@ struct LocalReferenceMirror {
     const bVector3 *mVelocity;
     const bVector3 *mAcceleration;
 };
-
-void StopEffect(VehicleRenderConn::Effect *effect) {
-    effect->Stop();
-}
 
 void EmitterGroupSetOldSurfaceEffectFlag(EmitterGroup *group) {
     *reinterpret_cast<unsigned int *>(reinterpret_cast<unsigned char *>(group) + 0x18) |= 0x80000;
@@ -264,6 +286,23 @@ TireState::TireState()
     gTireStateList.AddTail(reinterpret_cast<bNode *>(this));
 }
 
+TireState::~TireState() {
+    this->KillSkids();
+    this->Remove();
+
+    if (this->mDriveFX.mGroup != 0) {
+        this->mDriveFX.mGroup->UnSubscribe();
+    }
+
+    if (this->mSkidFX.mGroup != 0) {
+        this->mSkidFX.mGroup->UnSubscribe();
+    }
+
+    if (this->mSlipFX.mGroup != 0) {
+        this->mSlipFX.mGroup->UnSubscribe();
+    }
+}
+
 void TireState::KillSkids() {
     MakeNoSkid__9SkidMaker(&this->mSkidMaker);
 }
@@ -352,13 +391,14 @@ void TireState::SetSurface(const SimSurface &surface) {
 
 void TireState::UpdateWorld(const WCollider *wc, bool rain, bool flat) {
     UMath::Vector3 tire_pos;
+    UMath::Vector3 ground_pos;
 
     tire_pos.x = -this->mTirePos.y;
     tire_pos.y = this->mTirePos.z;
     tire_pos.z = this->mTirePos.x;
 
     this->mWPos.FindClosestFace(wc, tire_pos, true);
-    if (this->mWPos.GetSurface() != this->mSurface.GetConstCollection() || this->mRaining != rain || this->mFlat != flat) {
+    if (this->mWPos.GetSurface() != TireState_GetSurfaceCollection(this) || this->mRaining != rain || this->mFlat != flat) {
         this->mRaining = rain;
         this->mFlat = flat;
 
@@ -366,9 +406,11 @@ void TireState::UpdateWorld(const WCollider *wc, bool rain, bool flat) {
         this->SetSurface(surface);
     }
 
-    this->mGroundPos.z = this->mWPos.HeightAtPoint(tire_pos);
-    this->mGroundPos.x = tire_pos.z;
-    this->mGroundPos.y = -tire_pos.x;
+    ground_pos = tire_pos;
+    ground_pos.y = this->mWPos.HeightAtPoint(ground_pos);
+    this->mGroundPos.z = ground_pos.y;
+    this->mGroundPos.x = ground_pos.z;
+    this->mGroundPos.y = -ground_pos.x;
 }
 
 Sim::Connection *CarRenderConn::Construct(const Sim::ConnectionData &data) {
