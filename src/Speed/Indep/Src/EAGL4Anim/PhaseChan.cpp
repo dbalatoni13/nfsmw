@@ -12,24 +12,12 @@ bool FnPhaseChan::GetLength(float &timeLength) const {
 
 void FnPhaseChan::SetAnimMemoryMap(AnimMemoryMap *anim) {
     PhaseChan *phaseChan = reinterpret_cast<PhaseChan *>(anim);
-    unsigned char flag = phaseChan->mFlag;
 
     mpAnim = anim;
     mIdx = 0;
     mCurrentFrame = phaseChan->mStartTime;
-    mRight = (flag & 1) == 0;
-
-    if ((flag & 0x8) != 0) {
-        mSampleRate = 1;
-    } else if ((flag & 0x10) != 0) {
-        mSampleRate = 2;
-    } else if ((flag & 0x20) != 0) {
-        mSampleRate = 4;
-    } else if ((flag & 0x40) != 0) {
-        mSampleRate = 8;
-    } else {
-        mSampleRate = 1;
-    }
+    mRight = !phaseChan->StartWithRight();
+    mSampleRate = phaseChan->GetAngleSampleRate();
 }
 
 void FnPhaseChan::Eval(float prevTime, float currTime, float *phaseValue) {
