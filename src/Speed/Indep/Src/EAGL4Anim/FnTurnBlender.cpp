@@ -159,16 +159,13 @@ float FnTurnBlender::GetFrequency() const {
 float FnTurnBlender::CycleTime(float t, float startTime, float endTime) const {
     float length = endTime - startTime;
 
-    if (length <= 0.0f) {
-        return startTime;
+    if (t < startTime) {
+        return endTime - ((startTime - t) - static_cast<float>(static_cast<int>((startTime - t) / length)) * length);
     }
-    while (t < startTime) {
-        t += length;
+    if (t < endTime) {
+        return t;
     }
-    while (t > endTime) {
-        t -= length;
-    }
-    return t;
+    return startTime + ((t - endTime) - static_cast<float>(static_cast<int>((t - endTime) / length)) * length);
 }
 
 int FnTurnBlender::ComputeCycleIdx(float t, float startTime, float endTime) const {
