@@ -221,14 +221,12 @@ void sh_Setup(bVector3 *car_pos) {
     light_delta.y = car_pos->y - light_pos.y;
     light_delta.z = car_pos->z - light_pos.z;
 
-    bVector3 light_vector(light_delta);
-
     cs_lightV.z = light_delta.z;
-    cs_lightV.x = light_vector.x;
-    cs_lightV.y = light_vector.y;
+    cs_lightV.x = light_delta.x;
+    cs_lightV.y = light_delta.y;
 
     light_length = lbl_8040AD84;
-    float xy_length_sq = light_vector.x * light_vector.x + light_vector.y * light_vector.y;
+    float xy_length_sq = light_delta.x * light_delta.x + light_delta.y * light_delta.y;
     if (lbl_8040AD8C < xy_length_sq) {
         light_length = bSqrt(xy_length_sq);
     }
