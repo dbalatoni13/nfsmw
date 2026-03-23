@@ -288,27 +288,34 @@ CAR_PART_ID GetCarPartFromSlot(CAR_SLOT_ID slot) {
 unsigned int *GetTypesFromSlot(CAR_SLOT_ID slot, CarType car_type) {
     const char *car_type_name = GetCarTypeName(car_type);
     unsigned int car_type_namehash = bStringHash(car_type_name);
-    int i = 0;
 
-    if (NumSlotTypeOverrides > 0) {
-        do {
-            SlotTypeOverrideLayout *slot_type_override = &reinterpret_cast<SlotTypeOverrideLayout *>(SlotTypeOverrideTable)[i];
+    {
+        int i = 0;
 
-            if (slot_type_override->CarType == car_type_namehash && slot_type_override->SlotId == slot) {
-                return slot_type_override->LookupType;
-            }
-            i++;
-        } while (i < NumSlotTypeOverrides);
+        if (i < NumSlotTypeOverrides) {
+            do {
+                SlotTypeOverrideLayout *slot_type_override = &reinterpret_cast<SlotTypeOverrideLayout *>(SlotTypeOverrideTable)[i];
+
+                if (slot_type_override->CarType == car_type_namehash && slot_type_override->SlotId == slot) {
+                    return slot_type_override->LookupType;
+                }
+                i++;
+            } while (i < NumSlotTypeOverrides);
+        }
     }
 
     bMemCpy(&TempSlotTable, DefaultSlotTypeNameTable + slot * 2, 8);
-    i = 0;
-    do {
-        if (TempSlotTable[i] == 0xFFFFFFFF) {
-            TempSlotTable[i] = car_type_namehash;
-        }
-        i++;
-    } while (i < 2);
+
+    {
+        int i = 0;
+
+        do {
+            if (TempSlotTable[i] == 0xFFFFFFFF) {
+                TempSlotTable[i] = car_type_namehash;
+            }
+            i++;
+        } while (i < 2);
+    }
 
     return TempSlotTable;
 }
