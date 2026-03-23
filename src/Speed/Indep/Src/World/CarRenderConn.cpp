@@ -763,9 +763,10 @@ void CarRenderConn::UpdateEngineAnimation(float dT, const RenderConn::Pkt_Car_Se
     }
 
     const Attrib::Gen::ecar &attributes = this->VehicleRenderConn::mAttributes;
+    const LocalReferenceMirror *world_ref = reinterpret_cast<const LocalReferenceMirror *>(&this->mWorldRef);
 
     if (this->mShifting != 0.0f) {
-        float car_speed = bLength(*this->mWorldRef.GetVelocity());
+        float car_speed = bLength(*world_ref->mVelocity);
         float shift_speed = attributes.ShiftSpeed(0) * 0.017453f;
         float max_pitch = attributes.ShiftAngle(0) * 0.017453f;
         int gear = data.mGear - 2;
@@ -774,7 +775,7 @@ void CarRenderConn::UpdateEngineAnimation(float dT, const RenderConn::Pkt_Car_Se
             this->mShiftPitchAngle = 0.0f;
             this->mShifting = 0.0f;
         } else {
-            float fwd_accel = bDot(this->mWorldRef.GetAcceleration(), reinterpret_cast<const bVector3 *>(&this->mRenderMatrix.v0));
+            float fwd_accel = bDot(world_ref->mAcceleration, reinterpret_cast<const bVector3 *>(&this->mRenderMatrix.v0));
             float accel_ratio = (bAbs(fwd_accel * 0.10204081f) - 0.1f) / 0.4f;
             float gear_ratio = UMath::Clamp(accel_ratio, 0.0f, 1.0f);
             float rev_accel = UMath::Pow(0.95f, static_cast<float>(gear));
