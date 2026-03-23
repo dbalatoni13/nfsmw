@@ -1334,16 +1334,17 @@ void CarRenderInfo::UpdateCarParts() {
                 }
             }
 
-            eModel *model = this->mCarPartModels[slot_id][model_number][this->mMinLodLevel].GetModel();
+            if (slot_id == CARSLOTID_BASE || slot_id == CARSLOTID_DAMAGE_BODY || slot_id == CARSLOTID_DAMAGE_COP_LIGHTS ||
+                (slot_id >= CARSLOTID_DAMAGE_HOOD && slot_id <= CARSLOTID_DAMAGE_FRONT_BUMPER) ||
+                (slot_id >= CARSLOTID_DAMAGE_TRUNK && slot_id <= CARSLOTID_DAMAGE_REAR_BUMPER) || slot_id == CARSLOTID_BODY ||
+                slot_id == CARSLOTID_LEFT_SIDE_MIRROR || slot_id == CARSLOTID_RIGHT_SIDE_MIRROR ||
+                slot_id == CARSLOTID_SPOILER || (slot_id >= CARSLOTID_ROOF && slot_id <= CARSLOTID_HOOD)) {
+                eModel *model = this->mCarPartModels[slot_id][model_number][this->mMinLodLevel].GetModel();
 
-            if (model != 0 &&
-                (slot_id == CARSLOTID_BASE || slot_id == CARSLOTID_DAMAGE_BODY || slot_id == CARSLOTID_DAMAGE_COP_LIGHTS ||
-                 (slot_id >= CARSLOTID_DAMAGE_HOOD && slot_id <= CARSLOTID_DAMAGE_FRONT_BUMPER) ||
-                 (slot_id >= CARSLOTID_DAMAGE_TRUNK && slot_id <= CARSLOTID_DAMAGE_REAR_BUMPER) || slot_id == CARSLOTID_BODY ||
-                 slot_id == CARSLOTID_LEFT_SIDE_MIRROR || slot_id == CARSLOTID_RIGHT_SIDE_MIRROR ||
-                 slot_id == CARSLOTID_SPOILER || (slot_id >= CARSLOTID_ROOF && slot_id <= CARSLOTID_HOOD))) {
+                if (model != 0) {
                     model->GetBoundingBox(&bbox_min, &bbox_max);
                     bExpandBoundingBox(&this->AABBMin, &this->AABBMax, &bbox_min, &bbox_max);
+                }
             }
         }
     }
