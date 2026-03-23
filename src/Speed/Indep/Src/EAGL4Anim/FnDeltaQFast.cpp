@@ -277,38 +277,25 @@ void FnDeltaQFast::UpdateNextQs(DeltaQFast *deltaQ, int ceilKey, int floorBinIdx
 
     if (ceilBinIdx != floorBinIdx) {
         unsigned char numBones = deltaQ->mNumBones;
-        DeltaQFastPhysical *physical = reinterpret_cast<DeltaQFastPhysical *>(binData);
+        DeltaQFastPhysical *ceilPhys = reinterpret_cast<DeltaQFastPhysical *>(binData);
 
         for (int ibone = 0; ibone < numBones; ibone++) {
-            float *nextQ = reinterpret_cast<float *>(&mNextQs[ibone]);
-
-            nextQ[0] = static_cast<float>(physical->mX) * kQFastPhysicalScale12 - kQFastPhysicalBias12;
-            nextQ[1] = static_cast<float>(physical->mY) * kQFastPhysicalScale12 - kQFastPhysicalBias12;
-            nextQ[2] = static_cast<float>(physical->mZ) * kQFastPhysicalScale12 - kQFastPhysicalBias12;
-            nextQ[3] = static_cast<float>(static_cast<unsigned short>((physical->mW0 << 8) | (physical->mW1 << 4) | physical->mW2)) *
-                           kQFastPhysicalScale12 -
-                       kQFastPhysicalBias12;
-            physical++;
+            ceilPhys[ibone].UnQuantize(mNextQs[ibone]);
         }
     } else {
         unsigned int numBones = deltaQ->mNumBones;
-        unsigned char *deltaData = &binData[numBones * 6 + floorDeltaIdx * numBones * 3];
+        int ceilDeltaIdx = floorDeltaIdx;
+        DeltaQFastDelta *ceilDelta = reinterpret_cast<DeltaQFastDelta *>(&binData[numBones * 6 + ceilDeltaIdx * numBones * 3]);
 
         for (int ibone = 0; ibone < static_cast<int>(numBones); ibone++) {
-            float *prevQ = reinterpret_cast<float *>(&mPrevQs[ibone]);
-            float *nextQ = reinterpret_cast<float *>(&mNextQs[ibone]);
-            float *minRange = reinterpret_cast<float *>(&mMinRangesf[ibone]);
-            unsigned char b0 = deltaData[0];
-            unsigned char b1 = deltaData[1];
-            unsigned char b2 = deltaData[2];
+            UMath::Vector4 ceilq;
 
-            nextQ[0] = minRange[4] * static_cast<float>(b0 >> 2) * kQFastDeltaScale6 + minRange[0] + prevQ[0];
-            nextQ[1] = minRange[5] * static_cast<float>(b1 >> 2) * kQFastDeltaScale6 + minRange[1] + prevQ[1];
-            nextQ[2] = minRange[6] * static_cast<float>(b2 >> 2) * kQFastDeltaScale6 + minRange[2] + prevQ[2];
-            nextQ[3] =
-                minRange[7] * static_cast<float>(static_cast<unsigned char>(((b0 & 3) * 0x10) + ((b1 & 3) * 4) | (b2 & 3))) * kQFastDeltaScale6 +
-                minRange[3] + prevQ[3];
-            deltaData += 3;
+            ceilDelta->UnQuantize(mMinRangesf[ibone], ceilq);
+            mNextQs[ibone].x = ceilq.x + mPrevQs[ibone].x;
+            mNextQs[ibone].y = ceilq.y + mPrevQs[ibone].y;
+            mNextQs[ibone].z = ceilq.z + mPrevQs[ibone].z;
+            mNextQs[ibone].w = ceilq.w + mPrevQs[ibone].w;
+            ceilDelta++;
         }
     }
 

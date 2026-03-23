@@ -27,7 +27,14 @@ struct DeltaQFastMinRange {
 
 // total size: 0x6
 struct DeltaQFastPhysical {
-    void UnQuantize(UMath::Vector4 &q) const {}
+    void UnQuantize(UMath::Vector4 &q) const {
+        unsigned short w = static_cast<unsigned short>((mW0 << 8) | (mW1 << 4) | mW2);
+
+        q.x = static_cast<float>(mX) * 4.8840049e-4f - 1.0002443f;
+        q.y = static_cast<float>(mY) * 4.8840049e-4f - 1.0002443f;
+        q.z = static_cast<float>(mZ) * 4.8840049e-4f - 1.0002443f;
+        q.w = static_cast<float>(w) * 4.8840049e-4f - 1.0002443f;
+    }
 
     unsigned short mX : 12; // offset 0x0, size 0x2
     unsigned short mW0 : 4; // offset 0x0, size 0x2
@@ -39,7 +46,14 @@ struct DeltaQFastPhysical {
 
 // total size: 0x3
 struct DeltaQFastDelta {
-    void UnQuantize(const DeltaQFastMinRangef &minRangef, UMath::Vector4 &q) const {}
+    void UnQuantize(const DeltaQFastMinRangef &minRangef, UMath::Vector4 &q) const {
+        unsigned char w = static_cast<unsigned char>((mW0 << 4) | (mW1 << 2) | mW2);
+
+        q.x = minRangef.mMin.x + minRangef.mRange.x * static_cast<float>(mX) * 1.5873017e-2f;
+        q.y = minRangef.mMin.y + minRangef.mRange.y * static_cast<float>(mY) * 1.5873017e-2f;
+        q.z = minRangef.mMin.z + minRangef.mRange.z * static_cast<float>(mZ) * 1.5873017e-2f;
+        q.w = minRangef.mMin.w + minRangef.mRange.w * static_cast<float>(w) * 1.5873017e-2f;
+    }
 
     unsigned char mX : 6;  // offset 0x0, size 0x1
     unsigned char mW0 : 2; // offset 0x0, size 0x1
