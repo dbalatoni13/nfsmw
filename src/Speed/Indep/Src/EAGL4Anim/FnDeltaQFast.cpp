@@ -121,10 +121,10 @@ static inline int FindQFastFloorKey(int prevKey, DeltaQFast *deltaQ, float currT
         if (floorTime < 0) {
             return 0;
         }
-        if (floorTime >= deltaQ->mNumKeys) {
-            return deltaQ->mNumKeys - 1;
+        if (deltaQ->mNumKeys > floorTime) {
+            return floorTime;
         }
-        return floorTime;
+        return deltaQ->mNumKeys - 1;
     }
     if (floorTime < deltaQ->mTimes[0]) {
         return 0;
