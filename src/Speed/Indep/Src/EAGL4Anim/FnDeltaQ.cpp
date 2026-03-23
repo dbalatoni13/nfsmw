@@ -32,6 +32,8 @@ static const float kRangeScale16Bit = 3.0518044e-5f;
 static const float kRangeScale15Bit = 6.1037019e-5f;
 static const float kRangeScale8Bit = 7.8431377e-3f;
 static const float kRangeScale7Bit = 1.5748032e-2f;
+static const float kRangeScale16To7Bit = 9.6119827e-7f;
+static const float kRangeScale16To8Bit = 4.7871444e-7f;
 
 static inline int GetFrameDeltaSize(const DeltaQ *deltaQ) {
     return deltaQ->mNumBones * sizeof(DeltaQDelta);
@@ -115,9 +117,9 @@ static inline void DecodeMinRange(const DeltaQMinRange &minRange, DeltaQMinRange
     minRangef.mMin.y = minRange.mMin[1] * kRangeScale16Bit - kFloatOne;
     minRangef.mMin.z = minRange.mMin[2] * kRangeScale16Bit - kFloatOne;
 
-    minRangef.mRange.x = 2.0f * (minRange.mRange[0] * kRangeScale16Bit) * kRangeScale7Bit;
-    minRangef.mRange.y = 2.0f * (minRange.mRange[1] * kRangeScale16Bit) * kRangeScale8Bit;
-    minRangef.mRange.z = 2.0f * (minRange.mRange[2] * kRangeScale16Bit) * kRangeScale8Bit;
+    minRangef.mRange.x = minRange.mRange[0] * kRangeScale16To7Bit;
+    minRangef.mRange.y = minRange.mRange[1] * kRangeScale16To8Bit;
+    minRangef.mRange.z = minRange.mRange[2] * kRangeScale16To8Bit;
 }
 
 static inline void DecodeDelta(const DeltaQMinRange &minRange, const DeltaQDelta &delta, UMath::Vector4 &q) {
