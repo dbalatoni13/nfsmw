@@ -1435,7 +1435,7 @@ void CarRenderConn::OnRender(eView *view, int reflection) {
     if (camera_mover != 0 && !camera_mover->RenderCarPOV()) {
         CameraAnchor *anchor = camera_mover->GetAnchor();
 
-        if (anchor != 0 && anchor->GetWorldID() == this->GetWorldID()) {
+        if (anchor != 0 && anchor->GetWorldID() == world_ref->mWorldID) {
             return;
         }
     }
@@ -1446,7 +1446,7 @@ void CarRenderConn::OnRender(eView *view, int reflection) {
         if (rear_view_mover != 0) {
             CameraAnchor *anchor = rear_view_mover->GetAnchor();
 
-            if (anchor != 0 && anchor->GetWorldID() == this->GetWorldID()) {
+            if (anchor != 0 && anchor->GetWorldID() == world_ref->mWorldID) {
                 return;
             }
         }
@@ -1464,7 +1464,7 @@ void CarRenderConn::OnRender(eView *view, int reflection) {
             RVManchor = camera_mover->GetAnchor();
         }
 
-        if (RVManchor != 0 && RVManchor->GetWorldID() == this->GetWorldID()) {
+        if (RVManchor != 0 && RVManchor->GetWorldID() == world_ref->mWorldID) {
             return;
         }
     }
@@ -1474,7 +1474,7 @@ void CarRenderConn::OnRender(eView *view, int reflection) {
         this->mDistanceToView = UMath::Min(distance, this->mDistanceToView);
     }
 
-    CarRenderInfo *render_info = this->GetRenderInfo();
+    CarRenderInfo *render_info = this->mRenderInfo;
     if (render_info == 0) {
         return;
     }
