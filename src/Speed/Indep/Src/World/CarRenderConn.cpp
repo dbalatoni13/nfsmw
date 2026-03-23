@@ -1521,14 +1521,19 @@ void CarRenderConn::OnRender(eView *view, int reflection) {
     body_matrix.v3.y = 0.0f;
     body_matrix.v3.z = 0.0f;
 
-    if ((this->mFlags & CF_ISPLAYER) == 0 || NumTimesRenderTestPlayerCar == 0) {
+    int num_times_render_test_player_car = 0;
+    if (this->mFlags & CF_ISPLAYER) {
+        num_times_render_test_player_car = NumTimesRenderTestPlayerCar;
+    }
+
+    if (num_times_render_test_player_car == 0) {
         if (render_info->Render(view, &world_position, &body_matrix, this->mTireMatrices, this->mBrakeMatrices, this->mTireMatrices,
                                 extra_render_flags, 0, reflection, 1.0f, render_info->mMinLodLevel, render_info->mMinLodLevel) &&
             view->GetID() < 4) {
             this->mLastVisibleFrame = eFrameCounter;
         }
     } else {
-        for (int i = 0; i < NumTimesRenderTestPlayerCar; i++) {
+        for (int i = 0; i < num_times_render_test_player_car; i++) {
             if (render_info->Render(view, &world_position, &body_matrix, this->mTireMatrices, this->mBrakeMatrices, this->mTireMatrices,
                                     extra_render_flags, 0, reflection, static_cast<float>(render_info->mMinLodLevel),
                                     render_info->mMinLodLevel, static_cast<CARPART_LOD>(0)) &&
