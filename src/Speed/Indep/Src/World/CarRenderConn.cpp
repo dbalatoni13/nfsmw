@@ -9,6 +9,7 @@
 struct Car;
 struct CarPartDatabase;
 extern void *gINISInstance asm("_Q33UTL11Collectionst9Singleton1Z4INIS_mInstance");
+extern unsigned int numCopsActiveView;
 extern CarPartDatabase CarPartDB;
 extern CarType GetCarType__15CarPartDatabaseUi(CarPartDatabase *database, unsigned int model_hash)
     asm("GetCarType__15CarPartDatabaseUi");
@@ -65,7 +66,6 @@ struct TireState : public bTNode<TireState> {
         void Update(float speed, const bVector3 *car_velocity, const bMatrix4 *car_matrix, float dT, const bVector4 &pos);
 
         bool mNeedsLazyInit;
-        unsigned char _pad1[3];
         unsigned int mEmitterKey;
         EmitterGroup *mGroup;
         float mMinVel;
@@ -94,9 +94,7 @@ struct TireState : public bTNode<TireState> {
     bVector4 mGroundPos;
     float mRoll;
     bool mRaining;
-    unsigned char _pad7D[3];
     bool mFlat;
-    unsigned char _pad81[3];
     SimSurface mSurface;
     Effect mSlipFX;
     Effect mSkidFX;
@@ -226,13 +224,14 @@ void TireState::DoSkids(float intensity, const bVector3 *deltaPos, const bMatrix
 
 void TireState::Effect::FreeUpFX() {
     if (this->mGroup != 0) {
-        EmitterGroupSetOldSurfaceEffectFlag(this->mGroup);
+        *reinterpret_cast<unsigned int *>(reinterpret_cast<unsigned char *>(this->mGroup) + 0x18) |= 0x80000;
         this->mGroup->UnSubscribe();
     }
 
+    EmitterGroup *group = 0;
     this->mZeroParticleFrameCount = 0;
     this->mNeedsLazyInit = true;
-    this->mGroup = 0;
+    this->mGroup = group;
 }
 
 void TireState::Effect::LazyInit() {
@@ -411,6 +410,36 @@ void TireState::UpdateWorld(const WCollider *wc, bool rain, bool flat) {
     this->mGroundPos.z = ground_pos.y;
     this->mGroundPos.x = ground_pos.z;
     this->mGroundPos.y = -ground_pos.x;
+}
+
+void TireState::DoFX(float slip, float skid, float speed, const bVector3 *car_velocity, const bMatrix4 *car_matrix, float dT) {
+    if (1.1920929e-07f < slip || slip < -1.1920929e-07f || 1.1920929e-07f < skid || skid < -1.1920929e-07f || 1.1920929e-07f < speed ||
+        speed < -1.1920929e-07f) {
+        goto update_fx;
+    }
+
+    this->mDriveFX.FreeUpFX();
+    this->mSlipFX.FreeUpFX();
+    this->mSkidFX.FreeUpFX();
+    return;
+
+update_fx:
+    if (this->mWPos.OnValidFace()) {
+        {
+            SimSurface surface(this->mWPos.GetSurface());
+            this->SetSurface(surface);
+        }
+
+        this->mSlipFX.Update(slip, car_velocity, car_matrix, dT, this->mGroundPos);
+        this->mSkidFX.Update(skid, car_velocity, car_matrix, dT, this->mGroundPos);
+
+        if (numCopsActiveView < 2) {
+            bool inis_active = gINISInstance != 0;
+            if (!inis_active) {
+                this->mDriveFX.Update(speed, car_velocity, car_matrix, dT, this->mGroundPos);
+            }
+        }
+    }
 }
 
 Sim::Connection *CarRenderConn::Construct(const Sim::ConnectionData &data) {
