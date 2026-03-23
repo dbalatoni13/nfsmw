@@ -204,7 +204,7 @@ void FnDeltaQFast::SetAnimMemoryMap(AnimMemoryMap *anim) {
         unsigned int qBlockOffset = numBones << 5;
         unsigned int nextQBlockOffset = numBones << 4;
         unsigned char *block =
-            reinterpret_cast<unsigned char *>(MemoryPoolManager::NewBlock(qBlockOffset + nextQBlockOffset + nextQBlockOffset));
+            reinterpret_cast<unsigned char *>(MemoryPoolManager::NewBlock(nextQBlockOffset + nextQBlockOffset + qBlockOffset));
         unsigned char *qBlock = block + qBlockOffset;
         unsigned char *nextQBlock = qBlock + nextQBlockOffset;
 
