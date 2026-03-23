@@ -1308,7 +1308,8 @@ void CarRenderInfo::UpdateCarParts() {
                 packed_model = reinterpret_cast<unsigned int>(model) | (packed_model & 1);
                 model->Init(model_name_hash);
 
-                if (model->Solid == 0) {
+                bool is_solid = model->Solid != 0;
+                if (!is_solid) {
                     model->UnInit();
                     CarPartModelPool->Free(model);
                     packed_model &= 1;
@@ -1361,7 +1362,8 @@ void CarRenderInfo::UpdateCarParts() {
                 rear_wheel_packed_model = reinterpret_cast<unsigned int>(rear_wheel_model) | (rear_wheel_packed_model & 1);
                 rear_wheel_model->Init(front_wheel_model->GetNameHash());
 
-                if (rear_wheel_model->Solid == 0) {
+                bool is_solid = rear_wheel_model->Solid != 0;
+                if (!is_solid) {
                     rear_wheel_model->UnInit();
                     CarPartModelPool->Free(rear_wheel_model);
                     rear_wheel_packed_model &= 1;
@@ -1380,7 +1382,8 @@ void CarRenderInfo::UpdateCarParts() {
                 rear_brake_packed_model = reinterpret_cast<unsigned int>(rear_brake_model) | (rear_brake_packed_model & 1);
                 rear_brake_model->Init(front_brake_model->GetNameHash());
 
-                if (rear_brake_model->Solid == 0) {
+                bool is_solid = rear_brake_model->Solid != 0;
+                if (!is_solid) {
                     rear_brake_model->UnInit();
                     CarPartModelPool->Free(rear_brake_model);
                     rear_brake_packed_model &= 1;
