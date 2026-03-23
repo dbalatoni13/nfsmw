@@ -54,7 +54,7 @@ struct CarPartModelTable {
     char TemplatedNameHashes;
     char pad;
     unsigned short MiddleStringOffset;
-    const char *ModelNames[5][1];
+    const char *ModelNames[1][5];
 
     unsigned int GetModelNameHash(unsigned int base_namehash, int model_num, int lod);
 
