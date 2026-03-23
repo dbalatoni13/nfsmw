@@ -13,6 +13,9 @@ extern float RAINY;
 extern float RAINZ;
 extern float RAINZconstant;
 extern float twkCloudsMinAmount;
+extern float windAng;
+extern float swayMax;
+extern bVector3 windAxis;
 
 float rainOverrideIntensity;
 extern bool EnableRainIn2P;
@@ -97,6 +100,33 @@ Rain::Rain(eView *view, RainType StartType) {
     this->inTunnel = 0;
     this->inOverpass = 0;
     this->IsValidRainCurtainPos = CT_INACTIVE;
+}
+
+void CreateWindRotMatrix(eView *view, bMatrix4 *windrot, int offset, bMatrix4 *l2w) {
+    bMatrix4 local2world;
+    bVector3 axis(1.0f, 0.0f, 0.0f);
+    unsigned short wind_angle = bDegToAng(windAng + static_cast<float>(offset));
+    float sway = bSin(wind_angle) * swayMax;
+    unsigned short sway_angle;
+
+    bCopy(&local2world, l2w);
+    bIdentity(windrot);
+    windAxis = axis;
+
+    if (view->Precipitation != 0) {
+        bNormalize(&windAxis, reinterpret_cast<bVector3 *>(reinterpret_cast<unsigned char *>(view->Precipitation) + 0x300));
+    }
+
+    local2world.v1.x = -local2world.v1.x;
+    local2world.v0.y = -local2world.v0.y;
+    local2world.v3.x = 0.0f;
+    local2world.v3.y = 0.0f;
+    local2world.v3.z = 0.0f;
+    local2world.v3.w = 1.0f;
+    eMulVector(&windAxis, &local2world, &windAxis);
+    sway_angle = bDegToAng(sway);
+    eCreateAxisRotationMatrix(windrot, windAxis, sway_angle);
+    eRotateZ(windrot, windrot, sway_angle);
 }
 
 void Rain::Init(RainType type, float percent) {
