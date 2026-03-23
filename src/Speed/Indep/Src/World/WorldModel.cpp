@@ -383,16 +383,25 @@ void WorldModel::Render(eView *view, int exc_flag) {
     PSMTX44Copy(*reinterpret_cast<const Mtx44 *>(render_matrix), *reinterpret_cast<Mtx44 *>(&world_matrix));
 
     have_world_matrix:
-    if (view->PixelMinSize <= view->GetPixelSize(reinterpret_cast<const bVector3 *>(&world_matrix.v3), lbl_8040CD94) &&
-        view->GetVisibleState(render_model, &world_matrix) != 0) {
-        if (this->mHeirarchy != 0) {
-            this->RenderNode(this->mHeirarchy, this->mHeirarchyIndex, view, exc_flag, blended_matrices, render_matrix);
-        } else {
-            this->RenderModel(render_model, view, exc_flag, blended_matrices, render_matrix);
-        }
-
-        this->mLastVisibleFrame = eFrameCounter;
+    if (view->GetPixelSize(reinterpret_cast<const bVector3 *>(&world_matrix.v3), lbl_8040CD94) < view->PixelMinSize) {
+        return;
     }
+
+    {
+        int visible = view->GetVisibleState(render_model, &world_matrix) != 0;
+
+        if (visible == 0) {
+            return;
+        }
+    }
+
+    if (this->mHeirarchy != 0) {
+        this->RenderNode(this->mHeirarchy, this->mHeirarchyIndex, view, exc_flag, blended_matrices, render_matrix);
+    } else {
+        this->RenderModel(render_model, view, exc_flag, blended_matrices, render_matrix);
+    }
+
+    this->mLastVisibleFrame = eFrameCounter;
 }
 
 void RenderWorldModels(eView *view, int exc_flag) {
