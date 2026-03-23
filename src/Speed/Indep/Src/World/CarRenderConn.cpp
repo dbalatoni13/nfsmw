@@ -1425,10 +1425,10 @@ void CarRenderConn::OnRender(eView *view, int reflection) {
         return;
     }
 
-    if (this->mLastRenderFrame != eFrameCounter) {
+    if (this->mLastRenderFrame != eGetFrameCounter()) {
         this->mDistanceToView = 1000000.0f;
     }
-    this->mLastRenderFrame = eFrameCounter;
+    this->mLastRenderFrame = eGetFrameCounter();
 
     CameraMover *camera_mover = view->GetCameraMover();
 
@@ -1441,7 +1441,7 @@ void CarRenderConn::OnRender(eView *view, int reflection) {
     }
 
     if (view->GetID() > 0xF && view->GetID() < 0x16) {
-        CameraMover *rear_view_mover = eViews[1].GetCameraMover();
+        CameraMover *rear_view_mover = eGetView(1, false)->GetCameraMover();
 
         if (rear_view_mover != 0) {
             CameraAnchor *anchor = rear_view_mover->GetAnchor();
@@ -1471,10 +1471,7 @@ void CarRenderConn::OnRender(eView *view, int reflection) {
 
     if (camera_mover != nullptr && view->GetID() - 1U < 3) {
         float distance = camera_mover->GetDistanceTo(reinterpret_cast<bVector3 *>(&this->mRenderMatrix.v3));
-        if (distance > this->mDistanceToView) {
-            distance = this->mDistanceToView;
-        }
-        this->mDistanceToView = distance;
+        this->mDistanceToView = UMath::Min(distance, this->mDistanceToView);
     }
 
     CarRenderInfo *render_info = this->GetRenderInfo();
@@ -1532,7 +1529,7 @@ void CarRenderConn::OnRender(eView *view, int reflection) {
                                     extra_render_flags, 0, reflection, static_cast<float>(render_info->mMinLodLevel),
                                     render_info->mMinLodLevel, static_cast<CARPART_LOD>(0)) &&
                 view->GetID() < 4) {
-                this->mLastVisibleFrame = eFrameCounter;
+                this->mLastVisibleFrame = eGetFrameCounter();
             }
         }
     }
