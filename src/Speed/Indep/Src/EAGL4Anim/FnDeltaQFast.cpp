@@ -466,11 +466,10 @@ bool FnDeltaQFast::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask)
         if (!times) {
             if (floorTime < 0) {
                 floorKey = 0;
-            } else {
+            } else if (deltaQ->mNumKeys > floorTime) {
                 floorKey = floorTime;
-                if (deltaQ->mNumKeys <= floorTime) {
-                    floorKey = deltaQ->mNumKeys - 1;
-                }
+            } else {
+                floorKey = deltaQ->mNumKeys - 1;
             }
         } else {
             if (floorTime < times[0]) {
