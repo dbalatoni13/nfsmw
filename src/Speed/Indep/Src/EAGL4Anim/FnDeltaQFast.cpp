@@ -192,9 +192,10 @@ FnDeltaQFast::~FnDeltaQFast() {
 void FnDeltaQFast::SetAnimMemoryMap(AnimMemoryMap *anim) {
     DeltaQFast *deltaQ = reinterpret_cast<DeltaQFast *>(anim);
     unsigned char numBones = deltaQ->mNumBones;
+    DeltaQFastMinRange *minRange = reinterpret_cast<DeltaQFastMinRange *>(reinterpret_cast<unsigned char *>(deltaQ) + 0x12);
 
     mpAnim = anim;
-    mBins = reinterpret_cast<unsigned char *>(deltaQ) + 0x14 + (numBones << 4);
+    mBins = reinterpret_cast<unsigned char *>(minRange) + numBones * sizeof(DeltaQFastMinRange);
     mConstBoneIdxs = reinterpret_cast<unsigned char *>(deltaQ->GetConstBoneIdx());
     mConstPhysical = reinterpret_cast<DeltaQFastPhysical *>(deltaQ->GetConstPhysical());
     mBinSize = AlignSize2(numBones * (((1 << deltaQ->mBinLengthPower) - 1) * 3 + 6));
@@ -205,7 +206,6 @@ void FnDeltaQFast::SetAnimMemoryMap(AnimMemoryMap *anim) {
     if (numBones != 0) {
         unsigned char *block = reinterpret_cast<unsigned char *>(MemoryPoolManager::NewBlock(numBones << 6));
         unsigned char *qBlock = block + (numBones << 5);
-        DeltaQFastMinRange *minRange = reinterpret_cast<DeltaQFastMinRange *>(deltaQ + 1);
 
         mMinRangesf = reinterpret_cast<DeltaQFastMinRangef *>(block);
         mPrevQBlock = qBlock;
