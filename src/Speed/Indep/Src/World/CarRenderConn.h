@@ -33,7 +33,7 @@ class Pkt_Car_Open : public Sim::Packet {
 class Pkt_Car_Service : public Sim::Packet {
   public:
     Pkt_Car_Service(bool inview, float distancetoview) {
-        int i;
+        unsigned int i;
 
         this->mDamageInfo = 0;
 
