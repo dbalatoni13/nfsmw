@@ -13,6 +13,7 @@
 extern Timer RealTimer;
 extern float WorldTimeSeconds;
 float GetValueFromSpline(float t, bMatrix4 *curve) asm("GetValueFromSpline__FfP8bMatrix4");
+void SetMiddleGrayValue(float val) {}
 
 void VisualLookEffect::Reset() {
     this->StartTime = 0.0f;

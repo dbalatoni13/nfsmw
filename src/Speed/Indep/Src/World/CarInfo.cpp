@@ -1435,3 +1435,5 @@ CarPart *CarPartDatabase::NewGetNextCarPart(CarPart *car_part, CarType car_type,
                                             int upgrade_level) {
     return this->NewGetCarPart(car_type, car_slot_id, car_part_namehash, car_part, upgrade_level);
 }
+
+void GenerateMissingCarParts() {}
