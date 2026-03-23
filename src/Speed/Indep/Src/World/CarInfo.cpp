@@ -155,6 +155,36 @@ int UsedCarTextureAddToTable(unsigned int *table, int num_used, int max_textures
     return 1;
 }
 
+int GetNumCarPartIDNames() {
+    return CARPARTID_NUM;
+}
+
+int GetNumCarSlotIDNames() {
+    return CARSLOTID_NUM;
+}
+
+const char *GetCarTypeName(CarType car_type) {
+    const char *car_type_name = CarTypeInfoArray[car_type].CarTypeName;
+
+    if (car_type_name != 0) {
+        return car_type_name;
+    }
+
+    return 0;
+}
+
+CarTypeInfo *GetCarTypeInfoFromHash(unsigned int car_type_hash) {
+    for (int i = 0; i < 0x54; i++) {
+        CarTypeInfo *car_type_info = reinterpret_cast<CarTypeInfo *>(i * sizeof(CarTypeInfo) + reinterpret_cast<unsigned int>(CarTypeInfoArray));
+
+        if (car_type_info->CarTypeNameHash == car_type_hash) {
+            return car_type_info;
+        }
+    }
+
+    return 0;
+}
+
 unsigned int RideInfo::GetSkinNameHash() {
     if (this->IsUsingCompositeSkin() != 0) {
         return this->mCompositeSkinHash;
