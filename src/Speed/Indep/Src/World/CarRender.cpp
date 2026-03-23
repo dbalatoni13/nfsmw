@@ -15,6 +15,7 @@
 #include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
 #include "Speed/Indep/Src/Main/AttribSupport.h"
 #include "Speed/Indep/Src/Frontend/FEManager.hpp"
+#include "Speed/Indep/Src/Misc/BuildRegion.hpp"
 #include "Speed/Indep/Src/Misc/GameFlow.hpp"
 #include "Speed/Indep/Src/Misc/Profiler.hpp"
 #include "Speed/Indep/Src/Sim/Simulation.h"
@@ -30,6 +31,10 @@
 #include "Speed/Indep/bWare/Inc/bMemory.hpp"
 #include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
 #include "Speed/Indep/bWare/Inc/bVector.hpp"
+
+namespace BuildRegion {
+bool IsEurope();
+}
 
 float culldiv = 12000.0f;
 static const CarFXPosInfo FXMarkerNameHashMappings[28] = {
@@ -688,6 +693,9 @@ CarRenderInfo::CarRenderInfo(RideInfo *ride_info)
         this->MasterReplacementTextureTable[REPLACETEX_DASHSKIN].SetOldNameHash(used_texture_info->MappedDashSkinHash);
         this->MasterReplacementTextureTable[REPLACETEX_DRIVER].SetOldNameHash(0x5799E60B);
         this->MasterReplacementTextureTable[REPLACETEX_TIRE].SetOldNameHash(used_texture_info->MappedTireHash);
+        if (this->pCarTypeInfo->UsageType == CAR_USAGE_TYPE_TRAFFIC) {
+            this->MasterReplacementTextureTable[REPLACETEX_TIRE].SetNewNameHash(bStringHash("_N", used_texture_info->MappedTireHash));
+        }
         this->MasterReplacementTextureTable[REPLACETEX_WINDOW_FRONT].SetOldNameHash(window_front_hash);
         this->MasterReplacementTextureTable[REPLACETEX_WINDOW_REAR].SetOldNameHash(window_rear_hash);
         this->MasterReplacementTextureTable[REPLACETEX_WINDOW_LEFT_FRONT].SetOldNameHash(window_left_front_hash);
@@ -726,6 +734,14 @@ CarRenderInfo::CarRenderInfo(RideInfo *ride_info)
         CarRenderUsedCarTextureInfoLayout *used_texture_info =
             reinterpret_cast<CarRenderUsedCarTextureInfoLayout *>(&this->mUsedTextureInfos);
         unsigned int badging_hash = used_texture_info->MappedBadging;
+        if (BuildRegion::IsEurope()) {
+            unsigned int europe_badging_hash = bStringHash("_EU", badging_hash);
+            TextureInfo *europe_badging_texture = GetTextureInfo(europe_badging_hash, 0, 0);
+
+            if (europe_badging_texture != nullptr) {
+                badging_hash = europe_badging_hash;
+            }
+        }
         TextureInfo *badging_texture = GetTextureInfo(badging_hash, 0, 0);
 
         if (badging_texture != nullptr) {
@@ -751,7 +767,71 @@ CarRenderInfo::CarRenderInfo(RideInfo *ride_info)
         this->ShadowRampTexture->RenderingOrder = 3;
     }
 
+    {
+        eModel *base_model = this->mCarPartModels[CARSLOTID_BASE][0][this->mMinLodLevel].GetModel();
+        bVector4 *pivot_position = nullptr;
+
+        if (base_model != nullptr) {
+            pivot_position = base_model->GetPivotPosition();
+        }
+
+        if (pivot_position != nullptr) {
+            this->PivotPosition.x = pivot_position->x;
+            this->PivotPosition.y = pivot_position->y;
+            this->PivotPosition.z = pivot_position->z;
+        } else {
+            this->PivotPosition.x = 0.0f;
+            this->PivotPosition.y = 0.0f;
+            this->PivotPosition.z = 0.0f;
+        }
+    }
+
     this->CreateCarLightFlares();
+
+    {
+        unsigned int light_material_hash = 0;
+        CarPart *base_paint_part = ride_info->GetPart(CARSLOTID_BASE_PAINT);
+
+        if (base_paint_part != nullptr) {
+            light_material_hash = CarPart_GetAppliedAttributeUParam(base_paint_part, 0x6BA02C05, 0);
+        }
+
+        this->LightMaterial_CarSkin = elGetLightMaterial(light_material_hash);
+        this->LightMaterial_Carbon = elGetLightMaterial(bStringHash("CARBONFIBRE"));
+
+        CarPart *window_tint_part = ride_info->GetPart(CARSLOTID_WINDOW_TINT);
+
+        light_material_hash = 0x471A1DCA;
+        if (window_tint_part != nullptr) {
+            light_material_hash = CarPart_GetAppliedAttributeUParam(window_tint_part, 0x6BA02C05, 0);
+        }
+
+        this->LightMaterial_WindowTint = elGetLightMaterial(light_material_hash);
+
+        CarPart *paint_rim_part = ride_info->GetPart(CARSLOTID_PAINT_RIM);
+        CarPart *front_wheel_part = ride_info->GetPart(CARSLOTID_FRONT_WHEEL);
+
+        if (front_wheel_part == nullptr || (reinterpret_cast<unsigned char *>(front_wheel_part)[5] >> 5) == 0) {
+            paint_rim_part = nullptr;
+        }
+
+        light_material_hash = 0;
+        if (paint_rim_part != nullptr) {
+            light_material_hash = CarPart_GetAppliedAttributeUParam(paint_rim_part, 0x6BA02C05, 0);
+        }
+
+        if (light_material_hash != 0) {
+            this->LightMaterial_WheelRim = elGetLightMaterial(light_material_hash);
+        } else {
+            this->LightMaterial_WheelRim = nullptr;
+        }
+
+        this->LightMaterial_Caliper = nullptr;
+        this->LightMaterial_Spoiler = nullptr;
+        this->LightMaterial_Roof = nullptr;
+        this->LightMaterial_Spinner = nullptr;
+    }
+
     this->UpdateWheelYRenderOffset();
     
     { //?
