@@ -2502,9 +2502,15 @@ void CarRenderInfo::RenderFlaresOnCar(eView *view, const bVector3 *position, con
         this->RenderTextureHeadlights(view, local_world, 0);
     }
 
-    if (this->pCarTypeInfo != 0 && this->pCarTypeInfo->UsageType == CAR_USAGE_TYPE_COP &&
-        (this->mOnLights & VehicleFX::LIGHT_COPRED) != 0) {
-        view->NumCopsCherry++;
+    if (this->pCarTypeInfo != 0 && this->pCarTypeInfo->UsageType == CAR_USAGE_TYPE_COP) {
+        int cop_red_on = 1;
+
+        if ((this->mOnLights & VehicleFX::LIGHT_COPRED) == 0) {
+            cop_red_on = 0;
+        }
+        if (cop_red_on != 0) {
+            view->NumCopsCherry++;
+        }
     }
 
     int car_pixel_size = view->GetPixelSize(position, this->mRadius);
