@@ -587,13 +587,13 @@ void SFXCTL_Tunnel::UpdateDriveBySnds(float t) {
 
     FutureZoneType = TRACK_PATH_ZONE_RESET;
 
-    UnNormalCurCarDir = bVector2(
+    bFill(&UnNormalCurCarDir,
         m_pEAXCar->GetPhysCar()->GetForwardVector()->x,
         m_pEAXCar->GetPhysCar()->GetForwardVector()->y);
-    CurCarDir = bNormalize(UnNormalCurCarDir);
-    FutureCarDir = bScale(CurCarDir, m_pEAXCar->GetPhysCar()->GetForwardSpeed() * 0.4f);
-    FutureCar2dPos = bAdd(*m_pEAXCar->GetPhysCar()->GetPosition2D(), FutureCarDir);
-    FutureCarPos = bVector3(
+    bNormalize(&CurCarDir, &UnNormalCurCarDir);
+    bScale(&FutureCarDir, &CurCarDir, m_pEAXCar->GetPhysCar()->GetForwardSpeed() * 0.4f);
+    bAdd(&FutureCar2dPos, m_pEAXCar->GetPhysCar()->GetPosition2D(), &FutureCarDir);
+    bFill(&FutureCarPos,
         FutureCar2dPos.x,
         FutureCar2dPos.y,
         m_pEAXCar->GetPhysCar()->GetPosition()->z);
