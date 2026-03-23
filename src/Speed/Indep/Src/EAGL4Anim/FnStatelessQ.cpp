@@ -95,12 +95,12 @@ bool FnStatelessQ::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask)
         if (mPrevKey != 0) {
             timeIndex = mPrevKey - 1;
         }
-        if (floorTime < statelessQ->mTimes[timeIndex]) {
-            while (timeIndex > 0 && floorTime < statelessQ->mTimes[timeIndex]) {
+        if (statelessQ->mTimes[timeIndex] > floorTime) {
+            while (timeIndex > 0 && statelessQ->mTimes[timeIndex] > floorTime) {
                 timeIndex--;
             }
         } else {
-            while (timeIndex < statelessQ->mNumKeys - 2 && floorTime >= statelessQ->mTimes[timeIndex + 1]) {
+            while (timeIndex < statelessQ->mNumKeys - 2 && statelessQ->mTimes[timeIndex + 1] <= floorTime) {
                 timeIndex++;
             }
         }
