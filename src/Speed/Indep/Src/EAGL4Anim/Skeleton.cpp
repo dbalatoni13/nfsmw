@@ -138,132 +138,132 @@ void Skeleton::GetStillPose(float *pose, const BoneMask *mask) const {
 void Skeleton::MirrorPose(float *pose, float *mirrorPose, bool local, const BoneMask *mask) {
     int numBones = GetNumBones();
 
-    if (!mask) {
+    if (mask) {
         if (pose == mirrorPose) {
-            for (int ibone = 0; ibone < numBones; ibone++) {
-                int mirrorBone = GetBoneData(ibone).mLeftRightIdx;
+            for (unsigned int ibone = 0; static_cast<int>(ibone) < numBones; ibone++) {
+                if (mask->GetBone(ibone)) {
+                    unsigned int mirrorBone = GetBoneData(static_cast<int>(ibone)).mLeftRightIdx;
 
-                if (ibone < mirrorBone) {
-                    float *dst = &mirrorPose[mirrorBone * 12];
-                    float *src = &mirrorPose[ibone * 12];
-                    float value = dst[4];
+                    if (ibone < mirrorBone) {
+                        float *dst = &mirrorPose[mirrorBone * 12];
+                        float *src = &mirrorPose[ibone * 12];
+                        float value = dst[4];
 
-                    dst[4] = -src[4];
-                    src[4] = -value;
-                    value = dst[5];
-                    dst[5] = -src[5];
-                    src[5] = -value;
-                    value = dst[6];
-                    dst[6] = src[6];
-                    src[6] = value;
-                    value = dst[7];
-                    dst[7] = src[7];
-                    src[7] = value;
-                    value = dst[8];
-                    dst[8] = src[8];
-                    src[8] = value;
-                    value = dst[9];
-                    dst[9] = src[9];
-                    src[9] = value;
-                    value = dst[10];
-                    dst[10] = -src[10];
-                    src[10] = -value;
-                } else if (mirrorBone == ibone) {
-                    float *dst = &mirrorPose[ibone * 12];
+                        dst[4] = -src[4];
+                        src[4] = -value;
+                        value = dst[5];
+                        dst[5] = -src[5];
+                        src[5] = -value;
+                        value = dst[6];
+                        dst[6] = src[6];
+                        src[6] = value;
+                        value = dst[7];
+                        dst[7] = src[7];
+                        src[7] = value;
+                        value = dst[8];
+                        dst[8] = src[8];
+                        src[8] = value;
+                        value = dst[9];
+                        dst[9] = src[9];
+                        src[9] = value;
+                        value = dst[10];
+                        dst[10] = -src[10];
+                        src[10] = -value;
+                    } else if (mirrorBone == ibone) {
+                        float *dst = &mirrorPose[ibone * 12];
 
-                    dst[4] = -dst[4];
-                    dst[5] = -dst[5];
-                    dst[10] = -dst[10];
+                        dst[4] = -dst[4];
+                        dst[5] = -dst[5];
+                        dst[10] = -dst[10];
+                    }
                 }
             }
         } else {
-            for (int ibone = 0; ibone < numBones; ibone++) {
-                int mirrorBone = GetBoneData(ibone).mLeftRightIdx;
-                float *src = &pose[ibone * 12];
-                float *dst = &mirrorPose[mirrorBone * 12];
+            for (unsigned int ibone = 0; static_cast<int>(ibone) < numBones; ibone++) {
+                if (mask->GetBone(ibone)) {
+                    int mirrorBone = GetBoneData(static_cast<int>(ibone)).mLeftRightIdx;
+                    float *src = &pose[ibone * 12];
+                    float *dst = &mirrorPose[mirrorBone * 12];
 
-                dst[0] = src[0];
-                dst[1] = src[1];
-                dst[2] = src[2];
-                dst[3] = src[3];
-                dst[4] = src[4];
-                dst[5] = -src[5];
-                dst[6] = -src[6];
-                dst[7] = src[7];
-                dst[8] = -src[8];
-                dst[9] = src[9];
-                dst[10] = src[10];
-                dst[11] = src[11];
+                    dst[0] = src[0];
+                    dst[1] = src[1];
+                    dst[2] = src[2];
+                    dst[3] = src[3];
+                    dst[4] = src[4];
+                    dst[5] = -src[5];
+                    dst[6] = -src[6];
+                    dst[7] = src[7];
+                    dst[8] = -src[8];
+                    dst[9] = src[9];
+                    dst[10] = src[10];
+                    dst[11] = src[11];
 
-                if (!local) {
-                    dst[4] = -dst[4];
-                    dst[7] = -dst[7];
+                    if (!local) {
+                        dst[4] = -dst[4];
+                        dst[7] = -dst[7];
+                    }
                 }
             }
         }
     } else if (pose == mirrorPose) {
-        for (unsigned int ibone = 0; static_cast<int>(ibone) < numBones; ibone++) {
-            if (mask->GetBone(ibone)) {
-                unsigned int mirrorBone = GetBoneData(static_cast<int>(ibone)).mLeftRightIdx;
+        for (int ibone = 0; ibone < numBones; ibone++) {
+            int mirrorBone = GetBoneData(ibone).mLeftRightIdx;
 
-                if (ibone < mirrorBone) {
-                    float *dst = &mirrorPose[mirrorBone * 12];
-                    float *src = &mirrorPose[ibone * 12];
-                    float value = dst[4];
+            if (ibone < mirrorBone) {
+                float *dst = &mirrorPose[mirrorBone * 12];
+                float *src = &mirrorPose[ibone * 12];
+                float value = dst[4];
 
-                    dst[4] = -src[4];
-                    src[4] = -value;
-                    value = dst[5];
-                    dst[5] = -src[5];
-                    src[5] = -value;
-                    value = dst[6];
-                    dst[6] = src[6];
-                    src[6] = value;
-                    value = dst[7];
-                    dst[7] = src[7];
-                    src[7] = value;
-                    value = dst[8];
-                    dst[8] = src[8];
-                    src[8] = value;
-                    value = dst[9];
-                    dst[9] = src[9];
-                    src[9] = value;
-                    value = dst[10];
-                    dst[10] = -src[10];
-                    src[10] = -value;
-                } else if (mirrorBone == ibone) {
-                    float *dst = &mirrorPose[ibone * 12];
+                dst[4] = -src[4];
+                src[4] = -value;
+                value = dst[5];
+                dst[5] = -src[5];
+                src[5] = -value;
+                value = dst[6];
+                dst[6] = src[6];
+                src[6] = value;
+                value = dst[7];
+                dst[7] = src[7];
+                src[7] = value;
+                value = dst[8];
+                dst[8] = src[8];
+                src[8] = value;
+                value = dst[9];
+                dst[9] = src[9];
+                src[9] = value;
+                value = dst[10];
+                dst[10] = -src[10];
+                src[10] = -value;
+            } else if (mirrorBone == ibone) {
+                float *dst = &mirrorPose[ibone * 12];
 
-                    dst[4] = -dst[4];
-                    dst[5] = -dst[5];
-                    dst[10] = -dst[10];
-                }
+                dst[4] = -dst[4];
+                dst[5] = -dst[5];
+                dst[10] = -dst[10];
             }
         }
     } else {
-        for (unsigned int ibone = 0; static_cast<int>(ibone) < numBones; ibone++) {
-            if (mask->GetBone(ibone)) {
-                int mirrorBone = GetBoneData(static_cast<int>(ibone)).mLeftRightIdx;
-                float *src = &pose[ibone * 12];
-                float *dst = &mirrorPose[mirrorBone * 12];
+        for (int ibone = 0; ibone < numBones; ibone++) {
+            int mirrorBone = GetBoneData(ibone).mLeftRightIdx;
+            float *src = &pose[ibone * 12];
+            float *dst = &mirrorPose[mirrorBone * 12];
 
-                dst[0] = src[0];
-                dst[1] = src[1];
-                dst[2] = src[2];
-                dst[3] = src[3];
-                dst[4] = src[4];
-                dst[5] = -src[5];
-                dst[6] = -src[6];
-                dst[7] = src[7];
-                dst[8] = -src[8];
-                dst[9] = src[9];
-                dst[10] = src[10];
-                dst[11] = src[11];
+            dst[0] = src[0];
+            dst[1] = src[1];
+            dst[2] = src[2];
+            dst[3] = src[3];
+            dst[4] = src[4];
+            dst[5] = -src[5];
+            dst[6] = -src[6];
+            dst[7] = src[7];
+            dst[8] = -src[8];
+            dst[9] = src[9];
+            dst[10] = src[10];
+            dst[11] = src[11];
 
-                if (!local) {
-                    dst[4] = -dst[4];
-                    dst[7] = -dst[7];
-                }
+            if (!local) {
+                dst[4] = -dst[4];
+                dst[7] = -dst[7];
             }
         }
     }

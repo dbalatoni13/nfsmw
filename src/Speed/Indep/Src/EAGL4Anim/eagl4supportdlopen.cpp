@@ -7,6 +7,15 @@
 
 static void *dlsym(void *handle, const char *name);
 
+inline void *RuntimeAllocDestructorEntry::operator new(size_t size) {
+    return EAGL4Internal::EAGL4Malloc(size, nullptr);
+}
+
+inline RuntimeAllocDestructorEntry::RuntimeAllocDestructorEntry(RuntimeAllocDestructor d, void *data, int auxData)
+    : d(d),       //
+      data(data), //
+      auxData(auxData) {}
+
 namespace EAGL4 {
 
 namespace {
@@ -33,14 +42,6 @@ static inline unsigned int htotul(unsigned int l) {
 
 static inline unsigned int ByteSwap32(unsigned int value) {
     return ((value >> 16) & 0xFF) << 8 | (value >> 24) | (((value & 0xFF) << 8 | ((value & 0xFFFF) >> 8)) << 16);
-}
-
-static inline const char *GetLoaderSymbolType(const char *name) {
-    const char *type = name + strlen(name);
-    if (type[1] == 0x7F) {
-        type += 2;
-    }
-    return type + 1;
 }
 
 } // namespace
@@ -242,16 +243,27 @@ retry:
                     }
                 }
 
-                const char *type = GetLoaderSymbolType(name);
+                const char *type = name + strlen(name);
+
+                if (type[1] == 0x7F) {
+                    type += 2;
+                }
+                type += 1;
                 if (strncmp(gRuntimeAllocType, name, strlen(gRuntimeAllocType)) == 0) {
-                    const char *stripped_name = name + strlen(gRuntimeAllocType);
-                    RuntimeAllocConstructor c = gRuntimeAllocConsPool.FindConstructor(type);
+                    Symbol s;
+                    const char *stripped_name;
+                    RuntimeAllocConstructor c;
+
+                    s.name = name;
+                    s.type = type;
+                    stripped_name = s.name + strlen(gRuntimeAllocType);
+                    c = gRuntimeAllocConsPool.FindConstructor(s.type);
 
                     if (c) {
                         RuntimeAllocDestructor d = gRuntimeAllocConsPool.FindDestructor(type);
                         int auxData = 0;
                         bool bCallDestructor = false;
-                        void *addr = c(stripped_name, reinterpret_cast<class DynamicLoader *>(this), auxData, bCallDestructor, name);
+                        void *addr = c(stripped_name, reinterpret_cast<class DynamicLoader *>(this), auxData, bCallDestructor, s.name);
 
                         if (bCallDestructor && addr) {
                             RuntimeAllocDestructorEntry *de = new RuntimeAllocDestructorEntry(d, addr, auxData);
@@ -271,8 +283,8 @@ retry:
                 if (numUnresolved < MAX_UNRESOLVED_ERRORS) {
                     bool found = false;
 
-                    for (int k = 0; k < numUnresolved; k++) {
-                        if (name == unresolvedList[k]) {
+                    for (j = 0; j < numUnresolved; j++) {
+                        if (name == unresolvedList[j]) {
                             found = true;
                             break;
                         }
@@ -281,6 +293,7 @@ retry:
                     if (!found) {
                         unresolvedList[numUnresolved++] = name;
                     }
+                    j = iIndex;
                 }
                 break;
             }
