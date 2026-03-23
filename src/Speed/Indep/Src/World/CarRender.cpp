@@ -1441,16 +1441,16 @@ void CarRenderInfo::UpdateCarParts() {
 
     CarPart *base_part = ride_info->GetPart(CARSLOTID_BASE);
     if (base_part == 0) {
-        this->SpoilerPositionMarker2 = 0;
         this->RoofScoopPositionMarker = 0;
         this->SpoilerPositionMarker = 0;
+        this->SpoilerPositionMarker2 = 0;
     } else {
         eSolid *solid = eFindSolid(CarPart_GetModelNameHash(base_part, 0, this->mMinLodLevel), 0);
 
         if (solid == 0) {
-            this->SpoilerPositionMarker2 = 0;
             this->RoofScoopPositionMarker = 0;
             this->SpoilerPositionMarker = 0;
+            this->SpoilerPositionMarker2 = 0;
         } else {
             this->SpoilerPositionMarker = solid->GetPostionMarker(0xC93B73FD);
             this->SpoilerPositionMarker2 = solid->GetPostionMarker(0xF0A9F3CF);
