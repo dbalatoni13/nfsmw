@@ -140,10 +140,11 @@ bool FnStatelessQ::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask)
             for (int ibone = 0; ibone < nBones; ibone++) {
                 UMath::Vector4 prevQ;
                 UMath::Vector4 nextQ;
-                float *q = GetStatelessQOutput(sqt, boneIdxs[ibone]);
 
                 LoadStatelessQ(frameData, prevQ);
                 LoadStatelessQ(nextFrameData, nextQ);
+
+                float *q = GetStatelessQOutput(sqt, boneIdxs[ibone]);
 
                 q[0] = prevQ.x + (nextQ.x - prevQ.x) * scale;
                 q[1] = prevQ.y + (nextQ.y - prevQ.y) * scale;
