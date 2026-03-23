@@ -706,7 +706,15 @@ bool FnDeltaQFast::EvalSQTMask(float currTime, float *sqt, const BoneMask *boneM
                 continue;
             }
 
-            DecodeQFastPhysical(floorPhys[ibone], mPrevQs[ibone]);
+            unsigned short *physical = reinterpret_cast<unsigned short *>(&floorPhys[ibone]);
+            float *prevQ = reinterpret_cast<float *>(&mPrevQs[ibone]);
+
+            prevQ[0] = static_cast<float>(physical[0] >> 4) * kQFastPhysicalScale12 - kQFastPhysicalBias12;
+            prevQ[1] = static_cast<float>(physical[1] >> 4) * kQFastPhysicalScale12 - kQFastPhysicalBias12;
+            prevQ[2] = static_cast<float>(physical[2] >> 4) * kQFastPhysicalScale12 - kQFastPhysicalBias12;
+            prevQ[3] = static_cast<float>(static_cast<unsigned char>((physical[2] & 0xF) | ((physical[0] & 0xF) * 0x100) + ((physical[1] & 0xF) * 0x10))) *
+                       kQFastPhysicalScale12 -
+                       kQFastPhysicalBias12;
         }
         prevDeltaIdx = 0;
     } else {
