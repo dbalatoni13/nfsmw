@@ -294,12 +294,12 @@ bool FnStatelessF3::EvalSQTfast(float currTime, float *sqt, const BoneMask *bone
             float *constBuf = statelessF3->GetConstData(dataBuf);
 
             for (int ibone = 0; ibone < statelessF3->mNumConstBones; ibone++) {
+                float *constBone = &constBuf[ibone * 3];
                 int index = constIdxs[ibone];
 
-                sqt[index + 0] = constBuf[0];
-                sqt[index + 1] = constBuf[1];
-                sqt[index + 2] = constBuf[2];
-                constBuf += 3;
+                sqt[index + 0] = constBone[0];
+                sqt[index + 1] = constBone[1];
+                sqt[index + 2] = constBone[2];
             }
         }
     } else {
