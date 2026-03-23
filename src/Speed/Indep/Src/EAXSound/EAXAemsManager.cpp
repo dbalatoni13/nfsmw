@@ -804,11 +804,11 @@ ReprocessQueue:
 }
 
 void EAXAemsManager::RemoveBankListing(int Index) {
-    g_SndAssetList[Index].Clear();
+    ResetSndAssetParams(g_SndAssetList[Index]);
     {
         for (int n = Index; n < 0x2F; n++) {
             g_SndAssetList[n] = g_SndAssetList[n + 1];
-            g_SndAssetList[n + 1].Clear();
+            ResetSndAssetParams(g_SndAssetList[n + 1]);
         }
     }
 
