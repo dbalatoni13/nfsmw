@@ -2095,8 +2095,15 @@ void CarRenderInfo::RenderFlaresOnCar(eView *view, const bVector3 *position, con
     }
 
     float headlight_base = gINISInstance != 0 ? 0.5f : 0.0f;
-    float headlight_left_intensity = ((force_light_state & 1) || (this->mOnLights & 1)) ? headlight_base + 1.0f : headlight_base;
-    float headlight_right_intensity = ((force_light_state & 1) || (this->mOnLights & 2)) ? headlight_base + 1.0f : headlight_base;
+    float headlight_left_intensity = headlight_base;
+    float headlight_right_intensity = headlight_base;
+
+    if ((force_light_state & 1) || (this->mOnLights & 1)) {
+        headlight_left_intensity += 1.0f;
+    }
+    if ((force_light_state & 1) || (this->mOnLights & 2)) {
+        headlight_right_intensity += 1.0f;
+    }
     float brakelight_left_intensity = ((force_light_state & 2) || (this->mOnLights & 8)) ? 1.0f : 0.0f;
     float brakelight_centre_intensity = ((force_light_state & 2) || (this->mOnLights & 0x20)) ? 1.0f : 0.0f;
     float brakelight_right_intensity = ((force_light_state & 2) || (this->mOnLights & 0x10)) ? 1.0f : 0.0f;
