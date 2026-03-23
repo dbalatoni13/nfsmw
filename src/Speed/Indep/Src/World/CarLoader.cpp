@@ -232,6 +232,29 @@ CarLoader::CarLoader()
     this->NumLoadingSkinLayers = 0;
 }
 
+LoadedTexturePack::LoadedTexturePack(const char *filename, int max_header_size) {
+    const char *shared_filename = bAllocateSharedString(filename);
+
+    this->MaxHeaderSize = max_header_size;
+    this->Pad0 = 0;
+    this->pStreamingPack = 0;
+    this->Filename = shared_filename;
+    this->NumInstances = 0;
+    this->LoadState = 0;
+
+    if (bFileSize(this->Filename) == 0) {
+        this->LoadState = 2;
+    }
+}
+
+LoadedSolidPack::LoadedSolidPack(const char *filename) {
+    this->Filename = bAllocateSharedString(filename);
+    this->NumInstances = 0;
+    this->LoadState = 0;
+    this->pStreamingPack = 0;
+    this->pResourceFile = 0;
+}
+
 int LoadedSkin::GetTextureHashes(unsigned int *texture_hashes, int max_texture_hashes, int perm) {
     UsedCarTextureInfoMirror used_texture_info;
 

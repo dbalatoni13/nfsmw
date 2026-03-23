@@ -111,6 +111,10 @@ void InitVehicleDamage() {
     VehiclePartDamageZoneSlotPool = bNewSlotPool(0x18, 100, lbl_8040D170, 0);
 }
 
+ePositionMarker *VehiclePartDamageBehaviour::FindPositionMarker(const char *findPivotName) {
+    return 0;
+}
+
 VehiclePartDamageBehaviour::VehiclePartDamageBehaviour(CarRenderInfo *carRenderInfo)
     : mCarRenderInfo(carRenderInfo), //
       mDamageZoneNum(0), //
