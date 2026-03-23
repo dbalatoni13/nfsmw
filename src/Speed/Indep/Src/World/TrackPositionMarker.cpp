@@ -9,15 +9,6 @@ bChunkLoader bChunkLoaderTrackPositionMarkers(0x34146, LoaderTrackPositionMarker
 
 static void NotifyTrackMarkersChanged() {}
 
-void ForEachTrackPositionMarker(bool (*callback)(TrackPositionMarker *, unsigned int), unsigned int tag) {
-    for (TrackPositionMarker *marker = TrackPositionMarkerList.GetHead(); marker != TrackPositionMarkerList.EndOfList();
-         marker = marker->GetNext()) {
-        if (!callback(marker, tag)) {
-            break;
-        }
-    }
-}
-
 int LoaderTrackPositionMarkers(bChunk *chunk) {
     if (chunk->GetID() == 0x34146) {
         TrackPositionMarker *marker_table = reinterpret_cast<TrackPositionMarker *>(chunk->GetAlignedData(0x10));
@@ -67,6 +58,15 @@ int GetNumTrackPositionMarkers(int track_number, unsigned int name_hash) {
     }
 
     return num_markers;
+}
+
+void ForEachTrackPositionMarker(bool (*callback)(TrackPositionMarker *, unsigned int), unsigned int tag) {
+    for (TrackPositionMarker *marker = TrackPositionMarkerList.GetHead(); marker != TrackPositionMarkerList.EndOfList();
+         marker = marker->GetNext()) {
+        if (!callback(marker, tag)) {
+            break;
+        }
+    }
 }
 
 TrackPositionMarker *GetTrackPositionMarker(int track_number, unsigned int name_hash, int index) {

@@ -24,6 +24,28 @@ TrackPathManager TheTrackPathManager;
 bChunkLoader bChunkLoaderTrackPath(0x80034147, LoaderTrackPath, UnloaderTrackPath);
 bChunkLoader bChunkLoaderTrackPathBarriers(0x3414D, LoaderTrackPath, UnloaderTrackPath);
 
+bool DoLinesIntersect(const bVector2 &line1_start, const bVector2 &line1_end, const bVector2 &line2_start, const bVector2 &line2_end) {
+    float dy1 = line1_end.y - line1_start.y;
+    float dx2 = line2_end.x - line2_start.x;
+    float dx1 = line1_end.x - line1_start.x;
+    float dy2 = line2_end.y - line2_start.y;
+    float den = dx1 * dy2 - dy1 * dx2;
+
+    if (den != 0.0f) {
+        float dx3 = line1_start.x - line2_start.x;
+        float dy3 = line1_start.y - line2_start.y;
+        float r = (dy3 * dx2 - dx3 * dy2) / den;
+        if (0.0f <= r && r <= 1.0f) {
+            float s = (dy3 * dx1 - dx3 * dy1) / den;
+            if (0.0f <= s && s <= 1.0f) {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
 void TrackPathManager::Clear() {
     NumZones = 0;
     SizeofZones = 0;
@@ -222,6 +244,15 @@ bool TrackPathZone::IsPointInside(const bVector2 *point) {
     return bIsPointInPoly(point, Points, NumPoints);
 }
 
+void TrackPathInitRemoteCaffeineConnection() {}
+
+int LoaderTrackPath(bChunk *chunk) {
+    return TheTrackPathManager.Loader(chunk);
+}
+
+int UnloaderTrackPath(bChunk *chunk) {
+    return TheTrackPathManager.Unloader(chunk);
+}
 float TrackPathZone::GetSegmentNextTo(bVector2 *point, bVector2 *segment_point_a, bVector2 *segment_point_b) {
     int Closest0 = -1;
     int Closest1 = -1;
@@ -256,12 +287,3 @@ float TrackPathZone::GetSegmentNextTo(bVector2 *point, bVector2 *segment_point_a
     return d0;
 }
 
-void TrackPathInitRemoteCaffeineConnection() {}
-
-int LoaderTrackPath(bChunk *chunk) {
-    return TheTrackPathManager.Loader(chunk);
-}
-
-int UnloaderTrackPath(bChunk *chunk) {
-    return TheTrackPathManager.Unloader(chunk);
-}

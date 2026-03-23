@@ -25,6 +25,90 @@ extern float oldDistFogStart_27399;
 extern float oldDistFogPower_27398;
 extern unsigned int oldDistFogColour_27397;
 
+int LoaderWeatherMan(bChunk *bchunk) {
+    if (bchunk->GetID() != 0x34250) {
+        return 0;
+    }
+
+    unsigned char *data = reinterpret_cast<unsigned char *>(bchunk->GetAlignedData(0x10));
+    bEndianSwap32(data + 8);
+    bEndianSwap32(data + 0xC);
+    if (*reinterpret_cast<int *>(data + 8) == 2) {
+        int num_regions = *reinterpret_cast<int *>(data + 0xC);
+        unsigned char *region_data = data + 0x10;
+        for (int i = 0; i < num_regions; i++) {
+            bEndianSwap32(region_data + 0x84);
+            bEndianSwap32(region_data + 0x88);
+            bEndianSwap32(region_data + 0x48);
+            bEndianSwap32(region_data + 0x4C);
+            bEndianSwap32(region_data + 0x50);
+            bEndianSwap32(region_data + 0x54);
+            bEndianSwap32(region_data + 0x58);
+            bEndianSwap32(region_data + 0x5C);
+            bEndianSwap32(region_data + 0x60);
+            bEndianSwap32(region_data + 0x64);
+            bEndianSwap32(region_data + 0x68);
+            bEndianSwap32(region_data + 0x6C);
+            bEndianSwap32(region_data + 0x70);
+            bEndianSwap32(region_data + 0x74);
+            bEndianSwap32(region_data + 0x78);
+            bEndianSwap32(region_data + 0x8C);
+            bEndianSwap32(region_data + 0x90);
+            bEndianSwap32(region_data + 0x94);
+            AddRegion(reinterpret_cast<GenericRegion *>(region_data));
+            region_data += sizeof(GenericRegion);
+        }
+    }
+
+    return 1;
+}
+
+int UnloaderWeatherMan(bChunk *bchunk) {
+    if (bchunk->GetID() != 0x34250) {
+        return 0;
+    }
+
+    unsigned char *data = reinterpret_cast<unsigned char *>(bchunk->GetAlignedData(0x10));
+    int version = *reinterpret_cast<int *>(data + 8);
+    if (version == 2) {
+        GenericRegion *region = reinterpret_cast<GenericRegion *>(data + 0x10);
+        int num_regions = *reinterpret_cast<int *>(data + 0xC);
+        for (int i = 0; i < num_regions; i++) {
+            RemoveRegion(region);
+            region += 1;
+        }
+    }
+
+    return 1;
+}
+
+void AddRegion(GenericRegion *region) {
+    unsigned int region_type = static_cast<unsigned int>(region->Type);
+    if (region_type == REGION_RAIN && region->Intensity == 0.0f) {
+        region->Type = REGION_TUNNEL;
+        region_type = REGION_TUNNEL;
+    }
+
+    if (region_type < NUM_REGION_TYPES) {
+        RegionLists[region_type].AddTail(region);
+        RegionCount[region_type] += 1;
+    }
+}
+
+void RemoveRegion(GenericRegion *region) {
+    region->Remove();
+}
+
+int DepthRegion(GenericRegion *before, GenericRegion *after) {
+    bVector3 Position(before->PositionX, before->PositionY, before->PositionZ);
+    bVector3 Delta = Position - cPos;
+    float distB = bLength(Delta);
+    Position = bVector3(after->PositionX, after->PositionY, after->PositionZ);
+    Delta = Position - cPos;
+    float distA = bLength(Delta);
+    return distB <= distA;
+}
+
 int RegionQuery::CalculateRegionInfo(eView *view, RegionType regionKind, int InFE) {
     unsigned int colr_r = 0;
     unsigned int colr_g = 0;
@@ -140,90 +224,6 @@ int RegionQuery::CalculateRegionInfo(eView *view, RegionType regionKind, int InF
     oldDistFogPower_27398 = DistFogPower;
     oldDistFogStart_27399 = DistFogStart;
     return 1;
-}
-
-int LoaderWeatherMan(bChunk *bchunk) {
-    if (bchunk->GetID() != 0x34250) {
-        return 0;
-    }
-
-    unsigned char *data = reinterpret_cast<unsigned char *>(bchunk->GetAlignedData(0x10));
-    bEndianSwap32(data + 8);
-    bEndianSwap32(data + 0xC);
-    if (*reinterpret_cast<int *>(data + 8) == 2) {
-        int num_regions = *reinterpret_cast<int *>(data + 0xC);
-        unsigned char *region_data = data + 0x10;
-        for (int i = 0; i < num_regions; i++) {
-            bEndianSwap32(region_data + 0x84);
-            bEndianSwap32(region_data + 0x88);
-            bEndianSwap32(region_data + 0x48);
-            bEndianSwap32(region_data + 0x4C);
-            bEndianSwap32(region_data + 0x50);
-            bEndianSwap32(region_data + 0x54);
-            bEndianSwap32(region_data + 0x58);
-            bEndianSwap32(region_data + 0x5C);
-            bEndianSwap32(region_data + 0x60);
-            bEndianSwap32(region_data + 0x64);
-            bEndianSwap32(region_data + 0x68);
-            bEndianSwap32(region_data + 0x6C);
-            bEndianSwap32(region_data + 0x70);
-            bEndianSwap32(region_data + 0x74);
-            bEndianSwap32(region_data + 0x78);
-            bEndianSwap32(region_data + 0x8C);
-            bEndianSwap32(region_data + 0x90);
-            bEndianSwap32(region_data + 0x94);
-            AddRegion(reinterpret_cast<GenericRegion *>(region_data));
-            region_data += sizeof(GenericRegion);
-        }
-    }
-
-    return 1;
-}
-
-int UnloaderWeatherMan(bChunk *bchunk) {
-    if (bchunk->GetID() != 0x34250) {
-        return 0;
-    }
-
-    unsigned char *data = reinterpret_cast<unsigned char *>(bchunk->GetAlignedData(0x10));
-    int version = *reinterpret_cast<int *>(data + 8);
-    if (version == 2) {
-        GenericRegion *region = reinterpret_cast<GenericRegion *>(data + 0x10);
-        int num_regions = *reinterpret_cast<int *>(data + 0xC);
-        for (int i = 0; i < num_regions; i++) {
-            RemoveRegion(region);
-            region += 1;
-        }
-    }
-
-    return 1;
-}
-
-void AddRegion(GenericRegion *region) {
-    unsigned int region_type = static_cast<unsigned int>(region->Type);
-    if (region_type == REGION_RAIN && region->Intensity == 0.0f) {
-        region->Type = REGION_TUNNEL;
-        region_type = REGION_TUNNEL;
-    }
-
-    if (region_type < NUM_REGION_TYPES) {
-        RegionLists[region_type].AddTail(region);
-        RegionCount[region_type] += 1;
-    }
-}
-
-void RemoveRegion(GenericRegion *region) {
-    region->Remove();
-}
-
-int DepthRegion(GenericRegion *before, GenericRegion *after) {
-    bVector3 Position(before->PositionX, before->PositionY, before->PositionZ);
-    bVector3 Delta = Position - cPos;
-    float distB = bLength(Delta);
-    Position = bVector3(after->PositionX, after->PositionY, after->PositionZ);
-    Delta = Position - cPos;
-    float distA = bLength(Delta);
-    return distB <= distA;
 }
 
 GenericRegion *GetClosestRegionInView(eView *view, bVector3 *endVector, float *angleCos) {

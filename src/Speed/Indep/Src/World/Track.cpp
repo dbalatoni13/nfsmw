@@ -1,9 +1,28 @@
 #include "Track.hpp"
 
+#include "Speed/Indep/Src/World/WWorldPos.h"
+#include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include "Speed/Indep/bWare/Inc/bChunk.hpp"
 
 void bEndianSwap32(void *value);
+
+static inline UMath::Vector3 &bConvertToBond_Track(UMath::Vector3 &dest, const bVector3 &v) {
+    bConvertToBond(*reinterpret_cast<bVector3 *>(&dest), v);
+    return dest;
+}
+
+class WWorldPosTopologyShim_Track : public WWorldPos {
+  public:
+    WWorldPosTopologyShim_Track(float yOffset)
+        : WWorldPos(yOffset) {
+        fFace.fPt0 = UMath::Vector3::kZero;
+        fFace.fPt1 = UMath::Vector3::kZero;
+        fFace.fPt2 = UMath::Vector3::kZero;
+        fFace.fSurface.fSurface = 0;
+        fFace.fSurface.fFlags = 0;
+    }
+};
 
 enum TerrainType {
     TERRAIN_TYPE_NONE = 0,
@@ -64,8 +83,6 @@ static char *TrackOBBTable = 0;
 static int NumTrackOBBs = 0;
 bChunkLoader bChunkLoaderTrackOBB(0x34191, LoaderTrackOBB, UnloaderTrackOBB);
 
-void EstablishRemoteCaffeineConnection() {}
-
 int GetNumTrackOBBs() {
     return NumTrackOBBs;
 }
@@ -97,6 +114,27 @@ int UnloaderTrackOBB(bChunk *chunk) {
     NumTrackOBBs = 0;
     TrackOBBTable = 0;
     return 1;
+}
+
+void EstablishRemoteCaffeineConnection() {}
+
+float TopologyCoordinate::GetElevation(const bVector3 *position, enum TerrainType *type, bVector3 *normal, bool *point_valid) {
+    UMath::Vector3 bond_pos;
+    UMath::Vector4 dummy_normal;
+
+    (void)type;
+    (void)normal;
+
+    bConvertToBond_Track(bond_pos, *position);
+    WWorldPosTopologyShim_Track world_pos(0.025f);
+    world_pos.Update(bond_pos, dummy_normal, true, 0, true);
+    if (point_valid) {
+        *point_valid = world_pos.OnValidFace();
+    }
+    if (world_pos.OnValidFace()) {
+        return world_pos.HeightAtPoint(bond_pos);
+    }
+    return position->z;
 }
 
 int TopologyCoordinate::HasTopology(const bVector2 *position) {

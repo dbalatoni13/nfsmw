@@ -8,6 +8,17 @@ static unsigned int NumTrackInfo = 0;
 TrackInfo *LoadedTrackInfo = 0;
 bChunkLoader bChunkLoaderTrackInfo(0x34201, TrackInfo::LoaderTrackInfo, TrackInfo::UnloaderTrackInfo);
 
+TrackInfo *TrackInfo::GetTrackInfo(int track_number) {
+    for (int n = 0; n < static_cast<int>(NumTrackInfo); n++) {
+        TrackInfo *info = &TrackInfoTable[n];
+        if (info->TrackNumber == track_number) {
+            return info;
+        }
+    }
+
+    return 0;
+}
+
 int TrackInfo::LoaderTrackInfo(bChunk *chunk) {
     int i;
     int j;
@@ -81,17 +92,6 @@ int TrackInfo::LoaderTrackInfo(bChunk *chunk) {
 
         return 1;
     }
-    return 0;
-}
-
-TrackInfo *TrackInfo::GetTrackInfo(int track_number) {
-    for (int n = 0; n < static_cast<int>(NumTrackInfo); n++) {
-        TrackInfo *info = &TrackInfoTable[n];
-        if (info->TrackNumber == track_number) {
-            return info;
-        }
-    }
-
     return 0;
 }
 

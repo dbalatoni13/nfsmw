@@ -55,7 +55,7 @@ class WWorldPosTopologyShim : public WWorldPos {
     }
 };
 
-void InitScreenEFX() {}
+void InitScreenEFX();
 
 enum TunnelBloomDataIndex {
     kTunnelPoint0X = 0,
@@ -89,15 +89,6 @@ ScreenEffectDB::ScreenEffectDB() {
     }
     InitScreenEFX();
 }
-void TickSFX() {
-    if (TheGameFlowManager.IsInGame()) {
-        if (ticS_27592 != eFrameCounter - 1) {
-            UpdateAllScreenEFX();
-        }
-        ticS_27592 = eFrameCounter;
-    }
-}
-
 void ScreenEffectDB::Update(float deltatime) {
     SE_time += deltatime;
 
@@ -111,25 +102,6 @@ void ScreenEffectDB::Update(float deltatime) {
             }
         }
     }
-}
-
-float TopologyCoordinate::GetElevation(const bVector3 *position, enum TerrainType *type, bVector3 *normal, bool *point_valid) {
-    UMath::Vector3 bond_pos;
-    UMath::Vector4 dummy_normal;
-
-    (void)type;
-    (void)normal;
-
-    bConvertToBond(bond_pos, *position);
-    WWorldPosTopologyShim world_pos(0.025f);
-    world_pos.Update(bond_pos, dummy_normal, true, 0, true);
-    if (point_valid) {
-        *point_valid = world_pos.OnValidFace();
-    }
-    if (world_pos.OnValidFace()) {
-        return world_pos.HeightAtPoint(bond_pos);
-    }
-    return position->z;
 }
 
 void ScreenEffectDB::AddScreenEffect(ScreenEffectType type, float intensity, float r, float g, float b) {
@@ -177,77 +149,79 @@ void ScreenEffectDB::AddScreenEffect(ScreenEffectType type, ScreenEffectDef *inf
     }
 }
 
+void ScreenEffectDB::AddPaletteEffect(ScreenEffectPalette palette) {
+    AddPaletteEffect(&SE_PaletteFile[palette]);
+}
+
 void ScreenEffectDB::AddPaletteEffect(ScreenEffectPaletteDef *palette) {
     for (int i = 0; i < palette->NumEffects; i++) {
         AddScreenEffect(palette->SE_type[i], &palette->SE_Def[i], 1, palette->SE_Controller[i]);
     }
 }
 
-void ScreenEffectDB::AddPaletteEffect(ScreenEffectPalette palette) {
-    AddPaletteEffect(&SE_PaletteFile[palette]);
+void InitScreenEFX() {}
+
+void TickSFX() {
+    if (TheGameFlowManager.IsInGame()) {
+        if (ticS_27592 != eFrameCounter - 1) {
+            UpdateAllScreenEFX();
+        }
+        ticS_27592 = eFrameCounter;
+    }
 }
 
-void RenderVisibleSectionBoundary(VisibleSectionBoundary *boundary, eView *view) {
-    if (boundary->NumPoints <= 0) {
+void UpdateAllScreenEFX() {
+    for (int i = 1; i <= 2; i++) {
+        eView *view = eGetView(i, false);
+        if (view->IsActive()) {
+            eGetView(i, false)->ScreenEffects->Update(0.033333335f);
+            if (debugflash != 0) {
+                debugflash = 0;
+                eGetView(i, false)->ScreenEffects->AddPaletteEffect(EFX_CAMERA_FLASH);
+            }
+        }
+    }
+}
+
+void FlushAccumulationBuffer() {
+    AccumulationBufferNeedsFlush = 1;
+}
+
+void AccumulationBufferFlushed() {
+    AccumulationBufferNeedsFlush = 0;
+}
+
+unsigned int QueryFlushAccumulationBuffer() {
+    return AccumulationBufferNeedsFlush;
+}
+void DoTinting(eView *view) {
+    ScreenEffectDef SE_def;
+    unsigned int r;
+    unsigned int g;
+    unsigned int b;
+    float intense;
+
+    if (IsRainDisabled()) {
         return;
     }
 
-    float perimeter;
-    {
-        int n;
-
-        for (n = 0; n < boundary->GetNumPoints(); n++) {
-            bVector2 *v1 = boundary->GetPoint(n);
-            bVector2 *v2 = boundary->GetPoint((n + 1) % boundary->GetNumPoints());
-            float x = v1->x - v2->x;
-            float y = v1->y - v2->y;
-            perimeter = bSqrt(x * x + y * y);
-        }
+    if (view->Precipitation) {
+        intense = view->Precipitation->GetCloudIntensity();
+    } else {
+        intense = 0.0f;
     }
 
-    bVector3 position;
-    TopologyCoordinate topology_coordinate;
-    float pos = static_cast<float>((static_cast<int>(WorldTimer.GetSeconds() * 262144.0f) & 0xffff)) * 6.103515625e-05f;
-    int point_number;
-
-    for (point_number = 0; point_number < boundary->GetNumPoints(); point_number++) {
-        bVector2 normal = *boundary->GetPoint((point_number + 1) % boundary->GetNumPoints()) - *boundary->GetPoint(point_number);
-        float length = bLength(&normal);
-
-        bNormalize(&normal, &normal);
-        if (pos < length) {
-            do {
-                bScaleAdd(reinterpret_cast<bVector2 *>(&position), boundary->GetPoint(point_number), &normal, pos);
-
-                if (topology_coordinate.HasTopology(reinterpret_cast<bVector2 *>(&position))) {
-                    position.z = 9999.0f;
-                    position.z = topology_coordinate.GetElevation(&position, 0, 0, 0);
-                    int pixel_size = view->GetPixelSize(&position, 1.0f);
-                    if (pixel_size > 0) {
-                        unsigned char *matrix_memory = CurrentBufferPos;
-                        unsigned char *next_buffer_pos = matrix_memory + sizeof(bMatrix4);
-                        if (next_buffer_pos >= CurrentBufferEnd) {
-                            FrameMallocFailed = 1;
-                            FrameMallocFailAmount += sizeof(bMatrix4);
-                            matrix_memory = 0;
-                        } else {
-                            CurrentBufferPos = next_buffer_pos;
-                        }
-
-                        if (matrix_memory) {
-                            bMatrix4 *matrix = reinterpret_cast<bMatrix4 *>(matrix_memory);
-                            bIdentity(matrix);
-                            bCopy(&matrix->v3, &position, 1.0f);
-                            reinterpret_cast<eViewPlatInterface *>(view)->Render(pVisibleZoneBoundaryModel, matrix, 0, 0, 0);
-                        }
-                    }
-                }
-
-                pos += 4.0f;
-            } while (pos < length);
+    if (0.0f < intense) {
+        if (view->Precipitation) {
+            view->Precipitation->GetPrecipFogColour(&r, &g, &b);
         }
-
-        pos -= length;
+        SE_def.r = static_cast<float>(r);
+        SE_def.g = static_cast<float>(g);
+        SE_def.a = 128.0f;
+        SE_def.UpdateFnc = 0;
+        SE_def.intensity = intense;
+        SE_def.b = static_cast<float>(b);
+        view->ScreenEffects->AddScreenEffect(SE_TINT, &SE_def, 1, SEC_FRAME);
     }
 }
 
@@ -438,60 +412,4 @@ void DoTunnelBloom(eView *view) {
             AccumulationBufferNeedsFlush = 1;
         }
     }
-}
-
-void DoTinting(eView *view) {
-    ScreenEffectDef SE_def;
-    unsigned int r;
-    unsigned int g;
-    unsigned int b;
-    float intense;
-
-    if (IsRainDisabled()) {
-        return;
-    }
-
-    if (view->Precipitation) {
-        intense = view->Precipitation->GetCloudIntensity();
-    } else {
-        intense = 0.0f;
-    }
-
-    if (0.0f < intense) {
-        if (view->Precipitation) {
-            view->Precipitation->GetPrecipFogColour(&r, &g, &b);
-        }
-        SE_def.r = static_cast<float>(r);
-        SE_def.g = static_cast<float>(g);
-        SE_def.a = 128.0f;
-        SE_def.UpdateFnc = 0;
-        SE_def.intensity = intense;
-        SE_def.b = static_cast<float>(b);
-        view->ScreenEffects->AddScreenEffect(SE_TINT, &SE_def, 1, SEC_FRAME);
-    }
-}
-
-void UpdateAllScreenEFX() {
-    for (int i = 1; i <= 2; i++) {
-        eView *view = eGetView(i, false);
-        if (view->IsActive()) {
-            eGetView(i, false)->ScreenEffects->Update(0.033333335f);
-            if (debugflash != 0) {
-                debugflash = 0;
-                eGetView(i, false)->ScreenEffects->AddPaletteEffect(EFX_CAMERA_FLASH);
-            }
-        }
-    }
-}
-
-void FlushAccumulationBuffer() {
-    AccumulationBufferNeedsFlush = 1;
-}
-
-void AccumulationBufferFlushed() {
-    AccumulationBufferNeedsFlush = 0;
-}
-
-unsigned int QueryFlushAccumulationBuffer() {
-    return AccumulationBufferNeedsFlush;
 }

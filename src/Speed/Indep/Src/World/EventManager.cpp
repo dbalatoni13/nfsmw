@@ -177,66 +177,6 @@ void emEventManagerInit() {
     EventHandlerSlotPool = bNewSlotPool(0x18, 0x14, "EventHandlerSlotPool", 0);
 }
 
-int emAddHandler(EVENT_HANDLER_FUNC function, unsigned int stream_mask) {
-    if (function && stream_mask) {
-        for (emEventHandler *handler = EventHandlerList.GetHead(); handler != EventHandlerList.EndOfList();
-             handler = handler->GetNext()) {
-            if (handler->HandlerFunction == function) {
-                handler->ReferenceCount += 1;
-                return 1;
-            }
-        }
-
-        emEventHandler *handler = reinterpret_cast<emEventHandler *>(bOMalloc(EventHandlerSlotPool));
-        if (!handler) {
-            return 0;
-        }
-
-        handler->HandlerFunction = function;
-        handler->StreamMask = stream_mask;
-        handler->ReferenceCount = 1;
-        EventHandlerList.AddTail(handler);
-        EventManagerStats[1] += 1;
-        if (EventManagerStats[1] > EventManagerStats[4]) {
-            EventManagerStats[4] = EventManagerStats[1];
-        }
-        return 1;
-    }
-
-    return 0;
-}
-
-void emRemoveHandler(EVENT_HANDLER_FUNC function) {
-    for (emEventHandler *handler = EventHandlerList.GetHead(); handler != EventHandlerList.EndOfList();
-         handler = handler->GetNext()) {
-        if (handler->HandlerFunction == function) {
-            int ref_count = handler->ReferenceCount - 1;
-            handler->ReferenceCount = ref_count;
-            if (ref_count == 0) {
-                if (handler->Remove()) {
-                    bFree(EventHandlerSlotPool, handler);
-                }
-                EventManagerStats[1] -= 1;
-            }
-            return;
-        }
-    }
-}
-
-emEvent *emAddEvent(EVENT_ID event_id) {
-    emEvent *event = new emEvent;
-    if (!event) {
-        return 0;
-    }
-
-    bMemSet(event, 0, sizeof(emEvent));
-    event->ReferenceCount = 0;
-    event->ID = event_id;
-    CurrentEventQueue->AddTail(event);
-    EventManagerStats[0] += 1;
-    return event;
-}
-
 int LoaderEventManager(bChunk *bchunk) {
     if (bchunk->GetID() != 0x80036000) {
         return false;
@@ -338,50 +278,64 @@ int UnloaderEventManager(bChunk *bchunk) {
     return true;
 }
 
-emEvent **emTriggerEventsInSection(bVector3 *position, int section_number) {
-    emEvent **current_event = TriggerEventArray;
-    emEvent **sentinel_event = &TriggerEventArray[40];
-    float x = position->x;
-    float y = position->y;
-    float z = position->z;
-    VisibleSectionUserInfo *user_info = TheVisibleSectionManager.GetUserInfo(section_number);
-
-    if (user_info && user_info->pEventTriggerPack) {
-        EventTriggerPack *trigger_pack = user_info->pEventTriggerPack;
-        vAABBTree *tree = trigger_pack->EventTree;
-        vAABB *aabb = tree->QueryLeaf(x, y, z);
-        if (aabb) {
-            EventTrigger *root_event = trigger_pack->EventTriggerArray;
-            int num_hits = -aabb->NumChildren;
-
-            for (int i = 0; i < num_hits && current_event < sentinel_event; i++) {
-                EventTrigger *event = &root_event[aabb->ChildrenIndicies[i]];
-                float event_x = event->PositionX;
-                float event_z = event->PositionZ;
-                float event_y = event->PositionY;
-                float dz = bAbs(z - event_z);
-                float dy = bAbs(y - event_y);
-                float dx = bAbs(x - event_x);
-                float r2 = event->GetRadius();
-                float dist2 = dz * dz + dx * dx + dy * dy;
-
-                r2 *= r2;
-                if (dist2 < r2) {
-                    emEvent *new_event = emAddEvent(static_cast<EVENT_ID>(event->GetEventID()));
-                    new_event->pEventTrigger = event;
-                    *current_event = new_event;
-                    current_event++;
-                }
+int emAddHandler(EVENT_HANDLER_FUNC function, unsigned int stream_mask) {
+    if (function && stream_mask) {
+        for (emEventHandler *handler = EventHandlerList.GetHead(); handler != EventHandlerList.EndOfList();
+             handler = handler->GetNext()) {
+            if (handler->HandlerFunction == function) {
+                handler->ReferenceCount += 1;
+                return 1;
             }
         }
+
+        emEventHandler *handler = reinterpret_cast<emEventHandler *>(bOMalloc(EventHandlerSlotPool));
+        if (!handler) {
+            return 0;
+        }
+
+        handler->HandlerFunction = function;
+        handler->StreamMask = stream_mask;
+        handler->ReferenceCount = 1;
+        EventHandlerList.AddTail(handler);
+        EventManagerStats[1] += 1;
+        if (EventManagerStats[1] > EventManagerStats[4]) {
+            EventManagerStats[4] = EventManagerStats[1];
+        }
+        return 1;
     }
 
-    if (current_event == TriggerEventArray) {
+    return 0;
+}
+
+void emRemoveHandler(EVENT_HANDLER_FUNC function) {
+    for (emEventHandler *handler = EventHandlerList.GetHead(); handler != EventHandlerList.EndOfList();
+         handler = handler->GetNext()) {
+        if (handler->HandlerFunction == function) {
+            int ref_count = handler->ReferenceCount - 1;
+            handler->ReferenceCount = ref_count;
+            if (ref_count == 0) {
+                if (handler->Remove()) {
+                    bFree(EventHandlerSlotPool, handler);
+                }
+                EventManagerStats[1] -= 1;
+            }
+            return;
+        }
+    }
+}
+
+emEvent *emAddEvent(EVENT_ID event_id) {
+    emEvent *event = new emEvent;
+    if (!event) {
         return 0;
     }
 
-    *current_event = 0;
-    return TriggerEventArray;
+    bMemSet(event, 0, sizeof(emEvent));
+    event->ReferenceCount = 0;
+    event->ID = event_id;
+    CurrentEventQueue->AddTail(event);
+    EventManagerStats[0] += 1;
+    return event;
 }
 
 void emProcessAllEvents() {
@@ -432,3 +386,49 @@ void emProcessAllEvents() {
 
     CurrentEventQueue = &MasterEventQueue;
 }
+emEvent **emTriggerEventsInSection(bVector3 *position, int section_number) {
+    emEvent **current_event = TriggerEventArray;
+    emEvent **sentinel_event = &TriggerEventArray[40];
+    float x = position->x;
+    float y = position->y;
+    float z = position->z;
+    VisibleSectionUserInfo *user_info = TheVisibleSectionManager.GetUserInfo(section_number);
+
+    if (user_info && user_info->pEventTriggerPack) {
+        EventTriggerPack *trigger_pack = user_info->pEventTriggerPack;
+        vAABBTree *tree = trigger_pack->EventTree;
+        vAABB *aabb = tree->QueryLeaf(x, y, z);
+        if (aabb) {
+            EventTrigger *root_event = trigger_pack->EventTriggerArray;
+            int num_hits = -aabb->NumChildren;
+
+            for (int i = 0; i < num_hits && current_event < sentinel_event; i++) {
+                EventTrigger *event = &root_event[aabb->ChildrenIndicies[i]];
+                float event_x = event->PositionX;
+                float event_z = event->PositionZ;
+                float event_y = event->PositionY;
+                float dz = bAbs(z - event_z);
+                float dy = bAbs(y - event_y);
+                float dx = bAbs(x - event_x);
+                float r2 = event->GetRadius();
+                float dist2 = dz * dz + dx * dx + dy * dy;
+
+                r2 *= r2;
+                if (dist2 < r2) {
+                    emEvent *new_event = emAddEvent(static_cast<EVENT_ID>(event->GetEventID()));
+                    new_event->pEventTrigger = event;
+                    *current_event = new_event;
+                    current_event++;
+                }
+            }
+        }
+    }
+
+    if (current_event == TriggerEventArray) {
+        return 0;
+    }
+
+    *current_event = 0;
+    return TriggerEventArray;
+}
+
