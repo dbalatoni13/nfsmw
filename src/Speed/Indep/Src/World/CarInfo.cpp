@@ -939,6 +939,47 @@ void RideInfo::DumpForPreset(FECarRecord *car) {
     }
 }
 
+int LoaderFEPresetCars(bChunk *chunk) {
+    if (chunk->GetID() == 0x30220) {
+        int *chunk_words = reinterpret_cast<int *>(chunk);
+        int *preset_words = chunk_words + 2;
+        int preset_count = static_cast<unsigned int>(chunk_words[1]) / 0x290;
+
+        if (preset_count != 0) {
+            int i = preset_count - 1;
+
+            do {
+                i--;
+
+                int j = 0;
+                int k;
+                do {
+                    k = j + 1;
+                    bEndianSwap32(preset_words + j + 0x18);
+                    j = k;
+                } while (k < 0x8B);
+
+                bEndianSwap64(preset_words + 0x14);
+                bEndianSwap64(preset_words + 0x12);
+                bEndianSwap32(preset_words + 0x17);
+                bEndianSwap32(preset_words + 0x16);
+
+                PresetCar *preset = reinterpret_cast<PresetCar *>(preset_words);
+
+                PresetCarList.Prev->Next = preset;
+                preset->Prev = PresetCarList.Prev;
+                PresetCarList.Prev = preset;
+                preset->Next = reinterpret_cast<PresetCar *>(&PresetCarList);
+                preset_words += 0xA4;
+            } while (i != -1);
+        }
+
+        return 1;
+    }
+
+    return 0;
+}
+
 int UnloaderFEPresetCars(bChunk *chunk) {
     if (chunk->GetID() == 0x30220) {
         PresetCar *end = reinterpret_cast<PresetCar *>(&PresetCarList);
