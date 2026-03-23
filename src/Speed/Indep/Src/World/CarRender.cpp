@@ -692,6 +692,8 @@ CarRenderInfo::CarRenderInfo(RideInfo *ride_info)
     this->mRadius = lbl_8040AA60;
     this->mAttributes.Change(Attrib::FindCollectionWithDefault(
         Attrib::Gen::ecar::ClassKey(), Attrib::StringToLowerCaseKey(CarTypeInfoArray[ride_info->Type].BaseModelName)));
+    this->mMirrorLeftWheels = static_cast<unsigned char>(
+        reinterpret_cast<Attrib::Gen::ecar::_LayoutStruct *>(this->mAttributes.GetLayoutPointer())->WheelSpokeCount) >> 7;
     this->mFlashing = false;
     this->mFlashInterval = 0.0f;
     bMemSet(&this->mDamageInfoCache, 0, 0x14);
