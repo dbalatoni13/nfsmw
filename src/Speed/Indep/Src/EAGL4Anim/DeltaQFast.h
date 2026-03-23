@@ -108,9 +108,9 @@ struct DeltaQFast : public AnimMemoryMap {
         return reinterpret_cast<DeltaQFastDelta *>(&binData[mNumBones * 6 + deltaIdx * mNumBones * 3]);
     }
 
-    unsigned short *GetConstBoneIdx();
+    unsigned char *GetConstBoneIdx();
 
-    void *GetConstPhysical();
+    DeltaQFastPhysical *GetConstPhysical();
 
     unsigned short mNumKeys;       // offset 0x4, size 0x2
     unsigned char mNumBones;       // offset 0x6, size 0x1

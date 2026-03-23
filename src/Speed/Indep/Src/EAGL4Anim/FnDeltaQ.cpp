@@ -6,22 +6,34 @@
 
 namespace EAGL4Anim {
 
-unsigned short *DeltaQ::GetConstBoneIdx() {
-    const int binSize = GetBinSize();
-    int numBins = mNumKeys >> GetBinLengthPower();
-    unsigned char *s = &GetBin(0)[binSize * numBins];
-    int r = mNumKeys & GetBinLengthModMask();
+unsigned char *DeltaQ::GetConstBoneIdx() {
+    unsigned int numBones = mNumBones;
+    unsigned int binLength = 1u << mBinLengthPower;
+    unsigned int numBins = mNumKeys / binLength;
+    unsigned int remainder = mNumKeys - numBins * binLength;
+    int s = reinterpret_cast<int>(this) + 0x12 + numBones * sizeof(DeltaQMinRange) +
+            AlignSize2(numBones * (((binLength - 1) * sizeof(DeltaQDelta)) + sizeof(DeltaQPhysical))) * numBins;
 
-    if (r > 0) {
-        s = reinterpret_cast<unsigned char *>(
-            AlignSize2(reinterpret_cast<intptr_t>(s + mNumBones * sizeof(DeltaQPhysical) + ((r - 1) * mNumBones * sizeof(DeltaQDelta)))));
+    if (remainder > 0) {
+        s += numBones * (((remainder - 1) * sizeof(DeltaQDelta)) + sizeof(DeltaQPhysical));
     }
 
-    return reinterpret_cast<unsigned short *>(s);
+    return reinterpret_cast<unsigned char *>(s);
 }
 
-float *DeltaQ::GetConstPhysical() {
-    return reinterpret_cast<float *>(AlignSize2(reinterpret_cast<intptr_t>(&GetConstBoneIdx()[mNumConstBones])));
+DeltaQPhysical *DeltaQ::GetConstPhysical() {
+    unsigned int numBones = mNumBones;
+    unsigned int binLength = 1u << mBinLengthPower;
+    unsigned int numBins = mNumKeys / binLength;
+    unsigned int remainder = mNumKeys - numBins * binLength;
+    int s = reinterpret_cast<int>(this) + 0x12 + numBones * sizeof(DeltaQMinRange) +
+            AlignSize2(numBones * (((binLength - 1) * sizeof(DeltaQDelta)) + sizeof(DeltaQPhysical))) * numBins;
+
+    if (remainder > 0) {
+        s += numBones * (((remainder - 1) * sizeof(DeltaQDelta)) + sizeof(DeltaQPhysical));
+    }
+
+    return reinterpret_cast<DeltaQPhysical *>(AlignSize2(s + mNumConstBones));
 }
 
 namespace {

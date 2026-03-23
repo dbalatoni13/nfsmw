@@ -108,9 +108,9 @@ struct DeltaQ : public AnimMemoryMap {
 
     DeltaQDelta *GetDelta(unsigned char *binData, int deltaIdx) {}
 
-    unsigned short *GetConstBoneIdx();
+    unsigned char *GetConstBoneIdx();
 
-    float *GetConstPhysical();
+    DeltaQPhysical *GetConstPhysical();
 
     unsigned short mNumKeys;       // offset 0x4, size 0x2
     unsigned char mNumBones;       // offset 0x6, size 0x1

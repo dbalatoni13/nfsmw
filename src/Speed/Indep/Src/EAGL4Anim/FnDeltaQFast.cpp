@@ -32,22 +32,34 @@ void QuatMultQxZ(const UMath::Vector4 &a, const UMath::Vector4 &b, UMath::Vector
 
 namespace EAGL4Anim {
 
-unsigned short *DeltaQFast::GetConstBoneIdx() {
-    const int binSize = GetBinSize();
-    int numFrames = GetNumFrames();
-    int numBins = numFrames >> GetBinLengthPower();
-    unsigned char *s = &GetBin(0)[binSize * numBins];
-    int r = numFrames & GetBinLengthModMask();
+unsigned char *DeltaQFast::GetConstBoneIdx() {
+    unsigned int numBones = mNumBones;
+    unsigned int binLength = 1u << mBinLengthPower;
+    unsigned int numBins = mNumKeys / binLength;
+    unsigned int remainder = mNumKeys - numBins * binLength;
+    int s = reinterpret_cast<int>(this) + 0x12 + numBones * sizeof(DeltaQFastMinRange) +
+            AlignSize2(numBones * (((binLength - 1) * sizeof(DeltaQFastDelta)) + sizeof(DeltaQFastPhysical))) * numBins;
 
-    if (r > 0) {
-        s = reinterpret_cast<unsigned char *>(AlignSize2(reinterpret_cast<intptr_t>(s + mNumBones * 6 + ((r - 1) * mNumBones * 3))));
+    if (remainder > 0) {
+        s += numBones * (((remainder - 1) * sizeof(DeltaQFastDelta)) + sizeof(DeltaQFastPhysical));
     }
 
-    return reinterpret_cast<unsigned short *>(s);
+    return reinterpret_cast<unsigned char *>(s);
 }
 
-void *DeltaQFast::GetConstPhysical() {
-    return reinterpret_cast<void *>(AlignSize2(reinterpret_cast<intptr_t>(&GetConstBoneIdx()[mNumConstBones])));
+DeltaQFastPhysical *DeltaQFast::GetConstPhysical() {
+    unsigned int numBones = mNumBones;
+    unsigned int binLength = 1u << mBinLengthPower;
+    unsigned int numBins = mNumKeys / binLength;
+    unsigned int remainder = mNumKeys - numBins * binLength;
+    int s = reinterpret_cast<int>(this) + 0x12 + numBones * sizeof(DeltaQFastMinRange) +
+            AlignSize2(numBones * (((binLength - 1) * sizeof(DeltaQFastDelta)) + sizeof(DeltaQFastPhysical))) * numBins;
+
+    if (remainder > 0) {
+        s += numBones * (((remainder - 1) * sizeof(DeltaQFastDelta)) + sizeof(DeltaQFastPhysical));
+    }
+
+    return reinterpret_cast<DeltaQFastPhysical *>(AlignSize2(s + mNumConstBones));
 }
 
 namespace {
@@ -497,10 +509,10 @@ bool FnDeltaQFast::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask)
         floorDeltaIdx = floorKey & binLengthMask;
 
         if (mNextKey == floorKey) {
-            UMath::Vector4 *swapQs = mPrevQs;
+            UMath::Vector4 *swapQs = mNextQs;
 
-            mPrevQs = mNextQs;
-            mNextQs = swapQs;
+            mNextQs = mPrevQs;
+            mPrevQs = swapQs;
             mNextKey = prevKey;
         } else {
             int binData = reinterpret_cast<int>(mBins) + floorBinIdx * mBinSize;
