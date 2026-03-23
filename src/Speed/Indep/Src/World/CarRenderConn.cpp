@@ -1517,6 +1517,10 @@ void CarRenderConn::OnRender(eView *view, int reflection) {
     }
 
     bVector3 world_position(body_matrix.v3.x, body_matrix.v3.y, body_matrix.v3.z);
+    body_matrix.v3.x = 0.0f;
+    body_matrix.v3.y = 0.0f;
+    body_matrix.v3.z = 0.0f;
+
     if ((this->mFlags & CF_ISPLAYER) == 0 || NumTimesRenderTestPlayerCar == 0) {
         if (render_info->Render(view, &world_position, &body_matrix, this->mTireMatrices, this->mBrakeMatrices, this->mTireMatrices,
                                 extra_render_flags, 0, reflection, 1.0f, render_info->mMinLodLevel, render_info->mMinLodLevel) &&
