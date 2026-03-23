@@ -5,6 +5,7 @@
 #include "Speed/Indep/Src/Interfaces/SimActivities/INIS.h"
 
 inline float SFXCTL::GetPhysRPM() { return m_pEAXCar->GetPhysRPM(); }
+inline float SFXCTL::GetPhysTRQ() { return m_pEAXCar->GetPhysTRQ(); }
 
 inline const unsigned int &Attrib::Gen::acceltrans::AccelFromIdle_INTERUPT_T() const {
     const unsigned int *resultptr = reinterpret_cast<const unsigned int *>(GetAttributePointer(0x49fb8ce5, 0));
@@ -162,8 +163,13 @@ void SFXCTL_AccelTrans::BeginAccelTrans() {
 }
 
 void SFXCTL_AccelTrans::BeginAccelTrans_Idle() {
-    eAccelTransFxState = 2;
-    t_LastAccelTrans = 0.0f;
+    eAccelTransFxState = FX_ACCEL_STATE_IDLE_REVING;
+    t_LastAccelTrans = SndBase::m_fRunningTime;
+    m_InterpEngRPM.Initialize(GetPhysRPM(), GetPhysRPM() + m_pAccelTransDataSet->AccelFromIdle_PEAK_RPM(),
+                              m_pAccelTransDataSet->AccelFromIdle_PEAK_T(), LINEAR);
+    m_InterpEngVol.Initialize(0.0f, m_pAccelTransDataSet->AccelFromIdle_PEAK_VOL(),
+                              m_pAccelTransDataSet->AccelFromIdle_PEAK_T(), LINEAR);
+    m_InterpEngTorque.Initialize(GetPhysTRQ(), GetPhysTRQ(), 10, LINEAR);
 }
 
 bool SFXCTL_AccelTrans::ShouldBeginAccelTrans_Idle() {
