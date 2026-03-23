@@ -80,7 +80,7 @@ bool FnPoseAnim::EvalPose(float currTime, const PosePaletteBank *paletteBank, fl
         int src1 = (poseAnim->mPoseIndices[key + 1] + 1) * stride - 4;
         int transIdx = static_cast<int>(numT) - 1;
 
-        t = t * (3.0f - (t + t)) * t;
+        t = (3.0f - (t + t)) * t * t;
 
         while (transIdx >= 0) {
             float *from = &poseData[src0];
