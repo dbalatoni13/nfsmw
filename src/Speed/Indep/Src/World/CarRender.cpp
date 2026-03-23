@@ -3007,11 +3007,11 @@ void CarRenderInfo::DrawAmbientShadow(eView *view, const bVector3 *position, flo
                                       bMatrix4 *biasedIdentity) {
     const int N = 16;
     int in_front_end;
+    bVector3 usPoint;
     float scaleW;
     float scaleL;
     bVector3 min;
     bVector3 max;
-    bVector3 usPoint;
     float scale;
     bVector3 SunCarVector;
     bVector3 light_pos;
