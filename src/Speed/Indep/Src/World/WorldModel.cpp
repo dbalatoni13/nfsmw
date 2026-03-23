@@ -324,10 +324,7 @@ void WorldModel::Render(eView *view, int exc_flag) {
             delta.z = camera_position->z - world_matrix->v3.z;
             distance_sq = delta.x * delta.x + delta.y * delta.y + delta.z * delta.z;
             if (lbl_8040CD84 < distance_sq) {
-                float inv_sqrt = 1.0f / bSqrt(distance_sq);
-
-                inv_sqrt = -(distance_sq * inv_sqrt * inv_sqrt - lbl_8040CD8C) * inv_sqrt * lbl_8040CD88 + inv_sqrt;
-                distance_scale = (-(distance_sq * inv_sqrt * inv_sqrt - lbl_8040CD8C) * inv_sqrt * lbl_8040CD88 + inv_sqrt) * distance_sq;
+                distance_scale = bSqrt(distance_sq);
             }
 
             if (this->mDistanceToGameView < distance_scale) {
@@ -381,7 +378,7 @@ void WorldModel::Render(eView *view, int exc_flag) {
     } else {
         render_matrix = &this->mMatrix;
     }
-
+ 
     PSMTX44Copy(*reinterpret_cast<const Mtx44 *>(render_matrix), *reinterpret_cast<Mtx44 *>(&world_matrix));
 
     have_world_matrix:
