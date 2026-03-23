@@ -3011,6 +3011,7 @@ void CarRenderInfo::DrawAmbientShadow(eView *view, const bVector3 *position, flo
     float scaleL;
     bVector3 min;
     bVector3 max;
+    bVector3 usPoint;
     float scale;
     bVector3 SunCarVector;
     bVector3 light_pos;
@@ -3044,7 +3045,6 @@ void CarRenderInfo::DrawAmbientShadow(eView *view, const bVector3 *position, flo
     int shadow_alphai;
     TextureInfo *texture_info;
     unsigned int colour;
-    bVector3 usPoint;
 
     sh_Setup(const_cast<bVector3 *>(position));
     if (iRam8047ff04 == 6) {
