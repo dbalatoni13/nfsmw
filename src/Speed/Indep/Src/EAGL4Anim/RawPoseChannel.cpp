@@ -126,12 +126,12 @@ void RawPoseChannel::EvalFrame(int frame, float *outputPose, const BoneMask *bon
     if (!boneMask) {
         while (sig < sigEnd) {
             int numChannels = *sig++;
-            float *bonePose = outputPose;
+            float *nextOutputPose = outputPose + 12;
 
-            outputPose = bonePose + 12;
             for (int ichan = 0; ichan < numChannels; ichan++) {
-                reinterpret_cast<void (*)(float *&, float *)>(*sig++)(frameData, bonePose + 4);
+                reinterpret_cast<void (*)(float *&, float *)>(*sig++)(frameData, outputPose + 4);
             }
+            outputPose = nextOutputPose;
         }
     } else {
         for (unsigned int ibone = 0; sig < sigEnd; ibone++) {
