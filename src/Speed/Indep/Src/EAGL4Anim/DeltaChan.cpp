@@ -634,6 +634,13 @@ void EulF3Interp(float w, float *&data0, float *&data1, float *output) {
         output[2] = qt0[2] - w * (output[2] + qt0[2]);
         output[3] = qt0[3] - w * (output[3] + qt0[3]);
     }
+
+    float invNorm = 1.0f / sqrtf(output[0] * output[0] + output[1] * output[1] + output[2] * output[2] + output[3] * output[3]);
+
+    output[0] = output[0] * invNorm;
+    output[3] = output[3] * invNorm;
+    output[1] = output[1] * invNorm;
+    output[2] = output[2] * invNorm;
 }
 
 // TODO inline and move
