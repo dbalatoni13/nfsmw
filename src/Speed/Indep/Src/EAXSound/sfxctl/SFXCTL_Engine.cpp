@@ -27,6 +27,8 @@ extern float lbl_803D72EC;
 extern float lbl_803D72F0;
 extern float lbl_803D72F4;
 extern float lbl_803D72F8;
+extern float lbl_803D72FC;
+extern float lbl_803D7300;
 extern Slope RedLineDelayPerGear;
 extern "C" int GetQ15FromHundredthsdB__11NFSMixShapei(int ndB);
 
@@ -401,10 +403,18 @@ have_cur_rpm:
 
 void SFXCTL_Engine::UpdateTorque(float t) {
     (void)t;
-    if (m_pPhysicsCtl != nullptr) {
-        m_fEng_Trq = m_pPhysicsCtl->PhysicsTRQ;
+    if (m_pShiftCtl != nullptr && m_pShiftCtl->IsActive()) {
+        Trq.Flush(m_pShiftCtl->GetShiftingTRQ());
+    } else if (m_pAccelTransitionCtl->IsActive()) {
+        Trq.Flush(m_pAccelTransitionCtl->m_InterpEngTorque.GetValue());
+    } else {
+        Trq.Record(GetPhysTRQ());
     }
-    m_fSmoothedEng_Trq = m_fEng_Trq;
+
+    Trq.Recalculate();
+
+    m_fEng_Trq = Trq.GetValue() + m_TRQ_LFO;
+    m_fSmoothedEng_Trq = m_fSmoothedEng_Trq * lbl_803D72FC + m_fEng_Trq * lbl_803D7300;
 }
 
 void SFXCTL_Engine::UpdateEngineLFO_FX(float t) {
