@@ -187,6 +187,11 @@ void EndianSwapChunkHeader(bChunk *chunk);
 void EndianSwapChunkHeadersRecursive(bChunk *chunks, int sizeof_chunks);
 void EndianSwapChunkHeadersRecursive(bChunk *first_chunk, bChunk *last_chunk);
 
+int ServiceResourceLoading();
+ResourceFile *CreateResourceFile(const char *filename, ResourceFileType type, int flags, int flag_offset, int file_size);
+void UnloadResourceFile(ResourceFile *resource_file);
+void SetDelayedResourceCallback(void (*callback)(void *), void *param);
+
 extern int ChunkMovementOffset; // size: 0x4
 
 inline ResourceFile *LoadResourceFile(const char *filename, ResourceFileType type, int flags) {
@@ -205,6 +210,10 @@ inline bool AreChunksBeingMoved() {
 
 inline int GetChunkMovementOffset() {
     return ChunkMovementOffset;
+}
+
+inline void SetDelayedResourceCallback(void (*callback)(int), int param) {
+    SetDelayedResourceCallback(reinterpret_cast<void (*)(void *)>(callback), reinterpret_cast<void *>(param));
 }
 
 #endif

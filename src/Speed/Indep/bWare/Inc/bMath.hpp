@@ -243,7 +243,7 @@ struct bVector2 {
 
     int operator==(const bVector2 &v);
 
-    // bVector2 &operator=(const bVector2 &v) {} // compiler generated? shown in dwarf
+    bVector2 &operator=(const bVector2 &v);
 
     // bVector2(const bVector2 &v) {} // compiler generated
 
@@ -260,6 +260,18 @@ inline bVector2 *bFill(bVector2 *dest, float x, float y) {
     dest->x = x;
     dest->y = y;
     return dest;
+}
+
+inline bVector2 *bCopy(bVector2 *dest, const bVector2 *v) {
+    float x = v->x;
+    float y = v->y;
+    bFill(dest, x, y);
+    return dest;
+}
+
+inline bVector2 &bVector2::operator=(const bVector2 &v) {
+    bCopy(this, &v);
+    return *this;
 }
 
 inline bVector2::bVector2(float _x, float _y) {
@@ -286,10 +298,33 @@ inline bVector2 bVector2::operator-(const bVector2 &v) const {
     return bVector2(_x, _y);
 }
 
+inline bVector2 *bScale(bVector2 *dest, const bVector2 *v, float scale) {
+    float x = v->x;
+    float y = v->y;
+
+    dest->x = x * scale;
+    dest->y = y * scale;
+    return dest;
+}
+
+inline bVector2 bScale(const bVector2 &v, float scale) {
+    bVector2 dest;
+    bScale(&dest, &v, scale);
+    return dest;
+}
+
+inline bVector2 bVector2::operator*(float f) const {
+    return bScale(*this, f);
+}
+
 inline float bLength(const bVector2 *v) {
     float x = v->x;
     float y = v->y;
     return bSqrt(x * x + y * y);
+}
+
+inline float bLength(const bVector2 &v) {
+    return bLength(&v);
 }
 
 inline bVector2 bNormalize(const bVector2 &v) {
@@ -302,15 +337,6 @@ int bEqual(const bVector2 *v1, const bVector2 *v2, float epsilon);
 
 inline float bDot(const bVector2 *v1, const bVector2 *v2) {
     return v1->x * v2->x + v1->y * v2->y;
-}
-
-inline bVector2 *bScale(bVector2 *dest, const bVector2 *v, float scale) {
-    float x = v->x;
-    float y = v->y;
-
-    dest->x = x * scale;
-    dest->y = y * scale;
-    return dest;
 }
 
 struct ALIGN_16 bVector3 {
@@ -930,15 +956,25 @@ struct bQuaternion {
 
 class bBitTable {
   public:
-    // bBitTable() {}
+    bBitTable() {
+        Bits = 0;
+        NumBits = 0;
+    }
 
-    // bBitTable(void *mem, int num_bits) {}
+    bBitTable(void *mem, int num_bits) {
+        Init(mem, num_bits);
+    }
 
-    // void Init(void *mem, int num_bits) {}
+    void Init(void *mem, int num_bits) {
+        Bits = reinterpret_cast<uint8 *>(mem);
+        NumBits = num_bits;
+    }
 
-    // void ClearTable() {}
+    void ClearTable();
 
-    // void Set(int bit) {}
+    void Set(int bit) {
+        Bits[bit >> 3] |= static_cast<uint8>(1 << (bit & 7));
+    }
 
     // void Clear(int bit) {}
 
