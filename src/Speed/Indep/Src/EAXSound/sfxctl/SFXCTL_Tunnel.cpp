@@ -594,9 +594,9 @@ void SFXCTL_Tunnel::UpdateDriveBySnds(float t) {
     bFill(&UnNormalCurCarDir,
         m_pEAXCar->GetPhysCar()->GetForwardVector()->x,
         m_pEAXCar->GetPhysCar()->GetForwardVector()->y);
-    bNormalize(&CurCarDir, &UnNormalCurCarDir);
-    bScale(&FutureCarDir, &CurCarDir, m_pEAXCar->GetPhysCar()->GetForwardSpeed() * 0.4f);
-    bAdd(&FutureCar2dPos, CurCarPos, &FutureCarDir);
+    CurCarDir = bNormalize(UnNormalCurCarDir);
+    FutureCarDir = bScale(CurCarDir, m_pEAXCar->GetPhysCar()->GetForwardSpeed() * 0.4f);
+    FutureCar2dPos = bAdd(*CurCarPos, FutureCarDir);
     bFill(&FutureCarPos,
         FutureCar2dPos.x,
         FutureCar2dPos.y,
