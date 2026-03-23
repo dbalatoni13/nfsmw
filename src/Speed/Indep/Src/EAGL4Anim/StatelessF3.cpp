@@ -5,11 +5,12 @@ namespace EAGL4Anim {
 
 void StatelessF3::InitAnimMemoryMap(AnimMemoryMap *anim) {
     StatelessF3 *statelessF3 = reinterpret_cast<StatelessF3 *>(anim);
-    FnStatelessF3 fnStatelessF3;
     FnStatelessF3 *fnStatelessF3Ptr = reinterpret_cast<FnStatelessF3 *>(statelessF3->GetFnLocation());
 
-    *reinterpret_cast<void **>(fnStatelessF3Ptr) = *reinterpret_cast<void **>(&fnStatelessF3);
-    fnStatelessF3Ptr->SetAnimMemoryMap(statelessF3);
+    {
+        FnStatelessF3 fnStatelessF3;
+        *reinterpret_cast<void **>(fnStatelessF3Ptr) = *reinterpret_cast<void **>(&fnStatelessF3);
+    }
 }
 
 }; // namespace EAGL4Anim
