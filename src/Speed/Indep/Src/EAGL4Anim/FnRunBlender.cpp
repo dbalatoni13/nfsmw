@@ -228,9 +228,6 @@ bool FnRunBlender::BlendVel(float t0, float t1, float *vel) const {
     float vel0[2];
     float vel1[2];
 
-    if (!mFnVelAnims[0] || !mFnVelAnims[1]) {
-        return false;
-    }
     if (!mFnVelAnims[0]->EvalVel2D(t0, vel0)) {
         return false;
     }
@@ -251,8 +248,8 @@ bool FnRunBlender::BlendVel(float t0, float t1, float *vel) const {
             float vel0Length = length(vel0);
             float scale = (mWeight * vel1Length + weight1 * vel0Length) / velLength;
 
-            vel[1] = vel[1] * scale;
             vel[0] = vel[0] * scale;
+            vel[1] = vel[1] * scale;
         }
     } else {
         vel[1] = vel0[1];
