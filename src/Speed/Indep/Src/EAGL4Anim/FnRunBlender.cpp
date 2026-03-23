@@ -15,28 +15,23 @@ float length(float *v) {
 namespace EAGL4Anim {
 
 FnRunBlender::FnRunBlender()
-    : mAnims(nullptr),      //
-      mPhases(nullptr),     //
-      mVels(nullptr),       //
-      mWeight(0.0f),        //
-      mNumAnims(0),         //
-      mIdx(-100),           //
-      mSkeleton(nullptr),   //
-      mFreq(1.0f),          //
-      mPrevTime(0.0f),      //
-      mOffset(0.0f),        //
-      mCycleIdx(-100),      //
-      mInit(false),         //
-      mSpeed(nullptr) {
+    : mFreq(1.0f),       //
+      mOffset(0.0f),     //
+      mCycleIdx(-100) {
+    mFnVelAnims[1] = nullptr;
     mType = AnimTypeId::ANIM_RUNBLENDER;
+    mAnims = nullptr;
+    mPhases = nullptr;
+    mVels = nullptr;
+    mWeight = 0.0f;
+    mNumAnims = 0;
+    mIdx = -100;
+    mPrevTime = 0.0f;
+    mInit = false;
+    mSpeed = nullptr;
     mFnAnims[0] = nullptr;
     mFnAnims[1] = nullptr;
     mFnVelAnims[0] = nullptr;
-    mFnVelAnims[1] = nullptr;
-    mAlignFrame[0] = 0.0f;
-    mAlignFrame[1] = 0.0f;
-    mCycles[0] = 0.0f;
-    mCycles[1] = 0.0f;
 }
 
 FnRunBlender::~FnRunBlender() {

@@ -17,27 +17,18 @@ static int i_6840;
 namespace EAGL4Anim {
 
 FnTurnBlender::FnTurnBlender()
-    : mAnims(nullptr),     //
-      mWeight(0.0f),       //
-      mNumAnims(0),        //
-      mIdx(-100),          //
-      mSkeleton(nullptr),  //
-      mFreq(1.0f),         //
-      mPrevTime(0.0f),     //
-      mOffset(0.0f),       //
-      mCycleIdx(-100),     //
-      mInit(false) {
-    mType = AnimTypeId::ANIM_TURNBLENDER;
-    mFnAnims[0] = nullptr;
+    : mFreq(1.0f),       //
+      mOffset(0.0f),     //
+      mCycleIdx(-100) {
     mFnAnims[1] = nullptr;
-    mCycles[0] = 0.0f;
-    mCycles[1] = 0.0f;
-    mOffsets[0] = 0.0f;
-    mOffsets[1] = 0.0f;
-    mAlignQ.x = 0.0f;
-    mAlignQ.y = 0.0f;
-    mAlignQ.z = 0.0f;
-    mAlignQ.w = 1.0f;
+    mType = AnimTypeId::ANIM_TURNBLENDER;
+    mAnims = nullptr;
+    mWeight = 0.0f;
+    mNumAnims = 0;
+    mIdx = -100;
+    mPrevTime = 0.0f;
+    mInit = false;
+    mFnAnims[0] = nullptr;
 }
 
 FnTurnBlender::~FnTurnBlender() {
