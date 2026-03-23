@@ -2500,21 +2500,30 @@ void CarRenderInfo::RenderFlaresOnCar(eView *view, const bVector3 *position, con
         force_light_state |= 4;
     }
 
-    unsigned int onLights = this->mOnLights;
     if (force_light_state & 1) {
         headlight_left_intensity += 1.0f;
         headlight_right_intensity += 1.0f;
     }
-    if (onLights & 1) {
-        headlight_left_intensity += 1.0f;
-    }
-    if (onLights & 2) {
-        headlight_right_intensity += 1.0f;
+    if ((force_light_state & 9) == 8) {
+        headlight_left_intensity = 0.0f;
+        headlight_right_intensity = 0.0f;
     }
     if (force_light_state & 2) {
         brakelight_left_intensity += 1.0f;
         brakelight_right_intensity += 1.0f;
         brakelight_centre_intensity += 1.0f;
+    }
+    if (force_light_state & 4) {
+        reverselight_left_intensity += 1.0f;
+        reverselight_right_intensity += 1.0f;
+    }
+
+    unsigned int onLights = this->mOnLights;
+    if (onLights & 1) {
+        headlight_left_intensity += 1.0f;
+    }
+    if (onLights & 2) {
+        headlight_right_intensity += 1.0f;
     }
     if (onLights & 8) {
         brakelight_left_intensity += 1.0f;
@@ -2524,10 +2533,6 @@ void CarRenderInfo::RenderFlaresOnCar(eView *view, const bVector3 *position, con
     }
     if (onLights & 0x20) {
         brakelight_centre_intensity += 1.0f;
-    }
-    if (force_light_state & 4) {
-        reverselight_left_intensity += 1.0f;
-        reverselight_right_intensity += 1.0f;
     }
     if (onLights & 0x40) {
         reverselight_left_intensity += 1.0f;
@@ -2545,11 +2550,6 @@ void CarRenderInfo::RenderFlaresOnCar(eView *view, const bVector3 *position, con
         coplight_intensityW = cpw;
     }
     unsigned int flashHeadlights = onLights & 0x4000;
-
-    if ((force_light_state & 9) == 8) {
-        headlight_left_intensity = 0.0f;
-        headlight_right_intensity = 0.0f;
-    }
 
     unsigned int brokenLights = this->mBrokenLights;
     if (brokenLights & 1) {
