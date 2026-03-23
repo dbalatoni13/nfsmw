@@ -13,35 +13,9 @@ static const int kUpShiftTrqAttackTime[4] = {0x64, 0x64, 0x64, 0x64};
 static const float kUpShiftTrqAttachInitialPercent[4] = {0.0f, 0.0f, 0.0f, 0.0f};
 
 SFXCTL_Shifting::SFXCTL_Shifting()
-    : m_pEngineCtl(nullptr) //
-    , m_bNeed_ShiftGearSnd(false) //
-    , m_bNeed_DisengageSnd(false) //
-    , m_bNeed_EngageSnd(false) //
-    , m_bNeed_AccelSnd(false) //
-    , m_bNeed_DeccelSnd(false) //
-    , m_bShouldBeWhining(false) //
-    , m_bBrakePedalMashed(false) //
-    , m_pShiftingPatternData(nullptr) //
-    , eShiftState(SHFT_NONE) //
-    , eShiftStageChanged(SHFT_NONE) //
-    , m_VOL_LFO_AMP(0) //
-    , m_VOL_LFO_FRQ(0) //
-    , m_TRQ_LFO_AMP(0) //
-    , m_TRQ_LFO_FRQ(0) //
-    , m_RPM_LFO_AMP(0) //
-    , m_RPM_LFO_FRQ(0) //
-    , m_bPendingNeedShiftSound(false) //
-    , ShiftType(static_cast< AEMS_SHIFTING_SAMPLES >(0)) //
-    , tShiftDelay(0.0f) //
-    , t_Last_Shift(0.0f) //
-    , RPM_AtShift(0.0f) //
-    , m_RPMGraph(m_RPMPoints, 7) //
-    , t_CurStage(0.0f) //
-    , m_CurStage(0) //
-    , RPMOffset(0) //
-    , m_timeBrakeLastMashed(0) //
-    , m_nPostShiftFXLevel(0) //
-    , eShift_LFO(SHIFT_LFO_NONE) {}
+    : m_RPMGraph(m_RPMPoints, 7) {
+    m_pShiftingPatternData = nullptr;
+}
 
 SndBase *SFXCTL_Shifting::CreateObject(unsigned int allocator) {
     if (allocator != 0) {
