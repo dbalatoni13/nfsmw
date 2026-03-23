@@ -269,9 +269,7 @@ void WorldModel::RenderModel(eModel *render_model, eView *view, int exc_flag, bM
             camera_world_position.y = eye->y;
             camera_world_position.z = eye->z;
             camera_world_position.w = 1.0f;
-            if (blended_matrices == 0) {
-                elSetupLightContext(light_context, &ShaperLightsCarsInGame, frame_matrix, world_view, &camera_world_position, view);
-            } else {
+            if (blended_matrices != 0) {
                 bMatrix4 *actual_frame_matrix;
                 bMatrix4 moved_frame_matrix;
                 bVector4 pelvis_pos = blended_matrices[1].v3;
@@ -283,6 +281,8 @@ void WorldModel::RenderModel(eModel *render_model, eView *view, int exc_flag, bM
                 AdjustQuickDynamicLight(&ShaperLightsCharacters, reinterpret_cast<bVector3 *>(&camera_world_position));
                 elSetupLightContext(light_context, &ShaperLightsCharacters, actual_frame_matrix, world_view, &camera_world_position, view);
                 ShaperLightsCharacters.NumOverideSlots = 0;
+            } else {
+                elSetupLightContext(light_context, &ShaperLightsCarsInGame, frame_matrix, world_view, &camera_world_position, view);
             }
         }
 
