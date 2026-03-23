@@ -265,10 +265,11 @@ bool FnStatelessF3::EvalSQTfast(float currTime, float *sqt, const BoneMask *bone
             for (int ibone = 0; ibone < nBones; ibone++) {
                 UMath::Vector3 prev;
                 UMath::Vector3 next;
-                int index = dofIdxs[ibone];
 
                 UnquantizeStatelessF3(dofInfos[ibone], frameData, prev);
                 UnquantizeStatelessF3(dofInfos[ibone], nextFrameData, next);
+
+                int index = dofIdxs[ibone];
 
                 sqt[index + 0] = prev.x + (next.x - prev.x) * scale;
                 sqt[index + 1] = prev.y + (next.y - prev.y) * scale;
