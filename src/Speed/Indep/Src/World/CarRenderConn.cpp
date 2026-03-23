@@ -20,6 +20,7 @@ extern void MakeNoSkid__9SkidMaker(void *skid_maker) asm("MakeNoSkid__9SkidMaker
 extern void MakeSkid__9SkidMakerP3CarP8bVector3T2if(void *skid_maker, Car *car, bVector3 *skid_centre, bVector3 *skid_direction,
                                                     int terrain, float intensity)
     asm("MakeSkid__9SkidMakerP3CarP8bVector3T2if");
+void DeleteAllSkids();
 extern void TireState_ctor(TireState *state) asm("__9TireState");
 extern void TireState_dtor(TireState *state, int in_chrg) asm("_._9TireState");
 extern bTList<TireState> gTireStateList;
@@ -308,6 +309,14 @@ TireState::~TireState() {
 
 void TireState::KillSkids() {
     MakeNoSkid__9SkidMaker(&this->mSkidMaker);
+}
+
+void KillSkidsOnRaceRestart() {
+    for (TireState *state = gTireStateList.GetHead(); state != gTireStateList.EndOfList(); state = state->GetNext()) {
+        state->KillSkids();
+    }
+
+    DeleteAllSkids();
 }
 
 void TireState::Effect::Update(float speed, const bVector3 *car_velocity, const bMatrix4 *car_matrix, float dT, const bVector4 &pos) {

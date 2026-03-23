@@ -196,6 +196,7 @@ extern float cs_OneOverZ asm("cs_OneOverZ");
 extern int counter_31665 asm("counter.31665");
 extern int counter_31669 asm("counter.31669");
 extern float heliScale;
+extern bVector4 feposoff;
 extern CarTypeInfo *CarTypeInfoArray;
 extern void RestoreShaperRig(eShaperLightRig *ShaperRigP, unsigned int slot, eShaperLightRig *ShaperRigBP);
 extern void AddQuickDynamicLight(eShaperLightRig *ShaperRigP, unsigned int slot, float r, float g, float b, float intensity, bVector3 *position);
@@ -2956,6 +2957,47 @@ void RefreshAllRenderInfo(CarType type) {
 }
 
 void RenderFEFlares(eView *, int) {}
+
+void RenderFrontEndCars(eView *view, int reflection) {
+    if (DrawCars != 0) {
+        bool reflection_pass = reflection != 0;
+
+        if (reflection_pass) {
+            FEManager *fe_manager = FEManager::Get();
+            if (fe_manager->GetGarageType() == GARAGETYPE_CAR_LOT) {
+                return;
+            }
+        }
+
+        eGetCurrentViewMode();
+
+        for (FrontEndRenderingCar *front_end_car = FrontEndRenderingCarList.GetHead(); front_end_car != FrontEndRenderingCarList.EndOfList();
+             front_end_car = front_end_car->GetNext()) {
+            CarRenderInfo *render_info = front_end_car->RenderInfo;
+
+            if (render_info != 0 && front_end_car->Visible != 0) {
+                CARPART_LOD lod = render_info->mMinLodLevel;
+                bMatrix4 body_matrix(front_end_car->BodyMatrix);
+                bVector3 position(front_end_car->Position.x, front_end_car->Position.y, front_end_car->Position.z);
+
+                if (reflection_pass) {
+                    float offset_scale =
+                        *reinterpret_cast<float *>(*reinterpret_cast<int *>(reinterpret_cast<unsigned char *>(render_info) + 0x1764) + 0xF4);
+
+                    body_matrix.v2.x = -body_matrix.v2.x;
+                    body_matrix.v2.y = -body_matrix.v2.y;
+                    body_matrix.v2.z = -body_matrix.v2.z;
+                    position.x += feposoff.x + body_matrix.v2.x * offset_scale;
+                    position.y += feposoff.y + body_matrix.v2.y * offset_scale;
+                    position.z += feposoff.z + body_matrix.v2.z * offset_scale;
+                }
+
+                render_info->Render(view, &position, &body_matrix, front_end_car->TireMatrices, front_end_car->BrakeMatrices,
+                                    front_end_car->TireMatrices, reflection_pass, 0, reflection, 1.0f, lod, lod);
+            }
+        }
+    }
+}
 
 void RenderVehicleFlares(eView *view, int reflection, int renderFlareFlags) {
     VehicleRenderConn::RenderFlares(view, reflection, renderFlareFlags);
