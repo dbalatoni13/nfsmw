@@ -16,6 +16,7 @@ static const float kSingleQAngleScale16Bit = 9.5875265e-5f;
 static const float kSingleQRangeScale16Bit = 3.0518044e-5f;
 static const float kSingleQRangeScale8Bit = 7.8431377e-3f;
 static const float kSingleQRangeScale4Bit = 0.13333334f;
+static const float kSingleQRangeScale16To4Bit = 8.1381455e-6f;
 
 static inline int GetSingleQFrameDeltaSize(const DeltaSingleQ *deltaQ) {
     return deltaQ->mNumBones * sizeof(DeltaSingleQDelta);
@@ -106,8 +107,8 @@ static inline void SingleQQuatMultQxZ(const UMath::Vector4 &a, const UMath::Vect
 static inline void DecodeSingleQMinRange(const DeltaSingleQMinRange &minRange, DeltaSingleQMinRangef &minRangef) {
     minRangef.mMin[0] = minRange.mMin[0] * kSingleQRangeScale16Bit - kSingleQFloatOne;
     minRangef.mMin[1] = minRange.mMin[1] * kSingleQRangeScale16Bit - kSingleQFloatOne;
-    minRangef.mRange[0] = 2.0f * (minRange.mRange[0] * kSingleQRangeScale16Bit) * kSingleQRangeScale4Bit;
-    minRangef.mRange[1] = 2.0f * (minRange.mRange[1] * kSingleQRangeScale16Bit) * kSingleQRangeScale4Bit;
+    minRangef.mRange[0] = minRange.mRange[0] * kSingleQRangeScale16To4Bit;
+    minRangef.mRange[1] = minRange.mRange[1] * kSingleQRangeScale16To4Bit;
     minRangef.mIndex = static_cast<unsigned char>(minRange.mIndex);
     minRangef.mConst0 = minRange.mConst0 * kSingleQAngleScale16Bit + -kSingleQPi;
     minRangef.mConst1 = minRange.mConst1 * kSingleQAngleScale16Bit + -kSingleQPi;
