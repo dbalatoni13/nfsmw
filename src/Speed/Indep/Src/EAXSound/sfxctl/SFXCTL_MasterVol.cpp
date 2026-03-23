@@ -35,9 +35,8 @@ void SFXCTL_MasterVol::InitSFX() { SFXCTL::InitSFX(); }
 
 void SFXCTL_MasterVol::UpdateParams(float t) {
     (void)t;
-
     const char *eaxSound = static_cast<const char *>(static_cast<const void *>(g_pEAXSound));
-    const AudioSettings *audioSettings = *static_cast<const AudioSettings *const *>(static_cast<const void *>(eaxSound + 0x34));
+    AudioSettings *audioSettings = *static_cast<AudioSettings *const *>(static_cast<const void *>(eaxSound + 0x34));
 
     if (audioSettings != nullptr) {
         float fMasterVol = audioSettings->MasterVol;
@@ -46,12 +45,12 @@ void SFXCTL_MasterVol::UpdateParams(float t) {
         float fvol = static_cast<float>(nmastervol) * 3.051851e-05f;
         int nvol;
 
-        SetDMIX_Input(0, static_cast<int>((1.0f - audioSettings->GetMasteredFEMusicVol() * fvol) * 32767.0f));
-        SetDMIX_Input(1, static_cast<int>((1.0f - audioSettings->GetMasteredIGMusicVol() * fvol) * 32767.0f));
-        SetDMIX_Input(2, static_cast<int>((1.0f - audioSettings->GetMasteredSpeechVol() * fvol) * 32767.0f));
-        SetDMIX_Input(3, static_cast<int>((1.0f - audioSettings->GetMasteredSoundEffectsVol() * fvol) * 32767.0f));
-        SetDMIX_Input(4, static_cast<int>((1.0f - audioSettings->GetMasteredCarVol() * fvol) * 32767.0f));
-        nvol = static_cast<int>((1.0f - audioSettings->GetMasteredCarVol() * fvol) * 32767.0f);
+        SetDMIX_Input(0, static_cast<int>((1.0f - audioSettings->MasterVol * audioSettings->FEMusicVol * fvol) * 32767.0f));
+        SetDMIX_Input(1, static_cast<int>((1.0f - audioSettings->MasterVol * audioSettings->IGMusicVol * fvol) * 32767.0f));
+        SetDMIX_Input(2, static_cast<int>((1.0f - audioSettings->MasterVol * audioSettings->SpeechVol * fvol) * 32767.0f));
+        SetDMIX_Input(3, static_cast<int>((1.0f - audioSettings->MasterVol * audioSettings->SoundEffectsVol * fvol) * 32767.0f));
+        SetDMIX_Input(4, static_cast<int>((1.0f - audioSettings->MasterVol * audioSettings->CarVol * fvol) * 32767.0f));
+        nvol = static_cast<int>((1.0f - audioSettings->MasterVol * audioSettings->CarVol * fvol) * 32767.0f);
         SetDMIX_Input(5, nvol);
     }
 
