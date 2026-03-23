@@ -191,10 +191,10 @@ FnDeltaQFast::~FnDeltaQFast() {
 
 void FnDeltaQFast::SetAnimMemoryMap(AnimMemoryMap *anim) {
     DeltaQFast *deltaQ = reinterpret_cast<DeltaQFast *>(anim);
-    unsigned char numBones = deltaQ->mNumBones;
-    DeltaQFastMinRange *minRange = reinterpret_cast<DeltaQFastMinRange *>(reinterpret_cast<unsigned char *>(deltaQ) + 0x12);
 
     mpAnim = anim;
+    unsigned char numBones = deltaQ->mNumBones;
+    DeltaQFastMinRange *minRange = reinterpret_cast<DeltaQFastMinRange *>(reinterpret_cast<unsigned char *>(deltaQ) + 0x12);
     mBins = reinterpret_cast<unsigned char *>(minRange) + numBones * sizeof(DeltaQFastMinRange);
     mConstBoneIdxs = reinterpret_cast<unsigned char *>(deltaQ->GetConstBoneIdx());
     mConstPhysical = reinterpret_cast<DeltaQFastPhysical *>(deltaQ->GetConstPhysical());
