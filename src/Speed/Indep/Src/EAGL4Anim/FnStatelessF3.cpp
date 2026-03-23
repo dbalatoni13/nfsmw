@@ -248,6 +248,8 @@ bool FnStatelessF3::EvalSQTMask(float, float *sqt, const BoneMask *boneMask, boo
 }
 
 bool FnStatelessF3::EvalSQTfast(float, float *sqt, const BoneMask *boneMask, bool slerpReqd, int floorKey, float scale) {
+    mPrevKey = static_cast<unsigned short>(floorKey);
+
     if (boneMask) {
         return EvalSQTMask(0.0f, sqt, boneMask, slerpReqd, floorKey, scale);
     }
@@ -258,8 +260,6 @@ bool FnStatelessF3::EvalSQTfast(float, float *sqt, const BoneMask *boneMask, boo
     unsigned short *dofIdxs = statelessF3->mDofIdxs;
     short *frameData = statelessF3->GetFrameData(dataBuf, floorKey);
     int nBones = statelessF3->mNumBones;
-
-    mPrevKey = static_cast<unsigned short>(floorKey);
 
     if (!slerpReqd) {
         for (int ibone = 0; ibone < nBones; ibone++) {
