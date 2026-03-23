@@ -1131,7 +1131,7 @@ int LoaderCarInfo(bChunk *chunk) {
     } else if (chunk_id == 0x34607) {
         DefaultSlotTypeNameTable = reinterpret_cast<unsigned int *>(chunk->GetData());
         SlotTypeOverrideTable = reinterpret_cast<CarSlotTypeOverride *>(reinterpret_cast<unsigned int *>(chunk->GetData()) + 0x116);
-        NumSlotTypeOverrides = (chunk->GetSize() - 0x458) >> 4;
+        NumSlotTypeOverrides = static_cast<unsigned int>(chunk->GetSize() - 0x458) >> 4;
 
         for (int i = 0; i < 0x116; i++) {
             bEndianSwap32(&DefaultSlotTypeNameTable[i]);
