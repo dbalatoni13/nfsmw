@@ -51,13 +51,13 @@ void SpaceNode::RemoveFromParent() {
 void SpaceNode::AddChild(SpaceNode *child) {
     child = this->ChildrenList.AddTail(child);
     child->Parent = this;
-    child->Lock();
+    this->Lock();
 }
 
 void SpaceNode::RemoveChild(SpaceNode *child) {
-    child = this->ChildrenList.Remove(child);
+    child = child->Remove();
     child->Parent = 0;
-    child->Unlock();
+    this->Unlock();
 }
 
 void SpaceNode::RemoveAllChildren() {
