@@ -1491,10 +1491,10 @@ void CarRenderConn::OnRender(eView *view, int reflection) {
             CameraAnchor *anchor = anchor_mover->GetAnchor();
 
             if (anchor != 0 && reinterpret_cast<const CameraAnchorPovMirror *>(anchor)->mPOVType == 1) {
-                const bMatrix4 *world_matrix = this->GetBodyMatrix();
+                const bMatrix4 *world_matrix = world_ref->mMatrix;
 
                 if (world_matrix != 0) {
-                    bVector4 offset = this->GetModelOffset();
+                    bVector4 offset = this->mModelOffset;
                     bVector4 translated_offset;
 
                     PSMTX44Copy(*reinterpret_cast<const Mtx44 *>(world_matrix), *reinterpret_cast<Mtx44 *>(&body_matrix));
