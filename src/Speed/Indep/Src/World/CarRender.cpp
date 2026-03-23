@@ -126,6 +126,12 @@ extern float lbl_8040AD70;
 extern float lbl_8040AD74;
 extern float lbl_8040AD78;
 extern float lbl_8040AD7C;
+extern float lbl_8040AD80;
+extern float lbl_8040AD84;
+extern float lbl_8040AD88;
+extern float lbl_8040AD8C;
+extern float lbl_8040AD90;
+extern float lbl_8040AD94;
 extern float lbl_8040AD98;
 extern float lbl_8040AD9C;
 extern float lbl_8040ADA0;
@@ -189,7 +195,58 @@ extern float heliScale;
 extern CarTypeInfo *CarTypeInfoArray;
 extern void RestoreShaperRig(eShaperLightRig *ShaperRigP, unsigned int slot, eShaperLightRig *ShaperRigBP);
 extern void AddQuickDynamicLight(eShaperLightRig *ShaperRigP, unsigned int slot, float r, float g, float b, float intensity, bVector3 *position);
-extern void sh_Setup(bVector3 *car_pos) asm("sh_Setup__FP8bVector3");
+void sh_Setup(bVector3 *car_pos);
+
+void sh_Setup(bVector3 *car_pos) {
+    float horizontal_distance = lbl_8040AD84;
+    bVector3 light_pos;
+    bVector3 light_vector;
+    unsigned short shadow_angle;
+
+    if (SunInfo == 0) {
+        light_pos.x = lbl_8040AD80;
+        light_pos.y = lbl_8040AD84;
+        light_pos.z = lbl_8040AD88;
+    } else {
+        light_pos.x = SunInfo->CarShadowPositionX;
+        light_pos.y = SunInfo->CarShadowPositionY;
+        light_pos.z = SunInfo->CarShadowPositionZ;
+    }
+
+    light_vector.x = car_pos->x - light_pos.x;
+    light_vector.y = car_pos->y - light_pos.y;
+    light_vector.z = car_pos->z - light_pos.z;
+    cs_lightV = light_vector;
+
+    float xy_length_sq = light_vector.x * light_vector.x + light_vector.y * light_vector.y;
+    if (lbl_8040AD8C < xy_length_sq) {
+        horizontal_distance = bSqrt(xy_length_sq);
+    }
+
+    shadow_angle = bATan(horizontal_distance, -light_vector.z);
+    if (shadow_angle < 4000) {
+        float light_length = lbl_8040AD84;
+        float sin_angle;
+        float cos_angle;
+        float abs_y;
+
+        bSinCos(&sin_angle, &cos_angle, 4000);
+        xy_length_sq = cs_lightV.z * cs_lightV.z + cs_lightV.x * cs_lightV.x + cs_lightV.y * cs_lightV.y;
+        if (lbl_8040AD8C < xy_length_sq) {
+            light_length = bSqrt(xy_length_sq);
+        }
+
+        abs_y = bAbs(cs_lightV.y);
+        cs_lightV.z = -light_length * sin_angle;
+        cs_lightV.y = (cs_lightV.y / (bAbs(cs_lightV.x) + abs_y)) * light_length * cos_angle;
+        cs_lightV.x = (cs_lightV.x / (bAbs(cs_lightV.x) + abs_y)) * light_length * cos_angle;
+    }
+
+    cs_OneOverZ = lbl_8040AD84;
+    if (cs_lightV.z != lbl_8040AD84) {
+        cs_OneOverZ = lbl_8040AD94 / cs_lightV.z;
+    }
+}
 
 namespace {
 float const CarBodyLodSwapSize[] = {120.0f, 25.0f, 20.0f, 10.0f, 0.0f};
@@ -696,8 +753,8 @@ CarRenderInfo::CarRenderInfo(RideInfo *ride_info)
         this->MasterReplacementTextureTable[REPLACETEX_DASHSKIN].SetOldNameHash(used_texture_info->MappedDashSkinHash);
         this->MasterReplacementTextureTable[REPLACETEX_DRIVER].SetOldNameHash(0x5799E60B);
         this->MasterReplacementTextureTable[REPLACETEX_TIRE].SetOldNameHash(used_texture_info->MappedTireHash);
-        if (this->pCarTypeInfo->UsageType == CAR_USAGE_TYPE_TRAFFIC) {
-            this->MasterReplacementTextureTable[REPLACETEX_TIRE].SetNewNameHash(bStringHash("_N", used_texture_info->MappedTireHash));
+    if (this->pCarTypeInfo->UsageType == CAR_USAGE_TYPE_TRAFFIC) {
+        this->MasterReplacementTextureTable[REPLACETEX_TIRE].SetNewNameHash(bStringHash("_N", used_texture_info->MappedTireHash));
         }
         this->MasterReplacementTextureTable[REPLACETEX_WINDOW_FRONT].SetOldNameHash(window_front_hash);
         this->MasterReplacementTextureTable[REPLACETEX_WINDOW_REAR].SetOldNameHash(window_rear_hash);
