@@ -86,6 +86,13 @@ class CameraMover : public bTNode<CameraMover>, public WCollisionMgr::ICollision
         return pCamera->GetPosition();
     }
 
+    float GetDistanceTo(bVector3 *to) {
+        bVector3 rel;
+
+        bSub(&rel, this->GetPosition(), to);
+        return bLength(&rel);
+    }
+
     // Virtual methods
     virtual ~CameraMover();
 

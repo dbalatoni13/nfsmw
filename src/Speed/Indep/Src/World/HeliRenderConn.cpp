@@ -26,10 +26,10 @@ Sim::Connection *HeliRenderConn::Construct(const Sim::ConnectionData &data) {
 }
 
 HeliRenderConn::HeliRenderConn(const Sim::ConnectionData &data, CarType type, RenderConn::Pkt_Heli_Open *open)
-    : VehicleRenderConn(data, type), //
-      mLastVisibleFrame(0), //
-      mDistanceToView(lbl_8040B0A8), //
-      mShadowScale(lbl_8040B0AC) {
+    : VehicleRenderConn(data, type) {
+    this->mLastVisibleFrame = 0;
+    this->mDistanceToView = lbl_8040B0A8;
+    this->mShadowScale = lbl_8040B0AC;
     this->mLastRenderFrame = 0;
 
     for (int i = 0; i <= 3; i++) {
@@ -43,12 +43,13 @@ HeliRenderConn::~HeliRenderConn() {}
 
 void HeliRenderConn::Update(const RenderConn::Pkt_Heli_Service &data, float dT) {
     if (this->CanUpdate() && this->mRenderInfo != 0) {
+        const ReferenceMirror *world_ref = reinterpret_cast<const ReferenceMirror *>(&this->mWorldRef);
         bVector4 model_offset(this->mModelOffset);
         bVector4 translated_offset;
 
         this->mShadowScale = data.mShadowScale;
-        PSMTX44Copy(*reinterpret_cast<const Mtx44 *>(this->mWorldRef.GetMatrix()), *reinterpret_cast<Mtx44 *>(&this->mGeomMatrix));
-        eMulVector(&translated_offset, this->mWorldRef.GetMatrix(), &model_offset);
+        PSMTX44Copy(*reinterpret_cast<const Mtx44 *>(world_ref->mMatrix), *reinterpret_cast<Mtx44 *>(&this->mGeomMatrix));
+        eMulVector(&translated_offset, world_ref->mMatrix, &model_offset);
         this->mGeomMatrix.v3.x -= translated_offset.x;
         this->mGeomMatrix.v3.y -= translated_offset.y;
         this->mGeomMatrix.v3.z -= translated_offset.z;
@@ -72,6 +73,7 @@ void HeliRenderConn::OnFetch(float dT) {
 }
 
 void HeliRenderConn::OnRender(eView *view, int reflection) {
+    const ReferenceMirror *world_ref = reinterpret_cast<const ReferenceMirror *>(&this->mWorldRef);
     CameraMover *mover;
     CarRenderInfo *car_render_info;
     EVIEWMODE view_mode;
@@ -87,22 +89,18 @@ void HeliRenderConn::OnRender(eView *view, int reflection) {
 
     mover = view->GetCameraMover();
     if (mover != 0) {
-        if (!mover->RenderCarPOV()) {
+        if (!mover->OutsidePOV()) {
             CameraAnchor *anchor = mover->GetAnchor();
 
-            if (anchor != 0 && anchor->GetWorldID() == this->GetWorldID()) {
+            if (anchor != 0 && anchor->GetWorldID() == world_ref->mWorldID) {
                 return;
             }
         }
 
         if (static_cast<unsigned int>(view->GetID() - 1) < 3) {
-            bVector3 rel;
             float distance;
 
-            rel.x = mover->GetPosition()->x - this->mGeomMatrix.v3.x;
-            rel.y = mover->GetPosition()->y - this->mGeomMatrix.v3.y;
-            rel.z = mover->GetPosition()->z - this->mGeomMatrix.v3.z;
-            distance = bLength(&rel);
+            distance = mover->GetDistanceTo(reinterpret_cast<bVector3 *>(&this->mGeomMatrix.v3));
             if (this->mDistanceToView < distance) {
                 distance = this->mDistanceToView;
             }
@@ -114,14 +112,14 @@ void HeliRenderConn::OnRender(eView *view, int reflection) {
     if (car_render_info != 0 && ((view_mode = eGetCurrentViewMode()), reflection == 0)) {
         bMatrix4 cbm(this->mGeomMatrix);
         bVector3 position(cbm.v3.x, cbm.v3.y, cbm.v3.z);
+        CARPART_LOD lod = car_render_info->GetMinLodLevel();
 
         cbm.v3.x = lbl_8040B0C0;
         cbm.v3.y = lbl_8040B0C0;
         cbm.v3.z = lbl_8040B0C0;
 
         if (car_render_info->Render(view, &position, &cbm, this->mMatrices, this->mMatrices, this->mMatrices, 0, reflection, reflection,
-                                    this->mShadowScale, car_render_info->GetMinLodLevel(),
-                                    car_render_info->GetMinLodLevel()) &&
+                                    this->mShadowScale, lod, lod) &&
             view->GetID() < 4) {
             this->mLastVisibleFrame = eFrameCounter;
         }
