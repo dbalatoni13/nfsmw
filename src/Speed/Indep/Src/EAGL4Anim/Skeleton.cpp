@@ -56,10 +56,9 @@ void Skeleton::PoseSQTToGlobal(float *pose, EAGL4::Transform *output, BoneMask *
 
 void Skeleton::GetStillPose(float *pose, const BoneMask *mask) const {
     int numBones = GetNumBones();
-    const float *invBoneScales = GetInvBoneScales();
 
     if (mask) {
-        if (invBoneScales) {
+        if (GetInvBoneScales()) {
             for (int i = 0; i < numBones; i++) {
                 if (mask->GetBone(i)) {
                     const BoneData &bone = GetBoneData(i);
@@ -67,7 +66,7 @@ void Skeleton::GetStillPose(float *pose, const BoneMask *mask) const {
                     pose[0] = bone.mS.x;
                     pose[1] = bone.mS.y;
                     pose[2] = bone.mS.z;
-                    pose[3] = invBoneScales[i];
+                    pose[3] = GetInvBoneScales()[i];
                     pose[4] = bone.mQ.x;
                     pose[5] = bone.mQ.y;
                     pose[6] = bone.mQ.z;
@@ -100,14 +99,14 @@ void Skeleton::GetStillPose(float *pose, const BoneMask *mask) const {
                 pose += 12;
             }
         }
-    } else if (invBoneScales) {
+    } else if (GetInvBoneScales()) {
         for (int i = 0; i < numBones; i++) {
             const BoneData &bone = GetBoneData(i);
 
             pose[0] = bone.mS.x;
             pose[1] = bone.mS.y;
             pose[2] = bone.mS.z;
-            pose[3] = invBoneScales[i];
+            pose[3] = GetInvBoneScales()[i];
             pose[4] = bone.mQ.x;
             pose[5] = bone.mQ.y;
             pose[6] = bone.mQ.z;
