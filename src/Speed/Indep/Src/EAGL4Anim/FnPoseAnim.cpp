@@ -32,6 +32,7 @@ bool FnPoseAnim::EvalPose(float currTime, const PosePaletteBank *paletteBank, fl
     bool interp = false;
     float t = 0.0f;
     int floorTime = FloatToInt(currTime);
+    const PosePalette *const *palettes = paletteBank->GetPalettes();
 
     if (currTime > static_cast<float>(times[0])) {
         unsigned int numKeys = poseAnim->mNumKeys;
@@ -67,7 +68,7 @@ bool FnPoseAnim::EvalPose(float currTime, const PosePaletteBank *paletteBank, fl
 
     mPrevKey = static_cast<unsigned short>(key);
 
-    const PosePalette *palette = paletteBank->GetPalettes()[poseAnim->mPaletteIndex];
+    const PosePalette *palette = palettes[poseAnim->mPaletteIndex];
     float *poseData = palette->GetPoseData();
     unsigned short *dofIndices = palette->GetDofIndices();
     unsigned int numQ = static_cast<unsigned int>(palette->GetNumQs());
