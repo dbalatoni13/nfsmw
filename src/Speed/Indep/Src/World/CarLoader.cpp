@@ -1667,7 +1667,7 @@ void CarLoader::ServiceLoading() {
         if (free_slots < 10) {
             int slots_to_leave = 10 - free_slots;
 
-            if (num_unallocated_ride_infos < slots_to_leave) {
+            if (slots_to_leave > num_unallocated_ride_infos) {
                 slots_to_leave = num_unallocated_ride_infos;
             }
 
