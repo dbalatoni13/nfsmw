@@ -1250,16 +1250,14 @@ void CarRenderConn::UpdateEffects(const RenderConn::Pkt_Car_Service &data, float
 
     for (VehicleRenderConn::Effect *engine_effect = this->mEngineEffects.GetHead(); engine_effect != this->mEngineEffects.EndOfList();
          engine_effect = engine_effect->GetNext()) {
-        if (death_key == 0 || 0.0f < data.mHealth) {
-            if (damage_key != 0 && data.mHealth <= 1.0f) {
-                engine_effect->Update(&this->mRenderMatrix, damage_key, dT, 1.0f, velocity);
-            } else if (data.mEngineBlown) {
-                engine_effect->Update(&this->mRenderMatrix, engine_key, dT, 1.0f, velocity);
-            } else {
-                engine_effect->Stop();
-            }
-        } else {
+        if (death_key != 0 && data.mHealth <= 0.0f) {
             engine_effect->Update(&this->mRenderMatrix, death_key, dT, 1.0f, velocity);
+        } else if (damage_key != 0 && data.mHealth <= 1.0f) {
+            engine_effect->Update(&this->mRenderMatrix, damage_key, dT, 1.0f, velocity);
+        } else if (data.mEngineBlown) {
+            engine_effect->Update(&this->mRenderMatrix, engine_key, dT, 1.0f, velocity);
+        } else {
+            engine_effect->Stop();
         }
     }
 
