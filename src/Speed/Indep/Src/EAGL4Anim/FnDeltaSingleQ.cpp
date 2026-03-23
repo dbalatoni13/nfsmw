@@ -199,7 +199,7 @@ bool FnDeltaSingleQ::EvalSQT(float currTime, float *sqt, const BoneMask *boneMas
     DeltaSingleQ *deltaQ = reinterpret_cast<DeltaSingleQ *>(mpAnim);
 
     if (!mPrevQs) {
-        mMinRanges = GetSingleQMinRanges(deltaQ);
+        DeltaSingleQMinRange *minRanges = GetSingleQMinRanges(deltaQ);
         mBins = GetSingleQBinStart(deltaQ);
         mBinSize = GetSingleQBinSize(deltaQ);
 
@@ -208,6 +208,7 @@ bool FnDeltaSingleQ::EvalSQT(float currTime, float *sqt, const BoneMask *boneMas
 
             mPrevQBlock = MemoryPoolManager::NewBlock(deltaQ->mNumBones * sizeof(*mPrevQs));
             mPrevQs = reinterpret_cast<UMath::Vector4 *>(mPrevQBlock);
+            mMinRanges = minRanges;
             mPreMultQs =
                 reinterpret_cast<UMath::Vector4 *>(MemoryPoolManager::NewBlock(deltaQ->mNumBones * sizeof(*mPreMultQs)));
             mPostMultQs =
@@ -248,6 +249,8 @@ bool FnDeltaSingleQ::EvalSQT(float currTime, float *sqt, const BoneMask *boneMas
                     SingleQEulToQuat(eul, reinterpret_cast<float *>(&mPreMultQs[ibone]));
                 }
             }
+        } else {
+            mMinRanges = minRanges;
         }
     }
     int floorTime = FloatToInt(currTime);
@@ -402,7 +405,7 @@ bool FnDeltaSingleQ::EvalSQTMasked(float currTime, const BoneMask *boneMask, flo
     DeltaSingleQ *deltaQ = reinterpret_cast<DeltaSingleQ *>(mpAnim);
 
     if (!mPrevQs) {
-        mMinRanges = GetSingleQMinRanges(deltaQ);
+        DeltaSingleQMinRange *minRanges = GetSingleQMinRanges(deltaQ);
         mBins = GetSingleQBinStart(deltaQ);
         mBinSize = GetSingleQBinSize(deltaQ);
 
@@ -411,6 +414,7 @@ bool FnDeltaSingleQ::EvalSQTMasked(float currTime, const BoneMask *boneMask, flo
 
             mPrevQBlock = MemoryPoolManager::NewBlock(deltaQ->mNumBones * sizeof(*mPrevQs));
             mPrevQs = reinterpret_cast<UMath::Vector4 *>(mPrevQBlock);
+            mMinRanges = minRanges;
             mPreMultQs =
                 reinterpret_cast<UMath::Vector4 *>(MemoryPoolManager::NewBlock(deltaQ->mNumBones * sizeof(*mPreMultQs)));
             mPostMultQs =
@@ -451,6 +455,8 @@ bool FnDeltaSingleQ::EvalSQTMasked(float currTime, const BoneMask *boneMask, flo
                     SingleQEulToQuat(eul, reinterpret_cast<float *>(&mPreMultQs[ibone]));
                 }
             }
+        } else {
+            mMinRanges = minRanges;
         }
     }
     int floorTime = FloatToInt(currTime);
