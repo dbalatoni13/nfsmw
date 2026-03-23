@@ -156,6 +156,9 @@ extern float lbl_8040ADEC;
 extern float lbl_8040ADF0;
 extern float lbl_8040ADF4;
 extern float lbl_8040ADF8;
+extern float lbl_8040ADFC;
+extern float lbl_8040AE00;
+extern float lbl_8040AE04;
 extern float copWhitemul;
 extern int gTWEAKER_NISLightEnabled;
 extern float gTWEAKER_NISLightIntensity;
@@ -2048,6 +2051,13 @@ int CarRenderInfo::GetEmitterPositions(bSList<CarEmitterPosition> &markers_out, 
 
 void CarRenderInfo::InitEmitterPositions(bVector4 *tire_positions) {
     if (this->pCarTypeInfo != nullptr && !this->mEmitterPositionsInitialized) {
+        bVector4 *tire_fr = tire_positions + 1;
+        bVector4 *tire_rr = tire_positions + 2;
+        bVector4 *tire_rl = tire_positions + 3;
+        float zero = lbl_8040ADFC;
+        float tire_mid = lbl_8040AE00;
+        float engine_offset = lbl_8040AE04;
+
         for (int i = 0; i < NUM_CARFXPOS; i++) {
             int num_pos_name_hashes = 0;
             bSList<CarEmitterPosition> &markers = this->EmitterPositionList[i];
@@ -2064,15 +2074,15 @@ void CarRenderInfo::InitEmitterPositions(bVector4 *tire_positions) {
                 case CARFXPOS_NONE:
                     empos = static_cast<CarEmitterPosition *>(bOMalloc(CarEmitterPositionSlotPool));
                     empos->PositionMarker = nullptr;
-                    empos->X = 0.0f;
-                    empos->Y = 0.0f;
-                    empos->Z = 0.0f;
+                    empos->X = zero;
+                    empos->Y = zero;
+                    empos->Z = zero;
                     break;
                 case CARFXPOS_FRONT_TIRES:
                     {
-                        float x = (tire_positions[0].x + tire_positions[1].x) * 0.5f;
-                        float y = (tire_positions[0].y + tire_positions[1].y) * 0.5f;
-                        float z = (tire_positions[0].z + tire_positions[1].z) * 0.5f;
+                        float x = (tire_positions->x + tire_fr->x) * tire_mid;
+                        float y = (tire_positions->y + tire_fr->y) * tire_mid;
+                        float z = (tire_positions->z + tire_fr->z) * tire_mid;
 
                         empos = static_cast<CarEmitterPosition *>(bOMalloc(CarEmitterPositionSlotPool));
                         empos->PositionMarker = nullptr;
@@ -2083,9 +2093,9 @@ void CarRenderInfo::InitEmitterPositions(bVector4 *tire_positions) {
                     break;
                 case CARFXPOS_REAR_TIRES:
                     {
-                        float x = (tire_positions[2].x + tire_positions[3].x) * 0.5f;
-                        float y = (tire_positions[2].y + tire_positions[3].y) * 0.5f;
-                        float z = (tire_positions[2].z + tire_positions[3].z) * 0.5f;
+                        float x = (tire_rr->x + tire_rl->x) * tire_mid;
+                        float y = (tire_rr->y + tire_rl->y) * tire_mid;
+                        float z = (tire_rr->z + tire_rl->z) * tire_mid;
 
                         empos = static_cast<CarEmitterPosition *>(bOMalloc(CarEmitterPositionSlotPool));
                         empos->PositionMarker = nullptr;
@@ -2096,9 +2106,9 @@ void CarRenderInfo::InitEmitterPositions(bVector4 *tire_positions) {
                     break;
                 case CARFXPOS_LEFT_TIRES:
                     {
-                        float x = (tire_positions[0].x + tire_positions[3].x) * 0.5f;
-                        float y = (tire_positions[0].y + tire_positions[3].y) * 0.5f;
-                        float z = (tire_positions[0].z + tire_positions[3].z) * 0.5f;
+                        float x = (tire_positions->x + tire_rl->x) * tire_mid;
+                        float y = (tire_positions->y + tire_rl->y) * tire_mid;
+                        float z = (tire_positions->z + tire_rl->z) * tire_mid;
 
                         empos = static_cast<CarEmitterPosition *>(bOMalloc(CarEmitterPositionSlotPool));
                         empos->PositionMarker = nullptr;
@@ -2109,9 +2119,9 @@ void CarRenderInfo::InitEmitterPositions(bVector4 *tire_positions) {
                     break;
                 case CARFXPOS_RIGHT_TIRES:
                     {
-                        float x = (tire_positions[1].x + tire_positions[2].x) * 0.5f;
-                        float y = (tire_positions[1].y + tire_positions[2].y) * 0.5f;
-                        float z = (tire_positions[1].z + tire_positions[2].z) * 0.5f;
+                        float x = (tire_fr->x + tire_rr->x) * tire_mid;
+                        float y = (tire_fr->y + tire_rr->y) * tire_mid;
+                        float z = (tire_fr->z + tire_rr->z) * tire_mid;
 
                         empos = static_cast<CarEmitterPosition *>(bOMalloc(CarEmitterPositionSlotPool));
                         empos->PositionMarker = nullptr;
@@ -2123,36 +2133,36 @@ void CarRenderInfo::InitEmitterPositions(bVector4 *tire_positions) {
                 case CARFXPOS_TIRE_FL:
                     empos = static_cast<CarEmitterPosition *>(bOMalloc(CarEmitterPositionSlotPool));
                     empos->PositionMarker = nullptr;
-                    empos->X = tire_positions[0].x;
-                    empos->Y = tire_positions[0].y;
-                    empos->Z = tire_positions[0].z;
+                    empos->X = tire_positions->x;
+                    empos->Y = tire_positions->y;
+                    empos->Z = tire_positions->z;
                     break;
                 case CARFXPOS_TIRE_FR:
                     empos = static_cast<CarEmitterPosition *>(bOMalloc(CarEmitterPositionSlotPool));
                     empos->PositionMarker = nullptr;
-                    empos->X = tire_positions[1].x;
-                    empos->Y = tire_positions[1].y;
-                    empos->Z = tire_positions[1].z;
+                    empos->X = tire_fr->x;
+                    empos->Y = tire_fr->y;
+                    empos->Z = tire_fr->z;
                     break;
                 case CARFXPOS_TIRE_RR:
                     empos = static_cast<CarEmitterPosition *>(bOMalloc(CarEmitterPositionSlotPool));
                     empos->PositionMarker = nullptr;
-                    empos->X = tire_positions[2].x;
-                    empos->Y = tire_positions[2].y;
-                    empos->Z = tire_positions[2].z;
+                    empos->X = tire_rr->x;
+                    empos->Y = tire_rr->y;
+                    empos->Z = tire_rr->z;
                     break;
                 case CARFXPOS_TIRE_RL:
                     empos = static_cast<CarEmitterPosition *>(bOMalloc(CarEmitterPositionSlotPool));
                     empos->PositionMarker = nullptr;
-                    empos->X = tire_positions[3].x;
-                    empos->Y = tire_positions[3].y;
-                    empos->Z = tire_positions[3].z;
+                    empos->X = tire_rl->x;
+                    empos->Y = tire_rl->y;
+                    empos->Z = tire_rl->z;
                     break;
                 case CARFXPOS_ENGINE:
                     {
-                        float x = (tire_positions[0].x + tire_positions[1].x) * 0.5f;
-                        float y = (tire_positions[0].y + tire_positions[1].y) * 0.5f;
-                        float z = (tire_positions[0].z + tire_positions[1].z) * 0.5f + (tire_positions[0].y - tire_positions[1].y) * 0.2f;
+                        float x = (tire_positions->x + tire_fr->x) * tire_mid;
+                        float y = (tire_positions->y + tire_fr->y) * tire_mid;
+                        float z = (tire_positions->z + tire_fr->z) * tire_mid + (tire_positions->y - tire_fr->y) * engine_offset;
 
                         empos = static_cast<CarEmitterPosition *>(bOMalloc(CarEmitterPositionSlotPool));
                         empos->PositionMarker = nullptr;
@@ -2165,12 +2175,8 @@ void CarRenderInfo::InitEmitterPositions(bVector4 *tire_positions) {
 
             if (empos != nullptr) {
                 bSListLayout<CarEmitterPosition> &layout = reinterpret_cast<bSListLayout<CarEmitterPosition> &>(markers);
-                bSNodeLayout<CarEmitterPosition> &node_layout = reinterpret_cast<bSNodeLayout<CarEmitterPosition> &>(*empos);
-                CarEmitterPosition *end = markers.EndOfList();
-                CarEmitterPosition *tail = layout.Tail;
-
-                node_layout.Next = end;
-                reinterpret_cast<bSNodeLayout<CarEmitterPosition> &>(*tail).Next = empos;
+                reinterpret_cast<bSNodeLayout<CarEmitterPosition> &>(*empos).Next = markers.EndOfList();
+                reinterpret_cast<bSNodeLayout<CarEmitterPosition> &>(*layout.Tail).Next = empos;
                 layout.Tail = empos;
             }
         }
