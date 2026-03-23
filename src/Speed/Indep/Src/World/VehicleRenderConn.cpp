@@ -516,8 +516,8 @@ void VehicleRenderConn::RenderFlares(eView *view, int reflection, int renderFlar
                             bVector3 delta = render_info->LastFewPositions[current_index] - render_info->LastFewPositions[next_index];
                             bVector3 flare_position(delta);
 
-                            for (int div = 1; div < FlareDiv; div++) {
-                                float t = static_cast<float>(div) / static_cast<float>(FlareDiv);
+                            for (int div = 0; div < FlareDiv; div++) {
+                                float t = static_cast<float>(div + 1) / static_cast<float>(FlareDiv);
 
                                 flare_position.x = delta.x * t + render_info->LastFewPositions[next_index].x;
                                 flare_position.y = delta.y * t + render_info->LastFewPositions[next_index].y;
