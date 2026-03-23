@@ -413,7 +413,7 @@ bool FnDeltaSingleQ::EvalSQTMasked(float currTime, const BoneMask *boneMask, flo
             reinterpret_cast<DeltaSingleQMinRange *>(reinterpret_cast<unsigned char *>(deltaQ) + 0x10);
 
         mBins = reinterpret_cast<unsigned char *>(minRanges) + numBones * sizeof(DeltaSingleQMinRange);
-        mBinSize = AlignSize2(numBones * ((1 << deltaQ->mBinLengthPower) + 1));
+        mBinSize = AlignSize2(deltaQ->mNumBones * ((1 << deltaQ->mBinLengthPower) + 1));
 
         if (deltaQ->mNumBones != 0) {
             float eul[3];
