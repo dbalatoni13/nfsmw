@@ -679,8 +679,10 @@ bMatrix4 NISCopCarDoorClosedMarkers[4];
 
 // UNSOLVED, to preserve my sanity
 CarRenderInfo::CarRenderInfo(RideInfo *ride_info)
-    : mDamageBehaviour(nullptr), mWorldPos(0.025f),
-    mAttributes(Attrib::FindCollection(this->GetAttributes().ClassKey(), 0xeec2271a), 0, nullptr)
+    : mDamageBehaviour(nullptr), //
+      mWCollider(nullptr), //
+      mWorldPos(0.025f), //
+      mAttributes(0xeec2271a, 0, nullptr)
 {
     CarRenderRideInfoLayout *ride_layout = reinterpret_cast<CarRenderRideInfoLayout *>(ride_info);
 
@@ -692,11 +694,7 @@ CarRenderInfo::CarRenderInfo(RideInfo *ride_info)
         Attrib::Gen::ecar::ClassKey(), Attrib::StringToLowerCaseKey(CarTypeInfoArray[ride_info->Type].BaseModelName)));
     this->mFlashing = false;
     this->mFlashInterval = 0.0f;
-    this->mDamageInfoCache.Clear();
-
-    for (int i = 0; i < 4; i++) {
-        this->mWheelWobbleEnabled[i] = false;
-    }
+    bMemSet(&this->mDamageInfoCache, 0, 0x14);
 
     this->AnimTime = 0.0f;
     this->WheelWidths[0] = WheelStandardWidth;
