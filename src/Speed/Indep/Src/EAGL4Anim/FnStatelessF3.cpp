@@ -44,11 +44,11 @@ void FnStatelessF3::Eval(float, float currTime, float *sqt) {
 }
 
 bool FnStatelessF3::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask) {
-    StatelessF3 *statelessF3 = reinterpret_cast<StatelessF3 *>(mpAnim);
-
     if (mUseFPS) {
         currTime *= mFPS;
     }
+
+    StatelessF3 *statelessF3 = reinterpret_cast<StatelessF3 *>(mpAnim);
 
     int floorTime = FloatToInt(currTime);
     int floorKey;
