@@ -433,14 +433,14 @@ void FnDeltaQFast::UpdateNextQsMask(DeltaQFast *deltaQ, int ceilKey, int floorBi
 }
 
 bool FnDeltaQFast::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask) {
+    if (boneMask) {
+        return EvalSQTMask(currTime, sqt, boneMask);
+    }
     if (!mpAnim) {
         return false;
     }
     if (!mMinRangesf && reinterpret_cast<DeltaQFast *>(mpAnim)->mNumBones) {
         InitBuffers();
-    }
-    if (boneMask) {
-        return EvalSQTMask(currTime, sqt, boneMask);
     }
     if (mBoneMask) {
         mBoneMask = nullptr;
