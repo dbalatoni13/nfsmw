@@ -81,8 +81,6 @@ int SkyInitModel(eModel *model, bMatrix4 *local_world, unsigned int scenery_name
         short rotation2 = scenery_instance->Rotation[2];
         float rotation_scale = lbl_8040B0FC;
         float row_w = lbl_8040B108;
-        float matrix_w = lbl_8040B10C;
-        unsigned int detail_level = 0;
 
         local_world->v0.x = static_cast<float>(rotation0) * rotation_scale;
         local_world->v0.y = static_cast<float>(rotation1) * rotation_scale;
@@ -104,10 +102,12 @@ int SkyInitModel(eModel *model, bMatrix4 *local_world, unsigned int scenery_name
         local_world->v2.y = static_cast<float>(rotation1) * rotation_scale;
         local_world->v2.z = static_cast<float>(rotation2) * rotation_scale;
         local_world->v2.w = row_w;
+        float matrix_w = lbl_8040B10C;
         local_world->v3 = *reinterpret_cast<bVector4 *>(scenery_instance->Position);
         local_world->v3.w = matrix_w;
 
         int *scenery_info_models = reinterpret_cast<int *>(reinterpret_cast<char *>(FindSceneryInfo(scenery_name_hash)) + 0x28);
+        unsigned int detail_level = 0;
 
         do {
             if (*scenery_info_models != 0) {
