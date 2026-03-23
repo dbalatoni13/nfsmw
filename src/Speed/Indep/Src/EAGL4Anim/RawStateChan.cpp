@@ -102,18 +102,25 @@ void FnRawStateChan::Decode(unsigned char *src, unsigned char *dest) const {
 
 bool FnRawStateChan::EvalState(float time, State *s) {
     RawStateChan *rawStateChan = reinterpret_cast<RawStateChan *>(mpAnim);
+    unsigned char numFields = rawStateChan->GetNumFields();
     unsigned char keySize = rawStateChan->GetKeySize();
-    unsigned char *keyData = GetRawStateKeyData(rawStateChan);
+    unsigned char *keyData;
     int keyIdx = mKeyIdx;
 
-    if (*reinterpret_cast<float *>(&keyData[keyIdx * keySize]) > time) {
+    if ((numFields & 1) == 0) {
+        keyData = reinterpret_cast<unsigned char *>(rawStateChan) + numFields * sizeof(unsigned short) + 12;
+    } else {
+        keyData = reinterpret_cast<unsigned char *>(rawStateChan) + numFields * sizeof(unsigned short) + 10;
+    }
+
+    if (time < *reinterpret_cast<float *>(&keyData[keyIdx * keySize])) {
         keyIdx--;
 
-        while (keyIdx >= 0) {
-            float *keyTime = reinterpret_cast<float *>(&keyData[keyIdx * keySize]);
+        while (keyIdx > -1) {
+            unsigned char *currKey = &keyData[keyIdx * keySize];
 
-            if (*keyTime <= time) {
-                Decode(reinterpret_cast<unsigned char *>(keyTime) + sizeof(float), reinterpret_cast<unsigned char *>(s));
+            if (*reinterpret_cast<float *>(currKey) <= time) {
+                Decode(currKey + sizeof(float), reinterpret_cast<unsigned char *>(s));
                 mKeyIdx = keyIdx;
                 return true;
             }
@@ -124,7 +131,9 @@ bool FnRawStateChan::EvalState(float time, State *s) {
         Decode(keyData + sizeof(float), reinterpret_cast<unsigned char *>(s));
         mKeyIdx = 0;
     } else {
-        for (; keyIdx < rawStateChan->GetNumKeys(); keyIdx++) {
+        unsigned short numKeys = rawStateChan->GetNumKeys();
+
+        for (; keyIdx < numKeys; keyIdx++) {
             unsigned char *currKey = &keyData[keyIdx * keySize];
 
             if (time < *reinterpret_cast<float *>(currKey + keySize)) {
@@ -134,8 +143,8 @@ bool FnRawStateChan::EvalState(float time, State *s) {
             }
         }
 
-        Decode(keyData + keySize * (rawStateChan->GetNumKeys() - 1) + sizeof(float), reinterpret_cast<unsigned char *>(s));
-        mKeyIdx = rawStateChan->GetNumKeys() - 1;
+        Decode(keyData + keySize * (numKeys - 1) + sizeof(float), reinterpret_cast<unsigned char *>(s));
+        mKeyIdx = numKeys - 1;
     }
 
     return true;

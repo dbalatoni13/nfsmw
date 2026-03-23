@@ -361,12 +361,38 @@ void FnRunBlender::ComputeAlignQ(float *v1, float *v2, UMath::Vector4 &q) const 
 }
 
 void FnRunBlender::AlignCycleBeginEnd(int cIdx) {
-    mCycleIdx = cIdx;
-    mInit = true;
-    mAlignQ.x = 0.0f;
-    mAlignQ.y = 0.0f;
-    mAlignQ.z = 0.0f;
-    mAlignQ.w = 1.0f;
+    if (!mInit) {
+        mInit = true;
+        mCycleIdx = -1;
+        mAlignQ.x = 0.0f;
+        mAlignQ.y = 0.0f;
+        mAlignQ.z = 0.0f;
+        mAlignQ.w = 1.0f;
+    } else if (mCycleIdx != cIdx) {
+        float beginFacing[2];
+        float endFacing[2];
+        UMath::Vector4 q;
+        PhaseChan *phase0 = const_cast<PhaseChan *>(mPhases[mIdx]);
+        PhaseChan *phase1 = const_cast<PhaseChan *>(mPhases[mIdx + 1]);
+
+        BlendFacing(0.0f, 0.0f, beginFacing);
+        BlendFacing(static_cast<float>(phase0->mNumFrames - 1), static_cast<float>(phase1->mNumFrames - 1), endFacing);
+        ComputeAlignQ(beginFacing, endFacing, q);
+        if (mCycleIdx - 1 == cIdx) {
+            q.y = -q.y;
+        }
+
+        float x = mAlignQ.x;
+        float y = mAlignQ.y;
+        float z = mAlignQ.z;
+        float w = mAlignQ.w;
+
+        mAlignQ.x = w * q.x + z * q.y + (x * q.w - y * q.z);
+        mAlignQ.w = w * q.w + ((-x * q.x - y * q.y) - z * q.z);
+        mAlignQ.y = w * q.y + ((x * q.z + y * q.w) - z * q.x);
+        mAlignQ.z = w * q.z + z * q.w - x * q.y + y * q.x;
+        mCycleIdx = cIdx;
+    }
 }
 
 void FnRunBlender::AlignRootQ(float *sqt) const {

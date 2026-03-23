@@ -11,6 +11,8 @@ float turnLength(float *v) {
     return sqrtf(v[0] * v[0] + v[1] * v[1]);
 }
 
+static int i_6840;
+
 
 namespace EAGL4Anim {
 
@@ -193,12 +195,42 @@ void FnTurnBlender::ComputeAlignQ(float *v1, float *v2, UMath::Vector4 &q) const
 }
 
 void FnTurnBlender::AlignCycleBeginEnd(int cIdx) {
-    mCycleIdx = cIdx;
-    mInit = true;
-    mAlignQ.x = 0.0f;
-    mAlignQ.y = 0.0f;
-    mAlignQ.z = 0.0f;
-    mAlignQ.w = 1.0f;
+    if (!mInit) {
+        mInit = true;
+        mCycleIdx = -1;
+        mAlignQ.x = 0.0f;
+        mAlignQ.y = 0.0f;
+        mAlignQ.z = 0.0f;
+        mAlignQ.w = 1.0f;
+    } else if (mCycleIdx != cIdx) {
+        float beginFacing[2];
+        float endFacing[2];
+        UMath::Vector4 q;
+
+        BlendBeginFacing(beginFacing);
+        BlendEndFacing(endFacing);
+        ComputeAlignQ(beginFacing, endFacing, q);
+        if (mCycleIdx - 1 == cIdx) {
+            q.y = -q.y;
+        }
+
+        float x = mAlignQ.x;
+        float y = mAlignQ.y;
+        float z = mAlignQ.z;
+        float w = mAlignQ.w;
+        float newX = (x * q.w - y * q.z) + z * q.y + w * q.x;
+        float newY = ((x * q.z + y * q.w) - z * q.x) + w * q.y;
+        float newZ = -x * q.y + y * q.x + z * q.w + w * q.z;
+        float newW = ((-x * q.x - y * q.y) - z * q.z) + w * q.w;
+
+        i_6840++;
+        mAlignQ.x = newX;
+        mAlignQ.y = newY;
+        mAlignQ.z = newZ;
+        mAlignQ.w = newW;
+        mCycleIdx = cIdx;
+        printf("turn align[%d] Q: %g %g %g %g\n\n", i_6840 - 1, mAlignQ.x, mAlignQ.y, mAlignQ.z, mAlignQ.w);
+    }
 }
 
 void FnTurnBlender::AlignRootQ(float *sqt) const {
