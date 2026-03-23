@@ -1,17 +1,26 @@
 #include "Speed/Indep/Src/World/Interfaces/IVehicleDamageBehaviour.h"
 #include "Speed/Indep/Src/World/CarRender.hpp"
 #include "Speed/Indep/Src/World/CarInfo.hpp"
+#include "Speed/Indep/Libs/Support/Utility/UStandard.h"
 #include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
 
 typedef float Mtx44[4][4];
 
 struct VehiclePartDamageZone {
+    struct DamageZoneSlotMapDataType {
+        int ZoneId;
+        int SlotId;
+    };
+
     int mZoneId;
     unsigned short mDamageLevel;
     unsigned short pad;
     int *mSlotIdsStart;
     int *mSlotIdsEnd;
+    int *mSlotIdsReserved;
+    int *mSlotIdsCapacityEnd;
 
+    VehiclePartDamageZone(int zoneId, DamageZoneSlotMapDataType *zoneSlotMappingDataList);
     void Reset();
     int GetSlotNum() const;
     int GetSlotID(int index) const;
@@ -100,6 +109,31 @@ extern int VehiclePartDamageZone_GetSlotNum(const VehiclePartDamageZone *zone) a
 extern int VehiclePartDamageZone_GetSlotID(const VehiclePartDamageZone *zone, int index) asm("GetSlotID__C21VehiclePartDamageZonei");
 extern void VehiclePartDamageZone_SetDamageLevel(VehiclePartDamageZone *zone, unsigned short damageLevel)
     asm("SetDamageLevel__21VehiclePartDamageZoneUs");
+
+VehiclePartDamageZone::VehiclePartDamageZone(int zoneId, DamageZoneSlotMapDataType *zoneSlotMappingDataList) {
+    int zoneSlotIndex;
+    int currentZoneId;
+    int slotId;
+
+    mZoneId = zoneId;
+    mDamageLevel = 0;
+    mSlotIdsStart = 0;
+    mSlotIdsEnd = 0;
+    mSlotIdsCapacityEnd = 0;
+    reinterpret_cast<UTL::Std::vector<int, _type_vector> *>(&mSlotIdsStart)->reserve(0x14);
+
+    if (zoneSlotMappingDataList != 0) {
+        zoneSlotIndex = 0;
+        do {
+            currentZoneId = zoneSlotMappingDataList[zoneSlotIndex].ZoneId;
+            if (currentZoneId == mZoneId) {
+                slotId = zoneSlotMappingDataList[zoneSlotIndex].SlotId;
+                reinterpret_cast<UTL::Std::vector<int, _type_vector> *>(&mSlotIdsStart)->push_back(slotId);
+            }
+            zoneSlotIndex++;
+        } while (currentZoneId != 0xFFFF);
+    }
+}
 
 void VehiclePartDamageZone::Reset() {
     mDamageLevel = 0;
