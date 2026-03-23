@@ -95,15 +95,29 @@ void SFXCTL_AccelTrans::UpdateParams(float t) {
 }
 
 void SFXCTL_AccelTrans::UpdateRPM(float t) {
-    (void)t;
-    float rpm = (m_pEngineCtl != nullptr) ? m_pEngineCtl->GetSmoothedEngRPM() : 0.0f;
-    m_InterpEngRPM.Update(SndBase::m_fDeltaTime, rpm);
+    switch (eAccelTransFxState) {
+    case FX_ACCEL_STATE_ATTACK:
+    case FX_ACCEL_STATE_IDLE_ENGAGING:
+    case FX_ACCEL_STATE_INTERRUPT:
+        m_InterpEngRPM.Update(t, GetPhysRPM());
+        return;
+
+    case FX_ACCEL_STATE_IDLE_REVING:
+        m_InterpEngRPM.Update(t);
+        return;
+
+    default:
+        return;
+    }
 }
 
 void SFXCTL_AccelTrans::UpdateTRQ(float t) {
-    (void)t;
-    float trq = (m_pEngineCtl != nullptr) ? m_pEngineCtl->GetSmoothedEngTorque() : 0.0f;
-    m_InterpEngTorque.Update(SndBase::m_fDeltaTime, trq);
+    if (eAccelTransFxState > FX_ACCEL_STATE_NONE && eAccelTransFxState < 5) {
+        m_InterpEngTorque.Update(t, GetPhysTRQ());
+        if (m_InterpEngTorque.IsFinished()) {
+            m_InterpEngTorque.Initialize(GetPhysTRQ(), GetPhysTRQ(), 0, LINEAR);
+        }
+    }
 }
 
 void SFXCTL_AccelTrans::UpdateState(float t) {
