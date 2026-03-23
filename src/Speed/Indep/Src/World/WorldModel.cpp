@@ -365,7 +365,7 @@ void WorldModel::Render(eView *view, int exc_flag) {
 
     bMatrix4 world_matrix;
     bMatrix4 *blended_matrices = 0;
-    const bMatrix4 *render_matrix = &this->mMatrix;
+    const bMatrix4 *render_matrix;
     if (this->pSpaceNode != 0) {
         SpaceNode *space_node = this->pSpaceNode;
 
@@ -378,6 +378,8 @@ void WorldModel::Render(eView *view, int exc_flag) {
             bMulMatrix(&world_matrix, render_matrix, &blended_matrices[1]);
             goto have_world_matrix;
         }
+    } else {
+        render_matrix = &this->mMatrix;
     }
 
     PSMTX44Copy(*reinterpret_cast<const Mtx44 *>(render_matrix), *reinterpret_cast<Mtx44 *>(&world_matrix));
