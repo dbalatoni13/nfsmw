@@ -566,9 +566,49 @@ void QuatF4Interp(float w, float *&data0, float *&data1, float *output) {
 
 // TODO inline and move
 void EulF3Interp(float w, float *&data0, float *&data1, float *output) {
-    EulF3(data0, qt0);
-    EulF3(data1, output);
-    FastQuatBlendF4(w, qt0, output, output);
+    const float degreesToRadians = 0.017453294f;
+
+    float x = *data0++ * degreesToRadians * 0.5f;
+    float y = *data0++ * degreesToRadians * 0.5f;
+    float z = *data0++ * degreesToRadians * 0.5f;
+    float cx = cosf(x);
+    float cy = cosf(y);
+    float cz = cosf(z);
+    float sx = sinf(x);
+    float sy = sinf(y);
+    float sz = sinf(z);
+
+    qt0[0] = cy * sx * cz - sy * cx * sz;
+    qt0[2] = cy * cx * sz - sy * sx * cz;
+    qt0[1] = cy * sx * sz + sy * cx * cz;
+    qt0[3] = cy * cx * cz + sy * sx * sz;
+
+    x = *data1++ * degreesToRadians * 0.5f;
+    y = *data1++ * degreesToRadians * 0.5f;
+    z = *data1++ * degreesToRadians * 0.5f;
+    cx = cosf(x);
+    cy = cosf(y);
+    cz = cosf(z);
+    sx = sinf(x);
+    sy = sinf(y);
+    sz = sinf(z);
+
+    output[0] = cy * sx * cz - sy * cx * sz;
+    output[2] = cy * cx * sz - sy * sx * cz;
+    output[1] = cy * sx * sz + sy * cx * cz;
+    output[3] = cy * cx * cz + sy * sx * sz;
+
+    if (qt0[0] * output[0] + qt0[1] * output[1] + qt0[2] * output[2] + qt0[3] * output[3] > 0.0f) {
+        output[0] = w * (output[0] - qt0[0]) + qt0[0];
+        output[1] = w * (output[1] - qt0[1]) + qt0[1];
+        output[2] = w * (output[2] - qt0[2]) + qt0[2];
+        output[3] = w * (output[3] - qt0[3]) + qt0[3];
+    } else {
+        output[0] = qt0[0] - w * (output[0] + qt0[0]);
+        output[1] = qt0[1] - w * (output[1] + qt0[1]);
+        output[2] = qt0[2] - w * (output[2] + qt0[2]);
+        output[3] = qt0[3] - w * (output[3] + qt0[3]);
+    }
 }
 
 // TODO inline and move
