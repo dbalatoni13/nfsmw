@@ -50,8 +50,9 @@ bool FnTurnBlender::EvalSQT(float currTime, float *sqtBuffer, const BoneMask *bo
     }
 
     float evalTime = currTime + mOffset;
-    float t0 = CycleTime(mFreq * mCycles[0] * evalTime + mOffsets[0], 0.0f, mCycles[0]);
-    float t1 = CycleTime(mFreq * mCycles[1] * evalTime + mOffsets[1], 0.0f, mCycles[1]);
+    int cycleIdx = ComputeCycleIdx(evalTime, 0.0f, 2.0f / mFreq);
+    float t0 = CycleTime(mFreq * mCycles[0] * evalTime, 0.0f, mCycles[0] + mCycles[0]) - mOffsets[0];
+    float t1 = CycleTime(mFreq * mCycles[1] * evalTime, 0.0f, mCycles[1] + mCycles[1]) - mOffsets[1];
 
     mSkeleton->GetStillPose(sqtBuffer, 0);
     if (!mFnAnims[0] || !mFnAnims[0]->EvalSQT(t0, sqtBuffer, 0)) {
@@ -59,7 +60,7 @@ bool FnTurnBlender::EvalSQT(float currTime, float *sqtBuffer, const BoneMask *bo
     }
 
     if (mWeight != 0.0f && mFnAnims[1]) {
-        ScratchBuffer &scratch = ScratchBuffer::GetScratchBuffer(0);
+        ScratchBuffer &scratch = ScratchBuffer::GetScratchBuffer(1);
         unsigned int bufferSize = static_cast<unsigned int>(mSkeleton->GetNumBones() * 12 * sizeof(float));
 
         if (scratch.GetSize() < bufferSize) {
@@ -76,6 +77,7 @@ bool FnTurnBlender::EvalSQT(float currTime, float *sqtBuffer, const BoneMask *bo
         FnPoseBlender::Blend(mSkeleton->GetNumBones(), mWeight, sqtBuffer, blendPose, sqtBuffer, boneMask);
     }
 
+    AlignCycleBeginEnd(cycleIdx);
     AlignRootQ(sqtBuffer);
     return true;
 }
