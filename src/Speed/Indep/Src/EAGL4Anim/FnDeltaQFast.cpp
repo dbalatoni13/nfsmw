@@ -796,14 +796,15 @@ bool FnDeltaQFast::EvalSQTMask(float currTime, float *sqt, const BoneMask *boneM
             continue;
         }
 
-        UMath::Vector4 q;
+        unsigned short *physical = reinterpret_cast<unsigned short *>(&mConstPhysical[ibone]);
         float *out = &quatBase[boneIdx * 12];
 
-        DecodeQFastPhysical(mConstPhysical[ibone], q);
-        out[0] = q.x;
-        out[1] = q.y;
-        out[2] = q.z;
-        out[3] = q.w;
+        out[0] = static_cast<float>(physical[0] >> 4) * kQFastPhysicalScale12 - kQFastPhysicalBias12;
+        out[1] = static_cast<float>(physical[1] >> 4) * kQFastPhysicalScale12 - kQFastPhysicalBias12;
+        out[2] = static_cast<float>(physical[2] >> 4) * kQFastPhysicalScale12 - kQFastPhysicalBias12;
+        out[3] = static_cast<float>(static_cast<unsigned char>((physical[2] & 0xF) | ((physical[0] & 0xF) * 0x100) + ((physical[1] & 0xF) * 0x10))) *
+                     kQFastPhysicalScale12 -
+                 kQFastPhysicalBias12;
     }
 
     return true;
