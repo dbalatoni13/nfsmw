@@ -15,24 +15,34 @@ static void altersingle(int alpha, int i, int b, int g, int r, int aa);
 static void alterneigh(int rad, int i, int b, int g, int r, int aa);
 
 void initnet(unsigned char *thepic, int len, int num_colours, int sample) {
+    int i = 0;
+
     thepicture = thepic;
     lengthcount = len;
     samplefac = sample;
     netsize = num_colours;
 
-    if (num_colours < 1) {
+    if (i >= num_colours) {
         return;
     }
 
-    for (int i = 0; i < num_colours; i++) {
+    int *p = &network[0][0];
+    int *f = freq;
+    int *b = bias;
+
+    do {
         int value = (i << 12) / num_colours;
-        network[i][0] = value;
-        network[i][1] = value;
-        network[i][2] = value;
-        network[i][3] = value;
-        freq[i] = 0x10000 / num_colours;
-        bias[i] = 0;
-    }
+        *b = 0;
+        *f = 0x10000 / num_colours;
+        p[1] = value;
+        p[3] = value;
+        p[2] = value;
+        p[0] = value;
+        i++;
+        p += 5;
+        f++;
+        b++;
+    } while (i < num_colours);
 }
 
 void unbiasnet() {
@@ -285,26 +295,32 @@ static int contest(int b, int g, int r, int aa) {
     int bestbiasd = 0x7FFFFFFF;
     int bestpos = -1;
     int bestbiaspos = -1;
+    int i = 0;
 
-    for (int i = 0; i < netsize; i++) {
-        int dist = network[i][0] - b;
+    if (i < netsize) {
+        int *p = &network[0][0];
+        int *f = freq;
+        int *bptr = bias;
+
+        do {
+        int dist = p[0] - b;
         if (dist < 0) {
             dist = -dist;
         }
 
-        int value = network[i][1] - g;
+        int value = p[1] - g;
         if (value < 0) {
             value = -value;
         }
         dist += value;
 
-        value = network[i][2] - r;
+        value = p[2] - r;
         if (value < 0) {
             value = -value;
         }
         dist += value;
 
-        value = network[i][3] - aa;
+        value = p[3] - aa;
         if (value < 0) {
             value = -value;
         }
@@ -315,15 +331,20 @@ static int contest(int b, int g, int r, int aa) {
             bestpos = i;
         }
 
-        value = dist - (bias[i] >> 12);
+        value = dist - (*bptr >> 12);
         if (value < bestbiasd) {
             bestbiasd = value;
             bestbiaspos = i;
         }
 
-        value = freq[i] >> 10;
-        freq[i] -= value;
-        bias[i] += value << 10;
+        value = *f >> 10;
+        *f -= value;
+        *bptr += value << 10;
+        i++;
+        p += 5;
+        f++;
+        bptr++;
+        } while (i < netsize);
     }
 
     freq[bestpos] += 0x40;
@@ -332,34 +353,34 @@ static int contest(int b, int g, int r, int aa) {
 }
 
 static void altersingle(int alpha, int i, int b, int g, int r, int aa) {
-    i *= 0x14;
-
-    int value = alpha * (network[0][0] - b);
-    if (value < 0) {
-        value += 0x3FF;
+    int *p = &network[i][0];
+    int current = p[0];
+    int delta = alpha * (current - b);
+    if (delta < 0) {
+        delta += 0x3FF;
     }
-    *reinterpret_cast<int *>(reinterpret_cast<unsigned char *>(network) + i) = network[i / 0x14][0] - (value >> 10);
+    p[0] = current - (delta >> 10);
 
-    int current = *reinterpret_cast<int *>(reinterpret_cast<unsigned char *>(network) + i + 4);
-    value = alpha * (current - g);
-    if (value < 0) {
-        value += 0x3FF;
+    current = *++p;
+    delta = alpha * (current - g);
+    if (delta < 0) {
+        delta += 0x3FF;
     }
-    *reinterpret_cast<int *>(reinterpret_cast<unsigned char *>(network) + i + 4) = current - (value >> 10);
+    p[0] = current - (delta >> 10);
 
-    current = *reinterpret_cast<int *>(reinterpret_cast<unsigned char *>(network) + i + 8);
-    value = alpha * (current - r);
-    if (value < 0) {
-        value += 0x3FF;
+    current = *++p;
+    delta = alpha * (current - r);
+    if (delta < 0) {
+        delta += 0x3FF;
     }
-    *reinterpret_cast<int *>(reinterpret_cast<unsigned char *>(network) + i + 8) = current - (value >> 10);
+    p[0] = current - (delta >> 10);
 
-    current = *reinterpret_cast<int *>(reinterpret_cast<unsigned char *>(network) + i + 12);
+    current = *++p;
     alpha *= current - aa;
     if (alpha < 0) {
         alpha += 0x3FF;
     }
-    *reinterpret_cast<int *>(reinterpret_cast<unsigned char *>(network) + i + 12) = current - (alpha >> 10);
+    p[0] = current - (alpha >> 10);
 }
 
 static void alterneigh(int rad, int i, int b, int g, int r, int aa) {
@@ -381,65 +402,67 @@ static void alterneigh(int rad, int i, int b, int g, int r, int aa) {
         int a = *++q;
 
         if (j < hi) {
-            int offset = j * 0x14;
-            int value = a * (*reinterpret_cast<int *>(reinterpret_cast<unsigned char *>(network) + offset) - b);
-            if (value < 0) {
-                value += 0x3FFFF;
+            int *p = &network[j][0];
+            int current = p[0];
+            int delta = a * (current - b);
+            if (delta < 0) {
+                delta += 0x3FFFF;
             }
-            *reinterpret_cast<int *>(reinterpret_cast<unsigned char *>(network) + offset) -= value >> 18;
+            p[0] = current - (delta >> 18);
 
-            int current = *reinterpret_cast<int *>(reinterpret_cast<unsigned char *>(network) + offset + 4);
-            value = a * (current - g);
-            if (value < 0) {
-                value += 0x3FFFF;
+            current = p[1];
+            delta = a * (current - g);
+            if (delta < 0) {
+                delta += 0x3FFFF;
             }
-            *reinterpret_cast<int *>(reinterpret_cast<unsigned char *>(network) + offset + 4) = current - (value >> 18);
+            p[1] = current - (delta >> 18);
 
-            current = *reinterpret_cast<int *>(reinterpret_cast<unsigned char *>(network) + offset + 8);
-            value = a * (current - r);
-            if (value < 0) {
-                value += 0x3FFFF;
+            current = p[2];
+            delta = a * (current - r);
+            if (delta < 0) {
+                delta += 0x3FFFF;
             }
-            *reinterpret_cast<int *>(reinterpret_cast<unsigned char *>(network) + offset + 8) = current - (value >> 18);
+            p[2] = current - (delta >> 18);
 
-            current = *reinterpret_cast<int *>(reinterpret_cast<unsigned char *>(network) + offset + 12);
-            value = a * (current - aa);
-            if (value < 0) {
-                value += 0x3FFFF;
+            current = p[3];
+            delta = a * (current - aa);
+            if (delta < 0) {
+                delta += 0x3FFFF;
             }
             j++;
-            *reinterpret_cast<int *>(reinterpret_cast<unsigned char *>(network) + offset + 12) = current - (value >> 18);
+            p[3] = current - (delta >> 18);
         }
 
         if (lo < i) {
-            int offset = i * 0x14;
-            int value = a * (*reinterpret_cast<int *>(reinterpret_cast<unsigned char *>(network) + offset) - b);
-            if (value < 0) {
-                value += 0x3FFFF;
+            int *p = &network[i][0];
+            int current = p[0];
+            int delta = a * (current - b);
+            if (delta < 0) {
+                delta += 0x3FFFF;
             }
-            *reinterpret_cast<int *>(reinterpret_cast<unsigned char *>(network) + offset) -= value >> 18;
+            p[0] = current - (delta >> 18);
 
-            int current = *reinterpret_cast<int *>(reinterpret_cast<unsigned char *>(network) + offset + 4);
-            value = a * (current - g);
-            if (value < 0) {
-                value += 0x3FFFF;
+            current = p[1];
+            delta = a * (current - g);
+            if (delta < 0) {
+                delta += 0x3FFFF;
             }
-            *reinterpret_cast<int *>(reinterpret_cast<unsigned char *>(network) + offset + 4) = current - (value >> 18);
+            p[1] = current - (delta >> 18);
 
-            current = *reinterpret_cast<int *>(reinterpret_cast<unsigned char *>(network) + offset + 8);
-            value = a * (current - r);
-            if (value < 0) {
-                value += 0x3FFFF;
+            current = p[2];
+            delta = a * (current - r);
+            if (delta < 0) {
+                delta += 0x3FFFF;
             }
-            *reinterpret_cast<int *>(reinterpret_cast<unsigned char *>(network) + offset + 8) = current - (value >> 18);
+            p[2] = current - (delta >> 18);
 
-            current = *reinterpret_cast<int *>(reinterpret_cast<unsigned char *>(network) + offset + 12);
+            current = p[3];
             a *= current - aa;
             if (a < 0) {
                 a += 0x3FFFF;
             }
             i--;
-            *reinterpret_cast<int *>(reinterpret_cast<unsigned char *>(network) + offset + 12) = current - (a >> 18);
+            p[3] = current - (a >> 18);
         }
     }
 }
