@@ -399,6 +399,7 @@ const unsigned int *GetCarEffectMarkerHashes(CarEffectPosition fx_pos) {
 
 CarPartCullingPlaneInfo CarPartCullingPlaneInfoTable[11];
 const CarPartCullingPlaneInfo *pCurrentPartCullingPlaneInfo = nullptr;
+extern "C" void __5ePoly(ePoly *);
 
 void CarPartCuller::InitPart(eCullableCarParts type, const bVector3 *position) {
     CarPartCullingPlaneInfo *plane_info = &CarPartCullingPlaneInfoTable[type];
@@ -2456,6 +2457,7 @@ void CarRenderInfo::RenderTextureHeadlights(eView *view, bMatrix4 *l_w, unsigned
         }
 
         ePoly poly;
+        __5ePoly(&poly);
         TextureInfo *texture_info = GetTextureInfo(bStringHash("2PLAYERHEADLIGHT1"), 1, 0);
 
         poly.Vertices[0].x = hOffX - hRad0x;
