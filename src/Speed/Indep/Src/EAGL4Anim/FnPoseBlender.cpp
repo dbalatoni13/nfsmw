@@ -5,6 +5,58 @@
 
 namespace EAGL4 {
 
+static inline void EAGL4m3toquat(const UMath::Matrix3 *mat, UMath::Vector4 *result) {
+    float s;
+    float trace = (*mat)[0][0] + (*mat)[1][1] + (*mat)[2][2];
+
+    if (trace > 0.0f) {
+        s = EAGL4Anim::FastSqrt(trace + 1.0f);
+        result->w = s * 0.5f;
+        s = 0.5f / s;
+        result->x = ((*mat)[1][2] - (*mat)[2][1]) * s;
+        result->y = ((*mat)[2][0] - (*mat)[0][2]) * s;
+        result->z = ((*mat)[0][1] - (*mat)[1][0]) * s;
+    } else {
+        unsigned long i = 0;
+
+        if ((*mat)[1][1] > (*mat)[0][0]) {
+            i = 1;
+        }
+        if ((*mat)[2][2] > (*mat)[i][i]) {
+            i = 2;
+        }
+
+        if (i == 0) {
+            s = EAGL4Anim::FastSqrt(((*mat)[0][0] - ((*mat)[1][1] + (*mat)[2][2])) + 1.0f);
+            result->x = s * 0.5f;
+            if (s != 0.0f) {
+                s = 0.5f / s;
+            }
+            result->w = ((*mat)[1][2] - (*mat)[2][1]) * s;
+            result->y = ((*mat)[0][1] + (*mat)[1][0]) * s;
+            result->z = ((*mat)[0][2] + (*mat)[2][0]) * s;
+        } else if (i == 1) {
+            s = EAGL4Anim::FastSqrt(((*mat)[1][1] - ((*mat)[2][2] + (*mat)[0][0])) + 1.0f);
+            result->y = s * 0.5f;
+            if (s != 0.0f) {
+                s = 0.5f / s;
+            }
+            result->w = ((*mat)[2][0] - (*mat)[0][2]) * s;
+            result->x = ((*mat)[1][0] + (*mat)[0][1]) * s;
+            result->z = ((*mat)[1][2] + (*mat)[2][1]) * s;
+        } else {
+            s = EAGL4Anim::FastSqrt(((*mat)[2][2] - ((*mat)[0][0] + (*mat)[1][1])) + 1.0f);
+            result->z = s * 0.5f;
+            if (s != 0.0f) {
+                s = 0.5f / s;
+            }
+            result->w = ((*mat)[0][1] - (*mat)[1][0]) * s;
+            result->x = ((*mat)[2][0] + (*mat)[0][2]) * s;
+            result->y = ((*mat)[2][1] + (*mat)[1][2]) * s;
+        }
+    }
+}
+
 void MultMatrix(const UMath::Matrix4 *pm1, const UMath::Matrix4 *pm2, UMath::Matrix4 *presult) {
     const float *m1 = pm1->GetElements();
     const float *m2 = pm2->GetElements();
@@ -41,66 +93,19 @@ void Transform::PostMult(const Transform &second) {
 
 void Transform::ExtractQuatTrans(UMath::Vector4 *retQuat, UMath::Vector4 *retTrans) const {
     const float *mat = m.GetElements();
-    float xx = mat[0];
-    float yy = mat[5];
-    float zz = mat[10];
-    float trace = xx + yy + zz;
+    UMath::Matrix3 m3;
 
-    if (trace > 0.0f) {
-        float s = EAGL4Anim::FastSqrt(trace + 1.0f);
-        float invS = 0.5f / s;
+    m3[0][0] = mat[0];
+    m3[0][1] = mat[1];
+    m3[0][2] = mat[2];
+    m3[1][0] = mat[4];
+    m3[1][1] = mat[5];
+    m3[1][2] = mat[6];
+    m3[2][0] = mat[8];
+    m3[2][1] = mat[9];
+    m3[2][2] = mat[10];
 
-        retQuat->w = s * 0.5f;
-        retQuat->z = (mat[1] - mat[4]) * invS;
-        retQuat->x = (mat[6] - mat[9]) * invS;
-        retQuat->y = (mat[8] - mat[2]) * invS;
-    } else {
-        if (xx < yy) {
-            if (zz > yy) {
-                float s = EAGL4Anim::FastSqrt((zz - (xx + yy)) + 1.0f);
-
-                retQuat->z = s * 0.5f;
-                if (s != 0.0f) {
-                    s = 0.5f / s;
-                }
-                retQuat->w = (mat[1] - mat[4]) * s;
-                retQuat->y = (mat[9] + mat[6]) * s;
-                retQuat->x = (mat[8] + mat[2]) * s;
-            } else {
-                float s = EAGL4Anim::FastSqrt((yy - (zz + xx)) + 1.0f);
-
-                retQuat->y = s * 0.5f;
-                if (s != 0.0f) {
-                    s = 0.5f / s;
-                }
-                retQuat->w = (mat[8] - mat[2]) * s;
-                retQuat->x = (mat[4] + mat[1]) * s;
-                retQuat->z = (mat[6] + mat[9]) * s;
-            }
-        } else {
-            if (zz > xx) {
-                float s = EAGL4Anim::FastSqrt((zz - (xx + yy)) + 1.0f);
-
-                retQuat->z = s * 0.5f;
-                if (s != 0.0f) {
-                    s = 0.5f / s;
-                }
-                retQuat->w = (mat[1] - mat[4]) * s;
-                retQuat->y = (mat[9] + mat[6]) * s;
-                retQuat->x = (mat[8] + mat[2]) * s;
-            } else {
-                float s = EAGL4Anim::FastSqrt((xx - (yy + zz)) + 1.0f);
-
-                retQuat->x = s * 0.5f;
-                if (s != 0.0f) {
-                    s = 0.5f / s;
-                }
-                retQuat->w = (mat[6] - mat[9]) * s;
-                retQuat->y = (mat[1] + mat[4]) * s;
-                retQuat->z = (mat[2] + mat[8]) * s;
-            }
-        }
-    }
+    EAGL4m3toquat(&m3, retQuat);
 
     retTrans->x = mat[12];
     retTrans->y = mat[13];
