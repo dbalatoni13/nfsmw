@@ -15,7 +15,7 @@ extern CarType GetCarType__15CarPartDatabaseUi(CarPartDatabase *database, unsign
     asm("GetCarType__15CarPartDatabaseUi");
 extern int GetAppliedAttributeIParam__7CarPartUii(const CarPart *part, unsigned int key, int default_value)
     asm("GetAppliedAttributeIParam__7CarPartUii");
-extern int GetCarPartIDFromCrc(UCrc32 part_name) asm("GetCarPartIDFromCrc__FG6UCrc32");
+extern int GetCarPartIDFromCrc(UCrc32 part_name);
 extern void bRotateVector(bVector3 *dest, const bMatrix4 *m, bVector3 *v);
 extern void MakeNoSkid__9SkidMaker(void *skid_maker) asm("MakeNoSkid__9SkidMaker");
 extern void MakeSkid__9SkidMakerP3CarP8bVector3T2if(void *skid_maker, Car *car, bVector3 *skid_centre, bVector3 *skid_direction,

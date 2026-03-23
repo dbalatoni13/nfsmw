@@ -57,3 +57,23 @@ const char *GetCarSlotNameFromID(int car_slot_id) {
 
     return 0;
 }
+
+int GetCarPartIDFromCrc(UCrc32 crc) {
+    int num_car_part_names = GetNumCarPartIDNames();
+
+    if (num_car_part_names > 0) {
+        for (int i = 0; i < num_car_part_names; i++) {
+            if (crc == CarPartIDNames[i].NameHash) {
+                return CarPartIDNames[i].PartID;
+            }
+        }
+    }
+
+    for (unsigned int j = 0; j < 1; j++) {
+        if (crc == CarPartIDOldNames[j].NameHash) {
+            return CarPartIDOldNames[j].PartID;
+        }
+    }
+
+    return -1;
+}

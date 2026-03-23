@@ -5,7 +5,7 @@
 #include "Speed/Indep/Src/Physics/Bounds.h"
 #include "Speed/Indep/bWare/Inc/bMemory.hpp"
 
-int GetCarPartIDFromCrc(UCrc32 part_name) asm("GetCarPartIDFromCrc__FG6UCrc32");
+int GetCarPartIDFromCrc(UCrc32 part_name);
 const CollisionGeometry::Bounds *CollisionGeometry_Collection_GetBounds(const CollisionGeometry::Collection *collection, UCrc32 name_hash)
     asm("GetBounds__CQ217CollisionGeometry10CollectionG6UCrc32");
 void OrthoInverse(UMath::Matrix4 &m);
