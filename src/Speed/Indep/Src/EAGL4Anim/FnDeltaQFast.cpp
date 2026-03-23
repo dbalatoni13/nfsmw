@@ -184,8 +184,8 @@ FnDeltaQFast::FnDeltaQFast()
 }
 
 FnDeltaQFast::~FnDeltaQFast() {
-    if (mPrevQBlock) {
-        MemoryPoolManager::DeleteBlock(mPrevQBlock);
+    if (mMinRangesf) {
+        MemoryPoolManager::DeleteBlock(mMinRangesf);
     }
 }
 
