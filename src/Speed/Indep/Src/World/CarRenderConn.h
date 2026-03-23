@@ -85,6 +85,8 @@ class Pkt_Car_Service : public Sim::Packet {
         return SType();
     }
 
+    void HidePart(const UCrc32 &partname);
+
     float mCompressions[4];              // offset 0x4, size 0x10
     float mWheelSpeed[4];                // offset 0x14, size 0x10
     float mTireSkid[4];                  // offset 0x24, size 0x10

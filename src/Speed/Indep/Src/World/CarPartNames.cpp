@@ -1,0 +1,59 @@
+#include "Speed/Indep/Libs/Support/Utility/UCrc.h"
+
+struct CarPartIDName {
+    int PartID;
+    const char *Name;
+    unsigned int NameHash;
+};
+
+struct CarSlotIDName {
+    int SlotID;
+    const char *Name;
+};
+
+extern CarPartIDName CarPartIDNames[] asm("CarPartIDNames");
+extern CarPartIDName CarPartIDOldNames[] asm("CarPartIDOldNames");
+extern CarSlotIDName CarSlotIDNames[] asm("CarSlotIDNames");
+
+int GetNumCarPartIDNames();
+int GetNumCarSlotIDNames();
+
+const char *GetCarPartNameFromID(int car_part_id) {
+    int num_car_part_names = GetNumCarPartIDNames();
+
+    if (-1 < car_part_id && car_part_id < num_car_part_names) {
+        int index = car_part_id;
+
+        if (CarPartIDNames[index].PartID == index) {
+            return CarPartIDNames[index].Name;
+        }
+
+        for (index = 0; index < num_car_part_names; index++) {
+            if (CarPartIDNames[index].PartID == car_part_id) {
+                return CarPartIDNames[index].Name;
+            }
+        }
+    }
+
+    return 0;
+}
+
+const char *GetCarSlotNameFromID(int car_slot_id) {
+    int num_car_slot_names = GetNumCarSlotIDNames();
+
+    if (-1 < car_slot_id && car_slot_id < num_car_slot_names) {
+        int index = car_slot_id;
+
+        if (CarSlotIDNames[index].SlotID == index) {
+            return CarSlotIDNames[index].Name;
+        }
+
+        for (index = 0; index < num_car_slot_names; index++) {
+            if (CarSlotIDNames[index].SlotID == car_slot_id) {
+                return CarSlotIDNames[index].Name;
+            }
+        }
+    }
+
+    return 0;
+}

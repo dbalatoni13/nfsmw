@@ -32,6 +32,8 @@
 
 #include "Speed/Indep/Src/World/CarInfo.cpp"
 
+#include "Speed/Indep/Src/World/CarPartNames.cpp"
+
 #include "Speed/Indep/Src/World/CarLoader.cpp"
 
 #include "Speed/Indep/Src/World/CarSkin.cpp"
