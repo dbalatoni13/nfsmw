@@ -505,7 +505,7 @@ void VehicleRenderConn::RenderFlares(eView *view, int reflection, int renderFlar
                 }
 
                 {
-                    const bVector3 *velocity = world_ref->mVelocity;
+                    const bVector3 *velocity = reinterpret_cast<const ReferenceMirror *>(&vehicle_render_conn->mWorldRef)->mVelocity;
                     float speed_sq = velocity->z * velocity->z + velocity->x * velocity->x + velocity->y * velocity->y;
                     float speed = bSqrt(speed_sq);
 
