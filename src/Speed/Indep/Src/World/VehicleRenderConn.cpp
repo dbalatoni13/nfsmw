@@ -510,9 +510,9 @@ void VehicleRenderConn::RenderFlares(eView *view, int reflection, int renderFlar
                     float speed = bSqrt(speed_sq);
 
                     if (0.1f < speed && render_info->NOSstate != 0) {
-                        for (int streak = 2; streak > 0; --streak) {
-                            int current_index = (render_info->matrixIndex + streak) % 3;
-                            int next_index = (render_info->matrixIndex + streak - 1) % 3;
+                        for (int streak = 3; streak > 1; --streak) {
+                            int current_index = (render_info->matrixIndex + streak - 1) % 3;
+                            int next_index = (render_info->matrixIndex + streak - 2) % 3;
                             bVector3 delta = render_info->LastFewPositions[current_index] - render_info->LastFewPositions[next_index];
                             bVector3 flare_position(delta);
 
