@@ -569,11 +569,11 @@ void SFXCTL_Tunnel::UpdateDriveBySnds(float t) {
     eTrackPathZoneType PrevFutureZoneType = FutureZoneType;
     TrackPathZone *zone;
     const bVector2 *CurCarPos;
+    bVector3 FutureCarPos;
     bVector2 UnNormalCurCarDir;
     bVector2 CurCarDir;
     bVector2 FutureCarDir;
     bVector2 FutureCar2dPos;
-    bVector3 FutureCarPos;
 
     bPlayDriveBy = false;
     bPlayTunnelExit = false;
