@@ -280,7 +280,8 @@ LoadedSolidPack::LoadedSolidPack(const char *filename) {
 }
 
 int CarInfo_GetResourceCost(CarType car_type, bool is_player_car, bool two_player) {
-    int car_memory_info = CarTypeInfoArray[car_type].CarMemTypeHash;
+    CarTypeInfo *car_type_info = &CarTypeInfoArray[car_type];
+    int car_memory_info = car_type_info->CarMemTypeHash;
     int i;
     CarMemoryInfoEntryLayout *entry;
 
@@ -292,10 +293,11 @@ int CarInfo_GetResourceCost(CarType car_type, bool is_player_car, bool two_playe
     i = 0;
     do {
         entry = &CarMemoryInfoTable[i];
-        if (bStringHash(entry->Name) == car_memory_info) {
+        if (bStringHash(entry->Name) != car_memory_info) {
+            i++;
+        } else {
             return entry->Size << 10;
         }
-        i++;
     } while (i < 6);
 
     return 0;
