@@ -6,6 +6,9 @@
 
 typedef float Mtx44[4][4];
 
+extern SlotPool *VehicleDamagePartSlotPool;
+extern SlotPool *VehiclePartDamageZoneSlotPool;
+
 struct VehiclePartDamageZone {
     struct DamageZoneSlotMapDataType {
         int ZoneId;
@@ -20,7 +23,12 @@ struct VehiclePartDamageZone {
     int *mSlotIdsReserved;
     int *mSlotIdsCapacityEnd;
 
+    static void operator delete(void *ptr) {
+        bFree(VehiclePartDamageZoneSlotPool, ptr);
+    }
+
     VehiclePartDamageZone(int zoneId, DamageZoneSlotMapDataType *zoneSlotMappingDataList);
+    ~VehiclePartDamageZone();
     void Reset();
     int GetSlotNum() const;
     int GetSlotID(int index) const;
@@ -40,14 +48,16 @@ struct VehicleDamagePart {
     int mAttached;
     int mHidden;
 
+    static void operator delete(void *ptr) {
+        bFree(VehicleDamagePartSlotPool, ptr);
+    }
+
     VehicleDamagePart(CarRenderInfo *carRenderInfo, int slotId);
     ~VehicleDamagePart();
     void Reset();
 };
 
 extern CarPartDatabase CarPartDB;
-extern SlotPool *VehicleDamagePartSlotPool;
-extern SlotPool *VehiclePartDamageZoneSlotPool;
 extern unsigned int unitTestDelay;
 extern unsigned int uniTestLevel;
 extern "C" void PSMTX44Copy(const Mtx44 src, Mtx44 dst);
@@ -133,6 +143,11 @@ VehiclePartDamageZone::VehiclePartDamageZone(int zoneId, DamageZoneSlotMapDataTy
             zoneSlotIndex++;
         } while (currentZoneId != 0xFFFF);
     }
+}
+
+VehiclePartDamageZone::~VehiclePartDamageZone() {
+    typedef UTL::Std::vector<int, _type_vector> SlotIdVector;
+    reinterpret_cast<SlotIdVector *>(&mSlotIdsStart)->~SlotIdVector();
 }
 
 void VehiclePartDamageZone::Reset() {
