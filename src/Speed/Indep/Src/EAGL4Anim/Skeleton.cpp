@@ -4,43 +4,46 @@ static void MtxMult(EAGL4::Transform *result, const EAGL4::Transform *A, const E
 
 namespace EAGL4Anim {
 
+extern void (*MatrixMultiply)(EAGL4::Transform *, const EAGL4::Transform *, const EAGL4::Transform *);
+
 void Skeleton::PoseSQTToGlobal(float *pose, EAGL4::Transform *output, BoneMask *mask) {
-    int numBones = GetNumBones();
+    BoneData *bones = GetBoneData();
+    int n = GetNumBones();
 
-    if (!mask) {
-        for (int i = 0; i < numBones; i++) {
-            float *bonePose = pose;
-            float *mat = output[i].m.GetElements();
+    if (mask) {
+        for (int i = 0; i < n; i++) {
+            if (mask->GetBone(i)) {
+                int p = bones[i].mParentIdx;
+                float *poseData = pose;
+                float *mat = output[i].m.GetElements();
 
-            output[i].BuildSQT(bonePose[0], bonePose[1], bonePose[2], bonePose[4], bonePose[5], bonePose[6], bonePose[7], bonePose[8],
-                               bonePose[9], bonePose[10]);
-            mat[0] *= bonePose[3];
-            mat[4] *= bonePose[3];
-            mat[8] *= bonePose[3];
+                output[i].BuildSQT(poseData[0], poseData[1], poseData[2], poseData[4], poseData[5], poseData[6], poseData[7], poseData[8],
+                                   poseData[9], poseData[10]);
+                mat[0] *= poseData[3];
+                mat[4] *= poseData[3];
+                mat[8] *= poseData[3];
 
-            int parentIdx = GetBoneData(i).mParentIdx;
-            if (parentIdx > -1) {
-                MtxMult(&output[i], &output[parentIdx], &output[i]);
+                if (p > -1) {
+                    MatrixMultiply(&output[i], &output[p], &output[i]);
+                }
             }
 
             pose += 12;
         }
     } else {
-        for (int i = 0; i < numBones; i++) {
-            if (mask->GetBone(i)) {
-                float *bonePose = pose;
-                float *mat = output[i].m.GetElements();
+        for (int i = 0; i < n; i++) {
+            int p = bones[i].mParentIdx;
+            float *poseData = pose;
+            float *mat = output[i].m.GetElements();
 
-                output[i].BuildSQT(bonePose[0], bonePose[1], bonePose[2], bonePose[4], bonePose[5], bonePose[6], bonePose[7], bonePose[8],
-                                   bonePose[9], bonePose[10]);
-                mat[0] *= bonePose[3];
-                mat[4] *= bonePose[3];
-                mat[8] *= bonePose[3];
+            output[i].BuildSQT(poseData[0], poseData[1], poseData[2], poseData[4], poseData[5], poseData[6], poseData[7], poseData[8],
+                               poseData[9], poseData[10]);
+            mat[0] *= poseData[3];
+            mat[4] *= poseData[3];
+            mat[8] *= poseData[3];
 
-                int parentIdx = GetBoneData(i).mParentIdx;
-                if (parentIdx > -1) {
-                    MtxMult(&output[i], &output[parentIdx], &output[i]);
-                }
+            if (p > -1) {
+                MatrixMultiply(&output[i], &output[p], &output[i]);
             }
 
             pose += 12;
