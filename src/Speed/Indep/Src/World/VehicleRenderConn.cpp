@@ -507,11 +507,7 @@ void VehicleRenderConn::RenderFlares(eView *view, int reflection, int renderFlar
                 {
                     const bVector3 *velocity = world_ref->mVelocity;
                     float speed_sq = velocity->x * velocity->x + velocity->y * velocity->y + velocity->z * velocity->z;
-                    float speed = 0.0f;
-
-                    if (0.0f < speed_sq) {
-                        speed = bSqrt(speed_sq);
-                    }
+                    float speed = bSqrt(speed_sq);
 
                     if (0.1f < speed && render_info->NOSstate != 0) {
                         for (int streak = 2; streak > 0; --streak) {
