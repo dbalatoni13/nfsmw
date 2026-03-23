@@ -2448,11 +2448,15 @@ void CarRenderInfo::RenderTextureHeadlights(eView *view, bMatrix4 *l_w, unsigned
         *matrix = *l_w;
     }
 
-    if (matrix != 0 && matrix->v2.z >= 0.707f) {
+    if (matrix != 0) {
+        bVector3 headlight_direction(0.0f, 0.0f, 1.0f);
+
+        if (bDot(reinterpret_cast<const bVector3 *>(&matrix->v2), &headlight_direction) < 0.707f) {
+            return;
+        }
+
         ePoly poly;
         TextureInfo *texture_info = GetTextureInfo(bStringHash("2PLAYERHEADLIGHT1"), 1, 0);
-
-        bMemSet(&poly, 0, sizeof(poly));
 
         poly.Vertices[0].x = hOffX - hRad0x;
         poly.Vertices[0].y = hOffY - hRad0y;
