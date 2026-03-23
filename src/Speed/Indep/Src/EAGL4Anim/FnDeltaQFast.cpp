@@ -394,7 +394,7 @@ void FnDeltaQFast::UpdateNextQsMask(DeltaQFast *deltaQ, int ceilKey, int floorBi
         unsigned char numBones = deltaQ->mNumBones;
         DeltaQFastPhysical *physical = reinterpret_cast<DeltaQFastPhysical *>(binData);
 
-        for (int ibone = 0; ibone < numBones; ibone++) {
+        for (int ibone = 0; ibone < deltaQ->mNumBones; ibone++) {
             unsigned char boneIdx = boneIdxs[ibone];
             if (boneMask->GetBone(boneIdx)) {
                 float *nextQ = reinterpret_cast<float *>(&mNextQs[ibone]);
@@ -413,7 +413,7 @@ void FnDeltaQFast::UpdateNextQsMask(DeltaQFast *deltaQ, int ceilKey, int floorBi
         unsigned int numBones = deltaQ->mNumBones;
         unsigned char *deltaData = &binData[numBones * 6 + floorDeltaIdx * numBones * 3];
 
-        for (int ibone = 0; ibone < static_cast<int>(numBones); ibone++) {
+        for (int ibone = 0; ibone < deltaQ->mNumBones; ibone++) {
             unsigned char boneIdx = boneIdxs[ibone];
             if (boneMask->GetBone(boneIdx)) {
                 float *prevQ = reinterpret_cast<float *>(&mPrevQs[ibone]);
