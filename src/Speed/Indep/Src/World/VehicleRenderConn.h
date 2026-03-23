@@ -25,12 +25,18 @@ class Reference {
     bool IsValid() const;
     void operator=(const Reference &from);
     void operator=(unsigned int id);
-    unsigned int GetWorldID() const;
-    const bMatrix4 *GetMatrix() const;
+    unsigned int GetWorldID() const {
+        return this->mWorldID;
+    }
+    const bMatrix4 *GetMatrix() const {
+        return this->mMatrix;
+    }
     const bVector3 *GetVelocity() const {
         return this->mVelocity;
     }
-    const bVector3 *GetAcceleration() const;
+    const bVector3 *GetAcceleration() const {
+        return this->mAcceleration;
+    }
 
     void Set(unsigned int worldid);
     void Lock();
@@ -114,16 +120,30 @@ class VehicleRenderConn : public Sim::Connection, public UTL::Collections::Lista
         return this->mRenderInfo;
     }
     const bVector3 *GetPosition() const;
-    const bMatrix4 *GetBodyMatrix() const;
+    const bMatrix4 *GetBodyMatrix() const {
+        return this->mWorldRef.GetMatrix();
+    }
     const bVector3 *GetVelocity() const {
         return this->mWorldRef.GetVelocity();
     }
-    const bVector3 *GetAcceleration() const;
-    bool IsLoaded() const;
-    eState GetState() const;
-    unsigned int GetWorldID() const;
-    CarType GetCarType() const;
-    WCollider *GetWCollider() const;
+    const bVector3 *GetAcceleration() const {
+        return this->mWorldRef.GetAcceleration();
+    }
+    bool IsLoaded() const {
+        return this->mState == S_Loaded;
+    }
+    eState GetState() const {
+        return this->mState;
+    }
+    unsigned int GetWorldID() const {
+        return this->mWorldRef.GetWorldID();
+    }
+    CarType GetCarType() const {
+        return this->mCarType;
+    }
+    WCollider *GetWCollider() const {
+        return this->mWCollider;
+    }
 
   protected:
     bool CanUpdate() const;
