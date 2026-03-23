@@ -1494,11 +1494,11 @@ void CarRenderInfo::UpdateCarParts() {
     if (spoiler_part != 0) {
         mirror_left_wheels = (reinterpret_cast<CarPartMetaLayout *>(spoiler_part)->GroupNumber_UpgradeLevel >> 5) == 0;
     }
-    this->mMirrorLeftWheels = mirror_left_wheels;
 
     for (int lod = this->mMinLodLevel; lod <= this->mMaxLodLevel; lod++) {
-        this->mCarPartModels[CARSLOTID_UNIVERSAL_SPOILER_BASE][0][lod].Hide(this->mMirrorLeftWheels);
+        this->mCarPartModels[CARSLOTID_UNIVERSAL_SPOILER_BASE][0][lod].Hide(mirror_left_wheels);
     }
+    this->mMirrorLeftWheels = mirror_left_wheels;
 
     this->SetCarDamageState(false, 0x2E, 0x33);
 }
