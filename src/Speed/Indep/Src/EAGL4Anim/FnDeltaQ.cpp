@@ -191,8 +191,8 @@ bool FnDeltaQ::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask) {
             UMath::Vector4 *prevQs = reinterpret_cast<UMath::Vector4 *>(MemoryPoolManager::NewBlock(numBones * sizeof(*mPrevQs)));
 
             mMinRanges = minRanges;
-            mPrevQs = prevQs;
             mPrevQBlock = prevQs;
+            mPrevQs = prevQs;
         } else {
             mMinRanges = minRanges;
         }
@@ -407,8 +407,8 @@ bool FnDeltaQ::EvalSQTMasked(float currTime, const BoneMask *boneMask, float *sq
             UMath::Vector4 *prevQs = reinterpret_cast<UMath::Vector4 *>(MemoryPoolManager::NewBlock(numBones * sizeof(*mPrevQs)));
 
             mMinRanges = minRanges;
-            mPrevQs = prevQs;
             mPrevQBlock = prevQs;
+            mPrevQs = prevQs;
         } else {
             mMinRanges = minRanges;
         }
