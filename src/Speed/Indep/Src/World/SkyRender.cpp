@@ -63,50 +63,64 @@ void Render(eViewPlatInterface *view, eModel *model, bMatrix4 *local_to_world, e
 } // namespace
 
 int SkyInitModel(eModel *model, bMatrix4 *local_world, unsigned int scenery_name_hash) {
-    int result = 1;
-
-    if (model->GetNameHash() == 0) {
-        if (eFindSolid(scenery_name_hash) == 0) {
-            result = 0;
-        } else {
-            model->Init(scenery_name_hash);
-            PSMTX44Identity(*reinterpret_cast<Mtx44 *>(local_world));
-
-            SceneryInstance *scenery_instance = FindSceneryInstance(scenery_name_hash);
-            if (scenery_instance != 0) {
-                unsigned int detail_level = 0;
-
-                local_world->v0.x = static_cast<float>(scenery_instance->Rotation[0]) * lbl_8040B0FC;
-                local_world->v0.y = static_cast<float>(scenery_instance->Rotation[1]) * lbl_8040B0FC;
-                local_world->v0.z = static_cast<float>(scenery_instance->Rotation[2]) * lbl_8040B0FC;
-                local_world->v0.w = lbl_8040B108;
-                local_world->v1.x = static_cast<float>(scenery_instance->Rotation[3]) * lbl_8040B0FC;
-                local_world->v1.y = static_cast<float>(scenery_instance->Rotation[4]) * lbl_8040B0FC;
-                local_world->v1.z = static_cast<float>(scenery_instance->Rotation[5]) * lbl_8040B0FC;
-                local_world->v1.w = lbl_8040B108;
-                local_world->v2.x = static_cast<float>(scenery_instance->Rotation[6]) * lbl_8040B0FC;
-                local_world->v2.y = static_cast<float>(scenery_instance->Rotation[7]) * lbl_8040B0FC;
-                local_world->v2.z = static_cast<float>(scenery_instance->Rotation[8]) * lbl_8040B0FC;
-                local_world->v2.w = lbl_8040B108;
-                local_world->v3.x = scenery_instance->Position[0];
-                local_world->v3.y = scenery_instance->Position[1];
-                local_world->v3.z = scenery_instance->Position[2];
-                local_world->v3.w = lbl_8040B10C;
-
-                int *scenery_info_models = reinterpret_cast<int *>(reinterpret_cast<char *>(FindSceneryInfo(scenery_name_hash)) + 0x28);
-
-                do {
-                    if (*scenery_info_models != 0) {
-                        model->UnInit();
-                    }
-                    detail_level++;
-                    scenery_info_models++;
-                } while (detail_level < 4);
-            }
-        }
+    if (model->GetNameHash() != 0) {
+        return 1;
     }
 
-    return result;
+    if (eFindSolid(scenery_name_hash) == 0) {
+        return 0;
+    }
+
+    model->Init(scenery_name_hash);
+    PSMTX44Identity(*reinterpret_cast<Mtx44 *>(local_world));
+
+    SceneryInstance *scenery_instance = FindSceneryInstance(scenery_name_hash);
+    if (scenery_instance != 0) {
+        short rotation0 = scenery_instance->Rotation[0];
+        short rotation1 = scenery_instance->Rotation[1];
+        short rotation2 = scenery_instance->Rotation[2];
+        float rotation_scale = lbl_8040B0FC;
+        float row_w = lbl_8040B108;
+        float matrix_w = lbl_8040B10C;
+        unsigned int detail_level = 0;
+
+        local_world->v0.x = static_cast<float>(rotation0) * rotation_scale;
+        local_world->v0.y = static_cast<float>(rotation1) * rotation_scale;
+        local_world->v0.z = static_cast<float>(rotation2) * rotation_scale;
+        local_world->v0.w = row_w;
+
+        rotation0 = scenery_instance->Rotation[3];
+        rotation1 = scenery_instance->Rotation[4];
+        rotation2 = scenery_instance->Rotation[5];
+        local_world->v1.x = static_cast<float>(rotation0) * rotation_scale;
+        local_world->v1.y = static_cast<float>(rotation1) * rotation_scale;
+        local_world->v1.z = static_cast<float>(rotation2) * rotation_scale;
+        local_world->v1.w = row_w;
+
+        rotation0 = scenery_instance->Rotation[6];
+        rotation1 = scenery_instance->Rotation[7];
+        rotation2 = scenery_instance->Rotation[8];
+        local_world->v2.x = static_cast<float>(rotation0) * rotation_scale;
+        local_world->v2.y = static_cast<float>(rotation1) * rotation_scale;
+        local_world->v2.z = static_cast<float>(rotation2) * rotation_scale;
+        local_world->v2.w = row_w;
+        local_world->v3.x = scenery_instance->Position[0];
+        local_world->v3.y = scenery_instance->Position[1];
+        local_world->v3.z = scenery_instance->Position[2];
+        local_world->v3.w = matrix_w;
+
+        int *scenery_info_models = reinterpret_cast<int *>(reinterpret_cast<char *>(FindSceneryInfo(scenery_name_hash)) + 0x28);
+
+        do {
+            if (*scenery_info_models != 0) {
+                model->UnInit();
+            }
+            detail_level++;
+            scenery_info_models++;
+        } while (detail_level < 4);
+    }
+
+    return 1;
 }
 
 void StuffSpecular(eView *view) {
