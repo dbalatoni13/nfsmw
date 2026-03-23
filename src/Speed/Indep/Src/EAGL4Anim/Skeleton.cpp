@@ -8,21 +8,21 @@ extern void (*MatrixMultiply)(EAGL4::Transform *, const EAGL4::Transform *, cons
 
 void Skeleton::PoseSQTToGlobal(float *pose, EAGL4::Transform *output, BoneMask *mask) {
     if (mask) {
+        int i;
+        int p;
         float *poseData = pose;
         BoneData *bones = GetBoneData();
         int n = GetNumBones();
 
-        for (int i = 0; i < n; i++) {
+        for (i = 0; i < n; i++) {
             if (mask->GetBone(i)) {
-                float *mat = output[i].m.GetElements();
-
                 output[i].BuildSQT(poseData[0], poseData[1], poseData[2], poseData[4], poseData[5], poseData[6], poseData[7], poseData[8],
                                    poseData[9], poseData[10]);
-                mat[0] *= poseData[3];
-                mat[4] *= poseData[3];
-                mat[8] *= poseData[3];
+                output[i].m.v0.x *= poseData[3];
+                output[i].m.v1.x *= poseData[3];
+                output[i].m.v2.x *= poseData[3];
 
-                int p = bones[i].mParentIdx;
+                p = bones[i].mParentIdx;
                 if (p >= 0) {
                     MatrixMultiply(&output[i], &output[p], &output[i]);
                 }
@@ -31,20 +31,20 @@ void Skeleton::PoseSQTToGlobal(float *pose, EAGL4::Transform *output, BoneMask *
             poseData += 12;
         }
     } else {
+        int i;
+        int p;
         float *poseData = pose;
         BoneData *bones = GetBoneData();
         int n = GetNumBones();
 
-        for (int i = 0; i < n; i++) {
-            float *mat = output[i].m.GetElements();
-
+        for (i = 0; i < n; i++) {
             output[i].BuildSQT(poseData[0], poseData[1], poseData[2], poseData[4], poseData[5], poseData[6], poseData[7], poseData[8],
                                poseData[9], poseData[10]);
-            mat[0] *= poseData[3];
-            mat[4] *= poseData[3];
-            mat[8] *= poseData[3];
+            output[i].m.v0.x *= poseData[3];
+            output[i].m.v1.x *= poseData[3];
+            output[i].m.v2.x *= poseData[3];
 
-            int p = bones[i].mParentIdx;
+            p = bones[i].mParentIdx;
             if (p >= 0) {
                 MatrixMultiply(&output[i], &output[p], &output[i]);
             }
@@ -55,217 +55,241 @@ void Skeleton::PoseSQTToGlobal(float *pose, EAGL4::Transform *output, BoneMask *
 }
 
 void Skeleton::GetStillPose(float *pose, const BoneMask *mask) const {
-    int numBones = GetNumBones();
+    int n = GetNumBones();
+    int i;
 
     if (mask) {
         if (GetInvBoneScales()) {
-            for (int i = 0; i < numBones; i++) {
+            for (i = 0; i < n; i++) {
                 if (mask->GetBone(i)) {
-                    const BoneData &bone = GetBoneData(i);
+                    const BoneData &bd = GetBoneData(i);
 
-                    pose[0] = bone.mS.x;
-                    pose[1] = bone.mS.y;
-                    pose[2] = bone.mS.z;
+                    pose[0] = bd.mS.x;
+                    pose[1] = bd.mS.y;
+                    pose[2] = bd.mS.z;
                     pose[3] = GetInvBoneScales()[i];
-                    pose[4] = bone.mQ.x;
-                    pose[5] = bone.mQ.y;
-                    pose[6] = bone.mQ.z;
-                    pose[7] = bone.mQ.w;
-                    pose[8] = bone.mT.x;
-                    pose[9] = bone.mT.y;
-                    pose[10] = bone.mT.z;
+                    pose[4] = bd.mQ.x;
+                    pose[5] = bd.mQ.y;
+                    pose[6] = bd.mQ.z;
+                    pose[7] = bd.mQ.w;
+                    pose[8] = bd.mT.x;
+                    pose[9] = bd.mT.y;
+                    pose[10] = bd.mT.z;
                     pose[11] = 1.0f;
                 }
                 pose += 12;
             }
         } else {
-            for (int i = 0; i < numBones; i++) {
+            for (i = 0; i < n; i++) {
                 if (mask->GetBone(i)) {
-                    const BoneData &bone = GetBoneData(i);
+                    const BoneData &bd = GetBoneData(i);
+                    const float one = 1.0f;
+                    float z = bd.mS.z;
 
-                    pose[0] = bone.mS.x;
-                    pose[1] = bone.mS.y;
-                    pose[3] = 1.0f;
-                    pose[2] = bone.mS.z;
-                    pose[4] = bone.mQ.x;
-                    pose[5] = bone.mQ.y;
-                    pose[6] = bone.mQ.z;
-                    pose[7] = bone.mQ.w;
-                    pose[8] = bone.mT.x;
-                    pose[9] = bone.mT.y;
-                    pose[10] = bone.mT.z;
-                    pose[11] = 1.0f;
+                    pose[0] = bd.mS.x;
+                    pose[1] = bd.mS.y;
+                    pose[2] = (pose[3] = one, z);
+                    pose[4] = bd.mQ.x;
+                    pose[5] = bd.mQ.y;
+                    pose[6] = bd.mQ.z;
+                    pose[7] = bd.mQ.w;
+                    pose[8] = bd.mT.x;
+                    pose[9] = bd.mT.y;
+                    pose[10] = bd.mT.z;
+                    pose[11] = one;
                 }
                 pose += 12;
             }
         }
     } else if (GetInvBoneScales()) {
-        for (int i = 0; i < numBones; i++) {
-            const BoneData &bone = GetBoneData(i);
+        for (i = 0; i < n; i++) {
+            const BoneData &bd = GetBoneData(i);
 
-            pose[0] = bone.mS.x;
-            pose[1] = bone.mS.y;
-            pose[2] = bone.mS.z;
+            pose[0] = bd.mS.x;
+            pose[1] = bd.mS.y;
+            pose[2] = bd.mS.z;
             pose[3] = GetInvBoneScales()[i];
-            pose[4] = bone.mQ.x;
-            pose[5] = bone.mQ.y;
-            pose[6] = bone.mQ.z;
-            pose[7] = bone.mQ.w;
-            pose[8] = bone.mT.x;
-            pose[9] = bone.mT.y;
-            pose[10] = bone.mT.z;
+            pose[4] = bd.mQ.x;
+            pose[5] = bd.mQ.y;
+            pose[6] = bd.mQ.z;
+            pose[7] = bd.mQ.w;
+            pose[8] = bd.mT.x;
+            pose[9] = bd.mT.y;
+            pose[10] = bd.mT.z;
             pose[11] = 1.0f;
             pose += 12;
         }
     } else {
-        for (int i = 0; i < numBones; i++) {
-            const BoneData &bone = GetBoneData(i);
+        for (i = 0; i < n; i++) {
+            const BoneData &bd = GetBoneData(i);
+            const float one = 1.0f;
+            float z = bd.mS.z;
 
-            pose[0] = bone.mS.x;
-            pose[1] = bone.mS.y;
-            pose[3] = 1.0f;
-            pose[2] = bone.mS.z;
-            pose[4] = bone.mQ.x;
-            pose[5] = bone.mQ.y;
-            pose[6] = bone.mQ.z;
-            pose[7] = bone.mQ.w;
-            pose[8] = bone.mT.x;
-            pose[9] = bone.mT.y;
-            pose[10] = bone.mT.z;
-            pose[11] = 1.0f;
+            pose[0] = bd.mS.x;
+            pose[1] = bd.mS.y;
+            pose[2] = (pose[3] = one, z);
+            pose[4] = bd.mQ.x;
+            pose[5] = bd.mQ.y;
+            pose[6] = bd.mQ.z;
+            pose[7] = bd.mQ.w;
+            pose[8] = bd.mT.x;
+            pose[9] = bd.mT.y;
+            pose[10] = bd.mT.z;
+            pose[11] = one;
             pose += 12;
         }
     }
 }
 
 void Skeleton::MirrorPose(float *pose, float *mirrorPose, bool local, const BoneMask *mask) {
-    int numBones = GetNumBones();
+    const int DOF = 12;
+    const int n = GetNumBones();
+    int i;
+    float *ps;
+    float *pd;
 
     if (mask) {
         if (pose == mirrorPose) {
-            for (int ibone = 0; ibone < numBones; ibone++) {
-                if (mask->GetBone(ibone)) {
-                    int mirrorBone = GetBoneData(ibone).mLeftRightIdx;
+            for (i = 0; i < n; i++) {
+                if (mask->GetBone(i)) {
+                    int lrIdx = GetBoneData(i).mLeftRightIdx;
 
-                    if (ibone < mirrorBone) {
-                        float *dst = &mirrorPose[mirrorBone * 12];
-                        float *src = &mirrorPose[ibone * 12];
-                        float value = dst[4];
+                    if (lrIdx > i) {
+                        float tmp;
 
-                        dst[4] = -src[4];
-                        src[4] = -value;
-                        value = dst[5];
-                        dst[5] = -src[5];
-                        src[5] = -value;
-                        value = dst[6];
-                        dst[6] = src[6];
-                        src[6] = value;
-                        value = dst[7];
-                        dst[7] = src[7];
-                        src[7] = value;
-                        value = dst[8];
-                        dst[8] = src[8];
-                        src[8] = value;
-                        value = dst[9];
-                        dst[9] = src[9];
-                        src[9] = value;
-                        value = dst[10];
-                        dst[10] = -src[10];
-                        src[10] = -value;
-                    } else if (mirrorBone == ibone) {
-                        float *dst = &mirrorPose[ibone * 12];
-
-                        dst[4] = -dst[4];
-                        dst[5] = -dst[5];
-                        dst[10] = -dst[10];
+                        pd = &mirrorPose[lrIdx * DOF];
+                        ps = &mirrorPose[i * DOF];
+                        tmp = pd[4];
+                        pd[4] = -ps[4];
+                        ps[4] = -tmp;
+                        tmp = pd[5];
+                        pd[5] = -ps[5];
+                        ps[5] = -tmp;
+                        tmp = pd[6];
+                        pd[6] = ps[6];
+                        ps[6] = tmp;
+                        tmp = pd[7];
+                        pd[7] = ps[7];
+                        ps[7] = tmp;
+                        tmp = pd[8];
+                        pd[8] = ps[8];
+                        ps[8] = tmp;
+                        tmp = pd[9];
+                        pd[9] = ps[9];
+                        ps[9] = tmp;
+                        tmp = pd[10];
+                        pd[10] = -ps[10];
+                        ps[10] = -tmp;
+                    } else if (lrIdx == i) {
+                        pd = &mirrorPose[i * DOF];
+                        pd[4] = -pd[4];
+                        pd[5] = -pd[5];
+                        pd[10] = -pd[10];
                     }
                 }
             }
         } else {
-            for (int ibone = 0; ibone < numBones; ibone++) {
-                if (mask->GetBone(ibone)) {
-                    int mirrorBone = GetBoneData(ibone).mLeftRightIdx;
-                    float *src = &pose[ibone * 12];
-                    float *dst = &mirrorPose[mirrorBone * 12];
+            for (i = 0; i < n; i++) {
+                if (mask->GetBone(i)) {
+                    int lrIdx = GetBoneData(i).mLeftRightIdx;
 
-                    dst[0] = src[0];
-                    dst[1] = src[1];
-                    dst[2] = src[2];
-                    dst[4] = -src[4];
-                    dst[5] = -src[5];
-                    dst[6] = src[6];
-                    dst[7] = src[7];
-                    dst[8] = src[8];
-                    dst[9] = src[9];
-                    dst[10] = -src[10];
+                    ps = &pose[i * DOF];
+                    pd = &mirrorPose[lrIdx * DOF];
+                    pd[0] = ps[0];
+                    pd[1] = ps[1];
+                    pd[2] = ps[2];
+                    pd[4] = -ps[4];
+                    pd[5] = -ps[5];
+                    pd[6] = ps[6];
+                    pd[7] = ps[7];
+                    pd[8] = ps[8];
+                    pd[9] = ps[9];
+                    pd[10] = -ps[10];
                 }
             }
         }
-    } else if (pose == mirrorPose) {
-        for (int ibone = 0; ibone < numBones; ibone++) {
-            int mirrorBone = GetBoneData(ibone).mLeftRightIdx;
+        if (!local) {
+            pd = mirrorPose;
+            UMath::Vector4 quat = *reinterpret_cast<UMath::Vector4 *>(&pd[4]);
+            float v8 = pd[8];
+            float v10 = pd[10];
 
-            if (ibone < mirrorBone) {
-                float *dst = &mirrorPose[mirrorBone * 12];
-                float *src = &mirrorPose[ibone * 12];
-                float value = dst[4];
-
-                dst[4] = -src[4];
-                src[4] = -value;
-                value = dst[5];
-                dst[5] = -src[5];
-                src[5] = -value;
-                value = dst[6];
-                dst[6] = src[6];
-                src[6] = value;
-                value = dst[7];
-                dst[7] = src[7];
-                src[7] = value;
-                value = dst[8];
-                dst[8] = src[8];
-                src[8] = value;
-                value = dst[9];
-                dst[9] = src[9];
-                src[9] = value;
-                value = dst[10];
-                dst[10] = -src[10];
-                src[10] = -value;
-            } else if (mirrorBone == ibone) {
-                float *dst = &mirrorPose[ibone * 12];
-
-                dst[4] = -dst[4];
-                dst[5] = -dst[5];
-                dst[10] = -dst[10];
-            }
+            pd[4] = quat.z;
+            pd[5] = quat.w;
+            pd[6] = -quat.x;
+            pd[10] = -v10;
+            pd[8] = -v8;
+            pd[7] = -quat.y;
         }
     } else {
-        for (int ibone = 0; ibone < numBones; ibone++) {
-            int mirrorBone = GetBoneData(ibone).mLeftRightIdx;
-            float *src = &pose[ibone * 12];
-            float *dst = &mirrorPose[mirrorBone * 12];
+        if (pose == mirrorPose) {
+            for (i = 0; i < n; i++) {
+                int lrIdx = GetBoneData(i).mLeftRightIdx;
 
-            dst[0] = src[0];
-            dst[1] = src[1];
-            dst[2] = src[2];
-            dst[4] = -src[4];
-            dst[5] = -src[5];
-            dst[6] = src[6];
-            dst[7] = src[7];
-            dst[8] = src[8];
-            dst[9] = src[9];
-            dst[10] = -src[10];
+                if (lrIdx > i) {
+                    float tmp;
+
+                    pd = &mirrorPose[lrIdx * DOF];
+                    ps = &mirrorPose[i * DOF];
+                    tmp = pd[4];
+                    pd[4] = -ps[4];
+                    ps[4] = -tmp;
+                    tmp = pd[5];
+                    pd[5] = -ps[5];
+                    ps[5] = -tmp;
+                    tmp = pd[6];
+                    pd[6] = ps[6];
+                    ps[6] = tmp;
+                    tmp = pd[7];
+                    pd[7] = ps[7];
+                    ps[7] = tmp;
+                    tmp = pd[8];
+                    pd[8] = ps[8];
+                    ps[8] = tmp;
+                    tmp = pd[9];
+                    pd[9] = ps[9];
+                    ps[9] = tmp;
+                    tmp = pd[10];
+                    pd[10] = -ps[10];
+                    ps[10] = -tmp;
+                } else if (lrIdx == i) {
+                    pd = &mirrorPose[i * DOF];
+                    pd[4] = -pd[4];
+                    pd[5] = -pd[5];
+                    pd[10] = -pd[10];
+                }
+            }
+        } else {
+            for (i = 0; i < n; i++) {
+                int lrIdx = GetBoneData(i).mLeftRightIdx;
+
+                ps = &pose[i * DOF];
+                pd = &mirrorPose[lrIdx * DOF];
+                pd[0] = ps[0];
+                pd[1] = ps[1];
+                pd[2] = ps[2];
+                pd[4] = -ps[4];
+                pd[5] = -ps[5];
+                pd[6] = ps[6];
+                pd[7] = ps[7];
+                pd[8] = ps[8];
+                pd[9] = ps[9];
+                pd[10] = -ps[10];
+            }
         }
-    }
+        if (!local) {
+            pd = mirrorPose;
+            UMath::Vector4 quat = *reinterpret_cast<UMath::Vector4 *>(&pd[4]);
+            float v8 = pd[8];
+            float v10 = pd[10];
 
-    if (!local) {
-        UMath::Vector4 quat = *reinterpret_cast<UMath::Vector4 *>(&mirrorPose[4]);
-
-        mirrorPose[4] = quat.z;
-        mirrorPose[5] = quat.w;
-        mirrorPose[6] = -quat.x;
-        mirrorPose[10] = -mirrorPose[10];
-        mirrorPose[8] = -mirrorPose[8];
-        mirrorPose[7] = -quat.y;
+            pd[4] = quat.z;
+            pd[5] = quat.w;
+            pd[6] = -quat.x;
+            pd[10] = -v10;
+            pd[8] = -v8;
+            pd[7] = -quat.y;
+        }
     }
 }
 

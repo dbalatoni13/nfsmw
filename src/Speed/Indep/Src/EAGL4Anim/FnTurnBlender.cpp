@@ -191,15 +191,23 @@ float FnTurnBlender::GetFrequency() const {
 }
 
 float FnTurnBlender::CycleTime(float t, float startTime, float endTime) const {
-    float length = endTime - startTime;
+    float len = endTime - startTime;
+    float tmp;
+    int n;
 
     if (t < startTime) {
-        return endTime - ((startTime - t) - static_cast<float>(static_cast<int>((startTime - t) / length)) * length);
+        tmp = startTime - t;
+        n = FloatToInt(tmp / len);
+        tmp = tmp - static_cast<float>(n) * len;
+        return endTime - tmp;
     }
     if (t < endTime) {
         return t;
     }
-    return startTime + ((t - endTime) - static_cast<float>(static_cast<int>((t - endTime) / length)) * length);
+    tmp = t - endTime;
+    n = FloatToInt(tmp / len);
+    tmp = tmp - static_cast<float>(n) * len;
+    return startTime + tmp;
 }
 
 int FnTurnBlender::ComputeCycleIdx(float t, float startTime, float endTime) const {
