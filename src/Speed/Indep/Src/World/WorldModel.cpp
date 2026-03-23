@@ -226,25 +226,18 @@ void CloseWorldModels() {
 
 void WorldModel::RenderNode(const ModelHeirarchy *heirarchy, unsigned int nodeIndex, eView *view, int exc_flag, bMatrix4 *blended_matrices,
                             const bMatrix4 *matrix) {
-    const unsigned char *node = reinterpret_cast<const unsigned char *>(heirarchy) + 8 + nodeIndex * 0x10;
-    eModel *model = *reinterpret_cast<eModel *const *>(node + 8);
+    const ModelHeirarchy::Node *node = &heirarchy->GetNodes()[nodeIndex];
 
-    if (model != 0 && model->Solid != 0) {
-        this->RenderModel(model, view, exc_flag, blended_matrices, matrix);
+    if (node->mModel != 0 && node->mModel->GetSolid() != 0) {
+        this->RenderModel(node->mModel, view, exc_flag, blended_matrices, matrix);
     }
 
-    unsigned int child = 0;
-    if (node[0xE] != 0) {
-        do {
-            unsigned int child_index = node[0xF] + child;
-            const unsigned char *child_node = reinterpret_cast<const unsigned char *>(heirarchy) + 8 + child_index * 0x10;
-
-            if ((this->mHeirarchyIndex != nodeIndex || (this->mChildVisibility & (1U << (child & 0x3F))) != 0) && (child_node[0xC] & 1) == 0) {
-                this->RenderNode(heirarchy, child_index, view, exc_flag, blended_matrices, matrix);
+    for (unsigned int i = 0; i < node->mNumChildren; i++) {
+        if (this->mHeirarchyIndex != nodeIndex || (this->mChildVisibility & (1 << i))) {
+            if ((heirarchy->GetNodes()[node->mChildIndex + i].mFlags & ModelHeirarchy::F_INTERNAL) == 0) {
+                this->RenderNode(heirarchy, node->mChildIndex + i, view, exc_flag, blended_matrices, matrix);
             }
-
-            child++;
-        } while (child < node[0xE]);
+        }
     }
 }
 
