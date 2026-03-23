@@ -1337,18 +1337,47 @@ void CarRenderInfo::UpdateCarParts() {
                 }
             }
 
-            if (slot_id == CARSLOTID_BASE || slot_id == CARSLOTID_DAMAGE_BODY || slot_id == CARSLOTID_DAMAGE_COP_LIGHTS ||
-                (slot_id >= CARSLOTID_DAMAGE_HOOD && slot_id <= CARSLOTID_DAMAGE_FRONT_BUMPER) ||
-                (slot_id >= CARSLOTID_DAMAGE_TRUNK && slot_id <= CARSLOTID_DAMAGE_REAR_BUMPER) || slot_id == CARSLOTID_BODY ||
-                slot_id == CARSLOTID_LEFT_SIDE_MIRROR || slot_id == CARSLOTID_RIGHT_SIDE_MIRROR ||
-                slot_id == CARSLOTID_SPOILER || (slot_id >= CARSLOTID_ROOF && slot_id <= CARSLOTID_HOOD)) {
-                eModel *model = this->mCarPartModels[slot_id][model_number][this->mMinLodLevel].GetModel();
+            eModel *model;
 
-                if (model != 0) {
-                    model->GetBoundingBox(&bbox_min, &bbox_max);
-                    bExpandBoundingBox(&this->AABBMin, &this->AABBMax, &bbox_min, &bbox_max);
+            if (slot_id <= CARSLOTID_DAMAGE_REAR_BUMPER) {
+                if (slot_id >= CARSLOTID_DAMAGE_TRUNK) {
+                    goto expand_bbox;
                 }
+
+                if (slot_id > CARSLOTID_DAMAGE_COP_LIGHTS) {
+                    if (slot_id <= CARSLOTID_DAMAGE_FRONT_BUMPER && slot_id >= CARSLOTID_DAMAGE_HOOD) {
+                        goto expand_bbox;
+                    }
+                } else {
+                    if (slot_id >= CARSLOTID_DAMAGE_BODY) {
+                        goto expand_bbox;
+                    }
+                    if (slot_id == CARSLOTID_BASE) {
+                        goto expand_bbox;
+                    }
+                }
+            } else if (slot_id == CARSLOTID_RIGHT_SIDE_MIRROR) {
+                goto expand_bbox;
+            } else if (slot_id < CARSLOTID_RIGHT_SIDE_MIRROR) {
+                if (slot_id == CARSLOTID_BODY || slot_id == CARSLOTID_LEFT_SIDE_MIRROR) {
+                    goto expand_bbox;
+                }
+            } else if (slot_id == CARSLOTID_SPOILER || (slot_id >= CARSLOTID_ROOF && slot_id <= CARSLOTID_HOOD)) {
+                goto expand_bbox;
             }
+
+            goto skip_expand_bbox;
+
+        expand_bbox:
+            model = this->mCarPartModels[slot_id][model_number][this->mMinLodLevel].GetModel();
+
+            if (model != 0) {
+                model->GetBoundingBox(&bbox_min, &bbox_max);
+                bExpandBoundingBox(&this->AABBMin, &this->AABBMax, &bbox_min, &bbox_max);
+            }
+
+        skip_expand_bbox:
+            ;
         }
     }
 
