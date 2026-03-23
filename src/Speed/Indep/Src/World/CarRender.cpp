@@ -2516,12 +2516,7 @@ void CarRenderInfo::RenderFlaresOnCar(eView *view, const bVector3 *position, con
     }
 
     if (this->pCarTypeInfo != 0 && this->pCarTypeInfo->UsageType == CAR_USAGE_TYPE_COP) {
-        int cop_red_on = 1;
-
-        if ((this->mOnLights & VehicleFX::LIGHT_COPRED) == 0) {
-            cop_red_on = 0;
-        }
-        if (cop_red_on != 0) {
+        if (this->IsLightOn(VehicleFX::LIGHT_COPRED)) {
             view->NumCopsCherry++;
         }
     }
@@ -2585,147 +2580,66 @@ void CarRenderInfo::RenderFlaresOnCar(eView *view, const bVector3 *position, con
         reverselight_right_intensity += 1.0f;
     }
 
-    unsigned int onLights = this->mOnLights;
-    int headlight_left_on = 1;
-    if ((onLights & 1) == 0) {
-        headlight_left_on = 0;
-    }
-    if (headlight_left_on != 0) {
+    if (this->IsLightOn(VehicleFX::LIGHT_LHEAD)) {
         headlight_left_intensity = 1.0f;
     }
-    int headlight_right_on = 1;
-    if ((onLights & 2) == 0) {
-        headlight_right_on = 0;
-    }
-    if (headlight_right_on != 0) {
+    if (this->IsLightOn(VehicleFX::LIGHT_RHEAD)) {
         headlight_right_intensity = 1.0f;
     }
-    int brakelight_left_on = 1;
-    if ((onLights & 8) == 0) {
-        brakelight_left_on = 0;
-    }
-    if (brakelight_left_on != 0) {
+    if (this->IsLightOn(VehicleFX::LIGHT_LBRAKE)) {
         brakelight_left_intensity += 1.0f;
     }
-    int brakelight_right_on = 1;
-    if ((onLights & 0x10) == 0) {
-        brakelight_right_on = 0;
-    }
-    if (brakelight_right_on != 0) {
+    if (this->IsLightOn(VehicleFX::LIGHT_RBRAKE)) {
         brakelight_right_intensity += 1.0f;
     }
-    int brakelight_centre_on = 1;
-    if ((onLights & 0x20) == 0) {
-        brakelight_centre_on = 0;
-    }
-    if (brakelight_centre_on != 0) {
+    if (this->IsLightOn(VehicleFX::LIGHT_CBRAKE)) {
         brakelight_centre_intensity += 1.0f;
     }
-    int reverselight_left_on = 1;
-    if ((onLights & 0x40) == 0) {
-        reverselight_left_on = 0;
-    }
-    if (reverselight_left_on != 0) {
+    if (this->IsLightOn(VehicleFX::LIGHT_LREVERSE)) {
         reverselight_left_intensity += 1.0f;
     }
-    int reverselight_right_on = 1;
-    if ((onLights & 0x80) == 0) {
-        reverselight_right_on = 0;
-    }
-    if (reverselight_right_on != 0) {
+    if (this->IsLightOn(VehicleFX::LIGHT_RREVERSE)) {
         reverselight_right_intensity += 1.0f;
     }
-    int coplight_red_on = 1;
-    if ((onLights & 0x1000) == 0) {
-        coplight_red_on = 0;
-    }
-    if (coplight_red_on != 0) {
+    if (this->IsLightOn(VehicleFX::LIGHT_COPRED)) {
         coplight_intensityR = cpr;
     }
-    int coplight_blue_on = 1;
-    if ((onLights & 0x2000) == 0) {
-        coplight_blue_on = 0;
-    }
-    if (coplight_blue_on != 0) {
+    if (this->IsLightOn(VehicleFX::LIGHT_COPBLUE)) {
         coplight_intensityB = cpb;
     }
-    int coplight_white_on = 1;
-    if ((onLights & 0x4000) == 0) {
-        coplight_white_on = 0;
-    }
-    if (coplight_white_on != 0) {
+    if (this->IsLightOn(VehicleFX::LIGHT_COPWHITE)) {
         coplight_intensityW = cpw;
     }
-    unsigned int flashHeadlights = onLights & 0x4000;
-    unsigned int brokenLights = this->mBrokenLights;
-    int headlight_left_broken = 1;
-    if ((brokenLights & 1) == 0) {
-        headlight_left_broken = 0;
-    }
-    if (headlight_left_broken != 0) {
+    unsigned int flashHeadlights = this->IsLightOn(VehicleFX::LIGHT_COPWHITE);
+
+    if (this->IsLightBroken(VehicleFX::LIGHT_LHEAD)) {
         headlight_left_intensity = 0.0f;
     }
-    int headlight_right_broken = 1;
-    if ((brokenLights & 2) == 0) {
-        headlight_right_broken = 0;
-    }
-    if (headlight_right_broken != 0) {
+    if (this->IsLightBroken(VehicleFX::LIGHT_RHEAD)) {
         headlight_right_intensity = 0.0f;
     }
-    int brakelight_left_broken = 1;
-    if ((brokenLights & 8) == 0) {
-        brakelight_left_broken = 0;
-    }
-    if (brakelight_left_broken != 0) {
+    if (this->IsLightBroken(VehicleFX::LIGHT_LBRAKE)) {
         brakelight_left_intensity = 0.0f;
     }
-    int brakelight_right_broken = 1;
-    if ((brokenLights & 0x10) == 0) {
-        brakelight_right_broken = 0;
-    }
-    if (brakelight_right_broken != 0) {
+    if (this->IsLightBroken(VehicleFX::LIGHT_RBRAKE)) {
         brakelight_right_intensity = 0.0f;
     }
-    int brakelight_centre_broken = 1;
-    if ((brokenLights & 0x20) == 0) {
-        brakelight_centre_broken = 0;
-    }
-    if (brakelight_centre_broken != 0) {
+    if (this->IsLightBroken(VehicleFX::LIGHT_CBRAKE)) {
         brakelight_centre_intensity = 0.0f;
     }
-    int reverselight_left_broken = 1;
-    if ((brokenLights & 0x40) == 0) {
-        reverselight_left_broken = 0;
-    }
-    if (reverselight_left_broken != 0) {
+    if (this->IsLightBroken(VehicleFX::LIGHT_LREVERSE)) {
         reverselight_left_intensity = 0.0f;
     }
-    int reverselight_right_broken = 1;
-    if ((brokenLights & 0x80) == 0) {
-        reverselight_right_broken = 0;
-    }
-    if (reverselight_right_broken != 0) {
+    if (this->IsLightBroken(VehicleFX::LIGHT_RREVERSE)) {
         reverselight_right_intensity = 0.0f;
     }
-    int coplight_red_broken = 1;
-    if ((brokenLights & 0x1000) == 0) {
-        coplight_red_broken = 0;
-    }
-    if (coplight_red_broken != 0) {
+    if (this->IsLightBroken(VehicleFX::LIGHT_COPRED)) {
         coplight_intensityR = 0.0f;
     }
-    int coplight_blue_broken = 1;
-    if ((brokenLights & 0x2000) == 0) {
-        coplight_blue_broken = 0;
-    }
-    if (coplight_blue_broken != 0) {
+    if (this->IsLightBroken(VehicleFX::LIGHT_COPBLUE)) {
         coplight_intensityB = 0.0f;
     }
-    int coplight_white_broken = 1;
-    if ((brokenLights & 0x4000) == 0) {
-        coplight_white_broken = 0;
-    }
-    if (coplight_white_broken != 0) {
+    if (this->IsLightBroken(VehicleFX::LIGHT_COPWHITE)) {
         coplight_intensityW = 0.0f;
     }
 
