@@ -138,9 +138,9 @@ bool FnStatelessQ::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask)
         unsigned short *frameData = statelessQ->GetFrameData(dataBuf, floorKey);
         unsigned char *boneIdxs = statelessQ->mBoneIdxs;
         int nBones = statelessQ->mNumBones;
-        int index;
+        unsigned short index;
 
-        if (slerpReqd) {
+        if (slerpReqd && floorKey < statelessQ->mNumKeys - 1) {
             unsigned short *nextFrameData = statelessQ->GetFrameData(dataBuf, floorKey + 1);
 
             for (int ibone = 0; ibone < nBones; ibone++) {
@@ -157,10 +157,10 @@ bool FnStatelessQ::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask)
                 nextQ.w = UncompressStatelessQValue(*nextFrameData++);
                 index = boneIdxs[ibone] * 12;
 
-                q[index + 0] = prevQ.x + (nextQ.x - prevQ.x) * scale;
-                q[index + 1] = prevQ.y + (nextQ.y - prevQ.y) * scale;
-                q[index + 2] = prevQ.z + (nextQ.z - prevQ.z) * scale;
-                q[index + 3] = prevQ.w + (nextQ.w - prevQ.w) * scale;
+                q[index + 0] = scale * (nextQ.x - prevQ.x) + prevQ.x;
+                q[index + 1] = scale * (nextQ.y - prevQ.y) + prevQ.y;
+                q[index + 2] = scale * (nextQ.z - prevQ.z) + prevQ.z;
+                q[index + 3] = scale * (nextQ.w - prevQ.w) + prevQ.w;
             }
         } else {
             for (int ibone = 0; ibone < nBones; ibone++) {
@@ -209,7 +209,7 @@ bool FnStatelessQ::EvalSQTMask(float, float *sqt, const BoneMask *boneMask, bool
     unsigned short *frameData = statelessQ->GetFrameData(dataBuf, floorKey);
     unsigned char *boneIdxs = statelessQ->mBoneIdxs;
     int nBones = statelessQ->mNumBones;
-    int index;
+    unsigned short index;
 
     if (slerpReqd && floorKey < statelessQ->mNumKeys - 1) {
         unsigned short *nextFrameData = statelessQ->GetFrameData(dataBuf, floorKey + 1);
@@ -232,10 +232,10 @@ bool FnStatelessQ::EvalSQTMask(float, float *sqt, const BoneMask *boneMask, bool
                 nextQ.w = UncompressStatelessQValue(nextFrameData[frameIndex + 3]);
                 index = boneIdx * 12;
 
-                sqt[index + 0] = prevQ.x + (nextQ.x - prevQ.x) * scale;
-                sqt[index + 1] = prevQ.y + (nextQ.y - prevQ.y) * scale;
-                sqt[index + 2] = prevQ.z + (nextQ.z - prevQ.z) * scale;
-                sqt[index + 3] = prevQ.w + (nextQ.w - prevQ.w) * scale;
+                sqt[index + 0] = scale * (nextQ.x - prevQ.x) + prevQ.x;
+                sqt[index + 1] = scale * (nextQ.y - prevQ.y) + prevQ.y;
+                sqt[index + 2] = scale * (nextQ.z - prevQ.z) + prevQ.z;
+                sqt[index + 3] = scale * (nextQ.w - prevQ.w) + prevQ.w;
             }
         }
     } else {

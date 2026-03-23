@@ -136,18 +136,18 @@ bool FnStatelessF3::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask
                 UnquantizeStatelessF3(dofInfos[ibone], frameData, prev);
                 UnquantizeStatelessF3(dofInfos[ibone], nextFrameData, next);
 
-                int index = dofIdxs[ibone];
+                unsigned short index = dofIdxs[ibone];
 
-                sqt[index + 0] = prev.x + (next.x - prev.x) * scale;
-                sqt[index + 1] = prev.y + (next.y - prev.y) * scale;
-                sqt[index + 2] = prev.z + (next.z - prev.z) * scale;
+                sqt[index + 0] = scale * (next.x - prev.x) + prev.x;
+                sqt[index + 1] = scale * (next.y - prev.y) + prev.y;
+                sqt[index + 2] = scale * (next.z - prev.z) + prev.z;
 
                 frameData += 3;
                 nextFrameData += 3;
             }
         } else {
             for (int ibone = 0; ibone < nBones; ibone++) {
-                int index = dofIdxs[ibone];
+                unsigned short index = dofIdxs[ibone];
 
                 sqt[index + 0] = dofInfos[ibone].mRange[0] * frameData[0];
                 sqt[index + 1] = dofInfos[ibone].mRange[1] * frameData[1];
@@ -162,7 +162,7 @@ bool FnStatelessF3::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask
 
             for (int ibone = 0; ibone < statelessF3->mNumConstBones; ibone++) {
                 float *constBone = &constBuf[ibone * 3];
-                int index = constIdxs[ibone];
+                unsigned short index = constIdxs[ibone];
 
                 sqt[index + 0] = constBone[0];
                 sqt[index + 1] = constBone[1];
@@ -204,11 +204,11 @@ bool FnStatelessF3::EvalSQTMask(float, float *sqt, const BoneMask *boneMask, boo
                 UnquantizeStatelessF3(dofInfos[ibone], frameData, prev);
                 UnquantizeStatelessF3(dofInfos[ibone], nextFrameData, next);
 
-                int index = dofIdxs[ibone];
+                unsigned short index = dofIdxs[ibone];
 
-                sqt[index + 0] = prev.x + (next.x - prev.x) * scale;
-                sqt[index + 1] = prev.y + (next.y - prev.y) * scale;
-                sqt[index + 2] = prev.z + (next.z - prev.z) * scale;
+                sqt[index + 0] = scale * (next.x - prev.x) + prev.x;
+                sqt[index + 1] = scale * (next.y - prev.y) + prev.y;
+                sqt[index + 2] = scale * (next.z - prev.z) + prev.z;
             }
             frameData += 3;
             nextFrameData += 3;
@@ -217,7 +217,7 @@ bool FnStatelessF3::EvalSQTMask(float, float *sqt, const BoneMask *boneMask, boo
         for (int ibone = 0; ibone < nBones; ibone++) {
             if (boneMask->GetBone(boneIdxs[ibone])) {
                 UMath::Vector3 value;
-                int index = dofIdxs[ibone];
+                unsigned short index = dofIdxs[ibone];
 
                 UnquantizeStatelessF3(dofInfos[ibone], frameData, value);
                 sqt[index + 0] = value.x;
@@ -236,7 +236,7 @@ bool FnStatelessF3::EvalSQTMask(float, float *sqt, const BoneMask *boneMask, boo
             unsigned char boneIdx = GetStatelessF3BoneIndex(constIdxs[ibone]);
 
             if (boneMask->GetBone(boneIdx)) {
-                int index = constIdxs[ibone];
+                unsigned short index = constIdxs[ibone];
 
                 sqt[index + 0] = constBuf[0];
                 sqt[index + 1] = constBuf[1];
@@ -270,18 +270,18 @@ bool FnStatelessF3::EvalSQTfast(float currTime, float *sqt, const BoneMask *bone
                 UnquantizeStatelessF3(dofInfos[ibone], frameData, prev);
                 UnquantizeStatelessF3(dofInfos[ibone], nextFrameData, next);
 
-                int index = dofIdxs[ibone];
+                unsigned short index = dofIdxs[ibone];
 
-                sqt[index + 0] = prev.x + (next.x - prev.x) * scale;
-                sqt[index + 1] = prev.y + (next.y - prev.y) * scale;
-                sqt[index + 2] = prev.z + (next.z - prev.z) * scale;
+                sqt[index + 0] = scale * (next.x - prev.x) + prev.x;
+                sqt[index + 1] = scale * (next.y - prev.y) + prev.y;
+                sqt[index + 2] = scale * (next.z - prev.z) + prev.z;
 
                 frameData += 3;
                 nextFrameData += 3;
             }
         } else {
             for (int ibone = 0; ibone < nBones; ibone++) {
-                int index = dofIdxs[ibone];
+                unsigned short index = dofIdxs[ibone];
 
                 sqt[index + 0] = dofInfos[ibone].mRange[0] * frameData[0];
                 sqt[index + 1] = dofInfos[ibone].mRange[1] * frameData[1];
@@ -296,7 +296,7 @@ bool FnStatelessF3::EvalSQTfast(float currTime, float *sqt, const BoneMask *bone
 
             for (int ibone = 0; ibone < statelessF3->mNumConstBones; ibone++) {
                 float *constBone = &constBuf[ibone * 3];
-                int index = constIdxs[ibone];
+                unsigned short index = constIdxs[ibone];
 
                 sqt[index + 0] = constBone[0];
                 sqt[index + 1] = constBone[1];
