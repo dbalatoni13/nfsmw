@@ -748,6 +748,38 @@ unsigned int GetWheelTextureMaskHash(RideInfo *ride_info) {
     return bStringHash("_WHEEL_INNER_MASK", wheel->GetAppliedAttributeUParam(0x10C98090, 0));
 }
 
+unsigned int GetHoodSpoilerHash(RideInfo *ride_info) {
+    return 0;
+}
+
+unsigned int GetHoodSpoilerMaskHash(RideInfo *ride_info) {
+    return 0;
+}
+
+unsigned int GetSpinnerTextureHash(RideInfo *ride_info) {
+    CarPart *rim_part = ride_info->GetPart(CARSLOTID_SPINNER);
+
+    if (rim_part == 0) {
+        return 0;
+    }
+
+    return rim_part->GetAppliedAttributeUParam(bStringHash("SPINNER_TEXTURE"), 0);
+}
+
+unsigned int GetSpinnerTextureMaskHash(RideInfo *ride_info) {
+    CarPart *rim_part = ride_info->GetPart(CARSLOTID_SPINNER);
+    unsigned int spinner_hash = 0;
+
+    if (rim_part != 0) {
+        spinner_hash = rim_part->GetAppliedAttributeUParam(bStringHash("SPINNER_TEXTURE"), 0);
+        if (spinner_hash != 0) {
+            return bStringHash("_MASK", spinner_hash);
+        }
+    }
+
+    return 0;
+}
+
 unsigned int GetVinylLayerHash(CarPart *car_part, CarType car_type, int skin_type) {
     CarTypeInfo *type_info = &CarTypeInfoArray[car_type];
     const char *texture_name = car_part->GetAppliedAttributeString(bStringHash("TEXTURE"), 0);

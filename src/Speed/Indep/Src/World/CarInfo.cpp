@@ -136,6 +136,31 @@ struct UsedCarTextureInfoLayout {
 
 CarPartDatabase::CarPartDatabase() {}
 
+int UsedCarTextureAddToTable(unsigned int *table, int num_used, int max_textures, unsigned int texture_hash) {
+    int i = 0;
+
+    if (texture_hash == 0) {
+        return 0;
+    }
+
+    if (num_used > 0) {
+        do {
+            if (table[i] == texture_hash) {
+                return 0;
+            }
+
+            i++;
+        } while (i < num_used);
+    }
+
+    if (num_used < max_textures) {
+        table[num_used] = texture_hash;
+        return 1;
+    }
+
+    return num_used;
+}
+
 unsigned int RideInfo::GetSkinNameHash() {
     if (this->IsUsingCompositeSkin() != 0) {
         return this->mCompositeSkinHash;
