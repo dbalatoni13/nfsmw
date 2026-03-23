@@ -1377,7 +1377,8 @@ int LoaderCarInfo(bChunk *chunk) {
         }
 
         for (unsigned int model_table_index = 0; model_table_index < car_part_pack->NumModelTables; model_table_index++) {
-            CarPartModelTable *model_table = reinterpret_cast<CarPartModelTable *>(reinterpret_cast<char *>(CarPartModelsTable) + model_table_index * 0x18);
+            CarPartModelTable *model_table =
+                reinterpret_cast<CarPartModelTable *>(reinterpret_cast<char *>(car_part_pack->ModelTable) + model_table_index * 0x18);
 
             model_table->EndianSwap();
 
