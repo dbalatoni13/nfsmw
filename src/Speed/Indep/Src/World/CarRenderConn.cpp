@@ -1205,18 +1205,21 @@ void CarRenderConn::UpdateContrails(const RenderConn::Pkt_Car_Service &data, flo
 
 void CarRenderConn::UpdateEffects(const RenderConn::Pkt_Car_Service &data, float dT) {
     if (!this->TestVisibility(renderModifier * 80.0f)) {
+        void (*stop_effect)(VehicleRenderConn::Effect *) = StopEffect;
+
         for (VehicleRenderConn::Effect *effect = this->mPipeEffects.GetHead(); effect != this->mPipeEffects.EndOfList(); effect = effect->GetNext()) {
-            StopEffect(effect);
+            stop_effect(effect);
         }
 
         for (VehicleRenderConn::Effect *effect = this->mEngineEffects.GetHead(); effect != this->mEngineEffects.EndOfList(); effect = effect->GetNext()) {
-            StopEffect(effect);
+            stop_effect(effect);
         }
         return;
     }
 
     const Attrib::Gen::ecar &attributes = this->VehicleRenderConn::mAttributes;
-    const bVector3 *velocity = this->mWorldRef.GetVelocity();
+    const LocalReferenceMirror *world_ref = reinterpret_cast<const LocalReferenceMirror *>(&this->mWorldRef);
+    const bVector3 *velocity = world_ref->mVelocity;
     unsigned int damage_key = attributes.DamageEffect(0).GetCollectionKey();
     unsigned int death_key = attributes.DeathEffect(0).GetCollectionKey();
     unsigned int engine_key = attributes.EngineBlownEffect(0).GetCollectionKey();
