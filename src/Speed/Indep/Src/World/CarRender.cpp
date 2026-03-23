@@ -116,6 +116,8 @@ extern int ForceBrakelightsOn;
 extern int ForceHeadlightsOn;
 extern int iRam8047ff04;
 extern float lbl_8040AA60;
+extern float lbl_8040AA68;
+extern float lbl_8040AA6C;
 extern bVector3 EnvMapEyeOffset;
 extern bVector3 EnvMapCamOffset;
 extern float WheelStandardWidth;
@@ -788,6 +790,61 @@ CarRenderInfo::CarRenderInfo(RideInfo *ride_info)
     }
 
     this->CreateCarLightFlares();
+
+    {
+        UMath::Vector4 tire_offsets[4];
+        bVector3 tire_positions[4];
+        bVector3 left_side_sum;
+        bVector3 right_side_sum;
+        bVector3 left_side_position;
+        bVector3 right_side_position;
+        bVector3 underneath_position;
+        float cull_position_scale = lbl_8040AA68 / lbl_8040AA6C;
+
+        for (int wheel = 0; wheel < 4; wheel++) {
+            this->GetAttributes().TireOffsets(tire_offsets[wheel], wheel);
+            tire_positions[wheel].x = tire_offsets[wheel].x;
+            tire_positions[wheel].y = tire_offsets[wheel].y;
+            tire_positions[wheel].z = tire_offsets[wheel].z;
+        }
+
+        this->TheCarPartCuller.InitPart(CULLABLE_CAR_PART_TIRE_FL, &tire_positions[0]);
+        this->TheCarPartCuller.InitPart(CULLABLE_CAR_PART_TIRE_FR, &tire_positions[1]);
+        this->TheCarPartCuller.InitPart(CULLABLE_CAR_PART_TIRE_RR, &tire_positions[2]);
+        this->TheCarPartCuller.InitPart(CULLABLE_CAR_PART_TIRE_RL, &tire_positions[3]);
+
+        left_side_sum.x = tire_positions[0].x + tire_positions[3].x;
+        left_side_sum.y = tire_positions[0].y + tire_positions[3].y;
+        left_side_sum.z = tire_positions[0].z + tire_positions[3].z;
+        left_side_position = left_side_sum;
+        left_side_position.x *= cull_position_scale;
+        left_side_position.y *= cull_position_scale;
+        left_side_position.z *= cull_position_scale;
+
+        right_side_sum.x = tire_positions[1].x + tire_positions[2].x;
+        right_side_sum.y = tire_positions[1].y + tire_positions[2].y;
+        right_side_sum.z = tire_positions[1].z + tire_positions[2].z;
+        right_side_position = right_side_sum;
+        right_side_position.x *= cull_position_scale;
+        right_side_position.y *= cull_position_scale;
+        right_side_position.z *= cull_position_scale;
+
+        this->TheCarPartCuller.InitPart(CULLABLE_CAR_PART_BRAKE_FL, &left_side_position);
+        this->TheCarPartCuller.InitPart(CULLABLE_CAR_PART_BRAKE_FR, &tire_positions[1]);
+        this->TheCarPartCuller.InitPart(CULLABLE_CAR_PART_BRAKE_RR, &right_side_position);
+        this->TheCarPartCuller.InitPart(CULLABLE_CAR_PART_BRAKE_RL, &tire_positions[3]);
+        this->TheCarPartCuller.InitPart(CULLABLE_CAR_PART_SIDE_FRONT, &left_side_position);
+        this->TheCarPartCuller.InitPart(CULLABLE_CAR_PART_SIDE_REAR, &right_side_position);
+
+        underneath_position.x = left_side_position.x + right_side_position.x;
+        underneath_position.y = left_side_position.y + right_side_position.y;
+        underneath_position.z = left_side_position.z + right_side_position.z;
+        underneath_position.x *= cull_position_scale;
+        underneath_position.y *= cull_position_scale;
+        underneath_position.z *= cull_position_scale;
+
+        this->TheCarPartCuller.InitPart(CULLABLE_CAR_PART_UNDERNEATH, &underneath_position);
+    }
 
     {
         for (int lod = this->mMinLodLevel; lod <= this->mMaxLodLevel; lod++) {
