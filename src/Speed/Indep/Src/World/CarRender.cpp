@@ -2548,8 +2548,7 @@ void CarRenderInfo::RenderFlaresOnCar(eView *view, const bVector3 *position, con
     if (force_light_state & 1) {
         headlight_left_intensity += 1.0f;
         headlight_right_intensity += 1.0f;
-    }
-    if ((force_light_state & 9) == 8) {
+    } else if (force_light_state & 8) {
         headlight_left_intensity = 0.0f;
         headlight_right_intensity = 0.0f;
     }
