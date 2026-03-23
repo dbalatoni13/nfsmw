@@ -250,7 +250,7 @@ void StuffSkyLayer(eView *view, SKY_LAYER layer) {
         bMatrix4 *cameraMatrix = view->GetCamera()->GetCameraMatrix();
         bMatrix4 *matrix = reinterpret_cast<bMatrix4 *>(CurrentBufferPos);
         float scaleZ = lbl_8040B27C;
-        float scale = lbl_8040B280;
+        float scale = lbl_8040B278;
         bool rotate = false;
         float z = cameraMatrix->v3.z;
         float x = cameraMatrix->v3.x;
@@ -268,18 +268,16 @@ void StuffSkyLayer(eView *view, SKY_LAYER layer) {
         if (matrix != 0) {
             PSMTX44Identity(*reinterpret_cast<Mtx44 *>(matrix));
             ReplaceSkyTextures(layer);
-            if (layer != SKY_LAYER_BLUE && layer != SKY_LAYER_CLOUDS) {
-                if (layer == SKY_LAYER_OVERCAST) {
-                    rotate = true;
-                    scale = lbl_8040B284;
-                } else if (layer == SKY_LAYER_REFLECTION) {
-                    rotate = true;
-                    matrix->v2.z = lbl_8040B28C;
-                    scale = lbl_8040B288;
-                    scaleZ = lbl_8040B290;
-                }
-            } else {
-                scale = lbl_8040B278;
+            if (layer == SKY_LAYER_BLUE) {
+                scale = lbl_8040B280;
+            } else if (layer == SKY_LAYER_OVERCAST) {
+                rotate = true;
+                scale = lbl_8040B284;
+            } else if (layer == SKY_LAYER_REFLECTION) {
+                rotate = true;
+                matrix->v2.z = lbl_8040B28C;
+                scale = lbl_8040B288;
+                scaleZ = lbl_8040B290;
             }
 
             if (view_id - 0x10U < 6) {

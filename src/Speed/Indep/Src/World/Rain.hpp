@@ -11,4 +11,8 @@ int AmIinATunnel(eView *view, int CheckOverPass);
 int AmIinATunnelSlow(eView *view, int CheckOverPass);
 void SetRainBase();
 
+inline bVector3 *Rain::GetWind() {
+    return &this->PrevailingWindSpeed;
+}
+
 #endif
