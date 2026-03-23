@@ -403,6 +403,10 @@ struct CarTypeInfo {
     int DefaultBasePaint;                       // offset 0xCC, size 0x4
 
     char *GetBaseModelName();
+    char *GetCarTypeName() {
+        return this->CarTypeName;
+    }
+
     CarUsageType GetCarUsageType() {
         return this->UsageType;
     }

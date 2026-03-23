@@ -1436,4 +1436,16 @@ CarPart *CarPartDatabase::NewGetNextCarPart(CarPart *car_part, CarType car_type,
     return this->NewGetCarPart(car_type, car_slot_id, car_part_namehash, car_part, upgrade_level);
 }
 
+bool CarInfo_IsSkinned(CarType type) {
+    CarTypeInfo *info = &CarTypeInfoArray[type];
+
+    if (info != 0) {
+        Attrib::Gen::ecar ecar(Attrib::StringToLowerCaseKey(info->GetCarTypeName()), 0, 0);
+
+        return ecar.IsSkinned();
+    }
+
+    return false;
+}
+
 void GenerateMissingCarParts() {}

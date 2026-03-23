@@ -291,6 +291,14 @@ struct ecar : Instance {
         return *resultptr;
     }
 
+    const bool &IsSkinned() const {
+        const bool *resultptr = reinterpret_cast<const bool *>(this->GetAttributePointer(0xd9102c65, 0));
+        if (!resultptr) {
+            resultptr = reinterpret_cast<const bool *>(DefaultDataArea(sizeof(bool)));
+        }
+        return *resultptr;
+    }
+
     const RefSpec &EngineBlownEffect(unsigned int index) const {
         const RefSpec *resultptr = reinterpret_cast<const RefSpec *>(this->GetAttributePointer(0xd9cca9a3, index));
         if (!resultptr) {

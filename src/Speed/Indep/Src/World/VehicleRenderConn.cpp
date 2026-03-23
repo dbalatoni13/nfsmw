@@ -24,7 +24,7 @@ extern eView eViews[];
 extern EmitterSystem gEmitterSystem;
 extern int UsePrecompositeVinyls;
 extern int FlareDiv;
-int CarInfo_IsSkinned(CarType car_type) asm("CarInfo_IsSkinned__F7CarType");
+bool CarInfo_IsSkinned(CarType car_type);
 
 struct RideInfoLoaderMirror {
     CarType Type;
