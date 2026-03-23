@@ -157,12 +157,12 @@ int SkyInitModel(eModel *model, bMatrix4 *local_world, unsigned int scenery_name
         float matrix_w = lbl_8040B10C;
         local_world->v3.w = matrix_w;
 
-        int *scenery_info_models = reinterpret_cast<int *>(reinterpret_cast<char *>(FindSceneryInfo(scenery_name_hash)) + 0x28);
+        eModel **scenery_info_models = reinterpret_cast<eModel **>(reinterpret_cast<char *>(FindSceneryInfo(scenery_name_hash)) + 0x28);
         unsigned int detail_level = 0;
 
         do {
             if (*scenery_info_models != 0) {
-                model->UnInit();
+                (*scenery_info_models)->UnInit();
             }
             detail_level++;
             scenery_info_models++;
