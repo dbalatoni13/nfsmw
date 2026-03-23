@@ -131,21 +131,21 @@ void SFXCTL_Wheel::GenerateTerrainTypes() {
     Attrib::Gen::simsurface CurRight(FRTerrainType.GetCollection() != RRTerrainType.GetCollection() ? RightSideTerrain : FRTerrainType);
     Attrib::Gen::simsurface CurLeft(FLTerrainType.GetCollection() != RLTerrainType.GetCollection() ? LeftSideTerrain : FLTerrainType);
 
-    PrevRightSideTerrain = RightSideTerrain;
-    PrevLeftSideTerrain = LeftSideTerrain;
+    PrevRightSideTerrain.Attrib::Gen::simsurface::operator=(static_cast< const Attrib::Instance & >(RightSideTerrain));
+    PrevLeftSideTerrain.Attrib::Gen::simsurface::operator=(static_cast< const Attrib::Instance & >(LeftSideTerrain));
 
     if (GetPhysCar()->TireState(1) == TIRE_DAMAGE_BLOWN || GetPhysCar()->TireState(2) == TIRE_DAMAGE_BLOWN) {
         Attrib::Gen::simsurface blown(0x8EE645B3, 0, nullptr);
-        RightSideTerrain = blown;
+        RightSideTerrain.Attrib::Gen::simsurface::operator=(static_cast< const Attrib::Instance & >(blown));
     } else {
-        RightSideTerrain = CurRight;
+        RightSideTerrain.Attrib::Gen::simsurface::operator=(static_cast< const Attrib::Instance & >(CurRight));
     }
 
     if (GetPhysCar()->TireState(0) == TIRE_DAMAGE_BLOWN || GetPhysCar()->TireState(3) == TIRE_DAMAGE_BLOWN) {
         Attrib::Gen::simsurface blown(0x8EE645B3, 0, nullptr);
-        LeftSideTerrain = blown;
+        LeftSideTerrain.Attrib::Gen::simsurface::operator=(static_cast< const Attrib::Instance & >(blown));
     } else {
-        LeftSideTerrain = CurLeft;
+        LeftSideTerrain.Attrib::Gen::simsurface::operator=(static_cast< const Attrib::Instance & >(CurLeft));
     }
 }
 
