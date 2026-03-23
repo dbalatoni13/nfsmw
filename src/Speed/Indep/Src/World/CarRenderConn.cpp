@@ -1017,10 +1017,8 @@ void CarRenderConn::UpdateTires(float dT, float carspeed, const RenderConn::Pkt_
 
         eRotateY(&this->mTireMatrices[i], &this->mTireMatrices[i], static_cast<unsigned short>(state->mRoll * 10430.378f));
         if (i < 2) {
-            unsigned short steer_angle = static_cast<unsigned short>(this->mSteering[i] * 10430.378f);
-
-            eRotateZ(&this->mTireMatrices[i], &this->mTireMatrices[i], steer_angle);
-            eRotateZ(&this->mBrakeMatrices[i], &this->mBrakeMatrices[i], steer_angle);
+            eRotateZ(&this->mTireMatrices[i], &this->mTireMatrices[i], static_cast<unsigned short>(this->mSteering[i] * 10430.378f));
+            eRotateZ(&this->mBrakeMatrices[i], &this->mBrakeMatrices[i], static_cast<unsigned short>(this->mSteering[i] * 10430.378f));
         }
 
         if (flatten_tires && is_flat) {
