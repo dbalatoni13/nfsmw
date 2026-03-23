@@ -1086,20 +1086,12 @@ void EAXAemsManager::InitSPUram() {
 }
 
 bool EAXAemsManager::AreResourceLoadsPending() {
-    if (m_pCurLoadSDLP != nullptr) {
-        goto Pending;
-    }
-    if (m_ItemsPendingAsyncResolve != 0) {
-        goto Pending;
-    }
-    if (m_IsWaitingForFileCB != 0) {
-        goto Pending;
-    }
-    if (m_nCurLoadedBankIndex >= (m_nEndOfList - 1)) {
+    if (m_pCurLoadSDLP == nullptr && m_ItemsPendingAsyncResolve == 0 && m_IsWaitingForFileCB == 0) {
+        if (m_nCurLoadedBankIndex < (m_nEndOfList - 1)) {
+            return true;
+        }
         return false;
     }
-
-Pending:
     return true;
 }
 
