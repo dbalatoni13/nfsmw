@@ -40,7 +40,14 @@ FnTurnBlender::FnTurnBlender()
     mAlignQ.w = 1.0f;
 }
 
-FnTurnBlender::~FnTurnBlender() {}
+FnTurnBlender::~FnTurnBlender() {
+    if (mNumAnims) {
+        ScratchBuffer::GetScratchBuffer(1).FreeBuffer();
+    }
+    if (mAnims) {
+        MemoryPoolManager::DeleteBlock(mAnims);
+    }
+}
 
 bool FnTurnBlender::EvalSQT(float currTime, float *sqtBuffer, const BoneMask *boneMask) {
     mPrevTime = currTime;
