@@ -360,12 +360,14 @@ int FnRunBlender::ComputeCycleIdx(float t, float startTime, float endTime) const
 
 void FnRunBlender::ComputeAlignQ(float *v1, float *v2, UMath::Vector4 &q) const {
     float dot = v1[0] * v2[0] + v1[1] * v2[1];
-    float norm = length(v1) * length(v2);
+    float v1Length = sqrtf(v1[0] * v1[0] + v1[1] * v1[1]);
+    float v2Length = sqrtf(v2[0] * v2[0] + v2[1] * v2[1]);
+    float norm = v1Length * v2Length;
     float w = ((dot / norm) + 1.0f) * 0.5f;
 
     q.x = 0.0f;
-    q.z = 0.0f;
     q.y = sqrtf(1.0f - w);
+    q.z = 0.0f;
     q.w = sqrtf(w);
     if (0.0f < v1[0] * v2[1] - v1[1] * v2[0]) {
         q.y = -q.y;
