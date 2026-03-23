@@ -46,8 +46,8 @@ struct CarPartAttribute {
     } Params;
 
     void EndianSwap() {
-        bPlatEndianSwap(&this->NameHash);
         bPlatEndianSwap(&this->Params.iParam);
+        bPlatEndianSwap(&this->NameHash);
     }
 };
 struct CarPartModelTable {
