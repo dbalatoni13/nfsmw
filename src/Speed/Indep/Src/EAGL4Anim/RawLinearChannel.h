@@ -28,30 +28,86 @@ class RawLinearChannel : public AnimMemoryMap {
         mNumFrames = n;
     }
 
-    unsigned short *GetDOFIndex() {}
+    unsigned short *GetDOFIndex() {
+        return reinterpret_cast<unsigned short *>(&this[1]);
+    }
 
-    const unsigned short *GetDOFIndex() const {}
+    const unsigned short *GetDOFIndex() const {
+        return reinterpret_cast<const unsigned short *>(&this[1]);
+    }
 
-    int GetDOFIndexSize() const {}
+    int GetDOFIndexSize() const {
+        return (mNumDOFs + 1) & ~1;
+    }
 
-    float *GetAnimData() {}
+    float *GetAnimData() {
+        return reinterpret_cast<float *>(GetDOFIndex() + GetDOFIndexSize());
+    }
 
-    const float *GetAnimData() const {}
+    const float *GetAnimData() const {
+        return reinterpret_cast<const float *>(GetDOFIndex() + GetDOFIndexSize());
+    }
 
-    float *GetFrame(int i) {}
+    float *GetFrame(int i) {
+        return &GetAnimData()[i * mNumDOFs];
+    }
 
-    const float *GetFrame(int i) const {}
+    const float *GetFrame(int i) const {
+        return &GetAnimData()[i * mNumDOFs];
+    }
 
-    int GetSize() const {}
+    int GetSize() const {
+        return ComputeSize(mNumDOFs, mNumFrames);
+    }
 
-    static int ComputeSize(int numDOFs, int numFrames) {}
+    static int ComputeSize(int numDOFs, int numFrames) {
+        return sizeof(RawLinearChannel) + (((numDOFs + 1) & ~1) * sizeof(unsigned short)) + numFrames * numDOFs * sizeof(float);
+    }
 
-    void EvalInterpFrame(float t, int frame0, int frame1, float *output) {}
+    void EvalInterpFrame(float t, int frame0, int frame1, float *output) {
+        const unsigned short *dofIndex = GetDOFIndex();
+        const float *frameData0 = GetFrame(frame0);
+        const float *frameData1 = GetFrame(frame1);
+        unsigned short numDOFs = mNumDOFs;
 
-    void Eval(float frameTime, float *output, bool interp) {}
+        for (int i = 0; i < numDOFs; i++) {
+            float value0 = *frameData0++;
+            output[*dofIndex++] = t * (*frameData1++ - value0) + value0;
+        }
+    }
+
+    void Eval(float frameTime, float *output, bool interp) {
+        int frame = static_cast<int>(frameTime);
+
+        if (frame < 0) {
+            EvalFrame(0, output);
+        } else {
+            int lastFrame = mNumFrames - 1;
+
+            if (frame < lastFrame) {
+                float t = frameTime - static_cast<float>(frame);
+
+                if (t == 0.0f || !interp) {
+                    EvalFrame(frame, output);
+                } else {
+                    EvalInterpFrame(t, frame, frame + 1, output);
+                }
+            } else {
+                EvalFrame(lastFrame, output);
+            }
+        }
+    }
 
   private:
-    void EvalFrame(int frame, float *output) {}
+    void EvalFrame(int frame, float *output) {
+        const unsigned short *dofIndex = GetDOFIndex();
+        const float *frameData = GetFrame(frame);
+        unsigned short numDOFs = mNumDOFs;
+
+        for (int i = 0; i < numDOFs; i++) {
+            output[*dofIndex++] = *frameData++;
+        }
+    }
 
     unsigned short mNumDOFs;   // offset 0x4, size 0x2
     unsigned short mNumFrames; // offset 0x6, size 0x2
