@@ -106,7 +106,8 @@ bool FnPoseAnim::EvalPose(float currTime, const PosePaletteBank *paletteBank, fl
             quatIdx--;
         }
     } else {
-        int src = (poseIdx + 1) * (numQ + numT) * 4 - 4;
+        int stride = (numQ + numT) * 4;
+        int src = (poseIdx + 1) * stride - 4;
         int transIdx = static_cast<int>(numT) - 1;
 
         while (transIdx >= 0) {
