@@ -18,12 +18,11 @@ SpaceNode::SpaceNode(SpaceNode *parent) {
     PSMTX44Identity(*reinterpret_cast<Mtx44 *>(&this->LocalMatrix));
 
     this->Parent = 0;
-    zero.x = 0.0f;
-    zero.y = 0.0f;
-    zero.z = 0.0f;
-    this->LocalVelocity = zero;
-    this->WorldAngularVelocity = zero;
-    this->LocalAngularVelocity = zero;
+    bFill(&zero, 0.0f, 0.0f, 0.0f);
+    bCopy(&this->LocalVelocity, &zero);
+    bFill(&zero, 0.0f, 0.0f, 0.0f);
+    bCopy(&this->WorldAngularVelocity, &zero);
+    bCopy(&this->LocalAngularVelocity, &zero);
 
     this->SetParent(parent);
     this->BlendingMatrices = 0;
