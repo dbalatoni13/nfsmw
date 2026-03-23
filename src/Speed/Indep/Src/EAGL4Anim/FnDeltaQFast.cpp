@@ -399,7 +399,7 @@ void FnDeltaQFast::UpdateNextQsMask(DeltaQFast *deltaQ, int ceilKey, int floorBi
                 nextQ[1] = static_cast<float>(physical[1] >> 4) * kQFastPhysicalScale12 - kQFastPhysicalBias12;
                 nextQ[2] = static_cast<float>(physical[2] >> 4) * kQFastPhysicalScale12 - kQFastPhysicalBias12;
                 nextQ[3] =
-                    static_cast<float>(static_cast<unsigned char>((physical[2] & 0xF) | ((physical[0] & 0xF) * 0x100) + ((physical[1] & 0xF) * 0x10))) *
+                    static_cast<float>(static_cast<unsigned short>(((physical[0] & 0xF) << 8) | ((physical[1] & 0xF) << 4) | (physical[2] & 0xF))) *
                         kQFastPhysicalScale12 -
                     kQFastPhysicalBias12;
             }
