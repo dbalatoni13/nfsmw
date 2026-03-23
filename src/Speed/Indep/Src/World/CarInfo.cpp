@@ -288,12 +288,11 @@ CAR_PART_ID GetCarPartFromSlot(CAR_SLOT_ID slot) {
 unsigned int *GetTypesFromSlot(CAR_SLOT_ID slot, CarType car_type) {
     const char *car_type_name = GetCarTypeName(car_type);
     unsigned int car_type_namehash = bStringHash(car_type_name);
-    SlotTypeOverrideLayout *slot_type_overrides = reinterpret_cast<SlotTypeOverrideLayout *>(SlotTypeOverrideTable);
     int i = 0;
 
     if (NumSlotTypeOverrides > 0) {
         do {
-            SlotTypeOverrideLayout *slot_type_override = &slot_type_overrides[i];
+            SlotTypeOverrideLayout *slot_type_override = &reinterpret_cast<SlotTypeOverrideLayout *>(SlotTypeOverrideTable)[i];
 
             if (slot_type_override->CarType == car_type_namehash && slot_type_override->SlotId == slot) {
                 return slot_type_override->LookupType;
@@ -650,17 +649,14 @@ void RideInfo::SetUpgradePart(CAR_SLOT_ID car_slot_id, int upg_level) {
 CarPart *FindPartWithLevel(CarType car_type, CAR_SLOT_ID slot_id, int level) {
     CarPart *part = CarPartDB.NewGetCarPart(car_type, slot_id, 0, 0, -1);
 
-    while (true) {
-        if (part == 0) {
-            return 0;
-        }
+    while (part != 0) {
         if ((reinterpret_cast<unsigned char *>(part)[5] >> 5) == static_cast<unsigned int>(level)) {
-            break;
+            return part;
         }
         part = CarPartDB.NewGetNextCarPart(part, car_type, slot_id, 0, -1);
     }
 
-    return part;
+    return 0;
 }
 
 void RideInfo::SetStockParts() {

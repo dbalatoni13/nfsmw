@@ -274,8 +274,10 @@ int CarInfo_GetResourceCost(CarType car_type, bool is_player_car, bool two_playe
 
     i = 0;
     do {
-        if (bStringHash(CarMemoryInfoTable[i].Name) == car_memory_info) {
-            return CarMemoryInfoTable[i].Size << 10;
+        CarMemoryInfoEntryLayout *entry = &CarMemoryInfoTable[i];
+
+        if (bStringHash(entry->Name) == car_memory_info) {
+            return entry->Size << 10;
         }
         i++;
     } while (i < 6);
