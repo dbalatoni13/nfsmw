@@ -192,5 +192,14 @@ bool SFXCTL_AccelTrans::ShouldBeginAccelTrans() {
 }
 
 bool SFXCTL_AccelTrans::ShouldPlayEngOffSweet() {
-    return PlayEngOffSweet;
+    if (eAccelTransFxState != FX_ACCEL_STATE_NONE) {
+        return false;
+    }
+    if (m_pShiftCtl && m_pShiftCtl->IsActive()) {
+        return false;
+    }
+    if (GetPhysRPM() < 6000.0f) {
+        return false;
+    }
+    return !(m_pEAXCar->GetCurGear() < Sound::SECOND_GEAR);
 }
