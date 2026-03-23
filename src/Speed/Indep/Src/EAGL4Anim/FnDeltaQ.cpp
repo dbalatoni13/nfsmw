@@ -44,21 +44,6 @@ namespace {
 
 static const float kFloatZero = 0.0f;
 static const float kFloatOne = 1.0f;
-static const float kRangeScale16Bit = 3.0518044e-5f;
-static const float kRangeScale15Bit = 6.1037019e-5f;
-static const float kRangeScale8Bit = 7.8431377e-3f;
-static const float kRangeScale7Bit = 1.5748032e-2f;
-static const float kRangeScale16To7Bit = 9.6119827e-7f;
-static const float kRangeScale16To8Bit = 4.7871444e-7f;
-
-static inline int GetFrameDeltaSize(const DeltaQ *deltaQ) {
-    return deltaQ->mNumBones * sizeof(DeltaQDelta);
-}
-
-static inline int GetBinSize(const DeltaQ *deltaQ) {
-    return static_cast<int>(AlignSize2((deltaQ->mNumBones * sizeof(DeltaQPhysical)) +
-                                       ((deltaQ->GetBinLength() - 1) * GetFrameDeltaSize(deltaQ))));
-}
 
 static inline DeltaQMinRange *GetMinRanges(DeltaQ *deltaQ) {
     return deltaQ->GetMinRange();
@@ -69,7 +54,7 @@ static inline unsigned char *GetBinStart(DeltaQ *deltaQ) {
 }
 
 static inline unsigned char *GetBin(DeltaQ *deltaQ, int binIdx) {
-    return &GetBinStart(deltaQ)[binIdx * GetBinSize(deltaQ)];
+    return &GetBinStart(deltaQ)[binIdx * deltaQ->GetBinSize()];
 }
 
 static inline DeltaQPhysical *GetPhysical(unsigned char *binData) {
@@ -77,76 +62,7 @@ static inline DeltaQPhysical *GetPhysical(unsigned char *binData) {
 }
 
 static inline DeltaQDelta *GetDelta(DeltaQ *deltaQ, unsigned char *binData, int deltaIdx) {
-    return reinterpret_cast<DeltaQDelta *>(&binData[deltaQ->mNumBones * sizeof(DeltaQPhysical) +
-                                                     (deltaIdx * GetFrameDeltaSize(deltaQ))]);
-}
-
-static inline unsigned char *GetConstBoneIdx(DeltaQ *deltaQ) {
-    const int binSize = GetBinSize(deltaQ);
-    int numBins = deltaQ->mNumKeys >> deltaQ->GetBinLengthPower();
-    unsigned char *s = &GetBin(deltaQ, 0)[binSize * numBins];
-    int r = deltaQ->mNumKeys & deltaQ->GetBinLengthModMask();
-
-    if (r > 0) {
-        s = reinterpret_cast<unsigned char *>(
-            AlignSize2(reinterpret_cast<intptr_t>(s + (deltaQ->mNumBones * sizeof(DeltaQPhysical)) +
-                                                  ((r - 1) * GetFrameDeltaSize(deltaQ)))));
-    }
-    if (deltaQ->mNumBones == 0) {
-        s = reinterpret_cast<unsigned char *>(AlignSize2(reinterpret_cast<intptr_t>(s)));
-    }
-
-    return s;
-}
-
-static inline DeltaQPhysical *GetConstPhysical(DeltaQ *deltaQ) {
-    return reinterpret_cast<DeltaQPhysical *>(AlignSize2(reinterpret_cast<intptr_t>(&GetConstBoneIdx(deltaQ)[deltaQ->mNumConstBones])));
-}
-
-static inline void RecoverW(int signBit, UMath::Vector4 &q) {
-    float ndotn = q.x * q.x + q.y * q.y + q.z * q.z;
-
-    if (ndotn <= kFloatOne) {
-        q.w = FastSqrt(kFloatOne - ndotn);
-        if (signBit > 0) {
-            q.w = -q.w;
-        }
-    } else {
-        float len = FastSqrt(ndotn);
-
-        q.x /= len;
-        q.y /= len;
-        q.z /= len;
-        q.w = kFloatZero;
-    }
-}
-
-static inline void DecodePhysical(const DeltaQPhysical &physical, UMath::Vector4 &q) {
-    q.x = physical.mX * kRangeScale15Bit - kFloatOne;
-    q.y = physical.mY * kRangeScale16Bit - kFloatOne;
-    q.z = physical.mZ * kRangeScale16Bit - kFloatOne;
-    RecoverW(physical.mW, q);
-}
-
-static inline void DecodeMinRange(const DeltaQMinRange &minRange, DeltaQMinRangef &minRangef) {
-    minRangef.mMin.x = minRange.mMin[0] * kRangeScale16Bit - kFloatOne;
-    minRangef.mMin.y = minRange.mMin[1] * kRangeScale16Bit - kFloatOne;
-    minRangef.mMin.z = minRange.mMin[2] * kRangeScale16Bit - kFloatOne;
-
-    minRangef.mRange.x = minRange.mRange[0] * kRangeScale16To7Bit;
-    minRangef.mRange.y = minRange.mRange[1] * kRangeScale16To8Bit;
-    minRangef.mRange.z = minRange.mRange[2] * kRangeScale16To8Bit;
-}
-
-static inline void DecodeDelta(const DeltaQMinRange &minRange, const DeltaQDelta &delta, UMath::Vector4 &q) {
-    DeltaQMinRangef minRangef;
-
-    DecodeMinRange(minRange, minRangef);
-
-    q.x = minRangef.mMin.x + minRangef.mRange.x * delta.mX;
-    q.y = minRangef.mMin.y + minRangef.mRange.y * delta.mY;
-    q.z = minRangef.mMin.z + minRangef.mRange.z * delta.mZ;
-    RecoverW(delta.mW, q);
+    return deltaQ->GetDelta(binData, deltaIdx);
 }
 
 static inline float *GetOutputQuat(float *sqt, unsigned char boneIdx) {
@@ -184,7 +100,7 @@ bool FnDeltaQ::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask) {
         mBins = reinterpret_cast<unsigned char *>(minRanges) + numBones * sizeof(DeltaQMinRange);
         mConstBoneIdxs = reinterpret_cast<unsigned char *>(deltaQ->GetConstBoneIdx());
         mConstPhysical = reinterpret_cast<DeltaQPhysical *>(deltaQ->GetConstPhysical());
-        mBinSize = AlignSize2(deltaQ->mNumBones * ((((1 << deltaQ->mBinLengthPower) - 1) * 3) + 6));
+        mBinSize = deltaQ->GetBinSize();
 
         if (deltaQ->mNumBones != 0) {
             UMath::Vector4 *prevQs =
@@ -245,7 +161,7 @@ bool FnDeltaQ::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask) {
 
     if (mPrevKey == -1 || floorBinIdx != prevBinIdx || floorDeltaIdx == 0 || preventReverse) {
         for (int ibone = 0; ibone < deltaQ->mNumBones; ibone++) {
-            DecodePhysical(floorPhys[ibone], mPrevQs[ibone]);
+            floorPhys[ibone].UnQuantize(mPrevQs[ibone]);
         }
         prevDeltaIdx = 0;
     } else {
@@ -257,12 +173,14 @@ bool FnDeltaQ::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask) {
             DeltaQDelta *floorDelta = GetDelta(deltaQ, binData, iframe);
 
             for (int ibone = 0; ibone < deltaQ->mNumBones; ibone++) {
-                UMath::Vector4 delta;
+                UMath::Vector4 deltaf;
+                DeltaQMinRangef minRangef;
 
-                DecodeDelta(mMinRanges[ibone], *floorDelta, delta);
-                mPrevQs[ibone].x += delta.x;
-                mPrevQs[ibone].y += delta.y;
-                mPrevQs[ibone].z += delta.z;
+                mMinRanges[ibone].UnQuantize(minRangef);
+                floorDelta->UnQuantize(minRangef, deltaf);
+                mPrevQs[ibone].x += deltaf.x;
+                mPrevQs[ibone].y += deltaf.y;
+                mPrevQs[ibone].z += deltaf.z;
                 floorDelta++;
             }
         }
@@ -271,12 +189,14 @@ bool FnDeltaQ::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask) {
             DeltaQDelta *floorDelta = GetDelta(deltaQ, binData, iframe);
 
             for (int ibone = 0; ibone < deltaQ->mNumBones; ibone++) {
-                UMath::Vector4 delta;
+                UMath::Vector4 deltaf;
+                DeltaQMinRangef minRangef;
 
-                DecodeDelta(mMinRanges[ibone], *floorDelta, delta);
-                mPrevQs[ibone].x -= delta.x;
-                mPrevQs[ibone].y -= delta.y;
-                mPrevQs[ibone].z -= delta.z;
+                mMinRanges[ibone].UnQuantize(minRangef);
+                floorDelta->UnQuantize(minRangef, deltaf);
+                mPrevQs[ibone].x -= deltaf.x;
+                mPrevQs[ibone].y -= deltaf.y;
+                mPrevQs[ibone].z -= deltaf.z;
                 floorDelta++;
             }
         }
@@ -284,13 +204,13 @@ bool FnDeltaQ::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask) {
 
     if (floorDeltaIdx == 0) {
         for (int ibone = 0; ibone < deltaQ->mNumBones; ibone++) {
-            RecoverW(floorPhys[ibone].mW, mPrevQs[ibone]);
+            DeltaQRecoverW(floorPhys[ibone].mW, mPrevQs[ibone]);
         }
     } else {
         DeltaQDelta *floorDelta = GetDelta(deltaQ, binData, floorDeltaIdx - 1);
 
         for (int ibone = 0; ibone < deltaQ->mNumBones; ibone++) {
-            RecoverW(floorDelta->mW, mPrevQs[ibone]);
+            DeltaQRecoverW(floorDelta->mW, mPrevQs[ibone]);
             floorDelta++;
         }
     }
@@ -331,7 +251,7 @@ bool FnDeltaQ::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask) {
                 float *ceilQ = reinterpret_cast<float *>(&ceilq);
                 float *out = GetOutputQuat(sqt, boneIdxs[ibone]);
 
-                DecodePhysical(ceilPhys[ibone], ceilq);
+                ceilPhys[ibone].UnQuantize(ceilq);
                 if (prevQ[0] * ceilQ[0] + prevQ[1] * ceilQ[1] + prevQ[2] * ceilQ[2] + prevQ[3] * ceilQ[3] > 0.0f) {
                     out[0] = scale * (ceilQ[0] - prevQ[0]) + prevQ[0];
                     out[1] = scale * (ceilQ[1] - prevQ[1]) + prevQ[1];
@@ -357,14 +277,16 @@ bool FnDeltaQ::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask) {
             DeltaQDelta *ceilDelta = GetDelta(deltaQ, binData, floorDeltaIdx);
 
             for (int ibone = 0; ibone < deltaQ->mNumBones; ibone++) {
-                UMath::Vector4 delta;
+                UMath::Vector4 deltaf;
                 UMath::Vector4 ceilq;
+                DeltaQMinRangef minRangef;
 
-                DecodeDelta(mMinRanges[ibone], *ceilDelta, delta);
-                ceilq.x = mPrevQs[ibone].x + delta.x;
-                ceilq.y = mPrevQs[ibone].y + delta.y;
-                ceilq.z = mPrevQs[ibone].z + delta.z;
-                RecoverW(ceilDelta->mW, ceilq);
+                mMinRanges[ibone].UnQuantize(minRangef);
+                ceilDelta->UnQuantize(minRangef, deltaf);
+                ceilq.x = mPrevQs[ibone].x + deltaf.x;
+                ceilq.y = mPrevQs[ibone].y + deltaf.y;
+                ceilq.z = mPrevQs[ibone].z + deltaf.z;
+                DeltaQRecoverW(ceilDelta->mW, ceilq);
 
                 FastQuatBlendF4(scale, reinterpret_cast<float *>(&mPrevQs[ibone]), reinterpret_cast<float *>(&ceilq),
                                 GetOutputQuat(sqt, boneIdxs[ibone]));
@@ -379,12 +301,10 @@ bool FnDeltaQ::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask) {
 
     if (deltaQ->mNumConstBones != 0) {
         for (int ibone = 0; ibone < deltaQ->mNumConstBones; ibone++) {
-            float *out = GetOutputQuat(sqt, mConstBoneIdxs[ibone]);
+            UMath::Vector4 constq;
 
-            out[0] = mConstPhysical[ibone].mX * kRangeScale15Bit - kFloatOne;
-            out[1] = mConstPhysical[ibone].mY * kRangeScale16Bit - kFloatOne;
-            out[2] = mConstPhysical[ibone].mZ * kRangeScale16Bit - kFloatOne;
-            RecoverW(mConstPhysical[ibone].mW, *reinterpret_cast<UMath::Vector4 *>(out));
+            mConstPhysical[ibone].UnQuantize(constq);
+            *reinterpret_cast<UMath::Vector4 *>(GetOutputQuat(sqt, mConstBoneIdxs[ibone])) = constq;
         }
     }
 
@@ -401,7 +321,7 @@ bool FnDeltaQ::EvalSQTMasked(float currTime, const BoneMask *boneMask, float *sq
         mBins = reinterpret_cast<unsigned char *>(minRanges) + numBones * sizeof(DeltaQMinRange);
         mConstBoneIdxs = reinterpret_cast<unsigned char *>(deltaQ->GetConstBoneIdx());
         mConstPhysical = reinterpret_cast<DeltaQPhysical *>(deltaQ->GetConstPhysical());
-        mBinSize = AlignSize2(deltaQ->mNumBones * ((((1 << deltaQ->mBinLengthPower) - 1) * 3) + 6));
+        mBinSize = deltaQ->GetBinSize();
 
         if (deltaQ->mNumBones != 0) {
             UMath::Vector4 *prevQs =
@@ -462,7 +382,7 @@ bool FnDeltaQ::EvalSQTMasked(float currTime, const BoneMask *boneMask, float *sq
         (floorKey < mPrevKey && !IsReverseDeltaSumEnabled())) {
         for (int ibone = 0; ibone < deltaQ->mNumBones; ibone++) {
             if (boneMask->GetBone(boneIdxs[ibone])) {
-                DecodePhysical(floorPhys[ibone], mPrevQs[ibone]);
+                floorPhys[ibone].UnQuantize(mPrevQs[ibone]);
             }
         }
         prevDeltaIdx = 0;
@@ -476,12 +396,14 @@ bool FnDeltaQ::EvalSQTMasked(float currTime, const BoneMask *boneMask, float *sq
 
             for (int ibone = 0; ibone < deltaQ->mNumBones; ibone++) {
                 if (boneMask->GetBone(boneIdxs[ibone])) {
-                    UMath::Vector4 delta;
+                    UMath::Vector4 deltaf;
+                    DeltaQMinRangef minRangef;
 
-                    DecodeDelta(mMinRanges[ibone], *floorDelta, delta);
-                    mPrevQs[ibone].x += delta.x;
-                    mPrevQs[ibone].y += delta.y;
-                    mPrevQs[ibone].z += delta.z;
+                    mMinRanges[ibone].UnQuantize(minRangef);
+                    floorDelta->UnQuantize(minRangef, deltaf);
+                    mPrevQs[ibone].x += deltaf.x;
+                    mPrevQs[ibone].y += deltaf.y;
+                    mPrevQs[ibone].z += deltaf.z;
                 }
                 floorDelta++;
             }
@@ -492,12 +414,14 @@ bool FnDeltaQ::EvalSQTMasked(float currTime, const BoneMask *boneMask, float *sq
 
             for (int ibone = 0; ibone < deltaQ->mNumBones; ibone++) {
                 if (boneMask->GetBone(boneIdxs[ibone])) {
-                    UMath::Vector4 delta;
+                    UMath::Vector4 deltaf;
+                    DeltaQMinRangef minRangef;
 
-                    DecodeDelta(mMinRanges[ibone], *floorDelta, delta);
-                    mPrevQs[ibone].x -= delta.x;
-                    mPrevQs[ibone].y -= delta.y;
-                    mPrevQs[ibone].z -= delta.z;
+                    mMinRanges[ibone].UnQuantize(minRangef);
+                    floorDelta->UnQuantize(minRangef, deltaf);
+                    mPrevQs[ibone].x -= deltaf.x;
+                    mPrevQs[ibone].y -= deltaf.y;
+                    mPrevQs[ibone].z -= deltaf.z;
                 }
                 floorDelta++;
             }
@@ -507,7 +431,7 @@ bool FnDeltaQ::EvalSQTMasked(float currTime, const BoneMask *boneMask, float *sq
     if (floorDeltaIdx == 0) {
         for (int ibone = 0; ibone < deltaQ->mNumBones; ibone++) {
             if (boneMask->GetBone(boneIdxs[ibone])) {
-                RecoverW(floorPhys[ibone].mW, mPrevQs[ibone]);
+                DeltaQRecoverW(floorPhys[ibone].mW, mPrevQs[ibone]);
             }
         }
     } else {
@@ -515,7 +439,7 @@ bool FnDeltaQ::EvalSQTMasked(float currTime, const BoneMask *boneMask, float *sq
 
         for (int ibone = 0; ibone < deltaQ->mNumBones; ibone++) {
             if (boneMask->GetBone(boneIdxs[ibone])) {
-                RecoverW(floorDelta->mW, mPrevQs[ibone]);
+                DeltaQRecoverW(floorDelta->mW, mPrevQs[ibone]);
             }
             floorDelta++;
         }
@@ -558,10 +482,7 @@ bool FnDeltaQ::EvalSQTMasked(float currTime, const BoneMask *boneMask, float *sq
                     float *ceilQ = reinterpret_cast<float *>(&ceilq);
                     float *out = GetOutputQuat(sqt, boneIdxs[ibone]);
 
-                    ceilQ[0] = ceilPhys[ibone].mX * kRangeScale15Bit - kFloatOne;
-                    ceilQ[1] = ceilPhys[ibone].mY * kRangeScale16Bit - kFloatOne;
-                    ceilQ[2] = ceilPhys[ibone].mZ * kRangeScale16Bit - kFloatOne;
-                    RecoverW(ceilPhys[ibone].mW, ceilq);
+                    ceilPhys[ibone].UnQuantize(ceilq);
                     if (prevQ[0] * ceilQ[0] + prevQ[1] * ceilQ[1] + prevQ[2] * ceilQ[2] + prevQ[3] * ceilQ[3] > 0.0f) {
                         out[0] = scale * (ceilQ[0] - prevQ[0]) + prevQ[0];
                         out[1] = scale * (ceilQ[1] - prevQ[1]) + prevQ[1];
@@ -589,17 +510,19 @@ bool FnDeltaQ::EvalSQTMasked(float currTime, const BoneMask *boneMask, float *sq
 
             for (int ibone = 0; ibone < deltaQ->mNumBones; ibone++) {
                 if (boneMask->GetBone(boneIdxs[ibone])) {
-                    UMath::Vector4 delta;
+                    UMath::Vector4 deltaf;
                     UMath::Vector4 ceilq;
                     float *prevQ = reinterpret_cast<float *>(&mPrevQs[ibone]);
                     float *ceilQ = reinterpret_cast<float *>(&ceilq);
                     float *out = GetOutputQuat(sqt, boneIdxs[ibone]);
+                    DeltaQMinRangef minRangef;
 
-                    DecodeDelta(mMinRanges[ibone], *ceilDelta, delta);
-                    ceilq.x = mPrevQs[ibone].x + delta.x;
-                    ceilq.y = mPrevQs[ibone].y + delta.y;
-                    ceilq.z = mPrevQs[ibone].z + delta.z;
-                    RecoverW(ceilDelta->mW, ceilq);
+                    mMinRanges[ibone].UnQuantize(minRangef);
+                    ceilDelta->UnQuantize(minRangef, deltaf);
+                    ceilq.x = mPrevQs[ibone].x + deltaf.x;
+                    ceilq.y = mPrevQs[ibone].y + deltaf.y;
+                    ceilq.z = mPrevQs[ibone].z + deltaf.z;
+                    DeltaQRecoverW(ceilDelta->mW, ceilq);
 
                     if (prevQ[0] * ceilQ[0] + prevQ[1] * ceilQ[1] + prevQ[2] * ceilQ[2] + prevQ[3] * ceilQ[3] > 0.0f) {
                         out[0] = scale * (ceilQ[0] - prevQ[0]) + prevQ[0];
@@ -638,7 +561,7 @@ bool FnDeltaQ::EvalSQTMasked(float currTime, const BoneMask *boneMask, float *sq
             if (boneMask->GetBone(mConstBoneIdxs[ibone])) {
                 UMath::Vector4 constq;
 
-                DecodePhysical(mConstPhysical[ibone], constq);
+                mConstPhysical[ibone].UnQuantize(constq);
                 *reinterpret_cast<UMath::Vector4 *>(GetOutputQuat(sqt, mConstBoneIdxs[ibone])) = constq;
             }
         }
@@ -662,9 +585,9 @@ void FnDeltaQ::InitBuffersAsRequired() {
 
     mMinRanges = GetMinRanges(deltaQ);
     mBins = GetBinStart(deltaQ);
-    mBinSize = GetBinSize(deltaQ);
-    mConstBoneIdxs = GetConstBoneIdx(deltaQ);
-    mConstPhysical = GetConstPhysical(deltaQ);
+    mBinSize = deltaQ->GetBinSize();
+    mConstBoneIdxs = deltaQ->GetConstBoneIdx();
+    mConstPhysical = deltaQ->GetConstPhysical();
 
     if (deltaQ->mNumBones != 0) {
         mPrevQs = reinterpret_cast<UMath::Vector4 *>(MemoryPoolManager::NewBlock(deltaQ->mNumBones * sizeof(*mPrevQs)));

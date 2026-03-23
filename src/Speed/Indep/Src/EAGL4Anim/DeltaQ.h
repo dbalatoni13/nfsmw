@@ -10,6 +10,8 @@
 
 namespace EAGL4Anim {
 
+inline void DeltaQRecoverW(int signBit, UMath::Vector4 &q);
+
 // total size: 0x18
 struct DeltaQMinRangef {
     UMath::Vector3 mMin;   // offset 0x0, size 0xC
@@ -18,7 +20,16 @@ struct DeltaQMinRangef {
 
 // total size: 0xC
 struct DeltaQMinRange {
-    void UnQuantize(DeltaQMinRangef &minRangef) {}
+    void UnQuantize(DeltaQMinRangef &minRangef) {
+        const float RangeScale16Bit = 3.0518044e-5f;
+
+        minRangef.mMin.x = mMin[0] * RangeScale16Bit - 1.0f;
+        minRangef.mMin.y = mMin[1] * RangeScale16Bit - 1.0f;
+        minRangef.mMin.z = mMin[2] * RangeScale16Bit - 1.0f;
+        minRangef.mRange.x = mRange[0] * 9.6119827e-7f;
+        minRangef.mRange.y = mRange[1] * 4.7871444e-7f;
+        minRangef.mRange.z = mRange[2] * 4.7871444e-7f;
+    }
 
     unsigned short mMin[3];   // offset 0x0, size 0x6
     unsigned short mRange[3]; // offset 0x6, size 0x6
@@ -26,7 +37,12 @@ struct DeltaQMinRange {
 
 // total size: 0x3
 struct DeltaQDelta {
-    void UnQuantize(const DeltaQMinRangef &minRangef, UMath::Vector4 &q) {}
+    void UnQuantize(const DeltaQMinRangef &minRangef, UMath::Vector4 &q) {
+        q.x = minRangef.mMin.x + minRangef.mRange.x * mX;
+        q.y = minRangef.mMin.y + minRangef.mRange.y * mY;
+        q.z = minRangef.mMin.z + minRangef.mRange.z * mZ;
+        DeltaQRecoverW(mW, q);
+    }
 
     unsigned char mX : 7; // offset 0x0, size 0x1
     unsigned char mW : 1; // offset 0x0, size 0x1
@@ -37,8 +53,13 @@ struct DeltaQDelta {
 // total size: 0x6
 struct DeltaQPhysical {
     void UnQuantize(UMath::Vector4 &q) {
-        // const float RangeScale15Bit;
-        // const float RangeScale16Bit;
+        const float RangeScale16Bit = 3.0518044e-5f;
+        const float RangeScale15Bit = 6.1037019e-5f;
+
+        q.x = mX * RangeScale15Bit - 1.0f;
+        q.y = mY * RangeScale16Bit - 1.0f;
+        q.z = mZ * RangeScale16Bit - 1.0f;
+        DeltaQRecoverW(mW, q);
     }
 
     unsigned short mX : 15; // offset 0x0, size 0x2
@@ -52,6 +73,21 @@ inline void DeltaQRecoverW(int signBit, UMath::Vector4 &q) {
 
     {
         float len;
+    }
+
+    ndotn = q.x * q.x + q.y * q.y + q.z * q.z;
+    if (ndotn <= 1.0f) {
+        q.w = FastSqrt(1.0f - ndotn);
+        if (signBit > 0) {
+            q.w = -q.w;
+        }
+    } else {
+        float len = FastSqrt(ndotn);
+
+        q.x /= len;
+        q.y /= len;
+        q.z /= len;
+        q.w = 0.0f;
     }
 }
 
@@ -87,8 +123,7 @@ struct DeltaQ : public AnimMemoryMap {
     void GetArrays(DeltaQMinRange *&minRanges, unsigned char *&binStart, unsigned char *&constBoneIndices, DeltaQPhysical *&constPhysical) {}
 
     int GetBinSize() const {
-        // TODO
-        return AlignSize2(3 * ((GetBinLength() - 1) * mNumBones));
+        return AlignSize2((mNumBones * sizeof(DeltaQPhysical)) + ((GetBinLength() - 1) * mNumBones * sizeof(DeltaQDelta)));
     }
 
     DeltaQMinRange *GetMinRange() {
@@ -106,7 +141,9 @@ struct DeltaQ : public AnimMemoryMap {
         return reinterpret_cast<DeltaQPhysical *>(binData);
     }
 
-    DeltaQDelta *GetDelta(unsigned char *binData, int deltaIdx) {}
+    DeltaQDelta *GetDelta(unsigned char *binData, int deltaIdx) {
+        return reinterpret_cast<DeltaQDelta *>(&binData[mNumBones * sizeof(DeltaQPhysical) + deltaIdx * mNumBones * sizeof(DeltaQDelta)]);
+    }
 
     unsigned char *GetConstBoneIdx();
 
