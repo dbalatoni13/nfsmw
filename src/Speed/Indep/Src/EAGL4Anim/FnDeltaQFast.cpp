@@ -214,7 +214,7 @@ void FnDeltaQFast::SetAnimMemoryMap(AnimMemoryMap *anim) {
         mNextQBlock = nextQBlock;
         mNextQs = reinterpret_cast<UMath::Vector4 *>(mNextQBlock);
 
-        for (int ibone = 0; ibone < numBones; ibone++) {
+        for (int ibone = 0; ibone < deltaQ->mNumBones; ibone++) {
             unsigned short *minRangeValues = reinterpret_cast<unsigned short *>(&minRange[ibone]);
             float *minRangefValues = reinterpret_cast<float *>(&mMinRangesf[ibone]);
 
