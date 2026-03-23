@@ -37,13 +37,16 @@ unsigned char *DeltaQFast::GetConstBoneIdx() {
     unsigned int binLength = 1u << mBinLengthPower;
     unsigned int numBins = mNumKeys / binLength;
     unsigned int remainder = mNumKeys - numBins * binLength;
-    int s = reinterpret_cast<int>(this) + 0x12 + numBones * sizeof(DeltaQFastMinRange) +
-            AlignSize2(numBones * (((binLength - 1) * sizeof(DeltaQFastDelta)) + sizeof(DeltaQFastPhysical))) * numBins;
+    int s = reinterpret_cast<int>(this) + 0x12;
 
-    if (remainder > 0) {
-        s += numBones * (((remainder - 1) * sizeof(DeltaQFastDelta)) + sizeof(DeltaQFastPhysical));
+    s += numBones * sizeof(DeltaQFastMinRange);
+    s += AlignSize2(numBones * (((binLength - 1) * sizeof(DeltaQFastDelta)) + sizeof(DeltaQFastPhysical))) * numBins;
+
+    if (!remainder) {
+        return reinterpret_cast<unsigned char *>(s);
     }
 
+    s += numBones * (((remainder - 1) * sizeof(DeltaQFastDelta)) + sizeof(DeltaQFastPhysical));
     return reinterpret_cast<unsigned char *>(s);
 }
 
@@ -52,8 +55,10 @@ DeltaQFastPhysical *DeltaQFast::GetConstPhysical() {
     unsigned int binLength = 1u << mBinLengthPower;
     unsigned int numBins = mNumKeys / binLength;
     unsigned int remainder = mNumKeys - numBins * binLength;
-    int s = reinterpret_cast<int>(this) + 0x12 + numBones * sizeof(DeltaQFastMinRange) +
-            AlignSize2(numBones * (((binLength - 1) * sizeof(DeltaQFastDelta)) + sizeof(DeltaQFastPhysical))) * numBins;
+    int s = reinterpret_cast<int>(this) + 0x12;
+
+    s += numBones * sizeof(DeltaQFastMinRange);
+    s += AlignSize2(numBones * (((binLength - 1) * sizeof(DeltaQFastDelta)) + sizeof(DeltaQFastPhysical))) * numBins;
 
     if (remainder > 0) {
         s += numBones * (((remainder - 1) * sizeof(DeltaQFastDelta)) + sizeof(DeltaQFastPhysical));

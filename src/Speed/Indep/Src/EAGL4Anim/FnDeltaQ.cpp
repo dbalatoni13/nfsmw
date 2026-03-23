@@ -11,13 +11,16 @@ unsigned char *DeltaQ::GetConstBoneIdx() {
     unsigned int binLength = 1u << mBinLengthPower;
     unsigned int numBins = mNumKeys / binLength;
     unsigned int remainder = mNumKeys - numBins * binLength;
-    int s = reinterpret_cast<int>(this) + 0x12 + numBones * sizeof(DeltaQMinRange) +
-            AlignSize2(numBones * (((binLength - 1) * sizeof(DeltaQDelta)) + sizeof(DeltaQPhysical))) * numBins;
+    int s = reinterpret_cast<int>(this) + 0x12;
 
-    if (remainder > 0) {
-        s += numBones * (((remainder - 1) * sizeof(DeltaQDelta)) + sizeof(DeltaQPhysical));
+    s += numBones * sizeof(DeltaQMinRange);
+    s += AlignSize2(numBones * (((binLength - 1) * sizeof(DeltaQDelta)) + sizeof(DeltaQPhysical))) * numBins;
+
+    if (!remainder) {
+        return reinterpret_cast<unsigned char *>(s);
     }
 
+    s += numBones * (((remainder - 1) * sizeof(DeltaQDelta)) + sizeof(DeltaQPhysical));
     return reinterpret_cast<unsigned char *>(s);
 }
 
@@ -26,8 +29,10 @@ DeltaQPhysical *DeltaQ::GetConstPhysical() {
     unsigned int binLength = 1u << mBinLengthPower;
     unsigned int numBins = mNumKeys / binLength;
     unsigned int remainder = mNumKeys - numBins * binLength;
-    int s = reinterpret_cast<int>(this) + 0x12 + numBones * sizeof(DeltaQMinRange) +
-            AlignSize2(numBones * (((binLength - 1) * sizeof(DeltaQDelta)) + sizeof(DeltaQPhysical))) * numBins;
+    int s = reinterpret_cast<int>(this) + 0x12;
+
+    s += numBones * sizeof(DeltaQMinRange);
+    s += AlignSize2(numBones * (((binLength - 1) * sizeof(DeltaQDelta)) + sizeof(DeltaQPhysical))) * numBins;
 
     if (remainder > 0) {
         s += numBones * (((remainder - 1) * sizeof(DeltaQDelta)) + sizeof(DeltaQPhysical));
