@@ -90,7 +90,46 @@ void SFXCTL_AccelTrans::AttachController(SFXCTL *ctrl) {
 }
 
 void SFXCTL_AccelTrans::UpdateParams(float t) {
+    bool bVar1;
+    int iVar2;
+    int iVar3;
+
     SFXCTL::UpdateParams(t);
+    if (m_pStateBase->m_eStateType == eMM_AIRACECAR) {
+        return;
+    }
+
+    iVar2 = *reinterpret_cast< int * >(&IsAccelerating);
+    *reinterpret_cast< int * >(&PlayEngOffSweet) = 0;
+    *reinterpret_cast< int * >(&OldIsAccelerating) = iVar2;
+
+    iVar3 = *reinterpret_cast< int * >(&m_pEAXCar->bIsAccelerating);
+    *reinterpret_cast< int * >(&IsAccelerating) = iVar3;
+
+    if (iVar3 != 0) {
+        if (iVar2 == 0) {
+            bVar1 = ShouldBeginAccelTrans_Idle();
+            if (bVar1) {
+                BeginAccelTrans_Idle();
+            } else {
+                bVar1 = ShouldBeginAccelTrans();
+                if (bVar1) {
+                    BeginAccelTrans();
+                }
+            }
+        }
+
+        if (*reinterpret_cast< int * >(&IsAccelerating) != 0) {
+            goto end;
+        }
+    }
+
+    if (*reinterpret_cast< int * >(&OldIsAccelerating) != 0 &&
+        (bVar1 = ShouldPlayEngOffSweet(), bVar1)) {
+        *reinterpret_cast< int * >(static_cast< void * >(&m_pShiftCtl->m_bNeed_DeccelSnd)) = 1;
+    }
+
+end:
     UpdateState(t);
 }
 
