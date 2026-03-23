@@ -34,10 +34,10 @@ bool FnPoseAnim::EvalPose(float currTime, const PosePaletteBank *paletteBank, fl
     float t = 0.0f;
     int floorTime = FloatToInt(currTime);
 
-    if (floorTime > times[0]) {
+    if (currTime > static_cast<float>(times[0])) {
         unsigned int numKeys = poseAnim->mNumKeys;
 
-        if (floorTime >= times[numKeys - 1]) {
+        if (currTime >= static_cast<float>(times[numKeys - 1])) {
             key = numKeys - 1;
         } else {
             key = mPrevKey;
