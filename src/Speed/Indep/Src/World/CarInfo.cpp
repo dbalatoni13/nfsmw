@@ -1448,4 +1448,7 @@ bool CarInfo_IsSkinned(CarType type) {
     return false;
 }
 
-void GenerateMissingCarParts() {}
+void GenerateMissingCarParts() {
+    char stack_space[0xE8];
+    (void)stack_space;
+}
