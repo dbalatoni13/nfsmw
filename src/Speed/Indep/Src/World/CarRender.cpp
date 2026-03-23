@@ -110,8 +110,11 @@ extern int TweakKitWheelOffsetRear;
 extern int ForceBrakelightsOn;
 extern int ForceHeadlightsOn;
 extern int iRam8047ff04;
+extern float lbl_8040AA60;
 extern bVector3 EnvMapEyeOffset;
 extern bVector3 EnvMapCamOffset;
+extern float WheelStandardWidth;
+extern float WheelStandardRadius;
 extern float lbl_8040AD70;
 extern float lbl_8040AD74;
 extern float lbl_8040AD78;
@@ -176,6 +179,7 @@ extern float cs_OneOverZ asm("cs_OneOverZ");
 extern int counter_31665 asm("counter.31665");
 extern int counter_31669 asm("counter.31669");
 extern float heliScale;
+extern CarTypeInfo *CarTypeInfoArray;
 extern void RestoreShaperRig(eShaperLightRig *ShaperRigP, unsigned int slot, eShaperLightRig *ShaperRigBP);
 extern void AddQuickDynamicLight(eShaperLightRig *ShaperRigP, unsigned int slot, float r, float g, float b, float intensity, bVector3 *position);
 extern void sh_Setup(bVector3 *car_pos) asm("sh_Setup__FP8bVector3");
@@ -247,6 +251,27 @@ struct CarRenderUsedCarTextureInfoLayout {
     unsigned int ReplaceBrakelightGlassHash[3];
     unsigned int ReplaceReverselightHash[3];
     unsigned int ShadowHash;
+};
+
+struct CarRenderRideInfoLayout {
+    CarType Type;
+    char InstanceIndex;
+    char HasDash;
+    char CanBeVertexDamaged;
+    char SkinType;
+    CARPART_LOD mMinLodLevel;
+    CARPART_LOD mMaxLodLevel;
+    CARPART_LOD mMinFELodLevel;
+    CARPART_LOD mMaxFELodLevel;
+    CARPART_LOD mMaxLicenseLodLevel;
+    CARPART_LOD mMinTrafficDiffuseLodLevel;
+    CARPART_LOD mMinShadowLodLevel;
+    CARPART_LOD mMaxShadowLodLevel;
+    CARPART_LOD mMaxTireLodLevel;
+    CARPART_LOD mMaxBrakeLodLevel;
+    CARPART_LOD mMaxSpoilerLodLevel;
+    CARPART_LOD mMaxRoofScoopLodLevel;
+    CARPART_LOD mMinReflectionLodLevel;
 };
 
 struct FrontEndRenderingCarLayout {
@@ -584,11 +609,62 @@ CarRenderInfo::CarRenderInfo(RideInfo *ride_info)
     : mDamageBehaviour(nullptr), mWorldPos(0.025f),
     mAttributes(Attrib::FindCollection(this->GetAttributes().ClassKey(), 0xeec2271a), 0, nullptr)
 {
-    // ...
+    CarRenderRideInfoLayout *ride_layout = reinterpret_cast<CarRenderRideInfoLayout *>(ride_info);
+
+    this->mOnLights = 0;
+    this->mBrokenLights = 0;
+    bMemSet(&this->TheCarPartCuller, 0, sizeof(this->TheCarPartCuller));
+    this->mRadius = lbl_8040AA60;
+    this->mAttributes.Change(Attrib::FindCollectionWithDefault(
+        Attrib::Gen::ecar::ClassKey(), Attrib::StringToLowerCaseKey(CarTypeInfoArray[ride_info->Type].BaseModelName)));
+    this->AnimTime = 0.0f;
+    this->WheelWidths[0] = WheelStandardWidth;
+    this->WheelWidths[1] = WheelStandardWidth;
+    this->WheelRadius[0] = WheelStandardRadius;
+    this->WheelRadius[1] = WheelStandardRadius;
+
+    for (int i = 0; i < 4; i++) {
+        this->WheelWidthScales[i] = 1.0f;
+        this->WheelRadiusScales[i] = 1.0f;
+    }
+
+    this->mVelocity.x = 0.0f;
+    this->mVelocity.y = 0.0f;
+    this->mVelocity.z = 0.0f;
+    this->mAngularVelocity.x = 0.0f;
+    this->mAngularVelocity.y = 0.0f;
+    this->mAngularVelocity.z = 0.0f;
+    this->mAcceleration.x = 0.0f;
+    this->mAcceleration.y = 0.0f;
+    this->mAcceleration.z = 0.0f;
+
+    if (iRam8047ff04 == 3) {
+        this->mMinLodLevel = ride_layout->mMinFELodLevel;
+        this->mMaxLodLevel = ride_layout->mMaxFELodLevel;
+    } else {
+        this->mMinLodLevel = ride_layout->mMinLodLevel;
+        this->mMaxLodLevel = ride_layout->mMaxLodLevel;
+    }
+
+    this->pRideInfo = ride_info;
+    this->mMinReflectionLodLevel = ride_layout->mMinReflectionLodLevel;
+    this->LastCarPartChanged = -1;
+    this->CarTimebaseStart = bRandom(1.0f);
+    this->mDeltaTime = 0.0f;
+    this->pCarTypeInfo = &CarTypeInfoArray[ride_info->Type];
+    this->CarbonHood = 0;
+    this->mEmitterPositionsInitialized = false;
+    bMemSet(this->mCarPartModels, 0, sizeof(this->mCarPartModels));
+    GetUsedCarTextureInfo(&this->mUsedTextureInfos, this->pRideInfo, 0);
+    this->SwitchSkin(ride_info);
+    this->UpdateDecalTextures(ride_info);
+    this->UpdateCarParts();
+    this->CreateCarLightFlares();
+    this->UpdateWheelYRenderOffset();
     
     { //?
-        eModel *front_wheel_model = this->mCarPartModels[this->mMinLodLevel][0][1].GetModel();
-        eModel *rear_wheel_model  = this->mCarPartModels[this->mMinLodLevel][0][2].GetModel();
+        eModel *front_wheel_model = this->mCarPartModels[CARSLOTID_FRONT_WHEEL][0][this->mMinLodLevel].GetModel();
+        eModel *rear_wheel_model  = this->mCarPartModels[CARSLOTID_REAR_WHEEL][0][this->mMinLodLevel].GetModel();
 
         ePositionMarker *front_position_marker;
         if (front_wheel_model != nullptr) {
@@ -627,7 +703,7 @@ CarRenderInfo::CarRenderInfo(RideInfo *ride_info)
             eIdentity(&NISCopCarDoorClosedMarkers[i]);
         }
         
-        eModel *base_model = this->mCarPartModels[this->mMinLodLevel][0][1].GetModel();
+        eModel *base_model = this->mCarPartModels[CARSLOTID_BODY][0][this->mMinLodLevel].GetModel();
         if (base_model != nullptr) {
             unsigned int open_string_hashes[4] = { 0xF91BCA96, 0x8DE14C29, 0x60989ECA, 0xD0F2CD17 };
             unsigned int closed_string_hashes[4] = { 0x58A2A425, 0x8FE91DD8, 0x05C907D9, 0x7B3CD206 };
@@ -638,8 +714,8 @@ CarRenderInfo::CarRenderInfo(RideInfo *ride_info)
 
                 if (open_marker == nullptr || closed_marker == nullptr) continue;
 
-                open_marker->Matrix = NISCopCarDoorOpenMarkers[i];
-                closed_marker->Matrix = NISCopCarDoorClosedMarkers[i];
+                NISCopCarDoorOpenMarkers[i] = open_marker->Matrix;
+                NISCopCarDoorClosedMarkers[i] = closed_marker->Matrix;
             }
         }
     }
