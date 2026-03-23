@@ -58,69 +58,11 @@ void Skeleton::GetStillPose(float *pose, const BoneMask *mask) const {
     int numBones = GetNumBones();
     const float *invBoneScales = GetInvBoneScales();
 
-    if (!mask) {
-        if (!invBoneScales) {
+    if (mask) {
+        if (invBoneScales) {
             for (int i = 0; i < numBones; i++) {
-                const BoneData &bone = GetBoneData(i);
-
-                pose[0] = bone.mS.x;
-                pose[1] = bone.mS.y;
-                pose[2] = bone.mS.z;
-                pose[3] = 1.0f;
-                pose[4] = bone.mQ.x;
-                pose[5] = bone.mQ.y;
-                pose[6] = bone.mQ.z;
-                pose[7] = bone.mQ.w;
-                pose[8] = bone.mT.x;
-                pose[9] = bone.mT.y;
-                pose[10] = bone.mT.z;
-                pose[11] = 1.0f;
-                pose += 12;
-            }
-        } else {
-            for (int i = 0; i < numBones; i++) {
-                const BoneData &bone = GetBoneData(i);
-
-                pose[0] = bone.mS.x;
-                pose[1] = bone.mS.y;
-                pose[2] = bone.mS.z;
-                pose[3] = invBoneScales[i];
-                pose[4] = bone.mQ.x;
-                pose[5] = bone.mQ.y;
-                pose[6] = bone.mQ.z;
-                pose[7] = bone.mQ.w;
-                pose[8] = bone.mT.x;
-                pose[9] = bone.mT.y;
-                pose[10] = bone.mT.z;
-                pose[11] = 1.0f;
-                pose += 12;
-            }
-        }
-    } else {
-        if (!invBoneScales) {
-            for (unsigned int i = 0; i < static_cast<unsigned int>(numBones); i++) {
                 if (mask->GetBone(i)) {
-                    const BoneData &bone = GetBoneData(static_cast<int>(i));
-
-                    pose[0] = bone.mS.x;
-                    pose[1] = bone.mS.y;
-                    pose[2] = bone.mS.z;
-                    pose[3] = 1.0f;
-                    pose[4] = bone.mQ.x;
-                    pose[5] = bone.mQ.y;
-                    pose[6] = bone.mQ.z;
-                    pose[7] = bone.mQ.w;
-                    pose[8] = bone.mT.x;
-                    pose[9] = bone.mT.y;
-                    pose[10] = bone.mT.z;
-                    pose[11] = 1.0f;
-                }
-                pose += 12;
-            }
-        } else {
-            for (unsigned int i = 0; i < static_cast<unsigned int>(numBones); i++) {
-                if (mask->GetBone(i)) {
-                    const BoneData &bone = GetBoneData(static_cast<int>(i));
+                    const BoneData &bone = GetBoneData(i);
 
                     pose[0] = bone.mS.x;
                     pose[1] = bone.mS.y;
@@ -137,6 +79,62 @@ void Skeleton::GetStillPose(float *pose, const BoneMask *mask) const {
                 }
                 pose += 12;
             }
+        } else {
+            for (int i = 0; i < numBones; i++) {
+                if (mask->GetBone(i)) {
+                    const BoneData &bone = GetBoneData(i);
+
+                    pose[0] = bone.mS.x;
+                    pose[1] = bone.mS.y;
+                    pose[3] = 1.0f;
+                    pose[2] = bone.mS.z;
+                    pose[4] = bone.mQ.x;
+                    pose[5] = bone.mQ.y;
+                    pose[6] = bone.mQ.z;
+                    pose[7] = bone.mQ.w;
+                    pose[8] = bone.mT.x;
+                    pose[9] = bone.mT.y;
+                    pose[10] = bone.mT.z;
+                    pose[11] = 1.0f;
+                }
+                pose += 12;
+            }
+        }
+    } else if (invBoneScales) {
+        for (int i = 0; i < numBones; i++) {
+            const BoneData &bone = GetBoneData(i);
+
+            pose[0] = bone.mS.x;
+            pose[1] = bone.mS.y;
+            pose[2] = bone.mS.z;
+            pose[3] = invBoneScales[i];
+            pose[4] = bone.mQ.x;
+            pose[5] = bone.mQ.y;
+            pose[6] = bone.mQ.z;
+            pose[7] = bone.mQ.w;
+            pose[8] = bone.mT.x;
+            pose[9] = bone.mT.y;
+            pose[10] = bone.mT.z;
+            pose[11] = 1.0f;
+            pose += 12;
+        }
+    } else {
+        for (int i = 0; i < numBones; i++) {
+            const BoneData &bone = GetBoneData(i);
+
+            pose[0] = bone.mS.x;
+            pose[1] = bone.mS.y;
+            pose[3] = 1.0f;
+            pose[2] = bone.mS.z;
+            pose[4] = bone.mQ.x;
+            pose[5] = bone.mQ.y;
+            pose[6] = bone.mQ.z;
+            pose[7] = bone.mQ.w;
+            pose[8] = bone.mT.x;
+            pose[9] = bone.mT.y;
+            pose[10] = bone.mT.z;
+            pose[11] = 1.0f;
+            pose += 12;
         }
     }
 }
