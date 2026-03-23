@@ -1342,8 +1342,14 @@ int LoaderCarInfo(bChunk *chunk) {
 
             int part_id = car_part_bytes[4];
             unsigned int brand_name = car_part->GetAppliedAttributeUParam(0xEBB03E66, 0);
-            int upgrade_level = ClampUpgradeLevel((static_cast<unsigned char>(car_part_bytes[5]) >> 5) - 1);
+            int upgrade_level = (static_cast<unsigned char>(car_part_bytes[5]) >> 5) - 1;
             int group_number = static_cast<unsigned char>(car_part_bytes[5]) & 0x1F;
+
+            if (upgrade_level < 0) {
+                upgrade_level = 0;
+            } else if (upgrade_level > 2) {
+                upgrade_level = 2;
+            }
 
             if (part_id == 'L') {
                 if (brand_name == 0x03437A52) {
