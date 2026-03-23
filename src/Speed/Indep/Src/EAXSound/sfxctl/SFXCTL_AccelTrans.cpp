@@ -160,8 +160,12 @@ void SFXCTL_AccelTrans::UpdateState(float t) {
 }
 
 void SFXCTL_AccelTrans::BeginAccelTrans() {
-    eAccelTransFxState = 1;
-    t_LastAccelTrans = 0.0f;
+    m_InterpEngRPM.Initialize(GetPhysRPM() + 1000.0f, GetPhysRPM(), 500, EQ_PWR_SQ);
+    eAccelTransFxState = FX_ACCEL_STATE_ATTACK;
+    m_InterpEngVol.Initialize(0.8f, 0.0f, 200, LINEAR);
+    *static_cast< int * >(static_cast< void * >(&m_pShiftCtl->m_bNeed_AccelSnd)) = 1;
+    m_InterpEngTorque.Initialize(100.0f, 100.0f, 10, LINEAR);
+    t_LastAccelTrans = SndBase::m_fRunningTime;
 }
 
 void SFXCTL_AccelTrans::BeginAccelTrans_Idle() {
