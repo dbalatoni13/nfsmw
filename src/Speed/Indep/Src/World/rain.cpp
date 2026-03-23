@@ -1,4 +1,5 @@
 #include "Speed/Indep/Src/World/Rain.hpp"
+#include "Speed/Indep/Src/World/OnlineManager.hpp"
 
 float rainOverrideIntensity;
 extern bool EnableRainIn2P;
@@ -48,3 +49,5 @@ int AmIinATunnel(eView *view, int CheckOverPass) {
 
 void Rain::AttachRainCurtain(float x0, float y0, float z0, float x1, float y1, float z1, float x2, float y2, float z2, float x3, float y3,
                              float z3) {}
+
+void OnlineManager::InitQuantizers() {}
