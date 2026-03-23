@@ -2567,6 +2567,7 @@ void CarRenderInfo::RenderFlaresOnCar(eView *view, const bVector3 *position, con
     float coplight_intensityR = 0.0f;
     float coplight_intensityB = 0.0f;
     float coplight_intensityW = 0.0f;
+    unsigned int flashHeadlights = 0;
 
     if (ForceHeadlightsOn != 0) {
         force_light_state |= 1;
@@ -2624,8 +2625,8 @@ void CarRenderInfo::RenderFlaresOnCar(eView *view, const bVector3 *position, con
     }
     if (this->IsLightOn(VehicleFX::LIGHT_COPWHITE)) {
         coplight_intensityW = cpw;
+        flashHeadlights = 1;
     }
-    unsigned int flashHeadlights = this->IsLightOn(VehicleFX::LIGHT_COPWHITE);
 
     if (this->IsLightBroken(VehicleFX::LIGHT_LHEAD)) {
         headlight_left_intensity = 0.0f;
@@ -2662,7 +2663,7 @@ void CarRenderInfo::RenderFlaresOnCar(eView *view, const bVector3 *position, con
     CAR_PART_ID preview_part_id =
         preview_part != 0
             ? static_cast<CAR_PART_ID>(*reinterpret_cast<signed char *>(reinterpret_cast<unsigned char *>(preview_part) + 4))
-            : CARPARTID_ATTACHMENT5;
+            : CARPARTID_NUM;
     float constFlicker = coplightflicker(Ftime, 0);
     int FlareCount = 0;
 
