@@ -6,6 +6,7 @@
 #pragma once
 #endif
 
+#include "AnimUtil.h"
 #include "FnAnim.h"
 
 namespace EAGL4Anim {
@@ -57,6 +58,27 @@ class FnCycle : public FnAnim {
         return mEndTime;
     }
 
+  private:
+    float GetInRangeTime(float t) const {
+        float tmp;
+        int n;
+
+        if (t < mStartTime) {
+            tmp = t - mStartTime;
+            n = FloatToInt(tmp / mLength);
+            return mEndTime - (tmp - static_cast<float>(n) * mLength);
+        }
+
+        if (t <= mEndTime) {
+            return t;
+        }
+
+        tmp = t - mEndTime;
+        n = FloatToInt(tmp / mLength);
+        return mStartTime + (tmp - static_cast<float>(n) * mLength);
+    }
+
+  public:
     // Overrides: FnAnim
     void Eval(float previousTime, float currentTime, float *dofs) override {
         mpAnim->Eval(GetInRangeTime(previousTime), GetInRangeTime(currentTime), dofs);
@@ -75,19 +97,6 @@ class FnCycle : public FnAnim {
     // Overrides: FnAnim
     bool EvalPhase(float currentTime, PhaseValue &phase) override {
         return mpAnim->EvalPhase(GetInRangeTime(currentTime), phase);
-    }
-
-  private:
-    float GetInRangeTime(float t) const {
-        if (t < mStartTime) {
-            return mEndTime - ((t - mStartTime) - static_cast<float>(static_cast<int>((t - mStartTime) / mLength)) * mLength);
-        } else {
-            if (t <= mEndTime) {
-                return t;
-            }
-            t = t - mEndTime;
-            return mStartTime + (t - static_cast<float>(static_cast<int>(t / mLength)) * mLength);
-        }
     }
 
     float mStartTime; // offset 0xC, size 0x4
