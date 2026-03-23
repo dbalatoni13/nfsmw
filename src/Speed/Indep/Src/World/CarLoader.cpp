@@ -26,7 +26,7 @@ struct CarPartAttributeTable {
     short AttributeOffsetTable[1];
 
     unsigned int GetByteSize() {
-        return static_cast<unsigned int>((this->NumAttributes + 1) * sizeof(short));
+        return static_cast<unsigned int>(this->NumAttributes * sizeof(short) + sizeof(short));
     }
 
     void EndianSwap() {
