@@ -7,9 +7,12 @@
 
 namespace EAGL4Anim {
 
-FnPoseAnim::FnPoseAnim() : mPrevKey(0) {
+FnPoseAnim::FnPoseAnim() {
+    mPrevKey = 0;
     mType = AnimTypeId::ANIM_POSEANIM;
 }
+
+FnPoseAnim::~FnPoseAnim() {}
 
 void FnPoseAnim::SetAnimMemoryMap(AnimMemoryMap *anim) {
     mpAnim = anim;
@@ -136,6 +139,10 @@ bool FnPoseAnim::EvalPose(float currTime, const PosePaletteBank *paletteBank, fl
     }
 
     return true;
+}
+
+unsigned short FnPoseAnim::GetTargetCheckSum() const {
+    return mpAnim->GetTargetCheckSum();
 }
 
 }; // namespace EAGL4Anim

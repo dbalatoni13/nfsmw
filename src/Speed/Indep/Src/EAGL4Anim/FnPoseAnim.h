@@ -30,7 +30,7 @@ class FnPoseAnim : public FnAnimMemoryMap {
     }
 
     // Overrides: FnAnimSuper
-    ~FnPoseAnim() override {}
+    ~FnPoseAnim() override;
 
     static void PatchVtbl(FnPoseAnim *poseAnim) {}
 
@@ -46,7 +46,7 @@ class FnPoseAnim : public FnAnimMemoryMap {
     bool EvalPose(float currTime, const PosePaletteBank *paletteBank, float *sqt) override;
 
     // Overrides: FnAnim
-    unsigned short GetTargetCheckSum() const override {}
+    unsigned short GetTargetCheckSum() const override;
 
   protected:
     unsigned short mPrevKey; // offset 0x10, size 0x2
