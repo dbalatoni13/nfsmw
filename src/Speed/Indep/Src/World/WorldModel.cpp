@@ -29,7 +29,7 @@ namespace {
 void Render(eViewPlatInterface *view, eModel *model, bMatrix4 *local_to_world, eLightContext *light_context, unsigned int flags,
             unsigned int exc_flag) asm("Render__18eViewPlatInterfaceP6eModelP8bMatrix4P13eLightContextUiT2");
 
-void *eFrameMalloc(unsigned int size) {
+inline void *eFrameMalloc(unsigned int size) {
     unsigned char *address = CurrentBufferPos;
 
     if (CurrentBufferEnd <= CurrentBufferPos + size) {
