@@ -10,7 +10,7 @@ static void QuatMultXxYxZ(const UMath::Vector4 &a, const UMath::Vector4 &b, cons
     q.x = a.x * b.w;
     q.y = a.w * b.y;
     q.w = a.w * b.w;
-    q.z = -(a.x * b.y);
+    q.z = (-a.x) * b.y;
 
     result.x = q.x * c.w - q.y * c.z;
     result.y = q.x * c.z + q.y * c.w;
@@ -21,7 +21,7 @@ static void QuatMultXxYxZ(const UMath::Vector4 &a, const UMath::Vector4 &b, cons
 static void QuatMultXxQ(const UMath::Vector4 &a, const UMath::Vector4 &b, UMath::Vector4 &result) {
     result.x = a.x * b.w + a.w * b.x;
     result.y = a.x * b.z + a.w * b.y;
-    result.z = (-a.x) * b.z + a.w * b.y;
+    result.z = (-a.x) * b.y + a.w * b.z;
     result.w = (-a.x) * b.x + a.w * b.w;
 }
 

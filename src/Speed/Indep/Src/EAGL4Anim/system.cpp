@@ -4,10 +4,8 @@
 #include "dolphin/mtx44_ext.h"
 
 static void MtxMult(EAGL4::Transform *result, const EAGL4::Transform *A, const EAGL4::Transform *B) {
-    EAGL4::Transform temp;
-    const Mtx44 &src = *reinterpret_cast<const Mtx44 *>(&temp);
-    Mtx44 &dst = *reinterpret_cast<Mtx44 *>(result);
+    EAGL4::Transform newMtx;
 
-    bMulMatrix(reinterpret_cast<bMatrix4 *>(&temp), reinterpret_cast<const bMatrix4 *>(A), reinterpret_cast<const bMatrix4 *>(B));
-    PSMTX44Copy(src, dst);
+    bMulMatrix(reinterpret_cast<bMatrix4 *>(&newMtx), reinterpret_cast<const bMatrix4 *>(A), reinterpret_cast<const bMatrix4 *>(B));
+    bCopy(reinterpret_cast<bMatrix4 *>(result), reinterpret_cast<const bMatrix4 *>(&newMtx));
 }
