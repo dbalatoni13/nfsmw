@@ -1146,26 +1146,33 @@ void CarRenderConn::UpdateRenderMatrix(float dT) {
 }
 
 void CarRenderConn::Update(const RenderConn::Pkt_Car_Service &data, float dT) {
-    if (this->CanUpdate() && this->mRenderInfo != 0) {
-        this->mRenderInfo->SetDamageInfo(*reinterpret_cast<const DamageZone::Info *>(&data.mDamageInfo));
-        CarRenderInfoF32(this->mRenderInfo, 0x1754) = dT;
-        CarRenderInfoU32(this->mRenderInfo, 0x1608) = data.mLights;
-        CarRenderInfoU32(this->mRenderInfo, 0x160C) = data.mBrokenLights;
-        CarRenderInfoI32(this->mRenderInfo, 0x1770) = data.mBlowOuts;
-        if (data.mBlowOuts != 0) {
-            float blown_timer = CarRenderInfoF32(this->mRenderInfo, 0x1774) + RealTimeElapsed;
+    if (this->CanUpdate()) {
+        CarRenderInfo *render_info = this->mRenderInfo;
 
-            CarRenderInfoF32(this->mRenderInfo, 0x1774) = blown_timer;
+        if (render_info == 0) {
+            return;
+        }
+
+        const LocalReferenceMirror *world_ref = reinterpret_cast<const LocalReferenceMirror *>(&this->mWorldRef);
+        const bVector3 *velocity = world_ref->mVelocity;
+
+        render_info->SetDamageInfo(*reinterpret_cast<const DamageZone::Info *>(&data.mDamageInfo));
+        CarRenderInfoF32(render_info, 0x1754) = dT;
+        CarRenderInfoU32(render_info, 0x1608) = data.mLights;
+        CarRenderInfoU32(render_info, 0x160C) = data.mBrokenLights;
+        CarRenderInfoI32(render_info, 0x1770) = data.mBlowOuts;
+        if (data.mBlowOuts != 0) {
+            float blown_timer = CarRenderInfoF32(render_info, 0x1774) + RealTimeElapsed;
+
+            CarRenderInfoF32(render_info, 0x1774) = blown_timer;
             if (0.05f < blown_timer) {
-                CarRenderInfoF32(this->mRenderInfo, 0x1774) = blown_timer - 0.12f;
+                CarRenderInfoF32(render_info, 0x1774) = blown_timer - 0.12f;
             }
         }
 
-        CarRenderInfoU32(this->mRenderInfo, 0x1170) = data.mNos ? 1 : 0;
-        CarRenderInfoS16(this->mRenderInfo, 0x1174) = static_cast<short>(this->mSteering[0] * 10430.378f);
-        CarRenderInfoS16(this->mRenderInfo, 0x1176) = static_cast<short>(this->mSteering[1] * 10430.378f);
-
-        const bVector3 *velocity = this->mWorldRef.GetVelocity();
+        CarRenderInfoU32(render_info, 0x1170) = data.mNos;
+        CarRenderInfoS16(render_info, 0x1174) = static_cast<short>(this->mSteering[0] * 10430.378f);
+        CarRenderInfoS16(render_info, 0x1176) = static_cast<short>(this->mSteering[1] * 10430.378f);
         float carspeed = bSqrt(velocity->x * velocity->x + velocity->y * velocity->y + velocity->z * velocity->z);
 
         this->mAnimTime += dT;
@@ -1173,7 +1180,7 @@ void CarRenderConn::Update(const RenderConn::Pkt_Car_Service &data, float dT) {
             this->mAnimTime -= 10.0f;
         }
 
-        CarRenderInfoF32(this->mRenderInfo, 0x0) = this->mAnimTime;
+        CarRenderInfoF32(render_info, 0x0) = this->mAnimTime;
         this->UpdateParts(dT, data);
         this->BuildRenderMatrix(dT);
         this->SetFlag(CF_ISRAINING, this->CheckForRain());
