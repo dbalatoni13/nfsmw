@@ -424,8 +424,7 @@ void DynamicLoader::Release() {
             EAGL4Internal::EAGL4Free(h->isOriginal, h->symbols_num * sizeof(uintptr_t));
         }
 
-        // TODO how to avoid the null check?
-        delete h;
+        EAGL4Internal::EAGL4Free(h, sizeof(HashPointer));
         handle = nullptr;
     }
     mIsResolved = false;
