@@ -146,14 +146,169 @@ class TrackStreamer {
         NUM_LOADING_PHASES = 7,
     };
 
-    void ServiceGameState();
-    void ServiceNonGameState();
+    int Loader(bChunk *chunk);
+
+    int Unloader(bChunk *chunk);
+
+    void ClearCurrentZones();
+
+    void InitMemoryPool(int size);
+
+    void CloseMemoryPool();
+
+    int GetMemoryPoolSize();
+
+    int CountUserAllocations(const char **pfragmented_user_allocation);
+
+    void AddKeepSection(int section_number);
+
+    void RemoveKeepSection(int section_number);
+
+    TrackStreamingSection *FindSection(int section_number);
+
+    TrackStreamingSection *FindSectionByAddress(int address);
+
+    int GetCombinedSectionNumber(int section_number);
+
+    void InitRegion(const char *region_stream_filename, bool split_screen);
+
+    void StartPermFileLoading(const char *filename);
+
+    void PermFileLoadedCallback();
+
+    void HibernateStreamingSections();
+
+    void FlushHibernatingSections();
+
+    void *AllocateMemory(TrackStreamingSection *section, int allocation_params);
+
+    void LoadDiscBundle(DiscBundleSection *disc_bundle);
+
+    static void DiscBundleLoadedCallback(int param, int error_status);
+
+    void DiscBundleLoadedCallback(DiscBundleSection *disc_bundle);
+
+    void LoadSection(TrackStreamingSection *section);
+
+    void ActivateSection(TrackStreamingSection *section);
+
+    void UnactivateSection(TrackStreamingSection *section);
+
+    bool WillUnloadBlock(TrackStreamingSection *section);
+
+    void UnloadSection(TrackStreamingSection *section);
+
+    bool NeedsGameStateActivation(TrackStreamingSection *section);
+
+    static void SectionLoadedCallback(int param, int error_status);
+
+    void SectionLoadedCallback(TrackStreamingSection *section);
+
+    void EmptyCaffeineLayers();
+
+    static char *GetLoadingPhaseName(enum eLoadingPhase phase);
+
+    void SetLoadingPhase(enum eLoadingPhase phase);
+
+    const char *GetPrintHeader();
+
+    int UnloadLeastRecentlyUsedSection();
+
+    void JettisonSection(TrackStreamingSection *section);
+
+    bool JettisonLeastImportantSection();
+
+    TrackStreamingSection *ChooseSectionToJettison();
+
+    void UnJettisonSections();
+
+    int BuildHoleMovements(struct HoleMovement *hole_movements, int max_movements, int filler_method, int largest_free, int *pamount_moved,
+                           int max_amount_to_move);
+
+    int DoHoleFilling(int largest_free);
+
     void SetStreamingPosition(int position_number, const bVector3 *position);
+
+    void SetStreamingPosition(int position_number, const bVector2 *position);
+
+    void PredictStreamingPosition(int position_number, const bVector3 *position, const bVector3 *velocity, const bVector3 *direction,
+                                  bool following_car);
+
+    short GetPredictedZone(StreamingPositionEntry *position_entry);
+
     void ClearStreamingPositions();
-    void BlockUntilLoadingComplete();
+
+    void RemoveCurrentStreamingSections();
+
+    void AddCurrentStreamingSections(short *sections_to_load, int num_sections_to_load, int position_number);
+
+    void DetermineStreamingSections();
+
+    int AllocateSectionMemory(int *ptotal_needing_allocation);
+
+    void FreeSectionMemory();
+
+    bool HandleMemoryAllocation();
+
     void *AllocateUserMemory(int size, const char *debug_name, int offset);
+
     void FreeUserMemory(void *mem);
-    int CheckLoadingBar();
+
+    bool IsUserMemory(void *mem);
+
+    bool MakeSpaceInPool(int size, bool force_unloading);
+
+    void MakeSpaceInPool(int size, void (*callback)(int), int param);
+
+    void ReadyToMakeSpaceInPool();
+
+    bool DetermineCurrentZones(short *current_zones);
+
+    void ServiceGameState();
+
+    void PrintMemoryPool();
+
+    void ServiceNonGameState();
+
+    void BlockUntilLoadingComplete();
+
+    void WaitForCurrentLoadingToComplete();
+
+    bool IsLoadingInProgress();
+
+    bool AreAllSectionsActivated();
+
+    void RefreshLoading();
+
+    void SetLoadingCallback(void (*callback)(int), int param);
+
+    void HandleZoneSwitching();
+
+    void SwitchZones(short *current_zones);
+
+    void HandleLoading();
+
+    int GetLoadingPriority(TrackStreamingSection *section, StreamingPositionEntry *position_entry, bool calculating_jettison);
+
+    void AssignLoadingPriority();
+
+    void CalculateLoadingBacklog();
+
+    void StartLoadingSections();
+
+    void FinishedLoading();
+
+    void PlotLoadingMarker(StreamingPositionEntry *position_entry);
+
+    bool CheckLoadingBar();
+
+    int GetSectionToActivate(int activation_delay);
+
+    void HandleSectionActivation();
+
+    void UnloadEverything();
+
+    void ForceSectionToUnload(int section_number);
 
     void DisableZoneSwitching() {
         ZoneSwitchingDisabled = true;
@@ -161,6 +316,10 @@ class TrackStreamer {
 
     int IsSectionVisible(int section_number) {
         return CurrentVisibleSectionTable.IsSet(section_number);
+    }
+
+    bool IsPermFileLoading() {
+        return PermFileLoading;
     }
 
   private:
@@ -178,10 +337,7 @@ class TrackStreamer {
     int NumSectionsMoved;                                 // offset 0x2C, size 0x4
     char StreamFilenames[2][64];                          // offset 0x30, size 0x80
     bool SplitScreen;                                     // offset 0xB0, size 0x1
-  public:
     bool PermFileLoading;                                 // offset 0xB4, size 0x1
-
-  private:
     const char *PermFilename;                             // offset 0xB8, size 0x4
     bChunk *PermFileChunks;                               // offset 0xBC, size 0x4
     int PermFileSize;                                     // offset 0xC0, size 0x4

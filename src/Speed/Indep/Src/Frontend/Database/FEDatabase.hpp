@@ -273,7 +273,7 @@ class cFrontendDatabase {
     }
 
     bool IsSplitScreenMode() {
-        return FEGameMode & 4;
+        return FEGameMode & 4 && iNumPlayers == 2;
     }
 
     bool IsCareerMode() {

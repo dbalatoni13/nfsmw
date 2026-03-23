@@ -1,6 +1,7 @@
 #include "Sun.hpp"
 #include "Rain.hpp"
 #include "Speed/Indep/Libs/Support/Miscellaneous/StringHash.h"
+#include "Speed/Indep/Src/Camera/Camera.hpp"
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
 #include "Speed/Indep/Src/Ecstasy/Texture.hpp"
 #include "Speed/Indep/Src/Ecstasy/eLight.hpp"
@@ -8,6 +9,7 @@
 #include "Speed/Indep/bWare/Inc/bChunk.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
+#include "TimeOfDay.hpp"
 #include "World.hpp"
 
 SunChunkInfo *SunInfoTable;
@@ -123,7 +125,7 @@ void RenderSunAsFlare() {
         bVector3 CamPos = *eGetView(1, false)->GetCamera()->GetPosition();
         bVector3 ToSun = position3d;
         float recipdistance2sun = 1.0f / bLength(position3d);
-        
+
         ToSun *= recipdistance2sun;
         ToSun *= 40.0f;
         position3d = CamPos + ToSun;
@@ -135,11 +137,11 @@ void RenderSunAsFlare() {
             eLightFlare->PositionZ = position3d.z;
             eLightFlare->Type = 21; // eLightFlareType::ELF_SUN_FLARE, or eSingleLightFlares::ESLF_SUN_FLARE
         }
-        
+
         position3d.x = SunInfo->PositionX;
         position3d.y = SunInfo->PositionY;
         position3d.z = SunInfo->PositionZ;
-        
+
         ToSun = position3d;
         ToSun *= recipdistance2sun;
         ToSun *= 60.0f;

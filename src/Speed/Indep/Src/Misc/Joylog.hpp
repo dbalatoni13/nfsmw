@@ -27,14 +27,14 @@ enum JoylogChannel {
 
 // total size: 0xC
 struct JoylogBufferEntry {
-    // Members
     int ChannelNumber; // offset 0x0, size 0x4
     int DataSize;      // offset 0x4, size 0x4
     uint32 Data;       // offset 0x8, size 0x4
 };
 
 // total size: 0x4118
-struct JoylogBuffer {
+class JoylogBuffer {
+  public:
     JoylogBuffer(const char *filename, int top_position);
 
     void SaveBuffer();
@@ -53,19 +53,25 @@ struct JoylogBuffer {
 
     void PrintNearbyJoylogEntries(int error_pos);
 
-    char *GetFilename() { return Filename; }
+    char *GetFilename() {
+        return Filename;
+    }
 
-    int GetTotalSize() { return TopPosition; }
+    int GetTotalSize() {
+        return TopPosition;
+    }
 
     int IsMoreData() {
         return CurrentPosition < TopPosition;
     }
 
-    int GetPosition() { return CurrentPosition; }
+    int GetPosition() {
+        return CurrentPosition;
+    }
 
     void SetPosition(int position) {}
 
-    // Members
+  private:
     int32 CurrentPosition;       // offset 0x0, size 0x4
     int32 NumBytesInBuffer;      // offset 0x4, size 0x4
     int32 CurrentLoadPosition;   // offset 0x8, size 0x4

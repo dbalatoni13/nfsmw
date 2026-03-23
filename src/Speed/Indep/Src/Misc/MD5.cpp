@@ -1,26 +1,19 @@
 #include "Speed/Indep/Src/Misc/MD5.hpp"
-
-extern int bStrLen(const char *);
-
-static const char hexChars[] = "0123456789abcdef";
+#include "Speed/Indep/bWare/Inc/Strings.hpp"
 
 void MD5::Update(const void *buffer, int length) {
+    unsigned int uIndex;
     const unsigned char *_buffer = static_cast<const unsigned char *>(buffer);
 
     if (computed == true) {
-        uRegs[0] = 0x67452301;
-        uRegs[1] = 0xEFCDAB89;
-        uRegs[2] = 0x98BADCFE;
-        uRegs[3] = 0x10325476;
-        uCount = 0;
-        computed = false;
+        Reset();
     }
 
     if (length < 0) {
         length = bStrLen(reinterpret_cast<const char *>(_buffer));
     }
 
-    unsigned int uIndex = uCount & 0x3F;
+    uIndex = uCount & 0x3F;
 
     for (; length > 0; length--) {
         strData[uIndex] = *_buffer;
@@ -51,31 +44,30 @@ void *MD5::GetRaw() {
 
 #define ROTATE_LEFT(x, n) (((x) << (n)) | ((x) >> (32 - (n))))
 
-#define FF(a, b, c, d, x, s, ac)                                                                  \
-    (a) += F((b), (c), (d)) + (x) + (unsigned int)(ac);                                           \
+#define FF(a, b, c, d, x, s, ac)                                                                                                                     \
+    (a) += F((b), (c), (d)) + (x) + (unsigned int)(ac);                                                                                              \
     (a) = ROTATE_LEFT((a), (s)) + (b);
 
-#define GG(a, b, c, d, x, s, ac)                                                                  \
-    (a) += G((b), (c), (d)) + (x) + (unsigned int)(ac);                                           \
+#define GG(a, b, c, d, x, s, ac)                                                                                                                     \
+    (a) += G((b), (c), (d)) + (x) + (unsigned int)(ac);                                                                                              \
     (a) = ROTATE_LEFT((a), (s)) + (b);
 
-#define HH(a, b, c, d, x, s, ac)                                                                  \
-    (a) += H((b), (c), (d)) + (x) + (unsigned int)(ac);                                           \
+#define HH(a, b, c, d, x, s, ac)                                                                                                                     \
+    (a) += H((b), (c), (d)) + (x) + (unsigned int)(ac);                                                                                              \
     (a) = ROTATE_LEFT((a), (s)) + (b);
 
-#define II(a, b, c, d, x, s, ac)                                                                  \
-    (a) += I((b), (c), (d)) + (x) + (unsigned int)(ac);                                           \
+#define II(a, b, c, d, x, s, ac)                                                                                                                     \
+    (a) += I((b), (c), (d)) + (x) + (unsigned int)(ac);                                                                                              \
     (a) = ROTATE_LEFT((a), (s)) + (b);
 
+// UNSOLVED, mostly wrong
 void MD5::_Transform() {
     unsigned int uData[16];
     unsigned char *pInput = strData;
 
     unsigned int i = 0;
     do {
-        uData[i] = static_cast<unsigned int>(pInput[0]) |
-                   (static_cast<unsigned int>(pInput[1]) << 8) |
-                   (static_cast<unsigned int>(pInput[2]) << 16) |
+        uData[i] = static_cast<unsigned int>(pInput[0]) | (static_cast<unsigned int>(pInput[1]) << 8) | (static_cast<unsigned int>(pInput[2]) << 16) |
                    (static_cast<unsigned int>(pInput[3]) << 24);
         pInput += 4;
         i++;
@@ -164,7 +156,9 @@ void MD5::_Transform() {
     uRegs[1] += b;
 }
 
+// UNSOLVED, mostly wrong
 void MD5::_Final() {
+    static const char hexChars[] = "0123456789abcdef";
     unsigned int uIndex = uCount & 0x3F;
     unsigned char uPad = 0x80;
 
@@ -211,3 +205,14 @@ void MD5::_Final() {
     *str = '\0';
     computed = true;
 }
+
+#undef F
+#undef G
+#undef H
+#undef I
+#undef ROTATE_LEFT
+
+#undef FF
+#undef GG
+#undef HH
+#undef II

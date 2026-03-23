@@ -5,7 +5,7 @@
 #pragma once
 #endif
 
-class ActionQueue;
+#include "Speed/Indep/Src/Input/ActionQueue.h"
 
 enum EasterEggsSpecial {
     EASTER_EGG_UNLOCK_ALL_THINGS = 0,
@@ -23,7 +23,7 @@ enum EasterEggsSpecial {
 
 // total size: 0x48
 class EasterEggs {
-public:
+  public:
     enum EasterEggsType {
         EASTER_EGG_CARS = 0,
         EASTER_EGG_VISUAL_PARTS = 1,
@@ -36,17 +36,17 @@ public:
     };
 
     enum EasterEggButtons {
-        XX = 0,
-        UP = 25,
-        DN = 26,
+        L1 = 43,
+        L2 = 40,
+        R1 = 44,
+        R2 = 38,
         LT = 27,
         RT = 28,
-        TR = 34,
-        R2 = 38,
-        L2 = 40,
         SQ = 41,
-        L1 = 43,
-        R1 = 44,
+        TR = 34,
+        UP = 25,
+        DN = 26,
+        XX = 0,
     };
 
     enum EasterEggGroups {
@@ -57,16 +57,14 @@ public:
     // total size: 0x3C
     struct EasterEggsData {
         EasterEggButtons buttons[8]; // offset 0x0
-        unsigned int type;           // offset 0x20
-        unsigned int item;           // offset 0x24
-        unsigned int group;          // offset 0x28
-        unsigned int unlock_message; // offset 0x2C
+        uint32 type;                 // offset 0x20
+        uint32 item;                 // offset 0x24
+        uint32 group;                // offset 0x28
+        uint32 unlock_message;       // offset 0x2C
         bool unlocked;               // offset 0x30
         bool persistent;             // offset 0x34
         bool enabled;                // offset 0x38
     };
-
-    ActionQueue *EasterEggActionQ[2]; // offset 0x0
 
     EasterEggs();
     virtual ~EasterEggs();
@@ -74,23 +72,28 @@ public:
     void Activate();
     void UnActivate();
     void ClearNonPersistent();
-    void ActivateEasterEgg(int egg);
     void HandleJoy();
     void ClearButtons();
     bool IsEasterEggUnlocked(unsigned int type, unsigned int item);
     bool IsEasterEggUnlocked(EasterEggsSpecial egg);
+
+    ActionQueue *EasterEggActionQ[2]; // offset 0x0, size 0x8
+
+  private:
     void ClearGroup(unsigned int group);
     void TriggerSpecial(unsigned int special);
+    void ActivateEasterEgg(int egg);
 
-private:
-    bool ButtonsEnabled;                   // offset 0x8
-    bool HaveUnlockMessage;                // offset 0xC
-    unsigned int UnlockMessage;            // offset 0x10
-    EasterEggsData *EasterEggsTable;       // offset 0x14
-    unsigned int NumberOfEasterEggs;        // offset 0x18
-    EasterEggButtons ButtonBuffer[8];      // offset 0x1C
-    unsigned int NumberOfCurrentButtons;   // offset 0x3C
-    unsigned int CurrentStartButton;       // offset 0x40
+    bool ButtonsEnabled;                 // offset 0x8, size 0x1
+    bool HaveUnlockMessage;              // offset 0xC, size 0x1
+    unsigned int UnlockMessage;          // offset 0x10, size 0x4
+    EasterEggsData *EasterEggsTable;     // offset 0x14, size 0x4
+    unsigned int NumberOfEasterEggs;     // offset 0x18, size 0x4
+    EasterEggButtons ButtonBuffer[8];    // offset 0x1C, size 0x20
+    unsigned int NumberOfCurrentButtons; // offset 0x3C, size 0x4
+    unsigned int CurrentStartButton;     // offset 0x40, size 0x4
 };
+
+extern EasterEggs gEasterEggs;
 
 #endif

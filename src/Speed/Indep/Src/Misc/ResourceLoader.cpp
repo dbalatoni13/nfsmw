@@ -19,7 +19,6 @@
 bChunkLoaderFunction LoaderTable[LOADER_AMOUNT];
 bChunkLoaderFunction UnloaderTable[LOADER_AMOUNT];
 
-// UNSOLVED
 int LoaderStub(bChunk *chunk) {
     switch (chunk->ID) {
         case BCHUNK_SMOKEABLES:
@@ -524,7 +523,7 @@ int ServiceResourceLoading() {
     ProfileNode profile_node("TODO", 0);
 
     while (NumDelayedResourceCallbacks != 0) {
-        ProfileNode profile_node("TODO2", 0);
+        ProfileNode profile_node("TODO", 0);
 #ifdef EA_PLATFORM_PLAYSTATION2
         DelayedResourceCallback drc = DelayedResourceCallbacks[0];
 #else
@@ -560,11 +559,7 @@ int ServiceResourceLoading() {
 }
 
 int IsResourceLoadingComplete() {
-    int result = 0;
-    if (NumResourcesBeingLoaded == 0) {
-        result = NumDelayedResourceCallbacks == 0;
-    }
-    return result;
+    return NumResourcesBeingLoaded == 0 && NumDelayedResourceCallbacks == 0;
 }
 
 void WaitForResourceLoadingComplete() {
@@ -628,20 +623,6 @@ int UnloaderColourCube(bChunk *chunk) {
     return chunk->GetID() == BCHUNK_FENG_FONT;
 }
 
-// total size: 0x4C
-struct VMFile {
-    VMFile();
-
-    bool mInit;          // offset 0x0, size 0x1
-    char mFilename[48];  // offset 0x4, size 0x30
-    bool mCompressed;    // offset 0x34, size 0x1
-    int mSize;           // offset 0x38, size 0x4
-    int mSizeOfChunks;   // offset 0x3C, size 0x4
-    void *mMainMemAddr;  // offset 0x40, size 0x4
-    void *mVirtMemAddr;  // offset 0x44, size 0x4
-    bool mUsedTrackPool; // offset 0x48, size 0x1
-};
-
 VMFile::VMFile() {
     mInit = false;
     mCompressed = false;
@@ -664,7 +645,7 @@ VMFile *GetVMFile() {
 }
 
 // UNSOLVED regswap
-void MoveFileIntoVirtualMemoryThenLoadChunks(int param, int err) {
+void MoveFileIntoVirtualMemoryThenLoadChunks(intptr_t param, int err) {
     VMFile *vm_file = reinterpret_cast<VMFile *>(param);
     if (!vm_file->mInit) {
         return;
@@ -684,13 +665,14 @@ void MoveFileIntoVirtualMemoryThenLoadChunks(int param, int err) {
             old_memory = nullptr;
             if (sizeofchunks != 0) {
                 int allocation_params = GetVirtualMemoryAllocParams();
-                old_memory = bMalloc(sizeofchunks, "TODO", __LINE__, allocation_params);
+                void *realloc = bMalloc(sizeofchunks, "TODO2", 0, allocation_params);
+                old_memory = realloc;
                 LZDecompress(compressed_data, static_cast<uint8 *>(old_memory));
             }
             bFree(compressed_data);
         }
     }
-    void *new_mem = bMalloc(sizeofchunks, "TODO", __LINE__, GetVirtualMemoryAllocParams());
+    void *new_mem = bMalloc(sizeofchunks, "TODO", 0, GetVirtualMemoryAllocParams());
     bMemCpy(new_mem, old_memory, sizeofchunks);
     vm_file->mVirtMemAddr = new_mem;
     if (vm_file->mUsedTrackPool) {
