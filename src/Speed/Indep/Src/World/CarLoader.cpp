@@ -1396,7 +1396,6 @@ int LoaderCarInfo(bChunk *chunk) {
             }
         }
 
-        CarPartDatabaseLayout *database = reinterpret_cast<CarPartDatabaseLayout *>(&CarPartDB);
         for (unsigned int i = 0; i < car_part_pack->NumParts; i++) {
             char *car_part_bytes = reinterpret_cast<char *>(car_part_pack->PartsTable) + i * 0xE;
             CarPart *car_part = reinterpret_cast<CarPart *>(car_part_bytes);
@@ -1422,38 +1421,38 @@ int LoaderCarInfo(bChunk *chunk) {
 
             if (part_id == 'L') {
                 if (brand_name == 0x03437A52) {
-                    index0 = &database->PaintPart_Metallic[upgrade_level];
+                    index0 = &reinterpret_cast<CarPartDatabaseLayout *>(&CarPartDB)->PaintPart_Metallic[upgrade_level];
                 } else if (brand_name < 0x03437A53) {
                     if (brand_name == 0x0000DA27) {
-                        index0 = &database->PaintPart_Rims[upgrade_level];
+                        index0 = &reinterpret_cast<CarPartDatabaseLayout *>(&CarPartDB)->PaintPart_Rims[upgrade_level];
                     } else if (brand_name == 0x02DAAB07) {
-                        index0 = &database->PaintPart_Gloss[upgrade_level];
+                        index0 = &reinterpret_cast<CarPartDatabaseLayout *>(&CarPartDB)->PaintPart_Gloss[upgrade_level];
                     }
                 } else if (brand_name == 0x03E871F1) {
-                    index0 = &database->PaintPart_Vinyl[upgrade_level];
+                    index0 = &reinterpret_cast<CarPartDatabaseLayout *>(&CarPartDB)->PaintPart_Vinyl[upgrade_level];
                 } else if (brand_name < 0x03E871F2) {
                     if (brand_name == 0x03797533) {
-                        index0 = &database->PaintPart_Pearl[upgrade_level];
+                        index0 = &reinterpret_cast<CarPartDatabaseLayout *>(&CarPartDB)->PaintPart_Pearl[upgrade_level];
                     }
                 } else if (brand_name == 0xD6640DFF) {
-                    index0 = &database->PaintPart_Caliper[upgrade_level];
+                    index0 = &reinterpret_cast<CarPartDatabaseLayout *>(&CarPartDB)->PaintPart_Caliper[upgrade_level];
                 }
             } else if (part_id == 'O') {
                 int vinyl_type = ConvertVinylGroupNumberToVinylType(group_number);
 
                 if (vinyl_type == 1) {
-                    index0 = &database->VinylPart_Hood[upgrade_level];
+                    index0 = &reinterpret_cast<CarPartDatabaseLayout *>(&CarPartDB)->VinylPart_Hood[upgrade_level];
                 } else if (vinyl_type < 2) {
                     if (vinyl_type == 0) {
-                        index0 = &database->VinylPart_Side[upgrade_level];
+                        index0 = &reinterpret_cast<CarPartDatabaseLayout *>(&CarPartDB)->VinylPart_Side[upgrade_level];
                     }
                 } else if (vinyl_type == 2) {
-                    index0 = &database->VinylPart_Body[upgrade_level];
+                    index0 = &reinterpret_cast<CarPartDatabaseLayout *>(&CarPartDB)->VinylPart_Body[upgrade_level];
                 } else if (vinyl_type == 3) {
-                    index0 = &database->VinylPart_Manufacturer[upgrade_level];
+                    index0 = &reinterpret_cast<CarPartDatabaseLayout *>(&CarPartDB)->VinylPart_Manufacturer[upgrade_level];
                 }
 
-                index1 = &database->VinylPart_All[upgrade_level];
+                index1 = &reinterpret_cast<CarPartDatabaseLayout *>(&CarPartDB)->VinylPart_All[upgrade_level];
             }
 
             if (index0 != 0) {
@@ -1471,6 +1470,7 @@ int LoaderCarInfo(bChunk *chunk) {
             }
         }
 
+        CarPartDatabaseLayout *database = reinterpret_cast<CarPartDatabaseLayout *>(&CarPartDB);
         MasterCarPartPack = car_part_pack;
         database->CarPartPackList.AddTail(car_part_pack);
         database->NumPacks += 1;
