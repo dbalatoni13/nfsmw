@@ -4,6 +4,10 @@
 #include "Speed/Indep/Src/EAGL4Anim/AnimTypeId.h"
 #include "Speed/Indep/Src/EAGL4Anim/AnimUtil.h"
 
+void QuatMultXxYxZ(const UMath::Vector4 &a, const UMath::Vector4 &b, const UMath::Vector4 &c, UMath::Vector4 &result);
+void QuatMultXxQ(const UMath::Vector4 &a, const UMath::Vector4 &b, UMath::Vector4 &result);
+void QuatMultQxZ(const UMath::Vector4 &a, const UMath::Vector4 &b, UMath::Vector4 &result);
+
 namespace EAGL4Anim {
 
 namespace {
@@ -158,11 +162,11 @@ static inline void DecodeSingleQDelta(const DeltaSingleQMinRange &minRange, cons
 static inline void ComposeSingleQQuat(unsigned short index, const UMath::Vector4 &pre, const UMath::Vector4 &mid,
                                const UMath::Vector4 &post, UMath::Vector4 &result) {
     if (index == 0) {
-        SingleQQuatMultXxQ(mid, post, result);
+        QuatMultXxQ(mid, post, result);
     } else if (index == 1) {
-        SingleQQuatMultXxYxZ(pre, mid, post, result);
+        QuatMultXxYxZ(pre, mid, post, result);
     } else {
-        SingleQQuatMultQxZ(pre, mid, result);
+        QuatMultQxZ(pre, mid, result);
     }
 }
 
