@@ -146,9 +146,9 @@ void Skeleton::MirrorPose(float *pose, float *mirrorPose, bool local, const Bone
 
     if (mask) {
         if (pose == mirrorPose) {
-            for (unsigned int ibone = 0; static_cast<int>(ibone) < numBones; ibone++) {
+            for (int ibone = 0; ibone < numBones; ibone++) {
                 if (mask->GetBone(ibone)) {
-                    unsigned int mirrorBone = GetBoneData(static_cast<int>(ibone)).mLeftRightIdx;
+                    int mirrorBone = GetBoneData(ibone).mLeftRightIdx;
 
                     if (ibone < mirrorBone) {
                         float *dst = &mirrorPose[mirrorBone * 12];
@@ -185,29 +185,22 @@ void Skeleton::MirrorPose(float *pose, float *mirrorPose, bool local, const Bone
                 }
             }
         } else {
-            for (unsigned int ibone = 0; static_cast<int>(ibone) < numBones; ibone++) {
+            for (int ibone = 0; ibone < numBones; ibone++) {
                 if (mask->GetBone(ibone)) {
-                    int mirrorBone = GetBoneData(static_cast<int>(ibone)).mLeftRightIdx;
+                    int mirrorBone = GetBoneData(ibone).mLeftRightIdx;
                     float *src = &pose[ibone * 12];
                     float *dst = &mirrorPose[mirrorBone * 12];
 
                     dst[0] = src[0];
                     dst[1] = src[1];
                     dst[2] = src[2];
-                    dst[3] = src[3];
-                    dst[4] = src[4];
+                    dst[4] = -src[4];
                     dst[5] = -src[5];
-                    dst[6] = -src[6];
+                    dst[6] = src[6];
                     dst[7] = src[7];
-                    dst[8] = -src[8];
+                    dst[8] = src[8];
                     dst[9] = src[9];
-                    dst[10] = src[10];
-                    dst[11] = src[11];
-
-                    if (!local) {
-                        dst[4] = -dst[4];
-                        dst[7] = -dst[7];
-                    }
+                    dst[10] = -src[10];
                 }
             }
         }
@@ -257,21 +250,25 @@ void Skeleton::MirrorPose(float *pose, float *mirrorPose, bool local, const Bone
             dst[0] = src[0];
             dst[1] = src[1];
             dst[2] = src[2];
-            dst[3] = src[3];
-            dst[4] = src[4];
+            dst[4] = -src[4];
             dst[5] = -src[5];
-            dst[6] = -src[6];
+            dst[6] = src[6];
             dst[7] = src[7];
-            dst[8] = -src[8];
+            dst[8] = src[8];
             dst[9] = src[9];
-            dst[10] = src[10];
-            dst[11] = src[11];
-
-            if (!local) {
-                dst[4] = -dst[4];
-                dst[7] = -dst[7];
-            }
+            dst[10] = -src[10];
         }
+    }
+
+    if (!local) {
+        UMath::Vector4 quat = *reinterpret_cast<UMath::Vector4 *>(&mirrorPose[4]);
+
+        mirrorPose[4] = quat.z;
+        mirrorPose[5] = quat.w;
+        mirrorPose[6] = -quat.x;
+        mirrorPose[10] = -mirrorPose[10];
+        mirrorPose[8] = -mirrorPose[8];
+        mirrorPose[7] = -quat.y;
     }
 }
 
