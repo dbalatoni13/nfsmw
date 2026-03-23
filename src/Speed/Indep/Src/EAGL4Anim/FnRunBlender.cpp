@@ -76,9 +76,9 @@ bool FnRunBlender::EvalSQT(float currTime, float *sqtBuffer, const BoneMask *bon
         SetWeight(0.0f);
     }
 
-    float evalTime = currTime + mOffset;
-    float evalTime0 = mFreq * mCycles[0] * evalTime + mAlignFrame[0];
-    float evalTime1 = mFreq * mCycles[1] * evalTime + mAlignFrame[1];
+    currTime += mOffset;
+    float evalTime0 = mFreq * mCycles[0] * currTime + mAlignFrame[0];
+    float evalTime1 = mFreq * mCycles[1] * currTime + mAlignFrame[1];
     int cycleIdx = ComputeCycleIdx(evalTime0, 0.0f, static_cast<float>(mPhases[mIdx]->mNumFrames - 1));
     float t0 = CycleTime(evalTime0, 0.0f, static_cast<float>(mPhases[mIdx]->mNumFrames - 1));
     float t1 = CycleTime(evalTime1, 0.0f, static_cast<float>(mPhases[mIdx + 1]->mNumFrames - 1));
@@ -96,7 +96,7 @@ bool FnRunBlender::EvalSQT(float currTime, float *sqtBuffer, const BoneMask *bon
             return false;
         }
 
-        FnPoseBlender::Blend(mSkeleton->GetNumBones(), mWeight, sqtBuffer, blendPose, sqtBuffer, boneMask);
+        FnPoseBlender::Blend(mSkeleton->GetNumBones(), mWeight, sqtBuffer, blendPose, sqtBuffer, nullptr);
     }
 
     AlignCycleBeginEnd(cycleIdx);
