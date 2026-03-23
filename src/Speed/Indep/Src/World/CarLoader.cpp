@@ -28,6 +28,14 @@ struct CarPartAttributeTable {
     unsigned int GetByteSize() {
         return static_cast<unsigned int>((this->NumAttributes + 1) * sizeof(short));
     }
+
+    void EndianSwap() {
+        bPlatEndianSwap(&this->NumAttributes);
+
+        for (int i = 0; i < this->NumAttributes; i++) {
+            bPlatEndianSwap(&this->AttributeOffsetTable[i]);
+        }
+    }
 };
 struct CarPartAttribute {
     unsigned int NameHash;
@@ -36,6 +44,11 @@ struct CarPartAttribute {
         int iParam;
         unsigned int uParam;
     } Params;
+
+    void EndianSwap() {
+        bPlatEndianSwap(&this->NameHash);
+        bPlatEndianSwap(&this->Params.iParam);
+    }
 };
 struct CarPartModelTable {
     char TemplatedNameHashes;
@@ -44,6 +57,16 @@ struct CarPartModelTable {
     const char *ModelNames[5][1];
 
     unsigned int GetModelNameHash(unsigned int base_namehash, int model_num, int lod);
+
+    void EndianSwap() {
+        bPlatEndianSwap(&this->MiddleStringOffset);
+
+        for (int i = 0; i < 1; i++) {
+            for (int j = 0; j < 5; j++) {
+                bPlatEndianSwap(reinterpret_cast<unsigned int *>(const_cast<const char **>(&this->ModelNames[i][j])));
+            }
+        }
+    }
 };
 struct CarPartPack : public bTNode<CarPartPack> {
     unsigned int Version;
@@ -59,6 +82,20 @@ struct CarPartPack : public bTNode<CarPartPack> {
     unsigned int NumModelTables;
     CarPart *PartsTable;
     unsigned int NumParts;
+
+    void EndianSwap() {
+        bPlatEndianSwap(&this->Version);
+        bPlatEndianSwap(&this->NumParts);
+        bPlatEndianSwap(&this->NumAttributes);
+        bPlatEndianSwap(&this->NumTypeNames);
+        bPlatEndianSwap(&this->NumModelTables);
+        bPlatEndianSwap(&this->NumAttributeTables);
+    }
+
+    void InPlaceInit() {
+        this->Next = this;
+        this->Prev = this;
+    }
 };
 struct CarPartIndex {
     CarPart *Part;
@@ -1295,79 +1332,54 @@ int LoaderCarInfo(bChunk *chunk) {
             bEndianSwap32(&SlotTypeOverrideTable[i].LookupType[0]);
             bEndianSwap32(&SlotTypeOverrideTable[i].LookupType[1]);
         }
-    } else {
-        if (chunk_id != 0x80034602) {
-            return 0;
-        }
+    } else if (chunk_id == 0x80034602) {
+        bChunk *car_pack_chunk = chunk->GetFirstChunk();
+        bChunk *car_string_table_chunk = car_pack_chunk->GetNext();
+        bChunk *car_attributetable_table_chunk = car_string_table_chunk->GetNext();
+        bChunk *car_attributes_table_chunk = car_attributetable_table_chunk->GetNext();
+        bChunk *car_model_table_chunk = car_attributes_table_chunk->GetNext();
+        bChunk *car_typename_table_chunk = car_model_table_chunk->GetNext();
+        bChunk *car_parts_table_chunk = car_typename_table_chunk->GetNext();
+        CarPartPack *car_part_pack = reinterpret_cast<CarPartPack *>(car_pack_chunk->GetData());
+        unsigned char *track;
+        unsigned char *end_track;
 
-        int *chunk_words = reinterpret_cast<int *>(chunk);
-        int string_table_offset = chunk_words[3];
-        CarPartPack *car_part_pack = reinterpret_cast<CarPartPack *>(chunk_words + 4);
-        int attribute_table_table_offset =
-            *reinterpret_cast<int *>(reinterpret_cast<char *>(chunk_words) + string_table_offset + 0x14) + string_table_offset + 0x10;
-        int attributes_table_offset =
-            *reinterpret_cast<int *>(reinterpret_cast<char *>(chunk_words) + attribute_table_table_offset + 0xC) + attribute_table_table_offset + 8;
-        int model_table_offset =
-            *reinterpret_cast<int *>(reinterpret_cast<char *>(chunk_words) + attributes_table_offset + 0xC) + attributes_table_offset + 8;
-        int typename_table_offset =
-            *reinterpret_cast<int *>(reinterpret_cast<char *>(chunk_words) + model_table_offset + 0xC) + model_table_offset + 8;
-        int parts_table_offset = *reinterpret_cast<int *>(reinterpret_cast<char *>(chunk_words) + typename_table_offset + 0xC);
-
-        bEndianSwap32(&car_part_pack->Version);
-        bEndianSwap32(&car_part_pack->NumParts);
-        bEndianSwap32(&car_part_pack->NumAttributes);
-        bEndianSwap32(&car_part_pack->NumTypeNames);
-        bEndianSwap32(&car_part_pack->NumModelTables);
-        bEndianSwap32(&car_part_pack->NumAttributeTables);
-
-        car_part_pack->AttributeTableTable =
-            reinterpret_cast<CarPartAttributeTable *>(reinterpret_cast<char *>(chunk_words) + attribute_table_table_offset + 0x10);
-        CarPartPartsTable = reinterpret_cast<CarPart *>(reinterpret_cast<char *>(chunk_words) + typename_table_offset + parts_table_offset + 0x18);
-        CarPartTypeNameHashTable = reinterpret_cast<unsigned int *>(reinterpret_cast<char *>(chunk_words) + typename_table_offset + 0x10);
-        CarPartModelsTable = reinterpret_cast<CarPartModelTable *>(reinterpret_cast<char *>(chunk_words) + model_table_offset + 0x10);
-        CarPartStringTable = reinterpret_cast<const char *>(reinterpret_cast<char *>(chunk_words) + string_table_offset + 0x18);
-        car_part_pack->AttributesTable = reinterpret_cast<CarPartAttribute *>(reinterpret_cast<char *>(chunk_words) + attributes_table_offset + 0x10);
-        car_part_pack->Next = car_part_pack;
-        car_part_pack->Prev = car_part_pack;
-        car_part_pack->StringTable = CarPartStringTable;
-        car_part_pack->PartsTable = CarPartPartsTable;
-        car_part_pack->TypeNameTable = CarPartTypeNameHashTable;
-        car_part_pack->ModelTable = CarPartModelsTable;
+        car_part_pack->EndianSwap();
+        car_part_pack->AttributesTable = reinterpret_cast<CarPartAttribute *>(car_attributes_table_chunk->GetData());
+        car_part_pack->InPlaceInit();
+        car_part_pack->AttributeTableTable = reinterpret_cast<CarPartAttributeTable *>(car_attributetable_table_chunk->GetData());
+        car_part_pack->PartsTable = reinterpret_cast<CarPart *>(car_parts_table_chunk->GetData());
+        car_part_pack->TypeNameTable = reinterpret_cast<unsigned int *>(car_typename_table_chunk->GetData());
+        car_part_pack->ModelTable = reinterpret_cast<CarPartModelTable *>(car_model_table_chunk->GetData());
+        car_part_pack->StringTable = reinterpret_cast<const char *>(car_string_table_chunk->GetData());
+        car_part_pack->StringTableSize = car_string_table_chunk->GetSize();
+        CarPartStringTable = car_part_pack->StringTable;
+        CarPartTypeNameHashTable = car_part_pack->TypeNameTable;
+        CarPartStringTableSize = car_part_pack->StringTableSize;
         CarPartTypeNameHashTableSize = car_part_pack->NumTypeNames;
-        car_part_pack->StringTableSize = *reinterpret_cast<int *>(reinterpret_cast<char *>(chunk_words) + string_table_offset + 0x14);
-        CarPartStringTableSize = *reinterpret_cast<int *>(reinterpret_cast<char *>(chunk_words) + string_table_offset + 0x14);
+        CarPartPartsTable = car_part_pack->PartsTable;
+        CarPartModelsTable = car_part_pack->ModelTable;
+        MasterCarPartPack = car_part_pack;
+        track = reinterpret_cast<unsigned char *>(car_part_pack->AttributeTableTable);
+        end_track = track + car_attributetable_table_chunk->GetSize();
 
-        short *attribute_offset_table = reinterpret_cast<short *>(reinterpret_cast<char *>(chunk_words) + attribute_table_table_offset + 0x10);
-        short *attribute_offset_table_end = reinterpret_cast<short *>(
-            reinterpret_cast<char *>(attribute_offset_table) +
-            *reinterpret_cast<int *>(reinterpret_cast<char *>(chunk_words) + attribute_table_table_offset + 0xC));
-
-        while (attribute_offset_table < attribute_offset_table_end) {
-            bEndianSwap16(attribute_offset_table);
-            for (int i = 0; i < *attribute_offset_table; i++) {
-                bEndianSwap16(attribute_offset_table + i + 1);
-            }
-            attribute_offset_table += *attribute_offset_table + 1;
+        while (track < end_track) {
+            reinterpret_cast<CarPartAttributeTable *>(track)->EndianSwap();
+            track += reinterpret_cast<CarPartAttributeTable *>(track)->GetByteSize();
         }
 
-        for (unsigned int i = 0; i < car_part_pack->NumAttributes; i++) {
-            bEndianSwap32(&car_part_pack->AttributesTable[i].NameHash);
-            bEndianSwap32(&car_part_pack->AttributesTable[i].Params.iParam);
+        for (unsigned int attribute_index = 0; attribute_index < car_part_pack->NumAttributes; attribute_index++) {
+            car_part_pack->AttributesTable[attribute_index].EndianSwap();
         }
 
-        for (unsigned int i = 0; i < car_part_pack->NumTypeNames; i++) {
-            bEndianSwap32(&CarPartTypeNameHashTable[i]);
+        for (unsigned int typename_hash_index = 0; typename_hash_index < car_part_pack->NumTypeNames; typename_hash_index++) {
+            bEndianSwap32(&CarPartTypeNameHashTable[typename_hash_index]);
         }
 
         for (unsigned int model_table_index = 0; model_table_index < car_part_pack->NumModelTables; model_table_index++) {
             CarPartModelTable *model_table = reinterpret_cast<CarPartModelTable *>(reinterpret_cast<char *>(CarPartModelsTable) + model_table_index * 0x18);
 
-            bEndianSwap16(&model_table->MiddleStringOffset);
-            for (int model_number = 0; model_number < 1; model_number++) {
-                for (int model_lod = 0; model_lod < 5; model_lod++) {
-                    bEndianSwap32(const_cast<const char **>(&model_table->ModelNames[model_number][model_lod]));
-                }
-            }
+            model_table->EndianSwap();
 
             if (model_table->TemplatedNameHashes != 0) {
                 for (int model_number = 0; model_number < 1; model_number++) {
@@ -1461,6 +1473,8 @@ int LoaderCarInfo(bChunk *chunk) {
         database->NumPacks += 1;
         database->NumParts += car_part_pack->NumParts;
         database->NumBytes += chunk->GetSize();
+    } else {
+        return 0;
     }
 
     return 1;
