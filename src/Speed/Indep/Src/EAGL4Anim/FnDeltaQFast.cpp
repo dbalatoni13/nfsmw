@@ -712,7 +712,7 @@ bool FnDeltaQFast::EvalSQTMask(float currTime, float *sqt, const BoneMask *boneM
             prevQ[0] = static_cast<float>(physical[0] >> 4) * kQFastPhysicalScale12 - kQFastPhysicalBias12;
             prevQ[1] = static_cast<float>(physical[1] >> 4) * kQFastPhysicalScale12 - kQFastPhysicalBias12;
             prevQ[2] = static_cast<float>(physical[2] >> 4) * kQFastPhysicalScale12 - kQFastPhysicalBias12;
-            prevQ[3] = static_cast<float>(static_cast<unsigned char>((physical[2] & 0xF) | ((physical[0] & 0xF) * 0x100) + ((physical[1] & 0xF) * 0x10))) *
+            prevQ[3] = static_cast<float>(static_cast<unsigned short>(((physical[0] & 0xF) << 8) | ((physical[1] & 0xF) << 4) | (physical[2] & 0xF))) *
                        kQFastPhysicalScale12 -
                        kQFastPhysicalBias12;
         }
@@ -810,7 +810,7 @@ bool FnDeltaQFast::EvalSQTMask(float currTime, float *sqt, const BoneMask *boneM
         out[0] = static_cast<float>(physical[0] >> 4) * kQFastPhysicalScale12 - kQFastPhysicalBias12;
         out[1] = static_cast<float>(physical[1] >> 4) * kQFastPhysicalScale12 - kQFastPhysicalBias12;
         out[2] = static_cast<float>(physical[2] >> 4) * kQFastPhysicalScale12 - kQFastPhysicalBias12;
-        out[3] = static_cast<float>(static_cast<unsigned char>((physical[2] & 0xF) | ((physical[0] & 0xF) * 0x100) + ((physical[1] & 0xF) * 0x10))) *
+        out[3] = static_cast<float>(static_cast<unsigned short>(((physical[0] & 0xF) << 8) | ((physical[1] & 0xF) << 4) | (physical[2] & 0xF))) *
                      kQFastPhysicalScale12 -
                  kQFastPhysicalBias12;
     }
