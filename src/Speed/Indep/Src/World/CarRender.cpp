@@ -3065,7 +3065,7 @@ void CarRenderInfo::DrawAmbientShadow(eView *view, const bVector3 *position, flo
     }
 
     scale = shadow_scale;
-    if (this->pRideInfo != 0 && this->pRideInfo->Type == static_cast<CarType>(4)) {
+    if (this->pRideInfo->Type == static_cast<CarType>(4)) {
         scale *= heliScale;
     }
 
