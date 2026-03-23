@@ -1,5 +1,6 @@
 #include "Sun.hpp"
 #include "Scenery.hpp"
+#include "TimeOfDay.hpp"
 #include "World.hpp"
 #include "Speed/Indep/Src/Camera/Camera.hpp"
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"

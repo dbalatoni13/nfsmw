@@ -1,9 +1,9 @@
 #include "./WorldModel.hpp"
 #include "Speed/Indep/Src/Camera/Camera.hpp"
 #include "Speed/Indep/Src/Camera/CameraMover.hpp"
+#include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
 #include "Speed/Indep/Src/Ecstasy/eLight.hpp"
 #include "Speed/Indep/Src/Ecstasy/eMath.hpp"
-#include "Speed/Indep/Src/Ecstasy/eSolid.hpp"
 
 extern unsigned int FrameMallocFailed;
 extern unsigned int FrameMallocFailAmount;

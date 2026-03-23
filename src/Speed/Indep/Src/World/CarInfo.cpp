@@ -114,9 +114,20 @@ struct MissingCarPart {
     unsigned int PartNameHash;
 };
 struct PresetCar {
-    char pad0[8];
+    PresetCar *Next;
+    PresetCar *Prev;
     char CarTypeName[0x58];
     unsigned int PartNameHashes[139];
+};
+struct CarSlotTypeOverride;
+struct SlotTypeOverrideLayout {
+    unsigned int CarType;
+    unsigned int SlotId;
+    unsigned int LookupType[2];
+};
+struct PresetCarListHead {
+    PresetCar *Next;
+    PresetCar *Prev;
 };
 
 CarTypeInfo *CarTypeInfoArray;
@@ -128,10 +139,16 @@ extern unsigned int *CarPartTypeNameHashTable;
 extern unsigned int CarPartTypeNameHashTableSize;
 extern CAR_PART_ID CarPartSlotMap[];
 extern CarPartPackLayout *MasterCarPartPackLayout asm("MasterCarPartPack");
+extern unsigned int *DefaultSlotTypeNameTable;
+extern CarSlotTypeOverride *SlotTypeOverrideTable;
+extern int NumSlotTypeOverrides;
+extern unsigned int TempSlotTable[2];
+extern PresetCarListHead PresetCarList;
 
 int UsedCarTextureAddToTable(unsigned int *table, int num_used, int max_textures, unsigned int texture_hash = 0);
 int GetTempCarSkinTextures(unsigned int *table, int num_used, int max_textures, RideInfo *ride_info);
 int GetIsCollectorsEdition();
+void bMemCpy(void *dest, const void *src, unsigned int numbytes);
 unsigned int *GetTypesFromSlot(CAR_SLOT_ID slot, CarType car_type);
 unsigned char MapCarTypeNameHashToIndex(unsigned int car_type_namehash);
 void *ScanHashTableKey8(unsigned char key_value, void *table_start, int table_length, int entry_key_offset, int entry_size);
@@ -266,6 +283,35 @@ unsigned int CarPart::GetCarTypeNameHash() {
 
 CAR_PART_ID GetCarPartFromSlot(CAR_SLOT_ID slot) {
     return CarPartSlotMap[slot];
+}
+
+unsigned int *GetTypesFromSlot(CAR_SLOT_ID slot, CarType car_type) {
+    const char *car_type_name = GetCarTypeName(car_type);
+    unsigned int car_type_namehash = bStringHash(car_type_name);
+    SlotTypeOverrideLayout *slot_type_overrides = reinterpret_cast<SlotTypeOverrideLayout *>(SlotTypeOverrideTable);
+    int i = 0;
+
+    if (NumSlotTypeOverrides > 0) {
+        do {
+            SlotTypeOverrideLayout *slot_type_override = &slot_type_overrides[i];
+
+            if (slot_type_override->CarType == car_type_namehash && slot_type_override->SlotId == slot) {
+                return slot_type_override->LookupType;
+            }
+            i++;
+        } while (i < NumSlotTypeOverrides);
+    }
+
+    bMemCpy(&TempSlotTable, DefaultSlotTypeNameTable + slot * 2, 8);
+    i = 0;
+    do {
+        if (TempSlotTable[i] == 0xFFFFFFFF) {
+            TempSlotTable[i] = car_type_namehash;
+        }
+        i++;
+    } while (i < 2);
+
+    return TempSlotTable;
 }
 
 unsigned char MapCarTypeNameHashToIndex(unsigned int namehash) {
@@ -601,6 +647,22 @@ void RideInfo::SetUpgradePart(CAR_SLOT_ID car_slot_id, int upg_level) {
     }
 }
 
+CarPart *FindPartWithLevel(CarType car_type, CAR_SLOT_ID slot_id, int level) {
+    CarPart *part = CarPartDB.NewGetCarPart(car_type, slot_id, 0, 0, -1);
+
+    while (true) {
+        if (part == 0) {
+            return 0;
+        }
+        if ((reinterpret_cast<unsigned char *>(part)[5] >> 5) == static_cast<unsigned int>(level)) {
+            break;
+        }
+        part = CarPartDB.NewGetNextCarPart(part, car_type, slot_id, 0, -1);
+    }
+
+    return part;
+}
+
 void RideInfo::SetStockParts() {
     unsigned int stock_vinyl_colours[4];
 
@@ -871,6 +933,22 @@ void RideInfo::DumpForPreset(FECarRecord *car) {
             (void)display_name;
         }
     }
+}
+
+PresetCar *FindFEPresetCar(unsigned int preset_name_hash) {
+    PresetCar *preset = PresetCarList.Next;
+
+    while (true) {
+        if (preset == reinterpret_cast<PresetCar *>(&PresetCarList)) {
+            return 0;
+        }
+        if (preset_name_hash == FEHashUpper(preset->CarTypeName)) {
+            break;
+        }
+        preset = preset->Next;
+    }
+
+    return preset;
 }
 
 void RideInfo::FillWithPreset(unsigned int preset_name_hash) {

@@ -102,6 +102,12 @@ struct _DefragmentParams {
     void *pNewAllocation;
     char AllocationName[64];
 };
+struct CarMemoryInfoEntryLayout {
+    const char *Name;
+    int pad0;
+    int Size;
+    int pad1[3];
+};
 
 extern CarPartDatabase CarPartDB;
 extern CarTypeInfo *CarTypeInfoArray;
@@ -118,6 +124,8 @@ unsigned int CarPartTypeNameHashTableSize;
 CarPart *CarPartPartsTable;
 CarPartModelTable *CarPartModelsTable;
 CarPartPack *MasterCarPartPack;
+extern CarMemoryInfoEntryLayout CarMemoryInfoTable[6];
+extern const char lbl_8040A594[] asm("lbl_8040A594");
 
 unsigned int CarPartModelTable::GetModelNameHash(unsigned int base_namehash, int model_num, int lod) {
     const char *model_name = reinterpret_cast<const char *const *>(reinterpret_cast<unsigned char *>(this) + 4)[lod + model_num * 5];
@@ -253,6 +261,26 @@ LoadedSolidPack::LoadedSolidPack(const char *filename) {
     this->LoadState = 0;
     this->pStreamingPack = 0;
     this->pResourceFile = 0;
+}
+
+int CarInfo_GetResourceCost(CarType car_type, bool is_player_car, bool two_player) {
+    int car_memory_info = CarTypeInfoArray[car_type].CarMemTypeHash;
+    int i;
+
+    (void)two_player;
+    if (is_player_car != 0) {
+        car_memory_info = bStringHash(lbl_8040A594);
+    }
+
+    i = 0;
+    do {
+        if (bStringHash(CarMemoryInfoTable[i].Name) == car_memory_info) {
+            return CarMemoryInfoTable[i].Size << 10;
+        }
+        i++;
+    } while (i < 6);
+
+    return 0;
 }
 
 int LoadedSkin::GetTextureHashes(unsigned int *texture_hashes, int max_texture_hashes, int perm) {
