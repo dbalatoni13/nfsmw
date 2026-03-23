@@ -354,11 +354,11 @@ void WorldModel::Render(eView *view, int exc_flag) {
         if (!this->mCastsShadow) {
             return;
         }
-        if ((static_cast<unsigned int>(exc_flag) & 0x2000) == 0) {
-            if (*reinterpret_cast<char *>(reinterpret_cast<unsigned char *>(solid) + 0x18) == '\0') {
+        if ((static_cast<unsigned int>(exc_flag) & 0x2000) != 0) {
+            if (*reinterpret_cast<char *>(reinterpret_cast<unsigned char *>(solid) + 0x18) != '\0') {
                 return;
             }
-        } else if (*reinterpret_cast<char *>(reinterpret_cast<unsigned char *>(solid) + 0x18) != '\0') {
+        } else if (*reinterpret_cast<char *>(reinterpret_cast<unsigned char *>(solid) + 0x18) == '\0') {
             return;
         }
     }
