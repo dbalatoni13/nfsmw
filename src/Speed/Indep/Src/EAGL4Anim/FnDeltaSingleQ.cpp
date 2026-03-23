@@ -138,17 +138,15 @@ static inline void DecodeSingleQDelta(const DeltaSingleQMinRange &minRange, cons
     v = minRangef.mRange[0] * delta.mV + minRangef.mMin[0];
     w = minRangef.mRange[1] * delta.mW + minRangef.mMin[1];
 
+    q.x = kSingleQFloatZero;
+    q.y = kSingleQFloatZero;
+    q.z = kSingleQFloatZero;
+
     if (minRangef.mIndex == 0) {
         q.x = v;
-        q.y = kSingleQFloatZero;
-        q.z = kSingleQFloatZero;
     } else if (minRangef.mIndex == 1) {
-        q.x = kSingleQFloatZero;
         q.y = v;
-        q.z = kSingleQFloatZero;
     } else {
-        q.x = kSingleQFloatZero;
-        q.y = kSingleQFloatZero;
         q.z = v;
     }
     q.w = w;
