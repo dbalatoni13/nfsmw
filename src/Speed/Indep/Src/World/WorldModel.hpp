@@ -7,6 +7,7 @@
 
 #include "SpaceNode.hpp"
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
+#include "Speed/Indep/Libs/Support/Utility/UCrc.h"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
@@ -15,6 +16,39 @@
 
 extern SlotPool *SpaceNodeSlotPool;
 extern SlotPool *WorldModelSlotPool;
+
+struct ModelHeirarchy {
+    enum Flags {
+        F_INTERNAL = 1,
+    };
+
+    struct Node {
+        UCrc32 mNodeName;       // offset 0x0, size 0x4
+        unsigned int mModelHash; // offset 0x4, size 0x4
+        eModel *mModel;         // offset 0x8, size 0x4
+        unsigned char mFlags;   // offset 0xC, size 0x1
+        unsigned char mParent;  // offset 0xD, size 0x1
+        unsigned char mNumChildren; // offset 0xE, size 0x1
+        unsigned char mChildIndex;  // offset 0xF, size 0x1
+    };
+
+    const Node *GetNodes() const {
+        return reinterpret_cast<const Node *>(this + 1);
+    }
+
+    Node *GetNodes() {
+        return reinterpret_cast<Node *>(this + 1);
+    }
+
+    unsigned int GetSize() const {
+        return sizeof(*this) + sizeof(Node) * this->mNumNodes;
+    }
+
+    unsigned int mNameHash; // offset 0x0, size 0x4
+    unsigned char mNumNodes; // offset 0x4, size 0x1
+    unsigned char mFlags; // offset 0x5, size 0x1
+    unsigned short pad; // offset 0x6, size 0x2
+};
 
 // total size: 0x88
 

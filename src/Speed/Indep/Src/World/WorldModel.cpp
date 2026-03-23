@@ -180,11 +180,11 @@ eModel *WorldModel::GetModel() {
         return this->pModel;
     }
 
-    if (this->mHeirarchy == 0) {
-        return 0;
+    if (this->mHeirarchy != 0) {
+        return this->mHeirarchy->GetNodes()[this->mHeirarchyIndex].mModel;
     }
 
-    return *reinterpret_cast<eModel *const *>(reinterpret_cast<const unsigned char *>(this->mHeirarchy) + this->mHeirarchyIndex * 0x10 + 0x10);
+    return 0;
 }
 
 void WorldModel::AttachReplacementTextureTable(eReplacementTextureTable *replacement_texture_table, int num_textures) {
@@ -200,16 +200,13 @@ void WorldModel::AttachReplacementTextureTable(eReplacementTextureTable *replace
 void WorldModel::GetLocalBoundingBox(bVector3 *min_ext, bVector3 *max_ext) {
     eModel *model = this->GetModel();
 
-    if (model == 0) {
-        min_ext->x = 0.0f;
-        min_ext->y = 0.0f;
-        min_ext->z = 0.0f;
-
-        max_ext->x = 0.0f;
-        max_ext->y = 0.0f;
-        max_ext->z = 0.0f;
-    } else {
+    if (model != 0) {
         model->GetBoundingBox(min_ext, max_ext);
+    } else {
+        bVector3 zero;
+        bFill(&zero, 0.0f, 0.0f, 0.0f);
+        bCopy(min_ext, &zero);
+        bCopy(max_ext, &zero);
     }
 }
 
