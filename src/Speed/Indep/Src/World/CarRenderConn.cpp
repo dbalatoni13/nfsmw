@@ -1069,34 +1069,38 @@ void CarRenderConn::UpdateTires(float dT, float carspeed, const RenderConn::Pkt_
         this->mTireMatrices[i].v3.y = this->mTirePositions[i].y;
 
         if (can_do_fx) {
-            CarRenderInfoU32(this->mRenderInfo, 0x177C + i * 4) = is_flat ? 1U : 0U;
+            CarRenderInfoU32(this->mRenderInfo, 0x177C + i * 4) = (data.mBlowOuts >> i) & 1U;
         }
 
         eMulVector(&state->mTirePos, &this->mRenderMatrix, &this->mTireMatrices[i].v3);
         state->UpdateWorld(this->mWCollider, this->GetFlag(CF_ISRAINING), is_flat);
 
-        if (!onground || !can_do_fx) {
-            state->KillSkids();
-        } else {
-            float skid = UMath::Max(UMath::Abs(data.mTireSkid[i] * 0.05f) - 0.1f, 0.0f);
-            float slip = UMath::Max(UMath::Abs(data.mTireSlip[i] * 0.2f) - 0.1f, 0.0f);
-            float intensity = UMath::Sqrt(skid * skid + slip * slip);
+        if (can_do_fx) {
+            if (onground) {
+                float skid = UMath::Max(UMath::Abs(data.mTireSkid[i] * 0.05f) - 0.1f, 0.0f);
+                float slip = UMath::Max(UMath::Abs(data.mTireSlip[i] * 0.2f) - 0.1f, 0.0f);
+                float intensity = UMath::Sqrt(skid * skid + slip * slip);
 
-            if (0.0f < intensity) {
-                bVector3 delta_pos;
+                if (0.0f < intensity) {
+                    bVector3 delta_pos;
 
-                delta_pos.x = state->mTirePos.x - state->mPrevTirePos.x;
-                delta_pos.y = state->mTirePos.y - state->mPrevTirePos.y;
-                delta_pos.z = state->mTirePos.z - state->mPrevTirePos.z;
-                state->DoSkids(intensity, &delta_pos, &this->mTireMatrices[i], &this->mRenderMatrix,
-                               this->VehicleRenderConn::mAttributes.TireSkidWidth(i));
+                    delta_pos.x = state->mTirePos.x - state->mPrevTirePos.x;
+                    delta_pos.y = state->mTirePos.y - state->mPrevTirePos.y;
+                    delta_pos.z = state->mTirePos.z - state->mPrevTirePos.z;
+                    state->DoSkids(intensity, &delta_pos, &this->mTireMatrices[i], &this->mRenderMatrix,
+                                   this->VehicleRenderConn::mAttributes.TireSkidWidth(i));
+                } else {
+                    state->KillSkids();
+                }
+
+                state->DoFX(data.mTireSlip[i] * this->VehicleRenderConn::mAttributes.SlipFX(axle),
+                            data.mTireSkid[i] * this->VehicleRenderConn::mAttributes.SkidFX(axle), carspeed,
+                            reinterpret_cast<const LocalReferenceMirror *>(&this->mWorldRef)->mVelocity, &this->mRenderMatrix, dT);
             } else {
                 state->KillSkids();
             }
-
-            state->DoFX(data.mTireSlip[i] * this->VehicleRenderConn::mAttributes.SlipFX(axle),
-                        data.mTireSkid[i] * this->VehicleRenderConn::mAttributes.SkidFX(axle), carspeed,
-                        reinterpret_cast<const LocalReferenceMirror *>(&this->mWorldRef)->mVelocity, &this->mRenderMatrix, dT);
+        } else {
+            state->KillSkids();
         }
 
         state->mPrevTirePos = state->mTirePos;
