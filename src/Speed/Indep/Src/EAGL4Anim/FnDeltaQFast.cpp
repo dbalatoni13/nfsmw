@@ -42,11 +42,10 @@ unsigned char *DeltaQFast::GetConstBoneIdx() {
     s += numBones * sizeof(DeltaQFastMinRange);
     s += AlignSize2(numBones * (((binLength - 1) * sizeof(DeltaQFastDelta)) + sizeof(DeltaQFastPhysical))) * numBins;
 
-    if (!remainder) {
-        return reinterpret_cast<unsigned char *>(s);
+    if (remainder != 0) {
+        s += numBones * (((remainder - 1) * sizeof(DeltaQFastDelta)) + sizeof(DeltaQFastPhysical));
     }
 
-    s += numBones * (((remainder - 1) * sizeof(DeltaQFastDelta)) + sizeof(DeltaQFastPhysical));
     return reinterpret_cast<unsigned char *>(s);
 }
 
@@ -60,7 +59,7 @@ DeltaQFastPhysical *DeltaQFast::GetConstPhysical() {
     s += numBones * sizeof(DeltaQFastMinRange);
     s += AlignSize2(numBones * (((binLength - 1) * sizeof(DeltaQFastDelta)) + sizeof(DeltaQFastPhysical))) * numBins;
 
-    if (remainder > 0) {
+    if (remainder != 0) {
         s += numBones * (((remainder - 1) * sizeof(DeltaQFastDelta)) + sizeof(DeltaQFastPhysical));
     }
 
