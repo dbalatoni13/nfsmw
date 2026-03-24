@@ -68,9 +68,8 @@ class RawLinearChannel : public AnimMemoryMap {
         const unsigned short *dofIndex = GetDOFIndex();
         const float *frameData0 = GetFrame(frame0);
         const float *frameData1 = GetFrame(frame1);
-        unsigned short numDOFs = mNumDOFs;
 
-        for (int i = 0; i < numDOFs; i++) {
+        for (int i = 0; i < mNumDOFs; i++) {
             float value0 = frameData0[i];
             output[dofIndex[i]] = t * (frameData1[i] - value0) + value0;
         }
@@ -80,9 +79,8 @@ class RawLinearChannel : public AnimMemoryMap {
     void EvalFrame(int frame, float *output) {
         const unsigned short *dofIndex = GetDOFIndex();
         const float *frameData = GetFrame(frame);
-        unsigned short numDOFs = mNumDOFs;
 
-        for (int i = 0; i < numDOFs; i++) {
+        for (int i = 0; i < mNumDOFs; i++) {
             output[dofIndex[i]] = frameData[i];
         }
     }
