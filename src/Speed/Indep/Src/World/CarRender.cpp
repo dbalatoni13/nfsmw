@@ -976,27 +976,39 @@ CarRenderInfo::CarRenderInfo(RideInfo *ride_info)
 
                     if (slot == CARSLOTID_RIGHT_SIDE_MIRROR) {
                         goto use_smooth_normal_model;
-                    } else if (slot > CARSLOTID_RIGHT_SIDE_MIRROR) {
-                        if (slot == CARSLOTID_SPOILER || (slot >= CARSLOTID_ROOF && slot <= CARSLOTID_BRAKELIGHT)) {
+                    } else {
+                        if (slot > CARSLOTID_RIGHT_SIDE_MIRROR) {
+                            if (slot != CARSLOTID_SPOILER &&
+                                (slot < CARSLOTID_SPOILER || slot > CARSLOTID_BRAKELIGHT || slot < CARSLOTID_ROOF)) {
+                                goto skip_smooth_normal_model;
+                            }
                             goto use_smooth_normal_model;
                         }
-                    } else if (slot == CARSLOTID_BODY) {
-                        goto use_smooth_normal_model;
-                    } else if (slot < CARSLOTID_BODY) {
-                        if (slot == CARSLOTID_BASE) {
+                        if (slot == CARSLOTID_BODY) {
                             goto use_smooth_normal_model;
                         }
-                    } else if (slot == CARSLOTID_LEFT_SIDE_MIRROR) {
-use_smooth_normal_model:
-                        if (lod > this->mMinLodLevel) {
-                            previous_model = this->mCarPartModels[slot][0][lod - 1].GetModel();
+                        if (slot < CARSLOTID_BODY + 1) {
+                            if (slot == CARSLOTID_BASE) {
+                                goto use_smooth_normal_model;
+                            }
+                        } else if (slot == CARSLOTID_LEFT_SIDE_MIRROR) {
+                            goto use_smooth_normal_model;
                         }
 
-                        if (lod <= this->mMinLodLevel || previous_model == nullptr ||
-                            previous_model->GetNameHash() != model->GetNameHash()) {
-                            smooth_model = model;
-                        }
+                        goto skip_smooth_normal_model;
                     }
+
+use_smooth_normal_model:
+                    if (lod > this->mMinLodLevel) {
+                        previous_model = this->mCarPartModels[slot][0][lod - 1].GetModel();
+                    }
+
+                    if (lod <= this->mMinLodLevel || previous_model == nullptr ||
+                        previous_model->GetNameHash() != model->GetNameHash()) {
+                        smooth_model = model;
+                    }
+
+skip_smooth_normal_model: {}
                 }
 
                 smooth_normal_models[slot] = smooth_model;
