@@ -2569,7 +2569,8 @@ void CarRenderInfo::RenderFlaresOnCar(eView *view, const bVector3 *position, con
         return;
     }
 
-    int is_traffic_car = this->pCarTypeInfo != 0 ? this->pCarTypeInfo->GetCarUsageType() == CAR_USAGE_TYPE_TRAFFIC : 0;
+    CarTypeInfo *car_type_info = &CarTypeInfoArray[this->pRideInfo->Type];
+    int is_traffic_car = car_type_info->GetCarUsageType() == CAR_USAGE_TYPE_TRAFFIC;
 
     float headlight_left_intensity;
     if (UTL::Collections::Singleton<INIS>::Get() == 0) {
