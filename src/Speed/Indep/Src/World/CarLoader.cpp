@@ -2070,8 +2070,8 @@ void CarLoader::CallUserCallback(int param) {
     } else {
         void (*callback)(unsigned int) = car_loader->pCallback;
 
-        car_loader->pCallback = 0;
         car_loader->LoadingInProgress = 0;
+        car_loader->pCallback = 0;
         callback(car_loader->Param);
     }
 }
