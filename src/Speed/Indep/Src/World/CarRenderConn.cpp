@@ -1471,7 +1471,7 @@ void CarRenderConn::OnRender(eView *view, int reflection) {
         }
     }
 
-    if (this->mDoContrailEffect && camera_mover != 0 && camera_mover->IsHoodCamera() &&
+    if (this->mDoContrailEffect && camera_mover != 0 && camera_mover->OutsidePOV() &&
         (view->GetID() == 1 || view->GetID() == 2)) {
         const Attrib::Collection *xenon_effect = Attrib::FindCollection(0x6F5943F1, 0x16AFDE7B);
         AddXenonEffect(0, xenon_effect, this->GetBodyMatrix(), reinterpret_cast<const bVector4 *>(this->GetVelocity()));
