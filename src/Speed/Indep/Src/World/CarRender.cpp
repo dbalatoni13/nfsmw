@@ -2666,11 +2666,6 @@ void CarRenderInfo::RenderFlaresOnCar(eView *view, const bVector3 *position, con
         brakelight_right_intensity += 1.0f;
         brakelight_centre_intensity += 1.0f;
     }
-    if (force_light_state & 4) {
-        reverselight_left_intensity += 1.0f;
-        reverselight_right_intensity += 1.0f;
-    }
-
     if (this->IsLightOn(VehicleFX::LIGHT_LHEAD)) {
         headlight_left_intensity = 1.0f;
     }
@@ -2700,6 +2695,10 @@ void CarRenderInfo::RenderFlaresOnCar(eView *view, const bVector3 *position, con
     }
     if (this->IsLightBroken(VehicleFX::LIGHT_CBRAKE)) {
         brakelight_centre_intensity = 0.0f;
+    }
+    if (force_light_state & 4) {
+        reverselight_left_intensity += 1.0f;
+        reverselight_right_intensity += 1.0f;
     }
     if (this->IsLightOn(VehicleFX::LIGHT_LREVERSE)) {
         reverselight_left_intensity += 1.0f;
