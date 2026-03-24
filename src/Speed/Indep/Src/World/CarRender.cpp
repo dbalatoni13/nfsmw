@@ -2674,61 +2674,60 @@ void CarRenderInfo::RenderFlaresOnCar(eView *view, const bVector3 *position, con
     if (this->IsLightOn(VehicleFX::LIGHT_LHEAD)) {
         headlight_left_intensity = 1.0f;
     }
-    if (this->IsLightOn(VehicleFX::LIGHT_RHEAD)) {
-        headlight_right_intensity = 1.0f;
-    }
-    if (this->IsLightOn(VehicleFX::LIGHT_LBRAKE)) {
-        brakelight_left_intensity += 1.0f;
-    }
-    if (this->IsLightOn(VehicleFX::LIGHT_RBRAKE)) {
-        brakelight_right_intensity += 1.0f;
-    }
-    if (this->IsLightOn(VehicleFX::LIGHT_CBRAKE)) {
-        brakelight_centre_intensity += 1.0f;
-    }
-    if (this->IsLightOn(VehicleFX::LIGHT_LREVERSE)) {
-        reverselight_left_intensity += 1.0f;
-    }
-    if (this->IsLightOn(VehicleFX::LIGHT_RREVERSE)) {
-        reverselight_right_intensity += 1.0f;
-    }
-    if (this->IsLightOn(VehicleFX::LIGHT_COPRED)) {
-        coplight_intensityR = cpr;
-    }
-    if (this->IsLightOn(VehicleFX::LIGHT_COPBLUE)) {
-        coplight_intensityB = cpb;
-    }
-    if (this->IsLightOn(VehicleFX::LIGHT_COPWHITE)) {
-        coplight_intensityW = cpw;
-        flashHeadlights = 1;
-    }
-
     if (this->IsLightBroken(VehicleFX::LIGHT_LHEAD)) {
         headlight_left_intensity = 0.0f;
+    }
+    if (this->IsLightOn(VehicleFX::LIGHT_RHEAD)) {
+        headlight_right_intensity = 1.0f;
     }
     if (this->IsLightBroken(VehicleFX::LIGHT_RHEAD)) {
         headlight_right_intensity = 0.0f;
     }
+    if (this->IsLightOn(VehicleFX::LIGHT_LBRAKE)) {
+        brakelight_left_intensity += 1.0f;
+    }
     if (this->IsLightBroken(VehicleFX::LIGHT_LBRAKE)) {
         brakelight_left_intensity = 0.0f;
+    }
+    if (this->IsLightOn(VehicleFX::LIGHT_RBRAKE)) {
+        brakelight_right_intensity += 1.0f;
     }
     if (this->IsLightBroken(VehicleFX::LIGHT_RBRAKE)) {
         brakelight_right_intensity = 0.0f;
     }
+    if (this->IsLightOn(VehicleFX::LIGHT_CBRAKE)) {
+        brakelight_centre_intensity += 1.0f;
+    }
     if (this->IsLightBroken(VehicleFX::LIGHT_CBRAKE)) {
         brakelight_centre_intensity = 0.0f;
+    }
+    if (this->IsLightOn(VehicleFX::LIGHT_LREVERSE)) {
+        reverselight_left_intensity += 1.0f;
     }
     if (this->IsLightBroken(VehicleFX::LIGHT_LREVERSE)) {
         reverselight_left_intensity = 0.0f;
     }
+    if (this->IsLightOn(VehicleFX::LIGHT_RREVERSE)) {
+        reverselight_right_intensity += 1.0f;
+    }
     if (this->IsLightBroken(VehicleFX::LIGHT_RREVERSE)) {
         reverselight_right_intensity = 0.0f;
+    }
+    if (this->IsLightOn(VehicleFX::LIGHT_COPRED)) {
+        coplight_intensityR = cpr;
     }
     if (this->IsLightBroken(VehicleFX::LIGHT_COPRED)) {
         coplight_intensityR = 0.0f;
     }
+    if (this->IsLightOn(VehicleFX::LIGHT_COPBLUE)) {
+        coplight_intensityB = cpb;
+    }
     if (this->IsLightBroken(VehicleFX::LIGHT_COPBLUE)) {
         coplight_intensityB = 0.0f;
+    }
+    if (this->IsLightOn(VehicleFX::LIGHT_COPWHITE)) {
+        coplight_intensityW = cpw;
+        flashHeadlights = 1;
     }
     if (this->IsLightBroken(VehicleFX::LIGHT_COPWHITE)) {
         coplight_intensityW = 0.0f;
