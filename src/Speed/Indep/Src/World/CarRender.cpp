@@ -1501,9 +1501,7 @@ void CarRenderInfo::UpdateCarParts() {
         this->WheelRadius[1] = wheel_radius * 0.5f;
     }
 
-    this->ModelOffset.x = (this->AABBMax.x + this->AABBMin.x) * 0.5f;
-    this->ModelOffset.y = (this->AABBMax.y + this->AABBMin.y) * 0.5f;
-    this->ModelOffset.z = (this->AABBMax.z + this->AABBMin.z) * 0.5f;
+    this->ModelOffset = (this->AABBMax + this->AABBMin) * 0.5f;
 
     CarPart *base_part = ride_info->GetPart(CARSLOTID_BASE);
     if (base_part == 0) {
