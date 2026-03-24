@@ -144,8 +144,10 @@ bool FnRawStateChan::EvalState(float time, State *s) {
     RawStateChan *rawStateChan = reinterpret_cast<RawStateChan *>(mpAnim);
     unsigned char numFields = rawStateChan->GetNumFields();
     unsigned char keySize = rawStateChan->GetKeySize();
+    unsigned short numKeys;
     unsigned char *keyData;
     int keyIdx = mKeyIdx;
+    unsigned char *currKey;
 
     if ((numFields & 1) == 0) {
         keyData = reinterpret_cast<unsigned char *>(rawStateChan) + numFields * sizeof(unsigned short) + 12;
@@ -153,40 +155,71 @@ bool FnRawStateChan::EvalState(float time, State *s) {
         keyData = reinterpret_cast<unsigned char *>(rawStateChan) + numFields * sizeof(unsigned short) + 10;
     }
 
-    if (time < *reinterpret_cast<float *>(&keyData[keyIdx * keySize])) {
-        keyIdx--;
+    if (*reinterpret_cast<float *>(&keyData[keyIdx * keySize]) <= time) {
+        numKeys = rawStateChan->GetNumKeys();
 
-        while (keyIdx > -1) {
-            unsigned char *currKey = &keyData[keyIdx * keySize];
+        if (keyIdx < numKeys) {
+            keyData = reinterpret_cast<unsigned char *>(rawStateChan) + numFields * sizeof(unsigned short) + 10;
 
-            if (*reinterpret_cast<float *>(currKey) <= time) {
-                Decode(currKey + sizeof(float), reinterpret_cast<unsigned char *>(s));
-                mKeyIdx = keyIdx;
-                return true;
-            }
+            do {
+                currKey = keyData + 2;
+                if ((numFields & 1) != 0) {
+                    currKey = keyData;
+                }
+                currKey += keyIdx * keySize;
 
-            keyIdx--;
+                if (time < *reinterpret_cast<float *>(currKey + keySize)) {
+                    goto KeyFound;
+                }
+
+                keyIdx++;
+            } while (keyIdx < numKeys);
         }
 
-        Decode(keyData + sizeof(float), reinterpret_cast<unsigned char *>(s));
-        mKeyIdx = 0;
-    } else {
-        unsigned short numKeys = rawStateChan->GetNumKeys();
-
-        for (; keyIdx < numKeys; keyIdx++) {
-            unsigned char *currKey = &keyData[keyIdx * keySize];
-
-            if (time < *reinterpret_cast<float *>(currKey + keySize)) {
-                Decode(currKey + sizeof(float), reinterpret_cast<unsigned char *>(s));
-                mKeyIdx = keyIdx;
-                return true;
-            }
+        if ((numFields & 1) == 0) {
+            keyData = reinterpret_cast<unsigned char *>(rawStateChan) + numFields * sizeof(unsigned short) + 12;
+        } else {
+            keyData = reinterpret_cast<unsigned char *>(rawStateChan) + numFields * sizeof(unsigned short) + 10;
         }
 
         Decode(keyData + keySize * (numKeys - 1) + sizeof(float), reinterpret_cast<unsigned char *>(s));
         mKeyIdx = numKeys - 1;
+    } else {
+        keyIdx--;
+
+        if (keyIdx > -1) {
+            keyData = reinterpret_cast<unsigned char *>(rawStateChan) + numFields * sizeof(unsigned short) + 10;
+
+            do {
+                currKey = keyData + 2;
+                if ((numFields & 1) != 0) {
+                    currKey = keyData;
+                }
+                currKey += keyIdx * keySize;
+
+                if (*reinterpret_cast<float *>(currKey) <= time) {
+                    goto KeyFound;
+                }
+
+                keyIdx--;
+            } while (keyIdx > -1);
+        }
+
+        if ((numFields & 1) == 0) {
+            keyData = reinterpret_cast<unsigned char *>(rawStateChan) + numFields * sizeof(unsigned short) + 12;
+        } else {
+            keyData = reinterpret_cast<unsigned char *>(rawStateChan) + numFields * sizeof(unsigned short) + 10;
+        }
+
+        Decode(keyData + sizeof(float), reinterpret_cast<unsigned char *>(s));
+        mKeyIdx = 0;
     }
 
+    return true;
+
+KeyFound:
+    Decode(currKey + sizeof(float), reinterpret_cast<unsigned char *>(s));
+    mKeyIdx = keyIdx;
     return true;
 }
 
