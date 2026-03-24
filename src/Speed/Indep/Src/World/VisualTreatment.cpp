@@ -364,6 +364,7 @@ void IVisualTreatment::UpdateHeat(eView *view, float targetHeat, bool isBeingPur
 
     this->IsBeingPursued = isBeingPursued;
     this->CurrentTarget = targetHeat;
+    float currentTarget = this->CurrentTarget;
 
     VisualLookEffect *uvesTransition = this->UvesTransition;
     float uves = 0.0f;
@@ -384,21 +385,21 @@ void IVisualTreatment::UpdateHeat(eView *view, float targetHeat, bool isBeingPur
     VisualLookEffect *uvesPulse = this->UvesPulse;
     float pulseBrightness = 0.0f;
     if (uvesPulse->IsActive()) {
-        pulseBrightness = uvesPulse->UpdateActive(this->CurrentTarget);
+        pulseBrightness = uvesPulse->UpdateActive(currentTarget);
     }
     this->PulseBrightness = pulseBrightness;
 
     VisualLookEffect *cameraFlash = this->CameraFlash;
     float cameraFlashValue = 0.0f;
     if (cameraFlash->IsActive()) {
-        cameraFlashValue = cameraFlash->UpdateActive(this->CurrentTarget);
+        cameraFlashValue = cameraFlash->UpdateActive(currentTarget);
     }
     this->PulseBrightness += cameraFlashValue;
 
     VisualLookEffect *uvesRadialBlurEffect = this->UvesRadialBlur;
     float uvesRadialBlur = 0.0f;
     if (uvesRadialBlurEffect->IsActive()) {
-        uvesRadialBlur = uvesRadialBlurEffect->UpdateActive(this->CurrentTarget);
+        uvesRadialBlur = uvesRadialBlurEffect->UpdateActive(currentTarget);
     }
 
     VisualLookEffectTarget *pursuitBreaker = this->PursuitBreaker;
