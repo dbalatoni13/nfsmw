@@ -2733,14 +2733,10 @@ void CarRenderInfo::RenderFlaresOnCar(eView *view, const bVector3 *position, con
     CAR_PART_ID preview_part_id = CARPARTID_NUM;
 
     if (preview_part != 0) {
-        unsigned char *preview_part_bytes = reinterpret_cast<unsigned char *>(preview_part);
-        signed char *preview_part_id_ptr = reinterpret_cast<signed char *>(preview_part_bytes + 4);
-        preview_part_id = static_cast<CAR_PART_ID>(*preview_part_id_ptr);
+        preview_part_id = static_cast<CAR_PART_ID>(*reinterpret_cast<signed char *>(reinterpret_cast<unsigned char *>(preview_part) + 4));
     }
     float constFlicker = coplightflicker(Ftime, 0);
     int FlareCount = 0;
-    int render_flare_type_only = renderFlareFlags & 2;
-    int render_flare_cop_only = renderFlareFlags & 1;
 
     for (eLightFlare *light_flare = this->LightFlareList.GetHead(); light_flare != this->LightFlareList.EndOfList();
          light_flare = light_flare->GetNext()) {
@@ -2753,10 +2749,10 @@ void CarRenderInfo::RenderFlaresOnCar(eView *view, const bVector3 *position, con
         if (is_traffic_car != 0 && light_flare->Type == 1) {
             light_flare->Type = 2;
         }
-        if (render_flare_type_only != 0 && light_flare->Type != 1) {
+        if ((renderFlareFlags & 2) != 0 && light_flare->Type != 1) {
             continue;
         }
-        if (render_flare_cop_only != 0) {
+        if ((renderFlareFlags & 1) != 0) {
             if (light_flare->Type < 5 || light_flare->Type > 12) {
                 continue;
             }
