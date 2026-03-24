@@ -2598,7 +2598,12 @@ void CarRenderInfo::RenderFlaresOnCar(eView *view, const bVector3 *position, con
         car_pixel_size = static_cast<int>(static_cast<float>(car_pixel_size) * 0.5f);
     }
 
-    if (car_pixel_size < view->PixelMinSize || view->GetVisibleState(&this->AABBMin, &this->AABBMax, local_world) == EVISIBLESTATE_NOT) {
+    if (car_pixel_size < view->PixelMinSize) {
+        return;
+    }
+
+    unsigned int visibility_state = view->GetVisibleState(&this->AABBMin, &this->AABBMax, local_world);
+    if (visibility_state == EVISIBLESTATE_NOT) {
         return;
     }
 
@@ -2630,8 +2635,8 @@ void CarRenderInfo::RenderFlaresOnCar(eView *view, const bVector3 *position, con
     }
 
     float brakelight_left_intensity = base_brakelight_intensity;
-    float brakelight_right_intensity = base_brakelight_intensity;
     float brakelight_centre_intensity = 0.0f;
+    float brakelight_right_intensity = brakelight_left_intensity;
     float reverselight_left_intensity = 0.0f;
     float reverselight_right_intensity = 0.0f;
     float coplight_intensityR = 0.0f;
