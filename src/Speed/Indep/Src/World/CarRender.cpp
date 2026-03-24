@@ -780,22 +780,35 @@ CarRenderInfo::CarRenderInfo(RideInfo *ride_info)
     {
         CarRenderUsedCarTextureInfoLayout *used_texture_info =
             reinterpret_cast<CarRenderUsedCarTextureInfoLayout *>(&this->mUsedTextureInfos);
+        unsigned int mapped_skin_hash = used_texture_info->MappedSkinHash;
+        unsigned int mapped_skin_b_hash = used_texture_info->MappedSkinBHash;
+        unsigned int mapped_global_hash = used_texture_info->MappedGlobalHash;
+        unsigned int mapped_badging_hash = used_texture_info->MappedBadging;
+        unsigned int mapped_wheel_hash = used_texture_info->MappedWheelHash;
+        unsigned int mapped_spinner_hash = used_texture_info->MappedSpinnerHash;
+        unsigned int mapped_spoiler_hash = used_texture_info->MappedSpoilerHash;
+        unsigned int mapped_roof_scoop_hash = used_texture_info->MappedRoofScoopHash;
+        unsigned int mapped_dash_skin_hash = used_texture_info->MappedDashSkinHash;
+        unsigned int mapped_tire_hash = used_texture_info->MappedTireHash;
+        unsigned int carbon_skin_hash = 0xA7366AE6;
+        unsigned int global_carbon_skin_hash = 0x3C84D757;
+        unsigned int driver_hash = 0x5799E60B;
 
-        this->MasterReplacementTextureTable[REPLACETEX_CARSKIN].SetOldNameHash(used_texture_info->MappedSkinHash);
-        this->MasterReplacementTextureTable[REPLACETEX_CARSKINB].SetOldNameHash(used_texture_info->MappedSkinBHash);
-        this->MasterReplacementTextureTable[REPLACETEX_GLOBALSKIN].SetOldNameHash(used_texture_info->MappedGlobalHash);
-        this->MasterReplacementTextureTable[REPLACETEX_CARBONSKIN].SetOldNameHash(0xA7366AE6);
-        this->MasterReplacementTextureTable[REPLACETEX_GLOBALCARBONSKIN].SetOldNameHash(0x3C84D757);
-        this->MasterReplacementTextureTable[REPLACETEX_BADGING].SetOldNameHash(used_texture_info->MappedBadging);
-        this->MasterReplacementTextureTable[REPLACETEX_WHEEL].SetOldNameHash(used_texture_info->MappedWheelHash);
-        this->MasterReplacementTextureTable[REPLACETEX_SPINNER].SetOldNameHash(used_texture_info->MappedSpinnerHash);
-        this->MasterReplacementTextureTable[REPLACETEX_SPOILER].SetOldNameHash(used_texture_info->MappedSpoilerHash);
-        this->MasterReplacementTextureTable[REPLACETEX_ROOF_SCOOP].SetOldNameHash(used_texture_info->MappedRoofScoopHash);
-        this->MasterReplacementTextureTable[REPLACETEX_DASHSKIN].SetOldNameHash(used_texture_info->MappedDashSkinHash);
-        this->MasterReplacementTextureTable[REPLACETEX_DRIVER].SetOldNameHash(0x5799E60B);
-        this->MasterReplacementTextureTable[REPLACETEX_TIRE].SetOldNameHash(used_texture_info->MappedTireHash);
+        this->MasterReplacementTextureTable[REPLACETEX_CARSKIN].SetOldNameHash(mapped_skin_hash);
+        this->MasterReplacementTextureTable[REPLACETEX_CARSKINB].SetOldNameHash(mapped_skin_b_hash);
+        this->MasterReplacementTextureTable[REPLACETEX_GLOBALSKIN].SetOldNameHash(mapped_global_hash);
+        this->MasterReplacementTextureTable[REPLACETEX_CARBONSKIN].SetOldNameHash(carbon_skin_hash);
+        this->MasterReplacementTextureTable[REPLACETEX_GLOBALCARBONSKIN].SetOldNameHash(global_carbon_skin_hash);
+        this->MasterReplacementTextureTable[REPLACETEX_BADGING].SetOldNameHash(mapped_badging_hash);
+        this->MasterReplacementTextureTable[REPLACETEX_WHEEL].SetOldNameHash(mapped_wheel_hash);
+        this->MasterReplacementTextureTable[REPLACETEX_SPINNER].SetOldNameHash(mapped_spinner_hash);
+        this->MasterReplacementTextureTable[REPLACETEX_SPOILER].SetOldNameHash(mapped_spoiler_hash);
+        this->MasterReplacementTextureTable[REPLACETEX_ROOF_SCOOP].SetOldNameHash(mapped_roof_scoop_hash);
+        this->MasterReplacementTextureTable[REPLACETEX_DASHSKIN].SetOldNameHash(mapped_dash_skin_hash);
+        this->MasterReplacementTextureTable[REPLACETEX_DRIVER].SetOldNameHash(driver_hash);
+        this->MasterReplacementTextureTable[REPLACETEX_TIRE].SetOldNameHash(mapped_tire_hash);
         if (is_traffic_car != 0) {
-            this->MasterReplacementTextureTable[REPLACETEX_TIRE].SetNewNameHash(bStringHash("_N", used_texture_info->MappedTireHash));
+            this->MasterReplacementTextureTable[REPLACETEX_TIRE].SetNewNameHash(bStringHash("_N", mapped_tire_hash));
         }
         this->MasterReplacementTextureTable[REPLACETEX_WINDOW_FRONT].SetOldNameHash(bStringHash("WINDOW_FRONT"));
         this->MasterReplacementTextureTable[REPLACETEX_WINDOW_REAR].SetOldNameHash(bStringHash("WINDOW_REAR"));
