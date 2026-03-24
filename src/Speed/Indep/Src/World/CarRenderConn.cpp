@@ -276,8 +276,8 @@ void TireState::Effect::Set(const TireEffectRecord &record) {
     this->mMinVel = record.MinSpeed;
     this->mMaxVel = record.MaxSpeed;
     if (this->mEmitterKey != emitter_key) {
-        this->mNeedsLazyInit = true;
         this->mEmitterKey = emitter_key;
+        this->mNeedsLazyInit = true;
         this->mZeroParticleFrameCount = 0;
     }
 }
