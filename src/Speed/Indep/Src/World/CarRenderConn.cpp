@@ -1000,8 +1000,8 @@ void CarRenderConn::UpdateTires(float dT, float carspeed, const RenderConn::Pkt_
     this->mFlatTireAngle = UMath::Vector3::kZero;
 
     if (this->TestVisibility(renderModifier * 30.0f)) {
-        const float &hop_scale = this->GetAttributes().WheelHopScale(0);
         flatten_tires = true;
+        float hop_scale = this->GetAttributes().WheelHopScale(0);
         if (0.0f < data.mExtraBodyPitch && 0.0f < hop_scale) {
             float pitch_scale = hop_scale * hop_scale;
 
@@ -1024,13 +1024,13 @@ void CarRenderConn::UpdateTires(float dT, float carspeed, const RenderConn::Pkt_
         const bool is_flat = ((data.mBlowOuts >> i) & 1U) != 0;
         TireState *state = this->mTireState[i];
         float compression = data.mCompressions[i] + (this->mTireRadius[i] - this->mPhysicsRadius[i]);
-        float wheel_delta = UMath::Clamp((data.mWheelSpeed[i] / this->mTireRadius[i]) * dT, -this->mMaxWheelRenderDeltaAngle,
-                                         this->mMaxWheelRenderDeltaAngle);
+        float dW = UMath::Clamp((data.mWheelSpeed[i] / this->mTireRadius[i]) * dT, -this->mMaxWheelRenderDeltaAngle,
+                                this->mMaxWheelRenderDeltaAngle);
 
         eIdentity(&this->mTireMatrices[i]);
         eIdentity(&this->mBrakeMatrices[i]);
 
-        state->mRoll += wheel_delta;
+        state->mRoll += dW;
         if (6.2831855f <= state->mRoll) {
             state->mRoll -= 6.2831855f;
         } else if (state->mRoll <= -6.2831855f) {
