@@ -1278,13 +1278,12 @@ void CarRenderInfo::UpdateCarParts() {
     for (int slot_id = 0; slot_id < 0x4C; slot_id++) {
         for (int model_number = 0; model_number < 1; model_number++) {
             for (int lod = this->mMinLodLevel; lod <= this->mMaxLodLevel; lod++) {
-                CarPartModel *car_part_model = &this->mCarPartModels[slot_id][model_number][lod];
-                eModel *model = car_part_model->GetModel();
+                eModel *model = this->mCarPartModels[slot_id][model_number][lod].GetModel();
 
                 if (model != 0 && model->GetNameHash() != 0) {
                     model->UnInit();
                     CarPartModelPool->Free(model);
-                    reinterpret_cast<CarPartModelLayout *>(car_part_model)->mModel &= 1;
+                    reinterpret_cast<CarPartModelLayout *>(&this->mCarPartModels[slot_id][model_number][lod])->mModel &= 1;
                 }
             }
         }
