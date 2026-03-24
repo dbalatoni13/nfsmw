@@ -723,7 +723,6 @@ CarRenderInfo::CarRenderInfo(RideInfo *ride_info)
       mFlashInterval(0.0f)
 {
     ProfileNode profile_node;
-    CarRenderRideInfoLayout *ride_layout = reinterpret_cast<CarRenderRideInfoLayout *>(ride_info);
     CarTypeInfo *info = &CarTypeInfoArray[ride_info->Type];
     char *car_base_name = info->BaseModelName;
     bVector3 tire_positions[4];
@@ -763,15 +762,15 @@ CarRenderInfo::CarRenderInfo(RideInfo *ride_info)
     this->mAcceleration.y = 0.0f;
     this->mAcceleration.z = 0.0f;
 
-    if (iRam8047ff04 == 3) {
-        this->mMinLodLevel = ride_layout->mMinFELodLevel;
-        this->mMaxLodLevel = ride_layout->mMaxFELodLevel;
+    if (TheGameFlowManager.IsInFrontend()) {
+        this->mMinLodLevel = reinterpret_cast<CarRenderRideInfoLayout *>(ride_info)->mMinFELodLevel;
+        this->mMaxLodLevel = reinterpret_cast<CarRenderRideInfoLayout *>(ride_info)->mMaxFELodLevel;
     } else {
-        this->mMinLodLevel = ride_layout->mMinLodLevel;
-        this->mMaxLodLevel = ride_layout->mMaxLodLevel;
+        this->mMinLodLevel = reinterpret_cast<CarRenderRideInfoLayout *>(ride_info)->mMinLodLevel;
+        this->mMaxLodLevel = reinterpret_cast<CarRenderRideInfoLayout *>(ride_info)->mMaxLodLevel;
     }
 
-    CARPART_LOD min_reflection_lod = ride_layout->mMinReflectionLodLevel;
+    CARPART_LOD min_reflection_lod = reinterpret_cast<CarRenderRideInfoLayout *>(ride_info)->mMinReflectionLodLevel;
 
     this->pRideInfo = ride_info;
     this->mMinReflectionLodLevel = min_reflection_lod;
