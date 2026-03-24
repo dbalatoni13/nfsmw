@@ -303,11 +303,10 @@ void StuffSkyLayer(eView *view, SKY_LAYER layer) {
                     matrix->v1.y *= scale;
                     if (rotate) {
                         bMatrix4 rotation;
-                        unsigned short angle = static_cast<unsigned short>(WorldTimeElapsed * lbl_8040B29C);
+                        int angle = matAng_33578 + static_cast<int>(WorldTimeElapsed * lbl_8040B29C);
 
-                        angle = static_cast<unsigned short>(angle + matAng_33578);
                         matAng_33578 = static_cast<unsigned short>(angle);
-                        eCreateRotationZ(&rotation, angle);
+                        eCreateRotationZ(&rotation, static_cast<unsigned short>(angle));
                         eMulMatrix(matrix, &rotation, matrix);
                     }
 
