@@ -467,16 +467,13 @@ CarLoader::CarLoader()
     this->NumLoadingSkinLayers = 0;
 }
 
-LoadedTexturePack::LoadedTexturePack(const char *filename, int max_header_size) {
-    const char *shared_filename = bAllocateSharedString(filename);
-
-    this->MaxHeaderSize = max_header_size;
-    this->Pad0 = 0;
-    this->pStreamingPack = 0;
-    this->Filename = shared_filename;
-    this->NumInstances = 0;
-    this->LoadState = 0;
-
+LoadedTexturePack::LoadedTexturePack(const char *filename, int max_header_size)
+    : Filename(bAllocateSharedString(filename)), //
+      NumInstances(0),                          //
+      LoadState(0),                             //
+      Pad0(0),                                  //
+      MaxHeaderSize(max_header_size),           //
+      pStreamingPack(0) {
     if (bFileSize(this->Filename) == 0) {
         this->LoadState = 2;
     }
