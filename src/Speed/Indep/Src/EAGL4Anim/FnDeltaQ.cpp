@@ -144,7 +144,9 @@ bool FnDeltaQ::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask) {
 
     if (mPrevKey == -1 || floorBinIdx != prevBinIdx || floorDeltaIdx == 0 || preventReverse) {
         for (int ibone = 0; ibone < deltaQ->mNumBones; ibone++) {
-            floorPhys[ibone].UnQuantize(mPrevQs[ibone]);
+            mPrevQs[ibone].x = floorPhys[ibone].mX * 6.1037019e-5f - 1.0f;
+            mPrevQs[ibone].y = floorPhys[ibone].mY * 3.0518044e-5f - 1.0f;
+            mPrevQs[ibone].z = floorPhys[ibone].mZ * 3.0518044e-5f - 1.0f;
         }
         prevDeltaIdx = 0;
     } else {
@@ -160,7 +162,9 @@ bool FnDeltaQ::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask) {
                 DeltaQMinRangef minRangef;
 
                 mMinRanges[ibone].UnQuantize(minRangef);
-                floorDelta->UnQuantize(minRangef, deltaf);
+                deltaf.x = minRangef.mMin.x + minRangef.mRange.x * floorDelta->mX;
+                deltaf.y = minRangef.mMin.y + minRangef.mRange.y * floorDelta->mY;
+                deltaf.z = minRangef.mMin.z + minRangef.mRange.z * floorDelta->mZ;
                 mPrevQs[ibone].x += deltaf.x;
                 mPrevQs[ibone].y += deltaf.y;
                 mPrevQs[ibone].z += deltaf.z;
@@ -176,7 +180,9 @@ bool FnDeltaQ::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask) {
                 DeltaQMinRangef minRangef;
 
                 mMinRanges[ibone].UnQuantize(minRangef);
-                floorDelta->UnQuantize(minRangef, deltaf);
+                deltaf.x = minRangef.mMin.x + minRangef.mRange.x * floorDelta->mX;
+                deltaf.y = minRangef.mMin.y + minRangef.mRange.y * floorDelta->mY;
+                deltaf.z = minRangef.mMin.z + minRangef.mRange.z * floorDelta->mZ;
                 mPrevQs[ibone].x -= deltaf.x;
                 mPrevQs[ibone].y -= deltaf.y;
                 mPrevQs[ibone].z -= deltaf.z;
@@ -265,7 +271,9 @@ bool FnDeltaQ::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask) {
                 DeltaQMinRangef minRangef;
 
                 mMinRanges[ibone].UnQuantize(minRangef);
-                ceilDelta->UnQuantize(minRangef, deltaf);
+                deltaf.x = minRangef.mMin.x + minRangef.mRange.x * ceilDelta->mX;
+                deltaf.y = minRangef.mMin.y + minRangef.mRange.y * ceilDelta->mY;
+                deltaf.z = minRangef.mMin.z + minRangef.mRange.z * ceilDelta->mZ;
                 ceilq.x = mPrevQs[ibone].x + deltaf.x;
                 ceilq.y = mPrevQs[ibone].y + deltaf.y;
                 ceilq.z = mPrevQs[ibone].z + deltaf.z;
@@ -348,7 +356,9 @@ bool FnDeltaQ::EvalSQTMasked(float currTime, const BoneMask *boneMask, float *sq
         (floorKey < mPrevKey && !IsReverseDeltaSumEnabled())) {
         for (int ibone = 0; ibone < deltaQ->mNumBones; ibone++) {
             if (boneMask->GetBone(boneIdxs[ibone])) {
-                floorPhys[ibone].UnQuantize(mPrevQs[ibone]);
+                mPrevQs[ibone].x = floorPhys[ibone].mX * 6.1037019e-5f - 1.0f;
+                mPrevQs[ibone].y = floorPhys[ibone].mY * 3.0518044e-5f - 1.0f;
+                mPrevQs[ibone].z = floorPhys[ibone].mZ * 3.0518044e-5f - 1.0f;
             }
         }
         prevDeltaIdx = 0;
@@ -366,7 +376,9 @@ bool FnDeltaQ::EvalSQTMasked(float currTime, const BoneMask *boneMask, float *sq
                     DeltaQMinRangef minRangef;
 
                     mMinRanges[ibone].UnQuantize(minRangef);
-                    floorDelta->UnQuantize(minRangef, deltaf);
+                    deltaf.x = minRangef.mMin.x + minRangef.mRange.x * floorDelta->mX;
+                    deltaf.y = minRangef.mMin.y + minRangef.mRange.y * floorDelta->mY;
+                    deltaf.z = minRangef.mMin.z + minRangef.mRange.z * floorDelta->mZ;
                     mPrevQs[ibone].x += deltaf.x;
                     mPrevQs[ibone].y += deltaf.y;
                     mPrevQs[ibone].z += deltaf.z;
@@ -384,7 +396,9 @@ bool FnDeltaQ::EvalSQTMasked(float currTime, const BoneMask *boneMask, float *sq
                     DeltaQMinRangef minRangef;
 
                     mMinRanges[ibone].UnQuantize(minRangef);
-                    floorDelta->UnQuantize(minRangef, deltaf);
+                    deltaf.x = minRangef.mMin.x + minRangef.mRange.x * floorDelta->mX;
+                    deltaf.y = minRangef.mMin.y + minRangef.mRange.y * floorDelta->mY;
+                    deltaf.z = minRangef.mMin.z + minRangef.mRange.z * floorDelta->mZ;
                     mPrevQs[ibone].x -= deltaf.x;
                     mPrevQs[ibone].y -= deltaf.y;
                     mPrevQs[ibone].z -= deltaf.z;
@@ -484,7 +498,9 @@ bool FnDeltaQ::EvalSQTMasked(float currTime, const BoneMask *boneMask, float *sq
                     DeltaQMinRangef minRangef;
 
                     mMinRanges[ibone].UnQuantize(minRangef);
-                    ceilDelta->UnQuantize(minRangef, deltaf);
+                    deltaf.x = minRangef.mMin.x + minRangef.mRange.x * ceilDelta->mX;
+                    deltaf.y = minRangef.mMin.y + minRangef.mRange.y * ceilDelta->mY;
+                    deltaf.z = minRangef.mMin.z + minRangef.mRange.z * ceilDelta->mZ;
                     ceilq.x = mPrevQs[ibone].x + deltaf.x;
                     ceilq.y = mPrevQs[ibone].y + deltaf.y;
                     ceilq.z = mPrevQs[ibone].z + deltaf.z;
