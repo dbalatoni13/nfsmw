@@ -50,21 +50,18 @@ void FnRawStateChan::Decode(unsigned char *src, unsigned char *dest) const {
 
     for (int i = 0; i < rawStateChan->GetNumFields(); i++) {
         unsigned short decodeData = rawStateChan->GetDecodeData()[i];
-        unsigned char decodeInfo[3];
-        decodeInfo[0] = static_cast<unsigned char>(decodeData >> 13);
-        decodeInfo[1] = static_cast<unsigned char>(((decodeData >> 11) & 3) + 1);
-        decodeInfo[2] = static_cast<unsigned char>(decodeData);
+        char decodeInfo[3];
+        decodeInfo[0] = static_cast<char>(decodeData >> 13);
+        decodeInfo[1] = static_cast<char>(((decodeData >> 11) & 3) + 1);
+        decodeInfo[2] = static_cast<char>(decodeData);
 
         if (decodeInfo[0] == 2) {
             goto Decode4Bits;
-        }
-        if (decodeInfo[0] > 2) {
+        } else if (decodeInfo[0] > 2) {
             goto DecodeWide;
-        }
-        if (decodeInfo[0] == 0) {
+        } else if (decodeInfo[0] == 0) {
             goto Decode1Bit;
-        }
-        if (decodeInfo[0] == 1) {
+        } else if (decodeInfo[0] == 1) {
             goto Decode2Bits;
         }
         goto DecodeDone;
@@ -116,11 +113,9 @@ void FnRawStateChan::Decode(unsigned char *src, unsigned char *dest) const {
 
         if (decodeInfo[1] == 2) {
             goto Store2Bytes;
-        }
-        if (decodeInfo[1] > 2) {
+        } else if (decodeInfo[1] > 2) {
             goto StoreWide;
-        }
-        if (decodeInfo[1] == 1) {
+        } else if (decodeInfo[1] == 1) {
             goto Store1Byte;
         }
         goto StoreDone;
@@ -129,15 +124,16 @@ void FnRawStateChan::Decode(unsigned char *src, unsigned char *dest) const {
         if (decodeInfo[1] != 4) {
             goto StoreDone;
         }
-        *reinterpret_cast<unsigned int *>(&dest[decodeInfo[2]]) = value;
+        *reinterpret_cast<unsigned int *>(&dest[static_cast<unsigned char>(decodeInfo[2])]) = value;
         goto StoreDone;
 
     Store2Bytes:
-        *reinterpret_cast<unsigned short *>(&dest[decodeInfo[2]]) = static_cast<unsigned short>(value);
+        *reinterpret_cast<unsigned short *>(&dest[static_cast<unsigned char>(decodeInfo[2])]) =
+            static_cast<unsigned short>(value);
         goto StoreDone;
 
     Store1Byte:
-        dest[decodeInfo[2]] = static_cast<unsigned char>(value);
+        dest[static_cast<unsigned char>(decodeInfo[2])] = static_cast<unsigned char>(value);
 
     StoreDone:
         ;
