@@ -999,7 +999,6 @@ void CarRenderConn::UpdateTires(float dT, float carspeed, const RenderConn::Pkt_
 
     if (this->TestVisibility(renderModifier * 30.0f)) {
         const float &hop_scale = this->GetAttributes().WheelHopScale(0);
-
         flatten_tires = true;
         if (0.0f < data.mExtraBodyPitch && 0.0f < hop_scale) {
             float pitch_scale = hop_scale * hop_scale;
@@ -1478,10 +1477,8 @@ void CarRenderConn::OnRender(eView *view, int reflection) {
         AddXenonEffect(0, xenon_effect, this->GetBodyMatrix(), reinterpret_cast<const bVector4 *>(this->GetVelocity()));
     }
 
-    if (view->GetID() == 3) {
-        if (camera_mover != 0) {
-            RVManchor = camera_mover->GetAnchor();
-        }
+    if (view->GetID() == 3 && camera_mover != 0) {
+        RVManchor = camera_mover->GetAnchor();
 
         if (RVManchor != 0 && RVManchor->GetWorldID() == this->GetWorldID()) {
             return;
