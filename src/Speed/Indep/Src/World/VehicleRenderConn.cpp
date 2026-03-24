@@ -464,35 +464,32 @@ void VehicleRenderConn::RenderAll(eView *view, int reflection) {
 }
 
 void VehicleRenderConn::RenderFlares(eView *view, int reflection, int renderFlareFlags) {
-    UTL::Collections::Listable<VehicleRenderConn, 10>::List::const_iterator it = VehicleRenderConn::GetList().begin();
-    UTL::Collections::Listable<VehicleRenderConn, 10>::List::const_iterator end = VehicleRenderConn::GetList().end();
+    for (VehicleRenderConn *const *iter = VehicleRenderConn::GetList().begin(); iter != VehicleRenderConn::GetList().end(); ++iter) {
+        VehicleRenderConn *conn = *iter;
+        CarRenderInfo *car_render_info = conn->GetRenderInfo();
 
-    for (; it != end; ++it) {
-        VehicleRenderConn *vehicle_render_conn = *it;
-        CarRenderInfo *car_render_info = vehicle_render_conn->GetRenderInfo();
-
-        if (vehicle_render_conn->CanRender() && car_render_info != 0) {
-            bMatrix4 matrix;
-            bVector3 position;
+        if (conn->CanRender() && car_render_info != 0) {
+            bMatrix4 render_matrix;
+            bVector3 offset2;
             CameraMover *mover = view->GetCameraMover();
 
-            vehicle_render_conn->GetRenderMatrix(&matrix);
-            position.x = matrix.v3.x;
-            position.y = matrix.v3.y;
-            position.z = matrix.v3.z;
+            conn->GetRenderMatrix(&render_matrix);
+            offset2.x = render_matrix.v3.x;
+            offset2.y = render_matrix.v3.y;
+            offset2.z = render_matrix.v3.z;
 
             if (mover != 0 && !mover->RenderCarPOV()) {
                 CameraAnchor *anchor = mover->GetAnchor();
 
-                if (anchor != 0 && anchor->GetWorldID() == vehicle_render_conn->GetWorldID()) {
+                if (anchor != 0 && anchor->GetWorldID() == conn->GetWorldID()) {
                     continue;
                 }
             }
 
-            car_render_info->RenderFlaresOnCar(view, &position, &matrix, 0, reflection, renderFlareFlags);
+            car_render_info->RenderFlaresOnCar(view, &offset2, &render_matrix, 0, reflection, renderFlareFlags);
 
             if (reflection == 0) {
-                CarRenderInfo *info = vehicle_render_conn->GetRenderInfo();
+                CarRenderInfo *info = conn->GetRenderInfo();
 
                 if (view->GetID() == 1 || view->GetID() == 2) {
                     if (info->matrixIndex < 0) {
@@ -502,14 +499,14 @@ void VehicleRenderConn::RenderFlares(eView *view, int reflection, int renderFlar
                     if (info->matrixIndex > 2) {
                         info->matrixIndex = 0;
                     }
-                    bCopy(&info->LastFewMatrices[info->matrixIndex], &matrix);
-                    info->LastFewPositions[info->matrixIndex] = position;
+                    bCopy(&info->LastFewMatrices[info->matrixIndex], &render_matrix);
+                    info->LastFewPositions[info->matrixIndex] = offset2;
                 }
 
                 {
-                    float speed = bLength(vehicle_render_conn->GetVelocity());
+                    float NOSamount = bLength(conn->GetVelocity());
 
-                    if (0.1f < speed && info->NOSstate != 0) {
+                    if (0.1f < NOSamount && info->NOSstate != 0) {
                         for (int streak = 3; streak > 1; --streak) {
                             int history_index = info->matrixIndex + streak;
                             int next_index = (history_index + 1) % 3;
