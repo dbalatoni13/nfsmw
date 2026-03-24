@@ -155,8 +155,8 @@ int HeliSheetManager::Loader(bChunk *chunk) {
     unsigned int *tail = reinterpret_cast<unsigned int *>(this->HeliSectionList.HeadNode.Prev);
     *tail = reinterpret_cast<unsigned int>(heli_section);
     this->HeliSectionList.HeadNode.Prev = reinterpret_cast<bNode *>(heli_section);
-    heli_section[0] = reinterpret_cast<int>(this);
     heli_section[1] = reinterpret_cast<int>(tail);
+    heli_section[0] = reinterpret_cast<int>(this);
     return 1;
 }
 
