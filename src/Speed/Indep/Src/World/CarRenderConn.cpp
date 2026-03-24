@@ -1520,10 +1520,10 @@ void CarRenderConn::OnRender(eView *view, int reflection) {
                 const bMatrix4 *world_matrix = this->GetBodyMatrix();
 
                 if (world_matrix != 0) {
-                    bVector4 offset = this->mModelOffset;
                     bVector4 translated_offset;
 
                     PSMTX44Copy(*reinterpret_cast<const Mtx44 *>(world_matrix), *reinterpret_cast<Mtx44 *>(&body_matrix));
+                    bVector4 offset = this->mModelOffset;
                     eMulVector(&translated_offset, &body_matrix, &offset);
                     body_matrix.v3.x -= translated_offset.x;
                     body_matrix.v3.y -= translated_offset.y;
