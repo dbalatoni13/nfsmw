@@ -3366,7 +3366,6 @@ void CarRenderInfo::convex_hull(bVector3 *p, const WCollider *wcoll, int &n, flo
     n = ch2d(P, n);
     if (wcoll != nullptr) {
         bVector3 *vec;
-        float fastZ = lbl_8040AD74;
 
         this->mWorldPos.SetTolerance(lbl_8040AD70);
         if (fast != 0) {
@@ -3400,6 +3399,8 @@ void CarRenderInfo::convex_hull(bVector3 *p, const WCollider *wcoll, int &n, flo
                 bPointValid = zBias > dot;
             }
         } else {
+            float fastZ = lbl_8040AD74;
+
             vec = hullVertArray2;
             vec->x = P[0]->x;
             vec->y = P[0]->y;
