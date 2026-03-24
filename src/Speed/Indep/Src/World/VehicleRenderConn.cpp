@@ -56,8 +56,8 @@ int SkinSlotToMask(int slot) {
 
 VehicleRenderConn::Effect::Effect(const bMatrix4 *matrix) {
     PSMTX44Copy(*reinterpret_cast<const Mtx44 *>(matrix), *reinterpret_cast<Mtx44 *>(&this->mLocalMatrix));
-    this->mKey = 0;
     this->mEmitterGroup = 0;
+    this->mKey = 0;
 }
 
 VehicleRenderConn::Effect::~Effect() {
