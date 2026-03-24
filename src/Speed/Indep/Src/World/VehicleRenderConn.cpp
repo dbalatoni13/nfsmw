@@ -385,8 +385,8 @@ void VehicleRenderConn::Unload() {
 
 void VehicleRenderConn::Update(float) {
     if (this->CanUpdate()) {
-        *reinterpret_cast<int *>(&this->mHide) = 0;
         this->mState = S_Updated;
+        *reinterpret_cast<int *>(&this->mHide) = 0;
     }
 }
 
