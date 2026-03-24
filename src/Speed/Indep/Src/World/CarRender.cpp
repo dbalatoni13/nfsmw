@@ -2450,8 +2450,11 @@ void CarRenderInfo::CreateCarLightFlares() {
 
                     light_flare->NameHash = name_hash;
                     light_flare->Type = static_cast<char>(flare_type);
-                    light_flare->Flags =
-                        static_cast<char>(((flare_type - 5U < 3) || flare_type == 10 || flare_type == 11 || flare_type == 12) ? 2 : 4);
+                    if ((flare_type - 5U < 3) || flare_type == 10 || flare_type == 11 || flare_type == 12) {
+                        light_flare->Flags = 2;
+                    } else {
+                        light_flare->Flags = 4;
+                    }
                     light_flare->PositionX = position_marker->Matrix.v3.x;
                     light_flare->PositionY = position_marker->Matrix.v3.y;
                     light_flare->PositionZ = position_marker->Matrix.v3.z;
