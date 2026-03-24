@@ -708,6 +708,7 @@ CarRenderInfo::CarRenderInfo(RideInfo *ride_info)
     : mDamageBehaviour(nullptr), //
       mWCollider(nullptr), //
       mWorldPos(0.025f), //
+      mEmitterPositionsInitialized(false), //
       mAttributes(0xeec2271a, 0, nullptr)
 {
     CarRenderRideInfoLayout *ride_layout = reinterpret_cast<CarRenderRideInfoLayout *>(ride_info);
@@ -724,7 +725,6 @@ CarRenderInfo::CarRenderInfo(RideInfo *ride_info)
     this->mMirrorLeftWheels = static_cast<unsigned char>(this->mAttributes.WheelSpokeCount()) >> 7;
     this->mFlashing = false;
     this->mFlashInterval = 0.0f;
-    this->mEmitterPositionsInitialized = false;
     bMemSet(&this->mDamageInfoCache, 0, 0x14);
 
     this->AnimTime = 0.0f;
