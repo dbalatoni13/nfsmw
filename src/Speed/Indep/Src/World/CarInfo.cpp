@@ -12,6 +12,7 @@ static inline int CarLoader_GetMemoryPoolSize(CarLoader *car_loader) {
 }
 
 struct CarPartAttribute;
+struct CarPartModelTable;
 
 struct CarPart {
     CarPartAttribute *GetAttribute(unsigned int namehash, CarPartAttribute *prev_attribute);
@@ -29,6 +30,10 @@ struct CarPart {
     unsigned int GetBrandNameHash();
     unsigned int GetPartNameHash();
 };
+
+inline unsigned int CarPart::GetBrandNameHash() {
+    return GetAppliedAttributeUParam(0xEBB03E66, 0);
+}
 
 struct CarPartPackListCtor {
     CarPartPackListCtor *Next;
@@ -65,13 +70,6 @@ struct CarPartAttributeLayout {
         int iParam;
         unsigned int uParam;
     } Params;
-};
-
-struct CarPartModelTableLayout {
-    char TemplatedNameHashes;
-    char pad;
-    unsigned short MiddleStringOffset;
-    const char *ModelNames[1][5];
 };
 
 struct CarPartIndexCtor {
@@ -154,7 +152,7 @@ void bMemCpy(void *dest, const void *src, unsigned int numbytes);
 unsigned int *GetTypesFromSlot(CAR_SLOT_ID slot, CarType car_type);
 unsigned char MapCarTypeNameHashToIndex(unsigned int car_type_namehash);
 void *ScanHashTableKey8(unsigned char key_value, void *table_start, int table_length, int entry_key_offset, int entry_size);
-unsigned int CarPartModelTable_GetModelNameHash(CarPartModelTableLayout *model_table, unsigned int base_namehash, int model_num, int lod)
+unsigned int CarPartModelTable_GetModelNameHash(CarPartModelTable *model_table, unsigned int base_namehash, int model_num, int lod)
     asm("GetModelNameHash__17CarPartModelTableUiii");
 CAR_PART_ID GetCarPartFromSlot(CAR_SLOT_ID slot);
 CarPart *FindPartWithLevel(CarType type, CAR_SLOT_ID slot, int upg_level);
@@ -339,22 +337,22 @@ unsigned char MapCarTypeNameHashToIndex(unsigned int namehash) {
 }
 
 unsigned int CarPart::GetModelNameHash(int model_num, int lod) {
-    unsigned short model_table_index = *reinterpret_cast<unsigned short *>(reinterpret_cast<unsigned char *>(this) + 0xC);
-    unsigned int base_namehash;
-
-    if (model_table_index == 0xFFFF) {
+    if (*reinterpret_cast<unsigned short *>(reinterpret_cast<unsigned char *>(this) + 0xC) == 0xFFFF) {
         return 0;
     }
 
-    CarPartModelTableLayout *model_table = reinterpret_cast<CarPartModelTableLayout *>(MasterCarPartPackLayout->ModelTable) + model_table_index;
-    char group = *reinterpret_cast<char *>(reinterpret_cast<unsigned char *>(this) + 6);
+    CarPartModelTable *model_table =
+        reinterpret_cast<CarPartModelTable *>(
+            reinterpret_cast<char *>(MasterCarPartPackLayout->ModelTable)
+            + *reinterpret_cast<unsigned short *>(reinterpret_cast<unsigned char *>(this) + 0xC) * 0x18);
+    unsigned int base_namehash;
 
-    if (group == 0) {
+    if (*reinterpret_cast<char *>(reinterpret_cast<unsigned char *>(this) + 6) == 0) {
         base_namehash = 0xFFFFFFFF;
-    } else if (group == 1) {
+    } else if (*reinterpret_cast<char *>(reinterpret_cast<unsigned char *>(this) + 6) == 1) {
         base_namehash = GetCarTypeNameHash();
     } else {
-        base_namehash = GetAppliedAttributeUParam(0xEBB03E66, 0);
+        base_namehash = GetBrandNameHash();
     }
 
     return CarPartModelTable_GetModelNameHash(model_table, base_namehash, model_num, lod);
