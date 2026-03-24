@@ -1312,7 +1312,7 @@ void GetUsedCarTextureInfo(UsedCarTextureInfo *used_texture_info, RideInfo *ride
         num_perm_textures += UsedCarTextureAddToTable(reinterpret_cast<unsigned int *>(info), num_perm_textures, max_perm_textures, bStringHash("AUDIO_SKIN"));
     }
 
-    bSPrintf(buffer, "%s_SHADOW%s", car_base_name, front_end_only == 0 ? "IG" : "FE");
+    bSPrintf(buffer, "%s_SHADOW%s", car_base_name, front_end_only != 0 ? "FE" : "IG");
     info->ShadowHash = bStringHash(buffer);
     num_perm_textures += UsedCarTextureAddToTable(reinterpret_cast<unsigned int *>(info), num_perm_textures, max_perm_textures, info->ShadowHash);
 
