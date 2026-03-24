@@ -1132,34 +1132,34 @@ void GetUsedCarTextureInfo(UsedCarTextureInfo *used_texture_info, RideInfo *ride
     info->MappedGlobalHash = bStringHash("GLOBAL_SKIN1");
     wheel_part = ride_info->GetPart(0x42);
 
-    if (wheel_part == 0) {
-        info->MappedSpinnerHash = 0;
-        info->MappedWheelHash = 0;
-    } else {
+    if (wheel_part != 0) {
         info->MappedWheelHash = bStringHash("_WHEEL", wheel_part->GetAppliedAttributeUParam(0x10C98090, 0));
         composite_spinner_hash = wheel_part->GetAppliedAttributeUParam(bStringHash("SPINNER_TEXTURE"), 0);
-        if (composite_spinner_hash == 0) {
-            info->MappedSpinnerHash = 0;
-        } else {
+        if (composite_spinner_hash != 0) {
             info->MappedSpinnerHash = composite_spinner_hash;
+        } else {
+            info->MappedSpinnerHash = 0;
         }
+    } else {
+        info->MappedSpinnerHash = 0;
+        info->MappedWheelHash = 0;
     }
 
     info->MappedSpoilerHash = bStringHash("SPOILER_SKIN1");
     info->MappedRoofScoopHash = bStringHash("ROOF_SKIN");
 
-    if (ride_info->IsUsingCompositeSkin() == 0) {
-        info->ReplaceWheelHash = 0;
-        info->ReplaceSpoilerHash = info->MappedSkinHash;
-        info->ReplaceSkinHash = info->MappedSkinHash;
-        info->ReplaceRoofScoopHash = info->MappedSkinHash;
-        info->ReplaceSpinnerHash = 0;
-    } else {
+    if (ride_info->IsUsingCompositeSkin() != 0) {
         info->ReplaceSkinHash = ride_info->GetSkinNameHash();
         info->ReplaceWheelHash = ride_info->GetCompositeWheelNameHash();
         info->ReplaceSpinnerHash = ride_info->GetCompositeSpinnerNameHash();
         info->ReplaceSpoilerHash = ride_info->GetSkinNameHash();
         info->ReplaceRoofScoopHash = ride_info->GetSkinNameHash();
+    } else {
+        info->ReplaceSpinnerHash = 0;
+        info->ReplaceRoofScoopHash = info->MappedSkinHash;
+        info->ReplaceSkinHash = info->MappedSkinHash;
+        info->ReplaceSpoilerHash = info->MappedSkinHash;
+        info->ReplaceWheelHash = 0;
     }
 
     info->ReplaceSkinBHash = 0;
@@ -1214,18 +1214,12 @@ void GetUsedCarTextureInfo(UsedCarTextureInfo *used_texture_info, RideInfo *ride
     bSPrintf(buffer, "%s_KIT00_BRAKELIGHT", car_base_name);
     base_brakelight_hash = bStringHash(buffer);
 
-    if (carpart_headlight != 0) {
-        composite_skin_hash = carpart_headlight->GetAppliedAttributeUParam(0x10C98090, 0);
-        if (composite_skin_hash != 0) {
-            base_headlight_hash = composite_skin_hash;
-        }
+    if (carpart_headlight != 0 && carpart_headlight->GetAppliedAttributeUParam(0x10C98090, 0) != 0) {
+        base_headlight_hash = carpart_headlight->GetAppliedAttributeUParam(0x10C98090, 0);
     }
 
-    if (carpart_brakelight != 0) {
-        composite_skin_hash = carpart_brakelight->GetAppliedAttributeUParam(0x10C98090, 0);
-        if (composite_skin_hash != 0) {
-            base_brakelight_hash = composite_skin_hash;
-        }
+    if (carpart_brakelight != 0 && carpart_brakelight->GetAppliedAttributeUParam(0x10C98090, 0) != 0) {
+        base_brakelight_hash = carpart_brakelight->GetAppliedAttributeUParam(0x10C98090, 0);
     }
 
     info->MappedLightHash[0] = bStringHash("HEADLIGHT_LEFT");
