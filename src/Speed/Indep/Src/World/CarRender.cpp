@@ -3400,9 +3400,7 @@ void CarRenderInfo::DrawKeithProjShadow(eView *view, const bVector3 *position, b
         if (TheGameFlowManager.GetState() == GAMEFLOW_STATE_RACING) {
             bVector3 worldPosition;
 
-            worldPosition.x = position->x;
-            worldPosition.y = -position->y;
-            worldPosition.z = position->z;
+            eUnSwizzleWorldVector(*position, worldPosition);
             this->mWorldPos.FindClosestFace(this->mWCollider, reinterpret_cast<const UMath::Vector3 &>(worldPosition), false);
             if (this->mWorldPos.OnValidFace()) {
                 shadowZ = this->mWorldPos.HeightAtPoint(reinterpret_cast<const UMath::Vector3 &>(worldPosition));
@@ -3413,6 +3411,7 @@ void CarRenderInfo::DrawKeithProjShadow(eView *view, const bVector3 *position, b
         scale.x = lbl_8040AD98;
         scale.y = lbl_8040AD9C;
         scale.z = lbl_8040ADA0;
+        float one_over_z = cs_OneOverZ;
         for (i = 0; i < n; i++) {
             bVector3 localPoint;
             bVector3 worldPoint;
@@ -3422,7 +3421,7 @@ void CarRenderInfo::DrawKeithProjShadow(eView *view, const bVector3 *position, b
             localPoint.y = PointCloud[i].y * scale.y;
             localPoint.z = PointCloud[i].z * scale.z;
             eMulVector(&worldPoint, localWorld, &localPoint);
-            scaleToGround = (shadowZ - worldPoint.z) * cs_OneOverZ;
+            scaleToGround = (shadowZ - worldPoint.z) * one_over_z;
             shadowVertices[i].x = scaleToGround * lightV.x + worldPoint.x;
             shadowVertices[i].y = scaleToGround * lightV.y + worldPoint.y;
             shadowVertices[i].z = scaleToGround * lightV.z + worldPoint.z;
