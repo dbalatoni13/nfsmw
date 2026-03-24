@@ -74,12 +74,12 @@ void RawPoseChannel::Eval(float frameTime, float *outputPose, bool interp, const
     } else {
         int lastFrame = mNumFrames - 1;
 
-        if (frame < lastFrame) {
+        if (frame >= lastFrame) {
+            EvalFrame(lastFrame, outputPose, boneMask);
+        } else {
             float t = frameTime - static_cast<float>(frame);
 
-            if (t == 0.0f || !interp) {
-                EvalFrame(frame, outputPose, boneMask);
-            } else {
+            if (t != 0.0f && interp) {
                 int *sig = GetInterpSig();
                 int *sigEnd = sig + mSigSize;
                 float *data0 = GetFrame(frame);
@@ -123,9 +123,9 @@ void RawPoseChannel::Eval(float frameTime, float *outputPose, bool interp, const
                         outputPose += 12;
                     }
                 }
+            } else {
+                EvalFrame(frame, outputPose, boneMask);
             }
-        } else {
-            EvalFrame(lastFrame, outputPose, boneMask);
         }
     }
 }
