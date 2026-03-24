@@ -333,9 +333,9 @@ void FnDeltaQFast::SubDeltaMask(DeltaQFastPhysical *floorPhys, DeltaQFast *delta
     unsigned char *boneIdxs = deltaQ->mBoneIdxs;
 
     for (int iframe = prevDeltaIdx - 1; iframe >= floorDeltaIdx; iframe--) {
-        unsigned char *deltaData = GetQFastDeltaData(deltaQ, binData, iframe);
+        unsigned char *deltaData = GetQFastDeltaData(deltaQ, binData, iframe) + (deltaQ->mNumBones - 1) * 3;
 
-        for (int ibone = 0; ibone < deltaQ->mNumBones; ibone++) {
+        for (int ibone = deltaQ->mNumBones - 1; ibone >= 0; ibone--) {
             if (boneMask->GetBone(boneIdxs[ibone])) {
                 UMath::Vector4 delta;
 
@@ -345,7 +345,7 @@ void FnDeltaQFast::SubDeltaMask(DeltaQFastPhysical *floorPhys, DeltaQFast *delta
                 prevQs[ibone].z -= delta.z;
                 prevQs[ibone].w -= delta.w;
             }
-            deltaData += 3;
+            deltaData -= 3;
         }
     }
 }
