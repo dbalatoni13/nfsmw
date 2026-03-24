@@ -456,7 +456,7 @@ void IVisualTreatment::UpdateHeat(eView *view, float targetHeat, bool isBeingPur
     }
 
     float radialBlur = bMax(nosRadialBlurValue, pursuitBreakerRadialBlur);
-    radialBlur = bMax(radialBlur, uvesRadialBlur);
+    radialBlur = bMax(uvesRadialBlur, radialBlur);
     this->RadialBlur = radialBlur;
 
     if (this->DesaturationTarget >= 0.0f) {
