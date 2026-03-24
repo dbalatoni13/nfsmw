@@ -50,28 +50,29 @@ void FnRawStateChan::Decode(unsigned char *src, unsigned char *dest) const {
 
     for (int i = 0; i < rawStateChan->GetNumFields(); i++) {
         unsigned short decodeData = rawStateChan->GetDecodeData()[i];
-        unsigned char storedNumBitsInPowersOf2 = static_cast<unsigned char>(decodeData >> 13);
-        unsigned char destNumBytes = static_cast<unsigned char>(((decodeData >> 11) & 3) + 1);
-        unsigned char destByteOffset = static_cast<unsigned char>(decodeData);
+        unsigned char decodeInfo[3];
+        decodeInfo[0] = static_cast<unsigned char>(decodeData >> 13);
+        decodeInfo[1] = static_cast<unsigned char>(((decodeData >> 11) & 3) + 1);
+        decodeInfo[2] = static_cast<unsigned char>(decodeData);
 
-        if (storedNumBitsInPowersOf2 == 2) {
+        if (decodeInfo[0] == 2) {
             numBits = (numBits + 4) & 0xFF;
             value = (*src >> ((8 - numBits) & 0x3F)) & 0xF;
-        } else if (storedNumBitsInPowersOf2 > 2) {
-            if (storedNumBitsInPowersOf2 == 4) {
+        } else if (decodeInfo[0] > 2) {
+            if (decodeInfo[0] == 4) {
                 value = *reinterpret_cast<unsigned short *>(src);
                 src += 2;
-            } else if (storedNumBitsInPowersOf2 < 4) {
+            } else if (decodeInfo[0] < 4) {
                 value = *src;
                 src += 1;
-            } else if (storedNumBitsInPowersOf2 == 5) {
+            } else if (decodeInfo[0] == 5) {
                 value = *reinterpret_cast<unsigned int *>(src);
                 src += 4;
             }
-        } else if (storedNumBitsInPowersOf2 == 0) {
+        } else if (decodeInfo[0] == 0) {
             numBits = (numBits + 1) & 0xFF;
             value = (*src >> ((8 - numBits) & 0x3F)) & 1;
-        } else if (storedNumBitsInPowersOf2 == 1) {
+        } else if (decodeInfo[0] == 1) {
             numBits = (numBits + 2) & 0xFF;
             value = (*src >> ((8 - numBits) & 0x3F)) & 3;
         }
@@ -81,14 +82,14 @@ void FnRawStateChan::Decode(unsigned char *src, unsigned char *dest) const {
             numBits = 0;
         }
 
-        if (destNumBytes == 2) {
-            *reinterpret_cast<unsigned short *>(&dest[destByteOffset]) = static_cast<unsigned short>(value);
-        } else if (destNumBytes > 2) {
-            if (destNumBytes == 4) {
-                *reinterpret_cast<unsigned int *>(&dest[destByteOffset]) = value;
+        if (decodeInfo[1] == 2) {
+            *reinterpret_cast<unsigned short *>(&dest[decodeInfo[2]]) = static_cast<unsigned short>(value);
+        } else if (decodeInfo[1] > 2) {
+            if (decodeInfo[1] == 4) {
+                *reinterpret_cast<unsigned int *>(&dest[decodeInfo[2]]) = value;
             }
-        } else if (destNumBytes == 1) {
-            dest[destByteOffset] = static_cast<unsigned char>(value);
+        } else if (decodeInfo[1] == 1) {
+            dest[decodeInfo[2]] = static_cast<unsigned char>(value);
         }
     }
 }
