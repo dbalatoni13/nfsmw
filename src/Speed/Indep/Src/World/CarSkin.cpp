@@ -701,9 +701,7 @@ int CompositeSkin(RideInfo *ride_info) {
                                         for (int j = 0; j < 4; j++) {
                                             CarPart *colour_part = ride_info->GetPart(CARSLOTID_VINYL_COLOUR0_0 + j);
 
-                                            if (colour_part == 0) {
-                                                info->m_RemapColours[j] = 0xFFu << (j << 3);
-                                            } else {
+                                            if (colour_part != 0) {
                                                 unsigned int remap_colour =
                                                     colour_part->GetAppliedAttributeIParam(bStringHash("RED"), 0);
                                                 int remap_green =
@@ -717,6 +715,8 @@ int CompositeSkin(RideInfo *ride_info) {
                                                 remap_colour |= remap_blue << 16;
                                                 remap_colour |= remap_gloss << 24;
                                                 info->m_RemapColours[j] = remap_colour;
+                                            } else {
+                                                info->m_RemapColours[j] = 0xFFu << (j << 3);
                                             }
                                         }
                                     }
