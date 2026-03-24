@@ -770,7 +770,6 @@ CarRenderInfo::CarRenderInfo(RideInfo *ride_info)
     this->LastCarPartChanged = -1;
     this->CarTimebaseStart = bRandom(1.0f);
     this->mDeltaTime = 0.0f;
-    this->mEmitterPositionsInitialized = false;
     CarTypeInfo *car_type_info = &CarTypeInfoArray[this->pRideInfo->Type];
     int is_traffic_car = car_type_info->GetCarUsageType() == CAR_USAGE_TYPE_TRAFFIC;
 
@@ -898,6 +897,7 @@ CarRenderInfo::CarRenderInfo(RideInfo *ride_info)
         }
     }
 
+    this->mEmitterPositionsInitialized = false;
     this->CreateCarLightFlares();
 
     {
