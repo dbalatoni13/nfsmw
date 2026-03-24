@@ -1487,7 +1487,7 @@ void CarRenderConn::OnRender(eView *view, int reflection) {
 
     if (camera_mover != 0 && eIsGameViewID(view->GetID())) {
         float distance = camera_mover->GetDistanceTo(reinterpret_cast<bVector3 *>(&this->mRenderMatrix.v3));
-        this->mDistanceToView = UMath::Min(distance, this->mDistanceToView);
+        this->mDistanceToView = UMath::Min(this->mDistanceToView, distance);
     }
 
     CarRenderInfo *render_info = this->mRenderInfo;
