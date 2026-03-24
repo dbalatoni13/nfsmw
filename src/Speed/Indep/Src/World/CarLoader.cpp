@@ -2239,8 +2239,8 @@ void CarLoader::SetMemoryPoolSize(int size) {
 
             bCloseMemoryPool(CarLoaderMemoryPoolNumber);
             bFree(this->MemoryPoolMem);
-            this->MemoryPoolSize = 0;
             this->MemoryPoolMem = 0;
+            this->MemoryPoolSize = 0;
         }
 
         if (size != 0) {
