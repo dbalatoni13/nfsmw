@@ -521,7 +521,6 @@ int CompositeSkin(SkinCompositeParams *composite_params) {
 
         if (cur_semi_trans_pixel != 0) {
             int max_remap_colours = 0xFF - current_palette_base;
-            SemiTransPixel *pixel_list = semi_trans_pixels;
             int num_pixels = cur_semi_trans_pixel;
             unsigned char *input;
 
@@ -542,7 +541,7 @@ int CompositeSkin(SkinCompositeParams *composite_params) {
 
             if (num_pixels < max_remap_colours) {
                 for (int i = 0; i < num_pixels; i++) {
-                    SemiTransPixel *pixel = &pixel_list[i];
+                    SemiTransPixel *pixel = &semi_trans_pixels[i];
                     unsigned char *dest = &dest_image_data[pixel->x + pixel->y * dest_texture->Width];
 
                     *dest = static_cast<unsigned char>(current_palette_base + i);
@@ -568,7 +567,7 @@ int CompositeSkin(SkinCompositeParams *composite_params) {
                 inxbuild();
 
                 for (int i = 0; i < num_pixels; i++) {
-                    SemiTransPixel *pixel = &pixel_list[i];
+                    SemiTransPixel *pixel = &semi_trans_pixels[i];
                     unsigned char *dest = &dest_image_data[pixel->x + pixel->y * dest_texture->Width];
 
                     if (*dest == 0xFF) {
