@@ -1643,9 +1643,7 @@ void CarRenderInfo::UpdateDecalTextures(RideInfo *ride_info) {
 
     for (int i = REPLACETEX_DECAL_START; i <= REPLACETEX_DECAL_END; i++) {
         this->MasterReplacementTextureTable[i].SetOldNameHash(CarReplacementDecalHash[i - REPLACETEX_DECAL_START]);
-        if (alpha_hash != this->MasterReplacementTextureTable[i].GetNewNameHash()) {
-            this->MasterReplacementTextureTable[i].SetNewNameHash(alpha_hash);
-        }
+        this->MasterReplacementTextureTable[i].SetNewNameHash(alpha_hash);
     }
 
     decal_hashes[0] = bStringHash("DUMMY_DECAL1");
@@ -1659,9 +1657,7 @@ void CarRenderInfo::UpdateDecalTextures(RideInfo *ride_info) {
 
     for (int i = 0; i < 48; i++) {
         this->DecalReplacementTextureTable[i].SetOldNameHash(decal_hashes[i % 8]);
-        if (alpha_hash != this->DecalReplacementTextureTable[i].GetNewNameHash()) {
-            this->DecalReplacementTextureTable[i].SetNewNameHash(alpha_hash);
-        }
+        this->DecalReplacementTextureTable[i].SetNewNameHash(alpha_hash);
     }
 
     hood_decals = 1;
@@ -1708,9 +1704,7 @@ void CarRenderInfo::UpdateDecalTextures(RideInfo *ride_info) {
                     }
 
                     decal_texture_hash = bStringHash(buf, base_hash);
-                    if (decal_texture_hash != replace_table[j].GetNewNameHash()) {
-                        replace_table[j].SetNewNameHash(decal_texture_hash);
-                    }
+                    replace_table[j].SetNewNameHash(decal_texture_hash);
                 }
             }
         }
