@@ -768,10 +768,10 @@ CarRenderInfo::CarRenderInfo(RideInfo *ride_info)
     this->LastCarPartChanged = -1;
     this->CarTimebaseStart = bRandom(1.0f);
     this->mDeltaTime = 0.0f;
-    this->pCarTypeInfo = info;
-    this->CarbonHood = 0;
     this->mEmitterPositionsInitialized = false;
     bMemSet(this->mCarPartModels, 0, sizeof(this->mCarPartModels));
+    this->pCarTypeInfo = info;
+    this->CarbonHood = 0;
     GetUsedCarTextureInfo(&this->mUsedTextureInfos, this->pRideInfo, 0);
     {
         CarRenderUsedCarTextureInfoLayout *used_texture_info =
