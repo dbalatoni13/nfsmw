@@ -1270,7 +1270,6 @@ int elCloneLightContext(eDynamicLightContext *light_context, bMatrix4 *local_wor
                         eDynamicLightContext *old_context);
 
 void CarRenderInfo::UpdateCarParts() {
-    RideInfo *ride_info = this->pRideInfo;
     bVector3 bbox_min;
     bVector3 bbox_max;
 
@@ -1291,6 +1290,7 @@ void CarRenderInfo::UpdateCarParts() {
         }
     }
 
+    RideInfo *ride_info = this->pRideInfo;
     for (int slot_id = 0; slot_id < 0x4C; slot_id++) {
         CarPart *car_part = ride_info->GetPart(slot_id);
 
