@@ -1362,8 +1362,10 @@ void CarRenderInfo::UpdateCarParts() {
                 }
 
                 if (slot_id > CARSLOTID_DAMAGE_COP_LIGHTS) {
-                    if (slot_id <= CARSLOTID_DAMAGE_FRONT_BUMPER && slot_id >= CARSLOTID_DAMAGE_HOOD) {
-                        goto expand_bbox;
+                    if (slot_id <= CARSLOTID_DAMAGE_FRONT_BUMPER) {
+                        if (slot_id >= CARSLOTID_DAMAGE_HOOD) {
+                            goto expand_bbox;
+                        }
                     }
                 } else {
                     if (slot_id >= CARSLOTID_DAMAGE_BODY) {
@@ -1376,11 +1378,21 @@ void CarRenderInfo::UpdateCarParts() {
             } else if (slot_id == CARSLOTID_RIGHT_SIDE_MIRROR) {
                 goto expand_bbox;
             } else if (slot_id < CARSLOTID_RIGHT_SIDE_MIRROR) {
-                if (slot_id == CARSLOTID_BODY || slot_id == CARSLOTID_LEFT_SIDE_MIRROR) {
+                if (slot_id == CARSLOTID_BODY) {
                     goto expand_bbox;
                 }
-            } else if (slot_id == CARSLOTID_SPOILER || (slot_id >= CARSLOTID_ROOF && slot_id <= CARSLOTID_HOOD)) {
-                goto expand_bbox;
+                if (slot_id == CARSLOTID_LEFT_SIDE_MIRROR) {
+                    goto expand_bbox;
+                }
+            } else {
+                if (slot_id == CARSLOTID_SPOILER) {
+                    goto expand_bbox;
+                }
+                if (slot_id >= CARSLOTID_ROOF) {
+                    if (slot_id <= CARSLOTID_HOOD) {
+                        goto expand_bbox;
+                    }
+                }
             }
 
             goto skip_expand_bbox;
