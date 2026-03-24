@@ -1348,14 +1348,14 @@ void GetUsedCarTextureInfo(UsedCarTextureInfo *used_texture_info, RideInfo *ride
     shape_hashes[1] = rect_shape_hash;
     shape_hashes[2] = wide_shape_hash;
 
-    for (int i = 0x46; i < 0x4C; i++) {
+    for (int i = 0x46; i <= 0x4B; i++) {
         CarPart *decal_model_part = ride_info->GetPart(i);
 
         if (decal_model_part != 0 && decal_model_part->HasAppliedAttribute(size_hash) != 0 &&
             decal_model_part->HasAppliedAttribute(shape_hash) != 0) {
             unsigned int decal_shape = decal_model_part->GetAppliedAttributeUParam(shape_hash, 0);
 
-            for (int j = 0; j < 8; j++) {
+            for (int j = 0; j <= 7; j++) {
                 CarPart *decal_texture_part = ride_info->GetPart(j + i * 8 - 0x1DD);
 
                 if (decal_texture_part != 0) {
@@ -1376,8 +1376,8 @@ void GetUsedCarTextureInfo(UsedCarTextureInfo *used_texture_info, RideInfo *ride
         }
     }
 
-    info->NumTexturesToLoadTemp = num_temp_textures;
     info->NumTexturesToLoadPerm = num_perm_textures;
+    info->NumTexturesToLoadTemp = num_temp_textures;
 }
 
 int CarPartDatabase::NewGetNumCarParts(CarType car_type, int car_slot_id, unsigned int car_part_namehash, int upgrade_level) {
