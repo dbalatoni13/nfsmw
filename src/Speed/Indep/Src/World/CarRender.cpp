@@ -2290,9 +2290,11 @@ void CarRenderInfo::InitEmitterPositions(bVector4 *tire_positions) {
 
             if (empos != nullptr) {
                 bSListLayout<CarEmitterPosition> &layout = reinterpret_cast<bSListLayout<CarEmitterPosition> &>(markers);
-                reinterpret_cast<bSNodeLayout<CarEmitterPosition> &>(*empos).Next = markers.EndOfList();
-                reinterpret_cast<bSNodeLayout<CarEmitterPosition> &>(*layout.Tail).Next = empos;
+                CarEmitterPosition *tail = layout.Tail;
+
                 layout.Tail = empos;
+                reinterpret_cast<bSNodeLayout<CarEmitterPosition> &>(*tail).Next = empos;
+                reinterpret_cast<bSNodeLayout<CarEmitterPosition> &>(*empos).Next = markers.EndOfList();
             }
         }
 
