@@ -35,27 +35,26 @@ void cPathLine::Initialize(float _Start, float _Finish, int _Length) {
 }
 
 int cPathLine::AddStage(float _Start, float _Finish, int _Length, eCURVETYPE _Curve) {
-    int stage = num_stages;
-    if (stage == 5) {
+    if (num_stages == 5) {
         return -1;
     }
 
-    Length[stage] = static_cast<float>(_Length) * 0.001f;
-    if (Length[stage] <= 0.0f) {
-        Length[stage] = 0.01f;
+    Length[num_stages] = static_cast<float>(_Length) * 0.001f;
+    if (Length[num_stages] <= 0.0f) {
+        Length[num_stages] = 0.01f;
     }
 
-    IsLinked[stage] = false;
-    Finish[stage] = _Finish;
-    Start[stage] = _Start;
-    CurveTypes[stage] = _Curve;
+    IsLinked[num_stages] = 0;
+    Finish[num_stages] = _Finish;
+    Start[num_stages] = _Start;
+    CurveTypes[num_stages] = _Curve;
     *(int *)&bComplete = 0;
 
-    if (stage == 0) {
+    if (num_stages == 0) {
         CurValue = Start[0];
     }
 
-    num_stages = stage + 1;
+    num_stages = num_stages + 1;
     return num_stages;
 }
 

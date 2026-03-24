@@ -1941,21 +1941,18 @@ void EAXSound::CloseSound() {
     bSyncTaskRun();
 }
 
-void EAXSound::ReStartRace(bool bfullrestart) {
+void EAXSound::ReStartRace(bool bIs321) {
     if (!IsSoundEnabled) {
         return;
     }
 
     SetSoundControlState(true, SNDSTATE_STOP_MUSIC, "RestartRace");
 
-    if (m_pStreamManager != nullptr) {
-        for (int n = 0; n < 4; n++) {
-            EAXS_StreamChannel *channel = m_pStreamManager->GetStreamChannel(n);
-            if (channel != nullptr) {
-                channel->Stop();
-                channel->PurgeStream();
-                channel->Resume();
-            }
+    for (int n = 0; n < 4; n++) {
+        if (m_pStreamManager->GetStreamChannel(n) != nullptr) {
+            m_pStreamManager->GetStreamChannel(n)->Stop();
+            m_pStreamManager->GetStreamChannel(n)->PurgeStream();
+            m_pStreamManager->GetStreamChannel(n)->Resume();
         }
     }
 
@@ -1964,18 +1961,16 @@ void EAXSound::ReStartRace(bool bfullrestart) {
         m_pCmnSnd = nullptr;
     }
 
-    for (int i = 0; i < 13; i++) {
-        if (i == 1) {
-            if (m_pStateMgr[1] != nullptr) {
-                m_pStateMgr[1]->DisconnectMixMap();
-            }
-        } else if (m_pStateMgr[i] != nullptr) {
-            m_pStateMgr[i]->ExitWorld();
+    for (int s = 0; s < 13; s++) {
+        if (s == 1) {
+            m_pStateMgr[1]->DisconnectMixMap();
+        } else if (m_pStateMgr[s] != nullptr) {
+            m_pStateMgr[s]->ExitWorld();
         }
     }
 
     gb_DORESTART_RACE = 1;
-    gb_Is321 = bfullrestart ? 1 : 0;
+    gb_Is321 = bIs321;
 }
 
 void InitializeSoundDriver() {

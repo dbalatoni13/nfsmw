@@ -927,52 +927,46 @@ void *EAXAemsManager::ResidentAllocCB(void *pbank, int residentsize, int totalsi
 
 void EAXAemsManager::DataLoadCB(int param, int error_status) {
     (void)error_status;
-    unsigned int ticker = bGetTicker();
-    char *mgr = static_cast<char *>(static_cast<void *>(&gAEMSMgr));
-    int worldTime = *static_cast<int *>(static_cast<void *>(&WorldTimer));
-    StartBankLoadTicks = ticker;
-    *static_cast<stSndDataLoadParams **>(static_cast<void *>(mgr + 0x118)) = reinterpret_cast<stSndDataLoadParams *>(param);
-    char *currentLoad = static_cast<char *>(
-        static_cast<void *>(*static_cast<stSndDataLoadParams **>(static_cast<void *>(mgr + 0x118))));
-    *static_cast<int *>(static_cast<void *>(currentLoad + 0x64)) = worldTime;
-    int eDataType = *static_cast<int *>(static_cast<void *>(currentLoad + 0x0));
+    int Result;
+    int nhandle;
+    StartBankLoadTicks = bGetTicker();
+    gAEMSMgr.m_pCurLoadSDLP = reinterpret_cast<stSndDataLoadParams *>(param);
+    gAEMSMgr.m_pCurLoadSDLP->t_load = WorldTimer;
+    eSNDDATATYPE eDataType = gAEMSMgr.m_pCurLoadSDLP->AssetDescription.eDataType;
 
-    if (eDataType == EAXSND_DT_AEMS_ASYNCSPU) {
-        goto LoadDone;
-    }
+    if (eDataType != EAXSND_DT_AEMS_ASYNCSPU) {
+        if (eDataType <= EAXSND_DT_AEMS_SYNCSPU) {
+            if (eDataType >= EAXSND_DT_AEMS_AUDIOMEM) {
+                AddAemsBank();
+                gAEMSMgr.ResolveCurrentDataMemory();
+                *reinterpret_cast<int *>(&gAEMSMgr.m_pCurLoadSDLP->bResolvedAsync) = 1;
+                *reinterpret_cast<int *>(&gAEMSMgr.m_pCurLoadSDLP->bResolvedSync) = 1;
+            }
+        } else if (eDataType == EAXSND_DT_AEMS_ASYNCSPUMEM) {
+            *reinterpret_cast<int *>(&gAEMSMgr.m_IsWaitingForFileCB) = 0;
+            if (*reinterpret_cast<int *>(&gAEMSMgr.m_bBulkLoad) != 0) {
+                gAEMSMgr.m_pCurLoadSDLP = nullptr;
+                gAEMSMgr.m_ItemsPendingAsyncResolve++;
+                goto LoadDone;
+            }
 
-    if (eDataType <= EAXSND_DT_AEMS_SYNCSPU) {
-        if (eDataType >= EAXSND_DT_AEMS_AUDIOMEM) {
-            AddAemsBank();
-            gAEMSMgr.ResolveCurrentDataMemory();
-            *static_cast<unsigned int *>(static_cast<void *>(currentLoad + 0x38)) = 1;
-            *static_cast<unsigned int *>(static_cast<void *>(currentLoad + 0x3C)) = 1;
+            stBankSlot *pBankSlot = gAEMSMgr.m_pCurLoadSDLP->mBankSlot;
+            if (pBankSlot != nullptr) {
+                SNDmemlimits(pBankSlot->BANKmemLocation, pBankSlot->BANKmemLocation + pBankSlot->BANKMemSize);
+            } else {
+                SNDmemlimits(-1, gAEMSMgr.m_SPUMainAllocsEnd);
+            }
+
+            gAEMSMgr.m_pCurLoadSDLP->Handle = SNDAEMS_asyncloadmodulebankmem(
+                gAEMSMgr.m_pCurLoadSDLP->pmem, nullptr, 0, AsyncResidentAllocCB);
+        } else if (eDataType == EAXSND_DT_GENERIC_DATA) {
+            *reinterpret_cast<int *>(&gAEMSMgr.m_pCurLoadSDLP->bResolvedAsync) = 1;
+            *reinterpret_cast<int *>(&gAEMSMgr.m_pCurLoadSDLP->bResolvedSync) = 1;
         }
-    } else if (eDataType == EAXSND_DT_AEMS_ASYNCSPUMEM) {
-        *static_cast<unsigned int *>(static_cast<void *>(mgr + 0x12C)) = 0;
-        if (*static_cast<int *>(static_cast<void *>(mgr + 0x128)) != 0) {
-            *static_cast<stSndDataLoadParams **>(static_cast<void *>(mgr + 0x118)) = nullptr;
-            (*static_cast<int *>(static_cast<void *>(mgr + 0x124)))++;
-            goto LoadDone;
-        }
-
-        stBankSlot *pBankSlot = *static_cast<stBankSlot **>(static_cast<void *>(currentLoad + 0x24));
-        if (pBankSlot == nullptr) {
-            SNDmemlimits(-1, gAEMSMgr.m_SPUMainAllocsEnd);
-        } else {
-            SNDmemlimits(pBankSlot->BANKmemLocation, pBankSlot->BANKmemLocation + pBankSlot->BANKMemSize);
-        }
-
-        *static_cast<int *>(static_cast<void *>(currentLoad + 0x34)) =
-            SNDAEMS_asyncloadmodulebankmem(*static_cast<void **>(static_cast<void *>(currentLoad + 0x28)), nullptr, 0,
-                                           AsyncResidentAllocCB);
-    } else if (eDataType == EAXSND_DT_GENERIC_DATA) {
-        *static_cast<unsigned int *>(static_cast<void *>(currentLoad + 0x38)) = 1;
-        *static_cast<unsigned int *>(static_cast<void *>(currentLoad + 0x3C)) = 1;
     }
 
 LoadDone:
-    *static_cast<unsigned int *>(static_cast<void *>(mgr + 0x12C)) = 0;
+    *reinterpret_cast<int *>(&gAEMSMgr.m_IsWaitingForFileCB) = 0;
 }
 
 int EAXAemsManager::AddBankListing(stAssetDescription &asset) {
