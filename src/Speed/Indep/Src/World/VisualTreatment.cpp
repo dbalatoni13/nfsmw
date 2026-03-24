@@ -405,18 +405,16 @@ void IVisualTreatment::UpdateHeat(eView *view, float targetHeat, bool isBeingPur
     if (pursuitBreaker->StartWorldTime != 0.0f) {
         float elapsed = WorldTimeSeconds - pursuitBreaker->StartWorldTime;
         float length = pursuitBreaker->GetAttrib()->length();
-        if (elapsed <= length) {
-            if (elapsed >= 0.0f) {
-                float normalized = elapsed / length;
-                if (pursuitBreaker->Current > pursuitBreaker->Target) {
-                    normalized = 1.0f - normalized;
-                }
-                pursuitBreaker->Current =
-                    GetValueFromSpline(normalized, reinterpret_cast<bMatrix4 *>(&const_cast<UMath::Matrix4 &>(pursuitBreaker->GetAttrib()->graph())));
-            }
-        } else {
+        if (elapsed > length) {
             pursuitBreaker->StartWorldTime = 0.0f;
             pursuitBreaker->Current = pursuitBreaker->Target;
+        } else if (elapsed >= 0.0f) {
+            float normalized = elapsed / length;
+            if (pursuitBreaker->Current > pursuitBreaker->Target) {
+                normalized = 1.0f - normalized;
+            }
+            pursuitBreaker->Current =
+                GetValueFromSpline(normalized, reinterpret_cast<bMatrix4 *>(&const_cast<UMath::Matrix4 &>(pursuitBreaker->GetAttrib()->graph())));
         }
     }
 
@@ -425,18 +423,16 @@ void IVisualTreatment::UpdateHeat(eView *view, float targetHeat, bool isBeingPur
     if (nosRadialBlur->StartWorldTime != 0.0f) {
         float elapsed = WorldTimeSeconds - nosRadialBlur->StartWorldTime;
         float length = nosRadialBlur->GetAttrib()->length();
-        if (elapsed <= length) {
-            if (elapsed >= 0.0f) {
-                float normalized = elapsed / length;
-                if (nosRadialBlur->Current > nosRadialBlur->Target) {
-                    normalized = 1.0f - normalized;
-                }
-                nosRadialBlur->Current =
-                    GetValueFromSpline(normalized, reinterpret_cast<bMatrix4 *>(&const_cast<UMath::Matrix4 &>(nosRadialBlur->GetAttrib()->graph())));
-            }
-        } else {
+        if (elapsed > length) {
             nosRadialBlur->StartWorldTime = 0.0f;
             nosRadialBlur->Current = nosRadialBlur->Target;
+        } else if (elapsed >= 0.0f) {
+            float normalized = elapsed / length;
+            if (nosRadialBlur->Current > nosRadialBlur->Target) {
+                normalized = 1.0f - normalized;
+            }
+            nosRadialBlur->Current =
+                GetValueFromSpline(normalized, reinterpret_cast<bMatrix4 *>(&const_cast<UMath::Matrix4 &>(nosRadialBlur->GetAttrib()->graph())));
         }
     }
 
