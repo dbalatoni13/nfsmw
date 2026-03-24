@@ -1054,6 +1054,8 @@ skip_smooth_normal_model: {}
             eLightMaterial *spoiler_material;
             eLightMaterial *roof_material;
 
+            this->LightMaterial_Spinner = nullptr;
+
             if (paint_rim_part == nullptr || (reinterpret_cast<unsigned char *>(paint_rim_part)[5] >> 5) == 0) {
                 paint_rim_part = nullptr;
             }
@@ -1115,8 +1117,6 @@ skip_smooth_normal_model: {}
             this->LightMaterial_Spoiler = spoiler_material;
             this->LightMaterial_Roof = roof_material;
         }
-
-        this->LightMaterial_Spinner = nullptr;
     }
 
     this->UpdateWheelYRenderOffset();
