@@ -660,13 +660,10 @@ int CompositeSkin(RideInfo *ride_info) {
             }
         }
 
-        if (info->m_LayerHash == 0) {
-            cur_layer++;
-        } else {
+        if (info->m_LayerHash != 0) {
             info->m_LayerTexture = GetTextureInfo(info->m_LayerHash, false, false);
             if (info->m_LayerTexture == 0) {
                 info->m_LayerHash = 0;
-                cur_layer++;
             } else {
                 info->m_LayerImageData = static_cast<unsigned char *>(TextureInfo_LockImage(info->m_LayerTexture, TEXLOCK_READ));
                 if (do_32bit_composite == 0) {
@@ -674,10 +671,7 @@ int CompositeSkin(RideInfo *ride_info) {
                         static_cast<unsigned int *>(TextureInfo_LockPalette(info->m_LayerTexture, TEXLOCK_READ));
                 }
 
-                if (info->m_LayerImageData == 0) {
-                    info->m_LayerHash = 0;
-                    cur_layer++;
-                } else {
+                if (info->m_LayerImageData != 0) {
                     if (UsePrecompositeVinyls != 0 || ride_info->SkinType == 2) {
                         DumpPreComp(info, dest_texture);
                         return 1;
@@ -687,7 +681,6 @@ int CompositeSkin(RideInfo *ride_info) {
                     info->m_LayerMaskTexture = GetTextureInfo(mask_hash, false, false);
                     if (info->m_LayerMaskTexture == 0) {
                         info->m_LayerHash = 0;
-                        cur_layer++;
                     } else {
                         info->m_LayerMaskData =
                             static_cast<unsigned char *>(TextureInfo_LockImage(info->m_LayerMaskTexture, TEXLOCK_READ));
@@ -696,10 +689,7 @@ int CompositeSkin(RideInfo *ride_info) {
                                 static_cast<unsigned int *>(TextureInfo_LockPalette(info->m_LayerMaskTexture, TEXLOCK_READ));
                         }
 
-                        if (info->m_LayerMaskData == 0) {
-                            info->m_LayerHash = 0;
-                            cur_layer++;
-                        } else {
+                        if (info->m_LayerMaskData != 0) {
                             int next_total_layer_colours = total_layer_colours + 1;
 
                             if (cur_layer == first_vinyl_layer) {
@@ -734,12 +724,17 @@ int CompositeSkin(RideInfo *ride_info) {
                             }
 
                             total_layer_colours = next_total_layer_colours;
-                            cur_layer++;
+                        } else {
+                            info->m_LayerHash = 0;
                         }
                     }
+                } else {
+                    info->m_LayerHash = 0;
                 }
             }
         }
+
+        cur_layer++;
 
         if (cur_layer >= max_layer_colours) {
             success = 1;
