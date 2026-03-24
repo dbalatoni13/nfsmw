@@ -3390,13 +3390,12 @@ void CarRenderInfo::convex_hull(bVector3 *p, const WCollider *wcoll, int &n, flo
                     dot = -dot;
                 }
 
-                if (zBias <= dot) {
+                bPointValid = zBias > dot;
+                if (!bPointValid) {
                     dec++;
                 } else {
                     vec++;
                 }
-
-                bPointValid = zBias > dot;
             }
         } else {
             float fastZ = lbl_8040AD74;
