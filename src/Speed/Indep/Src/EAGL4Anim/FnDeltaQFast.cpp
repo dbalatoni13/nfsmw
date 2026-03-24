@@ -234,16 +234,17 @@ inline void FnDeltaQFast::AddDelta(DeltaQFastPhysical *floorPhys, DeltaQFast *de
     unsigned char *binData = reinterpret_cast<unsigned char *>(floorPhys);
 
     for (int iframe = prevDeltaIdx; iframe < floorDeltaIdx; iframe++) {
-        unsigned char *deltaData = GetQFastDeltaData(deltaQ, binData, iframe);
+        DeltaQFastDelta *floorDelta = reinterpret_cast<DeltaQFastDelta *>(GetQFastDeltaData(deltaQ, binData, iframe));
 
         for (int ibone = 0; ibone < deltaQ->mNumBones; ibone++) {
             UMath::Vector4 delta;
 
-            DecodeQFastDelta(mMinRangesf[ibone], &deltaData[ibone * 3], delta);
+            floorDelta->UnQuantize(mMinRangesf[ibone], delta);
             prevQs[ibone].x += delta.x;
             prevQs[ibone].y += delta.y;
             prevQs[ibone].z += delta.z;
             prevQs[ibone].w += delta.w;
+            floorDelta++;
         }
     }
 }
@@ -253,16 +254,17 @@ inline void FnDeltaQFast::SubDelta(DeltaQFastPhysical *floorPhys, DeltaQFast *de
     unsigned char *binData = reinterpret_cast<unsigned char *>(floorPhys);
 
     for (int iframe = prevDeltaIdx - 1; iframe >= floorDeltaIdx; iframe--) {
-        unsigned char *deltaData = GetQFastDeltaData(deltaQ, binData, iframe);
+        DeltaQFastDelta *floorDelta = reinterpret_cast<DeltaQFastDelta *>(GetQFastDeltaData(deltaQ, binData, iframe));
 
         for (int ibone = 0; ibone < deltaQ->mNumBones; ibone++) {
             UMath::Vector4 delta;
 
-            DecodeQFastDelta(mMinRangesf[ibone], &deltaData[ibone * 3], delta);
+            floorDelta->UnQuantize(mMinRangesf[ibone], delta);
             prevQs[ibone].x -= delta.x;
             prevQs[ibone].y -= delta.y;
             prevQs[ibone].z -= delta.z;
             prevQs[ibone].w -= delta.w;
+            floorDelta++;
         }
     }
 }
