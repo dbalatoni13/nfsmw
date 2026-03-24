@@ -1049,10 +1049,10 @@ skip_smooth_normal_model: {}
             unsigned int caliper_material_hash = 0;
             unsigned int spoiler_material_hash = 0;
             unsigned int roof_material_hash = 0;
-            eLightMaterial *wheel_rim_material = nullptr;
-            eLightMaterial *caliper_material = nullptr;
-            eLightMaterial *spoiler_material = nullptr;
-            eLightMaterial *roof_material = nullptr;
+            eLightMaterial *wheel_rim_material;
+            eLightMaterial *caliper_material;
+            eLightMaterial *spoiler_material;
+            eLightMaterial *roof_material;
 
             if (paint_rim_part == nullptr || (reinterpret_cast<unsigned char *>(paint_rim_part)[5] >> 5) == 0) {
                 paint_rim_part = nullptr;
@@ -1088,18 +1088,26 @@ skip_smooth_normal_model: {}
 
             if (wheel_rim_material_hash != 0) {
                 wheel_rim_material = elGetLightMaterial(wheel_rim_material_hash);
+            } else {
+                wheel_rim_material = nullptr;
             }
 
             if (caliper_material_hash != 0) {
                 caliper_material = elGetLightMaterial(caliper_material_hash);
+            } else {
+                caliper_material = nullptr;
             }
 
             if (spoiler_material_hash != 0) {
                 spoiler_material = elGetLightMaterial(spoiler_material_hash);
+            } else {
+                spoiler_material = nullptr;
             }
 
             if (roof_material_hash != 0) {
                 roof_material = elGetLightMaterial(roof_material_hash);
+            } else {
+                roof_material = nullptr;
             }
 
             this->LightMaterial_Caliper = caliper_material;
