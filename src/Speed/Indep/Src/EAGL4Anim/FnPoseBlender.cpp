@@ -319,16 +319,15 @@ void FnPoseBlender::Eval(float previousTime, float currentTime, float *outputPos
     }
 
     mAnim[0]->Eval(previousTime - mTimeOffset[0], currentTime - mTimeOffset[0], mPose[0]);
-    int numBones = mpSkel->GetNumBones();
     mAnim[1]->Eval(previousTime - mTimeOffset[1], currentTime - mTimeOffset[1], mPose[1]);
 
     if (mAlignRootBoneIdx >= 0) {
-        for (int boneIdx = numBones - 1; boneIdx >= 0; --boneIdx) {
+        for (int boneIdx = mpSkel->GetNumBones() - 1; boneIdx >= 0; --boneIdx) {
             if (boneIdx == mAlignRootBoneIdx) {
                 EAGL4::Transform rootTransform;
 
-                ApplyAlignedRootTransform(rootTransform, mAlignMatrix, mPose[1], boneIdx);
-                BlendRootTranslation(w, mPose[0], mPose[1], outputPose, boneIdx);
+                ApplyAlignedRootTransform(rootTransform, mAlignMatrix, mPose[1], mAlignRootBoneIdx);
+                BlendRootTranslation(w, mPose[0], mPose[1], outputPose, mAlignRootBoneIdx);
             }
 
             int poseIdx = boneIdx * 12;
@@ -336,7 +335,7 @@ void FnPoseBlender::Eval(float previousTime, float currentTime, float *outputPos
             FastQuatBlendF4(w, &mPose[0][poseIdx + 4], &mPose[1][poseIdx + 4], &outputPose[poseIdx + 4]);
         }
     } else {
-        for (int boneIdx = numBones - 1; boneIdx >= 0; --boneIdx) {
+        for (int boneIdx = mpSkel->GetNumBones() - 1; boneIdx >= 0; --boneIdx) {
             int poseIdx = boneIdx * 12;
 
             FastQuatBlendF4(w, &mPose[0][poseIdx + 4], &mPose[1][poseIdx + 4], &outputPose[poseIdx + 4]);
