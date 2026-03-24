@@ -1308,12 +1308,15 @@ void CarRenderInfo::UpdateCarParts() {
                         &special_minimum,
                         &special_maximum,
                         TheGameFlowManager.GetState() == GAMEFLOW_STATE_IN_FRONTEND)) {
-                    if (model_lod < special_minimum) {
-                        model_lod = special_minimum;
+                    CARPART_LOD clamped_lod = special_minimum;
+
+                    if (special_minimum < model_lod) {
+                        clamped_lod = model_lod;
                     }
-                    if (special_maximum < model_lod) {
-                        model_lod = special_maximum;
+                    if (special_maximum < clamped_lod) {
+                        clamped_lod = special_maximum;
                     }
+                    model_lod = clamped_lod;
                 }
 
                 unsigned int model_name_hash = CarPart_GetModelNameHash(car_part, model_number, model_lod);
