@@ -1631,47 +1631,45 @@ void CarRenderInfo::UpdateWheelYRenderOffset() {
 }
 
 void CarRenderInfo::UpdateDecalTextures(RideInfo *ride_info) {
-    unsigned int alpha_hash;
-    unsigned int decal_hashes[8];
-    int hood_decals;
-    unsigned int size_hash;
-    unsigned int shape_hash;
-    unsigned int size_hashes[3];
-    unsigned int shape_hashes[3];
-
-    alpha_hash = bStringHash("DEFAULTALPHA");
+    unsigned int alpha_hash = bStringHash("DEFAULTALPHA");
 
     for (int i = REPLACETEX_DECAL_START; i <= REPLACETEX_DECAL_END; i++) {
         this->MasterReplacementTextureTable[i].SetOldNameHash(CarReplacementDecalHash[i - REPLACETEX_DECAL_START]);
         this->MasterReplacementTextureTable[i].SetNewNameHash(alpha_hash);
     }
 
-    decal_hashes[0] = bStringHash("DUMMY_DECAL1");
-    decal_hashes[1] = bStringHash("DUMMY_DECAL2");
-    decal_hashes[2] = bStringHash("DUMMY_DECAL3");
-    decal_hashes[3] = bStringHash("DUMMY_DECAL4");
-    decal_hashes[4] = bStringHash("DUMMY_DECAL5");
-    decal_hashes[5] = bStringHash("DUMMY_DECAL6");
-    decal_hashes[6] = bStringHash("DUMMY_NUMBER_LEFT");
-    decal_hashes[7] = bStringHash("DUMMY_NUMBER_RIGHT");
+    unsigned int decal_hashes[8] = {
+        bStringHash("DUMMY_DECAL1"),
+        bStringHash("DUMMY_DECAL2"),
+        bStringHash("DUMMY_DECAL3"),
+        bStringHash("DUMMY_DECAL4"),
+        bStringHash("DUMMY_DECAL5"),
+        bStringHash("DUMMY_DECAL6"),
+        bStringHash("DUMMY_NUMBER_LEFT"),
+        bStringHash("DUMMY_NUMBER_RIGHT"),
+    };
 
     for (int i = 0; i < 48; i++) {
         this->DecalReplacementTextureTable[i].SetOldNameHash(decal_hashes[i % 8]);
         this->DecalReplacementTextureTable[i].SetNewNameHash(alpha_hash);
     }
 
-    hood_decals = 1;
+    int hood_decals = 1;
     if (ride_info->GetPart(CARSLOTID_HOOD) == 0) {
         hood_decals = 0;
     }
-    size_hash = bStringHash("SIZE");
-    shape_hash = bStringHash("SHAPE");
-    size_hashes[0] = bStringHash("SMALL");
-    size_hashes[1] = bStringHash("MEDIUM");
-    size_hashes[2] = bStringHash("LARGE");
-    shape_hashes[0] = bStringHash("SQUARE");
-    shape_hashes[1] = bStringHash("RECT");
-    shape_hashes[2] = bStringHash("WIDE");
+    unsigned int size_hash = bStringHash("SIZE");
+    unsigned int shape_hash = bStringHash("SHAPE");
+    unsigned int size_hashes[3] = {
+        bStringHash("SMALL"),
+        bStringHash("MEDIUM"),
+        bStringHash("LARGE"),
+    };
+    unsigned int shape_hashes[3] = {
+        bStringHash("SQUARE"),
+        bStringHash("RECT"),
+        bStringHash("WIDE"),
+    };
 
     for (int i = CARSLOTID_DECAL_FRONT_WINDOW; i < CARSLOTID_BASE_PAINT; i++) {
         CarPart *decal_model_part = ride_info->GetPart(i);
