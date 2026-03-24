@@ -1372,17 +1372,17 @@ LoadedRideInfo::LoadedRideInfo(RideInfo *ride_info, int in_front_end, int is_two
       TheLoadedCar(&TheRideInfo, in_front_end, is_two_player), //
       TheLoadedWheel(&TheRideInfo, in_front_end != 0),         //
       TheLoadedSkin(&TheRideInfo, in_front_end, is_player_car) {
-    this->HighPriority = 0;
     this->NumInstances = 0;
     this->LoadState = CARLOADSTATE_QUEUED;
     this->PrintedLoading = 0;
+    this->HighPriority = 0;
     this->pCarTypeInfo = &CarTypeInfoArray[ride_info->Type];
     this->ID = sNextID;
-    sNextID++;
+    sNextID = this->ID + 1;
     this->pLoadedCar = &this->TheLoadedCar;
     this->pLoadedWheel = &this->TheLoadedWheel;
     this->pLoadedSkin = &this->TheLoadedSkin;
-    bSPrintf(this->Name, "%s(%d)", this->pCarTypeInfo->CarTypeName, this->ID);
+    bSPrintf(this->Name, "%s(%d)", this->pCarTypeInfo->GetName(), this->ID);
 }
 
 void InitCarLoader() {
