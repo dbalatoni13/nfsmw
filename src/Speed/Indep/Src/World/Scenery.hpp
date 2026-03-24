@@ -103,33 +103,7 @@ struct SceneryCullInfo {
     int PrecullerSectionNumber;               // offset 0xB8, size 0x4
 };
 
-// total size: 0x8
-struct ModelHeirarchy {
-    enum Flags {
-        F_INTERNAL = 1,
-    };
-    // total size: 0x10
-    struct Node {
-        UCrc32 mNodeName;           // offset 0x0, size 0x4
-        unsigned int mModelHash;    // offset 0x4, size 0x4
-        eModel *mModel;             // offset 0x8, size 0x4
-        unsigned char mFlags;       // offset 0xC, size 0x1
-        unsigned char mParent;      // offset 0xD, size 0x1
-        unsigned char mNumChildren; // offset 0xE, size 0x1
-        unsigned char mChildIndex;  // offset 0xF, size 0x1
-    };
-
-    const Node *GetNodes() const {}
-
-    Node *GetNodes() {}
-
-    unsigned int GetSize() const {}
-
-    unsigned int mNameHash;  // offset 0x0, size 0x4
-    unsigned char mNumNodes; // offset 0x4, size 0x1
-    unsigned char mFlags;    // offset 0x5, size 0x1
-    unsigned short pad;      // offset 0x6, size 0x2
-};
+struct ModelHeirarchy;
 
 // total size: 0x48
 struct SceneryInfo {

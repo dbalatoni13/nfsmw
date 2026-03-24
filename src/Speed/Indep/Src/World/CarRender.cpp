@@ -267,7 +267,6 @@ void Render(eViewPlatInterface *view, eModel *model, bMatrix4 *local_to_world, e
 void Render(eViewPlatInterface *view, ePoly *poly, TextureInfo *texture_info, bMatrix4 *matrix, int accurate, float z_bias);
 int eSmoothNormals(eModel **model_table, int num_models);
 eEnvMap *eGetEnvMap();
-void bExpandBoundingBox(bVector3 *bbox_min, bVector3 *bbox_max, const bVector3 *bbox2_min, const bVector3 *bbox2_max);
 bool eBeginStrip(TextureInfo *a, int b, bMatrix4 *c);
 bool eEndStrip(eView *view);
 void eAddVertex(const bVector3 &v);

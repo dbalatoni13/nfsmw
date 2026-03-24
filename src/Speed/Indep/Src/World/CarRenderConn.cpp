@@ -41,11 +41,11 @@ extern void AddXenonEffect(EmitterGroup *piggyback_fx, const Attrib::Collection 
     asm("AddXenonEffect__FP12EmitterGroupPCQ26Attrib10CollectionPCQ25UMath7Matrix4PCQ25UMath7Vector4");
 void NotifyTireStateEffectOfEmitterDelete(void *tire_state_effect, EmitterGroup *grp);
 
-struct SkidMaker {
-    SkidMaker(unsigned int value)
+struct TireSkidMaker {
+    TireSkidMaker(unsigned int value)
         : mValue(value) {}
 
-    ~SkidMaker() {
+    ~TireSkidMaker() {
         MakeNoSkid__9SkidMaker(this);
     }
 
@@ -95,7 +95,7 @@ struct TireState : public bTNode<TireState> {
 
     bVector4 mPrevTirePos;
     WWorldPos mWPos;
-    SkidMaker mSkidMaker;
+    TireSkidMaker mSkidMaker;
     bVector4 mTirePos;
     bVector4 mGroundPos;
     float mRoll;

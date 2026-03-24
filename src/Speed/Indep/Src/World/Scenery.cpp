@@ -2,6 +2,7 @@
 
 #include "Speed/Indep/Libs/Support/Utility/UStandard.h"
 #include "VisibleSection.hpp"
+#include "WorldModel.hpp"
 #include "Speed/Indep/Src/Camera/Camera.hpp"
 #include "Speed/Indep/Src/Ecstasy/eMath.hpp"
 #include "Speed/Indep/Src/Ecstasy/eLight.hpp"
@@ -1392,4 +1393,3 @@ void GrandSceneryCullInfo::StuffScenery(eView *view, int stuff_flags) {
     }
 }
 void ServicePreculler() {}
-
