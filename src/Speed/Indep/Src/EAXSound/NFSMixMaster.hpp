@@ -45,6 +45,7 @@ struct NFSMixMaster : AudioMemBase {
     virtual ~NFSMixMaster();
 
     void *operator new(unsigned int size, const char *debug_name);
+    void *operator new(size_t, void *p) { return p; }
 
     void SetMainMixMapPtr(int *pmem);
     void ConnectMap();

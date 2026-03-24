@@ -115,6 +115,8 @@ struct EAXSND8Wrapper : public AudioMemBase {
         return gAudioMemoryManager.AllocateMemory(size, debug_name, false);
     }
 
+    void *operator new(size_t, void *p) { return p; }
+
     EAXSND8Wrapper();
     virtual ~EAXSND8Wrapper();
     bool Initialize();
@@ -185,6 +187,9 @@ struct CSTATEMGR_CarState : public CSTATEMGR_Base {
     static void ResolveCarBanks();
     static void ResetCarBanks();
     static void DestroyCar(EAX_CarState *pCar);
+
+    Sound::Context m_CarContext; // offset 0x1C
+    float m_fConnectDistance;    // offset 0x20
 };
 
 struct CSTATEMGR_Main : public CSTATEMGR_Base {
@@ -199,20 +204,26 @@ struct CSTATEMGR_PlayerCar : public CSTATEMGR_Base {
     CSTATEMGR_PlayerCar();
 };
 
-struct CSTATEMGR_AICar : public CSTATEMGR_Base {
+struct CSTATEMGR_AICar : public CSTATEMGR_CarState {
     CSTATEMGR_AICar();
     static void QueueSlots();
 };
 
-struct CSTATEMGR_CopCar : public CSTATEMGR_Base {
+struct WorldObject;
+
+struct CSTATEMGR_CopCar : public CSTATEMGR_CarState {
+    int mNumCopsInProximity; // offset 0x24
+
     CSTATEMGR_CopCar();
 };
 
-struct CSTATEMGR_TrafficCar : public CSTATEMGR_Base {
+struct CSTATEMGR_TrafficCar : public CSTATEMGR_CarState {
     CSTATEMGR_TrafficCar();
 };
 
 struct CSTATEMGR_Enviro : public CSTATEMGR_Base {
+    UTL::Std::list<WorldObject *, _type_list> m_WorldObjects; // offset 0x1C
+
     CSTATEMGR_Enviro();
 };
 
@@ -221,6 +232,8 @@ struct CSTATEMGR_Collision : public CSTATEMGR_Base {
 };
 
 struct CSTATEMGR_DriveBy : public CSTATEMGR_Base {
+    int WooshCheckFrameCntr; // offset 0x1C
+
     CSTATEMGR_DriveBy();
 };
 
@@ -228,7 +241,7 @@ struct CSTATEMGR_Helicopter : public CSTATEMGR_Base {
     CSTATEMGR_Helicopter();
 };
 
-struct CSTATEMGR_Truck : public CSTATEMGR_Base {
+struct CSTATEMGR_Truck : public CSTATEMGR_CarState {
     CSTATEMGR_Truck();
 };
 
@@ -671,52 +684,78 @@ void EAXSound::InitializeDriver() {
         return;
     }
 
-    m_pEAXSND8Wrapper = new ("EAXSND8Wrapper") EAXSND8Wrapper();
+    m_pEAXSND8Wrapper =
+        new (gAudioMemoryManager.AllocateMemory(sizeof(EAXSND8Wrapper), "EAXSND8Wrapper", false)) EAXSND8Wrapper();
     if (!m_pEAXSND8Wrapper->Initialize()) {
         IsSoundEnabled = false;
         return;
     }
 
     gAEMSMgr.InitSPUram();
-    m_pNFSMixMaster = new ("NFSMixMaster") NFSMixMaster();
-    m_pSTICH_Playback = new ("STICH_PlayBack") cSTICH_PlayBack();
-    g_pNISRevMgr = new ("NISRevMan") NIS_RevManager();
+    m_pNFSMixMaster = new (gAudioMemoryManager.AllocateMemory(sizeof(NFSMixMaster), "NFSMixMaster", false))
+        NFSMixMaster();
+    m_pSTICH_Playback = new (gAudioMemoryManager.AllocateMemory(sizeof(cSTICH_PlayBack), "STICH_PlayBack", false))
+        cSTICH_PlayBack();
+    g_pNISRevMgr = new (gAudioMemoryManager.AllocateMemory(sizeof(NIS_RevManager), "NISRevMan", false))
+        NIS_RevManager();
 
     for (int n = 0; n < 13; n++) {
         m_pStateMgr[n] = nullptr;
     }
 
-    m_pStateMgr[0] = new ("SND: CSTATEMGR_MAIN") CSTATEMGR_Main();
+    m_pStateMgr[0] =
+        new (gAudioMemoryManager.AllocateMemory(sizeof(CSTATEMGR_Main), "SND: CSTATEMGR_MAIN", false))
+            CSTATEMGR_Main();
     m_pStateMgr[0]->Initialize(static_cast<eMAINMAPSTATES>(0));
 
-    m_pStateMgr[1] = new ("SND: CSTATEMGR_Music") CSTATEMGR_Music();
+    m_pStateMgr[1] =
+        new (gAudioMemoryManager.AllocateMemory(sizeof(CSTATEMGR_Music), "SND: CSTATEMGR_Music", false))
+            CSTATEMGR_Music();
     m_pStateMgr[1]->Initialize(static_cast<eMAINMAPSTATES>(1));
 
-    m_pStateMgr[2] = new ("SND: CSTATEMGR_PlyrCar") CSTATEMGR_PlayerCar();
+    m_pStateMgr[2] =
+        new (gAudioMemoryManager.AllocateMemory(sizeof(CSTATEMGR_PlayerCar), "SND: CSTATEMGR_PlyrCar", false))
+            CSTATEMGR_PlayerCar();
     m_pStateMgr[2]->Initialize(static_cast<eMAINMAPSTATES>(2));
 
-    m_pStateMgr[3] = new ("SND: CSTATEMGR_AICar") CSTATEMGR_AICar();
+    m_pStateMgr[3] =
+        new (gAudioMemoryManager.AllocateMemory(sizeof(CSTATEMGR_AICar), "SND: CSTATEMGR_AICar", false))
+            CSTATEMGR_AICar();
     m_pStateMgr[3]->Initialize(static_cast<eMAINMAPSTATES>(3));
 
-    m_pStateMgr[4] = new ("SND: CSTATEMGR_CarState") CSTATEMGR_CopCar();
+    m_pStateMgr[4] =
+        new (gAudioMemoryManager.AllocateMemory(sizeof(CSTATEMGR_CopCar), "SND: CSTATEMGR_CarState", false))
+            CSTATEMGR_CopCar();
     m_pStateMgr[4]->Initialize(static_cast<eMAINMAPSTATES>(4));
 
-    m_pStateMgr[5] = new ("SND: CSTATEMGR_TrafficCar") CSTATEMGR_TrafficCar();
+    m_pStateMgr[5] =
+        new (gAudioMemoryManager.AllocateMemory(sizeof(CSTATEMGR_TrafficCar), "SND: CSTATEMGR_TrafficCar", false))
+            CSTATEMGR_TrafficCar();
     m_pStateMgr[5]->Initialize(static_cast<eMAINMAPSTATES>(5));
 
-    m_pStateMgr[6] = new ("SND: CSTATEMGR_ENVIRO") CSTATEMGR_Enviro();
+    m_pStateMgr[6] =
+        new (gAudioMemoryManager.AllocateMemory(sizeof(CSTATEMGR_Enviro), "SND: CSTATEMGR_ENVIRO", false))
+            CSTATEMGR_Enviro();
     m_pStateMgr[6]->Initialize(static_cast<eMAINMAPSTATES>(6));
 
-    m_pStateMgr[7] = new ("SND: CSTATEMGR_Collision") CSTATEMGR_Collision();
+    m_pStateMgr[7] =
+        new (gAudioMemoryManager.AllocateMemory(sizeof(CSTATEMGR_Collision), "SND: CSTATEMGR_Collision", false))
+            CSTATEMGR_Collision();
     m_pStateMgr[7]->Initialize(static_cast<eMAINMAPSTATES>(7));
 
-    m_pStateMgr[8] = new ("SND: CSTATEMGR_DriveBy") CSTATEMGR_DriveBy();
+    m_pStateMgr[8] =
+        new (gAudioMemoryManager.AllocateMemory(sizeof(CSTATEMGR_DriveBy), "SND: CSTATEMGR_DriveBy", false))
+            CSTATEMGR_DriveBy();
     m_pStateMgr[8]->Initialize(static_cast<eMAINMAPSTATES>(8));
 
-    m_pStateMgr[11] = new ("SND: CSTATEMGR_Helicopter") CSTATEMGR_Helicopter();
+    m_pStateMgr[11] =
+        new (gAudioMemoryManager.AllocateMemory(sizeof(CSTATEMGR_Helicopter), "SND: CSTATEMGR_Helicopter", false))
+            CSTATEMGR_Helicopter();
     m_pStateMgr[11]->Initialize(static_cast<eMAINMAPSTATES>(11));
 
-    m_pStateMgr[12] = new ("SND: CSTATEMGR_Truck") CSTATEMGR_Truck();
+    m_pStateMgr[12] =
+        new (gAudioMemoryManager.AllocateMemory(sizeof(CSTATEMGR_Truck), "SND: CSTATEMGR_Truck", false))
+            CSTATEMGR_Truck();
     m_pStateMgr[12]->Initialize(static_cast<eMAINMAPSTATES>(12));
 
     m_pNFSMixMaster->AssignSFXCallbacks(EAXSound::GetPointerCallback, EAXSound::SetSFXOutCallback,

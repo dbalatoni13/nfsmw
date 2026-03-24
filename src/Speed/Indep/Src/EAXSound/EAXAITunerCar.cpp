@@ -194,9 +194,9 @@ struct EAXCopCar : public EAXAITunerCar {
 };
 
 CSTATE_Base::StateInfo EAXCopCar::s_StateInfo = {
-    0x00030000,
+    0x00040000,
     "EAXCopCar",
-    &EAXCar::s_StateInfo,
+    &EAXAITunerCar::s_StateInfo,
     reinterpret_cast< CSTATE_Base *(*)(void) >(&EAXCopCar::CreateState),
 };
 
@@ -237,9 +237,9 @@ struct EAXTruck : public EAXAITunerCar {
 };
 
 CSTATE_Base::StateInfo EAXTruck::s_StateInfo = {
-    0x00030000,
+    0x000C0000,
     "EAXTruck",
-    &EAXCar::s_StateInfo,
+    &EAXAITunerCar::s_StateInfo,
     reinterpret_cast< CSTATE_Base *(*)(void) >(&EAXTruck::CreateState),
 };
 

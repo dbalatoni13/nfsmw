@@ -29,6 +29,7 @@ class NIS_RevManager : public AudioMemBase {
   public:
     NIS_RevManager();
     void *operator new(unsigned int size, const char *debug_name);
+    void *operator new(size_t, void *p) { return p; }
     void OpenNISRevData(unsigned int anim_id);
     void StartNISReving();
     void Start321Reving();

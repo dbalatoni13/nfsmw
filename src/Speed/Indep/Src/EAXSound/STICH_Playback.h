@@ -137,6 +137,7 @@ class cSTICH_PlayBack : public AudioMemBase {
     ~cSTICH_PlayBack() override;
 
     static void *operator new(unsigned int size, const char *debug_name);
+    static void *operator new(size_t, void *p) { return p; }
 
     bool AddStich(STICH_TYPE, SND_Stich &);
     SND_Stich &GetStich(STICH_TYPE StichType, int Index);

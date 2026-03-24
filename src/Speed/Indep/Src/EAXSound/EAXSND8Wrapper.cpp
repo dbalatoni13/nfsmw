@@ -12,6 +12,8 @@ struct PF_Allocator : EA::Allocator::IAllocator {
     virtual void Free(void *pBlock, unsigned int size);
     virtual int AddRef();
     virtual int Release();
+
+    int mRefcount; // offset 0x4
 };
 
 namespace EA {
@@ -62,7 +64,6 @@ extern EAXSound *g_pEAXSound;
 extern void SNDSYS_service();
 
 CSISCoreAllocator g_CSISCoreAllocator;
-PF_Allocator gPF_MemoryAllocator;
 
 namespace Csis {
 namespace System {
@@ -310,3 +311,5 @@ void CSISCoreAllocator::Free(void *pBlock, unsigned int size) {
     (void)size;
     bFree(pBlock);
 }
+
+PF_Allocator gPF_MemoryAllocator;
