@@ -87,6 +87,11 @@ class VehicleRenderConn : public Sim::Connection, public UTL::Collections::Lista
             }
         }
 
+        void ResetEmitterGroup() {
+            mEmitterGroup = 0;
+            mKey = 0;
+        }
+
         bMatrix4 mLocalMatrix;       // offset 0x8, size 0x40
         EmitterGroup *mEmitterGroup; // offset 0x48, size 0x4
         unsigned int mKey;           // offset 0x4C, size 0x4

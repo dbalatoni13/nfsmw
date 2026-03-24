@@ -43,10 +43,9 @@ struct ReferenceMirror {
     const bVector3 *mAcceleration;
 };
 
-static void HandleEmitterGroupDelete(void *subscriber, EmitterGroup *) {
-    VehicleRenderConn::Effect *effect = static_cast<VehicleRenderConn::Effect *>(subscriber);
-    effect->mEmitterGroup = 0;
-    effect->mKey = 0;
+void HandleEmitterGroupDelete(void *effect, EmitterGroup *grp) {
+    VehicleRenderConn::Effect *car_fx = static_cast<VehicleRenderConn::Effect *>(effect);
+    car_fx->ResetEmitterGroup();
 }
 
 UTL::Collections::Listable<VehicleRenderConn, 10>::List UTL::Collections::Listable<VehicleRenderConn, 10>::_mTable;
