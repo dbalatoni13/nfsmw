@@ -61,13 +61,18 @@ Sim::ConnStatus VehicleFragmentConn::OnStatusCheck() {
 }
 
 void VehicleFragmentConn::UpdateModel() {
-    if (this->mPartSlot == CARPARTID_INVALID || this->mTarget.GetMatrix() == 0 || this->mVehicleWorldID == 0) {
+    if (this->mPartSlot == CARPARTID_INVALID) {
+        return;
+    }
+
+    bool has_target_matrix = this->mTarget.GetMatrix() != 0;
+    if (!has_target_matrix || this->mVehicleWorldID == 0) {
         return;
     }
 
     if (this->mModelHash == 0) {
         VehicleRenderConn *vehicle_render_conn = VehicleRenderConn::Find(this->mVehicleWorldID);
-        if (vehicle_render_conn == 0 || !vehicle_render_conn->IsLoaded()) {
+        if (vehicle_render_conn == 0 || vehicle_render_conn->mState <= VehicleRenderConn::S_Loading) {
             return;
         }
 
