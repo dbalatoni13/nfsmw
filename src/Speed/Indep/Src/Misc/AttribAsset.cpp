@@ -9,8 +9,7 @@ bool AddDepFile(const char *filename, void *data, size_t bytes) {
     FileMap::iterator result = gFiles.find(assetID);
 
     if (result == gFiles.end()) {
-        gFiles.insert(FileMap::value_type(assetID, FileRecord(data, bytes)));
-        // TODO
+        result = gFiles.insert(FileMap::value_type(assetID, FileRecord(data, bytes))).first;
         return true;
     } else {
         return false;

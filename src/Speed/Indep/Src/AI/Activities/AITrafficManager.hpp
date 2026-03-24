@@ -8,6 +8,7 @@
 #include "Speed/Indep/Libs/Support/Utility/UStandard.h"
 #include "Speed/Indep/Src/Debug/Debugable.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/trafficpattern.h"
+#include "Speed/Indep/Src/World/RaceParameters.hpp"
 #include "Speed/Indep/Src/Input/ActionQueue.h"
 #include "Speed/Indep/Src/Interfaces/SimActivities/IActivity.h"
 #include "Speed/Indep/Src/Interfaces/SimActivities/ITrafficMgr.h"
@@ -18,14 +19,6 @@
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 
 #include "algorithm"
-
-enum eTrafficDensity {
-    NUM_TRAFFIC_DENSITIES = 4,
-    eTRAFFICDENSITY_HIGH = 3,
-    eTRAFFICDENSITY_MEDIUM = 2,
-    eTRAFFICDENSITY_LOW = 1,
-    eTRAFFICDENSITY_OFF = 0,
-};
 
 DECLARE_CONTAINER_TYPE(TrafficList);
 DECLARE_CONTAINER_TYPE(AITrafficManager_PatternMap);

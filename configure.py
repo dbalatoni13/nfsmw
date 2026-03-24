@@ -161,7 +161,7 @@ elif version_num in [2]:
 
 config.objdiff_tag = "v3.7.0"
 config.sjiswrap_tag = "v1.2.0"
-config.wibo_tag = "1.0.0"
+config.wibo_tag = "1.1.0"
 
 # Project
 config.config_path = Path("config") / config.version / "config.yml"
@@ -241,7 +241,7 @@ if config.platform == Platform.GC_WII:
     # TODO move some of these to the game flags
     cflags_base_prodg = [
         "-O1",
-        "-gdwarf",
+        "-gdwarf+",
         # "-Wa,-L",
         # "-Wall",
         # "-Wreturn-type", # enable at some point
@@ -306,6 +306,11 @@ if config.platform == Platform.GC_WII:
         # # "-fcaller-saves",
         # # "-ffloat-store",
         # # "-funroll-all-loops",
+        # "-fno-sched-spec",
+        # "-fno-keep-static-consts",
+        # "-fno-common",
+        # "-fno-argument-alias",
+        # "-fno-ident",
         "-DLUA_NUMBER=float",
     ]
 

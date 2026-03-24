@@ -14,10 +14,6 @@ Usage:
   python tools/decomp-context.py -u main/Speed/Indep/SourceLists/zAnim -f __9CAnimBank --no-lookup
   python tools/decomp-context.py -u main/Speed/Indep/SourceLists/zAnim -f __9CAnimBank --no-source
   python tools/decomp-context.py --ghidra-check
-
-Parallel-safe usage (avoids interference from other agents building the same TU):
-  TEMPOBJ=$(python tools/build-unit.py -u main/Speed/Indep/SourceLists/zAnim)
-  python tools/decomp-context.py -u main/Speed/Indep/SourceLists/zAnim -f __9CAnimBank --base-obj "$TEMPOBJ"
 """
 
 import argparse
@@ -28,7 +24,15 @@ import shutil
 import subprocess
 import sys
 from typing import Any, Dict, List, Optional, Tuple
-from _common import ROOT_DIR, ToolError, fail, load_objdiff_config, run_objdiff_json
+from _common import (
+    RELOC_DIFF_CHOICES,
+    ROOT_DIR,
+    ToolError,
+    build_objdiff_symbol_rows,
+    fail,
+    load_objdiff_config,
+    run_objdiff_json,
+)
 
 script_dir = os.path.dirname(os.path.realpath(__file__))
 root_dir = ROOT_DIR
@@ -37,7 +41,7 @@ OBJDIFF_CLI = os.path.join(root_dir, "build", "tools", "objdiff-cli")
 DTK = os.path.join(root_dir, "build", "tools", "dtk")
 GC_SYMBOLS_FILE = os.path.join(root_dir, "config", "GOWE69", "symbols.txt")
 PS2_SYMBOLS_FILE = os.path.join(root_dir, "config", "SLES-53558-A124", "symbols.txt")
-GC_DWARF_FILE = os.path.join(root_dir, "symbols", "mw_dwarfdump.nothpp")
+GC_DWARF_PATH = os.path.join(root_dir, "symbols", "Dwarf")
 DEBUG_LINES_FILE = os.path.join(root_dir, "symbols", "debug_lines.txt")
 GC_GHIDRA_PROGRAM = "NFSMWRELEASE.ELF"
 PS2_GHIDRA_PROGRAM = "NFS.ELF"
@@ -47,6 +51,10 @@ SOURCE_CONTEXT_LINES = 5
 RELATED_SOURCE_LIMIT = 8
 BRIEF_RELATED_SOURCE_LIMIT = 3
 BRIEF_SUGGESTED_COMMAND_LIMIT = 2
+LOW_UNMATCHED_HINT_THRESHOLD = 192
+HIGH_MATCH_HINT_THRESHOLD = 85.0
+LARGER_TARGET_RATIO = 3
+LARGER_TARGET_MIN_BYTES = 192
 
 
 def load_project_config() -> Dict[str, Any]:
@@ -62,11 +70,16 @@ def find_unit(config: Dict[str, Any], unit_name: str) -> Optional[Dict[str, Any]
     return None
 
 
-def run_objdiff(unit_name: str, base_obj: Optional[str] = None) -> Optional[Dict[str, Any]]:
+def run_objdiff(
+    unit_name: str,
+    base_obj: Optional[str] = None,
+    reloc_diffs: str = "none",
+) -> Optional[Dict[str, Any]]:
     return run_objdiff_json(
         OBJDIFF_CLI,
         unit_name,
         base_obj=base_obj,
+        reloc_diffs=reloc_diffs,
         root_dir=root_dir,
     )
 
@@ -136,15 +149,14 @@ def format_hex_address(address: str) -> str:
 
 
 def lookup_function_dwarf(query: str) -> Tuple[Optional[str], Optional[str]]:
-    """Query the combined GC DWARF dump for one function."""
-    if not os.path.exists(GC_DWARF_FILE):
-        return None, f"DWARF dump not found: {GC_DWARF_FILE}"
+    """Query the split GC DWARF dump for one function."""
+    if not os.path.exists(GC_DWARF_PATH):
+        return None, f"DWARF dump not found: {GC_DWARF_PATH}"
 
     cmd = [
         sys.executable,
         os.path.join(script_dir, "lookup.py"),
-        "--file",
-        GC_DWARF_FILE,
+        GC_DWARF_PATH,
         "function",
         query,
     ]
@@ -341,6 +353,42 @@ def extract_source_for_function(
         return ""
     header = f"// Lines {start}–{end} of {source_path}\n"
     return header + "".join(excerpt)
+
+
+def source_excerpt_is_useful(source_path: str, excerpt: str) -> bool:
+    lines = [line.strip() for line in excerpt.splitlines()]
+    content_lines = [
+        line
+        for line in lines
+        if line and not line.startswith("// Lines ")
+    ]
+    if not content_lines:
+        return False
+
+    include_like = sum(
+        1
+        for line in content_lines
+        if line.startswith("#include")
+        or line.startswith("#pragma")
+        or line.startswith("#if")
+        or line.startswith("#endif")
+        or line.startswith("#define")
+    )
+
+    source_list_path = source_path.replace("\\", "/")
+    if "SourceLists/" in source_list_path:
+        if include_like == len(content_lines):
+            return False
+        if include_like >= max(2, len(content_lines) - 1):
+            return False
+
+    useful_tokens = ("{", "}", "if ", "for ", "while ", "::", "return ", "=")
+    if include_like == len(content_lines) and not any(
+        token in excerpt for token in useful_tokens
+    ):
+        return False
+
+    return True
 
 
 def extract_source_around_line(
@@ -909,6 +957,114 @@ def format_suggested_commands(
     return "\n".join(lines)
 
 
+def unit_progress_category(unit: Dict[str, Any]) -> Optional[str]:
+    categories = unit.get("metadata", {}).get("progress_categories", [])
+    if not categories:
+        return None
+    if len(categories) > 1:
+        return str(categories[1])
+    return str(categories[0])
+
+
+def format_priority_guidance(
+    unit_name: str,
+    unit: Dict[str, Any],
+    diff_data: Optional[Dict[str, Any]],
+    current_symbol_name: Optional[str],
+    brief: bool = False,
+) -> Optional[str]:
+    if diff_data is None or current_symbol_name is None:
+        return None
+
+    function_rows = [
+        row
+        for row in build_objdiff_symbol_rows(diff_data)
+        if row["side"] == "left"
+        and row["type"] == "function"
+        and row["status"] in ("missing", "nonmatching")
+        and row["unmatched_bytes_est"] > 0
+    ]
+    if not function_rows:
+        return None
+
+    function_rows.sort(
+        key=lambda row: (-row["unmatched_bytes_est"], -row["size"], row["name"].lower())
+    )
+
+    current_row = None
+    for row in function_rows:
+        if row["symbol_name"] == current_symbol_name:
+            current_row = row
+            break
+    if current_row is None:
+        return None
+
+    current_unmatched = int(current_row["unmatched_bytes_est"])
+    current_match = current_row.get("match_percent")
+    if (
+        current_unmatched > LOW_UNMATCHED_HINT_THRESHOLD
+        and (current_match is None or float(current_match) < HIGH_MATCH_HINT_THRESHOLD)
+    ):
+        return None
+
+    unit_top = function_rows[0]
+    larger_unit_target = None
+    for row in function_rows:
+        if row["symbol_name"] == current_symbol_name:
+            continue
+        if (
+            int(row["unmatched_bytes_est"]) >= LARGER_TARGET_MIN_BYTES
+            and int(row["unmatched_bytes_est"]) >= current_unmatched * LARGER_TARGET_RATIO
+        ):
+            larger_unit_target = row
+            break
+
+    lines: List[str] = []
+    if current_match is not None and float(current_match) >= HIGH_MATCH_HINT_THRESHOLD:
+        lines.append(
+            f"- Current function is already in cleanup/polish territory "
+            f"(~{current_unmatched}B remaining, {float(current_match):.1f}% matched)."
+        )
+    else:
+        lines.append(
+            f"- Current function is already low-byte cleanup territory (~{current_unmatched}B remaining)."
+        )
+
+    if larger_unit_target is not None:
+        larger_match = larger_unit_target.get("match_percent")
+        larger_match_detail = ""
+        if larger_match is not None:
+            larger_match_detail = f", {float(larger_match):.1f}% matched"
+        lines.append(
+            f"- This unit still has a much larger target: "
+            f"{larger_unit_target['name']} "
+            f"(~{larger_unit_target['unmatched_bytes_est']}B remaining{larger_match_detail})."
+        )
+        lines.append(
+            f"- Try: python tools/decomp-workflow.py function -u {unit_name} "
+            f"-f '{larger_unit_target['name']}'"
+        )
+    else:
+        lines.append(
+            f"- This unit's largest remaining function is only ~{unit_top['unmatched_bytes_est']}B "
+            f"({unit_top['name']})."
+        )
+        category = unit_progress_category(unit)
+        next_cmd = "python tools/decomp-workflow.py next --strategy balanced --limit 10"
+        if category:
+            next_cmd = (
+                "python tools/decomp-workflow.py next "
+                f"--category {category} --strategy balanced --limit 10"
+            )
+        lines.append(f"- For larger gains elsewhere, rerun: {next_cmd}")
+
+    if brief:
+        if larger_unit_target is not None:
+            return "\n".join([lines[0], lines[2]])
+        return "\n".join([lines[0], lines[2]])
+    return "\n".join(lines)
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Gather context for decomp function matching"
@@ -948,15 +1104,20 @@ def main():
         action="store_true",
         help="Verify Ghidra CLI is reachable and programs are loaded, then exit",
     )
-    # Parallel-safe option: use a pre-compiled temp .o instead of the shared build output.
-    # Obtain the temp path with: TEMPOBJ=$(python tools/build-unit.py -u <unit>)
     parser.add_argument(
         "--base-obj",
         metavar="PATH",
         help=(
-            "Use this .o file as the decomp base instead of the one from objdiff.json. "
-            "Allows parallel agents to see their own compilation result without interference. "
-            "Produce the path with build-unit.py."
+            "Use this .o file as the decomp base instead of the one from objdiff.json."
+        ),
+    )
+    parser.add_argument(
+        "--reloc-diffs",
+        choices=RELOC_DIFF_CHOICES,
+        default="none",
+        help=(
+            "Control relocation-only mismatches in objdiff "
+            "(default: none; use all to surface relocation diffs)"
         ),
     )
     args = parser.parse_args()
@@ -978,7 +1139,9 @@ def main():
     source_path = meta.get("source_path", "")
 
     # === objdiff Status (run first so we have line numbers for source scoping) ===
-    diff_data = run_objdiff(args.unit, base_obj=args.base_obj)
+    diff_data = run_objdiff(
+        args.unit, base_obj=args.base_obj, reloc_diffs=args.reloc_diffs
+    )
     left_sym = right_sym = None
 
     if diff_data:
@@ -1001,7 +1164,11 @@ def main():
     if not args.no_source:
         if source_path:
             excerpt = extract_source_for_function(source_path, right_sym)
-            if excerpt is not None and excerpt.strip():
+            if (
+                excerpt is not None
+                and excerpt.strip()
+                and source_excerpt_is_useful(source_path, excerpt)
+            ):
                 label = "Source"
                 if right_sym and right_sym.get("instructions"):
                     # Check if we actually got line info
@@ -1086,6 +1253,16 @@ def main():
                 ),
             )
 
+            priority_guidance = format_priority_guidance(
+                args.unit,
+                unit,
+                diff_data,
+                mangled,
+                brief=args.brief,
+            )
+            if priority_guidance:
+                print_section("Higher-impact targets right now", priority_guidance)
+
             if not source_was_useful and args.no_source:
                 print_section(
                     "Related Source Files",
@@ -1109,6 +1286,8 @@ def main():
                     args.unit,
                     "-d",
                     args.function,
+                    "--reloc-diffs",
+                    args.reloc_diffs,
                 ]
                 if args.base_obj:
                     diff_cmd += ["--base-obj", args.base_obj]

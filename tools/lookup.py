@@ -248,6 +248,32 @@ def _normalise_func_name(name: str) -> str:
     return name.strip()
 
 
+def _candidate_func_names(name: str) -> list[str]:
+    """
+    Generate progressively shorter qualified-name suffixes.
+
+    Example:
+      Attrib::Class::RemoveCollection -> [
+          'Attrib::Class::RemoveCollection',
+          'Class::RemoveCollection',
+          'RemoveCollection',
+      ]
+
+    This helps match DWARF signatures that omit leading namespaces.
+    """
+    bare = _normalise_func_name(name)
+    if not bare:
+        return []
+
+    parts = bare.split("::")
+    candidates: list[str] = []
+    for index in range(len(parts)):
+        candidate = "::".join(parts[index:]).strip()
+        if candidate and candidate not in candidates:
+            candidates.append(candidate)
+    return candidates
+
+
 def _sig_contains_name(sig_line: str, bare_name: str) -> bool:
     """
     Return True if *bare_name* (e.g. 'EPerfectLaunch::~EPerfectLaunch') appears
@@ -291,8 +317,12 @@ def find_functions_by_name(
     funcs: list[tuple[str, str, str, str]], query: str
 ) -> list[str]:
     """Return all function blocks whose signature matches *query* (ignoring params)."""
-    bare = _normalise_func_name(query)
-    return [block for start, end, sig, block in funcs if _sig_contains_name(sig, bare)]
+    candidates = _candidate_func_names(query)
+    return [
+        block
+        for start, end, sig, block in funcs
+        if any(_sig_contains_name(sig, candidate) for candidate in candidates)
+    ]
 
 
 # ---------------------------------------------------------------------------

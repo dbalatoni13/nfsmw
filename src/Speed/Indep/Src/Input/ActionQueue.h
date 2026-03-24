@@ -24,6 +24,10 @@ class ActionQueue : public UTL::Collections::Listable<ActionQueue, 20> {
         return gFastMem.Alloc(size, nullptr);
     }
 
+    void *operator new(size_t size, const char *name) {
+        return gFastMem.Alloc(size, nullptr);
+    }
+
     ActionQueue(bool required);
     ActionQueue(int port, unsigned int config, const char *queue_name, bool required);
     ~ActionQueue();

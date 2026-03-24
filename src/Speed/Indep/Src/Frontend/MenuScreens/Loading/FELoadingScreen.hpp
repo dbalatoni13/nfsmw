@@ -5,6 +5,15 @@
 #pragma once
 #endif
 
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
 
+class LoadingScreen : public MenuScreen {
+  public:
+    enum LoadingScreenTypes {
+        LS_LOADING_FE = 0,
+        LS_LOADING_GAME_FROM_FE = 1,
+    };
+    LoadingScreen(struct ScreenConstructorData *sd);
+};
 
 #endif

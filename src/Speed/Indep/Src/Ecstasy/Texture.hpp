@@ -358,6 +358,10 @@ void UpdateTextureAnimations();
 TextureInfo *GetTextureInfo(unsigned int name_hash, BOOL return_default_texture_if_not_found, BOOL include_unloaded_textures);
 TextureInfo *FixupTextureInfo(TextureInfo *texture_info, unsigned int name_hash, TexturePack *texture_pack, bool loading);
 void MaybePrintUnusedTextures();
+int eLoadStreamingTexturePack(const char *filename, void (*callback_function)(void *), void *callback_param, int memory_pool_num);
+void eLoadStreamingTexture(unsigned int *name_hash_table, int num_hashes, void (*callback)(void *), void *param0, int memory_pool_num);
+void eWaitForStreamingTexturePackLoading(const char *filename);
+void eUnloadAllStreamingTextures(const char *filename);
 
 TextureInfo *eCreateTextureInfo();
 void eDestroyTextureInfo(TextureInfo *texture_info);
@@ -368,6 +372,18 @@ inline TextureInfo *FixupTextureInfoLoading(TextureInfo *texture_info, unsigned 
 
 inline TextureInfo *FixupTextureInfoUnloading(TextureInfo *texture_info, unsigned int name_hash, TexturePack *texture_pack) {
     return FixupTextureInfo(texture_info, name_hash, texture_pack, false);
+}
+
+inline int eLoadStreamingTexturePack(const char *filename) {
+    return eLoadStreamingTexturePack(filename, nullptr, nullptr, 0);
+}
+
+inline void eLoadStreamingTexture(unsigned int *name_hash_table, int num_hashes) {
+    return eLoadStreamingTexture(name_hash_table, num_hashes, nullptr, nullptr, 0);
+}
+
+inline void eLoadStreamingTexture(unsigned int name_hash) {
+    return eLoadStreamingTexture(&name_hash, 1);
 }
 
 #endif

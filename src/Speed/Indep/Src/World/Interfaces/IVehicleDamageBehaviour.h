@@ -6,12 +6,31 @@
 #endif
 
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
+#include "Speed/Indep/Src/World/DamageZones.h"
 
 struct IVehiclePartDamageBehaviour {
     // Functions
     IVehiclePartDamageBehaviour() {}
 
     virtual ~IVehiclePartDamageBehaviour() {}
+
+    virtual void Init();
+
+    virtual void Reset();
+
+    virtual void Pose(struct bMatrix4 * worldMatrix);
+
+    virtual void Update(struct bMatrix4 * worldMatrix);
+
+    virtual void DamageVehicle(const DamageZone::Info & damageInfo);
+
+    virtual struct bMatrix4 * GetPartMatrix(unsigned int slotId);
+
+    virtual bool IsPartHidden(unsigned int slotId);
+
+    virtual void HidePart(unsigned int slotId);
+
+    virtual void UnitTest();
 };
 
 class VehiclePartDamageBehaviour : public IVehiclePartDamageBehaviour {
@@ -80,7 +99,7 @@ public:
     void AnimatePart(unsigned int slotId, const bVector3 &rotation, struct bMatrix4 * worldMatrix);
 
     // Overrides: IVehiclePartDamageBehaviour
-    virtual void DamageVehicle(const struct Info & damageInfo);
+    virtual void DamageVehicle(const DamageZone::Info & damageInfo);
 
     // Overrides: IVehiclePartDamageBehaviour
     virtual void UnitTest();

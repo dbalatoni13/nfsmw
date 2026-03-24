@@ -1,6 +1,7 @@
 #include "QuickGame.h"
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 #include "Speed/Indep/Src/Gameplay/GRaceDatabase.h"
+#include "Speed/Indep/Src/Misc/Config.h"
 #include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
 #include "Speed/Indep/Src/Generated/Events/ECommitAudioAssets.hpp"
 #include "Speed/Indep/Src/Generated/Events/ECommitRenderAssets.hpp"
@@ -175,17 +176,6 @@ Sim::State QuickGame::OnManageState(Sim::State state) {
         }
     }
 }
-
-// TODO move
-extern BOOL SkipFE;
-extern BOOL SkipFEDisableCops;
-extern char SkipFERaceID[16];
-extern int SkipFENumLaps;
-extern eTrackDirection SkipFETrackDirection;
-extern int SkipFENumAICars;
-extern eOpponentStrength SkipFEDifficulty;
-extern BOOL SkipFEDisableTraffic;
-extern int SkipFETrafficDensity;
 
 void QuickGame::HandleSkipFEOptions() {
     if (!SkipFE) {

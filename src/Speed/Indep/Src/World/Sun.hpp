@@ -47,6 +47,8 @@ struct SunChunkInfo {
 };
 
 void RenderSunAsFlare();
+void SunTrackLoader(void);
+void SunTrackUnloader(void);
 
 extern SunChunkInfo *SunInfo;
 

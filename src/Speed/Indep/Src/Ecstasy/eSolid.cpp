@@ -1,6 +1,4 @@
-#include "eSolid.hpp"
-#include "EcstasyData.hpp"
-#include "Speed/Indep/Src/Ecstasy/Texture.hpp"
+#include "Ecstasy.hpp"
 #include "Speed/Indep/Src/Ecstasy/eStreamingPack.hpp"
 #include "Speed/Indep/Src/Misc/ResourceLoader.hpp"
 #include "Speed/Indep/Src/Misc/SpeedChunks.hpp"

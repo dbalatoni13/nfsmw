@@ -66,7 +66,6 @@ class WWorldPos {
 
     // bool FindClosestFace(const WCollisionInstanceCacheList &instList, const UMath::Vector3 &pt, bool quitIfOnSameFace) {}
 
-  private:
     WCollisionTri fFace;                // offset 0x0, size 0x30
     unsigned int fFaceValid : 1;        // offset 0x30, size 0x4
     unsigned int fMissCount : 15;       // offset 0x30, size 0x4

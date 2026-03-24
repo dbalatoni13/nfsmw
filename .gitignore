@@ -2,6 +2,12 @@
 .idea/
 .vs/
 
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
 # Caches
 __pycache__
 .mypy_cache

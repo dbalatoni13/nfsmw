@@ -70,9 +70,13 @@ class FEManager {
 
     //  eGarageType GetPreviousGarageType() {}
 
-    //  ResourceFile *GetGarageBackground() {}
+    ResourceFile *GetGarageBackground() {
+        return mGarageBackground;
+    }
 
-    //  void SetGarageBackground(ResourceFile *pBackground) {}
+    void SetGarageBackground(ResourceFile *pBackground) {
+        mGarageBackground = pBackground;
+    }
 
     //  void SetEATraxFirstButton(bool onOff) {}
 
@@ -82,7 +86,18 @@ class FEManager {
 
     // static  const char *GetPauseReason(int idx) {}
 
-    //  void ClearControllerError(int port) {}
+    void ClearControllerError(int port) {
+        if (port == -1) {
+            return;
+        }
+        if (port == 4) {
+            for (int i = 0; i < 8; i++) {
+                bWantControllerError[i] = 0;
+            }
+        } else {
+            bWantControllerError[port] = 0;
+        }
+    }
 
     //  void SuppressControllerError(bool b) {}
 

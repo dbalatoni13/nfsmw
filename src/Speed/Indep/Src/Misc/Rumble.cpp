@@ -147,14 +147,6 @@ void tShaker::GetValue(bVector3 *pV) {
     bScale(pV, &vShake, fAmplitude);
 }
 
-inline void tShaker::Reset() {
-    bFill(&vShake, 0.0f, 0.0f, 0.0f);
-    pAmplitude = nullptr;
-    fTime = 0.0f;
-    fDuration = 1.0f;
-    fFrequency = fShakeFrequency;
-}
-
 void UpdateCameraShakers(float dT) {
     for (int i = 0; i < MAX_CAMERA_SHAKERS; i++) {
         CameraShakers[i].Update(dT);

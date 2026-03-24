@@ -41,82 +41,85 @@ Speed/Indep/SourceLists/zAttribSys.cpp:
 Speed/Indep/SourceLists/zBWare.cpp:
 	.text       start:0x8005C1F8 end:0x80064DB4
 	.ctors      start:0x803C8B70 end:0x803C8B74
-	.rodata     start:0x803D0E18 end:0x803D3AE4
+	.rodata     start:0x803D0E18 end:0x803D1928
 	.data       start:0x80415938 end:0x80416488
-	.bss        start:0x804577A0 end:0x8045AB34
+	.bss        start:0x804577A0 end:0x8045A974
 
 Speed/Indep/SourceLists/zCamera.cpp:
 	.text       start:0x80064DB4 end:0x80083604
 	.ctors      start:0x803C8B74 end:0x803C8B78
-	.rodata     start:0x803D3AE4 end:0x803D3F50
-	.data       start:0x80416488 end:0x80417108
-	.bss        start:0x8045AB34 end:0x8045B0F8
+	.rodata     start:0x803D1928 end:0x803D3C78
+	.data       start:0x80416488 end:0x804170C8
+	.bss        start:0x8045A974 end:0x8045B0F8
 
 Speed/Indep/SourceLists/zDebug.cpp:
 	.text       start:0x80083604 end:0x80083680
 	.ctors      start:0x803C8B78 end:0x803C8B7C
+	.rodata     start:0x803D3C78 end:0x803D3DC8
 	.bss        start:0x8045B0F8 end:0x8045B108
 
 Speed/Indep/SourceLists/zDynamics.cpp:
 	.text       start:0x80083680 end:0x8008A7B0
 	.ctors      start:0x803C8B7C end:0x803C8B80
-	.rodata     start:0x803D3F50 end:0x803D428C
+	.rodata     start:0x803D3DC8 end:0x803D3FE8
+	.data       start:0x804170C8 end:0x804170F4
 	.bss        start:0x8045B108 end:0x8045B110
 
 Speed/Indep/SourceLists/zEagl4Anim.cpp:
 	.text       start:0x8008A7B0 end:0x800A6128
 	.ctors      start:0x803C8B80 end:0x803C8B84
-	.rodata     start:0x803D428C end:0x803D5E28
-	.data       start:0x80417108 end:0x80417634
+	.rodata     start:0x803D3FE8 end:0x803D5E38
+	.data       start:0x804170F4 end:0x80417634
 	.bss        start:0x8045B110 end:0x8045B268
 
 Speed/Indep/SourceLists/zEAXSound.cpp:
 	.text       start:0x800A6128 end:0x800CAF5C
 	.ctors      start:0x803C8B84 end:0x803C8B88
-	.rodata     start:0x803D5E28 end:0x803DD468
-	.data       start:0x80417634 end:0x80417F60
+	.rodata     start:0x803D5E38 end:0x803D9050
+	.data       start:0x80417634 end:0x80417D88
 	.bss        start:0x8045B268 end:0x8045DE60
 
 Speed/Indep/SourceLists/zEAXSound2.cpp:
 	.text       start:0x800CAF5C end:0x800F486C
 	.ctors      start:0x803C8B88 end:0x803C8B8C
-	.rodata     start:0x803DD468 end:0x803DD6D8
-	.data       start:0x80417F60 end:0x8041AB34
-	.bss        start:0x8045DE60 end:0x80461F5C
+	.rodata     start:0x803D9050 end:0x803DD6D8
+	.data       start:0x80417D88 end:0x8041A5A4
+	.bss        start:0x8045DE60 end:0x8045ECB0
 
 Speed/Indep/SourceLists/zEcstasy.cpp:
 	.text       start:0x800F486C end:0x80118248
 	.ctors      start:0x803C8B8C end:0x803C8B90
-	.rodata     start:0x803DD6D8 end:0x803E4290
-	.data       start:0x8041AB34 end:0x8041B5E4
-	.bss        start:0x80461F5C end:0x804729E0
+	.rodata     start:0x803DD6D8 end:0x803DF568
+	.data       start:0x8041A5A4 end:0x8041B5CC
+	.bss        start:0x8045ECB0 end:0x804729E0
 
 Speed/Indep/SourceLists/zFe.cpp:
 	.text       start:0x80118248 end:0x80142AC0
 	.ctors      start:0x803C8B90 end:0x803C8B94
-	.rodata     start:0x803E4290 end:0x803EA794
-	.data       start:0x8041B5E4 end:0x8041BE08
+	.rodata     start:0x803DF568 end:0x803E4380
+	.data       start:0x8041B5CC end:0x8041BE08
 	.bss        start:0x804729E0 end:0x80472FBC
 
 Speed/Indep/SourceLists/zFe2.cpp:
 	.text       start:0x80142AC0 end:0x8017FE2C
 	.ctors      start:0x803C8B94 end:0x803C8B98
-	.rodata     start:0x803EA794 end:0x803EB9FC
-	.data       start:0x8041BE08 end:0x8041D060
-	.bss        start:0x80472FBC end:0x80473CD0
+	.rodata     start:0x803E4380 end:0x803EA7E8
+	.data       start:0x8041BE08 end:0x8041CE90
+	.bss        start:0x80472FBC end:0x80473CC8
 
 Speed/Indep/SourceLists/zFEng.cpp:
 	.text       start:0x8017FE2C end:0x80191550
 	.ctors      start:0x803C8B98 end:0x803C8B9C
-	.data       start:0x8041D060 end:0x8041D1DC
-	.bss        start:0x80473CD0 end:0x80473E74
+	.rodata     start:0x803EA7E8 end:0x803EB230
+	.data       start:0x8041CE90 end:0x8041D1C0
+	.bss        start:0x80473CC8 end:0x80473E14
 
 Speed/Indep/SourceLists/zFoundation.cpp:
 	.text       start:0x80191550 end:0x8019A1F0
 	.ctors      start:0x803C8B9C end:0x803C8BA0
-	.rodata     start:0x803EB9FC end:0x803ED2FC
-	.data       start:0x8041D1DC end:0x8041D31C
-	.bss        start:0x80473E74 end:0x80473EF8
+	.rodata     start:0x803EB230 end:0x803EBB48
+	.data       start:0x8041D1C0 end:0x8041D2B8
+	.bss        start:0x80473E14 end:0x80473EF8
 
 Speed/Indep/SourceLists/zGameModes.cpp:
 	.text       start:0x8019A1F0 end:0x8019A26C
@@ -126,99 +129,106 @@ Speed/Indep/SourceLists/zGameModes.cpp:
 Speed/Indep/SourceLists/zGameplay.cpp:
 	.text       start:0x8019A26C end:0x801BCB0C
 	.ctors      start:0x803C8BA4 end:0x803C8BA8
-	.rodata     start:0x803ED2FC end:0x803EEF24
-	.data       start:0x8041D31C end:0x8041D5A4
+	.rodata     start:0x803EBB48 end:0x803ED338
+	.data       start:0x8041D2B8 end:0x8041D5A4
 	.bss        start:0x80473F00 end:0x80473FE0
 
 Speed/Indep/SourceLists/zLua.cpp:
 	.text       start:0x801BCB0C end:0x801D3B44
 	.ctors      start:0x803C8BA8 end:0x803C8BAC
-	.rodata     start:0x803EEF24 end:0x803F3EB8
+	.rodata     start:0x803ED338 end:0x803EF580
 	.data       start:0x8041D5A4 end:0x8041D7EC
 	.bss        start:0x80473FE0 end:0x80474024
 
 Speed/Indep/SourceLists/zMain.cpp:
 	.text       start:0x801D3B44 end:0x801FAB64
 	.ctors      start:0x803C8BAC end:0x803C8BB0
-	.rodata     start:0x803F3EB8 end:0x803F48D4
+	.rodata     start:0x803EF580 end:0x803F4878
 	.data       start:0x8041D7EC end:0x8041E508
-	.bss        start:0x80474024 end:0x8047F91C
+	.bss        start:0x80474024 end:0x8047F914
 
 Speed/Indep/SourceLists/zMisc.cpp:
-	.text       start:0x801FAB64 end:0x8020DEA0
+	.text       start:0x801FAB64 end:0x8020DC1C
 	.ctors      start:0x803C8BB0 end:0x803C8BB4
-	.rodata     start:0x803F48D4 end:0x803F9804
-	.data       start:0x8041E508 end:0x8041EFE8
-	.bss        start:0x8047F91C end:0x804801A4
+	.rodata     start:0x803F4878 end:0x803F6730
+	.data       start:0x8041E508 end:0x8041ED7C
+	.bss        start:0x8047F914 end:0x804801A4
+	.bss        start:0x804FE9CC end:0x804FEA4C align:4 common
 
 Speed/Indep/SourceLists/zMiscSmall.cpp:
-	.text       start:0x8020DEA0 end:0x8020DF1C
+	.text       start:0x8020DC1C end:0x8020DF1C
 	.ctors      start:0x803C8BB4 end:0x803C8BB8
+	.rodata     start:0x803F6730 end:0x803F6890
+	.data       start:0x8041ED7C end:0x8041EFE8
 	.bss        start:0x804801A4 end:0x804801AC
 
 Speed/Indep/SourceLists/zMission.cpp:
 	.text       start:0x8020DF1C end:0x8020DF98
 	.ctors      start:0x803C8BB8 end:0x803C8BBC
+	.rodata     start:0x803F6890 end:0x803F68F0
 	.bss        start:0x804801AC end:0x804801D8
 
 Speed/Indep/SourceLists/zPhysics.cpp:
 	.text       start:0x8020DF98 end:0x80231A64
 	.ctors      start:0x803C8BBC end:0x803C8BC0
-	.rodata     start:0x803F9804 end:0x803FAB04
-	.data       start:0x8041EFE8 end:0x8041F358
-	.bss        start:0x804801D8 end:0x8048A1A8
+	.rodata     start:0x803F68F0 end:0x803FA7B0
+	.data       start:0x8041EFE8 end:0x8041F1A4
+	.bss        start:0x804801D8 end:0x80484EB8
 
 Speed/Indep/SourceLists/zPhysicsBehaviors.cpp:
 	.text       start:0x80231A64 end:0x8026B4F4
 	.ctors      start:0x803C8BC0 end:0x803C8BC4
-	.rodata     start:0x803FAB04 end:0x80403B1C
-	.data       start:0x8041F358 end:0x8041F7F4
-	.bss        start:0x8048A1A8 end:0x8048BD18
+	.rodata     start:0x803FA7B0 end:0x80402108
+	.data       start:0x8041F1A4 end:0x8041F728
+	.bss        start:0x80484EB8 end:0x8048BD18
 
 Speed/Indep/SourceLists/zPlatform.cpp:
 	.text       start:0x8026B4F4 end:0x802727B8
 	.ctors      start:0x803C8BC4 end:0x803C8BC8
-	.rodata     start:0x80403B1C end:0x804043B0
-	.data       start:0x8041F7F4 end:0x80435814
+	.rodata     start:0x80402108 end:0x80403B40
+	.data       start:0x8041F728 end:0x80435768
 	.bss        start:0x8048BD18 end:0x80496A20
 
 Speed/Indep/SourceLists/zRender.cpp:
 	.text       start:0x802727B8 end:0x802728EC
 	.ctors      start:0x803C8BC8 end:0x803C8BCC
+	.rodata     start:0x80403B40 end:0x80403F48
+	.data       start:0x80435768 end:0x80435814
 	.bss        start:0x80496A20 end:0x80496A28
 
 Speed/Indep/SourceLists/zSim.cpp:
 	.text       start:0x802728EC end:0x8028A17C
 	.ctors      start:0x803C8BCC end:0x803C8BD0
-	.rodata     start:0x804043B0 end:0x804074A4
+	.rodata     start:0x80403F48 end:0x80405E10
 	.data       start:0x80435814 end:0x80435970
 	.bss        start:0x80496A28 end:0x80498974
 
 Speed/Indep/SourceLists/zSpeech.cpp:
 	.text       start:0x8028A17C end:0x802B5C44
 	.ctors      start:0x803C8BD0 end:0x803C8BD4
-	.rodata     start:0x804074A4 end:0x8040DCC4
+	.rodata     start:0x80405E10 end:0x80408FB8
 	.data       start:0x80435970 end:0x80435F48
 	.bss        start:0x80498974 end:0x8049A5A4
 
 Speed/Indep/SourceLists/zTrack.cpp:
 	.text       start:0x802B5C44 end:0x802C5544
 	.ctors      start:0x803C8BD4 end:0x803C8BD8
-	.data       start:0x80435F48 end:0x80437248
+	.rodata     start:0x80408FB8 end:0x80409D58
+	.data       start:0x80435F48 end:0x80437100
 	.bss        start:0x8049A5A4 end:0x804A5E60
 
 Speed/Indep/SourceLists/zWorld.cpp:
 	.text       start:0x802C5544 end:0x802ECA00
 	.ctors      start:0x803C8BD8 end:0x803C8BDC
-	.rodata     start:0x8040DCC4 end:0x8040E370
-	.data       start:0x80437248 end:0x80438F80
+	.rodata     start:0x80409D58 end:0x8040DFE8
+	.data       start:0x80437100 end:0x80438F58
 	.bss        start:0x804A5E60 end:0x804AA598
 
 Speed/Indep/SourceLists/zWorld2.cpp:
-	.text       start:0x802ECA00 end:0x8030EB08
+	.text       start:0x802ECA00 end:0x8030EA7C
 	.ctors      start:0x803C8BDC end:0x803C8BE0
-	.rodata     start:0x8040E370 end:0x8040FBB8
-	.data       start:0x80438F80 end:0x804390F0
+	.rodata     start:0x8040DFE8 end:0x8040FBB8
+	.data       start:0x80438F58 end:0x804390E4
 	.bss        start:0x804AA598 end:0x804AAA88
 
 Speed/Indep/SourceLists/zOnline.cpp:
@@ -229,7 +239,7 @@ Speed/Indep/SourceLists/zOnline.cpp:
 Speed/Indep/SourceLists/zFeOverlay.cpp:
 	.over       start:0x803A4294 end:0x803C6A3C
 	.ctors      start:0x803C8BE4 end:0x803C8BE8
-	.data       start:0x804390F0 end:0x804394D0
+	.data       start:0x804390E4 end:0x804394D0
 	.bss        start:0x804AAA90 end:0x804B4DE8
 
 asd2:

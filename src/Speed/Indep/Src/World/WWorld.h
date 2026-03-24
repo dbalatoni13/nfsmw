@@ -45,7 +45,9 @@ class WWorld {
 
     // static bool IsPresent() {}
 
-    // static struct WWorld &Get() {}
+    static WWorld &Get() {
+        return *fgWorld;
+    }
 
     // static void Shutdown() {}
 

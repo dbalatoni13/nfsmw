@@ -24,6 +24,7 @@ struct MUTEX {
 
 inline bool MUTEX_create(MUTEX *m) {
     reinterpret_cast<RealSystem::Mutex *>(m)->Create();
+    return true;
 }
 
 inline void MUTEX_destroy(MUTEX *m) {

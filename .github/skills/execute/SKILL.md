@@ -9,6 +9,11 @@ Your goal is to decompile a full translation unit: understand the current state,
 scaffold any missing classes if needed, then match the unit function by function until
 the produced C++ compiles to byte-identical object code against the original retail binary.
 
+For each function, "done" means both objdiff and normalized DWARF are exact.
+
+Human review is not a substitute for running `dwarf compare`. Each function should hit
+its own `verify` gate before you treat it as ready to hand off, commit, or move past.
+
 ## Overview
 
 This workflow combines several smaller workflows:
@@ -30,9 +35,13 @@ the main worker after reviewing the read-only findings.
 Before any work begins, establish a regression baseline:
 
 ```sh
+python tools/decomp-workflow.py health --full main/Path/To/TU
 ninja           # ensure clean build
 ninja baseline  # snapshot current match state
 ```
+
+Add `--timings` to the `health --full` command when you are investigating slow worktrees
+or unexpectedly expensive build/tool startup.
 
 After modifying shared headers, check `ninja changes` to verify no regressions were
 introduced. An empty changeset means no regressions. If regressions appear, the shared
@@ -55,35 +64,42 @@ Determine the file path (e.g. `src/Speed/Indep/SourceLists/zWorld2`). The game u
 Preferred shortcut:
 
 ```sh
+python tools/decomp-workflow.py next --unit main/Path/To/TU --limit 10
 python tools/decomp-workflow.py unit -u main/Path/To/TU --limit 20
 ```
 
-Manual equivalent:
+Use `next` first when you want the wrapper to rank the most useful targets instead of
+following raw objdiff order. `--strategy balanced` is the default and is usually the best
+starting point because it now favors large remaining gains and penalizes near-finished
+cleanup work. Use `--strategy impact` when you only care about the biggest unmatched-byte
+wins. Use `--strategy quick-wins` when you want lower-match functions where the first big
+chunk of progress is likely to come faster than late cleanup.
 
-```sh
-python tools/decomp-status.py --unit main/Path/To/TU
-TEMPOBJ=$(python tools/build-unit.py -u main/Path/To/TU)
-python tools/decomp-diff.py -u main/Path/To/TU -s missing -t function --base-obj "$TEMPOBJ"
-python tools/decomp-diff.py -u main/Path/To/TU -s nonmatching -t function --base-obj "$TEMPOBJ"
-```
+Stay in the wrapper flow by default. Only drop to raw `decomp-status.py` / `decomp-diff.py`
+when you need an option the wrapper does not expose yet.
 
-This shows all symbols with their match status. Note the total count of missing,
-nonmatching, and matching functions.
+If the shared unit object is missing, the wrapper now rebuilds it automatically before
+running `next --unit` / `unit`.
+
+If you need the raw tools instead of the wrapper, run `decomp-status.py` and
+`decomp-diff.py` directly against the shared build output as a fallback, not the default.
 
 ## Phase 2: Scaffold (if needed)
 
-A jump file contains many files and classes. If the TU depends on a type whose
+A jumbo file contains many files and classes. If the TU depends on a type whose
 definition does not yet exist in the project, follow the scaffold workflow in
 `.github/skills/scaffold/SKILL.md` to create the needed header/source definitions
 before moving on.
+
+Treat recovered types here as copied reference data, not as hand-designed headers. Copy
+the GC DWARF type body into the canonical owner header first and preserve its declaration
+order unless PS2 or existing repo-header evidence proves a specific correction.
 
 ## Phase 3: Implement Functions
 
 ### 3a. Get the updated function list
 
-After scaffolding, rebuild and re-check the function list.
-Use `build-unit.py` to compile to a private temp `.o` so the status check isn't
-polluted by another concurrent temp build:
+After scaffolding, rebuild and re-check the function list:
 
 Preferred shortcut:
 
@@ -91,14 +107,8 @@ Preferred shortcut:
 python tools/decomp-workflow.py unit -u main/Path/To/TU
 ```
 
-Manual equivalent:
-
-```sh
-ninja                  # full build to update shared state (progress, sha1)
-TEMPOBJ=$(python tools/build-unit.py -u main/Path/To/TU)
-python tools/decomp-diff.py -u main/Path/To/TU -s missing -t function --base-obj "$TEMPOBJ"
-python tools/decomp-diff.py -u main/Path/To/TU -s nonmatching -t function --base-obj "$TEMPOBJ"
-```
+If you need the raw tools, rebuild normally and then run `decomp-diff.py`
+directly on the unit only as a fallback.
 
 ### 3c. Implement each function sequentially
 
@@ -110,12 +120,17 @@ For each missing or nonmatching function, follow the implementation workflow in
 - **One at a time.** Keep the tree in a coherent state as you work through the list.
 - **Balance new vs fixing.** Don't get stuck on one stubborn function — sometimes
   implementing the next function reveals patterns that make the previous one click.
+- **Recovered types are not freeform.** If a function forces you to add or fix a type,
+  copy the DWARF layout into the owner header first. Do not sketch structs/classes from
+  use sites or reorder declarations just to make the header look nicer.
 - **Mismatch triage:**
   - `@stringBase0` offset mismatches often resolve as more string literals are added
+    - If you need to inspect the original string or rodata at a virtual address, use `python tools/elf_lookup.py 0xADDR`
   - Register swaps and stack layout issues require direct intervention
   - Branch structure mismatches indicate wrong control flow (if/switch/loop)
 - **Match percentage is misleading.** The last few percent are often the hardest.
   Treat 95% as unfinished; the goal is 100%.
+- **DWARF is equally mandatory.** A 100% objdiff function with a DWARF mismatch is still unfinished.
 
 ### 3d. Collect and propagate matching tips
 
@@ -134,15 +149,30 @@ After modifying any shared headers, run `ninja changes` to check for regressions
 Empty changeset = no regressions. If regressions appear, revert the shared change
 and use a local workaround instead.
 
-Use `build-unit.py` + `--base-obj` for diff and context commands when you want
-results isolated from other concurrent builds of the same TU.
+Use `python tools/decomp-workflow.py function ...` or
+`python tools/decomp-workflow.py diff ...` when you want a shorter, wrapper-first
+view for one function.
+
+After each function-level edit pass, run:
+
+```sh
+python tools/decomp-workflow.py verify -u main/Path/To/TU -f FunctionName
+```
+
+If it fails, follow up with `decomp-workflow.py diff` and `decomp-workflow.py dwarf`
+until both checks pass.
+
+Do not queue up several "probably done" functions and leave the DWARF check for later.
+Close the `verify` gate per function before moving on whenever feasible; otherwise the
+reviewer ends up doing avoidable DWARF triage.
 
 ### 3g. Periodic reassessment
 
 After every few functions, re-run the full status check:
 
 ```sh
-python tools/decomp-diff.py -u main/Path/To/TU
+python tools/decomp-workflow.py unit -u main/Path/To/TU
+python tools/decomp-workflow.py next --unit main/Path/To/TU --limit 10
 ```
 
 Review progress and decide whether to:
@@ -156,18 +186,25 @@ Review progress and decide whether to:
 When all functions have been attempted:
 
 ```sh
-# Full status
-python tools/decomp-diff.py -u main/Path/To/TU
+# Wrapper-first unit summary
+python tools/decomp-workflow.py unit -u main/Path/To/TU
 
-# Check for any remaining mismatches
-python tools/decomp-diff.py -u main/Path/To/TU -s nonmatching
+# Focused remaining mismatches
+python tools/decomp-workflow.py diff -u main/Path/To/TU -s nonmatching -t function
 
 # Verify no regressions
 ninja changes
 ```
 
+If you need a raw full-symbol dump beyond that, use `decomp-diff.py` only as a final
+fallback.
+
 For any remaining nonmatching functions, make one final pass using the implementation
 or refiner workflow with all context accumulated during the session.
+
+Do not report a function as complete unless its per-function `verify` check also passes.
+Do not hand a function to review as "done except maybe DWARF" — either resolve the DWARF
+failure yourself or explicitly call out the blocker and why it remains.
 
 ## Phase 5: Report
 

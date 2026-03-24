@@ -7,7 +7,6 @@
 
 #include "SpaceNode.hpp"
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
-#include "Speed/Indep/Src/Ecstasy/eModel.hpp"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
@@ -119,5 +118,7 @@ class WorldModel : public bTNode<WorldModel> {
     eLightMaterial *mLightMaterial;      // offset 0x80, size 0x4
     unsigned int mLightMaterialSkinHash; // offset 0x84, size 0x4
 };
+
+void InitWorldModels();
 
 #endif

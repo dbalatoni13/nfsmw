@@ -90,7 +90,11 @@ inline float bSqrt(float x) {
 }
 
 inline int bMin(int a, int b) {
-    return a > b ? b : a;
+    if (b < a) {
+        return b;
+    } else {
+        return a;
+    }
 }
 
 inline float bMin(float a, float b) {
@@ -106,7 +110,11 @@ inline float bMin(float a, float b) {
 }
 
 inline int bMax(int a, int b) {
-    return a > b ? a : b;
+    if (a > b) {
+        return a;
+    } else {
+        return b;
+    }
 }
 
 inline float bMax(float a, float b) {
@@ -126,6 +134,10 @@ inline int bAbs(int a) {
         return -a;
     }
     return a;
+}
+
+inline int bMult(int a, int b) {
+    return (static_cast<long long>(a) * b) >> 16;
 }
 
 inline float bAbs(float a) {
@@ -211,33 +223,33 @@ struct bVector2 {
 
     bVector2() {}
 
-    bVector2 operator+() {}
-
     bVector2(float _x, float _y);
 
-    bVector2(const bVector2 &v) {}
+    bVector2 operator+(const bVector2 &v) const;
 
-    bVector2 operator-(const bVector2 &v);
+    bVector2 operator-(const bVector2 &v) const;
 
-    bVector2 &operator=(const bVector2 &v) {}
+    bVector2 operator*(float f) const;
 
-    bVector2 &operator*=(float scale) {}
+    bVector2 operator-() const;
 
-    bVector2 &operator/=(float inv_scale) {}
+    bVector2 &operator-=(const bVector2 &v);
 
-    int operator==(const bVector2 &v) {}
+    bVector2 &operator+=(const bVector2 &v);
 
-    float &operator[](int index) {}
+    bVector2 &operator*=(float scale);
 
-    bVector2 operator+(const bVector2 &v) {}
+    bVector2 &operator/=(float inv_scale);
 
-    bVector2 operator-() {}
+    int operator==(const bVector2 &v);
 
-    bVector2 operator*(float f) {}
+    // bVector2 &operator=(const bVector2 &v) {} // compiler generated? shown in dwarf
 
-    bVector2 &operator-=(const bVector2 &v) {}
+    // bVector2(const bVector2 &v) {} // compiler generated
 
-    bVector2 &operator+=(const bVector2 &v) {}
+    // bVector2 operator+() {} // not present in dwarf
+
+    // float &operator[](int index) {} // not present in dwarf
 };
 
 bVector2 *bNormalize(bVector2 *dest, const bVector2 *v);
@@ -254,7 +266,17 @@ inline bVector2::bVector2(float _x, float _y) {
     bFill(this, _x, _y);
 }
 
-inline bVector2 bVector2::operator-(const bVector2 &v) {
+inline bVector2 bVector2::operator+(const bVector2 &v) const {
+    float x1 = this->x;
+    float y1 = this->y;
+    float x2 = v.x;
+    float y2 = v.y;
+    float _x = x1 + x2;
+    float _y = y1 + y2;
+    return bVector2(_x, _y);
+}
+
+inline bVector2 bVector2::operator-(const bVector2 &v) const {
     float x1 = this->x;
     float y1 = this->y;
     float x2 = v.x;
@@ -280,6 +302,15 @@ int bEqual(const bVector2 *v1, const bVector2 *v2, float epsilon);
 
 inline float bDot(const bVector2 *v1, const bVector2 *v2) {
     return v1->x * v2->x + v1->y * v2->y;
+}
+
+inline bVector2 *bScale(bVector2 *dest, const bVector2 *v, float scale) {
+    float x = v->x;
+    float y = v->y;
+
+    dest->x = x * scale;
+    dest->y = y * scale;
+    return dest;
 }
 
 struct ALIGN_16 bVector3 {
@@ -524,9 +555,13 @@ struct bVector4 {
 
     int operator==(const bVector4 &v) {}
 
-    float &operator[](int index) {}
+    float &operator[](int index) {
+        return reinterpret_cast<float *>(this)[index];
+    }
 
-    const float &operator[](int index) const {}
+    const float &operator[](int index) const {
+        return reinterpret_cast<const float *>(this)[index];
+    }
 
     bVector4 operator+(const bVector4 &v) {
         bVector4 *pv;
@@ -758,12 +793,29 @@ inline bVector4 bVector4::operator-(const bVector4 &v) {
     return bVector4(_x, _y, _z, _w);
 }
 
-// inline bVector4 &bConvertToBond(bVector4 &dest, const struct bVector4 &v) {
-//     float w; // f13
-//     float z; // f9
-//     float y; // f10
-//     float x; // f0
-// }
+inline bVector4 &bConvertToBond(bVector4 &dest, const bVector4 &v) {
+    float x = v.y;
+    float y = v.z;
+    float z = v.x;
+    float w = v.w;
+    dest.x = -x;
+    dest.y = y;
+    dest.z = z;
+    dest.w = w;
+    return dest;
+}
+
+inline bVector4 &bConvertFromBond(bVector4 &dest, const bVector4 &v) {
+    float x = v.z;
+    float y = v.x;
+    float z = v.y;
+    float w = v.w;
+    dest.x = x;
+    dest.y = -y;
+    dest.z = z;
+    dest.w = w;
+    return dest;
+}
 
 inline bVector3 &bConvertFromBond(bVector3 &dest, const bVector3 &v) {
     float x = v.z;
@@ -799,9 +851,13 @@ struct bMatrix4 {
     bMatrix4(const bMatrix4 &m);
     bMatrix4 &operator=(const bMatrix4 &m);
 
-    bVector4 &operator[](int index) {}
+    bVector4 &operator[](int index) {
+        return reinterpret_cast<bVector4 *>(this)[index];
+    }
 
-    const bVector4 &operator[](int index) const {}
+    const bVector4 &operator[](int index) const {
+        return reinterpret_cast<const bVector4 *>(this)[index];
+    }
 };
 
 inline bMatrix4 *bCopy(bMatrix4 *dest, const bMatrix4 *v) {

@@ -1,6 +1,7 @@
 #include "./eStreamingPack.hpp"
 #include "./EcstasyE.hpp"
 #include "Speed/Indep/Src/Misc/LZCompress.hpp"
+#include "Speed/Indep/Src/Misc/Platform.h"
 #include "Speed/Indep/Src/Misc/Profiler.hpp"
 #include "Speed/Indep/Src/Misc/QueuedFile.hpp"
 #include "Speed/Indep/Src/Misc/ResourceLoader.hpp"
@@ -331,7 +332,7 @@ void eStreamPackLoader::InternalLoadedStreamingEntryCallback(void *callback_para
 
 void eStreamPackLoader::InternalLoadStreamingEntry(eStreamingPackLoadTable *loading_table, eStreamingPack *streaming_pack,
                                                    eStreamingEntry *streaming_entry) {
-    unsigned int name_hash = streaming_entry->NameHash;
+    uint32 name_hash = streaming_entry->NameHash;
 
     if (!loading_table || !streaming_pack || !streaming_entry)
         return;
@@ -688,9 +689,6 @@ bool eStreamPackLoader::DefragmentAllocation(void *allocation) {
 
     return 0;
 }
-
-extern void DVDErrorTask(void *, int);
-extern void bThreadYield(int);
 
 void eStreamPackLoader::WaitForLoadingToFinish(const char *filename) {
     while (this->IsLoading(filename)) {

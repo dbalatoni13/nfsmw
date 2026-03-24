@@ -256,6 +256,28 @@ int bBoundingBoxIsInside(const bVector3 *bbox_min, const bVector3 *bbox_max, con
     return true;
 }
 
+// UNSOLVED, ProStreet scratch: https://decomp.me/scratch/VE8bd
+float bDistToLine(const bVector2 *point, const bVector2 *line_p1, const bVector2 *line_p2) {
+    bVector2 p = *point - *line_p1;
+    bVector2 tangent(line_p2->x - line_p1->x, line_p2->y - line_p1->y);
+    float length = bLength(&tangent);
+    bNormalize(&tangent, &tangent);
+    bVector2 normal(-tangent.y, tangent.x);
+    float d = bDot(&p, &normal);
+    float l = bDot(&p, &tangent);
+    float distance;
+
+    if (l < 0.0f) {
+        distance = bSqrt(l * l + d * d);
+    } else if (l > length) {
+        distance = bSqrt((l - length) * (l - length) + d * d);
+    } else {
+        distance = bAbs(d);
+    }
+
+    return distance;
+}
+
 bool bIsPointInPoly(const bVector2 *point, const bVector2 *points, int num_points) {
     float x = point->x;
     float y = point->y;

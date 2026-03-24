@@ -14,6 +14,14 @@
 #include "Speed/Indep/Tools/AttribSys/Runtime/VecHashMap64.h"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 
+inline void *DefaultTableAllocFunc(size_t bytes) {
+    return AttribAlloc::Allocate(bytes, "TODO");
+}
+
+inline void DefaultTableFreeFunc(void *ptr, size_t bytes) {
+    AttribAlloc::Free(ptr, bytes, "TODO");
+}
+
 namespace Hermes {
 
 DECLARE_CONTAINER_TYPE(ID_HermesHandlerVector);
@@ -196,14 +204,6 @@ struct PortKey {
     uint64_t key;    // offset 0x0, size 0x8
     PortMessage *pm; // offset 0x8, size 0x4
 };
-
-inline void *DefaultTableAllocFunc(size_t bytes) {
-    return AttribAlloc::Allocate(bytes, "TODO");
-}
-
-inline void DefaultTableFreeFunc(void *ptr, size_t bytes) {
-    AttribAlloc::Free(ptr, bytes, "TODO");
-}
 
 // total size: 0x20
 class System {

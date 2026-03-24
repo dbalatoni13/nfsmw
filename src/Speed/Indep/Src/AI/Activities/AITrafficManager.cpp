@@ -6,6 +6,7 @@
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/trafficpattern.h"
 #include "Speed/Indep/Src/Generated/Messages/MSetTrafficSpeed.h"
 #include "Speed/Indep/Src/Input/ActionQueue.h"
+#include "Speed/Indep/Src/Misc/Config.h"
 #include "Speed/Indep/Src/Input/ActionRef.h"
 #include "Speed/Indep/Src/Interfaces/ITaskable.h"
 #include "Speed/Indep/Src/Interfaces/SimActivities/ICopMgr.h"
@@ -27,11 +28,6 @@
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 
 #include <algorithm>
-
-// TODO move
-extern BOOL SkipFETrafficDensity; // size: 0x4
-extern BOOL SkipFEDisableTraffic; // size: 0x4
-extern BOOL SkipFE;               // size: 0x4
 
 UTL::COM::Factory<Sim::Param, Sim::IActivity, UCrc32>::Prototype _AITrafficManager("AITrafficManager", AITrafficManager::Construct);
 

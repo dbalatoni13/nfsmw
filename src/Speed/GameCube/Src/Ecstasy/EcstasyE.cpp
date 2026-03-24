@@ -4,19 +4,13 @@
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
 #include "Speed/Indep/Src/Ecstasy/EcstasyEx.hpp"
 #include "Speed/Indep/Src/Ecstasy/Texture.hpp"
+#include "Speed/Indep/Src/Misc/Timer.hpp"
 #include "Speed/Indep/Src/World/Car.hpp"
 #include "Speed/Indep/Src/World/Sun.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include "dolphin.h"
-
-enum VIDEO_MODE {
-    MODE_PAL = 0,
-    MODE_PAL60 = 1,
-    MODE_NTSC = 2,
-    NUM_VIDEO_MODES = 3,
-};
 
 // TODO put these in correct headers
 unsigned int bGetTicker();
@@ -70,6 +64,14 @@ void eProgressiveScan_EURGB60SetMode(int os_restarted /* r31 */, int tv_mode /* 
 void eNTSCInterlace_PALSetMode(int os_restarted /* r31 */, int tv_mode /* r4 */);
 void eEURGB60ModeCheck();
 void eInitContrastSurface();
+void eForceResetTevSwapStages();
+void eResetIndirectTextureSetup();
+void eSetOrthographicMatrixToHW();
+void eLoadTevSwapTable();
+
+extern "C" {
+unsigned short GXReadDrawSync();
+}
 
 GXRenderModeObj *_rmode;                   // size: 0x4
 GXRenderModeObj _rmodeObj;                 // size: 0x3C
@@ -93,21 +95,19 @@ Mtx44 Player1SpecularProjection;
 Mtx44 Player2ReflectionProjection;
 Mtx44 Player2SpecularProjection;
 
-volatile int FrameCounter = 0;
-volatile unsigned int LastFrameCounterTick = 0;
 VIDEO_MODE eCurrentVideoMode;
 int ScreenWidth;
 int ScreenHeight;
 Mtx g_ScreenPositionMatrix;
 SlotPool *ActiveTextureSlotPool;
 
-Bool bEURGB60;                                                      // size: 0x1
+Bool bEURGB60 = false;                                              // size: 0x1
 int _firstFrame;                                                    // size: 0x4
-void *_frameBuffer1;                                                // size: 0x4
-void *_frameBuffer2;                                                // size: 0x4
-void *_currentBuffer;                                               // size: 0x4
+void *_frameBuffer1 = nullptr;                                      // size: 0x4
+void *_frameBuffer2 = nullptr;                                      // size: 0x4
+void *_currentBuffer = nullptr;                                     // size: 0x4
 int _GxInitialized;                                                 // size: 0x4
-static unsigned char e_bDither;                                     // size: 0x1
+static Bool e_bDither = false;                                      // size: 0x1
 static unsigned int fbSize;                                         // size: 0x4
 void *_defaultFIFO;                                                 // size: 0x4
 GXFifoObj *_defaultFIFOObj;                                         // size: 0x4
@@ -141,18 +141,22 @@ static const float TweakOverrideSunIntensityForRoadSpecular = 0.0f; // size: 0x4
 bool EnableRainIn2P;                                                // size: 0x1
 int efbWcrt;                                                        // size: 0x4
 int xfbWcrt;                                                        // size: 0x4
-bool IsPal50Mode;                                                   // size: 0x1
-int xfbHcrt = 574;                                                  // size: 0x4
-int efbHcrt = 480;                                                  // size: 0x4
-float efbxfbRatio = 1.0f;                                           // size: 0x4
-GXRenderModeObj PalNFS01IntDfScale;                                 // size: 0x3C
-Bool bEProgressive;
-volatile unsigned short e_sync;          // size: 0x2
-volatile unsigned short e_endsync;       // size: 0x2
+bool IsPal50Mode = false;                                           // size: 0x1
+#ifdef EA_PLATFORM_GAMECUBE
+int xfbHcrt = 520; // size: 0x4
+#else
+int xfbHcrt = 574; // size: 0x4
+#endif
+int efbHcrt = 480;                  // size: 0x4
+float efbxfbRatio = 1.0f;           // size: 0x4
+GXRenderModeObj PalNFS01IntDfScale; // size: 0x3C
+Bool bProgressiveScan = false;
+vu16 e_sync = 0;                         // size: 0x2
+vu16 e_endsync = 0;                      // size: 0x2
 volatile unsigned short load_sync;       // size: 0x2
 volatile unsigned short last_sync_token; // size: 0x2
 Bool bNoWait;                            // size: 0x1
-Bool bAlwaysCopyDisp;                    // size: 0x1
+Bool bAlwaysCopyDisp = true;             // size: 0x1
 int nFilterUpdates;
 int nDepthFormat;
 TextureInfo *pTexPrev; // size: 0x4
@@ -164,6 +168,14 @@ int EnableTexturing = true;
 int DrawWireframe = 0;
 cReflectMap ReflectMap;
 cQuarterSizeMap QuarterSizeMap;
+float PALefbxfbFOVscl = 1.0f; // size: 0x4, address: 0x8041ABFC
+float PALefbxfbAspect = 1.0f; // size: 0x4, address: 0x8041AC00
+static vu16 __sync_token;
+
+bool IsRainDisabled() {
+    bool rain_disabled = !EnableRainIn2P && (eGetCurrentViewMode() == EVIEWMODE_TWOH || eGetCurrentViewMode() == EVIEWMODE_TWOV);
+    return rain_disabled;
+}
 
 void cb_PreRetrace(unsigned long param) {}
 
@@ -314,44 +326,15 @@ void eUpdateViewMode(void) {
     eView *eview_player2 = eGetView(2, false);
     eView *eview_player1_rvm = eGetView(3, false);
 
-    node1 = (eview_player1->CameraMoverList).HeadNode.GetNext();
-    node3 = (bNode *)0x0;
-    if (node1 != (bNode *)&eview_player1->CameraMoverList) {
-        node3 = node1;
-    }
-    if (node3 != (bNode *)0x0) {
-        node1 = (eview_player2->CameraMoverList).HeadNode.GetNext();
-        node3 = (bNode *)0x0;
-        if (node1 != (bNode *)&eview_player2->CameraMoverList) {
-            node3 = node1;
-        }
-        if (node3 != (bNode *)0x0) {
-            CurrentViewMode = EVIEWMODE_TWOH;
-            return;
-        }
-    }
-    node1 = (eview_player1->CameraMoverList).HeadNode.GetNext();
-    node3 = (bNode *)0x0;
-    if (node1 != (bNode *)&eview_player1->CameraMoverList) {
-        node3 = (eview_player1->CameraMoverList).HeadNode.GetNext();
-    }
-    if (node3) {
-        node2 = (eview_player1_rvm->CameraMoverList).HeadNode.GetNext();
-        node3 = (bNode *)0x0;
-        if (node2 != (bNode *)&eview_player1_rvm->CameraMoverList) {
-            node3 = node2;
-        }
-        if (node3) {
-            CurrentViewMode = EVIEWMODE_ONE_RVM;
-            return;
-        }
-    }
-    CurrentViewMode = EVIEWMODE_NONE;
-    if (node1 != (bNode *)&eview_player1->CameraMoverList) {
-        CurrentViewMode = EVIEWMODE_TWOH; // (EVIEWMODE)node1;
-    }
-    if (CurrentViewMode != EVIEWMODE_NONE) {
+    if (eview_player1->GetCameraMover() != nullptr && eview_player2->GetCameraMover() != nullptr) {
+        CurrentViewMode = EVIEWMODE_TWOH;
+    } else if (eview_player1->GetCameraMover() != nullptr && eview_player1_rvm->GetCameraMover() != nullptr &&
+               !eview_player1->GetCameraMover()->OutsidePOV()) {
+        CurrentViewMode = EVIEWMODE_ONE_RVM;
+    } else if (eview_player1->GetCameraMover() != nullptr) {
         CurrentViewMode = EVIEWMODE_ONE;
+    } else {
+        CurrentViewMode = EVIEWMODE_NONE;
     }
 }
 
@@ -426,20 +409,19 @@ int eClampTopLeft(bool bOnOff, int nUnused) {
     return false;
 }
 
-// UNSOLVED https://decomp.me/scratch/xURfH
 bool IsSunInFrustrum(eView *player_view) {
-    SunChunkInfo *sun_info = SunInfo;
+    SunChunkInfo *sun_info = SunInfo; // r9
 
     if (!sun_info) {
         return false;
     }
-    bVector2 sunpos_xy(sun_info->PositionX, sun_info->PositionY);
-    bVector2 campos_xy(player_view->GetCamera()->GetPosition()->x, player_view->GetCamera()->GetPosition()->y);
+    const bVector2 sunpos_xy(sun_info->PositionX, sun_info->PositionY);                                         // sp8
+    bVector2 campos_xy(player_view->GetCamera()->GetPosition()->x, player_view->GetCamera()->GetPosition()->y); // sp10
 
-    bVector2 to_pt_xy_un = sunpos_xy - campos_xy;
-    bVector2 cam_dir_xy_un(player_view->GetCamera()->GetDirection()->x, player_view->GetCamera()->GetDirection()->y);
-    bVector2 to_pt_xy = bNormalize(to_pt_xy_un);
-    bVector2 cam_dir_xy = bNormalize(cam_dir_xy_un);
+    const bVector2 to_pt_xy_un = sunpos_xy - campos_xy;                                                                     // sp18
+    const bVector2 cam_dir_xy_un(player_view->GetCamera()->GetDirection()->x, player_view->GetCamera()->GetDirection()->y); // sp20
+    bVector2 to_pt_xy = bNormalize(to_pt_xy_un);                                                                            // sp38
+    bVector2 cam_dir_xy = bNormalize(cam_dir_xy_un);                                                                        // sp40;
 
     float dotp = bDot(&to_pt_xy, &cam_dir_xy);
 
@@ -491,11 +473,21 @@ eRenderTarget *eGetCurrentRenderTarget() {
 
 void eSetCurrentRenderTarget(eRenderTarget *render_target) {
     CurrentRenderTarget = render_target;
-    if (render_target) {
-        GXSetViewport(render_target->ScissorX, render_target->ScissorY, render_target->FrameWidth, render_target->FrameHeight, 0.0, 1.0);
+    if (CurrentRenderTarget) {
+        if (_rmode->field_rendering && CurrentRenderTarget->ID <= 1u) {
+            GXSetViewportJitter(CurrentRenderTarget->ScissorX, CurrentRenderTarget->ScissorY, CurrentRenderTarget->FrameWidth,
+                                CurrentRenderTarget->FrameHeight / 2.0f, 0.0, 1.0, VIGetNextField());
+        } else {
+            GXSetViewport(CurrentRenderTarget->ScissorX, CurrentRenderTarget->ScissorY, CurrentRenderTarget->FrameWidth,
+                          CurrentRenderTarget->FrameHeight, 0.0, 1.0);
+        }
         eSetScissor(CurrentRenderTarget->ScissorX, CurrentRenderTarget->ScissorY, CurrentRenderTarget->ScissorW, CurrentRenderTarget->ScissorH);
         eSetBackgroundColor(CurrentRenderTarget->BackgroundColour);
-        eSetCopyFilter(CurrentRenderTarget->GetCopyFilter(), false);
+        if (CurrentRenderTarget->GetCopyFilter() == FILTER_OFF) {
+            eSetCopyFilter(CurrentRenderTarget->GetCopyFilter(), false);
+        } else {
+            eSetCopyFilter(CurrentRenderTarget->GetCopyFilter(), true);
+        }
     }
 }
 
@@ -503,7 +495,13 @@ eRenderTarget *eGetRenderTarget(int render_target) {
     return &RenderTargets[render_target];
 }
 
-void eWaitUntilRenderingDone() {}
+void eWaitUntilRenderingDone() {
+    GXSetDrawSync(__sync_token);
+    while (__sync_token != GXReadDrawSync()) {
+        // nop
+    }
+    __sync_token++;
+}
 
 float CalculateH(unsigned short alpha) {
     unsigned short beta = alpha >> 1;
@@ -537,25 +535,33 @@ void eInitGX() {
 }
 
 void __InitRenderMode() {
+    PALefbxfbAspect = 0.0f;
+    PALefbxfbFOVscl = 0.0f;
     switch (VIGetTvFormat()) {
-        case 0:
-            if (bEProgressive) {
+        case VI_TVMODE_NTSC_INT:
+            if (bProgressiveScan) {
                 _rmode = &GXNtsc480Prog;
             } else {
                 _rmode = &GXNtsc480IntDf;
             }
             break;
-        case 1:
-            _rmode = &PalNFS01IntDfScale;
-            break;
-        case 5:
+        case VI_TVMODE_NTSC_DS:
+            if (!bEURGB60) {
+                _rmode = &PalNFS01IntDfScale;
+                IsPal50Mode = true;
+                PALefbxfbAspect = (float)efbHcrt / (float)xfbHcrt;
+                PALefbxfbFOVscl = (float)xfbHcrt / (float)efbHcrt;
+                break;
+            }
+            // fallthrough
+        case VI_TVMODE_PAL_DS:
             _rmode = &GXEurgb60Hz480IntDf;
             break;
-        case 2:
+        case VI_TVMODE_NTSC_PROG:
             _rmode = &GXMpal480IntDf;
             break;
         default:
-            OSPanic("src/ecstasy/EcstasyE.cpp", 0x1281, "Init: invalid TV format\n");
+            OSPanic("src/ecstasy/EcstasyE.cpp", 0x1880, "Init: invalid TV format\n");
             break;
     }
     efbxfbRatio = static_cast<float>(efbHcrt) / xfbHcrt;
@@ -566,51 +572,61 @@ void __InitRenderMode() {
 }
 
 void __InitMem() {
-    fbSize = (((_rmode->fbWidth + 15) & 0xfff0) * _rmode->xfbHeight) * 2;
-    void *pFB = _frameBuffer1 = bMalloc(fbSize * 2, "TODO", __LINE__, 0x800);
-    _currentBuffer = (u8 *)pFB + fbSize;
-    _frameBuffer2 = (u8 *)pFB + fbSize;
+#define ROUND_UP(x, round) (((x) + ((round) - 1)) & ~((round) - 1))
+
+    fbSize = (u16)ROUND_UP(_rmode->fbWidth, 16) * _rmode->xfbHeight * 2;
+    void *pFB = bMalloc(fbSize * 2, "TODO", __LINE__, 0x800);
+    _frameBuffer1 = _frameBuffer2 = _currentBuffer = pFB;
+    _currentBuffer = _frameBuffer2 = (u8 *)pFB + fbSize;
+#undef ROUND_UP
 }
 
 void __InitGXlite(void) {
     GXSetViewport(0.0f, 0.0f, _rmode->fbWidth, _rmode->xfbHeight, 0.0f, 1.0f);
     scis_xOrig = 0;
+    scis_yOrig = 12;
     scis_wd = _rmode->fbWidth;
     scis_ht = _rmode->efbHeight - 24;
-    scis_yOrig = 12;
     eSetScissor(scis_xOrig, scis_yOrig, scis_wd, scis_ht);
     eSetCulling(GX_CULL_NONE);
     eResetBlendMode();
     eResetZBuffering();
     eSetColourUpdate(1, 1);
+    eForceResetTevSwapStages();
+    eResetIndirectTextureSetup();
     for (int i = 0; i < 16; i++) {
         GXSetTevKColorSel(static_cast<GXTevStageID>(i), GX_TEV_KCSEL_1_4);
         GXSetTevKAlphaSel(static_cast<GXTevStageID>(i), GX_TEV_KASEL_1);
     }
-    vsReset(0);
+    vsReset(RESET_OPTION_DEFAULT);
     vsResetTexGen(0, 0);
     psReset(RESET_OPTION_DEFAULT);
     ps_NoLighting(0, 0);
+    pTexPrev = nullptr;
 }
 
 void __InitGX(void) {
     GXSetViewport(0.0f, 0.0f, _rmode->fbWidth, _rmode->xfbHeight, 0.0f, 1.0f);
+    scis_xOrig = 0;
     scis_yOrig = 12;
     scis_wd = _rmode->fbWidth;
     scis_ht = _rmode->efbHeight - 24;
-    scis_xOrig = 0;
     eSetScissor(scis_xOrig, scis_yOrig, scis_wd, scis_ht);
     GXSetDispCopySrc(0, 0, _rmode->fbWidth, _rmode->efbHeight);
     GXSetDispCopyDst(_rmode->fbWidth, _rmode->xfbHeight);
     GXSetDispCopyYScale(static_cast<float>(_rmode->xfbHeight) / static_cast<float>(_rmode->efbHeight));
-    filt_00 = _rmode->vfilter[0];
-    filt_01 = _rmode->vfilter[1];
-    filt_10 = _rmode->vfilter[2];
-    filt_11 = _rmode->vfilter[3];
-    filt_12 = _rmode->vfilter[4];
+    // filt_00 = _rmode->vfilter[0];
+    // filt_01 = _rmode->vfilter[1];
+    // filt_10 = _rmode->vfilter[2];
+    // filt_11 = _rmode->vfilter[3];
+    // filt_12 = _rmode->vfilter[4];
     GXSetCopyFilter(_rmode->aa, _rmode->sample_pattern, GX_TRUE, _rmode->vfilter);
-    GXSetPixelFmt(GX_PF_RGBA6_Z24, GX_ZC_LINEAR);
-    GXSetFieldMode(_rmode->field_rendering, _rmode->xfbHeight < _rmode->viHeight);
+    if (_rmode->aa) {
+        GXSetPixelFmt(GX_PF_RGB565_Z16, GX_ZC_LINEAR);
+    } else {
+        GXSetPixelFmt(GX_PF_RGB8_Z24, GX_ZC_LINEAR);
+    }
+    GXSetFieldMode(_rmode->field_rendering, _rmode->viHeight == _rmode->xfbHeight * 2);
     GXColor clr;
     clr.r = 0;
     clr.g = 0;
@@ -621,6 +637,7 @@ void __InitGX(void) {
     e_bDither = 1;
     GXSetDither(1);
     GXSetCullMode(GX_CULL_NONE);
+    eSetCulling(GX_CULL_NONE);
     GXSetBlendMode(GX_BM_NONE, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_SET);
     eSetColourUpdate(1, 1);
     eSetZBuffering(1, 1);
@@ -629,7 +646,7 @@ void __InitGX(void) {
     vsVtxAttrFmt(0);
     psReset(RESET_OPTION_DEFAULT);
     ps_NoLighting(0, 0);
-    psGouraud(0);
+    psGouraud();
     GXCopyDisp(_currentBuffer, 1);
 }
 
@@ -641,22 +658,19 @@ void __InitVI(void) {
     if ((_rmode->viTVmode & 1) != 0) {
         eWaitRetrace(0);
     }
-    return;
 }
 
 void __InitMatrices(void) {
     Mtx fe_scale;
-
-    float transx = (_rmode->fbWidth - _rmode->fbWidth * 0.95f) * 0.5f;
-    float transy = (_rmode->efbHeight - _rmode->efbHeight * 0.95f) * 0.5f;
-    MTXScale(fe_scale, 0.95f, 0.95f, 1.0f);
-    MTXTransApply(fe_scale, viewMOrthographic, transx, transy, 0.0f);
-    C_MTXOrtho(projMOrthographic, 0.0f, _rmode->efbHeight, 0.0f, _rmode->fbWidth, 0.0f, -16777215.0f);
+    float gcn_scale = IsPal50Mode ? 0.81f : 0.84f;
+    float transx = ((float)_rmode->fbWidth - (float)_rmode->fbWidth * gcn_scale * (448.f / 378.f)) / 2.0f;
+    float transy = ((float)_rmode->efbHeight - gcn_scale / 448.0f * (float)_rmode->efbHeight * (float)_rmode->xfbHeight) / 2.0f;
+    MTXScale(fe_scale, gcn_scale * (448.f / 378.f), gcn_scale / 448.0f * (float)_rmode->xfbHeight, 1.0f);
+    MTXTransApply(fe_scale, viewMOrthographic, transx, transy, 10.0f);
+    MTXOrtho(projMOrthographic, 0.0f, _rmode->efbHeight, 0.0f, _rmode->fbWidth, 0.0f, -100000.0f);
     MTXIdentity(viewMOrthographicScreenQuad);
-    C_MTXOrtho(projMOrthographicScreenQuad, 0.0f, _rmode->efbHeight, 0.0f, _rmode->fbWidth, 0.0f, -16777215.0f);
-    GXSetCurrentMtx(0);
-    GXLoadPosMtxImm(viewMOrthographic, 0);
-    GXSetProjection(projMOrthographic, GX_ORTHOGRAPHIC);
+    MTXOrtho(projMOrthographicScreenQuad, 0.0f, _rmode->efbHeight, 0.0f, _rmode->fbWidth, 0.0f, -100000.0f);
+    eSetOrthographicMatrixToHW();
 }
 
 void eBeginScene(void) {
@@ -779,11 +793,11 @@ void eUpdateCopyFilter2(Bool enable) {
 }
 
 void eDrawStartup(void) {
-    GXColor clr = {0};
-    clr.a = 0xFF;
-    GXSetFog(GX_FOG_LIN, 16.0f, 512.0f, 0.5f, 10000.0f, clr);
-    GXInitTexObj(&HeadlightClipTextureObj, &HeadlightClipTextureTestData, 2, 1, GX_TF_RGB565, GX_CLAMP, GX_CLAMP, 0);
-    GXInitTexObjLOD(&HeadlightClipTextureObj, GX_LINEAR, GX_LINEAR, 0.0f, 0.0f, 0.0f, GX_FALSE, GX_FALSE, GX_ANISO_1);
+    GXColor fog_color = {0, 0, 0, 0xff};
+    GXSetFog(GX_FOG_LIN, 16.0f, 512.0f, 0.5f, 10000.0f, fog_color);
+    eLoadTevSwapTable();
+    // GXInitTexObj(&HeadlightClipTextureObj, &HeadlightClipTextureTestData, 2, 1, GX_TF_RGB565, GX_CLAMP, GX_CLAMP, 0);
+    // GXInitTexObjLOD(&HeadlightClipTextureObj, GX_LINEAR, GX_LINEAR, 0.0f, 0.0f, 0.0f, GX_FALSE, GX_FALSE, GX_ANISO_1);
 }
 
 cSphereMap SphereMap;
@@ -792,7 +806,6 @@ cSpecularMap SpecularMap;
 cQuarterSizeMap QSizeI8_Z8;
 cQuarterSizeMap QSizeScratchPad;
 cQuarterSizeMap QSizeAccumulationI8;
-;
 
 void eExStartup(void) {
     unsigned int iter_countA;
@@ -884,9 +897,6 @@ void eSendDrawDone(unsigned char bFlush) {
 Bool eIsDrawDone() {
     return bDrawDoneEncountered;
 }
-extern "C" {
-unsigned short GXReadDrawSync();
-}
 
 Bool IsSyncValid() {
     if (last_sync_token == e_sync) {
@@ -945,29 +955,45 @@ void eStallWorkaround(Bool bEnabled) {
 }
 
 void eDiagnoseHang(void) {
-    unsigned long xfTop0; // r1+0x10
-    unsigned long xfBot0; // r1+0xC
-    unsigned long suRdy0; // r1+0x18
-    unsigned long r0Rdy0; // r1+0x14
-    unsigned long xfTop1; // r1+0x20
-    unsigned long xfBot1; // r1+0x1C
-    unsigned long suRdy1; // r1+0x28
-    unsigned long r0Rdy1; // r1+0x24
-    unsigned long xfTopD; // r29
-    unsigned long xfBotD; // r31
-    unsigned long suRdyD;
-    unsigned long r0RdyD;
-    unsigned char readIdle; // r1+0x9
-    unsigned char cmdIdle;  // r1+0xA
-    unsigned char junk;     // r1+0x8
+    u32 xfTop0; // r1+0x10
+    u32 xfBot0; // r1+0xC
+    u32 suRdy0; // r1+0x18
+    u32 r0Rdy0; // r1+0x14
+    u32 xfTop1; // r1+0x20
+    u32 xfBot1; // r1+0x1C
+    u32 suRdy1; // r1+0x28
+    u32 r0Rdy1; // r1+0x24
+    u32 xfTopD; // r29
+    u32 xfBotD; // r31
+    u32 suRdyD;
+    u32 r0RdyD;
+    u8 readIdle; // r1+0x9
+    u8 cmdIdle;  // r1+0xA
+    u8 junk;     // r1+0x8
 
     GXReadXfRasMetric(&xfBot0, &xfTop0, &r0Rdy0, &suRdy0);
     GXReadXfRasMetric(&xfBot1, &xfTop1, &r0Rdy1, &suRdy1);
+    xfTopD = xfTop1 == xfTop0;
+    xfBotD = xfBot1 == xfBot0;
+    suRdyD = suRdy1 != suRdy0;
+    r0RdyD = r0Rdy0 != r0Rdy1;
+
     GXGetGPStatus(&junk, &junk, &readIdle, &cmdIdle, &junk);
+
+    // not sure, might be a fake match
+    if (!xfBotD && suRdyD) {
+    } else if (!xfTopD && xfBotD && suRdyD) {
+    } else if (!cmdIdle && xfTopD && xfBotD && suRdyD) {
+    } else if (readIdle && cmdIdle) {
+    } else if (!cmdIdle && readIdle) {
+    } else if (readIdle) {
+    }
 }
 
 void eHangMetric(Bool bEnable) {
     if (!bEnable) {
+        // These are GX_WRITE_RAS_REG from __gx.h
+
         // *0xCC008000 = 0x61;
         // *0xCC008000 = 0x2402C004;
         // *0xCC008000 = 0x61;

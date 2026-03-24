@@ -9,98 +9,18 @@
 #include "bList.hpp"
 
 // total size: 0x10
-struct FreeBlock : public bTNode<FreeBlock> {
-    int Size;        // offset 0x8, size 0x4
-    int MagicNumber; // offset 0xC, size 0x4
-};
-
-struct AllocationHeader : public bTNode<AllocationHeader> {
-    // total size: 0x14
-    unsigned char PoolNum;       // offset 0x8, size 0x1
-    unsigned char MagicNumber;   // offset 0x9, size 0x1
-    unsigned short FrontPadding; // offset 0xA, size 0x2
-    int Size;                    // offset 0xC, size 0x4
-    int RequestedSize;           // offset 0x10, size 0x4
-
-    void *GetBottomAddress() {
-        return reinterpret_cast<void *>((uintptr_t)this - (uintptr_t)this->FrontPadding);
+class FreeBlock : public bTNode<FreeBlock> {
+  public:
+    FreeBlock *GetTop() {
+        return reinterpret_cast<FreeBlock *>(&reinterpret_cast<char *>(this)[Size]);
     }
 
-    void *GetAllocAddress() {
+    FreeBlock *GetBot() {
         return &this[1];
     }
 
-    const char *GetDebugText() {
-        return "";
-    }
-};
-
-struct MemoryPool {
-    // total size: 0x60
-    const char *pDebugName;                        // offset 0x0, size 0x4
-    bTList<FreeBlock> FreeBlockList;               // offset 0x4, size 0x8
-    bTList<AllocationHeader> AllocationHeaderList; // offset 0xC, size 0x8
-    intptr_t InitialAddress;                       // offset 0x14, size 0x4
-    int InitialSize;                               // offset 0x18, size 0x4
-    int NumAllocations;                            // offset 0x1C, size 0x4
-    int TotalNumAllocations;                       // offset 0x20, size 0x4
-    int PoolSize;                                  // offset 0x24, size 0x4
-    int AmountAllocated;                           // offset 0x28, size 0x4
-    int MostAmountAllocated;                       // offset 0x2C, size 0x4
-    int AmountFree;                                // offset 0x30, size 0x4
-    int LeastAmountFree;                           // offset 0x34, size 0x4
-    bool DebugFillEnabled;                         // offset 0x38, size 0x1
-    bool DebugTracingEnabled;                      // offset 0x3C, size 0x1
-    bMutex Mutex;                                  // offset 0x40, size 0x20
-
-  public:
-    void Init(void *memory, int memory_size, const char *debug_name);
-    void Close();
-    void AddMemory(void *p, int size);
-    void RemoveMemory(void *p, int size);
-    void FreeMemory(void *p, int size, const char *debug_name);
-    void AddFreeMemory(void *p, int size, const char *debug_name);
-    void *AllocateMemory(int size, int alignment, int alignment_offset, int start_from_top, int use_best_fit, int *new_size);
-    int GetAmountFree();
-    int GetLargestFreeBlock();
-    void VerifyPoolIntegrity(bool verify_free_pattern);
-    int CountAllocations(const char *debug_text);
-    void PrintAllocationsByAddress(int from_allocation, int to_allocation);
-    void PrintAllocations(int from_allocation, int to_allocation);
-    AllocationHeader *FindAllocation(int allocation_num);
-    int GetAllocations(void **allocations, int max_allocations);
-    void SetFancyStompDetector(void *mem, int mem_size, const char *name);
-    bool CheckFancyStompDetector(const void *mem, int mem_size);
-    void TraceNewPool();
-    void TraceDeletePool();
-    void TraceFreeMemory(void *p, int size);
-    void TraceRemoveMemory(void *p, int size);
-    void TraceAllocateMemory(void *p, int size);
-    void UpdateTraceInformation();
-
-    const char *GetName() {
-        return this->pDebugName;
-    }
-
-    bool SetDebugFill(bool on_off) {
-        bool previous = this->DebugFillEnabled;
-        this->DebugFillEnabled = on_off;
-        return previous;
-    }
-
-    bool SetDebugTracing(bool on_off) {
-        bool previous = this->DebugTracingEnabled;
-        this->DebugTracingEnabled = on_off;
-        return previous;
-    }
-
-    bool IsInPool(intptr_t address) {
-        return address >= this->InitialAddress && address < this->InitialAddress + this->InitialSize;
-    }
-
-    void RemoveAllocationHeader(AllocationHeader *allocation_header) {
-        this->AllocationHeaderList.Remove(allocation_header);
-    }
+    int Size;        // offset 0x8, size 0x4
+    int MagicNumber; // offset 0xC, size 0x4
 };
 
 struct MemoryPoolOverrideInfo {
@@ -186,6 +106,11 @@ class bMemoryAllocator : public EA::Allocator::IAllocator {
     int PoolNumber; // offset 0x8, size 0x4
 
   public:
+    bMemoryAllocator()
+        : mRefcount(1) //
+          ,
+          PoolNumber(0) {}
+
     virtual void *Alloc(unsigned int size, const EA::TagValuePair &flags);
     virtual void Free(void *pBlock, unsigned int size);
     virtual int AddRef();
@@ -204,8 +129,7 @@ struct AllocDesc {
     unsigned int mHigh;  // offset 0xC, size 0x4
 };
 
-extern MemoryPool *MemoryPools[16];
-
+void bMemoryInit();
 unsigned int GetVirtualMemoryAllocParams();
 void bInitMemoryPool(int pool_num, void *mem, int mem_size, const char *debug_name);
 int GetVirtualMemoryPoolNumber();
@@ -217,6 +141,9 @@ int bLargestMalloc(int allocation_params);
 void bVerifyPoolIntegrity(int pool);
 void bMemoryPrintAllocationsByAddress(int pool_num, int from_allocation, int to_allocation);
 int bCountFreeMemory(int pool);
+int bMemoryGetAllocationNumber();
+void bCloseMemoryPool(int pool_num);
+void bMemorySetOverflowPoolNumber(int pool_num, int overflow_pool_number);
 
 void *bWareMalloc(int size, const char *debug_text, int debug_line, int allocation_params);
 
@@ -226,13 +153,12 @@ inline int bMemoryGetPoolNum(int allocation_params) {
 
 inline int bMemoryGetAlignment(int allocation_params) {
     int alignment = allocation_params >> 6 & 0x1ffc;
-    if (alignment == 0) {
-        alignment = 0x10;
-    }
-    if (alignment < 0x80) {
-        alignment = 0x80;
-    }
+
     return alignment;
+}
+
+inline int bMemoryGetAlignmentOffset(int allocation_params) {
+    return (allocation_params >> 17) & 0x1ffc;
 }
 
 #endif

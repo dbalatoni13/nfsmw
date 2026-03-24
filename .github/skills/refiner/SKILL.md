@@ -15,14 +15,42 @@ approaches that were tried before — instead, apply systematic lateral analysis
 - A diff is available (`decomp-diff.py -u <TU> -d <func>`).
 - The "obvious" translation from Ghidra has been attempted.
 - You have been given the current source code and the diff.
+- You have already run the per-function `verify` gate and know whether the remaining work
+  is still structural DWARF cleanup or true late-stage instruction cleanup.
+
+Refiner is not the place to dump unresolved DWARF debt on a reviewer. If `verify` or
+`dwarf` is still showing obvious structural mismatches (missing locals, wrong types,
+wrong inline ownership, wrong helper/header owner), fix those first or drop back to the
+implementer workflow before doing late instruction polish.
 
 ## Phase 1: Read the full diff without collapsing
 
-First compile to a private temp `.o`, then diff:
+Before you start a refiner pass, confirm the gate status:
 
 ```sh
-TEMPOBJ=$(python tools/build-unit.py -u main/Path/To/TU)
-python tools/decomp-diff.py -u main/Path/To/TU -d FunctionName --no-collapse --base-obj "$TEMPOBJ"
+python tools/decomp-workflow.py verify -u main/Path/To/TU -f FunctionName
+```
+
+If the combined gate is failing for reasons that are still clearly visible in the DWARF
+diff, address those first instead of treating them as reviewer follow-up.
+
+Preferred shortcut:
+
+```sh
+python tools/decomp-workflow.py diff -u main/Path/To/TU -d FunctionName --no-collapse
+```
+
+If the shared unit object is missing, the wrapper now rebuilds it automatically before
+running `diff`.
+
+Stay in the wrapper flow for refiner passes unless you hit a wrapper limitation and need a
+backend-only option.
+
+If you need the raw backend form instead of the wrapper, rebuild the unit and then run:
+
+```sh
+python tools/decomp-workflow.py build -u main/Path/To/TU
+python tools/decomp-diff.py -u main/Path/To/TU -d FunctionName --no-collapse
 ```
 
 Read every instruction pair. Categorize each mismatch:
@@ -34,11 +62,10 @@ Read every instruction pair. Categorize each mismatch:
 | **Stack frame size** | Wrong frame size in prologue | Count locals in DWARF; remove temporaries not in DWARF |
 | **Float vs int sequence** | `xoris` present → field is `int`; absent → `uint` | Check field type in DWARF; change cast |
 | **`fmuls` operand order** | `fmuls fX, fX, fY` or `fmuls fX, fY, fX` | Try `v *= fY` vs `fY * v` explicitly |
-| **Relocation offset** | `@stringBase0` or data offset differs | More string literals will shift this; add them in order |
+| **Relocation offset** | `@stringBase0` or data offset differs | More string literals will shift this; add them in order. Use `python tools/elf_lookup.py 0xADDR` when you need to confirm the original string/rodata at a virtual address |
 | **Virtual vs direct call** | `bl` vs indirect through vtable | Check const-qualifier; use `GetFoo()` vs `Foo()` |
 | **Inline vs outlined** | Extra call to helper vs inlined sequence | Force inline by rewriting the expression without calling the helper |
-| **Missing `this->` dereference** | Wrong address in load/store | Ensure member access goes through the correct `this` pointer |
-| **Loop structure** | `do/while` vs `for` vs `while` | Try all three forms; compiler emits different branch sequences |
+| **Loop structure** | Guarded `do/while` from Ghidra or mismatched loop branches | Rewrite to the natural source form suggested by the control flow; in particular, a guarded `do/while` often needs to become a plain `for` loop |
 
 ## Phase 2: Systematic permutation strategies
 
@@ -90,30 +117,43 @@ python tools/lookup.py ./symbols/Dwarf struct bMath
 
 Replace hand-rolled sequences with the correct inline call.
 
-### 2e. Initializer list order
+### 2e. Constructor initialization placement
 
-Constructors compiled with GCC are sensitive to initializer list order. The DWARF
-shows the canonical member order. If yours differs, reorder.
+Only do this for constructors. Compare which members are initialized in the
+initializer list versus the function body, and in what order. Initializer-list use
+often stabilizes store order, but forcing every member into the initializer list can
+also make the match worse.
 
 ### 2f. Cast type
 
 `static_cast<int>` vs `static_cast<unsigned int>` produces different assembly
 sequences on PPC (see `xoris` pattern in AGENTS.md). Check all casts.
 
-### 2g. Compiler flag hint
-
-If none of the above resolve the mismatch, note the function address and consider
-running `flag_permuter.py`. This is a last resort — only do this for a single
-isolated function, not as a general strategy.
-
 ## Phase 3: DWARF verification
 
-After any instruction match, verify the DWARF also matches.
-Use the same `TEMPOBJ` from Phase 1 (or rebuild if you've changed the source):
+After any instruction match, verify the DWARF also matches. The function is not done
+until both objdiff and normalized DWARF are exact.
+
+Preferred shortcut:
 
 ```bash
-# Compile to temp .o and dump its DWARF
-dtk dwarf dump "$TEMPOBJ" -o /tmp/refiner_<func>_check.nothpp
+python tools/decomp-workflow.py verify -u main/Path/To/TU -f FunctionName
+```
+
+If the combined gate fails because of DWARF, inspect the DWARF diff directly with:
+
+```bash
+python tools/decomp-workflow.py dwarf -u main/Path/To/TU -f FunctionName
+```
+
+Manual fallback:
+
+Use the rebuilt shared object from Phase 1 (or rebuild again if you've changed the source):
+
+```bash
+# Rebuild the unit, then dump its DWARF (ignore dwarf specific errors)
+python tools/decomp-workflow.py build -u main/Path/To/TU
+build/tools/dtk dwarf dump build/GOWE69/src/Path/To/TU.o -o /tmp/refiner_<func>_check.nothpp
 
 # Compare your function's DWARF against the original
 python tools/lookup.py --file /tmp/refiner_<func>_check.nothpp function "ClassName::FunctionName(void)"
@@ -127,6 +167,9 @@ DWARF mismatches to watch for:
 - Wrong return type
 - Missing inlined function records (means an inline call was outlined)
 
+If these mismatches are still present, you are not in pure refiner territory yet. Resolve
+them before you ask a reviewer to spend time on the function.
+
 ## Phase 4: Report
 
 Summarize:
@@ -135,5 +178,5 @@ Summarize:
 - What was blocking the match (the root cause category from Phase 1)
 - The specific source change that resolved it
 - Any new generalizable assembly pattern discovered (add to AGENTS.md if so)
-- DWARF match status
+- DWARF match status and whether `verify` passes
 - If still not matching: the exact diff lines that remain and your best theory

@@ -2,7 +2,11 @@
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 #include "Speed/Indep/bWare/Inc/bFunk.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
+
 #include <types.h>
+
+// for UMath constants static_init
+#include "Speed/Indep/Libs/Support/Utility/UMath.h"
 
 #ifdef EA_PLATFORM_GAMECUBE
 #include <dolphin.h>

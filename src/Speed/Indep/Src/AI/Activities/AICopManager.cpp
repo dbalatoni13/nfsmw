@@ -11,6 +11,7 @@
 #include "Speed/Indep/Src/Frontend/Database/VehicleDB.hpp"
 #include "Speed/Indep/Src/Frontend/HUD/FeReputation.hpp"
 #include "Speed/Indep/Src/Gameplay/GManager.h"
+#include "Speed/Indep/Src/Misc/Config.h"
 #include "Speed/Indep/Src/Gameplay/GRaceDatabase.h"
 #include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/pursuitsupport.h"
@@ -50,12 +51,6 @@
 
 #include <algorithm>
 #include <cfloat>
-
-// TODO
-extern int SkipFE;
-extern int SkipFEMaxCops;
-extern int SkipFEDisableCops;
-extern int SkipFEHelicopter;
 
 int ICopMgr::mDisableCops = false;
 

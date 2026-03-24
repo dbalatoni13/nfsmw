@@ -18,7 +18,14 @@ import json
 import os
 import sys
 from typing import Any, Dict, List, Optional, Tuple
-from _common import ROOT_DIR, ToolError, fail, load_objdiff_config, run_objdiff_json
+from _common import (
+    ROOT_DIR,
+    ToolError,
+    build_objdiff_symbol_rows,
+    fail,
+    load_objdiff_config,
+    run_objdiff_json,
+)
 
 root_dir = ROOT_DIR
 
@@ -41,9 +48,17 @@ def run_objdiff(unit_name: str) -> Tuple[Optional[Dict[str, Any]], Optional[str]
 def analyze_unit(diff_data: Dict[str, Any]) -> Dict[str, Any]:
     """Analyze a unit's diff data and return summary statistics."""
     left = diff_data.get("left", {})
-    right = diff_data.get("right", {})
-    left_syms = left.get("symbols", [])
     left_sections = left.get("sections", [])
+    symbol_rows = build_objdiff_symbol_rows(diff_data)
+    function_rows = [r for r in symbol_rows if r["type"] == "function" and r["side"] == "left"]
+    unmatched_function_rows = [
+        r
+        for r in function_rows
+        if r["status"] in ("missing", "nonmatching") and r["unmatched_bytes_est"] > 0
+    ]
+    unmatched_function_rows.sort(
+        key=lambda r: (-r["unmatched_bytes_est"], -r["size"], r["name"].lower())
+    )
 
     # Section-level stats
     section_stats = {}
@@ -65,17 +80,17 @@ def analyze_unit(diff_data: Dict[str, Any]) -> Dict[str, Any]:
     matching_funcs = 0
     total_code_size = 0
     matching_code_size = 0
+    remaining_code_size_est = 0
 
-    for sym in left_syms:
-        if "instructions" not in sym:
-            continue
-        size = int(sym.get("size", "0"))
+    for row in function_rows:
+        size = row["size"]
         total_funcs += 1
         total_code_size += size
-        mp = sym.get("match_percent")
+        mp = row["match_percent"]
         if mp is not None and mp >= 100.0:
             matching_funcs += 1
             matching_code_size += size
+        remaining_code_size_est += row["unmatched_bytes_est"]
 
     text_section = section_stats.get(".text", {})
     text_match = text_section.get("match_percent")
@@ -86,9 +101,20 @@ def analyze_unit(diff_data: Dict[str, Any]) -> Dict[str, Any]:
         "matching_functions": matching_funcs,
         "total_code_size": total_code_size,
         "matching_code_size": matching_code_size,
+        "remaining_code_size_est": remaining_code_size_est,
         "text_match_percent": text_match,
         "text_size": text_size,
         "sections": section_stats,
+        "top_unmatched_functions": [
+            {
+                "name": row["name"],
+                "status": row["status"],
+                "size": row["size"],
+                "match_percent": row["match_percent"],
+                "unmatched_bytes_est": row["unmatched_bytes_est"],
+            }
+            for row in unmatched_function_rows[:10]
+        ],
     }
 
 
@@ -104,6 +130,12 @@ def main():
         action="store_true",
         dest="json_output",
         help="Output as JSON",
+    )
+    parser.add_argument(
+        "--top-unmatched",
+        type=int,
+        metavar="N",
+        help="Show the top N unmatched functions by estimated unmatched bytes",
     )
     args = parser.parse_args()
 
@@ -180,7 +212,9 @@ def main():
     grand_matching_funcs = 0
     grand_total_size = 0
     grand_matching_size = 0
+    grand_remaining_size_est = 0
     cat_summaries = {}
+    top_unmatched_candidates = []
 
     for cat, entries in sorted(results.items()):
         print(f"\n=== {cat} ===")
@@ -206,13 +240,26 @@ def main():
                 mf = entry.get("matching_functions", 0)
                 tm = entry.get("text_match_percent")
                 tm_str = f"{tm:.1f}%" if tm is not None else "?"
+                remain = entry.get("remaining_code_size_est", 0)
                 print(
-                    f"  {display_name:<50s} .text {tm_str:>6s}  ({mf}/{tf} functions)"
+                    f"  {display_name:<50s} .text {tm_str:>6s}  ~{remain:>6}B rem  ({mf}/{tf} functions)"
                 )
                 cat_funcs += tf
                 cat_matching += mf
                 cat_size += entry.get("total_code_size", 0)
                 cat_matching_size += entry.get("matching_code_size", 0)
+                for candidate in entry.get("top_unmatched_functions", []):
+                    top_unmatched_candidates.append(
+                        {
+                            "unit": name,
+                            "display_unit": display_name,
+                            "name": candidate["name"],
+                            "status": candidate["status"],
+                            "size": candidate["size"],
+                            "match_percent": candidate["match_percent"],
+                            "unmatched_bytes_est": candidate["unmatched_bytes_est"],
+                        }
+                    )
             elif status == "no_source":
                 if args.unit:
                     print(f"  {display_name:<50s} no source file")
@@ -235,11 +282,17 @@ def main():
             "matching": cat_matching,
             "complete_units": complete_count,
             "total_units": len(entries),
+            "remaining_code_size_est": sum(
+                e.get("remaining_code_size_est", 0)
+                for e in entries
+                if e.get("status") == "incomplete"
+            ),
         }
         grand_total_funcs += cat_funcs
         grand_matching_funcs += cat_matching
         grand_total_size += cat_size
         grand_matching_size += cat_matching_size
+        grand_remaining_size_est += cat_summaries[cat]["remaining_code_size_est"]
 
     if not args.unit:
         print(f"\n=== Summary ===")
@@ -251,13 +304,39 @@ def main():
             pct = f"{matching/total*100:.1f}%" if total > 0 else "N/A"
             print(
                 f"  {cat:<15s} {pct:>6s} ({matching}/{total} functions)  "
-                f"[{complete}/{total_units} units complete]"
+                f"[{complete}/{total_units} units complete, ~{s['remaining_code_size_est']}B rem]"
             )
         if grand_total_funcs > 0:
             grand_pct = grand_matching_funcs / grand_total_funcs * 100
             print(
-                f"\n  Total: {grand_pct:.1f}% ({grand_matching_funcs}/{grand_total_funcs} functions)"
+                f"\n  Total: {grand_pct:.1f}% ({grand_matching_funcs}/{grand_total_funcs} functions, ~{grand_remaining_size_est}B rem)"
             )
+
+    if args.top_unmatched:
+        top_unmatched_candidates.sort(
+            key=lambda r: (-r["unmatched_bytes_est"], -r["size"], r["name"].lower())
+        )
+        if args.top_unmatched > 0:
+            top_unmatched_candidates = top_unmatched_candidates[: args.top_unmatched]
+
+        print("\n=== Top Unmatched Functions ===")
+        if not top_unmatched_candidates:
+            print("No unmatched functions found for the given filters.")
+        else:
+            print(
+                f"{'UNMATCH':>8}  {'MATCH':>7}  {'SIZE':>6}  {'UNIT':<34} NAME"
+            )
+            print("-" * 110)
+            for candidate in top_unmatched_candidates:
+                match_str = (
+                    f"{candidate['match_percent']:.1f}%"
+                    if candidate["match_percent"] is not None
+                    else "-"
+                )
+                print(
+                    f"{candidate['unmatched_bytes_est']:>7}B  {match_str:>7}  "
+                    f"{candidate['size']:>5}B  {candidate['display_unit']:<34} {candidate['name']}"
+                )
 
 
 if __name__ == "__main__":

@@ -6,6 +6,10 @@
 #endif
 
 #include "Speed/Indep/bWare/Inc/bList.hpp"
+#include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
+#include "Speed/Indep/bWare/Inc/bWare.hpp"
+
+extern SlotPool *QueuedFileSlotPool;
 
 // total size: 0x10
 struct QueuedFileParams {
@@ -39,47 +43,94 @@ class QueuedFile : public bTNode<QueuedFile> {
 
     void ReadDoneCallback();
 
-    // void *operator new(size_t size) {}
+    static void *operator new(std::size_t size, void *ptr) {
+        return ptr;
+    }
 
-    // void operator delete(void *ptr) {}
-
-    // static int SortByPriority(QueuedFile *before, QueuedFile *after) {}
+    void operator delete(void *ptr) {
+        bFree(QueuedFileSlotPool, ptr);
+    }
 
     // static int SortBySeekPosition(QueuedFile *before, QueuedFile *after) {}
 
-    // static int GetNumFilesDecompressing() {}
+    static int SortByPriority(QueuedFile *before, QueuedFile *after) {
+        return before->Params.Priority >= after->Params.Priority;
+    }
 
-    static void ReadDoneCallback(void *param) {}
+    static int GetNumFilesDecompressing() {
+        return DecompressionTableTop - DecompressionTableBot;
+    }
 
-    // int GetHandle() {}
+    static void ReadDoneCallback(void *param) {
+        static_cast<QueuedFile *>(param)->ReadDoneCallback();
+    }
 
-    // const char *GetFilename() {}
+    int GetHandle() {
+        return Handle;
+    }
 
-    // int GetFilePos() {}
+    const char *GetFilename() {
+        return Filename;
+    }
 
-    // int GetNumBytes() {}
+    int GetFilePos() {
+        return FilePos;
+    }
 
-    // int GetNumRead() {}
+    int GetNumBytes() {
+        return NumBytes;
+    }
 
-    // void *GetBuffer() {}
+    int GetNumRead() {
+        return NumRead;
+    }
+
+    void *GetBuffer() {
+        return pBuf;
+    }
 
     // float GetStartReadTime() {}
 
-    // int GetPriority() {}
+    int GetPriority() {
+        return Params.Priority;
+    }
 
-    // QueuedFileStatus GetStatus() {}
+    QueuedFileStatus GetStatus() {
+        return Status;
+    }
 
-    void SetStatus(QueuedFileStatus status) {}
+    void SetStatus(QueuedFileStatus status) {
+        Status = status;
+    }
 
-    // int IsFinishedAllReading() {}
+    int IsFinishedAllReading() {
+        return NumRead == NumBytes;
+    }
 
-    // unsigned int CalculateChecksum() {}
+    unsigned int CalculateChecksum() {
+        return bCalculateCrc32(pBuf, NumBytes, 0xFFFFFFFF);
+    }
 
-    // void *GetCallback() {}
+    void *GetCallback() {
+        return CallbackFunction;
+    }
 
-    void SetCallbackParam2(void *param) {}
+    void SetCallbackParam2(void *param) {
+        CallbackParam2 = param;
+        CallbackModeUseParam2 = true;
+    }
 
-    void CallDoneCallback(int error_status) {}
+    void CallDoneCallback(int error_status) {
+        if (CallbackFunction) {
+            if (CallbackModeUseParam2) {
+                ((void (*)(void *, int, void *))CallbackFunction)(CallbackParam, error_status, CallbackParam2);
+            } else {
+                ((void (*)(void *, int))CallbackFunction)(CallbackParam, error_status);
+            }
+        }
+    }
+
+    friend class QueuedFileBundle;
 
   private:
     static int CurrentHandle;                  // size: 0x4, address: 0x8041EA64
@@ -109,11 +160,63 @@ void AddQueuedFile(void *buf, const char *filename, int file_pos, int num_bytes,
 void AddQueuedFile2(void *buf, const char *filename, int file_pos, int num_bytes, void (*callback)(void *, int, void *), void *callback_param,
                     void *callback_param2, QueuedFileParams *params);
 int GetQueuedFileSize(const char *filename);
+bool IsQueuedFileBusy();
+void BlockWhileQueuedFileBusy();
 
-inline void AddQueuedFile(void *buf, const char *filename, int file_pos, int num_bytes, void (*callback)(int, int), int callback_param,
+inline void AddQueuedFile(void *buf, const char *filename, int file_pos, int num_bytes, void (*callback)(intptr_t, int), intptr_t callback_param,
                           QueuedFileParams *params) {
     AddQueuedFile(buf, filename, file_pos, num_bytes, reinterpret_cast<void (*)(void *, int)>(callback), reinterpret_cast<void *>(callback_param),
                   params);
 }
+
+// total size: 0x3C
+class QueuedFileBundle {
+  public:
+    QueuedFileBundle() {
+        ReadBuffer = 0;
+        ReadBufferBot = 0;
+        ReadBufferTop = 0;
+        NumBytesQueued = 0;
+        NumQueuedFiles = 0;
+        MemoryPoolNumber = 0;
+    }
+
+    ~QueuedFileBundle() {}
+
+    void *operator new(std::size_t size) {
+        return bOMalloc(QueuedFileSlotPool);
+    }
+
+    void operator delete(void *ptr) {
+        bFree(QueuedFileSlotPool, ptr);
+    }
+
+    const char *GetFilename() {
+        return QueuedFiles[0]->GetFilename();
+    }
+
+    static void ReadCallbackBridge(void *param, int error_status) {
+        QueuedFileBundle *bundle = static_cast<QueuedFileBundle *>(param);
+        bundle->ReadCallback(error_status);
+        if (bundle) {
+            if (bundle->ReadBuffer) {
+                bFree(bundle->ReadBuffer);
+            }
+            delete bundle;
+        }
+    }
+
+    bool TestAddQueuedFile(QueuedFile *q);
+    void BeginRead();
+    void ReadCallback(int error_status);
+
+    int8 *ReadBuffer;            // offset 0x0, size 0x4
+    int ReadBufferBot;           // offset 0x4, size 0x4
+    int ReadBufferTop;           // offset 0x8, size 0x4
+    int NumBytesQueued;          // offset 0xC, size 0x4
+    int16 MemoryPoolNumber;      // offset 0x10, size 0x2
+    int16 NumQueuedFiles;        // offset 0x12, size 0x2
+    QueuedFile *QueuedFiles[10]; // offset 0x14, size 0x28
+};
 
 #endif

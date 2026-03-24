@@ -38,7 +38,7 @@ int bCountTotalSlots(SlotPool *slot_pool) {
 
 SlotPool *SlotPool::NewSlotPool(int slot_size, int num_slots, const char *debug_name, int memory_pool) {
     SlotPool *slot_pool =
-        reinterpret_cast<SlotPool *>(bMalloc(slot_size * num_slots + (sizeof(SlotPool) - sizeof(SlotPoolEntry)), "TODO", __LINE__, memory_pool));
+        reinterpret_cast<SlotPool *>(bMalloc(slot_size * num_slots + (sizeof(SlotPool) - sizeof(SlotPoolEntry)), debug_name, 0, memory_pool));
     if (slot_pool) {
         slot_pool->SlotSize = slot_size;
         slot_pool->MemoryPool = memory_pool;
@@ -128,7 +128,7 @@ void *SlotPool::GetSlot(int slot_number) {
 }
 
 void *SlotPool::GetAllocatedSlot(int n) {
-    char *allocated_table = static_cast<char *>(bMalloc(TotalNumSlots, "TODO", __LINE__, 0));
+    char *allocated_table = static_cast<char *>(bMalloc(TotalNumSlots, "SlotPool::GetAllocatedSlots", 0, 0));
     bMemSet(allocated_table, 1, TotalNumSlots);
     for (SlotPoolEntry *slot = FreeSlots; slot; slot = slot->Next) {
         int slot_number = GetSlotNumber(slot);
@@ -299,6 +299,8 @@ SlotPoolManager::SlotPoolManager() {
     Initialized = true;
 }
 
+SlotPoolManager::~SlotPoolManager() {}
+
 SlotPool *SlotPoolManager::NewSlotPool(int slot_size, int num_slots, const char *debug_name, int memory_pool) {
     SlotPool *new_slot_pool = SlotPool::NewSlotPool((slot_size + 3) & ~3, num_slots, debug_name, memory_pool);
     if (!new_slot_pool) {
@@ -310,7 +312,6 @@ SlotPool *SlotPoolManager::NewSlotPool(int slot_size, int num_slots, const char 
     return new_slot_pool;
 }
 
-// UNSOLVED
 void SlotPoolManager::DeleteSlotPool(SlotPool *slot_pool) {
     if (!slot_pool) {
         return;
@@ -320,10 +321,12 @@ void SlotPoolManager::DeleteSlotPool(SlotPool *slot_pool) {
     }
     if ((slot_pool->Flags & SLOTPOOL_FLAG_WARN_IF_NONEMPTY_DELETE) && (slot_pool->CountAllocatedSlots() > 0)) {
         void *leaky_slot = slot_pool->GetAllocatedSlot(0);
-        slot_pool->GetSlotNumber(leaky_slot);
+        int leaky_slot_num = slot_pool->GetSlotNumber(leaky_slot);
     }
-    for (SlotPool *next_pool = slot_pool; next_pool; next_pool = next_pool->NextSlotPool) {
-        SlotPool::DeleteSlotPool(next_pool);
+    while (slot_pool) {
+        SlotPool *next_pool = slot_pool->NextSlotPool;
+        SlotPool::DeleteSlotPool(slot_pool);
+        slot_pool = next_pool;
     }
 }
 

@@ -10,10 +10,22 @@
 #include "bMemory.hpp"
 #include "bSlotPool.hpp"
 
-#if MILESTONE_OPT
+#ifdef DEBUG_OPT
+#define ENABLE_IN_DEBUG true
+#else
+#define ENABLE_IN_DEBUG false
+#endif
+
+#ifdef MILESTONE_OPT
+#define ENABLE_IN_MILESTONE true
+#else
+#define ENABLE_IN_MILESTONE false
+#endif
+
+void *bMalloc(int size, int allocation_params);
+#ifdef MILESTONE_OPT
 void *bMalloc(int size, const char *debug_text, int debug_line, int allocation_params);
 #else
-void *bMalloc(int size, int allocation_params);
 
 inline void *bMalloc(int size, const char *debug_text, int debug_line, int allocation_params) {
     return bMalloc(size, allocation_params);
@@ -45,6 +57,18 @@ inline void *operator new[](size_t size, const char *file, int line) {
     return bWareMalloc(size, file, line, 0);
 #else
     return new char[size];
+#endif
+}
+
+inline char *bGetPlatformName() {
+#ifdef EA_PLATFORM_GAMECUBE
+    return "GAMECUBE";
+#elif defined(EA_PLATFORM_PLAYSTATION2)
+    return "PSX2";
+#elif defined(EA_PLATFORM_XENON)
+    return "XENON";
+#else
+#error "Platform not specified";
 #endif
 }
 
@@ -102,5 +126,11 @@ inline int bIsCodeineConnected() {
     return false;
 #endif
 }
+
+inline int bIsBFunkAvailable() {
+    return bIsCodeineConnected();
+}
+
+unsigned int bCalculateCrc32(const void *data, int size, unsigned int prev_crc32);
 
 #endif

@@ -5,8 +5,10 @@
 #pragma once
 #endif
 
+#include "Speed/Indep/Libs/realcore/6.24.00/include/common/realcore/file/driver.h"
 #include "Speed/Indep/bWare/Inc/bChunk.hpp"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
+#include "Speed/Indep/bWare/Inc/Strings.hpp"
 #include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
 
 enum ResourceFileType {
@@ -73,13 +75,20 @@ class ResourceFile : public bTNode<ResourceFile> {
 
     // static void operator delete(void *ptr) {}
 
-    // void AssignMemory(void *mem, int allocation_params, const char *debug_name) {}
+    void AssignMemory(void *mem, int allocation_params, const char *debug_name) {
+        pFirstChunk = reinterpret_cast<bChunk *>(mem);
+        SetAllocationParams(allocation_params, debug_name);
+    }
 
     // int GetAddress() {}
 
-    // void BeginLoading(ASYNCFILE_CALLBACK *callback, int callback_param) {}
+    void BeginLoading(ASYNCFILE_CALLBACK *callback, intptr_t callback_param) {
+        BeginLoading(reinterpret_cast<void (*)(void *)>(callback), reinterpret_cast<void *>(callback_param));
+    }
 
-    // void BeginLoading() {}
+    void BeginLoading() {
+        BeginLoading(nullptr, 0);
+    }
 
     int IsFinishedLoading() {
         return LoadingFinishedFlag;
@@ -95,23 +104,36 @@ class ResourceFile : public bTNode<ResourceFile> {
         return Filename;
     }
 
-    // const char *GetHotFilename() {}
+    const char *GetHotFilename() {
+        return HotFilename;
+    }
 
     ResourceFileType GetType() {
         return Type;
     }
 
-    // void ChangeFilenameForHotChunking(const char *filename) {}
+    void ChangeFilenameForHotChunking(const char *filename) {
+        bFreeSharedString(Filename);
+        Filename = bAllocateSharedString(filename);
+    }
 
-    // void SetHotFileNumber(int number) {}
+    void SetHotFileNumber(int number) {
+        HotFileNumber = number;
+    }
 
-    // int GetHotFileNumber() {}
+    int GetHotFileNumber() {
+        return HotFileNumber;
+    }
 
     // int IsHotChunkable() {}
 
-    // bChunk *GetFirstChunk() {}
+    bChunk *GetFirstChunk() {
+        return pFirstChunk;
+    }
 
-    // int GetSizeofChunks() {}
+    int GetSizeofChunks() {
+        return SizeofChunks;
+    }
 
   private:
     bool mEnableFreeMemory;                    // offset 0x8, size 0x1
@@ -134,17 +156,48 @@ class ResourceFile : public bTNode<ResourceFile> {
     int HotFileNumber;                         // offset 0x4C, size 0x4
 };
 
+// total size: 0x4C
+struct VMFile {
+    VMFile();
+
+    bool mInit;          // offset 0x0, size 0x1
+    char mFilename[48];  // offset 0x4, size 0x30
+    bool mCompressed;    // offset 0x34, size 0x1
+    int mSize;           // offset 0x38, size 0x4
+    int mSizeOfChunks;   // offset 0x3C, size 0x4
+    void *mMainMemAddr;  // offset 0x40, size 0x4
+    void *mVirtMemAddr;  // offset 0x44, size 0x4
+    bool mUsedTrackPool; // offset 0x48, size 0x1
+};
+
 void InitResourceLoader();
+void LoadEmbeddedChunks(struct bChunk *chunk, int sizeof_chunks, const char *debug_name);
+void WaitForResourceLoadingComplete();
+int ServiceResourceLoading();
+
+ResourceFile *FindResourceFile(ResourceFileType type);
+ResourceFile *LoadResourceFile(const char *filename, ResourceFileType type, int flags, void (*callback)(void *), void *callback_param,
+                               int file_offset, int file_size);
+ResourceFile *CreateResourceFile(const char *filename, ResourceFileType type, int flags, int flag_offset, int file_size);
+void UnloadResourceFile(ResourceFile *resource_file);
+VMFile *LoadFileIntoVirtualMemory(const char *filename, bool compressed, bool use_trackstreampool_as_temp);
+void UnloadFileFromVirtualMemory(VMFile *vm_file);
 
 void EndianSwapChunkHeader(bChunk *chunk);
 void EndianSwapChunkHeadersRecursive(bChunk *chunks, int sizeof_chunks);
 void EndianSwapChunkHeadersRecursive(bChunk *first_chunk, bChunk *last_chunk);
 
-int ServiceResourceLoading();
-ResourceFile *CreateResourceFile(const char *filename, ResourceFileType type, int flags, int flag_offset, int file_size);
-void UnloadResourceFile(ResourceFile *resource_file);
-
 extern int ChunkMovementOffset; // size: 0x4
+
+inline ResourceFile *LoadResourceFile(const char *filename, ResourceFileType type, int flags) {
+    return LoadResourceFile(filename, type, flags, nullptr, nullptr, 0, 0);
+}
+
+inline ResourceFile *LoadResourceFile(const char *filename, ResourceFileType type, int flags, void (*callback)(intptr_t), intptr_t callback_param,
+                                      int file_offset, int file_size) {
+    return LoadResourceFile(filename, type, flags, reinterpret_cast<void (*)(void *)>(callback), reinterpret_cast<void *>(callback_param),
+                            file_offset, file_size);
+}
 
 inline bool AreChunksBeingMoved() {
     return ChunkMovementOffset;

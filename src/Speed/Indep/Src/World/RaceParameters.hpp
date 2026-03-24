@@ -10,6 +10,7 @@
 #include "./World.hpp"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
 
+// TODO where should these two go?
 enum eTrackDirection {
     eDIRECTION_FORWARD,
     eDIRECTION_BACKWARD,
@@ -114,5 +115,7 @@ struct RaceParameters {
     Timer TimeTrialTime;                        // offset 0x98, size 0x4
     bool bCareerEventRace;                      // offset 0x9C, size 0x1
 };
+
+extern RaceParameters TheRaceParameters;
 
 #endif

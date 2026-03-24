@@ -7,6 +7,13 @@
 
 #include "EcstasyData.hpp"
 
+enum VIDEO_MODE {
+    MODE_PAL = 0,
+    MODE_PAL60 = 1,
+    MODE_NTSC = 2,
+    NUM_VIDEO_MODES = 3,
+};
+
 class eView;
 class eRenderTarget;
 
@@ -21,5 +28,6 @@ void SetParticleSystemStats(int num_particles, int max_num_particles, int num_pa
 void eWaitUntilRenderingDone();
 void eDisplayFrame();
 void eSetScissor(int xOrig, int yOrig, int wd, int ht);
+int eClampTopLeft(bool bOnOff, int nUnused);
 
 #endif

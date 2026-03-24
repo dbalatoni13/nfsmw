@@ -8,8 +8,19 @@
 
 #include <stdarg.h>
 
-// TODO
-bool IsWhiteSpace(char c) {}
+bool IsWhiteSpace(char c) {
+    if (c == ' ')
+        return true;
+    else if (c == '\n')
+        return true;
+    else if (c == '\t')
+        return true;
+    else if (c == '=')
+        return true;
+    else if (c == ',')
+        return true;
+    return c == '\r';
+}
 
 SpeedScript::SpeedScript(const char *filename, BOOL enable_fatal_error) {
     this->ErrorFunction = nullptr;
@@ -225,17 +236,14 @@ char *SpeedScript::GetNextCommand() {
     return this->GetName(entry);
 }
 
-// UNSOLVED
 char *SpeedScript::GetNextCommand(const char *command) {
     char *s;
-
-    do {
-        s = this->GetNextCommand();
-        if (!s) {
-            return nullptr;
+    while ((s = GetNextCommand()) != nullptr) {
+        if (bStrICmp(s, command) == 0) {
+            return s;
         }
-    } while (bStrICmp(s, command) != 0);
-    return s;
+    }
+    return nullptr;
 }
 
 // TODO fake match, isArg doesn't exist
@@ -284,8 +292,17 @@ int SpeedScript::GetNextArgumentInt() {
 
 short SpeedScript::GetNextArgumentShort() {
     int a = this->GetNextArgumentInt();
-    if (a + 0x8000U > 0x17fff) {
+    if (a < -32768 || a > 65535) {
         this->Error("Parameter %d wouldn\'t fit into short in %s\n", a, this->GetPositionName());
+    }
+    return a;
+}
+
+// STRIPPED
+char SpeedScript::GetNextArgumentChar() {
+    int a = this->GetNextArgumentInt();
+    if (a < -128 || a > 255) {
+        this->Error("Parameter %d wouldn\'t fit into char in %s\n", a, this->GetPositionName());
     }
     return a;
 }

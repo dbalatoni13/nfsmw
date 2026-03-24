@@ -21,6 +21,7 @@ class IHud : public UTL::COM::IUnknown, public UTL::Collections::Listable<IHud, 
     virtual void Update(class IPlayer *player, float dT);
     virtual void Release();
     virtual void HideAll();
+    virtual void FadeAll();
     virtual bool AreResourcesLoaded();
     virtual bool IsHudVisible();
     virtual void SetInPursuit(bool inPursuit);

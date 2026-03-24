@@ -24,17 +24,9 @@ struct SpeedScriptEntry {
     unsigned short Pad;               // offset 0xA, size 0x2
 };
 
-struct SpeedScript {
-    // total size: 0x268
-    int NumFiles;                        // offset 0x0, size 0x4
-    SpeedScriptFile FileTable[4];        // offset 0x4, size 0x150
-    int NumEntries;                      // offset 0x154, size 0x4
-    int MaxEntries;                      // offset 0x158, size 0x4
-    SpeedScriptEntry *EntryTable;        // offset 0x15C, size 0x4
-    int NextEntryNum;                    // offset 0x160, size 0x4
-    char ErrorText[256];                 // offset 0x164, size 0x100
-    void (*ErrorFunction)(const char *); // offset 0x264, size 0x4
-
+// total size: 0x268
+class SpeedScript {
+  public:
     static void DefaultErrorFunction(const char *msg);
 
     SpeedScript(const char *filename, int enable_fatal_error);
@@ -55,6 +47,7 @@ struct SpeedScript {
     int GetNextArgumentInt();
     short GetNextArgumentShort();
     float GetNextArgumentFloat();
+    char GetNextArgumentChar();
     bVector3 GetNextArgumentVector3();
 
     SpeedScriptEntry *GetCurrentEntry() {
@@ -73,9 +66,18 @@ struct SpeedScript {
         }
     }
 
-    inline char *GetName(struct SpeedScriptEntry *entry) {
+    char *GetName(struct SpeedScriptEntry *entry) {
         return &this->FileTable[entry->FileNumber].ArgBuf[entry->ArgBufPos];
     }
+
+    int NumFiles;                        // offset 0x0, size 0x4
+    SpeedScriptFile FileTable[4];        // offset 0x4, size 0x150
+    int NumEntries;                      // offset 0x154, size 0x4
+    int MaxEntries;                      // offset 0x158, size 0x4
+    SpeedScriptEntry *EntryTable;        // offset 0x15C, size 0x4
+    int NextEntryNum;                    // offset 0x160, size 0x4
+    char ErrorText[256];                 // offset 0x164, size 0x100
+    void (*ErrorFunction)(const char *); // offset 0x264, size 0x4
 };
 
 #endif

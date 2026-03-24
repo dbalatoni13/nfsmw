@@ -30,8 +30,17 @@ class OnlineManager {
 #if !ONLINE_SUPPORT
         return false;
 #else
+        // TODO
         return false;
 #endif
+    }
+
+    void EndOnlineRace(bool bForced) {
+        // TODO
+    }
+
+    void TrackLoaded() {
+        // TODO
     }
 
     // TODO

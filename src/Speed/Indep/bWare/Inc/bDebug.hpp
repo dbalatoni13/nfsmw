@@ -7,7 +7,7 @@
 
 #include <types.h>
 
-#include "Speed/Indep/Libs/realcore/include/common/realcore/system.h"
+#include "Speed/Indep/Libs/realcore/6.24.00/include/common/realcore/system.h"
 
 struct bMutex {
     // total size: 0x20
@@ -19,6 +19,7 @@ struct bMutex {
     void Unlock();
 };
 
+int bIsValidPointer(void *p, int size);
 float bGetTickerDifference(unsigned int start_ticks);
 int bGetFixTickerDifference(unsigned int start_ticks, unsigned int end_ticks);
 float bGetTickerDifference(unsigned int start_ticks, unsigned int end_ticks);
@@ -27,6 +28,7 @@ void bInitTicker(float min_wraparound_time);
 void bBreak();
 int bDisableInterrupts();
 void bRestoreInterrupts(int previous_state);
+void bSetUserPutStringFunction(bool (*function)(int, const char *));
 
 extern int EnableReleasePrintf;
 

@@ -19,21 +19,15 @@
 bChunkLoaderFunction LoaderTable[LOADER_AMOUNT];
 bChunkLoaderFunction UnloaderTable[LOADER_AMOUNT];
 
-// UNSOLVED
 int LoaderStub(bChunk *chunk) {
-    // TODO magic, put those into SpeedChunks.hpp
-    if (chunk->ID != BCHUNK_STYLE_MOMENTS_INFO) {
-        if (chunk->ID < BCHUNK_STYLE_PARTITIONS) {
-            if (chunk->ID != BCHUNK_SMOKEABLES) {
-                return 0;
-            }
-        } else if (chunk->ID != 0x34b00) {
+    switch (chunk->ID) {
+        case BCHUNK_SMOKEABLES:
+        case BCHUNK_STYLE_MOMENTS_INFO:
+        case 0x34b00:
+            return 1;
+        default:
             return 0;
-        }
-    } else {
-        return 1;
     }
-    return 0;
 }
 
 int CallChunkLoader(bChunk *chunk) {
@@ -529,17 +523,23 @@ int ServiceResourceLoading() {
     ProfileNode profile_node("TODO", 0);
 
     while (NumDelayedResourceCallbacks != 0) {
-        ProfileNode profile_node("TODO2", 0);
-        // TODO registers instead of stack
+        ProfileNode profile_node("TODO", 0);
+#ifdef EA_PLATFORM_PLAYSTATION2
         DelayedResourceCallback drc = DelayedResourceCallbacks[0];
-        // drc.pCallback = DelayedResourceCallbacks[0].pCallback;
-        // drc.Param = DelayedResourceCallbacks[0].Param;
+#else
+        void (*pCallback)(void *) = DelayedResourceCallbacks[0].pCallback;
+        void *callbackParam = DelayedResourceCallbacks[0].Param;
+#endif
         if (NumDelayedResourceCallbacks > 1) {
             bOverlappedMemCpy(&DelayedResourceCallbacks[0], &DelayedResourceCallbacks[1],
                               NumDelayedResourceCallbacks * sizeof(DelayedResourceCallback));
         }
         NumDelayedResourceCallbacks--;
+#ifdef EA_PLATFORM_PLAYSTATION2
         drc.pCallback(drc.Param);
+#else
+        pCallback(callbackParam);
+#endif
     }
     ServiceQueuedFiles();
     if (NumResourcesBeingLoaded != 0) {
@@ -559,7 +559,7 @@ int ServiceResourceLoading() {
 }
 
 int IsResourceLoadingComplete() {
-    return NumResourcesBeingLoaded == 0;
+    return NumResourcesBeingLoaded == 0 && NumDelayedResourceCallbacks == 0;
 }
 
 void WaitForResourceLoadingComplete() {
@@ -623,20 +623,6 @@ int UnloaderColourCube(bChunk *chunk) {
     return chunk->GetID() == BCHUNK_FENG_FONT;
 }
 
-// total size: 0x4C
-struct VMFile {
-    VMFile();
-
-    bool mInit;          // offset 0x0, size 0x1
-    char mFilename[48];  // offset 0x4, size 0x30
-    bool mCompressed;    // offset 0x34, size 0x1
-    int mSize;           // offset 0x38, size 0x4
-    int mSizeOfChunks;   // offset 0x3C, size 0x4
-    void *mMainMemAddr;  // offset 0x40, size 0x4
-    void *mVirtMemAddr;  // offset 0x44, size 0x4
-    bool mUsedTrackPool; // offset 0x48, size 0x1
-};
-
 VMFile::VMFile() {
     mInit = false;
     mCompressed = false;
@@ -659,7 +645,7 @@ VMFile *GetVMFile() {
 }
 
 // UNSOLVED regswap
-void MoveFileIntoVirtualMemoryThenLoadChunks(int param, int err) {
+void MoveFileIntoVirtualMemoryThenLoadChunks(intptr_t param, int err) {
     VMFile *vm_file = reinterpret_cast<VMFile *>(param);
     if (!vm_file->mInit) {
         return;
@@ -681,7 +667,7 @@ void MoveFileIntoVirtualMemoryThenLoadChunks(int param, int err) {
                 int allocation_params = GetVirtualMemoryAllocParams();
                 void *realloc = bMalloc(sizeofchunks, "TODO2", 0, allocation_params);
                 old_memory = realloc;
-                LZDecompress(compressed_data, (uint8 *)old_memory);
+                LZDecompress(compressed_data, static_cast<uint8 *>(old_memory));
             }
             bFree(compressed_data);
         }

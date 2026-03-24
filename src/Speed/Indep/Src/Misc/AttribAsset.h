@@ -45,4 +45,9 @@ class FileMap : public std::map<Attrib::AssetID, FileRecord> {
     FileMap();
 };
 
+bool AddDepFile(const char *filename, void *data, size_t bytes);
+bool RemoveDepFile(const char *filename);
+Attrib::Vault *AddVault(const char *filename, void *data, size_t bytes);
+void RemoveVault(const char *filename);
+
 #endif

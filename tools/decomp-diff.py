@@ -11,66 +11,36 @@ Usage:
   python tools/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim
   python tools/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim -s nonmatching
   python tools/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim -d __9CAnimBank
-
-Parallel-safe usage (use a temp .o to avoid collisions with other agents):
-  TEMPOBJ=$(python tools/build-unit.py -u main/Speed/Indep/SourceLists/zAnim)
-  python tools/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim --base-obj "$TEMPOBJ" -d __9CAnimBank
+  python tools/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim -d __9CAnimBank --reloc-diffs all
 """
 
 import argparse
-import json
 import os
-import subprocess
 import sys
 from typing import Any, Dict, List, Optional, Tuple
-from _common import ROOT_DIR, ToolError, fail, run_objdiff_json
+from _common import (
+    ROOT_DIR,
+    RELOC_DIFF_CHOICES,
+    ToolError,
+    build_objdiff_symbol_rows,
+    fail,
+    run_objdiff_json,
+)
 
 root_dir = ROOT_DIR
 OBJDIFF_CLI = os.path.join(root_dir, "build", "tools", "objdiff-cli")
 
 
-def run_objdiff(unit: str, base_obj: Optional[str] = None) -> Dict[str, Any]:
+def run_objdiff(
+    unit: str, base_obj: Optional[str] = None, reloc_diffs: str = "none"
+) -> Dict[str, Any]:
     return run_objdiff_json(
         OBJDIFF_CLI,
         unit,
         base_obj=base_obj,
-        extra_args=["-c", "functionRelocDiffs=none"],
+        reloc_diffs=reloc_diffs,
         root_dir=root_dir,
     )
-
-
-def classify_symbol(sym: Dict[str, Any]) -> str:
-    """Classify a symbol as 'function', 'object', or 'section'."""
-    kind = sym.get("kind", "")
-    if kind == "SYMBOL_FUNCTION":
-        return "function"
-    if kind == "SYMBOL_OBJECT":
-        return "object"
-    if kind == "SYMBOL_SECTION":
-        return "section"
-    # Fallback for external/relocation-only symbols (empty kind)
-    if "instructions" in sym:
-        return "function"
-    if "data_diff" in sym:
-        return "object"
-    return "unknown"
-
-
-def symbol_section(sym: Dict[str, Any], sections: List[Dict[str, Any]]) -> str:
-    """Determine which section a symbol belongs to."""
-    # For named section data symbols like [.rodata-0]
-    name = sym.get("name", "")
-    if name.startswith("[."):
-        return name[1:].split("-")[0].rstrip("]")
-    # Use content type as best indicator
-    if classify_symbol(sym) == "function":
-        return ".text"
-    # Check sections for data
-    for sec in sections:
-        kind = sec.get("kind", "")
-        if kind in ("SECTION_DATA", "SECTION_BSS"):
-            return sec["name"]
-    return ".data"
 
 
 def fuzzy_match(pattern: str, name: str) -> bool:
@@ -98,72 +68,43 @@ def describe_pair_status(
 
 def build_overview(data: Dict[str, Any], args) -> None:
     """Print overview of all symbols in a unit."""
-    left_syms = data.get("left", {}).get("symbols", [])
-    right_syms = data.get("right", {}).get("symbols", [])
-    left_sections = data.get("left", {}).get("sections", [])
-    right_sections = data.get("right", {}).get("sections", [])
-
-    rows = []
-
-    # Process left (original/target) symbols
-    for i, sym in enumerate(left_syms):
-        sym_type = classify_symbol(sym)
-        # Skip section symbols and external references
-        if sym_type in ("section", "unknown"):
-            continue
-        # Skip symbols without size
-        size = int(sym.get("size", "0"))
-        if size == 0:
-            continue
-
-        name = sym.get("demangled_name", sym.get("name", "?"))
-        section = symbol_section(sym, left_sections)
-        ts = sym.get("target_symbol")
-        mp = sym.get("match_percent")
-
-        if ts is None:
-            status = "missing"
-            match_str = "-"
-        elif mp is not None and mp >= 100.0:
-            status = "match"
-            match_str = f"{mp:.1f}%"
-        elif mp is not None:
-            status = "nonmatching"
-            match_str = f"{mp:.1f}%"
-        else:
-            status = "missing"
-            match_str = "-"
-
-        rows.append((status, match_str, size, section, sym_type, name, "left"))
-
-    # Process right (decomp/base) symbols that aren't targeted (extra)
-    for i, sym in enumerate(right_syms):
-        if sym.get("target_symbol") is not None:
-            continue  # Already covered via left side
-        sym_type = classify_symbol(sym)
-        if sym_type in ("section", "unknown"):
-            continue
-        size = int(sym.get("size", "0"))
-        if size == 0:
-            continue
-        name = sym.get("demangled_name", sym.get("name", "?"))
-        section = symbol_section(sym, right_sections)
-        rows.append(("extra", "-", size, section, sym_type, name, "right"))
+    rows = build_objdiff_symbol_rows(data)
 
     # Apply filters
     if args.type:
         types = set(t.strip() for t in args.type.split(","))
-        rows = [r for r in rows if r[4] in types]
+        rows = [r for r in rows if r["type"] in types]
 
     if args.status:
-        statuses = set(s.strip() for s in args.status.split(","))
-        rows = [r for r in rows if r[0] in statuses]
+        status_aliases = {"matching": "match", "matched": "match"}
+        statuses = set(
+            status_aliases.get(s.strip(), s.strip()) for s in args.status.split(",")
+        )
+        rows = [r for r in rows if r["status"] in statuses]
 
     if args.section:
-        rows = [r for r in rows if r[3] == args.section]
+        rows = [r for r in rows if r["section"] == args.section]
 
     if args.search:
-        rows = [r for r in rows if fuzzy_match(args.search, r[5])]
+        rows = [r for r in rows if fuzzy_match(args.search, r["name"])]
+
+    if args.sort == "unmatched":
+        rows.sort(
+            key=lambda r: (-r["unmatched_bytes_est"], -r["size"], r["name"].lower())
+        )
+    elif args.sort == "size":
+        rows.sort(key=lambda r: (-r["size"], r["name"].lower()))
+    elif args.sort == "match":
+        rows.sort(
+            key=lambda r: (
+                r["match_percent"] is None,
+                r["match_percent"] if r["match_percent"] is not None else 101.0,
+                -r["size"],
+                r["name"].lower(),
+            )
+        )
+    elif args.sort == "name":
+        rows.sort(key=lambda r: r["name"].lower())
 
     if args.limit is not None:
         rows = rows[: args.limit]
@@ -173,10 +114,18 @@ def build_overview(data: Dict[str, Any], args) -> None:
         return
 
     # Print header
-    print(f"{'STATUS':<10} {'MATCH':>7}  {'SIZE':>6}  {'SECTION':<10} {'NAME'}")
-    print("-" * 80)
-    for status, match_str, size, section, sym_type, name, side in rows:
-        print(f"{status:<10} {match_str:>7}  {size:>5}B  {section:<10} {name}")
+    print(
+        f"{'STATUS':<10} {'MATCH':>7}  {'UNMATCH':>8}  {'SIZE':>6}  {'SECTION':<10} {'NAME'}"
+    )
+    print("-" * 96)
+    for row in rows:
+        match_str = (
+            f"{row['match_percent']:.1f}%" if row["match_percent"] is not None else "-"
+        )
+        print(
+            f"{row['status']:<10} {match_str:>7}  {row['unmatched_bytes_est']:>7}B  "
+            f"{row['size']:>5}B  {row['section']:<10} {row['name']}"
+        )
 
 
 def render_instruction(
@@ -462,6 +411,12 @@ def main():
         type=int,
         help="Limit overview output to the first N matching rows",
     )
+    parser.add_argument(
+        "--sort",
+        choices=["objdiff", "unmatched", "size", "match", "name"],
+        default="objdiff",
+        help="Sort overview rows (default: objdiff order)",
+    )
 
     # Diff options
     parser.add_argument(
@@ -480,22 +435,29 @@ def main():
         help="Don't collapse matching instruction runs",
     )
 
-    # Parallel-safe option: use a pre-compiled temp .o instead of the shared build output.
-    # Obtain the temp path with: TEMPOBJ=$(python tools/build-unit.py -u <unit>)
     parser.add_argument(
         "--base-obj",
         metavar="PATH",
         help=(
-            "Use this .o file as the decomp base instead of the one from objdiff.json. "
-            "Allows parallel agents to diff against their own private compilation output "
-            "without interference. Produce the path with build-unit.py."
+            "Use this .o file as the decomp base instead of the one from objdiff.json."
+        ),
+    )
+    parser.add_argument(
+        "--reloc-diffs",
+        choices=RELOC_DIFF_CHOICES,
+        default="none",
+        help=(
+            "Control relocation-only mismatches in objdiff "
+            "(default: none; use all to surface relocation diffs)"
         ),
     )
 
     args = parser.parse_args()
 
     try:
-        data = run_objdiff(args.unit, base_obj=args.base_obj)
+        data = run_objdiff(
+            args.unit, base_obj=args.base_obj, reloc_diffs=args.reloc_diffs
+        )
     except ToolError as e:
         fail(str(e))
 

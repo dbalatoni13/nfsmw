@@ -120,6 +120,183 @@ class CarLoader {
         MODE_IN_GAME = 2,
     };
 
+    void SetLoadingMode(eLoadingMode mode, int two_player_flag);
+
+    void SetMemoryPoolSize(int size);
+
+    int IsAddressInMemoryPool(void *address);
+
+    int IsInMemoryPool(LoadedTexturePack *loaded_texture_pack);
+
+    int GetMemoryEntries(LoadedTexturePack *loaded_texture_pack, void **memory_entries, int num_memory_entries);
+
+    int IsInMemoryPool(LoadedSolidPack *loaded_solid_pack);
+
+    int GetMemoryEntries(LoadedSolidPack *loaded_solid_pack, void **memory_entries, int num_memory_entries);
+
+    void PrintInventory();
+
+    void PrintMemoryUsage(bool on_screen);
+
+    int GetMemoryRequired(LoadedRideInfo *loaded_ride_info);
+
+    void ServiceTweakables();
+
+    char *GetPrintHeader();
+
+    LoadedSolidPack *AllocateSolidPack(const char *filename);
+
+    void UnallocateSolidPack(LoadedSolidPack *loaded_solid_pack);
+
+    void LoadSolidPack(LoadedSolidPack *loaded_solid_pack, int stream_solids);
+
+    void LoadedTrackStreamerCallback();
+
+    void LoadedSolidPackCallback(LoadedSolidPack *loaded_solid_pack);
+
+    int UnloadSolidPack(LoadedSolidPack *loaded_solid_pack);
+
+    LoadedTexturePack *AllocateTexturePack(const char *filename, int max_header_size);
+
+    void UnallocateTexturePack(LoadedTexturePack *loaded_texture_pack);
+
+    int LoadTexturePack(LoadedTexturePack *loaded_texture_pack, int use_memory_pool);
+
+    void LoadedTexturePackCallback(LoadedTexturePack *loaded_texture_pack);
+
+    int UnloadTexturePack(LoadedTexturePack *loaded_texture_pack);
+
+    int LoadCar(LoadedCar *loaded_car);
+
+    void LoadedCarCallback(LoadedCar *loaded_car);
+
+    int UnloadCar(LoadedCar *loaded_car);
+
+    int LoadAllWheelModels();
+
+    void LoadedWheelModelsCallback();
+
+    int LoadAllWheelTextures();
+
+    void LoadedWheelTexturesCallback();
+
+    int UnloadWheel(LoadedWheel *loaded_wheel);
+
+    int GetMemoryEntries(LoadedWheel *loaded_wheel, void **memory_entries, int num_memory_entries);
+
+    int LoadAllTexturesFromPack(const char *filename, int load_perm_layers);
+
+    void LoadedAllTexturesFromPackCallback();
+
+    int LoadSkin(LoadedSkin *loaded_skin, int load_perm_layers);
+
+    void LoadedSkinCallback(LoadedSkin *loaded_skin);
+
+    void CompositeSkin(LoadedSkin *loaded_skin);
+
+    int UnloadSkinTemporaries(LoadedSkin *loaded_skin, int force_unload);
+
+    int UnloadSkinPerms(LoadedSkin *loaded_skin);
+
+    int UnloadSkin(LoadedSkin *loaded_skin);
+
+    int IsSkinInMemoryPool(LoadedSkin *loaded_skin);
+
+    int GetMemoryEntries(LoadedSkin *loaded_skin, void **memory_entries, int num_memory_entries);
+
+    int AllocateSkinLayers(unsigned int *name_hash_table, int num_name_hashes, LoadedSkinLayer **loaded_skin_layer_table, int max_loaded_skin_layers,
+                           const char *filename);
+
+    void UnallocateSkinLayers(LoadedSkinLayer **loaded_skin_layer_table, int num_loaded_skin_layers);
+
+    int LoadSkinLayers(unsigned int *name_hash_table, int max_name_hashes, LoadedSkinLayer **loaded_skin_layer_table, int num_loaded_skin_layers);
+
+    void LoadedSkinLayers(LoadedSkinLayer **loaded_skin_layer_table, int num_loaded_skin_layers);
+
+    int UnloadSkinLayers(unsigned int *name_hash_table, int max_name_hashes, LoadedSkinLayer **loaded_skin_layer_table, int num_loaded_skin_layers);
+
+    int IsSkinLayerInMemoryPool(LoadedSkinLayer *loaded_skin_layer);
+
+    int GetMemoryEntries(LoadedSkinLayer *loaded_skin_layer, void **memory_entries, int num_memory_entries);
+
+    LoadedSolidPack *FindLoadedSolidPack(const char *filename);
+
+    LoadedTexturePack *FindLoadedTexturePack(const char *filename);
+
+    LoadedSkinLayer *FindLoadedSkinLayer(unsigned int name_hash);
+
+    LoadedRideInfo *FindLoadedRideInfo(int handle);
+
+    LoadedRideInfo *FindLoadedRideInfo(RideInfo *ride_info);
+
+    int Load(RideInfo *ride_info);
+
+    void Unload(int handle);
+
+    int IsLoaded(int handle);
+
+    int IsLoaded(LoadedRideInfo *loaded_ride_info);
+
+    void EnsureHasLoaded(int handle);
+
+    LoadedRideInfo *AllocateRideInfo(RideInfo *ride_info, int is_player_car);
+
+    int UnallocateRideInfo(LoadedRideInfo *loaded_ride_info);
+
+    int UnloadRideInfo(LoadedRideInfo *loaded_ride_info, int leave_if_in_mempool);
+
+    void UnloadEverything();
+
+    void UnloadOverflowedResources();
+
+    void UnloadUnallocatedRideInfos(int max_left_unloaded);
+
+    void UnloadAllSkinTemporaries();
+
+    int IsCarInMemoryPool(LoadedCar *loaded_car);
+
+    int GetMemoryEntries(LoadedCar *loaded_car, void **memory_entries, int num_memory_entries);
+
+    int RemoveSomethingFromCarMemoryPool(bool force_unload);
+
+    bool MakeSpaceInPool(int size);
+
+    int MakeSpaceInCarMemoryPool(int largest_malloc_needed, int amount_free_needed, bool allocating_stream_header_chunks);
+
+    bool DefragmentAllocation(void *allocation);
+
+    bool AllocateDefragmentStorage();
+
+    void FreeDefragmentStorage();
+
+    int DefragmentPool();
+
+    void BeginLoading(void (*callback)(unsigned int), unsigned int param);
+
+    void ServiceLoading();
+
+    static void CallUserCallback(int param);
+
+    void LoadingDoneCallback();
+
+    static void LoadedTrackStreamerCallbackBridge(int param);
+
+    static void LoadedSolidPackCallbackBridge(unsigned int param);
+
+    static void LoadedSolidPackCallbackBridge(int param);
+
+    static void LoadedTexturePackCallbackBridge(unsigned int param);
+
+    static void LoadedCarCallbackBridge(unsigned int param);
+
+    static void LoadedWheelModelsCallbackBridge(unsigned int param);
+
+    static void LoadedWheelTexturesCallbackBridge(unsigned int param);
+
+    static void LoadedAllTexturesFromPackCallbackBridge(unsigned int param);
+
+    static void LoadedSkinCallbackBridge(unsigned int param);
+
     int IsLoadingInProgress() {
         return LoadingInProgress;
     }
@@ -147,7 +324,7 @@ class CarLoader {
     int NumSpongeAllocations;                        // offset 0x68, size 0x4
     void *SpongeAllocations[16];                     // offset 0x6C, size 0x40
     int NumLoadingSkinLayers;                        // offset 0xAC, size 0x4
-    struct LoadedSkinLayer *LoadingSkinLayers[512];  // offset 0xB0, size 0x800
+    LoadedSkinLayer *LoadingSkinLayers[512];         // offset 0xB0, size 0x800
 };
 
 void *MoveDefragmentAllocation(void *allocation);

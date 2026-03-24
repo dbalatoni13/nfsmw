@@ -60,6 +60,8 @@ HSIMTASK AddTask(const UCrc32 &schedule, float rate, ITaskable *handler, float s
 void RemoveTask(HSIMTASK hTask, ITaskable *handler);
 void ModifyTask(HSIMTASK hTask, float rate);
 float DistanceToCamera(const UMath::Vector3 &v);
+void Init(const UCrc32 &track, eUserMode mode);
+void Shutdown();
 
 }; // namespace Sim
 

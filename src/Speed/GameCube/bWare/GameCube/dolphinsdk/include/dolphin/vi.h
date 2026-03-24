@@ -3,6 +3,7 @@
 
 #include <dolphin/gx/GXStruct.h>
 #include <dolphin/vifuncs.h>
+#include <dolphin/vitypes.h>
 
 #ifdef __cplusplus
 extern "C" {

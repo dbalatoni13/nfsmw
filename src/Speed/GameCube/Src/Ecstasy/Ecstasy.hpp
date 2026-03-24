@@ -26,8 +26,8 @@ enum ePixelShaderLightingMode {
     LM_ERROR = -1,
 };
 
-int psGouraud(int);
-int psReset(int opt);
+int psGouraud();
+int psReset(PS_ResetOptions opt);
 int ps_NoLighting(int bVertexColour, int opt);
 
 int vsReset(int opt);

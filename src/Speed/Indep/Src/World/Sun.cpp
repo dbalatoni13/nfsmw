@@ -1,6 +1,7 @@
 #include "Sun.hpp"
 #include "Rain.hpp"
 #include "Speed/Indep/Libs/Support/Miscellaneous/StringHash.h"
+#include "Speed/Indep/Src/Camera/Camera.hpp"
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
 #include "Speed/Indep/Src/Ecstasy/Texture.hpp"
 #include "Speed/Indep/Src/Ecstasy/eLight.hpp"
@@ -8,6 +9,7 @@
 #include "Speed/Indep/bWare/Inc/bChunk.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
+#include "TimeOfDay.hpp"
 #include "World.hpp"
 
 SunChunkInfo *SunInfoTable;
@@ -112,55 +114,45 @@ void SunTrackUnloader(void) {
     SunTextures[4] = nullptr;
 }
 
-// UNSOLVED
 void RenderSunAsFlare() {
-    bVector3 sp8; // position3d
+    bVector3 position3d;
 
     if (SunInfo) {
-        float fVar1;
-        float fVar2;
-        float fVar3;
-        float fVar4;
-        float fVar5;
-        float fVar6;
-        float fVar7;
-        bVector3 local_38;
+        position3d.x = SunInfo->PositionX;
+        position3d.y = SunInfo->PositionY;
+        position3d.z = SunInfo->PositionZ;
 
-        sp8.x = SunInfo->PositionX;
-        sp8.y = SunInfo->PositionY;
-        sp8.z = SunInfo->PositionZ;
+        bVector3 CamPos = *eGetView(1, false)->GetCamera()->GetPosition();
+        bVector3 ToSun = position3d;
+        float recipdistance2sun = 1.0f / bLength(position3d);
 
-        bVector3 sp18(*eGetView(1, false)->GetCamera()->GetPosition());
-        bVector3 sp28; // ToSun
-        float var_r31; // recipdistance2sun
-
-        fVar6 = 1.0f / bLength(sp28);
-        local_38.x = fVar3 * fVar6 * 40.0f;
-        sp28.pad = fVar5 + fVar2 * fVar6 * 40.0f;
-        sp28.z = fVar4 + fVar1 * fVar6 * 40.0f;
-        // bVector3((bVector3 *)&local_38.z, (bVector3 *)&local_28.z);
-        fVar3 = sp28.x;
-        fVar2 = local_38.pad;
-        fVar1 = local_38.z;
-        eLightFlare *light_flare = eGetNextLightFlareInPool(0x3e);
-        if (light_flare) {
-            light_flare->Flags = 2;
-            light_flare->PositionX = fVar1;
-            light_flare->PositionY = fVar2;
-            light_flare->Type = 21;
-            light_flare->PositionZ = fVar3;
+        ToSun *= recipdistance2sun;
+        ToSun *= 40.0f;
+        position3d = CamPos + ToSun;
+        eLightFlare *eLightFlare = eGetNextLightFlareInPool(0x3e);
+        if (eLightFlare) {
+            eLightFlare->Flags = 2;
+            eLightFlare->PositionX = position3d.x;
+            eLightFlare->PositionY = position3d.y;
+            eLightFlare->PositionZ = position3d.z;
+            eLightFlare->Type = 21; // eLightFlareType::ELF_SUN_FLARE, or eSingleLightFlares::ESLF_SUN_FLARE
         }
-        sp28.z = fVar4 + SunInfo->PositionX * fVar6 * 60.0f;
-        sp28.pad = fVar5 + SunInfo->PositionY * fVar6 * 60.0f;
-        local_38.x = SunInfo->PositionZ * fVar6 * 60.0f;
-        // bVector3((bVector3 *)&local_38.z, (bVector3 *)&local_28.z);
-        light_flare = eGetNextLightFlareInPool(0x3f0036);
-        if (light_flare) {
-            light_flare->Flags = 2;
-            light_flare->PositionX = local_38.z;
-            light_flare->PositionY = local_38.pad;
-            light_flare->Type = 21;
-            light_flare->PositionZ = sp28.x;
+
+        position3d.x = SunInfo->PositionX;
+        position3d.y = SunInfo->PositionY;
+        position3d.z = SunInfo->PositionZ;
+
+        ToSun = position3d;
+        ToSun *= recipdistance2sun;
+        ToSun *= 60.0f;
+        position3d = CamPos + ToSun;
+        eLightFlare = eGetNextLightFlareInPool(0x3f0036);
+        if (eLightFlare) {
+            eLightFlare->Flags = 2;
+            eLightFlare->PositionX = position3d.x;
+            eLightFlare->PositionY = position3d.y;
+            eLightFlare->PositionZ = position3d.z;
+            eLightFlare->Type = 21; // eLightFlareType::ELF_SUN_FLARE, or eSingleLightFlares::ESLF_SUN_FLARE
         }
     }
 }

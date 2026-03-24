@@ -38,6 +38,8 @@ class Pkt_Smackable_Service : public Sim::Packet {
 
 void UpdateServices(float dT);
 void UpdateLoading();
+void InitServices();
+void RestoreServices();
 
 } // namespace RenderConn
 

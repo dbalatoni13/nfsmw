@@ -5,7 +5,7 @@
 #pragma once
 #endif
 
-// TODO I just made this up to store declarations for Platform.cpp
+// I just made this up to store declarations for Platform.cpp
 
 void InitPlatform();
 void InitDisplaySystem();
@@ -13,5 +13,6 @@ void ServicePlatform();
 int bDoWithStack(void *function, void *stack_pointer, int arg1, int arg2);
 void EnableInterrupts();
 void DVDErrorTask(void *, int);
+void FlushCaches();
 
 #endif

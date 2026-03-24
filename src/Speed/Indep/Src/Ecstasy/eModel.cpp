@@ -1,9 +1,8 @@
-#include "eModel.hpp"
 #include "DefragFixer.hpp"
+#include "Ecstasy.hpp"
 #include "Speed/Indep/Src/Misc/ResourceLoader.hpp"
 #include "Speed/Indep/bWare/Inc/bDebug.hpp"
 #include "Texture.hpp"
-#include "eSolid.hpp"
 
 #include <types.h>
 
