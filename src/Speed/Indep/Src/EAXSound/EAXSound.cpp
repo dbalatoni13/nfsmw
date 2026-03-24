@@ -256,8 +256,8 @@ Attrib::StringKey crcShiftPattern("ShiftPattern");
 Attrib::StringKey crcSweetener("Sweetener");
 Attrib::StringKey crcEnglish("English");
 Attrib::StringKey crcCarHitWall("CarHitWall");
-Attrib::StringKey crcMusic("Music");
 Attrib::StringKey crcLicensedMusic("LicensedMusic");
+Attrib::StringKey crcMusic("Music");
 EAXAemsManager gAEMSMgr;
 stSndDataLoadParams g_SndAssetList[48];
 Slope TablePitch(0.0f, 1.0f, 3500.0f, 4500.0f);
@@ -696,8 +696,7 @@ void EAXSound::InitializeDriver() {
         NFSMixMaster();
     m_pSTICH_Playback = new (gAudioMemoryManager.AllocateMemory(sizeof(cSTICH_PlayBack), "STICH_PlayBack", false))
         cSTICH_PlayBack();
-    g_pNISRevMgr = new (gAudioMemoryManager.AllocateMemory(sizeof(NIS_RevManager), "NISRevMan", false))
-        NIS_RevManager();
+    new (gAudioMemoryManager.AllocateMemory(sizeof(NIS_RevManager), "NISRevMan", false)) NIS_RevManager();
 
     for (int n = 0; n < 13; n++) {
         m_pStateMgr[n] = nullptr;
