@@ -1175,10 +1175,12 @@ void GetUsedCarTextureInfo(UsedCarTextureInfo *used_texture_info, RideInfo *ride
         num_perm_textures = UsedCarTextureAddToTable(reinterpret_cast<unsigned int *>(info), 0, max_perm_textures, composite_skin_hash);
     } else {
         if (info->ReplaceSkinHash != 0) {
-            num_perm_textures = UsedCarTextureAddToTable(reinterpret_cast<unsigned int *>(info), 0, max_perm_textures);
+            num_perm_textures =
+                UsedCarTextureAddToTable(reinterpret_cast<unsigned int *>(info), 0, max_perm_textures, info->ReplaceSkinHash);
         }
         if (info->ReplaceSkinBHash != 0) {
-            num_perm_textures += UsedCarTextureAddToTable(reinterpret_cast<unsigned int *>(info), num_perm_textures, max_perm_textures);
+            num_perm_textures += UsedCarTextureAddToTable(
+                reinterpret_cast<unsigned int *>(info), num_perm_textures, max_perm_textures, info->ReplaceSkinBHash);
         }
     }
 
