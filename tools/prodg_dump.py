@@ -50,6 +50,10 @@ FRAME_SLOT_PLUS_RE = re.compile(
     re.MULTILINE,
 )
 FRAME_SLOT_DIRECT_RE = re.compile(r"mem/f:[A-Za-z0-9_]+ \(\s*reg:SI (?P<base>\d+)\) 0\)")
+ASM_WEAK_RE = re.compile(r"^\s*\.weak\s+(\S+)$")
+ASM_TYPE_RE = re.compile(r"^\s*\.type\s+(\S+),@function$")
+ASM_LABEL_RE = re.compile(r"^(\S+):$")
+ASM_SIZE_RE = re.compile(r"^\s*\.size\s+(\S+),")
 DEFAULT_STAGES = ("rtl", "greg", "lreg")
 
 
@@ -254,6 +258,9 @@ def parse_stages(value: str) -> List[str]:
 
 
 def load_function_blocks(path: Path) -> List[FunctionBlock]:
+    if path.suffix == ".s":
+        return load_assembly_function_blocks(path)
+
     lines = path.read_text(errors="replace").splitlines()
     blocks: List[FunctionBlock] = []
     current_header: Optional[str] = None
@@ -283,6 +290,50 @@ def load_function_blocks(path: Path) -> List[FunctionBlock]:
         blocks.append(
             FunctionBlock(header=current_header, start_line=current_start, lines=current_lines)
         )
+
+    return blocks
+
+
+def load_assembly_function_blocks(path: Path) -> List[FunctionBlock]:
+    lines = path.read_text(errors="replace").splitlines()
+    starts: Dict[str, int] = {}
+    labels: Dict[str, int] = {}
+    blocks: List[FunctionBlock] = []
+
+    for index, line in enumerate(lines, start=1):
+        weak_match = ASM_WEAK_RE.match(line)
+        if weak_match:
+            symbol = weak_match.group(1)
+            starts[symbol] = min(starts.get(symbol, index), index)
+            continue
+
+        type_match = ASM_TYPE_RE.match(line)
+        if type_match:
+            symbol = type_match.group(1)
+            starts[symbol] = min(starts.get(symbol, index), index)
+            continue
+
+        label_match = ASM_LABEL_RE.match(line)
+        if label_match:
+            symbol = label_match.group(1)
+            if symbol in starts and symbol not in labels:
+                labels[symbol] = index
+            continue
+
+        size_match = ASM_SIZE_RE.match(line)
+        if size_match:
+            symbol = size_match.group(1)
+            if symbol in starts and symbol in labels:
+                start_line = starts[symbol]
+                blocks.append(
+                    FunctionBlock(
+                        header=symbol,
+                        start_line=start_line,
+                        lines=lines[start_line - 1 : index],
+                    )
+                )
+                del starts[symbol]
+                del labels[symbol]
 
     return blocks
 

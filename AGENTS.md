@@ -279,6 +279,9 @@ python tools/prodg_dump.py diff /tmp/zattrib_dumps /tmp/zattrib_dumps \
 python tools/prodg_dump.py diff /tmp/zattrib_oldfloor_dump /tmp/zattrib_block_dump \
     --exact --summary-only --stages rtl,greg,lreg \
     -f 'unsigned int VecHashMap<unsigned int,Attrib::Class,Attrib::Class::TablePolicy,false,16>::UpdateSearchLength(unsigned int, unsigned int)'
+python tools/prodg_dump.py diff /tmp/zattrib_block_dump /tmp/zattrib_trial_dump \
+    --exact --stages s \
+    -f 'UpdateSearchLength__t10VecHashMap5ZUiZQ26Attrib5ClassZQ36Attrib5Class11TablePolicyb0Ui16UiUi'
 ```
 
 Use `extract --grep ... -C <n>` when you only want a few interesting lines inside a
@@ -290,7 +293,11 @@ frame-slot counts and compare operand/order signatures, while plain `diff` still
 the raw stage diff underneath. `diff --skip-missing` is useful when one side is a partial
 saved dump set that only contains some stages or functions. For `lreg`, `diff` also
 summarizes register-preference and final hard-register assignment changes so
-allocator/regclass shifts stand out immediately.
+allocator/regclass shifts stand out immediately. The helper now also understands final
+assembly (`--stages s`) by extracting blocks from `.type/.size` symbol ranges; use that
+when ProDG's late text dumps (`regmove` / `sched` / `sched2`) are empty in this setup.
+Assembly-stage queries are by mangled symbol name, not the demangled `;; Function ...`
+header used by RTL-style dumps.
 
 When working with these tools, do not just work around recurring friction silently. If you
 notice a clear, safe workflow or tooling improvement that would make future decomp work
@@ -598,6 +605,11 @@ Hoisting the second-loop `searchLen` declaration above `newMaxSearch` (`unsigned
 TU: zAttribSys | Function: Class::RemoveCollection / Database::RemoveClass / VecHashMap::UpdateSearchLength
 The block-scoped variant `unsigned int newMaxSearch; { unsigned int searchLen = 1; newMaxSearch = 0; for (; maxSearch > searchLen; searchLen++) ... }` is the current best-known text floor. On `zAttribSys` it fixes `Database::RemoveClass`'s **second-inline** `newMaxSearch // r31` placement, raises both remaining wrappers to `98.6%`, and lifts the TU to `99.91307%` (`42B` remaining), but it also collapses the remaining debt in **both** wrappers to the same single mismatch: the shared second-inline `searchLen // r7 -> r6` register-home swap.
 On that `99.91307%` plateau, a whole batch of "safe" follow-up nudges stayed completely inert: empty `if (Unk2)` / `if (!Unk2)` hooks inside the late loop, `searchLen = searchLen + 0`, `newMaxSearch = newMaxSearch + 0`, `register` hints on `searchLen` / `newMaxSearch`, typed-pointer `IsValid()`, `Move`'s C-style cast, `Key()`'s zero spellings, local `asm("r7")` register variables, and even an empty `asm volatile("" : "+r"(searchLen))` constraint. If you revisit this plateau, skip those low-risk hooks and look for a genuinely different source shape.
+
+### SplitSearchLenInitIsAsmIdenticalNoise
+
+TU: zAttribSys | Function: Class::RemoveCollection / Database::RemoveClass / VecHashMap::UpdateSearchLength
+Splitting the retained block-scoped `searchLen` initializer into declaration plus assignment (`unsigned int searchLen; searchLen = 1;`) is a false signal. It can make `verify` and the per-function `decomp-status` estimates wobble slightly, but `python tools/prodg_dump.py diff --stages s` shows the emitted assembly for the shared `UpdateSearchLength` template and for both wrapper symbols is identical to the retained block floor, so do not treat that variant as real progress.
 
 ### PreincrementLessThanFixesHeaderButMovesGlobalRegs
 
