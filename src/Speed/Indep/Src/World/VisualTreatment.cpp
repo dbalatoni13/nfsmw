@@ -400,9 +400,11 @@ void IVisualTreatment::UpdateHeat(eView *view, float targetHeat, bool isBeingPur
     this->PulseBrightness += cameraFlashValue;
 
     VisualLookEffect *uvesRadialBlurEffect = this->UvesRadialBlur;
-    float uvesRadialBlur = 0.0f;
+    float uvesRadialBlur;
     if (uvesRadialBlurEffect->IsActive()) {
         uvesRadialBlur = uvesRadialBlurEffect->UpdateActive(currentTarget);
+    } else {
+        uvesRadialBlur = 0.0f;
     }
 
     VisualLookEffectTarget *pursuitBreaker = this->PursuitBreaker;
