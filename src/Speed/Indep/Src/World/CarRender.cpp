@@ -3098,19 +3098,21 @@ void CarRenderInfo::DrawAmbientShadow(eView *view, const bVector3 *position, flo
         car_elevation_scale = lbl_8040ADCC;
     }
 
+    min = this->AABBMin;
+    max = this->AABBMax;
+    in_front_end = IsGameFlowInFrontEnd();
+
     scale = shadow_scale;
     if (this->pRideInfo->Type == static_cast<CarType>(4)) {
         scale *= heliScale;
     }
 
-    min.x = this->AABBMin.x * scale;
-    min.y = this->AABBMin.y * scale;
-    min.z = this->AABBMin.z * scale;
-    max.x = this->AABBMax.x * scale;
-    max.y = this->AABBMax.y * scale;
-    max.z = this->AABBMax.z * scale;
-
-    in_front_end = IsGameFlowInFrontEnd();
+    min.x *= scale;
+    min.y *= scale;
+    min.z *= scale;
+    max.x *= scale;
+    max.y *= scale;
+    max.z *= scale;
     sun_info = SunInfo;
     if (sun_info == 0) {
         light_pos.x = lbl_8040ADD4;
