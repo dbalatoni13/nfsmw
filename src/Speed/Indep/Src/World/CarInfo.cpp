@@ -680,6 +680,13 @@ void RideInfo::SetStockParts() {
                 } else {
                     this->SetPart(car_slot_id, hud_part, true);
                 }
+            } else if (car_slot_id == CARSLOTID_BASE_PAINT) {
+                CarTypeInfo *type_info = &CarTypeInfoArray[this->Type];
+                CarPart *paint_part =
+                    CarPartDB.NewGetCarPart(this->Type, car_slot_id, static_cast<unsigned int>(type_info->DefaultBasePaint), 0, -1);
+                if (paint_part != 0) {
+                    this->SetPart(car_slot_id, paint_part, true);
+                }
             } else if (car_slot_id == CARSLOTID_HUD_NEEDLE_COLOUR) {
                 CarPart *hud_part = CarPartDB.NewGetCarPart(this->Type, car_slot_id, bStringHash("ORANGE"), 0, -1);
                 if (hud_part == 0) {
@@ -693,13 +700,6 @@ void RideInfo::SetStockParts() {
                     this->SetUpgradePart(static_cast<CAR_SLOT_ID>(car_slot_id), 0);
                 } else {
                     this->SetPart(car_slot_id, hud_part, true);
-                }
-            } else if (car_slot_id == CARSLOTID_BASE_PAINT) {
-                CarTypeInfo *type_info = &CarTypeInfoArray[this->Type];
-                CarPart *paint_part =
-                    CarPartDB.NewGetCarPart(this->Type, car_slot_id, static_cast<unsigned int>(type_info->DefaultBasePaint), 0, -1);
-                if (paint_part != 0) {
-                    this->SetPart(car_slot_id, paint_part, true);
                 }
             } else {
                 this->SetUpgradePart(static_cast<CAR_SLOT_ID>(car_slot_id), 0);
