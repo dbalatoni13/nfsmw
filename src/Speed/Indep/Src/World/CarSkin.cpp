@@ -417,11 +417,13 @@ int CompositeSkin(SkinCompositeParams *composite_params) {
 
                 do {
                     if (static_cast<unsigned int>(*dest) == static_cast<unsigned int>(swatch_indices[i])) {
+                        int *swatch_offsets = swatch_offset_cache + i * 16;
+
                         *dest = static_cast<unsigned char>(i + 1);
                         int count = swatch_offset_count[i];
 
                         swatch_offset_count[i] = count + 1;
-                        swatch_offset_cache[i * 16 + count] = dest - dest_image_data;
+                        swatch_offsets[count] = dest - dest_image_data;
                         break;
                     }
 
