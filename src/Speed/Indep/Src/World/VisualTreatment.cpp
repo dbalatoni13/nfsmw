@@ -440,33 +440,20 @@ void IVisualTreatment::UpdateHeat(eView *view, float targetHeat, bool isBeingPur
     float nosRadialBlurAmount = nosRadialBlur->Current;
     if (this->PursuitBreakerBlend > 0.0f) {
         pursuitBreakerRadialBlur = this->PursuitBreakerBlend * pursuitBreaker->GetAttrib()->radialblur_scale();
-        if (pursuitBreakerRadialBlur < 0.0f) {
-            pursuitBreakerRadialBlur = 0.0f;
-        }
-        if (pursuitBreakerRadialBlur > 1.0f) {
-            pursuitBreakerRadialBlur = 1.0f;
-        }
+        pursuitBreakerRadialBlur = bMax(pursuitBreakerRadialBlur, 0.0f);
+        pursuitBreakerRadialBlur = bMin(pursuitBreakerRadialBlur, 1.0f);
     }
 
     this->NosRadialBlurAmount = 0.0f;
     if (nosRadialBlurAmount > 0.0f) {
         float blur = nosRadialBlurAmount * nosRadialBlur->GetAttrib()->radialblur_scale();
-        if (blur < 0.0f) {
-            blur = 0.0f;
-        }
-        if (blur > 0.5f) {
-            blur = 0.5f;
-        }
+        blur = bMax(blur, 0.0f);
+        blur = bMin(blur, 0.5f);
         this->NosRadialBlurAmount = blur;
     }
 
-    float radialBlur = this->NosRadialBlurAmount;
-    if (radialBlur < pursuitBreakerRadialBlur) {
-        radialBlur = pursuitBreakerRadialBlur;
-    }
-    if (radialBlur < uvesRadialBlur) {
-        radialBlur = uvesRadialBlur;
-    }
+    float radialBlur = bMax(this->NosRadialBlurAmount, pursuitBreakerRadialBlur);
+    radialBlur = bMax(radialBlur, uvesRadialBlur);
     this->RadialBlur = radialBlur;
 
     if (this->DesaturationTarget >= 0.0f) {
