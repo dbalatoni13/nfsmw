@@ -1095,7 +1095,7 @@ void GetUsedCarTextureInfo(UsedCarTextureInfo *used_texture_info, RideInfo *ride
     int num_temp_textures;
     int debug_print;
     char buffer[64];
-    CarPart *wheel_part = ride_info->GetPart(0x42);
+    CarPart *wheel_part;
     unsigned int composite_skin_hash;
     unsigned int composite_wheel_hash;
     unsigned int composite_spinner_hash;
@@ -1124,6 +1124,7 @@ void GetUsedCarTextureInfo(UsedCarTextureInfo *used_texture_info, RideInfo *ride
     unsigned int shape_hashes[3];
 
     bMemSet(info, 0, sizeof(*info));
+    wheel_part = ride_info->GetPart(0x42);
 
     bSPrintf(buffer, "%s_SKIN1", car_base_name);
     info->MappedSkinHash = bStringHash(buffer);
@@ -1132,8 +1133,8 @@ void GetUsedCarTextureInfo(UsedCarTextureInfo *used_texture_info, RideInfo *ride
     info->MappedGlobalHash = bStringHash("GLOBAL_SKIN1");
 
     if (wheel_part == 0) {
-        info->MappedWheelHash = 0;
         info->MappedSpinnerHash = 0;
+        info->MappedWheelHash = 0;
     } else {
         info->MappedWheelHash = bStringHash("_WHEEL", wheel_part->GetAppliedAttributeUParam(0x10C98090, 0));
         composite_spinner_hash = wheel_part->GetAppliedAttributeUParam(bStringHash("SPINNER_TEXTURE"), 0);
@@ -1148,11 +1149,11 @@ void GetUsedCarTextureInfo(UsedCarTextureInfo *used_texture_info, RideInfo *ride
     info->MappedRoofScoopHash = bStringHash("ROOF_SKIN");
 
     if (ride_info->IsUsingCompositeSkin() == 0) {
-        info->ReplaceSpinnerHash = 0;
-        info->ReplaceRoofScoopHash = info->MappedSkinHash;
-        info->ReplaceSkinHash = info->MappedSkinHash;
-        info->ReplaceSpoilerHash = info->MappedSkinHash;
         info->ReplaceWheelHash = 0;
+        info->ReplaceSpoilerHash = info->MappedSkinHash;
+        info->ReplaceSkinHash = info->MappedSkinHash;
+        info->ReplaceRoofScoopHash = info->MappedSkinHash;
+        info->ReplaceSpinnerHash = 0;
     } else {
         info->ReplaceSkinHash = ride_info->GetSkinNameHash();
         info->ReplaceWheelHash = ride_info->GetCompositeWheelNameHash();
