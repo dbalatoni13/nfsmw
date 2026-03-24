@@ -368,20 +368,42 @@ template <typename T> void InitSList(bSList<T> &list) {
     layout.Tail = end;
 }
 
-CarEmitterPosition *AddTailEmitterPosition(bSList<CarEmitterPosition> &list, CarEmitterPosition *node) {
-    bSListLayout<CarEmitterPosition> &layout = reinterpret_cast<bSListLayout<CarEmitterPosition> &>(list);
-    bSNodeLayout<CarEmitterPosition> &node_layout = reinterpret_cast<bSNodeLayout<CarEmitterPosition> &>(*node);
-    CarEmitterPosition *end = list.EndOfList();
-    CarEmitterPosition *tail = layout.Tail;
+} // namespace
 
-    node_layout.Next = end;
-    reinterpret_cast<bSNodeLayout<CarEmitterPosition> &>(*tail).Next = node;
-    layout.Tail = node;
-
-    return node;
+inline void *CarEmitterPosition::operator new(unsigned int size) {
+    return bOMalloc(CarEmitterPositionSlotPool);
 }
 
-} // namespace
+inline void CarEmitterPosition::operator delete(void *ptr) {
+    bFree(CarEmitterPositionSlotPool, ptr);
+}
+
+inline CarEmitterPosition::CarEmitterPosition(ePositionMarker *position_marker) {
+    PositionMarker = position_marker;
+    X = position_marker->Matrix.v3.x;
+    Y = position_marker->Matrix.v3.y;
+    Z = position_marker->Matrix.v3.z;
+}
+
+inline CarEmitterPosition::CarEmitterPosition(float x, float y, float z) {
+    PositionMarker = nullptr;
+    X = x;
+    Y = y;
+    Z = z;
+}
+
+template <> inline CarEmitterPosition *bSList<CarEmitterPosition>::EndOfList() {
+    return reinterpret_cast<CarEmitterPosition *>(this);
+}
+
+template <> inline CarEmitterPosition *bSList<CarEmitterPosition>::AddTail(CarEmitterPosition *node) {
+    CarEmitterPosition *prev_tail = Tail;
+
+    Tail = node;
+    prev_tail->Next = node;
+    node->Next = EndOfList();
+    return node;
+}
 
 bool GetNumCarEffectMarkerHashes(CarEffectPosition fx_pos, int &count_out) {
     bool position_marker_based_fxpos = false;
@@ -2129,14 +2151,14 @@ void CarRenderInfo::InitEmitterPositions(bVector4 *tire_positions) {
 
         for (int fxpos = 0; fxpos < NUM_CARFXPOS; fxpos++) {
             int pos_count = 0;
-            bool is_based_off_position_marker =
-                GetNumCarEffectMarkerHashes(static_cast<CarEffectPosition>(fxpos), pos_count);
+            bool is_based_off_position_marker;
+
+            is_based_off_position_marker = GetNumCarEffectMarkerHashes(static_cast<CarEffectPosition>(fxpos), pos_count);
 
             if (is_based_off_position_marker) {
                 if (pos_count > 0) {
-                    bSList<CarEmitterPosition> &pos_list = this->EmitterPositionList[fxpos];
-
-                    this->GetEmitterPositions(pos_list, GetCarEffectMarkerHashes(static_cast<CarEffectPosition>(fxpos)),
+                    this->GetEmitterPositions(this->EmitterPositionList[fxpos],
+                                              GetCarEffectMarkerHashes(static_cast<CarEffectPosition>(fxpos)),
                                               pos_count);
                 }
                 continue;
@@ -2148,6 +2170,7 @@ void CarRenderInfo::InitEmitterPositions(bVector4 *tire_positions) {
             switch (efxpos) {
                 case CARFXPOS_NONE:
                     empos = new CarEmitterPosition(zero, zero, zero);
+                    pos_list.AddTail(empos);
                     break;
                 case CARFXPOS_FRONT_TIRES:
                     {
@@ -2157,6 +2180,7 @@ void CarRenderInfo::InitEmitterPositions(bVector4 *tire_positions) {
 
                         avg *= tire_mid;
                         empos = new CarEmitterPosition(avg.x, avg.y, avg.z);
+                        pos_list.AddTail(empos);
                     }
                     break;
                 case CARFXPOS_REAR_TIRES:
@@ -2167,6 +2191,7 @@ void CarRenderInfo::InitEmitterPositions(bVector4 *tire_positions) {
 
                         avg *= tire_mid;
                         empos = new CarEmitterPosition(avg.x, avg.y, avg.z);
+                        pos_list.AddTail(empos);
                     }
                     break;
                 case CARFXPOS_LEFT_TIRES:
@@ -2177,6 +2202,7 @@ void CarRenderInfo::InitEmitterPositions(bVector4 *tire_positions) {
 
                         avg *= tire_mid;
                         empos = new CarEmitterPosition(avg.x, avg.y, avg.z);
+                        pos_list.AddTail(empos);
                     }
                     break;
                 case CARFXPOS_RIGHT_TIRES:
@@ -2187,36 +2213,38 @@ void CarRenderInfo::InitEmitterPositions(bVector4 *tire_positions) {
 
                         avg *= tire_mid;
                         empos = new CarEmitterPosition(avg.x, avg.y, avg.z);
+                        pos_list.AddTail(empos);
                     }
                     break;
                 case CARFXPOS_TIRE_FL:
                     empos = new CarEmitterPosition(tire_positions->x, tire_positions->y, tire_positions->z);
+                    pos_list.AddTail(empos);
                     break;
                 case CARFXPOS_TIRE_FR:
                     empos = new CarEmitterPosition(tire_positions[1].x, tire_positions[1].y, tire_positions[1].z);
+                    pos_list.AddTail(empos);
                     break;
                 case CARFXPOS_TIRE_RR:
                     empos = new CarEmitterPosition(tire_positions[2].x, tire_positions[2].y, tire_positions[2].z);
+                    pos_list.AddTail(empos);
                     break;
                 case CARFXPOS_TIRE_RL:
                     empos = new CarEmitterPosition(tire_positions[3].x, tire_positions[3].y, tire_positions[3].z);
+                    pos_list.AddTail(empos);
                     break;
                 case CARFXPOS_ENGINE:
                     {
                         bVector4 *fl = tire_positions;
                         bVector4 *fr = tire_positions + 1;
                         bVector4 avg = *fl + *fr;
-                        bVector4 diff;
 
                         avg *= tire_mid;
+                        bVector4 diff;
                         bSub(&diff, fl, fr);
                         empos = new CarEmitterPosition(avg.x, avg.y, avg.z + diff.y * engine_offset);
+                        pos_list.AddTail(empos);
                     }
                     break;
-            }
-
-            if (empos != nullptr) {
-                pos_list.AddTail(empos);
             }
         }
 
