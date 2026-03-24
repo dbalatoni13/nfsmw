@@ -234,17 +234,17 @@ bool FnRawStateChan::FindTime(const StateTest &test, float startTime, float &res
         float keyTime;
         unsigned char numFields = rawStateChan->GetNumFields();
 
-        if ((numFields & 1) == 0) {
-            keyDataOffset = rawStateChan->GetNumFields() * sizeof(unsigned short) + 12;
-        } else {
+        if (numFields & 1) {
             keyDataOffset = rawStateChan->GetNumFields() * sizeof(unsigned short) + 10;
+        } else {
+            keyDataOffset = rawStateChan->GetNumFields() * sizeof(unsigned short) + 12;
         }
 
         currKey = reinterpret_cast<const float *>(
             reinterpret_cast<const unsigned char *>(rawStateChan) + keyDataOffset + keyIdx * rawStateChan->GetKeySize());
         keyTime = *currKey;
 
-        if (startTime < keyTime) {
+        if (keyTime > startTime) {
             Decode(const_cast<unsigned char *>(reinterpret_cast<const unsigned char *>(currKey + 1)), stateBuffer);
             if (test.Pass(reinterpret_cast<const State *>(stateBuffer))) {
                 resultTime = keyTime;
