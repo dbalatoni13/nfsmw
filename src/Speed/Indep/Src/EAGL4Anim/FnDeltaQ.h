@@ -81,10 +81,12 @@ class FnDeltaQ : public FnAnimMemoryMap {
         mBinSize = deltaQ->GetBinSize();
 
         if (deltaQ->mNumBones != 0) {
-            mPrevQs = reinterpret_cast<UMath::Vector4 *>(MemoryPoolManager::NewBlock(deltaQ->mNumBones * sizeof(*mPrevQs)));
-            mPrevQBlock = mPrevQs;
+            mPrevQBlock = MemoryPoolManager::NewBlock(deltaQ->mNumBones * sizeof(*mPrevQs));
+            mPrevQs = reinterpret_cast<UMath::Vector4 *>(mPrevQBlock);
+            mMinRanges = minRanges;
+        } else {
+            mMinRanges = minRanges;
         }
-        mMinRanges = minRanges;
     }
 
     DeltaQMinRange *mMinRanges;     // offset 0x10, size 0x4
