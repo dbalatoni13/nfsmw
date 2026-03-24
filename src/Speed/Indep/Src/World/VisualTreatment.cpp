@@ -441,13 +441,13 @@ void IVisualTreatment::UpdateHeat(eView *view, float targetHeat, bool isBeingPur
     float pursuitBreakerRadialBlur = 0.0f;
     float nosRadialBlurAmount = nosRadialBlur->Current;
     float nosRadialBlurValue = 0.0f;
-    this->NosRadialBlurAmount = 0.0f;
     if (this->PursuitBreakerBlend > 0.0f) {
         pursuitBreakerRadialBlur = this->PursuitBreakerBlend * this->PursuitBreaker->GetAttrib()->radialblur_scale();
         pursuitBreakerRadialBlur = bMax(pursuitBreakerRadialBlur, 0.0f);
         pursuitBreakerRadialBlur = bMin(pursuitBreakerRadialBlur, 1.0f);
     }
 
+    this->NosRadialBlurAmount = 0.0f;
     if (nosRadialBlurAmount > 0.0f) {
         nosRadialBlurValue = nosRadialBlurAmount * this->NosRadialBlur->GetAttrib()->radialblur_scale();
         nosRadialBlurValue = bMax(nosRadialBlurValue, 0.0f);
