@@ -2605,23 +2605,33 @@ void CarRenderInfo::RenderFlaresOnCar(eView *view, const bVector3 *position, con
 
     CarTypeInfo *car_type_info = &CarTypeInfoArray[this->pRideInfo->Type];
     int is_traffic_car = car_type_info->GetCarUsageType() == CAR_USAGE_TYPE_TRAFFIC;
+    float base_headlight_intensity;
+    float base_brakelight_intensity;
+
+    if (is_traffic_car != 0) {
+        base_brakelight_intensity = 0.0f;
+        base_headlight_intensity = 1.0f;
+    } else {
+        base_headlight_intensity = 1.0f;
+        base_brakelight_intensity = 0.0f;
+    }
 
     float headlight_left_intensity;
     if (UTL::Collections::Singleton<INIS>::Get() == 0) {
-        headlight_left_intensity = 0.0f;
+        headlight_left_intensity = base_headlight_intensity;
     } else {
         headlight_left_intensity = 0.5f;
     }
 
     float headlight_right_intensity;
     if (UTL::Collections::Singleton<INIS>::Get() == 0) {
-        headlight_right_intensity = 0.0f;
+        headlight_right_intensity = base_headlight_intensity;
     } else {
         headlight_right_intensity = 0.5f;
     }
 
-    float brakelight_left_intensity = 0.0f;
-    float brakelight_right_intensity = 0.0f;
+    float brakelight_left_intensity = base_brakelight_intensity;
+    float brakelight_right_intensity = base_brakelight_intensity;
     float brakelight_centre_intensity = 0.0f;
     float reverselight_left_intensity = 0.0f;
     float reverselight_right_intensity = 0.0f;
