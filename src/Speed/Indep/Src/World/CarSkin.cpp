@@ -446,50 +446,50 @@ int CompositeSkin(SkinCompositeParams *composite_params) {
         }
 
         for (dest = dest_image_data; dest < dest_end; dest++) {
-            unsigned int dest_colour = dest_palette_data[*dest];
+            unsigned int dest_pixel = dest_palette_data[*dest];
 
             for (int i = 0; i < num_layers; i++) {
                 VinylLayerInfo *info = &layer_infos[i];
 
                 if (info->m_LayerHash != 0) {
-                    unsigned int mask_colour = info->m_LayerMaskPaletteData[*mask_src[i]];
-                    unsigned int blend_value = mask_colour & 0xFF;
-                    unsigned int src_colour = info->m_LayerImagePaletteData[*image_src[i]];
+                    unsigned int src_pixel = info->m_LayerImagePaletteData[*image_src[i]];
+                    unsigned int src_mask = info->m_LayerMaskPaletteData[*mask_src[i]];
 
-                    if (info->m_RemapPalette != 0 && blend_value != 0) {
-                        src_colour = RemapColour(src_colour, info->m_RemapColours);
+                    if (info->m_RemapPalette != 0 && (src_mask & 0xFF) != 0) {
+                        src_pixel = RemapColour(src_pixel, info->m_RemapColours);
                     }
 
-                    if (blend_value < 0x80) {
-                        if (blend_value != 0) {
-                            unsigned int blend_colours[2];
+                    if ((src_mask & 0xFF) < 0x80) {
+                        if ((src_mask & 0xFF) != 0) {
                             float weights[2];
-                            float blend = static_cast<float>(blend_value) / 255.0f;
-                            int next_semi_trans_pixel = cur_semi_trans_pixel + 1;
-                            int pixel_offset = dest - dest_image_data;
+                            unsigned int colours[2];
+                            unsigned int blend_colour;
+                            int x = dest - dest_image_data;
+                            int y;
 
-                            if (blend > 1.0f) {
-                                blend = 1.0f;
+                            weights[0] = static_cast<float>(src_mask & 0xFF) / 255.0f;
+                            if (weights[0] > 1.0f) {
+                                weights[0] = 1.0f;
                             }
 
-                            weights[0] = blend;
-                            weights[1] = 1.0f - blend;
-                            blend_colours[0] = src_colour;
-                            blend_colours[1] = dest_colour;
-                            semi_trans_colours[cur_semi_trans_pixel] = GetBlendColour(blend_colours, weights, 2, false);
-                            semi_trans_pixels[cur_semi_trans_pixel].x = pixel_offset - (pixel_offset / dest_width) * dest_width;
-                            semi_trans_pixels[cur_semi_trans_pixel].y = pixel_offset / dest_width;
+                            weights[1] = 1.0f - weights[0];
+                            colours[0] = src_pixel;
+                            colours[1] = dest_pixel;
+                            blend_colour = GetBlendColour(colours, weights, 2, false);
+                            semi_trans_colours[cur_semi_trans_pixel] = blend_colour;
+                            y = x / dest_width;
+                            semi_trans_pixels[cur_semi_trans_pixel].x = x - y * dest_width;
+                            semi_trans_pixels[cur_semi_trans_pixel].y = y;
 
-                            if (max_semi_trans_pixels <= next_semi_trans_pixel) {
-                                next_semi_trans_pixel = cur_semi_trans_pixel;
+                            if (cur_semi_trans_pixel + 1 < max_semi_trans_pixels) {
+                                cur_semi_trans_pixel++;
                             }
 
                             *dest = 0xFF;
-                            cur_semi_trans_pixel = next_semi_trans_pixel;
                         }
                     } else {
                         *dest = static_cast<unsigned char>(*image_src[i] + current_palette_base);
-                        dest_colour = src_colour;
+                        dest_pixel = src_pixel;
                     }
 
                     image_src[i]++;
