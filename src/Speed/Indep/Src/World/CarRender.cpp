@@ -763,8 +763,10 @@ CarRenderInfo::CarRenderInfo(RideInfo *ride_info)
         this->mMaxLodLevel = ride_layout->mMaxLodLevel;
     }
 
+    CARPART_LOD min_reflection_lod = ride_layout->mMinReflectionLodLevel;
+
     this->pRideInfo = ride_info;
-    this->mMinReflectionLodLevel = ride_layout->mMinReflectionLodLevel;
+    this->mMinReflectionLodLevel = min_reflection_lod;
     this->LastCarPartChanged = -1;
     this->CarTimebaseStart = bRandom(1.0f);
     this->mDeltaTime = 0.0f;
