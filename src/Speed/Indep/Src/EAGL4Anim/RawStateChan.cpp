@@ -226,43 +226,30 @@ KeyFound:
 bool FnRawStateChan::FindTime(const StateTest &test, float startTime, float &resultTime) {
     const RawStateChan *rawStateChan = reinterpret_cast<const RawStateChan *>(mpAnim);
     unsigned char stateBuffer[84];
-    int keyIdx = 0;
-    unsigned short numKeys = rawStateChan->GetNumKeys();
+    int keyIdx;
 
-    if (numKeys != 0) {
+    for (keyIdx = 0; keyIdx < rawStateChan->GetNumKeys(); keyIdx++) {
+        int keyDataOffset;
+        const float *currKey;
+        float keyTime;
         unsigned char numFields = rawStateChan->GetNumFields();
 
-        while (true) {
-            int keyDataOffset;
-            const float *currKey;
-            float keyTime;
+        if ((numFields & 1) == 0) {
+            keyDataOffset = rawStateChan->GetNumFields() * sizeof(unsigned short) + 12;
+        } else {
+            keyDataOffset = rawStateChan->GetNumFields() * sizeof(unsigned short) + 10;
+        }
 
-            if ((numFields & 1) == 0) {
-                keyDataOffset = rawStateChan->GetNumFields() * sizeof(unsigned short) + 12;
-            } else {
-                keyDataOffset = rawStateChan->GetNumFields() * sizeof(unsigned short) + 10;
+        currKey = reinterpret_cast<const float *>(
+            reinterpret_cast<const unsigned char *>(rawStateChan) + keyDataOffset + keyIdx * rawStateChan->GetKeySize());
+        keyTime = *currKey;
+
+        if (startTime < keyTime) {
+            Decode(const_cast<unsigned char *>(reinterpret_cast<const unsigned char *>(currKey + 1)), stateBuffer);
+            if (test.Pass(reinterpret_cast<const State *>(stateBuffer))) {
+                resultTime = keyTime;
+                return true;
             }
-
-            currKey = reinterpret_cast<const float *>(
-                reinterpret_cast<const unsigned char *>(rawStateChan) + keyDataOffset + keyIdx * rawStateChan->GetKeySize());
-            keyTime = *currKey;
-
-            if (startTime < keyTime) {
-                Decode(const_cast<unsigned char *>(reinterpret_cast<const unsigned char *>(currKey + 1)), stateBuffer);
-                if (test.Pass(reinterpret_cast<const State *>(stateBuffer))) {
-                    resultTime = keyTime;
-                    return true;
-                }
-
-                numKeys = rawStateChan->GetNumKeys();
-            }
-
-            keyIdx++;
-            if (numKeys <= keyIdx) {
-                break;
-            }
-
-            numFields = rawStateChan->GetNumFields();
         }
     }
 
