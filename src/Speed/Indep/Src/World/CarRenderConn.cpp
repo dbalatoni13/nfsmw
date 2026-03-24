@@ -511,12 +511,15 @@ CarRenderConn::CarRenderConn(const Sim::ConnectionData &data, CarType ct, Render
         this->mPartState[i] = 0;
     }
 
+    const Attrib::Gen::ecar::_LayoutStruct *attributes_layout =
+        reinterpret_cast<const Attrib::Gen::ecar::_LayoutStruct *>(this->VehicleRenderConn::mAttributes.GetLayoutPointer());
+
     for (i = 0; i < 4; i++) {
         TireState *state = reinterpret_cast<TireState *>(gFastMem.Alloc(0xe0, 0));
 
         TireState_ctor(state);
         this->mTireState[i] = state;
-        this->mTirePositions[i] = this->VehicleRenderConn::mAttributes.TireOffsets(i);
+        this->mTirePositions[i] = attributes_layout->TireOffsets[i];
         this->mTireRadius[i] = this->mTirePositions[i].w;
         if (this->mTireRadius[i] < 0.1f) {
             this->mTireRadius[i] = 0.1f;
