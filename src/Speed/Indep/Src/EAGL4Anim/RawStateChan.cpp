@@ -111,17 +111,17 @@ void FnRawStateChan::Decode(unsigned char *src, unsigned char *dest) const {
             numBits = 0;
         }
 
-        if (decodeInfo[1] == 2) {
+        if (static_cast<unsigned char>(decodeInfo[1]) == 2) {
             goto Store2Bytes;
-        } else if (decodeInfo[1] > 2) {
+        } else if (static_cast<unsigned char>(decodeInfo[1]) > 2) {
             goto StoreWide;
-        } else if (decodeInfo[1] == 1) {
+        } else if (static_cast<unsigned char>(decodeInfo[1]) == 1) {
             goto Store1Byte;
         }
         goto StoreDone;
 
     StoreWide:
-        if (decodeInfo[1] != 4) {
+        if (static_cast<unsigned char>(decodeInfo[1]) != 4) {
             goto StoreDone;
         }
         *reinterpret_cast<unsigned int *>(&dest[static_cast<unsigned char>(decodeInfo[2])]) = value;
