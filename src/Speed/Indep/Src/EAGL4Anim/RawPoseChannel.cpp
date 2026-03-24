@@ -88,13 +88,13 @@ void RawPoseChannel::Eval(float frameTime, float *outputPose, bool interp, const
                 if (!boneMask) {
                     while (sig < sigEnd) {
                         int numChannels = *sig++;
-                        float *bonePose = outputPose;
+                        float *nextOutputPose = outputPose + 12;
 
-                        outputPose = bonePose + 12;
                         for (int ichan = 0; ichan < numChannels; ichan++) {
                             reinterpret_cast<void (*)(float, float *&, float *&, float *)>(*sig++)(t, data0, data1,
-                                                                                                  bonePose + 4);
+                                                                                                  outputPose + 4);
                         }
+                        outputPose = nextOutputPose;
                     }
                 } else {
                     for (unsigned int ibone = 0; sig < sigEnd; ibone++) {
