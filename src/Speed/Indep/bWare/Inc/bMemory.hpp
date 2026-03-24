@@ -147,18 +147,4 @@ void bMemorySetOverflowPoolNumber(int pool_num, int overflow_pool_number);
 
 void *bWareMalloc(int size, const char *debug_text, int debug_line, int allocation_params);
 
-inline int bMemoryGetPoolNum(int allocation_params) {
-    return allocation_params & 0xf;
-}
-
-inline int bMemoryGetAlignment(int allocation_params) {
-    int alignment = allocation_params >> 6 & 0x1ffc;
-
-    return alignment;
-}
-
-inline int bMemoryGetAlignmentOffset(int allocation_params) {
-    return (allocation_params >> 17) & 0x1ffc;
-}
-
 #endif

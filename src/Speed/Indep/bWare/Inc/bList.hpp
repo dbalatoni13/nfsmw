@@ -36,8 +36,8 @@ class bNode {
     }
 
     bNode *AddAfter(bNode *insert_point) {
-        bNode *new_next = insert_point->Next;
         bNode *new_prev = this->Prev; // unused
+        bNode *new_next = insert_point->Next;
         insert_point->Next = this;
         new_next->Prev = this;
         this->Prev = insert_point;
@@ -327,8 +327,10 @@ class bPNode : public bTNode<bPNode> {
         this->Object = object;
     }
 
-    bPNode *GetObject() {
-        return reinterpret_cast<bPNode *>(Object);
+    ~bPNode() {}
+
+    void *GetObject() {
+        return Object;
     }
 
     void *GetpObject() {
@@ -359,7 +361,7 @@ template <typename T> class bPList : public bTList<bPNode> {
 
     void Remove(bNode *node) {
         bList::Remove(node);
-        delete node;
+        delete reinterpret_cast<bPNode *>(node);
     }
 
     void RemoveHead() {
