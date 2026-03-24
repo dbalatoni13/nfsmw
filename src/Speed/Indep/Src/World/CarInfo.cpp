@@ -14,27 +14,6 @@ static inline int CarLoader_GetMemoryPoolSize(CarLoader *car_loader) {
 struct CarPartAttribute;
 struct CarPartModelTable;
 
-struct CarPart {
-    CarPartAttribute *GetAttribute(unsigned int namehash, CarPartAttribute *prev_attribute);
-    CarPartAttribute *GetFirstAppliedAttribute(unsigned int namehash);
-    CarPartAttribute *GetNextAppliedAttribute(unsigned int namehash, CarPartAttribute *prev_attribute);
-    char *GetName();
-    unsigned int GetTextureNameHash();
-    unsigned int GetCarTypeNameHash();
-    unsigned int GetModelNameHash(int model, int lod);
-    unsigned int GetAppliedAttributeUParam(unsigned int namehash, unsigned int default_value);
-    int GetAppliedAttributeIParam(unsigned int namehash, int default_value);
-    const char *GetAppliedAttributeString(unsigned int namehash, const char *default_string);
-    int HasAppliedAttribute(unsigned int namehash);
-    char GetGroupNumber();
-    unsigned int GetBrandNameHash();
-    unsigned int GetPartNameHash();
-};
-
-inline unsigned int CarPart::GetBrandNameHash() {
-    return GetAppliedAttributeUParam(0xEBB03E66, 0);
-}
-
 struct CarPartPackListCtor {
     CarPartPackListCtor *Next;
     CarPartPackListCtor *Prev;
@@ -466,16 +445,19 @@ unsigned int CarInfo_GetResourcePool(bool needs_compositing) {
 }
 
 unsigned int RideInfo::GetSkinNameHash() {
-    if (this->IsUsingCompositeSkin() != 0) {
-        return this->mCompositeSkinHash;
+    CarPart *skin_base;
+
+    if (this->IsUsingCompositeSkin() == 0) {
+        skin_base = this->GetPart(0x4C);
+
+        if (skin_base == 0) {
+            return 0;
+        }
+
+        return skin_base->GetTextureNameHash();
     }
 
-    CarPart *skin_base = this->GetPart(0x4C);
-    if (skin_base == 0) {
-        return 0;
-    }
-
-    return skin_base->GetAppliedAttributeUParam(0x10C98090, 0);
+    return this->mCompositeSkinHash;
 }
 
 void RideInfo::Init(CarType type, CarRenderUsage usage, int has_dash, int can_be_vertex_damaged) {

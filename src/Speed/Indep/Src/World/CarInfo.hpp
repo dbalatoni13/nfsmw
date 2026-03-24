@@ -283,6 +283,29 @@ struct CarPartAttribute {
     void EndianSwap();
 };
 
+struct CarPart {
+    CarPartAttribute *GetAttribute(unsigned int namehash, CarPartAttribute *prev_attribute);
+    CarPartAttribute *GetFirstAppliedAttribute(unsigned int namehash);
+    CarPartAttribute *GetNextAppliedAttribute(unsigned int namehash, CarPartAttribute *prev_attribute);
+    char *GetName();
+    unsigned int GetCarTypeNameHash();
+    unsigned int GetModelNameHash(int model, int lod);
+    unsigned int GetAppliedAttributeUParam(unsigned int namehash, unsigned int default_value);
+    int GetAppliedAttributeIParam(unsigned int namehash, int default_value);
+    const char *GetAppliedAttributeString(unsigned int namehash, const char *default_string);
+    int HasAppliedAttribute(unsigned int namehash);
+    char GetGroupNumber();
+    unsigned int GetPartNameHash();
+
+    unsigned int GetTextureNameHash() {
+        return GetAppliedAttributeUParam(0x10C98090, 0);
+    }
+
+    unsigned int GetBrandNameHash() {
+        return GetAppliedAttributeUParam(0xEBB03E66, 0);
+    }
+};
+
 // total size: 0x310
 struct FECarRecord;
 class RideInfo {
