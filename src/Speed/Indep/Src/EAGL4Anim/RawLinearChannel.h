@@ -71,8 +71,8 @@ class RawLinearChannel : public AnimMemoryMap {
         unsigned short numDOFs = mNumDOFs;
 
         for (int i = 0; i < numDOFs; i++) {
-            float value0 = *frameData0++;
-            output[*dofIndex++] = t * (*frameData1++ - value0) + value0;
+            float value0 = frameData0[i];
+            output[dofIndex[i]] = t * (frameData1[i] - value0) + value0;
         }
     }
 
@@ -83,7 +83,7 @@ class RawLinearChannel : public AnimMemoryMap {
         unsigned short numDOFs = mNumDOFs;
 
         for (int i = 0; i < numDOFs; i++) {
-            output[*dofIndex++] = *frameData++;
+            output[dofIndex[i]] = frameData[i];
         }
     }
 
@@ -99,10 +99,10 @@ class RawLinearChannel : public AnimMemoryMap {
             if (frame < lastFrame) {
                 float t = frameTime - static_cast<float>(frame);
 
-                if (t == 0.0f || !interp) {
-                    EvalFrame(frame, output);
-                } else {
+                if (t != 0.0f && interp) {
                     EvalInterpFrame(t, frame, frame + 1, output);
+                } else {
+                    EvalFrame(frame, output);
                 }
             } else {
                 EvalFrame(lastFrame, output);
