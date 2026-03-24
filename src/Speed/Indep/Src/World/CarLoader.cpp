@@ -1999,7 +1999,9 @@ void CarLoader::ServiceLoading() {
             LoadedCar *loaded_car = loaded_ride_info->pLoadedCar;
 
             if (loaded_car->pLoadedSolidPack->LoadState == CARLOADSTATE_QUEUED) {
-                this->LoadSolidPack(loaded_car->pLoadedSolidPack, CarTypeInfoArray[loaded_car->Type].UsageType != 2);
+                CarTypeInfo *car_type_info = &CarTypeInfoArray[loaded_car->Type];
+
+                this->LoadSolidPack(loaded_car->pLoadedSolidPack, car_type_info->UsageType != 2);
                 return;
             }
 
