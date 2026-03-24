@@ -459,8 +459,8 @@ void ParameterAccessorBlendByDistance::CaptureData(float x, float y, float full_
     float ratio = 1.0f;
 
     if (this->HaveLastPosition != 0 && full_blend_distance != 0.0f) {
-        float dx = x - this->last_x;
         float dy = y - this->last_y;
+        float dx = x - this->last_x;
         float distance = bSqrt(dx * dx + dy * dy);
         if (distance < full_blend_distance) {
             ratio = distance / full_blend_distance;
@@ -468,8 +468,8 @@ void ParameterAccessorBlendByDistance::CaptureData(float x, float y, float full_
     }
 
     ParameterAccessorBlend::CaptureData(x, y, ratio);
-    this->last_x = x;
     this->last_y = y;
+    this->last_x = x;
     this->HaveLastPosition = 1;
 }
 
