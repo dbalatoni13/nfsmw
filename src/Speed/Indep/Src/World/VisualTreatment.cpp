@@ -294,9 +294,9 @@ void IVisualTreatment::UpdateVisualLook() {
             currVisualLook = &this->MiddayVisualLook;
         }
 
+        this->PulseBrightness = 0.0f;
         this->RadialBlur = 0.0f;
         this->PursuitBreakerBlend = 0.0f;
-        this->PulseBrightness = 0.0f;
     }
 
     PSMTX44Copy(*reinterpret_cast<const Mtx44 *>(&currVisualLook->BlackBloomCurve()),
