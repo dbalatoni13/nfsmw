@@ -2388,14 +2388,13 @@ float TireFace(bMatrix4 *matrix, eView *view) {
 }
 
 void CarRenderInfo::UpdateCarReplacementTextures() {
-    CarRenderUsedCarTextureInfoLayout *used_texture_info =
-        reinterpret_cast<CarRenderUsedCarTextureInfoLayout *>(&this->mUsedTextureInfos);
-
     bMemCpy(this->CarbonReplacementTextureTable, this->MasterReplacementTextureTable, sizeof(this->CarbonReplacementTextureTable));
 
     this->CarbonReplacementTextureTable[REPLACETEX_CARSKIN].SetNewNameHash(bStringHash("CARBONFIBRE"));
-    this->CarbonReplacementTextureTable[REPLACETEX_CARSKINB].SetNewNameHash(used_texture_info->ReplaceGlobalHash);
-    this->CarbonReplacementTextureTable[REPLACETEX_GLOBALSKIN].SetNewNameHash(used_texture_info->ReplaceGlobalHash);
+    this->CarbonReplacementTextureTable[REPLACETEX_CARSKINB].SetNewNameHash(
+        reinterpret_cast<CarRenderUsedCarTextureInfoLayout *>(&this->mUsedTextureInfos)->ReplaceGlobalHash);
+    this->CarbonReplacementTextureTable[REPLACETEX_GLOBALSKIN].SetNewNameHash(
+        reinterpret_cast<CarRenderUsedCarTextureInfoLayout *>(&this->mUsedTextureInfos)->ReplaceGlobalHash);
     this->CarbonReplacementTextureTable[REPLACETEX_CARBONSKIN].SetNewNameHash(bStringHash("CARBONFIBRE"));
     this->CarbonReplacementTextureTable[REPLACETEX_GLOBALCARBONSKIN].SetNewNameHash(bStringHash("CARBONFIBRE"));
 }
