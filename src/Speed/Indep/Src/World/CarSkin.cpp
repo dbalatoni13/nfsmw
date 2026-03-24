@@ -536,9 +536,9 @@ int CompositeSkin(SkinCompositeParams *composite_params) {
                 unsigned int pixel_colour = semi_trans_colours[i];
 
                 input[p * 4] = static_cast<unsigned char>(pixel_colour);
-                input[p * 4 + 3] = static_cast<unsigned char>(pixel_colour >> 24);
                 input[p * 4 + 1] = static_cast<unsigned char>(pixel_colour >> 8);
                 input[p * 4 + 2] = static_cast<unsigned char>(pixel_colour >> 16);
+                input[p * 4 + 3] = static_cast<unsigned char>(pixel_colour >> 24);
             }
 
             if (num_pixels < max_remap_colours) {
