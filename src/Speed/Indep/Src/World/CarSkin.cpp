@@ -714,7 +714,7 @@ int CompositeSkin(RideInfo *ride_info) {
                                             CarPart *colour_part = ride_info->GetPart(CARSLOTID_VINYL_COLOUR0_0 + layer_id);
 
                                             if (colour_part == 0) {
-                                                info->m_RemapColours[j] = 0xFFu << ((j & 3) << 3);
+                                                info->m_RemapColours[j] = 0xFFu << (j << 3);
                                             } else {
                                                 unsigned int remap_colour =
                                                     colour_part->GetAppliedAttributeIParam(bStringHash("RED"), 0);
