@@ -672,59 +672,59 @@ int CompositeSkin(RideInfo *ride_info) {
                 }
 
                 if (info->m_LayerImageData != 0) {
-                    if (UsePrecompositeVinyls != 0 || ride_info->SkinType == 2) {
-                        DumpPreComp(info, dest_texture);
-                        return 1;
-                    }
+                    if (UsePrecompositeVinyls == 0 && ride_info->SkinType != 2) {
+                        mask_hash = bStringHash("_MASK", info->m_LayerHash);
+                        info->m_LayerMaskTexture = GetTextureInfo(mask_hash, false, false);
+                        if (info->m_LayerMaskTexture == 0) {
+                            info->m_LayerHash = 0;
+                        } else {
+                            info->m_LayerMaskData =
+                                static_cast<unsigned char *>(TextureInfo_LockImage(info->m_LayerMaskTexture, TEXLOCK_READ));
+                            if (do_32bit_composite == 0) {
+                                info->m_LayerMaskPaletteData =
+                                    static_cast<unsigned int *>(TextureInfo_LockPalette(info->m_LayerMaskTexture, TEXLOCK_READ));
+                            }
 
-                    mask_hash = bStringHash("_MASK", info->m_LayerHash);
-                    info->m_LayerMaskTexture = GetTextureInfo(mask_hash, false, false);
-                    if (info->m_LayerMaskTexture == 0) {
-                        info->m_LayerHash = 0;
-                    } else {
-                        info->m_LayerMaskData =
-                            static_cast<unsigned char *>(TextureInfo_LockImage(info->m_LayerMaskTexture, TEXLOCK_READ));
-                        if (do_32bit_composite == 0) {
-                            info->m_LayerMaskPaletteData =
-                                static_cast<unsigned int *>(TextureInfo_LockPalette(info->m_LayerMaskTexture, TEXLOCK_READ));
-                        }
+                            if (info->m_LayerMaskData != 0) {
+                                int next_total_layer_colours = total_layer_colours + 1;
 
-                        if (info->m_LayerMaskData != 0) {
-                            int next_total_layer_colours = total_layer_colours + 1;
+                                if (cur_layer == first_vinyl_layer) {
+                                    CarPart *car_part = ride_info->GetPart(CARSLOTID_VINYL_LAYER0 + cur_layer);
 
-                            if (cur_layer == first_vinyl_layer) {
-                                CarPart *car_part = ride_info->GetPart(CARSLOTID_VINYL_LAYER0 + cur_layer);
+                                    if (car_part != 0 && car_part->HasAppliedAttribute(bStringHash("REMAP")) != 0) {
+                                        info->m_RemapPalette = car_part->GetAppliedAttributeIParam(bStringHash("REMAP"), 0);
+                                        if (info->m_RemapPalette != 0) {
+                                            for (int j = 0; j < 4; j++) {
+                                                CarPart *colour_part = ride_info->GetPart(CARSLOTID_VINYL_COLOUR0_0 + j);
 
-                                if (car_part != 0 && car_part->HasAppliedAttribute(bStringHash("REMAP")) != 0) {
-                                    info->m_RemapPalette = car_part->GetAppliedAttributeIParam(bStringHash("REMAP"), 0);
-                                    if (info->m_RemapPalette != 0) {
-                                        for (int j = 0; j < 4; j++) {
-                                            CarPart *colour_part = ride_info->GetPart(CARSLOTID_VINYL_COLOUR0_0 + j);
+                                                if (colour_part != 0) {
+                                                    unsigned int remap_colour =
+                                                        colour_part->GetAppliedAttributeIParam(bStringHash("RED"), 0);
+                                                    int remap_green =
+                                                        colour_part->GetAppliedAttributeIParam(bStringHash("GREEN"), 0);
+                                                    int remap_blue =
+                                                        colour_part->GetAppliedAttributeIParam(bStringHash("BLUE"), 0);
+                                                    int remap_gloss =
+                                                        colour_part->GetAppliedAttributeIParam(bStringHash("GLOSS"), 0);
 
-                                            if (colour_part != 0) {
-                                                unsigned int remap_colour =
-                                                    colour_part->GetAppliedAttributeIParam(bStringHash("RED"), 0);
-                                                int remap_green =
-                                                    colour_part->GetAppliedAttributeIParam(bStringHash("GREEN"), 0);
-                                                int remap_blue =
-                                                    colour_part->GetAppliedAttributeIParam(bStringHash("BLUE"), 0);
-                                                int remap_gloss =
-                                                    colour_part->GetAppliedAttributeIParam(bStringHash("GLOSS"), 0);
-
-                                                info->m_RemapColours[j] =
-                                                    (remap_gloss << 24) | (remap_blue << 16) | (remap_green << 8) | remap_colour;
-                                            } else {
-                                                info->m_RemapColours[j] = 0xFFu << (j << 3);
+                                                    info->m_RemapColours[j] = (remap_gloss << 24) | (remap_blue << 16) |
+                                                                              (remap_green << 8) | remap_colour;
+                                                } else {
+                                                    info->m_RemapColours[j] = 0xFFu << (j << 3);
+                                                }
                                             }
                                         }
                                     }
                                 }
-                            }
 
-                            total_layer_colours = next_total_layer_colours;
-                        } else {
-                            info->m_LayerHash = 0;
+                                total_layer_colours = next_total_layer_colours;
+                            } else {
+                                info->m_LayerHash = 0;
+                            }
                         }
+                    } else {
+                        DumpPreComp(info, dest_texture);
+                        return 1;
                     }
                 } else {
                     info->m_LayerHash = 0;
