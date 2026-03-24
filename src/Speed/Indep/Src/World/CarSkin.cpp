@@ -520,38 +520,41 @@ int CompositeSkin(SkinCompositeParams *composite_params) {
         }
 
         if (cur_semi_trans_pixel != 0) {
-            int remaining_palette_slots = 0xFF - current_palette_base;
-            unsigned char *quantized_colours;
+            int max_remap_colours = 0xFF - current_palette_base;
+            SemiTransPixel *pixel_list = semi_trans_pixels;
+            int num_pixels = cur_semi_trans_pixel;
+            unsigned char *input;
+            int p = 0;
 
-            if (bLargestMalloc(0) < (cur_semi_trans_pixel << 2)) {
-                cur_semi_trans_pixel = 0;
+            if (bLargestMalloc(0) < (num_pixels << 2)) {
+                num_pixels = 0;
             }
 
-            quantized_colours = static_cast<unsigned char *>(bMalloc(cur_semi_trans_pixel << 2, 0, 0, 0x40));
+            input = static_cast<unsigned char *>(bMalloc(num_pixels << 2, 0, 0, 0x40));
 
-            for (int i = 0; i < cur_semi_trans_pixel; i++) {
-                unsigned int colour = semi_trans_colours[i];
+            for (int i = 0; i < num_pixels; i++, p++) {
+                unsigned int pixel_colour = semi_trans_colours[i];
 
-                quantized_colours[i * 4] = static_cast<unsigned char>(colour);
-                quantized_colours[i * 4 + 3] = static_cast<unsigned char>(colour >> 24);
-                quantized_colours[i * 4 + 1] = static_cast<unsigned char>(colour >> 8);
-                quantized_colours[i * 4 + 2] = static_cast<unsigned char>(colour >> 16);
+                input[p * 4] = static_cast<unsigned char>(pixel_colour);
+                input[p * 4 + 3] = static_cast<unsigned char>(pixel_colour >> 24);
+                input[p * 4 + 1] = static_cast<unsigned char>(pixel_colour >> 8);
+                input[p * 4 + 2] = static_cast<unsigned char>(pixel_colour >> 16);
             }
 
-            if (cur_semi_trans_pixel < remaining_palette_slots) {
-                for (int i = 0; i < cur_semi_trans_pixel; i++) {
-                    int palette_index = current_palette_base + i;
+            if (num_pixels < max_remap_colours) {
+                for (int i = 0; i < num_pixels; i++) {
+                    SemiTransPixel *pixel = &pixel_list[i];
+                    unsigned char *dest = &dest_image_data[pixel->x + pixel->y * dest_width];
 
-                    dest_image_data[semi_trans_pixels[i].x + semi_trans_pixels[i].y * dest_width] =
-                        static_cast<unsigned char>(palette_index);
-                    dest_palette_data[palette_index] = semi_trans_colours[i];
+                    *dest = static_cast<unsigned char>(current_palette_base + i);
+                    dest_palette_data[current_palette_base + i] = semi_trans_colours[i];
                 }
             } else {
-                initnet(quantized_colours, cur_semi_trans_pixel << 2, remaining_palette_slots, 0x14);
+                initnet(input, num_pixels << 2, max_remap_colours, 0x14);
                 learn();
                 unbiasnet();
 
-                for (int i = 0; i < remaining_palette_slots; i++) {
+                for (int i = 0; i < max_remap_colours; i++) {
                     unsigned char r;
                     unsigned char g;
                     unsigned char b;
@@ -565,24 +568,24 @@ int CompositeSkin(SkinCompositeParams *composite_params) {
 
                 inxbuild();
 
-                for (int i = 0; i < cur_semi_trans_pixel; i++) {
-                    int offset = semi_trans_pixels[i].x + semi_trans_pixels[i].y * dest_width;
+                for (int i = 0; i < num_pixels; i++) {
+                    SemiTransPixel *pixel = &pixel_list[i];
+                    unsigned char *dest = &dest_image_data[pixel->x + pixel->y * dest_width];
 
-                    if (dest_image_data[offset] == 0xFF) {
+                    if (*dest == 0xFF) {
                         unsigned int colour = semi_trans_colours[i];
-                        int palette_index = inxsearch(colour & 0xFF, (colour >> 8) & 0xFF, (colour >> 16) & 0xFF,
-                                                      colour >> 24);
+                        int index = inxsearch(colour & 0xFF, (colour >> 8) & 0xFF, (colour >> 16) & 0xFF, colour >> 24);
 
-                        if (palette_index < remaining_palette_slots) {
-                            dest_image_data[offset] = static_cast<unsigned char>(palette_index + current_palette_base);
+                        if (index < max_remap_colours) {
+                            *dest = static_cast<unsigned char>(index + current_palette_base);
                         } else {
-                            dest_image_data[offset] = 0;
+                            *dest = 0;
                         }
                     }
                 }
             }
 
-            bFree(quantized_colours);
+            bFree(input);
         }
 
         bFree(semi_trans_pixels);
