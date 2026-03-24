@@ -2660,10 +2660,13 @@ void CarRenderInfo::RenderFlaresOnCar(eView *view, const bVector3 *position, con
     }
 
     CarPart *preview_part = this->pRideInfo->GetPreviewPart();
-    CAR_PART_ID preview_part_id =
-        preview_part != 0
-            ? static_cast<CAR_PART_ID>(*reinterpret_cast<signed char *>(reinterpret_cast<unsigned char *>(preview_part) + 4))
-            : CARPARTID_NUM;
+    CAR_PART_ID preview_part_id = CARPARTID_NUM;
+
+    if (preview_part != 0) {
+        unsigned char *preview_part_bytes = reinterpret_cast<unsigned char *>(preview_part);
+        signed char *preview_part_id_ptr = reinterpret_cast<signed char *>(preview_part_bytes + 4);
+        preview_part_id = static_cast<CAR_PART_ID>(*preview_part_id_ptr);
+    }
     float constFlicker = coplightflicker(Ftime, 0);
     int FlareCount = 0;
 
