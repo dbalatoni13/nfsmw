@@ -537,9 +537,13 @@ CarRenderConn::CarRenderConn(const Sim::ConnectionData &data, CarType ct, Render
     this->Load(oc->mWorldID, oc->mUsage, !oc->mSpoolLoad, oc->mCustomizations);
     this->SetFlag(CF_ISPLAYER, oc->mUsage == 0);
 
-    if ((this->mUsage == 0 || this->mUsage == 2) &&
-        (PhysicsUpgrades_GetLevel(this->mPhysics, 4) != 0 || PhysicsUpgrades_GetMaxLevel(this->mPhysics, 4) == 0)) {
-        this->SetFlag(CF_BLOWOFF, true);
+    if (this->mUsage == 0 || this->mUsage == 2) {
+        int blowoff_level = PhysicsUpgrades_GetLevel(this->mPhysics, 4);
+        int blowoff_max_level = PhysicsUpgrades_GetMaxLevel(this->mPhysics, 4);
+
+        if (blowoff_level != 0 || blowoff_level == blowoff_max_level) {
+            this->SetFlag(CF_BLOWOFF, true);
+        }
     }
 }
 
