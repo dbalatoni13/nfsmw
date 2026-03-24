@@ -1508,8 +1508,7 @@ void CarRenderConn::OnRender(eView *view, int reflection) {
 
     eGetCurrentViewMode();
 
-    bMatrix4 body_matrix;
-    PSMTX44Copy(*reinterpret_cast<Mtx44 *>(&this->mRenderMatrix), *reinterpret_cast<Mtx44 *>(&body_matrix));
+    bMatrix4 body_matrix(this->mRenderMatrix);
 
     if (reflection == 0 && this->IsViewAnchor(view)) {
         CameraMover *anchor_mover = view->GetCameraMover();
