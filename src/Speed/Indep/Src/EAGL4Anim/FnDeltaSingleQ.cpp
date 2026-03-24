@@ -221,7 +221,8 @@ inline void FnDeltaSingleQ::InitBuffersAsRequired() {
     unsigned char numBones = deltaQ->mNumBones;
     DeltaSingleQMinRange *minRanges;
 
-    deltaQ->GetArrays(minRanges, mBins);
+    minRanges = reinterpret_cast<DeltaSingleQMinRange *>(&deltaQ[1]);
+    mBins = &reinterpret_cast<unsigned char *>(minRanges)[numBones * sizeof(DeltaSingleQMinRange)];
     mBinSize = deltaQ->GetBinSize();
 
     if (numBones != 0) {
