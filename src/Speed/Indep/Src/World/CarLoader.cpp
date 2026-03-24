@@ -2244,8 +2244,8 @@ void CarLoader::SetMemoryPoolSize(int size) {
         }
 
         if (size != 0) {
-            TrackStreamer_FlushHibernatingSections(&TheTrackStreamer);
-            TrackStreamer_MakeSpaceInPool(&TheTrackStreamer, size, true);
+            TheTrackStreamer.FlushHibernatingSections();
+            TheTrackStreamer.MakeSpaceInPool(size, true);
 
             this->MemoryPoolMem = bMalloc(size, 7);
             this->MemoryPoolSize = size;
