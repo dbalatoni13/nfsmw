@@ -140,7 +140,7 @@ void DeleteSpaceNode(SpaceNode *space_node) {
 }
 
 void ServiceSpaceNodes() {
-    while (SpaceNodeTrashList.GetHead() != SpaceNodeTrashList.EndOfList()) {
+    while (!SpaceNodeTrashList.IsEmpty()) {
         delete SpaceNodeTrashList.RemoveHead();
     }
 }

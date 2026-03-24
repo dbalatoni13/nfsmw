@@ -141,6 +141,7 @@ class SpaceNode : public bTNode<SpaceNode> {
     SpaceNode *Parent;                // offset 0xE0, size 0x4
     unsigned int Dirty;               // offset 0xE4, size 0x4
     bMatrix4 *BlendingMatrices;       // offset 0xE8, size 0x4
+    unsigned int pad1;                // offset 0xEC, size 0x4
 };
 
 void InitSpaceNodes();
