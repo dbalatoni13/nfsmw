@@ -334,13 +334,18 @@ int CompositeSkin(SkinCompositeParams *composite_params) {
         short y;
     };
 
-    TextureInfo *dest_texture = composite_params->DestTexture;
-    unsigned int base_colour = composite_params->BaseColour;
-    unsigned int *swatch_colours = composite_params->SwatchColours;
-    VinylLayerInfo *layer_infos = composite_params->VinylLayerInfos;
-    int num_layers = composite_params->NumLayers;
+    TextureInfo *dest_texture;
+    unsigned int base_colour;
+    unsigned int *swatch_colours;
+    VinylLayerInfo *layer_infos;
+    int num_layers;
     int debug_print;
 
+    num_layers = composite_params->NumLayers;
+    swatch_colours = composite_params->SwatchColours;
+    layer_infos = composite_params->VinylLayerInfos;
+    dest_texture = composite_params->DestTexture;
+    base_colour = composite_params->BaseColour;
     (void)debug_print;
 
     if (dest_texture == 0) {
