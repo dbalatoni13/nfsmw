@@ -82,14 +82,16 @@ void FnRawStateChan::Decode(unsigned char *src, unsigned char *dest) const {
             numBits = 0;
         }
 
-        if (decodeInfo[1] == 2) {
-            *reinterpret_cast<unsigned short *>(&dest[decodeInfo[2]]) = static_cast<unsigned short>(value);
-        } else if (decodeInfo[1] > 2) {
-            if (decodeInfo[1] == 4) {
-                *reinterpret_cast<unsigned int *>(&dest[decodeInfo[2]]) = value;
+        if (decodeInfo[1] != 2) {
+            if (decodeInfo[1] > 2) {
+                if (decodeInfo[1] == 4) {
+                    *reinterpret_cast<unsigned int *>(&dest[decodeInfo[2]]) = value;
+                }
+            } else if (decodeInfo[1] == 1) {
+                dest[decodeInfo[2]] = static_cast<unsigned char>(value);
             }
-        } else if (decodeInfo[1] == 1) {
-            dest[decodeInfo[2]] = static_cast<unsigned char>(value);
+        } else {
+            *reinterpret_cast<unsigned short *>(&dest[decodeInfo[2]]) = static_cast<unsigned short>(value);
         }
     }
 }
