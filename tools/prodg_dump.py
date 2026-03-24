@@ -8,6 +8,8 @@ Examples:
   python tools/prodg_dump.py dump -u main/Speed/Indep/SourceLists/zAttribSys -o /tmp/zattrib_base
   python tools/prodg_dump.py extract /tmp/zattrib_base --stage lreg \
       -f 'VecHashMap<unsigned int,Attrib::Class,Attrib::Class::TablePolicy,false,16>::UpdateSearchLength'
+  python tools/prodg_dump.py trace /tmp/zattrib_base --stage greg \
+      -f 'void Attrib::Database::RemoveClass(const Attrib::Class *)' --pseudo 318,319
   python tools/prodg_dump.py diff /tmp/zattrib_base /tmp/zattrib_trial \
       -f 'VecHashMap<unsigned int,Attrib::Class,Attrib::Class::TablePolicy,false,16>::UpdateSearchLength'
   build/tools/dtk elf disasm build/GOWE69/src/Speed/Indep/SourceLists/zAttribSys.o /tmp/zattrib_objdisasm.txt
@@ -40,6 +42,9 @@ from _common import (
 FUNCTION_HEADER_RE = re.compile(r"^;; Function (.+)$")
 REGISTER_PREF_RE = re.compile(r"^Register (\d+) used .*; pref (.+)$")
 REGISTER_ASSIGN_RE = re.compile(r"^;; Register (\d+) in ([^.]+)\.$")
+REGISTER_CONFLICT_RE = re.compile(r"^;; (\d+) conflicts: (.+)$")
+REGISTER_PREFERENCES_RE = re.compile(r"^;; (\d+) preferences: (.+)$")
+REGISTER_DISPOSITION_PAIR_RE = re.compile(r"(\d+)\s+in\s+([^\s]+)")
 USER_PSEUDO_RE = re.compile(
     r"\(reg/(?P<flags>[a-z/]+):(?P<mode>[A-Za-z0-9_]+) (?P<num>\d+)(?: r(?P<hard>\d+))?\)"
 )
@@ -621,15 +626,52 @@ def format_block_lines(
     return output
 
 
+def parse_int_list(values: Sequence[str]) -> List[int]:
+    result: List[int] = []
+    seen: set[int] = set()
+    for value in values:
+        for chunk in value.split(","):
+            item = chunk.strip()
+            if not item:
+                continue
+            try:
+                reg_num = int(item, 10)
+            except ValueError as e:
+                raise DumpToolError(f"Invalid register number: {item}") from e
+            if reg_num not in seen:
+                seen.add(reg_num)
+                result.append(reg_num)
+    return result
+
+
 def parse_register_preferences(block: FunctionBlock) -> Dict[int, str]:
     prefs: Dict[int, str] = {}
     for line in block.lines:
-        match = REGISTER_PREF_RE.match(line.strip())
+        stripped = line.strip()
+        match = REGISTER_PREF_RE.match(stripped)
         if not match:
-            continue
-        reg = int(match.group(1))
-        prefs[reg] = match.group(2).rstrip(".").strip()
+            match = REGISTER_PREFERENCES_RE.match(stripped)
+        if match:
+            reg = int(match.group(1))
+            prefs[reg] = match.group(2).rstrip(".").strip()
     return prefs
+
+
+def parse_register_dispositions(block: FunctionBlock) -> Dict[int, str]:
+    assignments: Dict[int, str] = {}
+    in_section = False
+    for line in block.lines:
+        stripped = line.strip()
+        if stripped == ";; Register dispositions:":
+            in_section = True
+            continue
+        if not in_section:
+            continue
+        if stripped.startswith(";; Hard regs used:"):
+            break
+        for match in REGISTER_DISPOSITION_PAIR_RE.finditer(line):
+            assignments[int(match.group(1))] = match.group(2).strip()
+    return assignments
 
 
 def parse_register_assignments(block: FunctionBlock) -> Dict[int, str]:
@@ -639,7 +681,18 @@ def parse_register_assignments(block: FunctionBlock) -> Dict[int, str]:
         if not match:
             continue
         assignments[int(match.group(1))] = match.group(2).strip()
+    assignments.update(parse_register_dispositions(block))
     return assignments
+
+
+def parse_register_conflicts(block: FunctionBlock) -> Dict[int, str]:
+    conflicts: Dict[int, str] = {}
+    for line in block.lines:
+        match = REGISTER_CONFLICT_RE.match(line.strip())
+        if not match:
+            continue
+        conflicts[int(match.group(1))] = match.group(2).strip()
+    return conflicts
 
 
 def iter_block_entries(block: FunctionBlock) -> List[tuple[int, str]]:
@@ -901,6 +954,112 @@ def print_summary_changes(left: FunctionBlock, right: FunctionBlock) -> None:
                 flush=True,
             )
     print(flush=True)
+
+
+def format_entry_text(entry_text: str, start_line: int, line_numbers: bool) -> str:
+    lines = entry_text.splitlines()
+    if not line_numbers:
+        return "\n".join(lines)
+    return "\n".join(f"{start_line + index}: {line}" for index, line in enumerate(lines))
+
+
+def collect_entry_trace_tags(
+    entry_text: str,
+    pseudos: Sequence[int],
+    hard_regs: Sequence[int],
+    pseudo_homes: Dict[int, int],
+) -> List[str]:
+    tags: List[str] = []
+    seen_pseudos: set[int] = set()
+    seen_home_pseudos: set[int] = set()
+    seen_hard_regs: set[int] = set()
+    pseudo_targets = set(pseudos)
+    hard_targets = set(hard_regs)
+    home_to_pseudos: Dict[int, List[int]] = {}
+    for pseudo_reg, hard_reg in pseudo_homes.items():
+        home_to_pseudos.setdefault(hard_reg, []).append(pseudo_reg)
+
+    for match in USER_PSEUDO_RE.finditer(entry_text):
+        reg_num = int(match.group("num"))
+        if reg_num in pseudo_targets and reg_num not in seen_pseudos:
+            seen_pseudos.add(reg_num)
+            tags.append(f"pseudo {reg_num}")
+    for match in HARD_REG_RE.finditer(entry_text):
+        hard_reg = int(match.group("hard"))
+        if hard_reg in hard_targets and hard_reg not in seen_hard_regs:
+            seen_hard_regs.add(hard_reg)
+            tags.append(f"hard r{hard_reg}")
+        for pseudo_reg in home_to_pseudos.get(hard_reg, []):
+            if pseudo_reg not in seen_home_pseudos:
+                seen_home_pseudos.add(pseudo_reg)
+                tags.append(f"pseudo {pseudo_reg} via r{hard_reg}")
+    return tags
+
+
+def command_trace(args: argparse.Namespace) -> None:
+    dump_path = resolve_stage_file(args.path, args.stage, args.base_name)
+    blocks = load_function_blocks(dump_path)
+    block = choose_block(blocks, args.function, exact=args.exact)
+    pseudos = parse_int_list(args.pseudo)
+    hard_regs = parse_int_list(args.hard_reg)
+    if not pseudos and not hard_regs:
+        raise DumpToolError("Trace requires at least one --pseudo or --hard-reg value")
+
+    assignments = parse_register_assignments(block)
+    preferences = parse_register_preferences(block)
+    conflicts = parse_register_conflicts(block)
+    pseudo_homes: Dict[int, int] = {}
+    for reg_num in pseudos:
+        home = assignments.get(reg_num)
+        if home is None:
+            continue
+        try:
+            pseudo_homes[reg_num] = int(home, 10)
+        except ValueError:
+            continue
+
+    print_section(f"{dump_path.name}: {block.header}")
+    if pseudos:
+        print("Pseudo summaries:", flush=True)
+        for reg_num in pseudos:
+            home = assignments.get(reg_num, "<unknown>")
+            print(f"  - pseudo {reg_num}: home {home}", flush=True)
+            if reg_num in preferences:
+                print(f"    preferences: {preferences[reg_num]}", flush=True)
+            if reg_num in conflicts:
+                print(f"    conflicts: {conflicts[reg_num]}", flush=True)
+    if hard_regs:
+        print("Hard-register traces:", flush=True)
+        for hard_reg in hard_regs:
+            assigned = sorted(
+                reg_num for reg_num, home in assignments.items() if home == str(hard_reg)
+            )
+            assigned_text = ", ".join(str(reg_num) for reg_num in assigned) if assigned else "<none>"
+            print(f"  - hard r{hard_reg}: pseudos {assigned_text}", flush=True)
+
+    matched_entries: List[tuple[int, str, List[str]]] = []
+    for start_line, entry_text in iter_block_entries(block):
+        tags = collect_entry_trace_tags(entry_text, pseudos, hard_regs, pseudo_homes)
+        if tags:
+            matched_entries.append((start_line, entry_text, tags))
+
+    print(flush=True)
+    if not matched_entries:
+        print("No matching entries.", flush=True)
+        return
+
+    limit = args.limit if args.limit and args.limit > 0 else len(matched_entries)
+    print(f"Matching entries ({min(len(matched_entries), limit)}/{len(matched_entries)}):", flush=True)
+    for start_line, entry_text, tags in matched_entries[:limit]:
+        line_count = len(entry_text.splitlines())
+        end_line = start_line + line_count - 1
+        tag_text = ", ".join(tags)
+        print(flush=True)
+        print(f"- lines {start_line}-{end_line} [{tag_text}]", flush=True)
+        print(format_entry_text(entry_text, start_line, line_numbers=args.line_numbers), flush=True)
+    if limit < len(matched_entries):
+        print(flush=True)
+        print(f"... truncated {len(matched_entries) - limit} additional entries", flush=True)
 
 
 def print_register_change_summary(left: FunctionBlock, right: FunctionBlock) -> None:
@@ -1203,6 +1362,59 @@ def build_parser() -> argparse.ArgumentParser:
         help="prefix output lines with their original dump file line numbers",
     )
     extract.set_defaults(func=command_extract)
+
+    trace = subparsers.add_parser(
+        "trace",
+        help="Trace selected pseudos or hard registers through one function block",
+    )
+    trace.add_argument(
+        "path",
+        help="dump file path or dump directory produced by this tool",
+    )
+    trace.add_argument(
+        "--stage",
+        default="greg",
+        help="dump stage when PATH is a directory (default: greg)",
+    )
+    trace.add_argument(
+        "--base-name",
+        help="base filename used to disambiguate PATH when it contains multiple dump sets",
+    )
+    trace.add_argument(
+        "-f",
+        "--function",
+        required=True,
+        help="function header query; exact or substring match",
+    )
+    trace.add_argument(
+        "--exact",
+        action="store_true",
+        help="require an exact function-header match",
+    )
+    trace.add_argument(
+        "--pseudo",
+        action="append",
+        default=[],
+        help="pseudo register numbers to trace (comma-separated, repeatable)",
+    )
+    trace.add_argument(
+        "--hard-reg",
+        action="append",
+        default=[],
+        help="hard register numbers to trace (comma-separated, repeatable)",
+    )
+    trace.add_argument(
+        "--limit",
+        type=int,
+        default=20,
+        help="maximum matching entries to print (default: 20, 0 = no limit)",
+    )
+    trace.add_argument(
+        "--line-numbers",
+        action="store_true",
+        help="prefix traced entry lines with their original dump file line numbers",
+    )
+    trace.set_defaults(func=command_trace)
 
     summary = subparsers.add_parser(
         "summary",

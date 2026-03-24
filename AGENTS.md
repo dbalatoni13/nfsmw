@@ -274,6 +274,8 @@ python tools/prodg_dump.py extract /tmp/zattrib_base --stage lreg \
     -f 'VecHashMap<unsigned int,Attrib::Class,Attrib::Class::TablePolicy,false,16>::UpdateSearchLength'
 python tools/prodg_dump.py summary /tmp/zattrib_base --stage rtl \
     -f 'VecHashMap<unsigned int,Attrib::Class,Attrib::Class::TablePolicy,false,16>::UpdateSearchLength'
+python tools/prodg_dump.py trace /tmp/zattrib_base --stage greg \
+    -f 'void Attrib::Database::RemoveClass(const Attrib::Class *)' --pseudo 318,319
 python tools/prodg_dump.py diff /tmp/zattrib_dumps /tmp/zattrib_dumps \
     --left-base-name base --right-base-name preinc --stages lreg,greg,rtl \
     -f 'VecHashMap<unsigned int,Attrib::Class,Attrib::Class::TablePolicy,false,16>::UpdateSearchLength'
@@ -291,23 +293,28 @@ python tools/prodg_dump.py diff /tmp/zattrib_oldfloor_objdisasm.txt /tmp/zattrib
 Use `extract --grep ... -C <n>` when you only want a few interesting lines inside a
 function block, such as stack-slot references or one pseudo register family. `summary`
 prints one function's user pseudos, hard-register refs, frame-slot traffic, and compare
-signatures for a given stage. `diff --summary-only` is the quickest way to compare two
-variants structurally without drowning in full unified diffs; it highlights changed
-frame-slot counts and compare operand/order signatures, while plain `diff` still prints
-the raw stage diff underneath. `diff --skip-missing` is useful when one side is a partial
-saved dump set that only contains some stages or functions. For `lreg`, `diff` also
-summarizes register-preference and final hard-register assignment changes so
-allocator/regclass shifts stand out immediately. The helper now also understands final
-assembly (`--stages s`) by extracting blocks from `.type/.size` symbol ranges; use that
-when ProDG's late text dumps (`regmove` / `sched` / `sched2`) are empty in this setup.
-Assembly-stage queries are by mangled symbol name, not the demangled `;; Function ...`
-header used by RTL-style dumps. Plain `.s` diffs are normalized automatically now:
-`diff` strips `.line` / `.debug_srcinfo` scaffolding and renumbers local `.L*` labels so
-you see emitted-code movement instead of debug-section churn. It also understands
-`dtk elf disasm` text directly: when you pass a disassembly text file with `.fn ...` /
-`.endfn ...` blocks, `extract` and `diff` can operate on real object-level symbols
-without another ad hoc extractor, and `diff` also normalizes object-local `.L_*` label
-tokens so rebuilt-vs-reference wrapper diffs are easier to read.
+signatures for a given stage. `trace` is the quickest way to follow a few pseudo-register
+families through a post-allocation dump: it prints each requested pseudo's current home,
+conflict/preference summary, and the matching dump entries, including entries where the
+pseudo only survives via its assigned hard register. Use it in `greg`/`lreg` when you are
+trying to answer "what kept pseudo 318 on r6 instead of r7?" without hand-grepping a full
+function dump. `diff --summary-only` is the quickest way to compare two variants
+structurally without drowning in full unified diffs; it highlights changed frame-slot
+counts and compare operand/order signatures, while plain `diff` still prints the raw
+stage diff underneath. `diff --skip-missing` is useful when one side is a partial saved
+dump set that only contains some stages or functions. For `lreg`, `diff` also summarizes
+register-preference and final hard-register assignment changes so allocator/regclass
+shifts stand out immediately. The helper now also understands final assembly (`--stages s`)
+by extracting blocks from `.type/.size` symbol ranges; use that when ProDG's late text
+dumps (`regmove` / `sched` / `sched2`) are empty in this setup. Assembly-stage queries are
+by mangled symbol name, not the demangled `;; Function ...` header used by RTL-style
+dumps. Plain `.s` diffs are normalized automatically now: `diff` strips `.line` /
+`.debug_srcinfo` scaffolding and renumbers local `.L*` labels so you see emitted-code
+movement instead of debug-section churn. It also understands `dtk elf disasm` text
+directly: when you pass a disassembly text file with `.fn ...` / `.endfn ...` blocks,
+`extract` and `diff` can operate on real object-level symbols without another ad hoc
+extractor, and `diff` also normalizes object-local `.L_*` label tokens so
+rebuilt-vs-reference wrapper diffs are easier to read.
 
 When working with these tools, do not just work around recurring friction silently. If you
 notice a clear, safe workflow or tooling improvement that would make future decomp work
