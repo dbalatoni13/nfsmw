@@ -50,35 +50,30 @@ void FnRawStateChan::Decode(unsigned char *src, unsigned char *dest) const {
 
     for (int i = 0; i < rawStateChan->GetNumFields(); i++) {
         unsigned short decodeData = rawStateChan->GetDecodeData()[i];
-        unsigned short storedNumBitsInPowersOf2 = decodeData >> 13;
+        unsigned char storedNumBitsInPowersOf2 = static_cast<unsigned char>(decodeData >> 13);
         unsigned char destNumBytes = static_cast<unsigned char>(((decodeData >> 11) & 3) + 1);
         unsigned char destByteOffset = static_cast<unsigned char>(decodeData);
 
-        switch (storedNumBitsInPowersOf2) {
-        case 0:
-            numBits = (numBits + 1) & 0xFF;
-            value = (*src >> ((8 - numBits) & 0x1F)) & 1;
-            break;
-        case 1:
-            numBits = (numBits + 2) & 0xFF;
-            value = (*src >> ((8 - numBits) & 0x1F)) & 3;
-            break;
-        case 2:
+        if (storedNumBitsInPowersOf2 == 2) {
             numBits = (numBits + 4) & 0xFF;
             value = (*src >> ((8 - numBits) & 0x3F)) & 0xF;
-            break;
-        case 3:
-            value = *src;
-            src += 1;
-            break;
-        case 4:
-            value = *reinterpret_cast<unsigned short *>(src);
-            src += 2;
-            break;
-        case 5:
-            value = *reinterpret_cast<unsigned int *>(src);
-            src += 4;
-            break;
+        } else if (storedNumBitsInPowersOf2 > 2) {
+            if (storedNumBitsInPowersOf2 == 4) {
+                value = *reinterpret_cast<unsigned short *>(src);
+                src += 2;
+            } else if (storedNumBitsInPowersOf2 < 4) {
+                value = *src;
+                src += 1;
+            } else if (storedNumBitsInPowersOf2 == 5) {
+                value = *reinterpret_cast<unsigned int *>(src);
+                src += 4;
+            }
+        } else if (storedNumBitsInPowersOf2 == 0) {
+            numBits = (numBits + 1) & 0xFF;
+            value = (*src >> ((8 - numBits) & 0x3F)) & 1;
+        } else if (storedNumBitsInPowersOf2 == 1) {
+            numBits = (numBits + 2) & 0xFF;
+            value = (*src >> ((8 - numBits) & 0x3F)) & 3;
         }
 
         if (numBits > 7) {
@@ -86,16 +81,14 @@ void FnRawStateChan::Decode(unsigned char *src, unsigned char *dest) const {
             numBits = 0;
         }
 
-        switch (destNumBytes) {
-        case 1:
-            *reinterpret_cast<char *>(&dest[destByteOffset]) = static_cast<char>(value);
-            break;
-        case 2:
-            *reinterpret_cast<short *>(&dest[destByteOffset]) = static_cast<short>(value);
-            break;
-        case 4:
-            *reinterpret_cast<unsigned int *>(&dest[destByteOffset]) = value;
-            break;
+        if (destNumBytes == 2) {
+            *reinterpret_cast<unsigned short *>(&dest[destByteOffset]) = static_cast<unsigned short>(value);
+        } else if (destNumBytes > 2) {
+            if (destNumBytes == 4) {
+                *reinterpret_cast<unsigned int *>(&dest[destByteOffset]) = value;
+            }
+        } else if (destNumBytes == 1) {
+            dest[destByteOffset] = static_cast<unsigned char>(value);
         }
     }
 }
