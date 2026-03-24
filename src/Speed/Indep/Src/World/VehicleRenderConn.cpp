@@ -196,7 +196,8 @@ bool VehicleRenderConn::IsViewAnchor(eView *view) const {
 }
 
 bool VehicleRenderConn::IsViewAnchor() const {
-    return this->IsViewAnchor(&eViews[0]) || this->IsViewAnchor(&eViews[1]);
+    eView *views = eViews;
+    return this->IsViewAnchor(&views[1]) || this->IsViewAnchor(&views[2]);
 }
 
 bool VehicleRenderConn::CanRender() const {
@@ -287,7 +288,8 @@ bool VehicleRenderConn::CheckForRain(eView *view) const {
 }
 
 bool VehicleRenderConn::CheckForRain() const {
-    return this->CheckForRain(&eViews[0]) || this->CheckForRain(&eViews[1]);
+    eView *views = eViews;
+    return this->CheckForRain(&views[1]) || this->CheckForRain(&views[2]);
 }
 
 bool VehicleRenderConn::CanUpdate() const {
