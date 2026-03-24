@@ -1124,13 +1124,13 @@ void GetUsedCarTextureInfo(UsedCarTextureInfo *used_texture_info, RideInfo *ride
     unsigned int shape_hashes[3];
 
     bMemSet(info, 0, sizeof(*info));
-    wheel_part = ride_info->GetPart(0x42);
 
     bSPrintf(buffer, "%s_SKIN1", car_base_name);
     info->MappedSkinHash = bStringHash(buffer);
     bSPrintf(buffer, "%s_SKIN1B", car_base_name);
     info->MappedSkinBHash = bStringHash(buffer);
     info->MappedGlobalHash = bStringHash("GLOBAL_SKIN1");
+    wheel_part = ride_info->GetPart(0x42);
 
     if (wheel_part == 0) {
         info->MappedSpinnerHash = 0;
@@ -1166,24 +1166,30 @@ void GetUsedCarTextureInfo(UsedCarTextureInfo *used_texture_info, RideInfo *ride
     info->ReplaceGlobalHash = info->ReplaceSkinHash;
 
     composite_skin_hash = ride_info->GetCompositeSkinNameHash();
-    if (composite_skin_hash == 0) {
+    if (composite_skin_hash != 0) {
+        num_perm_textures = UsedCarTextureAddToTable(reinterpret_cast<unsigned int *>(info), 0, max_perm_textures, composite_skin_hash);
+    } else {
         if (info->ReplaceSkinHash != 0) {
             num_perm_textures = UsedCarTextureAddToTable(reinterpret_cast<unsigned int *>(info), 0, max_perm_textures);
         }
         if (info->ReplaceSkinBHash != 0) {
             num_perm_textures += UsedCarTextureAddToTable(reinterpret_cast<unsigned int *>(info), num_perm_textures, max_perm_textures);
         }
-    } else {
-        num_perm_textures = UsedCarTextureAddToTable(reinterpret_cast<unsigned int *>(info), 0, max_perm_textures, composite_skin_hash);
     }
 
     composite_wheel_hash = ride_info->GetCompositeWheelNameHash();
-    if (composite_wheel_hash != 0 || (composite_wheel_hash = info->ReplaceWheelHash, composite_wheel_hash != 0)) {
+    if (composite_wheel_hash == 0) {
+        composite_wheel_hash = info->ReplaceWheelHash;
+    }
+    if (composite_wheel_hash != 0) {
         num_perm_textures += UsedCarTextureAddToTable(reinterpret_cast<unsigned int *>(info), num_perm_textures, max_perm_textures, composite_wheel_hash);
     }
 
     composite_spinner_hash = ride_info->GetCompositeSpinnerNameHash();
-    if (composite_spinner_hash != 0 || (composite_spinner_hash = info->ReplaceSpinnerHash, composite_spinner_hash != 0)) {
+    if (composite_spinner_hash == 0) {
+        composite_spinner_hash = info->ReplaceSpinnerHash;
+    }
+    if (composite_spinner_hash != 0) {
         num_perm_textures += UsedCarTextureAddToTable(reinterpret_cast<unsigned int *>(info), num_perm_textures, max_perm_textures, composite_spinner_hash);
     }
 
