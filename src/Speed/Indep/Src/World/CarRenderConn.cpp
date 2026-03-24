@@ -283,18 +283,14 @@ void TireState::Effect::Set(const TireEffectRecord &record) {
 }
 
 TireState::TireState()
-    : mPrevTirePos(0.0f, 0.0f, 0.0f, 0.0f), //
-      mWPos(0.025f), //
-      mSkidMaker(0), //
-      mTirePos(0.0f, 0.0f, 0.0f, 0.0f), //
-      mGroundPos(0.0f, 0.0f, 0.0f, 0.0f), //
-      mRoll(0.0f), //
-      mRaining(false), //
-      mFlat(false), //
-      mSurface(), //
-      mSlipFX(), //
-      mSkidFX(), //
-      mDriveFX() {
+    : mWPos(0.025f), //
+      mSkidMaker(0) {
+    this->mPrevTirePos = bVector4(0.0f, 0.0f, 0.0f, 0.0f);
+    this->mTirePos = bVector4(0.0f, 0.0f, 0.0f, 0.0f);
+    this->mGroundPos = bVector4(0.0f, 0.0f, 0.0f, 0.0f);
+    this->mRoll = 0.0f;
+    this->mRaining = false;
+    this->mFlat = false;
     this->SetSurface(SimSurface::kNull);
     gTireStateList.AddTail(reinterpret_cast<bNode *>(this));
 }
