@@ -874,24 +874,30 @@ CarRenderInfo::CarRenderInfo(RideInfo *ride_info)
 
         if (base_model != nullptr) {
             bVector4 *pivot_position = base_model->GetPivotPosition();
-            float pivot_x = 0.0f;
+            float pivot_x;
 
             if (pivot_position != nullptr) {
                 pivot_x = pivot_position->x;
+            } else {
+                pivot_x = 0.0f;
             }
             this->PivotPosition.x = pivot_x;
 
-            float pivot_y = 0.0f;
+            float pivot_y;
 
             if (pivot_position != nullptr) {
                 pivot_y = pivot_position->y;
+            } else {
+                pivot_y = 0.0f;
             }
             this->PivotPosition.y = pivot_y;
 
-            float pivot_z = 0.0f;
+            float pivot_z;
 
             if (pivot_position != nullptr) {
                 pivot_z = pivot_position->z;
+            } else {
+                pivot_z = 0.0f;
             }
             this->PivotPosition.z = pivot_z;
         }
