@@ -292,8 +292,10 @@ void SFXCTL_HybridMotor::UpdateSingleMixEng(float t) {
         if (shiftState != SHFT_UP_LFO) {
             if (shiftState == SHFT_UP_ENGAGING) {
                 USE_SMOOTHING = false;
-            } else if (shiftState == SHFT_DOWN_ENGAGING_REATTACH && m_pEAXCar->IsAccelerating()) {
-                USE_SMOOTHING = false;
+            } else if (shiftState != SHFT_DOWN_ENGAGING_RISE) {
+                if (shiftState == SHFT_DOWN_ENGAGING_REATTACH && m_pEAXCar->IsAccelerating()) {
+                    USE_SMOOTHING = false;
+                }
             }
         }
     } else if (m_pAccelTranCtl->IsActive()) {

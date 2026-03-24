@@ -17,6 +17,12 @@ struct EngineMix {
     float AccelGinsu; // offset 0x4
     float DecelGinsu; // offset 0x8
     int Cutoff;       // offset 0xC
+
+    EngineMix()
+        : Aems(0.0f)       //
+        , AccelGinsu(0.0f) //
+        , DecelGinsu(0.0f) //
+        , Cutoff(0) {}
 };
 
 struct SFXCTL_HybridMotor : public SFXCTL {

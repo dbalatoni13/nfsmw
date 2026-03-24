@@ -633,13 +633,15 @@ void EAXAemsManager::SetupNextLoad() {
                 while (true) {
                     stSndAssetQueue currequst = *i;
                     if (*static_cast<unsigned int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(&currequst)) + 8)) ==
-                            *(&Hash32) &&
-                        *static_cast<const char **>(static_cast<void *>(static_cast<char *>(static_cast<void *>(&currequst)) + 0xC)) ==
+                        *(&Hash32)) {
+                        if (*static_cast<const char **>(
+                                static_cast<void *>(static_cast<char *>(static_cast<void *>(&currequst)) + 0xC)) ==
                             *(&String)) {
-                        mWaitForResolve.remove(currequst);
-                        SfxToDel[deleteCount] = currequst.pThis;
-                        deleteCount++;
-                        goto ContinueScanning;
+                            mWaitForResolve.remove(currequst);
+                            SfxToDel[deleteCount] = currequst.pThis;
+                            deleteCount++;
+                            goto ContinueScanning;
+                        }
                     }
 
                     ++i;
@@ -652,8 +654,8 @@ void EAXAemsManager::SetupNextLoad() {
                 ;
             }
 
-        RemoveQueuedLoads:
             deleteCount--;
+        RemoveQueuedLoads:
             do {
                 i = mWaitForResolve.begin();
                 while (true) {
