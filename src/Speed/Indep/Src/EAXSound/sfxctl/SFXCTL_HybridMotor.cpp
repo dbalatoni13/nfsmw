@@ -155,9 +155,19 @@ void SFXCTL_HybridMotor::UpdateDeltaRPM() {
 }
 
 void SFXCTL_HybridMotor::UpdateParams(float t) {
+    if (!m_pEAXCar->GetAttributes().IsValid()) {
+        return;
+    }
+    SFXCTL::UpdateParams(t);
     UpdateDeltaRPM();
-    UpdateSingleMixEng(t);
-    UpdateDualMixEng(t);
+    float AemsRPM = m_pEngineCtl->GetEngRPM();
+    AemsRPM = bClamp(AemsRPM, 1000.0f, 10000.0f);
+    m_GinsuScaledRPM = (AemsRPM - 1000.0f) * (m_pEAXCar->GetAttributes().MaxRPM() - m_pEAXCar->GetAttributes().MinRPM()) * (1.0f / 9000.0f) + m_pEAXCar->GetAttributes().MinRPM();
+    if (m_pEAXCar->m_EngineType == eGINSU_ENG_SINGLE) {
+        UpdateSingleMixEng(t);
+    } else {
+        UpdateDualMixEng(t);
+    }
     UpdateVolumeRedlining();
 }
 

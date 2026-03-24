@@ -219,7 +219,13 @@ void SFXCTL_Engine::UpdateClutchState() {
 }
 
 bool SFXCTL_Engine::ShouldTurnOnClutch() {
-    return m_pPhysicsCtl != nullptr && m_pPhysicsCtl->m_CurGear <= 0;
+    if (!GetPhysCar()->IsLocalPlayerCar()) {
+        return false;
+    }
+    if (m_pAccelTransitionCtl->IsActive()) {
+        return false;
+    }
+    return GetEngRPM() <= 2500.0f;
 }
 
 void SFXCTL_Engine::UpdateFilterFX() {
@@ -306,14 +312,11 @@ void SFXCTL_Engine::UpdateRedlining(float t) {
 }
 
 void SFXCTL_Engine::UpdateVolume(float t) {
-    (void)t;
-    m_iEngineVol = static_cast< int >(m_fSmoothedEng_RPM * 32767.0f);
-    if (m_iEngineVol < 0) {
-        m_iEngineVol = 0;
-    } else if (m_iEngineVol > 32767) {
-        m_iEngineVol = 32767;
+    m_iEngineVol = 0x7fff;
+    if (m_pShiftCtl->IsActive()) {
+        m_iEngineVol += static_cast<int>(static_cast<float>(m_iEngineVol) * m_pShiftCtl->GetShiftingVOL());
     }
-    SetDMIX_Input(DMX_VOL, m_iEngineVol);
+    m_iEngineVol += static_cast<int>(m_VOL_LFO);
 }
 
 void SFXCTL_Engine::UpdateRPM(float t) {

@@ -20,9 +20,13 @@ class Timer {
         this->PackedTime = packed_time;
     }
 
-    int operator=(const Timer &t) const {}
+    int operator==(const Timer &t) const {
+        return this->PackedTime == t.PackedTime;
+    }
 
-    int operator!=(const Timer &t) const {}
+    int operator!=(const Timer &t) const {
+        return this->PackedTime != t.PackedTime;
+    }
 
     Timer &operator=(const Timer &t) {
         this->PackedTime = t.PackedTime;

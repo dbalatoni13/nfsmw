@@ -418,17 +418,13 @@ void ScheduledSpeechEvent::operator delete(void *ptr) {
 }
 
 bool ScheduledSpeechEvent::sort_nested_priority(const ScheduledSpeechEvent *lhs, const ScheduledSpeechEvent *rhs) {
-    if (lhs->priority != rhs->priority) {
-        return rhs->priority < lhs->priority;
+    if (lhs->priority == rhs->priority) {
+        if (lhs->entry_time == rhs->entry_time) {
+            return lhs->frameindex < rhs->frameindex;
+        }
+        return lhs->entry_time < rhs->entry_time;
     }
-
-    int lhsEntryTime = *reinterpret_cast<const int *>(&lhs->entry_time);
-    int rhsEntryTime = *reinterpret_cast<const int *>(&rhs->entry_time);
-    if (lhsEntryTime == rhsEntryTime) {
-        return lhs->frameindex < rhs->frameindex;
-    }
-
-    return lhsEntryTime < rhsEntryTime;
+    return rhs->priority < lhs->priority;
 }
 
 void ScheduledSpeechEvent::AddSample(SpeechSampleData *sample, unsigned char specific_index) {
