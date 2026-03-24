@@ -35,6 +35,19 @@ struct Pkt_Heli_Open : public Sim::Packet {
 
 namespace SoundConn {
 
+template <>
+UTL::Collections::Listable<EAX_CarState, 10>::List UTL::Collections::Listable<EAX_CarState, 10>::_mTable =
+    UTL::Collections::Listable<EAX_CarState, 10>::List();
+template <>
+UTL::Collections::Listable<EAX_HeliState, 10>::List UTL::Collections::Listable<EAX_HeliState, 10>::_mTable =
+    UTL::Collections::Listable<EAX_HeliState, 10>::List();
+template <>
+UTL::Collections::Listable<CarSoundConn, 10>::List UTL::Collections::Listable<CarSoundConn, 10>::_mTable =
+    UTL::Collections::Listable<CarSoundConn, 10>::List();
+template <>
+UTL::Collections::Listable<HeliSoundConn, 10>::List UTL::Collections::Listable<HeliSoundConn, 10>::_mTable =
+    UTL::Collections::Listable<HeliSoundConn, 10>::List();
+
 void InitServices() {}
 void RestoreServices() {}
 

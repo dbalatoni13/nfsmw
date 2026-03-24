@@ -243,25 +243,12 @@ Attrib::StringKey crcShiftPattern("ShiftPattern");
 Attrib::StringKey crcSweetener("Sweetener");
 Attrib::StringKey crcEnglish("English");
 Attrib::StringKey crcCarHitWall("CarHitWall");
-Attrib::StringKey crcLicensedMusic("LicensedMusic");
 Attrib::StringKey crcMusic("Music");
+Attrib::StringKey crcLicensedMusic("LicensedMusic");
 EAXAemsManager gAEMSMgr;
 stSndDataLoadParams g_SndAssetList[48];
 Slope TablePitch(0.0f, 1.0f, 3500.0f, 4500.0f);
 Slope BreakingPitchVsSpeed(3000.0f, 5000.0f, 30.0f, 100.0f);
-
-template <>
-UTL::Collections::Listable<CarSoundConn, 10>::List UTL::Collections::Listable<CarSoundConn, 10>::_mTable =
-    UTL::Collections::Listable<CarSoundConn, 10>::List();
-template <>
-UTL::Collections::Listable<HeliSoundConn, 10>::List UTL::Collections::Listable<HeliSoundConn, 10>::_mTable =
-    UTL::Collections::Listable<HeliSoundConn, 10>::List();
-template <>
-UTL::Collections::Listable<EAX_CarState, 10>::List UTL::Collections::Listable<EAX_CarState, 10>::_mTable =
-    UTL::Collections::Listable<EAX_CarState, 10>::List();
-template <>
-UTL::Collections::Listable<EAX_HeliState, 10>::List UTL::Collections::Listable<EAX_HeliState, 10>::_mTable =
-    UTL::Collections::Listable<EAX_HeliState, 10>::List();
 
 extern unsigned int SoundRandomSeed;
 extern float g_SliderValue;
@@ -684,78 +671,52 @@ void EAXSound::InitializeDriver() {
         return;
     }
 
-    m_pEAXSND8Wrapper =
-        new (gAudioMemoryManager.AllocateMemory(sizeof(EAXSND8Wrapper), "EAXSND8Wrapper", false)) EAXSND8Wrapper();
+    m_pEAXSND8Wrapper = new ("EAXSND8Wrapper") EAXSND8Wrapper();
     if (!m_pEAXSND8Wrapper->Initialize()) {
         IsSoundEnabled = false;
         return;
     }
 
     gAEMSMgr.InitSPUram();
-    m_pNFSMixMaster = new (gAudioMemoryManager.AllocateMemory(sizeof(NFSMixMaster), "NFSMixMaster", false))
-        NFSMixMaster();
-    m_pSTICH_Playback =
-        new (gAudioMemoryManager.AllocateMemory(sizeof(cSTICH_PlayBack), "STICH_PlayBack", false)) cSTICH_PlayBack();
-    g_pNISRevMgr =
-        new (gAudioMemoryManager.AllocateMemory(sizeof(NIS_RevManager), "NISRevMan", false)) NIS_RevManager();
+    m_pNFSMixMaster = new ("NFSMixMaster") NFSMixMaster();
+    m_pSTICH_Playback = new ("STICH_PlayBack") cSTICH_PlayBack();
+    g_pNISRevMgr = new ("NISRevMan") NIS_RevManager();
 
     for (int n = 0; n < 13; n++) {
         m_pStateMgr[n] = nullptr;
     }
 
-    m_pStateMgr[0] =
-        new (gAudioMemoryManager.AllocateMemory(sizeof(CSTATEMGR_Main), "SND: CSTATEMGR_MAIN", false))
-            CSTATEMGR_Main();
+    m_pStateMgr[0] = new ("SND: CSTATEMGR_MAIN") CSTATEMGR_Main();
     m_pStateMgr[0]->Initialize(static_cast<eMAINMAPSTATES>(0));
 
-    m_pStateMgr[1] =
-        new (gAudioMemoryManager.AllocateMemory(sizeof(CSTATEMGR_Music), "SND: CSTATEMGR_Music", false))
-            CSTATEMGR_Music();
+    m_pStateMgr[1] = new ("SND: CSTATEMGR_Music") CSTATEMGR_Music();
     m_pStateMgr[1]->Initialize(static_cast<eMAINMAPSTATES>(1));
 
-    m_pStateMgr[2] =
-        new (gAudioMemoryManager.AllocateMemory(sizeof(CSTATEMGR_PlayerCar), "SND: CSTATEMGR_PlyrCar", false))
-            CSTATEMGR_PlayerCar();
+    m_pStateMgr[2] = new ("SND: CSTATEMGR_PlyrCar") CSTATEMGR_PlayerCar();
     m_pStateMgr[2]->Initialize(static_cast<eMAINMAPSTATES>(2));
 
-    m_pStateMgr[3] =
-        new (gAudioMemoryManager.AllocateMemory(sizeof(CSTATEMGR_AICar), "SND: CSTATEMGR_AICar", false))
-            CSTATEMGR_AICar();
+    m_pStateMgr[3] = new ("SND: CSTATEMGR_AICar") CSTATEMGR_AICar();
     m_pStateMgr[3]->Initialize(static_cast<eMAINMAPSTATES>(3));
 
-    m_pStateMgr[4] =
-        new (gAudioMemoryManager.AllocateMemory(sizeof(CSTATEMGR_CopCar), "SND: CSTATEMGR_CarState", false))
-            CSTATEMGR_CopCar();
+    m_pStateMgr[4] = new ("SND: CSTATEMGR_CarState") CSTATEMGR_CopCar();
     m_pStateMgr[4]->Initialize(static_cast<eMAINMAPSTATES>(4));
 
-    m_pStateMgr[5] =
-        new (gAudioMemoryManager.AllocateMemory(sizeof(CSTATEMGR_TrafficCar), "SND: CSTATEMGR_TrafficCar", false))
-            CSTATEMGR_TrafficCar();
+    m_pStateMgr[5] = new ("SND: CSTATEMGR_TrafficCar") CSTATEMGR_TrafficCar();
     m_pStateMgr[5]->Initialize(static_cast<eMAINMAPSTATES>(5));
 
-    m_pStateMgr[6] =
-        new (gAudioMemoryManager.AllocateMemory(sizeof(CSTATEMGR_Enviro), "SND: CSTATEMGR_ENVIRO", false))
-            CSTATEMGR_Enviro();
+    m_pStateMgr[6] = new ("SND: CSTATEMGR_ENVIRO") CSTATEMGR_Enviro();
     m_pStateMgr[6]->Initialize(static_cast<eMAINMAPSTATES>(6));
 
-    m_pStateMgr[7] =
-        new (gAudioMemoryManager.AllocateMemory(sizeof(CSTATEMGR_Collision), "SND: CSTATEMGR_Collision", false))
-            CSTATEMGR_Collision();
+    m_pStateMgr[7] = new ("SND: CSTATEMGR_Collision") CSTATEMGR_Collision();
     m_pStateMgr[7]->Initialize(static_cast<eMAINMAPSTATES>(7));
 
-    m_pStateMgr[8] =
-        new (gAudioMemoryManager.AllocateMemory(sizeof(CSTATEMGR_DriveBy), "SND: CSTATEMGR_DriveBy", false))
-            CSTATEMGR_DriveBy();
+    m_pStateMgr[8] = new ("SND: CSTATEMGR_DriveBy") CSTATEMGR_DriveBy();
     m_pStateMgr[8]->Initialize(static_cast<eMAINMAPSTATES>(8));
 
-    m_pStateMgr[11] =
-        new (gAudioMemoryManager.AllocateMemory(sizeof(CSTATEMGR_Helicopter), "SND: CSTATEMGR_Helicopter", false))
-            CSTATEMGR_Helicopter();
+    m_pStateMgr[11] = new ("SND: CSTATEMGR_Helicopter") CSTATEMGR_Helicopter();
     m_pStateMgr[11]->Initialize(static_cast<eMAINMAPSTATES>(11));
 
-    m_pStateMgr[12] =
-        new (gAudioMemoryManager.AllocateMemory(sizeof(CSTATEMGR_Truck), "SND: CSTATEMGR_Truck", false))
-            CSTATEMGR_Truck();
+    m_pStateMgr[12] = new ("SND: CSTATEMGR_Truck") CSTATEMGR_Truck();
     m_pStateMgr[12]->Initialize(static_cast<eMAINMAPSTATES>(12));
 
     m_pNFSMixMaster->AssignSFXCallbacks(EAXSound::GetPointerCallback, EAXSound::SetSFXOutCallback,
