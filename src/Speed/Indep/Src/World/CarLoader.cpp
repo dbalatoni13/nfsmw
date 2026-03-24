@@ -482,13 +482,12 @@ LoadedTexturePack::LoadedTexturePack(const char *filename, int max_header_size) 
     }
 }
 
-LoadedSolidPack::LoadedSolidPack(const char *filename) {
-    this->Filename = bAllocateSharedString(filename);
-    this->NumInstances = 0;
-    this->LoadState = 0;
-    this->pStreamingPack = 0;
-    this->pResourceFile = 0;
-}
+LoadedSolidPack::LoadedSolidPack(const char *filename)
+    : Filename(bAllocateSharedString(filename)), //
+      NumInstances(0),                          //
+      LoadState(0),                             //
+      pStreamingPack(0),                        //
+      pResourceFile(0) {}
 
 int CarInfo_GetResourceCost(CarType car_type, bool is_player_car, bool two_player) {
     CarTypeInfo *car_type_info = &CarTypeInfoArray[car_type];
