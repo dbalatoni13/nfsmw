@@ -224,11 +224,13 @@ unsigned int VehicleRenderConn::FindPart(CAR_PART_ID slot) {
         return 0;
     }
 
+    unsigned int modelid = 0;
+
     if (this->mRenderInfo != 0) {
-        return this->mRenderInfo->FindCarPart(slot);
+        modelid = this->mRenderInfo->FindCarPart(slot);
     }
 
-    return 0;
+    return modelid;
 }
 
 unsigned int VehicleRenderConn::HidePart(CAR_PART_ID slot) {
@@ -236,11 +238,13 @@ unsigned int VehicleRenderConn::HidePart(CAR_PART_ID slot) {
         return 0;
     }
 
+    unsigned int modelid = 0;
+
     if (this->mRenderInfo != 0) {
-        return this->mRenderInfo->HideCarPart(slot, true);
+        modelid = this->mRenderInfo->HideCarPart(slot, true);
     }
 
-    return 0;
+    return modelid;
 }
 
 void VehicleRenderConn::ShowPart(CAR_PART_ID slot) {
