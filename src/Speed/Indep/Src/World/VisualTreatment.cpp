@@ -349,7 +349,8 @@ void IVisualTreatment::TriggerUves() {
 void IVisualTreatment::UpdateHeat(eView *view, float targetHeat, bool isBeingPursued) {
     targetHeat = static_cast< float >(static_cast< int >(targetHeat));
 
-    if (UTL::Collections::Singleton<INIS>::Get() != 0) {
+    bool hasIni = UTL::Collections::Singleton<INIS>::Get() != 0;
+    if (hasIni) {
         this->IsBeingPursued = -1;
         this->CurrentTarget = -1.0f;
         this->UvesPulse->PulseLength = 0.0f;
