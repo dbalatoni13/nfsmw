@@ -56,43 +56,91 @@ void FnRawStateChan::Decode(unsigned char *src, unsigned char *dest) const {
         decodeInfo[2] = static_cast<unsigned char>(decodeData);
 
         if (decodeInfo[0] == 2) {
-            numBits = (numBits + 4) & 0xFF;
-            value = (*src >> ((8 - numBits) & 0x3F)) & 0xF;
-        } else if (decodeInfo[0] > 2) {
-            if (decodeInfo[0] == 4) {
-                value = *reinterpret_cast<unsigned short *>(src);
-                src += 2;
-            } else if (decodeInfo[0] < 4) {
-                value = *src;
-                src += 1;
-            } else if (decodeInfo[0] == 5) {
-                value = *reinterpret_cast<unsigned int *>(src);
-                src += 4;
-            }
-        } else if (decodeInfo[0] == 0) {
-            numBits = (numBits + 1) & 0xFF;
-            value = (*src >> ((8 - numBits) & 0x3F)) & 1;
-        } else if (decodeInfo[0] == 1) {
-            numBits = (numBits + 2) & 0xFF;
-            value = (*src >> ((8 - numBits) & 0x3F)) & 3;
+            goto Decode4Bits;
         }
+        if (decodeInfo[0] > 2) {
+            goto DecodeWide;
+        }
+        if (decodeInfo[0] == 0) {
+            goto Decode1Bit;
+        }
+        if (decodeInfo[0] == 1) {
+            goto Decode2Bits;
+        }
+        goto DecodeDone;
+
+    DecodeWide:
+        if (decodeInfo[0] == 4) {
+            goto DecodeU16;
+        }
+        if (decodeInfo[0] < 4) {
+            goto DecodeU8;
+        }
+        if (decodeInfo[0] != 5) {
+            goto DecodeDone;
+        }
+        value = *reinterpret_cast<unsigned int *>(src);
+        src += 4;
+        goto DecodeDone;
+
+    DecodeU16:
+        value = *reinterpret_cast<unsigned short *>(src);
+        src += 2;
+        goto DecodeDone;
+
+    DecodeU8:
+        value = *src;
+        src += 1;
+        goto DecodeDone;
+
+    Decode4Bits:
+        numBits = (numBits + 4) & 0xFF;
+        value = (*src >> ((8 - numBits) & 0x3F)) & 0xF;
+        goto DecodeDone;
+
+    Decode2Bits:
+        numBits = (numBits + 2) & 0xFF;
+        value = (*src >> ((8 - numBits) & 0x3F)) & 3;
+        goto DecodeDone;
+
+    Decode1Bit:
+        numBits = (numBits + 1) & 0xFF;
+        value = (*src >> ((8 - numBits) & 0x3F)) & 1;
+
+    DecodeDone:
 
         if (numBits > 7) {
             src += 1;
             numBits = 0;
         }
 
-        if (decodeInfo[1] != 2) {
-            if (decodeInfo[1] > 2) {
-                if (decodeInfo[1] == 4) {
-                    *reinterpret_cast<unsigned int *>(&dest[decodeInfo[2]]) = value;
-                }
-            } else if (decodeInfo[1] == 1) {
-                dest[decodeInfo[2]] = static_cast<unsigned char>(value);
-            }
-        } else {
-            *reinterpret_cast<unsigned short *>(&dest[decodeInfo[2]]) = static_cast<unsigned short>(value);
+        if (decodeInfo[1] == 2) {
+            goto Store2Bytes;
         }
+        if (decodeInfo[1] > 2) {
+            goto StoreWide;
+        }
+        if (decodeInfo[1] == 1) {
+            goto Store1Byte;
+        }
+        goto StoreDone;
+
+    StoreWide:
+        if (decodeInfo[1] != 4) {
+            goto StoreDone;
+        }
+        *reinterpret_cast<unsigned int *>(&dest[decodeInfo[2]]) = value;
+        goto StoreDone;
+
+    Store1Byte:
+        dest[decodeInfo[2]] = static_cast<unsigned char>(value);
+        goto StoreDone;
+
+    Store2Bytes:
+        *reinterpret_cast<unsigned short *>(&dest[decodeInfo[2]]) = static_cast<unsigned short>(value);
+
+    StoreDone:
+        ;
     }
 }
 
