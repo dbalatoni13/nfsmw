@@ -2443,7 +2443,6 @@ void CarRenderInfo::CreateCarLightFlares() {
                 if (flare_type != -1) {
                     eLightFlare *light_flare = static_cast<eLightFlare *>(gFastMem.Alloc(sizeof(eLightFlare), 0));
 
-                    bMemSet(light_flare, 0, sizeof(eLightFlare));
                     light_flare->NameHash = name_hash;
                     light_flare->Type = static_cast<char>(flare_type);
                     light_flare->Flags =
