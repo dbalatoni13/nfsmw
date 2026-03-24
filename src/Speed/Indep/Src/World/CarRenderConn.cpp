@@ -530,10 +530,7 @@ CarRenderConn::CarRenderConn(const Sim::ConnectionData &data, CarType ct, Render
         }
 
         this->mTirePositions[i].w = 0.0f;
-        this->mTireState[i]->mPrevTirePos.x = 0.0f;
-        this->mTireState[i]->mPrevTirePos.y = 0.0f;
-        this->mTireState[i]->mPrevTirePos.z = 0.0f;
-        this->mTireState[i]->mPrevTirePos.w = 0.0f;
+        this->mTireState[i]->mPrevTirePos = bVector4(0.0f, 0.0f, 0.0f, 0.0f);
         this->mPhysicsRadius[i] = Physics::Info::WheelDiameter(this->mTirePhysics, i < 2) * 0.5f;
     }
 
