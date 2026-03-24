@@ -1420,9 +1420,9 @@ void CarRenderInfo::UpdateCarParts() {
                 }
             }
 
-            eModel *front_brake_model = this->mCarPartModels[CARSLOTID_FRONT_BRAKE][model_number][lod].GetModel();
             CarPartModel *rear_brake_part_model = &this->mCarPartModels[CARSLOTID_REAR_BRAKE][model_number][lod];
             unsigned int &rear_brake_packed_model = reinterpret_cast<CarPartModelLayout *>(rear_brake_part_model)->mModel;
+            eModel *front_brake_model = this->mCarPartModels[CARSLOTID_FRONT_BRAKE][model_number][lod].GetModel();
             eModel *rear_brake_model = reinterpret_cast<eModel *>(rear_brake_packed_model & ~0x3);
 
             if (front_brake_model != 0 && rear_brake_model == 0) {
