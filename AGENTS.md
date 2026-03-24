@@ -544,6 +544,11 @@ In a jumbo TU, do not move a newly restored out-of-line wrapper special member a
 TU: zAttribSys | Function: Collection::Contains / Collection::NextKey / Collection::GetNode / HashMap::UpdateSearchLength
 When a byte-exact mismatch fans out through the same shared inline helper, verify the helper's recovered parameter names before restructuring callers. Renaming `HashMapTablePolicy::WrapIndex`'s first parameter from `k` back to DWARF's `index` cleared four matched-function DWARF mismatches at once without changing objdiff.
 
+### SizedDeletePathBeatsStrayUnsizedDelete
+
+TU: zAttribSys | Function: Collection::~Collection / Class::Delete / HashMap::PreFlightAdd
+If delete-path DWARF keeps collapsing to an empty unsized `operator delete()` helper, re-check whether the type still has a stray unsized `operator delete(void *)` overload that the original source never exposed. In `AttribHashMap.h`, removing the unsized `HashMap::operator delete(void *)` let ProDG reuse the sized delete path again and made `Collection::~Collection` and `Class::Delete` DWARF-exact without moving objdiff.
+
 ### RegisterAllocatorTieBreakDeadEnd
 
 TU: zAttribSys | Function: Class::RemoveCollection / Database::RemoveClass

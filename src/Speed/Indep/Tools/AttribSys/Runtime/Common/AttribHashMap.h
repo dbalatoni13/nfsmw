@@ -55,9 +55,6 @@ class HashMap {
         return ptr;
     }
 
-    void operator delete(void *) {
-    }
-
     HashMap(std::size_t reservationSize, unsigned int keyShift, bool exactFit)
         : mTable(nullptr), mTableSize(0), mNumEntries(0), mWorstCollision(0), mKeyShift(keyShift) {
         if (reservationSize != 0) {
