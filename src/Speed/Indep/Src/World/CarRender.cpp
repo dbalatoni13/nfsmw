@@ -920,11 +920,6 @@ CarRenderInfo::CarRenderInfo(RideInfo *ride_info)
     this->CreateCarLightFlares();
 
     {
-        bVector3 v_left;
-        bVector3 v_right;
-        bVector3 v_underneath;
-        bVector3 v_front_diff;
-        bVector3 v_side_diff;
         bVector3 v_normal;
         float tire_radius;
 
@@ -933,9 +928,9 @@ CarRenderInfo::CarRenderInfo(RideInfo *ride_info)
         this->TheCarPartCuller.InitPart(CULLABLE_CAR_PART_TIRE_RR, &tire_positions[2]);
         this->TheCarPartCuller.InitPart(CULLABLE_CAR_PART_TIRE_RL, &tire_positions[3]);
 
-        v_left = tire_positions[0] + tire_positions[3];
+        bVector3 v_left = tire_positions[0] + tire_positions[3];
         v_left /= 2.0f;
-        v_right = tire_positions[1] + tire_positions[2];
+        bVector3 v_right = tire_positions[1] + tire_positions[2];
         v_right /= 2.0f;
 
         this->TheCarPartCuller.InitPart(CULLABLE_CAR_PART_BRAKE_FL, &tire_positions[0]);
@@ -945,12 +940,12 @@ CarRenderInfo::CarRenderInfo(RideInfo *ride_info)
         this->TheCarPartCuller.InitPart(CULLABLE_CAR_PART_SIDE_FRONT, &tire_positions[0]);
         this->TheCarPartCuller.InitPart(CULLABLE_CAR_PART_SIDE_REAR, &tire_positions[2]);
 
-        v_underneath = v_left + v_right;
+        bVector3 v_underneath = v_left + v_right;
         v_underneath /= 2.0f;
         this->TheCarPartCuller.InitPart(CULLABLE_CAR_PART_UNDERNEATH, &v_underneath);
 
-        v_front_diff = tire_positions[0] - tire_positions[1];
-        v_side_diff = tire_positions[1] - tire_positions[2];
+        bVector3 v_front_diff = tire_positions[0] - tire_positions[1];
+        bVector3 v_side_diff = tire_positions[1] - tire_positions[2];
         bCross(&v_normal, &v_front_diff, &v_side_diff);
         bNormalize(&v_normal, &v_normal);
 
