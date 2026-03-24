@@ -2696,6 +2696,8 @@ void CarRenderInfo::RenderFlaresOnCar(eView *view, const bVector3 *position, con
     }
     float constFlicker = coplightflicker(Ftime, 0);
     int FlareCount = 0;
+    int render_flare_type_only = renderFlareFlags & 2;
+    int render_flare_cop_only = renderFlareFlags & 1;
 
     for (eLightFlare *light_flare = this->LightFlareList.GetHead(); light_flare != this->LightFlareList.EndOfList();
          light_flare = light_flare->GetNext()) {
@@ -2705,10 +2707,10 @@ void CarRenderInfo::RenderFlaresOnCar(eView *view, const bVector3 *position, con
         if (is_traffic_car != 0 && light_flare->Type == 1) {
             light_flare->Type = 2;
         }
-        if ((renderFlareFlags & 2) != 0 && light_flare->Type != 1) {
+        if (render_flare_type_only != 0 && light_flare->Type != 1) {
             continue;
         }
-        if ((renderFlareFlags & 1) != 0) {
+        if (render_flare_cop_only != 0) {
             if (light_flare->Type < 5 || light_flare->Type > 12) {
                 continue;
             }
