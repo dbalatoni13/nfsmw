@@ -3147,10 +3147,10 @@ void CarRenderInfo::DrawAmbientShadow(eView *view, const bVector3 *position, flo
     pp = p;
     puv = uv;
     py = min.y + sunStartY;
-    scaleL = (max.x - min.x) * lbl_8040ADE0;
     scaleW = (max.y - min.y) * lbl_8040ADE0;
-    dx = scaleL;
+    scaleL = (max.x - min.x) * lbl_8040ADE0;
     dy = scaleW;
+    dx = scaleL;
     ds = lbl_8040ADE0;
     dt = lbl_8040ADE0;
     pt = lbl_8040ADC0;
