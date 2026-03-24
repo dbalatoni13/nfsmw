@@ -38,19 +38,6 @@ struct CarPartAttributeTable {
         }
     }
 };
-struct CarPartAttribute {
-    unsigned int NameHash;
-    union {
-        float fParam;
-        int iParam;
-        unsigned int uParam;
-    } Params;
-
-    void EndianSwap() {
-        bPlatEndianSwap(&this->Params.iParam);
-        bPlatEndianSwap(&this->NameHash);
-    }
-};
 struct CarPartModelTable {
     char TemplatedNameHashes;
     char pad;
@@ -69,6 +56,11 @@ struct CarPartModelTable {
         }
     }
 };
+
+void CarPartAttribute::EndianSwap() {
+    bPlatEndianSwap(&this->Params.iParam);
+    bPlatEndianSwap(&this->NameHash);
+}
 struct CarPartPack : public bTNode<CarPartPack> {
     unsigned int Version;
     const char *StringTable;

@@ -268,6 +268,21 @@ enum CarRenderUsage {
     CarRenderUsage_Invalid,
 };
 
+struct CarPartAttribute {
+    unsigned int NameHash;
+    union {
+        float fParam;
+        int iParam;
+        unsigned int uParam;
+    } Params;
+
+    unsigned int GetUParam() {
+        return this->Params.uParam;
+    }
+
+    void EndianSwap();
+};
+
 // total size: 0x310
 struct FECarRecord;
 class RideInfo {

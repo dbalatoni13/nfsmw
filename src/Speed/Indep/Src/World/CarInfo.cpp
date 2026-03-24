@@ -112,9 +112,7 @@ struct MissingCarPart {
     short Slot;
     unsigned int PartNameHash;
 };
-struct PresetCar {
-    PresetCar *Next;
-    PresetCar *Prev;
+struct PresetCar : public bTNode<PresetCar> {
     char CarTypeName[0x20];
     char PresetName[0x38];
     unsigned int PartNameHashes[139];
@@ -125,10 +123,7 @@ struct SlotTypeOverrideLayout {
     unsigned int SlotId;
     unsigned int LookupType[2];
 };
-struct PresetCarListHead {
-    PresetCar *Next;
-    PresetCar *Prev;
-};
+struct PresetCarListHead : public bTList<PresetCar> {};
 
 CarTypeInfo *CarTypeInfoArray;
 CarPartDatabase CarPartDB;
@@ -363,13 +358,8 @@ int CarPart::HasAppliedAttribute(unsigned int namehash) {
 }
 
 const char *CarPart::GetAppliedAttributeString(unsigned int namehash, const char *default_string) {
-    CarPartAttributeLayout *attribute = reinterpret_cast<CarPartAttributeLayout *>(GetFirstAppliedAttribute(namehash));
-
-    if (attribute != 0) {
-        default_string = CarPartStringTable + attribute->Params.iParam * 4;
-    }
-
-    return default_string;
+    CarPartAttribute *attribute = GetFirstAppliedAttribute(namehash);
+    return attribute != 0 ? CarPartStringTable + attribute->GetUParam() * 4 : default_string;
 }
 
 int CarPart::GetAppliedAttributeIParam(unsigned int namehash, int default_value) {
@@ -997,12 +987,8 @@ int LoaderFEPresetCars(bChunk *chunk) {
                 bEndianSwap32(preset_words + 0x16);
 
                 PresetCar *preset = reinterpret_cast<PresetCar *>(preset_words);
-                PresetCar *tail = PresetCarList.Prev;
 
-                tail->Next = preset;
-                PresetCarList.Prev = preset;
-                preset->Prev = tail;
-                preset->Next = reinterpret_cast<PresetCar *>(&PresetCarList);
+                PresetCarList.AddTail(preset);
                 preset_words += 0xA4;
             } while (preset_count != -1);
         }
@@ -1015,16 +1001,8 @@ int LoaderFEPresetCars(bChunk *chunk) {
 
 int UnloaderFEPresetCars(bChunk *chunk) {
     if (chunk->GetID() == 0x30220) {
-        PresetCar *end = reinterpret_cast<PresetCar *>(&PresetCarList);
-        PresetCar *preset = PresetCarList.Next;
-
-        while (preset != end) {
-            PresetCar *prev = preset->Prev;
-            PresetCar *next = preset->Next;
-
-            prev->Next = next;
-            next->Prev = prev;
-            preset = PresetCarList.Next;
+        while (!PresetCarList.IsEmpty()) {
+            PresetCarList.RemoveHead();
         }
 
         return 1;
@@ -1034,23 +1012,18 @@ int UnloaderFEPresetCars(bChunk *chunk) {
 }
 
 int GetNumPresetCars() {
-    return reinterpret_cast<bList *>(&PresetCarList)->CountElements();
+    return PresetCarList.CountElements();
 }
 
 PresetCar *GetPresetCarAt(int index) {
-    return reinterpret_cast<bTList<PresetCar> *>(&PresetCarList)->GetNode(index);
+    return PresetCarList.GetNode(index);
 }
 
-PresetCar *FindFEPresetCar(unsigned int preset_name_hash) {
-    unsigned int hash = preset_name_hash;
-    PresetCar *end = reinterpret_cast<PresetCar *>(&PresetCarList);
-    PresetCar *preset = PresetCarList.Next;
-
-    while (preset != end) {
-        if (hash == FEHashUpper(preset->PresetName)) {
-            return preset;
+PresetCar *FindFEPresetCar(unsigned int hash) {
+    for (PresetCar *p = PresetCarList.GetHead(); p != PresetCarList.EndOfList(); p = p->GetNext()) {
+        if (hash == FEHashUpper(p->PresetName)) {
+            return p;
         }
-        preset = preset->Next;
     }
 
     return 0;
