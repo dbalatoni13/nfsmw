@@ -2392,9 +2392,9 @@ void CarRenderInfo::UpdateCarReplacementTextures() {
 
     this->CarbonReplacementTextureTable[REPLACETEX_CARSKIN].SetNewNameHash(bStringHash("CARBONFIBRE"));
     this->CarbonReplacementTextureTable[REPLACETEX_CARSKINB].SetNewNameHash(
-        reinterpret_cast<CarRenderUsedCarTextureInfoLayout *>(&this->mUsedTextureInfos)->ReplaceGlobalHash);
+        *reinterpret_cast<unsigned int *>(reinterpret_cast<unsigned char *>(this) + 0x15B0));
     this->CarbonReplacementTextureTable[REPLACETEX_GLOBALSKIN].SetNewNameHash(
-        reinterpret_cast<CarRenderUsedCarTextureInfoLayout *>(&this->mUsedTextureInfos)->ReplaceGlobalHash);
+        *reinterpret_cast<unsigned int *>(reinterpret_cast<unsigned char *>(this) + 0x15B0));
     this->CarbonReplacementTextureTable[REPLACETEX_CARBONSKIN].SetNewNameHash(bStringHash("CARBONFIBRE"));
     this->CarbonReplacementTextureTable[REPLACETEX_GLOBALCARBONSKIN].SetNewNameHash(bStringHash("CARBONFIBRE"));
 }
