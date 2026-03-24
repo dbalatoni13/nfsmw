@@ -778,8 +778,7 @@ CarRenderInfo::CarRenderInfo(RideInfo *ride_info)
     this->CarbonHood = 0;
     GetUsedCarTextureInfo(&this->mUsedTextureInfos, this->pRideInfo, 0);
     {
-        CarRenderUsedCarTextureInfoLayout *used_texture_info =
-            reinterpret_cast<CarRenderUsedCarTextureInfoLayout *>(&this->mUsedTextureInfos);
+        UsedCarTextureInfo *used_texture_info = &this->mUsedTextureInfos;
         unsigned int mapped_skin_hash = used_texture_info->MappedSkinHash;
         unsigned int mapped_skin_b_hash = used_texture_info->MappedSkinBHash;
         unsigned int mapped_global_hash = used_texture_info->MappedGlobalHash;
@@ -826,27 +825,26 @@ CarRenderInfo::CarRenderInfo(RideInfo *ride_info)
         this->MasterReplacementTextureTable[REPLACETEX_WINDOW2_REAR_DEFOST].SetOldNameHash(bStringHash("REAR_DEFROSTER"));
         this->MasterReplacementTextureTable[REPLACETEX_HEADLIGHT_LEFT].SetOldNameHash(0xA7E6EA53);
         this->MasterReplacementTextureTable[REPLACETEX_HEADLIGHT_RIGHT].SetOldNameHash(0xA532FC46);
-        this->MasterReplacementTextureTable[REPLACETEX_OLD_HEADLIGHT_LEFT].SetOldNameHash(used_texture_info->MappedLightHash[0]);
-        this->MasterReplacementTextureTable[REPLACETEX_OLD_HEADLIGHT_RIGHT].SetOldNameHash(used_texture_info->MappedLightHash[1]);
-        this->MasterReplacementTextureTable[REPLACETEX_OLD_BRAKELIGHT_LEFT].SetOldNameHash(used_texture_info->MappedLightHash[2]);
-        this->MasterReplacementTextureTable[REPLACETEX_OLD_BRAKELIGHT_RIGHT].SetOldNameHash(used_texture_info->MappedLightHash[3]);
-        this->MasterReplacementTextureTable[REPLACETEX_OLD_BRAKELIGHT_CENTRE].SetOldNameHash(used_texture_info->MappedLightHash[4]);
-        this->MasterReplacementTextureTable[REPLACETEX_OLD_HEADLIGHT_GLASS_LEFT].SetOldNameHash(used_texture_info->MappedLightHash[5]);
-        this->MasterReplacementTextureTable[REPLACETEX_OLD_HEADLIGHT_GLASS_RIGHT].SetOldNameHash(used_texture_info->MappedLightHash[6]);
-        this->MasterReplacementTextureTable[REPLACETEX_OLD_BRAKELIGHT_GLASS_LEFT].SetOldNameHash(used_texture_info->MappedLightHash[7]);
-        this->MasterReplacementTextureTable[REPLACETEX_OLD_BRAKELIGHT_GLASS_RIGHT].SetOldNameHash(used_texture_info->MappedLightHash[8]);
-        this->MasterReplacementTextureTable[REPLACETEX_OLD_BRAKELIGHT_GLASS_CENTRE].SetOldNameHash(used_texture_info->MappedLightHash[9]);
+        this->MasterReplacementTextureTable[REPLACETEX_OLD_HEADLIGHT_LEFT].SetOldNameHash(this->mUsedTextureInfos.MappedLightHash[0]);
+        this->MasterReplacementTextureTable[REPLACETEX_OLD_HEADLIGHT_RIGHT].SetOldNameHash(this->mUsedTextureInfos.MappedLightHash[1]);
+        this->MasterReplacementTextureTable[REPLACETEX_OLD_BRAKELIGHT_LEFT].SetOldNameHash(this->mUsedTextureInfos.MappedLightHash[2]);
+        this->MasterReplacementTextureTable[REPLACETEX_OLD_BRAKELIGHT_RIGHT].SetOldNameHash(this->mUsedTextureInfos.MappedLightHash[3]);
+        this->MasterReplacementTextureTable[REPLACETEX_OLD_BRAKELIGHT_CENTRE].SetOldNameHash(this->mUsedTextureInfos.MappedLightHash[4]);
+        this->MasterReplacementTextureTable[REPLACETEX_OLD_HEADLIGHT_GLASS_LEFT].SetOldNameHash(this->mUsedTextureInfos.MappedLightHash[5]);
+        this->MasterReplacementTextureTable[REPLACETEX_OLD_HEADLIGHT_GLASS_RIGHT].SetOldNameHash(this->mUsedTextureInfos.MappedLightHash[6]);
+        this->MasterReplacementTextureTable[REPLACETEX_OLD_BRAKELIGHT_GLASS_LEFT].SetOldNameHash(this->mUsedTextureInfos.MappedLightHash[7]);
+        this->MasterReplacementTextureTable[REPLACETEX_OLD_BRAKELIGHT_GLASS_RIGHT].SetOldNameHash(this->mUsedTextureInfos.MappedLightHash[8]);
+        this->MasterReplacementTextureTable[REPLACETEX_OLD_BRAKELIGHT_GLASS_CENTRE].SetOldNameHash(this->mUsedTextureInfos.MappedLightHash[9]);
         this->BrakeLeftReplacementTextureTable[0].SetOldNameHash(0x17F9F794);
         this->BrakeLeftReplacementTextureTable[0].SetNewNameHash(0x85E9C79E);
-        this->BrakeLeftReplacementTextureTable[1].SetOldNameHash(used_texture_info->MappedGlobalHash);
+        this->BrakeLeftReplacementTextureTable[1].SetOldNameHash(this->mUsedTextureInfos.MappedGlobalHash);
         this->BrakeRightReplacementTextureTable[0].SetOldNameHash(0x17F9F794);
         this->BrakeRightReplacementTextureTable[0].SetNewNameHash(0x17F9F794);
-        this->BrakeRightReplacementTextureTable[1].SetOldNameHash(used_texture_info->MappedGlobalHash);
+        this->BrakeRightReplacementTextureTable[1].SetOldNameHash(this->mUsedTextureInfos.MappedGlobalHash);
     }
     this->SwitchSkin(ride_info);
     {
-        CarRenderUsedCarTextureInfoLayout *used_texture_info =
-            reinterpret_cast<CarRenderUsedCarTextureInfoLayout *>(&this->mUsedTextureInfos);
+        UsedCarTextureInfo *used_texture_info = &this->mUsedTextureInfos;
         unsigned int badging_hash = used_texture_info->MappedBadging;
         const char *europe_suffix = BuildRegion::IsEurope() ? "_EU" : nullptr;
 
@@ -2352,8 +2350,7 @@ void CarRenderInfo::UpdateCarReplacementTextures() {
 }
 
 void CarRenderInfo::SwitchSkin(RideInfo *ride_info) {
-    CarRenderUsedCarTextureInfoLayout *used_texture_info =
-        reinterpret_cast<CarRenderUsedCarTextureInfoLayout *>(&this->mUsedTextureInfos);
+    UsedCarTextureInfo *used_texture_info = &this->mUsedTextureInfos;
 
     this->pRideInfo = ride_info;
     GetUsedCarTextureInfo(&this->mUsedTextureInfos, ride_info, 0);
@@ -2803,8 +2800,7 @@ void CarRenderInfo::RenderFlaresOnCar(eView *view, const bVector3 *position, con
 }
 
 void CarRenderInfo::UpdateLightStateTextures() {
-    CarRenderUsedCarTextureInfoLayout *used_texture_info =
-        reinterpret_cast<CarRenderUsedCarTextureInfoLayout *>(&this->mUsedTextureInfos);
+    UsedCarTextureInfo *used_texture_info = &this->mUsedTextureInfos;
     unsigned int headlights_on = used_texture_info->ReplaceHeadlightHash[1];
     unsigned int headlight_glass_on = used_texture_info->ReplaceHeadlightGlassHash[1];
     unsigned int window_front = this->MasterReplacementTextureTable[REPLACETEX_WINDOW_FRONT].GetNewNameHash();

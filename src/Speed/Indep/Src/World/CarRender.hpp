@@ -175,7 +175,7 @@ class CarEmitterPosition : public bSNode<CarEmitterPosition> {
     ePositionMarker *PositionMarker; // offset 0x10, size 0x4
 };
 
-class UsedCarTextureInfo {
+struct UsedCarTextureInfo {
     // Members
     unsigned int TexturesToLoadPerm[87];        // offset 0x0, size 0x15C
     unsigned int TexturesToLoadTemp[87];        // offset 0x15C, size 0x15C
