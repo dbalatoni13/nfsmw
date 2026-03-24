@@ -62,6 +62,15 @@ struct TireState : public bTNode<TireState> {
               mMaxVel(0.0f), //
               mZeroParticleFrameCount(0) {}
 
+        void ResetGroup() {
+            mGroup = 0;
+            mEmitterKey = 0;
+            mNeedsLazyInit = true;
+            mMaxVel = 0.0f;
+            mZeroParticleFrameCount = 0;
+            mMinVel = mMaxVel;
+        }
+
         void FreeUpFX();
         void LazyInit();
         void Set(const TireEffectRecord &record);
@@ -174,13 +183,7 @@ static inline bool eIsGameViewID(int id) {
 
 void NotifyTireStateEffectOfEmitterDelete(void *tire_state_effect, EmitterGroup *grp) {
     TireState::Effect *effect = static_cast<TireState::Effect *>(tire_state_effect);
-
-    effect->mGroup = 0;
-    effect->mEmitterKey = 0;
-    effect->mNeedsLazyInit = true;
-    effect->mMinVel = 0.0f;
-    effect->mMaxVel = 0.0f;
-    effect->mZeroParticleFrameCount = 0;
+    effect->ResetGroup();
 }
 
 void TireState::DoSkids(float intensity, const bVector3 *deltaPos, const bMatrix4 *tirematrix, const bMatrix4 *bodymatrix, float SkidWidth) {
