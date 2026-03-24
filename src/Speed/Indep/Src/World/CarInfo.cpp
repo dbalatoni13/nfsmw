@@ -1353,10 +1353,13 @@ void GetUsedCarTextureInfo(UsedCarTextureInfo *used_texture_info, RideInfo *ride
 
         if (decal_model_part != 0 && decal_model_part->HasAppliedAttribute(size_hash) != 0 &&
             decal_model_part->HasAppliedAttribute(shape_hash) != 0) {
+            unsigned int decal_size = decal_model_part->GetAppliedAttributeUParam(size_hash, 0);
             unsigned int decal_shape = decal_model_part->GetAppliedAttributeUParam(shape_hash, 0);
+            int num_decal_slots = 8;
+            int first_tex_part = i * num_decal_slots - 0x1DD;
 
-            for (int j = 0; j <= 7; j++) {
-                CarPart *decal_texture_part = ride_info->GetPart(j + i * 8 - 0x1DD);
+            for (int j = 0; j < num_decal_slots; j++) {
+                CarPart *decal_texture_part = ride_info->GetPart(first_tex_part + j);
 
                 if (decal_texture_part != 0) {
                     unsigned int texture_hash = decal_texture_part->GetAppliedAttributeUParam(bStringHash("NAME"), 0);
@@ -1373,6 +1376,8 @@ void GetUsedCarTextureInfo(UsedCarTextureInfo *used_texture_info, RideInfo *ride
                                                                   texture_hash);
                 }
             }
+
+            (void)decal_size;
         }
     }
 
