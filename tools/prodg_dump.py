@@ -10,6 +10,9 @@ Examples:
       -f 'VecHashMap<unsigned int,Attrib::Class,Attrib::Class::TablePolicy,false,16>::UpdateSearchLength'
   python tools/prodg_dump.py diff /tmp/zattrib_base /tmp/zattrib_trial \
       -f 'VecHashMap<unsigned int,Attrib::Class,Attrib::Class::TablePolicy,false,16>::UpdateSearchLength'
+  build/tools/dtk elf disasm build/GOWE69/src/Speed/Indep/SourceLists/zAttribSys.o /tmp/zattrib_objdisasm.txt
+  python tools/prodg_dump.py diff /tmp/zattrib_oldfloor_objdisasm.txt /tmp/zattrib_objdisasm.txt \
+      -f 'RemoveCollection__Q26Attrib5ClassPQ26Attrib10Collection'
 """
 
 import argparse
@@ -54,6 +57,19 @@ ASM_WEAK_RE = re.compile(r"^\s*\.weak\s+(\S+)$")
 ASM_TYPE_RE = re.compile(r"^\s*\.type\s+(\S+),@function$")
 ASM_LABEL_RE = re.compile(r"^(\S+):$")
 ASM_SIZE_RE = re.compile(r"^\s*\.size\s+(\S+),")
+ASM_DEBUG_SECTION_RE = re.compile(r"^\s*\.section\s+\.(line|debug_srcinfo)\b")
+ASM_PREVIOUS_RE = re.compile(r"^\s*\.previous\b")
+ASM_DEBUG_LABEL_RE = re.compile(
+    r"^(\.L_(?:LC|LE)\d+|\.L_B\d+(?:_e)?|\.L_b\d+|\.L_f\S*_s):$"
+)
+DTK_FN_RE = re.compile(r"^\s*\.fn\s+(\S+),")
+DTK_ENDFN_RE = re.compile(r"^\s*\.endfn\s+(\S+)$")
+DTK_LABEL_RE = re.compile(r"^\s*(\.L_[A-Za-z0-9_]+):$")
+DTK_LABEL_TOKEN_RE = re.compile(r"\.L_[A-Za-z0-9_]+")
+DTK_INSN_RE = re.compile(
+    r"^\s*/\*\s*[0-9A-Fa-f]{8}\s+[0-9A-Fa-f]{8}\s+"
+    r"(?P<bytes>(?:[0-9A-Fa-f]{2}\s+)+)\*/\s*(?P<asm>.*)$"
+)
 DEFAULT_STAGES = ("rtl", "greg", "lreg")
 
 
@@ -214,6 +230,31 @@ def derive_preprocess_command(info: UnitCompileInfo, ii_path: Path) -> List[str]
     return [*compile_argv[: info.ngccc_index + 1], *filtered]
 
 
+def derive_cc1plus_args(info: UnitCompileInfo) -> List[str]:
+    compiler_args = list(info.compile_argv[info.ngccc_index + 1 :])
+    filtered: List[str] = []
+
+    i = 0
+    while i < len(compiler_args):
+        arg = compiler_args[i]
+        if arg in ("-c", "-E", "-S", "-M", "-MM", "-MD", "-MMD", "-MG", "-MP"):
+            i += 1
+            continue
+        if arg in ("-o", "-x", "-I", "-D", "-U", "-MF", "-MT", "-MQ", "-include", "-imacros"):
+            i += 2
+            continue
+        if arg.startswith("-I") or arg.startswith("-D") or arg.startswith("-U"):
+            i += 1
+            continue
+        if not arg.startswith("-"):
+            i += 1
+            continue
+        filtered.append(arg)
+        i += 1
+
+    return filtered
+
+
 def derive_cc1plus_command(
     info: UnitCompileInfo, ii_path: Path, dumpbase: Path, asm_path: Path
 ) -> List[str]:
@@ -227,10 +268,13 @@ def derive_cc1plus_command(
     return [
         *prefix,
         str(cc1plus_path),
+        *derive_cc1plus_args(info),
         str(ii_path),
         "-da",
+        "-fdump-unnumbered",
         "-dumpbase",
         str(dumpbase),
+        "-quiet",
         "-o",
         str(asm_path),
     ]
@@ -258,10 +302,12 @@ def parse_stages(value: str) -> List[str]:
 
 
 def load_function_blocks(path: Path) -> List[FunctionBlock]:
-    if path.suffix == ".s":
-        return load_assembly_function_blocks(path)
-
     lines = path.read_text(errors="replace").splitlines()
+    if path.suffix == ".s":
+        return load_assembly_function_blocks(lines)
+    if any(DTK_FN_RE.match(line) for line in lines):
+        return load_dtk_disasm_function_blocks(lines)
+
     blocks: List[FunctionBlock] = []
     current_header: Optional[str] = None
     current_start = 0
@@ -294,8 +340,7 @@ def load_function_blocks(path: Path) -> List[FunctionBlock]:
     return blocks
 
 
-def load_assembly_function_blocks(path: Path) -> List[FunctionBlock]:
-    lines = path.read_text(errors="replace").splitlines()
+def load_assembly_function_blocks(lines: Sequence[str]) -> List[FunctionBlock]:
     starts: Dict[str, int] = {}
     labels: Dict[str, int] = {}
     blocks: List[FunctionBlock] = []
@@ -336,6 +381,161 @@ def load_assembly_function_blocks(path: Path) -> List[FunctionBlock]:
                 del labels[symbol]
 
     return blocks
+
+
+def load_dtk_disasm_function_blocks(lines: Sequence[str]) -> List[FunctionBlock]:
+    blocks: List[FunctionBlock] = []
+    current_header: Optional[str] = None
+    current_start = 0
+    current_lines: List[str] = []
+
+    for index, line in enumerate(lines, start=1):
+        fn_match = DTK_FN_RE.match(line)
+        if fn_match:
+            current_header = fn_match.group(1)
+            current_start = index
+            current_lines = [line]
+            continue
+
+        if current_header is not None:
+            current_lines.append(line)
+            end_match = DTK_ENDFN_RE.match(line)
+            if end_match and end_match.group(1) == current_header:
+                blocks.append(
+                    FunctionBlock(
+                        header=current_header,
+                        start_line=current_start,
+                        lines=current_lines,
+                    )
+                )
+                current_header = None
+                current_start = 0
+                current_lines = []
+
+    return blocks
+
+
+def is_dtk_disasm_block(block: FunctionBlock) -> bool:
+    return bool(block.lines and DTK_FN_RE.match(block.lines[0]))
+
+
+def replace_dtk_labels(text: str, label_map: Dict[str, str]) -> str:
+    if not label_map:
+        return text
+    result = text
+    for label, replacement in sorted(label_map.items(), key=lambda item: len(item[0]), reverse=True):
+        result = result.replace(label, replacement)
+    return result
+
+
+def normalize_dtk_disasm_lines(block: FunctionBlock) -> List[str]:
+    label_map: Dict[str, str] = {}
+    next_index = 1
+
+    def add_label(label: str) -> None:
+        nonlocal next_index
+        if label not in label_map:
+            label_map[label] = f".L_{next_index}"
+            next_index += 1
+
+    for line in block.lines:
+        label_match = DTK_LABEL_RE.match(line)
+        if label_match:
+            add_label(label_match.group(1))
+        for label in DTK_LABEL_TOKEN_RE.findall(line):
+            add_label(label)
+
+    normalized: List[str] = []
+    for line in block.lines:
+        label_match = DTK_LABEL_RE.match(line)
+        if label_match:
+            normalized.append(f"{label_map[label_match.group(1)]}:")
+            continue
+
+        insn_match = DTK_INSN_RE.match(line)
+        if insn_match:
+            byte_text = " ".join(insn_match.group("bytes").split())
+            asm_text = replace_dtk_labels(insn_match.group("asm"), label_map)
+            normalized.append(f"/* {byte_text} */\t{asm_text}")
+            continue
+
+        normalized.append(replace_dtk_labels(line, label_map))
+
+    return normalized
+
+
+def replace_asm_labels(text: str, label_map: Dict[str, str]) -> str:
+    if not label_map:
+        return text
+    result = text
+    for label, replacement in sorted(label_map.items(), key=lambda item: len(item[0]), reverse=True):
+        result = result.replace(label, replacement)
+    return result
+
+
+def is_debug_asm_label(line: str) -> bool:
+    return bool(ASM_DEBUG_LABEL_RE.match(line))
+
+
+def normalize_assembly_lines(block: FunctionBlock) -> List[str]:
+    label_map: Dict[str, str] = {}
+    next_index = 1
+
+    i = 0
+    while i < len(block.lines):
+        line = block.lines[i]
+        if ASM_DEBUG_SECTION_RE.match(line):
+            i += 1
+            while i < len(block.lines) and not ASM_PREVIOUS_RE.match(block.lines[i]):
+                i += 1
+            if i < len(block.lines):
+                i += 1
+            continue
+
+        if is_debug_asm_label(line):
+            i += 1
+            continue
+
+        label_match = ASM_LABEL_RE.match(line)
+        if label_match:
+            label = label_match.group(1)
+            if label.startswith(".L") and label not in label_map:
+                label_map[label] = f".L_{next_index}"
+                next_index += 1
+        i += 1
+
+    normalized: List[str] = []
+    i = 0
+    while i < len(block.lines):
+        line = block.lines[i]
+        if ASM_DEBUG_SECTION_RE.match(line):
+            i += 1
+            while i < len(block.lines) and not ASM_PREVIOUS_RE.match(block.lines[i]):
+                i += 1
+            if i < len(block.lines):
+                i += 1
+            continue
+
+        if is_debug_asm_label(line):
+            i += 1
+            continue
+
+        label_match = ASM_LABEL_RE.match(line)
+        if label_match:
+            label = label_match.group(1)
+            if label.startswith(".L"):
+                normalized.append(f"{label_map[label]}:")
+            else:
+                normalized.append(line)
+            i += 1
+            continue
+
+        normalized_line = replace_asm_labels(line, label_map)
+        if normalized_line.strip():
+            normalized.append(normalized_line)
+        i += 1
+
+    return normalized
 
 
 def choose_block(blocks: Sequence[FunctionBlock], query: str, exact: bool) -> FunctionBlock:
@@ -845,10 +1045,18 @@ def command_summary(args: argparse.Namespace) -> None:
 
 
 def command_diff(args: argparse.Namespace) -> None:
-    stages = parse_stages(args.stages)
+    left_input = Path(args.left)
+    right_input = Path(args.right)
+    direct_files = left_input.is_file() and right_input.is_file()
+    stages = ["file"] if direct_files else parse_stages(args.stages)
+
     for stage in stages:
-        left_path = resolve_stage_file(args.left, stage, args.left_base_name)
-        right_path = resolve_stage_file(args.right, stage, args.right_base_name)
+        if direct_files:
+            left_path = left_input
+            right_path = right_input
+        else:
+            left_path = resolve_stage_file(args.left, stage, args.left_base_name)
+            right_path = resolve_stage_file(args.right, stage, args.right_base_name)
         try:
             left_block = choose_block(
                 load_function_blocks(left_path), args.function, exact=args.exact
@@ -875,10 +1083,19 @@ def command_diff(args: argparse.Namespace) -> None:
         if args.summary_only:
             continue
 
+        left_lines = left_block.lines
+        right_lines = right_block.lines
+        if is_dtk_disasm_block(left_block) and is_dtk_disasm_block(right_block):
+            left_lines = normalize_dtk_disasm_lines(left_block)
+            right_lines = normalize_dtk_disasm_lines(right_block)
+        elif left_path.suffix == ".s" and right_path.suffix == ".s":
+            left_lines = normalize_assembly_lines(left_block)
+            right_lines = normalize_assembly_lines(right_block)
+
         diff_lines = list(
             difflib.unified_diff(
-                left_block.lines,
-                right_block.lines,
+                left_lines,
+                right_lines,
                 fromfile=str(left_path),
                 tofile=str(right_path),
                 n=args.context,

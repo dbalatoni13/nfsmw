@@ -263,8 +263,9 @@ file+line count is stricter and mainly useful as a secondary hint, not as the ma
 When you need the exact ProDG compiler state for one unit, prefer this helper over
 reconstructing long `ngccc` / `cc1plus` command lines by hand. It recovers the real
 `ngccc.exe` invocation from `ninja -t commands`, derives the matching preprocess step,
-runs `cc1plus.exe -da`, and can extract, summarize, or diff one function across dump
-sets.
+passes the real optimization / target / warning flags through to `cc1plus.exe`
+(`-fdump-unnumbered` included), and can extract, summarize, or diff one function across
+dump sets.
 
 ```sh
 python tools/prodg_dump.py command -u main/Speed/Indep/SourceLists/zAttribSys
@@ -282,6 +283,9 @@ python tools/prodg_dump.py diff /tmp/zattrib_oldfloor_dump /tmp/zattrib_block_du
 python tools/prodg_dump.py diff /tmp/zattrib_block_dump /tmp/zattrib_trial_dump \
     --exact --stages s \
     -f 'UpdateSearchLength__t10VecHashMap5ZUiZQ26Attrib5ClassZQ36Attrib5Class11TablePolicyb0Ui16UiUi'
+build/tools/dtk elf disasm build/GOWE69/src/Speed/Indep/SourceLists/zAttribSys.o /tmp/zattrib_objdisasm.txt
+python tools/prodg_dump.py diff /tmp/zattrib_oldfloor_objdisasm.txt /tmp/zattrib_objdisasm.txt \
+    -f 'RemoveCollection__Q26Attrib5ClassPQ26Attrib10Collection'
 ```
 
 Use `extract --grep ... -C <n>` when you only want a few interesting lines inside a
@@ -297,7 +301,13 @@ allocator/regclass shifts stand out immediately. The helper now also understands
 assembly (`--stages s`) by extracting blocks from `.type/.size` symbol ranges; use that
 when ProDG's late text dumps (`regmove` / `sched` / `sched2`) are empty in this setup.
 Assembly-stage queries are by mangled symbol name, not the demangled `;; Function ...`
-header used by RTL-style dumps.
+header used by RTL-style dumps. Plain `.s` diffs are normalized automatically now:
+`diff` strips `.line` / `.debug_srcinfo` scaffolding and renumbers local `.L*` labels so
+you see emitted-code movement instead of debug-section churn. It also understands
+`dtk elf disasm` text directly: when you pass a disassembly text file with `.fn ...` /
+`.endfn ...` blocks, `extract` and `diff` can operate on real object-level symbols
+without another ad hoc extractor, and `diff` also normalizes object-local `.L_*` label
+tokens so rebuilt-vs-reference wrapper diffs are easier to read.
 
 When working with these tools, do not just work around recurring friction silently. If you
 notice a clear, safe workflow or tooling improvement that would make future decomp work
@@ -598,7 +608,7 @@ Writing the second `UpdateSearchLength` search loop as `for (unsigned int search
 ### SearchFirstHoistIsFalseFriend
 
 TU: zAttribSys | Function: Database::RemoveClass / VecHashMap::UpdateSearchLength
-Hoisting the second-loop `searchLen` declaration above `newMaxSearch` (`unsigned int searchLen = 1; unsigned int newMaxSearch = 0; for (; maxSearch > searchLen; searchLen++)`) is a false friend. On the current endgame floor it improves the **second** `UpdateSearchLength` inline in `Database::RemoveClass` and nudges objdiff up to `98.6%`, but it also hoists `searchLen` out of the anonymous loop block in **both** inlined `UpdateSearchLength` bodies and drops normalized DWARF to about `86.6%`, so do not keep or build on that variant.
+Hoisting the second-loop `searchLen` declaration above `newMaxSearch` (`unsigned int searchLen = 1; unsigned int newMaxSearch = 0; for (; maxSearch > searchLen; searchLen++)`) is a DWARF-only false friend. On real forced rebuilds, direct `dtk elf disasm` diffs show that both wrapper symbols are text-identical to the retained block-scoped floor, so it does **not** buy real code progress. What it does change is DWARF: it hoists `searchLen` out of the anonymous loop block in both inlined `UpdateSearchLength` bodies and drops normalized DWARF to about `86.6%`, so do not keep or build on that variant.
 
 ### BlockScopedSearchLenRaisesTextButSharesR6Debt
 
@@ -615,6 +625,11 @@ Splitting the retained block-scoped `searchLen` initializer into declaration plu
 
 TU: zAttribSys | Function: Class::RemoveCollection / Database::RemoveClass / VecHashMap::UpdateSearchLength
 Writing the late scan as `for (unsigned int searchLen = 0; ++searchLen < maxSearch; )` is the first condition-only rewrite that makes the second `UpdateSearchLength` loop header itself line up: it fixes the `cmplwi r4, 1` fold, restores the `li r7, 1` / `cmplw r7, r4` shape, and also fixes `Database::RemoveClass`'s `newMaxSearch // r31` placement in that late inline. But it is still a false friend overall: it moves both wrappers onto a broader `r6`/`r7` swap family, drops `Class::RemoveCollection` to `98.6% / 99.6%`, leaves `Database::RemoveClass` at `98.5% / 99.6%`, and changes the remaining mismatches rather than removing them.
+
+### ObjectDisasmResolvesWrapperDrift
+
+TU: zAttribSys | Function: Class::RemoveCollection / Database::RemoveClass
+When wrapper `verify` / `objdiff` movement disagrees with `.s`-level or dump-summary comparisons, disassemble the rebuilt object with `build/tools/dtk elf disasm` and diff the `.fn/.endfn` blocks directly with `python tools/prodg_dump.py diff`. On `zAttribSys`, that direct object diff corrected a stale assumption: the commonly revisited `search-first` late-loop variant is object-identical to the retained block-scoped floor in both wrapper symbols and only changes DWARF. Use the object-level symbol diff when you need the truth about wrapper-emitted code, not just helper `.s` output or status churn.
 
 ### Unk2SelectiveLoopBodyHooksAreRealButUnsafe
 
