@@ -1517,25 +1517,20 @@ void CarRenderConn::OnRender(eView *view, int reflection) {
             CameraAnchor *anchor = anchor_mover->GetAnchor();
 
             if (anchor != 0 && reinterpret_cast<const CameraAnchorPovMirror *>(anchor)->mPOVType == 1) {
-                const bMatrix4 *world_matrix = this->GetBodyMatrix();
+                bVector4 translated_offset;
 
-                if (world_matrix != 0) {
-                    bVector4 translated_offset;
-
-                    PSMTX44Copy(*reinterpret_cast<const Mtx44 *>(world_matrix), *reinterpret_cast<Mtx44 *>(&body_matrix));
-                    bVector4 offset = this->mModelOffset;
-                    eMulVector(&translated_offset, &body_matrix, &offset);
-                    body_matrix.v3.x -= translated_offset.x;
-                    body_matrix.v3.y -= translated_offset.y;
-                    body_matrix.v3.z -= translated_offset.z;
-                }
+                PSMTX44Copy(*reinterpret_cast<const Mtx44 *>(this->GetBodyMatrix()), *reinterpret_cast<Mtx44 *>(&body_matrix));
+                bVector4 offset = this->mModelOffset;
+                eMulVector(&translated_offset, &body_matrix, &offset);
+                body_matrix.v3.x -= translated_offset.x;
+                body_matrix.v3.y -= translated_offset.y;
+                body_matrix.v3.z -= translated_offset.z;
             }
         }
     }
 
     unsigned int extra_render_flags = 0;
     if (reflection != 0) {
-        render_info->RenderTextureHeadlights(view, &body_matrix, 0);
         extra_render_flags = 0x401;
         body_matrix.v2.x = -body_matrix.v2.x;
         body_matrix.v2.y = -body_matrix.v2.y;
