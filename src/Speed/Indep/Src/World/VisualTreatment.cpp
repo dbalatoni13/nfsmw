@@ -365,9 +365,10 @@ void IVisualTreatment::UpdateHeat(eView *view, float targetHeat, bool isBeingPur
     this->IsBeingPursued = isBeingPursued;
     this->CurrentTarget = targetHeat;
 
+    VisualLookEffect *uvesTransition = this->UvesTransition;
     float uves = 0.0f;
-    if (this->UvesTransition->IsActive()) {
-        uves = this->UvesTransition->UpdateActive(targetHeat);
+    if (uvesTransition->IsActive()) {
+        uves = uvesTransition->UpdateActive(targetHeat);
     }
 
     float defaultUves = 1.0f - uves;
@@ -380,21 +381,24 @@ void IVisualTreatment::UpdateHeat(eView *view, float targetHeat, bool isBeingPur
     this->BlendVisualLookAttribute(this->DetailMapCurve, defaultUves, uves, &Attrib::Gen::visuallook::DetailMapCurve);
     this->BlendVisualLookAttribute(this->DetailMapIntensity, defaultUves, uves, &Attrib::Gen::visuallook::DetailMapIntensity);
 
+    VisualLookEffect *uvesPulse = this->UvesPulse;
     float pulseBrightness = 0.0f;
-    if (this->UvesPulse->IsActive()) {
-        pulseBrightness = this->UvesPulse->UpdateActive(this->CurrentTarget);
+    if (uvesPulse->IsActive()) {
+        pulseBrightness = uvesPulse->UpdateActive(this->CurrentTarget);
     }
     this->PulseBrightness = pulseBrightness;
 
-    float cameraFlash = 0.0f;
-    if (this->CameraFlash->IsActive()) {
-        cameraFlash = this->CameraFlash->UpdateActive(this->CurrentTarget);
+    VisualLookEffect *cameraFlash = this->CameraFlash;
+    float cameraFlashValue = 0.0f;
+    if (cameraFlash->IsActive()) {
+        cameraFlashValue = cameraFlash->UpdateActive(this->CurrentTarget);
     }
-    this->PulseBrightness += cameraFlash;
+    this->PulseBrightness += cameraFlashValue;
 
+    VisualLookEffect *uvesRadialBlurEffect = this->UvesRadialBlur;
     float uvesRadialBlur = 0.0f;
-    if (this->UvesRadialBlur->IsActive()) {
-        uvesRadialBlur = this->UvesRadialBlur->UpdateActive(this->CurrentTarget);
+    if (uvesRadialBlurEffect->IsActive()) {
+        uvesRadialBlur = uvesRadialBlurEffect->UpdateActive(this->CurrentTarget);
     }
 
     VisualLookEffectTarget *pursuitBreaker = this->PursuitBreaker;
