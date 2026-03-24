@@ -300,8 +300,8 @@ void StuffSkyLayer(eView *view, SKY_LAYER layer) {
 
                     matrix->v3.z = z + scaleZ;
                     matrix->v0.x *= skyScale;
-                    matrix->v2.z *= skyScale;
                     matrix->v1.y *= skyScale;
+                    matrix->v2.z *= skyScale;
                     if (rotate) {
                         bMatrix4 rotation;
                         int angle = matAng_33578 + static_cast<int>(WorldTimeElapsed * lbl_8040B29C);
