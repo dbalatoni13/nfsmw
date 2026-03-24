@@ -137,7 +137,7 @@ bool FnDeltaQ::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask) {
     int floorDeltaIdx = floorKey & binLenModMask;
     int prevBinIdx = mPrevKey >> binLenPower;
     int prevDeltaIdx;
-    unsigned char *binData = GetBin(deltaQ, floorBinIdx);
+    unsigned char *binData = &mBins[floorBinIdx * mBinSize];
     DeltaQPhysical *floorPhys = GetPhysical(binData);
     unsigned char *boneIdxs = deltaQ->mBoneIdxs;
     bool preventReverse = floorKey < mPrevKey && !IsReverseDeltaSumEnabled();
@@ -225,7 +225,7 @@ bool FnDeltaQ::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask) {
 
     if (slerpReqd && floorKey < deltaQ->mNumKeys - 1) {
         int ceilBinIdx = ceilKey >> binLenPower;
-        DeltaQPhysical *ceilPhys = GetPhysical(GetBin(deltaQ, ceilBinIdx));
+        DeltaQPhysical *ceilPhys = GetPhysical(&mBins[ceilBinIdx * mBinSize]);
 
         if (ceilBinIdx != floorBinIdx) {
             for (int ibone = 0; ibone < deltaQ->mNumBones; ibone++) {
@@ -341,7 +341,7 @@ bool FnDeltaQ::EvalSQTMasked(float currTime, const BoneMask *boneMask, float *sq
     int floorDeltaIdx = floorKey & binLenModMask;
     int prevBinIdx = mPrevKey >> binLenPower;
     int prevDeltaIdx;
-    unsigned char *binData = GetBin(deltaQ, floorBinIdx);
+    unsigned char *binData = &mBins[floorBinIdx * mBinSize];
     DeltaQPhysical *floorPhys = GetPhysical(binData);
     unsigned char *boneIdxs = deltaQ->mBoneIdxs;
     if (mPrevKey == -1 || floorBinIdx != prevBinIdx || floorDeltaIdx == 0 ||
@@ -438,7 +438,7 @@ bool FnDeltaQ::EvalSQTMasked(float currTime, const BoneMask *boneMask, float *sq
 
     if (slerpReqd && floorKey < deltaQ->mNumKeys - 1) {
         int ceilBinIdx = ceilKey >> binLenPower;
-        DeltaQPhysical *ceilPhys = GetPhysical(GetBin(deltaQ, ceilBinIdx));
+        DeltaQPhysical *ceilPhys = GetPhysical(&mBins[ceilBinIdx * mBinSize]);
 
         if (ceilBinIdx != floorBinIdx) {
             for (int ibone = 0; ibone < deltaQ->mNumBones; ibone++) {
