@@ -1523,12 +1523,20 @@ void CarRenderConn::OnRender(eView *view, int reflection) {
         body_matrix.v2.z = -body_matrix.v2.z;
     }
 
-    bVector3 world_position(body_matrix.v3.x, body_matrix.v3.y, body_matrix.v3.z);
+    bVector3 world_position;
+    world_position.x = body_matrix.v3.x;
+    world_position.y = body_matrix.v3.y;
+    world_position.z = body_matrix.v3.z;
     body_matrix.v3.x = 0.0f;
     body_matrix.v3.y = 0.0f;
     body_matrix.v3.z = 0.0f;
 
-    if (this->mFlags & CF_ISPLAYER) {
+    bool is_player = true;
+    if (!(this->mFlags & CF_ISPLAYER)) {
+        is_player = false;
+    }
+
+    if (is_player) {
         if (NumTimesRenderTestPlayerCar != 0) {
             for (int i = 0; i < NumTimesRenderTestPlayerCar; i++) {
                 CARPART_LOD min_lod = render_info->mMinLodLevel;
