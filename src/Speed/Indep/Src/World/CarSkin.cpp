@@ -363,7 +363,7 @@ int CompositeSkin(SkinCompositeParams *composite_params) {
         unsigned int *semi_trans_colours;
         int semi_trans_pixels_buffer_size = 0x30000;
         int total_malloc_required = semi_trans_pixels_buffer_size;
-        int cur_semi_trans_pixel = 0;
+        int cur_semi_trans_pixel;
         int num_pixels;
         unsigned char *dest;
         unsigned char *dest_end;
@@ -371,6 +371,7 @@ int CompositeSkin(SkinCompositeParams *composite_params) {
         unsigned char *mask_src[1];
         int current_palette_base;
 
+        cur_semi_trans_pixel = 0;
         semi_trans_pixels = static_cast<SemiTransPixel *>(bMalloc(total_malloc_required, 0, 0, (GetVirtualMemoryPoolNumber() & 0xF) | 0x40));
         semi_trans_colours = static_cast<unsigned int *>(bMalloc(total_malloc_required, 0, 0, (GetVirtualMemoryPoolNumber() & 0xF) | 0x40));
         num_pixels = dest_width * dest_height;
