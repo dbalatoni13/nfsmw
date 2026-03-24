@@ -263,23 +263,34 @@ file+line count is stricter and mainly useful as a secondary hint, not as the ma
 When you need the exact ProDG compiler state for one unit, prefer this helper over
 reconstructing long `ngccc` / `cc1plus` command lines by hand. It recovers the real
 `ngccc.exe` invocation from `ninja -t commands`, derives the matching preprocess step,
-runs `cc1plus.exe -da`, and can extract or diff one function across dump sets.
+runs `cc1plus.exe -da`, and can extract, summarize, or diff one function across dump
+sets.
 
 ```sh
 python tools/prodg_dump.py command -u main/Speed/Indep/SourceLists/zAttribSys
 python tools/prodg_dump.py dump -u main/Speed/Indep/SourceLists/zAttribSys -o /tmp/zattrib_base
 python tools/prodg_dump.py extract /tmp/zattrib_base --stage lreg \
     -f 'VecHashMap<unsigned int,Attrib::Class,Attrib::Class::TablePolicy,false,16>::UpdateSearchLength'
+python tools/prodg_dump.py summary /tmp/zattrib_base --stage rtl \
+    -f 'VecHashMap<unsigned int,Attrib::Class,Attrib::Class::TablePolicy,false,16>::UpdateSearchLength'
 python tools/prodg_dump.py diff /tmp/zattrib_dumps /tmp/zattrib_dumps \
     --left-base-name base --right-base-name preinc --stages lreg,greg,rtl \
     -f 'VecHashMap<unsigned int,Attrib::Class,Attrib::Class::TablePolicy,false,16>::UpdateSearchLength'
+python tools/prodg_dump.py diff /tmp/zattrib_oldfloor_dump /tmp/zattrib_block_dump \
+    --exact --summary-only --stages rtl,greg,lreg \
+    -f 'unsigned int VecHashMap<unsigned int,Attrib::Class,Attrib::Class::TablePolicy,false,16>::UpdateSearchLength(unsigned int, unsigned int)'
 ```
 
 Use `extract --grep ... -C <n>` when you only want a few interesting lines inside a
-function block, such as stack-slot references or one pseudo register family. `diff`
-prints a unified diff for each requested stage, and for `lreg` it also summarizes
-register-preference and final hard-register assignment changes so allocator/regclass
-shifts stand out immediately.
+function block, such as stack-slot references or one pseudo register family. `summary`
+prints one function's user pseudos, hard-register refs, frame-slot traffic, and compare
+signatures for a given stage. `diff --summary-only` is the quickest way to compare two
+variants structurally without drowning in full unified diffs; it highlights changed
+frame-slot counts and compare operand/order signatures, while plain `diff` still prints
+the raw stage diff underneath. `diff --skip-missing` is useful when one side is a partial
+saved dump set that only contains some stages or functions. For `lreg`, `diff` also
+summarizes register-preference and final hard-register assignment changes so
+allocator/regclass shifts stand out immediately.
 
 When working with these tools, do not just work around recurring friction silently. If you
 notice a clear, safe workflow or tooling improvement that would make future decomp work

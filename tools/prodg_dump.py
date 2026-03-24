@@ -37,6 +37,19 @@ from _common import (
 FUNCTION_HEADER_RE = re.compile(r"^;; Function (.+)$")
 REGISTER_PREF_RE = re.compile(r"^Register (\d+) used .*; pref (.+)$")
 REGISTER_ASSIGN_RE = re.compile(r"^;; Register (\d+) in ([^.]+)\.$")
+USER_PSEUDO_RE = re.compile(
+    r"\(reg/(?P<flags>[a-z/]+):(?P<mode>[A-Za-z0-9_]+) (?P<num>\d+)(?: r(?P<hard>\d+))?\)"
+)
+HARD_REG_RE = re.compile(
+    r"\(reg(?:/[a-z/]+)?:(?P<mode>[A-Za-z0-9_]+) (?P<num>\d+) r(?P<hard>\d+)\)"
+)
+PLAIN_REG_RE = re.compile(r"\(reg:(?P<mode>[A-Za-z0-9_]+) (?P<num>\d+)\)")
+FRAME_SLOT_PLUS_RE = re.compile(
+    r"mem/f:[A-Za-z0-9_]+ \(\s*plus:[A-Za-z0-9_]+ \(\s*reg:SI (?P<base>\d+)\)\s*"
+    r"\(\s*const_int (?P<offset>-?\d+) \[[^]]+\]\)\s*\) 0\)",
+    re.MULTILINE,
+)
+FRAME_SLOT_DIRECT_RE = re.compile(r"mem/f:[A-Za-z0-9_]+ \(\s*reg:SI (?P<base>\d+)\) 0\)")
 DEFAULT_STAGES = ("rtl", "greg", "lreg")
 
 
@@ -59,6 +72,21 @@ class FunctionBlock:
     header: str
     start_line: int
     lines: List[str]
+
+
+@dataclass
+class SummaryStats:
+    count: int
+    first_line: int
+    last_line: int
+
+
+@dataclass
+class StageSummary:
+    pseudos: Dict[tuple[int, str, str], SummaryStats]
+    hard_regs: Dict[int, SummaryStats]
+    frame_slots: Dict[tuple[int, int], SummaryStats]
+    compares: Dict[tuple[str, str, str], SummaryStats]
 
 
 def print_section(title: str) -> None:
@@ -363,6 +391,267 @@ def parse_register_assignments(block: FunctionBlock) -> Dict[int, str]:
     return assignments
 
 
+def iter_block_entries(block: FunctionBlock) -> List[tuple[int, str]]:
+    entries: List[tuple[int, str]] = []
+    current: List[str] = []
+    current_start = block.start_line
+
+    for index, line in enumerate(block.lines):
+        if not line.strip():
+            if current:
+                entries.append((current_start, "\n".join(current)))
+                current = []
+            continue
+        if not current:
+            current_start = block.start_line + index
+        current.append(line)
+
+    if current:
+        entries.append((current_start, "\n".join(current)))
+    return entries
+
+
+def update_summary_stats(mapping: Dict, key, line: int) -> None:
+    stats = mapping.get(key)
+    if stats is None:
+        mapping[key] = SummaryStats(count=1, first_line=line, last_line=line)
+        return
+    stats.count += 1
+    stats.last_line = line
+
+
+def read_paren_expr(text: str, start_index: int) -> tuple[str, int]:
+    index = start_index
+    while index < len(text) and text[index].isspace():
+        index += 1
+    if index >= len(text) or text[index] != "(":
+        raise DumpToolError(f"Expected '(' while parsing compare expression: {text[start_index:]}")
+
+    depth = 0
+    end = index
+    while end < len(text):
+        char = text[end]
+        if char == "(":
+            depth += 1
+        elif char == ")":
+            depth -= 1
+            if depth == 0:
+                return text[index : end + 1], end + 1
+        end += 1
+    raise DumpToolError(f"Unbalanced compare expression: {text[start_index:]}")
+
+
+def simplify_compare_operand(expr: str) -> str:
+    expr = expr.strip()
+
+    hard_match = HARD_REG_RE.fullmatch(expr)
+    if hard_match:
+        flags_match = USER_PSEUDO_RE.fullmatch(expr)
+        if flags_match:
+            return (
+                f"reg/{flags_match.group('flags')}:{flags_match.group('mode')}"
+                f"#{flags_match.group('num')}/r{hard_match.group('hard')}"
+            )
+        return f"reg:{hard_match.group('mode')}#{hard_match.group('num')}/r{hard_match.group('hard')}"
+
+    pseudo_match = USER_PSEUDO_RE.fullmatch(expr)
+    if pseudo_match:
+        return (
+            f"reg/{pseudo_match.group('flags')}:{pseudo_match.group('mode')}"
+            f"#{pseudo_match.group('num')}"
+        )
+
+    plain_reg_match = PLAIN_REG_RE.fullmatch(expr)
+    if plain_reg_match:
+        return f"reg:{plain_reg_match.group('mode')}#{plain_reg_match.group('num')}"
+
+    const_match = re.fullmatch(r"\(const_int (-?\d+) \[[^]]+\]\)", expr)
+    if const_match:
+        return f"const:{const_match.group(1)}"
+
+    frame_plus_match = FRAME_SLOT_PLUS_RE.fullmatch(expr)
+    if frame_plus_match:
+        return (
+            f"frame:r{frame_plus_match.group('base')}"
+            f"{format_offset(int(frame_plus_match.group('offset')))}"
+        )
+
+    frame_direct_match = FRAME_SLOT_DIRECT_RE.fullmatch(expr)
+    if frame_direct_match:
+        return f"frame:r{frame_direct_match.group('base')}+0x0"
+
+    head_match = re.match(r"\(([A-Za-z0-9_/:+-]+)", expr)
+    if head_match:
+        return head_match.group(1)
+    return expr
+
+
+def parse_compare_signatures(entry_text: str) -> List[tuple[str, str, str]]:
+    flat = " ".join(entry_text.split())
+    signatures: List[tuple[str, str, str]] = []
+    search_from = 0
+    while True:
+        index = flat.find("compare:", search_from)
+        if index < 0:
+            return signatures
+        kind_start = index + len("compare:")
+        kind_end = kind_start
+        while kind_end < len(flat) and not flat[kind_end].isspace():
+            kind_end += 1
+        kind = flat[kind_start:kind_end]
+        left_expr, next_index = read_paren_expr(flat, kind_end)
+        right_expr, next_index = read_paren_expr(flat, next_index)
+        signatures.append(
+            (
+                kind,
+                simplify_compare_operand(left_expr),
+                simplify_compare_operand(right_expr),
+            )
+        )
+        search_from = next_index
+
+
+def summarize_block(block: FunctionBlock) -> StageSummary:
+    pseudos: Dict[tuple[int, str, str], SummaryStats] = {}
+    hard_regs: Dict[int, SummaryStats] = {}
+    frame_slots: Dict[tuple[int, int], SummaryStats] = {}
+    compares: Dict[tuple[str, str, str], SummaryStats] = {}
+
+    for start_line, entry_text in iter_block_entries(block):
+        for match in USER_PSEUDO_RE.finditer(entry_text):
+            key = (
+                int(match.group("num")),
+                match.group("flags"),
+                match.group("mode"),
+            )
+            update_summary_stats(pseudos, key, start_line)
+        for match in HARD_REG_RE.finditer(entry_text):
+            update_summary_stats(hard_regs, int(match.group("hard")), start_line)
+        for match in FRAME_SLOT_PLUS_RE.finditer(entry_text):
+            key = (int(match.group("base")), int(match.group("offset")))
+            update_summary_stats(frame_slots, key, start_line)
+        for match in FRAME_SLOT_DIRECT_RE.finditer(entry_text):
+            key = (int(match.group("base")), 0)
+            update_summary_stats(frame_slots, key, start_line)
+        for signature in parse_compare_signatures(entry_text):
+            update_summary_stats(compares, signature, start_line)
+
+    return StageSummary(
+        pseudos=pseudos,
+        hard_regs=hard_regs,
+        frame_slots=frame_slots,
+        compares=compares,
+    )
+
+
+def format_line_range(stats: SummaryStats) -> str:
+    if stats.first_line == stats.last_line:
+        return str(stats.first_line)
+    return f"{stats.first_line}-{stats.last_line}"
+
+
+def format_offset(offset: int) -> str:
+    sign = "-" if offset < 0 else "+"
+    return f"{sign}0x{abs(offset):X}"
+
+
+def print_stage_summary(block: FunctionBlock) -> None:
+    summary = summarize_block(block)
+    if not summary.pseudos and not summary.hard_regs and not summary.frame_slots and not summary.compares:
+        print("No summary data found.", flush=True)
+        return
+
+    if summary.pseudos:
+        print("User pseudos:", flush=True)
+        for reg_num, flags, mode in sorted(summary.pseudos):
+            stats = summary.pseudos[(reg_num, flags, mode)]
+            print(
+                f"  - r{reg_num} ({flags}:{mode}): {stats.count} refs "
+                f"[lines {format_line_range(stats)}]",
+                flush=True,
+            )
+    if summary.hard_regs:
+        print("Hard registers:", flush=True)
+        for reg_num in sorted(summary.hard_regs):
+            stats = summary.hard_regs[reg_num]
+            print(
+                f"  - r{reg_num}: {stats.count} refs [lines {format_line_range(stats)}]",
+                flush=True,
+            )
+    if summary.frame_slots:
+        print("Frame slots (mem/f):", flush=True)
+        for base, offset in sorted(summary.frame_slots):
+            stats = summary.frame_slots[(base, offset)]
+            print(
+                f"  - base r{base}{format_offset(offset)}: {stats.count} refs "
+                f"[lines {format_line_range(stats)}]",
+                flush=True,
+            )
+    if summary.compares:
+        print("Compare signatures:", flush=True)
+        for kind, left_operand, right_operand in sorted(summary.compares):
+            stats = summary.compares[(kind, left_operand, right_operand)]
+            print(
+                f"  - {kind}: {left_operand} vs {right_operand}: {stats.count} refs "
+                f"[lines {format_line_range(stats)}]",
+                flush=True,
+            )
+
+
+def print_summary_changes(left: FunctionBlock, right: FunctionBlock) -> None:
+    left_summary = summarize_block(left)
+    right_summary = summarize_block(right)
+
+    def changed_counts(left_map: Dict, right_map: Dict) -> List[tuple]:
+        return sorted(
+            (
+                key,
+                left_map.get(key).count if left_map.get(key) else 0,
+                right_map.get(key).count if right_map.get(key) else 0,
+            )
+            for key in set(left_map) | set(right_map)
+            if (left_map.get(key).count if left_map.get(key) else 0)
+            != (right_map.get(key).count if right_map.get(key) else 0)
+        )
+
+    pseudo_changes = changed_counts(left_summary.pseudos, right_summary.pseudos)
+    hard_changes = changed_counts(left_summary.hard_regs, right_summary.hard_regs)
+    frame_changes = changed_counts(left_summary.frame_slots, right_summary.frame_slots)
+    compare_changes = changed_counts(left_summary.compares, right_summary.compares)
+
+    if not pseudo_changes and not hard_changes and not frame_changes and not compare_changes:
+        return
+
+    print("Stage summary changes:", flush=True)
+    if pseudo_changes:
+        print("  User pseudos:", flush=True)
+        for (reg_num, flags, mode), left_count, right_count in pseudo_changes:
+            print(
+                f"    r{reg_num} ({flags}:{mode}): {left_count} -> {right_count}",
+                flush=True,
+            )
+    if hard_changes:
+        print("  Hard registers:", flush=True)
+        for reg_num, left_count, right_count in hard_changes:
+            print(f"    r{reg_num}: {left_count} -> {right_count}", flush=True)
+    if frame_changes:
+        print("  Frame slots:", flush=True)
+        for (base, offset), left_count, right_count in frame_changes:
+            print(
+                f"    base r{base}{format_offset(offset)}: {left_count} -> {right_count}",
+                flush=True,
+            )
+    if compare_changes:
+        print("  Compare signatures:", flush=True)
+        for (kind, left_operand, right_operand), left_count, right_count in compare_changes:
+            print(
+                f"    {kind}: {left_operand} vs {right_operand}: "
+                f"{left_count} -> {right_count}",
+                flush=True,
+            )
+    print(flush=True)
+
+
 def print_register_change_summary(left: FunctionBlock, right: FunctionBlock) -> None:
     left_prefs = parse_register_preferences(left)
     right_prefs = parse_register_preferences(right)
@@ -495,21 +784,45 @@ def command_extract(args: argparse.Namespace) -> None:
     print("\n".join(lines), flush=True)
 
 
+def command_summary(args: argparse.Namespace) -> None:
+    dump_path = resolve_stage_file(args.path, args.stage, args.base_name)
+    blocks = load_function_blocks(dump_path)
+    block = choose_block(blocks, args.function, exact=args.exact)
+
+    print_section(f"{dump_path.name}: {block.header}")
+    print_stage_summary(block)
+
+
 def command_diff(args: argparse.Namespace) -> None:
     stages = parse_stages(args.stages)
     for stage in stages:
         left_path = resolve_stage_file(args.left, stage, args.left_base_name)
         right_path = resolve_stage_file(args.right, stage, args.right_base_name)
-        left_block = choose_block(
-            load_function_blocks(left_path), args.function, exact=args.exact
-        )
-        right_block = choose_block(
-            load_function_blocks(right_path), args.function, exact=args.exact
-        )
+        try:
+            left_block = choose_block(
+                load_function_blocks(left_path), args.function, exact=args.exact
+            )
+            right_block = choose_block(
+                load_function_blocks(right_path), args.function, exact=args.exact
+            )
+        except DumpToolError as e:
+            if args.skip_missing:
+                print_section(f"{stage.upper()} diff: skipped")
+                print(f"{e}", flush=True)
+                print(f"Left:  {left_path}", flush=True)
+                print(f"Right: {right_path}", flush=True)
+                continue
+            raise DumpToolError(
+                f"{e}\nStage: {stage}\nLeft: {left_path}\nRight: {right_path}"
+            )
 
         print_section(f"{stage.upper()} diff: {left_block.header}")
         if stage == "lreg":
             print_register_change_summary(left_block, right_block)
+        if args.summary or args.summary_only:
+            print_summary_changes(left_block, right_block)
+        if args.summary_only:
+            continue
 
         diff_lines = list(
             difflib.unified_diff(
@@ -623,6 +936,36 @@ def build_parser() -> argparse.ArgumentParser:
     )
     extract.set_defaults(func=command_extract)
 
+    summary = subparsers.add_parser(
+        "summary",
+        help="Summarize one function's pseudos, hard regs, and frame-slot usage in a dump",
+    )
+    summary.add_argument(
+        "path",
+        help="dump file path or dump directory produced by this tool",
+    )
+    summary.add_argument(
+        "--stage",
+        default="rtl",
+        help="dump stage when PATH is a directory (default: rtl)",
+    )
+    summary.add_argument(
+        "--base-name",
+        help="base filename used to disambiguate PATH when it contains multiple dump sets",
+    )
+    summary.add_argument(
+        "-f",
+        "--function",
+        required=True,
+        help="function header query; exact or substring match",
+    )
+    summary.add_argument(
+        "--exact",
+        action="store_true",
+        help="require an exact function-header match",
+    )
+    summary.set_defaults(func=command_summary)
+
     diff = subparsers.add_parser(
         "diff",
         help="Diff one function across two dump files or dump directories",
@@ -659,6 +1002,21 @@ def build_parser() -> argparse.ArgumentParser:
         type=int,
         default=3,
         help="unified diff context lines (default: 3)",
+    )
+    diff.add_argument(
+        "--summary",
+        action="store_true",
+        help="print per-stage pseudo/hard-reg/frame-slot count changes before the diff",
+    )
+    diff.add_argument(
+        "--summary-only",
+        action="store_true",
+        help="print summary deltas only and skip the full unified diff text",
+    )
+    diff.add_argument(
+        "--skip-missing",
+        action="store_true",
+        help="skip stages where the requested function is missing instead of failing",
     )
     diff.set_defaults(func=command_diff)
 
