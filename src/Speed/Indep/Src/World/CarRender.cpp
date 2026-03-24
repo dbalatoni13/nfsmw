@@ -971,18 +971,36 @@ CarRenderInfo::CarRenderInfo(RideInfo *ride_info)
                 eModel *model = this->mCarPartModels[slot][0][lod].GetModel();
                 eModel *smooth_model = nullptr;
 
-                if (model != nullptr && (slot == CARSLOTID_BASE || slot == CARSLOTID_BODY || slot == CARSLOTID_LEFT_SIDE_MIRROR ||
-                                         slot == CARSLOTID_RIGHT_SIDE_MIRROR || slot == CARSLOTID_SPOILER ||
-                                         (slot >= CARSLOTID_ROOF && slot <= CARSLOTID_BRAKELIGHT))) {
-                    eModel *previous_model = nullptr;
+                if (model != nullptr) {
+                    bool use_model = false;
 
-                    if (lod > this->mMinLodLevel) {
-                        previous_model = this->mCarPartModels[slot][0][lod - 1].GetModel();
+                    if (slot == CARSLOTID_RIGHT_SIDE_MIRROR) {
+                        use_model = true;
+                    } else if (slot > CARSLOTID_RIGHT_SIDE_MIRROR) {
+                        if (slot == CARSLOTID_SPOILER || (slot >= CARSLOTID_ROOF && slot <= CARSLOTID_BRAKELIGHT)) {
+                            use_model = true;
+                        }
+                    } else if (slot == CARSLOTID_BODY) {
+                        use_model = true;
+                    } else if (slot < CARSLOTID_BODY) {
+                        if (slot == CARSLOTID_BASE) {
+                            use_model = true;
+                        }
+                    } else if (slot == CARSLOTID_LEFT_SIDE_MIRROR) {
+                        use_model = true;
                     }
 
-                    if (lod <= this->mMinLodLevel || previous_model == nullptr ||
-                        previous_model->GetNameHash() != model->GetNameHash()) {
-                        smooth_model = model;
+                    if (use_model) {
+                        eModel *previous_model = nullptr;
+
+                        if (lod > this->mMinLodLevel) {
+                            previous_model = this->mCarPartModels[slot][0][lod - 1].GetModel();
+                        }
+
+                        if (lod <= this->mMinLodLevel || previous_model == nullptr ||
+                            previous_model->GetNameHash() != model->GetNameHash()) {
+                            smooth_model = model;
+                        }
                     }
                 }
 
