@@ -1121,10 +1121,8 @@ void GetUsedCarTextureInfo(UsedCarTextureInfo *used_texture_info, RideInfo *ride
     unsigned int tread_n_namehash;
     unsigned int size_hash;
     unsigned int shape_hash;
+    unsigned int size_hashes[3];
     unsigned int shape_hashes[3];
-    unsigned int square_shape_hash;
-    unsigned int rect_shape_hash;
-    unsigned int wide_shape_hash;
 
     bMemSet(info, 0, sizeof(*info));
 
@@ -1341,12 +1339,12 @@ void GetUsedCarTextureInfo(UsedCarTextureInfo *used_texture_info, RideInfo *ride
 
     size_hash = bStringHash("SIZE");
     shape_hash = bStringHash("SHAPE");
-    square_shape_hash = bStringHash("SQUARE");
-    rect_shape_hash = bStringHash("RECT");
-    wide_shape_hash = bStringHash("WIDE");
-    shape_hashes[0] = square_shape_hash;
-    shape_hashes[1] = rect_shape_hash;
-    shape_hashes[2] = wide_shape_hash;
+    size_hashes[0] = bStringHash("SQUARE");
+    size_hashes[1] = bStringHash("RECT");
+    size_hashes[2] = bStringHash("WIDE");
+    shape_hashes[0] = size_hashes[0];
+    shape_hashes[1] = size_hashes[1];
+    shape_hashes[2] = size_hashes[2];
 
     for (int i = 0x46; i <= 0x4B; i++) {
         CarPart *decal_model_part = ride_info->GetPart(i);
