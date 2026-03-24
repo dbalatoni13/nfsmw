@@ -382,27 +382,31 @@ void DynamicLoader::Initialize(DynamicUserCallback pSearchFunction) {
         if (sheader->sh_type == SHT_STRTAB) {
             sheader->sh_vlink = h.sections[sheader->sh_link].sh_voffset;
             if (strcmp(kStrTabName, shstrtab + sheader->sh_name) == 0) {
-                char *stringEntry = reinterpret_cast<char *>(sheader->sh_voffset);
+                char *s = reinterpret_cast<char *>(sheader->sh_voffset);
                 int len = sheader->sh_size;
                 const char *TYPE_SEPARATOR = kNamespaceMarker;
-                char *t;
-                unsigned int nameLength;
+                int slen;
 
-                h.strtab = stringEntry;
+                h.strtab = s;
                 while (len > 0) {
-                    if (stringEntry[0] == '_' && stringEntry[1] == '_') {
-                        t = strstr(stringEntry + 2, TYPE_SEPARATOR);
+                    slen = strlen(s);
+                    if (s[0] == '_' && s[1] == '_') {
+                        char *t = strstr(s + 2, TYPE_SEPARATOR);
                         if (t) {
+                            char typebuf[128];
+                            char *type_separator = t + strlen(TYPE_SEPARATOR);
+                            unsigned int nameLength;
+
                             *t = 0;
-                            nameLength = strlen(t + 3);
-                            memmove(stringEntry + nameLength + 2, stringEntry + 2, strlen(stringEntry + 2) + 1);
-                            memmove(stringEntry, t + 3, nameLength + 1);
-                            stringEntry[nameLength + 1] = '\x7F';
+                            strcpy(typebuf, s + 2);
+                            nameLength = strlen(type_separator);
+                            memmove(s, type_separator, nameLength + 1);
+                            s[nameLength + 1] = '\x7F';
+                            strcpy(s + nameLength + 2, typebuf);
                         }
                     }
-                    nameLength = strlen(stringEntry) + 1;
-                    stringEntry += nameLength;
-                    len -= nameLength;
+                    s += slen + 1;
+                    len -= slen + 1;
                 }
             }
         } else if (sheader->sh_type == SHT_SYMTAB || sheader->sh_type == SHT_STRTAB) {
