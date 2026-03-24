@@ -391,9 +391,11 @@ void IVisualTreatment::UpdateHeat(eView *view, float targetHeat, bool isBeingPur
     this->PulseBrightness = pulseBrightness;
 
     VisualLookEffect *cameraFlash = this->CameraFlash;
-    float cameraFlashValue = 0.0f;
+    float cameraFlashValue;
     if (cameraFlash->IsActive()) {
         cameraFlashValue = cameraFlash->UpdateActive(currentTarget);
+    } else {
+        cameraFlashValue = 0.0f;
     }
     this->PulseBrightness += cameraFlashValue;
 
