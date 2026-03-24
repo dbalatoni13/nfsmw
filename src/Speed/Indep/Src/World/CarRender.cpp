@@ -920,9 +920,6 @@ CarRenderInfo::CarRenderInfo(RideInfo *ride_info)
     this->CreateCarLightFlares();
 
     {
-        bVector3 v_normal;
-        float tire_radius;
-
         this->TheCarPartCuller.InitPart(CULLABLE_CAR_PART_TIRE_FL, &tire_positions[0]);
         this->TheCarPartCuller.InitPart(CULLABLE_CAR_PART_TIRE_FR, &tire_positions[1]);
         this->TheCarPartCuller.InitPart(CULLABLE_CAR_PART_TIRE_RR, &tire_positions[2]);
@@ -946,10 +943,11 @@ CarRenderInfo::CarRenderInfo(RideInfo *ride_info)
 
         bVector3 v_front_diff = tire_positions[0] - tire_positions[1];
         bVector3 v_side_diff = tire_positions[1] - tire_positions[2];
+        bVector3 v_normal;
         bCross(&v_normal, &v_front_diff, &v_side_diff);
         bNormalize(&v_normal, &v_normal);
 
-        tire_radius = wheel_radius[0];
+        float tire_radius = wheel_radius[0];
         if (tire_radius < wheel_radius[1]) {
             tire_radius = wheel_radius[1];
         }
