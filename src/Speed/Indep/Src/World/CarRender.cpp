@@ -1304,7 +1304,7 @@ void CarRenderInfo::UpdateCarParts() {
                 if (model != 0 && model->GetNameHash() != 0) {
                     model->UnInit();
                     CarPartModelPool->Free(model);
-                    reinterpret_cast<CarPartModelLayout *>(&this->mCarPartModels[slot_id][model_number][lod])->mModel &= 1;
+                    this->mCarPartModels[slot_id][model_number][lod].SetModel(nullptr);
                 }
             }
         }
@@ -1338,18 +1338,15 @@ void CarRenderInfo::UpdateCarParts() {
                     continue;
                 }
 
-                CarPartModel *car_part_model = &this->mCarPartModels[slot_id][model_number][lod];
                 eModel *model = static_cast<eModel *>(CarPartModelPool->Malloc());
-                unsigned int &packed_model = reinterpret_cast<CarPartModelLayout *>(car_part_model)->mModel;
 
-                packed_model = reinterpret_cast<unsigned int>(model) | (packed_model & 1);
+                this->mCarPartModels[slot_id][model_number][lod].SetModel(model);
                 model->Init(model_name_hash);
 
-                bool is_solid = model->Solid != 0;
-                if (!is_solid) {
+                if (!model->HasSolid()) {
                     model->UnInit();
                     CarPartModelPool->Free(model);
-                    packed_model &= 1;
+                    this->mCarPartModels[slot_id][model_number][lod].SetModel(nullptr);
                     model = 0;
                 }
 
@@ -1438,19 +1435,17 @@ void CarRenderInfo::UpdateCarParts() {
             CarPartModel *front_wheel_part_model = &this->mCarPartModels[CARSLOTID_FRONT_WHEEL][model_number][lod];
             eModel *front_wheel_model = front_wheel_part_model->GetModel();
             CarPartModel *rear_wheel_part_model = &this->mCarPartModels[CARSLOTID_REAR_WHEEL][model_number][lod];
-            unsigned int &rear_wheel_packed_model = reinterpret_cast<CarPartModelLayout *>(rear_wheel_part_model)->mModel;
-            eModel *rear_wheel_model = reinterpret_cast<eModel *>(rear_wheel_packed_model & ~0x3);
+            eModel *rear_wheel_model = rear_wheel_part_model->GetModel();
 
             if (front_wheel_model != 0 && rear_wheel_model == 0) {
                 rear_wheel_model = static_cast<eModel *>(CarPartModelPool->Malloc());
-                rear_wheel_packed_model = reinterpret_cast<unsigned int>(rear_wheel_model) | (rear_wheel_packed_model & 1);
+                rear_wheel_part_model->SetModel(rear_wheel_model);
                 rear_wheel_model->Init(front_wheel_model->GetNameHash());
 
-                bool is_solid = rear_wheel_model->Solid != 0;
-                if (!is_solid) {
+                if (!rear_wheel_model->HasSolid()) {
                     rear_wheel_model->UnInit();
                     CarPartModelPool->Free(rear_wheel_model);
-                    rear_wheel_packed_model &= 1;
+                    rear_wheel_part_model->SetModel(nullptr);
                 } else {
                     rear_wheel_model->AttachReplacementTextureTable(this->MasterReplacementTextureTable, REPLACETEX_NUM, 0);
                 }
@@ -1458,20 +1453,18 @@ void CarRenderInfo::UpdateCarParts() {
 
             CarPartModel *front_brake_part_model = &this->mCarPartModels[CARSLOTID_FRONT_BRAKE][model_number][lod];
             CarPartModel *rear_brake_part_model = &this->mCarPartModels[CARSLOTID_REAR_BRAKE][model_number][lod];
-            unsigned int &rear_brake_packed_model = reinterpret_cast<CarPartModelLayout *>(rear_brake_part_model)->mModel;
             eModel *front_brake_model = front_brake_part_model->GetModel();
-            eModel *rear_brake_model = reinterpret_cast<eModel *>(rear_brake_packed_model & ~0x3);
+            eModel *rear_brake_model = rear_brake_part_model->GetModel();
 
             if (front_brake_model != 0 && rear_brake_model == 0) {
                 rear_brake_model = static_cast<eModel *>(CarPartModelPool->Malloc());
-                rear_brake_packed_model = reinterpret_cast<unsigned int>(rear_brake_model) | (rear_brake_packed_model & 1);
+                rear_brake_part_model->SetModel(rear_brake_model);
                 rear_brake_model->Init(front_brake_model->GetNameHash());
 
-                bool is_solid = rear_brake_model->Solid != 0;
-                if (!is_solid) {
+                if (!rear_brake_model->HasSolid()) {
                     rear_brake_model->UnInit();
                     CarPartModelPool->Free(rear_brake_model);
-                    rear_brake_packed_model &= 1;
+                    rear_brake_part_model->SetModel(nullptr);
                 } else {
                     rear_brake_model->AttachReplacementTextureTable(this->MasterReplacementTextureTable, REPLACETEX_NUM, 0);
                 }

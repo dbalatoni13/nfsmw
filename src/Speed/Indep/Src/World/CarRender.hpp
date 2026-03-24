@@ -224,7 +224,9 @@ class CarPartModel {
 
     void Clear() {}
 
-    int IsHidden() {}
+    int IsHidden() {
+        return this->mModel & 1;
+    }
 
     void Hide(int bHide) {
         mModel = (mModel & ~3) | (bHide ? 1 : 0);
@@ -235,7 +237,7 @@ class CarPartModel {
     }
 
     void SetModel(struct eModel *model) {
-        this->mModel = reinterpret_cast<unsigned int>(model);
+        this->mModel = reinterpret_cast<unsigned int>(model) | this->IsHidden();
     }
 
     bool IsLodMissing() const {}

@@ -56,6 +56,10 @@ struct eModel : public bTNode<eModel> {
     eSolid *GetSolid() {
         return Solid;
     }
+
+    int HasSolid() {
+        return this->Solid != 0;
+    }
 };
 
 class eSolidPlatInterface {
