@@ -675,10 +675,10 @@ void RideInfo::SetStockParts() {
             (static_cast<unsigned int>(car_slot_id - CARSLOTID_DECAL_FRONT_WINDOW_TEX0) > 0x2F)) {
             if (car_slot_id == CARSLOTID_HUD_BACKING_COLOUR) {
                 CarPart *hud_part = CarPartDB.NewGetCarPart(this->Type, car_slot_id, bStringHash("ORANGE"), 0, -1);
-                if (hud_part == 0) {
-                    this->SetUpgradePart(static_cast<CAR_SLOT_ID>(car_slot_id), 0);
-                } else {
+                if (hud_part != 0) {
                     this->SetPart(car_slot_id, hud_part, true);
+                } else {
+                    this->SetUpgradePart(static_cast<CAR_SLOT_ID>(car_slot_id), 0);
                 }
             } else if (car_slot_id == CARSLOTID_BASE_PAINT) {
                 CarTypeInfo *type_info = &CarTypeInfoArray[this->Type];
@@ -689,17 +689,17 @@ void RideInfo::SetStockParts() {
                 }
             } else if (car_slot_id == CARSLOTID_HUD_NEEDLE_COLOUR) {
                 CarPart *hud_part = CarPartDB.NewGetCarPart(this->Type, car_slot_id, bStringHash("ORANGE"), 0, -1);
-                if (hud_part == 0) {
-                    this->SetUpgradePart(static_cast<CAR_SLOT_ID>(car_slot_id), 0);
-                } else {
+                if (hud_part != 0) {
                     this->SetPart(car_slot_id, hud_part, true);
+                } else {
+                    this->SetUpgradePart(static_cast<CAR_SLOT_ID>(car_slot_id), 0);
                 }
             } else if (car_slot_id == CARSLOTID_HUD_CHARACTER_COLOUR) {
                 CarPart *hud_part = CarPartDB.NewGetCarPart(this->Type, car_slot_id, bStringHash("WHITE"), 0, -1);
-                if (hud_part == 0) {
-                    this->SetUpgradePart(static_cast<CAR_SLOT_ID>(car_slot_id), 0);
-                } else {
+                if (hud_part != 0) {
                     this->SetPart(car_slot_id, hud_part, true);
+                } else {
+                    this->SetUpgradePart(static_cast<CAR_SLOT_ID>(car_slot_id), 0);
                 }
             } else {
                 this->SetUpgradePart(static_cast<CAR_SLOT_ID>(car_slot_id), 0);
