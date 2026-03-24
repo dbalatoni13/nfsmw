@@ -1155,10 +1155,12 @@ void GetUsedCarTextureInfo(UsedCarTextureInfo *used_texture_info, RideInfo *ride
         info->ReplaceSpoilerHash = ride_info->GetSkinNameHash();
         info->ReplaceRoofScoopHash = ride_info->GetSkinNameHash();
     } else {
+        unsigned int mapped_skin_hash = info->MappedSkinHash;
+
         info->ReplaceSpinnerHash = 0;
-        info->ReplaceRoofScoopHash = info->MappedSkinHash;
-        info->ReplaceSkinHash = info->MappedSkinHash;
-        info->ReplaceSpoilerHash = info->MappedSkinHash;
+        info->ReplaceRoofScoopHash = mapped_skin_hash;
+        info->ReplaceSkinHash = mapped_skin_hash;
+        info->ReplaceSpoilerHash = mapped_skin_hash;
         info->ReplaceWheelHash = 0;
     }
 
@@ -1178,19 +1180,17 @@ void GetUsedCarTextureInfo(UsedCarTextureInfo *used_texture_info, RideInfo *ride
     }
 
     composite_wheel_hash = ride_info->GetCompositeWheelNameHash();
-    if (composite_wheel_hash == 0) {
-        composite_wheel_hash = info->ReplaceWheelHash;
-    }
     if (composite_wheel_hash != 0) {
         num_perm_textures += UsedCarTextureAddToTable(reinterpret_cast<unsigned int *>(info), num_perm_textures, max_perm_textures, composite_wheel_hash);
+    } else if (info->ReplaceWheelHash != 0) {
+        num_perm_textures += UsedCarTextureAddToTable(reinterpret_cast<unsigned int *>(info), num_perm_textures, max_perm_textures, info->ReplaceWheelHash);
     }
 
     composite_spinner_hash = ride_info->GetCompositeSpinnerNameHash();
-    if (composite_spinner_hash == 0) {
-        composite_spinner_hash = info->ReplaceSpinnerHash;
-    }
     if (composite_spinner_hash != 0) {
         num_perm_textures += UsedCarTextureAddToTable(reinterpret_cast<unsigned int *>(info), num_perm_textures, max_perm_textures, composite_spinner_hash);
+    } else if (info->ReplaceSpinnerHash != 0) {
+        num_perm_textures += UsedCarTextureAddToTable(reinterpret_cast<unsigned int *>(info), num_perm_textures, max_perm_textures, info->ReplaceSpinnerHash);
     }
 
     num_temp_textures = GetTempCarSkinTextures(info->TexturesToLoadTemp, 0, max_temp_textures, ride_info);
