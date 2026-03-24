@@ -46,6 +46,7 @@ struct ReferenceMirror {
 static void HandleEmitterGroupDelete(void *subscriber, EmitterGroup *) {
     VehicleRenderConn::Effect *effect = static_cast<VehicleRenderConn::Effect *>(subscriber);
     effect->mEmitterGroup = 0;
+    effect->mKey = 0;
 }
 
 UTL::Collections::Listable<VehicleRenderConn, 10>::List UTL::Collections::Listable<VehicleRenderConn, 10>::_mTable;
