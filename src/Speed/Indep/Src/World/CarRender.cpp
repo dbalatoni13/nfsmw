@@ -771,6 +771,8 @@ CarRenderInfo::CarRenderInfo(RideInfo *ride_info)
     this->CarTimebaseStart = bRandom(1.0f);
     this->mDeltaTime = 0.0f;
     this->mEmitterPositionsInitialized = false;
+    int is_traffic_car = CarTypeInfoArray[this->pRideInfo->Type].GetCarUsageType() == CAR_USAGE_TYPE_TRAFFIC;
+
     bMemSet(this->mCarPartModels, 0, sizeof(this->mCarPartModels));
     this->pCarTypeInfo = info;
     this->CarbonHood = 0;
@@ -778,8 +780,6 @@ CarRenderInfo::CarRenderInfo(RideInfo *ride_info)
     {
         CarRenderUsedCarTextureInfoLayout *used_texture_info =
             reinterpret_cast<CarRenderUsedCarTextureInfoLayout *>(&this->mUsedTextureInfos);
-        CarTypeInfo *car_type_info = info;
-        int is_traffic_car = car_type_info->GetCarUsageType() == CAR_USAGE_TYPE_TRAFFIC;
 
         this->MasterReplacementTextureTable[REPLACETEX_CARSKIN].SetOldNameHash(used_texture_info->MappedSkinHash);
         this->MasterReplacementTextureTable[REPLACETEX_CARSKINB].SetOldNameHash(used_texture_info->MappedSkinBHash);
