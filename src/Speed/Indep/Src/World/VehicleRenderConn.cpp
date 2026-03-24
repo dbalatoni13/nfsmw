@@ -51,7 +51,7 @@ void HandleEmitterGroupDelete(void *effect, EmitterGroup *grp) {
 UTL::Collections::Listable<VehicleRenderConn, 10>::List UTL::Collections::Listable<VehicleRenderConn, 10>::_mTable;
 
 int SkinSlotToMask(int slot) {
-    return 1 << ((slot - 1U) & 0x3F);
+    return 1 << (slot - 1);
 }
 
 VehicleRenderConn::Effect::Effect(const bMatrix4 *matrix) {
