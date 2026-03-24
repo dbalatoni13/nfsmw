@@ -94,7 +94,9 @@ class RawLinearChannel : public AnimMemoryMap {
         } else {
             int lastFrame = mNumFrames - 1;
 
-            if (frame < lastFrame) {
+            if (frame >= lastFrame) {
+                EvalFrame(lastFrame, output);
+            } else {
                 float t = frameTime - static_cast<float>(frame);
 
                 if (t != 0.0f && interp) {
@@ -102,8 +104,6 @@ class RawLinearChannel : public AnimMemoryMap {
                 } else {
                     EvalFrame(frame, output);
                 }
-            } else {
-                EvalFrame(lastFrame, output);
             }
         }
     }
