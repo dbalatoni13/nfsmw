@@ -524,7 +524,6 @@ int CompositeSkin(SkinCompositeParams *composite_params) {
             SemiTransPixel *pixel_list = semi_trans_pixels;
             int num_pixels = cur_semi_trans_pixel;
             unsigned char *input;
-            int p = 0;
 
             if (bLargestMalloc(0) < (num_pixels << 2)) {
                 num_pixels = 0;
@@ -532,7 +531,7 @@ int CompositeSkin(SkinCompositeParams *composite_params) {
 
             input = static_cast<unsigned char *>(bMalloc(num_pixels << 2, 0, 0, 0x40));
 
-            for (int i = 0; i < num_pixels; i++, p++) {
+            for (int i = 0, p = 0; i < num_pixels; i++, p++) {
                 unsigned int pixel_colour = semi_trans_colours[i];
 
                 input[p * 4] = static_cast<unsigned char>(pixel_colour);
