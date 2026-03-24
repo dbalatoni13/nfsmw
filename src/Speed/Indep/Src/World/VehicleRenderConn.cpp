@@ -464,68 +464,69 @@ void VehicleRenderConn::RenderAll(eView *view, int reflection) {
 }
 
 void VehicleRenderConn::RenderFlares(eView *view, int reflection, int renderFlareFlags) {
-    const UTL::Collections::Listable<VehicleRenderConn, 10>::List &loader_list = VehicleRenderConn::GetList();
-    UTL::Collections::Listable<VehicleRenderConn, 10>::List::const_iterator it = loader_list.begin();
-    UTL::Collections::Listable<VehicleRenderConn, 10>::List::const_iterator end = loader_list.end();
+    UTL::Collections::Listable<VehicleRenderConn, 10>::List::const_iterator it = VehicleRenderConn::GetList().begin();
+    UTL::Collections::Listable<VehicleRenderConn, 10>::List::const_iterator end = VehicleRenderConn::GetList().end();
 
     for (; it != end; ++it) {
         VehicleRenderConn *vehicle_render_conn = *it;
-        CarRenderInfo *render_info = vehicle_render_conn->mRenderInfo;
+        CarRenderInfo *car_render_info = vehicle_render_conn->GetRenderInfo();
 
-        if (vehicle_render_conn->CanRender() && render_info != 0) {
-            const ReferenceMirror *world_ref = reinterpret_cast<const ReferenceMirror *>(&vehicle_render_conn->mWorldRef);
+        if (vehicle_render_conn->CanRender() && car_render_info != 0) {
             bMatrix4 matrix;
             bVector3 position;
-            CameraMover *camera_mover = view->GetCameraMover();
+            CameraMover *mover = view->GetCameraMover();
 
             vehicle_render_conn->GetRenderMatrix(&matrix);
             position.x = matrix.v3.x;
             position.y = matrix.v3.y;
             position.z = matrix.v3.z;
 
-            if (camera_mover != 0 && !camera_mover->RenderCarPOV()) {
-                CameraAnchor *anchor = camera_mover->GetAnchor();
+            if (mover != 0 && !mover->RenderCarPOV()) {
+                CameraAnchor *anchor = mover->GetAnchor();
 
-                if (anchor != 0 && anchor->GetWorldID() == world_ref->mWorldID) {
+                if (anchor != 0 && anchor->GetWorldID() == vehicle_render_conn->GetWorldID()) {
                     continue;
                 }
             }
 
-            render_info->RenderFlaresOnCar(view, &position, &matrix, 0, reflection, renderFlareFlags);
+            car_render_info->RenderFlaresOnCar(view, &position, &matrix, 0, reflection, renderFlareFlags);
 
             if (reflection == 0) {
+                CarRenderInfo *info = vehicle_render_conn->GetRenderInfo();
+
                 if (view->GetID() == 1 || view->GetID() == 2) {
-                    if (render_info->matrixIndex < 0) {
-                        render_info->matrixIndex = 0;
+                    if (info->matrixIndex < 0) {
+                        info->matrixIndex = 0;
                     }
-                    render_info->matrixIndex++;
-                    if (render_info->matrixIndex > 2) {
-                        render_info->matrixIndex = 0;
+                    info->matrixIndex++;
+                    if (info->matrixIndex > 2) {
+                        info->matrixIndex = 0;
                     }
-                    bCopy(&render_info->LastFewMatrices[render_info->matrixIndex], &matrix);
-                    render_info->LastFewPositions[render_info->matrixIndex] = position;
+                    bCopy(&info->LastFewMatrices[info->matrixIndex], &matrix);
+                    info->LastFewPositions[info->matrixIndex] = position;
                 }
 
                 {
-                    const bVector3 *velocity = reinterpret_cast<const ReferenceMirror *>(&vehicle_render_conn->mWorldRef)->mVelocity;
-                    float speed_sq = velocity->y * velocity->y + velocity->x * velocity->x + velocity->z * velocity->z;
-                    float speed = bSqrt(speed_sq);
+                    float speed = bLength(vehicle_render_conn->GetVelocity());
 
-                    if (0.1f < speed && render_info->NOSstate != 0) {
+                    if (0.1f < speed && info->NOSstate != 0) {
                         for (int streak = 3; streak > 1; --streak) {
-                            int history_index = render_info->matrixIndex + streak;
+                            int history_index = info->matrixIndex + streak;
                             int next_index = (history_index + 1) % 3;
                             int current_index = (history_index + 2) % 3;
-                            bVector3 delta = render_info->LastFewPositions[current_index] - render_info->LastFewPositions[next_index];
+                            bVector3 delta = info->LastFewPositions[current_index] - info->LastFewPositions[next_index];
                             bVector3 flare_position(delta);
 
                             for (int div = 0; div < FlareDiv; div++) {
                                 float t = static_cast<float>(div + 1) / static_cast<float>(FlareDiv);
-                                bVector3 point(flare_position);
+                                bVector3 *point = static_cast<bVector3 *>(eFrameMalloc(sizeof(bVector3)));
 
-                                point *= t;
-                                point += render_info->LastFewPositions[next_index];
-                                render_info->RenderFlaresOnCar(view, &point, &render_info->LastFewMatrices[next_index], 8, 0, 2);
+                                if (point != 0) {
+                                    *point = flare_position;
+                                    *point *= t;
+                                    *point += info->LastFewPositions[next_index];
+                                    info->RenderFlaresOnCar(view, point, &info->LastFewMatrices[next_index], 8, 0, 2);
+                                }
                             }
                         }
                     }
