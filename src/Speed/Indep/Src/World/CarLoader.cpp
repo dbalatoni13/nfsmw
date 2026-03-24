@@ -1607,9 +1607,9 @@ int UnloaderCarInfo(bChunk *chunk) {
 }
 
 void CarLoader::SetLoadingMode(eLoadingMode mode, int two_player_flag) {
-    this->TwoPlayerFlag = two_player_flag;
     this->InFrontEndFlag = mode == MODE_FRONT_END;
     this->LoadingMode = mode;
+    this->TwoPlayerFlag = two_player_flag;
 }
 
 LoadedSolidPack *CarLoader::AllocateSolidPack(const char *filename) {
