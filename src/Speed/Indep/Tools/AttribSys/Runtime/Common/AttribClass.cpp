@@ -99,7 +99,7 @@ bool Class::AddCollection(Collection *c) {
     return mPrivates.mCollections.Add(c->GetKey(), c);
 }
 
-// NON_MATCHING: 98.7% - shared VecHashMap remove path still has ~21B of objdiff after the maxSearch > searchLen loop-header fix made DWARF exact
+// NON_MATCHING: 98.6% / 99.6% - best known floor uses the block-scoped late VecHashMap::UpdateSearchLength scan, but the shared searchLen local still lands in r6 instead of r7
 bool Class::RemoveCollection(Collection *c) {
     return mPrivates.mCollections.Remove(c->GetKey());
 }

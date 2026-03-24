@@ -249,11 +249,15 @@ template <typename KeyType, typename T, typename Policy, bool Unk2, unsigned int
         if (mTable[worstIndex].IsValid()) {
         }
 
-        unsigned int newMaxSearch = 0;
-        for (unsigned int searchLen = 1; maxSearch > searchLen; searchLen++) {
-            unsigned int index = Policy::WrapIndex(targetIndex + searchLen, mTableSize, 0);
-            if (Policy::KeyIndex(mTable[index].Key(), mTableSize, 0) == targetIndex) {
-                newMaxSearch = searchLen;
+        unsigned int newMaxSearch;
+        {
+            unsigned int searchLen = 1;
+            newMaxSearch = 0;
+            for (; maxSearch > searchLen; searchLen++) {
+                unsigned int index = Policy::WrapIndex(targetIndex + searchLen, mTableSize, 0);
+                if (Policy::KeyIndex(mTable[index].Key(), mTableSize, 0) == targetIndex) {
+                    newMaxSearch = searchLen;
+                }
             }
         }
 
