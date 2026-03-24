@@ -812,57 +812,55 @@ void EAXAemsManager::RemoveBankListing(int Index) {
 }
 
 void EAXAemsManager::UnloadSndData(int Index) {
-    if (Index < 0 || Index >= 0x30) {
+    if (static_cast<unsigned int>(Index) > 0x2F) {
         return;
+    }
+
+    while (AreResourceLoadsPending()) {
+        ServiceQueuedFiles();
+        g_pEAXSound->Update(0.0f);
     }
 
     m_pCurUNLOADSDLP = g_SndAssetList + Index;
-    char *entry = static_cast<char *>(static_cast<void *>(m_pCurUNLOADSDLP));
-    if (*static_cast<int *>(static_cast<void *>(entry + 0x3C)) == 0) {
+    if (!m_pCurUNLOADSDLP->bResolvedSync) {
         return;
     }
 
-    *static_cast<int *>(static_cast<void *>(entry + 0x38)) = 0;
-    *static_cast<int *>(static_cast<void *>(entry + 0x3C)) = 0;
-    int eDataType = *static_cast<int *>(static_cast<void *>(entry + 0x0));
-    if (eDataType < EAXSND_DT_GENERIC_DATA) {
+    m_pCurUNLOADSDLP->bResolvedAsync = false;
+    m_pCurUNLOADSDLP->bResolvedSync = false;
+    if (m_pCurUNLOADSDLP->AssetDescription.eDataType < EAXSND_DT_GENERIC_DATA) {
         RemoveAEMSBank();
     }
 
-    void *plocmem = *static_cast<void **>(static_cast<void *>(entry + 0x2C));
-    if (plocmem != nullptr) {
-        if (eDataType == EAXSND_DT_AEMS_MAINMEM) {
-            bFree(plocmem);
+    if (m_pCurUNLOADSDLP->plocmem != nullptr) {
+        if (m_pCurUNLOADSDLP->AssetDescription.eDataType == EAXSND_DT_AEMS_MAINMEM) {
+            bFree(m_pCurUNLOADSDLP->plocmem);
         } else {
-            gAudioMemoryManager.FreeMemory(plocmem);
+            gAudioMemoryManager.FreeMemory(m_pCurUNLOADSDLP->plocmem);
         }
-        *static_cast<void **>(static_cast<void *>(entry + 0x2C)) = nullptr;
+        m_pCurUNLOADSDLP->plocmem = nullptr;
     }
 
-    void *pmem = *static_cast<void **>(static_cast<void *>(entry + 0x28));
-    if (pmem != nullptr) {
-        if (eDataType == EAXSND_DT_AEMS_MAINMEM) {
-            bFree(pmem);
+    if (m_pCurUNLOADSDLP->pmem != nullptr) {
+        if (m_pCurUNLOADSDLP->AssetDescription.eDataType == EAXSND_DT_AEMS_MAINMEM) {
+            bFree(m_pCurUNLOADSDLP->pmem);
         } else {
-            gAudioMemoryManager.FreeMemory(pmem);
+            gAudioMemoryManager.FreeMemory(m_pCurUNLOADSDLP->pmem);
         }
-        *static_cast<void **>(static_cast<void *>(entry + 0x28)) = nullptr;
+        m_pCurUNLOADSDLP->pmem = nullptr;
     }
 
-    stBankSlot *bankSlot = *static_cast<stBankSlot **>(static_cast<void *>(entry + 0x24));
-    if (bankSlot != nullptr) {
-        bankSlot->pAssetParams = nullptr;
-        bankSlot->pLastAlloc = bankSlot->MAINmemLocation;
-        bMemSet(bankSlot->MAINmemLocation, '\0', bankSlot->MAINmemSize);
-        *static_cast<stBankSlot **>(static_cast<void *>(entry + 0x24)) = nullptr;
+    if (m_pCurUNLOADSDLP->mBankSlot != nullptr) {
+        m_pCurUNLOADSDLP->mBankSlot->pAssetParams = nullptr;
+        m_pCurUNLOADSDLP->mBankSlot->pLastAlloc = m_pCurUNLOADSDLP->mBankSlot->MAINmemLocation;
+        bMemSet(m_pCurUNLOADSDLP->mBankSlot->pLastAlloc, '\0', m_pCurUNLOADSDLP->mBankSlot->MAINmemSize);
+        m_pCurUNLOADSDLP->mBankSlot = nullptr;
     }
 
-    unsigned int **resStart = static_cast<unsigned int **>(static_cast<void *>(entry + 0x40));
-    unsigned int **resFinish = static_cast<unsigned int **>(static_cast<void *>(entry + 0x44));
-    while (*resStart != *resFinish) {
-        unsigned int *cur = *resFinish - 1;
-        *resFinish = cur;
-        gAudioMemoryManager.FreeMemory(reinterpret_cast<void *>(*cur));
+    while (!m_pCurUNLOADSDLP->resallocs.empty()) {
+        void *presalloc = reinterpret_cast<void *>(m_pCurUNLOADSDLP->resallocs.back());
+        m_pCurUNLOADSDLP->resallocs.pop_back();
+        gAudioMemoryManager.FreeMemory(presalloc);
     }
 
     RemoveBankListing(Index);
