@@ -1029,29 +1029,41 @@ skip_smooth_normal_model: {}
         this->LightMaterial_CarSkin = elGetLightMaterial(light_material_hash);
         this->LightMaterial_Carbon = elGetLightMaterial(bStringHash("CARBONFIBRE"));
 
-        CarPart *window_tint_part = ride_info->GetPart(CARSLOTID_WINDOW_TINT);
+        {
+            CarPart *window_tint_part = ride_info->GetPart(CARSLOTID_WINDOW_TINT);
+            unsigned int window_tint_material_hash = 0x471A1DCA;
 
-        light_material_hash = 0x471A1DCA;
-        if (window_tint_part != nullptr) {
-            light_material_hash = CarPart_GetAppliedAttributeUParam(window_tint_part, 0x6BA02C05, 0);
+            if (window_tint_part != nullptr) {
+                window_tint_material_hash = CarPart_GetAppliedAttributeUParam(window_tint_part, 0x6BA02C05, 0);
+            }
+
+            this->LightMaterial_WindowTint = elGetLightMaterial(window_tint_material_hash);
         }
 
-        this->LightMaterial_WindowTint = elGetLightMaterial(light_material_hash);
+        {
+            CarPart *paint_rim_part = ride_info->GetPart(CARSLOTID_PAINT_RIM);
+            CarPart *front_wheel_part = ride_info->GetPart(CARSLOTID_FRONT_WHEEL);
+            eLightMaterial *wheel_rim_material = nullptr;
+            unsigned int wheel_rim_material_hash = 0;
 
-        CarPart *paint_rim_part = ride_info->GetPart(CARSLOTID_PAINT_RIM);
-        CarPart *front_wheel_part = ride_info->GetPart(CARSLOTID_FRONT_WHEEL);
+            if (front_wheel_part == nullptr || (reinterpret_cast<unsigned char *>(front_wheel_part)[5] >> 5) == 0) {
+                paint_rim_part = nullptr;
+            }
 
-        light_material_hash = 0;
-        if (paint_rim_part != nullptr && front_wheel_part != nullptr &&
-            (reinterpret_cast<unsigned char *>(front_wheel_part)[5] >> 5) != 0) {
-            light_material_hash = CarPart_GetAppliedAttributeUParam(paint_rim_part, 0x6BA02C05, 0);
+            if (paint_rim_part != nullptr) {
+                wheel_rim_material_hash = CarPart_GetAppliedAttributeUParam(paint_rim_part, 0x6BA02C05, 0);
+            }
+
+            if (wheel_rim_material_hash != 0) {
+                wheel_rim_material = elGetLightMaterial(wheel_rim_material_hash);
+            }
+
+            this->LightMaterial_Caliper = nullptr;
+            this->LightMaterial_WheelRim = wheel_rim_material;
+            this->LightMaterial_Spoiler = nullptr;
+            this->LightMaterial_Roof = nullptr;
         }
 
-        this->LightMaterial_WheelRim = light_material_hash != 0 ? elGetLightMaterial(light_material_hash) : nullptr;
-
-        this->LightMaterial_Caliper = nullptr;
-        this->LightMaterial_Spoiler = nullptr;
-        this->LightMaterial_Roof = nullptr;
         this->LightMaterial_Spinner = nullptr;
     }
 
