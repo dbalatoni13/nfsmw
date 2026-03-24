@@ -1686,7 +1686,7 @@ void CarRenderInfo::UpdateDecalTextures(RideInfo *ride_info) {
             (void)size_hashes;
 
             for (int j = 0; j < 8; j++) {
-                CarPart *decal_texture_part = ride_info->GetPart(first_tex_part + j);
+                CarPart *decal_texture_part = ride_info->GetPart(j + first_tex_part);
 
                 if (decal_texture_part != 0) {
                     char buf[128];
