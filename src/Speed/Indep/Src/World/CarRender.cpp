@@ -146,6 +146,7 @@ extern float lbl_8040ADC0;
 extern float lbl_8040ADC4;
 extern float lbl_8040ADC8;
 extern float lbl_8040ADCC;
+extern float lbl_8040ADD0;
 extern float lbl_8040ADD4;
 extern float lbl_8040ADD8;
 extern float lbl_8040ADDC;
@@ -3102,7 +3103,7 @@ void CarRenderInfo::DrawAmbientShadow(eView *view, const bVector3 *position, flo
     max = this->AABBMax;
     in_front_end = IsGameFlowInFrontEnd();
 
-    scale = shadow_scale;
+    scale = lbl_8040ADD0;
     if (this->pRideInfo->Type == static_cast<CarType>(4)) {
         scale *= heliScale;
     }
