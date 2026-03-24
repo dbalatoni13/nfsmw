@@ -2145,11 +2145,9 @@ int CarRenderInfo::GetEmitterPositions(bSList<CarEmitterPosition> &markers_out, 
 
 void CarRenderInfo::InitEmitterPositions(bVector4 *tire_positions) {
     if (this->pCarTypeInfo != nullptr && !this->mEmitterPositionsInitialized) {
-        float zero = lbl_8040ADFC;
-        float tire_mid = lbl_8040AE00;
-        float engine_offset = lbl_8040AE04;
+        int fxpos;
 
-        for (int fxpos = 0; fxpos < NUM_CARFXPOS; fxpos++) {
+        for (fxpos = 0; fxpos < NUM_CARFXPOS; fxpos++) {
             int pos_count = 0;
             bool is_based_off_position_marker;
 
@@ -2164,87 +2162,89 @@ void CarRenderInfo::InitEmitterPositions(bVector4 *tire_positions) {
                 continue;
             }
 
-            CarEffectPosition efxpos = static_cast<CarEffectPosition>(fxpos);
-            bSList<CarEmitterPosition> &pos_list = this->EmitterPositionList[fxpos];
-            CarEmitterPosition *empos = nullptr;
-            switch (efxpos) {
-                case CARFXPOS_NONE:
-                    empos = new CarEmitterPosition(zero, zero, zero);
-                    pos_list.AddTail(empos);
-                    break;
-                case CARFXPOS_FRONT_TIRES:
-                    {
-                        bVector4 *fl = tire_positions;
-                        bVector4 *fr = tire_positions + 1;
-                        bVector4 avg = *fl + *fr;
-
-                        avg *= tire_mid;
-                        empos = new CarEmitterPosition(avg.x, avg.y, avg.z);
+            {
+                CarEffectPosition efxpos = static_cast<CarEffectPosition>(fxpos);
+                bSList<CarEmitterPosition> &pos_list = this->EmitterPositionList[fxpos];
+                CarEmitterPosition *empos = nullptr;
+                switch (efxpos) {
+                    case CARFXPOS_NONE:
+                        empos = new CarEmitterPosition(0.0f, 0.0f, 0.0f);
                         pos_list.AddTail(empos);
-                    }
-                    break;
-                case CARFXPOS_REAR_TIRES:
-                    {
-                        bVector4 *rr = tire_positions + 2;
-                        bVector4 *rl = tire_positions + 3;
-                        bVector4 avg = *rr + *rl;
+                        break;
+                    case CARFXPOS_FRONT_TIRES:
+                        {
+                            bVector4 *fl = tire_positions;
+                            bVector4 *fr = tire_positions + 1;
+                            bVector4 avg = *fl + *fr;
 
-                        avg *= tire_mid;
-                        empos = new CarEmitterPosition(avg.x, avg.y, avg.z);
-                        pos_list.AddTail(empos);
-                    }
-                    break;
-                case CARFXPOS_LEFT_TIRES:
-                    {
-                        bVector4 *fl = tire_positions;
-                        bVector4 *rl = tire_positions + 3;
-                        bVector4 avg = *fl + *rl;
+                            avg *= 0.5f;
+                            empos = new CarEmitterPosition(avg.x, avg.y, avg.z);
+                            pos_list.AddTail(empos);
+                        }
+                        break;
+                    case CARFXPOS_REAR_TIRES:
+                        {
+                            bVector4 *rr = tire_positions + 2;
+                            bVector4 *rl = tire_positions + 3;
+                            bVector4 avg = *rr + *rl;
 
-                        avg *= tire_mid;
-                        empos = new CarEmitterPosition(avg.x, avg.y, avg.z);
-                        pos_list.AddTail(empos);
-                    }
-                    break;
-                case CARFXPOS_RIGHT_TIRES:
-                    {
-                        bVector4 *fr = tire_positions + 1;
-                        bVector4 *rr = tire_positions + 2;
-                        bVector4 avg = *fr + *rr;
+                            avg *= 0.5f;
+                            empos = new CarEmitterPosition(avg.x, avg.y, avg.z);
+                            pos_list.AddTail(empos);
+                        }
+                        break;
+                    case CARFXPOS_LEFT_TIRES:
+                        {
+                            bVector4 *fl = tire_positions;
+                            bVector4 *rl = tire_positions + 3;
+                            bVector4 avg = *fl + *rl;
 
-                        avg *= tire_mid;
-                        empos = new CarEmitterPosition(avg.x, avg.y, avg.z);
-                        pos_list.AddTail(empos);
-                    }
-                    break;
-                case CARFXPOS_TIRE_FL:
-                    empos = new CarEmitterPosition(tire_positions->x, tire_positions->y, tire_positions->z);
-                    pos_list.AddTail(empos);
-                    break;
-                case CARFXPOS_TIRE_FR:
-                    empos = new CarEmitterPosition(tire_positions[1].x, tire_positions[1].y, tire_positions[1].z);
-                    pos_list.AddTail(empos);
-                    break;
-                case CARFXPOS_TIRE_RR:
-                    empos = new CarEmitterPosition(tire_positions[2].x, tire_positions[2].y, tire_positions[2].z);
-                    pos_list.AddTail(empos);
-                    break;
-                case CARFXPOS_TIRE_RL:
-                    empos = new CarEmitterPosition(tire_positions[3].x, tire_positions[3].y, tire_positions[3].z);
-                    pos_list.AddTail(empos);
-                    break;
-                case CARFXPOS_ENGINE:
-                    {
-                        bVector4 *fl = tire_positions;
-                        bVector4 *fr = tire_positions + 1;
-                        bVector4 avg = *fl + *fr;
+                            avg *= 0.5f;
+                            empos = new CarEmitterPosition(avg.x, avg.y, avg.z);
+                            pos_list.AddTail(empos);
+                        }
+                        break;
+                    case CARFXPOS_RIGHT_TIRES:
+                        {
+                            bVector4 *fr = tire_positions + 1;
+                            bVector4 *rr = tire_positions + 2;
+                            bVector4 avg = *fr + *rr;
 
-                        avg *= tire_mid;
-                        bVector4 diff;
-                        bSub(&diff, fl, fr);
-                        empos = new CarEmitterPosition(avg.x, avg.y, avg.z + diff.y * engine_offset);
+                            avg *= 0.5f;
+                            empos = new CarEmitterPosition(avg.x, avg.y, avg.z);
+                            pos_list.AddTail(empos);
+                        }
+                        break;
+                    case CARFXPOS_TIRE_FL:
+                        empos = new CarEmitterPosition(tire_positions->x, tire_positions->y, tire_positions->z);
                         pos_list.AddTail(empos);
-                    }
-                    break;
+                        break;
+                    case CARFXPOS_TIRE_FR:
+                        empos = new CarEmitterPosition(tire_positions[1].x, tire_positions[1].y, tire_positions[1].z);
+                        pos_list.AddTail(empos);
+                        break;
+                    case CARFXPOS_TIRE_RR:
+                        empos = new CarEmitterPosition(tire_positions[2].x, tire_positions[2].y, tire_positions[2].z);
+                        pos_list.AddTail(empos);
+                        break;
+                    case CARFXPOS_TIRE_RL:
+                        empos = new CarEmitterPosition(tire_positions[3].x, tire_positions[3].y, tire_positions[3].z);
+                        pos_list.AddTail(empos);
+                        break;
+                    case CARFXPOS_ENGINE:
+                        {
+                            bVector4 *fl = tire_positions;
+                            bVector4 *fr = tire_positions + 1;
+                            bVector4 avg = *fl + *fr;
+
+                            avg *= 0.5f;
+                            bVector4 diff;
+                            bSub(&diff, fl, fr);
+                            empos = new CarEmitterPosition(avg.x, avg.y, avg.z + diff.y * 0.2f);
+                            pos_list.AddTail(empos);
+                        }
+                        break;
+                }
             }
         }
 
