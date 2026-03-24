@@ -302,6 +302,10 @@ class RideInfo {
         Init(CARTYPE_NONE, CarRenderUsage_Player, 0, 0);
     }
 
+    void SetCarLoaderHandle(int car_loader_handle) {
+        this->mMyCarLoaderHandle = car_loader_handle;
+    }
+
     CARPART_LOD GetMinLodLevel() const {
         return this->mMinLodLevel;
     }

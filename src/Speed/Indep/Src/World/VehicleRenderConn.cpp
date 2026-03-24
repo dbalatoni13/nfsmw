@@ -410,10 +410,9 @@ void VehicleRenderConn::Update(float) {
 }
 
 void VehicleRenderConn::SetupLoading(bool commit) {
-    RideInfoLoaderMirror *ride_info = reinterpret_cast<RideInfoLoaderMirror *>(this->mRideInfo);
-
-    ride_info->mMyCarLoaderHandle = CarLoader_Load(&TheCarLoader, this->mRideInfo);
-    ride_info->InstanceIndex = 0;
+    int car_loader_handle = CarLoader_Load(&TheCarLoader, this->mRideInfo);
+    this->mRideInfo->SetCarLoaderHandle(car_loader_handle);
+    reinterpret_cast<RideInfoLoaderMirror *>(this->mRideInfo)->InstanceIndex = 0;
 
     if (commit) {
         new ECommitRenderAssets();
