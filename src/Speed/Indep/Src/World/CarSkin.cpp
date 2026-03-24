@@ -633,7 +633,7 @@ int CompositeSkin(RideInfo *ride_info) {
     blue = base_paint_part->GetAppliedAttributeIParam(bStringHash("BLUE"), 0);
     gloss = base_paint_part->GetAppliedAttributeIParam(bStringHash("GLOSS"), 0);
 
-    base_paint_colour = red | (green << 8) | (blue << 16) | (gloss << 24);
+    base_paint_colour = (gloss << 24) | (blue << 16) | (green << 8) | red;
 
     for (int i = 0; i < 4; i++) {
         swatch_colours[i] = base_paint_colour;
@@ -711,10 +711,8 @@ int CompositeSkin(RideInfo *ride_info) {
                                                 int remap_gloss =
                                                     colour_part->GetAppliedAttributeIParam(bStringHash("GLOSS"), 0);
 
-                                                remap_colour |= remap_green << 8;
-                                                remap_colour |= remap_blue << 16;
-                                                remap_colour |= remap_gloss << 24;
-                                                info->m_RemapColours[j] = remap_colour;
+                                                info->m_RemapColours[j] =
+                                                    (remap_gloss << 24) | (remap_blue << 16) | (remap_green << 8) | remap_colour;
                                             } else {
                                                 info->m_RemapColours[j] = 0xFFu << (j << 3);
                                             }
