@@ -358,7 +358,7 @@ void IVisualTreatment::UpdateHeat(eView *view, float targetHeat, bool isBeingPur
         this->UvesTransition->StartTime = 0.0f;
     }
 
-    if (((this->CurrentTarget < targetHeat && this->CurrentTarget != -1.0f)) || (this->IsBeingPursued == 0 && isBeingPursued)) {
+    if (((targetHeat > this->CurrentTarget && this->CurrentTarget != -1.0f)) || (this->IsBeingPursued == 0 && isBeingPursued)) {
         this->TriggerUves();
     }
 
@@ -380,10 +380,11 @@ void IVisualTreatment::UpdateHeat(eView *view, float targetHeat, bool isBeingPur
     this->BlendVisualLookAttribute(this->DetailMapCurve, defaultUves, uves, &Attrib::Gen::visuallook::DetailMapCurve);
     this->BlendVisualLookAttribute(this->DetailMapIntensity, defaultUves, uves, &Attrib::Gen::visuallook::DetailMapIntensity);
 
-    this->PulseBrightness = 0.0f;
+    float pulseBrightness = 0.0f;
     if (this->UvesPulse->IsActive()) {
-        this->PulseBrightness = this->UvesPulse->UpdateActive(this->CurrentTarget);
+        pulseBrightness = this->UvesPulse->UpdateActive(this->CurrentTarget);
     }
+    this->PulseBrightness = pulseBrightness;
 
     float cameraFlash = 0.0f;
     if (this->CameraFlash->IsActive()) {
@@ -403,7 +404,7 @@ void IVisualTreatment::UpdateHeat(eView *view, float targetHeat, bool isBeingPur
         if (elapsed <= length) {
             if (elapsed >= 0.0f) {
                 float normalized = elapsed / length;
-                if (pursuitBreaker->Target < pursuitBreaker->Current) {
+                if (pursuitBreaker->Current > pursuitBreaker->Target) {
                     normalized = 1.0f - normalized;
                 }
                 pursuitBreaker->Current =
@@ -423,7 +424,7 @@ void IVisualTreatment::UpdateHeat(eView *view, float targetHeat, bool isBeingPur
         if (elapsed <= length) {
             if (elapsed >= 0.0f) {
                 float normalized = elapsed / length;
-                if (nosRadialBlur->Target < nosRadialBlur->Current) {
+                if (nosRadialBlur->Current > nosRadialBlur->Target) {
                     normalized = 1.0f - normalized;
                 }
                 nosRadialBlur->Current =
