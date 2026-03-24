@@ -1292,8 +1292,7 @@ int elCloneLightContext(eDynamicLightContext *light_context, bMatrix4 *local_wor
                         eDynamicLightContext *old_context);
 
 void CarRenderInfo::UpdateCarParts() {
-    bVector3 bbox_min;
-    bVector3 bbox_max;
+    ProfileNode profile_node("UpdateCarParts", 0);
 
     bInitializeBoundingBox(&this->AABBMin, &this->AABBMax);
 
@@ -1329,16 +1328,8 @@ void CarRenderInfo::UpdateCarParts() {
                         slot_id,
                         &special_minimum,
                         &special_maximum,
-                        TheGameFlowManager.GetState() == GAMEFLOW_STATE_IN_FRONTEND)) {
-                    CARPART_LOD clamped_lod = special_minimum;
-
-                    if (special_minimum < model_lod) {
-                        clamped_lod = model_lod;
-                    }
-                    if (special_maximum < clamped_lod) {
-                        clamped_lod = special_maximum;
-                    }
-                    model_lod = clamped_lod;
+                        IsGameFlowInFrontEnd())) {
+                    model_lod = static_cast<CARPART_LOD>(bClamp(model_lod, special_minimum, special_maximum));
                 }
 
                 unsigned int model_name_hash = CarPart_GetModelNameHash(car_part, model_number, model_lod);
@@ -1430,6 +1421,9 @@ void CarRenderInfo::UpdateCarParts() {
             model = this->mCarPartModels[slot_id][model_number][this->mMinLodLevel].GetModel();
 
             if (model != 0) {
+                bVector3 bbox_min;
+                bVector3 bbox_max;
+
                 model->GetBoundingBox(&bbox_min, &bbox_max);
                 bExpandBoundingBox(&this->AABBMin, &this->AABBMax, &bbox_min, &bbox_max);
             }
@@ -1489,6 +1483,8 @@ void CarRenderInfo::UpdateCarParts() {
     eModel *rear_wheel_model = this->mCarPartModels[CARSLOTID_REAR_WHEEL][0][this->mMinLodLevel].GetModel();
 
     if (front_wheel_model != 0) {
+        bVector3 bbox_min;
+        bVector3 bbox_max;
         float wheel_width;
         float wheel_radius;
 
@@ -1507,6 +1503,8 @@ void CarRenderInfo::UpdateCarParts() {
     }
 
     if (rear_wheel_model != 0) {
+        bVector3 bbox_min;
+        bVector3 bbox_max;
         float wheel_width;
         float wheel_radius;
 
