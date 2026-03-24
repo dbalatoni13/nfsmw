@@ -239,9 +239,9 @@ void TireState::Effect::FreeUpFX() {
     }
 
     EmitterGroup *group = 0;
-    this->mZeroParticleFrameCount = 0;
-    this->mNeedsLazyInit = true;
     this->mGroup = group;
+    this->mNeedsLazyInit = true;
+    this->mZeroParticleFrameCount = 0;
 }
 
 void TireState::Effect::LazyInit() {
