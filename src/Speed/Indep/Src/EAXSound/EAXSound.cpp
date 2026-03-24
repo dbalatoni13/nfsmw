@@ -1948,11 +1948,11 @@ void EAXSound::ReStartRace(bool bIs321) {
 
     SetSoundControlState(true, SNDSTATE_STOP_MUSIC, "RestartRace");
 
-    for (int n = 0; n < 4; n++) {
-        if (m_pStreamManager->GetStreamChannel(n) != nullptr) {
-            m_pStreamManager->GetStreamChannel(n)->Stop();
-            m_pStreamManager->GetStreamChannel(n)->PurgeStream();
-            m_pStreamManager->GetStreamChannel(n)->Resume();
+    for (int s = 0; s < 4; s++) {
+        if (m_pStreamManager->GetStreamChannel(s) != nullptr) {
+            m_pStreamManager->GetStreamChannel(s)->Stop();
+            m_pStreamManager->GetStreamChannel(s)->PurgeStream();
+            m_pStreamManager->GetStreamChannel(s)->Resume();
         }
     }
 
@@ -1961,11 +1961,13 @@ void EAXSound::ReStartRace(bool bIs321) {
         m_pCmnSnd = nullptr;
     }
 
-    for (int s = 0; s < 13; s++) {
-        if (s == 1) {
+    for (int n = 0; n < 13; n++) {
+        if (n != 1) {
+            if (m_pStateMgr[n] != nullptr) {
+                m_pStateMgr[n]->ExitWorld();
+            }
+        } else {
             m_pStateMgr[1]->DisconnectMixMap();
-        } else if (m_pStateMgr[s] != nullptr) {
-            m_pStateMgr[s]->ExitWorld();
         }
     }
 

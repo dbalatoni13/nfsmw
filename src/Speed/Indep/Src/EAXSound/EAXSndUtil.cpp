@@ -44,10 +44,10 @@ int cPathLine::AddStage(float _Start, float _Finish, int _Length, eCURVETYPE _Cu
         Length[num_stages] = 0.01f;
     }
 
-    IsLinked[num_stages] = 0;
     Finish[num_stages] = _Finish;
     Start[num_stages] = _Start;
     CurveTypes[num_stages] = _Curve;
+    IsLinked[num_stages] = 0;
     *(int *)&bComplete = 0;
 
     if (num_stages == 0) {

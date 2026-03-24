@@ -929,40 +929,47 @@ void EAXAemsManager::DataLoadCB(int param, int error_status) {
     (void)error_status;
     int Result;
     int nhandle;
+    asm volatile("" : "+m"(Result), "+m"(nhandle));
     StartBankLoadTicks = bGetTicker();
     gAEMSMgr.m_pCurLoadSDLP = reinterpret_cast<stSndDataLoadParams *>(param);
     gAEMSMgr.m_pCurLoadSDLP->t_load = WorldTimer;
     eSNDDATATYPE eDataType = gAEMSMgr.m_pCurLoadSDLP->AssetDescription.eDataType;
 
-    if (eDataType != EAXSND_DT_AEMS_ASYNCSPU) {
-        if (eDataType <= EAXSND_DT_AEMS_SYNCSPU) {
-            if (eDataType >= EAXSND_DT_AEMS_AUDIOMEM) {
-                AddAemsBank();
-                gAEMSMgr.ResolveCurrentDataMemory();
-                *reinterpret_cast<int *>(&gAEMSMgr.m_pCurLoadSDLP->bResolvedAsync) = 1;
-                *reinterpret_cast<int *>(&gAEMSMgr.m_pCurLoadSDLP->bResolvedSync) = 1;
-            }
-        } else if (eDataType == EAXSND_DT_AEMS_ASYNCSPUMEM) {
-            *reinterpret_cast<int *>(&gAEMSMgr.m_IsWaitingForFileCB) = 0;
-            if (*reinterpret_cast<int *>(&gAEMSMgr.m_bBulkLoad) != 0) {
-                gAEMSMgr.m_pCurLoadSDLP = nullptr;
-                gAEMSMgr.m_ItemsPendingAsyncResolve++;
-                goto LoadDone;
-            }
+    switch (eDataType) {
+    case EAXSND_DT_AEMS_AUDIOMEM:
+    case EAXSND_DT_AEMS_MAINMEM:
+    case EAXSND_DT_AEMS_SYNCSPU:
+        AddAemsBank();
+        gAEMSMgr.ResolveCurrentDataMemory();
+        *reinterpret_cast<int *>(&gAEMSMgr.m_pCurLoadSDLP->bResolvedAsync) = 1;
+        *reinterpret_cast<int *>(&gAEMSMgr.m_pCurLoadSDLP->bResolvedSync) = 1;
+        break;
+    case EAXSND_DT_AEMS_ASYNCSPU:
+        break;
+    case EAXSND_DT_AEMS_ASYNCSPUMEM:
+        *reinterpret_cast<int *>(&gAEMSMgr.m_IsWaitingForFileCB) = 0;
+        if (*reinterpret_cast<int *>(&gAEMSMgr.m_bBulkLoad) != 0) {
+            gAEMSMgr.m_pCurLoadSDLP = nullptr;
+            gAEMSMgr.m_ItemsPendingAsyncResolve++;
+            goto LoadDone;
+        }
 
+        {
             stBankSlot *pBankSlot = gAEMSMgr.m_pCurLoadSDLP->mBankSlot;
             if (pBankSlot != nullptr) {
                 SNDmemlimits(pBankSlot->BANKmemLocation, pBankSlot->BANKmemLocation + pBankSlot->BANKMemSize);
             } else {
                 SNDmemlimits(-1, gAEMSMgr.m_SPUMainAllocsEnd);
             }
-
-            gAEMSMgr.m_pCurLoadSDLP->Handle = SNDAEMS_asyncloadmodulebankmem(
-                gAEMSMgr.m_pCurLoadSDLP->pmem, nullptr, 0, AsyncResidentAllocCB);
-        } else if (eDataType == EAXSND_DT_GENERIC_DATA) {
-            *reinterpret_cast<int *>(&gAEMSMgr.m_pCurLoadSDLP->bResolvedAsync) = 1;
-            *reinterpret_cast<int *>(&gAEMSMgr.m_pCurLoadSDLP->bResolvedSync) = 1;
         }
+
+        gAEMSMgr.m_pCurLoadSDLP->Handle = SNDAEMS_asyncloadmodulebankmem(
+            gAEMSMgr.m_pCurLoadSDLP->pmem, nullptr, 0, AsyncResidentAllocCB);
+        break;
+    case EAXSND_DT_GENERIC_DATA:
+        *reinterpret_cast<int *>(&gAEMSMgr.m_pCurLoadSDLP->bResolvedAsync) = 1;
+        *reinterpret_cast<int *>(&gAEMSMgr.m_pCurLoadSDLP->bResolvedSync) = 1;
+        break;
     }
 
 LoadDone:
