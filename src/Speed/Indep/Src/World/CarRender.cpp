@@ -2394,15 +2394,57 @@ void CarRenderInfo::CreateCarLightFlares() {
             }
 
             while ((position_marker = model->GetPostionMarker(position_marker)) != 0) {
-                int flare_type =
-                    GetCarLightFlareType(position_marker->NameHash, slot_model_index, front_marker_slot, rear_marker_slot);
+                unsigned int name_hash = position_marker->NameHash;
+                int flare_type = -1;
+
+                switch (name_hash) {
+                    case 0xD09091C6:
+                    case 0x9DB90133:
+                    case 0x7A5BCF69:
+                        flare_type = 0;
+                        break;
+                    case 0x31A66786:
+                    case 0xA2A2FC7C:
+                    case 0xBF700A79:
+                        flare_type = 1;
+                        break;
+                    case 0x1E4150B4:
+                        flare_type = 5;
+                        break;
+                    case 0xE662C161:
+                        flare_type = 6;
+                        break;
+                    case 0xB4348DBA:
+                        flare_type = 7;
+                        break;
+                    case 0x41489594:
+                        flare_type = 10;
+                        break;
+                    case 0x6A52A241:
+                        flare_type = 11;
+                        break;
+                    case 0x28CD78F5:
+                        flare_type = 12;
+                        break;
+                    case 0x7A5B2F25:
+                        if (front_marker_slot == slot_model_index || front_marker_slot < 1) {
+                            front_marker_slot = slot_model_index;
+                            flare_type = 3;
+                        }
+                        break;
+                    case 0x7ADF7EF8:
+                        if (rear_marker_slot == slot_model_index || rear_marker_slot <= 0) {
+                            rear_marker_slot = slot_model_index;
+                            flare_type = 3;
+                        }
+                        break;
+                }
 
                 if (flare_type != -1) {
                     eLightFlare *light_flare = static_cast<eLightFlare *>(gFastMem.Alloc(sizeof(eLightFlare), 0));
 
                     bMemSet(light_flare, 0, sizeof(eLightFlare));
-                    light_flare->NameHash = position_marker->NameHash;
-                    light_flare->ColourTint = 0;
+                    light_flare->NameHash = name_hash;
                     light_flare->Type = static_cast<char>(flare_type);
                     light_flare->Flags =
                         static_cast<char>(((flare_type - 5U < 3) || flare_type == 10 || flare_type == 11 || flare_type == 12) ? 2 : 4);
