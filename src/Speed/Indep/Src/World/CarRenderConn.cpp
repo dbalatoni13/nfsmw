@@ -605,20 +605,21 @@ void RenderConn::Pkt_Car_Service::HidePart(const UCrc32 &partname) {
 }
 
 void CarRenderConn::OnEvent(EventID id) {
-    if (id == E_UPSHIFT) {
+    switch (id) {
+    case E_MISS_SHIFT:
+        this->SetFlag(CF_MISSSHIFT, true);
+        break;
+
+    case E_UPSHIFT:
         this->mShifting = 1.0f;
-        return;
-    }
+        break;
 
-    if (id < E_DOWNSHIFT) {
-        if (id == E_MISS_SHIFT) {
-            this->mFlags |= CF_MISSSHIFT;
-        }
-        return;
-    }
-
-    if (id == E_DOWNSHIFT) {
+    case E_DOWNSHIFT:
         this->mShifting = -1.0f;
+        break;
+
+    default:
+        return;
     }
 }
 
