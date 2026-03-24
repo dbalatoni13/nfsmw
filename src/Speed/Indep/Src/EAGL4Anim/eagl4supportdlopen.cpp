@@ -580,11 +580,8 @@ DynamicLoader::Symbol DynamicLoader::GetSymbol(int i) const {
     }
     r.name = &h->strtab[s[i].st_name];
     r.type = &r.name[strlen(&h->strtab[s[i].st_name])];
-    r.type++;
     if (r.type[1] == 0x7F) {
-        r.type++;
-    } else {
-        r.type--;
+        r.type += 2;
     }
     r.isInternalRef = (s[i].st_other - 2) > 3;
 
