@@ -161,7 +161,9 @@ int VehiclePartDamageZone::GetSlotNum() const {
 }
 
 int VehiclePartDamageZone::GetSlotID(int index) const {
-    return *reinterpret_cast<int *>(reinterpret_cast<unsigned char *>(mSlotIdsStart) + index * sizeof(int));
+    int offset = index * sizeof(int);
+    unsigned char *slot_ids = reinterpret_cast<unsigned char *>(mSlotIdsStart);
+    return *reinterpret_cast<int *>(slot_ids + offset);
 }
 
 void VehiclePartDamageZone::SetDamageLevel(unsigned short damageLevel) {
