@@ -559,9 +559,9 @@ int CompositeSkin(SkinCompositeParams *composite_params) {
                     unsigned char a;
 
                     nqGetPaletteEntry(i, r, g, b, a);
-                    dest_palette_data[current_palette_base + i] =
-                        (static_cast<unsigned int>(a) << 24) | (static_cast<unsigned int>(r) << 16) |
-                        (static_cast<unsigned int>(g) << 8) | b;
+                    dest_palette_data[current_palette_base + i] = (((static_cast<unsigned int>(g) << 8) | b) |
+                                                                    (static_cast<unsigned int>(r) << 16)) |
+                                                                   (static_cast<unsigned int>(a) << 24);
                 }
 
                 inxbuild();
