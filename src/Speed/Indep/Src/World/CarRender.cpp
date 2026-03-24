@@ -780,13 +780,6 @@ CarRenderInfo::CarRenderInfo(RideInfo *ride_info)
             reinterpret_cast<CarRenderUsedCarTextureInfoLayout *>(&this->mUsedTextureInfos);
         CarTypeInfo *car_type_info = info;
         int is_traffic_car = car_type_info->GetCarUsageType() == CAR_USAGE_TYPE_TRAFFIC;
-        unsigned int window_front_hash = bStringHash("WINDOW_FRONT");
-        unsigned int window_rear_hash = bStringHash("WINDOW_REAR");
-        unsigned int window_left_front_hash = bStringHash("WINDOW_LEFT_FRONT");
-        unsigned int window_left_rear_hash = bStringHash("WINDOW_LEFT_REAR");
-        unsigned int window_right_front_hash = bStringHash("WINDOW_RIGHT_FRONT");
-        unsigned int window_right_rear_hash = bStringHash("WINDOW_RIGHT_REAR");
-        unsigned int rear_defroster_hash = bStringHash("REAR_DEFROSTER");
 
         this->MasterReplacementTextureTable[REPLACETEX_CARSKIN].SetOldNameHash(used_texture_info->MappedSkinHash);
         this->MasterReplacementTextureTable[REPLACETEX_CARSKINB].SetOldNameHash(used_texture_info->MappedSkinBHash);
@@ -804,20 +797,20 @@ CarRenderInfo::CarRenderInfo(RideInfo *ride_info)
         if (is_traffic_car != 0) {
             this->MasterReplacementTextureTable[REPLACETEX_TIRE].SetNewNameHash(bStringHash("_N", used_texture_info->MappedTireHash));
         }
-        this->MasterReplacementTextureTable[REPLACETEX_WINDOW_FRONT].SetOldNameHash(window_front_hash);
-        this->MasterReplacementTextureTable[REPLACETEX_WINDOW_REAR].SetOldNameHash(window_rear_hash);
-        this->MasterReplacementTextureTable[REPLACETEX_WINDOW_LEFT_FRONT].SetOldNameHash(window_left_front_hash);
-        this->MasterReplacementTextureTable[REPLACETEX_WINDOW_LEFT_REAR].SetOldNameHash(window_left_rear_hash);
-        this->MasterReplacementTextureTable[REPLACETEX_WINDOW_RIGHT_FRONT].SetOldNameHash(window_right_front_hash);
-        this->MasterReplacementTextureTable[REPLACETEX_WINDOW_RIGHT_REAR].SetOldNameHash(window_right_rear_hash);
-        this->MasterReplacementTextureTable[REPLACETEX_WINDOW_REAR_DEFOST].SetOldNameHash(rear_defroster_hash);
-        this->MasterReplacementTextureTable[REPLACETEX_WINDOW2_FRONT].SetOldNameHash(window_front_hash);
-        this->MasterReplacementTextureTable[REPLACETEX_WINDOW2_REAR].SetOldNameHash(window_rear_hash);
-        this->MasterReplacementTextureTable[REPLACETEX_WINDOW2_LEFT_FRONT].SetOldNameHash(window_left_front_hash);
-        this->MasterReplacementTextureTable[REPLACETEX_WINDOW2_LEFT_REAR].SetOldNameHash(window_left_rear_hash);
-        this->MasterReplacementTextureTable[REPLACETEX_WINDOW2_RIGHT_FRONT].SetOldNameHash(window_right_front_hash);
-        this->MasterReplacementTextureTable[REPLACETEX_WINDOW2_RIGHT_REAR].SetOldNameHash(window_right_rear_hash);
-        this->MasterReplacementTextureTable[REPLACETEX_WINDOW2_REAR_DEFOST].SetOldNameHash(rear_defroster_hash);
+        this->MasterReplacementTextureTable[REPLACETEX_WINDOW_FRONT].SetOldNameHash(bStringHash("WINDOW_FRONT"));
+        this->MasterReplacementTextureTable[REPLACETEX_WINDOW_REAR].SetOldNameHash(bStringHash("WINDOW_REAR"));
+        this->MasterReplacementTextureTable[REPLACETEX_WINDOW_LEFT_FRONT].SetOldNameHash(bStringHash("WINDOW_LEFT_FRONT"));
+        this->MasterReplacementTextureTable[REPLACETEX_WINDOW_LEFT_REAR].SetOldNameHash(bStringHash("WINDOW_LEFT_REAR"));
+        this->MasterReplacementTextureTable[REPLACETEX_WINDOW_RIGHT_FRONT].SetOldNameHash(bStringHash("WINDOW_RIGHT_FRONT"));
+        this->MasterReplacementTextureTable[REPLACETEX_WINDOW_RIGHT_REAR].SetOldNameHash(bStringHash("WINDOW_RIGHT_REAR"));
+        this->MasterReplacementTextureTable[REPLACETEX_WINDOW_REAR_DEFOST].SetOldNameHash(bStringHash("REAR_DEFROSTER"));
+        this->MasterReplacementTextureTable[REPLACETEX_WINDOW2_FRONT].SetOldNameHash(bStringHash("WINDOW_FRONT"));
+        this->MasterReplacementTextureTable[REPLACETEX_WINDOW2_REAR].SetOldNameHash(bStringHash("WINDOW_REAR"));
+        this->MasterReplacementTextureTable[REPLACETEX_WINDOW2_LEFT_FRONT].SetOldNameHash(bStringHash("WINDOW_LEFT_FRONT"));
+        this->MasterReplacementTextureTable[REPLACETEX_WINDOW2_LEFT_REAR].SetOldNameHash(bStringHash("WINDOW_LEFT_REAR"));
+        this->MasterReplacementTextureTable[REPLACETEX_WINDOW2_RIGHT_FRONT].SetOldNameHash(bStringHash("WINDOW_RIGHT_FRONT"));
+        this->MasterReplacementTextureTable[REPLACETEX_WINDOW2_RIGHT_REAR].SetOldNameHash(bStringHash("WINDOW_RIGHT_REAR"));
+        this->MasterReplacementTextureTable[REPLACETEX_WINDOW2_REAR_DEFOST].SetOldNameHash(bStringHash("REAR_DEFROSTER"));
         this->MasterReplacementTextureTable[REPLACETEX_HEADLIGHT_LEFT].SetOldNameHash(0xA7E6EA53);
         this->MasterReplacementTextureTable[REPLACETEX_HEADLIGHT_RIGHT].SetOldNameHash(0xA532FC46);
         this->MasterReplacementTextureTable[REPLACETEX_OLD_HEADLIGHT_LEFT].SetOldNameHash(used_texture_info->MappedLightHash[0]);
