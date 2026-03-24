@@ -876,72 +876,48 @@ void CarRenderConn::UpdateEngineAnimation(float dT, const RenderConn::Pkt_Car_Se
 
 void CarRenderConn::UpdateBodyAnimation(float dT, const RenderConn::Pkt_Car_Service &data) {
     if (!this->TestVisibility(renderModifier * 80.0f)) {
-        this->mExtraBodyAngle.x = UMath::Vector2::kZero.x;
-        this->mExtraBodyAngle.y = UMath::Vector2::kZero.y;
+        this->mExtraBodyAngle = UMath::Vector2::kZero;
         return;
     }
 
-    const bVector3 *acceleration = this->GetAcceleration();
-    float longitudinalGs =
-        bDot(*acceleration, *reinterpret_cast<const bVector3 *>(&this->mRenderMatrix.v0)) * 0.10204081f;
-    float lateralGs = bDot(*acceleration, *reinterpret_cast<const bVector3 *>(&this->mRenderMatrix.v1)) * 0.10204081f;
+    const bVector3 *accel = this->GetAcceleration();
+    float left_accel = bDot(accel, reinterpret_cast<const bVector3 *>(&this->mRenderMatrix.v1)) * 0.10204081f;
+    float fwd_accel = bDot(accel, reinterpret_cast<const bVector3 *>(&this->mRenderMatrix.v0)) * 0.10204081f;
+    const CarBodyMotion &pitch_control =
+        fwd_accel < 0.0f ? this->GetAttributes().BodyDive() : this->GetAttributes().BodySquat();
+    const CarBodyMotion &roll_control = this->GetAttributes().BodyRoll();
+    float max_pitch = data.mExtraBodyPitch * DEG2RAD(pitch_control.DegPerG);
+    float rate_pitch = DEG2RAD(pitch_control.DegPerSec) * dT;
+    float max_roll = data.mExtraBodyRoll * DEG2RAD(roll_control.DegPerG);
+    float rate_roll = DEG2RAD(roll_control.DegPerSec) * dT;
 
-    const CarBodyMotion &bodyRoll = this->GetAttributes().BodyRoll();
-    const CarBodyMotion *bodyPitch = &this->GetAttributes().BodySquat();
-    if (longitudinalGs < 0.0f) {
-        bodyPitch = &this->GetAttributes().BodyDive();
+    if (UMath::Abs(left_accel) < 0.2f) {
+        left_accel = 0.0f;
     }
 
-    float rollTarget = data.mExtraBodyRoll * bodyRoll.DegPerG * 0.017453f;
-    float pitchTarget = data.mExtraBodyPitch * bodyPitch->DegPerG * 0.017453f;
-    float rollDelta = bodyRoll.DegPerSec * 0.017453f * dT;
-    float pitchDelta = bodyPitch->DegPerSec * 0.017453f * dT;
-
-    if (bAbs(lateralGs) < 0.2f) {
-        lateralGs = 0.0f;
-    }
-    if (bAbs(longitudinalGs) < 0.2f) {
-        longitudinalGs = 0.0f;
+    if (UMath::Abs(fwd_accel) < 0.2f) {
+        fwd_accel = 0.0f;
     }
 
-    float rollBlend = 0.0f;
-    float rollMin = -bodyRoll.MaxGs;
-    float rollRange = bodyRoll.MaxGs - rollMin;
-    if (1e-6f < rollRange) {
-        rollBlend = (lateralGs - rollMin) / rollRange;
-        rollBlend = bClamp(rollBlend, 0.0f, 1.0f);
+    float dest_angle_x = (max_roll + max_roll) * (UMath::Ramp(left_accel, -roll_control.MaxGs, roll_control.MaxGs) - 0.5f);
+    float dest_angle_y = (max_pitch + max_pitch) * (UMath::Ramp(-fwd_accel, -pitch_control.MaxGs, pitch_control.MaxGs) - 0.5f);
+    float speed = bLength(this->GetVelocity());
+
+    if (speed < 1.0f) {
+        dest_angle_x = 0.0f;
+        dest_angle_y = 0.0f;
     }
 
-    float pitchBlend = 0.0f;
-    float pitchMin = -bodyPitch->MaxGs;
-    float pitchRange = bodyPitch->MaxGs - pitchMin;
-    if (1e-6f < pitchRange) {
-        pitchBlend = ((-longitudinalGs * 0.10204081f) - pitchMin) / pitchRange;
-        pitchBlend = bClamp(pitchBlend, 0.0f, 1.0f);
+    if (this->mExtraBodyAngle.x < dest_angle_x) {
+        this->mExtraBodyAngle.x = UMath::Min(this->mExtraBodyAngle.x + rate_roll, dest_angle_x);
+    } else if (dest_angle_x < this->mExtraBodyAngle.x) {
+        this->mExtraBodyAngle.x = UMath::Max(this->mExtraBodyAngle.x - rate_roll, dest_angle_x);
     }
 
-    rollTarget = (rollTarget + rollTarget) * (rollBlend - 0.5f);
-    pitchTarget = (pitchTarget + pitchTarget) * (pitchBlend - 0.5f);
-
-    if (bLength(*this->GetVelocity()) < 1.0f) {
-        rollTarget = 0.0f;
-        pitchTarget = 0.0f;
-    }
-
-    if (this->mExtraBodyAngle.x < rollTarget) {
-        float current = this->mExtraBodyAngle.x + rollDelta;
-        this->mExtraBodyAngle.x = current < rollTarget ? current : rollTarget;
-    } else if (rollTarget < this->mExtraBodyAngle.x) {
-        float current = this->mExtraBodyAngle.x - rollDelta;
-        this->mExtraBodyAngle.x = rollTarget < current ? current : rollTarget;
-    }
-
-    if (this->mExtraBodyAngle.y < pitchTarget) {
-        float current = this->mExtraBodyAngle.y + pitchDelta;
-        this->mExtraBodyAngle.y = current < pitchTarget ? current : pitchTarget;
-    } else if (pitchTarget < this->mExtraBodyAngle.y) {
-        float current = this->mExtraBodyAngle.y - pitchDelta;
-        this->mExtraBodyAngle.y = pitchTarget < current ? current : pitchTarget;
+    if (this->mExtraBodyAngle.y < dest_angle_y) {
+        this->mExtraBodyAngle.y = UMath::Min(this->mExtraBodyAngle.y + rate_pitch, dest_angle_y);
+    } else if (dest_angle_y < this->mExtraBodyAngle.y) {
+        this->mExtraBodyAngle.y = UMath::Max(this->mExtraBodyAngle.y - rate_pitch, dest_angle_y);
     }
 }
 
