@@ -1474,44 +1474,30 @@ void CarRenderInfo::UpdateCarParts() {
 
     eModel *front_wheel_model = this->mCarPartModels[CARSLOTID_FRONT_WHEEL][0][this->mMinLodLevel].GetModel();
     eModel *rear_wheel_model = this->mCarPartModels[CARSLOTID_REAR_WHEEL][0][this->mMinLodLevel].GetModel();
+    bVector3 bbox_min;
+    bVector3 bbox_max;
 
     if (front_wheel_model != 0) {
-        bVector3 bbox_min;
-        bVector3 bbox_max;
         float wheel_width;
         float wheel_radius;
 
         front_wheel_model->GetBoundingBox(&bbox_min, &bbox_max);
-        wheel_width = bbox_max.y - bbox_min.y;
-        if (wheel_width < 0.0f) {
-            wheel_width = -wheel_width;
-        }
+        wheel_width = UMath::Abs(bbox_max.y - bbox_min.y);
         this->WheelWidths[0] = wheel_width;
 
-        wheel_radius = bbox_max.x - bbox_min.x;
-        if (wheel_radius < 0.0f) {
-            wheel_radius = -wheel_radius;
-        }
+        wheel_radius = UMath::Abs(bbox_max.x - bbox_min.x);
         this->WheelRadius[0] = wheel_radius * 0.5f;
     }
 
     if (rear_wheel_model != 0) {
-        bVector3 bbox_min;
-        bVector3 bbox_max;
         float wheel_width;
         float wheel_radius;
 
         rear_wheel_model->GetBoundingBox(&bbox_min, &bbox_max);
-        wheel_width = bbox_max.y - bbox_min.y;
-        if (wheel_width < 0.0f) {
-            wheel_width = -wheel_width;
-        }
+        wheel_width = UMath::Abs(bbox_max.y - bbox_min.y);
         this->WheelWidths[1] = wheel_width;
 
-        wheel_radius = bbox_max.x - bbox_min.x;
-        if (wheel_radius < 0.0f) {
-            wheel_radius = -wheel_radius;
-        }
+        wheel_radius = UMath::Abs(bbox_max.x - bbox_min.x);
         this->WheelRadius[1] = wheel_radius * 0.5f;
     }
 
