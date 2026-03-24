@@ -531,7 +531,10 @@ CarRenderConn::CarRenderConn(const Sim::ConnectionData &data, CarType ct, Render
 
         this->mTirePositions[i].w = 0.0f;
         this->mTireState[i]->mPrevTirePos = bVector4(0.0f, 0.0f, 0.0f, 0.0f);
-        this->mPhysicsRadius[i] = Physics::Info::WheelDiameter(this->mTirePhysics, i < 2) * 0.5f;
+        {
+            int is_front = i < 2;
+            this->mPhysicsRadius[i] = Physics::Info::WheelDiameter(this->mTirePhysics, is_front) * 0.5f;
+        }
     }
 
     this->mMaxWheelRenderDeltaAngle = 0.017453f;
