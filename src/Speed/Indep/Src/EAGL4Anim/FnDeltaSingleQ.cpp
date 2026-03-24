@@ -320,7 +320,7 @@ bool FnDeltaSingleQ::EvalSQT(float currTime, float *sqt, const BoneMask *boneMas
     int floorDeltaIdx = floorKey & binLenModMask;
     int prevBinIdx = mPrevKey >> binLenPower;
     int prevDeltaIdx;
-    unsigned char *binData = GetSingleQBin(deltaQ, floorBinIdx);
+    unsigned char *binData = &mBins[floorBinIdx * mBinSize];
     DeltaSingleQPhysical *floorPhys = GetSingleQPhysical(binData);
     unsigned char *boneIdxs = deltaQ->mBoneIdxs;
 
@@ -378,7 +378,7 @@ bool FnDeltaSingleQ::EvalSQT(float currTime, float *sqt, const BoneMask *boneMas
 
     if (slerpReqd && floorKey < deltaQ->mNumKeys - 1) {
         int ceilBinIdx = ceilKey >> binLenPower;
-        DeltaSingleQPhysical *ceilPhys = GetSingleQPhysical(GetSingleQBin(deltaQ, ceilBinIdx));
+        DeltaSingleQPhysical *ceilPhys = GetSingleQPhysical(&mBins[ceilBinIdx * mBinSize]);
 
         if (ceilBinIdx != floorBinIdx) {
             for (int ibone = 0; ibone < deltaQ->mNumBones; ibone++) {
@@ -532,7 +532,7 @@ bool FnDeltaSingleQ::EvalSQTMasked(float currTime, const BoneMask *boneMask, flo
     int floorDeltaIdx = floorKey & binLenModMask;
     int prevBinIdx = mPrevKey >> binLenPower;
     int prevDeltaIdx;
-    unsigned char *binData = GetSingleQBin(deltaQ, floorBinIdx);
+    unsigned char *binData = &mBins[floorBinIdx * mBinSize];
     DeltaSingleQPhysical *floorPhys = GetSingleQPhysical(binData);
     unsigned char *boneIdxs = deltaQ->mBoneIdxs;
 
@@ -594,7 +594,7 @@ bool FnDeltaSingleQ::EvalSQTMasked(float currTime, const BoneMask *boneMask, flo
 
     if (slerpReqd && floorKey < deltaQ->mNumKeys - 1) {
         int ceilBinIdx = ceilKey >> binLenPower;
-        DeltaSingleQPhysical *ceilPhys = GetSingleQPhysical(GetSingleQBin(deltaQ, ceilBinIdx));
+        DeltaSingleQPhysical *ceilPhys = GetSingleQPhysical(&mBins[ceilBinIdx * mBinSize]);
 
         if (ceilBinIdx != floorBinIdx) {
             for (int ibone = 0; ibone < deltaQ->mNumBones; ibone++) {
