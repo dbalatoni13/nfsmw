@@ -1741,11 +1741,13 @@ int CarLoader::GetMemoryEntries(LoadedSolidPack *loaded_solid_pack, void **memor
 }
 
 int CarLoader::GetMemoryEntries(LoadedTexturePack *loaded_texture_pack, void **memory_entries, int num_memory_entries) {
+    int result = num_memory_entries;
+
     if (loaded_texture_pack->pStreamingPack != 0) {
-        return loaded_texture_pack->pStreamingPack->GetHeaderMemoryEntries(memory_entries, num_memory_entries);
+        result = loaded_texture_pack->pStreamingPack->GetHeaderMemoryEntries(memory_entries, result);
     }
 
-    return 0;
+    return result;
 }
 
 int CarLoader::GetMemoryEntries(LoadedWheel *loaded_wheel, void **memory_entries, int num_memory_entries) {
