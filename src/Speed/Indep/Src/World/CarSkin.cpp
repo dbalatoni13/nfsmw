@@ -350,6 +350,7 @@ int CompositeSkin(SkinCompositeParams *composite_params) {
     if (dest_texture->ImageCompressionType == TEXCOMP_8BIT) {
         unsigned char *dest_image_data = static_cast<unsigned char *>(TextureInfo_LockImage(dest_texture, TEXLOCK_WRITE));
         unsigned int *dest_palette_data = static_cast<unsigned int *>(TextureInfo_LockPalette(dest_texture, TEXLOCK_WRITE));
+        eUnSwizzle8bitPalette(dest_palette_data);
         int dest_width = dest_texture->Width;
         int dest_height = dest_texture->Height;
         int max_semi_trans_pixels = 0xC000;
@@ -365,8 +366,6 @@ int CompositeSkin(SkinCompositeParams *composite_params) {
         unsigned char *mask_src[1];
         int cur_semi_trans_pixel = 0;
         int current_palette_base;
-
-        eUnSwizzle8bitPalette(dest_palette_data);
 
         for (int i = 0; i < num_layers; i++) {
             VinylLayerInfo *info = &layer_infos[i];
