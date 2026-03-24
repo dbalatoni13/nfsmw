@@ -674,37 +674,66 @@ void RideInfo::SetStockParts() {
         if (((this->Type != static_cast<CarType>(4)) || (car_slot_id != CARSLOTID_ATTACHMENT6)) && car_slot_id != CARSLOTID_VINYL_LAYER0 &&
             (static_cast<unsigned int>(car_slot_id - CARSLOTID_DECAL_FRONT_WINDOW_TEX0) > 0x2F)) {
             if (car_slot_id == CARSLOTID_HUD_BACKING_COLOUR) {
-                CarPart *hud_part = CarPartDB.NewGetCarPart(this->Type, car_slot_id, bStringHash("ORANGE"), 0, -1);
-                if (hud_part != 0) {
-                    this->SetPart(car_slot_id, hud_part, true);
-                } else {
-                    this->SetUpgradePart(static_cast<CAR_SLOT_ID>(car_slot_id), 0);
-                }
+                goto set_hud_backing_colour;
             } else if (car_slot_id == CARSLOTID_BASE_PAINT) {
-                CarTypeInfo *type_info = &CarTypeInfoArray[this->Type];
-                CarPart *paint_part =
-                    CarPartDB.NewGetCarPart(this->Type, car_slot_id, static_cast<unsigned int>(type_info->DefaultBasePaint), 0, -1);
-                if (paint_part != 0) {
-                    this->SetPart(car_slot_id, paint_part, true);
-                }
+                goto set_base_paint;
             } else if (car_slot_id == CARSLOTID_HUD_NEEDLE_COLOUR) {
-                CarPart *hud_part = CarPartDB.NewGetCarPart(this->Type, car_slot_id, bStringHash("ORANGE"), 0, -1);
-                if (hud_part != 0) {
-                    this->SetPart(car_slot_id, hud_part, true);
-                } else {
-                    this->SetUpgradePart(static_cast<CAR_SLOT_ID>(car_slot_id), 0);
-                }
+                goto set_hud_needle_colour;
             } else if (car_slot_id == CARSLOTID_HUD_CHARACTER_COLOUR) {
-                CarPart *hud_part = CarPartDB.NewGetCarPart(this->Type, car_slot_id, bStringHash("WHITE"), 0, -1);
-                if (hud_part != 0) {
-                    this->SetPart(car_slot_id, hud_part, true);
-                } else {
-                    this->SetUpgradePart(static_cast<CAR_SLOT_ID>(car_slot_id), 0);
-                }
+                goto set_hud_character_colour;
+            } else {
+                goto set_upgrade_part;
+            }
+        }
+
+        continue;
+
+    set_base_paint: {
+            CarTypeInfo *type_info = &CarTypeInfoArray[this->Type];
+            CarPart *paint_part =
+                CarPartDB.NewGetCarPart(this->Type, car_slot_id, static_cast<unsigned int>(type_info->DefaultBasePaint), 0, -1);
+
+            if (paint_part != 0) {
+                this->SetPart(car_slot_id, paint_part, true);
+            }
+            continue;
+        }
+
+    set_hud_backing_colour: {
+            CarPart *hud_part = CarPartDB.NewGetCarPart(this->Type, car_slot_id, bStringHash("ORANGE"), 0, -1);
+
+            if (hud_part != 0) {
+                this->SetPart(car_slot_id, hud_part, true);
             } else {
                 this->SetUpgradePart(static_cast<CAR_SLOT_ID>(car_slot_id), 0);
             }
+            continue;
         }
+
+    set_hud_needle_colour: {
+            CarPart *hud_part = CarPartDB.NewGetCarPart(this->Type, car_slot_id, bStringHash("ORANGE"), 0, -1);
+
+            if (hud_part != 0) {
+                this->SetPart(car_slot_id, hud_part, true);
+            } else {
+                this->SetUpgradePart(static_cast<CAR_SLOT_ID>(car_slot_id), 0);
+            }
+            continue;
+        }
+
+    set_hud_character_colour: {
+            CarPart *hud_part = CarPartDB.NewGetCarPart(this->Type, car_slot_id, bStringHash("WHITE"), 0, -1);
+
+            if (hud_part != 0) {
+                this->SetPart(car_slot_id, hud_part, true);
+            } else {
+                this->SetUpgradePart(static_cast<CAR_SLOT_ID>(car_slot_id), 0);
+            }
+            continue;
+        }
+
+    set_upgrade_part:
+        this->SetUpgradePart(static_cast<CAR_SLOT_ID>(car_slot_id), 0);
     }
 
     stock_vinyl_colours[0] = bStringHash("VINYL_L1_COLOR01");
