@@ -39,16 +39,14 @@ const char *GetCarPartNameFromID(int car_part_id) {
 const char *GetCarSlotNameFromID(int car_slot_id) {
     int num_car_slot_names = GetNumCarSlotIDNames();
 
-    if (-1 < car_slot_id && car_slot_id < num_car_slot_names) {
-        int index = car_slot_id;
-
-        if (CarSlotIDNames[index].SlotID == index) {
-            return CarSlotIDNames[index].Name;
+    if (car_slot_id >= 0 && car_slot_id < num_car_slot_names) {
+        if (CarSlotIDNames[car_slot_id].SlotID == car_slot_id) {
+            return CarSlotIDNames[car_slot_id].Name;
         }
 
-        for (index = 0; index < num_car_slot_names; index++) {
-            if (CarSlotIDNames[index].SlotID == car_slot_id) {
-                return CarSlotIDNames[index].Name;
+        for (int i = 0; i < num_car_slot_names; i++) {
+            if (CarSlotIDNames[i].SlotID == car_slot_id) {
+                return CarSlotIDNames[i].Name;
             }
         }
     }
