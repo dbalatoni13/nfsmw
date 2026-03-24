@@ -610,12 +610,12 @@ void CarRenderConn::OnEvent(EventID id) {
         this->SetFlag(CF_MISSSHIFT, true);
         break;
 
-    case E_UPSHIFT:
-        this->mShifting = 1.0f;
-        break;
-
     case E_DOWNSHIFT:
         this->mShifting = -1.0f;
+        break;
+
+    case E_UPSHIFT:
+        this->mShifting = 1.0f;
         break;
 
     default:
