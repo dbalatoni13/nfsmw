@@ -95,17 +95,17 @@ void FnRawStateChan::Decode(unsigned char *src, unsigned char *dest) const {
 
     Decode4Bits:
         numBits = (numBits + 4) & 0xFF;
-        value = (*src >> ((8 - numBits) & 0x3F)) & 0xF;
+        value = (*src >> (8 - numBits)) & 0xF;
         goto DecodeDone;
 
     Decode2Bits:
         numBits = (numBits + 2) & 0xFF;
-        value = (*src >> ((8 - numBits) & 0x3F)) & 3;
+        value = (*src >> (8 - numBits)) & 3;
         goto DecodeDone;
 
     Decode1Bit:
         numBits = (numBits + 1) & 0xFF;
-        value = (*src >> ((8 - numBits) & 0x3F)) & 1;
+        value = (*src >> (8 - numBits)) & 1;
 
     DecodeDone:
 
@@ -132,12 +132,12 @@ void FnRawStateChan::Decode(unsigned char *src, unsigned char *dest) const {
         *reinterpret_cast<unsigned int *>(&dest[decodeInfo[2]]) = value;
         goto StoreDone;
 
-    Store1Byte:
-        dest[decodeInfo[2]] = static_cast<unsigned char>(value);
-        goto StoreDone;
-
     Store2Bytes:
         *reinterpret_cast<unsigned short *>(&dest[decodeInfo[2]]) = static_cast<unsigned short>(value);
+        goto StoreDone;
+
+    Store1Byte:
+        dest[decodeInfo[2]] = static_cast<unsigned char>(value);
 
     StoreDone:
         ;
