@@ -166,6 +166,10 @@ static inline short &CarRenderInfoS16(CarRenderInfo *info, unsigned int offset) 
     return *reinterpret_cast<short *>(reinterpret_cast<unsigned char *>(info) + offset);
 }
 
+static inline bool eIsGameViewID(int id) {
+    return id - 1U < 3;
+}
+
 } // namespace
 
 void NotifyTireStateEffectOfEmitterDelete(void *tire_state_effect, EmitterGroup *grp) {
@@ -1483,7 +1487,6 @@ void CarRenderConn::OnRender(eView *view, int reflection) {
     }
 
     if (view->GetID() == 3) {
-        RVManchor = 0;
         if (camera_mover != 0) {
             RVManchor = camera_mover->GetAnchor();
         }
@@ -1493,7 +1496,7 @@ void CarRenderConn::OnRender(eView *view, int reflection) {
         }
     }
 
-    if (camera_mover != nullptr && view->GetID() - 1U < 3) {
+    if (camera_mover != 0 && eIsGameViewID(view->GetID())) {
         float distance = camera_mover->GetDistanceTo(reinterpret_cast<bVector3 *>(&this->mRenderMatrix.v3));
         this->mDistanceToView = UMath::Min(distance, this->mDistanceToView);
     }
