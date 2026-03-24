@@ -359,18 +359,22 @@ int CompositeSkin(SkinCompositeParams *composite_params) {
         int dest_width = dest_texture->Width;
         int dest_height = dest_texture->Height;
         int max_semi_trans_pixels = 0xC000;
+        SemiTransPixel *semi_trans_pixels;
+        unsigned int *semi_trans_colours;
         int semi_trans_pixels_buffer_size = 0x30000;
         int total_malloc_required = semi_trans_pixels_buffer_size;
-        SemiTransPixel *semi_trans_pixels = static_cast<SemiTransPixel *>(
-            bMalloc(total_malloc_required, 0, 0, (GetVirtualMemoryPoolNumber() & 0xF) | 0x40));
-        unsigned int *semi_trans_colours =
-            static_cast<unsigned int *>(bMalloc(total_malloc_required, 0, 0, (GetVirtualMemoryPoolNumber() & 0xF) | 0x40));
-        int num_pixels = dest_width * dest_height;
-        unsigned char *dest_end = dest_image_data + num_pixels;
+        int cur_semi_trans_pixel = 0;
+        int num_pixels;
+        unsigned char *dest;
+        unsigned char *dest_end;
         unsigned char *image_src[1];
         unsigned char *mask_src[1];
-        int cur_semi_trans_pixel = 0;
         int current_palette_base;
+
+        semi_trans_pixels = static_cast<SemiTransPixel *>(bMalloc(total_malloc_required, 0, 0, (GetVirtualMemoryPoolNumber() & 0xF) | 0x40));
+        semi_trans_colours = static_cast<unsigned int *>(bMalloc(total_malloc_required, 0, 0, (GetVirtualMemoryPoolNumber() & 0xF) | 0x40));
+        num_pixels = dest_width * dest_height;
+        dest_end = dest_image_data + num_pixels;
 
         for (int i = 0; i < num_layers; i++) {
             VinylLayerInfo *info = &layer_infos[i];
@@ -408,7 +412,7 @@ int CompositeSkin(SkinCompositeParams *composite_params) {
 
             bMemSet(swatch_offset_cache, 0, sizeof(swatch_offset_cache));
 
-            for (unsigned char *dest = dest_image_data; dest < dest_end; dest++) {
+            for (dest = dest_image_data; dest < dest_end; dest++) {
                 int i = 0;
 
                 do {
@@ -441,7 +445,7 @@ int CompositeSkin(SkinCompositeParams *composite_params) {
             current_palette_base++;
         }
 
-        for (unsigned char *dest = dest_image_data; dest < dest_end; dest++) {
+        for (dest = dest_image_data; dest < dest_end; dest++) {
             unsigned int dest_colour = dest_palette_data[*dest];
 
             for (int i = 0; i < num_layers; i++) {
