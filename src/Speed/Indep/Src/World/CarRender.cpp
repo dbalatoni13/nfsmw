@@ -3307,7 +3307,7 @@ void CarRenderInfo::convex_hull(bVector3 *p, const WCollider *wcoll, int &n, flo
         float fastZ = lbl_8040AD74;
 
         this->mWorldPos.SetTolerance(lbl_8040AD70);
-        if (fast == 0) {
+        if (fast != 0) {
             vec = hullVertArray2;
             dec = 0;
             bPointValid = true;
