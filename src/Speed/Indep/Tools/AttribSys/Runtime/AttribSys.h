@@ -774,9 +774,9 @@ class Instance {
         return mCollection;
     }
 
-    void SetDefaultLayout(unsigned int bytes) {
+    void SetDefaultLayout(unsigned int bytes) const {
         if (mLayoutPtr == nullptr) {
-            mLayoutPtr = const_cast<void *>(DefaultDataArea(bytes));
+            const_cast<Instance *>(this)->mLayoutPtr = const_cast<void *>(DefaultDataArea(bytes));
         }
     }
 

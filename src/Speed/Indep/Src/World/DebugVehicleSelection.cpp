@@ -54,16 +54,16 @@ void DebugVehicleSelection::Service() {
 }
 
 void DebugVehicleSelection::InitSelectionList() {
-    const Attrib::Class *aClass = Attrib::Database::Get().GetClass(0x4A97EC8F);
-    unsigned int key = aClass->GetFirstCollection();
-    this->mSelectionList.reserve(aClass->GetNumCollections());
+    const Attrib::Class *aclass = Attrib::Database::Get().GetClass(0x4A97EC8F);
+    unsigned int key = aclass->GetFirstCollection();
+    this->mSelectionList.reserve(aclass->GetNumCollections());
     while (key != 0) {
         Attrib::Gen::pvehicle atr = Attrib::Gen::pvehicle(key, 0, nullptr);
         if (atr.MODEL().GetHash32() != UCrc32::kNull.GetValue() && atr.GetParent() == 0xA6ABC921) {
             const char *vehicleName = atr.CollectionName();
             this->mSelectionList.push_back(vehicleName);
         }
-        key = aClass->GetNextCollection(key);
+        key = aclass->GetNextCollection(key);
     }
 }
 
