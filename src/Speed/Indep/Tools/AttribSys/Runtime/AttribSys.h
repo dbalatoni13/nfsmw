@@ -629,13 +629,9 @@ class Class {
             return AdjustHashTableSize(entries);
         }
 
-        static unsigned int KeyIndex(unsigned int k, unsigned int tableSize, unsigned int keyShift) {
-            return RotateNTo32(k, keyShift) % tableSize;
-        }
+        static unsigned int KeyIndex(unsigned int k, unsigned int tableSize, unsigned int keyShift);
 
-        static unsigned int WrapIndex(unsigned int index, unsigned int tableSize, unsigned int keyShift) {
-            return index % tableSize;
-        }
+        static unsigned int WrapIndex(unsigned int index, unsigned int tableSize, unsigned int keyShift);
     };
 
     Class(Key k, ClassPrivate &privates);

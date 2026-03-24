@@ -13,6 +13,14 @@
 // Credit: Brawltendo
 namespace Attrib {
 
+inline unsigned int Class::TablePolicy::KeyIndex(unsigned int k, unsigned int tableSize, unsigned int keyShift) {
+    return RotateNTo32(k, keyShift) % tableSize;
+}
+
+inline unsigned int Class::TablePolicy::WrapIndex(unsigned int index, unsigned int tableSize, unsigned int keyShift) {
+    return index % tableSize;
+}
+
 // total size: 0x20
 class CollectionLoadData {
   public:
