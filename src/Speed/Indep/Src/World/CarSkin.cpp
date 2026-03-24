@@ -461,37 +461,35 @@ int CompositeSkin(SkinCompositeParams *composite_params) {
                         src_pixel = RemapColour(src_pixel, info->m_RemapColours);
                     }
 
-                    if ((src_mask & 0xFF) < 0x80) {
-                        if ((src_mask & 0xFF) != 0) {
-                            float weights[2];
-                            unsigned int colours[2];
-                            unsigned int blend_colour;
-                            int x = dest - dest_image_data;
-                            int y;
-
-                            weights[0] = static_cast<float>(src_mask & 0xFF) / 255.0f;
-                            if (weights[0] > 1.0f) {
-                                weights[0] = 1.0f;
-                            }
-
-                            weights[1] = 1.0f - weights[0];
-                            colours[0] = src_pixel;
-                            colours[1] = dest_pixel;
-                            blend_colour = GetBlendColour(colours, weights, 2, false);
-                            semi_trans_colours[cur_semi_trans_pixel] = blend_colour;
-                            y = x / dest_width;
-                            semi_trans_pixels[cur_semi_trans_pixel].x = x - y * dest_width;
-                            semi_trans_pixels[cur_semi_trans_pixel].y = y;
-
-                            if (cur_semi_trans_pixel + 1 < max_semi_trans_pixels) {
-                                cur_semi_trans_pixel++;
-                            }
-
-                            *dest = 0xFF;
-                        }
-                    } else {
+                    if ((src_mask & 0xFF) > 0x7F) {
                         *dest = static_cast<unsigned char>(*image_src[i] + current_palette_base);
                         dest_pixel = src_pixel;
+                    } else if ((src_mask & 0xFF) != 0) {
+                        float weights[2];
+                        unsigned int colours[2];
+                        unsigned int blend_colour;
+                        int x = dest - dest_image_data;
+                        int y;
+
+                        weights[0] = static_cast<float>(src_mask & 0xFF) / 255.0f;
+                        if (weights[0] > 1.0f) {
+                            weights[0] = 1.0f;
+                        }
+
+                        weights[1] = 1.0f - weights[0];
+                        colours[0] = src_pixel;
+                        colours[1] = dest_pixel;
+                        blend_colour = GetBlendColour(colours, weights, 2, false);
+                        semi_trans_colours[cur_semi_trans_pixel] = blend_colour;
+                        y = x / dest_width;
+                        semi_trans_pixels[cur_semi_trans_pixel].x = x - y * dest_width;
+                        semi_trans_pixels[cur_semi_trans_pixel].y = y;
+
+                        if (cur_semi_trans_pixel + 1 < max_semi_trans_pixels) {
+                            cur_semi_trans_pixel++;
+                        }
+
+                        *dest = 0xFF;
                     }
 
                     image_src[i]++;
