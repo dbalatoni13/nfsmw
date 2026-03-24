@@ -713,6 +713,8 @@ CarRenderInfo::CarRenderInfo(RideInfo *ride_info)
     CarRenderRideInfoLayout *ride_layout = reinterpret_cast<CarRenderRideInfoLayout *>(ride_info);
     CarTypeInfo *info = &CarTypeInfoArray[ride_info->Type];
     char *car_base_name = info->BaseModelName;
+    bVector3 tire_positions[4];
+    float wheel_radius[4];
 
     this->mOnLights = 0;
     this->mBrokenLights = 0;
@@ -725,6 +727,14 @@ CarRenderInfo::CarRenderInfo(RideInfo *ride_info)
     bMemSet(&this->mDamageInfoCache, 0, 0x14);
 
     this->AnimTime = 0.0f;
+    for (unsigned int wheel = 0; wheel < 4; wheel++) {
+        UMath::Vector4 tire_offset;
+
+        this->GetAttributes().TireOffsets(tire_offset, wheel);
+        tire_positions[wheel] = bVector3(tire_offset.x, tire_offset.y, tire_offset.z);
+        wheel_radius[wheel] = tire_offset.w;
+    }
+
     this->WheelWidths[0] = WheelStandardWidth;
     this->WheelWidths[1] = WheelStandardWidth;
     this->WheelRadius[0] = WheelStandardRadius;
@@ -885,8 +895,6 @@ CarRenderInfo::CarRenderInfo(RideInfo *ride_info)
     this->CreateCarLightFlares();
 
     {
-        bVector3 tire_positions[4];
-        float wheel_radius[4];
         bVector3 v_left;
         bVector3 v_right;
         bVector3 v_underneath;
@@ -894,14 +902,6 @@ CarRenderInfo::CarRenderInfo(RideInfo *ride_info)
         bVector3 v_side_diff;
         bVector3 v_normal;
         float tire_radius;
-
-        for (unsigned int wheel = 0; wheel < 4; wheel++) {
-            UMath::Vector4 tire_offset;
-
-            this->GetAttributes().TireOffsets(tire_offset, wheel);
-            tire_positions[wheel] = bVector3(tire_offset.x, tire_offset.y, tire_offset.z);
-            wheel_radius[wheel] = tire_offset.w;
-        }
 
         this->TheCarPartCuller.InitPart(CULLABLE_CAR_PART_TIRE_FL, &tire_positions[0]);
         this->TheCarPartCuller.InitPart(CULLABLE_CAR_PART_TIRE_FR, &tire_positions[1]);
