@@ -319,11 +319,11 @@ void FnDeltaQFast::AddDeltaMask(DeltaQFastPhysical *floorPhys, DeltaQFast *delta
 
     for (int iframe = prevDeltaIdx; iframe < floorDeltaIdx; iframe++) {
         unsigned char numBones = deltaQ->mNumBones;
+        DeltaQFastDelta *floorDelta = reinterpret_cast<DeltaQFastDelta *>(deltaData);
 
         for (int ibone = 0; ibone < numBones; ibone++) {
             if (boneMask->GetBone(boneIdxs[ibone])) {
                 UMath::Vector4 delta;
-                DeltaQFastDelta *floorDelta = reinterpret_cast<DeltaQFastDelta *>(deltaData);
 
                 floorDelta->UnQuantize(mMinRangesf[ibone], delta);
                 prevQs[ibone].x += delta.x;
@@ -331,8 +331,9 @@ void FnDeltaQFast::AddDeltaMask(DeltaQFastPhysical *floorPhys, DeltaQFast *delta
                 prevQs[ibone].z += delta.z;
                 prevQs[ibone].w += delta.w;
             }
-            deltaData += 3;
+            floorDelta++;
         }
+        deltaData = reinterpret_cast<unsigned char *>(floorDelta);
     }
 }
 
@@ -344,11 +345,11 @@ void FnDeltaQFast::SubDeltaMask(DeltaQFastPhysical *floorPhys, DeltaQFast *delta
 
     for (int iframe = prevDeltaIdx - 1; iframe >= floorDeltaIdx; iframe--) {
         unsigned char numBones = deltaQ->mNumBones;
+        DeltaQFastDelta *floorDelta = reinterpret_cast<DeltaQFastDelta *>(deltaData);
 
         for (int ibone = numBones - 1; ibone >= 0; ibone--) {
             if (boneMask->GetBone(boneIdxs[ibone])) {
                 UMath::Vector4 delta;
-                DeltaQFastDelta *floorDelta = reinterpret_cast<DeltaQFastDelta *>(deltaData);
 
                 floorDelta->UnQuantize(mMinRangesf[ibone], delta);
                 prevQs[ibone].x -= delta.x;
@@ -356,8 +357,9 @@ void FnDeltaQFast::SubDeltaMask(DeltaQFastPhysical *floorPhys, DeltaQFast *delta
                 prevQs[ibone].z -= delta.z;
                 prevQs[ibone].w -= delta.w;
             }
-            deltaData -= 3;
+            floorDelta--;
         }
+        deltaData = reinterpret_cast<unsigned char *>(floorDelta);
     }
 }
 
