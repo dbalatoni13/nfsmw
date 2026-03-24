@@ -8,9 +8,10 @@
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 
 // total size: 0x10
-template <typename KeyType, typename T, typename Policy, bool Unk2, unsigned int Unk3> struct VecHashMap {
+template <typename KeyType, typename T, typename Policy, bool Unk2, unsigned int Unk3> class VecHashMap {
     // total size: 0xC or 0x10
-    struct Node {
+    class Node {
+      public:
         Node() : mKey(0), mPtr(reinterpret_cast<T *>(this)), mMax(0) {}
 
         Node(KeyType key, T *ptr) : mKey(key), mPtr(ptr) {}
@@ -62,7 +63,13 @@ template <typename KeyType, typename T, typename Policy, bool Unk2, unsigned int
     };
 
   public:
-    ~VecHashMap() {
+    VecHashMap(std::size_t reservationSize) : mTable(nullptr), mTableSize(0), mNumEntries(0), mFixedAlloc(0), mWorstCollision(0) {
+        if (reservationSize != 0) {
+            RebuildTable(reservationSize);
+        }
+    }
+
+    void Clear() {
         if (Unk2) {
             for (std::size_t i = 0; i < mTableSize && mNumEntries != 0; i++) {
                 if (mTable[i].IsValid()) {
@@ -78,6 +85,10 @@ template <typename KeyType, typename T, typename Policy, bool Unk2, unsigned int
         }
         mNumEntries = 0;
         mWorstCollision = 0;
+    }
+
+    ~VecHashMap() {
+        Clear();
     }
 
     bool InternalAdd(KeyType key, T *ptr) {
@@ -141,12 +152,6 @@ template <typename KeyType, typename T, typename Policy, bool Unk2, unsigned int
                 mTable = reinterpret_cast<Node *>(Policy::Alloc(mTableSize * sizeof(Node)));
                 CopyFromOldTable(oldTable, oldSize, true);
             } while (mWorstCollision > Unk3);
-        }
-    }
-
-    VecHashMap(std::size_t reservationSize) : mTable(nullptr), mTableSize(0), mNumEntries(0), mFixedAlloc(0), mWorstCollision(0) {
-        if (reservationSize != 0) {
-            RebuildTable(reservationSize);
         }
     }
 
@@ -305,7 +310,7 @@ template <typename KeyType, typename T, typename Policy, bool Unk2, unsigned int
         return 0;
     }
 
-  private:
+  protected:
     Node *mTable;                      // offset 0x0, size 0x4
     unsigned int mTableSize;           // offset 0x4, size 0x4
     unsigned int mNumEntries;          // offset 0x8, size 0x4

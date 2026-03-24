@@ -10,8 +10,10 @@
 // Credit: Brawltendo
 namespace Attrib {
 
-struct HashMap {
-    struct HashMapTablePolicy {
+class HashMap {
+  public:
+    class HashMapTablePolicy {
+      public:
         static std::size_t KeyIndex(Key k, std::size_t tableSize, unsigned int keyShift) {
             return RotateNTo32(k, keyShift) % tableSize;
         }

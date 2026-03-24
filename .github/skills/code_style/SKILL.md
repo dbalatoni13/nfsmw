@@ -122,6 +122,7 @@ Foo::Foo()
 
 - Use the repo's header guard form when writing headers: `#ifndef` / `#define` plus the `#ifdef EA_PRAGMA_ONCE_SUPPORTED` / `#pragma once` block.
 - Keep member layout comments aligned and intact in decomp headers.
+- In match-sensitive headers, do not add class/member placement-`new` or unsized `operator delete` overloads just because the implementation uses placement new or delete expressions. Prefer the platform/global overloads that the original headers already pulled in unless DWARF proves the type exposed a custom overload.
 - When writing a recovered layout, start from a pasted GC DWARF dump instead of hand-reconstructing a cleaner version. Treat the dump as source-of-truth data entry, then make only small verified fixes from PS2 or existing headers.
 - Preserve the original `class` / `struct` kind from existing headers or Dwarf / PS2 evidence; do not treat it as a cosmetic style choice.
 - Treat header declarations as the repo source of truth. If the repo only has local `.cpp` partial declarations, verify the kind with the PS2 dump instead of copying them blindly.

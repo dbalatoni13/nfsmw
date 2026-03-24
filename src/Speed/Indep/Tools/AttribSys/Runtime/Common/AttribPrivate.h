@@ -191,10 +191,26 @@ class ClassPrivate : public Class {
     }
 
     // total size: 0x10
-    struct CollectionHashMap : public VecHashMap<unsigned int, Attrib::Collection, Attrib::Class::TablePolicy, true, 40> {
-        CollectionHashMap(unsigned int reserve);
+    class CollectionHashMap : public VecHashMap<unsigned int, Attrib::Collection, Attrib::Class::TablePolicy, true, 40> {
+      public:
+        CollectionHashMap(std::size_t reserve) : VecHashMap<unsigned int, Attrib::Collection, Attrib::Class::TablePolicy, true, 40>(reserve) {}
 
-        ~CollectionHashMap();
+        ~CollectionHashMap() {}
+
+        unsigned int GetNextValidIndex(unsigned int startPoint) const {
+            unsigned int index = startPoint + 1;
+            for (; index < mTableSize && !mTable[index].IsValid(); index++) {
+            }
+            return index;
+        }
+
+        unsigned int GetKeyAtIndex(unsigned int index) const {
+            if (ValidIndex(index)) {
+                (void)ValidIndex(index);
+                return mTable[index].Key();
+            }
+            return 0;
+        }
     };
 
     void *operator new(std::size_t bytes) {
@@ -227,6 +243,7 @@ class ClassPrivate : public Class {
 class ClassTable : public VecHashMap<unsigned int, Class, Class::TablePolicy, false, 16> {
   public:
     ClassTable(std::size_t capacity) : VecHashMap<unsigned int, Class, Class::TablePolicy, false, 16>(capacity) {}
+    ~ClassTable();
 
     void operator delete(void *ptr, std::size_t bytes) {
         Free(ptr, bytes, "Attrib::ClassTable");

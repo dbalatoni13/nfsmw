@@ -243,4 +243,6 @@ Key StringToKey(const char *str) {
 
 TypeTable::~TypeTable() {}
 
+ClassTable::~ClassTable() {}
+
 }; // namespace Attrib

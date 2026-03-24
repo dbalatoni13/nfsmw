@@ -529,6 +529,11 @@ TU: <translation-unit-name> | Function: <FunctionName>
 TU: zAttribSys | Function: \_STL::\_Rb_tree<Attrib::TypeDesc, ...>::\_M_insert
 If an STL node insertion path refuses to match, check whether the element type is missing explicit inline special members that the original source exposed. Adding the Dwarf-backed `operator new`, `operator delete`, placement `new`, copy constructor, and tiny accessors to `TypeDesc` made the tree node creation/insertion path match exactly.
 
+### WrapperOwnedVecHashMapHelpers
+
+TU: zAttribSys | Function: Class::SetTableBuffer / Class::AddCollection / Database::AddClass
+For `VecHashMap`-backed wrapper tables, keep `VecHashMap::Clear()` as a named helper, keep the `CollectionHashMap` constructor and scan helpers on the thin wrapper in `AttribPrivate.h`, and rely on the global placement `operator new` from SN's `<new>` instead of adding a `Node::operator new` member. That combination restored `Class::SetTableBuffer`, `Class::AddCollection`, and `Database::AddClass` to PASS/PASS without changing objdiff.
+
 ### RegisterAllocatorTieBreakDeadEnd
 
 TU: zAttribSys | Function: Class::RemoveCollection / Database::RemoveClass

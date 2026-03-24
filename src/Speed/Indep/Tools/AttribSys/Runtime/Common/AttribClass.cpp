@@ -49,11 +49,6 @@ Key Class::GetNextDefinition(Key prev) const {
     return 0;
 }
 
-ClassPrivate::CollectionHashMap::~CollectionHashMap() {}
-
-ClassPrivate::CollectionHashMap::CollectionHashMap(unsigned int reserve)
-    : VecHashMap<unsigned int, Attrib::Collection, Attrib::Class::TablePolicy, true, 40>(reserve) {}
-
 const Collection *Class::GetCollection(Key key) const {
     return mPrivates.mCollections.Find(key);
 }

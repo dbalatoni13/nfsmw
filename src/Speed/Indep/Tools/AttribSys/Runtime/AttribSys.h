@@ -607,7 +607,8 @@ class Node {
 // total size: 0xC
 class Class {
   public:
-    struct TablePolicy {
+    class TablePolicy {
+      public:
         static void *Alloc(std::size_t bytes) {
             return TableAllocFunc(bytes);
         }
