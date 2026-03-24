@@ -240,8 +240,8 @@ bool FnPoseBlender::EvalSQT(float currentTime, float *sqtBuffer, const BoneMask 
                     if (boneIdx == mAlignRootBoneIdx) {
                         EAGL4::Transform rootTransform;
 
-                        ApplyAlignedRootTransform(rootTransform, mAlignMatrix, mPose[1], boneIdx);
-                        BlendRootTranslation(w, mPose[0], mPose[1], sqtBuffer, boneIdx);
+                        ApplyAlignedRootTransform(rootTransform, mAlignMatrix, mPose[1], mAlignRootBoneIdx);
+                        BlendRootTranslation(w, mPose[0], mPose[1], sqtBuffer, mAlignRootBoneIdx);
                     }
 
                     int poseIdx = boneIdx * 12;
@@ -263,8 +263,8 @@ bool FnPoseBlender::EvalSQT(float currentTime, float *sqtBuffer, const BoneMask 
                     if (boneIdx == mAlignRootBoneIdx) {
                         EAGL4::Transform rootTransform;
 
-                        ApplyAlignedRootTransform(rootTransform, mAlignMatrix, mPose[1], boneIdx);
-                        BlendRootTranslation(w, mPose[0], mPose[1], sqtBuffer, boneIdx);
+                        ApplyAlignedRootTransform(rootTransform, mAlignMatrix, mPose[1], mAlignRootBoneIdx);
+                        BlendRootTranslation(w, mPose[0], mPose[1], sqtBuffer, mAlignRootBoneIdx);
                     }
 
                     int poseIdx = boneIdx * 12;
