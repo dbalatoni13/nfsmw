@@ -248,7 +248,6 @@ retry:
                 if (type[1] == 0x7F) {
                     type += 2;
                 }
-                type += 1;
                 if (strncmp(gRuntimeAllocType, name, strlen(gRuntimeAllocType)) == 0) {
                     Symbol s;
                     const char *stripped_name;
