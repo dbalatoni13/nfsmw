@@ -871,20 +871,29 @@ CarRenderInfo::CarRenderInfo(RideInfo *ride_info)
 
     {
         eModel *base_model = this->mCarPartModels[CARSLOTID_BASE][0][this->mMinLodLevel].GetModel();
-        bVector4 *pivot_position = nullptr;
 
         if (base_model != nullptr) {
-            pivot_position = base_model->GetPivotPosition();
-        }
+            bVector4 *pivot_position = base_model->GetPivotPosition();
+            float pivot_x = 0.0f;
 
-        if (pivot_position != nullptr) {
-            this->PivotPosition.x = pivot_position->x;
-            this->PivotPosition.y = pivot_position->y;
-            this->PivotPosition.z = pivot_position->z;
-        } else {
-            this->PivotPosition.x = 0.0f;
-            this->PivotPosition.y = 0.0f;
-            this->PivotPosition.z = 0.0f;
+            if (pivot_position != nullptr) {
+                pivot_x = pivot_position->x;
+            }
+            this->PivotPosition.x = pivot_x;
+
+            float pivot_y = 0.0f;
+
+            if (pivot_position != nullptr) {
+                pivot_y = pivot_position->y;
+            }
+            this->PivotPosition.y = pivot_y;
+
+            float pivot_z = 0.0f;
+
+            if (pivot_position != nullptr) {
+                pivot_z = pivot_position->z;
+            }
+            this->PivotPosition.z = pivot_z;
         }
     }
 
