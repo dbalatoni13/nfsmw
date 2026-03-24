@@ -307,12 +307,14 @@ void VehicleRenderConn::HandleEvent(EventID id) {
 }
 
 void VehicleRenderConn::FetchData(float dT) {
-    const UTL::Collections::Listable<VehicleRenderConn, 10>::List &loader_list = VehicleRenderConn::GetList();
-    UTL::Collections::Listable<VehicleRenderConn, 10>::List::const_iterator it = loader_list.begin();
-    UTL::Collections::Listable<VehicleRenderConn, 10>::List::const_iterator end = loader_list.end();
+    const UTL::Collections::Listable<VehicleRenderConn, 10>::List &carlist = VehicleRenderConn::GetList();
+    {
+        VehicleRenderConn *const *iter = carlist.begin();
 
-    for (; it != end; ++it) {
-        (*it)->OnFetch(dT);
+        while (iter != carlist.end()) {
+            (*iter)->OnFetch(dT);
+            ++iter;
+        }
     }
 }
 
