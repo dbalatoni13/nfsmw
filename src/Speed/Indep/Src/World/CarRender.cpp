@@ -2427,16 +2427,21 @@ void CarRenderInfo::CreateCarLightFlares() {
                         flare_type = 12;
                         break;
                     case 0x7A5B2F25:
-                        if (front_marker_slot == slot_model_index || front_marker_slot < 1) {
-                            front_marker_slot = slot_model_index;
-                            flare_type = 3;
+                        if (front_marker_slot != slot_model_index && front_marker_slot > 0) {
+                            continue;
                         }
+                        front_marker_slot = slot_model_index;
+                        flare_type = 3;
                         break;
                     case 0x7ADF7EF8:
-                        if (rear_marker_slot == slot_model_index || rear_marker_slot <= 0) {
-                            rear_marker_slot = slot_model_index;
-                            flare_type = 3;
+                        if (rear_marker_slot != slot_model_index && rear_marker_slot > 0) {
+                            continue;
                         }
+                        rear_marker_slot = slot_model_index;
+                        flare_type = 3;
+                        break;
+                    default:
+                        flare_type = -1;
                         break;
                 }
 
