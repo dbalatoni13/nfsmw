@@ -201,9 +201,10 @@ bool Collection::AddAttribute(Key attributeKey, unsigned int count) {
     if (Contains(attributeKey)) {
         return false;
     }
+    const Class *c = mClass;
     bool result = false;
     unsigned char flags = 0;
-    const Attrib::Definition *d = mClass->GetDefinition(attributeKey);
+    const Attrib::Definition *d = c->GetDefinition(attributeKey);
     if (d) {
         d->InLayout();
         if (d->IsArray()) {

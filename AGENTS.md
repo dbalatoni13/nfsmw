@@ -539,6 +539,11 @@ For `VecHashMap`-backed wrapper tables, keep `VecHashMap::Clear()` as a named he
 TU: zAttribSys | Function: global constructors keyed to Attrib::Class::Class / ClassPrivate::CollectionHashMap::~CollectionHashMap
 In a jumbo TU, do not move a newly restored out-of-line wrapper special member above the file's first real top-level function without rechecking symbol order. In `AttribClass.cpp`, restoring `CollectionHashMap::~CollectionHashMap()` was necessary to emit the destructor and keep `Class::Delete` matched, but placing it above `Class::Class` renamed the 44-byte `global constructors keyed to ...` helper. Keeping `Class::Class` first and moving the wrapper dtor below it restored the helper name and the TU's `99.91143%` floor.
 
+### SharedInlineParameterNamesMatter
+
+TU: zAttribSys | Function: Collection::Contains / Collection::NextKey / Collection::GetNode / HashMap::UpdateSearchLength
+When a byte-exact mismatch fans out through the same shared inline helper, verify the helper's recovered parameter names before restructuring callers. Renaming `HashMapTablePolicy::WrapIndex`'s first parameter from `k` back to DWARF's `index` cleared four matched-function DWARF mismatches at once without changing objdiff.
+
 ### RegisterAllocatorTieBreakDeadEnd
 
 TU: zAttribSys | Function: Class::RemoveCollection / Database::RemoveClass

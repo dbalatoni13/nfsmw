@@ -136,6 +136,7 @@ Foo::Foo()
 - Add offset / size comments when you are writing recovered type layouts from DWARF.
 - In recovered layouts, prefer explicit-width aliases such as `uint8` / `uint16` when the field width is known. Use plain `char` for text / byte buffers and `signed char` when the field is a signed 8-bit counter.
 - Define inline member functions in headers only when DWARF shows that they are genuinely inlined in the binary.
+- In touched shared inlines/templates, preserve recovered parameter names too. In `zAttribSys`, changing `HashMapTablePolicy::WrapIndex` from `k` back to DWARF's `index` cleared several matched-function DWARF mismatches without changing codegen.
 - Use `struct` for POD-like data carriers with public fields; use `class` for behavior-heavy types only when that matches the recovered type information.
 - Keep tiny placeholder methods as concise inline bodies when that is already the local pattern.
 

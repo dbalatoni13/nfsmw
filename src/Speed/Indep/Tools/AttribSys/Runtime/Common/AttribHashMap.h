@@ -18,8 +18,8 @@ class HashMap {
             return RotateNTo32(k, keyShift) % tableSize;
         }
 
-        static std::size_t WrapIndex(Key k, std::size_t tableSize, unsigned int keyShift) {
-            return k % tableSize;
+        static std::size_t WrapIndex(Key index, std::size_t tableSize, unsigned int keyShift) {
+            return index % tableSize;
         }
 
         static void *Alloc(std::size_t bytes) {
