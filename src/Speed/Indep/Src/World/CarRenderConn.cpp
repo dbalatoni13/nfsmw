@@ -83,6 +83,10 @@ struct TireState : public bTNode<TireState> {
     void SetSurface(const SimSurface &surface);
     void UpdateWorld(const WCollider *wc, bool rain, bool flat);
 
+    static void *operator new(unsigned int size) {
+        return gFastMem.Alloc(size, nullptr);
+    }
+
     static void operator delete(void *mem, unsigned int size) {
         if (mem) {
             gFastMem.Free(mem, size, nullptr);
@@ -512,9 +516,7 @@ CarRenderConn::CarRenderConn(const Sim::ConnectionData &data, CarType ct, Render
     }
 
     for (i = 0; i < 4; i++) {
-        TireState *state = reinterpret_cast<TireState *>(gFastMem.Alloc(0xe0, 0));
-
-        TireState_ctor(state);
+        TireState *state = new TireState;
         this->mTireState[i] = state;
         this->VehicleRenderConn::mAttributes.TireOffsets(reinterpret_cast<UMath::Vector4 &>(this->mTirePositions[i]), i);
         {
