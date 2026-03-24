@@ -149,6 +149,7 @@ Foo::Foo()
 
 - Expand dense one-line helper structs, declaration blocks, and function bodies in non-match-sensitive files into normal multiline formatting.
 - In low-level headers, prefer normal multi-line bodies for touched inline operators and accessors instead of stacking `{ return ...; }` on one line, unless the surrounding file clearly uses intentional placeholder one-liners.
+- In match-sensitive `.cpp` files, do not slide a restored tiny out-of-line special member above the file's first real top-level function just for tidiness. On `zAttribSys`, moving `CollectionHashMap::~CollectionHashMap()` above `Class::Class` was enough to rename a `global constructors keyed to ...` helper and drop the TU until the original first-function order was restored.
 - Prefer readable blocks over stacked one-line statements when behavior does not depend on exact source shape.
 - In touched validation/parsing code, prefer explicit min/max or boundary checks over equivalent magic-constant arithmetic when the clearer form still compiles to the verified result.
 - In parser/state-table code, prefer named enums and enum-typed state variables over anonymous integer state codes when that rewrite is verified safe.

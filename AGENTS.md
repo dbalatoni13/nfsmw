@@ -534,6 +534,11 @@ If an STL node insertion path refuses to match, check whether the element type i
 TU: zAttribSys | Function: Class::SetTableBuffer / Class::AddCollection / Database::AddClass
 For `VecHashMap`-backed wrapper tables, keep `VecHashMap::Clear()` as a named helper, keep the `CollectionHashMap` constructor and scan helpers on the thin wrapper in `AttribPrivate.h`, and rely on the global placement `operator new` from SN's `<new>` instead of adding a `Node::operator new` member. That combination restored `Class::SetTableBuffer`, `Class::AddCollection`, and `Database::AddClass` to PASS/PASS without changing objdiff.
 
+### FirstFunctionAnchorsKeyedConstructors
+
+TU: zAttribSys | Function: global constructors keyed to Attrib::Class::Class / ClassPrivate::CollectionHashMap::~CollectionHashMap
+In a jumbo TU, do not move a newly restored out-of-line wrapper special member above the file's first real top-level function without rechecking symbol order. In `AttribClass.cpp`, restoring `CollectionHashMap::~CollectionHashMap()` was necessary to emit the destructor and keep `Class::Delete` matched, but placing it above `Class::Class` renamed the 44-byte `global constructors keyed to ...` helper. Keeping `Class::Class` first and moving the wrapper dtor below it restored the helper name and the TU's `99.91143%` floor.
+
 ### RegisterAllocatorTieBreakDeadEnd
 
 TU: zAttribSys | Function: Class::RemoveCollection / Database::RemoveClass

@@ -13,6 +13,8 @@ Class::~Class() {
     Database::Get().RemoveClass(this);
 }
 
+ClassPrivate::CollectionHashMap::~CollectionHashMap() {}
+
 const Definition *Class::GetDefinition(Key key) const {
     Definition target(key);
     const Definition *b = mPrivates.mDefinitions;
