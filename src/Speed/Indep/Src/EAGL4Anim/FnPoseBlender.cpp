@@ -233,11 +233,10 @@ bool FnPoseBlender::EvalSQT(float currentTime, float *sqtBuffer, const BoneMask 
         return false;
     }
 
-    int numBones = mpSkel->GetNumBones();
     if (mAnim[1]->EvalSQT(currentTime - mTimeOffset[1], mPose[1], boneMask)) {
         if (!boneMask) {
             if (mAlignRootBoneIdx >= 0) {
-                for (int boneIdx = numBones - 1; boneIdx >= 0; --boneIdx) {
+                for (int boneIdx = mpSkel->GetNumBones() - 1; boneIdx >= 0; --boneIdx) {
                     if (boneIdx == mAlignRootBoneIdx) {
                         EAGL4::Transform rootTransform;
 
@@ -250,7 +249,7 @@ bool FnPoseBlender::EvalSQT(float currentTime, float *sqtBuffer, const BoneMask 
                     FastQuatBlendF4(w, &mPose[0][poseIdx + 4], &mPose[1][poseIdx + 4], &sqtBuffer[poseIdx + 4]);
                 }
             } else {
-                for (int boneIdx = numBones - 1; boneIdx >= 0; --boneIdx) {
+                for (int boneIdx = mpSkel->GetNumBones() - 1; boneIdx >= 0; --boneIdx) {
                     int poseIdx = boneIdx * 12;
 
                     FastQuatBlendF4(w, &mPose[0][poseIdx + 4], &mPose[1][poseIdx + 4], &sqtBuffer[poseIdx + 4]);
@@ -259,7 +258,7 @@ bool FnPoseBlender::EvalSQT(float currentTime, float *sqtBuffer, const BoneMask 
                 BlendRootTranslation(w, mPose[0], mPose[1], sqtBuffer, 0);
             }
         } else if (mAlignRootBoneIdx >= 0) {
-            for (int boneIdx = numBones - 1; boneIdx >= 0; --boneIdx) {
+            for (int boneIdx = mpSkel->GetNumBones() - 1; boneIdx >= 0; --boneIdx) {
                 if (boneMask->GetBone(boneIdx)) {
                     if (boneIdx == mAlignRootBoneIdx) {
                         EAGL4::Transform rootTransform;
@@ -274,7 +273,7 @@ bool FnPoseBlender::EvalSQT(float currentTime, float *sqtBuffer, const BoneMask 
                 }
             }
         } else {
-            for (int boneIdx = numBones - 1; boneIdx >= 0; --boneIdx) {
+            for (int boneIdx = mpSkel->GetNumBones() - 1; boneIdx >= 0; --boneIdx) {
                 if (boneMask->GetBone(boneIdx)) {
                     int poseIdx = boneIdx * 12;
 
