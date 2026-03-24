@@ -486,8 +486,9 @@ int CompositeSkin(SkinCompositeParams *composite_params) {
                         semi_trans_pixels[cur_semi_trans_pixel].x = x - y * dest_width;
                         semi_trans_pixels[cur_semi_trans_pixel].y = y;
 
-                        if (cur_semi_trans_pixel + 1 < max_semi_trans_pixels) {
-                            cur_semi_trans_pixel++;
+                        cur_semi_trans_pixel++;
+                        if (cur_semi_trans_pixel >= max_semi_trans_pixels) {
+                            cur_semi_trans_pixel--;
                         }
 
                         *dest = 0xFF;
