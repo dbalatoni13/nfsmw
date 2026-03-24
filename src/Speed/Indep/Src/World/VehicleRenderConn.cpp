@@ -333,21 +333,38 @@ bool VehicleRenderConn::Load(unsigned int worldID, CarRenderUsage usage, bool co
     }
 
     this->mWorldRef.Set(worldID);
-    this->mRideInfo = new RideInfo;
+    this->mRideInfo = new (__FILE__, __LINE__) RideInfo;
     this->mRideInfo->Init(this->mCarType, usage, 0, 0);
 
     if (CarInfo_IsSkinned(this->mCarType)) {
-        int skin_slot = UsePrecompositeVinyls == 0 ? 1 : 5;
-        int end_skin_slot = UsePrecompositeVinyls == 0 ? 5 : 13;
+        bool precomposite = false;
 
-        while (skin_slot < end_skin_slot) {
-            unsigned int skin_mask = SkinSlotToMask(skin_slot);
-            if (mOpenSkinSlots & skin_mask) {
-                mOpenSkinSlots &= ~skin_mask;
-                this->mSkinSlot = skin_slot;
-                break;
+        if (0) {
+            customizations->IsPreset();
+        }
+
+        if (UsePrecompositeVinyls != 0) {
+            precomposite = true;
+        }
+
+        if (!precomposite) {
+            for (int i = 1; i < 5; i++) {
+                int mask = SkinSlotToMask(i);
+                if (mOpenSkinSlots & mask) {
+                    mOpenSkinSlots &= ~mask;
+                    this->mSkinSlot = i;
+                    break;
+                }
             }
-            skin_slot++;
+        } else {
+            for (int i = 5; i < 13; i++) {
+                int mask = SkinSlotToMask(i);
+                if (mOpenSkinSlots & mask) {
+                    mOpenSkinSlots &= ~mask;
+                    this->mSkinSlot = i;
+                    break;
+                }
+            }
         }
 
         if (this->mSkinSlot != 0) {
