@@ -1445,8 +1445,6 @@ void CarRenderConn::GetRenderMatrix(bMatrix4 *matrix) {
 }
 
 void CarRenderConn::OnRender(eView *view, int reflection) {
-    const LocalReferenceMirror *world_ref = reinterpret_cast<const LocalReferenceMirror *>(&this->mWorldRef);
-
     if (!this->CanRender()) {
         return;
     }
@@ -1481,7 +1479,7 @@ void CarRenderConn::OnRender(eView *view, int reflection) {
     if (this->mDoContrailEffect && camera_mover != 0 && camera_mover->IsHoodCamera() &&
         (view->GetID() == 1 || view->GetID() == 2)) {
         const Attrib::Collection *xenon_effect = Attrib::FindCollection(0x6F5943F1, 0x16AFDE7B);
-        AddXenonEffect(0, xenon_effect, world_ref->mMatrix, reinterpret_cast<const bVector4 *>(world_ref->mVelocity));
+        AddXenonEffect(0, xenon_effect, this->GetBodyMatrix(), reinterpret_cast<const bVector4 *>(this->GetVelocity()));
     }
 
     if (view->GetID() == 3) {
@@ -1517,7 +1515,7 @@ void CarRenderConn::OnRender(eView *view, int reflection) {
             CameraAnchor *anchor = anchor_mover->GetAnchor();
 
             if (anchor != 0 && reinterpret_cast<const CameraAnchorPovMirror *>(anchor)->mPOVType == 1) {
-                const bMatrix4 *world_matrix = world_ref->mMatrix;
+                const bMatrix4 *world_matrix = this->GetBodyMatrix();
 
                 if (world_matrix != 0) {
                     bVector4 offset = this->mModelOffset;
