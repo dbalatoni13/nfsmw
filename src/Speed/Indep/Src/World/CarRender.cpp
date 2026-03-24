@@ -2562,9 +2562,6 @@ void CarRenderInfo::RenderFlaresOnCar(eView *view, const bVector3 *position, con
             view->NumCopsCherry++;
         }
     }
-    if (car_type_info != 0) {
-        is_traffic_car = car_type_info->GetCarUsageType() == CAR_USAGE_TYPE_TRAFFIC;
-    }
 
     int car_pixel_size = view->GetPixelSize(position, this->mRadius);
     if (eGetCurrentViewMode() == EVIEWMODE_TWOH) {
@@ -2573,6 +2570,10 @@ void CarRenderInfo::RenderFlaresOnCar(eView *view, const bVector3 *position, con
 
     if (car_pixel_size < view->PixelMinSize || view->GetVisibleState(&this->AABBMin, &this->AABBMax, local_world) == EVISIBLESTATE_NOT) {
         return;
+    }
+
+    if (car_type_info != 0) {
+        is_traffic_car = car_type_info->GetCarUsageType() == CAR_USAGE_TYPE_TRAFFIC;
     }
 
     float headlight_left_intensity;
