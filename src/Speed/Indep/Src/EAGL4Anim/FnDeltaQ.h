@@ -73,7 +73,19 @@ class FnDeltaQ : public FnAnimMemoryMap {
   protected:
     virtual bool EvalSQTMasked(float currTime, const BoneMask *boneMask, float *sqt);
 
-    void InitBuffersAsRequired();
+    void InitBuffersAsRequired() {
+        DeltaQ *deltaQ = reinterpret_cast<DeltaQ *>(mpAnim);
+        DeltaQMinRange *minRanges;
+
+        deltaQ->GetArrays(minRanges, mBins, mConstBoneIdxs, mConstPhysical);
+        mBinSize = deltaQ->GetBinSize();
+
+        if (deltaQ->mNumBones != 0) {
+            mPrevQs = reinterpret_cast<UMath::Vector4 *>(MemoryPoolManager::NewBlock(deltaQ->mNumBones * sizeof(*mPrevQs)));
+            mPrevQBlock = mPrevQs;
+        }
+        mMinRanges = minRanges;
+    }
 
     DeltaQMinRange *mMinRanges;     // offset 0x10, size 0x4
     unsigned char *mBins;           // offset 0x14, size 0x4

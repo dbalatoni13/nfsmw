@@ -94,24 +94,7 @@ bool FnDeltaQ::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask) {
     DeltaQ *deltaQ = reinterpret_cast<DeltaQ *>(mpAnim);
 
     if (!mBins) {
-        unsigned char numBones = deltaQ->mNumBones;
-        DeltaQMinRange *minRanges = reinterpret_cast<DeltaQMinRange *>(reinterpret_cast<unsigned char *>(deltaQ) + 0x12);
-
-        mBins = reinterpret_cast<unsigned char *>(minRanges) + numBones * sizeof(DeltaQMinRange);
-        mConstBoneIdxs = reinterpret_cast<unsigned char *>(deltaQ->GetConstBoneIdx());
-        mConstPhysical = reinterpret_cast<DeltaQPhysical *>(deltaQ->GetConstPhysical());
-        mBinSize = deltaQ->GetBinSize();
-
-        if (deltaQ->mNumBones != 0) {
-            UMath::Vector4 *prevQs =
-                reinterpret_cast<UMath::Vector4 *>(MemoryPoolManager::NewBlock(deltaQ->mNumBones * sizeof(*mPrevQs)));
-
-            mMinRanges = minRanges;
-            mPrevQBlock = prevQs;
-            mPrevQs = prevQs;
-        } else {
-            mMinRanges = minRanges;
-        }
+        InitBuffersAsRequired();
     }
     int floorTime = FloatToInt(currTime);
     int floorKey;
@@ -315,24 +298,7 @@ bool FnDeltaQ::EvalSQTMasked(float currTime, const BoneMask *boneMask, float *sq
     DeltaQ *deltaQ = reinterpret_cast<DeltaQ *>(mpAnim);
 
     if (!mBins) {
-        unsigned char numBones = deltaQ->mNumBones;
-        DeltaQMinRange *minRanges = reinterpret_cast<DeltaQMinRange *>(reinterpret_cast<unsigned char *>(deltaQ) + 0x12);
-
-        mBins = reinterpret_cast<unsigned char *>(minRanges) + numBones * sizeof(DeltaQMinRange);
-        mConstBoneIdxs = reinterpret_cast<unsigned char *>(deltaQ->GetConstBoneIdx());
-        mConstPhysical = reinterpret_cast<DeltaQPhysical *>(deltaQ->GetConstPhysical());
-        mBinSize = deltaQ->GetBinSize();
-
-        if (deltaQ->mNumBones != 0) {
-            UMath::Vector4 *prevQs =
-                reinterpret_cast<UMath::Vector4 *>(MemoryPoolManager::NewBlock(deltaQ->mNumBones * sizeof(*mPrevQs)));
-
-            mMinRanges = minRanges;
-            mPrevQBlock = prevQs;
-            mPrevQs = prevQs;
-        } else {
-            mMinRanges = minRanges;
-        }
+        InitBuffersAsRequired();
     }
     int floorTime = FloatToInt(currTime);
     int floorKey;
@@ -578,21 +544,6 @@ bool FnDeltaQ::EvalWeights(float currTime, float *weights) {
 bool FnDeltaQ::EvalVel2D(float currTime, float *vel) {
     Eval(currTime, currTime, vel);
     return true;
-}
-
-void FnDeltaQ::InitBuffersAsRequired() {
-    DeltaQ *deltaQ = reinterpret_cast<DeltaQ *>(mpAnim);
-
-    mMinRanges = GetMinRanges(deltaQ);
-    mBins = GetBinStart(deltaQ);
-    mBinSize = deltaQ->GetBinSize();
-    mConstBoneIdxs = deltaQ->GetConstBoneIdx();
-    mConstPhysical = deltaQ->GetConstPhysical();
-
-    if (deltaQ->mNumBones != 0) {
-        mPrevQs = reinterpret_cast<UMath::Vector4 *>(MemoryPoolManager::NewBlock(deltaQ->mNumBones * sizeof(*mPrevQs)));
-        mPrevQBlock = mPrevQs;
-    }
 }
 
 }; // namespace EAGL4Anim

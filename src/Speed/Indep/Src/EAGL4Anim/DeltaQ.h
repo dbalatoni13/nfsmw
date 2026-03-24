@@ -120,14 +120,21 @@ struct DeltaQ : public AnimMemoryMap {
         return result;
     }
 
-    void GetArrays(DeltaQMinRange *&minRanges, unsigned char *&binStart, unsigned char *&constBoneIndices, DeltaQPhysical *&constPhysical) {}
+    void GetArrays(DeltaQMinRange *&minRanges, unsigned char *&binStart, unsigned char *&constBoneIndices, DeltaQPhysical *&constPhysical) {
+        unsigned char *memBytes = reinterpret_cast<unsigned char *>(this) + 0x12;
+
+        minRanges = reinterpret_cast<DeltaQMinRange *>(memBytes);
+        binStart = &memBytes[mNumBones * sizeof(DeltaQMinRange)];
+        constBoneIndices = GetConstBoneIdx();
+        constPhysical = GetConstPhysical();
+    }
 
     int GetBinSize() const {
-        return AlignSize2((mNumBones * sizeof(DeltaQPhysical)) + ((GetBinLength() - 1) * mNumBones * sizeof(DeltaQDelta)));
+        return AlignSize2(mNumBones * (((GetBinLength() - 1) * sizeof(DeltaQDelta)) + sizeof(DeltaQPhysical)));
     }
 
     DeltaQMinRange *GetMinRange() {
-        unsigned char *memBytes = reinterpret_cast<unsigned char *>(&this[1]);
+        unsigned char *memBytes = reinterpret_cast<unsigned char *>(this) + 0x12;
         return reinterpret_cast<DeltaQMinRange *>(memBytes);
     }
 
