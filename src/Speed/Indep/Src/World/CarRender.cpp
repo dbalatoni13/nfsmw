@@ -932,9 +932,9 @@ CarRenderInfo::CarRenderInfo(RideInfo *ride_info)
         this->TheCarPartCuller.InitPart(CULLABLE_CAR_PART_TIRE_RL, &tire_positions[3]);
 
         v_left = tire_positions[0] + tire_positions[3];
-        v_left /= culldiv;
+        v_left /= 2.0f;
         v_right = tire_positions[1] + tire_positions[2];
-        v_right /= culldiv;
+        v_right /= 2.0f;
 
         this->TheCarPartCuller.InitPart(CULLABLE_CAR_PART_BRAKE_FL, &tire_positions[0]);
         this->TheCarPartCuller.InitPart(CULLABLE_CAR_PART_BRAKE_FR, &tire_positions[1]);
@@ -944,7 +944,7 @@ CarRenderInfo::CarRenderInfo(RideInfo *ride_info)
         this->TheCarPartCuller.InitPart(CULLABLE_CAR_PART_SIDE_REAR, &tire_positions[2]);
 
         v_underneath = v_left + v_right;
-        v_underneath /= culldiv;
+        v_underneath /= 2.0f;
         this->TheCarPartCuller.InitPart(CULLABLE_CAR_PART_UNDERNEATH, &v_underneath);
 
         v_front_diff = tire_positions[0] - tire_positions[1];
