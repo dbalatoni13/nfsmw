@@ -724,6 +724,7 @@ CarRenderInfo::CarRenderInfo(RideInfo *ride_info)
     this->mMirrorLeftWheels = static_cast<unsigned char>(this->mAttributes.WheelSpokeCount()) >> 7;
     this->mFlashing = false;
     this->mFlashInterval = 0.0f;
+    this->mEmitterPositionsInitialized = false;
     bMemSet(&this->mDamageInfoCache, 0, 0x14);
 
     this->AnimTime = 0.0f;
@@ -911,7 +912,6 @@ CarRenderInfo::CarRenderInfo(RideInfo *ride_info)
         }
     }
 
-    this->mEmitterPositionsInitialized = false;
     this->CreateCarLightFlares();
 
     {
