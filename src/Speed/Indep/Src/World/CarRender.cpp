@@ -3082,7 +3082,7 @@ void CarRenderInfo::DrawAmbientShadow(eView *view, const bVector3 *position, flo
     TextureInfo *texture_info;
     unsigned int colour;
 
-    sh_Setup(const_cast<bVector3 *>(position));
+    hull_Origin = *position;
     if (TheGameFlowManager.GetState() == GAMEFLOW_STATE_RACING) {
         eUnSwizzleWorldVector(*position, usPoint);
         this->mWorldPos.FindClosestFace(this->mWCollider, reinterpret_cast<const UMath::Vector3 &>(usPoint), false);
