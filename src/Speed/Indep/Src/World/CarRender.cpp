@@ -2554,10 +2554,7 @@ void CarRenderInfo::RenderFlaresOnCar(eView *view, const bVector3 *position, con
         this->RenderTextureHeadlights(view, local_world, 0);
     }
 
-    CarTypeInfo *car_type_info = this->pCarTypeInfo;
-    int is_traffic_car = 0;
-
-    if (car_type_info != 0 && car_type_info->GetCarUsageType() == CAR_USAGE_TYPE_COP) {
+    if (this->pCarTypeInfo != 0 && this->pCarTypeInfo->GetCarUsageType() == CAR_USAGE_TYPE_COP) {
         if (this->IsLightOn(VehicleFX::LIGHT_COPRED)) {
             view->NumCopsCherry++;
         }
@@ -2572,8 +2569,9 @@ void CarRenderInfo::RenderFlaresOnCar(eView *view, const bVector3 *position, con
         return;
     }
 
-    if (car_type_info != 0) {
-        is_traffic_car = car_type_info->GetCarUsageType() == CAR_USAGE_TYPE_TRAFFIC;
+    int is_traffic_car = 0;
+    if (this->pCarTypeInfo != 0) {
+        is_traffic_car = this->pCarTypeInfo->GetCarUsageType() == CAR_USAGE_TYPE_TRAFFIC;
     }
 
     float headlight_left_intensity;
