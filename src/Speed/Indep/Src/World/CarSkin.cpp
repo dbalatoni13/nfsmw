@@ -380,17 +380,18 @@ int CompositeSkin(SkinCompositeParams *composite_params) {
         }
 
         if (swatch_offset_init == 0) {
-            unsigned int swatch_lookup_colours[4];
-            int swatch_indices[4];
-
-            swatch_lookup_colours[0] = 0xA00000F0;
-            swatch_lookup_colours[1] = 0xA000F000;
-            swatch_lookup_colours[2] = 0xA0F00000;
-            swatch_lookup_colours[3] = 0xA0F000F0;
-            swatch_indices[0] = -1;
-            swatch_indices[1] = -1;
-            swatch_indices[2] = -1;
-            swatch_indices[3] = -1;
+            unsigned int swatch_lookup_colours[4] = {
+                0xA00000F0,
+                0xA000F000,
+                0xA0F00000,
+                0xA0F000F0,
+            };
+            int swatch_indices[4] = {
+                -1,
+                -1,
+                -1,
+                -1,
+            };
 
             for (int i = 0; i < 4; i++) {
                 for (int j = 0; j < 0x100; j++) {
