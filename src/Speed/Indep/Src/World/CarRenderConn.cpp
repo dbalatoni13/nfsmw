@@ -1508,24 +1508,21 @@ void CarRenderConn::OnRender(eView *view, int reflection) {
 
     eGetCurrentViewMode();
 
-    bMatrix4 body_matrix(this->mRenderMatrix);
+    bMatrix4 body_matrix = this->mRenderMatrix;
 
     if (reflection == 0 && this->IsViewAnchor(view)) {
         CameraMover *anchor_mover = view->GetCameraMover();
+        CameraAnchor *anchor = anchor_mover->GetAnchor();
 
-        if (anchor_mover != 0) {
-            CameraAnchor *anchor = anchor_mover->GetAnchor();
+        if (anchor != 0 && reinterpret_cast<const CameraAnchorPovMirror *>(anchor)->mPOVType == 1) {
+            bVector4 translated_offset;
 
-            if (anchor != 0 && reinterpret_cast<const CameraAnchorPovMirror *>(anchor)->mPOVType == 1) {
-                bVector4 translated_offset;
-
-                PSMTX44Copy(*reinterpret_cast<const Mtx44 *>(this->GetBodyMatrix()), *reinterpret_cast<Mtx44 *>(&body_matrix));
-                bVector4 offset = this->mModelOffset;
-                eMulVector(&translated_offset, &body_matrix, &offset);
-                body_matrix.v3.x -= translated_offset.x;
-                body_matrix.v3.y -= translated_offset.y;
-                body_matrix.v3.z -= translated_offset.z;
-            }
+            PSMTX44Copy(*reinterpret_cast<const Mtx44 *>(this->GetBodyMatrix()), *reinterpret_cast<Mtx44 *>(&body_matrix));
+            bVector4 offset = this->mModelOffset;
+            eMulVector(&translated_offset, &body_matrix, &offset);
+            body_matrix.v3.x -= translated_offset.x;
+            body_matrix.v3.y -= translated_offset.y;
+            body_matrix.v3.z -= translated_offset.z;
         }
     }
 
