@@ -396,6 +396,11 @@ template <> inline CarEmitterPosition *bSList<CarEmitterPosition>::EndOfList() {
     return reinterpret_cast<CarEmitterPosition *>(this);
 }
 
+template <> inline bSList<CarEmitterPosition>::bSList() {
+    Head = EndOfList();
+    Tail = EndOfList();
+}
+
 template <> inline CarEmitterPosition *bSList<CarEmitterPosition>::AddTail(CarEmitterPosition *node) {
     CarEmitterPosition *prev_tail = Tail;
 
@@ -711,6 +716,7 @@ CarRenderInfo::CarRenderInfo(RideInfo *ride_info)
       mEmitterPositionsInitialized(false), //
       mAttributes(0xeec2271a, 0, nullptr)
 {
+    ProfileNode profile_node;
     CarRenderRideInfoLayout *ride_layout = reinterpret_cast<CarRenderRideInfoLayout *>(ride_info);
     CarTypeInfo *info = &CarTypeInfoArray[ride_info->Type];
     char *car_base_name = info->BaseModelName;
