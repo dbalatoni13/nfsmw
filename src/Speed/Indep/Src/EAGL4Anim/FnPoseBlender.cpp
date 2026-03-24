@@ -335,10 +335,8 @@ void FnPoseBlender::Eval(float previousTime, float currentTime, float *outputPos
             FastQuatBlendF4(w, &mPose[0][poseIdx + 4], &mPose[1][poseIdx + 4], &outputPose[poseIdx + 4]);
         }
     } else {
-        for (int boneIdx = mpSkel->GetNumBones() - 1; boneIdx >= 0; --boneIdx) {
-            int poseIdx = boneIdx * 12;
-
-            FastQuatBlendF4(w, &mPose[0][poseIdx + 4], &mPose[1][poseIdx + 4], &outputPose[poseIdx + 4]);
+        for (int poseIdx = mpSkel->GetNumBones() * 12 - 8; poseIdx > 3; poseIdx -= 12) {
+            FastQuatBlendF4(w, &mPose[0][poseIdx], &mPose[1][poseIdx], &outputPose[poseIdx]);
         }
 
         BlendRootTranslation(w, mPose[0], mPose[1], outputPose, 0);
