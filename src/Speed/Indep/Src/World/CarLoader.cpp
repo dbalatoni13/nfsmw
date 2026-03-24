@@ -716,7 +716,7 @@ int CarLoader::UnloadCar(LoadedCar *loaded_car) {
 }
 
 int CarLoader::UnloadWheel(LoadedWheel *loaded_wheel) {
-    unsigned int name_hashes[129];
+    unsigned int name_hashes[128];
 
     this->UnallocateSkinLayers(loaded_wheel->LoadedSkinLayersPerm, 4);
 
