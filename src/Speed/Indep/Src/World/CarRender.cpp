@@ -2143,15 +2143,16 @@ void CarRenderInfo::InitEmitterPositions(bVector4 *tire_positions) {
 
         for (int i = 0; i < NUM_CARFXPOS; i++) {
             int num_pos_name_hashes = 0;
-            bSList<CarEmitterPosition> &markers = this->EmitterPositionList[i];
 
             if (GetNumCarEffectMarkerHashes(static_cast<CarEffectPosition>(i), num_pos_name_hashes)) {
                 if (num_pos_name_hashes > 0) {
+                    bSList<CarEmitterPosition> &markers = this->EmitterPositionList[i];
                     this->GetEmitterPositions(markers, GetCarEffectMarkerHashes(static_cast<CarEffectPosition>(i)), num_pos_name_hashes);
                 }
                 continue;
             }
 
+            bSList<CarEmitterPosition> &markers = this->EmitterPositionList[i];
             CarEmitterPosition *empos = nullptr;
             switch (i) {
                 case CARFXPOS_NONE:
