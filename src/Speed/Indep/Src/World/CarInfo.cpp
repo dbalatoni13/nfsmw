@@ -1160,11 +1160,11 @@ void GetUsedCarTextureInfo(UsedCarTextureInfo *used_texture_info, RideInfo *ride
     } else {
         unsigned int mapped_skin_hash = info->MappedSkinHash;
 
-        info->ReplaceSpinnerHash = 0;
-        info->ReplaceRoofScoopHash = mapped_skin_hash;
         info->ReplaceSkinHash = mapped_skin_hash;
         info->ReplaceSpoilerHash = mapped_skin_hash;
+        info->ReplaceRoofScoopHash = mapped_skin_hash;
         info->ReplaceWheelHash = 0;
+        info->ReplaceSpinnerHash = 0;
     }
 
     info->ReplaceSkinBHash = 0;
