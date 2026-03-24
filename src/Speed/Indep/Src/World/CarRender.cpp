@@ -1412,7 +1412,8 @@ void CarRenderInfo::UpdateCarParts() {
 
     for (int model_number = 0; model_number < 1; model_number++) {
         for (int lod = this->mMinLodLevel; lod <= this->mMaxLodLevel; lod++) {
-            eModel *front_wheel_model = this->mCarPartModels[CARSLOTID_FRONT_WHEEL][model_number][lod].GetModel();
+            CarPartModel *front_wheel_part_model = &this->mCarPartModels[CARSLOTID_FRONT_WHEEL][model_number][lod];
+            eModel *front_wheel_model = front_wheel_part_model->GetModel();
             CarPartModel *rear_wheel_part_model = &this->mCarPartModels[CARSLOTID_REAR_WHEEL][model_number][lod];
             unsigned int &rear_wheel_packed_model = reinterpret_cast<CarPartModelLayout *>(rear_wheel_part_model)->mModel;
             eModel *rear_wheel_model = reinterpret_cast<eModel *>(rear_wheel_packed_model & ~0x3);
@@ -1432,9 +1433,10 @@ void CarRenderInfo::UpdateCarParts() {
                 }
             }
 
+            CarPartModel *front_brake_part_model = &this->mCarPartModels[CARSLOTID_FRONT_BRAKE][model_number][lod];
             CarPartModel *rear_brake_part_model = &this->mCarPartModels[CARSLOTID_REAR_BRAKE][model_number][lod];
             unsigned int &rear_brake_packed_model = reinterpret_cast<CarPartModelLayout *>(rear_brake_part_model)->mModel;
-            eModel *front_brake_model = this->mCarPartModels[CARSLOTID_FRONT_BRAKE][model_number][lod].GetModel();
+            eModel *front_brake_model = front_brake_part_model->GetModel();
             eModel *rear_brake_model = reinterpret_cast<eModel *>(rear_brake_packed_model & ~0x3);
 
             if (front_brake_model != 0 && rear_brake_model == 0) {
