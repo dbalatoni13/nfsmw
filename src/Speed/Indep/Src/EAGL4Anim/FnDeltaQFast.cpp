@@ -423,56 +423,12 @@ bool FnDeltaQFast::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask)
         unsigned char *boneIdxs = deltaQ->mBoneIdxs;
 
         if (deltaQ->mNumBones) {
-        int floorTime = FloatToInt(currTime);
-        unsigned short *times = deltaQ->mTimes;
-        int floorKey;
-        unsigned int floorDeltaIdx;
-        int floorBinIdx;
-        unsigned int binLengthMask;
-
-            if (!times) {
-                if (floorTime < 0) {
-                    floorKey = 0;
-                } else if (deltaQ->mNumKeys > floorTime) {
-                    floorKey = floorTime;
-                } else {
-                    floorKey = deltaQ->mNumKeys - 1;
-                }
-            } else {
-            if (floorTime < times[0]) {
-                floorKey = 0;
-            } else {
-                int timeIndex = mPrevKey - 1;
-                if (mPrevKey < 1) {
-                    timeIndex = 0;
-                }
-
-                    if (floorTime >= times[timeIndex]) {
-                        int lastTimeIndex = deltaQ->mNumKeys - 2;
-                        if (timeIndex < lastTimeIndex) {
-                            unsigned int nextTime = times[timeIndex + 1];
-                            int nextIndex = timeIndex;
-
-                            while (((timeIndex = nextIndex), static_cast<int>(nextTime) <= floorTime &&
-                                    ((timeIndex = nextIndex + 1), timeIndex < lastTimeIndex))) {
-                                nextTime = times[nextIndex + 2];
-                                nextIndex = timeIndex;
-                            }
-                        }
-                    } else {
-                        if (timeIndex > 0) {
-                            do {
-                                timeIndex--;
-                                if (timeIndex < 1) {
-                                    break;
-                                }
-                            } while (floorTime < times[timeIndex]);
-                        }
-                    }
-
-                    floorKey = timeIndex + 1;
-                }
-            }
+            int floorTime = FloatToInt(currTime);
+            unsigned short *times = deltaQ->mTimes;
+            int floorKey = FindQFastFloorKey(mPrevKey, deltaQ, currTime);
+            unsigned int floorDeltaIdx;
+            int floorBinIdx;
+            unsigned int binLengthMask;
 
         floorBinIdx = static_cast<int>(floorKey) >> deltaQ->mBinLengthPower;
         binLengthMask = 0x7FFFFFFFU >> (0x1F - deltaQ->mBinLengthPower);
