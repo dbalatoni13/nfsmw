@@ -807,24 +807,25 @@ void CarRenderConn::UpdateEngineAnimation(float dT, const RenderConn::Pkt_Car_Se
         return;
     }
 
-    const Attrib::Gen::ecar &attributes = this->VehicleRenderConn::mAttributes;
-    const LocalReferenceMirror *world_ref = reinterpret_cast<const LocalReferenceMirror *>(&this->mWorldRef);
+    float delta;
+    float rev_accel;
 
     if (this->mShifting != 0.0f) {
-        float car_speed = bLength(*world_ref->mVelocity);
-        float shift_speed = attributes.ShiftSpeed(0) * 0.017453f;
-        float max_pitch = attributes.ShiftAngle(0) * 0.017453f;
-        int gear = data.mGear - 2;
+        const float car_speed = bLength(this->GetVelocity());
+        const float shift_speed = DEG2RAD(this->GetAttributes().ShiftSpeed(0));
+        const float max_pitch = DEG2RAD(this->GetAttributes().ShiftAngle(0));
+        const int gear = data.mGear - 2;
 
         if (shift_speed <= 0.0f || max_pitch <= 0.0f || gear < 0 || car_speed <= 10.0f) {
             this->mShiftPitchAngle = 0.0f;
             this->mShifting = 0.0f;
         } else {
-            float fwd_accel = bDot(world_ref->mAcceleration, reinterpret_cast<const bVector3 *>(&this->mRenderMatrix.v0));
-            float accel_ratio = (bAbs(fwd_accel * 0.10204081f) - 0.1f) / 0.4f;
-            float gear_ratio = UMath::Clamp(accel_ratio, 0.0f, 1.0f);
-            float rev_accel = UMath::Pow(0.95f, static_cast<float>(gear));
-            float delta = UMath::Sina(bAbs(this->mShifting) * 0.5f) * max_pitch * rev_accel * gear_ratio;
+            float fwd_accel = bDot(this->GetAcceleration(), reinterpret_cast<const bVector3 *>(&this->mRenderMatrix.v0));
+            float accel_ratio = (UMath::Abs(fwd_accel * 0.10204081f) - 0.1f) / 0.4f;
+            float gear_ratio = UMath::Ramp(accel_ratio, 0.0f, 1.0f);
+
+            rev_accel = UMath::Pow(0.95f, static_cast<float>(gear));
+            delta = UMath::Sina(UMath::Abs(this->mShifting) * 0.5f) * max_pitch * rev_accel * gear_ratio;
 
             this->mShiftPitchAngle = delta;
             if (this->mShifting < 0.0f) {
@@ -838,7 +839,7 @@ void CarRenderConn::UpdateEngineAnimation(float dT, const RenderConn::Pkt_Car_Se
         this->mShiftPitchAngle = 0.0f;
     }
 
-    float delta = data.mEnginePower - this->mEnginePower;
+    delta = data.mEnginePower - this->mEnginePower;
     if (UMath::Abs(delta) < 0.005f) {
         delta = 0.0f;
     }
@@ -847,9 +848,10 @@ void CarRenderConn::UpdateEngineAnimation(float dT, const RenderConn::Pkt_Car_Se
     this->mEnginePitchAngle = data.mAnimatedCarPitch;
 
     if (data.mAnimatedCarRoll == 0.0f) {
-        float max_pitch = data.mEnginePower * data.mEngineSpeed * attributes.EngineRevAngle(0) * 0.017453f;
-        float rev_speed = attributes.EngineRevSpeed(0) * 0.017453f * dT;
-        float desired_angle = UMath::Clamp((delta / dT) * attributes.EngineRev(0) / 0.2f, 0.0f, 1.0f) * max_pitch;
+        float acceleration = (delta / dT) * this->GetAttributes().EngineRev(0);
+        float max_rev = data.mEnginePower * data.mEngineSpeed * DEG2RAD(this->GetAttributes().EngineRevAngle(0));
+        float rev_speed = DEG2RAD(this->GetAttributes().EngineRevSpeed(0)) * dT;
+        float desired_angle = UMath::Ramp(acceleration, 0.0f, 0.2f) * max_rev;
 
         if (this->mEngineTorqueAngle < desired_angle) {
             this->mEngineTorqueAngle = UMath::Min(this->mEngineTorqueAngle + rev_speed, desired_angle);
@@ -857,15 +859,15 @@ void CarRenderConn::UpdateEngineAnimation(float dT, const RenderConn::Pkt_Car_Se
             this->mEngineTorqueAngle = UMath::Max(this->mEngineTorqueAngle - rev_speed, desired_angle);
         }
 
-        this->mEngineTorqueAngle = UMath::Clamp(this->mEngineTorqueAngle, 0.0f, max_pitch);
+        this->mEngineTorqueAngle = UMath::Clamp(this->mEngineTorqueAngle, 0.0f, max_rev);
     } else {
         this->mEngineTorqueAngle = data.mAnimatedCarRoll;
     }
 
     if (data.mAnimatedCarShake == 0.0f) {
-        float max_vibration = attributes.EngineVibrationMax(0) * 0.017453f;
-        float min_vibration = attributes.EngineVibrationMin(0) * 0.017453f;
-        float vibration_freq = attributes.EngineVibrationFreq(0);
+        float max_vibration = DEG2RAD(this->GetAttributes().EngineVibrationMax(0));
+        float min_vibration = DEG2RAD(this->GetAttributes().EngineVibrationMin(0));
+        float vibration_freq = this->GetAttributes().EngineVibrationFreq(0);
 
         this->mEngineVibrationAngle =
             data.mEngineSpeed * bSin(this->mAnimTime * vibration_freq * 6.2831855f) * (min_vibration + max_vibration * data.mEngineSpeed);
