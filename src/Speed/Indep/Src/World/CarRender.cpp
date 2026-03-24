@@ -2735,6 +2735,9 @@ void CarRenderInfo::RenderFlaresOnCar(eView *view, const bVector3 *position, con
 
     for (eLightFlare *light_flare = this->LightFlareList.GetHead(); light_flare != this->LightFlareList.EndOfList();
          light_flare = light_flare->GetNext()) {
+        unsigned int name_hash = light_flare->NameHash;
+        int is_brakelight = preview_part_id == CARPARTID_BRAKELIGHT;
+        int is_headlight = preview_part_id == CARPARTID_HEADLIGHT;
         float intensity = 0.0f;
         float sizescale = 1.0f;
 
@@ -2751,7 +2754,7 @@ void CarRenderInfo::RenderFlaresOnCar(eView *view, const bVector3 *position, con
             sizescale = 0.75f;
         }
 
-        switch (light_flare->NameHash) {
+        switch (name_hash) {
             case 0x9DB90133:
                 intensity = headlight_left_intensity;
                 if (flashHeadlights != 0) {
@@ -2791,7 +2794,7 @@ void CarRenderInfo::RenderFlaresOnCar(eView *view, const bVector3 *position, con
                 intensity = bSin(coplight_intensityW * coplightflicker2(Ftime, 2, FlareCount) * copWhitemul);
                 break;
             case 0x28CD78F5:
-                if (preview_part_id == CARPARTID_BRAKELIGHT || (preview_part_id == CARPARTID_HEADLIGHT && renderFlareFlags != 0)) {
+                if (is_brakelight || (is_headlight && renderFlareFlags != 0)) {
                     intensity = 1.0f;
                 }
                 break;
