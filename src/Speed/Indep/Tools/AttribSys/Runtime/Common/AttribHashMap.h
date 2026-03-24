@@ -329,14 +329,15 @@ class HashMap {
 
     std::size_t PreFlightAdd(Key key, std::size_t targetIndex, std::size_t &searchLen) {
         searchLen = 0;
-        while (mTable[targetIndex].IsValid()) {
-            if (mTable[targetIndex].GetKey() == key) {
+        std::size_t actualIndex = targetIndex;
+        while (mTable[actualIndex].IsValid()) {
+            if (mTable[actualIndex].GetKey() == key) {
                 return static_cast<std::size_t>(-1);
             }
-            targetIndex = HashMapTablePolicy::WrapIndex(targetIndex + 1, mTableSize, 0);
+            actualIndex = HashMapTablePolicy::WrapIndex(actualIndex + 1, mTableSize, 0);
             searchLen++;
         }
-        return targetIndex;
+        return actualIndex;
     }
 
     void PostFlightAdd(std::size_t targetIndex, std::size_t searchLen) {
