@@ -336,7 +336,12 @@ int CompositeSkin(SkinCompositeParams *composite_params) {
 
     TextureInfo *dest_texture = composite_params->DestTexture;
     unsigned int base_colour = composite_params->BaseColour;
+    unsigned int *swatch_colours = composite_params->SwatchColours;
+    VinylLayerInfo *layer_infos = composite_params->VinylLayerInfos;
     int num_layers = composite_params->NumLayers;
+    int debug_print;
+
+    (void)debug_print;
 
     if (dest_texture == 0) {
         return 0;
@@ -345,22 +350,26 @@ int CompositeSkin(SkinCompositeParams *composite_params) {
     if (dest_texture->ImageCompressionType == TEXCOMP_8BIT) {
         unsigned char *dest_image_data = static_cast<unsigned char *>(TextureInfo_LockImage(dest_texture, TEXLOCK_WRITE));
         unsigned int *dest_palette_data = static_cast<unsigned int *>(TextureInfo_LockPalette(dest_texture, TEXLOCK_WRITE));
-        short dest_width = dest_texture->Width;
-        short dest_height = dest_texture->Height;
-        int allocation_params = (GetVirtualMemoryPoolNumber() & 0xF) | 0x40;
-        SemiTransPixel *semi_trans_pixels = static_cast<SemiTransPixel *>(bMalloc(0x30000, allocation_params));
-        unsigned int *semi_trans_colours = static_cast<unsigned int *>(bMalloc(0x30000, allocation_params));
-        unsigned char *dest_end = dest_image_data + dest_width * dest_height;
+        int dest_width = dest_texture->Width;
+        int dest_height = dest_texture->Height;
+        int max_semi_trans_pixels = 0xC000;
+        int semi_trans_pixels_buffer_size = 0x30000;
+        int total_malloc_required = semi_trans_pixels_buffer_size;
+        SemiTransPixel *semi_trans_pixels = static_cast<SemiTransPixel *>(
+            bMalloc(total_malloc_required, 0, 0, (GetVirtualMemoryPoolNumber() & 0xF) | 0x40));
+        unsigned int *semi_trans_colours =
+            static_cast<unsigned int *>(bMalloc(total_malloc_required, 0, 0, (GetVirtualMemoryPoolNumber() & 0xF) | 0x40));
+        int num_pixels = dest_width * dest_height;
+        unsigned char *dest_end = dest_image_data + num_pixels;
         unsigned char *image_src[1];
         unsigned char *mask_src[1];
-        int max_semi_trans_pixels = 0xC000;
         int cur_semi_trans_pixel = 0;
         int current_palette_base;
 
         eUnSwizzle8bitPalette(dest_palette_data);
 
         for (int i = 0; i < num_layers; i++) {
-            VinylLayerInfo *info = &composite_params->VinylLayerInfos[i];
+            VinylLayerInfo *info = &layer_infos[i];
 
             if (info->m_LayerHash != 0) {
                 eUnSwizzle8bitPalette(info->m_LayerImagePaletteData);
@@ -423,7 +432,7 @@ int CompositeSkin(SkinCompositeParams *composite_params) {
         dest_palette_data[0] = base_colour;
         current_palette_base = 1;
         for (int i = 0; i < 4; i++) {
-            dest_palette_data[current_palette_base] = composite_params->SwatchColours[i];
+            dest_palette_data[current_palette_base] = swatch_colours[i];
             current_palette_base++;
         }
 
@@ -431,7 +440,7 @@ int CompositeSkin(SkinCompositeParams *composite_params) {
             unsigned int dest_colour = dest_palette_data[*dest];
 
             for (int i = 0; i < num_layers; i++) {
-                VinylLayerInfo *info = &composite_params->VinylLayerInfos[i];
+                VinylLayerInfo *info = &layer_infos[i];
 
                 if (info->m_LayerHash != 0) {
                     unsigned int mask_colour = info->m_LayerMaskPaletteData[*mask_src[i]];
@@ -481,7 +490,7 @@ int CompositeSkin(SkinCompositeParams *composite_params) {
         }
 
         for (int i = 0; i < num_layers; i++) {
-            VinylLayerInfo *info = &composite_params->VinylLayerInfos[i];
+            VinylLayerInfo *info = &layer_infos[i];
 
             if (info->m_RemapPalette == 0) {
                 for (int j = 0; j < info->m_NumColours; j++) {
@@ -507,7 +516,7 @@ int CompositeSkin(SkinCompositeParams *composite_params) {
                 cur_semi_trans_pixel = 0;
             }
 
-            quantized_colours = static_cast<unsigned char *>(bMalloc(cur_semi_trans_pixel << 2, 0x40));
+            quantized_colours = static_cast<unsigned char *>(bMalloc(cur_semi_trans_pixel << 2, 0, 0, 0x40));
 
             for (int i = 0; i < cur_semi_trans_pixel; i++) {
                 unsigned int colour = semi_trans_colours[i];
