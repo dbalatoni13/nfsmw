@@ -1545,10 +1545,14 @@ void CarRenderConn::OnRender(eView *view, int reflection) {
         }
     }
 
-    if (render_info->Render(view, &world_position, &body_matrix, this->mTireMatrices, this->mBrakeMatrices, this->mTireMatrices,
-                            extra_render_flags, 0, reflection, 1.0f, render_info->mMinLodLevel, render_info->mMinLodLevel) &&
-        view->GetID() < 4) {
-        this->mLastVisibleFrame = eFrameCounter;
+    {
+        CARPART_LOD min_lod = render_info->mMinLodLevel;
+
+        if (render_info->Render(view, &world_position, &body_matrix, this->mTireMatrices, this->mBrakeMatrices, this->mTireMatrices,
+                                extra_render_flags, 0, reflection, 1.0f, min_lod, min_lod) &&
+            view->GetID() < 4) {
+            this->mLastVisibleFrame = eFrameCounter;
+        }
     }
 
 render_done:
