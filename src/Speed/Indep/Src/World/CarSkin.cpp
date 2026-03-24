@@ -468,7 +468,7 @@ int CompositeSkin(SkinCompositeParams *composite_params) {
                         float weights[2];
                         unsigned int colours[2];
                         unsigned int blend_colour;
-                        int x = dest - dest_image_data;
+                        int x;
                         int y;
 
                         weights[0] = static_cast<float>(src_mask & 0xFF) / 255.0f;
@@ -481,6 +481,7 @@ int CompositeSkin(SkinCompositeParams *composite_params) {
                         colours[1] = dest_pixel;
                         blend_colour = GetBlendColour(colours, weights, 2, false);
                         semi_trans_colours[cur_semi_trans_pixel] = blend_colour;
+                        x = dest - dest_image_data;
                         y = x / dest_width;
                         semi_trans_pixels[cur_semi_trans_pixel].x = x - y * dest_width;
                         semi_trans_pixels[cur_semi_trans_pixel].y = y;
