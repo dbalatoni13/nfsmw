@@ -2395,7 +2395,7 @@ void CarRenderInfo::CreateCarLightFlares() {
 
             while ((position_marker = model->GetPostionMarker(position_marker)) != 0) {
                 unsigned int name_hash = position_marker->NameHash;
-                int flare_type = -1;
+                int flare_type;
 
                 switch (name_hash) {
                     case 0xD09091C6:
