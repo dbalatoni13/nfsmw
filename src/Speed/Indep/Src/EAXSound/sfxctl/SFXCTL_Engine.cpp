@@ -66,8 +66,11 @@ SFXCTL_Engine::SFXCTL_Engine()
 }
 
 SndBase *SFXCTL_Engine::CreateObject(unsigned int allocator) {
-    (void)allocator;
-    return new SFXCTL_Engine();
+    if (allocator != 0) {
+        return new (SFXCTL_Engine::s_TypeInfo.typeName, true) SFXCTL_Engine();
+    } else {
+        return new (SFXCTL_Engine::s_TypeInfo.typeName, false) SFXCTL_Engine();
+    }
 }
 
 SFXCTL_Engine::~SFXCTL_Engine() {

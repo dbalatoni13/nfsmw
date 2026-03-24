@@ -22,9 +22,11 @@ SFXCTL_MasterVol::SFXCTL_MasterVol() {}
 SFXCTL_MasterVol::~SFXCTL_MasterVol() {}
 
 SndBase *SFXCTL_MasterVol::CreateObject(unsigned int allocator) {
-    SFXCTL_MasterVol *object = static_cast<SFXCTL_MasterVol *>(
-      gAudioMemoryManager.AllocateMemory(sizeof(SFXCTL_MasterVol), SFXCTL_MasterVol::s_TypeInfo.typeName, allocator != 0));
-    return new (object) SFXCTL_MasterVol();
+    if (allocator != 0) {
+        return new (SFXCTL_MasterVol::s_TypeInfo.typeName, true) SFXCTL_MasterVol();
+    } else {
+        return new (SFXCTL_MasterVol::s_TypeInfo.typeName, false) SFXCTL_MasterVol();
+    }
 }
 
 SndBase::TypeInfo *SFXCTL_MasterVol::GetTypeInfo() const { return &s_TypeInfo; }
@@ -110,9 +112,11 @@ void SFXCTL_MasterVol::UpdateParams(float t) {
 SFXCTL_GameState::SFXCTL_GameState() {}
 
 SndBase *SFXCTL_GameState::CreateObject(unsigned int allocator) {
-    SFXCTL_GameState *object = static_cast<SFXCTL_GameState *>(
-      gAudioMemoryManager.AllocateMemory(sizeof(SFXCTL_GameState), SFXCTL_GameState::s_TypeInfo.typeName, allocator != 0));
-    return new (object) SFXCTL_GameState();
+    if (allocator != 0) {
+        return new (SFXCTL_GameState::s_TypeInfo.typeName, true) SFXCTL_GameState();
+    } else {
+        return new (SFXCTL_GameState::s_TypeInfo.typeName, false) SFXCTL_GameState();
+    }
 }
 
 void SFXCTL_GameState::UpdateMixerOutputs() {

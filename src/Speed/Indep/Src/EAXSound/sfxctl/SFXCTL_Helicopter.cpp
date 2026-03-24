@@ -6,8 +6,11 @@
 SFXCTL_3DHeliPos::~SFXCTL_3DHeliPos() {}
 
 SndBase *SFXCTL_3DHeliPos::CreateObject(unsigned int allocator) {
-    (void)allocator;
-    return new SFXCTL_3DHeliPos();
+    if (allocator != 0) {
+        return new (SFXCTL_3DHeliPos::s_TypeInfo.typeName, true) SFXCTL_3DHeliPos();
+    } else {
+        return new (SFXCTL_3DHeliPos::s_TypeInfo.typeName, false) SFXCTL_3DHeliPos();
+    }
 }
 
 SFXCTL_Helicopter::SFXCTL_Helicopter()
@@ -25,8 +28,11 @@ SndBase::TypeInfo *SFXCTL_Helicopter::GetTypeInfo() const { return &s_TypeInfo; 
 char *SFXCTL_Helicopter::GetTypeName() const { return s_TypeInfo.typeName; }
 
 SndBase *SFXCTL_Helicopter::CreateObject(unsigned int allocator) {
-    (void)allocator;
-    return new SFXCTL_Helicopter();
+    if (allocator != 0) {
+        return new (SFXCTL_Helicopter::s_TypeInfo.typeName, true) SFXCTL_Helicopter();
+    } else {
+        return new (SFXCTL_Helicopter::s_TypeInfo.typeName, false) SFXCTL_Helicopter();
+    }
 }
 
 int SFXCTL_Helicopter::GetController(int Index) {

@@ -55,8 +55,11 @@ SFXCTL_Wheel::SFXCTL_Wheel()
 SFXCTL_Wheel::~SFXCTL_Wheel() {}
 
 SndBase *SFXCTL_Wheel::CreateObject(unsigned int allocator) {
-    (void)allocator;
-    return new SFXCTL_Wheel();
+    if (allocator != 0) {
+        return new (SFXCTL_Wheel::s_TypeInfo.typeName, true) SFXCTL_Wheel();
+    } else {
+        return new (SFXCTL_Wheel::s_TypeInfo.typeName, false) SFXCTL_Wheel();
+    }
 }
 
 SndBase::TypeInfo *SFXCTL_Wheel::GetTypeInfo() const { return &s_TypeInfo; }

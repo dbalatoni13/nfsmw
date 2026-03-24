@@ -130,18 +130,11 @@ SFXCTL_Tunnel::SFXCTL_Tunnel() {
 SFXCTL_Tunnel::~SFXCTL_Tunnel() {}
 
 SndBase *SFXCTL_Tunnel::CreateObject(unsigned int allocator) {
-    SFXCTL_Tunnel *object;
     if (allocator != 0) {
-        object = static_cast<SFXCTL_Tunnel *>(
-            gAudioMemoryManager.AllocateMemory(sizeof(SFXCTL_Tunnel), SFXCTL_Tunnel::s_TypeInfo.typeName, true));
+        return new (SFXCTL_Tunnel::s_TypeInfo.typeName, true) SFXCTL_Tunnel();
     } else {
-        object = static_cast<SFXCTL_Tunnel *>(
-            gAudioMemoryManager.AllocateMemory(sizeof(SFXCTL_Tunnel), SFXCTL_Tunnel::s_TypeInfo.typeName, false));
+        return new (SFXCTL_Tunnel::s_TypeInfo.typeName, false) SFXCTL_Tunnel();
     }
-    if (object != nullptr) {
-        object = new (object) SFXCTL_Tunnel();
-    }
-    return object;
 }
 
 SndBase::TypeInfo *SFXCTL_Tunnel::GetTypeInfo() const { return &s_TypeInfo; }
