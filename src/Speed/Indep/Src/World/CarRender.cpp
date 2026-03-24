@@ -3075,7 +3075,7 @@ void CarRenderInfo::DrawAmbientShadow(eView *view, const bVector3 *position, flo
     unsigned int colour;
 
     sh_Setup(const_cast<bVector3 *>(position));
-    if (iRam8047ff04 == 6) {
+    if (TheGameFlowManager.GetState() == GAMEFLOW_STATE_RACING) {
         eUnSwizzleWorldVector(*position, usPoint);
         this->mWorldPos.FindClosestFace(this->mWCollider, reinterpret_cast<const UMath::Vector3 &>(usPoint), false);
         if (this->mWorldPos.OnValidFace()) {
@@ -3397,14 +3397,14 @@ void CarRenderInfo::DrawKeithProjShadow(eView *view, const bVector3 *position, b
 
         sh_Setup(const_cast<bVector3 *>(position));
         shadowZ = position->z;
-        if (iRam8047ff04 == 6) {
+        if (TheGameFlowManager.GetState() == GAMEFLOW_STATE_RACING) {
             bVector3 worldPosition;
 
             worldPosition.x = position->x;
             worldPosition.y = -position->y;
             worldPosition.z = position->z;
             this->mWorldPos.FindClosestFace(this->mWCollider, reinterpret_cast<const UMath::Vector3 &>(worldPosition), false);
-            if (!this->mWorldPos.OnValidFace()) {
+            if (this->mWorldPos.OnValidFace()) {
                 shadowZ = this->mWorldPos.HeightAtPoint(reinterpret_cast<const UMath::Vector3 &>(worldPosition));
             }
         }
