@@ -1303,7 +1303,11 @@ void CarRenderInfo::UpdateCarParts() {
                 CARPART_LOD special_maximum;
                 CARPART_LOD model_lod = static_cast<CARPART_LOD>(lod);
 
-                if (ride_info->GetSpecialLODRangeForCarSlot(slot_id, &special_minimum, &special_maximum, iRam8047ff04 == 3)) {
+                if (ride_info->GetSpecialLODRangeForCarSlot(
+                        slot_id,
+                        &special_minimum,
+                        &special_maximum,
+                        TheGameFlowManager.GetState() == GAMEFLOW_STATE_IN_FRONTEND)) {
                     if (model_lod < special_minimum) {
                         model_lod = special_minimum;
                     }
