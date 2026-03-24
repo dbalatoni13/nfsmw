@@ -3361,7 +3361,7 @@ void CarRenderInfo::convex_hull(bVector3 *p, const WCollider *wcoll, int &n, flo
                     dot = -dot;
                 }
 
-                if (lbl_8040AD78 <= dot) {
+                if (zBias <= dot) {
                     dec++;
                 } else {
                     vec++;
