@@ -316,16 +316,10 @@ unsigned int *GetTypesFromSlot(CAR_SLOT_ID slot, CarType car_type) {
 }
 
 unsigned char MapCarTypeNameHashToIndex(unsigned int namehash) {
-    unsigned int index = 0;
-
-    if (CarPartTypeNameHashTableSize != 0) {
-        do {
-            if (CarPartTypeNameHashTable[index] == namehash) {
-                return static_cast<unsigned char>(index);
-            }
-
-            index++;
-        } while (index < static_cast<unsigned int>(CarPartTypeNameHashTableSize));
+    for (unsigned int i = 0; i < static_cast<unsigned int>(CarPartTypeNameHashTableSize); i++) {
+        if (CarPartTypeNameHashTable[i] == namehash) {
+            return static_cast<unsigned char>(i);
+        }
     }
 
     return 0xFF;
