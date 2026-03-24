@@ -608,7 +608,13 @@ bool FnDeltaQFast::EvalSQTMask(float currTime, float *sqt, const BoneMask *boneM
 
     DeltaQFast *deltaQ = reinterpret_cast<DeltaQFast *>(mpAnim);
     float *quatBase = sqt + 4;
+    unsigned char numBones = deltaQ->mNumBones;
     unsigned char *boneIdxs = deltaQ->mBoneIdxs;
+
+    if (!numBones) {
+        return true;
+    }
+
     int floorKey = FindQFastFloorKey(mPrevKey, deltaQ, currTime);
     int floorBinIdx = floorKey >> deltaQ->GetBinLengthPower();
     int floorDeltaIdx = floorKey & deltaQ->GetBinLengthModMask();
