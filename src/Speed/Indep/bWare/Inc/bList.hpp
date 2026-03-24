@@ -379,7 +379,6 @@ template <typename T> class bSNode {
         return Next;
     }
 
-  private:
     T *Next;
 };
 
@@ -402,7 +401,14 @@ template <typename T> class bSList {
         return (T *)this;
     }
 
-    T *AddTail(T *node) {}
+    T *AddTail(T *node) {
+        T *prev_tail = Tail;
+
+        Tail = node;
+        prev_tail->Next = node;
+        node->Next = EndOfList();
+        return node;
+    }
 
   private:
     T *Head; // offset 0x0, size 0x4

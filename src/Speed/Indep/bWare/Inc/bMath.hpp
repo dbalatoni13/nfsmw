@@ -589,21 +589,7 @@ struct bVector4 {
         return reinterpret_cast<const float *>(this)[index];
     }
 
-    bVector4 operator+(const bVector4 &v) {
-        bVector4 *pv;
-        float x1;
-        float y1;
-        float z1;
-        float w1;
-        float x2;
-        float y2;
-        float z2;
-        float w2;
-        float _x;
-        float _y;
-        float _z;
-        float _w;
-    }
+    bVector4 operator+(const bVector4 &v) const;
 
     bVector4 operator-() {
         float x1;
@@ -681,14 +667,17 @@ inline bVector4 &bVector4::operator+=(const bVector4 &v) {
 }
 
 inline bVector4 *bSub(bVector4 *dest, const bVector4 *v1, const bVector4 *v2) {
-    float x1;
-    float y1;
-    float z1;
-    float w1;
-    float x2;
-    float y2;
-    float z2;
-    float w2;
+    float x1 = v1->x;
+    float y1 = v1->y;
+    float z1 = v1->z;
+    float w1 = v1->w;
+    float x2 = v2->x;
+    float y2 = v2->y;
+    float z2 = v2->z;
+    float w2 = v2->w;
+
+    bFill(dest, x1 - x2, y1 - y2, z1 - z2, w1 - w2);
+    return dest;
 }
 
 inline bVector4 *bNeg(bVector4 *dest, const bVector4 *v) {
@@ -797,6 +786,24 @@ inline bVector4 &bVector4::operator=(const bVector4 &v) {
 inline bVector4 &bVector4::operator*=(float scale) {
     bScale(this, this, scale);
     return *this;
+}
+
+inline bVector4 bVector4::operator+(const bVector4 &v) const {
+    bVector4 *pv;
+    float x1 = x;
+    float y1 = y;
+    float z1 = z;
+    float w1 = w;
+    float x2 = v.x;
+    float y2 = v.y;
+    float z2 = v.z;
+    float w2 = v.w;
+    float _x = x1 + x2;
+    float _y = y1 + y2;
+    float _z = z1 + z2;
+    float _w = w1 + w2;
+
+    return bVector4(_x, _y, _z, _w);
 }
 
 inline bVector4 bVector4::operator-(const bVector4 &v) {

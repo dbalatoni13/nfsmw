@@ -16,6 +16,7 @@
 #include "Speed/Indep/Src/Sim/Collision.h"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
+#include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
 
 /////// NOT IN THIS FILE ///////
 class ePointSprite3D {
@@ -154,16 +155,32 @@ typedef struct tagCarEffectParam {
     unsigned int NameHash;
 } CarEffectParam;
 
+extern SlotPool *CarEmitterPositionSlotPool;
+
 class CarEmitterPosition : public bSNode<CarEmitterPosition> {
   public:
     // Functions
-    static void *operator new(size_t size) {}
+    static void *operator new(unsigned int size) {
+        return bOMalloc(CarEmitterPositionSlotPool);
+    }
 
-    static void operator delete(void *ptr) {}
+    static void operator delete(void *ptr) {
+        bFree(CarEmitterPositionSlotPool, ptr);
+    }
 
-    CarEmitterPosition(ePositionMarker *position_marker) {}
+    CarEmitterPosition(ePositionMarker *position_marker) {
+        PositionMarker = position_marker;
+        X = position_marker->Matrix.v3.x;
+        Y = position_marker->Matrix.v3.y;
+        Z = position_marker->Matrix.v3.z;
+    }
 
-    CarEmitterPosition(float x, float y, float z) {}
+    CarEmitterPosition(float x, float y, float z) {
+        PositionMarker = nullptr;
+        X = x;
+        Y = y;
+        Z = z;
+    }
 
     // Members
     float X;                         // offset 0x4, size 0x4
