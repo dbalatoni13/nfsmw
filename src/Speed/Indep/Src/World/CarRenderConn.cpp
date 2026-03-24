@@ -900,7 +900,8 @@ void CarRenderConn::UpdateBodyAnimation(float dT, const RenderConn::Pkt_Car_Serv
     }
 
     float dest_angle_x = (max_roll + max_roll) * (UMath::Ramp(left_accel, -roll_control.MaxGs, roll_control.MaxGs) - 0.5f);
-    float dest_angle_y = (max_pitch + max_pitch) * (UMath::Ramp(-fwd_accel, -pitch_control.MaxGs, pitch_control.MaxGs) - 0.5f);
+    float dest_angle_y =
+        (max_pitch + max_pitch) * (UMath::Ramp(-fwd_accel * 0.10204081f, -pitch_control.MaxGs, pitch_control.MaxGs) - 0.5f);
     float speed = bLength(this->GetVelocity());
 
     if (speed < 1.0f) {
