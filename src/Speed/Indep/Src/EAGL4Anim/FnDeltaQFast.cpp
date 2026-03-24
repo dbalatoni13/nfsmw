@@ -323,8 +323,9 @@ void FnDeltaQFast::AddDeltaMask(DeltaQFastPhysical *floorPhys, DeltaQFast *delta
         for (int ibone = 0; ibone < numBones; ibone++) {
             if (boneMask->GetBone(boneIdxs[ibone])) {
                 UMath::Vector4 delta;
+                DeltaQFastDelta *floorDelta = reinterpret_cast<DeltaQFastDelta *>(deltaData);
 
-                DecodeQFastDelta(mMinRangesf[ibone], deltaData, delta);
+                floorDelta->UnQuantize(mMinRangesf[ibone], delta);
                 prevQs[ibone].x += delta.x;
                 prevQs[ibone].y += delta.y;
                 prevQs[ibone].z += delta.z;
@@ -347,8 +348,9 @@ void FnDeltaQFast::SubDeltaMask(DeltaQFastPhysical *floorPhys, DeltaQFast *delta
         for (int ibone = numBones - 1; ibone >= 0; ibone--) {
             if (boneMask->GetBone(boneIdxs[ibone])) {
                 UMath::Vector4 delta;
+                DeltaQFastDelta *floorDelta = reinterpret_cast<DeltaQFastDelta *>(deltaData);
 
-                DecodeQFastDelta(mMinRangesf[ibone], deltaData, delta);
+                floorDelta->UnQuantize(mMinRangesf[ibone], delta);
                 prevQs[ibone].x -= delta.x;
                 prevQs[ibone].y -= delta.y;
                 prevQs[ibone].z -= delta.z;
