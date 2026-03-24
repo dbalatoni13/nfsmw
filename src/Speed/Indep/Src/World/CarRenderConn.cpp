@@ -493,7 +493,7 @@ CarRenderConn::CarRenderConn(const Sim::ConnectionData &data, CarType ct, Render
       mDoContrailEffect(false), //
       mUsage(oc->mUsage), //
       mFlags(0) {
-    int i;
+    unsigned int i;
 
     PSMTX44Identity(*reinterpret_cast<Mtx44 *>(&this->mRenderMatrix));
     {
