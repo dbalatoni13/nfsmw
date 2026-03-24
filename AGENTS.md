@@ -258,6 +258,29 @@ It also compares the debug-line ownership of each `// Range:` block. Treat the
 strong evidence that an inline body came from the wrong header or owner file. The exact
 file+line count is stricter and mainly useful as a secondary hint, not as the main gate.
 
+### prodg_dump.py — ProDG compiler-state dump helper
+
+When you need the exact ProDG compiler state for one unit, prefer this helper over
+reconstructing long `ngccc` / `cc1plus` command lines by hand. It recovers the real
+`ngccc.exe` invocation from `ninja -t commands`, derives the matching preprocess step,
+runs `cc1plus.exe -da`, and can extract or diff one function across dump sets.
+
+```sh
+python tools/prodg_dump.py command -u main/Speed/Indep/SourceLists/zAttribSys
+python tools/prodg_dump.py dump -u main/Speed/Indep/SourceLists/zAttribSys -o /tmp/zattrib_base
+python tools/prodg_dump.py extract /tmp/zattrib_base --stage lreg \
+    -f 'VecHashMap<unsigned int,Attrib::Class,Attrib::Class::TablePolicy,false,16>::UpdateSearchLength'
+python tools/prodg_dump.py diff /tmp/zattrib_dumps /tmp/zattrib_dumps \
+    --left-base-name base --right-base-name preinc --stages lreg,greg,rtl \
+    -f 'VecHashMap<unsigned int,Attrib::Class,Attrib::Class::TablePolicy,false,16>::UpdateSearchLength'
+```
+
+Use `extract --grep ... -C <n>` when you only want a few interesting lines inside a
+function block, such as stack-slot references or one pseudo register family. `diff`
+prints a unified diff for each requested stage, and for `lreg` it also summarizes
+register-preference and final hard-register assignment changes so allocator/regclass
+shifts stand out immediately.
+
 When working with these tools, do not just work around recurring friction silently. If you
 notice a clear, safe workflow or tooling improvement that would make future decomp work
 faster, shorter, or more reliable, prefer implementing that improvement as part of the task
@@ -547,12 +570,38 @@ When a byte-exact mismatch fans out through the same shared inline helper, verif
 ### TernaryNodeGetClearsWrapperDWARFNoise
 
 TU: zAttribSys | Function: Class::RemoveCollection / VecHashMap::RemoveIndex
-When `VecHashMap::Node::Get()` is written as `return IsValid() ? mPtr : nullptr;` instead of an `if (IsValid()) return mPtr; return nullptr;` ladder, `Class::RemoveCollection` drops the stray `RemoveIndex::result // r26` DWARF mismatch while leaving objdiff and `Database::RemoveClass` unchanged. This does not solve the final shared `searchLen r6/r7` tie-break, but it is a safe retained cleanup that reduces the last `RemoveCollection` DWARF debt to the same single mismatch as `RemoveClass`.
+When `VecHashMap::Node::Get()` is written as `return IsValid() ? mPtr : nullptr;` instead of an `if (IsValid()) return mPtr; return nullptr;` ladder, `Class::RemoveCollection` drops the stray `RemoveIndex::result // r26` DWARF mismatch while leaving objdiff and `Database::RemoveClass` unchanged. This is a safe retained cleanup, but it does not touch the remaining `Database::RemoveClass` first-inline `newMaxSearch r31 -> r30` DWARF debt.
 
 ### MaxSearchGreaterFixesRemoveCollectionDwarf
 
 TU: zAttribSys | Function: Class::RemoveCollection / VecHashMap::UpdateSearchLength
 Writing the second `UpdateSearchLength` search loop as `for (unsigned int searchLen = 1; maxSearch > searchLen; searchLen++)` instead of `searchLen < maxSearch` is a real retained partial win. On `zAttribSys` it makes `Class::RemoveCollection` DWARF-exact, improves that wrapper's objdiff slightly, and nudges the unit text floor from `99.91143%` to `99.9116%`, but it does not help `Database::RemoveClass`.
+
+### SearchFirstHoistIsFalseFriend
+
+TU: zAttribSys | Function: Database::RemoveClass / VecHashMap::UpdateSearchLength
+Hoisting the second-loop `searchLen` declaration above `newMaxSearch` (`unsigned int searchLen = 1; unsigned int newMaxSearch = 0; for (; maxSearch > searchLen; searchLen++)`) is a false friend. On the current endgame floor it improves the **second** `UpdateSearchLength` inline in `Database::RemoveClass` and nudges objdiff up to `98.6%`, but it also hoists `searchLen` out of the anonymous loop block in **both** inlined `UpdateSearchLength` bodies and drops normalized DWARF to about `86.6%`, so do not keep or build on that variant.
+
+### BlockScopedSearchLenTradesOneDebtForAnother
+
+TU: zAttribSys | Function: Class::RemoveCollection / Database::RemoveClass / VecHashMap::UpdateSearchLength
+The block-scoped variant `unsigned int newMaxSearch; { unsigned int searchLen = 1; newMaxSearch = 0; for (; maxSearch > searchLen; searchLen++) ... }` is another false friend. On the current floor it fixes `Database::RemoveClass`'s **second-inline** `newMaxSearch // r31` placement and raises that wrapper to `98.6%`, but it simultaneously reintroduces the old second-inline `searchLen // r7 -> r6` mismatch in **both** wrappers and drops `Class::RemoveCollection` back to `98.6% / 99.6%`, so it is not a real endgame win.
+On that higher-text plateau (`99.91307%`, `42B` remaining), a whole batch of "safe" follow-up nudges stayed completely inert: empty `if (Unk2)` / `if (!Unk2)` hooks inside the late loop, `searchLen = searchLen + 0`, `newMaxSearch = newMaxSearch + 0`, `register` hints on `searchLen` / `newMaxSearch`, typed-pointer `IsValid()`, `Move`'s C-style cast, `Key()`'s zero spellings, local `asm("r7")` register variables, and even an empty `asm volatile("" : "+r"(searchLen))` constraint. If you revisit this plateau, skip those low-risk hooks and look for a genuinely different source shape.
+
+### PreincrementLessThanFixesHeaderButMovesGlobalRegs
+
+TU: zAttribSys | Function: Class::RemoveCollection / Database::RemoveClass / VecHashMap::UpdateSearchLength
+Writing the late scan as `for (unsigned int searchLen = 0; ++searchLen < maxSearch; )` is the first condition-only rewrite that makes the second `UpdateSearchLength` loop header itself line up: it fixes the `cmplwi r4, 1` fold, restores the `li r7, 1` / `cmplw r7, r4` shape, and also fixes `Database::RemoveClass`'s `newMaxSearch // r31` placement in that late inline. But it is still a false friend overall: it moves both wrappers onto a broader `r6`/`r7` swap family, drops `Class::RemoveCollection` to `98.6% / 99.6%`, leaves `Database::RemoveClass` at `98.5% / 99.6%`, and changes the remaining mismatches rather than removing them.
+
+### Unk2SelectiveLoopBodyHooksAreRealButUnsafe
+
+TU: zAttribSys | Function: Class::RemoveCollection / Database::RemoveClass / VecHashMap::RemoveIndex
+The second empty `for` body in `VecHashMap::RemoveIndex` is a real per-instantiation regalloc lever via the `Unk2` template boolean, but the obvious source shapes are false friends. In this endgame, baseline `if (Unk2) {}` inside that empty body perturbs only `Database::RemoveClass` while leaving `Class::RemoveCollection` at the retained baseline, and baseline `if (!Unk2) {}` perturbs only `Class::RemoveCollection` while leaving `Database::RemoveClass` at the retained baseline. On top of the block-scoped `UpdateSearchLength` near-miss, `if (!Unk2) {}` still perturbs only `Class::RemoveCollection` while leaving `Database::RemoveClass` at the block state. That proves the `Unk2` polarity and the body-CFG selectivity are real, but the tested body forms (`{}`, expression statements, `switch (0)`, `continue`) all regressed, so do not assume an `Unk2`-guarded loop-body tweak is a safe hybrid fix by itself. By contrast, wrapping an empty body as `if (Unk2) { do {} while (0); }` or `if (!Unk2) { do {} while (0); }` was fully inert on the retained floor and is not a useful perturbation.
+
+### HeaderOnlyZAttribSweepsNeedForcedRebuild
+
+TU: zAttribSys | Function: any header-defined inline in `VecHashMap64.h`
+Header-only sweeps against `VecHashMap64.h` can silently compare stale code unless you force a rebuild of the rebuilt jumbo object first. The generated `build.ninja` rule for `build/GOWE69/src/Speed/Indep/SourceLists/zAttribSys.o` tracks only `src/Speed/Indep/SourceLists/zAttribSys.cpp`, so after editing included headers you must delete that rebuilt `.o` (and, if needed for tooling, refresh the `.ctx`) before trusting `verify` or `diff` output.
 
 ### SizedDeletePathBeatsStrayUnsizedDelete
 
@@ -562,7 +611,7 @@ If delete-path DWARF keeps collapsing to an empty unsized `operator delete()` he
 ### RegisterAllocatorTieBreakDeadEnd
 
 TU: zAttribSys | Function: Class::RemoveCollection / Database::RemoveClass
-If two near-matching functions differ only because the same inlined helper chain lands `mTableSize` in `r6` in the original but `r7` in the rebuild, treat it as a likely ProDG/GCC 2.95 register-allocation tie-break, not a normal source mismatch. In `zAttribSys`, `VecHashMap::FindIndex` inlined through `Remove -> RemoveIndex -> UpdateSearchLength` produced a stable `lwz r6, 4(r3)` vs `lwz r7, 4(r3)` split, which then propagated into later `UpdateSearchLength` control-flow differences. This survived 300+ source experiments plus later focused sweeps of `RemoveIndex` statement order, `FindIndex` local declaration order, second-call expression sugar, `UpdateSearchLength` prelude condition forms, `register` hints on params/locals, per-instantiation `UpdateSearchLength` specializations with identical bodies, and combination searches across individually neutral source toggles. Temporary compiler-side probing was no better: single-flag ProDG toggles around `gcse`/scheduling/CSE/regmove/caller-saves/thread-jumps/delayed-branch either regressed or produced no change, a named-register local only added DWARF debt without moving objdiff, and binding the parameter itself to a named register emitted an unreadable object that objdiff could not load. One real exception is the retained `maxSearch > searchLen` loop-header rewrite above: it makes `Class::RemoveCollection` DWARF-exact and bumps the unit floor slightly, but `Database::RemoveClass` still behaves like the same allocator tie-break family. Once the remaining diff has collapsed to this kind of isolated register swap and DWARF locals/inlining already match, stop attacking each caller separately. Document the functions as `NON_MATCHING`, note the shared inlined root cause, and only revisit the area if you have a genuinely new source shape or stronger compiler evidence than the dead ends above.
+If two near-matching functions differ only because the same inlined helper chain lands long-lived locals in different caller-saved registers, treat it as a likely ProDG/GCC 2.95 register-allocation tie-break, not a normal source mismatch. In `zAttribSys`, the retained `maxSearch > searchLen` rewrite moved the live endgame debt into the **second** `UpdateSearchLength` inline reached from `RemoveIndex`'s empty follow-up loop: `Class::RemoveCollection` is left with the shared late-loop compare/branch shape, while `Database::RemoveClass` also wants `newMaxSearch // r31` where the rebuild keeps it in `r30`. This survived 300+ source experiments plus later focused sweeps of `RemoveIndex` statement order, `FindIndex` local declaration order, wrapper-result liveness, first-call shapes, second-loop declaration/scope variants, second-call expression sugar, `UpdateSearchLength` prelude condition forms, `register` hints on params/locals, per-instantiation `UpdateSearchLength` specializations with identical bodies, and combination searches across individually neutral source toggles. Temporary compiler-side probing was no better: single-flag ProDG toggles around `gcse`/scheduling/CSE/regmove/caller-saves/thread-jumps/delayed-branch either regressed or produced no change, local register variables did not reserve hard registers, and explicit `UpdateSearchLength` specialization was catastrophic even with an identical body. One real exception is the retained `maxSearch > searchLen` loop-header rewrite above: it makes `Class::RemoveCollection` DWARF-exact and bumps the unit floor slightly, but the remaining `RemoveCollection` / `RemoveClass` debt still behaves like the same allocator tie-break family. Once the remaining diff has collapsed to this kind of isolated register swap and DWARF locals/inlining already match, stop attacking each caller separately. Document the functions as `NON_MATCHING`, note the shared inlined root cause, and only revisit the area if you have a genuinely new source shape or stronger compiler evidence than the dead ends above.
 
 ### NamedRodataForInlinedAllocatorStrings
 TU: zAttribSys | Function: DatabaseExportPolicy::Initialize
