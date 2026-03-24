@@ -331,11 +331,11 @@ void FnDeltaQFast::SubDeltaMask(DeltaQFastPhysical *floorPhys, DeltaQFast *delta
                                 const BoneMask *boneMask) {
     unsigned char *binData = reinterpret_cast<unsigned char *>(floorPhys);
     unsigned char *boneIdxs = deltaQ->mBoneIdxs;
+    unsigned char numBones = deltaQ->mNumBones;
+    unsigned char *deltaData = GetQFastDeltaData(deltaQ, binData, prevDeltaIdx - 1) + (numBones - 1) * 3;
 
     for (int iframe = prevDeltaIdx - 1; iframe >= floorDeltaIdx; iframe--) {
-        unsigned char *deltaData = GetQFastDeltaData(deltaQ, binData, iframe) + (deltaQ->mNumBones - 1) * 3;
-
-        for (int ibone = deltaQ->mNumBones - 1; ibone >= 0; ibone--) {
+        for (int ibone = numBones - 1; ibone >= 0; ibone--) {
             if (boneMask->GetBone(boneIdxs[ibone])) {
                 UMath::Vector4 delta;
 
