@@ -1043,25 +1043,69 @@ skip_smooth_normal_model: {}
         {
             CarPart *paint_rim_part = ride_info->GetPart(CARSLOTID_PAINT_RIM);
             CarPart *front_wheel_part = ride_info->GetPart(CARSLOTID_FRONT_WHEEL);
-            eLightMaterial *wheel_rim_material = nullptr;
+            CarPart *spoiler_part = ride_info->GetPart(CARSLOTID_SPOILER);
+            CarPart *roof_part = ride_info->GetPart(CARSLOTID_ROOF);
             unsigned int wheel_rim_material_hash = 0;
+            unsigned int caliper_material_hash = 0;
+            unsigned int spoiler_material_hash = 0;
+            unsigned int roof_material_hash = 0;
+            eLightMaterial *wheel_rim_material = nullptr;
+            eLightMaterial *caliper_material = nullptr;
+            eLightMaterial *spoiler_material = nullptr;
+            eLightMaterial *roof_material = nullptr;
+
+            if (paint_rim_part == nullptr || (reinterpret_cast<unsigned char *>(paint_rim_part)[5] >> 5) == 0) {
+                paint_rim_part = nullptr;
+            }
 
             if (front_wheel_part == nullptr || (reinterpret_cast<unsigned char *>(front_wheel_part)[5] >> 5) == 0) {
-                paint_rim_part = nullptr;
+                front_wheel_part = nullptr;
+            }
+
+            if (spoiler_part == nullptr || (reinterpret_cast<unsigned char *>(spoiler_part)[5] >> 5) == 0) {
+                spoiler_part = nullptr;
+            }
+
+            if (roof_part == nullptr || (reinterpret_cast<unsigned char *>(roof_part)[5] >> 5) == 0) {
+                roof_part = nullptr;
             }
 
             if (paint_rim_part != nullptr) {
                 wheel_rim_material_hash = CarPart_GetAppliedAttributeUParam(paint_rim_part, 0x6BA02C05, 0);
             }
 
+            if (front_wheel_part != nullptr) {
+                caliper_material_hash = CarPart_GetAppliedAttributeUParam(front_wheel_part, 0x6BA02C05, 0);
+            }
+
+            if (spoiler_part != nullptr) {
+                spoiler_material_hash = CarPart_GetAppliedAttributeUParam(spoiler_part, 0x6BA02C05, 0);
+            }
+
+            if (roof_part != nullptr) {
+                roof_material_hash = CarPart_GetAppliedAttributeUParam(roof_part, 0x6BA02C05, 0);
+            }
+
             if (wheel_rim_material_hash != 0) {
                 wheel_rim_material = elGetLightMaterial(wheel_rim_material_hash);
             }
 
-            this->LightMaterial_Caliper = nullptr;
+            if (caliper_material_hash != 0) {
+                caliper_material = elGetLightMaterial(caliper_material_hash);
+            }
+
+            if (spoiler_material_hash != 0) {
+                spoiler_material = elGetLightMaterial(spoiler_material_hash);
+            }
+
+            if (roof_material_hash != 0) {
+                roof_material = elGetLightMaterial(roof_material_hash);
+            }
+
+            this->LightMaterial_Caliper = caliper_material;
             this->LightMaterial_WheelRim = wheel_rim_material;
-            this->LightMaterial_Spoiler = nullptr;
-            this->LightMaterial_Roof = nullptr;
+            this->LightMaterial_Spoiler = spoiler_material;
+            this->LightMaterial_Roof = roof_material;
         }
 
         this->LightMaterial_Spinner = nullptr;
