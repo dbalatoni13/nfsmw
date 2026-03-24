@@ -711,15 +711,15 @@ CarRenderInfo::CarRenderInfo(RideInfo *ride_info)
       mAttributes(0xeec2271a, 0, nullptr)
 {
     CarRenderRideInfoLayout *ride_layout = reinterpret_cast<CarRenderRideInfoLayout *>(ride_info);
+    CarTypeInfo *info = &CarTypeInfoArray[ride_info->Type];
+    char *car_base_name = info->BaseModelName;
 
     this->mOnLights = 0;
     this->mBrokenLights = 0;
     bMemSet(&this->TheCarPartCuller, 0, sizeof(this->TheCarPartCuller));
     this->mRadius = lbl_8040AA60;
-    this->mAttributes.Change(Attrib::FindCollectionWithDefault(
-        Attrib::Gen::ecar::ClassKey(), Attrib::StringToLowerCaseKey(CarTypeInfoArray[ride_info->Type].BaseModelName)));
-    this->mMirrorLeftWheels = static_cast<unsigned char>(
-        reinterpret_cast<Attrib::Gen::ecar::_LayoutStruct *>(this->mAttributes.GetLayoutPointer())->WheelSpokeCount) >> 7;
+    this->mAttributes.Change(Attrib::FindCollectionWithDefault(Attrib::Gen::ecar::ClassKey(), Attrib::StringToLowerCaseKey(car_base_name)));
+    this->mMirrorLeftWheels = static_cast<unsigned char>(this->mAttributes.WheelSpokeCount()) >> 7;
     this->mFlashing = false;
     this->mFlashInterval = 0.0f;
     bMemSet(&this->mDamageInfoCache, 0, 0x14);
@@ -758,7 +758,7 @@ CarRenderInfo::CarRenderInfo(RideInfo *ride_info)
     this->LastCarPartChanged = -1;
     this->CarTimebaseStart = bRandom(1.0f);
     this->mDeltaTime = 0.0f;
-    this->pCarTypeInfo = &CarTypeInfoArray[ride_info->Type];
+    this->pCarTypeInfo = info;
     this->CarbonHood = 0;
     this->mEmitterPositionsInitialized = false;
     bMemSet(this->mCarPartModels, 0, sizeof(this->mCarPartModels));
@@ -766,6 +766,8 @@ CarRenderInfo::CarRenderInfo(RideInfo *ride_info)
     {
         CarRenderUsedCarTextureInfoLayout *used_texture_info =
             reinterpret_cast<CarRenderUsedCarTextureInfoLayout *>(&this->mUsedTextureInfos);
+        CarTypeInfo *car_type_info = info;
+        int is_traffic_car = car_type_info->GetCarUsageType() == CAR_USAGE_TYPE_TRAFFIC;
         unsigned int window_front_hash = bStringHash("WINDOW_FRONT");
         unsigned int window_rear_hash = bStringHash("WINDOW_REAR");
         unsigned int window_left_front_hash = bStringHash("WINDOW_LEFT_FRONT");
@@ -787,8 +789,8 @@ CarRenderInfo::CarRenderInfo(RideInfo *ride_info)
         this->MasterReplacementTextureTable[REPLACETEX_DASHSKIN].SetOldNameHash(used_texture_info->MappedDashSkinHash);
         this->MasterReplacementTextureTable[REPLACETEX_DRIVER].SetOldNameHash(0x5799E60B);
         this->MasterReplacementTextureTable[REPLACETEX_TIRE].SetOldNameHash(used_texture_info->MappedTireHash);
-    if (this->pCarTypeInfo->UsageType == CAR_USAGE_TYPE_TRAFFIC) {
-        this->MasterReplacementTextureTable[REPLACETEX_TIRE].SetNewNameHash(bStringHash("_N", used_texture_info->MappedTireHash));
+        if (is_traffic_car != 0) {
+            this->MasterReplacementTextureTable[REPLACETEX_TIRE].SetNewNameHash(bStringHash("_N", used_texture_info->MappedTireHash));
         }
         this->MasterReplacementTextureTable[REPLACETEX_WINDOW_FRONT].SetOldNameHash(window_front_hash);
         this->MasterReplacementTextureTable[REPLACETEX_WINDOW_REAR].SetOldNameHash(window_rear_hash);
