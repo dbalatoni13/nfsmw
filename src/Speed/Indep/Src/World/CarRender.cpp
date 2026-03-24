@@ -2718,18 +2718,18 @@ void CarRenderInfo::RenderFlaresOnCar(eView *view, const bVector3 *position, con
     if (this->IsLightBroken(VehicleFX::LIGHT_COPRED)) {
         coplight_intensityR = 0.0f;
     }
-    if (this->IsLightOn(VehicleFX::LIGHT_COPBLUE)) {
-        coplight_intensityB = cpb;
-    }
-    if (this->IsLightBroken(VehicleFX::LIGHT_COPBLUE)) {
-        coplight_intensityB = 0.0f;
-    }
     if (this->IsLightOn(VehicleFX::LIGHT_COPWHITE)) {
         coplight_intensityW = cpw;
         flashHeadlights = 1;
     }
     if (this->IsLightBroken(VehicleFX::LIGHT_COPWHITE)) {
         coplight_intensityW = 0.0f;
+    }
+    if (this->IsLightOn(VehicleFX::LIGHT_COPBLUE)) {
+        coplight_intensityB = cpb;
+    }
+    if (this->IsLightBroken(VehicleFX::LIGHT_COPBLUE)) {
+        coplight_intensityB = 0.0f;
     }
 
     CarPart *preview_part = this->pRideInfo->GetPreviewPart();
