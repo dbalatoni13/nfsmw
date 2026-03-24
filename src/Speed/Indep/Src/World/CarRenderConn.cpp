@@ -1503,7 +1503,7 @@ void CarRenderConn::OnRender(eView *view, int reflection) {
         CameraMover *anchor_mover = view->GetCameraMover();
         CameraAnchor *anchor = anchor_mover->GetAnchor();
 
-        if (anchor != 0 && reinterpret_cast<const CameraAnchorPovMirror *>(anchor)->mPOVType == 1) {
+        if (reinterpret_cast<const CameraAnchorPovMirror *>(anchor)->mPOVType == 1) {
             bVector4 translated_offset;
 
             PSMTX44Copy(*reinterpret_cast<const Mtx44 *>(this->GetBodyMatrix()), *reinterpret_cast<Mtx44 *>(&body_matrix));
