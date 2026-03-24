@@ -978,11 +978,11 @@ void CarRenderConn::UpdateTires(float dT, float carspeed, const RenderConn::Pkt_
         flatten_tires = true;
         float hop_scale = this->GetAttributes().WheelHopScale(0);
         if (0.0f < data.mExtraBodyPitch && 0.0f < hop_scale) {
-            float pitch_scale = hop_scale * hop_scale;
+            hop_scale *= hop_scale;
 
-            wheel_hop_roll = pitch_scale * data.mExtraBodyPitch * DEG2RAD(0.15f) * UMath::Abs(bSin(this->mAnimTime + 37.699112f));
-            wheel_hop_pitch = pitch_scale * data.mExtraBodyPitch * DEG2RAD(0.2f) * UMath::Abs(bSin(this->mAnimTime * 150.79645f));
-            tire_hop = pitch_scale * data.mExtraBodyPitch * DEG2RAD(0.3f) * UMath::Abs(bSin((this->mAnimTime + 0.5f) * 150.79645f));
+            wheel_hop_roll = hop_scale * data.mExtraBodyPitch * DEG2RAD(0.15f) * UMath::Abs(bSin(this->mAnimTime + 37.699112f));
+            wheel_hop_pitch = hop_scale * data.mExtraBodyPitch * DEG2RAD(0.2f) * UMath::Abs(bSin(this->mAnimTime * 150.79645f));
+            tire_hop = hop_scale * data.mExtraBodyPitch * DEG2RAD(0.3f) * UMath::Abs(bSin((this->mAnimTime + 0.5f) * 150.79645f));
             hop_wheels = true;
         }
     }
