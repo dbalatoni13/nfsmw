@@ -2345,45 +2345,6 @@ float TireFace(bMatrix4 *matrix, eView *view) {
     return face;
 }
 
-int GetCarLightFlareType(unsigned int name_hash, int slot_model_index, int &front_marker_slot, int &rear_marker_slot) {
-    switch (name_hash) {
-        case 0xD09091C6:
-        case 0x9DB90133:
-        case 0x7A5BCF69:
-            return 0;
-        case 0x31A66786:
-        case 0xA2A2FC7C:
-        case 0xBF700A79:
-            return 1;
-        case 0x1E4150B4:
-            return 5;
-        case 0xE662C161:
-            return 6;
-        case 0xB4348DBA:
-            return 7;
-        case 0x41489594:
-            return 10;
-        case 0x6A52A241:
-            return 11;
-        case 0x28CD78F5:
-            return 12;
-        case 0x7A5B2F25:
-            if (front_marker_slot == slot_model_index || front_marker_slot < 1) {
-                front_marker_slot = slot_model_index;
-                return 3;
-            }
-            return -1;
-        case 0x7ADF7EF8:
-            if (rear_marker_slot != slot_model_index && rear_marker_slot > 0) {
-                return -1;
-            }
-            rear_marker_slot = slot_model_index;
-            return 3;
-        default:
-            return -1;
-    }
-}
-
 void CarRenderInfo::UpdateCarReplacementTextures() {
     CarRenderUsedCarTextureInfoLayout *used_texture_info =
         reinterpret_cast<CarRenderUsedCarTextureInfoLayout *>(&this->mUsedTextureInfos);
