@@ -34,11 +34,16 @@ class WWorldPos {
 
     WWorldPos(float yOffset)
         : fFace(), //
-          fYOffset(yOffset), //
-          fSurface(nullptr) {
+          fYOffset(yOffset) {
         fFaceValid = 0;
         fMissCount = 0;
         fUsageCount = 0;
+        fFace.fSurface.fFlags = 0;
+        fFace.fSurface.fSurface = 0;
+        fFace.fPt0 = UMath::Vector3::kZero;
+        fFace.fPt1 = UMath::Vector3::kZero;
+        fFace.fPt2 = UMath::Vector3::kZero;
+        fSurface = nullptr;
     }
 
     ~WWorldPos() {}
