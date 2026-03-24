@@ -303,16 +303,15 @@ bool FnDeltaQ::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask) {
 }
 
 bool FnDeltaQ::EvalSQTMasked(float currTime, const BoneMask *boneMask, float *sqt) {
+    if (!mBins) {
+        InitBuffersAsRequired();
+    }
     DeltaQ *deltaQ = reinterpret_cast<DeltaQ *>(mpAnim);
     unsigned char numBones = deltaQ->mNumBones;
     unsigned char *boneIdxs = deltaQ->mBoneIdxs;
 
     if (!numBones) {
         return true;
-    }
-
-    if (!mBins) {
-        InitBuffersAsRequired();
     }
     int floorTime = FloatToInt(currTime);
     int floorKey;
