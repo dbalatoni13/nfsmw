@@ -34,10 +34,7 @@ template <typename KeyType, typename T, typename Policy, bool Unk2, unsigned int
         }
 
         T *Get() const {
-            if (IsValid()) {
-                return mPtr;
-            }
-            return nullptr;
+            return IsValid() ? mPtr : nullptr;
         }
 
         KeyType Key() const {
@@ -253,7 +250,7 @@ template <typename KeyType, typename T, typename Policy, bool Unk2, unsigned int
         }
 
         unsigned int newMaxSearch = 0;
-        for (unsigned int searchLen = 1; searchLen < maxSearch; searchLen++) {
+        for (unsigned int searchLen = 1; maxSearch > searchLen; searchLen++) {
             unsigned int index = Policy::WrapIndex(targetIndex + searchLen, mTableSize, 0);
             if (Policy::KeyIndex(mTable[index].Key(), mTableSize, 0) == targetIndex) {
                 newMaxSearch = searchLen;

@@ -544,6 +544,16 @@ In a jumbo TU, do not move a newly restored out-of-line wrapper special member a
 TU: zAttribSys | Function: Collection::Contains / Collection::NextKey / Collection::GetNode / HashMap::UpdateSearchLength
 When a byte-exact mismatch fans out through the same shared inline helper, verify the helper's recovered parameter names before restructuring callers. Renaming `HashMapTablePolicy::WrapIndex`'s first parameter from `k` back to DWARF's `index` cleared four matched-function DWARF mismatches at once without changing objdiff.
 
+### TernaryNodeGetClearsWrapperDWARFNoise
+
+TU: zAttribSys | Function: Class::RemoveCollection / VecHashMap::RemoveIndex
+When `VecHashMap::Node::Get()` is written as `return IsValid() ? mPtr : nullptr;` instead of an `if (IsValid()) return mPtr; return nullptr;` ladder, `Class::RemoveCollection` drops the stray `RemoveIndex::result // r26` DWARF mismatch while leaving objdiff and `Database::RemoveClass` unchanged. This does not solve the final shared `searchLen r6/r7` tie-break, but it is a safe retained cleanup that reduces the last `RemoveCollection` DWARF debt to the same single mismatch as `RemoveClass`.
+
+### MaxSearchGreaterFixesRemoveCollectionDwarf
+
+TU: zAttribSys | Function: Class::RemoveCollection / VecHashMap::UpdateSearchLength
+Writing the second `UpdateSearchLength` search loop as `for (unsigned int searchLen = 1; maxSearch > searchLen; searchLen++)` instead of `searchLen < maxSearch` is a real retained partial win. On `zAttribSys` it makes `Class::RemoveCollection` DWARF-exact, improves that wrapper's objdiff slightly, and nudges the unit text floor from `99.91143%` to `99.9116%`, but it does not help `Database::RemoveClass`.
+
 ### SizedDeletePathBeatsStrayUnsizedDelete
 
 TU: zAttribSys | Function: Collection::~Collection / Class::Delete / HashMap::PreFlightAdd
@@ -552,7 +562,7 @@ If delete-path DWARF keeps collapsing to an empty unsized `operator delete()` he
 ### RegisterAllocatorTieBreakDeadEnd
 
 TU: zAttribSys | Function: Class::RemoveCollection / Database::RemoveClass
-If two near-matching functions differ only because the same inlined helper chain lands `mTableSize` in `r6` in the original but `r7` in the rebuild, treat it as a likely ProDG/GCC 2.95 register-allocation tie-break, not a normal source mismatch. In `zAttribSys`, `VecHashMap::FindIndex` inlined through `Remove -> RemoveIndex -> UpdateSearchLength` produced a stable `lwz r6, 4(r3)` vs `lwz r7, 4(r3)` split, which then propagated into later `UpdateSearchLength` control-flow differences. This survived 300+ source experiments: loop-form changes, adding/removing temporaries, splitting/merging expressions, helper inline/outline changes, declaration-order tweaks, member type changes, access-control changes, template method reorderings, and inline vs out-of-line ctor/dtor placement. Once the diff has collapsed to this kind of isolated register swap and DWARF locals/inlining already match, stop attacking each caller separately. Document the functions as `NON_MATCHING`, note the shared inlined root cause, and only consider flag permutation or compiler-level investigation as a last resort.
+If two near-matching functions differ only because the same inlined helper chain lands `mTableSize` in `r6` in the original but `r7` in the rebuild, treat it as a likely ProDG/GCC 2.95 register-allocation tie-break, not a normal source mismatch. In `zAttribSys`, `VecHashMap::FindIndex` inlined through `Remove -> RemoveIndex -> UpdateSearchLength` produced a stable `lwz r6, 4(r3)` vs `lwz r7, 4(r3)` split, which then propagated into later `UpdateSearchLength` control-flow differences. This survived 300+ source experiments plus later focused sweeps of `RemoveIndex` statement order, `FindIndex` local declaration order, second-call expression sugar, `UpdateSearchLength` prelude condition forms, `register` hints on params/locals, per-instantiation `UpdateSearchLength` specializations with identical bodies, and combination searches across individually neutral source toggles. Temporary compiler-side probing was no better: single-flag ProDG toggles around `gcse`/scheduling/CSE/regmove/caller-saves/thread-jumps/delayed-branch either regressed or produced no change, a named-register local only added DWARF debt without moving objdiff, and binding the parameter itself to a named register emitted an unreadable object that objdiff could not load. One real exception is the retained `maxSearch > searchLen` loop-header rewrite above: it makes `Class::RemoveCollection` DWARF-exact and bumps the unit floor slightly, but `Database::RemoveClass` still behaves like the same allocator tie-break family. Once the remaining diff has collapsed to this kind of isolated register swap and DWARF locals/inlining already match, stop attacking each caller separately. Document the functions as `NON_MATCHING`, note the shared inlined root cause, and only revisit the area if you have a genuinely new source shape or stronger compiler evidence than the dead ends above.
 
 ### NamedRodataForInlinedAllocatorStrings
 TU: zAttribSys | Function: DatabaseExportPolicy::Initialize

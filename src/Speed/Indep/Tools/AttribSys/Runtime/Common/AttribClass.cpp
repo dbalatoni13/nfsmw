@@ -99,7 +99,7 @@ bool Class::AddCollection(Collection *c) {
     return mPrivates.mCollections.Add(c->GetKey(), c);
 }
 
-// NON_MATCHING: 98.6% - r6/r7 register swap in VecHashMap::FindIndex inlined into Remove
+// NON_MATCHING: 98.7% - shared VecHashMap remove path still has ~21B of objdiff after the maxSearch > searchLen loop-header fix made DWARF exact
 bool Class::RemoveCollection(Collection *c) {
     return mPrivates.mCollections.Remove(c->GetKey());
 }
