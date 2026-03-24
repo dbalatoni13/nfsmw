@@ -714,7 +714,13 @@ CarRenderInfo::CarRenderInfo(RideInfo *ride_info)
       mWCollider(nullptr), //
       mWorldPos(0.025f), //
       mEmitterPositionsInitialized(false), //
-      mAttributes(0xeec2271a, 0, nullptr)
+      mOnLights(0), //
+      mBrokenLights(0), //
+      mDeltaTime(0.0f), //
+      mRadius(lbl_8040AA60), //
+      mAttributes(0xeec2271a, 0, nullptr), //
+      mFlashing(false), //
+      mFlashInterval(0.0f)
 {
     ProfileNode profile_node;
     CarRenderRideInfoLayout *ride_layout = reinterpret_cast<CarRenderRideInfoLayout *>(ride_info);
@@ -723,14 +729,9 @@ CarRenderInfo::CarRenderInfo(RideInfo *ride_info)
     bVector3 tire_positions[4];
     float wheel_radius[4];
 
-    this->mOnLights = 0;
-    this->mBrokenLights = 0;
     bMemSet(&this->TheCarPartCuller, 0, sizeof(this->TheCarPartCuller));
-    this->mRadius = lbl_8040AA60;
     this->mAttributes.Change(Attrib::FindCollectionWithDefault(Attrib::Gen::ecar::ClassKey(), Attrib::StringToLowerCaseKey(car_base_name)));
     this->mMirrorLeftWheels = static_cast<unsigned char>(this->mAttributes.WheelSpokeCount()) >> 7;
-    this->mFlashing = false;
-    this->mFlashInterval = 0.0f;
     bMemSet(&this->mDamageInfoCache, 0, 0x14);
 
     this->AnimTime = 0.0f;
@@ -776,7 +777,6 @@ CarRenderInfo::CarRenderInfo(RideInfo *ride_info)
     this->mMinReflectionLodLevel = min_reflection_lod;
     this->LastCarPartChanged = -1;
     this->CarTimebaseStart = bRandom(1.0f);
-    this->mDeltaTime = 0.0f;
     CarTypeInfo *car_type_info = &CarTypeInfoArray[this->pRideInfo->Type];
     int is_traffic_car = car_type_info->GetCarUsageType() == CAR_USAGE_TYPE_TRAFFIC;
 
