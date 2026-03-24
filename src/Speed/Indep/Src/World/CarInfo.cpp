@@ -839,13 +839,12 @@ void RideInfo::SetRandomParts() {
 
 void RideInfo::SetRandomPaint() {
     int num_paints;
-    CarPart *paint_part;
+    CarPart *paint_part = 0;
     int paint_number;
 
-    paint_part = 0;
     num_paints = CarPartDB.NewGetNumCarParts(this->Type, CARSLOTID_BASE_PAINT, 0, -1);
-    paint_number = bRandom(num_paints);
-    for (int i = 0; i < paint_number + 1; i++) {
+    paint_number = bRandom(num_paints) + 1;
+    for (int i = 0; i < paint_number; i++) {
         paint_part = CarPartDB.NewGetNextCarPart(paint_part, this->Type, CARSLOTID_BASE_PAINT, 0, -1);
     }
 
