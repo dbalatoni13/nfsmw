@@ -866,14 +866,16 @@ unsigned int GetSpinnerTextureMaskHash(RideInfo *ride_info) {
     CarPart *rim_part = ride_info->GetPart(CARSLOTID_FRONT_WHEEL);
     unsigned int spinner_hash;
 
-    if (rim_part != 0) {
-        spinner_hash = rim_part->GetAppliedAttributeUParam(bStringHash("SPINNER_TEXTURE"), 0);
-        if (spinner_hash != 0) {
-            return bStringHash("_MASK", spinner_hash);
-        }
+    if (rim_part == 0) {
+        return 0;
     }
 
-    return 0;
+    spinner_hash = rim_part->GetAppliedAttributeUParam(bStringHash("SPINNER_TEXTURE"), 0);
+    if (spinner_hash == 0) {
+        return 0;
+    }
+
+    return bStringHash("_MASK", spinner_hash);
 }
 
 unsigned int GetVinylLayerHash(CarPart *car_part, CarType car_type, int skin_type) {
