@@ -669,6 +669,7 @@ CarPart *FindPartWithLevel(CarType car_type, CAR_SLOT_ID slot_id, int level) {
 
 void RideInfo::SetStockParts() {
     unsigned int stock_vinyl_colours[4];
+    unsigned int stock_vinyl_hashes[4];
 
     for (int car_slot_id = 0; car_slot_id <= CARSLOTID_MISC; car_slot_id++) {
         if (((this->Type != static_cast<CarType>(4)) || (car_slot_id != CARSLOTID_ATTACHMENT6)) && car_slot_id != CARSLOTID_VINYL_LAYER0 &&
@@ -736,10 +737,14 @@ void RideInfo::SetStockParts() {
         this->SetUpgradePart(static_cast<CAR_SLOT_ID>(car_slot_id), 0);
     }
 
-    stock_vinyl_colours[0] = bStringHash("VINYL_L1_COLOR01");
-    stock_vinyl_colours[1] = bStringHash("VINYL_L1_COLOR03");
-    stock_vinyl_colours[2] = bStringHash("VINYL_L2_COLOR11");
-    stock_vinyl_colours[3] = bStringHash("VINYL_L1_COLOR01");
+    stock_vinyl_hashes[0] = bStringHash("VINYL_L1_COLOR01");
+    stock_vinyl_hashes[1] = bStringHash("VINYL_L1_COLOR03");
+    stock_vinyl_hashes[2] = bStringHash("VINYL_L2_COLOR11");
+    stock_vinyl_hashes[3] = bStringHash("VINYL_L1_COLOR01");
+    stock_vinyl_colours[0] = stock_vinyl_hashes[0];
+    stock_vinyl_colours[1] = stock_vinyl_hashes[1];
+    stock_vinyl_colours[2] = stock_vinyl_hashes[2];
+    stock_vinyl_colours[3] = stock_vinyl_hashes[3];
 
     for (int j = 0; j < 4; j++) {
         int car_slot_id = j + CARSLOTID_VINYL_COLOUR0_0;
