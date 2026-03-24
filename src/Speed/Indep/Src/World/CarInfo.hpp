@@ -306,6 +306,10 @@ class RideInfo {
         this->mMyCarLoaderHandle = car_loader_handle;
     }
 
+    int GetCarLoaderHandle() {
+        return this->mMyCarLoaderHandle;
+    }
+
     CARPART_LOD GetMinLodLevel() const {
         return this->mMinLodLevel;
     }

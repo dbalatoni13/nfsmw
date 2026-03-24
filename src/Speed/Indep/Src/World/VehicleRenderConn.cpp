@@ -317,16 +317,18 @@ void VehicleRenderConn::FetchData(float dT) {
 }
 
 void VehicleRenderConn::UpdateLoading() {
-    const UTL::Collections::Listable<VehicleRenderConn, 10>::List &loader_list = VehicleRenderConn::GetList();
-    UTL::Collections::Listable<VehicleRenderConn, 10>::List::const_iterator it = loader_list.begin();
-    UTL::Collections::Listable<VehicleRenderConn, 10>::List::const_iterator end = loader_list.end();
+    const UTL::Collections::Listable<VehicleRenderConn, 10>::List &carlist = VehicleRenderConn::GetList();
+    {
+        VehicleRenderConn *const *iter = carlist.begin();
 
-    for (; it != end; ++it) {
-        VehicleRenderConn *vehicle_render_conn = *it;
-        RideInfoLoaderMirror *ride_info = reinterpret_cast<RideInfoLoaderMirror *>(vehicle_render_conn->mRideInfo);
+        while (iter != carlist.end()) {
+            VehicleRenderConn *conn = *iter;
 
-        if (vehicle_render_conn->mState == S_Loading && CarLoader_IsLoaded(&TheCarLoader, ride_info->mMyCarLoaderHandle)) {
-            vehicle_render_conn->OnLoaded(new CarRenderInfo(vehicle_render_conn->mRideInfo));
+            if (conn->mState == S_Loading && CarLoader_IsLoaded(&TheCarLoader, conn->mRideInfo->GetCarLoaderHandle())) {
+                conn->OnLoaded(new (__FILE__, __LINE__) CarRenderInfo(conn->mRideInfo));
+            }
+
+            ++iter;
         }
     }
 }
