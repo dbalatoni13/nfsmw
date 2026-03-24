@@ -968,7 +968,25 @@ CarRenderInfo::CarRenderInfo(RideInfo *ride_info)
 
             bMemSet(smooth_normal_models, 0, sizeof(smooth_normal_models));
             for (int slot = 0; slot < 0x4C; slot++) {
-                smooth_normal_models[slot] = this->mCarPartModels[slot][0][lod].GetModel();
+                eModel *model = this->mCarPartModels[slot][0][lod].GetModel();
+                eModel *smooth_model = nullptr;
+
+                if (model != nullptr && (slot == CARSLOTID_BASE || slot == CARSLOTID_BODY || slot == CARSLOTID_LEFT_SIDE_MIRROR ||
+                                         slot == CARSLOTID_RIGHT_SIDE_MIRROR || slot == CARSLOTID_SPOILER ||
+                                         (slot >= CARSLOTID_ROOF && slot <= CARSLOTID_BRAKELIGHT))) {
+                    eModel *previous_model = nullptr;
+
+                    if (lod > this->mMinLodLevel) {
+                        previous_model = this->mCarPartModels[slot][0][lod - 1].GetModel();
+                    }
+
+                    if (lod <= this->mMinLodLevel || previous_model == nullptr ||
+                        previous_model->GetNameHash() != model->GetNameHash()) {
+                        smooth_model = model;
+                    }
+                }
+
+                smooth_normal_models[slot] = smooth_model;
             }
 
             eSmoothNormals(smooth_normal_models, 0x4C);
