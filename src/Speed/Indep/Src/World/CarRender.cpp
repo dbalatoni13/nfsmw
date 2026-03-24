@@ -963,7 +963,7 @@ CarRenderInfo::CarRenderInfo(RideInfo *ride_info)
     }
 
     {
-        for (int lod = this->mMinLodLevel; lod <= this->mMaxLodLevel; lod++) {
+        for (int lod = this->mMinLodLevel; lod < this->mMaxLodLevel + 1; lod++) {
             eModel *smooth_normal_models[0x4C];
 
             bMemSet(smooth_normal_models, 0, sizeof(smooth_normal_models));
