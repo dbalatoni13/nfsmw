@@ -203,10 +203,7 @@ void FnPoseBlender::Blend(int numBones, float w, const float *pose0, const float
 
 bool FnPoseBlender::EvalSQT(float currentTime, float *sqtBuffer, const BoneMask *boneMask) {
     if (currentTime <= mStartTransTime) {
-        if (mAnim[0]->EvalSQT(currentTime - mTimeOffset[0], sqtBuffer, boneMask)) {
-            return true;
-        }
-        return false;
+        return mAnim[0]->EvalSQT(currentTime - mTimeOffset[0], sqtBuffer, boneMask);
     }
 
     if (currentTime >= mEndTransTime) {
