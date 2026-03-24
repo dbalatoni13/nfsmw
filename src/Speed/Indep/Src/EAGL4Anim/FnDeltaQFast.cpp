@@ -279,10 +279,18 @@ void FnDeltaQFast::UpdateNextQs(DeltaQFast *deltaQ, int ceilKey, int floorBinIdx
 
     if (ceilBinIdx != floorBinIdx) {
         unsigned char numBones = deltaQ->mNumBones;
-        DeltaQFastPhysical *ceilPhys = reinterpret_cast<DeltaQFastPhysical *>(binData);
+        DeltaQFastPhysical *physical = reinterpret_cast<DeltaQFastPhysical *>(binData);
 
         for (int ibone = 0; ibone < numBones; ibone++) {
-            ceilPhys[ibone].UnQuantize(mNextQs[ibone]);
+            float *nextQ = reinterpret_cast<float *>(&mNextQs[ibone]);
+
+            nextQ[0] = static_cast<float>(physical->mX) * kQFastPhysicalScale12 - kQFastPhysicalBias12;
+            nextQ[1] = static_cast<float>(physical->mY) * kQFastPhysicalScale12 - kQFastPhysicalBias12;
+            nextQ[2] = static_cast<float>(physical->mZ) * kQFastPhysicalScale12 - kQFastPhysicalBias12;
+            nextQ[3] =
+                static_cast<float>(static_cast<unsigned short>((physical->mW0 << 8) | (physical->mW1 << 4) | physical->mW2)) * kQFastPhysicalScale12 -
+                kQFastPhysicalBias12;
+            physical++;
         }
     } else {
         unsigned int numBones = deltaQ->mNumBones;
