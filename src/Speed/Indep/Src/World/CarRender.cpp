@@ -835,11 +835,7 @@ CarRenderInfo::CarRenderInfo(RideInfo *ride_info)
         CarRenderUsedCarTextureInfoLayout *used_texture_info =
             reinterpret_cast<CarRenderUsedCarTextureInfoLayout *>(&this->mUsedTextureInfos);
         unsigned int badging_hash = used_texture_info->MappedBadging;
-        const char *europe_suffix = nullptr;
-
-        if (BuildRegion::IsEurope()) {
-            europe_suffix = "_EU";
-        }
+        const char *europe_suffix = BuildRegion::IsEurope() ? "_EU" : nullptr;
 
         if (europe_suffix != nullptr) {
             unsigned int europe_badging_hash = bStringHash(europe_suffix, badging_hash);
