@@ -28,10 +28,9 @@ void DebugVehicleSelection::Init() {
     }
 }
 
-DebugVehicleSelection::DebugVehicleSelection() : UTL::COM::Object(1), IVehicleCache((UTL::COM::Object *)this) {
-    this->mCollisionObject = "";
-    this->mCollisionSurface = "";
-    this->mSelectionIndex = 0;
+DebugVehicleSelection::DebugVehicleSelection()
+    : UTL::COM::Object(1), IVehicleCache((UTL::COM::Object *)this), mSelectionIndex(0), mSelectionList(), mCollisionObject(""),
+      mCollisionSurface("") {
     this->mSelectionList.reserve(32);
     this->InitSelectionList();
     this->mOnOff = 1;
