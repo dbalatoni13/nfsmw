@@ -166,8 +166,8 @@ int HeliSheetManager::Unloader(bChunk *chunk) {
     }
 
     int *heli_section = reinterpret_cast<int *>((reinterpret_cast<int>(chunk) + 0x17U) & 0xfffffff0);
-    int *next = reinterpret_cast<int *>(heli_section[1]);
     int prev = heli_section[0];
+    int *next = reinterpret_cast<int *>(heli_section[1]);
 
     *next = prev;
     *reinterpret_cast<int **>(prev + 4) = next;
