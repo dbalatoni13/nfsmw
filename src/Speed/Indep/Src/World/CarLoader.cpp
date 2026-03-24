@@ -1341,16 +1341,16 @@ LoadedWheel::LoadedWheel(RideInfo *ride_info, bool in_fe) {
     this->LoadStateSkinPerm = CARLOADSTATE_LOADED;
 }
 
-LoadedSkin::LoadedSkin(RideInfo *ride_info, int in_front_end, int is_player_skin) {
-    this->pRideInfo = ride_info;
-    this->InFrontEnd = in_front_end;
-    this->pLoadedTexturesPack = 0;
-    this->pLoadedVinylsPack = 0;
-    this->NumLoadedSkinLayersPerm = 0;
-    this->IsPlayerSkin = is_player_skin;
-    this->DoneComposite = 0;
-    this->LoadStatePerm = 0;
-    this->LoadStateTemp = 0;
+LoadedSkin::LoadedSkin(RideInfo *ride_info, int in_front_end, int is_player_skin)
+    : pRideInfo(ride_info),           //
+      LoadStatePerm(0),               //
+      LoadStateTemp(0),               //
+      DoneComposite(0),               //
+      IsPlayerSkin(is_player_skin),   //
+      InFrontEnd(in_front_end),       //
+      pLoadedTexturesPack(0),         //
+      pLoadedVinylsPack(0),           //
+      NumLoadedSkinLayersPerm(0) {
     bMemSet(this->LoadedSkinLayersPerm, 0, sizeof(this->LoadedSkinLayersPerm));
     this->NumLoadedSkinLayersTemp = 0;
     bMemSet(this->LoadedSkinLayersTemp, 0, sizeof(this->LoadedSkinLayersTemp));
