@@ -856,7 +856,7 @@ CarRenderInfo::CarRenderInfo(RideInfo *ride_info)
     this->MasterReplacementTextureTable[REPLACETEX_DRIVER].SetNewNameHash(0xA244D489);
     this->UpdateCarParts();
     this->ShadowTexture = GetTextureInfo(bStringHash("CARSHADOW"), 1, 0);
-    this->ShadowRampTexture = GetTextureInfo(bStringHash("SHADOWRAMP"), 0, 0);
+    this->ShadowRampTexture = GetTextureInfo(0xBADB4475, 0, 0);
 
     if (this->ShadowTexture != nullptr) {
         this->ShadowTexture->ApplyAlphaSorting = 0;
