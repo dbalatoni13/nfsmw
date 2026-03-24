@@ -520,9 +520,13 @@ CarRenderConn::CarRenderConn(const Sim::ConnectionData &data, CarType ct, Render
         TireState_ctor(state);
         this->mTireState[i] = state;
         this->mTirePositions[i] = attributes_layout->TireOffsets[i];
-        this->mTireRadius[i] = this->mTirePositions[i].w;
-        if (this->mTireRadius[i] < 0.1f) {
-            this->mTireRadius[i] = 0.1f;
+        {
+            float tire_radius = this->mTirePositions[i].w;
+
+            if (tire_radius < 0.1f) {
+                tire_radius = 0.1f;
+            }
+            this->mTireRadius[i] = tire_radius;
         }
 
         this->mTirePositions[i].w = 0.0f;
