@@ -716,7 +716,6 @@ CarRenderInfo::CarRenderInfo(RideInfo *ride_info)
       mEmitterPositionsInitialized(false), //
       mOnLights(0), //
       mBrokenLights(0), //
-      mDeltaTime(0.0f), //
       mRadius(lbl_8040AA60), //
       mAttributes(0xeec2271a, 0, nullptr), //
       mFlashing(false), //
@@ -776,6 +775,7 @@ CarRenderInfo::CarRenderInfo(RideInfo *ride_info)
     this->mMinReflectionLodLevel = min_reflection_lod;
     this->LastCarPartChanged = -1;
     this->CarTimebaseStart = bRandom(1.0f);
+    this->mDeltaTime = 0.0f;
     CarTypeInfo *car_type_info = &CarTypeInfoArray[this->pRideInfo->Type];
     int is_traffic_car = car_type_info->GetCarUsageType() == CAR_USAGE_TYPE_TRAFFIC;
 
