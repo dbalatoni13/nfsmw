@@ -1633,7 +1633,7 @@ void CarRenderInfo::UpdateWheelYRenderOffset() {
 void CarRenderInfo::UpdateDecalTextures(RideInfo *ride_info) {
     unsigned int alpha_hash;
     unsigned int decal_hashes[8];
-    CarPart *hood_decals;
+    int hood_decals;
     unsigned int size_hash;
     unsigned int shape_hash;
     unsigned int size_hashes[3];
@@ -1664,7 +1664,10 @@ void CarRenderInfo::UpdateDecalTextures(RideInfo *ride_info) {
         }
     }
 
-    hood_decals = ride_info->GetPart(CARSLOTID_HOOD);
+    hood_decals = 1;
+    if (ride_info->GetPart(CARSLOTID_HOOD) == 0) {
+        hood_decals = 0;
+    }
     size_hash = bStringHash("SIZE");
     shape_hash = bStringHash("SHAPE");
     size_hashes[0] = bStringHash("SMALL");
