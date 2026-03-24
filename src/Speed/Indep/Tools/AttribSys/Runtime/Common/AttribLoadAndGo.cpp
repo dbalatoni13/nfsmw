@@ -265,9 +265,9 @@ void Vault::Initialize() {
                 break;
             case 4: {
                 Vault *depVault = reinterpret_cast<Vault *>(mDepData[ptr->mIndex].mData);
-                unsigned int exportIndex = depVault->FindExportID(ptr->mExportID);
-                if (exportIndex != -1) {
-                    *targetptr = reinterpret_cast<char *>(depVault->GetExportData(exportIndex));
+                unsigned int exportindex = depVault->FindExportID(ptr->mExportID);
+                if (exportindex != -1) {
+                    *targetptr = reinterpret_cast<char *>(depVault->GetExportData(exportindex));
                 } else {
                     *targetptr = nullptr;
                 }
