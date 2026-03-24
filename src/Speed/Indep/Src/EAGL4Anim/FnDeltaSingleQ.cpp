@@ -216,6 +216,63 @@ void FnDeltaSingleQ::Eval(float prevTime, float currTime, float *sqt) {
     EvalSQTMasked(currTime, nullptr, sqt);
 }
 
+inline void FnDeltaSingleQ::InitBuffersAsRequired() {
+    DeltaSingleQ *deltaQ = reinterpret_cast<DeltaSingleQ *>(mpAnim);
+    unsigned char numBones = deltaQ->mNumBones;
+    DeltaSingleQMinRange *minRanges;
+
+    deltaQ->GetArrays(minRanges, mBins);
+    mBinSize = deltaQ->GetBinSize();
+
+    if (numBones != 0) {
+        float eul[3];
+
+        mPrevQBlock = MemoryPoolManager::NewBlock(numBones * sizeof(*mPrevQs));
+        mPrevQs = reinterpret_cast<UMath::Vector4 *>(mPrevQBlock);
+        mMinRanges = minRanges;
+        mPreMultQs = reinterpret_cast<UMath::Vector4 *>(MemoryPoolManager::NewBlock(numBones * sizeof(*mPreMultQs)));
+        mPostMultQs = reinterpret_cast<UMath::Vector4 *>(MemoryPoolManager::NewBlock(numBones * sizeof(*mPostMultQs)));
+
+        for (int ibone = 0; ibone < numBones; ibone++) {
+            DeltaSingleQMinRangef minRangef;
+
+            mMinRanges[ibone].UnQuantize(minRangef);
+
+            if (minRangef.mIndex == 0) {
+                mPreMultQs[ibone].x = kSingleQFloatZero;
+                mPreMultQs[ibone].y = kSingleQFloatZero;
+                mPreMultQs[ibone].z = kSingleQFloatZero;
+                mPreMultQs[ibone].w = kSingleQFloatOne;
+                eul[0] = kSingleQFloatZero;
+                eul[1] = minRangef.mConst0;
+                eul[2] = minRangef.mConst1;
+                SingleQEulToQuat(eul, reinterpret_cast<float *>(&mPostMultQs[ibone]));
+            } else if (minRangef.mIndex == 1) {
+                eul[0] = minRangef.mConst0;
+                eul[1] = kSingleQFloatZero;
+                eul[2] = kSingleQFloatZero;
+                SingleQEulToQuat(eul, reinterpret_cast<float *>(&mPreMultQs[ibone]));
+
+                eul[0] = kSingleQFloatZero;
+                eul[1] = kSingleQFloatZero;
+                eul[2] = minRangef.mConst1;
+                SingleQEulToQuat(eul, reinterpret_cast<float *>(&mPostMultQs[ibone]));
+            } else {
+                mPostMultQs[ibone].x = kSingleQFloatZero;
+                mPostMultQs[ibone].y = kSingleQFloatZero;
+                mPostMultQs[ibone].z = kSingleQFloatZero;
+                mPostMultQs[ibone].w = kSingleQFloatOne;
+                eul[0] = minRangef.mConst0;
+                eul[1] = minRangef.mConst1;
+                eul[2] = kSingleQFloatZero;
+                SingleQEulToQuat(eul, reinterpret_cast<float *>(&mPreMultQs[ibone]));
+            }
+        }
+    } else {
+        mMinRanges = minRanges;
+    }
+}
+
 bool FnDeltaSingleQ::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask) {
     if (boneMask) {
         return EvalSQTMasked(currTime, boneMask, sqt);
@@ -223,61 +280,7 @@ bool FnDeltaSingleQ::EvalSQT(float currTime, float *sqt, const BoneMask *boneMas
     DeltaSingleQ *deltaQ = reinterpret_cast<DeltaSingleQ *>(mpAnim);
 
     if (!mPrevQs) {
-        unsigned char numBones = deltaQ->mNumBones;
-        DeltaSingleQMinRange *minRanges;
-
-        deltaQ->GetArrays(minRanges, mBins);
-        mBinSize = deltaQ->GetBinSize();
-
-        if (deltaQ->mNumBones != 0) {
-            float eul[3];
-
-            mPrevQBlock = MemoryPoolManager::NewBlock(deltaQ->mNumBones * sizeof(*mPrevQs));
-            mPrevQs = reinterpret_cast<UMath::Vector4 *>(mPrevQBlock);
-            mMinRanges = minRanges;
-            mPreMultQs =
-                reinterpret_cast<UMath::Vector4 *>(MemoryPoolManager::NewBlock(deltaQ->mNumBones * sizeof(*mPreMultQs)));
-            mPostMultQs =
-                reinterpret_cast<UMath::Vector4 *>(MemoryPoolManager::NewBlock(deltaQ->mNumBones * sizeof(*mPostMultQs)));
-
-            for (int ibone = 0; ibone < deltaQ->mNumBones; ibone++) {
-                DeltaSingleQMinRangef minRangef;
-
-                mMinRanges[ibone].UnQuantize(minRangef);
-
-                if (minRangef.mIndex == 0) {
-                    mPreMultQs[ibone].x = kSingleQFloatZero;
-                    mPreMultQs[ibone].y = kSingleQFloatZero;
-                    mPreMultQs[ibone].z = kSingleQFloatZero;
-                    mPreMultQs[ibone].w = kSingleQFloatOne;
-                    eul[0] = kSingleQFloatZero;
-                    eul[1] = minRangef.mConst0;
-                    eul[2] = minRangef.mConst1;
-                    SingleQEulToQuat(eul, reinterpret_cast<float *>(&mPostMultQs[ibone]));
-                } else if (minRangef.mIndex == 1) {
-                    eul[0] = minRangef.mConst0;
-                    eul[1] = kSingleQFloatZero;
-                    eul[2] = kSingleQFloatZero;
-                    SingleQEulToQuat(eul, reinterpret_cast<float *>(&mPreMultQs[ibone]));
-
-                    eul[0] = kSingleQFloatZero;
-                    eul[1] = kSingleQFloatZero;
-                    eul[2] = minRangef.mConst1;
-                    SingleQEulToQuat(eul, reinterpret_cast<float *>(&mPostMultQs[ibone]));
-                } else {
-                    mPostMultQs[ibone].x = kSingleQFloatZero;
-                    mPostMultQs[ibone].y = kSingleQFloatZero;
-                    mPostMultQs[ibone].z = kSingleQFloatZero;
-                    mPostMultQs[ibone].w = kSingleQFloatOne;
-                    eul[0] = minRangef.mConst0;
-                    eul[1] = minRangef.mConst1;
-                    eul[2] = kSingleQFloatZero;
-                    SingleQEulToQuat(eul, reinterpret_cast<float *>(&mPreMultQs[ibone]));
-                }
-            }
-        } else {
-            mMinRanges = minRanges;
-        }
+        InitBuffersAsRequired();
     }
     int floorTime = FloatToInt(currTime);
     int floorKey;
@@ -435,61 +438,7 @@ bool FnDeltaSingleQ::EvalSQTMasked(float currTime, const BoneMask *boneMask, flo
     DeltaSingleQ *deltaQ = reinterpret_cast<DeltaSingleQ *>(mpAnim);
 
     if (!mPrevQs) {
-        unsigned char numBones = deltaQ->mNumBones;
-        DeltaSingleQMinRange *minRanges;
-
-        deltaQ->GetArrays(minRanges, mBins);
-        mBinSize = deltaQ->GetBinSize();
-
-        if (deltaQ->mNumBones != 0) {
-            float eul[3];
-
-            mPrevQBlock = MemoryPoolManager::NewBlock(deltaQ->mNumBones * sizeof(*mPrevQs));
-            mPrevQs = reinterpret_cast<UMath::Vector4 *>(mPrevQBlock);
-            mMinRanges = minRanges;
-            mPreMultQs =
-                reinterpret_cast<UMath::Vector4 *>(MemoryPoolManager::NewBlock(deltaQ->mNumBones * sizeof(*mPreMultQs)));
-            mPostMultQs =
-                reinterpret_cast<UMath::Vector4 *>(MemoryPoolManager::NewBlock(deltaQ->mNumBones * sizeof(*mPostMultQs)));
-
-            for (int ibone = 0; ibone < deltaQ->mNumBones; ibone++) {
-                DeltaSingleQMinRangef minRangef;
-
-                mMinRanges[ibone].UnQuantize(minRangef);
-
-                if (minRangef.mIndex == 0) {
-                    mPreMultQs[ibone].x = kSingleQFloatZero;
-                    mPreMultQs[ibone].y = kSingleQFloatZero;
-                    mPreMultQs[ibone].z = kSingleQFloatZero;
-                    mPreMultQs[ibone].w = kSingleQFloatOne;
-                    eul[0] = kSingleQFloatZero;
-                    eul[1] = minRangef.mConst0;
-                    eul[2] = minRangef.mConst1;
-                    SingleQEulToQuat(eul, reinterpret_cast<float *>(&mPostMultQs[ibone]));
-                } else if (minRangef.mIndex == 1) {
-                    eul[0] = minRangef.mConst0;
-                    eul[1] = kSingleQFloatZero;
-                    eul[2] = kSingleQFloatZero;
-                    SingleQEulToQuat(eul, reinterpret_cast<float *>(&mPreMultQs[ibone]));
-
-                    eul[0] = kSingleQFloatZero;
-                    eul[1] = kSingleQFloatZero;
-                    eul[2] = minRangef.mConst1;
-                    SingleQEulToQuat(eul, reinterpret_cast<float *>(&mPostMultQs[ibone]));
-                } else {
-                    mPostMultQs[ibone].x = kSingleQFloatZero;
-                    mPostMultQs[ibone].y = kSingleQFloatZero;
-                    mPostMultQs[ibone].z = kSingleQFloatZero;
-                    mPostMultQs[ibone].w = kSingleQFloatOne;
-                    eul[0] = minRangef.mConst0;
-                    eul[1] = minRangef.mConst1;
-                    eul[2] = kSingleQFloatZero;
-                    SingleQEulToQuat(eul, reinterpret_cast<float *>(&mPreMultQs[ibone]));
-                }
-            }
-        } else {
-            mMinRanges = minRanges;
-        }
+        InitBuffersAsRequired();
     }
     int floorTime = FloatToInt(currTime);
     int floorKey;
