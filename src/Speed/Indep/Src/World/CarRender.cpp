@@ -2240,9 +2240,10 @@ void CarRenderInfo::InitEmitterPositions(bVector4 *tire_positions) {
                     break;
                 case CARFXPOS_ENGINE:
                     {
+                        float y_diff = tire_positions->y - tire_fr->y;
                         float x = (tire_positions->x + tire_fr->x) * tire_mid;
                         float y = (tire_positions->y + tire_fr->y) * tire_mid;
-                        float z = (tire_positions->z + tire_fr->z) * tire_mid + (tire_positions->y - tire_fr->y) * engine_offset;
+                        float z = (tire_positions->z + tire_fr->z) * tire_mid + y_diff * engine_offset;
 
                         empos = static_cast<CarEmitterPosition *>(bOMalloc(CarEmitterPositionSlotPool));
                         empos->PositionMarker = nullptr;
