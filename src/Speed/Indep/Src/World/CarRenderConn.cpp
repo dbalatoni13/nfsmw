@@ -993,7 +993,9 @@ void CarRenderConn::UpdateTires(float dT, float carspeed, const RenderConn::Pkt_
     float tire_hop = 0.0f;
     bool flatten_tires = false;
     bool hop_wheels = false;
+    bool is_view_anchor;
     bool can_do_fx;
+    CarRenderInfo *car_render_info;
 
     this->mFlatTireAngle = UMath::Vector3::kZero;
 
@@ -1011,8 +1013,10 @@ void CarRenderConn::UpdateTires(float dT, float carspeed, const RenderConn::Pkt_
     }
 
     this->mWheelHop = UMath::Vector3::kZero;
-    (void)this->IsViewAnchor();
+    is_view_anchor = this->IsViewAnchor();
     can_do_fx = this->TestVisibility(renderModifier * 80.0f);
+    car_render_info = this->GetRenderInfo();
+    (void)is_view_anchor;
 
     for (int i = 0; i < 4; i++) {
         const int axle = i >> 1;
@@ -1082,7 +1086,7 @@ void CarRenderConn::UpdateTires(float dT, float carspeed, const RenderConn::Pkt_
         this->mTireMatrices[i].v3.y = this->mTirePositions[i].y;
 
         if (can_do_fx) {
-            this->GetRenderInfo()->SetWheelWobble(i, (data.mBlowOuts >> i) & 1U);
+            car_render_info->SetWheelWobble(i, (data.mBlowOuts >> i) & 1U);
         }
 
         eMulVector(&state->mTirePos, &this->mRenderMatrix, &this->mTireMatrices[i].v3);
