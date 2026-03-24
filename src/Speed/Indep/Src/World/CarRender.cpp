@@ -2155,15 +2155,22 @@ void CarRenderInfo::InitEmitterPositions(bVector4 *tire_positions) {
                     break;
                 case CARFXPOS_FRONT_TIRES:
                     {
-                        float x = (tire_positions->x + tire_fr->x) * tire_mid;
-                        float y = (tire_positions->y + tire_fr->y) * tire_mid;
-                        float z = (tire_positions->z + tire_fr->z) * tire_mid;
+                        bVector4 midpoint;
+
+                        midpoint.x = tire_positions->x + tire_fr->x;
+                        midpoint.y = tire_positions->y + tire_fr->y;
+                        midpoint.z = tire_positions->z + tire_fr->z;
+                        midpoint.w = tire_positions->w + tire_fr->w;
+                        midpoint.x *= tire_mid;
+                        midpoint.y *= tire_mid;
+                        midpoint.z *= tire_mid;
+                        midpoint.w *= tire_mid;
 
                         empos = static_cast<CarEmitterPosition *>(bOMalloc(CarEmitterPositionSlotPool));
                         empos->PositionMarker = nullptr;
-                        empos->X = x;
-                        empos->Y = y;
-                        empos->Z = z;
+                        empos->X = midpoint.x;
+                        empos->Y = midpoint.y;
+                        empos->Z = midpoint.z;
                     }
                     break;
                 case CARFXPOS_REAR_TIRES:
