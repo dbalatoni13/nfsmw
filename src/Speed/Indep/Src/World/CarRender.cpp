@@ -3209,7 +3209,9 @@ void CarRenderInfo::DrawAmbientShadow(eView *view, const bVector3 *position, flo
             hull_Normal.z = lbl_8040ADCC;
         }
 
-        ref = bVector3(lbl_8040ADC0, lbl_8040ADC0, lbl_8040ADC0);
+        ref.x = lbl_8040ADC0;
+        ref.y = lbl_8040ADC0;
+        ref.z = lbl_8040ADC0;
         eMulVector(&ref, localWorld, &ref);
         this->mWorldPos.SetTolerance(lbl_8040ADE4);
         bVector3 *point = p;
