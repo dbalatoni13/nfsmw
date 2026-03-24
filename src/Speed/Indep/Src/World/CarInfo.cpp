@@ -71,6 +71,7 @@ struct CarPartModelTableLayout {
     char TemplatedNameHashes;
     char pad;
     unsigned short MiddleStringOffset;
+    const char *ModelNames[1][5];
 };
 
 struct CarPartIndexCtor {
@@ -340,11 +341,13 @@ unsigned char MapCarTypeNameHashToIndex(unsigned int namehash) {
 unsigned int CarPart::GetModelNameHash(int model_num, int lod) {
     unsigned short model_table_index = *reinterpret_cast<unsigned short *>(reinterpret_cast<unsigned char *>(this) + 0xC);
     unsigned int base_namehash;
-    char group = *reinterpret_cast<char *>(reinterpret_cast<unsigned char *>(this) + 6);
 
     if (model_table_index == 0xFFFF) {
         return 0;
     }
+
+    CarPartModelTableLayout *model_table = reinterpret_cast<CarPartModelTableLayout *>(MasterCarPartPackLayout->ModelTable) + model_table_index;
+    char group = *reinterpret_cast<char *>(reinterpret_cast<unsigned char *>(this) + 6);
 
     if (group == 0) {
         base_namehash = 0xFFFFFFFF;
@@ -354,8 +357,7 @@ unsigned int CarPart::GetModelNameHash(int model_num, int lod) {
         base_namehash = GetAppliedAttributeUParam(0xEBB03E66, 0);
     }
 
-    return CarPartModelTable_GetModelNameHash(reinterpret_cast<CarPartModelTableLayout *>(MasterCarPartPackLayout->ModelTable) + model_table_index,
-                                              base_namehash, model_num, lod);
+    return CarPartModelTable_GetModelNameHash(model_table, base_namehash, model_num, lod);
 }
 
 int CarPart::HasAppliedAttribute(unsigned int namehash) {
