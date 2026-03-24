@@ -114,8 +114,8 @@ void CreateWindRotMatrix(eView *view, bMatrix4 *windrot, int offset, bMatrix4 *l
         bNormalize(&windAxis, view->Precipitation->GetWind());
     }
 
-    local2world.v0.y = -local2world.v0.y;
     local2world.v1.x = -local2world.v1.x;
+    local2world.v0.y = -local2world.v0.y;
     local2world.v3.x = 0.0f;
     local2world.v3.y = 0.0f;
     local2world.v3.z = 0.0f;

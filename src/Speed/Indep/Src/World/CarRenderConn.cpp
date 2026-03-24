@@ -465,14 +465,14 @@ update_fx:
 }
 
 Sim::Connection *CarRenderConn::Construct(const Sim::ConnectionData &data) {
-    const RenderPktCarOpen *open = reinterpret_cast<const RenderPktCarOpen *>(data.pkt);
+    RenderConn::Pkt_Car_Open *open = reinterpret_cast<RenderConn::Pkt_Car_Open *>(data.pkt);
     int car_type = GetCarType__15CarPartDatabaseUi(&CarPartDB, open->mModelHash);
 
     if (car_type == -1 || car_type > 0x53) {
         return 0;
     }
 
-    return new CarRenderConn(data, static_cast<CarType>(car_type), reinterpret_cast<RenderConn::Pkt_Car_Open *>(data.pkt));
+    return new CarRenderConn(data, static_cast<CarType>(car_type), open);
 }
 
 CarRenderConn::CarRenderConn(const Sim::ConnectionData &data, CarType ct, RenderConn::Pkt_Car_Open *oc)
