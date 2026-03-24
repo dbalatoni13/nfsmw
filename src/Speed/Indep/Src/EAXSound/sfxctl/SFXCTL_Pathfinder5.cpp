@@ -1,6 +1,11 @@
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Pathfinder5.hpp"
 #include "Speed/Indep/Src/Generated/Messages/MControlPathfinder.h"
 #include "Speed/Indep/Src/Generated/Messages/MNotifyMusicFlow.h"
+#include "Speed/Indep/Src/EAXSound/Stream/SndStrmWrapper.hpp"
+
+int PATH_stop(int tracks);
+int PATH_shutdown();
+int PATH_destroy(int trackhandle);
 
 SFXCTL_Pathfinder *g_pSFXCTL_Pathfinder;
 stPFParms *SFXCTL_Pathfinder::m_pPFParms[4] = {nullptr, nullptr, nullptr, nullptr};
@@ -61,7 +66,7 @@ void SFXCTL_Pathfinder::UpdateParams(float t) {
             continue;
         }
         if ((pf->procflags & 1) != 0) {
-            pf->pathstatus._dummy = pf->PATH_TRACK;
+            pf->pathstatus.playingnode = pf->PATH_TRACK;
         }
         if ((pf->procflags & 2) != 0) {
             pf->track_status = kPATH_TRACK_PLAYSTATUS_NONE;
@@ -191,26 +196,40 @@ void SFXCTL_Pathfinder::AttachStreamInstance(stPFParms *pstPFParms) {
 }
 
 void SFXCTL_Pathfinder::DestroyTrack(stPFParms *pstPFParms) {
-    if (pstPFParms == nullptr) {
-        return;
-    }
+    bool bshutdown = true;
+    int n;
+    int i;
 
-    int proj = pstPFParms->projnum;
-    if (proj >= 0 && proj < 4 && m_pPFParms[proj] != nullptr) {
-        m_pPFParms[proj] = nullptr;
-        --m_projrefcnt;
-    }
-
-    bool shutdown = true;
-    for (int i = 0; i < 4; ++i) {
-        if (m_pPFParms[i] != nullptr) {
-            shutdown = false;
+    if (pstPFParms->bAttached) {
+        if (m_pPFParms[pstPFParms->projnum]) {
+            PATH_stop(pstPFParms->PATH_TRACK);
+            DetachStreamInstance(pstPFParms);
+            PATH_destroy(pstPFParms->PATH_TRACK);
+            m_pPFParms[pstPFParms->projnum] = 0;
+            m_projrefcnt -= 1;
+        }
+    } else {
+        if (m_pPFParms[pstPFParms->projnum]) {
+            PATH_destroy(pstPFParms->PATH_TRACK);
+            m_pPFParms[pstPFParms->projnum] = 0;
+            m_projrefcnt -= 1;
         }
     }
 
-    if (shutdown) {
-        for (int i = 0; i < 4; ++i) {
-            m_PFStrmImp[i] = nullptr;
+    for (n = 0; n < 4; ++n) {
+        if (m_pPFParms[n]) {
+            bshutdown = false;
+        }
+    }
+
+    if (bshutdown == true) {
+        SNDSYS_entercritical();
+        PATH_shutdown();
+        SNDSYS_leavecritical();
+        for (i = 0; i < 4; ++i) {
+            if (m_PFStrmImp[i]) {
+                m_PFStrmImp[i] = 0;
+            }
         }
     }
 
