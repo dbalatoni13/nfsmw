@@ -17,7 +17,7 @@ class ITransmission : public UTL::COM::IUnknown {
 
     ITransmission(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
 
-    virtual ~ITransmission();
+    virtual ~ITransmission() {}
 
   public:
     virtual GearID GetGear() const = 0;

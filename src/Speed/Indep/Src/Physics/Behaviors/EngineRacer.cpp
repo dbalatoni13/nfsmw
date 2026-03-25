@@ -31,12 +31,10 @@
 #include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
-IEngine::~IEngine() {}
 IDragEngine::~IDragEngine() {}
 IRaceEngine::~IRaceEngine() {}
 IInductable::~IInductable() {}
 ITiptronic::~ITiptronic() {}
-ITransmission::~ITransmission() {}
 HINTERFACE IDragTransmission::_IHandle() {
     return (HINTERFACE)_IHandle;
 }

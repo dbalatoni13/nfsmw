@@ -18,7 +18,7 @@ class IEngine : public UTL::COM::IUnknown {
 
     IEngine(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
 
-    virtual ~IEngine();
+    virtual ~IEngine() {}
 
   public:
     virtual float GetRPM() const = 0;
