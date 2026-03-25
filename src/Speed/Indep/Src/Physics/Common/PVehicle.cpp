@@ -43,19 +43,8 @@
 #include "Speed/Indep/Src/World/WWorldPos.h"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 
-namespace {
-HINTERFACE (*const kForceIRaceEngineHandle)() = &IRaceEngine::_IHandle;
-HINTERFACE (*const kForceIEffectsHandle)() = &IEffects::_IHandle;
-}
-
-extern "C" HINTERFACE _IHandle__11IRaceEngine() asm("_IHandle__11IRaceEngine");
-HINTERFACE _IHandle__11IRaceEngine() {
-    return (HINTERFACE)_IHandle__11IRaceEngine;
-}
-
-extern "C" HINTERFACE _IHandle__8IEffects() asm("_IHandle__8IEffects");
-HINTERFACE _IHandle__8IEffects() {
-    return (HINTERFACE)_IHandle__8IEffects;
+HINTERFACE IRaceEngine::_IHandle() {
+    return (HINTERFACE)_IHandle;
 }
 
 class OnlineRacer;

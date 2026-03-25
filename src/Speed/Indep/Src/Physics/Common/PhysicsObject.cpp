@@ -1,3 +1,4 @@
+#define ZPHYSICS_OUTLINE_IENTITY_HANDLE
 #include "Speed/Indep/Src/Physics/PhysicsObject.h"
 
 #include "Speed/Indep/Src/Interfaces/SimEntities/IEntity.h"
@@ -11,13 +12,8 @@
 
 #include <algorithm>
 
-namespace {
-HINTERFACE (*const kForceIEntityHandle)() = &Sim::IEntity::_IHandle;
-}
-
-extern "C" HINTERFACE _IHandle__Q23Sim7IEntity() asm("_IHandle__Q23Sim7IEntity");
-HINTERFACE _IHandle__Q23Sim7IEntity() {
-    return (HINTERFACE)_IHandle__Q23Sim7IEntity;
+HINTERFACE Sim::IEntity::_IHandle() {
+    return (HINTERFACE)_IHandle;
 }
 
 HINTERFACE IBody::_IHandle() {
