@@ -828,8 +828,10 @@ int CarLoader::UnloadRideInfo(LoadedRideInfo *loaded_ride_info, int leave_if_in_
             this->UnloadSkinTemporaries(loaded_skin, 0);
         }
 
+        int in_mempool = this->IsLoaded(loaded_ride_info);
+
         if (leave_if_in_mempool != 0) {
-            if (this->IsLoaded(loaded_ride_info)) {
+            if (in_mempool != 0) {
                 return 0;
             }
         }
