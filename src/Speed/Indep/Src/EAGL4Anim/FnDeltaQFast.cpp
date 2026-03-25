@@ -445,6 +445,7 @@ bool FnDeltaQFast::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask)
         } else {
             int binData = reinterpret_cast<int>(mBins) + floorBinIdx * mBinSize;
             int prevDeltaIdx = mPrevKey;
+            bool preventReverse = false;
 
             if (mPrevKey == static_cast<int>(floorKey + 1)) {
                 for (int ibone = 0; ibone < static_cast<int>(deltaQ->mNumBones); ibone++) {
@@ -454,25 +455,28 @@ bool FnDeltaQFast::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask)
                 mNextKey = mPrevKey;
             }
 
-                    if (prevDeltaIdx == -1 || floorBinIdx != (mPrevKey >> deltaQ->mBinLengthPower) || floorDeltaIdx == 0 ||
-                (floorKey < mPrevKey && !IsReverseDeltaSumEnabled())) {
-                    for (int ibone = 0; ibone < static_cast<int>(deltaQ->mNumBones); ibone++) {
-                        float *prevQ = reinterpret_cast<float *>(&mPrevQs[ibone]);
-                        DeltaQFastPhysical *physical = reinterpret_cast<DeltaQFastPhysical *>(binData + ibone * 6);
+            if (floorKey < mPrevKey) {
+                preventReverse = !IsReverseDeltaSumEnabled();
+            }
 
-                        prevQ[0] = static_cast<float>(physical->mX) * kQFastPhysicalScale12 - kQFastPhysicalBias12;
-                        prevQ[1] = static_cast<float>(physical->mY) * kQFastPhysicalScale12 - kQFastPhysicalBias12;
-                        prevQ[2] = static_cast<float>(physical->mZ) * kQFastPhysicalScale12 - kQFastPhysicalBias12;
-                        prevQ[3] =
-                            static_cast<float>(static_cast<unsigned short>((physical->mW0 << 8) | (physical->mW1 << 4) | physical->mW2)) *
-                                kQFastPhysicalScale12 -
-                            kQFastPhysicalBias12;
-                    }
+            if (prevDeltaIdx != -1 && floorBinIdx == (mPrevKey >> deltaQ->mBinLengthPower) && floorDeltaIdx != 0 && !preventReverse) {
+                prevDeltaIdx &= static_cast<int>(binLengthMask);
+            } else {
+                for (int ibone = 0; ibone < static_cast<int>(deltaQ->mNumBones); ibone++) {
+                    float *prevQ = reinterpret_cast<float *>(&mPrevQs[ibone]);
+                    DeltaQFastPhysical *physical = reinterpret_cast<DeltaQFastPhysical *>(binData + ibone * 6);
 
-                    prevDeltaIdx = 0;
-                } else {
-                    prevDeltaIdx &= static_cast<int>(binLengthMask);
+                    prevQ[0] = static_cast<float>(physical->mX) * kQFastPhysicalScale12 - kQFastPhysicalBias12;
+                    prevQ[1] = static_cast<float>(physical->mY) * kQFastPhysicalScale12 - kQFastPhysicalBias12;
+                    prevQ[2] = static_cast<float>(physical->mZ) * kQFastPhysicalScale12 - kQFastPhysicalBias12;
+                    prevQ[3] =
+                        static_cast<float>(static_cast<unsigned short>((physical->mW0 << 8) | (physical->mW1 << 4) | physical->mW2)) *
+                            kQFastPhysicalScale12 -
+                        kQFastPhysicalBias12;
                 }
+
+                prevDeltaIdx = 0;
+            }
 
                 if (prevDeltaIdx < static_cast<int>(floorDeltaIdx)) {
                     AddDelta(reinterpret_cast<DeltaQFastPhysical *>(binData), deltaQ, prevDeltaIdx, floorDeltaIdx, mPrevQs);
