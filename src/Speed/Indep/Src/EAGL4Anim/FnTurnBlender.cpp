@@ -272,34 +272,21 @@ void FnTurnBlender::AlignCycleBeginEnd(int cIdx) {
 
 void FnTurnBlender::AlignRootQ(float *sqt) const {
     UMath::Vector4 result;
-    float x = sqt[4];
-    float y = sqt[5];
-    float z = sqt[6];
-    float w = sqt[7];
-
-    result.x = w * mAlignQ.x + z * mAlignQ.y + (x * mAlignQ.w - y * mAlignQ.z);
-    result.y = w * mAlignQ.y + (x * mAlignQ.z + y * mAlignQ.w) - z * mAlignQ.x;
-    result.z = w * mAlignQ.z + z * mAlignQ.w - x * mAlignQ.y + y * mAlignQ.x;
-    result.w = w * mAlignQ.w - x * mAlignQ.x - y * mAlignQ.y - z * mAlignQ.z;
-
+    QuatMult(*reinterpret_cast<UMath::Vector4 *>(&sqt[4]), mAlignQ, result);
     *reinterpret_cast<UMath::Vector4 *>(&sqt[4]) = result;
 }
 
 void FnTurnBlender::AlignVel(float *vel) const {
-    float x = mAlignQ.x;
-    float y = mAlignQ.y;
-    float z = mAlignQ.z;
-    float w = mAlignQ.w;
-    float doubleY = y + y;
-    float doubleZ = z + z;
-    float oldX = vel[0];
-    float oldY = vel[1];
-    float y2 = y * doubleY;
-    float xz = x * doubleZ;
-    float wy = w * doubleY;
+    UMath::Vector4 org;
+    UMath::Vector4 result;
 
-    vel[0] = oldX * (1.0f - (z * doubleZ + y2)) + oldY * (xz + wy);
-    vel[1] = oldX * (xz - wy) + oldY * (1.0f - (x * (x + x) + y2));
+    org.x = vel[0];
+    org.y = 0.0f;
+    org.z = vel[1];
+    org.w = 1.0f;
+    QuatTransformPoint(mAlignQ, org, result);
+    vel[0] = result.x;
+    vel[1] = result.z;
 }
 
 bool FnTurnBlender::BlendBeginFacing(float *f) const {
