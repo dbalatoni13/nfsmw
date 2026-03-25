@@ -1414,31 +1414,23 @@ void EAXSound::LoadFrontEndSoundBanks(void (*callback)(int), int callback_param)
     m_prevSndGameMode = m_eSndGameMode;
     m_eSndGameMode = SND_FRONTEND;
     gAEMSMgr.ResetBankLoadParams();
-    m_pStreamManager = new EAXS_StreamManager();
-    if (m_pStreamManager != nullptr) {
-        m_pStreamManager->InitializeStreams(SNDGM_FRONTEND);
-    }
+    m_pStreamManager = new ("EAXS_StreamManager", false) EAXS_StreamManager();
+    m_pStreamManager->InitializeStreams(SNDGM_FRONTEND);
 
     if ((g_ActiveCtlStates & 0x20000) == 0) {
         g_ActiveCtlStates = 0;
-        g_PrevActiveCtlStates = 0;
         g_ActiveSFXStates = 0;
+        g_PrevActiveCtlStates = 0;
         g_PrevActiveSFXStates = 0;
     }
 
     InitializeFrontEnd();
 
-    if (m_pCmnSnd != nullptr) {
-        m_pCmnSnd->Initialize();
-    }
-    if (m_pFESnd != nullptr) {
-        m_pFESnd->Initialize();
-    }
+    m_pCmnSnd->Initialize();
+    m_pFESnd->Initialize();
 
-    if (m_pNFSMixMaster != nullptr) {
-        m_pNFSMixMaster->CreateMainMainMap(eRACE_CIRCUIT);
-        m_pNFSMixMaster->InitMixMap(0);
-    }
+    m_pNFSMixMaster->CreateMainMainMap(eRACE_CIRCUIT);
+    m_pNFSMixMaster->InitMixMap(0);
 
     gAEMSMgr.m_ExternalLoadCallback = callback;
     gAEMSMgr.m_ExternalLoadCallbackParam = callback_param;
@@ -1545,25 +1537,21 @@ void EAXSound::LoadInGameSoundBanks(void (*callback)(int), int callback_param) {
 
     gIsPauseForPause = 0;
     bIsAnFEToIngameTransition = true;
-    m_pStreamManager = new EAXS_StreamManager();
+    m_pStreamManager = new ("EAXS_StreamManager", false) EAXS_StreamManager();
 
     bool splitScreen = FEDatabase->IsSplitScreenMode() && FEDatabase->iNumPlayers == 2;
-    if (m_pStreamManager != nullptr) {
-        if (splitScreen) {
-            m_pStreamManager->InitializeStreams(SNDGM_SPLITSCREEN);
-            m_ePlayerMixMode = EAXS3D_TWO_PLAYER_MIX;
-        } else {
-            m_pStreamManager->InitializeStreams(SNDGM_FREEROAM);
-            m_ePlayerMixMode = EAXS3D_SINGLE_PLAYER_MIX;
-        }
+    if (splitScreen) {
+        m_pStreamManager->InitializeStreams(SNDGM_SPLITSCREEN);
+        m_ePlayerMixMode = EAXS3D_TWO_PLAYER_MIX;
+    } else {
+        m_pStreamManager->InitializeStreams(SNDGM_FREEROAM);
+        m_ePlayerMixMode = EAXS3D_SINGLE_PLAYER_MIX;
     }
 
     bHasDataLoadOccured = true;
     bHasStartNewGameOccured = false;
     m_pCurAudioSettings = &FEDatabase->CurrentUserProfiles[0]->GetOptions()->TheAudioSettings;
-    if (m_pEAXSND8Wrapper != nullptr) {
-        m_pEAXSND8Wrapper->ReInit();
-    }
+    m_pEAXSND8Wrapper->ReInit();
 
     m_prevSndGameMode = m_eSndGameMode;
     m_eSndGameMode = SND_STREETRACE;
