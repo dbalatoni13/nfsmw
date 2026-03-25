@@ -221,8 +221,14 @@ bool FnStatelessQ::EvalSQTMask(float, float *sqt, const BoneMask *boneMask, bool
                 prevData = &frameData[ibone * 4];
                 nextData = &nextFrameData[ibone * 4];
 
-                LoadStatelessQ(prevData, prevQ);
-                LoadStatelessQ(nextData, nextQ);
+                STORE_STATELESS_Q_BITS(prevQ.x, prevData[0]);
+                STORE_STATELESS_Q_BITS(prevQ.y, prevData[1]);
+                STORE_STATELESS_Q_BITS(prevQ.z, prevData[2]);
+                STORE_STATELESS_Q_BITS(prevQ.w, prevData[3]);
+                STORE_STATELESS_Q_BITS(nextQ.x, nextData[0]);
+                STORE_STATELESS_Q_BITS(nextQ.y, nextData[1]);
+                STORE_STATELESS_Q_BITS(nextQ.z, nextData[2]);
+                STORE_STATELESS_Q_BITS(nextQ.w, nextData[3]);
                 index = boneIdxs[ibone] * 12;
 
                 q[index + 0] = scale * (nextQ.x - prevQ.x) + prevQ.x;
@@ -238,10 +244,10 @@ bool FnStatelessQ::EvalSQTMask(float, float *sqt, const BoneMask *boneMask, bool
 
                 index = boneIdxs[ibone] * 12;
 
-                q[index + 0] = UncompressStatelessQValue(*prevData++);
-                q[index + 1] = UncompressStatelessQValue(*prevData++);
-                q[index + 2] = UncompressStatelessQValue(*prevData++);
-                q[index + 3] = UncompressStatelessQValue(*prevData);
+                STORE_STATELESS_Q_BITS(q[index + 0], prevData[0]);
+                STORE_STATELESS_Q_BITS(q[index + 1], prevData[1]);
+                STORE_STATELESS_Q_BITS(q[index + 2], prevData[2]);
+                STORE_STATELESS_Q_BITS(q[index + 3], prevData[3]);
             }
         }
     }
@@ -257,10 +263,10 @@ bool FnStatelessQ::EvalSQTMask(float, float *sqt, const BoneMask *boneMask, bool
 
                 index = constIdxs[ibone] * 12;
 
-                q[index + 0] = UncompressStatelessQValue(*prevData++);
-                q[index + 1] = UncompressStatelessQValue(*prevData++);
-                q[index + 2] = UncompressStatelessQValue(*prevData++);
-                q[index + 3] = UncompressStatelessQValue(*prevData);
+                STORE_STATELESS_Q_BITS(q[index + 0], prevData[0]);
+                STORE_STATELESS_Q_BITS(q[index + 1], prevData[1]);
+                STORE_STATELESS_Q_BITS(q[index + 2], prevData[2]);
+                STORE_STATELESS_Q_BITS(q[index + 3], prevData[3]);
             }
         }
     }
