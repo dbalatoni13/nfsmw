@@ -339,9 +339,10 @@ inline int LoadedSkin::IsLoaded() {
 }
 
 inline int LoadedCar::ShouldWeStream() {
+    CarTypeInfo *car_type_info = &CarTypeInfoArray[this->Type];
     int should_stream = 1;
 
-    if (CarTypeInfoArray[this->Type].GetCarUsageType() == 2) {
+    if (car_type_info->GetCarUsageType() == 2) {
         should_stream = 0;
     }
 
