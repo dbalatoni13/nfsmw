@@ -338,8 +338,8 @@ SuspensionTrailer::SuspensionTrailer(const BehaviorParams &bp, const SuspensionP
       mMotionDampingFactor(0.0f), //
       mSteeringControl(1.1f),     //
       mTimeInAir(0.0f) {
-    *reinterpret_cast<uint32 *>(reinterpret_cast<char *>(this) + 0x48) = 0;
     mDriftPhysics = false;
+    *reinterpret_cast<uint32 *>(reinterpret_cast<char *>(this) + 0x48) = 0;
 
     GetOwner()->QueryInterface(&mRB);
     GetOwner()->QueryInterface(&mRBComplex);
