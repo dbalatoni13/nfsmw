@@ -43,8 +43,8 @@ class IModel : public UTL::COM::IUnknown, public UTL::Collections::Instanceable<
     virtual ISimable *GetSimable() const;
     virtual bool IsHidden() const;
     virtual void HideModel();
-    virtual bool InView() const;
-    virtual float DistanceToView() const;
+    virtual bool InView() const = 0;
+    virtual float DistanceToView() const = 0;
     virtual void GetLinearVelocity(UMath::Vector3 &velocity) const;
     virtual void GetAngularVelocity(UMath::Vector3 &velocity) const;
     virtual void GetTransform(UMath::Matrix4 &matrix) const;
@@ -58,9 +58,9 @@ class IModel : public UTL::COM::IUnknown, public UTL::Collections::Instanceable<
     virtual IModel *SpawnModel(UCrc32 rendernode, UCrc32 collisionnode, UCrc32 attributes);
     virtual void ReleaseModel();
     virtual void ReleaseChildModels();
-    virtual void HidePart(const UCrc32 &nodename);
-    virtual void ShowPart(const UCrc32 &nodename);
-    virtual bool IsPartVisible(const UCrc32 &nodename) const;
+    virtual void HidePart(const UCrc32 &nodename) = 0;
+    virtual void ShowPart(const UCrc32 &nodename) = 0;
+    virtual bool IsPartVisible(const UCrc32 &nodename) const = 0;
     virtual void PlayEffect(UCrc32 identifire, const Attrib::Collection *effect, const UMath::Vector3 &position, const UMath::Vector3 &magnitude,
                             bool tracking);
     virtual void StopEffect(UCrc32 identifire);

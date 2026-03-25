@@ -382,7 +382,7 @@ void DrawCar::OnBehaviorChange(const UCrc32 &mechanic) {
 }
 
 bool DrawCar::IsHidden() const {
-    return mHidden || DrawVehicle::IsHidden() || mRenderService;
+    return mHidden || DrawVehicle::IsHidden() || IsPaused();
 }
 
 void DrawCar::HideModel() {
