@@ -45,9 +45,6 @@ DamageVehicle::DamageVehicle(const BehaviorParams &bp, const DamageParams &)
       mShockTimer(0.0f), //
       mSpecs(this, 0), //
       mDamageTotal(0.0f), //
-      mIRBComplex(nullptr), //
-      mRB(nullptr), //
-      mRenderable(nullptr), //
       mZoneDamage(), //
       mLastImpactSpeed(UMath::Vector3::kZero), //
       mBrokenParts(), //
