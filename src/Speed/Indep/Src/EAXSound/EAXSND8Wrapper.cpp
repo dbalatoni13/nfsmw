@@ -165,74 +165,94 @@ void EAXSND8Wrapper::ReInit() {
 eSndAudioMode EAXSND8Wrapper::SetAudioModeFromMemoryCard(eSndAudioMode mode) {
     if (IsSoundEnabled == 0) {
         IsAudioStreamingEnabled = IsSoundEnabled;
-        IsNISAudioEnabled = IsSoundEnabled;
         IsSpeechEnabled = IsSoundEnabled;
-    } else {
-        eSndAudioMode DefaultMode = GetDefaultPlatformAudioMode();
-        m_eCurrentAudioMode = DefaultMode;
-        if (DefaultMode == AUDIO_MODE_MIN) {
-            mode = AUDIO_MODE_MIN;
-        } else if (DefaultMode == AUDIO_MODE_STEREO) {
-            if (mode == AUDIO_MODE_MIN) {
-                mode = AUDIO_MODE_STEREO;
-            }
-        } else {
-            mode = m_eCurrentAudioMode;
-        }
-
-        if (mode == AUDIO_MODE_STEREO) {
-            OSSetSoundMode(1);
-        } else if (static_cast<int>(mode) < 2) {
-            if (mode == AUDIO_MODE_MIN) {
-                OSSetSoundMode(0);
-            }
-        } else if (mode == AUDIO_MODE_MAX) {
-            OSSetSoundMode(1);
-        }
-
-        m_eCurrentAudioMode = mode;
+        IsNISAudioEnabled = IsSoundEnabled;
+        return mode;
     }
+
+    eSndAudioMode DefaultMode = GetDefaultPlatformAudioMode();
+    m_eCurrentAudioMode = DefaultMode;
+    switch (DefaultMode) {
+    case AUDIO_MODE_MIN:
+        mode = AUDIO_MODE_MIN;
+        break;
+    case AUDIO_MODE_STEREO:
+        if (mode == AUDIO_MODE_MIN) {
+            mode = AUDIO_MODE_STEREO;
+        }
+        break;
+    default:
+        mode = m_eCurrentAudioMode;
+        break;
+    }
+
+    switch (mode) {
+    case AUDIO_MODE_MIN:
+        OSSetSoundMode(0);
+        break;
+    case AUDIO_MODE_STEREO:
+        OSSetSoundMode(1);
+        break;
+    case AUDIO_MODE_MAX:
+        OSSetSoundMode(1);
+        break;
+    default:
+        break;
+    }
+
+    m_eCurrentAudioMode = mode;
     return mode;
 }
 
 eSndAudioMode EAXSND8Wrapper::SetAudioRenderMode(eSndAudioMode mode) {
     if (IsSoundEnabled == 0) {
         IsAudioStreamingEnabled = IsSoundEnabled;
-        IsNISAudioEnabled = IsSoundEnabled;
         IsSpeechEnabled = IsSoundEnabled;
-    } else {
-        if (mode == AUDIO_MODE_STEREO) {
-            OSSetSoundMode(1);
-        } else if (static_cast<int>(mode) < 2) {
-            if (mode == AUDIO_MODE_MIN) {
-                OSSetSoundMode(0);
-            }
-        } else if (mode == AUDIO_MODE_MAX) {
-            OSSetSoundMode(1);
-        }
-
-        m_eCurrentAudioMode = mode;
-        SetSnd8RenderMode(mode);
-        mode = m_eCurrentAudioMode;
+        IsNISAudioEnabled = IsSoundEnabled;
+        return mode;
     }
-    return mode;
+
+    switch (mode) {
+    case AUDIO_MODE_MIN:
+        OSSetSoundMode(0);
+        break;
+    case AUDIO_MODE_STEREO:
+        OSSetSoundMode(1);
+        break;
+    case AUDIO_MODE_MAX:
+        OSSetSoundMode(1);
+        break;
+    default:
+        break;
+    }
+
+    m_eCurrentAudioMode = mode;
+    SetSnd8RenderMode(mode);
+    return m_eCurrentAudioMode;
 }
 
 eSndAudioMode EAXSND8Wrapper::SetSnd8RenderMode(eSndAudioMode mode) {
     if (IsSoundEnabled == 0) {
         IsAudioStreamingEnabled = IsSoundEnabled;
-        IsNISAudioEnabled = IsSoundEnabled;
         IsSpeechEnabled = IsSoundEnabled;
-    } else if (mode == AUDIO_MODE_STEREO) {
+        IsNISAudioEnabled = IsSoundEnabled;
+        return mode;
+    }
+
+    switch (mode) {
+    case AUDIO_MODE_MIN:
+        Snd::System::SetOutputMode(Snd::OUTPUTMODE_STEREO);
+        SNDSYS_service();
+        Snd::System::SetOutputMode(Snd::OUTPUTMODE_MONO);
+        break;
+    case AUDIO_MODE_STEREO:
         Snd::System::SetOutputMode(Snd::OUTPUTMODE_PROLOGIC2);
-    } else if (static_cast<int>(mode) < 2) {
-        if (mode == AUDIO_MODE_MIN) {
-            Snd::System::SetOutputMode(Snd::OUTPUTMODE_STEREO);
-            SNDSYS_service();
-            Snd::System::SetOutputMode(Snd::OUTPUTMODE_MONO);
-        }
-    } else if (mode == AUDIO_MODE_MAX) {
+        break;
+    case AUDIO_MODE_MAX:
         Snd::System::SetOutputMode(Snd::OUTPUTMODE_PROLOGIC2);
+        break;
+    default:
+        break;
     }
 
     return mode;
@@ -243,20 +263,14 @@ void EAXSND8Wrapper::Update() {
 }
 
 eSndAudioMode EAXSND8Wrapper::GetDefaultPlatformAudioMode() {
-    int mode;
-    if (IsSoundEnabled == 0) {
-        mode = AUDIO_MODE_STEREO;
-        goto ReturnMode;
-    }
-    {
+    int mode = AUDIO_MODE_STEREO;
+    if (IsSoundEnabled) {
         int sndmode = OSGetSoundMode();
         mode = 1;
         if (sndmode == 0) {
             mode = 0;
         }
     }
-
-ReturnMode:
     return static_cast<eSndAudioMode>(mode);
 }
 

@@ -421,20 +421,22 @@ void EAXAemsManager::ResolveCurrentDataMemory() {
     stSndDataLoadParams *curLoad = mgr->m_pCurLoadSDLP;
     eTEMPALLOCLOCATION MemLocation = curLoad->MemLocation;
 
-    if (MemLocation == TMP_ALLOC_MAIN) {
+    switch (MemLocation) {
+    case TMP_ALLOC_MAIN:
         bFree(curLoad->pmem);
-    } else if (MemLocation <= TMP_ALLOC_MAIN) {
-        return;
-    } else if (MemLocation == TMP_ALLOC_TRACKSTREAMER) {
+        break;
+    case TMP_ALLOC_TRACKSTREAMER:
         TheTrackStreamer.FreeUserMemory(curLoad->pmem);
-    } else if (MemLocation == TMP_ALLOC_AUDIO) {
+        break;
+    case TMP_ALLOC_AUDIO:
         if (curLoad->plocmem == nullptr) {
             if (curLoad->mBankSlot == nullptr) {
                 return;
             }
         }
         gAudioMemoryManager.FreeMemory(curLoad->pmem);
-    } else {
+        break;
+    default:
         return;
     }
     mgr->m_pCurLoadSDLP->pmem = nullptr;
