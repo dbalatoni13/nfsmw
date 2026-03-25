@@ -725,16 +725,15 @@ void CarLoader::UnallocateSolidPack(LoadedSolidPack *loaded_solid_pack) {
 int CarLoader::UnloadSolidPack(LoadedSolidPack *loaded_solid_pack) {
     if (loaded_solid_pack->NumInstances == 0) {
         if (loaded_solid_pack->LoadState == CARLOADSTATE_LOADED) {
-            if (loaded_solid_pack->pResourceFile == 0) {
-                eUnloadStreamingSolidPack(loaded_solid_pack->Filename);
-            } else {
+            if (loaded_solid_pack->pResourceFile != 0) {
                 UnloadResourceFile(loaded_solid_pack->pResourceFile);
                 loaded_solid_pack->pResourceFile = 0;
+            } else {
+                eUnloadStreamingSolidPack(loaded_solid_pack->Filename);
             }
         }
 
-        loaded_solid_pack->Remove();
-        LoadedSolidPack_Destruct(loaded_solid_pack, 3);
+        delete this->LoadedSolidPackList.Remove(loaded_solid_pack);
         return 1;
     }
 
@@ -1843,8 +1842,7 @@ int CarLoader::UnloadTexturePack(LoadedTexturePack *loaded_texture_pack) {
             eUnloadStreamingTexturePack(loaded_texture_pack->Filename);
         }
 
-        loaded_texture_pack->Remove();
-        LoadedTexturePack_Destruct(loaded_texture_pack, 3);
+        delete this->LoadedTexturePackList.Remove(loaded_texture_pack);
         return 1;
     }
 
