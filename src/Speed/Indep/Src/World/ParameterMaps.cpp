@@ -355,24 +355,35 @@ int ParameterMapsManager::GetDataForLayer(unsigned int layer_name_hash, Paramete
 }
 
 int LoaderParameterMaps(bChunk *chunk) {
-    bChunk *last_chunk = chunk->GetLastChunk();
-    bChunk *current_chunk = chunk->GetFirstChunk();
+    if (chunk->GetID() == 0x8003B600) {
+        bChunk *last_chunk = chunk->GetLastChunk();
+        chunk = chunk->GetFirstChunk();
 
-    while (current_chunk < last_chunk) {
-        ParameterMapLayer *new_layer = new ParameterMapLayer;
-        new_layer->Load(&current_chunk);
-        GetParameterMapsManager().AddLayer(new_layer);
-
-        for (ParameterAccessor *accessor = GetAutoParameterAccessors().GetHead(); accessor != GetAutoParameterAccessors().EndOfList();) {
-            ParameterAccessor *next_accessor = accessor->GetNext();
-            if (accessor->GetAutoAttachLayerNamehash() == new_layer->GetNameHash()) {
-                accessor->Remove();
-                accessor->SetLayer(new_layer);
+        while (chunk < last_chunk) {
+            if (chunk->GetID() == 0x8003B601) {
+                ParameterMapLayer *new_layer = new (__FILE__, __LINE__) ParameterMapLayer;
+                new_layer->Load(&chunk);
+                GetParameterMapsManager().AddLayer(new_layer);
             }
-            accessor = next_accessor;
         }
-    }
 
+        ParameterAccessor *current_accessor = GetAutoParameterAccessors().GetHead();
+        while (current_accessor != GetAutoParameterAccessors().EndOfList()) {
+            DumpAutoParameterAccessorsList();
+            ParameterAccessor *next_accessor = current_accessor->GetNext();
+            unsigned int namehash = current_accessor->GetAutoAttachLayerNamehash();
+            if (namehash) {
+                current_accessor->Remove();
+                if (!GetParameterMapsManager().GetDataForLayer(namehash, current_accessor, 0)) {
+                    GetAutoParameterAccessors().AddHead(current_accessor);
+                }
+            }
+            current_accessor = next_accessor;
+        }
+
+        DumpAutoParameterAccessorsList();
+        return 1;
+    }
     return 0;
 }
 
