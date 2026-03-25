@@ -31,31 +31,33 @@ bool VisualLookEffect::IsActive() {
 }
 
 float VisualLookEffect::UpdateActive(float heatMeter) {
-    int packedTime = RealTimer.GetPackedTime();
+    float secondsElapsed;
     if (this->UseWorldTime != 0) {
-        packedTime = WorldTimer.GetPackedTime();
+        secondsElapsed = WorldTimer.GetSeconds() - this->StartTime;
+    } else {
+        secondsElapsed = RealTimer.GetSeconds() - this->StartTime;
     }
 
-    float currentTime = packedTime * 0.00025f - this->StartTime;
     if (this->StopIfHeatFalls != 0 && heatMeter < this->AttribEffect->heattrigger()) {
         this->StartTime = 0.0f;
     }
 
-    if (this->StopAfterLength != 0 && this->PulseLength <= currentTime) {
+    if (this->StopAfterLength != 0 && secondsElapsed >= this->PulseLength) {
         this->StartTime = 0.0f;
     }
 
-    bMatrix4 *graph = reinterpret_cast<bMatrix4 *>(&const_cast<UMath::Matrix4 &>(this->AttribEffect->graph()));
-    float graphValue;
-    if (currentTime <= 0.0f) {
-        graphValue = graph->v0.y;
-    } else if (this->PulseLength <= currentTime) {
-        graphValue = graph->v3.y;
-    } else {
-        graphValue = GetValueFromSpline(currentTime / this->PulseLength, graph);
+    bMatrix4 *curve = reinterpret_cast<bMatrix4 *>(&const_cast<UMath::Matrix4 &>(this->AttribEffect->graph()));
+    float value;
+    if (secondsElapsed <= 0.0f) {
+        return curve->v0.y * this->AttribEffect->magnitude();
     }
 
-    return graphValue * this->AttribEffect->magnitude();
+    if (secondsElapsed >= this->PulseLength) {
+        return curve->v3.y * this->AttribEffect->magnitude();
+    }
+
+    value = GetValueFromSpline(secondsElapsed / this->PulseLength, curve);
+    return value * this->AttribEffect->magnitude();
 }
 
 inline void VisualLookEffectTarget::Reset() {

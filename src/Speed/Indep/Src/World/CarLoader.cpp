@@ -465,16 +465,16 @@ void *MoveDefragmentAllocation(void *allocation) {
     return allocation;
 }
 
-CarLoader::CarLoader()
-    : StartLoadingTime(0.0f) {
-    this->pCallback = 0;
+CarLoader::CarLoader() {
+    this->StartLoadingTime = 0.0f;
+    this->LoadingInProgress = 0;
     this->LoadingMode = MODE_FRONT_END;
     this->InFrontEndFlag = 0;
     this->TwoPlayerFlag = 0;
-    this->LoadingInProgress = 0;
     this->NumLoadedRideInfos = 0;
     this->NumAllocatedRideInfos = 0;
     this->MayNeedDefragmentation = 0;
+    this->pCallback = 0;
     this->MemoryPoolMem = 0;
     this->MemoryPoolSize = 0;
     this->NumSpongeAllocations = 0;

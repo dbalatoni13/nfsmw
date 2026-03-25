@@ -65,20 +65,10 @@ HeliSheetManager gHeliSheetManager;
 bChunkLoader bChunkLoaderHeliSheet(0x34159, LoaderHeliSheet, UnloaderHeliSheet);
 
 void HeliPoly::GetVertices(bVector3 *vertices) {
-    float xy_scale = lbl_8040CE88;
-    float z_scale = lbl_8040CE8C;
     int n = 0;
 
     do {
-        int short_offset = n * 2;
-        short y = *reinterpret_cast<short *>(reinterpret_cast<unsigned char *>(this) + 6 + short_offset);
-        short z = *reinterpret_cast<short *>(reinterpret_cast<unsigned char *>(this) + 0xc + short_offset);
-        int vertex_offset = n * 0x10;
-        bVector3 *vertex = reinterpret_cast<bVector3 *>(reinterpret_cast<unsigned char *>(vertices) + vertex_offset);
-
-        vertex->x = static_cast<float>(this->VertexX[n]) * xy_scale;
-        vertex->y = static_cast<float>(y) * xy_scale;
-        vertex->z = static_cast<float>(z) * z_scale;
+        vertices[n] = GetVertex(n);
         n++;
     } while (n < 3);
 }
