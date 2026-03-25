@@ -338,27 +338,27 @@ void FnRunBlender::ComputeEndRootQ(UMath::Vector4 &q) const {
 }
 
 void FnRunBlender::ComputeRootQ(float t0, float t1, UMath::Vector4 &q) const {
-    ScratchBuffer &scratch = ScratchBuffer::GetScratchBuffer(0);
-    float *pose = reinterpret_cast<float *>(scratch.GetBuffer());
+    float *buffer = reinterpret_cast<float *>(ScratchBuffer::GetScratchBuffer(0).GetBuffer());
+    UMath::Vector4 q0;
+    UMath::Vector4 q1;
 
-    if (!mFnAnims[0] || !mFnAnims[0]->EvalSQT(t0, pose, 0)) {
+    if (!mFnAnims[0]->EvalSQT(t0, buffer, 0)) {
         return;
     }
 
-    UMath::Vector4 q0 = *reinterpret_cast<UMath::Vector4 *>(&pose[4]);
+    q0 = *reinterpret_cast<UMath::Vector4 *>(&buffer[4]);
 
-    if (mWeight == 0.0f) {
+    if (mWeight != 0.0f) {
+        mSkeleton->GetStillPose(buffer, 0);
+        if (!mFnAnims[1]->EvalSQT(t1, buffer, 0)) {
+            return;
+        }
+
+        q1 = *reinterpret_cast<UMath::Vector4 *>(&buffer[4]);
+        FastQuatBlendF4(mWeight, reinterpret_cast<float *>(&q0), reinterpret_cast<float *>(&q1), reinterpret_cast<float *>(&q));
+    } else {
         q = q0;
-        return;
     }
-
-    mSkeleton->GetStillPose(pose, 0);
-    if (!mFnAnims[1] || !mFnAnims[1]->EvalSQT(t1, pose, 0)) {
-        return;
-    }
-
-    UMath::Vector4 q1 = *reinterpret_cast<UMath::Vector4 *>(&pose[4]);
-    FastQuatBlendF4(mWeight, reinterpret_cast<float *>(&q0), reinterpret_cast<float *>(&q1), reinterpret_cast<float *>(&q));
 }
 
 float FnRunBlender::CycleTime(float t, float startTime, float endTime) const {
