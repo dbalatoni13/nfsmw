@@ -2389,9 +2389,10 @@ void bRotateVector(bVector3 *dest, const bMatrix4 *m, bVector3 *v) {
 }
 
 float coplightflicker(float time, int offset) {
-    counter_31665 = (counter_31665 + 1) % copModulo;
+    int counter = counter_31665 + 1;
+    counter_31665 = counter % copModulo;
 
-    return bSin((time + copt * static_cast<float>(offset)) * copm + 1.5707964f);
+    return bCos((time + copt * static_cast<float>(offset)) * copm);
 }
 
 float coplightflicker2(float time, int whichColor, int flarecount) {
