@@ -14,23 +14,16 @@ enum ParameterMapChunkID {
     kPMCH_QuadData16 = 0x3B608,
 };
 
-ParameterMapsManager gParameterMapsManager;
-bTList<ParameterAccessor> gAutoParameterAccessors;
-
 } // namespace
 
-ParameterMapsManager *GetParameterMapsManager() {
-    return &gParameterMapsManager;
+ParameterMapsManager &GetParameterMapsManager() {
+    static ParameterMapsManager TheParameterMapsManager;
+    return TheParameterMapsManager;
 }
 
-bTList<ParameterAccessor> *GetAutoParameterAccessors() {
-    return &gAutoParameterAccessors;
-}
-
-extern "C" void __tcf_1() {
-    while (gAutoParameterAccessors.GetHead() != gAutoParameterAccessors.EndOfList()) {
-        delete gAutoParameterAccessors.GetHead();
-    }
+bTList<ParameterAccessor> &GetAutoParameterAccessors() {
+    static bTList<ParameterAccessor> AutoParameterAccessors;
+    return AutoParameterAccessors;
 }
 
 ParameterMapLayer::ParameterMapLayer()
@@ -284,7 +277,7 @@ void ParameterAccessor::SetLayer(ParameterMapLayer *layer) {
     this->Layer = layer;
     if (layer == 0) {
         if (this->AutoAttachLayerNamehash != 0) {
-            GetAutoParameterAccessors()->AddHead(this);
+            GetAutoParameterAccessors().AddHead(this);
         }
     } else {
         this->SetUpForNewLayer();
@@ -293,13 +286,7 @@ void ParameterAccessor::SetLayer(ParameterMapLayer *layer) {
 }
 
 void ParameterAccessor::ClearLayer() {
-    if (this->Layer != 0) {
-        this->Layer->RemoveParameterAccessor(this);
-        this->Layer = 0;
-    } else if (this->AutoAttachLayerNamehash != 0 && this->Next != this) {
-        this->Remove();
-    }
-    this->ClearData();
+    this->SetLayer(nullptr);
 }
 
 void ParameterAccessor::CaptureData(float x, float y) {
@@ -361,9 +348,9 @@ int LoaderParameterMaps(bChunk *chunk) {
     while (current_chunk < last_chunk) {
         ParameterMapLayer *new_layer = new ParameterMapLayer;
         new_layer->Load(&current_chunk);
-        GetParameterMapsManager()->AddLayer(new_layer);
+        GetParameterMapsManager().AddLayer(new_layer);
 
-        for (ParameterAccessor *accessor = GetAutoParameterAccessors()->GetHead(); accessor != GetAutoParameterAccessors()->EndOfList();) {
+        for (ParameterAccessor *accessor = GetAutoParameterAccessors().GetHead(); accessor != GetAutoParameterAccessors().EndOfList();) {
             ParameterAccessor *next_accessor = accessor->GetNext();
             if (accessor->GetAutoAttachLayerNamehash() == new_layer->GetNameHash()) {
                 accessor->Remove();
@@ -378,7 +365,7 @@ int LoaderParameterMaps(bChunk *chunk) {
 
 int UnloaderParameterMaps(bChunk *chunk) {
     (void)chunk;
-    GetParameterMapsManager()->UnloadAllLayers();
+    GetParameterMapsManager().UnloadAllLayers();
     return 0;
 }
 

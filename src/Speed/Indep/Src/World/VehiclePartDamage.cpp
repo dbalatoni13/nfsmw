@@ -52,6 +52,12 @@ struct VehicleDamagePart {
         bFree(VehicleDamagePartSlotPool, ptr);
     }
 
+    inline void SetPivot(float x, float y, float z) {
+        mAnimationPivot[0] = x;
+        mAnimationPivot[1] = y;
+        mAnimationPivot[2] = z;
+    }
+
     VehicleDamagePart(CarRenderInfo *carRenderInfo, int slotId);
     ~VehicleDamagePart();
     void Reset();
@@ -406,13 +412,10 @@ void VehiclePartDamageBehaviour::ManageGlassDamage() {
 }
 
 void VehiclePartDamageBehaviour::InitAnimationPivot(unsigned int slotId, const char * markerName) {
-    if (this->FindPositionMarker(markerName)) {
+    ePositionMarker *positionMarker;
+    if ((positionMarker = this->FindPositionMarker(markerName))) {
         VehicleDamagePart *damagePart = this->mDamagePartList[slotId];
-        float *pivot = reinterpret_cast<float *>(reinterpret_cast<unsigned char *>(damagePart) + 0x10);
-
-        pivot[0] = 0.0f;
-        pivot[1] = 0.0f;
-        pivot[2] = 0.0f;
+        damagePart->SetPivot(0.0f, 0.0f, 0.0f);
     }
 }
 

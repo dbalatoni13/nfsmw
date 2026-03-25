@@ -173,8 +173,8 @@ class ParameterMapsManager {
     bTList<ParameterMapLayer> ParameterMapLayers; // offset 0x0, size 0x8
 };
 
-ParameterMapsManager *GetParameterMapsManager();
-bTList<ParameterAccessor> *GetAutoParameterAccessors();
+ParameterMapsManager &GetParameterMapsManager();
+bTList<ParameterAccessor> &GetAutoParameterAccessors();
 int LoaderParameterMaps(bChunk *chunk);
 int UnloaderParameterMaps(bChunk *chunk);
 void DumpAutoParameterAccessorsList();
