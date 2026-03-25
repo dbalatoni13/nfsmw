@@ -3033,14 +3033,14 @@ void RefreshAllFrontEndCarRenderInfos(CarType type) {
 void RefreshAllRenderInfo(CarType type) {
     const UTL::Collections::Listable<VehicleRenderConn, 10>::List &loader_list = VehicleRenderConn::GetList();
     UTL::Collections::Listable<VehicleRenderConn, 10>::List::const_iterator it = loader_list.begin();
-    UTL::Collections::Listable<VehicleRenderConn, 10>::List::const_iterator end = loader_list.end();
 
-    for (; it != end; ++it) {
+    while (it != loader_list.end()) {
         VehicleRenderConn *vehicle_render_conn = *it;
 
         if ((type == static_cast<CarType>(-1) || vehicle_render_conn->mCarType == type) && vehicle_render_conn->mState > 1) {
             vehicle_render_conn->RefreshRenderInfo();
         }
+        ++it;
     }
 
     RefreshAllFrontEndCarRenderInfos(type);

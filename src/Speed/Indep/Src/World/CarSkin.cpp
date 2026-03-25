@@ -910,20 +910,20 @@ unsigned int GetSpinnerTextureMaskHash(RideInfo *ride_info) {
 }
 
 unsigned int GetVinylLayerHash(CarPart *car_part, CarType car_type, int skin_type) {
-    CarTypeInfo *type_info = &CarTypeInfoArray[car_type];
+    CarTypeInfo *car_type_info = GetCarTypeInfo(car_type);
     const char *texture_name = car_part->GetAppliedAttributeString(bStringHash("TEXTURE"), 0);
 
     if (texture_name != 0) {
-        char final_name[68];
+        char layer_name[64];
 
-        bStrCpy(final_name, type_info->BaseModelName);
+        bStrCpy(layer_name, car_type_info->GetBaseModelName());
         if (UsePrecompositeVinyls == 0 && skin_type != 2) {
-            bStrCat(final_name, final_name, "_");
+            bStrCat(layer_name, layer_name, "_");
         } else {
-            bStrCat(final_name, final_name, "_PRECOM_");
+            bStrCat(layer_name, layer_name, "_PRECOM_");
         }
-        bStrCat(final_name, final_name, texture_name);
-        return bStringHash(final_name);
+        bStrCat(layer_name, layer_name, texture_name);
+        return bStringHash(layer_name);
     }
 
     return 0;

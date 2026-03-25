@@ -576,21 +576,25 @@ CarRenderConn::~CarRenderConn() {
 }
 
 bool CarRenderConn::TestVisibility(float distance) {
-    if (gINISInstance == 0 && !this->IsViewAnchor()) {
-        bool visible = false;
+    if (INIS::Get() != nullptr) {
+        return true;
+    }
 
-        if (this->mLastRenderFrame <= this->mLastVisibleFrame && this->mLastVisibleFrame != 0) {
-            visible = true;
-        }
+    if (this->IsViewAnchor()) {
+        return true;
+    }
 
-        if (visible) {
-            return this->mDistanceToView <= distance;
-        }
+    bool visible = false;
 
+    if (this->mLastVisibleFrame >= this->mLastRenderFrame && this->mLastVisibleFrame != 0) {
+        visible = true;
+    }
+
+    if (!visible) {
         return false;
     }
 
-    return true;
+    return this->mDistanceToView <= distance;
 }
 
 void RenderConn::Pkt_Car_Service::HidePart(const UCrc32 &partname) {

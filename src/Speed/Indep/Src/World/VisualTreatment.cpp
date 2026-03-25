@@ -189,21 +189,20 @@ void IVisualTreatment::BlendVisualLookAttribute(
 void IVisualTreatment::BlendVisualLookAttribute(
     float &result, float defaultUves, float uves,
     const float &(Attrib::Gen::visuallook::*funcPtr)() const) {
-    const Attrib::Gen::visuallook *currVisualLook;
-
     result = 0.0f;
 
     if (defaultUves != 0.0f) {
-        currVisualLook = &this->SunsetVisualLook;
-        if (GetCurrentTimeOfDay() == eTOD_MIDDAY) {
+        int tod = GetCurrentTimeOfDay();
+        const Attrib::Gen::visuallook *currVisualLook = &this->SunsetVisualLook;
+        if (tod == eTOD_MIDDAY) {
             currVisualLook = &this->MiddayVisualLook;
         }
 
-        result += defaultUves * (currVisualLook->*funcPtr)();
+        result += (currVisualLook->*funcPtr)() * defaultUves;
     }
 
     if (uves != 0.0f) {
-        result += uves * (this->UvesVisualLook.*funcPtr)();
+        result += (this->UvesVisualLook.*funcPtr)() * uves;
     }
 }
 

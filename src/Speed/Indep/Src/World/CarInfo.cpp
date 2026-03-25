@@ -526,7 +526,9 @@ void RideInfo::Init(CarType type, CarRenderUsage usage, int has_dash, int can_be
 }
 
 int RideInfo::GetSpecialLODRangeForCarSlot(int slot_id, CARPART_LOD *special_minimum, CARPART_LOD *special_maximum, bool in_front_end) {
-    if (slot_id == CARSLOTID_DRIVER || slot_id == CARSLOTID_INTERIOR) {
+    switch (slot_id) {
+    case CARSLOTID_INTERIOR:
+    case CARSLOTID_DRIVER:
         if (this->mSpecialLODBehavior == 2) {
             *special_minimum = CARPART_LOD_OFF;
             *special_maximum = CARPART_LOD_OFF;
@@ -541,15 +543,20 @@ int RideInfo::GetSpecialLODRangeForCarSlot(int slot_id, CARPART_LOD *special_min
         }
 
         return 1;
-    }
 
-    if (slot_id > 0x47 && slot_id < 0x4C) {
+    case 0x46:
+    case 0x47:
+    case 0x48:
+    case 0x49:
+    case 0x4A:
+    case 0x4B:
         *special_minimum = CARPART_LOD_OFF;
         *special_maximum = CARPART_LOD_OFF;
         return 1;
-    }
 
-    return 0;
+    default:
+        return 0;
+    }
 }
 
 void RideInfo::SetCompositeNameHash(int skin_number) {

@@ -294,7 +294,9 @@ struct CarPart {
     int GetAppliedAttributeIParam(unsigned int namehash, int default_value);
     const char *GetAppliedAttributeString(unsigned int namehash, const char *default_string);
     int HasAppliedAttribute(unsigned int namehash);
-    char GetGroupNumber();
+    char GetGroupNumber() {
+        return *(reinterpret_cast<char *>(this) + 4);
+    }
     unsigned int GetPartNameHash() {
         return *reinterpret_cast<unsigned short *>(this) |
                (static_cast<unsigned int>(*(reinterpret_cast<unsigned short *>(this) + 1)) << 16);
