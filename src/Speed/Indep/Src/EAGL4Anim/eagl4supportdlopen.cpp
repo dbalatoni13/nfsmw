@@ -242,55 +242,57 @@ retry:
                     }
                 }
 
-                Symbol s;
+                {
+                    Symbol s;
 
-                s.name = &h->strtab[sym->st_name];
-                s.type = s.name + strlen(s.name);
-                if (s.type[1] == 0x7F) {
-                    s.type += 2;
-                }
-                if (strncmp(gRuntimeAllocType, s.name, strlen(gRuntimeAllocType)) == 0) {
-                    const char *stripped_name;
-                    RuntimeAllocConstructor c;
-
-                    stripped_name = s.name + strlen(gRuntimeAllocType);
-                    c = gRuntimeAllocConsPool.FindConstructor(s.type);
-
-                    if (c) {
-                        RuntimeAllocDestructor d = gRuntimeAllocConsPool.FindDestructor(s.type);
-                        int auxData = 0;
-                        bool bCallDestructor = false;
-                        void *addr = c(stripped_name, reinterpret_cast<class DynamicLoader *>(this), auxData, bCallDestructor, s.name);
-
-                        if (bCallDestructor && addr) {
-                            RuntimeAllocDestructorEntry *de = new RuntimeAllocDestructorEntry(d, addr, auxData);
-                            de->next = RuntimeAllocDestructors;
-                            RuntimeAllocDestructors = de;
-                        }
-
-                        sym->st_shndx = 1;
-                        sym->st_other = 5;
-                        baseaddr = reinterpret_cast<unsigned int>(sheader[1].sh_voffset);
-                        sym->st_value = reinterpret_cast<unsigned int>(addr) - baseaddr;
-                        break;
+                    s.name = &h->strtab[sym->st_name];
+                    s.type = s.name + strlen(s.name);
+                    if (s.type[1] == 0x7F) {
+                        s.type += 2;
                     }
-                }
+                    if (strncmp(gRuntimeAllocType, s.name, strlen(gRuntimeAllocType)) == 0) {
+                        const char *stripped_name;
+                        RuntimeAllocConstructor c;
 
-                unresolvedSymbolError = true;
-                if (numUnresolved < MAX_UNRESOLVED_ERRORS) {
-                    bool found = false;
+                        stripped_name = s.name + strlen(gRuntimeAllocType);
+                        c = gRuntimeAllocConsPool.FindConstructor(s.type);
 
-                    for (j = 0; j < numUnresolved; j++) {
-                        if (s.name == unresolvedList[j]) {
-                            found = true;
+                        if (c) {
+                            RuntimeAllocDestructor d = gRuntimeAllocConsPool.FindDestructor(s.type);
+                            int auxData = 0;
+                            bool bCallDestructor = false;
+                            s.data = c(stripped_name, reinterpret_cast<class DynamicLoader *>(this), auxData, bCallDestructor, s.name);
+
+                            if (bCallDestructor && s.data) {
+                                RuntimeAllocDestructorEntry *de = new RuntimeAllocDestructorEntry(d, s.data, auxData);
+                                de->next = RuntimeAllocDestructors;
+                                RuntimeAllocDestructors = de;
+                            }
+
+                            sym->st_shndx = 1;
+                            sym->st_other = 5;
+                            baseaddr = reinterpret_cast<unsigned int>(sheader[1].sh_voffset);
+                            sym->st_value = reinterpret_cast<unsigned int>(s.data) - baseaddr;
                             break;
                         }
                     }
 
-                    if (!found) {
-                        unresolvedList[numUnresolved++] = const_cast<char *>(s.name);
+                    unresolvedSymbolError = true;
+                    if (numUnresolved < MAX_UNRESOLVED_ERRORS) {
+                        bool found = false;
+
+                        for (j = 0; j < numUnresolved; j++) {
+                            if (s.name == unresolvedList[j]) {
+                                found = true;
+                                break;
+                            }
+                        }
+
+                        if (!found) {
+                            unresolvedList[numUnresolved++] = const_cast<char *>(s.name);
+                        }
+                        j = iIndex;
                     }
-                    j = iIndex;
                 }
                 break;
             }
