@@ -1293,23 +1293,22 @@ int CarLoader::DefragmentPool() {
 }
 
 LoadedWheel::LoadedWheel(RideInfo *ride_info, bool in_fe) {
-    RideInfoLayout *ride_layout = reinterpret_cast<RideInfoLayout *>(ride_info);
-
-    this->pCarPart = 0;
     this->LoadState = CARLOADSTATE_QUEUED;
     this->LoadStateSkinPerm = CARLOADSTATE_QUEUED;
     this->LoadStateSkinTemp = CARLOADSTATE_QUEUED;
     this->PartNameHash = 0;
     this->TextureBaseNameHash = 0;
+    this->pCarPart = 0;
 
-    if (!in_fe) {
-        this->mMinLodLevel = ride_layout->mMinLodLevel;
-        this->mMaxLodLevel = ride_layout->mMaxLodLevel;
+    if (in_fe) {
+        this->mMinLodLevel = ride_info->GetMinFELodLevel();
+        this->mMaxLodLevel = ride_info->GetMaxFELodLevel();
     } else {
-        this->mMinLodLevel = ride_layout->mMinFELodLevel;
-        this->mMaxLodLevel = ride_layout->mMaxFELodLevel;
+        this->mMinLodLevel = ride_info->GetMinLodLevel();
+        this->mMaxLodLevel = ride_info->GetMaxLodLevel();
     }
 
+    unsigned int *model_name_hashes = reinterpret_cast<unsigned int *>(this->ModelNameHashes);
     bMemSet(this->ModelNameHashes, 0, sizeof(this->ModelNameHashes));
     bMemSet(this->SkinNameHashesPerm, 0, sizeof(this->SkinNameHashesPerm));
     bMemSet(this->SkinNameHashesTemp, 0, sizeof(this->SkinNameHashesTemp));
@@ -1320,12 +1319,12 @@ LoadedWheel::LoadedWheel(RideInfo *ride_info, bool in_fe) {
     if (car_part != 0) {
         this->pCarPart = car_part;
         this->PartNameHash = car_part->GetPartNameHash();
-        this->TextureBaseNameHash = car_part->GetAppliedAttributeUParam(0x10C98090, 0);
+        this->TextureBaseNameHash = car_part->GetTextureNameHash();
 
         if (car_part->GetCarTypeNameHash() == bStringHash("WHEELS")) {
             for (int model = 0; model < 1; model++) {
                 for (int lod = this->mMinLodLevel; lod <= this->mMaxLodLevel; lod++) {
-                    reinterpret_cast<unsigned int *>(this->ModelNameHashes)[lod + model * 5] = car_part->GetModelNameHash(model, lod);
+                    model_name_hashes[lod + model * 5] = car_part->GetModelNameHash(model, lod);
                 }
             }
 
@@ -1336,9 +1335,9 @@ LoadedWheel::LoadedWheel(RideInfo *ride_info, bool in_fe) {
         }
     }
 
-    this->LoadStateSkinTemp = CARLOADSTATE_LOADED;
     this->LoadState = CARLOADSTATE_LOADED;
     this->LoadStateSkinPerm = CARLOADSTATE_LOADED;
+    this->LoadStateSkinTemp = CARLOADSTATE_LOADED;
 }
 
 LoadedSkin::LoadedSkin(RideInfo *ride_info, int in_front_end, int is_player_skin)

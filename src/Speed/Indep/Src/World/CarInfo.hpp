@@ -295,7 +295,10 @@ struct CarPart {
     const char *GetAppliedAttributeString(unsigned int namehash, const char *default_string);
     int HasAppliedAttribute(unsigned int namehash);
     char GetGroupNumber();
-    unsigned int GetPartNameHash();
+    unsigned int GetPartNameHash() {
+        return *reinterpret_cast<unsigned short *>(this) |
+               (static_cast<unsigned int>(*(reinterpret_cast<unsigned short *>(this) + 1)) << 16);
+    }
 
     unsigned int GetTextureNameHash() {
         return GetAppliedAttributeUParam(0x10C98090, 0);
@@ -354,6 +357,14 @@ class RideInfo {
 
     CARPART_LOD GetMaxLodLevel() const {
         return this->mMaxLodLevel;
+    }
+
+    CARPART_LOD GetMinFELodLevel() const {
+        return this->mMinFELodLevel;
+    }
+
+    CARPART_LOD GetMaxFELodLevel() const {
+        return this->mMaxFELodLevel;
     }
 
     CarType Type;            // offset 0x0, size 0x4
