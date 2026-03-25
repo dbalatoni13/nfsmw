@@ -170,7 +170,7 @@ bool FnStatelessF3::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask
             }
         }
     } else {
-        EvalSQTMask(currTime, sqt, boneMask, slerpReqd, floorKey, scale);
+        return EvalSQTMask(currTime, sqt, boneMask, slerpReqd, floorKey, scale);
     }
 
     return true;
