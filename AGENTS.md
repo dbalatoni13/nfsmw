@@ -269,6 +269,7 @@ python tools/dwarf1_subroutine_tree.py -u main/Path/To/TU -f FunctionName
 python tools/dwarf1_subroutine_tree.py build/GOWE69/src/Path/To/TU.o --tag 0xTAG
 python tools/dwarf1_subroutine_tree.py -u main/Path/To/TU -f FunctionName --json
 python tools/dwarf1_subroutine_tree.py -u main/Path/To/TU -f FunctionName --compare-original
+python tools/dwarf1_subroutine_tree.py -u main/Path/To/TU -f FunctionName --show-non-subroutine
 ```
 
 This prints the nested inline-subroutine / lexical-block ownership tree straight
@@ -280,6 +281,12 @@ from the raw MWCC DWARF tags, so it is the fastest way to answer:
   source really changed the raw DWARF tree?
 - with `--compare-original`, which owner/name rows are actually inserted, replaced, or
   missing relative to the original `symbols/Dwarf/functions.nothpp` tree?
+
+Treat `--compare-original` primarily as an owner/name drift check. By default it compares
+owner + bare function names, so overload-only mismatches can still hide behind a clean
+depth/label pass. When a candidate adds an overloaded inline helper or reuses the same
+base name with a different signature, run `--show-non-subroutine` too and inspect the
+rebuilt parameter/local rows directly before trusting the raw-tree result.
 
 ### prodg_dump.py — ProDG compiler-state dump helper
 
@@ -587,6 +594,19 @@ register assignments but does NOT affect integer register assignments (and vice 
   them as normal function bodies; their presence in source is controlled by `#include`.
 - If an inline appears in the DWARF but does not exist in `src/`, deduce its body and add
   it to the correct header (use `line-lookup` skill to find the header file).
+
+### Concrete template specializations
+
+- Do not assume ProDG rejects explicit member-function specializations of concrete template
+  instantiations. Forms like
+  `template <> inline ReturnType VecHashMap<...>::RemoveIndex(...)`
+  do compile here.
+- When you use that lane, expand dependent names inside the specialized body:
+  replace `Policy::` with the concrete owner, replace non-type template params like `Unk2`
+  with literal `true` / `false`, and replace aliases like `T *` / `KeyType` with the
+  concrete instantiation types.
+- Prefer this over owner-specific derived helper classes when you need per-instantiation
+  source bodies but want to preserve the original `VecHashMap<...>` owner names in DWARF.
 
 ---
 
