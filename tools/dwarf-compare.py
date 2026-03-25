@@ -18,6 +18,7 @@ import io
 import json
 import os
 import re
+import shlex
 import shutil
 import sqlite3
 import sys
@@ -151,6 +152,22 @@ def load_function_blocks(
         # Keep fixups in-memory only (do not rewrite dump files on disk).
         text = apply_umath_fixups(text)
     return split_functions(text)
+
+
+def dump_has_processing_errors(path: str) -> bool:
+    try:
+        return "// ERROR: Failed to process tag " in read_text(path)
+    except OSError:
+        return False
+
+
+def append_raw_tree_hint(message: str, unit_name: str, function_name: str) -> str:
+    hint = (
+        "\nRaw .debug inspection may help:\n"
+        f"  python tools/dwarf1_subroutine_tree.py -u {shlex.quote(unit_name)} "
+        f"-f {shlex.quote(function_name)}"
+    )
+    return message + hint
 
 
 def find_function_blocks(funcs: Iterable[FunctionBlock], query: str) -> List[FunctionBlock]:
@@ -954,7 +971,14 @@ def main() -> None:
         )
 
         original_block = choose_function_block(original_funcs, args.function, "original DWARF")
-        rebuilt_block = choose_function_block(rebuilt_funcs, args.function, "rebuilt DWARF")
+        try:
+            rebuilt_block = choose_function_block(rebuilt_funcs, args.function, "rebuilt DWARF")
+        except DwarfCompareError as exc:
+            if rebuilt_dwarf_path and dump_has_processing_errors(rebuilt_dwarf_path):
+                raise DwarfCompareError(
+                    append_raw_tree_hint(str(exc), args.unit, args.function)
+                ) from exc
+            raise
 
         report = build_report(
             args.unit,

@@ -258,6 +258,26 @@ It also compares the debug-line ownership of each `// Range:` block. Treat the
 strong evidence that an inline body came from the wrong header or owner file. The exact
 file+line count is stricter and mainly useful as a secondary hint, not as the main gate.
 
+### dwarf1_subroutine_tree.py — Raw DWARF subroutine fallback
+
+When `dtk dwarf dump` prints `// ERROR: Failed to process tag ...` and
+`dwarf-compare.py` cannot find the rebuilt wrapper function, inspect the raw
+relocated `.debug` tree directly with:
+
+```sh
+python tools/dwarf1_subroutine_tree.py -u main/Path/To/TU -f FunctionName
+python tools/dwarf1_subroutine_tree.py build/GOWE69/src/Path/To/TU.o --tag 0xTAG
+python tools/dwarf1_subroutine_tree.py -u main/Path/To/TU -f FunctionName --json
+```
+
+This prints the nested inline-subroutine / lexical-block ownership tree straight
+from the raw MWCC DWARF tags, so it is the fastest way to answer:
+
+- does the rebuilt top-level wrapper DIE still exist at all?
+- which inline owner changed (`VecHashMap<...>::Remove` vs `CollectionHashMap::Remove`, etc.)?
+- did a wrapper disappear only because the dumper/parser skipped it, or because the
+  source really changed the raw DWARF tree?
+
 ### prodg_dump.py — ProDG compiler-state dump helper
 
 When you need the exact ProDG compiler state for one unit, prefer this helper over
