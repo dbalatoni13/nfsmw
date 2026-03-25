@@ -126,16 +126,15 @@ bool ResetCar::CanRecord() const {
 }
 
 bool ResetCar::ShouldReset() const {
-    bool should_reset = false;
-
-    if (mCookies.Count() != 0) {
-        if (!GetVehicle()->IsLoading() && !ValidTerrain(2)) {
-            return true;
-        }
-        should_reset = 4.0f < mFlippedOver;
+    if (mCookies.Count() == 0) {
+        return false;
     }
 
-    return should_reset;
+    if (GetVehicle()->GetDriverClass() == DRIVER_HUMAN && !ValidTerrain(2)) {
+        return true;
+    }
+
+    return 4.0f < mFlippedOver;
 }
 
 void ResetCar::TrackState(float dT) {
