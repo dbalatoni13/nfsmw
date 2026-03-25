@@ -6,6 +6,7 @@
 
 #include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
+#include "Speed/Indep/bWare/Inc/bWare.hpp"
 
 // TODO this stuff may or may not go here.
 enum CarUsageType {
@@ -280,7 +281,10 @@ struct CarPartAttribute {
         return this->Params.uParam;
     }
 
-    void EndianSwap();
+    void EndianSwap() {
+        bPlatEndianSwap(&this->Params.iParam);
+        bPlatEndianSwap(&this->NameHash);
+    }
 };
 
 struct CarPart {

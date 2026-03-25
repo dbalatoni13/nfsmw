@@ -1372,17 +1372,17 @@ struct CarPartModelLayout {
     unsigned int mModel;
 };
 
-static eModel *GetPackedCarPartModel(CarPartModel *car_part_model) {
+static inline eModel *GetPackedCarPartModel(CarPartModel *car_part_model) {
     return reinterpret_cast<eModel *>(reinterpret_cast<CarPartModelLayout *>(car_part_model)->mModel & ~0x3);
 }
 
-static void SetPackedCarPartModel(CarPartModel *car_part_model, eModel *model) {
+static inline void SetPackedCarPartModel(CarPartModel *car_part_model, eModel *model) {
     unsigned int &packed_model = reinterpret_cast<CarPartModelLayout *>(car_part_model)->mModel;
 
     packed_model = reinterpret_cast<unsigned int>(model) | (packed_model & 1);
 }
 
-static void ClearPackedCarPartModel(CarPartModel *car_part_model) {
+static inline void ClearPackedCarPartModel(CarPartModel *car_part_model) {
     reinterpret_cast<CarPartModelLayout *>(car_part_model)->mModel &= 1;
 }
 
@@ -1397,7 +1397,7 @@ static inline bool DotPassesTest(const bVector3 *point) {
     return dot < lbl_8040ADEC;
 }
 
-static void *CarRenderFrameMalloc(unsigned int size) {
+static inline void *CarRenderFrameMalloc(unsigned int size) {
     unsigned char *address = CurrentBufferPos;
 
     if (CurrentBufferEnd <= CurrentBufferPos + size) {

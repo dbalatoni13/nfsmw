@@ -71,13 +71,13 @@ int UserSkyLoadCallbackParam;
 int bSkyTexturesLoaded = 0;
 eReplacementTextureTable SKYtextable[2];
 
-static bMatrix4 MakeIdentityMatrix() {
+static inline bMatrix4 MakeIdentityMatrix() {
     bMatrix4 matrix;
     PSMTX44Identity(*reinterpret_cast<Mtx44 *>(&matrix));
     return matrix;
 }
 
-static bMatrix4 MakeReflectedIdentityMatrix() {
+static inline bMatrix4 MakeReflectedIdentityMatrix() {
     bMatrix4 matrix = MakeIdentityMatrix();
     matrix.v2.z = -1.0f;
     return matrix;

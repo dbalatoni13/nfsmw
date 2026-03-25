@@ -121,11 +121,11 @@ static void StopEffect(VehicleRenderConn::Effect *effect) {
     effect->Stop();
 }
 
-static void EmitterGroupSetOldSurfaceEffectFlag(EmitterGroup *group) {
+static inline void EmitterGroupSetOldSurfaceEffectFlag(EmitterGroup *group) {
     *reinterpret_cast<unsigned int *>(reinterpret_cast<unsigned char *>(group) + 0x18) |= 0x80000;
 }
 
-static TireState *CreateTireState() {
+static inline TireState *CreateTireState() {
     TireState *state = reinterpret_cast<TireState *>(gFastMem.Alloc(0xe0, 0));
 
     TireState_ctor(state);

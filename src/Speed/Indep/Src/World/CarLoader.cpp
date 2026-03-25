@@ -57,10 +57,6 @@ struct CarPartModelTable {
     }
 };
 
-void CarPartAttribute::EndianSwap() {
-    bPlatEndianSwap(&this->Params.iParam);
-    bPlatEndianSwap(&this->NameHash);
-}
 struct CarPartPack : public bTNode<CarPartPack> {
     unsigned int Version;
     const char *StringTable;
@@ -1440,7 +1436,7 @@ void InitCarLoader() {
     LoadedRideInfoSlotPool = bNewSlotPool(0x6d4, 0x14, "CarLoadedRideInfoSlotPool", 0);
 }
 
-static int ClampUpgradeLevel(int level) {
+static inline int ClampUpgradeLevel(int level) {
     if (level < 0) {
         return 0;
     }
