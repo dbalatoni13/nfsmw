@@ -157,7 +157,6 @@ int CompositeSkin32(SkinCompositeParams *composite_params) {
         int dest_width = dest_texture->Width;
         int dest_height = dest_texture->Height;
         CompColour base;
-        int temp;
         unsigned int *dest_pixel;
         unsigned int *end_pixel;
         int num_pixels;
@@ -197,14 +196,12 @@ int CompositeSkin32(SkinCompositeParams *composite_params) {
         }
 
         num_pixels = dest_width * dest_height;
-        base.a = static_cast<unsigned char>(base_colour >> 24);
-        base.b = static_cast<unsigned char>(base_colour >> 16);
-        base.g = static_cast<unsigned char>(base_colour >> 8);
-        base.r = static_cast<unsigned char>(base_colour);
-        temp = *reinterpret_cast<unsigned int *>(&base);
+        *reinterpret_cast<unsigned int *>(&base) = base_colour;
+        base.a = static_cast<unsigned char>(base_colour >> 8);
+        base.g = static_cast<unsigned char>(base_colour >> 24);
 
         for (dest_pixel = dest_image_data, end_pixel = dest_image_data + num_pixels; dest_pixel < end_pixel; dest_pixel++) {
-            *dest_pixel = temp;
+            *dest_pixel = *reinterpret_cast<unsigned int *>(&base);
         }
 
         for (int i = 0; i < num_layers; i++) {
@@ -225,10 +222,9 @@ int CompositeSkin32(SkinCompositeParams *composite_params) {
                     if (info->m_RemapPalette != 0 && blend_value != 0) {
                         CompColour src_colour;
 
-                        src_colour.a = static_cast<unsigned char>(src_pixel >> 24);
-                        src_colour.b = static_cast<unsigned char>(src_pixel >> 16);
-                        src_colour.g = static_cast<unsigned char>(src_pixel >> 8);
-                        src_colour.r = static_cast<unsigned char>(src_pixel);
+                        *reinterpret_cast<unsigned int *>(&src_colour) = src_pixel;
+                        src_colour.a = static_cast<unsigned char>(src_pixel >> 8);
+                        src_colour.g = static_cast<unsigned char>(src_pixel >> 24);
                         src_pixel = RemapColour(*reinterpret_cast<unsigned int *>(&src_colour), info->m_RemapColours);
                     }
 
