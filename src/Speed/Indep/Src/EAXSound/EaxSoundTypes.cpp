@@ -321,7 +321,7 @@ void EventHistory::Reset() {
 }
 
 void SpeechSampleData::Destruct(SpeechSampleData *ptr) {
-    ::operator delete(ptr);
+    gSpeechCache.Free(ptr);
 }
 
 inline void SpeechSampleData::Lock() { *reinterpret_cast<int *>(&lock) = 1; }

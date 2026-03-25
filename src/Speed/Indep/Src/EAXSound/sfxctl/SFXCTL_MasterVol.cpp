@@ -34,7 +34,7 @@ SndBase::TypeInfo *SFXCTL_MasterVol::GetTypeInfo() const { return &s_TypeInfo; }
 
 char *SFXCTL_MasterVol::GetTypeName() const { return s_TypeInfo.typeName; }
 
-void SFXCTL_MasterVol::InitSFX() { SFXCTL::InitSFX(); }
+void SFXCTL_MasterVol::InitSFX() {}
 
 void SFXCTL_MasterVol::UpdateParams(float t) {
     (void)t;

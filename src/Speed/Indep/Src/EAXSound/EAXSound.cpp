@@ -50,6 +50,7 @@ struct SampleReqList;
 
 struct Cache {
     SlotPool *GetEventPool();
+    void Free(void *ptr);
     void Dump();
     void Init(int size);
     void Validate();
