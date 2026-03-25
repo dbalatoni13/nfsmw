@@ -569,6 +569,8 @@ DynamicLoader::Symbol DynamicLoader::GetSymbol(int i) const {
     ELF32_Sym *s;
     int iIndex;
 
+    r.name = nullptr;
+    r.data = nullptr;
     h = reinterpret_cast<HashPointer *>(handle);
     if (!h) {
         return r;
