@@ -1305,8 +1305,10 @@ ISimable *PVehicle::Construct(Sim::Param params) {
         return nullptr;
     }
     Physics::Info::Performance perf;
-    const Physics::Info::Performance *performance = vp.matched;
-    if (performance == nullptr && (vp.Flags & 8) != 0) {
+    const Physics::Info::Performance *performance = nullptr;
+    if (vp.matched != nullptr) {
+        performance = vp.matched;
+    } else if ((vp.Flags & 8) != 0) {
         if (Physics::Info::ComputePerformance(attributes, perf)) {
             performance = &perf;
         }
