@@ -2404,10 +2404,12 @@ float coplightflicker2(float time, int whichColor, int flarecount) {
 
     if (whichColor == 1) {
         offset = copoffsetb;
+    } else if (whichColor > 1) {
+        if (whichColor == 2) {
+            offset = copoffsetw;
+        }
     } else if (whichColor == 0) {
         offset = copoffsetr;
-    } else if (whichColor == 2) {
-        offset = copoffsetw;
     }
 
     t = bCos(time * 24.0f);
