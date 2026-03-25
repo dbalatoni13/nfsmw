@@ -228,15 +228,13 @@ void DrawVehicle::Part::PlaceTrigger(const UMath::Matrix4 &matrix, bool enable) 
 void DrawVehicle::Part::CreateTrigger(const UMath::Matrix4 &matrix) {
     UMath::Vector3 dim;
     GetCollisionGeometry()->GetHalfDimensions(dim);
-    if (VU0_v3lengthsquare(dim) > 0.0f) {
-        if (mTrigger == nullptr) {
-            mTrigger = new SmackableTrigger(GetInstanceHandle(), false, matrix, dim, 0);
-        } else {
-            mTrigger->Move(matrix, dim, false);
-            mTrigger->Enable();
-        }
-    } else {
+    if (VU0_v3lengthsquare(dim) <= 0.0f) {
         RemoveTrigger();
+    } else if (mTrigger == nullptr) {
+        mTrigger = new SmackableTrigger(GetInstanceHandle(), false, matrix, dim, 0);
+    } else {
+        mTrigger->Move(matrix, dim, false);
+        mTrigger->Enable();
     }
 }
 
