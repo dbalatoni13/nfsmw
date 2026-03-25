@@ -824,12 +824,12 @@ int CarLoader::UnloadSkin(LoadedSkin *loaded_skin) {
 int CarLoader::UnallocateRideInfo(LoadedRideInfo *loaded_ride_info) {
     loaded_ride_info->NumInstances--;
 
-    if (loaded_ride_info->NumInstances != 0) {
-        return 0;
+    if (loaded_ride_info->NumInstances == 0) {
+        this->NumAllocatedRideInfos--;
+        return 1;
     }
 
-    this->NumAllocatedRideInfos--;
-    return 1;
+    return 0;
 }
 
 int CarLoader::UnloadRideInfo(LoadedRideInfo *loaded_ride_info, int leave_if_in_mempool) {
