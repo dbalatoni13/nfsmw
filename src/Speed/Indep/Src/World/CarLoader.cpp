@@ -1038,7 +1038,11 @@ int CarLoader::RemoveSomethingFromCarMemoryPool(bool force_unload) {
 
     result = 0;
     if (force_unload != 0) {
-        if (this->DefragmentPool() == 0) {
+        if (this->DefragmentPool() != 0) {
+success:
+            result = 1;
+            goto exit;
+        } else {
             if (this->NumSpongeAllocations != 0) {
                 this->NumSpongeAllocations--;
                 bFree(this->SpongeAllocations[this->NumSpongeAllocations]);
@@ -1074,12 +1078,10 @@ int CarLoader::RemoveSomethingFromCarMemoryPool(bool force_unload) {
                 bBreak();
                 result = 0;
             }
-        } else {
-success:
-            result = 1;
         }
     }
 
+exit:
     return result;
 }
 
