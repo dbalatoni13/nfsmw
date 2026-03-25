@@ -443,7 +443,8 @@ void PVehicle::DoStaging(float dT) {
             IRaceEngine *raceEngine = reinterpret_cast<IRaceEngine *>(
                 (*reinterpret_cast<UTL::COM::Object **>(mEngine))->_mInterfaces.Find((HINTERFACE)IRaceEngine::_IHandle)
             );
-            if (raceEngine != nullptr) {
+            bool hasRaceEngine = raceEngine != nullptr;
+            if (hasRaceEngine) {
                 float range = 0.0f;
                 float peak_rpm = raceEngine->GetPerfectLaunchRange(range);
                 if (range > 0.0f && peak_rpm > 0.0f) {
