@@ -38,6 +38,8 @@
 
 #include "Speed/Indep/Src/EAGL4Anim/FnPoseAnim.cpp"
 
+#include "Speed/Indep/Src/EAGL4Anim/eagl4runtimetransform.cpp"
+
 #include "Speed/Indep/Src/EAGL4Anim/FnPoseBlender.cpp"
 
 #include "Speed/Indep/Src/EAGL4Anim/FnRawPoseChannel.cpp"

@@ -567,22 +567,14 @@ DynamicLoader::Symbol DynamicLoader::GetSymbol(int i) const {
     DynamicLoader::Symbol r;
     HashPointer *h = reinterpret_cast<HashPointer *>(handle);
     if (!h) {
-        // r.name = nullptr;
-        r.type = nullptr;
-        // r.data = nullptr;
-        r.isInternalRef = false;
         return r;
     }
     ELF32_Sym *s = h->symtab;
     if (i < 0 || i >= h->symbols_num) {
-        // r.name = nullptr;
-        r.type = nullptr;
-        // r.data = nullptr;
-        r.isInternalRef = false;
         return r;
     }
     r.name = &h->strtab[s[i].st_name];
-    r.type = &r.name[strlen(&h->strtab[s[i].st_name])];
+    r.type = r.name + strlen(r.name);
     if (r.type[1] == 0x7F) {
         r.type += 2;
     }
