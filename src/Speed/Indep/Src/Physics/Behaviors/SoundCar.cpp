@@ -511,7 +511,7 @@ void SoundCop::OnService(SoundConn::Pkt_Car_Service &svc) {
 
     if (mPursuitAI) {
         svc.SetSiren(mPursuitAI->GetSirenState());
-        if (mPursuitAI->GetInPursuit()) {
+        if (mPursuitAI->GetInFormation()) {
             svc.SetHotPursuit(true);
         }
         svc.SetTimeSinceSeen(mPursuitAI->GetTimeSinceTargetSeen());
