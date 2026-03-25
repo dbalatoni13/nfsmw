@@ -1243,8 +1243,7 @@ ISimable *PVehicle::Construct(Sim::Param params) {
     if (customizations == nullptr) {
         vehicle_name = attributes.DefaultPresetRide();
         if (vehicle_name != nullptr) {
-            unsigned int hash = bStringHashUpper(vehicle_name);
-            PresetCar *preset = FindFEPresetCar(hash);
+            PresetCar *preset = FindFEPresetCar(bStringHashUpper(vehicle_name));
             if (preset != nullptr) {
                 static FECustomizationRecord temp_record;
                 temp_record.Default();
@@ -1268,13 +1267,12 @@ ISimable *PVehicle::Construct(Sim::Param params) {
         Physics::Upgrades::RemovePart(attributes, Physics::Upgrades::PUT_NOS);
     }
     if (GetMikeMannBuild() != 0) {
-        int maxLevel = Physics::Upgrades::GetMaxLevel(attributes, Physics::Upgrades::PUT_NOS);
-        Physics::Upgrades::SetLevel(attributes, Physics::Upgrades::PUT_NOS, maxLevel);
+        int new_nos = Physics::Upgrades::GetMaxLevel(attributes, Physics::Upgrades::PUT_NOS);
+        Physics::Upgrades::SetLevel(attributes, Physics::Upgrades::PUT_NOS, new_nos);
     }
     if ((vp.Flags & 0x10) != 0) {
         if (Physics::Upgrades::GetLevel(attributes, Physics::Upgrades::PUT_NOS) == 0) {
-            int maxLevel = Physics::Upgrades::GetMaxLevel(attributes, Physics::Upgrades::PUT_NOS);
-            if (maxLevel > 0) {
+            if (Physics::Upgrades::GetMaxLevel(attributes, Physics::Upgrades::PUT_NOS) > 0) {
                 Physics::Upgrades::SetLevel(attributes, Physics::Upgrades::PUT_NOS, 1);
             }
         }
@@ -1305,6 +1303,7 @@ ISimable *PVehicle::Construct(Sim::Param params) {
     if (!MakeRoom(vp.VehicleCache, resources)) {
         return nullptr;
     }
+    resources.clear();
     perf.Default();
     const Physics::Info::Performance *performance = nullptr;
     if (vp.matched != nullptr) {
