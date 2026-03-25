@@ -154,8 +154,7 @@ VehicleRenderConn::VehicleRenderConn(const Sim::ConnectionData &data, CarType ty
     this->mModelOffset.x = 0.0f;
     this->mModelOffset.y = 0.0f;
     this->mModelOffset.z = 0.0f;
-    this->mAttributes.Change(Attrib::FindCollectionWithDefault(
-        Attrib::Gen::ecar::ClassKey(), Attrib::StringToLowerCaseKey(CarTypeInfoArray[type].BaseModelName)));
+    this->mAttributes.ChangeWithDefault(Attrib::StringToLowerCaseKey(CarTypeInfoArray[type].BaseModelName));
 }
 
 VehicleRenderConn::~VehicleRenderConn() {
