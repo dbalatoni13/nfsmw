@@ -402,24 +402,23 @@ void ReplaceSkyTextures(SKY_LAYER layer) {
     SkydomeModel.AttachReplacementTextureTable(SKYtextable, 2, 0);
 }
 
-void GetLayerMod(eView *view, SKY_LAYER layer, float *r, float *g, float *b, float *a) {
-    float overcast = lbl_8040B2B8;
-    float clear = lbl_8040B2BC;
+void GetLayerMod(eView *view, SKY_LAYER l, float *r, float *g, float *b, float *a) {
+    float weight = lbl_8040B2B8;
+    float invW = lbl_8040B2BC;
     int env_map = *reinterpret_cast<int *>(reinterpret_cast<unsigned char *>(view) + 0x60);
 
     if (env_map != 0) {
-        overcast = *reinterpret_cast<float *>(env_map + 0x50);
-        clear = lbl_8040B2BC - overcast;
+        weight = *reinterpret_cast<float *>(env_map + 0x50);
+        invW -= weight;
     }
 
-    if (lbl_8040B2B8 < SkyRenderForceOvercast) {
-        clear = lbl_8040B2BC - SkyRenderForceOvercast;
-        overcast = SkyRenderForceOvercast;
+    if (SkyRenderForceOvercast > lbl_8040B2B8) {
+        invW = lbl_8040B2BC - SkyRenderForceOvercast;
+        weight = SkyRenderForceOvercast;
     }
 
-    float *layer_mod = &skylayer[layer][0];
-    *r = layer_mod[0] * overcast + layer_mod[1] * clear;
-    *g = layer_mod[2] * overcast + layer_mod[3] * clear;
-    *b = layer_mod[4] * overcast + layer_mod[5] * clear;
-    *a = layer_mod[6] * overcast + layer_mod[7] * clear;
+    *r = skylayer[l][0] * weight + skylayer[l][1] * invW;
+    *g = skylayer[l][2] * weight + skylayer[l][3] * invW;
+    *b = skylayer[l][4] * weight + skylayer[l][5] * invW;
+    *a = skylayer[l][6] * weight + skylayer[l][7] * invW;
 }

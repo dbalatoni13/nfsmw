@@ -27,10 +27,10 @@ Sim::Connection *HeliRenderConn::Construct(const Sim::ConnectionData &data) {
 
 HeliRenderConn::HeliRenderConn(const Sim::ConnectionData &data, CarType type, RenderConn::Pkt_Heli_Open *open)
     : VehicleRenderConn(data, type) {
-    this->mLastVisibleFrame = 0;
-    this->mDistanceToView = lbl_8040B0A8;
-    this->mShadowScale = lbl_8040B0AC;
-    this->mLastRenderFrame = 0;
+    mLastVisibleFrame = 0;
+    mDistanceToView = lbl_8040B0A8;
+    mShadowScale = lbl_8040B0AC;
+    mLastRenderFrame = 0;
 
     for (int i = 0; i <= 3; i++) {
         PSMTX44Identity(*reinterpret_cast<Mtx44 *>(&this->mMatrices[i]));
