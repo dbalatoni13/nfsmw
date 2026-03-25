@@ -36,7 +36,7 @@ Behavior *DamageVehicle::Construct(const BehaviorParams &params) {
     return new DamageVehicle(params, dp);
 }
 
-DamageVehicle::DamageVehicle(const BehaviorParams &bp, const DamageParams &)
+DamageVehicle::DamageVehicle(const BehaviorParams &bp, const DamageParams &sp)
     : VehicleBehavior(bp, 2), //
       IDamageable(bp.fowner), //
       Sim::Collision::IListener(), //

@@ -36,7 +36,7 @@ class DamageVehicle : public VehicleBehavior,
   public:
     static Behavior *Construct(const BehaviorParams &params);
 
-    DamageVehicle(const BehaviorParams &bp, const DamageParams &dp);
+    DamageVehicle(const BehaviorParams &bp, const DamageParams &sp);
     void ResetParts();
     const DamageScaleRecord &GetDamageRecord(DamageZone::ID zone) const;
 
