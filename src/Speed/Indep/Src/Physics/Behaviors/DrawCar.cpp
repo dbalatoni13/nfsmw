@@ -412,11 +412,7 @@ bool DrawCar::IsPartVisible(const UCrc32 &name) const {
 void DrawCar::HidePart(const UCrc32 &name) {
     Parts::iterator iter = mParts.find(name);
     if (iter == mParts.end()) {
-        Parts::iterator lower = mParts.lower_bound(name);
-        if (lower == mParts.end() || name < lower->first) {
-            lower = mParts.insert(lower, Parts::value_type(name, 0));
-        }
-        lower->second = 1;
+        mParts[name] = 1;
     } else {
         iter->second = iter->second + 1;
     }
