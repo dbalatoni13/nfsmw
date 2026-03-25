@@ -886,40 +886,40 @@ PVehicle::PVehicle(DriverClass dc, const Attrib::Gen::pvehicle &attribs, const U
     , IExplodeable(this) //
     , IAttributeable() //
     , mAttributes(attribs) //
+    , mCustomization(nullptr) //
+    , mInput(nullptr) //
+    , mCollisionBody(nullptr) //
+    , mSuspension(nullptr) //
+    , mEngine(nullptr) //
+    , mDamage(nullptr) //
+    , mTranny(nullptr) //
+    , mAI(nullptr) //
+    , mArticulation(nullptr) //
+    , mRenderable(nullptr) //
+    , mAudible(nullptr) //
+    , mSequencer(nullptr) //
+    , mTaskFX(nullptr) //
     , mClass() //
+    , mSpeed(0.0f) //
+    , mAbsSpeed(0.0f) //
+    , mSpeedometer(0.0f) //
+    , mTimeInAir(0.0f) //
+    , mSlipAngle(0.0f) //
+    , mWheelsOnGround(0) //
+    , mLocalVel(UMath::Vector3::kZero) //
+    , mDriverClass(dc) //
+    , mDriverStyle(STYLE_RACING) //
+    , mGlareState(0) //
+    , mStartingNOS(0.0f) //
+    , mBrakeTime(0.0f) //
+    , mForceStop(0) //
+    , mPhysicsMode(PHYSICS_MODE_SIMULATED) //
+    , mAnimating(false) //
+    , mStaging(false) //
     , mPerfectLaunch() //
     , mBehaviorOverrides() //
     , mResources() //
 {
-    mCustomization = nullptr;
-    mInput = nullptr;
-    mCollisionBody = nullptr;
-    mSuspension = nullptr;
-    mEngine = nullptr;
-    mDamage = nullptr;
-    mTranny = nullptr;
-    mAI = nullptr;
-    mArticulation = nullptr;
-    mRenderable = nullptr;
-    mAudible = nullptr;
-    mSequencer = nullptr;
-    mTaskFX = nullptr;
-    mSpeed = 0.0f;
-    mAbsSpeed = 0.0f;
-    mSpeedometer = 0.0f;
-    mTimeInAir = 0.0f;
-    mSlipAngle = 0.0f;
-    mWheelsOnGround = 0;
-    mLocalVel = UMath::Vector3::kZero;
-    mStartingNOS = 0.0f;
-    mDriverClass = dc;
-    mDriverStyle = STYLE_RACING;
-    mGlareState = 0;
-    mBrakeTime = 0.0f;
-    mForceStop = 0;
-    mPhysicsMode = PHYSICS_MODE_SIMULATED;
-    mAnimating = false;
-    mStaging = false;
     mBounds = bounds;
     mOnScreenTime = 0.0f;
     mOverrideDirty = false;
