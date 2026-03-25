@@ -393,14 +393,12 @@ void DrawVehicle::PlayEffect(UCrc32 identifire, const Attrib::Collection *effect
 }
 
 void DrawVehicle::StopEffect(UCrc32 identifire) {
-    EffectList::iterator iter = mEffects.begin();
-    while (iter != mEffects.end()) {
+    for (EffectList::iterator iter = mEffects.begin(); iter != mEffects.end(); iter++) {
         Effect *effect = *iter;
         if (effect->Identifire == identifire) {
             delete effect;
             mEffects.erase(iter);
             return;
         }
-        ++iter;
     }
 }
