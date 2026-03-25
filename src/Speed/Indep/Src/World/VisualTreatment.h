@@ -40,7 +40,7 @@ class VisualLookEffect {
                 return;
             }
         }
-        this->StartTime = RealTimer.GetSeconds();
+        this->StartTime = useWorldTime ? WorldTimer.GetSeconds() : RealTimer.GetSeconds();
         this->PulseLength = length;
         this->UseWorldTime = useWorldTime;
         this->StopIfHeatFalls = stopIfHeatFalls;

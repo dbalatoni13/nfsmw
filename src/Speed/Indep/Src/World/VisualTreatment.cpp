@@ -268,36 +268,10 @@ void IVisualTreatment::UpdateVisualLook() {
 }
 
 void IVisualTreatment::TriggerUves() {
-    VisualLookEffect *uvesTransition = this->UvesTransition;
-    float length = uvesTransition->GetAttrib()->length();
-
-    if (length != 0.0f) {
-        uvesTransition->PulseLength = length;
-        uvesTransition->StopAfterLength = 0;
-        uvesTransition->UseWorldTime = 1;
-        uvesTransition->StopIfHeatFalls = 1;
-        uvesTransition->StartTime = WorldTimer.GetSeconds();
-    }
-
-    VisualLookEffect *uvesRadialBlur = this->UvesRadialBlur;
-    length = uvesRadialBlur->GetAttrib()->length();
-    if (length != 0.0f) {
-        uvesRadialBlur->PulseLength = length;
-        uvesRadialBlur->StopAfterLength = 0;
-        uvesRadialBlur->UseWorldTime = 1;
-        uvesRadialBlur->StopIfHeatFalls = 1;
-        uvesRadialBlur->StartTime = WorldTimer.GetSeconds();
-    }
-
-    VisualLookEffect *uvesPulse = this->UvesPulse;
-    length = uvesPulse->GetAttrib()->length();
-    if (length != 0.0f) {
-        uvesPulse->StopAfterLength = 0;
-        uvesPulse->PulseLength = length;
-        uvesPulse->StopIfHeatFalls = 1;
-        uvesPulse->UseWorldTime = 0;
-        uvesPulse->StartTime = RealTimer.GetSeconds();
-    }
+    const float kUseAttribLength = 0.0f;
+    UvesTransition->Trigger(kUseAttribLength, true, true, false);
+    UvesRadialBlur->Trigger(kUseAttribLength, true, true, false);
+    UvesPulse->Trigger(kUseAttribLength, false, true, false);
 }
 
 void IVisualTreatment::UpdateHeat(eView *view, float targetHeat, bool isBeingPursued) {
