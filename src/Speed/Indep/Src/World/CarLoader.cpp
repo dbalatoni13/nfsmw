@@ -939,11 +939,14 @@ void CarLoader::UnloadOverflowedResources() {
 }
 
 void CarLoader::UnloadUnallocatedRideInfos(int max_left_unloaded) {
-    do {
-        if (this->NumLoadedRideInfos - this->NumAllocatedRideInfos < max_left_unloaded) {
-            return;
+    {
+        bool force_unload = false;
+        while (NumLoadedRideInfos - NumAllocatedRideInfos >= max_left_unloaded) {
+            if (!RemoveSomethingFromCarMemoryPool(force_unload)) {
+                return;
+            }
         }
-    } while (this->RemoveSomethingFromCarMemoryPool(false) != 0);
+    }
 }
 
 void CarLoader::UnloadAllSkinTemporaries() {

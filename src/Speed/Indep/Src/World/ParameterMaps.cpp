@@ -436,8 +436,11 @@ void ParameterAccessorBlend::ClearData() {
 }
 
 void ParameterAccessorBlend::SetUpForNewLayer() {
-    if (this->Layer != 0 && this->Layer->GetSizeOfParameterSet() > 0) {
-        this->LastData = new char[this->Layer->GetSizeOfParameterSet()];
+    if (Layer) {
+        int data_size = Layer->GetSizeOfParameterSet();
+        if (data_size > 0) {
+            LastData = new (__FILE__, __LINE__) char[data_size];
+        }
     }
 }
 
