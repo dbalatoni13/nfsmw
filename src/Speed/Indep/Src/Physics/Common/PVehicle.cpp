@@ -946,20 +946,17 @@ PVehicle::PVehicle(DriverClass dc, const Attrib::Gen::pvehicle &attribs, const U
     mClass = classKey;
     IVehicle::AddToList(VEHICLE_ALL);
     UpdateListing();
-    float rate;
     switch (mDriverClass) {
     case DRIVER_HUMAN:
-        rate = 0.0f;
+        mTaskFX = AddTask("FX", 0.0f, 0.0f, Sim::TASK_FRAME_FIXED);
         break;
     case DRIVER_TRAFFIC:
-        rate = 0.05f;
+        mTaskFX = AddTask("FX", 0.05f, 0.0f, Sim::TASK_FRAME_FIXED);
         break;
     default:
-        rate = 0.02f;
+        mTaskFX = AddTask("FX", 0.02f, 0.0f, Sim::TASK_FRAME_FIXED);
         break;
     }
-    UCrc32 fxName("FX");
-    mTaskFX = AddTask(fxName, rate, 0.0f, Sim::TASK_FRAME_FIXED);
     Debugable::MakeDebugable(DBG_PHYSICS_RACERS);
     Reset();
     if (mDamage != nullptr) {
