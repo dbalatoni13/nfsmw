@@ -48,6 +48,7 @@ struct LoadedTexturePack : public bTNode<LoadedTexturePack> {
 class LoadedSkinLayer : public bTNode<LoadedSkinLayer> {
   public:
     LoadedSkinLayer(unsigned int name_hash);
+    static void operator delete(void *ptr);
 
     unsigned int NameHash; // offset 0x8, size 0x4
     short NumInstances;    // offset 0xC, size 0x2
@@ -80,6 +81,7 @@ class LoadedSkin : public bTNode<LoadedSkin> {
   public:
     LoadedSkin(RideInfo *ride_info, int in_front_end, int is_player_skin);
     int GetTextureHashes(unsigned int *texture_hashes, int max_texture_hashes, int perm);
+    int IsLoaded();
 
     RideInfo *pRideInfo;                       // offset 0x8, size 0x4
     char LoadStatePerm;                        // offset 0xC, size 0x1
@@ -113,6 +115,7 @@ class LoadedCar : public bTNode<LoadedCar> {
 class LoadedRideInfo : public bTNode<LoadedRideInfo> {
   public:
     LoadedRideInfo(RideInfo *ride_info, int in_front_end, int is_two_player, int is_player_car);
+    static void operator delete(void *ptr);
 
     int NumInstances;           // offset 0x8, size 0x4
     CarLoadState LoadState;     // offset 0xC, size 0x4

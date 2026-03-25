@@ -326,6 +326,18 @@ LoadedSolidPack::~LoadedSolidPack() {
     bFreeSharedString(this->Filename);
 }
 
+inline void LoadedSkinLayer::operator delete(void *ptr) {
+    bFree(LoadedSkinLayerSlotPool, ptr);
+}
+
+inline void LoadedRideInfo::operator delete(void *ptr) {
+    bFree(LoadedRideInfoSlotPool, ptr);
+}
+
+inline int LoadedSkin::IsLoaded() {
+    return this->LoadStatePerm == CARLOADSTATE_LOADED && this->LoadStateTemp == CARLOADSTATE_LOADED && this->DoneComposite != 0;
+}
+
 void CarLoader_UnallocateSkinLayers(CarLoader *car_loader, LoadedSkinLayer **loaded_skin_layers, int num_layers)
     asm("UnallocateSkinLayers__9CarLoaderPP15LoadedSkinLayeri");
 int CarLoader_MakeSpaceInCarMemoryPool(CarLoader *car_loader, int required_size, int max_allocations, bool stream_textures)
@@ -812,21 +824,23 @@ int CarLoader::UnloadRideInfo(LoadedRideInfo *loaded_ride_info, int leave_if_in_
     if (loaded_ride_info->NumInstances < 1) {
         LoadedSkin *loaded_skin = loaded_ride_info->pLoadedSkin;
 
-        if (loaded_skin != 0 && loaded_skin->LoadStatePerm == CARLOADSTATE_LOADED &&
-            loaded_skin->LoadStateTemp == CARLOADSTATE_LOADED && loaded_skin->DoneComposite != 0) {
+        if (loaded_skin != 0 && loaded_skin->IsLoaded()) {
             this->UnloadSkinTemporaries(loaded_skin, 0);
         }
 
-        if (leave_if_in_mempool == 0 || !this->IsLoaded(loaded_ride_info)) {
-            this->UnloadSkin(loaded_ride_info->pLoadedSkin);
-            this->UnloadWheel(loaded_ride_info->pLoadedWheel);
-            this->UnloadCar(loaded_ride_info->pLoadedCar);
-            loaded_ride_info->Remove();
-            bFree(LoadedRideInfoSlotPool, loaded_ride_info);
-            this->NumLoadedRideInfos--;
-            this->MayNeedDefragmentation++;
-            return 1;
+        if (leave_if_in_mempool != 0) {
+            if (this->IsLoaded(loaded_ride_info)) {
+                return 0;
+            }
         }
+
+        this->UnloadSkin(loaded_ride_info->pLoadedSkin);
+        this->UnloadWheel(loaded_ride_info->pLoadedWheel);
+        this->UnloadCar(loaded_ride_info->pLoadedCar);
+        delete this->LoadedRideInfoList.Remove(loaded_ride_info);
+        this->NumLoadedRideInfos--;
+        this->MayNeedDefragmentation++;
+        return 1;
     }
 
     return 0;
@@ -2216,8 +2230,8 @@ int CarLoader::UnloadSkinLayers(unsigned int *name_hash_table, int max_name_hash
                                 int num_loaded_skin_layers) {
     int num_name_hashes = 0;
 
-    for (int i = 0; i < num_loaded_skin_layers; i++) {
-        LoadedSkinLayer *loaded_skin_layer = loaded_skin_layer_table[i];
+    for (int n = 0; n < num_loaded_skin_layers; n++) {
+        LoadedSkinLayer *loaded_skin_layer = loaded_skin_layer_table[n];
 
         if (loaded_skin_layer != 0 && loaded_skin_layer->NumInstances == 0) {
             if (loaded_skin_layer->LoadState == CARLOADSTATE_LOADED) {
@@ -2225,8 +2239,7 @@ int CarLoader::UnloadSkinLayers(unsigned int *name_hash_table, int max_name_hash
                 num_name_hashes++;
             }
 
-            loaded_skin_layer->Remove();
-            bFree(LoadedSkinLayerSlotPool, loaded_skin_layer);
+            delete this->LoadedSkinLayerList.Remove(loaded_skin_layer);
         }
     }
 
