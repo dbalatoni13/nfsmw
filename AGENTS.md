@@ -268,6 +268,7 @@ relocated `.debug` tree directly with:
 python tools/dwarf1_subroutine_tree.py -u main/Path/To/TU -f FunctionName
 python tools/dwarf1_subroutine_tree.py build/GOWE69/src/Path/To/TU.o --tag 0xTAG
 python tools/dwarf1_subroutine_tree.py -u main/Path/To/TU -f FunctionName --json
+python tools/dwarf1_subroutine_tree.py -u main/Path/To/TU -f FunctionName --compare-original
 ```
 
 This prints the nested inline-subroutine / lexical-block ownership tree straight
@@ -277,6 +278,8 @@ from the raw MWCC DWARF tags, so it is the fastest way to answer:
 - which inline owner changed (`VecHashMap<...>::Remove` vs `CollectionHashMap::Remove`, etc.)?
 - did a wrapper disappear only because the dumper/parser skipped it, or because the
   source really changed the raw DWARF tree?
+- with `--compare-original`, which owner/name rows are actually inserted, replaced, or
+  missing relative to the original `symbols/Dwarf/functions.nothpp` tree?
 
 ### prodg_dump.py — ProDG compiler-state dump helper
 

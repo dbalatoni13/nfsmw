@@ -10,12 +10,15 @@ Examples:
   python tools/dwarf1_subroutine_tree.py -u main/Speed/Indep/SourceLists/zAttribSys -f 'Attrib::Class::RemoveCollection(Attrib::Collection *)'
   python tools/dwarf1_subroutine_tree.py build/GOWE69/src/Speed/Indep/SourceLists/zAttribSys.o --tag 0x2A2C8
   python tools/dwarf1_subroutine_tree.py -u main/Speed/Indep/SourceLists/zAttribSys -f 'Attrib::Database::RemoveClass(Attrib::Class const *)' --json
+  python tools/dwarf1_subroutine_tree.py -u main/Speed/Indep/SourceLists/zAttribSys -f 'Attrib::Class::RemoveCollection(Attrib::Collection *)' --compare-original
 """
 
 from __future__ import annotations
 
 import argparse
+import difflib
 import json
+import re
 from dataclasses import dataclass
 from enum import IntEnum
 from io import BytesIO
@@ -26,6 +29,7 @@ from elftools.elf.elffile import ELFFile
 from elftools.elf.relocation import RelocationSection
 
 from _common import find_objdiff_unit, load_objdiff_config, make_abs
+from lookup import split_functions
 
 
 class TreeError(RuntimeError):
@@ -439,6 +443,203 @@ def print_tree(rows: Iterable[Dict[str, Any]]) -> None:
         )
 
 
+def find_original_function_block(query: str) -> tuple[str, str, str, str]:
+    dwarf_path = Path(make_abs("symbols/Dwarf/functions.nothpp") or "symbols/Dwarf/functions.nothpp")
+    try:
+        text = dwarf_path.read_text(encoding="utf-8", errors="replace")
+    except OSError as exc:
+        raise TreeError(f"Failed to read original DWARF dump: {dwarf_path}") from exc
+
+    matches: List[tuple[str, str, str, str]] = []
+    exact: List[tuple[str, str, str, str]] = []
+    for func in split_functions(text):
+        sig_line = func[2]
+        if query in sig_line:
+            exact.append(func)
+        if any(candidate in sig_line for candidate in candidate_names(query)):
+            matches.append(func)
+
+    selected = exact or matches
+    if not selected:
+        raise TreeError(f"Original DWARF function '{query}' not found in {dwarf_path}")
+    if len(selected) > 1:
+        preview = "\n".join(f"  - {func[2]}" for func in selected[:12])
+        raise TreeError(
+            f"Original DWARF query '{query}' matched multiple functions.\n{preview}"
+        )
+    return selected[0]
+
+
+def normalize_original_label(sig_line: str) -> str:
+    line = sig_line.strip()
+    if not line:
+        return "<block>"
+
+    if line.endswith("{}"):
+        line = line[:-2].rstrip()
+    if line.endswith("{"):
+        line = line[:-1].rstrip()
+    if line.endswith(" const"):
+        line = line[:-6].rstrip()
+
+    while line.startswith("inline "):
+        line = line[len("inline ") :].lstrip()
+    while line.startswith("static "):
+        line = line[len("static ") :].lstrip()
+    while line.startswith("inline "):
+        line = line[len("inline ") :].lstrip()
+
+    paren = line.find("(")
+    if paren == -1:
+        return "<block>"
+    prefix = line[:paren].rstrip()
+    if not prefix:
+        return "<block>"
+
+    depth = 0
+    for index in range(len(prefix) - 1, -1, -1):
+        char = prefix[index]
+        if char == ">":
+            depth += 1
+        elif char == "<":
+            depth = max(0, depth - 1)
+        elif depth == 0 and char.isspace():
+            candidate = prefix[index + 1 :].strip()
+            return candidate or "<block>"
+    return prefix
+
+
+def original_rows_from_block(
+    block: tuple[str, str, str, str],
+    function_label: str,
+    *,
+    max_depth: Optional[int] = None,
+) -> List[Dict[str, Any]]:
+    rows: List[Dict[str, Any]] = [
+        {
+            "tag_kind": "ORIGINAL_FUNCTION",
+            "depth": 0,
+            "label": function_label,
+            "low_pc": int(block[0], 16),
+            "high_pc": int(block[1], 16),
+        }
+    ]
+
+    lines = block[3].splitlines()
+    range_re = re.compile(
+        r"^(\s*)// Range:\s+0x([0-9A-Fa-f]+)\s*->\s*0x([0-9A-Fa-f]+)\s*$"
+    )
+    for index, line in enumerate(lines):
+        match = range_re.match(line)
+        if not match:
+            continue
+
+        sig_line = ""
+        lookahead = index + 1
+        while lookahead < len(lines):
+            candidate = lines[lookahead].strip()
+            if candidate:
+                if candidate.startswith("//"):
+                    lookahead += 1
+                    continue
+                sig_line = candidate
+                break
+            lookahead += 1
+
+        depth = len(match.group(1)) // 4
+        if depth == 0:
+            continue
+        if max_depth is not None and depth > max_depth:
+            continue
+        rows.append(
+            {
+                "tag_kind": "ORIGINAL_RANGE",
+                "depth": depth,
+                "label": normalize_original_label(sig_line),
+                "low_pc": int(match.group(2), 16) & 0xFFFF,
+                "high_pc": int(match.group(3), 16) & 0xFFFF,
+            }
+        )
+    return rows
+
+
+def compare_rows(
+    original_rows: List[Dict[str, Any]], rebuilt_rows: List[Dict[str, Any]]
+) -> Dict[str, Any]:
+    original_keys = [(row["depth"], row["label"]) for row in original_rows]
+    rebuilt_keys = [(row["depth"], row["label"]) for row in rebuilt_rows]
+
+    mismatches: List[Dict[str, Any]] = []
+    matcher = difflib.SequenceMatcher(a=original_keys, b=rebuilt_keys, autojunk=False)
+    for tag, i1, i2, j1, j2 in matcher.get_opcodes():
+        if tag == "equal":
+            continue
+        mismatches.append(
+            {
+                "tag": tag,
+                "original_range": [i1, i2],
+                "rebuilt_range": [j1, j2],
+                "original": [
+                    {
+                        "depth": row["depth"],
+                        "label": row["label"],
+                        "low_pc": row["low_pc"],
+                        "high_pc": row["high_pc"],
+                    }
+                    for row in original_rows[i1:i2]
+                ],
+                "rebuilt": [
+                    {
+                        "depth": row["depth"],
+                        "label": row["label"],
+                        "low_pc": row["low_pc"],
+                        "high_pc": row["high_pc"],
+                    }
+                    for row in rebuilt_rows[j1:j2]
+                ],
+            }
+        )
+
+    return {
+        "original_count": len(original_rows),
+        "rebuilt_count": len(rebuilt_rows),
+        "mismatch_count": len(mismatches),
+        "mismatches": mismatches,
+    }
+
+
+def print_comparison(compare: Dict[str, Any]) -> None:
+    print()
+    print("Original-vs-rebuilt range-tree comparison:")
+    print(
+        f"  original rows: {compare['original_count']}, rebuilt rows: {compare['rebuilt_count']}, "
+        f"mismatches: {compare['mismatch_count']}"
+    )
+    if not compare["mismatches"]:
+        if compare["original_count"] == compare["rebuilt_count"]:
+            print("  range trees match by depth/label")
+        else:
+            print("  shared prefix matches by depth/label, but row counts differ")
+        return
+
+    for mismatch in compare["mismatches"][:12]:
+        print(
+            f"  {mismatch['tag']} "
+            f"original[{mismatch['original_range'][0]}:{mismatch['original_range'][1]}] "
+            f"rebuilt[{mismatch['rebuilt_range'][0]}:{mismatch['rebuilt_range'][1]}]"
+        )
+        for row in mismatch["original"][:4]:
+            print(f"      - original {row['depth']} {row['label']}")
+        if len(mismatch["original"]) > 4:
+            print(f"      - ... {len(mismatch['original']) - 4} more original rows")
+        for row in mismatch["rebuilt"][:4]:
+            print(f"      + rebuilt  {row['depth']} {row['label']}")
+        if len(mismatch["rebuilt"]) > 4:
+            print(f"      + ... {len(mismatch['rebuilt']) - 4} more rebuilt rows")
+    if compare["mismatch_count"] > 12:
+        print(f"  ... {compare['mismatch_count'] - 12} more mismatches")
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description=(
@@ -473,6 +674,14 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Emit JSON instead of a text tree",
     )
+    parser.add_argument(
+        "--compare-original",
+        action="store_true",
+        help=(
+            "Also compare the rebuilt raw tree against the original symbols/Dwarf/functions.nothpp "
+            "range tree for the same function"
+        ),
+    )
     return parser.parse_args()
 
 
@@ -504,6 +713,17 @@ def main() -> None:
         max_depth=args.max_depth,
         include_non_subroutine=args.show_non_subroutine,
     )
+    compare: Optional[Dict[str, Any]] = None
+    if args.compare_original:
+        if not args.function:
+            raise TreeError("--compare-original requires --function")
+        original_block = find_original_function_block(args.function)
+        original_rows = original_rows_from_block(
+            original_block,
+            qualified_name(tags, tag),
+            max_depth=args.max_depth,
+        )
+        compare = compare_rows(original_rows, rows)
 
     if args.json:
         payload = {
@@ -512,6 +732,8 @@ def main() -> None:
             "selected_name": qualified_name(tags, tag),
             "rows": rows,
         }
+        if compare is not None:
+            payload["compare_original"] = compare
         print(json.dumps(payload, indent=2))
     else:
         print(f"Object: {obj_path}")
@@ -521,6 +743,8 @@ def main() -> None:
         print(f"Range: {format_range(low_pc, high_pc)}")
         print()
         print_tree(rows)
+        if compare is not None:
+            print_comparison(compare)
 
 
 if __name__ == "__main__":
