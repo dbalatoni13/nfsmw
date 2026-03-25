@@ -1519,12 +1519,12 @@ int LoaderCarInfo(bChunk *chunk) {
         car_part_pack->ModelTable = reinterpret_cast<CarPartModelTable *>(car_model_table_chunk->GetData());
         car_part_pack->StringTable = reinterpret_cast<const char *>(car_string_table_chunk->GetData());
         car_part_pack->StringTableSize = car_string_table_chunk->GetSize();
-        CarPartStringTable = car_part_pack->StringTable;
-        CarPartTypeNameHashTable = car_part_pack->TypeNameTable;
-        CarPartStringTableSize = car_part_pack->StringTableSize;
+        CarPartStringTable = reinterpret_cast<const char *>(car_string_table_chunk->GetData());
+        CarPartTypeNameHashTable = reinterpret_cast<unsigned int *>(car_typename_table_chunk->GetData());
+        CarPartStringTableSize = car_string_table_chunk->GetSize();
         CarPartTypeNameHashTableSize = car_part_pack->NumTypeNames;
-        CarPartPartsTable = car_part_pack->PartsTable;
-        CarPartModelsTable = car_part_pack->ModelTable;
+        CarPartPartsTable = reinterpret_cast<CarPart *>(car_parts_table_chunk->GetData());
+        CarPartModelsTable = reinterpret_cast<CarPartModelTable *>(car_model_table_chunk->GetData());
         MasterCarPartPack = car_part_pack;
         track = reinterpret_cast<unsigned char *>(car_part_pack->AttributeTableTable);
         end_track = track + car_attributetable_table_chunk->GetSize();
