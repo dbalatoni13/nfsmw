@@ -377,28 +377,32 @@ void TireState::SetSurface(const SimSurface &surface) {
     unsigned int slide_index;
     unsigned int drive_index;
 
-    if (!this->mFlat || surface.Num_TireSlipEffects() < 3) {
+    unsigned int slip_count = surface.Num_TireSlipEffects();
+    unsigned int slide_count = surface.Num_TireSlideEffects();
+    unsigned int drive_count = surface.Num_TireDriveEffects();
+
+    if (!this->mFlat || slip_count < 3) {
         slip_index = 0;
         if (this->mRaining) {
-            slip_index = surface.Num_TireSlipEffects() > 1;
+            slip_index = slip_count > 1;
         }
     } else {
         slip_index = 2;
     }
 
-    if (!this->mFlat || surface.Num_TireSlideEffects() < 3) {
+    if (!this->mFlat || slide_count < 3) {
         slide_index = 0;
         if (this->mRaining) {
-            slide_index = surface.Num_TireSlideEffects() > 1;
+            slide_index = slide_count > 1;
         }
     } else {
         slide_index = 2;
     }
 
-    if (!this->mFlat || surface.Num_TireDriveEffects() < 3) {
+    if (!this->mFlat || drive_count < 3) {
         drive_index = 0;
         if (this->mRaining) {
-            drive_index = surface.Num_TireDriveEffects() > 1;
+            drive_index = drive_count > 1;
         }
     } else {
         drive_index = 2;

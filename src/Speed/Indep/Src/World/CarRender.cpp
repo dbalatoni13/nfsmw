@@ -1200,7 +1200,7 @@ skip_smooth_normal_model: {}
 // UNSOLVED
 CarRenderInfo::~CarRenderInfo() {
     for (int model_index = 0; model_index < 0x4C; model_index++) {
-        for (int model_number = 0; model_index < 1; model_index++) {
+        for (int model_number = 0; model_number < 1; model_number++) {
             for (int model_lod = this->mMinLodLevel; model_lod <= this->mMaxLodLevel; model_lod++) {
                 eModel *model = this->mCarPartModels[model_index][model_number][model_lod].GetModel();
                 if (model == nullptr)
