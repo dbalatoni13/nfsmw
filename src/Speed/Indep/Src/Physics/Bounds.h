@@ -34,6 +34,12 @@ struct _V3c {
     short x; // offset 0x0, size 0x2
     short y; // offset 0x2, size 0x2
     short z; // offset 0x4, size 0x2
+
+    void Decompress(UMath::Vector3 &to) const {
+        to.x = static_cast<float>(x) * 0.001f;
+        to.y = static_cast<float>(y) * 0.001f;
+        to.z = static_cast<float>(z) * 0.001f;
+    }
 };
 
 struct _Q4c {
@@ -76,7 +82,9 @@ struct Bounds {
     UCrc32 fNameHash;           // offset 0x28, size 0x4
     Collection *fCollection;    // offset 0x2C, size 0x4
 
-    void GetPivot(UMath::Vector3 &to) const {}
+    void GetPivot(UMath::Vector3 &to) const {
+        fPivot.Decompress(to);
+    }
 };
 
 class IBoundable : public UTL::COM::IUnknown {

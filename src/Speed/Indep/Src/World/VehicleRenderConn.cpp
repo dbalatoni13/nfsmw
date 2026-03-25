@@ -431,8 +431,7 @@ void VehicleRenderConn::SetupLoading(bool commit) {
 void VehicleRenderConn::OnEvent(EventID) {}
 
 void VehicleRenderConn::OnLoaded(CarRenderInfo *render_info) {
-    const CollisionGeometry::Collection *collision_geometry;
-    const CollisionGeometry::Bounds *root;
+    const CollisionGeometry::Collection *col;
 
     this->mState = S_Loaded;
     if (render_info != 0) {
@@ -445,21 +444,20 @@ void VehicleRenderConn::OnLoaded(CarRenderInfo *render_info) {
     this->mRenderInfo = render_info;
     render_info->Init();
 
-    collision_geometry = reinterpret_cast<const CollisionGeometry::Collection *>(
+    col = reinterpret_cast<const CollisionGeometry::Collection *>(
         CollisionGeometry::Lookup(UCrc32(stringhash32(CarTypeInfoArray[this->mCarType].CarTypeName))));
-    if (collision_geometry == 0) {
-        this->mModelOffset.x = render_info->ModelOffset.x;
-        this->mModelOffset.y = render_info->ModelOffset.y;
-        this->mModelOffset.z = render_info->ModelOffset.z;
-        this->mModelOffset.w = 0.0f;
-    } else {
-        root = CollisionGeometry_Collection_GetRoot(collision_geometry);
-        if (root != 0) {
-            this->mModelOffset.x = static_cast< float >(root->fPivot.z) * 0.001f;
-            this->mModelOffset.y = -static_cast< float >(root->fPivot.x) * 0.001f;
-            this->mModelOffset.z = static_cast< float >(root->fPivot.y) * 0.001f;
-            render_info->SetRadius(root->fRadius);
+    if (col) {
+        const CollisionGeometry::Bounds *root = CollisionGeometry_Collection_GetRoot(col);
+        if (root) {
+            UMath::Vector3 pivot;
+            root->GetPivot(pivot);
+            this->mModelOffset.x = pivot.z;
+            this->mModelOffset.y = -pivot.x;
+            this->mModelOffset.z = pivot.y;
+            this->mRenderInfo->SetRadius(root->fRadius);
         }
+    } else {
+        this->mModelOffset = bVector4(this->mRenderInfo->ModelOffset.x, this->mRenderInfo->ModelOffset.y, this->mRenderInfo->ModelOffset.z, 0.0f);
     }
 }
 
