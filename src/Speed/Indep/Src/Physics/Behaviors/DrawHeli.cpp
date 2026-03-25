@@ -59,11 +59,11 @@ DrawHeli::DrawHeli(const BehaviorParams &params)
     : DrawVehicle(params), //
       mRenderService(nullptr), //
       mEffect(0, nullptr), //
-      mWash(GetHeliWashCollection(), 0, nullptr), //
-      mInView(false), //
-      mDistanceToView(0.0f), //
-      mIAIHelicopter(nullptr) {
+      mWash(GetHeliWashCollection(), 0, nullptr) {
     mWash.SetDefaultLayout(0x10);
+    mInView = false;
+    mDistanceToView = 0.0f;
+    mIAIHelicopter = nullptr;
 
     const char *model = GetVehicle()->GetVehicleAttributes().MODEL().GetString();
     if (!model) {
