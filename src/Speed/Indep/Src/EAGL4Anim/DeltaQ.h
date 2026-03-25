@@ -41,7 +41,6 @@ struct DeltaQDelta {
         q.x = minRangef.mMin.x + minRangef.mRange.x * mX;
         q.y = minRangef.mMin.y + minRangef.mRange.y * mY;
         q.z = minRangef.mMin.z + minRangef.mRange.z * mZ;
-        DeltaQRecoverW(mW, q);
     }
 
     unsigned char mX : 7; // offset 0x0, size 0x1
@@ -89,6 +88,30 @@ inline void DeltaQRecoverW(int signBit, UMath::Vector4 &q) {
         q.z /= len;
         q.w = 0.0f;
     }
+}
+
+inline void FastPolarizedQuatBlend(float t, const UMath::Vector4 &q0, const UMath::Vector4 &q1, UMath::Vector4 &result) {
+    float s;
+    UMath::Vector4 temp;
+
+    if (q0.x * q1.x + q0.y * q1.y + q0.z * q1.z + q0.w * q1.w > 0.0f) {
+        temp = q1;
+    } else {
+        temp.x = -q1.x;
+        temp.y = -q1.y;
+        temp.z = -q1.z;
+        temp.w = -q1.w;
+    }
+
+    result.x = t * (temp.x - q0.x) + q0.x;
+    result.y = t * (temp.y - q0.y) + q0.y;
+    result.z = t * (temp.z - q0.z) + q0.z;
+    result.w = t * (temp.w - q0.w) + q0.w;
+    s = 1.0f / FastSqrt(result.x * result.x + result.y * result.y + result.z * result.z + result.w * result.w);
+    result.x *= s;
+    result.y *= s;
+    result.z *= s;
+    result.w *= s;
 }
 
 // total size: 0x14

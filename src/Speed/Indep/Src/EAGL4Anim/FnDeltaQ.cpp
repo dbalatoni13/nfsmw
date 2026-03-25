@@ -144,9 +144,7 @@ bool FnDeltaQ::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask) {
 
     if (mPrevKey == -1 || floorBinIdx != prevBinIdx || floorDeltaIdx == 0 || preventReverse) {
         for (int ibone = 0; ibone < deltaQ->mNumBones; ibone++) {
-            mPrevQs[ibone].x = floorPhys[ibone].mX * 6.1037019e-5f - 1.0f;
-            mPrevQs[ibone].y = floorPhys[ibone].mY * 3.0518044e-5f - 1.0f;
-            mPrevQs[ibone].z = floorPhys[ibone].mZ * 3.0518044e-5f - 1.0f;
+            floorPhys[ibone].UnQuantize(mPrevQs[ibone]);
         }
         prevDeltaIdx = 0;
     } else {
@@ -162,9 +160,7 @@ bool FnDeltaQ::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask) {
                 DeltaQMinRangef minRangef;
 
                 mMinRanges[ibone].UnQuantize(minRangef);
-                deltaf.x = minRangef.mMin.x + minRangef.mRange.x * floorDelta->mX;
-                deltaf.y = minRangef.mMin.y + minRangef.mRange.y * floorDelta->mY;
-                deltaf.z = minRangef.mMin.z + minRangef.mRange.z * floorDelta->mZ;
+                floorDelta->UnQuantize(minRangef, deltaf);
                 mPrevQs[ibone].x += deltaf.x;
                 mPrevQs[ibone].y += deltaf.y;
                 mPrevQs[ibone].z += deltaf.z;
@@ -180,9 +176,7 @@ bool FnDeltaQ::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask) {
                 DeltaQMinRangef minRangef;
 
                 mMinRanges[ibone].UnQuantize(minRangef);
-                deltaf.x = minRangef.mMin.x + minRangef.mRange.x * floorDelta->mX;
-                deltaf.y = minRangef.mMin.y + minRangef.mRange.y * floorDelta->mY;
-                deltaf.z = minRangef.mMin.z + minRangef.mRange.z * floorDelta->mZ;
+                floorDelta->UnQuantize(minRangef, deltaf);
                 mPrevQs[ibone].x -= deltaf.x;
                 mPrevQs[ibone].y -= deltaf.y;
                 mPrevQs[ibone].z -= deltaf.z;
@@ -236,51 +230,26 @@ bool FnDeltaQ::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask) {
         if (ceilBinIdx != floorBinIdx) {
             for (int ibone = 0; ibone < deltaQ->mNumBones; ibone++) {
                 UMath::Vector4 ceilq;
-                float *prevQ = reinterpret_cast<float *>(&mPrevQs[ibone]);
-                float *ceilQ = reinterpret_cast<float *>(&ceilq);
-                float *out = GetOutputQuat(sqt, boneIdxs[ibone]);
+                UMath::Vector4 &out = *reinterpret_cast<UMath::Vector4 *>(GetOutputQuat(sqt, boneIdxs[ibone]));
 
                 ceilPhys[ibone].UnQuantize(ceilq);
-                if (prevQ[0] * ceilQ[0] + prevQ[1] * ceilQ[1] + prevQ[2] * ceilQ[2] + prevQ[3] * ceilQ[3] > 0.0f) {
-                    out[0] = scale * (ceilQ[0] - prevQ[0]) + prevQ[0];
-                    out[1] = scale * (ceilQ[1] - prevQ[1]) + prevQ[1];
-                    out[2] = scale * (ceilQ[2] - prevQ[2]) + prevQ[2];
-                    out[3] = scale * (ceilQ[3] - prevQ[3]) + prevQ[3];
-                } else {
-                    out[0] = prevQ[0] - scale * (ceilQ[0] + prevQ[0]);
-                    out[1] = prevQ[1] - scale * (ceilQ[1] + prevQ[1]);
-                    out[2] = prevQ[2] - scale * (ceilQ[2] + prevQ[2]);
-                    out[3] = prevQ[3] - scale * (ceilQ[3] + prevQ[3]);
-                }
-
-                {
-                    float s = 1.0f / FastSqrt(out[0] * out[0] + out[1] * out[1] + out[2] * out[2] + out[3] * out[3]);
-
-                    out[0] *= s;
-                    out[1] *= s;
-                    out[2] *= s;
-                    out[3] *= s;
-                }
+                FastPolarizedQuatBlend(scale, mPrevQs[ibone], ceilq, out);
             }
         } else {
             DeltaQDelta *ceilDelta = GetDelta(deltaQ, binData, floorDeltaIdx);
 
             for (int ibone = 0; ibone < deltaQ->mNumBones; ibone++) {
-                UMath::Vector4 deltaf;
                 UMath::Vector4 ceilq;
+                UMath::Vector4 &out = *reinterpret_cast<UMath::Vector4 *>(GetOutputQuat(sqt, boneIdxs[ibone]));
                 DeltaQMinRangef minRangef;
 
                 mMinRanges[ibone].UnQuantize(minRangef);
-                deltaf.x = minRangef.mMin.x + minRangef.mRange.x * ceilDelta->mX;
-                deltaf.y = minRangef.mMin.y + minRangef.mRange.y * ceilDelta->mY;
-                deltaf.z = minRangef.mMin.z + minRangef.mRange.z * ceilDelta->mZ;
-                ceilq.x = mPrevQs[ibone].x + deltaf.x;
-                ceilq.y = mPrevQs[ibone].y + deltaf.y;
-                ceilq.z = mPrevQs[ibone].z + deltaf.z;
+                ceilDelta->UnQuantize(minRangef, ceilq);
+                ceilq.x += mPrevQs[ibone].x;
+                ceilq.y += mPrevQs[ibone].y;
+                ceilq.z += mPrevQs[ibone].z;
                 DeltaQRecoverW(ceilDelta->mW, ceilq);
-
-                FastQuatBlendF4(scale, reinterpret_cast<float *>(&mPrevQs[ibone]), reinterpret_cast<float *>(&ceilq),
-                                GetOutputQuat(sqt, boneIdxs[ibone]));
+                FastPolarizedQuatBlend(scale, mPrevQs[ibone], ceilq, out);
                 ceilDelta++;
             }
         }
@@ -360,9 +329,7 @@ bool FnDeltaQ::EvalSQTMasked(float currTime, const BoneMask *boneMask, float *sq
         (floorKey < mPrevKey && !IsReverseDeltaSumEnabled())) {
         for (int ibone = 0; ibone < deltaQ->mNumBones; ibone++) {
             if (boneMask->GetBone(boneIdxs[ibone])) {
-                mPrevQs[ibone].x = floorPhys[ibone].mX * 6.1037019e-5f - 1.0f;
-                mPrevQs[ibone].y = floorPhys[ibone].mY * 3.0518044e-5f - 1.0f;
-                mPrevQs[ibone].z = floorPhys[ibone].mZ * 3.0518044e-5f - 1.0f;
+                floorPhys[ibone].UnQuantize(mPrevQs[ibone]);
             }
         }
         prevDeltaIdx = 0;
@@ -380,9 +347,7 @@ bool FnDeltaQ::EvalSQTMasked(float currTime, const BoneMask *boneMask, float *sq
                     DeltaQMinRangef minRangef;
 
                     mMinRanges[ibone].UnQuantize(minRangef);
-                    deltaf.x = minRangef.mMin.x + minRangef.mRange.x * floorDelta->mX;
-                    deltaf.y = minRangef.mMin.y + minRangef.mRange.y * floorDelta->mY;
-                    deltaf.z = minRangef.mMin.z + minRangef.mRange.z * floorDelta->mZ;
+                    floorDelta->UnQuantize(minRangef, deltaf);
                     mPrevQs[ibone].x += deltaf.x;
                     mPrevQs[ibone].y += deltaf.y;
                     mPrevQs[ibone].z += deltaf.z;
@@ -400,9 +365,7 @@ bool FnDeltaQ::EvalSQTMasked(float currTime, const BoneMask *boneMask, float *sq
                     DeltaQMinRangef minRangef;
 
                     mMinRanges[ibone].UnQuantize(minRangef);
-                    deltaf.x = minRangef.mMin.x + minRangef.mRange.x * floorDelta->mX;
-                    deltaf.y = minRangef.mMin.y + minRangef.mRange.y * floorDelta->mY;
-                    deltaf.z = minRangef.mMin.z + minRangef.mRange.z * floorDelta->mZ;
+                    floorDelta->UnQuantize(minRangef, deltaf);
                     mPrevQs[ibone].x -= deltaf.x;
                     mPrevQs[ibone].y -= deltaf.y;
                     mPrevQs[ibone].z -= deltaf.z;
@@ -462,31 +425,10 @@ bool FnDeltaQ::EvalSQTMasked(float currTime, const BoneMask *boneMask, float *sq
             for (int ibone = 0; ibone < deltaQ->mNumBones; ibone++) {
                 if (boneMask->GetBone(boneIdxs[ibone])) {
                     UMath::Vector4 ceilq;
-                    float *prevQ = reinterpret_cast<float *>(&mPrevQs[ibone]);
-                    float *ceilQ = reinterpret_cast<float *>(&ceilq);
-                    float *out = GetOutputQuat(sqt, boneIdxs[ibone]);
+                    UMath::Vector4 &out = *reinterpret_cast<UMath::Vector4 *>(GetOutputQuat(sqt, boneIdxs[ibone]));
 
                     ceilPhys[ibone].UnQuantize(ceilq);
-                    if (prevQ[0] * ceilQ[0] + prevQ[1] * ceilQ[1] + prevQ[2] * ceilQ[2] + prevQ[3] * ceilQ[3] > 0.0f) {
-                        out[0] = scale * (ceilQ[0] - prevQ[0]) + prevQ[0];
-                        out[1] = scale * (ceilQ[1] - prevQ[1]) + prevQ[1];
-                        out[2] = scale * (ceilQ[2] - prevQ[2]) + prevQ[2];
-                        out[3] = scale * (ceilQ[3] - prevQ[3]) + prevQ[3];
-                    } else {
-                        out[0] = prevQ[0] - scale * (ceilQ[0] + prevQ[0]);
-                        out[1] = prevQ[1] - scale * (ceilQ[1] + prevQ[1]);
-                        out[2] = prevQ[2] - scale * (ceilQ[2] + prevQ[2]);
-                        out[3] = prevQ[3] - scale * (ceilQ[3] + prevQ[3]);
-                    }
-
-                    {
-                        float s = 1.0f / FastSqrt(out[0] * out[0] + out[1] * out[1] + out[2] * out[2] + out[3] * out[3]);
-
-                        out[0] *= s;
-                        out[1] *= s;
-                        out[2] *= s;
-                        out[3] *= s;
-                    }
+                    FastPolarizedQuatBlend(scale, mPrevQs[ibone], ceilq, out);
                 }
             }
         } else {
@@ -494,42 +436,17 @@ bool FnDeltaQ::EvalSQTMasked(float currTime, const BoneMask *boneMask, float *sq
 
             for (int ibone = 0; ibone < deltaQ->mNumBones; ibone++) {
                 if (boneMask->GetBone(boneIdxs[ibone])) {
-                    UMath::Vector4 deltaf;
                     UMath::Vector4 ceilq;
-                    float *prevQ = reinterpret_cast<float *>(&mPrevQs[ibone]);
-                    float *ceilQ = reinterpret_cast<float *>(&ceilq);
-                    float *out = GetOutputQuat(sqt, boneIdxs[ibone]);
+                    UMath::Vector4 &out = *reinterpret_cast<UMath::Vector4 *>(GetOutputQuat(sqt, boneIdxs[ibone]));
                     DeltaQMinRangef minRangef;
 
                     mMinRanges[ibone].UnQuantize(minRangef);
-                    deltaf.x = minRangef.mMin.x + minRangef.mRange.x * ceilDelta->mX;
-                    deltaf.y = minRangef.mMin.y + minRangef.mRange.y * ceilDelta->mY;
-                    deltaf.z = minRangef.mMin.z + minRangef.mRange.z * ceilDelta->mZ;
-                    ceilq.x = mPrevQs[ibone].x + deltaf.x;
-                    ceilq.y = mPrevQs[ibone].y + deltaf.y;
-                    ceilq.z = mPrevQs[ibone].z + deltaf.z;
+                    ceilDelta->UnQuantize(minRangef, ceilq);
+                    ceilq.x += mPrevQs[ibone].x;
+                    ceilq.y += mPrevQs[ibone].y;
+                    ceilq.z += mPrevQs[ibone].z;
                     DeltaQRecoverW(ceilDelta->mW, ceilq);
-
-                    if (prevQ[0] * ceilQ[0] + prevQ[1] * ceilQ[1] + prevQ[2] * ceilQ[2] + prevQ[3] * ceilQ[3] > 0.0f) {
-                        out[0] = scale * (ceilQ[0] - prevQ[0]) + prevQ[0];
-                        out[1] = scale * (ceilQ[1] - prevQ[1]) + prevQ[1];
-                        out[2] = scale * (ceilQ[2] - prevQ[2]) + prevQ[2];
-                        out[3] = scale * (ceilQ[3] - prevQ[3]) + prevQ[3];
-                    } else {
-                        out[0] = prevQ[0] - scale * (ceilQ[0] + prevQ[0]);
-                        out[1] = prevQ[1] - scale * (ceilQ[1] + prevQ[1]);
-                        out[2] = prevQ[2] - scale * (ceilQ[2] + prevQ[2]);
-                        out[3] = prevQ[3] - scale * (ceilQ[3] + prevQ[3]);
-                    }
-
-                    {
-                        float s = 1.0f / FastSqrt(out[0] * out[0] + out[1] * out[1] + out[2] * out[2] + out[3] * out[3]);
-
-                        out[0] *= s;
-                        out[1] *= s;
-                        out[2] *= s;
-                        out[3] *= s;
-                    }
+                    FastPolarizedQuatBlend(scale, mPrevQs[ibone], ceilq, out);
                 }
                 ceilDelta++;
             }
