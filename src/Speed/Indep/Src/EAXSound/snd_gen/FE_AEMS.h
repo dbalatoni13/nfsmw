@@ -128,9 +128,7 @@ struct PlayCommonSample {
         Csis::System::Free(ptr);
     }
 
-    PlayCommonSample(int id, int volume, int pitch, int azimuth)
-        : mpClass(nullptr)
-    {
+    PlayCommonSample(int id, int volume, int pitch, int azimuth) {
         SetId(id);
         SetVolume(volume);
         SetPitch(pitch);
@@ -230,9 +228,7 @@ struct PlayFrontEndSample {
         Csis::System::Free(ptr);
     }
 
-    PlayFrontEndSample(int id, int volume, int pitch, int azimuth)
-        : mpClass(nullptr)
-    {
+    PlayFrontEndSample(int id, int volume, int pitch, int azimuth) {
         SetId(id);
         SetVolume(volume);
         SetPitch(pitch);
@@ -322,9 +318,7 @@ struct PlayFrontEndSample_RS {
         Csis::System::Free(ptr);
     }
 
-    PlayFrontEndSample_RS(int id, int volume, int pitch, int azimuth)
-        : mpClass(nullptr)
-    {
+    PlayFrontEndSample_RS(int id, int volume, int pitch, int azimuth) {
         SetId(id);
         SetVolume(volume);
         SetPitch(pitch);

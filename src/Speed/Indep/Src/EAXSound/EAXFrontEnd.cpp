@@ -158,39 +158,34 @@ void EAXCommon::Initialize() {}
 int EAXCommon::Play(eMenuSoundTriggers etrigger) {
     int nvol;
 
-    if (IsSoundEnabled != 0) {
-        if (Debug_Common_FE_OFF != 0) {
-            return -1;
-        }
+    if (!IsSoundEnabled) return -1;
+    if (Debug_Common_FE_OFF) return -1;
 
-        if (m_pSFXOBJ_FEHUD) {
-            if (m_pSFXOBJ_FEHUD->GetOutputBlockPtr() == nullptr) {
-                return 0;
-            }
+    SndBase *snd = m_pSFXOBJ_FEHUD;
+    if (!snd) return -1;
+    if (!snd->GetOutputBlockPtr()) return 0;
 
-            nvol = m_pSFXOBJ_FEHUD->GetDMixOutput(1, DMX_VOL);
-            if (-1.0f < g_SliderValue) {
-                int CurSliderVol = bClamp(static_cast<int>(g_SliderValue * 32767.0f), 0, 0x7FFF);
+    nvol = snd->GetDMixOutput(1, DMX_VOL);
+    if (-1.0f < g_SliderValue) {
+        int CurSliderVol = static_cast<int>(g_SliderValue * 32767.0f);
+        if (CurSliderVol < 0) CurSliderVol = 0;
+        if (CurSliderVol > 0x7FFF) CurSliderVol = 0x7FFF;
 
-                g_SliderValue = -1.0f;
-                nvol = nvol * CurSliderVol >> 15;
-            }
-
-            if (etrigger == UISND_ENTER_TRIGGER) {
-                m_pSFXOBJ_FEHUD->SetDMIX_Input(4, 0x7FFF);
-            }
-
-            g_pEAXSound->SetCsisName(m_pSFXOBJ_FEHUD);
-            m_pPlayCommonSampleHandle = new PlayCommonSample(static_cast<int>(etrigger), nvol, 0x1000, 0);
-            if (m_pPlayCommonSampleHandle) {
-                delete m_pPlayCommonSampleHandle;
-            }
-            m_pPlayCommonSampleHandle = nullptr;
-            return 0;
-        }
+        g_SliderValue = -1.0f;
+        nvol = nvol * CurSliderVol >> 15;
     }
 
-    return -1;
+    if (etrigger == UISND_ENTER_TRIGGER) {
+        snd->SetDMIX_Input(4, 0x7FFF);
+    }
+
+    g_pEAXSound->SetCsisName(snd);
+    m_pPlayCommonSampleHandle = new PlayCommonSample(static_cast<int>(etrigger), nvol, 0x1000, 0);
+    if (m_pPlayCommonSampleHandle) {
+        delete m_pPlayCommonSampleHandle;
+    }
+    m_pPlayCommonSampleHandle = nullptr;
+    return 0;
 }
 
 void EAXCommon::Stop(eMenuSoundTriggers etrigger) {}
