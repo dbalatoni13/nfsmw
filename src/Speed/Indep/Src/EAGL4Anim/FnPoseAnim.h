@@ -32,9 +32,6 @@ class FnPoseAnim : public FnAnimMemoryMap {
         return ptr;
     }
 
-    // Overrides: FnAnimSuper
-    ~FnPoseAnim() override;
-
     static void PatchVtbl(FnPoseAnim *poseAnim) {}
 
     FnPoseAnim();

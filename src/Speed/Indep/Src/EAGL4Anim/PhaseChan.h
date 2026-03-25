@@ -152,9 +152,6 @@ class FnPhaseChan : public FnAnimMemoryMap {
         mType = AnimTypeId::ANIM_PHASE;
     }
 
-    // Overrides: FnAnimSuper
-    ~FnPhaseChan() override {}
-
     // Overrides: FnAnim
     bool GetLength(float &timeLength) const override;
 

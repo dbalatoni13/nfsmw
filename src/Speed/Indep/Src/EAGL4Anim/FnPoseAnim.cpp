@@ -12,8 +12,6 @@ FnPoseAnim::FnPoseAnim() {
     mPrevKey = 0;
 }
 
-FnPoseAnim::~FnPoseAnim() {}
-
 void FnPoseAnim::SetAnimMemoryMap(AnimMemoryMap *anim) {
     mpAnim = anim;
 }
