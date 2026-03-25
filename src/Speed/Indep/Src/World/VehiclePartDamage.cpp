@@ -46,7 +46,7 @@ struct VehicleDamagePart {
     float mAnimationPivot[3];
     bMatrix4 mMatrix;
     int mAttached;
-    int mHidden;
+    bool mHidden;
 
     static void operator delete(void *ptr) {
         bFree(VehicleDamagePartSlotPool, ptr);
@@ -56,6 +56,14 @@ struct VehicleDamagePart {
         mAnimationPivot[0] = x;
         mAnimationPivot[1] = y;
         mAnimationPivot[2] = z;
+    }
+
+    inline bool IsHidden() const {
+        return mHidden;
+    }
+
+    inline bMatrix4 *GetMatrix() {
+        return &mMatrix;
     }
 
     VehicleDamagePart(CarRenderInfo *carRenderInfo, int slotId);
@@ -336,19 +344,17 @@ void VehiclePartDamageBehaviour::ApplyDamage() {
 }
 
 bMatrix4 *VehiclePartDamageBehaviour::GetPartMatrix(unsigned int slotId) {
-    if (slotId > 0x17) {
-        return 0;
+    if (slotId <= 0x17) {
+        return mDamagePartList[slotId]->GetMatrix();
     }
-
-    return reinterpret_cast<bMatrix4 *>(reinterpret_cast<unsigned char *>(this->mDamagePartList[slotId]) + 0x1C);
+    return nullptr;
 }
 
 bool VehiclePartDamageBehaviour::IsPartHidden(unsigned int slotId) {
-    if (slotId > 0x16) {
-        return true;
+    if (slotId <= 0x16) {
+        return mDamagePartList[slotId]->IsHidden();
     }
-
-    return *reinterpret_cast<int *>(reinterpret_cast<unsigned char *>(this->mDamagePartList[slotId]) + 0x60) != 0;
+    return true;
 }
 
 void VehiclePartDamageBehaviour::HidePart(unsigned int slotId) {

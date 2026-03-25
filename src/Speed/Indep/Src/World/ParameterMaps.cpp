@@ -156,11 +156,19 @@ void *ParameterMapLayer::GetParameterData(float x, float y) {
 }
 
 float ParameterMapLayer::GetDataFloat(int field_index, void *parameter_data) {
-    return *reinterpret_cast<float *>(reinterpret_cast<char *>(parameter_data) + this->GetFieldOffset(field_index));
+    float *data = reinterpret_cast<float *>(static_cast<char *>(parameter_data) + FieldOffsets[field_index]);
+    if (!data) {
+        return 0.0f;
+    }
+    return *data;
 }
 
 int ParameterMapLayer::GetDataInt(int field_index, void *parameter_data) {
-    return *reinterpret_cast<int *>(reinterpret_cast<char *>(parameter_data) + this->GetFieldOffset(field_index));
+    int *data = reinterpret_cast<int *>(static_cast<char *>(parameter_data) + FieldOffsets[field_index]);
+    if (!data) {
+        return 0;
+    }
+    return *data;
 }
 
 int ParameterMapLayer::GetParameterSetIndexFromMapData(float x, float y) {
