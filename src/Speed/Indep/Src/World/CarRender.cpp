@@ -2396,35 +2396,42 @@ float coplightflicker(float time, int offset) {
 }
 
 float coplightflicker2(float time, int whichColor, int flarecount) {
-    int counter = counter_31669 + 1;
+    int counter;
     float offset;
+    float a;
     float t;
 
+    counter = counter_31669 + 1;
     counter_31669 = counter % copModulo;
 
-    if (whichColor == 1) {
-        offset = copoffsetb;
-    } else if (whichColor > 1) {
-        if (whichColor == 2) {
-            offset = copoffsetw;
-        }
-    } else if (whichColor == 0) {
+    switch (whichColor) {
+    case 0:
         offset = copoffsetr;
+        break;
+    case 1:
+        offset = copoffsetb;
+        break;
+    case 2:
+        offset = copoffsetw;
+        break;
     }
 
     t = bCos(time * 24.0f);
     t *= t;
 
     if (whichColor == 2) {
-        return t * coplightflicker(time, flarecount);
+        a = t * coplightflicker(time, flarecount);
+        return a;
     }
 
     float c = bCos(time * 8.0f + offset);
     if (c > 0.2f) {
-        return t;
+        a = t;
+        return a;
     }
 
-    return 0.0f;
+    a = 0.0f;
+    return a;
 }
 
 float TireFace(bMatrix4 *matrix, eView *view) {

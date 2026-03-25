@@ -896,16 +896,20 @@ void CarRenderConn::UpdateBodyAnimation(float dT, const RenderConn::Pkt_Car_Serv
         dest_angle_y = 0.0f;
     }
 
-    if (this->mExtraBodyAngle.x < dest_angle_x) {
-        this->mExtraBodyAngle.x = UMath::Min(this->mExtraBodyAngle.x + rate_roll, dest_angle_x);
+    if (dest_angle_x > this->mExtraBodyAngle.x) {
+        this->mExtraBodyAngle.x += rate_roll;
+        this->mExtraBodyAngle.x = UMath::Min(this->mExtraBodyAngle.x, dest_angle_x);
     } else if (dest_angle_x < this->mExtraBodyAngle.x) {
-        this->mExtraBodyAngle.x = UMath::Max(this->mExtraBodyAngle.x - rate_roll, dest_angle_x);
+        this->mExtraBodyAngle.x -= rate_roll;
+        this->mExtraBodyAngle.x = UMath::Max(this->mExtraBodyAngle.x, dest_angle_x);
     }
 
-    if (this->mExtraBodyAngle.y < dest_angle_y) {
-        this->mExtraBodyAngle.y = UMath::Min(this->mExtraBodyAngle.y + rate_pitch, dest_angle_y);
+    if (dest_angle_y > this->mExtraBodyAngle.y) {
+        this->mExtraBodyAngle.y += rate_pitch;
+        this->mExtraBodyAngle.y = UMath::Min(this->mExtraBodyAngle.y, dest_angle_y);
     } else if (dest_angle_y < this->mExtraBodyAngle.y) {
-        this->mExtraBodyAngle.y = UMath::Max(this->mExtraBodyAngle.y - rate_pitch, dest_angle_y);
+        this->mExtraBodyAngle.y -= rate_pitch;
+        this->mExtraBodyAngle.y = UMath::Max(this->mExtraBodyAngle.y, dest_angle_y);
     }
 }
 
