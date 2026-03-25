@@ -186,7 +186,7 @@ extern bVector3 hullVertArray2[16] asm("hullVertArray2");
 extern bVector3 hullVertArray3[48] asm("hullVertArray3");
 extern bVector4 PointCloud[16] asm("PointCloud");
 extern bVector3 *P[17] asm("P");
-extern int ch2d(bVector3 **P, int n) asm("ch2d__FPPfi");
+int ch2d(float **P, int n);
 extern float FancyCarShadowEdgeMult;
 extern float car_elevation;
 extern float car_elevation_scale;
@@ -3420,7 +3420,7 @@ void CarRenderInfo::convex_hull(bVector3 *p, const WCollider *wcoll, int &n, flo
         P[i] = &p[i];
     }
 
-    n = ch2d(P, n);
+    n = ch2d(reinterpret_cast<float **>(P), n);
     if (wcoll != nullptr) {
         bVector3 *vec;
 
@@ -3488,6 +3488,36 @@ void CarRenderInfo::convex_hull(bVector3 *p, const WCollider *wcoll, int &n, flo
 
         n -= dec;
     }
+}
+
+static inline bool ccw(float **P, int i, int j, int k) {
+    float d = P[k][1] - P[j][1];
+    float c = P[k][0] - P[j][0];
+    float b = P[i][1] - P[j][1];
+    float a = P[i][0] - P[j][0];
+    return a * d - b * c > 0.0f;
+}
+
+int make_chain(float **V, int n, int (*cmp)(const void *, const void *)) {
+    int s;
+    qsort(V, n, 4, cmp);
+    s = 1;
+    for (int i = 2; i < n; i++) {
+        int j;
+        for (j = s; j >= 1 && !ccw(V, j - 1, j, i); j--) {
+        }
+        s = j + 1;
+        float *t = V[s];
+        V[s] = V[i];
+        V[i] = t;
+    }
+    return s;
+}
+
+int ch2d(float **P, int n) {
+    int u = make_chain(P, n, cmpl);
+    P[n] = P[0];
+    return u + make_chain(P + u, n - u + 1, cmph);
 }
 
 void CarRenderInfo::DrawKeithProjShadow(eView *view, const bVector3 *position, bMatrix4 *localWorld, bMatrix4 *worldLocal, bMatrix4 *biasedIdentity,
