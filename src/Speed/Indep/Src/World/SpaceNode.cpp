@@ -89,43 +89,19 @@ void SpaceNode::ReallySetDirty() {
 }
 
 void SpaceNode::Update() {
-    bVector3 world_velocity;
+    bVector3 rotated_velocity;
 
-    if (this->Parent == 0) {
-        PSMTX44Copy(*reinterpret_cast<const Mtx44 *>(&this->LocalMatrix), *reinterpret_cast<Mtx44 *>(&this->WorldMatrix));
-        world_velocity = this->LocalVelocity;
+    if (Parent) {
+        bMulMatrix(&WorldMatrix, Parent->GetWorldMatrix(), &LocalMatrix);
+        bMulMatrix(&rotated_velocity, Parent->GetWorldMatrix(), &LocalVelocity);
+        rotated_velocity -= *reinterpret_cast<bVector3 *>(&Parent->GetWorldMatrix()->v3);
+        WorldVelocity = rotated_velocity + *Parent->GetWorldVelocity();
     } else {
-        if (this->Parent->Dirty != 0) {
-            this->Parent->Update();
-        }
-
-        bMulMatrix(&this->WorldMatrix, &this->Parent->WorldMatrix, &this->LocalMatrix);
-
-        if (this->Parent->Dirty != 0) {
-            this->Parent->Update();
-        }
-
-        bMulMatrix(&world_velocity, &this->Parent->WorldMatrix, &this->LocalVelocity);
-
-        if (this->Parent->Dirty != 0) {
-            this->Parent->Update();
-        }
-
-        world_velocity.x -= this->Parent->WorldMatrix.v3.x;
-        world_velocity.y -= this->Parent->WorldMatrix.v3.y;
-        world_velocity.z -= this->Parent->WorldMatrix.v3.z;
-
-        if (this->Parent->Dirty != 0) {
-            this->Parent->Update();
-        }
-
-        world_velocity.x += this->Parent->WorldVelocity.x;
-        world_velocity.y += this->Parent->WorldVelocity.y;
-        world_velocity.z += this->Parent->WorldVelocity.z;
+        PSMTX44Copy(*reinterpret_cast<const Mtx44 *>(&LocalMatrix), *reinterpret_cast<Mtx44 *>(&WorldMatrix));
+        WorldVelocity = LocalVelocity;
     }
 
-    this->WorldVelocity = world_velocity;
-    this->Dirty = 0;
+    Dirty = 0;
 }
 
 SpaceNode *CreateSpaceNode(SpaceNode *parent) {

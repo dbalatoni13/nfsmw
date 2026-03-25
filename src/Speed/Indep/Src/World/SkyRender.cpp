@@ -332,39 +332,26 @@ void RefreshCurrentSkyTextures() {
 
 void InitSkyHash(void (*callback)(int), int callback_param) {
     if (bSkyTexturesLoaded == 0) {
-        eTimeOfDay time_of_day;
+        eTimeOfDay tod;
 
         bSkyTexturesLoaded = 1;
         UserSkyLoadCallback = callback;
         UserSkyLoadCallbackParam = callback_param;
-        time_of_day = GetCurrentTimeOfDay();
+        tod = GetCurrentTimeOfDay();
         bMemSet(SkyHash, 0, 0x28);
         BaseSkyHash[0] = bStringHash(lbl_8040B110);
         BaseSkyHash[1] = bStringHash(lbl_8040B128);
 
-        if (time_of_day == eTOD_MIDDAY) {
-            SkyHash[0] = bStringHash(lbl_8040B13C);
-            SkyHash[1] = bStringHash(lbl_8040B128);
-            SkyHash[2] = bStringHash(lbl_8040B110);
-            SkyHash[3] = bStringHash(lbl_8040B128);
-            SkyHash[4] = bStringHash(lbl_8040B154);
-            SkyHash[5] = bStringHash(lbl_8040B170);
-            SkyHash[6] = bStringHash(lbl_8040B198);
-            SkyHash[7] = bStringHash(lbl_8040B198 + 0x18);
-            SkyHash[8] = bStringHash(lbl_8040B198 + 0x30);
-            SkyHash[9] = bStringHash(lbl_8040B198 + 0x48);
-        } else {
-            SkyHash[0] = bStringHash(lbl_8040B198 + 0x60);
-            SkyHash[1] = bStringHash(lbl_8040B198 + 0x78);
-            SkyHash[2] = bStringHash(lbl_8040B198 + 0x90);
-            SkyHash[3] = bStringHash(lbl_8040B198 + 0x78);
-            SkyHash[4] = bStringHash(lbl_8040B198 + 0xA8);
-            SkyHash[5] = bStringHash(lbl_8040B198 + 0xC0);
-            SkyHash[6] = bStringHash(lbl_8040B198 + 0xC0);
-            SkyHash[7] = bStringHash(lbl_8040B198 + 0xC0);
-            SkyHash[8] = bStringHash(lbl_8040B198 + 0xC0);
-            SkyHash[9] = bStringHash(lbl_8040B198 + 0xC0);
-        }
+        SkyHash[0] = bStringHash(lbl_8040B13C);
+        SkyHash[1] = bStringHash(lbl_8040B128);
+        SkyHash[2] = bStringHash(lbl_8040B110);
+        SkyHash[3] = bStringHash(lbl_8040B128);
+        SkyHash[4] = 0;
+        SkyHash[5] = 0;
+        SkyHash[6] = bStringHash(lbl_8040B154);
+        SkyHash[7] = bStringHash(lbl_8040B170);
+        SkyHash[8] = bStringHash(lbl_8040B198);
+        SkyHash[9] = bStringHash(lbl_8040B198);
 
         eLoadStreamingTexture(SkyHash, 10, SkyLoadCallback, 0, 0);
     }
