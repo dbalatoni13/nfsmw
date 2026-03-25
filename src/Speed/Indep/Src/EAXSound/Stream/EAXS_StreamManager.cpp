@@ -12,13 +12,20 @@ EAXS_StreamManager *gpEAXS_StrmMgr = nullptr;
 
 bool IsWorldDataStreaming(unsigned int strmhandle) {
     bool bStreamBlock = false;
-    unsigned int poolStart = reinterpret_cast<unsigned int>(gAudioMemoryManager.GetMemPoolMem());
-    unsigned int poolEnd = poolStart + static_cast<unsigned int>(gAudioMemoryManager.GetMemoryPoolSize());
-    int loadingPhase = TheTrackStreamer.GetLoadingPhase();
-
-    if ((strmhandle == 0 || (poolStart < strmhandle && strmhandle < poolEnd)) &&
-        (TheCarLoader.IsLoadingInProgress() != 0 || loadingPhase != 0)) {
+    if (strmhandle != 0) {
+        unsigned int poolStart = reinterpret_cast<unsigned int>(gAudioMemoryManager.GetMemPoolMem());
+        unsigned int poolEnd = poolStart + static_cast<unsigned int>(gAudioMemoryManager.GetMemoryPoolSize());
+        if (strmhandle <= poolStart || strmhandle >= poolEnd) {
+            return bStreamBlock;
+        }
+    }
+    if (TheCarLoader.IsLoadingInProgress() != 0) {
         bStreamBlock = true;
+    } else {
+        bool isStreaming = TheTrackStreamer.GetLoadingPhase() != 0;
+        if (isStreaming) {
+            bStreamBlock = true;
+        }
     }
     return bStreamBlock;
 }

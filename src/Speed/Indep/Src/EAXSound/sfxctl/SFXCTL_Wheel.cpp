@@ -96,16 +96,17 @@ void SFXCTL_Wheel::UpdateParams(float t) {
 }
 
 bVector3 *SFXCTL_Wheel::GetWheelPos(int wheelID, int numtires) {
-    if (numtires == 2) {
+    switch (numtires) {
+    case 2:
         if (wheelID == 0) {
             return &v3NewPosLeft;
         }
         return &v3NewPosRight;
+    case 1:
+        return reinterpret_cast<bVector3 *>(&GetPhysCar()->mMatrix.v3);
+    default:
+        return reinterpret_cast<bVector3 *>(&GetPhysCar()->mMatrix.v3);
     }
-    if (numtires == 1) {
-        return &v3NewPosLeft;
-    }
-    return &v3NewPosLeft;
 }
 
 void SFXCTL_Wheel::GenerateWheelPosition() {
