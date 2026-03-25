@@ -14,11 +14,13 @@ extern Timer RealTimer;
 extern float WorldTimeSeconds;
 void SetMiddleGrayValue(float val) {}
 
-float GetValueFromSpline(float t, bMatrix4 *curve) {
-    float inv_t = 1.0f - t;
+float GetValueFromSpline(float value, bMatrix4 *curve) {
+    float tm1 = 1.0f - value;
+    float tm13 = tm1 * tm1 * tm1;
+    float t3 = value * value * value;
 
-    return inv_t * inv_t * inv_t * curve->v0.y + t * 3.0f * inv_t * inv_t * curve->v1.y +
-           t * t * 3.0f * inv_t * curve->v2.y + t * t * t * curve->v3.y;
+    return tm13 * curve->v0.y + value * (tm1 * 3.0f) * tm1 * curve->v1.y +
+           value * (value * 3.0f) * tm1 * curve->v2.y + t3 * curve->v3.y;
 }
 
 inline void VisualLookEffect::Reset() {
