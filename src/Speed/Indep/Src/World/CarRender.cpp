@@ -2398,8 +2398,9 @@ float coplightflicker(float time, int offset) {
 float coplightflicker2(float time, int whichColor, int flarecount) {
     float offset = 0.0f;
     float flicker;
+    int counter = counter_31669 + 1;
 
-    counter_31669 = (counter_31669 + 1) % copModulo;
+    counter_31669 = counter % copModulo;
 
     if (whichColor == 1) {
         offset = copoffsetb;
@@ -2409,14 +2410,14 @@ float coplightflicker2(float time, int whichColor, int flarecount) {
         offset = copoffsetw;
     }
 
-    flicker = bSin(time * 24.0f + 1.5707964f);
+    flicker = bCos(time * 24.0f);
     flicker *= flicker;
 
     if (whichColor == 2) {
         return flicker * coplightflicker(time, flarecount);
     }
 
-    if (bSin(time * 8.0f + offset + 1.5707964f) > 0.2f) {
+    if (bCos(time * 8.0f + offset) > 0.2f) {
         return flicker;
     }
 
