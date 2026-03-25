@@ -728,7 +728,7 @@ CarRenderInfo::CarRenderInfo(RideInfo *ride_info)
     float wheel_radius[4];
 
     bMemSet(&this->TheCarPartCuller, 0, sizeof(this->TheCarPartCuller));
-    this->mAttributes.Change(Attrib::FindCollectionWithDefault(Attrib::Gen::ecar::ClassKey(), Attrib::StringToLowerCaseKey(car_base_name)));
+    this->mAttributes.ChangeWithDefault(Attrib::StringToLowerCaseKey(car_base_name));
     *reinterpret_cast<unsigned int *>(&this->mMirrorLeftWheels) =
         static_cast<unsigned char>(this->mAttributes.WheelSpokeCount()) >> 7;
     bMemSet(&this->mDamageInfoCache, 0, 0x14);

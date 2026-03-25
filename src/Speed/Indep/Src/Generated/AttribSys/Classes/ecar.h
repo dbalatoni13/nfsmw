@@ -73,6 +73,10 @@ struct ecar : Instance {
         Change(FindCollection(ClassKey(), collectionkey));
     }
 
+    void ChangeWithDefault(Key collectionkey) {
+        Change(FindCollectionWithDefault(ClassKey(), collectionkey));
+    }
+
     static Key ClassKey() {
         return 0xa5b543b7;
     }
