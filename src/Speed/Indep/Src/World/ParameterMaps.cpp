@@ -346,10 +346,6 @@ int ParameterMapsManager::GetDataForLayer(unsigned int layer_name_hash, Paramete
     return 0;
 }
 
-int ParameterMapsManager::GetDataForLayer(const char *layer_name, ParameterAccessor *accessor, int warning_if_not_found) {
-    return this->GetDataForLayer(UCrc32(layer_name).GetValue(), accessor, warning_if_not_found);
-}
-
 int LoaderParameterMaps(bChunk *chunk) {
     bChunk *last_chunk = chunk->GetLastChunk();
     bChunk *current_chunk = chunk->GetFirstChunk();
@@ -373,8 +369,12 @@ int LoaderParameterMaps(bChunk *chunk) {
 }
 
 int UnloaderParameterMaps(bChunk *chunk) {
-    (void)chunk;
-    GetParameterMapsManager().UnloadAllLayers();
+    if (chunk->GetID() == 0x8003B600) {
+        DumpAutoParameterAccessorsList();
+        GetParameterMapsManager().UnloadAllLayers();
+        DumpAutoParameterAccessorsList();
+        return 1;
+    }
     return 0;
 }
 

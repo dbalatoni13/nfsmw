@@ -34,3 +34,7 @@ block_relocations:
 
 - source: .text:0x80047c1c
   end: .text:0x80047c28
+
+# UnloaderParameterMaps: chunk ID constant, not a relocation
+- source: .text:0x802E650C
+  end: .text:0x802E6514
