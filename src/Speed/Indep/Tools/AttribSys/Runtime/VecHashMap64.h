@@ -255,9 +255,7 @@ template <typename KeyType, typename T, typename Policy, bool Unk2, unsigned int
                 newMaxSearch = 0;
             }
             unsigned int searchLen = 1;
-            if (!Unk2) {
-                asm("" : : "r"(targetIndex));
-            }
+            asm("" : : "r"(targetIndex));
             if (!Unk2) {
                 newMaxSearch = 0;
             }
