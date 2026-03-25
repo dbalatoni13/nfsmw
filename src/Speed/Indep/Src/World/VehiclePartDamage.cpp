@@ -415,7 +415,7 @@ void VehiclePartDamageBehaviour::ManageGlassDamage() {
 }
 
 void VehiclePartDamageBehaviour::InitAnimationPivot(unsigned int slotId, const char * markerName) {
-    if (this->FindPositionMarker(markerName)) {
+    if (this->FindPositionMarker(markerName) != nullptr) {
         this->mDamagePartList[slotId]->SetPivot(0.0f, 0.0f, 0.0f);
     }
 }

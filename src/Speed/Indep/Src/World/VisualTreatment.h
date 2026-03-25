@@ -20,11 +20,12 @@ class VisualLookEffect {
     explicit VisualLookEffect(Attrib::Gen::visuallookeffect *attribEffect)
         : AttribEffect(attribEffect), //
           StartTime(0.0f), //
-          PulseLength(0.0f), //
-          UseWorldTime(1), //
-          StopIfHeatFalls(1), //
-          StopAfterLength(0)
-    {}
+          PulseLength(0.0f)
+    {
+        StopIfHeatFalls = 1;
+        StopAfterLength = 0;
+        UseWorldTime = 1;
+    }
 
     float Update(float heatMeter);
     void Reset();
@@ -64,11 +65,12 @@ class VisualLookEffectTarget {
 
   public:
     explicit VisualLookEffectTarget(Attrib::Gen::visuallookeffect *attribEffect)
-        : AttribEffect(attribEffect), //
-          StartWorldTime(0.0f), //
-          Current(0.0f), //
-          Target(0.0f)
-    {}
+        : AttribEffect(attribEffect)
+    {
+        Target = 0.0f;
+        Current = 0.0f;
+        StartWorldTime = 0.0f;
+    }
 
     void Reset();
     float Update();
