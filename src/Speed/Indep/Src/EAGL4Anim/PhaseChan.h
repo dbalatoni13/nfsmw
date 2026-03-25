@@ -6,6 +6,7 @@
 #endif
 
 #include "FnAnimMemoryMap.h"
+#include "eagl4supportdef.h"
 
 namespace EAGL4Anim {
 
@@ -29,7 +30,9 @@ struct PhaseChan : public AnimMemoryMap {
 
     // void *operator new(size_t size, const char *msg) {}
 
-    // void operator delete(void *ptr, size_t size) {}
+    void operator delete(void *ptr, size_t size) {
+        EAGL4Internal::EAGL4Free(ptr, size);
+    }
 
     // void *operator new[](size_t size) {}
 
