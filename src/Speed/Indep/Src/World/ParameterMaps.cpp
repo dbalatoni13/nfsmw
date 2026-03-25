@@ -35,10 +35,7 @@ ParameterMapLayer::ParameterMapLayer()
       QuadData16(0) {}
 
 ParameterMapLayer::~ParameterMapLayer() {
-    this->Unload();
-    while (!this->ParameterAccessors.IsEmpty()) {
-        delete this->ParameterAccessors.GetHead();
-    }
+    Unload();
 }
 
 void ParameterMapLayer::Load(bChunk **chunk) {
@@ -284,7 +281,10 @@ ParameterAccessor::ParameterAccessor(const char *layer_name)
 }
 
 ParameterAccessor::~ParameterAccessor() {
-    this->ClearLayer();
+    ClearLayer();
+    if (GetAutoParameterAccessors().IsInList(this)) {
+        GetAutoParameterAccessors().Remove(this);
+    }
 }
 
 void ParameterAccessor::SetLayer(ParameterMapLayer *layer) {

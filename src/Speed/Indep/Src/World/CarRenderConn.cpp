@@ -66,10 +66,10 @@ struct TireState : public bTNode<TireState> {
         void ResetGroup() {
             mGroup = 0;
             mEmitterKey = 0;
+            mMinVel = 0.0f;
             mNeedsLazyInit = true;
-            mMaxVel = 0.0f;
             mZeroParticleFrameCount = 0;
-            mMinVel = mMaxVel;
+            mMaxVel = 0.0f;
         }
 
         void FreeUpFX();
