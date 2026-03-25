@@ -172,76 +172,72 @@ int SkyInitModel(eModel *model, bMatrix4 *local_world, unsigned int scenery_name
     return 1;
 }
 
-void StuffSpecular(eView *view) {
-    bMatrix4 *cameraMatrix = view->GetCamera()->GetCameraMatrix();
-    bMatrix4 *matrix = reinterpret_cast<bMatrix4 *>(CurrentBufferPos);
-    bMatrix4 rotation;
-    float x = cameraMatrix->v3.x;
-    float y = cameraMatrix->v3.y;
-    float z = cameraMatrix->v3.z;
-    bVector3 toSun;
-    short angle;
-
-    if (CurrentBufferEnd <= CurrentBufferPos + sizeof(bMatrix4)) {
+static inline bMatrix4 *eFrameMallocMatrix(int num_matrices) {
+    unsigned char *address = CurrentBufferPos;
+    unsigned int size = num_matrices * sizeof(bMatrix4);
+    if (address + size >= CurrentBufferEnd) {
         FrameMallocFailed = 1;
-        FrameMallocFailAmount += sizeof(bMatrix4);
-        matrix = 0;
+        FrameMallocFailAmount += size;
+        address = 0;
     } else {
-        CurrentBufferPos += sizeof(bMatrix4);
+        CurrentBufferPos = address + size;
+    }
+    return reinterpret_cast<bMatrix4 *>(address);
+}
+
+void StuffSpecular(eView *view) {
+    ProfileNode profile_node("StuffSpecular", 0);
+    int view_id = view->GetID();
+    Camera *view_camera = view->GetCamera();
+    bVector3 CamPosWORLD(*view_camera->GetPosition());
+    bMatrix4 *SkydomeLocalWorld = eFrameMallocMatrix(1);
+
+    if (SkydomeLocalWorld != nullptr) {
+        eIdentity(SkydomeLocalWorld);
+        SkydomeLocalWorld->v3.x = CamPosWORLD.x;
+        SkydomeLocalWorld->v3.y = CamPosWORLD.y;
+        SkydomeLocalWorld->v3.z = CamPosWORLD.z;
     }
 
-    if (matrix != 0) {
-        PSMTX44Identity(*reinterpret_cast<Mtx44 *>(matrix));
-        matrix->v3.x = x;
-        matrix->v3.y = y;
-        matrix->v3.z = z;
+    if (view_id - 6U > 1) {
+        return;
+    }
 
-        if (view->GetID() - 6U < 2) {
-            GetSunPos(view, &SunPos.x, &SunPos.y, &SunPos.z);
-            SunPosY = lbl_8040B2A0;
-            matrix->v0.x *= lbl_8040B2A8;
-            matrix->v1.y *= lbl_8040B2A8;
-            matrix->v2.z = lbl_8040B2A4 * lbl_8040B2A8;
-            matrix->v3.z += lbl_8040B2AC;
+    GetSunPos(view, &SunPos.x, &SunPos.y, &SunPos.z);
+    SunPos.z = 0.0f;
+    SkydomeLocalWorld->v0.x *= lbl_8040B2A8;
+    SkydomeLocalWorld->v1.y *= lbl_8040B2A8;
+    SkydomeLocalWorld->v2.z = lbl_8040B2A4 * lbl_8040B2A8;
+    SkydomeLocalWorld->v3.z += lbl_8040B2AC;
 
-            toSun.x = SunPos.x - x;
-            toSun.y = SunPos.y - y;
-            toSun.z = lbl_8040B2A0;
-            bNormalize(&toSun, &toSun);
-
-            toSun.x = lbl_8040B2A0;
-            toSun.y = lbl_8040B2B0;
-            toSun.z = lbl_8040B2A0;
-            angle = 0x4000 - bASin(toSun.x);
-            if (toSun.x < lbl_8040B2A0) {
-                angle = -angle;
-            }
-
-            eCreateRotationZ(&rotation, angle + SpecularOffset);
-            eMulMatrix(matrix, &rotation, matrix);
-            Render(view, &SkySpecularModel, matrix, 0, 0, 0);
-
-            matrix = reinterpret_cast<bMatrix4 *>(CurrentBufferPos);
-            if (CurrentBufferEnd <= CurrentBufferPos + sizeof(bMatrix4)) {
-                FrameMallocFailed = 1;
-                FrameMallocFailAmount += sizeof(bMatrix4);
-                matrix = 0;
-            } else {
-                CurrentBufferPos += sizeof(bMatrix4);
-            }
-
-            if (matrix != 0) {
-                PSMTX44Identity(*reinterpret_cast<Mtx44 *>(matrix));
-                matrix->v3.x = x;
-                matrix->v3.y = y;
-                matrix->v0.x *= lbl_8040B2A8;
-                matrix->v1.y *= lbl_8040B2A8;
-                matrix->v2.z *= lbl_8040B2A8;
-                matrix->v3.z = z + lbl_8040B2B4;
-                eMulMatrix(matrix, &rotation, matrix);
-                Render(view, &SkySpecularModel, matrix, 0, 0, 0);
-            }
+    {
+        bVector3 MySunDir = SunPos - CamPosWORLD;
+        bNormalize(&MySunDir, &MySunDir);
+        bVector3 Ahead(0.0f, 1.0f, 0.0f);
+        float matCos = bDot(&MySunDir, &Ahead);
+        unsigned short matAng = bACos(matCos);
+        if (MySunDir.y < 0.0f) {
+            matAng = -matAng;
         }
+
+        bMatrix4 matmat;
+        bMatrix4 LocalRot;
+
+        eCreateRotationZ(&LocalRot, static_cast<unsigned short>(matAng + SpecularOffset));
+        eMulMatrix(SkydomeLocalWorld, &LocalRot, SkydomeLocalWorld);
+        Render(view, &SkySpecularModel, SkydomeLocalWorld, 0, 0, 0);
+
+        bMatrix4 *SkydomeLocalWorld2 = eFrameMallocMatrix(1);
+
+        eIdentity(SkydomeLocalWorld2);
+        SkydomeLocalWorld2->v3.x = CamPosWORLD.x;
+        SkydomeLocalWorld2->v3.y = CamPosWORLD.y;
+        SkydomeLocalWorld2->v0.x *= lbl_8040B2A8;
+        SkydomeLocalWorld2->v1.y *= lbl_8040B2A8;
+        SkydomeLocalWorld2->v2.z *= lbl_8040B2A8;
+        SkydomeLocalWorld2->v3.z = CamPosWORLD.z + lbl_8040B2B4;
+        eMulMatrix(SkydomeLocalWorld2, &LocalRot, SkydomeLocalWorld2);
+        Render(view, &SkySpecularModel, SkydomeLocalWorld2, 0, 0, 0);
     }
 }
 
