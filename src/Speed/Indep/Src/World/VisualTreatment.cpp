@@ -122,23 +122,11 @@ void IVisualTreatment::TriggerPulse(float length) {
 }
 
 void IVisualTreatment::SetNosEngaged(bool isNosEngaged) {
-    float target;
-
     if (isNosEngaged) {
-        this->NosRadialBlur->Current = 1.0f;
-        target = 1.0f;
-        this->NosRadialBlur->Target = target;
-        this->NosRadialBlur->StartWorldTime = 0.0f;
-    } else {
-        target = 0.0f;
+        NosRadialBlur->SetCurrent(1.0f);
     }
 
-    if (this->NosRadialBlur->Target == target) {
-        return;
-    }
-
-    this->NosRadialBlur->Target = target;
-    this->NosRadialBlur->StartWorldTime = WorldTimeSeconds;
+    NosRadialBlur->SetTarget(isNosEngaged ? 1.0f : 0.0f);
 }
 
 void IVisualTreatment::SetPursuitBreakerTarget(float blendTarget) {

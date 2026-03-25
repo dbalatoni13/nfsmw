@@ -128,9 +128,11 @@ void FlushFromSkinCompositeCache(unsigned int texture_name_hash) {
 
 int IsInSkinCompositeCache(SkinCompositeParams *skin_composite_params) {
     SkinCompositeParams *cache_params = GetSkinCompositeParams(skin_composite_params->DestTexture->NameHash);
+    bool match;
 
-    if (cache_params != 0 && cache_params->DestTexture != 0) {
-        return CompareCompositeParams(cache_params, skin_composite_params);
+    if (cache_params) {
+        match = CompareCompositeParams(cache_params, skin_composite_params);
+        return match;
     }
 
     return 0;

@@ -11,6 +11,8 @@
 #include "Speed/Indep/Src/Misc/Timer.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
+extern float WorldTimeSeconds;
+
 class VisualLookEffect {
     friend class IVisualTreatment;
 
@@ -70,8 +72,18 @@ class VisualLookEffectTarget {
 
     void Reset();
     float Update();
-    void SetTarget(float target);
-    void SetCurrent(float value);
+    void SetTarget(float target) {
+        if (this->Target == target) {
+            return;
+        }
+        this->Target = target;
+        this->StartWorldTime = WorldTimeSeconds;
+    }
+    void SetCurrent(float value) {
+        this->Current = value;
+        this->Target = value;
+        this->StartWorldTime = 0.0f;
+    }
 
     Attrib::Gen::visuallookeffect *GetAttrib() {
         return this->AttribEffect;
