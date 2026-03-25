@@ -31,8 +31,6 @@
 #include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
-IDragEngine::~IDragEngine() {}
-IRaceEngine::~IRaceEngine() {}
 IInductable::~IInductable() {}
 ITiptronic::~ITiptronic() {}
 HINTERFACE IDragTransmission::_IHandle() {

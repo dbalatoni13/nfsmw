@@ -57,7 +57,7 @@ class IDragEngine : public UTL::COM::IUnknown {
 
     IDragEngine(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
 
-    virtual ~IDragEngine();
+    virtual ~IDragEngine() {}
 
   public:
     virtual float GetOverRev() const = 0;
@@ -70,7 +70,7 @@ class IRaceEngine : public UTL::COM::IUnknown {
 
     IRaceEngine(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
 
-    virtual ~IRaceEngine();
+    virtual ~IRaceEngine() {}
 
   public:
     virtual float GetPerfectLaunchRange(float &range) = 0;
