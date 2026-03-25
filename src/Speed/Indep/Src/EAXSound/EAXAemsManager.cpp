@@ -322,16 +322,18 @@ EAXAemsManager::EAXAemsManager() {
 }
 
 EAXAemsManager::~EAXAemsManager() {
-    int n = 0;
-    int numEvtSysLoaded = m_NumEvtSysLoaded;
-    while (n < numEvtSysLoaded) {
-        gAudioMemoryManager.FreeMemory(m_pEvtSystems[n]);
-        n++;
+    m_pEvtSystems.clear();
+
+    if (m_AsyncBuffLocation == TMP_ALLOC_AUDIO) {
+        gAudioMemoryManager.FreeMemory(m_pAsyncBuff);
+    } else if (m_AsyncBuffLocation == TMP_ALLOC_MAIN) {
+        bFree(m_pAsyncBuff);
+    } else if (m_AsyncBuffLocation == TMP_ALLOC_TRACKSTREAMER) {
+        TheTrackStreamer.FreeUserMemory(m_pAsyncBuff);
     }
 
-    ClearSndAssetQueue(mWaitForResolve);
-    mPFBankSlot.DestroySlots();
-    mBankSlots.DestroySlots();
+    m_pCurLoadSDLP = nullptr;
+    m_pAsyncBuff = nullptr;
 }
 
 void EAXAemsManager::Init() {
