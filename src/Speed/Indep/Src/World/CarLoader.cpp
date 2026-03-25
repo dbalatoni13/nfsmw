@@ -1849,8 +1849,8 @@ int CarLoader::LoadTexturePack(LoadedTexturePack *loaded_texture_pack, int use_m
     int memory_pool_num = 0;
 
     if (use_memory_pool != 0) {
-        CarLoader_MakeSpaceInCarMemoryPool(this, loaded_texture_pack->MaxHeaderSize, 0, true);
         memory_pool_num = CarLoaderMemoryPoolNumber;
+        CarLoader_MakeSpaceInCarMemoryPool(this, loaded_texture_pack->MaxHeaderSize, 0, true);
     }
 
     this->LoadingInProgress = 1;
@@ -2491,12 +2491,12 @@ void CarLoader::CompositeSkin(LoadedSkin *loaded_skin) {
         if (this->LoadingMode == MODE_IN_GAME) {
             int required_size = CarInfo_GetMaxCompositingBufferSize();
 
-            if (bCountFreeMemory(CarLoaderMemoryPoolNumber) < required_size) {
+            if (required_size > bCountFreeMemory(CarLoaderMemoryPoolNumber)) {
                 do {
-                    if (required_size <= bCountFreeMemory(CarLoaderMemoryPoolNumber)) {
+                    if (!this->RemoveSomethingFromCarMemoryPool(false)) {
                         break;
                     }
-                } while (this->RemoveSomethingFromCarMemoryPool(false) != 0);
+                } while (required_size > bCountFreeMemory(CarLoaderMemoryPoolNumber));
 
                 this->DefragmentPool();
             }
