@@ -91,11 +91,11 @@ bool FnDeltaQ::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask) {
     if (boneMask) {
         return EvalSQTMasked(currTime, boneMask, sqt);
     }
-    DeltaQ *deltaQ = reinterpret_cast<DeltaQ *>(mpAnim);
 
     if (!mBins) {
         InitBuffersAsRequired();
     }
+    DeltaQ *deltaQ = reinterpret_cast<DeltaQ *>(mpAnim);
     int floorTime = FloatToInt(currTime);
     int floorKey;
 
