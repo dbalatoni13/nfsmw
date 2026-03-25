@@ -102,6 +102,7 @@ class LoadedCar : public bTNode<LoadedCar> {
   public:
     LoadedCar(RideInfo *ride_info, int in_front_end, int is_two_player);
     int GetModelHashes(unsigned int *model_hashes, int max_model_hashes);
+    int ShouldWeStream();
 
     CarType Type;                      // offset 0x8, size 0x4
     struct RideInfo *pRideInfo;        // offset 0xC, size 0x4

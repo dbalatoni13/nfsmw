@@ -338,6 +338,16 @@ inline int LoadedSkin::IsLoaded() {
     return this->LoadStatePerm == CARLOADSTATE_LOADED && this->LoadStateTemp == CARLOADSTATE_LOADED && this->DoneComposite != 0;
 }
 
+inline int LoadedCar::ShouldWeStream() {
+    int should_stream = 1;
+
+    if (CarTypeInfoArray[this->Type].GetCarUsageType() == 2) {
+        should_stream = 0;
+    }
+
+    return should_stream;
+}
+
 void CarLoader_UnallocateSkinLayers(CarLoader *car_loader, LoadedSkinLayer **loaded_skin_layers, int num_layers)
     asm("UnallocateSkinLayers__9CarLoaderPP15LoadedSkinLayeri");
 int CarLoader_MakeSpaceInCarMemoryPool(CarLoader *car_loader, int required_size, int max_allocations, bool stream_textures)
@@ -753,11 +763,11 @@ int CarLoader::UnloadSolidPack(LoadedSolidPack *loaded_solid_pack) {
 }
 
 int CarLoader::UnloadCar(LoadedCar *loaded_car) {
-    if (loaded_car->LoadState == CARLOADSTATE_LOADED && CarTypeInfoArray[loaded_car->Type].UsageType != 2) {
-        unsigned int name_hashes[800];
-        int num_hashes = loaded_car->GetModelHashes(name_hashes, 800);
+    if (loaded_car->LoadState == CARLOADSTATE_LOADED && loaded_car->ShouldWeStream()) {
+        unsigned int model_hashes[800];
+        int num_model_hashes = loaded_car->GetModelHashes(model_hashes, 800);
 
-        eUnloadStreamingSolid(name_hashes, num_hashes);
+        eUnloadStreamingSolid(model_hashes, num_model_hashes);
     }
 
     this->UnallocateSolidPack(loaded_car->pLoadedSolidPack);
