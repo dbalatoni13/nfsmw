@@ -5,10 +5,63 @@
 #pragma once
 #endif
 
+#include "AnimUtil.h"
 #include "AnimMemoryMap.h"
 #include "BoneMask.h"
 
 namespace EAGL4Anim {
+
+extern float qt0[7];
+
+inline float DegToRad(float deg) {
+    return deg * 0.017453294f;
+}
+
+inline void QuatF4(float *&data, float *output) {
+    output[0] = *data++;
+    output[1] = *data++;
+    output[2] = *data++;
+    output[3] = *data++;
+}
+
+inline void EulF3(float *&data, float *output) {
+    float eulData[3];
+
+    eulData[0] = DegToRad(*data++);
+    eulData[1] = DegToRad(*data++);
+    eulData[2] = DegToRad(*data++);
+    EulToQuat(eulData, output);
+}
+
+inline void TranF3(float *&data, float *output) {
+    output[4] = *data++;
+    output[5] = *data++;
+    output[6] = *data++;
+}
+
+inline void QuatBlendF4(float w, const float *d0, const float *d1, float *out) {
+    FastQuatBlendF4(w, d0, d1, out);
+}
+
+inline void QuatF4Interp(float w, float *&data0, float *&data1, float *output) {
+    QuatF4(data0, qt0);
+    QuatF4(data1, output);
+    QuatBlendF4(w, qt0, output, output);
+}
+
+inline void EulF3Interp(float w, float *&data0, float *&data1, float *output) {
+    EulF3(data0, qt0);
+    EulF3(data1, output);
+    QuatBlendF4(w, qt0, output, output);
+}
+
+inline void TranF3Interp(float w, float *&data0, float *&data1, float *output) {
+    TranF3(data0, qt0);
+    TranF3(data1, output);
+    output[4] = qt0[4] + w * (output[4] - qt0[4]);
+    output[5] = qt0[5] + w * (output[5] - qt0[5]);
+    output[6] = qt0[6] + w * (output[6] - qt0[6]);
+}
 
 // total size: 0x10
 class RawPoseChannel : public AnimMemoryMap {

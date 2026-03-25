@@ -4,12 +4,7 @@
 
 namespace EAGL4Anim {
 
-void QuatF4(float *&data, float *output);
-void EulF3(float *&data, float *output);
-void TranF3(float *&data, float *output);
-void QuatF4Interp(float w, float *&data0, float *&data1, float *output);
-void EulF3Interp(float w, float *&data0, float *&data1, float *output);
-void TranF3Interp(float w, float *&data0, float *&data1, float *output);
+float qt0[7];
 
 void RawPoseChannel::InitAnimMemoryMap(AnimMemoryMap *anim) {
     RawPoseChannel *rawPoseChannel = reinterpret_cast<RawPoseChannel *>(anim);
