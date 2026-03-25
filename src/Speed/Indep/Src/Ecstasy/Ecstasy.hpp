@@ -438,7 +438,9 @@ struct Rain {
 
     float GetAmount(RainType type) {}
 
-    void SetRoadDampness(float damp) {}
+    void SetRoadDampness(float damp) {
+        this->RoadDampness = damp;
+    }
 
     bVector3 *GetWind();
 };

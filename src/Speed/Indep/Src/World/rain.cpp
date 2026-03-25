@@ -159,15 +159,12 @@ void SetOverRideRainIntensity(float rov) {
 }
 
 void SetRainBase() {
-    Rain *precipitation = eViews[1].Precipitation;
-
-    *reinterpret_cast<float *>(reinterpret_cast<unsigned char *>(precipitation) + 0x2F4) = 0.0f;
-    precipitation->Init(INACTIVE, 1.0f);
+    eGetView(1, false)->Precipitation->SetRoadDampness(0.0f);
+    eGetView(1, false)->Precipitation->Init(INACTIVE, 1.0f);
 
     if (EnableRainIn2P != 0) {
-        precipitation = eViews[2].Precipitation;
-        *reinterpret_cast<float *>(reinterpret_cast<unsigned char *>(precipitation) + 0x2F4) = 0.0f;
-        precipitation->Init(INACTIVE, 1.0f);
+        eGetView(2, false)->Precipitation->SetRoadDampness(0.0f);
+        eGetView(2, false)->Precipitation->Init(INACTIVE, 1.0f);
     }
 }
 
