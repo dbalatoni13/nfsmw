@@ -2,6 +2,7 @@
 #include "Speed/Indep/Src/World/CarRender.hpp"
 #include "Speed/Indep/Src/World/CarInfo.hpp"
 #include "Speed/Indep/Libs/Support/Utility/UStandard.h"
+#include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
 
 typedef float Mtx44[4][4];
@@ -64,6 +65,22 @@ struct VehicleDamagePart {
 
     inline bMatrix4 *GetMatrix() {
         return &mMatrix;
+    }
+
+    inline unsigned short GetDamageLevel() const {
+        return mDamageLevel;
+    }
+
+    inline void SetDamageLevel(unsigned short damageLevel) {
+        mDamageLevel = damageLevel;
+    }
+
+    inline CarPart *GetDamagePart(int ix) {
+        return mReplacementParts[ix];
+    }
+
+    inline int GetSlotID() const {
+        return mSlotId;
     }
 
     VehicleDamagePart(CarRenderInfo *carRenderInfo, int slotId);
@@ -297,34 +314,21 @@ void VehiclePartDamageBehaviour::Reset() {
 void VehiclePartDamageBehaviour::DamageZone(int zone, int damageLevel) {
     VehiclePartDamageZone *damageZone = this->mDamageZoneList[zone];
 
-    if (damageZone != 0) {
-        int slotIndex;
-        int slotCount;
+    if (damageZone) {
+        damageZone->SetDamageLevel(static_cast<unsigned short>(damageLevel));
 
-        VehiclePartDamageZone_SetDamageLevel(damageZone, static_cast<unsigned short>(damageLevel));
+        for (int slotIx = 0; slotIx < damageZone->GetSlotNum(); slotIx++) {
+            int slotID = damageZone->GetSlotID(slotIx);
+            VehicleDamagePart *damagePart = this->mDamagePartList[slotID];
 
-        for (slotIndex = 0, slotCount = VehiclePartDamageZone_GetSlotNum(damageZone); slotIndex < slotCount; slotIndex++) {
-            int damageSlotId = VehiclePartDamageZone_GetSlotID(damageZone, slotIndex);
-            VehicleDamagePart *damagePart = this->mDamagePartList[damageSlotId];
+            if (damagePart) {
+                int partDamageLevel = UMath::Max(damageLevel, static_cast<int>(damagePart->GetDamageLevel()));
+                partDamageLevel = UMath::Min(partDamageLevel, 1);
+                damagePart->SetDamageLevel(static_cast<unsigned short>(partDamageLevel));
 
-            if (damagePart != 0) {
-                unsigned int nextDamageLevel = static_cast<unsigned int>(damageLevel);
-                unsigned short *currentDamageLevel = reinterpret_cast<unsigned short *>(damagePart);
-
-                if (static_cast<int>(nextDamageLevel) < static_cast<int>(*currentDamageLevel)) {
-                    nextDamageLevel = *currentDamageLevel;
-                }
-
-                if (static_cast<int>(nextDamageLevel) < 1) {
-                    nextDamageLevel = 1;
-                }
-
-                *currentDamageLevel = static_cast<unsigned short>(nextDamageLevel);
-
-                if (this->mCarRenderInfo->pRideInfo != 0) {
-                    CarPart *replacement =
-                        *reinterpret_cast<CarPart **>(reinterpret_cast<unsigned char *>(damagePart) + 0x8 + nextDamageLevel * sizeof(CarPart *));
-                    this->mCarRenderInfo->pRideInfo->SetPart(damageSlotId, replacement, false);
+                if (this->mCarRenderInfo->pRideInfo) {
+                    CarPart *newCarPart = damagePart->GetDamagePart(partDamageLevel);
+                    this->mCarRenderInfo->pRideInfo->SetPart(slotID, newCarPart, false);
                 }
 
                 this->ManageGlassDamage();
