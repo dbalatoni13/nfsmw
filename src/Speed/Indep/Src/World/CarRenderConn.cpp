@@ -524,11 +524,7 @@ CarRenderConn::CarRenderConn(const Sim::ConnectionData &data, CarType ct, Render
         this->mTireState[i] = state;
         this->VehicleRenderConn::mAttributes.TireOffsets(reinterpret_cast<UMath::Vector4 &>(this->mTirePositions[i]), i);
         {
-            float tire_radius = this->mTirePositions[i].w;
-
-            if (tire_radius < 0.1f) {
-                tire_radius = 0.1f;
-            }
+            float tire_radius = UMath::Max(this->mTirePositions[i].w, 0.1f);
             this->mTireRadius[i] = tire_radius;
         }
 
