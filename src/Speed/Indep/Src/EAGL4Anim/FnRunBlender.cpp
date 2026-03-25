@@ -45,10 +45,10 @@ static inline void QuatTransformPoint(const UMath::Vector4 &q, const UMath::Vect
     yy = q.y * ys;
     yz = q.y * zs;
     zz = q.z * zs;
-    result.x = p.x * (p.w - (yy + zz)) + p.y * (xy - wz) + p.z * (xz + wy);
-    result.y = p.x * (xy + wz) + p.y * (p.w - (xx + zz)) + p.z * (yz - wx);
-    result.z = p.x * (xz - wy) + p.y * (yz + wx) + p.z * (p.w - (xx + yy));
-    result.w = p.w;
+    result.x = p.x * (1.0f - (yy + zz)) + p.y * (xy - wz) + p.z * (xz + wy);
+    result.y = p.x * (xy + wz) + p.y * (1.0f - (xx + zz)) + p.z * (yz - wx);
+    result.z = p.x * (xz - wy) + p.y * (yz + wx) + p.z * (1.0f - (xx + yy));
+    result.w = 1.0f;
 }
 
 FnRunBlender::FnRunBlender()
