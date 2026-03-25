@@ -218,8 +218,22 @@ bool FnPoseBlender::EvalSQT(float currentTime, float *sqtBuffer, const BoneMask 
 
         if (result) {
             if (mAlignRootBoneIdx >= 0 && (!boneMask || boneMask->GetBone(mAlignRootBoneIdx))) {
-                EAGL4::Transform rootTransform;
-                ApplyAlignedRootTransform(rootTransform, mAlignMatrix, sqtBuffer, mAlignRootBoneIdx);
+                float *sqt1 = &sqtBuffer[mAlignRootBoneIdx * 12];
+                EAGL4::Transform boneMat;
+                UMath::Vector4 quat;
+                UMath::Vector4 trans;
+
+                boneMat.BuildSQT(sqt1[0], sqt1[1], sqt1[2], sqt1[4], sqt1[5], sqt1[6], sqt1[7], sqt1[8], sqt1[9], sqt1[10]);
+                boneMat.PostMult(mAlignMatrix);
+                boneMat.ExtractQuatTrans(&quat, &trans);
+
+                sqt1[4] = quat.x;
+                sqt1[5] = quat.y;
+                sqt1[6] = quat.z;
+                sqt1[7] = quat.w;
+                sqt1[8] = trans.x;
+                sqt1[9] = trans.y;
+                sqt1[10] = trans.z;
             }
             return true;
         }
