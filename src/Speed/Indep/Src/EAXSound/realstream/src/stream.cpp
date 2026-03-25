@@ -740,27 +740,26 @@ void STREAM_setfilter(int sndstreamhandle, int filternum, int mask, int value, i
         return;
     }
 
-    STREAMHEADER *stream = static_cast<STREAMHEADER *>(static_cast<void *>(streamRaw));
-    if (filternum <= 0 || filternum > stream->filters) {
+    if (filternum <= 0 || filternum > streamRaw->filters) {
         return;
     }
-    if (filternum == stream->filters && (mask != 0 || value != 0)) {
+    if (filternum == streamRaw->filters && (mask != 0 || value != 0)) {
         return;
     }
 
-    int taps = stream->taps;
+    int taps = streamRaw->taps;
     if (tapnum < 1 && tapnum != -1 && tapnum != -2) {
         return;
     }
     if (tapnum > taps) {
         return;
     }
-    if (stream->state != STREAM_IDLE_STATE) {
+    if (streamRaw->state != STREAM_IDLE_STATE) {
         return;
     }
 
     FILTERSTRUCT *filter =
-        static_cast<FILTERSTRUCT *>(static_cast<void *>(stream->filter)) + (filternum - 1);
+        static_cast<FILTERSTRUCT *>(static_cast<void *>(streamRaw->filter)) + (filternum - 1);
     filter->tapnum = tapnum;
     filter->mask = mask;
     filter->value = value;
@@ -774,17 +773,16 @@ void STREAM_destroy(int sndstreamhandle) {
         return;
     }
 
-    STREAMHEADER *stream = reinterpret_cast<STREAMHEADER *>(streamRaw);
     STREAM_kill(sndstreamhandle);
-    while (stream->state == STREAM_RUNNING_STATE) {
+    while (streamRaw->state == STREAM_RUNNING_STATE) {
         SYNCTASK_run();
         THREAD_yield(0);
     }
 
-    stream->id = 0;
-    MUTEX_destroy(&stream->mutex);
-    if (stream->fhandle != 0) {
-        FILESYS_closesync(stream->fhandle, 100);
+    streamRaw->id = 0;
+    MUTEX_destroy(&streamRaw->mutex);
+    if (streamRaw->fhandle != 0) {
+        FILESYS_closesync(streamRaw->fhandle, 100);
     }
 }
 
@@ -793,9 +791,8 @@ void STREAM_setpriority(int sndstreamhandle, int prioritylow, int priorityhigh) 
     TAPSTRUCTtag *tapRaw;
     int status = validatehandle(sndstreamhandle, &streamRaw, &tapRaw);
     if (status == 0) {
-        STREAMHEADER *stream = reinterpret_cast<STREAMHEADER *>(streamRaw);
-        stream->prioritylow = prioritylow;
-        stream->priorityhigh = priorityhigh;
+        streamRaw->prioritylow = prioritylow;
+        streamRaw->priorityhigh = priorityhigh;
     }
 }
 
@@ -804,10 +801,9 @@ void STREAM_setgreedylevel(int sndstreamhandle, int greedylevel) {
     TAPSTRUCTtag *tapRaw;
     int status = validatehandle(sndstreamhandle, &streamRaw, &tapRaw);
     if (status == 0) {
-        STREAMHEADER *stream = reinterpret_cast<STREAMHEADER *>(streamRaw);
-        int bufferUsage = stream->bufferusage;
-        int oldGreedyLevel = stream->greedylevel;
-        stream->greedylevel = greedylevel;
+        int bufferUsage = streamRaw->bufferusage;
+        int oldGreedyLevel = streamRaw->greedylevel;
+        streamRaw->greedylevel = greedylevel;
         if ((bufferUsage < oldGreedyLevel) != (bufferUsage < greedylevel)) {
             STREAM_setgreedystate(sndstreamhandle, static_cast<int>(bufferUsage < greedylevel));
         }
@@ -819,10 +815,9 @@ void STREAM_setgreedystate(int sndstreamhandle, int greedystate) {
     TAPSTRUCTtag *tapRaw;
     int status = validatehandle(sndstreamhandle, &streamRaw, &tapRaw);
     if (status == 0) {
-        STREAMHEADER *stream = reinterpret_cast<STREAMHEADER *>(streamRaw);
-        stream->greedystate = greedystate;
-        if (greedystate != 0 && stream->state == STREAM_RUNNING_STATE) {
-            FILESYS_priorityop(stream->fop, stream->priorityhigh);
+        streamRaw->greedystate = greedystate;
+        if (greedystate != 0 && streamRaw->state == STREAM_RUNNING_STATE) {
+            FILESYS_priorityop(streamRaw->fop, streamRaw->priorityhigh);
         }
     }
 }
@@ -833,11 +828,10 @@ int STREAM_taphandle(int sndstreamhandle, int tapindex) {
     int status = validatehandle(sndstreamhandle, &streamRaw, &tapRaw);
     TAPSTRUCT *tap = nullptr;
     if (status == 0 && tapindex > 0) {
-        STREAMHEADER *stream = reinterpret_cast<STREAMHEADER *>(streamRaw);
-        if (stream->taps < tapindex) {
+        if (streamRaw->taps < tapindex) {
             tap = nullptr;
         } else {
-            tap = stream->tap + tapindex - 1;
+            tap = streamRaw->tap + tapindex - 1;
         }
     }
     return reinterpret_cast<int>(tap);
@@ -857,30 +851,28 @@ int STREAM_queuefile(int sndstreamhandle, const char *filename, int offset, int 
         return 0;
     }
 
-    REQUESTSTRUCT *request = reinterpret_cast<REQUESTSTRUCT *>(requestRaw);
-    request->type = 0;
-    strncpy(request->fname, filename, 0xFE);
-    request->parm = offset;
-    request->endchunkid = holdtime;
+    requestRaw->type = 0;
+    strncpy(requestRaw->fname, filename, 0xFE);
+    requestRaw->parm = offset;
+    requestRaw->endchunkid = holdtime;
     queuerequest(streamRaw, requestRaw);
 
-    STREAMHEADER *stream = reinterpret_cast<STREAMHEADER *>(streamRaw);
-    MUTEX_lock(&stream->mutex);
-    bool wasIdle = stream->state == STREAM_IDLE_STATE;
+    MUTEX_lock(&streamRaw->mutex);
+    bool wasIdle = streamRaw->state == STREAM_IDLE_STATE;
     if (wasIdle) {
-        stream->state = STREAM_RUNNING_STATE;
+        streamRaw->state = STREAM_RUNNING_STATE;
     }
-    MUTEX_unlock(&stream->mutex);
+    MUTEX_unlock(&streamRaw->mutex);
 
     if (wasIdle) {
-        if (stream->greedystate == 0) {
-            startnextrequest(streamRaw, stream->prioritylow);
+        if (streamRaw->greedystate == 0) {
+            startnextrequest(streamRaw, streamRaw->prioritylow);
         } else {
-            startnextrequest(streamRaw, stream->priorityhigh);
+            startnextrequest(streamRaw, streamRaw->priorityhigh);
         }
     }
 
-    requestId = request->id;
+    requestId = requestRaw->id;
     return requestId;
 }
 
@@ -904,25 +896,23 @@ int STREAM_queuemem(int sndstreamhandle, void *address, int length, int holdtime
                 length = totalLength + ReadChunkWord(&chunk->size);
             }
 
-            REQUESTSTRUCT *request = reinterpret_cast<REQUESTSTRUCT *>(requestRaw);
-            request->parm = length;
-            request->address = static_cast<char *>(address);
-            request->endchunkid = holdtime;
-            request->type = 1;
+            requestRaw->parm = length;
+            requestRaw->address = static_cast<char *>(address);
+            requestRaw->endchunkid = holdtime;
+            requestRaw->type = 1;
             queuerequest(streamRaw, requestRaw);
 
-            STREAMHEADER *stream = reinterpret_cast<STREAMHEADER *>(streamRaw);
-            MUTEX_lock(&stream->mutex);
-            int streamState = stream->state;
+            MUTEX_lock(&streamRaw->mutex);
+            int streamState = streamRaw->state;
             if (streamState == STREAM_IDLE_STATE) {
-                stream->state = STREAM_RUNNING_STATE;
+                streamRaw->state = STREAM_RUNNING_STATE;
             }
-            MUTEX_unlock(&stream->mutex);
+            MUTEX_unlock(&streamRaw->mutex);
 
             if (streamState == STREAM_IDLE_STATE) {
                 startnextrequest(streamRaw, 0);
             }
-            requestId = request->id;
+            requestId = requestRaw->id;
         }
     }
     return requestId;
@@ -1025,71 +1015,59 @@ void STREAM_kill(int sndstreamhandle) {
     int status = validatehandle(sndstreamhandle, &streamRaw, &tapRaw);
     int chunkSize = 0;
     if (status == 0) {
-        STREAMHEADER *stream = reinterpret_cast<STREAMHEADER *>(streamRaw);
-        REQUESTSTRUCT *request = stream->lastreq;
+        REQUESTSTRUCT *request = streamRaw->lastreq;
         if (request != nullptr) {
             while (request->state - STREAMREQUEST_PENDING < 2) {
                 STREAM_cancelrequest(sndstreamhandle, request->id);
-                request = stream->lastreq;
+                request = streamRaw->lastreq;
             }
-            while (stream->firstreq != stream->curreq) {
-                freerequest(streamRaw, reinterpret_cast<REQUESTSTRUCTtag *>(stream->firstreq));
+            while (streamRaw->firstreq != streamRaw->curreq) {
+                freerequest(streamRaw, reinterpret_cast<REQUESTSTRUCTtag *>(streamRaw->firstreq));
             }
 
             int tapIndex = 0;
-            stream->curreq->state = STREAMREQUEST_CANCELED;
-            if (stream->taps > 0) {
+            streamRaw->curreq->state = STREAMREQUEST_CANCELED;
+            if (streamRaw->taps > 0) {
                 int nextTap;
                 do {
                     nextTap = tapIndex + 1;
-                    stream->tap[tapIndex].gettable = 0;
+                    streamRaw->tap[tapIndex].gettable = 0;
                     tapIndex = nextTap;
-                } while (nextTap < stream->taps);
+                } while (nextTap < streamRaw->taps);
             }
 
-            decbufferusage(streamRaw, stream->bufferusage);
-            STREAMCHUNKHDR *chunk = reinterpret_cast<STREAMCHUNKHDR *>(stream->datastart);
-            if (chunk != reinterpret_cast<STREAMCHUNKHDR *>(stream->datatail)) {
+            decbufferusage(streamRaw, streamRaw->bufferusage);
+            STREAMCHUNKHDR *chunk = reinterpret_cast<STREAMCHUNKHDR *>(streamRaw->datastart);
+            if (chunk != reinterpret_cast<STREAMCHUNKHDR *>(streamRaw->datatail)) {
                 do {
                     if (ReadChunkWord(&chunk->type) == -1) {
-                        chunk = reinterpret_cast<STREAMCHUNKHDR *>(stream->bufferstart);
+                        chunk = reinterpret_cast<STREAMCHUNKHDR *>(streamRaw->bufferstart);
                     } else {
-                        unsigned char b1 = reinterpret_cast<unsigned char *>(&chunk->size)[2];
-                        unsigned char b2 = reinterpret_cast<unsigned char *>(&chunk->size)[1];
-                        unsigned char b3 = reinterpret_cast<unsigned char *>(&chunk->size)[0];
-                        reinterpret_cast<unsigned char *>(&chunk->type)[0] = 0xFE;
-                        reinterpret_cast<unsigned char *>(&chunk->type)[1] = 0xFF;
-                        chunkSize = (static_cast<int>(b1) << 16) | (static_cast<int>(b2) << 8) | static_cast<int>(b3);
-                        reinterpret_cast<unsigned char *>(&chunk->type)[2] = 0xFF;
-                        reinterpret_cast<unsigned char *>(&chunk->size)[1] = b2;
-                        reinterpret_cast<unsigned char *>(&chunk->size)[2] = b1;
-                        reinterpret_cast<unsigned char *>(&chunk->size)[3] = 0;
-                        reinterpret_cast<unsigned char *>(&chunk->type)[3] = 0xFF;
-                        reinterpret_cast<unsigned char *>(&chunk->size)[0] = b3;
-                        chunk = static_cast<STREAMCHUNKHDR *>(
-                            static_cast<void *>(static_cast<char *>(static_cast<void *>(&chunk->type)) + chunkSize));
+                        chunkSize = ReadChunkWord(&chunk->size) & 0x00FFFFFF;
+                        WriteChunkWord(&chunk->type, -2);
+                        WriteChunkWord(&chunk->size, chunkSize);
+                        chunk = reinterpret_cast<STREAMCHUNKHDR *>(
+                            reinterpret_cast<char *>(chunk) + chunkSize);
                     }
-                } while (chunk != reinterpret_cast<STREAMCHUNKHDR *>(stream->datatail));
+                } while (chunk != reinterpret_cast<STREAMCHUNKHDR *>(streamRaw->datatail));
             }
 
-            if (stream->state == STREAM_STOPPED_STATE) {
-                if (chunk == reinterpret_cast<STREAMCHUNKHDR *>(stream->bufferstart)) {
-                    stream->datatail = stream->actualbufferstart;
-                    stream->bufferstart = stream->datatail;
+            if (streamRaw->state == STREAM_STOPPED_STATE) {
+                if (chunk == reinterpret_cast<STREAMCHUNKHDR *>(streamRaw->bufferstart)) {
+                    streamRaw->datatail = streamRaw->actualbufferstart;
+                    streamRaw->bufferstart = streamRaw->datatail;
                 } else {
-                    int align = 0x20 - (reinterpret_cast<unsigned int>(stream->datatail) & 0x1F);
+                    int align = 0x20 - (reinterpret_cast<unsigned int>(streamRaw->datatail) & 0x1F);
                     if (align == 0x20) {
                         align = 0;
                     }
-                    char *dataTail = stream->datatail;
                     int alignedSize = chunkSize + align;
-                    dataTail[7 - chunkSize] = static_cast<char>(static_cast<unsigned int>(alignedSize) >> 24);
-                    dataTail[5 - chunkSize] = static_cast<char>(static_cast<unsigned int>(alignedSize) >> 8);
-                    dataTail[6 - chunkSize] = static_cast<char>(static_cast<unsigned int>(alignedSize) >> 16);
-                    dataTail[4 - chunkSize] = static_cast<char>(alignedSize);
-                    stream->datatail = stream->datatail + align;
+                    STREAMCHUNKHDR *lastChunk = reinterpret_cast<STREAMCHUNKHDR *>(
+                        streamRaw->datatail - chunkSize);
+                    WriteChunkWord(&lastChunk->size, alignedSize);
+                    streamRaw->datatail = streamRaw->datatail + align;
                 }
-                stream->state = STREAM_IDLE_STATE;
+                streamRaw->state = STREAM_IDLE_STATE;
             }
         }
     }
@@ -1104,36 +1082,34 @@ STREAMCHUNKHDR *STREAM_get(int sndstreamhandle) {
         return nullptr;
     }
 
-    STREAMHEADER *stream = reinterpret_cast<STREAMHEADER *>(streamRaw);
-    TAPSTRUCT *tap = reinterpret_cast<TAPSTRUCT *>(tapRaw);
-    if (tap->gettable == 0) {
+    if (tapRaw->gettable == 0) {
         return nullptr;
     }
 
-    chunk = reinterpret_cast<STREAMCHUNKHDR *>(tap->getptr);
+    chunk = reinterpret_cast<STREAMCHUNKHDR *>(tapRaw->getptr);
     unsigned int amount = static_cast<unsigned int>(ReadChunkWord(&chunk->size)) & 0xFFFFFF;
     WriteChunkWord(&chunk->size, static_cast<int>(amount));
 
-    MUTEX_lock(&stream->mutex);
-    int bytesLeft = tap->gettable - static_cast<int>(amount);
-    tap->gettable = bytesLeft;
-    MUTEX_unlock(&stream->mutex);
+    MUTEX_lock(&streamRaw->mutex);
+    int bytesLeft = tapRaw->gettable - static_cast<int>(amount);
+    tapRaw->gettable = bytesLeft;
+    MUTEX_unlock(&streamRaw->mutex);
 
     if (bytesLeft > 0) {
         int *nextChunk =
-            static_cast<int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(&chunk->type)) + amount));
+            reinterpret_cast<int *>(reinterpret_cast<char *>(chunk) + amount);
         unsigned int encodedSize = static_cast<unsigned int>(nextChunk[1]);
-        unsigned int tapMask = static_cast<unsigned int>(tap->tapnum) << 24;
+        unsigned int tapMask = static_cast<unsigned int>(tapRaw->tapnum) << 24;
         if ((encodedSize & 0xFF000000) == tapMask) {
-            tap->getptr = reinterpret_cast<char *>(nextChunk);
+            tapRaw->getptr = reinterpret_cast<char *>(nextChunk);
         } else {
             int type = *nextChunk;
             while (true) {
                 if (type == -1) {
-                    nextChunk = reinterpret_cast<int *>(stream->bufferstart);
+                    nextChunk = reinterpret_cast<int *>(streamRaw->bufferstart);
                 } else {
-                    nextChunk = static_cast<int *>(
-                        static_cast<void *>(static_cast<char *>(static_cast<void *>(nextChunk)) + (encodedSize & 0xFFFFFF)));
+                    nextChunk = reinterpret_cast<int *>(
+                        reinterpret_cast<char *>(nextChunk) + (encodedSize & 0xFFFFFF));
                 }
                 encodedSize = static_cast<unsigned int>(nextChunk[1]);
                 if ((encodedSize & 0xFF000000) == tapMask) {
@@ -1141,7 +1117,7 @@ STREAMCHUNKHDR *STREAM_get(int sndstreamhandle) {
                 }
                 type = *nextChunk;
             }
-            tap->getptr = reinterpret_cast<char *>(nextChunk);
+            tapRaw->getptr = reinterpret_cast<char *>(nextChunk);
         }
     }
 
@@ -1156,27 +1132,26 @@ void STREAM_release(int sndstreamhandle, STREAMCHUNKHDR *chunk) {
         return;
     }
 
-    STREAMHEADER *stream = reinterpret_cast<STREAMHEADER *>(streamRaw);
-    STREAMCHUNKHDR *bufferStart = reinterpret_cast<STREAMCHUNKHDR *>(stream->bufferstart);
-    STREAMCHUNKHDR *bufferEnd = reinterpret_cast<STREAMCHUNKHDR *>(stream->bufferend - 8);
+    STREAMCHUNKHDR *bufferStart = reinterpret_cast<STREAMCHUNKHDR *>(streamRaw->bufferstart);
+    STREAMCHUNKHDR *bufferEnd = reinterpret_cast<STREAMCHUNKHDR *>(streamRaw->bufferend - 8);
     if (!(bufferStart <= chunk && chunk <= bufferEnd && ReadChunkWord(&chunk->type) != -2)) {
         return;
     }
 
     WriteChunkWord(&chunk->type, -2);
     decbufferusage(streamRaw, ReadChunkWord(&chunk->size));
-    MUTEX_lock(&stream->mutex);
-    int streamState = stream->state;
+    MUTEX_lock(&streamRaw->mutex);
+    int streamState = streamRaw->state;
     if (streamState == STREAM_STOPPED_STATE) {
-        stream->state = STREAM_RUNNING_STATE;
+        streamRaw->state = STREAM_RUNNING_STATE;
     }
-    MUTEX_unlock(&stream->mutex);
+    MUTEX_unlock(&streamRaw->mutex);
 
     if (streamState == STREAM_STOPPED_STATE) {
-        if (stream->greedystate == 0) {
-            restartstream(streamRaw, stream->prioritylow);
+        if (streamRaw->greedystate == 0) {
+            restartstream(streamRaw, streamRaw->prioritylow);
         } else {
-            restartstream(streamRaw, stream->priorityhigh);
+            restartstream(streamRaw, streamRaw->priorityhigh);
         }
     }
 }
@@ -1187,7 +1162,7 @@ int STREAM_gettable(int sndstreamhandle) {
     if (validatehandle(sndstreamhandle, &streamRaw, &tapRaw) != 0) {
         return 0;
     }
-    return reinterpret_cast<TAPSTRUCT *>(tapRaw)->gettable;
+    return tapRaw->gettable;
 }
 
 int STREAM_state(int sndstreamhandle) {
@@ -1196,7 +1171,7 @@ int STREAM_state(int sndstreamhandle) {
     if (validatehandle(sndstreamhandle, &streamRaw, &tapRaw) != 0) {
         return STREAM_IDLE_STATE;
     }
-    return reinterpret_cast<STREAMHEADER *>(streamRaw)->state;
+    return streamRaw->state;
 }
 
 int STREAM_isendofstream(int sndstreamhandle) {
@@ -1206,8 +1181,8 @@ int STREAM_isendofstream(int sndstreamhandle) {
     bool isEnd = false;
     if (status == 0) {
         isEnd = false;
-        if (reinterpret_cast<STREAMHEADER *>(streamRaw)->state == STREAM_IDLE_STATE) {
-            isEnd = reinterpret_cast<TAPSTRUCT *>(tapRaw)->gettable == 0;
+        if (streamRaw->state == STREAM_IDLE_STATE) {
+            isEnd = tapRaw->gettable == 0;
         }
     }
     return isEnd;
@@ -1220,6 +1195,5 @@ int STREAM_buffersize(int sndstreamhandle) {
         return 0;
     }
 
-    STREAMHEADER *stream = static_cast<STREAMHEADER *>(static_cast<void *>(streamRaw));
-    return static_cast<int>(stream->bufferend - stream->actualbufferstart);
+    return static_cast<int>(streamRaw->bufferend - streamRaw->actualbufferstart);
 }
