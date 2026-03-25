@@ -88,6 +88,9 @@ struct cSampleWarpper {
     static void operator delete(void *ptr);
 
     void Initialize();
+    bool IsPlaying() {
+        return m_eIsPlaying != 0;
+    }
     void Update(const SND_Params *params);
     void Play(const SND_Params *params);
     void Destroy();
@@ -112,6 +115,9 @@ struct cStichWrapper : public AudioMemBase {
     void Update(const SND_Params *params);
     bool IsPlaying() {
         return bIsPlaying;
+    }
+    const SND_Stich &GetData() {
+        return *StichData;
     }
 
     void Destroy();

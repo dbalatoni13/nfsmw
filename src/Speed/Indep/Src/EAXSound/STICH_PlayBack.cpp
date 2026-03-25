@@ -853,19 +853,17 @@ void cStichWrapper::Update(const SND_Params *Params) {
     }
 
     if (Params != nullptr) {
-        SndParams.ID = Params->ID;
-        SndParams.Vol = Params->Vol;
-        SndParams.Pitch = Params->Pitch;
-        SndParams.Az = Params->Az;
-        SndParams.Mag = Params->Mag;
-        SndParams.RVerb = Params->RVerb;
+        SndParams = *Params;
     }
 
     bIsPlaying = false;
-    for (int i = 0; i < static_cast<int>(StichData->Num_SampleRefs); i++) {
+    for (int i = 0; ; i++) {
+        if (i >= static_cast<int>(GetData().Num_SampleRefs)) break;
         if (ActiveSamplesRefs[i] != nullptr) {
+            bool playing = true;
             ActiveSamplesRefs[i]->Update(&SndParams);
-            if (ActiveSamplesRefs[i]->m_eIsPlaying == eSTITCH_PLAY_STATUS_OFF) {
+            playing = ActiveSamplesRefs[i]->IsPlaying();
+            if (!playing) {
                 delete ActiveSamplesRefs[i];
                 ActiveSamplesRefs[i] = nullptr;
             } else {
