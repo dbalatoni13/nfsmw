@@ -324,7 +324,7 @@ IModel *DrawVehicle::GetChildModel(UCrc32 name) const {
 }
 
 IModel *DrawVehicle::SpawnModel(UCrc32 name, UCrc32 collisionnode, UCrc32 attributes) {
-    if (Vehicle_Part_Count < 61 && UTL::Collections::Listable< IModel, 434 >::Count() < 435 && mGeometry) {
+    if (Vehicle_Part_Count < 61U && UTL::Collections::Listable< IModel, 434 >::Count() < 435U && mGeometry) {
         const CollisionGeometry::Bounds *bounds = mGeometry->GetChild(collisionnode);
         if (bounds) {
             const Attrib::Collection *attribs = SmokeableSpawner::FindAttributes(attributes);
