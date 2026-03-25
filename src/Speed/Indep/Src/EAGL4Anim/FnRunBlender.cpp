@@ -484,17 +484,20 @@ void FnRunBlender::AlignVel(float *vel) const {
 
 bool FnRunBlender::FindMatchTime(const MatchPhaseInput &input, float &time) const {
     PhaseValue phase;
+    float inputAngle = input.mAngle;
+    float inputDAngle = input.mDAngle;
+    float searchLength = input.mSearchLength;
     float cycleLength = mWeight * (mCycles[1] - mCycles[0]) + mCycles[0];
     int searchCount = static_cast<int>(cycleLength + cycleLength);
 
     phase.mAngle = 0.0f;
-    if (0.0f < input.mSearchLength && input.mSearchLength < static_cast<float>(searchCount)) {
-        searchCount = static_cast<int>(input.mSearchLength) + 1;
+    if (0.0f < searchLength && searchLength < static_cast<float>(searchCount)) {
+        searchCount = static_cast<int>(searchLength) + 1;
     }
 
     const_cast<FnRunBlender *>(this)->EvalPhase(0.0f, phase);
 
-    float bestDelta = input.mAngle - phase.mAngle;
+    float bestDelta = inputAngle - phase.mAngle;
     if (bestDelta < 0.0f) {
         bestDelta = -bestDelta;
     }
@@ -505,12 +508,12 @@ bool FnRunBlender::FindMatchTime(const MatchPhaseInput &input, float &time) cons
 
         const_cast<FnRunBlender *>(this)->EvalPhase(static_cast<float>(i), phase);
 
-        if (prevAngle <= input.mAngle && input.mAngle <= phase.mAngle) {
+        if (prevAngle <= inputAngle && inputAngle <= phase.mAngle) {
             float deltaAngle = phase.mAngle - prevAngle;
 
-            if (0.0f <= deltaAngle * input.mDAngle) {
+            if (0.0f <= deltaAngle * inputDAngle) {
                 if (deltaAngle != 0.0f) {
-                    time = (input.mAngle - prevAngle) / deltaAngle + static_cast<float>(i - 1);
+                    time = (inputAngle - prevAngle) / deltaAngle + static_cast<float>(i - 1);
                 } else {
                     time = static_cast<float>(i - 1) + 0.5f;
                 }
@@ -518,7 +521,7 @@ bool FnRunBlender::FindMatchTime(const MatchPhaseInput &input, float &time) cons
             }
         }
 
-        float delta = input.mAngle - phase.mAngle;
+        float delta = inputAngle - phase.mAngle;
         if (delta < 0.0f) {
             delta = -delta;
         }
