@@ -1240,19 +1240,20 @@ bool PVehicle::SetVehicleOnGround(const UMath::Vector3 &resetPos, const UMath::V
 
 ISimable *PVehicle::Construct(Sim::Param params) {
     const VehicleParams vp = params.Fetch< VehicleParams >(UCrc32(0xa6b47fac));
-    Attrib::Gen::pvehicle attributes(
-        Attrib::FindCollection(Attrib::Gen::pvehicle::ClassKey(), vp.carType), 0, nullptr);
+    Attrib::Gen::pvehicle attributes(vp.carType, 0, nullptr);
     if (!attributes.IsValid()) {
         return nullptr;
     }
+    const char *vehicle_name;
     const FECustomizationRecord *customizations = vp.customization;
     if (customizations == nullptr) {
-        const char *vehicle_name = attributes.DefaultPresetRide();
-        if (vehicle_name[0] != '\0') {
+        vehicle_name = attributes.DefaultPresetRide();
+        if (vehicle_name != nullptr) {
             unsigned int hash = bStringHashUpper(vehicle_name);
             PresetCar *preset = FindFEPresetCar(hash);
             if (preset != nullptr) {
                 static FECustomizationRecord temp_record;
+                temp_record.Default();
                 temp_record.BecomePreset(preset);
                 customizations = &temp_record;
             }
@@ -1294,20 +1295,16 @@ ISimable *PVehicle::Construct(Sim::Param params) {
         return nullptr;
     }
     bool spooling_resources = (vp.Flags & 1) != 0;
-    Resource resource(attributes, spooling_resources, vp.carClass == DRIVER_HUMAN);
+    bool is_player = vp.carClass == DRIVER_HUMAN;
+    Resource resource(attributes, spooling_resources, is_player);
     if (!resource.IsValid()) {
         return nullptr;
     }
     UTL::Std::list< Resource, _type_list > resources;
     resources.push_back(resource);
-    Attrib::RefSpec trailer_ref;
-    const Attrib::RefSpec *src = reinterpret_cast<const Attrib::RefSpec *>(
-        attributes.GetAttributePointer(0x9a5537fe, 0));
-    if (src != nullptr) {
-        trailer_ref = *src;
-    }
+    Attrib::RefSpec trailer_ref = attributes.Trailer();
     if (trailer_ref.GetCollectionKey() != 0) {
-        Attrib::Gen::pvehicle trailerAttribs(trailer_ref.GetCollectionKey(), 0, nullptr);
+        Attrib::Gen::pvehicle trailerAttribs(trailer_ref, 0, nullptr);
         Resource trailerResource(trailerAttribs, spooling_resources, false);
         resources.push_back(trailerResource);
     }
