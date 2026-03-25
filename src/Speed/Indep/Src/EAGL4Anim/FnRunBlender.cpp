@@ -205,10 +205,10 @@ void FnRunBlender::SetWeight(float w) {
 
     prevFreq = mFreq;
 
-    if (!mPhases[i]->StartWithRight()) {
-        mAlignFrame[0] = static_cast<float>(mPhases[i]->mStartTime + mPhases[i]->mCycles[0]);
-    } else {
+    if (mPhases[i]->StartWithRight()) {
         mAlignFrame[0] = static_cast<float>(mPhases[i]->mStartTime);
+    } else {
+        mAlignFrame[0] = static_cast<float>(mPhases[i]->mStartTime + mPhases[i]->mCycles[0]);
     }
 
     mAlignFrame[1] = static_cast<float>(mPhases[i + 1]->mStartTime);
