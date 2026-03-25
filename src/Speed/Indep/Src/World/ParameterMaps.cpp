@@ -136,11 +136,9 @@ void ParameterMapLayer::Unload() {
     this->FieldTypes = 0;
     this->FieldOffsets = 0;
     this->ParameterData = 0;
-    this->QuadData8 = 0;
-    this->QuadData16 = 0;
 
     while (!this->ParameterAccessors.IsEmpty()) {
-        this->ParameterAccessors.GetHead()->SetLayer(0);
+        this->ParameterAccessors.GetHead()->ClearLayer();
     }
 }
 
