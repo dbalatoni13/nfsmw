@@ -138,17 +138,17 @@ char *SFXCTL_Tunnel::GetTypeName() const { return s_TypeInfo.typeName; }
 
 void SFXCTL_Tunnel::InitSFX() {
     SFXCTL::InitSFX();
-    m_bIsInTunnel = false;
     m_bWasInTunnel = false;
+    m_bIsInTunnel = false;
 
     EAX_CarState *car = m_pStateBase->GetPhysCar();
-    int context = static_cast<int>(car->mContext);
-    int isLeadCar = 0;
-    if (context == 0 && m_pStateBase->m_InstNum == 0) {
-        isLeadCar = 1;
+    if (static_cast<int>(car->mContext) != 0) {
+        m_IsLeadCar = 0;
+    } else if (m_pStateBase->m_InstNum != 0) {
+        m_IsLeadCar = 0;
+    } else {
+        m_IsLeadCar = 1;
     }
-
-    m_IsLeadCar = isLeadCar;
     IsOccluded = 0;
 }
 
@@ -540,13 +540,11 @@ void SFXCTL_Tunnel::UpdateOcclusion(float t) {
 }
 
 void SFXCTL_Tunnel::EndTunnelVerb() {
-    if (m_IsLeadCar != 0) {
-        eREVERBFX reverbType = static_cast< eREVERBFX >(ReverbZoneCrossMap[m_CurReverbZone]);
-        if (static_cast< int >(reverbType) > 0xB) {
-            reverbType = static_cast< eREVERBFX >(9);
-        }
-        SetCurrentReverbType(reverbType, 0);
+    eREVERBFX reverbType = static_cast<eREVERBFX>(ReverbZoneCrossMap[m_CurReverbZone]);
+    if (static_cast<int>(reverbType) > 0xB) {
+        reverbType = static_cast<eREVERBFX>(9);
     }
+    SetCurrentReverbType(reverbType, 0);
 }
 
 void SFXCTL_Tunnel::UpdateDriveBySnds(float t) {
