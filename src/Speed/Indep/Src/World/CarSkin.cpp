@@ -162,14 +162,15 @@ int CompositeSkin32(SkinCompositeParams *composite_params) {
         int num_pixels;
 
         if (swatch_offset_init == 0) {
-            unsigned int swatch_lookup_colours[4];
+            unsigned int swatch_lookup_colours[4] = {
+                0xBF0000FF,
+                0xBF00FF00,
+                0xBFFF0000,
+                0xBFFF00FF,
+            };
             unsigned int *dest = dest_image_data;
             unsigned int *dest_end;
 
-            swatch_lookup_colours[0] = 0xBF0000FF;
-            swatch_lookup_colours[1] = 0xBF00FF00;
-            swatch_lookup_colours[2] = 0xBFFF0000;
-            swatch_lookup_colours[3] = 0xBFFF00FF;
             bMemSet(swatch_offset_cache, 0, sizeof(swatch_offset_cache));
 
             dest_end = dest_image_data + dest_width * dest_height;
@@ -179,10 +180,11 @@ int CompositeSkin32(SkinCompositeParams *composite_params) {
 
                 do {
                     if (*dest == swatch_lookup_colours[i]) {
+                        int *swatch_offsets = swatch_offset_cache + i * 16;
                         int count = swatch_offset_count[i];
 
                         swatch_offset_count[i] = count + 1;
-                        swatch_offset_cache[count + i * 16] = pixel_offset;
+                        swatch_offsets[count] = pixel_offset;
                         break;
                     }
 
@@ -197,8 +199,8 @@ int CompositeSkin32(SkinCompositeParams *composite_params) {
 
         num_pixels = dest_width * dest_height;
         *reinterpret_cast<unsigned int *>(&base) = base_colour;
-        base.a = static_cast<unsigned char>(base_colour >> 8);
         base.g = static_cast<unsigned char>(base_colour >> 24);
+        base.a = static_cast<unsigned char>(base_colour >> 8);
 
         for (dest_pixel = dest_image_data, end_pixel = dest_image_data + num_pixels; dest_pixel < end_pixel; dest_pixel++) {
             *dest_pixel = *reinterpret_cast<unsigned int *>(&base);
@@ -223,8 +225,8 @@ int CompositeSkin32(SkinCompositeParams *composite_params) {
                         CompColour src_colour;
 
                         *reinterpret_cast<unsigned int *>(&src_colour) = src_pixel;
-                        src_colour.a = static_cast<unsigned char>(src_pixel >> 8);
                         src_colour.g = static_cast<unsigned char>(src_pixel >> 24);
+                        src_colour.a = static_cast<unsigned char>(src_pixel >> 8);
                         src_pixel = RemapColour(*reinterpret_cast<unsigned int *>(&src_colour), info->m_RemapColours);
                     }
 
@@ -257,8 +259,11 @@ int CompositeSkin32(SkinCompositeParams *composite_params) {
         }
 
         for (int i = 0; i < 4; i++) {
+            int *swatch_offsets = swatch_offset_cache + i * 16;
+            unsigned int swatch_colour = swatch_colours[i];
+
             for (int j = 0; j < swatch_offset_count[i]; j++) {
-                dest_image_data[swatch_offset_cache[j + i * 16]] = swatch_colours[i];
+                dest_image_data[swatch_offsets[j]] = swatch_colour;
             }
         }
 
