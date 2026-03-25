@@ -1302,16 +1302,8 @@ void CarRenderConn::UpdateEffects(const RenderConn::Pkt_Car_Service &data, float
 }
 
 void CarRenderConn::Hide(bool b) {
-    unsigned int flags = this->mFlags;
-
-    if (((flags & CF_HIDDEN) != 0) != b) {
-        if (b) {
-            flags |= CF_HIDDEN;
-        } else {
-            flags &= ~CF_HIDDEN;
-        }
-
-        this->mFlags = flags;
+    if (this->GetFlag(CF_HIDDEN) != b) {
+        this->SetFlag(CF_HIDDEN, b);
         if (b) {
             this->mAnimTime = 0.0f;
             for (int i = 0; i < 4; i++) {
