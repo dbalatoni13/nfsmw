@@ -22,40 +22,30 @@ struct cStitchLoop {
 };
 
 cStitchLoop::cStitchLoop(unsigned int attrib)
-    : m_StitchAttribKey(attrib) //
-    , m_StichData(nullptr) //
-    , m_tTimeBeforeRepeat(0) //
-    , m_tOverlap(0) {
-    m_Stitch[0] = nullptr;
+    : m_StitchAttribKey(attrib) {
     m_Stitch[1] = nullptr;
+    m_Stitch[0] = nullptr;
 
     Attrib::Instance loopdata(Attrib::FindCollection(Attrib::Gen::aud_stitch_loop::ClassKey(), attrib), 0, nullptr);
-    cSTICH_PlayBack *playback = nullptr;
-    if (g_pEAXSound != nullptr) {
-        playback = g_pEAXSound->GetSTICHPlayback();
-    }
+    cSTICH_PlayBack *playback = g_pEAXSound->GetSTICHPlayback();
 
-    const int *stitchIndex = static_cast< const int * >(loopdata.GetAttributePointer(0x1553cd23, 0));
+    const int *stitchIndex = static_cast<const int *>(loopdata.GetAttributePointer(0x1553cd23, 0));
     if (!stitchIndex) {
-        stitchIndex = static_cast< const int * >(Attrib::DefaultDataArea(sizeof(int)));
+        stitchIndex = static_cast<const int *>(Attrib::DefaultDataArea(sizeof(int)));
     }
 
-    if (playback != nullptr) {
-        m_StichData = &playback->GetStich(STICH_TYPE_COLLISION, *stitchIndex);
-    }
+    m_StichData = &playback->GetStich(STICH_TYPE_COLLISION, *stitchIndex);
 
-    const int *overlap = static_cast< const int * >(loopdata.GetAttributePointer(0xad8c27f5, 0));
+    const int *overlap = static_cast<const int *>(loopdata.GetAttributePointer(0xad8c27f5, 0));
     if (!overlap) {
-        overlap = static_cast< const int * >(Attrib::DefaultDataArea(sizeof(int)));
+        overlap = static_cast<const int *>(Attrib::DefaultDataArea(sizeof(int)));
     }
 
-    m_tTimeBeforeRepeat = static_cast< short >(*overlap);
-    m_tOverlap = m_tTimeBeforeRepeat;
+    m_tOverlap = static_cast<short>(*overlap);
+    m_tTimeBeforeRepeat = m_tOverlap;
 
-    if (m_StichData != nullptr) {
-        m_Stitch[0] = new cStichWrapper(*m_StichData);
-        m_Stitch[0]->Play(0, 0, 0);
-    }
+    m_Stitch[0] = new cStichWrapper(*m_StichData);
+    m_Stitch[0]->Play(0, 0, 0);
 }
 
 cStitchLoop::~cStitchLoop() {
