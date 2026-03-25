@@ -214,7 +214,7 @@ void DrawVehicle::Part::OnEndDraw() {
         mOffScreenTask = false;
     }
     ReleaseSequencer();
-    static_cast<IModel *>(this)->ReleaseModel();
+    static_cast<IModel *>(this)->StopEffects();
 }
 
 void DrawVehicle::Part::PlaceTrigger(const UMath::Matrix4 &matrix, bool enable) {
