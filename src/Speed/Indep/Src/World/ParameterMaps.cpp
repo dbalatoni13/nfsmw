@@ -303,9 +303,7 @@ void ParameterAccessor::ClearLayer() {
 }
 
 void ParameterAccessor::CaptureData(float x, float y) {
-    if (this->Layer != 0) {
-        this->CurrentParameterData = this->Layer->GetParameterData(x, y);
-    }
+    this->CurrentParameterData = this->Layer != 0 ? this->Layer->GetParameterData(x, y) : this->Layer;
 }
 
 void ParameterAccessor::ClearData() {
