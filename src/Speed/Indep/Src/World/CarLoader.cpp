@@ -833,31 +833,29 @@ int CarLoader::UnallocateRideInfo(LoadedRideInfo *loaded_ride_info) {
 }
 
 int CarLoader::UnloadRideInfo(LoadedRideInfo *loaded_ride_info, int leave_if_in_mempool) {
-    if (loaded_ride_info->NumInstances < 1) {
-        LoadedSkin *loaded_skin = loaded_ride_info->pLoadedSkin;
+    ProfileNode profile_node("CarLoader::UnloadRideInfo", 0);
 
-        if (loaded_skin != 0 && loaded_skin->IsLoaded()) {
-            this->UnloadSkinTemporaries(loaded_skin, 0);
-        }
-
-        int in_mempool = this->IsLoaded(loaded_ride_info);
-
-        if (leave_if_in_mempool != 0) {
-            if (in_mempool != 0) {
-                return 0;
-            }
-        }
-
-        this->UnloadSkin(loaded_ride_info->pLoadedSkin);
-        this->UnloadWheel(loaded_ride_info->pLoadedWheel);
-        this->UnloadCar(loaded_ride_info->pLoadedCar);
-        delete this->LoadedRideInfoList.Remove(loaded_ride_info);
-        this->NumLoadedRideInfos--;
-        this->MayNeedDefragmentation++;
-        return 1;
+    if (loaded_ride_info->NumInstances > 0) {
+        return 0;
     }
 
-    return 0;
+    if (loaded_ride_info->pLoadedSkin != 0 && loaded_ride_info->pLoadedSkin->IsLoaded()) {
+        this->UnloadSkinTemporaries(loaded_ride_info->pLoadedSkin, 0);
+    }
+
+    int in_mempool = this->IsLoaded(loaded_ride_info);
+
+    if (leave_if_in_mempool != 0 && in_mempool != 0) {
+        return 0;
+    }
+
+    this->UnloadSkin(loaded_ride_info->pLoadedSkin);
+    this->UnloadWheel(loaded_ride_info->pLoadedWheel);
+    this->UnloadCar(loaded_ride_info->pLoadedCar);
+    delete this->LoadedRideInfoList.Remove(loaded_ride_info);
+    this->NumLoadedRideInfos--;
+    this->MayNeedDefragmentation++;
+    return 1;
 }
 
 void CarLoader::Unload(int handle) {
