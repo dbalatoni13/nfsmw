@@ -1453,14 +1453,16 @@ void EAXSound::UnloadFrontEndSoundBanks() {
     }
 
     gIsPauseForPause = 0;
-    while (AreResourceLoadsPending()) {
-        Update(0.0f);
+    while (g_pEAXSound->AreResourceLoadsPending()) {
+        g_pEAXSound->Update(0.0f);
         ServiceQueuedFiles();
     }
 
     Speech::Manager::Destroy();
 
-    m_pFESnd->DestroyAllDriveOnSnds();
+    if (m_pFESnd) {
+        m_pFESnd->DestroyAllDriveOnSnds();
+    }
 
     for (int n = 0; n < 13; n++) {
         if (m_pStateMgr[n]) {
@@ -1471,7 +1473,13 @@ void EAXSound::UnloadFrontEndSoundBanks() {
     delete m_pStreamManager;
     m_pStreamManager = nullptr;
 
-    m_pNFSMixMaster->DestroyMainMainMap();
+    if (m_pNFSMixMaster) {
+        m_pNFSMixMaster->DestroyMainMainMap();
+    }
+
+    if (m_pNFSLiveLink) {
+        *(reinterpret_cast<int *>(m_pNFSLiveLink) + 1) = 0;
+    }
 
     delete m_pFESnd;
     m_pFESnd = nullptr;
