@@ -23,8 +23,8 @@ struct DeltaSingleQMinRangef {
 // total size: 0xE
 struct DeltaSingleQMinRange {
     void GetAlignment(float &c0, float &c1) {
-        c0 = mConst0 * 9.5875265e-5f - 3.1415927f;
-        c1 = mConst1 * 9.5875265e-5f - 3.1415927f;
+        c0 = mConst0 * 9.5875265e-5f + -3.1415927f;
+        c1 = mConst1 * 9.5875265e-5f + -3.1415927f;
     }
 
     void UnQuantize(DeltaSingleQMinRangef &minRangef) {
@@ -119,8 +119,10 @@ struct DeltaSingleQ : public AnimMemoryMap {
     }
 
     void GetArrays(DeltaSingleQMinRange *&minRanges, unsigned char *&binStart) {
-        minRanges = GetMinRange();
-        binStart = &reinterpret_cast<unsigned char *>(minRanges)[mNumBones * sizeof(DeltaSingleQMinRange)];
+        unsigned char *memBytes = reinterpret_cast<unsigned char *>(&this[1]);
+
+        minRanges = reinterpret_cast<DeltaSingleQMinRange *>(memBytes);
+        binStart = &memBytes[mNumBones * sizeof(DeltaSingleQMinRange)];
     }
 
     int GetBinSize() const {
