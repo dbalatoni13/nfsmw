@@ -795,19 +795,20 @@ int CarLoader::UnloadWheel(LoadedWheel *loaded_wheel) {
 }
 
 int CarLoader::UnloadSkinPerms(LoadedSkin *loaded_skin) {
-    unsigned int name_hashes[89];
+    unsigned int name_hash_table[87];
 
     this->UnallocateSkinLayers(loaded_skin->LoadedSkinLayersPerm, loaded_skin->NumLoadedSkinLayersPerm);
 
-    int num_hashes =
-        this->UnloadSkinLayers(name_hashes, 0x57, loaded_skin->LoadedSkinLayersPerm, loaded_skin->NumLoadedSkinLayersPerm);
+    int num_name_hashes =
+        this->UnloadSkinLayers(name_hash_table, 0x57, loaded_skin->LoadedSkinLayersPerm, loaded_skin->NumLoadedSkinLayersPerm);
 
-    if (num_hashes != 0) {
-        eUnloadStreamingTexture(name_hashes, num_hashes);
-        loaded_skin->NumLoadedSkinLayersPerm = 0;
+    if (num_name_hashes == 0) {
+        return 0;
     }
 
-    return num_hashes != 0;
+    eUnloadStreamingTexture(name_hash_table, num_name_hashes);
+    loaded_skin->NumLoadedSkinLayersPerm = 0;
+    return 1;
 }
 
 int CarLoader::UnloadSkin(LoadedSkin *loaded_skin) {
