@@ -15,9 +15,7 @@ FacePixelation::FacePixelation(eView *view) {
 }
 
 void FacePixelation::SetLocation(bVector3 &worldPos) {
-    FacePixelation_mWorldPos.x = worldPos.x;
-    FacePixelation_mWorldPos.z = worldPos.z;
-    FacePixelation_mWorldPos.y = worldPos.y;
+    FacePixelation_mWorldPos = worldPos;
 }
 
 void FacePixelation::GetData(float *x, float *y, float *width, float *height) {
