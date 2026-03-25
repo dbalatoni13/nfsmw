@@ -1297,8 +1297,7 @@ ISimable *PVehicle::Construct(Sim::Param params) {
     Physics::Info::Performance perf;
     if (trailer_ref.GetCollectionKey() != 0) {
         Attrib::Gen::pvehicle trailerAttribs(trailer_ref, 0, nullptr);
-        Resource trailerResource(trailerAttribs, spooling_resources, false);
-        resources.push_back(trailerResource);
+        resources.push_back(Resource(trailerAttribs, spooling_resources, false));
     }
     if (!MakeRoom(vp.VehicleCache, resources)) {
         return nullptr;
