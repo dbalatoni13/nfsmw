@@ -325,8 +325,8 @@ bool FnDeltaQ::EvalSQTMasked(float currTime, const BoneMask *boneMask, float *sq
     int prevDeltaIdx;
     unsigned char *binData = &mBins[floorBinIdx * mBinSize];
     DeltaQPhysical *floorPhys = GetPhysical(binData);
-    if (mPrevKey == -1 || floorBinIdx != prevBinIdx || floorDeltaIdx == 0 ||
-        (floorKey < mPrevKey && !IsReverseDeltaSumEnabled())) {
+    bool preventReverse = floorKey < mPrevKey && !IsReverseDeltaSumEnabled();
+    if (mPrevKey == -1 || floorBinIdx != prevBinIdx || floorDeltaIdx == 0 || preventReverse) {
         for (int ibone = 0; ibone < deltaQ->mNumBones; ibone++) {
             if (boneMask->GetBone(boneIdxs[ibone])) {
                 floorPhys[ibone].UnQuantize(mPrevQs[ibone]);
