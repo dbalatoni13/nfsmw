@@ -571,21 +571,48 @@ bool FnDeltaQFast::EvalSQTMask(float currTime, float *sqt, const BoneMask *boneM
     }
 
     DeltaQFast *deltaQ = reinterpret_cast<DeltaQFast *>(mpAnim);
-    float *quatBase = sqt + 4;
-    unsigned char numBones = deltaQ->mNumBones;
+    float *q = sqt + 4;
     unsigned char *boneIdxs = deltaQ->mBoneIdxs;
 
-    if (!numBones) {
+    if (!deltaQ->mNumBones) {
         return true;
     }
 
-    int floorKey = FindQFastFloorKey(mPrevKey, deltaQ, currTime);
+    int floorTime = FloatToInt(currTime);
+    int floorKey;
+
+    if (!deltaQ->mTimes) {
+        if (floorTime < 0) {
+            floorKey = 0;
+        } else if (floorTime >= deltaQ->mNumKeys) {
+            floorKey = deltaQ->mNumKeys - 1;
+        } else {
+            floorKey = floorTime;
+        }
+    } else if (floorTime < deltaQ->mTimes[0]) {
+        floorKey = 0;
+    } else {
+        int timeIndex = mPrevKey < 1 ? 0 : mPrevKey - 1;
+
+        if (deltaQ->mTimes[timeIndex] <= floorTime) {
+            while (timeIndex < deltaQ->mNumKeys - 2 && deltaQ->mTimes[timeIndex + 1] <= floorTime) {
+                timeIndex++;
+            }
+        } else {
+            while (timeIndex > 0 && deltaQ->mTimes[timeIndex] > floorTime) {
+                timeIndex--;
+            }
+        }
+
+        floorKey = timeIndex + 1;
+    }
+
     int floorBinIdx = floorKey >> deltaQ->GetBinLengthPower();
     int floorDeltaIdx = floorKey & deltaQ->GetBinLengthModMask();
     int prevBinIdx = mPrevKey >> deltaQ->GetBinLengthPower();
     bool preventReverse = floorKey < mPrevKey && !IsReverseDeltaSumEnabled();
-    unsigned char *binData = GetQFastBin(mBins, mBinSize, floorBinIdx);
-    DeltaQFastPhysical *floorPhys = GetQFastPhysical(binData);
+    unsigned char *binData = &mBins[floorBinIdx * mBinSize];
+    DeltaQFastPhysical *floorPhys = reinterpret_cast<DeltaQFastPhysical *>(binData);
     int prevDeltaIdx;
 
     if (mPrevKey == -1 || floorBinIdx != prevBinIdx || floorDeltaIdx == 0 || preventReverse) {
@@ -633,14 +660,18 @@ bool FnDeltaQFast::EvalSQTMask(float currTime, float *sqt, const BoneMask *boneM
     } else if (floorKey == 0) {
         slerpReqd = currTime != 0.0f;
         if (slerpReqd) {
-            t = currTime / static_cast<float>(deltaQ->mTimes[0]);
+            float ceilKeyTime = static_cast<float>(deltaQ->mTimes[0]);
+
+            t = currTime / ceilKeyTime;
         }
     } else {
-        float floorTimef = static_cast<float>(deltaQ->mTimes[floorKey - 1]);
+        float floorKeyTime = static_cast<float>(deltaQ->mTimes[floorKey - 1]);
 
-        slerpReqd = currTime != floorTimef;
+        slerpReqd = currTime != floorKeyTime;
         if (slerpReqd) {
-            t = (currTime - floorTimef) / (static_cast<float>(deltaQ->mTimes[floorKey]) - floorTimef);
+            float ceilKeyTime = static_cast<float>(deltaQ->mTimes[floorKey]);
+
+            t = (currTime - floorKeyTime) / (ceilKeyTime - floorKeyTime);
         }
     }
 
@@ -656,7 +687,7 @@ bool FnDeltaQFast::EvalSQTMask(float currTime, float *sqt, const BoneMask *boneM
 
             float *prevQ = reinterpret_cast<float *>(&mPrevQs[ibone]);
             float *nextQ = reinterpret_cast<float *>(&mNextQs[ibone]);
-            float *out = &quatBase[boneIdx * 12];
+            float *out = &q[boneIdx * 12];
             float x = t * (nextQ[0] - prevQ[0]) + prevQ[0];
             float y = t * (nextQ[1] - prevQ[1]) + prevQ[1];
             float z = t * (nextQ[2] - prevQ[2]) + prevQ[2];
@@ -676,7 +707,7 @@ bool FnDeltaQFast::EvalSQTMask(float currTime, float *sqt, const BoneMask *boneM
                 continue;
             }
 
-            float *out = &quatBase[boneIdx * 12];
+            float *out = &q[boneIdx * 12];
 
             out[0] = mPrevQs[ibone].x;
             out[1] = mPrevQs[ibone].y;
@@ -693,7 +724,7 @@ bool FnDeltaQFast::EvalSQTMask(float currTime, float *sqt, const BoneMask *boneM
         }
 
         DeltaQFastPhysical *physical = &mConstPhysical[ibone];
-        float *out = &quatBase[boneIdx * 12];
+        float *out = &q[boneIdx * 12];
 
         out[0] = static_cast<float>(physical->mX) * kQFastPhysicalScale12 - kQFastPhysicalBias12;
         out[1] = static_cast<float>(physical->mY) * kQFastPhysicalScale12 - kQFastPhysicalBias12;

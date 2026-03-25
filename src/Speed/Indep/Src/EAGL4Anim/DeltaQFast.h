@@ -83,7 +83,7 @@ struct DeltaQFast : public AnimMemoryMap {
         return 1 << mBinLengthPower;
     }
 
-    unsigned char GetBinLengthPower() const {
+    unsigned int GetBinLengthPower() const {
         return mBinLengthPower;
     }
 
