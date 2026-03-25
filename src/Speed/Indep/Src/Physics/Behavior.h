@@ -147,6 +147,6 @@ template <typename T> class BehaviorSpecsPtr : public AttributeStructPtr<T> {
     }
 };
 
-template <typename T> inline BehaviorSpecsPtr<T>::~BehaviorSpecsPtr() {}
+template <typename T> BehaviorSpecsPtr<T>::~BehaviorSpecsPtr() {}
 
 #endif
