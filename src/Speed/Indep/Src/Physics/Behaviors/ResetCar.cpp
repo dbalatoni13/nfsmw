@@ -295,8 +295,7 @@ bool ResetCar::FindNearestRoad(ResetCookie *cookie) const {
                     if (WCollisionMgr(0, 3).GetWorldHeightAtPointRigorous(nav.GetPosition(), worldHeight, nullptr)) {
                         if (UMath::Abs(cookie->position.y - worldHeight) < 2.5f) {
                             cookie->position = nav.GetPosition();
-                            drive_dir = nav.GetForwardVector();
-                            UMath::Unit(drive_dir, cookie->direction);
+                            UMath::Unit(nav.GetForwardVector(), cookie->direction);
 
                             const WRoadSegment *seg = nav.GetSegment();
                             if (seg && seg->IsInRace()) {
