@@ -290,17 +290,14 @@ bool FnRunBlender::BlendVel(float t0, float t1, float *vel) const {
 }
 
 bool FnRunBlender::BlendFacing(float t0, float t1, float *f) const {
-    if (!f) {
-        return false;
-    }
-
     float *buffer = reinterpret_cast<float *>(ScratchBuffer::GetScratchBuffer(0).GetBuffer());
     UMath::Vector4 q0;
+    UMath::Vector4 q1;
     UMath::Vector4 q;
     UMath::Vector4 xAxis;
     UMath::Vector4 xAxis1;
 
-    if (!mFnAnims[0] || !mFnAnims[0]->EvalSQT(t0, buffer, 0)) {
+    if (!mFnAnims[0]->EvalSQT(t0, buffer, 0)) {
         return false;
     }
 
@@ -308,11 +305,11 @@ bool FnRunBlender::BlendFacing(float t0, float t1, float *f) const {
 
     if (mWeight != 0.0f) {
         mSkeleton->GetStillPose(buffer, 0);
-        if (!mFnAnims[1] || !mFnAnims[1]->EvalSQT(t1, buffer, 0)) {
+        if (!mFnAnims[1]->EvalSQT(t1, buffer, 0)) {
             return false;
         }
 
-        UMath::Vector4 q1 = *reinterpret_cast<UMath::Vector4 *>(&buffer[4]);
+        q1 = *reinterpret_cast<UMath::Vector4 *>(&buffer[4]);
         FastQuatBlendF4(mWeight, reinterpret_cast<float *>(&q0), reinterpret_cast<float *>(&q1), reinterpret_cast<float *>(&q));
     } else {
         q = q0;
@@ -320,9 +317,8 @@ bool FnRunBlender::BlendFacing(float t0, float t1, float *f) const {
 
     xAxis = kFacingAxis;
     QuatTransformPoint(q, xAxis, xAxis1);
-    f[0] = xAxis1.x;
     f[1] = xAxis1.z;
-    printf("Facing: %g %g\n", f[0], f[1]);
+    f[0] = xAxis1.x;
     return true;
 }
 
