@@ -258,8 +258,18 @@ int ParameterMapLayer::GetParameterSetIndexFromQuadData16(float x, float y) {
 }
 
 void *ParameterMapLayer::GetFieldPointer(int set_index, int field_index) {
-    int data_offset = set_index * this->GetSizeOfParameterSet() + this->GetFieldOffset(field_index);
-    return reinterpret_cast<char *>(this->ParameterData) + data_offset;
+    if (!Header->NumberOfParameterSets || !Header->SizeOfParameterSet ||
+        !Header->NumberOfFields || !FieldTypes || !FieldOffsets || !ParameterData) {
+        return nullptr;
+    }
+    if (set_index >= Header->NumberOfParameterSets) {
+        return nullptr;
+    }
+    if (field_index >= Header->NumberOfFields) {
+        return nullptr;
+    }
+    int data_offset = Header->SizeOfParameterSet * set_index + FieldOffsets[field_index];
+    return static_cast<char *>(ParameterData) + data_offset;
 }
 
 ParameterAccessor::ParameterAccessor(const char *layer_name)
@@ -285,13 +295,11 @@ void ParameterAccessor::SetLayer(ParameterMapLayer *layer) {
     }
 
     this->Layer = layer;
-    if (layer == 0) {
-        if (this->AutoAttachLayerNamehash != 0) {
-            GetAutoParameterAccessors().AddHead(this);
-        }
-    } else {
+    if (layer) {
         this->SetUpForNewLayer();
         this->Layer->AddParameterAccessor(this);
+    } else if (this->AutoAttachLayerNamehash) {
+        GetAutoParameterAccessors().AddTail(this);
     }
 }
 
