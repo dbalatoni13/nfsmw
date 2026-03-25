@@ -1290,8 +1290,7 @@ ISimable *PVehicle::Construct(Sim::Param params) {
     if (geoms == nullptr) {
         return nullptr;
     }
-    const CollisionGeometry::Bounds *bounds = geoms->GetRoot();
-    if (bounds == nullptr) {
+    if (geoms->GetRoot() == nullptr) {
         return nullptr;
     }
     bool spooling_resources = (vp.Flags & 1) != 0;
@@ -1322,19 +1321,21 @@ ISimable *PVehicle::Construct(Sim::Param params) {
         return nullptr;
     }
     const char *cache_name;
+    PVehicle *vehicle;
     if (vp.VehicleCache != nullptr) {
         cache_name = vp.VehicleCache->GetCacheName();
     } else {
         cache_name = nullptr;
     }
-    PVehicle *pv = new PVehicle(vp.carClass, attributes, vp.initialVec, vp.initialPos, bounds,
-                                customizations, resource, performance, cache_name);
+    vehicle = new PVehicle(vp.carClass, attributes, vp.initialVec, vp.initialPos,
+                           geoms->GetRoot(),
+                           customizations, resource, performance, cache_name);
     if ((vp.Flags & 2) != 0) {
-        pv->SetVehicleOnGround(vp.initialPos, vp.initialVec);
+        vehicle->SetVehicleOnGround(vp.initialPos, vp.initialVec);
     }
     ISimable *result = nullptr;
-    if (pv != nullptr) {
-        result = static_cast<ISimable *>(pv);
+    if (vehicle != nullptr) {
+        result = static_cast<ISimable *>(vehicle);
     }
     return result;
 }
