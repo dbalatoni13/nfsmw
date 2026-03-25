@@ -222,17 +222,25 @@ int SFXCTL_Pathfinder::GetHandle(int index) {
 }
 
 void SFXCTL_Pathfinder::DetachStreamInstance(stPFParms *pstPFParms) {
-    if (pstPFParms == nullptr) {
-        return;
-    }
+    IPathTrack *trackimp = PATH_gettrackimp(m_pPFParms[pstPFParms->projnum]->PATH_TRACK);
+    PathTrackSndStream *streamimp;
+    char *pbuff = gpEAXS_StrmMgr->GetStreamChannel(1)->GetBuffer();
+    int nresult;
+    nresult = trackimp->DetachSndStream(&pbuff);
     pstPFParms->bAttached = false;
 }
 
 void SFXCTL_Pathfinder::AttachStreamInstance(stPFParms *pstPFParms) {
-    if (pstPFParms == nullptr) {
-        return;
+    IPathTrack *trackimp = PATH_gettrackimp(m_pPFParms[pstPFParms->projnum]->PATH_TRACK);
+    PathTrackSndStream *streamimp;
+    int mystreamhandle = gpEAXS_StrmMgr->GetStreamChannel(1)->GetStrmHandle();
+    char *pbuff = gpEAXS_StrmMgr->GetStreamChannel(1)->GetBuffer();
+    if (trackimp != nullptr) {
+        int nresult;
+        nresult = trackimp->AttachSndStream(mystreamhandle, pbuff);
     }
     pstPFParms->bAttached = true;
+    PATH_clearallevents(0x0f000000);
 }
 
 void SFXCTL_Pathfinder::DestroyTrack(stPFParms *pstPFParms) {

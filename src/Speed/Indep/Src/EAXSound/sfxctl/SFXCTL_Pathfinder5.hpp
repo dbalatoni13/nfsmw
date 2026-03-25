@@ -51,6 +51,7 @@ struct stPFParms {
 
 struct PATHTRACKINFO;
 struct PATHSUBBANKSTATUS;
+struct PathTrackSndStream;
 
 struct IPathTrack {
     // Members (vtable is at offset 0x68, after data)
@@ -69,6 +70,16 @@ struct IPathTrack {
     /* 0x64 */ PATHSUBBANKSTATUS *mSubBanks;
     // vtable at 0x68
 
+    // 8 base virtual functions before destructor
+    virtual void __base_vfunc0();
+    virtual void __base_vfunc1();
+    virtual void __base_vfunc2();
+    virtual void __base_vfunc3();
+    virtual void __base_vfunc4();
+    virtual void __base_vfunc5();
+    virtual void __base_vfunc6();
+    virtual void __base_vfunc7();
+
     IPathTrack();
     virtual ~IPathTrack();
     virtual int GetNumSubBanks();
@@ -86,6 +97,19 @@ struct IPathTrack {
     virtual int GetHandle();
     virtual void *GetPlayOpts();
     virtual void SetFilePath();
+    virtual void __unk_vfunc16();
+    virtual void __unk_vfunc17();
+    virtual void __unk_vfunc18();
+    virtual void __unk_vfunc19();
+    virtual void __unk_vfunc20();
+    virtual void __unk_vfunc21();
+    virtual void __unk_vfunc22();
+    virtual void __unk_vfunc23();
+    virtual void __unk_vfunc24();
+    virtual void __unk_vfunc25();
+    virtual void __unk_vfunc26();
+    virtual int AttachSndStream(int handle, char *buffer);
+    virtual int DetachSndStream(char **pbuffer);
 };
 
 struct SFXCTL_Pathfinder : public SFXCTL {
