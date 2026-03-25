@@ -907,27 +907,26 @@ CarPart *RideInfo::SetPart(int car_slot_id, CarPart *car_part, bool update_enabl
 }
 
 void RideInfo::UpdatePartsEnabled() {
-    int num_car_slot_names;
-
     bMemSet(this->mPartsEnabled, 1, 0x8B);
-    num_car_slot_names = GetNumCarSlotIDNames();
-    for (int i = 0; i < num_car_slot_names; i++) {
+    int i = 0;
+    GetNumCarSlotIDNames();
+    do {
         if (i == CARSLOTID_FRONT_WHEEL) {
-            const unsigned int brake_paint_hash = bStringHash("CALIPER");
-            bool is_part_brake_paint = false;
+            unsigned int brake_paint_hash = bStringHash("CALIPER");
             CarPart *part = this->PreviewPart;
-
-            if (part != 0) {
+            bool is_part_brake_paint = false;
+            if (part) {
                 if (part->GetGroupNumber() == 'L') {
                     is_part_brake_paint = part->GetBrandNameHash() == brake_paint_hash;
                 }
-
-                if (part->GetGroupNumber() == 'B' || is_part_brake_paint) {
+                part = this->PreviewPart;
+                if (part && (part->GetGroupNumber() == 'B' || is_part_brake_paint)) {
                     this->mPartsEnabled[i] = 0;
                 }
             }
         }
-    }
+        i++;
+    } while (i <= 0x8a);
 }
 
 int RideInfo::IsPartEnabled(int car_part_id) {
