@@ -11,6 +11,14 @@ Examples:
   python tools/dwarf1_subroutine_tree.py build/GOWE69/src/Speed/Indep/SourceLists/zAttribSys.o --tag 0x2A2C8
   python tools/dwarf1_subroutine_tree.py -u main/Speed/Indep/SourceLists/zAttribSys -f 'Attrib::Database::RemoveClass(Attrib::Class const *)' --json
   python tools/dwarf1_subroutine_tree.py -u main/Speed/Indep/SourceLists/zAttribSys -f 'Attrib::Class::RemoveCollection(Attrib::Collection *)' --compare-original
+  python tools/dwarf1_subroutine_tree.py -u main/Speed/Indep/SourceLists/zAttribSys -f 'Attrib::Class::RemoveCollection(Attrib::Collection *)' --show-non-subroutine
+
+The default tree intentionally compares by owner + bare name, which is great for fast
+owner-drift checks but can hide overload-only mismatches. When an exact-text candidate
+adds an overloaded inline helper or otherwise reuses the same base name with different
+parameters/locals, use `--show-non-subroutine` (and `--show-mangled` when available) to
+inspect the rebuilt formal-parameter/local rows directly before trusting a
+`--compare-original` pass.
 """
 
 from __future__ import annotations
@@ -295,6 +303,18 @@ def resolved_name(tags: Dict[int, Tag], tag: Tag) -> Optional[str]:
     return None
 
 
+def resolved_mangled_name(tags: Dict[int, Tag], tag: Tag) -> Optional[str]:
+    mangled = attribute_value(tag, AttributeKind.MW_MANGLED)
+    if isinstance(mangled, str):
+        return mangled
+    spec_ref = attribute_value(tag, AttributeKind.SPECIFICATION)
+    if isinstance(spec_ref, int) and spec_ref in tags:
+        spec_mangled = attribute_value(tags[spec_ref], AttributeKind.MW_MANGLED)
+        if isinstance(spec_mangled, str):
+            return spec_mangled
+    return None
+
+
 def resolved_owner_name(tags: Dict[int, Tag], tag: Tag) -> Optional[str]:
     owner = member_owner_name(tags, tag)
     if owner:
@@ -391,6 +411,7 @@ def render_tree(
                 "label": block_label(tags, current),
                 "owner": resolved_owner_name(tags, current),
                 "name": resolved_name(tags, current),
+                "mangled": resolved_mangled_name(tags, current),
                 "low_pc": low,
                 "high_pc": high,
                 "specification": attribute_value(current, AttributeKind.SPECIFICATION),
@@ -415,6 +436,7 @@ def render_tree(
                         "label": block_label(tags, child),
                         "owner": resolved_owner_name(tags, child),
                         "name": resolved_name(tags, child),
+                        "mangled": resolved_mangled_name(tags, child),
                         "low_pc": low_pc,
                         "high_pc": high_pc,
                         "specification": attribute_value(child, AttributeKind.SPECIFICATION),
@@ -432,14 +454,20 @@ def format_range(low_pc: Optional[int], high_pc: Optional[int]) -> str:
     return f"{low_pc:04X}-{high_pc:04X}"
 
 
-def print_tree(rows: Iterable[Dict[str, Any]]) -> None:
+def print_tree(rows: Iterable[Dict[str, Any]], *, show_mangled: bool = False) -> None:
     for row in rows:
         indent = "  " * int(row["depth"])
         spec = row["specification"]
         spec_suffix = f" [spec=0x{spec:X}]" if isinstance(spec, int) else ""
+        mangled = row.get("mangled")
+        mangled_suffix = (
+            f" [mangled={mangled}]"
+            if show_mangled and isinstance(mangled, str) and mangled
+            else ""
+        )
         print(
             f"{indent}{format_range(row['low_pc'], row['high_pc'])} "
-            f"{row['label']}{spec_suffix}"
+            f"{row['label']}{spec_suffix}{mangled_suffix}"
         )
 
 
@@ -509,11 +537,95 @@ def normalize_original_label(sig_line: str) -> str:
     return prefix
 
 
+def split_top_level_commas(text: str) -> List[str]:
+    parts: List[str] = []
+    depth_angle = 0
+    depth_paren = 0
+    start = 0
+    for index, char in enumerate(text):
+        if char == "<":
+            depth_angle += 1
+        elif char == ">":
+            depth_angle = max(0, depth_angle - 1)
+        elif char == "(":
+            depth_paren += 1
+        elif char == ")":
+            depth_paren = max(0, depth_paren - 1)
+        elif char == "," and depth_angle == 0 and depth_paren == 0:
+            parts.append(text[start:index].strip())
+            start = index + 1
+    tail = text[start:].strip()
+    if tail:
+        parts.append(tail)
+    return parts
+
+
+def extract_decl_name(line: str) -> Optional[str]:
+    candidate = re.sub(r"/\*.*?\*/", "", line).split("//", 1)[0].strip()
+    if not candidate or candidate.startswith("/*"):
+        return None
+    if candidate.endswith("{}"):
+        return None
+    if candidate.endswith("{"):
+        candidate = candidate[:-1].rstrip()
+    if "=" in candidate:
+        candidate = candidate.split("=", 1)[0].rstrip()
+    if candidate.endswith(";"):
+        candidate = candidate[:-1].rstrip()
+    match = re.search(r"([A-Za-z_]\w*)\s*(?:\[[^\]]*\])?$", candidate)
+    if not match:
+        return None
+    name = match.group(1)
+    if name in {"const", "volatile", "unsigned", "signed", "struct", "class"}:
+        return None
+    return name
+
+
+def original_param_names(sig_line: str) -> List[str]:
+    line = re.sub(r"/\*.*?\*/", "", sig_line).strip()
+    if line.endswith("{}"):
+        line = line[:-2].rstrip()
+    if line.endswith("{"):
+        line = line[:-1].rstrip()
+
+    is_static = False
+    changed = True
+    while changed:
+        changed = False
+        if line.startswith("static "):
+            line = line[len("static ") :].lstrip()
+            is_static = True
+            changed = True
+        if line.startswith("inline "):
+            line = line[len("inline ") :].lstrip()
+            changed = True
+
+    paren = line.find("(")
+    close = line.rfind(")")
+    if paren == -1 or close == -1 or close < paren:
+        return []
+
+    names: List[str] = []
+    if not is_static and "::" in line[:paren]:
+        names.append("this")
+
+    params_text = line[paren + 1 : close].strip()
+    if not params_text or params_text == "void":
+        return names
+
+    for part in split_top_level_commas(params_text):
+        name = extract_decl_name(part)
+        if name:
+            names.append(name)
+    return names
+
+
 def original_rows_from_block(
     block: tuple[str, str, str, str],
     function_label: str,
     *,
     max_depth: Optional[int] = None,
+    include_non_subroutine: bool = False,
 ) -> List[Dict[str, Any]]:
     rows: List[Dict[str, Any]] = [
         {
@@ -524,12 +636,47 @@ def original_rows_from_block(
             "high_pc": int(block[1], 16),
         }
     ]
+    if include_non_subroutine:
+        for name in original_param_names(block[2]):
+            rows.append(
+                {
+                    "tag_kind": "ORIGINAL_PARAM",
+                    "depth": 1,
+                    "label": name,
+                    "low_pc": int(block[0], 16),
+                    "high_pc": int(block[1], 16),
+                }
+            )
 
     lines = block[3].splitlines()
     range_re = re.compile(
         r"^(\s*)// Range:\s+0x([0-9A-Fa-f]+)\s*->\s*0x([0-9A-Fa-f]+)\s*$"
     )
     for index, line in enumerate(lines):
+        if include_non_subroutine and line.strip() == "// Local variables":
+            depth = len(line) - len(line.lstrip(" "))
+            local_depth = depth // 4
+            lookahead = index + 1
+            while lookahead < len(lines):
+                candidate = lines[lookahead].strip()
+                if not candidate or candidate.startswith("// Range:"):
+                    break
+                if candidate.startswith("//"):
+                    lookahead += 1
+                    continue
+                name = extract_decl_name(candidate)
+                if name:
+                    rows.append(
+                        {
+                            "tag_kind": "ORIGINAL_LOCAL",
+                            "depth": local_depth,
+                            "label": name,
+                            "low_pc": 0,
+                            "high_pc": 0,
+                        }
+                    )
+                lookahead += 1
+
         match = range_re.match(line)
         if not match:
             continue
@@ -560,6 +707,30 @@ def original_rows_from_block(
                 "high_pc": int(match.group(3), 16) & 0xFFFF,
             }
         )
+        if include_non_subroutine:
+            for name in original_param_names(sig_line):
+                rows.append(
+                    {
+                        "tag_kind": "ORIGINAL_PARAM",
+                        "depth": depth + 1,
+                        "label": name,
+                        "low_pc": int(match.group(2), 16) & 0xFFFF,
+                        "high_pc": int(match.group(3), 16) & 0xFFFF,
+                    }
+                )
+            if normalize_original_label(sig_line) == "<block>":
+                name = extract_decl_name(sig_line)
+                if name:
+                    rows.append(
+                        {
+                            "tag_kind": "ORIGINAL_LOCAL",
+                            "depth": depth + 1,
+                            "label": name,
+                            "low_pc": int(match.group(2), 16) & 0xFFFF,
+                            "high_pc": int(match.group(3), 16) & 0xFFFF,
+                        }
+                    )
+
     return rows
 
 
@@ -670,6 +841,11 @@ def parse_args() -> argparse.Namespace:
         help="Also include parameters, locals, and labels in the tree output",
     )
     parser.add_argument(
+        "--show-mangled",
+        action="store_true",
+        help="Also print MWCC mangled names when present",
+    )
+    parser.add_argument(
         "--json",
         action="store_true",
         help="Emit JSON instead of a text tree",
@@ -722,6 +898,7 @@ def main() -> None:
             original_block,
             qualified_name(tags, tag),
             max_depth=args.max_depth,
+            include_non_subroutine=args.show_non_subroutine,
         )
         compare = compare_rows(original_rows, rows)
 
@@ -739,10 +916,14 @@ def main() -> None:
         print(f"Object: {obj_path}")
         print(f"Tag: 0x{tag.key:X}")
         print(f"Function: {qualified_name(tags, tag)}")
+        if args.show_mangled:
+            mangled = resolved_mangled_name(tags, tag)
+            if mangled:
+                print(f"Mangled: {mangled}")
         low_pc, high_pc = tag_range(tag)
         print(f"Range: {format_range(low_pc, high_pc)}")
         print()
-        print_tree(rows)
+        print_tree(rows, show_mangled=args.show_mangled)
         if compare is not None:
             print_comparison(compare)
 
