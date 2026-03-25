@@ -103,38 +103,40 @@ int LoaderSoundStichs(bChunk *chunk) {
         return 0;
     }
 
-    bChunk *cur = chunk + 1;
-    bChunk *end = static_cast<bChunk *>(
-        static_cast<void *>(static_cast<char *>(static_cast<void *>(&chunk[1].ID)) + chunk->Size));
-    while (cur < end && cur->ID == 0x3b502) {
-        SND_Stich *stitch = static_cast<SND_Stich *>(static_cast<void *>(cur + 1));
-        bEndianSwap32(stitch);
-        bEndianSwap16(&cur[1].Size);
-        bEndianSwap16(static_cast<char *>(static_cast<void *>(&cur[1].Size)) + 2);
-        bEndianSwap16(static_cast<char *>(static_cast<void *>(&cur[2].ID)) + 2);
-        bEndianSwap16(&cur[2].Size);
+    bChunk *last_chunk = chunk->GetLastChunk();
+    chunk = chunk + 1;
+
+    while (chunk < last_chunk) {
+        if (chunk->GetID() != 0x3b502) {
+            break;
+        }
+        SND_Stich *NewStich = reinterpret_cast<SND_Stich *>(chunk->GetData());
+        bEndianSwap32(NewStich);
+        bEndianSwap16(chunk->GetData() + 4);
+        bEndianSwap16(chunk->GetData() + 6);
+        bEndianSwap16(chunk->GetData() + 0xA);
+        bEndianSwap16(chunk->GetData() + 0xC);
 
         if (g_pEAXSound != nullptr) {
             cSTICH_PlayBack *playback = g_pEAXSound->GetSTICHPlayback();
             if (playback != nullptr) {
-                playback->AddStich(static_cast< STICH_TYPE >(stitch->eStichType), *stitch);
+                playback->AddStich(static_cast<STICH_TYPE>(NewStich->eStichType), *NewStich);
             }
         }
 
-        stitch->pSampleRefList = static_cast<SND_SampleRef *>(
-            static_cast<void *>(static_cast<char *>(static_cast<void *>(&cur[2].ID)) + cur->Size));
-        for (int i = 0; i < static_cast< int >(stitch->Num_SampleRefs); i++) {
-            char *sample = static_cast<char *>(static_cast<void *>(stitch->pSampleRefList + i));
+        bChunk *sampleRefChunk = chunk->GetNext();
+        NewStich->pSampleRefList = reinterpret_cast<SND_SampleRef *>(sampleRefChunk->GetData());
+        for (int i = 0; i < static_cast<int>(NewStich->Num_SampleRefs); i++) {
             GlobalStichSizes += 0x10;
-            bEndianSwap16(sample + 2);
-            bEndianSwap16(sample + 4);
-            bEndianSwap16(sample + 6);
-            bEndianSwap16(sample + 8);
-            bEndianSwap16(sample + 0xA);
-            bEndianSwap16(sample + 0xC);
+            bEndianSwap16(i * 16 + reinterpret_cast<char *>(NewStich->pSampleRefList) + 2);
+            bEndianSwap16(i * 16 + reinterpret_cast<char *>(NewStich->pSampleRefList) + 4);
+            bEndianSwap16(i * 16 + reinterpret_cast<char *>(NewStich->pSampleRefList) + 6);
+            bEndianSwap16(i * 16 + reinterpret_cast<char *>(NewStich->pSampleRefList) + 8);
+            bEndianSwap16(i * 16 + reinterpret_cast<char *>(NewStich->pSampleRefList) + 0xA);
+            bEndianSwap16(i * 16 + reinterpret_cast<char *>(NewStich->pSampleRefList) + 0xC);
         }
 
-        cur = cur->GetNext();
+        chunk = sampleRefChunk->GetNext();
     }
 
     return 1;
