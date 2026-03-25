@@ -114,28 +114,36 @@ void Transform::ExtractQuatTrans(UMath::Vector4 *retQuat, UMath::Vector4 *retTra
 }
 
 void Transform::BuildSQT(float sx, float sy, float sz, float qx, float qy, float qz, float qw, float tx, float ty, float tz) {
-    float *mat = m.GetElements();
-    float qy2 = qy + qy;
-    float qz2 = qz + qz;
-    float qx2qx = qx * (qx + qx);
-    float qw2qx = qw * (qx + qx);
+    float s = 1.0f;
+    float xs = qx + qx;
+    float ys = qy + qy;
+    float zs = qz + qz;
+    float wx = qw * xs;
+    float wy = qw * ys;
+    float wz = qw * zs;
+    float xx = qx * xs;
+    float xy = qx * ys;
+    float xz = qx * zs;
+    float yy = qy * ys;
+    float yz = qy * zs;
+    float zz = qz * zs;
 
-    mat[12] = tx;
-    mat[13] = ty;
-    mat[15] = 1.0f;
-    mat[11] = 0.0f;
-    mat[3] = 0.0f;
-    mat[7] = 0.0f;
-    mat[14] = tz;
-    mat[2] = sx * (qw * qz2 - qw * qy2);
-    mat[6] = sy * (qy * qz2 + qw2qx);
-    mat[10] = sz * (1.0f - (qx2qx + qy * qy2));
-    mat[0] = sx * (1.0f - (qy * qy2 + qz * qz2));
-    mat[4] = sy * (qw * qy2 - qz * qz2);
-    mat[8] = sz * (qw * qz2 + qz * qy2);
-    mat[1] = sx * (qw * qy2 + qz * qz2);
-    mat[5] = sy * (1.0f - (qx2qx + qz * qz2));
-    mat[9] = sz * (qy * qz2 - qw2qx);
+    m[3].x = tx;
+    m[3].y = ty;
+    m[3].w = s;
+    m[2].w = 0.0f;
+    m[0].w = 0.0f;
+    m[1].w = 0.0f;
+    m[3].z = tz;
+    m[0].z = sx * (xz - wy);
+    m[1].z = sy * (yz + wx);
+    m[2].z = sz * (s - (xx + yy));
+    m[0].x = sx * (s - (yy + zz));
+    m[1].x = sy * (xy - wz);
+    m[2].x = sz * (xz + wy);
+    m[0].y = sx * (xy + wz);
+    m[1].y = sy * (s - (xx + zz));
+    m[2].y = sz * (yz - wx);
 }
 
 }; // namespace EAGL4
