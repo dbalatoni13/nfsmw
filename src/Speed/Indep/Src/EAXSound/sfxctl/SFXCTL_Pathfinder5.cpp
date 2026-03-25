@@ -148,7 +148,7 @@ void SFXCTL_Pathfinder::SongProgressCallback(int projID, int nodeparm) {
 
     for (int n = 0; n < 4; ++n) {
         stPFParms *pf = m_pPFParms[n];
-        if (pf != nullptr && static_cast< int >(pf->PATH_VOICE) == projID && (pf->procflags & 4) != 0) {
+        if (pf != nullptr && projID == static_cast< int >(pf->PATH_VOICE) && (pf->procflags & 4) != 0) {
             pf->curnodeparm = nodeparm;
         }
     }

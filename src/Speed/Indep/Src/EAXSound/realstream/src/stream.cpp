@@ -231,9 +231,9 @@ void queuerequest(STREAMHEADERtag *stream, REQUESTSTRUCTtag *reqRaw) {
     MUTEX_lock(&header->mutex);
     if (header->lastreq == nullptr) {
         request->prev = nullptr;
-        header->lastreq = request;
         header->firstreq = request;
         header->curreq = request;
+        header->lastreq = request;
     } else {
         request->prev = header->lastreq;
         header->lastreq->next = request;

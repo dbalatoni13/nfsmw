@@ -1160,8 +1160,7 @@ int EAXAemsManager::IsAssetLoaded(Attrib::StringKey filename) {
 }
 
 void EAXAemsManager::UnloadSndData(Attrib::StringKey filename) {
-    Attrib::StringKey local_18(filename);
-    int index = IsAssetInList(local_18);
+    int index = IsAssetInList(filename);
     if (index != -1) {
         UnloadSndData(index);
     }

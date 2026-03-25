@@ -315,10 +315,10 @@ void SFXCTL_Tunnel::SetCurrentReverbType(eREVERBFX type, int reverboffset) {
     m_ReverbOffset = static_cast< float >(reverboffset);
     m_TargetType = type;
     ReflRamp.Initialize(0.0f, 1.0f, g_REVERBFXMODULES[m_ReverbType].FadeOut, LINEAR);
-    m_CurWetAemsTarget = 0.0f;
-    m_CurDryAemsTarget = 1.0f;
     m_CurWetGinsuTarget = 0.0f;
     m_CurDryGinsuTarget = 1.0f;
+    m_CurWetAemsTarget = 0.0f;
+    m_CurDryAemsTarget = 1.0f;
 }
 
 void SFXCTL_Tunnel::UpdateCityVerb(float t) {
