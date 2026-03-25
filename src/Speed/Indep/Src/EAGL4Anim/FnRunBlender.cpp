@@ -509,10 +509,10 @@ bool FnRunBlender::FindMatchTime(const MatchPhaseInput &input, float &time) cons
             float deltaAngle = phase.mAngle - prevAngle;
 
             if (0.0f <= deltaAngle * input.mDAngle) {
-                if (deltaAngle == 0.0f) {
-                    time = static_cast<float>(i - 1) + 0.5f;
-                } else {
+                if (deltaAngle != 0.0f) {
                     time = (input.mAngle - prevAngle) / deltaAngle + static_cast<float>(i - 1);
+                } else {
+                    time = static_cast<float>(i - 1) + 0.5f;
                 }
                 return true;
             }
