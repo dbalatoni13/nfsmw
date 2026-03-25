@@ -49,7 +49,44 @@ struct stPFParms {
     PATHSTATUS pathstatus;
 };
 
-struct IPathTrack;
+struct PATHTRACKINFO;
+struct PATHSUBBANKSTATUS;
+
+struct IPathTrack {
+    // Members (vtable is at offset 0x68, after data)
+    /* 0x00 */ int mHandle;
+    /* 0x04 */ int mStatusCode;
+    /* 0x08 */ int mFXSendLevel;
+    /* 0x0C */ int mDryLevel;
+    /* 0x10 */ int mVolume;
+    /* 0x14 */ int mMaxRequests;
+    /* 0x18 */ int mActiveRequests;
+    /* 0x1C */ int mUpdateStatus;
+    /* 0x20 */ void *mPlayOpts;
+    /* 0x24 */ PATHSTATUS mStatus;
+    /* 0x5C */ PATHTRACKINFO *mTrackInfo;
+    /* 0x60 */ int mMaxSubBanks;
+    /* 0x64 */ PATHSUBBANKSTATUS *mSubBanks;
+    // vtable at 0x68
+
+    IPathTrack();
+    virtual ~IPathTrack();
+    virtual int GetNumSubBanks();
+    virtual int GetMaxSubBanks();
+    virtual PATHSUBBANKSTATUS *GetSubBankPtr(int);
+    virtual PATHSUBBANKSTATUS *GetAvailSubBankPtr();
+    virtual int AddSubBank(int);
+    virtual int AddSubBankDone(int);
+    virtual int DetachSubBankHeader(int, int);
+    virtual int RemoveSubBank(int);
+    virtual void SetTrackInfo(PATHTRACKINFO *info);
+    virtual int GetVolume();
+    virtual int GetDryLevel();
+    virtual int GetFXSendLevel(int bus);
+    virtual int GetHandle();
+    virtual void *GetPlayOpts();
+    virtual void SetFilePath();
+};
 
 struct SFXCTL_Pathfinder : public SFXCTL {
   protected:

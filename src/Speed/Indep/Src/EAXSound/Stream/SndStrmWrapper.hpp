@@ -90,6 +90,9 @@ struct SndStrmWrapper {
     int PurgeStream();
     void DestroyStream();
 
+    int GetStrmHandle() { return m_handle; }
+    char *GetBuffer() { return m_buffer; }
+
   private:
     int m_RealStreamBuffer;
     unsigned int m_RealStrmHandle;

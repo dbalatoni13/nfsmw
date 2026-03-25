@@ -6,6 +6,14 @@
 int PATH_stop(int tracks);
 int PATH_shutdown();
 int PATH_destroy(int trackhandle);
+void PATH_setallocator(EA::Allocator::IAllocator *allocator, const EA::TagValuePair &flags);
+void PATH_vectortoreal6();
+void PATH_vectortosnd();
+void PATH_callbacks(void (*songprogress)(int, int), void (*eventrelease)(void *, PATHEVENTRESULT), void (*eventaction)(int, int, int));
+int PATH_createstreamtrack(int track, char *musname, int bytespersec);
+IPathTrack *PATH_createstreamimp(int track, int channels, float rate);
+IPathTrack *PATH_gettrackimp(int track);
+void PATH_clearallevents(int mask);
 
 SFXCTL_Pathfinder *g_pSFXCTL_Pathfinder;
 stPFParms *SFXCTL_Pathfinder::m_pPFParms[4] = {nullptr, nullptr, nullptr, nullptr};
@@ -28,10 +36,12 @@ int PFXMAP[4][21][2] = {
 
 SFXCTL_Pathfinder::SFXCTL_Pathfinder()
     : m_projrefcnt(0) {
-    m_PFStrmImp[0] = nullptr;
-    m_PFStrmImp[1] = nullptr;
-    m_PFStrmImp[2] = nullptr;
-    m_PFStrmImp[3] = nullptr;
+    g_pSFXCTL_Pathfinder = nullptr;
+    for (int n = 0; n <= 3; n++) {
+        if (m_PFStrmImp[n] != 0) {
+            m_PFStrmImp[n] = 0;
+        }
+    }
 }
 
 SFXCTL_Pathfinder::~SFXCTL_Pathfinder() {}
@@ -48,7 +58,17 @@ SndBase::TypeInfo *SFXCTL_Pathfinder::GetTypeInfo() const { return &s_TypeInfo; 
 
 char *SFXCTL_Pathfinder::GetTypeName() const { return s_TypeInfo.typeName; }
 
-void SFXCTL_Pathfinder::InitSFX() { SFXCTL::InitSFX(); }
+void SFXCTL_Pathfinder::InitSFX() {
+    EA::TagValuePair tvp;
+    tvp.mTag = 0;
+    tvp.mValue.mInt = 0;
+    tvp.mNext = nullptr;
+    PATH_setallocator(&gPF_MemoryAllocator, tvp);
+    PATH_vectortoreal6();
+    PATH_vectortosnd();
+    PATH_callbacks(SongProgressCallback, EventReleaseCallback, EventActionCallback);
+    SFXCTL::InitSFX();
+}
 
 int SFXCTL_Pathfinder::GetController(int Index) { return -1; }
 
@@ -162,26 +182,27 @@ int SFXCTL_Pathfinder::InitPFParms(stPFParms *pstparms, int pathid, int trackid)
 }
 
 void SFXCTL_Pathfinder::CreateTrack(int index) {
-    if (index < 0 || index >= 4) {
-        return;
-    }
     stPFParms *pf = m_pPFParms[index];
-    if (pf == nullptr || !pf->bdataloaded) {
+    if (!pf->bdataloaded) {
         return;
     }
+    char musname[64];
+    bStrCat(musname, g_DataPaths[0], pf->musfile);
+    int result = PATH_createstreamtrack(pf->PATH_TRACK, musname, 2500);
+    if (result < 0) {
+        return;
+    }
+    m_PFStrmImp[index] = PATH_createstreamimp(pf->PATH_TRACK, 3, 2500.0f);
     if (index == 0) {
-        AttachStreamInstance(pf);
+        AttachStreamInstance(m_pPFParms[0]);
     }
 }
 
 int SFXCTL_Pathfinder::GetHandle(int index) {
-    if (index < 0 || index >= 4) {
-        return -1;
-    }
     if (m_PFStrmImp[index] == nullptr) {
         return -1;
     }
-    return -1;
+    return m_PFStrmImp[index]->GetHandle();
 }
 
 void SFXCTL_Pathfinder::DetachStreamInstance(stPFParms *pstPFParms) {

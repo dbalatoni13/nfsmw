@@ -219,19 +219,15 @@ void SFXCTL_Tunnel::SetupSFX(CSTATE_Base *_StateBase) {
 
 TrackPathZone *SFXCTL_Tunnel::GetTunnelType(bVector3 &pos, eTrackPathZoneType zonetype) {
     TrackPathZone *zone = nullptr;
-    while (true) {
-        zone = TheTrackPathManager.FindZone(static_cast<bVector2 *>(static_cast<void *>(&pos)), zonetype, zone);
-        if (zone == nullptr) {
-            return nullptr;
+    while ((zone = TheTrackPathManager.FindZone(static_cast<bVector2 *>(static_cast<void *>(&pos)), zonetype, zone)) != nullptr) {
+        if (zone->GetElevation() == 0.0f) {
+            return zone;
         }
-        if (zone->Elevation == 0.0f) {
-            break;
-        }
-        if (m_pStateBase->GetPhysCar()->mMatrix.v3.z <= zone->Elevation) {
+        if (zone->GetElevation() >= GetPhysCar()->GetPosition()->z) {
             return zone;
         }
     }
-    return zone;
+    return nullptr;
 }
 
 void SFXCTL_Tunnel::UpdateIsInTunnel(float t) {

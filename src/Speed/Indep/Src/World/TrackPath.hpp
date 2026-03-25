@@ -52,6 +52,10 @@ class TrackPathZone {
     int GetData(int index) {
         return Data[index];
     }
+
+    float GetElevation() {
+        return Elevation;
+    }
 };
 
 class TrackPathManager {
