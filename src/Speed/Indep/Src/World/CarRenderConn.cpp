@@ -121,7 +121,16 @@ static void StopEffect(VehicleRenderConn::Effect *effect) {
     effect->Stop();
 }
 
-namespace {
+static void EmitterGroupSetOldSurfaceEffectFlag(EmitterGroup *group) {
+    *reinterpret_cast<unsigned int *>(reinterpret_cast<unsigned char *>(group) + 0x18) |= 0x80000;
+}
+
+static TireState *CreateTireState() {
+    TireState *state = reinterpret_cast<TireState *>(gFastMem.Alloc(0xe0, 0));
+
+    TireState_ctor(state);
+    return state;
+}
 
 struct RenderPktCarOpen {
     void *vtable;
@@ -149,17 +158,6 @@ struct LocalReferenceMirror {
     const bVector3 *mAcceleration;
 };
 
-void EmitterGroupSetOldSurfaceEffectFlag(EmitterGroup *group) {
-    *reinterpret_cast<unsigned int *>(reinterpret_cast<unsigned char *>(group) + 0x18) |= 0x80000;
-}
-
-TireState *CreateTireState() {
-    TireState *state = reinterpret_cast<TireState *>(gFastMem.Alloc(0xe0, 0));
-
-    TireState_ctor(state);
-    return state;
-}
-
 static inline float &CarRenderInfoF32(CarRenderInfo *info, unsigned int offset) {
     return *reinterpret_cast<float *>(reinterpret_cast<unsigned char *>(info) + offset);
 }
@@ -179,8 +177,6 @@ static inline short &CarRenderInfoS16(CarRenderInfo *info, unsigned int offset) 
 static inline bool eIsGameViewID(int id) {
     return id - 1U < 3;
 }
-
-} // namespace
 
 void NotifyTireStateEffectOfEmitterDelete(void *tire_state_effect, EmitterGroup *grp) {
     TireState::Effect *effect = static_cast<TireState::Effect *>(tire_state_effect);

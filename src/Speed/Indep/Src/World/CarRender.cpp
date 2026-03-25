@@ -258,9 +258,10 @@ void sh_Setup(bVector3 *car_pos) {
     }
 }
 
+static float const CarBodyLodSwapSize[] = {120.0f, 25.0f, 20.0f, 10.0f, 0.0f};
+static float const TrafficCarBodyLodSwapSize[] = {20.0f, 10.0f, 4.0f, 0.0f, 0.0f};
+
 namespace {
-float const CarBodyLodSwapSize[] = {120.0f, 25.0f, 20.0f, 10.0f, 0.0f};
-float const TrafficCarBodyLodSwapSize[] = {20.0f, 10.0f, 4.0f, 0.0f, 0.0f};
 
 void Render(eViewPlatInterface *view, eModel *model, bMatrix4 *local_to_world, eLightContext *light_context, unsigned int flags,
             unsigned int exc_flag);
