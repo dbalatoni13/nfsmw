@@ -131,6 +131,11 @@ struct SampleQueueItem {
     cSampleWarpper *pSample; // offset 0x0, size 0x4
     cStichWrapper *pStitch;  // offset 0x4, size 0x4
 
+    SampleQueueItem()
+        : pSample(nullptr) //
+        , pStitch(nullptr)
+    {}
+
     bool operator==(const SampleQueueItem &compareto) const {
         return pSample == compareto.pSample && pStitch == compareto.pStitch;
     }

@@ -802,27 +802,22 @@ void cStichWrapper::Play(int Vol, int Pitch, int Azimuth) {
 }
 
 void cStichWrapper::Play(const SND_Params *Params) {
-    STICH_TYPE stitchType = static_cast<STICH_TYPE>(StichData->eStichType);
+    STICH_TYPE stitch_type = static_cast<STICH_TYPE>(GetData().eStichType);
 
     if (Params != nullptr) {
-        SndParams.ID = Params->ID;
-        SndParams.Vol = Params->Vol;
-        SndParams.Pitch = Params->Pitch;
-        SndParams.Az = Params->Az;
-        SndParams.Mag = Params->Mag;
-        SndParams.RVerb = Params->RVerb;
+        SndParams = *Params;
         SndParams.Vol = SndParams.Vol * 0x7FFF >> 0xF;
     }
 
-    for (int i = 0; i < static_cast<int>(StichData->Num_SampleRefs); i++) {
-        cSampleWarpper *sample = new cSampleWarpper(StichData->pSampleRefList[i]);
+    for (int i = 0; i < static_cast<int>(GetData().Num_SampleRefs); i++) {
+        cSampleWarpper *sample = new cSampleWarpper(GetData().pSampleRefList[i]);
         ActiveSamplesRefs[i] = sample;
 
         if (sample != nullptr) {
             sample->Initialize();
 
             SampleQueueItem samplereq;
-            samplereq.pSample = sample;
+            samplereq.pSample = ActiveSamplesRefs[i];
             samplereq.pStitch = this;
             cSTICH_PlayBack::QueueSampleRequest(samplereq);
         }
@@ -830,20 +825,19 @@ void cStichWrapper::Play(const SND_Params *Params) {
 
     bIsPlaying = true;
 
-    int numToClear = cSTICH_PlayBack::mQueuedSampleList[stitchType].size() + cSampleListSet::GetList(stitchType).size() - 25;
-    if (numToClear > 0) {
-        int priority = 0;
-        bool keepPruning = true;
-        while (keepPruning) {
-            int numQueuePruned = cSTICH_PlayBack::Prune(stitchType, priority, numToClear);
-            int numListPruned = cSampleWarpper::Prune(stitchType, priority, numToClear - numQueuePruned);
-            numToClear = (numToClear - numQueuePruned) - numListPruned;
-            if (numToClear == 0 || priority == 10) {
-                keepPruning = false;
+    int num_to_prune = cSTICH_PlayBack::mQueuedSampleList[stitch_type].size() + cSampleListSet::GetList(stitch_type).size() - 25;
+    if (num_to_prune > 0) {
+        bool continueloop = true;
+        int priority_to_prune = 0;
+        do {
+            num_to_prune -= cSTICH_PlayBack::Prune(stitch_type, priority_to_prune, num_to_prune);
+            num_to_prune -= cSampleWarpper::Prune(stitch_type, priority_to_prune, num_to_prune);
+            if (num_to_prune != 0 && priority_to_prune != 10) {
+                priority_to_prune++;
             } else {
-                priority++;
+                continueloop = false;
             }
-        }
+        } while (continueloop);
     }
 }
 
