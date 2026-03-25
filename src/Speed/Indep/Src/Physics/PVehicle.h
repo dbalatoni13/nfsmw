@@ -158,10 +158,10 @@ class PVehicle : public PhysicsObject,
     typedef UTL::Std::map<UCrc32, UCrc32, _type_ID_PVehicleChangeReq> ChangeRequest;
 
 
-    PVehicle(DriverClass dc, const Attrib::Gen::pvehicle &attribs, const UMath::Vector3 &initialPos,
-             const UMath::Vector3 &initialVec, const CollisionGeometry::Bounds *bounds,
+    PVehicle(DriverClass dc, const Attrib::Gen::pvehicle &attribs, const UMath::Vector3 &initialVec,
+             const UMath::Vector3 &initialPos, const CollisionGeometry::Bounds *bounds,
              const FECustomizationRecord *customization, const Resource &resource,
-             const Physics::Info::Performance *matched, const char *cacheName);
+             const Physics::Info::Performance *performance, const char *cache_name);
     virtual ~PVehicle();
 
     static ISimable *Construct(Sim::Param params);
