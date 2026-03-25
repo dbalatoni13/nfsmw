@@ -203,8 +203,6 @@ void FnRunBlender::SetWeight(float w) {
         }
     }
 
-    prevFreq = mFreq;
-
     if (mPhases[i]->StartWithRight()) {
         mAlignFrame[0] = static_cast<float>(mPhases[i]->mStartTime);
     } else {
@@ -213,10 +211,11 @@ void FnRunBlender::SetWeight(float w) {
 
     mAlignFrame[1] = static_cast<float>(mPhases[i + 1]->mStartTime);
     if (!mPhases[i + 1]->StartWithRight()) {
-        mAlignFrame[1] += static_cast<float>(mPhases[i + 1]->mCycles[0]);
+        mAlignFrame[1] += static_cast<float>(static_cast<int>(mPhases[i + 1]->mCycles[0]));
     }
 
     mIdx = i;
+    prevFreq = mFreq;
     mCycles[0] = static_cast<float>(mPhases[i]->mCycles[0] + mPhases[i]->mCycles[1]) * 0.5f;
     mCycles[1] = static_cast<float>(mPhases[i + 1]->mCycles[0] + mPhases[i + 1]->mCycles[1]) * 0.5f;
     mFreq = mWeight / mCycles[1] + (1.0f - mWeight) / mCycles[0];
