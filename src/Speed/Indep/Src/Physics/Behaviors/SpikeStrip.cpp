@@ -70,8 +70,8 @@ void SpikeStrip::OnCollide(const Dynamics::Collision::Geometry &mygeometry, IRig
             UMath::Scale(irb->GetLinearVelocity(), dT, dP);
             irb->GetMatrix4(matrix);
 
-            UMath::Vector3 dim;
             UMath::Vector3 position = isuspension->GetWheelCenterPos(i);
+            UMath::Vector3 dim;
 
             dim.y = isuspension->GetWheelRadius(i);
             dim.z = dim.y;
