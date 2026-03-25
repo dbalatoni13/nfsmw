@@ -368,23 +368,21 @@ void FnRunBlender::ComputeRootQ(float t0, float t1, UMath::Vector4 &q) const {
 }
 
 float FnRunBlender::CycleTime(float t, float startTime, float endTime) const {
-    float len = endTime - startTime;
     float tmp;
     int n;
+    float len = endTime - startTime;
 
     if (t < startTime) {
         tmp = startTime - t;
         n = FloatToInt(tmp / len);
-        tmp = tmp - static_cast<float>(n) * len;
-        return endTime - tmp;
+        return endTime - (tmp - static_cast<float>(n) * len);
     }
     if (t < endTime) {
         return t;
     }
     tmp = t - endTime;
     n = FloatToInt(tmp / len);
-    tmp = tmp - static_cast<float>(n) * len;
-    return startTime + tmp;
+    return startTime + (tmp - static_cast<float>(n) * len);
 }
 
 int FnRunBlender::ComputeCycleIdx(float t, float startTime, float endTime) const {
