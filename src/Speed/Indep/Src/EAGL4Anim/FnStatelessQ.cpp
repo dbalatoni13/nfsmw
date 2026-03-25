@@ -225,14 +225,8 @@ bool FnStatelessQ::EvalSQTMask(float, float *sqt, const BoneMask *boneMask, bool
                 prevData = &frameData[ibone * 4];
                 nextData = &nextFrameData[ibone * 4];
 
-                prevQ.x = UncompressStatelessQValue(*prevData++);
-                prevQ.y = UncompressStatelessQValue(*prevData++);
-                prevQ.z = UncompressStatelessQValue(*prevData++);
-                prevQ.w = UncompressStatelessQValue(*prevData);
-                nextQ.x = UncompressStatelessQValue(*nextData++);
-                nextQ.y = UncompressStatelessQValue(*nextData++);
-                nextQ.z = UncompressStatelessQValue(*nextData++);
-                nextQ.w = UncompressStatelessQValue(*nextData);
+                LoadStatelessQ(prevData, prevQ);
+                LoadStatelessQ(nextData, nextQ);
                 index = boneIdxs[ibone] * 12;
 
                 q[index + 0] = scale * (nextQ.x - prevQ.x) + prevQ.x;
