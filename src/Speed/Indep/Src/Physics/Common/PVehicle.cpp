@@ -1321,9 +1321,11 @@ ISimable *PVehicle::Construct(Sim::Param params) {
     if (!CanSpawnRigidBody(vp.initialPos, true)) {
         return nullptr;
     }
-    const char *cache_name = nullptr;
+    const char *cache_name;
     if (vp.VehicleCache != nullptr) {
         cache_name = vp.VehicleCache->GetCacheName();
+    } else {
+        cache_name = nullptr;
     }
     PVehicle *pv = new PVehicle(vp.carClass, attributes, vp.initialVec, vp.initialPos, bounds,
                                 customizations, resource, performance, cache_name);
