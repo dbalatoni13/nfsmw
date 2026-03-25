@@ -26,7 +26,8 @@ RBTractor::~RBTractor() {
 void RBTractor::SetInvulnerability(eInvulnerablitiy state, float time) {
     if (mTrailer && IsHitched()) {
         IRBVehicle *irbv = nullptr;
-        if (mTrailer->QueryInterface(&irbv)) {
+        mTrailer->QueryInterface(&irbv);
+        if (irbv) {
             irbv->SetInvulnerability(state, time);
         }
     }
