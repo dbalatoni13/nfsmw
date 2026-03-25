@@ -1926,9 +1926,8 @@ void CarLoader::LoadedSkinCallback(LoadedSkin *loaded_skin) {
 }
 
 int CarLoader::UnloadSkinTemporaries(LoadedSkin *loaded_skin, int force_unload) {
-    int unloaded_something = 0;
-
     if ((loaded_skin->LoadStateTemp == CARLOADSTATE_LOADED && loaded_skin->DoneComposite != 0) || force_unload != 0) {
+        int unloaded_something = 0;
         unsigned int name_hash_table[87];
 
         this->UnallocateSkinLayers(loaded_skin->LoadedSkinLayersTemp, loaded_skin->NumLoadedSkinLayersTemp);
@@ -1947,9 +1946,11 @@ int CarLoader::UnloadSkinTemporaries(LoadedSkin *loaded_skin, int force_unload) 
             this->UnloadTexturePack(loaded_skin->pLoadedVinylsPack);
             loaded_skin->pLoadedVinylsPack = 0;
         }
+
+        return unloaded_something;
     }
 
-    return unloaded_something;
+    return 0;
 }
 
 LoadedSolidPack *CarLoader::FindLoadedSolidPack(const char *filename) {
