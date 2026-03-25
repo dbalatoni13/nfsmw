@@ -51,19 +51,31 @@ void FnPoseBlender::operator delete(void *ptr, size_t size) {
 void FnPoseBlender::Blend(int numBones, float w, const float *pose0, const float *pose1, float *result,
                           const BoneMask *boneMask) {
     if (!boneMask) {
-        for (int boneIdx = 0, poseIdx = 0; boneIdx < numBones; ++boneIdx, poseIdx += 12) {
-            FastQuatBlendF4(w, &pose0[poseIdx + 4], &pose1[poseIdx + 4], &result[poseIdx + 4]);
-            result[poseIdx + 8] = pose0[poseIdx + 8] + w * (pose1[poseIdx + 8] - pose0[poseIdx + 8]);
-            result[poseIdx + 9] = pose0[poseIdx + 9] + w * (pose1[poseIdx + 9] - pose0[poseIdx + 9]);
-            result[poseIdx + 10] = pose0[poseIdx + 10] + w * (pose1[poseIdx + 10] - pose0[poseIdx + 10]);
+        int q = 0;
+
+        for (int boneIdx = 0; boneIdx < numBones; ++boneIdx) {
+            q += 4;
+            FastQuatBlendF4(w, &pose0[q], &pose1[q], &result[q]);
+            q += 4;
+            result[q + 0] = pose0[q + 0] + w * (pose1[q + 0] - pose0[q + 0]);
+            result[q + 1] = pose0[q + 1] + w * (pose1[q + 1] - pose0[q + 1]);
+            result[q + 2] = pose0[q + 2] + w * (pose1[q + 2] - pose0[q + 2]);
+            q += 4;
         }
     } else {
-        for (int boneIdx = 0, poseIdx = 0; boneIdx < numBones; ++boneIdx, poseIdx += 12) {
+        int q = 0;
+
+        for (int boneIdx = 0; boneIdx < numBones; ++boneIdx) {
+            q += 4;
             if (boneMask->GetBone(boneIdx)) {
-                FastQuatBlendF4(w, &pose0[poseIdx + 4], &pose1[poseIdx + 4], &result[poseIdx + 4]);
-                result[poseIdx + 8] = pose0[poseIdx + 8] + w * (pose1[poseIdx + 8] - pose0[poseIdx + 8]);
-                result[poseIdx + 9] = pose0[poseIdx + 9] + w * (pose1[poseIdx + 9] - pose0[poseIdx + 9]);
-                result[poseIdx + 10] = pose0[poseIdx + 10] + w * (pose1[poseIdx + 10] - pose0[poseIdx + 10]);
+                FastQuatBlendF4(w, &pose0[q], &pose1[q], &result[q]);
+                q += 4;
+                result[q + 0] = pose0[q + 0] + w * (pose1[q + 0] - pose0[q + 0]);
+                result[q + 1] = pose0[q + 1] + w * (pose1[q + 1] - pose0[q + 1]);
+                result[q + 2] = pose0[q + 2] + w * (pose1[q + 2] - pose0[q + 2]);
+                q += 4;
+            } else {
+                q += 8;
             }
         }
     }
