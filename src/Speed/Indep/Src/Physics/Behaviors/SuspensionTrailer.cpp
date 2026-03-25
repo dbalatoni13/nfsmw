@@ -333,7 +333,6 @@ SuspensionTrailer::SuspensionTrailer(const BehaviorParams &bp, const SuspensionP
       mRB(0),                   //
       mIDynamicsEntity(0),      //
       mRBComplex(0),            //
-      mIDamage(0),              //
       mPowerSliding(false),     //
       mNumWheelsOnGround(0),    //
       mMotionDampingFactor(0.0f), //
