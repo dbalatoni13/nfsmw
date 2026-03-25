@@ -140,15 +140,19 @@ bool FnDeltaQ::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask) {
     unsigned char *binData = &mBins[floorBinIdx * mBinSize];
     DeltaQPhysical *floorPhys = GetPhysical(binData);
     unsigned char *boneIdxs = deltaQ->mBoneIdxs;
-    bool preventReverse = floorKey < mPrevKey && !IsReverseDeltaSumEnabled();
+    bool preventReverse = false;
 
-    if (mPrevKey == -1 || floorBinIdx != prevBinIdx || floorDeltaIdx == 0 || preventReverse) {
+    if (floorKey < mPrevKey) {
+        preventReverse = !IsReverseDeltaSumEnabled();
+    }
+
+    if (mPrevKey != -1 && floorBinIdx == prevBinIdx && floorDeltaIdx != 0 && !preventReverse) {
+        prevDeltaIdx = mPrevKey & binLenModMask;
+    } else {
         for (int ibone = 0; ibone < deltaQ->mNumBones; ibone++) {
             floorPhys[ibone].UnQuantize(mPrevQs[ibone]);
         }
         prevDeltaIdx = 0;
-    } else {
-        prevDeltaIdx = mPrevKey & binLenModMask;
     }
 
     if (prevDeltaIdx < floorDeltaIdx) {
