@@ -398,16 +398,16 @@ CarPart *CarPartDatabase::GetCarPartByIndex(int index) {
         CarPartPackLayout *car_part_pack = reinterpret_cast<CarPartPackLayout *>(this->CarPartPackList.Next);
 
         while (true) {
-            if (car_part_pack == reinterpret_cast<CarPartPackLayout *>(&this->CarPartPackList)) {
-                return 0;
-            }
+            if (car_part_pack != reinterpret_cast<CarPartPackLayout *>(&this->CarPartPackList)) {
+                if (index < car_part_pack->NumParts) {
+                    return reinterpret_cast<CarPart *>(reinterpret_cast<unsigned char *>(car_part_pack->PartsTable) + index * 0xE);
+                }
 
-            if (index < car_part_pack->NumParts) {
-                return reinterpret_cast<CarPart *>(reinterpret_cast<unsigned char *>(car_part_pack->PartsTable) + index * 0xE);
+                index -= car_part_pack->NumParts;
+                car_part_pack = car_part_pack->Next;
+            } else {
+                break;
             }
-
-            index -= car_part_pack->NumParts;
-            car_part_pack = car_part_pack->Next;
         }
     }
 
