@@ -76,7 +76,12 @@ DamageZone::Info DamageRacer::GetZoneDamage() const {
 }
 
 bool DamageRacer::CanDamageVisuals() const {
-    return !FEDatabase || FEDatabase->CurrentUserProfiles[0]->GetOptions()->TheGameplaySettings.Damage;
+    if (FEDatabase) {
+        if (!FEDatabase->GetGameplaySettings()->Damage) {
+            return false;
+        }
+    }
+    return DamageVehicle::CanDamageVisuals();
 }
 
 void DamageRacer::OnTaskSimulate(float dT) {

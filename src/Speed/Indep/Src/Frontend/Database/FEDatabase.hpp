@@ -264,6 +264,10 @@ class cFrontendDatabase {
         return &CurrentUserProfiles[0]->GetOptions()->ThePlayerSettings[player];
     }
 
+    GameplaySettings *GetGameplaySettings() {
+        return &CurrentUserProfiles[0]->GetOptions()->TheGameplaySettings;
+    }
+
     FEPlayerCarDB *GetPlayerCarStable(int player) {
         return &CurrentUserProfiles[player]->PlayersCarStable;
     }
