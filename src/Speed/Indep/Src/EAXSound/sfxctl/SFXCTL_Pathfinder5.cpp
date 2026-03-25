@@ -117,15 +117,16 @@ int SFXCTL_Pathfinder::CrossMapNodeParam(int pid, int np) {
     (void)pid;
 
     int nproj = 0;
-    if (m_curinteractive == 1) {
+    switch (m_curinteractive) {
+    case 1:
         nproj = 1;
-    } else if (m_curinteractive <= 1) {
-    } else {
-        if (m_curinteractive == 2) {
-            nproj = 2;
-        } else if (m_curinteractive == 3) {
-            nproj = 3;
-        }
+        break;
+    case 2:
+        nproj = 2;
+        break;
+    case 3:
+        nproj = 3;
+        break;
     }
 
     for (int n = 0; n < 21; ++n) {
@@ -215,10 +216,10 @@ void SFXCTL_Pathfinder::CreateTrack(int index) {
 }
 
 int SFXCTL_Pathfinder::GetHandle(int index) {
-    if (m_PFStrmImp[index] == nullptr) {
-        return -1;
+    if (m_PFStrmImp[index]) {
+        return m_PFStrmImp[index]->GetHandle();
     }
-    return m_PFStrmImp[index]->GetHandle();
+    return -1;
 }
 
 void SFXCTL_Pathfinder::DetachStreamInstance(stPFParms *pstPFParms) {
