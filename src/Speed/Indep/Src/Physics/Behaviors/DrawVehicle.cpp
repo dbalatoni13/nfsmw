@@ -63,7 +63,7 @@ DrawVehicle::~DrawVehicle() {
     if (mAttachments) {
         delete mAttachments;
     }
-    for (EffectList::iterator iter = mEffects.begin(); iter != mEffects.end(); ++iter) {
+    for (EffectList::iterator iter = mEffects.begin(); iter != mEffects.end(); iter++) {
         delete *iter;
     }
 }
