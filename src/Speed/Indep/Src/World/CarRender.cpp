@@ -1386,7 +1386,7 @@ static void ClearPackedCarPartModel(CarPartModel *car_part_model) {
     reinterpret_cast<CarPartModelLayout *>(car_part_model)->mModel &= 1;
 }
 
-static bool DotPassesTest(const bVector3 *point) {
+static inline bool DotPassesTest(const bVector3 *point) {
     bVector3 vec = *point - hull_Origin;
     float dot = bDot(&vec, &hull_Normal);
 
@@ -3431,19 +3431,48 @@ void CarRenderInfo::convex_hull(bVector3 *p, const WCollider *wcoll, int &n, flo
 
     n = ch2d(reinterpret_cast<float **>(P), n);
     if (wcoll != nullptr) {
-        bVector3 *vec;
-
         this->mWorldPos.SetTolerance(lbl_8040AD70);
         if (fast != 0) {
+            bVector3 *vec;
+            float fastZ = Z;
+
+            vec = hullVertArray2;
+            bFill(vec, P[0]->x, P[0]->y, Z);
+
+            eUnSwizzleWorldVector(*vec, usPoint);
+            this->mWorldPos.FindClosestFace(wcoll, reinterpret_cast<const UMath::Vector3 &>(usPoint), true);
+            if (!this->mWorldPos.OnValidFace()) {
+                fastZ = this->mWorldPos.HeightAtPoint(reinterpret_cast<const UMath::Vector3 &>(usPoint));
+            }
+
+            dec = 0;
+            for (i = 0; i < n; i++) {
+                bFill(vec, P[i]->x, P[i]->y, fastZ);
+
+                bVector3 dotVec = *vec - hull_Origin;
+                float dot = bDot(&dotVec, &hull_Normal);
+                if (dot < lbl_8040AD74) {
+                    dot = -dot;
+                }
+
+                if (lbl_8040AD78 <= dot) {
+                    dec++;
+                } else {
+                    vec++;
+                }
+            }
+        } else {
+            bool quitIfSameFace = true;
+            bVector3 *vec;
+
             vec = hullVertArray2;
             dec = 0;
-            bPointValid = true;
 
             for (i = 0; i < n; i++) {
                 bFill(vec, P[i]->x, P[i]->y, Z);
 
                 eUnSwizzleWorldVector(*vec, usPoint);
-                this->mWorldPos.FindClosestFace(wcoll, reinterpret_cast<const UMath::Vector3 &>(usPoint), bPointValid);
+                this->mWorldPos.FindClosestFace(wcoll, reinterpret_cast<const UMath::Vector3 &>(usPoint), quitIfSameFace);
                 if (!this->mWorldPos.OnValidFace()) {
                     vec->z = this->mWorldPos.HeightAtPoint(reinterpret_cast<const UMath::Vector3 &>(usPoint));
                 }
@@ -3454,44 +3483,12 @@ void CarRenderInfo::convex_hull(bVector3 *p, const WCollider *wcoll, int &n, flo
                     dot = -dot;
                 }
 
-                bPointValid = zBias > dot;
-                if (!bPointValid) {
+                if (lbl_8040AD78 <= dot) {
                     dec++;
                 } else {
                     vec++;
                 }
-            }
-        } else {
-            float fastZ = lbl_8040AD74;
-
-            vec = hullVertArray2;
-            vec->x = P[0]->x;
-            vec->y = P[0]->y;
-            vec->z = Z;
-
-            eUnSwizzleWorldVector(*vec, usPoint);
-            this->mWorldPos.FindClosestFace(wcoll, reinterpret_cast<const UMath::Vector3 &>(usPoint), true);
-            if (!this->mWorldPos.OnValidFace()) {
-                fastZ = this->mWorldPos.HeightAtPoint(reinterpret_cast<const UMath::Vector3 &>(usPoint));
-            }
-
-            dec = 0;
-            for (i = 0; i < n; i++) {
-                vec->x = P[i]->x;
-                vec->y = P[i]->y;
-                vec->z = fastZ;
-
-                bVector3 dotVec = *vec - hull_Origin;
-                float dot = bDot(&dotVec, &hull_Normal);
-                if (dot < lbl_8040AD74) {
-                    dot = -dot;
-                }
-
-                if (zBias <= dot) {
-                    dec++;
-                } else {
-                    vec++;
-                }
+                quitIfSameFace = false;
             }
         }
 
