@@ -359,23 +359,26 @@ void EAXAemsManager::Init() {
 }
 
 int EAXAemsManager::AddEventSystem(eEVTSYS eESIndex, eSNDDATAPATH eSDP) {
-    const char *evtName = g_pEAXSound->GetAttributes()->EvtSys(eESIndex).GetString();
-    if (evtName == nullptr) {
+    Attrib::Gen::audiosystem &atr = *g_pEAXSound->GetAttributes();
+    const char *dataPath = g_DataPaths[eSDP];
+
+    const char *evtName = atr.EvtSys(eESIndex).GetString();
+    if (!evtName) {
         evtName = "";
     }
 
-    bStrCat(m_csTemp1, g_DataPaths[eSDP], evtName);
-    int filesize = bFileSize(m_csTemp1);
-    evtName = g_pEAXSound->GetAttributes()->EvtSys(eESIndex).GetString();
-    if (evtName == nullptr) {
+    bStrCat(m_csTemp1, dataPath, evtName);
+    int nfilesize = bFileSize(m_csTemp1);
+    evtName = atr.EvtSys(eESIndex).GetString();
+    if (!evtName) {
         evtName = "";
     }
-    m_pEvtSystems[eESIndex] = gAudioMemoryManager.AllocateMemoryChar(filesize, evtName, false);
+    m_pEvtSystems[eESIndex] = gAudioMemoryManager.AllocateMemoryChar(nfilesize, evtName, false);
 
-    int callback_param = m_NumEvtSysLoaded;
-    AddQueuedFile(m_pEvtSystems[callback_param], m_csTemp1, 0, filesize, EvtSysLoadCallback, callback_param, nullptr);
-    m_NumEvtSysLoaded = callback_param + 1;
-    return callback_param;
+    AddQueuedFile(m_pEvtSystems[m_NumEvtSysLoaded], m_csTemp1, 0, nfilesize, EvtSysLoadCallback, m_NumEvtSysLoaded, nullptr);
+    int nret = m_NumEvtSysLoaded;
+    m_NumEvtSysLoaded = nret + 1;
+    return nret;
 }
 
 void EAXAemsManager::InitializeSlots(bool bDoPFSlot) {
