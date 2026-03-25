@@ -1926,30 +1926,30 @@ void CarLoader::LoadedSkinCallback(LoadedSkin *loaded_skin) {
 }
 
 int CarLoader::UnloadSkinTemporaries(LoadedSkin *loaded_skin, int force_unload) {
-    int unloaded = 0;
+    int unloaded_something = 0;
 
     if ((loaded_skin->LoadStateTemp == CARLOADSTATE_LOADED && loaded_skin->DoneComposite != 0) || force_unload != 0) {
-        unsigned int name_hashes[87];
+        unsigned int name_hash_table[87];
 
         this->UnallocateSkinLayers(loaded_skin->LoadedSkinLayersTemp, loaded_skin->NumLoadedSkinLayersTemp);
-        int unloaded_hashes = this->UnloadSkinLayers(name_hashes, 0x57, loaded_skin->LoadedSkinLayersTemp,
+        int num_name_hashes = this->UnloadSkinLayers(name_hash_table, 0x57, loaded_skin->LoadedSkinLayersTemp,
                                                      loaded_skin->NumLoadedSkinLayersTemp);
-        unloaded = unloaded_hashes != 0;
         loaded_skin->NumLoadedSkinLayersTemp = 0;
 
-        if (unloaded != 0) {
-            eUnloadStreamingTexture(name_hashes, unloaded_hashes);
+        if (num_name_hashes != 0) {
+            unloaded_something = 1;
+            eUnloadStreamingTexture(name_hash_table, num_name_hashes);
         }
 
         if (loaded_skin->pLoadedVinylsPack != 0) {
-            unloaded += 1;
+            unloaded_something += 1;
             this->UnallocateTexturePack(loaded_skin->pLoadedVinylsPack);
             this->UnloadTexturePack(loaded_skin->pLoadedVinylsPack);
             loaded_skin->pLoadedVinylsPack = 0;
         }
     }
 
-    return unloaded;
+    return unloaded_something;
 }
 
 LoadedSolidPack *CarLoader::FindLoadedSolidPack(const char *filename) {
