@@ -15,33 +15,26 @@ static void altersingle(int alpha, int i, int b, int g, int r, int aa);
 static void alterneigh(int rad, int i, int b, int g, int r, int aa);
 
 void initnet(unsigned char *thepic, int len, int num_colours, int sample) {
-    int i = 0;
-
+    netsize = num_colours;
     thepicture = thepic;
     lengthcount = len;
     samplefac = sample;
-    netsize = num_colours;
 
+    int i = 0;
+    int *p;
     if (i >= num_colours) {
         return;
     }
 
-    int *p = &network[0][0];
-    int *f = freq;
-    int *b = bias;
-
     do {
-        int value = (i << 12) / num_colours;
-        *b = 0;
-        *f = 0x10000 / num_colours;
-        p[1] = value;
-        p[3] = value;
-        p[2] = value;
-        p[0] = value;
+        p = network[i];
+        freq[i] = 0x10000 / num_colours;
+        bias[i] = 0;
+        p[3] = (i << 12) / num_colours;
+        p[2] = (i << 12) / num_colours;
+        p[1] = (i << 12) / num_colours;
+        p[0] = (i << 12) / num_colours;
         i++;
-        p += 5;
-        f++;
-        b++;
     } while (i < num_colours);
 }
 

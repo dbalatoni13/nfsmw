@@ -62,18 +62,21 @@ inline char *CarTypeInfo::GetBaseModelName() {
 }
 
 SkinCompositeParams *GetSkinCompositeParams(unsigned int dest_name_hash) {
-    SkinCompositeParams *cache_params = 0;
+    SkinCompositeParams *cache_params = nullptr;
 
-    if (dest_name_hash == 0x530B82B1) {
+    switch (dest_name_hash) {
+    case 0x530B82B0:
+        cache_params = &SkinCompositeParameterCache[0];
+        break;
+    case 0x530B82B1:
         cache_params = &SkinCompositeParameterCache[1];
-    } else if (dest_name_hash < 0x530B82B2) {
-        if (dest_name_hash == 0x530B82B0) {
-            cache_params = &SkinCompositeParameterCache[0];
-        }
-    } else if (dest_name_hash == 0x530B82B2) {
+        break;
+    case 0x530B82B2:
         cache_params = &SkinCompositeParameterCache[2];
-    } else if (dest_name_hash == 0x530B82B3) {
+        break;
+    case 0x530B82B3:
         cache_params = &SkinCompositeParameterCache[3];
+        break;
     }
 
     return cache_params;
