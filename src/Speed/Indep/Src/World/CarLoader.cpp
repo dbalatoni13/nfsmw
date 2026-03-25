@@ -1657,14 +1657,14 @@ int UnloaderCarInfo(bChunk *chunk) {
     }
 
     if (chunk_id == 0x80034602) {
-        int *chunk_words = reinterpret_cast<int *>(chunk);
-        CarPartPack *car_part_pack = reinterpret_cast<CarPartPack *>(chunk_words + 4);
+        bChunk *car_pack_chunk = chunk->GetFirstChunk();
+        CarPartPack *car_part_pack = reinterpret_cast<CarPartPack *>(car_pack_chunk->GetData());
         CarPartDatabaseLayout *database = reinterpret_cast<CarPartDatabaseLayout *>(&CarPartDB);
 
         car_part_pack->Remove();
         database->NumPacks -= 1;
         database->NumParts -= car_part_pack->NumParts;
-        database->NumBytes -= chunk_words[1];
+        database->NumBytes -= chunk->GetSize();
         return 1;
     }
 
