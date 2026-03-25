@@ -484,54 +484,66 @@ void FnRunBlender::AlignVel(float *vel) const {
 
 bool FnRunBlender::FindMatchTime(const MatchPhaseInput &input, float &time) const {
     PhaseValue phase;
-    float inputAngle = input.mAngle;
-    float inputDAngle = input.mDAngle;
-    float searchLength = input.mSearchLength;
-    float cycleLength = mWeight * (mCycles[1] - mCycles[0]) + mCycles[0];
-    int searchCount = static_cast<int>(cycleLength + cycleLength);
+    float a;
+    float da;
+    float na;
+    int n;
+    int s;
+    int i;
+    int minIdx;
+    float diffAngle;
+    float minAngle;
+    float angle = input.mAngle;
+    float dAngle = input.mDAngle;
+    FnRunBlender *nonConstThis = const_cast<FnRunBlender *>(this);
+
+    n = FloatToInt((mWeight * (mCycles[1] - mCycles[0]) + mCycles[0]) * 2.0f);
+    s = 1;
 
     phase.mAngle = 0.0f;
-    if (0.0f < searchLength && searchLength < static_cast<float>(searchCount)) {
-        searchCount = static_cast<int>(searchLength) + 1;
+    if (0.0f < input.mSearchLength && input.mSearchLength < static_cast<float>(n)) {
+        n = FloatToInt(input.mSearchLength) + s;
     }
 
-    const_cast<FnRunBlender *>(this)->EvalPhase(0.0f, phase);
+    nonConstThis->EvalPhase(0.0f, phase);
 
-    float bestDelta = inputAngle - phase.mAngle;
-    if (bestDelta < 0.0f) {
-        bestDelta = -bestDelta;
+    a = phase.mAngle;
+    minAngle = angle - a;
+    if (minAngle < 0.0f) {
+        minAngle = -minAngle;
     }
 
-    int bestIdx = 0;
-    for (int i = 1; i < searchCount; i++) {
-        float prevAngle = phase.mAngle;
+    minIdx = 0;
+    for (i = s; i < n; i++) {
+        nonConstThis->EvalPhase(static_cast<float>(i), phase);
+        na = phase.mAngle;
 
-        const_cast<FnRunBlender *>(this)->EvalPhase(static_cast<float>(i), phase);
+        if (a <= angle && angle <= na) {
+            da = na - a;
 
-        if (prevAngle <= inputAngle && inputAngle <= phase.mAngle) {
-            float deltaAngle = phase.mAngle - prevAngle;
-
-            if (0.0f <= deltaAngle * inputDAngle) {
-                if (deltaAngle != 0.0f) {
-                    time = (inputAngle - prevAngle) / deltaAngle + static_cast<float>(i - 1);
+            if (0.0f <= da * dAngle) {
+                if (da != 0.0f) {
+                    time = ((angle - a) / da + static_cast<float>(i - s)) * static_cast<float>(s);
                 } else {
-                    time = static_cast<float>(i - 1) + 0.5f;
+                    time = (static_cast<float>(i - s) + 0.5f) * static_cast<float>(s);
                 }
                 return true;
             }
         }
 
-        float delta = inputAngle - phase.mAngle;
-        if (delta < 0.0f) {
-            delta = -delta;
+        diffAngle = angle - na;
+        if (diffAngle < 0.0f) {
+            diffAngle = -diffAngle;
         }
-        if (delta < bestDelta) {
-            bestIdx = i;
-            bestDelta = delta;
+        if (diffAngle < minAngle) {
+            minIdx = i;
+            minAngle = diffAngle;
         }
+
+        a = na;
     }
 
-    time = static_cast<float>(bestIdx);
+    time = static_cast<float>(minIdx);
     return true;
 }
 
