@@ -217,7 +217,7 @@ retry:
                 }
 
                 if (h->pSearchFunction) {
-                    bool valid = false;
+                    bool valid;
                     void *addr = h->pSearchFunction(&h->strtab[sym->st_name], valid);
 
                     if (valid) {
@@ -230,7 +230,7 @@ retry:
                 }
 
                 {
-                    bool valid = false;
+                    bool valid;
                     void *addr = gSymbolPool.Search(&h->strtab[sym->st_name], valid);
 
                     if (valid) {
@@ -259,7 +259,7 @@ retry:
 
                         if (c) {
                             RuntimeAllocDestructor d = gRuntimeAllocConsPool.FindDestructor(s.type);
-                            int auxData = 0;
+                            int auxData;
                             bool bCallDestructor = false;
                             s.data = c(stripped_name, reinterpret_cast<class DynamicLoader *>(this), auxData, bCallDestructor, s.name);
 
@@ -277,7 +277,9 @@ retry:
                         }
                     }
 
-                    unresolvedSymbolError = true;
+                    if (!unresolvedSymbolError) {
+                        unresolvedSymbolError = true;
+                    }
                     if (numUnresolved < MAX_UNRESOLVED_ERRORS) {
                         bool found = false;
 
