@@ -21,7 +21,7 @@ float GetValueFromSpline(float t, bMatrix4 *curve) {
            t * t * 3.0f * inv_t * curve->v2.y + t * t * t * curve->v3.y;
 }
 
-void VisualLookEffect::Reset() {
+inline void VisualLookEffect::Reset() {
     this->StartTime = 0.0f;
     this->PulseLength = 0.0f;
 }
@@ -58,10 +58,10 @@ float VisualLookEffect::UpdateActive(float heatMeter) {
     return graphValue * this->AttribEffect->magnitude();
 }
 
-void VisualLookEffectTarget::Reset() {
-    this->StartWorldTime = 0.0f;
-    this->Current = 0.0f;
+inline void VisualLookEffectTarget::Reset() {
     this->Target = 0.0f;
+    this->Current = 0.0f;
+    this->StartWorldTime = 0.0f;
 }
 
 IVisualTreatment::IVisualTreatment()
@@ -100,13 +100,6 @@ IVisualTreatment::~IVisualTreatment() {
 }
 
 void IVisualTreatment::Reset() {
-    VisualLookEffectTarget *pursuitBreaker = this->PursuitBreaker;
-    VisualLookEffect *uvesPulse = this->UvesPulse;
-    VisualLookEffect *uvesRadialBlur = this->UvesRadialBlur;
-    VisualLookEffect *uvesTransition = this->UvesTransition;
-    VisualLookEffect *cameraFlash = this->CameraFlash;
-    VisualLookEffectTarget *nosRadialBlur = this->NosRadialBlur;
-
     this->State = HEAT_LOOK;
     this->PulseBrightness = 1.0f;
     this->DesaturationTarget = -1.0f;
@@ -116,42 +109,16 @@ void IVisualTreatment::Reset() {
     this->PursuitBreakerBlend = 0.0f;
     this->CurrentTarget = -1.0f;
 
-    pursuitBreaker->StartWorldTime = 0.0f;
-    pursuitBreaker->Current = 0.0f;
-    pursuitBreaker->Target = 0.0f;
-
-    uvesPulse->PulseLength = 0.0f;
-    uvesPulse->StartTime = 0.0f;
-
-    uvesRadialBlur->PulseLength = 0.0f;
-    uvesRadialBlur->StartTime = 0.0f;
-
-    uvesTransition->PulseLength = 0.0f;
-    uvesTransition->StartTime = 0.0f;
-
-    cameraFlash->PulseLength = 0.0f;
-    cameraFlash->StartTime = 0.0f;
-
-    nosRadialBlur->StartWorldTime = 0.0f;
-    nosRadialBlur->Target = 0.0f;
-    nosRadialBlur->Current = 0.0f;
+    PursuitBreaker->Reset();
+    UvesPulse->Reset();
+    UvesRadialBlur->Reset();
+    UvesTransition->Reset();
+    CameraFlash->Reset();
+    NosRadialBlur->Reset();
 }
 
 void IVisualTreatment::TriggerPulse(float length) {
-    VisualLookEffect *cameraFlash = this->CameraFlash;
-
-    if (length == 0.0f) {
-        length = cameraFlash->GetAttrib()->length();
-        if (length == 0.0f) {
-            return;
-        }
-    }
-
-    cameraFlash->StopAfterLength = 1;
-    cameraFlash->PulseLength = length;
-    cameraFlash->StopIfHeatFalls = 0;
-    cameraFlash->UseWorldTime = 0;
-    cameraFlash->StartTime = RealTimer.GetSeconds();
+    CameraFlash->Trigger(length, false, false, true);
 }
 
 void IVisualTreatment::SetNosEngaged(bool isNosEngaged) {

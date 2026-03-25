@@ -8,6 +8,7 @@
 #include "Speed/Indep/Src/Ecstasy/EcstasyE.hpp"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/visuallook.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/visuallookeffect.h"
+#include "Speed/Indep/Src/Misc/Timer.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
 class VisualLookEffect {
@@ -25,10 +26,23 @@ class VisualLookEffect {
 
     float Update(float heatMeter);
     void Reset();
-    void Trigger(float length, bool useWorldTime, bool stopIfHeatFalls, bool stopAfterLength);
 
     Attrib::Gen::visuallookeffect *GetAttrib() {
         return this->AttribEffect;
+    }
+
+    void Trigger(float length, bool useWorldTime, bool stopIfHeatFalls, bool stopAfterLength) {
+        if (length == 0.0f) {
+            length = AttribEffect->length();
+            if (length == 0.0f) {
+                return;
+            }
+        }
+        this->StartTime = RealTimer.GetSeconds();
+        this->PulseLength = length;
+        this->UseWorldTime = useWorldTime;
+        this->StopIfHeatFalls = stopIfHeatFalls;
+        this->StopAfterLength = stopAfterLength;
     }
 
   protected:
