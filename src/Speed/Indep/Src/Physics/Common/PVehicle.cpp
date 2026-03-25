@@ -1314,27 +1314,27 @@ ISimable *PVehicle::Construct(Sim::Param params) {
             performance = &perf;
         }
     }
-    if (!CanSpawnRigidBody(vp.initialPos, true)) {
-        return nullptr;
+    if (CanSpawnRigidBody(vp.initialPos, true)) {
+        const char *cache_name;
+        PVehicle *vehicle;
+        if (vp.VehicleCache != nullptr) {
+            cache_name = vp.VehicleCache->GetCacheName();
+        } else {
+            cache_name = nullptr;
+        }
+        vehicle = new PVehicle(vp.carClass, attributes, vp.initialVec, vp.initialPos,
+                               geoms->GetRoot(),
+                               customizations, resource, performance, cache_name);
+        if ((vp.Flags & 2) != 0) {
+            vehicle->SetVehicleOnGround(vp.initialPos, vp.initialVec);
+        }
+        ISimable *result = nullptr;
+        if (vehicle != nullptr) {
+            result = static_cast<ISimable *>(vehicle);
+        }
+        return result;
     }
-    const char *cache_name;
-    PVehicle *vehicle;
-    if (vp.VehicleCache != nullptr) {
-        cache_name = vp.VehicleCache->GetCacheName();
-    } else {
-        cache_name = nullptr;
-    }
-    vehicle = new PVehicle(vp.carClass, attributes, vp.initialVec, vp.initialPos,
-                           geoms->GetRoot(),
-                           customizations, resource, performance, cache_name);
-    if ((vp.Flags & 2) != 0) {
-        vehicle->SetVehicleOnGround(vp.initialPos, vp.initialVec);
-    }
-    ISimable *result = nullptr;
-    if (vehicle != nullptr) {
-        result = static_cast<ISimable *>(vehicle);
-    }
-    return result;
+    return nullptr;
 }
 
 bool PVehicle::MakeRoom(IVehicleCache *whosasking, const UTL::Std::list<Resource, _type_list> &resources) {
