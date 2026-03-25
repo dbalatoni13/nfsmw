@@ -363,10 +363,8 @@ UCrc32 DrawVehicle::GetName() const {
 }
 
 void DrawVehicle::StopEffects() {
-    EffectList::iterator iter = mEffects.begin();
-    while (iter != mEffects.end()) {
+    for (EffectList::iterator iter = mEffects.begin(); iter != mEffects.end(); iter++) {
         Effect *effect = *iter;
-        ++iter;
         delete effect;
     }
     mEffects.clear();
