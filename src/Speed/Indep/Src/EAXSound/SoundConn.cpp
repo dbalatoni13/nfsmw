@@ -14,6 +14,9 @@ extern "C" void *__builtin_vec_new(unsigned int size);
 extern "C" void __builtin_delete(void *ptr);
 extern int btestprint;
 
+unsigned int Sim::Packet::Compress(Sim::Packet *) const { return 0; }
+unsigned int Sim::Packet::Decompress(Sim::Packet *) const { return 0; }
+
 namespace {
 
 // total size: 0x18

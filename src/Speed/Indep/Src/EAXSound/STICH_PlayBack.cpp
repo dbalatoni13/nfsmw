@@ -230,8 +230,6 @@ cSampleWarpper::cSampleWarpper(SND_SampleRef &NewRef) {
     AEMS_ActiveSampleWsh = nullptr;
     AEMS_ActiveSampleCol = nullptr;
     AEMS_ActiveSampleStatic = nullptr;
-    m_nLocalVolume = 0;
-    m_nLocalPitch = 0;
 }
 
 void cSampleWarpper::Initialize() {
