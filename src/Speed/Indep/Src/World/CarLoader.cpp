@@ -951,11 +951,11 @@ void CarLoader::UnloadAllSkinTemporaries() {
          loaded_ride_info != this->LoadedRideInfoList.EndOfList(); loaded_ride_info = loaded_ride_info->GetNext()) {
         LoadedSkin *loaded_skin = loaded_ride_info->pLoadedSkin;
 
-        if (loaded_skin->LoadStatePerm == CARLOADSTATE_LOADED && loaded_skin->LoadStateTemp == CARLOADSTATE_LOADED &&
-            loaded_skin->DoneComposite != 0) {
+        if (loaded_skin->IsLoaded()) {
             this->UnloadSkinTemporaries(loaded_skin, 0);
         } else if (loaded_ride_info->NumInstances == 0 && loaded_skin->LoadStateTemp == CARLOADSTATE_LOADED) {
-            this->UnloadSkinTemporaries(loaded_skin, 1);
+            int force_unload = 1;
+            this->UnloadSkinTemporaries(loaded_skin, force_unload);
         }
     }
 }
