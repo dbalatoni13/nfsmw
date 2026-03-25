@@ -249,33 +249,24 @@ void FnTurnBlender::AlignCycleBeginEnd(int cIdx) {
         mAlignQ.z = 0.0f;
         mAlignQ.w = 1.0f;
     } else if (mCycleIdx != cIdx) {
-        float beginFacing[2];
-        float endFacing[2];
+        float v0[2];
+        float v1[2];
         UMath::Vector4 q;
+        UMath::Vector4 resultQ;
+        int i;
 
-        BlendBeginFacing(beginFacing);
-        BlendEndFacing(endFacing);
-        ComputeAlignQ(beginFacing, endFacing, q);
+        BlendBeginFacing(v0);
+        BlendEndFacing(v1);
+        ComputeAlignQ(v0, v1, q);
         if (mCycleIdx - 1 == cIdx) {
             q.y = -q.y;
         }
 
-        float x = mAlignQ.x;
-        float y = mAlignQ.y;
-        float z = mAlignQ.z;
-        float w = mAlignQ.w;
-        float newX = (x * q.w - y * q.z) + z * q.y + w * q.x;
-        float newY = ((x * q.z + y * q.w) - z * q.x) + w * q.y;
-        float newZ = -x * q.y + y * q.x + z * q.w + w * q.z;
-        float newW = ((-x * q.x - y * q.y) - z * q.z) + w * q.w;
-
-        i_6840++;
-        mAlignQ.x = newX;
-        mAlignQ.y = newY;
-        mAlignQ.z = newZ;
-        mAlignQ.w = newW;
+        QuatMult(mAlignQ, q, resultQ);
+        i = i_6840++;
+        mAlignQ = resultQ;
         mCycleIdx = cIdx;
-        printf("turn align[%d] Q: %g %g %g %g\n\n", i_6840 - 1, mAlignQ.x, mAlignQ.y, mAlignQ.z, mAlignQ.w);
+        printf("turn align[%d] Q: %g %g %g %g\n\n", i, mAlignQ.x, mAlignQ.y, mAlignQ.z, mAlignQ.w);
     }
 }
 

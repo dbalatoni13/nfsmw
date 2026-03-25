@@ -419,32 +419,26 @@ void FnRunBlender::AlignCycleBeginEnd(int cIdx) {
     if (!mInit) {
         mInit = true;
         mCycleIdx = -1;
-        mAlignQ.x = 0.0f;
-        mAlignQ.y = 0.0f;
         mAlignQ.z = 0.0f;
         mAlignQ.w = 1.0f;
+        mAlignQ.x = 0.0f;
+        mAlignQ.y = 0.0f;
     } else if (mCycleIdx != cIdx) {
-        float beginFacing[2];
-        float endFacing[2];
+        float v0[2];
+        float v1[2];
         UMath::Vector4 q;
-        PhaseChan *phase0 = const_cast<PhaseChan *>(mPhases[mIdx]);
-        PhaseChan *phase1 = const_cast<PhaseChan *>(mPhases[mIdx + 1]);
+        UMath::Vector4 resultQ;
 
-        BlendFacing(0.0f, 0.0f, beginFacing);
-        BlendFacing(static_cast<float>(phase0->mNumFrames - 1), static_cast<float>(phase1->mNumFrames - 1), endFacing);
-        ComputeAlignQ(beginFacing, endFacing, q);
+        BlendFacing(0.0f, 0.0f, v0);
+        BlendFacing(static_cast<float>(const_cast<PhaseChan *>(mPhases[mIdx])->mNumFrames - 1),
+                    static_cast<float>(const_cast<PhaseChan *>(mPhases[mIdx + 1])->mNumFrames - 1), v1);
+        ComputeAlignQ(v0, v1, q);
         if (mCycleIdx - 1 == cIdx) {
             q.y = -q.y;
         }
 
-        float x = mAlignQ.x;
-        float y = mAlignQ.y;
-        float z = mAlignQ.z;
-        float w = mAlignQ.w;
-        mAlignQ.x = w * q.x + z * q.y + (x * q.w - y * q.z);
-        mAlignQ.w = w * q.w + ((-x * q.x - y * q.y) - z * q.z);
-        mAlignQ.y = w * q.y + ((x * q.z + y * q.w) - z * q.x);
-        mAlignQ.z = w * q.z + z * q.w - x * q.y + y * q.x;
+        QuatMult(mAlignQ, q, resultQ);
+        mAlignQ = resultQ;
         mCycleIdx = cIdx;
     }
 }

@@ -93,6 +93,13 @@ inline void FastQuatBlendF4(float w, const float *d0, const float *d1, float *ou
     out[3] *= s;
 }
 
+inline void QuatMult(const UMath::Vector4 &a, const UMath::Vector4 &b, UMath::Vector4 &result) {
+    result.x = (a.x * b.w - a.y * b.z) + a.z * b.y + a.w * b.x;
+    result.y = ((a.x * b.z + a.y * b.w) - a.z * b.x) + a.w * b.y;
+    result.z = ((-a.x) * b.y + a.y * b.x) + a.z * b.w + a.w * b.z;
+    result.w = ((-a.x * b.x - a.y * b.y) - a.z * b.z) + a.w * b.w;
+}
+
 }; // namespace EAGL4Anim
 
 #endif
