@@ -13,7 +13,8 @@ class Pkt_Heli_Open : public Sim::Packet {
           mSpoolLoad(spool_load) {}
 
     UCrc32 ConnectionClass() override {
-        return UCrc32(0x804c146e);
+        static UCrc32 hash = "HeliRenderConn";
+        return hash;
     }
 
     unsigned int Size() override {
