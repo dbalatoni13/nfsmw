@@ -328,7 +328,9 @@ void ParameterAccessor::SetUpForNewLayer() {}
 ParameterMapsManager::ParameterMapsManager() {}
 
 ParameterMapsManager::~ParameterMapsManager() {
-    this->UnloadAllLayers();
+    while (!this->ParameterMapLayers.IsEmpty()) {
+        delete this->ParameterMapLayers.RemoveHead();
+    }
 }
 
 void ParameterMapsManager::AddLayer(ParameterMapLayer *new_layer) {
@@ -336,6 +338,9 @@ void ParameterMapsManager::AddLayer(ParameterMapLayer *new_layer) {
 }
 
 void ParameterMapsManager::UnloadAllLayers() {
+    for (ParameterMapLayer *current_layer = this->ParameterMapLayers.GetHead(); current_layer != this->ParameterMapLayers.EndOfList(); current_layer = current_layer->GetNext()) {
+        current_layer->Unload();
+    }
     while (!this->ParameterMapLayers.IsEmpty()) {
         delete this->ParameterMapLayers.RemoveHead();
     }

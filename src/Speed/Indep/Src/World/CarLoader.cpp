@@ -2033,19 +2033,22 @@ void CarLoader::LoadingDoneCallback() {
 }
 
 void CarLoader::BeginLoading(void (*callback)(unsigned int), unsigned int param) {
+    if (this->LoadingInProgress != 0) {
+        if (this->LoadingInProgress == 2) {
+            this->LoadingInProgress = 1;
+        }
+        return;
+    }
+
+    this->StartLoadingTime = GetDebugRealTime();
+
+    if (callback != 0) {
+        this->pCallback = callback;
+        this->Param = param;
+    }
+
     if (this->LoadingInProgress == 0) {
-        this->StartLoadingTime = GetDebugRealTime();
-
-        if (callback != 0) {
-            this->pCallback = callback;
-            this->Param = param;
-        }
-
-        if (this->LoadingInProgress == 0) {
-            this->ServiceLoading();
-        }
-    } else if (this->LoadingInProgress == 2) {
-        this->LoadingInProgress = 1;
+        this->ServiceLoading();
     }
 }
 
