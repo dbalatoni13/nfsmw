@@ -92,25 +92,24 @@ void Transform::PostMult(const Transform &second) {
 }
 
 void Transform::ExtractQuatTrans(UMath::Vector4 *retQuat, UMath::Vector4 *retTrans) const {
-    const float *mat = m.GetElements();
     UMath::Matrix3 m3;
 
-    m3[0][0] = mat[0];
-    m3[0][1] = mat[1];
-    m3[0][2] = mat[2];
-    m3[1][0] = mat[4];
-    m3[1][1] = mat[5];
-    m3[1][2] = mat[6];
-    m3[2][0] = mat[8];
-    m3[2][1] = mat[9];
-    m3[2][2] = mat[10];
+    m3.v0.x = m.v0.x;
+    m3.v0.y = m.v0.y;
+    m3.v0.z = m.v0.z;
+    m3.v1.x = m.v1.x;
+    m3.v1.y = m.v1.y;
+    m3.v1.z = m.v1.z;
+    m3.v2.x = m.v2.x;
+    m3.v2.y = m.v2.y;
+    m3.v2.z = m.v2.z;
 
     EAGL4m3toquat(&m3, retQuat);
 
-    retTrans->x = mat[12];
-    retTrans->y = mat[13];
-    retTrans->z = mat[14];
-    retTrans->w = mat[15];
+    retTrans->x = m.v3.x;
+    retTrans->y = m.v3.y;
+    retTrans->z = m.v3.z;
+    retTrans->w = m.v3.w;
 }
 
 void Transform::BuildSQT(float sx, float sy, float sz, float qx, float qy, float qz, float qw, float tx, float ty, float tz) {
@@ -128,22 +127,22 @@ void Transform::BuildSQT(float sx, float sy, float sz, float qx, float qy, float
     float yz = qy * zs;
     float zz = qz * zs;
 
-    m[3].x = tx;
-    m[3].y = ty;
-    m[3].w = s;
-    m[2].w = 0.0f;
-    m[0].w = 0.0f;
-    m[1].w = 0.0f;
-    m[3].z = tz;
-    m[0].z = sx * (xz - wy);
-    m[1].z = sy * (yz + wx);
-    m[2].z = sz * (s - (xx + yy));
-    m[0].x = sx * (s - (yy + zz));
-    m[1].x = sy * (xy - wz);
-    m[2].x = sz * (xz + wy);
-    m[0].y = sx * (xy + wz);
-    m[1].y = sy * (s - (xx + zz));
-    m[2].y = sz * (yz - wx);
+    m.v3.x = tx;
+    m.v3.y = ty;
+    m.v3.w = s;
+    m.v2.w = 0.0f;
+    m.v0.w = 0.0f;
+    m.v1.w = 0.0f;
+    m.v3.z = tz;
+    m.v0.z = sx * (xz - wy);
+    m.v1.z = sy * (yz + wx);
+    m.v2.z = sz * (s - (xx + yy));
+    m.v0.x = sx * (s - (yy + zz));
+    m.v1.x = sy * (xy - wz);
+    m.v2.x = sz * (xz + wy);
+    m.v0.y = sx * (xy + wz);
+    m.v1.y = sy * (s - (xx + zz));
+    m.v2.y = sz * (yz - wx);
 }
 
 }; // namespace EAGL4
