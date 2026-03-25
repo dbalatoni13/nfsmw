@@ -68,7 +68,7 @@ class IRaceEngine : public UTL::COM::IUnknown {
   public:
     static HINTERFACE _IHandle();
 
-    IRaceEngine(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
+    IRaceEngine(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, (HINTERFACE)_IHandle) {}
 
     virtual ~IRaceEngine() {}
 

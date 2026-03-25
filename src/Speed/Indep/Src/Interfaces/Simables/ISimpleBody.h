@@ -13,7 +13,7 @@ class ISimpleBody : public UTL::COM::IUnknown, public UTL::Collections::Listable
   public:
     static HINTERFACE _IHandle();
 
-    ISimpleBody(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
+    ISimpleBody(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, (HINTERFACE)_IHandle) {}
 
     virtual ~ISimpleBody();
 

@@ -13,7 +13,7 @@ class IBody : public UTL::COM::IUnknown {
   public:
     static HINTERFACE _IHandle();
 
-    IBody(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
+    IBody(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, (HINTERFACE)_IHandle) {}
 
     virtual ~IBody();
 

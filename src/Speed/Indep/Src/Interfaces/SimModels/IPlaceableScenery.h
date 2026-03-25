@@ -13,7 +13,7 @@ class IPlaceableScenery : public UTL::COM::IUnknown, public UTL::Collections::Co
   public:
     static HINTERFACE _IHandle();
 
-    IPlaceableScenery(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
+    IPlaceableScenery(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, (HINTERFACE)_IHandle) {}
 
     virtual ~IPlaceableScenery();
 
