@@ -450,19 +450,18 @@ void FnRunBlender::AlignCycleBeginEnd(int cIdx) {
 }
 
 void FnRunBlender::AlignRootQ(float *sqt) const {
+    UMath::Vector4 result;
     float x = sqt[4];
     float y = sqt[5];
     float z = sqt[6];
     float w = sqt[7];
-    float newX = w * mAlignQ.x + z * mAlignQ.y + (x * mAlignQ.w - y * mAlignQ.z);
-    float newY = w * mAlignQ.y + (x * mAlignQ.z + y * mAlignQ.w) - z * mAlignQ.x;
-    float newZ = w * mAlignQ.z + z * mAlignQ.w - x * mAlignQ.y + y * mAlignQ.x;
-    float newW = w * mAlignQ.w - x * mAlignQ.x - y * mAlignQ.y - z * mAlignQ.z;
 
-    sqt[4] = newX;
-    sqt[5] = newY;
-    sqt[6] = newZ;
-    sqt[7] = newW;
+    result.x = w * mAlignQ.x + z * mAlignQ.y + (x * mAlignQ.w - y * mAlignQ.z);
+    result.y = w * mAlignQ.y + (x * mAlignQ.z + y * mAlignQ.w) - z * mAlignQ.x;
+    result.z = w * mAlignQ.z + z * mAlignQ.w - x * mAlignQ.y + y * mAlignQ.x;
+    result.w = w * mAlignQ.w - x * mAlignQ.x - y * mAlignQ.y - z * mAlignQ.z;
+
+    *reinterpret_cast<UMath::Vector4 *>(&sqt[4]) = result;
 }
 
 void FnRunBlender::AlignVel(float *vel) const {
