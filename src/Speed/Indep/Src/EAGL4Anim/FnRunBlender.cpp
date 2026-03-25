@@ -18,19 +18,19 @@ namespace EAGL4Anim {
 static const UMath::Vector4 kFacingAxis = {0.0f, 1.0f, 0.0f, 1.0f};
 
 static inline void QuatTransformPoint(const UMath::Vector4 &q, const UMath::Vector4 &p, UMath::Vector4 &result) {
-    float zz;
-    float yz;
-    float yy;
-    float xz;
-    float xy;
-    float xx;
-    float wz;
-    float wy;
-    float wx;
-    float zs;
-    float ys;
-    float xs;
     float s;
+    float xs;
+    float ys;
+    float zs;
+    float wx;
+    float wy;
+    float wz;
+    float xx;
+    float xy;
+    float xz;
+    float yy;
+    float yz;
+    float zz;
 
     s = 2.0f;
     xs = q.x * s;
