@@ -1460,34 +1460,24 @@ void EAXSound::UnloadFrontEndSoundBanks() {
 
     Speech::Manager::Destroy();
 
-    if (m_pFESnd != nullptr) {
-        m_pFESnd->DestroyAllDriveOnSnds();
-    }
+    m_pFESnd->DestroyAllDriveOnSnds();
 
     for (int n = 0; n < 13; n++) {
-        if (m_pStateMgr[n] != nullptr) {
+        if (m_pStateMgr[n]) {
             m_pStateMgr[n]->ExitWorld();
         }
     }
 
-    if (m_pStreamManager != nullptr) {
-        delete m_pStreamManager;
-        m_pStreamManager = nullptr;
-    }
+    delete m_pStreamManager;
+    m_pStreamManager = nullptr;
 
-    if (m_pNFSMixMaster != nullptr) {
-        m_pNFSMixMaster->DestroyMainMainMap();
-    }
+    m_pNFSMixMaster->DestroyMainMainMap();
 
-    if (m_pFESnd != nullptr) {
-        delete m_pFESnd;
-        m_pFESnd = nullptr;
-    }
+    delete m_pFESnd;
+    m_pFESnd = nullptr;
 
-    if (m_pCmnSnd != nullptr) {
-        delete m_pCmnSnd;
-        m_pCmnSnd = nullptr;
-    }
+    delete m_pCmnSnd;
+    m_pCmnSnd = nullptr;
 
     while (gAEMSMgr.m_nEndOfList != 0) {
         gAEMSMgr.UnloadSndData(0);

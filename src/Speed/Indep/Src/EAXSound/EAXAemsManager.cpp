@@ -906,27 +906,28 @@ void *EAXAemsManager::AsyncResidentAllocCB(int size) {
 void *EAXAemsManager::ResidentAllocCB(void *pbank, int residentsize, int totalsize) {
     (void)pbank;
     if (residentsize != totalsize) {
-        stSndDataLoadParams *currentLoad = gAEMSMgr.m_pCurLoadSDLP;
+        EAXAemsManager &mgr = gAEMSMgr;
         void *resmem;
-        if (currentLoad->AssetDescription.eDataType == EAXSND_DT_AEMS_MAINMEM) {
+        if (mgr.m_pCurLoadSDLP->AssetDescription.eDataType == EAXSND_DT_AEMS_MAINMEM) {
             resmem = bMalloc(residentsize, 0x1040);
         } else {
-            stBankSlot *pBankSlot = currentLoad->mBankSlot;
+            stBankSlot *pBankSlot = mgr.m_pCurLoadSDLP->mBankSlot;
             if (pBankSlot != nullptr) {
                 pBankSlot->pLastAlloc += residentsize;
-                return pBankSlot->MAINmemLocation;
+                return mgr.m_pCurLoadSDLP->mBankSlot->MAINmemLocation;
             }
 
-            char *filename = const_cast<char *>(currentLoad->AssetDescription.FileName.GetString());
+            char *filename = const_cast<char *>(mgr.m_pCurLoadSDLP->AssetDescription.FileName.GetString());
+            AudioMemoryManager &amm = gAudioMemoryManager;
             if (filename == nullptr) {
                 filename = const_cast<char *>("");
             }
-            resmem = gAudioMemoryManager.AllocateMemory(residentsize, filename, false);
+            resmem = amm.AllocateMemory(residentsize, filename, false);
         }
 
-        currentLoad->plocmem = resmem;
-        gAEMSMgr.m_NumBankLoadResolves++;
-        return currentLoad->plocmem;
+        mgr.m_pCurLoadSDLP->plocmem = resmem;
+        mgr.m_NumBankLoadResolves++;
+        return mgr.m_pCurLoadSDLP->plocmem;
     }
 
     return gAEMSMgr.m_pCurLoadSDLP->pmem;
