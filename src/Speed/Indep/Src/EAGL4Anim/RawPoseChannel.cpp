@@ -76,9 +76,9 @@ void RawPoseChannel::Eval(float frameTime, float *outputPose, bool interp, const
 
             if (t != 0.0f && interp) {
                 int *sig = GetInterpSig();
-                int *sigEnd = sig + mSigSize;
                 float *data0 = GetFrame(frame);
                 float *data1 = GetFrame(frame + 1);
+                int *sigEnd = sig + mSigSize;
 
                 if (!boneMask) {
                     while (sig < sigEnd) {
@@ -127,8 +127,8 @@ void RawPoseChannel::Eval(float frameTime, float *outputPose, bool interp, const
 
 void RawPoseChannel::EvalFrame(int frame, float *outputPose, const BoneMask *boneMask) {
     int *sig = GetNonInterpSig();
-    int *sigEnd = sig + mSigSize;
     float *frameData = GetFrame(frame);
+    int *sigEnd = sig + mSigSize;
 
     if (!boneMask) {
         while (sig < sigEnd) {
