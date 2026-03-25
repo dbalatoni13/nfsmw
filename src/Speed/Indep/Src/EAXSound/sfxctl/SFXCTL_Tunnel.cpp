@@ -88,30 +88,25 @@ static void DispatchDriveByEvent(stDriveByInfo &info) {
 eTrackPathZoneType SFXCTL_Tunnel::m_PlayerZoneType = TRACK_PATH_ZONE_RESET;
 
 SFXCTL_Tunnel::SFXCTL_Tunnel() {
-    float kZero = 0.0f;
-    float kOne = 1.0f;
-
-    m_TargetType = static_cast< eREVERBFX >(5);
-    m_CurReverbZone = -1;
-    vDriveByLoc.x = kZero;
-    vDriveByLoc.y = kZero;
     m_ReverbType = static_cast< eREVERBFX >(5);
-    m_CurWetGinsu = kZero;
-    m_CurWetAems = kZero;
-    m_CurWetGinsuTarget = kZero;
-    m_CurWetAemsTarget = kZero;
-    m_fIntensity = kZero;
+    m_TargetType = static_cast< eREVERBFX >(5);
     m_GinsuDryVol = 0x7F;
-    vDriveByLoc.z = kZero;
-    tTimeToWaitBeforeAnotherDriveBy = kZero;
-    tTimeToWaitBeforeAnotherExitDriveBy = kZero;
+    m_CurWetGinsu = 0.0f;
+    m_CurWetAems = 0.0f;
+    m_CurWetGinsuTarget = 0.0f;
+    m_CurWetAemsTarget = 0.0f;
+    m_fIntensity = 0.0f;
+    m_CurReverbZone = -1;
+    vDriveByLoc = bVector3(0.0f, 0.0f, 0.0f);
+    tTimeToWaitBeforeAnotherDriveBy = 0.0f;
+    tTimeToWaitBeforeAnotherExitDriveBy = 0.0f;
     m_GinsuWetVol = 0;
     m_AEMSWetVol = 0;
     m_AEMSDryVol = 0;
-    m_CurDryGinsu = kOne;
-    m_CurDryAems = kOne;
-    m_CurDryGinsuTarget = kOne;
-    m_CurDryAemsTarget = kOne;
+    m_CurDryGinsu = 1.0f;
+    m_CurDryAems = 1.0f;
+    m_CurDryGinsuTarget = 1.0f;
+    m_CurDryAemsTarget = 1.0f;
     m_PrevReverbZone = 0;
     bPlayDriveBy = false;
     pLastZoneWePlayedWooshFor = nullptr;
@@ -119,10 +114,10 @@ SFXCTL_Tunnel::SFXCTL_Tunnel() {
     bFadingOut = false;
     bFadingIn = false;
     bIsReadyForSwitch = false;
-    ReflRamp.Initialize(kZero, kZero, 1, LINEAR);
+    ReflRamp.Initialize(0.0f, 0.0f, 1, LINEAR);
     bToggleOffset = false;
     m_IsLeadCar = false;
-    m_LastOcclusionTest = g_pEAXSound->Random(kOne);
+    m_LastOcclusionTest = g_pEAXSound->Random(1.0f);
     TickerTimeStart = bGetTicker();
     TickerTimeAccum = 0;
 }
