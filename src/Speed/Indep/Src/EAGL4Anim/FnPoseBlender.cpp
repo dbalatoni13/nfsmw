@@ -2,6 +2,12 @@
 
 #include "AnimUtil.h"
 
+static inline void LinearBlendF3(float w, const float *d0, const float *d1, float *out) {
+    out[0] = d0[0] + w * (d1[0] - d0[0]);
+    out[1] = d0[1] + w * (d1[1] - d0[1]);
+    out[2] = d0[2] + w * (d1[2] - d0[2]);
+}
+
 
 namespace EAGL4 {
 
@@ -403,7 +409,8 @@ void FnPoseBlender::Eval(float previousTime, float currentTime, float *outputPos
                 sqt1[8] = trans.x;
                 sqt1[9] = trans.y;
                 sqt1[10] = trans.z;
-                BlendRootTranslation(w, mPose[0], mPose[1], outputPose, mAlignRootBoneIdx);
+                ::LinearBlendF3(w, &mPose[0][mAlignRootBoneIdx * 12 + 8], &mPose[1][mAlignRootBoneIdx * 12 + 8],
+                                &outputPose[mAlignRootBoneIdx * 12 + 8]);
             }
 
             int poseIdx = boneIdx * 12;
