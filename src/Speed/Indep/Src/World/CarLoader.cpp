@@ -1051,17 +1051,19 @@ int CarLoader::RemoveSomethingFromCarMemoryPool(bool force_unload) {
                     for (LoadedRideInfo *loaded_ride_info = this->LoadedRideInfoList.GetHead();
                          loaded_ride_info != this->LoadedRideInfoList.EndOfList();
                          loaded_ride_info = loaded_ride_info->GetNext()) {
-                        LoadedSkin *loaded_skin = loaded_ride_info->pLoadedSkin;
+                        if (loaded_ride_info->HighPriority == 0 || pass == 1) {
+                            LoadedSkin *loaded_skin = loaded_ride_info->pLoadedSkin;
 
-                        if ((loaded_ride_info->HighPriority == 0 || pass == 1) &&
-                            loaded_skin->LoadStatePerm == CARLOADSTATE_LOADED && this->UnloadSkinPerms(loaded_skin) != 0) {
-                            if (this->LoadingMode == MODE_FRONT_END) {
-                                bBreak();
+                            if (loaded_skin->LoadStatePerm == CARLOADSTATE_LOADED &&
+                                this->UnloadSkinPerms(loaded_skin) != 0) {
+                                if (this->LoadingMode == MODE_FRONT_END) {
+                                    bBreak();
+                                }
+
+                                eFixupReplacementTextureTables();
+                                RefreshAllRenderInfo(loaded_skin->pRideInfo->Type);
+                                goto success;
                             }
-
-                            eFixupReplacementTextureTables();
-                            RefreshAllRenderInfo(loaded_skin->pRideInfo->Type);
-                            goto success;
                         }
                     }
 
