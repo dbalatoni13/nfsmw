@@ -312,7 +312,7 @@ int PF_Allocator::Release() {
 
 void *CSISCoreAllocator::Alloc(unsigned int size, const char *name, unsigned int flags) {
     (void)flags;
-    return bMalloc(size, name, 0, AudioMemoryPool);
+    return bOMalloc(pCsisSlotPools[0]);
 }
 
 void *CSISCoreAllocator::Alloc(unsigned int size, const char *name, unsigned int flags, unsigned int alignment, unsigned int offset) {

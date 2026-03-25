@@ -826,15 +826,13 @@ int STREAM_taphandle(int sndstreamhandle, int tapindex) {
     STREAMHEADERtag *streamRaw;
     TAPSTRUCTtag *tapRaw;
     int status = validatehandle(sndstreamhandle, &streamRaw, &tapRaw);
-    TAPSTRUCT *tap = nullptr;
-    if (status == 0 && tapindex > 0) {
-        if (streamRaw->taps < tapindex) {
-            tap = nullptr;
-        } else {
-            tap = streamRaw->tap + tapindex - 1;
-        }
+    if (status != 0 || tapindex <= 0) {
+        return 0;
     }
-    return reinterpret_cast<int>(tap);
+    if (tapindex <= streamRaw->taps) {
+        return reinterpret_cast<int>(streamRaw->tap + tapindex - 1);
+    }
+    return 0;
 }
 
 int STREAM_queuefile(int sndstreamhandle, const char *filename, int offset, int holdtime) {
