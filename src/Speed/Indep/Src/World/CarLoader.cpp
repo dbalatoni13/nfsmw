@@ -1308,7 +1308,6 @@ LoadedWheel::LoadedWheel(RideInfo *ride_info, bool in_fe) {
         this->mMaxLodLevel = ride_info->GetMaxLodLevel();
     }
 
-    unsigned int *model_name_hashes = reinterpret_cast<unsigned int *>(this->ModelNameHashes);
     bMemSet(this->ModelNameHashes, 0, sizeof(this->ModelNameHashes));
     bMemSet(this->SkinNameHashesPerm, 0, sizeof(this->SkinNameHashesPerm));
     bMemSet(this->SkinNameHashesTemp, 0, sizeof(this->SkinNameHashesTemp));
@@ -1324,7 +1323,7 @@ LoadedWheel::LoadedWheel(RideInfo *ride_info, bool in_fe) {
         if (car_part->GetCarTypeNameHash() == bStringHash("WHEELS")) {
             for (int model = 0; model < 1; model++) {
                 for (int lod = this->mMinLodLevel; lod <= this->mMaxLodLevel; lod++) {
-                    model_name_hashes[lod + model * 5] = car_part->GetModelNameHash(model, lod);
+                    reinterpret_cast<unsigned int (*)[5]>(this->ModelNameHashes)[model][lod] = car_part->GetModelNameHash(model, lod);
                 }
             }
 
