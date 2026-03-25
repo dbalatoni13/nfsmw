@@ -162,8 +162,8 @@ VehiclePartDamageZone::VehiclePartDamageZone(int zoneId, DamageZoneSlotMapDataTy
 }
 
 VehiclePartDamageZone::~VehiclePartDamageZone() {
-    typedef UTL::Std::vector<int, _type_vector> SlotIdVector;
-    reinterpret_cast<SlotIdVector *>(&mSlotIdsStart)->~SlotIdVector();
+    reinterpret_cast<UTL::Std::vector<int, _type_vector> *>(&mSlotIdsStart)->clear();
+    reinterpret_cast<UTL::Std::vector<int, _type_vector> *>(&mSlotIdsStart)->~vector();
 }
 
 void VehiclePartDamageZone::Reset() {
@@ -411,10 +411,8 @@ void VehiclePartDamageBehaviour::ManageGlassDamage() {
 }
 
 void VehiclePartDamageBehaviour::InitAnimationPivot(unsigned int slotId, const char * markerName) {
-    ePositionMarker *positionMarker = this->FindPositionMarker(markerName);
-    if (positionMarker) {
-        VehicleDamagePart *damagePart = this->mDamagePartList[slotId];
-        damagePart->SetPivot(0.0f, 0.0f, 0.0f);
+    if (this->FindPositionMarker(markerName)) {
+        this->mDamagePartList[slotId]->SetPivot(0.0f, 0.0f, 0.0f);
     }
 }
 

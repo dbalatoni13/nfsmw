@@ -186,28 +186,28 @@ extern CarMemoryInfoEntryLayout CarMemoryInfoTable[6];
 extern const char lbl_8040A594[] asm("lbl_8040A594");
 
 unsigned int CarPartModelTable::GetModelNameHash(unsigned int base_namehash, int model_num, int lod) {
-    const char *model_name = reinterpret_cast<const char *const *>(reinterpret_cast<unsigned char *>(this) + 4)[lod + model_num * 5];
+    typedef const char *Row[5];
+    Row *names = reinterpret_cast<Row *>(reinterpret_cast<unsigned char *>(this) + 4);
 
-    if (reinterpret_cast<unsigned int>(model_name) == 0xFFFFFFFF) {
+    if (reinterpret_cast<int>(names[model_num][lod]) == -1) {
         return 0;
     }
 
-    if (TemplatedNameHashes != 0) {
-        char lod_suffix[3];
-
-        lod_suffix[0] = '_';
-        lod_suffix[1] = static_cast<char>(lod + 'A');
-        lod_suffix[2] = '\0';
-
-        if (MiddleStringOffset != 0xFFFF) {
-            base_namehash = bStringHash(MasterCarPartPack->StringTable + MiddleStringOffset * 4);
-        }
-
-        base_namehash = bStringHash(model_name, base_namehash);
-        return bStringHash(lod_suffix, base_namehash);
+    if (!this->TemplatedNameHashes) {
+        return reinterpret_cast<unsigned int>(names[model_num][lod]);
     }
 
-    return reinterpret_cast<unsigned int>(model_name);
+    char lod_suffix[3];
+    lod_suffix[0] = '_';
+    lod_suffix[1] = static_cast<char>(lod + 'A');
+    lod_suffix[2] = '\0';
+
+    if (this->MiddleStringOffset != 0xFFFF) {
+        base_namehash = bStringHash(MasterCarPartPack->StringTable + this->MiddleStringOffset * 4);
+    }
+
+    base_namehash = bStringHash(names[model_num][lod], base_namehash);
+    return bStringHash(lod_suffix, base_namehash);
 }
 
 int ConvertVinylGroupNumberToVinylType(int vinyl_group_number) {
