@@ -81,12 +81,13 @@ PhysicsObject::PhysicsObject(const Attrib::Instance &attribs, SimableType objTyp
 
 PhysicsObject::PhysicsObject(const char *attributeClass, const char *attribName, SimableType objType,
                              HSIMABLE owner, WUID wuid)
-    : Sim::Object(3) //
+    : Sim::Object(13) //
     , ISimable(this) //
     , IBody(this) //
     , IAttachable(this) //
-    , mAttributes(Attrib::FindCollection(stringhash32(attributeClass), stringhash32(attribName)), 0,
-                  nullptr) //
+    , mAttributes(Attrib::FindCollectionWithDefault(Attrib::StringToKey(attributeClass),
+                                                    Attrib::StringToKey(attribName)),
+                  0, nullptr) //
 {
     mWPos = new WWorldPos(0.025f);
     mObjType = objType;
@@ -386,8 +387,9 @@ Behavior *PhysicsObject::LoadBehavior(const UCrc32 &mechanic, const UCrc32 &beha
     }
 
     unsigned int key = mechanic.GetValue();
+    UCrc32 signature(behavior);
     BehaviorParams bp(params, this, mechanic, behavior);
-    beh = BuildElement(behavior, bp);
+    beh = BuildElement(signature, bp);
     if (beh != nullptr) {
         mMechanics[key] = beh;
         mBehaviors.Add(beh);

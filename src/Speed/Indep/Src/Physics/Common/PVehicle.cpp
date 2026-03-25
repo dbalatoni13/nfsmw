@@ -59,7 +59,9 @@ class IOnlinePlayer : public UTL::COM::IUnknown {
     virtual void SendSetVehicleOnGround();
 };
 
-class CarPartDatabase { public: CarType GetCarType(unsigned int hash); };
+struct CarPartDatabase {
+    CarType GetCarType(unsigned int hash);
+};
 extern CarPartDatabase CarPartDB;
 bool CarInfo_IsSkinned(CarType type);
 unsigned int CarInfo_GetResourceCost(CarType type, bool is_player, bool split_screen);

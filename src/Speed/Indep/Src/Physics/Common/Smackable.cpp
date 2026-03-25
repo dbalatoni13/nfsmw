@@ -3,7 +3,7 @@
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #include "Speed/Indep/Libs/Support/Utility/UStandard.h"
 #include "Speed/Indep/Src/Camera/CameraAI.hpp"
-#include "Speed/Indep/Src/Ecstasy/eModel.hpp"
+#include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
 #include "Speed/Indep/Src/Interfaces/SimModels/IModel.h"
 #include "Speed/Indep/Src/Interfaces/SimModels/IPlaceableScenery.h"
 #include "Speed/Indep/Src/Interfaces/SimModels/ISceneryModel.h"
@@ -1035,7 +1035,8 @@ PlaceableScenery *PlaceableScenery::Construct(const char *name, unsigned int att
     }
     const CollisionGeometry::Bounds *bounds = collection->GetRoot();
     if (bounds != nullptr) {
-        eModel model(render_name.GetValue());
+        eModel model;
+        model.Init(render_name.GetValue());
         if (model.GetSolid() == nullptr) {
             bHash32 fallback(0xc7395a8);
             render_name = fallback;

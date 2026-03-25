@@ -141,7 +141,7 @@ inline const PCloud *Collection::GetPCloud() const {
     return reinterpret_cast< const PCloud * >(GetPCHeader() + 1);
 }
 
-struct BoundsPack : public bTNode< BoundsPack > {
+class BoundsPack : public bTNode< BoundsPack > {
     struct Pair {
         UCrc32 Name;
         Collection *Collection;
@@ -153,7 +153,8 @@ struct BoundsPack : public bTNode< BoundsPack > {
         }
     };
 
-    struct Table : public _STL::vector< Pair, UTL::Std::Allocator< Pair, _type_CollisionBoundsTable > > {
+    class Table : public _STL::vector< Pair, UTL::Std::Allocator< Pair, _type_CollisionBoundsTable > > {
+      public:
         void Add(Collection *collection) {
             Pair pair(collection->fNameHash, collection);
             iterator pos = _STL::upper_bound(begin(), end(), pair);
@@ -162,9 +163,10 @@ struct BoundsPack : public bTNode< BoundsPack > {
         Collection *Find(UCrc32 name);
     };
 
-    bChunk *mChunk;
+    const bChunk *mChunk;
     Table mTable;
 
+  public:
     void *operator new(std::size_t size) {
         return gFastMem.Alloc(size, nullptr);
     }

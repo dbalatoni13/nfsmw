@@ -54,15 +54,6 @@ template <> ScratchPtr<RigidBody::Volatile>::~ScratchPtr() {
 
 IDynamicsEntity::~IDynamicsEntity() {}
 
-struct MeshAccess {
-    char pad[8];
-    const UMath::Vector4 *mVerts;
-    unsigned short mNumVertices;
-    unsigned short mFlags;
-    const Attrib::Collection *mMaterial;
-    UCrc32 mName;
-};
-
 struct SAPNodeAccess {
     SAPNodeAccess *mHead;
     SAPNodeAccess *mTail;
@@ -1767,14 +1758,12 @@ void RigidBody::DoInstanceCollision2d(float dT) {
     }
 
     for (Mesh *mesh = mMeshes.GetHead(); mesh != mMeshes.EndOfList() && packetCount < 16; mesh = mesh->GetNext()) {
-        const MeshAccess &meshAccess = *reinterpret_cast<const MeshAccess *>(mesh);
-
-        if (meshAccess.mFlags & Mesh::DISABLED) {
+        if (mesh->GetFlags() & Mesh::DISABLED) {
             continue;
         }
 
-        const UMath::Vector4 *vertices = meshAccess.mVerts;
-        const unsigned int vertexCount = meshAccess.mNumVertices;
+        const UMath::Vector4 *vertices = mesh->GetVerts();
+        const unsigned int vertexCount = mesh->GetNumVertices();
         for (unsigned int i = 0; i < vertexCount && packetCount < 16; ++i) {
             UMath::Vector3 arm = UMath::Vector4To3(vertices[i]);
             UMath::Vector3 lever;
@@ -1805,7 +1794,7 @@ void RigidBody::DoInstanceCollision2d(float dT) {
 
                 CollisionPacket &packet = packets[packetCount++];
                 packet.lever = lever;
-                packet.bodysurface = meshAccess.mMaterial;
+                packet.bodysurface = mesh->GetMaterial();
                 packet.normal = UMath::Vector4To3(groundNormal);
                 packet.penetration = groundNormal.w;
                 packet.arm = arm;

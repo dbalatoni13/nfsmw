@@ -9,7 +9,8 @@
 #include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
 
 // total size: 0x8
-struct ICarAudio : public UTL::COM::IUnknown {
+class ICarAudio : public UTL::COM::IUnknown {
+  public:
     static HINTERFACE _IHandle();
 
     ICarAudio(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, (HINTERFACE)_IHandle) {}

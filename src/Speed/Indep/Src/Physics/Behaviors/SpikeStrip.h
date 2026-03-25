@@ -11,7 +11,7 @@
 #include "Speed/Indep/Src/Physics/Dynamics/Collision.h"
 
 // total size: 0x50
-class SpikeStrip : public Behavior {
+struct SpikeStrip : public Behavior {
   public:
     static Behavior *Construct(const BehaviorParams &params);
 

@@ -9,8 +9,7 @@
 #include "Speed/Indep/Src/Interfaces/SimModels/IPlaceableScenery.h"
 #include "Speed/Indep/Src/Physics/HeirarchyModel.h"
 
-class PlaceableScenery : public HeirarchyModel, public IPlaceableScenery {
-  public:
+struct PlaceableScenery : public HeirarchyModel, public IPlaceableScenery {
     PlaceableScenery(bHash32 rendermesh, const CollisionGeometry::Bounds *geometry,
                      const Attrib::Collection *attribs, const ModelHeirarchy *heirarchy);
     ~PlaceableScenery() override;

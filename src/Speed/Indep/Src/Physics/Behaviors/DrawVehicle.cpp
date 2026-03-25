@@ -3,12 +3,8 @@
 #include "Speed/Indep/Src/Physics/SmackableTrigger.h"
 
 namespace RenderConn {
-struct Pkt_VehicleFragment_Open : Sim::Packet {
-    WUID mVehicleWorldID;
-    WUID mWorldID;
-    UCrc32 mPartName;
-    UCrc32 mColName;
-
+class Pkt_VehicleFragment_Open : public Sim::Packet {
+  public:
     Pkt_VehicleFragment_Open(WUID vehicleWorldID, WUID worldID, UCrc32 partName, UCrc32 colName)
         : mVehicleWorldID(vehicleWorldID), //
           mWorldID(worldID),               //
@@ -32,11 +28,20 @@ struct Pkt_VehicleFragment_Open : Sim::Packet {
         static UCrc32 hash = "VehicleFragment_Open";
         return hash.GetValue();
     }
+
+  private:
+    WUID mVehicleWorldID;
+    WUID mWorldID;
+    UCrc32 mPartName;
+    UCrc32 mColName;
 };
 
-struct Pkt_VehicleFragment_Service : Sim::Packet {
+class Pkt_VehicleFragment_Service : public Sim::Packet {
+  private:
     int mInView;
     float mDistanceToView;
+
+    friend class DrawVehicle::Part;
 };
 }
 
@@ -294,7 +299,7 @@ HCAUSE DrawVehicle::GetCausality() const {
 IModel::Enumerator *DrawVehicle::EnumerateChildren(Enumerator *enumerator) const {
     const IAttachable::List *attachments = static_cast<const IAttachable *>(this)->GetAttachments();
     if (attachments) {
-        IModel *model = static_cast< IModel * >(const_cast< DrawVehicle * >(this));
+        IModel *model = static_cast<IModel *>(const_cast<DrawVehicle *>(this));
         for (IAttachable::List::const_iterator iter = attachments->begin(); iter != attachments->end(); ++iter) {
             IModel *imodel = nullptr;
             if ((*iter)->QueryInterface(&imodel) && imodel->GetParentModel() == model) {
@@ -323,18 +328,19 @@ IModel *DrawVehicle::GetChildModel(UCrc32 name) const {
 }
 
 IModel *DrawVehicle::SpawnModel(UCrc32 name, UCrc32 collisionnode, UCrc32 attributes) {
-    if (Vehicle_Part_Count < 61U && UTL::Collections::Listable< IModel, 434 >::Count() < 435U && mGeometry) {
+    if (Vehicle_Part_Count < 61U && UTL::Collections::Listable<IModel, 434>::Count() < 435U && mGeometry) {
         const CollisionGeometry::Bounds *bounds = mGeometry->GetChild(collisionnode);
         if (bounds) {
             const Attrib::Collection *attribs = SmokeableSpawner::FindAttributes(attributes);
-            if (attribs) {
-                Part *part = new Part(static_cast< IModel * >(this), GetOwner()->GetWorldID(), bounds, attribs, name);
-                IModel *model = nullptr;
-                if (part) {
-                    model = part;
-                }
-                return model;
+            if (!attribs) {
+                return nullptr;
             }
+            Part *part = new Part(static_cast<IModel *>(this), GetOwner()->GetWorldID(), bounds, attribs, name);
+            IModel *model = nullptr;
+            if (part) {
+                model = part;
+            }
+            return model;
         }
     }
     return nullptr;
@@ -386,7 +392,7 @@ void DrawVehicle::PlayEffect(UCrc32 identifire, const Attrib::Collection *effect
     }
 
     if (!drawEffect) {
-        drawEffect = ::new ("DrawVehicle", 0) Effect(identifire, static_cast< IModel * >(this)->GetWorldID(), GetAttributes().GetConstCollection());
+        drawEffect = ::new ("DrawVehicle", 0) Effect(identifire, static_cast<IModel *>(this)->GetWorldID(), GetAttributes().GetConstCollection());
         mEffects.push_back(drawEffect);
     }
 

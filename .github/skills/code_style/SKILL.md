@@ -109,8 +109,12 @@ Foo::Foo()
 - Prefer including the owning repo header over adding a local forward declaration for a project type.
 - If the repo already has a header declaration/definition for a type, include that header instead of redeclaring the type locally.
 - If the repo only has an empty or stub owner header, and line info / surrounding source clearly points at that header's subsystem, prefer populating that owner header over leaving a recovered project type declaration inside a `.cpp`.
+- Do not create a duplicate micro-header that re-declares one type already owned by a broader subsystem header just to dodge that include. Include the real owner header and rewrite the caller back toward the original API shape instead of inventing one-off constructors or wrappers in the duplicate header.
 - Only keep a local forward declaration when no canonical repo header exists yet and you have verified that the ownership is still unresolved.
 - Likewise for project free functions: if a declaration is shared across translation units, move it into the owning header instead of leaving ad-hoc local prototypes in `.cpp` files.
+- For COM-style interfaces that declare `static HINTERFACE _IHandle();`, preserve the original ownership. If the interface wants an out-of-line handle, define the real `Type::_IHandle()` member in the owning TU (or use the header's outline hook macro) instead of inventing a free `extern "C"` shim with an `asm("...")` alias.
+- In constructors for out-of-line `_IHandle` owners, check local precedent before calling `_IHandle()`. In this repo, several matching interfaces want `(HINTERFACE)_IHandle` passed straight to `UTL::COM::IUnknown`, and using the call form can perturb both codegen and DWARF ownership.
+- If DWARF says a tiny virtual destructor was inline, do not assume "move it into the header" is automatically safe. In jumbo TUs that can improve one destructor callsite while also making objdiff report the standalone deleting-dtor symbol as missing from the owner TU, so always rebuild and check both the caller and the destructor symbol before keeping that rewrite.
 - Prefer moving helper template declarations next to their real use site instead of leaving them in an unrelated file.
 
 ### Pointer style
@@ -126,6 +130,7 @@ Foo::Foo()
 - Preserve the original `class` / `struct` kind from existing headers or Dwarf / PS2 evidence; do not treat it as a cosmetic style choice.
 - Treat header declarations as the repo source of truth. If the repo only has local `.cpp` partial declarations, verify the kind with the PS2 dump instead of copying them blindly.
 - Even forward declarations and local partial declarations should use the accurate keyword when known.
+- If Dwarf and PS2 disagree on `struct` vs `class`, treat PS2 visibility sections as the tie-breaker for the real owner kind and then rebuild the affected TU to confirm the shape is byte-stable.
 - Keep the `// total size: 0x...` comment above the recovered type declaration instead of burying it inside the body.
 - When a recovered type is a `class`, keep explicit access sections and put the method/accessor block before the member layout block unless existing repo evidence shows otherwise.
 - Preserve the member naming style that DWARF shows. Some types use `mMember`, others use `m_member`; do not normalize them.
@@ -167,6 +172,7 @@ Foo::Foo()
 
 - When touched recovered code repeats the same pointer/boundary arithmetic, prefer a short named helper or accessor such as `GetTop`, `GetBot`, `GetNext`, `GetPrev`, `GetStringTableStart`, or `GetStringTableEnd` if that shape is already supported by Dwarf/inlining evidence.
 - Prefer call sites that use those helpers or existing container APIs over re-encoding the same arithmetic or link manipulation inline.
+- If a touched caller is using a local `*Access` shim with placeholder padding just to peek at another type's private members, prefer a narrow inline accessor on the real type over keeping the fake layout struct in the caller.
 
 ## Phase 3: Things Not To "Clean Up" Blindly
 

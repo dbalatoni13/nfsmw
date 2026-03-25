@@ -19,6 +19,7 @@
 #include "Speed/Indep/Src/Interfaces/Simables/IRenderable.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ISpikeable.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ISuspension.h"
+#include "Speed/Indep/Src/Physics/SmackableTrigger.h"
 #include "Speed/Indep/Src/Physics/VehicleBehaviors.h"
 #include "Speed/Indep/Src/Sim/SimModel.h"
 #include "Speed/Indep/Src/World/CarInfo.hpp"
@@ -28,12 +29,12 @@ class Pkt_Car_Service;
 class Pkt_Heli_Service;
 }
 
-struct SmackableTrigger;
-
 // total size: 0x88
-struct DrawVehicle : public VehicleBehavior, public IRenderable, public IModel, public IAttachable {
+class DrawVehicle : public VehicleBehavior, public IRenderable, public IModel, public IAttachable {
+  public:
     // total size: 0x60
-    struct Effect : public Sim::Effect {
+    class Effect : public Sim::Effect {
+      public:
         Effect(UCrc32 id, unsigned int owner, const Attrib::Collection *parent)
             : Sim::Effect(owner, parent), //
               Identifire(id) {}
@@ -130,7 +131,8 @@ struct DrawVehicle : public VehicleBehavior, public IRenderable, public IModel, 
 };
 
 // total size: 0x114
-struct DrawHeli : public DrawVehicle {
+class DrawHeli : public DrawVehicle {
+  public:
     typedef DrawVehicle Base;
 
     void HidePart(const UCrc32 &name) override;
@@ -164,7 +166,8 @@ struct DrawHeli : public DrawVehicle {
 };
 
 // total size: 0xC4
-struct DrawCar : public DrawVehicle {
+class DrawCar : public DrawVehicle {
+  public:
     typedef DrawVehicle Base;
     typedef UTL::Std::map<UCrc32, int, _type_map> Parts;
 
@@ -203,14 +206,16 @@ struct DrawCar : public DrawVehicle {
 };
 
 // total size: 0xC4
-struct DrawTraffic : public DrawCar {
+class DrawTraffic : public DrawCar {
+  public:
     static Behavior *Construct(const BehaviorParams &params);
 
     DrawTraffic(const BehaviorParams &params);
 };
 
 // total size: 0xCC
-struct DrawPerformanceCar : public DrawCar {
+class DrawPerformanceCar : public DrawCar {
+  public:
     DrawPerformanceCar(const BehaviorParams &params, CarRenderUsage usage);
     void OnBehaviorChange(const UCrc32 &mechanic) override;
     void OnService(RenderConn::Pkt_Car_Service &pkt) override;
@@ -221,21 +226,24 @@ struct DrawPerformanceCar : public DrawCar {
 };
 
 // total size: 0xCC
-struct DrawNISCar : public DrawPerformanceCar {
+class DrawNISCar : public DrawPerformanceCar {
+  public:
     static Behavior *Construct(const BehaviorParams &params);
 
     DrawNISCar(const BehaviorParams &params);
 };
 
 // total size: 0xCC
-struct DrawCopCar : public DrawPerformanceCar {
+class DrawCopCar : public DrawPerformanceCar {
+  public:
     static Behavior *Construct(const BehaviorParams &params);
 
     DrawCopCar(const BehaviorParams &params);
 };
 
 // total size: 0xD0
-struct DrawRaceCar : public DrawPerformanceCar {
+class DrawRaceCar : public DrawPerformanceCar {
+  public:
     static Behavior *Construct(const BehaviorParams &params);
 
     DrawRaceCar(const BehaviorParams &params, CarRenderUsage usage);

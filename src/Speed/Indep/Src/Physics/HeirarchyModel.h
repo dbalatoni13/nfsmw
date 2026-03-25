@@ -9,11 +9,10 @@
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/smackable.h"
 #include "Speed/Indep/Src/Interfaces/IBody.h"
 #include "Speed/Indep/Src/Interfaces/SimModels/ITriggerableModel.h"
+#include "Speed/Indep/Src/Physics/Smackable.h"
+#include "Speed/Indep/Src/Physics/SmackableTrigger.h"
 #include "Speed/Indep/Src/Sim/SimModel.h"
 #include "Speed/Indep/Src/World/ModelHeirarchy.hpp"
-
-struct SmackableTrigger;
-struct SmackableAvoidable;
 
 class HeirarchyModel : public Sim::Model, public IBody, public ITriggerableModel, public Attrib::Gen::smackable {
   public:

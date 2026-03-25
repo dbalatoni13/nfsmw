@@ -93,6 +93,22 @@ class RigidBody : public Behavior,
             return mName;
         }
 
+        const UMath::Vector4 *GetVerts() const {
+            return mVerts;
+        }
+
+        unsigned int GetNumVertices() const {
+            return mNumVertices;
+        }
+
+        unsigned short GetFlags() const {
+            return mFlags;
+        }
+
+        const Attrib::Collection *GetMaterial() const {
+            return mMaterial;
+        }
+
       private:
         // total size: 0x18
         UMath::Vector4 *mVerts;              // offset 0x8, size 0x4
