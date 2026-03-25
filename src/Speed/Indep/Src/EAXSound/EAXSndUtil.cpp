@@ -4,7 +4,7 @@
 
 class NFSMixShape {
   public:
-    enum eMIXTABLEID { SHAPE_UP_EQPWR_SQ = 0 };
+    enum eMIXTABLEID { SHAPE_UP_EQPWR_SQ = 3 };
     static int GetCurveOutput(eMIXTABLEID id, int nQ15Ratio, bool invert);
 };
 
@@ -189,24 +189,17 @@ void cInterpLine::Update(float delta_time) {
         return;
     }
 
-    if (curve > 1) {
+    if ((int)curve > 1) {
         if (curve == INV_PARABOLIC) {
-            float ratio = elapsed / length - 1.0f;
-            CurValue = Start + (Finish - Start) * (-ratio * ratio + 1.0f);
+            float t = elapsed / length - 1.0f;
+            CurValue = Start + (Finish - Start) * (-t * t + 1.0f);
             return;
         }
         if (curve == EQ_PWR_SQ) {
-            float start = Start;
-            float finish = Finish;
-            int nQ15Ratio = static_cast<int>((elapsed * 32767.0f) / length);
-            if (nQ15Ratio < 0) {
-                nQ15Ratio = 0;
-            }
-            if (nQ15Ratio > 0x7fff) {
-                nQ15Ratio = 0x7fff;
-            }
-            int curveOutput = NFSMixShape::GetCurveOutput(NFSMixShape::SHAPE_UP_EQPWR_SQ, nQ15Ratio, false);
-            CurValue = Start + (finish - start) * static_cast<float>(curveOutput) * 3.051851e-05f;
+            float t = Finish - Start;
+            int Delta = bClamp(static_cast<int>((elapsed * 32767.0f) / length), 0, 0x7fff);
+            float Result = static_cast<float>(NFSMixShape::GetCurveOutput(NFSMixShape::SHAPE_UP_EQPWR_SQ, Delta, false));
+            CurValue = Start + t * Result * 3.051851e-05f;
             return;
         }
     }

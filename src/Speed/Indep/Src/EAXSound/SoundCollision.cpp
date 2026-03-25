@@ -74,8 +74,10 @@ bool IsPrimaryTarget(unsigned int object_id) {
     view = eGetView(1, false);
     if (view) {
         if (view->GetCameraMover()) {
-            if (view->GetCameraMover()->GetAnchor()->GetWorldID() == object_id) {
-                return true;
+            if (view->GetCameraMover()->GetAnchor()) {
+                if (view->GetCameraMover()->GetAnchor()->GetWorldID() == object_id) {
+                    return true;
+                }
             }
         }
     }
@@ -83,8 +85,10 @@ bool IsPrimaryTarget(unsigned int object_id) {
     view = eGetView(2, false);
     if (view) {
         if (view->GetCameraMover()) {
-            if (view->GetCameraMover()->GetAnchor()->GetWorldID() == object_id) {
-                return true;
+            if (view->GetCameraMover()->GetAnchor()) {
+                if (view->GetCameraMover()->GetAnchor()->GetWorldID() == object_id) {
+                    return true;
+                }
             }
         }
     }
