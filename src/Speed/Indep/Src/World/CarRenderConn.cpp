@@ -1335,25 +1335,20 @@ void CarRenderConn::OnLoaded(CarRenderInfo *carrender_info) {
         return;
     }
 
-    if (carrender_info->pRideInfo != 0) {
-        CarPart *wheel = carrender_info->pRideInfo->GetPart(0x42);
-        if (wheel != 0) {
-            int num_spokes = GetAppliedAttributeIParam__7CarPartUii(wheel, 0x1b0ea1a9, 0);
+    if (carrender_info->pRideInfo) {
+        CarPart *part_rim = carrender_info->pRideInfo->GetPart(0x42);
+        if (part_rim) {
+            unsigned int numSpokes = static_cast<signed char>(
+                bAbs(GetAppliedAttributeIParam__7CarPartUii(part_rim, 0x1b0ea1a9, 0)));
 
-            if (num_spokes < 0) {
-                num_spokes = -num_spokes;
+            if (numSpokes == 0) {
+                numSpokes = bAbs(this->VehicleRenderConn::mAttributes.WheelSpokeCount());
             }
 
-            if (num_spokes == 0) {
-                num_spokes = this->VehicleRenderConn::mAttributes.WheelSpokeCount();
-                if (num_spokes < 0) {
-                    num_spokes = -num_spokes;
-                }
-            }
-
-            if (num_spokes != 0) {
-                float spoke_count = static_cast<float>(num_spokes + num_spokes);
-                this->mMaxWheelRenderDeltaAngle = (360.0f / spoke_count - 1.0f) * 0.017453f;
+            if (numSpokes != 0) {
+                float spoke_count = static_cast<float>(numSpokes);
+                spoke_count += spoke_count;
+                this->mMaxWheelRenderDeltaAngle = DEG2RAD(360.0f / spoke_count - 1.0f);
             }
         }
     }
@@ -1361,42 +1356,36 @@ void CarRenderConn::OnLoaded(CarRenderInfo *carrender_info) {
     carrender_info->InitEmitterPositions(this->mTirePositions);
 
     if (this->mPipeEffects.IsEmpty()) {
-        for (CarEmitterPosition *position = carrender_info->EmitterPositionList[10].GetHead();
-             position != carrender_info->EmitterPositionList[10].EndOfList(); position = position->GetNext()) {
-            bMatrix4 emitter_matrix;
-            const bMatrix4 *effect_matrix = 0;
-
-            if (position->PositionMarker == 0) {
-                PSMTX44Identity(*reinterpret_cast<Mtx44 *>(&emitter_matrix));
-                emitter_matrix.v3.x = position->X;
-                emitter_matrix.v3.y = position->Y;
-                emitter_matrix.v3.z = position->Z;
-                effect_matrix = &emitter_matrix;
+        for (CarEmitterPosition *emitter_position = carrender_info->EmitterPositionList[10].GetHead();
+             emitter_position != carrender_info->EmitterPositionList[10].EndOfList(); emitter_position = emitter_position->GetNext()) {
+            ePositionMarker *position_marker = emitter_position->PositionMarker;
+            if (position_marker) {
+                this->mPipeEffects.AddTail(new VehicleRenderConn::Effect(&position_marker->Matrix));
             } else {
-                effect_matrix = &position->PositionMarker->Matrix;
+                bMatrix4 tempmat;
+                bIdentity(&tempmat);
+                tempmat.v3.x = emitter_position->X;
+                tempmat.v3.y = emitter_position->Y;
+                tempmat.v3.z = emitter_position->Z;
+                this->mPipeEffects.AddTail(new VehicleRenderConn::Effect(&tempmat));
             }
-
-            this->mPipeEffects.AddTail(new VehicleRenderConn::Effect(effect_matrix));
         }
     }
 
     if (this->mEngineEffects.IsEmpty()) {
-        for (CarEmitterPosition *position = carrender_info->EmitterPositionList[9].GetHead();
-             position != carrender_info->EmitterPositionList[9].EndOfList(); position = position->GetNext()) {
-            bMatrix4 emitter_matrix;
-            const bMatrix4 *effect_matrix = 0;
-
-            if (position->PositionMarker == 0) {
-                PSMTX44Identity(*reinterpret_cast<Mtx44 *>(&emitter_matrix));
-                emitter_matrix.v3.x = position->X;
-                emitter_matrix.v3.y = position->Y;
-                emitter_matrix.v3.z = position->Z;
-                effect_matrix = &emitter_matrix;
+        for (CarEmitterPosition *emitter_position = carrender_info->EmitterPositionList[9].GetHead();
+             emitter_position != carrender_info->EmitterPositionList[9].EndOfList(); emitter_position = emitter_position->GetNext()) {
+            ePositionMarker *position_marker = emitter_position->PositionMarker;
+            if (position_marker) {
+                this->mEngineEffects.AddTail(new VehicleRenderConn::Effect(&position_marker->Matrix));
             } else {
-                effect_matrix = &position->PositionMarker->Matrix;
+                bMatrix4 tempmat;
+                bIdentity(&tempmat);
+                tempmat.v3.x = emitter_position->X;
+                tempmat.v3.y = emitter_position->Y;
+                tempmat.v3.z = emitter_position->Z;
+                this->mEngineEffects.AddTail(new VehicleRenderConn::Effect(&tempmat));
             }
-
-            this->mEngineEffects.AddTail(new VehicleRenderConn::Effect(effect_matrix));
         }
     }
 }
