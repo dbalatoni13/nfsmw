@@ -932,9 +932,7 @@ PVehicle::PVehicle(DriverClass dc, const Attrib::Gen::pvehicle &attribs, const U
     mPerformanceValid = false;
     mCacheName = cache_name;
     if (performance != nullptr) {
-        mPerformance.TopSpeed = performance->TopSpeed;
-        mPerformance.Acceleration = performance->Acceleration;
-        mPerformance.Handling = performance->Handling;
+        mPerformance = *performance;
         mPerformanceValid = true;
     }
     mInstances.AddTail(this);
