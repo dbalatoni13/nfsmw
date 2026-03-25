@@ -480,10 +480,18 @@ register assignments but does NOT affect integer register assignments (and vice 
   Every local that is NOT in the DWARF is a spurious temporary — remove it.
 - Every local that IS in the DWARF must exist in the source, even if you don't use the name.
   Name it exactly as the DWARF shows.
+- If DWARF shows a float-derived local as `int`, keep it signed in source and clamp it with
+  a signed helper such as `UMath::Min`/`UMath::Max` or an equivalent signed branch. Rewriting
+  it as `unsigned int` often forces the PPC unsigned float-to-int conversion path (`lfd` /
+  `xoris`) and can badly perturb both objdiff and DWARF.
 - When objdiff is already exact but a local only differs by lexical scope, try an equivalent
   loop form that keeps the temporary inside the same block as the original DWARF. In practice,
   changing a `for (...; ...; x = next)` into a `while (...) { T *next = ...; ...; x = next; }`
   can fix DWARF-only scope mismatches without changing codegen.
+- If DWARF groups most of a function's working locals inside one anonymous block, prefer keeping
+  that recovered logic inside one explicit inner scope instead of leaving the locals at function
+  scope. Matching the lexical block alone can dramatically improve normalized DWARF even when
+  objdiff is unchanged.
 
 ### Slot-pooled delete paths
 
