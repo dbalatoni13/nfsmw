@@ -84,8 +84,6 @@ class FnDeltaQ : public FnAnimMemoryMap {
             mPrevQBlock = MemoryPoolManager::NewBlock(deltaQ->mNumBones * sizeof(*mPrevQs));
             mPrevQs = reinterpret_cast<UMath::Vector4 *>(mPrevQBlock);
             mMinRanges = minRanges;
-        } else {
-            mMinRanges = minRanges;
         }
     }
 

@@ -96,6 +96,10 @@ bool FnDeltaQ::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask) {
         InitBuffersAsRequired();
     }
     DeltaQ *deltaQ = reinterpret_cast<DeltaQ *>(mpAnim);
+
+    if (!deltaQ->mNumBones) {
+        return true;
+    }
     int floorTime = FloatToInt(currTime);
     int floorKey;
 
@@ -140,6 +144,7 @@ bool FnDeltaQ::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask) {
     unsigned char *binData = &mBins[floorBinIdx * mBinSize];
     DeltaQPhysical *floorPhys = GetPhysical(binData);
     unsigned char *boneIdxs = deltaQ->mBoneIdxs;
+
     bool preventReverse = false;
 
     if (floorKey < mPrevKey) {
