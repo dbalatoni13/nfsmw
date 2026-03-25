@@ -14,6 +14,9 @@ int PATH_createstreamtrack(int track, char *musname, int bytespersec);
 IPathTrack *PATH_createstreamimp(int track, int channels, float rate);
 IPathTrack *PATH_gettrackimp(int track);
 void PATH_clearallevents(int mask);
+int PATH_status(int track, PATHSTATUS *status);
+int PATH_trackstatus(unsigned int track);
+int PATH_addmapfile(char *mapfile);
 
 SFXCTL_Pathfinder *g_pSFXCTL_Pathfinder;
 stPFParms *SFXCTL_Pathfinder::m_pPFParms[4] = {nullptr, nullptr, nullptr, nullptr};
@@ -44,7 +47,19 @@ SFXCTL_Pathfinder::SFXCTL_Pathfinder()
     }
 }
 
-SFXCTL_Pathfinder::~SFXCTL_Pathfinder() {}
+SFXCTL_Pathfinder::~SFXCTL_Pathfinder() {
+    for (int n = 0; n <= 3; ++n) {
+        if (m_pPFParms[n]) {
+            DestroyTrack(m_pPFParms[n]);
+            m_pPFParms[n] = 0;
+            for (int n = 0; n <= 3; ++n) {
+                if (m_PFStrmImp[n]) {
+                    m_PFStrmImp[n] = 0;
+                }
+            }
+        }
+    }
+}
 
 SndBase *SFXCTL_Pathfinder::CreateObject(unsigned int allocator) {
     if (allocator != 0) {
@@ -83,16 +98,17 @@ void SFXCTL_Pathfinder::SetupSFX(CSTATE_Base *_StateBase) {
 
 void SFXCTL_Pathfinder::UpdateParams(float t) {
     (void)t;
-    for (int n = 0; n < 4; ++n) {
+    for (int n = 0; n <= 3; ++n) {
         stPFParms *pf = m_pPFParms[n];
-        if (pf == nullptr) {
+        if (!pf) {
             continue;
         }
         if ((pf->procflags & 1) != 0) {
-            pf->pathstatus.playingnode = pf->PATH_TRACK;
+            PATH_status(pf->PATH_TRACK, &pf->pathstatus);
         }
+        pf = m_pPFParms[n];
         if ((pf->procflags & 2) != 0) {
-            pf->track_status = kPATH_TRACK_PLAYSTATUS_NONE;
+            pf->track_status = PATH_trackstatus(pf->PATH_TRACK);
         }
     }
 }
@@ -144,41 +160,37 @@ void SFXCTL_Pathfinder::EventActionCallback(int trackhandle, int cbID, int parm)
     if (cbID == 2) {
         MControlPathfinder(false, 0, 0, 0).Send(UCrc32("InteractiveDone"));
         MNotifyMusicFlow(0).Send(UCrc32("InteractiveDone"));
-        return;
-    }
-
-    if (cbID == 3) {
-        if (parm == 0 || parm == 1 || parm == 2) {
-            MControlPathfinder(false, 0x13, static_cast< unsigned int >(parm), 0).Send(UCrc32("Event"));
+    } else if (cbID == 3) {
+        if (parm == 0) {
+            MControlPathfinder(false, 0x13, 0, 0).Send(UCrc32("Event"));
+        } else if (parm == 1) {
+            MControlPathfinder(false, 0x14, 0, 0).Send(UCrc32("Event"));
         }
     }
 }
 
 int SFXCTL_Pathfinder::InitPFParms(stPFParms *pstparms, int pathid, int trackid) {
-    if (pstparms == nullptr) {
-        return -1;
+    if (!IsAudioStreamingEnabled) {
+        return 0;
     }
-    if (m_projrefcnt >= 4) {
-        return -1;
+    int pathproj = 0x1000000 << pathid;
+    int inst;
+    int error;
+    unsigned int voice = pathproj | 0x10000000u;
+    unsigned int track = voice | (1u << trackid);
+
+    m_pPFParms[m_projrefcnt] = pstparms;
+    m_pPFParms[m_projrefcnt]->projnum = m_projrefcnt;
+    m_pPFParms[m_projrefcnt]->PATH_PROJECT = pathproj;
+    m_pPFParms[m_projrefcnt]->PATH_VOICE = voice;
+    m_pPFParms[m_projrefcnt]->PATH_TRACK = track;
+
+    error = PATH_addmapfile(m_pPFParms[m_projrefcnt]->pmapfile);
+    if (error >= 0) {
+        m_pPFParms[m_projrefcnt]->bdataloaded = true;
+        g_pSFXCTL_Pathfinder->CreateTrack(m_projrefcnt);
     }
-
-    int slot = m_projrefcnt;
-    unsigned int project = 0x1000000u << (pathid & 0x1f);
-    unsigned int voice = project | 0x10000000u;
-    unsigned int track = voice | (1u << (trackid & 0x1f));
-
-    m_pPFParms[slot] = pstparms;
-    pstparms->projnum = slot;
-    pstparms->PATH_PROJECT = project;
-    pstparms->PATH_VOICE = voice;
-    pstparms->PATH_TRACK = track;
-    pstparms->bdataloaded = true;
-    pstparms->bAttached = false;
-    pstparms->track_status = kPATH_TRACK_PLAYSTATUS_NONE;
-    ++m_projrefcnt;
-
-    CreateTrack(slot);
-    return slot;
+    return m_projrefcnt++;
 }
 
 void SFXCTL_Pathfinder::CreateTrack(int index) {
