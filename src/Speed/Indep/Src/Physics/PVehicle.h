@@ -68,6 +68,10 @@ class PVehicle : public PhysicsObject,
                  public IExplodeable,
                  public IAttributeable {
   public:
+    static void *operator new(unsigned int size) {
+        return gFastMem.Alloc(size, nullptr);
+    }
+
     static void operator delete(void *mem, unsigned int size) {
         if (mem) {
             gFastMem.Free(mem, size, nullptr);
