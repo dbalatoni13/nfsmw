@@ -1039,12 +1039,18 @@ int CarLoader::RemoveSomethingFromCarMemoryPool(bool force_unload) {
     result = 0;
     if (force_unload != 0) {
         if (this->DefragmentPool() == 0) {
-            if (this->NumSpongeAllocations == 0) {
+            if (this->NumSpongeAllocations != 0) {
+                this->NumSpongeAllocations--;
+                bFree(this->SpongeAllocations[this->NumSpongeAllocations]);
+                result = 1;
+                this->MayNeedDefragmentation++;
+            } else {
                 int pass = 0;
 
                 do {
-                for (LoadedRideInfo *loaded_ride_info = this->LoadedRideInfoList.GetHead();
-                     loaded_ride_info != this->LoadedRideInfoList.EndOfList(); loaded_ride_info = loaded_ride_info->GetNext()) {
+                    for (LoadedRideInfo *loaded_ride_info = this->LoadedRideInfoList.GetHead();
+                         loaded_ride_info != this->LoadedRideInfoList.EndOfList();
+                         loaded_ride_info = loaded_ride_info->GetNext()) {
                         LoadedSkin *loaded_skin = loaded_ride_info->pLoadedSkin;
 
                         if ((loaded_ride_info->HighPriority == 0 || pass == 1) &&
@@ -1065,11 +1071,6 @@ int CarLoader::RemoveSomethingFromCarMemoryPool(bool force_unload) {
                 this->PrintMemoryUsage(false);
                 bBreak();
                 result = 0;
-            } else {
-                this->NumSpongeAllocations--;
-                bFree(this->SpongeAllocations[this->NumSpongeAllocations]);
-                result = 1;
-                this->MayNeedDefragmentation++;
             }
         } else {
 success:
