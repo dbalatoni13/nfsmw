@@ -29,7 +29,7 @@ class IModel : public UTL::COM::IUnknown, public UTL::Collections::Instanceable<
 
     static HINTERFACE _IHandle();
 
-    IModel(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
+    IModel(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, (HINTERFACE)_IHandle) {}
 
     virtual ~IModel();
 
