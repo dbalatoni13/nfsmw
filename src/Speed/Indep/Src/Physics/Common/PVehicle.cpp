@@ -942,8 +942,7 @@ PVehicle::PVehicle(DriverClass dc, const Attrib::Gen::pvehicle &attribs, const U
         memcpy(pFVar, customization, 0x198);
         mCustomization = pFVar;
     }
-    UCrc32 classKey(mAttributes.CLASS());
-    mClass = classKey;
+    mClass = mAttributes.CLASS();
     IVehicle::AddToList(VEHICLE_ALL);
     UpdateListing();
     switch (mDriverClass) {
