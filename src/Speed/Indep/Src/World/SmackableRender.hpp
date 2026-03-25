@@ -24,6 +24,16 @@ public:
     void Update(float dT);
     static void UpdateAll(float dT);
 
+    void *operator new(unsigned int size) {
+        return gFastMem.Alloc(size, nullptr);
+    }
+
+    void operator delete(void *mem, unsigned int size) {
+        if (mem) {
+            gFastMem.Free(mem, size, nullptr);
+        }
+    }
+
     static bTList<SmackableRenderConn> mList;
 
 private:

@@ -477,12 +477,10 @@ void VehicleRenderConn::GetRenderMatrix(bMatrix4 *matrix) {
 }
 
 void VehicleRenderConn::RenderAll(eView *view, int reflection) {
-    const UTL::Collections::Listable<VehicleRenderConn, 10>::List &loader_list = VehicleRenderConn::GetList();
-    UTL::Collections::Listable<VehicleRenderConn, 10>::List::const_iterator it = loader_list.begin();
-    UTL::Collections::Listable<VehicleRenderConn, 10>::List::const_iterator end = loader_list.end();
-
-    for (; it != end; ++it) {
-        (*it)->OnRender(view, reflection);
+    for (VehicleRenderConn *const *iter = VehicleRenderConn::GetList().begin();
+         iter != VehicleRenderConn::GetList().end(); ++iter) {
+        VehicleRenderConn *conn = *iter;
+        conn->OnRender(view, reflection);
     }
 }
 

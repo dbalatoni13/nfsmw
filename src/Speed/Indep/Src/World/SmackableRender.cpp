@@ -36,10 +36,12 @@ Sim::Connection *SmackableRenderConn::Construct(const Sim::ConnectionData &data)
 }
 
 SmackableRenderConn::~SmackableRenderConn() {
-    if (this->mModel) {
-        delete this->mModel;
+    mList.Remove(this);
+    if (mModel) {
+        delete mModel;
+        mModel = nullptr;
     }
-    this->mTarget.Set(0);
+    mTarget.Set(0);
 }
 
 void SmackableRenderConn::OnClose() {
@@ -97,7 +99,7 @@ void SmackableRenderConn::Update(float dT) {
 }
 
 void SmackableRenderConn::UpdateAll(float dT) {
-    for (SmackableRenderConn *w = mList.GetHead(); w != mList.GetHead(); w = w->GetNext()) {
+    for (SmackableRenderConn *w = mList.GetHead(); w != mList.EndOfList(); w = w->GetNext()) {
         w->Update(dT);
     }
 }
