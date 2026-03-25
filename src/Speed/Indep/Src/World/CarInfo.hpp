@@ -351,6 +351,10 @@ class RideInfo {
         return this->mMyCarLoaderHandle;
     }
 
+    CarRenderUsage GetCarRenderUsage() {
+        return this->mMyCarRenderUsage;
+    }
+
     CARPART_LOD GetMinLodLevel() const {
         return this->mMinLodLevel;
     }

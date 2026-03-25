@@ -2203,10 +2203,10 @@ void CarRenderInfo::RenderPart(eView *view, CarPartModel *carPart, bMatrix4 *loc
         eModel *model = carPart->GetModel();
 
         if (model == nullptr) {
-            model = &StandardDebugModel;
+            view->Render(&StandardDebugModel, local_to_world, light_context, flags, nullptr);
+        } else {
+            view->Render(model, local_to_world, light_context, flags, nullptr);
         }
-
-        ::Render(view, model, local_to_world, light_context, flags, 0);
     }
 }
 

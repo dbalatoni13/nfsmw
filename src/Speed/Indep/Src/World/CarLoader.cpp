@@ -665,10 +665,11 @@ LoadedSkinLayer::LoadedSkinLayer(unsigned int name_hash) {
 }
 
 int CarLoader::Load(RideInfo *ride_info) {
+    int high_priority = 0;
+    int is_player_car = ride_info->GetCarRenderUsage() == CarRenderUsage_Player;
     char filename[128];
-    bool is_player_car = ride_info->SkinType == 0;
 
-    bSPrintf(filename, "CARS\\%s\\TEXTURES.BIN", CarTypeInfoArray[ride_info->Type].CarTypeName);
+    bSPrintf(filename, "CARS\\%s\\TEXTURES.BIN", GetCarTypeName(ride_info->Type));
 
     if (!bFileExists(filename)) {
         bBreak();
@@ -676,7 +677,9 @@ int CarLoader::Load(RideInfo *ride_info) {
 
     LoadedRideInfo *loaded_ride_info = this->AllocateRideInfo(ride_info, is_player_car);
 
+    loaded_ride_info->HighPriority = high_priority;
     loaded_ride_info->IsPlayerCar = is_player_car;
+    this->LoadedRideInfoList.Remove(loaded_ride_info);
     this->LoadedRideInfoList.AddTail(loaded_ride_info);
     return loaded_ride_info->ID;
 }
