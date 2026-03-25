@@ -39,8 +39,11 @@ static inline char GetNodeInd(const WRoadNav &nav) {
     return *reinterpret_cast<const char *>(reinterpret_cast<const char *>(&nav) + 0x98);
 }
 
-static inline bool RaceRouteForward(const WRoadSegment &seg) {
-    return seg.fFlags & (1 << 2);
+static inline char RaceRouteForward(const WRoadSegment &seg) {
+    if (seg.fFlags & (1 << 2)) {
+        return 1;
+    }
+    return 0;
 }
 
 Behavior *ResetCar::Construct(const BehaviorParams &params) {
