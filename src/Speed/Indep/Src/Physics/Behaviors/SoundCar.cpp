@@ -43,8 +43,6 @@ HINTERFACE ICarAudio::_IHandle() {
     return (HINTERFACE)_IHandle;
 }
 
-ICarAudio::~ICarAudio() {}
-
 enum ControlSource {
     CONTROL_NONE = 0,
     CONTROL_HUMAN = 1,

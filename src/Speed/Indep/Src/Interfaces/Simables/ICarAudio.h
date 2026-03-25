@@ -14,7 +14,7 @@ struct ICarAudio : public UTL::COM::IUnknown {
 
     ICarAudio(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, (HINTERFACE)_IHandle) {}
 
-    virtual ~ICarAudio();
+    virtual ~ICarAudio() {}
 
     virtual Rpm GetRPM() const = 0;
 };
