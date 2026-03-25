@@ -407,8 +407,11 @@ bool PhysicsObject::Attach(UTL::COM::IUnknown *object) {
     if (UTL::COM::ComparePtr(mEntity, object)) {
         return false;
     }
-    Sim::IEntity *ientity = nullptr;
-    if (object->QueryInterface(&ientity)) {
+    Sim::IEntity *ientity = reinterpret_cast<Sim::IEntity *>(
+        (*reinterpret_cast<UTL::COM::Object **>(object))->_mInterfaces.Find((HINTERFACE)Sim::IEntity::_IHandle)
+    );
+    bool hasIEntity = ientity != nullptr;
+    if (hasIEntity) {
         if (mEntity != nullptr) {
             Detach(mEntity);
             mEntity = nullptr;
