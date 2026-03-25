@@ -2412,31 +2412,33 @@ int CarLoader::LoadAllWheelTextures() {
 }
 
 void CarLoader::LoadSolidPack(LoadedSolidPack *loaded_solid_pack, int stream_solids) {
-    if (stream_solids == 0) {
-        loaded_solid_pack->pResourceFile = CreateResourceFile(loaded_solid_pack->Filename, RESOURCE_FILE_CAR, 0, 0, 0);
-
-        int allocation_params = 0;
-
-        if (CarLoader_MakeSpaceInCarMemoryPool(this, bFileSize(loaded_solid_pack->Filename), 0, false) != 0) {
-            allocation_params = CarLoaderMemoryPoolNumber;
-        }
-
-        loaded_solid_pack->pResourceFile->SetAllocationParams((allocation_params & 0xF) | 0x2000, loaded_solid_pack->Filename);
-        loaded_solid_pack->LoadState = CARLOADSTATE_LOADING;
-        this->LoadingInProgress = 1;
-        loaded_solid_pack->pResourceFile->BeginLoading(
-            reinterpret_cast<void (*)(void *)>(static_cast<void (*)(int)>(LoadedSolidPackCallbackBridge)), loaded_solid_pack);
-    } else {
+    if (stream_solids != 0) {
         CarLoader_MakeSpaceInCarMemoryPool(this, 0x8000, 0, true);
         loaded_solid_pack->LoadState = CARLOADSTATE_LOADING;
         this->LoadingInProgress = 1;
-        eLoadStreamingSolidPack(loaded_solid_pack->Filename, LoadedSolidPackCallbackBridge, reinterpret_cast<int>(loaded_solid_pack),
-                                CarLoaderMemoryPoolNumber);
+        eLoadStreamingSolidPack(loaded_solid_pack->Filename,
+            reinterpret_cast<void (*)(void *)>(static_cast<void (*)(unsigned int)>(LoadedSolidPackCallbackBridge)),
+            loaded_solid_pack, CarLoaderMemoryPoolNumber);
         loaded_solid_pack->pStreamingPack = StreamingSolidPackLoader.GetLoadedStreamingPack(loaded_solid_pack->Filename);
 
         if (loaded_solid_pack->pStreamingPack == 0) {
-            LoadedSolidPackCallbackBridge(reinterpret_cast<int>(loaded_solid_pack));
+            LoadedSolidPackCallbackBridge(reinterpret_cast<unsigned int>(loaded_solid_pack));
         }
+    } else {
+        loaded_solid_pack->pResourceFile = CreateResourceFile(loaded_solid_pack->Filename, RESOURCE_FILE_CAR, 0, 0, 0);
+
+        int file_size = bFileSize(loaded_solid_pack->Filename);
+        int pool = 0;
+
+        if (CarLoader_MakeSpaceInCarMemoryPool(this, file_size, 0, false) != 0) {
+            pool = CarLoaderMemoryPoolNumber;
+        }
+
+        loaded_solid_pack->pResourceFile->SetAllocationParams((pool & 0xF) | 0x2000, loaded_solid_pack->Filename);
+        loaded_solid_pack->LoadState = CARLOADSTATE_LOADING;
+        this->LoadingInProgress = 1;
+        loaded_solid_pack->pResourceFile->BeginLoading(
+            reinterpret_cast<void (*)(void *)>(static_cast<void (*)(unsigned int)>(LoadedSolidPackCallbackBridge)), loaded_solid_pack);
     }
 }
 
