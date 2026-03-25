@@ -55,23 +55,23 @@ struct smackable : Instance {
 
     smackable(Key collectionKey, unsigned int msgPort, UTL::COM::IUnknown *owner)
         : Instance(FindCollection(ClassKey(), collectionKey), msgPort, owner) {
-        SetDefaultLayout(sizeof(_LayoutStruct));
+        SetDefaultLayout(0x28);
     }
 
     smackable(const Collection *collection, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(collection, msgPort, owner) {
-        SetDefaultLayout(sizeof(_LayoutStruct));
+        SetDefaultLayout(0x28);
     }
 
     smackable(const smackable &src) : Instance(src) {
-        SetDefaultLayout(sizeof(_LayoutStruct));
+        SetDefaultLayout(0x28);
     }
 
     smackable(const Instance &src) : Instance(src) {
-        SetDefaultLayout(sizeof(_LayoutStruct));
+        SetDefaultLayout(0x28);
     }
 
     smackable(const RefSpec &refspec, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(refspec, msgPort, owner) {
-        SetDefaultLayout(sizeof(_LayoutStruct));
+        SetDefaultLayout(0x28);
     }
 
     ~smackable() {}

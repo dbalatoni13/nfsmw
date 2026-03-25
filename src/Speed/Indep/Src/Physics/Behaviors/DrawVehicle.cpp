@@ -161,7 +161,6 @@ DrawVehicle::Part::Part(IModel *parent, WUID vehicleID, const CollisionGeometry:
       ITriggerableModel(this),                //
       mTrigger(nullptr),                      //
       mAttributes(spec, 0, nullptr) {
-    mAttributes.SetDefaultLayout(0x28);
     mOffScreenTask = false;
     mOffScreenTime = 0.0f;
     mVehicleID = vehicleID;
