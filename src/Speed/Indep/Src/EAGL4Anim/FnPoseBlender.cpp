@@ -282,7 +282,8 @@ bool FnPoseBlender::EvalSQT(float currentTime, float *sqtBuffer, const BoneMask 
                             sqt1[8] = trans.x;
                             sqt1[9] = trans.y;
                             sqt1[10] = trans.z;
-                            BlendRootTranslation(w, mPose[0], mPose[1], sqtBuffer, mAlignRootBoneIdx);
+                            ::LinearBlendF3(w, &mPose[0][mAlignRootBoneIdx * 12 + 8], &mPose[1][mAlignRootBoneIdx * 12 + 8],
+                                            &sqtBuffer[mAlignRootBoneIdx * 12 + 8]);
                         }
 
                     int poseIdx = boneIdx * 12;
