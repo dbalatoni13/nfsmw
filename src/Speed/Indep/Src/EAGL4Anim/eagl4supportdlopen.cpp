@@ -246,9 +246,11 @@ retry:
                     Symbol s;
 
                     s.name = &h->strtab[sym->st_name];
-                    s.type = s.name + strlen(s.name);
-                    if (s.type[1] == 0x7F) {
-                        s.type += 2;
+                    s.type = s.name + strlen(s.name) + 1;
+                    if (s.type[0] == 0x7F) {
+                        s.type++;
+                    } else {
+                        s.type--;
                     }
                     if (strncmp(gRuntimeAllocType, s.name, strlen(gRuntimeAllocType)) == 0) {
                         const char *stripped_name;
@@ -284,14 +286,14 @@ retry:
                         bool found = false;
 
                         for (j = 0; j < numUnresolved; j++) {
-                            if (s.name == unresolvedList[j]) {
+                            if (&h->strtab[sym->st_name] == unresolvedList[j]) {
                                 found = true;
                                 break;
                             }
                         }
 
                         if (!found) {
-                            unresolvedList[numUnresolved++] = const_cast<char *>(s.name);
+                            unresolvedList[numUnresolved++] = &h->strtab[sym->st_name];
                         }
                         j = iIndex;
                     }
