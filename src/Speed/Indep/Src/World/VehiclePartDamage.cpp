@@ -390,28 +390,21 @@ void VehiclePartDamageBehaviour::Init() {
 void VehiclePartDamageBehaviour::ManageGlassDamage() {
     int windowIx;
 
-    for (windowIx = 0; windowIx < 5; windowIx++) {
+    for (windowIx = 0; windowIx <= 4; windowIx++) {
         const BreakableWindowInfoDataType &windowInfo = mBreakableWindowInfoList[windowIx];
         VehicleDamagePart *damagePart = this->mDamagePartList[windowInfo.mPartSlotId];
+        int damageState = bMin(1, static_cast<int>(*reinterpret_cast<unsigned short *>(damagePart)));
 
         if (this->mCarRenderInfo != 0) {
-            eReplacementTextureTable *replacementTexture =
-                &this->mCarRenderInfo->MasterReplacementTextureTable[windowInfo.mReplaceTexId];
-
-            if (bMin(static_cast<int>(*reinterpret_cast<unsigned short *>(damagePart)), 1) == 0) {
-                if (replacementTexture->GetNewNameHash() != windowInfo.mOriginalHash) {
-                    replacementTexture->SetNewNameHash(windowInfo.mOriginalHash);
-                }
-            } else {
+            if (damageState > 0) {
                 unsigned int damageHash = 0x0A155545;
-
-                if (replacementTexture->GetNewNameHash() != damageHash) {
-                    replacementTexture->SetNewNameHash(damageHash);
-                }
-
-                if (this->mCarRenderInfo->MasterReplacementTextureTable[CarRenderInfo::REPLACETEX_WINDOW_REAR_DEFOST].GetNewNameHash() != damageHash) {
-                    this->mCarRenderInfo->MasterReplacementTextureTable[CarRenderInfo::REPLACETEX_WINDOW_REAR_DEFOST].SetNewNameHash(damageHash);
-                }
+                this->mCarRenderInfo->MasterReplacementTextureTable[windowInfo.mReplaceTexId]
+                    .SetNewNameHash(damageHash);
+                this->mCarRenderInfo->MasterReplacementTextureTable[CarRenderInfo::REPLACETEX_WINDOW_REAR_DEFOST]
+                    .SetNewNameHash(damageHash);
+            } else {
+                this->mCarRenderInfo->MasterReplacementTextureTable[windowInfo.mReplaceTexId]
+                    .SetNewNameHash(windowInfo.mOriginalHash);
             }
         }
     }
