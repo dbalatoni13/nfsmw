@@ -5,6 +5,7 @@
 #pragma once
 #endif
 
+#include "Speed/Indep/Libs/Support/Utility/UBitArray.h"
 #include "Speed/Indep/Libs/Support/Utility/UTypes.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/ecar.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/pvehicle.h"
@@ -16,7 +17,7 @@
 struct RoadNoiseRecord;
 struct TireState;
 
-typedef unsigned int PartState[3];
+typedef BitArray<unsigned int, 76> PartState;
 
 namespace RenderConn {
 class Pkt_Car_Open : public Sim::Packet {
@@ -36,10 +37,6 @@ class Pkt_Car_Service : public Sim::Packet {
         unsigned int i;
 
         this->mDamageInfo = 0;
-
-        for (i = 0; i < 3; i++) {
-            this->mPartState[i] = 0;
-        }
 
         *reinterpret_cast<unsigned int *>(&this->mFlashing) = 0;
         bMemSet(this->mCompressions, 0, 0x10);

@@ -913,20 +913,20 @@ unsigned int GetVinylLayerHash(CarPart *car_part, CarType car_type, int skin_typ
     CarTypeInfo *car_type_info = GetCarTypeInfo(car_type);
     const char *texture_name = car_part->GetAppliedAttributeString(bStringHash("TEXTURE"), 0);
 
-    if (texture_name != 0) {
-        char layer_name[64];
-
-        bStrCpy(layer_name, car_type_info->GetBaseModelName());
-        if (UsePrecompositeVinyls == 0 && skin_type != 2) {
-            bStrCat(layer_name, layer_name, "_");
-        } else {
-            bStrCat(layer_name, layer_name, "_PRECOM_");
-        }
-        bStrCat(layer_name, layer_name, texture_name);
-        return bStringHash(layer_name);
+    if (texture_name == nullptr) {
+        return 0;
     }
 
-    return 0;
+    char layer_name[64];
+
+    bStrCpy(layer_name, car_type_info->GetBaseModelName());
+    if (UsePrecompositeVinyls || skin_type == 2) {
+        bStrCat(layer_name, layer_name, "_PRECOM_");
+    } else {
+        bStrCat(layer_name, layer_name, "_");
+    }
+    bStrCat(layer_name, layer_name, texture_name);
+    return bStringHash(layer_name);
 }
 
 unsigned int GetVinylLayerHash(RideInfo *ride_info, int layer) {
@@ -1111,11 +1111,11 @@ int CompositeWheel(RideInfo *ride_info, unsigned int dest_namehash, unsigned int
 
         if (dest_texture->Width == src_texture->Width && dest_texture->Width == src_mask->Width &&
             dest_texture->Height == src_texture->Height && dest_texture->Height == src_mask->Height) {
-            if (do_32bit_composite != 0) {
-                return CompositeWheel32(dest_texture, src_texture, src_mask, wheel_colour);
+            if (!do_32bit_composite) {
+                return CompositeWheel8(dest_texture, src_texture, src_mask, wheel_colour);
             }
 
-            return CompositeWheel8(dest_texture, src_texture, src_mask, wheel_colour);
+            return CompositeWheel32(dest_texture, src_texture, src_mask, wheel_colour);
         }
     }
 

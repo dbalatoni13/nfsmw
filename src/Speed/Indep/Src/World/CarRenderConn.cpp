@@ -515,9 +515,7 @@ CarRenderConn::CarRenderConn(const Sim::ConnectionData &data, CarType ct, Render
     this->mSteering[0] = 0.0f;
     this->mSteering[1] = 0.0f;
 
-    for (i = 0; i < 3; i++) {
-        this->mPartState[i] = 0;
-    }
+    this->mPartState.Clear();
 
     for (i = 0; i < 4; i++) {
         TireState *state = new TireState;
@@ -601,7 +599,7 @@ void RenderConn::Pkt_Car_Service::HidePart(const UCrc32 &partname) {
     unsigned int part_id = static_cast<unsigned int>(GetCarPartIDFromCrc(partname));
 
     if (part_id - 1 < 0x4B) {
-        this->mPartState[part_id >> 5] |= 1 << (part_id & 0x1F);
+        this->mPartState.Set(part_id);
     }
 }
 
@@ -669,39 +667,25 @@ void CarRenderConn::UpdateSteering(float dT, const RenderConn::Pkt_Car_Service &
 }
 
 void CarRenderConn::UpdateParts(float dT, const RenderConn::Pkt_Car_Service &data) {
-    bool changed = false;
-    int i;
+    if (this->mPartState != data.mPartState) {
+        unsigned int i = 0;
 
-    for (i = 0; i < 3; i++) {
-        if (this->mPartState[i] != data.mPartState[i]) {
-            changed = true;
-            break;
-        }
-    }
+        while (i < 0x4c) {
+            bool hide = data.mPartState.Test(i);
 
-    if (changed) {
-        unsigned int part_id = 0;
-
-        while (part_id < 0x4c) {
-            unsigned int word_index = part_id >> 5;
-            unsigned int shift = part_id & 0x1f;
-            bool hide_part = ((data.mPartState[word_index] >> shift) & 1) != 0;
-
-            if (hide_part != (((this->mPartState[word_index] >> shift) & 1) != 0)) {
-                if (hide_part) {
-                    this->HidePart(static_cast<CAR_PART_ID>(part_id));
+            if (hide != this->mPartState.Test(i)) {
+                if (hide) {
+                    this->HidePart(static_cast<CAR_PART_ID>(i));
                 } else {
-                    this->ShowPart(static_cast<CAR_PART_ID>(part_id));
+                    this->ShowPart(static_cast<CAR_PART_ID>(i));
                 }
             }
 
-            part_id++;
-        }
-
-        for (i = 0; i < 3; i++) {
-            this->mPartState[i] = data.mPartState[i];
+            i++;
         }
     }
+
+    this->mPartState = data.mPartState;
 }
 
 void CarRenderConn::AddRoadNoise(float speed, unsigned int tires, const RoadNoiseRecord &noise) {
