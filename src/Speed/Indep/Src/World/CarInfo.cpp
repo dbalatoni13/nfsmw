@@ -397,7 +397,11 @@ CarPart *CarPartDatabase::GetCarPartByIndex(int index) {
     if (index > -1) {
         CarPartPackLayout *car_part_pack = reinterpret_cast<CarPartPackLayout *>(this->CarPartPackList.Next);
 
-        while (car_part_pack != reinterpret_cast<CarPartPackLayout *>(&this->CarPartPackList)) {
+        while (true) {
+            if (car_part_pack == reinterpret_cast<CarPartPackLayout *>(&this->CarPartPackList)) {
+                return 0;
+            }
+
             if (index < car_part_pack->NumParts) {
                 return reinterpret_cast<CarPart *>(reinterpret_cast<unsigned char *>(car_part_pack->PartsTable) + index * 0xE);
             }
