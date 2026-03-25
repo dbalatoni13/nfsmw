@@ -89,36 +89,32 @@ void SndAITrigger::Update(float UpdateVal, float t) {
     Average_Record(&AvgMonitor, UpdateVal);
     AverageBase_Recalculate(&AvgMonitor);
 
-    float avgValue = AvgMonitor.GetValue();
-    CurValue = avgValue;
+    CurValue = static_cast<const Average &>(AvgMonitor).GetValue();
 
-    if (bTrigger) {
-        if (fSign * m_fThreshold < fSign * avgValue) {
-            CurTriggerLength = t_TriggerLength;
+    if (!bTrigger) {
+        if (fSign * CurValue > fSign * m_fAutoTrigger) {
+            BeginTrigger();
             return;
         }
+        if (fSign * CurValue > fSign * m_fThreshold) {
+            CurSustain -= t;
+            if (CurSustain < 0.0f) {
+                BeginTrigger();
+            }
+            return;
+        }
+        CurSustain = t_fSustain;
+        return;
+    }
 
+    if (fSign * CurValue > fSign * m_fThreshold) {
+        CurTriggerLength = t_TriggerLength;
+    } else {
         CurTriggerLength -= t;
         if (CurTriggerLength < 0.0f) {
             EndTrigger();
         }
-        return;
     }
-
-    if (fSign * m_fAutoTrigger < fSign * avgValue) {
-        BeginTrigger();
-        return;
-    }
-
-    if (fSign * m_fThreshold < fSign * avgValue) {
-        CurSustain -= t;
-        if (CurSustain < 0.0f) {
-            BeginTrigger();
-        }
-        return;
-    }
-
-    CurSustain = t_fSustain;
 }
 
 void SndAIStateManager::SwitchState(SND_AI_STATE NewState) {
