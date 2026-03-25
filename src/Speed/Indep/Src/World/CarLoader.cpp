@@ -1164,11 +1164,11 @@ bool CarLoader::DefragmentAllocation(void *allocation) {
 
     for (LoadedRideInfo *loaded_ride_info = this->LoadedRideInfoList.GetHead();
          loaded_ride_info != this->LoadedRideInfoList.EndOfList(); loaded_ride_info = loaded_ride_info->GetNext()) {
-        ResourceFile *resource_file = loaded_ride_info->pLoadedCar->pLoadedSolidPack->pResourceFile;
+        LoadedSolidPack *loaded_solid_pack = loaded_ride_info->pLoadedCar->pLoadedSolidPack;
 
-        if (resource_file != 0 && resource_file->GetMemory() == allocation) {
-            resource_file->ManualUnload();
-            resource_file->ManualReload(reinterpret_cast<bChunk *>(MoveDefragmentAllocation(allocation)));
+        if (loaded_solid_pack->pResourceFile != 0 && loaded_solid_pack->pResourceFile->GetMemory() == allocation) {
+            loaded_solid_pack->pResourceFile->ManualUnload();
+            loaded_solid_pack->pResourceFile->ManualReload(reinterpret_cast<bChunk *>(MoveDefragmentAllocation(allocation)));
             return true;
         }
     }
