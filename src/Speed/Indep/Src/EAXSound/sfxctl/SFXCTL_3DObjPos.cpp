@@ -295,6 +295,19 @@ void SFXCTL_3DObjPos::UpdateDoppler(int PlayerNum, float t) {
 }
 
 void SFXCTL_3DObjPos::UpdateParams(float t) {
-    GenerateSinglePlayerMix();
-    UpdateDoppler(DMX_DEPTH, t);
+    if (m_pV3ObjPos == nullptr) {
+        SetDMIX_Input(DMX_AZIM, 0);
+        SetDMIX_Input(DMX_PITCH, -1);
+        SetDMIX_Input(DMX_FREQ, 0);
+        SetDMIX_Input(DMX_VOL, -1);
+        int nvar = GetDMIX_InputValue(15);
+        SetDMIX_Input(15, nvar & ~1);
+        return;
+    }
+    int nvar = GetDMIX_InputValue(15);
+    SetDMIX_Input(15, nvar | 1);
+    SetDMIX_Input(11, m_PlayerRef);
+    SFXCTL::UpdateParams(t);
+    Generate3DParams(0);
+    UpdateDoppler(m_PlayerRef, t);
 }

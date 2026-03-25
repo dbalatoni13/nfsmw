@@ -235,6 +235,11 @@ struct EAX_CarState : public UTL::Collections::Listable<EAX_CarState, 10> {
         return &mAttributes;
     }
 
+    float GetMaxEngineTorque() { return mMaxTorque; }
+    float GetMaxRPM() { return mMaxRPM; }
+    float GetIdleRPM() { return mMinRPM; }
+    float GetRedlineRPM() { return mRedline; }
+
     float GetWheelTractionUsage(int w) {
         return mWheel[w].mPercentFsFkTransfer;
     }

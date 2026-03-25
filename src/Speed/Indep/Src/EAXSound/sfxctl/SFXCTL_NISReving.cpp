@@ -148,3 +148,10 @@ void NIS_RevManager::Update(float t) {
 }
 
 void NIS_RevManager::StartNISReving() {}
+
+NIS_RevManager::~NIS_RevManager() {
+    g_pNISRevMgr = nullptr;
+    delete pRevData;
+    delete pBuffer;
+    RecordingCount = 0;
+}

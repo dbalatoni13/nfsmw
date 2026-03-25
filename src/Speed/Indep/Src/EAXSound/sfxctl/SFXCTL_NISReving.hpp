@@ -28,6 +28,7 @@ struct EngRevDataSet {
 class NIS_RevManager : public AudioMemBase {
   public:
     NIS_RevManager();
+    ~NIS_RevManager() override;
     void *operator new(unsigned int size, const char *debug_name);
     void *operator new(size_t, void *p) { return p; }
     void OpenNISRevData(unsigned int anim_id);

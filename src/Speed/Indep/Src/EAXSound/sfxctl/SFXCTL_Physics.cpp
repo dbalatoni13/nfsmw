@@ -193,13 +193,16 @@ char *SFXCTL_Physics::GetTypeName() const { return s_TypeInfo.typeName; }
 
 void SFXCTL_Physics::InitSFX() {
     SFXCTL::InitSFX();
+    EAX_CarState *car = GetPhysCar();
+    fMaxPhysTRQ = car->GetMaxEngineTorque();
+    fMaxPhysRPM = car->GetMaxRPM();
+    fMinPhysRPM = car->GetIdleRPM();
+    fRedLinePhysRPM = car->GetRedlineRPM();
     m_tHoldDecel = 0.0f;
-    PhysicsTRQ = 0.0f;
-    PhysicsRPM = 0.0f;
-    NISRPM = 0.0f;
-    NISTRQ = 0.0f;
-    IsAccelerating = false;
-    SetDMIX_Input(11, 0);
+    RedLineRPM = (fRedLinePhysRPM / fMaxPhysRPM) * 10000.0f;
+    if (car->GetAttributes()->TruckSndFX()) {
+        SetDMIX_Input(11, 0x7fff);
+    }
 }
 
 void SFXCTL_Physics::UpdateParams(float t) {
