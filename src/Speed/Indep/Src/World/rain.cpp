@@ -172,25 +172,15 @@ void SetRainBase() {
 }
 
 int AmIinATunnel(eView *view, int CheckOverPass) {
-    Rain *precipitation = view->Precipitation;
-
-    if (precipitation == 0) {
+    if (view->Precipitation == 0) {
         return 0;
     }
 
     if (CheckOverPass != 0) {
-        if (precipitation->inTunnel != 0) {
-            return 1;
-        }
-
-        if (precipitation->inOverpass == 0) {
-            return 0;
-        }
-
-        return 1;
+        return view->Precipitation->inTunnel != 0 || view->Precipitation->inOverpass != 0;
     }
 
-    return precipitation->inTunnel;
+    return view->Precipitation->inTunnel;
 }
 
 void Rain::AttachRainCurtain(float x0, float y0, float z0, float x1, float y1, float z1, float x2, float y2, float z2, float x3, float y3,
