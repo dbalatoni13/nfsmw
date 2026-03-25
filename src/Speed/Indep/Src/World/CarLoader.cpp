@@ -1426,8 +1426,7 @@ LoadedRideInfo::LoadedRideInfo(RideInfo *ride_info, int in_front_end, int is_two
     this->PrintedLoading = 0;
     this->HighPriority = 0;
     this->pCarTypeInfo = &CarTypeInfoArray[ride_info->Type];
-    this->ID = sNextID;
-    sNextID = this->ID + 1;
+    this->ID = sNextID++;
     this->pLoadedCar = &this->TheLoadedCar;
     this->pLoadedWheel = &this->TheLoadedWheel;
     this->pLoadedSkin = &this->TheLoadedSkin;
