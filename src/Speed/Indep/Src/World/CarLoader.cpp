@@ -545,30 +545,31 @@ int LoadedSkin::GetTextureHashes(unsigned int *texture_hashes, int max_texture_h
 }
 
 int LoadedCar::GetModelHashes(unsigned int *model_hashes, int max_model_hashes) {
-    RideInfo *ride_info = this->pRideInfo;
-    RideInfoLayout *ride_layout = reinterpret_cast<RideInfoLayout *>(ride_info);
+    ProfileNode profile_node("GetModelHashes", 0);
+    RideInfo *ride_info;
 
     bMemSet(model_hashes, 0, max_model_hashes << 2);
+    ride_info = this->pRideInfo;
 
-    CARPART_LOD minimum_lod = ride_layout->mMinLodLevel;
-    CARPART_LOD maximum_lod = ride_layout->mMaxLodLevel;
+    CARPART_LOD minLodLevel = ride_info->GetMinLodLevel();
+    CARPART_LOD maxLodLevel = ride_info->GetMaxLodLevel();
 
     if (this->InFrontEnd != 0) {
-        minimum_lod = ride_layout->mMinFELodLevel;
-        maximum_lod = ride_layout->mMaxFELodLevel;
+        minLodLevel = ride_info->GetMinFELodLevel();
+        maxLodLevel = ride_info->GetMaxFELodLevel();
     }
 
     int num_hashes = 0;
 
     for (int slot_id = 0; slot_id < 0x4c; slot_id++) {
         CarPart *car_part = ride_info->GetPart(slot_id);
-        CARPART_LOD current_slot_minimum = minimum_lod;
-        CARPART_LOD current_slot_maximum = maximum_lod;
+        CARPART_LOD currentSlotMinLodLevel = minLodLevel;
+        CARPART_LOD currentSlotMaxLodLevel = maxLodLevel;
 
-        ride_info->GetSpecialLODRangeForCarSlot(slot_id, &current_slot_minimum, &current_slot_maximum, this->InFrontEnd != 0);
+        ride_info->GetSpecialLODRangeForCarSlot(slot_id, &currentSlotMinLodLevel, &currentSlotMaxLodLevel, this->InFrontEnd != 0);
 
         for (int model = 0; model < 1; model++) {
-            for (int lod = current_slot_minimum; lod <= current_slot_maximum; lod++) {
+            for (int lod = currentSlotMinLodLevel; lod <= currentSlotMaxLodLevel; lod++) {
                 if (car_part != 0) {
                     unsigned int model_name_hash = car_part->GetModelNameHash(model, lod);
 
@@ -583,47 +584,54 @@ int LoadedCar::GetModelHashes(unsigned int *model_hashes, int max_model_hashes) 
         }
     }
 
-    num_hashes = GatherModelHashes(ride_info, model_hashes, num_hashes, max_model_hashes, 0x2e, 0x33);
-    num_hashes = GatherModelHashes(ride_info, model_hashes, num_hashes, max_model_hashes, 1, 0x17);
+    int new_num_hashes = GatherModelHashes(ride_info, model_hashes, num_hashes, max_model_hashes, 0x2e, 0x33);
+    num_hashes = new_num_hashes;
+    new_num_hashes = GatherModelHashes(ride_info, model_hashes, num_hashes, max_model_hashes, 1, 0x17);
+    num_hashes = new_num_hashes;
 
-    if (max_model_hashes < num_hashes) {
+    if (num_hashes > max_model_hashes) {
         num_hashes = max_model_hashes;
     }
 
     unsigned char bitfield[512];
 
     bMemSet(bitfield, 0, 0x200);
+    profile_node.Begin("GetModelHashes", 0);
 
-    int num_unique_hashes = 0;
+    int num_hits = 0;
 
-    for (int i = 0; i < num_hashes; i++) {
-        unsigned int hash = model_hashes[i];
+    int n = 0;
+
+    while (n < num_hashes) {
+        unsigned int hash = model_hashes[n];
         int bit = (hash >> 3) & 0x1ff;
         bool duplicate = false;
 
         if (((bitfield[bit] >> (hash & 7)) & 1U) == 0) {
             bitfield[bit] |= 1 << (hash & 7);
         } else {
-            int n = 0;
+            int i = 0;
 
-            if (num_unique_hashes > 0) {
-                while (n < num_unique_hashes && model_hashes[n] != hash) {
-                    n++;
+            if (num_hits > 0) {
+                while (i < num_hits && model_hashes[i] != hash) {
+                    i++;
                 }
             }
 
-            if (n != num_unique_hashes) {
+            if (i != num_hits) {
                 duplicate = true;
             }
         }
 
         if (!duplicate) {
-            model_hashes[num_unique_hashes] = hash;
-            num_unique_hashes++;
+            model_hashes[num_hits] = hash;
+            num_hits++;
         }
+
+        n++;
     }
 
-    return num_unique_hashes;
+    return num_hits;
 }
 
 LoadedSkinLayer::LoadedSkinLayer(unsigned int name_hash) {
