@@ -23,33 +23,35 @@ Sim::Connection *VehicleFragmentConn::Construct(const Sim::ConnectionData &data)
 VehicleFragmentConn::VehicleFragmentConn(const Sim::ConnectionData &data)
     : Sim::Connection(data), //
       mTarget(0), //
-      mVehicleWorldID(0), //
-      mPartSlot(CARPARTID_INVALID), //
       mColName(), //
       mModelHash(0), //
       mModel(0), //
       mReplacementTextureTable(0), //
       mLightMaterial(0) {
-    RenderConn::Pkt_VehicleFragment_Open *oc = Sim::Packet::Cast<RenderConn::Pkt_VehicleFragment_Open>(data.pkt);
+    mList.AddTail(this);
 
-    this->mList.AddTail(this);
-    this->mTarget.Set(oc->mWorldID);
-    this->mVehicleWorldID = oc->mVehicleWorldID;
-    this->mPartSlot = static_cast<CAR_PART_ID>(GetCarPartIDFromCrc(oc->mPartName));
-    this->mColName = oc->mColName;
+    RenderConn::Pkt_VehicleFragment_Open *oc =
+        static_cast<RenderConn::Pkt_VehicleFragment_Open *>(data.pkt);
+    mTarget.Set(oc->mWorldID);
+    mVehicleWorldID = oc->mVehicleWorldID;
+    mPartSlot = static_cast<CAR_PART_ID>(GetCarPartIDFromCrc(oc->mPartName));
+    mColName = oc->mColName;
 
-    bIdentity(&this->mModelOffset);
-    bIdentity(&this->mRenderMatrix);
+    bIdentity(&mModelOffset);
 }
 
 VehicleFragmentConn::~VehicleFragmentConn() {
-    if (this->mModel != 0) {
-        delete this->mModel;
-    }
-    if (this->mReplacementTextureTable != 0) {
-        delete[] this->mReplacementTextureTable;
-    }
     mList.Remove(this);
+    if (mPartSlot != CARPARTID_INVALID) {
+        mPartSlot = CARPARTID_INVALID;
+    }
+    if (mReplacementTextureTable) {
+        delete[] mReplacementTextureTable;
+    }
+    if (mModel) {
+        delete mModel;
+        mModel = nullptr;
+    }
 }
 
 void VehicleFragmentConn::OnClose() {
@@ -139,25 +141,28 @@ void VehicleFragmentConn::UpdateModel() {
 
 void VehicleFragmentConn::Update(float dT) {
     bool inview = false;
-    float disttoview = 0.0f;
 
-    if (this->mModel != 0) {
-        if (this->mModel->GetLastVisibleFrame() >= this->mModel->GetLastRenderFrame() && this->mModel->GetLastRenderFrame() != 0) {
+    if (mModel) {
+        if (mModel->GetLastVisibleFrame() >= mModel->GetLastRenderFrame() && mModel->GetLastRenderFrame() != 0) {
             inview = true;
         }
-        disttoview = this->mModel->DistanceToGameView();
+    }
+
+    float disttoview;
+    if (mModel) {
+        disttoview = mModel->DistanceToGameView();
+    } else {
+        disttoview = 0.0f;
     }
 
     RenderConn::Pkt_VehicleFragment_Service pkt(inview, disttoview);
-    if (!this->Service(&pkt)) {
-        if (this->mModel != 0) {
-            this->mModel->SetEnabledFlag(false);
-        }
+    if (Service(&pkt)) {
+        UpdateModel();
     } else {
-        this->UpdateModel();
+        if (mModel) {
+            mModel->SetEnabledFlag(false);
+        }
     }
-
-    (void)dT;
 }
 
 void VehicleFragmentConn::FetchData(float dT) {
