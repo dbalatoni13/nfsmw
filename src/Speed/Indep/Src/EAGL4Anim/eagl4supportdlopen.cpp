@@ -471,9 +471,8 @@ DynamicLoader::~DynamicLoader() {
 }
 
 void DynamicLoader::Release() {
-    if (handle) {
-        HashPointer *h = reinterpret_cast<HashPointer *>(handle);
-
+    HashPointer *h = reinterpret_cast<HashPointer *>(handle);
+    if (h) {
         if (h->prev) {
             h->prev->next = h->next;
         } else {
@@ -493,7 +492,8 @@ void DynamicLoader::Release() {
         }
 
         EAGL4Internal::EAGL4Free(h, sizeof(HashPointer));
-        handle = nullptr;
+        h = nullptr;
+        handle = h;
     }
     mIsResolved = false;
 }
