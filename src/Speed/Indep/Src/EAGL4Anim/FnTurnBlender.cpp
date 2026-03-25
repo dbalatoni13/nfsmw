@@ -49,8 +49,11 @@ bool FnTurnBlender::EvalSQT(float currTime, float *sqtBuffer, const BoneMask *bo
 
     currTime += mOffset;
     int cIdx = ComputeCycleIdx(currTime, 0.0f, 2.0f / mFreq);
-    float t0 = CycleTime(mFreq * mCycles[0] * currTime, 0.0f, mCycles[0] + mCycles[0]) - mOffsets[0];
-    float t1 = CycleTime(mFreq * mCycles[1] * currTime, 0.0f, mCycles[1] + mCycles[1]) - mOffsets[1];
+    float t0 = mFreq * mCycles[0] * currTime;
+    float t1 = mFreq * mCycles[1] * currTime;
+
+    t0 = CycleTime(t0, 0.0f, mCycles[0] + mCycles[0]) - mOffsets[0];
+    t1 = CycleTime(t1, 0.0f, mCycles[1] + mCycles[1]) - mOffsets[1];
 
     mSkeleton->GetStillPose(sqtBuffer, 0);
     if (!mFnAnims[0]->EvalSQT(t0, sqtBuffer, 0)) {
