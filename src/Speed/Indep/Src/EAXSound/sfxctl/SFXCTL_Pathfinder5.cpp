@@ -157,15 +157,18 @@ void SFXCTL_Pathfinder::SongProgressCallback(int projID, int nodeparm) {
 void SFXCTL_Pathfinder::EventActionCallback(int trackhandle, int cbID, int parm) {
     (void)trackhandle;
 
-    if (cbID == 2) {
-        MControlPathfinder(false, 0, 0, 0).Send(UCrc32("InteractiveDone"));
-        MNotifyMusicFlow(0).Send(UCrc32("InteractiveDone"));
-    } else if (cbID == 3) {
-        if (parm == 0) {
-            MControlPathfinder(false, 0x13, 0, 0).Send(UCrc32("Event"));
-        } else if (parm == 1) {
-            MControlPathfinder(false, 0x14, 0, 0).Send(UCrc32("Event"));
-        }
+    switch (cbID) {
+        case 2:
+            MControlPathfinder(false, 0, 0, 0).Send(UCrc32("InteractiveDone"));
+            MNotifyMusicFlow(0).Send(UCrc32("InteractiveDone"));
+            break;
+        case 3:
+            if (parm == 0) {
+                MControlPathfinder(false, 0x13, 0, 0).Send(UCrc32("Event"));
+            } else if (parm == 1) {
+                MControlPathfinder(false, 0x14, 0, 0).Send(UCrc32("Event"));
+            }
+            break;
     }
 }
 
@@ -190,7 +193,9 @@ int SFXCTL_Pathfinder::InitPFParms(stPFParms *pstparms, int pathid, int trackid)
         m_pPFParms[m_projrefcnt]->bdataloaded = true;
         g_pSFXCTL_Pathfinder->CreateTrack(m_projrefcnt);
     }
-    return m_projrefcnt++;
+    inst = m_projrefcnt;
+    m_projrefcnt = inst + 1;
+    return inst;
 }
 
 void SFXCTL_Pathfinder::CreateTrack(int index) {
