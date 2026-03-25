@@ -17,6 +17,8 @@ static inline float UncompressStatelessQValue(unsigned short value) {
     return bits.f;
 }
 
+#define STORE_STATELESS_Q_BITS(dst, value) *reinterpret_cast<unsigned int *>(&(dst)) = (((value) & 0x8000) << 16) | (((value) & 0x7FFF) << 15)
+
 static inline float *GetStatelessQOutput(float *sqt, unsigned char boneIdx) {
     return &sqt[boneIdx * 12 + 4];
 }
@@ -130,20 +132,23 @@ bool FnStatelessQ::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask)
         int index;
 
         if (slerpReqd && floorKey < statelessQ->mNumKeys - 1) {
-            unsigned short *nextFrameData = statelessQ->GetFrameData(dataBuf, floorKey + 1);
+            int nextKey = floorKey + 1;
+            unsigned short *nextFrameData = statelessQ->GetFrameData(dataBuf, nextKey);
 
             for (int ibone = 0; ibone < nBones; ibone++) {
                 UMath::Vector4 prevQ;
                 UMath::Vector4 nextQ;
 
-                prevQ.x = UncompressStatelessQValue(*frameData++);
-                prevQ.y = UncompressStatelessQValue(*frameData++);
-                prevQ.z = UncompressStatelessQValue(*frameData++);
-                prevQ.w = UncompressStatelessQValue(*frameData++);
-                nextQ.x = UncompressStatelessQValue(*nextFrameData++);
-                nextQ.y = UncompressStatelessQValue(*nextFrameData++);
-                nextQ.z = UncompressStatelessQValue(*nextFrameData++);
-                nextQ.w = UncompressStatelessQValue(*nextFrameData++);
+                STORE_STATELESS_Q_BITS(prevQ.x, frameData[0]);
+                STORE_STATELESS_Q_BITS(prevQ.y, frameData[1]);
+                STORE_STATELESS_Q_BITS(prevQ.z, frameData[2]);
+                STORE_STATELESS_Q_BITS(prevQ.w, frameData[3]);
+                frameData += 4;
+                STORE_STATELESS_Q_BITS(nextQ.x, nextFrameData[0]);
+                STORE_STATELESS_Q_BITS(nextQ.y, nextFrameData[1]);
+                STORE_STATELESS_Q_BITS(nextQ.z, nextFrameData[2]);
+                STORE_STATELESS_Q_BITS(nextQ.w, nextFrameData[3]);
+                nextFrameData += 4;
                 index = boneIdxs[ibone] * 12;
 
                 q[index + 0] = scale * (nextQ.x - prevQ.x) + prevQ.x;
@@ -155,25 +160,27 @@ bool FnStatelessQ::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask)
             for (int ibone = 0; ibone < nBones; ibone++) {
                 index = boneIdxs[ibone] * 12;
 
-                q[index + 0] = UncompressStatelessQValue(*frameData++);
-                q[index + 1] = UncompressStatelessQValue(*frameData++);
-                q[index + 2] = UncompressStatelessQValue(*frameData++);
-                q[index + 3] = UncompressStatelessQValue(*frameData++);
+                STORE_STATELESS_Q_BITS(q[index + 0], frameData[0]);
+                STORE_STATELESS_Q_BITS(q[index + 1], frameData[1]);
+                STORE_STATELESS_Q_BITS(q[index + 2], frameData[2]);
+                STORE_STATELESS_Q_BITS(q[index + 3], frameData[3]);
+                frameData += 4;
             }
         }
 
         if (statelessQ->mNumConstBones != 0) {
             int numConsts = statelessQ->mNumConstBones;
-            unsigned short *constBuf = statelessQ->GetConstData(dataBuf);
             unsigned char *constIdxs = statelessQ->GetConstBoneIdx();
+            unsigned short *constBuf = statelessQ->GetConstData(dataBuf);
 
             for (int ibone = 0; ibone < numConsts; ibone++) {
                 index = *constIdxs++ * 12;
 
-                q[index + 0] = UncompressStatelessQValue(*constBuf++);
-                q[index + 1] = UncompressStatelessQValue(*constBuf++);
-                q[index + 2] = UncompressStatelessQValue(*constBuf++);
-                q[index + 3] = UncompressStatelessQValue(*constBuf++);
+                STORE_STATELESS_Q_BITS(q[index + 0], constBuf[0]);
+                STORE_STATELESS_Q_BITS(q[index + 1], constBuf[1]);
+                STORE_STATELESS_Q_BITS(q[index + 2], constBuf[2]);
+                STORE_STATELESS_Q_BITS(q[index + 3], constBuf[3]);
+                constBuf += 4;
             }
         }
     } else {
