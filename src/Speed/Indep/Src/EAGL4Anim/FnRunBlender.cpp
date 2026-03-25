@@ -15,6 +15,41 @@ float length(float *v) {
 
 namespace EAGL4Anim {
 
+static const UMath::Vector4 kFacingAxis = {0.0f, 1.0f, 0.0f, 1.0f};
+
+static inline void QuatTransformPoint(const UMath::Vector4 &q, const UMath::Vector4 &p, UMath::Vector4 &result) {
+    float zz;
+    float yz;
+    float yy;
+    float xz;
+    float xy;
+    float xx;
+    float wz;
+    float wy;
+    float wx;
+    float zs;
+    float ys;
+    float xs;
+    float s;
+
+    s = 2.0f;
+    xs = q.x * s;
+    ys = q.y * s;
+    zs = q.z * s;
+    wx = q.w * xs;
+    wy = q.w * ys;
+    wz = q.w * zs;
+    xx = q.x * xs;
+    xy = q.x * ys;
+    xz = q.x * zs;
+    yy = q.y * ys;
+    yz = q.y * zs;
+    zz = q.z * zs;
+    result.x = p.x * (p.w - (yy + zz)) + p.y * (xy - wz) + p.z * (xz + wy);
+    result.y = p.x * (xy + wz) + p.y * (p.w - (xx + zz)) + p.z * (yz - wx);
+    result.z = p.x * (xz - wy) + p.y * (yz + wx) + p.z * (p.w - (xx + yy));
+}
+
 FnRunBlender::FnRunBlender()
     : mFreq(1.0f),       //
       mOffset(0.0f),     //
@@ -259,31 +294,34 @@ bool FnRunBlender::BlendFacing(float t0, float t1, float *f) const {
         return false;
     }
 
-    ScratchBuffer &scratch = ScratchBuffer::GetScratchBuffer(0);
-    float *pose = reinterpret_cast<float *>(scratch.GetBuffer());
+    float *buffer = reinterpret_cast<float *>(ScratchBuffer::GetScratchBuffer(0).GetBuffer());
     UMath::Vector4 q0;
     UMath::Vector4 q;
+    UMath::Vector4 xAxis;
+    UMath::Vector4 xAxis1;
 
-    if (!mFnAnims[0] || !mFnAnims[0]->EvalSQT(t0, pose, 0)) {
+    if (!mFnAnims[0] || !mFnAnims[0]->EvalSQT(t0, buffer, 0)) {
         return false;
     }
 
-    q0 = *reinterpret_cast<UMath::Vector4 *>(&pose[4]);
+    q0 = *reinterpret_cast<UMath::Vector4 *>(&buffer[4]);
 
-    if (mWeight == 0.0f) {
-        q = q0;
-    } else {
-        mSkeleton->GetStillPose(pose, 0);
-        if (!mFnAnims[1] || !mFnAnims[1]->EvalSQT(t1, pose, 0)) {
+    if (mWeight != 0.0f) {
+        mSkeleton->GetStillPose(buffer, 0);
+        if (!mFnAnims[1] || !mFnAnims[1]->EvalSQT(t1, buffer, 0)) {
             return false;
         }
 
-        UMath::Vector4 q1 = *reinterpret_cast<UMath::Vector4 *>(&pose[4]);
+        UMath::Vector4 q1 = *reinterpret_cast<UMath::Vector4 *>(&buffer[4]);
         FastQuatBlendF4(mWeight, reinterpret_cast<float *>(&q0), reinterpret_cast<float *>(&q1), reinterpret_cast<float *>(&q));
+    } else {
+        q = q0;
     }
 
-    f[0] = 2.0f * (q.w * q.z - q.x * q.y);
-    f[1] = 2.0f * (q.y * q.z + q.x * q.w);
+    xAxis = kFacingAxis;
+    QuatTransformPoint(q, xAxis, xAxis1);
+    f[0] = xAxis1.x;
+    f[1] = xAxis1.z;
     printf("Facing: %g %g\n", f[0], f[1]);
     return true;
 }
