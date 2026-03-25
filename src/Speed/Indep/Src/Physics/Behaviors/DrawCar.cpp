@@ -453,10 +453,6 @@ DrawCar::~DrawCar() {
         CloseService(mRenderService);
         mRenderService = 0;
     }
-
-    if (!mParts.empty()) {
-        mParts.clear();
-    }
 }
 
 void DrawCar::OnService(RenderConn::Pkt_Car_Service &pkt) {
