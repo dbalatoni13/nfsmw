@@ -1,4 +1,5 @@
 #include "Speed/Indep/Src/World/CarRenderConn.h"
+#include "Speed/Indep/Src/Interfaces/SimActivities/INIS.h"
 #include "Speed/Indep/Src/Physics/PhysicsInfo.hpp"
 #include "Speed/Indep/Src/Sim/SimSurface.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/simsurface.h"
@@ -1224,9 +1225,11 @@ void CarRenderConn::UpdateContrails(const RenderConn::Pkt_Car_Service &data, flo
     const bVector3 *velocity = this->mWorldRef.GetVelocity();
     float speed = bSqrt(velocity->x * velocity->x + velocity->y * velocity->y + velocity->z * velocity->z);
 
-    if ((data.mNos || 44.0f <= speed) && gINISInstance == 0) {
-        this->mDoContrailEffect = true;
-        return;
+    if (data.mNos || 44.0f <= speed) {
+        if (!INIS::Exists()) {
+            this->mDoContrailEffect = true;
+            return;
+        }
     }
 
     this->mDoContrailEffect = false;
