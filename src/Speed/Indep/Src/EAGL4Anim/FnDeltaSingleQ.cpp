@@ -85,27 +85,6 @@ static inline void NormalizeSingleQQuat(UMath::Vector4 &q) {
     q.w *= s;
 }
 
-static inline void SingleQEulToQuat(const float *eulData, float *quatData) {
-    float ti = eulData[0] * kSingleQHalf;
-    float tj = eulData[1] * kSingleQHalf;
-    float th = eulData[2] * kSingleQHalf;
-    float ci = cosf(ti);
-    float cj = cosf(tj);
-    float ch = cosf(th);
-    float si = sinf(ti);
-    float sj = sinf(tj);
-    float sh = sinf(th);
-    float cc = ci * cj;
-    float cs = ci * sj;
-    float sc = si * cj;
-    float ss = si * sj;
-
-    quatData[0] = sc * ch - cs * sh;
-    quatData[1] = cs * ch + sc * sh;
-    quatData[2] = cc * sh - ss * ch;
-    quatData[3] = cc * ch + ss * sh;
-}
-
 static inline void SingleQQuatMultXxYxZ(const UMath::Vector4 &a, const UMath::Vector4 &b, const UMath::Vector4 &c, UMath::Vector4 &result) {
     float awby = a.w * b.y;
     float axbw = a.x * b.w;
@@ -217,13 +196,13 @@ void FnDeltaSingleQ::Eval(float prevTime, float currTime, float *sqt) {
 }
 
 inline void FnDeltaSingleQ::InitBuffersAsRequired() {
-    float eul[3];
-    int ibone;
     DeltaSingleQ *deltaQ = reinterpret_cast<DeltaSingleQ *>(mpAnim);
     DeltaSingleQMinRange *minRanges;
+    int ibone;
+    float eul[3];
+    DeltaSingleQMinRangef *pMinRangef;
 
-    minRanges = reinterpret_cast<DeltaSingleQMinRange *>(&deltaQ[1]);
-    mBins = &reinterpret_cast<unsigned char *>(minRanges)[deltaQ->mNumBones * sizeof(DeltaSingleQMinRange)];
+    deltaQ->GetArrays(minRanges, mBins);
     mBinSize = deltaQ->GetBinSize();
     mPrevQBlock = MemoryPoolManager::NewBlock(deltaQ->mNumBones * sizeof(*mPrevQs));
     mPrevQs = reinterpret_cast<UMath::Vector4 *>(mPrevQBlock);
@@ -234,36 +213,37 @@ inline void FnDeltaSingleQ::InitBuffersAsRequired() {
     for (ibone = 0; ibone < deltaQ->mNumBones; ibone++) {
         DeltaSingleQMinRangef minRangef;
 
-        mMinRanges[ibone].UnQuantize(minRangef);
+        pMinRangef = &minRangef;
+        mMinRanges[ibone].UnQuantize(*pMinRangef);
 
-        if (minRangef.mIndex == 0) {
+        if (pMinRangef->mIndex == 0) {
             mPreMultQs[ibone].x = kSingleQFloatZero;
             mPreMultQs[ibone].y = kSingleQFloatZero;
             mPreMultQs[ibone].z = kSingleQFloatZero;
             mPreMultQs[ibone].w = kSingleQFloatOne;
             eul[0] = kSingleQFloatZero;
-            eul[1] = minRangef.mConst0;
-            eul[2] = minRangef.mConst1;
-            SingleQEulToQuat(eul, reinterpret_cast<float *>(&mPostMultQs[ibone]));
-        } else if (minRangef.mIndex == 1) {
-            eul[0] = minRangef.mConst0;
+            eul[1] = pMinRangef->mConst0;
+            eul[2] = pMinRangef->mConst1;
+            EulToQuat(eul, reinterpret_cast<float *>(&mPostMultQs[ibone]));
+        } else if (pMinRangef->mIndex == 1) {
+            eul[0] = pMinRangef->mConst0;
             eul[1] = kSingleQFloatZero;
             eul[2] = kSingleQFloatZero;
-            SingleQEulToQuat(eul, reinterpret_cast<float *>(&mPreMultQs[ibone]));
+            EulToQuat(eul, reinterpret_cast<float *>(&mPreMultQs[ibone]));
 
             eul[0] = kSingleQFloatZero;
             eul[1] = kSingleQFloatZero;
-            eul[2] = minRangef.mConst1;
-            SingleQEulToQuat(eul, reinterpret_cast<float *>(&mPostMultQs[ibone]));
+            eul[2] = pMinRangef->mConst1;
+            EulToQuat(eul, reinterpret_cast<float *>(&mPostMultQs[ibone]));
         } else {
             mPostMultQs[ibone].x = kSingleQFloatZero;
             mPostMultQs[ibone].y = kSingleQFloatZero;
             mPostMultQs[ibone].z = kSingleQFloatZero;
             mPostMultQs[ibone].w = kSingleQFloatOne;
-            eul[0] = minRangef.mConst0;
-            eul[1] = minRangef.mConst1;
+            eul[0] = pMinRangef->mConst0;
+            eul[1] = pMinRangef->mConst1;
             eul[2] = kSingleQFloatZero;
-            SingleQEulToQuat(eul, reinterpret_cast<float *>(&mPreMultQs[ibone]));
+            EulToQuat(eul, reinterpret_cast<float *>(&mPreMultQs[ibone]));
         }
     }
 }
