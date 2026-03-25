@@ -12,6 +12,7 @@ struct MoviePlayer {
 };
 
 extern MoviePlayer *gMoviePlayer;
+extern unsigned int g_ActiveSFXStates;
 
 namespace RadarDetector {
 extern float mStaticRange;
@@ -120,13 +121,13 @@ SndBase *SFXCTL_GameState::CreateObject(unsigned int allocator) {
 }
 
 void SFXCTL_GameState::UpdateMixerOutputs() {
-    SetDMIX_Input(0, 0);
-    SetDMIX_Input(1, 0);
-    SetDMIX_Input(2, 0);
-    SetDMIX_Input(3, 0);
-    SetDMIX_Input(4, 0);
-    SetDMIX_Input(5, 0);
-    SetDMIX_Input(6, 0);
+    for (int i = 0; i <= 13; i++) {
+        if (g_ActiveSFXStates & (1 << i)) {
+            SetDMIX_Input(i, 0x7fff);
+        } else {
+            SetDMIX_Input(i, 0);
+        }
+    }
 }
 
 SndBase::TypeInfo *SFXCTL_GameState::GetTypeInfo() const { return &s_TypeInfo; }

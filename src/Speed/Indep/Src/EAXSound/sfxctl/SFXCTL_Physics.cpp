@@ -330,8 +330,8 @@ void SFXCTL_Physics::MsgRevEngine(const MAIEngineRev &message) {
     (void)message;
     eCurNisRevingState = NIS_OFF;
     if (m_pStateBase->m_eStateType == eMM_AIRACECAR) {
-        PattternPlay = true;
-        PatternNumber = 5;
+        *static_cast<int *>(static_cast<void *>(&PattternPlay)) = 1;
+        PatternNumber = bRandom(7) + 5;
     }
 }
 

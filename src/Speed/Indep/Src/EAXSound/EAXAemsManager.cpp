@@ -216,15 +216,15 @@ inline void stAssetDescription::Clear() {
 }
 
 void stBankSlot::Clear() {
-    Type = static_cast<eBANK_SLOT_TYPE>(-1);
     BANKmemLocation = 0;
     MAINmemLocation = nullptr;
     pLastAlloc = nullptr;
-    MAINmemSize = 0;
-    BANKMemSize = 0;
-    LoadFailed = 0;
     Index = 0;
     pAssetParams = nullptr;
+    BANKMemSize = 0;
+    MAINmemSize = 0;
+    Type = static_cast<eBANK_SLOT_TYPE>(-1);
+    LoadFailed = 0;
 }
 
 inline void stSndDataLoadParams::Clear() {

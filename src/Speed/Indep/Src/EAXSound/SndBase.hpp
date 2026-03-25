@@ -59,6 +59,10 @@ struct SndBase : public AudioMemBase {
 
     int GetDMixOutput(int idx, DMX_PRESET_TYPE etype);
 
+    inline int GetObjectIndex() {
+        return (GetTypeInfo()->ObjectID >> 4) & 0xFFF;
+    }
+
     int *GetOutputBlockPtr() { return m_pOutPutBlock; }
     int GetDMIX_InputValue(int index) { return m_pOutPutBlock[index]; }
     void SetOutputsPtr(int *ptr) { m_pOutPutBlock = ptr; }

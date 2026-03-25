@@ -42,10 +42,9 @@ int SFXCTL_Helicopter::GetController(int Index) {
     return -1;
 }
 
-void SFXCTL_Helicopter::AttachController(SFXCTL *controller) {
-    SndBase::AttachController(controller);
-    if (!m_p3DHeliPosCtl) {
-        m_p3DHeliPosCtl = static_cast< SFXCTL_3DHeliPos * >(controller);
+void SFXCTL_Helicopter::AttachController(SFXCTL *psfxctl) {
+    if (psfxctl->GetObjectIndex() == 1) {
+        m_p3DHeliPosCtl = static_cast<SFXCTL_3DHeliPos *>(psfxctl);
     }
 }
 
@@ -53,7 +52,6 @@ void SFXCTL_Helicopter::Detach() { m_pHeliState = nullptr; }
 
 void SFXCTL_Helicopter::SetupSFX(CSTATE_Base *_StateBase) {
     SndBase::SetupSFX(_StateBase);
-    m_pHeliState = nullptr;
 }
 
 void SFXCTL_Helicopter::InitSFX() {
