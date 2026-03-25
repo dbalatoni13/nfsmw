@@ -264,11 +264,13 @@ void *ParameterMapLayer::GetFieldPointer(int set_index, int field_index) {
 
 ParameterAccessor::ParameterAccessor(const char *layer_name)
     : Layer(0), //
-      AutoAttachLayerNamehash(layer_name != 0 ? UCrc32(layer_name).GetValue() : 0), //
+      AutoAttachLayerNamehash(0), //
       DebugName(layer_name), //
       CurrentParameterData(0) {
-    this->Next = this;
-    this->Prev = this;
+    AutoAttachLayerNamehash = bStringHash(layer_name);
+    if (!GetParameterMapsManager().GetDataForLayer(AutoAttachLayerNamehash, this, 0)) {
+        GetAutoParameterAccessors().AddTail(this);
+    }
 }
 
 ParameterAccessor::~ParameterAccessor() {
@@ -341,7 +343,6 @@ int ParameterMapsManager::GetDataForLayer(unsigned int layer_name_hash, Paramete
 
     if (warning_if_not_found) {
     }
-    accessor->SetLayer(0);
     return 0;
 }
 
@@ -385,7 +386,6 @@ ParameterAccessorBlend::ParameterAccessorBlend(const char *layer_name)
       HaveLastData(0) {}
 
 ParameterAccessorBlend::~ParameterAccessorBlend() {
-    this->ClearData();
 }
 
 void ParameterAccessorBlend::CaptureData(float x, float y, float ratio) {
