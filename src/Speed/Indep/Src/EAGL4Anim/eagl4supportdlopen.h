@@ -19,11 +19,10 @@ class DynamicLoader {
   public:
     // total size: 0x10
     struct Symbol {
-        // TODO is this constructor correct? or is it empty maybe?
-        Symbol()
-            : name(nullptr), //
-              data(nullptr)  //
-        {}
+        Symbol() {
+            name = nullptr;
+            data = nullptr;
+        }
 
         const char *name;   // offset 0x0, size 0x4
         const char *type;   // offset 0x4, size 0x4

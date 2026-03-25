@@ -565,22 +565,25 @@ int DynamicLoader::GetCount() const {
 // TODO
 DynamicLoader::Symbol DynamicLoader::GetSymbol(int i) const {
     DynamicLoader::Symbol r;
-    HashPointer *h = reinterpret_cast<HashPointer *>(handle);
+    HashPointer *h;
+    ELF32_Sym *s;
+    int iIndex;
+
+    h = reinterpret_cast<HashPointer *>(handle);
     if (!h) {
         return r;
     }
-    ELF32_Sym *s = h->symtab;
+    s = h->symtab;
     if (i < 0 || i >= h->symbols_num) {
         return r;
     }
     r.name = &h->strtab[s[i].st_name];
-    r.type = r.name + strlen(r.name);
-    if (r.type[1] == 0x7F) {
-        r.type += 2;
+    r.type = &r.name[strlen(r.name) + 1];
+    if (r.type[0] == 0x7F) {
+        r.type++;
     }
     r.isInternalRef = (s[i].st_other - 2) > 3;
-
-    int iIndex = s[i].st_shndx;
+    iIndex = s[i].st_shndx;
     if (s[i].st_other == 1) {
         r.data = reinterpret_cast<void *>(s[i].st_value);
     } else if (iIndex > 0 && iIndex < h->e->e_shnum) {

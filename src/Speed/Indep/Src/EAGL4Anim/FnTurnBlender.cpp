@@ -78,44 +78,42 @@ void FnTurnBlender::Eval(float prevTime, float currTime, float *pose) {
 }
 
 void FnTurnBlender::SetWeight(float w) {
-    int idx = static_cast<int>(w);
-    int oldIdx = mIdx;
+    int i = FloatToInt(w);
 
-    if (idx < 0) {
-        idx = 0;
+    if (i < 0) {
+        i = 0;
     }
-    if (idx >= mNumAnims - 1) {
-        idx = mNumAnims - 2;
+    if (i >= mNumAnims - 1) {
+        i = mNumAnims - 2;
     }
 
-    mWeight = w - static_cast<float>(idx);
-    if (idx == oldIdx) {
+    mWeight = w - static_cast<float>(i);
+    if (i == mIdx) {
         float prevFreq = mFreq;
 
         mFreq = mWeight / mCycles[1] + (1.0f - mWeight) / mCycles[0];
         mOffset = (prevFreq / mFreq) * (mPrevTime + mOffset) - mPrevTime;
     } else {
-        if (idx == oldIdx + 1) {
+        if (i == mIdx + 1) {
             mFnAnims[0] = mFnAnims[1];
-            mFnAnims[1] = mAnims[idx + 1];
-        } else if (idx == oldIdx - 1) {
+            mFnAnims[1] = mAnims[i + 1];
+        } else if (i == mIdx - 1) {
             mFnAnims[1] = mFnAnims[0];
-            mFnAnims[0] = mAnims[idx];
+            mFnAnims[0] = mAnims[i];
         } else {
-            mFnAnims[0] = mAnims[idx];
-            mFnAnims[1] = mAnims[idx + 1];
+            mFnAnims[0] = mAnims[i];
+            mFnAnims[1] = mAnims[i + 1];
         }
 
-        mIdx = idx;
-
-        FnRunBlender *anim0 = static_cast<FnRunBlender *>(mAnims[idx]);
-        FnRunBlender *anim1 = static_cast<FnRunBlender *>(mAnims[mIdx + 1]);
+        mIdx = i;
+        FnRunBlender *fnA = static_cast<FnRunBlender *>(mAnims[i]);
         float prevFreq = mFreq;
 
-        mCycles[0] = 1.0f / anim0->GetFrequency();
-        mOffsets[0] = anim0->GetOffset();
-        mCycles[1] = 1.0f / anim1->GetFrequency();
-        mOffsets[1] = anim1->GetOffset();
+        mCycles[0] = 1.0f / fnA->GetFrequency();
+        mOffsets[0] = fnA->GetOffset();
+        fnA = static_cast<FnRunBlender *>(mAnims[mIdx + 1]);
+        mCycles[1] = 1.0f / fnA->GetFrequency();
+        mOffsets[1] = fnA->GetOffset();
         mFreq = mWeight / mCycles[1] + (1.0f - mWeight) / mCycles[0];
         mOffset = (prevFreq / mFreq) * (mPrevTime + mOffset) - mPrevTime;
     }
