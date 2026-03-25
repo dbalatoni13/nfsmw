@@ -1535,7 +1535,8 @@ int LoaderCarInfo(bChunk *chunk) {
         }
 
         for (unsigned int attribute_index = 0; attribute_index < car_part_pack->NumAttributes; attribute_index++) {
-            car_part_pack->AttributesTable[attribute_index].EndianSwap();
+            bEndianSwap32(&car_part_pack->AttributesTable[attribute_index].Params.iParam);
+            bEndianSwap32(&car_part_pack->AttributesTable[attribute_index].NameHash);
         }
 
         for (unsigned int typename_hash_index = 0; typename_hash_index < car_part_pack->NumTypeNames; typename_hash_index++) {
