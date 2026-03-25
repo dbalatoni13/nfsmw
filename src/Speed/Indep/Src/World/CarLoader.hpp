@@ -19,6 +19,8 @@ enum CarLoadState {
 class LoadedSolidPack : public bTNode<LoadedSolidPack> {
   public:
     LoadedSolidPack(const char *filename);
+    ~LoadedSolidPack();
+    static void operator delete(void *ptr);
 
     const char *Filename;           // offset 0x8, size 0x4
     eStreamingPack *pStreamingPack; // offset 0xC, size 0x4
@@ -31,6 +33,8 @@ class LoadedSolidPack : public bTNode<LoadedSolidPack> {
 struct LoadedTexturePack : public bTNode<LoadedTexturePack> {
   public:
     LoadedTexturePack(const char *filename, int max_header_size);
+    ~LoadedTexturePack();
+    static void operator delete(void *ptr);
 
     const char *Filename;           // offset 0x8, size 0x4
     short NumInstances;             // offset 0xC, size 0x2

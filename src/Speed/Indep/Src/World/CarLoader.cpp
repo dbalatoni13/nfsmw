@@ -310,6 +310,22 @@ int CarLoader_AllocateSkinLayers(CarLoader *car_loader, unsigned int *name_hashe
 int CarLoader_LoadSkinLayers(CarLoader *car_loader, unsigned int *name_hashes, int max_hashes,
                              LoadedSkinLayer **loaded_skin_layers, int max_layers)
     asm("LoadSkinLayers__9CarLoaderPUiiPP15LoadedSkinLayeri");
+inline void LoadedTexturePack::operator delete(void *ptr) {
+    bFree(LoadedTexturePackSlotPool, ptr);
+}
+
+LoadedTexturePack::~LoadedTexturePack() {
+    bFreeSharedString(this->Filename);
+}
+
+inline void LoadedSolidPack::operator delete(void *ptr) {
+    bFree(LoadedSolidPackSlotPool, ptr);
+}
+
+LoadedSolidPack::~LoadedSolidPack() {
+    bFreeSharedString(this->Filename);
+}
+
 void CarLoader_UnallocateSkinLayers(CarLoader *car_loader, LoadedSkinLayer **loaded_skin_layers, int num_layers)
     asm("UnallocateSkinLayers__9CarLoaderPP15LoadedSkinLayeri");
 int CarLoader_MakeSpaceInCarMemoryPool(CarLoader *car_loader, int required_size, int max_allocations, bool stream_textures)
