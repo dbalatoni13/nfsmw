@@ -1027,50 +1027,57 @@ int CarLoader::MakeSpaceInCarMemoryPool(int largest_malloc_needed, int amount_fr
 }
 
 int CarLoader::RemoveSomethingFromCarMemoryPool(bool force_unload) {
+    int result;
+
     for (LoadedRideInfo *loaded_ride_info = this->LoadedRideInfoList.GetHead();
          loaded_ride_info != this->LoadedRideInfoList.EndOfList(); loaded_ride_info = loaded_ride_info->GetNext()) {
         if (this->UnloadRideInfo(loaded_ride_info, 0) != 0) {
-            return 1;
+            goto success;
         }
     }
 
+    result = 0;
     if (force_unload != 0) {
-        if (this->DefragmentPool() != 0) {
-            return 1;
-        }
+        if (this->DefragmentPool() == 0) {
+            if (this->NumSpongeAllocations == 0) {
+                int pass = 0;
 
-        if (this->NumSpongeAllocations == 0) {
-            for (int pass = 0; pass < 2; pass++) {
+                do {
                 for (LoadedRideInfo *loaded_ride_info = this->LoadedRideInfoList.GetHead();
                      loaded_ride_info != this->LoadedRideInfoList.EndOfList(); loaded_ride_info = loaded_ride_info->GetNext()) {
-                    if (loaded_ride_info->HighPriority == 0 || pass == 1) {
                         LoadedSkin *loaded_skin = loaded_ride_info->pLoadedSkin;
 
-                        if (loaded_skin->LoadStatePerm == CARLOADSTATE_LOADED && this->UnloadSkinPerms(loaded_skin) != 0) {
+                        if ((loaded_ride_info->HighPriority == 0 || pass == 1) &&
+                            loaded_skin->LoadStatePerm == CARLOADSTATE_LOADED && this->UnloadSkinPerms(loaded_skin) != 0) {
                             if (this->LoadingMode == MODE_FRONT_END) {
                                 bBreak();
                             }
 
                             eFixupReplacementTextureTables();
                             RefreshAllRenderInfo(loaded_skin->pRideInfo->Type);
-                            return 1;
+                            goto success;
                         }
                     }
-                }
+
+                    pass++;
+                } while (pass < 2);
+
+                this->PrintMemoryUsage(false);
+                bBreak();
+                result = 0;
+            } else {
+                this->NumSpongeAllocations--;
+                bFree(this->SpongeAllocations[this->NumSpongeAllocations]);
+                result = 1;
+                this->MayNeedDefragmentation++;
             }
-
-            this->PrintMemoryUsage(false);
-            bBreak();
-            return 0;
+        } else {
+success:
+            result = 1;
         }
-
-        this->NumSpongeAllocations--;
-        bFree(this->SpongeAllocations[this->NumSpongeAllocations]);
-        this->MayNeedDefragmentation++;
-        return 1;
     }
 
-    return 0;
+    return result;
 }
 
 void CarLoader::PrintMemoryUsage(bool on_screen) {
