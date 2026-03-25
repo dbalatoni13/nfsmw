@@ -1265,8 +1265,8 @@ ISimable *PVehicle::Construct(Sim::Param params) {
     if (!customizations->WriteRecordIntoPhysics(attributes)) {
         return nullptr;
     }
-    const Physics::Info::Performance *performance = vp.matched;
-    if (performance != nullptr && !Physics::Upgrades::MatchPerformance(attributes, *performance)) {
+    if (vp.matched != nullptr
+        && !Physics::Upgrades::MatchPerformance(attributes, *vp.matched)) {
         return nullptr;
     }
     if ((vp.Flags & 4) != 0) {
@@ -1312,6 +1312,7 @@ ISimable *PVehicle::Construct(Sim::Param params) {
         return nullptr;
     }
     Physics::Info::Performance perf;
+    const Physics::Info::Performance *performance = vp.matched;
     if (performance == nullptr && (vp.Flags & 8) != 0) {
         if (Physics::Info::ComputePerformance(attributes, perf)) {
             performance = &perf;
