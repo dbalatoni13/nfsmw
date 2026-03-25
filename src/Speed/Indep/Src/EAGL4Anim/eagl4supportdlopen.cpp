@@ -196,12 +196,11 @@ retry:
                     break;
                 }
 
-                char *name = &h->strtab[sym->st_name];
                 HashPointer *hp;
 
                 for (hp = hashhead; hp; hp = hp->next) {
                     if (hp != h) {
-                        void *addr = dlsym(hp, name);
+                        void *addr = dlsym(hp, &h->strtab[sym->st_name]);
 
                         if (addr) {
                             sym->st_shndx = 1;
@@ -219,7 +218,7 @@ retry:
 
                 if (h->pSearchFunction) {
                     bool valid = false;
-                    void *addr = h->pSearchFunction(name, valid);
+                    void *addr = h->pSearchFunction(&h->strtab[sym->st_name], valid);
 
                     if (valid) {
                         sym->st_shndx = 1;
@@ -232,7 +231,7 @@ retry:
 
                 {
                     bool valid = false;
-                    void *addr = gSymbolPool.Search(name, valid);
+                    void *addr = gSymbolPool.Search(&h->strtab[sym->st_name], valid);
 
                     if (valid) {
                         sym->st_shndx = 1;
@@ -243,23 +242,22 @@ retry:
                     }
                 }
 
-                const char *type = name + strlen(name);
+                Symbol s;
 
-                if (type[1] == 0x7F) {
-                    type += 2;
+                s.name = &h->strtab[sym->st_name];
+                s.type = s.name + strlen(s.name);
+                if (s.type[1] == 0x7F) {
+                    s.type += 2;
                 }
-                if (strncmp(gRuntimeAllocType, name, strlen(gRuntimeAllocType)) == 0) {
-                    Symbol s;
+                if (strncmp(gRuntimeAllocType, s.name, strlen(gRuntimeAllocType)) == 0) {
                     const char *stripped_name;
                     RuntimeAllocConstructor c;
 
-                    s.name = name;
-                    s.type = type;
                     stripped_name = s.name + strlen(gRuntimeAllocType);
                     c = gRuntimeAllocConsPool.FindConstructor(s.type);
 
                     if (c) {
-                        RuntimeAllocDestructor d = gRuntimeAllocConsPool.FindDestructor(type);
+                        RuntimeAllocDestructor d = gRuntimeAllocConsPool.FindDestructor(s.type);
                         int auxData = 0;
                         bool bCallDestructor = false;
                         void *addr = c(stripped_name, reinterpret_cast<class DynamicLoader *>(this), auxData, bCallDestructor, s.name);
@@ -283,14 +281,14 @@ retry:
                     bool found = false;
 
                     for (j = 0; j < numUnresolved; j++) {
-                        if (name == unresolvedList[j]) {
+                        if (s.name == unresolvedList[j]) {
                             found = true;
                             break;
                         }
                     }
 
                     if (!found) {
-                        unresolvedList[numUnresolved++] = name;
+                        unresolvedList[numUnresolved++] = const_cast<char *>(s.name);
                     }
                     j = iIndex;
                 }
