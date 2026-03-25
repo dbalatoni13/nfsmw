@@ -116,44 +116,42 @@ void SpikeStrip::OnTaskSimulate(float dT) {
     {
         SimCollisionMap *cmap = mBody->GetCollisionMap();
 
-        if (cmap) {
-            if (cmap->CollisionWithAny()) {
-                UMath::Matrix4 matrix;
-                UMath::Vector3 position;
-                UMath::Vector3 dim;
+        if (cmap && cmap->CollisionWithAny()) {
+            UMath::Matrix4 matrix;
+            UMath::Vector3 position;
+            UMath::Vector3 dim;
 
-                model->GetTransform(matrix);
-                position = UMath::Vector4To3(matrix.v3);
-                matrix.v3 = UMath::Vector4::kIdentity;
-                geometry->GetHalfDimensions(dim);
+            model->GetTransform(matrix);
+            position = UMath::Vector4To3(matrix.v3);
+            matrix.v3 = UMath::Vector4::kIdentity;
+            geometry->GetHalfDimensions(dim);
 
-                Dynamics::Collision::Geometry mygeometry(
-                    matrix, //
-                    position, //
-                    dim, //
-                    Dynamics::Collision::Geometry::BOX, //
-                    UMath::Vector3::kZero
-                );
+            Dynamics::Collision::Geometry mygeometry(
+                matrix, //
+                position, //
+                dim, //
+                Dynamics::Collision::Geometry::BOX, //
+                UMath::Vector3::kZero
+            );
 
-                for (unsigned int i = 0; i < 0xA0; i++) {
-                    if (cmap->CollisionWithOrderedBody(i)) {
-                        IRigidBody *irb = cmap->GetOrderedBody(i);
+            for (int i = 0; static_cast<unsigned int>(i) < 0xA0; i++) {
+                if (cmap->CollisionWithOrderedBody(i)) {
+                    IRigidBody *irb = cmap->GetOrderedBody(i);
 
-                        if (irb) {
-                            OnCollide(mygeometry, irb, dT);
-                        }
+                    if (irb) {
+                        OnCollide(mygeometry, irb, dT);
                     }
                 }
-            } else {
-                ITriggerableModel *itrigger;
+            }
+        } else {
+            ITriggerableModel *itrigger;
 
-                if (model->QueryInterface(&itrigger)) {
-                    UMath::Matrix4 mat;
+            if (model->QueryInterface(&itrigger)) {
+                UMath::Matrix4 mat;
 
-                    GetOwner()->GetTransform(mat);
-                    itrigger->PlaceTrigger(mat, true);
-                    GetOwner()->DetachEntity();
-                }
+                GetOwner()->GetTransform(mat);
+                itrigger->PlaceTrigger(mat, true);
+                GetOwner()->Kill();
             }
         }
     }
