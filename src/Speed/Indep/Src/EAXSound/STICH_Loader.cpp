@@ -145,11 +145,8 @@ int UnloaderSoundStichs(bChunk *chunk) {
         return 0;
     }
 
-    if (IsSoundEnabled && g_pEAXSound != nullptr) {
-        cSTICH_PlayBack *playback = g_pEAXSound->GetSTICHPlayback();
-        if (playback != nullptr) {
-            playback->DestroyAllStichs();
-        }
+    if (IsSoundEnabled) {
+        g_pEAXSound->GetSTICHPlayback()->DestroyAllStichs();
     }
 
     return 1;

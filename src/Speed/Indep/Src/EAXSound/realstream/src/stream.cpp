@@ -1096,28 +1096,26 @@ STREAMCHUNKHDR *STREAM_get(int sndstreamhandle) {
     MUTEX_unlock(&streamRaw->mutex);
 
     if (bytesLeft > 0) {
-        int *nextChunk =
-            reinterpret_cast<int *>(reinterpret_cast<char *>(chunk) + amount);
-        unsigned int encodedSize = static_cast<unsigned int>(nextChunk[1]);
+        char *nextPtr = reinterpret_cast<char *>(chunk) + amount;
         unsigned int tapMask = static_cast<unsigned int>(tapRaw->tapnum) << 24;
+        unsigned int encodedSize = *reinterpret_cast<unsigned int *>(nextPtr + 4);
         if ((encodedSize & 0xFF000000) == tapMask) {
-            tapRaw->getptr = reinterpret_cast<char *>(nextChunk);
+            tapRaw->getptr = nextPtr;
         } else {
-            int type = *nextChunk;
+            int type = *reinterpret_cast<int *>(nextPtr);
             while (true) {
                 if (type == -1) {
-                    nextChunk = reinterpret_cast<int *>(streamRaw->bufferstart);
+                    nextPtr = streamRaw->bufferstart;
                 } else {
-                    nextChunk = reinterpret_cast<int *>(
-                        reinterpret_cast<char *>(nextChunk) + (encodedSize & 0xFFFFFF));
+                    nextPtr = nextPtr + (encodedSize & 0xFFFFFF);
                 }
-                encodedSize = static_cast<unsigned int>(nextChunk[1]);
+                encodedSize = *reinterpret_cast<unsigned int *>(nextPtr + 4);
                 if ((encodedSize & 0xFF000000) == tapMask) {
                     break;
                 }
-                type = *nextChunk;
+                type = *reinterpret_cast<int *>(nextPtr);
             }
-            tapRaw->getptr = reinterpret_cast<char *>(nextChunk);
+            tapRaw->getptr = nextPtr;
         }
     }
 

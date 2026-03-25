@@ -13,12 +13,15 @@ struct MoviePlayer {
 
 extern MoviePlayer *gMoviePlayer;
 extern unsigned int g_ActiveSFXStates;
+extern int GameFlowSndState[];
 
 namespace RadarDetector {
 extern float mStaticRange;
 }
 
-SFXCTL_MasterVol::SFXCTL_MasterVol() {}
+SFXCTL_MasterVol::SFXCTL_MasterVol() {
+    bMemSet(GameFlowSndState, '\0', 0x3C);
+}
 
 SFXCTL_MasterVol::~SFXCTL_MasterVol() {}
 

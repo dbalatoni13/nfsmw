@@ -132,14 +132,17 @@ end:
 
 void SFXCTL_AccelTrans::UpdateRPM(float t) {
     switch (eAccelTransFxState) {
+    case FX_ACCEL_STATE_IDLE_REVING:
+        m_InterpEngRPM.Update(t);
+        return;
+
     case FX_ACCEL_STATE_ATTACK:
     case FX_ACCEL_STATE_IDLE_ENGAGING:
-    case FX_ACCEL_STATE_INTERRUPT:
         m_InterpEngRPM.Update(t, GetPhysRPM());
         return;
 
-    case FX_ACCEL_STATE_IDLE_REVING:
-        m_InterpEngRPM.Update(t);
+    case FX_ACCEL_STATE_INTERRUPT:
+        m_InterpEngRPM.Update(t, GetPhysRPM());
         return;
 
     default:

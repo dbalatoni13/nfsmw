@@ -266,7 +266,7 @@ PF_Allocator::~PF_Allocator() {}
 
 void *PF_Allocator::Alloc(unsigned int size, const EA::TagValuePair &flags) {
     (void)flags;
-    return bMalloc(size, "PF_Allocator", 0, AudioMemoryPool);
+    return gAudioMemoryManager.AllocateMemory(size, "AUD: Pathfinder alloc", true);
 }
 
 void PF_Allocator::Free(void *pBlock, unsigned int size) {
