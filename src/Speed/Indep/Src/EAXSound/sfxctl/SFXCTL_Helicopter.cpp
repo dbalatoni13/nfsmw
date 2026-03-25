@@ -14,8 +14,10 @@ SndBase *SFXCTL_3DHeliPos::CreateObject(unsigned int allocator) {
 }
 
 SFXCTL_Helicopter::SFXCTL_Helicopter()
-    : m_pHeliState(nullptr) //
-    , m_p3DHeliPosCtl(nullptr) {}
+    : m_pHeliState(nullptr) {
+    vHeliPos = bVector3(0.0f, 0.0f, 0.0f);
+    vHeliFwd = bVector3(0.0f, 0.0f, 0.0f);
+}
 
 SFXCTL_Helicopter::~SFXCTL_Helicopter() {}
 

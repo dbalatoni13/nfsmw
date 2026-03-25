@@ -174,10 +174,18 @@ SFXCTL_Physics::~SFXCTL_Physics() {
 
 SFXCTL_AIPhysics::~SFXCTL_AIPhysics() {}
 
-SFXCTL_AIPhysics::SFXCTL_AIPhysics()
-    : m_pShiftCtl(nullptr) //
-    , Zero60Time(0.0f) //
-    , m_fDeltaRPM(0.0f) {}
+SFXCTL_AIPhysics::SFXCTL_AIPhysics() {
+    m_LastGear = Sound::FIRST_GEAR;
+    SteadyVelocityFactor = 0.0f;
+    IsCornering = false;
+    m_CurGear = Sound::FIRST_GEAR;
+    m_pShiftCtl = nullptr;
+    m_DeltaRPM_LFO_Offset = 0.0f;
+    m_AngleDeltaRPM_LFO = 0;
+    DownShiftSameGearCount = 0;
+    UpShiftSameGearCount = 0;
+    IsDrifting = false;
+}
 
 SndBase *SFXCTL_AIPhysics::CreateObject(unsigned int allocator) {
     if (allocator != 0) {
