@@ -2431,15 +2431,12 @@ float TireFace(bMatrix4 *matrix, eView *view) {
     float face = 1.0f;
 
     if (TireFaceIt != 0) {
-        CameraPositionAccess *camera = reinterpret_cast<CameraPositionAccess *>(view->pCamera);
-        bMatrix4 local_matrix = *matrix;
-        bVector3 normal;
+        bVector3 cDir(*view->GetCamera()->GetDirection());
+        bMatrix4 matrix2(*matrix);
+        bVector3 N(enX, enY, enZ);
 
-        normal.x = enX;
-        normal.y = enY;
-        normal.z = enZ;
-        eMulVector(&normal, &local_matrix, &normal);
-        face = normal.x * camera->x + normal.y * camera->y + normal.z * camera->z;
+        eMulVector(&N, &matrix2, &N);
+        face = bDot(&N, &cDir);
     }
 
     return face;
@@ -2458,24 +2455,29 @@ void CarRenderInfo::UpdateCarReplacementTextures() {
 }
 
 void CarRenderInfo::SwitchSkin(RideInfo *ride_info) {
-    UsedCarTextureInfo *used_texture_info = &this->mUsedTextureInfos;
-
     this->pRideInfo = ride_info;
     GetUsedCarTextureInfo(&this->mUsedTextureInfos, ride_info, 0);
 
-    this->MasterReplacementTextureTable[REPLACETEX_CARSKIN].SetNewNameHash(used_texture_info->ReplaceSkinHash);
-    this->MasterReplacementTextureTable[REPLACETEX_CARSKINB].SetNewNameHash(used_texture_info->ReplaceSkinBHash);
-    this->MasterReplacementTextureTable[REPLACETEX_WHEEL].SetNewNameHash(used_texture_info->ReplaceWheelHash);
-    this->MasterReplacementTextureTable[REPLACETEX_SPINNER].SetNewNameHash(used_texture_info->ReplaceSpinnerHash);
-    this->MasterReplacementTextureTable[REPLACETEX_SPOILER].SetNewNameHash(used_texture_info->ReplaceSpoilerHash);
-    this->MasterReplacementTextureTable[REPLACETEX_ROOF_SCOOP].SetNewNameHash(used_texture_info->ReplaceRoofScoopHash);
-    this->MasterReplacementTextureTable[REPLACETEX_GLOBALSKIN].SetNewNameHash(used_texture_info->ReplaceGlobalHash);
-    this->MasterReplacementTextureTable[REPLACETEX_CARBONSKIN].SetNewNameHash(used_texture_info->ReplaceGlobalHash);
-    this->MasterReplacementTextureTable[REPLACETEX_GLOBALCARBONSKIN].SetNewNameHash(used_texture_info->ReplaceGlobalHash);
+    this->MasterReplacementTextureTable[REPLACETEX_CARSKIN].SetNewNameHash(this->mUsedTextureInfos.ReplaceSkinHash);
+    this->MasterReplacementTextureTable[REPLACETEX_CARSKINB].SetNewNameHash(this->mUsedTextureInfos.ReplaceSkinBHash);
+    this->MasterReplacementTextureTable[REPLACETEX_WHEEL].SetNewNameHash(this->mUsedTextureInfos.ReplaceWheelHash);
+    this->MasterReplacementTextureTable[REPLACETEX_SPINNER].SetNewNameHash(this->mUsedTextureInfos.ReplaceSpinnerHash);
+    this->MasterReplacementTextureTable[REPLACETEX_SPOILER].SetNewNameHash(this->mUsedTextureInfos.ReplaceSpoilerHash);
+    this->MasterReplacementTextureTable[REPLACETEX_ROOF_SCOOP].SetNewNameHash(this->mUsedTextureInfos.ReplaceRoofScoopHash);
+    this->MasterReplacementTextureTable[REPLACETEX_GLOBALSKIN].SetNewNameHash(this->mUsedTextureInfos.ReplaceGlobalHash);
+    this->MasterReplacementTextureTable[REPLACETEX_CARBONSKIN].SetNewNameHash(this->mUsedTextureInfos.ReplaceGlobalHash);
+    this->MasterReplacementTextureTable[REPLACETEX_GLOBALCARBONSKIN].SetNewNameHash(this->mUsedTextureInfos.ReplaceGlobalHash);
 
-    this->UpdateCarReplacementTextures();
-    this->BrakeLeftReplacementTextureTable[1].SetNewNameHash(used_texture_info->ReplaceGlobalHash);
-    this->BrakeRightReplacementTextureTable[1].SetNewNameHash(used_texture_info->ReplaceGlobalHash);
+    bMemCpy(this->CarbonReplacementTextureTable, this->MasterReplacementTextureTable, sizeof(this->CarbonReplacementTextureTable));
+
+    this->CarbonReplacementTextureTable[REPLACETEX_CARSKIN].SetNewNameHash(bStringHash("CARBONFIBRE"));
+    this->CarbonReplacementTextureTable[REPLACETEX_CARSKINB].SetNewNameHash(this->mUsedTextureInfos.ReplaceGlobalHash);
+    this->CarbonReplacementTextureTable[REPLACETEX_GLOBALSKIN].SetNewNameHash(this->mUsedTextureInfos.ReplaceGlobalHash);
+    this->CarbonReplacementTextureTable[REPLACETEX_CARBONSKIN].SetNewNameHash(bStringHash("CARBONFIBRE"));
+    this->CarbonReplacementTextureTable[REPLACETEX_GLOBALCARBONSKIN].SetNewNameHash(bStringHash("CARBONFIBRE"));
+
+    this->BrakeLeftReplacementTextureTable[1].SetNewNameHash(this->mUsedTextureInfos.ReplaceGlobalHash);
+    this->BrakeRightReplacementTextureTable[1].SetNewNameHash(this->mUsedTextureInfos.ReplaceGlobalHash);
 }
 
 void CarRenderInfo::CreateCarLightFlares() {
