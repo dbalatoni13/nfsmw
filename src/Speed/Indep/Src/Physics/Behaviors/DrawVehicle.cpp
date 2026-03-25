@@ -377,7 +377,7 @@ void DrawVehicle::PlayEffect(UCrc32 identifire, const Attrib::Collection *effect
     }
 
     Effect *drawEffect = nullptr;
-    for (EffectList::iterator iter = mEffects.begin(); iter != mEffects.end(); ++iter) {
+    for (EffectList::iterator iter = mEffects.begin(); iter != mEffects.end(); iter++) {
         if ((*iter)->Identifire == identifire) {
             drawEffect = *iter;
             break;
