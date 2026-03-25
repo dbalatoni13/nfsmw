@@ -505,11 +505,11 @@ CarRenderConn::CarRenderConn(const Sim::ConnectionData &data, CarType ct, Render
 
     PSMTX44Identity(*reinterpret_cast<Mtx44 *>(&this->mRenderMatrix));
     {
-        Attrib::Instance physics(Attrib::FindCollection(Attrib::Gen::pvehicle::ClassKey(), oc->mPhysicsKey), 0, nullptr);
+        Attrib::Gen::pvehicle physics(oc->mPhysicsKey, 0, nullptr);
         this->mPhysics = physics;
     }
     {
-        Attrib::Instance tire_physics(this->mPhysics.tires(0), 0, nullptr);
+        Attrib::Gen::tires tire_physics(this->mPhysics.tires(0), 0, nullptr);
         this->mTirePhysics = tire_physics;
     }
     this->mSteering[0] = 0.0f;
