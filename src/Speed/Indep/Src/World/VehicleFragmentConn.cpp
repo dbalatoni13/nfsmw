@@ -87,8 +87,9 @@ void VehicleFragmentConn::UpdateModel() {
 
         this->mModelHash = vehicle_render_conn->FindPart(this->mPartSlot);
 
+        CarTypeInfo *car_type_info = CarTypeInfoArray + vehicle_render_conn->GetCarType();
         const CollisionGeometry::Collection *col =
-            reinterpret_cast<const CollisionGeometry::Collection *>(CollisionGeometry::Lookup(UCrc32(CarTypeInfoArray[vehicle_render_conn->GetCarType()].CarTypeName)));
+            reinterpret_cast<const CollisionGeometry::Collection *>(CollisionGeometry::Lookup(UCrc32(car_type_info->GetName())));
         if (col != 0) {
             const CollisionGeometry::Bounds *root = CollisionGeometry_Collection_GetBounds(col, this->mColName);
             if (root != 0) {
