@@ -60,12 +60,9 @@ DrawHeli::DrawHeli(const BehaviorParams &params)
       mRenderService(nullptr), //
       mEffect(0, nullptr), //
       mWash(GetHeliWashCollection(), 0, nullptr), //
-      mWashTask(nullptr), //
       mInView(false), //
       mDistanceToView(0.0f), //
-      mIAIHelicopter(nullptr), //
-      mIVehicle(nullptr), //
-      mCollisionBody(nullptr) {
+      mIAIHelicopter(nullptr) {
     mWash.SetDefaultLayout(0x10);
 
     const char *model = GetVehicle()->GetVehicleAttributes().MODEL().GetString();
