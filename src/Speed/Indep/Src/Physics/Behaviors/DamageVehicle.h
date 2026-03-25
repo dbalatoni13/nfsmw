@@ -88,6 +88,9 @@ class DamageVehicle : public VehicleBehavior,
     }
 
     virtual bool IsLightDamaged(VehicleFX::ID idx) const {
+        if (IsDestroyed()) {
+            return true;
+        }
         return (mLightDamage & idx) != VehicleFX::LIGHT_NONE;
     }
 

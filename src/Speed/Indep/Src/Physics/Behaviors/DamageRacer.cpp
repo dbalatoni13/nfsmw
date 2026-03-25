@@ -66,9 +66,6 @@ bool DamageRacer::IsLightDamaged(VehicleFX::ID idx) const {
     if (!CanDamageVisuals()) {
         return false;
     }
-    if (IsDestroyed()) {
-        return true;
-    }
     return DamageVehicle::IsLightDamaged(idx);
 }
 
