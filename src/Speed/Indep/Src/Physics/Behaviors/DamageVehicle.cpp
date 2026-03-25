@@ -297,6 +297,7 @@ void DamageVehicle::OnImpact(const UMath::Vector3 &arm, const UMath::Vector3 &no
             }
         }
 
+        float time;
         EventSequencer::IEngine *sequencer = GetOwner()->GetEventSequencer();
         EventSequencer::System *system = nullptr;
         if (sequencer) {
@@ -304,7 +305,7 @@ void DamageVehicle::OnImpact(const UMath::Vector3 &arm, const UMath::Vector3 &no
         }
 
         if (system) {
-            const float time = Sim::GetTime();
+            time = Sim::GetTime();
             system->ProcessStimulus(0x1ea131b8, time, this, EventSequencer::QUEUE_ALLOW);
 
             IVehicle *iv = nullptr;
@@ -321,8 +322,10 @@ void DamageVehicle::OnImpact(const UMath::Vector3 &arm, const UMath::Vector3 &no
             for (int j = 0; j < newimpact_level; ++j) {
                 system->ProcessStimulus(DamageZone::GetImpactStimulus(j).GetValue(), time, this, EventSequencer::QUEUE_ALLOW);
             }
+        }
 
-            if (0 < newdamage_level && CanDamageVisuals()) {
+        if (0 < newdamage_level && CanDamageVisuals()) {
+            if (system) {
                 int damage_level = mZoneDamage.Get(zone);
                 if (damage_level < 6 && damage_level < newdamage_level) {
                     while (damage_level < newdamage_level) {
@@ -332,11 +335,11 @@ void DamageVehicle::OnImpact(const UMath::Vector3 &arm, const UMath::Vector3 &no
                     }
                     mZoneDamage.Set(zone, newdamage_level);
                 }
-            }
-        } else if (0 < newdamage_level && CanDamageVisuals()) {
-            int damage_level = mZoneDamage.Get(zone);
-            if (damage_level < newdamage_level) {
-                mZoneDamage.Set(zone, newdamage_level);
+            } else {
+                int damage_level = mZoneDamage.Get(zone);
+                if (damage_level < newdamage_level) {
+                    mZoneDamage.Set(zone, newdamage_level);
+                }
             }
         }
     }
