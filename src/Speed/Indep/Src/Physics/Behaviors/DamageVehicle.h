@@ -65,14 +65,7 @@ class DamageVehicle : public VehicleBehavior,
     }
 
     float GetHealth() const override {
-        float health = 1.0f - mDamageTotal;
-        if (1.0f < health) {
-            health = 1.0f;
-        }
-        if (health < 0.0f) {
-            health = 0.0f;
-        }
-        return health;
+        return UMath::Clamp(1.0f - mDamageTotal, 0.0f, 1.0f);
     }
 
     bool IsDestroyed() const override {
