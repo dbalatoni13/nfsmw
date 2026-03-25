@@ -329,7 +329,7 @@ IModel *DrawVehicle::SpawnModel(UCrc32 name, UCrc32 collisionnode, UCrc32 attrib
         if (bounds) {
             const Attrib::Collection *attribs = SmokeableSpawner::FindAttributes(attributes);
             if (attribs) {
-                Part *part = new Part(static_cast< IModel * >(this), static_cast< IModel * >(this)->GetWorldID(), bounds, attribs, name);
+                Part *part = new Part(static_cast< IModel * >(this), GetOwner()->GetWorldID(), bounds, attribs, name);
                 if (part) {
                     return part;
                 }
