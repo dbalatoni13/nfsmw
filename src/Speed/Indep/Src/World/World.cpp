@@ -34,6 +34,8 @@
 
 static void World_Init();
 
+int SuperEasyAIMode = 0;
+
 // BSS Class Init
 bVector3 ZeroVector = bVector3(0, 0, 0);
 Sim::SubSystem _Physics_System_World = Sim::SubSystem(nullptr, World_Init, nullptr);
