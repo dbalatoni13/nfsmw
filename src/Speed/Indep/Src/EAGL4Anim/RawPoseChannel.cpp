@@ -17,7 +17,10 @@ void RawPoseChannel::InitAnimMemoryMap(AnimMemoryMap *anim) {
         isig++;
 
         for (int ichan = 0; ichan < numChannels; ichan++) {
-            switch (*sig) {
+            int t = *sig;
+
+            isig++;
+            switch (t) {
             case EUL:
                 *sig = reinterpret_cast<int>(EulF3);
                 break;
@@ -42,7 +45,10 @@ void RawPoseChannel::InitAnimMemoryMap(AnimMemoryMap *anim) {
         isig++;
 
         for (int ichan = 0; ichan < numChannels; ichan++) {
-            switch (*sig) {
+            int t = *sig;
+
+            isig++;
+            switch (t) {
             case EUL:
                 *sig = reinterpret_cast<int>(EulF3Interp);
                 break;
