@@ -106,12 +106,12 @@ IVisualTreatment::~IVisualTreatment() {
 void IVisualTreatment::Reset() {
     this->State = HEAT_LOOK;
     this->PulseBrightness = 1.0f;
-    this->DesaturationTarget = -1.0f;
+    this->CurrentTarget = -1.0f;
     this->IsBeingPursued = -1;
+    this->DesaturationTarget = -1.0f;
     this->RadialBlur = 0.0f;
     this->NosRadialBlurAmount = 0.0f;
     this->PursuitBreakerBlend = 0.0f;
-    this->CurrentTarget = -1.0f;
 
     PursuitBreaker->Reset();
     UvesPulse->Reset();

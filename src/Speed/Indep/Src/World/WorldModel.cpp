@@ -51,26 +51,29 @@ struct AABBAdjustor {
     void Adjust(float scaler) {
         if (this->mAdjustment != 0) {
             this->mMin->x += this->mAdjustment->x * scaler;
-            this->mMin->y += this->mAdjustment->y * scaler;
-            this->mMin->z += this->mAdjustment->z * scaler;
             this->mMax->x += this->mAdjustment->x * scaler;
+            this->mMin->y += this->mAdjustment->y * scaler;
             this->mMax->y += this->mAdjustment->y * scaler;
+            this->mMin->z += this->mAdjustment->z * scaler;
             this->mMax->z += this->mAdjustment->z * scaler;
         }
     }
 
-    AABBAdjustor(eModel *m, bMatrix4 *adjustment)
-        : mMin(0), //
-          mMax(0), //
-          mAdjustment(0) {
-        eSolid *solid = m->GetSolid();
+    AABBAdjustor(eModel *m, bMatrix4 *adjustment) {
+        if (adjustment != 0) {
+            eSolid *solid = m->GetSolid();
 
-        if (solid != 0 && adjustment != 0) {
-            this->mMin = reinterpret_cast<bVector4 *>(&solid->AABBMinX);
-            this->mMax = reinterpret_cast<bVector4 *>(&solid->AABBMaxX);
-            this->mAdjustment = &adjustment[1].v3;
-            this->Adjust(1.0f);
+            if (solid != 0) {
+                this->mMin = reinterpret_cast<bVector4 *>(&solid->AABBMinX);
+                this->mMax = reinterpret_cast<bVector4 *>(&solid->AABBMaxX);
+                this->mAdjustment = &adjustment[1].v3;
+                this->Adjust(1.0f);
+                return;
+            }
         }
+        this->mMin = 0;
+        this->mMax = 0;
+        this->mAdjustment = 0;
     }
 
     ~AABBAdjustor() {
