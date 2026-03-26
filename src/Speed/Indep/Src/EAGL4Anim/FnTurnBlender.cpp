@@ -241,12 +241,12 @@ void FnTurnBlender::ComputeAlignQ(float *v1, float *v2, UMath::Vector4 &q) const
 
 void FnTurnBlender::AlignCycleBeginEnd(int cIdx) {
     if (!mInit) {
-        mInit = true;
         mCycleIdx = -1;
+        mInit = true;
+        mAlignQ.w = 1.0f;
+        mAlignQ.z = 0.0f;
         mAlignQ.x = 0.0f;
         mAlignQ.y = 0.0f;
-        mAlignQ.z = 0.0f;
-        mAlignQ.w = 1.0f;
     } else if (mCycleIdx != cIdx) {
         float v0[2];
         float v1[2];
@@ -290,16 +290,15 @@ void FnTurnBlender::AlignVel(float *vel) const {
 
 bool FnTurnBlender::BlendBeginFacing(float *f) const {
     FnRunBlender *fnA;
-
-    if (!f) {
-        return false;
-    }
-
     UMath::Vector4 q0;
     UMath::Vector4 q1;
     UMath::Vector4 q;
     UMath::Vector4 xAxis;
     UMath::Vector4 xAxis1;
+
+    if (!f) {
+        return false;
+    }
 
     fnA = reinterpret_cast<FnRunBlender *>(mFnAnims[0]);
     fnA->ComputeBeginRootQ(q0);
@@ -308,24 +307,23 @@ bool FnTurnBlender::BlendBeginFacing(float *f) const {
     FastQuatBlendF4(mWeight, reinterpret_cast<float *>(&q0), reinterpret_cast<float *>(&q1), reinterpret_cast<float *>(&q));
     xAxis = kFacingAxis;
     QuatTransformPoint(q, xAxis, xAxis1);
-    f[0] = xAxis1.x;
     f[1] = xAxis1.z;
-    printf("Facing: %g %g\n", f[0], f[1]);
+    f[0] = xAxis1.x;
+    printf("Facing: %g %g\n", xAxis1.x, xAxis1.z);
     return true;
 }
 
 bool FnTurnBlender::BlendEndFacing(float *f) const {
     FnRunBlender *fnA;
-
-    if (!f) {
-        return false;
-    }
-
     UMath::Vector4 q0;
     UMath::Vector4 q1;
     UMath::Vector4 q;
     UMath::Vector4 xAxis;
     UMath::Vector4 xAxis1;
+
+    if (!f) {
+        return false;
+    }
 
     fnA = reinterpret_cast<FnRunBlender *>(mFnAnims[0]);
     fnA->ComputeEndRootQ(q0);
@@ -334,9 +332,9 @@ bool FnTurnBlender::BlendEndFacing(float *f) const {
     FastQuatBlendF4(mWeight, reinterpret_cast<float *>(&q0), reinterpret_cast<float *>(&q1), reinterpret_cast<float *>(&q));
     xAxis = kFacingAxis;
     QuatTransformPoint(q, xAxis, xAxis1);
-    f[0] = xAxis1.x;
     f[1] = xAxis1.z;
-    printf("Facing: %g %g\n", f[0], f[1]);
+    f[0] = xAxis1.x;
+    printf("Facing: %g %g\n", xAxis1.x, xAxis1.z);
     return true;
 }
 
