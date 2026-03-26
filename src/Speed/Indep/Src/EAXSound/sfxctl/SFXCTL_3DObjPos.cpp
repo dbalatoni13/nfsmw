@@ -33,11 +33,10 @@ bVector2 *SFXCTL_3DObjPos::m_pv2AzimRefPos = nullptr;
 unsigned short SFXCTL_3DObjPos::m_CameraAngle = 0;
 
 SndBase *SFXCTL_3DObjPos::CreateObject(unsigned int allocator) {
-    if (allocator != 0) {
-        return new (SFXCTL_3DObjPos::s_TypeInfo.typeName, true) SFXCTL_3DObjPos();
-    } else {
+    if (allocator == 0) {
         return new (SFXCTL_3DObjPos::s_TypeInfo.typeName, false) SFXCTL_3DObjPos();
     }
+    return new (SFXCTL_3DObjPos::s_TypeInfo.typeName, true) SFXCTL_3DObjPos();
 }
 
 SFXCTL_3DObjPos::~SFXCTL_3DObjPos() {}

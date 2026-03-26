@@ -60,11 +60,10 @@ SndBase::TypeInfo *SFXCTL_HybridMotor::GetTypeInfo() const { return &s_TypeInfo;
 char *SFXCTL_HybridMotor::GetTypeName() const { return s_TypeInfo.typeName; }
 
 SndBase *SFXCTL_HybridMotor::CreateObject(unsigned int allocator) {
-    if (allocator != 0) {
-        return new (SFXCTL_HybridMotor::s_TypeInfo.typeName, true) SFXCTL_HybridMotor();
-    } else {
+    if (allocator == 0) {
         return new (SFXCTL_HybridMotor::s_TypeInfo.typeName, false) SFXCTL_HybridMotor();
     }
+    return new (SFXCTL_HybridMotor::s_TypeInfo.typeName, true) SFXCTL_HybridMotor();
 }
 
 int SFXCTL_HybridMotor::GetController(int Index) {

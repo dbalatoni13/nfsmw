@@ -125,11 +125,10 @@ SFXCTL_Tunnel::SFXCTL_Tunnel() {
 SFXCTL_Tunnel::~SFXCTL_Tunnel() {}
 
 SndBase *SFXCTL_Tunnel::CreateObject(unsigned int allocator) {
-    if (allocator != 0) {
-        return new (SFXCTL_Tunnel::s_TypeInfo.typeName, true) SFXCTL_Tunnel();
-    } else {
+    if (allocator == 0) {
         return new (SFXCTL_Tunnel::s_TypeInfo.typeName, false) SFXCTL_Tunnel();
     }
+    return new (SFXCTL_Tunnel::s_TypeInfo.typeName, true) SFXCTL_Tunnel();
 }
 
 SndBase::TypeInfo *SFXCTL_Tunnel::GetTypeInfo() const { return &s_TypeInfo; }

@@ -22,15 +22,10 @@ SFXCTL_AccelTrans::SFXCTL_AccelTrans()
     , m_pAccelTransDataSet(nullptr) {}
 
 SndBase *SFXCTL_AccelTrans::CreateObject(unsigned int allocator) {
-    if (allocator != 0) {
-        return new (static_cast< SFXCTL_AccelTrans * >(
-            gAudioMemoryManager.AllocateMemory(sizeof(SFXCTL_AccelTrans), SFXCTL_AccelTrans::s_TypeInfo.typeName, true)))
-            SFXCTL_AccelTrans();
-    } else {
-        return new (static_cast< SFXCTL_AccelTrans * >(
-            gAudioMemoryManager.AllocateMemory(sizeof(SFXCTL_AccelTrans), SFXCTL_AccelTrans::s_TypeInfo.typeName, false)))
-            SFXCTL_AccelTrans();
+    if (allocator == 0) {
+        return new (SFXCTL_AccelTrans::s_TypeInfo.typeName, false) SFXCTL_AccelTrans();
     }
+    return new (SFXCTL_AccelTrans::s_TypeInfo.typeName, true) SFXCTL_AccelTrans();
 }
 
 SFXCTL_AccelTrans::~SFXCTL_AccelTrans() {}

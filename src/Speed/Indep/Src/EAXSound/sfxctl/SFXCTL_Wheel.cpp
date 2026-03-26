@@ -55,11 +55,10 @@ SFXCTL_Wheel::SFXCTL_Wheel()
 SFXCTL_Wheel::~SFXCTL_Wheel() {}
 
 SndBase *SFXCTL_Wheel::CreateObject(unsigned int allocator) {
-    if (allocator != 0) {
-        return new (SFXCTL_Wheel::s_TypeInfo.typeName, true) SFXCTL_Wheel();
-    } else {
+    if (allocator == 0) {
         return new (SFXCTL_Wheel::s_TypeInfo.typeName, false) SFXCTL_Wheel();
     }
+    return new (SFXCTL_Wheel::s_TypeInfo.typeName, true) SFXCTL_Wheel();
 }
 
 SndBase::TypeInfo *SFXCTL_Wheel::GetTypeInfo() const { return &s_TypeInfo; }
@@ -103,9 +102,9 @@ bVector3 *SFXCTL_Wheel::GetWheelPos(int wheelID, int numtires) {
         }
         return &v3NewPosRight;
     case 1:
-        return reinterpret_cast<bVector3 *>(&GetPhysCar()->mMatrix.v3);
+        return GetPhysCar()->GetPosition();
     default:
-        return reinterpret_cast<bVector3 *>(&GetPhysCar()->mMatrix.v3);
+        return GetPhysCar()->GetPosition();
     }
 }
 

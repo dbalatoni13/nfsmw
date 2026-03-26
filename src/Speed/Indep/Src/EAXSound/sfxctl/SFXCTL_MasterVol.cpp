@@ -26,11 +26,10 @@ SFXCTL_MasterVol::SFXCTL_MasterVol() {
 SFXCTL_MasterVol::~SFXCTL_MasterVol() {}
 
 SndBase *SFXCTL_MasterVol::CreateObject(unsigned int allocator) {
-    if (allocator != 0) {
-        return new (SFXCTL_MasterVol::s_TypeInfo.typeName, true) SFXCTL_MasterVol();
-    } else {
+    if (allocator == 0) {
         return new (SFXCTL_MasterVol::s_TypeInfo.typeName, false) SFXCTL_MasterVol();
     }
+    return new (SFXCTL_MasterVol::s_TypeInfo.typeName, true) SFXCTL_MasterVol();
 }
 
 SndBase::TypeInfo *SFXCTL_MasterVol::GetTypeInfo() const { return &s_TypeInfo; }

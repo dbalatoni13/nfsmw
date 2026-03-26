@@ -18,15 +18,10 @@ SFXCTL_Shifting::SFXCTL_Shifting()
 }
 
 SndBase *SFXCTL_Shifting::CreateObject(unsigned int allocator) {
-    if (allocator != 0) {
-        return new (static_cast<SFXCTL_Shifting *>(
-            gAudioMemoryManager.AllocateMemory(sizeof(SFXCTL_Shifting), SFXCTL_Shifting::s_TypeInfo.typeName, true)))
-            SFXCTL_Shifting();
-    } else {
-        return new (static_cast<SFXCTL_Shifting *>(
-            gAudioMemoryManager.AllocateMemory(sizeof(SFXCTL_Shifting), SFXCTL_Shifting::s_TypeInfo.typeName, false)))
-            SFXCTL_Shifting();
+    if (allocator == 0) {
+        return new (SFXCTL_Shifting::s_TypeInfo.typeName, false) SFXCTL_Shifting();
     }
+    return new (SFXCTL_Shifting::s_TypeInfo.typeName, true) SFXCTL_Shifting();
 }
 
 SFXCTL_Shifting::~SFXCTL_Shifting() {}
