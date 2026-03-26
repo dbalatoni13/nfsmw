@@ -66,10 +66,7 @@ struct SpeechEventPair {
     SPCHType_1_EventID id;
 
     bool operator<(const SpeechEventPair &rhs) const {
-        if (id != rhs.id) {
-            return id < rhs.id;
-        }
-        return hash < rhs.hash;
+        return id < rhs.id;
     }
 };
 
@@ -405,12 +402,13 @@ void *ScheduledSpeechEvent::operator new(unsigned int base_size, unsigned int xt
     (void)xtra;
     SlotPool *pool = gSpeechCache.GetEventPool();
 
-    if (pool != nullptr && ((pool = gSpeechCache.GetEventPool()) == nullptr ||
-                            !gSpeechCache.GetEventPool()->IsFull())) {
-        return gSpeechCache.GetEventPool()->Malloc(1, nullptr);
+    if (!pool) {
+        return NullPointer;
     }
-
-    return NullPointer;
+    if (gSpeechCache.GetEventPool() != nullptr && gSpeechCache.GetEventPool()->IsFull()) {
+        return NullPointer;
+    }
+    return gSpeechCache.GetEventPool()->Malloc(1, nullptr);
 }
 
 void ScheduledSpeechEvent::operator delete(void *ptr) {
