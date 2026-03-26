@@ -9,6 +9,12 @@ namespace Sim {
 bool CanSpawnSimpleRigidBody(const UMath::Vector3 &position, bool highPriority);
 }
 
+static inline ISimpleBody *FindSimpleBody(ISimable *owner) {
+    return reinterpret_cast<ISimpleBody *>(
+        (*reinterpret_cast<UTL::COM::Object **>(owner))->_mInterfaces.Find((HINTERFACE)ISimpleBody::_IHandle)
+    );
+}
+
 UTL::COM::Factory<Sim::Param, ISimable, UCrc32>::Prototype _Explosion("Explosion", Explosion::Construct);
 
 ISimable *Explosion::Construct(Sim::Param params) {
@@ -58,7 +64,12 @@ Explosion::~Explosion() {}
 
 void Explosion::OnBehaviorChange(const UCrc32 &mechanic) {
     if (mechanic == UCrc32(BEHAVIOR_MECHANIC_RIGIDBODY)) {
-        if (static_cast<ISimable *>(this)->QueryInterface(&mIRBSimple)) {
+        bool hasbody;
+
+        mIRBSimple = FindSimpleBody(static_cast<ISimable *>(this));
+        hasbody = mIRBSimple != nullptr;
+
+        if (hasbody) {
             mIRBSimple->ModifyFlags(0, 0xC100);
         }
     }
