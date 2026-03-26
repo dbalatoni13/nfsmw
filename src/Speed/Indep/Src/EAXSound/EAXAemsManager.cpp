@@ -1153,10 +1153,8 @@ int EAXAemsManager::IsAssetInList(Attrib::StringKey filename) {
 int EAXAemsManager::IsAssetLoaded(Attrib::StringKey filename) {
     int n = IsAssetInList(filename);
     int nLoadedAsset = -1;
-    if (n != -1) {
-        if (*static_cast<int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(&g_SndAssetList[n])) + 0x3C)) != 0) {
-            nLoadedAsset = n;
-        }
+    if (n != -1 && g_SndAssetList[n].bResolvedSync) {
+        nLoadedAsset = n;
     }
     return nLoadedAsset;
 }

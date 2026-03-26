@@ -130,10 +130,10 @@ SndAIStateManager::SndAIStateManager()
     , AccelMonitor() //
     , DeccelMonitor() //
     , ThrottleMonitor() {
-    m_pPhysicsCTL = nullptr;
+    bTransition = 0;
     CurState = SND_AI_STATE_UNKNOWN;
     PrevState = SND_AI_STATE_UNKNOWN;
-    bTransition = 0;
+    m_pPhysicsCTL = nullptr;
     m_tLastSwitch = 0.0f;
 }
 
