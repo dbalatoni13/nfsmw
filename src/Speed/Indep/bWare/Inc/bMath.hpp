@@ -505,6 +505,8 @@ inline bVector3 bNeg(const bVector3 &v) {
 
 inline bVector3 bCross(const bVector3 &v1, const bVector3 &v2) {
     bVector3 dest;
+    bCross(&dest, &v1, &v2);
+    return dest;
 }
 
 inline float bDot(const bVector3 &v1, const bVector3 &v2) {
@@ -539,10 +541,14 @@ inline bVector3 bScaleAdd(const bVector3 &v1, const bVector3 &v2, float scale) {
 
 inline bVector3 bNormalize(const bVector3 &v) {
     bVector3 dest;
+    bNormalize(&dest, &v);
+    return dest;
 }
 
 inline bVector3 bNormalize(const bVector3 &v, float length) {
     bVector3 dest;
+    bNormalize(&dest, &v, length);
+    return dest;
 }
 
 inline bVector3 bMin(const bVector3 &v1, const bVector3 &v2) {

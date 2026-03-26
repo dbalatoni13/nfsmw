@@ -106,8 +106,8 @@ float HeliSheetCoordinate::GetElevation(const bVector2 &point, bVector3 *NormalO
         heli_poly->GetVertices(this->Vertex);
     }
 
-    bVector3 edge0 = bVector3(this->Vertex[1].x - this->Vertex[0].x, this->Vertex[1].y - this->Vertex[0].y, this->Vertex[1].z - this->Vertex[0].z);
-    bVector3 edge1 = bVector3(this->Vertex[2].x - this->Vertex[0].x, this->Vertex[2].y - this->Vertex[0].y, this->Vertex[2].z - this->Vertex[0].z);
+    bVector3 edge0 = this->Vertex[1] - this->Vertex[0];
+    bVector3 edge1 = this->Vertex[2] - this->Vertex[0];
     bVector3 normal = bNormalize(bCross(edge0, edge1));
 
     float elevation = ((this->Vertex[0].z * normal.z + this->Vertex[0].x * normal.x + this->Vertex[0].y * normal.y) -
