@@ -416,16 +416,17 @@ void FnRunBlender::ComputeAlignQ(float *v1, float *v2, UMath::Vector4 &q) const 
 }
 
 void FnRunBlender::AlignCycleBeginEnd(int cIdx) {
+    float v0[2];
+    float v1[2];
+
     if (!mInit) {
         mCycleIdx = -1;
         mInit = true;
-        mAlignQ.z = 0.0f;
-        mAlignQ.w = 1.0f;
         mAlignQ.x = 0.0f;
         mAlignQ.y = 0.0f;
+        mAlignQ.w = 1.0f;
+        mAlignQ.z = 0.0f;
     } else if (mCycleIdx != cIdx) {
-        float v0[2];
-        float v1[2];
         UMath::Vector4 q;
         UMath::Vector4 resultQ;
 
