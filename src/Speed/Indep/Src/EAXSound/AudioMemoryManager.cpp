@@ -1,6 +1,7 @@
 #include "./AudioMemoryManager.hpp"
 #include "Speed/Indep/bWare/Inc/bMemory.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
+#include "Speed/Indep/Libs/Support/Utility/UVectorMath.h"
 
 AudioMemoryManager gAudioMemoryManager;
 int AudioMemoryPool = -1;
