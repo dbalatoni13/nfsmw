@@ -138,6 +138,7 @@ Foo::Foo()
 - Keep the `// total size: 0x...` comment above the recovered type declaration instead of burying it inside the body.
 - When a recovered type is a `class`, keep explicit access sections and put the method/accessor block before the member layout block unless existing repo evidence shows otherwise.
 - Preserve the member naming style that DWARF shows. Some types use `mMember`, others use `m_member`; do not normalize them.
+- If DWARF says a member is a concrete generated Attrib wrapper such as `Attrib::Gen::effects`, keep the owner-header member typed as that wrapper and use the wrapper's original ctor overload in callers. Do not flatten it back to `Attrib::Instance` plus local `FindCollection` / `SetDefaultLayout` glue unless the dumps prove the generic form was real.
 - Preserve recovered member names, types, order, and offset comments. Do not invent placeholder members named `pad`, `unk`, `unknown`, or `field_XXXX` for game code just to make a layout compile.
 - Preserve the dumped declaration order too. Do not regroup methods, helpers, enums, or fields for readability unless an existing repo header or PS2 evidence proves the original order differs.
 - If a member is genuinely unknown, stop and verify it with `find-symbol.py`, GC Dwarf, and PS2 data. If the layout is still incomplete, add a short TODO above the type instead of burying uncertainty in fake member names.

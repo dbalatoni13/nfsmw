@@ -435,6 +435,8 @@ The inline information in the dwarf is incredibly useful. When you encounter one
 
 For recovered structs and classes, treat DWARF as copied source material rather than a loose sketch. Paste the dumped type into the owner header first and keep its declaration/member order unless PS2 or an existing repo header proves a specific correction.
 
+Apply the same rule to generated Attrib wrappers. If DWARF names a member as `Attrib::Gen::foo` (or another concrete generated wrapper), keep the member typed as that wrapper in the owner header and mirror the original wrapper ctor overload instead of demoting it to `Attrib::Instance` plus a local `FindCollection` / `SetDefaultLayout` helper chain.
+
 It's very important that you use math inlines from bMath and UMath as shown in the dwarf. UVector inlines use temporaries that the compiler couldn't optimize out. You can see in the dwarf on which stack address they are and deduce final destination they are copied to.
 
 ### Store instruction order hints
