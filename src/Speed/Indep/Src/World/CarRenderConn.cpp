@@ -1164,9 +1164,6 @@ void CarRenderConn::Update(const RenderConn::Pkt_Car_Service &data, float dT) {
             return;
         }
 
-        const LocalReferenceMirror *world_ref = reinterpret_cast<const LocalReferenceMirror *>(&this->mWorldRef);
-        const bVector3 *velocity = world_ref->mVelocity;
-
         render_info->SetDamageInfo(*reinterpret_cast<const DamageZone::Info *>(&data.mDamageInfo));
         CarRenderInfoF32(render_info, 0x1754) = dT;
         CarRenderInfoU32(render_info, 0x1608) = data.mLights;
@@ -1184,7 +1181,7 @@ void CarRenderConn::Update(const RenderConn::Pkt_Car_Service &data, float dT) {
         CarRenderInfoU32(render_info, 0x1170) = data.mNos;
         CarRenderInfoS16(render_info, 0x1174) = static_cast<short>(this->mSteering[0] * 10430.378f);
         CarRenderInfoS16(render_info, 0x1176) = static_cast<short>(this->mSteering[1] * 10430.378f);
-        float carspeed = bSqrt(velocity->x * velocity->x + velocity->y * velocity->y + velocity->z * velocity->z);
+        float carspeed = bLength(this->GetVelocity());
 
         this->mAnimTime += dT;
         if (10.0f <= this->mAnimTime) {
@@ -1210,10 +1207,9 @@ void CarRenderConn::Update(const RenderConn::Pkt_Car_Service &data, float dT) {
 }
 
 void CarRenderConn::UpdateContrails(const RenderConn::Pkt_Car_Service &data, float dT) {
-    const bVector3 *velocity = this->mWorldRef.GetVelocity();
-    float speed = bSqrt(velocity->x * velocity->x + velocity->y * velocity->y + velocity->z * velocity->z);
+    float carspeed = bLength(this->GetVelocity());
 
-    if (data.mNos || 44.0f <= speed) {
+    if (data.mNos || 44.0f <= carspeed) {
         if (!INIS::Exists()) {
             this->mDoContrailEffect = true;
             return;

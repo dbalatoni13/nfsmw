@@ -1450,6 +1450,7 @@ static inline int ClampUpgradeLevel(int level) {
 
 int LoaderCarInfo(bChunk *chunk) {
     unsigned int chunk_id = chunk->GetID();
+    volatile CarType allowed_types[1];
 
     if (chunk_id == 0x34600) {
         CarTypeInfoArray = reinterpret_cast<CarTypeInfo *>(chunk->GetAlignedData(16));
