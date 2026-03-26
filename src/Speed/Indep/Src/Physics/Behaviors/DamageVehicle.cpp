@@ -17,6 +17,10 @@ UCrc32 GetDamageStimulus(unsigned int level);
 UCrc32 GetImpactStimulus(unsigned int level);
 } // namespace DamageZone
 
+static inline int Min(const int a, const int b) {
+    return a > b ? b : a;
+}
+
 HINTERFACE IModel::_IHandle() {
     return (HINTERFACE)_IHandle;
 }
@@ -281,8 +285,8 @@ void DamageVehicle::OnImpact(const UMath::Vector3 &arm, const UMath::Vector3 &no
         float visual_scale = record.VisualScale;
         float hitpoint_scale = record.HitPointScale;
         float ratio = force / material_strength;
-        int newimpact_level = UMath::Min(static_cast<int>(ratio * visual_scale), 6);
-        int newdamage_level = UMath::Min(static_cast<int>(ratio * visual_scale), 2);
+        int newimpact_level = Min(static_cast<int>(ratio * visual_scale), 6);
+        int newdamage_level = Min(static_cast<int>(ratio * visual_scale), 2);
 
         float total_hit_points = mSpecs.HIT_POINTS();
         if (0.0f < total_hit_points && mDamageTotal < 1.0f) {
