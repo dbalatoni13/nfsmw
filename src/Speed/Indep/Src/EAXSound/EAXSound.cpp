@@ -5,6 +5,7 @@
 #include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_NISStream.hpp"
 #include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_PFEATrax.hpp"
 #include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_Pathfinder.hpp"
+#include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_Reverb.hpp"
 #include "Speed/Indep/Src/EAXSound/SndCamera.hpp"
 #include "Speed/Indep/Src/EAXSound/Stream/EAXS_StreamManager.h"
 #include "Speed/Indep/Src/EAXSound/States/Managers/STATEMGR_Base.hpp"
@@ -1605,8 +1606,8 @@ void EAXSound::UnLoadInGameSoundBanks() {
 
     IsSpeechEnabled = true;
     gIsPauseForPause = 0;
-    while (AreResourceLoadsPending()) {
-        Update(0.0f);
+    while (g_pEAXSound->AreResourceLoadsPending()) {
+        g_pEAXSound->Update(0.0f);
         ServiceQueuedFiles();
     }
 
@@ -1634,6 +1635,13 @@ void EAXSound::UnLoadInGameSoundBanks() {
     if (m_pStreamManager != nullptr) {
         delete m_pStreamManager;
         m_pStreamManager = nullptr;
+    }
+
+    for (int i = 0; i < 12; i++) {
+        if (SFXObj_Reverb::m_pFXEditPatch[i] != nullptr) {
+            gAudioMemoryManager.FreeMemory(SFXObj_Reverb::m_pFXEditPatch[i]);
+        }
+        SFXObj_Reverb::m_pFXEditPatch[i] = nullptr;
     }
 
     if (m_pCmnSnd != nullptr) {
