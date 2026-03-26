@@ -732,52 +732,32 @@ void CarRenderConn::AddRoadNoise(float speed, unsigned int tires, const RoadNois
 }
 
 void CarRenderConn::UpdateRoadNoise(float dT, float carspeed, const RenderConn::Pkt_Car_Service &data) {
-    this->mRoadNoise.z = 0.0f;
-    this->mRoadNoise.x = 0.0f;
-    this->mRoadNoise.y = 0.0f;
+    UMath::Clear(this->mRoadNoise);
 
     if (this->TestVisibility(renderModifier * 30.0f) && Tweak_DisableRoadNoise == 0) {
-        RoadNoiseRecord road_noise = {0.0f, 0.0f, 0.0f, 0.0f};
+        RoadNoiseRecord roughness;
 
         for (unsigned int i = 0; i < 4; i++) {
             if (((data.mGroundState >> i) & 1U) != 0) {
-                const RoadNoiseRecord &tire_noise =
+                const RoadNoiseRecord &tirenoise =
                     reinterpret_cast<TireStateRoadNoiseMirror *>(this->mTireState[i])->mSurface.RenderNoise();
 
-                if (road_noise.Frequency * road_noise.Amplitude < tire_noise.Frequency * tire_noise.Amplitude) {
-                    road_noise = tire_noise;
+                if (tirenoise.Amplitude * tirenoise.Frequency > roughness.Amplitude * roughness.Frequency) {
+                    roughness = tirenoise;
                 }
             }
         }
 
-        this->AddRoadNoise(carspeed, static_cast<unsigned int>(data.mGroundState), road_noise);
+        this->AddRoadNoise(carspeed, static_cast<unsigned int>(data.mGroundState), roughness);
         this->AddRoadNoise(carspeed, static_cast<unsigned int>(data.mGroundState & data.mBlowOuts), Tweak_BlowOutNoise);
 
-        float pitch = sinf(this->mRoadNoise.y);
-        float roll = sinf(this->mRoadNoise.x);
-        float body_noise = 0.0f;
-        float candidate = this->mTirePositions[0].x * pitch;
+        float siny = UMath::Sinr(this->mRoadNoise.y);
+        float sinx = UMath::Sinr(this->mRoadNoise.x);
 
-        if (body_noise < candidate) {
-            body_noise = candidate;
-        }
-
-        candidate = this->mTirePositions[3].x * pitch;
-        if (body_noise < candidate) {
-            body_noise = candidate;
-        }
-
-        candidate = this->mTirePositions[0].y * roll;
-        if (body_noise < candidate) {
-            body_noise = candidate;
-        }
-
-        candidate = this->mTirePositions[1].y * roll;
-        if (body_noise < candidate) {
-            body_noise = candidate;
-        }
-
-        this->mRoadNoise.z = body_noise;
+        this->mRoadNoise.z = UMath::Max(this->mTirePositions[0].x * siny, 0.0f);
+        this->mRoadNoise.z = UMath::Max(this->mTirePositions[3].x * siny, this->mRoadNoise.z);
+        this->mRoadNoise.z = UMath::Max(this->mTirePositions[0].y * sinx, this->mRoadNoise.z);
+        this->mRoadNoise.z = UMath::Max(this->mTirePositions[1].y * sinx, this->mRoadNoise.z);
     }
 }
 
