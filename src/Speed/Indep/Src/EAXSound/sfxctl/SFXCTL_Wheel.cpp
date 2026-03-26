@@ -3,8 +3,10 @@
 #include "Speed/Indep/Src/EAXSound/EAXSndUtil.h"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
+extern float gWheelLoadThreshold[];
+Slope g_WheelLoadSlope(0.0f, 1023.0f, gWheelLoadThreshold[0], gWheelLoadThreshold[1]);
+
 namespace {
-extern Slope g_WheelLoadSlope;
 extern float gWheelSlipSensitivity[2];
 extern float gfTireOffsetDist;
 extern float gfTireFwdOffsetDist;

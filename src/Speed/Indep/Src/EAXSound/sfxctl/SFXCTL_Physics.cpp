@@ -13,14 +13,6 @@
 #include "Speed/Indep/Src/World/RaceParameters.hpp"
 
 namespace {
-extern EngRevDataPoint RevPat5[];
-extern EngRevDataPoint RevPat6[];
-extern EngRevDataPoint RevPat7[];
-extern EngRevDataPoint RevPat8[];
-extern EngRevDataPoint RevPat9[];
-extern EngRevDataPoint RevPat10[];
-extern EngRevDataPoint RevPat11[];
-extern EngRevDataPoint RevPat12[];
 
 static const float SND_AI_DOWNSHIFT_RPMS[] = {
     6000.0f,

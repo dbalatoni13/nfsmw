@@ -12,6 +12,12 @@ struct EngRevDataPoint {
     float time; // offset 0x0, size 0x4
     int RPM;    // offset 0x4, size 0x4
     int Trq;    // offset 0x8, size 0x4
+
+    EngRevDataPoint() {}
+    EngRevDataPoint(float _time, int _RPM, int _trq)
+        : time(_time) //
+        , RPM(_RPM)
+        , Trq(_trq) {}
 };
 
 // total size: 0x8
