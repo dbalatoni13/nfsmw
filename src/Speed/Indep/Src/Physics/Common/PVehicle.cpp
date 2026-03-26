@@ -1070,7 +1070,7 @@ UCrc32 PVehicle::LookupBehaviorSignature(const Attrib::StringKey &mechanic) cons
     Attrib::StringKey behaviourKey;
     Attrib::Attribute value = mAttributes.Get(mechanic.GetHash32());
     value.Get(0, behaviourKey);
-    if (value.IsValid()) {
+    if (value.GetInternal()) {
         return UCrc32(behaviourKey);
     }
     return UCrc32::kNull;
