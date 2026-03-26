@@ -759,12 +759,12 @@ void CarRenderConn::UpdateRoadNoise(float dT, float carspeed, const RenderConn::
 
 void CarRenderConn::UpdateEngineAnimation(float dT, const RenderConn::Pkt_Car_Service &data) {
     if (!this->TestVisibility(renderModifier * 30.0f)) {
-        this->mEnginePitchAngle = 0.0f;
         this->mEnginePower = 0.0f;
         this->mEngineVibrationAngle = 0.0f;
         this->mEngineTorqueAngle = 0.0f;
         this->mShiftPitchAngle = 0.0f;
         this->mShifting = 0.0f;
+        this->mEnginePitchAngle = 0.0f;
         return;
     }
 
@@ -782,18 +782,17 @@ void CarRenderConn::UpdateEngineAnimation(float dT, const RenderConn::Pkt_Car_Se
             this->mShifting = 0.0f;
         } else {
             float fwd_accel = bDot(this->GetAcceleration(), reinterpret_cast<const bVector3 *>(&this->mRenderMatrix.v0));
-            float accel_ratio = (UMath::Abs(fwd_accel * 0.10204081f) - 0.1f) / 0.4f;
-            float gear_ratio = UMath::Ramp(accel_ratio, 0.0f, 1.0f);
+            float gear_ratio = UMath::Ramp(UMath::Abs(fwd_accel * 0.10204081f), 0.1f, 0.5f);
 
             rev_accel = UMath::Pow(0.95f, static_cast<float>(gear));
             delta = UMath::Sina(UMath::Abs(this->mShifting) * 0.5f) * max_pitch * rev_accel * gear_ratio;
 
             this->mShiftPitchAngle = delta;
             if (this->mShifting < 0.0f) {
-                this->mShifting = UMath::Min(this->mShifting + (dT * shift_speed) / max_pitch, 0.0f);
+                this->mShifting = UMath::Min(this->mShifting - (dT * shift_speed) / max_pitch, 0.0f);
                 this->mShiftPitchAngle *= 0.25f;
             } else if (0.0f < this->mShifting) {
-                this->mShifting = UMath::Max(this->mShifting - (dT * shift_speed) / max_pitch, 0.0f);
+                this->mShifting = UMath::Max(this->mShifting + (dT * shift_speed) / max_pitch, 0.0f);
             }
         }
     } else {
