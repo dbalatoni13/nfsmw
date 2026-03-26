@@ -108,6 +108,7 @@ Foo::Foo()
 
 - Prefer including the owning repo header over adding a local forward declaration for a project type.
 - If the repo already has a header declaration/definition for a type, include that header instead of redeclaring the type locally.
+- Before replacing a forward declaration with the owner header, check both directions for an include cycle. If the owner header already includes the current header (for example `Smackable.h` vs `HeirarchyModel.h`), keep the forward declaration until the ownership/header split is cleaned up more deliberately instead of blindly introducing the cycle.
 - If the repo only has an empty or stub owner header, and line info / surrounding source clearly points at that header's subsystem, prefer populating that owner header over leaving a recovered project type declaration inside a `.cpp`.
 - Do not create a duplicate micro-header that re-declares one type already owned by a broader subsystem header just to dodge that include. Include the real owner header and rewrite the caller back toward the original API shape instead of inventing one-off constructors or wrappers in the duplicate header.
 - Only keep a local forward declaration when no canonical repo header exists yet and you have verified that the ownership is still unresolved.
