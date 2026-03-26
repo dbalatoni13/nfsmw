@@ -53,10 +53,6 @@ struct CompColour {
     CompColour() {}
 };
 
-inline CarTypeInfo *GetCarTypeInfo(CarType car_type) {
-    return &CarTypeInfoArray[car_type];
-}
-
 inline char *CarTypeInfo::GetBaseModelName() {
     return BaseModelName;
 }

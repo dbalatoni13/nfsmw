@@ -42,17 +42,16 @@ HeliRenderConn::HeliRenderConn(const Sim::ConnectionData &data, CarType type, Re
 HeliRenderConn::~HeliRenderConn() {}
 
 void HeliRenderConn::Update(const RenderConn::Pkt_Heli_Service &data, float dT) {
-    if (this->CanUpdate() && this->mRenderInfo != 0) {
-        const ReferenceMirror *world_ref = reinterpret_cast<const ReferenceMirror *>(&this->mWorldRef);
-        bVector4 model_offset(this->mModelOffset);
-        bVector4 translated_offset;
-
+    if (this->CanUpdate() && this->GetRenderInfo() != nullptr) {
         this->mShadowScale = data.mShadowScale;
-        PSMTX44Copy(*reinterpret_cast<const Mtx44 *>(world_ref->mMatrix), *reinterpret_cast<Mtx44 *>(&this->mGeomMatrix));
-        eMulVector(&translated_offset, world_ref->mMatrix, &model_offset);
-        this->mGeomMatrix.v3.x -= translated_offset.x;
-        this->mGeomMatrix.v3.y -= translated_offset.y;
-        this->mGeomMatrix.v3.z -= translated_offset.z;
+        bVector4 offset(this->GetModelOffset());
+        bVector4 rotOffset;
+
+        this->mGeomMatrix = *this->GetBodyMatrix();
+        eMulVector(&rotOffset, this->GetBodyMatrix(), &offset);
+        this->mGeomMatrix.v3.x -= rotOffset.x;
+        this->mGeomMatrix.v3.y -= rotOffset.y;
+        this->mGeomMatrix.v3.z -= rotOffset.z;
         this->VehicleRenderConn::Update(dT);
     }
 }

@@ -309,15 +309,12 @@ inline int LoadedSkin::IsLoaded() {
     return this->LoadStatePerm == CARLOADSTATE_LOADED && this->LoadStateTemp == CARLOADSTATE_LOADED && this->DoneComposite != 0;
 }
 
+inline CarTypeInfo *GetCarTypeInfo(CarType car_type) {
+    return &CarTypeInfoArray[car_type];
+}
+
 inline int LoadedCar::ShouldWeStream() {
-    CarTypeInfo *car_type_info = &CarTypeInfoArray[this->Type];
-    int should_stream = 1;
-
-    if (car_type_info->GetCarUsageType() == 2) {
-        should_stream = 0;
-    }
-
-    return should_stream;
+    return GetCarTypeInfo(this->Type)->GetCarUsageType() != 2;
 }
 
 void CarLoader_UnallocateSkinLayers(CarLoader *car_loader, LoadedSkinLayer **loaded_skin_layers, int num_layers)
@@ -335,8 +332,13 @@ void CarLoader_LoadedAllTexturesFromPackCallback(CarLoader *car_loader) asm("Loa
 void bCloseMemoryPool(int pool_num);
 bool bSetMemoryPoolDebugFill(int pool_num, bool on_off);
 void bSetMemoryPoolTopDirection(int pool_num, bool top_means_larger_address);
-void eLoadStreamingSolid(unsigned int *name_hash_table, int num_hashes, void (*callback)(unsigned int), unsigned int param0,
-                         int memory_pool_num);
+void _eLoadStreamingSolid(unsigned int *name_hash_table, int num_hashes, void (*callback)(unsigned int), unsigned int param0,
+                         int memory_pool_num)
+    asm("eLoadStreamingSolid__FPUiiPFPv_vPvi");
+inline void eLoadStreamingSolid(unsigned int *name_hash_table, int num_hashes, void (*callback)(unsigned int), unsigned int param0,
+                         int memory_pool_num) {
+    _eLoadStreamingSolid(name_hash_table, num_hashes, callback, param0, memory_pool_num);
+}
 int eLoadStreamingSolidPack(const char *filename, void (*callback_function)(int), int callback_param, int memory_pool_num);
 void eLoadStreamingTexture(unsigned int *name_hash_table, int num_hashes, void (*callback)(unsigned int), unsigned int param0,
                            int memory_pool_num);
@@ -2300,24 +2302,27 @@ void CarLoader::SetMemoryPoolSize(int size) {
 }
 
 int CarLoader::LoadCar(LoadedCar *loaded_car) {
-    if (CarTypeInfoArray[loaded_car->Type].UsageType == 2) {
+    if (!loaded_car->ShouldWeStream()) {
         loaded_car->LoadState = CARLOADSTATE_LOADED;
         return 0;
     }
 
     {
-        unsigned int name_hashes[800];
-        int num_hashes = LoadedCar_GetModelHashes(loaded_car, name_hashes, 800);
+        ProfileNode profile_node("LoadCar", 0);
+        unsigned int model_hashes[800];
+        int num_model_hashes = LoadedCar_GetModelHashes(loaded_car, model_hashes, 800);
 
         do {
-            if (StreamingSolidPackLoader.TestLoadStreamingEntry(name_hashes, num_hashes, CarLoaderMemoryPoolNumber, true) == 0) {
+            if (StreamingSolidPackLoader.TestLoadStreamingEntry(model_hashes, num_model_hashes, CarLoaderMemoryPoolNumber, true) == 0) {
                 break;
             }
         } while (this->RemoveSomethingFromCarMemoryPool(true) != 0);
 
         loaded_car->LoadState = CARLOADSTATE_LOADING;
         this->LoadingInProgress = 1;
-        eLoadStreamingSolid(name_hashes, num_hashes, LoadedCarCallbackBridge, reinterpret_cast<unsigned int>(loaded_car),
+        StreamingSolidPackLoader.EnableStreamingPack(nullptr);
+        profile_node.End();
+        eLoadStreamingSolid(model_hashes, num_model_hashes, LoadedCarCallbackBridge, reinterpret_cast<unsigned int>(loaded_car),
                            CarLoaderMemoryPoolNumber);
     }
 
