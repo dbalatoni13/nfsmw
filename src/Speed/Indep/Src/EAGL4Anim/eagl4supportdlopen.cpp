@@ -580,13 +580,13 @@ DynamicLoader::Symbol DynamicLoader::GetSymbol(int i) const {
         return r;
     }
     r.name = &h->strtab[s[i].st_name];
-    r.type = &h->strtab[s[i].st_name] + strlen(&h->strtab[s[i].st_name]) + 1;
+    r.type = &h->strtab[s[i].st_name] + strlen(r.name) + 1;
     if (r.type[0] == 0x7F) {
         r.type++;
     } else {
         r.type--;
     }
-    r.isInternalRef = s[i].st_other - 2 > 3;
+    r.isInternalRef = static_cast<unsigned int>(s[i].st_other) - 2 > 3;
     iIndex = s[i].st_shndx;
     if (s[i].st_other == 1) {
         r.data = reinterpret_cast<void *>(s[i].st_value);
