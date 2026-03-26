@@ -1046,14 +1046,14 @@ UCrc32 PVehicle::LookupBehaviorSignature(const Attrib::StringKey &mechanic) cons
     }
     if (mechanic == BEHAVIOR_MECHANIC_AI) {
         AIBehaviors *ab = ai_behaviors;
-        UCrc32 sig = ab->signature;
-        while (sig != UCrc32::kNull) {
-            if (mDriverClass == ab->dclass &&
-                (mClass == ab->vclass || ab->vclass == UCrc32::kNull)) {
-                return ab->signature;
+        UCrc32 sig = UCrc32::kNull;
+        while ((sig = ab->signature) != UCrc32::kNull) {
+            if (mDriverClass == ab->dclass) {
+                if (mClass == ab->vclass || ab->vclass == UCrc32::kNull) {
+                    break;
+                }
             }
             ab++;
-            sig = ab->signature;
         }
         return sig;
     }
