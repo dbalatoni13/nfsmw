@@ -16,6 +16,8 @@ struct PF_Allocator : EA::Allocator::IAllocator {
     int mRefcount; // offset 0x4
 };
 
+#include "Speed/Indep/Src/EAXSound/PF_iallocatorimpl.h"
+
 namespace EA {
 namespace Allocator {
 class ICoreAllocator {
@@ -280,11 +282,6 @@ PF_Allocator::~PF_Allocator() {}
 void *PF_Allocator::Alloc(unsigned int size, const EA::TagValuePair &flags) {
     (void)flags;
     return gAudioMemoryManager.AllocateMemory(size, "AUD: Pathfinder alloc", true);
-}
-
-void PF_Allocator::Free(void *pBlock, unsigned int size) {
-    (void)size;
-    bFree(pBlock);
 }
 
 int PF_Allocator::AddRef() {

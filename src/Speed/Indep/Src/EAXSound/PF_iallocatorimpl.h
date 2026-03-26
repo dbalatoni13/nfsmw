@@ -5,6 +5,8 @@
 #pragma once
 #endif
 
-
+inline void PF_Allocator::Free(void *pBlock, unsigned int size) {
+    gAudioMemoryManager.FreeMemory(pBlock);
+}
 
 #endif
