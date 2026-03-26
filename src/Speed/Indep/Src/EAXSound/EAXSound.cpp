@@ -142,7 +142,11 @@ struct CarSoundConn : public Sim::Connection, public UTL::Collections::Listable<
     Sim::ConnStatus OnStatusCheck() override;
     void UpdateState(float dT);
     static Sim::Connection *Construct(const Sim::ConnectionData &data);
-    static void SetAssetsLoaded(CarSoundConn *conn);
+    static inline void SetAssetsLoaded(CarSoundConn *conn) {
+        if (conn->mConnected && conn->mState != nullptr) {
+            conn->mState->mAssetsLoaded = true;
+        }
+    }
 };
 
 struct EAX_HeliState : public UTL::Collections::Listable<EAX_HeliState, 10> {

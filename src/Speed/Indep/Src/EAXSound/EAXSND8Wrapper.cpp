@@ -263,15 +263,14 @@ void EAXSND8Wrapper::Update() {
 }
 
 eSndAudioMode EAXSND8Wrapper::GetDefaultPlatformAudioMode() {
-    int mode = AUDIO_MODE_STEREO;
-    if (IsSoundEnabled) {
-        int sndmode = OSGetSoundMode();
-        mode = 1;
-        if (sndmode == 0) {
-            mode = 0;
-        }
+    if (!IsSoundEnabled) {
+        return AUDIO_MODE_STEREO;
     }
-    return static_cast<eSndAudioMode>(mode);
+    eSndAudioMode mode = AUDIO_MODE_STEREO;
+    if (OSGetSoundMode() == 0) {
+        mode = static_cast<eSndAudioMode>(0);
+    }
+    return mode;
 }
 
 void EAXSND8Wrapper::STUPID() {}

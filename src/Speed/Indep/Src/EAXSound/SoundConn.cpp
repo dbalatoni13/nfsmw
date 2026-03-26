@@ -230,12 +230,6 @@ Sim::Connection *HeliSoundConn::Construct(const Sim::ConnectionData &data) {
     return new HeliSoundConn(data);
 }
 
-void CarSoundConn::SetAssetsLoaded(CarSoundConn *conn) {
-    if (conn != nullptr && conn->mState != nullptr) {
-        conn->mState->mAssetsLoaded = true;
-    }
-}
-
 void CarSoundConn::UpdateState(float dT) {
     if (g_pEAXSound == nullptr) {
         return;
