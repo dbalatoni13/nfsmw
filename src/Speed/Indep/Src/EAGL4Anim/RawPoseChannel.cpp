@@ -10,13 +10,15 @@ void RawPoseChannel::InitAnimMemoryMap(AnimMemoryMap *anim) {
     RawPoseChannel *rawPoseChannel = reinterpret_cast<RawPoseChannel *>(anim);
     int numSigs = rawPoseChannel->mSigSize;
     int *sig = rawPoseChannel->GetNonInterpSig();
-
     int isig = 0;
+    int ichan;
+    int numChannels;
+
     while (isig < numSigs) {
-        int numChannels = *sig++;
+        numChannels = *sig++;
         isig++;
 
-        for (int ichan = 0; ichan < numChannels; ichan++) {
+        for (ichan = 0; ichan < numChannels; ichan++) {
             int t = *sig;
 
             isig++;
@@ -41,10 +43,10 @@ void RawPoseChannel::InitAnimMemoryMap(AnimMemoryMap *anim) {
     sig = rawPoseChannel->GetInterpSig();
     isig = 0;
     while (isig < numSigs) {
-        int numChannels = *sig++;
+        numChannels = *sig++;
         isig++;
 
-        for (int ichan = 0; ichan < numChannels; ichan++) {
+        for (ichan = 0; ichan < numChannels; ichan++) {
             int t = *sig;
 
             isig++;
