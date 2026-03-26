@@ -92,41 +92,45 @@ void RawPoseChannel::Eval(float frameTime, float *outputPose, bool interp, const
 }
 
 void RawPoseChannel::EvalFrame(int frame, float *outputPose, const BoneMask *boneMask) {
-    int *sig = GetNonInterpSig();
-    float *frameData = GetFrame(frame);
-    int *sigEnd = sig + mSigSize;
+    int count;
+    int *s = GetNonInterpSig();
+    float *d = GetFrame(frame);
+    float *out = outputPose;
+    int *end = s + GetSigSize();
+    void (*func)(float *&, float *);
+    int j;
 
     if (!boneMask) {
-        while (sig < sigEnd) {
-            int numChannels = *sig++;
-            float *nextOutputPose = outputPose + 12;
+        while (s < end) {
+            count = *s++;
 
-            for (int ichan = 0; ichan < numChannels; ichan++) {
-                reinterpret_cast<void (*)(float *&, float *)>(*sig++)(frameData, outputPose + 4);
+            for (j = 0; j < count; j++) {
+                func = reinterpret_cast<void (*)(float *&, float *)>(*s++);
+                func(d, out + 4);
             }
-            outputPose = nextOutputPose;
+            out += 12;
         }
     } else {
-        for (unsigned int ibone = 0; sig < sigEnd; ibone++) {
-            int numChannels = *sig++;
+        for (int i = 0; s < end; i++) {
+            count = *s++;
 
-            if (boneMask->GetBone(ibone)) {
-                for (int ichan = 0; ichan < numChannels; ichan++) {
-                    reinterpret_cast<void (*)(float *&, float *)>(*sig++)(frameData, outputPose + 4);
+            if (boneMask->GetBone(i)) {
+                for (j = 0; j < count; j++) {
+                    func = reinterpret_cast<void (*)(float *&, float *)>(*s++);
+                    func(d, out + 4);
                 }
             } else {
-                for (int ichan = 0; ichan < numChannels; ichan++) {
-                    void (*func)(float *&, float *) = reinterpret_cast<void (*)(float *&, float *)>(*sig++);
-
+                for (j = 0; j < count; j++) {
+                    func = reinterpret_cast<void (*)(float *&, float *)>(*s++);
                     if (func == EulF3 || func == TranF3) {
-                        frameData += 3;
+                        d += 3;
                     } else if (func == QuatF4) {
-                        frameData += 4;
+                        d += 4;
                     }
                 }
             }
 
-            outputPose += 12;
+            out += 12;
         }
     }
 }

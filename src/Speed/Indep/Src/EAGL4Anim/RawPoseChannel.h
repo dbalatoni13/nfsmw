@@ -107,19 +107,19 @@ class RawPoseChannel : public AnimMemoryMap {
     }
 
     float *GetAnimData() {
-        return reinterpret_cast<float *>(GetInterpSig() + mSigSize);
+        return reinterpret_cast<float *>(GetInterpSig() + GetSigSize());
     }
 
     const float *GetAnimData() const {
-        return reinterpret_cast<const float *>(GetInterpSig() + mSigSize);
+        return reinterpret_cast<const float *>(GetInterpSig() + GetSigSize());
     }
 
     float *GetFrame(int i) {
-        return &GetAnimData()[i * mFrameSize];
+        return &GetAnimData()[i * GetFrameSize()];
     }
 
     const float *GetFrame(int i) const {
-        return &GetAnimData()[i * mFrameSize];
+        return &GetAnimData()[i * GetFrameSize()];
     }
 
     int GetSize() const {}
