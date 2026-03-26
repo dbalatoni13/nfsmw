@@ -26,9 +26,10 @@ struct SFXCTL_GameState : public SFXCTL {
     static TypeInfo s_TypeInfo;
 
   public:
-    SFXCTL_GameState();
+    SFXCTL_GameState() {}
     TypeInfo *GetTypeInfo() const override;
     char *GetTypeName() const override;
+    static TypeInfo *GetStaticTypeInfo() { return &s_TypeInfo; }
     static SndBase *CreateObject(unsigned int allocator);
     void UpdateMixerOutputs() override;
 };

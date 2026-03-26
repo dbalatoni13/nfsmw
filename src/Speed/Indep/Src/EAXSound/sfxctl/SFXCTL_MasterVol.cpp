@@ -113,14 +113,11 @@ void SFXCTL_MasterVol::UpdateParams(float t) {
     SetDMIX_Input(10, static_cast<int>(RadarDetector::mStaticRange * 32767.0f));
 }
 
-SFXCTL_GameState::SFXCTL_GameState() {}
-
 SndBase *SFXCTL_GameState::CreateObject(unsigned int allocator) {
-    if (allocator != 0) {
-        return new (SFXCTL_GameState::s_TypeInfo.typeName, true) SFXCTL_GameState();
-    } else {
-        return new (SFXCTL_GameState::s_TypeInfo.typeName, false) SFXCTL_GameState();
+    if (allocator == 0) {
+        return new (SFXCTL_GameState::GetStaticTypeInfo()->typeName, false) SFXCTL_GameState();
     }
+    return new (SFXCTL_GameState::GetStaticTypeInfo()->typeName, true) SFXCTL_GameState();
 }
 
 void SFXCTL_GameState::UpdateMixerOutputs() {
