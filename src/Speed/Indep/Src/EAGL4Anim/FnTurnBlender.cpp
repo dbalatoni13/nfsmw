@@ -241,12 +241,12 @@ void FnTurnBlender::AlignCycleBeginEnd(int cIdx) {
     float v1[2];
 
     if (!mInit) {
-mAlignQ.x = 0.0f;
-mAlignQ.y = 0.0f;
-mCycleIdx = -1;
-mAlignQ.z = 0.0f;
-mAlignQ.w = 1.0f;
-mInit = true;
+        mCycleIdx = -1;
+        mAlignQ.x = 0.0f;
+        mAlignQ.y = 0.0f;
+        mAlignQ.z = 0.0f;
+        mAlignQ.w = 1.0f;
+        mInit = true;
     } else if (mCycleIdx != cIdx) {
         UMath::Vector4 q;
         UMath::Vector4 resultQ;
