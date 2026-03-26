@@ -276,7 +276,7 @@ bool FnStatelessQ::EvalSQTMask(float, float *sqt, const BoneMask *boneMask, bool
 
 void FnStatelessQ::UseFPS(bool u) {
     mUseFPS = u;
-    if (mFPS != 0 || !u) {
+    if (mFPS != 0 || !mUseFPS) {
         return;
     }
     GetAttribute(AttributeId(AttributeId::ID_FPS), mFPS);

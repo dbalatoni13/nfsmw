@@ -312,7 +312,7 @@ bool FnStatelessF3::EvalSQTfast(float currTime, float *sqt, const BoneMask *bone
 
 void FnStatelessF3::UseFPS(bool u) {
     mUseFPS = u;
-    if (mFPS != 0 || !u) {
+    if (mFPS != 0 || !mUseFPS) {
         return;
     }
     GetAttribute(AttributeId(AttributeId::ID_FPS), mFPS);
