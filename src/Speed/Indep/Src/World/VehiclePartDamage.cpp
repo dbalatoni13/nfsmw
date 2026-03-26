@@ -83,6 +83,10 @@ struct VehicleDamagePart {
         return mSlotId;
     }
 
+    inline const UMath::Vector3 &GetPivot() const {
+        return *reinterpret_cast<const UMath::Vector3 *>(mAnimationPivot);
+    }
+
     VehicleDamagePart(CarRenderInfo *carRenderInfo, int slotId);
     ~VehicleDamagePart();
     void Reset();
@@ -577,38 +581,35 @@ float VehiclePartDamageBehaviour::CalcPartRotation(bMatrix4 *worldMatrix, float 
 }
 
 void VehiclePartDamageBehaviour::AnimatePart(unsigned int slotId, const bVector3 &rotation, bMatrix4 *worldMatrix) {
+    this->Init();
+
     if (slotId < 0x18) {
-        int lod = this->mCarRenderInfo->mMinLodLevel;
         VehicleDamagePart *damagePart = this->mDamagePartList[slotId];
-        bMatrix4 *partMatrix = reinterpret_cast<bMatrix4 *>(reinterpret_cast<unsigned char *>(damagePart) + 0x1C);
+        CarRenderInfo *cri = this->mCarRenderInfo;
+        int lodIx = cri->GetMinLodLevel();
 
-        while (lod <= this->mCarRenderInfo->mMaxLodLevel &&
-               ((reinterpret_cast<unsigned int *>(reinterpret_cast<unsigned char *>(this->mCarRenderInfo) + 0xB78 + slotId * 0x14)[lod] & 1) == 0)) {
-            if (damagePart != 0) {
-                bMatrix4 localInverse;
-                bVector3 pivot;
-                bVector3 offset;
+        while (lodIx <= cri->GetMaxLodLevel()) {
+            CarPartModel *carPartModel = &cri->mCarPartModels[slotId][0][lodIx];
 
-                PSMTX44Copy(*reinterpret_cast<const Mtx44 *>(worldMatrix), *reinterpret_cast<Mtx44 *>(&localInverse));
-                bInvertMatrix(&localInverse, &localInverse);
-                eMulMatrix(partMatrix, worldMatrix, &localInverse);
-
-                pivot.x = *reinterpret_cast<float *>(reinterpret_cast<unsigned char *>(damagePart) + 0x10);
-                pivot.y = *reinterpret_cast<float *>(reinterpret_cast<unsigned char *>(damagePart) + 0x14);
-                pivot.z = *reinterpret_cast<float *>(reinterpret_cast<unsigned char *>(damagePart) + 0x18);
-                offset = pivot;
-                eTranslate(partMatrix, partMatrix, &offset);
-                eRotateX(partMatrix, partMatrix, static_cast<unsigned short>(static_cast<int>(rotation.x * lbl_8040D14C) / 0x168));
-                eRotateY(partMatrix, partMatrix, static_cast<unsigned short>(static_cast<int>(rotation.y * lbl_8040D14C) / 0x168));
-                eRotateZ(partMatrix, partMatrix, static_cast<unsigned short>(static_cast<int>(rotation.z * lbl_8040D14C) / 0x168));
-                offset.x = -pivot.x;
-                offset.y = -pivot.y;
-                offset.z = -pivot.z;
-                eTranslate(partMatrix, partMatrix, &offset);
-                eMulMatrix(partMatrix, partMatrix, worldMatrix);
+            if (!carPartModel->IsHidden()) {
+                if (damagePart != nullptr) {
+                    bMatrix4 *partMatrix = damagePart->GetMatrix();
+                    bMatrix4 localInverse(*worldMatrix);
+                    bInvertMatrix(&localInverse, &localInverse);
+                    eMulMatrix(partMatrix, worldMatrix, &localInverse);
+                    const UMath::Vector3 pivot(damagePart->GetPivot());
+                    bVector3 model_pivot_translate(pivot.x, pivot.y, pivot.z);
+                    eTranslate(partMatrix, partMatrix, &model_pivot_translate);
+                    eRotateX(partMatrix, partMatrix, bDegToAng(rotation.x));
+                    eRotateY(partMatrix, partMatrix, bDegToAng(rotation.y));
+                    eRotateZ(partMatrix, partMatrix, bDegToAng(rotation.z));
+                    bVector3 pviot_model_translate(-pivot.x, -pivot.y, -pivot.z);
+                    eTranslate(partMatrix, partMatrix, &pviot_model_translate);
+                    eMulMatrix(partMatrix, partMatrix, worldMatrix);
+                }
             }
 
-            lod++;
+            lodIx++;
         }
     }
 }
