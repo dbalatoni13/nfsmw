@@ -11,7 +11,7 @@ float turnLength(float *v) {
     return sqrtf(v[0] * v[0] + v[1] * v[1]);
 }
 
-static int i_6840;
+static int i;
 
 
 namespace EAGL4Anim {
@@ -240,6 +240,9 @@ void FnTurnBlender::ComputeAlignQ(float *v1, float *v2, UMath::Vector4 &q) const
 }
 
 void FnTurnBlender::AlignCycleBeginEnd(int cIdx) {
+    float v0[2];
+    float v1[2];
+
     if (!mInit) {
         mCycleIdx = -1;
         mInit = true;
@@ -248,11 +251,8 @@ void FnTurnBlender::AlignCycleBeginEnd(int cIdx) {
         mAlignQ.x = 0.0f;
         mAlignQ.y = 0.0f;
     } else if (mCycleIdx != cIdx) {
-        float v0[2];
-        float v1[2];
         UMath::Vector4 q;
         UMath::Vector4 resultQ;
-        int i;
 
         BlendBeginFacing(v0);
         BlendEndFacing(v1);
@@ -262,10 +262,9 @@ void FnTurnBlender::AlignCycleBeginEnd(int cIdx) {
         }
 
         QuatMult(mAlignQ, q, resultQ);
-        i = i_6840++;
         mAlignQ = resultQ;
         mCycleIdx = cIdx;
-        printf("turn align[%d] Q: %g %g %g %g\n\n", i, mAlignQ.x, mAlignQ.y, mAlignQ.z, mAlignQ.w);
+        printf("turn align[%d] Q: %g %g %g %g\n\n", i++, mAlignQ.x, mAlignQ.y, mAlignQ.z, mAlignQ.w);
     }
 }
 
