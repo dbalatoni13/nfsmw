@@ -1685,6 +1685,8 @@ void CarRenderInfo::UpdateWheelYRenderOffset() {
 
     if (this->pRideInfo != nullptr) {
         front_wheel = this->pRideInfo->GetPart(CARSLOTID_FRONT_WHEEL);
+    }
+    if (this->pRideInfo != nullptr) {
         rear_wheel = this->pRideInfo->GetPart(CARSLOTID_REAR_WHEEL);
     }
 
@@ -1706,12 +1708,10 @@ void CarRenderInfo::UpdateWheelYRenderOffset() {
         float desired_width;
         float desired_radius;
 
-        this->GetAttributes().TireOffsets(tire_offset, wheel);
-        this->WheelYRenderOffset[wheel] = -tire_offset.y;
+        const UMath::Vector4 &tire_ref = this->GetAttributes().TireOffsets(wheel);
+        this->WheelYRenderOffset[wheel] = -tire_ref.y;
 
-        if (this->pRideInfo != nullptr) {
-            body_part = this->pRideInfo->GetPart(CARSLOTID_BODY);
-        }
+        body_part = this->pRideInfo->GetPart(CARSLOTID_BODY);
 
         if (body_part != nullptr) {
             kit_number = CarPart_GetAppliedAttributeIParam(body_part, 0x796C0CB0, 0);
@@ -1730,34 +1730,35 @@ void CarRenderInfo::UpdateWheelYRenderOffset() {
         }
 
         kit_wheel_offset_float = static_cast<float>(kit_wheel_offset) * 0.001f;
-        if (0.0f < this->WheelYRenderOffset[wheel]) {
-            this->WheelYRenderOffset[wheel] += kit_wheel_offset_float;
-        } else {
+        if (this->WheelYRenderOffset[wheel] <= 0.0f) {
             this->WheelYRenderOffset[wheel] -= kit_wheel_offset_float;
+        } else {
+            this->WheelYRenderOffset[wheel] += kit_wheel_offset_float;
         }
 
-        model_radius = this->WheelRadius[wheel_end];
         model_width = this->WheelWidths[wheel_end];
+        model_radius = this->WheelRadius[wheel_end];
         desired_width = this->GetAttributes().TireSkidWidth(wheel);
 
-        if (wheel > 1) {
-            desired_width *= this->GetAttributes().TireSkidWidthKitScale(kit_number).y;
-        } else {
+        if (wheel <= 1) {
             desired_width *= this->GetAttributes().TireSkidWidthKitScale(kit_number).x;
+        } else {
+            desired_width *= this->GetAttributes().TireSkidWidthKitScale(kit_number).y;
         }
 
+        tire_offset = tire_ref;
         desired_radius = tire_offset.w;
 
-        if (model_width <= 0.0f || desired_width <= 0.0f) {
-            this->WheelWidthScales[wheel] = 1.0f;
-        } else {
+        if (model_width > 0.0f && desired_width > 0.0f) {
             this->WheelWidthScales[wheel] = desired_width / model_width;
+        } else {
+            this->WheelWidthScales[wheel] = 1.0f;
         }
 
-        if (model_radius <= 0.0f || desired_radius <= 0.0f) {
-            this->WheelRadiusScales[wheel] = 1.0f;
-        } else {
+        if (model_radius > 0.0f && desired_radius > 0.0f) {
             this->WheelRadiusScales[wheel] = desired_radius / model_radius;
+        } else {
+            this->WheelRadiusScales[wheel] = 1.0f;
         }
     }
 }
