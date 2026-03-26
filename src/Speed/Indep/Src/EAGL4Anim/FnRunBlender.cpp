@@ -261,35 +261,35 @@ bool FnRunBlender::EvalVel2D(float currTime, float *vel) {
 }
 
 bool FnRunBlender::BlendVel(float t0, float t1, float *vel) const {
-    float vel0[2];
-    float vel1[2];
+    float v0[2];
+    float v1[2];
 
-    if (!mFnVelAnims[0]->EvalVel2D(t0, vel0)) {
+    if (!mFnVelAnims[0]->EvalVel2D(t0, v0)) {
         return false;
     }
     if (mWeight != 0.0f) {
-        if (!mFnVelAnims[1]->EvalVel2D(t1, vel1)) {
+        if (!mFnVelAnims[1]->EvalVel2D(t1, v1)) {
             return false;
         }
 
-        float weight1 = 1.0f - mWeight;
+        float len;
+        float w;
 
-        vel[0] = mWeight * vel1[0] + weight1 * vel0[0];
-        vel[1] = mWeight * vel1[1] + weight1 * vel0[1];
+        w = 1.0f - mWeight;
 
-        float velLength = length(vel);
+        vel[0] = mWeight * v1[0] + w * v0[0];
+        vel[1] = mWeight * v1[1] + w * v0[1];
 
-        if (velLength != 0.0f) {
-            float vel1Length = length(vel1);
-            float vel0Length = length(vel0);
-            float scale = (mWeight * vel1Length + weight1 * vel0Length) / velLength;
+        len = length(vel);
 
-            vel[0] = vel[0] * scale;
-            vel[1] = vel[1] * scale;
+        if (len != 0.0f) {
+            len = (mWeight * length(v1) + w * length(v0)) / len;
+            vel[0] = vel[0] * len;
+            vel[1] = vel[1] * len;
         }
     } else {
-        vel[1] = vel0[1];
-        vel[0] = vel0[0];
+        vel[1] = v0[1];
+        vel[0] = v0[0];
     }
 
     return true;
