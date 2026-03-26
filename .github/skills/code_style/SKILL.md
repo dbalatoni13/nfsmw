@@ -165,6 +165,7 @@ Foo::Foo()
 - Watch COM `QueryInterface` on interfaces that only declare `static HINTERFACE _IHandle();` in the header and define it out-of-line elsewhere. The current `UCOM.h` template calls `T::_IHandle()`, which can compile as a helper call instead of the original direct `(HINTERFACE)T::_IHandle` constant. If objdiff shows the direct handle form, use a tiny file-local `_mInterfaces.Find((HINTERFACE)T::_IHandle)` helper and preserve any explicit `bool hasX` local the original kept.
 - If a touched shared utility header still has placeholder virtual/helper bodies, treat clusters of tiny 8-byte helper diffs as evidence that the header itself is unfinished. Recover the real shared body once in the header (for example, `UTL::FixedVector` returning the template size and inline buffer) instead of polishing each emitted instantiation separately.
 - If DWARF puts most of a function's live locals inside one anonymous block, prefer preserving that with one explicit inner scope in the recovered source. Scope-only rewrites like this can improve normalized DWARF a lot without changing objdiff.
+- In factory/build helpers, if DWARF only names the final real local and shows copy-ctor / parameter-bundle setup as inline ranges, prefer passing those temporaries directly at the call site instead of naming extra locals for them. This often shrinks the frame and matches the original ownership better.
 
 ### Recovery markers
 

@@ -507,6 +507,11 @@ register assignments but does NOT affect integer register assignments (and vice 
   that recovered logic inside one explicit inner scope instead of leaving the locals at function
   scope. Matching the lexical block alone can dramatically improve normalized DWARF even when
   objdiff is unchanged.
+- In factory/build helpers, if DWARF only names the final real local but shows copy-ctor / parameter-bundle
+  construction as inline ranges, prefer passing those temporaries directly at the call site instead of
+  materializing named locals for them. In `PhysicsObject::LoadBehavior`, collapsing a copied `UCrc32` and
+  `BehaviorParams` into `BuildElement(behavior, BehaviorParams(...))` removed the extra stack slot and matched
+  the original frame.
 
 ### Slot-pooled delete paths
 
