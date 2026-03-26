@@ -563,6 +563,11 @@ TU: <translation-unit-name> | Function: <FunctionName>
 
 <!-- Add new entries below this line -->
 
+### AttributeGetStringKeyFallback
+
+TU: zPhysics | Function: PVehicle::LookupBehaviorSignature
+When a generated Attrib wrapper fallback refuses to match, do not "simplify" it to `GetAttributePointer` plus a raw `const char *` hash. In `PVehicle::LookupBehaviorSignature`, ProDG matched much better when the code kept a local `Attrib::StringKey`, fetched through `Attrib::Attribute value = mAttributes.Get(...)`, copied it with `value.Get(0, behaviourKey)`, and even preserved an otherwise-unused local `Attrib::Instance(nullptr, 0, nullptr)` ahead of that path to reproduce the hidden ctor/dtor pair the original emitted.
+
 ### ExplicitInlineSpecialMembersForSTLElements
 
 TU: zAttribSys | Function: \_STL::\_Rb_tree<Attrib::TypeDesc, ...>::\_M_insert
