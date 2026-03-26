@@ -475,6 +475,10 @@ register assignments but does NOT affect integer register assignments (and vice 
   loop form that keeps the temporary inside the same block as the original DWARF. In practice,
   changing a `for (...; ...; x = next)` into a `while (...) { T *next = ...; ...; x = next; }`
   can fix DWARF-only scope mismatches without changing codegen.
+- In parser/script code, do not collapse DWARF-listed consumed tokens into chained discarded
+  calls. If the original debug info shows locals such as `region`, `section`, or `option`,
+  keep those named locals and the small nested parse block; that can preserve exact DWARF
+  while leaving objdiff unchanged.
 
 ### Slot-pooled delete paths
 

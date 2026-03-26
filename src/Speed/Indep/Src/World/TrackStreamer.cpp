@@ -634,7 +634,6 @@ int TrackStreamer::Unloader(bChunk *chunk) {
 void TrackStreamer::ClearCurrentZones() {
     for (int position_number = 0; position_number < 2; position_number++) {
         StreamingPositionEntry *position_entry = &StreamingPositionEntries[position_number];
-        position_entry->AmountLoaded = 0;
         position_entry->CurrentZone = 0;
         position_entry->BeginLoadingTime = 0.0f;
         position_entry->BeginLoadingPosition.x = 0.0f;
@@ -642,17 +641,18 @@ void TrackStreamer::ClearCurrentZones() {
         position_entry->NumSectionsToLoad = 0;
         position_entry->NumSectionsLoaded = 0;
         position_entry->AmountToLoad = 0;
+        position_entry->AmountLoaded = 0;
     }
 
     CurrentZoneFarLoad = true;
     StartLoadingTime = 0.0f;
+    NumJettisonedSections = 0;
+    LoadingPhase = LOADING_IDLE;
+    LoadingBacklog = 0.0f;
     CurrentZoneOutOfMemory = false;
     CurrentZoneAllocatedButIncomplete = false;
     CurrentZoneNonReplayLoad = false;
-    LoadingPhase = LOADING_IDLE;
-    LoadingBacklog = 0.0f;
     CurrentZoneName[0] = 0;
-    NumJettisonedSections = 0;
     MemorySafetyMargin = 0;
     AmountJettisoned = 0;
     bMemSet(JettisonedSections, 0, sizeof(JettisonedSections));
@@ -2119,10 +2119,10 @@ void TrackStreamer::SwitchZones(short *current_zones) {
     FreeSectionMemory();
     SetLoadingPhase(ALLOCATING_TEXTURE_SECTIONS);
     NumJettisonedSections = 0;
+    AmountJettisoned = 0;
     CurrentZoneOutOfMemory = false;
     CurrentZoneAllocatedButIncomplete = false;
     MemorySafetyMargin = 0;
-    AmountJettisoned = 0;
     bMemSet(JettisonedSections, 0, sizeof(JettisonedSections));
     AssignLoadingPriority();
     CalculateLoadingBacklog();

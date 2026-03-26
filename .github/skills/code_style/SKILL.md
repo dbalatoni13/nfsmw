@@ -151,6 +151,7 @@ Foo::Foo()
 - Prefer readable blocks over stacked one-line statements when behavior does not depend on exact source shape.
 - In touched validation/parsing code, prefer explicit min/max or boundary checks over equivalent magic-constant arithmetic when the clearer form still compiles to the verified result.
 - In parser/state-table code, prefer named enums and enum-typed state variables over anonymous integer state codes when that rewrite is verified safe.
+- In touched parser/script code, prefer keeping DWARF-listed consumed-token locals such as `region`, `section`, or `option` instead of chaining and discarding `GetNextArgument*` calls inline. When the original code used a small nested parse block, preserving that block shape can be necessary for exact DWARF even when objdiff already matches.
 
 ### Recovery markers
 
@@ -206,3 +207,4 @@ Keep the cleanup only if the build succeeds and the relevant match status is unc
 - Reviewed fixups also remove stale bare recovery markers or replace them with context, and prefer existing list/node helpers over hand-written pointer/link rewiring.
 - Some reviewed fixups improved readability without losing match by replacing opaque range-check arithmetic with explicit bounds and by moving repeated pointer/boundary math behind short named helpers.
 - Other recurring review churn came from plain-`int` address helpers, stray local `.cpp` prototypes for shared functions, and integer-coded parser states where named enums were clearer but still matched.
+- Recent `zTrack` polish also showed that parser-like code should keep DWARF-listed consumed-token locals and the original nested block shape instead of compressing everything into inline/discarded `GetNextArgument*` calls.

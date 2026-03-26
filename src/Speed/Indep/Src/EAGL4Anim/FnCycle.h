@@ -1,11 +1,11 @@
 #ifndef EAGL4ANIM_FNCYCLE_H
 #define EAGL4ANIM_FNCYCLE_H
 
-#include "Speed/Indep/Src/EAGL4Anim/eagl4supportdef.h"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
 
+#include "Speed/Indep/Src/EAGL4Anim/eagl4supportdef.h"
 #include "AnimUtil.h"
 #include "FnAnim.h"
 

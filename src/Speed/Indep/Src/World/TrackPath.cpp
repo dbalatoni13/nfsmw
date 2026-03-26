@@ -172,9 +172,8 @@ TrackPathZone *TrackPathManager::FindZone(const bVector2 *position, eTrackPathZo
     } else {
         const float cached_radius = 64.0f;
         TrackPathZone *first_zone;
-        TrackPathZone *last_zone;
+        TrackPathZone *last_zone = zone_info->pLastZone;
 
-        last_zone = zone_info->pLastZone;
         first_zone = zone_info->pFirstZone;
 
         zone_info->CachedBBoxMin.x = position->x - cached_radius;
@@ -200,8 +199,8 @@ TrackPathZone *TrackPathManager::FindZone(const bVector2 *position, eTrackPathZo
 
     TrackPathZone *found_zone = 0;
     if (!cache_valid) {
-        TrackPathZone *last_zone = zone_info->pLastZone;
         TrackPathZone *first_zone;
+        TrackPathZone *last_zone = zone_info->pLastZone;
 
         first_zone = zone_info->pFirstZone;
         zone_info->NumCacheRebuilds += 1;
@@ -209,12 +208,14 @@ TrackPathZone *TrackPathManager::FindZone(const bVector2 *position, eTrackPathZo
             first_zone = prev_zone->GetMemoryImageNext();
         }
 
-        TrackPathZone *zone = first_zone;
-        while (zone < last_zone && position &&
-               (!bBoundingBoxIsInside(&zone->BBoxMin, &zone->BBoxMax, position, 0.0f) || !zone->IsPointInside(position))) {
-            zone = zone->GetMemoryImageNext();
+        {
+            TrackPathZone *zone = first_zone;
+            while (zone < last_zone && position &&
+                   (!bBoundingBoxIsInside(&zone->BBoxMin, &zone->BBoxMax, position, 0.0f) || !zone->IsPointInside(position))) {
+                zone = zone->GetMemoryImageNext();
+            }
+            found_zone = zone;
         }
-        found_zone = zone;
     } else {
         int first_zone_index = 0;
         zone_info->NumCacheHits += 1;
@@ -286,4 +287,3 @@ float TrackPathZone::GetSegmentNextTo(bVector2 *point, bVector2 *segment_point_a
     bCopy(segment_point_b, &Points[Closest1]);
     return d0;
 }
-

@@ -416,6 +416,7 @@ def audit_forward_declarations(
     path: str, text: str, touched_lines: Optional[Set[int]]
 ) -> List[Finding]:
     findings: List[Finding] = []
+    current_rel = relpath(path)
     for idx, line in enumerate(text.splitlines(), 1):
         if touched_lines is not None and idx not in touched_lines:
             continue
@@ -424,7 +425,11 @@ def audit_forward_declarations(
             continue
 
         name = match.group(2)
-        headers = header_declaration_paths(name, path, idx)
+        headers = [
+            header
+            for header in header_declaration_paths(name, path, idx)
+            if header != current_rel
+        ]
         if not headers:
             continue
 
