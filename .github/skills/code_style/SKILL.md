@@ -161,6 +161,7 @@ Foo::Foo()
 - In touched validation/parsing code, prefer explicit min/max or boundary checks over equivalent magic-constant arithmetic when the clearer form still compiles to the verified result.
 - In parser/state-table code, prefer named enums and enum-typed state variables over anonymous integer state codes when that rewrite is verified safe.
 - In match-sensitive gameplay code, if DWARF shows float-derived locals as `int`, keep them signed in source and prefer signed clamps such as `UMath::Min` / `UMath::Max` over `unsigned int` temporaries. On PPC, unsigned float-to-int conversion often pulls in the wrong `lfd` / `xoris` sequence.
+- If DWARF points a tiny inline helper back at the current `.cpp` instead of a shared utility header, prefer recreating that file-local helper with the same return type / signedness before reusing a generic helper. Helper ownership alone can change normalized DWARF even when objdiff stays flat.
 - If DWARF puts most of a function's live locals inside one anonymous block, prefer preserving that with one explicit inner scope in the recovered source. Scope-only rewrites like this can improve normalized DWARF a lot without changing objdiff.
 
 ### Recovery markers

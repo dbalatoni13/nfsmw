@@ -484,6 +484,10 @@ register assignments but does NOT affect integer register assignments (and vice 
   a signed helper such as `UMath::Min`/`UMath::Max` or an equivalent signed branch. Rewriting
   it as `unsigned int` often forces the PPC unsigned float-to-int conversion path (`lfd` /
   `xoris`) and can badly perturb both objdiff and DWARF.
+- When DWARF attributes a tiny inline helper to the current `.cpp` instead of a shared header
+  utility, prefer recreating that file-local helper with the same signedness / ownership rather
+  than calling the generic helper. In `DamageVehicle::OnImpact`, a file-local `int Min(int, int)`
+  preserved the helper's owner file and improved DWARF without changing objdiff.
 - When objdiff is already exact but a local only differs by lexical scope, try an equivalent
   loop form that keeps the temporary inside the same block as the original DWARF. In practice,
   changing a `for (...; ...; x = next)` into a `while (...) { T *next = ...; ...; x = next; }`
