@@ -690,44 +690,40 @@ void CarRenderConn::UpdateParts(float dT, const RenderConn::Pkt_Car_Service &dat
 
 void CarRenderConn::AddRoadNoise(float speed, unsigned int tires, const RoadNoiseRecord &noise) {
     if (noise.Frequency * noise.Amplitude * noise.MaxSpeed > 0.0f) {
-        float fade = 0.0f;
-        float speed_range = noise.MaxSpeed - noise.MinSpeed;
+        float intensity = UMath::Ramp(speed, noise.MinSpeed, noise.MaxSpeed);
+        float frequency = noise.Frequency * intensity;
+        float amplitude = this->GetAttributes().RoadNoise(0) * DEG2RAD(noise.Amplitude) * intensity;
 
-        if (1e-6f < speed_range) {
-            fade = (speed - noise.MinSpeed) / speed_range;
-            if (1.0f < fade) {
-                fade = 1.0f;
+        unsigned int do_front = tires & 3;
+        unsigned int do_rear = tires & 0xC;
+        unsigned int do_roll = do_front | do_rear;
+        unsigned int do_right = tires & 9;
+        unsigned int do_left = tires & 6;
+
+        float noise_pitch = 0.0f;
+        if (do_roll) {
+            noise_pitch = amplitude * UMath::Sinr(this->mAnimTime * frequency) * 0.5f;
+            if (!do_front) {
+                noise_pitch = UMath::Abs(noise_pitch);
             }
-            if (fade < 0.0f) {
-                fade = 0.0f;
+            if (!do_rear) {
+                noise_pitch = -UMath::Abs(noise_pitch);
             }
         }
 
-        float scale = this->VehicleRenderConn::mAttributes.RoadNoise(0) * noise.Amplitude * 0.017453f * fade;
-        float pitch = 0.0f;
-        if ((tires & 0xf) != 0) {
-            pitch = scale * sinf(this->mAnimTime * noise.Frequency * fade) * 0.5f;
-            if ((tires & 3) == 0) {
-                pitch = bAbs(pitch);
+        float noise_roll = 0.0f;
+        if (do_roll) {
+            noise_roll = amplitude * UMath::Sinr((this->mAnimTime + 0.33f) * frequency);
+            if (!do_right) {
+                noise_roll = UMath::Abs(noise_roll);
             }
-            if ((tires & 0xc) == 0) {
-                pitch = -bAbs(pitch);
-            }
-        }
-
-        float roll = 0.0f;
-        if ((tires & 0xf) != 0) {
-            roll = scale * sinf((this->mAnimTime + 0.33f) * noise.Frequency * fade);
-            if ((tires & 9) == 0) {
-                roll = bAbs(roll);
-            }
-            if ((tires & 6) == 0) {
-                roll = -bAbs(roll);
+            if (!do_left) {
+                noise_roll = -UMath::Abs(noise_roll);
             }
         }
 
-        this->mRoadNoise.y += pitch;
-        this->mRoadNoise.x += roll;
+        this->mRoadNoise.y += noise_pitch;
+        this->mRoadNoise.x += noise_roll;
     }
 }
 
