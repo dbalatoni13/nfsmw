@@ -5,6 +5,7 @@
 #pragma once
 #endif
 
+#include "Speed/Indep/Tools/AttribSys/Runtime/AttribHash.h"
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 #include "Speed/Indep/Src/Misc/AttribAlloc.h"
 
@@ -680,6 +681,15 @@ class Attribute {
             result = *resultptr;
         }
         return result;
+    }
+
+    bool Get(unsigned int index, StringKey &result) const {
+        const StringKey *resultptr = reinterpret_cast<const StringKey *>(GetElementPointer(index));
+        if (resultptr) {
+            result = *resultptr;
+            return true;
+        }
+        return false;
     }
 
     template <typename T> const T &Get(unsigned int index) const {

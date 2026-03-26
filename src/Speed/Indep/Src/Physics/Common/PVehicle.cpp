@@ -1001,10 +1001,10 @@ UCrc32 PVehicle::LookupBehaviorSignature(const Attrib::StringKey &mechanic) cons
             return UCrc32::kNull;
         }
     }
-    UTL::Std::map<UCrc32, UCrc32, _type_ID_PVehicleChangeReq>::const_iterator it =
+    UTL::Std::map<UCrc32, UCrc32, _type_ID_PVehicleChangeReq>::const_iterator iter =
         mBehaviorOverrides.find(UCrc32(mechanic));
-    if (it != mBehaviorOverrides.end()) {
-        return (*it).second;
+    if (iter != mBehaviorOverrides.end()) {
+        return (*iter).second;
     }
     if (mAnimating) {
         if (mClass != VehicleClass::CHOPPER) {
@@ -1066,11 +1066,10 @@ UCrc32 PVehicle::LookupBehaviorSignature(const Attrib::StringKey &mechanic) cons
             return UCrc32("EffectsPlayer");
         }
     }
-    Attrib::Instance attribute(nullptr, 0, nullptr);
+    Attrib::Instance instance(nullptr, 0, nullptr);
     Attrib::StringKey behaviourKey;
-    Attrib::Attribute value = mAttributes.Get(mechanic.GetHash32());
-    value.Get(0, behaviourKey);
-    if (value.GetInternal()) {
+    Attrib::Attribute atr = mAttributes.Get(mechanic.GetHash32());
+    if (atr.Get(0, behaviourKey)) {
         return UCrc32(behaviourKey);
     }
     return UCrc32::kNull;
