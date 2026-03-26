@@ -1039,9 +1039,8 @@ UCrc32 PVehicle::LookupBehaviorSignature(const Attrib::StringKey &mechanic) cons
         return UCrc32("EngineDragster");
     }
     if (mechanic == BEHAVIOR_MECHANIC_SUSPENSION && mClass == VehicleClass::CAR) {
-        int dc = static_cast<int>(mDriverClass);
-        if (dc >= 3) {
-            if (dc <= 4 || dc == 6) {
+        if (mDriverClass >= DRIVER_RACER) {
+            if (mDriverClass <= DRIVER_NONE || mDriverClass == DRIVER_REMOTE) {
                 return UCrc32("SuspensionSimple");
             }
         }
