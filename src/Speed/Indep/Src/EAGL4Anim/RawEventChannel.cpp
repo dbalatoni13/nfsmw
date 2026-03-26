@@ -51,19 +51,18 @@ void RawEventChannel::Eval(float previousTime, float currentTime, int &currentId
 
     i = currentIdx;
 
-    while (true) {
-        if (i >= numEvents) {
-            break;
-        }
-        if (events[i].triggerTime > currentTime) {
-            break;
-        }
+    if (i < numEvents) {
+        do {
+            if (events[i].triggerTime > currentTime) {
+                break;
+            }
 
-        eh = eventHandlers[events[i].eventId];
-        if (eh) {
-            eh->HandleEvent(currentTime, events[i], extraData);
-        }
-        i++;
+            eh = eventHandlers[events[i].eventId];
+            if (eh) {
+                eh->HandleEvent(currentTime, events[i], extraData);
+            }
+            i++;
+        } while (i < numEvents);
     }
 
     currentIdx = i;
