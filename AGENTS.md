@@ -568,6 +568,11 @@ TU: <translation-unit-name> | Function: <FunctionName>
 TU: zPhysics | Function: PVehicle::LookupBehaviorSignature
 When a generated Attrib wrapper fallback refuses to match, do not "simplify" it to `GetAttributePointer` plus a raw `const char *` hash. In `PVehicle::LookupBehaviorSignature`, ProDG matched much better when the code kept a local `Attrib::StringKey`, fetched through `Attrib::Attribute value = mAttributes.Get(...)`, copied it with `value.Get(0, behaviourKey)`, and even preserved an otherwise-unused local `Attrib::Instance(nullptr, 0, nullptr)` ahead of that path to reproduce the hidden ctor/dtor pair the original emitted.
 
+### EmptyIUnknownWrapperDtorTrap
+
+TU: zPhysics / zPhysicsBehaviors | Function: Smackable::~Smackable / EngineRacer::~EngineRacer / PVehicle::~PVehicle
+When a small interface derives from `UTL::COM::IUnknown` and its out-of-line destructor body is empty, do not assume callers should simply invoke that empty wrapper dtor. In both `Smackable::~Smackable` and `EngineRacer::~EngineRacer`, the remaining diff wanted the inlined `_mCOMObject->_mInterfaces.Remove(this)` path from `IUnknown::~IUnknown`, not a direct call to the empty derived wrapper. Naively moving those empty dtors inline in the caller TU can improve one destructor but also erase the standalone interface-dtor symbol and regress the unit, so only inline them when you can preserve the owner symbol elsewhere.
+
 ### ExplicitInlineSpecialMembersForSTLElements
 
 TU: zAttribSys | Function: \_STL::\_Rb_tree<Attrib::TypeDesc, ...>::\_M_insert
