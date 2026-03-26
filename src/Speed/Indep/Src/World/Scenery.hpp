@@ -167,9 +167,7 @@ struct SceneryTreeNode : public SceneryBoundingBox {
     short ChildCodes[5]; // offset 0x1A, size 0xA
 };
 
-// TODO
-class ScenerySectionHeader : public bTNode<ScenerySectionHeader> {
-  public:
+struct ScenerySectionHeader : public bTNode<ScenerySectionHeader> {
     void DrawAScenery(int scenery_instance_number, SceneryCullInfo *scenery_cull_info, int visibility_state);
 
     int IsVisible(SceneryCullInfo *scenery_cull_info);

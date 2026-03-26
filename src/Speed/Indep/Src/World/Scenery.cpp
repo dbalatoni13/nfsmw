@@ -58,7 +58,7 @@ class PrecullerBooBooManager {
     void Clr(bVector3 &pos) {
         int n = GetSectionNumber(pos);
         unsigned char *p = GetByte(n);
-        *p &= -GetBit(n) - 1U;
+        *p &= 0xFF - GetBit(n);
     }
 
     bool IsSet(bVector3 &pos) {
@@ -316,17 +316,23 @@ void LoadPrecullerBooBooScript(const char *filename, bool reset) {
 
     SpeedScript script(filename, 1);
     while (script.GetNextCommand("BOOBOO:")) {
-        if (bStrICmp(script.GetNextArgumentString(), TrackInfo::GetLoadedTrackInfo()->RegionName) == 0) {
-            script.GetNextArgumentString();
-            char *option = script.GetNextArgumentString();
-            bool set_booboo = bStrICmp(option, "SET") == 0;
-            bool clr_booboo = bStrICmp(option, "CLR") == 0;
-            script.GetNextArgumentString();
-            bVector3 pos = script.GetNextArgumentVector3();
-            if (set_booboo) {
-                gPrecullerBooBooManager.Set(pos);
-            } else if (clr_booboo) {
-                gPrecullerBooBooManager.Clr(pos);
+        char *region = script.GetNextArgumentString();
+
+        if (bStrICmp(region, TrackInfo::GetLoadedTrackInfo()->RegionName) == 0) {
+            {
+                char *section = script.GetNextArgumentString();
+                char *option = script.GetNextArgumentString();
+                bool set_booboo = bStrICmp(option, "SET") == 0;
+                bool clr_booboo = bStrICmp(option, "CLR") == 0;
+
+                (void)section;
+                script.GetNextArgumentString();
+                bVector3 pos = script.GetNextArgumentVector3();
+                if (set_booboo) {
+                    gPrecullerBooBooManager.Set(pos);
+                } else if (clr_booboo) {
+                    gPrecullerBooBooManager.Clr(pos);
+                }
             }
         }
     }
@@ -1392,4 +1398,3 @@ void GrandSceneryCullInfo::StuffScenery(eView *view, int stuff_flags) {
     }
 }
 void ServicePreculler() {}
-

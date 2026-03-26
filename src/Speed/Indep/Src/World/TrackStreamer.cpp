@@ -585,7 +585,7 @@ int TrackStreamer::Loader(bChunk *chunk) {
     } else if (chunk_id == 0x34111) {
         pInfo = reinterpret_cast<TrackStreamingInfo *>(chunk->GetData());
         for (int i = 0; i < 2; i++) {
-            bEndianSwap32(i + pInfo->FileSize);
+            bEndianSwap32(&pInfo->FileSize[i]);
         }
         return 1;
     } else if (chunk_id == 0x34112) {
@@ -2463,4 +2463,3 @@ void TrackStreamer::UnloadEverything() {
     FreeSectionMemory();
     ClearCurrentZones();
 }
-

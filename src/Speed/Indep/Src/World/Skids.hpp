@@ -12,7 +12,7 @@
 #include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 
-struct eView;
+class eView;
 extern SlotPool *SkidSetSlotPool;
 
 class SkidSegment {

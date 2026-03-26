@@ -9,7 +9,7 @@
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
 struct SkidSet;
-struct eView;
+class eView;
 
 void bExpandBoundingBox(bVector3 *bbox_min, bVector3 *bbox_max, const bVector3 *bbox2_min, const bVector3 *bbox2_max);
 
