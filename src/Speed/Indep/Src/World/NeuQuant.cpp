@@ -146,66 +146,72 @@ void learn() {
 void inxbuild() {
     int previouscol = 0;
     int startpos = 0;
+    int i = 0;
 
-    for (int i = 0; i < netsize; i++) {
-        int smallpos = i;
-        int smallval = network[i][1];
+    if (i < netsize) {
+        do {
+            int *pi = network[i];
+            int smallpos = i;
+            int smallval = pi[1];
+            int j = i + 1;
 
-        for (int j = i + 1; j < netsize; j++) {
-            int value = network[j][1];
-            if (value < smallval) {
-                smallval = value;
-                smallpos = j;
+            if (j < netsize) {
+                do {
+                    int value = network[j][1];
+                    if (value < smallval) {
+                        smallval = value;
+                        smallpos = j;
+                    }
+                    j++;
+                } while (j < netsize);
             }
-        }
 
-        if (i != smallpos) {
-            int temp = network[smallpos][0];
-            network[smallpos][0] = network[i][0];
-            network[i][0] = temp;
-
-            temp = network[smallpos][1];
-            network[smallpos][1] = network[i][1];
-            network[i][1] = temp;
-
-            temp = network[smallpos][2];
-            network[smallpos][2] = network[i][2];
-            network[i][2] = temp;
-
-            temp = network[smallpos][3];
-            network[smallpos][3] = network[i][3];
-            network[i][3] = temp;
-
-            temp = network[smallpos][4];
-            network[smallpos][4] = network[i][4];
-            network[i][4] = temp;
-        }
-
-        if (smallval != previouscol) {
-            netindex[previouscol] = (startpos + i) >> 1;
-            for (int j = previouscol + 1; j < smallval; j++) {
-                netindex[j] = i;
+            if (i != smallpos) {
+                int *ps = network[smallpos];
+                int temp;
+                temp = ps[0]; ps[0] = pi[0]; pi[0] = temp;
+                temp = ps[1]; ps[1] = pi[1]; pi[1] = temp;
+                temp = ps[2]; ps[2] = pi[2]; pi[2] = temp;
+                temp = ps[3]; ps[3] = pi[3]; pi[3] = temp;
+                temp = ps[4]; ps[4] = pi[4]; pi[4] = temp;
             }
-            previouscol = smallval;
-            startpos = i;
-        }
+
+            if (smallval != previouscol) {
+                netindex[previouscol] = (startpos + i) >> 1;
+                int j = previouscol + 1;
+                if (j < smallval) {
+                    do {
+                        netindex[j] = i;
+                        j++;
+                    } while (j < smallval);
+                }
+                previouscol = smallval;
+                startpos = i;
+            }
+            i++;
+        } while (i < netsize);
     }
 
     netindex[previouscol] = (startpos + netsize - 1) >> 1;
-    for (int i = previouscol + 1; i < 0x100; i++) {
-        netindex[i] = netsize - 1;
+    int i2 = previouscol + 1;
+    if (i2 < 0x100) {
+        do {
+            netindex[i2] = netsize - 1;
+            i2++;
+        } while (i2 < 0x100);
     }
 }
 
 int inxsearch(int b, int g, int r, int aa) {
     int best = -1;
     int i = netindex[g];
-    int j = netindex[g] - 1;
+    int j = i - 1;
     int bestd = 0x400;
 
     while (true) {
         if (i < netsize) {
-            int dist = network[i][1] - g;
+            int *p = network[i];
+            int dist = p[1] - g;
             int next = netsize;
 
             if (dist < bestd) {
@@ -214,25 +220,25 @@ int inxsearch(int b, int g, int r, int aa) {
                     dist = -dist;
                 }
 
-                int a = network[i][0] - b;
+                int a = p[0] - b;
                 if (a < 0) {
                     a = -a;
                 }
 
                 if (dist + a < bestd) {
-                    int value = network[i][2] - r;
+                    int value = p[2] - r;
                     if (value < 0) {
                         value = -value;
                     }
                     value = dist + a + value;
                     if (value < bestd) {
-                        dist = network[i][3] - aa;
+                        dist = p[3] - aa;
                         if (dist < 0) {
                             dist = -dist;
                         }
                         value += dist;
                         if (value < bestd) {
-                            best = network[i][4];
+                            best = p[4];
                             bestd = value;
                         }
                     }
@@ -245,33 +251,34 @@ int inxsearch(int b, int g, int r, int aa) {
         }
 
         if (j > -1) {
-            int dist = g - network[j][1];
+            int *p = network[j];
+            int dist = g - p[1];
 
             if (dist < bestd) {
                 if (dist < 0) {
                     dist = -dist;
                 }
 
-                int a = network[j][0] - b;
+                int a = p[0] - b;
                 if (a < 0) {
                     a = -a;
                 }
 
                 j--;
                 if (dist + a < bestd) {
-                    int value = network[j + 1][2] - r;
+                    int value = p[2] - r;
                     if (value < 0) {
                         value = -value;
                     }
                     value = dist + a + value;
                     if (value < bestd) {
-                        dist = network[j + 1][3] - aa;
+                        dist = p[3] - aa;
                         if (dist < 0) {
                             dist = -dist;
                         }
                         value += dist;
                         if (value < bestd) {
-                            best = network[j + 1][4];
+                            best = p[4];
                             bestd = value;
                         }
                     }
@@ -288,32 +295,31 @@ static int contest(int b, int g, int r, int aa) {
     int bestbiasd = 0x7FFFFFFF;
     int bestpos = -1;
     int bestbiaspos = -1;
+    int *bptr = bias;
+    int *f = freq;
     int i = 0;
 
     if (i < netsize) {
-        int *p = &network[0][0];
-        int *f = freq;
-        int *bptr = bias;
-
         do {
-        int dist = p[0] - b;
+        int *n = network[i];
+        int dist = n[0] - b;
         if (dist < 0) {
             dist = -dist;
         }
 
-        int value = p[1] - g;
+        int value = n[1] - g;
         if (value < 0) {
             value = -value;
         }
         dist += value;
 
-        value = p[2] - r;
+        value = n[2] - r;
         if (value < 0) {
             value = -value;
         }
         dist += value;
 
-        value = p[3] - aa;
+        value = n[3] - aa;
         if (value < 0) {
             value = -value;
         }
@@ -334,7 +340,6 @@ static int contest(int b, int g, int r, int aa) {
         *f -= value;
         *bptr += value << 10;
         i++;
-        p += 5;
         f++;
         bptr++;
         } while (i < netsize);
@@ -383,7 +388,7 @@ static void alterneigh(int rad, int i, int b, int g, int r, int aa) {
     }
 
     int hi = i + rad;
-    if (netsize < hi) {
+    if (hi > netsize) {
         hi = netsize;
     }
 
