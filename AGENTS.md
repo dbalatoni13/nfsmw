@@ -573,6 +573,16 @@ When a generated Attrib wrapper fallback refuses to match, do not "simplify" it 
 TU: zPhysics | Function: PVehicle::LookupBehaviorSignature
 If DWARF shows `Attribute::Get(unsigned int, StringKey&)` as a bool-returning inline instead of the generic template path, recover that shared overload in `AttribSys.h` rather than open-coding `Get(...); GetInternal()` in each caller. `PVehicle::LookupBehaviorSignature` improved and its DWARF got closer to the original once `Attrib::Attribute` exposed a dedicated `bool Get(unsigned int, StringKey&) const` helper and the caller used `if (atr.Get(0, behaviourKey))`.
 
+### ExplicitStringKeyAssignmentOrder
+
+TU: zPhysics | Function: PVehicle::LookupBehaviorSignature
+If an Attrib/StringKey copy path still differs after recovering the bool `Attribute::Get` helper, check whether `StringKey` is missing an explicit inline assignment operator. `PVehicle::LookupBehaviorSignature` only moved the copied `behaviourKey` words into the original store order once `AttribHash.h` exposed `const StringKey &operator=(const StringKey &rhs)` and assigned `mString` before the hashed fields instead of relying on the compiler-generated memberwise assignment.
+
+### AILoopReturnSignatureSplit
+
+TU: zPhysics | Function: PVehicle::LookupBehaviorSignature
+When a small lookup loop still reloads the same field twice in objdiff, do not assume the clean `while (sig != kNull) { ... sig = ab->field; }` form is original. `PVehicle::LookupBehaviorSignature` matched much better once the AI block kept `sig` as the return value, compared `ab->signature` directly in the loop condition, and only assigned `sig = ab->signature` on the winning match before breaking.
+
 ### EmptyIUnknownWrapperDtorTrap
 
 TU: zPhysics / zPhysicsBehaviors | Function: Smackable::~Smackable / EngineRacer::~EngineRacer / PVehicle::~PVehicle
