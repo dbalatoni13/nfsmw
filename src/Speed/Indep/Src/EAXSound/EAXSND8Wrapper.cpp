@@ -317,12 +317,12 @@ void *CSISCoreAllocator::Alloc(unsigned int size, const char *name, unsigned int
 void *CSISCoreAllocator::Alloc(unsigned int size, const char *name, unsigned int flags, unsigned int alignment, unsigned int offset) {
     (void)alignment;
     (void)offset;
-    return Alloc(size, name, flags);
+    return Alloc(size, g_pcsCSISAllocString, 0);
 }
 
 void CSISCoreAllocator::Free(void *pBlock, unsigned int size) {
     (void)size;
-    bFree(pBlock);
+    bFree(pCsisSlotPools[0], pBlock);
 }
 
 PF_Allocator gPF_MemoryAllocator;
