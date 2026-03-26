@@ -225,7 +225,7 @@ KeyFound:
 
 bool FnRawStateChan::FindTime(const StateTest &test, float startTime, float &resultTime) {
     const RawStateChan *rawStateChan = reinterpret_cast<const RawStateChan *>(mpAnim);
-    unsigned char stateBuffer[84];
+    unsigned char stateBuffer[80];
     int keyIdx;
 
     for (keyIdx = 0; keyIdx < rawStateChan->GetNumKeys(); keyIdx++) {
