@@ -387,9 +387,7 @@ Behavior *PhysicsObject::LoadBehavior(const UCrc32 &mechanic, const UCrc32 &beha
     }
 
     unsigned int key = mechanic.GetValue();
-    UCrc32 signature(behavior);
-    BehaviorParams bp(params, this, mechanic, behavior);
-    beh = BuildElement(signature, bp);
+    beh = BuildElement(behavior, BehaviorParams(params, this, mechanic, behavior));
     if (beh != nullptr) {
         mMechanics[key] = beh;
         mBehaviors.Add(beh);
