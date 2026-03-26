@@ -99,11 +99,11 @@ class RawPoseChannel : public AnimMemoryMap {
     }
 
     int *GetInterpSig() {
-        return GetNonInterpSig() + mSigSize;
+        return GetNonInterpSig() + GetSigSize();
     }
 
     const int *GetInterpSig() const {
-        return GetNonInterpSig() + mSigSize;
+        return GetNonInterpSig() + GetSigSize();
     }
 
     float *GetAnimData() {

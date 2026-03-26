@@ -7,21 +7,21 @@ namespace EAGL4Anim {
 float qt0[7];
 
 void RawPoseChannel::InitAnimMemoryMap(AnimMemoryMap *anim) {
-    RawPoseChannel *rawPoseChannel = reinterpret_cast<RawPoseChannel *>(anim);
-    int numSigs = rawPoseChannel->mSigSize;
-    int *sig = rawPoseChannel->GetNonInterpSig();
-    int isig = 0;
-    int ichan;
-    int numChannels;
+    RawPoseChannel *rawChan = reinterpret_cast<RawPoseChannel *>(anim);
+    int i = 0;
+    int j;
+    int count;
+    int *sig = rawChan->GetNonInterpSig();
+    int sigSize = rawChan->GetSigSize();
 
-    while (isig < numSigs) {
-        numChannels = *sig++;
-        isig++;
+    while (i < sigSize) {
+        count = *sig++;
+        i++;
 
-        for (ichan = 0; ichan < numChannels; ichan++) {
+        for (j = 0; j < count; j++) {
             int t = *sig;
 
-            isig++;
+            i++;
             switch (t) {
             case EUL:
                 *sig = reinterpret_cast<int>(EulF3);
@@ -40,16 +40,16 @@ void RawPoseChannel::InitAnimMemoryMap(AnimMemoryMap *anim) {
         }
     }
 
-    sig = rawPoseChannel->GetInterpSig();
-    isig = 0;
-    while (isig < numSigs) {
-        numChannels = *sig++;
-        isig++;
+    sig = rawChan->GetInterpSig();
+    i = 0;
+    while (i < sigSize) {
+        count = *sig++;
+        i++;
 
-        for (ichan = 0; ichan < numChannels; ichan++) {
+        for (j = 0; j < count; j++) {
             int t = *sig;
 
-            isig++;
+            i++;
             switch (t) {
             case EUL:
                 *sig = reinterpret_cast<int>(EulF3Interp);
