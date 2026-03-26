@@ -594,6 +594,11 @@ void EAXSound::SetSFXBaseObject(SFX_Base *psb, eMAINMAPSTATES estate, int ntype,
     switch (estate) {
     case eMM_MAIN:
         switch (ntype) {
+        case SFXOBJ_MUSIC:
+        case SFXOBJ_AMBIENCE:
+        case SFXOBJ_MOVIES:
+        case SFXOBJ_COMMON:
+            break;
         case SFXOBJ_SPEECH:
             Speech::Manager::AttachSFXOBJ(COPSPEECH_MODULE, psb, SFXOBJ_SPEECH);
             return;
@@ -610,6 +615,13 @@ void EAXSound::SetSFXBaseObject(SFX_Base *psb, eMAINMAPSTATES estate, int ntype,
             }
             return;
         }
+        break;
+    case eMM_MUSIC:
+    case eMM_PLAYERCAR:
+    case eMM_AIRACECAR:
+    case eMM_COPCAR:
+    case eMM_TRAFFIC:
+    case eMM_ENVIRONMENT:
         break;
     case eMM_COLLISION:
         Speech::Manager::AttachSFXOBJ(NISSFX_MODULE, psb, static_cast<eSFXOBJ_MAIN_TYPES>(ntype));
