@@ -1920,13 +1920,17 @@ void EAXSound::CloseSound() {
         }
     }
 
-    while (AreResourceLoadsPending()) {
-        Update(0.0f);
+    while (g_pEAXSound->AreResourceLoadsPending()) {
+        g_pEAXSound->Update(0.0f);
         ServiceQueuedFiles();
     }
 
     if (m_pNFSMixMaster != nullptr) {
         m_pNFSMixMaster->DestroyMainMainMap();
+    }
+
+    if (g_pNISRevMgr != nullptr) {
+        g_pNISRevMgr->CloseNIS();
     }
 
     bSyncTaskRun();
