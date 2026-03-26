@@ -937,16 +937,17 @@ bool TrackStreamer::WillUnloadBlock(TrackStreamingSection *section) {
 }
 
 void TrackStreamer::UnloadSection(TrackStreamingSection *section) {
+    ProfileNode profile_node(section->SectionName, 0);
     if (section->Status == TrackStreamingSection::ACTIVATED) {
         UnactivateSection(section);
     }
 
     if (section->Status == TrackStreamingSection::LOADED) {
         if (WillUnloadBlock(section)) {
-            WaitForFrameBufferSwapDisabled = 1;
+            DisableWaitForFrameBufferSwap();
             eWaitUntilRenderingDone();
-            WaitForFrameBufferSwapDisabled = 0;
-            LastWaitUntilRenderingDoneFrameCount = eFrameCounter;
+            EnableWaitForFrameBufferSwap();
+            LastWaitUntilRenderingDoneFrameCount = eGetFrameCounter();
         }
 
         section->UnactivatedFrameCount = 0;
