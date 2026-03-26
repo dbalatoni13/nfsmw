@@ -494,6 +494,11 @@ register assignments but does NOT affect integer register assignments (and vice 
   helper-call shape the original code did not use. When objdiff wants the direct handle constant,
   prefer a tiny file-local helper that calls `_mInterfaces.Find((HINTERFACE)T::_IHandle)` and preserve
   any explicit `bool hasX = ptr != nullptr;` local if the assembly/DWARF shows one.
+- When a shared utility header still has obvious placeholder virtual/helper bodies, do not dismiss the
+  resulting 8-byte helper diffs as harmless noise. In `UTL::FixedVector`, restoring the real header-level
+  bodies (`GetGrowSize` / `GetMaxCapacity` returning the template size and `AllocVectorSpace` returning the
+  inline buffer) matched whole clusters of instantiations at once and improved the owning TU without any
+  per-instantiation edits.
 - When objdiff is already exact but a local only differs by lexical scope, try an equivalent
   loop form that keeps the temporary inside the same block as the original DWARF. In practice,
   changing a `for (...; ...; x = next)` into a `while (...) { T *next = ...; ...; x = next; }`
