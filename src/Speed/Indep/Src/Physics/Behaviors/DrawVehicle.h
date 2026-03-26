@@ -156,7 +156,7 @@ class DrawHeli : public DrawVehicle {
   private:
     HSIMSERVICE mRenderService;        // offset 0x88, size 0x4
     Sim::Effect mEffect;               // offset 0x8C, size 0x5C
-    Attrib::Instance mWash;            // offset 0xE8, size 0x14
+    Attrib::Gen::effects mWash;        // offset 0xE8, size 0x14
     HSIMTASK mWashTask;                // offset 0xFC, size 0x4
     bool mInView;                      // offset 0x100, size 0x1
     float mDistanceToView;             // offset 0x104, size 0x4
