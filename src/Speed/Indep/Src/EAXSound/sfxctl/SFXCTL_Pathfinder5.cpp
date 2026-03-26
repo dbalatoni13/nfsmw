@@ -75,9 +75,9 @@ char *SFXCTL_Pathfinder::GetTypeName() const { return s_TypeInfo.typeName; }
 
 void SFXCTL_Pathfinder::InitSFX() {
     EA::TagValuePair tvp;
-    tvp.mTag = 0;
-    tvp.mValue.mInt = 0;
     tvp.mNext = nullptr;
+    tvp.mValue.mInt = 0;
+    tvp.mTag = 0;
     PATH_setallocator(&gPF_MemoryAllocator, tvp);
     PATH_vectortoreal6();
     PATH_vectortosnd();

@@ -102,6 +102,7 @@ void NIS_RevManager::Start321Reving() {
 }
 
 void NIS_RevManager::CloseNIS() {
+    bFree(pRevData);
     pRevData = nullptr;
     MAIEngineRev(0, 0, nullptr, 0).Send(UCrc32("RevOFF"));
     IsInitialized = false;
