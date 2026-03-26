@@ -1,5 +1,10 @@
 #include "Table.hpp"
 
+Graph::Graph(bVector2 *points, int num_points) {
+    Points = points;
+    NumPoints = num_points;
+}
+
 // Credits: Brawltendo
 // TODO variables aren't dwarf matching
 float Table::GetValue(float input) {

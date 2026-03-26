@@ -196,12 +196,11 @@ template <typename T, int Alignment = 16> class Vector {
     virtual void FreeVectorSpace(pointer buffer, size_type num) {}
 
     virtual size_type GetGrowSize(size_type minSize) const {
-        size_type result = minSize;
         size_type grown = mCapacity + ((mCapacity + 1) >> 1);
-        if (result < grown) {
-            result = grown;
+        if (grown >= minSize) {
+            return grown;
         }
-        return result;
+        return minSize;
     }
 
     // Unfinished
