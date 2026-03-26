@@ -648,7 +648,7 @@ void TrackStreamer::ClearCurrentZones() {
     StartLoadingTime = 0.0f;
     NumJettisonedSections = 0;
     LoadingPhase = LOADING_IDLE;
-    LoadingBacklog = 0.0f;
+    LoadingBacklog = StartLoadingTime;
     CurrentZoneOutOfMemory = false;
     CurrentZoneAllocatedButIncomplete = false;
     CurrentZoneNonReplayLoad = false;
