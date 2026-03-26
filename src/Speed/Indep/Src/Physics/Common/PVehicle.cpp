@@ -1070,9 +1070,10 @@ UCrc32 PVehicle::LookupBehaviorSignature(const Attrib::StringKey &mechanic) cons
     Attrib::StringKey behaviourKey;
     Attrib::Attribute atr = mAttributes.Get(mechanic.GetHash32());
     if (atr.Get(0, behaviourKey)) {
-        return UCrc32(behaviourKey);
+    } else {
+        return UCrc32::kNull;
     }
-    return UCrc32::kNull;
+    return UCrc32(behaviourKey);
 }
 
 void PVehicle::LoadBehaviors(const UMath::Vector3 &initialPos, const UMath::Matrix4 &initMat) {
