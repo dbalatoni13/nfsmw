@@ -153,12 +153,15 @@ template <typename T, int Alignment = 16> class Vector {
     virtual void FreeVectorSpace(pointer buffer, size_type num) {}
 
     virtual size_type GetGrowSize(size_type minSize) const {
-        return UMath::Max(minSize, mCapacity + ((mCapacity + 1) >> 1)); // TODO is this right?
+        size_type growSize = mCapacity + ((mCapacity + 1) >> 1);
+        if (growSize >= minSize) {
+            return growSize;
+        }
+        return minSize;
     }
 
-    // Unfinished
     virtual size_type GetMaxCapacity() const {
-        return 0;
+        return 0x7FFFFFFF;
     }
 
     virtual void OnGrowRequest(size_type newSize) {}
