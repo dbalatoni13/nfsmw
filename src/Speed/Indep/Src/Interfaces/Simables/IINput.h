@@ -48,7 +48,7 @@ class IInput : public UTL::COM::IUnknown {
 
     virtual void ClearInput();
     virtual InputControls &GetControls() const;
-    virtual float GetControlHandBrake() const;
+    virtual bool GetControlHandBrake() const;
     virtual bool GetControlActionButton() const;
     virtual void SetControlSteering(float steer);
     virtual void SetControlGas(float gas);
@@ -72,7 +72,7 @@ class IInputPlayer : public UTL::COM::IUnknown, public UTL::Collections::Listabl
 
     IInputPlayer(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
 
-    virtual ~IInputPlayer() {}
+    virtual ~IInputPlayer();
 
     virtual void BlockInput(bool block);
     virtual bool IsBlocked() const;

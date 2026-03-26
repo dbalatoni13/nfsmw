@@ -13,32 +13,9 @@
 #include "Speed/Indep/Src/Interfaces/Simables/ISimpleBody.h"
 #include "Speed/Indep/Src/Main/ScratchPtr.h"
 #include "Speed/Indep/Src/Physics/Behavior.h"
+#include "Speed/Indep/Src/Physics/VehicleBehaviors.h"
 
 #define SIMPLE_RIGID_BODY_MAX (96)
-
-// total size: 0x28
-struct RBSimpleParams : public Sim::Param {
-    RBSimpleParams(const RBSimpleParams &_ctor_arg)
-        : Sim::Param(_ctor_arg), finitPos(_ctor_arg.finitPos), finitVel(_ctor_arg.finitVel), finitAngVel(_ctor_arg.finitAngVel),
-          finitMat(_ctor_arg.finitMat), finitRadius(_ctor_arg.finitRadius), finitMass(_ctor_arg.finitMass) {}
-
-    RBSimpleParams(const UMath::Vector3 &initPos, const UMath::Vector3 &initVel, const UMath::Vector3 &initAngVel, const UMath::Matrix4 &initMat,
-                   float initRadius, float initMass)
-        : Sim::Param(TypeName(), static_cast<RBSimpleParams *>(nullptr)), finitPos(initPos), finitVel(initVel), finitAngVel(initAngVel),
-          finitMat(initMat), finitRadius(initRadius), finitMass(initMass) {}
-
-    static UCrc32 TypeName() {
-        static UCrc32 value = "RBSimpleParams";
-        return value;
-    }
-
-    const UMath::Vector3 &finitPos;    // offset 0x10, size 0x4
-    const UMath::Vector3 &finitVel;    // offset 0x14, size 0x4
-    const UMath::Vector3 &finitAngVel; // offset 0x18, size 0x4
-    const UMath::Matrix4 &finitMat;    // offset 0x1C, size 0x4
-    float finitRadius;                 // offset 0x20, size 0x4
-    float finitMass;                   // offset 0x24, size 0x4
-};
 
 // total size: 0x74
 class SimpleRigidBody : public Behavior, public IRigidBody, public ISimpleBody, public bTNode<SimpleRigidBody>, public Debugable {
@@ -69,6 +46,8 @@ class SimpleRigidBody : public Behavior, public IRigidBody, public ISimpleBody, 
     float GetScalarVelocity() const;
     void ApplyFriction();
     void DoIntegration(const float dT);
+    void DoRBCollisions(const float dT);
+    void DoSRBCollisions(SimpleRigidBody *other);
     void RecalcOrientMat(UMath::Matrix4 &resultMat4) const;
 
     // Virtual methods

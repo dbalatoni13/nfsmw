@@ -23,6 +23,11 @@
 #include "Speed/Indep/Src/Sim/Simulation.h"
 #include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
 
+template BehaviorSpecsPtr<Attrib::Gen::tires>::~BehaviorSpecsPtr();
+template BehaviorSpecsPtr<Attrib::Gen::brakes>::~BehaviorSpecsPtr();
+template BehaviorSpecsPtr<Attrib::Gen::chassis>::~BehaviorSpecsPtr();
+template BehaviorSpecsPtr<Attrib::Gen::transmission>::~BehaviorSpecsPtr();
+
 // Credits: Brawltendo
 class SuspensionRacer : public Chassis, public Sim::Collision::IListener, public IAttributeable, Debugable {
   public:
@@ -451,6 +456,8 @@ float SixDegreeTable[] = {0.0f, 1.8f, 3.5f, 4.9f, 5.8f, 6.1f};
 float EightDegreeTable[] = {0.0f, 1.83f, 3.6f, 5.0f, 5.96f, 6.4f};
 float TenDegreeTable[] = {0.0f, 1.86f, 3.7f, 5.1f, 6.13f, 6.7f};
 float TwelveDegreeTable[] = {0.0f, 1.9f, 3.8f, 5.2f, 6.3f, 7.1f};
+
+Wheel::~Wheel() {}
 
 Table ZeroDegree = Table(ZeroDegreeTable, 6, 0.0f, 10.0f);
 Table TwoDegree = Table(TwoDegreeTable, 6, 0.0f, 10.0f);

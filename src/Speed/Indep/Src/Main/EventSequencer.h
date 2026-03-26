@@ -34,13 +34,11 @@ class System;
 
 class IContext : public UTL::COM::IUnknown {
   public:
-    static HINTERFACE _IHandle() {
-        return (HINTERFACE)_IHandle;
-    }
+    static HINTERFACE _IHandle();
 
-    IContext(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
+    IContext(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, (HINTERFACE)_IHandle) {}
 
-    virtual ~IContext() {}
+    virtual ~IContext();
 
     virtual bool SetDynamicData(const System *system, EventDynamicData *data);
 };
@@ -55,6 +53,7 @@ typedef HENGINE__ *HENGINE;
 enum QueueMode {
     QUEUE_DISABLE = 0,
     QUEUE_SHALLOW = 1,
+    QUEUE = 2,
     QUEUE_ALLOW = 2,
     QUEUE_FLUSH = 3,
     QUEUE_ABORT = 4,
@@ -101,6 +100,7 @@ struct System {
         kQueueLength = 4,
     };
     unsigned int ID() const;
+    bool ProcessStimulus(unsigned int stimulus, float externalTime, IContext *context, QueueMode mode);
 
     // TODO it's EventSequencer::Engine
     struct Engine *mEngine;               // offset 0x0, size 0x4

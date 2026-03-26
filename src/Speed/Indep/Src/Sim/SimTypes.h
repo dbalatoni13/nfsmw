@@ -64,6 +64,23 @@ class SimCollisionMap {
     class IRigidBody *GetSRB(int srbIndex) const;
     class IRigidBody *GetOrderedBody(int index) const;
 
+    bool TestBit(unsigned int index) const {
+        return (fBitMap[index / 64] >> (index % 64)) & 1;
+    }
+
+    bool CollisionWithOrderedBody(int obIndex) const {
+        return TestBit(obIndex);
+    }
+
+    bool CollisionWithAny() const {
+        for (int i = 0; i < 3; ++i) {
+            if (fBitMap[i] != 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     void Clear() {
         for (unsigned int i = 0; i < 3; ++i) {
             fBitMap[i] = 0;

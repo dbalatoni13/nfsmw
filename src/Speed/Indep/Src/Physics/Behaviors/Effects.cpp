@@ -1,5 +1,6 @@
 #include "Effects.h"
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/effects.h"
 #include "Speed/Indep/Src/Interfaces/IListener.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
 #include "Speed/Indep/Src/Physics/Behavior.h"
@@ -7,8 +8,59 @@
 #include "Speed/Indep/Src/Sim/Collision.h"
 #include "Speed/Indep/Src/Sim/SimSurface.h"
 
-Effects::Effects(const struct BehaviorParams &bp) : Behavior(bp, 0) {
-    // TODO
+Attrib::Key Attrib::Gen::effects::ClassKey() {
+    return 0xebcee74c;
+}
+
+template <> const EffectLinkageRecord &Attrib::Attribute::Get<EffectLinkageRecord>(unsigned int index) const {
+    const EffectLinkageRecord *resultptr = reinterpret_cast<const EffectLinkageRecord *>(GetElementPointer(index));
+    if (!resultptr) {
+        resultptr = reinterpret_cast<const EffectLinkageRecord *>(DefaultDataArea(sizeof(EffectLinkageRecord)));
+    }
+    return *resultptr;
+}
+
+const EffectLinkageRecord *EffectLookup::Find(unsigned int surfacekey, const Attrib::Attribute &list) const {
+    unsigned int i = 0;
+    while (i < list.GetLength()) {
+        const EffectLinkageRecord &record = list.Get<EffectLinkageRecord>(i);
+        if (record.mSurface.GetCollectionKey() == surfacekey) {
+            return &record;
+        }
+        ++i;
+    }
+    return nullptr;
+}
+
+Behavior *EffectsVehicle::Construct(const BehaviorParams &params) {
+    return new EffectsVehicle(params);
+}
+
+Behavior *EffectsCar::Construct(const BehaviorParams &params) {
+    return new EffectsCar(params);
+}
+
+Behavior *EffectsPlayer::Construct(const BehaviorParams &params) {
+    return new EffectsPlayer(params);
+}
+
+Behavior *EffectsSmackable::Construct(const BehaviorParams &params) {
+    return new EffectsSmackable(params);
+}
+
+Behavior *EffectsFragment::Construct(const BehaviorParams &params) {
+    return new EffectsFragment(params);
+}
+
+Effects::Effects(const struct BehaviorParams &bp)
+    : Behavior(bp, 0), //
+      Sim::Collision::IListener(), //
+      mIRBComplex(nullptr), //
+      mHitEffects(), //
+      mScrapeEffects(), //
+      mScrape(bp.fowner->GetWorldID(), bp.fowner->GetAttributes().GetConstCollection()) {
+    mScrapeTimeOut = 0.0f;
+    Sim::Collision::AddListener(this, GetOwner(), "Effects");
 }
 
 Effects::~Effects() {
@@ -142,7 +194,40 @@ void Effects::OnHitGround(const SimSurface &othersurface, float impulse, const U
 }
 
 void Effects::OnCollision(const COLLISION_INFO &cinfo) {
-    // TODO annoying virtuals
+    if (IsPaused()) {
+        return;
+    }
+
+    if (cinfo.Type() == COLLISION_INFO::WORLD) {
+        SimSurface othersurface(cinfo.objBsurface);
+        OnHitWorld(othersurface, cinfo.impulseA, cinfo.position, cinfo.closingVel, cinfo.normal);
+        OnScrapeWorld(othersurface, cinfo.position, cinfo.slidingVel, cinfo.normal);
+        return;
+    }
+
+    if (cinfo.Type() == COLLISION_INFO::OBJECT) {
+        UMath::Vector3 normal = cinfo.normal;
+        SimSurface othersurface(cinfo.objBsurface);
+        HSIMABLE hother = cinfo.objB;
+        float impulse = cinfo.impulseA;
+
+        if (cinfo.objB == GetOwner()->GetInstanceHandle()) {
+            UMath::Scale(normal, -1.0f, normal);
+            othersurface.Change(cinfo.objAsurface);
+            impulse = cinfo.impulseB;
+            hother = cinfo.objA;
+        }
+
+        OnHitObject(othersurface, impulse, cinfo.position, cinfo.closingVel, normal, hother);
+        OnScrapeObject(othersurface, cinfo.position, cinfo.slidingVel, normal, hother);
+        return;
+    }
+
+    if (cinfo.Type() == COLLISION_INFO::GROUND) {
+        SimSurface othersurface(cinfo.objBsurface);
+        OnHitGround(othersurface, cinfo.impulseA, cinfo.position, cinfo.closingVel, cinfo.normal);
+        OnScrapeGround(othersurface, cinfo.position, cinfo.slidingVel, cinfo.normal);
+    }
 }
 
 EffectsVehicle::EffectsVehicle(const BehaviorParams &bp) : Effects(bp) {}

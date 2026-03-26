@@ -68,8 +68,8 @@ class RBVehicle : public RigidBody, public IRBVehicle {
     }
 
     void SetInvulnerability(eInvulnerablitiy state, float time) override {
-        mInvulnerableTimer = time;
         mInvulnerableState = state;
+        mInvulnerableTimer = time;
     }
 
     eInvulnerablitiy GetInvulnerability() const override {

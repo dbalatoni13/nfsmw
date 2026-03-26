@@ -82,9 +82,7 @@ struct chopperspecs : Instance {
         Instance::Change(refspec);
     }
 
-    static Key ClassKey() {
-        return 0x5d898ee7;
-    }
+    static Key ClassKey();
 
     const UMath::Vector4 &AIR_RESISTANCE_SCALE() const {
         return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->AIR_RESISTANCE_SCALE;

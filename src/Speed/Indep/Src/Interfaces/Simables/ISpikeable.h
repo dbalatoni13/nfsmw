@@ -17,7 +17,7 @@ class ISpikeable : public UTL::COM::IUnknown, public UTL::Collections::Listable<
 
     ISpikeable(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
 
-    virtual ~ISpikeable() {}
+    virtual ~ISpikeable();
 
   public:
     virtual eTireDamage GetTireDamage(unsigned int wheelId) const;

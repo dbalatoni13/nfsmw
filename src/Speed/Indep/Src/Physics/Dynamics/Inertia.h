@@ -37,14 +37,15 @@ class Box : public Tensor {
 
   public:
     Box(float mass, float width, float height, float length) {
-        float x2 = width * width;
-        float y2 = height * height;
-        float z2 = length * length;
-
-        x = (y2 + z2) / 1.2f;
-        y = (x2 + z2) / 1.2f;
-        z = (x2 + y2) / 1.2f;
-
+        float x2 = width + width;
+        float y2 = height + height;
+        float z2 = length + length;
+        x2 *= x2;
+        y2 *= y2;
+        z2 *= z2;
+        x = (y2 + z2) / 12.0f;
+        y = (x2 + z2) / 12.0f;
+        z = (x2 + y2) / 12.0f;
         *this *= mass;
     }
 };

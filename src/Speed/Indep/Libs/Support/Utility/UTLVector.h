@@ -9,7 +9,7 @@
 #include <cstddef>
 
 namespace UTL {
-template <typename T, unsigned int Alignment = 16> class Vector {
+template <typename T, int Alignment = 16> class Vector {
   public:
     typedef T value_type;
     typedef value_type *pointer;
@@ -117,6 +117,9 @@ template <typename T, unsigned int Alignment = 16> class Vector {
     }
 
     iterator erase(iterator begIt, iterator endIt) {
+        if (begIt == mBegin + mSize) {
+            return mBegin + mSize;
+        }
         size_type iPos = indexof(begIt);
         size_type num = endIt - begIt;
         for (iterator it = begIt; it != endIt; ++it) {
@@ -124,13 +127,13 @@ template <typename T, unsigned int Alignment = 16> class Vector {
             obj.~T();
         }
 
-        for (size_type ii = 0; ii < size() - (iPos + num); ++ii) {
+        for (size_type ii = 0; ii < size() - (iPos + num); ii++) {
             size_type src = iPos + num + ii;
             size_type dest = iPos + ii;
-
             new (&mBegin[dest]) T(mBegin[src]);
         }
-        mSize = size() - num;
+        mSize -= num;
+        (void)size();
         return end();
     }
 
@@ -150,12 +153,15 @@ template <typename T, unsigned int Alignment = 16> class Vector {
     virtual void FreeVectorSpace(pointer buffer, size_type num) {}
 
     virtual size_type GetGrowSize(size_type minSize) const {
-        return UMath::Max(minSize, mCapacity + ((mCapacity + 1) >> 1)); // TODO is this right?
+        size_type growSize = mCapacity + ((mCapacity + 1) >> 1);
+        if (growSize < minSize) {
+            growSize = minSize;
+        }
+        return growSize;
     }
 
-    // Unfinished
     virtual size_type GetMaxCapacity() const {
-        return 0;
+        return 0x7FFFFFFF;
     }
 
     virtual void OnGrowRequest(size_type newSize) {}
@@ -167,7 +173,7 @@ template <typename T, unsigned int Alignment = 16> class Vector {
     size_type mSize;     // offset 0x8, size 0x4
 };
 
-template <typename T, std::size_t Size, unsigned int Alignment = 16> class FixedVector : public Vector<T, Alignment> {
+template <typename T, int Size, int Alignment = 16> class FixedVector : public Vector<T, Alignment> {
   public:
     FixedVector() {}
 
@@ -179,21 +185,21 @@ template <typename T, std::size_t Size, unsigned int Alignment = 16> class Fixed
     // TODO also put the typedefs here according to the dwarf?
 
   protected:
-    // Unfinished
     virtual std::size_t GetGrowSize(std::size_t minSize) const {
-        return 0;
+        (void)minSize;
+        return Size;
     }
 
-    // Unfinished
     virtual typename Vector<T, Alignment>::pointer AllocVectorSpace(std::size_t num, unsigned int alignment) {
-        return nullptr;
+        (void)num;
+        (void)alignment;
+        return reinterpret_cast<typename Vector<T, Alignment>::pointer>(mVectorSpace);
     }
 
     virtual void FreeVectorSpace(typename Vector<T, Alignment>::pointer buffer, std::size_t) {}
 
-    // Unfinished
     virtual std::size_t GetMaxCapacity() const {
-        return 0;
+        return Size;
     }
 
   private:

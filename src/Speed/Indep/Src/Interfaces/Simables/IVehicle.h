@@ -127,31 +127,6 @@ enum DriverClass {
     DRIVER_REMOTE = 6,
 };
 
-// TODO move?
-enum ID {
-    LIGHT_NONE = 0,
-    LIGHT_LHEAD = 1,
-    LIGHT_RHEAD = 2,
-    LIGHT_CHEAD = 4,
-    LIGHT_LBRAKE = 8,
-    LIGHT_RBRAKE = 16,
-    LIGHT_CBRAKE = 32,
-    LIGHT_LREVERSE = 64,
-    LIGHT_RREVERSE = 128,
-    LIGHT_LRSIGNAL = 256,
-    LIGHT_RRSIGNAL = 512,
-    LIGHT_LFSIGNAL = 1024,
-    LIGHT_RFSIGNAL = 2048,
-    LIGHT_COPRED = 4096,
-    LIGHT_COPBLUE = 8192,
-    LIGHT_COPWHITE = 16384,
-    LIGHT_COPS = 28672,
-    LIGHT_LSIGNAL = 1280,
-    LIGHT_RSIGNAL = 2560,
-    LIGHT_HEADLIGHTS = 7,
-    LIGHT_REVERSE = 192,
-    LIGHT_BRAKELIGHTS = 56,
-};
 
 class IVehicle : public UTL::COM::IUnknown, public UTL::Collections::ListableSet<IVehicle, 10, eVehicleList, VEHICLE_MAX> {
   public:
@@ -164,7 +139,7 @@ class IVehicle : public UTL::COM::IUnknown, public UTL::Collections::ListableSet
     virtual ~IVehicle() {}
     virtual const ISimable *GetSimable() const = 0;
     virtual ISimable *GetSimable() = 0;
-    virtual UMath::Vector3 &GetPosition() const = 0;
+    virtual const UMath::Vector3 &GetPosition() const = 0;
     virtual void SetBehaviorOverride(UCrc32 mechanic, UCrc32 behavior) = 0;
     virtual void RemoveBehaviorOverride(UCrc32 mechanic) = 0;
     virtual void CommitBehaviorOverrides() = 0;
@@ -179,7 +154,7 @@ class IVehicle : public UTL::COM::IUnknown, public UTL::Collections::ListableSet
     virtual CarType GetModelType() const = 0;
     virtual bool IsSpooled() const = 0;
     virtual const UCrc32 &GetVehicleClass() const = 0;
-    virtual Attrib::Gen::pvehicle &GetVehicleAttributes() const = 0;
+    virtual const Attrib::Gen::pvehicle &GetVehicleAttributes() const = 0;
     virtual const char *GetVehicleName() const = 0;
     virtual unsigned int GetVehicleKey() const = 0;
     virtual void SetDriverClass(DriverClass dc) = 0;
@@ -200,13 +175,13 @@ class IVehicle : public UTL::COM::IUnknown, public UTL::Collections::ListableSet
     virtual float GetSpeed() const = 0;
     virtual void SetSpeed(float speed) = 0;
     virtual float GetAbsoluteSpeed() const = 0;
-    virtual bool IsGlareOn(ID glare) const = 0;
-    virtual void GlareOn(ID glare) = 0;
-    virtual void GlareOff(ID glare) = 0;
+    virtual bool IsGlareOn(VehicleFX::ID glare) = 0;
+    virtual void GlareOn(VehicleFX::ID glare) = 0;
+    virtual void GlareOff(VehicleFX::ID glare) = 0;
     virtual bool IsCollidingWithSoftBarrier() = 0;
     virtual class IVehicleAI *GetAIVehiclePtr() const = 0;
     virtual float GetSlipAngle() const = 0;
-    virtual UMath::Vector3 &GetLocalVelocity() const = 0;
+    virtual const UMath::Vector3 &GetLocalVelocity() const = 0;
     virtual void ComputeHeading(UMath::Vector3 *v) = 0;
     virtual bool IsAnimating() const = 0;
     virtual void SetAnimating(bool animate) = 0;

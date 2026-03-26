@@ -83,6 +83,7 @@ const char *bAllocateSharedString(const char *s);
 void bFreeSharedString(const char *s);
 unsigned int bStringHash(const char *text);
 unsigned int bStringHash(const char *text, int prefix_hash);
+unsigned int bStringHashUpper(const char *text);
 int bStrToLong(const char *s);
 float bStrToFloat(const char *s);
 int bStrLen(const char *s);

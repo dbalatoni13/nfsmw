@@ -139,6 +139,7 @@ template <typename T, typename U, typename V> class Factory {
         Prototype(const _PRODUCT_SIGNATURE &classsig, _CONSTRUCTOR constructor) {
             mSignature = classsig;
             mConstructor = constructor;
+            mTail = mHead;
             mHead = this;
         }
 
@@ -162,17 +163,18 @@ template <typename T, typename U, typename V> class Factory {
 
     ~Factory() {}
 
-    static _PRODUCT CreateInstance(_PRODUCT_SIGNATURE sig, _BUILD_PARAMETERS params);
-    // TODO
-    //  {
-    //     for (const Prototype *f = Prototype::GetHead(); f != nullptr; f = f->GetNext()) {
-    //         if (f->mSignature == sig) {
-    //             return f->mConstructor(params);
-    //         }
-    //     }
-    //     return nullptr;
-    // }
+    static _PRODUCT CreateInstance(_PRODUCT_SIGNATURE sig, _BUILD_PARAMETERS params) {
+        for (const Prototype *f = Prototype::GetHead(); f != nullptr; f = f->GetNext()) {
+            if (f->mSignature == sig) {
+                return f->mConstructor(params);
+            }
+        }
+        return nullptr;
+    }
 };
+
+template <typename T, typename U, typename V>
+typename Factory<T, U, V>::Prototype *Factory<T, U, V>::Prototype::mHead;
 
 } // namespace COM
 } // namespace UTL

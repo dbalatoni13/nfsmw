@@ -5,6 +5,25 @@
 #pragma once
 #endif
 
+#include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 
+class IEffects : public UTL::COM::IUnknown {
+  public:
+    static HINTERFACE _IHandle() {
+        return (HINTERFACE)_IHandle;
+    }
+
+    IEffects(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
+
+    virtual ~IEffects() {}
+
+    virtual void HitGround();
+    virtual void HitWorld();
+    virtual void HitObject();
+    virtual void ScrapeObject();
+    virtual void ScrapeGround();
+    virtual void ScrapeWorld();
+    virtual void Purge();
+};
 
 #endif

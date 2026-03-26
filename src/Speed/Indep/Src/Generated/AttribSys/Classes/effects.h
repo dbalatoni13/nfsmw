@@ -60,9 +60,7 @@ struct effects : Instance {
         Instance::Change(refspec);
     }
 
-    static Key ClassKey() {
-        return 0xebcee74c;
-    }
+    static Key ClassKey();
 
     const float &InheritVelocity() const {
         const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0x0099cb26, 0));

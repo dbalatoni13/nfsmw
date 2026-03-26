@@ -8,16 +8,176 @@
 #include "Speed/Indep/Src/Main/EventSequencer.h"
 #include "Speed/Indep/Src/Physics/Dynamics.h"
 #include "Speed/Indep/Src/Physics/Dynamics/Collision.h"
+#include "Speed/Indep/Src/Physics/PhysicsObject.h"
 #include "Speed/Indep/Src/Sim/Collision.h"
 #include "Speed/Indep/Src/Sim/Simulation.h"
 #include "Speed/Indep/Src/World/WCollisionTri.h"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 
+#include <algorithm>
 #include <types.h>
+
+namespace Dynamics {
+namespace Articulation {
+
+void Resolve();
+
+} // namespace Articulation
+} // namespace Dynamics
 
 static char RBGrid_Memory[6912]; // size: 0x1B00, address: 0x8048A1A8
 
+template <>
+void *ScratchPtr<RigidBody::Volatile>::mWorkSpace = nullptr;
+
+template <>
+RigidBody::Volatile *ScratchPtr<RigidBody::Volatile>::mPointer[64] = { nullptr };
+
+template <>
+RigidBody::Volatile ScratchPtr<RigidBody::Volatile>::mRAMBuffer[64];
+
+template <>
+SAP::Grid<RigidBody>::Node *SAP::Grid<RigidBody>::mRootX = nullptr;
+
+template <>
+SAP::Grid<RigidBody>::Node *SAP::Grid<RigidBody>::mRootZ = nullptr;
+
 bTList<RigidBody> TheRigidBodies;
+
+inline bool operator<(const CollisionPacket &a, const CollisionPacket &b) {
+    return a.penetration > b.penetration;
+}
+
+template <> ScratchPtr<RigidBody::Volatile>::~ScratchPtr() {
+    *mRef = nullptr;
+}
+
+IDynamicsEntity::~IDynamicsEntity() {}
+
+struct SAPNodeAccess {
+    SAPNodeAccess *mHead;
+    SAPNodeAccess *mTail;
+    float mPosition;
+    float mSort;
+    void *mAxis;
+    SAPNodeAccess **mRoot;
+};
+
+struct SAPAxisAccess {
+    SAPNodeAccess mMin;
+    SAPNodeAccess mMax;
+    void *mGrid;
+};
+
+struct RBGridAccess {
+    SAPAxisAccess mX;
+    SAPAxisAccess mZ;
+    RigidBody *mOwner;
+};
+
+static inline void InitGridNode(SAPNodeAccess &node, void *axis, SAPNodeAccess **root, float position) {
+    node.mHead = nullptr;
+    node.mTail = nullptr;
+    node.mPosition = position;
+    node.mSort = position;
+    node.mAxis = axis;
+    node.mRoot = root;
+}
+
+static inline void InsertGridNode(SAPNodeAccess *&root, SAPNodeAccess *node) {
+    SAPNodeAccess *tail = root;
+    SAPNodeAccess *head = nullptr;
+
+    while (tail && tail->mPosition < node->mPosition) {
+        head = tail;
+        tail = tail->mTail;
+    }
+
+    node->mHead = head;
+    node->mTail = tail;
+    if (head) {
+        head->mTail = node;
+    } else {
+        root = node;
+    }
+    if (tail) {
+        tail->mHead = node;
+    }
+}
+
+template <typename T>
+SAP::Grid<T>::~Grid() {
+    struct NodeAccess {
+        NodeAccess *mHead;
+        NodeAccess *mTail;
+        float mPosition;
+        float mSort;
+        void *mAxis;
+        NodeAccess **mRoot;
+    };
+
+    struct AxisAccess {
+        NodeAccess mMin;
+        NodeAccess mMax;
+        void *mGrid;
+    };
+
+    struct GridAccess {
+        AxisAccess mX;
+        AxisAccess mZ;
+        void *mOwner;
+    };
+
+    GridAccess &grid = *reinterpret_cast<GridAccess *>(this);
+
+    if (*grid.mZ.mMax.mRoot == &grid.mZ.mMax) {
+        *grid.mZ.mMax.mRoot = grid.mZ.mMax.mTail;
+    }
+    if (grid.mZ.mMax.mHead) {
+        grid.mZ.mMax.mHead->mTail = grid.mZ.mMax.mTail;
+    }
+    if (grid.mZ.mMax.mTail) {
+        grid.mZ.mMax.mTail->mHead = grid.mZ.mMax.mHead;
+    }
+    grid.mZ.mMax.mTail = nullptr;
+    grid.mZ.mMax.mHead = nullptr;
+
+    if (*grid.mZ.mMin.mRoot == &grid.mZ.mMin) {
+        *grid.mZ.mMin.mRoot = grid.mZ.mMin.mTail;
+    }
+    if (grid.mZ.mMin.mHead) {
+        grid.mZ.mMin.mHead->mTail = grid.mZ.mMin.mTail;
+    }
+    if (grid.mZ.mMin.mTail) {
+        grid.mZ.mMin.mTail->mHead = grid.mZ.mMin.mHead;
+    }
+    grid.mZ.mMin.mTail = nullptr;
+    grid.mZ.mMin.mHead = nullptr;
+
+    if (*grid.mX.mMax.mRoot == &grid.mX.mMax) {
+        *grid.mX.mMax.mRoot = grid.mX.mMax.mTail;
+    }
+    if (grid.mX.mMax.mHead) {
+        grid.mX.mMax.mHead->mTail = grid.mX.mMax.mTail;
+    }
+    if (grid.mX.mMax.mTail) {
+        grid.mX.mMax.mTail->mHead = grid.mX.mMax.mHead;
+    }
+    grid.mX.mMax.mTail = nullptr;
+    grid.mX.mMax.mHead = nullptr;
+
+    if (*grid.mX.mMin.mRoot == &grid.mX.mMin) {
+        *grid.mX.mMin.mRoot = grid.mX.mMin.mTail;
+    }
+    if (grid.mX.mMin.mHead) {
+        grid.mX.mMin.mHead->mTail = grid.mX.mMin.mTail;
+    }
+    if (grid.mX.mMin.mTail) {
+        grid.mX.mMin.mTail->mHead = grid.mX.mMin.mHead;
+    }
+    grid.mX.mMin.mTail = nullptr;
+    grid.mX.mMin.mHead = nullptr;
+}
 
 // TODO clear the magic numbers in Volatile::state and status
 
@@ -30,11 +190,11 @@ RigidBody::Volatile::Volatile() {}
 
 // UNSOLVED but functionally matching
 RigidBody::Mesh::Mesh(const SimSurface &material, const UMath::Vector4 *verts, unsigned int count, UCrc32 name, bool persistant)
-    : mVerts(nullptr),                          //
-      mNumVertices(count),                      //
-      mFlags(0),                                //
-      mMaterial(material.GetConstCollection()), //
-      mName(name) {
+    : mNumVertices(count), //
+      mFlags(0) {
+    mVerts = nullptr;
+    mMaterial = material.GetConstCollection();
+    mName = name;
     if (persistant) {
         mVerts = const_cast<UMath::Vector4 *>(verts);
     } else {
@@ -121,10 +281,368 @@ void RigidBody::InitRigidBodySystem() {}
 
 void RigidBody::ShutdownRigidBodySystem() {}
 
+RBGrid *RBGrid::Add(unsigned int index, RigidBody &owner, const UMath::Vector3 &position, float radius) {
+    if (index > 0x3F) {
+        return nullptr;
+    }
+
+    RBGridAccess *grid = reinterpret_cast<RBGridAccess *>(RBGrid_Memory + index * sizeof(RBGrid));
+    if (!grid) {
+        return nullptr;
+    }
+
+    const float minX = position.x - radius;
+    const float maxX = position.x + radius;
+    const float maxZ = position.z + radius;
+    const float minZ = position.z - radius;
+
+    SAPNodeAccess *&rootX = reinterpret_cast<SAPNodeAccess *&>(SAP::Grid<RigidBody>::mRootX);
+    SAPNodeAccess *&rootZ = reinterpret_cast<SAPNodeAccess *&>(SAP::Grid<RigidBody>::mRootZ);
+
+    grid->mX.mMin.mHead = nullptr;
+    grid->mX.mMin.mTail = nullptr;
+    grid->mX.mMin.mPosition = minX;
+    grid->mX.mMin.mSort = minX;
+    grid->mX.mMin.mAxis = &grid->mX;
+    grid->mX.mMin.mRoot = &rootX;
+
+    SAPNodeAccess *tail = rootX;
+    if (!tail) {
+        rootX = &grid->mX.mMin;
+    } else {
+        bool before = minX < tail->mPosition;
+        bool equal = tail->mPosition == minX;
+        SAPNodeAccess *head = nullptr;
+        SAPNodeAccess *node = rootX;
+        while (!(before || equal) && (tail = node->mTail, head = node, tail)) {
+            before = grid->mX.mMin.mPosition < tail->mPosition;
+            equal = tail->mPosition == grid->mX.mMin.mPosition;
+            node = tail;
+        }
+        if (!head) {
+            SAPNodeAccess *oldHead = rootX;
+            if (rootX == &grid->mX.mMin) {
+                rootX = grid->mX.mMin.mTail;
+            }
+            if (grid->mX.mMin.mHead) {
+                grid->mX.mMin.mHead->mTail = grid->mX.mMin.mTail;
+            }
+            if (grid->mX.mMin.mTail) {
+                grid->mX.mMin.mTail->mHead = grid->mX.mMin.mHead;
+            }
+            grid->mX.mMin.mHead = oldHead;
+            grid->mX.mMin.mTail = nullptr;
+            if (oldHead) {
+                oldHead->mTail = &grid->mX.mMin;
+            }
+        } else {
+            SAPNodeAccess *newTail = head->mTail;
+            if (rootX == &grid->mX.mMin) {
+                rootX = grid->mX.mMin.mTail;
+            }
+            if (grid->mX.mMin.mHead) {
+                grid->mX.mMin.mHead->mTail = grid->mX.mMin.mTail;
+            }
+            if (grid->mX.mMin.mTail) {
+                grid->mX.mMin.mTail->mHead = grid->mX.mMin.mHead;
+            }
+            grid->mX.mMin.mHead = head;
+            grid->mX.mMin.mTail = nullptr;
+            head->mTail = &grid->mX.mMin;
+            if (newTail) {
+                grid->mX.mMin.mTail = newTail;
+                newTail->mHead = &grid->mX.mMin;
+                if (grid->mX.mMin.mTail == rootX) {
+                    rootX = &grid->mX.mMin;
+                }
+            }
+        }
+    }
+
+    grid->mX.mMax.mHead = nullptr;
+    grid->mX.mMax.mTail = nullptr;
+    grid->mX.mMax.mPosition = maxX;
+    grid->mX.mMax.mSort = maxX;
+    grid->mX.mMax.mAxis = &grid->mX;
+    grid->mX.mMax.mRoot = &rootX;
+    grid->mX.mGrid = grid;
+
+    tail = rootX;
+    if (!tail) {
+        rootX = &grid->mX.mMax;
+    } else {
+        bool before = maxX < tail->mPosition;
+        bool equal = tail->mPosition == maxX;
+        SAPNodeAccess *head = nullptr;
+        SAPNodeAccess *node = rootX;
+        while (!(before || equal) && (tail = node->mTail, head = node, tail)) {
+            before = grid->mX.mMax.mPosition < tail->mPosition;
+            equal = tail->mPosition == grid->mX.mMax.mPosition;
+            node = tail;
+        }
+        if (!head) {
+            SAPNodeAccess *oldHead = rootX;
+            if (rootX == &grid->mX.mMax) {
+                rootX = grid->mX.mMax.mTail;
+            }
+            if (grid->mX.mMax.mHead) {
+                grid->mX.mMax.mHead->mTail = grid->mX.mMax.mTail;
+            }
+            if (grid->mX.mMax.mTail) {
+                grid->mX.mMax.mTail->mHead = grid->mX.mMax.mHead;
+            }
+            grid->mX.mMax.mHead = oldHead;
+            grid->mX.mMax.mTail = nullptr;
+            if (oldHead) {
+                oldHead->mTail = &grid->mX.mMax;
+            }
+        } else {
+            SAPNodeAccess *newTail = head->mTail;
+            if (rootX == &grid->mX.mMax) {
+                rootX = grid->mX.mMax.mTail;
+            }
+            if (grid->mX.mMax.mHead) {
+                grid->mX.mMax.mHead->mTail = grid->mX.mMax.mTail;
+            }
+            if (grid->mX.mMax.mTail) {
+                grid->mX.mMax.mTail->mHead = grid->mX.mMax.mHead;
+            }
+            grid->mX.mMax.mHead = head;
+            grid->mX.mMax.mTail = nullptr;
+            head->mTail = &grid->mX.mMax;
+            if (newTail) {
+                grid->mX.mMax.mTail = newTail;
+                newTail->mHead = &grid->mX.mMax;
+                if (grid->mX.mMax.mTail == rootX) {
+                    rootX = &grid->mX.mMax;
+                }
+            }
+        }
+    }
+
+    grid->mZ.mMin.mHead = nullptr;
+    grid->mZ.mMin.mTail = nullptr;
+    grid->mZ.mMin.mPosition = minZ;
+    grid->mZ.mMin.mSort = minZ;
+    grid->mZ.mMin.mAxis = &grid->mZ;
+    grid->mZ.mMin.mRoot = &rootZ;
+
+    tail = rootZ;
+    if (!tail) {
+        rootZ = &grid->mZ.mMin;
+    } else {
+        bool before = minZ < tail->mPosition;
+        bool equal = tail->mPosition == minZ;
+        SAPNodeAccess *head = nullptr;
+        SAPNodeAccess *node = rootZ;
+        while (!(before || equal) && (tail = node->mTail, head = node, tail)) {
+            before = grid->mZ.mMin.mPosition < tail->mPosition;
+            equal = tail->mPosition == grid->mZ.mMin.mPosition;
+            node = tail;
+        }
+        if (!head) {
+            SAPNodeAccess *oldHead = rootZ;
+            if (rootZ == &grid->mZ.mMin) {
+                rootZ = grid->mZ.mMin.mTail;
+            }
+            if (grid->mZ.mMin.mHead) {
+                grid->mZ.mMin.mHead->mTail = grid->mZ.mMin.mTail;
+            }
+            if (grid->mZ.mMin.mTail) {
+                grid->mZ.mMin.mTail->mHead = grid->mZ.mMin.mHead;
+            }
+            grid->mZ.mMin.mHead = oldHead;
+            grid->mZ.mMin.mTail = nullptr;
+            if (oldHead) {
+                oldHead->mTail = &grid->mZ.mMin;
+            }
+        } else {
+            SAPNodeAccess *newTail = head->mTail;
+            if (rootZ == &grid->mZ.mMin) {
+                rootZ = grid->mZ.mMin.mTail;
+            }
+            if (grid->mZ.mMin.mHead) {
+                grid->mZ.mMin.mHead->mTail = grid->mZ.mMin.mTail;
+            }
+            if (grid->mZ.mMin.mTail) {
+                grid->mZ.mMin.mTail->mHead = grid->mZ.mMin.mHead;
+            }
+            grid->mZ.mMin.mHead = head;
+            grid->mZ.mMin.mTail = nullptr;
+            head->mTail = &grid->mZ.mMin;
+            if (newTail) {
+                grid->mZ.mMin.mTail = newTail;
+                newTail->mHead = &grid->mZ.mMin;
+                if (grid->mZ.mMin.mTail == rootZ) {
+                    rootZ = &grid->mZ.mMin;
+                }
+            }
+        }
+    }
+
+    grid->mZ.mMax.mHead = nullptr;
+    grid->mZ.mMax.mTail = nullptr;
+    grid->mZ.mMax.mPosition = maxZ;
+    grid->mZ.mMax.mSort = maxZ;
+    grid->mZ.mMax.mAxis = &grid->mZ;
+    grid->mZ.mMax.mRoot = &rootZ;
+    grid->mZ.mGrid = grid;
+
+    tail = rootZ;
+    if (!tail) {
+        rootZ = &grid->mZ.mMax;
+    } else {
+        bool before = maxZ < tail->mPosition;
+        bool equal = tail->mPosition == maxZ;
+        SAPNodeAccess *head = nullptr;
+        SAPNodeAccess *node = rootZ;
+        while (!(before || equal) && (tail = node->mTail, head = node, tail)) {
+            before = grid->mZ.mMax.mPosition < tail->mPosition;
+            equal = tail->mPosition == grid->mZ.mMax.mPosition;
+            node = tail;
+        }
+        if (!head) {
+            SAPNodeAccess *oldHead = rootZ;
+            if (rootZ == &grid->mZ.mMax) {
+                rootZ = grid->mZ.mMax.mTail;
+            }
+            if (grid->mZ.mMax.mHead) {
+                grid->mZ.mMax.mHead->mTail = grid->mZ.mMax.mTail;
+            }
+            if (grid->mZ.mMax.mTail) {
+                grid->mZ.mMax.mTail->mHead = grid->mZ.mMax.mHead;
+            }
+            grid->mZ.mMax.mHead = oldHead;
+            grid->mZ.mMax.mTail = nullptr;
+            if (oldHead) {
+                oldHead->mTail = &grid->mZ.mMax;
+            }
+        } else {
+            SAPNodeAccess *newTail = head->mTail;
+            if (rootZ == &grid->mZ.mMax) {
+                rootZ = grid->mZ.mMax.mTail;
+            }
+            if (grid->mZ.mMax.mHead) {
+                grid->mZ.mMax.mHead->mTail = grid->mZ.mMax.mTail;
+            }
+            if (grid->mZ.mMax.mTail) {
+                grid->mZ.mMax.mTail->mHead = grid->mZ.mMax.mHead;
+            }
+            grid->mZ.mMax.mHead = head;
+            grid->mZ.mMax.mTail = nullptr;
+            head->mTail = &grid->mZ.mMax;
+            if (newTail) {
+                grid->mZ.mMax.mTail = newTail;
+                newTail->mHead = &grid->mZ.mMax;
+                if (grid->mZ.mMax.mTail == rootZ) {
+                    rootZ = &grid->mZ.mMax;
+                }
+            }
+        }
+    }
+
+    grid->mOwner = &owner;
+    return reinterpret_cast<RBGrid *>(grid);
+}
+
 void RBGrid::Remove(RBGrid *grid) {
     if (grid) {
         grid->~RBGrid();
     }
+}
+
+RigidBody::RigidBody(const BehaviorParams &bp, const RBComplexParams &params)
+    : Behavior(bp, 0),                  //
+      IRigidBody(bp.fowner),            //
+      ICollisionBody(bp.fowner),        //
+      IDynamicsEntity(bp.fowner),       //
+      IBoundable(bp.fowner),            //
+      mData(),                          //
+      mSpecs(this, 0),                  //
+      mWCollider(nullptr),              //
+      mCOG(UMath::Vector3::kZero),      //
+      mGeoms(params.fgeoms),            //
+      mGrid(nullptr),                   //
+      mCollisionMask(params.fCollisionMask), //
+      mSimableType(GetOwner()->GetSimableType()), //
+      mDetachForce(0.0f) {
+    unsigned int world_id;
+
+    UMath::Copy(UMath::Matrix4::kIdentity, mInvWorldTensor);
+    mGroundNormal.x = 0.0f;
+    mGroundNormal.y = 1.0f;
+    mGroundNormal.z = 0.0f;
+    mGroundNormal.w = 0.0f;
+    {
+        float dimension = params.fdimension.x;
+        if (dimension < 0.1f) {
+            dimension = 0.1f;
+        }
+        mDimension.x = dimension;
+    }
+    {
+        float dimension = params.fdimension.y;
+        if (dimension < 0.1f) {
+            dimension = 0.1f;
+        }
+        mDimension.y = dimension;
+    }
+    {
+        float dimension = params.fdimension.z;
+        if (dimension < 0.1f) {
+            dimension = 0.1f;
+        }
+        mDimension.z = dimension;
+    }
+
+    TheRigidBodies.AddTail(this);
+    MakeDebugable(DBG_RIGIDBODY);
+
+    mData->force = UMath::Vector3::kZero;
+    mData->torque = UMath::Vector3::kZero;
+    mData->index = AssignSlot();
+    mData->mass = params.finitMass;
+    mData->status = 0;
+    mData->statusPrev = 0;
+    mData->position = params.finitPos;
+    mData->linearVel = params.factive ? params.finitVel : UMath::Vector3::kZero;
+    mData->angularVel = params.factive ? params.finitAngVel : UMath::Vector3::kZero;
+    UMath::Copy(UMath::Matrix4::kIdentity, mData->bodyMatrix);
+    mData->inertiaTensor = params.finitMoment;
+    mData->leversInContact = 0;
+    mData->oom = 1.0f / mData->mass;
+    mData->state = 0;
+    mData->radius = UMath::Length(params.fdimension);
+    SetOrientation(params.finitMat);
+    mGrid = RBGrid::Add(mData->index, *this, params.finitPos, UMath::Length(params.fdimension));
+
+    mCOG = UMath::Vector4To3(mSpecs->CG());
+    if (!params.factive) {
+        mData->state = 1;
+    }
+
+    if (UMath::LengthSquare(UMath::Vector4To3(mSpecs->DRAG())) > 0.0f) {
+        mData->status |= 0x20;
+    } else {
+        mData->status &= 0xFFDF;
+    }
+
+    if (UMath::LengthSquare(UMath::Vector4To3(mSpecs->DRAG_ANGULAR())) > 0.0f) {
+        mData->status |= 0x800;
+    } else {
+        mData->status &= 0xF7FF;
+    }
+
+    if (mSimableType == SIMABLE_VEHICLE) {
+        mData->status |= 0x40;
+    }
+
+    world_id = GetOwner()->GetWorldID();
+    mWCollider = WCollider::Create(world_id, WCollider::kColliderShape_Cylinder, 0x1C, mCollisionMask);
+    CreateGeometries();
+    mCount++;
+    mMaps[mData->index] = this;
+    mData->status |= 0x200;
 }
 
 RigidBody::~RigidBody() {
@@ -237,6 +755,63 @@ void RigidBody::Detach() {
 
 void RigidBody::SetInertiaTensor(const UMath::Vector3 &moment) {
     mData->inertiaTensor = moment;
+}
+
+void RigidBody::DoIntegration(const float dT) {
+    Volatile &data = *mData;
+
+    if (data.state == STATE_AWAKE) {
+        UMath::Vector3 cg0;
+        UMath::Rotate(mCOG, data.bodyMatrix, cg0);
+
+        UMath::ScaleAdd(data.force, dT * data.oom, data.linearVel, data.linearVel);
+        UMath::Scale(data.torque, dT, data.torque);
+        UMath::ScaleAdd(data.linearVel, dT, data.position, data.position);
+        UMath::Rotate(data.torque, mInvWorldTensor, data.torque);
+        UMath::Add(data.angularVel, data.torque, data.angularVel);
+
+        data.linearVel.x = UMath::Clamp(data.linearVel.x, -300.0f, 300.0f);
+        data.linearVel.y = UMath::Clamp(data.linearVel.y, -300.0f, 300.0f);
+        data.linearVel.z = UMath::Clamp(data.linearVel.z, -300.0f, 300.0f);
+        data.angularVel.x = UMath::Clamp(data.angularVel.x, -30.0f, 30.0f);
+        data.angularVel.y = UMath::Clamp(data.angularVel.y, -30.0f, 30.0f);
+        data.angularVel.z = UMath::Clamp(data.angularVel.z, -30.0f, 30.0f);
+
+        if (UMath::LengthSquare(data.angularVel) != 0.0f) {
+            UMath::Vector3 angularStep;
+            UMath::Vector4 deltaOrientation;
+
+            UMath::Scale(data.angularVel, dT, angularStep);
+            deltaOrientation.x =
+                angularStep.x * data.orientation.w + (angularStep.y * data.orientation.z - angularStep.z * data.orientation.y);
+            deltaOrientation.y =
+                angularStep.y * data.orientation.w + (angularStep.z * data.orientation.x - angularStep.x * data.orientation.z);
+            deltaOrientation.z =
+                angularStep.z * data.orientation.w + (angularStep.x * data.orientation.y - angularStep.y * data.orientation.x);
+            deltaOrientation.w =
+                -(angularStep.x * data.orientation.x + angularStep.y * data.orientation.y + angularStep.z * data.orientation.z);
+
+            UMath::ScaleAdd(deltaOrientation, 0.5f, data.orientation, data.orientation);
+
+            float orientationLength =
+                UMath::Sqrt(UMath::Dotxyz(data.orientation, data.orientation) + data.orientation.w * data.orientation.w);
+            if (orientationLength != 0.0f) {
+                UMath::Scale(data.orientation, 1.0f / orientationLength, data.orientation);
+            }
+
+            UMath::QuaternionToMatrix4(data.orientation, data.bodyMatrix);
+            data.inertiaTensor.GetInverseWorldTensor(data.bodyMatrix, mInvWorldTensor);
+
+            UMath::Vector3 cg1;
+            UMath::Vector3 dcg;
+            UMath::Rotate(mCOG, data.bodyMatrix, cg1);
+            UMath::Sub(cg0, cg1, dcg);
+            UMath::Add(data.position, dcg, data.position);
+        }
+    } else {
+        UMath::Clear(data.linearVel);
+        UMath::Clear(data.angularVel);
+    }
 }
 
 void RigidBody::SetMass(float newMass) {
@@ -1024,13 +1599,220 @@ void RigidBody::DoWorldCollisions(const float dT) {
     }
 }
 
-void RigidBody::DoBarrierCollision(float dT) {}
+void RigidBody::DoObbCollision(float dT) {
+    if (mWCollider->fObbList.empty()) {
+        return;
+    }
+
+    Volatile &data = *mData;
+    WCollisionMgr mgr(mCollisionMask, 3);
+    Dynamics::Collision::Geometry thisGeom;
+    Dynamics::Collision::Geometry otherGeom;
+
+    const WCollisionObject *const *obb = mWCollider->fObbList.begin();
+    const WCollisionObject *const *obbEnd = mWCollider->fObbList.end();
+    while (obb != obbEnd) {
+        UMath::Vector3 otherVelocity = UMath::Vector3::kZero;
+        WSurface otherSurface;
+        const WCollisionObject *object = *obb++;
+
+        mgr.BuildGeomFromWorldObb(*object, dT, otherGeom, otherVelocity, otherSurface);
+        for (Primitive *collider = mPrimitives.GetHead(); collider != mPrimitives.EndOfList(); collider = collider->GetNext()) {
+            if (!(collider->GetFlags() & Primitive::VSWORLD) || (collider->GetFlags() & Primitive::DISABLED) ||
+                !collider->SetCollision(data, thisGeom) || !Dynamics::Collision::Geometry::FindIntersection(&thisGeom, &otherGeom, &thisGeom)) {
+                continue;
+            }
+
+            COLLISION_INFO collisionInfo;
+            SimSurface bodySurface(collider->GetMaterial());
+
+            data.SetStatus(Volatile::HAS_HAD_OBJECT_COLLISION);
+            UMath::ScaleAdd(thisGeom.GetCollisionNormal(), -thisGeom.GetOverlap(), data.position, data.position);
+            if (ResolveWorldOBBCollision(thisGeom.GetCollisionNormal(), thisGeom.GetCollisionPoint(), &collisionInfo, &otherGeom, otherVelocity,
+                                         bodySurface, SimSurface::kNull)) {
+                data.SetStatus(Volatile::HAS_HAD_WORLD_COLLISION);
+                new ECollision(collisionInfo);
+            }
+        }
+    }
+}
+
+void RigidBody::DoBarrierCollision(float dT) {
+    if (mWCollider->fBarrierList.empty()) {
+        return;
+    }
+
+    const Volatile &data = *mData;
+    const WCollisionBarrierList &barriers = mWCollider->fBarrierList;
+    Dynamics::Collision::Geometry thisGeom;
+    bool test_primitives = true;
+
+    if (mPrimitives.Size() > 1) {
+        UMath::Vector3 velocity;
+        UMath::Vector3 dim;
+        float radius = mPrimitives.GetRadius();
+
+        UMath::Scale(data.linearVel, dT, velocity);
+        dim.x = radius;
+        dim.y = radius;
+        dim.z = radius;
+        thisGeom.Set(data.bodyMatrix, data.position, dim, Dynamics::Collision::Geometry::SPHERE, velocity);
+        test_primitives = WCollisionMgr(mCollisionMask, 3).Collide(&thisGeom, &barriers, this, nullptr, false);
+    }
+
+    if (test_primitives) {
+        for (Primitive *collider = mPrimitives.GetHead(); collider != mPrimitives.EndOfList(); collider = collider->GetNext()) {
+            if ((((collider->GetFlags() ^ 1) & 1) == 0) && !(collider->GetFlags() & 8) && collider->SetCollision(data, thisGeom)) {
+                WCollisionMgr(mCollisionMask, 3).Collide(&thisGeom, &barriers, this, collider, (collider->GetFlags() & Primitive::ONESIDED) != 0);
+            }
+        }
+    }
+}
 
 void RigidBody::DoInstanceCollision(float dT) {
     if (!mSpecs.INSTANCE_COLLISIONS_3D()) {
         DoInstanceCollision2d(dT);
     } else {
         DoInstanceCollision3d(dT);
+    }
+}
+
+void RigidBody::DoInstanceCollision2d(float dT) {
+    Volatile &data = *mData;
+    CollisionPacket packets[16];
+    unsigned int packetCount = 0;
+    UMath::Vector4 deepestPenetration = UMath::Vector4::kZero;
+    UMath::Vector3 worldCG;
+    WWorldPos worldPos = GetOwner()->GetWPos();
+    UMath::Vector3 upExtent;
+
+    data.leversInContact = 0;
+    UMath::Rotate(mCOG, data.bodyMatrix, worldCG);
+
+    upExtent.x = data.bodyMatrix.v0.y * mDimension.x;
+    upExtent.y = data.bodyMatrix.v1.y * mDimension.y;
+    upExtent.z = data.bodyMatrix.v2.y * mDimension.z;
+
+    const float speedXZ = UMath::Lengthxz(data.linearVel);
+    const float projectedHeight = UMath::Length(upExtent);
+    const float maxBodyY = data.position.y + projectedHeight;
+
+    for (Primitive *collider = mPrimitives.GetHead(); collider != mPrimitives.EndOfList() && packetCount < 16; collider = collider->GetNext()) {
+        if (!(collider->GetFlags() & Primitive::VSGROUND) || (collider->GetFlags() & Primitive::DISABLED) ||
+            collider->GetShape() != Dynamics::Collision::Geometry::BOX) {
+            continue;
+        }
+
+        Dynamics::Collision::Geometry boxGeom;
+        if (!collider->SetCollision(data, boxGeom)) {
+            continue;
+        }
+
+        const UMath::Vector3 &dim = collider->GetDimension();
+        for (int corner = 0; corner < 8 && packetCount < 16; ++corner) {
+            UMath::Vector3 localCorner = UMath::Vector3::kZero;
+            UMath::Vector3 lever;
+            UMath::Vector3 worldPoint;
+            UMath::Vector3 arm;
+            UMath::Vector4 groundNormal = mGroundNormal;
+
+            localCorner.x = (corner & 1) ? dim.x : -dim.x;
+            localCorner.y = (corner & 2) ? dim.y : -dim.y;
+            localCorner.z = (corner & 4) ? dim.z : -dim.z;
+
+            UMath::Rotate(localCorner, boxGeom.GetOrientation(), lever);
+            UMath::Add(lever, boxGeom.GetPosition(), worldPoint);
+            UMath::Sub(worldPoint, data.position, lever);
+
+            float fallDistance =
+                (data.angularVel.x * (lever.z - worldCG.z) - (data.angularVel.z * (lever.x - worldCG.x) + data.linearVel.y)) * dT;
+            fallDistance = UMath::Max(fallDistance, 0.0f);
+
+            float tolerance = maxBodyY - worldPoint.y;
+            const float maxTolerance = projectedHeight + speedXZ * dT + fallDistance;
+            if (maxTolerance < tolerance) {
+                tolerance = maxTolerance;
+            }
+            if (tolerance < 0.25f) {
+                tolerance = 0.25f;
+            }
+
+            worldPos.SetTolerance(tolerance);
+            if (worldPos.Update(worldPoint, groundNormal, true, mWCollider, true) && groundNormal.w > 1.0e-6f) {
+                if (deepestPenetration.w < groundNormal.w) {
+                    deepestPenetration = groundNormal;
+                }
+
+                arm = lever;
+                ConvertWorldToLocal(arm, false);
+
+                CollisionPacket &packet = packets[packetCount++];
+                packet.lever = lever;
+                packet.bodysurface = collider->GetMaterial();
+                packet.normal = UMath::Vector4To3(groundNormal);
+                packet.penetration = groundNormal.w;
+                packet.arm = arm;
+                packet.surface = worldPos.GetSurface();
+            }
+        }
+    }
+
+    for (Mesh *mesh = mMeshes.GetHead(); mesh != mMeshes.EndOfList() && packetCount < 16; mesh = mesh->GetNext()) {
+        if (mesh->GetFlags() & Mesh::DISABLED) {
+            continue;
+        }
+
+        const UMath::Vector4 *vertices = mesh->GetVerts();
+        const unsigned int vertexCount = mesh->GetNumVertices();
+        for (unsigned int i = 0; i < vertexCount && packetCount < 16; ++i) {
+            UMath::Vector3 arm = UMath::Vector4To3(vertices[i]);
+            UMath::Vector3 lever;
+            UMath::Vector3 worldPoint;
+            UMath::Vector4 groundNormal = mGroundNormal;
+
+            UMath::Rotate(arm, data.bodyMatrix, lever);
+            UMath::Add(lever, data.position, worldPoint);
+
+            float fallDistance =
+                (data.angularVel.x * (lever.z - worldCG.z) - (data.angularVel.z * (lever.x - worldCG.x) + data.linearVel.y)) * dT;
+            fallDistance = UMath::Max(fallDistance, 0.0f);
+
+            float tolerance = maxBodyY - worldPoint.y;
+            const float maxTolerance = projectedHeight + speedXZ * dT + fallDistance;
+            if (maxTolerance < tolerance) {
+                tolerance = maxTolerance;
+            }
+            if (tolerance < 0.25f) {
+                tolerance = 0.25f;
+            }
+
+            worldPos.SetTolerance(tolerance);
+            if (worldPos.Update(worldPoint, groundNormal, true, mWCollider, true) && groundNormal.w > 1.0e-6f) {
+                if (deepestPenetration.w < groundNormal.w) {
+                    deepestPenetration = groundNormal;
+                }
+
+                CollisionPacket &packet = packets[packetCount++];
+                packet.lever = lever;
+                packet.bodysurface = mesh->GetMaterial();
+                packet.normal = UMath::Vector4To3(groundNormal);
+                packet.penetration = groundNormal.w;
+                packet.arm = arm;
+                packet.surface = worldPos.GetSurface();
+            }
+        }
+    }
+
+    if (packetCount != 0) {
+        data.leversInContact = static_cast<char>(packetCount);
+        if (packetCount > 1) {
+            std::sort(packets, packets + packetCount);
+        }
+
+        ResolveGroundCollision(packets, packetCount);
+        if (deepestPenetration.w > 0.0f) {
+            UMath::ScaleAdd(UMath::Vector4To3(deepestPenetration), deepestPenetration.w, data.position, data.position);
+        }
     }
 }
 
@@ -1104,6 +1886,178 @@ void RigidBody::PushSP(void *workspace) {
 void RigidBody::PopSP() {
     mOnSP = 0;
     ScratchPtr<RigidBody::Volatile>::Pop();
+}
+
+void RigidBody::Update(const float dT) {
+    int overlapX = 0;
+    int overlapZ = 0;
+
+    for (RigidBody *body = TheRigidBodies.GetHead(); body != TheRigidBodies.EndOfList(); body = body->GetNext()) {
+        body->OnBeginFrame(dT);
+        body->UpdateGrid(overlapX, overlapZ);
+    }
+
+    for (SAPNodeAccess *nodeX = reinterpret_cast<SAPNodeAccess *>(SAP::Grid<RigidBody>::mRootX); nodeX;) {
+        SAPNodeAccess *next = nodeX->mTail;
+        const float position = nodeX->mPosition;
+        nodeX->mSort = position;
+
+        SAPNodeAccess *head = nullptr;
+        for (SAPNodeAccess *node = nodeX->mHead; node && position < node->mSort; node = node->mHead) {
+            head = node;
+        }
+
+        if (head) {
+            SAPNodeAccess *newHead = head->mHead;
+            if (*nodeX->mRoot == nodeX) {
+                *nodeX->mRoot = nodeX->mTail;
+            }
+            if (nodeX->mHead) {
+                nodeX->mHead->mTail = nodeX->mTail;
+            }
+            if (nodeX->mTail) {
+                nodeX->mTail->mHead = nodeX->mHead;
+            }
+            nodeX->mTail = head;
+            nodeX->mHead = newHead;
+            if (newHead) {
+                newHead->mTail = nodeX;
+            }
+            head->mHead = nodeX;
+            if (nodeX->mTail == *nodeX->mRoot) {
+                *nodeX->mRoot = nodeX;
+            }
+            nodeX = next;
+            continue;
+        }
+
+        SAPNodeAccess *tail = nullptr;
+        for (SAPNodeAccess *node = nodeX->mTail; node && node->mSort < position; node = node->mTail) {
+            tail = node;
+        }
+
+        if (tail) {
+            SAPNodeAccess *newTail = tail->mTail;
+            if (*nodeX->mRoot == nodeX) {
+                *nodeX->mRoot = nodeX->mTail;
+            }
+            if (nodeX->mHead) {
+                nodeX->mHead->mTail = nodeX->mTail;
+            }
+            if (nodeX->mTail) {
+                nodeX->mTail->mHead = nodeX->mHead;
+            }
+            nodeX->mHead = tail;
+            tail->mTail = nodeX;
+            if (newTail) {
+                nodeX->mTail = newTail;
+                newTail->mHead = nodeX;
+                if (nodeX->mTail == *nodeX->mRoot) {
+                    *nodeX->mRoot = nodeX;
+                }
+            } else {
+                nodeX->mTail = nullptr;
+            }
+        }
+        nodeX = next;
+    }
+
+    for (SAPNodeAccess *nodeZ = reinterpret_cast<SAPNodeAccess *>(SAP::Grid<RigidBody>::mRootZ); nodeZ;) {
+        SAPNodeAccess *next = nodeZ->mTail;
+        const float position = nodeZ->mPosition;
+        nodeZ->mSort = position;
+
+        SAPNodeAccess *head = nullptr;
+        for (SAPNodeAccess *node = nodeZ->mHead; node && position < node->mSort; node = node->mHead) {
+            head = node;
+        }
+
+        if (head) {
+            SAPNodeAccess *newHead = head->mHead;
+            if (*nodeZ->mRoot == nodeZ) {
+                *nodeZ->mRoot = nodeZ->mTail;
+            }
+            if (nodeZ->mHead) {
+                nodeZ->mHead->mTail = nodeZ->mTail;
+            }
+            if (nodeZ->mTail) {
+                nodeZ->mTail->mHead = nodeZ->mHead;
+            }
+            nodeZ->mTail = head;
+            nodeZ->mHead = newHead;
+            if (newHead) {
+                newHead->mTail = nodeZ;
+            }
+            head->mHead = nodeZ;
+            if (nodeZ->mTail == *nodeZ->mRoot) {
+                *nodeZ->mRoot = nodeZ;
+            }
+            nodeZ = next;
+            continue;
+        }
+
+        SAPNodeAccess *tail = nullptr;
+        for (SAPNodeAccess *node = nodeZ->mTail; node && node->mSort < position; node = node->mTail) {
+            tail = node;
+        }
+
+        if (tail) {
+            SAPNodeAccess *newTail = tail->mTail;
+            if (*nodeZ->mRoot == nodeZ) {
+                *nodeZ->mRoot = nodeZ->mTail;
+            }
+            if (nodeZ->mHead) {
+                nodeZ->mHead->mTail = nodeZ->mTail;
+            }
+            if (nodeZ->mTail) {
+                nodeZ->mTail->mHead = nodeZ->mHead;
+            }
+            nodeZ->mHead = tail;
+            tail->mTail = nodeZ;
+            if (newTail) {
+                nodeZ->mTail = newTail;
+                newTail->mHead = nodeZ;
+                if (nodeZ->mTail == *nodeZ->mRoot) {
+                    *nodeZ->mRoot = nodeZ;
+                }
+            } else {
+                nodeZ->mTail = nullptr;
+            }
+        }
+        nodeZ = next;
+    }
+
+    const bool useZ = overlapZ <= overlapX;
+    SAPNodeAccess *root = reinterpret_cast<SAPNodeAccess *>(useZ ? SAP::Grid<RigidBody>::mRootZ : SAP::Grid<RigidBody>::mRootX);
+    for (SAPNodeAccess *node = root; node; node = node->mTail) {
+        if (node == reinterpret_cast<SAPNodeAccess *>(node->mAxis)) {
+            SAPAxisAccess *axis = reinterpret_cast<SAPAxisAccess *>(node->mAxis);
+            RBGridAccess *grid = reinterpret_cast<RBGridAccess *>(axis->mGrid);
+            SAPAxisAccess *otherAxis = useZ ? &grid->mX : &grid->mZ;
+            const float max = otherAxis->mMax.mPosition;
+            const float min = otherAxis->mMin.mPosition;
+
+            for (SAPNodeAccess *test = node->mTail; test != &axis->mMax; test = test->mTail) {
+                if (test == reinterpret_cast<SAPNodeAccess *>(test->mAxis)) {
+                    SAPAxisAccess *testAxis = reinterpret_cast<SAPAxisAccess *>(test->mAxis);
+                    RBGridAccess *testGrid = reinterpret_cast<RBGridAccess *>(testAxis->mGrid);
+                    SAPAxisAccess *testOtherAxis = useZ ? &testGrid->mX : &testGrid->mZ;
+                    const float testMin = testOtherAxis->mMin.mPosition;
+                    const float testMax = testOtherAxis->mMax.mPosition;
+
+                    if (((min <= testMin) && (testMin <= max)) || ((min <= testMax) && (testMax <= max)) ||
+                        ((testMin < min) && (max < testMax))) {
+                        OnObjectOverlap(*grid->mOwner, *testGrid->mOwner, dT);
+                    }
+                }
+            }
+        }
+    }
+
+    for (RigidBody *body = TheRigidBodies.GetHead(); body != TheRigidBodies.EndOfList(); body = body->GetNext()) {
+        body->OnEndFrame(dT);
+    }
+    Dynamics::Articulation::Resolve();
 }
 
 void RigidBody::Damp(float amount) {

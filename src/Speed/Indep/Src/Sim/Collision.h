@@ -49,6 +49,10 @@ struct Info {
 
     void Clear() {}
 
+    CollisionType Type() const {
+        return static_cast<CollisionType>(type);
+    }
+
     UMath::Vector3 position;               // offset 0x0, size 0xC
     const Attrib::Collection *objAsurface; // offset 0xC, size 0x4
     UMath::Vector3 normal;                 // offset 0x10, size 0xC
@@ -77,6 +81,10 @@ void AddListener(IListener *listener, HSIMABLE participant, const char *who);
 void AddListener(IListener *listener, class UTL::COM::IUnknown *participant, const char *who);
 void RemoveListener(IListener *listener, const UTL::COM::IUnknown *participant);
 void RemoveListener(IListener *listener);
+void AddParticipant(HSIMABLE participant);
+void RemoveParticipant(HSIMABLE participant);
+void AddParticipant(HSIMABLE participant);
+void RemoveParticipant(HSIMABLE participant);
 
 }; // namespace Collision
 

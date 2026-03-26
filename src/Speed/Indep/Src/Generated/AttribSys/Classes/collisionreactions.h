@@ -51,6 +51,10 @@ struct collisionreactions : Instance {
         return *this;
     }
 
+#ifdef COLLISIONREACTIONS_INSTANCE_ASSIGN_OWNER
+    const collisionreactions &operator=(const Instance &rhs);
+#endif
+
     void Change(const Collection *c) {
         Instance::Change(c);
     }

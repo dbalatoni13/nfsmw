@@ -365,7 +365,8 @@ bool AITrafficManager::CheckRace(const WRoadNav &nav) const {
 
 bool AITrafficManager::FindSpawnPoint(WRoadNav &nav) const {
     RandomSortTCDir = !RandomSortTCDir;
-    ITrafficCenter::Sort(RandomSortTC);
+    // TODO clanker
+    // ITrafficCenter::Sort(RandomSortTC);
     nav.Reset();
     const ITrafficCenter::List &traffic_centers = ITrafficCenter::GetList();
 

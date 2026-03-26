@@ -38,6 +38,8 @@ struct AxlePair {
     float Front; // offset 0x0, size 0x4
     float Rear;  // offset 0x4, size 0x4
 
+    AxlePair() : Front(0.0f), Rear(0.0f) {}
+
     float At(int index) const {
         return (&Front)[index];
     }

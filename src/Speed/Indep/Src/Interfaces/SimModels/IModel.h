@@ -27,13 +27,11 @@ class IModel : public UTL::COM::IUnknown, public UTL::Collections::Instanceable<
         virtual bool OnModel(IModel *model);
     };
 
-    static HINTERFACE _IHandle() {
-        return (HINTERFACE)_IHandle;
-    }
+    static HINTERFACE _IHandle();
 
-    IModel(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
+    IModel(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, (HINTERFACE)_IHandle) {}
 
-    virtual ~IModel() {}
+    virtual ~IModel();
 
     virtual void OnProcessFrame(float dT);
     virtual UCrc32 GetPartName() const;
@@ -45,8 +43,8 @@ class IModel : public UTL::COM::IUnknown, public UTL::Collections::Instanceable<
     virtual ISimable *GetSimable() const;
     virtual bool IsHidden() const;
     virtual void HideModel();
-    virtual bool InView() const;
-    virtual float DistanceToView() const;
+    virtual bool InView() const = 0;
+    virtual float DistanceToView() const = 0;
     virtual void GetLinearVelocity(UMath::Vector3 &velocity) const;
     virtual void GetAngularVelocity(UMath::Vector3 &velocity) const;
     virtual void GetTransform(UMath::Matrix4 &matrix) const;
@@ -60,9 +58,9 @@ class IModel : public UTL::COM::IUnknown, public UTL::Collections::Instanceable<
     virtual IModel *SpawnModel(UCrc32 rendernode, UCrc32 collisionnode, UCrc32 attributes);
     virtual void ReleaseModel();
     virtual void ReleaseChildModels();
-    virtual void HidePart(const UCrc32 &nodename);
-    virtual void ShowPart(const UCrc32 &nodename);
-    virtual bool IsPartVisible(const UCrc32 &nodename) const;
+    virtual void HidePart(const UCrc32 &nodename) = 0;
+    virtual void ShowPart(const UCrc32 &nodename) = 0;
+    virtual bool IsPartVisible(const UCrc32 &nodename) const = 0;
     virtual void PlayEffect(UCrc32 identifire, const Attrib::Collection *effect, const UMath::Vector3 &position, const UMath::Vector3 &magnitude,
                             bool tracking);
     virtual void StopEffect(UCrc32 identifire);

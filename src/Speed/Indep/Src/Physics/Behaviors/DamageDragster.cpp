@@ -11,6 +11,8 @@ Behavior *DamageDragster::Construct(const BehaviorParams &params) {
 
 DamageDragster::DamageDragster(const BehaviorParams &bp, const DamageParams &dp) : DamageRacer(bp, dp) {}
 
+DamageDragster::~DamageDragster() {}
+
 void DamageDragster::CheckTotaling(const COLLISION_INFO &cinfo) {
     if ((cinfo.type == Sim::Collision::Info::GROUND) || IsDestroyed()) {
         return;

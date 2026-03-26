@@ -25,9 +25,13 @@ class IEntity : public UTL::COM::IUnknown,
                 public UTL::Collections::ListableSet<Sim::IEntity, 8, eEntityList, ENTITY_MAX>,
                 public UTL::COM::Factory<Sim::Param, Sim::IEntity, UCrc32> {
   public:
+#ifdef ZPHYSICS_OUTLINE_IENTITY_HANDLE
+    static HINTERFACE _IHandle();
+#else
     static HINTERFACE _IHandle() {
         return (HINTERFACE)_IHandle;
     }
+#endif
 
     IEntity(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
 

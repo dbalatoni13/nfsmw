@@ -11,13 +11,11 @@
 
 class ISimpleBody : public UTL::COM::IUnknown, public UTL::Collections::Listable<ISimpleBody, 96> {
   public:
-    static HINTERFACE _IHandle() {
-        return (HINTERFACE)_IHandle;
-    }
+    static HINTERFACE _IHandle();
 
-    ISimpleBody(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
+    ISimpleBody(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, (HINTERFACE)_IHandle) {}
 
-    virtual ~ISimpleBody() {}
+    virtual ~ISimpleBody();
 
   public:
     virtual void ModifyFlags(unsigned int uRemove, unsigned int uAdd);

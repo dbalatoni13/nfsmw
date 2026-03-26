@@ -15,7 +15,17 @@
 #include "Speed/Indep/Src/Interfaces/SimModels/IPlaceableScenery.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ISimable.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
+#include "Speed/Indep/Src/Sim/SimTypes.h"
 #include "Speed/Indep/Src/World/WRoadNetwork.h"
+
+struct AIParams : public Sim::Param {
+    AIParams() : Sim::Param(TypeName(), static_cast<AIParams *>(nullptr)) {}
+
+    static UCrc32 TypeName() {
+        static UCrc32 value = "AIParams";
+        return value;
+    }
+};
 
 // TODO move?
 enum eLaneSelection {

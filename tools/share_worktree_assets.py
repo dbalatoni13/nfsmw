@@ -13,6 +13,8 @@ Examples:
   python tools/share_worktree_assets.py status --all
   python tools/share_worktree_assets.py link --all
   python tools/share_worktree_assets.py bootstrap
+  python tools/share_worktree_assets.py bootstrap --version EUROPEGERMILESTONE --xbox-xex /path/to/NfsMWEuropeGerMilestone.xex
+  python tools/share_worktree_assets.py bootstrap --version SLES-53558-A124 --ps2-toolchain-zip /path/to/PS2.zip
 """
 
 import argparse
@@ -21,6 +23,7 @@ import os
 import shutil
 import subprocess
 import sys
+import zipfile
 from dataclasses import dataclass
 from typing import Dict, Iterable, List, Optional, Set
 
@@ -39,11 +42,16 @@ class AssetSpec:
 
 FIXED_ASSETS = (
     AssetSpec(os.path.join("orig", "GOWE69", "NFSMWRELEASE.ELF"), "file"),
+    AssetSpec(
+        os.path.join("orig", "EUROPEGERMILESTONE", "NfsMWEuropeGerMilestone.xex"),
+        "file",
+    ),
     AssetSpec(os.path.join("orig", "SLES-53558-A124", "NFS.ELF"), "file"),
     AssetSpec(os.path.join("orig", "SLES-53558-A124", "NFS.MAP"), "file"),
     AssetSpec(os.path.join("build", "tools"), "dir"),
     AssetSpec(os.path.join("build", "compilers"), "dir"),
     AssetSpec(os.path.join("build", "ppc_binutils"), "dir"),
+    AssetSpec(os.path.join("build", "mips_binutils"), "dir"),
 )
 
 
@@ -118,6 +126,85 @@ def ensure_parent(path: str) -> None:
     parent = os.path.dirname(path)
     if parent:
         os.makedirs(parent, exist_ok=True)
+
+
+def seed_shared_file(shared_path: str, source_path: str, description: str) -> None:
+    ensure_parent(shared_path)
+    if os.path.isfile(shared_path) and not os.path.islink(shared_path):
+        if not filecmp.cmp(shared_path, source_path, shallow=False):
+            raise RuntimeError(
+                f"Refusing to replace existing shared {description}: {shared_path}"
+            )
+        return
+    if os.path.islink(shared_path):
+        if not same_symlink(shared_path, source_path):
+            raise RuntimeError(
+                f"Refusing to replace existing shared {description}: {shared_path}"
+            )
+        os.unlink(shared_path)
+    elif lexists(shared_path):
+        raise RuntimeError(
+            f"Refusing to replace existing shared {description}: {shared_path}"
+        )
+    shutil.copy2(source_path, shared_path)
+
+
+def extract_zip_into(zip_path: str, output_dir: str) -> None:
+    os.makedirs(output_dir, exist_ok=True)
+    with zipfile.ZipFile(zip_path) as archive:
+        for member in archive.infolist():
+            member_name = member.filename.rstrip("/")
+            if not member_name:
+                continue
+
+            output_path = os.path.join(output_dir, *member_name.split("/"))
+            if member.is_dir():
+                os.makedirs(output_path, exist_ok=True)
+                continue
+
+            ensure_parent(output_path)
+            if os.path.exists(output_path):
+                continue
+
+            with archive.open(member) as src, open(output_path, "wb") as dst:
+                shutil.copyfileobj(src, dst)
+            os.chmod(output_path, 0o755)
+
+
+def seed_bootstrap_assets(
+    shared_root: str, xbox_xex: Optional[str], ps2_toolchain_zip: Optional[str]
+) -> None:
+    if xbox_xex:
+        if not os.path.isfile(xbox_xex):
+            raise RuntimeError(f"Xbox XEX not found: {xbox_xex}")
+        seed_shared_file(
+            os.path.join(
+                shared_root,
+                "orig",
+                "EUROPEGERMILESTONE",
+                "NfsMWEuropeGerMilestone.xex",
+            ),
+            xbox_xex,
+            "Xbox XEX",
+        )
+
+    if ps2_toolchain_zip:
+        if not os.path.isfile(ps2_toolchain_zip):
+            raise RuntimeError(f"PS2 toolchain zip not found: {ps2_toolchain_zip}")
+        extract_zip_into(ps2_toolchain_zip, os.path.join(shared_root, "build", "compilers"))
+        expected_ee_gcc = os.path.join(
+            shared_root,
+            "build",
+            "compilers",
+            "PS2",
+            "ee-gcc2.9-991111",
+            "bin",
+            "ee-gcc.exe",
+        )
+        if not os.path.isfile(expected_ee_gcc):
+            raise RuntimeError(
+                "PS2 toolchain zip did not produce build/compilers/PS2/ee-gcc2.9-991111/bin/ee-gcc.exe"
+            )
 
 
 def merge_file(src: str, dst: str, relpath: str) -> None:
@@ -342,18 +429,23 @@ def bootstrap_generated_files(worktree: str, version: str) -> None:
     objdiff_json = os.path.join(worktree, "objdiff.json")
     compile_commands = os.path.join(worktree, "compile_commands.json")
     config_target = os.path.join("build", version, "config.json")
+    configure_cmd = [sys.executable, "configure.py", "--version", version]
 
-    print(f"{worktree}: running configure.py")
-    run_command([sys.executable, "configure.py"], worktree, "configure.py")
+    print(f"{worktree}: running {' '.join(configure_cmd)}")
+    run_command(configure_cmd, worktree, "configure.py")
 
     if not os.path.isfile(build_ninja):
         raise RuntimeError(f"{worktree}: configure.py did not create build.ninja")
 
-    if not os.path.isfile(objdiff_json) or not os.path.isfile(compile_commands):
+    if (
+        not os.path.isfile(config_target)
+        or not os.path.isfile(objdiff_json)
+        or not os.path.isfile(compile_commands)
+    ):
         print(f"{worktree}: generating {config_target} for local objdiff metadata")
         run_command(["ninja", config_target], worktree, f"ninja {config_target}")
-        print(f"{worktree}: rerunning configure.py")
-        run_command([sys.executable, "configure.py"], worktree, "configure.py")
+        print(f"{worktree}: rerunning {' '.join(configure_cmd)}")
+        run_command(configure_cmd, worktree, "configure.py")
 
     missing = []
     if not os.path.isfile(objdiff_json):
@@ -373,7 +465,10 @@ def bootstrap_worktrees(
     version: str,
     run_health: bool,
     smoke_build: Optional[str],
+    xbox_xex: Optional[str],
+    ps2_toolchain_zip: Optional[str],
 ) -> int:
+    seed_bootstrap_assets(shared_root, xbox_xex, ps2_toolchain_zip)
     link_assets(target_worktrees, seed_worktrees, shared_root)
     for worktree in target_worktrees:
         bootstrap_generated_files(worktree, version)
@@ -418,6 +513,16 @@ def main() -> int:
         metavar="UNIT",
         help="Also run `decomp-workflow.py health --smoke-build UNIT` after bootstrap.",
     )
+    parser.add_argument(
+        "--xbox-xex",
+        metavar="PATH",
+        help="Seed the shared Xbox XEX from a local file before linking/bootstrap.",
+    )
+    parser.add_argument(
+        "--ps2-toolchain-zip",
+        metavar="PATH",
+        help="Extract a local PS2 EE-GCC zip into shared build/compilers before linking/bootstrap.",
+    )
     args = parser.parse_args()
 
     common_dir = git_common_dir(root_dir)
@@ -437,6 +542,8 @@ def main() -> int:
             args.version,
             args.health,
             args.smoke_build,
+            args.xbox_xex,
+            args.ps2_toolchain_zip,
         )
     except RuntimeError as e:
         print(f"Error: {e}", file=sys.stderr)

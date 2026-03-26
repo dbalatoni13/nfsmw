@@ -36,8 +36,8 @@ class bNode {
     }
 
     bNode *AddAfter(bNode *insert_point) {
-        bNode *new_next = insert_point->Next;
         bNode *new_prev = this->Prev; // unused
+        bNode *new_next = insert_point->Next;
         insert_point->Next = this;
         new_next->Prev = this;
         this->Prev = insert_point;

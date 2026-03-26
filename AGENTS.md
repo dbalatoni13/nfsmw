@@ -12,7 +12,15 @@ ninja all_source       # build all objects
 ninja                  # build all objects, hash check and progress report
 ninja baseline         # generates baseline report for regression checking
 ninja changes          # check for regressions after code changes (empty = no regressions)
+python tools/build_matrix.py              # sequential full `ninja` across GC/Xbox/PS2, then restore GOWE69
+python tools/build_matrix.py --all-source # sequential compile-only smoke check across GC/Xbox/PS2
 ```
+
+Use `python tools/build_matrix.py` when you want one command that verifies the current
+worktree across all supported platforms. It runs `configure.py --version ...` and the
+selected ninja target sequentially, writes per-platform logs under `build/<VERSION>/logs/`,
+prints failure tails with the exact failing command, and restores the worktree to
+`GOWE69` by default when it finishes.
 
 ## Project Layout
 
@@ -31,16 +39,7 @@ objdiff.json           Generated build/diff configuration
 
 ## Sub-Agent Usage
 
-Sub-agents are allowed only for **read-only exploration** tasks such as:
-
-- searching the codebase for symbols, call sites, or include relationships
-- inspecting decomp output, assembly, DWARF, PS2 dumps, or line mappings
-- gathering context from Ghidra, `tools/decomp-workflow.py`, `lookup.py`, `decomp-diff.py`, or similar tools
-- summarizing findings that help the main worker decide what to change
-
-Sub-agents must **not** write or edit code files, headers, configs, or other repository files.
-All persistent file changes, decomp implementations, scaffolding, and follow-up fixes must be
-done by the main worker after reviewing the read-only findings.
+Sub-agents are **strictly prohibited**. Do not use sub-agents for any tasks (whether read-only exploration or editing). All work must be performed by the main worker directly.
 
 ## Forbidden Changes
 
@@ -343,8 +342,24 @@ This is a **C++98** codebase compiled with ProDG GC 3.9.3 (GCC 2.95 under the ho
 - Inline assembly is acceptable when needed to reproduce dead code or compiler scheduling that source alone cannot express cleanly
 - Preserve the original `class` vs `struct` kind. Check existing headers first, then Dwarf / PS2 info when needed. Even forward declarations and local partial declarations should use the accurate keyword when known.
 - Prefer including the real repo header over introducing a local forward declaration for a project type. If a type already has a header in `src/`, include it instead of redeclaring it locally.
-- If a subsystem already has a stub owner header and the debug line info points back at that subsystem, fill the owner header instead of keeping a recovered project type declaration in a `.cpp`.
+- If a subsystem already has a stub or umbrella owner header and the debug line info points back at that subsystem, fill the owner header instead of keeping a recovered project type declaration in a `.cpp` or spinning up a one-off micro-header just for that type.
+- Do not spin up a duplicate micro-header that re-declares a type already owned by a real subsystem or umbrella header just to avoid a heavier include. Include the owner header and adapt the call site back to the original API shape (for example, use the existing default-constructor-plus-`Init` flow instead of inventing a convenience constructor in a one-off header).
+- Apply the same owner-header rule to shared enums, globals, callback typedefs, and free functions. If multiple TUs need the declaration, put it in the canonical owner header once and include that header instead of duplicating enum bodies or `extern` blocks across `.cpp`s.
+- For COM-style interfaces that declare `static HINTERFACE _IHandle();`, preserve the original ownership: if the handle is meant to be out-of-line, define the real `Type::_IHandle()` member in the owning TU (or via the header's outline hook macro) instead of inventing a free `extern "C"` shim with an `asm("...")` alias. Those fake shims can generate malformed local labels and even make `ngcas` crash.
+- In constructors for out-of-line `_IHandle` owners, prefer passing `(HINTERFACE)_IHandle` to the `UTL::COM::IUnknown` base when existing repo examples in that subsystem already do so. Calling `_IHandle()` instead often changes codegen and DWARF ownership in match-sensitive TUs.
+- When `QueryInterface(&iface)` on an out-of-line `_IHandle` owner emits the wrong handle-call shape, check for existing subsystem precedent to read the COM table directly with `(*reinterpret_cast<UTL::COM::Object **>(owner))->_mInterfaces.Find((HINTERFACE)Iface::_IHandle)`. For some functions (for example `PVehicle::DoStaging` with `IRaceEngine`), GCC only matched after that direct `Find` path and an explicit `bool hasIface = iface != nullptr;` branch shape.
+- If DWARF / PS2 show that a shared project type had a real out-of-line constructor, declare that constructor in the owner header instead of relying on an implicit default constructor. Leaving it implicit can make GCC synthesize member-by-member initialization in each caller; `PVehicle::Construct` only took the original local-static path after `FECustomizationRecord()` was declared in `FECustomizationRecord.h`.
+- When a recovered constructor still emits a big zeroing block before a later non-trivial member ctor (for example `UTL::Std::map` or another container), try moving the declaration-ordered pointer/scalar setup into the initializer list instead of zeroing those members in the body. `PVehicle::PVehicle` only jumped into the 90% range once the pre-`mBehaviorOverrides` members were initialized through the list, letting GCC schedule those stores before the map ctor like the original.
+- Keep owner-header parameter names aligned with the matched out-of-line definition and DWARF names when adjacent parameters share the same type. Swapped names like `initialPos` / `initialVec` in a header do not change mangling, but they mislead later cleanup and make it easier to "fix" a function away from the original source shape.
+- When DWARF marks a tiny virtual destructor as inline, do not blindly move the body into the header. In jumbo TUs that can fix one caller's inlining while also making objdiff report the standalone deleting-destructor symbol as missing from its original owner TU; always rebuild the owner TU and check both the callsite and the destructor symbol itself before keeping that change.
 - Preserve original member names, types, order, and proven layout comments. Do not invent `pad`, `unk`, or `field_XXXX` members just to satisfy a guessed size or offset; verify the real members with `find-symbol.py`, GC Dwarf, and PS2 data, and leave a short TODO if a layout detail is still uncertain.
+- When recovering a type, start by copying the GC DWARF struct/class body into the canonical owner header. Treat that dump as the source of truth for declaration order too; only apply targeted fixes that are backed by existing repo headers or PS2 data, such as visibility, virtual/function order, duplicate-inline cleanup, or owner-header placement.
+- Do not hand-reconstruct recovered layouts from scattered field accesses, guessed semantics, or a "cleaned up" reordering. If you do not have enough evidence to paste the type confidently, stop and gather more DWARF / PS2 info first.
+- Preserve the original scope and nesting of recovered declarations too. Keep class-owned enums/types nested when the original did, and move subsystem/global enums into their real owner header instead of flattening or duplicating them near one caller.
+- Use the narrowest correct home for recovered declarations: shared project-facing types in headers, TU-private helper structs/classes and allocator metadata in the `.cpp`. Do not dump implementation-only helpers into public headers just because they were convenient to write there.
+- Prefer real subsystem or vendor headers over ad-hoc local typedef/prototype blocks. If an external API is shared and the project is missing the proper header, add that header in the correct subtree instead of stashing declarations in an unrelated gameplay file.
+- When a touched function is reaching through an object's private layout via a local `*Access` struct plus guessed padding, stop and look for a cleaner owner-backed shape first. If the real type already lives in the repo, prefer adding a tiny inline accessor on that type over keeping a fake layout shim with `pad` members in the caller.
+- Do not leave repeated `// TODO move`, `// TODO where should this go`, or "I just made this up" markers around declarations. Either move the declaration to its owner now or leave one short targeted TODO above the owner declaration if ownership is still genuinely unresolved.
 - Follow DWARF member naming exactly (`mMember` vs `m_member`) instead of normalizing names
 - Omit the `this` pointer.
 - Use `nullptr` and `override`. If they are missing, you need to include `types.h`.
@@ -363,44 +378,26 @@ python tools/decomp-status.py --unit main/Path/To/TU
 Commit whenever the match percentage increases (e.g. you matched a new function). Use this format for the commit message:
 
 ```
-n.n%: short description of what was matched or changed
+n.n[n]%: short description of what was matched or changed
 ```
 
 Examples:
 
 - `42.1%: match UpdateCamera`
-- `78.5%: match PlayerController constructor and destructor`
+- `78.56%: match PlayerController constructor and destructor`
 - `100.0%: full match for zAnim`
 
 Do not batch up multiple percentage milestones into one commit — commit as each improvement lands.
-
-## Parallel Sub-Agent Matching
-
-When working on a translation unit with multiple non-matching functions, use sub-agents selectively for **read-only exploration** around individual functions. Each sub-agent should focus on **exactly one function** — do not assign a sub-agent more than one function at a time.
-
-**Limit: never run more than 5 sub-agents concurrently.** Spawning too many at once causes resource contention and makes it harder to reason about progress.
-
-Guidelines:
-
-- Prefer solving difficult matching work in the main worker. Use sub-agents to inspect one function's context, diff, DWARF, or related call paths without editing files.
-- Spawn a sub-agent per function only when the functions are independent (no shared edits to the same source lines).
-- Sub-agents stay read-only. Let them inspect existing diff/context output rather than compiling or rebuilding.
-- Do not sit idle waiting for sub-agents to finish. Continue with other independent investigation while they run.
-- After a useful result lands and you make a real improvement, check the updated match percentage and commit if it improved.
 
 ## Matching Philosophy
 
 You should take the Ghidra decompiler output for the initial translation step, get it to compile, make sure that the dwarf of the function matches and only then look for binary matching problems in the assembly. Be aware Ghidra usually gets the order of branches incorrect in if statements (it inverts the logic and the two bodies are swapped), this needs to be fixed to achieve bytematching status.
 
-You may use sub-agents to gather read-only context during this process, but they must not
-edit files. Treat their output as analysis input for the main worker, not as a path to
-delegate source changes.
-
 A function is only done when both objdiff and normalized DWARF are exact. Treat a
 100% instruction match with a DWARF mismatch as unfinished work, not a near-complete
 result.
 
-The dwarf of your structs doesn't have to neccessarily match the original due to various reasons, just make sure that you copied everything correctly.
+The DWARF of your structs does not always compare cleanly in every detail, but the recovery process still starts by copying the dumped layout correctly. Do not freehand-reconstruct a struct from call sites or guessed semantics; paste the DWARF body into the real owner header first, then make only the minimal PS2/header-backed fixes such as visibility, function order, vtable order, or duplicate-inline cleanup.
 
 Never dismiss a diff as "close enough" or "just register allocation." Every mismatched
 instruction is a signal that the source doesn't perfectly represent the original. Even
@@ -435,6 +432,10 @@ The dwarf (lookup skill using symbols/Dwarf) is your main source of information,
 Virtual table layout is also missing from the dwarf but there on PS2. Be aware that the PS2 version might be missing things because it's an alpha build.
 
 The inline information in the dwarf is incredibly useful. When you encounter one, you should look up its body in the project. If it doesn't exist yet, deduce how the code should look like and add it to the correct header (you can use your address lookup skill or if that doesn't succeed and the inline is a member function, just find the corresponding class in the project).
+
+For recovered structs and classes, treat DWARF as copied source material rather than a loose sketch. Paste the dumped type into the owner header first and keep its declaration/member order unless PS2 or an existing repo header proves a specific correction.
+
+Apply the same rule to generated Attrib wrappers. If DWARF names a member as `Attrib::Gen::foo` (or another concrete generated wrapper), keep the member typed as that wrapper in the owner header and mirror the original wrapper ctor overload instead of demoting it to `Attrib::Instance` plus a local `FindCollection` / `SetDefaultLayout` helper chain.
 
 It's very important that you use math inlines from bMath and UMath as shown in the dwarf. UVector inlines use temporaries that the compiler couldn't optimize out. You can see in the dwarf on which stack address they are and deduce final destination they are copied to.
 
@@ -481,6 +482,48 @@ register assignments but does NOT affect integer register assignments (and vice 
   Every local that is NOT in the DWARF is a spurious temporary — remove it.
 - Every local that IS in the DWARF must exist in the source, even if you don't use the name.
   Name it exactly as the DWARF shows.
+- If DWARF shows a float-derived local as `int`, keep it signed in source and clamp it with
+  a signed helper such as `UMath::Min`/`UMath::Max` or an equivalent signed branch. Rewriting
+  it as `unsigned int` often forces the PPC unsigned float-to-int conversion path (`lfd` /
+  `xoris`) and can badly perturb both objdiff and DWARF.
+- When DWARF attributes a tiny inline helper to the current `.cpp` instead of a shared header
+  utility, prefer recreating that file-local helper with the same signedness / ownership rather
+  than calling the generic helper. In `DamageVehicle::OnImpact`, a file-local `int Min(int, int)`
+  preserved the helper's owner file and improved DWARF without changing objdiff.
+- Be careful with COM `QueryInterface` on interfaces whose headers only declare
+  `static HINTERFACE _IHandle();` out-of-line while their constructors already use the function-address
+  form `(HINTERFACE)_IHandle`. The template in `UCOM.h` calls `T::_IHandle()`, which can compile as a
+  helper-call shape the original code did not use. When objdiff wants the direct handle constant,
+  prefer a tiny file-local helper that calls `_mInterfaces.Find((HINTERFACE)T::_IHandle)` and preserve
+  any explicit `bool hasX = ptr != nullptr;` local if the assembly/DWARF shows one.
+- When a shared utility header still has obvious placeholder virtual/helper bodies, do not dismiss the
+  resulting 8-byte helper diffs as harmless noise. In `UTL::FixedVector`, restoring the real header-level
+  bodies (`GetGrowSize` / `GetMaxCapacity` returning the template size and `AllocVectorSpace` returning the
+  inline buffer) matched whole clusters of instantiations at once and improved the owning TU without any
+  per-instantiation edits.
+- When objdiff is already exact but a local only differs by lexical scope, try an equivalent
+  loop form that keeps the temporary inside the same block as the original DWARF. In practice,
+  changing a `for (...; ...; x = next)` into a `while (...) { T *next = ...; ...; x = next; }`
+  can fix DWARF-only scope mismatches without changing codegen.
+- If DWARF groups most of a function's working locals inside one anonymous block, prefer keeping
+  that recovered logic inside one explicit inner scope instead of leaving the locals at function
+  scope. Matching the lexical block alone can dramatically improve normalized DWARF even when
+  objdiff is unchanged.
+- In factory/build helpers, if DWARF only names the final real local but shows copy-ctor / parameter-bundle
+  construction as inline ranges, prefer passing those temporaries directly at the call site instead of
+  materializing named locals for them. In `PhysicsObject::LoadBehavior`, collapsing a copied `UCrc32` and
+  `BehaviorParams` into `BuildElement(behavior, BehaviorParams(...))` removed the extra stack slot and matched
+  the original frame.
+
+### Slot-pooled delete paths
+
+- If a recovered local/project type participates in `delete` paths or container/list teardown,
+  check whether the original type exposed inline `operator new` / `operator delete`. Missing
+  slot-pool-backed operators often makes GCC emit `__builtin_delete` instead of the original
+  allocator/free path and can also move destructor/delete DWARF ownership out of the TU.
+- This applies even when the TU mostly allocates the type manually through `bOMalloc` or a
+  pool helper. Restoring the inline operators can still be necessary so `delete` expressions
+  and synthesized cleanup paths match the original code and DWARF.
 
 ### Virtual vs direct calls
 
@@ -519,6 +562,31 @@ TU: <translation-unit-name> | Function: <FunctionName>
 ```
 
 <!-- Add new entries below this line -->
+
+### AttributeGetStringKeyFallback
+
+TU: zPhysics | Function: PVehicle::LookupBehaviorSignature
+When a generated Attrib wrapper fallback refuses to match, do not "simplify" it to `GetAttributePointer` plus a raw `const char *` hash. In `PVehicle::LookupBehaviorSignature`, ProDG matched much better when the code kept a local `Attrib::StringKey`, fetched through `Attrib::Attribute value = mAttributes.Get(...)`, copied it with `value.Get(0, behaviourKey)`, and even preserved an otherwise-unused local `Attrib::Instance(nullptr, 0, nullptr)` ahead of that path to reproduce the hidden ctor/dtor pair the original emitted.
+
+### BoolStringKeyAttributeGet
+
+TU: zPhysics | Function: PVehicle::LookupBehaviorSignature
+If DWARF shows `Attribute::Get(unsigned int, StringKey&)` as a bool-returning inline instead of the generic template path, recover that shared overload in `AttribSys.h` rather than open-coding `Get(...); GetInternal()` in each caller. `PVehicle::LookupBehaviorSignature` improved and its DWARF got closer to the original once `Attrib::Attribute` exposed a dedicated `bool Get(unsigned int, StringKey&) const` helper and the caller used `if (atr.Get(0, behaviourKey))`.
+
+### ExplicitStringKeyAssignmentOrder
+
+TU: zPhysics | Function: PVehicle::LookupBehaviorSignature
+If an Attrib/StringKey copy path still differs after recovering the bool `Attribute::Get` helper, check whether `StringKey` is missing an explicit inline assignment operator. `PVehicle::LookupBehaviorSignature` only moved the copied `behaviourKey` words into the original store order once `AttribHash.h` exposed `const StringKey &operator=(const StringKey &rhs)` and assigned `mString` before the hashed fields instead of relying on the compiler-generated memberwise assignment.
+
+### AILoopReturnSignatureSplit
+
+TU: zPhysics | Function: PVehicle::LookupBehaviorSignature
+When a small lookup loop still reloads the same field twice in objdiff, do not assume the clean `while (sig != kNull) { ... sig = ab->field; }` form is original. `PVehicle::LookupBehaviorSignature` matched much better once the AI block kept `sig` as the return value, compared `ab->signature` directly in the loop condition, and only assigned `sig = ab->signature` on the winning match before breaking.
+
+### EmptyIUnknownWrapperDtorTrap
+
+TU: zPhysics / zPhysicsBehaviors | Function: Smackable::~Smackable / EngineRacer::~EngineRacer / PVehicle::~PVehicle
+When a small interface derives from `UTL::COM::IUnknown` and its out-of-line destructor body is empty, do not assume callers should simply invoke that empty wrapper dtor. In both `Smackable::~Smackable` and `EngineRacer::~EngineRacer`, the remaining diff wanted the inlined `_mCOMObject->_mInterfaces.Remove(this)` path from `IUnknown::~IUnknown`, not a direct call to the empty derived wrapper. Naively moving those empty dtors inline in the caller TU can improve one destructor but also erase the standalone interface-dtor symbol and regress the unit, so only inline them when you can preserve the owner symbol elsewhere.
 
 ### ExplicitInlineSpecialMembersForSTLElements
 

@@ -31,7 +31,7 @@ python tools/code_style.py audit --base origin/main
 - `audit` also checks touched `class` / `struct` declarations against known header declarations and, when no header exists, against the PS2 visibility rule.
 - `audit` warns on touched local forward declarations when the repo already has a header for that type.
 - `audit` warns on touched type members that look like invented padding or placeholder names such as `pad`, `unk`, or `field_1234`.
-- `audit` also checks touched style-guide rules that clang-format cannot enforce for you, such as cast spacing, `using namespace`, `NULL`, and missing `EA_PRAGMA_ONCE_SUPPORTED` guard blocks when a header's guard region is touched.
+- `audit` also checks touched style-guide rules that clang-format cannot enforce for you, such as cast spacing, `using namespace`, `NULL`, bare `#if MACRO` presence checks, recovered layout members that still use raw `unsigned char` / `unsigned short`, and missing or misordered `EA_PRAGMA_ONCE_SUPPORTED` guard blocks when a header's prologue is touched.
 - `audit` groups repeated findings by file so branch-wide output stays readable.
 - Use `audit --category safe-cpp` when you want a smaller Frontend/FEng-focused subset and `audit --category match-sensitive-cpp` when you want a conservative review queue for decomp code.
 - `format --check` is an opt-in wrapper around the repo's `.clang-format`, and by default it targets eligible changed C/C++ files, including match-sensitive code.
@@ -95,14 +95,32 @@ Foo::Foo()
 - Use `nullptr` exclusively for null pointers.
 - Prefer `if (ptr)` / `if (!ptr)` over explicit null comparisons when the change is local and verified safe.
 - When a match-sensitive TU has many explicit `nullptr` checks and you decide to normalize them, prefer one mechanical full-TU pass over piecemeal cleanup. Rebuild the unit and re-check its status before keeping the rewrite.
+- When a helper is doing address arithmetic, prefer `intptr_t` / `uintptr_t` or byte-pointer (`reinterpret_cast<char *>`) math over plain `int` parameters or integerized pointer subtraction.
 - Inline assembly is acceptable when it is needed to preserve dead-code compares, ordering, or other compiler behavior that source alone cannot reproduce.
+- In low-level list / node / allocator code, prefer existing helper methods such as `AddBefore`, `AddAfter`, `Remove`, `GetPrev`, `GetNext`, or typed accessors over open-coding link rewiring once the helper exists.
+
+### Header prologues and preprocessor checks
+
+- In headers, keep the guard / `EA_PRAGMA_ONCE_SUPPORTED` block before any project `#include`; do not place includes ahead of `#pragma once`.
+- Use `#ifdef MACRO` / `#ifndef MACRO` for presence checks. Reserve bare `#if MACRO` for cases where you really need the macro's numeric value.
 
 ### Forward declarations and local prototypes
 
 - Prefer including the owning repo header over adding a local forward declaration for a project type.
 - If the repo already has a header declaration/definition for a type, include that header instead of redeclaring the type locally.
+- Before replacing a forward declaration with the owner header, check both directions for an include cycle. If the owner header already includes the current header (for example `Smackable.h` vs `HeirarchyModel.h`), keep the forward declaration until the ownership/header split is cleaned up more deliberately instead of blindly introducing the cycle.
+- Treat owner-header audit warnings as hints, not proof. Verify the namespace and the actual owner before acting: `SoundHeli.cpp` forward-declares `SoundConn::Pkt_Car_Service`, but `DrawVehicle.h` only owns `RenderConn::Pkt_Car_Service`, and the `SoundConn` packet body actually lives as a `.cpp`-local class in `SoundCar.cpp`.
 - If the repo only has an empty or stub owner header, and line info / surrounding source clearly points at that header's subsystem, prefer populating that owner header over leaving a recovered project type declaration inside a `.cpp`.
+- Do not create a duplicate micro-header that re-declares one type already owned by a broader subsystem header just to dodge that include. Include the real owner header and rewrite the caller back toward the original API shape instead of inventing one-off constructors or wrappers in the duplicate header.
 - Only keep a local forward declaration when no canonical repo header exists yet and you have verified that the ownership is still unresolved.
+- Likewise for project free functions: if a declaration is shared across translation units, move it into the owning header instead of leaving ad-hoc local prototypes in `.cpp` files.
+- For COM-style interfaces that declare `static HINTERFACE _IHandle();`, preserve the original ownership. If the interface wants an out-of-line handle, define the real `Type::_IHandle()` member in the owning TU (or use the header's outline hook macro) instead of inventing a free `extern "C"` shim with an `asm("...")` alias.
+- In constructors for out-of-line `_IHandle` owners, check local precedent before calling `_IHandle()`. In this repo, several matching interfaces want `(HINTERFACE)_IHandle` passed straight to `UTL::COM::IUnknown`, and using the call form can perturb both codegen and DWARF ownership.
+- When `QueryInterface(&iface)` still emits the wrong handle path for an out-of-line `_IHandle` owner, look for local precedent before rewriting it as a direct COM-table lookup through `_mInterfaces.Find((HINTERFACE)Iface::_IHandle)`. Also preserve the source-level branch shape around the result: `PVehicle::DoStaging` only matched after the direct `Find` plus an explicit `bool hasRaceEngine = raceEngine != nullptr;` test.
+- If the dumps show that a shared project type had a real out-of-line constructor, declare that constructor in the owner header instead of relying on an implicit default constructor. Missing ctor declarations can make GCC synthesize member initialization inside each caller; `PVehicle::Construct` only matched the local-static setup once `FECustomizationRecord()` was declared in `FECustomizationRecord.h`.
+- When a recovered constructor still needs a block of trivial member stores to happen before a later non-trivial member ctor, prefer moving those declaration-ordered pointer/scalar initializers into the initializer list instead of leaving them as body assignments. `PVehicle::PVehicle` only got close once the pre-`mBehaviorOverrides` members moved into the list, which let GCC place that setup ahead of the map ctor like the original.
+- Keep owner-header parameter names synced with the matched out-of-line definition / DWARF names when neighboring parameters share the same type. The mangled signature may still compile, but stale swapped names make future polish work much easier to get wrong.
+- If DWARF says a tiny virtual destructor was inline, do not assume "move it into the header" is automatically safe. In jumbo TUs that can improve one destructor callsite while also making objdiff report the standalone deleting-dtor symbol as missing from the owner TU, so always rebuild and check both the caller and the destructor symbol before keeping that rewrite.
 - Prefer moving helper template declarations next to their real use site instead of leaving them in an unrelated file.
 
 ### Pointer style
@@ -114,13 +132,20 @@ Foo::Foo()
 
 - Use the repo's header guard form when writing headers: `#ifndef` / `#define` plus the `#ifdef EA_PRAGMA_ONCE_SUPPORTED` / `#pragma once` block.
 - Keep member layout comments aligned and intact in decomp headers.
+- When writing a recovered layout, start from a pasted GC DWARF dump instead of hand-reconstructing a cleaner version. Treat the dump as source-of-truth data entry, then make only small verified fixes from PS2 or existing headers.
 - Preserve the original `class` / `struct` kind from existing headers or Dwarf / PS2 evidence; do not treat it as a cosmetic style choice.
 - Treat header declarations as the repo source of truth. If the repo only has local `.cpp` partial declarations, verify the kind with the PS2 dump instead of copying them blindly.
 - Even forward declarations and local partial declarations should use the accurate keyword when known.
+- If Dwarf and PS2 disagree on `struct` vs `class`, treat PS2 visibility sections as the tie-breaker for the real owner kind and then rebuild the affected TU to confirm the shape is byte-stable.
+- Keep the `// total size: 0x...` comment above the recovered type declaration instead of burying it inside the body.
+- When a recovered type is a `class`, keep explicit access sections and put the method/accessor block before the member layout block unless existing repo evidence shows otherwise.
 - Preserve the member naming style that DWARF shows. Some types use `mMember`, others use `m_member`; do not normalize them.
+- If DWARF says a member is a concrete generated Attrib wrapper such as `Attrib::Gen::effects`, keep the owner-header member typed as that wrapper and use the wrapper's original ctor overload in callers. Do not flatten it back to `Attrib::Instance` plus local `FindCollection` / `SetDefaultLayout` glue unless the dumps prove the generic form was real.
 - Preserve recovered member names, types, order, and offset comments. Do not invent placeholder members named `pad`, `unk`, `unknown`, or `field_XXXX` for game code just to make a layout compile.
+- Preserve the dumped declaration order too. Do not regroup methods, helpers, enums, or fields for readability unless an existing repo header or PS2 evidence proves the original order differs.
 - If a member is genuinely unknown, stop and verify it with `find-symbol.py`, GC Dwarf, and PS2 data. If the layout is still incomplete, add a short TODO above the type instead of burying uncertainty in fake member names.
 - Add offset / size comments when you are writing recovered type layouts from DWARF.
+- In recovered layouts, prefer explicit-width aliases such as `uint8` / `uint16` when the field width is known. Use plain `char` for text / byte buffers and `signed char` when the field is a signed 8-bit counter.
 - Define inline member functions in headers only when DWARF shows that they are genuinely inlined in the binary.
 - Use `struct` for POD-like data carriers with public fields; use `class` for behavior-heavy types only when that matches the recovered type information.
 - Keep tiny placeholder methods as concise inline bodies when that is already the local pattern.
@@ -134,12 +159,33 @@ Foo::Foo()
 ### Dense local code
 
 - Expand dense one-line helper structs, declaration blocks, and function bodies in non-match-sensitive files into normal multiline formatting.
+- In low-level headers, prefer normal multi-line bodies for touched inline operators and accessors instead of stacking `{ return ...; }` on one line, unless the surrounding file clearly uses intentional placeholder one-liners.
 - Prefer readable blocks over stacked one-line statements when behavior does not depend on exact source shape.
+- In touched validation/parsing code, prefer explicit min/max or boundary checks over equivalent magic-constant arithmetic when the clearer form still compiles to the verified result.
+- In parser/state-table code, prefer named enums and enum-typed state variables over anonymous integer state codes when that rewrite is verified safe.
+- In match-sensitive gameplay code, if DWARF shows float-derived locals as `int`, keep them signed in source and prefer signed clamps such as `UMath::Min` / `UMath::Max` over `unsigned int` temporaries. On PPC, unsigned float-to-int conversion often pulls in the wrong `lfd` / `xoris` sequence.
+- If DWARF points a tiny inline helper back at the current `.cpp` instead of a shared utility header, prefer recreating that file-local helper with the same return type / signedness before reusing a generic helper. Helper ownership alone can change normalized DWARF even when objdiff stays flat.
+- Watch COM `QueryInterface` on interfaces that only declare `static HINTERFACE _IHandle();` in the header and define it out-of-line elsewhere. The current `UCOM.h` template calls `T::_IHandle()`, which can compile as a helper call instead of the original direct `(HINTERFACE)T::_IHandle` constant. If objdiff shows the direct handle form, use a tiny file-local `_mInterfaces.Find((HINTERFACE)T::_IHandle)` helper and preserve any explicit `bool hasX` local the original kept.
+- If a touched shared utility header still has placeholder virtual/helper bodies, treat clusters of tiny 8-byte helper diffs as evidence that the header itself is unfinished. Recover the real shared body once in the header (for example, `UTL::FixedVector` returning the template size and inline buffer) instead of polishing each emitted instantiation separately.
+- If DWARF puts most of a function's live locals inside one anonymous block, prefer preserving that with one explicit inner scope in the recovered source. Scope-only rewrites like this can improve normalized DWARF a lot without changing objdiff.
+- In factory/build helpers, if DWARF only names the final real local and shows copy-ctor / parameter-bundle setup as inline ranges, prefer passing those temporaries directly at the call site instead of naming extra locals for them. This often shrinks the frame and matches the original ownership better.
+
+### Recovery markers
+
+- Remove stale recovery markers such as `// TODO`, `// UNSOLVED`, or `// STRIPPED` when the touched code is now implemented or understood.
+- If a marker still needs to stay, give it short context such as ownership uncertainty, a Dwarf caveat, a platform/config note, or a scratch/link reference. Avoid bare marker-only comments.
+- Do not leave `// TODO` hanging off a declaration or helper you just implemented; either finish the thought or remove the marker.
 
 ### Uncertain ownership
 
 - If a declaration or global clearly compiles but its original home is uncertain, add a short TODO comment instead of inventing structure you cannot justify yet.
 - When ownership matters, verify it with `decomp-workflow.py`, `decomp-context.py`, and `line-lookup` before moving code.
+
+### Readable helper extraction
+
+- When touched recovered code repeats the same pointer/boundary arithmetic, prefer a short named helper or accessor such as `GetTop`, `GetBot`, `GetNext`, `GetPrev`, `GetStringTableStart`, or `GetStringTableEnd` if that shape is already supported by Dwarf/inlining evidence.
+- Prefer call sites that use those helpers or existing container APIs over re-encoding the same arithmetic or link manipulation inline.
+- If a touched caller is using a local `*Access` shim with placeholder padding just to peek at another type's private members, prefer a narrow inline accessor on the real type over keeping the fake layout struct in the caller.
 
 ## Phase 3: Things Not To "Clean Up" Blindly
 
@@ -172,3 +218,10 @@ Keep the cleanup only if the build succeeds and the relevant match status is unc
 - The trailing `//` initializer-list markers are an intentional repo convention, not noise to remove.
 - Small `if (ptr)` cleanup batches can be kept in match-sensitive code, but only after rebuilding the affected unit.
 - Dense frontend shim files benefit from multiline struct/prototype/function formatting.
+- Header prologues should keep the `EA_PRAGMA_ONCE_SUPPORTED` block ahead of includes, not after them.
+- Bare `#if MACRO` presence checks are review bait; use `#ifdef` / `#ifndef` unless you are intentionally testing a numeric config value.
+- Reviewed recovered headers tend to keep total-size comments above the type, methods before fields, explicit access sections, and fixed-width aliases for width-known narrow integer members.
+- Recent `zMisc` review cleanup also showed that hand-reconstructed structs and reordered declarations create avoidable churn; copy recovered layouts from DWARF into the owner header first and keep the dumped order unless PS2/header evidence proves a correction.
+- Reviewed fixups also remove stale bare recovery markers or replace them with context, and prefer existing list/node helpers over hand-written pointer/link rewiring.
+- Some reviewed fixups improved readability without losing match by replacing opaque range-check arithmetic with explicit bounds and by moving repeated pointer/boundary math behind short named helpers.
+- Other recurring review churn came from plain-`int` address helpers, stray local `.cpp` prototypes for shared functions, and integer-coded parser states where named enums were clearer but still matched.

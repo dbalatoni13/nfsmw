@@ -11,17 +11,17 @@
 // total size: 0x8
 class IPlaceableScenery : public UTL::COM::IUnknown, public UTL::Collections::Countable<IPlaceableScenery> {
   public:
-    static HINTERFACE _IHandle() {
-        return (HINTERFACE)_IHandle;
-    }
+    static HINTERFACE _IHandle();
 
-    IPlaceableScenery(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
+    IPlaceableScenery(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, (HINTERFACE)_IHandle) {}
 
-    virtual ~IPlaceableScenery() {}
+    virtual ~IPlaceableScenery();
 
+    virtual void Destroy();
     virtual void PickUp();
     virtual bool Place(const UMath::Matrix4 &transform, bool snap_to_ground);
-    virtual void Destroy();
+
+    static IPlaceableScenery *CreateInstance(const char *name, unsigned int attributes);
 };
 
 #endif

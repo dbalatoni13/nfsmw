@@ -24,6 +24,14 @@ struct EffectLinkageRecord {
 // TODO here or in SimEffect.h?
 class EffectLookup {
   public:
+    EffectLookup()
+        : mEffect(), //
+          mSourceKey(0), //
+          mDataKey(0), //
+          mSurfaceKey(0), //
+          mMinSpeed(0.0f), //
+          mMaxSpeed(0.0f) {}
+
     const Attrib::Collection *GetEffect() {
         return mEffect.GetCollection();
     }
@@ -62,10 +70,7 @@ class EffectLookup {
         }
     }
 
-    const EffectLinkageRecord *Find(unsigned int surfacekey, const Attrib::Attribute &list) {
-        // TODO
-        return nullptr;
-    }
+    const EffectLinkageRecord *Find(unsigned int surfacekey, const Attrib::Attribute &list) const;
 
     float GetMinSpeed() {
         return mMinSpeed;
@@ -132,12 +137,14 @@ class Effects : public Behavior, public Sim::Collision::IListener {
 // total size: 0xF4
 class EffectsVehicle : public Effects {
   public:
+    static Behavior *Construct(const BehaviorParams &params);
     EffectsVehicle(const BehaviorParams &bp);
 };
 
 // total size: 0xF8
 class EffectsCar : public EffectsVehicle {
   public:
+    static Behavior *Construct(const BehaviorParams &params);
     EffectsCar(const BehaviorParams &bp);
 
     // Overrides
@@ -157,12 +164,14 @@ class EffectsCar : public EffectsVehicle {
 // total size: 0xF8
 class EffectsPlayer : public EffectsCar {
   public:
+    static Behavior *Construct(const BehaviorParams &params);
     EffectsPlayer(const BehaviorParams &bp);
 };
 
 // total size: 0xF4
 class EffectsSmackable : public Effects {
   public:
+    static Behavior *Construct(const BehaviorParams &params);
     EffectsSmackable(const BehaviorParams &bp);
 
     // Overrides
@@ -173,6 +182,7 @@ class EffectsSmackable : public Effects {
 // total size: 0xF4
 class EffectsFragment : public Effects {
   public:
+    static Behavior *Construct(const BehaviorParams &params);
     EffectsFragment(const BehaviorParams &bp);
 };
 

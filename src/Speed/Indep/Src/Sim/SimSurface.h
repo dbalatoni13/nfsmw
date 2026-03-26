@@ -54,4 +54,8 @@ inline bool operator!=(const SimSurface &surfaceA, const SimSurface &surfaceB) {
     return surfaceA.GetConstCollection() != surfaceB.GetConstCollection();
 }
 
+inline bool operator==(const SimSurface &surfaceA, const SimSurface &surfaceB) {
+    return surfaceA.GetConstCollection() == surfaceB.GetConstCollection();
+}
+
 #endif

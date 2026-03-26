@@ -17,6 +17,8 @@
 #include "Speed/Indep/Src/Physics/PhysicsObject.h"
 #include "Speed/Indep/Src/Physics/PhysicsTypes.h"
 
+IInputPlayer::~IInputPlayer() {}
+
 Behavior *PInput::Construct(const BehaviorParams &params) {
     return new PInput(params);
 }
@@ -33,6 +35,49 @@ void PInput::Reset() {
 
 void PInput::ClearInput() {
     mControls = InputControls();
+}
+
+InputControls &PInput::GetControls() const {
+    return const_cast<InputControls &>(mControls);
+}
+
+bool PInput::GetControlHandBrake() const {
+    return mControls.fHandBrake != 0.0f;
+}
+
+bool PInput::GetControlActionButton() const {
+    if (!mControls.fActionButton) {
+        return false;
+    }
+    return true;
+}
+
+void PInput::SetControlSteering(float steer) {
+    mControls.fSteering = steer;
+}
+
+void PInput::SetControlGas(float gas) {
+    mControls.fGas = gas;
+}
+
+void PInput::SetControlBrake(float brake) {
+    mControls.fBrake = brake;
+}
+
+void PInput::SetControlNOS(bool nos_on) {
+    mControls.fNOS = nos_on;
+}
+
+void PInput::SetControlHandBrake(float hbrake) {
+    mControls.fHandBrake = hbrake;
+}
+
+void PInput::SetControlActionButton(bool hAction) {
+    mControls.fActionButton = hAction;
+}
+
+void PInput::SetControlSteeringVertical(float steer) {
+    mControls.fSteeringVertical = steer;
 }
 
 Behavior *InputPlayer::Construct(const BehaviorParams &params) {
@@ -105,6 +150,18 @@ void InputPlayer::BlockInput(bool block) {
             mActionQ.Enable(true);
         }
     }
+}
+
+bool InputPlayer::IsBlocked() const {
+    return mBlocked;
+}
+
+bool InputPlayer::IsLookBackButtonPressed() const {
+    return mLookBackButton > 0.0f;
+}
+
+bool InputPlayer::IsPullBackButtonPressed() const {
+    return mPullBackButton > 0.0f;
 }
 
 void InputPlayer::FetchInput() {
@@ -378,3 +435,7 @@ bool InputPlayerDrag::OnAction(const ActionRef &a) {
 }
 
 InputNIS::InputNIS(const BehaviorParams &bp) : PInput(bp) {}
+
+Behavior *InputNIS::Construct(const BehaviorParams &params) {
+    return new InputNIS(params);
+}

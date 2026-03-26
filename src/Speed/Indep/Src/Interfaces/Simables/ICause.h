@@ -9,6 +9,13 @@
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 #include "Speed/Indep/Libs/Support/Utility/UCollections.h"
 
+namespace Sim {
+namespace Collision {
+struct Info;
+}
+}
+typedef Sim::Collision::Info COLLISION_INFO;
+
 struct HCAUSE__ {
     // total size: 0x4
     int unused; // offset 0x0, size 0x4
@@ -29,6 +36,7 @@ class ICause : public UTL::COM::IUnknown, public UTL::Collections::Instanceable<
     virtual ~ICause() {}
 
     // virtual void OnCausedCollision(const COLLISION_INFO &cinfo, ISimable *from, ISimable *to);
+    virtual void OnCausedCollision(const COLLISION_INFO &cinfo, ISimable *from, ISimable *to) = 0;
     virtual void OnCausedExplosion(IExplosion *explosion, ISimable *to);
 };
 

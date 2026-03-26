@@ -1,7 +1,9 @@
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/chopperspecs.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/engine.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/induction.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/nos.h"
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/pvehicle.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/tires.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/transmission.h"
 #include "Speed/Indep/Src/Generated/Events/EEngineBlown.hpp"
@@ -28,6 +30,16 @@
 #include "Speed/Indep/Src/Sim/UTil.h"
 #include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
+
+IInductable::~IInductable() {}
+ITiptronic::~ITiptronic() {}
+HINTERFACE IDragTransmission::_IHandle() {
+    return (HINTERFACE)_IHandle;
+}
+
+Attrib::Key Attrib::Gen::chopperspecs::ClassKey() {
+    return 0x5d898ee7;
+}
 
 // total size: 0x1B0
 class EngineRacer : protected VehicleBehavior,
@@ -398,6 +410,12 @@ EngineRacer::EngineRacer(const BehaviorParams &bp)
 EngineRacer::~EngineRacer() {
     IAttributeable::UnRegister(this);
 }
+
+template BehaviorSpecsPtr<Attrib::Gen::nos>::~BehaviorSpecsPtr();
+template BehaviorSpecsPtr<Attrib::Gen::induction>::~BehaviorSpecsPtr();
+template BehaviorSpecsPtr<Attrib::Gen::engine>::~BehaviorSpecsPtr();
+template BehaviorSpecsPtr<Attrib::Gen::chopperspecs>::~BehaviorSpecsPtr();
+template BehaviorSpecsPtr<Attrib::Gen::pvehicle>::~BehaviorSpecsPtr();
 
 float EngineRacer::GetHorsePower() const {
     float engine_torque = GetEngineTorque(mRPM);

@@ -4,12 +4,16 @@
 #include "Speed/Indep/Src/Physics/VehicleBehaviors.h"
 #include "Speed/Indep/Src/Sim/SimServer.h"
 
+namespace SoundConn {
+class Pkt_Car_Service;
+}
+
 // total size: 0x64
 class SoundHeli : public VehicleBehavior, public IAudible {
     static Behavior *Construct(const BehaviorParams &params);
 
     SoundHeli(const BehaviorParams &params);
-    // void OnService(Pkt_Car_Service &svc);
+    void OnService(SoundConn::Pkt_Car_Service &svc);
 
     // Virtual overrides
     // IUnknown
@@ -41,4 +45,26 @@ SoundHeli::SoundHeli(const BehaviorParams &params) : VehicleBehavior(params, 0),
 
     SoundConn::Pkt_Heli_Open pkt(GetOwner()->GetAttributes().GetConstCollection(), GetOwner()->GetWorldID());
     mSoundService = OpenService(0xa3f44e2e, &pkt);
+}
+
+SoundHeli::~SoundHeli() {
+    if (mSoundService) {
+        CloseService(mSoundService);
+    }
+}
+
+Behavior *SoundHeli::Construct(const BehaviorParams &params) {
+    return new SoundHeli(params);
+}
+
+void SoundHeli::OnService(SoundConn::Pkt_Car_Service &svc) {}
+
+void SoundHeli::OnBehaviorChange(const struct UCrc32 &mechanic) {}
+
+bool SoundHeli::OnService(HSIMSERVICE hCon, Sim::Packet *pkt) {
+    if (hCon == mSoundService && !IsPaused()) {
+        OnService(*reinterpret_cast<SoundConn::Pkt_Car_Service *>(pkt));
+        return true;
+    }
+    return false;
 }

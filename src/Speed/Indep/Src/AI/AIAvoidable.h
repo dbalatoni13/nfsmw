@@ -62,7 +62,7 @@ class ALIGN_16 AIAvoidable {
         return mNeighbors;
     }
 
-    // void SetAvoidableObject(UTL::COM::IUnknown *pUnk) {}
+    void SetAvoidableObject(UTL::COM::IUnknown *pUnk) { mUnk = pUnk; }
 
     template <typename T> bool QueryInterface(T **out) {
         if (mUnk) {

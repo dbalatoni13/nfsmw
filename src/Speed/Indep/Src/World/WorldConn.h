@@ -112,6 +112,41 @@ void InitServices();
 void UpdateServices(float dT);
 void RestoreServices();
 
+// total size: 0x60
+class Pkt_Body_Open : public Sim::Packet {
+  public:
+    Pkt_Body_Open(unsigned int id, const UMath::Matrix4 &matrix) : mMatrix(matrix), mID(id) {}
+    ~Pkt_Body_Open() override {}
+
+    UCrc32 ConnectionClass() override;
+
+    unsigned int Size() override;
+
+    unsigned int Type() override;
+
+    static unsigned int SType();
+
+    UMath::Matrix4 mMatrix; // offset 0x4, size 0x40
+    WUID mID;               // offset 0x44, size 0x4
+};
+
+// total size: 0x60
+class Pkt_Body_Service : public Sim::Packet {
+  public:
+    ~Pkt_Body_Service() override {}
+
+    void SetMatrix(const UMath::Matrix4 &matrix) {
+        mMatrix = matrix;
+    }
+
+    void SetVelocity(const UMath::Vector3 &velocity) {
+        mVelocity = velocity;
+    }
+
+    UMath::Matrix4 mMatrix;    // offset 0x4, size 0x40
+    UMath::Vector3 mVelocity;  // offset 0x44, size 0xC
+};
+
 } // namespace WorldConn
 
 #endif

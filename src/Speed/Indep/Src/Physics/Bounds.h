@@ -7,8 +7,14 @@
 
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 #include "Speed/Indep/Libs/Support/Utility/UCrc.h"
+#include "Speed/Indep/Libs/Support/Utility/UStandard.h"
 #include "Speed/Indep/Libs/Support/Utility/UTypes.h"
 #include "Speed/Indep/Src/Sim/SimSurface.h"
+#include "Speed/Indep/bWare/Inc/bChunk.hpp"
+#include "Speed/Indep/bWare/Inc/bList.hpp"
+#include "Speed/Indep/bWare/Inc/bWare.hpp"
+
+DECLARE_CONTAINER_TYPE(CollisionBoundsTable);
 
 namespace CollisionGeometry {
 
@@ -30,53 +36,158 @@ enum BoundFlags {
 };
 
 struct _V3c {
-    // total size: 0x6
-    short x; // offset 0x0, size 0x2
-    short y; // offset 0x2, size 0x2
-    short z; // offset 0x4, size 0x2
+    short x;
+    short y;
+    short z;
+
+    void Decompress(UMath::Vector3 &to) const {
+        to.x = static_cast< float >(x) * (1.0f / 128.0f);
+        to.y = static_cast< float >(y) * (1.0f / 128.0f);
+        to.z = static_cast< float >(z) * (1.0f / 128.0f);
+    }
 };
 
 struct _Q4c {
-    // total size: 0x8
-    short x; // offset 0x0, size 0x2
-    short y; // offset 0x2, size 0x2
-    short z; // offset 0x4, size 0x2
-    short w; // offset 0x6, size 0x2
+    short x;
+    short y;
+    short z;
+    short w;
+
+    void Decompress(UMath::Vector4 &to) const {
+        to.x = static_cast< float >(x) * (1.0f / 16384.0f);
+        to.y = static_cast< float >(y) * (1.0f / 16384.0f);
+        to.z = static_cast< float >(z) * (1.0f / 16384.0f);
+        to.w = static_cast< float >(w) * (1.0f / 16384.0f);
+    }
+};
+
+struct PCloudHeader {
+    int fNumPClouds;
+    int fPad[3];
+};
+
+struct PCloud {
+    int fNumVerts;
+    int fPad1;
+    int fPad2;
+    UMath::Vector4 *fPList;
 };
 
 struct BoundsHeader {
-    // total size: 0x10
-    UCrc32 fNameHash; // offset 0x0, size 0x4
-    int fNumBounds;   // offset 0x4, size 0x4
-    int fIsResolved;  // offset 0x8, size 0x4
-    int fPad;         // offset 0xC, size 0x4
+    UCrc32 fNameHash;
+    int fNumBounds;
+    int fIsResolved;
+    int fPad;
 };
 
 struct Bounds;
 class IBoundable;
 
 struct Collection : public BoundsHeader {
-    // total size: 0x10
+    Bounds *GetBounds() { return reinterpret_cast< Bounds * >(this + 1); }
+    const Bounds *GetBounds() const { return reinterpret_cast< const Bounds * >(this + 1); }
+    PCloudHeader *GetPCHeader();
+    const PCloudHeader *GetPCHeader() const;
+    PCloud *GetPCloud();
+    const PCloud *GetPCloud() const;
 
+    const Bounds *GetRoot() const;
+    const Bounds *GetChild(const Bounds *parent, UCrc32 name) const;
+    const Bounds *GetChild(const Bounds *parent, unsigned int idx) const;
+    const PCloud *GetPointCloud(const Bounds *parent) const;
+    const Bounds *GetBounds(UCrc32 hash_name) const;
+    void Init();
     bool AddTo(IBoundable *irbc, const Bounds *root, const SimSurface &defsurface, bool parsechildren) const;
+    bool AddNode(IBoundable *iboundable, const Bounds *geom, const SimSurface &defsurface, bool ischild) const;
 };
 
-// total size: 0x30
 struct Bounds {
-    _Q4c fOrientation;          // offset 0x0, size 0x8
-    _V3c fPosition;             // offset 0x8, size 0x6
-    unsigned short fFlags;      // offset 0xE, size 0x2
-    _V3c fHalfDimensions;       // offset 0x10, size 0x6
-    unsigned char fNumChildren; // offset 0x16, size 0x1
-    char fPCloudIndex;          // offset 0x17, size 0x1
-    _V3c fPivot;                // offset 0x18, size 0x6
-    short fChildIndex;          // offset 0x1E, size 0x2
-    float fRadius;              // offset 0x20, size 0x4
-    UCrc32 fSurface;            // offset 0x24, size 0x4
-    UCrc32 fNameHash;           // offset 0x28, size 0x4
-    Collection *fCollection;    // offset 0x2C, size 0x4
+    _Q4c fOrientation;
+    _V3c fPosition;
+    unsigned short fFlags;
+    _V3c fHalfDimensions;
+    unsigned char fNumChildren;
+    char fPCloudIndex;
+    _V3c fPivot;
+    short fChildIndex;
+    float fRadius;
+    UCrc32 fSurface;
+    UCrc32 fNameHash;
+    Collection *fCollection;
 
-    void GetPivot(UMath::Vector3 &to) const {}
+    void GetPivot(UMath::Vector3 &to) const { fPivot.Decompress(to); }
+    void GetPosition(UMath::Vector3 &to) const { fPosition.Decompress(to); }
+    void GetHalfDimensions(UMath::Vector3 &to) const { fHalfDimensions.Decompress(to); }
+    void GetOrientation(UMath::Vector4 &to) const { fOrientation.Decompress(to); }
+
+    const Bounds *GetChild(unsigned int idx) const {
+        return fCollection->GetChild(this, idx);
+    }
+    const Bounds *GetChild(UCrc32 name) const {
+        return fCollection->GetChild(this, name);
+    }
+};
+
+inline PCloudHeader *Collection::GetPCHeader() {
+    return reinterpret_cast< PCloudHeader * >(&GetBounds()[fNumBounds]);
+}
+inline const PCloudHeader *Collection::GetPCHeader() const {
+    return reinterpret_cast< const PCloudHeader * >(&GetBounds()[fNumBounds]);
+}
+inline PCloud *Collection::GetPCloud() {
+    return reinterpret_cast< PCloud * >(GetPCHeader() + 1);
+}
+inline const PCloud *Collection::GetPCloud() const {
+    return reinterpret_cast< const PCloud * >(GetPCHeader() + 1);
+}
+
+class BoundsPack : public bTNode< BoundsPack > {
+    struct Pair {
+        UCrc32 Name;
+        Collection *Collection;
+
+        Pair(UCrc32 name, struct Collection *collection) : Name(name), Collection(collection) {}
+
+        bool operator<(const Pair &rhs) const {
+            return Name < rhs.Name;
+        }
+    };
+
+    class Table : public _STL::vector< Pair, UTL::Std::Allocator< Pair, _type_CollisionBoundsTable > > {
+      public:
+        void Add(Collection *collection) {
+            Pair pair(collection->fNameHash, collection);
+            iterator pos = _STL::upper_bound(begin(), end(), pair);
+            insert(pos, pair);
+        }
+        Collection *Find(UCrc32 name);
+    };
+
+    const bChunk *mChunk;
+    Table mTable;
+
+  public:
+    void *operator new(std::size_t size) {
+        return gFastMem.Alloc(size, nullptr);
+    }
+
+    void operator delete(void *mem, std::size_t size) {
+        gFastMem.Free(mem, size, nullptr);
+    }
+
+    BoundsPack(bChunk *pack);
+
+    const bChunk *GetHeader() const { return mChunk; }
+
+    const Collection *Find(UCrc32 name) {
+        return mTable.Find(UCrc32(name));
+    }
+};
+
+struct Collections : public bTList< BoundsPack > {
+    ~Collections() {}
+    BoundsPack *Find(const bChunk *header);
+    const Collection *Find(UCrc32 name);
 };
 
 class IBoundable : public UTL::COM::IUnknown {
@@ -96,8 +207,8 @@ class IBoundable : public UTL::COM::IUnknown {
                                   CollisionGeometry::BoundFlags flags, bool persistant);
 };
 
-const Attrib::Collection *Lookup(UCrc32 object_name_hash);
-bool CreateJoint(IBoundable *ifemale, struct UCrc32 femalenode_name, IBoundable *imale, UCrc32 malenode_name, UMath::Vector3 *out_female,
+const Collection *Lookup(UCrc32 object_name_hash);
+bool CreateJoint(IBoundable *ifemale, UCrc32 femalenode_name, IBoundable *imale, UCrc32 malenode_name, UMath::Vector3 *out_female,
                  UMath::Vector3 *out_male, unsigned int joint_flags);
 
 }; // namespace CollisionGeometry

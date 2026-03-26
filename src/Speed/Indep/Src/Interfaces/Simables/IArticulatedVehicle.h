@@ -16,7 +16,7 @@ class IArticulatedVehicle : public UTL::COM::IUnknown {
 
     IArticulatedVehicle(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
 
-    virtual ~IArticulatedVehicle() {}
+    virtual ~IArticulatedVehicle();
 
     virtual IVehicle *GetTrailer() const;
     virtual void SetHitch(bool hitched);

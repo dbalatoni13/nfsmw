@@ -52,6 +52,14 @@ class TrackPathZone {
     int GetData(int index) {
         return Data[index];
     }
+
+    bVector2 *GetPosition() {
+        return &Position;
+    }
+
+    bVector2 *GetDirection() {
+        return &Direction;
+    }
 };
 
 // total size: 0x48C

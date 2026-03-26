@@ -14,8 +14,8 @@ class bHash32 {
   public:
     bHash32() {}
     bHash32(const char *name) {}
-    bHash32(const bHash32 &from) {}
-    bHash32(unsigned int crc) {}
+    bHash32(const bHash32 &from) : mCRC(from.mCRC) {}
+    bHash32(unsigned int crc) : mCRC(crc) {}
 
     bHash32 &operator=(bHash32 &from) {
         this->mCRC = from.mCRC;

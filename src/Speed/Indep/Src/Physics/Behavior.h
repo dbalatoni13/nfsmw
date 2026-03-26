@@ -20,6 +20,13 @@ extern Attrib::StringKey BEHAVIOR_MECHANIC_SUSPENSION;
 
 // total size: 0x10
 struct BehaviorParams {
+    BehaviorParams(const Sim::Param &params, struct PhysicsObject *owner,
+                   const UCrc32 &mechanic, const UCrc32 &signature)
+        : fparams(params) //
+        , fowner(owner) //
+        , fSig(signature) //
+        , fMechanic(mechanic) {}
+
     const Sim::Param &fparams;    // offset 0x0, size 0x4
     struct PhysicsObject *fowner; // offset 0x4, size 0x4
     const UCrc32 &fSig;           // offset 0x8, size 0x4
@@ -28,6 +35,8 @@ struct BehaviorParams {
 
 // total size: 0x4C
 class Behavior : public Sim::Object, public UTL::COM::Factory<const BehaviorParams &, Behavior, UCrc32> {
+    friend class PhysicsObject;
+
   public:
     void *operator new(std::size_t size) {
         return gFastMem.Alloc(size, nullptr);
@@ -41,20 +50,31 @@ class Behavior : public Sim::Object, public UTL::COM::Factory<const BehaviorPara
 
     Behavior(const BehaviorParams &params, unsigned int num_interfaces);
 
-    const UCrc32 &GetMechanic() {
+    const UCrc32 &GetMechanic() const {
         return mMechanic;
     }
 
-    const UCrc32 &GetSignature() {
+    const UCrc32 &GetSignature() const {
         return mSignature;
     }
 
-    bool IsPaused() {
+    void Pause(bool pause);
+
+    static void Destroy(Behavior *b) {
+        delete b;
+    }
+
+    int IsPaused() const {
         return mPaused;
     }
 
     ISimable *GetOwner() const {
         return mIOwner;
+    }
+
+    void DoSimulate(float dT) {
+        Sim::Profile::Scope profile(mProfile);
+        OnTaskSimulate(dT);
     }
 
     void EnableProfile(const char *name) {
@@ -74,21 +94,24 @@ class Behavior : public Sim::Object, public UTL::COM::Factory<const BehaviorPara
         // TODO right place?
     }
 
-  protected:
     virtual void OnTaskSimulate(float dT);
-
     virtual void OnBehaviorChange(const UCrc32 &mechanic) {}
 
-    virtual void OnPause();
-    virtual void OnUnPause();
+    inline void BehaviorChanged(const UCrc32 &mechanic) {
+        OnBehaviorChange(mechanic);
+    }
 
     virtual ~Behavior() {
         // TODO
         Sim::Profile::Release(nullptr);
     }
 
+  protected:
+    virtual void OnPause();
+    virtual void OnUnPause();
+
   private:
-    bool mPaused;                 // offset 0x30, size 0x1
+    int mPaused;                  // offset 0x30, size 0x4
     struct PhysicsObject *mOwner; // offset 0x34, size 0x4
     ISimable *mIOwner;            // offset 0x38, size 0x4
     const UCrc32 mMechanic;       // offset 0x3C, size 0x4
@@ -102,9 +125,7 @@ template <typename T> class BehaviorSpecsPtr : public AttributeStructPtr<T> {
   public:
     BehaviorSpecsPtr(Behavior *behavior, int index) : AttributeStructPtr<T>(LookupKey(behavior->GetOwner(), index)) {}
 
-    BehaviorSpecsPtr(ISimable *owner, int index) : AttributeStructPtr<T>(0) {
-        // TODO
-    }
+    BehaviorSpecsPtr(ISimable *owner, int index) : AttributeStructPtr<T>(LookupKey(owner, index)) {}
 
     ~BehaviorSpecsPtr();
 
@@ -125,5 +146,7 @@ template <typename T> class BehaviorSpecsPtr : public AttributeStructPtr<T> {
         }
     }
 };
+
+template <typename T> BehaviorSpecsPtr<T>::~BehaviorSpecsPtr() {}
 
 #endif

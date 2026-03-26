@@ -36,7 +36,7 @@ class DamageVehicle : public VehicleBehavior,
   public:
     static Behavior *Construct(const BehaviorParams &params);
 
-    DamageVehicle(const BehaviorParams &bp, const DamageParams &dp);
+    DamageVehicle(const BehaviorParams &bp, const DamageParams &sp);
     void ResetParts();
     const DamageScaleRecord &GetDamageRecord(DamageZone::ID zone) const;
 
@@ -60,6 +60,17 @@ class DamageVehicle : public VehicleBehavior,
     void SetShockForce(float f) override;
     void SetInShock(float scale) override;
     void ResetDamage() override;
+    float InShock() const override {
+        return mShockTimer;
+    }
+
+    float GetHealth() const override {
+        return UMath::Clamp(1.0f - mDamageTotal, 0.0f, 1.0f);
+    }
+
+    bool IsDestroyed() const override {
+        return mDamageTotal >= 1.0f;
+    }
 
     // Virtual methods
     virtual void OnImpact(const UMath::Vector3 &arm, const UMath::Vector3 &normal, float force, float speed, const SimSurface &mysurface,
@@ -70,7 +81,20 @@ class DamageVehicle : public VehicleBehavior,
     }
 
     virtual bool IsLightDamaged(VehicleFX::ID idx) const {
+        if (IsDestroyed()) {
+            return true;
+        }
         return (mLightDamage & idx) != VehicleFX::LIGHT_NONE;
+    }
+
+    void DamageLight(VehicleFX::ID idx, bool b) override {
+        if (CanDamageVisuals()) {
+            if (b) {
+                mLightDamage |= idx;
+            } else {
+                mLightDamage &= ~idx;
+            }
+        }
     }
 
     // Inline overrides

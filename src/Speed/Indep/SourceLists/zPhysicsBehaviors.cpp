@@ -40,4 +40,18 @@
 
 #include "Speed/Indep/Src/Physics/Behaviors/EngineTraffic.cpp"
 
+#include "Speed/Indep/Src/Physics/Behaviors/SimpleChopper.cpp"
+
+#include "Speed/Indep/Src/Physics/Behaviors/DrawVehicle.cpp"
+
+#include "Speed/Indep/Src/Physics/Behaviors/DrawHeli.cpp"
+
+#include "Speed/Indep/Src/Physics/Behaviors/DrawCar.cpp"
+
+#include "Speed/Indep/Src/Physics/Behaviors/ResetCar.cpp"
+
+#include "Speed/Indep/Src/Physics/Behaviors/SpikeStrip.cpp"
+
 #include "Speed/Indep/Src/Physics/Behaviors/SoundHeli.cpp"
+
+#include "Speed/Indep/Src/Physics/Behaviors/SoundCar.cpp"

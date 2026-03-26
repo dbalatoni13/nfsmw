@@ -28,6 +28,16 @@ class PInput : public Behavior, public IInput {
 
     // IInput
     void ClearInput() override;
+    InputControls &GetControls() const override;
+    bool GetControlHandBrake() const override;
+    bool GetControlActionButton() const override;
+    void SetControlSteering(float steer) override;
+    void SetControlGas(float gas) override;
+    void SetControlBrake(float brake) override;
+    void SetControlNOS(bool nos_on) override;
+    void SetControlHandBrake(float hbrake) override;
+    void SetControlActionButton(bool hAction) override;
+    void SetControlSteeringVertical(float steer) override;
 
     // Virtual methods
     virtual void SetControlStrafeVertical(float steer) {
@@ -84,11 +94,14 @@ class InputPlayer : public PInput, public IInputPlayer {
     // IInput
     void ClearInput() override;
     bool IsAutomaticShift() const override;
+    bool IsLookBackButtonPressed() const override;
+    bool IsPullBackButtonPressed() const override;
 
     // IInputPlayer
     void FlushInput() override;
     void BlockInput(bool block) override;
     void FetchInput() override;
+    bool IsBlocked() const override;
 
     // Virtual methods
     virtual bool OnAction(const ActionRef &a) {
@@ -131,6 +144,7 @@ class InputPlayerDrag : public InputPlayer {
 
 // total size: 0x7C
 class InputNIS : public PInput {
+  public:
     static Behavior *Construct(const BehaviorParams &params);
 
     InputNIS(const BehaviorParams &bp);

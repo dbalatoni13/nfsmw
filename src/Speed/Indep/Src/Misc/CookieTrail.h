@@ -19,6 +19,36 @@ template <typename T, std::size_t U> class CookieTrail {
 
   public:
     CookieTrail() : mCount(0), mLast(-1), mCapacity(U) {}
+
+    int Count() const {
+        return mCount;
+    }
+
+    T &Oldest() {
+        int next;
+        if (mCount < mCapacity) {
+            return mData[0];
+        }
+        next = mLast + 1;
+        return mData[next - (next / mCapacity) * mCapacity];
+    }
+
+    const T &Newest() const {
+        return mData[mLast];
+    }
+
+    void Clear() {
+        mCount = 0;
+        mLast = -1;
+    }
+
+    void AddNew(const T &t) {
+        mLast = (mLast + 1) % mCapacity;
+        if (mCount < mCapacity) {
+            mCount++;
+        }
+        mData[mLast] = t;
+    }
 };
 
 // TODO move?

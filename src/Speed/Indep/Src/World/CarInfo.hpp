@@ -137,6 +137,12 @@ struct CarTypeInfo {
     char Skinnable;                             // offset 0xC7, size 0x1
     int Padding;                                // offset 0xC8, size 0x4
     int DefaultBasePaint;                       // offset 0xCC, size 0x4
+
+    CarUsageType GetCarUsageType() { return UsageType; }
 };
+
+extern CarTypeInfo *CarTypeInfoArray;
+
+inline CarTypeInfo *GetCarTypeInfo(CarType car_type) { return &CarTypeInfoArray[car_type]; }
 
 #endif

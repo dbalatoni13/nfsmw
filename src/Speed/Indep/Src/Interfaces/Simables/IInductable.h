@@ -17,7 +17,7 @@ class IInductable : public UTL::COM::IUnknown {
 
     IInductable(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
 
-    virtual ~IInductable() {}
+    virtual ~IInductable();
 
   public:
     virtual Physics::Info::eInductionType InductionType() const;

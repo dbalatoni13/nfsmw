@@ -75,6 +75,10 @@ inline void Copy(const Matrix4 &a, Matrix4 &r) {
     VU0_MATRIX4Copy(a, r);
 }
 
+inline void Copy(const Vector3 &a, Vector3 &r) {
+    __builtin_memcpy(&r, &a, sizeof(Vector3));
+}
+
 inline void Set(Matrix4 &m, unsigned int row, const Vector4 &a) {
     VU0_v4Copy(a, m[row]);
 }
@@ -97,6 +101,10 @@ inline void Transpose(const Vector4 &q, Vector4 &r) {
 
 inline const Vector3 &ExtractAxis(const Matrix4 &m, unsigned int row) {
     return *reinterpret_cast<const Vector3 *>(&m[row]);
+}
+
+inline Vector3 &ExtractAxis(Matrix4 &m, unsigned int row) {
+    return *reinterpret_cast<Vector3 *>(&m[row]);
 }
 
 inline void ExtractXAxis(const Vector4 &q, Vector3 &r) {
@@ -147,6 +155,10 @@ inline void Unitxyz(const Vector4 &a, Vector4 &r) {
     VU0_v4unitxyz(a, r);
 }
 
+inline void Unitxyz(Vector4 &a) {
+    VU0_v4unitxyz(a, a);
+}
+
 // UEALibs not working???
 void MATRIX4_multyrot(const Matrix4 *m4, float ybangle, Matrix4 *resultm);
 inline void MultYRot(const Matrix4 &m, float a, Matrix4 &r) {
@@ -170,6 +182,10 @@ inline void Add(const Vector3 &a, const Vector3 &b, Vector3 &r) {
 #else
     VU0_v3add(a, b, r);
 #endif
+}
+
+inline void Add(const Vector4 &a, const Vector4 &b, Vector4 &r) {
+    VU0_v4add(a, b, r);
 }
 
 inline void Scale(const Vector3 &a, const Vector3 &b, Vector3 &r) {
@@ -228,11 +244,19 @@ inline void ScaleAddxyz(const Vector4 &a, const float s, const Vector4 &b, Vecto
     VU0_v4scaleaddxyz(a, s, b, r);
 }
 
+inline void Addxyz(const Vector4 &a, const Vector4 &b, Vector4 &r) {
+    VU0_v4addxyz(a, b, r);
+}
+
 inline void AddScale(const Vector3 &a, const Vector3 &b, const float s, Vector3 &r) {
 #ifdef EA_PLATFORM_XENON
 #else
     VU0_v3addscale(a, b, s, r);
 #endif
+}
+
+inline void AddScale(const Vector4 &a, const Vector4 &b, const float s, Vector4 &r) {
+    VU0_v4addscale(a, b, s, r);
 }
 
 inline void Sub(const Vector3 &a, const Vector3 &b, Vector3 &r) {
@@ -280,6 +304,10 @@ inline void Rotate(const Vector3 &a, const Matrix4 &m, Vector3 &r) {
 #else
     VU0_MATRIX3x4_vect3mult(a, m, r);
 #endif
+}
+
+inline void Rotate(const Vector4 &a, const Matrix4 &m, Vector4 &r) {
+    VU0_MATRIX3x4_vect4mult(a, m, r);
 }
 
 inline float Dot(const Vector3 &a, const Vector3 &b) {
@@ -463,5 +491,13 @@ inline float Limit(const float a, const float l) {
 }
 
 } // namespace UMath
+
+inline void AddScalexyz(const UMath::Vector4 &a, const UMath::Vector4 &b, const float s, UMath::Vector4 &r) {
+    VU0_v4addscalexyz(a, b, s, r);
+}
+
+inline void UnitCrossxyz(const UMath::Vector4 &a, const UMath::Vector4 &b, UMath::Vector4 &dest) {
+    VU0_v4unitcrossprodxyz(a, b, dest);
+}
 
 #endif

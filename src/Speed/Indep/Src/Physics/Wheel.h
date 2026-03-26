@@ -17,7 +17,9 @@ class Wheel {
     }
 
     void operator delete(void *mem, std::size_t size) {
-        gFastMem.Free(mem, size, nullptr);
+        if (mem) {
+            gFastMem.Free(mem, size, nullptr);
+        }
     }
 
     Wheel() : mWorldPos(0.0f) {

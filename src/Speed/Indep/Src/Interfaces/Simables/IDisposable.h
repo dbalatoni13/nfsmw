@@ -16,7 +16,7 @@ class IDisposable : public UTL::COM::IUnknown, public UTL::Collections::Listable
 
     IDisposable(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
 
-    virtual ~IDisposable() {}
+    virtual ~IDisposable();
 
   public:
     virtual bool IsRequired() const;
