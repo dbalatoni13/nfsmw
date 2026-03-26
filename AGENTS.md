@@ -568,6 +568,11 @@ TU: <translation-unit-name> | Function: <FunctionName>
 TU: zPhysics | Function: PVehicle::LookupBehaviorSignature
 When a generated Attrib wrapper fallback refuses to match, do not "simplify" it to `GetAttributePointer` plus a raw `const char *` hash. In `PVehicle::LookupBehaviorSignature`, ProDG matched much better when the code kept a local `Attrib::StringKey`, fetched through `Attrib::Attribute value = mAttributes.Get(...)`, copied it with `value.Get(0, behaviourKey)`, and even preserved an otherwise-unused local `Attrib::Instance(nullptr, 0, nullptr)` ahead of that path to reproduce the hidden ctor/dtor pair the original emitted.
 
+### BoolStringKeyAttributeGet
+
+TU: zPhysics | Function: PVehicle::LookupBehaviorSignature
+If DWARF shows `Attribute::Get(unsigned int, StringKey&)` as a bool-returning inline instead of the generic template path, recover that shared overload in `AttribSys.h` rather than open-coding `Get(...); GetInternal()` in each caller. `PVehicle::LookupBehaviorSignature` improved and its DWARF got closer to the original once `Attrib::Attribute` exposed a dedicated `bool Get(unsigned int, StringKey&) const` helper and the caller used `if (atr.Get(0, behaviourKey))`.
+
 ### EmptyIUnknownWrapperDtorTrap
 
 TU: zPhysics / zPhysicsBehaviors | Function: Smackable::~Smackable / EngineRacer::~EngineRacer / PVehicle::~PVehicle
