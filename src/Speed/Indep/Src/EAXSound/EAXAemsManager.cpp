@@ -1183,13 +1183,19 @@ void EAXAemsManager::AddAemsBank() {
 
 void EAXAemsManager::CheckForCompleteAsyncLoad() {
     if (!m_pCurLoadSDLP->bResolvedAsync) {
-        if (m_pCurLoadSDLP->AssetDescription.eDataType == EAXSND_DT_AEMS_ASYNCSPU) {
+        switch (m_pCurLoadSDLP->AssetDescription.eDataType) {
+        case EAXSND_DT_AEMS_ASYNCSPU:
             if (SNDAEMS_asyncloadmodulebankdone() > 0) {
                 CompleteAsyncLoad();
             }
-        } else if (m_pCurLoadSDLP->AssetDescription.eDataType == EAXSND_DT_AEMS_ASYNCSPUMEM &&
-                   SNDAEMS_asyncloadmodulebankmemdone() > 0 && m_IsWaitingForFileCB == 0) {
-            CompleteAsyncLoad();
+            break;
+        case EAXSND_DT_AEMS_ASYNCSPUMEM:
+            if (SNDAEMS_asyncloadmodulebankmemdone() > 0 && m_IsWaitingForFileCB == 0) {
+                CompleteAsyncLoad();
+            }
+            break;
+        default:
+            break;
         }
     }
 }
