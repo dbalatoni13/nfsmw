@@ -138,7 +138,7 @@ struct CarSoundConn : public Sim::Connection, public UTL::Collections::Listable<
     CarSoundConn(const Sim::ConnectionData &data);
     ~CarSoundConn() override;
     void OnReceive(Sim::Packet *) override;
-    void OnClose() override;
+    inline void OnClose() override { delete this; }
     Sim::ConnStatus OnStatusCheck() override;
     void UpdateState(float dT);
     static Sim::Connection *Construct(const Sim::ConnectionData &data);
@@ -180,7 +180,7 @@ struct HeliSoundConn : public Sim::Connection, public UTL::Collections::Listable
     HeliSoundConn(const Sim::ConnectionData &data);
     ~HeliSoundConn() override;
     void OnReceive(Sim::Packet *) override;
-    void OnClose() override;
+    inline void OnClose() override { delete this; }
     Sim::ConnStatus OnStatusCheck() override;
     void UpdateState(float dT);
     static Sim::Connection *Construct(const Sim::ConnectionData &data);

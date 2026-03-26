@@ -205,18 +205,7 @@ Sim::ConnStatus CarSoundConn::OnStatusCheck() {
 
 void CarSoundConn::OnReceive(Sim::Packet *) {}
 
-void CarSoundConn::OnClose() {
-    mConnected = false;
-    mTarget.Set(0);
-    mState = nullptr;
-}
-
 void HeliSoundConn::OnReceive(Sim::Packet *) {}
-
-void HeliSoundConn::OnClose() {
-    mTarget.Set(0);
-    mState = nullptr;
-}
 
 Sim::ConnStatus HeliSoundConn::OnStatusCheck() {
     return Sim::CONNSTATUS_READY;
