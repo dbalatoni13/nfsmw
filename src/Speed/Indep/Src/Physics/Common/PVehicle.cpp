@@ -996,8 +996,10 @@ PVehicle::~PVehicle() {
 }
 
 UCrc32 PVehicle::LookupBehaviorSignature(const Attrib::StringKey &mechanic) const {
-    if (mechanic == BEHAVIOR_MECHANIC_AUDIO && !IsSoundEnabled) {
-        return UCrc32::kNull;
+    if (mechanic == BEHAVIOR_MECHANIC_AUDIO) {
+        if (!IsSoundEnabled) {
+            return UCrc32::kNull;
+        }
     }
     UTL::Std::map<UCrc32, UCrc32, _type_ID_PVehicleChangeReq>::const_iterator it =
         mBehaviorOverrides.find(UCrc32(mechanic));
@@ -1038,7 +1040,7 @@ UCrc32 PVehicle::LookupBehaviorSignature(const Attrib::StringKey &mechanic) cons
     }
     if (mechanic == BEHAVIOR_MECHANIC_SUSPENSION && mClass == VehicleClass::CAR) {
         int dc = static_cast<int>(mDriverClass);
-        if (dc >= 3 && (dc < 5 || dc == 6)) {
+        if (dc > 2 && (dc < 5 || dc == 6)) {
             return UCrc32("SuspensionSimple");
         }
     }
@@ -1061,12 +1063,11 @@ UCrc32 PVehicle::LookupBehaviorSignature(const Attrib::StringKey &mechanic) cons
             return UCrc32("EffectsPlayer");
         }
     }
+    Attrib::Instance attribute(nullptr, 0, nullptr);
     Attrib::StringKey behaviourKey;
-    const void *data = mAttributes.GetAttributePointer(mechanic.GetHash32(), 0);
-    if (data != nullptr) {
-        return UCrc32(static_cast<const char *>(data));
-    }
-    return UCrc32::kNull;
+    Attrib::Attribute value = mAttributes.Get(mechanic.GetHash32());
+    value.Get(0, behaviourKey);
+    return UCrc32(behaviourKey);
 }
 
 void PVehicle::LoadBehaviors(const UMath::Vector3 &initialPos, const UMath::Matrix4 &initMat) {
