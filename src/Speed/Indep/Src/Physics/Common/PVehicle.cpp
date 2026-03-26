@@ -1040,20 +1040,23 @@ UCrc32 PVehicle::LookupBehaviorSignature(const Attrib::StringKey &mechanic) cons
     }
     if (mechanic == BEHAVIOR_MECHANIC_SUSPENSION && mClass == VehicleClass::CAR) {
         int dc = static_cast<int>(mDriverClass);
-        if (dc > 2 && (dc < 5 || dc == 6)) {
-            return UCrc32("SuspensionSimple");
+        if (dc >= 3) {
+            if (dc <= 4 || dc == 6) {
+                return UCrc32("SuspensionSimple");
+            }
         }
     }
     if (mechanic == BEHAVIOR_MECHANIC_AI) {
         AIBehaviors *ab = ai_behaviors;
-        UCrc32 sig = UCrc32::kNull;
-        while ((sig = ab->signature) != UCrc32::kNull) {
+        UCrc32 sig = ab->signature;
+        while (sig != UCrc32::kNull) {
             if (mDriverClass == ab->dclass) {
                 if (mClass == ab->vclass || ab->vclass == UCrc32::kNull) {
                     break;
                 }
             }
             ab++;
+            sig = ab->signature;
         }
         return sig;
     }
