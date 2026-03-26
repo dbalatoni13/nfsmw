@@ -385,13 +385,13 @@ void VehiclePartDamageBehaviour::Init() {
     this->InitAnimationPivot(CARSLOTID_DAMAGE_REAR_BUMPER, lbl_8040D0DC);
 
     pivot = reinterpret_cast<float *>(reinterpret_cast<unsigned char *>(this->mDamagePartList[CARSLOTID_DAMAGE_TRUNK]) + 0x10);
-    pivot[0] = lbl_8040D0E8;
     pivot[1] = lbl_8040D0EC;
+    pivot[0] = lbl_8040D0E8;
     pivot[2] = lbl_8040D0F0;
 
     pivot = reinterpret_cast<float *>(reinterpret_cast<unsigned char *>(this->mDamagePartList[CARSLOTID_DAMAGE_HOOD]) + 0x10);
-    pivot[0] = lbl_8040D0F4;
     pivot[1] = lbl_8040D0F8;
+    pivot[0] = lbl_8040D0F4;
     pivot[2] = lbl_8040D0F0;
 }
 

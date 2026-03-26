@@ -212,15 +212,18 @@ void InitWorldModels() {
 }
 
 void CloseWorldModels() {
-    WorldModel *world_model = WorldModelList.GetHead();
+    WorldModel *end = WorldModelList.EndOfList();
 
-    if (world_model != WorldModelList.EndOfList()) {
-        do {
+    if (WorldModelList.GetHead() != end) {
+        for (;;) {
+            WorldModel *world_model = WorldModelList.GetHead();
+            if (world_model == end) {
+                break;
+            }
             if (world_model != 0) {
                 delete world_model;
             }
-            world_model = WorldModelList.GetHead();
-        } while (world_model != WorldModelList.EndOfList());
+        }
     }
 
     bDeleteSlotPool(WorldModelSlotPool);
@@ -322,8 +325,8 @@ void WorldModel::Render(eView *view, int exc_flag) {
             float distance_sq;
             float distance_scale = lbl_8040CD90;
 
-            delta.x = camera_position->x - world_matrix->v3.x;
             delta.y = camera_position->y - world_matrix->v3.y;
+            delta.x = camera_position->x - world_matrix->v3.x;
             delta.z = camera_position->z - world_matrix->v3.z;
             distance_sq = delta.x * delta.x + delta.y * delta.y + delta.z * delta.z;
             if (lbl_8040CD84 < distance_sq) {
