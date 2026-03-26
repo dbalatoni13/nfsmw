@@ -162,6 +162,7 @@ Foo::Foo()
 - In parser/state-table code, prefer named enums and enum-typed state variables over anonymous integer state codes when that rewrite is verified safe.
 - In match-sensitive gameplay code, if DWARF shows float-derived locals as `int`, keep them signed in source and prefer signed clamps such as `UMath::Min` / `UMath::Max` over `unsigned int` temporaries. On PPC, unsigned float-to-int conversion often pulls in the wrong `lfd` / `xoris` sequence.
 - If DWARF points a tiny inline helper back at the current `.cpp` instead of a shared utility header, prefer recreating that file-local helper with the same return type / signedness before reusing a generic helper. Helper ownership alone can change normalized DWARF even when objdiff stays flat.
+- Watch COM `QueryInterface` on interfaces that only declare `static HINTERFACE _IHandle();` in the header and define it out-of-line elsewhere. The current `UCOM.h` template calls `T::_IHandle()`, which can compile as a helper call instead of the original direct `(HINTERFACE)T::_IHandle` constant. If objdiff shows the direct handle form, use a tiny file-local `_mInterfaces.Find((HINTERFACE)T::_IHandle)` helper and preserve any explicit `bool hasX` local the original kept.
 - If DWARF puts most of a function's live locals inside one anonymous block, prefer preserving that with one explicit inner scope in the recovered source. Scope-only rewrites like this can improve normalized DWARF a lot without changing objdiff.
 
 ### Recovery markers

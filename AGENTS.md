@@ -488,6 +488,12 @@ register assignments but does NOT affect integer register assignments (and vice 
   utility, prefer recreating that file-local helper with the same signedness / ownership rather
   than calling the generic helper. In `DamageVehicle::OnImpact`, a file-local `int Min(int, int)`
   preserved the helper's owner file and improved DWARF without changing objdiff.
+- Be careful with COM `QueryInterface` on interfaces whose headers only declare
+  `static HINTERFACE _IHandle();` out-of-line while their constructors already use the function-address
+  form `(HINTERFACE)_IHandle`. The template in `UCOM.h` calls `T::_IHandle()`, which can compile as a
+  helper-call shape the original code did not use. When objdiff wants the direct handle constant,
+  prefer a tiny file-local helper that calls `_mInterfaces.Find((HINTERFACE)T::_IHandle)` and preserve
+  any explicit `bool hasX = ptr != nullptr;` local if the assembly/DWARF shows one.
 - When objdiff is already exact but a local only differs by lexical scope, try an equivalent
   loop form that keeps the temporary inside the same block as the original DWARF. In practice,
   changing a `for (...; ...; x = next)` into a `while (...) { T *next = ...; ...; x = next; }`
