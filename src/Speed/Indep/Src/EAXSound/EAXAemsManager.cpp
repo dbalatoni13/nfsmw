@@ -1141,13 +1141,7 @@ int EAXAemsManager::IsAssetInList(Attrib::StringKey filename) {
     int nEndOfList = m_nEndOfList;
     if (n < nEndOfList) {
         do {
-            bool bAssetMatch = false;
-            if (*static_cast<unsigned int *>(static_cast<void *>(&filename)) ==
-                *static_cast<unsigned int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(&g_SndAssetList[n])) + 0x8))) {
-                bAssetMatch = *static_cast<unsigned int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(&filename)) + 0x4)) ==
-                              *static_cast<unsigned int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(&g_SndAssetList[n])) + 0xC));
-            }
-            if (bAssetMatch) {
+            if (filename == g_SndAssetList[n].AssetDescription.FileName) {
                 return n;
             }
             n++;

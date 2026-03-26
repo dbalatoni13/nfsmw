@@ -1171,14 +1171,14 @@ int STREAM_state(int sndstreamhandle) {
 }
 
 int STREAM_isendofstream(int sndstreamhandle) {
-    STREAMHEADERtag *streamRaw;
-    TAPSTRUCTtag *tapRaw;
-    int status = validatehandle(sndstreamhandle, &streamRaw, &tapRaw);
+    STREAMHEADERtag *strm;
+    TAPSTRUCTtag *tap;
+    int status = validatehandle(sndstreamhandle, &strm, &tap);
     bool isEnd = false;
     if (status == 0) {
         isEnd = false;
-        if (streamRaw->state == STREAM_IDLE_STATE) {
-            isEnd = tapRaw->gettable == 0;
+        if (strm->state == STREAM_IDLE_STATE) {
+            isEnd = tap->gettable == 0;
         }
     }
     return isEnd;

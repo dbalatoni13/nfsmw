@@ -221,8 +221,8 @@ void Slope::Initialize(float _Min, float _Max, float _Start, float _Finish) {
     if (bAbs(_Finish - _Start) < 1e-06f) {
         Finish = _Finish + 1e-06f;
     }
-    LastInput = 0.0f;
     LastOutput = Min;
+    LastInput = 0.0f;
 }
 
 float Slope::GetValue(float input) {
