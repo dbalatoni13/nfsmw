@@ -128,7 +128,49 @@ class RawPoseChannel : public AnimMemoryMap {
 
     int GetNumBones() const {}
 
-    void EvalInterpFrame(float t, int frame0, int frame1, float *outputPose, const BoneMask *boneMask) {}
+    void EvalInterpFrame(float t, int frame0, int frame1, float *outputPose, const BoneMask *boneMask) {
+        int *s = GetInterpSig();
+        float *d0 = GetFrame(frame0);
+        float *d1 = GetFrame(frame1);
+        int *end = s + mSigSize;
+
+        if (!boneMask) {
+            while (s < end) {
+                int count = *s++;
+                float *out = outputPose + 12;
+
+                for (int j = 0; j < count; j++) {
+                    reinterpret_cast<void (*)(float, float *&, float *&, float *)>(*s++)(t, d0, d1, outputPose + 4);
+                }
+                outputPose = out;
+            }
+        } else {
+            for (int i = 0; s < end; i++) {
+                int count = *s++;
+
+                if (boneMask->GetBone(i)) {
+                    for (int j = 0; j < count; j++) {
+                        reinterpret_cast<void (*)(float, float *&, float *&, float *)>(*s++)(t, d0, d1, outputPose + 4);
+                    }
+                } else {
+                    for (int j = 0; j < count; j++) {
+                        void (*func)(float, float *&, float *&, float *) =
+                            reinterpret_cast<void (*)(float, float *&, float *&, float *)>(*s++);
+
+                        if (func == EulF3Interp || func == TranF3Interp) {
+                            d0 += 3;
+                            d1 += 3;
+                        } else if (func == QuatF4Interp) {
+                            d0 += 4;
+                            d1 += 4;
+                        }
+                    }
+                }
+
+                outputPose += 12;
+            }
+        }
+    }
 
     static void InitAnimMemoryMap(AnimMemoryMap *anim);
 

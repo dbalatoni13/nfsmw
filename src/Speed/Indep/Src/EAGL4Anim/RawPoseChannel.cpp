@@ -71,56 +71,14 @@ void RawPoseChannel::Eval(float frameTime, float *outputPose, bool interp, const
 
         if (frame >= lastFrame) {
             EvalFrame(lastFrame, outputPose, boneMask);
-        } else {
-            float t = frameTime - static_cast<float>(frame);
-
-            if (t != 0.0f && interp) {
-                int *sig = GetInterpSig();
-                float *data0 = GetFrame(frame);
-                float *data1 = GetFrame(frame + 1);
-                int *sigEnd = sig + mSigSize;
-
-                if (!boneMask) {
-                    while (sig < sigEnd) {
-                        int numChannels = *sig++;
-                        float *nextOutputPose = outputPose + 12;
-
-                        for (int ichan = 0; ichan < numChannels; ichan++) {
-                            reinterpret_cast<void (*)(float, float *&, float *&, float *)>(*sig++)(t, data0, data1,
-                                                                                                  outputPose + 4);
-                        }
-                        outputPose = nextOutputPose;
-                    }
-                } else {
-                    for (unsigned int ibone = 0; sig < sigEnd; ibone++) {
-                        int numChannels = *sig++;
-
-                        if (boneMask->GetBone(ibone)) {
-                            for (int ichan = 0; ichan < numChannels; ichan++) {
-                                reinterpret_cast<void (*)(float, float *&, float *&, float *)>(*sig++)(
-                                    t, data0, data1, outputPose + 4);
-                            }
-                        } else {
-                            for (int ichan = 0; ichan < numChannels; ichan++) {
-                                void (*func)(float, float *&, float *&, float *) =
-                                    reinterpret_cast<void (*)(float, float *&, float *&, float *)>(*sig++);
-
-                                if (func == EulF3Interp || func == TranF3Interp) {
-                                    data0 += 3;
-                                    data1 += 3;
-                                } else if (func == QuatF4Interp) {
-                                    data0 += 4;
-                                    data1 += 4;
-                                }
-                            }
-                        }
-
-                        outputPose += 12;
-                    }
-                }
             } else {
-                EvalFrame(frame, outputPose, boneMask);
-            }
+                float t = frameTime - static_cast<float>(frame);
+
+                if (t != 0.0f && interp) {
+                    EvalInterpFrame(t, frame, frame + 1, outputPose, boneMask);
+                } else {
+                    EvalFrame(frame, outputPose, boneMask);
+                }
         }
     }
 }

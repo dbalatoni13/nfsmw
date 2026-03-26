@@ -14,18 +14,18 @@ void FnEventBlender::Eval(float previousTime, float currentTime, float *data) {
         return;
     }
 
-    if (mTriggerType == FIRST_ONLY) {
+    switch (mTriggerType) {
+    case FIRST_ONLY:
         mAnim[0]->Eval(previousTime - mTimeOffset[0], currentTime - mTimeOffset[0], data);
         return;
-    }
-
-    if (mTriggerType == SECOND_ONLY) {
+    case SECOND_ONLY:
+        mAnim[1]->Eval(previousTime - mTimeOffset[1], currentTime - mTimeOffset[1], data);
+        return;
+    default:
+        mAnim[0]->Eval(previousTime - mTimeOffset[0], currentTime - mTimeOffset[0], data);
         mAnim[1]->Eval(previousTime - mTimeOffset[1], currentTime - mTimeOffset[1], data);
         return;
     }
-
-    mAnim[0]->Eval(previousTime - mTimeOffset[0], currentTime - mTimeOffset[0], data);
-    mAnim[1]->Eval(previousTime - mTimeOffset[1], currentTime - mTimeOffset[1], data);
 }
 
 }; // namespace EAGL4Anim
