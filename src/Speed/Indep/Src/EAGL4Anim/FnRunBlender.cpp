@@ -421,11 +421,11 @@ void FnRunBlender::AlignCycleBeginEnd(int cIdx) {
 
     if (!mInit) {
         mCycleIdx = -1;
-        mInit = true;
         mAlignQ.x = 0.0f;
         mAlignQ.y = 0.0f;
-        mAlignQ.w = 1.0f;
         mAlignQ.z = 0.0f;
+        mAlignQ.w = 1.0f;
+        mInit = true;
     } else if (mCycleIdx != cIdx) {
         UMath::Vector4 q;
         UMath::Vector4 resultQ;
