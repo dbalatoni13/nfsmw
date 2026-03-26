@@ -384,7 +384,7 @@ int CarPartDatabase::GetPartIndex(CarPart *car_part) {
             static_cast<int>(reinterpret_cast<unsigned char *>(car_part) - reinterpret_cast<unsigned char *>(car_part_pack->PartsTable)) * -0x49249249 >>
             1;
 
-        if (part_index > -1 && part_index < car_part_pack->NumParts) {
+        if (part_index >= 0 && part_index < car_part_pack->NumParts) {
             return index + part_index;
         }
 
