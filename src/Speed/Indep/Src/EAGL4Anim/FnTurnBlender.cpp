@@ -11,9 +11,6 @@ float turnLength(float *v) {
     return sqrtf(v[0] * v[0] + v[1] * v[1]);
 }
 
-static int i;
-
-
 namespace EAGL4Anim {
 
 FnTurnBlender::FnTurnBlender()
@@ -244,15 +241,16 @@ void FnTurnBlender::AlignCycleBeginEnd(int cIdx) {
     float v1[2];
 
     if (!mInit) {
-        mCycleIdx = -1;
-        mInit = true;
-        mAlignQ.w = 1.0f;
-        mAlignQ.z = 0.0f;
-        mAlignQ.x = 0.0f;
-        mAlignQ.y = 0.0f;
+mAlignQ.x = 0.0f;
+mAlignQ.y = 0.0f;
+mCycleIdx = -1;
+mAlignQ.z = 0.0f;
+mAlignQ.w = 1.0f;
+mInit = true;
     } else if (mCycleIdx != cIdx) {
         UMath::Vector4 q;
         UMath::Vector4 resultQ;
+        static int i;
 
         BlendBeginFacing(v0);
         BlendEndFacing(v1);
