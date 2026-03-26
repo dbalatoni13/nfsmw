@@ -28,7 +28,7 @@ template <typename T, int U> class Listable {
         typedef value_type const *const_pointer;
 
         // List(const List &);
-        List();
+        List() { this->reserve(U); }
         virtual ~List();
 
         // List &operator=(List &);
@@ -74,8 +74,6 @@ template <typename T, int U> class Listable {
     static List _mTable;
 };
 
-template <typename T, int U> Listable<T, U>::List::List() {}
-
 template <typename T, int U> Listable<T, U>::List::~List() {}
 
 template <typename T, int ListSize, typename Enum, std::size_t EnumMax> class ListableSet {
@@ -89,7 +87,7 @@ template <typename T, int ListSize, typename Enum, std::size_t EnumMax> class Li
     class List : public _Storage<pointer, ListSize> {
       public:
         // List(const List &);
-        List();
+        List() { this->reserve(ListSize); }
         ~List() override;
 
         // List &operator=(List &);
@@ -155,9 +153,6 @@ template <typename T, int ListSize, typename Enum, std::size_t EnumMax> class Li
   private:
     static _ListSet _mLists;
 };
-
-template <typename T, int ListSize, typename Enum, std::size_t EnumMax>
-inline ListableSet<T, ListSize, Enum, EnumMax>::List::List() {}
 
 template <typename T, int ListSize, typename Enum, std::size_t EnumMax>
 inline ListableSet<T, ListSize, Enum, EnumMax>::List::~List() {}
