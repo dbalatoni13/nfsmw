@@ -4384,11 +4384,12 @@ void CarRenderInfo::DrawKeithProjShadow(eView *view, const bVector3 *position, b
 
                             for (; loopIndex < endIndex; loopIndex++) {
                                 bVector3 *edge = &shadowVertices[loopIndex];
-                                bVector3 inner(*edge);
+                                bVector3 edgeVertex(*edge);
+                                bVector3 inner(edgeVertex);
 
-                                inner.x = FancyCarShadowEdgeMult * (edge->x - shadowCenter.x) + shadowCenter.x;
-                                inner.y = FancyCarShadowEdgeMult * (edge->y - shadowCenter.y) + shadowCenter.y;
-                                exAddVertex(*edge);
+                                inner.x = FancyCarShadowEdgeMult * (edgeVertex.x - shadowCenter.x) + shadowCenter.x;
+                                inner.y = FancyCarShadowEdgeMult * (edgeVertex.y - shadowCenter.y) + shadowCenter.y;
+                                exAddVertex(edgeVertex);
                                 exAddVertex(inner);
                                 exAddColour(colour);
                                 exAddColour(colour);
@@ -4402,11 +4403,12 @@ void CarRenderInfo::DrawKeithProjShadow(eView *view, const bVector3 *position, b
 
                             {
                                 bVector3 *edge = &shadowVertices[loopIndex];
-                                bVector3 inner(*edge);
+                                bVector3 edgeVertex(*edge);
+                                bVector3 inner(edgeVertex);
 
-                                inner.x = FancyCarShadowEdgeMult * (edge->x - shadowCenter.x) + shadowCenter.x;
-                                inner.y = FancyCarShadowEdgeMult * (edge->y - shadowCenter.y) + shadowCenter.y;
-                                exAddVertex(*edge);
+                                inner.x = FancyCarShadowEdgeMult * (edgeVertex.x - shadowCenter.x) + shadowCenter.x;
+                                inner.y = FancyCarShadowEdgeMult * (edgeVertex.y - shadowCenter.y) + shadowCenter.y;
+                                exAddVertex(edgeVertex);
                                 exAddVertex(inner);
                                 exAddColour(colour);
                                 exAddColour(colour);
