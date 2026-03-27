@@ -66,14 +66,14 @@ void SndAITrigger::EndTrigger() {
 SndAITrigger::SndAITrigger()
     : AvgMonitor() //
 {
-    CurValue = -1.0f;
-    fSign = 1.0f;
     m_fThreshold = 0.0f;
     t_fSustain = 0.0f;
     m_fAutoTrigger = 0.0f;
     t_TriggerLength = 0.0f;
     CurSustain = -1.0f;
     CurTriggerLength = -1.0f;
+    CurValue = -1.0f;
+    fSign = 1.0f;
     bTrigger = false;
 }
 
