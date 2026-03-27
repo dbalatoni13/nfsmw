@@ -78,13 +78,25 @@ bool DebugVehicleSelection::SwitchPlayerVehicle(const char *attribName) {
 
     UMath::Matrix4 transform;
     oldcar->GetTransform(transform);
-    // Attrib::StringToKey(attribName);
-    // VehicleParams params = VehicleParams::VehicleParams();
 
-    // ISimable *icar = UTL::Collections::ListableSet<IPlayer, 8, ePlayerList, 3>::First(PLAYER_LOCAL)->GetSimable();
+    unsigned int carType = Attrib::StringToKey(attribName);
 
-    // oldcar->Attach(icar);
-    oldcar->Kill();
+    VehicleParams params(
+        static_cast<IVehicleCache *>(this), //
+        static_cast<DriverClass>(0),        //
+        carType,                            //
+        UMath::Vector4To3(transform.v2),    //
+        UMath::Vector4To3(transform.v3),    //
+        2,                                  //
+        nullptr,                            //
+        nullptr);
 
-    return true;
+    ISimable *icar = UTL::COM::Factory<Sim::Param, ISimable, UCrc32>::CreateInstance(UCrc32("PVehicle"), params);
+    if (icar) {
+        icar->Attach(UTL::Collections::ListableSet<IPlayer, 8, ePlayerList, 3>::First(PLAYER_LOCAL));
+        oldcar->Kill();
+        return true;
+    }
+
+    return false;
 }
