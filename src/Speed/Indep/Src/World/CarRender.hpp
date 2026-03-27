@@ -240,7 +240,9 @@ class CarPartModel {
         this->mModel = reinterpret_cast<unsigned int>(model) | this->IsHidden();
     }
 
-    bool IsLodMissing() const {}
+    bool IsLodMissing() const {
+        return (mModel & ~3u) == 0;
+    }
 
   private:
     unsigned int mModel; // offset 0x0, size 0x4

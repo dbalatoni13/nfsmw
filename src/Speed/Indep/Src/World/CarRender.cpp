@@ -2202,12 +2202,10 @@ bool CarRenderInfo::Render(eView *view, const bVector3 *world_position, const bM
 void CarRenderInfo::RenderPart(eView *view, CarPartModel *carPart, bMatrix4 *local_to_world, eDynamicLightContext *light_context,
                                unsigned int flags) {
     if (carPart != nullptr) {
-        eModel *model = carPart->GetModel();
-
-        if (model == nullptr) {
+        if (carPart->IsLodMissing()) {
             view->Render(&StandardDebugModel, local_to_world, light_context, flags, nullptr);
         } else {
-            view->Render(model, local_to_world, light_context, flags, nullptr);
+            view->Render(carPart->GetModel(), local_to_world, light_context, flags, nullptr);
         }
     }
 }
