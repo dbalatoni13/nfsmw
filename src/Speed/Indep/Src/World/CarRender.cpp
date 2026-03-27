@@ -2758,14 +2758,21 @@ bool CarRenderInfo::Render(eView *view, const bVector3 *world_position, const bM
                     eMulMatrix(&bm0, &bm0, &trans_axle[0]);
                     eMulMatrix(&brake_local_world[0], &bm0, local_world);
 
-                    if (front_brake_models[0] != 0) {
-                        front_brake_models[0]->AttachReplacementTextureTable(this->BrakeLeftReplacementTextureTable, 2, 0);
-                        if (iRam8047ff04 != 6) {
-                            elCloneLightContext(&brake_light_context[0], &brake_local_world[0], &hack_man_matrix, &camera_world_position, view,
-                                                &base_light_context);
-                            ::Render(view, front_brake_models[0], &brake_local_world[0], &brake_light_context[0], brake_render_flags | 0x40000, 0);
-                        } else {
-                            ::Render(view, front_brake_models[0], &brake_local_world[0], light_context, brake_render_flags | 0x40000, 0);
+                    if (IsGameFlowInGame()) {
+                        for (int i = 0; i < 1; i++) {
+                            if (front_brake_models[i] != 0) {
+                                front_brake_models[i]->AttachReplacementTextureTable(this->BrakeLeftReplacementTextureTable, 2, 0);
+                                ::Render(view, front_brake_models[i], &brake_local_world[0], light_context, brake_render_flags | 0x40000, 0);
+                            }
+                        }
+                    } else {
+                        for (int i = 0; i < 1; i++) {
+                            if (front_brake_models[i] != 0) {
+                                front_brake_models[i]->AttachReplacementTextureTable(this->BrakeLeftReplacementTextureTable, 2, 0);
+                                elCloneLightContext(&brake_light_context[0], &brake_local_world[0], &hack_man_matrix, &camera_world_position, view,
+                                                    &base_light_context);
+                                ::Render(view, front_brake_models[i], &brake_local_world[0], &brake_light_context[0], brake_render_flags | 0x40000, 0);
+                            }
                         }
                     }
                 }
@@ -2789,14 +2796,21 @@ bool CarRenderInfo::Render(eView *view, const bVector3 *world_position, const bM
                     eMulMatrix(&bm1, &bm1, &trans_axle[1]);
                     eMulMatrix(&brake_local_world[1], &bm1, local_world);
 
-                    if (front_brake_models[0] != 0) {
-                        front_brake_models[0]->AttachReplacementTextureTable(this->BrakeRightReplacementTextureTable, 2, 0);
-                        if (iRam8047ff04 != 6) {
-                            elCloneLightContext(&brake_light_context[1], &brake_local_world[1], &hack_man_matrix, &camera_world_position, view,
-                                                &base_light_context);
-                            ::Render(view, front_brake_models[0], &brake_local_world[1], &brake_light_context[1], brake_render_flags, 0);
-                        } else {
-                            ::Render(view, front_brake_models[0], &brake_local_world[1], light_context, brake_render_flags, 0);
+                    if (IsGameFlowInGame()) {
+                        for (int i = 0; i < 1; i++) {
+                            if (front_brake_models[i] != 0) {
+                                front_brake_models[i]->AttachReplacementTextureTable(this->BrakeRightReplacementTextureTable, 2, 0);
+                                ::Render(view, front_brake_models[i], &brake_local_world[1], light_context, brake_render_flags, 0);
+                            }
+                        }
+                    } else {
+                        for (int i = 0; i < 1; i++) {
+                            if (front_brake_models[i] != 0) {
+                                front_brake_models[i]->AttachReplacementTextureTable(this->BrakeRightReplacementTextureTable, 2, 0);
+                                elCloneLightContext(&brake_light_context[1], &brake_local_world[1], &hack_man_matrix, &camera_world_position, view,
+                                                    &base_light_context);
+                                ::Render(view, front_brake_models[i], &brake_local_world[1], &brake_light_context[1], brake_render_flags, 0);
+                            }
                         }
                     }
                 }
@@ -2820,14 +2834,21 @@ bool CarRenderInfo::Render(eView *view, const bVector3 *world_position, const bM
                     eMulMatrix(&bm2, &bm2, &trans_axle[2]);
                     eMulMatrix(&brake_local_world[2], &bm2, local_world);
 
-                    if (rear_brake_models[0] != 0) {
-                        rear_brake_models[0]->AttachReplacementTextureTable(this->BrakeRightReplacementTextureTable, 2, 0);
-                        if (iRam8047ff04 != 6) {
-                            elCloneLightContext(&brake_light_context[2], &brake_local_world[2], &hack_man_matrix, &camera_world_position, view,
-                                                &base_light_context);
-                            ::Render(view, rear_brake_models[0], &brake_local_world[2], &brake_light_context[2], brake_render_flags, 0);
-                        } else {
-                            ::Render(view, rear_brake_models[0], &brake_local_world[2], light_context, brake_render_flags, 0);
+                    if (IsGameFlowInGame()) {
+                        for (int i = 0; i < 1; i++) {
+                            if (rear_brake_models[i] != 0) {
+                                rear_brake_models[i]->AttachReplacementTextureTable(this->BrakeRightReplacementTextureTable, 2, 0);
+                                ::Render(view, rear_brake_models[i], &brake_local_world[2], light_context, brake_render_flags, 0);
+                            }
+                        }
+                    } else {
+                        for (int i = 0; i < 1; i++) {
+                            if (rear_brake_models[i] != 0) {
+                                rear_brake_models[i]->AttachReplacementTextureTable(this->BrakeRightReplacementTextureTable, 2, 0);
+                                elCloneLightContext(&brake_light_context[2], &brake_local_world[2], &hack_man_matrix, &camera_world_position, view,
+                                                    &base_light_context);
+                                ::Render(view, rear_brake_models[i], &brake_local_world[2], &brake_light_context[2], brake_render_flags, 0);
+                            }
                         }
                     }
                 }
@@ -2852,14 +2873,21 @@ bool CarRenderInfo::Render(eView *view, const bVector3 *world_position, const bM
                     eMulMatrix(&bm3, &bm3, &trans_axle[3]);
                     eMulMatrix(&brake_local_world[3], &bm3, local_world);
 
-                    if (rear_brake_models[0] != 0) {
-                        rear_brake_models[0]->AttachReplacementTextureTable(this->BrakeLeftReplacementTextureTable, 2, 0);
-                        if (iRam8047ff04 != 6) {
-                            elCloneLightContext(&brake_light_context[3], &brake_local_world[3], &hack_man_matrix, &camera_world_position, view,
-                                                &base_light_context);
-                            ::Render(view, rear_brake_models[0], &brake_local_world[3], &brake_light_context[3], brake_render_flags | 0x40000, 0);
-                        } else {
-                            ::Render(view, rear_brake_models[0], &brake_local_world[3], light_context, brake_render_flags | 0x40000, 0);
+                    if (IsGameFlowInGame()) {
+                        for (int i = 0; i < 1; i++) {
+                            if (rear_brake_models[i] != 0) {
+                                rear_brake_models[i]->AttachReplacementTextureTable(this->BrakeLeftReplacementTextureTable, 2, 0);
+                                ::Render(view, rear_brake_models[i], &brake_local_world[3], light_context, brake_render_flags | 0x40000, 0);
+                            }
+                        }
+                    } else {
+                        for (int i = 0; i < 1; i++) {
+                            if (rear_brake_models[i] != 0) {
+                                rear_brake_models[i]->AttachReplacementTextureTable(this->BrakeLeftReplacementTextureTable, 2, 0);
+                                elCloneLightContext(&brake_light_context[3], &brake_local_world[3], &hack_man_matrix, &camera_world_position, view,
+                                                    &base_light_context);
+                                ::Render(view, rear_brake_models[i], &brake_local_world[3], &brake_light_context[3], brake_render_flags | 0x40000, 0);
+                            }
                         }
                     }
                 }
