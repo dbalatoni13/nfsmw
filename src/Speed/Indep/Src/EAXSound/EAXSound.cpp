@@ -1681,7 +1681,7 @@ void FESoundControl(bool bOn, const char *name) {
         return;
     }
 
-    unsigned int uVar2 = Attrib::StringHash32(name);
+    unsigned int key = Attrib::StringHash32(name);
     Attrib::StringKey FengList[37] = {
         "Pause_Main.fng",
         "Pause_Options.fng",
@@ -1724,16 +1724,16 @@ void FESoundControl(bool bOn, const char *name) {
 
     bStringHash(name);
     int index = -1;
-    int iVar1 = 0;
+    int namehash = 0;
     do {
-        index = iVar1;
-        if (uVar2 == static_cast<unsigned int>(FengList[index])) {
+        index = namehash;
+        if (key == FengList[index].GetHash32()) {
             break;
         }
         int n = index + 1;
         index = -1;
-        iVar1 = n;
-    } while (iVar1 < 37);
+        namehash = n;
+    } while (namehash < 37);
 
     if (g_pEAXSound->GetSoundGameMode() == SND_FRONTEND) {
         if (index != 10 && index < 14) {
@@ -1743,81 +1743,78 @@ void FESoundControl(bool bOn, const char *name) {
         return;
     }
 
-    if (index < 16) {
-        if (index < 14) {
-            if (index == 8) {
-                SetSoundControlState(bOn, SNDSTATE_PAUSE, name);
-                SetSoundControlState(bOn, SNDSTATE_OFF, name);
-                return;
-            }
-
-            if (index < 9) {
-                if (index != 3) {
-                    if (index > 3) {
-                        return;
-                    }
-                    if (index < 0) {
-                        goto FE_UPSCREEN;
-                    }
-
-                    g_pEAXSound->SetPauseMainFNG(bOn);
-                    SetSoundControlState(bOn, SNDSTATE_PAUSE, name);
-                    return;
-                }
-                SetSoundControlState(bOn, SNDSTATE_PAUSE, name);
-                return;
-            }
-
-            if (index == 11) {
-                g_pEAXSound->SetPauseMainFNG(bOn);
-                SetSoundControlState(bOn, SNDSTATE_PAUSE, name);
-                return;
-            }
-
-            if (index < 12) {
-                if (index != 9) {
-                    if (index != 10) {
-                        goto FE_UPSCREEN;
-                    }
-                    goto FMV_STATE;
-                }
-            } else if (index != 12) {
-                if (index == 13) {
-                    return;
-                }
-                goto FE_UPSCREEN;
-            }
-
+    switch (index) {
+        case 8:
+            SetSoundControlState(bOn, SNDSTATE_PAUSE, name);
+            SetSoundControlState(bOn, SNDSTATE_OFF, name);
+            return;
+        case 0:
+        case 1:
+        case 2:
+            g_pEAXSound->SetPauseMainFNG(bOn);
+            SetSoundControlState(bOn, SNDSTATE_PAUSE, name);
+            return;
+        case 3:
+            SetSoundControlState(bOn, SNDSTATE_PAUSE, name);
+            return;
+        case 4:
+        case 5:
+        case 6:
+        case 7:
+            return;
+        case 11:
+            g_pEAXSound->SetPauseMainFNG(bOn);
+            SetSoundControlState(bOn, SNDSTATE_PAUSE, name);
+            return;
+        case 9:
+        case 12:
             if (g_pEAXSound->IsPauseMainFNG()) {
                 return;
             }
             SetSoundControlState(bOn, SNDSTATE_PAUSE, name);
             return;
-        }
-    } else {
-        if (index > 30) {
-            if (index != 33) {
-                if (index < 33) {
-                    SetSoundControlState(bOn, SNDSTATE_FE_SMS_MESSAGE, name);
-                    return;
-                }
-
-                if (index < 37) {
-                    Speech::Module *pMVar3 = Speech::Manager::GetSpeechModule(1);
-                    if (pMVar3 != nullptr) {
-                        pMVar3 = Speech::Manager::GetSpeechModule(1);
-                        pMVar3->PurgeSpeech();
-                    }
-                }
-                goto FE_UPSCREEN;
-            }
-            goto STOP_MUSIC;
-        }
-
-        if (index < 21 && (index > 19 || index < 17)) {
+        case 10:
+            goto FMV_STATE;
+        case 13:
+            return;
+        case 16:
+        case 20:
             SetSoundControlState(bOn, SNDSTATE_FMV, name);
             goto STOP_MUSIC;
+        case 31:
+        case 32:
+            SetSoundControlState(bOn, SNDSTATE_FE_SMS_MESSAGE, name);
+            return;
+        case 33:
+            goto STOP_MUSIC;
+        case 34:
+        case 35:
+        case 36: {
+            Speech::Module *pMVar3 = Speech::Manager::GetSpeechModule(1);
+            if (pMVar3 != nullptr) {
+                pMVar3 = Speech::Manager::GetSpeechModule(1);
+                pMVar3->PurgeSpeech();
+            }
+            goto FE_UPSCREEN;
         }
+        case 14:
+        case 15:
+        case 17:
+        case 18:
+        case 19:
+        case 21:
+        case 22:
+        case 23:
+        case 24:
+        case 25:
+        case 26:
+        case 27:
+        case 28:
+        case 29:
+        case 30:
+            break;
+        default:
+            goto FE_UPSCREEN;
     }
 
 FMV_STATE:
