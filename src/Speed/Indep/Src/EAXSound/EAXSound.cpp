@@ -1723,10 +1723,8 @@ void FESoundControl(bool bOn, const char *name) {
     };
 
     bStringHash(name);
-    int namehash;
-    int index;
-    index = -1;
-    namehash = 0;
+    int index = -1;
+    int namehash = 0;
     do {
         if (key == FengList[namehash].GetHash32()) {
             index = namehash;
