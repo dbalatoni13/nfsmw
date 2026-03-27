@@ -6,6 +6,7 @@
 #endif
 
 #include "Speed/Indep/Libs/Support/Utility/UTLVector.h"
+#include "Speed/Indep/Libs/Support/Utility/UListable.h"
 #include "Speed/Indep/Src/EAXSound/AudioMemBase.hpp"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 #include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
@@ -66,11 +67,19 @@ struct SND_Params {
 struct AEMS_StichCollision;
 struct AEMS_StichWoosh;
 struct AEMS_StichStatic;
+struct cSampleWarpper;
 
-struct cSampleWarpper {
-    char _pad[4];                 // offset 0x0, from empty ListableSet base
-    int m_eIsPlaying;             // offset 0x4, size 0x4
-    SND_SampleRef *SampleRefData; // offset 0x8, size 0x4
+typedef UTL::Collections::ListableSet<cSampleWarpper, 25, STICH_TYPE, MAX_NUM_STICH_TYPE> cSampleListSet;
+
+enum eSTITCH_PLAY_STATUS {
+    eSTITCH_PLAY_STATUS_OFF = 0,
+    eSTITCH_PLAY_STATUS_QUEUED = 1,
+    eSTITCH_PLAY_STATUS_PLAYING = 2,
+};
+
+struct cSampleWarpper : public cSampleListSet {
+    eSTITCH_PLAY_STATUS m_eIsPlaying;       // offset 0x4, size 0x4
+    const SND_SampleRef *SampleRefData;     // offset 0x8, size 0x4
     AEMS_StichCollision *AEMS_ActiveSampleCol; // offset 0xC, size 0x4
     AEMS_StichWoosh *AEMS_ActiveSampleWsh;     // offset 0x10, size 0x4
     AEMS_StichStatic *AEMS_ActiveSampleStatic; // offset 0x14, size 0x4

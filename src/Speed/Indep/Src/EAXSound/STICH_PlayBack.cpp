@@ -80,14 +80,6 @@ struct AEMS_StichStatic {
     int GetRefCount();
 };
 
-enum eSTITCH_PLAY_STATUS {
-    eSTITCH_PLAY_STATUS_OFF = 0,
-    eSTITCH_PLAY_STATUS_QUEUED = 1,
-    eSTITCH_PLAY_STATUS_PLAYING = 2,
-};
-
-typedef UTL::Collections::ListableSet<cSampleWarpper, 25, STICH_TYPE, MAX_NUM_STICH_TYPE> cSampleListSet;
-
 static int ClampStichValue(int value, int low, int high) {
     if (value < low) {
         return low;
@@ -109,16 +101,11 @@ static int NormalizeStichAzimuth(int az) {
 }
 
 static inline void AddToSampleList(cSampleWarpper *sample, STICH_TYPE to) {
-    cSampleListSet::List &samplelist = const_cast<cSampleListSet::List &>(cSampleListSet::GetList(to));
-    samplelist.push_back(sample);
+    sample->AddToList(to);
 }
 
 static inline void RemoveFromSampleList(cSampleWarpper *sample, STICH_TYPE from) {
-    cSampleListSet::List &samplelist = const_cast<cSampleListSet::List &>(cSampleListSet::GetList(from));
-    cSampleListSet::List::iterator newend = std::remove(samplelist.begin(), samplelist.end(), sample);
-    if (newend != samplelist.end()) {
-        samplelist.erase(newend, samplelist.end());
-    }
+    sample->UnList(from);
 }
 
 cSTICH_PlayBack::cSTICH_PlayBack() {
@@ -251,9 +238,6 @@ void cSampleWarpper::operator delete(void *ptr) {
 
 cSampleWarpper::~cSampleWarpper() {
     Destroy();
-    for (unsigned int i = 0; i < MAX_NUM_STICH_TYPE; i++) {
-        RemoveFromSampleList(this, static_cast<STICH_TYPE>(i));
-    }
 }
 
 void cSampleWarpper::Destroy() {
@@ -476,7 +460,7 @@ void cSampleWarpper::Play(const SND_Params *Params) {
         AEMS_StichCollision **activeSample = &AEMS_ActiveSampleCol;
         AEMS_StichCollision *sample = static_cast<AEMS_StichCollision *>(Csis::System::Alloc(0x2C));
 
-        SND_SampleRef *ref = SampleRefData;
+        const SND_SampleRef *ref = SampleRefData;
         int sampleType = static_cast<int>(ref->eStichType);
         int sampleIndex = static_cast<int>(ref->SampleIndex);
         int sampleAz = (TempAz + static_cast<unsigned short>(ref->Az) + 0x10000) % 0x10000;
@@ -566,7 +550,7 @@ void cSampleWarpper::Play(const SND_Params *Params) {
         AEMS_StichWoosh **activeSample = &AEMS_ActiveSampleWsh;
         AEMS_StichWoosh *sample = static_cast<AEMS_StichWoosh *>(Csis::System::Alloc(0x2C));
 
-        SND_SampleRef *ref = SampleRefData;
+        const SND_SampleRef *ref = SampleRefData;
         int sampleType = static_cast<int>(ref->eStichType);
         int sampleIndex = static_cast<int>(ref->SampleIndex);
         int sampleAz = (TempAz + static_cast<unsigned short>(ref->Az) + 0x10000) % 0x10000;
@@ -656,7 +640,7 @@ void cSampleWarpper::Play(const SND_Params *Params) {
         AEMS_StichStatic **activeSample = &AEMS_ActiveSampleStatic;
         AEMS_StichStatic *sample = static_cast<AEMS_StichStatic *>(Csis::System::Alloc(0x2C));
 
-        SND_SampleRef *ref = SampleRefData;
+        const SND_SampleRef *ref = SampleRefData;
         int sampleType = static_cast<int>(ref->eStichType);
         int sampleIndex = static_cast<int>(ref->SampleIndex);
         int sampleAz = (TempAz + static_cast<unsigned short>(ref->Az) + 0x10000) % 0x10000;

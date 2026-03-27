@@ -140,6 +140,10 @@ template <typename T, int ListSize, typename Enum, std::size_t EnumMax> class Li
         }
     }
 
+    void UnList(Enum from) {
+        _mLists._remove(static_cast<iterator>(this), from);
+    }
+
     ~ListableSet() {
         UnList();
     }
