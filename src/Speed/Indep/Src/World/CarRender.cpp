@@ -3033,7 +3033,7 @@ float coplightflicker2(float time, int whichColor, int flarecount) {
 }
 
 float TireFace(bMatrix4 *matrix, eView *view) {
-    float face = 1.0f;
+    float face;
 
     if (TireFaceIt != 0) {
         bVector3 cDir(*view->GetCamera()->GetDirection());
@@ -3042,6 +3042,8 @@ float TireFace(bMatrix4 *matrix, eView *view) {
 
         eMulVector(&N, &matrix2, &N);
         face = bDot(&N, &cDir);
+    } else {
+        face = 1.0f;
     }
 
     return face;
