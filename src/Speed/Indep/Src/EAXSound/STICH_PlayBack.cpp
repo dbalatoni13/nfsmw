@@ -165,30 +165,252 @@ struct AEMS_StichWoosh {
     Csis::Class *mpClass;
     AEMS_StichData mData;
 
+    void SetType(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0x10) {
+            x = 0x10;
+        }
+        mData.type = x;
+    }
+
+    void SetID(int x) {
+        if (x > 0x3FF) {
+            x = 0x3FF;
+        }
+        mData.iD = x;
+    }
+
+    void SetVol(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0x7FFF) {
+            x = 0x7FFF;
+        }
+        mData.vol = x;
+    }
+
+    void SetPitch(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0x2000) {
+            x = 0x2000;
+        }
+        mData.pitch = x;
+    }
+
+    void SetAz(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0x10000) {
+            x = 0x10000;
+        }
+        mData.az = x;
+    }
+
+    void SetOffset(int x) {
+        if (x > 4000) {
+            x = 4000;
+        }
+        mData.offset = x;
+    }
+
+    void SetFilter_DryFX(int x) {
+        mData.filter_DryFX = x;
+    }
+
+    void SetFilter_WetFX(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0x7FFF) {
+            x = 0x7FFF;
+        }
+        mData.filter_WetFX = x;
+    }
+
+    void SetFilter_LoPass(int x) {
+        mData.filter_LoPass = x;
+    }
+
+    void SetFilter_HiPass(int x) {
+        mData.filter_HiPass = x;
+    }
+
+    int GetRefCount() {
+        int refCount = 0;
+
+        if (mpClass) {
+            mpClass->GetRefCount(&refCount);
+        }
+
+        return refCount;
+    }
+
+    static void *operator new(unsigned int size) {
+        return Csis::System::Alloc(size);
+    }
+
+    static void operator delete(void *ptr) {
+        Csis::System::Free(ptr);
+    }
+
     AEMS_StichWoosh(int type, int iD, int vol, int pitch, int az, int offset, int filter_DryFX, int filter_WetFX,
-                    int filter_LoPass, int filter_HiPass);
-    ~AEMS_StichWoosh();
-    void SetAz(int x);
-    void SetVol(int x);
-    void SetPitch(int x);
-    void SetFilter_WetFX(int x);
-    void CommitMemberData();
-    int GetRefCount();
+                    int filter_LoPass, int filter_HiPass) {
+        SetType(type);
+        SetID(iD);
+        SetVol(vol);
+        SetPitch(pitch);
+        SetAz(az);
+        SetOffset(offset);
+        SetFilter_DryFX(filter_DryFX);
+        SetFilter_WetFX(filter_WetFX);
+        SetFilter_LoPass(filter_LoPass);
+        SetFilter_HiPass(filter_HiPass);
+
+        int result = Csis::Class::CreateInstance(&Csis::gAEMS_StichWooshHandle, &mData, &mpClass);
+        if (result < 0) {
+            Csis::gAEMS_StichWooshHandle.Set(&Csis::AEMS_StichWooshId);
+            Csis::Class::CreateInstance(&Csis::gAEMS_StichWooshHandle, &mData, &mpClass);
+        }
+    }
+
+    ~AEMS_StichWoosh() {
+        if (mpClass) {
+            mpClass->Release();
+        }
+    }
+
+    void CommitMemberData() {
+        if (mpClass) {
+            mpClass->SetMemberData(&mData);
+        }
+    }
 };
 
 struct AEMS_StichStatic {
     Csis::Class *mpClass;
     AEMS_StichData mData;
 
+    void SetType(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0x10) {
+            x = 0x10;
+        }
+        mData.type = x;
+    }
+
+    void SetID(int x) {
+        if (x > 0x3FF) {
+            x = 0x3FF;
+        }
+        mData.iD = x;
+    }
+
+    void SetVol(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0x7FFF) {
+            x = 0x7FFF;
+        }
+        mData.vol = x;
+    }
+
+    void SetPitch(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0x2000) {
+            x = 0x2000;
+        }
+        mData.pitch = x;
+    }
+
+    void SetAz(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0x10000) {
+            x = 0x10000;
+        }
+        mData.az = x;
+    }
+
+    void SetOffset(int x) {
+        if (x > 4000) {
+            x = 4000;
+        }
+        mData.offset = x;
+    }
+
+    void SetFilter_DryFX(int x) {
+        mData.filter_DryFX = x;
+    }
+
+    void SetFilter_WetFX(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0x7FFF) {
+            x = 0x7FFF;
+        }
+        mData.filter_WetFX = x;
+    }
+
+    void SetFilter_LoPass(int x) {
+        mData.filter_LoPass = x;
+    }
+
+    void SetFilter_HiPass(int x) {
+        mData.filter_HiPass = x;
+    }
+
+    int GetRefCount() {
+        int refCount = 0;
+
+        if (mpClass) {
+            mpClass->GetRefCount(&refCount);
+        }
+
+        return refCount;
+    }
+
+    static void *operator new(unsigned int size) {
+        return Csis::System::Alloc(size);
+    }
+
+    static void operator delete(void *ptr) {
+        Csis::System::Free(ptr);
+    }
+
     AEMS_StichStatic(int type, int iD, int vol, int pitch, int az, int offset, int filter_DryFX, int filter_WetFX,
-                     int filter_LoPass, int filter_HiPass);
-    ~AEMS_StichStatic();
-    void SetAz(int x);
-    void SetVol(int x);
-    void SetPitch(int x);
-    void SetFilter_WetFX(int x);
-    void CommitMemberData();
-    int GetRefCount();
+                     int filter_LoPass, int filter_HiPass) {
+        SetType(type);
+        SetID(iD);
+        SetVol(vol);
+        SetPitch(pitch);
+        SetAz(az);
+        SetOffset(offset);
+        SetFilter_DryFX(filter_DryFX);
+        SetFilter_WetFX(filter_WetFX);
+        SetFilter_LoPass(filter_LoPass);
+        SetFilter_HiPass(filter_HiPass);
+
+        int result = Csis::Class::CreateInstance(&Csis::gAEMS_StichStaticHandle, &mData, &mpClass);
+        if (result < 0) {
+            Csis::gAEMS_StichStaticHandle.Set(&Csis::AEMS_StichStaticId);
+            Csis::Class::CreateInstance(&Csis::gAEMS_StichStaticHandle, &mData, &mpClass);
+        }
+    }
+
+    ~AEMS_StichStatic() {
+        if (mpClass) {
+            mpClass->Release();
+        }
+    }
+
+    void CommitMemberData() {
+        if (mpClass) {
+            mpClass->SetMemberData(&mData);
+        }
+    }
 };
 
 static int ClampStichValue(int value, int low, int high) {
