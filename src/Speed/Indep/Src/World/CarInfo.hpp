@@ -377,6 +377,22 @@ class RideInfo {
         return this->mMaxFELodLevel;
     }
 
+    CARPART_LOD GetMaxTireLodLevel() const {
+        return this->mMaxTireLodLevel;
+    }
+
+    CARPART_LOD GetMaxBrakeLodLevel() const {
+        return this->mMaxBrakeLodLevel;
+    }
+
+    CARPART_LOD GetMaxSpoilerLodLevel() const {
+        return this->mMaxSpoilerLodLevel;
+    }
+
+    CARPART_LOD GetMaxRoofScoopLodLevel() const {
+        return this->mMaxRoofScoopLodLevel;
+    }
+
     CarType Type;            // offset 0x0, size 0x4
     char InstanceIndex;      // offset 0x4, size 0x1
     char HasDash;            // offset 0x5, size 0x1

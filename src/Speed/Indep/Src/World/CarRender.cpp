@@ -101,6 +101,7 @@ extern float hRad3x;
 extern float hRad0y;
 extern float hRad3y;
 extern unsigned int TireFaceIt;
+float TireFace(bMatrix4 *matrix, eView *view);
 extern unsigned int CarReplacementDecalHash[CarRenderInfo::REPLACETEX_DECAL_NUM];
 extern unsigned int hcL;
 extern unsigned int FrameMallocFailed;
@@ -2264,64 +2265,519 @@ bool CarRenderInfo::Render(eView *view, const bVector3 *world_position, const bM
         }
     }
 
-    if (tire_matrices != 0) {
-        CarPartModel *front_tire = &this->mCarPartModels[CARSLOTID_FRONT_WHEEL][0][car_tire_lod];
-        CarPartModel *rear_tire = &this->mCarPartModels[CARSLOTID_REAR_WHEEL][0][car_tire_lod];
+    // Camber computation
+    {
+        float camber_amount_front = this->GetAttributes().CamberFront();
+        float camber_amount_rear = this->GetAttributes().CamberRear();
+        wheel_camber_angle_front = bDegToAng(camber_amount_front);
+        wheel_camber_angle_rear = bDegToAng(camber_amount_rear);
+        wheel_camber_push_down_rear = camber_amount_rear * 0.01f;
+        wheel_camber_push_down_front = camber_amount_front * 0.01f;
+    }
 
+    wheel_wobble_angle = bDegToAng(0.0f);
+
+    // Wheel scale loop - initialize transformation matrices
+    {
         for (int wheel = 0; wheel < 4; wheel++) {
-            bMatrix4 tire_local_world = tire_matrices[wheel];
+            int wheel_end = wheel < 2 ? 0 : 1;
+            float wheel_width_scale = this->WheelWidthScales[wheel];
+            float wheel_width = this->WheelWidths[wheel_end];
+            float wheel_radius_scale = this->WheelRadiusScales[wheel];
+            float yrender_offset = this->WheelYRenderOffset[wheel];
+            float pivot_y = this->PivotPosition.y;
+            float wheel_brake_marker_y = this->WheelBrakeMarkerY[wheel_end];
 
-            if ((wheel == 0 || wheel == 3) && this->mMirrorLeftWheels) {
-                eMulMatrix(&tire_local_world, &tire_local_world, &LeftTireMirrorMatrix);
-            }
+            eIdentity(&trans_pivot[wheel]);
+            eIdentity(&trans_axle[wheel]);
+            eIdentity(&brake_trans_pivot[wheel]);
 
-            eMulMatrix(&tire_local_world, &tire_local_world, local_world);
-            CarPartModel *wheel_part_model = wheel < 2 ? front_tire : rear_tire;
-            eModel *wheel_model = wheel_part_model->GetModel();
+            trans_pivot[wheel].v0.x = wheel_width_scale;
+            trans_pivot[wheel].v1.y = wheel_radius_scale;
+            trans_pivot[wheel].v2.z = wheel_radius_scale;
+            trans_pivot[wheel].v3.y = yrender_offset - pivot_y;
 
-            if (wheel_model != 0) {
-                eReplacementTextureTable *brake_replacement_table =
-                    (wheel == 0 || wheel == 3) ? this->BrakeLeftReplacementTextureTable : this->BrakeRightReplacementTextureTable;
+            trans_axle[wheel].v0.x = wheel_width_scale;
+            trans_axle[wheel].v1.y = wheel_radius_scale;
+            trans_axle[wheel].v2.z = wheel_radius_scale;
+            trans_axle[wheel].v3.y = yrender_offset - pivot_y;
+            trans_axle[wheel].v3.x = wheel_width * (wheel_width_scale - 1.0f) * 0.5f;
 
-                wheel_model->AttachReplacementTextureTable(brake_replacement_table, 2, 0);
-                if (this->LightMaterial_WheelRim != 0) {
-                    wheel_model->ReplaceLightMaterial(0xD6640DFF, this->LightMaterial_WheelRim);
-                }
-                if (this->LightMaterial_Spinner != 0) {
-                    wheel_model->ReplaceLightMaterial(0xA3186E2B, this->LightMaterial_Spinner);
-                }
-            }
-
-            if (wheel_model != 0) {
-                ::Render(view, wheel_model, &tire_local_world, light_context, extra_render_flags | disable_env_flag_tires, 0);
+            brake_trans_pivot[wheel].v3.y = yrender_offset - pivot_y;
+            {
+                float marker_y = wheel_brake_marker_y;
+                brake_trans_pivot[wheel].v3.y += marker_y;
             }
         }
     }
 
-    if (brake_matrices != 0) {
-        CarPartModel *front_brake = &this->mCarPartModels[CARSLOTID_FRONT_BRAKE][0][car_body_lod];
-        CarPartModel *rear_brake = &this->mCarPartModels[CARSLOTID_REAR_BRAKE][0][car_body_lod];
+    // Tire section
+    if (tire_matrices != 0) {
+        CARPART_LOD max_tire_lod = this->pRideInfo->GetMaxTireLodLevel();
 
-        for (int wheel = 0; wheel < 4; wheel++) {
-            bMatrix4 brake_local_world = brake_matrices[wheel];
+        bMatrix4 *tire_local_world;
+        float extra_rear_tire_offset;
+        bMatrix4 *extra_tire_local_world;
 
-            eMulMatrix(&brake_local_world, &brake_local_world, local_world);
-            CarPartModel *brake_part_model = wheel < 2 ? front_brake : rear_brake;
-            eModel *brake_model = brake_part_model->GetModel();
+        // Allocate tire_local_world from frame buffer
+        {
+            unsigned char *address = CurrentBufferPos;
+            unsigned int size = sizeof(bMatrix4);
+            if (address + size >= CurrentBufferEnd) {
+                FrameMallocFailed = 1;
+                FrameMallocFailAmount += size;
+                tire_local_world = 0;
+            } else {
+                CurrentBufferPos = address + size;
+                tire_local_world = reinterpret_cast<bMatrix4 *>(address);
+            }
+        }
 
-            if (brake_model != 0) {
-                eReplacementTextureTable *brake_replacement_table =
-                    (wheel == 0 || wheel == 3) ? this->BrakeLeftReplacementTextureTable : this->BrakeRightReplacementTextureTable;
+        extra_rear_tire_offset = this->GetAttributes().ExtraRearTireOffset(0);
 
-                brake_model->AttachReplacementTextureTable(brake_replacement_table, 2, 0);
-                if (this->LightMaterial_Caliper != 0) {
-                    brake_model->ReplaceLightMaterial(0xD6640DFF, this->LightMaterial_Caliper);
-                    brake_model->ReplaceLightMaterial(0xA3186E2B, this->LightMaterial_Caliper);
+        // Allocate extra_tire_local_world from frame buffer
+        {
+            unsigned char *address = CurrentBufferPos;
+            unsigned int size = sizeof(bMatrix4);
+            if (address + size >= CurrentBufferEnd) {
+                FrameMallocFailed = 1;
+                FrameMallocFailAmount += size;
+                extra_tire_local_world = 0;
+            } else {
+                CurrentBufferPos = address + size;
+                extra_tire_local_world = reinterpret_cast<bMatrix4 *>(address);
+            }
+        }
+
+        // Allocate tire_light_context from frame buffer
+        {
+            unsigned char *address = CurrentBufferPos;
+            unsigned int size = sizeof(eDynamicLightContext);
+            if (address + size >= CurrentBufferEnd) {
+                FrameMallocFailed = 1;
+                FrameMallocFailAmount += size;
+                tire_light_context = 0;
+            } else {
+                CurrentBufferPos = address + size;
+                tire_light_context = reinterpret_cast<eDynamicLightContext *>(address);
+            }
+        }
+
+        {
+            int tire_lod = car_tire_lod;
+            CarPartModel *front_tire_models[1];
+            CarPartModel *rear_tire_models[1];
+            eLightMaterial *light_material_rim[2];
+            bMatrix4 *left_tire_flip;
+            unsigned int extra_mirror_flag;
+            bMatrix4 wobbleMat;
+
+            tire_visible0 = this->TheCarPartCuller.IsPartVisible(CULLABLE_CAR_PART_TIRE_FL);
+            tire_visible1 = this->TheCarPartCuller.IsPartVisible(CULLABLE_CAR_PART_TIRE_FR);
+            tire_visible2 = this->TheCarPartCuller.IsPartVisible(CULLABLE_CAR_PART_TIRE_RR);
+            tire_visible3 = this->TheCarPartCuller.IsPartVisible(CULLABLE_CAR_PART_TIRE_RL);
+
+            if (max_tire_lod > car_tire_lod) {
+                tire_lod = max_tire_lod;
+            }
+
+            // Check tire models across LOD levels
+            {
+                for (int i = tire_lod; i >= 0; i--) {
+                    front_tire_models[0] = &this->mCarPartModels[CARSLOTID_FRONT_WHEEL][0][i];
+                    if (front_tire_models[0]->GetModel() != 0) {
+                        break;
+                    }
+                    if (i == 0) {
+                        front_tire_models[0]->GetModel();
+                    }
+                }
+                for (int i = tire_lod; i >= 0; i--) {
+                    rear_tire_models[0] = &this->mCarPartModels[CARSLOTID_REAR_WHEEL][0][i];
+                    if (rear_tire_models[0]->GetModel() != 0) {
+                        break;
+                    }
+                    if (i == 0) {
+                        rear_tire_models[0]->GetModel();
+                    }
                 }
             }
 
-            if (brake_model != 0) {
-                ::Render(view, brake_model, &brake_local_world, light_context, extra_render_flags | disable_env_flag_tires, 0);
+            light_material_rim[0] = this->LightMaterial_WheelRim;
+            light_material_rim[1] = this->LightMaterial_Spinner;
+
+            if (this->mMirrorLeftWheels) {
+                left_tire_flip = &LeftTireMirrorMatrix;
+            } else {
+                left_tire_flip = &LeftTireRotateZMatrix;
+            }
+
+            extra_mirror_flag = extra_render_flags | disable_env_flag_tires;
+
+            wobbleMat = bMatrix4();
+            bIdentity(&wobbleMat);
+
+            // Tire 0 (front-left)
+            {
+                bMatrix4 *starting_tire_matrix = &tire_matrices[0];
+                bMatrix4 tire_matrix_for_camber;
+                bMatrix4 tire0;
+
+                {
+                    bVector3 wheel_offset;
+                    bCopy(&tire_matrix_for_camber, starting_tire_matrix);
+                    wheel_offset = bVector3();
+                    bCopy(&wheel_offset, reinterpret_cast<bVector3 *>(&tire_matrix_for_camber.v3));
+                    bFill(&tire_matrix_for_camber.v3, 0.0f, 0.0f, 0.0f, 1.0f);
+                    bCopy(reinterpret_cast<bVector3 *>(&tire0.v3), &wheel_offset);
+                }
+
+                eRotateX(&tire_matrix_for_camber, &tire_matrix_for_camber, wheel_camber_angle_front);
+                eMulMatrix(&tire0, &tire_matrix_for_camber, &trans_pivot[0]);
+                tire0.v3.y += wheel_camber_push_down_front;
+                eMulMatrix(&tire0, left_tire_flip, &tire0);
+                eMulMatrix(&tire0, &wobbleMat, &tire0);
+                PSMTX44Copy(*reinterpret_cast<Mtx44 *>(&tire0), *reinterpret_cast<Mtx44 *>(tire_local_world));
+                eMulMatrix(tire_local_world, tire_local_world, local_world);
+
+                if (tire_visible0) {
+                    eModel *tire_model = front_tire_models[0]->GetModel();
+                    if (tire_model != 0) {
+                        eReplacementTextureTable *rep_table = this->BrakeLeftReplacementTextureTable;
+                        tire_model->AttachReplacementTextureTable(rep_table, 2, 0);
+                        if (light_material_rim[0] != 0) {
+                            tire_model->ReplaceLightMaterial(0xD6640DFF, light_material_rim[0]);
+                        }
+                        if (light_material_rim[1] != 0) {
+                            tire_model->ReplaceLightMaterial(0xA3186E2B, light_material_rim[1]);
+                        }
+                        float face = TireFace(tire_local_world, view);
+                        ::Render(view, tire_model, tire_local_world, light_context, extra_mirror_flag, 0);
+                    }
+                }
+            }
+
+            // Tire 1 (front-right)
+            {
+                bMatrix4 *starting_tire_matrix = &tire_matrices[1];
+                bMatrix4 tire_matrix_for_camber;
+                bMatrix4 tire1;
+
+                {
+                    bVector3 wheel_offset;
+                    bCopy(&tire_matrix_for_camber, starting_tire_matrix);
+                    wheel_offset = bVector3();
+                    bCopy(&wheel_offset, reinterpret_cast<bVector3 *>(&tire_matrix_for_camber.v3));
+                    bFill(&tire_matrix_for_camber.v3, 0.0f, 0.0f, 0.0f, 1.0f);
+                    bCopy(reinterpret_cast<bVector3 *>(&tire1.v3), &wheel_offset);
+                }
+
+                eRotateX(&tire_matrix_for_camber, &tire_matrix_for_camber, wheel_camber_angle_front);
+                eMulMatrix(&tire1, &tire_matrix_for_camber, &trans_pivot[1]);
+                tire1.v3.y += wheel_camber_push_down_front;
+                tire1 = tire1;
+                eMulMatrix(&tire1, &wobbleMat, &tire1);
+                PSMTX44Copy(*reinterpret_cast<Mtx44 *>(&tire1), *reinterpret_cast<Mtx44 *>(tire_local_world));
+                eMulMatrix(tire_local_world, tire_local_world, local_world);
+
+                if (tire_visible1) {
+                    eModel *tire_model = front_tire_models[0]->GetModel();
+                    if (tire_model != 0) {
+                        eReplacementTextureTable *rep_table = this->BrakeRightReplacementTextureTable;
+                        tire_model->AttachReplacementTextureTable(rep_table, 2, 0);
+                        if (light_material_rim[0] != 0) {
+                            tire_model->ReplaceLightMaterial(0xD6640DFF, light_material_rim[0]);
+                        }
+                        if (light_material_rim[1] != 0) {
+                            tire_model->ReplaceLightMaterial(0xA3186E2B, light_material_rim[1]);
+                        }
+                        float face = TireFace(tire_local_world, view);
+                        ::Render(view, tire_model, tire_local_world, light_context, extra_mirror_flag, 0);
+                    }
+                }
+            }
+
+            // Tire 2 (rear-right)
+            {
+                bMatrix4 *starting_tire_matrix = &tire_matrices[2];
+                bMatrix4 tire_matrix_for_camber;
+                bMatrix4 tire2;
+
+                {
+                    bVector3 wheel_offset;
+                    bCopy(&tire_matrix_for_camber, starting_tire_matrix);
+                    wheel_offset = bVector3();
+                    bCopy(&wheel_offset, reinterpret_cast<bVector3 *>(&tire_matrix_for_camber.v3));
+                    bFill(&tire_matrix_for_camber.v3, 0.0f, 0.0f, 0.0f, 1.0f);
+                    bCopy(reinterpret_cast<bVector3 *>(&tire2.v3), &wheel_offset);
+                }
+
+                eRotateX(&tire_matrix_for_camber, &tire_matrix_for_camber, wheel_camber_angle_rear);
+                eMulMatrix(&tire2, &tire_matrix_for_camber, &trans_pivot[2]);
+                tire2.v3.y += wheel_camber_push_down_rear;
+                tire2 = tire2;
+                eMulMatrix(&tire2, &wobbleMat, &tire2);
+                PSMTX44Copy(*reinterpret_cast<Mtx44 *>(&tire2), *reinterpret_cast<Mtx44 *>(tire_local_world));
+                eMulMatrix(tire_local_world, tire_local_world, local_world);
+
+                if (tire_visible2) {
+                    if (IsGameFlowInGame()) {
+                        eModel *tire_model = rear_tire_models[0]->GetModel();
+                        if (tire_model != 0) {
+                            eReplacementTextureTable *rep_table = this->BrakeRightReplacementTextureTable;
+                            tire_model->AttachReplacementTextureTable(rep_table, 2, 0);
+                            if (light_material_rim[0] != 0) {
+                                tire_model->ReplaceLightMaterial(0xD6640DFF, light_material_rim[0]);
+                            }
+                            if (light_material_rim[1] != 0) {
+                                tire_model->ReplaceLightMaterial(0xA3186E2B, light_material_rim[1]);
+                            }
+                            float face = TireFace(tire_local_world, view);
+                            ::Render(view, tire_model, tire_local_world, light_context, extra_mirror_flag, 0);
+                        }
+                    } else {
+                        CarPartModel *tmpM = rear_tire_models[0];
+                        this->RenderPart(view, tmpM, tire_local_world, light_context, extra_mirror_flag);
+                    }
+                }
+            }
+
+            // Extra rear tire offset intermediate
+            {
+                for (int i = 3; i >= 0; i--) {
+                }
+            }
+
+            // Tire 3 (rear-left)
+            {
+                bMatrix4 *starting_tire_matrix = &tire_matrices[3];
+                bMatrix4 tire_matrix_for_camber;
+                bMatrix4 tire3;
+
+                {
+                    bVector3 wheel_offset;
+                    bCopy(&tire_matrix_for_camber, starting_tire_matrix);
+                    wheel_offset = bVector3();
+                    bCopy(&wheel_offset, reinterpret_cast<bVector3 *>(&tire_matrix_for_camber.v3));
+                    bFill(&tire_matrix_for_camber.v3, 0.0f, 0.0f, 0.0f, 1.0f);
+                    bCopy(reinterpret_cast<bVector3 *>(&tire3.v3), &wheel_offset);
+                }
+
+                eRotateX(&tire_matrix_for_camber, &tire_matrix_for_camber, wheel_camber_angle_rear);
+                eMulMatrix(&tire3, &tire_matrix_for_camber, &trans_pivot[3]);
+                tire3.v3.y += wheel_camber_push_down_rear;
+                eMulMatrix(&tire3, left_tire_flip, &tire3);
+                eMulMatrix(&tire3, &wobbleMat, &tire3);
+                PSMTX44Copy(*reinterpret_cast<Mtx44 *>(&tire3), *reinterpret_cast<Mtx44 *>(tire_local_world));
+                eMulMatrix(tire_local_world, tire_local_world, local_world);
+
+                if (tire_visible3) {
+                    if (IsGameFlowInGame()) {
+                        eModel *tire_model = rear_tire_models[0]->GetModel();
+                        if (tire_model != 0) {
+                            eReplacementTextureTable *rep_table = this->BrakeLeftReplacementTextureTable;
+                            tire_model->AttachReplacementTextureTable(rep_table, 2, 0);
+                            if (light_material_rim[0] != 0) {
+                                tire_model->ReplaceLightMaterial(0xD6640DFF, light_material_rim[0]);
+                            }
+                            if (light_material_rim[1] != 0) {
+                                tire_model->ReplaceLightMaterial(0xA3186E2B, light_material_rim[1]);
+                            }
+                            float face = TireFace(tire_local_world, view);
+                            ::Render(view, tire_model, tire_local_world, light_context, extra_mirror_flag, 0);
+                        }
+                    } else {
+                        CarPartModel *tmpM = rear_tire_models[0];
+                        this->RenderPart(view, tmpM, tire_local_world, light_context, extra_mirror_flag);
+                    }
+                }
+            }
+        }
+    }
+
+    // Brake section
+    if (brake_matrices != 0) {
+        CARPART_LOD max_brake_lod = this->pRideInfo->GetMaxBrakeLodLevel();
+
+        eModel *front_brake_check = this->mCarPartModels[CARSLOTID_FRONT_BRAKE][0][car_body_lod].GetModel();
+
+        int brakes_visible_front_left = this->TheCarPartCuller.IsPartVisible(CULLABLE_CAR_PART_BRAKE_FL);
+        int brakes_visible_front_right = this->TheCarPartCuller.IsPartVisible(CULLABLE_CAR_PART_BRAKE_FR);
+        int brakes_visible_rear_right = this->TheCarPartCuller.IsPartVisible(CULLABLE_CAR_PART_BRAKE_RR);
+        int brakes_visible_rear_left = this->TheCarPartCuller.IsPartVisible(CULLABLE_CAR_PART_BRAKE_RL);
+
+        {
+            bMatrix4 *brake_local_world;
+            eDynamicLightContext *brake_light_context;
+
+            // Allocate brake_local_world
+            {
+                unsigned char *address = CurrentBufferPos;
+                unsigned int size = sizeof(bMatrix4);
+                if (address + size >= CurrentBufferEnd) {
+                    FrameMallocFailed = 1;
+                    FrameMallocFailAmount += size;
+                    brake_local_world = 0;
+                } else {
+                    CurrentBufferPos = address + size;
+                    brake_local_world = reinterpret_cast<bMatrix4 *>(address);
+                }
+            }
+
+            // Allocate brake_light_context
+            {
+                unsigned char *address = CurrentBufferPos;
+                unsigned int size = sizeof(eDynamicLightContext);
+                if (address + size >= CurrentBufferEnd) {
+                    FrameMallocFailed = 1;
+                    FrameMallocFailAmount += size;
+                    brake_light_context = 0;
+                } else {
+                    CurrentBufferPos = address + size;
+                    brake_light_context = reinterpret_cast<eDynamicLightContext *>(address);
+                }
+            }
+
+            {
+                int brakes_lod = car_body_lod;
+                eModel *front_brake_models[1];
+                eModel *rear_brake_models[1];
+                eLightMaterial *light_material_caliper = this->LightMaterial_Caliper;
+                bMatrix4 mirror;
+
+                // Find best brake model LOD
+                {
+                    for (int i = brakes_lod; i >= 0; i--) {
+                        front_brake_models[0] = this->mCarPartModels[CARSLOTID_FRONT_BRAKE][0][i].GetModel();
+                        rear_brake_models[0] = this->mCarPartModels[CARSLOTID_REAR_BRAKE][0][i].GetModel();
+                        if (front_brake_models[0] != 0 || rear_brake_models[0] != 0) {
+                            break;
+                        }
+                    }
+                }
+
+                mirror = bMatrix4();
+                eIdentity(&mirror);
+
+                // Brake 0 (front-left)
+                {
+                    bMatrix4 *starting_brake_matrix = &brake_matrices[0];
+                    bMatrix4 brake_matrix_for_camber;
+                    bMatrix4 bm0;
+
+                    {
+                        bVector3 wheel_offset;
+                        bCopy(&brake_matrix_for_camber, starting_brake_matrix);
+                        wheel_offset = bVector3();
+                        bCopy(&wheel_offset, reinterpret_cast<bVector3 *>(&brake_matrix_for_camber.v3));
+                        bFill(&brake_matrix_for_camber.v3, 0.0f, 0.0f, 0.0f, 1.0f);
+                        bCopy(reinterpret_cast<bVector3 *>(&bm0.v3), &wheel_offset);
+                    }
+
+                    eRotateX(&brake_matrix_for_camber, &brake_matrix_for_camber, wheel_camber_angle_front);
+                    eMulMatrix(&bm0, &brake_matrix_for_camber, &brake_trans_pivot[0]);
+
+                    if (IsGameFlowInGame()) {
+                        for (int i = 0; i < 4; i++) {
+                            eMulMatrix(&bm0, &bm0, local_world);
+                        }
+                    }
+                    {
+                        for (int i = 0; i < 4; i++) {
+                            eMulMatrix(&bm0, &bm0, local_world);
+                        }
+                    }
+                }
+
+                // Brake 1 (front-right)
+                {
+                    bMatrix4 *starting_brake_matrix = &brake_matrices[1];
+                    bMatrix4 brake_matrix_for_camber;
+                    bMatrix4 bm1;
+
+                    {
+                        bVector3 wheel_offset;
+                        bCopy(&brake_matrix_for_camber, starting_brake_matrix);
+                        wheel_offset = bVector3();
+                        bCopy(&wheel_offset, reinterpret_cast<bVector3 *>(&brake_matrix_for_camber.v3));
+                        bFill(&brake_matrix_for_camber.v3, 0.0f, 0.0f, 0.0f, 1.0f);
+                        bCopy(reinterpret_cast<bVector3 *>(&bm1.v3), &wheel_offset);
+                    }
+
+                    eRotateX(&brake_matrix_for_camber, &brake_matrix_for_camber, wheel_camber_angle_front);
+                    eMulMatrix(&bm1, &brake_matrix_for_camber, &brake_trans_pivot[1]);
+
+                    if (IsGameFlowInGame()) {
+                        for (int i = 0; i < 4; i++) {
+                            eMulMatrix(&bm1, &bm1, local_world);
+                        }
+                    }
+                    {
+                        for (int i = 0; i < 4; i++) {
+                            eMulMatrix(&bm1, &bm1, local_world);
+                        }
+                    }
+                }
+
+                // Brake 2 (rear-right)
+                {
+                    bMatrix4 *starting_brake_matrix = &brake_matrices[2];
+                    bMatrix4 brake_matrix_for_camber;
+                    bMatrix4 bm2;
+
+                    {
+                        bVector3 wheel_offset;
+                        bCopy(&brake_matrix_for_camber, starting_brake_matrix);
+                        wheel_offset = bVector3();
+                        bCopy(&wheel_offset, reinterpret_cast<bVector3 *>(&brake_matrix_for_camber.v3));
+                        bFill(&brake_matrix_for_camber.v3, 0.0f, 0.0f, 0.0f, 1.0f);
+                        bCopy(reinterpret_cast<bVector3 *>(&bm2.v3), &wheel_offset);
+                    }
+
+                    eRotateX(&brake_matrix_for_camber, &brake_matrix_for_camber, wheel_camber_angle_rear);
+                    eMulMatrix(&bm2, &brake_matrix_for_camber, &brake_trans_pivot[2]);
+
+                    if (IsGameFlowInGame()) {
+                        for (int i = 0; i < 4; i++) {
+                            eMulMatrix(&bm2, &bm2, local_world);
+                        }
+                    }
+                    {
+                        for (int i = 0; i < 4; i++) {
+                            eMulMatrix(&bm2, &bm2, local_world);
+                        }
+                    }
+                }
+
+                // Brake 3 (rear-left)
+                {
+                    bMatrix4 *starting_brake_matrix = &brake_matrices[3];
+                    bMatrix4 brake_matrix_for_camber;
+                    bMatrix4 bm3;
+
+                    {
+                        bVector3 wheel_offset;
+                        bCopy(&brake_matrix_for_camber, starting_brake_matrix);
+                        wheel_offset = bVector3();
+                        bCopy(&wheel_offset, reinterpret_cast<bVector3 *>(&brake_matrix_for_camber.v3));
+                        bFill(&brake_matrix_for_camber.v3, 0.0f, 0.0f, 0.0f, 1.0f);
+                        bCopy(reinterpret_cast<bVector3 *>(&bm3.v3), &wheel_offset);
+                    }
+
+                    eRotateX(&brake_matrix_for_camber, &brake_matrix_for_camber, wheel_camber_angle_rear);
+                    eMulMatrix(&bm3, &brake_matrix_for_camber, &brake_trans_pivot[3]);
+
+                    if (IsGameFlowInGame()) {
+                        for (int i = 0; i < 4; i++) {
+                            eMulMatrix(&bm3, &bm3, local_world);
+                        }
+                    }
+                    {
+                        for (int i = 0; i < 4; i++) {
+                            eMulMatrix(&bm3, &bm3, local_world);
+                        }
+                    }
+                }
             }
         }
     }
