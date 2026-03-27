@@ -653,14 +653,20 @@ void RideInfo::SetStockParts() {
             (static_cast<unsigned int>(car_slot_id - CARSLOTID_DECAL_FRONT_WINDOW_TEX0) > 0x2F)) {
             if (car_slot_id == CARSLOTID_HUD_BACKING_COLOUR) {
                 goto set_hud_backing_colour;
-            } else if (car_slot_id == CARSLOTID_BASE_PAINT) {
-                goto set_base_paint;
-            } else if (car_slot_id == CARSLOTID_HUD_NEEDLE_COLOUR) {
-                goto set_hud_needle_colour;
-            } else if (car_slot_id == CARSLOTID_HUD_CHARACTER_COLOUR) {
-                goto set_hud_character_colour;
+            } else if (car_slot_id <= CARSLOTID_HUD_BACKING_COLOUR) {
+                if (car_slot_id == CARSLOTID_BASE_PAINT) {
+                    goto set_base_paint;
+                } else {
+                    goto set_upgrade_part;
+                }
             } else {
-                goto set_upgrade_part;
+                if (car_slot_id == CARSLOTID_HUD_NEEDLE_COLOUR) {
+                    goto set_hud_needle_colour;
+                } else if (car_slot_id == CARSLOTID_HUD_CHARACTER_COLOUR) {
+                    goto set_hud_character_colour;
+                } else {
+                    goto set_upgrade_part;
+                }
             }
         }
 
