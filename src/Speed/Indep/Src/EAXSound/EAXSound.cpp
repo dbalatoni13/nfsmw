@@ -1837,55 +1837,52 @@ FE_UPSCREEN:
     SetSoundControlState(bOn, SNDSTATE_FE_UPSCREEN, name);
 }
 
-void SetSoundControlState(bool on, eSNDCTLSTATE state, const char *caller) {
+void SetSoundControlState(bool bON, eSNDCTLSTATE esndstate, const char *Reason) {
     if (_RUN_SOUND_STATE == 0 || g_pEAXSound == nullptr || !IsSoundEnabled) {
         return;
     }
 
-    on = on == true ? false : true;
-    if (g_pEAXSound->IsPauseMainFNG()) {
-        if (!on) {
-            if (state != SNDSTATE_MINILOAD) {
-                unsigned int fngState = state - 6;
-                if (fngState > 4) {
-                    return;
+    if (g_pEAXSound->m_bPause_MainFNG) {
+        if (!bON) {
+            if (esndstate != SNDSTATE_MINILOAD) {
+                if (esndstate <= SNDSTATE_FE_SMS_MESSAGE) {
+                    if (esndstate > SNDSTATE_NIS_ARREST) {
+                        return;
+                    }
                 }
             }
         }
     }
 
-    unsigned int stateBit = 1u << state;
-    if ((g_ActiveCtlStates & stateBit) != 0) {
-        if (!on) {
+    if ((g_ActiveCtlStates & (1 << esndstate)) != 0) {
+        if (bON) {
             return;
         }
-    } else if (on) {
+    } else if (!bON) {
         return;
     }
 
     g_PrevActiveCtlStates = g_ActiveCtlStates;
     g_PrevActiveSFXStates = g_ActiveSFXStates;
 
-    if (on) {
-        g_ActiveCtlStates &= ~(1u << state);
+    if (!bON) {
+        g_ActiveCtlStates &= ~(1 << esndstate);
     } else {
-        g_ActiveCtlStates |= 1u << state;
+        g_ActiveCtlStates |= 1 << esndstate;
     }
 
     g_ActiveSFXStates = 0;
     for (int n = 0; n < 18; n++) {
-        unsigned int activeCtlStateBit = 1u << n;
-        if ((g_ActiveCtlStates & activeCtlStateBit) != 0) {
+        if ((g_ActiveCtlStates & (1 << n)) != 0) {
             g_ActiveSFXStates |= g_CtlStateActions[n];
         }
     }
 
-    for (int s = 0; s < 13; s++) {
-        unsigned int sBit = 1u << s;
-        unsigned int cur = g_ActiveSFXStates & sBit;
-        if (cur != (g_PrevActiveSFXStates & sBit) && g_pEAXSound->GetStreamManager()) {
-            if (cur != 0) {
-                switch (s) {
+    for (int state = 0; state < 13; state++) {
+        if ((g_ActiveSFXStates & (1 << state)) != (g_PrevActiveSFXStates & (1 << state)) &&
+            g_pEAXSound->GetStreamManager()) {
+            if ((g_ActiveSFXStates & (1 << state)) != 0) {
+                switch (state) {
                     case 0:
                         if (g_pEAXSound->GetStreamManager()->GetStreamChannel(1)) {
                             g_pEAXSound->GetStreamManager()->GetStreamChannel(1)->Pause();
@@ -1903,7 +1900,7 @@ void SetSoundControlState(bool on, eSNDCTLSTATE state, const char *caller) {
                         break;
                 }
             } else {
-                switch (s) {
+                switch (state) {
                     case 0:
                         if (g_pEAXSound->GetStreamManager()->GetStreamChannel(1)) {
                             g_pEAXSound->GetStreamManager()->GetStreamChannel(1)->Resume();
@@ -1924,7 +1921,7 @@ void SetSoundControlState(bool on, eSNDCTLSTATE state, const char *caller) {
         }
     }
 
-    if (state == SNDSTATE_ERROR) {
+    if (esndstate == SNDSTATE_ERROR) {
         g_pEAXSound->Update(0.0f);
     }
 }

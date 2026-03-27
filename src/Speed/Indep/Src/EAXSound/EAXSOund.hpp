@@ -193,9 +193,12 @@ class EAXSound : public AudioMemBase {
     eSndGameMode GetSoundGameMode() const { return m_eSndGameMode; }
     bool IsPauseMainFNG() const { return m_bPause_MainFNG; }
     void SetPauseMainFNG(bool pauseMainFNG) { m_bPause_MainFNG = pauseMainFNG; }
+    struct EAXS_StreamManager *GetStreamManager() { return m_pStreamManager; }
     struct EAXS_StreamManager *GetStreamManager() const { return m_pStreamManager; }
 
     static CSTATEMGR_Base *m_pStateMgr[13];
+
+    friend void SetSoundControlState(bool bON, eSNDCTLSTATE esndstate, const char *Reason);
 
   private:
     int ncompiletest;                            // offset 0x4, size 0x4
