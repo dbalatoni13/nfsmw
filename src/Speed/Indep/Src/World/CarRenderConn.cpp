@@ -624,8 +624,8 @@ void CarRenderConn::OnEvent(EventID id) {
 
 void CarRenderConn::UpdateSteering(float dT, const RenderConn::Pkt_Car_Service &data) {
     if (!this->TestVisibility(renderModifier * 100.0f)) {
-        this->mSteering[0] = 0.0f;
         this->mSteering[1] = 0.0f;
+        this->mSteering[0] = 0.0f;
         return;
     }
 
@@ -633,6 +633,7 @@ void CarRenderConn::UpdateSteering(float dT, const RenderConn::Pkt_Car_Service &
     if (max_steering == 0) {
         max_steering = reinterpret_cast<const float *>(Attrib::DefaultDataArea(sizeof(float)));
     }
+    float steering_limit = *max_steering * 0.017453f;
 
     const float *steering_speed =
         reinterpret_cast<const float *>(this->VehicleRenderConn::mAttributes.GetAttributePointer(0x79356463, 0));
@@ -640,7 +641,6 @@ void CarRenderConn::UpdateSteering(float dT, const RenderConn::Pkt_Car_Service &
         steering_speed = reinterpret_cast<const float *>(Attrib::DefaultDataArea(sizeof(float)));
     }
 
-    float steering_limit = *max_steering * 0.017453f;
     float steering_delta = *steering_speed * 0.017453f * dT;
 
     for (int i = 0; i < 2; i++) {
