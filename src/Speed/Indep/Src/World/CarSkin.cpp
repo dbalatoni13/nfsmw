@@ -368,11 +368,11 @@ int CompositeSkin(SkinCompositeParams *composite_params) {
     int num_layers;
     int debug_print;
 
-    num_layers = composite_params->NumLayers;
+    base_colour = composite_params->BaseColour;
     swatch_colours = composite_params->SwatchColours;
     layer_infos = composite_params->VinylLayerInfos;
     dest_texture = composite_params->DestTexture;
-    base_colour = composite_params->BaseColour;
+    num_layers = composite_params->NumLayers;
     (void)debug_print;
 
     if (dest_texture == 0) {

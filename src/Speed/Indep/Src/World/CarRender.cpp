@@ -1219,6 +1219,11 @@ CarRenderInfo::~CarRenderInfo() {
             }
         }
     }
+
+    if (mDamageBehaviour != nullptr) {
+        delete mDamageBehaviour;
+        mDamageBehaviour = nullptr;
+    }
 }
 
 void CarRenderInfo::Init() {
