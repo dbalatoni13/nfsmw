@@ -409,8 +409,8 @@ void GetLayerMod(eView *view, SKY_LAYER l, float *r, float *g, float *b, float *
     }
 
     if (SkyRenderForceOvercast > lbl_8040B2B8) {
-        invW = lbl_8040B2BC - SkyRenderForceOvercast;
         weight = SkyRenderForceOvercast;
+        invW = lbl_8040B2BC - weight;
     }
 
     *r = skylayer[l][0] * weight + skylayer[l][1] * invW;
