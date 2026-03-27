@@ -107,6 +107,7 @@ extern unsigned int FrameMallocFailed;
 extern unsigned int FrameMallocFailAmount;
 extern int DrawCars;
 extern int DrawCarShadow;
+extern float WorldTimeElapsed;
 extern int ForceCarLOD;
 extern int ForceTireLOD;
 extern int ForceReverselightsOn;
@@ -200,6 +201,7 @@ extern bVector4 feposoff;
 extern CarTypeInfo *CarTypeInfoArray;
 extern void RestoreShaperRig(eShaperLightRig *ShaperRigP, unsigned int slot, eShaperLightRig *ShaperRigBP);
 extern void AddQuickDynamicLight(eShaperLightRig *ShaperRigP, unsigned int slot, float r, float g, float b, float intensity, bVector3 *position);
+extern int bBoundingBoxIsInside(const bVector3 *bbox_min, const bVector3 *bbox_max, const bVector3 *point, float extra_width);
 
 void sh_Setup(bVector3 *car_pos);
 
@@ -1865,21 +1867,15 @@ bool CarRenderInfo::Render(eView *view, const bVector3 *world_position, const bM
         return true;
     }
 
-    eDynamicLightContext light_context_storage;
-    eDynamicLightContext *light_context;
-    bMatrix4 *local_world;
-    bMatrix4 *world_local;
-    bVector4 *camera_world_position;
-    eShaperLightRig *shaper_lights = &ShaperLightsCarsInGame;
-    float pixel_size = static_cast<float>(car_pixel_size);
-    float const *body_lod_swap_size = CarBodyLodSwapSize;
     Camera *camera = view->GetCamera();
-    bool print_query_light_mat;
-    unsigned short steering = this->mSteeringR;
-    unsigned short left_steering = this->mSteeringL;
-    int body_lod = static_cast<int>(this->mMinLodLevel);
-    int tire_lod = static_cast<int>(this->mMinLodLevel);
+    int is_traffic_car;
+    if (this->pCarTypeInfo != 0) {
+        is_traffic_car = this->pCarTypeInfo->UsageType == CAR_USAGE_TYPE_RACING;
+    } else {
+        is_traffic_car = 0;
+    }
 
+    eDynamicLightContext *light_context;
     if (CurrentBufferEnd <= CurrentBufferPos + 0x130) {
         FrameMallocFailed = 1;
         FrameMallocFailAmount += 0x130;
@@ -1888,90 +1884,64 @@ bool CarRenderInfo::Render(eView *view, const bVector3 *world_position, const bM
         light_context = reinterpret_cast<eDynamicLightContext *>(CurrentBufferPos);
         CurrentBufferPos += 0x130;
     }
-    if (CurrentBufferEnd <= CurrentBufferPos + sizeof(bMatrix4)) {
-        FrameMallocFailed = 1;
-        FrameMallocFailAmount += sizeof(bMatrix4);
-        local_world = 0;
-    } else {
-        local_world = reinterpret_cast<bMatrix4 *>(CurrentBufferPos);
-        CurrentBufferPos += sizeof(bMatrix4);
-    }
-    if (CurrentBufferEnd <= CurrentBufferPos + sizeof(bMatrix4)) {
-        FrameMallocFailed = 1;
-        FrameMallocFailAmount += sizeof(bMatrix4);
-        world_local = 0;
-    } else {
-        world_local = reinterpret_cast<bMatrix4 *>(CurrentBufferPos);
-        CurrentBufferPos += sizeof(bMatrix4);
-    }
-    if (CurrentBufferEnd <= CurrentBufferPos + sizeof(bVector4)) {
-        FrameMallocFailed = 1;
-        FrameMallocFailAmount += sizeof(bVector4);
-        camera_world_position = 0;
-    } else {
-        camera_world_position = reinterpret_cast<bVector4 *>(CurrentBufferPos);
-        CurrentBufferPos += sizeof(bVector4);
-    }
 
-    if (left_steering > 0x8000) {
-        left_steering = static_cast<unsigned short>(-left_steering);
-    }
-    if (steering > 0x8000) {
-        steering = static_cast<unsigned short>(-steering);
-    }
-    if (steering < left_steering) {
-        steering = this->mSteeringL;
-    }
-    if (reflexion != 0 || this->mMinLodLevel == 2) {
-        body_lod_swap_size = TrafficCarBodyLodSwapSize;
-    }
-
-    if (pixel_size > body_lod_swap_size[0]) {
-        int lod_offset = 0;
-
-        do {
-            lod_offset++;
-            if (pixel_size < body_lod_swap_size[lod_offset]) {
-                continue;
-            }
-            break;
-        } while (lod_offset < 4);
-
-        body_lod += lod_offset;
-        tire_lod += lod_offset;
-    }
-
-    if (body_lod > static_cast<int>(this->mMaxLodLevel)) {
-        body_lod = static_cast<int>(this->mMaxLodLevel);
-    }
-    if (tire_lod > static_cast<int>(this->mMaxLodLevel)) {
-        tire_lod = static_cast<int>(this->mMaxLodLevel);
-    }
-    if (ForceCarLOD != -1) {
-        body_lod = ForceCarLOD;
-        if (body_lod < static_cast<int>(this->mMinLodLevel)) {
-            body_lod = static_cast<int>(this->mMinLodLevel);
-        }
-        if (body_lod > static_cast<int>(this->mMaxLodLevel)) {
-            body_lod = static_cast<int>(this->mMaxLodLevel);
+    bMatrix4 *local_world;
+    {
+        unsigned char *addr = CurrentBufferPos;
+        unsigned int sz = sizeof(bMatrix4);
+        if (CurrentBufferEnd <= addr + sz) {
+            FrameMallocFailed = 1;
+            FrameMallocFailAmount += sz;
+            local_world = 0;
+        } else {
+            CurrentBufferPos = addr + sz;
+            local_world = reinterpret_cast<bMatrix4 *>(addr);
         }
     }
-    if (ForceTireLOD != -1) {
-        tire_lod = ForceTireLOD;
-        if (tire_lod < static_cast<int>(this->mMinLodLevel)) {
-            tire_lod = static_cast<int>(this->mMinLodLevel);
-        }
-        if (tire_lod > static_cast<int>(this->mMaxLodLevel)) {
-            tire_lod = static_cast<int>(this->mMaxLodLevel);
+
+    bMatrix4 *cpy_local_world;
+    {
+        unsigned char *addr = CurrentBufferPos;
+        unsigned int sz = sizeof(bMatrix4);
+        if (CurrentBufferEnd <= addr + sz) {
+            FrameMallocFailed = 1;
+            FrameMallocFailAmount += sz;
+            cpy_local_world = 0;
+        } else {
+            CurrentBufferPos = addr + sz;
+            cpy_local_world = reinterpret_cast<bMatrix4 *>(addr);
         }
     }
-    if (this->pRideInfo != 0 && this->pCarTypeInfo != 0 && this->pCarTypeInfo->UsageType != CAR_USAGE_TYPE_RACING) {
-        extra_render_flags |= 0x800;
-        if (INIS::Get() != 0) {
-            extra_render_flags |= 0x80000;
+
+    bMatrix4 *biased_identity;
+    {
+        unsigned char *addr = CurrentBufferPos;
+        unsigned int sz = sizeof(bMatrix4);
+        if (CurrentBufferEnd <= addr + sz) {
+            FrameMallocFailed = 1;
+            FrameMallocFailAmount += sz;
+            biased_identity = 0;
+        } else {
+            CurrentBufferPos = addr + sz;
+            biased_identity = reinterpret_cast<bMatrix4 *>(addr);
         }
     }
-    if (light_context == 0 || local_world == 0 || world_local == 0 || camera_world_position == 0) {
+
+    bMatrix4 *biased_local_world;
+    {
+        unsigned char *addr = CurrentBufferPos;
+        unsigned int sz = sizeof(bMatrix4);
+        if (CurrentBufferEnd <= addr + sz) {
+            FrameMallocFailed = 1;
+            FrameMallocFailAmount += sz;
+            biased_local_world = 0;
+        } else {
+            CurrentBufferPos = addr + sz;
+            biased_local_world = reinterpret_cast<bMatrix4 *>(addr);
+        }
+    }
+
+    if (light_context == 0 || local_world == 0 || biased_identity == 0 || biased_local_world == 0) {
         return true;
     }
 
@@ -1986,84 +1956,273 @@ bool CarRenderInfo::Render(eView *view, const bVector3 *world_position, const bM
         return true;
     }
 
-    PSMTX44Copy(*reinterpret_cast<const Mtx44 *>(body_matrix), *reinterpret_cast<Mtx44 *>(world_local));
-    world_local->v3.x = position.x;
-    world_local->v3.y = position.y;
-    world_local->v3.z = position.z;
-    world_local->v3.w = 1.0f;
+    bVector4 camera_world_position;
     if (camera != 0) {
-        camera_world_position->x = camera->GetPosition()->x;
-        camera_world_position->y = camera->GetPosition()->y;
-        camera_world_position->z = camera->GetPosition()->z;
+        camera_world_position.x = camera->GetPosition()->x;
+        camera_world_position.y = camera->GetPosition()->y;
+        camera_world_position.z = camera->GetPosition()->z;
     } else {
-        camera_world_position->x = position.x;
-        camera_world_position->y = position.y;
-        camera_world_position->z = position.z;
+        camera_world_position.x = position.x;
+        camera_world_position.y = position.y;
+        camera_world_position.z = position.z;
     }
-    camera_world_position->w = 1.0f;
-    print_query_light_mat = PrintQueryLightMat != 0;
+    camera_world_position.w = 1.0f;
+
+    Player *player1 = Player::GetPlayerByIndex(0);
+    int in_front_end = IsGameFlowInFrontEnd();
+    bool print_query_light_mat = PrintQueryLightMat != 0;
     if (print_query_light_mat) {
         PrintLightQuery = 1;
     }
-    if (iRam8047ff04 != 6) {
-        FEManager *fe_manager = FEManager::Get();
 
-        if (fe_manager != 0) {
-            switch (fe_manager->GetGarageType()) {
-            case GARAGETYPE_CAREER_SAFEHOUSE:
-                shaper_lights = &ShaperLightsSafehouse;
-                break;
-            case GARAGETYPE_CUSTOMIZATION_SHOP:
-                shaper_lights = &ShaperLightsCShop;
-                break;
-            case GARAGETYPE_CUSTOMIZATION_SHOP_BACKROOM:
-                shaper_lights = &ShaperLightsBackRoom;
-                break;
-            case GARAGETYPE_CAR_LOT:
-                shaper_lights = &ShaperLightsCarLot;
-                break;
-            case GARAGETYPE_MAIN_FE:
-            default:
-                shaper_lights = &ShaperLightsQRace;
-                break;
-            }
-        }
+    PSMTX44Copy(*reinterpret_cast<const Mtx44 *>(body_matrix), *reinterpret_cast<Mtx44 *>(cpy_local_world));
+    cpy_local_world->v3.x = position.x;
+    cpy_local_world->v3.y = position.y;
+    cpy_local_world->v3.z = position.z;
+    cpy_local_world->v3.w = 1.0f;
+
+    eDynamicLightContext base_light_context;
+    elResetLightContext(&base_light_context);
+
+    eShaperLightRig *shaper_lights;
+    FEManager::Get();
+    switch (FEManager::Get()->GetGarageType()) {
+    case GARAGETYPE_CAREER_SAFEHOUSE:
+        shaper_lights = &ShaperLightsSafehouse;
+        break;
+    case GARAGETYPE_CUSTOMIZATION_SHOP:
+        shaper_lights = &ShaperLightsCShop;
+        break;
+    case GARAGETYPE_CUSTOMIZATION_SHOP_BACKROOM:
+        shaper_lights = &ShaperLightsBackRoom;
+        break;
+    case GARAGETYPE_CAR_LOT:
+        shaper_lights = &ShaperLightsCarLot;
+        break;
+    default:
+        shaper_lights = &ShaperLightsQRace;
+        break;
     }
-    elResetLightContext(&light_context_storage);
-    elSetupLights(&light_context_storage, shaper_lights, &position, 0, &hack_man_matrix, view);
-    elCloneLightContext(light_context, world_local, &hack_man_matrix, camera_world_position, view, &light_context_storage);
+    if (iRam8047ff04 == 6) {
+        shaper_lights = &ShaperLightsCarsInGame;
+    }
+
+    elSetupLights(&base_light_context, shaper_lights, &position, 0, &hack_man_matrix, view);
+    elCloneLightContext(light_context, cpy_local_world, &hack_man_matrix, &camera_world_position, view, &base_light_context);
     this->CarFrame = eFrameCounter;
     if (print_query_light_mat) {
         PrintLightQuery = 0;
     }
-    this->UpdateLightStateTextures();
 
-    if (!IsGameFlowInFrontEnd()) {
-        if (camera != 0) {
-            this->TheCarPartCuller.CullParts(camera->GetPosition(), steering);
+    unsigned int disable_env_flag = 0;
+    unsigned int disable_env_flag_tires = 0;
+    this->UpdateLightStateTextures();
+    if (EnableEnvMap == 0 || static_cast<float>(car_pixel_size) < lbl_8040AD70) {
+        disable_env_flag = 1;
+        disable_env_flag_tires = 1;
+    }
+
+    int bodyLodIx = 0;
+    int tireLodIx = 0;
+    int mMinLod = static_cast<int>(this->mMinLodLevel);
+    int mMaxLod = static_cast<int>(this->mMaxLodLevel);
+    float const *body_lod_swap_size;
+
+    if (!is_traffic_car) {
+        if (mMinLod == 2) {
+            goto use_traffic_lod;
+        }
+        body_lod_swap_size = CarBodyLodSwapSize;
+        while (static_cast<float>(car_pixel_size) < body_lod_swap_size[bodyLodIx]) {
+            bodyLodIx++;
+            tireLodIx++;
+        }
+    } else {
+        extra_render_flags |= 0x80000;
+    use_traffic_lod:
+        body_lod_swap_size = TrafficCarBodyLodSwapSize;
+        while (static_cast<float>(car_pixel_size) < body_lod_swap_size[bodyLodIx]) {
+            bodyLodIx++;
+            tireLodIx++;
         }
     }
 
+    int car_body_lod = mMaxLod;
+    if (bodyLodIx + mMinLod < mMaxLod) {
+        car_body_lod = bodyLodIx + mMinLod;
+    }
+    int car_tire_lod = mMaxLod;
+    if (tireLodIx + mMinLod < mMaxLod) {
+        car_tire_lod = tireLodIx + mMinLod;
+    }
+
+    if (ForceCarLOD != -1) {
+        car_body_lod = mMinLod;
+        if (mMinLod < ForceCarLOD) {
+            car_body_lod = ForceCarLOD;
+        }
+        if (mMaxLod < car_body_lod) {
+            car_body_lod = mMaxLod;
+        }
+    }
+    if (ForceTireLOD != -1) {
+        car_tire_lod = mMinLod;
+        if (mMinLod < ForceTireLOD) {
+            car_tire_lod = ForceTireLOD;
+        }
+        if (mMaxLod < car_tire_lod) {
+            car_tire_lod = mMaxLod;
+        }
+    }
+
+    if (car_body_lod == -1 && car_tire_lod == -1) {
+        return true;
+    }
+
+    if (this->pRideInfo != 0 && this->pCarTypeInfo != 0 && this->pCarTypeInfo->UsageType != CAR_USAGE_TYPE_RACING) {
+        extra_render_flags |= 0x800;
+        if (INIS::Get() != 0) {
+            extra_render_flags |= 0x80000;
+        }
+    }
+
+    bMatrix4 world_local;
+    bInvertMatrix(&world_local, local_world);
+    bVector3 camera_eye_in_car_space;
+    bMulMatrix(&camera_eye_in_car_space, &world_local, camera->GetPosition());
+    float fDistanceToCamera = bDistBetween(camera->GetPosition(), reinterpret_cast<bVector3 *>(&local_world->v3));
+
+    if (car_body_lod == 0 && fDistanceToCamera < lbl_8040AD74 && view->GetID() == 1 && INIS::Get() == 0) {
+        camera_eye_in_car_space.y += lbl_8040AD78;
+        if (bBoundingBoxIsInside(&this->AABBMin, &this->AABBMax, &camera_eye_in_car_space, lbl_8040AD7C) != 0) {
+            return true;
+        }
+        camera_eye_in_car_space.y -= lbl_8040AD78;
+    }
+
+    PSMTX44Copy(*reinterpret_cast<Mtx44 *>(local_world), *reinterpret_cast<Mtx44 *>(biased_identity));
+    *biased_local_world = eMathIdentityMatrix;
+    biased_local_world->v3.x = position.x;
+    biased_local_world->v3.y = position.y;
+    biased_local_world->v3.z = position.z;
+    biased_local_world->v3.w = 1.0f;
+
+    bool nisPlaying = false;
+    INIS *nis = INIS::Get();
+    if (nis != 0) {
+        nisPlaying = nis->IsPlaying();
+    }
+
+    if (reflexion == 0) {
+        float bias_amount = lbl_8040AD80;
+        biased_identity->v3.y += bias_amount;
+        float dist_bias = static_cast<float>((fDistanceToCamera - lbl_8040AD84) / fDistanceToCamera);
+        if (in_front_end) {
+            view->BiasMatrixForZSorting(biased_identity, dist_bias);
+        }
+        view->BiasMatrixForZSorting(biased_local_world, dist_bias);
+
+        bMatrix4 neg_pos_matrix;
+        eIdentity(&neg_pos_matrix);
+        neg_pos_matrix.v3.x = -position.x;
+        neg_pos_matrix.v3.y = -position.y;
+        neg_pos_matrix.v3.z = -position.z;
+        eMulMatrix(biased_local_world, &neg_pos_matrix, biased_local_world);
+    }
+
+    unsigned short tangR = this->mSteeringR;
+    unsigned short tangL = this->mSteeringL;
+    unsigned short steerAngle = tangR;
+    if (tangR > 0x8000) {
+        steerAngle = static_cast<unsigned short>(-tangR);
+    }
+    unsigned short absL = tangL;
+    if (tangL > 0x8000) {
+        absL = static_cast<unsigned short>(-tangL);
+    }
+    if (absL < steerAngle) {
+        tangL = tangR;
+    }
+    this->TheCarPartCuller.CullParts(&camera_eye_in_car_space, tangL);
+
+    unsigned int body_render_flags;
+    if (DrawCarShadow != 0 && reflexion == 0) {
+        this->DrawAmbientShadow(view, &position, shadow_scale, local_world, &world_local, biased_local_world);
+        if (iRam8047ff04 != 3 && this->pCarTypeInfo->UsageType != CAR_USAGE_TYPE_COP && is_traffic_car) {
+            this->DrawKeithProjShadow(view, &position, local_world, &world_local, biased_local_world, car_body_lod);
+        }
+    }
+
+    body_render_flags = 0;
+    if (iRam8047ff04 == 6 && view->GetID() != 3) {
+        body_render_flags = 0x8000;
+    }
+
+    eLightMaterial *light_material_carskin = this->LightMaterial_CarSkin;
+    eLightMaterial *light_material_spoiler = this->LightMaterial_Spoiler;
+    if (light_material_spoiler == 0) {
+        light_material_spoiler = light_material_carskin;
+    }
+    eLightMaterial *light_material_roof = this->LightMaterial_Roof;
+    if (light_material_roof == 0) {
+        light_material_roof = light_material_carskin;
+    }
+    eLightMaterial *light_material_tint = this->LightMaterial_WindowTint;
+
+    bMatrix4 trans_pivot[4];
+    bMatrix4 trans_axle[4];
+    bMatrix4 brake_trans_pivot[4];
+    float wheel_pivot_trans_amount;
+    float front_wheel_brake_marker;
+    float rear_wheel_brake_marker;
+    unsigned short wheel_camber_angle_front;
+    float wheel_camber_push_down_front;
+    unsigned short wheel_camber_angle_rear;
+    float wheel_camber_push_down_rear;
+    unsigned short wheel_wobble_angle;
+    int tire_visible0;
+    int tire_visible1;
+    int tire_visible2;
+    int tire_visible3;
+    eDynamicLightContext *tire_light_context;
+    int tires_enabled;
+    bMatrix4 *tirelight_world_view;
+
     for (int slot_id = 0; slot_id < 0x4C; slot_id++) {
+        bMatrix4 *slot_local_world;
+        {
+            unsigned char *addr = CurrentBufferPos;
+            unsigned int sz = sizeof(bMatrix4);
+            if (CurrentBufferEnd <= addr + sz) {
+                FrameMallocFailed = 1;
+                FrameMallocFailAmount += sz;
+                slot_local_world = 0;
+            } else {
+                CurrentBufferPos = addr + sz;
+                slot_local_world = reinterpret_cast<bMatrix4 *>(addr);
+            }
+        }
+        if (slot_local_world == 0) {
+            continue;
+        }
+
+        PSMTX44Copy(*reinterpret_cast<Mtx44 *>(biased_identity), *reinterpret_cast<Mtx44 *>(slot_local_world));
+
         if (slot_id == CARSLOTID_FRONT_WHEEL || slot_id == CARSLOTID_REAR_WHEEL || slot_id == CARSLOTID_FRONT_BRAKE ||
             slot_id == CARSLOTID_REAR_BRAKE || slot_id == CARSLOTID_SPOILER || slot_id == CARSLOTID_ROOF) {
             continue;
         }
 
-        CarPartModel *car_part_model = &this->mCarPartModels[slot_id][0][body_lod];
+        CarPartModel *car_part_model = &this->mCarPartModels[slot_id][0][car_body_lod];
         eModel *model = car_part_model->GetModel();
 
         if (model != 0) {
-            eLightMaterial *paint_material = this->LightMaterial_CarSkin;
+            eLightMaterial *paint_material = light_material_carskin;
 
             if (slot_id == CARSLOTID_SPOILER || slot_id == CARSLOTID_UNIVERSAL_SPOILER_BASE) {
-                if (this->LightMaterial_Spoiler != 0) {
-                    paint_material = this->LightMaterial_Spoiler;
-                }
+                paint_material = light_material_spoiler;
             } else if (slot_id == CARSLOTID_ROOF) {
-                if (this->LightMaterial_Roof != 0) {
-                    paint_material = this->LightMaterial_Roof;
-                }
+                paint_material = light_material_roof;
             } else if (slot_id == CARSLOTID_HOOD && this->CarbonHood != 0 && this->LightMaterial_Carbon != 0) {
                 paint_material = this->LightMaterial_Carbon;
             }
@@ -2071,53 +2230,43 @@ bool CarRenderInfo::Render(eView *view, const bVector3 *world_position, const bM
             if (paint_material != 0) {
                 model->ReplaceLightMaterial(0xD6D6080A, paint_material);
             }
-            if (this->LightMaterial_WindowTint != 0) {
-                model->ReplaceLightMaterial(0x471A1DCA, this->LightMaterial_WindowTint);
+            if (light_material_tint != 0) {
+                model->ReplaceLightMaterial(0x471A1DCA, light_material_tint);
             }
         }
 
-        this->RenderPart(view, car_part_model, local_world, light_context, extra_render_flags);
+        this->RenderPart(view, car_part_model, slot_local_world, light_context, extra_render_flags | disable_env_flag | body_render_flags);
     }
 
     {
-        CarPartModel *spoiler_part_model = &this->mCarPartModels[CARSLOTID_SPOILER][0][body_lod];
+        CarPartModel *spoiler_part_model = &this->mCarPartModels[CARSLOTID_SPOILER][0][car_body_lod];
         eModel *spoiler_model = spoiler_part_model->GetModel();
 
         if (spoiler_model != 0) {
-            eLightMaterial *spoiler_material = this->LightMaterial_Spoiler;
-
-            if (spoiler_material == 0) {
-                spoiler_material = this->LightMaterial_CarSkin;
-            }
-            if (spoiler_material != 0) {
-                spoiler_model->ReplaceLightMaterial(0xD6D6080A, spoiler_material);
+            if (light_material_spoiler != 0) {
+                spoiler_model->ReplaceLightMaterial(0xD6D6080A, light_material_spoiler);
             }
 
-            ::Render(view, spoiler_model, local_world, light_context, extra_render_flags, 0);
+            ::Render(view, spoiler_model, local_world, light_context, extra_render_flags | disable_env_flag | body_render_flags, 0);
         }
     }
 
     {
-        CarPartModel *roof_part_model = &this->mCarPartModels[CARSLOTID_ROOF][0][body_lod];
+        CarPartModel *roof_part_model = &this->mCarPartModels[CARSLOTID_ROOF][0][car_body_lod];
         eModel *roof_model = roof_part_model->GetModel();
 
         if (roof_model != 0) {
-            eLightMaterial *roof_material = this->LightMaterial_Roof;
-
-            if (roof_material == 0) {
-                roof_material = this->LightMaterial_CarSkin;
-            }
-            if (roof_material != 0) {
-                roof_model->ReplaceLightMaterial(0xD6D6080A, roof_material);
+            if (light_material_roof != 0) {
+                roof_model->ReplaceLightMaterial(0xD6D6080A, light_material_roof);
             }
 
-            ::Render(view, roof_model, local_world, light_context, extra_render_flags, 0);
+            ::Render(view, roof_model, local_world, light_context, extra_render_flags | disable_env_flag | body_render_flags, 0);
         }
     }
 
     if (tire_matrices != 0) {
-        CarPartModel *front_tire = &this->mCarPartModels[CARSLOTID_FRONT_WHEEL][0][tire_lod];
-        CarPartModel *rear_tire = &this->mCarPartModels[CARSLOTID_REAR_WHEEL][0][tire_lod];
+        CarPartModel *front_tire = &this->mCarPartModels[CARSLOTID_FRONT_WHEEL][0][car_tire_lod];
+        CarPartModel *rear_tire = &this->mCarPartModels[CARSLOTID_REAR_WHEEL][0][car_tire_lod];
 
         for (int wheel = 0; wheel < 4; wheel++) {
             bMatrix4 tire_local_world = tire_matrices[wheel];
@@ -2144,14 +2293,14 @@ bool CarRenderInfo::Render(eView *view, const bVector3 *world_position, const bM
             }
 
             if (wheel_model != 0) {
-                ::Render(view, wheel_model, &tire_local_world, light_context, extra_render_flags, 0);
+                ::Render(view, wheel_model, &tire_local_world, light_context, extra_render_flags | disable_env_flag_tires, 0);
             }
         }
     }
 
     if (brake_matrices != 0) {
-        CarPartModel *front_brake = &this->mCarPartModels[CARSLOTID_FRONT_BRAKE][0][body_lod];
-        CarPartModel *rear_brake = &this->mCarPartModels[CARSLOTID_REAR_BRAKE][0][body_lod];
+        CarPartModel *front_brake = &this->mCarPartModels[CARSLOTID_FRONT_BRAKE][0][car_body_lod];
+        CarPartModel *rear_brake = &this->mCarPartModels[CARSLOTID_REAR_BRAKE][0][car_body_lod];
 
         for (int wheel = 0; wheel < 4; wheel++) {
             bMatrix4 brake_local_world = brake_matrices[wheel];
@@ -2172,7 +2321,7 @@ bool CarRenderInfo::Render(eView *view, const bVector3 *world_position, const bM
             }
 
             if (brake_model != 0) {
-                ::Render(view, brake_model, &brake_local_world, light_context, extra_render_flags, 0);
+                ::Render(view, brake_model, &brake_local_world, light_context, extra_render_flags | disable_env_flag_tires, 0);
             }
         }
     }
@@ -2188,13 +2337,6 @@ bool CarRenderInfo::Render(eView *view, const bVector3 *world_position, const bM
     }
 
     this->RenderFlaresOnCar(view, &position, body_matrix, force_light_state, reflexion, static_cast<int>(extra_render_flags));
-
-    if (!reflexion && DrawCarShadow != 0 && shadow_scale > 0.0f) {
-        bMatrix4 biased_identity = *local_world;
-
-        view->BiasMatrixForZSorting(&biased_identity, 0.0f);
-        this->DrawAmbientShadow(view, &position, shadow_scale, local_world, world_local, &biased_identity);
-    }
 
     return true;
 }
