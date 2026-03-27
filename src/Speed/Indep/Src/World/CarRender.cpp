@@ -3663,7 +3663,9 @@ void UpdateEnvironmentMapCameras() {
     if (view->GetCameraMover() != nullptr) {
         CameraAnchor *anchor = view->GetCameraMover()->GetAnchor();
 
-        if (anchor == nullptr) {
+        if (anchor != nullptr) {
+            car_world_position = &reinterpret_cast<CameraAnchorLayout *>(anchor)->mGeomPos;
+        } else {
             static bVector3 sCarWorldPosition_31751;
             static int tmp_45_31752;
 
@@ -3682,8 +3684,6 @@ void UpdateEnvironmentMapCameras() {
                     car_world_position = &sCarWorldPosition_31751;
                 }
             }
-        } else {
-            car_world_position = &reinterpret_cast<CameraAnchorLayout *>(anchor)->mGeomPos;
         }
     }
 
@@ -3737,9 +3737,7 @@ void RenderFEFlares(eView *, int) {}
 
 void RenderFrontEndCars(eView *view, int reflection) {
     if (DrawCars != 0) {
-        bool reflection_pass = reflection != 0;
-
-        if (reflection_pass) {
+        if (reflection) {
             FEManager *fe_manager = FEManager::Get();
             if (fe_manager->GetGarageType() == GARAGETYPE_CAR_LOT) {
                 return;
@@ -3757,7 +3755,7 @@ void RenderFrontEndCars(eView *view, int reflection) {
                 bMatrix4 body_matrix(front_end_car->BodyMatrix);
                 bVector3 position(front_end_car->Position.x, front_end_car->Position.y, front_end_car->Position.z);
 
-                if (reflection_pass) {
+                if (reflection) {
                     float offset_scale =
                         *reinterpret_cast<float *>(*reinterpret_cast<int *>(reinterpret_cast<unsigned char *>(render_info) + 0x1764) + 0xF4);
 
@@ -3770,7 +3768,7 @@ void RenderFrontEndCars(eView *view, int reflection) {
                 }
 
                 render_info->Render(view, &position, &body_matrix, front_end_car->TireMatrices, front_end_car->BrakeMatrices,
-                                    front_end_car->TireMatrices, reflection_pass, 0, reflection, 1.0f, lod, lod);
+                                    front_end_car->TireMatrices, reflection, 0, reflection, 1.0f, lod, lod);
             }
         }
     }
