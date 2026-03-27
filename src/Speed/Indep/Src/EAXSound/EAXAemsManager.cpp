@@ -620,6 +620,7 @@ void EAXAemsManager::SetupNextLoad() {
         m_nCurLoadedBankIndex++;
         m_pCurLoadSDLP = g_SndAssetList + m_nCurLoadedBankIndex;
         if (InitiateLoad() < 0) {
+            Attrib::StringKey fileName = m_pCurLoadSDLP->AssetDescription.FileName;
             SndBase *SfxToDel[32];
             SndAssetQueue::iterator i;
             int deleteCount = 0;
@@ -627,13 +628,9 @@ void EAXAemsManager::SetupNextLoad() {
             bMemSet(SfxToDel, '\0', 0x80);
             while (true) {
                 i = mWaitForResolve.begin();
-                if (i == mWaitForResolve.end()) {
-                    break;
-                }
-
-                while (true) {
+                while (i != mWaitForResolve.end()) {
                     stSndAssetQueue currequst = *i;
-                    if (currequst.Asset.FileName == m_pCurLoadSDLP->AssetDescription.FileName) {
+                    if (currequst.Asset.FileName == fileName) {
                         mWaitForResolve.remove(currequst);
                         SfxToDel[deleteCount] = currequst.pThis;
                         deleteCount++;
@@ -641,10 +638,9 @@ void EAXAemsManager::SetupNextLoad() {
                     }
 
                     ++i;
-                    if (i == mWaitForResolve.end()) {
-                        goto RemoveQueuedLoads;
-                    }
                 }
+
+                goto RemoveQueuedLoads;
 
             ContinueScanning:
                 ;
@@ -654,11 +650,7 @@ void EAXAemsManager::SetupNextLoad() {
         RemoveQueuedLoads:
             do {
                 i = mWaitForResolve.begin();
-                while (true) {
-                    if (i == mWaitForResolve.end()) {
-                        goto ContinueDeleting;
-                    }
-
+                while (i != mWaitForResolve.end()) {
                     stSndAssetQueue currequst = *i;
                     if (SfxToDel[deleteCount] == currequst.pThis) {
                         mWaitForResolve.remove(currequst);
