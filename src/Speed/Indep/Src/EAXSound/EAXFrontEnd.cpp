@@ -78,8 +78,11 @@ int EAXFrontEnd::Play(eMenuSoundTriggers etrigger) {
     testID = static_cast<int>(etrigger);
     adjusted = testID + 23;
     if (static_cast<unsigned int>(testID - 80) < 16 && adjusted != 0x6E && adjusted != 0x6F) {
+        int pitch = 0x1000;
+        int azimuth = 0;
+
         delete m_pPlayRapSheet;
-        m_pPlayRapSheet = new PlayFrontEndSample_RS(testID, nvol, 0x1000, 0);
+        m_pPlayRapSheet = new PlayFrontEndSample_RS(testID, nvol, pitch, azimuth);
     } else {
         int getref;
 

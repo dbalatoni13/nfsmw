@@ -74,9 +74,9 @@ struct PlayCommonSample {
     void SetVolume(int x) {
         int volume = x;
 
-        if (volume < 0) {
+        if (x < 0) {
             volume = 0;
-        } else if (volume > 0x7FFF) {
+        } else if (x > 0x7FFF) {
             volume = 0x7FFF;
         }
         mData.volume = volume;
@@ -176,9 +176,9 @@ struct PlayFrontEndSample {
     void SetVolume(int x) {
         int volume = x;
 
-        if (volume < 0) {
+        if (x < 0) {
             volume = 0;
-        } else if (volume > 0x7FFF) {
+        } else if (x > 0x7FFF) {
             volume = 0x7FFF;
         }
         mData.volume = volume;
@@ -238,7 +238,8 @@ struct PlayFrontEndSample {
         SetPitch(pitch);
         SetAzimuth(azimuth);
 
-        int result = Csis::Class::CreateInstance(&Csis::gPlayFrontEndSampleHandle, &mData, &mpClass);
+        Csis::System::Result result =
+            static_cast<Csis::System::Result>(Csis::Class::CreateInstance(&Csis::gPlayFrontEndSampleHandle, &mData, &mpClass));
         if (result < 0) {
             Csis::gPlayFrontEndSampleHandle.Set(&Csis::PlayFrontEndSampleId);
             Csis::Class::CreateInstance(&Csis::gPlayFrontEndSampleHandle, &mData, &mpClass);
@@ -276,12 +277,14 @@ struct PlayFrontEndSample_RS {
     }
 
     void SetVolume(int x) {
+        int volume = x;
+
         if (x < 0) {
-            x = 0;
+            volume = 0;
         } else if (x > 0x7FFF) {
-            x = 0x7FFF;
+            volume = 0x7FFF;
         }
-        mData.volume = x;
+        mData.volume = volume;
     }
 
     int GetVolume() {
@@ -330,7 +333,8 @@ struct PlayFrontEndSample_RS {
         SetPitch(pitch);
         SetAzimuth(azimuth);
 
-        int result = Csis::Class::CreateInstance(&Csis::gPlayFrontEndSample_RSHandle, &mData, &mpClass);
+        Csis::System::Result result =
+            static_cast<Csis::System::Result>(Csis::Class::CreateInstance(&Csis::gPlayFrontEndSample_RSHandle, &mData, &mpClass));
         if (result < 0) {
             Csis::gPlayFrontEndSample_RSHandle.Set(&Csis::PlayFrontEndSample_RSId);
             Csis::Class::CreateInstance(&Csis::gPlayFrontEndSample_RSHandle, &mData, &mpClass);
