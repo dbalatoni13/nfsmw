@@ -4397,7 +4397,8 @@ void CarRenderInfo::DrawKeithProjShadow(eView *view, const bVector3 *position, b
                                 exAddUV(lbl_8040ADA0, lbl_8040ADAC);
                             }
 
-                            if (n <= loopIndex) {
+                            if (loopIndex < n) {
+                            } else {
                                 loopIndex = 0;
                             }
 
