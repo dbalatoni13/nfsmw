@@ -1465,6 +1465,7 @@ void EAXSound::UnloadFrontEndSoundBanks() {
     if (!IsSoundEnabled) {
         return;
     }
+    int n;
 
     if (IsSpeechEnabled) {
         gSpeechCache.Validate();
@@ -1478,11 +1479,11 @@ void EAXSound::UnloadFrontEndSoundBanks() {
 
     Speech::Manager::Destroy();
 
-    if (m_pFESnd) {
-        m_pFESnd->DestroyAllDriveOnSnds();
+    if (GetFrontEnd()) {
+        GetFrontEnd()->DestroyAllDriveOnSnds();
     }
 
-    for (int n = 0; n < 13; n++) {
+    for (n = 0; n < 13; n++) {
         if (m_pStateMgr[n]) {
             m_pStateMgr[n]->ExitWorld();
         }
@@ -1499,11 +1500,15 @@ void EAXSound::UnloadFrontEndSoundBanks() {
         *(reinterpret_cast<int *>(m_pNFSLiveLink) + 1) = 0;
     }
 
-    delete m_pFESnd;
-    m_pFESnd = nullptr;
+    if (m_pFESnd) {
+        delete m_pFESnd;
+        m_pFESnd = nullptr;
+    }
 
-    delete m_pCmnSnd;
-    m_pCmnSnd = nullptr;
+    if (m_pCmnSnd) {
+        delete m_pCmnSnd;
+        m_pCmnSnd = nullptr;
+    }
 
     while (gAEMSMgr.m_nEndOfList != 0) {
         gAEMSMgr.UnloadSndData(0);
@@ -1633,16 +1638,14 @@ void EAXSound::UnLoadInGameSoundBanks() {
         m_pStateMgr[0]->ExitWorld();
     }
 
-    if (m_pStreamManager != nullptr) {
-        delete m_pStreamManager;
-        m_pStreamManager = nullptr;
-    }
+    delete m_pStreamManager;
+    m_pStreamManager = nullptr;
 
-    for (int i = 0; i < 12; i++) {
-        if (SFXObj_Reverb::m_pFXEditPatch[i] != nullptr) {
-            gAudioMemoryManager.FreeMemory(SFXObj_Reverb::m_pFXEditPatch[i]);
+    for (int n = 0; n < 12; n++) {
+        if (SFXObj_Reverb::m_pFXEditPatch[n] != nullptr) {
+            gAudioMemoryManager.FreeMemory(SFXObj_Reverb::m_pFXEditPatch[n]);
         }
-        SFXObj_Reverb::m_pFXEditPatch[i] = nullptr;
+        SFXObj_Reverb::m_pFXEditPatch[n] = nullptr;
     }
 
     if (m_pCmnSnd != nullptr) {
