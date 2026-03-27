@@ -251,7 +251,7 @@ void cSampleWarpper::operator delete(void *ptr) {
 
 cSampleWarpper::~cSampleWarpper() {
     Destroy();
-    for (int i = 0; i < MAX_NUM_STICH_TYPE; i++) {
+    for (unsigned int i = 0; i < MAX_NUM_STICH_TYPE; i++) {
         RemoveFromSampleList(this, static_cast<STICH_TYPE>(i));
     }
 }
