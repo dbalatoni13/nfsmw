@@ -4384,8 +4384,8 @@ void CarRenderInfo::DrawKeithProjShadow(eView *view, const bVector3 *position, b
 
                             for (; loopIndex < endIndex; loopIndex++) {
                                 bVector3 *edge = &shadowVertices[loopIndex];
-                                bVector3 edgeVertex(*edge);
-                                bVector3 inner(edgeVertex);
+                                bVector3 inner(*edge);
+                                bVector3 edgeVertex(inner);
 
                                 inner.x = FancyCarShadowEdgeMult * (edgeVertex.x - shadowCenter.x) + shadowCenter.x;
                                 inner.y = FancyCarShadowEdgeMult * (edgeVertex.y - shadowCenter.y) + shadowCenter.y;
@@ -4404,8 +4404,8 @@ void CarRenderInfo::DrawKeithProjShadow(eView *view, const bVector3 *position, b
 
                             {
                                 bVector3 *edge = &shadowVertices[loopIndex];
-                                bVector3 edgeVertex(*edge);
-                                bVector3 inner(edgeVertex);
+                                bVector3 inner(*edge);
+                                bVector3 edgeVertex(inner);
 
                                 inner.x = FancyCarShadowEdgeMult * (edgeVertex.x - shadowCenter.x) + shadowCenter.x;
                                 inner.y = FancyCarShadowEdgeMult * (edgeVertex.y - shadowCenter.y) + shadowCenter.y;
