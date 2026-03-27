@@ -7,6 +7,7 @@
 
 #include "AnimMemoryMap.h"
 #include "FnAnimMemoryMap.h"
+#include "eagl4supportdef.h"
 
 namespace EAGL4Anim {
 
@@ -17,7 +18,9 @@ class RawStateChan : public AnimMemoryMap {
 
     // void *operator new(size_t size, const char *msg) {}
 
-    // void operator delete(void *ptr, size_t size) {}
+    void operator delete(void *ptr, size_t size) {
+        EAGL4Internal::EAGL4Free(ptr, size);
+    }
 
     // void *operator new[](size_t size) {}
 
@@ -29,23 +32,35 @@ class RawStateChan : public AnimMemoryMap {
 
     void SetNumFrames(unsigned short n) {}
 
-    unsigned short GetNumFrames() const {}
+    unsigned short GetNumFrames() const {
+        return mNumFrames;
+    }
 
     void SetNumKeys(unsigned short n) {}
 
-    unsigned short GetNumKeys() const {}
+    unsigned short GetNumKeys() const {
+        return mNumKeys;
+    }
 
     void SetKeySize(unsigned char n) {}
 
-    unsigned char GetKeySize() const {}
+    unsigned char GetKeySize() const {
+        return mKeySize;
+    }
 
     void SetNumFields(unsigned char n) {}
 
-    unsigned char GetNumFields() const {}
+    unsigned char GetNumFields() const {
+        return mNumFields;
+    }
 
-    const unsigned short *GetDecodeData() const {}
+    const unsigned short *GetDecodeData() const {
+        return mDecodeData;
+    }
 
-    unsigned short *GetDecodeData() {}
+    unsigned short *GetDecodeData() {
+        return mDecodeData;
+    }
 
     int GetSize() const {}
 
@@ -74,7 +89,9 @@ class FnRawStateChan : public FnAnimMemoryMap {
 
     // void *operator new(size_t size, const char *msg) {}
 
-    // void operator delete(void *ptr, size_t size) {}
+    void operator delete(void *ptr, size_t size) {
+        EAGL4Internal::EAGL4Free(ptr, size);
+    }
 
     // void *operator new[](size_t size) {}
 
@@ -91,13 +108,13 @@ class FnRawStateChan : public FnAnimMemoryMap {
     }
 
     // Overrides: FnAnimSuper
-    ~FnRawStateChan() override {}
+    ~FnRawStateChan() override;
 
     // Overrides: FnAnim
-    bool GetLength(float &timeLength) const override {}
+    bool GetLength(float &timeLength) const override;
 
     // Overrides: FnAnim
-    void Eval(float, float time, float *dofs) override {}
+    void Eval(float, float time, float *dofs) override;
 
     void Decode(unsigned char *src, unsigned char *dest) const;
 

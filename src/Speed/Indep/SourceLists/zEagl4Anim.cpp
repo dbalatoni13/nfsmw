@@ -34,7 +34,11 @@
 
 #include "Speed/Indep/Src/EAGL4Anim/FnDeltaSingleQ.cpp"
 
+#include "Speed/Indep/Src/EAGL4Anim/FnEventBlender.cpp"
+
 #include "Speed/Indep/Src/EAGL4Anim/FnPoseAnim.cpp"
+
+#include "Speed/Indep/Src/EAGL4Anim/eagl4runtimetransform.cpp"
 
 #include "Speed/Indep/Src/EAGL4Anim/FnPoseBlender.cpp"
 
@@ -67,5 +71,7 @@
 #include "Speed/Indep/Src/EAGL4Anim/StatelessF3.cpp"
 
 #include "Speed/Indep/Src/EAGL4Anim/StatelessQ.cpp"
+
+#include "Speed/Indep/Src/EAGL4Anim/SystemCmn.cpp"
 
 #include "Speed/Indep/Src/EAGL4Anim/system.cpp"

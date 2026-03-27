@@ -19,11 +19,10 @@ class DynamicLoader {
   public:
     // total size: 0x10
     struct Symbol {
-        // TODO is this constructor correct? or is it empty maybe?
-        Symbol()
-            : name(nullptr), //
-              data(nullptr)  //
-        {}
+        Symbol() {
+            name = nullptr;
+            data = nullptr;
+        }
 
         const char *name;   // offset 0x0, size 0x4
         const char *type;   // offset 0x4, size 0x4
@@ -54,7 +53,7 @@ class DynamicLoader {
 
     // bool IsResolved() {}
 
-    // void *ELFAddr(unsigned int offset) {}
+    void *ELFAddr(unsigned int offset);
 
     DynamicLoader(void *d, unsigned int len, DynamicUserCallback pSearchFunction);
 
@@ -253,7 +252,7 @@ enum ELF32_SHN_TYPES { SHN_UNDEF = 0, SHN_MIPS_ACCOMON = 65280, SHN_ABS = 65521,
 
 // total size: 0x430
 struct HashPointer {
-    // void *operator new(size_t size) {}
+    void *operator new(size_t size);
 
     // void *operator new(size_t size, const char *msg) {}
 
@@ -277,9 +276,7 @@ struct HashPointer {
         return *mpDynamicLoader;
     }
 
-    HashPointer(DynamicLoader *pDL) {
-        mpDynamicLoader = pDL;
-    }
+    HashPointer(DynamicLoader *pDL);
 
     ~HashPointer() {}
 

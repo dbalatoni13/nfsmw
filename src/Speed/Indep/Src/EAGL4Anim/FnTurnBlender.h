@@ -7,6 +7,7 @@
 
 #include "FnAnim.h"
 #include "Skeleton.h"
+#include "eagl4supportdef.h"
 
 namespace EAGL4Anim {
 
@@ -17,7 +18,9 @@ class FnTurnBlender : public FnAnim {
 
     // void *operator new(size_t size, const char *msg) {}
 
-    // void operator delete(void *ptr, size_t size) {}
+    void operator delete(void *ptr, size_t size) {
+        EAGL4Internal::EAGL4Free(ptr, size);
+    }
 
     // void *operator new[](size_t size) {}
 
@@ -45,7 +48,7 @@ class FnTurnBlender : public FnAnim {
     void SetAnims(Skeleton *s, int numAnims, FnAnim **anims);
 
     // Overrides: FnAnim
-    bool EvalPhase(float) override;
+    bool EvalPhase(float currTime, PhaseValue &phase) override;
 
     // Overrides: FnAnim
     bool EvalVel2D(float currTime, float *vel) override;

@@ -22,13 +22,13 @@ class FnPoseBlender : public FnAnim {
     }
 
     // Overrides: FnAnimSuper
-    ~FnPoseBlender() override {}
+    ~FnPoseBlender() override;
 
     // void *operator new(size_t size) {}
 
     // void *operator new(size_t size, const char *msg) {}
 
-    // void operator delete(void *ptr, size_t size) {}
+    void operator delete(void *ptr, size_t size);
 
     // void *operator new[](size_t size) {}
 

@@ -133,4 +133,26 @@ inline int bIsBFunkAvailable() {
 
 unsigned int bCalculateCrc32(const void *data, int size, unsigned int prev_crc32);
 
+inline int bMemoryGetPoolNum(int allocation_params) {
+    return allocation_params & 0xf;
+}
+
+inline int bMemoryGetAlignment(int allocation_params) {
+    int alignment = allocation_params >> 6 & 0x1ffc;
+
+    return alignment;
+}
+
+inline int bMemoryGetBestFit(int allocation_params) {
+    return allocation_params & 0x80;
+}
+
+inline int bMemoryGetTopBit(int allocation_params) {
+    return allocation_params & 0x40;
+}
+
+inline int bMemoryGetAlignmentOffset(int allocation_params) {
+    return (allocation_params >> 17) & 0x1ffc;
+}
+
 #endif

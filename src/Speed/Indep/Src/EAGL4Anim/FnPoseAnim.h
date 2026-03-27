@@ -7,6 +7,7 @@
 
 #include "FnAnimMemoryMap.h"
 #include "PosePalette.h"
+#include "eagl4supportdef.h"
 
 namespace EAGL4Anim {
 
@@ -17,7 +18,9 @@ class FnPoseAnim : public FnAnimMemoryMap {
 
     // void *operator new(size_t size, const char *msg) {}
 
-    // void operator delete(void *ptr, size_t size) {}
+    void operator delete(void *ptr, size_t size) {
+        EAGL4Internal::EAGL4Free(ptr, size);
+    }
 
     // void *operator new[](size_t size) {}
 
@@ -28,9 +31,6 @@ class FnPoseAnim : public FnAnimMemoryMap {
     void *operator new(size_t, void *ptr) {
         return ptr;
     }
-
-    // Overrides: FnAnimSuper
-    ~FnPoseAnim() override {}
 
     static void PatchVtbl(FnPoseAnim *poseAnim) {}
 
@@ -46,7 +46,7 @@ class FnPoseAnim : public FnAnimMemoryMap {
     bool EvalPose(float currTime, const PosePaletteBank *paletteBank, float *sqt) override;
 
     // Overrides: FnAnim
-    unsigned short GetTargetCheckSum() const override {}
+    unsigned short GetTargetCheckSum() const override;
 
   protected:
     unsigned short mPrevKey; // offset 0x10, size 0x2

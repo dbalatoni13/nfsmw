@@ -22,9 +22,21 @@ struct DeltaSingleQMinRangef {
 
 // total size: 0xE
 struct DeltaSingleQMinRange {
-    void GetAlignment(float &c0, float &c1) {}
+    void GetAlignment(float &c0, float &c1) {
+        c0 = mConst0 * 9.5875265e-5f + -3.1415927f;
+        c1 = mConst1 * 9.5875265e-5f + -3.1415927f;
+    }
 
-    void UnQuantize(DeltaSingleQMinRangef &minRangef) {}
+    void UnQuantize(DeltaSingleQMinRangef &minRangef) {
+        const float RangeScale16Bit = 3.0518044e-5f;
+
+        minRangef.mMin[0] = mMin[0] * RangeScale16Bit - 1.0f;
+        minRangef.mMin[1] = mMin[1] * RangeScale16Bit - 1.0f;
+        minRangef.mRange[0] = mRange[0] * 8.1381455e-6f;
+        minRangef.mRange[1] = mRange[1] * 8.1381455e-6f;
+        minRangef.mIndex = static_cast<unsigned char>(mIndex);
+        GetAlignment(minRangef.mConst0, minRangef.mConst1);
+    }
 
     unsigned short mConst0;   // offset 0x0, size 0x2
     unsigned short mConst1;   // offset 0x2, size 0x2
@@ -35,7 +47,22 @@ struct DeltaSingleQMinRange {
 
 // total size: 0x2
 struct DeltaSingleQPhysical {
-    void UnQuantize(int index, UMath::Vector4 &q) const {}
+    void UnQuantize(int index, UMath::Vector4 &q) const {
+        const float RangeScale8Bit = 7.8431377e-3f;
+
+        q.z = 0.0f;
+        q.y = 0.0f;
+        q.x = 0.0f;
+
+        if (index == 0) {
+            q.x = mV * RangeScale8Bit - 1.0f;
+        } else if (index == 1) {
+            q.y = mV * RangeScale8Bit - 1.0f;
+        } else {
+            q.z = mV * RangeScale8Bit - 1.0f;
+        }
+        q.w = mW * RangeScale8Bit - 1.0f;
+    }
 
     unsigned char mV; // offset 0x0, size 0x1
     unsigned char mW; // offset 0x1, size 0x1
@@ -43,7 +70,20 @@ struct DeltaSingleQPhysical {
 
 // total size: 0x1
 struct DeltaSingleQDelta {
-    void UnQuantize(const DeltaSingleQMinRangef &minRangef, UMath::Vector4 &q) {}
+    void UnQuantize(const DeltaSingleQMinRangef &minRangef, UMath::Vector4 &q) {
+        q.z = 0.0f;
+        q.y = 0.0f;
+        q.x = 0.0f;
+
+        if (minRangef.mIndex == 0) {
+            q.x = minRangef.mRange[0] * mV + minRangef.mMin[0];
+        } else if (minRangef.mIndex == 1) {
+            q.y = minRangef.mRange[0] * mV + minRangef.mMin[0];
+        } else {
+            q.z = minRangef.mRange[0] * mV + minRangef.mMin[0];
+        }
+        q.w = minRangef.mRange[1] * mW + minRangef.mMin[1];
+    }
 
     unsigned char mV : 4; // offset 0x0, size 0x1
     unsigned char mW : 4; // offset 0x0, size 0x1
@@ -78,11 +118,16 @@ struct DeltaSingleQ : public AnimMemoryMap {
         return result;
     }
 
-    void GetArrays(DeltaSingleQMinRange *&minRanges, unsigned char *&binStart) {}
+    void GetArrays(DeltaSingleQMinRange *&minRanges, unsigned char *&binStart) {
+        unsigned char *memBytes = reinterpret_cast<unsigned char *>(&this[1]);
+
+        minRanges = reinterpret_cast<DeltaSingleQMinRange *>(memBytes);
+        binStart = &memBytes[mNumBones * sizeof(DeltaSingleQMinRange)];
+    }
 
     int GetBinSize() const {
-        // TODO
-        // return AlignSize2(3 * ((GetBinLength() - 1) * mNumBones));
+        return static_cast<int>(AlignSize2((mNumBones * sizeof(DeltaSingleQPhysical)) +
+                                           ((GetBinLength() - 1) * mNumBones * sizeof(DeltaSingleQDelta))));
     }
 
     DeltaSingleQMinRange *GetMinRange() {
@@ -91,16 +136,19 @@ struct DeltaSingleQ : public AnimMemoryMap {
     }
 
     unsigned char *GetBin(int binIdx) {
-        // const int bs = GetBinSize();
-        // unsigned char *memPos = &reinterpret_cast<unsigned char *>(GetMinRange())[mNumBones * sizeof(DeltaSingleQMinRange)];
-        // return &memPos[binIdx * bs];
+        const int bs = GetBinSize();
+        unsigned char *memPos = &reinterpret_cast<unsigned char *>(GetMinRange())[mNumBones * sizeof(DeltaSingleQMinRange)];
+        return &memPos[binIdx * bs];
     }
 
     DeltaSingleQPhysical *GetPhysical(unsigned char *binData) {
         return reinterpret_cast<DeltaSingleQPhysical *>(binData);
     }
 
-    DeltaSingleQDelta *GetDelta(unsigned char *binData, int deltaIdx) {}
+    DeltaSingleQDelta *GetDelta(unsigned char *binData, int deltaIdx) {
+        return reinterpret_cast<DeltaSingleQDelta *>(&binData[mNumBones * sizeof(DeltaSingleQPhysical) +
+                                                              (deltaIdx * mNumBones * sizeof(DeltaSingleQDelta))]);
+    }
 
     unsigned short *GetConstBoneIdx() {
         unsigned int binLen = GetBinLength();

@@ -195,6 +195,9 @@ struct ePositionMarker {
     void EndianSwap() {}
 };
 
+struct eModel;
+struct eLightContext;
+
 class eViewPlatInfo;
 
 // total size: 0x4
@@ -212,6 +215,7 @@ class eViewPlatInterface {
     static eViewPlatInfo *GimmeMyViewPlatInfo(int view_id);
     eVisibleState GetVisibleStateGB(const bVector3 *aabb_min, const bVector3 *aabb_max, bMatrix4 *local_world);
     eVisibleState GetVisibleStateSB(const bVector3 *aabb_min, const bVector3 *aabb_max, bMatrix4 *local_world);
+    void Render(eModel *model, bMatrix4 *local_to_world, eLightContext *light_context, unsigned int flags, bMatrix4 *blending_matricies);
 };
 
 struct eLoadedSolidStats {

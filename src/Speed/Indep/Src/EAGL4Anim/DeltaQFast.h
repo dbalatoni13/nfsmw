@@ -27,7 +27,14 @@ struct DeltaQFastMinRange {
 
 // total size: 0x6
 struct DeltaQFastPhysical {
-    void UnQuantize(UMath::Vector4 &q) const {}
+    void UnQuantize(UMath::Vector4 &q) const {
+        unsigned short w = static_cast<unsigned short>((mW0 << 8) | (mW1 << 4) | mW2);
+
+        q.x = static_cast<float>(mX) * 4.8840049e-4f - 1.0002443f;
+        q.y = static_cast<float>(mY) * 4.8840049e-4f - 1.0002443f;
+        q.z = static_cast<float>(mZ) * 4.8840049e-4f - 1.0002443f;
+        q.w = static_cast<float>(w) * 4.8840049e-4f - 1.0002443f;
+    }
 
     unsigned short mX : 12; // offset 0x0, size 0x2
     unsigned short mW0 : 4; // offset 0x0, size 0x2
@@ -39,7 +46,14 @@ struct DeltaQFastPhysical {
 
 // total size: 0x3
 struct DeltaQFastDelta {
-    void UnQuantize(const DeltaQFastMinRangef &minRangef, UMath::Vector4 &q) const {}
+    void UnQuantize(const DeltaQFastMinRangef &minRangef, UMath::Vector4 &q) const {
+        unsigned char w = static_cast<unsigned char>((mW0 << 4) | (mW1 << 2) | mW2);
+
+        q.x = minRangef.mMin.x + minRangef.mRange.x * static_cast<float>(mX) * 1.5873017e-2f;
+        q.y = minRangef.mMin.y + minRangef.mRange.y * static_cast<float>(mY) * 1.5873017e-2f;
+        q.z = minRangef.mMin.z + minRangef.mRange.z * static_cast<float>(mZ) * 1.5873017e-2f;
+        q.w = minRangef.mMin.w + minRangef.mRange.w * static_cast<float>(w) * 1.5873017e-2f;
+    }
 
     unsigned char mX : 6;  // offset 0x0, size 0x1
     unsigned char mW0 : 2; // offset 0x0, size 0x1
@@ -69,7 +83,7 @@ struct DeltaQFast : public AnimMemoryMap {
         return 1 << mBinLengthPower;
     }
 
-    unsigned char GetBinLengthPower() const {
+    unsigned int GetBinLengthPower() const {
         return mBinLengthPower;
     }
 
@@ -78,11 +92,15 @@ struct DeltaQFast : public AnimMemoryMap {
         return result;
     }
 
-    void GetArrays(DeltaQFastMinRange *&minRanges, unsigned char *&binStart, unsigned char *&constBoneIndices, DeltaQFastPhysical *&constPhysical) {}
+    void GetArrays(DeltaQFastMinRange *&minRanges, unsigned char *&binStart, unsigned char *&constBoneIndices, DeltaQFastPhysical *&constPhysical) {
+        minRanges = GetMinRange();
+        binStart = GetBin(0);
+        constBoneIndices = reinterpret_cast<unsigned char *>(GetConstBoneIdx());
+        constPhysical = reinterpret_cast<DeltaQFastPhysical *>(GetConstPhysical());
+    }
 
     int GetBinSize() const {
-        // TODO
-        return AlignSize2(3 * ((GetBinLength() - 1) * mNumBones));
+        return AlignSize2(mNumBones * (6 + ((GetBinLength() - 1) * 3)));
     }
 
     DeltaQFastMinRange *GetMinRange() {
@@ -100,27 +118,13 @@ struct DeltaQFast : public AnimMemoryMap {
         return reinterpret_cast<DeltaQFastPhysical *>(binData);
     }
 
-    DeltaQFastDelta *GetDelta(unsigned char *binData, int deltaIdx) {}
-
-    unsigned short *GetConstBoneIdx() {
-        unsigned int binLen = GetBinLength();
-        const int binSize = GetBinSize();
-        // TODO it's out of line
-        // int numBins = mNumFrames >> GetBinLengthPower(); // r8
-        // // get to the end of the bins
-        // unsigned char *s = &GetBin(0)[binSize * numBins]; // r11
-        // int r = mNumFrames & GetBinLengthModMask();       // r31
-
-        // if (r > 0) {
-        //     s = reinterpret_cast<unsigned char *>(AlignSize2((intptr_t)s + mNumBones * 2 + (r - 1) * GetFrameDeltaSize()));
-        // }
-
-        return reinterpret_cast<unsigned short *>(nullptr);
+    DeltaQFastDelta *GetDelta(unsigned char *binData, int deltaIdx) {
+        return reinterpret_cast<DeltaQFastDelta *>(&binData[mNumBones * 6 + deltaIdx * mNumBones * 3]);
     }
 
-    float *GetConstPhysical() {
-        // return reinterpret_cast<float *>(AlignSize4(reinterpret_cast<intptr_t>(&GetConstBoneIdx()[mNumConstBones])));
-    }
+    unsigned char *GetConstBoneIdx();
+
+    DeltaQFastPhysical *GetConstPhysical();
 
     unsigned short mNumKeys;       // offset 0x4, size 0x2
     unsigned char mNumBones;       // offset 0x6, size 0x1

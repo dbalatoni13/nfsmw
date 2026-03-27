@@ -136,9 +136,6 @@ class FnDeltaLerpChan : public FnDeltaChan {
         mType = AnimTypeId::ANIM_DELTALERP;
     }
 
-    // Overrides: FnAnimSuper
-    ~FnDeltaLerpChan() override {}
-
     // Overrides: FnAnim
     void Eval(float prevTime, float currTime, float *evalBuffer) override;
 
@@ -179,9 +176,6 @@ class FnDeltaQuatChan : public FnDeltaChan {
     FnDeltaQuatChan() {
         mType = AnimTypeId::ANIM_DELTAQUAT;
     }
-
-    // Overrides: FnAnimSuper
-    ~FnDeltaQuatChan() override {}
 
     // Overrides: FnAnim
     void Eval(float prevTime, float currTime, float *evalBuffer) override;
@@ -356,9 +350,6 @@ class FnKeyLerpChan : public FnKeyDeltaChan {
         mType = AnimTypeId::ANIM_KEYLERP;
     }
 
-    // Overrides: FnAnimSuper
-    ~FnKeyLerpChan() override {}
-
     // Overrides: FnAnim
     void Eval(float prevTime, float currTime, float *evalBuffer) override;
 
@@ -393,9 +384,6 @@ class FnKeyQuatChan : public FnKeyDeltaChan {
     FnKeyQuatChan() {
         mType = AnimTypeId::ANIM_KEYQUAT;
     }
-
-    // Overrides: FnAnimSuper
-    ~FnKeyQuatChan() override {}
 
     // Overrides: FnAnim
     void Eval(float prevTime, float currTime, float *evalBuffer) override;

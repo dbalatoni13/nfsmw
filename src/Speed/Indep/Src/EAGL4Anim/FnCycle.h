@@ -1,11 +1,12 @@
 #ifndef EAGL4ANIM_FNCYCLE_H
 #define EAGL4ANIM_FNCYCLE_H
 
-#include "Speed/Indep/Src/EAGL4Anim/eagl4supportdef.h"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
 
+#include "Speed/Indep/Src/EAGL4Anim/eagl4supportdef.h"
+#include "AnimUtil.h"
 #include "FnAnim.h"
 
 namespace EAGL4Anim {
@@ -42,30 +43,61 @@ class FnCycle : public FnAnim {
         mpAnim = anim;
         mStartTime = startTime;
         mEndTime = endTime;
+        mLength = endTime - startTime;
     }
 
     FnAnim *GetAnim() {
         return mpAnim;
     }
 
-    float GetStartTime() const {}
+    float GetStartTime() const {
+        return mStartTime;
+    }
 
-    float GetEndTime() const {}
-
-    // Overrides: FnAnim
-    void Eval(float previousTime, float currentTime, float *dofs) override {}
-
-    // Overrides: FnAnim
-    bool EvalEvent(float previousTime, float currentTime, EventHandler **eventHandlers, void *extraData) override {}
-
-    // Overrides: FnAnim
-    bool EvalSQT(float currentTime, float *sqt, const BoneMask *boneMask) override {}
-
-    // Overrides: FnAnim
-    bool EvalPhase(float currentTime, PhaseValue &phase) override {}
+    float GetEndTime() const {
+        return mEndTime;
+    }
 
   private:
-    float GetInRangeTime(float t) const {}
+    float GetInRangeTime(float t) const {
+        float tmp;
+        int n;
+
+        if (t < mStartTime) {
+            tmp = t - mStartTime;
+            n = FloatToInt(tmp / mLength);
+            return mEndTime - (tmp - static_cast<float>(n) * mLength);
+        }
+
+        if (t <= mEndTime) {
+            return t;
+        }
+
+        tmp = t - mEndTime;
+        n = FloatToInt(tmp / mLength);
+        return mStartTime + (tmp - static_cast<float>(n) * mLength);
+    }
+
+  public:
+    // Overrides: FnAnim
+    void Eval(float previousTime, float currentTime, float *dofs) override {
+        mpAnim->Eval(GetInRangeTime(previousTime), GetInRangeTime(currentTime), dofs);
+    }
+
+    // Overrides: FnAnim
+    bool EvalEvent(float previousTime, float currentTime, EventHandler **eventHandlers, void *extraData) override {
+        return mpAnim->EvalEvent(GetInRangeTime(previousTime), GetInRangeTime(currentTime), eventHandlers, extraData);
+    }
+
+    // Overrides: FnAnim
+    bool EvalSQT(float currentTime, float *sqt, const BoneMask *boneMask) override {
+        return mpAnim->EvalSQT(GetInRangeTime(currentTime), sqt, boneMask);
+    }
+
+    // Overrides: FnAnim
+    bool EvalPhase(float currentTime, PhaseValue &phase) override {
+        return mpAnim->EvalPhase(GetInRangeTime(currentTime), phase);
+    }
 
     float mStartTime; // offset 0xC, size 0x4
     float mEndTime;   // offset 0x10, size 0x4

@@ -11,6 +11,9 @@ the produced C++ compiles to byte-identical object code against the original ret
 
 For each function, "done" means both objdiff and normalized DWARF are exact.
 
+Human review is not a substitute for running `dwarf compare`. Each function should hit
+its own `verify` gate before you treat it as ready to hand off, commit, or move past.
+
 ## Overview
 
 This workflow combines several smaller workflows:
@@ -88,6 +91,10 @@ definition does not yet exist in the project, follow the scaffold workflow in
 `.github/skills/scaffold/SKILL.md` to create the needed header/source definitions
 before moving on.
 
+Treat recovered types here as copied reference data, not as hand-designed headers. Copy
+the GC DWARF type body into the canonical owner header first and preserve its declaration
+order unless PS2 or existing repo-header evidence proves a specific correction.
+
 ## Phase 3: Implement Functions
 
 ### 3a. Get the updated function list
@@ -113,6 +120,9 @@ For each missing or nonmatching function, follow the implementation workflow in
 - **One at a time.** Keep the tree in a coherent state as you work through the list.
 - **Balance new vs fixing.** Don't get stuck on one stubborn function — sometimes
   implementing the next function reveals patterns that make the previous one click.
+- **Recovered types are not freeform.** If a function forces you to add or fix a type,
+  copy the DWARF layout into the owner header first. Do not sketch structs/classes from
+  use sites or reorder declarations just to make the header look nicer.
 - **Mismatch triage:**
   - `@stringBase0` offset mismatches often resolve as more string literals are added
     - If you need to inspect the original string or rodata at a virtual address, use `python tools/elf_lookup.py 0xADDR`
@@ -152,6 +162,10 @@ python tools/decomp-workflow.py verify -u main/Path/To/TU -f FunctionName
 If it fails, follow up with `decomp-workflow.py diff` and `decomp-workflow.py dwarf`
 until both checks pass.
 
+Do not queue up several "probably done" functions and leave the DWARF check for later.
+Close the `verify` gate per function before moving on whenever feasible; otherwise the
+reviewer ends up doing avoidable DWARF triage.
+
 ### 3g. Periodic reassessment
 
 After every few functions, re-run the full status check:
@@ -189,6 +203,8 @@ For any remaining nonmatching functions, make one final pass using the implement
 or refiner workflow with all context accumulated during the session.
 
 Do not report a function as complete unless its per-function `verify` check also passes.
+Do not hand a function to review as "done except maybe DWARF" — either resolve the DWARF
+failure yourself or explicitly call out the blocker and why it remains.
 
 ## Phase 5: Report
 

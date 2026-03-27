@@ -520,29 +520,4 @@ bool FnKeyQuatChan::EvalSQTMask(float currTime, float *sqt, const BoneMask *bone
     return true;
 }
 
-// TODO move
-float qt0[7];
-
-// TODO move
-inline void QuatF4(float *&data, float *output) {
-    output[0] = *data++;
-    output[1] = *data++;
-    output[2] = *data++;
-    output[3] = *data++;
-}
-
-// TODO inline and move
-void TranF3(float *&data, float *output) {
-    output[4] = *data++;
-    output[5] = *data++;
-    output[6] = *data++;
-}
-
-// TODO inline and move
-void QuatF4Interp(float w, float *&data0, float *&data1, float *output) {
-    QuatF4(data0, qt0);
-    QuatF4(data1, output);
-    FastQuatBlendF4(w, qt0, output, output);
-}
-
 }; // namespace EAGL4Anim

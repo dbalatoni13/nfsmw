@@ -19,6 +19,41 @@ inline float FastSqrt(float x) {
     return sqrtf(x);
 }
 
+inline void EulToQuat(const float *eulData, float *quatData) {
+    float ss;
+    float sc;
+    float cs;
+    float cc;
+    float sh;
+    float sj;
+    float si;
+    float ch;
+    float cj;
+    float ci;
+    float th;
+    float tj;
+    float ti;
+
+    ti = eulData[0] * 0.5f;
+    tj = eulData[1] * 0.5f;
+    th = eulData[2] * 0.5f;
+    ci = cosf(ti);
+    cj = cosf(tj);
+    ch = cosf(th);
+    si = sinf(ti);
+    sj = sinf(tj);
+    sh = sinf(th);
+    cc = ci * cj;
+    cs = ci * sj;
+    sc = si * cj;
+    ss = si * sj;
+
+    quatData[0] = sc * ch - cs * sh;
+    quatData[1] = cs * ch + sc * sh;
+    quatData[2] = cc * sh - ss * ch;
+    quatData[3] = cc * ch + ss * sh;
+}
+
 inline intptr_t AlignSize16(intptr_t size) {
     return (size + 15) & ~15;
 }
@@ -56,6 +91,13 @@ inline void FastQuatBlendF4(float w, const float *d0, const float *d1, float *ou
     out[1] *= s;
     out[2] *= s;
     out[3] *= s;
+}
+
+inline void QuatMult(const UMath::Vector4 &a, const UMath::Vector4 &b, UMath::Vector4 &result) {
+    result.x = (a.x * b.w - a.y * b.z) + a.z * b.y + a.w * b.x;
+    result.y = ((a.x * b.z + a.y * b.w) - a.z * b.x) + a.w * b.y;
+    result.z = ((-a.x) * b.y + a.y * b.x) + a.z * b.w + a.w * b.z;
+    result.w = ((-a.x * b.x - a.y * b.y) - a.z * b.z) + a.w * b.w;
 }
 
 }; // namespace EAGL4Anim
