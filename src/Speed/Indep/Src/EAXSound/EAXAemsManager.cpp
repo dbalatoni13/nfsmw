@@ -1109,14 +1109,13 @@ void EAXAemsManager::CompleteAsyncLoad() {
     int Result;
     float delta;
     m_pCurrentlyLoading = gAEMSMgr.m_pAsyncLoadSDLP;
-    if (gAEMSMgr.m_pAsyncLoadSDLP == nullptr) {
+    if (!m_pCurrentlyLoading) {
         m_pCurrentlyLoading = gAEMSMgr.m_pCurLoadSDLP;
     }
-    *static_cast<int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pCurrentlyLoading)) + 0x38)) = 1;
+    m_pCurrentlyLoading->bResolvedAsync = 1;
     SNDmemlimits(-1, gAEMSMgr.m_SPUMainAllocsEnd);
-    *static_cast<Timer *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pCurrentlyLoading)) + 0x64)) =
-        WorldTimer;
-    delta = (WorldTimer - *static_cast<Timer *>(static_cast<void *>(&StartBankLoadTicks))).GetSeconds();
+    m_pCurrentlyLoading->t_load = WorldTimer;
+    delta = (WorldTimer - Timer(static_cast<int>(StartBankLoadTicks))).GetSeconds();
 }
 
 void EAXAemsManager::ResetBankLoadParams() {

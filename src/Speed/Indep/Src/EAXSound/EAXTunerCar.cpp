@@ -102,11 +102,11 @@ int EAXTunerCar::SFXMessage(eSFXMessageType SFXMessageType, unsigned int param1,
 }
 
 int EAXTunerCar::UpdateRotation() {
-    int zero = 0;
-    asm volatile("" : "+r"(zero));
-    int val = zero;
-    m_Rotation = zero;
-    if (val > 0x400) val = 0x400;
+    int val = 0;
+    m_Rotation = 0;
+    val = bMax(val, 0);
+    asm volatile("" : "+r"(val));
+    val = bMin(val, 0x400);
     m_Rotation = val;
     return val;
 }

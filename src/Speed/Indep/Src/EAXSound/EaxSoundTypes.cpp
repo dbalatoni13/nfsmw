@@ -311,9 +311,10 @@ History *EventHistory::Touch(SPCHType_1_EventID id, unsigned short speaker) {
 
 void EventHistory::Reset() {
     for (iterator it = begin(); it != end(); ++it) {
-        it->history.count = 0;
-        it->history.time = Timer(0);
-        it->history.speakers = 0;
+        History &h = it->history;
+        h.count = 0;
+        h.time = Timer(0);
+        h.speakers = 0;
     }
 }
 
