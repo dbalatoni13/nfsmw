@@ -620,16 +620,10 @@ void EAXAemsManager::SetupNextLoad() {
         m_nCurLoadedBankIndex++;
         m_pCurLoadSDLP = g_SndAssetList + m_nCurLoadedBankIndex;
         if (InitiateLoad() < 0) {
-            unsigned int Hash32;
-            const char *String;
             SndBase *SfxToDel[32];
             SndAssetQueue::iterator i;
             int deleteCount = 0;
 
-            Hash32 =
-                *static_cast<unsigned int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pCurLoadSDLP)) + 8));
-            String =
-                *static_cast<const char **>(static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pCurLoadSDLP)) + 0xC));
             bMemSet(SfxToDel, '\0', 0x80);
             while (true) {
                 i = mWaitForResolve.begin();
@@ -639,16 +633,11 @@ void EAXAemsManager::SetupNextLoad() {
 
                 while (true) {
                     stSndAssetQueue currequst = *i;
-                    if (*static_cast<unsigned int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(&currequst)) + 8)) ==
-                        *(&Hash32)) {
-                        if (*static_cast<const char **>(
-                                static_cast<void *>(static_cast<char *>(static_cast<void *>(&currequst)) + 0xC)) ==
-                            *(&String)) {
-                            mWaitForResolve.remove(currequst);
-                            SfxToDel[deleteCount] = currequst.pThis;
-                            deleteCount++;
-                            goto ContinueScanning;
-                        }
+                    if (currequst.Asset.FileName == m_pCurLoadSDLP->AssetDescription.FileName) {
+                        mWaitForResolve.remove(currequst);
+                        SfxToDel[deleteCount] = currequst.pThis;
+                        deleteCount++;
+                        goto ContinueScanning;
                     }
 
                     ++i;
@@ -671,7 +660,7 @@ void EAXAemsManager::SetupNextLoad() {
                     }
 
                     stSndAssetQueue currequst = *i;
-                    if (*(&SfxToDel[deleteCount]) == currequst.pThis) {
+                    if (SfxToDel[deleteCount] == currequst.pThis) {
                         mWaitForResolve.remove(currequst);
                         goto ContinueDeleting;
                     }
