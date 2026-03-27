@@ -300,18 +300,18 @@ unsigned int GetBlendColour(unsigned int *colours, float *weights, int num_colou
 
         if (weight > 0.003921569f) {
             comp_colours = reinterpret_cast<CompColour *>(&colours[i]);
-            b += static_cast<int>(weight * static_cast<float>(comp_colours->b));
             g += static_cast<int>(weight * static_cast<float>(comp_colours->g));
+            b += static_cast<int>(weight * static_cast<float>(comp_colours->b));
             r += static_cast<int>(weight * static_cast<float>(comp_colours->r));
 
-            if (!max_alpha_blend) {
-                a += static_cast<int>(weight * static_cast<float>(comp_colours->a));
-            } else {
+            if (max_alpha_blend) {
                 int tempa = static_cast<int>(weight * static_cast<float>(comp_colours->a)) & 0xFF;
 
-                if (a < tempa) {
+                if (tempa > a) {
                     a = tempa;
                 }
+            } else {
+                a += static_cast<int>(weight * static_cast<float>(comp_colours->a));
             }
         }
     }
