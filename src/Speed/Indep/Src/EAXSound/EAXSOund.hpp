@@ -187,6 +187,7 @@ class EAXSound : public AudioMemBase {
     EAXFrontEnd *GetFrontEnd() { return m_pFESnd; }
     struct AudioSettings *GetCurrentAudioSettings() const { return m_pCurAudioSettings; }
     Attrib::Gen::audiosystem *GetAttributes() const { return mAttributes; }
+    eSndGameMode GetSndGameMode() { return m_eSndGameMode; }
     eSndGameMode GetSndGameMode() const { return m_eSndGameMode; }
     eSndGameMode GetPrevSndGameMode() const { return m_prevSndGameMode; }
     e3DPlayerMix GetPlayerMixMode();
@@ -199,6 +200,7 @@ class EAXSound : public AudioMemBase {
     static CSTATEMGR_Base *m_pStateMgr[13];
 
     friend void SetSoundControlState(bool bON, eSNDCTLSTATE esndstate, const char *Reason);
+    friend void FESoundControl(bool bOn, const char *name);
 
   private:
     int ncompiletest;                            // offset 0x4, size 0x4

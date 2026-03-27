@@ -1723,8 +1723,10 @@ void FESoundControl(bool bOn, const char *name) {
     };
 
     bStringHash(name);
-    int index = -1;
-    int namehash = 0;
+    int namehash;
+    int index;
+    index = -1;
+    namehash = 0;
     do {
         if (key == FengList[namehash].GetHash32()) {
             index = namehash;
@@ -1734,83 +1736,75 @@ void FESoundControl(bool bOn, const char *name) {
         namehash = n;
     } while (namehash < 37);
 
-    if (g_pEAXSound->GetSoundGameMode() != SND_FRONTEND) {
-        switch (index) {
-            case 0:
-            case 1:
-            case 2:
-            case 11:
-                g_pEAXSound->SetPauseMainFNG(bOn);
-                SetSoundControlState(bOn, SNDSTATE_PAUSE, name);
-                return;
-            case 3:
-                SetSoundControlState(bOn, SNDSTATE_PAUSE, name);
-                return;
-            case 4:
-            case 5:
-            case 6:
-            case 7:
-                return;
-            case 8:
-                SetSoundControlState(bOn, SNDSTATE_PAUSE, name);
-                SetSoundControlState(bOn, SNDSTATE_OFF, name);
-                return;
-            case 9:
-            case 12:
-                if (g_pEAXSound->IsPauseMainFNG()) {
-                    return;
-                }
-                SetSoundControlState(bOn, SNDSTATE_PAUSE, name);
-                return;
-            case 10:
-                goto FMV_STATE;
-            case 13:
-                return;
-            case 16:
-            case 20:
-                SetSoundControlState(bOn, SNDSTATE_FMV, name);
-                goto STOP_MUSIC;
-            case 31:
-            case 32:
-                SetSoundControlState(bOn, SNDSTATE_FE_SMS_MESSAGE, name);
-                return;
-            case 33:
-                goto STOP_MUSIC;
-            case 34:
-            case 35:
-            case 36:
-                if (Speech::Manager::GetSpeechModule(1) != nullptr) {
-                    Speech::Manager::GetSpeechModule(1)->PurgeSpeech();
-                }
-                goto FE_UPSCREEN;
-            case 14:
-            case 15:
-            case 17:
-            case 18:
-            case 19:
-            case 21:
-            case 22:
-            case 23:
-            case 24:
-            case 25:
-            case 26:
-            case 27:
-            case 28:
-            case 29:
-            case 30:
-                break;
-            default:
-                goto FE_UPSCREEN;
-        }
-    } else {
-        if (index == 10 || index >= 14) {
-            SetSoundControlState(bOn, SNDSTATE_FMV, name);
-        }
-        return;
+    if (g_pEAXSound->GetSndGameMode() == SND_FRONTEND) {
+        goto FRONTEND_FMV_STATE;
     }
 
-FMV_STATE:
-    if (bOn) {
+    switch (index) {
+        case 0:
+        case 1:
+        case 2:
+        case 11:
+            g_pEAXSound->m_bPause_MainFNG = bOn;
+            SetSoundControlState(bOn, SNDSTATE_PAUSE, name);
+            return;
+        case 3:
+            SetSoundControlState(bOn, SNDSTATE_PAUSE, name);
+            return;
+        case 4:
+        case 5:
+        case 6:
+        case 7:
+            return;
+        case 8:
+            SetSoundControlState(bOn, SNDSTATE_PAUSE, name);
+            SetSoundControlState(bOn, SNDSTATE_OFF, name);
+            return;
+        case 9:
+        case 12:
+            if (g_pEAXSound->m_bPause_MainFNG) {
+                return;
+            }
+            SetSoundControlState(bOn, SNDSTATE_PAUSE, name);
+            return;
+        case 10:
+            goto FMV_STATE;
+        case 13:
+            return;
+        case 16:
+        case 20:
+            SetSoundControlState(bOn, SNDSTATE_FMV, name);
+            goto STOP_MUSIC;
+        case 31:
+        case 32:
+            goto FE_SMS_MESSAGE;
+        case 33:
+            goto STOP_MUSIC;
+        case 34:
+        case 35:
+        case 36:
+            goto PURGE_SPEECH;
+        case 14:
+        case 15:
+        case 17:
+        case 18:
+        case 19:
+        case 21:
+        case 22:
+        case 23:
+        case 24:
+        case 25:
+        case 26:
+        case 27:
+        case 28:
+        case 29:
+        case 30:
+            break;
+        default:
+            goto FE_UPSCREEN;
+    }
+
+FMV_STATE: if (bOn) {
         SetSoundControlState(bOn, SNDSTATE_FMV, name);
         return;
     }
@@ -1818,12 +1812,23 @@ FMV_STATE:
     SetSoundControlState(true, SNDSTATE_STOP_MUSIC, name);
     return;
 
-STOP_MUSIC:
-    SetSoundControlState(bOn, SNDSTATE_STOP_MUSIC, name);
+FE_SMS_MESSAGE: SetSoundControlState(bOn, SNDSTATE_FE_SMS_MESSAGE, name);
     return;
 
-FE_UPSCREEN:
-    SetSoundControlState(bOn, SNDSTATE_FE_UPSCREEN, name);
+STOP_MUSIC: SetSoundControlState(bOn, SNDSTATE_STOP_MUSIC, name);
+    return;
+
+PURGE_SPEECH: if (Speech::Manager::GetSpeechModule(1) != nullptr) {
+        Speech::Manager::GetSpeechModule(1)->PurgeSpeech();
+    }
+    goto FE_UPSCREEN;
+
+FE_UPSCREEN: SetSoundControlState(bOn, SNDSTATE_FE_UPSCREEN, name);
+    return;
+
+FRONTEND_FMV_STATE: if (index == 10 || index >= 14) {
+        SetSoundControlState(bOn, SNDSTATE_FMV, "name");
+    }
 }
 
 void SetSoundControlState(bool bON, eSNDCTLSTATE esndstate, const char *Reason) {
