@@ -1778,14 +1778,11 @@ void FESoundControl(bool bOn, const char *name) {
                 goto STOP_MUSIC;
             case 34:
             case 35:
-            case 36: {
-                Speech::Module *pMVar3 = Speech::Manager::GetSpeechModule(1);
-                if (pMVar3 != nullptr) {
-                    pMVar3 = Speech::Manager::GetSpeechModule(1);
-                    pMVar3->PurgeSpeech();
+            case 36:
+                if (Speech::Manager::GetSpeechModule(1) != nullptr) {
+                    Speech::Manager::GetSpeechModule(1)->PurgeSpeech();
                 }
                 goto FE_UPSCREEN;
-            }
             case 14:
             case 15:
             case 17:
@@ -1806,10 +1803,9 @@ void FESoundControl(bool bOn, const char *name) {
                 goto FE_UPSCREEN;
         }
     } else {
-        if (index != 10 && index < 14) {
-            return;
+        if (index == 10 || index >= 14) {
+            SetSoundControlState(bOn, SNDSTATE_FMV, name);
         }
-        SetSoundControlState(bOn, SNDSTATE_FMV, name);
         return;
     }
 
