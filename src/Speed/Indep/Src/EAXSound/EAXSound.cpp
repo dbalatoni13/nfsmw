@@ -1736,13 +1736,10 @@ void FESoundControl(bool bOn, const char *name) {
 
     if (g_pEAXSound->GetSoundGameMode() != SND_FRONTEND) {
         switch (index) {
-            case 8:
-                SetSoundControlState(bOn, SNDSTATE_PAUSE, name);
-                SetSoundControlState(bOn, SNDSTATE_OFF, name);
-                return;
             case 0:
             case 1:
             case 2:
+            case 11:
                 g_pEAXSound->SetPauseMainFNG(bOn);
                 SetSoundControlState(bOn, SNDSTATE_PAUSE, name);
                 return;
@@ -1754,9 +1751,9 @@ void FESoundControl(bool bOn, const char *name) {
             case 6:
             case 7:
                 return;
-            case 11:
-                g_pEAXSound->SetPauseMainFNG(bOn);
+            case 8:
                 SetSoundControlState(bOn, SNDSTATE_PAUSE, name);
+                SetSoundControlState(bOn, SNDSTATE_OFF, name);
                 return;
             case 9:
             case 12:
