@@ -846,7 +846,7 @@ CarPart *RideInfo::GetPart(int car_slot_id) const {
 CarPart *RideInfo::SetPart(int car_slot_id, CarPart *car_part, bool update_enabled) {
     CarPart *previous_part;
 
-    if (car_slot_id < 0x34) {
+    if (car_slot_id <= 0x33) {
         if (car_slot_id > 0x2D) {
             return this->mPartsTable[car_slot_id];
         }
@@ -859,10 +859,6 @@ CarPart *RideInfo::SetPart(int car_slot_id, CarPart *car_part, bool update_enabl
                 this->mPartsTable[CARSLOTID_DAMAGE0_FRONTRIGHT] = 0;
                 this->mPartsTable[CARSLOTID_DAMAGE0_REARLEFT] = 0;
                 this->mPartsTable[CARSLOTID_DAMAGE0_REARRIGHT] = 0;
-                this->mPartsTable[CARSLOTID_DECAL_LEFT_DOOR] = 0;
-                this->mPartsTable[CARSLOTID_DECAL_RIGHT_DOOR] = 0;
-                this->mPartsTable[CARSLOTID_DECAL_LEFT_QUARTER] = 0;
-                this->mPartsTable[CARSLOTID_DECAL_RIGHT_QUARTER] = 0;
             } else {
                 int kit_number = car_part->GetAppliedAttributeIParam(0x796C0CB0, 0);
                 char buffer[64];
@@ -882,25 +878,43 @@ CarPart *RideInfo::SetPart(int car_slot_id, CarPart *car_part, bool update_enabl
                     CarPartDB.NewGetCarPart(this->Type, CARSLOTID_DAMAGE0_REARLEFT, bStringHash("DAMAGE0_REARLEFT", base_hash), 0, -1);
                 this->mPartsTable[CARSLOTID_DAMAGE0_REARRIGHT] =
                     CarPartDB.NewGetCarPart(this->Type, CARSLOTID_DAMAGE0_REARRIGHT, bStringHash("DAMAGE0_REARRIGHT", base_hash), 0, -1);
+            }
 
-                kit_number = car_part->GetAppliedAttributeIParam(0x796C0CB0, 0);
+            if (car_part == 0) {
+                this->mPartsTable[CARSLOTID_DECAL_LEFT_DOOR] = 0;
+                this->mPartsTable[CARSLOTID_DECAL_RIGHT_DOOR] = 0;
+                this->mPartsTable[CARSLOTID_DECAL_LEFT_QUARTER] = 0;
+                this->mPartsTable[CARSLOTID_DECAL_RIGHT_QUARTER] = 0;
+            } else {
+                int kit_number = car_part->GetAppliedAttributeIParam(0x796C0CB0, 0);
+                char buffer[64];
+                unsigned int base_hash;
+                CarPart *left_door_decal_part;
+                CarPart *right_door_decal_part;
+                CarPart *left_quarter_decal_part;
+                CarPart *right_quarter_decal_part;
+
                 bSPrintf(buffer, "%s_KIT%02d_", GetCarTypeName(this->Type), kit_number);
                 base_hash = bStringHash(buffer);
-                this->mPartsTable[CARSLOTID_DECAL_LEFT_DOOR] =
+                left_door_decal_part =
                     CarPartDB.NewGetCarPart(this->Type, CARSLOTID_DECAL_LEFT_DOOR, bStringHash("DECAL_LEFT_DOOR_RECT_MEDIUM", base_hash), 0,
-                                  -1);
-                this->mPartsTable[CARSLOTID_DECAL_RIGHT_DOOR] =
+                                            -1);
+                right_door_decal_part =
                     CarPartDB.NewGetCarPart(this->Type, CARSLOTID_DECAL_RIGHT_DOOR, bStringHash("DECAL_RIGHT_DOOR_RECT_MEDIUM", base_hash), 0,
-                                  -1);
-                this->mPartsTable[CARSLOTID_DECAL_LEFT_QUARTER] =
-                    CarPartDB.NewGetCarPart(this->Type, CARSLOTID_DECAL_LEFT_QUARTER, bStringHash("DECAL_LEFT_QUARTER_RECT_MEDIUM", base_hash),
-                                  0, -1);
-                this->mPartsTable[CARSLOTID_DECAL_RIGHT_QUARTER] =
-                    CarPartDB.NewGetCarPart(this->Type, CARSLOTID_DECAL_RIGHT_QUARTER,
-                                  bStringHash("DECAL_RIGHT_QUARTER_RECT_MEDIUM", base_hash), 0, -1);
+                                            -1);
+                left_quarter_decal_part = CarPartDB.NewGetCarPart(this->Type, CARSLOTID_DECAL_LEFT_QUARTER,
+                                                                  bStringHash("DECAL_LEFT_QUARTER_RECT_MEDIUM", base_hash), 0, -1);
+                right_quarter_decal_part = CarPartDB.NewGetCarPart(this->Type, CARSLOTID_DECAL_RIGHT_QUARTER,
+                                                                   bStringHash("DECAL_RIGHT_QUARTER_RECT_MEDIUM", base_hash), 0, -1);
+                this->mPartsTable[CARSLOTID_DECAL_LEFT_DOOR] = left_door_decal_part;
+                this->mPartsTable[CARSLOTID_DECAL_RIGHT_DOOR] = right_door_decal_part;
+                this->mPartsTable[CARSLOTID_DECAL_LEFT_QUARTER] = left_quarter_decal_part;
+                this->mPartsTable[CARSLOTID_DECAL_RIGHT_QUARTER] = right_quarter_decal_part;
             }
         }
-    } else if (car_slot_id == CARSLOTID_REAR_WHEEL || (car_slot_id > 0x47 && car_slot_id < 0x4C)) {
+    } else if (car_slot_id == CARSLOTID_REAR_WHEEL) {
+        return this->mPartsTable[car_slot_id];
+    } else if (static_cast<unsigned int>(car_slot_id - 0x48) <= 3) {
         return this->mPartsTable[car_slot_id];
     }
 
