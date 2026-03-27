@@ -782,35 +782,37 @@ void RideInfo::SetRandomParts() {
     this->SetStockParts();
     randomset = bRandom(3);
 
-    if (randomset == 1) {
+    switch (randomset) {
+    case 0:
+        this->SetRandomPart(CARSLOTID_BODY, -1);
+        this->SetRandomPart(CARSLOTID_SPOILER, -1);
+        this->SetRandomPart(CARSLOTID_BASE_PAINT, -1);
+        this->SetRandomPart(CARSLOTID_FRONT_WHEEL, -1);
+        this->SetRandomPart(CARSLOTID_PAINT_RIM, -1);
+        break;
+    case 1:
         this->SetRandomPart(CARSLOTID_BASE_PAINT, -1);
         this->SetRandomPart(CARSLOTID_VINYL_LAYER0, -1);
         this->SetRandomPart(CARSLOTID_VINYL_COLOUR0_0, -1);
         this->SetRandomPart(CARSLOTID_VINYL_COLOUR0_1, -1);
         this->SetRandomPart(CARSLOTID_VINYL_COLOUR0_2, -1);
         this->SetRandomPart(CARSLOTID_VINYL_COLOUR0_3, -1);
-    } else if (randomset > 1) {
-        if (randomset == 2) {
-            this->SetRandomPart(CARSLOTID_BODY, -1);
-            this->SetRandomPart(CARSLOTID_SPOILER, -1);
-            this->SetRandomPart(CARSLOTID_FRONT_WHEEL, -1);
-            this->SetRandomPart(CARSLOTID_PAINT_RIM, -1);
-            this->SetRandomPart(CARSLOTID_DECAL_FRONT_WINDOW_TEX0, -1);
-            this->SetRandomPart(CARSLOTID_HEADLIGHT, -1);
-            this->SetRandomPart(CARSLOTID_BRAKELIGHT, -1);
-            this->SetRandomPart(CARSLOTID_BASE_PAINT, -1);
-            this->SetRandomPart(CARSLOTID_VINYL_LAYER0, -1);
-            this->SetRandomPart(CARSLOTID_VINYL_COLOUR0_0, -1);
-            this->SetRandomPart(CARSLOTID_VINYL_COLOUR0_1, -1);
-            this->SetRandomPart(CARSLOTID_VINYL_COLOUR0_2, -1);
-            this->SetRandomPart(CARSLOTID_VINYL_COLOUR0_3, -1);
-        }
-    } else if (randomset == 0) {
+        break;
+    case 2:
         this->SetRandomPart(CARSLOTID_BODY, -1);
         this->SetRandomPart(CARSLOTID_SPOILER, -1);
-        this->SetRandomPart(CARSLOTID_BASE_PAINT, -1);
         this->SetRandomPart(CARSLOTID_FRONT_WHEEL, -1);
         this->SetRandomPart(CARSLOTID_PAINT_RIM, -1);
+        this->SetRandomPart(CARSLOTID_WINDOW_TINT, -1);
+        this->SetRandomPart(CARSLOTID_ROOF, -1);
+        this->SetRandomPart(CARSLOTID_HOOD, -1);
+        this->SetRandomPart(CARSLOTID_BASE_PAINT, -1);
+        this->SetRandomPart(CARSLOTID_VINYL_LAYER0, -1);
+        this->SetRandomPart(CARSLOTID_VINYL_COLOUR0_0, -1);
+        this->SetRandomPart(CARSLOTID_VINYL_COLOUR0_1, -1);
+        this->SetRandomPart(CARSLOTID_VINYL_COLOUR0_2, -1);
+        this->SetRandomPart(CARSLOTID_VINYL_COLOUR0_3, -1);
+        break;
     }
 }
 
