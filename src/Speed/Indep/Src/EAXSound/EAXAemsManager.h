@@ -71,6 +71,7 @@ struct stAssetDescription {
     bool bLoadToTop;            // offset 0x1C, size 0x1
 
     void Clear();
+    stAssetDescription &operator=(const stAssetDescription &copy);
 };
 
 DECLARE_CONTAINER_TYPE(ResAllocList);

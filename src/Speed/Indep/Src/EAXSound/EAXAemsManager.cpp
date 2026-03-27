@@ -215,6 +215,14 @@ inline void stAssetDescription::Clear() {
     DataPath = SNDPATH_ROUTE;
 }
 
+inline stAssetDescription &stAssetDescription::operator=(const stAssetDescription &copy) {
+    eDataType = copy.eDataType;
+    FileName = copy.FileName;
+    DataPath = copy.DataPath;
+    bLoadToTop = copy.bLoadToTop;
+    return *this;
+}
+
 void stBankSlot::Clear() {
     BANKmemLocation = 0;
     MAINmemLocation = nullptr;
@@ -262,14 +270,16 @@ inline stSndDataLoadParams &stSndDataLoadParams::operator=(stSndDataLoadParams &
 
     resallocs.clear();
     resallocs.reserve(copy.resallocs.size());
-    for (const unsigned int *i = copy.resallocs.begin(); i != copy.resallocs.end(); ++i) {
+    const unsigned int *i;
+    for (i = copy.resallocs.begin(); i != copy.resallocs.end(); ++i) {
         resallocs.push_back(*i);
     }
     copy.resallocs.clear();
 
     RefCount.clear();
     RefCount.reserve(copy.RefCount.size());
-    for (EAX_CarState **j = copy.RefCount.begin(); j != copy.RefCount.end(); ++j) {
+    EAX_CarState **j;
+    for (j = copy.RefCount.begin(); j != copy.RefCount.end(); ++j) {
         RefCount.push_back(*j);
     }
     copy.RefCount.clear();
