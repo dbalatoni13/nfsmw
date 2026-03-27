@@ -197,10 +197,7 @@ template <typename T, int Alignment = 16> class Vector {
 
     virtual size_type GetGrowSize(size_type minSize) const {
         size_type grown = mCapacity + ((mCapacity + 1) >> 1);
-        if (grown >= minSize) {
-            return grown;
-        }
-        return minSize;
+        return grown >= minSize ? grown : minSize;
     }
 
     // Unfinished
