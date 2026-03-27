@@ -4376,7 +4376,6 @@ void CarRenderInfo::DrawKeithProjShadow(eView *view, const bVector3 *position, b
                         if (nextSection > 2) {
                             nSubVerts = n - startIndex;
                         }
-                        section = nextSection;
 
                         if (exBeginStrip(this->ShadowRampTexture, (nSubVerts + 1) * 2, biasedIdentity)) {
                             int endIndex = startIndex + nSubVerts;
@@ -4420,6 +4419,7 @@ void CarRenderInfo::DrawKeithProjShadow(eView *view, const bVector3 *position, b
                         }
 
                         startIndex = nextStart;
+                        section = nextSection;
                     } while (section < 3);
                 }
             }
