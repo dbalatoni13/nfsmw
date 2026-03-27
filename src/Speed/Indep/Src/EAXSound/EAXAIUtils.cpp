@@ -180,7 +180,7 @@ void SndAIStateManager::Initialize(SFXCTL_Physics *_m_pPhysicsCTL) {
 
 void SndAIStateManager::GeneratePotentialStates(bool *ArrayList) {
     ArrayList[SND_AI_STATE_PRERACE] = false;
-    if (m_pPhysicsCTL->GetStateBase()->GetPhysCar()->GetVelocityMagnitudeMPH() < 5.0f) {
+    if (m_pPhysicsCTL->GetPhysCar()->GetVelocityMagnitudeMPH() < 5.0f) {
         ArrayList[SND_AI_STATE_IDLE] = true;
     } else {
         ArrayList[SND_AI_STATE_IDLE] = false;
@@ -198,12 +198,8 @@ void SndAIStateManager::GeneratePotentialStates(bool *ArrayList) {
         ArrayList[SND_AI_STATE_DECEL] = false;
     }
 
-    if (DeccelMonitor.IsTriggering()) {
-        if (SteeringMonitorLeft.IsTriggering()) {
-            ArrayList[SND_AI_STATE_CORNER_LEFT] = true;
-        } else {
-            ArrayList[SND_AI_STATE_CORNER_LEFT] = false;
-        }
+    if (DeccelMonitor.IsTriggering() && SteeringMonitorLeft.IsTriggering()) {
+        ArrayList[SND_AI_STATE_CORNER_LEFT] = true;
     } else {
         ArrayList[SND_AI_STATE_CORNER_LEFT] = false;
     }
