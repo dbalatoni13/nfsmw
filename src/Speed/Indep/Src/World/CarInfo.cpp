@@ -527,6 +527,16 @@ void RideInfo::Init(CarType type, CarRenderUsage usage, int has_dash, int can_be
 
 int RideInfo::GetSpecialLODRangeForCarSlot(int slot_id, CARPART_LOD *special_minimum, CARPART_LOD *special_maximum, bool in_front_end) {
     switch (slot_id) {
+    case 0x46:
+    case 0x47:
+    case 0x48:
+    case 0x49:
+    case 0x4A:
+    case 0x4B:
+        *special_minimum = CARPART_LOD_OFF;
+        *special_maximum = CARPART_LOD_OFF;
+        return 1;
+
     case CARSLOTID_INTERIOR:
     case CARSLOTID_DRIVER:
         if (this->mSpecialLODBehavior == 2) {
@@ -542,16 +552,6 @@ int RideInfo::GetSpecialLODRangeForCarSlot(int slot_id, CARPART_LOD *special_min
             *special_maximum = slot_id == CARSLOTID_DRIVER ? CARPART_LOD_B : CARPART_LOD_D;
         }
 
-        return 1;
-
-    case 0x46:
-    case 0x47:
-    case 0x48:
-    case 0x49:
-    case 0x4A:
-    case 0x4B:
-        *special_minimum = CARPART_LOD_OFF;
-        *special_maximum = CARPART_LOD_OFF;
         return 1;
 
     default:
