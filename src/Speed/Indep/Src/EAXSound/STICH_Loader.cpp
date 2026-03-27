@@ -133,9 +133,9 @@ int LoaderSoundStichs(bChunk *chunk) {
 }
 
 int UnloaderSoundStichs(bChunk *chunk) {
-    if (chunk->ID == 0x8003b500) {
+    if (chunk->GetID() == 0x8003b500) {
         if (IsSoundEnabled) {
-            g_pEAXSound->GetSTICHPlayback()->DestroyAllStichs();
+            g_pEAXSound->GetStichPlayer()->DestroyAllStichs();
         }
         return 1;
     }
