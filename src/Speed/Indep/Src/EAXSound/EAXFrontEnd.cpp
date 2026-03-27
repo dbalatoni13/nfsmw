@@ -66,28 +66,30 @@ int EAXFrontEnd::Play(eMenuSoundTriggers etrigger) {
     }
 
     nvol = 0;
-    if (m_pSFXOBJ_FEHUD) {
-        int adjusted;
-
-        nvol = m_pSFXOBJ_FEHUD->GetDMixOutput(2, DMX_VOL);
-        g_pEAXSound->SetCsisName(m_pSFXOBJ_FEHUD);
-
-        testID = static_cast<int>(etrigger);
-        adjusted = testID + 23;
-        if (static_cast<unsigned int>(testID - 80) < 16 && adjusted != 0x6E && adjusted != 0x6F) {
-            delete m_pPlayRapSheet;
-            m_pPlayRapSheet = new PlayFrontEndSample_RS(testID, nvol, 0x1000, 0);
-        } else {
-            int getref;
-
-            m_pPlayFrontEndSampleHandle = new PlayFrontEndSample(testID, nvol, 0x1000, 0);
-            getref = m_pPlayFrontEndSampleHandle->GetRefCount();
-            delete m_pPlayFrontEndSampleHandle;
-            m_pPlayFrontEndSampleHandle = nullptr;
-        }
-
-        nvol = 0;
+    if (!m_pSFXOBJ_FEHUD) {
+        return nvol;
     }
+
+    int adjusted;
+
+    nvol = m_pSFXOBJ_FEHUD->GetDMixOutput(2, DMX_VOL);
+    g_pEAXSound->SetCsisName(m_pSFXOBJ_FEHUD);
+
+    testID = static_cast<int>(etrigger);
+    adjusted = testID + 23;
+    if (static_cast<unsigned int>(testID - 80) < 16 && adjusted != 0x6E && adjusted != 0x6F) {
+        delete m_pPlayRapSheet;
+        m_pPlayRapSheet = new PlayFrontEndSample_RS(testID, nvol, 0x1000, 0);
+    } else {
+        int getref;
+
+        m_pPlayFrontEndSampleHandle = new PlayFrontEndSample(testID, nvol, 0x1000, 0);
+        getref = m_pPlayFrontEndSampleHandle->GetRefCount();
+        delete m_pPlayFrontEndSampleHandle;
+        m_pPlayFrontEndSampleHandle = nullptr;
+    }
+
+    nvol = 0;
 
     return nvol;
 }
