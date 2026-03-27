@@ -4364,8 +4364,8 @@ void CarRenderInfo::DrawKeithProjShadow(eView *view, const bVector3 *position, b
 
                 {
                     int nStart = n / 3;
-                    int section = 0;
                     int startIndex = 0;
+                    int section = 0;
 
                     do {
                         int nSubVerts = nStart;
