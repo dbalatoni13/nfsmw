@@ -434,18 +434,14 @@ void cSampleWarpper::Play(const SND_Params *Params) {
     AddToSampleList(this, stichType);
 
     if (GetData().RND_Vol != 0) {
-        m_nLocalVolume = static_cast<int>(GetData().Volume - g_pEAXSound->Random(GetData().RND_Vol));
+        m_nLocalVolume = static_cast<int>(GetData().Volume - g_pEAXSound->Random(bAbs(GetData().RND_Vol)));
     } else {
         m_nLocalVolume = GetData().Volume;
     }
 
     int TempVol = m_nLocalVolume * Params->Vol >> 0xF;
-    int randomPitchRange = GetData().RND_Pitch;
-    if (randomPitchRange != 0) {
-        if (randomPitchRange < 0) {
-            randomPitchRange = -randomPitchRange;
-        }
-        m_nLocalPitch = static_cast<int>(GetData().Pitch - g_pEAXSound->Random(randomPitchRange));
+    if (GetData().RND_Pitch != 0) {
+        m_nLocalPitch = static_cast<int>(GetData().Pitch - g_pEAXSound->Random(bAbs(GetData().RND_Pitch)));
     } else {
         m_nLocalPitch = GetData().Pitch;
     }
