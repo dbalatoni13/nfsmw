@@ -280,10 +280,10 @@ unsigned int ScaleColours(unsigned int a, unsigned int b) {
     CompColour *colour_b = reinterpret_cast<CompColour *>(&b);
     CompColour final_colour;
 
-    final_colour.g = static_cast<unsigned char>(static_cast<float>(colour_a->g) * 0.003921569f * static_cast<float>(colour_b->g));
-    final_colour.b = static_cast<unsigned char>(static_cast<float>(colour_a->b) * 0.003921569f * static_cast<float>(colour_b->b));
-    final_colour.a = static_cast<unsigned char>(static_cast<float>(colour_a->a) * 0.003921569f * static_cast<float>(colour_b->a));
-    final_colour.r = static_cast<unsigned char>(static_cast<float>(colour_a->r) * 0.003921569f * static_cast<float>(colour_b->r));
+    final_colour.g = static_cast<unsigned char>(static_cast<float>(static_cast<int>(colour_a->g)) * 0.003921569f * static_cast<float>(static_cast<int>(colour_b->g)));
+    final_colour.b = static_cast<unsigned char>(static_cast<float>(static_cast<int>(colour_a->b)) * 0.003921569f * static_cast<float>(static_cast<int>(colour_b->b)));
+    final_colour.a = static_cast<unsigned char>(static_cast<float>(static_cast<int>(colour_a->a)) * 0.003921569f * static_cast<float>(static_cast<int>(colour_b->a)));
+    final_colour.r = static_cast<unsigned char>(static_cast<float>(static_cast<int>(colour_a->r)) * 0.003921569f * static_cast<float>(static_cast<int>(colour_b->r)));
     return *reinterpret_cast<unsigned int *>(&final_colour);
 }
 
@@ -346,9 +346,9 @@ unsigned int RemapColour(unsigned int colour, unsigned int *colour_map) {
     float weights[4];
     unsigned int result;
 
-    weights[0] = static_cast<float>(col.r) * 0.003921569f;
-    weights[1] = static_cast<float>(col.g) * 0.003921569f;
-    weights[2] = static_cast<float>(col.b) * 0.003921569f;
+    weights[0] = static_cast<float>(static_cast<int>(col.r)) * 0.003921569f;
+    weights[1] = static_cast<float>(static_cast<int>(col.g)) * 0.003921569f;
+    weights[2] = static_cast<float>(static_cast<int>(col.b)) * 0.003921569f;
     weights[3] = 0.0f;
     result = GetBlendColour(colour_map, weights, 3, true);
     return result;
