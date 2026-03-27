@@ -1368,6 +1368,7 @@ void EAXSound::DestroyEAXCar(EAX_CarState *pCar) {
             attachedcar = m_pStateMgr[eMM_TRAFFIC]->GetStateObj(pCar);
         }
         break;
+    case 4:
     default:
         if (m_pStateMgr[eMM_TRUCK] != nullptr) {
             attachedcar = m_pStateMgr[eMM_TRUCK]->GetStateObj(pCar);
