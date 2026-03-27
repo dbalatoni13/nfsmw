@@ -54,7 +54,13 @@ void EAXS_StreamManager::InitializeStreams(eGAMEMODE gamemode) {
     gpEAXS_StrmMgr = this;
     EAXS_StreamChannel *channel;
 
-    if (static_cast<int>(gamemode) >= 0 && static_cast<int>(gamemode) > 2 && gamemode == SNDGM_SPLITSCREEN) {
+    if (static_cast<int>(gamemode) < 0) {
+        goto NORMAL;
+    }
+    if (static_cast<int>(gamemode) <= 2) {
+        goto NORMAL;
+    }
+    if (gamemode == SNDGM_SPLITSCREEN) {
         channel = EAXS_StreamChannel_Ctor(static_cast<EAXS_StreamChannel *>(__builtin_vec_new(0x178)));
         m_pStrmCh[1] = channel;
         channel->InitParams(this);
@@ -65,6 +71,7 @@ void EAXS_StreamManager::InitializeStreams(eGAMEMODE gamemode) {
         channel->InitParams(this);
         m_pStrmCh[2]->InitChannel(8, 0x20, INCREASE_NISSFXSTRM_BLOCKS * 0x8000 + 0x10000, STYPE_NISSFX);
     } else {
+    NORMAL:
         channel = EAXS_StreamChannel_Ctor(static_cast<EAXS_StreamChannel *>(__builtin_vec_new(0x178)));
         m_pStrmCh[0] = channel;
         channel->InitParams(this);

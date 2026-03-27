@@ -52,7 +52,7 @@ struct EAXTunerCar : public EAXCar {
     bool BottomOutPlay;          // offset 0x11C
     int BottomOutIntensity;      // offset 0x120
     bool TrunkBouncePlay;        // offset 0x124
-    int TrunkBounceInstensity;   // offset 0x128
+    float TrunkBounceInstensity; // offset 0x128
     bool PlayBackFire;           // offset 0x12C
   protected:
     bool bFirstUpdate;           // offset 0x130

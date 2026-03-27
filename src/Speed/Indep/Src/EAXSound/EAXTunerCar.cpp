@@ -91,7 +91,7 @@ int EAXTunerCar::SFXMessage(eSFXMessageType SFXMessageType, unsigned int param1,
         break;
     case SFX_TRUNKBOUNCE:
         TrunkBouncePlay = true;
-        *(int *)&TrunkBounceInstensity = param1;
+        *reinterpret_cast<int *>(&TrunkBounceInstensity) = param1;
         break;
     case SFX_CHANGEGEAR:
         return 0;

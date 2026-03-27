@@ -116,7 +116,11 @@ int SFXCTL_Pathfinder::CrossMapNodeParam(int pid, int np) {
     (void)pid;
 
     int nproj = 0;
+    int IDHACK;
     switch (m_curinteractive) {
+    case 0:
+    default:
+        break;
     case 1:
         nproj = 1;
         break;
