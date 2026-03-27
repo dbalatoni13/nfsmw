@@ -502,6 +502,9 @@ float VehiclePartDamageBehaviour::CalcPartRotation(bMatrix4 *worldMatrix, float 
     bInvertMatrix(&localInverse, &localInverse);
     eMulMatrix(&localMatrix, worldMatrix, &localInverse);
 
+    this->angularVel_ch = this->mCarRenderInfo->mAngularVelocity;
+    this->linearVel_ch = this->mCarRenderInfo->mVelocity;
+    this->linearAcc_ch = this->mCarRenderInfo->mAcceleration;
     eMulVector(&this->angularVel_ch, &localMatrix, &this->mCarRenderInfo->mAngularVelocity);
     eMulVector(&this->linearVel_ch, &localMatrix, &this->mCarRenderInfo->mVelocity);
     eMulVector(&this->linearAcc_ch, &localMatrix, &this->mCarRenderInfo->mAcceleration);
