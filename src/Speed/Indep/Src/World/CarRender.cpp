@@ -4266,7 +4266,6 @@ void CarRenderInfo::DrawKeithProjShadow(eView *view, const bVector3 *position, b
         float shadowZ;
         bVector3 lightV;
         bVector3 scale;
-        int i;
 
         sh_Setup(const_cast<bVector3 *>(position));
         shadowZ = position->z;
@@ -4285,7 +4284,7 @@ void CarRenderInfo::DrawKeithProjShadow(eView *view, const bVector3 *position, b
         scale.y = lbl_8040AD9C;
         scale.z = lbl_8040ADA0;
         float one_over_z = cs_OneOverZ;
-        for (i = 0; i < n; i++) {
+        for (int i = 0; i < n; i++) {
             bVector3 localPoint;
             bVector3 worldPoint;
             float scaleToGround;
@@ -4370,12 +4369,13 @@ void CarRenderInfo::DrawKeithProjShadow(eView *view, const bVector3 *position, b
 
                     do {
                         int nSubVerts = nStart;
-                        int nextStart = startIndex + nStart;
+                        int nextStart;
                         int nextSection = section + 1;
 
                         if (nextSection > 2) {
                             nSubVerts = n - startIndex;
                         }
+                        nextStart = startIndex + nSubVerts;
 
                         if (exBeginStrip(this->ShadowRampTexture, (nSubVerts + 1) * 2, biasedIdentity)) {
                             int endIndex = startIndex + nSubVerts;
