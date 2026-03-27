@@ -222,7 +222,9 @@ class CarPartModel {
 
     ~CarPartModel() {}
 
-    void Clear() {}
+    void Clear() {
+        mModel = 0;
+    }
 
     int IsHidden() {
         return this->mModel & 1;

@@ -18,9 +18,9 @@ struct IVehiclePartDamageBehaviour {
 
     virtual void Reset();
 
-    virtual void Pose(struct bMatrix4 * worldMatrix);
-
     virtual void Update(struct bMatrix4 * worldMatrix);
+
+    virtual void Pose(struct bMatrix4 * worldMatrix);
 
     virtual void DamageVehicle(const DamageZone::Info & damageInfo);
 
@@ -83,10 +83,10 @@ public:
     virtual void HidePart(unsigned int slotId);
 
     // Overrides: IVehiclePartDamageBehaviour
-    virtual void Pose(struct bMatrix4 * worldMatrix);
+    virtual void Update(struct bMatrix4 * worldMatrix);
 
     // Overrides: IVehiclePartDamageBehaviour
-    virtual void Update(struct bMatrix4 * worldMatrix);
+    virtual void Pose(struct bMatrix4 * worldMatrix);
 
     void ManageHoodAnimation();
 
