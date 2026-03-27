@@ -71,6 +71,7 @@ int EAXFrontEnd::Play(eMenuSoundTriggers etrigger) {
     }
 
     int adjusted;
+    int pitch;
 
     nvol = m_pSFXOBJ_FEHUD->GetDMixOutput(2, DMX_VOL);
     g_pEAXSound->SetCsisName(m_pSFXOBJ_FEHUD);
@@ -78,11 +79,10 @@ int EAXFrontEnd::Play(eMenuSoundTriggers etrigger) {
     testID = static_cast<int>(etrigger);
     adjusted = testID + 23;
     if (static_cast<unsigned int>(testID - 80) < 16 && adjusted != 0x6E && adjusted != 0x6F) {
-        int pitch = 0x1000;
-        int azimuth = 0;
+        pitch = 0x1000;
 
         delete m_pPlayRapSheet;
-        m_pPlayRapSheet = new PlayFrontEndSample_RS(testID, nvol, pitch, azimuth);
+        m_pPlayRapSheet = new PlayFrontEndSample_RS(testID, nvol, pitch, 0);
     } else {
         int getref;
 

@@ -72,14 +72,12 @@ struct PlayCommonSample {
     }
 
     void SetVolume(int x) {
-        int volume = x;
-
         if (x < 0) {
-            volume = 0;
+            x = 0;
         } else if (x > 0x7FFF) {
-            volume = 0x7FFF;
+            x = 0x7FFF;
         }
-        mData.volume = volume;
+        mData.volume = x;
     }
 
     int GetVolume() {
@@ -174,14 +172,12 @@ struct PlayFrontEndSample {
     }
 
     void SetVolume(int x) {
-        int volume = x;
-
         if (x < 0) {
-            volume = 0;
+            x = 0;
         } else if (x > 0x7FFF) {
-            volume = 0x7FFF;
+            x = 0x7FFF;
         }
-        mData.volume = volume;
+        mData.volume = x;
     }
 
     int GetVolume() {
@@ -300,9 +296,7 @@ struct PlayFrontEndSample_RS {
     }
 
     void SetAzimuth(int x) {
-        int azimuth = x;
-
-        mData.azimuth = azimuth;
+        mData.azimuth = x;
     }
 
     int GetAzimuth() {
