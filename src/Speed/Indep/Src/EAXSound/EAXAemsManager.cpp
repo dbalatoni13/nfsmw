@@ -332,8 +332,8 @@ EAXAemsManager::~EAXAemsManager() {
         TheTrackStreamer.FreeUserMemory(m_pAsyncBuff);
     }
 
-    m_pCurLoadSDLP = nullptr;
     m_pAsyncBuff = nullptr;
+    m_pCurLoadSDLP = nullptr;
 }
 
 void EAXAemsManager::Init() {
@@ -1193,6 +1193,7 @@ void EAXAemsManager::CheckForCompleteAsyncLoad() {
                 CompleteAsyncLoad();
             }
             break;
+        case EAXSND_DT_AEMS_SYNCSPU:
         default:
             break;
         }

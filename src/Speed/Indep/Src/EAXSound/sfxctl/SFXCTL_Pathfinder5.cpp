@@ -154,10 +154,13 @@ void SFXCTL_Pathfinder::SongProgressCallback(int projID, int nodeparm) {
     }
 }
 
-void SFXCTL_Pathfinder::EventActionCallback(int trackhandle, int cbID, int parm) {
+void SFXCTL_Pathfinder::EventActionCallback(const int trackhandle, const int cbID, const int parm) {
     (void)trackhandle;
 
     switch (cbID) {
+        case 1:
+        default:
+            break;
         case 2:
             MControlPathfinder(false, 0, 0, 0).Send(UCrc32("InteractiveDone"));
             MNotifyMusicFlow(0).Send(UCrc32("InteractiveDone"));
