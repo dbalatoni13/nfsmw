@@ -80,7 +80,7 @@ struct cSampleWarpper {
     cSampleWarpper(SND_SampleRef &NewRef);
     ~cSampleWarpper();
 
-    const SND_SampleRef &GetData() const {
+    const SND_SampleRef &GetData() {
         return *SampleRefData;
     }
 
