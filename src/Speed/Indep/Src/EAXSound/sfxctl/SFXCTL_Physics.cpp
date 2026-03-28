@@ -71,39 +71,39 @@ enum ControlSource {
 };
 
 inline EAX_CarState *ReadStateCar(EAXCar *carOwner) {
-    return *static_cast<EAX_CarState **>(static_cast<void *>(static_cast<char *>(static_cast<void *>(carOwner)) + 0x34));
+    return carOwner->GetPhysCar();
 }
 
 inline float &ReadStateCurTime(EAXCar *carOwner) {
-    return *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(carOwner)) + 0x3C));
+    return *reinterpret_cast<float *>(reinterpret_cast<char *>(carOwner) + 0x3C);
 }
 
 inline float &ReadCarPhysTRQRef(EAXCar *carOwner) {
-    return *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(carOwner)) + 0x60));
+    return carOwner->PhysTRQ;
 }
 
 inline float &ReadCarPhysRPMRef(EAXCar *carOwner) {
-    return *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(carOwner)) + 0x64));
+    return carOwner->PhysRPM;
 }
 
 inline int &ReadCarIsAcceleratingRef(EAXCar *carOwner) {
-    return *static_cast<int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(carOwner)) + 0x68));
+    return *reinterpret_cast<int *>(&carOwner->bIsAccelerating);
 }
 
 inline int &ReadCarCurGearRef(EAXCar *carOwner) {
-    return *static_cast<int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(carOwner)) + 0x6C));
+    return carOwner->CurGear;
 }
 
 inline float &ReadCarTrottleRef(EAXCar *carOwner) {
-    return *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(carOwner)) + 0x70));
+    return carOwner->fTrottle;
 }
 
 inline int &ReadCarPovTypeRef(EAXCar *carOwner) {
-    return *static_cast<int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(carOwner)) + 0xB8));
+    return carOwner->m_PovType;
 }
 
 inline char *ReadCarEngineInfo(EAXCar *carOwner) {
-    return static_cast<char *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(carOwner)) + 0xC4));
+    return reinterpret_cast<char *>(&carOwner->mEngineInfo);
 }
 
 inline Sound::Wheel *ReadCarWheels(EAX_CarState *car) {
@@ -112,9 +112,7 @@ inline Sound::Wheel *ReadCarWheels(EAX_CarState *car) {
 } // namespace
 
 extern int GameFlowSndState[];
-extern "C" void Average_Record(Average *avg, float value) asm("Record__7Averagef");
-extern "C" void AverageBase_Recalculate(AverageBase *avg) asm("Recalculate__11AverageBase");
-extern "C" float GetValueFromSpline(float value, bMatrix4 *curve);
+extern float GetValueFromSpline(float value, bMatrix4 *curve);
 
 SFXCTL_Physics::SFXCTL_Physics()
     : m_fDeltaDesiredSpeed(2) {
@@ -214,9 +212,9 @@ void SFXCTL_Physics::UpdateParams(float t) {
     m_OldThrottle = m_fThrottle;
 
     if (car->mControlSource == CONTROL_AI) {
-        Average_Record(&m_fDeltaDesiredSpeed, car->mDesiredSpeed - m_OldDesiredSpeed);
+        m_fDeltaDesiredSpeed.Record(car->mDesiredSpeed - m_OldDesiredSpeed);
         m_OldDesiredSpeed = car->mDesiredSpeed;
-        AverageBase_Recalculate(&m_fDeltaDesiredSpeed);
+        m_fDeltaDesiredSpeed.Recalculate();
 
         if (m_fDeltaDesiredSpeed.GetValue() > -1.0f && m_tHoldDecel < 0.0f) {
             m_fThrottle = smooth(m_fThrottle, 100.0f, 50.0f);
@@ -275,7 +273,7 @@ void SFXCTL_Physics::UpdateParams(float t) {
     ReadCarPhysTRQRef(carOwner) = PhysicsTRQ;
     ReadCarPhysRPMRef(carOwner) = PhysicsRPM;
     ReadCarTrottleRef(carOwner) = m_fThrottle;
-    ReadCarIsAcceleratingRef(carOwner) = static_cast<int>(static_cast<float>(*static_cast<int *>(static_cast<void *>(&IsAccelerating))) != 0.0f);
+    ReadCarIsAcceleratingRef(carOwner) = static_cast<int>(IsAccelerating);
     ReadCarCurGearRef(carOwner) = static_cast< int >(m_CurGear);
 }
 
@@ -294,7 +292,7 @@ void SFXCTL_Physics::UpdateMixerOutputs() {
     SetDMIX_Input(4, TargeVal);
 
     TargeVal = 0;
-    if (*static_cast<int *>(static_cast<void *>(&IsAccelerating)) != 0) {
+    if (IsAccelerating) {
         TargeVal = 0x7FFF;
     }
     SetDMIX_Input(10, TargeVal);
@@ -331,7 +329,7 @@ void SFXCTL_Physics::MsgRevEngine(const MAIEngineRev &message) {
     (void)message;
     eCurNisRevingState = NIS_OFF;
     if (m_pStateBase->m_eStateType == eMM_AIRACECAR) {
-        *static_cast<int *>(static_cast<void *>(&PattternPlay)) = 1;
+        PattternPlay = true;
         PatternNumber = bRandom(7) + 5;
     }
 }
@@ -389,12 +387,12 @@ void SFXCTL_AIPhysics::UpdateParams(float t) {
     SFXCTL::UpdateParams(t);
     AIStateManager.Update(t);
     IsCornering = AIStateManager.GetState() == SND_AI_STATE_CORNER_LEFT || AIStateManager.GetState() == SND_AI_STATE_CORNER_RIGHT;
-    Average_Record(&m_fDeltaDesiredSpeed, GetPhysCar()->GetDriver()->GetThrottle() * 100.0f);
-    AverageBase_Recalculate(&m_fDeltaDesiredSpeed);
+    m_fDeltaDesiredSpeed.Record(GetPhysCar()->GetDriver()->GetThrottle() * 100.0f);
+    m_fDeltaDesiredSpeed.Recalculate();
     m_OldThrottle = m_fThrottle;
     m_fDeltaRPM = GenDeltaRPM();
     UpdateAccel(t);
-    m_fThrottle = static_cast<float>(*static_cast<int *>(static_cast<void *>(&IsAccelerating))) * 100.0f;
+    m_fThrottle = static_cast<float>(static_cast<int>(IsAccelerating)) * 100.0f;
     UpdateRPM(t);
     UpdateTorque(t);
     m_LastGear = m_CurGear;
@@ -582,10 +580,10 @@ void SFXCTL_Physics::UpdateNIS(float TotalTime, float deltaTime) {
     ICountdown *icountdown;
 
     if (eCurNisRevingState == NIS_OFF) {
-        if (*static_cast<int *>(static_cast<void *>(&PattternPlay)) != 0) {
+        if (PattternPlay) {
             int patternLength;
 
-            *static_cast<int *>(static_cast<void *>(&PattternPlay)) = 0;
+            PattternPlay = false;
             pRevData = nullptr;
             if (PatternNumber == 8) {
                 goto L_Pattern8;
@@ -661,7 +659,7 @@ L_PatternDone:
             if (CarID < 0) {
                 return;
             }
-            if (*static_cast<int *>(static_cast<void *>(&g_pNISRevMgr->IsInitialized)) == 0) {
+            if (!g_pNISRevMgr->IsInitialized) {
                 return;
             }
             if (g_pNISRevMgr->m_EngineDataSet[CarID].NumPoints < 2) {

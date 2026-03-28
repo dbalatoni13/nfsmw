@@ -391,7 +391,7 @@ void SFXCTL_Tunnel::UpdateReflectionParams(float t) {
     ReflRamp.Update(t);
 
     if (bFadingOut) {
-        if (*static_cast<int *>(static_cast<void *>(&ReflRamp.bComplete)) != 0 &&
+        if (ReflRamp.bComplete &&
             bIsTunnelRamping == 0) {
             if (m_IsLeadCar != 0) {
                 bIsReadyForSwitch = true;
@@ -418,7 +418,7 @@ void SFXCTL_Tunnel::UpdateReflectionParams(float t) {
             m_CurDryAemsTarget = GetFloatFromHundredthsdB__11NFSMixShapei(g_REVERBFXMODULES[m_ReverbType].AemsDry);
         }
     } else if (bFadingIn &&
-               *static_cast<int *>(static_cast<void *>(&ReflRamp.bComplete)) != 0) {
+               ReflRamp.bComplete) {
         m_CurWetGinsu = m_CurWetGinsuTarget;
         m_CurDryGinsu = m_CurDryGinsuTarget;
         m_CurWetAems = m_CurWetAemsTarget;

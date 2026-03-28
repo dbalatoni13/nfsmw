@@ -42,14 +42,14 @@ void SFXCTL_Shifting::InitSFX() {
     eShiftState = SHFT_NONE;
     eShiftStageChanged = SHFT_NONE;
     eShift_LFO = SHIFT_LFO_NONE;
-    *static_cast<int *>(static_cast<void *>(&m_bPendingNeedShiftSound)) = 0;
-    *static_cast<int *>(static_cast<void *>(&m_bShouldBeWhining)) = 0;
-    *static_cast<int *>(static_cast<void *>(&m_bBrakePedalMashed)) = 0;
+    m_bPendingNeedShiftSound = false;
+    m_bShouldBeWhining = false;
+    m_bBrakePedalMashed = false;
     tShiftDelay = 0.0f;
     m_nPostShiftFXLevel = 0;
-    *static_cast<int *>(static_cast<void *>(&m_bNeed_DeccelSnd)) = 0;
+    m_bNeed_DeccelSnd = false;
     t_Last_Shift = 0.0f;
-    *static_cast<int *>(static_cast<void *>(&m_bNeed_AccelSnd)) = 0;
+    m_bNeed_AccelSnd = false;
     m_timeBrakeLastMashed = Timer(0);
 }
 

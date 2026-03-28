@@ -4,9 +4,6 @@
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include <types.h>
 
-extern "C" void Average_Record(Average *avg, float value) asm("Record__7Averagef");
-extern "C" void AverageBase_Recalculate(AverageBase *avg) asm("Recalculate__11AverageBase");
-
 static const float MIN_StateSustainTime[MAX_NUM_SND_AI_STATE] = {
     1.0f,
     1.0f,
@@ -86,8 +83,8 @@ void SndAITrigger::Initialize(int AvgSize) {
 }
 
 void SndAITrigger::Update(float UpdateVal, float t) {
-    Average_Record(&AvgMonitor, UpdateVal);
-    AverageBase_Recalculate(&AvgMonitor);
+    AvgMonitor.Record(UpdateVal);
+    AvgMonitor.Recalculate();
 
     CurValue = static_cast<const Average &>(AvgMonitor).GetValue();
 

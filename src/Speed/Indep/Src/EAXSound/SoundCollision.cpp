@@ -313,7 +313,7 @@ void CollisionEvent::InitAsScrape(const Attrib::Gen::audioscrape &audioFx) {
             effectString = "";
         }
 
-        *static_cast<int *>(static_cast<void *>(&mActive)) = 1;
+        mActive = true;
         mCSISEffect = effectString;
         Description |= 0x200;
     }
@@ -396,7 +396,7 @@ void CollisionEvent::InitAsImpact(const Attrib::Gen::audioimpact &audioFx) {
 }
 
 void CollisionEvent::Release() {
-    *static_cast<int *>(static_cast<void *>(&mActive)) = 0;
+    mActive = false;
 
     if (Owner) {
         Owner->Detach();

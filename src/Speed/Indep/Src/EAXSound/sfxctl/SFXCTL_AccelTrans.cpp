@@ -116,9 +116,9 @@ void SFXCTL_AccelTrans::UpdateParams(float t) {
         }
     }
 
-    if (*reinterpret_cast< int * >(&OldIsAccelerating) != 0 &&
+    if (OldIsAccelerating &&
         (bVar1 = ShouldPlayEngOffSweet(), bVar1)) {
-        *reinterpret_cast< int * >(static_cast< void * >(&m_pShiftCtl->m_bNeed_DeccelSnd)) = 1;
+        m_pShiftCtl->m_bNeed_DeccelSnd = true;
     }
 
 end:
@@ -211,7 +211,7 @@ void SFXCTL_AccelTrans::BeginAccelTrans() {
     m_InterpEngRPM.Initialize(GetPhysRPM() + 1000.0f, GetPhysRPM(), 500, EQ_PWR_SQ);
     eAccelTransFxState = FX_ACCEL_STATE_ATTACK;
     m_InterpEngVol.Initialize(0.8f, 0.0f, 200, LINEAR);
-    *static_cast< int * >(static_cast< void * >(&m_pShiftCtl->m_bNeed_AccelSnd)) = 1;
+    m_pShiftCtl->m_bNeed_AccelSnd = true;
     m_InterpEngTorque.Initialize(100.0f, 100.0f, 10, LINEAR);
     t_LastAccelTrans = SndBase::m_fRunningTime;
 }

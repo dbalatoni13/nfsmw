@@ -234,7 +234,7 @@ void SFXCTL_HybridMotor::UpdateDualMixEng(float t) {
     DecelMix.Cutoff =
         bMin(static_cast<int>(m_pEAXCar->GetAttributes().GINSU_LowPassCutoff()), m_pEngineCtl->m_DistanceFltr);
 
-    *static_cast<int *>(static_cast<void *>(&m_bAEMSLPF)) = 0;
+    m_bAEMSLPF = false;
     newmix.Aems = (AccelMix.Aems - DecelMix.Aems) * AccelDecelMix + DecelMix.Aems;
     newmix.AccelGinsu = (AccelMix.AccelGinsu - DecelMix.AccelGinsu) * AccelDecelMix + DecelMix.AccelGinsu;
     newmix.DecelGinsu = (AccelMix.DecelGinsu - DecelMix.DecelGinsu) * AccelDecelMix + DecelMix.DecelGinsu;
@@ -403,7 +403,7 @@ void SFXCTL_HybridMotor::UpdateMixerOutputs() {
     } else {
         if (SteadyFrameCnt == 0) {
             SteadyFrameCnt = static_cast< unsigned short >(g_pEAXSound->Random(0x96) + 0x3C);
-            *static_cast<int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pEngineCtl)) + 0x14C)) = 1;
+            m_pEngineCtl->bPlayCompression = true;
         }
         SteadyFrameCnt = static_cast< unsigned short >(SteadyFrameCnt - 1);
     }
@@ -417,8 +417,8 @@ void SFXCTL_HybridMotor::UpdateMixerOutputs() {
     PercentOfThreshold = bClamp(PercentOfThreshold, 0.0f, 1.0f);
     output = smooth(GetDMIX_InputValue(1), static_cast< int >(PercentOfThreshold * 32767.0f), 3000);
 
-    if (*static_cast<int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pEngineCtl)) + 0xD0)) == 0 &&
-        *static_cast<int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pEngineCtl)) + 0xCC)) != 0) {
+    if (!m_pEngineCtl->bWasRedlining &&
+        m_pEngineCtl->bIsRedlining) {
         mPrevDeltaRPM = output / 2;
     }
 
@@ -445,7 +445,7 @@ void SFXCTL_HybridMotor::UpdateMixerOutputs() {
         }
     }
 
-    if (*static_cast<int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pEngineCtl)) + 0xCC)) != 0) {
+    if (m_pEngineCtl->bIsRedlining) {
         SetDMIX_Input(1, mPrevDeltaRPM);
     }
 }

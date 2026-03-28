@@ -285,16 +285,14 @@ void *PF_Allocator::Alloc(unsigned int size, const EA::TagValuePair &flags) {
 }
 
 int PF_Allocator::AddRef() {
-    int *data = static_cast<int *>(static_cast<void *>(this));
-    int refCount = data[1] + 1;
-    data[1] = refCount;
+    int refCount = mRefcount + 1;
+    mRefcount = refCount;
     return refCount;
 }
 
 int PF_Allocator::Release() {
-    int *data = static_cast<int *>(static_cast<void *>(this));
-    int refCount = data[1] - 1;
-    data[1] = refCount;
+    int refCount = mRefcount - 1;
+    mRefcount = refCount;
 
     if (refCount < 1) {
         if (this) {
