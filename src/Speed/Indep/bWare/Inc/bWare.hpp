@@ -7,6 +7,7 @@
 
 #include "Strings.hpp"
 #include "bMath.hpp"
+#include "Speed/Indep/Libs/Support/Utility/UCrc.h"
 #include "bMemory.hpp"
 #include "bSlotPool.hpp"
 
@@ -105,6 +106,13 @@ inline void bPlatEndianSwap(signed char *value) {}
 
 inline void bPlatEndianSwap(float *value) {
     bEndianSwap32(value);
+}
+
+// TODO are the endian swap functions in this file?
+inline void bPlatEndianSwap(UCrc32 *c) {
+    unsigned int val = c->GetValue();
+    bPlatEndianSwap(&val);
+    *c = UCrc32(val);
 }
 
 inline bool bIsDigit(char c) {

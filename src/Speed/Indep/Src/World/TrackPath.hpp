@@ -29,19 +29,24 @@ enum eTrackPathZoneType {
 };
 
 // total size: 0x18
-struct TrackPathBarrier {
+class TrackPathBarrier {
+  public:
+    void EndianSwap() {
+        bPlatEndianSwap(&Points[0]);
+        bPlatEndianSwap(&Points[1]);
+        bPlatEndianSwap(&GroupHash);
+    }
+
+    bool HasGroup(unsigned int group_hash) {
+        return GroupHash == group_hash;
+    }
+
     bVector2 Points[2];     // offset 0x0, size 0x10
     char Enabled;           // offset 0x10, size 0x1
     char Pad;               // offset 0x11, size 0x1
     char PlayerBarrier;     // offset 0x12, size 0x1
     char LeftHanded;        // offset 0x13, size 0x1
     unsigned int GroupHash; // offset 0x14, size 0x4
-
-    void EndianSwap() {
-        bPlatEndianSwap(&Points[0]);
-        bPlatEndianSwap(&Points[1]);
-        bPlatEndianSwap(&GroupHash);
-    }
 };
 
 // total size: 0x244
@@ -67,6 +72,7 @@ class TrackPathZone {
     bool GetIntercept(bVector2 &InterceptPoint, const bVector2 *Start, const bVector2 *Direction);
     bool IsPointInside(const bVector2 *point);
     float GetSegmentNextTo(bVector2 *point, bVector2 *segment_point_a, bVector2 *segment_point_b);
+
     float GetElevation() {
         return Elevation;
     }
@@ -93,21 +99,20 @@ class TrackPathZone {
 };
 
 // total size: 0x48C
-
 class TrackPathManager {
   public:
+    // total size: 0x4C
     struct ZoneInfo {
-        // total size: 0x4C
-        int NumZones;
-        TrackPathZone *pFirstZone;
-        TrackPathZone *pLastZone;
-        bVector2 CachedBBoxMin;
-        bVector2 CachedBBoxMax;
-        int NumCachedZones;
-        int NumCacheHits;
-        int NumFullRebuilds;
-        int NumCacheRebuilds;
-        TrackPathZone *CachedZones[8];
+        int NumZones;                  // offset 0x0, size 0x4
+        TrackPathZone *pFirstZone;     // offset 0x4, size 0x4
+        TrackPathZone *pLastZone;      // offset 0x8, size 0x4
+        bVector2 CachedBBoxMin;        // offset 0xC, size 0x8
+        bVector2 CachedBBoxMax;        // offset 0x14, size 0x8
+        int NumCachedZones;            // offset 0x1C, size 0x4
+        int NumCacheHits;              // offset 0x20, size 0x4
+        int NumCacheRebuilds;          // offset 0x24, size 0x4
+        int NumFullRebuilds;           // offset 0x28, size 0x4
+        TrackPathZone *CachedZones[8]; // offset 0x2C, size 0x20
     };
 
   public:
@@ -126,6 +131,10 @@ class TrackPathManager {
 
     void Close() {}
 
+    TrackPathBarrier *GetBarrier(int n) {
+        return &pBarriers[n];
+    }
+
   private:
     TrackPathZone *GetLastZone() {
         return reinterpret_cast<TrackPathZone *>(reinterpret_cast<char *>(pZones) + SizeofZones);
@@ -142,6 +151,7 @@ class TrackPathManager {
 
 extern TrackPathManager TheTrackPathManager;
 
+bool DoLinesIntersect(const bVector2 &line1_start, const bVector2 &line1_end, const bVector2 &line2_start, const bVector2 &line2_end);
 void TrackPathInitRemoteCaffeineConnection();
 int LoaderTrackPath(bChunk *chunk);
 int UnloaderTrackPath(bChunk *chunk);

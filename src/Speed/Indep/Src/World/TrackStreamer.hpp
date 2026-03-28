@@ -5,6 +5,7 @@
 #pragma once
 #endif
 
+#include "TrackPath.hpp"
 #include "Speed/Indep/bWare/Inc/bChunk.hpp"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
@@ -23,6 +24,7 @@ struct DiscBundleSectionMember {
     struct TrackStreamingSection *pSection; // offset 0x4, size 0x4
 };
 
+// total size: 0x114
 struct DiscBundleSection {
     int GetMemoryImageSize() {
         return NumMembers * sizeof(DiscBundleSectionMember) + 0x14;
@@ -32,11 +34,10 @@ struct DiscBundleSection {
         return reinterpret_cast<DiscBundleSection *>(reinterpret_cast<char *>(this) + GetMemoryImageSize());
     }
 
-    // total size: 0x114
-    int FileOffset;                      // offset 0x0, size 0x4
-    int FileSize;                        // offset 0x4, size 0x4
+    int32 FileOffset;                    // offset 0x0, size 0x4
+    int32 FileSize;                      // offset 0x4, size 0x4
     char SectionName[11];                // offset 0x8, size 0xB
-    char NumMembers;                     // offset 0x13, size 0x1
+    int8 NumMembers;                     // offset 0x13, size 0x1
     DiscBundleSectionMember Members[32]; // offset 0x14, size 0x100
 };
 
@@ -102,16 +103,22 @@ struct StreamingPositionEntry {
 // total size: 0x34
 class TSMemoryNode : public bTNode<TSMemoryNode> {
   public:
-    int Address;        // offset 0x8, size 0x4
+    intptr_t Address;   // offset 0x8, size 0x4
     int Size;           // offset 0xC, size 0x4
     bool Allocated;     // offset 0x10, size 0x1
     char DebugName[32]; // offset 0x14, size 0x20
 
-    bool IsAllocated();
+    bool IsFree() {
+        return !Allocated;
+    }
 
-    bool IsFree();
+    bool IsAllocated() {
+        return Allocated;
+    }
 
-    bool Contains(int address);
+    bool Contains(intptr_t address) {
+        return address >= Address && address < Address + Size;
+    }
 
     int GetAddress(bool start_from_top, int size) {
         if (start_from_top) {
@@ -124,39 +131,69 @@ class TSMemoryNode : public bTNode<TSMemoryNode> {
 // total size: 0x2754
 class TSMemoryPool {
   public:
-    TSMemoryPool(int address, int size, const char *debug_name, int pool_num);
-    void *Malloc(int size, const char *debug_name, bool best_fit, bool allocate_from_top, int address);
-    void Free(void *memory);
+    TSMemoryPool(intptr_t address, int size, const char *debug_name, int pool_num);
+    void *Malloc(int size, const char *debug_name, bool best_fit, bool allocate_from_top, intptr_t address);
+    void Free(void *ptr);
     int GetAmountFree();
     int GetLargestFreeBlock();
-    TSMemoryNode *GetNextNode(bool start_from_top, TSMemoryNode *node = 0);
+    TSMemoryNode *GetNextNode(bool start_from_top, TSMemoryNode *node);
+
     TSMemoryNode *GetFirstNode(bool start_from_top) {
-        return GetNextNode(start_from_top, 0);
+        return GetNextNode(start_from_top, nullptr);
     }
-    TSMemoryNode *GetNextFreeNode(bool start_from_top, TSMemoryNode *node = 0);
+
+    TSMemoryNode *GetNextFreeNode(bool start_from_top, TSMemoryNode *node);
+
     TSMemoryNode *GetFirstFreeNode(bool start_from_top) {
-        return GetNextFreeNode(start_from_top, 0);
+        return GetNextFreeNode(start_from_top, nullptr);
     }
-    TSMemoryNode *GetNextAllocatedNode(bool start_from_top, TSMemoryNode *node = 0);
-    TSMemoryNode *GetFirstAllocatedNode(bool start_from_top);
+
+    TSMemoryNode *GetNextAllocatedNode(bool start_from_top, TSMemoryNode *node);
+
+    TSMemoryNode *GetFirstAllocatedNode(bool start_from_top) {
+        return GetNextAllocatedNode(start_from_top, 0);
+    }
+
     bool IsUpdated() {
         bool updated = Updated;
         Updated = false;
         return updated;
     }
+
     unsigned int GetPoolChecksum();
+    void DebugPrint();
+
     void EnableTracing(bool enabled) {
         TracingEnabled = enabled;
     }
-    void DebugPrint();
 
   private:
-    static void *OverrideMalloc(void *pool, int size, const char *debug_text, int debug_line, int allocation_params);
-    static void OverrideFree(void *pool, void *ptr);
-    static int OverrideGetAmountFree(void *pool);
-    static int OverrideGetLargestFreeBlock(void *pool);
+    static void *OverrideMalloc(void *pool, int size, const char *debug_text, int debug_line, int allocation_params) {
+        int user_alignment_offset = bMemoryGetAlignmentOffset(allocation_params);
 
-    TSMemoryNode *GetNewNode(int address, int size, bool allocated, const char *debug_name);
+        if (user_alignment_offset != 0) {
+            char *p = reinterpret_cast<char *>(static_cast<TSMemoryPool *>(pool)->Malloc(
+                size + 0x80, debug_text, bMemoryGetBestFit(allocation_params), bMemoryGetTopBit(allocation_params), 0));
+            return &p[0x80 - user_alignment_offset];
+        }
+
+        return static_cast<TSMemoryPool *>(pool)->Malloc(size, debug_text, bMemoryGetBestFit(allocation_params), bMemoryGetTopBit(allocation_params),
+                                                         0);
+    }
+
+    static void OverrideFree(void *pool, void *ptr) {
+        static_cast<TSMemoryPool *>(pool)->Free(reinterpret_cast<void *>(reinterpret_cast<uintptr_t>(ptr) & ~static_cast<uintptr_t>(0x7F)));
+    }
+
+    static int OverrideGetAmountFree(void *pool) {
+        return static_cast<TSMemoryPool *>(pool)->GetAmountFree();
+    }
+
+    static int OverrideGetLargestFreeBlock(void *pool) {
+        return static_cast<TSMemoryPool *>(pool)->GetLargestFreeBlock();
+    }
+
+    TSMemoryNode *GetNewNode(intptr_t address, int size, bool allocated, const char *debug_name);
     void RemoveNode(TSMemoryNode *node);
 
     int PoolNum;                         // offset 0x0, size 0x4
@@ -180,19 +217,34 @@ struct TrackStreamingInfo {
 
 // total size: 0x10
 struct TrackStreamingBarrier {
-    // void EndianSwap() {}
+    void EndianSwap() {
+        bPlatEndianSwap(&Points[0]);
+        bPlatEndianSwap(&Points[1]);
+    }
 
-    bool Intersects(const bVector2 *pointa, const bVector2 *pointb);
+    bool Intersects(const bVector2 *pointa, const bVector2 *pointb) {
+        return DoLinesIntersect(Points[0], Points[1], *pointa, *pointb);
+    }
 
     bVector2 Points[2]; // offset 0x0, size 0x10
 };
 
+// total size: 0x10
 struct HoleMovement {
-    // total size: 0x10
-    int Address;           // offset 0x0, size 0x4
-    int NewAddress;        // offset 0x4, size 0x4
+    intptr_t Address;      // offset 0x0, size 0x4
+    intptr_t NewAddress;   // offset 0x4, size 0x4
     int Size;              // offset 0x8, size 0x4
     unsigned int Checksum; // offset 0xC, size 0x4
+};
+
+enum HoleFillerMethod {
+    HOLE_FILLER_METHOD_LINEAR_BOTTOM_ALL_THE_WAY = 0,
+    HOLE_FILLER_METHOD_SUPER_SCOOPER = 1,
+    HOLE_FILLER_METHOD_LINEAR_BOTTOM = 2,
+    HOLE_FILLER_METHOD_LINEAR_TOP = 3,
+    HOLE_FILLER_METHOD_BIGGEST_FIRST_BOTTOM = 4,
+    HOLE_FILLER_METHOD_BIGGEST_FIRST_TOP = 5,
+    NUM_HOLE_FILLER_METHODS = 6,
 };
 
 // total size: 0x888
@@ -228,7 +280,7 @@ class TrackStreamer {
 
     TrackStreamingSection *FindSection(int section_number);
 
-    TrackStreamingSection *FindSectionByAddress(int address);
+    TrackStreamingSection *FindSectionByAddress(intptr_t address);
 
     void InitRegion(const char *region_stream_filename, bool split_screen);
 
@@ -306,7 +358,7 @@ class TrackStreamer {
 
     bool MakeSpaceInPool(int size, bool force_unloading);
 
-    void MakeSpaceInPool(int size, void (*callback)(int), int param);
+    void MakeSpaceInPool(int size, void (*callback)(intptr_t), intptr_t param);
 
     void ReadyToMakeSpaceInPool();
 
@@ -326,7 +378,7 @@ class TrackStreamer {
 
     void RefreshLoading();
 
-    void SetLoadingCallback(void (*callback)(int), int param);
+    void SetLoadingCallback(void (*callback)(intptr_t), intptr_t param);
 
     void SwitchZones(short *current_zones);
 
@@ -375,12 +427,16 @@ class TrackStreamer {
     bool DetermineCurrentZones(short *current_zones);
     void HandleZoneSwitching();
     int GetCombinedSectionNumber(int section_number);
-    static void DiscBundleLoadedCallback(int param, int error_status);
-    static void ReadyToMakeSpaceInPoolBridge(int param);
+    static void DiscBundleLoadedCallback(intptr_t param, int error_status);
+
+    static void ReadyToMakeSpaceInPoolBridge(intptr_t param) {
+        reinterpret_cast<TrackStreamer *>(param)->ReadyToMakeSpaceInPool();
+    }
+
     void DiscBundleLoadedCallback(DiscBundleSection *disc_bundle);
     void LoadDiscBundle(DiscBundleSection *disc_bundle);
     void LoadSection(TrackStreamingSection *section);
-    static void SectionLoadedCallback(int param, int error_status);
+    static void SectionLoadedCallback(intptr_t param, int error_status);
     void SectionLoadedCallback(TrackStreamingSection *section);
 
     TrackStreamingSection *pTrackStreamingSections;       // offset 0x0, size 0x4
@@ -430,13 +486,15 @@ class TrackStreamer {
     TSMemoryPool *pMemoryPool;                            // offset 0x860, size 0x4
     bBitTable CurrentVisibleSectionTable;                 // offset 0x864, size 0x8
     short KeepSectionTable[4];                            // offset 0x86C, size 0x8
-    void (*pCallback)(int);                               // offset 0x874, size 0x4
-    int CallbackParam;                                    // offset 0x878, size 0x4
-    void (*MakeSpaceInPoolCallback)(int);                 // offset 0x87C, size 0x4
-    int MakeSpaceInPoolCallbackParam;                     // offset 0x880, size 0x4
+    void (*pCallback)(intptr_t);                          // offset 0x874, size 0x4
+    intptr_t CallbackParam;                               // offset 0x878, size 0x4
+    void (*MakeSpaceInPoolCallback)(intptr_t);            // offset 0x87C, size 0x4
+    intptr_t MakeSpaceInPoolCallbackParam;                // offset 0x880, size 0x4
     int MakeSpaceInPoolSize;                              // offset 0x884, size 0x4
 };
 
 extern TrackStreamer TheTrackStreamer;
+
+void RefreshTrackStreamer();
 
 #endif

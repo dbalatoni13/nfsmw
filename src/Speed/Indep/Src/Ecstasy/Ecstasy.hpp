@@ -8,14 +8,15 @@
 #include "EcstasyData.hpp"
 #include "EcstasyE.hpp"
 #include "Speed/Indep/bWare/Inc/bChunk.hpp"
+#include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
 #include "Texture.hpp"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
 extern SlotPool *eModelSlotPool;
 
+// total size: 0x18
 struct eModel : public bTNode<eModel> {
-    // total size: 0x18
     unsigned int NameHash;                                     // offset 0x8, size 0x4
     eSolid *Solid;                                             // offset 0xC, size 0x4
     struct eReplacementTextureTable *pReplacementTextureTable; // offset 0x10, size 0x4
@@ -35,7 +36,9 @@ struct eModel : public bTNode<eModel> {
     ePositionMarker *GetPostionMarker(ePositionMarker *prev_marker);
     ePositionMarker *GetPostionMarker(unsigned int namehash);
 
-    static void *operator new(size_t size) {}
+    void *operator new(size_t size) {
+        return bOMalloc(eModelSlotPool);
+    }
 
     void operator delete(void *ptr) {
         bFree(eModelSlotPool, ptr);
@@ -43,8 +46,14 @@ struct eModel : public bTNode<eModel> {
 
     eModel() {}
 
+    eModel(unsigned int name_hash) {
+        NameHash = 0;
+        Solid = nullptr;
+        Init(name_hash);
+    }
+
     ~eModel() {
-        this->UnInit();
+        UnInit();
     }
 
     unsigned int GetNameHash() {
@@ -55,6 +64,10 @@ struct eModel : public bTNode<eModel> {
 
     eSolid *GetSolid() {
         return Solid;
+    }
+
+    int HasSolid() {
+        return Solid != nullptr;
     }
 };
 
@@ -218,81 +231,6 @@ inline void eUnSwizzleWorldVector(const bVector3 &inVec, bVector3 &outVec) {
 eRenderTarget *eGetRenderTarget(int render_target);
 void eUpdateViewMode(void);
 
-enum ScreenEffectType {
-    SE_NUM_TYPES = 5,
-    SE_FE_BLUR = 4,
-    SE_GLARE = 3,
-    SE_VISUAL_SIG = 2,
-    SE_MOTION_BLUR = 1,
-    SE_TINT = 0,
-};
-
-enum ScreenEffectControl {
-    SEC_FUNCTION = 2,
-    SEC_BOOLEAN = 1,
-    SEC_FRAME = 0,
-};
-
-enum ScreenEffectPalette {
-    EFX_CAMERA_FLASH = 0,
-    EFX_TUNNEL = 1,
-    EFX_UNIQUE = 2,
-    EFX_NUMBER = 3,
-};
-
-struct ScreenEffectInf {
-    // total size: 0xC
-    ScreenEffectControl Controller; // offset 0x0, size 0x4
-    unsigned int frameNum;          // offset 0x4, size 0x4
-    unsigned int active;            // offset 0x8, size 0x4
-};
-struct ScreenEffectDef {
-    // total size: 0x50
-    float r;         // offset 0x0, size 0x4
-    float g;         // offset 0x4, size 0x4
-    float b;         // offset 0x8, size 0x4
-    float a;         // offset 0xC, size 0x4
-    float intensity; // offset 0x10, size 0x4
-    float data[14];  // offset 0x14, size 0x38
-    void (*UpdateFnc)(ScreenEffectType,
-                      struct ScreenEffectDB *); // offset 0x4C, size 0x4
-};
-
-struct ScreenEffectPaletteDef {
-    // total size: 0x10C
-    int NumEffects;                       // offset 0x0, size 0x4
-    ScreenEffectType SE_type[3];          // offset 0x4, size 0xC
-    ScreenEffectDef SE_Def[3];            // offset 0x10, size 0xF0
-    ScreenEffectControl SE_Controller[3]; // offset 0x100, size 0xC
-};
-
-struct ScreenEffectDB {
-    // total size: 0x1E8
-    eView *MyView;              // offset 0x0, size 0x4
-    ScreenEffectInf SE_inf[5];  // offset 0x4, size 0x3C
-    ScreenEffectDef SE_data[5]; // offset 0x40, size 0x190
-    unsigned int numType[5];    // offset 0x1D0, size 0x14
-    float SE_time;              // offset 0x1E4, size 0x4
-
-    ScreenEffectDB();
-    void Update(float deltatime);
-    void AddScreenEffect(ScreenEffectType type, float intensity, float r, float g, float b);
-    void AddScreenEffect(ScreenEffectType type, ScreenEffectDef *info, unsigned int lock, ScreenEffectControl controller);
-    void AddPaletteEffect(ScreenEffectPalette palette);
-    void AddPaletteEffect(ScreenEffectPaletteDef *palette);
-    float GetIntensity(ScreenEffectType type);
-    float GetDATA(ScreenEffectType type, int index);
-    void SetDATA(ScreenEffectType type, float data, int index);
-
-    void SetController(ScreenEffectType type, ScreenEffectControl SEC) {
-        SE_inf[type].Controller = SEC;
-    }
-
-    void SetMyView(eView *view) {
-        MyView = view;
-    }
-};
-
 struct ePoly {
     // total size: 0x94
     bVector3 Vertices[4];        // offset 0x0, size 0x40
@@ -317,32 +255,11 @@ struct ePoly {
     unsigned char GetFlailer() {}
 };
 
-struct OnScreenRain {
-    // total size: 0x4
-    int NumOnScreen; // offset 0x0, size 0x4
-
-    int GetNumOnScreen() {
-        return NumOnScreen;
-    }
-};
-
 enum CurtainStatus {
     CT_OVERIDE = 3,
     CT_TURNON = 2,
     CT_ACTIVE = 1,
     CT_INACTIVE = 0,
-};
-
-enum RainType {
-    NUMTYPES = 2,
-    INACTIVE = 1,
-    RAIN = 0,
-};
-
-enum RainWindType {
-    NUMWINDTYPES = 2,
-    VECTOR_WIND = 1,
-    POINT_WIND = 0,
 };
 
 struct FacePixelation {
@@ -463,6 +380,8 @@ void eSolidNotifyTextureLoading(TexturePack *texture_pack, TextureInfo *texture_
 eSolid *eFindSolid(unsigned int name_hash, eSolidListHeader *solid_list_header);
 int eSmoothNormals(eSolid **solid_table, int num_solids);
 
+void SetDuplicateTextureWarning(BOOL enabled);
+
 extern eLoadedSolidStats LoadedSolidStats;
 extern unsigned int eFrameCounter;
 extern int WaitUntilRenderingDoneDisabled;
@@ -481,6 +400,42 @@ inline void DisableWaitUntilRenderingDone() {
 
 inline void EnableWaitUntilRenderingDone() {
     WaitUntilRenderingDoneDisabled = 0;
+}
+
+extern unsigned int FrameMallocFailed;
+extern unsigned int FrameMallocFailAmount;
+
+static inline bMatrix4 *eFrameMallocMatrix(int num_matrices) {
+    unsigned int size = num_matrices * sizeof(bMatrix4);
+    unsigned char *address = CurrentBufferPos;
+    if (address + size < CurrentBufferEnd) {
+        CurrentBufferPos += size;
+    } else {
+        FrameMallocFailed = 1;
+        FrameMallocFailAmount += size;
+        return nullptr;
+    }
+    return reinterpret_cast<bMatrix4 *>(address);
+}
+
+extern bool WaitForFrameBufferSwapDisabled;
+
+inline void DisableWaitForFrameBufferSwap() {
+    WaitForFrameBufferSwapDisabled = true;
+}
+
+inline void EnableWaitForFrameBufferSwap() {
+    WaitForFrameBufferSwapDisabled = false;
+}
+
+extern int AllowDuplicateSolids;
+
+inline void eAllowDuplicateSolids(bool enable) {
+    if (enable) {
+        AllowDuplicateSolids++;
+    } else {
+        AllowDuplicateSolids--;
+    }
 }
 
 #endif

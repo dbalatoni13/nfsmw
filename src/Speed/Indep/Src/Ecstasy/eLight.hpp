@@ -15,6 +15,7 @@
 
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
+#include "Speed/Indep/Src/Misc/VolumeTree.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
 enum eLightReflexionType {
@@ -135,14 +136,14 @@ struct eLight {
 
 struct eLightPack : public bTNode<eLightPack> {
     // total size: 0x20
-    short Version;               // offset 0x8, size 0x2
-    char EndianSwapped;          // offset 0xA, size 0x1
-    char Pad;                    // offset 0xB, size 0x1
-    int ScenerySectionNumber;    // offset 0xC, size 0x4
-    struct vAABBTree *LightTree; // offset 0x10, size 0x4
-    int NumTreeNodes;            // offset 0x14, size 0x4
-    eLight *LightArray;          // offset 0x18, size 0x4
-    int NumLights;               // offset 0x1C, size 0x4
+    short Version;            // offset 0x8, size 0x2
+    char EndianSwapped;       // offset 0xA, size 0x1
+    char Pad;                 // offset 0xB, size 0x1
+    int ScenerySectionNumber; // offset 0xC, size 0x4
+    vAABBTree *LightTree;     // offset 0x10, size 0x4
+    int NumTreeNodes;         // offset 0x14, size 0x4
+    eLight *LightArray;       // offset 0x18, size 0x4
+    int NumLights;            // offset 0x1C, size 0x4
 
     void EndianSwap() {}
 };
@@ -190,6 +191,27 @@ struct eShaperLightRig {
     eShaperLight Lights[4]; // offset 0x4, size 0x70
     bVector3 position;      // offset 0x74, size 0x10
     int NumOverideSlots;    // offset 0x84, size 0x4
+};
+
+class eSceneryLightContext : public eLightContext {
+  public:
+    void EndianSwap() {
+        bPlatEndianSwap(&Type);
+        bPlatEndianSwap(&NumLights);
+        bPlatEndianSwap(&LightingContextNumber);
+
+        for (unsigned int i = 0; i < NumLights; i++) {
+            bPlatEndianSwap(&LocalLights[i].v0);
+            bPlatEndianSwap(&LocalLights[i].v1);
+            bPlatEndianSwap(&LocalLights[i].v2);
+            bPlatEndianSwap(&LocalLights[i].v3);
+        }
+    }
+
+    char Name[34];
+    short LightingContextNumber;
+    bMatrix4 *LocalLights;
+    unsigned int NumLights;
 };
 
 void elInit();

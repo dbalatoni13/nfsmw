@@ -8,9 +8,6 @@
 #include "Speed/Indep/bWare/Inc/bChunk.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
-class TrackInfo;
-extern TrackInfo *LoadedTrackInfo;
-
 enum eLocationName {
     UPPER_CLASS = 0,
     CITY_CORE = 1,

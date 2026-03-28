@@ -6,11 +6,14 @@
 #endif
 
 #include "./WCollision.h"
+#include "WSurfaceTypes.h"
 #include "Speed/Indep/Libs/Support/Utility/UStandard.h"
 #include "Speed/Indep/Libs/Support/Utility/UTypes.h"
 
+// total size: 0x30
 struct WCollisionTri {
-    // total size: 0x30
+    WCollisionTri() {}
+
     UMath::Vector3 fPt0;                  // offset 0x0, size 0xC
     const struct SimSurface *fSurfaceRef; // offset 0xC, size 0x4
     UMath::Vector3 fPt1;                  // offset 0x10, size 0xC

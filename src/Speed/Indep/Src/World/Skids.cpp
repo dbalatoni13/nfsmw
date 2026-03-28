@@ -1,37 +1,17 @@
+#include "Speed/Indep/Libs/Support/Utility/UMath.h"
+#include "Clans.hpp"
 #include "Skids.hpp"
-
 #include "Speed/Indep/Src/Camera/Camera.hpp"
+#include "Speed/Indep/Src/Ecstasy/EcstasyData.hpp"
 #include "Speed/Indep/Src/Ecstasy/Texture.hpp"
 #include "Speed/Indep/Src/Ecstasy/eMath.hpp"
 #include "Speed/Indep/Src/Misc/Profiler.hpp"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
-#include "Speed/Indep/bWare/Inc/bVector.hpp"
-#include "Speed/Indep/bWare/Inc/bWare.hpp"
-
-void bInitializeBoundingBox(bVector3 *bbox_min, bVector3 *bbox_max, const bVector3 *point);
-void bExpandBoundingBox(bVector3 *bbox_min, bVector3 *bbox_max, const bVector3 *point, float extra_width);
-void bExpandBoundingBox(bVector3 *bbox_min, bVector3 *bbox_max, const bVector3 *bbox2_min, const bVector3 *bbox2_max);
-int bIsSlotPoolFull(SlotPool *slot_pool);
-extern bVector3 ZeroVector;
-
-static const int kNumSkidSegments_Skids = 8;
-static const int kNumSkidTextures_Skids = 29;
-static const float kSkidSegmentScale_Skids = 64.0f;
-static const float kInverseSkidSegmentScale_Skids = 1.0f / 64.0f;
-static const float kSkidDirectionBreakThreshold_Skids = 0.2f;
-static const float kSkidDirectionMergeThreshold_Skids = 0.002f;
-static const float kSkidLengthMergeThreshold_Skids = 0.25f;
-static const float kSkidLengthSplitThreshold_Skids = 3.0f;
-static const float kSkidIntensityScale_Skids = 255.0f;
-static const unsigned int kSkidColour_Skids = 0x80808080;
-
-class eViewSkidRenderShim : public eView {
-  public:
-    void Render(ePoly *poly, TextureInfo *texture_info, bMatrix4 *matrix, int flags, float z_bias);
-};
+#include "Speed/Indep/bWare/Inc/Espresso.hpp"
+#include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
 
 void SkidSegment::SetPoints(bVector3 *position, bVector3 *delta_position) {
-    const float scale_factor = kSkidSegmentScale_Skids;
+    const float scale_factor = 64.0f;
     float x = position->x;
     float y = position->y;
     float z = position->z;
@@ -47,14 +27,26 @@ void SkidSegment::SetPoints(bVector3 *position, bVector3 *delta_position) {
     DeltaPosition[2] = static_cast<signed char>(dz);
 }
 
-SlotPool *SkidSetSlotPool = 0;
+bTList<SkidSet> SkidSetList;
+SlotPool *SkidSetSlotPool = nullptr;
 int PlotSkidsInCaffeine = 0;
 int PlotSkidPointsInCaffeine = 0;
-bTList<SkidSet> SkidSetList;
-TextureInfo *SkidTextureInfo[kNumSkidTextures_Skids];
+
+// TODO use these
+// static const float MaxSkidLength;
+// static const float MinSkidLength;
+static const float SkidWayTooCurvyFactor = 0.2f;
+static const float SkidTooCurvyFactor = 0.002f;
+static const float SkidExtraHeight = 0.05f;
+static const float MaxSkidDistanceFromCar = 4.0f;
+static const float SkidFarClip = 4.0f;
+static const float SkidFullIntensityFarClip = 10.0f;
+// static const int ClearSkids;
+
+TextureInfo *SkidTextureInfo[29];
 
 void SkidSegment::GetPoints(bVector3 *position, bVector3 *delta_position) {
-    const float scale_factor = kInverseSkidSegmentScale_Skids;
+    const float scale_factor = 1.0f / 64.0f;
     float x;
     float y;
     float z;
@@ -81,7 +73,7 @@ void SkidSegment::GetPoints(bVector3 *position, bVector3 *delta_position) {
 }
 
 void SkidSegment::GetEndPoints(bVector3 *left_point, bVector3 *right_point) {
-    const float scale_factor = kInverseSkidSegmentScale_Skids;
+    const float scale_factor = 1.0f / 64.0f;
     float x;
     float y;
     float z;
@@ -109,9 +101,10 @@ SkidSet::SkidSet(SkidMaker *skid_maker, bVector3 *position, bVector3 *delta_posi
     pSkidMaker = skid_maker;
     Position = *position;
     bInitializeBoundingBox(&BBoxMin, &BBoxMax, position);
-    BBoxCentre = *position;
+    bCopy(&BBoxCentre, position);
 
-    pClan = GetClan(position);
+    Clan *clan = GetClan(position);
+    pClan = clan;
     pClanNode = pClan->SkidSetList.AddTail(this);
 
     AddSegment(position, delta_position, false, intensity);
@@ -128,52 +121,61 @@ SkidSet::~SkidSet() {
 int SkidSet::AddSegment(bVector3 *position, bVector3 *delta_position, bool skid_is_flaming, float intensity) {
     (void)skid_is_flaming;
 
+    bVector3 new_segment_normal;
     bVector3 new_segment_forward;
     float length = 0.0f;
     if (NumSkidSegments > 0) {
-        bVector3 new_segment_normal = *position - *SkidSegments[NumSkidSegments - 1].GetPosition();
-        bVector3 new_segment_delta(new_segment_normal);
-        length = bLength(&new_segment_delta);
-        bNormalize(&new_segment_forward, &new_segment_delta);
+        new_segment_forward = *position - *SkidSegments[NumSkidSegments - 1].GetPosition();
+        length = bLength(&new_segment_forward);
+        bNormalize(&new_segment_normal, &new_segment_forward);
     }
 
     int expand_last_skid_segment = 0;
+    float error;
     if (NumSkidSegments > 1) {
-        float error = 1.0f - bDot(&new_segment_forward, &LastNormal);
+        error = 1.0f - bDot(&new_segment_normal, &LastNormal);
         float new_segment_length = LastSegmentLength + length;
-        if (error > kSkidDirectionBreakThreshold_Skids) {
+        if (error > SkidWayTooCurvyFactor) {
             FinishedAddingSkids();
             return 0;
         }
 
-        if (new_segment_length < kSkidLengthMergeThreshold_Skids) {
+        if (new_segment_length < 0.25f) {
             expand_last_skid_segment = 1;
         }
-        if (error < kSkidDirectionMergeThreshold_Skids) {
+        if (error < SkidTooCurvyFactor) {
             expand_last_skid_segment = 1;
         }
-        if (new_segment_length > kSkidLengthSplitThreshold_Skids) {
+        if (new_segment_length > 3.0f) {
             expand_last_skid_segment = 0;
         }
     }
 
+    if (RemoteCaffeinating && PlotSkidPointsInCaffeine) {
+        unsigned int obj = espCreateObject("SkidPoints", "SkidPoint", nullptr);
+        espSetObjectPosition(obj, reinterpret_cast<FloatVector *>(position));
+        espSetAttributeFloat(obj, "Dot", error);
+    }
+
     SkidSegment *skid_segment;
+    if (!expand_last_skid_segment && NumSkidSegments == 8) {
+        return 1;
+    }
+
     if (expand_last_skid_segment) {
         skid_segment = &SkidSegments[NumSkidSegments - 1];
         LastSegmentLength += length;
-    } else if (NumSkidSegments == kNumSkidSegments_Skids) {
-        return 1;
     } else {
         skid_segment = &SkidSegments[NumSkidSegments];
         NumSkidSegments += 1;
         if (NumSkidSegments > 1) {
-            LastNormal = new_segment_forward;
+            LastNormal = new_segment_normal;
         }
         LastSegmentLength = length;
     }
 
     skid_segment->SetPoints(position, delta_position);
-    skid_segment->SetIntensity(static_cast<unsigned char>(intensity * kSkidIntensityScale_Skids));
+    skid_segment->SetIntensity(static_cast<unsigned char>(intensity * 255.0f));
 
     bExpandBoundingBox(&BBoxMin, &BBoxMax, position, length);
     pClan->ExpandBoundingBox(&BBoxMin, &BBoxMax);
@@ -185,8 +187,34 @@ int SkidSet::AddSegment(bVector3 *position, bVector3 *delta_position, bool skid_
 
 void SkidSet::FinishedAddingSkids() {
     if (pSkidMaker) {
-        pSkidMaker->pSkidSet = 0;
-        pSkidMaker = 0;
+        pSkidMaker->pSkidSet = nullptr;
+        pSkidMaker = nullptr;
+
+        if (RemoteCaffeinating && PlotSkidsInCaffeine && NumSkidSegments > 1) {
+            unsigned int obj = espCreateObject("Skids", "Skid", 0);
+            espSetObjectPosition(obj, reinterpret_cast<FloatVector *>(&Position));
+            espCreateUserMesh(obj, NumSkidSegments - 1);
+
+            // TODO check if this is right (in Undercover)
+            for (int n = 0; n < NumSkidSegments - 1; n++) {
+                SkidSegment *skid_segment = &SkidSegments[n];
+                SkidSegment *next_skid_segment = &SkidSegments[n + 1];
+                bVector3 vertices[4];
+                skid_segment->GetEndPoints(&vertices[0], &vertices[3]);
+                next_skid_segment->GetEndPoints(&vertices[1], &vertices[2]);
+                FloatVector float_vertices[4];
+
+                for (int x = 0; x < 4; x++) {
+                    // TODO is this right?
+                    bVector3 vertex = vertices[x] - Position;
+                    float_vertices[x].x = vertex.x;
+                    float_vertices[x].y = vertex.y;
+                    float_vertices[x].z = vertex.z;
+                }
+
+                espSetUserMeshFace(obj, n, float_vertices);
+            }
+        }
     }
 }
 
@@ -202,8 +230,6 @@ void SkidSet::Render(eView *view, unsigned char intensityReduction) {
     for (int n = 0; n < NumSkidSegments - 1; n++) {
         SkidSegment *skid_segment = &SkidSegments[n];
         SkidSegment *next_skid_segment = &SkidSegments[n + 1];
-        unsigned char alpha0;
-        unsigned char alpha1;
 
         skid_segment->GetEndPoints(&poly.Vertices[0], &poly.Vertices[3]);
         next_skid_segment->GetEndPoints(&poly.Vertices[1], &poly.Vertices[2]);
@@ -212,8 +238,8 @@ void SkidSet::Render(eView *view, unsigned char intensityReduction) {
         poly.Vertices[2].z += extra_height;
         poly.Vertices[3].z += extra_height;
 
-        alpha0 = skid_segment->GetIntensity();
-        alpha1 = next_skid_segment->GetIntensity();
+        unsigned char alpha0 = skid_segment->GetIntensity();
+        unsigned char alpha1 = next_skid_segment->GetIntensity();
         if (intensityReduction > alpha0) {
             alpha0 = 0;
         } else {
@@ -225,22 +251,21 @@ void SkidSet::Render(eView *view, unsigned char intensityReduction) {
             alpha1 -= intensityReduction;
         }
 
-        *reinterpret_cast<unsigned int *>(&poly.Colours[0][0]) = kSkidColour_Skids;
-        *reinterpret_cast<unsigned int *>(&poly.Colours[1][0]) = kSkidColour_Skids;
-        *reinterpret_cast<unsigned int *>(&poly.Colours[2][0]) = kSkidColour_Skids;
-        *reinterpret_cast<unsigned int *>(&poly.Colours[3][0]) = kSkidColour_Skids;
+        *reinterpret_cast<unsigned int *>(&poly.Colours[0][0]) = 0x80808080;
+        *reinterpret_cast<unsigned int *>(&poly.Colours[1][0]) = 0x80808080;
+        *reinterpret_cast<unsigned int *>(&poly.Colours[2][0]) = 0x80808080;
+        *reinterpret_cast<unsigned int *>(&poly.Colours[3][0]) = 0x80808080;
         poly.Colours[0][3] = alpha0;
         poly.Colours[1][3] = alpha1;
         poly.Colours[2][3] = alpha1;
         poly.Colours[3][3] = alpha0;
-        reinterpret_cast<eViewSkidRenderShim *>(view)->Render(&poly, SkidTextureInfo[TheTerrainType], identity_matrix, 0,
-                                                              0.05f);
+        view->Render(&poly, SkidTextureInfo[TheTerrainType], identity_matrix, 0, 0.0f);
     }
 }
 
 SkidSet *CreateNewSkidSet(SkidMaker *skid_maker, bVector3 *position, bVector3 *delta_position, int terrain_type, float intensity) {
     if (bIsSlotPoolFull(SkidSetSlotPool)) {
-        SkidSet *oldest_skid_set = static_cast<SkidSet *>(SkidSetList.GetTail()->Remove());
+        SkidSet *oldest_skid_set = SkidSetList.RemoveTail();
         if (oldest_skid_set) {
             delete oldest_skid_set;
         }
@@ -256,20 +281,19 @@ void SkidMaker::MakeSkid(Car *pCar, bVector3 *position, bVector3 *delta_position
     if (pCar) {
         float distance_from_car = bDistBetween(0, position);
         if (distance_from_car > 4.0f) {
+            pCar->GetGeometryPosition();
             return;
         }
     }
 
     if (!pSkidSet) {
         pSkidSet = CreateNewSkidSet(this, position, delta_position, terrain_type, intensity);
-    } else if (pSkidSet->GetTerrainType() != terrain_type ||
-               pSkidSet->AddSegment(position, delta_position, make_flaming_skids, intensity) != 0) {
+    } else if (pSkidSet->GetTerrainType() != terrain_type || pSkidSet->AddSegment(position, delta_position, make_flaming_skids, intensity) != 0) {
         bVector3 last_position;
         bVector3 last_delta_position;
-        float last_intensity;
 
         pSkidSet->GetLastPoints(&last_position, &last_delta_position);
-        last_intensity = pSkidSet->GetLastIntensity();
+        float last_intensity = pSkidSet->GetLastIntensity();
         pSkidSet->FinishedAddingSkids();
         SkidSet *new_skid_set = CreateNewSkidSet(this, &last_position, &last_delta_position, terrain_type, last_intensity);
         new_skid_set->AddSegment(position, delta_position, make_flaming_skids, intensity);
@@ -286,39 +310,43 @@ void SkidMaker::MakeNoSkid() {
 void InitSkids(int max_skids) {
     if (!SkidSetSlotPool) {
         SkidSetSlotPool = bNewSlotPool(0xF0, max_skids, "SkidSetSlotPool", GetVirtualMemoryAllocParams());
-        SkidSetSlotPool->Flags = static_cast<SlotPoolFlags>(SkidSetSlotPool->Flags & ~1);
+        SkidSetSlotPool->ClearFlag(SLOTPOOL_FLAG_OVERFLOW_IF_FULL);
     }
 
-    for (int i = 0; i < kNumSkidTextures_Skids; i++) {
-        SkidTextureInfo[i] = 0;
-        SkidTextureInfo[i] = GetTextureInfo(bStringHash("SKID_ROAD"), 1, 0);
+    for (int n = 0; n < 29; n++) {
+        SkidTextureInfo[n] = 0;
+        SkidTextureInfo[n] = GetTextureInfo(bStringHash("SKID_ROAD"), 1, 0);
     }
 
-    PlotSkidsInCaffeine = 0;
-    PlotSkidPointsInCaffeine = 0;
+    PlotSkidsInCaffeine = false;
+    PlotSkidPointsInCaffeine = false;
+    if (RemoteCaffeinating) {
+        PlotSkidsInCaffeine = espGetLayerState("Skids") != 0;
+        if (espGetLayerState("SkidPoints")) {
+            PlotSkidPointsInCaffeine = true;
+        }
+    }
 }
 
 void CloseSkids() {
     if (SkidSetSlotPool) {
         bDeleteSlotPool(SkidSetSlotPool);
-        SkidSetSlotPool = 0;
+        SkidSetSlotPool = nullptr;
     }
 
-    for (int n = 0; n < kNumSkidTextures_Skids; n++) {
-        SkidTextureInfo[n] = 0;
+    for (int n = 0; n < 29; n++) {
+        SkidTextureInfo[n] = nullptr;
     }
 }
 
 void DeleteThisSkid(SkidSet *skid_set) {
     SkidSetList.Remove(skid_set);
-    if (skid_set) {
-        delete skid_set;
-    }
+    delete skid_set;
 }
 
 void DeleteAllSkids() {
     while (!SkidSetList.IsEmpty()) {
-        delete static_cast<SkidSet *>(SkidSetList.GetTail()->Remove());
+        delete SkidSetList.RemoveTail();
     }
 }
 
@@ -326,7 +354,7 @@ void RenderSkids(eView *view, Clan *clan) {
     ProfileNode profile_node("TODO", 0);
 
     for (bPNode *p = clan->SkidSetList.GetHead(); p != clan->SkidSetList.EndOfList(); p = p->GetNext()) {
-        SkidSet *skid_set = reinterpret_cast<SkidSet *>(p->GetObject());
+        SkidSet *skid_set = static_cast<SkidSet *>(p->GetObject());
         eVisibleState visibility = view->GetVisibleState(skid_set->GetBBoxMin(), skid_set->GetBBoxMax(), 0);
         if (visibility != EVISIBLESTATE_NOT) {
             int pixel_size = view->GetPixelSize(bDistBetween(skid_set->GetBBoxCentre(), view->GetCamera()->GetPosition()), 1.0f);
@@ -335,8 +363,7 @@ void RenderSkids(eView *view, Clan *clan) {
                 if (10.0f < static_cast<float>(pixel_size)) {
                     intensityReduction = 0;
                 } else {
-                    intensityReduction =
-                        static_cast<unsigned char>(static_cast<int>(256.0f - (pixel_size - 4.0f) * 42.666668f) & 0xff);
+                    intensityReduction = static_cast<unsigned char>(static_cast<int>(256.0f - (pixel_size - 4.0f) * 42.666668f) & 0xff);
                 }
 
                 skid_set->Render(view, intensityReduction);

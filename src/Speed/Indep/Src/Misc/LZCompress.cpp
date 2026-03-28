@@ -196,7 +196,6 @@ int JLZCompress(uint8 *pSrc, int32 Size, uint8 *pDest) {
     return reinterpret_cast<int>(out) - reinterpret_cast<int>(header);
 }
 
-// UNSOLVED
 int JLZDecompress(uint8 *pSrc, uint8 *pDst) {
     uint8 *pOut = pDst;
     uint8 *pEnd;
@@ -221,13 +220,15 @@ int JLZDecompress(uint8 *pSrc, uint8 *pDst) {
     while (Size != 0) {
         if ((Control & 1) != 0) {
             if ((RunType & 1) != 0) {
-                Offset = *pSrc;
-                Run = ((Offset & 0xf0) << 4 | static_cast<unsigned int>(pSrc[1])) + 3;
-                ShortMove(pOut, pOut - ((Offset & 0xf) + 1), Run);
+                Run = (((pSrc[0]) >> 4 << 8) | pSrc[1]) + 3;
+                Offset = ((pSrc[0] & 0xf) + 1);
+
+                ShortMove(pOut, pOut - Offset, Run);
             } else {
-                Offset = *pSrc;
-                Run = (Offset & 0x1f) + 3;
-                ShortMove(pOut, pOut - (((Offset & 0xe0) << 3 | static_cast<unsigned int>(pSrc[1])) + 0x11), Run);
+                Offset = (((pSrc[0]) >> 5 << 8) | pSrc[1]) + 0x11;
+                Run = ((pSrc[0] & 0x1f) + 3);
+
+                ShortMove(pOut, pOut - Offset, Run);
             }
             pOut += Run;
             pSrc += 2;

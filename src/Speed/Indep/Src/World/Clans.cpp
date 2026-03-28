@@ -1,35 +1,21 @@
 #include "Clans.hpp"
 
 #include "Skids.hpp"
-#include "Speed/Indep/bWare/Inc/bVector.hpp"
-#include "Speed/Indep/bWare/Inc/bWare.hpp"
+#include "Speed/Indep/Src/Misc/Profiler.hpp"
+#include "Speed/Indep/Src/Misc/Timer.hpp"
 
-void bInitializeBoundingBox(bVector3 *bbox_min, bVector3 *bbox_max, const bVector3 *point);
-
-extern int WorldTime;
-
-SlotPool *ClanSlotPool = 0;
+SlotPool *ClanSlotPool = nullptr;
 bTList<Clan> ClanList;
-
-inline void *Clan::operator new(size_t) {
-    return bOMalloc(ClanSlotPool);
-}
-
-inline void Clan::operator delete(void *ptr) {
-    bFree(ClanSlotPool, ptr);
-}
 
 void InitClans() {
     if (!ClanSlotPool) {
-        ClanSlotPool = bNewSlotPool(0x48, 0x28, "ClanSlotPool", 0);
+        ClanSlotPool = bNewSlotPool(0x48, 40, "ClanSlotPool", 0);
     }
 }
 
 void FlushClans() {
     while (!ClanList.IsEmpty()) {
-        Clan *clan = ClanList.GetHead();
-        ClanList.Remove(clan);
-        delete clan;
+        delete ClanList.RemoveHead();
     }
 }
 
@@ -44,13 +30,13 @@ void CloseClans() {
 Clan *GetClan(bVector3 *position) {
     int cx = (static_cast<int>(position->x * 65536.0f) >> 22) & 0xffff;
     int cy = (static_cast<int>(position->y * 65536.0f) >> 22) * 0x10000;
-    unsigned int hash = static_cast<unsigned int>(cx + cy);
+    uint32 hash = static_cast<unsigned int>(cy + cx);
     Clan *clan = ClanList.GetHead();
 
-    if (clan != ClanList.EndOfList() && clan->GetHash() != hash) {
-        do {
-            clan = clan->GetNext();
-        } while (clan != ClanList.EndOfList() && clan->GetHash() != hash);
+    for (; clan != ClanList.EndOfList(); clan = clan->GetNext()) {
+        if (clan->GetHash() == hash) {
+            break;
+        }
     }
 
     if (clan != ClanList.EndOfList()) {
@@ -61,14 +47,11 @@ Clan *GetClan(bVector3 *position) {
     }
 
     if (bIsSlotPoolFull(ClanSlotPool)) {
-        clan = ClanList.GetTail();
-        ClanList.Remove(clan);
+        Clan *clan = ClanList.RemoveTail();
         delete clan;
     }
 
-    clan = new Clan(position, hash);
-    ClanList.AddHead(clan);
-    return clan;
+    return ClanList.AddHead(new Clan(position, hash));
 }
 
 void RenderClans(eView *view) {
@@ -93,20 +76,16 @@ void RenderClans(eView *view) {
     }
 }
 
-Clan::Clan(bVector3 *position, unsigned int hash)
-    : Hash(hash)
-{
+Clan::Clan(bVector3 *position, uint32 hash) {
     Position = *position;
+    Hash = hash;
     bInitializeBoundingBox(&BBoxMin, &BBoxMax, position);
 }
 
 Clan::~Clan() {
-    while (SkidSetList.GetHead() != SkidSetList.EndOfList()) {
-        bPNode *node = SkidSetList.GetHead();
-        DeleteThisSkid(reinterpret_cast<SkidSet *>(node->GetpObject()));
-    }
-
-    while (SkidSetList.GetHead() != SkidSetList.EndOfList()) {
-        SkidSetList.RemoveHead();
+    while (!SkidSetList.IsEmpty()) {
+        bPNode *p = SkidSetList.GetHead();
+        SkidSet *skid_set = static_cast<SkidSet *>(p->GetObject());
+        DeleteThisSkid(skid_set);
     }
 }

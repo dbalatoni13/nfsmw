@@ -83,8 +83,6 @@ void SlotPool::FlushSlotPool() {
 }
 
 void SlotPool::ExpandSlotPool(int num_extra_slots) {
-    int uVar2;
-
     SlotPool *new_slot_pool = NewSlotPool(SlotSize, num_extra_slots, DebugName, MemoryPool);
     new_slot_pool->Flags = Flags;
     SlotPool *last_slot_pool = this;

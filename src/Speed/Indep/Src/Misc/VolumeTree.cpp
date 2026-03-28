@@ -1,36 +1,6 @@
+#include "VolumeTree.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
-
-class vAABB {
-  public:
-    float PositionX;            // offset 0x0
-    float PositionY;            // offset 0x4
-    float PositionZ;            // offset 0x8
-    short ParentIndex;          // offset 0xC
-    short NumChildren;          // offset 0xE
-    float ExtentX;              // offset 0x10
-    float ExtentY;              // offset 0x14
-    float ExtentZ;              // offset 0x18
-    short ChildrenIndicies[10]; // offset 0x1C
-
-    int Contains(float x, float y, float z);
-};
-
-class vAABBTree {
-  public:
-    void SwapEndian();
-    vAABB *QueryLeaf(float x, float y, float z);
-
-    vAABB *NodeArray;     // offset 0x0
-    short NumLeafNodes;   // offset 0x4
-    short NumParentNodes; // offset 0x6
-    short TotalNodes;     // offset 0x8
-    short Depth;          // offset 0xA
-    int pad1;             // offset 0xC
-
-  private:
-    vAABB *QueryLeafHelper(vAABB *aabb, float x, float y, float z);
-};
 
 // TODO Dwarf non-matching
 int vAABB::Contains(float x, float y, float z) {

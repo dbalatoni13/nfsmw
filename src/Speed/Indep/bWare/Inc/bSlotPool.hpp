@@ -106,6 +106,7 @@ int bCountFreeSlots(SlotPool *slot_pool);
 int bCountTotalSlots(SlotPool *slot_pool);
 SlotPool *bNewSlotPool(int slot_size, int num_slots, const char *debug_name, int memory_pool);
 void bDeleteSlotPool(SlotPool *slot_pool);
+int bIsSlotPoolFull(SlotPool *slot_pool);
 void *bOMalloc(SlotPool *slot_pool);
 void bFree(SlotPool *slot_pool, void *p);
 void bFree(SlotPool *slot_pool, void *first_slot, void *last_slot);

@@ -5,6 +5,14 @@
 #pragma once
 #endif
 
+#include "Speed/Indep/Src/Physics/Dynamics/Collision.h"
 
+class WSurface : public CollisionSurface {
+  public:
+    WSurface() {
+        fSurface = 0;
+        fFlags = 0;
+    }
+};
 
 #endif

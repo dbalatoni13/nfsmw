@@ -270,4 +270,7 @@ class GManager : public UTL::COM::Object, public IVehicleCache {
     unsigned int mRestartEventHash;                 // offset 0x304, size 0x4
 };
 
+void NotifyTrackMarkersChanged();
+void NotifyGameZonesChanged();
+
 #endif

@@ -10,9 +10,9 @@
 #include "WCollision.h"
 #include "WCollisionTri.h"
 
+// total size: 0x58
 class WCollisionMgr {
   public:
-    // total size: 0x58
     struct WorldCollisionInfo {
         UMath::Vector4 fCollidePt;        // offset 0x0, size 0x10
         UMath::Vector4 fNormal;           // offset 0x10, size 0x10

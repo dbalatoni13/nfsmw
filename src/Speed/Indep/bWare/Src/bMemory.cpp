@@ -151,8 +151,6 @@ bVirtualMemoryManager eARAMMM;          // size: 0x18, address: 0x8045A950
 unsigned int MemoryPoolZeroSize = 0;    // size: 0x4, address: 0x8041645C
 int bMemoryPersistentPoolNumber = -1;   // size: 0x4, address: 0x80416460
 
-void *bWareMalloc(int size, const char *debug_text, int debug_line, int allocation_params);
-
 void bFunkGameCube(const char *server_name, unsigned char function_num, const void *param_buffer, long param_size) {}
 
 int GetAlignmentAdjustTop(intptr_t address, int alignment, int alignment_offset) {

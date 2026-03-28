@@ -1,6 +1,7 @@
 #ifndef WORLD_SCENERY_H
 #define WORLD_SCENERY_H
 
+#include "Speed/Indep/bWare/Inc/bWare.hpp"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
@@ -19,8 +20,8 @@ enum SceneryDetailLevel {
     NUM_SCENERY_DETAIL_LEVELS = 4,
 };
 
+// total size: 0x18
 struct SceneryBoundingBox {
-    // total size: 0x18
     float BBoxMin[3]; // offset 0x0, size 0xC
     float BBoxMax[3]; // offset 0xC, size 0xC
 
@@ -30,34 +31,39 @@ struct SceneryBoundingBox {
     }
 };
 
-struct SceneryInstance : public SceneryBoundingBox {
-    // total size: 0x40
-    unsigned int ExcludeFlags;   // offset 0x18, size 0x4
-    short PrecullerInfoIndex;    // offset 0x1C, size 0x2
-    short LightingContextNumber; // offset 0x1E, size 0x2
-    float Position[3];           // offset 0x20, size 0xC
-    short Rotation[9];           // offset 0x2C, size 0x12
-    short SceneryInfoNumber;     // offset 0x3E, size 0x2
-
+// total size: 0x40
+class SceneryInstance : public SceneryBoundingBox {
+  public:
     void GetRotation(bMatrix4 *matrix) {
-        const float rotation_conversion = 0.00012207031f;
+        const float rotation_conversion = 1.0f / 8192.0f;
         float x = static_cast<float>(Rotation[0]) * rotation_conversion;
         float y = static_cast<float>(Rotation[1]) * rotation_conversion;
         float z = static_cast<float>(Rotation[2]) * rotation_conversion;
-        bFill(&matrix->v0, x, y, z, 0.0f);
+        matrix->v0.x = x;
+        matrix->v0.y = y;
+        matrix->v0.z = z;
+        matrix->v0.w = 0.0f;
+
         x = static_cast<float>(Rotation[3]) * rotation_conversion;
         y = static_cast<float>(Rotation[4]) * rotation_conversion;
         z = static_cast<float>(Rotation[5]) * rotation_conversion;
-        bFill(&matrix->v1, x, y, z, 0.0f);
+        matrix->v1.x = x;
+        matrix->v1.y = y;
+        matrix->v1.z = z;
+        matrix->v1.w = 0.0f;
+
         x = static_cast<float>(Rotation[6]) * rotation_conversion;
         y = static_cast<float>(Rotation[7]) * rotation_conversion;
         z = static_cast<float>(Rotation[8]) * rotation_conversion;
-        bFill(&matrix->v2, x, y, z, 0.0f);
-        bFill(&matrix->v3, 0.0f, 0.0f, 0.0f, 1.0f);
+        matrix->v2.x = x;
+        matrix->v2.y = y;
+        matrix->v2.z = z;
+        matrix->v2.w = 0.0f;
     }
 
     void GetPosition(bVector4 *position) {
-        bFill(position, Position[0], Position[1], Position[2], 1.0f);
+        *position = *reinterpret_cast<bVector4 *>(Position);
+        position->w = 1.0f;
     }
 
     bVector3 *GetPosition() {
@@ -79,28 +85,35 @@ struct SceneryInstance : public SceneryBoundingBox {
         Position[1] = matrix->v3.y;
         Position[2] = matrix->v3.z;
     }
+
+    unsigned int ExcludeFlags;   // offset 0x18, size 0x4
+    short PrecullerInfoIndex;    // offset 0x1C, size 0x2
+    short LightingContextNumber; // offset 0x1E, size 0x2
+    float Position[3];           // offset 0x20, size 0xC
+    short Rotation[9];           // offset 0x2C, size 0x12
+    short SceneryInfoNumber;     // offset 0x3E, size 0x2
 };
 
+// total size: 0xC
 struct SceneryDrawInfo {
-    // total size: 0xC
     eModel *pModel;               // offset 0x0, size 0x4
     bMatrix4 *pMatrix;            // offset 0x4, size 0x4
     SceneryInstance *SceneryInst; // offset 0x8, size 0x4
 };
 
+// total size: 0xBC
 struct SceneryCullInfo {
-    // total size: 0xBC
-    struct bMatrix4 FacadeMatrix;             // offset 0x0, size 0x40
-    struct bMatrix4 ClipMatrix;               // offset 0x40, size 0x40
-    struct eView *pView;                      // offset 0x80, size 0x4
-    int ExcludeFlags;                         // offset 0x84, size 0x4
-    struct SceneryDrawInfo *pFirstDrawInfo;   // offset 0x88, size 0x4
-    struct SceneryDrawInfo *pCurrentDrawInfo; // offset 0x8C, size 0x4
-    struct SceneryDrawInfo *pTopDrawInfo;     // offset 0x90, size 0x4
-    struct bVector3 Position;                 // offset 0x94, size 0x10
-    struct bVector3 Direction;                // offset 0xA4, size 0x10
-    float H;                                  // offset 0xB4, size 0x4
-    int PrecullerSectionNumber;               // offset 0xB8, size 0x4
+    bMatrix4 FacadeMatrix;             // offset 0x0, size 0x40
+    bMatrix4 ClipMatrix;               // offset 0x40, size 0x40
+    struct eView *pView;               // offset 0x80, size 0x4
+    int ExcludeFlags;                  // offset 0x84, size 0x4
+    SceneryDrawInfo *pFirstDrawInfo;   // offset 0x88, size 0x4
+    SceneryDrawInfo *pCurrentDrawInfo; // offset 0x8C, size 0x4
+    SceneryDrawInfo *pTopDrawInfo;     // offset 0x90, size 0x4
+    bVector3 Position;                 // offset 0x94, size 0x10
+    bVector3 Direction;                // offset 0xA4, size 0x10
+    float H;                           // offset 0xB4, size 0x4
+    int PrecullerSectionNumber;        // offset 0xB8, size 0x4
 };
 
 // total size: 0x8
@@ -110,30 +123,33 @@ struct ModelHeirarchy {
     };
     // total size: 0x10
     struct Node {
-        UCrc32 mNodeName;           // offset 0x0, size 0x4
-        unsigned int mModelHash;    // offset 0x4, size 0x4
-        eModel *mModel;             // offset 0x8, size 0x4
-        unsigned char mFlags;       // offset 0xC, size 0x1
-        unsigned char mParent;      // offset 0xD, size 0x1
-        unsigned char mNumChildren; // offset 0xE, size 0x1
-        unsigned char mChildIndex;  // offset 0xF, size 0x1
+        UCrc32 mNodeName;   // offset 0x0, size 0x4
+        uint32 mModelHash;  // offset 0x4, size 0x4
+        eModel *mModel;     // offset 0x8, size 0x4
+        uint8 mFlags;       // offset 0xC, size 0x1
+        uint8 mParent;      // offset 0xD, size 0x1
+        uint8 mNumChildren; // offset 0xE, size 0x1
+        uint8 mChildIndex;  // offset 0xF, size 0x1
     };
 
-    const Node *GetNodes() const {}
+    const Node *GetNodes() const {
+        return reinterpret_cast<const Node *>(&this[1]);
+    }
 
-    Node *GetNodes() {}
+    Node *GetNodes() {
+        return reinterpret_cast<Node *>(&this[1]);
+    }
 
-    unsigned int GetSize() const {}
+    // unsigned int GetSize() const {}
 
-    unsigned int mNameHash;  // offset 0x0, size 0x4
-    unsigned char mNumNodes; // offset 0x4, size 0x1
-    unsigned char mFlags;    // offset 0x5, size 0x1
-    unsigned short pad;      // offset 0x6, size 0x2
+    uint32 mNameHash; // offset 0x0, size 0x4
+    uint8 mNumNodes;  // offset 0x4, size 0x1
+    uint8 mFlags;     // offset 0x5, size 0x1
+    uint16 pad;       // offset 0x6, size 0x2
 };
 
 // total size: 0x48
 struct SceneryInfo {
-    // Members
     char DebugName[24];              // offset 0x0, size 0x18
     unsigned int NameHash[4];        // offset 0x18, size 0x10
     eModel *pModel[4];               // offset 0x28, size 0x10
@@ -145,26 +161,35 @@ struct SceneryInfo {
 
 class tPrecullerInfo {
   public:
-    bool IsVisible(int preculler_section_number) {
-        return (VisibilityBits[preculler_section_number >> 3] & (1 << (preculler_section_number & 7))) != 0;
+    int IsNotVisible(int preculler_section_number) {
+        return (VisibilityBits[preculler_section_number >> 3] & (1 << (preculler_section_number & 7)));
     }
 
-    bool IsNotVisible(int preculler_section_number) {
-        return !IsVisible(preculler_section_number);
+    int IsVisible(int preculler_section_number) {
+        return !IsNotVisible(preculler_section_number);
     }
 
     unsigned char *GetBits() {
         return VisibilityBits;
     }
 
+    void EndianSwap() {}
+
   private:
     unsigned char VisibilityBits[0x80];
 };
 
+inline int GetPrecullerSectionNumber(float x, float y) {
+    int nx = (static_cast<unsigned int>(static_cast<int>(x)) >> 5) & 0x1F;
+    int ny = static_cast<int>(y) & 0x3E0;
+    return ny + nx;
+}
+
 // total size: 0x24
-struct SceneryTreeNode : public SceneryBoundingBox {
-    short NumChildren;   // offset 0x18, size 0x2
-    short ChildCodes[5]; // offset 0x1A, size 0xA
+class SceneryTreeNode : public SceneryBoundingBox {
+  public:
+    int16 NumChildren;       // offset 0x18, size 0x2
+    short int ChildCodes[5]; // offset 0x1A, size 0xA
 };
 
 // TODO
@@ -182,6 +207,10 @@ class ScenerySectionHeader : public bTNode<ScenerySectionHeader> {
 
     SceneryInstance *GetSceneryInstance(int scenery_instance_number) {
         return &pSceneryInstance[scenery_instance_number];
+    }
+
+    SceneryInfo *GetSceneryInfo(int scenery_info_number) {
+        return &pSceneryInfo[scenery_info_number];
     }
 
     int GetSectionNumber() {
@@ -209,6 +238,7 @@ class ScenerySectionHeader : public bTNode<ScenerySectionHeader> {
     int ViewsVisibleThisFrame;             // offset 0x38, size 0x4
 };
 
+// total size: 0x6
 struct SceneryOverrideInfo {
     void EndianSwap() {
         bPlatEndianSwap(&SectionNumber);
@@ -216,35 +246,97 @@ struct SceneryOverrideInfo {
         bPlatEndianSwap(&ExcludeFlags);
     }
 
+    static int GetHashIndex(short section_number) {
+        return section_number;
+    }
+
+    int GetHashIndex() {
+        return GetHashIndex(SectionNumber);
+    }
+
+    void SetExcludeFlags(unsigned short exclude_flag_mask, unsigned short exclude_flag_override) {
+        ExcludeFlags = (ExcludeFlags & exclude_flag_mask) | exclude_flag_override;
+        AssignOverrides();
+    }
+
     void AssignOverrides();
     void AssignOverrides(ScenerySectionHeader *section_header);
 
-    short SectionNumber;         // offset 0x0, size 0x2
-    short InstanceNumber;        // offset 0x2, size 0x2
-    unsigned short ExcludeFlags; // offset 0x4, size 0x2
+    int16 SectionNumber;  // offset 0x0, size 0x2
+    int16 InstanceNumber; // offset 0x2, size 0x2
+    uint16 ExcludeFlags;  // offset 0x4, size 0x2
 };
 
-extern SceneryOverrideInfo *SceneryOverrideInfoTable;
+extern signed char SceneryGroupEnabledTable[0x1000];
+
+SceneryOverrideInfo *GetSceneryOverrideInfo(int override_info_number);
+
+// total size: 0x4
+struct SceneryOverrideInfoHookup {
+    void EndianSwap() {
+        bPlatEndianSwap(&OverrideInfoNumber);
+        bPlatEndianSwap(&InstanceNumber);
+    }
+
+    uint16 OverrideInfoNumber; // offset 0x0, size 0x2
+    uint16 InstanceNumber;     // offset 0x2, size 0x2
+};
 
 // total size: 0x8014
 struct SceneryGroup : public bTNode<SceneryGroup> {
     // SceneryGroup(unsigned int name_hash) {}
 
-    // int GetMemoryImageSize() {}
+    int GetMemoryImageSize() {
+        // TODO magic
+        int size = (NumObjects * sizeof(*OverrideInfoNumbers) + 0x17U) & ~3;
+        return size;
+    }
 
-    // int GetNumObjects() {}
+    int GetNumObjects() {
+        return NumObjects;
+    }
 
     // int GetOverrideInfoNumber(int index) {}
 
     SceneryOverrideInfo *GetOverrideInfo(int index) {
-        return &SceneryOverrideInfoTable[OverrideInfoNumbers[index]];
+        return GetSceneryOverrideInfo(OverrideInfoNumbers[index]);
     }
 
-    // void EndianSwap() {}
+    void EndianSwap() {
+        bPlatEndianSwap(&NameHash);
+        bPlatEndianSwap(&GroupNumber);
+        bPlatEndianSwap(&NumObjects);
+        for (int n = 0; n < NumObjects; n++) {
+            bPlatEndianSwap(&OverrideInfoNumbers[n]);
+        }
+    }
 
-    // void EnableRendering(bool flip_artwork) {}
+    void EnableRendering(bool flip_artwork) {
+        int exclude_flag_mask = 0xFBEF;
+        int exclude_flag_override = 0;
+        if (flip_artwork) {
+            exclude_flag_override = 0x400;
+        }
 
-    // void DisableRendering() {}
+        for (int n = 0; n < GetNumObjects(); n++) {
+            GetOverrideInfo(n)->SetExcludeFlags(exclude_flag_mask, exclude_flag_override);
+        }
+
+        SceneryGroupEnabledTable[this->GroupNumber] = 1;
+        if (flip_artwork) {
+            SceneryGroupEnabledTable[this->GroupNumber] |= 2;
+        }
+        if (this->DriveThroughBarrierFlag) {
+            SceneryGroupEnabledTable[this->GroupNumber] |= 4;
+        }
+    }
+
+    void DisableRendering() {
+        for (int n = 0; n < GetNumObjects(); n++) {
+            SceneryOverrideInfo *override_info = GetOverrideInfo(n);
+            override_info->SetExcludeFlags(0xFFFF, 0x10);
+        }
+    }
 
     uint32 NameHash;                               // offset 0x8, size 0x4
     int16 GroupNumber;                             // offset 0xC, size 0x2
@@ -255,9 +347,28 @@ struct SceneryGroup : public bTNode<SceneryGroup> {
     short unsigned int OverrideInfoNumbers[16384]; // offset 0x14, size 0x8000
 };
 
-extern RegionQuery RegionInfo;
+// total size: 0x8E0
+class GrandSceneryCullInfo {
+  public:
+    int WhatSectionsShouldWeDraw(short *sections_to_draw, int max_sections_to_draw, SceneryCullInfo *scenery_cull_info);
+    void CullView(SceneryCullInfo *scenery_cull_info);
+    void DoCulling();
+    void StuffScenery(eView *view, int stuff_flags);
+
+    SceneryCullInfo SceneryCullInfos[12]; // offset 0x0, size 0x8D0
+    int NumCullInfos;                     // offset 0x8D0, size 0x4
+    SceneryDrawInfo *pFirstDrawInfo;      // offset 0x8D4, size 0x4
+    SceneryDrawInfo *pCurrentDrawInfo;    // offset 0x8D8, size 0x4
+    SceneryDrawInfo *pTopDrawInfo;        // offset 0x8DC, size 0x4
+
+    static SceneryDrawInfo SceneryDrawInfoTable[3500];
+};
+
+// TODO making this extern messes with the order
+// extern RegionQuery RegionInfo;
 extern SceneryDetailLevel ForceAllSceneryDetailLevels;
 extern bTList<SceneryGroup> SceneryGroupList;
+extern int DisablePrecullerCounter;
 
 void InitVisibleZones();
 void CloseVisibleZones();
@@ -265,5 +376,32 @@ void ServicePreculler();
 void LoadPrecullerBooBooScripts();
 void EnableSceneryGroup(unsigned int group_name_hash, bool flip_artwork);
 SceneryGroup *FindSceneryGroup(unsigned int name_hash);
+
+inline int IsSceneryGroupEnabled(int group_number) {
+    return SceneryGroupEnabledTable[group_number];
+}
+
+inline int InlinedViewGetPixelSize(SceneryCullInfo *scenery_cull_info, const bVector3 *position, float radius) {
+    bVector3 dir = *position - scenery_cull_info->Position;
+    float distance_ahead = bDot(&dir, &scenery_cull_info->Direction);
+    if (distance_ahead < -radius) {
+        return 0;
+    }
+
+    float distance_away = bLength(&dir) - radius;
+    float pixel_size = scenery_cull_info->H;
+    if (distance_away > radius) {
+        pixel_size = (radius * pixel_size) / distance_away;
+    }
+    return static_cast<int>(pixel_size);
+}
+
+inline void EnablePreculler() {
+    DisablePrecullerCounter--;
+}
+
+inline void DisablePreculler() {
+    DisablePrecullerCounter++;
+}
 
 #endif

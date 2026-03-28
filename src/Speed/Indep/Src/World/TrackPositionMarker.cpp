@@ -3,25 +3,16 @@
 #include "TrackInfo.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include "Speed/Indep/bWare/Inc/bChunk.hpp"
+#include "Speed/Indep/Src/Misc/SpeedChunks.hpp"
+#include "Speed/Indep/Src/Gameplay/GManager.h"
 
 bTList<TrackPositionMarker> TrackPositionMarkerList;
-bChunkLoader bChunkLoaderTrackPositionMarkers(0x34146, LoaderTrackPositionMarkers, UnloaderTrackPositionMarkers);
-
-static void NotifyTrackMarkersChanged() {}
-
-void ForEachTrackPositionMarker(bool (*callback)(TrackPositionMarker *, unsigned int), unsigned int tag) {
-    for (TrackPositionMarker *marker = TrackPositionMarkerList.GetHead(); marker != TrackPositionMarkerList.EndOfList();
-         marker = marker->GetNext()) {
-        if (!callback(marker, tag)) {
-            break;
-        }
-    }
-}
+bChunkLoader bChunkLoaderTrackPositionMarkers(BCHUNK_TTRACK_POSITION_MARKERS, LoaderTrackPositionMarkers, UnloaderTrackPositionMarkers);
 
 int LoaderTrackPositionMarkers(bChunk *chunk) {
-    if (chunk->GetID() == 0x34146) {
-        TrackPositionMarker *marker_table = reinterpret_cast<TrackPositionMarker *>(chunk->GetAlignedData(0x10));
-        int num_markers = chunk->GetAlignedSize(0x10) / sizeof(TrackPositionMarker);
+    if (chunk->GetID() == BCHUNK_TTRACK_POSITION_MARKERS) {
+        TrackPositionMarker *marker_table = reinterpret_cast<TrackPositionMarker *>(chunk->GetAlignedData(16));
+        int num_markers = chunk->GetAlignedSize(16) / sizeof(*marker_table);
 
         for (int n = 0; n < num_markers; n++) {
             TrackPositionMarker *marker = &marker_table[n];
@@ -41,9 +32,9 @@ int LoaderTrackPositionMarkers(bChunk *chunk) {
 }
 
 int UnloaderTrackPositionMarkers(bChunk *chunk) {
-    if (chunk->GetID() == 0x34146) {
-        TrackPositionMarker *marker_table = reinterpret_cast<TrackPositionMarker *>(chunk->GetAlignedData(0x10));
-        int num_markers = chunk->GetAlignedSize(0x10) / sizeof(TrackPositionMarker);
+    if (chunk->GetID() == BCHUNK_TTRACK_POSITION_MARKERS) {
+        TrackPositionMarker *marker_table = reinterpret_cast<TrackPositionMarker *>(chunk->GetAlignedData(16));
+        int num_markers = chunk->GetAlignedSize(16) / sizeof(*marker_table);
 
         for (int n = 0; n < num_markers; n++) {
             TrackPositionMarkerList.Remove(&marker_table[n]);
@@ -59,31 +50,37 @@ int UnloaderTrackPositionMarkers(bChunk *chunk) {
 int GetNumTrackPositionMarkers(int track_number, unsigned int name_hash) {
     int num_markers = 0;
 
-    for (TrackPositionMarker *p = TrackPositionMarkerList.GetHead(); p != TrackPositionMarkerList.EndOfList();
-         p = p->GetNext()) {
+    for (TrackPositionMarker *p = TrackPositionMarkerList.GetHead(); p != TrackPositionMarkerList.EndOfList(); p = p->GetNext()) {
         if (p->NameHash == name_hash && (track_number == 0 || p->TrackNumber == track_number)) {
-            num_markers += 1;
+            num_markers++;
         }
     }
 
     return num_markers;
 }
 
+void ForEachTrackPositionMarker(TrackPositionMarkerCallback callback, uint32 tag) {
+    for (TrackPositionMarker *p = TrackPositionMarkerList.GetHead(); p != TrackPositionMarkerList.EndOfList(); p = p->GetNext()) {
+        if (!callback(p, tag)) {
+            break;
+        }
+    }
+}
+
 TrackPositionMarker *GetTrackPositionMarker(int track_number, unsigned int name_hash, int index) {
     int num_markers = 0;
 
-    for (TrackPositionMarker *p = TrackPositionMarkerList.GetHead(); p != TrackPositionMarkerList.EndOfList();
-         p = p->GetNext()) {
+    for (TrackPositionMarker *p = TrackPositionMarkerList.GetHead(); p != TrackPositionMarkerList.EndOfList(); p = p->GetNext()) {
         if (p->NameHash == name_hash && (p->TrackNumber == 0 || p->TrackNumber == track_number)) {
             if (num_markers == index) {
                 return p;
             }
 
-            num_markers += 1;
+            num_markers++;
         }
     }
 
-    return 0;
+    return nullptr;
 }
 
 TrackPositionMarker *GetTrackPositionMarker(unsigned int name_hash, int index) {
