@@ -365,8 +365,7 @@ void SFXCTL_AIPhysics::InitSFX() {
 }
 
 void SFXCTL_AIPhysics::AttachController(SFXCTL *psfxctl) {
-    TypeInfo *pInfo = psfxctl->GetTypeInfo();
-    if (((pInfo->ObjectID >> 4) & 0xFFF) == 2) {
+    if (psfxctl->GetObjectIndex() == 2) {
         m_pShiftCtl = static_cast<SFXCTL_Shifting *>(psfxctl);
     }
 }

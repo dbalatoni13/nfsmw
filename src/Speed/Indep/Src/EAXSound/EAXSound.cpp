@@ -1318,7 +1318,7 @@ EAXCar *EAXSound::GetPlayerTunerCar(int nindex) {
     if (mgr == nullptr) {
         return nullptr;
     }
-    return (EAXCar *)mgr->GetStateObj(nindex);
+    return reinterpret_cast<EAXCar *>(mgr->GetStateObj(nindex));
 }
 
 CSTATE_Base *EAXSound::SpawnHelicopter(EAX_HeliState *pHeli) {

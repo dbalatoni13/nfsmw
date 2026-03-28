@@ -13,7 +13,7 @@ struct SFXCTL_3DHeliPos : public SFXCTL_3DObjPos {
     static TypeInfo *GetStaticTypeInfo() { return &s_TypeInfo; }
 
   public:
-    ~SFXCTL_3DHeliPos() override;
+    ~SFXCTL_3DHeliPos() override {}
     TypeInfo *GetTypeInfo() const override;
     const char *GetTypeName() const override;
     static SndBase *CreateObject(unsigned int allocator);

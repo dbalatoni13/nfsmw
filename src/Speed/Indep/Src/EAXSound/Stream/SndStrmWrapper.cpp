@@ -69,8 +69,7 @@ int SndStrmWrapper::AddToStream(int holdtime, void *paddr, int length, int offse
 }
 
 int SndStrmWrapper::ModifyHold(int sndrequesthandle, int holdtime) {
-    int result = SNDSTRM_modifyhold(sndrequesthandle, holdtime);
-    return result;
+    return SNDSTRM_modifyhold(sndrequesthandle, holdtime);
 }
 
 bool SndStrmWrapper::IsPlaying() {

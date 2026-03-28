@@ -509,20 +509,19 @@ int SFXCTL_Engine::GetController(int Index) {
     }
 }
 
-void SFXCTL_Engine::AttachController(SFXCTL *ctrl) {
-    int id = (ctrl->GetTypeInfo()->ObjectID >> 4) & 0xFFF;
-    switch (id) {
+void SFXCTL_Engine::AttachController(SFXCTL *psfxctl) {
+    switch (psfxctl->GetObjectIndex()) {
     case 2:
-        m_pShiftCtl = static_cast<SFXCTL_Shifting *>(ctrl);
+        m_pShiftCtl = static_cast<SFXCTL_Shifting *>(psfxctl);
         break;
     case 3:
-        m_pAccelTransitionCtl = static_cast<SFXCTL_AccelTrans *>(ctrl);
+        m_pAccelTransitionCtl = static_cast<SFXCTL_AccelTrans *>(psfxctl);
         break;
     case 0:
-        m_pPhysicsCtl = static_cast<SFXCTL_Physics *>(ctrl);
+        m_pPhysicsCtl = static_cast<SFXCTL_Physics *>(psfxctl);
         break;
     case 7:
-        m_p3DCarPosCtl = static_cast<SFXCTL_3DCarPos *>(ctrl);
+        m_p3DCarPosCtl = static_cast<SFXCTL_3DCarPos *>(psfxctl);
         break;
     }
 }

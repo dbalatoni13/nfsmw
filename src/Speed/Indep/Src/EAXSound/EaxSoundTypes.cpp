@@ -446,7 +446,9 @@ void *ScheduledSpeechEvent::GetData(unsigned int *datasize) {
 }
 
 unsigned char ScheduledSpeechEvent::ReserveSample() {
-    return curndx++;
+    unsigned char requested_index = curndx;
+    curndx++;
+    return requested_index;
 }
 
 } // namespace Speech

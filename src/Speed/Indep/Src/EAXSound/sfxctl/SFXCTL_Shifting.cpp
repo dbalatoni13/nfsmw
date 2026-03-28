@@ -77,11 +77,11 @@ int SFXCTL_Shifting::GetController(int Index) {
     return 4;
 }
 
-float SFXCTL_Shifting::GetShiftingRPM() { return m_InterpShiftRPM.CurValue; }
+float SFXCTL_Shifting::GetShiftingRPM() { return m_InterpShiftRPM.GetValue(); }
 
-float SFXCTL_Shifting::GetShiftingTRQ() { return m_InterpShiftTorque.CurValue; }
+float SFXCTL_Shifting::GetShiftingTRQ() { return m_InterpShiftTorque.GetValue(); }
 
-float SFXCTL_Shifting::GetShiftingVOL() { return m_InterpShiftVol.CurValue; }
+float SFXCTL_Shifting::GetShiftingVOL() { return m_InterpShiftVol.GetValue(); }
 
 Gear SFXCTL_Shifting::GetCurGear() { return m_pEngineCtl->m_pPhysicsCtl->m_CurGear; }
 
@@ -110,9 +110,9 @@ void SFXCTL_Shifting::SetupSFX(CSTATE_Base *_StateBase) {
     m_nPostShiftFXLevel = m_UGL % 2;
 }
 
-void SFXCTL_Shifting::AttachController(SFXCTL *ctrl) {
-    if (((ctrl->GetTypeInfo()->ObjectID >> 4) & 0xFFF) == 4) {
-        m_pEngineCtl = static_cast<SFXCTL_Engine *>(ctrl);
+void SFXCTL_Shifting::AttachController(SFXCTL *psfxctl) {
+    if ((psfxctl->GetObjectIndex()) == 4) {
+        m_pEngineCtl = static_cast<SFXCTL_Engine *>(psfxctl);
     }
 }
 

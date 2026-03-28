@@ -70,14 +70,14 @@ void SFXCTL_AccelTrans::InitSFX() {
     PlayEngOffSweet = false;
 }
 
-void SFXCTL_AccelTrans::AttachController(SFXCTL *ctrl) {
-    int id = (ctrl->GetTypeInfo()->ObjectID >> 4) & 0xFFF;
-    if (id != 2) {
-        if (id == 4) {
-            m_pEngineCtl = static_cast<SFXCTL_Engine *>(ctrl);
-        }
-    } else {
-        m_pShiftCtl = static_cast<SFXCTL_Shifting *>(ctrl);
+void SFXCTL_AccelTrans::AttachController(SFXCTL *psfxctl) {
+    switch (psfxctl->GetObjectIndex()) {
+    case 4:
+        m_pEngineCtl = static_cast<SFXCTL_Engine *>(psfxctl);
+        break;
+    case 2:
+        m_pShiftCtl = static_cast<SFXCTL_Shifting *>(psfxctl);
+        break;
     }
 }
 

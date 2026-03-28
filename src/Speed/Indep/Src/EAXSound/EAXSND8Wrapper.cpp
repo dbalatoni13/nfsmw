@@ -7,7 +7,7 @@
 struct SlotPool;
 class EAXSound;
 struct PF_Allocator : EA::Allocator::IAllocator {
-    virtual ~PF_Allocator();
+    virtual ~PF_Allocator() {}
     virtual void *Alloc(unsigned int size, const EA::TagValuePair &flags);
     virtual void Free(void *pBlock, unsigned int size);
     virtual int AddRef();
@@ -172,9 +172,8 @@ eSndAudioMode EAXSND8Wrapper::SetAudioModeFromMemoryCard(eSndAudioMode mode) {
         return mode;
     }
 
-    eSndAudioMode DefaultMode = GetDefaultPlatformAudioMode();
-    m_eCurrentAudioMode = DefaultMode;
-    switch (DefaultMode) {
+    m_eCurrentAudioMode = GetDefaultPlatformAudioMode();
+    switch (m_eCurrentAudioMode) {
     case AUDIO_MODE_MIN:
         mode = AUDIO_MODE_MIN;
         break;
@@ -277,32 +276,11 @@ eSndAudioMode EAXSND8Wrapper::GetDefaultPlatformAudioMode() {
 
 void EAXSND8Wrapper::STUPID() {}
 
-PF_Allocator::~PF_Allocator() {}
-
 void *PF_Allocator::Alloc(unsigned int size, const EA::TagValuePair &flags) {
     (void)flags;
     return gAudioMemoryManager.AllocateMemory(size, "AUD: Pathfinder alloc", true);
 }
 
-int PF_Allocator::AddRef() {
-    int refCount = mRefcount + 1;
-    mRefcount = refCount;
-    return refCount;
-}
-
-int PF_Allocator::Release() {
-    int refCount = mRefcount - 1;
-    mRefcount = refCount;
-
-    if (refCount < 1) {
-        if (this) {
-            delete this;
-        }
-        refCount = 0;
-    }
-
-    return refCount;
-}
 
 void *CSISCoreAllocator::Alloc(unsigned int size, const char *name, unsigned int flags) {
     (void)flags;

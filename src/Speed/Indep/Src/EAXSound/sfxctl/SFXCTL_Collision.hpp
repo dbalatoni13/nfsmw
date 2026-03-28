@@ -13,7 +13,7 @@ struct SFXCTL_3DColPos : public SFXCTL_3DObjPos {
     static TypeInfo *GetStaticTypeInfo() { return &s_TypeInfo; }
 
   public:
-    ~SFXCTL_3DColPos() override;
+    ~SFXCTL_3DColPos() override {}
     TypeInfo *GetTypeInfo() const override;
     const char *GetTypeName() const override;
     static SndBase *CreateObject(unsigned int allocator);
@@ -25,7 +25,7 @@ struct SFXCTL_3DScrapePos : public SFXCTL_3DObjPos {
     static TypeInfo *GetStaticTypeInfo() { return &s_TypeInfo; }
 
   public:
-    ~SFXCTL_3DScrapePos() override;
+    ~SFXCTL_3DScrapePos() override {}
     TypeInfo *GetTypeInfo() const override;
     const char *GetTypeName() const override;
     static SndBase *CreateObject(unsigned int allocator);

@@ -105,17 +105,16 @@ void SFXCTL_HybridMotor::SetupSFX(CSTATE_Base *_StateBase) {
     CrossFadesPoints[4].x = static_cast<float>(m_pEAXCar->GetAttributes().GINSU_Decel_MaxRPM());
 }
 
-void SFXCTL_HybridMotor::AttachController(SFXCTL *ctrl) {
-    int id = (ctrl->GetTypeInfo()->ObjectID >> 4) & 0xFFF;
-    switch (id) {
+void SFXCTL_HybridMotor::AttachController(SFXCTL *psfxctl) {
+    switch (psfxctl->GetObjectIndex()) {
     case 4:
-        m_pEngineCtl = static_cast<SFXCTL_Engine *>(ctrl);
+        m_pEngineCtl = static_cast<SFXCTL_Engine *>(psfxctl);
         break;
     case 2:
-        m_pShiftingCtl = static_cast<SFXCTL_Shifting *>(ctrl);
+        m_pShiftingCtl = static_cast<SFXCTL_Shifting *>(psfxctl);
         break;
     case 3:
-        m_pAccelTranCtl = static_cast<SFXCTL_AccelTrans *>(ctrl);
+        m_pAccelTranCtl = static_cast<SFXCTL_AccelTrans *>(psfxctl);
         break;
     }
 }

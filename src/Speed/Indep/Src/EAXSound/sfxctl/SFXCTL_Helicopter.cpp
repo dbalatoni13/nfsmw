@@ -3,8 +3,6 @@
 #include "Speed/Indep/Src/EAXSound/SimStates/EAX_HeliState.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
-SFXCTL_3DHeliPos::~SFXCTL_3DHeliPos() {}
-
 SndBase *SFXCTL_3DHeliPos::CreateObject(unsigned int allocator) {
     if (allocator == 0) {
         return new (SFXCTL_3DHeliPos::GetStaticTypeInfo()->typeName, false) SFXCTL_3DHeliPos();

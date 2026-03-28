@@ -223,6 +223,7 @@ inline stAssetDescription &stAssetDescription::operator=(const stAssetDescriptio
     return *this;
 }
 
+
 void stBankSlot::Clear() {
     BANKmemLocation = 0;
     MAINmemLocation = nullptr;
@@ -1073,9 +1074,8 @@ void EAXAemsManager::EvtSysLoadCallback(int param, int error_status) {
 }
 
 void EAXAemsManager::RemoveAEMSBank() {
-    int mbhandle = m_pCurUNLOADSDLP->Handle;
-    if (mbhandle != -1) {
-        SNDAEMS_removemodulebank(mbhandle);
+    if (m_pCurUNLOADSDLP->Handle != -1) {
+        SNDAEMS_removemodulebank(m_pCurUNLOADSDLP->Handle);
     }
 }
 
