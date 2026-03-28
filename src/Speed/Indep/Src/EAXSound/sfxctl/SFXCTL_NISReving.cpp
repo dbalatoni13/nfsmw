@@ -338,7 +338,7 @@ NIS_RevManager::NIS_RevManager() {
     pRevData = nullptr;
     pBuffer = nullptr;
     RecordingCount = 0;
-    *reinterpret_cast<int *>(&IsInitialized) = 0;
+    IsInitialized = false;
 }
 
 
@@ -353,7 +353,7 @@ void NIS_RevManager::OpenNISRevData(unsigned int anim_id) {
     char *AnimName;
     char EngineRevBin[50];
 
-    *reinterpret_cast<int *>(&IsInitialized) = 0;
+    IsInitialized = false;
     index = GetCsisEventIndex(anim_id);
     if (index != -1) {
         AnimName = reinterpret_cast<char **>(uNIS_STRINGHASHMAP + 8)[index * 3];
@@ -404,10 +404,10 @@ void NIS_RevManager::OpenNISRevData(unsigned int anim_id) {
                     }
                 }
 
-                *reinterpret_cast<int *>(&IsInitialized) = 1;
+                IsInitialized = true;
             }
         } else {
-            *reinterpret_cast<int *>(&IsInitialized) = index;
+            IsInitialized = false;
         }
     }
 }

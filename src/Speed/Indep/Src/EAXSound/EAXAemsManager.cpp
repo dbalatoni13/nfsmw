@@ -940,14 +940,14 @@ void EAXAemsManager::DataLoadCB(int param, int error_status) {
     case EAXSND_DT_AEMS_SYNCSPU:
         AddAemsBank();
         gAEMSMgr.ResolveCurrentDataMemory();
-        *reinterpret_cast<int *>(&gAEMSMgr.m_pCurLoadSDLP->bResolvedAsync) = 1;
-        *reinterpret_cast<int *>(&gAEMSMgr.m_pCurLoadSDLP->bResolvedSync) = 1;
+        gAEMSMgr.m_pCurLoadSDLP->bResolvedAsync = true;
+        gAEMSMgr.m_pCurLoadSDLP->bResolvedSync = true;
         break;
     case EAXSND_DT_AEMS_ASYNCSPU:
         break;
     case EAXSND_DT_AEMS_ASYNCSPUMEM:
-        *reinterpret_cast<int *>(&gAEMSMgr.m_IsWaitingForFileCB) = 0;
-        if (*reinterpret_cast<int *>(&gAEMSMgr.m_bBulkLoad) != 0) {
+        gAEMSMgr.m_IsWaitingForFileCB = false;
+        if (gAEMSMgr.m_bBulkLoad) {
             gAEMSMgr.m_pCurLoadSDLP = nullptr;
             gAEMSMgr.m_ItemsPendingAsyncResolve++;
             goto LoadDone;
@@ -966,13 +966,13 @@ void EAXAemsManager::DataLoadCB(int param, int error_status) {
             gAEMSMgr.m_pCurLoadSDLP->pmem, nullptr, 0, AsyncResidentAllocCB);
         break;
     case EAXSND_DT_GENERIC_DATA:
-        *reinterpret_cast<int *>(&gAEMSMgr.m_pCurLoadSDLP->bResolvedAsync) = 1;
-        *reinterpret_cast<int *>(&gAEMSMgr.m_pCurLoadSDLP->bResolvedSync) = 1;
+        gAEMSMgr.m_pCurLoadSDLP->bResolvedAsync = true;
+        gAEMSMgr.m_pCurLoadSDLP->bResolvedSync = true;
         break;
     }
 
 LoadDone:
-    *reinterpret_cast<int *>(&gAEMSMgr.m_IsWaitingForFileCB) = 0;
+    gAEMSMgr.m_IsWaitingForFileCB = false;
 }
 
 int EAXAemsManager::AddBankListing(stAssetDescription &asset) {

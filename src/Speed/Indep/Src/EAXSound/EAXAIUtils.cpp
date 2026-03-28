@@ -121,7 +121,7 @@ void SndAIStateManager::SwitchState(SND_AI_STATE NewState) {
     m_tLastSwitch = SndBase::m_fRunningTime;
     PrevState = CurState;
     CurState = NewState;
-    *(int *)&bTransition = 1;
+    bTransition = true;
 }
 
 SndAIStateManager::SndAIStateManager()

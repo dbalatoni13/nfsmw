@@ -8,7 +8,7 @@
 inline EAX_HeliState::~EAX_HeliState() {}
 
 inline bool EAX_HeliState::IsSimUpdating() {
-    return *(int *)&mSimUpdating == 1;
+    return mSimUpdating == true;
 }
 
 inline bVector3 *EAX_HeliState::GetPosition() {

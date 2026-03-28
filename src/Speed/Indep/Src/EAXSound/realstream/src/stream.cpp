@@ -427,7 +427,7 @@ static void readcallback(int, int, void *userdata) {
     int endoffile;
     int endchunk;
 
-    *(int *)&bReadCallbackToggle = 1;
+    bReadCallbackToggle = true;
     if (req->type == 1) {
         bytesread = strm->readsize;
         endoffile = strm->foffset + bytesread >= req->parm;

@@ -322,9 +322,9 @@ void SpeechSampleData::Destruct(SpeechSampleData *ptr) {
     gSpeechCache.Free(ptr);
 }
 
-inline void SpeechSampleData::Lock() { *reinterpret_cast<int *>(&lock) = 1; }
+inline void SpeechSampleData::Lock() { lock = true; }
 
-inline void SpeechSampleData::Unlock() { *reinterpret_cast<int *>(&lock) = 0; }
+inline void SpeechSampleData::Unlock() { lock = false; }
 
 inline SampleReqList &Manager::GetSampleRequests() { return mSampleRequests; }
 
@@ -378,7 +378,7 @@ ScheduledSpeechEvent::ScheduledSpeechEvent() {
 ScheduledSpeechEvent::~ScheduledSpeechEvent() {
     for (short i = 0; i < 7; ++i) {
         SpeechSampleData *stitch = assoc_samples[i];
-        if (stitch != nullptr && *reinterpret_cast<int *>(&stitch->lock) == 1) {
+        if (stitch != nullptr && stitch->lock == true) {
             stitch->Unlock();
         }
         assoc_samples[i] = nullptr;
