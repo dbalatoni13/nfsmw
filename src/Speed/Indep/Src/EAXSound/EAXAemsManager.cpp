@@ -1053,7 +1053,6 @@ void EAXAemsManager::QueueFileLoad(stSndAssetQueue &queueitem, eBANK_SLOT_TYPE S
 void EAXAemsManager::ResolvePendingAsyncLoads() {}
 
 void *EAXAemsManager::GetCallbackEventSys() {
-    int offset = m_nCallbackEvtSys << 2;
     return m_pEvtSystems[m_nCallbackEvtSys];
 }
 

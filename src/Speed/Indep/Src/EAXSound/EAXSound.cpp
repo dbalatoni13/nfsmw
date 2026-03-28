@@ -1027,8 +1027,7 @@ void EAXSound::InitEATRAX() {
 }
 
 void EAXSound::PlayFEMusic(int nIndex) {
-    MControlPathfinder msg(true, 0, 0, 0);
-    msg.Send(UCrc32("Pathfinder5"));
+    MControlPathfinder(true, 0, 0, 0).Send(UCrc32("Pathfinder5"));
 }
 
 unsigned int GenerateUpgradedEngine(EAX_CarState *pCar, int playerUpgrade);

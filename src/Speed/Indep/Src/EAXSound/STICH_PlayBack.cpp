@@ -461,7 +461,7 @@ cSTICH_PlayBack::~cSTICH_PlayBack() {
 }
 
 void cSTICH_PlayBack::QueueSampleRequest(struct SampleQueueItem &samplereq) {
-    STICH_TYPE type = static_cast<STICH_TYPE>(samplereq.pStitch->StichData->eStichType);
+    STICH_TYPE type = static_cast<STICH_TYPE>(samplereq.pStitch->GetData().eStichType);
     GetQueueList(type).push_back(samplereq);
 }
 
