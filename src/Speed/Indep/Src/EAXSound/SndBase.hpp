@@ -38,7 +38,7 @@ struct SndBase : public AudioMemBase {
     SndBase();
     ~SndBase() override;
     virtual TypeInfo *GetTypeInfo(void) const;
-    virtual char *GetTypeName() const;
+    virtual const char *GetTypeName() const;
     virtual int GetController(int Index) {
         return -1;
     }

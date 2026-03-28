@@ -47,7 +47,7 @@ struct EAXCar : public CSTATE_Base {
     virtual void ProcessUpdate() override;
     virtual bool Detach() override;
     virtual StateInfo *GetStateInfo(void) const override;
-    virtual char *GetStateName(void) const override;
+    virtual const char *GetStateName(void) const override;
 
     virtual void ProcessSoundSphere(unsigned int unamehash, int nparamid, bVector3 *pv3pos, float fradius);
     virtual void UpdateCarPhysics();

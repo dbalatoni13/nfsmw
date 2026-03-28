@@ -24,6 +24,6 @@ SndBase::~SndBase() {}
 
 int SndBase::GetDMixOutput(int idx, DMX_PRESET_TYPE etype) {}
 
-char *SndBase::GetTypeName(void) const {
+const char *SndBase::GetTypeName(void) const {
     return s_TypeInfo.typeName;
 }

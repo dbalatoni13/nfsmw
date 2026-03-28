@@ -17,14 +17,14 @@ struct SFXCTL : public SndBase {
     SFXCTL();
     ~SFXCTL() override;
     TypeInfo *GetTypeInfo() const override;
-    char *GetTypeName() const override;
+    const char *GetTypeName() const override;
     void InitSFX() override;
     void UpdateParams(float t) override;
 
     float GetPhysTRQ();
     float GetPhysRPM();
 
-    static TypeInfo *GetStaticTypeInfo(void);
+    static TypeInfo *GetStaticTypeInfo(void) { return &s_TypeInfo; }
 };
 
 #endif

@@ -23,16 +23,16 @@ SFXCTL_AccelTrans::SFXCTL_AccelTrans()
 
 SndBase *SFXCTL_AccelTrans::CreateObject(unsigned int allocator) {
     if (allocator == 0) {
-        return new (SFXCTL_AccelTrans::s_TypeInfo.typeName, false) SFXCTL_AccelTrans();
+        return new (SFXCTL_AccelTrans::GetStaticTypeInfo()->typeName, false) SFXCTL_AccelTrans();
     }
-    return new (SFXCTL_AccelTrans::s_TypeInfo.typeName, true) SFXCTL_AccelTrans();
+    return new (SFXCTL_AccelTrans::GetStaticTypeInfo()->typeName, true) SFXCTL_AccelTrans();
 }
 
 SFXCTL_AccelTrans::~SFXCTL_AccelTrans() {}
 
 SndBase::TypeInfo *SFXCTL_AccelTrans::GetTypeInfo() const { return &s_TypeInfo; }
 
-char *SFXCTL_AccelTrans::GetTypeName() const { return s_TypeInfo.typeName; }
+const char *SFXCTL_AccelTrans::GetTypeName() const { return s_TypeInfo.typeName; }
 
 void SFXCTL_AccelTrans::Destroy() {}
 

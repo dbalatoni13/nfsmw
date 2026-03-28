@@ -28,6 +28,7 @@ struct EngineMix {
 struct SFXCTL_HybridMotor : public SFXCTL {
   protected:
     static TypeInfo s_TypeInfo;
+    static TypeInfo *GetStaticTypeInfo() { return &s_TypeInfo; }
 
   public:
     SFXCTL_HybridMotor();
@@ -57,7 +58,7 @@ struct SFXCTL_HybridMotor : public SFXCTL {
 
     ~SFXCTL_HybridMotor() override;
     TypeInfo *GetTypeInfo() const override;
-    char *GetTypeName() const override;
+    const char *GetTypeName() const override;
     int GetController(int Index) override;
     static SndBase *CreateObject(unsigned int);
     void SetupSFX(CSTATE_Base *_StateBase) override;

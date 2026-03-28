@@ -14,7 +14,7 @@ struct EAXTrafficCar : public CSTATE_Base {
     virtual void Attach(void *pAttachment) override;
     virtual bool Detach() override;
     virtual StateInfo *GetStateInfo(void) const override;
-    virtual char *GetStateName(void) const override;
+    virtual const char *GetStateName(void) const override;
 
     static StateInfo *GetStaticStateInfo(void) {
         return &s_StateInfo;

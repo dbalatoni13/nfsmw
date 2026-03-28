@@ -67,9 +67,9 @@ SFXCTL_Engine::SFXCTL_Engine()
 
 SndBase *SFXCTL_Engine::CreateObject(unsigned int allocator) {
     if (allocator == 0) {
-        return new (SFXCTL_Engine::s_TypeInfo.typeName, false) SFXCTL_Engine();
+        return new (SFXCTL_Engine::GetStaticTypeInfo()->typeName, false) SFXCTL_Engine();
     }
-    return new (SFXCTL_Engine::s_TypeInfo.typeName, true) SFXCTL_Engine();
+    return new (SFXCTL_Engine::GetStaticTypeInfo()->typeName, true) SFXCTL_Engine();
 }
 
 SFXCTL_Engine::~SFXCTL_Engine() {
@@ -83,7 +83,7 @@ SFXCTL_Engine::~SFXCTL_Engine() {
 
 SndBase::TypeInfo *SFXCTL_Engine::GetTypeInfo() const { return &s_TypeInfo; }
 
-char *SFXCTL_Engine::GetTypeName() const { return s_TypeInfo.typeName; }
+const char *SFXCTL_Engine::GetTypeName() const { return s_TypeInfo.typeName; }
 
 void SFXCTL_Engine::InitSFX() {
     GRaceParameters *race;

@@ -31,6 +31,7 @@ struct bMatrix4;
 struct SFXCTL_Physics : public SFXCTL {
   protected:
     static TypeInfo s_TypeInfo;
+    static TypeInfo *GetStaticTypeInfo() { return &s_TypeInfo; }
 
   public:
     /* 0x28 */ bool m_bBlownEngineStreamQueued;
@@ -70,7 +71,7 @@ struct SFXCTL_Physics : public SFXCTL {
     SFXCTL_Physics();
     ~SFXCTL_Physics() override;
     TypeInfo *GetTypeInfo() const override;
-    char *GetTypeName() const override;
+    const char *GetTypeName() const override;
     static SndBase *CreateObject(unsigned int allocator);
     void SetupSFX(CSTATE_Base *_StateBase) override;
     void InitSFX() override;
@@ -91,6 +92,7 @@ struct SFXCTL_Shifting;
 struct SFXCTL_AIPhysics : public SFXCTL_Physics {
   protected:
     static TypeInfo s_TypeInfo;
+    static TypeInfo *GetStaticTypeInfo() { return &s_TypeInfo; }
 
   public:
     SFXCTL_AIPhysics();
@@ -109,7 +111,7 @@ struct SFXCTL_AIPhysics : public SFXCTL_Physics {
 
     ~SFXCTL_AIPhysics() override;
     TypeInfo *GetTypeInfo() const override;
-    char *GetTypeName() const override;
+    const char *GetTypeName() const override;
     static SndBase *CreateObject(unsigned int allocator);
     int GetController(int Index) override;
     void SetupSFX(CSTATE_Base *_StateBase) override;
@@ -129,11 +131,12 @@ struct SFXCTL_AIPhysics : public SFXCTL_Physics {
 struct SFXCTL_TruckPhysics : public SFXCTL_AIPhysics {
   protected:
     static TypeInfo s_TypeInfo;
+    static TypeInfo *GetStaticTypeInfo() { return &s_TypeInfo; }
 
   public:
     static SndBase *CreateObject(unsigned int allocator);
     TypeInfo *GetTypeInfo() const override;
-    char *GetTypeName() const override;
+    const char *GetTypeName() const override;
 };
 
 #endif

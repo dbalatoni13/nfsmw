@@ -14,6 +14,7 @@ struct bVector3;
 struct SFXCTL_Wheel : public SFXCTL {
   protected:
     static TypeInfo s_TypeInfo;
+    static TypeInfo *GetStaticTypeInfo() { return &s_TypeInfo; }
 
   public:
     SFXCTL_Wheel();
@@ -33,7 +34,7 @@ struct SFXCTL_Wheel : public SFXCTL {
 
     ~SFXCTL_Wheel() override;
     TypeInfo *GetTypeInfo() const override;
-    char *GetTypeName() const override;
+    const char *GetTypeName() const override;
     static SndBase *CreateObject(unsigned int allocator);
     void InitSFX() override;
     void UpdateParams(float t) override;

@@ -4,7 +4,7 @@ SFXCTL::SFXCTL() : m_UGL(AEMS_LEVEL0) {}
 
 SndBase::TypeInfo *SFXCTL::GetTypeInfo() const { return &s_TypeInfo; }
 
-char *SFXCTL::GetTypeName() const { return s_TypeInfo.typeName; }
+const char *SFXCTL::GetTypeName() const { return s_TypeInfo.typeName; }
 
 void SFXCTL::InitSFX() {}
 

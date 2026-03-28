@@ -147,9 +147,9 @@ SFXCTL_Physics::SFXCTL_Physics()
 
 SndBase *SFXCTL_Physics::CreateObject(unsigned int allocator) {
     if (allocator == 0) {
-        return new (SFXCTL_Physics::s_TypeInfo.typeName, false) SFXCTL_Physics();
+        return new (SFXCTL_Physics::GetStaticTypeInfo()->typeName, false) SFXCTL_Physics();
     }
-    return new (SFXCTL_Physics::s_TypeInfo.typeName, true) SFXCTL_Physics();
+    return new (SFXCTL_Physics::GetStaticTypeInfo()->typeName, true) SFXCTL_Physics();
 }
 
 SFXCTL_Physics::~SFXCTL_Physics() {
@@ -178,14 +178,14 @@ SFXCTL_AIPhysics::SFXCTL_AIPhysics() {
 
 SndBase *SFXCTL_AIPhysics::CreateObject(unsigned int allocator) {
     if (allocator == 0) {
-        return new (SFXCTL_AIPhysics::s_TypeInfo.typeName, false) SFXCTL_AIPhysics();
+        return new (SFXCTL_AIPhysics::GetStaticTypeInfo()->typeName, false) SFXCTL_AIPhysics();
     }
-    return new (SFXCTL_AIPhysics::s_TypeInfo.typeName, true) SFXCTL_AIPhysics();
+    return new (SFXCTL_AIPhysics::GetStaticTypeInfo()->typeName, true) SFXCTL_AIPhysics();
 }
 
 SndBase::TypeInfo *SFXCTL_Physics::GetTypeInfo() const { return &s_TypeInfo; }
 
-char *SFXCTL_Physics::GetTypeName() const { return s_TypeInfo.typeName; }
+const char *SFXCTL_Physics::GetTypeName() const { return s_TypeInfo.typeName; }
 
 void SFXCTL_Physics::InitSFX() {
     SFXCTL::InitSFX();
@@ -341,7 +341,7 @@ void SFXCTL_Physics::SetupSFX(CSTATE_Base *_StateBase) {
 
 SndBase::TypeInfo *SFXCTL_AIPhysics::GetTypeInfo() const { return &s_TypeInfo; }
 
-char *SFXCTL_AIPhysics::GetTypeName() const { return s_TypeInfo.typeName; }
+const char *SFXCTL_AIPhysics::GetTypeName() const { return s_TypeInfo.typeName; }
 
 int SFXCTL_AIPhysics::GetController(int Index) {
     if (Index == 0) {
@@ -564,13 +564,13 @@ void SFXCTL_AIPhysics::UpdateGear() {
 
 SndBase::TypeInfo *SFXCTL_TruckPhysics::GetTypeInfo() const { return &s_TypeInfo; }
 
-char *SFXCTL_TruckPhysics::GetTypeName() const { return s_TypeInfo.typeName; }
+const char *SFXCTL_TruckPhysics::GetTypeName() const { return s_TypeInfo.typeName; }
 
 SndBase *SFXCTL_TruckPhysics::CreateObject(unsigned int allocator) {
     if (allocator == 0) {
-        return new (SFXCTL_TruckPhysics::s_TypeInfo.typeName, false) SFXCTL_TruckPhysics();
+        return new (SFXCTL_TruckPhysics::GetStaticTypeInfo()->typeName, false) SFXCTL_TruckPhysics();
     }
-    return new (SFXCTL_TruckPhysics::s_TypeInfo.typeName, true) SFXCTL_TruckPhysics();
+    return new (SFXCTL_TruckPhysics::GetStaticTypeInfo()->typeName, true) SFXCTL_TruckPhysics();
 }
 
 void SFXCTL_Physics::UpdateNIS(float TotalTime, float deltaTime) {

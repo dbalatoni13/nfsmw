@@ -6,7 +6,7 @@ struct EAXTrafficCar : public CSTATE_Base {
     virtual void Attach(void *pAttachment) override;
     virtual bool Detach() override;
     virtual StateInfo *GetStateInfo(void) const override;
-    virtual char *GetStateName(void) const override;
+    virtual const char *GetStateName(void) const override;
 
     static CSTATE_Base *CreateState(unsigned int allocator);
 
@@ -26,7 +26,7 @@ CSTATE_Base::StateInfo *EAXTrafficCar::GetStateInfo(void) const {
     return &s_StateInfo;
 }
 
-char *EAXTrafficCar::GetStateName(void) const {
+const char *EAXTrafficCar::GetStateName(void) const {
     return s_StateInfo.stateName;
 }
 

@@ -10,11 +10,12 @@
 struct SFXCTL_3DHeliPos : public SFXCTL_3DObjPos {
   protected:
     static TypeInfo s_TypeInfo;
+    static TypeInfo *GetStaticTypeInfo() { return &s_TypeInfo; }
 
   public:
     ~SFXCTL_3DHeliPos() override;
     TypeInfo *GetTypeInfo() const override;
-    char *GetTypeName() const override;
+    const char *GetTypeName() const override;
     static SndBase *CreateObject(unsigned int allocator);
 };
 
@@ -23,6 +24,7 @@ struct EAX_HeliState;
 struct SFXCTL_Helicopter : public SFXCTL {
   protected:
     static TypeInfo s_TypeInfo;
+    static TypeInfo *GetStaticTypeInfo() { return &s_TypeInfo; }
 
   public:
     SFXCTL_Helicopter();
@@ -37,7 +39,7 @@ struct SFXCTL_Helicopter : public SFXCTL {
 
     ~SFXCTL_Helicopter() override;
     TypeInfo *GetTypeInfo() const override;
-    char *GetTypeName() const override;
+    const char *GetTypeName() const override;
     static SndBase *CreateObject(unsigned int allocator);
     int GetController(int Index) override;
     void AttachController(SFXCTL *) override;

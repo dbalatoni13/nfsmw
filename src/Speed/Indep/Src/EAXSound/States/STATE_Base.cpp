@@ -3,7 +3,7 @@
 CSTATE_Base::StateInfo *CSTATE_Base::GetStateInfo(void) const {
     return &s_StateInfo;
 }
-char *CSTATE_Base::GetStateName(void) const {
+const char *CSTATE_Base::GetStateName(void) const {
     return s_StateInfo.stateName;
 }
 

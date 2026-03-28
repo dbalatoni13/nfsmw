@@ -19,16 +19,16 @@ SFXCTL_Shifting::SFXCTL_Shifting()
 
 SndBase *SFXCTL_Shifting::CreateObject(unsigned int allocator) {
     if (allocator == 0) {
-        return new (SFXCTL_Shifting::s_TypeInfo.typeName, false) SFXCTL_Shifting();
+        return new (SFXCTL_Shifting::GetStaticTypeInfo()->typeName, false) SFXCTL_Shifting();
     }
-    return new (SFXCTL_Shifting::s_TypeInfo.typeName, true) SFXCTL_Shifting();
+    return new (SFXCTL_Shifting::GetStaticTypeInfo()->typeName, true) SFXCTL_Shifting();
 }
 
 SFXCTL_Shifting::~SFXCTL_Shifting() {}
 
 SndBase::TypeInfo *SFXCTL_Shifting::GetTypeInfo() const { return &s_TypeInfo; }
 
-char *SFXCTL_Shifting::GetTypeName() const { return s_TypeInfo.typeName; }
+const char *SFXCTL_Shifting::GetTypeName() const { return s_TypeInfo.typeName; }
 
 void SFXCTL_Shifting::InitSFX() {
     SFXCTL::InitSFX();

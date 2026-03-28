@@ -52,7 +52,7 @@ struct EAXAITunerCar : public EAXCar {
     virtual ~EAXAITunerCar();
     virtual void UpdateParams(float t) override;
     virtual StateInfo *GetStateInfo(void) const override;
-    virtual char *GetStateName(void) const override;
+    virtual const char *GetStateName(void) const override;
     virtual void UpdateCarPhysics() override;
     virtual int SFXMessage(eSFXMessageType SFXMessageType, unsigned int param1, unsigned int param2) override;
 
@@ -92,7 +92,7 @@ CSTATE_Base::StateInfo *EAXAITunerCar::GetStateInfo(void) const {
     return &s_StateInfo;
 }
 
-char *EAXAITunerCar::GetStateName(void) const {
+const char *EAXAITunerCar::GetStateName(void) const {
     return s_StateInfo.stateName;
 }
 
@@ -186,7 +186,7 @@ struct EAXCopCar : public EAXAITunerCar {
     virtual void Attach(void *pAttachment) override;
     virtual void UpdateParams(float t) override;
     virtual CSTATE_Base::StateInfo *GetStateInfo(void) const override;
-    virtual char *GetStateName(void) const override;
+    virtual const char *GetStateName(void) const override;
 
     static CSTATE_Base *CreateState(unsigned int allocator);
 
@@ -204,7 +204,7 @@ CSTATE_Base::StateInfo *EAXCopCar::GetStateInfo(void) const {
     return &s_StateInfo;
 }
 
-char *EAXCopCar::GetStateName(void) const {
+const char *EAXCopCar::GetStateName(void) const {
     return s_StateInfo.stateName;
 }
 
@@ -229,7 +229,7 @@ void EAXCopCar::Attach(void *pAttachment) {
 struct EAXTruck : public EAXAITunerCar {
     virtual void UpdateParams(float t) override;
     virtual CSTATE_Base::StateInfo *GetStateInfo(void) const override;
-    virtual char *GetStateName(void) const override;
+    virtual const char *GetStateName(void) const override;
 
     static CSTATE_Base *CreateState(unsigned int allocator);
 
@@ -247,7 +247,7 @@ CSTATE_Base::StateInfo *EAXTruck::GetStateInfo(void) const {
     return &s_StateInfo;
 }
 
-char *EAXTruck::GetStateName(void) const {
+const char *EAXTruck::GetStateName(void) const {
     return s_StateInfo.stateName;
 }
 

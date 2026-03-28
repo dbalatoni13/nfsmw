@@ -17,6 +17,7 @@ enum eREVERBFX {
 struct SFXCTL_Tunnel : public SFXCTL {
   protected:
     static TypeInfo s_TypeInfo;
+    static TypeInfo *GetStaticTypeInfo() { return &s_TypeInfo; }
     static eTrackPathZoneType m_PlayerZoneType;
 
   public:
@@ -63,7 +64,7 @@ struct SFXCTL_Tunnel : public SFXCTL {
 
     ~SFXCTL_Tunnel() override;
     TypeInfo *GetTypeInfo() const override;
-    char *GetTypeName() const override;
+    const char *GetTypeName() const override;
     static SndBase *CreateObject(unsigned int allocator);
     void InitSFX() override;
     void UpdateParams(float t) override;

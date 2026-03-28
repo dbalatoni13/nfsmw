@@ -19,6 +19,7 @@ class MNotifyVehicleDestroyed;
 struct SFXCTL_Engine : public SFXCTL {
   protected:
     static TypeInfo s_TypeInfo;
+    static TypeInfo *GetStaticTypeInfo() { return &s_TypeInfo; }
 
   public:
     /* 0x28 */ SFXCTL_Shifting *m_pShiftCtl;
@@ -61,7 +62,7 @@ struct SFXCTL_Engine : public SFXCTL {
     SFXCTL_Engine();
     ~SFXCTL_Engine() override;
     TypeInfo *GetTypeInfo() const override;
-    char *GetTypeName() const override;
+    const char *GetTypeName() const override;
     static SndBase *CreateObject(unsigned int allocator);
     void InitSFX() override;
     void UpdateParams(float t) override;

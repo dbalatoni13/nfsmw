@@ -63,14 +63,14 @@ SFXCTL_Pathfinder::~SFXCTL_Pathfinder() {
 
 SndBase *SFXCTL_Pathfinder::CreateObject(unsigned int allocator) {
     if (allocator == 0) {
-        return new (SFXCTL_Pathfinder::s_TypeInfo.typeName, false) SFXCTL_Pathfinder();
+        return new (SFXCTL_Pathfinder::GetStaticTypeInfo()->typeName, false) SFXCTL_Pathfinder();
     }
-    return new (SFXCTL_Pathfinder::s_TypeInfo.typeName, true) SFXCTL_Pathfinder();
+    return new (SFXCTL_Pathfinder::GetStaticTypeInfo()->typeName, true) SFXCTL_Pathfinder();
 }
 
 SndBase::TypeInfo *SFXCTL_Pathfinder::GetTypeInfo() const { return &s_TypeInfo; }
 
-char *SFXCTL_Pathfinder::GetTypeName() const { return s_TypeInfo.typeName; }
+const char *SFXCTL_Pathfinder::GetTypeName() const { return s_TypeInfo.typeName; }
 
 void SFXCTL_Pathfinder::InitSFX() {
     EA::TagValuePair tvp;

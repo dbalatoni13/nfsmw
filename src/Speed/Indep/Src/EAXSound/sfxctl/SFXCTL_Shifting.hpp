@@ -38,6 +38,7 @@ struct SFXCTL_Engine;
 struct SFXCTL_Shifting : public SFXCTL {
   protected:
     static TypeInfo s_TypeInfo;
+    static TypeInfo *GetStaticTypeInfo() { return &s_TypeInfo; }
 
   public:
     /* 0x28 */ SFXCTL_Engine *m_pEngineCtl;
@@ -80,7 +81,7 @@ struct SFXCTL_Shifting : public SFXCTL {
     SFXCTL_Shifting();
     ~SFXCTL_Shifting() override;
     TypeInfo *GetTypeInfo() const override;
-    char *GetTypeName() const override;
+    const char *GetTypeName() const override;
     static SndBase *CreateObject(unsigned int allocator);
     void InitSFX() override;
     void UpdateParams(float t) override;

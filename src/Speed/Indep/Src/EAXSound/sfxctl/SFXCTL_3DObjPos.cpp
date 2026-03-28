@@ -34,9 +34,9 @@ unsigned short SFXCTL_3DObjPos::m_CameraAngle = 0;
 
 SndBase *SFXCTL_3DObjPos::CreateObject(unsigned int allocator) {
     if (allocator == 0) {
-        return new (SFXCTL_3DObjPos::s_TypeInfo.typeName, false) SFXCTL_3DObjPos();
+        return new (SFXCTL_3DObjPos::GetStaticTypeInfo()->typeName, false) SFXCTL_3DObjPos();
     }
-    return new (SFXCTL_3DObjPos::s_TypeInfo.typeName, true) SFXCTL_3DObjPos();
+    return new (SFXCTL_3DObjPos::GetStaticTypeInfo()->typeName, true) SFXCTL_3DObjPos();
 }
 
 SFXCTL_3DObjPos::~SFXCTL_3DObjPos() {}
@@ -57,7 +57,7 @@ SFXCTL_3DObjPos::SFXCTL_3DObjPos()
 
 SndBase::TypeInfo *SFXCTL_3DObjPos::GetTypeInfo() const { return &s_TypeInfo; }
 
-char *SFXCTL_3DObjPos::GetTypeName() const { return s_TypeInfo.typeName; }
+const char *SFXCTL_3DObjPos::GetTypeName() const { return s_TypeInfo.typeName; }
 
 void SFXCTL_3DObjPos::SetPlayerRef(int i) { m_PlayerRef = i; }
 

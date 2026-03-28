@@ -11,7 +11,7 @@ struct EAXTunerCar : public EAXCar {
     virtual void PreLoadAssets() override;
     virtual void UpdateParams(float t) override;
     virtual StateInfo *GetStateInfo(void) const override;
-    virtual char *GetStateName(void) const override;
+    virtual const char *GetStateName(void) const override;
     virtual void ProcessSoundSphere(unsigned int unamehash, int nparamid, bVector3 *pv3pos, float fradius) override;
     virtual int SFXMessage(eSFXMessageType SFXMessageType, unsigned int param1, unsigned int param2) override;
     virtual void UpdatePov() override;
@@ -47,7 +47,7 @@ CSTATE_Base::StateInfo *EAXTunerCar::GetStateInfo(void) const {
     return &s_StateInfo;
 }
 
-char *EAXTunerCar::GetStateName(void) const {
+const char *EAXTunerCar::GetStateName(void) const {
     return s_StateInfo.stateName;
 }
 

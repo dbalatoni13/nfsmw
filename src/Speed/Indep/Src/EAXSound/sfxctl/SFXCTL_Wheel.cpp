@@ -58,14 +58,14 @@ SFXCTL_Wheel::~SFXCTL_Wheel() {}
 
 SndBase *SFXCTL_Wheel::CreateObject(unsigned int allocator) {
     if (allocator == 0) {
-        return new (SFXCTL_Wheel::s_TypeInfo.typeName, false) SFXCTL_Wheel();
+        return new (SFXCTL_Wheel::GetStaticTypeInfo()->typeName, false) SFXCTL_Wheel();
     }
-    return new (SFXCTL_Wheel::s_TypeInfo.typeName, true) SFXCTL_Wheel();
+    return new (SFXCTL_Wheel::GetStaticTypeInfo()->typeName, true) SFXCTL_Wheel();
 }
 
 SndBase::TypeInfo *SFXCTL_Wheel::GetTypeInfo() const { return &s_TypeInfo; }
 
-char *SFXCTL_Wheel::GetTypeName() const { return s_TypeInfo.typeName; }
+const char *SFXCTL_Wheel::GetTypeName() const { return s_TypeInfo.typeName; }
 
 void SFXCTL_Wheel::InitSFX() {
     SFXCTL::InitSFX();

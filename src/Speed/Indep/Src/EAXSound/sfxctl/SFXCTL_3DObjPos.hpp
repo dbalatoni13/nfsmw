@@ -13,6 +13,7 @@ struct bVector3;
 struct SFXCTL_3DObjPos : public SFXCTL {
   protected:
     static TypeInfo s_TypeInfo;
+    static TypeInfo *GetStaticTypeInfo() { return &s_TypeInfo; }
     static bVector2 m_v2ObjPosCopy;
     static bVector2 *m_pv2AzimRefDir;
     static bVector2 *m_pv2AzimRefPos;
@@ -36,7 +37,7 @@ struct SFXCTL_3DObjPos : public SFXCTL {
     SFXCTL_3DObjPos();
     ~SFXCTL_3DObjPos() override;
     TypeInfo *GetTypeInfo() const override;
-    char *GetTypeName() const override;
+    const char *GetTypeName() const override;
     static SndBase *CreateObject(unsigned int);
     void Detach() override;
     void SetCameraAngle();

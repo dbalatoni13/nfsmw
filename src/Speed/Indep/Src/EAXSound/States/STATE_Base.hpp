@@ -47,7 +47,7 @@ struct CSTATE_Base : public AudioMemBase {
     virtual bool Detach();
     virtual void Destroy();
     virtual StateInfo *GetStateInfo(void) const;
-    virtual char *GetStateName(void) const;
+    virtual const char *GetStateName(void) const;
 
     static StateInfo *GetStaticStateInfo(void) {
         return &s_StateInfo;
