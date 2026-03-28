@@ -854,7 +854,7 @@ int TrackStreamer::UnloadLeastRecentlyUsedSection() {
     }
 
     if (!best_section) {
-        return nullptr;
+        return 0;
     }
 
     UnloadSection(best_section);
@@ -1759,7 +1759,7 @@ void TrackStreamer::ReadyToMakeSpaceInPool() {
     void (*callback)(intptr_t) = MakeSpaceInPoolCallback;
     intptr_t param = MakeSpaceInPoolCallbackParam;
     MakeSpaceInPoolCallback = nullptr;
-    MakeSpaceInPoolCallbackParam = nullptr;
+    MakeSpaceInPoolCallbackParam = 0;
     MakeSpaceInPoolSize = 0;
     callback(param);
 }
