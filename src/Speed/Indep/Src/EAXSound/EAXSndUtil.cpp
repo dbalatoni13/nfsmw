@@ -232,10 +232,10 @@ float Slope::GetValue(float input) {
 }
 
 void Slope::Regenerate() {
-    float fVal = (LastInput - Start) / (Finish - Start);
+    float Scale = (LastInput - Start) / (Finish - Start);
     bNeedsRegenerate = false;
-    fVal = bClamp(fVal, 0.0f, 1.0f);
-    LastOutput = fVal * (Max - Min) + Min;
+    Scale = bClamp(Scale, 0.0f, 1.0f);
+    LastOutput = Scale * (Max - Min) + Min;
 }
 
 EAX_CarState *GetClosestPlayerCar(const bVector3 *vPosition) {

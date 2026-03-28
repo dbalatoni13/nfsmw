@@ -279,7 +279,7 @@ void SFXCTL_3DObjPos::UpdateDoppler(int PlayerNum, float t) {
 
     if (((m_fdvelmag_car[1] < 0.0f) && (0.0f < m_fdvelmag_car[0])) ||
         ((0.0f < m_fdvelmag_car[1]) && (m_fdvelmag_car[0] < 0.0f))) {
-        register int nvar asm("r0") = GetDMIX_InputValue(15);
+        register int nvar = GetDMIX_InputValue(15);
         SetDMIX_Input(15, nvar | 0x80000000);
     }
 
@@ -299,13 +299,14 @@ void SFXCTL_3DObjPos::UpdateParams(float t) {
         SetDMIX_Input(DMX_PITCH, -1);
         SetDMIX_Input(DMX_FREQ, 0);
         SetDMIX_Input(DMX_VOL, -1);
-        int nvar = GetDMIX_InputValue(15);
+        register int nvar asm("r0") = GetDMIX_InputValue(15);
         SetDMIX_Input(15, nvar & ~1);
         return;
     }
-    int nvar = GetDMIX_InputValue(15);
+    register int nvar asm("r0") = GetDMIX_InputValue(15);
     SetDMIX_Input(15, nvar | 1);
-    SetDMIX_Input(11, m_PlayerRef);
+    register int playerRef asm("r11") = m_PlayerRef;
+    SetDMIX_Input(11, playerRef);
     SFXCTL::UpdateParams(t);
     Generate3DParams(0);
     UpdateDoppler(m_PlayerRef, t);

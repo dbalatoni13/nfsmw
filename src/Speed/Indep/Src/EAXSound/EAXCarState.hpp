@@ -240,6 +240,10 @@ struct EAX_CarState : public UTL::Collections::Listable<EAX_CarState, 10> {
     float GetIdleRPM() { return mMinRPM; }
     float GetRedlineRPM() { return mRedline; }
 
+    float GetZero60Time() {
+        return 4.5f;
+    }
+
     float GetWheelTractionUsage(int w) {
         return mWheel[w].mPercentFsFkTransfer;
     }

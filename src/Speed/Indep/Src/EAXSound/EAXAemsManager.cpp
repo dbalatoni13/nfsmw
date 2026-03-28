@@ -876,21 +876,19 @@ void *EAXAemsManager::AsyncResidentAllocCB(int size) {
         m_pCurrentlyLoading = tmpLoading;
     }
 
-    char *currentLoad = static_cast<char *>(static_cast<void *>(m_pCurrentlyLoading));
-    stBankSlot *pBankSlot = *static_cast<stBankSlot **>(static_cast<void *>(currentLoad + 0x24));
-    if (pBankSlot != nullptr) {
-        newresalloc = pBankSlot->pLastAlloc;
-        pBankSlot->pLastAlloc += size;
+    if (m_pCurrentlyLoading->mBankSlot != nullptr) {
+        newresalloc = m_pCurrentlyLoading->mBankSlot->pLastAlloc;
+        m_pCurrentlyLoading->mBankSlot->pLastAlloc += size;
     } else {
-        char *filename = *static_cast<char **>(static_cast<void *>(currentLoad + 0x14));
+        const char *filename = m_pCurrentlyLoading->AssetDescription.FileName.GetString();
         if (filename == nullptr) {
-            filename = const_cast<char *>("");
+            filename = "";
         }
         char dbgstring[64];
         bStrCat(dbgstring, filename, ": resident allocation");
         newresalloc = gAudioMemoryManager.AllocateMemory(size, dbgstring, true);
         unsigned int newresallocaddr = reinterpret_cast<unsigned int>(newresalloc);
-        static_cast<ResAllocList *>(static_cast<void *>(currentLoad + 0x40))->push_back(newresallocaddr);
+        m_pCurrentlyLoading->resallocs.push_back(newresallocaddr);
     }
     return newresalloc;
 }

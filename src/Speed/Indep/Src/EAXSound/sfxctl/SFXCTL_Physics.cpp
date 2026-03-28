@@ -361,7 +361,7 @@ void SFXCTL_AIPhysics::SetupSFX(CSTATE_Base *_StateBase) {
 void SFXCTL_AIPhysics::InitSFX() {
     SFXCTL_Physics::InitSFX();
     AIStateManager.Initialize(static_cast<SFXCTL_Physics *>(this));
-    Zero60Time = 4.5f;
+    Zero60Time = GetPhysCar()->GetZero60Time();
 }
 
 void SFXCTL_AIPhysics::AttachController(SFXCTL *psfxctl) {
@@ -485,7 +485,9 @@ void SFXCTL_AIPhysics::UpdateRPM(float t) {
 
 void SFXCTL_AIPhysics::UpdateAccel(float t) {
     (void)t;
-    SteadyVelocityFactor = bClamp(bAbs(AIStateManager.AccelMonitor.AvgMonitor.GetValue()) * 5.5555553f, 0.1f, 1.0f);
+    SteadyVelocityFactor =
+        bClamp(bAbs(static_cast<const Average &>(GetAIStateManager()->AccelMonitor.AvgMonitor).GetValue()) * 5.5555553f,
+               0.1f, 1.0f);
     if (m_pShiftCtl->IsActive()) {
         return;
     }

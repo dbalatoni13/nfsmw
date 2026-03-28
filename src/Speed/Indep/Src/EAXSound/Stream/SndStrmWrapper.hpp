@@ -69,7 +69,7 @@ struct SndStrmWrapper {
     SndStrmWrapper();
     ~SndStrmWrapper();
     int Create(int maxChunks, int maxRequests, int buffersize);
-    int CreateStream(int maxChunks, int maxRequests, char *pmem, int buffersize, void *paddr);
+    int CreateStream(const int maxChunks, const int maxRequests, char *pmem, const int buffersize, void *paddr);
     bool IsPlaying();
     int Stop();
     int AddToStream(const char *filename, long offset, int holdtime);

@@ -123,6 +123,7 @@ struct SpeechSampleData {
     Timer t_play;
     unsigned int dataoffset;
 
+    ~SpeechSampleData() {}
     void Lock();
     void Unlock();
 
@@ -169,10 +170,11 @@ Attrib::Key Attrib::Gen::speech::ClassKey() {
 }
 
 void copMap::Add(HSIMABLE__ *hsimable, EAXCop *cop) {
-    copPair pair;
-    pair.hsimable = hsimable;
-    pair.cop = cop;
-    insert(std::upper_bound(begin(), end(), pair), pair);
+    copPair p;
+    p.hsimable = hsimable;
+    p.cop = cop;
+    iterator iter = std::upper_bound(begin(), end(), p);
+    insert(iter, p);
 }
 
 EAXCop *copMap::Remove(HSIMABLE__ *hsimable) {
@@ -191,9 +193,10 @@ EAXCop *copMap::Remove(HSIMABLE__ *hsimable) {
 }
 
 void copMap::ModifyHandle(HSIMABLE__ *hsimable, HSIMABLE__ *newhandle) {
-    for (iterator it = begin(); it != end(); ++it) {
-        if (it->hsimable == hsimable) {
-            it->hsimable = newhandle;
+    iterator iter;
+    for (iter = begin(); iter != end(); ++iter) {
+        if (iter->hsimable == hsimable) {
+            iter->hsimable = newhandle;
             break;
         }
     }
@@ -201,13 +204,13 @@ void copMap::ModifyHandle(HSIMABLE__ *hsimable, HSIMABLE__ *newhandle) {
 }
 
 EAXCop *copMap::Find(HSIMABLE__ *hsimable) const {
-    copPair pair;
-    pair.hsimable = hsimable;
-    pair.cop = nullptr;
+    copPair p;
+    p.hsimable = hsimable;
+    p.cop = nullptr;
 
-    const_iterator it = std::lower_bound(begin(), end(), pair);
-    if (it != end() && it->hsimable == hsimable) {
-        return it->cop;
+    const_iterator iter = std::lower_bound(begin(), end(), p);
+    if (iter != end() && iter->hsimable == hsimable) {
+        return iter->cop;
     }
 
     return nullptr;
@@ -221,9 +224,10 @@ void SpeechHashIDMap::Add(unsigned int hash, SPCHType_1_EventID id) {
 }
 
 SPCHType_1_EventID SpeechHashIDMap::GetID(unsigned int hash) {
-    for (iterator it = begin(); it != end(); ++it) {
-        if (it->hash == hash) {
-            return it->id;
+    for (const_iterator i = begin(); i != end(); ++i) {
+        const SpeechEventPair &p = *i;
+        if (p.hash == hash) {
+            return p.id;
         }
     }
 
@@ -310,15 +314,16 @@ History *EventHistory::Touch(SPCHType_1_EventID id, unsigned short speaker) {
 }
 
 void EventHistory::Reset() {
-    for (iterator it = begin(); it != end(); ++it) {
-        History &h = it->history;
-        h.count = 0;
-        h.time = Timer(0);
-        h.speakers = 0;
+    for (iterator i = begin(); i != end(); ++i) {
+        History &hist = i->history;
+        hist.count = 0;
+        hist.time = Timer(0);
+        hist.speakers = 0;
     }
 }
 
 void SpeechSampleData::Destruct(SpeechSampleData *ptr) {
+    ptr->~SpeechSampleData();
     gSpeechCache.Free(ptr);
 }
 
@@ -399,11 +404,10 @@ ScheduledSpeechEvent::~ScheduledSpeechEvent() {
 }
 
 void *ScheduledSpeechEvent::operator new(unsigned int base_size, unsigned int xtra) {
-    (void)base_size;
-    (void)xtra;
-    SlotPool *pool = gSpeechCache.GetEventPool();
+    unsigned int total = base_size + xtra;
+    (void)total;
 
-    if (!pool) {
+    if (!gSpeechCache.GetEventPool()) {
         return NullPointer;
     }
     if (gSpeechCache.GetEventPool() != nullptr && gSpeechCache.GetEventPool()->IsFull()) {
@@ -438,11 +442,11 @@ void ScheduledSpeechEvent::AddSample(SpeechSampleData *sample, unsigned char spe
 }
 
 void *ScheduledSpeechEvent::GetData(unsigned int *datasize) {
-    void *data = static_cast<void *>(this + 1);
+    unsigned int ptr = reinterpret_cast<unsigned int>(this + 1);
     if (datasize != nullptr) {
         *datasize = 0x40;
     }
-    return data;
+    return reinterpret_cast<void *>(ptr);
 }
 
 unsigned char ScheduledSpeechEvent::ReserveSample() {

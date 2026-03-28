@@ -21,7 +21,8 @@ int SndStrmWrapper::Create(int maxChunks, int maxRequests, int buffersize) {
     return CreateStream(maxChunks, maxRequests, pmem, buffersize, &STRMopts);
 }
 
-int SndStrmWrapper::CreateStream(int maxChunks, int maxRequests, char *pmem, int buffersize, void *pplayopts) {
+int SndStrmWrapper::CreateStream(const int maxChunks, const int maxRequests, char *pmem, const int buffersize,
+                                 void *pplayopts) {
     m_buffer = pmem;
     m_handle = SNDSTRM_create(static_cast<SNDPLAYOPTS *>(pplayopts), maxRequests, maxChunks, pmem, buffersize);
     m_BufferSize = buffersize;
@@ -48,10 +49,10 @@ SndStrmWrapper::~SndStrmWrapper() {
 }
 
 int SndStrmWrapper::Stop() {
-    if (SNDSTRM_purge(m_handle) >= 0) {
-        return 0;
+    if (SNDSTRM_purge(m_handle) < 0) {
+        return -3;
     }
-    return -3;
+    return 0;
 }
 
 int SndStrmWrapper::AddToStream(const char *filename, long offset, int holdtime) {
@@ -75,10 +76,11 @@ bool SndStrmWrapper::IsPlaying() {
     SNDSTREAMSTATUS sss;
     SNDSYS_entercritical();
     SNDSTRM_status(m_handle, &sss);
-    if (sss.currentrequest < 0) {
+    int reqHandle = sss.currentrequest;
+    if (reqHandle < 0) {
         SNDSYS_leavecritical();
     } else {
-        SNDSTRM_requeststatus(sss.currentrequest, &srs);
+        SNDSTRM_requeststatus(reqHandle, &srs);
         SNDSYS_leavecritical();
         if ((srs.state != 3) || (sss.outstandingrequests > 0)) {
             return true;
@@ -152,8 +154,7 @@ int SndStrmWrapper::GetRequestStatus(int sndrequesthandle, SNDREQUESTSTATUS *psr
 
 int SndStrmWrapper::GetTimeBuffered() {
     SNDSTREAMSTATUS sss;
-    int result = GetStatus(&sss);
-    if (result >= 0) {
+    if (GetStatus(&sss) >= 0) {
         return sss.timebuffered;
     }
     return 0;
@@ -176,14 +177,17 @@ int SndStrmWrapper::GetTimeRemaining() {
 }
 
 bool SndStrmWrapper::AlmostDone() {
+    int itemsinq;
+    int timeremaining;
     SNDSTREAMSTATUS sss;
     SNDREQUESTSTATUS srs;
     GetStatus(&sss);
-    if (sss.outstandingrequests == 0) {
+    itemsinq = sss.outstandingrequests;
+    if (itemsinq == 0) {
         return true;
     }
 
-    if (sss.outstandingrequests == 1) {
+    if (itemsinq == 1) {
         SNDSYS_entercritical();
         SNDSTRM_requeststatus(sss.currentrequest, &srs);
         SNDSYS_leavecritical();
@@ -215,17 +219,17 @@ void SndStrmWrapper::Resume() {
 }
 
 int SndStrmWrapper::PurgeStream() {
-    if (SNDSTRM_purge(m_handle) >= 0) {
-        return 0;
+    if (SNDSTRM_purge(m_handle) < 0) {
+        return -3;
     }
-    return -3;
+    return 0;
 }
 
 void SndStrmWrapper::DestroyStream() {
     if (m_handle >= 0) {
         Stop();
-        unsigned int time = bGetTicker();
-        while (time + 0x14 > bGetTicker()) {
+        register unsigned int time asm("r30") = bGetTicker() + 0x14;
+        while (time > bGetTicker()) {
             bSyncTaskRun();
         }
         SNDSTRM_destroy(m_handle);
