@@ -74,10 +74,10 @@ struct SFXCTL_Engine : public SFXCTL {
     virtual void UpdateVolume(float t);
     virtual void UpdateRedlining(float t);
 
-    virtual float GetEngRPM();
-    virtual float GetSmoothedEngRPM();
-    virtual float GetEngTorque();
-    virtual float GetSmoothedEngTorque();
+    virtual float GetEngRPM() { return m_fEng_RPM; }
+    virtual float GetSmoothedEngRPM() { return m_fSmoothedEng_RPM; }
+    virtual float GetEngTorque() { return m_fEng_Trq; }
+    virtual float GetSmoothedEngTorque() { return m_fSmoothedEng_Trq; }
     virtual void UpdateEngineLFO_FX(float t);
     void SetEngTorque(float _torque);
     void SetEngRPM(float _RPM) { m_fEng_RPM = _RPM; }

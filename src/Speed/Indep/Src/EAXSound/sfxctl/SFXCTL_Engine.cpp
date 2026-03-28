@@ -197,14 +197,6 @@ void SFXCTL_Engine::MessageVehicleDestroyed(const MNotifyVehicleDestroyed &messa
     }
 }
 
-float SFXCTL_Engine::GetEngRPM() { return m_fEng_RPM; }
-
-float SFXCTL_Engine::GetSmoothedEngRPM() { return m_fSmoothedEng_RPM; }
-
-float SFXCTL_Engine::GetEngTorque() { return m_fEng_Trq; }
-
-float SFXCTL_Engine::GetSmoothedEngTorque() { return m_fSmoothedEng_Trq; }
-
 inline void SFXCTL_Engine::SetEngTorque(float _torque) {
     _torque += m_TRQ_LFO;
     m_fEng_Trq = _torque;

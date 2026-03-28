@@ -48,12 +48,10 @@ SndStrmWrapper::~SndStrmWrapper() {
 }
 
 int SndStrmWrapper::Stop() {
-    int result = SNDSTRM_purge(m_handle);
-    int ret = -3;
-    if (result >= 0) {
-        ret = 0;
+    if (SNDSTRM_purge(m_handle) >= 0) {
+        return 0;
     }
-    return ret;
+    return -3;
 }
 
 int SndStrmWrapper::AddToStream(const char *filename, long offset, int holdtime) {
@@ -217,12 +215,10 @@ void SndStrmWrapper::Resume() {
 }
 
 int SndStrmWrapper::PurgeStream() {
-    int result = SNDSTRM_purge(m_handle);
-    int ret = -3;
-    if (result >= 0) {
-        ret = 0;
+    if (SNDSTRM_purge(m_handle) >= 0) {
+        return 0;
     }
-    return ret;
+    return -3;
 }
 
 void SndStrmWrapper::DestroyStream() {
