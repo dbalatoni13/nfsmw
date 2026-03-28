@@ -311,6 +311,14 @@ class bPNode : public bTNode<bPNode> {
     static void *Malloc();
     static void Free(void *ptr);
 
+    void *operator new(size_t size) {
+        return Malloc();
+    }
+
+    void operator delete(void *ptr) {
+        Free(ptr);
+    }
+
     bPNode(void *object) {
         this->Object = object;
     }
@@ -323,14 +331,6 @@ class bPNode : public bTNode<bPNode> {
 
     void *GetpObject() {
         return Object;
-    }
-
-    void *operator new(size_t size) {
-        return Malloc();
-    }
-
-    void operator delete(void *ptr) {
-        Free(ptr);
     }
 
   private:

@@ -214,14 +214,14 @@ Speed/Indep/SourceLists/zTrack.cpp:
 	.text       start:0x802B5C44 end:0x802C5544
 	.ctors      start:0x803C8BD4 end:0x803C8BD8
 	.rodata     start:0x80408FB8 end:0x80409D58
-	.data       start:0x80435F48 end:0x80437100
+	.data       start:0x80435F48 end:0x80437248
 	.bss        start:0x8049A5A4 end:0x804A5E60
 
 Speed/Indep/SourceLists/zWorld.cpp:
 	.text       start:0x802C5544 end:0x802ECA00
 	.ctors      start:0x803C8BD8 end:0x803C8BDC
 	.rodata     start:0x80409D58 end:0x8040DFE8
-	.data       start:0x80437100 end:0x80438F58
+	.data       start:0x80437248 end:0x80438F58
 	.bss        start:0x804A5E60 end:0x804AA598
 
 Speed/Indep/SourceLists/zWorld2.cpp:

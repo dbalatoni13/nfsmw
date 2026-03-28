@@ -37,6 +37,9 @@ class WWorldPos {
         this->fMissCount = 0;
         this->fUsageCount = 0;
         this->fYOffset = yOffset;
+        this->fFace.fPt0 = UMath::Vector3::kZero;
+        this->fFace.fPt1 = UMath::Vector3::kZero;
+        this->fFace.fPt2 = UMath::Vector3::kZero;
         this->fSurface = nullptr;
     }
 

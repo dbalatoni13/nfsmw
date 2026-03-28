@@ -77,7 +77,9 @@ class Camera {
 
     // unsigned short GetPreviousFov() {}
 
-    // bVector3 *GetVelocityPosition() {}
+    bVector3 *GetVelocityPosition() {
+        return &this->VelocityKey.Position;
+    }
 
     // bVector3 *GetVelocityDirection() {}
 

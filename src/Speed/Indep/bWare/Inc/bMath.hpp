@@ -8,6 +8,8 @@
 #include <math.h>
 #include <types.h>
 
+#include "Speed/Indep/bWare/Inc/Strings.hpp"
+
 #ifdef EA_PLATFORM_GAMECUBE
 #include "dolphin/mtx44_ext.h"
 #elif defined(EA_PLATFORM_XENON)
@@ -216,6 +218,20 @@ inline int bEqual(float a, float b, float epsilon) {
     return bAbs(a - b) <= epsilon;
 }
 
+inline int bGetTablePos(short *table, int num_elements, short element) {
+    for (int n = 0; n < num_elements; n++) {
+        if (table[n] == element) {
+            return n;
+        }
+    }
+
+    return -1;
+}
+
+inline bool bIsInTable(short *table, int num_elements, short element) {
+    return bGetTablePos(table, num_elements, element) >= 0;
+}
+
 struct bVector2 {
     // total size: 0x8
     float x; // offset 0x0, size 0x4
@@ -279,20 +295,22 @@ inline bVector2::bVector2(float _x, float _y) {
 }
 
 inline bVector2 bVector2::operator+(const bVector2 &v) const {
+    bVector2 *pv = const_cast<bVector2 *>(&v);
     float x1 = this->x;
     float y1 = this->y;
-    float x2 = v.x;
-    float y2 = v.y;
+    float x2 = pv->x;
+    float y2 = pv->y;
     float _x = x1 + x2;
     float _y = y1 + y2;
     return bVector2(_x, _y);
 }
 
 inline bVector2 bVector2::operator-(const bVector2 &v) const {
+    bVector2 *pv = const_cast<bVector2 *>(&v);
     float x1 = this->x;
     float y1 = this->y;
-    float x2 = v.x;
-    float y2 = v.y;
+    float x2 = pv->x;
+    float y2 = pv->y;
     float _x = x1 - x2;
     float _y = y1 - y2;
     return bVector2(_x, _y);
@@ -339,6 +357,12 @@ inline float bDot(const bVector2 *v1, const bVector2 *v2) {
     return v1->x * v2->x + v1->y * v2->y;
 }
 
+static inline float bDistBetween(const bVector2 *v1, const bVector2 *v2) {
+    float x = v1->x - v2->x;
+    float y = v1->y - v2->y;
+    return bSqrt(x * x + y * y);
+}
+
 struct ALIGN_16 bVector3 {
     // total size: 0x10
     float x;   // offset 0x0, size 0x4
@@ -358,14 +382,13 @@ struct ALIGN_16 bVector3 {
     bVector3 operator+(const bVector3 &v) const;
     bVector3 &operator=(const bVector3 &v);
     bVector3 operator-(const bVector3 &v) const;
+    bVector3 operator*(float f) const;
 
     int operator==(const bVector3 &v) {}
 
     float &operator[](int index) {}
 
     bVector3 operator-() {}
-
-    bVector3 operator*(float f) {}
 
     bVector3 &operator-=(const bVector3 &v) {}
 };
@@ -397,6 +420,12 @@ inline bVector3 *bScale(bVector3 *dest, const bVector3 *v, float scale) {
     dest->x = x * scale;
     dest->y = y * scale;
     dest->z = z * scale;
+    return dest;
+}
+
+inline bVector3 bScale(const bVector3 &v, float scale) {
+    bVector3 dest;
+    bScale(&dest, &v, scale);
     return dest;
 }
 
@@ -467,6 +496,10 @@ inline bVector3 bVector3::operator-(const bVector3 &v) const {
     return bSub(*this, v);
 }
 
+inline bVector3 bVector3::operator*(float f) const {
+    return bScale(*this, f);
+}
+
 inline bVector3 &bVector3::operator=(const bVector3 &v) {
     bCopy(this, &v);
     return *this;
@@ -522,10 +555,6 @@ float bDistBetween(const bVector3 *v1, const bVector3 *v2);
 
 inline float bDistBetween(const bVector3 &v1, const bVector3 &v2) {
     return bDistBetween(&v1, &v2);
-}
-
-inline bVector3 bScale(const bVector3 &v, float scale) {
-    bVector3 dest;
 }
 
 inline bVector3 bScale(const bVector3 &v1, const bVector3 &v2) {
@@ -845,20 +874,20 @@ inline bVector4 &bConvertFromBond(bVector4 &dest, const bVector4 &v) {
 
 inline bVector3 &bConvertFromBond(bVector3 &dest, const bVector3 &v) {
     float x = v.z;
-    float y = v.x;
+    float y = -v.x;
     float z = v.y;
     dest.x = x;
-    dest.y = -y;
+    dest.y = y;
     dest.z = z;
 
     return dest;
 }
 
 inline bVector3 &bConvertToBond(bVector3 &dest, const bVector3 &v) {
-    float x = v.y;
+    float x = -v.y;
     float y = v.z;
     float z = v.x;
-    dest.x = -x;
+    dest.x = x;
     dest.y = y;
     dest.z = z;
 
@@ -954,6 +983,10 @@ struct bQuaternion {
     bQuaternion &Slerp(bQuaternion &r, const bQuaternion &target, float t) const;
 };
 
+inline void bMemZero(void *dest, unsigned int size) {
+    bMemSet(dest, 0, size);
+}
+
 class bBitTable {
   public:
     bBitTable() {
@@ -970,16 +1003,20 @@ class bBitTable {
         NumBits = num_bits;
     }
 
-    void ClearTable();
+    void ClearTable() {
+        bMemZero(Bits, NumBits >> 3);
+    }
 
     void Set(int bit) {
-        Bits[bit >> 3] |= static_cast<uint8>(1 << (bit & 7));
+        unsigned char *p = &Bits[bit >> 3];
+        *p |= static_cast<uint8>(1 << (bit & 7));
     }
 
     // void Clear(int bit) {}
 
     int IsSet(int bit) {
-        return Bits[bit >> 3] & (1 << (bit & 7));
+        unsigned char *p = &Bits[bit >> 3];
+        return *p & (1 << (bit & 7));
     }
 
   private:
@@ -989,5 +1026,14 @@ class bBitTable {
 
 void hermite_basis(bMatrix4 *b, bMatrix4 *p, float u1, float u2, float u3, float u4);
 void hermite_parameter(bVector4 *dest, const bMatrix4 *b, float t);
+void bExpandBoundingBox(bVector3 *bbox_min, bVector3 *bbox_max, const bVector3 *bbox2_min, const bVector3 *bbox2_max);
+void bExpandBoundingBox(bVector3 *bbox_min, bVector3 *bbox_max, const bVector3 *point, float extra_width);
+void bInitializeBoundingBox(bVector3 *bbox_min, bVector3 *bbox_max, const bVector3 *point);
+int bBoundingBoxIsInside(const bVector2 *bbox_min, const bVector2 *bbox_max, const bVector2 *point, float extra_width);
+int bBoundingBoxOverlapping(const bVector2 *bbox_min, const bVector2 *bbox_max, const bVector2 *bbox2_min, const bVector2 *bbox2_max);
+bool bIsPointInPoly(const bVector2 *point, const bVector2 *points, int num_points);
+float bDistToLine(const bVector2 *point, const bVector2 *line_p1, const bVector2 *line_p2);
+
+extern bVector3 ZeroVector;
 
 #endif

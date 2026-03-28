@@ -10,49 +10,49 @@
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 
 enum EVIEW_ID {
-    NUM_RVM_VIEWS = 1,
-    NUM_PLAYER_VIEWS = 3,
-    NUM_RENDER_VIEWS = 21,
-    NUM_EVIEWS = 22,
-    EVIEW_LAST_ENVMAP = 21,
-    EVIEW_FIRST_ENVMAP = 16,
-    EVIEW_LAST_RVM = 3,
-    EVIEW_FIRST_RVM = 3,
-    EVIEW_LAST_PLAYER = 3,
-    EVIEW_FIRST_PLAYER = 1,
-    EVIEW_LAST_RENDER = 21,
-    EVIEW_FIRST_RENDER = 1,
-    EVIEW_LAST = 21,
-    EVIEW_FIRST = 0,
-    EVIEW_ENVMAP0D = 21,
-    EVIEW_ENVMAP0U = 20,
-    EVIEW_ENVMAP0L = 19,
-    EVIEW_ENVMAP0B = 18,
-    EVIEW_ENVMAP0R = 17,
-    EVIEW_ENVMAP0F = 16,
-    EVIEW_SHADOWMATTE = 15,
-    EVIEW_SHADOWMAP2 = 14,
-    EVIEW_SHADOWMAP1 = 13,
-    EVIEW_HDR_SCENE = 12,
-    EVIEW_QUADRANT_BOTTOM_RIGHT = 11,
-    EVIEW_QUADRANT_BOTTOM_LEFT = 10,
-    EVIEW_QUADRANT_TOP_RIGHT = 9,
-    EVIEW_QUADRANT_TOP_LEFT = 8,
-    EVIEW_PLAYER2_SPECULAR = 7,
-    EVIEW_PLAYER1_SPECULAR = 6,
-    EVIEW_PLAYER2_GLOW = 5,
-    EVIEW_PLAYER1_GLOW = 4,
-    EVIEW_PLAYER1_RVM = 3,
-    EVIEW_PLAYER2 = 2,
-    EVIEW_PLAYER1 = 1,
-    EVIEW_FLAILER = 0,
     EVIEW_NONE = -1,
+    EVIEW_FLAILER = 0,
+    EVIEW_PLAYER1 = 1,
+    EVIEW_PLAYER2 = 2,
+    EVIEW_PLAYER1_RVM = 3,
+    EVIEW_PLAYER1_GLOW = 4,
+    EVIEW_PLAYER2_GLOW = 5,
+    EVIEW_PLAYER1_SPECULAR = 6,
+    EVIEW_PLAYER2_SPECULAR = 7,
+    EVIEW_QUADRANT_TOP_LEFT = 8,
+    EVIEW_QUADRANT_TOP_RIGHT = 9,
+    EVIEW_QUADRANT_BOTTOM_LEFT = 10,
+    EVIEW_QUADRANT_BOTTOM_RIGHT = 11,
+    EVIEW_HDR_SCENE = 12,
+    EVIEW_SHADOWMAP1 = 13,
+    EVIEW_SHADOWMAP2 = 14,
+    EVIEW_SHADOWMATTE = 15,
+    EVIEW_ENVMAP0F = 16,
+    EVIEW_ENVMAP0R = 17,
+    EVIEW_ENVMAP0B = 18,
+    EVIEW_ENVMAP0L = 19,
+    EVIEW_ENVMAP0U = 20,
+    EVIEW_ENVMAP0D = 21,
+    EVIEW_FIRST = 0,
+    EVIEW_LAST = 21,
+    EVIEW_FIRST_RENDER = 1,
+    EVIEW_LAST_RENDER = 21,
+    EVIEW_FIRST_PLAYER = 1,
+    EVIEW_LAST_PLAYER = 3,
+    EVIEW_FIRST_RVM = 3,
+    EVIEW_LAST_RVM = 3,
+    EVIEW_FIRST_ENVMAP = 16,
+    EVIEW_LAST_ENVMAP = 21,
+    NUM_EVIEWS = 22,
+    NUM_RENDER_VIEWS = 21,
+    NUM_PLAYER_VIEWS = 3,
+    NUM_RVM_VIEWS = 1,
 };
 
 enum eVisibleState {
-    EVISIBLESTATE_FULL = 2,
-    EVISIBLESTATE_PARTIAL = 1,
     EVISIBLESTATE_NOT = 0,
+    EVISIBLESTATE_PARTIAL = 1,
+    EVISIBLESTATE_FULL = 2,
 };
 
 enum TARGET_ID {
@@ -196,6 +196,7 @@ struct ePositionMarker {
 };
 
 struct eModel;
+struct ePoly;
 struct eLightContext;
 
 class eViewPlatInfo;
@@ -215,7 +216,15 @@ class eViewPlatInterface {
     static eViewPlatInfo *GimmeMyViewPlatInfo(int view_id);
     eVisibleState GetVisibleStateGB(const bVector3 *aabb_min, const bVector3 *aabb_max, bMatrix4 *local_world);
     eVisibleState GetVisibleStateSB(const bVector3 *aabb_min, const bVector3 *aabb_max, bMatrix4 *local_world);
+
     void Render(eModel *model, bMatrix4 *local_to_world, eLightContext *light_context, unsigned int flags, bMatrix4 *blending_matricies);
+    void FERender(ePoly *poly, TextureInfo *texture_info, bMatrix4 *local_to_world, int use_previous_data, float bbRad);
+    void Render(ePoly *poly, TextureInfo *texture_info, bMatrix4 *local_to_world, int use_previous_data, float bbRad);
+    void FERender(ePoly *poly, TextureInfo *texture_info, TextureInfo *texture_info_mask, int use_previous_data);
+    void Render(ePoly *poly, TextureInfo *texture_info, TextureInfo *texture_info_mask, int use_previous_data);
+    void FERender(ePoly *poly, TextureInfo *texture_info, int use_previous_data);
+    void Render(ePoly *poly, TextureInfo *texture_info, int use_previous_data);
+    void Render(struct ePointSprite3D *sprite, TextureInfo *texture_info, bMatrix4 *local_world, int num_sprites);
 };
 
 struct eLoadedSolidStats {

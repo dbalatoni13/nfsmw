@@ -192,6 +192,11 @@ ResourceFile *CreateResourceFile(const char *filename, ResourceFileType type, in
 void UnloadResourceFile(ResourceFile *resource_file);
 void SetDelayedResourceCallback(void (*callback)(void *), void *param);
 
+bool LoadTempPermChunks(bChunk **ppchunks, int *psizeof_chunks, int allocation_params, const char *debug_name);
+void MoveChunks(bChunk *dest_chunks, bChunk *source_chunks, int sizeof_chunks, const char *debug_name);
+void UnloadChunks(bChunk *chunks, int sizeof_chunks, const char *debug_name);
+void PostLoadFixup();
+
 extern int ChunkMovementOffset; // size: 0x4
 
 inline ResourceFile *LoadResourceFile(const char *filename, ResourceFileType type, int flags) {
@@ -205,7 +210,7 @@ inline ResourceFile *LoadResourceFile(const char *filename, ResourceFileType typ
 }
 
 inline bool AreChunksBeingMoved() {
-    return ChunkMovementOffset;
+    return ChunkMovementOffset != 0;
 }
 
 inline int GetChunkMovementOffset() {

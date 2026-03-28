@@ -109,6 +109,7 @@ extern int WorldTimeFrames;
 extern float WorldTimeElapsed;
 extern int RealTimeFrames;
 extern Timer WorldTimer;
+extern int WorldTime;
 extern Timer RealTimer;
 extern float RealTimeElapsed;
 extern int RealLoopCounter;

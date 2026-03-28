@@ -1,28 +1,37 @@
 #include "Speed/Indep/Src/World/TrackPath.hpp"
+#include "Speed/Indep/Src/Gameplay/GManager.h"
+#include "Speed/Indep/Src/Misc/SpeedChunks.hpp"
 #include "Scenery.hpp"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 
-BOOL bBoundingBoxIsInside(const bVector2 *bbox_min, const bVector2 *bbox_max, const bVector2 *point, float extra_width);
-BOOL bBoundingBoxOverlapping(const bVector2 *bbox_min, const bVector2 *bbox_max, const bVector2 *bbox2_min, const bVector2 *bbox2_max);
-bool bIsPointInPoly(const bVector2 *point, const bVector2 *points, int num_points);
-void bEndianSwap16(void *value);
-void bEndianSwap32(void *value);
-void bPlatEndianSwap(bVector2 *value);
-void NotifyGameZonesChanged();
-
-static inline TrackPathZone *NextTrackPathZone(TrackPathZone *zone) {
-    return reinterpret_cast<TrackPathZone *>(reinterpret_cast<char *>(zone) + zone->MemoryImageSize);
-}
-
-static inline char *GetTrackPathBarrierData(TrackPathBarrier *barriers, int index) {
-    return reinterpret_cast<char *>(barriers) + index * 0x18;
-}
-
-TrackPathZone *zoneB[2];
+TrackPathZone *zoneB[2] = {};
 TrackPathManager TheTrackPathManager;
-bChunkLoader bChunkLoaderTrackPath(0x80034147, LoaderTrackPath, UnloaderTrackPath);
-bChunkLoader bChunkLoaderTrackPathBarriers(0x3414D, LoaderTrackPath, UnloaderTrackPath);
+bChunkLoader bChunkLoaderTrackPath(BCHUNK_TRACK_PATH_MANAGER, LoaderTrackPath, UnloaderTrackPath);
+bChunkLoader bChunkLoaderTrackPathBarriers(BCHUNK_TTRACK_PATH_BARRIERS, LoaderTrackPath, UnloaderTrackPath);
+
+// UNSOLVED
+bool DoLinesIntersect(const bVector2 &line1_start, const bVector2 &line1_end, const bVector2 &line2_start, const bVector2 &line2_end) {
+    float dy1 = line1_end.y - line1_start.y;
+    float dx2 = line2_end.x - line2_start.x;
+    float dx1 = line1_end.x - line1_start.x;
+    float dy2 = line2_end.y - line2_start.y;
+    float den = dx1 * dy2 - dy1 * dx2;
+
+    if (den != 0.0f) {
+        float dx3 = line1_start.x - line2_start.x;
+        float dy3 = line1_start.y - line2_start.y;
+        float r = (dy3 * dx2 - dx3 * dy2) / den;
+        if (0.0f <= r && r <= 1.0f) {
+            float s = (dy3 * dx1 - dx3 * dy1) / den;
+            if (0.0f <= s && s <= 1.0f) {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
 
 void TrackPathManager::Clear() {
     NumZones = 0;
@@ -32,38 +41,39 @@ void TrackPathManager::Clear() {
     MostCachedZones = 0;
     pBarriers = nullptr;
     NumBarriers = 0;
-    zoneB[0] = 0;
-    zoneB[1] = 0;
+    zoneB[0] = nullptr;
+    zoneB[1] = nullptr;
 }
 
 int TrackPathManager::Loader(bChunk *chunk) {
-    if (chunk->GetID() == 0x80034147) {
+    if (chunk->GetID() == BCHUNK_TRACK_PATH_MANAGER) {
         bChunk *last_chunk = chunk->GetLastChunk();
 
         for (chunk = chunk->GetFirstChunk(); chunk != last_chunk; chunk = chunk->GetNext()) {
-            if (chunk->GetID() == 0x3414A) {
+            if (chunk->GetID() == BCHUNK_TTRACK_PATH_ZONES) {
                 pZones = reinterpret_cast<TrackPathZone *>(chunk->GetData());
-                TrackPathZone *zone = pZones;
                 SizeofZones = chunk->GetSize();
                 NumZones = 0;
 
-                for (; zone < GetLastZone(); zone = zone->GetMemoryImageNext()) {
-                    bEndianSwap32(&zone->Type);
+                for (TrackPathZone *zone = pZones; zone < GetLastZone(); zone = zone->GetMemoryImageNext()) {
+                    bPlatEndianSwap(reinterpret_cast<int32 *>(&zone->Type));
                     bPlatEndianSwap(&zone->Position);
                     bPlatEndianSwap(&zone->Direction);
-                    bEndianSwap32(&zone->Elevation);
-                    bEndianSwap16(&zone->VisitInfo);
-                    bEndianSwap16(&zone->NumPoints);
-                    bEndianSwap16(&zone->MemoryImageSize);
+                    bPlatEndianSwap(&zone->Elevation);
+                    bPlatEndianSwap(&zone->VisitInfo);
+                    bPlatEndianSwap(&zone->NumPoints);
+                    bPlatEndianSwap(&zone->MemoryImageSize);
                     bPlatEndianSwap(&zone->BBoxMin);
                     bPlatEndianSwap(&zone->BBoxMax);
-                    for (int n = 0; n < zone->NumPoints; n++) {
+
+                    int n;
+                    for (n = 0; n < zone->NumPoints; n++) {
                         bPlatEndianSwap(&zone->Points[n]);
                     }
-                    for (int n = 0; n < 4; n++) {
-                        bEndianSwap32(reinterpret_cast<void *>(n * sizeof(int) + reinterpret_cast<int>(zone) + 0x30));
+                    for (n = 0; n < 4; n++) {
+                        bPlatEndianSwap(&zone->Data[n]);
                     }
-                    NumZones += 1;
+                    NumZones++;
                 }
             }
         }
@@ -71,12 +81,10 @@ int TrackPathManager::Loader(bChunk *chunk) {
         return true;
     }
 
-    if (chunk->GetID() == 0x3414D) {
+    if (chunk->GetID() == BCHUNK_TTRACK_PATH_BARRIERS) {
         pBarriers = reinterpret_cast<TrackPathBarrier *>(chunk->GetData());
-        int i;
-        unsigned int size = chunk->GetSize();
-        NumBarriers = size / 0x18;
-        for (i = 0; i < NumBarriers; i++) {
+        NumBarriers = chunk->GetSize() / sizeof(*pBarriers);
+        for (int i = 0; i < NumBarriers; i++) {
             pBarriers[i].EndianSwap();
         }
         return true;
@@ -86,13 +94,13 @@ int TrackPathManager::Loader(bChunk *chunk) {
 }
 
 int TrackPathManager::Unloader(bChunk *chunk) {
-    if (chunk->GetID() == 0x80034147) {
+    if (chunk->GetID() == BCHUNK_TRACK_PATH_MANAGER) {
         Clear();
         NotifyGameZonesChanged();
         return true;
     }
 
-    if (chunk->GetID() == 0x3414D) {
+    if (chunk->GetID() == BCHUNK_TTRACK_PATH_BARRIERS) {
         pBarriers = nullptr;
         NumBarriers = 0;
         return true;
@@ -103,35 +111,38 @@ int TrackPathManager::Unloader(bChunk *chunk) {
 
 void TrackPathManager::DisableAllBarriers() {
     for (int i = 0; i < NumBarriers; i++) {
-        GetTrackPathBarrierData(pBarriers, i)[0x10] = 0;
+        TrackPathBarrier *barrier = GetBarrier(i);
+        barrier->Enabled = false;
     }
 }
 
 void TrackPathManager::EnableBarriers(const char *group_name) {
     unsigned int group_name_hash = bStringHash(group_name);
     for (int i = 0; i < NumBarriers; i++) {
-        char *barrier = GetTrackPathBarrierData(pBarriers, i);
-        if (*reinterpret_cast<unsigned int *>(barrier + 0x14) == group_name_hash) {
-            barrier[0x10] = 1;
+        TrackPathBarrier *barrier = GetBarrier(i);
+        if (barrier->HasGroup(group_name_hash)) {
+            barrier->Enabled = true;
 
-            void *scenery_group = FindSceneryGroup(group_name_hash);
-            barrier[0x12] = scenery_group && *reinterpret_cast<unsigned char *>(reinterpret_cast<char *>(scenery_group) + 0x11);
+            SceneryGroup *scenery_group = FindSceneryGroup(group_name_hash);
+            barrier->PlayerBarrier = scenery_group && scenery_group->DriveThroughBarrierFlag;
         }
     }
 }
 
 void TrackPathManager::BuildZoneInfoTable() {
-    for (int type = 0; type < NUM_TRACK_PATH_ZONES; type++) {
+    int type;
+    for (type = 0; type < NUM_TRACK_PATH_ZONES; type++) {
         ZoneInfo *zone_info = &ZoneInfoTable[type];
         zone_info->NumZones = 0;
 
-        for (TrackPathZone *zone = pZones; zone < GetLastZone(); zone = zone->GetMemoryImageNext()) {
-            if (zone->GetType() == static_cast<eTrackPathZoneType>(type)) {
+        TrackPathZone *zone;
+        for (zone = pZones; zone < GetLastZone(); zone = zone->GetMemoryImageNext()) {
+            if (zone->GetType() == type) {
                 if (zone_info->NumZones == 0) {
                     zone_info->pFirstZone = zone;
                 }
                 zone_info->pLastZone = zone->GetMemoryImageNext();
-                zone_info->NumZones += 1;
+                zone_info->NumZones++;
             }
         }
     }
@@ -139,6 +150,7 @@ void TrackPathManager::BuildZoneInfoTable() {
     NotifyGameZonesChanged();
 }
 
+// UNSOLVED, regswap
 TrackPathZone *TrackPathManager::FindZone(const bVector2 *position, eTrackPathZoneType zone_type, TrackPathZone *prev_zone) {
     ZoneInfo *zone_info = &ZoneInfoTable[zone_type];
     bool cache_valid;
@@ -149,26 +161,23 @@ TrackPathZone *TrackPathManager::FindZone(const bVector2 *position, eTrackPathZo
         cache_valid = zone_info->NumCachedZones < 9;
     } else {
         const float cached_radius = 64.0f;
-        TrackPathZone *first_zone;
-        TrackPathZone *last_zone;
-
-        last_zone = zone_info->pLastZone;
-        first_zone = zone_info->pFirstZone;
+        TrackPathZone *first_zone = zone_info->pFirstZone;
+        TrackPathZone *last_zone = zone_info->pLastZone;
 
         zone_info->CachedBBoxMin.x = position->x - cached_radius;
         zone_info->CachedBBoxMin.y = position->y - cached_radius;
         zone_info->CachedBBoxMax.x = position->x + cached_radius;
         zone_info->CachedBBoxMax.y = position->y + cached_radius;
         zone_info->NumCachedZones = 0;
-        zone_info->NumFullRebuilds += 1;
+        zone_info->NumCacheRebuilds++;
 
-        for (TrackPathZone *zone = first_zone; zone < last_zone; zone = zone->GetMemoryImageNext()) {
+        for (TrackPathZone *zone = zone_info->pFirstZone; zone < last_zone; zone = zone->GetMemoryImageNext()) {
             if (bBoundingBoxOverlapping(&zone_info->CachedBBoxMin, &zone_info->CachedBBoxMax, &zone->BBoxMin, &zone->BBoxMax)) {
                 if (zone_info->NumCachedZones < 8) {
                     zone->CachedIndex = static_cast<char>(zone_info->NumCachedZones);
                     zone_info->CachedZones[zone_info->NumCachedZones] = zone;
                 }
-                zone_info->NumCachedZones += 1;
+                zone_info->NumCachedZones++;
             }
         }
 
@@ -176,26 +185,26 @@ TrackPathZone *TrackPathManager::FindZone(const bVector2 *position, eTrackPathZo
         MostCachedZones = bMax(MostCachedZones, zone_info->NumCachedZones);
     }
 
-    TrackPathZone *found_zone = 0;
+    TrackPathZone *found_zone = nullptr;
     if (!cache_valid) {
-        TrackPathZone *last_zone = zone_info->pLastZone;
         TrackPathZone *first_zone;
-
+        TrackPathZone *last_zone = zone_info->pLastZone;
         first_zone = zone_info->pFirstZone;
-        zone_info->NumCacheRebuilds += 1;
+
+        zone_info->NumFullRebuilds++;
         if (prev_zone) {
             first_zone = prev_zone->GetMemoryImageNext();
         }
 
-        TrackPathZone *zone = first_zone;
-        while (zone < last_zone && position &&
-               (!bBoundingBoxIsInside(&zone->BBoxMin, &zone->BBoxMax, position, 0.0f) || !zone->IsPointInside(position))) {
-            zone = zone->GetMemoryImageNext();
+        for (TrackPathZone *zone = first_zone; zone < last_zone; zone = zone->GetMemoryImageNext()) {
+            if (!position || (bBoundingBoxIsInside(&zone->BBoxMin, &zone->BBoxMax, position, 0.0f) && zone->IsPointInside(position))) {
+                found_zone = zone;
+                break;
+            }
         }
-        found_zone = zone;
     } else {
         int first_zone_index = 0;
-        zone_info->NumCacheHits += 1;
+        zone_info->NumCacheHits++;
         if (prev_zone) {
             first_zone_index = prev_zone->CachedIndex + 1;
         }
@@ -222,22 +231,31 @@ bool TrackPathZone::IsPointInside(const bVector2 *point) {
     return bIsPointInPoly(point, Points, NumPoints);
 }
 
-float TrackPathZone::GetSegmentNextTo(bVector2 *point, bVector2 *segment_point_a, bVector2 *segment_point_b) {
+void TrackPathInitRemoteCaffeineConnection() {}
+
+int LoaderTrackPath(bChunk *chunk) {
+    return TheTrackPathManager.Loader(chunk);
+}
+
+int UnloaderTrackPath(bChunk *chunk) {
+    return TheTrackPathManager.Unloader(chunk);
+}
+float TrackPathZone::GetSegmentNextTo(bVector2 *point, bVector2 *s0, bVector2 *s1) {
     int Closest0 = -1;
     int Closest1 = -1;
-    float d0 = 1.0e30f;
+    float d0 = 99999.0f;
     float len;
 
     for (int n = 0; n < NumPoints; n++) {
         bVector2 *p0 = &Points[n % NumPoints];
         bVector2 *p1 = &Points[(n + 1) % NumPoints];
-        bVector2 v = *p0 - *point;
-        bVector2 r(p1->y - p0->y, p0->x - p1->x);
+        bVector2 r = *p0 - *point;
+        bVector2 v(p1->y - p0->y, p0->x - p1->x);
 
-        bNormalize(&r, &r);
-        len = bDot(&r, &v);
-        bVector2 InPoint = r * (len * 0.999f) + *point;
-        bVector2 InPoint2 = r * (len * 1.001f) + *point;
+        bNormalize(&v, &v);
+        len = bDot(&v, &r);
+        bVector2 InPoint = v * (len * -1.1f) + *point;
+        bVector2 InPoint2 = v * (len * 1.1f) + *point;
         len = bAbs(len);
 
         if (len < d0 && (IsPointInside(&InPoint) || IsPointInside(&InPoint2))) {
@@ -251,17 +269,7 @@ float TrackPathZone::GetSegmentNextTo(bVector2 *point, bVector2 *segment_point_a
         return -1.0f;
     }
 
-    bCopy(segment_point_a, &Points[Closest0]);
-    bCopy(segment_point_b, &Points[Closest1]);
+    *s0 = Points[Closest0];
+    *s1 = Points[Closest1];
     return d0;
-}
-
-void TrackPathInitRemoteCaffeineConnection() {}
-
-int LoaderTrackPath(bChunk *chunk) {
-    return TheTrackPathManager.Loader(chunk);
-}
-
-int UnloaderTrackPath(bChunk *chunk) {
-    return TheTrackPathManager.Unloader(chunk);
 }

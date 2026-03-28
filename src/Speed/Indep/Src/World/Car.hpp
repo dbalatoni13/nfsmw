@@ -5,10 +5,15 @@
 #pragma once
 #endif
 
+#include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 
-struct Car : public bTNode<Car> {
-    // total size: 0x8
+// total size: 0x8
+class Car : public bTNode<Car> {
+  public:
+    bVector3 *GetGeometryPosition() {
+        return nullptr; // TODO
+    }
 };
 
 struct VinylLayerInfo {

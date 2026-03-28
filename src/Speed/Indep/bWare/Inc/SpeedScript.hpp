@@ -14,6 +14,7 @@ struct SpeedScriptFile {
     char Filename[80]; // offset 0x0, size 0x50
     char *ArgBuf;      // offset 0x50, size 0x4
 };
+
 struct SpeedScriptEntry {
     // total size: 0xC
     unsigned char FileNumber;         // offset 0x0, size 0x1

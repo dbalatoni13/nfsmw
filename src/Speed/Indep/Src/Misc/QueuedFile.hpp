@@ -10,10 +10,15 @@
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 
 extern SlotPool *QueuedFileSlotPool;
+extern int QueuedFileDefaultPriority;
 
 // total size: 0x10
 struct QueuedFileParams {
-    QueuedFileParams() {}
+    QueuedFileParams()
+        : Priority(QueuedFileDefaultPriority), //
+          BlockSize(0x7ffffff),                //
+          Compressed(false),                   //
+          UncompressedSize(0) {}
 
     int Priority;         // offset 0x0, size 0x4
     int BlockSize;        // offset 0x4, size 0x4
@@ -162,6 +167,7 @@ void AddQueuedFile2(void *buf, const char *filename, int file_pos, int num_bytes
 int GetQueuedFileSize(const char *filename);
 bool IsQueuedFileBusy();
 void BlockWhileQueuedFileBusy();
+void SetQueuedFileMinPriority(int priority);
 
 inline void AddQueuedFile(void *buf, const char *filename, int file_pos, int num_bytes, void (*callback)(intptr_t, int), intptr_t callback_param,
                           QueuedFileParams *params) {

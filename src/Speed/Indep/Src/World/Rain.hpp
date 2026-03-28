@@ -7,8 +7,71 @@
 
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
 
+enum RainType {
+    NUMTYPES = 2,
+    INACTIVE = 1,
+    RAIN = 0,
+};
+
+enum RainWindType {
+    NUMWINDTYPES = 2,
+    VECTOR_WIND = 1,
+    POINT_WIND = 0,
+};
+
+// total size: 0x4
+class OnScreenRain {
+  public:
+    int GetNumOnScreen() {
+        return NumOnScreen;
+    }
+
+  private:
+    int NumOnScreen; // offset 0x0, size 0x4
+};
+
 // total size: 0x47C
-struct Rain {
+class Rain {
+  public:
+    Rain(eView *view, RainType StartType);
+    void Init(RainType type, float percent);
+
+    float GetRainIntensity() {
+        return intensity;
+    }
+
+    float GetCloudIntensity() {
+        return CloudIntensity;
+    }
+
+    float GetRoadDampness() {
+        return RoadDampness;
+    }
+
+    void SetPrecipFogColour(unsigned int r, unsigned int g, unsigned int b) {
+        this->fogR = r;
+        this->fogG = g;
+        this->fogB = b;
+    }
+
+    float GetAmount(RainType type) {}
+
+    void SetRoadDampness(float damp) {
+        this->RoadDampness = damp;
+    }
+
+    bVector3 *GetWind() {
+        return &this->PrevailingWindSpeed;
+    }
+
+    void GetPrecipFogColour(unsigned int *r, unsigned int *g, unsigned int *b) {
+        *r = this->fogR;
+        *g = this->fogG;
+        *b = this->fogB;
+    }
+
+    void AttachRainCurtain(float x0, float y0, float z0, float x1, float y1, float z1, float x2, float y2, float z2, float x3, float y3, float z3);
+
     OnScreenRain OSrain;                 // offset 0x0, size 0x4
     int NoRain;                          // offset 0x4, size 0x4
     int NoRainAhead;                     // offset 0x8, size 0x4
@@ -20,6 +83,7 @@ struct Rain {
     bVector3 CamVelLOCAL;                // offset 0x30, size 0x10
     CurtainStatus IsValidRainCurtainPos; // offset 0x40, size 0x4
     int renderCount;                     // offset 0x44, size 0x4
+
   private:
     eView *MyView;                    // offset 0x48, size 0x4
     float intensity;                  // offset 0x4C, size 0x4
@@ -67,42 +131,11 @@ struct Rain {
     bVector2 ext1;                    // offset 0x470, size 0x8
     uint8 entFLAG;                    // offset 0x478, size 0x1
     uint8 extFLAG;                    // offset 0x479, size 0x1
-
-  public:
-    Rain(eView *view, RainType StartType);
-    void Init(RainType type, float percent);
-
-    float GetRainIntensity() {
-        return intensity;
-    }
-
-    float GetCloudIntensity() {
-        return CloudIntensity;
-    }
-
-    float GetRoadDampness() {
-        return RoadDampness;
-    }
-
-    void SetPrecipFogColour(unsigned int r, unsigned int g, unsigned int b) {}
-
-    float GetAmount(RainType type) {}
-
-    void SetRoadDampness(float damp) {}
-
-    bVector3 *GetWind() {}
-
-    void GetPrecipFogColour(unsigned int *r, unsigned int *g, unsigned int *b) {
-        *r = this->fogR;
-        *g = this->fogG;
-        *b = this->fogB;
-    }
-
-    void AttachRainCurtain(float x0, float y0, float z0, float x1, float y1, float z1, float x2, float y2, float z2, float x3, float y3, float z3);
 };
 
 int AmIinATunnel(eView *view, int CheckOverPass);
 int AmIinATunnelSlow(eView *view, int CheckOverPass);
 void SetRainBase();
+void CreateWindRotMatrix(eView *view, bMatrix4 *matrix, int x, const bMatrix4 *world);
 
 #endif
