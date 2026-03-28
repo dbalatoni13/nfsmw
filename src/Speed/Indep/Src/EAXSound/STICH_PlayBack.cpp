@@ -509,10 +509,6 @@ bool cSTICH_PlayBack::AddStich(STICH_TYPE StichType, SND_Stich &NewStichData) {
     return true;
 }
 
-bPList<SND_Stich> &cSTICH_PlayBack::GetStichList(STICH_TYPE StichType) {
-    return StichList[StichType];
-}
-
 SND_Stich &cSTICH_PlayBack::GetStich(STICH_TYPE StichType, int Index) {
     return *static_cast<SND_Stich *>(GetStichList(StichType).GetNode(Index)->GetpObject());
 }
@@ -540,7 +536,7 @@ char *GetStichTypeName(STICH_TYPE CurType) {
     return "";
 }
 
-void KillSample(cSampleWarpper *sampleref) {
+static void KillSample(cSampleWarpper *sampleref) {
     sampleref->Destroy();
 }
 
@@ -1180,11 +1176,10 @@ void cStichWrapper::Update(const SND_Params *Params) {
 
 void cStichWrapper::Destroy() {
     for (int i = 0; i < 18; i++) {
-        cSampleWarpper *sample = ActiveSamplesRefs[i];
-        if (sample != nullptr) {
-            if (sample->m_eIsPlaying == eSTITCH_PLAY_STATUS_QUEUED) {
+        if (ActiveSamplesRefs[i] != nullptr) {
+            if (ActiveSamplesRefs[i]->m_eIsPlaying == eSTITCH_PLAY_STATUS_QUEUED) {
                 SampleQueueItem sampleitem;
-                sampleitem.pSample = sample;
+                sampleitem.pSample = ActiveSamplesRefs[i];
                 sampleitem.pStitch = this;
                 cSTICH_PlayBack::RemoveFromList(sampleitem);
             }

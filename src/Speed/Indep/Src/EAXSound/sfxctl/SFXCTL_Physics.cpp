@@ -336,7 +336,7 @@ void SFXCTL_Physics::MsgRevEngine(const MAIEngineRev &message) {
 
 void SFXCTL_Physics::SetupSFX(CSTATE_Base *_StateBase) {
     SndBase::SetupSFX(_StateBase);
-    m_pEAXCar->m_pPhysicsCTL = this;
+    m_pEAXCar->SetPhysicsCTLPtr(this);
 }
 
 SndBase::TypeInfo *SFXCTL_AIPhysics::GetTypeInfo() const { return &s_TypeInfo; }
@@ -351,8 +351,6 @@ int SFXCTL_AIPhysics::GetController(int Index) {
 }
 
 void SFXCTL_AIPhysics::Destroy() {}
-
-void SFXCTL_AIPhysics::UpdateMixerOutputs() {}
 
 void SFXCTL_AIPhysics::SetupSFX(CSTATE_Base *_StateBase) {
     SFXCTL_Physics::SetupSFX(_StateBase);

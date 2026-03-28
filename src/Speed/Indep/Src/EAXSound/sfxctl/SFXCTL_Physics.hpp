@@ -125,7 +125,7 @@ struct SFXCTL_AIPhysics : public SFXCTL_Physics {
     Gear SuggestGear();
     void UpdateGear();
     void Destroy() override;
-    void UpdateMixerOutputs() override;
+    void UpdateMixerOutputs() override {}
     SndAIStateManager *GetAIStateManager() { return &AIStateManager; }
 };
 

@@ -133,7 +133,6 @@ struct cStichWrapper : public AudioMemBase {
 };
 
 char *GetStichTypeName(STICH_TYPE CurType /* r3 */);
-void KillSample(cSampleWarpper *sampleref);
 
 struct SampleQueueItem {
     // total size: 0x8
@@ -164,7 +163,9 @@ class cSTICH_PlayBack : public AudioMemBase {
     void Update(float t);
     void DestroyAllStichs(void);
 
-    bPList<SND_Stich> &GetStichList(STICH_TYPE StichType);
+    inline bPList<SND_Stich> &GetStichList(STICH_TYPE StichType) {
+        return StichList[StichType];
+    }
 
     static UTL::FixedVector<SampleQueueItem, 43, 16> &GetQueueList(STICH_TYPE type) {
         return mQueuedSampleList[type];

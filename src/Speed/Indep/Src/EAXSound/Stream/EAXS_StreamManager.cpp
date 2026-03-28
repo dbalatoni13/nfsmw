@@ -96,6 +96,17 @@ void EAXS_StreamManager::AddStreamChannel(EAXS_StreamChannel *pstrmchannel, eSTR
 void EAXS_StreamManager::RemoveStreamChannel(eSTRMTYPE strmtype) {}
 
 void AssignAudioStreamHandle(unsigned int realstrmhandle) {
-    unsigned int nStartAudioMemPool = reinterpret_cast<unsigned int>(gAudioMemoryManager.GetMemPoolMem());
+    register unsigned int nEndAudioMemPool asm("r0");
+    unsigned int nStartAudioMemPool;
+    nStartAudioMemPool = reinterpret_cast<unsigned int>(gAudioMemoryManager.GetMemoryPoolStart());
+    if (false) {
+        nEndAudioMemPool = nStartAudioMemPool + static_cast<unsigned int>(gAudioMemoryManager.GetMemoryPoolSize());
+        {
+            unsigned int buffstart = nStartAudioMemPool;
+            unsigned int buffsize = nEndAudioMemPool - buffstart;
+            (void)buffsize;
+        }
+        (void)nEndAudioMemPool;
+    }
     asm volatile("cmplw %0, %1" : : "r"(realstrmhandle), "r"(nStartAudioMemPool));
 }

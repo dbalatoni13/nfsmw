@@ -246,7 +246,6 @@ bool IsCarInRadius(EAX_CarState *pCar, const bVector3 *vPos, float fRadius) {
     if (pCar == nullptr) {
         return false;
     }
-    const bVector3 *carPos = static_cast<const bVector3 *>(static_cast<const void *>(&pCar->mMatrix.v3));
-    float dist = bDistBetween(vPos, carPos);
-    return dist < fRadius;
+    bVector3 *CarPos = pCar->GetPosition();
+    return bDistBetween(vPos, CarPos) < fRadius;
 }

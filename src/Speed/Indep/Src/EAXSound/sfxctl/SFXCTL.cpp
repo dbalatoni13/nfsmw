@@ -8,6 +8,8 @@ const char *SFXCTL::GetTypeName() const { return s_TypeInfo.typeName; }
 
 void SFXCTL::InitSFX() {}
 
-void SFXCTL::UpdateParams(float t) {}
+void SFXCTL::UpdateParams(float t) {
+    SndBase::UpdateParams(t);
+}
 
 SFXCTL::~SFXCTL() {}

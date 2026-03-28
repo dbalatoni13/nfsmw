@@ -20,7 +20,7 @@ struct EAXTunerCar : public EAXCar {
     virtual int SFXMessage(eSFXMessageType SFXMessageType, unsigned int param1, unsigned int param2) override;
     virtual void UpdatePov() override;
     virtual int UpdateRotation() override;
-    virtual int Play(void *peventst);
+    inline virtual int Play(void *peventst) { return 0; }
 
     static StateInfo *GetStaticStateInfo(void) {
         return &s_StateInfo;

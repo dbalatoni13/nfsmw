@@ -138,7 +138,7 @@ struct CarSoundConn : public Sim::Connection, public UTL::Collections::Listable<
 
     CarSoundConn(const Sim::ConnectionData &data);
     ~CarSoundConn() override;
-    void OnReceive(Sim::Packet *) override;
+    inline virtual void OnReceive(Sim::Packet *pkt) override {}
     inline void OnClose() override { delete this; }
     Sim::ConnStatus OnStatusCheck() override;
     void UpdateState(float dT);
@@ -180,9 +180,9 @@ struct HeliSoundConn : public Sim::Connection, public UTL::Collections::Listable
 
     HeliSoundConn(const Sim::ConnectionData &data);
     ~HeliSoundConn() override;
-    void OnReceive(Sim::Packet *) override;
+    inline virtual void OnReceive(Sim::Packet *pkt) override {}
     inline void OnClose() override { delete this; }
-    Sim::ConnStatus OnStatusCheck() override;
+    inline Sim::ConnStatus OnStatusCheck() override { return Sim::CONNSTATUS_READY; }
     void UpdateState(float dT);
     static Sim::Connection *Construct(const Sim::ConnectionData &data);
 };
@@ -1335,8 +1335,11 @@ CSTATE_Helicopter *EAXSound::SpawnHelicopter(EAX_HeliState *pHeli) {
 }
 
 void EAXSound::DestroyEAXHeli(EAX_HeliState *pHeli) {
+    CSTATE_Base *newheli;
+    eMAINMAPSTATES eStateMgrType;
     if (IsSoundEnabled) {
-        CSTATE_Base *newheli = m_pStateMgr[eMM_HELICOPTER]->GetStateObj(pHeli);
+        eStateMgrType = eMM_HELICOPTER;
+        newheli = m_pStateMgr[eStateMgrType]->GetStateObj(pHeli);
         if (newheli != nullptr) {
             newheli->Detach();
         }

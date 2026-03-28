@@ -209,15 +209,17 @@ void SFXCTL_Pathfinder::CreateTrack(int index) {
     if (!m_pPFParms[index]->bdataloaded) {
         return;
     }
-    char musname[64];
-    bStrCat(musname, g_DataPaths[0], m_pPFParms[index]->musfile);
-    int result = PATH_createstreamtrack(m_pPFParms[index]->PATH_TRACK, musname, 2500);
-    if (result < 0) {
-        return;
-    }
-    m_PFStrmImp[index] = PATH_createstreamimp(m_pPFParms[index]->PATH_TRACK, 3, 2500.0f);
-    if (index == 0) {
-        AttachStreamInstance(m_pPFParms[0]);
+    {
+        char musname[64];
+        bStrCat(musname, g_DataPaths[0], m_pPFParms[index]->musfile);
+        int result = PATH_createstreamtrack(m_pPFParms[index]->PATH_TRACK, musname, 2500);
+        if (result < 0) {
+            return;
+        }
+        m_PFStrmImp[index] = PATH_createstreamimp(m_pPFParms[index]->PATH_TRACK, 3, 2500.0f);
+        if (index == 0) {
+            AttachStreamInstance(m_pPFParms[0]);
+        }
     }
 }
 

@@ -30,6 +30,7 @@ struct CSTATE_Base;
 struct CSTATE_Helicopter;
 struct EAXFrontEnd;
 struct EAXCommon;
+struct SFXCTL_MasterVol;
 
 // yes that is the correct name for the file
 
@@ -202,6 +203,7 @@ class EAXSound : public AudioMemBase {
 
     friend void SetSoundControlState(bool bON, eSNDCTLSTATE esndstate, const char *Reason);
     friend void FESoundControl(bool bOn, const char *name);
+    friend struct SFXCTL_MasterVol;
 
   private:
     int ncompiletest;                            // offset 0x4, size 0x4

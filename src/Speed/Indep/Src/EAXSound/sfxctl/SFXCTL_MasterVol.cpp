@@ -36,7 +36,15 @@ SndBase::TypeInfo *SFXCTL_MasterVol::GetTypeInfo() const { return &s_TypeInfo; }
 
 const char *SFXCTL_MasterVol::GetTypeName() const { return s_TypeInfo.typeName; }
 
-void SFXCTL_MasterVol::InitSFX() {}
+void SFXCTL_MasterVol::InitSFX() {
+    float fvol;
+    int nvol;
+
+    if (false) {
+        fvol = g_pEAXSound->m_pCurAudioSettings->GetMasteredSoundEffectsVol();
+        nvol = static_cast<int>(fvol);
+    }
+}
 
 void SFXCTL_MasterVol::UpdateParams(float t) {
     (void)t;

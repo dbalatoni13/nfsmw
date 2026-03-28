@@ -124,7 +124,7 @@ class AudioSettings {
     float GetMasteredFEMusicVol() { return MasterVol * FEMusicVol; }
     float GetMasteredIGMusicVol() { return MasterVol * IGMusicVol; }
     float GetMasteredSpeechVol() const { return MasterVol * SpeechVol; }
-    float GetMasteredSoundEffectsVol() const { return MasterVol * SoundEffectsVol; }
+    float GetMasteredSoundEffectsVol() { return MasterVol * SoundEffectsVol; }
     float GetMasteredEngineVol() const { return MasterVol * EngineVol; }
     float GetMasteredCarVol() const { return MasterVol * CarVol; }
     float GetMasteredAmbientVol() const { return MasterVol * AmbientVol; }
