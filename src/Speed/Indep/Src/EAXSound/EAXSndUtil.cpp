@@ -60,13 +60,12 @@ int cPathLine::AddStage(float _Start, float _Finish, int _Length, eCURVETYPE _Cu
 
 int cPathLine::AddLinkedStage(float _Finish, int _Length, eCURVETYPE _Curve) {
     float _Start = 0.0f;
-    int result = -1;
     if (num_stages != 0) {
-        result = AddStage(_Start, _Finish, _Length, _Curve);
+        AddStage(_Start, _Finish, _Length, _Curve);
         IsLinked[num_stages - 1] = true;
-        result = num_stages;
+        return num_stages;
     }
-    return result;
+    return -1;
 }
 
 void cPathLine::Update(float delta_time) {

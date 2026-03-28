@@ -40,9 +40,9 @@ int PFXMAP[4][21][2] = {
 SFXCTL_Pathfinder::SFXCTL_Pathfinder()
     : m_projrefcnt(0) {
     g_pSFXCTL_Pathfinder = nullptr;
-    for (int n = 0; n <= 3; n++) {
-        if (m_PFStrmImp[n] != 0) {
-            m_PFStrmImp[n] = 0;
+    for (int i = 0; i <= 3; i++) {
+        if (m_PFStrmImp[i] != 0) {
+            m_PFStrmImp[i] = 0;
         }
     }
 }
@@ -52,9 +52,9 @@ SFXCTL_Pathfinder::~SFXCTL_Pathfinder() {
         if (m_pPFParms[n]) {
             DestroyTrack(m_pPFParms[n]);
             m_pPFParms[n] = 0;
-            for (int n = 0; n <= 3; ++n) {
-                if (m_PFStrmImp[n]) {
-                    m_PFStrmImp[n] = 0;
+            for (int i = 0; i <= 3; ++i) {
+                if (m_PFStrmImp[i]) {
+                    m_PFStrmImp[i] = 0;
                 }
             }
         }

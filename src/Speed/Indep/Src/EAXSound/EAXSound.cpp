@@ -1303,8 +1303,8 @@ void EAXSound::Update(float t) {
 
 void EAXSound::CommitAssets() {
     CSTATEMGR_CarState::ResolveCarBanks();
-    typedef UTL::Collections::Listable<CarSoundConn, 10> CarList;
-    for (CarSoundConn *const *iter = CarList::GetList().begin(); iter != CarList::GetList().end(); ++iter) {
+    for (CarSoundConn *const *iter = UTL::Collections::Listable<CarSoundConn, 10>::GetList().begin();
+         iter != UTL::Collections::Listable<CarSoundConn, 10>::GetList().end(); ++iter) {
         CarSoundConn *pconn = *iter;
         if (!pconn->mConnected) {
             pconn->mConnected = true;
@@ -1320,14 +1320,16 @@ EAXCar *EAXSound::GetPlayerTunerCar(int nindex) {
     return reinterpret_cast<EAXCar *>(mgr->GetStateObj(nindex));
 }
 
-CSTATE_Base *EAXSound::SpawnHelicopter(EAX_HeliState *pHeli) {
+CSTATE_Helicopter *EAXSound::SpawnHelicopter(EAX_HeliState *pHeli) {
     if (!IsSoundEnabled) {
         return nullptr;
     }
-    CSTATE_Base *newheli = m_pStateMgr[eMM_HELICOPTER]->GetFreeState(pHeli);
+    CSTATE_Base *newheli = nullptr;
+    eMAINMAPSTATES eStateMgrType = eMM_HELICOPTER;
+    newheli = m_pStateMgr[eStateMgrType]->GetFreeState(pHeli);
     if (newheli != nullptr) {
         newheli->Attach(pHeli);
-        return newheli;
+        return reinterpret_cast< CSTATE_Helicopter * >(newheli);
     }
     return nullptr;
 }

@@ -1,5 +1,5 @@
 #include "Speed/Indep/Src/EAXSound/AudioMemoryManager.hpp"
-#include "Speed/Indep/Src/EAXSound/EAXCar.hpp"
+#include "Speed/Indep/Src/EAXSound/EAXAITunerCar.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXCarState.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXSndUtil.h"
@@ -44,43 +44,6 @@ void emAddHandler(void (*function)(emEvent *), unsigned int stream_mask);
 void emRemoveHandler(void (*function)(emEvent *));
 bool g_EAXIsPaused(void);
 
-struct EAXAITunerCar : public EAXCar {
-    int m_PitchOffset;          // offset 0x114, size 0x4
-    bool mPhysicsChangedGear;   // offset 0x118, size 0x1
-
-    EAXAITunerCar();
-    virtual ~EAXAITunerCar();
-    virtual void UpdateParams(float t) override;
-    virtual StateInfo *GetStateInfo(void) const override;
-    virtual const char *GetStateName(void) const override;
-    virtual void UpdateCarPhysics() override;
-    virtual int SFXMessage(eSFXMessageType SFXMessageType, unsigned int param1, unsigned int param2) override;
-
-    static StateInfo *GetStaticStateInfo(void) {
-        return &s_StateInfo;
-    }
-    static CSTATE_Base *CreateState(unsigned int allocator);
-    static void ProcessEvent(emEvent *event);
-
-    void *operator new(size_t s, unsigned int allocator) {
-        if (allocator != 0) {
-            return gAudioMemoryManager.AllocateMemory(s, GetStaticStateInfo()->stateName, true);
-        } else {
-            return gAudioMemoryManager.AllocateMemory(s, GetStaticStateInfo()->stateName, false);
-        }
-    }
-
-    void *operator new(size_t s) {
-        return gAudioMemoryManager.AllocateMemory(s, GetStaticStateInfo()->stateName, 0);
-    }
-
-    void *operator new(size_t, void *p) { return p; }
-
-    void UpdatAIDriveBy(float t);
-
-    static StateInfo s_StateInfo;
-};
-
 CSTATE_Base::StateInfo EAXAITunerCar::s_StateInfo = {
     0x00030000,
     "EAXAITunerCar",
@@ -98,10 +61,10 @@ const char *EAXAITunerCar::GetStateName(void) const {
 
 CSTATE_Base *EAXAITunerCar::CreateState(unsigned int allocator) {
     if (allocator == 0) {
-        return new (gAudioMemoryManager.AllocateMemory(
+        return ::new (AudioMemBase::operator new(
             sizeof(EAXAITunerCar), GetStaticStateInfo()->stateName, false)) EAXAITunerCar;
     } else {
-        return new (gAudioMemoryManager.AllocateMemory(
+        return ::new (AudioMemBase::operator new(
             sizeof(EAXAITunerCar), GetStaticStateInfo()->stateName, true)) EAXAITunerCar;
     }
 }
@@ -182,17 +145,6 @@ void EAXAITunerCar::UpdateParams(float t) {
 void EAXAITunerCar::ProcessEvent(emEvent *event) {
 }
 
-struct EAXCopCar : public EAXAITunerCar {
-    virtual void Attach(void *pAttachment) override;
-    virtual void UpdateParams(float t) override;
-    virtual CSTATE_Base::StateInfo *GetStateInfo(void) const override;
-    virtual const char *GetStateName(void) const override;
-
-    static CSTATE_Base *CreateState(unsigned int allocator);
-
-    static CSTATE_Base::StateInfo s_StateInfo;
-};
-
 CSTATE_Base::StateInfo EAXCopCar::s_StateInfo = {
     0x00040000,
     "EAXCopCar",
@@ -210,11 +162,11 @@ const char *EAXCopCar::GetStateName(void) const {
 
 CSTATE_Base *EAXCopCar::CreateState(unsigned int allocator) {
     if (allocator == 0) {
-        return new (gAudioMemoryManager.AllocateMemory(
-            sizeof(EAXCopCar), s_StateInfo.stateName, false)) EAXCopCar;
+        return ::new (AudioMemBase::operator new(
+            sizeof(EAXCopCar), GetStaticStateInfo()->stateName, false)) EAXCopCar;
     } else {
-        return new (gAudioMemoryManager.AllocateMemory(
-            sizeof(EAXCopCar), s_StateInfo.stateName, true)) EAXCopCar;
+        return ::new (AudioMemBase::operator new(
+            sizeof(EAXCopCar), GetStaticStateInfo()->stateName, true)) EAXCopCar;
     }
 }
 
@@ -225,16 +177,6 @@ void EAXCopCar::Attach(void *pAttachment) {
     }
     EAXCar::Attach(pAttachment);
 }
-
-struct EAXTruck : public EAXAITunerCar {
-    virtual void UpdateParams(float t) override;
-    virtual CSTATE_Base::StateInfo *GetStateInfo(void) const override;
-    virtual const char *GetStateName(void) const override;
-
-    static CSTATE_Base *CreateState(unsigned int allocator);
-
-    static CSTATE_Base::StateInfo s_StateInfo;
-};
 
 CSTATE_Base::StateInfo EAXTruck::s_StateInfo = {
     0x000C0000,
@@ -253,11 +195,11 @@ const char *EAXTruck::GetStateName(void) const {
 
 CSTATE_Base *EAXTruck::CreateState(unsigned int allocator) {
     if (allocator == 0) {
-        return new (gAudioMemoryManager.AllocateMemory(
-            sizeof(EAXTruck), s_StateInfo.stateName, false)) EAXTruck;
+        return ::new (AudioMemBase::operator new(
+            sizeof(EAXTruck), GetStaticStateInfo()->stateName, false)) EAXTruck;
     } else {
-        return new (gAudioMemoryManager.AllocateMemory(
-            sizeof(EAXTruck), s_StateInfo.stateName, true)) EAXTruck;
+        return ::new (AudioMemBase::operator new(
+            sizeof(EAXTruck), GetStaticStateInfo()->stateName, true)) EAXTruck;
     }
 }
 

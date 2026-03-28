@@ -27,6 +27,7 @@ struct CSTATEMGR_Base;
 struct EAX_HeliState;
 struct EAX_CarState;
 struct CSTATE_Base;
+struct CSTATE_Helicopter;
 struct EAXFrontEnd;
 struct EAXCommon;
 
@@ -162,7 +163,7 @@ class EAXSound : public AudioMemBase {
     void StopUISoundFX(eMenuSoundTriggers etriggertype);
     void SetSFXBaseObject(SFX_Base *psb, eMAINMAPSTATES estate, int ntype, int instance);
     void PlayFEMusic(int nIndex);
-    CSTATE_Base *SpawnHelicopter(EAX_HeliState *pHeli);
+    CSTATE_Helicopter *SpawnHelicopter(EAX_HeliState *pHeli);
     void DestroyEAXHeli(EAX_HeliState *pHeli);
     void DestroyEAXCar(EAX_CarState *pCar);
     void LoadFrontEndSoundBanks(void (*callback)(int), int callback_param);

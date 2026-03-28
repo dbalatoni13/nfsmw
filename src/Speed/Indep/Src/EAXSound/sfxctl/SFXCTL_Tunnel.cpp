@@ -304,10 +304,10 @@ LAB_UPDATE_END:
     }
 }
 
-void SFXCTL_Tunnel::SetCurrentReverbType(eREVERBFX type, int reverboffset) {
+void SFXCTL_Tunnel::SetCurrentReverbType(eREVERBFX ereverbtype, int reverboffset) {
     bFadingOut = true;
     m_ReverbOffset = static_cast< float >(reverboffset);
-    m_TargetType = type;
+    m_TargetType = ereverbtype;
     ReflRamp.Initialize(0.0f, 1.0f, g_REVERBFXMODULES[m_ReverbType].FadeOut, LINEAR);
     m_CurWetGinsuTarget = 0.0f;
     m_CurDryGinsuTarget = 1.0f;
@@ -539,11 +539,11 @@ void SFXCTL_Tunnel::UpdateOcclusion(float t) {
 }
 
 void SFXCTL_Tunnel::EndTunnelVerb() {
-    eREVERBFX reverbType = static_cast<eREVERBFX>(ReverbZoneCrossMap[m_CurReverbZone]);
-    if (static_cast<int>(reverbType) > 0xB) {
-        reverbType = static_cast<eREVERBFX>(9);
+    eREVERBFX currentverb = static_cast<eREVERBFX>(ReverbZoneCrossMap[m_CurReverbZone]);
+    if (static_cast<int>(currentverb) > 0xB) {
+        currentverb = static_cast<eREVERBFX>(9);
     }
-    SetCurrentReverbType(reverbType, 0);
+    SetCurrentReverbType(currentverb, 0);
 }
 
 void SFXCTL_Tunnel::UpdateDriveBySnds(float t) {

@@ -1077,8 +1077,9 @@ void EAXAemsManager::RemoveAEMSBank() {
 }
 
 void EAXAemsManager::InitSPUram() {
+    register int Size asm("r0");
     int Start = -1;
-    int Size = SNDmemlargestunused(&Start);
+    Size = SNDmemlargestunused(&Start);
     m_SPU_UpperAddress = Start + Size;
 }
 
