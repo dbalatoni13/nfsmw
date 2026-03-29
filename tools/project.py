@@ -1484,7 +1484,7 @@ def generate_build_ninja(
             ok_path = build_path / "ok"
             n.rule(
                 name="check",
-                command=f"python tools/fake_ok.py {ok_path}",
+                command=f"$python tools/fake_ok.py {ok_path}",
                 description="CHECK $in",
             )
             n.build(
@@ -1663,7 +1663,7 @@ def generate_build_ninja(
         n.comment("Split ELF into relocatable objects")
         n.rule(
             name="split",
-            command="python tools/splat_to_config_json.py $in $out_dir",
+            command="$python tools/splat_to_config_json.py $in $out_dir",
             description="SPLIT $in",
             depfile="$out_dir/dep",
             deps="gcc",
