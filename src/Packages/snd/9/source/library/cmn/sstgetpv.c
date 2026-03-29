@@ -1,4 +1,4 @@
-#include "snd/source/library/cmn/sndcmn.h"
+#include "snd/9/source/library/cmn/sndcmn.h"
 
 int SNDSTRM_getprogvol(int sndstreamhandle) {
     SNDSTREAMCHANNEL *pssc = SNDSTRMI_getstreamptr(sndstreamhandle);

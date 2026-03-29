@@ -379,8 +379,856 @@ Speed/GameCube/bWare/GameCube/dolphinsdk/src/si/SIBios.c:
 Speed/GameCube/bWare/GameCube/dolphinsdk/src/si/SISamplingRate.c:
 	.text       start:0x803452A8 end:0x803453B0
 
+egami/rcmp/dev/source/av/cmn/avplayer.cpp:
+	.text       start:0x803472B4 end:0x80348334
+
+egami/rcmp/dev/source/av/cmn/avsubtitle.cpp:
+	.text       start:0x80348334 end:0x80348334
+
+egami/rcmp/dev/source/av/cmn/audioplayer.cpp:
+	.text       start:0x80348334 end:0x80348640
+
+egami/rcmp/dev/source/vd/gc/bigyuvswizzler.cpp:
+	.text       start:0x80348640 end:0x80348EE4
+
+egami/rcmp/dev/source/vd/gc/bigswizzler.cpp:
+	.text       start:0x80348EE4 end:0x8034939C
+
+egami/rcmp/dev/source/decoder/cmn/rcmpbase.cpp:
+	.text       start:0x8034939C end:0x803497E4
+	.bss        start:0x804BC0E0 end:0x804BC0F0
+
+egami/rcmp/dev/source/decoder/cmn/rcmp_vp6_codec.cpp:
+	.text       start:0x8034983C end:0x8034A2F0
+	.bss        start:0x804BC0F0 end:0x804BC104
+	.sbss       start:0x804FFC6C end:0x804FFC74
+
+egami/rcmp/dev/source/decoder/cmn/rcmp_vp6_codec_chunk_types.cpp:
+	.text       start:0x8034A348 end:0x8034A390
+
+egami/rcmp/dev/source/decoder/cmn/rcmp_mad_codec.cpp:
+	.text       start:0x8034A390 end:0x8034ADB0
+
+egami/rcmp/dev/source/decoder/cmn/rcmp_mad_codec_chunk_types.cpp:
+	.text       start:0x8034ADB0 end:0x8034ADE4
+	.rodata     start:0x8041045C end:0x80410468
+
+egami/rcmp/dev/source/decoder/cmn/maddec.cpp:
+	.text       start:0x8034ADE4 end:0x8034B900
+	.rodata     start:0x80410468 end:0x80411358
+	.bss        start:0x804BC104 end:0x804BDB04
+	.sbss       start:0x804FFC74 end:0x804FFC88
+
+egami/rcmp/dev/source/decoder/cmn/maddeca.cpp:
+	.text       start:0x8034B900 end:0x8034BAC4
+	.rodata     start:0x80411358 end:0x804114A8
+
+egami/rcmp/dev/source/decoder/cmn/madidct.cpp:
+	.text       start:0x8034BAC4 end:0x8034C0A4
+	.data       start:0x8044F62C end:0x8044F72C
+	.bss        start:0x804BDB04 end:0x804BDD04
+
+Packages/vp6/1.0.6/source/decode/cmn/allocator.cpp:
+	.text       start:0x8034C0A4 end:0x8034C160
+	.sdata      start:0x804FF5A0 end:0x804FF5A8
+
+Packages/vp6/1.0.6/source/decode/cmn/pb_globals.c:
+	.text       start:0x8034C160 end:0x8034C4E4
+	.data       start:0x8044F72C end:0x8044F754
+	.bss        start:0x804BDD04 end:0x804BDE04
+	.sbss       start:0x804FFC88 end:0x804FFC8C
+
+Packages/vp6/1.0.6/source/decode/cmn/postproc.c:
+	.text       start:0x8034C4E4 end:0x8034D1A8
+	.bss        start:0x804BDE04 end:0x804BE104
+	.sbss       start:0x804FFC8C end:0x804FFCF8
+
+Packages/vp6/1.0.6/source/decode/cmn/quantize.c:
+	.text       start:0x8034D1A8 end:0x8034D528
+	.rodata     start:0x804114A8 end:0x804119D0
+	.sbss       start:0x804FFCF8 end:0x804FFCFC
+
+Packages/vp6/1.0.6/source/decode/cmn/simpledeblocker.c:
+	.text       start:0x8034D528 end:0x8034D93C
+	.rodata     start:0x804119D0 end:0x80411AF4
+
+Packages/vp6/1.0.6/source/decode/cmn/vfwpbdll_if.c:
+	.text       start:0x8034D93C end:0x8034E180
+	.sdata      start:0x804FF5A8 end:0x804FF5B0
+
+Packages/vp6/1.0.6/source/decode/cmn/vputil.c:
+	.text       start:0x8034E180 end:0x8034E9F4
+	.data       start:0x8044F754 end:0x8044F794
+	.bss        start:0x804BE104 end:0x804BE46C
+	.sbss       start:0x804FFCFC end:0x804FFD2C
+
+Packages/vp6/1.0.6/source/decode/gc/doptsystemdependant.c:
+	.text       start:0x8034E9F4 end:0x8034EB4C
+
+Packages/vp6/1.0.6/source/decode/gc/DSystemDependant.c:
+	.text       start:0x8034EB4C end:0x8034EB64
+
+Packages/vp6/1.0.6/source/decode/gc/uoptsystemdependant.c:
+	.text       start:0x8034EB64 end:0x8034ECD0
+
+Packages/vp6/1.0.6/source/decode/cmn/duck_mem.cpp:
+	.text       start:0x8034ECD0 end:0x8034ED10
+
+Packages/vp6/1.0.6/source/decode/cmn/boolhuff.c:
+	.text       start:0x8034ED10 end:0x8034ED68
+
+Packages/vp6/1.0.6/source/decode/cmn/borders.c:
+	.text       start:0x8034ED68 end:0x8034F154
+
+Packages/vp6/1.0.6/source/decode/cmn/clamp.c:
+	.text       start:0x8034F154 end:0x8034F21C
+
+Packages/vp6/1.0.6/source/decode/cmn/deblock.c:
+	.text       start:0x8034F21C end:0x80351AC0
+	.data       start:0x8044F794 end:0x8044FA94
+	.sbss       start:0x804FFD2C end:0x804FFD3C
+
+Packages/vp6/1.0.6/source/decode/cmn/decodembs.c:
+	.text       start:0x80351AC0 end:0x8035305C
+	.rodata     start:0x80411AF4 end:0x80411CB8
+
+Packages/vp6/1.0.6/source/decode/cmn/decodemode.c:
+	.text       start:0x8035305C end:0x80353564
+	.rodata     start:0x80411CB8 end:0x804120C8
+
+Packages/vp6/1.0.6/source/decode/cmn/decodemv.c:
+	.text       start:0x80353564 end:0x80353734
+	.rodata     start:0x804120C8 end:0x80412108
+
+Packages/vp6/1.0.6/source/decode/cmn/DeInterlace.c:
+	.text       start:0x80353734 end:0x803537FC
+
+Packages/vp6/1.0.6/source/decode/cmn/dering.c:
+	.text       start:0x803537FC end:0x80354FF0
+	.data       start:0x8044FA94 end:0x8044FD94
+	.bss        start:0x804BE46C end:0x804BE5FC
+
+Packages/vp6/1.0.6/source/decode/cmn/DFrameR.c:
+	.text       start:0x80354FF0 end:0x803556B0
+
+Packages/vp6/1.0.6/source/decode/cmn/FrameIni.c:
+	.text       start:0x803556B0 end:0x80355CA8
+	.rodata     start:0x80412108 end:0x80412168
+
+Packages/vp6/1.0.6/source/decode/cmn/Huffman.c:
+	.text       start:0x80355CA8 end:0x80356028
+
+Packages/vp6/1.0.6/source/decode/cmn/idctpart.c:
+	.text       start:0x80356028 end:0x8035645C
+	.rodata     start:0x80412168 end:0x80412268
+
+Packages/vp6/1.0.6/source/decode/cmn/loopfilter.c:
+	.text       start:0x8035645C end:0x80356920
+	.data       start:0x8044FD94 end:0x80450094
+	.sbss       start:0x804FFD3C end:0x804FFD40
+
+Packages/vp6/1.0.6/source/decode/cmn/reconstruct.c:
+	.text       start:0x80356920 end:0x80356BB0
+
+Packages/vp6/1.0.6/source/decode/cmn/scale.c:
+	.text       start:0x80356BB0 end:0x80357864
+
+Packages/vp6/1.0.6/source/decode/cmn/TokenEntropy.c:
+	.text       start:0x80357864 end:0x80357928
+	.rodata     start:0x80412268 end:0x804124FC
+
+Packages/vp6/1.0.6/source/decode/gc/criticalpath.c:
+	.text       start:0x80357928 end:0x8035A830
+	.rodata     start:0x804124FC end:0x80412908
+	.data       start:0x80450094 end:0x80450174
+	.sdata      start:0x804FF5B0 end:0x804FF5B8
+
+Packages/vp6/1.0.6/source/decode/cmn/recon.c:
+	.text       start:0x8035A830 end:0x8035A9B0
+
+Packages/snd/9/source/library/cmn/s3dlow.c:
+	.text       start:0x8035A9B0 end:0x8035AA7C
+
+Packages/snd/9/source/library/cmn/saems.c:
+	.text       start:0x8035AA7C end:0x8035D4A0
+	.data       start:0x80450174 end:0x804502C8
+
+Packages/snd/9/source/library/cmn/saemsamb.c:
+	.text       start:0x8035D4A0 end:0x8035D690
+	.bss        start:0x804BE5FC end:0x804BE634
+
+Packages/snd/9/source/library/cmn/saemsstr.c:
+	.text       start:0x8035D6BC end:0x8035DFE4
+	.data       start:0x804502C8 end:0x804502D0
+	.bss        start:0x804BE634 end:0x804BE690
+
+Packages/snd/9/source/library/cmn/saemstimupdt.c:
+	.text       start:0x8035DFE4 end:0x8035E05C
+
+Packages/snd/9/source/library/cmn/salloc.c:
+	.text       start:0x8035E05C end:0x8035E650
+	.bss        start:0x804BE690 end:0x804BE69C
+
+Packages/snd/9/source/library/cmn/sattrdef.c:
+	.text       start:0x8035E650 end:0x8035E6E8
+
+Packages/snd/9/source/library/cmn/sbadd.c:
+	.text       start:0x8035E6E8 end:0x8035E9CC
+
+Packages/snd/9/source/library/cmn/ssballoc.c:
+	.text       start:0x8035E9CC end:0x8035EA50
+
+Packages/snd/9/source/library/cmn/sbasync.c:
+	.text       start:0x8035EA50 end:0x8035F650
+	.data       start:0x804502D0 end:0x804502DC
+
+Packages/snd/9/source/library/cmn/sbasyncm.c:
+	.text       start:0x8035F650 end:0x8035F8E8
+	.bss        start:0x804BE69C end:0x804BE6B0
+
+Packages/snd/9/source/library/cmn/ssbhdrcpy.c:
+	.text       start:0x8035F8E8 end:0x8035F95C
+
+Packages/snd/9/source/library/cmn/ssbhdrsze.c:
+	.text       start:0x8035F95C end:0x8035F974
+
+Packages/snd/9/source/library/cmn/ssbplay.c:
+	.text       start:0x8035F974 end:0x8035FA0C
+
+Packages/snd/9/source/library/cmn/ssbremove.c:
+	.text       start:0x8035FA0C end:0x8035FBA0
+
+Packages/snd/9/source/library/cmn/ssbvalid.c:
+	.text       start:0x8035FBA0 end:0x8035FBFC
+
+Packages/snd/9/source/library/cmn/scheckpo.c:
+	.text       start:0x8035FBFC end:0x8035FC28
+
+Packages/snd/9/source/library/cmn/sclnt100.c:
+	.text       start:0x8035FC28 end:0x8035FD34
+
+Packages/snd/9/source/library/cmn/sctrldry.cpp:
+	.text       start:0x8035FD34 end:0x8035FDEC
+
+Packages/snd/9/source/library/cmn/sdata.c:
+	.text       start:0x8035FDEC end:0x8035FDEC
+	.bss        start:0x804BE6B0 end:0x804BE8F4
+
+Packages/snd/9/source/library/cmn/sfxlevel.c:
+	.text       start:0x8035FDEC end:0x8035FEF0
+
+Packages/snd/9/source/library/cmn/slowpass.c:
+	.text       start:0x8035FEF0 end:0x8035FF58
+
+Packages/snd/9/source/library/cmn/smemcpy.c:
+	.text       start:0x8035FF58 end:0x80360150
+
+Packages/snd/9/source/library/cmn/smemdis.c:
+	.text       start:0x80360150 end:0x80360150
+
+Packages/snd/9/source/library/cmn/smemlmt.c:
+	.text       start:0x80360150 end:0x80360198
+
+Packages/snd/9/source/library/cmn/smemlu.c:
+	.text       start:0x80360198 end:0x803601D8
+
+Packages/snd/9/source/library/cmn/smemman.c:
+	.text       start:0x803601D8 end:0x80360550
+
+Packages/snd/9/source/library/cmn/sndfxbus.cpp:
+	.text       start:0x80360550 end:0x80360760
+
+Packages/snd/9/source/library/cmn/spatkey.c:
+	.text       start:0x80360760 end:0x8036080C
+
+Packages/snd/9/source/library/cmn/spitch.c:
+	.text       start:0x8036080C end:0x803608A0
+
+Packages/snd/9/source/library/cmn/spktplay.c:
+	.text       start:0x803608A0 end:0x80361480
+	.bss        start:0x804BE8F4 end:0x804BEC78
+
+Packages/snd/9/source/library/cmn/splysdef.c:
+	.text       start:0x80361480 end:0x803614D8
+
+Packages/snd/9/source/library/cmn/spoutlat.c:
+	.text       start:0x803614D8 end:0x80361510
+
+Packages/snd/9/source/library/cmn/srandom.c:
+	.text       start:0x80361510 end:0x8036164C
+	.data       start:0x804502DC end:0x804502F8
+	.bss        start:0x804BEC78 end:0x804BEC90
+
+Packages/snd/9/source/library/cmn/srender.c:
+	.text       start:0x8036164C end:0x80361708
+
+Packages/snd/9/source/library/cmn/sresopat.c:
+	.text       start:0x80361708 end:0x8036178C
+
+Packages/snd/9/source/library/cmn/sserver.c:
+	.text       start:0x8036178C end:0x80361B40
+	.data       start:0x804502F8 end:0x80450300
+	.bss        start:0x804BEC90 end:0x804BEC9C
+
+Packages/snd/9/source/library/cmn/ssine.c:
+	.text       start:0x80361B6C end:0x80361BEC
+	.data       start:0x80450300 end:0x80450504
+
+Packages/snd/9/source/library/cmn/sst.c:
+	.text       start:0x80361BEC end:0x80362E80
+	.data       start:0x80450504 end:0x80450528
+	.bss        start:0x804BEC9C end:0x804BED1C
+
+Packages/snd/9/source/library/cmn/sst3dpos.c:
+	.text       start:0x80362E80 end:0x80363134
+
+Packages/snd/9/source/library/cmn/sstautov.c:
+	.text       start:0x80363134 end:0x8036340C
+
+Packages/snd/9/source/library/cmn/sstcrtap.c:
+	.text       start:0x8036340C end:0x8036344C
+
+Packages/snd/9/source/library/cmn/sstfxlev.c:
+	.text       start:0x8036344C end:0x80363548
+
+Packages/snd/9/source/library/cmn/sstgetrp.c:
+	.text       start:0x80363548 end:0x803635C0
+
+Packages/snd/9/source/library/cmn/ssthold.c:
+	.text       start:0x803635C0 end:0x80363618
+
+Packages/snd/9/source/library/cmn/sstlowp.c:
+	.text       start:0x80363618 end:0x80363668
+
+Packages/snd/9/source/library/cmn/sstop.c:
+	.text       start:0x80363668 end:0x803636C8
+
+Packages/snd/9/source/library/cmn/sstovrhd.c:
+	.text       start:0x803636C8 end:0x80363754
+
+Packages/snd/9/source/library/cmn/sstpmult.c:
+	.text       start:0x80363754 end:0x803637B0
+
+Packages/snd/9/source/library/cmn/sstqmem.c:
+	.text       start:0x803637B0 end:0x803637DC
+
+Packages/snd/9/source/library/cmn/sstqreqi.c:
+	.text       start:0x803637DC end:0x80363808
+
+Packages/snd/9/source/library/cmn/sstrmdry.cpp:
+	.text       start:0x80363808 end:0x80363858
+
+Packages/snd/9/source/library/cmn/sstrstat.c:
+	.text       start:0x80363858 end:0x80363A6C
+
+Packages/snd/9/source/library/cmn/sstsetgl.c:
+	.text       start:0x80363A6C end:0x80363AB8
+
+Packages/snd/9/source/library/cmn/sststat.c:
+	.text       start:0x80363AB8 end:0x80363B98
+
+Packages/snd/9/source/library/cmn/ssttmul.c:
+	.text       start:0x80363B98 end:0x80363C04
+
+Packages/snd/9/source/library/cmn/sstvol.c:
+	.text       start:0x80363C04 end:0x80363E50
+	.rodata     start:0x80412908 end:0x80412AE8
+
+Packages/snd/9/source/library/cmn/ssys.cpp:
+	.text       start:0x80363E50 end:0x80364790
+	.data       start:0x80450528 end:0x80450530
+	.bss        start:0x804BED1C end:0x804BED68
+
+Packages/snd/9/source/library/cmn/ssysinit.c:
+	.text       start:0x80364790 end:0x80364E14
+	.data       start:0x80450530 end:0x80450544
+	.bss        start:0x804BED68 end:0x804BED88
+
+Packages/snd/9/source/library/cmn/ssysserv.c:
+	.text       start:0x80364E14 end:0x80364F54
+
+Packages/snd/9/source/library/cmn/ssysveccsismutex.cpp:
+	.text       start:0x80364F54 end:0x80364FD0
+
+Packages/snd/9/source/library/cmn/stagpat.c:
+	.text       start:0x80364FD0 end:0x803658F4
+
+Packages/snd/9/source/library/cmn/stimemul.c:
+	.text       start:0x803658F4 end:0x8036598C
+
+Packages/snd/9/source/library/cmn/stpparse.c:
+	.text       start:0x8036598C end:0x80366030
+	.data       start:0x80450544 end:0x80450550
+
+Packages/snd/9/source/library/cmn/svecreal.cpp:
+	.text       start:0x80366030 end:0x803660C8
+
+Packages/snd/9/source/library/cmn/svol.c:
+	.text       start:0x803660C8 end:0x80366270
+
+Packages/snd/9/source/library/extern/coda/cmn/lbmpeg.cpp:
+	.text       start:0x80366270 end:0x80366298
+	.data       start:0x80450550 end:0x80450558
+
+Packages/snd/9/source/library/extern/coda/cmn/mpeghufftables.cpp:
+	.text       start:0x803662C4 end:0x803662C4
+
+Packages/snd/9/source/library/extern/coda/cmn/mpegl3base.cpp:
+	.text       start:0x803662C4 end:0x803662C4
+	.rodata     start:0x80412AE8 end:0x80412CC8
+
+Packages/snd/9/source/library/gc/ssdfx.c:
+	.text       start:0x803662C4 end:0x8036641C
+
+Packages/snd/9/source/library/gc/sdspmix.c:
+	.text       start:0x8036641C end:0x80366C64
+	.data       start:0x80450558 end:0x80450D58
+	.bss        start:0x804BED88 end:0x804C03C0
+
+Packages/snd/9/source/library/gc/snddrv.c:
+	.text       start:0x80366C64 end:0x80369AF4
+	.data       start:0x80450D58 end:0x80450D68
+	.bss        start:0x804C03C0 end:0x804CC480
+
+Packages/snd/9/source/library/mix/sfxrevc.c:
+	.text       start:0x80369AF4 end:0x8036A948
+	.data       start:0x80450D68 end:0x804513A4
+	.bss        start:0x804CC480 end:0x804CC494
+
+Packages/snd/9/source/library/mix/slinkmix.c:
+	.text       start:0x8036A948 end:0x8036A9CC
+
+Packages/snd/9/source/library/mix/smixer.c:
+	.text       start:0x8036A9CC end:0x8036BB84
+	.bss        start:0x804CC494 end:0x804CC680
+
+Packages/snd/9/source/library/mix/smixfilt.c:
+	.text       start:0x8036BB84 end:0x8036BC0C
+
+Packages/snd/9/source/library/mix/smixfram.c:
+	.text       start:0x8036BC0C end:0x8036BC54
+
+Packages/snd/9/source/library/mix/smixhip.c:
+	.text       start:0x8036BC54 end:0x8036BD24
+
+Packages/snd/9/source/library/mix/smixlowp.c:
+	.text       start:0x8036BD24 end:0x8036BE70
+
+Packages/snd/9/source/library/mix/smixptch.c:
+	.text       start:0x8036BE70 end:0x8036BF2C
+
+Packages/snd/9/source/library/mix/smixtmul.c:
+	.text       start:0x8036BF2C end:0x8036BF68
+
+Packages/snd/9/source/library/mix/smixvec.c:
+	.text       start:0x8036BF68 end:0x8036BF68
+	.bss        start:0x804CC680 end:0x804CC69C
+
+Packages/snd/9/source/library/mix/stretch.c:
+	.text       start:0x8036BF68 end:0x8036C8B4
+
+Packages/snd/9/source/library/mix/sx87d16.c:
+	.text       start:0x8036C8B4 end:0x8036C90C
+
+Packages/snd/9/source/library/cmn/author.cpp:
+	.text       start:0x8036C90C end:0x8036C90C
+	.data       start:0x804513A4 end:0x804513E4
+
+Packages/snd/9/source/library/cmn/satospkr.c:
+	.text       start:0x8036C90C end:0x8036D010
+	.bss        start:0x804CC69C end:0x804CC6B8
+
+Packages/snd/9/source/library/cmn/sclcptch.c:
+	.text       start:0x8036D010 end:0x8036D170
+	.data       start:0x804513E4 end:0x804514E4
+
+Packages/snd/9/source/library/cmn/sctlfilt.c:
+	.text       start:0x8036D170 end:0x8036D1D8
+
+Packages/snd/9/source/library/cmn/sdownmix.cpp:
+	.text       start:0x8036D1D8 end:0x8036D248
+	.rodata     start:0x80412CC8 end:0x80412D7C
+
+Packages/snd/9/source/library/cmn/sexithndl.c:
+	.text       start:0x8036D248 end:0x8036D268
+
+Packages/snd/9/source/library/cmn/sformat.c:
+	.text       start:0x8036D268 end:0x8036D268
+
+Packages/snd/9/source/library/cmn/sgetdata.c:
+	.text       start:0x8036D268 end:0x8036D2E8
+
+Packages/snd/9/source/library/cmn/sgettag.c:
+	.text       start:0x8036D2E8 end:0x8036D3D4
+
+Packages/snd/9/source/library/cmn/slib.c:
+	.text       start:0x8036D3D4 end:0x8036D53C
+
+Packages/snd/9/source/library/cmn/slinklst.c:
+	.text       start:0x8036D53C end:0x8036D668
+
+Packages/snd/9/source/library/cmn/smemhigh.cpp:
+	.text       start:0x8036D668 end:0x8036D688
+
+Packages/snd/9/source/library/cmn/SNDI_cos.c:
+	.text       start:0x8036D688 end:0x8036D720
+
+Packages/snd/9/source/library/cmn/SNDI_sin.c:
+	.text       start:0x8036D720 end:0x8036D7B4
+
+Packages/snd/9/source/library/cmn/soutputmap.cpp:
+	.text       start:0x8036D7B4 end:0x8036D7B4
+
+Packages/snd/9/source/library/cmn/sover.c:
+	.text       start:0x8036D7B4 end:0x8036D7D8
+
+Packages/snd/9/source/library/cmn/spantoaz.c:
+	.text       start:0x8036D7D8 end:0x8036D7EC
+	.data       start:0x804514E4 end:0x804515E4
+
+Packages/snd/9/source/library/cmn/spat2hdr.c:
+	.text       start:0x8036D7EC end:0x8036DD08
+
+Packages/snd/9/source/library/cmn/spktctoh.c:
+	.text       start:0x8036DD08 end:0x8036DD90
+
+Packages/snd/9/source/library/cmn/sprofvoc.c:
+	.text       start:0x8036DD90 end:0x8036DE54
+
+Packages/snd/9/source/library/cmn/sreallocbuf.cpp:
+	.text       start:0x8036DE54 end:0x8036DEE8
+
+Packages/snd/9/source/library/cmn/srrange.c:
+	.text       start:0x8036DEE8 end:0x8036DF44
+
+Packages/snd/9/source/library/extern/coda/cmn/coda.cpp:
+	.text       start:0x8036DF44 end:0x8036DF5C
+	.data       start:0x804515E4 end:0x804515E8
+	.bss        start:0x804CC6B8 end:0x804CC6C0
+
+Packages/snd/9/source/library/extern/coda/cmn/setmemcpy.cpp:
+	.text       start:0x8036DF5C end:0x8036DF6C
+
+Packages/snd/9/source/library/gc/saramman.c:
+	.text       start:0x8036DF6C end:0x8036E48C
+	.bss        start:0x804CC6C0 end:0x804CC6D0
+
+Packages/snd/9/source/library/mix/sfamplf.c:
+	.text       start:0x8036E48C end:0x8036E5A4
+
+Packages/snd/9/source/library/mix/sfbpffir8.c:
+	.text       start:0x8036E5A4 end:0x8036E730
+
+Packages/snd/9/source/library/mix/sfecho.c:
+	.text       start:0x8036E730 end:0x8036EA40
+
+Packages/snd/9/source/library/mix/sfft24.c:
+	.text       start:0x8036EA40 end:0x8036EAB8
+
+Packages/snd/9/source/library/mix/sfhpffir8.c:
+	.text       start:0x8036EAB8 end:0x8036EC10
+
+Packages/snd/9/source/library/mix/sfilter.c:
+	.text       start:0x8036EC10 end:0x8036EDBC
+
+Packages/snd/9/source/library/mix/sfir.c:
+	.text       start:0x8036EDBC end:0x8036F164
+
+Packages/snd/9/source/library/mix/sfir8.c:
+	.text       start:0x8036F164 end:0x8036F250
+
+Packages/snd/9/source/library/mix/sflpf.c:
+	.text       start:0x8036F250 end:0x8036F408
+
+Packages/snd/9/source/library/mix/sflpffir8.c:
+	.text       start:0x8036F408 end:0x8036F560
+
+Packages/snd/9/source/library/mix/sfmixer.c:
+	.text       start:0x8036F560 end:0x8036F6BC
+
+Packages/snd/9/source/library/mix/sfreson.c:
+	.text       start:0x8036F6BC end:0x8036FA0C
+
+Packages/snd/9/source/library/mix/sfrsf.c:
+	.text       start:0x8036FA0C end:0x8036FD48
+
+Packages/snd/9/source/library/mix/sfsplit.c:
+	.text       start:0x8036FD48 end:0x8036FEC4
+
+Packages/snd/9/source/library/mix/sfsrc.c:
+	.text       start:0x8036FEC4 end:0x8036FF58
+
+Packages/snd/9/source/library/mix/sinit16.c:
+	.text       start:0x8036FF58 end:0x8036FFA0
+
+Packages/snd/9/source/library/mix/sinitut.c:
+	.text       start:0x8036FFA0 end:0x80370000
+
+Packages/snd/9/source/library/mix/sinitxa.c:
+	.text       start:0x80370000 end:0x80370048
+
+Packages/snd/9/source/library/mix/smixc.c:
+	.text       start:0x80370048 end:0x80370078
+
+Packages/snd/9/source/library/mix/supf.c:
+	.text       start:0x80370078 end:0x80370198
+
+Packages/snd/9/source/library/mix/suplf.c:
+	.text       start:0x80370198 end:0x803702A0
+
+Packages/snd/9/source/library/mix/supmutf.c:
+	.text       start:0x803702A0 end:0x80370464
+
+Packages/snd/9/source/library/mix/supmutlf.c:
+	.text       start:0x80370464 end:0x80370640
+
+Packages/snd/9/source/library/mix/supmutpf.c:
+	.text       start:0x80370640 end:0x80370954
+
+Packages/snd/9/source/library/mix/suppf.c:
+	.text       start:0x80370954 end:0x80370AF8
+
+Packages/snd/9/source/library/mix/supxaf.cpp:
+	.text       start:0x80370AF8 end:0x80370C50
+
+Packages/snd/9/source/library/mix/supxalf.cpp:
+	.text       start:0x80370C50 end:0x80370FE4
+
+Packages/snd/9/source/library/mix/supxapf.cpp:
+	.text       start:0x80370FE4 end:0x80371258
+
+Packages/snd/9/source/library/cmn/sgparse.cpp:
+	.text       start:0x80371258 end:0x80371460
+
+Packages/snd/9/source/library/cmn/SNDI_mult16.c:
+	.text       start:0x80371460 end:0x80371494
+
+Packages/snd/9/source/library/cmn/SNDI_root1x.c:
+	.text       start:0x80371494 end:0x80371524
+
+Packages/snd/9/source/library/extern/coda/cmn/eaxadecf.cpp:
+	.text       start:0x80371524 end:0x80371A48
+	.data       start:0x804515E8 end:0x80451A08
+
+Packages/snd/9/source/library/extern/coda/cmn/mtdecf.cpp:
+	.text       start:0x80371A48 end:0x80372D10
+	.data       start:0x80451A08 end:0x80451E88
+
+Packages/snd/9/source/library/mix/scrsfl.c:
+	.text       start:0x80372D10 end:0x80372DD4
+
 Packages/snd/9/source/library/cmn/SNDI_findprime.c:
 	.text       start:0x80372DD4 end:0x80372ED0
+
+Packages/realcore/6.24.00/source/file/cmn/filesys_c.cpp:
+	.text       start:0x80381654 end:0x80381874
+
+Packages/realcore/6.24.00/source/file/cmn/filesys_cc.cpp:
+	.text       start:0x80381874 end:0x80381A94
+
+Packages/realcore/6.24.00/source/file/cmn/filesys.cpp:
+	.text       start:0x80381A94 end:0x803844B4
+	.bss        start:0x804CCE80 end:0x804CCE94
+	.sdata      start:0x804FF610 end:0x804FF618
+	.sbss       start:0x804FFD40 end:0x804FFD44
+
+Packages/realcore/6.24.00/source/file/cmn/filesysopts.cpp:
+	.text       start:0x8038450C end:0x80384604
+	.data       start:0x80451F84 end:0x80451FBC
+	.bss        start:0x804CCE94 end:0x804CCEA0
+	.sdata      start:0x804FF618 end:0x804FF61C
+
+Packages/realcore/6.24.00/source/file/cmn/hlafile.cpp:
+	.text       start:0x80384630 end:0x80385008
+	.bss        start:0x804CCEA0 end:0x804CCEC0
+	.sdata      start:0x804FF61C end:0x804FF620
+	.sbss       start:0x804FFD44 end:0x804FFD54
+
+Packages/realcore/6.24.00/source/file/gc/device.cpp:
+	.sdata      start:0x804FF620 end:0x804FF628
+
+Packages/realcore/6.24.00/source/file/cmn/hlsfile.cpp:
+	.text       start:0x80385034 end:0x8038510C
+
+Packages/realcore/6.24.00/source/file/cmn/syncfile.cpp:
+	.text       start:0x8038510C end:0x803852B8
+
+Packages/realcore/6.24.00/source/file/gc/dvd_device.cpp:
+	.text       start:0x803852B8 end:0x80385CF0
+	.bss        start:0x804CCEC0 end:0x804D5000
+
+Packages/realcore/6.24.00/source/file/gc/hd_device.cpp:
+	.text       start:0x80385D48 end:0x80386024
+	.bss        start:0x804D5000 end:0x804D5018
+
+Packages/realcore/6.24.00/source/system/gc/inittmr.cpp:
+	.text       start:0x8038607C end:0x80386254
+	.bss        start:0x804D5018 end:0x804D5040
+	.sdata      start:0x804FF628 end:0x804FF630
+
+Packages/realcore/6.24.00/source/system/gc/signals.cpp:
+	.text       start:0x80386254 end:0x80386308
+
+Packages/realcore/6.24.00/source/system/gc/threads.cpp:
+	.text       start:0x80386308 end:0x803866CC
+	.sbss       start:0x804FFD54 end:0x804FFD58
+
+Packages/realcore/6.24.00/source/system/gc/timerthread.cpp:
+	.text       start:0x803866CC end:0x8038682C
+	.bss        start:0x804D5040 end:0x804D63F8
+	.sdata      start:0x804FF630 end:0x804FF640
+
+Packages/realcore/6.24.00/source/system/cmn/exit.cpp:
+	.text       start:0x8038682C end:0x80386898
+	.data       start:0x80451FBC end:0x804520BC
+
+Packages/realcore/6.24.00/source/system/cmn/systemvars.cpp:
+	.data       start:0x804520BC end:0x804520FC
+	.sdata      start:0x804FF640 end:0x804FF660
+
+Packages/realcore/6.24.00/source/system/cmn/mutex.cpp:
+	.text       start:0x80386898 end:0x8038693C
+
+Packages/realcore/6.24.00/source/system/cmn/systask.cpp:
+	.text       start:0x8038693C end:0x80386B38
+	.bss        start:0x804D63F8 end:0x804D6540
+
+Packages/realcore/6.24.00/source/system/cmn/timer.cpp:
+	.text       start:0x80386B38 end:0x80386B40
+
+Packages/realcore/6.24.00/source/system/gc/initvblt.cpp:
+	.text       start:0x80386B40 end:0x80386B9C
+
+Packages/realmemcard/3.04.01-layer2/source/lib/cmn/memcard_interface.cpp:
+	.text       start:0x80387D88 end:0x80388450
+	.sdata      start:0x804FF660 end:0x804FF664
+
+Packages/realmemcard/3.04.01-layer2/source/lib/cmn/memcard_interface_impl.cpp:
+	.text       start:0x80388450 end:0x80388B04
+
+Packages/realmemcard/3.04.01-layer2/source/lib/cmn/memcard_memvectors.cpp:
+	.text       start:0x80388B04 end:0x80388BC0
+	.sdata      start:0x804FF664 end:0x804FF670
+
+Packages/realmemcard/3.04.01-layer2/source/lib/cmn/memcard_taskmanager.cpp:
+	.text       start:0x80388BC0 end:0x8038A5A0
+
+Packages/realmemcard/3.04.01-layer2/source/lib/gc/gc_memcard_interface_impl.cpp:
+	.text       start:0x8038A5A0 end:0x8038D088
+	.sdata      start:0x804FF670 end:0x804FF674
+
+Packages/realmemcard/3.04.01-layer2/source/lib/gc/gc_memcard_taskmanager.cpp:
+	.text       start:0x8038D088 end:0x8038D1B8
+
+Packages/realmemcard/3.04.01-layer2/source/lib/cmn/locale.cpp:
+	.text       start:0x8038D1B8 end:0x8038D624
+	.bss        start:0x804D6540 end:0x804D8E24
+	.sdata      start:0x804FF674 end:0x804FF67C
+
+Packages/realmemcard/3.04.01-layer2/source/lib/cmn/memcard_utilities.cpp:
+	.text       start:0x8038D624 end:0x8038DA18
+	.data       start:0x804520FC end:0x804524FC
+
+Packages/realmemcard/3.04.01-layer2/source/lib/gc/gc_driver.cpp:
+	.text       start:0x8038DA18 end:0x8038FD10
+	.sdata      start:0x804FF67C end:0x804FF68C
+
+Packages/realmemcard/3.04.01-layer2/source/lib/gc/gc_interface.cpp:
+	.text       start:0x8038FD10 end:0x80391518
+	.bss        start:0x804D8E24 end:0x804D95E8
+	.sdata      start:0x804FF68C end:0x804FF6A8
+	.sbss       start:0x804FFD58 end:0x804FFD5C
+
+Packages/realmemcard/3.04.01-layer2/source/lib/gc/public.cpp:
+	.text       start:0x80391570 end:0x80392910
+	.bss        start:0x804D95E8 end:0x804D9668
+
+Packages/realmemcard/3.04.01-layer2/source/lib/gc/tasks.cpp:
+	.text       start:0x80392910 end:0x80393AB8
+	.sbss       start:0x804FFD5C end:0x804FFD60
+
+Packages/realmemcard/3.04.01-layer2/source/lib/gc/trctasks.cpp:
+	.text       start:0x80393AB8 end:0x80398988
+
+Packages/realmemcard/3.04.01-layer2/source/lib/cmn/interfaceimp.cpp:
+	.text       start:0x80398988 end:0x80398D08
+	.sdata      start:0x804FF6A8 end:0x804FF6AC
+
+Packages/realmemcard/3.04.01-layer2/source/lib/gc/gc_blockcalculator.cpp:
+	.text       start:0x80398D08 end:0x80398E40
+
+Packages/realcore/6.24.00/source/system/gc/memcopy.cpp:
+	.text       start:0x80398E40 end:0x80399038
+
+Packages/realcore/6.24.00/source/system/gc/memfill.cpp:
+	.text       start:0x80399038 end:0x8039917C
+
+Packages/realcore/6.24.00/source/std/cmn/locale.cpp:
+	.text       start:0x8039917C end:0x80399560
+
+Packages/realcore/6.24.00/source/std/cmn/memclear.cpp:
+	.text       start:0x80399560 end:0x80399588
+
+Packages/realcore/6.24.00/source/system/debug/cmn/abortmsg.cpp:
+	.text       start:0x80399588 end:0x80399738
+	.bss        start:0x804D9668 end:0x804DA668
+	.sdata      start:0x804FF6AC end:0x804FF6B0
+
+Packages/realcore/6.24.00/source/debug/cmn/debugger.cpp:
+	.text       start:0x80399738 end:0x8039976C
+
+Packages/realcore/6.24.00/source/debug/cmn/printvstr.cpp:
+	.text       start:0x8039976C end:0x80399800
+
+Packages/realcore/6.24.00/source/system/debug/cmn/printstr.cpp:
+	.text       start:0x80399800 end:0x8039989C
+	.data       start:0x804524FC end:0x804527FC
+
+Packages/realcore/6.24.00/source/debug/gc/printdrv.cpp:
+	.text       start:0x8039989C end:0x803998C8
+
+Packages/realcore/6.24.00/source/input/gc/gc_effect.cpp:
+	.text       start:0x803998C8 end:0x80399B28
+
+Packages/realcore/6.24.00/source/input/cmn/effectimp.cpp:
+	.text       start:0x80399B28 end:0x80399C4C
+
+Packages/realcore/6.24.00/source/input/cmn/interface.cpp:
+	.text       start:0x80399C4C end:0x80399D18
+	.sdata      start:0x804FF6B0 end:0x804FF6B8
+
+Packages/realcore/6.24.00/source/input/cmn/memvectors.cpp:
+	.text       start:0x80399D18 end:0x80399EBC
+	.sdata      start:0x804FF6B8 end:0x804FF6C0
+
+Packages/realcore/6.24.00/source/input/gc/gc_device.cpp:
+	.text       start:0x80399EBC end:0x80399FD8
+
+Packages/realcore/6.24.00/source/input/gc/gc_interface.cpp:
+	.text       start:0x80399FD8 end:0x8039A3C8
+	.bss        start:0x804DA668 end:0x804FE9CC
+	.sdata      start:0x804FF6C0 end:0x804FF6C8
+
+Packages/realcore/6.24.00/source/input/gc/gc_pad.cpp:
+	.text       start:0x8039A3C8 end:0x8039AA1C
+
+Packages/realcore/6.24.00/source/input/cmn/interfaceimp.cpp:
+	.text       start:0x8039AA1C end:0x8039ADF8
+
+Packages/realcore/6.24.00/source/input/cmn/device.cpp:
+	.text       start:0x8039ADF8 end:0x8039AF04
+
+Packages/realcore/6.24.00/source/input/cmn/effect.cpp:
+	.text       start:0x8039AF04 end:0x8039AF70
+
+Packages/realcore/6.24.00/source/input/cmn/event.cpp:
+	.text       start:0x8039AF70 end:0x8039AFD8
+
+Packages/realcore/6.24.00/source/input/cmn/eventqueue.cpp:
+	.text       start:0x8039AFD8 end:0x8039B238
+
+Packages/realcore/6.24.00/source/input/cmn/itimer.cpp:
+	.text       start:0x8039B238 end:0x8039B258
 
 Packages/snd/9/source/library/cmn/sbpatinf.c:
 	.text       start:0x803A30AC end:0x803A3190
