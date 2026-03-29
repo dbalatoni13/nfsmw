@@ -1,8 +1,7 @@
-#ifndef _DOLPHIN_GXCULL
-#define _DOLPHIN_GXCULL
+#ifndef _DOLPHIN_GX_GXCULL_H_
+#define _DOLPHIN_GX_GXCULL_H_
 
-#include <dolphin/types.h>
-#include "GXEnum.h"
+#include <dolphin/gx/GXEnum.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -16,4 +15,4 @@ void GXSetCoPlanar(GXBool enable);
 }
 #endif
 
-#endif // _DOLPHIN_GXCULL
+#endif

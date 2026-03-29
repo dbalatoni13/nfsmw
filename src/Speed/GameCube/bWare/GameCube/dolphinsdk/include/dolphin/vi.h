@@ -1,32 +1,7 @@
-#ifndef _DOLPHIN_VI
-#define _DOLPHIN_VI
+#ifndef _DOLPHIN_VI_H_
+#define _DOLPHIN_VI_H_
 
-#include <dolphin/gx/GXStruct.h>
-#include <dolphin/vifuncs.h>
-#include <dolphin/vitypes.h>
+#include <dolphin/vi/vifuncs.h>
+#include <dolphin/vi/vitypes.h>
 
-#ifdef __cplusplus
-extern "C" {
 #endif
-
-void VIInit(void);
-void VIConfigure(const GXRenderModeObj* rm);
-void VIFlush(void);
-u32 VIGetTvFormat(void);
-void VISetNextFrameBuffer(void* fb);
-void VIWaitForRetrace(void);
-void VISetBlack(BOOL black);
-
-#ifdef TARGET_PC
-void VISetWindowTitle(const char* title);
-void VISetWindowFullscreen(bool fullscreen);
-bool VIGetWindowFullscreen();
-#endif
-
-
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif // _DOLPHIN_VI

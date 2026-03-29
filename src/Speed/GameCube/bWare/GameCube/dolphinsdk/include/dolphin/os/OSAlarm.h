@@ -1,9 +1,7 @@
-#ifndef _DOLPHIN_OSALARM
-#define _DOLPHIN_OSALARM
+#ifndef _DOLPHIN_OSALARM_H_
+#define _DOLPHIN_OSALARM_H_
 
 #include <dolphin/os.h>
-#include <dolphin/os/OSContext.h>
-#include <types.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -11,30 +9,28 @@ extern "C" {
 
 typedef struct OSAlarm OSAlarm;
 typedef void (*OSAlarmHandler)(OSAlarm* alarm, OSContext* context);
-
 struct OSAlarm {
-  OSAlarmHandler handler;
-  u32 tag;
-  OSTime fire;
-  OSAlarm* prev;
-  OSAlarm* next;
-  OSTime period;
-  OSTime start;
+    OSAlarmHandler handler;
+    u32 tag;
+    OSTime fire;
+    OSAlarm* prev;
+    OSAlarm* next;
+    OSTime period;
+    OSTime start;
 };
 
+BOOL OSCheckAlarmQueue(void);
 void OSInitAlarm(void);
+void OSCreateAlarm(OSAlarm* alarm);
 void OSSetAlarm(OSAlarm* alarm, OSTime tick, OSAlarmHandler handler);
-void OSSetAlarmTag(OSAlarm* alarm, u32 tag);
 void OSSetAbsAlarm(OSAlarm* alarm, OSTime time, OSAlarmHandler handler);
 void OSSetPeriodicAlarm(OSAlarm* alarm, OSTime start, OSTime period, OSAlarmHandler handler);
-void OSCreateAlarm(OSAlarm* alarm);
-void OSCancelAlarm(OSAlarm* alarm);
+void OSCancelAlarm(OSAlarm *alarm);
+void OSSetAlarmTag(OSAlarm* alarm, u32 tag);
 void OSCancelAlarms(u32 tag);
-
-BOOL OSCheckAlarmQueue(void);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // _DOLPHIN_OSALARM
+#endif // _DOLPHIN_OSALARM_H_

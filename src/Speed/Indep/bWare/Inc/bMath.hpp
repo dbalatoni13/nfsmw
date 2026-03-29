@@ -11,7 +11,7 @@
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 
 #ifdef EA_PLATFORM_GAMECUBE
-#include "dolphin/mtx44_ext.h"
+#include "dolphin/mtx.h"
 #elif defined(EA_PLATFORM_XENON)
 #include <ppcintrinsics.h>
 #elif defined(EA_PLATFORM_PLAYSTATION2)
