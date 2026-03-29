@@ -214,6 +214,8 @@ config.reconfig_deps = []
 if config.platform == Platform.GC_WII:
     config.linker_version = "ProDG/3.9.3"
 
+    dolphinsdk_root = "src/Speed/GameCube/bWare/GameCube/dolphinsdk"
+
     cflags_base_mwcc = [
         "-nodefaults",
         "-proc gekko",
@@ -231,10 +233,10 @@ if config.platform == Platform.GC_WII:
         "-RTTI off",
         "-fp_contract on",
         "-str reuse",
-        "-i include",
-        "-i src/Speed/GameCube/bWare/GameCube/dolphinsdk/include",
-        f"-i build/{config.version}/include",
+        # "-i include",
+        # f"-i build/{config.version}/include",
         "-multibyte",
+        "-D__GEKKO__",
         f"-DVERSION={version_num}",
     ]
 
@@ -251,7 +253,7 @@ if config.platform == Platform.GC_WII:
         "-I src/Speed/GameCube/Libs/stl/STLport-4.5/stlport",
         "-I src/Speed/GameCube/bWare/GameCube/bWare/GameCube/SN/include",
         "-I include",
-        "-I src/Speed/GameCube/bWare/GameCube/dolphinsdk/include",
+        f"-I {dolphinsdk_root}/include",
         "-I src/Packages",
         "-I ./",
         "-I src",
@@ -322,7 +324,18 @@ if config.platform == Platform.GC_WII:
         "-DCLANGD_DAMNIT",  # used in cases where intellisense breaks
     ]
 
-    cflags_dolphin = [*cflags_base_mwcc]
+    cflags_dolphin = [
+        *cflags_base_mwcc,
+        f"-i {dolphinsdk_root}/include",
+        f"-i {dolphinsdk_root}/include/libc",
+        "-i include",
+        f"-i build/{config.version}/include",
+        "-char unsigned",
+        "-warn pragmas",
+        "-requireprotos",
+        "-DSDK_REVISION=2",
+        f"-ir {dolphinsdk_root}/src",
+    ]
 
     # Metrowerks library flags
     cflags_runtime = [*cflags_base_mwcc]
@@ -832,6 +845,15 @@ if config.platform == Platform.GC_WII:
                 ],
             },
             DolphinLib(
+                "base",
+                [
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/base/PPCArch.c",
+                    ),
+                ],
+            ),
+            DolphinLib(
                 "ar",
                 [
                     Object(
@@ -845,7 +867,7 @@ if config.platform == Platform.GC_WII:
                 [
                     Object(
                         NonMatching,
-                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/arq/arq.c",
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/ar/arq.c",
                     ),
                 ],
             ),
@@ -865,7 +887,7 @@ if config.platform == Platform.GC_WII:
                         "Speed/GameCube/bWare/GameCube/dolphinsdk/src/ax/AXCL.c",
                     ),
                     Object(
-                        NonMatching,
+                        Matching,
                         "Speed/GameCube/bWare/GameCube/dolphinsdk/src/ax/AX.c",
                     ),
                     Object(
@@ -894,16 +916,21 @@ if config.platform == Platform.GC_WII:
                         "Speed/GameCube/bWare/GameCube/dolphinsdk/src/card/CARDBios.c",
                     ),
                     Object(
-                        NonMatching,
+                        Matching,
                         "Speed/GameCube/bWare/GameCube/dolphinsdk/src/card/CARDBlock.c",
                     ),
                     Object(
-                        NonMatching,
+                        Matching,
                         "Speed/GameCube/bWare/GameCube/dolphinsdk/src/card/CARDDir.c",
                     ),
                     Object(
                         NonMatching,
                         "Speed/GameCube/bWare/GameCube/dolphinsdk/src/card/CARDCheck.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/card/CARDOpen.c",
+                        extra_cflags=["-char signed"],
                     ),
                     Object(
                         NonMatching,
@@ -914,7 +941,7 @@ if config.platform == Platform.GC_WII:
                         "Speed/GameCube/bWare/GameCube/dolphinsdk/src/card/CARDFormat.c",
                     ),
                     Object(
-                        NonMatching,
+                        Matching,
                         "Speed/GameCube/bWare/GameCube/dolphinsdk/src/card/CARDCreate.c",
                     ),
                     Object(
@@ -922,15 +949,15 @@ if config.platform == Platform.GC_WII:
                         "Speed/GameCube/bWare/GameCube/dolphinsdk/src/card/CARDRead.c",
                     ),
                     Object(
-                        NonMatching,
+                        Matching,
                         "Speed/GameCube/bWare/GameCube/dolphinsdk/src/card/CARDWrite.c",
                     ),
                     Object(
-                        NonMatching,
+                        Matching,
                         "Speed/GameCube/bWare/GameCube/dolphinsdk/src/card/CARDDelete.c",
                     ),
                     Object(
-                        NonMatching,
+                        Matching,
                         "Speed/GameCube/bWare/GameCube/dolphinsdk/src/card/CARDStat.c",
                     ),
                     Object(
@@ -980,7 +1007,7 @@ if config.platform == Platform.GC_WII:
                         "Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSArena.c",
                     ),
                     Object(
-                        NonMatching,
+                        Matching,
                         "Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSAudioSystem.c",
                     ),
                     Object(
@@ -994,6 +1021,10 @@ if config.platform == Platform.GC_WII:
                     Object(
                         NonMatching,
                         "Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSError.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSExec.c",
                     ),
                     Object(
                         NonMatching,
@@ -1013,6 +1044,10 @@ if config.platform == Platform.GC_WII:
                     ),
                     Object(
                         NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSMutex.c",
+                    ),
+                    Object(
+                        NonMatching,
                         "Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSReset.c",
                     ),
                     Object(
@@ -1024,7 +1059,7 @@ if config.platform == Platform.GC_WII:
                         "Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSRtc.c",
                     ),
                     Object(
-                        NonMatching,
+                        Matching,
                         "Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSSync.c",
                     ),
                     Object(
@@ -1041,7 +1076,7 @@ if config.platform == Platform.GC_WII:
                     ),
                     Object(
                         NonMatching,
-                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/__ppc_eabi_init.cpp",
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/__ppc_eabi_init.c",
                     ),
                 ],
             ),
@@ -1060,10 +1095,12 @@ if config.platform == Platform.GC_WII:
                     Object(
                         NonMatching,
                         "Speed/GameCube/bWare/GameCube/dolphinsdk/src/mtx/mtx.c",
+                        extra_cflags=["-char signed"],
                     ),
                     Object(
                         NonMatching,
                         "Speed/GameCube/bWare/GameCube/dolphinsdk/src/mtx/mtx44.c",
+                        extra_cflags=["-char signed"],
                     ),
                     Object(
                         NonMatching,
@@ -1077,30 +1114,37 @@ if config.platform == Platform.GC_WII:
                     Object(
                         NonMatching,
                         "Speed/GameCube/bWare/GameCube/dolphinsdk/src/dvd/dvdfs.c",
+                        extra_cflags=["-char signed"],
                     ),
                     Object(
                         NonMatching,
                         "Speed/GameCube/bWare/GameCube/dolphinsdk/src/dvd/dvd.c",
+                        extra_cflags=["-char signed"],
                     ),
                     Object(
                         NonMatching,
                         "Speed/GameCube/bWare/GameCube/dolphinsdk/src/dvd/dvdqueue.c",
+                        extra_cflags=["-char signed"],
                     ),
                     Object(
                         NonMatching,
                         "Speed/GameCube/bWare/GameCube/dolphinsdk/src/dvd/dvderror.c",
+                        extra_cflags=["-char signed"],
                     ),
                     Object(
                         NonMatching,
                         "Speed/GameCube/bWare/GameCube/dolphinsdk/src/dvd/dvdFatal.c",
+                        extra_cflags=["-char signed"],
                     ),
                     Object(
                         NonMatching,
                         "Speed/GameCube/bWare/GameCube/dolphinsdk/src/dvd/fstload.c",
+                        extra_cflags=["-char signed"],
                     ),
                     Object(
                         NonMatching,
                         "Speed/GameCube/bWare/GameCube/dolphinsdk/src/dvd/dvdlow.c",
+                        extra_cflags=["-char signed"],
                     ),
                 ],
             ),
@@ -1160,6 +1204,10 @@ if config.platform == Platform.GC_WII:
                     ),
                     Object(
                         NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/gx/GXGeometry.c",
+                    ),
+                    Object(
+                        Matching,
                         "Speed/GameCube/bWare/GameCube/dolphinsdk/src/gx/GXDisplayList.c",
                     ),
                     Object(
@@ -1198,6 +1246,7 @@ if config.platform == Platform.GC_WII:
                     Object(
                         NonMatching,
                         "Speed/GameCube/bWare/GameCube/dolphinsdk/src/exi/EXIBios.c",
+                        extra_cflags=["-O3,p"],
                     ),
                     Object(
                         NonMatching,
@@ -1225,7 +1274,7 @@ if config.platform == Platform.GC_WII:
                         "Speed/GameCube/bWare/GameCube/dolphinsdk/src/si/SISteeringXfer.c",
                     ),
                     Object(
-                        NonMatching,
+                        Matching,
                         "Speed/GameCube/bWare/GameCube/dolphinsdk/src/si/SISteeringAuto.c",
                     ),
                 ],

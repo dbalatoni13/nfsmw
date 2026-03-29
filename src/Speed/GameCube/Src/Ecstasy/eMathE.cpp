@@ -1,7 +1,7 @@
 #include "Speed/Indep/Src/Ecstasy/eMath.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
-#include "dolphin/mtx44_ext.h"
+#include "dolphin/mtx.h"
 
 bMatrix4 eMathIdentityMatrix;
 bMatrix4 eMathZeroMatrix;

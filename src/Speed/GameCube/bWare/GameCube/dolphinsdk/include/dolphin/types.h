@@ -1,115 +1,54 @@
-#ifndef _DOLPHIN_TYPES
-#define _DOLPHIN_TYPES
+#ifndef _DOLPHIN_TYPES_H_
+#define _DOLPHIN_TYPES_H_
 
-#ifdef TARGET_PC
-#include <stdint.h>
-typedef int8_t s8;
-typedef int16_t s16;
-typedef int32_t s32;
-typedef int64_t s64;
-typedef uint8_t u8;
-typedef uint16_t u16;
-typedef uint32_t u32;
-typedef uint64_t u64;
-#else
-typedef signed char s8;
-typedef signed short int s16;
-typedef signed long s32;
-typedef signed long long int s64;
-typedef unsigned char u8;
-typedef unsigned short int u16;
-typedef unsigned long u32;
+typedef signed   char          s8;
+typedef unsigned char          u8;
+typedef signed   short int     s16;
+typedef unsigned short int     u16;
+typedef signed   long          s32;
+typedef unsigned long          u32;
+typedef signed   long long int s64;
 typedef unsigned long long int u64;
 
-typedef char int8_t;
-typedef short int16_t;
-typedef int int32_t;
-typedef unsigned char uint8_t;
-typedef unsigned short uint16_t;
-typedef unsigned int uint32_t;
-typedef float float_t;
-typedef double double_t;
-typedef long long int64_t;
-typedef unsigned long long uint64_t;
-typedef bool bool8_t;
-#endif
-
-typedef volatile u8 vu8;
-typedef volatile u16 vu16;
-typedef volatile u32 vu32;
-typedef volatile u64 vu64;
-
-typedef volatile s8 vs8;
-typedef volatile s16 vs16;
-typedef volatile s32 vs32;
-typedef volatile s64 vs64;
-
-typedef float f32;
+typedef float  f32;
 typedef double f64;
 
-typedef volatile f32 vf32;
-typedef volatile f64 vf64;
+typedef char *Ptr;
 
-#if defined(TARGET_PC) && !defined(_WIN32)
-#include <stdbool.h>
-typedef bool BOOL;
-typedef bool Bool;
-#ifndef FALSE
-#define FALSE false
-#endif
-#ifndef TRUE
-#define TRUE true
-#endif
-#else
 typedef int BOOL;
 typedef unsigned char Bool;
-#ifndef FALSE
+
 #define FALSE 0
-#endif
-#ifndef TRUE
 #define TRUE 1
-#endif
-#endif
 
-#ifdef TARGET_PC
-#include <stddef.h>
-#else
-#ifndef NULL
-#define NULL 0
-#endif
-#endif
-
-#if !defined(__cplusplus) || __cplusplus < 201103L
-#ifndef nullptr
-#define nullptr NULL
-#endif
-
-#if __cplusplus < 201103L
-#ifndef override
-#define override
-#endif
-#endif
-
-#endif
-
-#ifndef ATTRIBUTE_ALIGN
-#if defined(__MWERKS__) || defined(__GNUC__)
-#define ATTRIBUTE_ALIGN(num) __attribute__((aligned(num)))
-#elif defined(_MSC_VER)
-#define ATTRIBUTE_ALIGN(num)
+#if defined(__MWERKS__)
+#define AT_ADDRESS(addr) : (addr)
+#elif defined(__GNUC__)
+//#define AT_ADDRESS(addr) __attribute__((address((addr))))
+#define AT_ADDRESS(addr)  // was removed in GCC. define in linker script instead.
 #else
 #error unknown compiler
 #endif
+
+#define ATTRIBUTE_ALIGN(num) __attribute__((aligned(num)))
+
+#ifndef INT_MAX
+#define INT_MAX 2147483647
 #endif
 
-#ifndef AT_ADDRESS
-#ifdef __SN__
-#define AT_ADDRESS(xyz) __attribute__((address((xyz))))
-#elif defined(__MWERKS__)
-#define AT_ADDRESS(xyz) : (xyz)
+#ifndef NULL
+#define NULL ((void*)0)
+#endif
+
+#ifdef __cplusplus
+#include <math.h>
 #else
-#define AT_ADDRESS(xyz)
-#endif
+#include "libc/stdio.h"
+#include "libc/stdarg.h"
+#include "libc/string.h"
+#include "libc/ctype.h"
+
+#include "cmath.h"
 #endif
 
-#endif // _DOLPHIN_TYPES
+#endif

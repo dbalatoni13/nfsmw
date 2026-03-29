@@ -5,6 +5,7 @@
 
 #include "dolphin/types.h"
 
+typedef unsigned char Bool;
 typedef signed char int8;
 typedef unsigned char uint8;
 typedef short int16;
@@ -13,6 +14,16 @@ typedef int int32;
 typedef unsigned int uint32;
 typedef long long int64;
 typedef unsigned long long uint64;
+typedef signed char int8_t;
+typedef short int int16_t;
+typedef int int32_t;
+typedef long long int64_t;
+typedef unsigned char uint8_t;
+typedef unsigned short uint16_t;
+typedef unsigned int uint32_t;
+typedef unsigned long long uint64_t;
+typedef float float_t;
+typedef double double_t;
 typedef unsigned int type_operator_new;
 
 #define ALIGN_16
@@ -30,7 +41,7 @@ typedef bool Bool;
 #if !defined(__cplusplus) || __cplusplus < 201103L
 
 #ifndef nullptr
-#define nullptr NULL
+#define nullptr 0
 #endif
 
 #if __cplusplus < 201103L
@@ -93,7 +104,7 @@ typedef bool Bool;
 #if !defined(__cplusplus) || __cplusplus < 201103L
 
 #ifndef nullptr
-#define nullptr NULL
+#define nullptr 0
 #endif
 
 #if __cplusplus < 201103L
@@ -154,6 +165,20 @@ typedef signed char i8;
 
 #endif
 
+#if !defined(__cplusplus) || __cplusplus < 201103L
+
+#ifndef nullptr
+#define nullptr 0
+#endif
+
+#if __cplusplus < 201103L
+#ifndef override
+#define override
+#endif
+#endif
+
+#endif
+
 #include <cmath>
 
 #ifndef M_TWOPI
@@ -162,6 +187,12 @@ typedef signed char i8;
 
 typedef unsigned int uintptr_t;
 typedef int intptr_t;
+typedef volatile uint8 vu8;
+typedef volatile uint16 vu16;
+typedef volatile uint32 vu32;
+typedef volatile int8 vs8;
+typedef volatile int16 vs16;
+typedef volatile int32 vs32;
 
 #define REFRESH_RATE (60.0f)
 
