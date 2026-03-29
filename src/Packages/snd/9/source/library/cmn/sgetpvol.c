@@ -1,4 +1,4 @@
-#include "snd/source/library/cmn/sndcmn.h"
+#include "snd/9/source/library/cmn/sndcmn.h"
 
 int SNDCTRL_getprogvol(int shandle) {
     int voice = SNDVOICEI_get(shandle);
