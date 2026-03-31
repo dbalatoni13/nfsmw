@@ -644,9 +644,10 @@ int STREAM_overhead(int requests, int filters, int taps) {
 }
 
 int STREAM_create(int requests, int filters, int taps, void *buffer, int size) {
-    int freeBytes = size - STREAM_overhead(requests, filters, taps);
-    if (freeBytes < 0x1800 || requests < 2 || requests > 0x100 || filters < 1 || filters > 0x10 || taps < 1 ||
-        filters < taps) {
+    int overhead = STREAM_overhead(requests, filters, taps);
+    overhead = size - overhead;
+    if (overhead < 0x1800 || requests < 2 || requests > 0x100 || static_cast<unsigned int>(filters - 1) > 0xF ||
+        taps < 1 || filters < taps) {
         return 0;
     }
 
@@ -656,37 +657,37 @@ int STREAM_create(int requests, int filters, int taps, void *buffer, int size) {
 
     REQUESTSTRUCT *requestBase = static_cast<REQUESTSTRUCT *>(
         static_cast<void *>(static_cast<char *>(buffer) + sizeof(STREAMHEADER)));
+    stream->requests = requests;
     FILTERSTRUCT *filterBase = reinterpret_cast<FILTERSTRUCT *>(requestBase + requests);
+    stream->filters = filters;
     TAPSTRUCT *tapBase = static_cast<TAPSTRUCT *>(
         static_cast<void *>(static_cast<char *>(static_cast<void *>(filterBase)) + filters * sizeof(FILTERSTRUCT)));
+    stream->taps = taps;
+    stream->state = STREAM_IDLE_STATE;
 
     char *dataBase =
         reinterpret_cast<char *>((reinterpret_cast<unsigned int>(reinterpret_cast<char *>(tapBase) + taps * sizeof(TAPSTRUCT)) &
                                   0xFFFFFFE0U) +
                                  0x20);
 
-    stream->request = requestBase;
-    stream->requests = requests;
-    stream->filter = filterBase;
-    stream->filters = filters;
-    stream->tap = tapBase;
-    stream->taps = taps;
-    stream->actualbufferstart = dataBase;
-    stream->bufferstart = dataBase;
-    stream->bufferend = static_cast<char *>(buffer) + size;
-    stream->state = STREAM_IDLE_STATE;
-    stream->prioritylow = 0x96;
-    stream->priorityhigh = 0x32;
     stream->greedylevel = 0;
     stream->greedystate = 0;
     stream->bufferusage = 0;
-    stream->datastart = dataBase;
-    stream->datatail = dataBase;
-    stream->dataend = dataBase;
     stream->firstreq = nullptr;
     stream->curreq = nullptr;
     stream->lastreq = nullptr;
+    stream->bufferend = static_cast<char *>(buffer) + size;
+    stream->prioritylow = 0x96;
+    stream->priorityhigh = 0x32;
+    stream->dataend = dataBase;
     stream->freereq = requestBase;
+    stream->request = requestBase;
+    stream->filter = filterBase;
+    stream->tap = tapBase;
+    stream->actualbufferstart = dataBase;
+    stream->bufferstart = dataBase;
+    stream->datastart = dataBase;
+    stream->datatail = dataBase;
 
     MEM_clear(stream->fname, 0xFF);
     stream->fhandle = 0;
@@ -694,13 +695,13 @@ int STREAM_create(int requests, int filters, int taps, void *buffer, int size) {
     stream->fop = 0;
     stream->readsize = 0;
 
-    if (freeBytes < 0x4000) {
+    if (overhead < 0x4000) {
         stream->readblocksize = 0x800;
-    } else if (freeBytes <= 0x7FFF) {
+    } else if (overhead <= 0x7FFF) {
         stream->readblocksize = 0x1000;
-    } else if (freeBytes <= 0xFFFF) {
+    } else if (overhead <= 0xFFFF) {
         stream->readblocksize = 0x2000;
-    } else if (freeBytes <= 0x17FFF) {
+    } else if (overhead <= 0x17FFF) {
         stream->readblocksize = 0x4000;
     } else {
         stream->readblocksize = 0x8000;
