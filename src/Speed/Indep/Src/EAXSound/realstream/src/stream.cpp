@@ -964,9 +964,9 @@ void STREAM_cancelrequest(int sndstreamhandle, int requesthandle) {
                 if (tap->gettable > 0) {
                     lockstate = inbetween(dataStart, requestStart, tap->getptr);
                     if (lockstate != 0) {
+                        finished = reinterpret_cast<int>(requestStart);
                         chunktap = tap->tapnum;
                         if (requestStart != requestEnd) {
-                            finished = reinterpret_cast<int>(requestStart);
                             while (reinterpret_cast<char *>(finished) != requestEnd) {
                                 chunk = reinterpret_cast<STREAMCHUNKHDR *>(finished);
                                 if (ReadChunkWord(&chunk->type) == -1) {
@@ -987,7 +987,11 @@ void STREAM_cancelrequest(int sndstreamhandle, int requesthandle) {
                             }
                         }
                     } else {
-                        while ((lockstate = inbetween(requestStart, requestEnd, tap->getptr)) != 0) {
+                        while (true) {
+                            lockstate = inbetween(requestStart, requestEnd, tap->getptr);
+                            if (lockstate == 0) {
+                                break;
+                            }
                             chunk = STREAM_get(reinterpret_cast<int>(tap));
                             STREAM_release(reinterpret_cast<int>(tap), chunk);
                             if (tap->gettable < 1) {
