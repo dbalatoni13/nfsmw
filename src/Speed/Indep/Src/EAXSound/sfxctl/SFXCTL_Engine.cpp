@@ -458,22 +458,13 @@ void SFXCTL_Engine::UpdateEngineLFO_FX(float t) {
     int tmp_RPM_LFO_AMP = 0;
     int tmp_RPM_LFO_FRQ = 0;
 
-    if (m_pShiftCtl != nullptr) {
-        if (m_pShiftCtl->IsActive()) {
-            tmp_VOL_LFO_AMP = m_pShiftCtl->m_VOL_LFO_AMP;
-            tmp_VOL_LFO_FRQ = m_pShiftCtl->m_VOL_LFO_FRQ;
-            tmp_TRQ_LFO_AMP = m_pShiftCtl->m_TRQ_LFO_AMP;
-            tmp_TRQ_LFO_FRQ = m_pShiftCtl->m_TRQ_LFO_FRQ;
-            tmp_RPM_LFO_AMP = m_pShiftCtl->m_RPM_LFO_AMP;
-            tmp_RPM_LFO_FRQ = m_pShiftCtl->m_RPM_LFO_FRQ;
-        } else {
-            m_aglTRQ_LFO = 0x4097;
-            m_TRQ_LFO = 0.0f;
-            m_VOL_LFO = 0.0f;
-            m_aglVOL_LFO = 0x4097;
-            m_RPM_LFO = 0.0f;
-            m_aglRPM_LFO = 0x4097;
-        }
+    if (m_pShiftCtl != nullptr && m_pShiftCtl->IsActive()) {
+        tmp_VOL_LFO_AMP = m_pShiftCtl->m_VOL_LFO_AMP;
+        tmp_VOL_LFO_FRQ = m_pShiftCtl->m_VOL_LFO_FRQ;
+        tmp_TRQ_LFO_AMP = m_pShiftCtl->m_TRQ_LFO_AMP;
+        tmp_TRQ_LFO_FRQ = m_pShiftCtl->m_TRQ_LFO_FRQ;
+        tmp_RPM_LFO_AMP = m_pShiftCtl->m_RPM_LFO_AMP;
+        tmp_RPM_LFO_FRQ = m_pShiftCtl->m_RPM_LFO_FRQ;
     } else {
         m_aglTRQ_LFO = 0x4097;
         m_TRQ_LFO = 0.0f;
