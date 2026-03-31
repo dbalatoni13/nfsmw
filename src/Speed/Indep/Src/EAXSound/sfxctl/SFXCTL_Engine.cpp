@@ -490,21 +490,21 @@ void SFXCTL_Engine::UpdateEngineLFO_FX(float t) {
     if (tmp_RPM_LFO_AMP != 0) {
         unsigned int angle = static_cast<unsigned int>(m_aglRPM_LFO) +
                              static_cast<int>((t / (static_cast<float>(tmp_RPM_LFO_FRQ) * 0.001f)) * 65535.0f);
-        m_aglRPM_LFO = static_cast<short>(angle) + static_cast<short>((angle & 0xFFFF) / 0xFFFF);
+        m_aglRPM_LFO = static_cast<unsigned short>(angle - ((angle & 0xFFFF) / 0xFFFF) * 65535);
         m_RPM_LFO = static_cast<float>(tmp_RPM_LFO_AMP) * bSin(m_aglRPM_LFO);
     }
 
     if (tmp_TRQ_LFO_AMP != 0) {
         unsigned int angle = static_cast<unsigned int>(m_aglTRQ_LFO) +
                              static_cast<int>((t / (static_cast<float>(tmp_TRQ_LFO_FRQ) * 0.001f)) * 65535.0f);
-        m_aglTRQ_LFO = static_cast<short>(angle) + static_cast<short>((angle & 0xFFFF) / 0xFFFF);
+        m_aglTRQ_LFO = static_cast<unsigned short>(angle - ((angle & 0xFFFF) / 0xFFFF) * 65535);
         m_TRQ_LFO = static_cast<float>(tmp_TRQ_LFO_AMP) * bSin(m_aglTRQ_LFO);
     }
 
     if (tmp_VOL_LFO_AMP != 0) {
         unsigned int angle = static_cast<unsigned int>(m_aglVOL_LFO) +
                              static_cast<int>((t / (static_cast<float>(tmp_VOL_LFO_FRQ) * 0.001f)) * 65535.0f);
-        m_aglVOL_LFO = static_cast<short>(angle) + static_cast<short>((angle & 0xFFFF) / 0xFFFF);
+        m_aglVOL_LFO = static_cast<unsigned short>(angle - ((angle & 0xFFFF) / 0xFFFF) * 65535);
         m_VOL_LFO = static_cast<float>(tmp_VOL_LFO_AMP) * bSin(m_aglVOL_LFO);
     }
 }
