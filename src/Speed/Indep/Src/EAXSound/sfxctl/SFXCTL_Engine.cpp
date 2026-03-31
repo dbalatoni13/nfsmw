@@ -483,9 +483,26 @@ void SFXCTL_Engine::UpdateEngineLFO_FX(float t) {
         m_aglRPM_LFO = 0x4097;
     }
 
-    tmp_RPM_LFO_FRQ = bClamp(tmp_RPM_LFO_FRQ, 1, 10000);
-    tmp_TRQ_LFO_FRQ = bClamp(tmp_TRQ_LFO_FRQ, 1, 10000);
-    tmp_VOL_LFO_FRQ = bClamp(tmp_VOL_LFO_FRQ, 1, 10000);
+    if (tmp_RPM_LFO_FRQ < 1) {
+        tmp_RPM_LFO_FRQ = 1;
+    }
+    if (tmp_RPM_LFO_FRQ > 10000) {
+        tmp_RPM_LFO_FRQ = 10000;
+    }
+
+    if (tmp_TRQ_LFO_FRQ < 1) {
+        tmp_TRQ_LFO_FRQ = 1;
+    }
+    if (tmp_TRQ_LFO_FRQ > 10000) {
+        tmp_TRQ_LFO_FRQ = 10000;
+    }
+
+    if (tmp_VOL_LFO_FRQ < 1) {
+        tmp_VOL_LFO_FRQ = 1;
+    }
+    if (tmp_VOL_LFO_FRQ > 10000) {
+        tmp_VOL_LFO_FRQ = 10000;
+    }
 
     if (tmp_RPM_LFO_AMP != 0) {
         unsigned int angle = static_cast<unsigned int>(m_aglRPM_LFO) +
