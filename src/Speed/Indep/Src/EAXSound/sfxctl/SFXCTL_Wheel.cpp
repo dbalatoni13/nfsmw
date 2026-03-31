@@ -160,7 +160,12 @@ void SFXCTL_Wheel::UpdateTireParams() {
                 if (nloop == 1) {
                     x = 0xe6;
                     y = -0xaa;
-                } else if (nloop > 1) {
+                } else if (nloop < 2) {
+                    if (nloop == 0) {
+                        x = -0x122;
+                        y = -0xaa;
+                    }
+                } else {
                     if (nloop == 2) {
                         x = 0xe6;
                     } else {
@@ -170,9 +175,6 @@ void SFXCTL_Wheel::UpdateTireParams() {
                         x = -0x122;
                     }
                     y = -100;
-                } else if (nloop == 0) {
-                    x = -0x122;
-                    y = -0xaa;
                 }
 
             print_skid_bars:
