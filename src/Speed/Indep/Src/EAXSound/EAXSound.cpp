@@ -325,17 +325,6 @@ bool g_EAXIsPaused() {
     return (g_ActiveCtlStates & 0x3483b) != 0;
 }
 
-void g_LoadSndAsset(Attrib::StringKey filename, eSNDDATAPATH path, eSNDDATATYPE datatype) {
-    stSndAssetQueue requeststruct;
-    requeststruct.Asset.Clear();
-    requeststruct.Asset.eDataType = datatype;
-    requeststruct.Asset.FileName = filename;
-    requeststruct.Asset.DataPath = path;
-    requeststruct.pThis = nullptr;
-    requeststruct.pCar = nullptr;
-    gAEMSMgr.QueueFileLoad(requeststruct, eBANK_SLOT_NONE);
-}
-
 void EAXSound::START_321Countdown() {
     int id;
     SFXObj_Pathfinder *ppf;
@@ -411,8 +400,6 @@ bool EAXSound::IsNISStreamQueued() {
     return pnis->IsNISStreamReady();
 }
 
-// NISFinished goes here when implemented
-
 void EAXSound::NISFinished() {
     int id;
     SFXObj_NISStream *pnis;
@@ -429,6 +416,8 @@ void EAXSound::NISFinished() {
     }
 }
 
+// NISFinished goes here when implemented
+
 void EAXSound::PlayNIS() {
     int id;
     SFXObj_NISStream *pnis;
@@ -440,8 +429,6 @@ void EAXSound::PlayNIS() {
         SoundPause(true, eSNDPAUSE_NISON);
     }
 }
-
-// PlayUISoundFX, StopUISoundFX go here when implemented
 
 void EAXSound::PlayUISoundFX(eMenuSoundTriggers etriggertype) {
     if (IsSoundEnabled) {
@@ -457,6 +444,8 @@ void EAXSound::PlayUISoundFX(eMenuSoundTriggers etriggertype) {
         }
     }
 }
+
+// PlayUISoundFX, StopUISoundFX go here when implemented
 
 void EAXSound::StopUISoundFX(eMenuSoundTriggers etriggertype) {
     if (IsSoundEnabled) {
@@ -589,8 +578,6 @@ int EAXSound::GetStateRefCount(int nstate) {
     return m_pStateMgr[nstate]->GetStateObjCount();
 }
 
-// GetSFXBase_Object, GetSndBase_Object go here when implemented
-
 void EAXSound::SetSFXBaseObject(SFX_Base *psb, eMAINMAPSTATES estate, int ntype, int instance) {
     switch (estate) {
     case eMM_MAIN:
@@ -629,6 +616,8 @@ void EAXSound::SetSFXBaseObject(SFX_Base *psb, eMAINMAPSTATES estate, int ntype,
         return;
     }
 }
+
+// GetSFXBase_Object, GetSndBase_Object go here when implemented
 
 SFX_Base *EAXSound::GetSFXBase_Object(int nID) {
     SFX_Base *ReturnObj = nullptr;
@@ -809,6 +798,20 @@ void EAXSound::RefreshLocalAttr() {
     }
 }
 
+void EAXSound::InitializeSoundBootLoad() {
+    if (!IsSoundEnabled) {
+        return;
+    }
+
+    mAttributes = new Attrib::Gen::audiosystem(0x7e4b0ed2, 0, nullptr);
+    RefreshLocalAttr();
+    gAEMSMgr.Init();
+    gSpeechCache.Init(0x1B000);
+    CSTATEMGR_Base::ClearClassLists();
+    RegisterStates();
+    RegisterSFX();
+}
+
 void EAXSound::StartNewGamePlay() {
     if (!IsSoundEnabled) {
         return;
@@ -934,6 +937,30 @@ void EAXSound::StartNewGamePlay() {
     gbHasStartNewGamePlayBeenProcessed = true;
 }
 
+void EAXSound::InitializeInGame() {
+    if (!IsSoundEnabled) {
+        return;
+    }
+
+    int nstate = -1;
+    m_pCmnSnd = new EAXCommon();
+    m_pCmnSnd->Initialize();
+
+    SoundRandomSeed = bRandom(-1);
+    if (!bIsAnFEToIngameTransition) {
+        nstate = 1;
+    }
+    bIsAnFEToIngameTransition = false;
+
+    for (int n = 0; n < 13; n++) {
+        if (n != nstate && m_pStateMgr[n] != nullptr) {
+            m_pStateMgr[n]->EnterWorld(m_eSndGameMode);
+        }
+    }
+
+    mEventID = Scheduler::Get().fSchedule_OncePerGameLoop->AddTask(-0x0D2EF66E, &mData, 6, true, 0, 0);
+}
+
 void EAXSound::InitializeFrontEnd() {
     if (!IsSoundEnabled) {
         return;
@@ -964,30 +991,6 @@ void EAXSound::InitializeFrontEnd() {
     }
 
     g_pEAXSound->InitEATRAX();
-}
-
-void EAXSound::InitializeInGame() {
-    if (!IsSoundEnabled) {
-        return;
-    }
-
-    int nstate = -1;
-    m_pCmnSnd = new EAXCommon();
-    m_pCmnSnd->Initialize();
-
-    SoundRandomSeed = bRandom(-1);
-    if (!bIsAnFEToIngameTransition) {
-        nstate = 1;
-    }
-    bIsAnFEToIngameTransition = false;
-
-    for (int n = 0; n < 13; n++) {
-        if (n != nstate && m_pStateMgr[n] != nullptr) {
-            m_pStateMgr[n]->EnterWorld(m_eSndGameMode);
-        }
-    }
-
-    mEventID = Scheduler::Get().fSchedule_OncePerGameLoop->AddTask(-0x0D2EF66E, &mData, 6, true, 0, 0);
 }
 
 void EAXSound::MixMapReadyCallback() {
@@ -1385,42 +1388,6 @@ void EAXSound::DestroyEAXCar(EAX_CarState *pCar) {
     CSTATEMGR_CarState::DestroyCar(pCar);
 }
 
-void LoadCommonIngameFiles() {
-    g_LoadSndAsset(g_pEAXSound->GetAttributes()->AEMS_FEBanks(1), SNDPATH_GLOBAL, EAXSND_DT_AEMS_ASYNCSPUMEM);
-    g_LoadSndAsset(g_pEAXSound->GetAttributes()->AEMS_EnvBanks(0), SNDPATH_INGAME, EAXSND_DT_AEMS_ASYNCSPUMEM);
-    g_LoadSndAsset(g_pEAXSound->GetAttributes()->AEMS_MiscBanks(5), SNDPATH_INGAME, EAXSND_DT_AEMS_ASYNCSPUMEM);
-    g_LoadSndAsset(g_pEAXSound->GetAttributes()->AEMS_MiscBanks(4), SNDPATH_INGAME, EAXSND_DT_AEMS_ASYNCSPUMEM);
-    g_LoadSndAsset(g_pEAXSound->GetAttributes()->AEMS_MiscBanks(3), SNDPATH_INGAME, EAXSND_DT_AEMS_ASYNCSPUMEM);
-    g_LoadSndAsset(g_pEAXSound->GetAttributes()->AEMS_MiscBanks(1), SNDPATH_INGAME, EAXSND_DT_AEMS_ASYNCSPUMEM);
-    g_LoadSndAsset(g_pEAXSound->GetAttributes()->AEMS_RNBanks(0), SNDPATH_INGAME, EAXSND_DT_AEMS_ASYNCSPUMEM);
-    g_LoadSndAsset(Attrib::StringKey("SIREN_MB.abk"), SNDPATH_INGAME, EAXSND_DT_AEMS_ASYNCSPUMEM);
-    g_LoadSndAsset(g_pEAXSound->GetAttributes()->AEMS_StitchBanks(0), SNDPATH_INGAME, EAXSND_DT_AEMS_ASYNCSPUMEM);
-    g_LoadSndAsset(g_pEAXSound->GetAttributes()->AEMS_StitchBanks(2), SNDPATH_INGAME, EAXSND_DT_AEMS_ASYNCSPUMEM);
-    g_LoadSndAsset(g_pEAXSound->GetAttributes()->AEMS_StitchBanks(1), SNDPATH_INGAME, EAXSND_DT_AEMS_ASYNCSPUMEM);
-    g_LoadSndAsset(g_pEAXSound->GetAttributes()->AEMS_MiscBanks(2), SNDPATH_INGAME, EAXSND_DT_AEMS_ASYNCSPUMEM);
-    g_LoadSndAsset(g_pEAXSound->GetAttributes()->AEMS_WNBanks(0), SNDPATH_INGAME, EAXSND_DT_AEMS_ASYNCSPUMEM);
-    g_LoadSndAsset(g_pEAXSound->GetAttributes()->AEMS_MiscBanks(6), SNDPATH_ENGINE, EAXSND_DT_AEMS_ASYNCSPUMEM);
-    g_LoadSndAsset(g_pEAXSound->GetAttributes()->AEMS_MiscBanks(7), SNDPATH_ENGINE, EAXSND_DT_AEMS_ASYNCSPUMEM);
-
-    for (int n = 0; n < 12; n++) {
-        g_LoadSndAsset(Attrib::StringKey(csfxedit[n]), SNDPATH_FXEDIT, EAXSND_DT_GENERIC_DATA);
-    }
-}
-
-void EAXSound::InitializeSoundBootLoad() {
-    if (!IsSoundEnabled) {
-        return;
-    }
-
-    mAttributes = new Attrib::Gen::audiosystem(0x7e4b0ed2, 0, nullptr);
-    RefreshLocalAttr();
-    gAEMSMgr.Init();
-    gSpeechCache.Init(0x1B000);
-    CSTATEMGR_Base::ClearClassLists();
-    RegisterStates();
-    RegisterSFX();
-}
-
 void EAXSound::LoadFrontEndSoundBanks(void (*callback)(int), int callback_param) {
     if (!IsSoundEnabled) {
         return;
@@ -1527,29 +1494,42 @@ void EAXSound::UnloadFrontEndSoundBanks() {
     }
 }
 
-void InitializeSoundLoad() {
-    g_pEAXSound->InitializeSoundBootLoad();
+void g_LoadSndAsset(Attrib::StringKey filename, eSNDDATAPATH path, eSNDDATATYPE datatype) {
+    stSndAssetQueue requeststruct;
+    requeststruct.Asset.Clear();
+    requeststruct.Asset.eDataType = datatype;
+    requeststruct.Asset.FileName = filename;
+    requeststruct.Asset.DataPath = path;
+    requeststruct.pThis = nullptr;
+    requeststruct.pCar = nullptr;
+    gAEMSMgr.QueueFileLoad(requeststruct, eBANK_SLOT_NONE);
 }
 
-void LoadAemsFrontEnd(void (*callback)(int), int callback_param) {
-    if (IsSoundEnabled == 1) {
-        g_pEAXSound->LoadFrontEndSoundBanks(callback, callback_param);
-    } else {
-        callback(callback_param);
-    }
-}
+void LoadCommonIngameFiles() {
+    g_LoadSndAsset(g_pEAXSound->GetAttributes()->AEMS_FEBanks(1), SNDPATH_GLOBAL, EAXSND_DT_AEMS_ASYNCSPUMEM);
+    g_LoadSndAsset(g_pEAXSound->GetAttributes()->AEMS_EnvBanks(0), SNDPATH_INGAME, EAXSND_DT_AEMS_ASYNCSPUMEM);
+    g_LoadSndAsset(g_pEAXSound->GetAttributes()->AEMS_MiscBanks(5), SNDPATH_INGAME, EAXSND_DT_AEMS_ASYNCSPUMEM);
+    g_LoadSndAsset(g_pEAXSound->GetAttributes()->AEMS_MiscBanks(4), SNDPATH_INGAME, EAXSND_DT_AEMS_ASYNCSPUMEM);
+    g_LoadSndAsset(g_pEAXSound->GetAttributes()->AEMS_MiscBanks(3), SNDPATH_INGAME, EAXSND_DT_AEMS_ASYNCSPUMEM);
+    g_LoadSndAsset(g_pEAXSound->GetAttributes()->AEMS_MiscBanks(1), SNDPATH_INGAME, EAXSND_DT_AEMS_ASYNCSPUMEM);
+    g_LoadSndAsset(g_pEAXSound->GetAttributes()->AEMS_RNBanks(0), SNDPATH_INGAME, EAXSND_DT_AEMS_ASYNCSPUMEM);
+    g_LoadSndAsset(Attrib::StringKey("SIREN_MB.abk"), SNDPATH_INGAME, EAXSND_DT_AEMS_ASYNCSPUMEM);
+    g_LoadSndAsset(g_pEAXSound->GetAttributes()->AEMS_StitchBanks(0), SNDPATH_INGAME, EAXSND_DT_AEMS_ASYNCSPUMEM);
+    g_LoadSndAsset(g_pEAXSound->GetAttributes()->AEMS_StitchBanks(2), SNDPATH_INGAME, EAXSND_DT_AEMS_ASYNCSPUMEM);
+    g_LoadSndAsset(g_pEAXSound->GetAttributes()->AEMS_StitchBanks(1), SNDPATH_INGAME, EAXSND_DT_AEMS_ASYNCSPUMEM);
+    g_LoadSndAsset(g_pEAXSound->GetAttributes()->AEMS_MiscBanks(2), SNDPATH_INGAME, EAXSND_DT_AEMS_ASYNCSPUMEM);
+    g_LoadSndAsset(g_pEAXSound->GetAttributes()->AEMS_WNBanks(0), SNDPATH_INGAME, EAXSND_DT_AEMS_ASYNCSPUMEM);
+    g_LoadSndAsset(g_pEAXSound->GetAttributes()->AEMS_MiscBanks(6), SNDPATH_ENGINE, EAXSND_DT_AEMS_ASYNCSPUMEM);
+    g_LoadSndAsset(g_pEAXSound->GetAttributes()->AEMS_MiscBanks(7), SNDPATH_ENGINE, EAXSND_DT_AEMS_ASYNCSPUMEM);
 
-void UnloadAemsFrontEnd() {
-    if (IsSoundEnabled == 1) {
-        g_pEAXSound->UnloadFrontEndSoundBanks();
+    for (int n = 0; n < 12; n++) {
+        g_LoadSndAsset(Attrib::StringKey(csfxedit[n]), SNDPATH_FXEDIT, EAXSND_DT_GENERIC_DATA);
     }
 }
 
 void EAXSound::StopSND11() {}
 
 void EAXSound::StartSND11() {}
-
-// LoadInGameSoundBanks, etc. go here when implemented
 
 void EAXSound::LoadInGameSoundBanks(void (*callback)(int), int callback_param) {
     if (!IsSoundEnabled) {
@@ -1609,6 +1589,31 @@ void EAXSound::LoadInGameSoundBanks(void (*callback)(int), int callback_param) {
     }
 }
 
+void EAXSound::CloseSound() {
+    bHasDataLoadOccured = false;
+
+    for (int n = 0; n < 13; n++) {
+        if (m_pStateMgr[n] != nullptr) {
+            m_pStateMgr[n]->ExitWorld();
+        }
+    }
+
+    while (g_pEAXSound->AreResourceLoadsPending()) {
+        g_pEAXSound->Update(0.0f);
+        ServiceQueuedFiles();
+    }
+
+    if (m_pNFSMixMaster != nullptr) {
+        m_pNFSMixMaster->DestroyMainMainMap();
+    }
+
+    if (g_pNISRevMgr != nullptr) {
+        g_pNISRevMgr->CloseNIS();
+    }
+
+    bSyncTaskRun();
+}
+
 void EAXSound::UnLoadInGameSoundBanks() {
     if (!IsSoundEnabled) {
         return;
@@ -1666,19 +1671,73 @@ void EAXSound::UnLoadInGameSoundBanks() {
     bSyncTaskRun();
 }
 
-void LoadAemsInGame(void (*callback)(int), int callback_param) {
+// LoadInGameSoundBanks, etc. go here when implemented
+
+void EAXSound::ReStartRace(bool bIs321) {
+    if (!IsSoundEnabled) {
+        return;
+    }
+
+    SetSoundControlState(true, SNDSTATE_STOP_MUSIC, "RestartRace");
+
+    for (int s = 0; s < 4; s++) {
+        if (m_pStreamManager->GetStreamChannel(s) != nullptr) {
+            m_pStreamManager->GetStreamChannel(s)->Stop();
+            m_pStreamManager->GetStreamChannel(s)->PurgeStream();
+            m_pStreamManager->GetStreamChannel(s)->Resume();
+        }
+    }
+
+    if (m_pCmnSnd != nullptr) {
+        delete m_pCmnSnd;
+        m_pCmnSnd = nullptr;
+    }
+
+    for (int n = 0; n < 13; n++) {
+        if (n != 1) {
+            if (m_pStateMgr[n] != nullptr) {
+                m_pStateMgr[n]->ExitWorld();
+            }
+        } else {
+            m_pStateMgr[1]->DisconnectMixMap();
+        }
+    }
+
+    gb_DORESTART_RACE = 1;
+    gb_Is321 = bIs321;
+}
+
+void InitializeSoundDriver() {
+    int poolSize = 0x4000;
+    if (IsSoundEnabled) {
+        poolSize = 0x11F000;
+    }
+
+    gAudioMemoryManager.InitMemoryPool(AUD_MAIN_MEM_POOL, poolSize);
+    void *mem = gAudioMemoryManager.AllocateMemory(0xBC, "AUD:EAXSound", false);
+    g_pEAXSound = new (mem) EAXSound();
+    g_pEAXSound->InitializeDriver();
+}
+
+void InitializeSoundLoad() {
+    g_pEAXSound->InitializeSoundBootLoad();
+}
+
+void LoadAemsFrontEnd(void (*callback)(int), int callback_param) {
     if (IsSoundEnabled == 1) {
-        g_pEAXSound->LoadInGameSoundBanks(callback, callback_param);
+        g_pEAXSound->LoadFrontEndSoundBanks(callback, callback_param);
     } else {
         callback(callback_param);
     }
 }
 
-void UnloadAemsInGame() {
+void UnloadAemsFrontEnd() {
     if (IsSoundEnabled == 1) {
-        g_pEAXSound->UnLoadInGameSoundBanks();
+        g_pEAXSound->UnloadFrontEndSoundBanks();
     }
 }
+
+void SoundPause(bool bpause, eSNDPAUSE_REASON esndpause) {}
 
 void FESoundControl(bool bOn, const char *name) {
     if (g_pEAXSound == nullptr) {
@@ -1922,81 +1981,24 @@ void SetSoundControlState(bool bON, eSNDCTLSTATE esndstate, const char *Reason) 
     }
 }
 
+void LoadAemsInGame(void (*callback)(int), int callback_param) {
+    if (IsSoundEnabled == 1) {
+        g_pEAXSound->LoadInGameSoundBanks(callback, callback_param);
+    } else {
+        callback(callback_param);
+    }
+}
+
+void UnloadAemsInGame() {
+    if (IsSoundEnabled == 1) {
+        g_pEAXSound->UnLoadInGameSoundBanks();
+    }
+}
+
 void CloseSound() {
     if (IsSoundEnabled) {
         g_pEAXSound->CloseSound();
     }
-}
-
-void EAXSound::CloseSound() {
-    bHasDataLoadOccured = false;
-
-    for (int n = 0; n < 13; n++) {
-        if (m_pStateMgr[n] != nullptr) {
-            m_pStateMgr[n]->ExitWorld();
-        }
-    }
-
-    while (g_pEAXSound->AreResourceLoadsPending()) {
-        g_pEAXSound->Update(0.0f);
-        ServiceQueuedFiles();
-    }
-
-    if (m_pNFSMixMaster != nullptr) {
-        m_pNFSMixMaster->DestroyMainMainMap();
-    }
-
-    if (g_pNISRevMgr != nullptr) {
-        g_pNISRevMgr->CloseNIS();
-    }
-
-    bSyncTaskRun();
-}
-
-void EAXSound::ReStartRace(bool bIs321) {
-    if (!IsSoundEnabled) {
-        return;
-    }
-
-    SetSoundControlState(true, SNDSTATE_STOP_MUSIC, "RestartRace");
-
-    for (int s = 0; s < 4; s++) {
-        if (m_pStreamManager->GetStreamChannel(s) != nullptr) {
-            m_pStreamManager->GetStreamChannel(s)->Stop();
-            m_pStreamManager->GetStreamChannel(s)->PurgeStream();
-            m_pStreamManager->GetStreamChannel(s)->Resume();
-        }
-    }
-
-    if (m_pCmnSnd != nullptr) {
-        delete m_pCmnSnd;
-        m_pCmnSnd = nullptr;
-    }
-
-    for (int n = 0; n < 13; n++) {
-        if (n != 1) {
-            if (m_pStateMgr[n] != nullptr) {
-                m_pStateMgr[n]->ExitWorld();
-            }
-        } else {
-            m_pStateMgr[1]->DisconnectMixMap();
-        }
-    }
-
-    gb_DORESTART_RACE = 1;
-    gb_Is321 = bIs321;
-}
-
-void InitializeSoundDriver() {
-    int poolSize = 0x4000;
-    if (IsSoundEnabled) {
-        poolSize = 0x11F000;
-    }
-
-    gAudioMemoryManager.InitMemoryPool(AUD_MAIN_MEM_POOL, poolSize);
-    void *mem = gAudioMemoryManager.AllocateMemory(0xBC, "AUD:EAXSound", false);
-    g_pEAXSound = new (mem) EAXSound();
-    g_pEAXSound->InitializeDriver();
 }
 
 eSndAudioMode EAXSound::GetDefaultPlatformAudioMode() {
@@ -2006,5 +2008,3 @@ eSndAudioMode EAXSound::GetDefaultPlatformAudioMode() {
 eSndAudioMode EAXSound::SetAudioModeFromMemoryCard(eSndAudioMode mode) {
     return m_pEAXSND8Wrapper->SetAudioModeFromMemoryCard(mode);
 }
-
-void SoundPause(bool bpause, eSNDPAUSE_REASON esndpause) {}

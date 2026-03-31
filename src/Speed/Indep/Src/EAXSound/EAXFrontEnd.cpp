@@ -57,6 +57,12 @@ void EAXFrontEnd::AttachSFXOBJ(SFX_Base *psfx, eSFXOBJ_MAIN_TYPES sfxtype) {
 
 void EAXFrontEnd::Initialize() {}
 
+void EAXFrontEnd::Stop(eMenuSoundTriggers etrigger) {
+    if (IsSoundEnabled != 0 && m_pPlayRapSheet && m_pPlayRapSheet->GetId() == etrigger) {
+        delete m_pPlayRapSheet;
+    }
+}
+
 int EAXFrontEnd::Play(eMenuSoundTriggers etrigger) {
     int nvol;
     int testID;
@@ -95,12 +101,6 @@ int EAXFrontEnd::Play(eMenuSoundTriggers etrigger) {
     nvol = 0;
 
     return nvol;
-}
-
-void EAXFrontEnd::Stop(eMenuSoundTriggers etrigger) {
-    if (IsSoundEnabled != 0 && m_pPlayRapSheet && m_pPlayRapSheet->GetId() == etrigger) {
-        delete m_pPlayRapSheet;
-    }
 }
 
 int EAXFrontEnd::Play(void *peventst) {
@@ -160,7 +160,20 @@ void EAXCommon::AttachSFXOBJ(SFX_Base *psfx, eSFXOBJ_MAIN_TYPES sfxtype) {
     m_pSFXOBJ_FEHUD = psfx;
 }
 
+void EAXCommon::MsgPlayMiscSound(const MMiscSound &msg) {
+    if (msg.GetSoundID() == 0) {
+        if (m_pRadar) {
+            delete m_pRadar;
+        }
+
+        g_pEAXSound->SetCsisName("FE Radar");
+        m_pRadar = new FX_Radar(0, m_pSFXOBJ_FEHUD->GetDMixOutput(3, DMX_VOL), 0, 0, 0);
+    }
+}
+
 void EAXCommon::Initialize() {}
+
+void EAXCommon::Stop(eMenuSoundTriggers etrigger) {}
 
 int EAXCommon::Play(eMenuSoundTriggers etrigger) {
     int nvol;
@@ -194,8 +207,6 @@ int EAXCommon::Play(eMenuSoundTriggers etrigger) {
     m_pPlayCommonSampleHandle = nullptr;
     return 0;
 }
-
-void EAXCommon::Stop(eMenuSoundTriggers etrigger) {}
 
 int EAXCommon::Play(void *peventst) {
     if (IsSoundEnabled != 0 && m_pSFXOBJ_FEHUD) {
@@ -239,15 +250,4 @@ void EAXCommon::Update(void *peventst) {
 
 void *EAXCommon::GetEventPointer(int neventindex) {
     return nullptr;
-}
-
-void EAXCommon::MsgPlayMiscSound(const MMiscSound &msg) {
-    if (msg.GetSoundID() == 0) {
-        if (m_pRadar) {
-            delete m_pRadar;
-        }
-
-        g_pEAXSound->SetCsisName("FE Radar");
-        m_pRadar = new FX_Radar(0, m_pSFXOBJ_FEHUD->GetDMixOutput(3, DMX_VOL), 0, 0, 0);
-    }
 }

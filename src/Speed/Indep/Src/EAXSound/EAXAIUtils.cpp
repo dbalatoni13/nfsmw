@@ -50,16 +50,6 @@ static const float TWK_SND_ThrottleMonitor[6] = {
     -1.0f,
 };
 
-void SndAITrigger::BeginTrigger() {
-    bTrigger = true;
-    CurTriggerLength = t_TriggerLength;
-}
-
-void SndAITrigger::EndTrigger() {
-    bTrigger = false;
-    CurSustain = t_fSustain;
-}
-
 SndAITrigger::SndAITrigger()
     : AvgMonitor() //
 {
@@ -79,6 +69,16 @@ SndAITrigger::~SndAITrigger() {}
 void SndAITrigger::Initialize(int AvgSize) {
     AvgMonitor.Init(AvgSize);
     AvgMonitor.Reset(0.0f);
+    CurSustain = t_fSustain;
+}
+
+void SndAITrigger::BeginTrigger() {
+    bTrigger = true;
+    CurTriggerLength = t_TriggerLength;
+}
+
+void SndAITrigger::EndTrigger() {
+    bTrigger = false;
     CurSustain = t_fSustain;
 }
 
@@ -112,13 +112,6 @@ void SndAITrigger::Update(float UpdateVal, float t) {
             EndTrigger();
         }
     }
-}
-
-void SndAIStateManager::SwitchState(SND_AI_STATE NewState) {
-    m_tLastSwitch = SndBase::m_fRunningTime;
-    PrevState = CurState;
-    CurState = NewState;
-    bTransition = true;
 }
 
 SndAIStateManager::SndAIStateManager()
@@ -175,40 +168,30 @@ void SndAIStateManager::Initialize(SFXCTL_Physics *_m_pPhysicsCTL) {
     ThrottleMonitor.Initialize(static_cast< int >(TWK_SND_ThrottleMonitor[0]));
 }
 
-void SndAIStateManager::GeneratePotentialStates(bool *ArrayList) {
-    ArrayList[SND_AI_STATE_PRERACE] = false;
-    if (m_pPhysicsCTL->GetPhysCar()->GetVelocityMagnitudeMPH() < 5.0f) {
-        ArrayList[SND_AI_STATE_IDLE] = true;
-    } else {
-        ArrayList[SND_AI_STATE_IDLE] = false;
+void SndAIStateManager::Update(float t) {
+    if (m_pPhysicsCTL == nullptr) {
+        return;
     }
 
-    if (AccelMonitor.IsTriggering()) {
-        ArrayList[SND_AI_STATE_ACCEL] = true;
-    } else {
-        ArrayList[SND_AI_STATE_ACCEL] = false;
+    float steering = static_cast< float >(m_pPhysicsCTL->GetPhysCar()->GetSteering()) * 0.005493248f;
+    if (180.0f < steering) {
+        steering -= 360.0f;
     }
 
-    if (DeccelMonitor.IsTriggering()) {
-        ArrayList[SND_AI_STATE_DECEL] = true;
-    } else {
-        ArrayList[SND_AI_STATE_DECEL] = false;
-    }
+    SteeringMonitorLeft.Update(steering, t);
+    SteeringMonitorRight.Update(steering, t);
 
-    if (DeccelMonitor.IsTriggering() && SteeringMonitorLeft.IsTriggering()) {
-        ArrayList[SND_AI_STATE_CORNER_LEFT] = true;
-    } else {
-        ArrayList[SND_AI_STATE_CORNER_LEFT] = false;
-    }
+    float vel0Length = m_pPhysicsCTL->GetPhysCar()->GetVelocityMagnitude();
+    float vel1Length = bLength(m_pPhysicsCTL->GetPhysCar()->GetOldVel());
+    AccelMonitor.Update(vel0Length - vel1Length, t);
 
-    if (DeccelMonitor.IsTriggering()) {
-        if (SteeringMonitorRight.IsTriggering()) {
-            ArrayList[SND_AI_STATE_CORNER_RIGHT] = true;
-            return;
-        }
-    }
+    vel0Length = m_pPhysicsCTL->GetPhysCar()->GetVelocityMagnitude();
+    vel1Length = bLength(m_pPhysicsCTL->GetPhysCar()->GetOldVel());
+    DeccelMonitor.Update(vel0Length - vel1Length, t);
 
-    ArrayList[SND_AI_STATE_CORNER_RIGHT] = false;
+    ThrottleMonitor.Update(m_pPhysicsCTL->m_fThrottle, t);
+
+    UpdateState(t);
 }
 
 void SndAIStateManager::UpdateState(float t) {
@@ -302,28 +285,45 @@ void SndAIStateManager::UpdateState(float t) {
     }
 }
 
-void SndAIStateManager::Update(float t) {
-    if (m_pPhysicsCTL == nullptr) {
-        return;
+void SndAIStateManager::SwitchState(SND_AI_STATE NewState) {
+    m_tLastSwitch = SndBase::m_fRunningTime;
+    PrevState = CurState;
+    CurState = NewState;
+    bTransition = true;
+}
+
+void SndAIStateManager::GeneratePotentialStates(bool *ArrayList) {
+    ArrayList[SND_AI_STATE_PRERACE] = false;
+    if (m_pPhysicsCTL->GetPhysCar()->GetVelocityMagnitudeMPH() < 5.0f) {
+        ArrayList[SND_AI_STATE_IDLE] = true;
+    } else {
+        ArrayList[SND_AI_STATE_IDLE] = false;
     }
 
-    float steering = static_cast< float >(m_pPhysicsCTL->GetPhysCar()->GetSteering()) * 0.005493248f;
-    if (180.0f < steering) {
-        steering -= 360.0f;
+    if (AccelMonitor.IsTriggering()) {
+        ArrayList[SND_AI_STATE_ACCEL] = true;
+    } else {
+        ArrayList[SND_AI_STATE_ACCEL] = false;
     }
 
-    SteeringMonitorLeft.Update(steering, t);
-    SteeringMonitorRight.Update(steering, t);
+    if (DeccelMonitor.IsTriggering()) {
+        ArrayList[SND_AI_STATE_DECEL] = true;
+    } else {
+        ArrayList[SND_AI_STATE_DECEL] = false;
+    }
 
-    float vel0Length = m_pPhysicsCTL->GetPhysCar()->GetVelocityMagnitude();
-    float vel1Length = bLength(m_pPhysicsCTL->GetPhysCar()->GetOldVel());
-    AccelMonitor.Update(vel0Length - vel1Length, t);
+    if (DeccelMonitor.IsTriggering() && SteeringMonitorLeft.IsTriggering()) {
+        ArrayList[SND_AI_STATE_CORNER_LEFT] = true;
+    } else {
+        ArrayList[SND_AI_STATE_CORNER_LEFT] = false;
+    }
 
-    vel0Length = m_pPhysicsCTL->GetPhysCar()->GetVelocityMagnitude();
-    vel1Length = bLength(m_pPhysicsCTL->GetPhysCar()->GetOldVel());
-    DeccelMonitor.Update(vel0Length - vel1Length, t);
+    if (DeccelMonitor.IsTriggering()) {
+        if (SteeringMonitorRight.IsTriggering()) {
+            ArrayList[SND_AI_STATE_CORNER_RIGHT] = true;
+            return;
+        }
+    }
 
-    ThrottleMonitor.Update(m_pPhysicsCTL->m_fThrottle, t);
-
-    UpdateState(t);
+    ArrayList[SND_AI_STATE_CORNER_RIGHT] = false;
 }

@@ -14,9 +14,6 @@ extern "C" void *__builtin_vec_new(unsigned int size);
 extern "C" void __builtin_delete(void *ptr);
 extern int btestprint;
 
-unsigned int Sim::Packet::Compress(Sim::Packet *) const { return 0; }
-unsigned int Sim::Packet::Decompress(Sim::Packet *) const { return 0; }
-
 namespace {
 
 // total size: 0x18
@@ -35,6 +32,39 @@ struct Pkt_Heli_Open : public Sim::Packet {
 };
 
 } // namespace
+
+Sim::Connection *CarSoundConn::Construct(const Sim::ConnectionData &data) {
+    return new CarSoundConn(data);
+}
+
+CarSoundConn::CarSoundConn(const Sim::ConnectionData &data)
+    : Sim::Connection(data) //
+    , mConnected(false) //
+    , mState(nullptr) //
+    , mTarget(0) {
+    Pkt_Car_Open *oc = static_cast<Pkt_Car_Open *>(data.pkt);
+    Attrib::Instance att(oc->m_VehicleSpec, 0, nullptr);
+    mTarget.Set(oc->mWorldID);
+
+    const void *modelData = att.GetAttributePointer(0x9047C9E0, 0);
+    if (modelData == nullptr) {
+        modelData = Attrib::DefaultDataArea(0x10);
+    }
+
+    const char *modelName = *static_cast<const char *const *>(
+        static_cast<const void *>(static_cast<const char *>(modelData) + 0xC));
+    if (modelName == nullptr) {
+        modelName = "";
+    }
+    CarPartDB.GetCarType(bStringHash(modelName));
+
+    mState = static_cast<EAX_CarState *>(__builtin_vec_new(0x248));
+    new (mState) EAX_CarState(att.GetConstCollection(), oc->mCarContext, oc->mWorldID, oc->mHandle);
+
+    if (!oc->mSpoolLoad) {
+        new ECommitAudioAssets();
+    }
+}
 
 namespace SoundConn {
 
@@ -115,35 +145,6 @@ UTL::COM::Factory<Sim::ConnectionData const &, Sim::Connection, UCrc32>::Prototy
 UTL::COM::Factory<Sim::ConnectionData const &, Sim::Connection, UCrc32>::Prototype _HeliSoundConn(
     "HeliSoundConn", HeliSoundConn::Construct);
 
-CarSoundConn::CarSoundConn(const Sim::ConnectionData &data)
-    : Sim::Connection(data) //
-    , mConnected(false) //
-    , mState(nullptr) //
-    , mTarget(0) {
-    Pkt_Car_Open *oc = static_cast<Pkt_Car_Open *>(data.pkt);
-    Attrib::Instance att(oc->m_VehicleSpec, 0, nullptr);
-    mTarget.Set(oc->mWorldID);
-
-    const void *modelData = att.GetAttributePointer(0x9047C9E0, 0);
-    if (modelData == nullptr) {
-        modelData = Attrib::DefaultDataArea(0x10);
-    }
-
-    const char *modelName = *static_cast<const char *const *>(
-        static_cast<const void *>(static_cast<const char *>(modelData) + 0xC));
-    if (modelName == nullptr) {
-        modelName = "";
-    }
-    CarPartDB.GetCarType(bStringHash(modelName));
-
-    mState = static_cast<EAX_CarState *>(__builtin_vec_new(0x248));
-    new (mState) EAX_CarState(att.GetConstCollection(), oc->mCarContext, oc->mWorldID, oc->mHandle);
-
-    if (!oc->mSpoolLoad) {
-        new ECommitAudioAssets();
-    }
-}
-
 CarSoundConn::~CarSoundConn() {
     mTarget.Set(0);
     if (g_pEAXSound != nullptr) {
@@ -156,59 +157,11 @@ CarSoundConn::~CarSoundConn() {
     mState = nullptr;
 }
 
-HeliSoundConn::HeliSoundConn(const Sim::ConnectionData &data)
-    : Sim::Connection(data) //
-    , mState(nullptr) //
-    , mTarget(0) {
-    Pkt_Heli_Open *oc = static_cast<Pkt_Heli_Open *>(data.pkt);
-    Attrib::Instance att(oc->m_VehicleSpec, 0, nullptr);
-    unsigned int namehash;
-    EAX_HeliState *state;
-    mTarget.Set(oc->mWorldID);
-
-    const void *modelData = att.GetAttributePointer(0x9047C9E0, 0);
-    if (modelData == nullptr) {
-        modelData = Attrib::DefaultDataArea(0x10);
-    }
-
-    const char *modelName = *static_cast<const char *const *>(
-        static_cast<const void *>(static_cast<const char *>(modelData) + 0xC));
-    if (modelName == nullptr) {
-        modelName = "";
-    }
-    namehash = bStringHash(modelName);
-
-    state = static_cast<EAX_HeliState *>(__builtin_vec_new(0xA0));
-    new (state) EAX_HeliState(att.GetConstCollection(), oc->mWorldID);
-    mState = state;
-    g_pEAXSound->SpawnHelicopter(mState);
-    mState->mSimUpdating = false;
-}
-
-HeliSoundConn::~HeliSoundConn() {
-    mTarget.Set(0);
-    if (g_pEAXSound != nullptr) {
-        g_pEAXSound->DestroyEAXHeli(mState);
-    }
-    if (mState != nullptr) {
-        delete mState;
-        mState = nullptr;
-    }
-}
-
 Sim::ConnStatus CarSoundConn::OnStatusCheck() {
     if (mConnected && mState != nullptr && mState->mAssetsLoaded) {
         return Sim::CONNSTATUS_READY;
     }
     return Sim::CONNSTATUS_CONNECTING;
-}
-
-Sim::Connection *CarSoundConn::Construct(const Sim::ConnectionData &data) {
-    return new CarSoundConn(data);
-}
-
-Sim::Connection *HeliSoundConn::Construct(const Sim::ConnectionData &data) {
-    return new HeliSoundConn(data);
 }
 
 void CarSoundConn::UpdateState(float dT) {
@@ -293,6 +246,50 @@ void CarSoundConn::UpdateState(float dT) {
     }
 }
 
+Sim::Connection *HeliSoundConn::Construct(const Sim::ConnectionData &data) {
+    return new HeliSoundConn(data);
+}
+
+HeliSoundConn::HeliSoundConn(const Sim::ConnectionData &data)
+    : Sim::Connection(data) //
+    , mState(nullptr) //
+    , mTarget(0) {
+    Pkt_Heli_Open *oc = static_cast<Pkt_Heli_Open *>(data.pkt);
+    Attrib::Instance att(oc->m_VehicleSpec, 0, nullptr);
+    unsigned int namehash;
+    EAX_HeliState *state;
+    mTarget.Set(oc->mWorldID);
+
+    const void *modelData = att.GetAttributePointer(0x9047C9E0, 0);
+    if (modelData == nullptr) {
+        modelData = Attrib::DefaultDataArea(0x10);
+    }
+
+    const char *modelName = *static_cast<const char *const *>(
+        static_cast<const void *>(static_cast<const char *>(modelData) + 0xC));
+    if (modelName == nullptr) {
+        modelName = "";
+    }
+    namehash = bStringHash(modelName);
+
+    state = static_cast<EAX_HeliState *>(__builtin_vec_new(0xA0));
+    new (state) EAX_HeliState(att.GetConstCollection(), oc->mWorldID);
+    mState = state;
+    g_pEAXSound->SpawnHelicopter(mState);
+    mState->mSimUpdating = false;
+}
+
+HeliSoundConn::~HeliSoundConn() {
+    mTarget.Set(0);
+    if (g_pEAXSound != nullptr) {
+        g_pEAXSound->DestroyEAXHeli(mState);
+    }
+    if (mState != nullptr) {
+        delete mState;
+        mState = nullptr;
+    }
+}
+
 void HeliSoundConn::UpdateState(float dT) {
     if (g_pEAXSound == nullptr) {
         if (!btestprint) {
@@ -338,6 +335,10 @@ void HeliSoundConn::UpdateState(float dT) {
     }
     mState->mFWSpeed = fwSpeed;
 }
+
+unsigned int Sim::Packet::Compress(Sim::Packet *) const { return 0; }
+
+unsigned int Sim::Packet::Decompress(Sim::Packet *) const { return 0; }
 
 template class UTL::Collections::Listable<CarSoundConn, 10>::List;
 

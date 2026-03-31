@@ -28,6 +28,22 @@ bool IsWorldDataStreaming(unsigned int strmhandle) {
     return bStreamBlock;
 }
 
+void AssignAudioStreamHandle(unsigned int realstrmhandle) {
+    register unsigned int nEndAudioMemPool asm("r0");
+    unsigned int nStartAudioMemPool;
+    nStartAudioMemPool = reinterpret_cast<unsigned int>(gAudioMemoryManager.GetMemoryPoolStart());
+    if (false) {
+        nEndAudioMemPool = nStartAudioMemPool + static_cast<unsigned int>(gAudioMemoryManager.GetMemoryPoolSize());
+        {
+            unsigned int buffstart = nStartAudioMemPool;
+            unsigned int buffsize = nEndAudioMemPool - buffstart;
+            (void)buffsize;
+        }
+        (void)nEndAudioMemPool;
+    }
+    asm volatile("cmplw %0, %1" : : "r"(realstrmhandle), "r"(nStartAudioMemPool));
+}
+
 EAXS_StreamManager::EAXS_StreamManager() {
     m_nNumStreamsAdded = 0;
     m_nWDRCount = 0;
@@ -94,19 +110,3 @@ void EAXS_StreamManager::AddStreamChannel(EAXS_StreamChannel *pstrmchannel, eSTR
 }
 
 void EAXS_StreamManager::RemoveStreamChannel(eSTRMTYPE strmtype) {}
-
-void AssignAudioStreamHandle(unsigned int realstrmhandle) {
-    register unsigned int nEndAudioMemPool asm("r0");
-    unsigned int nStartAudioMemPool;
-    nStartAudioMemPool = reinterpret_cast<unsigned int>(gAudioMemoryManager.GetMemoryPoolStart());
-    if (false) {
-        nEndAudioMemPool = nStartAudioMemPool + static_cast<unsigned int>(gAudioMemoryManager.GetMemoryPoolSize());
-        {
-            unsigned int buffstart = nStartAudioMemPool;
-            unsigned int buffsize = nEndAudioMemPool - buffstart;
-            (void)buffsize;
-        }
-        (void)nEndAudioMemPool;
-    }
-    asm volatile("cmplw %0, %1" : : "r"(realstrmhandle), "r"(nStartAudioMemPool));
-}

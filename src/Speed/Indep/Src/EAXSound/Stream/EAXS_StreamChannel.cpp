@@ -37,6 +37,14 @@ int EAXS_StreamChannel::AddToStrmReq(const char *filename, long offset, int hold
     return AddToStream(m_pStrmFileName, m_nStreamOffset, holdtime);
 }
 
+void EAXS_StreamChannel::ProcessTrackStreamerOn() {
+    m_bIsTrackStreamerOn = true;
+}
+
+void EAXS_StreamChannel::ProcessTrackStreamerOff() {
+    m_bIsTrackStreamerOn = false;
+}
+
 int EAXS_StreamChannel::InitChannel(int maxChunks, int maxRequests, int buffersize, eSTRMTYPE strmtype) {
     int nhandle = Create(maxChunks, maxRequests, buffersize);
     if (nhandle < 0) {
@@ -48,12 +56,4 @@ int EAXS_StreamChannel::InitChannel(int maxChunks, int maxRequests, int buffersi
         m_pStrmMgr->AddStreamChannel(this, strmtype);
     }
     return nhandle;
-}
-
-void EAXS_StreamChannel::ProcessTrackStreamerOn() {
-    m_bIsTrackStreamerOn = true;
-}
-
-void EAXS_StreamChannel::ProcessTrackStreamerOff() {
-    m_bIsTrackStreamerOn = false;
 }

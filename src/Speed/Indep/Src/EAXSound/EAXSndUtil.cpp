@@ -15,6 +15,12 @@ cPathLine::cPathLine() {
 
 cPathLine::~cPathLine() {}
 
+void cPathLine::Initialize(float _Start, float _Finish, int _Length) {
+    ClearStages();
+    AddStage(_Start, _Finish, _Length, LINEAR);
+    CurValue = _Start;
+}
+
 void cPathLine::ClearStages() {
     CurValue = 0.0f;
     ElapsedTime = 0.0f;
@@ -26,12 +32,6 @@ void cPathLine::ClearStages() {
         CurveTypes[i] = LINEAR;
     }
     bComplete = false;
-}
-
-void cPathLine::Initialize(float _Start, float _Finish, int _Length) {
-    ClearStages();
-    AddStage(_Start, _Finish, _Length, LINEAR);
-    CurValue = _Start;
 }
 
 int cPathLine::AddStage(float _Start, float _Finish, int _Length, eCURVETYPE _Curve) {

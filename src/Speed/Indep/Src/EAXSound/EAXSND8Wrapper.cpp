@@ -164,6 +164,12 @@ void EAXSND8Wrapper::ReInit() {
     }
 }
 
+void EAXSND8Wrapper::STUPID() {}
+
+void EAXSND8Wrapper::Update() {
+    STUPID();
+}
+
 eSndAudioMode EAXSND8Wrapper::SetAudioModeFromMemoryCard(eSndAudioMode mode) {
     if (IsSoundEnabled == 0) {
         IsAudioStreamingEnabled = IsSoundEnabled;
@@ -259,10 +265,6 @@ eSndAudioMode EAXSND8Wrapper::SetSnd8RenderMode(eSndAudioMode mode) {
     return mode;
 }
 
-void EAXSND8Wrapper::Update() {
-    STUPID();
-}
-
 eSndAudioMode EAXSND8Wrapper::GetDefaultPlatformAudioMode() {
     if (!IsSoundEnabled) {
         return AUDIO_MODE_STEREO;
@@ -274,18 +276,11 @@ eSndAudioMode EAXSND8Wrapper::GetDefaultPlatformAudioMode() {
     return mode;
 }
 
-void EAXSND8Wrapper::STUPID() {}
-
-void *PF_Allocator::Alloc(unsigned int size, const EA::TagValuePair &flags) {
-    (void)flags;
-    return gAudioMemoryManager.AllocateMemory(size, "AUD: Pathfinder alloc", true);
-}
-
-
 void *CSISCoreAllocator::Alloc(unsigned int size, const char *name, unsigned int flags) {
     (void)flags;
     return bOMalloc(pCsisSlotPools[0]);
 }
+
 
 void *CSISCoreAllocator::Alloc(unsigned int size, const char *name, unsigned int flags, unsigned int alignment, unsigned int offset) {
     (void)alignment;
@@ -296,6 +291,11 @@ void *CSISCoreAllocator::Alloc(unsigned int size, const char *name, unsigned int
 void CSISCoreAllocator::Free(void *pBlock, unsigned int size) {
     (void)size;
     bFree(pCsisSlotPools[0], pBlock);
+}
+
+void *PF_Allocator::Alloc(unsigned int size, const EA::TagValuePair &flags) {
+    (void)flags;
+    return gAudioMemoryManager.AllocateMemory(size, "AUD: Pathfinder alloc", true);
 }
 
 PF_Allocator gPF_MemoryAllocator;

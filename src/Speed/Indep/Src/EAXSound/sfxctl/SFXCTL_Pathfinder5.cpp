@@ -37,6 +37,17 @@ int PFXMAP[4][21][2] = {
      {48398670, 14}, {38561910, 15}, {29704135, 16}, {40792706, 17}, {43038428, 18}, {32566195, 19}, {33020764, 20}},
 };
 
+SndBase::TypeInfo *SFXCTL_Pathfinder::GetTypeInfo() const { return &s_TypeInfo; }
+
+const char *SFXCTL_Pathfinder::GetTypeName() const { return s_TypeInfo.typeName; }
+
+SndBase *SFXCTL_Pathfinder::CreateObject(unsigned int allocator) {
+    if (allocator == 0) {
+        return new (SFXCTL_Pathfinder::GetStaticTypeInfo()->typeName, false) SFXCTL_Pathfinder();
+    }
+    return new (SFXCTL_Pathfinder::GetStaticTypeInfo()->typeName, true) SFXCTL_Pathfinder();
+}
+
 SFXCTL_Pathfinder::SFXCTL_Pathfinder()
     : m_projrefcnt(0) {
     g_pSFXCTL_Pathfinder = nullptr;
@@ -61,39 +72,9 @@ SFXCTL_Pathfinder::~SFXCTL_Pathfinder() {
     }
 }
 
-SndBase *SFXCTL_Pathfinder::CreateObject(unsigned int allocator) {
-    if (allocator == 0) {
-        return new (SFXCTL_Pathfinder::GetStaticTypeInfo()->typeName, false) SFXCTL_Pathfinder();
-    }
-    return new (SFXCTL_Pathfinder::GetStaticTypeInfo()->typeName, true) SFXCTL_Pathfinder();
-}
-
-SndBase::TypeInfo *SFXCTL_Pathfinder::GetTypeInfo() const { return &s_TypeInfo; }
-
-const char *SFXCTL_Pathfinder::GetTypeName() const { return s_TypeInfo.typeName; }
-
-void SFXCTL_Pathfinder::InitSFX() {
-    EA::TagValuePair tvp;
-    tvp.mNext = nullptr;
-    tvp.mValue.mInt = 0;
-    tvp.mTag = 0;
-    PATH_setallocator(&gPF_MemoryAllocator, tvp);
-    PATH_vectortoreal6();
-    PATH_vectortosnd();
-    PATH_callbacks(SongProgressCallback, EventReleaseCallback, EventActionCallback);
-    SFXCTL::InitSFX();
-}
-
 int SFXCTL_Pathfinder::GetController(int Index) { return -1; }
 
 void SFXCTL_Pathfinder::AttachController(SFXCTL *psfxctl) {}
-
-void SFXCTL_Pathfinder::UpdateMixerOutputs() {}
-
-void SFXCTL_Pathfinder::SetupSFX(CSTATE_Base *_StateBase) {
-    (void)_StateBase;
-    g_pSFXCTL_Pathfinder = this;
-}
 
 void SFXCTL_Pathfinder::UpdateParams(float t) {
     (void)t;
@@ -110,6 +91,13 @@ void SFXCTL_Pathfinder::UpdateParams(float t) {
             pf->track_status = PATH_trackstatus(pf->PATH_TRACK);
         }
     }
+}
+
+void SFXCTL_Pathfinder::UpdateMixerOutputs() {}
+
+void SFXCTL_Pathfinder::SetupSFX(CSTATE_Base *_StateBase) {
+    (void)_StateBase;
+    g_pSFXCTL_Pathfinder = this;
 }
 
 int SFXCTL_Pathfinder::CrossMapNodeParam(int pid, int np) {
@@ -158,6 +146,8 @@ void SFXCTL_Pathfinder::SongProgressCallback(int projID, int nodeparm) {
     }
 }
 
+void SFXCTL_Pathfinder::EventReleaseCallback(void *eventID, PATHEVENTRESULT result) {}
+
 void SFXCTL_Pathfinder::EventActionCallback(const int trackhandle, const int cbID, const int parm) {
     (void)trackhandle;
 
@@ -177,6 +167,18 @@ void SFXCTL_Pathfinder::EventActionCallback(const int trackhandle, const int cbI
             }
             break;
     }
+}
+
+void SFXCTL_Pathfinder::InitSFX() {
+    EA::TagValuePair tvp;
+    tvp.mNext = nullptr;
+    tvp.mValue.mInt = 0;
+    tvp.mTag = 0;
+    PATH_setallocator(&gPF_MemoryAllocator, tvp);
+    PATH_vectortoreal6();
+    PATH_vectortosnd();
+    PATH_callbacks(SongProgressCallback, EventReleaseCallback, EventActionCallback);
+    SFXCTL::InitSFX();
 }
 
 int SFXCTL_Pathfinder::InitPFParms(stPFParms *pstparms, int pathid, int trackid) {
@@ -294,5 +296,3 @@ void SFXCTL_Pathfinder::DestroyTrack(stPFParms *pstPFParms) {
         m_projrefcnt = 0;
     }
 }
-
-void SFXCTL_Pathfinder::EventReleaseCallback(void *eventID, PATHEVENTRESULT result) {}

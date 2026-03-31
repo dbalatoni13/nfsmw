@@ -3,24 +3,16 @@
 #include "Speed/Indep/Src/EAXSound/SimStates/EAX_HeliState.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
+SndBase::TypeInfo *SFXCTL_3DHeliPos::GetTypeInfo() const { return &s_TypeInfo; }
+
+const char *SFXCTL_3DHeliPos::GetTypeName() const { return s_TypeInfo.typeName; }
+
 SndBase *SFXCTL_3DHeliPos::CreateObject(unsigned int allocator) {
     if (allocator == 0) {
         return new (SFXCTL_3DHeliPos::GetStaticTypeInfo()->typeName, false) SFXCTL_3DHeliPos();
     }
     return new (SFXCTL_3DHeliPos::GetStaticTypeInfo()->typeName, true) SFXCTL_3DHeliPos();
 }
-
-SFXCTL_Helicopter::SFXCTL_Helicopter()
-    : m_pHeliState(nullptr) {
-    vHeliPos = bVector3(0.0f, 0.0f, 0.0f);
-    vHeliFwd = bVector3(0.0f, 0.0f, 0.0f);
-}
-
-SFXCTL_Helicopter::~SFXCTL_Helicopter() {}
-
-SndBase::TypeInfo *SFXCTL_3DHeliPos::GetTypeInfo() const { return &s_TypeInfo; }
-
-const char *SFXCTL_3DHeliPos::GetTypeName() const { return s_TypeInfo.typeName; }
 
 SndBase::TypeInfo *SFXCTL_Helicopter::GetTypeInfo() const { return &s_TypeInfo; }
 
@@ -32,6 +24,14 @@ SndBase *SFXCTL_Helicopter::CreateObject(unsigned int allocator) {
     }
     return new (SFXCTL_Helicopter::GetStaticTypeInfo()->typeName, true) SFXCTL_Helicopter();
 }
+
+SFXCTL_Helicopter::SFXCTL_Helicopter()
+    : m_pHeliState(nullptr) {
+    vHeliPos = bVector3(0.0f, 0.0f, 0.0f);
+    vHeliFwd = bVector3(0.0f, 0.0f, 0.0f);
+}
+
+SFXCTL_Helicopter::~SFXCTL_Helicopter() {}
 
 int SFXCTL_Helicopter::GetController(int Index) {
     if (Index == 0) {
@@ -46,8 +46,6 @@ void SFXCTL_Helicopter::AttachController(SFXCTL *psfxctl) {
     }
 }
 
-void SFXCTL_Helicopter::Detach() { m_pHeliState = nullptr; }
-
 void SFXCTL_Helicopter::SetupSFX(CSTATE_Base *_StateBase) {
     SndBase::SetupSFX(_StateBase);
 }
@@ -58,6 +56,8 @@ void SFXCTL_Helicopter::InitSFX() {
     m_p3DHeliPosCtl->AssignVelocityVector(&vHeliVel);
     m_p3DHeliPosCtl->AssignDirectionVector(&vHeliFwd);
 }
+
+void SFXCTL_Helicopter::Detach() { m_pHeliState = nullptr; }
 
 void SFXCTL_Helicopter::UpdateParams(float t) {
     float dot;

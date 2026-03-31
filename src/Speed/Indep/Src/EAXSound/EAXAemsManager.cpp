@@ -224,16 +224,14 @@ inline stAssetDescription &stAssetDescription::operator=(const stAssetDescriptio
 }
 
 
-void stBankSlot::Clear() {
-    BANKmemLocation = 0;
-    MAINmemLocation = nullptr;
-    pLastAlloc = nullptr;
-    Index = 0;
-    pAssetParams = nullptr;
-    BANKMemSize = 0;
-    MAINmemSize = 0;
-    Type = static_cast<eBANK_SLOT_TYPE>(-1);
-    LoadFailed = 0;
+stBankSlot *BankSlotSystem::GetFreeSlot(eBANK_SLOT_TYPE Type) {
+    for (BankSlotSystem::iterator i = begin(); i != end(); i++) {
+        if ((*i).Type == Type && (*i).pAssetParams == nullptr) {
+            return &(*i);
+        }
+    }
+
+    return nullptr;
 }
 
 inline void stSndDataLoadParams::Clear() {
@@ -290,16 +288,6 @@ inline stSndDataLoadParams &stSndDataLoadParams::operator=(stSndDataLoadParams &
     return *this;
 }
 
-stBankSlot *BankSlotSystem::GetFreeSlot(eBANK_SLOT_TYPE Type) {
-    for (BankSlotSystem::iterator i = begin(); i != end(); i++) {
-        if ((*i).Type == Type && (*i).pAssetParams == nullptr) {
-            return &(*i);
-        }
-    }
-
-    return nullptr;
-}
-
 void BankSlotSystem::DestroySlots() {
     for (BankSlotSystem::iterator i = begin(); i != end(); i++) {
         if ((*i).LoadFailed == 0 && (*i).pAssetParams != nullptr) {
@@ -347,6 +335,16 @@ EAXAemsManager::~EAXAemsManager() {
     m_pCurLoadSDLP = nullptr;
 }
 
+bool EAXAemsManager::AreResourceLoadsPending() {
+    if (m_pCurLoadSDLP == nullptr && m_ItemsPendingAsyncResolve == 0 && m_IsWaitingForFileCB == 0) {
+        if (m_nCurLoadedBankIndex < (m_nEndOfList - 1)) {
+            return true;
+        }
+        return false;
+    }
+    return true;
+}
+
 void EAXAemsManager::Init() {
     if (0) {
         void (stSndDataLoadParams::*forceClear)() = &stSndDataLoadParams::Clear;
@@ -367,6 +365,13 @@ void EAXAemsManager::Init() {
     } while (n < 7);
 
     ResetBankLoadParams();
+}
+
+void EAXAemsManager::InitSPUram() {
+    register int Size asm("r0");
+    int Start = -1;
+    Size = SNDmemlargestunused(&Start);
+    m_SPU_UpperAddress = Start + Size;
 }
 
 int EAXAemsManager::AddEventSystem(eEVTSYS eESIndex, eSNDDATAPATH eSDP) {
@@ -392,70 +397,182 @@ int EAXAemsManager::AddEventSystem(eEVTSYS eESIndex, eSNDDATAPATH eSDP) {
     return nret;
 }
 
-void EAXAemsManager::InitializeSlots(bool bDoPFSlot) {
-    if (DISABLE_SLOT_LOADING == 0) {
-        if (bDoPFSlot) {
-            mPFBankSlot.DestroySlots();
+void EAXAemsManager::EvtSysLoadCallback(int param, int error_status) {
+    gAEMSMgr.m_nCallbackEvtSys = param;
+    SubscribeEventSys();
+}
+
+void *EAXAemsManager::GetCallbackEventSys() {
+    return m_pEvtSystems[m_nCallbackEvtSys];
+}
+
+void SubscribeEventSys() {
+    if (IsSoundEnabled == 1) {
+        if (gAEMSMgr.GetCallbackEventSys() != nullptr) {
+            Csis::System::Result status = Csis::System::Subscribe(gAEMSMgr.GetCallbackEventSys());
+            (void)status;
         }
-        mBankSlots.DestroySlots();
-        m_SPUMainAllocsEnd = m_SPU_UpperAddress;
-        for (int n = 0; n < 4; n++) {
-            RegisterSlots(static_cast<eBANK_SLOT_TYPE>(n), m_RequiredSlots[n], m_SlotSizes[n][0], m_SlotSizes[n][1], bDoPFSlot);
-        }
-        SNDmemlimits(-1, m_SPUMainAllocsEnd);
     }
 }
 
-void EAXAemsManager::RegisterSlots(eBANK_SLOT_TYPE Type, int NumSlots, int SizePerSlotSPU, int SizePerSlotMainMem, bool bDoPFSlot) {
-    stBankSlot NewSlot;
-    NewSlot.Clear();
-    for (int n = 0; n < NumSlots; n++) {
-        char DebugString[1];
-        DebugString[0] = '\0';
-        NewSlot.Index = static_cast<unsigned char>(n);
-        NewSlot.Type = Type;
-        NewSlot.MAINmemLocation = static_cast<char *>(
-            gAudioMemoryManager.AllocateMemory(SizePerSlotMainMem, DebugString, false));
-        NewSlot.BANKmemLocation = m_SPUMainAllocsEnd - SizePerSlotSPU;
-        m_SPUMainAllocsEnd = NewSlot.BANKmemLocation;
-        NewSlot.pAssetParams = nullptr;
-        NewSlot.pLastAlloc = NewSlot.MAINmemLocation;
-        NewSlot.MAINmemSize = SizePerSlotMainMem;
-        NewSlot.BANKMemSize = SizePerSlotSPU;
-
-        if (Type == eBANK_SLOT_PATHFINDER && bDoPFSlot) {
-            mPFBankSlot.push_back(NewSlot);
-        } else {
-            mBankSlots.push_back(NewSlot);
-        }
-    }
-    NewSlot.Clear();
-}
-
-void EAXAemsManager::ResolveCurrentDataMemory() {
-    EAXAemsManager *mgr = &gAEMSMgr;
-    stSndDataLoadParams *curLoad = mgr->m_pCurLoadSDLP;
-    eTEMPALLOCLOCATION MemLocation = curLoad->MemLocation;
-
-    switch (MemLocation) {
-    case TMP_ALLOC_MAIN:
-        bFree(curLoad->pmem);
-        break;
-    case TMP_ALLOC_TRACKSTREAMER:
-        TheTrackStreamer.FreeUserMemory(curLoad->pmem);
-        break;
-    case TMP_ALLOC_AUDIO:
-        if (curLoad->plocmem == nullptr) {
-            if (curLoad->mBankSlot == nullptr) {
-                return;
-            }
-        }
-        gAudioMemoryManager.FreeMemory(curLoad->pmem);
-        break;
-    default:
+void EAXAemsManager::UnloadSndData(int Index) {
+    if (static_cast<unsigned int>(Index) > 0x2F) {
         return;
     }
-    mgr->m_pCurLoadSDLP->pmem = nullptr;
+
+    while (AreResourceLoadsPending()) {
+        ServiceQueuedFiles();
+        g_pEAXSound->Update(0.0f);
+    }
+
+    m_pCurUNLOADSDLP = g_SndAssetList + Index;
+    if (!m_pCurUNLOADSDLP->bResolvedSync) {
+        return;
+    }
+
+    m_pCurUNLOADSDLP->bResolvedAsync = false;
+    m_pCurUNLOADSDLP->bResolvedSync = false;
+    if (m_pCurUNLOADSDLP->AssetDescription.eDataType < EAXSND_DT_GENERIC_DATA) {
+        RemoveAEMSBank();
+    }
+
+    if (m_pCurUNLOADSDLP->plocmem != nullptr) {
+        if (m_pCurUNLOADSDLP->AssetDescription.eDataType == EAXSND_DT_AEMS_MAINMEM) {
+            bFree(m_pCurUNLOADSDLP->plocmem);
+        } else {
+            gAudioMemoryManager.FreeMemory(m_pCurUNLOADSDLP->plocmem);
+        }
+        m_pCurUNLOADSDLP->plocmem = nullptr;
+    }
+
+    if (m_pCurUNLOADSDLP->pmem != nullptr) {
+        if (m_pCurUNLOADSDLP->AssetDescription.eDataType == EAXSND_DT_AEMS_MAINMEM) {
+            bFree(m_pCurUNLOADSDLP->pmem);
+        } else {
+            gAudioMemoryManager.FreeMemory(m_pCurUNLOADSDLP->pmem);
+        }
+        m_pCurUNLOADSDLP->pmem = nullptr;
+    }
+
+    if (m_pCurUNLOADSDLP->mBankSlot != nullptr) {
+        m_pCurUNLOADSDLP->mBankSlot->pAssetParams = nullptr;
+        m_pCurUNLOADSDLP->mBankSlot->pLastAlloc = m_pCurUNLOADSDLP->mBankSlot->MAINmemLocation;
+        bMemSet(m_pCurUNLOADSDLP->mBankSlot->pLastAlloc, '\0', m_pCurUNLOADSDLP->mBankSlot->MAINmemSize);
+        m_pCurUNLOADSDLP->mBankSlot = nullptr;
+    }
+
+    while (!m_pCurUNLOADSDLP->resallocs.empty()) {
+        void *presalloc = reinterpret_cast<void *>(m_pCurUNLOADSDLP->resallocs.back());
+        m_pCurUNLOADSDLP->resallocs.pop_back();
+        gAudioMemoryManager.FreeMemory(presalloc);
+    }
+
+    RemoveBankListing(Index);
+    m_pCurUNLOADSDLP = nullptr;
+}
+
+void EAXAemsManager::UnloadSndData(Attrib::StringKey filename) {
+    int index = IsAssetInList(filename);
+    if (index != -1) {
+        UnloadSndData(index);
+    }
+}
+
+void EAXAemsManager::RemoveBankListing(int Index) {
+    g_SndAssetList[Index].Clear();
+    {
+        for (int n = Index; n < 0x2F; n++) {
+            g_SndAssetList[n] = g_SndAssetList[n + 1];
+            g_SndAssetList[n + 1].Clear();
+        }
+    }
+
+    m_nCurLoadedBankIndex--;
+    m_nEndOfList--;
+}
+
+void EAXAemsManager::RemoveAEMSBank() {
+    if (m_pCurUNLOADSDLP->Handle != -1) {
+        SNDAEMS_removemodulebank(m_pCurUNLOADSDLP->Handle);
+    }
+}
+
+void EAXAemsManager::AddAemsBank() {
+    int Result;
+
+    if (gAEMSMgr.m_pCurLoadSDLP->mBankSlot != nullptr) {
+        SNDmemlimits(gAEMSMgr.m_pCurLoadSDLP->mBankSlot->BANKmemLocation,
+                     gAEMSMgr.m_pCurLoadSDLP->mBankSlot->BANKmemLocation + gAEMSMgr.m_pCurLoadSDLP->mBankSlot->BANKMemSize);
+    } else {
+        SNDmemlimits(-1, gAEMSMgr.m_SPUMainAllocsEnd);
+    }
+
+    int nhandle = SNDAEMS_addmodulebank(gAEMSMgr.m_pCurLoadSDLP->pmem, nullptr, 0, ResidentAllocCB);
+    SNDmemlimits(-1, gAEMSMgr.m_SPUMainAllocsEnd);
+    gAEMSMgr.m_pCurLoadSDLP->Handle = nhandle;
+}
+
+void EAXAemsManager::SetupNextLoad() {
+    m_pCurLoadSDLP = nullptr;
+    if (m_nCurLoadedBankIndex < (m_nEndOfList - 1)) {
+        m_nCurLoadedBankIndex++;
+        m_pCurLoadSDLP = g_SndAssetList + m_nCurLoadedBankIndex;
+        if (InitiateLoad() < 0) {
+            Attrib::StringKey fileName = m_pCurLoadSDLP->AssetDescription.FileName;
+            SndBase *SfxToDel[32];
+            SndAssetQueue::iterator i;
+            int deleteCount = 0;
+
+            bMemSet(SfxToDel, '\0', 0x80);
+            while (true) {
+                i = mWaitForResolve.begin();
+                while (i != mWaitForResolve.end()) {
+                    stSndAssetQueue currequst = *i;
+                    if (currequst.Asset.FileName == fileName) {
+                        mWaitForResolve.remove(currequst);
+                        SfxToDel[deleteCount] = currequst.pThis;
+                        deleteCount++;
+                        goto ContinueScanning;
+                    }
+
+                    ++i;
+                }
+
+                goto RemoveQueuedLoads;
+
+            ContinueScanning:
+                ;
+            }
+
+            deleteCount--;
+        RemoveQueuedLoads:
+            do {
+                i = mWaitForResolve.begin();
+                while (i != mWaitForResolve.end()) {
+                    stSndAssetQueue currequst = *i;
+                    if (SfxToDel[deleteCount] == currequst.pThis) {
+                        mWaitForResolve.remove(currequst);
+                        goto ContinueDeleting;
+                    }
+
+                    ++i;
+                }
+
+            ContinueDeleting:
+                ;
+            } while (deleteCount-- > 0);
+
+            RemoveBankListing(m_nCurLoadedBankIndex);
+            SetupNextLoad();
+        }
+    }
+}
+
+void EAXAemsManager::ResetBankLoadParams() {
+    m_nCurLoadedBankIndex = -1;
+    m_nEndOfList = 0;
+    mWaitForResolve.clear();
+    DestroySlots(true);
 }
 
 int EAXAemsManager::InitiateLoad() {
@@ -625,61 +742,41 @@ HaveAsyncBuffer:
     goto HaveQueueParams;
 }
 
-void EAXAemsManager::SetupNextLoad() {
-    m_pCurLoadSDLP = nullptr;
-    if (m_nCurLoadedBankIndex < (m_nEndOfList - 1)) {
-        m_nCurLoadedBankIndex++;
-        m_pCurLoadSDLP = g_SndAssetList + m_nCurLoadedBankIndex;
-        if (InitiateLoad() < 0) {
-            Attrib::StringKey fileName = m_pCurLoadSDLP->AssetDescription.FileName;
-            SndBase *SfxToDel[32];
-            SndAssetQueue::iterator i;
-            int deleteCount = 0;
-
-            bMemSet(SfxToDel, '\0', 0x80);
-            while (true) {
-                i = mWaitForResolve.begin();
-                while (i != mWaitForResolve.end()) {
-                    stSndAssetQueue currequst = *i;
-                    if (currequst.Asset.FileName == fileName) {
-                        mWaitForResolve.remove(currequst);
-                        SfxToDel[deleteCount] = currequst.pThis;
-                        deleteCount++;
-                        goto ContinueScanning;
-                    }
-
-                    ++i;
-                }
-
-                goto RemoveQueuedLoads;
-
-            ContinueScanning:
-                ;
+void EAXAemsManager::CheckForCompleteAsyncLoad() {
+    if (!m_pCurLoadSDLP->bResolvedAsync) {
+        switch (m_pCurLoadSDLP->AssetDescription.eDataType) {
+        case EAXSND_DT_AEMS_ASYNCSPU:
+            if (SNDAEMS_asyncloadmodulebankdone() > 0) {
+                CompleteAsyncLoad();
             }
-
-            deleteCount--;
-        RemoveQueuedLoads:
-            do {
-                i = mWaitForResolve.begin();
-                while (i != mWaitForResolve.end()) {
-                    stSndAssetQueue currequst = *i;
-                    if (SfxToDel[deleteCount] == currequst.pThis) {
-                        mWaitForResolve.remove(currequst);
-                        goto ContinueDeleting;
-                    }
-
-                    ++i;
-                }
-
-            ContinueDeleting:
-                ;
-            } while (deleteCount-- > 0);
-
-            RemoveBankListing(m_nCurLoadedBankIndex);
-            SetupNextLoad();
+            break;
+        case EAXSND_DT_AEMS_ASYNCSPUMEM:
+            if (SNDAEMS_asyncloadmodulebankmemdone() > 0 && m_IsWaitingForFileCB == 0) {
+                CompleteAsyncLoad();
+            }
+            break;
+        case EAXSND_DT_AEMS_SYNCSPU:
+        default:
+            break;
         }
     }
 }
+
+void EAXAemsManager::CompleteAsyncLoad() {
+    stSndDataLoadParams *m_pCurrentlyLoading;
+    int Result;
+    float delta;
+    m_pCurrentlyLoading = gAEMSMgr.m_pAsyncLoadSDLP;
+    if (!m_pCurrentlyLoading) {
+        m_pCurrentlyLoading = gAEMSMgr.m_pCurLoadSDLP;
+    }
+    m_pCurrentlyLoading->bResolvedAsync = 1;
+    SNDmemlimits(-1, gAEMSMgr.m_SPUMainAllocsEnd);
+    m_pCurrentlyLoading->t_load = WorldTimer;
+    delta = (WorldTimer - Timer(static_cast<int>(StartBankLoadTicks))).GetSeconds();
+}
+
+void EAXAemsManager::ResolvePendingAsyncLoads() {}
 
 void EAXAemsManager::Update() {
 ReprocessQueue:
@@ -797,75 +894,6 @@ ReprocessQueue:
     }
 }
 
-void EAXAemsManager::RemoveBankListing(int Index) {
-    g_SndAssetList[Index].Clear();
-    {
-        for (int n = Index; n < 0x2F; n++) {
-            g_SndAssetList[n] = g_SndAssetList[n + 1];
-            g_SndAssetList[n + 1].Clear();
-        }
-    }
-
-    m_nCurLoadedBankIndex--;
-    m_nEndOfList--;
-}
-
-void EAXAemsManager::UnloadSndData(int Index) {
-    if (static_cast<unsigned int>(Index) > 0x2F) {
-        return;
-    }
-
-    while (AreResourceLoadsPending()) {
-        ServiceQueuedFiles();
-        g_pEAXSound->Update(0.0f);
-    }
-
-    m_pCurUNLOADSDLP = g_SndAssetList + Index;
-    if (!m_pCurUNLOADSDLP->bResolvedSync) {
-        return;
-    }
-
-    m_pCurUNLOADSDLP->bResolvedAsync = false;
-    m_pCurUNLOADSDLP->bResolvedSync = false;
-    if (m_pCurUNLOADSDLP->AssetDescription.eDataType < EAXSND_DT_GENERIC_DATA) {
-        RemoveAEMSBank();
-    }
-
-    if (m_pCurUNLOADSDLP->plocmem != nullptr) {
-        if (m_pCurUNLOADSDLP->AssetDescription.eDataType == EAXSND_DT_AEMS_MAINMEM) {
-            bFree(m_pCurUNLOADSDLP->plocmem);
-        } else {
-            gAudioMemoryManager.FreeMemory(m_pCurUNLOADSDLP->plocmem);
-        }
-        m_pCurUNLOADSDLP->plocmem = nullptr;
-    }
-
-    if (m_pCurUNLOADSDLP->pmem != nullptr) {
-        if (m_pCurUNLOADSDLP->AssetDescription.eDataType == EAXSND_DT_AEMS_MAINMEM) {
-            bFree(m_pCurUNLOADSDLP->pmem);
-        } else {
-            gAudioMemoryManager.FreeMemory(m_pCurUNLOADSDLP->pmem);
-        }
-        m_pCurUNLOADSDLP->pmem = nullptr;
-    }
-
-    if (m_pCurUNLOADSDLP->mBankSlot != nullptr) {
-        m_pCurUNLOADSDLP->mBankSlot->pAssetParams = nullptr;
-        m_pCurUNLOADSDLP->mBankSlot->pLastAlloc = m_pCurUNLOADSDLP->mBankSlot->MAINmemLocation;
-        bMemSet(m_pCurUNLOADSDLP->mBankSlot->pLastAlloc, '\0', m_pCurUNLOADSDLP->mBankSlot->MAINmemSize);
-        m_pCurUNLOADSDLP->mBankSlot = nullptr;
-    }
-
-    while (!m_pCurUNLOADSDLP->resallocs.empty()) {
-        void *presalloc = reinterpret_cast<void *>(m_pCurUNLOADSDLP->resallocs.back());
-        m_pCurUNLOADSDLP->resallocs.pop_back();
-        gAudioMemoryManager.FreeMemory(presalloc);
-    }
-
-    RemoveBankListing(Index);
-    m_pCurUNLOADSDLP = nullptr;
-}
-
 void *EAXAemsManager::AsyncResidentAllocCB(int size) {
     stSndDataLoadParams *tmpLoading = gAEMSMgr.m_pAsyncLoadSDLP;
     stSndDataLoadParams *m_pCurrentlyLoading;
@@ -974,6 +1002,32 @@ LoadDone:
     gAEMSMgr.m_IsWaitingForFileCB = false;
 }
 
+void EAXAemsManager::ResolveCurrentDataMemory() {
+    EAXAemsManager *mgr = &gAEMSMgr;
+    stSndDataLoadParams *curLoad = mgr->m_pCurLoadSDLP;
+    eTEMPALLOCLOCATION MemLocation = curLoad->MemLocation;
+
+    switch (MemLocation) {
+    case TMP_ALLOC_MAIN:
+        bFree(curLoad->pmem);
+        break;
+    case TMP_ALLOC_TRACKSTREAMER:
+        TheTrackStreamer.FreeUserMemory(curLoad->pmem);
+        break;
+    case TMP_ALLOC_AUDIO:
+        if (curLoad->plocmem == nullptr) {
+            if (curLoad->mBankSlot == nullptr) {
+                return;
+            }
+        }
+        gAudioMemoryManager.FreeMemory(curLoad->pmem);
+        break;
+    default:
+        return;
+    }
+    mgr->m_pCurLoadSDLP->pmem = nullptr;
+}
+
 int EAXAemsManager::AddBankListing(stAssetDescription &asset) {
     stSndDataLoadParams *entry = g_SndAssetList + m_nEndOfList;
     entry->AssetDescription.eDataType = EAXSND_DT_NONE;
@@ -997,6 +1051,29 @@ int EAXAemsManager::AddBankListing(stAssetDescription &asset) {
     dst.AssetDescription = asset;
 
     return m_nEndOfList++;
+}
+
+int EAXAemsManager::IsAssetInList(Attrib::StringKey filename) {
+    int n = 0;
+    int nEndOfList = m_nEndOfList;
+    if (n < nEndOfList) {
+        do {
+            if (filename == g_SndAssetList[n].AssetDescription.FileName) {
+                return n;
+            }
+            n++;
+        } while (n < nEndOfList);
+    }
+    return -1;
+}
+
+int EAXAemsManager::IsAssetLoaded(Attrib::StringKey filename) {
+    int n = IsAssetInList(filename);
+    int nLoadedAsset = -1;
+    if (n != -1 && g_SndAssetList[n].bResolvedSync) {
+        nLoadedAsset = n;
+    }
+    return nLoadedAsset;
 }
 
 void EAXAemsManager::QueueFileLoad(stSndAssetQueue &queueitem, eBANK_SLOT_TYPE SlotType) {
@@ -1050,68 +1127,18 @@ void EAXAemsManager::QueueFileLoad(stSndAssetQueue &queueitem, eBANK_SLOT_TYPE S
     mWaitForResolve.push_back(queueitem);
 }
 
-void EAXAemsManager::ResolvePendingAsyncLoads() {}
-
-void *EAXAemsManager::GetCallbackEventSys() {
-    return m_pEvtSystems[m_nCallbackEvtSys];
-}
-
-void SubscribeEventSys() {
-    if (IsSoundEnabled == 1) {
-        if (gAEMSMgr.GetCallbackEventSys() != nullptr) {
-            Csis::System::Result status = Csis::System::Subscribe(gAEMSMgr.GetCallbackEventSys());
-            (void)status;
+void EAXAemsManager::InitializeSlots(bool bDoPFSlot) {
+    if (DISABLE_SLOT_LOADING == 0) {
+        if (bDoPFSlot) {
+            mPFBankSlot.DestroySlots();
         }
-    }
-}
-
-void EAXAemsManager::EvtSysLoadCallback(int param, int error_status) {
-    gAEMSMgr.m_nCallbackEvtSys = param;
-    SubscribeEventSys();
-}
-
-void EAXAemsManager::RemoveAEMSBank() {
-    if (m_pCurUNLOADSDLP->Handle != -1) {
-        SNDAEMS_removemodulebank(m_pCurUNLOADSDLP->Handle);
-    }
-}
-
-void EAXAemsManager::InitSPUram() {
-    register int Size asm("r0");
-    int Start = -1;
-    Size = SNDmemlargestunused(&Start);
-    m_SPU_UpperAddress = Start + Size;
-}
-
-bool EAXAemsManager::AreResourceLoadsPending() {
-    if (m_pCurLoadSDLP == nullptr && m_ItemsPendingAsyncResolve == 0 && m_IsWaitingForFileCB == 0) {
-        if (m_nCurLoadedBankIndex < (m_nEndOfList - 1)) {
-            return true;
+        mBankSlots.DestroySlots();
+        m_SPUMainAllocsEnd = m_SPU_UpperAddress;
+        for (int n = 0; n < 4; n++) {
+            RegisterSlots(static_cast<eBANK_SLOT_TYPE>(n), m_RequiredSlots[n], m_SlotSizes[n][0], m_SlotSizes[n][1], bDoPFSlot);
         }
-        return false;
+        SNDmemlimits(-1, m_SPUMainAllocsEnd);
     }
-    return true;
-}
-
-void EAXAemsManager::CompleteAsyncLoad() {
-    stSndDataLoadParams *m_pCurrentlyLoading;
-    int Result;
-    float delta;
-    m_pCurrentlyLoading = gAEMSMgr.m_pAsyncLoadSDLP;
-    if (!m_pCurrentlyLoading) {
-        m_pCurrentlyLoading = gAEMSMgr.m_pCurLoadSDLP;
-    }
-    m_pCurrentlyLoading->bResolvedAsync = 1;
-    SNDmemlimits(-1, gAEMSMgr.m_SPUMainAllocsEnd);
-    m_pCurrentlyLoading->t_load = WorldTimer;
-    delta = (WorldTimer - Timer(static_cast<int>(StartBankLoadTicks))).GetSeconds();
-}
-
-void EAXAemsManager::ResetBankLoadParams() {
-    m_nCurLoadedBankIndex = -1;
-    m_nEndOfList = 0;
-    mWaitForResolve.clear();
-    DestroySlots(true);
 }
 
 void EAXAemsManager::DestroySlots(bool bDoPFSlot) {
@@ -1124,67 +1151,40 @@ void EAXAemsManager::DestroySlots(bool bDoPFSlot) {
     bMemSet(EAXAemsManager::m_RequiredSlots, 0, 0x10);
 }
 
-int EAXAemsManager::IsAssetInList(Attrib::StringKey filename) {
-    int n = 0;
-    int nEndOfList = m_nEndOfList;
-    if (n < nEndOfList) {
-        do {
-            if (filename == g_SndAssetList[n].AssetDescription.FileName) {
-                return n;
-            }
-            n++;
-        } while (n < nEndOfList);
-    }
-    return -1;
-}
+void EAXAemsManager::RegisterSlots(eBANK_SLOT_TYPE Type, int NumSlots, int SizePerSlotSPU, int SizePerSlotMainMem, bool bDoPFSlot) {
+    stBankSlot NewSlot;
+    NewSlot.Clear();
+    for (int n = 0; n < NumSlots; n++) {
+        char DebugString[1];
+        DebugString[0] = '\0';
+        NewSlot.Index = static_cast<unsigned char>(n);
+        NewSlot.Type = Type;
+        NewSlot.MAINmemLocation = static_cast<char *>(
+            gAudioMemoryManager.AllocateMemory(SizePerSlotMainMem, DebugString, false));
+        NewSlot.BANKmemLocation = m_SPUMainAllocsEnd - SizePerSlotSPU;
+        m_SPUMainAllocsEnd = NewSlot.BANKmemLocation;
+        NewSlot.pAssetParams = nullptr;
+        NewSlot.pLastAlloc = NewSlot.MAINmemLocation;
+        NewSlot.MAINmemSize = SizePerSlotMainMem;
+        NewSlot.BANKMemSize = SizePerSlotSPU;
 
-int EAXAemsManager::IsAssetLoaded(Attrib::StringKey filename) {
-    int n = IsAssetInList(filename);
-    int nLoadedAsset = -1;
-    if (n != -1 && g_SndAssetList[n].bResolvedSync) {
-        nLoadedAsset = n;
-    }
-    return nLoadedAsset;
-}
-
-void EAXAemsManager::UnloadSndData(Attrib::StringKey filename) {
-    int index = IsAssetInList(filename);
-    if (index != -1) {
-        UnloadSndData(index);
-    }
-}
-
-void EAXAemsManager::AddAemsBank() {
-    int Result;
-
-    if (gAEMSMgr.m_pCurLoadSDLP->mBankSlot != nullptr) {
-        SNDmemlimits(gAEMSMgr.m_pCurLoadSDLP->mBankSlot->BANKmemLocation,
-                     gAEMSMgr.m_pCurLoadSDLP->mBankSlot->BANKmemLocation + gAEMSMgr.m_pCurLoadSDLP->mBankSlot->BANKMemSize);
-    } else {
-        SNDmemlimits(-1, gAEMSMgr.m_SPUMainAllocsEnd);
-    }
-
-    int nhandle = SNDAEMS_addmodulebank(gAEMSMgr.m_pCurLoadSDLP->pmem, nullptr, 0, ResidentAllocCB);
-    SNDmemlimits(-1, gAEMSMgr.m_SPUMainAllocsEnd);
-    gAEMSMgr.m_pCurLoadSDLP->Handle = nhandle;
-}
-
-void EAXAemsManager::CheckForCompleteAsyncLoad() {
-    if (!m_pCurLoadSDLP->bResolvedAsync) {
-        switch (m_pCurLoadSDLP->AssetDescription.eDataType) {
-        case EAXSND_DT_AEMS_ASYNCSPU:
-            if (SNDAEMS_asyncloadmodulebankdone() > 0) {
-                CompleteAsyncLoad();
-            }
-            break;
-        case EAXSND_DT_AEMS_ASYNCSPUMEM:
-            if (SNDAEMS_asyncloadmodulebankmemdone() > 0 && m_IsWaitingForFileCB == 0) {
-                CompleteAsyncLoad();
-            }
-            break;
-        case EAXSND_DT_AEMS_SYNCSPU:
-        default:
-            break;
+        if (Type == eBANK_SLOT_PATHFINDER && bDoPFSlot) {
+            mPFBankSlot.push_back(NewSlot);
+        } else {
+            mBankSlots.push_back(NewSlot);
         }
     }
+    NewSlot.Clear();
+}
+
+void stBankSlot::Clear() {
+    BANKmemLocation = 0;
+    MAINmemLocation = nullptr;
+    pLastAlloc = nullptr;
+    Index = 0;
+    pAssetParams = nullptr;
+    BANKMemSize = 0;
+    MAINmemSize = 0;
+    Type = static_cast<eBANK_SLOT_TYPE>(-1);
+    LoadFailed = 0;
 }

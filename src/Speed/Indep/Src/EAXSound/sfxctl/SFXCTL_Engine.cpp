@@ -42,6 +42,17 @@ Slope RedLineDelayPerGear(1.0f, 5.0f, 1.0f, 5.0f);
 
 struct HSIMABLE__;
 
+SndBase::TypeInfo *SFXCTL_Engine::GetTypeInfo() const { return &s_TypeInfo; }
+
+const char *SFXCTL_Engine::GetTypeName() const { return s_TypeInfo.typeName; }
+
+SndBase *SFXCTL_Engine::CreateObject(unsigned int allocator) {
+    if (allocator == 0) {
+        return new (SFXCTL_Engine::GetStaticTypeInfo()->typeName, false) SFXCTL_Engine();
+    }
+    return new (SFXCTL_Engine::GetStaticTypeInfo()->typeName, true) SFXCTL_Engine();
+}
+
 SFXCTL_Engine::SFXCTL_Engine()
     : Trq(3), //
       VisRpmAvg(2), //
@@ -65,13 +76,6 @@ SFXCTL_Engine::SFXCTL_Engine()
     bWasRedlining = false;
 }
 
-SndBase *SFXCTL_Engine::CreateObject(unsigned int allocator) {
-    if (allocator == 0) {
-        return new (SFXCTL_Engine::GetStaticTypeInfo()->typeName, false) SFXCTL_Engine();
-    }
-    return new (SFXCTL_Engine::GetStaticTypeInfo()->typeName, true) SFXCTL_Engine();
-}
-
 SFXCTL_Engine::~SFXCTL_Engine() {
     if (mmsgMVehicleDestroyed) {
         Hermes::Handler::Destroy(mmsgMVehicleDestroyed);
@@ -81,9 +85,34 @@ SFXCTL_Engine::~SFXCTL_Engine() {
     }
 }
 
-SndBase::TypeInfo *SFXCTL_Engine::GetTypeInfo() const { return &s_TypeInfo; }
+void SFXCTL_Engine::MessageVehicleDestroyed(const MNotifyVehicleDestroyed &message) {
+    UMath::Vector4 vpos;
 
-const char *SFXCTL_Engine::GetTypeName() const { return s_TypeInfo.typeName; }
+    if (GetPhysCar() != nullptr && GetPhysCar()->mHandle == message.GetRacer() && GetPhysCar()->IsLocalPlayerCar()) {
+        vpos.z = GetPhysCar()->GetPosition()->x;
+        vpos.x = -GetPhysCar()->GetPosition()->y;
+        vpos.y = GetPhysCar()->GetPosition()->z;
+
+        MGamePlayMoment(vpos, UMath::Vector4::kZero, UMath::Vector4::kZero, 0, 0xC565AC30)
+            .Send(UCrc32("MomentStrm"));
+    }
+}
+
+void SFXCTL_Engine::MsgCountdownDone(const MCountdownDone &message) {
+    tMergeWithPhysicsOffStart = 0.7f;
+    bPreRace = 0;
+}
+
+void SFXCTL_Engine::SetupSFX(CSTATE_Base *_StateBase) {
+    SndBase::SetupSFX(_StateBase);
+    m_UGL = static_cast<eAemsUpgradeLevel>(m_pEAXCar->GetEngineUpgradeLevel());
+}
+
+inline void SFXCTL_Engine::SetEngTorque(float _torque) {
+    _torque += m_TRQ_LFO;
+    m_fEng_Trq = _torque;
+    m_fSmoothedEng_Trq = m_fSmoothedEng_Trq * lbl_803D72FC + _torque * lbl_803D7300;
+}
 
 void SFXCTL_Engine::InitSFX() {
     GRaceParameters *race;
@@ -138,6 +167,38 @@ void SFXCTL_Engine::InitSFX() {
     }
 }
 
+int SFXCTL_Engine::GetController(int Index) {
+    switch (Index) {
+    case 0:
+        return 2;
+    case 1:
+        return 3;
+    case 2:
+        return 0;
+    case 3:
+        return 7;
+    default:
+        return -1;
+    }
+}
+
+void SFXCTL_Engine::AttachController(SFXCTL *psfxctl) {
+    switch (psfxctl->GetObjectIndex()) {
+    case 2:
+        m_pShiftCtl = static_cast<SFXCTL_Shifting *>(psfxctl);
+        break;
+    case 3:
+        m_pAccelTransitionCtl = static_cast<SFXCTL_AccelTrans *>(psfxctl);
+        break;
+    case 0:
+        m_pPhysicsCtl = static_cast<SFXCTL_Physics *>(psfxctl);
+        break;
+    case 7:
+        m_p3DCarPosCtl = static_cast<SFXCTL_3DCarPos *>(psfxctl);
+        break;
+    }
+}
+
 void SFXCTL_Engine::UpdateParams(float t) {
     SFXCTL::UpdateParams(t);
 
@@ -182,44 +243,6 @@ void SFXCTL_Engine::UpdateParams(float t) {
         MGamePlayMoment moment(UMath::Vector4::kZero, UMath::Vector4::kZero, UMath::Vector4::kZero, 0, key);
         moment.Send(UCrc32("MomentStrm"));
     }
-}
-
-void SFXCTL_Engine::MessageVehicleDestroyed(const MNotifyVehicleDestroyed &message) {
-    UMath::Vector4 vpos;
-
-    if (GetPhysCar() != nullptr && GetPhysCar()->mHandle == message.GetRacer() && GetPhysCar()->IsLocalPlayerCar()) {
-        vpos.z = GetPhysCar()->GetPosition()->x;
-        vpos.x = -GetPhysCar()->GetPosition()->y;
-        vpos.y = GetPhysCar()->GetPosition()->z;
-
-        MGamePlayMoment(vpos, UMath::Vector4::kZero, UMath::Vector4::kZero, 0, 0xC565AC30)
-            .Send(UCrc32("MomentStrm"));
-    }
-}
-
-inline void SFXCTL_Engine::SetEngTorque(float _torque) {
-    _torque += m_TRQ_LFO;
-    m_fEng_Trq = _torque;
-    m_fSmoothedEng_Trq = m_fSmoothedEng_Trq * lbl_803D72FC + _torque * lbl_803D7300;
-}
-
-void SFXCTL_Engine::MsgCountdownDone(const MCountdownDone &message) {
-    tMergeWithPhysicsOffStart = 0.7f;
-    bPreRace = 0;
-}
-
-void SFXCTL_Engine::UpdateClutchState() {
-    bClutchStateOn = ShouldTurnOnClutch();
-}
-
-bool SFXCTL_Engine::ShouldTurnOnClutch() {
-    if (!GetPhysCar()->IsLocalPlayerCar()) {
-        return false;
-    }
-    if (m_pAccelTransitionCtl->IsActive()) {
-        return false;
-    }
-    return GetEngRPM() <= 2500.0f;
 }
 
 void SFXCTL_Engine::UpdateFilterFX() {
@@ -481,39 +504,16 @@ void SFXCTL_Engine::UpdateEngineLFO_FX(float t) {
     }
 }
 
-void SFXCTL_Engine::SetupSFX(CSTATE_Base *_StateBase) {
-    SndBase::SetupSFX(_StateBase);
-    m_UGL = static_cast<eAemsUpgradeLevel>(m_pEAXCar->GetEngineUpgradeLevel());
+bool SFXCTL_Engine::ShouldTurnOnClutch() {
+    if (!GetPhysCar()->IsLocalPlayerCar()) {
+        return false;
+    }
+    if (m_pAccelTransitionCtl->IsActive()) {
+        return false;
+    }
+    return GetEngRPM() <= 2500.0f;
 }
 
-int SFXCTL_Engine::GetController(int Index) {
-    switch (Index) {
-    case 0:
-        return 2;
-    case 1:
-        return 3;
-    case 2:
-        return 0;
-    case 3:
-        return 7;
-    default:
-        return -1;
-    }
-}
-
-void SFXCTL_Engine::AttachController(SFXCTL *psfxctl) {
-    switch (psfxctl->GetObjectIndex()) {
-    case 2:
-        m_pShiftCtl = static_cast<SFXCTL_Shifting *>(psfxctl);
-        break;
-    case 3:
-        m_pAccelTransitionCtl = static_cast<SFXCTL_AccelTrans *>(psfxctl);
-        break;
-    case 0:
-        m_pPhysicsCtl = static_cast<SFXCTL_Physics *>(psfxctl);
-        break;
-    case 7:
-        m_p3DCarPosCtl = static_cast<SFXCTL_3DCarPos *>(psfxctl);
-        break;
-    }
+void SFXCTL_Engine::UpdateClutchState() {
+    bClutchStateOn = ShouldTurnOnClutch();
 }

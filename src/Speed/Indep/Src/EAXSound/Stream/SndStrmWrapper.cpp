@@ -39,13 +39,68 @@ int SndStrmWrapper::CreateStream(const int maxChunks, const int maxRequests, cha
     return m_handle;
 }
 
-SndStrmWrapper::~SndStrmWrapper() {
-    if (m_handle >= 0) {
-        DestroyStream();
-        if (m_buffer != nullptr) {
-            gAudioMemoryManager.FreeMemory(m_buffer);
+bool SndStrmWrapper::IsPlaying() {
+    SNDREQUESTSTATUS srs;
+    SNDSTREAMSTATUS sss;
+    SNDSYS_entercritical();
+    SNDSTRM_status(m_handle, &sss);
+    int reqHandle = sss.currentrequest;
+    if (reqHandle < 0) {
+        SNDSYS_leavecritical();
+    } else {
+        SNDSTRM_requeststatus(reqHandle, &srs);
+        SNDSYS_leavecritical();
+        if ((srs.state != 3) || (sss.outstandingrequests > 0)) {
+            return true;
         }
     }
+    return false;
+}
+
+int SndStrmWrapper::GetCurrentTime() {
+    SNDSTREAMSTATUS sss;
+    SNDREQUESTSTATUS srs;
+    GetStatus(&sss);
+    GetRequestStatus(sss.currentrequest, &srs);
+    return srs.currenttime;
+}
+
+int SndStrmWrapper::GetTimeRemaining() {
+    SNDSTREAMSTATUS sss;
+    SNDREQUESTSTATUS srs;
+    GetStatus(&sss);
+    GetRequestStatus(sss.currentrequest, &srs);
+    return srs.timetoend;
+}
+
+bool SndStrmWrapper::AlmostDone() {
+    int itemsinq;
+    int timeremaining;
+    SNDSTREAMSTATUS sss;
+    SNDREQUESTSTATUS srs;
+    GetStatus(&sss);
+    itemsinq = sss.outstandingrequests;
+    if (itemsinq == 0) {
+        return true;
+    }
+
+    if (itemsinq == 1) {
+        SNDSYS_entercritical();
+        SNDSTRM_requeststatus(sss.currentrequest, &srs);
+        SNDSYS_leavecritical();
+        if (srs.state == 3) {
+            return true;
+        }
+        if (srs.state != 0) {
+            if (srs.state != 1) {
+                if (srs.timetoend < 100) {
+                    return true;
+                }
+            }
+        }
+    }
+
+    return false;
 }
 
 int SndStrmWrapper::Stop() {
@@ -69,24 +124,6 @@ int SndStrmWrapper::AddToStream(int holdtime, void *paddr, int length, int offse
 
 int SndStrmWrapper::ModifyHold(int sndrequesthandle, int holdtime) {
     return SNDSTRM_modifyhold(sndrequesthandle, holdtime);
-}
-
-bool SndStrmWrapper::IsPlaying() {
-    SNDREQUESTSTATUS srs;
-    SNDSTREAMSTATUS sss;
-    SNDSYS_entercritical();
-    SNDSTRM_status(m_handle, &sss);
-    int reqHandle = sss.currentrequest;
-    if (reqHandle < 0) {
-        SNDSYS_leavecritical();
-    } else {
-        SNDSTRM_requeststatus(reqHandle, &srs);
-        SNDSYS_leavecritical();
-        if ((srs.state != 3) || (sss.outstandingrequests > 0)) {
-            return true;
-        }
-    }
-    return false;
 }
 
 int SndStrmWrapper::SetVol(int vol, bool bramp) {
@@ -160,52 +197,6 @@ int SndStrmWrapper::GetTimeBuffered() {
     return 0;
 }
 
-int SndStrmWrapper::GetCurrentTime() {
-    SNDSTREAMSTATUS sss;
-    SNDREQUESTSTATUS srs;
-    GetStatus(&sss);
-    GetRequestStatus(sss.currentrequest, &srs);
-    return srs.currenttime;
-}
-
-int SndStrmWrapper::GetTimeRemaining() {
-    SNDSTREAMSTATUS sss;
-    SNDREQUESTSTATUS srs;
-    GetStatus(&sss);
-    GetRequestStatus(sss.currentrequest, &srs);
-    return srs.timetoend;
-}
-
-bool SndStrmWrapper::AlmostDone() {
-    int itemsinq;
-    int timeremaining;
-    SNDSTREAMSTATUS sss;
-    SNDREQUESTSTATUS srs;
-    GetStatus(&sss);
-    itemsinq = sss.outstandingrequests;
-    if (itemsinq == 0) {
-        return true;
-    }
-
-    if (itemsinq == 1) {
-        SNDSYS_entercritical();
-        SNDSTRM_requeststatus(sss.currentrequest, &srs);
-        SNDSYS_leavecritical();
-        if (srs.state == 3) {
-            return true;
-        }
-        if (srs.state != 0) {
-            if (srs.state != 1) {
-                if (srs.timetoend < 100) {
-                    return true;
-                }
-            }
-        }
-    }
-
-    return false;
-}
-
 void SndStrmWrapper::Pause() {
     SNDSYS_entercritical();
     SNDSTRM_pitchmult(m_handle, 0);
@@ -218,11 +209,13 @@ void SndStrmWrapper::Resume() {
     SNDSYS_leavecritical();
 }
 
-int SndStrmWrapper::PurgeStream() {
-    if (SNDSTRM_purge(m_handle) < 0) {
-        return -3;
+SndStrmWrapper::~SndStrmWrapper() {
+    if (m_handle >= 0) {
+        DestroyStream();
+        if (m_buffer != nullptr) {
+            gAudioMemoryManager.FreeMemory(m_buffer);
+        }
     }
-    return 0;
 }
 
 void SndStrmWrapper::DestroyStream() {
@@ -234,4 +227,11 @@ void SndStrmWrapper::DestroyStream() {
         }
         SNDSTRM_destroy(m_handle);
     }
+}
+
+int SndStrmWrapper::PurgeStream() {
+    if (SNDSTRM_purge(m_handle) < 0) {
+        return -3;
+    }
+    return 0;
 }

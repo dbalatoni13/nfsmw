@@ -441,6 +441,10 @@ static inline void RemoveFromSampleList(cSampleWarpper *sample, STICH_TYPE from)
     sample->UnList(from);
 }
 
+char *GetStichTypeName(STICH_TYPE CurType) {
+    return "";
+}
+
 cSTICH_PlayBack::cSTICH_PlayBack() {
     mSampleRefSlotPool = bNewSlotPool(32, 129, "SampleWrapper SlotPool", AudioMemoryPool);
     mSampleRefSlotPool->SetFlag(SLOTPOOL_FLAG_OVERFLOW_IF_FULL);
@@ -465,6 +469,11 @@ void cSTICH_PlayBack::QueueSampleRequest(struct SampleQueueItem &samplereq) {
     GetQueueList(type).push_back(samplereq);
 }
 
+// UNSOLVED
+static void KillSample(cSampleWarpper *sampleref) {
+    sampleref->Destroy();
+}
+
 void cSTICH_PlayBack::RemoveFromList(struct SampleQueueItem sampleitem) {
     STICH_TYPE type = static_cast<STICH_TYPE>(sampleitem.pStitch->StichData->eStichType);
     for (SampleQueueItem *iter = mQueuedSampleList[type].begin();
@@ -478,7 +487,6 @@ void cSTICH_PlayBack::RemoveFromList(struct SampleQueueItem sampleitem) {
     sampleitem.pSample->Destroy();
 }
 
-// UNSOLVED
 int cSTICH_PlayBack::Prune(STICH_TYPE type, int priority, int num_to_clear) {
     if (num_to_clear == 0) {
         return 0;
@@ -532,12 +540,120 @@ void cSTICH_PlayBack::DestroyAllStichs(void) {
     }
 }
 
-char *GetStichTypeName(STICH_TYPE CurType) {
-    return "";
+cStichWrapper::cStichWrapper(const SND_Stich &NewStichData)
+    : SndParams() //
+{
+    StichData = const_cast<SND_Stich *>(&NewStichData);
+    for (int i = 0; i < 18; i++) {
+        ActiveSamplesRefs[i] = nullptr;
+    }
 }
 
-static void KillSample(cSampleWarpper *sampleref) {
-    sampleref->Destroy();
+cStichWrapper::~cStichWrapper() {
+    Destroy();
+}
+
+void *cStichWrapper::operator new(unsigned int obj_size) {
+    return cSTICH_PlayBack::mStitchSlotPool->Malloc(1, nullptr);
+}
+
+void cStichWrapper::operator delete(void *ptr) {
+    if (cSTICH_PlayBack::mStitchSlotPool != nullptr && ptr != nullptr) {
+        cSTICH_PlayBack::mStitchSlotPool->Free(ptr);
+    }
+}
+
+void cStichWrapper::Play(int Vol, int Pitch, int Azimuth) {
+    SndParams.Vol = Vol;
+    SndParams.Az = Azimuth;
+    SndParams.Pitch = Pitch;
+    Play(&SndParams);
+}
+
+void cStichWrapper::Play(const SND_Params *Params) {
+    STICH_TYPE stitch_type = static_cast<STICH_TYPE>(GetData().eStichType);
+
+    if (Params != nullptr) {
+        SndParams = *Params;
+        SndParams.Vol = SndParams.Vol * 0x7FFF >> 0xF;
+    }
+
+    for (int i = 0; i < static_cast<int>(GetData().Num_SampleRefs); i++) {
+        cSampleWarpper *sample = new cSampleWarpper(GetData().pSampleRefList[i]);
+        ActiveSamplesRefs[i] = sample;
+
+        if (sample != nullptr) {
+            sample->Initialize();
+
+            SampleQueueItem samplereq;
+            samplereq.pSample = ActiveSamplesRefs[i];
+            samplereq.pStitch = this;
+            cSTICH_PlayBack::QueueSampleRequest(samplereq);
+        }
+    }
+
+    bIsPlaying = true;
+
+    int num_to_prune = cSTICH_PlayBack::mQueuedSampleList[stitch_type].size() + cSampleListSet::GetList(stitch_type).size() - 25;
+    if (num_to_prune > 0) {
+        bool continueloop = true;
+        int priority_to_prune = 0;
+        do {
+            num_to_prune -= cSTICH_PlayBack::Prune(stitch_type, priority_to_prune, num_to_prune);
+            num_to_prune -= cSampleWarpper::Prune(stitch_type, priority_to_prune, num_to_prune);
+            if (num_to_prune != 0 && priority_to_prune != 10) {
+                priority_to_prune++;
+            } else {
+                continueloop = false;
+            }
+        } while (continueloop);
+    }
+}
+
+void cStichWrapper::Update(const SND_Params *Params) {
+    if (!bIsPlaying) {
+        return;
+    }
+
+    if (Params != nullptr) {
+        SndParams = *Params;
+    }
+
+    bIsPlaying = false;
+    for (int i = 0; ; i++) {
+        if (i >= static_cast<int>(GetData().Num_SampleRefs)) break;
+        if (ActiveSamplesRefs[i] != nullptr) {
+            bool playing = true;
+            ActiveSamplesRefs[i]->Update(&SndParams);
+            playing = ActiveSamplesRefs[i]->IsPlaying();
+            if (!playing) {
+                delete ActiveSamplesRefs[i];
+                ActiveSamplesRefs[i] = nullptr;
+            } else {
+                bIsPlaying = true;
+            }
+        }
+    }
+}
+
+void cStichWrapper::Destroy() {
+    for (int i = 0; i < 18; i++) {
+        if (ActiveSamplesRefs[i] != nullptr) {
+            if (ActiveSamplesRefs[i]->m_eIsPlaying == eSTITCH_PLAY_STATUS_QUEUED) {
+                SampleQueueItem sampleitem;
+                sampleitem.pSample = ActiveSamplesRefs[i];
+                sampleitem.pStitch = this;
+                cSTICH_PlayBack::RemoveFromList(sampleitem);
+            }
+
+            if (ActiveSamplesRefs[i] != nullptr) {
+                delete ActiveSamplesRefs[i];
+            }
+            ActiveSamplesRefs[i] = nullptr;
+        }
+    }
+
+    bIsPlaying = false;
 }
 
 cSampleWarpper::cSampleWarpper(SND_SampleRef &NewRef) {
@@ -548,8 +664,8 @@ cSampleWarpper::cSampleWarpper(SND_SampleRef &NewRef) {
     AEMS_ActiveSampleStatic = nullptr;
 }
 
-void cSampleWarpper::Initialize() {
-    m_eIsPlaying = eSTITCH_PLAY_STATUS_QUEUED;
+cSampleWarpper::~cSampleWarpper() {
+    Destroy();
 }
 
 void *cSampleWarpper::operator new(unsigned int obj_size) {
@@ -563,10 +679,6 @@ void cSampleWarpper::operator delete(void *ptr) {
     if (cSTICH_PlayBack::mSampleRefSlotPool != nullptr && ptr != nullptr) {
         cSTICH_PlayBack::mSampleRefSlotPool->Free(ptr);
     }
-}
-
-cSampleWarpper::~cSampleWarpper() {
-    Destroy();
 }
 
 void cSampleWarpper::Destroy() {
@@ -590,6 +702,10 @@ void cSampleWarpper::Destroy() {
     }
 
     m_eIsPlaying = eSTITCH_PLAY_STATUS_OFF;
+}
+
+void cSampleWarpper::Initialize() {
+    m_eIsPlaying = eSTITCH_PLAY_STATUS_QUEUED;
 }
 
 void cSampleWarpper::Update(const SND_Params *Params) {
@@ -1076,122 +1192,6 @@ int cSampleWarpper::Prune(STICH_TYPE type, int priority, int num_to_clear) {
     std::for_each(destroyed.begin(), destroyed.end(), KillSample);
 
     return num_pruned;
-}
-
-cStichWrapper::cStichWrapper(const SND_Stich &NewStichData)
-    : SndParams() //
-{
-    StichData = const_cast<SND_Stich *>(&NewStichData);
-    for (int i = 0; i < 18; i++) {
-        ActiveSamplesRefs[i] = nullptr;
-    }
-}
-
-cStichWrapper::~cStichWrapper() {
-    Destroy();
-}
-
-void *cStichWrapper::operator new(unsigned int obj_size) {
-    return cSTICH_PlayBack::mStitchSlotPool->Malloc(1, nullptr);
-}
-
-void cStichWrapper::operator delete(void *ptr) {
-    if (cSTICH_PlayBack::mStitchSlotPool != nullptr && ptr != nullptr) {
-        cSTICH_PlayBack::mStitchSlotPool->Free(ptr);
-    }
-}
-
-void cStichWrapper::Play(int Vol, int Pitch, int Azimuth) {
-    SndParams.Vol = Vol;
-    SndParams.Az = Azimuth;
-    SndParams.Pitch = Pitch;
-    Play(&SndParams);
-}
-
-void cStichWrapper::Play(const SND_Params *Params) {
-    STICH_TYPE stitch_type = static_cast<STICH_TYPE>(GetData().eStichType);
-
-    if (Params != nullptr) {
-        SndParams = *Params;
-        SndParams.Vol = SndParams.Vol * 0x7FFF >> 0xF;
-    }
-
-    for (int i = 0; i < static_cast<int>(GetData().Num_SampleRefs); i++) {
-        cSampleWarpper *sample = new cSampleWarpper(GetData().pSampleRefList[i]);
-        ActiveSamplesRefs[i] = sample;
-
-        if (sample != nullptr) {
-            sample->Initialize();
-
-            SampleQueueItem samplereq;
-            samplereq.pSample = ActiveSamplesRefs[i];
-            samplereq.pStitch = this;
-            cSTICH_PlayBack::QueueSampleRequest(samplereq);
-        }
-    }
-
-    bIsPlaying = true;
-
-    int num_to_prune = cSTICH_PlayBack::mQueuedSampleList[stitch_type].size() + cSampleListSet::GetList(stitch_type).size() - 25;
-    if (num_to_prune > 0) {
-        bool continueloop = true;
-        int priority_to_prune = 0;
-        do {
-            num_to_prune -= cSTICH_PlayBack::Prune(stitch_type, priority_to_prune, num_to_prune);
-            num_to_prune -= cSampleWarpper::Prune(stitch_type, priority_to_prune, num_to_prune);
-            if (num_to_prune != 0 && priority_to_prune != 10) {
-                priority_to_prune++;
-            } else {
-                continueloop = false;
-            }
-        } while (continueloop);
-    }
-}
-
-void cStichWrapper::Update(const SND_Params *Params) {
-    if (!bIsPlaying) {
-        return;
-    }
-
-    if (Params != nullptr) {
-        SndParams = *Params;
-    }
-
-    bIsPlaying = false;
-    for (int i = 0; ; i++) {
-        if (i >= static_cast<int>(GetData().Num_SampleRefs)) break;
-        if (ActiveSamplesRefs[i] != nullptr) {
-            bool playing = true;
-            ActiveSamplesRefs[i]->Update(&SndParams);
-            playing = ActiveSamplesRefs[i]->IsPlaying();
-            if (!playing) {
-                delete ActiveSamplesRefs[i];
-                ActiveSamplesRefs[i] = nullptr;
-            } else {
-                bIsPlaying = true;
-            }
-        }
-    }
-}
-
-void cStichWrapper::Destroy() {
-    for (int i = 0; i < 18; i++) {
-        if (ActiveSamplesRefs[i] != nullptr) {
-            if (ActiveSamplesRefs[i]->m_eIsPlaying == eSTITCH_PLAY_STATUS_QUEUED) {
-                SampleQueueItem sampleitem;
-                sampleitem.pSample = ActiveSamplesRefs[i];
-                sampleitem.pStitch = this;
-                cSTICH_PlayBack::RemoveFromList(sampleitem);
-            }
-
-            if (ActiveSamplesRefs[i] != nullptr) {
-                delete ActiveSamplesRefs[i];
-            }
-            ActiveSamplesRefs[i] = nullptr;
-        }
-    }
-
-    bIsPlaying = false;
 }
 
 template <>

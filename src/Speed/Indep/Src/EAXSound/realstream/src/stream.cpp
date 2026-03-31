@@ -147,17 +147,6 @@ static STREAMHEADERtag *GetHeader(int handle) {
     return g_StreamTable[handle];
 }
 
-int STREAM_overhead(int requests, int filters, int taps) {
-    int filterBytes = filters * 0xC;
-    int tapBytes = taps << 4;
-    int requestBytes = requests * 0x124;
-    filterBytes += 0x18C;
-    requestBytes += filterBytes;
-    requestBytes += tapBytes;
-    requestBytes += 0x20;
-    return requestBytes;
-}
-
 static int validatehandle(int handle, STREAMHEADERtag **strmptr, TAPSTRUCTtag **tapptr) {
     if (handle == 0) {
         return 1;
@@ -641,6 +630,17 @@ void restartstream(STREAMHEADERtag *stream, int priority) {
 
 stream_stop:
     strm->state = 2;
+}
+
+int STREAM_overhead(int requests, int filters, int taps) {
+    int filterBytes = filters * 0xC;
+    int tapBytes = taps << 4;
+    int requestBytes = requests * 0x124;
+    filterBytes += 0x18C;
+    requestBytes += filterBytes;
+    requestBytes += tapBytes;
+    requestBytes += 0x20;
+    return requestBytes;
 }
 
 int STREAM_create(int requests, int filters, int taps, void *buffer, int size) {

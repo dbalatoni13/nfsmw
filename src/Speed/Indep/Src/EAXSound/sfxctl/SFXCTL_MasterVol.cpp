@@ -19,11 +19,9 @@ namespace RadarDetector {
 extern float mStaticRange;
 }
 
-SFXCTL_MasterVol::SFXCTL_MasterVol() {
-    bMemSet(GameFlowSndState, '\0', 0x3C);
-}
+SndBase::TypeInfo *SFXCTL_MasterVol::GetTypeInfo() const { return &s_TypeInfo; }
 
-SFXCTL_MasterVol::~SFXCTL_MasterVol() {}
+const char *SFXCTL_MasterVol::GetTypeName() const { return s_TypeInfo.typeName; }
 
 SndBase *SFXCTL_MasterVol::CreateObject(unsigned int allocator) {
     if (allocator == 0) {
@@ -32,9 +30,11 @@ SndBase *SFXCTL_MasterVol::CreateObject(unsigned int allocator) {
     return new (SFXCTL_MasterVol::GetStaticTypeInfo()->typeName, true) SFXCTL_MasterVol();
 }
 
-SndBase::TypeInfo *SFXCTL_MasterVol::GetTypeInfo() const { return &s_TypeInfo; }
+SFXCTL_MasterVol::SFXCTL_MasterVol() {
+    bMemSet(GameFlowSndState, '\0', 0x3C);
+}
 
-const char *SFXCTL_MasterVol::GetTypeName() const { return s_TypeInfo.typeName; }
+SFXCTL_MasterVol::~SFXCTL_MasterVol() {}
 
 void SFXCTL_MasterVol::InitSFX() {
     float fvol;
@@ -120,6 +120,10 @@ void SFXCTL_MasterVol::UpdateParams(float t) {
     SetDMIX_Input(10, static_cast<int>(RadarDetector::mStaticRange * 32767.0f));
 }
 
+SndBase::TypeInfo *SFXCTL_GameState::GetTypeInfo() const { return &s_TypeInfo; }
+
+const char *SFXCTL_GameState::GetTypeName() const { return s_TypeInfo.typeName; }
+
 SndBase *SFXCTL_GameState::CreateObject(unsigned int allocator) {
     if (allocator == 0) {
         return new (SFXCTL_GameState::GetStaticTypeInfo()->typeName, false) SFXCTL_GameState();
@@ -136,7 +140,3 @@ void SFXCTL_GameState::UpdateMixerOutputs() {
         }
     }
 }
-
-SndBase::TypeInfo *SFXCTL_GameState::GetTypeInfo() const { return &s_TypeInfo; }
-
-const char *SFXCTL_GameState::GetTypeName() const { return s_TypeInfo.typeName; }

@@ -12,10 +12,9 @@ static const int kDownShiftingRevRampTime = 0x32;
 static const int kUpShiftTrqAttackTime[4] = {0x64, 0x64, 0x64, 0x64};
 static const float kUpShiftTrqAttachInitialPercent[4] = {0.0f, 0.0f, 0.0f, 0.0f};
 
-SFXCTL_Shifting::SFXCTL_Shifting()
-    : m_RPMGraph(m_RPMPoints, 7) {
-    m_pShiftingPatternData = nullptr;
-}
+SndBase::TypeInfo *SFXCTL_Shifting::GetTypeInfo() const { return &s_TypeInfo; }
+
+const char *SFXCTL_Shifting::GetTypeName() const { return s_TypeInfo.typeName; }
 
 SndBase *SFXCTL_Shifting::CreateObject(unsigned int allocator) {
     if (allocator == 0) {
@@ -24,11 +23,38 @@ SndBase *SFXCTL_Shifting::CreateObject(unsigned int allocator) {
     return new (SFXCTL_Shifting::GetStaticTypeInfo()->typeName, true) SFXCTL_Shifting();
 }
 
+SFXCTL_Shifting::SFXCTL_Shifting()
+    : m_RPMGraph(m_RPMPoints, 7) {
+    m_pShiftingPatternData = nullptr;
+}
+
 SFXCTL_Shifting::~SFXCTL_Shifting() {}
 
-SndBase::TypeInfo *SFXCTL_Shifting::GetTypeInfo() const { return &s_TypeInfo; }
+void SFXCTL_Shifting::UpdateMixerOutputs() {
+    SetDMIX_Input(0, (eShiftState == SHFT_UP_DISENGAGE) ? 0x7FFF : 0);
+    SetDMIX_Input(1, (eShiftStageChanged == SHFT_UP_ENGAGING) ? 0x7FFF : 0);
+    SetDMIX_Input(2, IsDownShifting() ? 0x7FFF : 0);
+}
 
-const char *SFXCTL_Shifting::GetTypeName() const { return s_TypeInfo.typeName; }
+int SFXCTL_Shifting::GetController(int Index) {
+    if (Index != 0) {
+        return -1;
+    }
+    return 4;
+}
+
+void SFXCTL_Shifting::AttachController(SFXCTL *psfxctl) {
+    if ((psfxctl->GetObjectIndex()) == 4) {
+        m_pEngineCtl = static_cast<SFXCTL_Engine *>(psfxctl);
+    }
+}
+
+void SFXCTL_Shifting::SetupSFX(CSTATE_Base *_StateBase) {
+    SndBase::SetupSFX(_StateBase);
+    m_UGL = m_pEAXCar->m_TransmissionUGL;
+    m_pShiftingPatternData = &m_pEAXCar->GetShiftInfo();
+    m_nPostShiftFXLevel = m_UGL % 2;
+}
 
 void SFXCTL_Shifting::InitSFX() {
     SFXCTL::InitSFX();
@@ -51,75 +77,6 @@ void SFXCTL_Shifting::InitSFX() {
     t_Last_Shift = 0.0f;
     m_bNeed_AccelSnd = false;
     m_timeBrakeLastMashed = Timer(0);
-}
-
-void SFXCTL_Shifting::UpdateParams(float t) {
-    SFXCTL::UpdateParams(t);
-    m_bNeed_DeccelSnd = false;
-    m_bNeed_AccelSnd = false;
-    m_bNeed_ShiftGearSnd = false;
-    m_bNeed_DisengageSnd = false;
-    m_bNeed_EngageSnd = false;
-
-    if (GetCurGear() > GetLastGear()) {
-        BeginUpShift();
-    } else if (GetCurGear() < GetLastGear()) {
-        BeginDownShift();
-    }
-
-    UpdateGearShiftState(t);
-}
-
-int SFXCTL_Shifting::GetController(int Index) {
-    if (Index != 0) {
-        return -1;
-    }
-    return 4;
-}
-
-float SFXCTL_Shifting::GetShiftingRPM() { return m_InterpShiftRPM.GetValue(); }
-
-float SFXCTL_Shifting::GetShiftingTRQ() { return m_InterpShiftTorque.GetValue(); }
-
-float SFXCTL_Shifting::GetShiftingVOL() { return m_InterpShiftVol.GetValue(); }
-
-Gear SFXCTL_Shifting::GetCurGear() { return m_pEngineCtl->m_pPhysicsCtl->m_CurGear; }
-
-Gear SFXCTL_Shifting::GetLastGear() { return m_pEngineCtl->m_pPhysicsCtl->m_LastGear; }
-
-void SFXCTL_Shifting::PostShiftFX_End() {
-    eShift_LFO = SHIFT_LFO_NONE;
-    m_VOL_LFO_AMP = 0;
-    m_VOL_LFO_FRQ = 0;
-    m_TRQ_LFO_AMP = 0;
-    m_TRQ_LFO_FRQ = 0;
-    m_RPM_LFO_AMP = 0;
-    m_RPM_LFO_FRQ = 0;
-}
-
-void SFXCTL_Shifting::CleanUpShiftFX() {
-    PostShiftFX_End();
-    eShiftState = static_cast<SHIFT_STAGE>(0);
-    eShiftStageChanged = static_cast<SHIFT_STAGE>(0);
-}
-
-void SFXCTL_Shifting::SetupSFX(CSTATE_Base *_StateBase) {
-    SndBase::SetupSFX(_StateBase);
-    m_UGL = m_pEAXCar->m_TransmissionUGL;
-    m_pShiftingPatternData = &m_pEAXCar->GetShiftInfo();
-    m_nPostShiftFXLevel = m_UGL % 2;
-}
-
-void SFXCTL_Shifting::AttachController(SFXCTL *psfxctl) {
-    if ((psfxctl->GetObjectIndex()) == 4) {
-        m_pEngineCtl = static_cast<SFXCTL_Engine *>(psfxctl);
-    }
-}
-
-void SFXCTL_Shifting::UpdateMixerOutputs() {
-    SetDMIX_Input(0, (eShiftState == SHFT_UP_DISENGAGE) ? 0x7FFF : 0);
-    SetDMIX_Input(1, (eShiftStageChanged == SHFT_UP_ENGAGING) ? 0x7FFF : 0);
-    SetDMIX_Input(2, IsDownShifting() ? 0x7FFF : 0);
 }
 
 void SFXCTL_Shifting::UpdateGearShiftState(float t) {
@@ -318,6 +275,23 @@ void SFXCTL_Shifting::UpdateGearShiftState(float t) {
     }
 }
 
+void SFXCTL_Shifting::UpdateParams(float t) {
+    SFXCTL::UpdateParams(t);
+    m_bNeed_DeccelSnd = false;
+    m_bNeed_AccelSnd = false;
+    m_bNeed_ShiftGearSnd = false;
+    m_bNeed_DisengageSnd = false;
+    m_bNeed_EngageSnd = false;
+
+    if (GetCurGear() > GetLastGear()) {
+        BeginUpShift();
+    } else if (GetCurGear() < GetLastGear()) {
+        BeginDownShift();
+    }
+
+    UpdateGearShiftState(t);
+}
+
 void SFXCTL_Shifting::UpdateTorque(float t) {
     switch (eShiftState) {
     case SHFT_UP_DISENGAGE:
@@ -357,6 +331,12 @@ void SFXCTL_Shifting::UpdateRPM(float t) {
         return;
     }
 }
+
+float SFXCTL_Shifting::GetShiftingRPM() { return m_InterpShiftRPM.GetValue(); }
+
+float SFXCTL_Shifting::GetShiftingTRQ() { return m_InterpShiftTorque.GetValue(); }
+
+float SFXCTL_Shifting::GetShiftingVOL() { return m_InterpShiftVol.GetValue(); }
 
 void SFXCTL_Shifting::BeginUpShift() {
     float TotalDuration;
@@ -401,6 +381,18 @@ void SFXCTL_Shifting::BeginUpShift() {
         tShiftDelay = SndBase::m_fRunningTime;
         tShiftDelay += m_pShiftingPatternData->Up_Shift_Sound_Delay();
         ShiftType = static_cast< AEMS_SHIFTING_SAMPLES >(1);
+    }
+}
+
+void FillGraphFromSpline(const UMath::Matrix4 &matrix, bVector2 *points, int num_points, float XScale, float YScale) {
+    if (num_points > 0) {
+        float denom = static_cast<float>(num_points - 1);
+        for (int n = 0; n < num_points; ++n) {
+            UMath::Vector4 point;
+            UBezierLite::Evaluate(matrix, static_cast<float>(n) / denom, point);
+            points[n].x = point.x * XScale;
+            points[n].y = point.y * YScale;
+        }
     }
 }
 
@@ -453,6 +445,16 @@ void SFXCTL_Shifting::PostShiftFX_Update(float t) {
     }
 }
 
+void SFXCTL_Shifting::PostShiftFX_End() {
+    eShift_LFO = SHIFT_LFO_NONE;
+    m_VOL_LFO_AMP = 0;
+    m_VOL_LFO_FRQ = 0;
+    m_TRQ_LFO_AMP = 0;
+    m_TRQ_LFO_FRQ = 0;
+    m_RPM_LFO_AMP = 0;
+    m_RPM_LFO_FRQ = 0;
+}
+
 void SFXCTL_Shifting::PostShiftFX_Init() {
     float ScaleDown;
 
@@ -479,14 +481,12 @@ void SFXCTL_Shifting::PostShiftFX_Init() {
     }
 }
 
-void FillGraphFromSpline(const UMath::Matrix4 &matrix, bVector2 *points, int num_points, float XScale, float YScale) {
-    if (num_points > 0) {
-        float denom = static_cast<float>(num_points - 1);
-        for (int n = 0; n < num_points; ++n) {
-            UMath::Vector4 point;
-            UBezierLite::Evaluate(matrix, static_cast<float>(n) / denom, point);
-            points[n].x = point.x * XScale;
-            points[n].y = point.y * YScale;
-        }
-    }
+void SFXCTL_Shifting::CleanUpShiftFX() {
+    PostShiftFX_End();
+    eShiftState = static_cast<SHIFT_STAGE>(0);
+    eShiftStageChanged = static_cast<SHIFT_STAGE>(0);
 }
+
+Gear SFXCTL_Shifting::GetCurGear() { return m_pEngineCtl->m_pPhysicsCtl->m_CurGear; }
+
+Gear SFXCTL_Shifting::GetLastGear() { return m_pEngineCtl->m_pPhysicsCtl->m_LastGear; }

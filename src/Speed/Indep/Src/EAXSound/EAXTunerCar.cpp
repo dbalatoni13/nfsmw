@@ -71,6 +71,8 @@ int EAXTunerCar::SFXMessage(eSFXMessageType SFXMessageType, unsigned int param1,
     return EAXCar::SFXMessage(SFXMessageType, param1, param2);
 }
 
+void DebugPrintSkidBar(int Horz, int Vert, char *Str, int Value) {}
+
 int EAXTunerCar::UpdateRotation() {
     int val = 0;
     m_Rotation = 0;
@@ -121,5 +123,3 @@ void EAXTunerCar::UpdateParams(float t) {
         UpdateRotation();
     }
 }
-
-void DebugPrintSkidBar(int Horz, int Vert, char *Str, int Value) {}

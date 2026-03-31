@@ -5,10 +5,6 @@
 
 int GlobalStichSizes = 0;
 
-Attrib::Key Attrib::Gen::aud_stitch_loop::ClassKey() {
-    return 0x3473edcd;
-}
-
 struct cStitchLoop {
     unsigned int m_StitchAttribKey;
     SND_Stich *m_StichData;
@@ -140,4 +136,8 @@ int UnloaderSoundStichs(bChunk *chunk) {
         return 1;
     }
     return 0;
+}
+
+Attrib::Key Attrib::Gen::aud_stitch_loop::ClassKey() {
+    return 0x3473edcd;
 }

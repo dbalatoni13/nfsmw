@@ -90,6 +90,16 @@ void EAXAITunerCar::UpdateCarPhysics() {
     g_EAXIsPaused();
 }
 
+void EAXAITunerCar::UpdateParams(float t) {
+    if (m_pCar != nullptr) {
+        EAXCar::UpdateParams(t);
+        mPhysicsChangedGear = 0;
+    }
+}
+
+void EAXAITunerCar::ProcessEvent(emEvent *event) {
+}
+
 void EAXAITunerCar::UpdatAIDriveBy(float t) {
     EAX_CarState *ClosestPlayer;
     bVector3 vVelDiff;
@@ -135,16 +145,6 @@ void EAXAITunerCar::UpdatAIDriveBy(float t) {
     }
 }
 
-void EAXAITunerCar::UpdateParams(float t) {
-    if (m_pCar != nullptr) {
-        EAXCar::UpdateParams(t);
-        mPhysicsChangedGear = 0;
-    }
-}
-
-void EAXAITunerCar::ProcessEvent(emEvent *event) {
-}
-
 CSTATE_Base::StateInfo EAXCopCar::s_StateInfo = {
     0x00040000,
     "EAXCopCar",
@@ -170,12 +170,8 @@ CSTATE_Base *EAXCopCar::CreateState(unsigned int allocator) {
     }
 }
 
-void EAXCopCar::Attach(void *pAttachment) {
-    EAX_CarState *pCar = static_cast<EAX_CarState *>(pAttachment);
-    if (CSTATEMGR_CarState::FinalCopV8Engines.size() != 0) {
-        pCar->GetEngineInfo()->ChangeWithDefault(CSTATEMGR_CarState::FinalCopV8Engines[0]);
-    }
-    EAXCar::Attach(pAttachment);
+CSTATE_Base::StateInfo *EAXTruck::GetStateInfo(void) const {
+    return &s_StateInfo;
 }
 
 CSTATE_Base::StateInfo EAXTruck::s_StateInfo = {
@@ -184,10 +180,6 @@ CSTATE_Base::StateInfo EAXTruck::s_StateInfo = {
     &EAXAITunerCar::s_StateInfo,
     reinterpret_cast< CSTATE_Base *(*)(void) >(&EAXTruck::CreateState),
 };
-
-CSTATE_Base::StateInfo *EAXTruck::GetStateInfo(void) const {
-    return &s_StateInfo;
-}
 
 const char *EAXTruck::GetStateName(void) const {
     return s_StateInfo.stateName;
@@ -211,4 +203,12 @@ void EAXTruck::UpdateParams(float t) {
 void EAXCopCar::UpdateParams(float t) {
     UpdatAIDriveBy(t);
     EAXAITunerCar::UpdateParams(t);
+}
+
+void EAXCopCar::Attach(void *pAttachment) {
+    EAX_CarState *pCar = static_cast<EAX_CarState *>(pAttachment);
+    if (CSTATEMGR_CarState::FinalCopV8Engines.size() != 0) {
+        pCar->GetEngineInfo()->ChangeWithDefault(CSTATEMGR_CarState::FinalCopV8Engines[0]);
+    }
+    EAXCar::Attach(pAttachment);
 }

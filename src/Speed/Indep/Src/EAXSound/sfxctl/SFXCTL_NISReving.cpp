@@ -333,6 +333,13 @@ void *NIS_RevManager::operator new(unsigned int size, const char *debug_name) {
     return gAudioMemoryManager.AllocateMemory(size, debug_name, false);
 }
 
+void SFXCTL_Physics::MsgRevOff(const MAIEngineRev &message) {
+    (void)message;
+    eCurNisRevingState = NIS_OFF;
+    pRevData = nullptr;
+}
+
+
 NIS_RevManager::NIS_RevManager() {
     g_pNISRevMgr = this;
     pRevData = nullptr;
@@ -341,11 +348,11 @@ NIS_RevManager::NIS_RevManager() {
     IsInitialized = false;
 }
 
-
-void SFXCTL_Physics::MsgRevOff(const MAIEngineRev &message) {
-    (void)message;
-    eCurNisRevingState = NIS_OFF;
-    pRevData = nullptr;
+NIS_RevManager::~NIS_RevManager() {
+    g_pNISRevMgr = nullptr;
+    delete pRevData;
+    delete pBuffer;
+    RecordingCount = 0;
 }
 
 void NIS_RevManager::OpenNISRevData(unsigned int anim_id) {
@@ -412,6 +419,8 @@ void NIS_RevManager::OpenNISRevData(unsigned int anim_id) {
     }
 }
 
+void NIS_RevManager::StartNISReving() {}
+
 void NIS_RevManager::Start321Reving() {
     CloseNIS();
     MAIEngineRev(0, 0, nullptr, 0).Send(UCrc32("QRev"));
@@ -462,13 +471,4 @@ void NIS_RevManager::Update(float t) {
     }
 
     (void)t;
-}
-
-void NIS_RevManager::StartNISReving() {}
-
-NIS_RevManager::~NIS_RevManager() {
-    g_pNISRevMgr = nullptr;
-    delete pRevData;
-    delete pBuffer;
-    RecordingCount = 0;
 }

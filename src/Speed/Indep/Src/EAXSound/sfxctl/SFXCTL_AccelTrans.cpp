@@ -16,10 +16,9 @@ inline const unsigned int &Attrib::Gen::acceltrans::AccelFromIdle_RESUME_T() con
     return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->AccelFromIdle_RESUME_T;
 }
 
-SFXCTL_AccelTrans::SFXCTL_AccelTrans()
-    : m_pEngineCtl(nullptr) //
-    , m_pShiftCtl(nullptr) //
-    , m_pAccelTransDataSet(nullptr) {}
+SndBase::TypeInfo *SFXCTL_AccelTrans::GetTypeInfo() const { return &s_TypeInfo; }
+
+const char *SFXCTL_AccelTrans::GetTypeName() const { return s_TypeInfo.typeName; }
 
 SndBase *SFXCTL_AccelTrans::CreateObject(unsigned int allocator) {
     if (allocator == 0) {
@@ -28,13 +27,27 @@ SndBase *SFXCTL_AccelTrans::CreateObject(unsigned int allocator) {
     return new (SFXCTL_AccelTrans::GetStaticTypeInfo()->typeName, true) SFXCTL_AccelTrans();
 }
 
+SFXCTL_AccelTrans::SFXCTL_AccelTrans()
+    : m_pEngineCtl(nullptr) //
+    , m_pShiftCtl(nullptr) //
+    , m_pAccelTransDataSet(nullptr) {}
+
 SFXCTL_AccelTrans::~SFXCTL_AccelTrans() {}
 
-SndBase::TypeInfo *SFXCTL_AccelTrans::GetTypeInfo() const { return &s_TypeInfo; }
+void SFXCTL_AccelTrans::SetupSFX(CSTATE_Base *_StateBase) {
+    SndBase::SetupSFX(_StateBase);
+    m_UGL = static_cast<eAemsUpgradeLevel>(m_pEAXCar->GetEngineUpgradeLevel());
+    m_pAccelTransDataSet = &m_pEAXCar->GetAccelInfo();
+}
 
-const char *SFXCTL_AccelTrans::GetTypeName() const { return s_TypeInfo.typeName; }
-
-void SFXCTL_AccelTrans::Destroy() {}
+void SFXCTL_AccelTrans::InitSFX() {
+    SFXCTL::InitSFX();
+    eAccelTransFxState = 0;
+    t_LastAccelTrans = 0.0f;
+    IsAccelerating = false;
+    OldIsAccelerating = false;
+    PlayEngOffSweet = false;
+}
 
 int SFXCTL_AccelTrans::GetController(int Index) {
     if (Index == 1) {
@@ -53,21 +66,6 @@ ReturnTwo:
 
 ReturnNegOne:
     return -1;
-}
-
-void SFXCTL_AccelTrans::SetupSFX(CSTATE_Base *_StateBase) {
-    SndBase::SetupSFX(_StateBase);
-    m_UGL = static_cast<eAemsUpgradeLevel>(m_pEAXCar->GetEngineUpgradeLevel());
-    m_pAccelTransDataSet = &m_pEAXCar->GetAccelInfo();
-}
-
-void SFXCTL_AccelTrans::InitSFX() {
-    SFXCTL::InitSFX();
-    eAccelTransFxState = 0;
-    t_LastAccelTrans = 0.0f;
-    IsAccelerating = false;
-    OldIsAccelerating = false;
-    PlayEngOffSweet = false;
 }
 
 void SFXCTL_AccelTrans::AttachController(SFXCTL *psfxctl) {
@@ -278,3 +276,5 @@ bool SFXCTL_AccelTrans::ShouldPlayEngOffSweet() {
     }
     return !(m_pEAXCar->GetCurGear() < Sound::SECOND_GEAR);
 }
+
+void SFXCTL_AccelTrans::Destroy() {}

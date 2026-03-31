@@ -32,14 +32,16 @@ bVector2 *SFXCTL_3DObjPos::m_pv2AzimRefDir = nullptr;
 bVector2 *SFXCTL_3DObjPos::m_pv2AzimRefPos = nullptr;
 unsigned short SFXCTL_3DObjPos::m_CameraAngle = 0;
 
+SndBase::TypeInfo *SFXCTL_3DObjPos::GetTypeInfo() const { return &s_TypeInfo; }
+
+const char *SFXCTL_3DObjPos::GetTypeName() const { return s_TypeInfo.typeName; }
+
 SndBase *SFXCTL_3DObjPos::CreateObject(unsigned int allocator) {
     if (allocator == 0) {
         return new (SFXCTL_3DObjPos::GetStaticTypeInfo()->typeName, false) SFXCTL_3DObjPos();
     }
     return new (SFXCTL_3DObjPos::GetStaticTypeInfo()->typeName, true) SFXCTL_3DObjPos();
 }
-
-SFXCTL_3DObjPos::~SFXCTL_3DObjPos() {}
 
 SFXCTL_3DObjPos::SFXCTL_3DObjPos()
     : m_pV3ObjPos(nullptr) //
@@ -55,26 +57,9 @@ SFXCTL_3DObjPos::SFXCTL_3DObjPos()
     m_fDistToRef[1][1] = 0.0f;
 }
 
-SndBase::TypeInfo *SFXCTL_3DObjPos::GetTypeInfo() const { return &s_TypeInfo; }
-
-const char *SFXCTL_3DObjPos::GetTypeName() const { return s_TypeInfo.typeName; }
+SFXCTL_3DObjPos::~SFXCTL_3DObjPos() {}
 
 void SFXCTL_3DObjPos::SetPlayerRef(int i) { m_PlayerRef = i; }
-
-void SFXCTL_3DObjPos::AssignPositionVector(bVector3 *pV3ObjPos) { m_pV3ObjPos = pV3ObjPos; }
-
-void SFXCTL_3DObjPos::AssignDirectionVector(const bVector3 *pV3ObjDir) {
-    m_pV3ObjDir = const_cast<bVector3 *>(pV3ObjDir);
-}
-
-void SFXCTL_3DObjPos::AssignVelocityVector(const bVector3 *pV3ObjVel) {
-    m_pV3ObjVel = const_cast<bVector3 *>(pV3ObjVel);
-}
-
-void SFXCTL_3DObjPos::Detach() {
-    m_pV3ObjPos = nullptr;
-    m_pV3ObjDir = nullptr;
-}
 
 void SFXCTL_3DObjPos::SetCameraAngle() {
     bVector2 v2Pos;
@@ -92,34 +77,6 @@ void SFXCTL_3DObjPos::SetCameraAngle() {
 
     if (-v2NormPos.y * m_pv2AzimRefDir->x + v2NormPos.x * m_pv2AzimRefDir->y < 0.0f) {
         m_CameraAngle = static_cast<unsigned short>(~m_CameraAngle);
-    }
-}
-
-void SFXCTL_3DObjPos::Generate3DParams(int nplayer) {
-    if (m_pV3ObjPos != nullptr) {
-        m_PlayerRef = nplayer;
-        if (g_pEAXSound->GetPlayerMixMode() == EAXS3D_SINGLE_PLAYER_MIX) {
-            POSMIXTYPE = SINGLE_PLAYER;
-            m_PlayerRef = 0;
-            GenerateSinglePlayerMix();
-        } else {
-            bVector2 v2test;
-            float fdisttoCar0;
-            float fdisttoCar1;
-
-            v2test.x = m_pV3ObjPos->x;
-            v2test.y = m_pV3ObjPos->y;
-
-            POSMIXTYPE = TPMIX_AVE_CAM;
-            fdisttoCar0 = bDistBetween(SndCamera::GetWorldCarPos(0), &v2test);
-            fdisttoCar1 = bDistBetween(SndCamera::GetWorldCarPos(1), &v2test);
-            if (fdisttoCar0 < fdisttoCar1) {
-                m_PlayerRef = 0;
-            } else {
-                m_PlayerRef = 1;
-            }
-            GenerateSinglePlayerMix();
-        }
     }
 }
 
@@ -250,6 +207,68 @@ done_mix:
     }
 }
 
+void SFXCTL_3DObjPos::Generate3DParams(int nplayer) {
+    if (m_pV3ObjPos != nullptr) {
+        m_PlayerRef = nplayer;
+        if (g_pEAXSound->GetPlayerMixMode() == EAXS3D_SINGLE_PLAYER_MIX) {
+            POSMIXTYPE = SINGLE_PLAYER;
+            m_PlayerRef = 0;
+            GenerateSinglePlayerMix();
+        } else {
+            bVector2 v2test;
+            float fdisttoCar0;
+            float fdisttoCar1;
+
+            v2test.x = m_pV3ObjPos->x;
+            v2test.y = m_pV3ObjPos->y;
+
+            POSMIXTYPE = TPMIX_AVE_CAM;
+            fdisttoCar0 = bDistBetween(SndCamera::GetWorldCarPos(0), &v2test);
+            fdisttoCar1 = bDistBetween(SndCamera::GetWorldCarPos(1), &v2test);
+            if (fdisttoCar0 < fdisttoCar1) {
+                m_PlayerRef = 0;
+            } else {
+                m_PlayerRef = 1;
+            }
+            GenerateSinglePlayerMix();
+        }
+    }
+}
+
+void SFXCTL_3DObjPos::AssignPositionVector(bVector3 *pV3ObjPos) { m_pV3ObjPos = pV3ObjPos; }
+
+void SFXCTL_3DObjPos::AssignDirectionVector(const bVector3 *pV3ObjDir) {
+    m_pV3ObjDir = const_cast<bVector3 *>(pV3ObjDir);
+}
+
+void SFXCTL_3DObjPos::AssignVelocityVector(const bVector3 *pV3ObjVel) {
+    m_pV3ObjVel = const_cast<bVector3 *>(pV3ObjVel);
+}
+
+void SFXCTL_3DObjPos::Detach() {
+    m_pV3ObjPos = nullptr;
+    m_pV3ObjDir = nullptr;
+}
+
+void SFXCTL_3DObjPos::UpdateParams(float t) {
+    if (m_pV3ObjPos == nullptr) {
+        SetDMIX_Input(DMX_AZIM, 0);
+        SetDMIX_Input(DMX_PITCH, -1);
+        SetDMIX_Input(DMX_FREQ, 0);
+        SetDMIX_Input(DMX_VOL, -1);
+        register int nvar asm("r0") = GetDMIX_InputValue(15);
+        SetDMIX_Input(15, nvar & ~1);
+        return;
+    }
+    register int nvar asm("r0") = GetDMIX_InputValue(15);
+    SetDMIX_Input(15, nvar | 1);
+    register int playerRef asm("r11") = m_PlayerRef;
+    SetDMIX_Input(11, playerRef);
+    SFXCTL::UpdateParams(t);
+    Generate3DParams(0);
+    UpdateDoppler(m_PlayerRef, t);
+}
+
 void SFXCTL_3DObjPos::UpdateDoppler(int PlayerNum, float t) {
     if (g_EAXIsPaused() || m_pV3ObjVel == nullptr) {
         return;
@@ -291,23 +310,4 @@ void SFXCTL_3DObjPos::UpdateDoppler(int PlayerNum, float t) {
 
     SetDMIX_Input(13, static_cast<int>(m_fdvelmag_car[0] * 100.0f));
     SetDMIX_Input(14, static_cast<int>(m_fdvelmag_cam[0] * 100.0f));
-}
-
-void SFXCTL_3DObjPos::UpdateParams(float t) {
-    if (m_pV3ObjPos == nullptr) {
-        SetDMIX_Input(DMX_AZIM, 0);
-        SetDMIX_Input(DMX_PITCH, -1);
-        SetDMIX_Input(DMX_FREQ, 0);
-        SetDMIX_Input(DMX_VOL, -1);
-        register int nvar asm("r0") = GetDMIX_InputValue(15);
-        SetDMIX_Input(15, nvar & ~1);
-        return;
-    }
-    register int nvar asm("r0") = GetDMIX_InputValue(15);
-    SetDMIX_Input(15, nvar | 1);
-    register int playerRef asm("r11") = m_PlayerRef;
-    SetDMIX_Input(11, playerRef);
-    SFXCTL::UpdateParams(t);
-    Generate3DParams(0);
-    UpdateDoppler(m_PlayerRef, t);
 }
