@@ -963,42 +963,35 @@ void STREAM_cancelrequest(int sndstreamhandle, int requesthandle) {
                 tap = strm->tap + i;
                 if (tap->gettable > 0) {
                     lockstate = inbetween(dataStart, requestStart, tap->getptr);
-                    if (lockstate == 0) {
-                        while ((lockstate = inbetween(requestStart, requestEnd, tap->getptr)) != 0) {
-                            chunk = STREAM_get(reinterpret_cast<int>(tap));
-                            STREAM_release(reinterpret_cast<int>(tap), chunk);
-                            if (tap->gettable < 1) {
-                                break;
-                            }
-                        }
-                    } else {
+                    if (lockstate != 0) {
                         chunktap = tap->tapnum;
                         if (requestStart != requestEnd) {
                             finished = reinterpret_cast<int>(requestStart);
                             while (reinterpret_cast<char *>(finished) != requestEnd) {
-                                if (ReadChunkWord(reinterpret_cast<const int *>(finished)) == -1) {
+                                chunk = reinterpret_cast<STREAMCHUNKHDR *>(finished);
+                                if (ReadChunkWord(&chunk->type) == -1) {
                                     finished = reinterpret_cast<int>(strm->bufferstart);
                                 } else {
-                                    unsigned char *bytes =
-                                        static_cast<unsigned char *>(static_cast<void *>(reinterpret_cast<int *>(finished)));
-                                    chunksize = ReadChunkWord(reinterpret_cast<const int *>(finished + 4)) & 0xFFFFFF;
-                                    if ((ReadChunkWord(reinterpret_cast<const int *>(finished + 4)) & 0xFF000000U) ==
+                                    chunksize = ReadChunkWord(&chunk->size) & 0xFFFFFF;
+                                    if ((ReadChunkWord(&chunk->size) & 0xFF000000U) ==
                                         (static_cast<unsigned int>(chunktap) << 24)) {
                                         MUTEX_lock(&strm->mutex);
                                         tap->gettable -= chunksize;
                                         MUTEX_unlock(&strm->mutex);
                                         decbufferusage(strm, chunksize);
-                                        bytes[5] = static_cast<unsigned char>(static_cast<unsigned int>(chunksize) >> 8);
-                                        bytes[6] = static_cast<unsigned char>(static_cast<unsigned int>(chunksize) >> 16);
-                                        bytes[7] = 0;
-                                        bytes[0] = 0xFE;
-                                        bytes[1] = 0xFF;
-                                        bytes[2] = 0xFF;
-                                        bytes[3] = 0xFF;
-                                        bytes[4] = static_cast<unsigned char>(chunksize);
+                                        WriteChunkWord(&chunk->size, chunksize);
+                                        WriteChunkWord(&chunk->type, -2);
                                     }
                                     finished += chunksize;
                                 }
+                            }
+                        }
+                    } else {
+                        while ((lockstate = inbetween(requestStart, requestEnd, tap->getptr)) != 0) {
+                            chunk = STREAM_get(reinterpret_cast<int>(tap));
+                            STREAM_release(reinterpret_cast<int>(tap), chunk);
+                            if (tap->gettable < 1) {
+                                break;
                             }
                         }
                     }
