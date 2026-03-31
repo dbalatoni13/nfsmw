@@ -163,7 +163,7 @@ struct ScheduledSpeechEvent {
     unsigned char ReserveSample();
 };
 
-static short sSpeechFrameIndex = 0;
+short Manager::m_frameindex = 0;
 
 Attrib::Key Attrib::Gen::speech::ClassKey() {
     return 0xc593dd47;
@@ -359,23 +359,23 @@ SpeechSampleData *SpeechSampleData::Construct(SPCHType_SampleRequestData *data, 
     return sample;
 }
 
-ScheduledSpeechEvent::ScheduledSpeechEvent() {
-    ID = kSPCH1_EventID_MaxEventID;
-    iid = nullptr;
-    fh = nullptr;
-    actor = nullptr;
-    entry_time = WorldTimer;
-    assoc_samples_count = 0;
-    assoc_samples_prep = 0;
-    curndx = 0;
-    priority = 0;
-    playback_time = WorldTimer;
-    finish_time = Timer(0);
-    flags = 0;
-    frameindex = sSpeechFrameIndex;
-    sSpeechFrameIndex = static_cast<short>(sSpeechFrameIndex + 1);
+ScheduledSpeechEvent::ScheduledSpeechEvent()
+    : iid(nullptr), //
+      fh(nullptr), //
+      ID(kSPCH1_EventID_MaxEventID), //
+      actor(nullptr), //
+      entry_time(WorldTimer), //
+      playback_time(WorldTimer), //
+      finish_time(0), //
+      assoc_samples_count(0), //
+      assoc_samples_prep(0), //
+      curndx(0), //
+      priority(0), //
+      frameindex(Manager::m_frameindex), //
+      flags(0) {
+    Manager::m_frameindex = static_cast<short>(Manager::m_frameindex + 1);
 
-    for (int i = 0; i < 7; ++i) {
+    for (short i = 0; i < 7; i = static_cast<short>(i + 1)) {
         assoc_samples[i] = nullptr;
     }
 }

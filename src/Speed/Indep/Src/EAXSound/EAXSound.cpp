@@ -88,6 +88,7 @@ struct Manager {
     static void AttachSFXOBJ(SpeechModuleIndex module, SFX_Base *psb, eSFXOBJ_MAIN_TYPES type);
     static SampleReqList &GetSampleRequests();
 
+    static short m_frameindex;
     static SampleReqList mSampleRequests;
 };
 } // namespace Speech
