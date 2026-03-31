@@ -212,11 +212,16 @@ void SFXCTL_Engine::UpdateParams(float t) {
     (void)Cur2dPos;
     vCarPos = *Cur3dPos;
     vOffset = bNormalize(*GetPhysCar()->GetForwardVector());
+    vOffset = bVector3(vOffset);
 
     if (m_pEAXCar->GetPOV() == 1) {
-        vOffset *= 2.0f;
+        bVector3 scaled(vOffset);
+        scaled *= 2.0f;
+        vOffset = scaled;
     } else {
-        vOffset *= lbl_803D726C;
+        bVector3 scaled(vOffset);
+        scaled *= lbl_803D726C;
+        vOffset = scaled;
     }
     vCarPos = bAdd(vCarPos, vOffset);
 
