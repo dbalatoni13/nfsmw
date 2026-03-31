@@ -82,6 +82,10 @@ struct simsurface : Instance {
         this->SetDefaultLayout(sizeof(_LayoutStruct));
     }
 
+    simsurface(const simsurface &src) : Instance(src) {
+        this->SetDefaultLayout(sizeof(_LayoutStruct));
+    }
+
     ~simsurface() {}
 
     void Change(const Collection *c) {
