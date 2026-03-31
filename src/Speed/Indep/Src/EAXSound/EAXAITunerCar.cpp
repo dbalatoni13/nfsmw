@@ -61,11 +61,11 @@ const char *EAXAITunerCar::GetStateName(void) const {
 
 CSTATE_Base *EAXAITunerCar::CreateState(unsigned int allocator) {
     if (allocator == 0) {
-        return ::new (AudioMemBase::operator new(
-            sizeof(EAXAITunerCar), GetStaticStateInfo()->stateName, false)) EAXAITunerCar;
+        return new (gAudioMemoryManager.AllocateMemory(
+            sizeof(EAXAITunerCar), s_StateInfo.stateName, false)) EAXAITunerCar;
     } else {
-        return ::new (AudioMemBase::operator new(
-            sizeof(EAXAITunerCar), GetStaticStateInfo()->stateName, true)) EAXAITunerCar;
+        return new (gAudioMemoryManager.AllocateMemory(
+            sizeof(EAXAITunerCar), s_StateInfo.stateName, true)) EAXAITunerCar;
     }
 }
 
@@ -162,11 +162,11 @@ const char *EAXCopCar::GetStateName(void) const {
 
 CSTATE_Base *EAXCopCar::CreateState(unsigned int allocator) {
     if (allocator == 0) {
-        return ::new (AudioMemBase::operator new(
-            sizeof(EAXCopCar), GetStaticStateInfo()->stateName, false)) EAXCopCar;
+        return new (gAudioMemoryManager.AllocateMemory(
+            sizeof(EAXCopCar), s_StateInfo.stateName, false)) EAXCopCar;
     } else {
-        return ::new (AudioMemBase::operator new(
-            sizeof(EAXCopCar), GetStaticStateInfo()->stateName, true)) EAXCopCar;
+        return new (gAudioMemoryManager.AllocateMemory(
+            sizeof(EAXCopCar), s_StateInfo.stateName, true)) EAXCopCar;
     }
 }
 
@@ -187,11 +187,11 @@ const char *EAXTruck::GetStateName(void) const {
 
 CSTATE_Base *EAXTruck::CreateState(unsigned int allocator) {
     if (allocator == 0) {
-        return ::new (AudioMemBase::operator new(
-            sizeof(EAXTruck), GetStaticStateInfo()->stateName, false)) EAXTruck;
+        return new (gAudioMemoryManager.AllocateMemory(
+            sizeof(EAXTruck), s_StateInfo.stateName, false)) EAXTruck;
     } else {
-        return ::new (AudioMemBase::operator new(
-            sizeof(EAXTruck), GetStaticStateInfo()->stateName, true)) EAXTruck;
+        return new (gAudioMemoryManager.AllocateMemory(
+            sizeof(EAXTruck), s_StateInfo.stateName, true)) EAXTruck;
     }
 }
 
