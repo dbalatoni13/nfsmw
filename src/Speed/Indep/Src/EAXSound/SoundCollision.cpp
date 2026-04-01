@@ -172,7 +172,6 @@ CollisionEvent::CollisionEvent(const AudioEventParams &aep, bool impact)
     , mActor(mParams.object) //
     , mActee(mParams.other_object) {
     mActive = false;
-    mAudioFX = 0;
     if (mActor != 0) {
         mTarget.Set(mActor);
     }
