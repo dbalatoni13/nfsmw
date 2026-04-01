@@ -644,6 +644,11 @@ int STREAM_overhead(int requests, int filters, int taps) {
 }
 
 int STREAM_create(int requests, int filters, int taps, void *buffer, int size) {
+    STREAMHEADER *strm;
+    REQUESTSTRUCT *req;
+    FILTERSTRUCT *filt;
+    TAPSTRUCT *tap;
+    int i;
     int overhead = STREAM_overhead(requests, filters, taps);
     overhead = size - overhead;
     if (overhead < 0x1800 || requests < 2 || requests > 0x100 || static_cast<unsigned int>(filters - 1) > 0xF ||
@@ -651,88 +656,86 @@ int STREAM_create(int requests, int filters, int taps, void *buffer, int size) {
         return 0;
     }
 
-    STREAMHEADER *stream = static_cast<STREAMHEADER *>(buffer);
-    stream->id = 0x4D525453;
-    MUTEX_create(&stream->mutex);
+    strm = static_cast<STREAMHEADER *>(buffer);
+    strm->id = 0x4D525453;
+    MUTEX_create(&strm->mutex);
 
-    REQUESTSTRUCT *requestBase = static_cast<REQUESTSTRUCT *>(
-        static_cast<void *>(static_cast<char *>(buffer) + sizeof(STREAMHEADER)));
-    stream->requests = requests;
-    FILTERSTRUCT *filterBase = reinterpret_cast<FILTERSTRUCT *>(requestBase + requests);
-    stream->filters = filters;
-    TAPSTRUCT *tapBase = static_cast<TAPSTRUCT *>(
-        static_cast<void *>(static_cast<char *>(static_cast<void *>(filterBase)) + filters * sizeof(FILTERSTRUCT)));
-    stream->taps = taps;
-    stream->state = STREAM_IDLE_STATE;
+    req = reinterpret_cast<REQUESTSTRUCT *>(static_cast<char *>(buffer) + sizeof(STREAMHEADER));
+    strm->requests = requests;
+    strm->tap = reinterpret_cast<TAPSTRUCT *>(static_cast<void *>(req[requests].fname + filters * sizeof(FILTERSTRUCT) - 0x14));
+    strm->filters = filters;
+    strm->taps = taps;
+    strm->state = STREAM_IDLE_STATE;
 
-    char *dataBase =
-        reinterpret_cast<char *>((reinterpret_cast<unsigned int>(reinterpret_cast<char *>(tapBase) + taps * sizeof(TAPSTRUCT)) &
-                                  0xFFFFFFE0U) +
-                                 0x20);
+    tap = reinterpret_cast<TAPSTRUCT *>((reinterpret_cast<unsigned int>(reinterpret_cast<char *>(strm->tap) + taps * sizeof(TAPSTRUCT)) &
+                                         0xFFFFFFE0U) +
+                                        0x20);
 
-    stream->greedylevel = 0;
-    stream->greedystate = 0;
-    stream->bufferusage = 0;
-    stream->firstreq = nullptr;
-    stream->curreq = nullptr;
-    stream->lastreq = nullptr;
-    stream->bufferend = static_cast<char *>(buffer) + size;
-    stream->prioritylow = 0x96;
-    stream->priorityhigh = 0x32;
-    stream->dataend = dataBase;
-    stream->freereq = requestBase;
-    stream->request = requestBase;
-    stream->filter = filterBase;
-    stream->tap = tapBase;
-    stream->actualbufferstart = dataBase;
-    stream->bufferstart = dataBase;
-    stream->datastart = dataBase;
-    stream->datatail = dataBase;
+    strm->greedylevel = 0;
+    strm->greedystate = 0;
+    strm->bufferusage = 0;
+    strm->firstreq = nullptr;
+    strm->curreq = nullptr;
+    strm->lastreq = nullptr;
+    strm->bufferend = static_cast<char *>(buffer) + size;
+    strm->prioritylow = 0x96;
+    strm->priorityhigh = 0x32;
+    strm->dataend = static_cast<char *>(static_cast<void *>(tap));
+    strm->freereq = req;
+    strm->request = req;
+    filt = reinterpret_cast<FILTERSTRUCT *>(req + requests);
+    strm->filter = filt;
+    strm->actualbufferstart = static_cast<char *>(static_cast<void *>(tap));
+    strm->bufferstart = static_cast<char *>(static_cast<void *>(tap));
+    strm->datastart = static_cast<char *>(static_cast<void *>(tap));
+    strm->datatail = static_cast<char *>(static_cast<void *>(tap));
 
-    MEM_clear(stream->fname, 0xFF);
-    stream->fhandle = 0;
-    stream->foffset = 0;
-    stream->fop = 0;
-    stream->readsize = 0;
+    MEM_clear(strm->fname, 0xFF);
+    strm->fhandle = 0;
+    strm->foffset = 0;
+    strm->fop = 0;
+    strm->readsize = 0;
 
     if (overhead < 0x4000) {
-        stream->readblocksize = 0x800;
+        strm->readblocksize = 0x800;
     } else if (overhead <= 0x7FFF) {
-        stream->readblocksize = 0x1000;
+        strm->readblocksize = 0x1000;
     } else if (overhead <= 0xFFFF) {
-        stream->readblocksize = 0x2000;
+        strm->readblocksize = 0x2000;
     } else if (overhead <= 0x17FFF) {
-        stream->readblocksize = 0x4000;
+        strm->readblocksize = 0x4000;
     } else {
-        stream->readblocksize = 0x8000;
+        strm->readblocksize = 0x8000;
     }
 
-    for (int i = 0; i < requests; ++i) {
+    for (i = 0; i < requests; ++i) {
         REQUESTSTRUCT *request = static_cast<REQUESTSTRUCT *>(
-            static_cast<void *>(static_cast<char *>(static_cast<void *>(requestBase)) + i * sizeof(REQUESTSTRUCT)));
+            static_cast<void *>(static_cast<char *>(static_cast<void *>(strm->request)) + i * sizeof(REQUESTSTRUCT)));
         request->id = i;
         request->state = STREAMREQUEST_FREE;
         request->next = static_cast<REQUESTSTRUCT *>(
-            static_cast<void *>(static_cast<char *>(static_cast<void *>(request)) + sizeof(REQUESTSTRUCT)));
+            static_cast<void *>(static_cast<char *>(static_cast<void *>(strm->request)) + i * sizeof(REQUESTSTRUCT) + sizeof(REQUESTSTRUCT)));
     }
     if (requests > 0) {
-        requestBase[requests - 1].next = nullptr;
+        reinterpret_cast<REQUESTSTRUCT *>(static_cast<char *>(static_cast<void *>(strm->request)) + requests * sizeof(REQUESTSTRUCT) -
+                                         sizeof(REQUESTSTRUCT))
+            ->next = nullptr;
     }
 
-    for (int i = 0; i < filters; ++i) {
-        filterBase[i].mask = 0;
-        filterBase[i].value = 0;
-        filterBase[i].tapnum = 1;
+    for (i = 0; i < filters; ++i) {
+        filt[i].mask = 0;
+        filt[i].value = 0;
+        filt[i].tapnum = 1;
     }
 
-    for (int i = 0; i < taps; ++i) {
-        tapBase[i].stream = static_cast<STREAMHEADERtag *>(buffer);
-        tapBase[i].tapnum = i + 1;
-        tapBase[i].gettable = 0;
+    for (i = 0; i < taps; ++i) {
+        strm->tap[i].stream = static_cast<STREAMHEADERtag *>(buffer);
+        strm->tap[i].tapnum = i + 1;
+        strm->tap[i].gettable = 0;
     }
 
-    AssignAudioStreamHandle(reinterpret_cast<unsigned int>(stream->tap));
-    return reinterpret_cast<int>(stream->tap);
+    AssignAudioStreamHandle(reinterpret_cast<unsigned int>(strm->tap));
+    return reinterpret_cast<int>(strm->tap);
 }
 
 void STREAM_setfilter(int sndstreamhandle, int filternum, int mask, int value, int tapnum) {
