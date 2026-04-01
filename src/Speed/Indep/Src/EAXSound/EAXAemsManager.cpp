@@ -577,15 +577,14 @@ void EAXAemsManager::ResetBankLoadParams() {
 
 int EAXAemsManager::InitiateLoad() {
     int result;
-    stBankSlot *pBankSlot;
-    eTEMPALLOCLOCATION memLocation;
     QueuedFileParams queuedFileParams;
+    char *to = m_csTemp1;
 
-    bStrCat(m_csTemp1, g_DataPaths[m_pCurLoadSDLP->AssetDescription.DataPath],
+    bStrCat(to, g_DataPaths[m_pCurLoadSDLP->AssetDescription.DataPath],
             m_pCurLoadSDLP->AssetDescription.FileName.GetString() != nullptr ?
                 m_pCurLoadSDLP->AssetDescription.FileName.GetString() :
                 "");
-    result = bFileSize(m_csTemp1);
+    result = bFileSize(to);
     m_pCurLoadSDLP->nSize = result;
     if (m_pCurLoadSDLP->nSize < 1) {
         return -1;
@@ -601,56 +600,44 @@ int EAXAemsManager::InitiateLoad() {
                     m_pAsyncBuff = static_cast<char *>(TheTrackStreamer.AllocateUserMemory(0x10000, "EAXAemsManager::m_pAsyncBuff", 0));
                     m_AsyncBuffLocation = TMP_ALLOC_TRACKSTREAMER;
                     if (m_pAsyncBuff == nullptr) {
-                        pBankSlot = m_pCurLoadSDLP->mBankSlot;
+                        stBankSlot *pBankSlot = m_pCurLoadSDLP->mBankSlot;
                         if (pBankSlot != nullptr) {
                             pBankSlot->LoadFailed = 1;
                         }
                         result = -2;
                     } else {
-                        {
-                            pBankSlot = m_pCurLoadSDLP->mBankSlot;
-                            if (pBankSlot != nullptr) {
-                                pBankSlot->LoadFailed = 0;
-                            }
-                            m_pCurLoadSDLP->MemLocation = TMP_ALLOC_NONE;
-                            m_pCurLoadSDLP->AssetDescription.eDataType = EAXSND_DT_AEMS_ASYNCSPU;
+                        stBankSlot *pBankSlot = m_pCurLoadSDLP->mBankSlot;
+                        if (pBankSlot != nullptr) {
+                            pBankSlot->LoadFailed = 0;
                         }
-                        goto HaveQueueParams;
+                        goto HaveAsyncBuffer;
                     }
                 } else {
                     m_AsyncBuffLocation = TMP_ALLOC_MAIN;
                     m_pAsyncBuff = static_cast<char *>(bMalloc(0x10000, 0));
-                    {
-                        pBankSlot = m_pCurLoadSDLP->mBankSlot;
-                        if (pBankSlot != nullptr) {
-                            pBankSlot->LoadFailed = 0;
-                        }
-                        m_pCurLoadSDLP->MemLocation = TMP_ALLOC_NONE;
-                        m_pCurLoadSDLP->AssetDescription.eDataType = EAXSND_DT_AEMS_ASYNCSPU;
+                    stBankSlot *pBankSlot = m_pCurLoadSDLP->mBankSlot;
+                    if (pBankSlot != nullptr) {
+                        pBankSlot->LoadFailed = 0;
                     }
-                    goto HaveQueueParams;
+                    goto HaveAsyncBuffer;
                 }
             }
         } else {
-            {
-                pBankSlot = m_pCurLoadSDLP->mBankSlot;
-                if (pBankSlot != nullptr) {
-                    pBankSlot->LoadFailed = 0;
-                }
-                m_pCurLoadSDLP->MemLocation = TMP_ALLOC_NONE;
-                m_pCurLoadSDLP->AssetDescription.eDataType = EAXSND_DT_AEMS_ASYNCSPU;
+            stBankSlot *pBankSlot = m_pCurLoadSDLP->mBankSlot;
+            if (pBankSlot != nullptr) {
+                pBankSlot->LoadFailed = 0;
             }
-            goto HaveQueueParams;
+            goto HaveAsyncBuffer;
         }
     } else {
         m_pCurLoadSDLP->MemLocation = TMP_ALLOC_AUDIO;
     HaveQueueParams:
-        queuedFileParams.UncompressedSize = 0;
         queuedFileParams.BlockSize = 0x7FFFFFF;
-        queuedFileParams.Priority = QueuedFileDefaultPriority - 2;
         queuedFileParams.Compressed = false;
+        queuedFileParams.UncompressedSize = 0;
         QueuedFileParams *pQueuedFileParams = &queuedFileParams;
-        memLocation = m_pCurLoadSDLP->MemLocation;
+        pQueuedFileParams->Priority = QueuedFileDefaultPriority - 2;
+        eTEMPALLOCLOCATION memLocation = m_pCurLoadSDLP->MemLocation;
         switch (memLocation) {
         case TMP_ALLOC_MAIN:
             result = bLargestMalloc(0);
@@ -686,29 +673,32 @@ int EAXAemsManager::InitiateLoad() {
             *static_cast<int *>(static_cast<void *>(&m_IsWaitingForFileCB)) = 1;
             break;
         case TMP_ALLOC_AUDIO:
-            if (m_pCurLoadSDLP->AssetDescription.eDataType == EAXSND_DT_GENERIC_DATA &&
-                (pBankSlot = m_pCurLoadSDLP->mBankSlot, pBankSlot != nullptr)) {
-                result = m_pCurLoadSDLP->nSize;
-                if (result > pBankSlot->MAINmemSize) {
-                    return -4;
+            if (m_pCurLoadSDLP->AssetDescription.eDataType == EAXSND_DT_GENERIC_DATA) {
+                stBankSlot *pBankSlot = m_pCurLoadSDLP->mBankSlot;
+                if (pBankSlot != nullptr) {
+                    result = m_pCurLoadSDLP->nSize;
+                    if (result > pBankSlot->MAINmemSize) {
+                        return -4;
+                    }
+                    AddQueuedFile(pBankSlot->MAINmemLocation, m_csTemp1, 0, result, DataLoadCB,
+                                  reinterpret_cast<int>(m_pCurLoadSDLP), pQueuedFileParams);
+                    *static_cast<int *>(static_cast<void *>(&m_IsWaitingForFileCB)) = 1;
+                    break;
                 }
-                AddQueuedFile(pBankSlot->MAINmemLocation, m_csTemp1, 0, result, DataLoadCB,
-                              reinterpret_cast<int>(m_pCurLoadSDLP), pQueuedFileParams);
-            } else {
-                result = bLargestMalloc(AudioMemoryPool);
-                if (result < m_pCurLoadSDLP->nSize) {
-                    return -4;
-                }
-                m_pCurLoadSDLP->pmem = gAudioMemoryManager.AllocateMemory(
-                    m_pCurLoadSDLP->nSize,
-                    m_pCurLoadSDLP->AssetDescription.FileName.GetString() != nullptr ?
-                        m_pCurLoadSDLP->AssetDescription.FileName.GetString() :
-                        "",
-                    m_pCurLoadSDLP->AssetDescription.bLoadToTop);
-                result = m_pCurLoadSDLP->nSize;
-                AddQueuedFile(m_pCurLoadSDLP->pmem, m_csTemp1, 0, result, DataLoadCB,
-                              reinterpret_cast<int>(m_pCurLoadSDLP), pQueuedFileParams);
             }
+            result = bLargestMalloc(AudioMemoryPool);
+            if (result < m_pCurLoadSDLP->nSize) {
+                return -4;
+            }
+            m_pCurLoadSDLP->pmem = gAudioMemoryManager.AllocateMemory(
+                m_pCurLoadSDLP->nSize,
+                m_pCurLoadSDLP->AssetDescription.FileName.GetString() != nullptr ?
+                    m_pCurLoadSDLP->AssetDescription.FileName.GetString() :
+                    "",
+                m_pCurLoadSDLP->AssetDescription.bLoadToTop);
+            result = m_pCurLoadSDLP->nSize;
+            AddQueuedFile(m_pCurLoadSDLP->pmem, m_csTemp1, 0, result, DataLoadCB,
+                          reinterpret_cast<int>(m_pCurLoadSDLP), pQueuedFileParams);
             *static_cast<int *>(static_cast<void *>(&m_IsWaitingForFileCB)) = 1;
             break;
         default:
@@ -716,7 +706,7 @@ int EAXAemsManager::InitiateLoad() {
         }
     CheckAsyncSpuLoad:
         if (m_pCurLoadSDLP->AssetDescription.eDataType == EAXSND_DT_AEMS_ASYNCSPU) {
-            pBankSlot = m_pCurLoadSDLP->mBankSlot;
+            stBankSlot *pBankSlot = m_pCurLoadSDLP->mBankSlot;
             if (pBankSlot != nullptr) {
                 SNDmemlimits(pBankSlot->BANKmemLocation, pBankSlot->BANKmemLocation + pBankSlot->BANKMemSize);
             } else {
@@ -733,7 +723,7 @@ ReturnResult:
 
 HaveAsyncBuffer:
     {
-        pBankSlot = m_pCurLoadSDLP->mBankSlot;
+        stBankSlot *pBankSlot = m_pCurLoadSDLP->mBankSlot;
         if (pBankSlot != nullptr) {
             pBankSlot->LoadFailed = 0;
         }
