@@ -170,11 +170,10 @@ void SFXCTL_Pathfinder::EventActionCallback(const int trackhandle, const int cbI
 }
 
 void SFXCTL_Pathfinder::InitSFX() {
-    EA::TagValuePair tvp;
-    tvp.mNext = nullptr;
-    tvp.mValue.mInt = 0;
-    tvp.mTag = 0;
-    PATH_setallocator(&gPF_MemoryAllocator, tvp);
+    EA::TagValuePair tvp(0, 0);
+    EA::TagValuePair &tvpref = tvp;
+    tvpref.mNext = nullptr;
+    PATH_setallocator(&gPF_MemoryAllocator, tvpref);
     PATH_vectortoreal6();
     PATH_vectortosnd();
     PATH_callbacks(SongProgressCallback, EventReleaseCallback, EventActionCallback);

@@ -167,6 +167,11 @@ struct TagValuePair {
         const void *mPointer;  // offset 0x0, size 0x4
     } mValue;                  // offset 0x4, size 0x4
     const TagValuePair *mNext; // offset 0x8, size 0x4
+
+    TagValuePair(unsigned int tag, int value)
+        : mTag(tag) {
+        mValue.mInt = value;
+    }
 };
 
 namespace Allocator {

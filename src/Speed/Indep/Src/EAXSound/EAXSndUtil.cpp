@@ -119,12 +119,10 @@ void cPathLine::Update(float delta_time) {
     }
 
     if (CurveTypes[cur_stage] == EQ_PWR_SQ) {
-        float t = Start[cur_stage];
-        float s = Finish[cur_stage] - t;
-        float x = Start[cur_stage];
+        float s = Finish[cur_stage] - Start[cur_stage];
         int Delta = bClamp(static_cast<int>((delta_time * 32767.0f) / Length[cur_stage]), 0, 0x7fff);
         float Result = static_cast<float>(NFSMixShape::GetCurveOutput(static_cast<NFSMixShape::eMIXTABLEID>(3), Delta, false));
-        CurValue = s * Result * 3.051851e-05f + x;
+        CurValue = s * Result * 3.051851e-05f + Start[cur_stage];
     }
 }
 
