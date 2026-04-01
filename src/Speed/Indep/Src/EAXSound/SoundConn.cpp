@@ -299,7 +299,7 @@ void HeliSoundConn::UpdateState(float dT) {
     }
 
     int validTarget = 1;
-    if (mTarget.GetMatrix() == nullptr) {
+    if (!mTarget.IsValid()) {
         validTarget = 0;
     }
 
@@ -321,19 +321,9 @@ void HeliSoundConn::UpdateState(float dT) {
     PSMTX44Copy((Mtx44)mTarget.GetMatrix(), (Mtx44)&mState->mMatrix);
     mState->mVel1 = mState->mVel0;
     mState->mVel0 = *mTarget.GetVelocity();
-
-    const float invDT = 1.0f / dT;
-    mState->mAccel.x = (mState->mVel0.x - mState->mVel1.x) * invDT;
-    mState->mAccel.y = (mState->mVel0.y - mState->mVel1.y) * invDT;
-    mState->mAccel.z = (mState->mVel0.z - mState->mVel1.z) * invDT;
-
-    const bVector3 *velocity = mTarget.GetVelocity();
-    const float speedSq = velocity->x * velocity->x + velocity->y * velocity->y + velocity->z * velocity->z;
-    float fwSpeed = 0.0f;
-    if (speedSq > 0.0f) {
-        fwSpeed = bSqrt(speedSq);
-    }
-    mState->mFWSpeed = fwSpeed;
+    bSub(&mState->mAccel, &mState->mVel0, &mState->mVel1);
+    bScale(&mState->mAccel, &mState->mAccel, 1.0f / dT);
+    mState->mFWSpeed = bLength(mTarget.GetVelocity());
 }
 
 unsigned int Sim::Packet::Compress(Sim::Packet *) const { return 0; }
