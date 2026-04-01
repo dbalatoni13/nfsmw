@@ -578,12 +578,13 @@ void EAXAemsManager::ResetBankLoadParams() {
 int EAXAemsManager::InitiateLoad() {
     int result;
     stBankSlot *pBankSlot;
-    char *fileString;
     eTEMPALLOCLOCATION memLocation;
     QueuedFileParams queuedFileParams;
 
-    fileString = const_cast<char *>(m_pCurLoadSDLP->AssetDescription.FileName.GetString());
-    bStrCat(m_csTemp1, g_DataPaths[m_pCurLoadSDLP->AssetDescription.DataPath], fileString != nullptr ? fileString : "");
+    bStrCat(m_csTemp1, g_DataPaths[m_pCurLoadSDLP->AssetDescription.DataPath],
+            m_pCurLoadSDLP->AssetDescription.FileName.GetString() != nullptr ?
+                m_pCurLoadSDLP->AssetDescription.FileName.GetString() :
+                "");
     result = bFileSize(m_csTemp1);
     m_pCurLoadSDLP->nSize = result;
     if (m_pCurLoadSDLP->nSize < 1) {
@@ -670,17 +671,17 @@ int EAXAemsManager::InitiateLoad() {
             if (result == 0) {
                 return -3;
             }
-            fileString = const_cast<char *>(m_pCurLoadSDLP->AssetDescription.FileName.GetString());
-            if (fileString == nullptr) {
-                fileString = "";
-            }
-            m_pCurLoadSDLP->pmem = TheTrackStreamer.AllocateUserMemory(m_pCurLoadSDLP->nSize, fileString, 0);
-            fileString = static_cast<char *>(m_pCurLoadSDLP->pmem);
-            if (fileString == nullptr) {
+            m_pCurLoadSDLP->pmem =
+                TheTrackStreamer.AllocateUserMemory(m_pCurLoadSDLP->nSize,
+                                                    m_pCurLoadSDLP->AssetDescription.FileName.GetString() != nullptr ?
+                                                        m_pCurLoadSDLP->AssetDescription.FileName.GetString() :
+                                                        "",
+                                                    0);
+            if (m_pCurLoadSDLP->pmem == nullptr) {
                 return -3;
             }
             result = m_pCurLoadSDLP->nSize;
-            AddQueuedFile(fileString, m_csTemp1, 0, result, DataLoadCB,
+            AddQueuedFile(m_pCurLoadSDLP->pmem, m_csTemp1, 0, result, DataLoadCB,
                           reinterpret_cast<int>(m_pCurLoadSDLP), pQueuedFileParams);
             *static_cast<int *>(static_cast<void *>(&m_IsWaitingForFileCB)) = 1;
             break;
@@ -691,23 +692,23 @@ int EAXAemsManager::InitiateLoad() {
                 if (result > pBankSlot->MAINmemSize) {
                     return -4;
                 }
-                fileString = pBankSlot->MAINmemLocation;
+                AddQueuedFile(pBankSlot->MAINmemLocation, m_csTemp1, 0, result, DataLoadCB,
+                              reinterpret_cast<int>(m_pCurLoadSDLP), pQueuedFileParams);
             } else {
                 result = bLargestMalloc(AudioMemoryPool);
                 if (result < m_pCurLoadSDLP->nSize) {
                     return -4;
                 }
-                fileString = const_cast<char *>(m_pCurLoadSDLP->AssetDescription.FileName.GetString());
-                if (fileString == nullptr) {
-                    fileString = "";
-                }
-                m_pCurLoadSDLP->pmem = gAudioMemoryManager.AllocateMemory(m_pCurLoadSDLP->nSize, fileString,
-                                                                          m_pCurLoadSDLP->AssetDescription.bLoadToTop);
-                fileString = static_cast<char *>(m_pCurLoadSDLP->pmem);
+                m_pCurLoadSDLP->pmem = gAudioMemoryManager.AllocateMemory(
+                    m_pCurLoadSDLP->nSize,
+                    m_pCurLoadSDLP->AssetDescription.FileName.GetString() != nullptr ?
+                        m_pCurLoadSDLP->AssetDescription.FileName.GetString() :
+                        "",
+                    m_pCurLoadSDLP->AssetDescription.bLoadToTop);
                 result = m_pCurLoadSDLP->nSize;
+                AddQueuedFile(m_pCurLoadSDLP->pmem, m_csTemp1, 0, result, DataLoadCB,
+                              reinterpret_cast<int>(m_pCurLoadSDLP), pQueuedFileParams);
             }
-            AddQueuedFile(fileString, m_csTemp1, 0, result, DataLoadCB,
-                          reinterpret_cast<int>(m_pCurLoadSDLP), pQueuedFileParams);
             *static_cast<int *>(static_cast<void *>(&m_IsWaitingForFileCB)) = 1;
             break;
         default:
