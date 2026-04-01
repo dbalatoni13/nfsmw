@@ -202,13 +202,15 @@ void SFXCTL_Engine::AttachController(SFXCTL *psfxctl) {
 void SFXCTL_Engine::UpdateParams(float t) {
     SFXCTL::UpdateParams(t);
 
-    const bVector3 *Cur3dPos = GetPhysCar()->GetPosition();
-    const bVector2 *Cur2dPos = GetPhysCar()->GetPosition2D();
+    const bVector3 *Cur3dPos;
+    const bVector2 *Cur2dPos;
     bVector3 vOffset;
 
     SetDMIX_Input(2, static_cast<int>(m_pEAXCar->GetAttributes().Master_Vol()));
     m_p3DCarPosCtl->AssignDirectionVector(GetPhysCar()->GetForwardVector());
 
+    Cur3dPos = GetPhysCar()->GetPosition();
+    Cur2dPos = GetPhysCar()->GetPosition2D();
     (void)Cur2dPos;
     vCarPos = *Cur3dPos;
     vOffset = bNormalize(*GetPhysCar()->GetForwardVector());
