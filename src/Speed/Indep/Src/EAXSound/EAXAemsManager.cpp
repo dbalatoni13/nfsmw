@@ -610,7 +610,9 @@ int EAXAemsManager::InitiateLoad() {
                         if (pBankSlot != nullptr) {
                             pBankSlot->LoadFailed = 0;
                         }
-                        goto HaveAsyncBuffer;
+                        m_pCurLoadSDLP->MemLocation = TMP_ALLOC_NONE;
+                        m_pCurLoadSDLP->AssetDescription.eDataType = EAXSND_DT_AEMS_ASYNCSPU;
+                        goto HaveQueueParams;
                     }
                 } else {
                     m_AsyncBuffLocation = TMP_ALLOC_MAIN;
@@ -619,7 +621,9 @@ int EAXAemsManager::InitiateLoad() {
                     if (pBankSlot != nullptr) {
                         pBankSlot->LoadFailed = 0;
                     }
-                    goto HaveAsyncBuffer;
+                    m_pCurLoadSDLP->MemLocation = TMP_ALLOC_NONE;
+                    m_pCurLoadSDLP->AssetDescription.eDataType = EAXSND_DT_AEMS_ASYNCSPU;
+                    goto HaveQueueParams;
                 }
             }
         } else {
@@ -627,7 +631,9 @@ int EAXAemsManager::InitiateLoad() {
             if (pBankSlot != nullptr) {
                 pBankSlot->LoadFailed = 0;
             }
-            goto HaveAsyncBuffer;
+            m_pCurLoadSDLP->MemLocation = TMP_ALLOC_NONE;
+            m_pCurLoadSDLP->AssetDescription.eDataType = EAXSND_DT_AEMS_ASYNCSPU;
+            goto HaveQueueParams;
         }
     } else {
         m_pCurLoadSDLP->MemLocation = TMP_ALLOC_AUDIO;
@@ -720,17 +726,6 @@ int EAXAemsManager::InitiateLoad() {
     }
 ReturnResult:
     return result;
-
-HaveAsyncBuffer:
-    {
-        stBankSlot *pBankSlot = m_pCurLoadSDLP->mBankSlot;
-        if (pBankSlot != nullptr) {
-            pBankSlot->LoadFailed = 0;
-        }
-        m_pCurLoadSDLP->MemLocation = TMP_ALLOC_NONE;
-        m_pCurLoadSDLP->AssetDescription.eDataType = EAXSND_DT_AEMS_ASYNCSPU;
-    }
-    goto HaveQueueParams;
 }
 
 void EAXAemsManager::CheckForCompleteAsyncLoad() {
