@@ -332,9 +332,9 @@ void SFXCTL_HybridMotor::UpdateDualMixEng(float t) {
     int curveOutput = NFSMixShape::GetCurveOutput(static_cast<NFSMixShape::eMIXTABLEID>(7), m_EngineMix.Cutoff, true);
     m_GinsuLPFVal = static_cast<float>(curveOutput);
 
-    unsigned int mixedCutoff = m_pEngineCtl->m_DistanceFltr;
-    if (static_cast<unsigned int>(m_EngineMix.Cutoff) < mixedCutoff) {
-        mixedCutoff = static_cast<unsigned int>(m_EngineMix.Cutoff);
+    unsigned int mixedCutoff = static_cast<unsigned int>(m_EngineMix.Cutoff);
+    if (m_pEngineCtl->m_DistanceFltr < m_EngineMix.Cutoff) {
+        mixedCutoff = m_pEngineCtl->m_DistanceFltr;
     }
     m_GinsuLPFVal = static_cast<float>(mixedCutoff);
 
