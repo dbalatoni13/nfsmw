@@ -109,10 +109,6 @@ void SFXCTL_Wheel::UpdateTireParams() {
     GenerateWheelPosition();
     GenerateTerrainTypes();
 
-    bVector2 wheelslip[4];
-    float totalwheelload;
-    int nloop;
-
     LeftSideTouchingGround = true;
     if (!GetPhysCar()->IsWheelTouchingGround(0) && !GetPhysCar()->IsWheelTouchingGround(3)) {
         LeftSideTouchingGround = false;
@@ -123,13 +119,15 @@ void SFXCTL_Wheel::UpdateTireParams() {
         RightSideTouchingGround = false;
     }
 
-    m_bvTotalRightWheelSlip = bVector2(0.0f, 0.0f);
-    m_bvTotalLeftWheelSlip = bVector2(0.0f, 0.0f);
-    totalwheelload = 0.0f;
-
     {
+        bVector2 wheelslip[4];
+        float totalwheelload;
+        int nloop;
         float vehicle_mass;
 
+        m_bvTotalRightWheelSlip = bVector2(0.0f, 0.0f);
+        m_bvTotalLeftWheelSlip = bVector2(0.0f, 0.0f);
+        totalwheelload = 0.0f;
         vehicle_mass = GetPhysCar()->GetAttributes()->MASS();
         for (nloop = 0; nloop <= 3; nloop++) {
             m_fWheelTractionMag[nloop] = bAbs(GetPhysCar()->GetWheelTractionUsage(nloop));
