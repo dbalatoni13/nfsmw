@@ -413,11 +413,11 @@ void SFXCTL_Physics::UpdateParams(float t) {
         return;
     }
 
-    m_pEAXCar->PhysTRQ = PhysicsTRQ;
-    m_pEAXCar->PhysRPM = PhysicsRPM;
-    ReadCarIsAcceleratingRef(m_pEAXCar) = static_cast<int>(IsAccelerating);
-    m_pEAXCar->CurGear = static_cast< int >(m_CurGear);
-    m_pEAXCar->fTrottle = m_fThrottle;
+    m_pEAXCar->SetPhysTRQ(PhysicsTRQ);
+    m_pEAXCar->SetPhysRPM(PhysicsRPM);
+    m_pEAXCar->SetIsAccelerating(static_cast<float>(IsAccelerating));
+    m_pEAXCar->SetCurGear(static_cast< Sound::Gear >(m_CurGear));
+    m_pEAXCar->SetThrottle(m_fThrottle);
 }
 
 void SFXCTL_Physics::SetupSFX(CSTATE_Base *_StateBase) {
