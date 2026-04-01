@@ -315,8 +315,8 @@ void SFXCTL_HybridMotor::UpdateDualMixEng(float t) {
 
     m_bAEMSLPF = false;
     newmix.Aems = (AccelMix.Aems - DecelMix.Aems) * AccelDecelMix + DecelMix.Aems;
-    newmix.AccelGinsu = (AccelMix.AccelGinsu - DecelMix.AccelGinsu) * AccelDecelMix + DecelMix.AccelGinsu;
     newmix.DecelGinsu = (AccelMix.DecelGinsu - DecelMix.DecelGinsu) * AccelDecelMix + DecelMix.DecelGinsu;
+    newmix.AccelGinsu = (AccelMix.AccelGinsu - DecelMix.AccelGinsu) * AccelDecelMix + DecelMix.AccelGinsu;
     newmix.Cutoff = static_cast<int>((static_cast<float>(AccelMix.Cutoff - DecelMix.Cutoff)) * AccelDecelMix +
                                      static_cast<float>(DecelMix.Cutoff));
 
