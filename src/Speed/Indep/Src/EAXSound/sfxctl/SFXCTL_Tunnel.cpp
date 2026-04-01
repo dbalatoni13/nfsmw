@@ -387,15 +387,10 @@ void SFXCTL_Tunnel::UpdateOcclusion(float t) {
     }
 
     m_LastOcclusionTest = TimeBetweenOcclusionTests;
-    if (m_PlayerZoneType == CurZoneType) {
+    if (m_PlayerZoneType == CurZoneType ||
+        (m_PlayerZoneType != TRACK_PATH_ZONE_TUNNEL && CurZoneType != TRACK_PATH_ZONE_TUNNEL)) {
         IsOccluded = 0;
         return;
-    }
-    if (m_PlayerZoneType != TRACK_PATH_ZONE_TUNNEL) {
-        if (CurZoneType != TRACK_PATH_ZONE_TUNNEL) {
-            IsOccluded = 0;
-            return;
-        }
     }
 
     UMath::Vector4 originToBarrier[2];
