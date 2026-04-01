@@ -129,7 +129,9 @@ Filters: `-t function,object` (type), `-s missing|matching|nonmatching|extra` (s
 `--section .text`, `--search <pattern>` (fuzzy name match), `--reloc-diffs none|name_address|data_value|all`
 (surface relocation-only mismatches when needed; default: `none`).
 
-Diff mode shows side-by-side instruction comparison:
+Diff mode shows instruction comparison.
+
+Side-by-side (default):
 
 ```sh
 python tools/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim -d DistributeOneMessage
@@ -137,6 +139,15 @@ python tools/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim -d FindIOWin -
 ```
 
 Mismatched args are wrapped in `{}`. Matching runs are collapsed (control with `-C <n>` context lines, `--no-collapse`). Left = original, right = decomp.
+
+Unified diff (git-style, `--unified`):
+
+```sh
+python tools/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim -d DistributeOneMessage --unified
+python tools/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim -d FindIOWin --unified -C 5
+```
+
+Unified format: `-` = original, `+` = decomp, context lines shown around each mismatch hunk. `@@ 0xOFFSET -N +N instructions @@` header shows where the hunk is and how many instructions differ. Equal counts mean register/offset rename, unequal counts mean structural difference. Mismatched args are wrapped in `{}`.
 
 ### decomp-status.py — Project-wide progress
 
