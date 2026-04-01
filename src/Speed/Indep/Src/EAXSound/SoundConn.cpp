@@ -185,10 +185,11 @@ void CarSoundConn::UpdateState(float dT) {
     mState->mMatrix = *mTarget.GetMatrix();
 
     if (!Service(&data)) {
+        bVector3 zeroAccel(0.0f, 0.0f, 0.0f);
         mState->mSimUpdating = false;
-        mState->mAccel = bVector3(0.0f, 0.0f, 0.0f);
-        mState->mVel1 = mState->mAccel;
-        mState->mVel0 = mState->mVel1;
+        mState->mAccel = zeroAccel;
+        mState->mVel1 = zeroAccel;
+        mState->mVel0 = zeroAccel;
         mState->mFWSpeed = 0.0f;
         mState->mWheel[0].Reset();
         mState->mWheel[1].Reset();
