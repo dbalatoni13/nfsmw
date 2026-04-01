@@ -2,6 +2,7 @@
 #include "Speed/Indep/Src/EAXSound/STICH_Playback.h"
 #include "Speed/Indep/Src/Camera/CameraMover.hpp"
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
+#include "Speed/Indep/Src/Generated/AttribSys/GenericAccessor.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 #include "Speed/Indep/Src/EAXSound/SoundCollision.hpp"
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
@@ -178,15 +179,10 @@ CollisionEvent::CollisionEvent(const AudioEventParams &aep, bool impact)
 
     if (mTarget.IsValid()) {
         if (mAttributes.IsValid()) {
-            unsigned int numDescriptions;
-            {
-                Attrib::Gen::audioimpact attributes(GetAttributes());
-                numDescriptions = attributes.Num_DESCRIPTION();
-            }
+            unsigned int numDescriptions = GetAttributes()->Num_DESCRIPTION();
 
             for (unsigned int d = 0; d < numDescriptions; d++) {
-                Attrib::Gen::audioimpact attributes(GetAttributes());
-                Description |= GetCollisionDescription(attributes.DESCRIPTION(d));
+                Description |= GetCollisionDescription(GetAttributes()->DESCRIPTION(d));
             }
 
             if (IsPrimaryTarget(mActor) || IsPrimaryTarget(mActee)) {
