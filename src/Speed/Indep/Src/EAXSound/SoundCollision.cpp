@@ -176,38 +176,43 @@ CollisionEvent::CollisionEvent(const AudioEventParams &aep, bool impact)
         mTarget.Set(mActor);
     }
 
-    if (mTarget.GetMatrix() != nullptr && mAttributes.IsValid()) {
-        Attrib::Attribute descriptionList = mAttributes.Get(0x9925106);
-        const unsigned int numDescriptions = descriptionList.GetLength();
-
-        for (unsigned int d = 0; d < numDescriptions; d++) {
-            const Attrib::StringKey *hash =
-                static_cast<const Attrib::StringKey *>(mAttributes.GetAttributePointer(0x9925106, d));
-            if (hash == nullptr) {
-                hash = static_cast<const Attrib::StringKey *>(Attrib::DefaultDataArea(0x10));
+    if (mTarget.GetMatrix() != nullptr) {
+        if (mAttributes.IsValid()) {
+            unsigned int numDescriptions;
+            {
+                Attrib::Attribute descriptionList = mAttributes.Get(0x9925106);
+                numDescriptions = descriptionList.GetLength();
             }
-            Description |= GetCollisionDescription(*hash);
-        }
 
-        if (IsPrimaryTarget(mActor) || IsPrimaryTarget(mActee)) {
-            Description |= 1;
-        }
+            for (unsigned int d = 0; d < numDescriptions; d++) {
+                const Attrib::StringKey *hash =
+                    static_cast<const Attrib::StringKey *>(mAttributes.GetAttributePointer(0x9925106, d));
+                if (hash == nullptr) {
+                    hash = static_cast<const Attrib::StringKey *>(Attrib::DefaultDataArea(0x10));
+                }
+                Description |= GetCollisionDescription(*hash);
+            }
 
-        float magnitude = mParams.magnitude;
-        if (magnitude > 1.0f) {
-            magnitude = 1.0f;
-        }
-        if (magnitude < 0.0f) {
-            magnitude = 0.0f;
-        }
-        Intensity = static_cast<int>(magnitude * 10.0f);
+            if (IsPrimaryTarget(mActor) || IsPrimaryTarget(mActee)) {
+                Description |= 1;
+            }
 
-        if (((Description & 6) != 6) || Intensity > 9) {
-            Attrib::Instance attributes(mAttributes);
-            if (impact) {
-                InitAsImpact(*static_cast<const Attrib::Gen::audioimpact *>(static_cast<const void *>(&attributes)));
-            } else {
-                InitAsScrape(*static_cast<const Attrib::Gen::audioscrape *>(static_cast<const void *>(&attributes)));
+            float magnitude = mParams.magnitude;
+            if (magnitude > 1.0f) {
+                magnitude = 1.0f;
+            }
+            if (magnitude < 0.0f) {
+                magnitude = 0.0f;
+            }
+            Intensity = static_cast<int>(magnitude * 10.0f);
+
+            if (((Description & 6) != 6) || Intensity > 9) {
+                Attrib::Instance attributes(mAttributes);
+                if (impact) {
+                    InitAsImpact(*static_cast<const Attrib::Gen::audioimpact *>(static_cast<const void *>(&attributes)));
+                } else {
+                    InitAsScrape(*static_cast<const Attrib::Gen::audioscrape *>(static_cast<const void *>(&attributes)));
+                }
             }
         }
     }
