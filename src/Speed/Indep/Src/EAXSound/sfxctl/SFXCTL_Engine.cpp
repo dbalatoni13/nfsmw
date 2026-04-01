@@ -213,8 +213,11 @@ void SFXCTL_Engine::UpdateParams(float t) {
     Cur2dPos = GetPhysCar()->GetPosition2D();
     (void)Cur2dPos;
     vCarPos = *Cur3dPos;
-    vOffset = bNormalize(*GetPhysCar()->GetForwardVector());
-    vOffset = bVector3(vOffset);
+    {
+        bVector3 normalizedOffset;
+        bNormalize(&normalizedOffset, GetPhysCar()->GetForwardVector());
+        vOffset = bVector3(normalizedOffset);
+    }
 
     if (m_pEAXCar->GetPOV() != 1) {
         bVector3 scaled(vOffset);
