@@ -774,7 +774,7 @@ ReprocessQueue:
             i++;
             while (i != mWaitForResolve.end()) {
                 stSndAssetQueue futureitems = *i;
-                if (futureitems.pThis == currequst.pThis) {
+                if (futureitems == currequst) {
                     callinit = false;
                 }
                 if (!callinit) {
