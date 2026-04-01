@@ -8,23 +8,8 @@
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/engineaudio.h"
 
 SFXCTL_HybridMotor::SFXCTL_HybridMotor()
-    : m_pEngineCtl(nullptr) //
-    , m_pShiftingCtl(nullptr) //
-    , m_pAccelTranCtl(nullptr) //
-    , tSteadyDuration(0.0f) //
-    , m_EngVolAEMS(0) //
-    , m_EngVolAccelGinsu(0) //
-    , m_EngVolDecelGinsu(0) //
-    , DecelCrossfadeMix(CrossFadesPoints, 5) //
-    , m_EngVolRedLine(0) //
-    , mPrevDeltaRPM(0) //
-    , m_bAEMSLPF(false) //
-    , SteadyFrameCnt(0) //
+    : DecelCrossfadeMix(CrossFadesPoints, 5) //
     , m_AvgDeltaRPM(4) {
-    m_EngineMix.Aems = 0.0f;
-    m_EngineMix.AccelGinsu = 0.0f;
-    m_EngineMix.DecelGinsu = 0.0f;
-    m_EngineMix.Cutoff = 0;
     m_AvgDeltaRPM.Flush(0.0f);
     m_GinsuLPFVal = 24000.0f;
     bVector2 point0;
@@ -44,13 +29,17 @@ SFXCTL_HybridMotor::SFXCTL_HybridMotor()
     CrossFadesPoints[2] = point2;
     CrossFadesPoints[3] = point3;
     CrossFadesPoints[4] = point4;
+    tSteadyDuration = 0.0f;
     m_GinsuScaledRPM = 0.0f;
     mPrevPhyDeltaRPM = 0.0f;
     m_CurPhyDeltaRPMVal = 0.0f;
     m_CurAudDeltaRPMVal = 0.0f;
     PrevRPM = 0.0f;
-    PercentOfDecelThreshold = 0.0f;
     PercentOfAccelThreshold = 0.0f;
+    PercentOfDecelThreshold = 0.0f;
+    m_EngVolRedLine = 0;
+    mPrevDeltaRPM = 0;
+    SteadyFrameCnt = 0;
 }
 
 SndBase::TypeInfo *SFXCTL_HybridMotor::GetTypeInfo() const { return &s_TypeInfo; }

@@ -1077,8 +1077,14 @@ void STREAM_kill(int sndstreamhandle) {
 STREAMCHUNKHDR *STREAM_get(int sndstreamhandle) {
     STREAMHEADERtag *streamRaw;
     TAPSTRUCTtag *tapRaw;
-    int status = validatehandle(sndstreamhandle, &streamRaw, &tapRaw);
     STREAMCHUNKHDR *chunk = nullptr;
+    STREAMCHUNKHDR *nextChunk;
+    int chunkSize;
+    int chunkTap;
+    int bytesLeft;
+    unsigned int nextChunkSize;
+    int chunkType;
+    int status = validatehandle(sndstreamhandle, &streamRaw, &tapRaw);
     if (status != 0) {
         return nullptr;
     }
@@ -1088,36 +1094,37 @@ STREAMCHUNKHDR *STREAM_get(int sndstreamhandle) {
     }
 
     chunk = reinterpret_cast<STREAMCHUNKHDR *>(tapRaw->getptr);
-    unsigned int amount = static_cast<unsigned int>(ReadChunkWord(&chunk->size)) & 0xFFFFFF;
-    WriteChunkWord(&chunk->size, static_cast<int>(amount));
+    chunkSize = ReadChunkWord(&chunk->size) & 0xFFFFFF;
+    WriteChunkWord(&chunk->size, chunkSize);
 
     MUTEX_lock(&streamRaw->mutex);
-    int bytesLeft = tapRaw->gettable - static_cast<int>(amount);
+    bytesLeft = tapRaw->gettable - chunkSize;
     tapRaw->gettable = bytesLeft;
     MUTEX_unlock(&streamRaw->mutex);
 
     if (bytesLeft > 0) {
-        char *nextPtr = reinterpret_cast<char *>(chunk) + amount;
-        unsigned int tapMask = static_cast<unsigned int>(tapRaw->tapnum) << 24;
-        unsigned int encodedSize = *reinterpret_cast<unsigned int *>(nextPtr + 4);
-        if ((encodedSize & 0xFF000000) == tapMask) {
-            tapRaw->getptr = nextPtr;
-        } else {
-            int type = *reinterpret_cast<int *>(nextPtr);
-            while (true) {
-                if (type == -1) {
-                    nextPtr = streamRaw->bufferstart;
-                } else {
-                    nextPtr = nextPtr + (encodedSize & 0xFFFFFF);
-                }
-                encodedSize = *reinterpret_cast<unsigned int *>(nextPtr + 4);
-                if ((encodedSize & 0xFF000000) == tapMask) {
-                    break;
-                }
-                type = *reinterpret_cast<int *>(nextPtr);
+        nextChunk = reinterpret_cast<STREAMCHUNKHDR *>(reinterpret_cast<char *>(&chunk->type) + chunkSize);
+        chunkTap = tapRaw->tapnum << 24;
+        while (true) {
+            const unsigned char *nextChunkSizeBytes =
+                static_cast<const unsigned char *>(static_cast<const void *>(&nextChunk->size));
+            nextChunkSize = (static_cast<unsigned int>(nextChunkSizeBytes[3]) << 24) |
+                            (static_cast<unsigned int>(nextChunkSizeBytes[2]) << 16) |
+                            (static_cast<unsigned int>(nextChunkSizeBytes[1]) << 8) |
+                            static_cast<unsigned int>(nextChunkSizeBytes[0]);
+            if (static_cast<int>(nextChunkSize & 0xFF000000) == chunkTap) {
+                break;
             }
-            tapRaw->getptr = nextPtr;
+            chunkType = ReadChunkWord(&nextChunk->type);
+            if (chunkType == -1) {
+                nextChunk = reinterpret_cast<STREAMCHUNKHDR *>(streamRaw->bufferstart);
+            } else {
+                chunkSize = static_cast<int>(nextChunkSize);
+                chunkSize &= 0xFFFFFF;
+                nextChunk = reinterpret_cast<STREAMCHUNKHDR *>(reinterpret_cast<char *>(&nextChunk->type) + chunkSize);
+            }
         }
+        tapRaw->getptr = reinterpret_cast<char *>(nextChunk);
     }
 
     return chunk;
