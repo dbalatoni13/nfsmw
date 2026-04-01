@@ -772,10 +772,13 @@ ReprocessQueue:
         if (IsAssetLoaded(currequst.Asset.FileName) != -1) {
             bool callinit = true;
             i++;
-            while (i != mWaitForResolve.end() && callinit) {
+            while (i != mWaitForResolve.end()) {
                 stSndAssetQueue futureitems = *i;
                 if (futureitems.pThis == currequst.pThis) {
                     callinit = false;
+                }
+                if (!callinit) {
+                    break;
                 }
                 i++;
             }
