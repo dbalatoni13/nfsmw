@@ -381,10 +381,8 @@ void SFXCTL_Tunnel::UpdateOcclusion(float t) {
         return;
     }
 
-    float kZero = 0.0f;
-    float lastOcclusionTest = m_LastOcclusionTest - t;
-    m_LastOcclusionTest = lastOcclusionTest;
-    if (lastOcclusionTest > kZero) {
+    m_LastOcclusionTest -= t;
+    if (m_LastOcclusionTest > 0.0f) {
         return;
     }
 
@@ -412,7 +410,7 @@ void SFXCTL_Tunnel::UpdateOcclusion(float t) {
     originToBarrier[1].y = m_pStateBase->GetPhysCar()->mMatrix.v3.z;
 
     float testDist = Distancexyz(originToBarrier[0], originToBarrier[1]);
-    if (MaxDistanceToOccludeTest < testDist) {
+    if (testDist > MaxDistanceToOccludeTest) {
         testDist = MaxDistanceToOccludeTest;
     }
 
