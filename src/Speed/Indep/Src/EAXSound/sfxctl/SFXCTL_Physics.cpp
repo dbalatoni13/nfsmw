@@ -350,7 +350,6 @@ void SFXCTL_Physics::UpdateParams(float t) {
     SFXCTL::UpdateParams(t);
 
     m_LastGear = m_CurGear;
-    EAXCar *carOwner = m_pEAXCar;
     EAX_CarState *car = GetPhysCar();
 
     m_CurGear = static_cast< Gear >(static_cast<int>(car->mDriveline.mGear));
@@ -377,18 +376,18 @@ void SFXCTL_Physics::UpdateParams(float t) {
     if (m_fThrottle > 30.0f) {
         if (!IsAccelerating) {
             IsAccelerating = true;
-            t_Last_Accel = ReadStateCurTime(carOwner);
+            t_Last_Accel = ReadStateCurTime(m_pEAXCar);
         }
     } else if (IsAccelerating) {
         IsAccelerating = false;
-        t_Last_Deccel = ReadStateCurTime(carOwner);
+        t_Last_Deccel = ReadStateCurTime(m_pEAXCar);
     }
 
     PhysicsTRQ = smooth(PhysicsTRQ, m_fThrottle, 100.0f);
 
     float rpm = car->mEngine.mRPMPct;
     if (m_pStateBase->m_eStateType == eMM_PLAYERCAR) {
-        const Attrib::Gen::engineaudio *engineInfo = &carOwner->mEngineInfo;
+        const Attrib::Gen::engineaudio *engineInfo = &m_pEAXCar->mEngineInfo;
         const bMatrix4 *curve = static_cast<const bMatrix4 *>(
             static_cast<const void *>(engineInfo->GetAttributePointer(0x07E3C833, 0)));
         if (curve == nullptr) {
@@ -414,11 +413,11 @@ void SFXCTL_Physics::UpdateParams(float t) {
         return;
     }
 
-    carOwner->PhysTRQ = PhysicsTRQ;
-    carOwner->PhysRPM = PhysicsRPM;
-    carOwner->fTrottle = m_fThrottle;
-    carOwner->bIsAccelerating = IsAccelerating;
-    carOwner->CurGear = static_cast< int >(m_CurGear);
+    m_pEAXCar->PhysTRQ = PhysicsTRQ;
+    m_pEAXCar->PhysRPM = PhysicsRPM;
+    ReadCarIsAcceleratingRef(m_pEAXCar) = static_cast<int>(IsAccelerating);
+    m_pEAXCar->CurGear = static_cast< int >(m_CurGear);
+    m_pEAXCar->fTrottle = m_fThrottle;
 }
 
 void SFXCTL_Physics::SetupSFX(CSTATE_Base *_StateBase) {
