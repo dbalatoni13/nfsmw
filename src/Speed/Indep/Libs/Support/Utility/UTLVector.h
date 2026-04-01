@@ -8,6 +8,19 @@
 #include <cstddef>
 
 namespace UTL {
+template <typename T> class RepeatSequencer {
+  public:
+    explicit RepeatSequencer(const T &t)
+        : mValue(&t) {}
+
+    const T &operator[](unsigned int) const {
+        return *mValue;
+    }
+
+  private:
+    const T *mValue;
+};
+
 template <typename T, int Alignment = 16> class Vector {
   public:
     typedef T value_type;
@@ -68,40 +81,8 @@ template <typename T, int Alignment = 16> class Vector {
 
     iterator insert(iterator position, const_reference val) {
         size_type posIndex = position - mBegin;
-        pointer oldBuffer = mBegin;
-        size_type oldSize = mSize;
-        size_type oldCapacity = mCapacity;
-
-        size_type newSize = oldSize + 1;
-        if (newSize > oldCapacity) {
-            size_type newCap = GetGrowSize(newSize);
-            mBegin = AllocVectorSpace(newCap, Alignment);
-            mCapacity = newCap;
-        }
-
-        mSize = newSize;
-
-        if (oldBuffer != mBegin) {
-            for (size_type ii = 0; ii < posIndex; ++ii) {
-                new (&mBegin[ii]) T(oldBuffer[ii]);
-            }
-        }
-
-        if (oldSize != posIndex) {
-            size_type shiftCount = oldSize - posIndex;
-            for (size_type ii = 0; ii < shiftCount; ++ii) {
-                pointer src = oldBuffer + (oldSize - 1 - ii);
-                pointer dst = mBegin + (oldSize - ii);
-                new (dst) T(*src);
-            }
-        }
-
-        new (&mBegin[posIndex]) T(val);
-
-        if (oldBuffer && oldBuffer != mBegin) {
-            FreeVectorSpace(oldBuffer, oldCapacity);
-        }
-
+        RepeatSequencer<const value_type> sequencer(val);
+        insert_sequence(position, 1, sequencer);
         return mBegin + posIndex;
     }
 
@@ -188,6 +169,63 @@ template <typename T, int Alignment = 16> class Vector {
     }
 
   protected:
+    void insert_sequence(iterator pos, unsigned int num, RepeatSequencer<const value_type> &sequencer) {
+        pointer oldBuffer = mBegin;
+        size_type oldSize = size();
+        size_type oldCapacity = capacity();
+        size_type iPos = pos - oldBuffer;
+        size_type newSize = oldSize + num;
+
+        if (newSize > oldCapacity) {
+            OnGrowRequest(newSize);
+
+            oldBuffer = mBegin;
+            oldSize = size();
+            oldCapacity = capacity();
+            iPos = pos - oldBuffer;
+            newSize = oldSize + num;
+
+            if (newSize > oldCapacity) {
+                mBegin = AllocVectorSpace(newSize, Alignment);
+                mCapacity = newSize;
+            }
+        }
+
+        mSize = newSize;
+
+        if (oldBuffer && oldBuffer != mBegin) {
+            for (size_type ii = 0; ii < iPos; ++ii) {
+                pointer dst = mBegin + ii;
+                if (dst) {
+                    new (dst) T(oldBuffer[ii]);
+                }
+            }
+        }
+
+        if (oldSize != iPos) {
+            for (size_type ii = 0; ii < oldSize - iPos; ++ii) {
+                pointer dst = mBegin + (newSize - ii);
+                --dst;
+                if (dst) {
+                    pointer src = oldBuffer + (oldSize - ii);
+                    --src;
+                    new (dst) T(*src);
+                }
+            }
+        }
+
+        for (size_type ii = 0; ii < num; ++ii) {
+            pointer dst = mBegin + iPos + ii;
+            if (dst) {
+                new (dst) T(sequencer[ii]);
+            }
+        }
+
+        if (oldBuffer && oldBuffer != mBegin) {
+            FreeVectorSpace(oldBuffer, oldCapacity);
+        }
+    }
+
     // Unfinished
     virtual pointer AllocVectorSpace(size_type num, unsigned int alignment) {
         return nullptr;
