@@ -30,6 +30,8 @@ struct audioimpact : Instance {
 
     audioimpact(const Collection *collection, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(collection, msgPort, owner) {}
 
+    audioimpact(const Instance &src) : Instance(src) {}
+
     audioimpact(const audioimpact &src) : Instance(src) {}
 
     audioimpact(const RefSpec &refspec, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(refspec, msgPort, owner) {}

@@ -168,50 +168,41 @@ CollisionEvent::CollisionEvent(const AudioEventParams &aep, bool impact)
     , Owner(nullptr) //
     , mRefCount(1) //
     , mCSISEffect(nullptr) //
-    , mActive(false) //
-    , mAudioFX(0) //
     , mActor(mParams.object) //
     , mActee(mParams.other_object) {
+    mActive = false;
+    mAudioFX = 0;
     if (mActor != 0) {
         mTarget.Set(mActor);
     }
 
-    if (mTarget.GetMatrix() != nullptr) {
+    if (mTarget.IsValid()) {
         if (mAttributes.IsValid()) {
             unsigned int numDescriptions;
             {
-                Attrib::Attribute descriptionList = mAttributes.Get(0x9925106);
-                numDescriptions = descriptionList.GetLength();
+                Attrib::Gen::audioimpact attributes(GetAttributes());
+                numDescriptions = attributes.Num_DESCRIPTION();
             }
 
             for (unsigned int d = 0; d < numDescriptions; d++) {
-                const Attrib::StringKey *hash =
-                    static_cast<const Attrib::StringKey *>(mAttributes.GetAttributePointer(0x9925106, d));
-                if (hash == nullptr) {
-                    hash = static_cast<const Attrib::StringKey *>(Attrib::DefaultDataArea(0x10));
-                }
-                Description |= GetCollisionDescription(*hash);
+                Attrib::Gen::audioimpact attributes(GetAttributes());
+                Description |= GetCollisionDescription(attributes.DESCRIPTION(d));
             }
 
             if (IsPrimaryTarget(mActor) || IsPrimaryTarget(mActee)) {
                 Description |= 1;
             }
 
-            float magnitude = mParams.magnitude;
-            if (magnitude > 1.0f) {
-                magnitude = 1.0f;
-            }
-            if (magnitude < 0.0f) {
-                magnitude = 0.0f;
-            }
+            float magnitude = UMath::Clamp(GetParameters().magnitude, 0.0f, 1.0f);
             Intensity = static_cast<int>(magnitude * 10.0f);
 
             if (((Description & 6) != 6) || Intensity > 9) {
-                Attrib::Instance attributes(mAttributes);
                 if (impact) {
-                    InitAsImpact(*static_cast<const Attrib::Gen::audioimpact *>(static_cast<const void *>(&attributes)));
+                    Attrib::Gen::audioimpact attributes(GetAttributes());
+                    InitAsImpact(attributes);
                 } else {
-                    InitAsScrape(*static_cast<const Attrib::Gen::audioscrape *>(static_cast<const void *>(&attributes)));
+                    Attrib::Gen::audioscrape attributes(GetAttributes());
+                    InitAsScrape(attributes);
                 }
             }
         }

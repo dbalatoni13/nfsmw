@@ -30,6 +30,8 @@ struct audioscrape : Instance {
 
     audioscrape(const Collection *collection, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(collection, msgPort, owner) {}
 
+    audioscrape(const Instance &src) : Instance(src) {}
+
     audioscrape(const audioscrape &src) : Instance(src) {}
 
     audioscrape(const RefSpec &refspec, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(refspec, msgPort, owner) {}
