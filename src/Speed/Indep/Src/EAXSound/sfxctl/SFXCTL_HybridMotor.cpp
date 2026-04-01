@@ -264,7 +264,6 @@ void SFXCTL_HybridMotor::UpdateDualMixEng(float t) {
     EngineMix DecelMix;
     float DeltaRPM = bAbs(m_AvgDeltaRPM.GetValue() + 10.0f);
     float adt = m_pEAXCar->GetAttributes().AccelDeltaRPMThreshold();
-    bool UseAccelMix;
     EngineMix newmix;
     float EngineCtlVolFactor;
     int VolAEMS;
@@ -278,12 +277,13 @@ void SFXCTL_HybridMotor::UpdateDualMixEng(float t) {
 
     if (!m_pEAXCar->GetPhysicsCTL()->NISRevingEnabled) {
         if (m_pStateBase->GetPhysCar()->IsShifting() || m_pShiftingCtl->IsActive()) {
-            UseAccelMix = (m_pShiftingCtl->eShiftState == SHFT_UP_ENGAGING) ? true : false;
-        } else {
-            UseAccelMix = (m_pAccelTranCtl->eAccelTransFxState == FX_ACCEL_STATE_ATTACK) ? true : false;
-        }
-        if (UseAccelMix) {
-            USE_SMOOTHING = false;
+            if (m_pShiftingCtl->eShiftState == SHFT_UP_ENGAGING) {
+                USE_SMOOTHING = false;
+            }
+        } else if (m_pAccelTranCtl->IsActive()) {
+            if (m_pAccelTranCtl->eAccelTransFxState == FX_ACCEL_STATE_ATTACK) {
+                USE_SMOOTHING = false;
+            }
         }
     }
 
