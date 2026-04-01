@@ -73,10 +73,11 @@ class Pkt_Car_Service : public Sim::Packet {
         mTractionPct[1] = 1.0f;
         mTractionPct[0] = 1.0f;
 
-        mWheelSlip[0] = bVector2(0.0f, 0.0f);
-        mWheelSlip[1] = bVector2(0.0f, 0.0f);
-        mWheelSlip[2] = bVector2(0.0f, 0.0f);
-        mWheelSlip[3] = bVector2(0.0f, 0.0f);
+        bVector2 zeroWheelSlip(0.0f, 0.0f);
+        mWheelSlip[0] = zeroWheelSlip;
+        mWheelSlip[1] = zeroWheelSlip;
+        mWheelSlip[2] = zeroWheelSlip;
+        mWheelSlip[3] = zeroWheelSlip;
 
         mWheelLoad[0] = 0.0f;
         mWheelLoad[1] = 0.0f;
