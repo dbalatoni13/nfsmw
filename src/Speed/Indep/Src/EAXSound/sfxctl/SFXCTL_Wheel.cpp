@@ -150,12 +150,12 @@ void SFXCTL_Wheel::UpdateTireParams() {
                 bClamp(wheelslip[nloop].y * gWheelSlipSensitivity[1], -1023.0f, 1023.0f);
 
             if (PRINT_SKID_FX_DEBUG != 0 && GetPhysCar()->IsLocalPlayerCar()) {
-                int x;
                 int y;
+                int x;
                 const float scale = 0.5f;
 
-                x = 0;
                 y = 0;
+                x = 0;
 
                 if (nloop == 1) {
                     x = 0xe6;
