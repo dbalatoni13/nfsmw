@@ -409,14 +409,15 @@ void SFXCTL_Tunnel::UpdateOcclusion(float t) {
     originToBarrier[1].x = -m_pStateBase->GetPhysCar()->mMatrix.v3.y;
     originToBarrier[1].y = m_pStateBase->GetPhysCar()->mMatrix.v3.z;
 
-    float testDist = Distancexyz(originToBarrier[0], originToBarrier[1]);
+    VU0_v4subxyz(originToBarrier[0], originToBarrier[1], directionVec);
+    float testDist = VU0_sqrt(VU0_v4lengthsquarexyz(directionVec));
     if (testDist > MaxDistanceToOccludeTest) {
         testDist = MaxDistanceToOccludeTest;
     }
 
     originToBarrier[0].y = originToBarrier[0].y + 2.0f;
     VU0_v4sub(originToBarrier[0], originToBarrier[1], directionVec);
-    UMath::Unit(directionVec, directionVec);
+    VU0_v4scale(directionVec, VU0_rsqrt(VU0_v4lengthsquare(directionVec)), directionVec);
     VU0_v4scaleadd(originToBarrier[1], testDist, originToBarrier[0], directionVec);
 
     WCollisionMgr::WorldCollisionInfo cInfo;
