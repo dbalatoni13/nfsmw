@@ -126,10 +126,10 @@ void SFXCTL_Wheel::UpdateTireParams() {
         float vehicle_mass;
         int zeroInitIndex;
 
-        m_bvTotalRightWheelSlip.x = 0.0f;
-        m_bvTotalRightWheelSlip.y = 0.0f;
-        m_bvTotalLeftWheelSlip.x = 0.0f;
         m_bvTotalLeftWheelSlip.y = 0.0f;
+        m_bvTotalRightWheelSlip.x = 0.0f;
+        m_bvTotalLeftWheelSlip.x = 0.0f;
+        m_bvTotalRightWheelSlip.y = 0.0f;
         zeroInitIndex = 3;
         do {
             wheelslip[zeroInitIndex].x = 0.0f;
