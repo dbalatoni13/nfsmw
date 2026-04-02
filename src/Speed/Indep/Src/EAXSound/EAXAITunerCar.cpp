@@ -37,6 +37,10 @@ struct stAIDriveByInfo {
     float ClosingVelocity;
     bVector3 vLocation;
     unsigned int UniqueID;
+
+    stAIDriveByInfo() {
+        vLocation = bVector3(0.0f, 0.0f, 0.0f);
+    }
 };
 } // namespace AIDriveBy
 
@@ -102,10 +106,8 @@ void EAXAITunerCar::ProcessEvent(emEvent *event) {
 
 void EAXAITunerCar::UpdatAIDriveBy(float t) {
     EAX_CarState *ClosestPlayer;
-    AIDriveBy::stAIDriveByInfo TmpDriveByPackage;
     float fRelativeVel;
     bVector3 vVelDiff;
-    CSTATE_Base *ReturnedObj;
 
     (void)t;
 
@@ -124,6 +126,7 @@ void EAXAITunerCar::UpdatAIDriveBy(float t) {
         return;
     }
 
+    AIDriveBy::stAIDriveByInfo TmpDriveByPackage;
     TmpDriveByPackage.eDriveByType = AIDriveBy::DRIVE_BY_AI_CAR;
     TmpDriveByPackage.ClosingVelocity = fRelativeVel;
     TmpDriveByPackage.pEAXCar = this;
@@ -137,6 +140,7 @@ void EAXAITunerCar::UpdatAIDriveBy(float t) {
         moment.Send(UCrc32("BlewByCop"));
     }
 
+    CSTATE_Base *ReturnedObj;
     ReturnedObj = EAXSound::GetStateMgr(eMM_DRIVEBY)->GetFreeState(&TmpDriveByPackage);
     if (ReturnedObj != nullptr) {
         ReturnedObj->Attach(&TmpDriveByPackage);
