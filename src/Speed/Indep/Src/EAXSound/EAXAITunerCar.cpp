@@ -102,25 +102,23 @@ void EAXAITunerCar::ProcessEvent(emEvent *event) {
 
 void EAXAITunerCar::UpdatAIDriveBy(float t) {
     EAX_CarState *ClosestPlayer;
-    bVector3 vVelDiff;
-    float fRelativeVel;
     AIDriveBy::stAIDriveByInfo TmpDriveByPackage;
+    float fRelativeVel;
+    bVector3 vVelDiff;
     CSTATE_Base *ReturnedObj;
 
     (void)t;
 
-    if (m_pCar == nullptr) {
+    if (GetPhysCar() == nullptr) {
         return;
     }
 
-    ClosestPlayer = GetClosestPlayerCar(static_cast<bVector3 *>(static_cast<void *>(&m_pCar->mMatrix.v3)));
-    if (!IsCarInRadius(ClosestPlayer, static_cast<bVector3 *>(static_cast<void *>(&m_pCar->mMatrix.v3)), 12.0f)) {
+    ClosestPlayer = GetClosestPlayerCar(GetPhysCar()->GetPosition());
+    if (!IsCarInRadius(ClosestPlayer, GetPhysCar()->GetPosition(), 12.0f)) {
         return;
     }
 
-    vVelDiff = bSub(
-        m_pCar->mVel0,
-        ClosestPlayer->mVel0);
+    vVelDiff = bSub(*GetPhysCar()->GetVelocity(), *ClosestPlayer->GetVelocity());
     fRelativeVel = bLength(vVelDiff);
     if (fRelativeVel < 15.0f) {
         return;
@@ -128,18 +126,18 @@ void EAXAITunerCar::UpdatAIDriveBy(float t) {
 
     TmpDriveByPackage.eDriveByType = AIDriveBy::DRIVE_BY_AI_CAR;
     TmpDriveByPackage.ClosingVelocity = fRelativeVel;
-    TmpDriveByPackage.vLocation = *static_cast<bVector3 *>(static_cast<void *>(&m_pCar->mMatrix.v3));
     TmpDriveByPackage.pEAXCar = this;
     TmpDriveByPackage.UniqueID = reinterpret_cast< unsigned int >(this);
+    TmpDriveByPackage.vLocation = *GetPhysCar()->GetPosition();
 
-    if (m_pCar->mContext == Sound::CONTEXT_COP) {
+    if (GetPhysCar()->GetContext() == Sound::CONTEXT_COP) {
         MGamePlayMoment moment(UMath::Vector4::kZero, UMath::Vector4::kZero, UMath::Vector4::kZero,
-                               m_pCar->mWorldID,
+                               GetPhysCar()->mWorldID,
                                0);
         moment.Send(UCrc32("BlewByCop"));
     }
 
-    ReturnedObj = EAXSound::m_pStateMgr[eMM_DRIVEBY]->GetFreeState(&TmpDriveByPackage);
+    ReturnedObj = EAXSound::GetStateMgr(eMM_DRIVEBY)->GetFreeState(&TmpDriveByPackage);
     if (ReturnedObj != nullptr) {
         ReturnedObj->Attach(&TmpDriveByPackage);
     }
