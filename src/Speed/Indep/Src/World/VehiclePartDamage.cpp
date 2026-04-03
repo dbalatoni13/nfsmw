@@ -401,7 +401,12 @@ void VehiclePartDamageBehaviour::ManageGlassDamage() {
     for (windowIx = 0; windowIx <= 4; windowIx++) {
         const BreakableWindowInfoDataType &windowInfo = mBreakableWindowInfoList[windowIx];
         VehicleDamagePart *damagePart = this->mDamagePartList[windowInfo.mPartSlotId];
-        int damageState = bMin(1, static_cast<int>(*reinterpret_cast<unsigned short *>(damagePart)));
+        int currentDamageState = static_cast<int>(*reinterpret_cast<unsigned short *>(damagePart));
+        int damageState = 1;
+
+        if (damageState > currentDamageState) {
+            damageState = currentDamageState;
+        }
 
         if (this->mCarRenderInfo != 0) {
             if (damageState > 0) {
