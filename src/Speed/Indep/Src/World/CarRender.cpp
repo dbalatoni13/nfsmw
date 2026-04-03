@@ -4392,8 +4392,10 @@ void CarRenderInfo::DrawKeithProjShadow(eView *view, const bVector3 *position, b
             shadow_vertex++;
         }
 
-        this->convex_hull(shadowVertices, this->mWCollider, n, shadowZ, lbl_8040ADA4, body_lod != this->mMinLodLevel);
-        if (body_lod == this->mMinLodLevel) {
+        int not_min_lod = body_lod != this->mMinLodLevel;
+
+        this->convex_hull(shadowVertices, this->mWCollider, n, shadowZ, lbl_8040ADA4, not_min_lod);
+        if (!not_min_lod) {
             n = smooth_shadow_corners(n);
             shadowVertices = hullVertArray3;
         } else {
