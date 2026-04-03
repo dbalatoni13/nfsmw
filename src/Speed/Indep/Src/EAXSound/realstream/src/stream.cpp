@@ -720,8 +720,8 @@ int STREAM_create(int requests, int filters, int taps, void *buffer, int size) {
     for (i = 0; i < filters; ++i) {
         FILTERSTRUCT *filter = strm->filter + i;
         filter->mask = 0;
-        filter->tapnum = 1;
         filter->value = 0;
+        filter->tapnum = 1;
     }
 
     i = 0;
@@ -729,8 +729,8 @@ int STREAM_create(int requests, int filters, int taps, void *buffer, int size) {
         TAPSTRUCT *streamTap = strm->tap + i;
         streamTap->stream = static_cast<STREAMHEADERtag *>(buffer);
         ++i;
-        streamTap->gettable = 0;
         streamTap->tapnum = i;
+        streamTap->gettable = 0;
     }
 
     AssignAudioStreamHandle(reinterpret_cast<unsigned int>(strm->tap));
