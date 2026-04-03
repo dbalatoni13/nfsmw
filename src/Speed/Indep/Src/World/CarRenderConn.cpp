@@ -993,10 +993,10 @@ void CarRenderConn::UpdateTires(float dT, float carspeed, const RenderConn::Pkt_
             state->mRoll += 6.2831855f;
         }
 
-        eRotateY(&this->mTireMatrices[i], &this->mTireMatrices[i], static_cast<unsigned short>(state->mRoll * 10430.378f));
+        eRotateY(&this->mTireMatrices[i], &this->mTireMatrices[i], bRadToAng(state->mRoll));
         if (i < 2) {
-            eRotateZ(&this->mTireMatrices[i], &this->mTireMatrices[i], static_cast<unsigned short>(this->mSteering[i] * 10430.378f));
-            eRotateZ(&this->mBrakeMatrices[i], &this->mBrakeMatrices[i], static_cast<unsigned short>(this->mSteering[i] * 10430.378f));
+            eRotateZ(&this->mTireMatrices[i], &this->mTireMatrices[i], bRadToAng(this->mSteering[i]));
+            eRotateZ(&this->mBrakeMatrices[i], &this->mBrakeMatrices[i], bRadToAng(this->mSteering[i]));
         }
 
         if (flatten_tires && is_flat) {
@@ -1046,7 +1046,7 @@ void CarRenderConn::UpdateTires(float dT, float carspeed, const RenderConn::Pkt_
         }
 
         eMulVector(&state->mTirePos, &this->mRenderMatrix, &this->mTireMatrices[i].v3);
-        state->UpdateWorld(this->mWCollider, this->GetFlag(CF_ISRAINING), is_flat);
+        state->UpdateWorld(this->GetWCollider(), this->GetFlag(CF_ISRAINING), is_flat);
 
         if (onground) {
             if (can_do_fx) {
