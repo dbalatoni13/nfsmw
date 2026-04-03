@@ -145,16 +145,19 @@ VehicleRenderConn::VehicleRenderConn(const Sim::ConnectionData &data, CarType ty
       mCarType(type), //
       mWorldRef(0)
 {
-    this->mSkinSlot = 0;
+    const char *base_model_name = CarTypeInfoArray[type].BaseModelName;
+    float zero = 0.0f;
+
     this->mRideInfo = 0;
     this->mRenderInfo = 0;
     *reinterpret_cast<int *>(&this->mHide) = 0;
     this->mWCollider = 0;
-    this->mModelOffset.w = 0.0f;
-    this->mModelOffset.x = 0.0f;
-    this->mModelOffset.y = 0.0f;
-    this->mModelOffset.z = 0.0f;
-    this->mAttributes.ChangeWithDefault(Attrib::StringToLowerCaseKey(CarTypeInfoArray[type].BaseModelName));
+    this->mModelOffset.x = zero;
+    this->mModelOffset.y = zero;
+    this->mModelOffset.z = zero;
+    this->mModelOffset.w = zero;
+    this->mSkinSlot = 0;
+    this->mAttributes.ChangeWithDefault(Attrib::StringToLowerCaseKey(base_model_name));
 }
 
 VehicleRenderConn::~VehicleRenderConn() {
