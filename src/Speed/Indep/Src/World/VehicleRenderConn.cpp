@@ -511,6 +511,7 @@ void VehicleRenderConn::RenderFlares(eView *view, int reflection, int renderFlar
             }
 
             info->RenderFlaresOnCar(view, &offset2, &render_matrix, 0, reflection, renderFlareFlags);
+            info = conn->mRenderInfo;
 
             if (reflection == 0) {
                 if (view->GetID() == 1 || view->GetID() == 2) {
