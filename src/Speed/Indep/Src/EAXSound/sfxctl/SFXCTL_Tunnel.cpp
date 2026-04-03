@@ -387,14 +387,19 @@ void SFXCTL_Tunnel::UpdateOcclusion(float t) {
     }
 
     m_LastOcclusionTest = TimeBetweenOcclusionTests;
-    if (m_PlayerZoneType == CurZoneType ||
-        (m_PlayerZoneType != TRACK_PATH_ZONE_TUNNEL && CurZoneType != TRACK_PATH_ZONE_TUNNEL)) {
+    if (m_PlayerZoneType == CurZoneType) {
+        IsOccluded = 0;
+        return;
+    }
+
+    if (m_PlayerZoneType != TRACK_PATH_ZONE_TUNNEL && CurZoneType != TRACK_PATH_ZONE_TUNNEL) {
         IsOccluded = 0;
         return;
     }
 
     UMath::Vector4 originToBarrier[2];
     UMath::Vector4 directionVec;
+    UMath::Vector4 testDirectionVec;
 
     originToBarrier[0].x = -SndCamera::GetV3WorldCarPos(0)->y;
     originToBarrier[0].y = SndCamera::GetV3WorldCarPos(0)->z;
@@ -404,8 +409,8 @@ void SFXCTL_Tunnel::UpdateOcclusion(float t) {
     originToBarrier[1].x = -m_pStateBase->GetPhysCar()->mMatrix.v3.y;
     originToBarrier[1].y = m_pStateBase->GetPhysCar()->mMatrix.v3.z;
 
-    VU0_v4subxyz(originToBarrier[0], originToBarrier[1], directionVec);
-    float testDist = VU0_sqrt(VU0_v4lengthsquarexyz(directionVec));
+    VU0_v4subxyz(originToBarrier[0], originToBarrier[1], testDirectionVec);
+    float testDist = VU0_sqrt(VU0_v4lengthsquarexyz(testDirectionVec));
     if (testDist > MaxDistanceToOccludeTest) {
         testDist = MaxDistanceToOccludeTest;
     }
@@ -416,15 +421,11 @@ void SFXCTL_Tunnel::UpdateOcclusion(float t) {
     VU0_v4scaleadd(originToBarrier[1], testDist, originToBarrier[0], directionVec);
 
     WCollisionMgr::WorldCollisionInfo cInfo;
-    WCollisionMgr collisionMgr(0, 3);
-    if (!collisionMgr.CheckHitWorld(originToBarrier, cInfo, 2)) {
-        IsOccluded = 0;
-        return;
-    }
-
-    if (VU0_v4distancesquarexyz(originToBarrier[0], cInfo.fCollidePt) < testDist * testDist - 9.0f) {
-        IsOccluded = 1;
-        return;
+    if (WCollisionMgr(0, 3).CheckHitWorld(originToBarrier, cInfo, 2)) {
+        if (VU0_v4distancesquarexyz(originToBarrier[0], cInfo.fCollidePt) < testDist * testDist - 9.0f) {
+            IsOccluded = 1;
+            return;
+        }
     }
 
     IsOccluded = 0;
