@@ -330,22 +330,21 @@ IModel *DrawVehicle::GetChildModel(UCrc32 name) const {
 }
 
 IModel *DrawVehicle::SpawnModel(UCrc32 name, UCrc32 collisionnode, UCrc32 attributes) {
-    if (Vehicle_Part_Count < 61U && UTL::Collections::Listable<IModel, 434>::Count() < 435U && mGeometry) {
-        const CollisionGeometry::Bounds *bounds = mGeometry->GetChild(collisionnode);
-        if (bounds) {
-            const Attrib::Collection *attribs = SmokeableSpawner::FindAttributes(attributes);
-            if (!attribs) {
-                return nullptr;
-            }
-            Part *part = new Part(static_cast<IModel *>(this), GetOwner()->GetWorldID(), bounds, attribs, name);
-            IModel *model = nullptr;
-            if (part) {
-                model = part;
-            }
-            return model;
-        }
+    const CollisionGeometry::Bounds *bounds;
+    const Attrib::Collection *spec;
+
+    if (Vehicle_Part_Count >= 61U || UTL::Collections::Listable<IModel, 434>::Count() >= 435U || !mGeometry) {
+        return nullptr;
     }
-    return nullptr;
+    bounds = mGeometry->GetChild(collisionnode);
+    if (!bounds) {
+        return nullptr;
+    }
+    spec = SmokeableSpawner::FindAttributes(attributes);
+    if (!spec) {
+        return nullptr;
+    }
+    return new Part(static_cast<IModel *>(this), GetOwner()->GetWorldID(), bounds, spec, name);
 }
 
 bool DrawVehicle::IsHidden() const {

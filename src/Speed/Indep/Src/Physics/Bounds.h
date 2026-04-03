@@ -123,8 +123,8 @@ struct Bounds {
     const Bounds *GetChild(unsigned int idx) const {
         return fCollection->GetChild(this, idx);
     }
-    const Bounds *GetChild(UCrc32 name) const {
-        return fCollection->GetChild(this, name);
+    const Bounds *GetChild(UCrc32 namehash) const {
+        return fCollection->GetChild(this, namehash);
     }
 };
 
