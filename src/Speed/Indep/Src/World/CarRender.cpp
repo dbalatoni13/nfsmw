@@ -1978,57 +1978,53 @@ bool CarRenderInfo::Render(eView *view, const bVector3 *world_position, const bM
 
     bMatrix4 *local_world;
     {
-        unsigned char *addr = CurrentBufferPos;
-        unsigned int sz = sizeof(bMatrix4);
-        if (CurrentBufferEnd <= addr + sz) {
+        unsigned char *address = CurrentBufferPos;
+        if (address + 0x40 >= CurrentBufferEnd) {
             FrameMallocFailed = 1;
-            FrameMallocFailAmount += sz;
+            FrameMallocFailAmount += 0x40;
             local_world = 0;
         } else {
-            CurrentBufferPos = addr + sz;
-            local_world = reinterpret_cast<bMatrix4 *>(addr);
+            CurrentBufferPos = address + 0x40;
+            local_world = reinterpret_cast<bMatrix4 *>(address);
         }
     }
 
     bMatrix4 *cpy_local_world;
     {
-        unsigned char *addr = CurrentBufferPos;
-        unsigned int sz = sizeof(bMatrix4);
-        if (CurrentBufferEnd <= addr + sz) {
+        unsigned char *address = CurrentBufferPos;
+        if (address + 0x40 >= CurrentBufferEnd) {
             FrameMallocFailed = 1;
-            FrameMallocFailAmount += sz;
+            FrameMallocFailAmount += 0x40;
             cpy_local_world = 0;
         } else {
-            CurrentBufferPos = addr + sz;
-            cpy_local_world = reinterpret_cast<bMatrix4 *>(addr);
+            CurrentBufferPos = address + 0x40;
+            cpy_local_world = reinterpret_cast<bMatrix4 *>(address);
         }
     }
 
     bMatrix4 *biased_identity;
     {
-        unsigned char *addr = CurrentBufferPos;
-        unsigned int sz = sizeof(bMatrix4);
-        if (CurrentBufferEnd <= addr + sz) {
+        unsigned char *address = CurrentBufferPos;
+        if (address + 0x40 >= CurrentBufferEnd) {
             FrameMallocFailed = 1;
-            FrameMallocFailAmount += sz;
+            FrameMallocFailAmount += 0x40;
             biased_identity = 0;
         } else {
-            CurrentBufferPos = addr + sz;
-            biased_identity = reinterpret_cast<bMatrix4 *>(addr);
+            CurrentBufferPos = address + 0x40;
+            biased_identity = reinterpret_cast<bMatrix4 *>(address);
         }
     }
 
     bMatrix4 *biased_local_world;
     {
-        unsigned char *addr = CurrentBufferPos;
-        unsigned int sz = sizeof(bMatrix4);
-        if (CurrentBufferEnd <= addr + sz) {
+        unsigned char *address = CurrentBufferPos;
+        if (address + 0x40 >= CurrentBufferEnd) {
             FrameMallocFailed = 1;
-            FrameMallocFailAmount += sz;
+            FrameMallocFailAmount += 0x40;
             biased_local_world = 0;
         } else {
-            CurrentBufferPos = addr + sz;
-            biased_local_world = reinterpret_cast<bMatrix4 *>(addr);
+            CurrentBufferPos = address + 0x40;
+            biased_local_world = reinterpret_cast<bMatrix4 *>(address);
         }
     }
 
