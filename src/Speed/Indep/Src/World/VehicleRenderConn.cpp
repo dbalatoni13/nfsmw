@@ -487,10 +487,10 @@ void VehicleRenderConn::RenderFlares(eView *view, int reflection, int renderFlar
         VehicleRenderConn *conn = *iter;
 
         if (conn->CanRender() && conn->mRenderInfo != 0) {
-            CarRenderInfo *info = conn->mRenderInfo;
             bMatrix4 render_matrix;
             bVector3 offset2;
             CameraMover *mover = nullptr;
+            CarRenderInfo *info = conn->mRenderInfo;
 
             conn->GetRenderMatrix(&render_matrix);
             offset2.x = render_matrix.v3.x;
@@ -531,7 +531,7 @@ void VehicleRenderConn::RenderFlares(eView *view, int reflection, int renderFlar
 
                     if (0.1f < NOSamount && info->NOSstate != 0) {
                         for (int streak = 3; streak > 1; --streak) {
-                            int history_index = info->matrixIndex + streak;
+                            int history_index = streak + info->matrixIndex;
                             int next_index = (history_index + 1) % 3;
                             int current_index = (history_index + 2) % 3;
                             bVector3 flare_position = info->LastFewPositions[current_index] - info->LastFewPositions[next_index];
