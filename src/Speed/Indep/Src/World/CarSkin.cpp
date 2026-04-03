@@ -153,126 +153,126 @@ int CompositeSkin32(SkinCompositeParams *composite_params) {
         return 0;
     }
 
-    if (dest_texture->ImageCompressionType == TEXCOMP_32BIT) {
-        unsigned int *dest_image_data = static_cast<unsigned int *>(TextureInfo_LockImage(dest_texture, TEXLOCK_WRITE));
-        int dest_width = dest_texture->Width;
-        int dest_height = dest_texture->Height;
-        unsigned int base;
-        unsigned int *dest_pixel;
-        unsigned int *end_pixel;
-        int num_pixels;
+    if (dest_texture->ImageCompressionType != TEXCOMP_32BIT) {
+        return 0;
+    }
 
-        if (swatch_offset_init == 0) {
-            unsigned int swatch_lookup_colours[4] = {
-                0xBF0000FF,
-                0xBF00FF00,
-                0xBFFF0000,
-                0xBFFF00FF,
-            };
+    unsigned int *dest_image_data = static_cast<unsigned int *>(TextureInfo_LockImage(dest_texture, TEXLOCK_WRITE));
+    int dest_width = dest_texture->Width;
+    int dest_height = dest_texture->Height;
+    unsigned int base;
+    unsigned int *dest_pixel;
+    unsigned int *end_pixel;
+    int num_pixels;
+
+    if (swatch_offset_init == 0) {
+        unsigned int swatch_lookup_colours[4] = {
+            0xBF0000FF,
+            0xBF00FF00,
+            0xBFFF0000,
+            0xBFFF00FF,
+        };
+        unsigned int *dest = dest_image_data;
+        unsigned int *dest_end;
+
+        bMemSet(swatch_offset_cache, 0, sizeof(swatch_offset_cache));
+
+        dest_end = dest_image_data + dest_width * dest_height;
+        while (dest < dest_end) {
+            int pixel_offset = dest - dest_image_data;
+            int i = 0;
+
+            do {
+                if (*dest == swatch_lookup_colours[i]) {
+                    int *swatch_offsets = swatch_offset_cache + i * 16;
+                    int count = swatch_offset_count[i];
+
+                    swatch_offset_count[i] = count + 1;
+                    swatch_offsets[count] = pixel_offset;
+                    break;
+                }
+
+                i++;
+            } while (i < 4);
+
+            dest++;
+        }
+
+        swatch_offset_init = 1;
+    }
+
+    num_pixels = dest_width * dest_height;
+    base = base_colour;
+    reinterpret_cast<unsigned char *>(&base)[2] = static_cast<unsigned char>(base_colour >> 24);
+    reinterpret_cast<unsigned char *>(&base)[0] = static_cast<unsigned char>(base_colour >> 8);
+
+    for (dest_pixel = dest_image_data, end_pixel = dest_image_data + num_pixels; dest_pixel < end_pixel; dest_pixel++) {
+        *dest_pixel = base;
+    }
+
+    for (int i = 0; i < num_layers; i++) {
+        VinylLayerInfo *info = &layer_infos[i];
+
+        if (info->m_LayerMaskData != 0) {
+            unsigned int *image_src = reinterpret_cast<unsigned int *>(info->m_LayerImageData);
             unsigned int *dest = dest_image_data;
-            unsigned int *dest_end;
+            unsigned int *mask_src = reinterpret_cast<unsigned int *>(info->m_LayerMaskData);
+            unsigned int *image_end = image_src + num_pixels;
 
-            bMemSet(swatch_offset_cache, 0, sizeof(swatch_offset_cache));
+            for (; image_src < image_end; image_src++, mask_src++, dest++) {
+                unsigned int src_pixel = *image_src;
+                unsigned int src_mask = *mask_src;
+                unsigned int dest_pixel = *dest;
+                unsigned char blend_value = reinterpret_cast<unsigned char *>(&src_mask)[2];
 
-            dest_end = dest_image_data + dest_width * dest_height;
-            while (dest < dest_end) {
-                int pixel_offset = dest - dest_image_data;
-                int i = 0;
+                if (info->m_RemapPalette != 0 && blend_value != 0) {
+                    CompColour src_colour;
 
-                do {
-                    if (*dest == swatch_lookup_colours[i]) {
-                        int *swatch_offsets = swatch_offset_cache + i * 16;
-                        int count = swatch_offset_count[i];
+                    *reinterpret_cast<unsigned int *>(&src_colour) = src_pixel;
+                    src_colour.g = static_cast<unsigned char>(src_pixel >> 24);
+                    src_colour.a = static_cast<unsigned char>(src_pixel >> 8);
+                    src_pixel = RemapColour(*reinterpret_cast<unsigned int *>(&src_colour), info->m_RemapColours);
+                }
 
-                        swatch_offset_count[i] = count + 1;
-                        swatch_offsets[count] = pixel_offset;
-                        break;
-                    }
+                if (blend_value < 0x80) {
+                    if (blend_value != 0) {
+                        unsigned int colours[2];
+                        float weights[2];
 
-                    i++;
-                } while (i < 4);
+                        weights[0] = static_cast<float>(blend_value) / 255.0f;
+                        weights[1] = 1.0f - weights[0];
 
-                dest++;
-            }
-
-            swatch_offset_init = 1;
-        }
-
-        num_pixels = dest_width * dest_height;
-        base = base_colour;
-        reinterpret_cast<unsigned char *>(&base)[2] = static_cast<unsigned char>(base_colour >> 24);
-        reinterpret_cast<unsigned char *>(&base)[0] = static_cast<unsigned char>(base_colour >> 8);
-
-        for (dest_pixel = dest_image_data, end_pixel = dest_image_data + num_pixels; dest_pixel < end_pixel; dest_pixel++) {
-            *dest_pixel = base;
-        }
-
-        for (int i = 0; i < num_layers; i++) {
-            VinylLayerInfo *info = &layer_infos[i];
-
-            if (info->m_LayerMaskData != 0) {
-                unsigned int *image_src = reinterpret_cast<unsigned int *>(info->m_LayerImageData);
-                unsigned int *dest = dest_image_data;
-                unsigned int *mask_src = reinterpret_cast<unsigned int *>(info->m_LayerMaskData);
-                unsigned int *image_end = image_src + num_pixels;
-
-                for (; image_src < image_end; image_src++, mask_src++, dest++) {
-                    unsigned int src_pixel = *image_src;
-                    unsigned int src_mask = *mask_src;
-                    unsigned int dest_pixel = *dest;
-                    unsigned char blend_value = reinterpret_cast<unsigned char *>(&src_mask)[2];
-
-                    if (info->m_RemapPalette != 0 && blend_value != 0) {
-                        CompColour src_colour;
-
-                        *reinterpret_cast<unsigned int *>(&src_colour) = src_pixel;
-                        src_colour.g = static_cast<unsigned char>(src_pixel >> 24);
-                        src_colour.a = static_cast<unsigned char>(src_pixel >> 8);
-                        src_pixel = RemapColour(*reinterpret_cast<unsigned int *>(&src_colour), info->m_RemapColours);
-                    }
-
-                    if (blend_value < 0x80) {
-                        if (blend_value != 0) {
-                            unsigned int colours[2];
-                            float weights[2];
-
-                            weights[0] = static_cast<float>(blend_value) / 255.0f;
-                            weights[1] = 1.0f - weights[0];
-
-                            if (1.0f < weights[0]) {
-                                weights[0] = 1.0f;
-                            }
-
-                            if (weights[1] < 0.0f) {
-                                weights[1] = 0.0f;
-                            }
-
-                            colours[0] = src_pixel;
-                            colours[1] = dest_pixel;
-                            src_pixel = GetBlendColour(colours, weights, 2, false);
-                            *dest = src_pixel;
+                        if (1.0f < weights[0]) {
+                            weights[0] = 1.0f;
                         }
-                    } else {
+
+                        if (weights[1] < 0.0f) {
+                            weights[1] = 0.0f;
+                        }
+
+                        colours[0] = src_pixel;
+                        colours[1] = dest_pixel;
+                        src_pixel = GetBlendColour(colours, weights, 2, false);
                         *dest = src_pixel;
                     }
+                } else {
+                    *dest = src_pixel;
                 }
             }
         }
-
-        for (int i = 0; i < 4; i++) {
-            int *swatch_offsets = swatch_offset_cache + i * 16;
-            unsigned int swatch_colour = swatch_colours[i];
-
-            for (int j = 0; j < swatch_offset_count[i]; j++) {
-                dest_image_data[swatch_offsets[j]] = swatch_colour;
-            }
-        }
-
-        TextureInfo_UnlockImage(dest_texture, dest_image_data);
-        return 1;
     }
 
-    return 0;
+    for (int i = 0; i < 4; i++) {
+        int *swatch_offsets = swatch_offset_cache + i * 16;
+        unsigned int swatch_colour = swatch_colours[i];
+
+        for (int j = 0; j < swatch_offset_count[i]; j++) {
+            dest_image_data[swatch_offsets[j]] = swatch_colour;
+        }
+    }
+
+    TextureInfo_UnlockImage(dest_texture, dest_image_data);
+    return 1;
 }
 
 unsigned int ScaleColours(unsigned int a, unsigned int b) {
