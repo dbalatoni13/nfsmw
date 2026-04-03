@@ -4195,13 +4195,7 @@ void CarRenderInfo::DrawAmbientShadow(eView *view, const bVector3 *position, flo
 
     shadow_alpha = (shadow_alpha_max - shadow_alpha_min) * shadow_alpha_scale + shadow_alpha_min;
     shadow_alphai_raw = static_cast<int>(shadow_alpha);
-    shadow_alphai = 0;
-    if (shadow_alphai_raw > 0) {
-        shadow_alphai = shadow_alphai_raw;
-    }
-    if (shadow_alphai > 0xFE) {
-        shadow_alphai = 0xFE;
-    }
+    shadow_alphai = bClamp(shadow_alphai_raw, 0, 0xFE);
 
     shadow_colour = static_cast<unsigned int>(shadow_alphai << 24) | 0x00808080;
     texture_info = this->ShadowTexture;
