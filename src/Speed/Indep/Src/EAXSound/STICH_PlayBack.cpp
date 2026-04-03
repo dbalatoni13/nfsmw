@@ -895,7 +895,6 @@ void cSampleWarpper::Play(const SND_Params *Params) {
     float PitchScale = static_cast<float>(0x1000 - Params->Pitch) * (1.0f / 4096.0f);
     int TempPitch = static_cast<int>(static_cast<float>(m_nLocalPitch) * PitchScale);
     int TempAz = Params->Az;
-    int RefCount;
     m_eIsPlaying = eSTITCH_PLAY_STATUS_OFF;
 
     if (GetData().eStichType == STICH_TYPE_COLLISION) {
@@ -974,12 +973,12 @@ void cSampleWarpper::Play(const SND_Params *Params) {
 
         *activeSample = sample;
         if (*activeSample != nullptr) {
-            RefCount = 0;
+            int refCount = 0;
             Csis::Class *cls = (*activeSample)->mpClass;
             if (cls != nullptr) {
-                cls->GetRefCount(&RefCount);
+                cls->GetRefCount(&refCount);
             }
-            if (RefCount < 3) {
+            if (refCount < 3) {
                 m_eIsPlaying = eSTITCH_PLAY_STATUS_OFF;
             } else {
                 m_eIsPlaying = eSTITCH_PLAY_STATUS_PLAYING;
@@ -1064,12 +1063,12 @@ void cSampleWarpper::Play(const SND_Params *Params) {
 
         *activeSample = sample;
         if (*activeSample != nullptr) {
-            RefCount = 0;
+            int refCount = 0;
             Csis::Class *cls = (*activeSample)->mpClass;
             if (cls != nullptr) {
-                cls->GetRefCount(&RefCount);
+                cls->GetRefCount(&refCount);
             }
-            if (RefCount < 3) {
+            if (refCount < 3) {
                 m_eIsPlaying = eSTITCH_PLAY_STATUS_OFF;
             } else {
                 m_eIsPlaying = eSTITCH_PLAY_STATUS_PLAYING;
@@ -1154,12 +1153,12 @@ void cSampleWarpper::Play(const SND_Params *Params) {
 
         *activeSample = sample;
         if (*activeSample != nullptr) {
-            RefCount = 0;
+            int refCount = 0;
             Csis::Class *cls = (*activeSample)->mpClass;
             if (cls != nullptr) {
-                cls->GetRefCount(&RefCount);
+                cls->GetRefCount(&refCount);
             }
-            if (RefCount < 3) {
+            if (refCount < 3) {
                 m_eIsPlaying = eSTITCH_PLAY_STATUS_OFF;
             } else {
                 m_eIsPlaying = eSTITCH_PLAY_STATUS_PLAYING;
