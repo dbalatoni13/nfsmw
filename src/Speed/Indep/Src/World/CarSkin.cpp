@@ -279,15 +279,20 @@ unsigned int ScaleColours(unsigned int a, unsigned int b) {
     unsigned char *colour_a = reinterpret_cast<unsigned char *>(&a);
     unsigned char *colour_b = reinterpret_cast<unsigned char *>(&b);
     unsigned int final_colour = 0;
+    float channel_scale;
 
-    reinterpret_cast<unsigned char *>(&final_colour)[2] = static_cast<unsigned char>(
-        static_cast<float>(static_cast<int>(colour_a[2])) * 0.003921569f * static_cast<float>(static_cast<int>(colour_b[2])));
-    reinterpret_cast<unsigned char *>(&final_colour)[1] = static_cast<unsigned char>(
-        static_cast<float>(static_cast<int>(colour_a[1])) * 0.003921569f * static_cast<float>(static_cast<int>(colour_b[1])));
-    reinterpret_cast<unsigned char *>(&final_colour)[0] = static_cast<unsigned char>(
-        static_cast<float>(static_cast<int>(colour_a[0])) * 0.003921569f * static_cast<float>(static_cast<int>(colour_b[0])));
-    reinterpret_cast<unsigned char *>(&final_colour)[3] = static_cast<unsigned char>(
-        static_cast<float>(static_cast<int>(colour_a[3])) * 0.003921569f * static_cast<float>(static_cast<int>(colour_b[3])));
+    channel_scale = static_cast<float>(static_cast<int>(colour_a[2])) * 0.003921569f;
+    reinterpret_cast<unsigned char *>(&final_colour)[2] =
+        static_cast<unsigned char>(channel_scale * static_cast<float>(static_cast<int>(colour_b[2])));
+    channel_scale = static_cast<float>(static_cast<int>(colour_a[1])) * 0.003921569f;
+    reinterpret_cast<unsigned char *>(&final_colour)[1] =
+        static_cast<unsigned char>(channel_scale * static_cast<float>(static_cast<int>(colour_b[1])));
+    channel_scale = static_cast<float>(static_cast<int>(colour_a[0])) * 0.003921569f;
+    reinterpret_cast<unsigned char *>(&final_colour)[0] =
+        static_cast<unsigned char>(channel_scale * static_cast<float>(static_cast<int>(colour_b[0])));
+    channel_scale = static_cast<float>(static_cast<int>(colour_a[3])) * 0.003921569f;
+    reinterpret_cast<unsigned char *>(&final_colour)[3] =
+        static_cast<unsigned char>(channel_scale * static_cast<float>(static_cast<int>(colour_b[3])));
     return final_colour;
 }
 
