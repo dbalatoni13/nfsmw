@@ -3394,9 +3394,10 @@ void CarRenderInfo::RenderTextureHeadlights(eView *view, bMatrix4 *l_w, unsigned
     }
 
     if (matrix != 0) {
-        bVector3 headlight_direction(0.0f, 0.0f, 1.0f);
+        bVector3 Up(0.0f, 0.0f, 1.0f);
+        bVector3 Basis(matrix->v0.z, matrix->v1.z, matrix->v2.z);
 
-        if (bDot(reinterpret_cast<const bVector3 *>(&matrix->v2), &headlight_direction) < 0.707f) {
+        if (bDot(&Up, &Basis) < 0.707f) {
             return;
         }
 
@@ -3407,10 +3408,15 @@ void CarRenderInfo::RenderTextureHeadlights(eView *view, bMatrix4 *l_w, unsigned
         poly.Vertices[0].y = hOffY - hRad0y;
         poly.Vertices[1].x = hRad1x + hOffX;
         poly.Vertices[1].y = hOffY - hRad1y;
-        poly.Vertices[2].x = hRad2x + hOffX;
-        poly.Vertices[2].y = hRad2y + hOffY;
         poly.Vertices[3].x = hOffX - hRad3x;
         poly.Vertices[3].y = hRad3y + hOffY;
+        poly.Vertices[2].x = hRad2x + hOffX;
+        poly.Vertices[2].y = hRad2y + hOffY;
+
+        poly.Vertices[0].z = 0.0f;
+        poly.Vertices[1].z = 0.0f;
+        poly.Vertices[2].z = 0.0f;
+        poly.Vertices[3].z = 0.0f;
 
         poly.UVs[0][0] = 0.0f;
         poly.UVs[1][0] = 0.0f;
