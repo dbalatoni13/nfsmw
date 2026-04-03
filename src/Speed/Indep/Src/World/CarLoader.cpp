@@ -1581,11 +1581,11 @@ int LoaderCarInfo(bChunk *chunk) {
 
             if (part_id == 'L') {
                 switch (brand_name) {
-                case 0x0000DA27:
-                    index0 = &reinterpret_cast<CarPartDatabaseLayout *>(&CarPartDB)->PaintPart_Rims[upgrade_level];
-                    break;
                 case 0x02DAAB07:
                     index0 = &reinterpret_cast<CarPartDatabaseLayout *>(&CarPartDB)->PaintPart_Gloss[upgrade_level];
+                    break;
+                case 0x0000DA27:
+                    index0 = &reinterpret_cast<CarPartDatabaseLayout *>(&CarPartDB)->PaintPart_Rims[upgrade_level];
                     break;
                 case 0x03437A52:
                     index0 = &reinterpret_cast<CarPartDatabaseLayout *>(&CarPartDB)->PaintPart_Metallic[upgrade_level];
