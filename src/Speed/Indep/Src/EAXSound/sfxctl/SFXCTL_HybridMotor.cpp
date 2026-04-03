@@ -216,15 +216,15 @@ void SFXCTL_HybridMotor::UpdateSingleMixEng(float t) {
         bMin(static_cast<int>(m_pEAXCar->GetAttributes().GINSU_LowPassCutoff()), m_pEngineCtl->m_DistanceFltr);
     EngineMix newmix;
     newmix.Aems = (AccelMix.Aems - DecelMix.Aems) * AccelDecelMix + DecelMix.Aems;
-    newmix.AccelGinsu = (AccelMix.AccelGinsu - DecelMix.AccelGinsu) * AccelDecelMix + DecelMix.AccelGinsu;
     newmix.DecelGinsu = (AccelMix.DecelGinsu - DecelMix.DecelGinsu) * AccelDecelMix + DecelMix.DecelGinsu;
+    newmix.AccelGinsu = (AccelMix.AccelGinsu - DecelMix.AccelGinsu) * AccelDecelMix + DecelMix.AccelGinsu;
     newmix.Cutoff = static_cast<int>((static_cast<float>(AccelMix.Cutoff - DecelMix.Cutoff)) * AccelDecelMix +
                                      static_cast<float>(DecelMix.Cutoff));
 
     if (USE_SMOOTHING) {
         m_EngineMix.Aems = smooth(m_EngineMix.Aems, newmix.Aems, 0.2f);
-        m_EngineMix.AccelGinsu = smooth(m_EngineMix.AccelGinsu, newmix.AccelGinsu, 0.2f);
         m_EngineMix.DecelGinsu = smooth(m_EngineMix.DecelGinsu, newmix.DecelGinsu, 0.2f);
+        m_EngineMix.AccelGinsu = smooth(m_EngineMix.AccelGinsu, newmix.AccelGinsu, 0.2f);
         m_EngineMix.Cutoff = smooth(m_EngineMix.Cutoff, newmix.Cutoff, 6000);
     } else {
         m_EngineMix = newmix;
