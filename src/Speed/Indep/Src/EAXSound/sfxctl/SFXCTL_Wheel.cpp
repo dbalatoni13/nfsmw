@@ -163,12 +163,12 @@ void SFXCTL_Wheel::UpdateTireParams() {
                     x = 0xe6;
                     y = -0xaa;
                     break;
-                case 2:
-                    x = 0xe6;
-                    y = -100;
-                    break;
                 case 3:
                     x = -0x122;
+                    y = -100;
+                    break;
+                case 2:
+                    x = 0xe6;
                     y = -100;
                     break;
                 }
