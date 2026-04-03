@@ -718,17 +718,19 @@ int STREAM_create(int requests, int filters, int taps, void *buffer, int size) {
         ->next = nullptr;
 
     for (i = 0; i < filters; ++i) {
-        strm->filter[i].mask = 0;
-        strm->filter[i].tapnum = 1;
-        strm->filter[i].value = 0;
+        FILTERSTRUCT *filter = strm->filter + i;
+        filter->mask = 0;
+        filter->tapnum = 1;
+        filter->value = 0;
     }
 
     i = 0;
     while (i < taps) {
-        strm->tap[i].stream = static_cast<STREAMHEADERtag *>(buffer);
-        strm->tap[i].gettable = 0;
-        strm->tap[i].tapnum = i + 1;
+        TAPSTRUCT *streamTap = strm->tap + i;
+        streamTap->stream = static_cast<STREAMHEADERtag *>(buffer);
         ++i;
+        streamTap->gettable = 0;
+        streamTap->tapnum = i;
     }
 
     AssignAudioStreamHandle(reinterpret_cast<unsigned int>(strm->tap));
