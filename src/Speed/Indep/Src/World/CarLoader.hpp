@@ -67,7 +67,7 @@ class LoadedWheel : public bTNode<LoadedWheel> {
     unsigned int PartNameHash;                // offset 0x14, size 0x4
     unsigned int TextureBaseNameHash;         // offset 0x18, size 0x4
     CarPart *pCarPart;                        // offset 0x1C, size 0x4
-    unsigned int ModelNameHashes[5][1];       // offset 0x20, size 0x14
+    unsigned int ModelNameHashes[1][5];       // offset 0x20, size 0x14
     unsigned int SkinNameHashesPerm[4];       // offset 0x34, size 0x10
     unsigned int SkinNameHashesTemp[4];       // offset 0x44, size 0x10
     LoadedSkinLayer *LoadedSkinLayersPerm[4]; // offset 0x54, size 0x10

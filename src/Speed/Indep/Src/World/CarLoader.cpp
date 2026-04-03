@@ -1371,7 +1371,7 @@ LoadedWheel::LoadedWheel(RideInfo *ride_info, bool in_fe) {
         if (car_part->GetCarTypeNameHash() == bStringHash("WHEELS")) {
             for (int model = 0; model < 1; model++) {
                 for (int lod = this->mMinLodLevel; lod <= this->mMaxLodLevel; lod++) {
-                    reinterpret_cast<unsigned int (*)[5]>(this->ModelNameHashes)[model][lod] = car_part->GetModelNameHash(model, lod);
+                    this->ModelNameHashes[model][lod] = car_part->GetModelNameHash(model, lod);
                 }
             }
 
@@ -2340,7 +2340,7 @@ int CarLoader::LoadAllWheelModels() {
 
             for (int model = 0; model < 1; model++) {
                 for (int lod = loaded_wheel->mMinLodLevel; lod <= loaded_wheel->mMaxLodLevel; lod++) {
-                    unsigned int model_name_hash = loaded_wheel->ModelNameHashes[lod][model];
+                    unsigned int model_name_hash = loaded_wheel->ModelNameHashes[model][lod];
 
                     if (model_name_hash != 0) {
                         name_hashes[num_hashes] = model_name_hash;
