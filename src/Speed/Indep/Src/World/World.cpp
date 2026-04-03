@@ -5,6 +5,7 @@
 #include "./TrackStreamer.hpp"
 #include "CarRender.hpp"
 #include "Clans.hpp"
+#include "OnlineManager.hpp"
 #include "RaceParameters.hpp"
 #include "Rain.hpp"
 #include "Scenery.hpp"
@@ -33,12 +34,31 @@
 #include "types.h"
 
 static void World_Init();
+static void World_Shutdown();
+
+OnlineManager TheOnlineManager;
+
+namespace {
+
+struct RaceParametersAutoInit {
+    RaceParametersAutoInit() {
+        TheRaceParameters.InitWithDefaults();
+    }
+};
+
+struct OnlineManagerQuantizerAutoInit {
+    OnlineManagerQuantizerAutoInit() {
+        TheOnlineManager.InitQuantizers();
+    }
+};
+
+} // namespace
 
 int SuperEasyAIMode = 0;
 
 // BSS Class Init
 bVector3 ZeroVector = bVector3(0, 0, 0);
-Sim::SubSystem _Physics_System_World = Sim::SubSystem(nullptr, World_Init, nullptr);
+Sim::SubSystem _Physics_System_World = Sim::SubSystem(nullptr, World_Init, World_Shutdown);
 
 float UglyTimestepHack = 0.016666668f;
 World *pCurrentWorld = nullptr;
@@ -213,6 +233,8 @@ void World_Service() {
 }
 
 RaceParameters TheRaceParameters;
+RaceParametersAutoInit gRaceParametersAutoInit;
+OnlineManagerQuantizerAutoInit gOnlineManagerQuantizerAutoInit;
 
 static void World_Init() {
     ResetWorldTime();

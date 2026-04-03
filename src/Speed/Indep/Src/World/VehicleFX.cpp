@@ -10,7 +10,7 @@ struct Maps {
     unsigned int marker;
 };
 
-static Maps vehicle_fx_maps[22];
+Maps vehicle_fx_maps[22] asm("_9VehicleFX.vehicle_fx_maps");
 
 const Maps *GetMaps() {
     return vehicle_fx_maps;

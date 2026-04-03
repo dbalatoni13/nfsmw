@@ -429,8 +429,93 @@ const unsigned int *GetCarEffectMarkerHashes(CarEffectPosition fx_pos) {
     return reinterpret_cast<const unsigned int *>(&FXMarkerNameHashMappings[fx_pos].marker_count);
 }
 
-CarPartCullingPlaneInfo CarPartCullingPlaneInfoTable[11];
+CarPartCullingPlaneInfo CarPartCullingPlaneInfoTable[11] = {
+    CarPartCullingPlaneInfo(CULLABLE_CAR_PART_TIRE_FL, "CULLABLE_CAR_PART_TIRE_FL", CULLING_POLARITY_ANY_VISIBLE, 3,
+                            bVector3(-0.01f, -1.0f, 0.0f), bVector3(0.0f, 0.0f, 1.0f), bVector3(-0.70710677f, 0.0f, 0.70710677f),
+                            0.1f, 0.86602539f, 0.5f),
+    CarPartCullingPlaneInfo(CULLABLE_CAR_PART_TIRE_FR, "CULLABLE_CAR_PART_TIRE_FR", CULLING_POLARITY_ANY_VISIBLE, 3,
+                            bVector3(-0.01f, 1.0f, 0.0f), bVector3(0.0f, 0.0f, 1.0f), bVector3(-0.70710677f, 0.0f, 0.70710677f),
+                            0.1f, 0.86602539f, 0.5f),
+    CarPartCullingPlaneInfo(CULLABLE_CAR_PART_TIRE_RR, "CULLABLE_CAR_PART_TIRE_RR", CULLING_POLARITY_ANY_VISIBLE, 3,
+                            bVector3(0.01f, 1.0f, 0.0f), bVector3(0.0f, 0.0f, 1.0f), bVector3(0.70710677f, 0.0f, 0.70710677f),
+                            0.1f, 0.86602539f, 0.5f),
+    CarPartCullingPlaneInfo(CULLABLE_CAR_PART_TIRE_RL, "CULLABLE_CAR_PART_TIRE_RL", CULLING_POLARITY_ANY_VISIBLE, 3,
+                            bVector3(0.01f, -1.0f, 0.0f), bVector3(0.0f, 0.0f, 1.0f), bVector3(0.70710677f, 0.0f, 0.70710677f),
+                            0.1f, 0.86602539f, 0.5f),
+    CarPartCullingPlaneInfo(CULLABLE_CAR_PART_BRAKE_FL, "CULLABLE_CAR_PART_BRAKE_FL", CULLING_POLARITY_ALL_MUST_BE_VISIBLE, 2,
+                            bVector3(0.36f, -1.0f, 0.0f), bVector3(-0.77f, -1.0f, 0.0f), bVector3(-0.77f, -1.0f, 0.0f), 0.0f,
+                            -0.77f, 0.0f),
+    CarPartCullingPlaneInfo(CULLABLE_CAR_PART_BRAKE_FR, "CULLABLE_CAR_PART_BRAKE_FR", CULLING_POLARITY_ALL_MUST_BE_VISIBLE, 2,
+                            bVector3(0.36f, 1.0f, 0.0f), bVector3(-0.77f, 1.0f, 0.0f), bVector3(-0.77f, -1.0f, 0.0f), 0.0f,
+                            -0.77f, 0.0f),
+    CarPartCullingPlaneInfo(CULLABLE_CAR_PART_BRAKE_RR, "CULLABLE_CAR_PART_BRAKE_RR", CULLING_POLARITY_ALL_MUST_BE_VISIBLE, 2,
+                            bVector3(0.36f, 1.0f, 0.0f), bVector3(-0.77f, 1.0f, 0.0f), bVector3(-0.77f, -1.0f, 0.0f), 0.0f,
+                            -0.77f, 0.0f),
+    CarPartCullingPlaneInfo(CULLABLE_CAR_PART_BRAKE_RL, "CULLABLE_CAR_PART_BRAKE_RL", CULLING_POLARITY_ALL_MUST_BE_VISIBLE, 2,
+                            bVector3(0.36f, -1.0f, 0.0f), bVector3(-0.77f, -1.0f, 0.0f), bVector3(-0.77f, -1.0f, 0.0f), 0.0f,
+                            -0.77f, 0.0f),
+    CarPartCullingPlaneInfo(CULLABLE_CAR_PART_SIDE_FRONT, "CULLABLE_CAR_PART_SIDE_FRONT", CULLING_POLARITY_ANY_VISIBLE, 1,
+                            bVector3(-1.0f, 0.0f, 0.0f), bVector3(-1.0f, 0.0f, 0.0f), bVector3(-1.0f, 0.0f, 0.0f), 0.0f, 0.0f,
+                            0.0f),
+    CarPartCullingPlaneInfo(CULLABLE_CAR_PART_SIDE_REAR, "CULLABLE_CAR_PART_SIDE_REAR", CULLING_POLARITY_ANY_VISIBLE, 1,
+                            bVector3(1.0f, 0.0f, 0.0f), bVector3(-1.0f, 0.0f, 0.0f), bVector3(-1.0f, 0.0f, 0.0f), 0.0f, 0.0f,
+                            0.0f),
+    CarPartCullingPlaneInfo(CULLABLE_CAR_PART_UNDERNEATH, "CULLABLE_CAR_PART_UNDERNEATH", CULLING_POLARITY_ALL_MUST_BE_VISIBLE, 2,
+                            bVector3(-0.07f, 0.0f, 1.0f), bVector3(0.07f, 0.0f, 1.0f), bVector3(0.07f, 0.0f, 1.0f), -0.77f,
+                            -0.77f, 0.0f),
+};
 const CarPartCullingPlaneInfo *pCurrentPartCullingPlaneInfo = nullptr;
+unsigned int CarReplacementDecalHash[CarRenderInfo::REPLACETEX_DECAL_NUM];
+unsigned int gTrunkAudioMarkerHash[12];
+
+struct CarRenderHashStartup {
+    CarRenderHashStartup() {
+        CarReplacementDecalHash[0] = bStringHash("BOTTOM_DECAL");
+
+        unsigned int *decal_hash = &CarReplacementDecalHash[1];
+        *decal_hash = bStringHash("FRONT_BUMPER_DECAL");
+        *++decal_hash = bStringHash("FRONT_DECAL");
+        *++decal_hash = bStringHash("GTWING_DECAL");
+        *++decal_hash = bStringHash("HOOD_DECAL");
+        *++decal_hash = bStringHash("LEFT_BRAKELIGHT_DECAL");
+        *++decal_hash = bStringHash("LEFT_DOOR_DECAL");
+        *++decal_hash = bStringHash("LEFT_FENDER_DECAL");
+        *++decal_hash = bStringHash("LEFT_QUARTER_DECAL");
+        *++decal_hash = bStringHash("LEFT_SIDE_MIRROR_DECAL");
+        *++decal_hash = bStringHash("LEFT_SKIRT_DECAL");
+        *++decal_hash = bStringHash("REAR_BUMPER_DECAL");
+        *++decal_hash = bStringHash("REAR_DECAL");
+        *++decal_hash = bStringHash("RIGHT_BRAKELIGHT_DECAL");
+        *++decal_hash = bStringHash("RIGHT_DOOR_DECAL");
+        *++decal_hash = bStringHash("RIGHT_FENDER_DECAL");
+        *++decal_hash = bStringHash("RIGHT_QUARTER_DECAL");
+        *++decal_hash = bStringHash("RIGHT_SIDE_MIRROR_DECAL");
+        *++decal_hash = bStringHash("RIGHT_SKIRT_DECAL");
+        *++decal_hash = bStringHash("TOP_DECAL");
+        *++decal_hash = bStringHash("FRONT_WINDOW_DECAL");
+        *++decal_hash = bStringHash("REAR_WINDOW_DECAL");
+        *++decal_hash = bStringHash("LEFT_FRONT_WINDOW_DECAL");
+        *++decal_hash = bStringHash("LEFT_REAR_WINDOW_DECAL");
+        *++decal_hash = bStringHash("RIGHT_FRONT_WINDOW_DECAL");
+        *++decal_hash = bStringHash("RIGHT_REAR_WINDOW_DECAL");
+
+        gTrunkAudioMarkerHash[0] = bStringHash("MARKER_AUDIO_COMP_0");
+
+        unsigned int *trunk_audio_hash = &gTrunkAudioMarkerHash[1];
+        *trunk_audio_hash = bStringHash("MARKER_AUDIO_COMP_1");
+        *++trunk_audio_hash = bStringHash("MARKER_AUDIO_COMP_2");
+        *++trunk_audio_hash = bStringHash("MARKER_AUDIO_COMP_3");
+        *++trunk_audio_hash = bStringHash("MARKER_AUDIO_COMP_4");
+        *++trunk_audio_hash = bStringHash("MARKER_AUDIO_COMP_5");
+        *++trunk_audio_hash = bStringHash("MARKER_AUDIO_COMP_6");
+        *++trunk_audio_hash = bStringHash("MARKER_AUDIO_COMP_7");
+        *++trunk_audio_hash = bStringHash("MARKER_AUDIO_COMP_8");
+        *++trunk_audio_hash = bStringHash("MARKER_AUDIO_COMP_9");
+        *++trunk_audio_hash = bStringHash("MARKER_AUDIO_COMP_10");
+        *++trunk_audio_hash = bStringHash("MARKER_AUDIO_COMP_11");
+    }
+} CarRenderHashStartupInitializer;
+
 extern "C" void __5ePoly(ePoly *);
 
 void CarPartCuller::InitPart(eCullableCarParts type, const bVector3 *position) {

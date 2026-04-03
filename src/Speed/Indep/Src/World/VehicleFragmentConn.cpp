@@ -11,11 +11,6 @@ const CollisionGeometry::Bounds *CollisionGeometry_Collection_GetBounds(const Co
 void OrthoInverse(UMath::Matrix4 &m);
 extern CarTypeInfo *CarTypeInfoArray;
 
-bTList<VehicleFragmentConn> VehicleFragmentConn::mList;
-
-UTL::COM::Factory<const Sim::ConnectionData &, Sim::Connection, UCrc32>::Prototype _VehicleFragmentConn("VehicleFragmentConn",
-                                                                                                          VehicleFragmentConn::Construct);
-
 Sim::Connection *VehicleFragmentConn::Construct(const Sim::ConnectionData &data) {
     return new VehicleFragmentConn(data);
 }
@@ -170,3 +165,8 @@ void VehicleFragmentConn::FetchData(float dT) {
         conn->Update(dT);
     }
 }
+
+bTList<VehicleFragmentConn> VehicleFragmentConn::mList asm("TheVehcileFrags");
+
+UTL::COM::Factory<const Sim::ConnectionData &, Sim::Connection, UCrc32>::Prototype _VehicleFragmentConn("VehicleFragmentConn",
+                                                                                                          VehicleFragmentConn::Construct);

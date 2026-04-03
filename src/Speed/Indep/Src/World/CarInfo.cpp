@@ -116,8 +116,8 @@ extern CarPartPackLayout *MasterCarPartPackLayout asm("MasterCarPartPack");
 extern unsigned int *DefaultSlotTypeNameTable;
 extern CarSlotTypeOverride *SlotTypeOverrideTable;
 extern int NumSlotTypeOverrides;
-extern unsigned int TempSlotTable[2];
-extern PresetCarListHead PresetCarList;
+unsigned int TempSlotTable[2];
+PresetCarListHead PresetCarList;
 
 int UsedCarTextureAddToTable(unsigned int *table, int num_used, int max_textures, unsigned int texture_hash = 0);
 int GetTempCarSkinTextures(unsigned int *table, int num_used, int max_textures, RideInfo *ride_info);

@@ -27,7 +27,7 @@ float skylayer[5][8] = {
 };
 eModel SkySpecularModel;
 eModel SkydomeModel;
-extern bVector3 SunPos;
+bVector3 SunPos;
 extern float SunPosY;
 extern float WorldTimeElapsed;
 float MainSkyScale = 1.0f;
@@ -70,6 +70,7 @@ void (*UserSkyLoadCallback)(int) = 0;
 int UserSkyLoadCallbackParam;
 int bSkyTexturesLoaded = 0;
 eReplacementTextureTable SKYtextable[2];
+eReplacementTextureTable SPECtextable;
 
 static inline bMatrix4 MakeIdentityMatrix() {
     bMatrix4 matrix;

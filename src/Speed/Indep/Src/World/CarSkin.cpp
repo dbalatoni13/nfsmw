@@ -35,7 +35,7 @@ int DumpPreComp(VinylLayerInfo *layer_info, TextureInfo *dest_texture);
 extern int UsePrecompositeVinyls;
 extern int swatch_offset_init;
 extern int swatch_offset_count[4];
-extern int swatch_offset_cache[64];
+int swatch_offset_cache[64];
 int CompositeSkin(SkinCompositeParams *composite_params);
 int CompositeSkin32(SkinCompositeParams *composite_params);
 int IsInSkinCompositeCache(SkinCompositeParams *skin_composite_params);
@@ -135,18 +135,18 @@ int IsInSkinCompositeCache(SkinCompositeParams *skin_composite_params) {
 }
 
 int CompositeSkin32(SkinCompositeParams *composite_params) {
-    TextureInfo *dest_texture;
     unsigned int base_colour;
     unsigned int *swatch_colours;
     VinylLayerInfo *layer_infos;
+    TextureInfo *dest_texture;
     int num_layers;
     int debug_print;
 
-    dest_texture = composite_params->DestTexture;
+    base_colour = composite_params->BaseColour;
     swatch_colours = composite_params->SwatchColours;
     layer_infos = composite_params->VinylLayerInfos;
+    dest_texture = composite_params->DestTexture;
     num_layers = composite_params->NumLayers;
-    base_colour = composite_params->BaseColour;
     (void)debug_print;
 
     if (dest_texture == 0) {
@@ -157,7 +157,7 @@ int CompositeSkin32(SkinCompositeParams *composite_params) {
         unsigned int *dest_image_data = static_cast<unsigned int *>(TextureInfo_LockImage(dest_texture, TEXLOCK_WRITE));
         int dest_width = dest_texture->Width;
         int dest_height = dest_texture->Height;
-        CompColour base;
+        unsigned int base;
         unsigned int *dest_pixel;
         unsigned int *end_pixel;
         int num_pixels;
@@ -199,12 +199,12 @@ int CompositeSkin32(SkinCompositeParams *composite_params) {
         }
 
         num_pixels = dest_width * dest_height;
-        *reinterpret_cast<unsigned int *>(&base) = base_colour;
-        base.g = static_cast<unsigned char>(base_colour >> 24);
-        base.a = static_cast<unsigned char>(base_colour >> 8);
+        base = base_colour;
+        reinterpret_cast<unsigned char *>(&base)[2] = static_cast<unsigned char>(base_colour >> 24);
+        reinterpret_cast<unsigned char *>(&base)[0] = static_cast<unsigned char>(base_colour >> 8);
 
         for (dest_pixel = dest_image_data, end_pixel = dest_image_data + num_pixels; dest_pixel < end_pixel; dest_pixel++) {
-            *dest_pixel = *reinterpret_cast<unsigned int *>(&base);
+            *dest_pixel = base;
         }
 
         for (int i = 0; i < num_layers; i++) {
@@ -220,7 +220,7 @@ int CompositeSkin32(SkinCompositeParams *composite_params) {
                     unsigned int src_pixel = *image_src;
                     unsigned int src_mask = *mask_src;
                     unsigned int dest_pixel = *dest;
-                    unsigned int blend_value = reinterpret_cast<unsigned char *>(&src_mask)[2];
+                    unsigned char blend_value = reinterpret_cast<unsigned char *>(&src_mask)[2];
 
                     if (info->m_RemapPalette != 0 && blend_value != 0) {
                         CompColour src_colour;
@@ -375,11 +375,7 @@ int CompositeSkin(SkinCompositeParams *composite_params) {
     num_layers = composite_params->NumLayers;
     (void)debug_print;
 
-    if (dest_texture == 0) {
-        return 0;
-    }
-
-    if (dest_texture->ImageCompressionType == TEXCOMP_8BIT) {
+    if (dest_texture != 0 && dest_texture->ImageCompressionType == TEXCOMP_8BIT) {
         unsigned char *dest_image_data = static_cast<unsigned char *>(TextureInfo_LockImage(dest_texture, TEXLOCK_WRITE));
         unsigned int *dest_palette_data = static_cast<unsigned int *>(TextureInfo_LockPalette(dest_texture, TEXLOCK_WRITE));
         eUnSwizzle8bitPalette(dest_palette_data);
@@ -450,8 +446,8 @@ int CompositeSkin(SkinCompositeParams *composite_params) {
                         *dest = static_cast<unsigned char>(i + 1);
                         int count = swatch_offset_count[i];
 
-                        swatch_offset_count[i] = count + 1;
                         swatch_offsets[count] = dest - dest_image_data;
+                        swatch_offset_count[i] = count + 1;
                         break;
                     }
 

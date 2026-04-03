@@ -11,6 +11,8 @@
 #include "Speed/Indep/Src/World/CarRender.hpp"
 #include "Speed/Indep/Src/World/TrackStreamer.hpp"
 
+CarLoader TheCarLoader;
+
 struct RideInfoLayout {
     CarType Type;
     char InstanceIndex;
@@ -245,7 +247,7 @@ extern SlotPool *LoadedSolidPackSlotPool;
 extern SlotPool *LoadedSkinLayerSlotPool;
 extern SlotPool *LoadedRideInfoSlotPool;
 extern int UsePrecompositeVinyls;
-extern _DefragmentParams DefragmentParams;
+_DefragmentParams DefragmentParams;
 int bMemoryGetAllocations(int pool_num, void **allocations, int max_allocations);
 int bGetMallocSize(const void *ptr);
 const char *bGetMallocName(void *ptr);

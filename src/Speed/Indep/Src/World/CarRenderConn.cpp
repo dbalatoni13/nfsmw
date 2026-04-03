@@ -25,7 +25,6 @@ extern void MakeSkid__9SkidMakerP3CarP8bVector3T2if(void *skid_maker, Car *car, 
 void DeleteAllSkids();
 extern void TireState_ctor(TireState *state) asm("__9TireState");
 extern void TireState_dtor(TireState *state, int in_chrg) asm("_._9TireState");
-extern bTList<TireState> gTireStateList;
 extern int PhysicsUpgrades_GetLevel(const Attrib::Gen::pvehicle &pvehicle, int type)
     asm("GetLevel__Q27Physics8UpgradesRCQ36Attrib3Gen8pvehicleQ37Physics8Upgrades4Type");
 extern int PhysicsUpgrades_GetMaxLevel(const Attrib::Gen::pvehicle &pvehicle, int type)
@@ -36,7 +35,6 @@ extern float RealTimeElapsed;
 extern float renderModifier;
 extern int Tweak_DisableRoadNoise;
 extern int NumTimesRenderTestPlayerCar;
-extern RoadNoiseRecord Tweak_BlowOutNoise asm("Tweak_BlowOutNoise");
 extern CameraAnchor *RVManchor;
 extern void AddXenonEffect(EmitterGroup *piggyback_fx, const Attrib::Collection *spec, const bMatrix4 *mat, const bVector4 *vel)
     asm("AddXenonEffect__FP12EmitterGroupPCQ26Attrib10CollectionPCQ25UMath7Matrix4PCQ25UMath7Vector4");
@@ -116,6 +114,21 @@ struct TireState : public bTNode<TireState> {
     Effect mSkidFX;
     Effect mDriveFX;
 };
+
+bTList<TireState> gTireStateList;
+
+UTL::COM::Factory<const Sim::ConnectionData &, Sim::Connection, UCrc32>::Prototype _CarRenderConn("CarRenderConn", CarRenderConn::Construct);
+
+static RoadNoiseRecord Tweak_BlowOutNoise asm("Tweak_BlowOutNoise");
+
+struct TweakBlowOutNoiseInit {
+    TweakBlowOutNoiseInit() {
+        Tweak_BlowOutNoise.Frequency = 4.0f;
+        Tweak_BlowOutNoise.Amplitude = 1.0f;
+        Tweak_BlowOutNoise.MinSpeed = 0.0f;
+        Tweak_BlowOutNoise.MaxSpeed = 10.0f;
+    }
+} TweakBlowOutNoiseInitializer;
 
 static void StopEffect(VehicleRenderConn::Effect *effect) {
     effect->Stop();

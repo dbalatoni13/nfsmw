@@ -1,5 +1,6 @@
 #include "Speed/Indep/Src/World/Rain.hpp"
 #include "Speed/Indep/Src/World/OnlineManager.hpp"
+#include "Speed/Indep/Src/World/ParameterMaps.hpp"
 #include "Speed/Indep/Src/Ecstasy/Texture.hpp"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/tires.h"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
@@ -15,7 +16,11 @@ extern float RAINZconstant;
 extern float twkCloudsMinAmount;
 extern float windAng;
 extern float swayMax;
-extern bVector3 windAxis;
+
+ParameterAccessor RainAccessor("Rain");
+ParameterAccessor CloudAccessor("Clouds");
+
+bVector3 windAxis;
 
 float rainOverrideIntensity;
 extern bool EnableRainIn2P;

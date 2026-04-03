@@ -113,4 +113,5 @@ void SmackableRender_Service(float dT) {
 }
 
 bTList<SmackableRenderConn> SmackableRenderConn::mList;
-// Prototype _SmackableRenderConn;
+UTL::COM::Factory<const Sim::ConnectionData &, Sim::Connection, UCrc32>::Prototype _SmackableRenderConn("SmackableRenderConn",
+                                                                                                          SmackableRenderConn::Construct);
