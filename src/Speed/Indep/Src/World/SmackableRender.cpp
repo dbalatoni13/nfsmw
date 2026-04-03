@@ -20,7 +20,7 @@ SmackableRenderConn::SmackableRenderConn(const Sim::ConnectionData &data /* r27 
     this->mList.AddTail(this);
 
     RenderConn::Pkt_Smackable_Open *oc = Sim::Packet::Cast<RenderConn::Pkt_Smackable_Open>(data.pkt);
-    this->mTarget.Set(oc->mModelHash.GetValue());
+    this->mTarget.Set(oc->mObjectWUID);
 
     this->mHeirarchy = oc->mHeirarchy;
     this->mModelHash = oc->mModelHash;
