@@ -1580,22 +1580,25 @@ int LoaderCarInfo(bChunk *chunk) {
             }
 
             if (part_id == 'L') {
-                if (brand_name == 0x03437A52) {
+                switch (brand_name) {
+                case 0x0000DA27:
+                    index0 = &reinterpret_cast<CarPartDatabaseLayout *>(&CarPartDB)->PaintPart_Rims[upgrade_level];
+                    break;
+                case 0x02DAAB07:
+                    index0 = &reinterpret_cast<CarPartDatabaseLayout *>(&CarPartDB)->PaintPart_Gloss[upgrade_level];
+                    break;
+                case 0x03437A52:
                     index0 = &reinterpret_cast<CarPartDatabaseLayout *>(&CarPartDB)->PaintPart_Metallic[upgrade_level];
-                } else if (brand_name < 0x03437A53) {
-                    if (brand_name == 0x0000DA27) {
-                        index0 = &reinterpret_cast<CarPartDatabaseLayout *>(&CarPartDB)->PaintPart_Rims[upgrade_level];
-                    } else if (brand_name == 0x02DAAB07) {
-                        index0 = &reinterpret_cast<CarPartDatabaseLayout *>(&CarPartDB)->PaintPart_Gloss[upgrade_level];
-                    }
-                } else if (brand_name == 0x03E871F1) {
+                    break;
+                case 0x03797533:
+                    index0 = &reinterpret_cast<CarPartDatabaseLayout *>(&CarPartDB)->PaintPart_Pearl[upgrade_level];
+                    break;
+                case 0x03E871F1:
                     index0 = &reinterpret_cast<CarPartDatabaseLayout *>(&CarPartDB)->PaintPart_Vinyl[upgrade_level];
-                } else if (brand_name < 0x03E871F2) {
-                    if (brand_name == 0x03797533) {
-                        index0 = &reinterpret_cast<CarPartDatabaseLayout *>(&CarPartDB)->PaintPart_Pearl[upgrade_level];
-                    }
-                } else if (brand_name == 0xD6640DFF) {
+                    break;
+                case 0xD6640DFF:
                     index0 = &reinterpret_cast<CarPartDatabaseLayout *>(&CarPartDB)->PaintPart_Caliper[upgrade_level];
+                    break;
                 }
             } else if (part_id == 'O') {
                 int vinyl_type = ConvertVinylGroupNumberToVinylType(group_number);
