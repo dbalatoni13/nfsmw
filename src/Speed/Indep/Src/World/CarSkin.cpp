@@ -288,8 +288,8 @@ unsigned int ScaleColours(unsigned int a, unsigned int b) {
 }
 
 unsigned int GetBlendColour(unsigned int *colours, float *weights, int num_colours, bool max_alpha_blend) {
-    CompColour *comp_colours;
-    CompColour final_colour;
+    unsigned char *comp_colours;
+    unsigned int final_colour = 0;
     int r = 0;
     int g = 0;
     int b = 0;
@@ -299,19 +299,19 @@ unsigned int GetBlendColour(unsigned int *colours, float *weights, int num_colou
         float weight = weights[i];
 
         if (weight > 0.003921569f) {
-            comp_colours = reinterpret_cast<CompColour *>(&colours[i]);
-            g += static_cast<int>(weight * static_cast<float>(comp_colours->g));
-            b += static_cast<int>(weight * static_cast<float>(comp_colours->b));
-            r += static_cast<int>(weight * static_cast<float>(comp_colours->r));
+            comp_colours = reinterpret_cast<unsigned char *>(&colours[i]);
+            g += static_cast<int>(weight * static_cast<float>(comp_colours[2]));
+            b += static_cast<int>(weight * static_cast<float>(comp_colours[1]));
+            r += static_cast<int>(weight * static_cast<float>(comp_colours[0]));
 
             if (max_alpha_blend) {
-                int tempa = static_cast<int>(weight * static_cast<float>(comp_colours->a)) & 0xFF;
+                int tempa = static_cast<int>(weight * static_cast<float>(comp_colours[3])) & 0xFF;
 
                 if (tempa > a) {
                     a = tempa;
                 }
             } else {
-                a += static_cast<int>(weight * static_cast<float>(comp_colours->a));
+                a += static_cast<int>(weight * static_cast<float>(comp_colours[3]));
             }
         }
     }
@@ -320,7 +320,7 @@ unsigned int GetBlendColour(unsigned int *colours, float *weights, int num_colou
         b = 0xFF;
     }
 
-    final_colour.b = static_cast<unsigned char>(b);
+    reinterpret_cast<unsigned char *>(&final_colour)[2] = static_cast<unsigned char>(b);
 
     if (g > 0xFF) {
         g = 0xFF;
@@ -330,15 +330,15 @@ unsigned int GetBlendColour(unsigned int *colours, float *weights, int num_colou
         r = 0xFF;
     }
 
-    final_colour.r = static_cast<unsigned char>(r);
-    final_colour.g = static_cast<unsigned char>(g);
+    reinterpret_cast<unsigned char *>(&final_colour)[0] = static_cast<unsigned char>(r);
+    reinterpret_cast<unsigned char *>(&final_colour)[1] = static_cast<unsigned char>(g);
 
     if (a > 0xFF) {
         a = 0xFF;
     }
 
-    final_colour.a = static_cast<unsigned char>(a);
-    return *reinterpret_cast<unsigned int *>(&final_colour);
+    reinterpret_cast<unsigned char *>(&final_colour)[3] = static_cast<unsigned char>(a);
+    return final_colour;
 }
 
 unsigned int RemapColour(unsigned int colour, unsigned int *colour_map) {
