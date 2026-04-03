@@ -79,9 +79,6 @@ SkinCompositeParams *GetSkinCompositeParams(unsigned int dest_name_hash) {
 }
 
 bool CompareCompositeParams(SkinCompositeParams *a, SkinCompositeParams *b) {
-    VinylLayerInfo *info_a;
-    VinylLayerInfo *info_b;
-
     if (a->DestTexture != b->DestTexture || a->BaseColour != b->BaseColour) {
         return false;
     }
@@ -92,15 +89,18 @@ bool CompareCompositeParams(SkinCompositeParams *a, SkinCompositeParams *b) {
         }
     }
 
-    info_a = &a->VinylLayerInfos[0];
-    info_b = &b->VinylLayerInfos[0];
+    for (int i = 0; i < 1; i++) {
+        VinylLayerInfo *info_a = &a->VinylLayerInfos[i];
+        VinylLayerInfo *info_b = &b->VinylLayerInfos[i];
 
-    if (info_a->m_LayerHash != info_b->m_LayerHash || info_a->m_LayerTexture != info_b->m_LayerTexture ||
-        info_a->m_LayerMaskTexture != info_b->m_LayerMaskTexture || info_a->m_NumColours != info_b->m_NumColours ||
-        info_a->m_RemapPalette != info_b->m_RemapPalette || info_a->m_RemapColours[0] != info_b->m_RemapColours[0] ||
-        info_a->m_RemapColours[1] != info_b->m_RemapColours[1] || info_a->m_RemapColours[2] != info_b->m_RemapColours[2] ||
-        info_a->m_RemapColours[3] != info_b->m_RemapColours[3]) {
-        return false;
+        if (info_a->m_LayerHash != info_b->m_LayerHash || info_a->m_LayerTexture != info_b->m_LayerTexture ||
+            info_a->m_LayerMaskTexture != info_b->m_LayerMaskTexture || info_a->m_NumColours != info_b->m_NumColours ||
+            info_a->m_RemapPalette != info_b->m_RemapPalette || info_a->m_RemapColours[0] != info_b->m_RemapColours[0] ||
+            info_a->m_RemapColours[1] != info_b->m_RemapColours[1] ||
+            info_a->m_RemapColours[2] != info_b->m_RemapColours[2] ||
+            info_a->m_RemapColours[3] != info_b->m_RemapColours[3]) {
+            return false;
+        }
     }
 
     return true;
