@@ -1599,14 +1599,14 @@ int LoaderCarInfo(bChunk *chunk) {
 
                 if (vinyl_type == 1) {
                     index0 = &reinterpret_cast<CarPartDatabaseLayout *>(&CarPartDB)->VinylPart_Hood[upgrade_level];
-                } else if (vinyl_type < 2) {
-                    if (vinyl_type == 0) {
-                        index0 = &reinterpret_cast<CarPartDatabaseLayout *>(&CarPartDB)->VinylPart_Side[upgrade_level];
+                } else if (vinyl_type > 1) {
+                    if (vinyl_type == 2) {
+                        index0 = &reinterpret_cast<CarPartDatabaseLayout *>(&CarPartDB)->VinylPart_Body[upgrade_level];
+                    } else if (vinyl_type == 3) {
+                        index0 = &reinterpret_cast<CarPartDatabaseLayout *>(&CarPartDB)->VinylPart_Manufacturer[upgrade_level];
                     }
-                } else if (vinyl_type == 2) {
-                    index0 = &reinterpret_cast<CarPartDatabaseLayout *>(&CarPartDB)->VinylPart_Body[upgrade_level];
-                } else if (vinyl_type == 3) {
-                    index0 = &reinterpret_cast<CarPartDatabaseLayout *>(&CarPartDB)->VinylPart_Manufacturer[upgrade_level];
+                } else if (vinyl_type == 0) {
+                    index0 = &reinterpret_cast<CarPartDatabaseLayout *>(&CarPartDB)->VinylPart_Side[upgrade_level];
                 }
 
                 index1 = &reinterpret_cast<CarPartDatabaseLayout *>(&CarPartDB)->VinylPart_All[upgrade_level];
