@@ -2061,8 +2061,8 @@ bool CarRenderInfo::Render(eView *view, const bVector3 *world_position, const bM
 
     Player *player1 = Player::GetPlayerByIndex(0);
     int in_front_end = IsGameFlowInFrontEnd();
-    bool print_query_light_mat = PrintQueryLightMat != 0;
-    if (print_query_light_mat) {
+    int print_query_light_mat = PrintQueryLightMat;
+    if (print_query_light_mat != 0) {
         PrintLightQuery = 1;
     }
 
@@ -2101,7 +2101,7 @@ bool CarRenderInfo::Render(eView *view, const bVector3 *world_position, const bM
     elSetupLights(&base_light_context, shaper_lights, &position, 0, &hack_man_matrix, view);
     elCloneLightContext(light_context, cpy_local_world, &hack_man_matrix, &camera_world_position, view, &base_light_context);
     this->CarFrame = eFrameCounter;
-    if (print_query_light_mat) {
+    if (print_query_light_mat != 0) {
         PrintLightQuery = 0;
     }
 
