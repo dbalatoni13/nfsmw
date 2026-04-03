@@ -1573,8 +1573,9 @@ int LoaderCarInfo(bChunk *chunk) {
 
             int part_id = car_part->GetPartID();
             unsigned int brand_name = car_part->GetBrandNameHash();
-            int upgrade_level = car_part->GetUpgradeLevel();
-            int group_number = car_part->GetGroupNumber();
+            unsigned char packed_group = *(reinterpret_cast<unsigned char *>(car_part) + 5);
+            int upgrade_level = (packed_group >> 5) - 1;
+            int group_number = packed_group & 0x1F;
 
             if (upgrade_level < 0) {
                 upgrade_level = 0;
