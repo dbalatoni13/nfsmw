@@ -485,31 +485,34 @@ void VehicleRenderConn::RenderAll(eView *view, int reflection) {
 void VehicleRenderConn::RenderFlares(eView *view, int reflection, int renderFlareFlags) {
     for (VehicleRenderConn *const *iter = VehicleRenderConn::GetList().begin(); iter != VehicleRenderConn::GetList().end(); ++iter) {
         VehicleRenderConn *conn = *iter;
-        CarRenderInfo *car_render_info = conn->GetRenderInfo();
+        CarRenderInfo *info = conn->mRenderInfo;
 
-        if (conn->CanRender() && car_render_info != 0) {
+        if (conn->CanRender() && info != 0) {
             bMatrix4 render_matrix;
             bVector3 offset2;
-            CameraMover *mover = view->GetCameraMover();
+            CameraMover *mover = nullptr;
 
             conn->GetRenderMatrix(&render_matrix);
             offset2.x = render_matrix.v3.x;
             offset2.y = render_matrix.v3.y;
             offset2.z = render_matrix.v3.z;
 
+            if (view->CameraMoverList.GetHead() != view->CameraMoverList.EndOfList()) {
+                mover = view->CameraMoverList.GetHead();
+            }
+
             if (mover != 0 && !mover->RenderCarPOV()) {
+                const ReferenceMirror *world_ref = reinterpret_cast<const ReferenceMirror *>(&conn->mWorldRef);
                 CameraAnchor *anchor = mover->GetAnchor();
 
-                if (anchor != 0 && anchor->GetWorldID() == conn->GetWorldID()) {
+                if (anchor != 0 && anchor->GetWorldID() == world_ref->mWorldID) {
                     continue;
                 }
             }
 
-            car_render_info->RenderFlaresOnCar(view, &offset2, &render_matrix, 0, reflection, renderFlareFlags);
+            info->RenderFlaresOnCar(view, &offset2, &render_matrix, 0, reflection, renderFlareFlags);
 
             if (reflection == 0) {
-                CarRenderInfo *info = conn->GetRenderInfo();
-
                 if (view->GetID() == 1 || view->GetID() == 2) {
                     if (info->matrixIndex < 0) {
                         info->matrixIndex = 0;
