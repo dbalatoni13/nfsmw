@@ -2354,16 +2354,8 @@ bool CarRenderInfo::Render(eView *view, const bVector3 *world_position, const bM
                 }
             }
 
-            if (this->SpoilerPositionMarker == nullptr || part_spoiler == nullptr ||
-                (reinterpret_cast<unsigned char *>(part_spoiler)[5] >> 5) == 0) {
-                for (int i = 0; i < 1; i++) {
-                    eModel *spoiler_model = this->mCarPartModels[CARSLOTID_SPOILER][i][car_body_lod].GetModel();
-                    if (spoiler_model) {
-                        spoiler_model->ReplaceLightMaterial(0xD6D6080A, light_material_spoiler);
-                        ::Render(view, spoiler_model, local_world, light_context, extra_render_flags | disable_env_flag, 0);
-                    }
-                }
-            } else {
+            if (this->SpoilerPositionMarker != nullptr && part_spoiler != nullptr &&
+                (reinterpret_cast<unsigned char *>(part_spoiler)[5] >> 5) != 0) {
                 for (int i = 0; i < 1; i++) {
                     eModel *spoiler_model = this->mCarPartModels[CARSLOTID_SPOILER][i][car_body_lod].GetModel();
                     if (spoiler_model) {
@@ -2372,6 +2364,14 @@ bool CarRenderInfo::Render(eView *view, const bVector3 *world_position, const bM
                                    local_world);
                         spoiler_model->ReplaceLightMaterial(0xD6D6080A, light_material_spoiler);
                         ::Render(view, spoiler_model, &spoiler_local_world[i], light_context, extra_render_flags | disable_env_flag, 0);
+                    }
+                }
+            } else {
+                for (int i = 0; i < 1; i++) {
+                    eModel *spoiler_model = this->mCarPartModels[CARSLOTID_SPOILER][i][car_body_lod].GetModel();
+                    if (spoiler_model) {
+                        spoiler_model->ReplaceLightMaterial(0xD6D6080A, light_material_spoiler);
+                        ::Render(view, spoiler_model, local_world, light_context, extra_render_flags | disable_env_flag, 0);
                     }
                 }
             }
@@ -2394,16 +2394,7 @@ bool CarRenderInfo::Render(eView *view, const bVector3 *world_position, const bM
         }
 
         if (roof_local_world) {
-            if (this->RoofScoopPositionMarker == nullptr) {
-                for (int i = 0; i < 1; i++) {
-                    eModel *roof_scoop_model = this->mCarPartModels[CARSLOTID_ROOF][i][car_body_lod].GetModel();
-                    if (roof_scoop_model) {
-                        roof_scoop_model->ReplaceLightMaterial(0xD6D6080A, light_material_roof);
-                        ::Render(view, roof_scoop_model, local_world, light_context,
-                                 (extra_render_flags | disable_env_flag) | body_render_flags, 0);
-                    }
-                }
-            } else {
+            if (this->RoofScoopPositionMarker != nullptr) {
                 eMulMatrix(roof_local_world,
                            reinterpret_cast<bMatrix4 *>(reinterpret_cast<char *>(this->RoofScoopPositionMarker) + 0x10),
                            local_world);
@@ -2412,6 +2403,15 @@ bool CarRenderInfo::Render(eView *view, const bVector3 *world_position, const bM
                     if (roof_scoop_model) {
                         roof_scoop_model->ReplaceLightMaterial(0xD6D6080A, light_material_roof);
                         ::Render(view, roof_scoop_model, roof_local_world, light_context,
+                                 (extra_render_flags | disable_env_flag) | body_render_flags, 0);
+                    }
+                }
+            } else {
+                for (int i = 0; i < 1; i++) {
+                    eModel *roof_scoop_model = this->mCarPartModels[CARSLOTID_ROOF][i][car_body_lod].GetModel();
+                    if (roof_scoop_model) {
+                        roof_scoop_model->ReplaceLightMaterial(0xD6D6080A, light_material_roof);
+                        ::Render(view, roof_scoop_model, local_world, light_context,
                                  (extra_render_flags | disable_env_flag) | body_render_flags, 0);
                     }
                 }
