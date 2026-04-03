@@ -15,7 +15,7 @@
 
 // UNSOLVED, i hate constructors
 SmackableRenderConn::SmackableRenderConn(const Sim::ConnectionData &data /* r27 */)
-    : Sim::Connection(data), mTarget(0), mModelHash((unsigned int)0), mModel(0), mLOD(0),
+    : Sim::Connection(data), mModelHash(), mTarget((*reinterpret_cast<unsigned int *>(&mModelHash) = 0, 0)), mModel(0), mLOD(0),
       mModelOffset(bVector4(0.0f, 0.0f, 0.0f, 0.0f)) {
     this->mList.AddTail(this);
 
