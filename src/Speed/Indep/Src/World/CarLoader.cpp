@@ -192,17 +192,20 @@ unsigned int CarPartModelTable::GetModelNameHash(unsigned int base_namehash, int
         return reinterpret_cast<unsigned int>(this->ModelNames[model_num][lod]);
     }
 
-    char lod_suffix[3];
-    lod_suffix[0] = '_';
-    lod_suffix[1] = static_cast<char>(lod + 'A');
-    lod_suffix[2] = '\0';
+    unsigned int namehash;
+    char lod_name[3];
+
+    namehash = base_namehash;
+    lod_name[0] = '_';
+    lod_name[1] = static_cast<char>(lod + 'A');
+    lod_name[2] = '\0';
 
     if (this->MiddleStringOffset != 0xFFFF) {
-        base_namehash = bStringHash(MasterCarPartPack->StringTable + this->MiddleStringOffset * 4);
+        namehash = bStringHash(MasterCarPartPack->StringTable + this->MiddleStringOffset * 4, namehash);
     }
 
-    base_namehash = bStringHash(this->ModelNames[model_num][lod], base_namehash);
-    return bStringHash(lod_suffix, base_namehash);
+    namehash = bStringHash(this->ModelNames[model_num][lod], namehash);
+    return bStringHash(lod_name, namehash);
 }
 
 int ConvertVinylGroupNumberToVinylType(int vinyl_group_number) {
