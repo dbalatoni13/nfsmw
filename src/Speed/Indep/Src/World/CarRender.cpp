@@ -4407,18 +4407,12 @@ void CarRenderInfo::DrawKeithProjShadow(eView *view, const bVector3 *position, b
         if (n > 2) {
             bVector3 shadowCenter = shadowVertices[0] + shadowVertices[n / 2];
             int alpha = static_cast<int>((lbl_8040ADA0 - car_elevation_scale) * lbl_8040ADB0);
-            int alpha_clamped = 0;
             unsigned int colour;
 
             shadowCenter *= lbl_8040ADA8;
             FancyCarShadowEdgeMult = car_elevation_scale * lbl_8040ADB4 + lbl_8040ADB8;
-            if (alpha > 0) {
-                alpha_clamped = alpha;
-            }
-            if (alpha_clamped > 0xFE) {
-                alpha_clamped = 0xFE;
-            }
-            colour = static_cast<unsigned int>(alpha_clamped << 24) | 0x00808080;
+            alpha = bClamp(alpha, 0, 0xFE);
+            colour = static_cast<unsigned int>(alpha << 24) | 0x00808080;
 
             if (dshad != 0) {
                 int start = 0;
