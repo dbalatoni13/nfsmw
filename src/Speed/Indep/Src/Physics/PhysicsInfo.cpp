@@ -277,34 +277,35 @@ float Physics::Info::MaxInductedPower(const Attrib::Gen::pvehicle &pvehicle, con
     return result;
 }
 
-float Physics::Info::AvgInductedTorque(const Attrib::Gen::engine &eng, const Attrib::Gen::induction &ind, const Attrib::Gen::transmission &trans, bool from_peak, const Tunings *tunings) {
-    unsigned int num_torque = eng.Num_TORQUE();
+float Physics::Info::AvgInductedTorque(const Attrib::Gen::engine &engine, const Attrib::Gen::induction &induction, const Attrib::Gen::transmission &transmission, bool from_peak, const Tunings *tunings) {
+    unsigned int num_torque = engine.Num_TORQUE();
     if (num_torque < 2) {
         return 0.0f;
     }
 
     float peak_torque_rpm;
-    float peak_torque = MaxInductedTorque(eng, ind, peak_torque_rpm, tunings);
+    float peak_torque = MaxInductedTorque(engine, induction, peak_torque_rpm, tunings);
     if (!(peak_torque > 0.0f)) {
         return 0.0f;
     }
 
-    float torque_converter = trans.TORQUE_CONVERTER();
-    float rpm = eng.IDLE();
+    float torque_converter = transmission.TORQUE_CONVERTER();
+    float torque;
+    float rpm = engine.IDLE();
     float total_torque = 0.0f;
     float count = 0.0f;
-    float delta_rpm = (eng.MAX_RPM() - eng.IDLE()) / static_cast<float>(eng.Num_TORQUE() - 1);
+    float delta_rpm = (engine.MAX_RPM() - engine.IDLE()) / static_cast<float>(engine.Num_TORQUE() - 1);
 
-    for (unsigned int i = 0; i < eng.Num_TORQUE(); i++) {
+    for (unsigned int i = 0; i < engine.Num_TORQUE(); i++) {
         if (!from_peak || rpm >= peak_torque_rpm) {
-            float converter_ratio = UMath::Ramp(rpm, eng.IDLE(), peak_torque_rpm);
-            converter_ratio = 1.0f + torque_converter * (1.0f - converter_ratio);
-            float torque_pt = eng.TORQUE(i) * (InductionBoost(eng, ind, rpm, 1.0f, tunings, nullptr) + 1.0f) * converter_ratio;
+            float converter_ratio = 1.0f + torque_converter * (1.0f - UMath::Ramp(rpm, engine.IDLE(), peak_torque_rpm));
+            torque = engine.TORQUE(i) * (InductionBoost(engine, induction, rpm, 1.0f, tunings, nullptr) + 1.0f);
+            float torque_pt = torque * converter_ratio;
             total_torque += torque_pt;
             count += 1.0f;
         }
         rpm += delta_rpm;
-        if (rpm >= eng.RED_LINE()) break;
+        if (rpm >= engine.RED_LINE()) break;
     }
 
     if (count > 0.0f) {
