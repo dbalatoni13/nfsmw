@@ -728,41 +728,12 @@ void cSampleWarpper::Update(const SND_Params *Params) {
         } else if (az > 0x10000) {
             az = 0x10000;
         }
-        AEMS_ActiveSampleWsh->mData.az = az;
-
-        int vol = TempVol;
-        if (TempVol < 0) {
-            vol = 0;
-        } else if (TempVol > 0x7FFF) {
-            vol = 0x7FFF;
-        }
-        AEMS_ActiveSampleWsh->mData.vol = vol;
-
-        int pitch = TempPitch;
-        if (TempPitch < 0) {
-            pitch = 0;
-        } else if (TempPitch > 0x2000) {
-            pitch = 0x2000;
-        }
-        AEMS_ActiveSampleWsh->mData.pitch = pitch;
-
-        int wetFX = Params->RVerb;
-        if (wetFX < 0) {
-            wetFX = 0;
-        } else if (wetFX > 0x7FFF) {
-            wetFX = 0x7FFF;
-        }
-        AEMS_ActiveSampleWsh->mData.filter_WetFX = wetFX;
-
-        Csis::Class *cls = AEMS_ActiveSampleWsh->mpClass;
-        if (cls != nullptr) {
-            cls->SetMemberData(&AEMS_ActiveSampleWsh->mData);
-        }
-        refCountWsh = 0;
-        cls = AEMS_ActiveSampleWsh->mpClass;
-        if (cls != nullptr) {
-            cls->GetRefCount(&refCountWsh);
-        }
+        AEMS_ActiveSampleWsh->SetAz(az);
+        AEMS_ActiveSampleWsh->SetVol(TempVol);
+        AEMS_ActiveSampleWsh->SetPitch(TempPitch);
+        AEMS_ActiveSampleWsh->SetFilter_WetFX(Params->RVerb);
+        AEMS_ActiveSampleWsh->CommitMemberData();
+        refCountWsh = AEMS_ActiveSampleWsh->GetRefCount();
         if (refCountWsh < 2) {
             Destroy();
         }
@@ -780,41 +751,12 @@ void cSampleWarpper::Update(const SND_Params *Params) {
         } else if (az > 0x10000) {
             az = 0x10000;
         }
-        AEMS_ActiveSampleCol->mData.az = az;
-
-        int vol = TempVol;
-        if (TempVol < 0) {
-            vol = 0;
-        } else if (TempVol > 0x7FFF) {
-            vol = 0x7FFF;
-        }
-        AEMS_ActiveSampleCol->mData.vol = vol;
-
-        int pitch = TempPitch;
-        if (TempPitch < 0) {
-            pitch = 0;
-        } else if (TempPitch > 0x2000) {
-            pitch = 0x2000;
-        }
-        AEMS_ActiveSampleCol->mData.pitch = pitch;
-
-        int wetFX = Params->RVerb;
-        if (wetFX < 0) {
-            wetFX = 0;
-        } else if (wetFX > 0x7FFF) {
-            wetFX = 0x7FFF;
-        }
-        AEMS_ActiveSampleCol->mData.filter_WetFX = wetFX;
-
-        Csis::Class *cls = AEMS_ActiveSampleCol->mpClass;
-        if (cls != nullptr) {
-            cls->SetMemberData(&AEMS_ActiveSampleCol->mData);
-        }
-        refCountCol = 0;
-        cls = AEMS_ActiveSampleCol->mpClass;
-        if (cls != nullptr) {
-            cls->GetRefCount(&refCountCol);
-        }
+        AEMS_ActiveSampleCol->SetAz(az);
+        AEMS_ActiveSampleCol->SetVol(TempVol);
+        AEMS_ActiveSampleCol->SetPitch(TempPitch);
+        AEMS_ActiveSampleCol->SetFilter_WetFX(Params->RVerb);
+        AEMS_ActiveSampleCol->CommitMemberData();
+        refCountCol = AEMS_ActiveSampleCol->GetRefCount();
         if (refCountCol < 2) {
             Destroy();
         }
@@ -832,39 +774,12 @@ void cSampleWarpper::Update(const SND_Params *Params) {
         } else if (az > 0x10000) {
             az = 0x10000;
         }
-        AEMS_ActiveSampleStatic->mData.az = az;
-
-        if (TempVol < 0) {
-            TempVol = 0;
-        } else if (TempVol > 0x7FFF) {
-            TempVol = 0x7FFF;
-        }
-        AEMS_ActiveSampleStatic->mData.vol = TempVol;
-
-        if (TempPitch < 0) {
-            TempPitch = 0;
-        } else if (TempPitch > 0x2000) {
-            TempPitch = 0x2000;
-        }
-        AEMS_ActiveSampleStatic->mData.pitch = TempPitch;
-
-        int wetFX = Params->RVerb;
-        if (wetFX < 0) {
-            wetFX = 0;
-        } else if (wetFX > 0x7FFF) {
-            wetFX = 0x7FFF;
-        }
-        AEMS_ActiveSampleStatic->mData.filter_WetFX = wetFX;
-
-        Csis::Class *cls = AEMS_ActiveSampleStatic->mpClass;
-        if (cls != nullptr) {
-            cls->SetMemberData(&AEMS_ActiveSampleStatic->mData);
-        }
-        refCountStatic = 0;
-        cls = AEMS_ActiveSampleStatic->mpClass;
-        if (cls != nullptr) {
-            cls->GetRefCount(&refCountStatic);
-        }
+        AEMS_ActiveSampleStatic->SetAz(az);
+        AEMS_ActiveSampleStatic->SetVol(TempVol);
+        AEMS_ActiveSampleStatic->SetPitch(TempPitch);
+        AEMS_ActiveSampleStatic->SetFilter_WetFX(Params->RVerb);
+        AEMS_ActiveSampleStatic->CommitMemberData();
+        refCountStatic = AEMS_ActiveSampleStatic->GetRefCount();
         if (refCountStatic < 2) {
             Destroy();
         }
@@ -990,7 +905,6 @@ void cSampleWarpper::Play(const SND_Params *Params) {
         g_pEAXSound->SetCsisName(GetStichTypeName(STICH_TYPE_WOOSH));
         AEMS_StichWoosh **activeSample = &AEMS_ActiveSampleWsh;
         AEMS_StichWoosh *sample = static_cast<AEMS_StichWoosh *>(Csis::System::Alloc(0x2C));
-
         const SND_SampleRef *ref = SampleRefData;
         int sampleType = static_cast<int>(ref->eStichType);
         int sampleIndex = static_cast<int>(ref->SampleIndex);
@@ -1080,7 +994,6 @@ void cSampleWarpper::Play(const SND_Params *Params) {
         g_pEAXSound->SetCsisName(GetStichTypeName(STICH_TYPE_STATIC));
         AEMS_StichStatic **activeSample = &AEMS_ActiveSampleStatic;
         AEMS_StichStatic *sample = static_cast<AEMS_StichStatic *>(Csis::System::Alloc(0x2C));
-
         const SND_SampleRef *ref = SampleRefData;
         int sampleType = static_cast<int>(ref->eStichType);
         int sampleIndex = static_cast<int>(ref->SampleIndex);
