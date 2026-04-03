@@ -80,18 +80,18 @@ IVisualTreatment::IVisualTreatment()
       PursuitBreaker(::new (__FILE__, __LINE__) VisualLookEffectTarget(new Attrib::Gen::visuallookeffect(0x90D06C71, 0, nullptr))), //
       NosRadialBlur(::new (__FILE__, __LINE__) VisualLookEffectTarget(new Attrib::Gen::visuallookeffect(0x6B40EB80, 0, nullptr)))
 {
-    this->PulseBrightness = 1.0f;
-    this->DesaturationTarget = -1.0f;
     this->State = HEAT_LOOK;
-    this->HeatMeter = 0.0f;
+    this->PulseBrightness = 1.0f;
     this->IsBeingPursued = -1;
-    this->NosRadialBlur->Target = 0.0f;
-    this->NosRadialBlur->Current = 0.0f;
     this->NosRadialBlur->StartWorldTime = 0.0f;
-    this->RadialBlur = 0.0f;
-    this->NosRadialBlurAmount = 0.0f;
     this->PursuitBreakerBlend = 0.0f;
     this->CurrentTarget = -1.0f;
+    this->DesaturationTarget = -1.0f;
+    this->HeatMeter = 0.0f;
+    this->NosRadialBlur->Target = 0.0f;
+    this->NosRadialBlur->Current = 0.0f;
+    this->RadialBlur = 0.0f;
+    this->NosRadialBlurAmount = 0.0f;
 }
 
 IVisualTreatment::~IVisualTreatment() {
