@@ -5,11 +5,11 @@
 namespace RenderConn {
 class Pkt_VehicleFragment_Open : public Sim::Packet {
   public:
-    Pkt_VehicleFragment_Open(WUID vehicleWorldID, WUID worldID, UCrc32 partName, UCrc32 colName)
-        : mVehicleWorldID(vehicleWorldID), //
-          mWorldID(worldID),               //
-          mPartName(partName),             //
-          mColName(colName) {}
+    Pkt_VehicleFragment_Open(WUID worldid_part, WUID worldid_vehicle, UCrc32 partname, UCrc32 collision_node)
+        : mVehicleWorldID(worldid_part),     //
+          mWorldID(worldid_vehicle),         //
+          mPartName(partname),               //
+          mColName(collision_node) {}
 
     UCrc32 ConnectionClass() override {
         static UCrc32 hash = "VehicleFragmentConn";
@@ -274,11 +274,9 @@ void DrawVehicle::Part::OnBeginSimulation() {
     BeginDraw(UCrc32(0x804c146e), &pkt);
 
     if (!mOffScreenTask) {
-        const float *offscreen_allow_ptr = reinterpret_cast<const float *>(mAttributes.GetAttributePointer(0xc141f7f8, 0));
-        if (!offscreen_allow_ptr) {
-            offscreen_allow_ptr = reinterpret_cast<const float *>(Attrib::DefaultDataArea(sizeof(float)));
-        }
-        if (0.0f < *offscreen_allow_ptr) {
+        float offscreen_allow;
+        offscreen_allow = mAttributes.KILL_OFF_SCREEN();
+        if (0.0f < offscreen_allow) {
             mOffScreenTime = 0.0f;
             mOffScreenTask = true;
         }
@@ -301,8 +299,9 @@ IModel::Enumerator *DrawVehicle::EnumerateChildren(Enumerator *enumerator) const
     if (attachments) {
         IModel *model = static_cast<IModel *>(const_cast<DrawVehicle *>(this));
         for (IAttachable::List::const_iterator iter = attachments->begin(); iter != attachments->end(); ++iter) {
-            IModel *imodel = nullptr;
-            if ((*iter)->QueryInterface(&imodel) && imodel->GetParentModel() == model) {
+            IModel *imodel =
+                static_cast<IModel *>((*reinterpret_cast<UTL::COM::Object **>(*iter))->_mInterfaces.Find((HINTERFACE)IModel::_IHandle));
+            if (imodel && UTL::COM::ComparePtr(imodel->GetParentModel(), model)) {
                 if (!enumerator->OnModel(imodel)) {
                     return enumerator;
                 }
@@ -313,14 +312,17 @@ IModel::Enumerator *DrawVehicle::EnumerateChildren(Enumerator *enumerator) const
 }
 
 IModel *DrawVehicle::GetChildModel(UCrc32 name) const {
-    if (name != UCrc32::kNull) {
-        const IAttachable::List *attachments = static_cast<const IAttachable *>(this)->GetAttachments();
-        if (attachments) {
-            for (IAttachable::List::const_iterator iter = attachments->begin(); iter != attachments->end(); ++iter) {
-                IModel *imodel = nullptr;
-                if ((*iter)->QueryInterface(&imodel) && imodel->GetPartName() == name) {
-                    return imodel;
-                }
+    if (name == UCrc32::kNull) {
+        return nullptr;
+    }
+
+    const IAttachable::List *attachments = static_cast<const IAttachable *>(this)->GetAttachments();
+    if (attachments) {
+        for (IAttachable::List::const_iterator iter = attachments->begin(); iter != attachments->end(); ++iter) {
+            IModel *imodel =
+                static_cast<IModel *>((*reinterpret_cast<UTL::COM::Object **>(*iter))->_mInterfaces.Find((HINTERFACE)IModel::_IHandle));
+            if (imodel && imodel->GetPartName() == name) {
+                return imodel;
             }
         }
     }
@@ -355,7 +357,7 @@ void DrawVehicle::HideModel() {
 }
 
 void DrawVehicle::ReleaseModel() {
-    static_cast<IModel *>(this)->ReleaseModel();
+    static_cast<IModel *>(this)->ReleaseChildModels();
 }
 
 void DrawVehicle::ReleaseChildModels() {
