@@ -10,8 +10,19 @@
 #include "Speed/Indep/Src/World/TrackPath.hpp"
 
 enum eREVERBFX {
-    RVRB_CITYOPEN = 0,
-    RVRB_SIMPLE_TUNNEL = 1,
+    RVRB_CARSHOW_SML = 0,
+    RVRB_CARSHOW_BASS = 1,
+    RVRB_CARSHOW_BASS_2 = 2,
+    RVRB_GARAGE = 3,
+    RVRB_GARAGE_SML = 4,
+    RVRB_SIMPLE_TUNNEL = 5,
+    RVRB_SIMPLE_TUNNEL_SML = 6,
+    RVRB_HILLS_CLOSE = 7,
+    RVRB_HILLS = 8,
+    RVRB_CITYOPEN = 9,
+    RVRB_CITYDENSE = 10,
+    RVRB_ALLEY = 11,
+    RVRB_MAX_TYPES = 12,
 };
 
 struct SFXCTL_Tunnel : public SFXCTL {
