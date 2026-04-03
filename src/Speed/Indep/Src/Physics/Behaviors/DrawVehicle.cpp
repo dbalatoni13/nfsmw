@@ -355,7 +355,7 @@ void DrawVehicle::HideModel() {
 }
 
 void DrawVehicle::ReleaseModel() {
-    delete static_cast<IModel *>(this);
+    static_cast<IModel *>(this)->ReleaseModel();
 }
 
 void DrawVehicle::ReleaseChildModels() {
