@@ -221,9 +221,8 @@ int CompositeSkin32(SkinCompositeParams *composite_params) {
 
             for (; image_src < image_end; image_src++, mask_src++, dest++) {
                 unsigned int src_pixel = *image_src;
-                unsigned int src_mask = *mask_src;
                 unsigned int dest_pixel = *dest;
-                unsigned char blend_value = reinterpret_cast<unsigned char *>(&src_mask)[2];
+                unsigned char blend_value = reinterpret_cast<unsigned char *>(mask_src)[2];
 
                 if (info->m_RemapPalette != 0 && blend_value != 0) {
                     CompColour src_colour;
