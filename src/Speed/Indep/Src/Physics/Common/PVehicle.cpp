@@ -1039,25 +1039,28 @@ UCrc32 PVehicle::LookupBehaviorSignature(const Attrib::StringKey &mechanic) cons
         return UCrc32("EngineDragster");
     }
     if (mechanic == BEHAVIOR_MECHANIC_SUSPENSION && mClass == VehicleClass::CAR) {
-        if (mDriverClass >= DRIVER_RACER) {
-            if (mDriverClass <= DRIVER_NONE || mDriverClass == DRIVER_REMOTE) {
-                return UCrc32("SuspensionSimple");
-            }
+        switch (mDriverClass) {
+        case DRIVER_RACER:
+        case DRIVER_NONE:
+        case DRIVER_REMOTE:
+            return UCrc32("SuspensionSimple");
+        default:
+            break;
         }
     }
     if (mechanic == BEHAVIOR_MECHANIC_AI) {
-        AIBehaviors *ab = ai_behaviors;
-        UCrc32 sig = ab->signature;
-        while (ab->signature != UCrc32::kNull) {
-            if (mDriverClass == ab->dclass) {
-                if (mClass == ab->vclass || ab->vclass == UCrc32::kNull) {
-                    sig = ab->signature;
+        const AIBehaviors *aibehavior = ai_behaviors;
+        UCrc32 signature = aibehavior->signature;
+        while (aibehavior->signature != UCrc32::kNull) {
+            if (mDriverClass == aibehavior->dclass) {
+                if (mClass == aibehavior->vclass || aibehavior->vclass == UCrc32::kNull) {
+                    signature = aibehavior->signature;
                     break;
                 }
             }
-            ab++;
+            aibehavior++;
         }
-        return sig;
+        return signature;
     }
     if (mechanic == BEHAVIOR_MECHANIC_EFFECTS) {
         if (mDriverClass == DRIVER_HUMAN ||
@@ -1067,7 +1070,7 @@ UCrc32 PVehicle::LookupBehaviorSignature(const Attrib::StringKey &mechanic) cons
     }
     Attrib::Instance instance(nullptr, 0, nullptr);
     Attrib::StringKey behaviourKey;
-    Attrib::Attribute atr = mAttributes.Get(mechanic.GetHash32());
+    Attrib::Attribute atr = mAttributes.Get(static_cast<unsigned int>(mechanic));
     if (atr.Get(0, behaviourKey)) {
     } else {
         return UCrc32::kNull;
