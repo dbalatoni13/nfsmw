@@ -98,10 +98,10 @@ struct Wheel {
         mWheelForceZ = 0.0f;
         mWheelSlip = bVector2(0.0f, 0.0f);
         mTerrainType = SimSurface::kNull;
-        mPrevBlownState = 0;
-        mPercentFsFkTransfer = 0.0f;
         mLoad = 0.0f;
+        mPercentFsFkTransfer = 0.0f;
         mBlownState = 0;
+        mPrevBlownState = 0;
     }
 };
 
