@@ -384,6 +384,7 @@ int CompositeSkin(SkinCompositeParams *composite_params) {
 
     {
         unsigned char *dest_image_data = static_cast<unsigned char *>(TextureInfo_LockImage(dest_texture, TEXLOCK_WRITE));
+        unsigned char *dest = dest_image_data;
         unsigned int *dest_palette_data = static_cast<unsigned int *>(TextureInfo_LockPalette(dest_texture, TEXLOCK_WRITE));
         eUnSwizzle8bitPalette(dest_palette_data);
         int dest_width = dest_texture->Width;
@@ -395,7 +396,6 @@ int CompositeSkin(SkinCompositeParams *composite_params) {
         int total_malloc_required = semi_trans_pixels_buffer_size;
         int cur_semi_trans_pixel;
         int num_pixels;
-        unsigned char *dest;
         unsigned char *dest_end;
         unsigned char *image_src[1];
         unsigned char *mask_src[1];
@@ -453,8 +453,8 @@ int CompositeSkin(SkinCompositeParams *composite_params) {
                         *dest = static_cast<unsigned char>(i + 1);
                         int count = swatch_offset_count[i];
 
-                        swatch_offsets[count] = dest - dest_image_data;
                         swatch_offset_count[i] = count + 1;
+                        swatch_offsets[count] = dest - dest_image_data;
                         break;
                     }
 

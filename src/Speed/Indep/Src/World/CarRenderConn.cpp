@@ -820,7 +820,9 @@ void CarRenderConn::UpdateEngineAnimation(float dT, const RenderConn::Pkt_Car_Se
     this->mEnginePower = UMath::Clamp(this->mEnginePower + delta, 0.0f, 1.0f);
     this->mEnginePitchAngle = data.mAnimatedCarPitch;
 
-    if (data.mAnimatedCarRoll == 0.0f) {
+    if (data.mAnimatedCarRoll != 0.0f) {
+        this->mEngineTorqueAngle = data.mAnimatedCarRoll;
+    } else {
         float acceleration = (delta / dT) * this->GetAttributes().EngineRev(0);
         float max_rev = data.mEnginePower * data.mEngineSpeed * DEG2RAD(this->GetAttributes().EngineRevAngle(0));
         float rev_speed = DEG2RAD(this->GetAttributes().EngineRevSpeed(0)) * dT;
@@ -833,8 +835,6 @@ void CarRenderConn::UpdateEngineAnimation(float dT, const RenderConn::Pkt_Car_Se
         }
 
         this->mEngineTorqueAngle = UMath::Clamp(this->mEngineTorqueAngle, 0.0f, max_rev);
-    } else {
-        this->mEngineTorqueAngle = data.mAnimatedCarRoll;
     }
 
     if (data.mAnimatedCarShake != 0.0f) {
