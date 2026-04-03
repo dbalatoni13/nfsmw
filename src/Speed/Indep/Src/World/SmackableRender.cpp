@@ -29,6 +29,9 @@ SmackableRenderConn::SmackableRenderConn(const Sim::ConnectionData &data /* r27 
     const CollisionGeometry::Bounds *bounds = oc->mCollisionNode;
     UMath::Vector3 pivot;
     bounds->GetPivot(pivot);
+    this->mModelOffset.x = -pivot.z;
+    this->mModelOffset.y = pivot.x;
+    this->mModelOffset.z = -pivot.y;
 }
 
 Sim::Connection *SmackableRenderConn::Construct(const Sim::ConnectionData &data) {
