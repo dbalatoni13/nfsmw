@@ -805,8 +805,8 @@ void CarRenderConn::UpdateEngineAnimation(float dT, const RenderConn::Pkt_Car_Se
                 this->mShifting = UMath::Max(this->mShifting + (dT * shift_speed) / max_pitch, 0.0f);
             }
         } else {
-            this->mShiftPitchAngle = 0.0f;
             this->mShifting = 0.0f;
+            this->mShiftPitchAngle = 0.0f;
         }
     } else {
         this->mShiftPitchAngle = 0.0f;
