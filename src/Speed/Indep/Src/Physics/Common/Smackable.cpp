@@ -1094,8 +1094,8 @@ SmackableAvoidable::SmackableAvoidable(HeirarchyModel *model)
               : nullptr) //
     , mModel(model) //
 {
-    SetAvoidableObject(model != nullptr
-                           ? static_cast<UTL::COM::IUnknown *>(static_cast<IBody *>(model))
+    SetAvoidableObject(mModel != nullptr
+                           ? static_cast<UTL::COM::IUnknown *>(static_cast<IBody *>(mModel))
                            : nullptr);
 }
 
