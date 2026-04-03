@@ -416,8 +416,6 @@ void SFXCTL_Tunnel::UpdateOcclusion(float t) {
     VU0_v4scaleadd(originToBarrier[1], testDist, originToBarrier[0], directionVec);
 
     WCollisionMgr::WorldCollisionInfo cInfo;
-    memset(&cInfo.fBle, 0, 0x20);
-
     WCollisionMgr collisionMgr(0, 3);
     if (!collisionMgr.CheckHitWorld(originToBarrier, cInfo, 2)) {
         IsOccluded = 0;
