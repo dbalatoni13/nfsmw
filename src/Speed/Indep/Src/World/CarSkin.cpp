@@ -375,7 +375,14 @@ int CompositeSkin(SkinCompositeParams *composite_params) {
     num_layers = composite_params->NumLayers;
     (void)debug_print;
 
-    if (dest_texture != 0 && dest_texture->ImageCompressionType == TEXCOMP_8BIT) {
+    if (dest_texture == 0) {
+        return 0;
+    }
+    if (dest_texture->ImageCompressionType != TEXCOMP_8BIT) {
+        return 0;
+    }
+
+    {
         unsigned char *dest_image_data = static_cast<unsigned char *>(TextureInfo_LockImage(dest_texture, TEXLOCK_WRITE));
         unsigned int *dest_palette_data = static_cast<unsigned int *>(TextureInfo_LockPalette(dest_texture, TEXLOCK_WRITE));
         eUnSwizzle8bitPalette(dest_palette_data);
@@ -624,8 +631,6 @@ int CompositeSkin(SkinCompositeParams *composite_params) {
         TextureInfo_UnlockPalette(dest_texture, dest_palette_data);
         return 1;
     }
-
-    return 0;
 }
 
 int CompositeSkin(RideInfo *ride_info) {
