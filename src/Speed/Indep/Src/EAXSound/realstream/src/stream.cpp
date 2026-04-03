@@ -646,7 +646,6 @@ int STREAM_overhead(int requests, int filters, int taps) {
 int STREAM_create(int requests, int filters, int taps, void *buffer, int size) {
     STREAMHEADER *strm;
     REQUESTSTRUCT *req;
-    FILTERSTRUCT *filt;
     TAPSTRUCT *tap;
     int i;
     int overhead = STREAM_overhead(requests, filters, taps);
@@ -683,8 +682,7 @@ int STREAM_create(int requests, int filters, int taps, void *buffer, int size) {
     strm->dataend = static_cast<char *>(static_cast<void *>(tap));
     strm->freereq = req;
     strm->request = req;
-    filt = reinterpret_cast<FILTERSTRUCT *>(req + requests);
-    strm->filter = filt;
+    strm->filter = reinterpret_cast<FILTERSTRUCT *>(req + requests);
     strm->actualbufferstart = static_cast<char *>(static_cast<void *>(tap));
     strm->bufferstart = static_cast<char *>(static_cast<void *>(tap));
     strm->datastart = static_cast<char *>(static_cast<void *>(tap));
@@ -692,9 +690,6 @@ int STREAM_create(int requests, int filters, int taps, void *buffer, int size) {
 
     MEM_clear(strm->fname, 0xFF);
     strm->fhandle = 0;
-    strm->foffset = 0;
-    strm->fop = 0;
-    strm->readsize = 0;
 
     if (overhead < 0x4000) {
         strm->readblocksize = 0x800;
@@ -708,13 +703,15 @@ int STREAM_create(int requests, int filters, int taps, void *buffer, int size) {
         strm->readblocksize = 0x8000;
     }
 
-    for (i = 0; i < requests; ++i) {
+    i = 0;
+    while (i < requests) {
         REQUESTSTRUCT *request = static_cast<REQUESTSTRUCT *>(
             static_cast<void *>(static_cast<char *>(static_cast<void *>(strm->request)) + i * sizeof(REQUESTSTRUCT)));
         request->id = i;
+        ++i;
         request->state = STREAMREQUEST_FREE;
         request->next = static_cast<REQUESTSTRUCT *>(
-            static_cast<void *>(static_cast<char *>(static_cast<void *>(strm->request)) + i * sizeof(REQUESTSTRUCT) + sizeof(REQUESTSTRUCT)));
+            static_cast<void *>(static_cast<char *>(static_cast<void *>(strm->request)) + i * sizeof(REQUESTSTRUCT)));
     }
     if (requests > 0) {
         reinterpret_cast<REQUESTSTRUCT *>(static_cast<char *>(static_cast<void *>(strm->request)) + requests * sizeof(REQUESTSTRUCT) -
@@ -723,15 +720,17 @@ int STREAM_create(int requests, int filters, int taps, void *buffer, int size) {
     }
 
     for (i = 0; i < filters; ++i) {
-        filt[i].mask = 0;
-        filt[i].value = 0;
-        filt[i].tapnum = 1;
+        strm->filter[i].mask = 0;
+        strm->filter[i].tapnum = 1;
+        strm->filter[i].value = 0;
     }
 
-    for (i = 0; i < taps; ++i) {
+    i = 0;
+    while (i < taps) {
         strm->tap[i].stream = static_cast<STREAMHEADERtag *>(buffer);
-        strm->tap[i].tapnum = i + 1;
         strm->tap[i].gettable = 0;
+        strm->tap[i].tapnum = i + 1;
+        ++i;
     }
 
     AssignAudioStreamHandle(reinterpret_cast<unsigned int>(strm->tap));
