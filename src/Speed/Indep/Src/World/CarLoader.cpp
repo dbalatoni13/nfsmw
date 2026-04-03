@@ -1579,7 +1579,8 @@ int LoaderCarInfo(bChunk *chunk) {
 
             if (upgrade_level < 0) {
                 upgrade_level = 0;
-            } else if (upgrade_level > 2) {
+            }
+            if (upgrade_level > 2) {
                 upgrade_level = 2;
             }
 
