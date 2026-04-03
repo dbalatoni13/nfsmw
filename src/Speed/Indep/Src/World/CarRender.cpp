@@ -4375,6 +4375,7 @@ void CarRenderInfo::DrawKeithProjShadow(eView *view, const bVector3 *position, b
         scale.y = lbl_8040AD9C;
         scale.z = lbl_8040ADA0;
         float one_over_z = cs_OneOverZ;
+        bVector3 *shadow_vertex = shadowVertices;
         for (int i = 0; i < n; i++) {
             bVector3 localPoint;
             bVector3 worldPoint;
@@ -4385,9 +4386,10 @@ void CarRenderInfo::DrawKeithProjShadow(eView *view, const bVector3 *position, b
             localPoint.z = PointCloud[i].z * scale.z;
             eMulVector(&worldPoint, localWorld, &localPoint);
             scaleToGround = (shadowZ - worldPoint.z) * one_over_z;
-            shadowVertices[i].x = scaleToGround * lightV.x + worldPoint.x;
-            shadowVertices[i].y = scaleToGround * lightV.y + worldPoint.y;
-            shadowVertices[i].z = scaleToGround * lightV.z + worldPoint.z;
+            shadow_vertex->x = scaleToGround * lightV.x + worldPoint.x;
+            shadow_vertex->y = scaleToGround * lightV.y + worldPoint.y;
+            shadow_vertex->z = scaleToGround * lightV.z + worldPoint.z;
+            shadow_vertex++;
         }
 
         this->convex_hull(hullVertArray1, this->mWCollider, n, shadowZ, lbl_8040ADA4, body_lod != this->mMinLodLevel);
