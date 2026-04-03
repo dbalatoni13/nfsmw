@@ -262,15 +262,16 @@ void SFXCTL_HybridMotor::UpdateDualMixEng(float t) {
     bool USE_SMOOTHING = true;
     EngineMix AccelMix;
     EngineMix DecelMix;
-    float DeltaRPM = bAbs(m_AvgDeltaRPM.GetValue() + 10.0f);
-    float adt = m_pEAXCar->GetAttributes().AccelDeltaRPMThreshold();
-    EngineMix newmix;
+    float DeltaRPM;
+    float adt;
     float EngineCtlVolFactor;
     int VolAEMS;
     int VolAccelGinsu;
     int VolDecelGinsu;
     int tempAEMVol;
 
+    DeltaRPM = bAbs(m_AvgDeltaRPM.GetValue() + 10.0f);
+    adt = m_pEAXCar->GetAttributes().AccelDeltaRPMThreshold();
     PercentOfAccelThreshold = bClamp(1.0f - (adt - DeltaRPM) / adt, 0.0f, 1.0f);
     adt = m_pEAXCar->GetAttributes().DecelDeltaRPMThreshold();
     PercentOfDecelThreshold = bClamp(1.0f - (adt - DeltaRPM) / adt, 0.0f, 1.0f);
@@ -314,6 +315,7 @@ void SFXCTL_HybridMotor::UpdateDualMixEng(float t) {
         bMin(static_cast<int>(m_pEAXCar->GetAttributes().GINSU_LowPassCutoff()), m_pEngineCtl->m_DistanceFltr);
 
     m_bAEMSLPF = false;
+    EngineMix newmix;
     newmix.Aems = (AccelMix.Aems - DecelMix.Aems) * AccelDecelMix + DecelMix.Aems;
     newmix.DecelGinsu = (AccelMix.DecelGinsu - DecelMix.DecelGinsu) * AccelDecelMix + DecelMix.DecelGinsu;
     newmix.AccelGinsu = (AccelMix.AccelGinsu - DecelMix.AccelGinsu) * AccelDecelMix + DecelMix.AccelGinsu;
