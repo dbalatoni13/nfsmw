@@ -811,12 +811,12 @@ CarRenderInfo::CarRenderInfo(RideInfo *ride_info)
       mFlashInterval(0.0f)
 {
     ProfileNode profile_node;
-    CarTypeInfo *info = &CarTypeInfoArray[ride_info->Type];
-    char *car_base_name = info->BaseModelName;
     bVector3 tire_positions[4];
     float wheel_radius[4];
 
     bMemSet(&this->TheCarPartCuller, 0, sizeof(this->TheCarPartCuller));
+    CarTypeInfo *info = &CarTypeInfoArray[ride_info->Type];
+    char *car_base_name = info->BaseModelName;
     this->mAttributes.ChangeWithDefault(Attrib::StringToLowerCaseKey(car_base_name));
     *reinterpret_cast<unsigned int *>(&this->mMirrorLeftWheels) =
         static_cast<unsigned char>(this->mAttributes.WheelSpokeCount()) >> 7;
