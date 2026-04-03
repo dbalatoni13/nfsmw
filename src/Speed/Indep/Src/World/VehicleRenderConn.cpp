@@ -485,9 +485,9 @@ void VehicleRenderConn::RenderAll(eView *view, int reflection) {
 void VehicleRenderConn::RenderFlares(eView *view, int reflection, int renderFlareFlags) {
     for (VehicleRenderConn *const *iter = VehicleRenderConn::GetList().begin(); iter != VehicleRenderConn::GetList().end(); ++iter) {
         VehicleRenderConn *conn = *iter;
-        CarRenderInfo *info = conn->mRenderInfo;
 
-        if (conn->CanRender() && info != 0) {
+        if (conn->CanRender() && conn->mRenderInfo != 0) {
+            CarRenderInfo *info = conn->mRenderInfo;
             bMatrix4 render_matrix;
             bVector3 offset2;
             CameraMover *mover = nullptr;
