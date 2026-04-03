@@ -1573,8 +1573,14 @@ int LoaderCarInfo(bChunk *chunk) {
 
             int part_id = car_part->GetPartID();
             unsigned int brand_name = car_part->GetBrandNameHash();
-            int upgrade_level = bClamp(car_part->GetUpgradeLevel(), 0, 2);
+            int upgrade_level = car_part->GetUpgradeLevel();
             int group_number = car_part->GetGroupNumber();
+
+            if (upgrade_level < 0) {
+                upgrade_level = 0;
+            } else if (upgrade_level > 2) {
+                upgrade_level = 2;
+            }
 
             if (part_id == 'L') {
                 if (brand_name == 0x03437A52) {
