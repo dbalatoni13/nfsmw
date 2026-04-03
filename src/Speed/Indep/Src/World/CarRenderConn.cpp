@@ -790,10 +790,7 @@ void CarRenderConn::UpdateEngineAnimation(float dT, const RenderConn::Pkt_Car_Se
         const float max_pitch = DEG2RAD(this->GetAttributes().ShiftAngle(0));
         const int gear = data.mGear - 2;
 
-        if (shift_speed <= 0.0f || max_pitch <= 0.0f || gear < 0 || car_speed <= 10.0f) {
-            this->mShiftPitchAngle = 0.0f;
-            this->mShifting = 0.0f;
-        } else {
+        if (0.0f < shift_speed && 0.0f < max_pitch && gear >= 0 && 10.0f < car_speed) {
             float fwd_accel = bDot(this->GetAcceleration(), reinterpret_cast<const bVector3 *>(&this->mRenderMatrix.v0));
             float gear_ratio = UMath::Ramp(UMath::Abs(fwd_accel * 0.10204081f), 0.1f, 0.5f);
 
@@ -807,6 +804,9 @@ void CarRenderConn::UpdateEngineAnimation(float dT, const RenderConn::Pkt_Car_Se
             } else if (0.0f < this->mShifting) {
                 this->mShifting = UMath::Max(this->mShifting + (dT * shift_speed) / max_pitch, 0.0f);
             }
+        } else {
+            this->mShiftPitchAngle = 0.0f;
+            this->mShifting = 0.0f;
         }
     } else {
         this->mShiftPitchAngle = 0.0f;
@@ -837,15 +837,15 @@ void CarRenderConn::UpdateEngineAnimation(float dT, const RenderConn::Pkt_Car_Se
         this->mEngineTorqueAngle = data.mAnimatedCarRoll;
     }
 
-    if (data.mAnimatedCarShake == 0.0f) {
+    if (data.mAnimatedCarShake != 0.0f) {
+        this->mEngineVibrationAngle = data.mAnimatedCarShake;
+    } else {
         float max_vibration = DEG2RAD(this->GetAttributes().EngineVibrationMax(0));
         float min_vibration = DEG2RAD(this->GetAttributes().EngineVibrationMin(0));
         float vibration_freq = this->GetAttributes().EngineVibrationFreq(0);
 
         this->mEngineVibrationAngle =
             data.mEngineSpeed * bSin(this->mAnimTime * vibration_freq * 6.2831855f) * (min_vibration + max_vibration * data.mEngineSpeed);
-    } else {
-        this->mEngineVibrationAngle = data.mAnimatedCarShake;
     }
 }
 

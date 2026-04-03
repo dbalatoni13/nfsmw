@@ -3396,6 +3396,13 @@ void CarRenderInfo::RenderTextureHeadlights(eView *view, bMatrix4 *l_w, unsigned
     if (matrix != 0) {
         bVector3 Up(0.0f, 0.0f, 1.0f);
         bVector3 Basis(matrix->v0.z, matrix->v1.z, matrix->v2.z);
+        float hOffZ0 = 0.0f;
+        float hOffZ1 = 0.0f;
+        float hOffZ2 = 0.0f;
+        float hOffZ3 = 0.0f;
+        float hOffMID12 = 1.0f;
+        float hOffMID03 = 0.0f;
+        float hOffMID13 = 1.0f;
 
         if (bDot(&Up, &Basis) < 0.707f) {
             return;
@@ -3413,19 +3420,19 @@ void CarRenderInfo::RenderTextureHeadlights(eView *view, bMatrix4 *l_w, unsigned
         poly.Vertices[2].x = hRad2x + hOffX;
         poly.Vertices[2].y = hRad2y + hOffY;
 
-        poly.Vertices[0].z = 0.0f;
-        poly.Vertices[1].z = 0.0f;
-        poly.Vertices[2].z = 0.0f;
-        poly.Vertices[3].z = 0.0f;
+        poly.Vertices[0].z = hOffZ0;
+        poly.Vertices[1].z = hOffZ1;
+        poly.Vertices[2].z = hOffZ2;
+        poly.Vertices[3].z = hOffZ3;
 
-        poly.UVs[0][0] = 0.0f;
-        poly.UVs[1][0] = 0.0f;
-        poly.UVs[0][1] = 1.0f;
-        poly.UVs[1][1] = 0.0f;
-        poly.UVs[0][2] = 1.0f;
-        poly.UVs[1][2] = 1.0f;
-        poly.UVs[0][3] = 0.0f;
-        poly.UVs[1][3] = 1.0f;
+        poly.UVs[0][0] = hOffMID03;
+        poly.UVs[1][0] = hOffMID03;
+        poly.UVs[0][1] = hOffMID12;
+        poly.UVs[1][1] = hOffMID03;
+        poly.UVs[0][2] = hOffMID12;
+        poly.UVs[1][2] = hOffMID13;
+        poly.UVs[0][3] = hOffMID03;
+        poly.UVs[1][3] = hOffMID13;
 
         reinterpret_cast<unsigned int *>(poly.Colours)[0] = hcL;
         reinterpret_cast<unsigned int *>(poly.Colours)[1] = hcL;
