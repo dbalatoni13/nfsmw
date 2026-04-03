@@ -1731,22 +1731,22 @@ void CarRenderInfo::UpdateCarParts() {
     this->ModelOffset = (this->AABBMax + this->AABBMin) * 0.5f;
 
     CarPart *base_part = ride_info->GetPart(CARSLOTID_BASE);
-    if (base_part == 0) {
-        this->RoofScoopPositionMarker = 0;
-        this->SpoilerPositionMarker = 0;
-        this->SpoilerPositionMarker2 = 0;
-    } else {
+    if (base_part != 0) {
         eSolid *solid = eFindSolid(CarPart_GetModelNameHash(base_part, 0, this->mMinLodLevel));
 
-        if (solid == 0) {
-            this->RoofScoopPositionMarker = 0;
-            this->SpoilerPositionMarker = 0;
-            this->SpoilerPositionMarker2 = 0;
-        } else {
+        if (solid != 0) {
             this->SpoilerPositionMarker = solid->GetPostionMarker(0xC93B73FD);
             this->SpoilerPositionMarker2 = solid->GetPostionMarker(0xF0A9F3CF);
             this->RoofScoopPositionMarker = solid->GetPostionMarker(0x90C81258);
+        } else {
+            this->SpoilerPositionMarker = 0;
+            this->SpoilerPositionMarker2 = 0;
+            this->RoofScoopPositionMarker = 0;
         }
+    } else {
+        this->SpoilerPositionMarker = 0;
+        this->SpoilerPositionMarker2 = 0;
+        this->RoofScoopPositionMarker = 0;
     }
 
     CarPart *spoiler_part = ride_info->GetPart(CARSLOTID_SPOILER);
