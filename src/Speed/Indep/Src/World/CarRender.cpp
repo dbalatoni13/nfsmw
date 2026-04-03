@@ -3379,14 +3379,15 @@ void CarRenderInfo::CreateCarLightFlares() {
 
 void CarRenderInfo::RenderTextureHeadlights(eView *view, bMatrix4 *l_w, unsigned int) {
     bMatrix4 *matrix;
+    unsigned char *address = CurrentBufferPos;
 
-    if (CurrentBufferEnd <= CurrentBufferPos + sizeof(bMatrix4)) {
+    if (address + 0x40 >= CurrentBufferEnd) {
         FrameMallocFailed = 1;
-        FrameMallocFailAmount += sizeof(bMatrix4);
+        FrameMallocFailAmount += 0x40;
         matrix = 0;
     } else {
-        matrix = reinterpret_cast<bMatrix4 *>(CurrentBufferPos);
-        CurrentBufferPos += sizeof(bMatrix4);
+        matrix = reinterpret_cast<bMatrix4 *>(address);
+        CurrentBufferPos = address + 0x40;
     }
 
     PSMTX44Copy(*reinterpret_cast<Mtx44 *>(l_w), *reinterpret_cast<Mtx44 *>(matrix));
