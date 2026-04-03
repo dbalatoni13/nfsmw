@@ -3401,7 +3401,6 @@ void CarRenderInfo::RenderTextureHeadlights(eView *view, bMatrix4 *l_w, unsigned
         }
 
         ePoly poly;
-        __5ePoly(&poly);
         TextureInfo *texture_info = GetTextureInfo(bStringHash("2PLAYERHEADLIGHT1"), 1, 0);
 
         poly.Vertices[0].x = hOffX - hRad0x;
