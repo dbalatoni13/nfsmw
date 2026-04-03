@@ -2075,9 +2075,9 @@ bool CarRenderInfo::Render(eView *view, const bVector3 *world_position, const bM
     eDynamicLightContext base_light_context;
     elResetLightContext(&base_light_context);
 
+    FEManager *fe_manager = FEManager::Get();
     eShaperLightRig *shaper_lights;
-    FEManager::Get();
-    switch (FEManager::Get()->GetGarageType()) {
+    switch (fe_manager->GetGarageType()) {
     case GARAGETYPE_CAREER_SAFEHOUSE:
         shaper_lights = &ShaperLightsSafehouse;
         break;
