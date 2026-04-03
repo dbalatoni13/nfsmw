@@ -33,7 +33,8 @@ HeliRenderConn::HeliRenderConn(const Sim::ConnectionData &data, CarType type, Re
     mLastRenderFrame = 0;
 
     for (int i = 0; i <= 3; i++) {
-        PSMTX44Identity(*reinterpret_cast<Mtx44 *>(&this->mMatrices[i]));
+        char *matrix = reinterpret_cast<char *>(this) + i * sizeof(this->mMatrices[0]);
+        PSMTX44Identity(*reinterpret_cast<Mtx44 *>(matrix + 0x64));
     }
 
     this->Load(open->mWorldID, CarRenderUsage_AIHeli, !open->mSpoolLoad, 0);
