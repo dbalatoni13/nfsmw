@@ -3378,16 +3378,18 @@ void CarRenderInfo::CreateCarLightFlares() {
 }
 
 void CarRenderInfo::RenderTextureHeadlights(eView *view, bMatrix4 *l_w, unsigned int) {
-    bMatrix4 *matrix = reinterpret_cast<bMatrix4 *>(CurrentBufferPos);
+    bMatrix4 *matrix;
 
     if (CurrentBufferEnd <= CurrentBufferPos + sizeof(bMatrix4)) {
         FrameMallocFailed = 1;
         FrameMallocFailAmount += sizeof(bMatrix4);
         matrix = 0;
     } else {
+        matrix = reinterpret_cast<bMatrix4 *>(CurrentBufferPos);
         CurrentBufferPos += sizeof(bMatrix4);
-        *matrix = *l_w;
     }
+
+    PSMTX44Copy(*reinterpret_cast<Mtx44 *>(l_w), *reinterpret_cast<Mtx44 *>(matrix));
 
     if (matrix != 0) {
         bVector3 Up(0.0f, 0.0f, 1.0f);
