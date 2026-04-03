@@ -568,9 +568,9 @@ void SFXCTL_Tunnel::UpdateReflectionParams(float t) {
             if (m_IsLeadCar != 0) {
                 bIsReadyForSwitch = true;
             }
+            bFadingOut = false;
             bFadingIn = true;
             m_ReverbType = m_TargetType;
-            bFadingOut = bIsTunnelRamping;
             ReflRamp.Initialize(0.0f, 1.0f, g_REVERBFXMODULES[m_TargetType].FadeIn, LINEAR);
 
             m_CurWetGinsu = m_CurWetGinsuTarget;
@@ -616,34 +616,11 @@ void SFXCTL_Tunnel::UpdateReflectionParams(float t) {
         m_AEMSDryVol = static_cast<int>(m_CurDryAems * 32767.0f);
     }
 
-    int toggleValue;
-    if (!bToggleOffset) {
-        toggleValue = 1;
-    } else {
-        int aemsWet = m_AEMSWetVol + 1;
-        m_AEMSWetVol = aemsWet;
-        int clampedAemsWet = 0;
-        if (aemsWet > 0) {
-            clampedAemsWet = aemsWet;
-        }
-        if (clampedAemsWet > 0x7FFF) {
-            clampedAemsWet = 0x7FFF;
-        }
-        m_AEMSWetVol = clampedAemsWet;
-
-        int ginsuWet = m_GinsuWetVol + 1;
-        m_GinsuWetVol = ginsuWet;
-        int clampedGinsuWet = 0;
-        if (ginsuWet > 0) {
-            clampedGinsuWet = ginsuWet;
-        }
-        if (clampedGinsuWet > 0x7FFF) {
-            clampedGinsuWet = 0x7FFF;
-        }
-        m_GinsuWetVol = clampedGinsuWet;
-        toggleValue = 0;
+    if (bToggleOffset) {
+        m_AEMSWetVol = bClamp(m_AEMSWetVol + 1, 0, 0x7FFF);
+        m_GinsuWetVol = bClamp(m_GinsuWetVol + 1, 0, 0x7FFF);
     }
 
-    bToggleOffset = toggleValue;
+    bToggleOffset = !bToggleOffset;
     bIsTunnelRamping = ReflRamp.bComplete ^ 1;
 }
