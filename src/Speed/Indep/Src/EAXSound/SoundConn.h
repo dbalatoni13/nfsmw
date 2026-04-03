@@ -73,6 +73,11 @@ class Pkt_Car_Service : public Sim::Packet {
         mTractionPct[1] = 1.0f;
         mTractionPct[0] = 1.0f;
 
+        mBlownTires[3] = 0;
+        mBlownTires[2] = 0;
+        mBlownTires[1] = 0;
+        mBlownTires[0] = 0;
+
         bVector2 zeroWheelSlip(0.0f, 0.0f);
         mWheelSlip[0] = zeroWheelSlip;
         mWheelSlip[1] = zeroWheelSlip;
@@ -93,11 +98,6 @@ class Pkt_Car_Service : public Sim::Packet {
         mWheelOnGround[2] = false;
         mWheelOnGround[1] = false;
         mWheelOnGround[0] = false;
-
-        mBlownTires[0] = 0;
-        mBlownTires[1] = 0;
-        mBlownTires[2] = 0;
-        mBlownTires[3] = 0;
     }
     ~Pkt_Car_Service() override;
     UCrc32 ConnectionClass() override;
