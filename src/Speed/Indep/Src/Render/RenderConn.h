@@ -23,7 +23,10 @@ class Pkt_Smackable_Open : public Sim::Packet {
         , mHeirarchy(heirarchy) //
         , mRenderNode(rendernode) {}
 
-    UCrc32 ConnectionClass() override;
+    UCrc32 ConnectionClass() override {
+        static UCrc32 hash = "SmackableRenderConn";
+        return hash;
+    }
 
     unsigned int Size() override;
 

@@ -271,10 +271,6 @@ bool Smackable::SetDynamicData(const EventSequencer::System *system, EventDynami
 template void UTL::Vector<ISimpleBody *, 16>::push_back(ISimpleBody *const &);
 template BehaviorSpecsPtr<Attrib::Gen::rigidbodyspecs>::~BehaviorSpecsPtr();
 
-UCrc32 RenderConn::Pkt_Smackable_Open::ConnectionClass() {
-    return UCrc32(0x804c146e);
-}
-
 unsigned int RenderConn::Pkt_Smackable_Open::Size() {
     return sizeof(*this);
 }

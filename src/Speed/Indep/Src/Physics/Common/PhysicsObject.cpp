@@ -22,10 +22,6 @@ HINTERFACE IBody::_IHandle() {
 
 IBody::~IBody() {}
 
-UCrc32 WorldConn::Pkt_Body_Open::ConnectionClass() {
-    return UCrc32(0x998c21c0);
-}
-
 unsigned int WorldConn::Pkt_Body_Open::Size() {
     return sizeof(*this);
 }

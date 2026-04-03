@@ -118,7 +118,10 @@ class Pkt_Body_Open : public Sim::Packet {
     Pkt_Body_Open(unsigned int id, const UMath::Matrix4 &matrix) : mMatrix(matrix), mID(id) {}
     ~Pkt_Body_Open() override {}
 
-    UCrc32 ConnectionClass() override;
+    UCrc32 ConnectionClass() override {
+        static UCrc32 hash = "WorldBodyConn";
+        return hash;
+    }
 
     unsigned int Size() override;
 
