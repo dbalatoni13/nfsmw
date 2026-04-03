@@ -1055,7 +1055,9 @@ void CarRenderConn::UpdateTires(float dT, float carspeed, const RenderConn::Pkt_
                 float intensity = UMath::Sqrt(skid * skid + slip * slip);
 
                 if (0.0f < intensity) {
-                    bVector4 delta_pos = state->mTirePos - state->mPrevTirePos;
+                    bVector4 delta_pos;
+
+                    bSub(&delta_pos, &state->mTirePos, &state->mPrevTirePos);
 
                     state->DoSkids(intensity, reinterpret_cast<const bVector3 *>(&delta_pos), &this->mTireMatrices[i], &this->mRenderMatrix,
                                    this->GetAttributes().TireSkidWidth(i));
