@@ -974,8 +974,8 @@ void CarRenderConn::UpdateTires(float dT, float carspeed, const RenderConn::Pkt_
     car_render_info = this->GetRenderInfo();
     (void)is_view_anchor;
 
-    for (int i = 0; i < 4; i++) {
-        const int axle = i >> 1;
+    for (unsigned int i = 0; i < 4; i++) {
+        const unsigned int axle = i >> 1;
         const bool onground = ((data.mGroundState >> i) & 1U) != 0;
         const bool is_flat = ((data.mBlowOuts >> i) & 1U) != 0;
         TireState *state = this->mTireState[i];
