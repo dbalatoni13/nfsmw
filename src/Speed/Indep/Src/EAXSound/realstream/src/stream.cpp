@@ -713,11 +713,9 @@ int STREAM_create(int requests, int filters, int taps, void *buffer, int size) {
         request->next = static_cast<REQUESTSTRUCT *>(
             static_cast<void *>(static_cast<char *>(static_cast<void *>(strm->request)) + i * sizeof(REQUESTSTRUCT)));
     }
-    if (requests > 0) {
-        reinterpret_cast<REQUESTSTRUCT *>(static_cast<char *>(static_cast<void *>(strm->request)) + requests * sizeof(REQUESTSTRUCT) -
-                                         sizeof(REQUESTSTRUCT))
-            ->next = nullptr;
-    }
+    reinterpret_cast<REQUESTSTRUCT *>(static_cast<char *>(static_cast<void *>(strm->request)) + requests * sizeof(REQUESTSTRUCT) -
+                                     sizeof(REQUESTSTRUCT))
+        ->next = nullptr;
 
     for (i = 0; i < filters; ++i) {
         strm->filter[i].mask = 0;
