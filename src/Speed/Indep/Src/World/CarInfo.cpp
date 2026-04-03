@@ -938,11 +938,11 @@ void RideInfo::UpdatePartsEnabled() {
             CarPart *part = this->PreviewPart;
             bool is_part_brake_paint = false;
             if (part) {
-                if (part->GetGroupNumber() == 'L') {
+                if (part->GetPartID() == 'L') {
                     is_part_brake_paint = part->GetBrandNameHash() == brake_paint_hash;
                 }
                 part = this->PreviewPart;
-                if (part && (part->GetGroupNumber() == 'B' || is_part_brake_paint)) {
+                if (part && (part->GetPartID() == 'B' || is_part_brake_paint)) {
                     this->mPartsEnabled[i] = 0;
                 }
             }

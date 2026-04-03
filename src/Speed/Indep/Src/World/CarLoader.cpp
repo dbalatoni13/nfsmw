@@ -1565,27 +1565,16 @@ int LoaderCarInfo(bChunk *chunk) {
         }
 
         for (unsigned int i = 0; i < car_part_pack->NumParts; i++) {
-            char *car_part_bytes = reinterpret_cast<char *>(car_part_pack->PartsTable) + i * 0xE;
-            CarPart *car_part = reinterpret_cast<CarPart *>(car_part_bytes);
+            CarPart *car_part = reinterpret_cast<CarPart *>(reinterpret_cast<char *>(car_part_pack->PartsTable) + i * 0xE);
             CarPartIndex *index0 = 0;
             CarPartIndex *index1 = 0;
 
-            bEndianSwap16(car_part_bytes);
-            bEndianSwap16(car_part_bytes + 2);
-            bEndianSwap16(car_part_bytes + 8);
-            bEndianSwap16(car_part_bytes + 10);
-            bEndianSwap16(car_part_bytes + 12);
+            car_part->EndianSwap();
 
-            int part_id = car_part_bytes[4];
-            unsigned int brand_name = car_part->GetAppliedAttributeUParam(0xEBB03E66, 0);
-            int upgrade_level = (static_cast<unsigned char>(car_part_bytes[5]) >> 5) - 1;
-            int group_number = static_cast<unsigned char>(car_part_bytes[5]) & 0x1F;
-
-            if (upgrade_level < 0) {
-                upgrade_level = 0;
-            } else if (upgrade_level > 2) {
-                upgrade_level = 2;
-            }
+            int part_id = car_part->GetPartID();
+            unsigned int brand_name = car_part->GetBrandNameHash();
+            int upgrade_level = bClamp(car_part->GetUpgradeLevel(), 0, 2);
+            int group_number = car_part->GetGroupNumber();
 
             if (part_id == 'L') {
                 if (brand_name == 0x03437A52) {

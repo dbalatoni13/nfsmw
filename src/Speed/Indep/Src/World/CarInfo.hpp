@@ -298,9 +298,26 @@ struct CarPart {
     int GetAppliedAttributeIParam(unsigned int namehash, int default_value);
     const char *GetAppliedAttributeString(unsigned int namehash, const char *default_string);
     int HasAppliedAttribute(unsigned int namehash);
-    char GetGroupNumber() {
+    char GetPartID() {
         return *(reinterpret_cast<char *>(this) + 4);
     }
+
+    char GetUpgradeLevel() {
+        return (static_cast<unsigned char>(*(reinterpret_cast<unsigned char *>(this) + 5)) >> 5) - 1;
+    }
+
+    char GetGroupNumber() {
+        return *(reinterpret_cast<unsigned char *>(this) + 5) & 0x1F;
+    }
+
+    void EndianSwap() {
+        bPlatEndianSwap(reinterpret_cast<unsigned short *>(reinterpret_cast<char *>(this) + 0));
+        bPlatEndianSwap(reinterpret_cast<unsigned short *>(reinterpret_cast<char *>(this) + 2));
+        bPlatEndianSwap(reinterpret_cast<unsigned short *>(reinterpret_cast<char *>(this) + 8));
+        bPlatEndianSwap(reinterpret_cast<unsigned short *>(reinterpret_cast<char *>(this) + 10));
+        bPlatEndianSwap(reinterpret_cast<unsigned short *>(reinterpret_cast<char *>(this) + 12));
+    }
+
     unsigned int GetPartNameHash() {
         return *reinterpret_cast<unsigned short *>(this) |
                (static_cast<unsigned int>(*(reinterpret_cast<unsigned short *>(this) + 1)) << 16);
