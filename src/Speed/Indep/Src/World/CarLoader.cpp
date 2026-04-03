@@ -192,13 +192,8 @@ unsigned int CarPartModelTable::GetModelNameHash(unsigned int base_namehash, int
         return reinterpret_cast<unsigned int>(this->ModelNames[model_num][lod]);
     }
 
-    unsigned int namehash;
-    char lod_name[3];
-
-    namehash = base_namehash;
-    lod_name[0] = '_';
-    lod_name[2] = '\0';
-    lod_name[1] = static_cast<char>(lod + 'A');
+    unsigned int namehash = base_namehash;
+    char lod_name[3] = {'_', static_cast<char>(lod + 'A'), '\0'};
 
     if (this->MiddleStringOffset != 0xFFFF) {
         namehash = bStringHash(MasterCarPartPack->StringTable + this->MiddleStringOffset * 4, namehash);
