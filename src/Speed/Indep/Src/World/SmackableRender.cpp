@@ -24,10 +24,8 @@ SmackableRenderConn::SmackableRenderConn(const Sim::ConnectionData &data /* r27 
 
     this->mHeirarchy = oc->mHeirarchy;
     this->mModelHash = oc->mModelHash;
-    this->mRenderNode = oc->mRenderNode;
-    this->mModelHash = oc->mModelHash;
-
     const CollisionGeometry::Bounds *bounds = oc->mCollisionNode;
+    this->mRenderNode = oc->mRenderNode;
     UMath::Vector3 pivot;
     bounds->GetPivot(pivot);
     this->mModelOffset.x = -pivot.z;
