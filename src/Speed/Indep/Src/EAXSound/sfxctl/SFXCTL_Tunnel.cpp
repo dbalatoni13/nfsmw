@@ -577,11 +577,23 @@ void SFXCTL_Tunnel::UpdateReflectionParams(float t) {
             m_CurWetAems = m_CurWetAemsTarget;
             m_CurDryAems = m_CurDryAemsTarget;
 
-            int nQGinWetTarget = g_REVERBFXMODULES[m_ReverbType].GinsuWet + static_cast<int>(m_ReverbOffset);
-            nQGinWetTarget = bClamp(nQGinWetTarget, -10000, 0);
+            int nQGinWetTarget = -10000;
+            int ginsuWet = g_REVERBFXMODULES[m_ReverbType].GinsuWet + static_cast<int>(m_ReverbOffset);
+            if (ginsuWet > -10000) {
+                nQGinWetTarget = ginsuWet;
+            }
+            if (nQGinWetTarget > 0) {
+                nQGinWetTarget = 0;
+            }
 
-            int nQAemsWetTarget = g_REVERBFXMODULES[m_ReverbType].AemsWet + static_cast<int>(m_ReverbOffset);
-            nQAemsWetTarget = bClamp(nQAemsWetTarget, -10000, 0);
+            int nQAemsWetTarget = -10000;
+            int aemsWet = g_REVERBFXMODULES[m_ReverbType].AemsWet + static_cast<int>(m_ReverbOffset);
+            if (aemsWet > -10000) {
+                nQAemsWetTarget = aemsWet;
+            }
+            if (nQAemsWetTarget > 0) {
+                nQAemsWetTarget = 0;
+            }
 
             m_CurWetGinsuTarget = GetFloatFromHundredthsdB__11NFSMixShapei(nQGinWetTarget);
             m_CurWetAemsTarget = GetFloatFromHundredthsdB__11NFSMixShapei(nQAemsWetTarget);
@@ -598,11 +610,10 @@ void SFXCTL_Tunnel::UpdateReflectionParams(float t) {
     }
 
     if (bFadingOut || bFadingIn) {
-        float ramp = ReflRamp.CurValue;
-        m_GinsuWetVol = static_cast<int>(((m_CurWetGinsuTarget - m_CurWetGinsu) * ramp + m_CurWetGinsu) * 32767.0f);
-        m_GinsuDryVol = static_cast<int>(((m_CurDryGinsuTarget - m_CurDryGinsu) * ramp + m_CurDryGinsu) * 32767.0f);
-        m_AEMSWetVol = static_cast<int>(((m_CurWetAemsTarget - m_CurWetAems) * ramp + m_CurWetAems) * 32767.0f);
-        m_AEMSDryVol = static_cast<int>(((m_CurDryAemsTarget - m_CurDryAems) * ramp + m_CurDryAems) * 32767.0f);
+        m_GinsuWetVol = static_cast<int>(((m_CurWetGinsuTarget - m_CurWetGinsu) * ReflRamp.CurValue + m_CurWetGinsu) * 32767.0f);
+        m_GinsuDryVol = static_cast<int>(((m_CurDryGinsuTarget - m_CurDryGinsu) * ReflRamp.CurValue + m_CurDryGinsu) * 32767.0f);
+        m_AEMSWetVol = static_cast<int>(((m_CurWetAemsTarget - m_CurWetAems) * ReflRamp.CurValue + m_CurWetAems) * 32767.0f);
+        m_AEMSDryVol = static_cast<int>(((m_CurDryAemsTarget - m_CurDryAems) * ReflRamp.CurValue + m_CurDryAems) * 32767.0f);
     } else {
         m_CurWetGinsu = smooth(m_CurWetGinsu, m_CurWetGinsuTarget, 0.25f);
         m_CurDryGinsu = smooth(m_CurDryGinsu, m_CurDryGinsuTarget, 0.25f);
