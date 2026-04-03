@@ -120,7 +120,6 @@ void SFXCTL_Wheel::UpdateTireParams() {
     }
 
     {
-        bVector2 wheelslip[4];
         float totalwheelload;
         int nloop;
 
@@ -129,6 +128,7 @@ void SFXCTL_Wheel::UpdateTireParams() {
         m_bvTotalLeftWheelSlip.x = 0.0f;
         m_bvTotalRightWheelSlip.y = 0.0f;
         totalwheelload = 0.0f;
+        bVector2 wheelslip[4];
         for (nloop = 0; nloop <= 3; nloop++) {
             m_fWheelTractionMag[nloop] = bAbs(GetPhysCar()->GetWheelTractionUsage(nloop));
             wheelslip[nloop] = GetPhysCar()->GetWheelSlip(nloop);
