@@ -1584,17 +1584,17 @@ int LoaderCarInfo(bChunk *chunk) {
                 case 0x02DAAB07:
                     index0 = &reinterpret_cast<CarPartDatabaseLayout *>(&CarPartDB)->PaintPart_Gloss[upgrade_level];
                     break;
-                case 0x0000DA27:
-                    index0 = &reinterpret_cast<CarPartDatabaseLayout *>(&CarPartDB)->PaintPart_Rims[upgrade_level];
-                    break;
                 case 0x03437A52:
                     index0 = &reinterpret_cast<CarPartDatabaseLayout *>(&CarPartDB)->PaintPart_Metallic[upgrade_level];
                     break;
-                case 0x03797533:
-                    index0 = &reinterpret_cast<CarPartDatabaseLayout *>(&CarPartDB)->PaintPart_Pearl[upgrade_level];
+                case 0x0000DA27:
+                    index0 = &reinterpret_cast<CarPartDatabaseLayout *>(&CarPartDB)->PaintPart_Rims[upgrade_level];
                     break;
                 case 0x03E871F1:
                     index0 = &reinterpret_cast<CarPartDatabaseLayout *>(&CarPartDB)->PaintPart_Vinyl[upgrade_level];
+                    break;
+                case 0x03797533:
+                    index0 = &reinterpret_cast<CarPartDatabaseLayout *>(&CarPartDB)->PaintPart_Pearl[upgrade_level];
                     break;
                 case 0xD6640DFF:
                     index0 = &reinterpret_cast<CarPartDatabaseLayout *>(&CarPartDB)->PaintPart_Caliper[upgrade_level];
