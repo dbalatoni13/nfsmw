@@ -520,17 +520,19 @@ void EAXAemsManager::SetupNextLoad() {
         if (InitiateLoad() < 0) {
             Attrib::StringKey fileName = m_pCurLoadSDLP->AssetDescription.FileName;
             SndBase *SfxToDel[32];
+            SndBase **toDelete = SfxToDel;
+            SndAssetQueue *waitForResolve = &mWaitForResolve;
             SndAssetQueue::iterator i;
             int deleteCount = 0;
 
-            bMemSet(SfxToDel, '\0', 0x80);
+            bMemSet(toDelete, '\0', 0x80);
             while (true) {
-                i = mWaitForResolve.begin();
-                while (i != mWaitForResolve.end()) {
+                i = waitForResolve->begin();
+                while (i != waitForResolve->end()) {
                     stSndAssetQueue currequst = *i;
                     if (currequst.Asset.FileName == fileName) {
-                        mWaitForResolve.remove(currequst);
-                        SfxToDel[deleteCount] = currequst.pThis;
+                        waitForResolve->remove(currequst);
+                        toDelete[deleteCount] = currequst.pThis;
                         deleteCount++;
                         goto ContinueScanning;
                     }
@@ -547,11 +549,11 @@ void EAXAemsManager::SetupNextLoad() {
             deleteCount--;
         RemoveQueuedLoads:
             do {
-                i = mWaitForResolve.begin();
-                while (i != mWaitForResolve.end()) {
+                i = waitForResolve->begin();
+                while (i != waitForResolve->end()) {
                     stSndAssetQueue currequst = *i;
-                    if (SfxToDel[deleteCount] == currequst.pThis) {
-                        mWaitForResolve.remove(currequst);
+                    if (toDelete[deleteCount] == currequst.pThis) {
+                        waitForResolve->remove(currequst);
                         goto ContinueDeleting;
                     }
 
