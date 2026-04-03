@@ -319,8 +319,8 @@ struct CarPart {
     }
 
     unsigned int GetPartNameHash() {
-        return *reinterpret_cast<unsigned short *>(this) |
-               (static_cast<unsigned int>(*(reinterpret_cast<unsigned short *>(this) + 1)) << 16);
+        return (static_cast<unsigned int>(*(reinterpret_cast<unsigned short *>(this) + 1)) << 16) |
+               *reinterpret_cast<unsigned short *>(this);
     }
 
     unsigned int GetTextureNameHash() {
