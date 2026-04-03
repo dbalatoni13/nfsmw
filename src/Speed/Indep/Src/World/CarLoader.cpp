@@ -184,15 +184,12 @@ extern CarMemoryInfoEntryLayout CarMemoryInfoTable[6];
 extern const char lbl_8040A594[] asm("lbl_8040A594");
 
 unsigned int CarPartModelTable::GetModelNameHash(unsigned int base_namehash, int model_num, int lod) {
-    typedef const char *Row[5];
-    Row *names = reinterpret_cast<Row *>(reinterpret_cast<unsigned char *>(this) + 4);
-
-    if (reinterpret_cast<int>(names[model_num][lod]) == -1) {
+    if (reinterpret_cast<int>(this->ModelNames[model_num][lod]) == -1) {
         return 0;
     }
 
     if (!this->TemplatedNameHashes) {
-        return reinterpret_cast<unsigned int>(names[model_num][lod]);
+        return reinterpret_cast<unsigned int>(this->ModelNames[model_num][lod]);
     }
 
     char lod_suffix[3];
@@ -204,7 +201,7 @@ unsigned int CarPartModelTable::GetModelNameHash(unsigned int base_namehash, int
         base_namehash = bStringHash(MasterCarPartPack->StringTable + this->MiddleStringOffset * 4);
     }
 
-    base_namehash = bStringHash(names[model_num][lod], base_namehash);
+    base_namehash = bStringHash(this->ModelNames[model_num][lod], base_namehash);
     return bStringHash(lod_suffix, base_namehash);
 }
 
