@@ -173,7 +173,6 @@ void SFXCTL_HybridMotor::UpdateSingleMixEng(float t) {
     EngineMix DecelMix;
     float DeltaRPM = bAbs(m_AvgDeltaRPM.GetValue() + 10.0f);
     float adt = m_pEAXCar->GetAttributes().AccelDeltaRPMThreshold();
-    EngineMix newmix;
     float EngineCtlVolFactor;
     int VolAEMS;
     int VolAccelGinsu;
@@ -215,6 +214,7 @@ void SFXCTL_HybridMotor::UpdateSingleMixEng(float t) {
     DecelMix.DecelGinsu = 0.0f;
     DecelMix.Cutoff =
         bMin(static_cast<int>(m_pEAXCar->GetAttributes().GINSU_LowPassCutoff()), m_pEngineCtl->m_DistanceFltr);
+    EngineMix newmix;
     newmix.Aems = (AccelMix.Aems - DecelMix.Aems) * AccelDecelMix + DecelMix.Aems;
     newmix.AccelGinsu = (AccelMix.AccelGinsu - DecelMix.AccelGinsu) * AccelDecelMix + DecelMix.AccelGinsu;
     newmix.DecelGinsu = (AccelMix.DecelGinsu - DecelMix.DecelGinsu) * AccelDecelMix + DecelMix.DecelGinsu;
