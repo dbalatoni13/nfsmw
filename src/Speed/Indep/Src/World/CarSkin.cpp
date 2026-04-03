@@ -330,12 +330,13 @@ unsigned int GetBlendColour(unsigned int *colours, float *weights, int num_colou
         g = 0xFF;
     }
 
+    reinterpret_cast<unsigned char *>(&final_colour)[1] = static_cast<unsigned char>(g);
+
     if (r > 0xFF) {
         r = 0xFF;
     }
 
     reinterpret_cast<unsigned char *>(&final_colour)[0] = static_cast<unsigned char>(r);
-    reinterpret_cast<unsigned char *>(&final_colour)[1] = static_cast<unsigned char>(g);
 
     if (a > 0xFF) {
         a = 0xFF;
