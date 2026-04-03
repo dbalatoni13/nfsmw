@@ -212,8 +212,14 @@ void SFXCTL_HybridMotor::UpdateSingleMixEng(float t) {
                     m_pEAXCar->GetAttributes().DECEL_AEMSMix_S_RPM();
     DecelMix.AccelGinsu = m_pEAXCar->GetAttributes().Ginsu_ACL_Neg_S_RPM();
     DecelMix.DecelGinsu = 0.0f;
-    DecelMix.Cutoff =
-        bMin(static_cast<int>(m_pEAXCar->GetAttributes().GINSU_LowPassCutoff()), m_pEngineCtl->m_DistanceFltr);
+    {
+        int lowPassCutoff = static_cast<int>(m_pEAXCar->GetAttributes().GINSU_LowPassCutoff());
+        int distanceFltr = m_pEngineCtl->m_DistanceFltr;
+        if (lowPassCutoff < distanceFltr) {
+            distanceFltr = lowPassCutoff;
+        }
+        DecelMix.Cutoff = distanceFltr;
+    }
     EngineMix newmix;
     newmix.Aems = (AccelMix.Aems - DecelMix.Aems) * AccelDecelMix + DecelMix.Aems;
     newmix.DecelGinsu = (AccelMix.DecelGinsu - DecelMix.DecelGinsu) * AccelDecelMix + DecelMix.DecelGinsu;
@@ -223,8 +229,8 @@ void SFXCTL_HybridMotor::UpdateSingleMixEng(float t) {
 
     if (USE_SMOOTHING) {
         m_EngineMix.Aems = smooth(m_EngineMix.Aems, newmix.Aems, 0.2f);
-        m_EngineMix.DecelGinsu = smooth(m_EngineMix.DecelGinsu, newmix.DecelGinsu, 0.2f);
         m_EngineMix.AccelGinsu = smooth(m_EngineMix.AccelGinsu, newmix.AccelGinsu, 0.2f);
+        m_EngineMix.DecelGinsu = smooth(m_EngineMix.DecelGinsu, newmix.DecelGinsu, 0.2f);
         m_EngineMix.Cutoff = smooth(m_EngineMix.Cutoff, newmix.Cutoff, 6000);
     } else {
         m_EngineMix = newmix;
@@ -311,8 +317,14 @@ void SFXCTL_HybridMotor::UpdateDualMixEng(float t) {
     }
     DecelMix.DecelGinsu = DecelCrossfadeMix.GetValue(m_GinsuScaledRPM) * DecelMix.DecelGinsu;
     DecelMix.AccelGinsu = m_pEAXCar->GetAttributes().Ginsu_ACL_Neg_S_RPM();
-    DecelMix.Cutoff =
-        bMin(static_cast<int>(m_pEAXCar->GetAttributes().GINSU_LowPassCutoff()), m_pEngineCtl->m_DistanceFltr);
+    {
+        int lowPassCutoff = static_cast<int>(m_pEAXCar->GetAttributes().GINSU_LowPassCutoff());
+        int distanceFltr = m_pEngineCtl->m_DistanceFltr;
+        if (lowPassCutoff < distanceFltr) {
+            distanceFltr = lowPassCutoff;
+        }
+        DecelMix.Cutoff = distanceFltr;
+    }
 
     m_bAEMSLPF = false;
     EngineMix newmix;
