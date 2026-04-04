@@ -25,7 +25,16 @@ enum eREVERBFX {
     RVRB_MAX_TYPES = 12,
 };
 
-struct SFXCTL_Tunnel : public SFXCTL {
+struct stREVERB_PARAMS {
+    int GinsuWet;
+    int GinsuDry;
+    int AemsWet;
+    int AemsDry;
+    int FadeOut;
+    int FadeIn;
+};
+
+class SFXCTL_Tunnel : public SFXCTL {
   protected:
     static TypeInfo s_TypeInfo;
     static TypeInfo *GetStaticTypeInfo() { return &s_TypeInfo; }

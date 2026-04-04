@@ -29,15 +29,6 @@ extern unsigned int TickerTimeStart;
 extern unsigned int TickerTimeAccum;
 extern unsigned int bGetTicker();
 
-struct stREVERB_PARAMS {
-    int GinsuWet;
-    int GinsuDry;
-    int AemsWet;
-    int AemsDry;
-    int FadeOut;
-    int FadeIn;
-};
-
 extern stREVERB_PARAMS g_REVERBFXMODULES[];
 
 namespace {
