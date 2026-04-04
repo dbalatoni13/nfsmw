@@ -12,15 +12,15 @@
 #include <float.h>
 
 struct CollisionStream {
-    Attrib::RefSpec StreamMoment;
-    unsigned char Threshold;
+    Attrib::RefSpec StreamMoment; // offset 0x0, size 0xC
+    unsigned char Threshold;      // offset 0xC, size 0x1
 };
 
 struct StitchCollisionVol {
-    short Vol1;
-    short Vol2;
-    short Vol3;
-    short Vol4;
+    short Vol1; // offset 0x0, size 0x2
+    short Vol2; // offset 0x2, size 0x2
+    short Vol3; // offset 0x4, size 0x2
+    short Vol4; // offset 0x6, size 0x2
 };
 
 enum STICH_COLLISION_TYPE {
@@ -117,23 +117,23 @@ unsigned int GetCollisionDescription(const Attrib::StringKey &hash) {
 
 class CollisionEvent : public AudioEvent {
   public:
-    Timer CollisionTime;
-    bVector3 InitialContactPoint;
-    bVector3 CurrentContactPoint;
-    bVector3 CurrentVelocity;
-    bVector3 ImpulseNormal;
-    int mVolume;
-    int Intensity;
-    SND_Stich *ImpactStich;
-    WorldConn::Reference mTarget;
-    unsigned int Description;
-    CSTATE_Base *Owner;
-    int mRefCount;
-    const char *mCSISEffect;
-    bool mActive;
-    unsigned int mAudioFX;
-    unsigned int mActor;
-    unsigned int mActee;
+    Timer CollisionTime;               // offset 0x64, size 0x4
+    bVector3 InitialContactPoint;      // offset 0x68, size 0x10
+    bVector3 CurrentContactPoint;      // offset 0x78, size 0x10
+    bVector3 CurrentVelocity;          // offset 0x88, size 0x10
+    bVector3 ImpulseNormal;            // offset 0x98, size 0x10
+    int mVolume;                       // offset 0xA8, size 0x4
+    int Intensity;                     // offset 0xAC, size 0x4
+    SND_Stich *ImpactStich;            // offset 0xB0, size 0x4
+    WorldConn::Reference mTarget;      // offset 0xB4, size 0x10
+    unsigned int Description;          // offset 0xC4, size 0x4
+    CSTATE_Base *Owner;                // offset 0xC8, size 0x4
+    int mRefCount;                     // offset 0xCC, size 0x4
+    const char *mCSISEffect;           // offset 0xD0, size 0x4
+    bool mActive;                      // offset 0xD4, size 0x1
+    unsigned int mAudioFX;             // offset 0xD8, size 0x4
+    unsigned int mActor;               // offset 0xDC, size 0x4
+    unsigned int mActee;               // offset 0xE0, size 0x4
 
     CollisionEvent(const AudioEventParams &params, bool isScrape);
     virtual ~CollisionEvent();

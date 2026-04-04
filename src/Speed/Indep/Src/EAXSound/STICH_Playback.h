@@ -42,7 +42,7 @@ struct SND_Stich {
     unsigned char Num_SampleRefs;         // offset 0x9, size 0x1
     short RND_Pitch;                      // offset 0xA, size 0x2
     unsigned short RND_Vol;               // offset 0xC, size 0x2
-    struct SND_SampleRef *pSampleRefList; // offset 0x10, size 0x4
+    SND_SampleRef *pSampleRefList; // offset 0x10, size 0x4
 };
 
 struct SND_Params {
@@ -172,8 +172,8 @@ class cSTICH_PlayBack : public AudioMemBase {
     }
 
   protected:
-    static void QueueSampleRequest(struct SampleQueueItem &samplereq);
-    static void RemoveFromList(struct SampleQueueItem sampleitem);
+    static void QueueSampleRequest(SampleQueueItem &samplereq);
+    static void RemoveFromList(SampleQueueItem sampleitem);
     static int Prune(STICH_TYPE type, int priority, int num_to_clear);
 
   private:

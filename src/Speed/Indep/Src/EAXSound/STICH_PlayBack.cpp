@@ -23,21 +23,21 @@ void *cSTICH_PlayBack::operator new(unsigned int size, const char *debug_name) {
 }
 
 struct AEMS_StichData {
-    int type;
-    int iD;
-    int vol;
-    int pitch;
-    int az;
-    int offset;
-    int filter_DryFX;
-    int filter_WetFX;
-    int filter_LoPass;
-    int filter_HiPass;
+    int type;           // offset 0x0, size 0x4
+    int iD;             // offset 0x4, size 0x4
+    int vol;            // offset 0x8, size 0x4
+    int pitch;          // offset 0xC, size 0x4
+    int az;             // offset 0x10, size 0x4
+    int offset;         // offset 0x14, size 0x4
+    int filter_DryFX;   // offset 0x18, size 0x4
+    int filter_WetFX;   // offset 0x1C, size 0x4
+    int filter_LoPass;  // offset 0x20, size 0x4
+    int filter_HiPass;  // offset 0x24, size 0x4
 };
 
 struct AEMS_StichCollision {
-    Csis::Class *mpClass;
-    AEMS_StichData mData;
+    Csis::Class *mpClass;   // offset 0x0, size 0x4
+    AEMS_StichData mData;   // offset 0x4, size 0x28
 
     void SetType(int x) {
         if (x < 0) {
@@ -162,8 +162,8 @@ struct AEMS_StichCollision {
 };
 
 struct AEMS_StichWoosh {
-    Csis::Class *mpClass;
-    AEMS_StichData mData;
+    Csis::Class *mpClass;   // offset 0x0, size 0x4
+    AEMS_StichData mData;   // offset 0x4, size 0x28
 
     void SetType(int x) {
         if (x < 0) {
@@ -288,8 +288,8 @@ struct AEMS_StichWoosh {
 };
 
 struct AEMS_StichStatic {
-    Csis::Class *mpClass;
-    AEMS_StichData mData;
+    Csis::Class *mpClass;   // offset 0x0, size 0x4
+    AEMS_StichData mData;   // offset 0x4, size 0x28
 
     void SetType(int x) {
         if (x < 0) {

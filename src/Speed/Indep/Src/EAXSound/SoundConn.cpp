@@ -18,11 +18,11 @@ namespace {
 // total size: 0x18
 class Pkt_Car_Open : public Sim::Packet {
   public:
-    const Attrib::Collection *m_VehicleSpec; // offset 0x4
-    WUID mWorldID;                           // offset 0x8
-    Sound::Context mCarContext;              // offset 0xC
-    bool mSpoolLoad;                         // offset 0x10
-    HSIMABLE__ *mHandle;                     // offset 0x14
+    const Attrib::Collection *m_VehicleSpec; // offset 0x4, size 0x4
+    WUID mWorldID;                           // offset 0x8, size 0x4
+    Sound::Context mCarContext;              // offset 0xC, size 0x4
+    bool mSpoolLoad;                         // offset 0x10, size 0x1
+    HSIMABLE__ *mHandle;                     // offset 0x14, size 0x4
 };
 
 } // namespace
