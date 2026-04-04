@@ -86,7 +86,7 @@ inline float &ReadCarPhysRPMRef(EAXCar *carOwner) {
     return carOwner->PhysRPM;
 }
 
-inline int &ReadCarCurGearRef(EAXCar *carOwner) {
+inline Sound::Gear &ReadCarCurGearRef(EAXCar *carOwner) {
     return carOwner->CurGear;
 }
 

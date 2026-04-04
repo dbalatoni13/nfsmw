@@ -66,7 +66,7 @@ struct EAXCar : public CSTATE_Base {
     SFXCTL_Physics *GetPhysicsCTL() { return m_pPhysicsCTL; }
     void SetPhysicsCTLPtr(SFXCTL_Physics *_m_pPhysicsCTL) { m_pPhysicsCTL = _m_pPhysicsCTL; }
     bool IsAccelerating() { return bIsAccelerating; }
-    Sound::Gear GetCurGear() { return static_cast<Sound::Gear>(CurGear); }
+    Sound::Gear GetCurGear() { return CurGear; }
     float GetPhysRPM() { return PhysRPM; }
     float GetThrottle() { return fTrottle; }
     float GetPhysTRQ() { return PhysTRQ; }
@@ -100,35 +100,35 @@ struct EAXCar : public CSTATE_Base {
 
     static StateInfo s_StateInfo;
 
-    int m_nHornState;                         // offset 0x44
-    Attrib::Gen::engineaudio m_FEEngineAttribs; // offset 0x48
-    SFXCTL_Physics *m_pPhysicsCTL;            // offset 0x5C
-    float PhysTRQ;                            // offset 0x60
-    float PhysRPM;                            // offset 0x64
-    bool bIsAccelerating;                     // offset 0x68
-    int CurGear;                              // offset 0x6C
-    float fTrottle;                           // offset 0x70
-    float m_fAudioRPM;                        // offset 0x74
-    float m_CurTime;                          // offset 0x78
-    float m_DeltaTime;                        // offset 0x7C
-    bool m_bIsInSoundSphere;                  // offset 0x80
-    bVector3 m_v3CurSpherePos;                // offset 0x84
-    float m_fSphereRadius;                    // offset 0x94
-    DriverInfo *m_pDriverInfo;                // offset 0x98
-    eGINSU_ENG_TYPE m_EngineType;             // offset 0x9C
-    eAemsUpgradeLevel m_nTrueEngineUpgradeLevel; // offset 0xA0
-    eAemsUpgradeLevel m_EngUGL;               // offset 0xA4
-    eAemsUpgradeLevel m_TurboUGL;             // offset 0xA8
-    eAemsUpgradeLevel m_NOSUGL;               // offset 0xAC
-    eAemsUpgradeLevel m_TireUGL;              // offset 0xB0
-    eAemsUpgradeLevel m_TransmissionUGL;      // offset 0xB4
-    int m_PovType;                            // offset 0xB8
-    int m_IsDriveCamera;                      // offset 0xBC
-    int m_Rotation;                           // offset 0xC0
-    Attrib::Gen::engineaudio mEngineInfo;     // offset 0xC4
-    Attrib::Gen::shiftpattern mShiftInfo;     // offset 0xD8
-    Attrib::Gen::turbosfx mTurboInfo;         // offset 0xEC
-    Attrib::Gen::acceltrans mAccelInfo;       // offset 0x100
+    int m_nHornState;                         // offset 0x44, size 0x4
+    Attrib::Gen::engineaudio m_FEEngineAttribs; // offset 0x48, size 0x14
+    SFXCTL_Physics *m_pPhysicsCTL;            // offset 0x5C, size 0x4
+    float PhysTRQ;                            // offset 0x60, size 0x4
+    float PhysRPM;                            // offset 0x64, size 0x4
+    bool bIsAccelerating;                     // offset 0x68, size 0x1
+    Sound::Gear CurGear;                             // offset 0x6C, size 0x4
+    float fTrottle;                           // offset 0x70, size 0x4
+    float m_fAudioRPM;                        // offset 0x74, size 0x4
+    float t_CurTime;                          // offset 0x78, size 0x4
+    float t_DeltaTime;                        // offset 0x7C, size 0x4
+    bool m_bIsInSoundSphere;                  // offset 0x80, size 0x1
+    bVector3 m_v3CurSpherePos;                // offset 0x84, size 0x10
+    float m_fSphereRadius;                    // offset 0x94, size 0x4
+    DriverInfo *m_pDriverInfo;                // offset 0x98, size 0x4
+    eGINSU_ENG_TYPE m_EngineType;             // offset 0x9C, size 0x4
+    eAemsUpgradeLevel m_nTrueEngineUpgradeLevel; // offset 0xA0, size 0x4
+    eAemsUpgradeLevel m_EngUGL;               // offset 0xA4, size 0x4
+    eAemsUpgradeLevel m_TurboUGL;             // offset 0xA8, size 0x4
+    eAemsUpgradeLevel m_NOSUGL;               // offset 0xAC, size 0x4
+    eAemsUpgradeLevel m_TireUGL;              // offset 0xB0, size 0x4
+    eAemsUpgradeLevel m_TransmissionUGL;      // offset 0xB4, size 0x4
+    int m_PovType;                            // offset 0xB8, size 0x4
+    int m_IsDriveCamera;                      // offset 0xBC, size 0x4
+    int m_Rotation;                           // offset 0xC0, size 0x4
+    Attrib::Gen::engineaudio mEngineInfo;     // offset 0xC4, size 0x14
+    Attrib::Gen::shiftpattern mShiftInfo;     // offset 0xD8, size 0x14
+    Attrib::Gen::turbosfx mTurboInfo;         // offset 0xEC, size 0x14
+    Attrib::Gen::acceltrans mAccelInfo;       // offset 0x100, size 0x14
 };
 
 #endif
