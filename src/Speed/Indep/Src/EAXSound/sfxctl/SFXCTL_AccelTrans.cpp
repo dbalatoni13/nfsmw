@@ -81,23 +81,20 @@ void SFXCTL_AccelTrans::AttachController(SFXCTL *psfxctl) {
 
 void SFXCTL_AccelTrans::UpdateParams(float t) {
     bool bVar1;
-    int iVar2;
-    int iVar3;
+    bool wasAccelerating;
 
     SFXCTL::UpdateParams(t);
     if (m_pStateBase->m_eStateType == eMM_AIRACECAR) {
         return;
     }
 
-    iVar2 = *reinterpret_cast<int *>(&IsAccelerating);
-    *reinterpret_cast<int *>(&PlayEngOffSweet) = 0;
-    *reinterpret_cast<int *>(&OldIsAccelerating) = iVar2;
+    wasAccelerating = IsAccelerating;
+    PlayEngOffSweet = false;
+    OldIsAccelerating = wasAccelerating;
+    IsAccelerating = m_pEAXCar->bIsAccelerating;
 
-    iVar3 = *reinterpret_cast<int *>(&m_pEAXCar->bIsAccelerating);
-    *reinterpret_cast<int *>(&IsAccelerating) = iVar3;
-
-    if (iVar3 != 0) {
-        if (iVar2 == 0) {
+    if (IsAccelerating) {
+        if (!wasAccelerating) {
             bVar1 = ShouldBeginAccelTrans_Idle();
             if (bVar1) {
                 BeginAccelTrans_Idle();
@@ -109,7 +106,7 @@ void SFXCTL_AccelTrans::UpdateParams(float t) {
             }
         }
 
-        if (*reinterpret_cast<int *>(&IsAccelerating) != 0) {
+        if (IsAccelerating) {
             goto end;
         }
     }

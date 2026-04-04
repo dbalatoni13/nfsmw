@@ -86,10 +86,6 @@ inline float &ReadCarPhysRPMRef(EAXCar *carOwner) {
     return carOwner->PhysRPM;
 }
 
-inline int &ReadCarIsAcceleratingRef(EAXCar *carOwner) {
-    return *reinterpret_cast<int *>(&carOwner->bIsAccelerating);
-}
-
 inline int &ReadCarCurGearRef(EAXCar *carOwner) {
     return carOwner->CurGear;
 }
