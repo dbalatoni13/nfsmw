@@ -12,13 +12,13 @@
 namespace Sound {
 
 struct AudioEventParams {
-    bVector3 position;
-    bVector3 normal;
-    bVector3 velocity;
-    float magnitude;
-    Attrib::RefSpec attributes;
-    unsigned int object;
-    unsigned int other_object;
+    bVector3 position;            // offset 0x0, size 0x10
+    bVector3 normal;              // offset 0x10, size 0x10
+    bVector3 velocity;            // offset 0x20, size 0x10
+    float magnitude;              // offset 0x30, size 0x4
+    Attrib::RefSpec attributes;   // offset 0x34, size 0xC
+    unsigned int object;          // offset 0x40, size 0x4
+    unsigned int other_object;    // offset 0x44, size 0x4
 };
 
 struct CollisionDescription {

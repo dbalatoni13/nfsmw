@@ -18,20 +18,16 @@ struct SFXCTL_3DObjPos : public SFXCTL {
     static bVector2 *m_pv2AzimRefDir;
     static bVector2 *m_pv2AzimRefPos;
     static unsigned short m_CameraAngle;
-    /* 0x28 */ bVector3 *m_pV3ObjPos;
-    /* 0x2c */ bVector3 *m_pV3ObjDir;
-    /* 0x30 */ bVector3 *m_pV3ObjVel;
-    /* 0x34 */ float m_fDistToRef[2][2];
-
-  public:
-    /* 0x44 */ int m_PlayerRef;
-
-  protected:
-    /* 0x48 */ bool m_bIsInTwoPlayerTransitionZone;
-    /* 0x4c */ bool m_bDirectionClockwise;
-    /* 0x50 */ bool m_bIsOtherCamRightSide;
-    /* 0x54 */ float m_fdvelmag_car[2];
-    /* 0x5c */ float m_fdvelmag_cam[2];
+    bVector3 *m_pV3ObjPos;                       // offset 0x28, size 0x4
+    bVector3 *m_pV3ObjDir;                       // offset 0x2C, size 0x4
+    bVector3 *m_pV3ObjVel;                       // offset 0x30, size 0x4
+    float m_fDistToRef[2][2];                    // offset 0x34, size 0x10
+    int m_PlayerRef;                             // offset 0x44, size 0x4
+    bool m_bIsInTwoPlayerTransitionZone;         // offset 0x48, size 0x1
+    bool m_bDirectionClockwise;                  // offset 0x4C, size 0x1
+    bool m_bIsOtherCamRightSide;                 // offset 0x50, size 0x1
+    float m_fdvelmag_car[2];                     // offset 0x54, size 0x8
+    float m_fdvelmag_cam[2];                     // offset 0x5C, size 0x8
 
   public:
     SFXCTL_3DObjPos();

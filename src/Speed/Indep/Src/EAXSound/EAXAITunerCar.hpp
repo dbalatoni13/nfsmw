@@ -28,11 +28,11 @@ enum eAIDRIVE_BY_TYPE {
 };
 
 struct stAIDriveByInfo {
-    eAIDRIVE_BY_TYPE eDriveByType;
-    EAXCar *pEAXCar;
-    float ClosingVelocity;
-    bVector3 vLocation;
-    unsigned int UniqueID;
+    eAIDRIVE_BY_TYPE eDriveByType; // offset 0x0, size 0x4
+    EAXCar *pEAXCar;               // offset 0x4, size 0x4
+    float ClosingVelocity;         // offset 0x8, size 0x4
+    bVector3 vLocation;            // offset 0xC, size 0x10
+    unsigned int UniqueID;         // offset 0x1C, size 0x4
 
     stAIDriveByInfo() {
         vLocation = bVector3(0.0f, 0.0f, 0.0f);

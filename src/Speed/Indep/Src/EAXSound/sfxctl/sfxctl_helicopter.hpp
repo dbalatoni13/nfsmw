@@ -28,14 +28,14 @@ struct SFXCTL_Helicopter : public SFXCTL {
 
   public:
     SFXCTL_Helicopter();
-    /* 0x28 */ EAX_HeliState *m_pHeliState;
-    /* 0x2c */ SFXCTL_3DHeliPos *m_p3DHeliPosCtl;
-    /* 0x30 */ bVector3 vHeliPos;
-    /* 0x40 */ bVector3 vHeliFwd;
-    /* 0x50 */ bVector3 vHeliVel;
-    /* 0x60 */ float m_fspeed;
-    /* 0x64 */ float m_fdist;
-    /* 0x68 */ int m_Rotation;
+    EAX_HeliState *m_pHeliState;                 // offset 0x28, size 0x4
+    SFXCTL_3DHeliPos *m_p3DHeliPosCtl;           // offset 0x2C, size 0x4
+    bVector3 vHeliPos;                           // offset 0x30, size 0x10
+    bVector3 vHeliFwd;                           // offset 0x40, size 0x10
+    bVector3 vHeliVel;                           // offset 0x50, size 0x10
+    float m_fspeed;                              // offset 0x60, size 0x4
+    float m_fdist;                               // offset 0x64, size 0x4
+    int m_Rotation;                              // offset 0x68, size 0x4
 
     ~SFXCTL_Helicopter() override;
     TypeInfo *GetTypeInfo() const override;

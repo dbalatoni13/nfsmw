@@ -8,34 +8,34 @@
 #include <types.h>
 
 struct SNDPLAYOPTS {
-    signed char vol;
-    signed char bend;
-    signed char keynum;
-    signed char velocity;
-    signed char drylevel;
-    signed char fxlevel0;
-    char pad[2];
-    unsigned short azimuth;
-    short elevation;
-    unsigned short pitchmult;
-    unsigned short timemult;
-    unsigned short tempomult;
-    unsigned short pad2;
-    unsigned short lowpasscutoff;
-    unsigned short highpasscutoff;
+    signed char vol;              // offset 0x0, size 0x1
+    signed char bend;             // offset 0x1, size 0x1
+    signed char keynum;           // offset 0x2, size 0x1
+    signed char velocity;         // offset 0x3, size 0x1
+    signed char drylevel;         // offset 0x4, size 0x1
+    signed char fxlevel0;         // offset 0x5, size 0x1
+    char pad[2];                  // offset 0x6, size 0x2
+    unsigned short azimuth;       // offset 0x8, size 0x2
+    short elevation;              // offset 0xA, size 0x2
+    unsigned short pitchmult;     // offset 0xC, size 0x2
+    unsigned short timemult;      // offset 0xE, size 0x2
+    unsigned short tempomult;     // offset 0x10, size 0x2
+    unsigned short pad2;          // offset 0x12, size 0x2
+    unsigned short lowpasscutoff; // offset 0x14, size 0x2
+    unsigned short highpasscutoff; // offset 0x16, size 0x2
 };
 
 struct SNDSTREAMSTATUS {
-    int outstandingrequests;
-    int currentrequest;
-    int timebuffered;
+    int outstandingrequests;      // offset 0x0, size 0x4
+    int currentrequest;           // offset 0x4, size 0x4
+    int timebuffered;             // offset 0x8, size 0x4
 };
 
 struct SNDREQUESTSTATUS {
-    int state;
-    int currenttime;
-    int timetoend;
-    int timebuffered;
+    int state;                    // offset 0x0, size 0x4
+    int currenttime;              // offset 0x4, size 0x4
+    int timetoend;                // offset 0x8, size 0x4
+    int timebuffered;             // offset 0xC, size 0x4
 };
 
 extern "C" {
@@ -94,13 +94,13 @@ struct SndStrmWrapper {
     char *GetBuffer() { return m_buffer; }
 
   private:
-    int m_RealStreamBuffer;
-    unsigned int m_RealStrmHandle;
-    char *m_buffer;
-    int m_BufferSize;
-    int m_handle;
-    int m_vol;
-    float m_fvol;
+    int m_RealStreamBuffer;       // offset 0x4, size 0x4
+    unsigned int m_RealStrmHandle; // offset 0x8, size 0x4
+    char *m_buffer;               // offset 0xC, size 0x4
+    int m_BufferSize;             // offset 0x10, size 0x4
+    int m_handle;                 // offset 0x14, size 0x4
+    int m_vol;                    // offset 0x18, size 0x4
+    float m_fvol;                 // offset 0x1C, size 0x4
 };
 
 #endif
