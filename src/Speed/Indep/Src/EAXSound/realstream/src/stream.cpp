@@ -2,8 +2,8 @@
 #include "Speed/Indep/Libs/realcore/include/common/realcore/system.h"
 
 struct STREAMCHUNKHDR {
-    int type;
-    int size;
+    int type; // offset 0x0, size 0x4
+    int size; // offset 0x4, size 0x4
 };
 
 struct REQUESTSTRUCTtag;
@@ -11,68 +11,10 @@ struct TAPSTRUCTtag;
 struct FILTERSTRUCTtag;
 struct STREAMHEADERtag;
 
-// total size: 0x124
-typedef struct REQUESTSTRUCTtag {
-    int id;
-    int state;
-    REQUESTSTRUCTtag *prev;
-    REQUESTSTRUCTtag *next;
-    int type;
-    char fname[255];
-    char *address;
-    int parm;
-    int endchunkid;
-    char *datastart;
-} REQUESTSTRUCT;
-
-// total size: 0x10
-typedef struct TAPSTRUCTtag {
-    STREAMHEADERtag *stream;
-    int tapnum;
-    int gettable;
-    char *getptr;
-} TAPSTRUCT;
-
-// total size: 0xC
-typedef struct FILTERSTRUCTtag {
-    int mask;
-    int value;
-    int tapnum;
-} FILTERSTRUCT;
-
-// total size: 0x18C
-typedef struct STREAMHEADERtag {
-    int id;
-    MUTEX mutex;
-    REQUESTSTRUCT *request;
-    int requests;
-    FILTERSTRUCT *filter;
-    int filters;
-    TAPSTRUCT *tap;
-    int taps;
-    char *actualbufferstart;
-    char *bufferstart;
-    char *bufferend;
-    int state;
-    int prioritylow;
-    int priorityhigh;
-    int greedylevel;
-    int greedystate;
-    int bufferusage;
-    char *datastart;
-    char *datatail;
-    char *dataend;
-    REQUESTSTRUCT *firstreq;
-    REQUESTSTRUCT *curreq;
-    REQUESTSTRUCT *lastreq;
-    REQUESTSTRUCT *freereq;
-    char fname[255];
-    int fhandle;
-    int foffset;
-    int fop;
-    int readsize;
-    int readblocksize;
-} STREAMHEADER;
+typedef enum READTYPE {
+    FILEREAD = 0,
+    MEMREAD = 1,
+} READTYPE;
 
 typedef enum STREAMREQUESTSTATE {
     STREAMREQUEST_FREE = 0,
@@ -87,6 +29,69 @@ typedef enum STREAMSTATE {
     STREAM_RUNNING_STATE = 1,
     STREAM_STOPPED_STATE = 2,
 } STREAMSTATE;
+
+// total size: 0x124
+typedef struct REQUESTSTRUCTtag {
+    int id;                          // offset 0x0, size 0x4
+    STREAMREQUESTSTATE state;        // offset 0x4, size 0x4
+    REQUESTSTRUCTtag *prev;         // offset 0x8, size 0x4
+    REQUESTSTRUCTtag *next;         // offset 0xC, size 0x4
+    READTYPE type;                   // offset 0x10, size 0x4
+    char fname[255];                 // offset 0x14, size 0xFF
+    char *address;                   // offset 0x114, size 0x4
+    int parm;                        // offset 0x118, size 0x4
+    int endchunkid;                  // offset 0x11C, size 0x4
+    char *datastart;                 // offset 0x120, size 0x4
+} REQUESTSTRUCT;
+
+// total size: 0x10
+typedef struct TAPSTRUCTtag {
+    STREAMHEADERtag *stream; // offset 0x0, size 0x4
+    int tapnum;              // offset 0x4, size 0x4
+    int gettable;            // offset 0x8, size 0x4
+    char *getptr;            // offset 0xC, size 0x4
+} TAPSTRUCT;
+
+// total size: 0xC
+typedef struct FILTERSTRUCTtag {
+    int mask;   // offset 0x0, size 0x4
+    int value;  // offset 0x4, size 0x4
+    int tapnum; // offset 0x8, size 0x4
+} FILTERSTRUCT;
+
+// total size: 0x18C
+typedef struct STREAMHEADERtag {
+    int id;                    // offset 0x0, size 0x4
+    MUTEX mutex;               // offset 0x4, size 0x1C
+    REQUESTSTRUCT *request;    // offset 0x20, size 0x4
+    int requests;              // offset 0x24, size 0x4
+    FILTERSTRUCT *filter;      // offset 0x28, size 0x4
+    int filters;               // offset 0x2C, size 0x4
+    TAPSTRUCT *tap;            // offset 0x30, size 0x4
+    int taps;                  // offset 0x34, size 0x4
+    char *actualbufferstart;   // offset 0x38, size 0x4
+    char *bufferstart;         // offset 0x3C, size 0x4
+    char *bufferend;           // offset 0x40, size 0x4
+    volatile STREAMSTATE state; // offset 0x44, size 0x4
+    int prioritylow;           // offset 0x48, size 0x4
+    int priorityhigh;          // offset 0x4C, size 0x4
+    int greedylevel;           // offset 0x50, size 0x4
+    int greedystate;           // offset 0x54, size 0x4
+    int bufferusage;           // offset 0x58, size 0x4
+    char *datastart;           // offset 0x5C, size 0x4
+    char *datatail;            // offset 0x60, size 0x4
+    char *dataend;             // offset 0x64, size 0x4
+    REQUESTSTRUCT *firstreq;   // offset 0x68, size 0x4
+    REQUESTSTRUCT *curreq;     // offset 0x6C, size 0x4
+    REQUESTSTRUCT *lastreq;    // offset 0x70, size 0x4
+    REQUESTSTRUCT *freereq;    // offset 0x74, size 0x4
+    char fname[255];           // offset 0x78, size 0xFF
+    int fhandle;               // offset 0x178, size 0x4
+    int foffset;               // offset 0x17C, size 0x4
+    int fop;                   // offset 0x180, size 0x4
+    int readsize;              // offset 0x184, size 0x4
+    int readblocksize;         // offset 0x188, size 0x4
+} STREAMHEADER;
 
 typedef char StreamRequestSizeCheck[(sizeof(REQUESTSTRUCT) == 0x124) ? 1 : -1];
 typedef char StreamTapSizeCheck[(sizeof(TAPSTRUCT) == 0x10) ? 1 : -1];
@@ -582,7 +587,7 @@ void restartstream(STREAMHEADERtag *stream, int priority) {
         IsWorldDataStreaming(reinterpret_cast<unsigned int>(strm->tap))) {
         bGetTickerDifference(utickreadcallback);
         gbWorldDataBlocksAudioRead = true;
-        strm->state = 2;
+        strm->state = STREAM_STOPPED_STATE;
         uTicksSinceLastAudioReadBailed = bGetTicker();
         return;
     }
@@ -629,7 +634,7 @@ void restartstream(STREAMHEADERtag *stream, int priority) {
     return;
 
 stream_stop:
-    strm->state = 2;
+    strm->state = STREAM_STOPPED_STATE;
 }
 
 int STREAM_overhead(int requests, int filters, int taps) {
@@ -854,7 +859,7 @@ int STREAM_queuefile(int sndstreamhandle, const char *filename, int offset, int 
         return 0;
     }
 
-    requestRaw->type = 0;
+    requestRaw->type = FILEREAD;
     strncpy(requestRaw->fname, filename, 0xFE);
     requestRaw->parm = offset;
     requestRaw->endchunkid = holdtime;
@@ -902,7 +907,7 @@ int STREAM_queuemem(int sndstreamhandle, void *address, int length, int holdtime
             requestRaw->parm = length;
             requestRaw->address = static_cast<char *>(address);
             requestRaw->endchunkid = holdtime;
-            requestRaw->type = 1;
+            requestRaw->type = MEMREAD;
             queuerequest(streamRaw, requestRaw);
 
             MUTEX_lock(&streamRaw->mutex);
