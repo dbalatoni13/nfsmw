@@ -99,7 +99,7 @@ void SFXCTL_Engine::MessageVehicleDestroyed(const MNotifyVehicleDestroyed &messa
 
 void SFXCTL_Engine::MsgCountdownDone(const MCountdownDone &message) {
     tMergeWithPhysicsOffStart = 0.7f;
-    bPreRace = 0;
+    bPreRace = false;
 }
 
 void SFXCTL_Engine::SetupSFX(CSTATE_Base *_StateBase) {
