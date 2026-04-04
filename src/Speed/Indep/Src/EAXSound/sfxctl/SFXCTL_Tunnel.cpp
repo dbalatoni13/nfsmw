@@ -49,12 +49,13 @@ enum eDRIVE_BY_TYPE {
     MAX_DRIVE_BY_TYPES = 13,
 };
 
+// total size: 0x20
 struct stDriveByInfo {
-    eDRIVE_BY_TYPE eDriveByType;
-    EAXCar *pEAXCar;
-    float ClosingVelocity;
-    bVector3 vLocation;
-    unsigned int UniqueID;
+    eDRIVE_BY_TYPE eDriveByType; // offset 0x0, size 0x4
+    EAXCar *pEAXCar;             // offset 0x4, size 0x4
+    float ClosingVelocity;       // offset 0x8, size 0x4
+    bVector3 vLocation;          // offset 0xC, size 0x10
+    unsigned int UniqueID;       // offset 0x1C, size 0x4
 };
 
 static inline float Distancexyz(const UMath::Vector4 &a, const UMath::Vector4 &b) {

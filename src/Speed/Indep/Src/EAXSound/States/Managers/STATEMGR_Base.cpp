@@ -16,7 +16,7 @@ CSTATEMGR_Base::CSTATEMGR_Base() {
     m_eStateType = eMM_MAIN;
     m_CurNumStates = 0;
     m_CurTime = 0.0f;
-    bIsInitialized = 0;
+    bIsInitialized = false;
     m_DeltaTime = 0.0f;
 }
 

@@ -7,6 +7,7 @@
 class AV_PLAYER;
 class FRAME;
 
+// total size: 0x158
 class MoviePlayer {
   public:
     int GetStatus() { return fStatus; }

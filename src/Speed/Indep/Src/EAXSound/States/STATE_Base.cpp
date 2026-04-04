@@ -22,8 +22,8 @@ CSTATE_Base::CSTATE_Base() {
     m_NumLoadedSFXObj = 0;
     m_NumLoadedSFXCTL = 0;
     m_pCar = nullptr;
-    t_CurTime = 0;
-    t_DeltaTime = 0;
+    t_CurTime = 0.0f;
+    t_DeltaTime = 0.0f;
 }
 
 void CSTATE_Base::Setup(int _m_SFXFlags) {
