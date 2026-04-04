@@ -9,7 +9,39 @@ struct emEvent;
 
 #include "Speed/Indep/Src/EAXSound/EAXCar.hpp"
 
-struct EAXAITunerCar : public EAXCar {
+namespace AIDriveBy {
+enum eAIDRIVE_BY_TYPE {
+    DRIVE_BY_UNKNOWN = 0,
+    DRIVE_BY_TREE = 1,
+    DRIVE_BY_LAMPPOST = 2,
+    DRIVE_BY_SMOKABLE = 3,
+    DRIVE_BY_TUNNEL_IN = 4,
+    DRIVE_BY_TUNNEL_OUT = 5,
+    DRIVE_BY_OVERPASS_IN = 6,
+    DRIVE_BY_OVERPASS_OUT = 7,
+    DRIVE_BY_AI_CAR = 8,
+    DRIVE_BY_TRAFFIC = 9,
+    DRIVE_BY_BRIDGE = 10,
+    DRIVE_BY_PRE_COL = 11,
+    DRIVE_BY_CAMERA_BY = 12,
+    MAX_DRIVE_BY_TYPES = 13,
+};
+
+struct stAIDriveByInfo {
+    eAIDRIVE_BY_TYPE eDriveByType;
+    EAXCar *pEAXCar;
+    float ClosingVelocity;
+    bVector3 vLocation;
+    unsigned int UniqueID;
+
+    stAIDriveByInfo() {
+        vLocation = bVector3(0.0f, 0.0f, 0.0f);
+    }
+};
+} // namespace AIDriveBy
+
+class EAXAITunerCar : public EAXCar {
+  public:
     int m_PitchOffset;        // offset 0x114, size 0x4
     bool mPhysicsChangedGear; // offset 0x118, size 0x1
 
@@ -38,7 +70,8 @@ struct EAXAITunerCar : public EAXCar {
     static StateInfo s_StateInfo;
 };
 
-struct EAXCopCar : public EAXAITunerCar {
+class EAXCopCar : public EAXAITunerCar {
+  public:
     virtual void Attach(void *pAttachment) override;
     virtual void UpdateParams(float t) override;
     virtual CSTATE_Base::StateInfo *GetStateInfo(void) const override;
@@ -52,7 +85,8 @@ struct EAXCopCar : public EAXAITunerCar {
     static CSTATE_Base::StateInfo s_StateInfo;
 };
 
-struct EAXTruck : public EAXAITunerCar {
+class EAXTruck : public EAXAITunerCar {
+  public:
     virtual void UpdateParams(float t) override;
     virtual CSTATE_Base::StateInfo *GetStateInfo(void) const override;
     virtual const char *GetStateName(void) const override;

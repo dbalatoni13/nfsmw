@@ -10,37 +10,6 @@
 
 bool IsCarInRadius(EAX_CarState *pCar, const bVector3 *vPos, float fRadius);
 
-namespace AIDriveBy {
-enum eAIDRIVE_BY_TYPE {
-    DRIVE_BY_UNKNOWN = 0,
-    DRIVE_BY_TREE = 1,
-    DRIVE_BY_LAMPPOST = 2,
-    DRIVE_BY_SMOKABLE = 3,
-    DRIVE_BY_TUNNEL_IN = 4,
-    DRIVE_BY_TUNNEL_OUT = 5,
-    DRIVE_BY_OVERPASS_IN = 6,
-    DRIVE_BY_OVERPASS_OUT = 7,
-    DRIVE_BY_AI_CAR = 8,
-    DRIVE_BY_TRAFFIC = 9,
-    DRIVE_BY_BRIDGE = 10,
-    DRIVE_BY_PRE_COL = 11,
-    DRIVE_BY_CAMERA_BY = 12,
-    MAX_DRIVE_BY_TYPES = 13,
-};
-
-struct stAIDriveByInfo {
-    eAIDRIVE_BY_TYPE eDriveByType;
-    EAXCar *pEAXCar;
-    float ClosingVelocity;
-    bVector3 vLocation;
-    unsigned int UniqueID;
-
-    stAIDriveByInfo() {
-        vLocation = bVector3(0.0f, 0.0f, 0.0f);
-    }
-};
-} // namespace AIDriveBy
-
 void emAddHandler(void (*function)(emEvent *), unsigned int stream_mask);
 void emRemoveHandler(void (*function)(emEvent *));
 bool g_EAXIsPaused(void);
