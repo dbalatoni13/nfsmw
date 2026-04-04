@@ -18,19 +18,22 @@ struct EventSpec {
 };
 
 struct SPCHType_SampleRequestData {
-    int bankNum;
-    int sampleOffset;
-    unsigned int numBytes;
-    EventSpec eventSpec;
-    int channel;
-    int subID;
-    int datID;
-    int interruptFlag;
+    int bankNum;           // offset 0x0, size 0x4
+    int sampleOffset;      // offset 0x4, size 0x4
+    int numBytes;          // offset 0x8, size 0x4
+    EventSpec eventSpec;   // offset 0xC, size 0x4
+    int channel;           // offset 0x10, size 0x4
+    int subID;             // offset 0x14, size 0x4
+    int datID;             // offset 0x18, size 0x4
+    int interruptFlag;     // offset 0x1C, size 0x4
 };
 
 extern void *NullPointer;
 
 struct ISndAttachable;
+struct InterfaceId;
+struct FunctionHandle;
+class EAXCharacter;
 
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/speech.h"
 
@@ -39,23 +42,23 @@ namespace Speech {
 struct ScheduledSpeechEvent;
 
 struct SPCHSampleRequest {
-    SPCHType_SampleRequestData data;
-    ScheduledSpeechEvent *owner;
-    unsigned int offset;
-    unsigned char sample_index;
+    SPCHType_SampleRequestData data; // offset 0x0, size 0x20
+    ScheduledSpeechEvent *owner;     // offset 0x20, size 0x4
+    unsigned int offset;             // offset 0x24, size 0x4
+    unsigned char sample_index;      // offset 0x28, size 0x1
 
     bool operator<(const SPCHSampleRequest &from) const;
 };
 
 struct History {
-    Timer time;
-    unsigned short count;
-    unsigned short speakers;
+    Timer time;            // offset 0x0, size 0x4
+    unsigned short count;  // offset 0x4, size 0x2
+    unsigned short speakers; // offset 0x6, size 0x2
 };
 
 struct HistoryPair {
-    SPCHType_1_EventID id;
-    History history;
+    SPCHType_1_EventID id; // offset 0x0, size 0x4
+    History history;       // offset 0x4, size 0x8
 
     bool operator<(const HistoryPair &rhs) const {
         return id < rhs.id;
@@ -63,8 +66,8 @@ struct HistoryPair {
 };
 
 struct SpeechEventPair {
-    unsigned int hash;
-    SPCHType_1_EventID id;
+    unsigned int hash;     // offset 0x0, size 0x4
+    SPCHType_1_EventID id; // offset 0x4, size 0x4
 
     bool operator<(const SpeechEventPair &rhs) const {
         return id < rhs.id;
@@ -72,8 +75,8 @@ struct SpeechEventPair {
 };
 
 struct copPair {
-    HSIMABLE hsimable;
-    EAXCop *cop;
+    HSIMABLE hsimable; // offset 0x0, size 0x4
+    EAXCop *cop;       // offset 0x4, size 0x4
 
     bool operator<(const copPair &rhs) const {
         return hsimable < rhs.hsimable;
@@ -111,18 +114,18 @@ struct EventHistory : public UTL::FixedVector<HistoryPair, 264, 16>, public Audi
 };
 
 struct SpeechSampleData {
-    unsigned int size;
-    bool ready;
-    int age;
-    int speakerID;
-    SPCHType_1_EventID eventID;
-    int HSTRM;
-    bool lock;
-    bool cached;
-    Timer t_req;
-    Timer t_load;
-    Timer t_play;
-    unsigned int dataoffset;
+    unsigned int size;              // offset 0x0, size 0x4
+    bool ready;                     // offset 0x4, size 0x1
+    int age;                        // offset 0x8, size 0x4
+    int speakerID;                  // offset 0xC, size 0x4
+    SPCHType_1_EventID eventID;     // offset 0x10, size 0x4
+    int HSTRM;                      // offset 0x14, size 0x4
+    bool lock;                      // offset 0x18, size 0x1
+    bool cached;                    // offset 0x1C, size 0x1
+    Timer t_req;                    // offset 0x20, size 0x4
+    Timer t_load;                   // offset 0x24, size 0x4
+    Timer t_play;                   // offset 0x28, size 0x4
+    unsigned int dataoffset;        // offset 0x2C, size 0x4
 
     ~SpeechSampleData() {}
     void Lock();
@@ -139,20 +142,20 @@ class SampleReqList : public UTL::Std::vector<SPCHSampleRequest, _type_SampleReq
 };
 
 struct ScheduledSpeechEvent {
-    void *iid;
-    void *fh;
-    SPCHType_1_EventID ID;
-    void *actor;
-    Timer entry_time;
-    Timer playback_time;
-    Timer finish_time;
-    SpeechSampleData *assoc_samples[7];
-    unsigned char assoc_samples_count;
-    unsigned char assoc_samples_prep;
-    unsigned char curndx;
-    unsigned char priority;
-    short frameindex;
-    short flags;
+    InterfaceId *iid;                       // offset 0x0, size 0x4
+    FunctionHandle *fh;                     // offset 0x4, size 0x4
+    SPCHType_1_EventID ID;                  // offset 0x8, size 0x4
+    EAXCharacter *actor;                    // offset 0xC, size 0x4
+    Timer entry_time;                       // offset 0x10, size 0x4
+    Timer playback_time;                    // offset 0x14, size 0x4
+    Timer finish_time;                      // offset 0x18, size 0x4
+    SpeechSampleData *assoc_samples[7];     // offset 0x1C, size 0x1C
+    unsigned char assoc_samples_count;      // offset 0x38, size 0x1
+    unsigned char assoc_samples_prep;       // offset 0x39, size 0x1
+    unsigned char curndx;                   // offset 0x3A, size 0x1
+    unsigned char priority;                 // offset 0x3B, size 0x1
+    short frameindex;                       // offset 0x3C, size 0x2
+    short flags;                            // offset 0x3E, size 0x2
 
     ScheduledSpeechEvent();
     ~ScheduledSpeechEvent();

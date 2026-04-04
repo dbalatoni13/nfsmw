@@ -106,12 +106,12 @@ extern Attrib::Gen::turbosfx *g_TurboInfo;
 #include "Speed/Indep/Src/EAXSound/EAXFrontEnd.hpp"
 
 struct EAXSND8Wrapper : public AudioMemBase {
-    char *m_pSoundHeap;   // offset 0x04
-    char *m_pStreamBuff;  // offset 0x08
-    int m_nHeapSize;      // offset 0x0C
-    int m_nStreamSize;    // offset 0x10
-    eSndAudioMode m_eCurrentAudioMode; // offset 0x14
-    eSndAudioMode m_eLastAudioMode;    // offset 0x18
+    char *m_pSoundHeap;            // offset 0x4, size 0x4
+    char *m_pStreamBuff;           // offset 0x8, size 0x4
+    int m_nHeapSize;               // offset 0xC, size 0x4
+    int m_nStreamSize;             // offset 0x10, size 0x4
+    eSndAudioMode m_eCurrentAudioMode; // offset 0x14, size 0x4
+    eSndAudioMode m_eLastAudioMode;    // offset 0x18, size 0x4
 
     void *operator new(unsigned int size, const char *debug_name) {
         return gAudioMemoryManager.AllocateMemory(size, debug_name, false);
@@ -153,7 +153,7 @@ class CarSoundConn : public Sim::Connection, public UTL::Collections::Listable<C
 
 class HeliSoundConn : public Sim::Connection, public UTL::Collections::Listable<HeliSoundConn, 10> {
   public:
-    EAX_HeliState *mState; // offset 0x18, size 0x4
+    EAX_HeliState *mState; // offset 0x14, size 0x4
     WorldConn::Reference mTarget; // offset 0x18, size 0x10
 
     HeliSoundConn(const Sim::ConnectionData &data);
@@ -172,8 +172,8 @@ struct CSTATEMGR_CarState : public CSTATEMGR_Base {
     static void ResetCarBanks();
     static void DestroyCar(EAX_CarState *pCar);
 
-    Sound::Context m_CarContext; // offset 0x1C
-    float m_fConnectDistance;    // offset 0x20
+    Sound::Context m_CarContext; // offset 0x1C, size 0x4
+    float m_fConnectDistance;    // offset 0x20, size 0x4
 };
 
 struct CSTATEMGR_Main : public CSTATEMGR_Base {
@@ -198,7 +198,7 @@ struct WorldObject;
 
 class CSTATEMGR_CopCar : public CSTATEMGR_CarState {
   public:
-    int mNumCopsInProximity; // offset 0x24
+    int mNumCopsInProximity; // offset 0x24, size 0x4
 
     CSTATEMGR_CopCar();
 };
@@ -209,7 +209,7 @@ class CSTATEMGR_TrafficCar : public CSTATEMGR_CarState {
 };
 
 struct CSTATEMGR_Enviro : public CSTATEMGR_Base {
-    UTL::Std::list<WorldObject *, _type_list> m_WorldObjects; // offset 0x1C
+    UTL::Std::list<WorldObject *, _type_list> m_WorldObjects; // offset 0x1C, size 0x8
 
     CSTATEMGR_Enviro();
 };
@@ -219,7 +219,7 @@ struct CSTATEMGR_Collision : public CSTATEMGR_Base {
 };
 
 struct CSTATEMGR_DriveBy : public CSTATEMGR_Base {
-    int WooshCheckFrameCntr; // offset 0x1C
+    int WooshCheckFrameCntr; // offset 0x1C, size 0x4
 
     CSTATEMGR_DriveBy();
 };
