@@ -238,6 +238,8 @@ int CompositeSkin32(SkinCompositeParams *composite_params) {
                         unsigned int colours[2];
                         float weights[2];
 
+                        colours[0] = src_pixel;
+                        colours[1] = dest_pixel;
                         weights[0] = static_cast<float>(blend_value) / 255.0f;
                         weights[1] = 1.0f - weights[0];
 
@@ -249,8 +251,6 @@ int CompositeSkin32(SkinCompositeParams *composite_params) {
                             weights[1] = 0.0f;
                         }
 
-                        colours[0] = src_pixel;
-                        colours[1] = dest_pixel;
                         src_pixel = GetBlendColour(colours, weights, 2, false);
                         *dest = src_pixel;
                     }
