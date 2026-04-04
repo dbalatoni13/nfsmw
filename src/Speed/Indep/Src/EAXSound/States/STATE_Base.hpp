@@ -31,9 +31,9 @@ struct CSTATE_Base : public AudioMemBase {
     struct StateInfo {
         // total size: 0x10
         int StateID;                       // offset 0x0, size 0x4
-        char *stateName;                   // offset 0x4, size 0x4
+        const char *stateName;                   // offset 0x4, size 0x4
         StateInfo *baseStateInfo;          // offset 0x8, size 0x4
-        CSTATE_Base *(*createState)(void); // offset 0xc, size 0x4
+        CSTATE_Base *(*createState)(unsigned int); // offset 0xC, size 0x4
     };
 
     CSTATE_Base();
