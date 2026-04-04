@@ -90,8 +90,8 @@ struct SndBase : public AudioMemBase {
     int *m_pInputBlock;               // offset 0x10, size 0x4
 
   protected:
-    struct CSTATE_Base *m_pStateBase; // offset 0x14, size 0x4
-    struct EAXCar *m_pEAXCar;         // offset 0x18, size 0x4
+    CSTATE_Base *m_pStateBase; // offset 0x14, size 0x4
+    EAXCar *m_pEAXCar;         // offset 0x18, size 0x4
     unsigned short m_refCount;        // offset 0x1C, size 0x2
     unsigned short m_allocatorIndex;  // offset 0x1E, size 0x2
     int objectID;                     // offset 0x20, size 0x4

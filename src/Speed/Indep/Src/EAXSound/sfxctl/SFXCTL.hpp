@@ -12,7 +12,7 @@ struct SFXCTL : public SndBase {
     static TypeInfo s_TypeInfo;
 
   public:
-    /* 0x24 */ eAemsUpgradeLevel m_UGL;
+    eAemsUpgradeLevel m_UGL; // offset 0x24, size 0x4
 
     SFXCTL();
     ~SFXCTL() override;

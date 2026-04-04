@@ -37,7 +37,7 @@ struct EAXTrafficCar : public CSTATE_Base {
 
     static StateInfo s_StateInfo;
 
-    bool IsLargeTrafficCar; // offset 0x44
+    bool IsLargeTrafficCar; // offset 0x44, size 0x1
 };
 
 #endif

@@ -9,6 +9,11 @@
 #include "Speed/Indep/Src/Misc/Timer.hpp"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribHash.h"
 
+struct SPEECH_BANK;
+struct EAXS_StreamChannel;
+struct SFX_Base;
+struct SPCHType_SampleRequestData;
+
 // TODO move
 enum eMasterMixChannel {
     eMASTER_VOL = 0,
@@ -57,7 +62,7 @@ class Module : public AudioMemBase {
     virtual void Update();
     virtual const char *GetFilename();
     virtual bool QueStream(eNISSFX_TYPE stream_type, void (*callback)(), bool trigger_play_after_callback);
-    virtual unsigned int SampleRequestCallback(struct SPCHType_SampleRequestData *data); // TODO
+    virtual unsigned int SampleRequestCallback(SPCHType_SampleRequestData *data); // TODO
     virtual bool IsStreamQueued();
     virtual char *GetCSIptr();
     virtual int GetChannel();
@@ -70,19 +75,19 @@ class Module : public AudioMemBase {
     bool m_enable;                        // offset 0x4, size 0x1
     int m_datID;                          // offset 0x8, size 0x4
     int m_projID;                         // offset 0xC, size 0x4
-    struct SPEECH_BANK *m_speechBanks;    // offset 0x10, size 0x4 // TODO
+    SPEECH_BANK *m_speechBanks;    // offset 0x10, size 0x4 // TODO
     eMasterMixChannel m_mixChannel;       // offset 0x14, size 0x4
     int m_streamID;                       // offset 0x18, size 0x4
     int m_fileNum;                        // offset 0x1C, size 0x4
     char *m_bankHeaders;                  // offset 0x20, size 0x4
     int m_numBanks;                       // offset 0x24, size 0x4
     unsigned int m_flags;                 // offset 0x28, size 0x4
-    struct EAXS_StreamChannel *m_strm;    // offset 0x2C, size 0x4 // TODO
+    EAXS_StreamChannel *m_strm;    // offset 0x2C, size 0x4 // TODO
     Attrib::StringKey m_filename;         // offset 0x30, size 0x10
     Timer mLastEventTimestamp;            // offset 0x40, size 0x4
-    struct SFX_Base *m_pSFXOBJ_Speech;    // offset 0x44, size 0x4
-    struct SFX_Base *m_pSFXOBJ_Moment;    // offset 0x48, size 0x4
-    struct SFX_Base *m_pSFXOBJ_NISStream; // offset 0x4C, size 0x4
+    SFX_Base *m_pSFXOBJ_Speech;    // offset 0x44, size 0x4
+    SFX_Base *m_pSFXOBJ_Moment;    // offset 0x48, size 0x4
+    SFX_Base *m_pSFXOBJ_NISStream; // offset 0x4C, size 0x4
     bool m_bIsStreamQueued;               // offset 0x50, size 0x1
 };
 

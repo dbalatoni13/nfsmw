@@ -9,6 +9,8 @@
 #include "Speed/Indep/Src/EAXSound/AudioMemBase.hpp"
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL.hpp"
 
+struct CSTATEMGR_Base;
+
 enum eMAINMAPSTATES {
     eMM_MAX_MAIN_MIXSTATES = 13,
     eMM_TRUCK = 12,
@@ -71,7 +73,7 @@ struct CSTATE_Base : public AudioMemBase {
     // total size: 0x44
     CSTATE_Base *m_pNextState;          // offset 0x4, size 0x4
     CSTATE_Base *m_pPreviousState;      // offset 0x8, size 0x4
-    struct CSTATEMGR_Base *m_pStateMgr; // offset 0xC, size 0x4
+    CSTATEMGR_Base *m_pStateMgr; // offset 0xC, size 0x4
     int m_InstNum;                      // offset 0x10, size 0x4
     eMAINMAPSTATES m_eStateType;        // offset 0x14, size 0x4
     int m_StateInstType;                // offset 0x18, size 0x4
@@ -82,7 +84,7 @@ struct CSTATE_Base : public AudioMemBase {
     int m_SFXFlags;                     // offset 0x28, size 0x4
     int m_NumLoadedSFXObj;              // offset 0x2C, size 0x4
     int m_NumLoadedSFXCTL;              // offset 0x30, size 0x4
-    struct EAX_CarState *m_pCar;        // offset 0x34, size 0x4
+    EAX_CarState *m_pCar;        // offset 0x34, size 0x4
     bool bIsAttached;                   // offset 0x38, size 0x1
     float t_CurTime;                    // offset 0x3C, size 0x4
     float t_DeltaTime;                  // offset 0x40, size 0x4

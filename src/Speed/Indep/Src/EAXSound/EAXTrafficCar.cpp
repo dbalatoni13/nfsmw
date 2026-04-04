@@ -1,5 +1,5 @@
 struct EAXTrafficCar : public CSTATE_Base {
-    bool IsLargeTrafficCar; // offset 0x44
+    bool IsLargeTrafficCar; // offset 0x44, size 0x1
 
     EAXTrafficCar();
     virtual ~EAXTrafficCar();

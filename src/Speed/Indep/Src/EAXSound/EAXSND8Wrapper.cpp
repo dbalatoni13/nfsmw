@@ -13,7 +13,7 @@ class PF_Allocator : public EA::Allocator::IAllocator {
     virtual int AddRef();
     virtual int Release();
 
-    int mRefcount; // offset 0x4
+    int mRefcount; // offset 0x4, size 0x4
 };
 
 #include "Speed/Indep/Src/EAXSound/PF_iallocatorimpl.h"

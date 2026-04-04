@@ -31,6 +31,13 @@ struct CSTATE_Helicopter;
 struct EAXFrontEnd;
 struct EAXCommon;
 struct SFXCTL_MasterVol;
+struct SndBase;
+struct AudioSettings;
+struct stSongInfo;
+struct EAXSND8Wrapper;
+struct EAXS_StreamManager;
+struct NFSMixMaster;
+struct NFSLiveLink;
 
 // yes that is the correct name for the file
 
@@ -143,19 +150,19 @@ class EAXSound : public AudioMemBase {
     void ReInitMasterVolumes();
     void UpdateSongInfo();
     void SetCsisName(char *pcsAllocName);
-    void SetCsisName(struct SndBase *psndbase);
+    void SetCsisName(SndBase *psndbase);
     static int GetStateRefCount(int nstate);
-    enum eSndAudioMode GetDefaultPlatformAudioMode();
-    enum eSndAudioMode SetAudioModeFromMemoryCard(enum eSndAudioMode mode);
+    eSndAudioMode GetDefaultPlatformAudioMode();
+    eSndAudioMode SetAudioModeFromMemoryCard(eSndAudioMode mode);
     unsigned int Random(int range);
     float Random(float range);
     float GetCurMusicVolume();
-    struct EAXCar *GetPlayerTunerCar(int nindex);
+    EAXCar *GetPlayerTunerCar(int nindex);
     void InitEATRAX();
     static int *GetPointerCallback(int nid);
     static void SetSFXOutCallback(int nid, int *ptr);
     static bool SetSFXInputCallback(int nid, int *ptr);
-    void UpdateVolumes(struct AudioSettings *paudiosettings, float NewValue);
+    void UpdateVolumes(AudioSettings *paudiosettings, float NewValue);
     void CommitAssets();
     static void MixMapReadyCallback();
     void AttachPlayerCars();
@@ -183,11 +190,11 @@ class EAXSound : public AudioMemBase {
     void InitializeFrontEnd();
 
     static CSTATEMGR_Base *GetStateMgr(eMAINMAPSTATES estate) { return m_pStateMgr[estate]; }
-    static struct SndBase *GetSndBase_Object(int nID);
+    static SndBase *GetSndBase_Object(int nID);
     cSTICH_PlayBack *GetStichPlayer() { return m_pSTICH_Playback; }
     cSTICH_PlayBack *GetSTICHPlayback() const { return m_pSTICH_Playback; }
     EAXFrontEnd *GetFrontEnd() { return m_pFESnd; }
-    struct AudioSettings *GetCurrentAudioSettings() const { return m_pCurAudioSettings; }
+    AudioSettings *GetCurrentAudioSettings() const { return m_pCurAudioSettings; }
     Attrib::Gen::audiosystem *GetAttributes() const { return mAttributes; }
     eSndGameMode GetSndGameMode() { return m_eSndGameMode; }
     eSndGameMode GetSndGameMode() const { return m_eSndGameMode; }
@@ -196,8 +203,8 @@ class EAXSound : public AudioMemBase {
     eSndGameMode GetSoundGameMode() const { return m_eSndGameMode; }
     bool IsPauseMainFNG() const { return m_bPause_MainFNG; }
     void SetPauseMainFNG(bool pauseMainFNG) { m_bPause_MainFNG = pauseMainFNG; }
-    struct EAXS_StreamManager *GetStreamManager() { return m_pStreamManager; }
-    struct EAXS_StreamManager *GetStreamManager() const { return m_pStreamManager; }
+    EAXS_StreamManager *GetStreamManager() { return m_pStreamManager; }
+    EAXS_StreamManager *GetStreamManager() const { return m_pStreamManager; }
 
     static CSTATEMGR_Base *m_pStateMgr[13];
 
@@ -218,7 +225,7 @@ class EAXSound : public AudioMemBase {
     float t_CurTime;                             // offset 0x28, size 0x4
     int FrameCnt;                                // offset 0x2C, size 0x4
     int m_nDebugStreamState;                     // offset 0x30, size 0x4
-    struct AudioSettings *m_pCurAudioSettings;   // offset 0x34, size 0x4
+    AudioSettings *m_pCurAudioSettings;   // offset 0x34, size 0x4
     bool m_bPause_MainFNG;                       // offset 0x38, size 0x1
     void *m_pMemoryPoolMem;                      // offset 0x3C, size 0x4
     int m_memoryPoolSize;                        // offset 0x40, size 0x4
@@ -229,21 +236,21 @@ class EAXSound : public AudioMemBase {
     bool m_bAudioIsPaused;                       // offset 0x54, size 0x1
     bool m_X360_UI_Override;                     // offset 0x58, size 0x1
     char *m_pcsCsisName;                         // offset 0x5C, size 0x4
-    struct stSongInfo *m_pNewSongInfoSt;         // offset 0x60, size 0x4
-    enum eEAXGameState m_streamManagerState;     // offset 0x64, size 0x4
+    stSongInfo *m_pNewSongInfoSt;         // offset 0x60, size 0x4
+    eEAXGameState m_streamManagerState;     // offset 0x64, size 0x4
     char *m_pEAX_SysHeap;                        // offset 0x68, size 0x4
-    struct EAXFrontEnd *m_pFESnd;                // offset 0x6C, size 0x4
-    struct EAXCommon *m_pCmnSnd;                 // offset 0x70, size 0x4
-    struct NFSLiveLink *m_pNFSLiveLink;          // offset 0x74, size 0x4
+    EAXFrontEnd *m_pFESnd;                // offset 0x6C, size 0x4
+    EAXCommon *m_pCmnSnd;                 // offset 0x70, size 0x4
+    NFSLiveLink *m_pNFSLiveLink;          // offset 0x74, size 0x4
     e3DPlayerMix m_ePlayerMixMode;               // offset 0x78, size 0x4
     int m_nStereoUpgradeLevel;                   // offset 0x7C, size 0x4
     int m_nGameMode;                             // offset 0x80, size 0x4
     eSndGameMode m_eSndGameMode;                 // offset 0x84, size 0x4
     eSndGameMode m_prevSndGameMode;              // offset 0x88, size 0x4
     int m_nNumCarsInGame;                        // offset 0x8C, size 0x4
-    struct EAXSND8Wrapper *m_pEAXSND8Wrapper;    // offset 0x90, size 0x4
-    struct EAXS_StreamManager *m_pStreamManager; // offset 0x94, size 0x4
-    struct NFSMixMaster *m_pNFSMixMaster;        // offset 0x98, size 0x4
+    EAXSND8Wrapper *m_pEAXSND8Wrapper;    // offset 0x90, size 0x4
+    EAXS_StreamManager *m_pStreamManager; // offset 0x94, size 0x4
+    NFSMixMaster *m_pNFSMixMaster;        // offset 0x98, size 0x4
     cSTICH_PlayBack *m_pSTICH_Playback;          // offset 0x9C, size 0x4
     eAemsStreamBanks m_eSpeechLoadBank;          // offset 0xA0, size 0x4
     int m_nSpeechLoadBankIndex;                  // offset 0xA4, size 0x4
