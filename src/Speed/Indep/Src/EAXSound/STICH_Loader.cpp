@@ -66,7 +66,7 @@ void cStitchLoop::Update(const SND_Params *Params, float dt) {
         }
     }
 
-    m_tTimeBeforeRepeat = static_cast< short >(static_cast< int >(m_tTimeBeforeRepeat) - static_cast< int >(dt * 1000.0f));
+    m_tTimeBeforeRepeat = static_cast<short>(static_cast<int>(m_tTimeBeforeRepeat) - static_cast<int>(dt * 1000.0f));
     if (m_tTimeBeforeRepeat < 0) {
         m_tTimeBeforeRepeat = m_tOverlap;
         int index = -1;

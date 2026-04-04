@@ -404,10 +404,10 @@ void SFXCTL_HybridMotor::UpdateMixerOutputs() {
         tSteadyDuration = SndBase::m_fRunningTime;
     } else {
         if (SteadyFrameCnt == 0) {
-            SteadyFrameCnt = static_cast< unsigned short >(g_pEAXSound->Random(0x96) + 0x3C);
+            SteadyFrameCnt = static_cast<unsigned short>(g_pEAXSound->Random(0x96) + 0x3C);
             m_pEngineCtl->bPlayCompression = true;
         }
-        SteadyFrameCnt = static_cast< unsigned short >(SteadyFrameCnt - 1);
+        SteadyFrameCnt = static_cast<unsigned short>(SteadyFrameCnt - 1);
     }
 
     output = smooth(GetDMIX_InputValue(0), bOutputOn ? 0x7FFF : 0, 0x3D7, 0xC4);
@@ -417,7 +417,7 @@ void SFXCTL_HybridMotor::UpdateMixerOutputs() {
     float accelThreshold = m_pEAXCar->GetAttributes().AccelDeltaRPMThreshold();
     PercentOfThreshold = 1.0f - (accelThreshold - bAbs(AvgDeltaRPM)) / accelThreshold;
     PercentOfThreshold = bClamp(PercentOfThreshold, 0.0f, 1.0f);
-    output = smooth(GetDMIX_InputValue(1), static_cast< int >(PercentOfThreshold * 32767.0f), 3000);
+    output = smooth(GetDMIX_InputValue(1), static_cast<int>(PercentOfThreshold * 32767.0f), 3000);
 
     if (!m_pEngineCtl->bWasRedlining &&
         m_pEngineCtl->bIsRedlining) {

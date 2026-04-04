@@ -52,7 +52,7 @@ CSTATE_Base::StateInfo EAXAITunerCar::s_StateInfo = {
     0x00030000,
     "EAXAITunerCar",
     &EAXCar::s_StateInfo,
-    reinterpret_cast< CSTATE_Base *(*)(void) >(&EAXAITunerCar::CreateState),
+    reinterpret_cast<CSTATE_Base *(*)(void)>(&EAXAITunerCar::CreateState),
 };
 
 CSTATE_Base::StateInfo *EAXAITunerCar::GetStateInfo(void) const {
@@ -130,7 +130,7 @@ void EAXAITunerCar::UpdatAIDriveBy(float t) {
     TmpDriveByPackage.eDriveByType = AIDriveBy::DRIVE_BY_AI_CAR;
     TmpDriveByPackage.ClosingVelocity = fRelativeVel;
     TmpDriveByPackage.pEAXCar = this;
-    TmpDriveByPackage.UniqueID = reinterpret_cast< unsigned int >(this);
+    TmpDriveByPackage.UniqueID = reinterpret_cast<unsigned int>(this);
     TmpDriveByPackage.vLocation = *GetPhysCar()->GetPosition();
 
     if (GetPhysCar()->GetContext() == Sound::CONTEXT_COP) {
@@ -151,7 +151,7 @@ CSTATE_Base::StateInfo EAXCopCar::s_StateInfo = {
     0x00040000,
     "EAXCopCar",
     &EAXAITunerCar::s_StateInfo,
-    reinterpret_cast< CSTATE_Base *(*)(void) >(&EAXCopCar::CreateState),
+    reinterpret_cast<CSTATE_Base *(*)(void)>(&EAXCopCar::CreateState),
 };
 
 CSTATE_Base::StateInfo *EAXCopCar::GetStateInfo(void) const {
@@ -180,7 +180,7 @@ CSTATE_Base::StateInfo EAXTruck::s_StateInfo = {
     0x000C0000,
     "EAXTruck",
     &EAXAITunerCar::s_StateInfo,
-    reinterpret_cast< CSTATE_Base *(*)(void) >(&EAXTruck::CreateState),
+    reinterpret_cast<CSTATE_Base *(*)(void)>(&EAXTruck::CreateState),
 };
 
 const char *EAXTruck::GetStateName(void) const {

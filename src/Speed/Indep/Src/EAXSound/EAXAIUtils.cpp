@@ -137,35 +137,35 @@ void SndAIStateManager::Initialize(SFXCTL_Physics *_m_pPhysicsCTL) {
     SteeringMonitorLeft.t_fSustain = TWK_SND_SteeringMonitor[3];
     SteeringMonitorLeft.t_TriggerLength = TWK_SND_SteeringMonitor[4];
     SteeringMonitorLeft.fSign = TWK_SND_SteeringMonitor[5];
-    SteeringMonitorLeft.Initialize(static_cast< int >(TWK_SND_SteeringMonitor[0]));
+    SteeringMonitorLeft.Initialize(static_cast<int>(TWK_SND_SteeringMonitor[0]));
 
     SteeringMonitorRight.m_fThreshold = -TWK_SND_SteeringMonitor[1];
     SteeringMonitorRight.m_fAutoTrigger = -TWK_SND_SteeringMonitor[2];
     SteeringMonitorRight.t_fSustain = TWK_SND_SteeringMonitor[3];
     SteeringMonitorRight.t_TriggerLength = TWK_SND_SteeringMonitor[4];
     SteeringMonitorRight.fSign = -TWK_SND_SteeringMonitor[5];
-    SteeringMonitorRight.Initialize(static_cast< int >(TWK_SND_SteeringMonitor[0]));
+    SteeringMonitorRight.Initialize(static_cast<int>(TWK_SND_SteeringMonitor[0]));
 
     AccelMonitor.m_fThreshold = TWK_SND_AccelMonitor[1];
     AccelMonitor.m_fAutoTrigger = TWK_SND_AccelMonitor[2];
     AccelMonitor.t_fSustain = TWK_SND_AccelMonitor[3];
     AccelMonitor.t_TriggerLength = TWK_SND_AccelMonitor[4];
     AccelMonitor.fSign = TWK_SND_AccelMonitor[5];
-    AccelMonitor.Initialize(static_cast< int >(TWK_SND_AccelMonitor[0]));
+    AccelMonitor.Initialize(static_cast<int>(TWK_SND_AccelMonitor[0]));
 
     DeccelMonitor.m_fThreshold = TWK_SND_DeccelMonitor[1];
     DeccelMonitor.m_fAutoTrigger = TWK_SND_DeccelMonitor[2];
     DeccelMonitor.t_fSustain = TWK_SND_DeccelMonitor[3];
     DeccelMonitor.t_TriggerLength = TWK_SND_DeccelMonitor[4];
     DeccelMonitor.fSign = TWK_SND_DeccelMonitor[5];
-    DeccelMonitor.Initialize(static_cast< int >(TWK_SND_DeccelMonitor[0]));
+    DeccelMonitor.Initialize(static_cast<int>(TWK_SND_DeccelMonitor[0]));
 
     ThrottleMonitor.m_fThreshold = TWK_SND_ThrottleMonitor[1];
     ThrottleMonitor.m_fAutoTrigger = TWK_SND_ThrottleMonitor[2];
     ThrottleMonitor.t_fSustain = TWK_SND_ThrottleMonitor[3];
     ThrottleMonitor.t_TriggerLength = TWK_SND_ThrottleMonitor[4];
     ThrottleMonitor.fSign = TWK_SND_ThrottleMonitor[5];
-    ThrottleMonitor.Initialize(static_cast< int >(TWK_SND_ThrottleMonitor[0]));
+    ThrottleMonitor.Initialize(static_cast<int>(TWK_SND_ThrottleMonitor[0]));
 }
 
 void SndAIStateManager::Update(float t) {
@@ -173,7 +173,7 @@ void SndAIStateManager::Update(float t) {
         return;
     }
 
-    float steering = static_cast< float >(m_pPhysicsCTL->GetPhysCar()->GetSteering()) * 0.005493248f;
+    float steering = static_cast<float>(m_pPhysicsCTL->GetPhysCar()->GetSteering()) * 0.005493248f;
     if (180.0f < steering) {
         steering -= 360.0f;
     }

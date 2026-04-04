@@ -393,7 +393,7 @@ have_cur_rpm:
     m_fEng_RPM = NormalRPM;
     m_fSmoothedEng_RPM = m_fSmoothedEng_RPM * lbl_803D72DC + NormalRPM * lbl_803D72E0;
 
-    if (static_cast< unsigned int >(m_pShiftCtl->eShiftState - SHFT_UP_DISENGAGE) < 2u) {
+    if (static_cast<unsigned int>(m_pShiftCtl->eShiftState - SHFT_UP_DISENGAGE) < 2u) {
         VisualRPM = m_pShiftCtl->m_VisualRPM.GetValue();
     } else if (m_pAccelTransitionCtl->eAccelTransFxState == 1) {
         VisualRPM = m_pEAXCar->PhysRPM;

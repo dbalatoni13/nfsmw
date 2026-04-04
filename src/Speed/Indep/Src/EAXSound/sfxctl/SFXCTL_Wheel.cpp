@@ -28,31 +28,31 @@ SndBase *SFXCTL_Wheel::CreateObject(unsigned int allocator) {
 
 SFXCTL_Wheel::SFXCTL_Wheel()
     : SFXCTL() //
-    , LeftSideTerrain(static_cast< const Attrib::Collection * >(nullptr), 0, nullptr) //
-    , RightSideTerrain(static_cast< const Attrib::Collection * >(nullptr), 0, nullptr) //
-    , PrevLeftSideTerrain(static_cast< const Attrib::Collection * >(nullptr), 0, nullptr) //
-    , PrevRightSideTerrain(static_cast< const Attrib::Collection * >(nullptr), 0, nullptr) {
+    , LeftSideTerrain(static_cast<const Attrib::Collection *>(nullptr), 0, nullptr) //
+    , RightSideTerrain(static_cast<const Attrib::Collection *>(nullptr), 0, nullptr) //
+    , PrevLeftSideTerrain(static_cast<const Attrib::Collection *>(nullptr), 0, nullptr) //
+    , PrevRightSideTerrain(static_cast<const Attrib::Collection *>(nullptr), 0, nullptr) {
     RightSideTouchingGround = true;
     LeftSideTouchingGround = true;
 
     {
-        Attrib::Gen::simsurface terrain(static_cast< const Attrib::Collection * >(nullptr), 0, nullptr);
-        LeftSideTerrain.Attrib::Gen::simsurface::operator=(static_cast< const Attrib::Instance & >(terrain));
+        Attrib::Gen::simsurface terrain(static_cast<const Attrib::Collection *>(nullptr), 0, nullptr);
+        LeftSideTerrain.Attrib::Gen::simsurface::operator=(static_cast<const Attrib::Instance &>(terrain));
     }
 
     {
-        Attrib::Gen::simsurface terrain(static_cast< const Attrib::Collection * >(nullptr), 0, nullptr);
-        RightSideTerrain.Attrib::Gen::simsurface::operator=(static_cast< const Attrib::Instance & >(terrain));
+        Attrib::Gen::simsurface terrain(static_cast<const Attrib::Collection *>(nullptr), 0, nullptr);
+        RightSideTerrain.Attrib::Gen::simsurface::operator=(static_cast<const Attrib::Instance &>(terrain));
     }
 
     {
-        Attrib::Gen::simsurface terrain(static_cast< const Attrib::Collection * >(nullptr), 0, nullptr);
-        PrevLeftSideTerrain.Attrib::Gen::simsurface::operator=(static_cast< const Attrib::Instance & >(terrain));
+        Attrib::Gen::simsurface terrain(static_cast<const Attrib::Collection *>(nullptr), 0, nullptr);
+        PrevLeftSideTerrain.Attrib::Gen::simsurface::operator=(static_cast<const Attrib::Instance &>(terrain));
     }
 
     {
-        Attrib::Gen::simsurface terrain(static_cast< const Attrib::Collection * >(nullptr), 0, nullptr);
-        PrevRightSideTerrain.Attrib::Gen::simsurface::operator=(static_cast< const Attrib::Instance & >(terrain));
+        Attrib::Gen::simsurface terrain(static_cast<const Attrib::Collection *>(nullptr), 0, nullptr);
+        PrevRightSideTerrain.Attrib::Gen::simsurface::operator=(static_cast<const Attrib::Instance &>(terrain));
     }
 }
 
@@ -67,23 +67,23 @@ void SFXCTL_Wheel::InitSFX() {
     SFXCTL::InitSFX();
 
     {
-        Attrib::Gen::simsurface terrain(static_cast< const Attrib::Collection * >(nullptr), 0, nullptr);
-        LeftSideTerrain.Attrib::Gen::simsurface::operator=(static_cast< const Attrib::Instance & >(terrain));
+        Attrib::Gen::simsurface terrain(static_cast<const Attrib::Collection *>(nullptr), 0, nullptr);
+        LeftSideTerrain.Attrib::Gen::simsurface::operator=(static_cast<const Attrib::Instance &>(terrain));
     }
 
     {
-        Attrib::Gen::simsurface terrain(static_cast< const Attrib::Collection * >(nullptr), 0, nullptr);
-        RightSideTerrain.Attrib::Gen::simsurface::operator=(static_cast< const Attrib::Instance & >(terrain));
+        Attrib::Gen::simsurface terrain(static_cast<const Attrib::Collection *>(nullptr), 0, nullptr);
+        RightSideTerrain.Attrib::Gen::simsurface::operator=(static_cast<const Attrib::Instance &>(terrain));
     }
 
     {
-        Attrib::Gen::simsurface terrain(static_cast< const Attrib::Collection * >(nullptr), 0, nullptr);
-        PrevLeftSideTerrain.Attrib::Gen::simsurface::operator=(static_cast< const Attrib::Instance & >(terrain));
+        Attrib::Gen::simsurface terrain(static_cast<const Attrib::Collection *>(nullptr), 0, nullptr);
+        PrevLeftSideTerrain.Attrib::Gen::simsurface::operator=(static_cast<const Attrib::Instance &>(terrain));
     }
 
     {
-        Attrib::Gen::simsurface terrain(static_cast< const Attrib::Collection * >(nullptr), 0, nullptr);
-        PrevRightSideTerrain.Attrib::Gen::simsurface::operator=(static_cast< const Attrib::Instance & >(terrain));
+        Attrib::Gen::simsurface terrain(static_cast<const Attrib::Collection *>(nullptr), 0, nullptr);
+        PrevRightSideTerrain.Attrib::Gen::simsurface::operator=(static_cast<const Attrib::Instance &>(terrain));
     }
 }
 
@@ -203,21 +203,21 @@ void SFXCTL_Wheel::GenerateTerrainTypes() {
     Attrib::Gen::simsurface CurRight(FRTerrainType.GetCollection() != RRTerrainType.GetCollection() ? RightSideTerrain : FRTerrainType);
     Attrib::Gen::simsurface CurLeft(FLTerrainType.GetCollection() != RLTerrainType.GetCollection() ? LeftSideTerrain : FLTerrainType);
 
-    PrevRightSideTerrain.Attrib::Gen::simsurface::operator=(static_cast< const Attrib::Instance & >(RightSideTerrain));
-    PrevLeftSideTerrain.Attrib::Gen::simsurface::operator=(static_cast< const Attrib::Instance & >(LeftSideTerrain));
+    PrevRightSideTerrain.Attrib::Gen::simsurface::operator=(static_cast<const Attrib::Instance &>(RightSideTerrain));
+    PrevLeftSideTerrain.Attrib::Gen::simsurface::operator=(static_cast<const Attrib::Instance &>(LeftSideTerrain));
 
     if (GetPhysCar()->TireState(1) == TIRE_DAMAGE_BLOWN || GetPhysCar()->TireState(2) == TIRE_DAMAGE_BLOWN) {
         Attrib::Gen::simsurface blown(0x8EE645B3, 0, nullptr);
-        RightSideTerrain.Attrib::Gen::simsurface::operator=(static_cast< const Attrib::Instance & >(blown));
+        RightSideTerrain.Attrib::Gen::simsurface::operator=(static_cast<const Attrib::Instance &>(blown));
     } else {
-        RightSideTerrain.Attrib::Gen::simsurface::operator=(static_cast< const Attrib::Instance & >(CurRight));
+        RightSideTerrain.Attrib::Gen::simsurface::operator=(static_cast<const Attrib::Instance &>(CurRight));
     }
 
     if (GetPhysCar()->TireState(0) == TIRE_DAMAGE_BLOWN || GetPhysCar()->TireState(3) == TIRE_DAMAGE_BLOWN) {
         Attrib::Gen::simsurface blown(0x8EE645B3, 0, nullptr);
-        LeftSideTerrain.Attrib::Gen::simsurface::operator=(static_cast< const Attrib::Instance & >(blown));
+        LeftSideTerrain.Attrib::Gen::simsurface::operator=(static_cast<const Attrib::Instance &>(blown));
     } else {
-        LeftSideTerrain.Attrib::Gen::simsurface::operator=(static_cast< const Attrib::Instance & >(CurLeft));
+        LeftSideTerrain.Attrib::Gen::simsurface::operator=(static_cast<const Attrib::Instance &>(CurLeft));
     }
 }
 

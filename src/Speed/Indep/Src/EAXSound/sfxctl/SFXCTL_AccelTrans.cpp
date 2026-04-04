@@ -89,12 +89,12 @@ void SFXCTL_AccelTrans::UpdateParams(float t) {
         return;
     }
 
-    iVar2 = *reinterpret_cast< int * >(&IsAccelerating);
-    *reinterpret_cast< int * >(&PlayEngOffSweet) = 0;
-    *reinterpret_cast< int * >(&OldIsAccelerating) = iVar2;
+    iVar2 = *reinterpret_cast<int *>(&IsAccelerating);
+    *reinterpret_cast<int *>(&PlayEngOffSweet) = 0;
+    *reinterpret_cast<int *>(&OldIsAccelerating) = iVar2;
 
-    iVar3 = *reinterpret_cast< int * >(&m_pEAXCar->bIsAccelerating);
-    *reinterpret_cast< int * >(&IsAccelerating) = iVar3;
+    iVar3 = *reinterpret_cast<int *>(&m_pEAXCar->bIsAccelerating);
+    *reinterpret_cast<int *>(&IsAccelerating) = iVar3;
 
     if (iVar3 != 0) {
         if (iVar2 == 0) {
@@ -109,7 +109,7 @@ void SFXCTL_AccelTrans::UpdateParams(float t) {
             }
         }
 
-        if (*reinterpret_cast< int * >(&IsAccelerating) != 0) {
+        if (*reinterpret_cast<int *>(&IsAccelerating) != 0) {
             goto end;
         }
     }

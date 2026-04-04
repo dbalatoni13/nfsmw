@@ -352,7 +352,7 @@ void SFXCTL_Physics::UpdateParams(float t) {
     m_LastGear = m_CurGear;
     EAX_CarState *car = GetPhysCar();
 
-    m_CurGear = static_cast< Gear >(static_cast<int>(car->mDriveline.mGear));
+    m_CurGear = static_cast<Gear>(static_cast<int>(car->mDriveline.mGear));
     m_OldThrottle = m_fThrottle;
 
     if (car->mControlSource == CONTROL_AI) {
@@ -416,7 +416,7 @@ void SFXCTL_Physics::UpdateParams(float t) {
     m_pEAXCar->SetPhysTRQ(PhysicsTRQ);
     m_pEAXCar->SetPhysRPM(PhysicsRPM);
     m_pEAXCar->SetIsAccelerating(static_cast<float>(IsAccelerating));
-    m_pEAXCar->SetCurGear(static_cast< Sound::Gear >(m_CurGear));
+    m_pEAXCar->SetCurGear(static_cast<Sound::Gear>(m_CurGear));
     m_pEAXCar->SetThrottle(m_fThrottle);
 }
 

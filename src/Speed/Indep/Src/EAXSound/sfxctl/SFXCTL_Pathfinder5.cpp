@@ -130,7 +130,7 @@ int SFXCTL_Pathfinder::CrossMapNodeParam(int pid, int np) {
 
 void SFXCTL_Pathfinder::SongProgressCallback(int projID, int nodeparm) {
     if (projID == 0x11000000) {
-        MControlPathfinder(false, 0, 0, static_cast< unsigned int >(nodeparm)).Send(UCrc32("PartUpdate"));
+        MControlPathfinder(false, 0, 0, static_cast<unsigned int>(nodeparm)).Send(UCrc32("PartUpdate"));
     } else {
         int nevt = CrossMapNodeParam(projID, nodeparm);
         if (nevt != -1) {
@@ -139,7 +139,7 @@ void SFXCTL_Pathfinder::SongProgressCallback(int projID, int nodeparm) {
     }
 
     for (int n = 0; n < 4; ++n) {
-        if (m_pPFParms[n] != nullptr && projID == static_cast< int >(m_pPFParms[n]->PATH_VOICE) &&
+        if (m_pPFParms[n] != nullptr && projID == static_cast<int>(m_pPFParms[n]->PATH_VOICE) &&
             (m_pPFParms[n]->procflags & 4) != 0) {
             m_pPFParms[n]->curnodeparm = nodeparm;
         }

@@ -1333,7 +1333,7 @@ CSTATE_Helicopter *EAXSound::SpawnHelicopter(EAX_HeliState *pHeli) {
     newheli = m_pStateMgr[eStateMgrType]->GetFreeState(pHeli);
     if (newheli != nullptr) {
         newheli->Attach(pHeli);
-        return reinterpret_cast< CSTATE_Helicopter * >(newheli);
+        return reinterpret_cast<CSTATE_Helicopter *>(newheli);
     }
     return nullptr;
 }

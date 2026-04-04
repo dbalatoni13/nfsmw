@@ -58,7 +58,7 @@ void SFXCTL_Shifting::SetupSFX(CSTATE_Base *_StateBase) {
 
 void SFXCTL_Shifting::InitSFX() {
     SFXCTL::InitSFX();
-    ShiftType = static_cast< AEMS_SHIFTING_SAMPLES >(1);
+    ShiftType = static_cast<AEMS_SHIFTING_SAMPLES>(1);
     m_VOL_LFO_AMP = 0;
     m_VOL_LFO_FRQ = 0;
     m_TRQ_LFO_AMP = 0;
@@ -380,7 +380,7 @@ void SFXCTL_Shifting::BeginUpShift() {
         *static_cast<int *>(static_cast<void *>(&m_bPendingNeedShiftSound)) = 1;
         tShiftDelay = SndBase::m_fRunningTime;
         tShiftDelay += m_pShiftingPatternData->Up_Shift_Sound_Delay();
-        ShiftType = static_cast< AEMS_SHIFTING_SAMPLES >(1);
+        ShiftType = static_cast<AEMS_SHIFTING_SAMPLES>(1);
     }
 }
 
@@ -399,7 +399,7 @@ void FillGraphFromSpline(const UMath::Matrix4 &matrix, bVector2 *points, int num
 void SFXCTL_Shifting::BeginDownShift() {
     float TargetRPM;
 
-    if (GetCurGear() != static_cast< Gear >(1)) {
+    if (GetCurGear() != static_cast<Gear>(1)) {
         CleanUpShiftFX();
         eShiftState = SHFT_DOWN_DISENGAGE;
         eShiftStageChanged = SHFT_DOWN_DISENGAGE;
@@ -423,7 +423,7 @@ void SFXCTL_Shifting::BeginDownShift() {
             *static_cast<int *>(static_cast<void *>(&m_bPendingNeedShiftSound)) = 1;
         }
 
-        ShiftType = static_cast< AEMS_SHIFTING_SAMPLES >(0);
+        ShiftType = static_cast<AEMS_SHIFTING_SAMPLES>(0);
     }
 }
 

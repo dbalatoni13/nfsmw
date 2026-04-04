@@ -99,8 +99,8 @@ SndBase *SFXCTL_Tunnel::CreateObject(unsigned int allocator) {
 }
 
 SFXCTL_Tunnel::SFXCTL_Tunnel() {
-    m_ReverbType = static_cast< eREVERBFX >(5);
-    m_TargetType = static_cast< eREVERBFX >(5);
+    m_ReverbType = static_cast<eREVERBFX>(5);
+    m_TargetType = static_cast<eREVERBFX>(5);
     m_GinsuDryVol = 0x7F;
     m_CurWetGinsu = 0.0f;
     m_CurWetAems = 0.0f;
@@ -347,12 +347,12 @@ LAB_IN_TUNNEL:
             eREVERBFX NewVerbType;
             if (CurZoneType > TRACK_PATH_ZONE_OVERPASS_SMALL) {
 LAB_DEFAULT_VERB:
-                NewVerbType = static_cast< eREVERBFX >(3);
+                NewVerbType = static_cast<eREVERBFX>(3);
             } else {
                 if (CurZoneType >= TRACK_PATH_ZONE_OVERPASS) {
-                    NewVerbType = static_cast< eREVERBFX >(6);
+                    NewVerbType = static_cast<eREVERBFX>(6);
                 } else if (CurZoneType == TRACK_PATH_ZONE_TUNNEL) {
-                    NewVerbType = static_cast< eREVERBFX >(5);
+                    NewVerbType = static_cast<eREVERBFX>(5);
                 } else {
                     goto LAB_DEFAULT_VERB;
                 }
@@ -487,7 +487,7 @@ void SFXCTL_Tunnel::UpdateCityVerb(float t) {
         }
     }
 
-    if (static_cast< unsigned int >(m_CurReverbZone) > 0xB) {
+    if (static_cast<unsigned int>(m_CurReverbZone) > 0xB) {
         register int zone asm("r0");
         if (g_pEAXSound->GetSoundGameMode() == SND_FRONTEND) {
             zone = 0;
@@ -497,9 +497,9 @@ void SFXCTL_Tunnel::UpdateCityVerb(float t) {
         m_CurReverbZone = zone;
     }
 
-    eREVERBFX currentverb = static_cast< eREVERBFX >(ReverbZoneCrossMap[m_CurReverbZone]);
-    if (static_cast< int >(currentverb) > 0xB) {
-        currentverb = static_cast< eREVERBFX >(9);
+    eREVERBFX currentverb = static_cast<eREVERBFX>(ReverbZoneCrossMap[m_CurReverbZone]);
+    if (static_cast<int>(currentverb) > 0xB) {
+        currentverb = static_cast<eREVERBFX>(9);
     }
 
     if ((m_CurReverbZone != m_PrevReverbZone) && !m_bIsInTunnel) {
@@ -521,7 +521,7 @@ void SFXCTL_Tunnel::EndTunnelVerb() {
 
 void SFXCTL_Tunnel::AdjustReverbOffset(int reverboffset) {
     if (!bFadingOut && !bFadingIn) {
-        m_ReverbOffset = static_cast< float >(reverboffset);
+        m_ReverbOffset = static_cast<float>(reverboffset);
 
         int ndBGinsu = -10000;
         int ginsuWet = g_REVERBFXMODULES[m_ReverbType].GinsuWet + reverboffset;
@@ -548,7 +548,7 @@ void SFXCTL_Tunnel::AdjustReverbOffset(int reverboffset) {
 
 void SFXCTL_Tunnel::SetCurrentReverbType(eREVERBFX ereverbtype, int reverboffset) {
     bFadingOut = true;
-    m_ReverbOffset = static_cast< float >(reverboffset);
+    m_ReverbOffset = static_cast<float>(reverboffset);
     m_TargetType = ereverbtype;
     ReflRamp.Initialize(0.0f, 1.0f, g_REVERBFXMODULES[m_ReverbType].FadeOut, LINEAR);
     m_CurWetGinsuTarget = 0.0f;
