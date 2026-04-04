@@ -26,13 +26,6 @@ class Pkt_Car_Open : public Sim::Packet {
     HSIMABLE__ *mHandle;                     // offset 0x14
 };
 
-// total size: 0x10
-class Pkt_Heli_Open : public Sim::Packet {
-  public:
-    const Attrib::Collection *m_VehicleSpec; // offset 0x4
-    WUID mWorldID;                           // offset 0x8
-};
-
 } // namespace
 
 Sim::Connection *CarSoundConn::Construct(const Sim::ConnectionData &data) {
@@ -256,7 +249,7 @@ HeliSoundConn::HeliSoundConn(const Sim::ConnectionData &data)
     : Sim::Connection(data) //
     , mState(nullptr) //
     , mTarget(0) {
-    Pkt_Heli_Open *oc = static_cast<Pkt_Heli_Open *>(data.pkt);
+    SoundConn::Pkt_Heli_Open *oc = static_cast<SoundConn::Pkt_Heli_Open *>(data.pkt);
     Attrib::Instance att(oc->m_VehicleSpec, 0, nullptr);
     mTarget.Set(oc->mWorldID);
 

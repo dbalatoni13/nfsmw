@@ -10,8 +10,8 @@
 #include "Speed/Indep/Src/World/WorldTypes.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/Common/AttribPrivate.h"
 
-struct CarSoundConn;
-struct HeliSoundConn;
+class CarSoundConn;
+class HeliSoundConn;
 
 namespace SoundConn {
 
@@ -40,7 +40,6 @@ class Pkt_Heli_Open : public Sim::Packet {
         return hash.GetValue();
     }
 
-  private:
     const Attrib::Collection *m_VehicleSpec; // offset 0x4, size 0x4
     WUID mWorldID;                           // offset 0x8, size 0x4
 };

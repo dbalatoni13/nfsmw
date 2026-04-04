@@ -131,7 +131,8 @@ struct EAXSND8Wrapper : public AudioMemBase {
     void STUPID();
 };
 
-struct CarSoundConn : public Sim::Connection, public UTL::Collections::Listable<CarSoundConn, 10> {
+class CarSoundConn : public Sim::Connection, public UTL::Collections::Listable<CarSoundConn, 10> {
+  public:
     bool mConnected; // offset 0x14, size 0x1
     EAX_CarState *mState; // offset 0x18, size 0x4
     WorldConn::Reference mTarget; // offset 0x1C, size 0x10
@@ -150,7 +151,8 @@ struct CarSoundConn : public Sim::Connection, public UTL::Collections::Listable<
     }
 };
 
-struct HeliSoundConn : public Sim::Connection, public UTL::Collections::Listable<HeliSoundConn, 10> {
+class HeliSoundConn : public Sim::Connection, public UTL::Collections::Listable<HeliSoundConn, 10> {
+  public:
     EAX_HeliState *mState; // offset 0x18, size 0x4
     WorldConn::Reference mTarget; // offset 0x18, size 0x10
 
