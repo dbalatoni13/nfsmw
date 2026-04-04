@@ -7,6 +7,7 @@
 
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL.hpp"
 
+// total size: 0x28
 struct SFXCTL_MasterVol : public SFXCTL {
   protected:
     static TypeInfo s_TypeInfo;
@@ -21,6 +22,7 @@ struct SFXCTL_MasterVol : public SFXCTL {
     void UpdateParams(float t) override;
 };
 
+// total size: 0x28
 struct SFXCTL_GameState : public SFXCTL {
   protected:
     static TypeInfo s_TypeInfo;

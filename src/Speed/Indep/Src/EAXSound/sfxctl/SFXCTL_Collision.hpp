@@ -7,6 +7,7 @@
 
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_3DObjPos.hpp"
 
+// total size: 0x64
 struct SFXCTL_3DColPos : public SFXCTL_3DObjPos {
   protected:
     static TypeInfo s_TypeInfo;
@@ -19,6 +20,7 @@ struct SFXCTL_3DColPos : public SFXCTL_3DObjPos {
     static SndBase *CreateObject(unsigned int allocator);
 };
 
+// total size: 0x64
 struct SFXCTL_3DScrapePos : public SFXCTL_3DObjPos {
   protected:
     static TypeInfo s_TypeInfo;

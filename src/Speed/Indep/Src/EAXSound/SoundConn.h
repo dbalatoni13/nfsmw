@@ -44,6 +44,7 @@ class Pkt_Heli_Open : public Sim::Packet {
     WUID mWorldID;                           // offset 0x8, size 0x4
 };
 
+// total size: 0x108
 class Pkt_Car_Service : public Sim::Packet {
   public:
     explicit Pkt_Car_Service(float audible_rpm)
@@ -66,7 +67,7 @@ class Pkt_Car_Service : public Sim::Packet {
         , mTrailer(0) //
         , mTimeSinceSeen(0.0f) //
         , mDesiredSpeed(0.0f) //
-        , mControlSource(0) {
+        , mControlSource(Sound::CONTROL_NONE) {
         mTractionPct[3] = 1.0f;
         mTractionPct[2] = 1.0f;
         mTractionPct[1] = 1.0f;
@@ -104,33 +105,33 @@ class Pkt_Car_Service : public Sim::Packet {
     unsigned int Type() override;
     static unsigned int SType();
 
-    float mRPMPercent;
-    float mThrottlePercent;
-    float mBrakePercent;
-    float mEBrakePercent;
-    float mSteering;
-    int mGear;
-    float mTractionPct[4];
-    SirenState mSirenState;
-    bool mHotPursuit;
-    float mOversteer;
-    float mUndersteer;
-    float mSlipAngle;
-    float mHealth;
-    SimSurface mWheelTerrain[4];
-    float mAudibleRPMPct;
-    bVector2 mWheelSlip[4];
-    float mWheelLoad[4];
-    float mWheelZforce[4];
-    bool mWheelOnGround[4];
-    int mEngineBlown;
-    bool mNOSFlag;
-    float mNOSCapacity;
-    unsigned int mTrailer;
-    unsigned char mBlownTires[4];
-    float mTimeSinceSeen;
-    float mDesiredSpeed;
-    int mControlSource;
+    float mRPMPercent;             // offset 0x4, size 0x4
+    float mThrottlePercent;        // offset 0x8, size 0x4
+    float mBrakePercent;           // offset 0xC, size 0x4
+    float mEBrakePercent;          // offset 0x10, size 0x4
+    float mSteering;               // offset 0x14, size 0x4
+    int mGear;                     // offset 0x18, size 0x4
+    float mTractionPct[4];         // offset 0x1C, size 0x10
+    SirenState mSirenState;        // offset 0x2C, size 0x4
+    bool mHotPursuit;              // offset 0x30, size 0x1
+    float mOversteer;              // offset 0x34, size 0x4
+    float mUndersteer;             // offset 0x38, size 0x4
+    float mSlipAngle;              // offset 0x3C, size 0x4
+    float mHealth;                 // offset 0x40, size 0x4
+    SimSurface mWheelTerrain[4];   // offset 0x44, size 0x50
+    float mAudibleRPMPct;          // offset 0x94, size 0x4
+    bVector2 mWheelSlip[4];        // offset 0x98, size 0x20
+    float mWheelLoad[4];           // offset 0xB8, size 0x10
+    float mWheelZforce[4];         // offset 0xC8, size 0x10
+    bool mWheelOnGround[4];        // offset 0xD8, size 0x4
+    int mEngineBlown;              // offset 0xE8, size 0x4
+    bool mNOSFlag;                 // offset 0xEC, size 0x1
+    float mNOSCapacity;            // offset 0xF0, size 0x4
+    unsigned int mTrailer;         // offset 0xF4, size 0x4
+    unsigned char mBlownTires[4];  // offset 0xF8, size 0x4
+    float mTimeSinceSeen;          // offset 0xFC, size 0x4
+    float mDesiredSpeed;           // offset 0x100, size 0x4
+    Sound::ControlSource mControlSource; // offset 0x104, size 0x4
 };
 
 class Pkt_Heli_Service : public Sim::Packet {

@@ -7,8 +7,7 @@
 
 #include "Speed/Indep/Src/EAXSound/SndBase.hpp"
 
-struct SFX_Base : public SndBase {
-    // total size: 0x24
-};
+// total size: 0x24
+struct SFX_Base : public SndBase {};
 
 #endif
