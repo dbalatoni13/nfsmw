@@ -23,16 +23,16 @@ enum SND_AI_STATE {
 struct SFXCTL_Physics;
 
 struct SndAITrigger {
-    float m_fThreshold;       // 0x00
-    float m_fAutoTrigger;     // 0x04
-    float t_fSustain;         // 0x08
-    float t_TriggerLength;    // 0x0C
-    float fSign;              // 0x10
-    Average AvgMonitor;       // 0x14
-    bool bTrigger;            // 0x3C
-    float CurSustain;         // 0x40
-    float CurTriggerLength;   // 0x44
-    float CurValue;           // 0x48
+    float m_fThreshold;       // offset 0x0, size 0x4
+    float m_fAutoTrigger;     // offset 0x4, size 0x4
+    float t_fSustain;         // offset 0x8, size 0x4
+    float t_TriggerLength;    // offset 0xC, size 0x4
+    float fSign;              // offset 0x10, size 0x4
+    Average AvgMonitor;       // offset 0x14, size 0x28
+    bool bTrigger;            // offset 0x3C, size 0x1
+    float CurSustain;         // offset 0x40, size 0x4
+    float CurTriggerLength;   // offset 0x44, size 0x4
+    float CurValue;           // offset 0x48, size 0x4
 
     void BeginTrigger();
     void EndTrigger();
@@ -46,16 +46,16 @@ struct SndAITrigger {
 };
 
 struct SndAIStateManager : public AudioMemBase {
-    SndAITrigger SteeringMonitorLeft;   // 0x004
-    SndAITrigger SteeringMonitorRight;  // 0x050
-    SndAITrigger AccelMonitor;          // 0x09C
-    SndAITrigger DeccelMonitor;         // 0x0E8
-    SndAITrigger ThrottleMonitor;       // 0x134
-    SFXCTL_Physics *m_pPhysicsCTL;      // 0x180
-    SND_AI_STATE CurState;              // 0x184
-    SND_AI_STATE PrevState;             // 0x188
-    int bTransition;                    // 0x18C
-    float m_tLastSwitch;                // 0x190
+    SndAITrigger SteeringMonitorLeft;   // offset 0x4, size 0x4C
+    SndAITrigger SteeringMonitorRight;  // offset 0x50, size 0x4C
+    SndAITrigger AccelMonitor;          // offset 0x9C, size 0x4C
+    SndAITrigger DeccelMonitor;         // offset 0xE8, size 0x4C
+    SndAITrigger ThrottleMonitor;       // offset 0x134, size 0x4C
+    SFXCTL_Physics *m_pPhysicsCTL;      // offset 0x180, size 0x4
+    SND_AI_STATE CurState;              // offset 0x184, size 0x4
+    SND_AI_STATE PrevState;             // offset 0x188, size 0x4
+    bool bTransition;                   // offset 0x18C, size 0x1
+    float m_tLastSwitch;                // offset 0x190, size 0x4
 
     virtual ~SndAIStateManager();
     SndAIStateManager();

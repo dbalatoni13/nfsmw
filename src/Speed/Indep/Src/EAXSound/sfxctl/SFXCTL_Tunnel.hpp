@@ -26,15 +26,15 @@ enum eREVERBFX {
 };
 
 struct stREVERB_PARAMS {
-    int GinsuWet;
-    int GinsuDry;
-    int AemsWet;
-    int AemsDry;
-    int FadeOut;
-    int FadeIn;
+    int GinsuWet;  // offset 0x0, size 0x4
+    int GinsuDry;  // offset 0x4, size 0x4
+    int AemsWet;   // offset 0x8, size 0x4
+    int AemsDry;   // offset 0xC, size 0x4
+    int FadeOut;   // offset 0x10, size 0x4
+    int FadeIn;    // offset 0x14, size 0x4
 };
 
-class SFXCTL_Tunnel : public SFXCTL {
+struct SFXCTL_Tunnel : public SFXCTL {
   protected:
     static TypeInfo s_TypeInfo;
     static TypeInfo *GetStaticTypeInfo() { return &s_TypeInfo; }
@@ -42,45 +42,45 @@ class SFXCTL_Tunnel : public SFXCTL {
 
   public:
     SFXCTL_Tunnel();
-    /* 0x28 */ bool m_bIsInTunnel;
-    /* 0x2c */ bool m_bWasInTunnel;
-    /* 0x30 */ float m_LastOcclusionTest;
-    /* 0x34 */ bool IsOccluded;
-    /* 0x38 */ eTrackPathZoneType FutureZoneType;
-    /* 0x3c */ eTrackPathZoneType CurZoneType;
-    /* 0x40 */ bool bPlayDriveBy;
-    /* 0x44 */ bVector3 vDriveByLoc;
-    /* 0x54 */ float m_fIntensity;
-    /* 0x58 */ float tTimeToWaitBeforeAnotherDriveBy;
-    /* 0x5c */ TrackPathZone *pLastZoneWePlayedWooshFor;
-    /* 0x60 */ bool bPlayTunnelExit;
-    /* 0x64 */ float m_fExitIntensity;
-    /* 0x68 */ float tTimeToWaitBeforeAnotherExitDriveBy;
-    /* 0x6c */ TrackPathZone *pLastZoneWePlayedExitWooshFor;
-    /* 0x70 */ bool bIsTunnelRamping;
-    /* 0x74 */ int m_PrevReverbZone;
-    /* 0x78 */ int m_CurReverbZone;
-    /* 0x7c */ cInterpLine ReflRamp;
-    /* 0x98 */ bool bFadingOut;
-    /* 0x9c */ bool bFadingIn;
-    /* 0xa0 */ bool bIsReadyForSwitch;
-    /* 0xa4 */ bool m_IsLeadCar;
-    /* 0xa8 */ eREVERBFX m_ReverbType;
-    /* 0xac */ float m_ReverbOffset;
-    /* 0xb0 */ eREVERBFX m_TargetType;
-    /* 0xb4 */ float m_CurWetGinsu;
-    /* 0xb8 */ float m_CurDryGinsu;
-    /* 0xbc */ float m_CurWetAems;
-    /* 0xc0 */ float m_CurDryAems;
-    /* 0xc4 */ float m_CurWetGinsuTarget;
-    /* 0xc8 */ float m_CurWetAemsTarget;
-    /* 0xcc */ float m_CurDryGinsuTarget;
-    /* 0xd0 */ float m_CurDryAemsTarget;
-    /* 0xd4 */ int m_GinsuWetVol;
-    /* 0xd8 */ int m_GinsuDryVol;
-    /* 0xdc */ int m_AEMSWetVol;
-    /* 0xe0 */ int m_AEMSDryVol;
-    /* 0xe4 */ bool bToggleOffset;
+    bool m_bIsInTunnel;                         // offset 0x28, size 0x1
+    bool m_bWasInTunnel;                        // offset 0x2C, size 0x1
+    float m_LastOcclusionTest;                  // offset 0x30, size 0x4
+    bool IsOccluded;                            // offset 0x34, size 0x1
+    eTrackPathZoneType FutureZoneType;          // offset 0x38, size 0x4
+    eTrackPathZoneType CurZoneType;             // offset 0x3C, size 0x4
+    bool bPlayDriveBy;                          // offset 0x40, size 0x1
+    bVector3 vDriveByLoc;                       // offset 0x44, size 0x10
+    float m_fIntensity;                         // offset 0x54, size 0x4
+    float tTimeToWaitBeforeAnotherDriveBy;      // offset 0x58, size 0x4
+    TrackPathZone *pLastZoneWePlayedWooshFor;   // offset 0x5C, size 0x4
+    bool bPlayTunnelExit;                       // offset 0x60, size 0x1
+    float m_fExitIntensity;                     // offset 0x64, size 0x4
+    float tTimeToWaitBeforeAnotherExitDriveBy;  // offset 0x68, size 0x4
+    TrackPathZone *pLastZoneWePlayedExitWooshFor; // offset 0x6C, size 0x4
+    bool bIsTunnelRamping;                      // offset 0x70, size 0x1
+    int m_PrevReverbZone;                       // offset 0x74, size 0x4
+    int m_CurReverbZone;                        // offset 0x78, size 0x4
+    cInterpLine ReflRamp;                       // offset 0x7C, size 0x1C
+    bool bFadingOut;                            // offset 0x98, size 0x1
+    bool bFadingIn;                             // offset 0x9C, size 0x1
+    bool bIsReadyForSwitch;                     // offset 0xA0, size 0x1
+    bool m_IsLeadCar;                           // offset 0xA4, size 0x1
+    eREVERBFX m_ReverbType;                     // offset 0xA8, size 0x4
+    float m_ReverbOffset;                       // offset 0xAC, size 0x4
+    eREVERBFX m_TargetType;                     // offset 0xB0, size 0x4
+    float m_CurWetGinsu;                        // offset 0xB4, size 0x4
+    float m_CurDryGinsu;                        // offset 0xB8, size 0x4
+    float m_CurWetAems;                         // offset 0xBC, size 0x4
+    float m_CurDryAems;                         // offset 0xC0, size 0x4
+    float m_CurWetGinsuTarget;                  // offset 0xC4, size 0x4
+    float m_CurWetAemsTarget;                   // offset 0xC8, size 0x4
+    float m_CurDryGinsuTarget;                  // offset 0xCC, size 0x4
+    float m_CurDryAemsTarget;                   // offset 0xD0, size 0x4
+    int m_GinsuWetVol;                          // offset 0xD4, size 0x4
+    int m_GinsuDryVol;                          // offset 0xD8, size 0x4
+    int m_AEMSWetVol;                           // offset 0xDC, size 0x4
+    int m_AEMSDryVol;                           // offset 0xE0, size 0x4
+    bool bToggleOffset;                         // offset 0xE4, size 0x1
 
     ~SFXCTL_Tunnel() override;
     TypeInfo *GetTypeInfo() const override;

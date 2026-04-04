@@ -11,7 +11,7 @@ namespace Attrib {
 class StringKey;
 }
 
-class EAXCar;
+struct EAXCar;
 struct Camera;
 
 enum eCamStates {

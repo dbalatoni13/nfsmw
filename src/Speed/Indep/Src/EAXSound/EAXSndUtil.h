@@ -15,13 +15,13 @@ enum eCURVETYPE {
 };
 
 struct cInterpLine {
-    float ElapsedTime;  // offset 0x0
-    float Length;        // offset 0x4
-    float Start;         // offset 0x8
-    float Finish;        // offset 0xC
-    eCURVETYPE CurveTypes; // offset 0x10
-    float CurValue;      // offset 0x14
-    bool bComplete;      // offset 0x18
+    float ElapsedTime;  // offset 0x0, size 0x4
+    float Length;        // offset 0x4, size 0x4
+    float Start;         // offset 0x8, size 0x4
+    float Finish;        // offset 0xC, size 0x4
+    eCURVETYPE CurveTypes; // offset 0x10, size 0x4
+    float CurValue;      // offset 0x14, size 0x4
+    bool bComplete;      // offset 0x18, size 0x1
 
     cInterpLine();
     ~cInterpLine();
@@ -33,16 +33,16 @@ struct cInterpLine {
 };
 
 struct cPathLine {
-    float ElapsedTime;       // offset 0x0
-    float Length[6];         // offset 0x4
-    float Start[6];          // offset 0x1C
-    float Finish[6];         // offset 0x34
-    int IsLinked[6];         // offset 0x4C
-    eCURVETYPE CurveTypes[6]; // offset 0x64
-    int num_stages;          // offset 0x7C
-    int cur_stage;           // offset 0x80
-    float CurValue;          // offset 0x84
-    bool bComplete;          // offset 0x88
+    float ElapsedTime;       // offset 0x0, size 0x4
+    float Length[6];         // offset 0x4, size 0x18
+    float Start[6];          // offset 0x1C, size 0x18
+    float Finish[6];         // offset 0x34, size 0x18
+    bool IsLinked[6];        // offset 0x4C, size 0x6
+    eCURVETYPE CurveTypes[6]; // offset 0x64, size 0x18
+    int num_stages;          // offset 0x7C, size 0x4
+    int cur_stage;           // offset 0x80, size 0x4
+    float CurValue;          // offset 0x84, size 0x4
+    bool bComplete;          // offset 0x88, size 0x1
 
     cPathLine();
     ~cPathLine();
@@ -54,13 +54,13 @@ struct cPathLine {
 };
 
 struct Slope {
-    float Min;            // offset 0x0
-    float Max;            // offset 0x4
-    float Start;          // offset 0x8
-    float Finish;         // offset 0xC
-    float LastInput;      // offset 0x10
-    float LastOutput;     // offset 0x14
-    bool bNeedsRegenerate; // offset 0x18
+    float Min;            // offset 0x0, size 0x4
+    float Max;            // offset 0x4, size 0x4
+    float Start;          // offset 0x8, size 0x4
+    float Finish;         // offset 0xC, size 0x4
+    float LastInput;      // offset 0x10, size 0x4
+    float LastOutput;     // offset 0x14, size 0x4
+    bool bNeedsRegenerate; // offset 0x18, size 0x1
 
     Slope(float _Min, float _Max, float _Start, float _Finish);
     ~Slope();
