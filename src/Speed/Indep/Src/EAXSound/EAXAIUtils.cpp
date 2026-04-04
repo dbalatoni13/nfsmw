@@ -120,7 +120,7 @@ SndAIStateManager::SndAIStateManager()
     , AccelMonitor() //
     , DeccelMonitor() //
     , ThrottleMonitor() {
-    bTransition = 0;
+    bTransition = false;
     CurState = SND_AI_STATE_UNKNOWN;
     PrevState = SND_AI_STATE_UNKNOWN;
     m_pPhysicsCTL = nullptr;
@@ -198,7 +198,7 @@ void SndAIStateManager::UpdateState(float t) {
     bool PossibleState[MAX_NUM_SND_AI_STATE];
 
     static_cast<void>(t);
-    bTransition = 0;
+    bTransition = false;
     GeneratePotentialStates(PossibleState);
 
     switch (CurState) {

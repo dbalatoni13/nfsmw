@@ -5,13 +5,12 @@
 
 int GlobalStichSizes = 0;
 
-class cStitchLoop {
-  public:
-    unsigned int m_StitchAttribKey;
-    SND_Stich *m_StichData;
-    cStichWrapper *m_Stitch[2];
-    short m_tOverlap;
-    short m_tTimeBeforeRepeat;
+struct cStitchLoop {
+    unsigned int m_StitchAttribKey;  // offset 0x0, size 0x4
+    const SND_Stich *m_StichData;    // offset 0x4, size 0x4
+    cStichWrapper *m_Stitch[2];      // offset 0x8, size 0x8
+    short m_tOverlap;                // offset 0x10, size 0x2
+    short m_tTimeBeforeRepeat;       // offset 0x12, size 0x2
 
     cStitchLoop(unsigned int attrib);
     ~cStitchLoop();

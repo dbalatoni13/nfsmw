@@ -474,7 +474,7 @@ static void KillSample(cSampleWarpper *sampleref) {
     sampleref->Destroy();
 }
 
-void cSTICH_PlayBack::RemoveFromList(struct SampleQueueItem sampleitem) {
+void cSTICH_PlayBack::RemoveFromList(SampleQueueItem sampleitem) {
     STICH_TYPE type = static_cast<STICH_TYPE>(sampleitem.pStitch->StichData->eStichType);
     for (SampleQueueItem *iter = mQueuedSampleList[type].begin();
          iter != mQueuedSampleList[type].end(); ++iter) {

@@ -137,13 +137,13 @@ void SFXCTL_Tunnel::InitSFX() {
 
     EAX_CarState *car = m_pStateBase->GetPhysCar();
     if (static_cast<int>(car->mContext) != 0) {
-        m_IsLeadCar = 0;
+        m_IsLeadCar = false;
     } else if (m_pStateBase->m_InstNum != 0) {
-        m_IsLeadCar = 0;
+        m_IsLeadCar = false;
     } else {
-        m_IsLeadCar = 1;
+        m_IsLeadCar = true;
     }
-    IsOccluded = 0;
+    IsOccluded = false;
 }
 
 int SFXCTL_Tunnel::GetController(int Index) { return -1; }
@@ -330,7 +330,7 @@ void SFXCTL_Tunnel::UpdateIsInTunnel(float t) {
 
 LAB_IN_TUNNEL:
     InTunnel = true;
-    if (m_bIsInTunnel == 0) {
+    if (!m_bIsInTunnel) {
         m_bIsInTunnel = true;
         if (static_cast<int>(m_pStateBase->GetPhysCar()->mContext) == 0) {
             MMiscSound(1).Send(UCrc32("TunnelUpdate"));
@@ -379,12 +379,12 @@ void SFXCTL_Tunnel::UpdateOcclusion(float t) {
 
     m_LastOcclusionTest = TimeBetweenOcclusionTests;
     if (m_PlayerZoneType == CurZoneType) {
-        IsOccluded = 0;
+        IsOccluded = false;
         return;
     }
 
     if (m_PlayerZoneType != TRACK_PATH_ZONE_TUNNEL && CurZoneType != TRACK_PATH_ZONE_TUNNEL) {
-        IsOccluded = 0;
+        IsOccluded = false;
         return;
     }
 
@@ -414,12 +414,12 @@ void SFXCTL_Tunnel::UpdateOcclusion(float t) {
     WCollisionMgr::WorldCollisionInfo cInfo;
     if (WCollisionMgr(0, 3).CheckHitWorld(originToBarrier, cInfo, 2)) {
         if (VU0_v4distancesquarexyz(originToBarrier[0], cInfo.fCollidePt) < testDist * testDist - 9.0f) {
-            IsOccluded = 1;
+            IsOccluded = true;
             return;
         }
     }
 
-    IsOccluded = 0;
+    IsOccluded = false;
 }
 
 void SFXCTL_Tunnel::UpdateMixerOutputs() {

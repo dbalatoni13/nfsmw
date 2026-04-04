@@ -52,8 +52,8 @@ SFXCTL_Pathfinder::SFXCTL_Pathfinder()
     : m_projrefcnt(0) {
     g_pSFXCTL_Pathfinder = nullptr;
     for (int i = 0; i <= 3; i++) {
-        if (m_PFStrmImp[i] != 0) {
-            m_PFStrmImp[i] = 0;
+        if (m_PFStrmImp[i] != nullptr) {
+            m_PFStrmImp[i] = nullptr;
         }
     }
 }
@@ -62,10 +62,10 @@ SFXCTL_Pathfinder::~SFXCTL_Pathfinder() {
     for (int n = 0; n <= 3; ++n) {
         if (m_pPFParms[n]) {
             DestroyTrack(m_pPFParms[n]);
-            m_pPFParms[n] = 0;
+            m_pPFParms[n] = nullptr;
             for (int i = 0; i <= 3; ++i) {
                 if (m_PFStrmImp[i]) {
-                    m_PFStrmImp[i] = 0;
+                    m_PFStrmImp[i] = nullptr;
                 }
             }
         }
@@ -263,13 +263,13 @@ void SFXCTL_Pathfinder::DestroyTrack(stPFParms *pstPFParms) {
             PATH_stop(pstPFParms->PATH_TRACK);
             DetachStreamInstance(pstPFParms);
             PATH_destroy(pstPFParms->PATH_TRACK);
-            m_pPFParms[pstPFParms->projnum] = 0;
+            m_pPFParms[pstPFParms->projnum] = nullptr;
             m_projrefcnt -= 1;
         }
     } else {
         if (m_pPFParms[pstPFParms->projnum]) {
             PATH_destroy(pstPFParms->PATH_TRACK);
-            m_pPFParms[pstPFParms->projnum] = 0;
+            m_pPFParms[pstPFParms->projnum] = nullptr;
             m_projrefcnt -= 1;
         }
     }
@@ -286,7 +286,7 @@ void SFXCTL_Pathfinder::DestroyTrack(stPFParms *pstPFParms) {
         SNDSYS_leavecritical();
         for (i = 0; i < 4; ++i) {
             if (m_PFStrmImp[i]) {
-                m_PFStrmImp[i] = 0;
+                m_PFStrmImp[i] = nullptr;
             }
         }
     }

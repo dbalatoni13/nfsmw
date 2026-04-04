@@ -41,7 +41,7 @@ CSTATE_Base *EAXAITunerCar::CreateState(unsigned int allocator) {
 
 EAXAITunerCar::EAXAITunerCar() {
     emAddHandler(ProcessEvent, 0x00040000);
-    mPhysicsChangedGear = 0;
+    mPhysicsChangedGear = false;
 }
 
 EAXAITunerCar::~EAXAITunerCar() {
@@ -50,7 +50,7 @@ EAXAITunerCar::~EAXAITunerCar() {
 
 int EAXAITunerCar::SFXMessage(eSFXMessageType SFXMessageType, unsigned int param1, unsigned int param2) {
     if (SFXMessageType == SFX_CHANGEGEAR) {
-        mPhysicsChangedGear = 1;
+        mPhysicsChangedGear = true;
         return 0;
     }
     return EAXCar::SFXMessage(SFXMessageType, param1, param2);
@@ -63,7 +63,7 @@ void EAXAITunerCar::UpdateCarPhysics() {
 void EAXAITunerCar::UpdateParams(float t) {
     if (m_pCar != nullptr) {
         EAXCar::UpdateParams(t);
-        mPhysicsChangedGear = 0;
+        mPhysicsChangedGear = false;
     }
 }
 

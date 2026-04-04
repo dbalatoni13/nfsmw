@@ -47,7 +47,7 @@ int cPathLine::AddStage(float _Start, float _Finish, int _Length, eCURVETYPE _Cu
     Finish[num_stages] = _Finish;
     Start[num_stages] = _Start;
     CurveTypes[num_stages] = _Curve;
-    IsLinked[num_stages] = 0;
+    IsLinked[num_stages] = false;
     bComplete = false;
 
     if (num_stages == 0) {
@@ -85,7 +85,7 @@ void cPathLine::Update(float delta_time) {
         if (cur_stage < num_stages - 1) {
             ElapsedTime = delta_time - Length[cur_stage];
             cur_stage++;
-            if (IsLinked[cur_stage] != 0) {
+            if (IsLinked[cur_stage]) {
                 Start[cur_stage] = Finish[cur_stage - 1];
             }
         } else {
