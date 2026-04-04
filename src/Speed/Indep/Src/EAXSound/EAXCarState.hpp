@@ -79,15 +79,15 @@ enum ControlSource {
 };
 
 struct Wheel {
-    bVector2 mWheelSlip;          // offset 0x0
-    float mWheelForceZ;           // offset 0x8
-    float mPercentFsFkTransfer;   // offset 0xC
-    int mWheelOnGround;           // offset 0x10
-    SimSurface mTerrainType;      // offset 0x14
-    SimSurface mPrevTerrainType;  // offset 0x28
-    float mLoad;                  // offset 0x3C
-    unsigned char mBlownState;    // offset 0x40
-    unsigned char mPrevBlownState; // offset 0x41
+    bVector2 mWheelSlip;          // offset 0x0, size 0x8
+    float mWheelForceZ;           // offset 0x8, size 0x4
+    float mPercentFsFkTransfer;   // offset 0xC, size 0x4
+    int mWheelOnGround;           // offset 0x10, size 0x4
+    SimSurface mTerrainType;      // offset 0x14, size 0x14
+    SimSurface mPrevTerrainType;  // offset 0x28, size 0x14
+    float mLoad;                  // offset 0x3C, size 0x4
+    unsigned char mBlownState;    // offset 0x40, size 0x1
+    unsigned char mPrevBlownState; // offset 0x41, size 0x1
 
     Wheel() : mWheelSlip(), mTerrainType(), mPrevTerrainType() {
         Reset();
@@ -106,13 +106,13 @@ struct Wheel {
 };
 
 struct Engine {
-    int mBoostFlag; // offset 0x0
-    int mNOSFlag;   // offset 0x4
-    float mNOS;     // offset 0x8
-    float mRPMPct;  // offset 0xC
-    float mThrottle; // offset 0x10
-    float mBoost;   // offset 0x14
-    int mBlownFlag; // offset 0x18
+    int mBoostFlag; // offset 0x0, size 0x4
+    int mNOSFlag;   // offset 0x4, size 0x4
+    float mNOS;     // offset 0x8, size 0x4
+    float mRPMPct;  // offset 0xC, size 0x4
+    float mThrottle; // offset 0x10, size 0x4
+    float mBoost;   // offset 0x14, size 0x4
+    int mBlownFlag; // offset 0x18, size 0x4
 
     Engine() {
         Reset();
@@ -130,54 +130,54 @@ struct Engine {
 };
 
 struct Driveline {
-    int mGearShiftFlag; // offset 0x0
-    Gear mGear;         // offset 0x4
+    int mGearShiftFlag; // offset 0x0, size 0x4
+    Gear mGear;         // offset 0x4, size 0x4
 
     Driveline() : mGearShiftFlag(0), mGear(NEUTRAL) {}
 };
 } // namespace Sound
 
 struct EAX_CarState : public UTL::Collections::Listable<EAX_CarState, 10> {
-    float mMaxTorque; // offset 0x4
-    float mMaxRPM; // offset 0x8
-    float mMinRPM; // offset 0xC
-    float mRedline; // offset 0x10
-    bMatrix4 mMatrix; // offset 0x14
-    bVector3 mVel0; // offset 0x54
-    int mRacePos; // offset 0x64
-    bVector3 mVel1; // offset 0x68
-    float mBrake; // offset 0x78
-    bVector3 mAccel; // offset 0x7C
-    float mEBrake; // offset 0x8C
-    float mFWSpeed; // offset 0x90
-    bool mIsShocked; // offset 0x94
-    float mHealth; // offset 0x98
-    bool mNosEmptyFlag; // offset 0x9C
-    Sound::MovementMode mMovementMode; // offset 0xA0
-    Sound::PlayerZones mPlayerZone; // offset 0xA4
-    Sound::Wheel mWheel[4]; // offset 0xA8
-    unsigned short mSteering; // offset 0x1B8
-    unsigned short mAngle; // offset 0x1BA
-    Sound::Engine mEngine; // offset 0x1BC
-    Sound::Driveline mDriveline; // offset 0x1D8
-    int mSirenState; // offset 0x1E0
-    bool mHotPursuit; // offset 0x1E4
-    Attrib::Gen::pvehicle mAttributes; // offset 0x1E8
-    Attrib::Gen::engineaudio mEngineInfo; // offset 0x1FC
-    Sound::Context mContext; // offset 0x210
-    bool mSimUpdating; // offset 0x214
-    bool mAssetsLoaded; // offset 0x218
-    unsigned int mWorldID; // offset 0x21C
-    HSIMABLE__ *mHandle; // offset 0x220
-    unsigned int mTrailerID; // offset 0x224
-    float mOversteer; // offset 0x228
-    float mUndersteer; // offset 0x22C
-    float mSlipAngle; // offset 0x230
-    float mVisualRPM; // offset 0x234
-    float mTimeSinceSeen; // offset 0x238
-    int mNISCarID; // offset 0x23C
-    float mDesiredSpeed; // offset 0x240
-    Sound::ControlSource mControlSource; // offset 0x244
+    float mMaxTorque; // offset 0x4, size 0x4
+    float mMaxRPM; // offset 0x8, size 0x4
+    float mMinRPM; // offset 0xC, size 0x4
+    float mRedline; // offset 0x10, size 0x4
+    bMatrix4 mMatrix; // offset 0x14, size 0x40
+    bVector3 mVel0; // offset 0x54, size 0x10
+    int mRacePos; // offset 0x64, size 0x4
+    bVector3 mVel1; // offset 0x68, size 0x10
+    float mBrake; // offset 0x78, size 0x4
+    bVector3 mAccel; // offset 0x7C, size 0x10
+    float mEBrake; // offset 0x8C, size 0x4
+    float mFWSpeed; // offset 0x90, size 0x4
+    bool mIsShocked; // offset 0x94, size 0x1
+    float mHealth; // offset 0x98, size 0x4
+    bool mNosEmptyFlag; // offset 0x9C, size 0x1
+    Sound::MovementMode mMovementMode; // offset 0xA0, size 0x4
+    Sound::PlayerZones mPlayerZone; // offset 0xA4, size 0x4
+    Sound::Wheel mWheel[4]; // offset 0xA8, size 0x110
+    unsigned short mSteering; // offset 0x1B8, size 0x2
+    unsigned short mAngle; // offset 0x1BA, size 0x2
+    Sound::Engine mEngine; // offset 0x1BC, size 0x1C
+    Sound::Driveline mDriveline; // offset 0x1D8, size 0x8
+    SirenState mSirenState; // offset 0x1E0, size 0x4
+    bool mHotPursuit; // offset 0x1E4, size 0x1
+    Attrib::Gen::pvehicle mAttributes; // offset 0x1E8, size 0x14
+    Attrib::Gen::engineaudio mEngineInfo; // offset 0x1FC, size 0x14
+    Sound::Context mContext; // offset 0x210, size 0x4
+    bool mSimUpdating; // offset 0x214, size 0x1
+    bool mAssetsLoaded; // offset 0x218, size 0x1
+    unsigned int mWorldID; // offset 0x21C, size 0x4
+    HSIMABLE__ *mHandle; // offset 0x220, size 0x4
+    unsigned int mTrailerID; // offset 0x224, size 0x4
+    float mOversteer; // offset 0x228, size 0x4
+    float mUndersteer; // offset 0x22C, size 0x4
+    float mSlipAngle; // offset 0x230, size 0x4
+    float mVisualRPM; // offset 0x234, size 0x4
+    float mTimeSinceSeen; // offset 0x238, size 0x4
+    int mNISCarID; // offset 0x23C, size 0x4
+    float mDesiredSpeed; // offset 0x240, size 0x4
+    Sound::ControlSource mControlSource; // offset 0x244, size 0x4
 
     bool IsShifting() {
         return mDriveline.mGearShiftFlag != 0;

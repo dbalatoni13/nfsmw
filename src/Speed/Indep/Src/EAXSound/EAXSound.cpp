@@ -1066,7 +1066,7 @@ EAX_CarState::EAX_CarState(const Attrib::Collection *atr, Sound::Context context
     , mPlayerZone(Sound::PLAYER_ZONE_NONE) //
     , mSteering(0) //
     , mAngle(0) //
-    , mSirenState(-1) //
+    , mSirenState(SIREN_OFF) //
     , mHotPursuit(0) //
     , mAttributes(atr, 0, nullptr) //
     , mEngineInfo(static_cast<const Attrib::Collection *>(nullptr), 0, nullptr) {

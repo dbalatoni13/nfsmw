@@ -53,7 +53,7 @@ class Pkt_Car_Service : public Sim::Packet {
         , mEBrakePercent(0.0f) //
         , mSteering(0.0f) //
         , mGear(1) //
-        , mSirenState(-1) //
+        , mSirenState(SIREN_OFF) //
         , mHotPursuit(false) //
         , mOversteer(0.0f) //
         , mUndersteer(0.0f) //
@@ -111,7 +111,7 @@ class Pkt_Car_Service : public Sim::Packet {
     float mSteering;
     int mGear;
     float mTractionPct[4];
-    int mSirenState;
+    SirenState mSirenState;
     bool mHotPursuit;
     float mOversteer;
     float mUndersteer;
