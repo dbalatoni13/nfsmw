@@ -9,14 +9,16 @@
 #include "Speed/Indep/Src/EAXSound/AudioMemBase.hpp"
 #include "Speed/Indep/Src/Interfaces/Simables/ISimable.h"
 
+struct EAXCop;
+
 namespace Speech {
 
 // total size: 0x8
 struct copPair {
-    inline bool operator<(const struct copPair &from) const {}
+    inline bool operator<(const copPair &from) const {}
 
     HSIMABLE hsimable;  // offset 0x0, size 0x4
-    struct EAXCop *cop; // offset 0x4, size 0x4
+    EAXCop *cop; // offset 0x4, size 0x4
 };
 
 DECLARE_CONTAINER_TYPE(copMap);

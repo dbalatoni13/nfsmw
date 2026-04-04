@@ -9,6 +9,8 @@
 
 struct EAXCar;
 struct EAX_CarState;
+struct SFXCTL;
+struct CSTATE_Base;
 
 enum DMX_PRESET_TYPE {
     DMX_DEPTH = 4,
@@ -42,8 +44,8 @@ struct SndBase : public AudioMemBase {
     virtual int GetController(int Index) {
         return -1;
     }
-    virtual void AttachController(struct SFXCTL *psfxctl) {}
-    virtual void SetupSFX(struct CSTATE_Base *_StateBase);
+    virtual void AttachController(SFXCTL *psfxctl) {}
+    virtual void SetupSFX(CSTATE_Base *_StateBase);
     virtual void SetupLoadData() {
         InitSFX();
     }
