@@ -18,40 +18,40 @@ extern InterfaceId PlayFrontEndSample_RSId;
 } // namespace Csis
 
 struct PlayFrontEndSampleStruct {
-    int id;
-    int volume;
-    int pitch;
-    int azimuth;
+    int id;      // offset 0x0, size 0x4
+    int volume;  // offset 0x4, size 0x4
+    int pitch;   // offset 0x8, size 0x4
+    int azimuth; // offset 0xC, size 0x4
 };
 
 struct PlayFrontEndSampleSt {
-    int nHack;
-    int id;
-    int volume;
-    int pitch;
-    int azimuth;
+    int nHack;   // offset 0x0, size 0x4
+    int id;      // offset 0x4, size 0x4
+    int volume;  // offset 0x8, size 0x4
+    int pitch;   // offset 0xC, size 0x4
+    int azimuth; // offset 0x10, size 0x4
 };
 
 struct PlayFrontEndSample_RSStruct {
-    int id;
-    int volume;
-    int pitch;
-    int azimuth;
+    int id;      // offset 0x0, size 0x4
+    int volume;  // offset 0x4, size 0x4
+    int pitch;   // offset 0x8, size 0x4
+    int azimuth; // offset 0xC, size 0x4
 };
 
 struct PlayCommonSampleStruct {
-    int id;
-    int volume;
-    int pitch;
-    int azimuth;
+    int id;      // offset 0x0, size 0x4
+    int volume;  // offset 0x4, size 0x4
+    int pitch;   // offset 0x8, size 0x4
+    int azimuth; // offset 0xC, size 0x4
 };
 
 struct PlayCommonSampleSt {
-    int nHack;
-    int id;
-    int volume;
-    int pitch;
-    int azimuth;
+    int nHack;   // offset 0x0, size 0x4
+    int id;      // offset 0x4, size 0x4
+    int volume;  // offset 0x8, size 0x4
+    int pitch;   // offset 0xC, size 0x4
+    int azimuth; // offset 0x10, size 0x4
 };
 
 struct PlayCommonSample {

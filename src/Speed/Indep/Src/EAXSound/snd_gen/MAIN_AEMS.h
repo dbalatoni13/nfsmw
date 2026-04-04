@@ -13,11 +13,11 @@ extern InterfaceId FX_RadarId;
 } // namespace Csis
 
 struct FX_RadarStruct {
-    int iD;
-    int volume;
-    int pitch_Offset;
-    int intensity;
-    int stop;
+    int iD;           // offset 0x0, size 0x4
+    int volume;       // offset 0x4, size 0x4
+    int pitch_Offset; // offset 0x8, size 0x4
+    int intensity;    // offset 0xC, size 0x4
+    int stop;         // offset 0x10, size 0x4
 };
 
 struct FX_Hydraulic {

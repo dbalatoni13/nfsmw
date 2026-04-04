@@ -25,19 +25,19 @@ enum eSTRMSTATE {
 };
 
 struct StreamChannelParams {
-    eSTRMTYPE StrmType;
-    eSTRMSTATE StrmState;
-    int StrmHandle;
-    int StrmRequests;
-    int NumStrmParts;
-    int MinStarveTime;
-    int BufferSize;
-    int DataRate;
-    int StrmOffsets[16];
-    unsigned int StrmStartTicks[16];
-    char StrmFileName[64];
-    char *StrmFile;
-    SNDPLAYOPTS StrmPlayOpts;
+    eSTRMTYPE StrmType;                // offset 0x0, size 0x4
+    eSTRMSTATE StrmState;              // offset 0x4, size 0x4
+    int StrmHandle;                    // offset 0x8, size 0x4
+    int StrmRequests;                  // offset 0xC, size 0x4
+    int NumStrmParts;                  // offset 0x10, size 0x4
+    int MinStarveTime;                 // offset 0x14, size 0x4
+    int BufferSize;                    // offset 0x18, size 0x4
+    int DataRate;                      // offset 0x1C, size 0x4
+    int StrmOffsets[16];               // offset 0x20, size 0x40
+    unsigned int StrmStartTicks[16];   // offset 0x60, size 0x40
+    char StrmFileName[64];             // offset 0xA0, size 0x40
+    char *StrmFile;                    // offset 0xE0, size 0x4
+    SNDPLAYOPTS StrmPlayOpts;          // offset 0xE4, size 0x18
 };
 
 char *bStrCat(char *dest, const char *src1, const char *src2);
@@ -58,18 +58,18 @@ struct EAXS_StreamChannel : public SndStrmWrapper {
     void SetupBigFileStuff(const char *filename, long offset);
     int AddToStrmReq(const char *filename, long offset, int holdtime);
 
-    EAXS_StreamManager *m_pStrmMgr;
-    StreamChannelParams m_SChP;
+    EAXS_StreamManager *m_pStrmMgr;    // offset 0x20, size 0x4
+    StreamChannelParams m_SChP;        // offset 0x24, size 0xFC
 
   protected:
-    int m_nBigFileOffset;
-    int m_nStreamOffset;
+    int m_nBigFileOffset;              // offset 0x120, size 0x4
+    int m_nStreamOffset;               // offset 0x124, size 0x4
 
   private:
-    char m_StreamFileName[64];
-    char *m_pStrmFileName;
-    bool m_bPlayPosted;
-    bool m_bIsTrackStreamerOn;
+    char m_StreamFileName[64];         // offset 0x128, size 0x40
+    const char *m_pStrmFileName;       // offset 0x168, size 0x4
+    bool m_bPlayPosted;                // offset 0x16C, size 0x1
+    bool m_bIsTrackStreamerOn;         // offset 0x170, size 0x1
 };
 
 #endif
