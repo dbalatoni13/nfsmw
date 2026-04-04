@@ -85,11 +85,11 @@ void EAXTunerCar::UpdatePov() {
     char *views = (char *)eViews;
     void **pNext = (void **)(views + 0xA4);
     void *sentinel = (void *)(views + 0xA4);
-    char *cm = 0;
+    char *cm = nullptr;
     if (*pNext != sentinel) {
         cm = (char *)*pNext;
     }
-    if (cm != 0) {
+    if (cm != nullptr) {
         int *vtable2 = *(int **)(cm + 0x8);
         short vthis_off = *(short *)((char *)vtable2 + 0x28);
         int (*vfunc)(char *) = (int (*)(char *))(*(int *)((char *)vtable2 + 0x2C));
@@ -97,7 +97,7 @@ void EAXTunerCar::UpdatePov() {
 
         m_IsDriveCamera = (*(int *)(cm + 0xC) == 1);
 
-        if (anchor != 0) {
+        if (anchor != nullptr) {
             m_PovType = static_cast<int>(*(short *)(anchor + 0xD8));
         } else {
             m_PovType = 7;

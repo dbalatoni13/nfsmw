@@ -10,8 +10,7 @@ public:
 };
 
 extern CarPartDatabase CarPartDB;
-extern "C" void *__builtin_vec_new(unsigned int size);
-extern "C" void __builtin_delete(void *ptr);
+
 extern int btestprint;
 
 namespace {
@@ -53,7 +52,7 @@ CarSoundConn::CarSoundConn(const Sim::ConnectionData &data)
     }
     CarPartDB.GetCarType(bStringHash(modelName));
 
-    mState = static_cast<EAX_CarState *>(__builtin_vec_new(0x248));
+    mState = static_cast<EAX_CarState *>(::operator new[](0x248));
     new (mState) EAX_CarState(att.GetConstCollection(), oc->mCarContext, oc->mWorldID, oc->mHandle);
 
     if (!oc->mSpoolLoad) {
@@ -147,7 +146,7 @@ CarSoundConn::~CarSoundConn() {
     }
     if (mState != nullptr) {
         mState->~EAX_CarState();
-        __builtin_delete(mState);
+        ::operator delete(mState);
     }
     mState = nullptr;
 }
@@ -265,7 +264,7 @@ HeliSoundConn::HeliSoundConn(const Sim::ConnectionData &data)
     }
     bStringHash(modelName);
 
-    mState = static_cast<EAX_HeliState *>(__builtin_vec_new(0xA0));
+    mState = static_cast<EAX_HeliState *>(::operator new[](0xA0));
     new (mState) EAX_HeliState(att.GetConstCollection(), oc->mWorldID);
     g_pEAXSound->SpawnHelicopter(mState);
     mState->mSimUpdating = false;

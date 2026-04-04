@@ -6,7 +6,7 @@
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include "Speed/Indep/bWare/Inc/bPrintf.hpp"
 
-extern "C" void __builtin_delete(void *ptr);
+
 extern int GetCsisEventIndex(unsigned int anim_id);
 extern const char lbl_803D7358[];
 extern unsigned char uNIS_STRINGHASHMAP[];
@@ -375,7 +375,7 @@ void NIS_RevManager::OpenNISRevData(unsigned int anim_id) {
             file = bOpen(EngineRevBin, 1, 1);
             if (file) {
                 if (pRevData) {
-                    __builtin_delete(pRevData);
+                    ::operator delete(pRevData);
                     pRevData = nullptr;
                 }
 

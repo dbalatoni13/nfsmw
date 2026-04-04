@@ -43,5 +43,5 @@ void AudioMemoryManager::FreeMemory(void *mem) {
 }
 
 char *AudioMemoryManager::AllocateMemoryChar(int size, const char *debug_name, bool FromTop) {
-    return (char *)AllocateMemory(size, debug_name, FromTop);
+    return static_cast<char *>(AllocateMemory(size, debug_name, FromTop));
 }
