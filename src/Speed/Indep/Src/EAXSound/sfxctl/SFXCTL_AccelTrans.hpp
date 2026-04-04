@@ -30,17 +30,17 @@ struct SFXCTL_AccelTrans : public SFXCTL {
 
   public:
     SFXCTL_AccelTrans();
-    /* 0x28 */ SFXCTL_Engine *m_pEngineCtl;
-    /* 0x2c */ SFXCTL_Shifting *m_pShiftCtl;
-    /* 0x30 */ cInterpLine m_InterpEngRPM;
-    /* 0x4c */ cInterpLine m_InterpEngVol;
-    /* 0x68 */ cInterpLine m_InterpEngTorque;
-    /* 0x84 */ int eAccelTransFxState;
-    /* 0x88 */ float t_LastAccelTrans;
-    /* 0x8c */ bool IsAccelerating;
-    /* 0x90 */ bool OldIsAccelerating;
-    /* 0x94 */ Attrib::Gen::acceltrans *m_pAccelTransDataSet;
-    /* 0x98 */ bool PlayEngOffSweet;
+    SFXCTL_Engine *m_pEngineCtl;               // offset 0x28, size 0x4
+    SFXCTL_Shifting *m_pShiftCtl;              // offset 0x2C, size 0x4
+    cInterpLine m_InterpEngRPM;                // offset 0x30, size 0x1C
+    cInterpLine m_InterpEngVol;                // offset 0x4C, size 0x1C
+    cInterpLine m_InterpEngTorque;             // offset 0x68, size 0x1C
+    FX_ACCEL_STATE eAccelTransFxState;         // offset 0x84, size 0x4
+    float t_LastAccelTrans;                    // offset 0x88, size 0x4
+    bool IsAccelerating;                       // offset 0x8C, size 0x1
+    bool OldIsAccelerating;                    // offset 0x90, size 0x1
+    Attrib::Gen::acceltrans *m_pAccelTransDataSet; // offset 0x94, size 0x4
+    bool PlayEngOffSweet;                      // offset 0x98, size 0x1
 
     ~SFXCTL_AccelTrans() override;
     TypeInfo *GetTypeInfo() const override;

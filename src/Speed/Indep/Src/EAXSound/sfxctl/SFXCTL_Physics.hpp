@@ -34,39 +34,39 @@ struct SFXCTL_Physics : public SFXCTL {
     static TypeInfo *GetStaticTypeInfo() { return &s_TypeInfo; }
 
   public:
-    /* 0x28 */ bool m_bBlownEngineStreamQueued;
-    /* 0x2c */ float PhysicsRPM;
-    /* 0x30 */ float RedLineRPM;
-    /* 0x34 */ float fMinPhysRPM;
-    /* 0x38 */ float fMaxPhysRPM;
-    /* 0x3c */ float fRedLinePhysRPM;
-    /* 0x40 */ float PhysicsTRQ;
-    /* 0x44 */ float fMaxPhysTRQ;
-    /* 0x48 */ float m_fThrottle;
-    /* 0x4c */ float m_OldThrottle;
-    /* 0x50 */ float m_OldDesiredSpeed;
-    /* 0x54 */ Average m_fDeltaDesiredSpeed;
-    /* 0x7c */ float m_tHoldDecel;
-    /* 0x80 */ bool IsAccelerating;
-    /* 0x84 */ float t_Last_Deccel;
-    /* 0x88 */ float t_Last_Accel;
-    /* 0x8c */ Gear m_CurGear;
-    /* 0x90 */ Gear m_LastGear;
-    /* 0x94 */ bMatrix4 *mRPMCurve;
-    /* 0x98 */ HHANDLER mMsgRevEngine;
-    /* 0x9c */ HHANDLER mMsgRevOff;
-    /* 0xa0 */ bool PattternPlay;
-    /* 0xa4 */ int PatternNumber;
-    /* 0xa8 */ int CarID;
-    /* 0xac */ bool bPlayerEngEnable;
-    /* 0xb0 */ int RevFramesRemaining;
-    /* 0xb4 */ bool NISRevingEnabled;
-    /* 0xb8 */ NIS_ENGINE_REVING_STATE eCurNisRevingState;
-    /* 0xbc */ float TimeIntoRev;
-    /* 0xc0 */ int NumDataPoints;
-    /* 0xc4 */ EngRevDataPoint *pRevData;
-    /* 0xc8 */ float NISRPM;
-    /* 0xcc */ float NISTRQ;
+    bool m_bBlownEngineStreamQueued;             // offset 0x28, size 0x1
+    float PhysicsRPM;                            // offset 0x2C, size 0x4
+    float RedLineRPM;                            // offset 0x30, size 0x4
+    float fMinPhysRPM;                           // offset 0x34, size 0x4
+    float fMaxPhysRPM;                           // offset 0x38, size 0x4
+    float fRedLinePhysRPM;                       // offset 0x3C, size 0x4
+    float PhysicsTRQ;                            // offset 0x40, size 0x4
+    float fMaxPhysTRQ;                           // offset 0x44, size 0x4
+    float m_fThrottle;                           // offset 0x48, size 0x4
+    float m_OldThrottle;                         // offset 0x4C, size 0x4
+    float m_OldDesiredSpeed;                     // offset 0x50, size 0x4
+    Average m_fDeltaDesiredSpeed;                // offset 0x54, size 0x28
+    float m_tHoldDecel;                          // offset 0x7C, size 0x4
+    bool IsAccelerating;                         // offset 0x80, size 0x1
+    float t_Last_Deccel;                         // offset 0x84, size 0x4
+    float t_Last_Accel;                          // offset 0x88, size 0x4
+    Gear m_CurGear;                              // offset 0x8C, size 0x4
+    Gear m_LastGear;                             // offset 0x90, size 0x4
+    bMatrix4 *mRPMCurve;                         // offset 0x94, size 0x4
+    HHANDLER mMsgRevEngine;                      // offset 0x98, size 0x4
+    HHANDLER mMsgRevOff;                         // offset 0x9C, size 0x4
+    bool PattternPlay;                           // offset 0xA0, size 0x1
+    int PatternNumber;                           // offset 0xA4, size 0x4
+    int CarID;                                   // offset 0xA8, size 0x4
+    bool bPlayerEngEnable;                       // offset 0xAC, size 0x1
+    int RevFramesRemaining;                      // offset 0xB0, size 0x4
+    bool NISRevingEnabled;                       // offset 0xB4, size 0x1
+    NIS_ENGINE_REVING_STATE eCurNisRevingState;  // offset 0xB8, size 0x4
+    float TimeIntoRev;                           // offset 0xBC, size 0x4
+    int NumDataPoints;                           // offset 0xC0, size 0x4
+    EngRevDataPoint *pRevData;                   // offset 0xC4, size 0x4
+    float NISRPM;                                // offset 0xC8, size 0x4
+    float NISTRQ;                                // offset 0xCC, size 0x4
 
     SFXCTL_Physics();
     ~SFXCTL_Physics() override;
@@ -96,18 +96,18 @@ struct SFXCTL_AIPhysics : public SFXCTL_Physics {
 
   public:
     SFXCTL_AIPhysics();
-    /* 0xd0 */ SFXCTL_Shifting *m_pShiftCtl;
-    /* 0xd4 */ SndAIStateManager AIStateManager;
-    /* 0x268 */ bool IsDrifting;
-    /* 0x26c */ bool IsCornering;
-    /* 0x270 */ float SteadyVelocityFactor;
-    /* 0x274 */ float TargetRPMOffset;
-    /* 0x278 */ bAngle m_AngleDeltaRPM_LFO;
-    /* 0x27c */ float m_DeltaRPM_LFO_Offset;
-    /* 0x280 */ int UpShiftSameGearCount;
-    /* 0x284 */ int DownShiftSameGearCount;
-    /* 0x288 */ float Zero60Time;
-    /* 0x28c */ float m_fDeltaRPM;
+    SFXCTL_Shifting *m_pShiftCtl;                // offset 0xD0, size 0x4
+    SndAIStateManager AIStateManager;            // offset 0xD4, size 0x194
+    bool IsDrifting;                             // offset 0x268, size 0x1
+    bool IsCornering;                            // offset 0x26C, size 0x1
+    float SteadyVelocityFactor;                  // offset 0x270, size 0x4
+    float TargetRPMOffset;                       // offset 0x274, size 0x4
+    unsigned short m_AngleDeltaRPM_LFO;          // offset 0x278, size 0x2
+    float m_DeltaRPM_LFO_Offset;                // offset 0x27C, size 0x4
+    int UpShiftSameGearCount;                    // offset 0x280, size 0x4
+    int DownShiftSameGearCount;                  // offset 0x284, size 0x4
+    float Zero60Time;                            // offset 0x288, size 0x4
+    float m_fDeltaRPM;                           // offset 0x28C, size 0x4
 
     ~SFXCTL_AIPhysics() override;
     TypeInfo *GetTypeInfo() const override;

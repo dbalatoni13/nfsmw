@@ -22,42 +22,42 @@ struct SFXCTL_Engine : public SFXCTL {
     static TypeInfo *GetStaticTypeInfo() { return &s_TypeInfo; }
 
   public:
-    /* 0x28 */ SFXCTL_Shifting *m_pShiftCtl;
-    /* 0x2c */ SFXCTL_AccelTrans *m_pAccelTransitionCtl;
-    /* 0x30 */ struct SFXCTL_Physics *m_pPhysicsCtl;
-    /* 0x34 */ SFXCTL_3DCarPos *m_p3DCarPosCtl;
-    /* 0x38 */ bVector3 vCarPos;
-    /* 0x48 */ Average Trq;
-    /* 0x70 */ Average Rpm;
-    /* 0x98 */ Average VisRpmAvg;
-    /* 0xc0 */ float tMergeWithPhysicsOffStart;
-    /* 0xc4 */ bool bPreRace;
-    /* 0xc8 */ int m_iEngineVol;
-    /* 0xcc */ bool bIsRedlining;
-    /* 0xd0 */ bool bWasRedlining;
-    /* 0xd4 */ cInterpLine RedLineSampFactor;
-    /* 0xf0 */ cInterpLine RedLineEngFactor;
-    /* 0x10c */ bool bRedliningBounce;
-    /* 0x110 */ float RedlineingVisualOffset;
-    /* 0x114 */ float m_fEng_RPM;
-    /* 0x118 */ float m_fPrevRPM;
-    /* 0x11c */ float m_fSmoothedEng_RPM;
-    /* 0x120 */ float m_fEng_Trq;
-    /* 0x124 */ float m_fSmoothedEng_Trq;
-    /* 0x128 */ int m_Rotation;
-    /* 0x12c */ bool m_bIsEngineBlown;
-    /* 0x130 */ int m_DistanceFltr;
-    /* 0x134 */ bool bClutchStateOn;
-    /* 0x138 */ float m_VOL_LFO;
-    /* 0x13c */ float m_RPM_LFO;
-    /* 0x140 */ float m_TRQ_LFO;
-    /* 0x144 */ unsigned short m_aglRPM_LFO;
-    /* 0x146 */ unsigned short m_aglTRQ_LFO;
-    /* 0x148 */ unsigned short m_aglVOL_LFO;
-    /* 0x14c */ bool bPlayCompression;
-    /* 0x150 */ cPathLine m_ComppressionRPM;
-    /* 0x1dc */ HHANDLER mmsgMVehicleDestroyed;
-    /* 0x1e0 */ HHANDLER mmsgMVehicleDestroyed2;
+    SFXCTL_Shifting *m_pShiftCtl;                // offset 0x28, size 0x4
+    SFXCTL_AccelTrans *m_pAccelTransitionCtl;    // offset 0x2C, size 0x4
+    SFXCTL_Physics *m_pPhysicsCtl;               // offset 0x30, size 0x4
+    SFXCTL_3DCarPos *m_p3DCarPosCtl;             // offset 0x34, size 0x4
+    bVector3 vCarPos;                            // offset 0x38, size 0x10
+    Average Trq;                                 // offset 0x48, size 0x28
+    Average Rpm;                                 // offset 0x70, size 0x28
+    Average VisRpmAvg;                           // offset 0x98, size 0x28
+    float tMergeWithPhysicsOffStart;             // offset 0xC0, size 0x4
+    bool bPreRace;                               // offset 0xC4, size 0x1
+    int m_iEngineVol;                            // offset 0xC8, size 0x4
+    bool bIsRedlining;                           // offset 0xCC, size 0x1
+    bool bWasRedlining;                          // offset 0xD0, size 0x1
+    cInterpLine RedLineSampFactor;               // offset 0xD4, size 0x1C
+    cInterpLine RedLineEngFactor;                // offset 0xF0, size 0x1C
+    bool bRedliningBounce;                       // offset 0x10C, size 0x1
+    float RedlineingVisualOffset;                // offset 0x110, size 0x4
+    float m_fEng_RPM;                            // offset 0x114, size 0x4
+    float m_fPrevRPM;                            // offset 0x118, size 0x4
+    float m_fSmoothedEng_RPM;                    // offset 0x11C, size 0x4
+    float m_fEng_Trq;                            // offset 0x120, size 0x4
+    float m_fSmoothedEng_Trq;                    // offset 0x124, size 0x4
+    int m_Rotation;                              // offset 0x128, size 0x4
+    bool m_bIsEngineBlown;                       // offset 0x12C, size 0x1
+    int m_DistanceFltr;                          // offset 0x130, size 0x4
+    bool bClutchStateOn;                         // offset 0x134, size 0x1
+    float m_VOL_LFO;                             // offset 0x138, size 0x4
+    float m_RPM_LFO;                             // offset 0x13C, size 0x4
+    float m_TRQ_LFO;                             // offset 0x140, size 0x4
+    unsigned short m_aglRPM_LFO;                 // offset 0x144, size 0x2
+    unsigned short m_aglTRQ_LFO;                 // offset 0x146, size 0x2
+    unsigned short m_aglVOL_LFO;                 // offset 0x148, size 0x2
+    bool bPlayCompression;                       // offset 0x14C, size 0x1
+    cPathLine m_ComppressionRPM;                 // offset 0x150, size 0x8C
+    HHANDLER mmsgMVehicleDestroyed;              // offset 0x1DC, size 0x4
+    HHANDLER mmsgMCoundown;                      // offset 0x1E0, size 0x4
 
     SFXCTL_Engine();
     ~SFXCTL_Engine() override;

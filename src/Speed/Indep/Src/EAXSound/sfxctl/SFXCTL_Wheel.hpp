@@ -18,19 +18,19 @@ struct SFXCTL_Wheel : public SFXCTL {
 
   public:
     SFXCTL_Wheel();
-    /* 0x28 */ bVector2 m_NormWheelSlip[4];
-    /* 0x48 */ bVector2 m_bvTotalRightWheelSlip;
-    /* 0x50 */ bVector2 m_bvTotalLeftWheelSlip;
-    /* 0x58 */ float m_fWheelTractionMag[4];
-    /* 0x68 */ float m_fLoad[4];
-    /* 0x78 */ Attrib::Gen::simsurface LeftSideTerrain;
-    /* 0x8c */ Attrib::Gen::simsurface RightSideTerrain;
-    /* 0xa0 */ Attrib::Gen::simsurface PrevLeftSideTerrain;
-    /* 0xb4 */ Attrib::Gen::simsurface PrevRightSideTerrain;
-    /* 0xc8 */ bVector3 v3NewPosLeft;
-    /* 0xd8 */ bVector3 v3NewPosRight;
-    /* 0xe8 */ bool LeftSideTouchingGround;
-    /* 0xec */ bool RightSideTouchingGround;
+    bVector2 m_NormWheelSlip[4];                 // offset 0x28, size 0x20
+    bVector2 m_bvTotalRightWheelSlip;            // offset 0x48, size 0x8
+    bVector2 m_bvTotalLeftWheelSlip;             // offset 0x50, size 0x8
+    float m_fWheelTractionMag[4];                // offset 0x58, size 0x10
+    float m_fLoad[4];                            // offset 0x68, size 0x10
+    Attrib::Gen::simsurface LeftSideTerrain;     // offset 0x78, size 0x14
+    Attrib::Gen::simsurface RightSideTerrain;    // offset 0x8C, size 0x14
+    Attrib::Gen::simsurface PrevLeftSideTerrain; // offset 0xA0, size 0x14
+    Attrib::Gen::simsurface PrevRightSideTerrain; // offset 0xB4, size 0x14
+    bVector3 v3NewPosLeft;                       // offset 0xC8, size 0x10
+    bVector3 v3NewPosRight;                      // offset 0xD8, size 0x10
+    bool LeftSideTouchingGround;                 // offset 0xE8, size 0x1
+    bool RightSideTouchingGround;                // offset 0xEC, size 0x1
 
     ~SFXCTL_Wheel() override;
     TypeInfo *GetTypeInfo() const override;

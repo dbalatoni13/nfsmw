@@ -59,7 +59,7 @@ SFXCTL_Engine::SFXCTL_Engine()
       m_fSmoothedEng_Trq(0.0f) {
     mmsgMVehicleDestroyed = Hermes::Handler::Create<MNotifyVehicleDestroyed, SFXCTL_Engine, SFXCTL_Engine>(
         this, &SFXCTL_Engine::MessageVehicleDestroyed, UCrc32(0x20D60DBF), 0);
-    mmsgMVehicleDestroyed2 = Hermes::Handler::Create<MCountdownDone, SFXCTL_Engine, SFXCTL_Engine>(
+    mmsgMCoundown = Hermes::Handler::Create<MCountdownDone, SFXCTL_Engine, SFXCTL_Engine>(
         this, &SFXCTL_Engine::MsgCountdownDone, UCrc32(0x20D60DBF), 0);
 
     m_pAccelTransitionCtl = nullptr;
@@ -79,8 +79,8 @@ SFXCTL_Engine::~SFXCTL_Engine() {
     if (mmsgMVehicleDestroyed) {
         Hermes::Handler::Destroy(mmsgMVehicleDestroyed);
     }
-    if (mmsgMVehicleDestroyed2) {
-        Hermes::Handler::Destroy(mmsgMVehicleDestroyed2);
+    if (mmsgMCoundown) {
+        Hermes::Handler::Destroy(mmsgMCoundown);
     }
 }
 

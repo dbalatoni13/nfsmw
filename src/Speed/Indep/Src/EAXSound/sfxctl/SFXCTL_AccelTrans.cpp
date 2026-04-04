@@ -42,7 +42,7 @@ void SFXCTL_AccelTrans::SetupSFX(CSTATE_Base *_StateBase) {
 
 void SFXCTL_AccelTrans::InitSFX() {
     SFXCTL::InitSFX();
-    eAccelTransFxState = 0;
+    eAccelTransFxState = FX_ACCEL_STATE_NONE;
     t_LastAccelTrans = 0.0f;
     IsAccelerating = false;
     OldIsAccelerating = false;

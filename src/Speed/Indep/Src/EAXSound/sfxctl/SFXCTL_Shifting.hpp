@@ -41,42 +41,42 @@ struct SFXCTL_Shifting : public SFXCTL {
     static TypeInfo *GetStaticTypeInfo() { return &s_TypeInfo; }
 
   public:
-    /* 0x28 */ SFXCTL_Engine *m_pEngineCtl;
-    /* 0x2c */ bool m_bNeed_ShiftGearSnd;
-    /* 0x30 */ bool m_bNeed_DisengageSnd;
-    /* 0x34 */ bool m_bNeed_EngageSnd;
-    /* 0x38 */ bool m_bNeed_AccelSnd;
-    /* 0x3c */ bool m_bNeed_DeccelSnd;
-    /* 0x40 */ bool m_bShouldBeWhining;
-    /* 0x44 */ bool m_bBrakePedalMashed;
-    /* 0x48 */ Attrib::Gen::shiftpattern *m_pShiftingPatternData;
-    /* 0x4c */ SHIFT_STAGE eShiftState;
-    /* 0x50 */ SHIFT_STAGE eShiftStageChanged;
-    /* 0x54 */ int m_VOL_LFO_AMP;
-    /* 0x58 */ int m_VOL_LFO_FRQ;
-    /* 0x5c */ int m_TRQ_LFO_AMP;
-    /* 0x60 */ int m_TRQ_LFO_FRQ;
-    /* 0x64 */ int m_RPM_LFO_AMP;
-    /* 0x68 */ int m_RPM_LFO_FRQ;
-    /* 0x6c */ bool m_bPendingNeedShiftSound;
-    /* 0x70 */ AEMS_SHIFTING_SAMPLES ShiftType;
-    /* 0x74 */ float tShiftDelay;
-    /* 0x78 */ float t_Last_Shift;
-    /* 0x7c */ float RPM_AtShift;
-    /* 0x80 */ cInterpLine m_InterpShiftTorque;
-    /* 0x9c */ cInterpLine m_InterpShiftRPM;
-    /* 0xb8 */ cInterpLine m_InterpShiftVol;
-    /* 0xd4 */ Graph m_RPMGraph;
-    /* 0xdc */ bVector2 m_RPMPoints[7];
-    /* 0x114 */ float t_CurStage;
-    /* 0x118 */ unsigned char m_CurStage;
-    /* 0x11a */ unsigned short RPMOffset;
-    /* 0x11c */ Timer m_timeBrakeLastMashed;
-    /* 0x120 */ int m_nPostShiftFXLevel;
-    /* 0x124 */ cInterpLine m_Shift_RPM_AMP_DECAY;
-    /* 0x140 */ cInterpLine m_Shift_VOL_AMP_DECAY;
-    /* 0x15c */ FX_POST_SHIFT_LFO eShift_LFO;
-    /* 0x160 */ cInterpLine m_VisualRPM;
+    SFXCTL_Engine *m_pEngineCtl;                 // offset 0x28, size 0x4
+    bool m_bNeed_ShiftGearSnd;                   // offset 0x2C, size 0x1
+    bool m_bNeed_DisengageSnd;                   // offset 0x30, size 0x1
+    bool m_bNeed_EngageSnd;                      // offset 0x34, size 0x1
+    bool m_bNeed_AccelSnd;                       // offset 0x38, size 0x1
+    bool m_bNeed_DeccelSnd;                      // offset 0x3C, size 0x1
+    bool m_bShouldBeWhining;                     // offset 0x40, size 0x1
+    bool m_bBrakePedalMashed;                    // offset 0x44, size 0x1
+    Attrib::Gen::shiftpattern *m_pShiftingPatternData; // offset 0x48, size 0x4
+    SHIFT_STAGE eShiftState;                     // offset 0x4C, size 0x4
+    SHIFT_STAGE eShiftStageChanged;              // offset 0x50, size 0x4
+    int m_VOL_LFO_AMP;                          // offset 0x54, size 0x4
+    int m_VOL_LFO_FRQ;                          // offset 0x58, size 0x4
+    int m_TRQ_LFO_AMP;                          // offset 0x5C, size 0x4
+    int m_TRQ_LFO_FRQ;                          // offset 0x60, size 0x4
+    int m_RPM_LFO_AMP;                          // offset 0x64, size 0x4
+    int m_RPM_LFO_FRQ;                          // offset 0x68, size 0x4
+    bool m_bPendingNeedShiftSound;               // offset 0x6C, size 0x1
+    AEMS_SHIFTING_SAMPLES ShiftType;             // offset 0x70, size 0x4
+    float tShiftDelay;                           // offset 0x74, size 0x4
+    float t_Last_Shift;                          // offset 0x78, size 0x4
+    float RPM_AtShift;                           // offset 0x7C, size 0x4
+    cInterpLine m_InterpShiftTorque;             // offset 0x80, size 0x1C
+    cInterpLine m_InterpShiftRPM;                // offset 0x9C, size 0x1C
+    cInterpLine m_InterpShiftVol;                // offset 0xB8, size 0x1C
+    Graph m_RPMGraph;                            // offset 0xD4, size 0x8
+    bVector2 m_RPMPoints[7];                     // offset 0xDC, size 0x38
+    float t_CurStage;                            // offset 0x114, size 0x4
+    unsigned char m_CurStage;                    // offset 0x118, size 0x1
+    unsigned short RPMOffset;                    // offset 0x11A, size 0x2
+    Timer m_timeBrakeLastMashed;                 // offset 0x11C, size 0x4
+    int m_nPostShiftFXLevel;                     // offset 0x120, size 0x4
+    cInterpLine m_Shift_RPM_AMP_DECAY;           // offset 0x124, size 0x1C
+    cInterpLine m_Shift_VOL_AMP_DECAY;           // offset 0x140, size 0x1C
+    FX_POST_SHIFT_LFO eShift_LFO;               // offset 0x15C, size 0x4
+    cInterpLine m_VisualRPM;                     // offset 0x160, size 0x1C
 
     SFXCTL_Shifting();
     ~SFXCTL_Shifting() override;
