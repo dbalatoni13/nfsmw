@@ -5,7 +5,8 @@
 
 int GlobalStichSizes = 0;
 
-struct cStitchLoop {
+class cStitchLoop {
+  public:
     unsigned int m_StitchAttribKey;
     SND_Stich *m_StichData;
     cStichWrapper *m_Stitch[2];

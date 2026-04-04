@@ -10,6 +10,7 @@
 #include "Speed/Indep/Src/Generated/Messages/MCountdownDone.h"
 #include "Speed/Indep/Src/Generated/Messages/MGamePlayMoment.h"
 #include "Speed/Indep/Src/Generated/Messages/MNotifyVehicleDestroyed.h"
+#include "Speed/Indep/Src/Interfaces/Simables/ISimable.h"
 #include "Speed/Indep/Src/Misc/Hermes.h"
 #include "Speed/Indep/Src/EAXSound/OldSoundTemplates.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
@@ -39,8 +40,6 @@ static const float REDLINE_ENG_FADE[2] = {450.0f, 50.0f};
 static const float REDLINE_REDSAMP_FADE[2] = {50.0f, 120.0f};
 
 Slope RedLineDelayPerGear(1.0f, 5.0f, 1.0f, 5.0f);
-
-struct HSIMABLE__;
 
 SndBase::TypeInfo *SFXCTL_Engine::GetTypeInfo() const { return &s_TypeInfo; }
 

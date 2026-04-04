@@ -1,5 +1,6 @@
 #include "./EAXSOund.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXAemsManager.h"
+#include "Speed/Indep/Src/EAXSound/EAXCar.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXCarState.hpp"
 #include "Speed/Indep/Src/EAXSound/NFSMixMaster.hpp"
 #include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_NISStream.hpp"
@@ -47,16 +48,18 @@ enum eSFXOBJ_MAIN_TYPES {
 };
 
 namespace Speech {
-struct SampleReqList;
+class SampleReqList;
 
-struct Cache {
+class Cache {
+  public:
     SlotPool *GetEventPool();
     void Free(void *ptr);
     void Dump();
     void Init(int size);
     void Validate();
 };
-struct Module {
+class Module {
+  public:
     virtual void Init(int channel);
     virtual void LoadBanks();
     virtual int TestSentenceRuleCallback(int eventID, int ruleID, int parmValue);
@@ -78,7 +81,8 @@ struct Module {
     virtual void ReleaseResource();
     void PurgeSpeech();
 };
-struct Manager {
+class Manager {
+  public:
     static void ClearPlayback();
     static void Init(int mode);
     static void Destroy();
@@ -94,12 +98,6 @@ struct Manager {
 } // namespace Speech
 
 extern Speech::Cache gSpeechCache;
-namespace Attrib {
-namespace Gen {
-struct shiftpattern;
-struct turbosfx;
-} // namespace Gen
-} // namespace Attrib
 extern Attrib::Gen::shiftpattern *g_ShiftInfo;
 extern Attrib::Gen::turbosfx *g_TurboInfo;
 
@@ -211,20 +209,23 @@ struct CSTATEMGR_PlayerCar : public CSTATEMGR_Base {
     CSTATEMGR_PlayerCar();
 };
 
-struct CSTATEMGR_AICar : public CSTATEMGR_CarState {
+class CSTATEMGR_AICar : public CSTATEMGR_CarState {
+  public:
     CSTATEMGR_AICar();
     static void QueueSlots();
 };
 
 struct WorldObject;
 
-struct CSTATEMGR_CopCar : public CSTATEMGR_CarState {
+class CSTATEMGR_CopCar : public CSTATEMGR_CarState {
+  public:
     int mNumCopsInProximity; // offset 0x24
 
     CSTATEMGR_CopCar();
 };
 
-struct CSTATEMGR_TrafficCar : public CSTATEMGR_CarState {
+class CSTATEMGR_TrafficCar : public CSTATEMGR_CarState {
+  public:
     CSTATEMGR_TrafficCar();
 };
 

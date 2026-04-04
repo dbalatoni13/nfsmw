@@ -2,11 +2,11 @@
 #include "Speed/Indep/Src/Misc/Config.h"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/EAXSound/AudioMemoryManager.hpp"
+#include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
 #include "Speed/Indep/bWare/Inc/bMemory.hpp"
 
-struct SlotPool;
-class EAXSound;
-struct PF_Allocator : EA::Allocator::IAllocator {
+class PF_Allocator : public EA::Allocator::IAllocator {
+  public:
     virtual ~PF_Allocator() {}
     virtual void *Alloc(unsigned int size, const EA::TagValuePair &flags);
     virtual void Free(void *pBlock, unsigned int size);
@@ -20,7 +20,7 @@ struct PF_Allocator : EA::Allocator::IAllocator {
 
 namespace EA {
 namespace Allocator {
-class ICoreAllocator {
+struct ICoreAllocator {
   public:
     ICoreAllocator() {}
     virtual void *Alloc(unsigned int size, const char *name, unsigned int flags) {

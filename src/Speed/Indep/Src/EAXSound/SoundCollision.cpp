@@ -29,18 +29,11 @@ enum STICH_COLLISION_TYPE {
 
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/audioimpact.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/audioscrape.h"
-
-struct CSTATE_Base;
-struct EAX_CarState;
+#include "Speed/Indep/Tools/AttribSys/Runtime/AttribHash.h"
 
 extern EAXSound *g_pEAXSound;
 
 namespace Attrib {
-struct StringKey;
-namespace Gen {
-struct audioscrape;
-struct audioimpact;
-} // namespace Gen
 }
 
 namespace Sound {
@@ -122,7 +115,8 @@ unsigned int GetCollisionDescription(const Attrib::StringKey &hash) {
     }
 }
 
-struct CollisionEvent : public AudioEvent {
+class CollisionEvent : public AudioEvent {
+  public:
     Timer CollisionTime;
     bVector3 InitialContactPoint;
     bVector3 CurrentContactPoint;

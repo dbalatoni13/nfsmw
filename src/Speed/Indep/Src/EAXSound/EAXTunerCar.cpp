@@ -2,8 +2,6 @@
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
-struct bVector3;
-
 extern eView eViews[];
 
 CSTATE_Base::StateInfo EAXTunerCar::s_StateInfo = {

@@ -4,7 +4,7 @@
 #include "Speed/Indep/Src/Generated/Events/ECommitAudioAssets.hpp"
 #include "Speed/Indep/Src/World/WorldConn.h"
 
-class CarPartDatabase {
+struct CarPartDatabase {
 public:
     int GetCarType(unsigned int hash);
 };
@@ -17,7 +17,8 @@ extern int btestprint;
 namespace {
 
 // total size: 0x18
-struct Pkt_Car_Open : public Sim::Packet {
+class Pkt_Car_Open : public Sim::Packet {
+  public:
     const Attrib::Collection *m_VehicleSpec; // offset 0x4
     WUID mWorldID;                           // offset 0x8
     Sound::Context mCarContext;              // offset 0xC
@@ -26,7 +27,8 @@ struct Pkt_Car_Open : public Sim::Packet {
 };
 
 // total size: 0x10
-struct Pkt_Heli_Open : public Sim::Packet {
+class Pkt_Heli_Open : public Sim::Packet {
+  public:
     const Attrib::Collection *m_VehicleSpec; // offset 0x4
     WUID mWorldID;                           // offset 0x8
 };

@@ -8,9 +8,6 @@
 #include <new>
 #include <types.h>
 
-struct emEvent;
-struct bVector3;
-
 bool IsCarInRadius(EAX_CarState *pCar, const bVector3 *vPos, float fRadius);
 
 namespace AIDriveBy {

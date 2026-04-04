@@ -107,7 +107,7 @@ inline void WriteChunkWord(int *field, int value) {
     bytes[3] = static_cast<unsigned char>(static_cast<unsigned int>(value) >> 24);
 }
 
-struct FILEOPERATION;
+class FILEOPERATION;
 
 static STREAMHEADERtag *g_StreamTable[64];
 static int g_NextStreamHandle = 1;

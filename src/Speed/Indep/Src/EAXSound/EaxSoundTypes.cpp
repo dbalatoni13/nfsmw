@@ -5,21 +5,23 @@
 
 #include "Speed/Indep/Src/Interfaces/Simables/ISimable.h"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
+#include "Speed/Indep/Src/Speech/EAXCop.h"
 
 enum SPCHType_1_EventID {
     kSPCH1_EventID_MaxEventID = 0x108,
 };
 
-struct SPCHType_1_EventSpec {
-    unsigned short eventID;
-    unsigned short _pad;
+struct EventSpec {
+    unsigned short eventID;    // offset 0x0, size 0x2
+    unsigned char eventDatID;  // offset 0x2, size 0x1
+    unsigned char projectID;   // offset 0x3, size 0x1
 };
 
 struct SPCHType_SampleRequestData {
     int bankNum;
     int sampleOffset;
     unsigned int numBytes;
-    SPCHType_1_EventSpec eventSpec;
+    EventSpec eventSpec;
     int channel;
     int subID;
     int datID;
@@ -28,7 +30,6 @@ struct SPCHType_SampleRequestData {
 
 extern void *NullPointer;
 
-struct EAXCop;
 struct ISndAttachable;
 
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/speech.h"
@@ -90,7 +91,7 @@ class copMap : public UTL::Std::vector<copPair, _type_copMap> {
     EAXCop *Find(HSIMABLE__ *hsimable) const;
 };
 
-class SpeechHashIDMap : public UTL::FixedVector<SpeechEventPair, 264, 16>, public AudioMemBase {
+struct SpeechHashIDMap : public UTL::FixedVector<SpeechEventPair, 264, 16>, public AudioMemBase {
   public:
     SpeechHashIDMap() {}
     void Add(unsigned int hash, SPCHType_1_EventID id);
@@ -98,7 +99,7 @@ class SpeechHashIDMap : public UTL::FixedVector<SpeechEventPair, 264, 16>, publi
     unsigned int GetHash(SPCHType_1_EventID id);
 };
 
-class EventHistory : public UTL::FixedVector<HistoryPair, 264, 16>, public AudioMemBase {
+struct EventHistory : public UTL::FixedVector<HistoryPair, 264, 16>, public AudioMemBase {
   public:
     EventHistory() {}
     void Init();
@@ -133,7 +134,9 @@ struct SpeechSampleData {
 
 DECLARE_CONTAINER_TYPE(SampleReqList);
 
-struct SampleReqList : public UTL::Std::vector<SPCHSampleRequest, _type_SampleReqList>, public AudioMemBase {};
+class SampleReqList : public UTL::Std::vector<SPCHSampleRequest, _type_SampleReqList>, public AudioMemBase {
+  public:
+};
 
 struct ScheduledSpeechEvent {
     void *iid;
