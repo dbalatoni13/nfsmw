@@ -194,6 +194,7 @@ class EAXSound : public AudioMemBase {
     cSTICH_PlayBack *GetStichPlayer() { return m_pSTICH_Playback; }
     cSTICH_PlayBack *GetSTICHPlayback() const { return m_pSTICH_Playback; }
     EAXFrontEnd *GetFrontEnd() { return m_pFESnd; }
+    AudioSettings *GetCurAudioSettings() { return m_pCurAudioSettings; }
     AudioSettings *GetCurrentAudioSettings() const { return m_pCurAudioSettings; }
     Attrib::Gen::audiosystem *GetAttributes() const { return mAttributes; }
     eSndGameMode GetSndGameMode() { return m_eSndGameMode; }

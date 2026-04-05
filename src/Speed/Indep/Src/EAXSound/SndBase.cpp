@@ -43,7 +43,7 @@ int SndBase::GetDMixOutput(int idx, DMX_PRESET_TYPE etype) {
                 return NFSMixShape::GetIntPitchMultFromCents((out >> shift) & 0xFFFF);
             }
         } else if (etype == DMX_AZIM) {
-            if (g_pEAXSound->GetCurrentAudioSettings()->AudioMode != 0) {
+            if (g_pEAXSound->GetCurAudioSettings()->AudioMode != 0) {
                 return (out >> shift) & 0xFFFF;
             }
         } else if (etype == DMX_DEPTH) {

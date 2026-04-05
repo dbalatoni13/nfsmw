@@ -228,24 +228,28 @@ void CSTATE_Base::CreateSFXCtrls() {
 
 void CSTATE_Base::SortSFXCtl() {
     SndBase *TmpSFXCTLArray[64];
-    int Cnt = 0;
-    SndBase *CurSFXCtl = m_pHeadSFXCTL;
-    SndBase *CurEndElement = nullptr;
+    int Cnt;
+    SndBase *CurSFXCtl;
+    SndBase *CurEndElement;
     bool bFound;
 
     bMemSet(TmpSFXCTLArray, 0, 0x100);
-    while (CurSFXCtl) {
-        TmpSFXCTLArray[Cnt] = CurSFXCtl;
-        Cnt++;
-        CurSFXCtl = CurSFXCtl->m_pNextSFX;
+    Cnt = 0;
+    CurSFXCtl = m_pHeadSFXCTL;
+    if (CurSFXCtl) {
+        do {
+            TmpSFXCTLArray[Cnt] = CurSFXCtl;
+            Cnt++;
+            CurSFXCtl = CurSFXCtl->m_pNextSFX;
+        } while (CurSFXCtl);
     }
 
     m_pHeadSFXCTL = nullptr;
-    while (true) {
+    CurEndElement = nullptr;
+    do {
         int UsedIndex = 0;
-        int LastSmalledID = 0x40;
-
         bFound = false;
+        int LastSmalledID = 0x40;
         for (int n = 0; n < m_NumLoadedSFXCTL; n++) {
             if (TmpSFXCTLArray[n]) {
                 bFound = true;
@@ -256,21 +260,19 @@ void CSTATE_Base::SortSFXCtl() {
             }
         }
 
-        if (!bFound) {
-            break;
-        }
+        if (bFound) {
+            if (!m_pHeadSFXCTL) {
+                CurEndElement = TmpSFXCTLArray[UsedIndex];
+                m_pHeadSFXCTL = CurEndElement;
+            } else {
+                CurEndElement->m_pNextSFX = TmpSFXCTLArray[UsedIndex];
+                CurEndElement = TmpSFXCTLArray[UsedIndex];
+            }
 
-        if (!m_pHeadSFXCTL) {
-            CurEndElement = TmpSFXCTLArray[UsedIndex];
-            m_pHeadSFXCTL = CurEndElement;
-        } else {
-            CurEndElement->m_pNextSFX = TmpSFXCTLArray[UsedIndex];
-            CurEndElement = TmpSFXCTLArray[UsedIndex];
+            CurEndElement->m_pNextSFX = nullptr;
+            TmpSFXCTLArray[UsedIndex] = nullptr;
         }
-
-        CurEndElement->m_pNextSFX = nullptr;
-        TmpSFXCTLArray[UsedIndex] = nullptr;
-    }
+    } while (bFound);
 }
 
 SFXCTL *CSTATE_Base::HasCtrlBeenAdded(int esfxctrl) {
