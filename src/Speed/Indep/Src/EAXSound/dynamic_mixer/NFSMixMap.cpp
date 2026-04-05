@@ -1406,6 +1406,96 @@ set_output:
                                        static_cast<float>(nSwing));
 }
 
+void NFSMixMap::UpdateATREvent(stEvtMixCtlProc *pProc) {
+    float ftstage_0;
+    float ftstage_2;
+    float nratio;
+    int nSwing;
+    stEvtMixCtlUniqueData *pData_U;
+    stMixEvtParams *pMapParms;
+    unsigned int stageInfo;
+
+    pMapParms = pProc->pData_S->pMapParms;
+    stageInfo = pMapParms->nParam_02;
+    ftstage_0 = static_cast<float>(pMapParms->nParam_00 & 0xFFF) * 16.66667f;
+    ftstage_2 = static_cast<float>(stageInfo & 0xFFF) * 16.66667f;
+    nSwing = static_cast<short>(pMapParms->nUScaleCntSwing & 0xFFFF);
+    pData_U = pProc->pData_U;
+    nratio = pData_U->msTimeElapsed;
+
+    if (nratio < ftstage_0) {
+        if (*pData_U->pTriggerPtr == 0) {
+            pData_U->msTimeElapsed = ftstage_0;
+            pData_U->reset = 1;
+            pData_U->reset_level = pData_U->output;
+            return;
+        }
+        nratio = (nratio * 32767.0f) / ftstage_0;
+        stageInfo = pMapParms->nParam_00;
+    } else {
+        if (*pData_U->pTriggerPtr != 0) {
+            if (*pData_U->pTriggerPtr == 1) {
+                if (pData_U->msResetTime != 0.0f) {
+                    pData_U->msResetTime = 0.0f;
+                    pData_U->reset = 1;
+                    pData_U->reset_level = pData_U->output;
+                    pData_U->qoutput = 0x7FFF;
+                    pData_U->msTimeElapsed = 0.0f;
+                    return;
+                }
+                pData_U->msTimeElapsed = ftstage_0;
+            } else {
+                pData_U->msTimeElapsed = ftstage_0;
+            }
+            pData_U->qoutput = 0;
+            pData_U->reset = 0;
+            pData_U->reset_level = 0;
+            pData_U->msResetTime = 0.0f;
+            goto set_output;
+        }
+
+        if (pData_U->msResetTime == 0.0f) {
+            pData_U->msResetTime = nratio;
+        }
+        nratio = pData_U->msTimeElapsed - pData_U->msResetTime;
+        if (ftstage_2 < nratio) {
+            pData_U->msResetTime = 0.0f;
+            pData_U->qoutput = 0x7FFF;
+            pData_U->reset = 0;
+            pData_U->reset_level = 0;
+            pData_U->msTimeElapsed = 0.0f;
+            return;
+        }
+        nratio = 32767.0f - ((nratio * 32767.0f) / ftstage_2);
+    }
+
+    if (nSwing < 0) {
+        pData_U->qoutput = NFSMixShape::GetCurveOutput(
+            static_cast<NFSMixShape::eMIXTABLEID>((stageInfo >> 12) & 0xF), static_cast<int>(nratio), false);
+    } else {
+        pData_U->qoutput =
+            0x7FFF - NFSMixShape::GetCurveOutput(
+                         static_cast<NFSMixShape::eMIXTABLEID>((stageInfo >> 12) & 0xF), static_cast<int>(nratio), false);
+    }
+
+set_output:
+    if (pData_U->reset == 0) {
+        pData_U->output = static_cast<int>((32767.0f - static_cast<float>(pData_U->qoutput)) * 3.0517578e-05f *
+                                           static_cast<float>(nSwing));
+        return;
+    }
+
+    if (*pData_U->pTriggerPtr != 0) {
+        pData_U->output = static_cast<int>((32767.0f - static_cast<float>(pData_U->qoutput)) * 3.051851e-05f *
+                                           static_cast<float>(nSwing - pData_U->reset_level)) +
+                          pData_U->reset_level;
+        return;
+    }
+
+    pData_U->output = static_cast<int>((32767.0f - static_cast<float>(pData_U->qoutput)) * 3.051851e-05f *
+                                       static_cast<float>(pData_U->reset_level));
+}
+
 void NFSMixMap::UpdateAREvent(stEvtMixCtlProc *pProc) {
     float ftstage_0;
     float ftstage_2;
