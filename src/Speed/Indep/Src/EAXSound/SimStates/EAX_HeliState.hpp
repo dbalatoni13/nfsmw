@@ -21,7 +21,16 @@ struct EAX_HeliState : public UTL::Collections::Listable<EAX_HeliState, 10> {
     char _pad_sim[3];
     unsigned int mWorldID;        // offset 0x9C, size 0x4
 
-    EAX_HeliState(const Attrib::Collection *atr, unsigned int wuid);
+    EAX_HeliState(const Attrib::Collection *atr, unsigned int wuid)
+        : mVel0(0.0f, 0.0f, 0.0f) //
+        , mMovementMode(Sound::PHYSICS_MOVEMENT) //
+        , mPlayerZone(Sound::PLAYER_ZONE_NONE) //
+        , mAttributes(atr, 0, nullptr) {
+        mVel1 = mVel0;
+        mSimUpdating = true;
+        mWorldID = wuid;
+        PSMTX44Identity((Mtx44)&mMatrix);
+    }
     ~EAX_HeliState() {}
 
     bool IsSimUpdating() {

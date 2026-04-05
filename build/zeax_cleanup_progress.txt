@@ -10,7 +10,7 @@ FILE                                  STATUS  NOTES
 ----                                  ------  -----
 AudioMemoryManager.cpp                DONE    Prior cast cleanup verified
 EAXSound.cpp                          DONE    Local Speech::Manager::GetSampleRequests folded in-class
-EAXAemsManager.cpp                    PEND    stAssetDescription / stSndDataLoadParams inline bodies still out-of-class
+EAXAemsManager.cpp                    SKIP    Folding its inline bodies into the header regressed the TU to 93.31052
 EAXFrontEnd.cpp                       DONE    Reviewed clean
 EAXAITunerCar.cpp                     DONE    mPhysicsChangedGear bool cleanup verified
 EAXTrafficCar.cpp                     DONE    Reviewed clean
@@ -61,7 +61,7 @@ STATE_Base.hpp                         DONE    Prior DWARF/member audit stands
 STATEMGR_Base.hpp                      DONE    Prior cleanup stands
 STICH_Playback.h                       DONE    Prior cleanup stands
 EAXFrontEnd.hpp                        DONE    Reviewed clean
-SimStates/EAX_HeliState.hpp            PEND    Getter/destructor inlines folded in-class; constructor still out-of-class in TU
+SimStates/EAX_HeliState.hpp            DONE    Getter/destructor/constructor inlines folded in-class
 EAXTunerCar.hpp                        DONE    Reviewed clean
 EAXTrafficCar.hpp                      DONE    Reviewed clean
 EAXAITunerCar.hpp                      DONE    Reviewed clean
@@ -106,8 +106,14 @@ DONE:
 - Attrib::Gen::acceltrans::AccelFromIdle_INTERUPT_T / AccelFromIdle_RESUME_T
 
 PEND:
+
+SKIP:
 - stAssetDescription::Clear / operator=
 - stSndDataLoadParams::Clear / operator=
+  Reason:
+  - moving them into `EAXAemsManager.h` regressed zEAXSound to 93.31052
+
+DONE:
 - EAX_HeliState constructor
 
 BLOCK:

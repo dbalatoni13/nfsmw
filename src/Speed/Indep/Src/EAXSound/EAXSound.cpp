@@ -1045,17 +1045,6 @@ float MaxTorque(const Attrib::Gen::engine &engine, float &atrpm);
 
 
 
-inline EAX_HeliState::EAX_HeliState(const Attrib::Collection *atr, unsigned int wuid)
-    : mVel0(0.0f, 0.0f, 0.0f) //
-    , mMovementMode(Sound::PHYSICS_MOVEMENT) //
-    , mPlayerZone(Sound::PLAYER_ZONE_NONE) //
-    , mAttributes(atr, 0, nullptr) {
-    mVel1 = mVel0;
-    mSimUpdating = true;
-    mWorldID = wuid;
-    PSMTX44Identity((Mtx44)&mMatrix);
-}
-
 EAX_CarState::EAX_CarState(const Attrib::Collection *atr, Sound::Context context, unsigned int wuid, HSIMABLE__ *handle)
     : mVel0(0.0f, 0.0f, 0.0f) //
     , mRacePos(0) //
