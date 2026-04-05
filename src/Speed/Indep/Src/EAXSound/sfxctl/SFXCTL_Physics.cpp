@@ -62,8 +62,8 @@ static const float SND_AI_DRIFT_RPM_Lengths_FINE[] = {
     1.0f,
 };
 
-inline float &ReadStateCurTime(EAXCar *carOwner) {
-    return *reinterpret_cast<float *>(reinterpret_cast<char *>(carOwner) + 0x3C);
+inline float ReadStateCurTime(EAXCar *carOwner) {
+    return carOwner->GetCurTime();
 }
 } // namespace
 

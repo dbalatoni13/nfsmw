@@ -3,6 +3,7 @@
 #include "Speed/Indep/Src/EAXSound/SimStates/EAX_HeliState.hpp"
 #include "Speed/Indep/Src/Generated/Events/ECommitAudioAssets.hpp"
 #include "Speed/Indep/Src/World/WorldConn.h"
+#include "Speed/Indep/Tools/AttribSys/Runtime/AttribHash.h"
 
 struct CarPartDatabase {
     int GetCarType(unsigned int hash);
@@ -27,11 +28,10 @@ CarSoundConn::CarSoundConn(const Sim::ConnectionData &data)
 
     const void *modelData = att.GetAttributePointer(0x9047C9E0, 0);
     if (modelData == nullptr) {
-        modelData = Attrib::DefaultDataArea(0x10);
+        modelData = Attrib::DefaultDataArea(sizeof(Attrib::StringKey));
     }
 
-    const char *modelName = *static_cast<const char *const *>(
-        static_cast<const void *>(static_cast<const char *>(modelData) + 0xC));
+    const char *modelName = static_cast<const Attrib::StringKey *>(modelData)->GetString();
     if (modelName == nullptr) {
         modelName = "";
     }
@@ -239,11 +239,10 @@ HeliSoundConn::HeliSoundConn(const Sim::ConnectionData &data)
 
     const void *modelData = att.GetAttributePointer(0x9047C9E0, 0);
     if (modelData == nullptr) {
-        modelData = Attrib::DefaultDataArea(0x10);
+        modelData = Attrib::DefaultDataArea(sizeof(Attrib::StringKey));
     }
 
-    const char *modelName = *static_cast<const char *const *>(
-        static_cast<const void *>(static_cast<const char *>(modelData) + 0xC));
+    const char *modelName = static_cast<const Attrib::StringKey *>(modelData)->GetString();
     if (modelName == nullptr) {
         modelName = "";
     }

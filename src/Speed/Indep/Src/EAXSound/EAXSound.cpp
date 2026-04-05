@@ -4,6 +4,7 @@
 #include "Speed/Indep/Src/EAXSound/EAXCarState.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXSND8Wrapper.hpp"
 #include "Speed/Indep/Src/EAXSound/NFSMixMaster.hpp"
+#include "Speed/Indep/Src/EAXSound/dynamic_mixer/NFSLiveLink.hpp"
 #include "Speed/Indep/Src/EAXSound/SimStates/EAX_HeliState.hpp"
 #include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_NISStream.hpp"
 #include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_PFEATrax.hpp"
@@ -1258,7 +1259,7 @@ void EAXSound::UnloadFrontEndSoundBanks() {
     }
 
     if (m_pNFSLiveLink) {
-        *(reinterpret_cast<int *>(m_pNFSLiveLink) + 1) = 0;
+        m_pNFSLiveLink->bMonitorChannel = false;
     }
 
     if (m_pFESnd) {
