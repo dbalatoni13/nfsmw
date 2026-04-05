@@ -27,6 +27,7 @@ class CarSoundConn : public Sim::Connection, public UTL::Collections::Listable<C
     void OnClose() override { delete this; }
     Sim::ConnStatus OnStatusCheck() override;
     void UpdateState(float dT);
+    EAX_CarState *GetState() { return mState; }
     static Sim::Connection *Construct(const Sim::ConnectionData &data);
     static void SetAssetsLoaded(CarSoundConn *conn) {
         if (conn->mConnected && conn->mState) {
