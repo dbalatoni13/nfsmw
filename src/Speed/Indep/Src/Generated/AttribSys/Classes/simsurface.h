@@ -28,6 +28,15 @@ struct RoadNoiseRecord {
     float MaxSpeed;
 };
 
+enum FXROADNOISE_LOOP {
+    FXROADNOISE_LOOP_NONE = -1,
+    FXROADNOISE_LOOP_ASPHALT = 0,
+    FXROADNOISE_LOOP_CONCRETE = 1,
+    FXROADNOISE_LOOP_DIRT_GRAVEL = 2,
+    FXROADNOISE_LOOP_WETROAD = 3,
+    MAX_NUM_FXROADNOISE_LOOP = 4,
+};
+
 enum FXROADNOISE_TRANSITION {
     FXROADNOISE_TRANSITION_NONE = -1,
     FXROADNOISE_TRANSITION_CURBON = 0,
@@ -124,14 +133,13 @@ struct simsurface : Instance {
         return this->Get(0x0c149044).GetLength();
     }
 
-    // TODO
-    // const FXROADNOISE_LOOP &Aud_Roadnoise_LOOP(unsigned int index) const {
-    //     const FXROADNOISE_LOOP *resultptr = reinterpret_cast<const FXROADNOISE_LOOP *>(this->GetAttributePointer(0x2907c135, index));
-    //     if (!resultptr) {
-    //         resultptr = reinterpret_cast<const FXROADNOISE_LOOP *>(DefaultDataArea(sizeof(FXROADNOISE_LOOP)));
-    //     }
-    //     return *resultptr;
-    // }
+    const FXROADNOISE_LOOP &Aud_Roadnoise_LOOP() const {
+        const FXROADNOISE_LOOP *resultptr = reinterpret_cast<const FXROADNOISE_LOOP *>(this->GetAttributePointer(0x2907c135, 0));
+        if (!resultptr) {
+            resultptr = reinterpret_cast<const FXROADNOISE_LOOP *>(DefaultDataArea(sizeof(FXROADNOISE_LOOP)));
+        }
+        return *resultptr;
+    }
 
     // TODO
     // const SurfaceEffectType &WheelSurfaceEffect(unsigned int index) const {
@@ -170,14 +178,13 @@ struct simsurface : Instance {
         return *resultptr;
     }
 
-    // TODO
-    // const FXROADNOISE_TRANSITION &Aud_RoadNoise_TransON(unsigned int index) const {
-    //     const FXROADNOISE_TRANSITION *resultptr = reinterpret_cast<const FXROADNOISE_TRANSITION *>(this->GetAttributePointer(0xb4c1b2cf, index));
-    //     if (!resultptr) {
-    //         resultptr = reinterpret_cast<const FXROADNOISE_TRANSITION *>(DefaultDataArea(sizeof(FXROADNOISE_TRANSITION)));
-    //     }
-    //     return *resultptr;
-    // }
+    const FXROADNOISE_TRANSITION &Aud_RoadNoise_TransON() const {
+        const FXROADNOISE_TRANSITION *resultptr = reinterpret_cast<const FXROADNOISE_TRANSITION *>(this->GetAttributePointer(0xb4c1b2cf, 0));
+        if (!resultptr) {
+            resultptr = reinterpret_cast<const FXROADNOISE_TRANSITION *>(DefaultDataArea(sizeof(FXROADNOISE_TRANSITION)));
+        }
+        return *resultptr;
+    }
 
     const FFBWaveRecord &FFB_ROLL(unsigned int index) const {
         const FFBWaveRecord *resultptr = reinterpret_cast<const FFBWaveRecord *>(this->GetAttributePointer(0xba1297da, index));
@@ -191,13 +198,13 @@ struct simsurface : Instance {
         return this->Get(0xba1297da).GetLength();
     }
 
-    // const FXROADNOISE_TRANSITION &Aud_RoadNoise_TransOFF(unsigned int index) const {
-    //     const FXROADNOISE_TRANSITION *resultptr = reinterpret_cast<const FXROADNOISE_TRANSITION *>(this->GetAttributePointer(0xcdf83544, index));
-    //     if (!resultptr) {
-    //         resultptr = reinterpret_cast<const FXROADNOISE_TRANSITION *>(DefaultDataArea(sizeof(FXROADNOISE_TRANSITION)));
-    //     }
-    //     return *resultptr;
-    // }
+    const FXROADNOISE_TRANSITION &Aud_RoadNoise_TransOFF() const {
+        const FXROADNOISE_TRANSITION *resultptr = reinterpret_cast<const FXROADNOISE_TRANSITION *>(this->GetAttributePointer(0xcdf83544, 0));
+        if (!resultptr) {
+            resultptr = reinterpret_cast<const FXROADNOISE_TRANSITION *>(DefaultDataArea(sizeof(FXROADNOISE_TRANSITION)));
+        }
+        return *resultptr;
+    }
 
     const unsigned int &RSNMCHUNK_FERESNAMES(unsigned int index) const {
         const unsigned int *resultptr = reinterpret_cast<const unsigned int *>(this->GetAttributePointer(0xd377b339, index));
@@ -205,6 +212,10 @@ struct simsurface : Instance {
             resultptr = reinterpret_cast<const unsigned int *>(DefaultDataArea(sizeof(unsigned int)));
         }
         return *resultptr;
+    }
+
+    const unsigned int &Aud_Skid_Type() const {
+        return RSNMCHUNK_FERESNAMES(0);
     }
 
     const float &CAMERA_NOISE(unsigned int index) const {
