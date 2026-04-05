@@ -1,4 +1,9 @@
 #include "./STATE_Base.hpp"
+#include "Speed/Indep/Src/EAXSound/EAXAemsManager.h"
+#include "Speed/Indep/bWare/Inc/bWare.hpp"
+
+extern int g_DMIX_DummyOutputBlock[];
+extern int g_DMIX_DummyInputBlock[];
 
 CSTATE_Base::StateInfo *CSTATE_Base::GetStateInfo(void) const {
     return &s_StateInfo;
@@ -38,9 +43,83 @@ CSTATE_Base::~CSTATE_Base() {
     Destroy();
 }
 
-void CSTATE_Base::DisconnectMixMap() {}
+void CSTATE_Base::DisconnectMixMap() {
+    SndBase *CurSFXOBj = m_pHeadSFXObj;
+    while (CurSFXOBj) {
+        {
+            int *pIn = CurSFXOBj->GetInputBlockPtr();
+            if (pIn) {
+                for (int n = 0; n < 16; n++) {
+                    pIn[n] = 0;
+                }
+            }
 
-void CSTATE_Base::SafeConnectOrphanObjects() {}
+            int *pout = CurSFXOBj->GetOutputBlockPtr();
+            if (pout) {
+                for (int n = 0; n < 16; n++) {
+                    pout[n] = 0;
+                }
+            }
+
+            CurSFXOBj->SetOutputsPtr(nullptr);
+            CurSFXOBj->SetInputsPtr(nullptr);
+        }
+
+        CurSFXOBj = CurSFXOBj->m_pNextSFX;
+    }
+
+    SndBase *CurSFXCtl = m_pHeadSFXCTL;
+    while (CurSFXCtl) {
+        {
+            int *pIn = CurSFXCtl->GetInputBlockPtr();
+            if (pIn) {
+                for (int n = 0; n < 16; n++) {
+                    pIn[n] = 0;
+                }
+            }
+
+            int *pout = CurSFXCtl->GetOutputBlockPtr();
+            if (pout) {
+                for (int n = 0; n < 16; n++) {
+                    pout[n] = 0;
+                }
+            }
+
+            CurSFXCtl->SetInputsPtr(nullptr);
+            CurSFXCtl->SetOutputsPtr(nullptr);
+        }
+
+        CurSFXCtl = CurSFXCtl->m_pNextSFX;
+    }
+}
+
+void CSTATE_Base::SafeConnectOrphanObjects() {
+    SndBase *CurSFXOBj = m_pHeadSFXObj;
+    while (CurSFXOBj) {
+        if (!CurSFXOBj->GetOutputBlockPtr()) {
+            CurSFXOBj->SetOutputsPtr(g_DMIX_DummyOutputBlock);
+        }
+
+        if (!CurSFXOBj->GetInputBlockPtr()) {
+            CurSFXOBj->SetInputsPtr(g_DMIX_DummyInputBlock);
+        }
+
+        CurSFXOBj = CurSFXOBj->m_pNextSFX;
+    }
+
+    SndBase *CurSFXCtl = m_pHeadSFXCTL;
+    while (CurSFXCtl) {
+        if (!CurSFXCtl->GetOutputBlockPtr()) {
+            CurSFXCtl->SetOutputsPtr(g_DMIX_DummyOutputBlock);
+        }
+
+        if (!CurSFXCtl->GetInputBlockPtr()) {
+            CurSFXCtl->SetInputsPtr(g_DMIX_DummyInputBlock);
+        }
+
+        CurSFXCtl = CurSFXCtl->m_pNextSFX;
+    }
+}
 
 void CSTATE_Base::CreateSFXObjs() {
     for (int i = 0; i < 32; i++) {
@@ -54,13 +133,72 @@ void CSTATE_Base::CreateSFXCtrls() {
     m_NumLoadedSFXCTL = 0;
 }
 
-void CSTATE_Base::SortSFXCtl() {}
+void CSTATE_Base::SortSFXCtl() {
+    SndBase *TmpSFXCTLArray[64];
+    int Cnt = 0;
+    SndBase *CurSFXCtl = m_pHeadSFXCTL;
+    SndBase *CurEndElement = nullptr;
+    bool bFound;
+
+    bMemSet(TmpSFXCTLArray, 0, 0x100);
+    while (CurSFXCtl) {
+        TmpSFXCTLArray[Cnt] = CurSFXCtl;
+        Cnt++;
+        CurSFXCtl = CurSFXCtl->m_pNextSFX;
+    }
+
+    m_pHeadSFXCTL = nullptr;
+    while (true) {
+        int UsedIndex = 0;
+        int LastSmalledID = 0x40;
+
+        bFound = false;
+        for (int n = 0; n < m_NumLoadedSFXCTL; n++) {
+            if (TmpSFXCTLArray[n]) {
+                bFound = true;
+                if (TmpSFXCTLArray[n]->GetSFX_ID() < LastSmalledID) {
+                    UsedIndex = n;
+                    LastSmalledID = TmpSFXCTLArray[n]->GetSFX_ID();
+                }
+            }
+        }
+
+        if (!bFound) {
+            break;
+        }
+
+        if (!m_pHeadSFXCTL) {
+            CurEndElement = TmpSFXCTLArray[UsedIndex];
+            m_pHeadSFXCTL = CurEndElement;
+        } else {
+            CurEndElement->m_pNextSFX = TmpSFXCTLArray[UsedIndex];
+            CurEndElement = TmpSFXCTLArray[UsedIndex];
+        }
+
+        CurEndElement->m_pNextSFX = nullptr;
+        TmpSFXCTLArray[UsedIndex] = nullptr;
+    }
+}
 
 SFXCTL *CSTATE_Base::HasCtrlBeenAdded(int esfxctrl) {
-    SndBase *obj = m_pHeadSFXCTL;
-    while (obj) {
+    SndBase *CurSFXCtl = m_pHeadSFXCTL;
+    while (CurSFXCtl) {
+        if (CurSFXCtl->GetObjectIndex() == esfxctrl) {
+            return static_cast<SFXCTL *>(CurSFXCtl);
+        }
+
+        CurSFXCtl = CurSFXCtl->m_pNextSFX;
     }
     return nullptr;
 }
 
-bool CSTATE_Base::IsDataLoaded(void) {}
+bool CSTATE_Base::IsDataLoaded(void) {
+    SndAssetQueue &cbs = gAEMSMgr.mWaitForResolve;
+    for (SndAssetQueue::iterator i = cbs.begin(); i != cbs.end(); i++) {
+        stSndAssetQueue &data = *i;
+        if (data.pThis && data.pThis->GetStateBase() == this) {
+            return false;
+        }
+    }
+    return true;
+}

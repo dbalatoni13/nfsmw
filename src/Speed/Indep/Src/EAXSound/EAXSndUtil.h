@@ -31,6 +31,7 @@ class NFSMixShape {
     };
 
     static int GetCurveOutput(eMIXTABLEID id, int nQ15Ratio, bool invert);
+    static int GetIntPitchMultFromCents(int cents);
 };
 
 struct cInterpLine {

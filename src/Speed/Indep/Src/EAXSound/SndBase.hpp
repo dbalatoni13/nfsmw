@@ -66,6 +66,7 @@ struct SndBase : public AudioMemBase {
     }
 
     int *GetOutputBlockPtr() { return m_pOutPutBlock; }
+    int *GetInputBlockPtr() { return m_pInputBlock; }
     int GetDMIX_InputValue(int index) { return m_pOutPutBlock[index]; }
     void SetOutputsPtr(int *ptr) { m_pOutPutBlock = ptr; }
     void SetDMIX_Input(int index, int value) { m_pOutPutBlock[index] = value; }
@@ -78,15 +79,17 @@ struct SndBase : public AudioMemBase {
     }
     CSTATE_Base *GetStateBase() { return m_pStateBase; }
     EAX_CarState *GetPhysCar();
+    int GetSFX_ID() { return (objectID >> 4) & 0x7F; }
     int GetUniqueID() { return objectID; }
 
   protected:
     static TypeInfo s_TypeInfo; // for some ungodly reason these are all defined in zEAXSound.cpp
                                 // but the rest of SndBase's funcs are in zEAXSound2.cpp
 
-  private:
-    // total size: 0x24
+  public:
     SndBase *m_pNextSFX;              // offset 0x4, size 0x4
+ 
+  private:
     bool m_bIsEnabled;                // offset 0x8, size 0x1
     int *m_pOutPutBlock;              // offset 0xC, size 0x4
     int *m_pInputBlock;               // offset 0x10, size 0x4
