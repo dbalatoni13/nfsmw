@@ -2,12 +2,6 @@
 #include "Speed/Indep/Src/EAXSound/EAXCarState.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
-class NFSMixShape {
-  public:
-    enum eMIXTABLEID { SHAPE_UP_EQPWR_SQ = 3 };
-    static int GetCurveOutput(eMIXTABLEID id, int nQ15Ratio, bool invert);
-};
-
 cPathLine::cPathLine() {
     ClearStages();
     bComplete = true;

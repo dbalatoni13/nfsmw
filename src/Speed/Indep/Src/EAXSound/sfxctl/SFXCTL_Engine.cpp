@@ -1,6 +1,7 @@
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Engine.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXCar.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXCarState.hpp"
+#include "Speed/Indep/Src/EAXSound/EAXSndUtil.h"
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Shifting.hpp"
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_AccelTrans.hpp"
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Physics.hpp"

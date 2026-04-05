@@ -80,6 +80,43 @@ class Pkt_Heli_Open : public Sim::Packet {
     WUID mWorldID;                           // offset 0x8, size 0x4
 };
 
+// total size: 0x18
+class Pkt_Car_Open : public Sim::Packet {
+  public:
+    Pkt_Car_Open(const Attrib::Collection *spec, WUID worldid, Sound::Context ctx, bool spool_load, HSIMABLE__ *handle)
+        : m_VehicleSpec(spec) //
+        , mWorldID(worldid) //
+        , mCarContext(ctx) //
+        , mSpoolLoad(spool_load) //
+        , mHandle(handle) {}
+
+    ~Pkt_Car_Open() override {}
+
+    UCrc32 ConnectionClass() override {
+        static UCrc32 hash = "CarSoundConn";
+        return hash;
+    }
+
+    unsigned int Size() override {
+        return sizeof(*this);
+    }
+
+    unsigned int Type() override {
+        return SType();
+    }
+
+    static unsigned int SType() {
+        static UCrc32 hash = "Pkt_Car_Open";
+        return hash.GetValue();
+    }
+
+    const Attrib::Collection *m_VehicleSpec; // offset 0x4, size 0x4
+    WUID mWorldID;                           // offset 0x8, size 0x4
+    Sound::Context mCarContext;              // offset 0xC, size 0x4
+    bool mSpoolLoad;                         // offset 0x10, size 0x1
+    HSIMABLE__ *mHandle;                     // offset 0x14, size 0x4
+};
+
 // total size: 0x108
 class Pkt_Car_Service : public Sim::Packet {
   public:

@@ -12,20 +12,6 @@ extern CarPartDatabase CarPartDB;
 
 extern int btestprint;
 
-namespace {
-
-// total size: 0x18
-class Pkt_Car_Open : public Sim::Packet {
-  public:
-    const Attrib::Collection *m_VehicleSpec; // offset 0x4, size 0x4
-    WUID mWorldID;                           // offset 0x8, size 0x4
-    Sound::Context mCarContext;              // offset 0xC, size 0x4
-    bool mSpoolLoad;                         // offset 0x10, size 0x1
-    HSIMABLE__ *mHandle;                     // offset 0x14, size 0x4
-};
-
-} // namespace
-
 Sim::Connection *CarSoundConn::Construct(const Sim::ConnectionData &data) {
     return new CarSoundConn(data);
 }
@@ -35,7 +21,7 @@ CarSoundConn::CarSoundConn(const Sim::ConnectionData &data)
     , mConnected(false) //
     , mState(nullptr) //
     , mTarget(0) {
-    Pkt_Car_Open *oc = static_cast<Pkt_Car_Open *>(data.pkt);
+    SoundConn::Pkt_Car_Open *oc = static_cast<SoundConn::Pkt_Car_Open *>(data.pkt);
     Attrib::Instance att(oc->m_VehicleSpec, 0, nullptr);
     mTarget.Set(oc->mWorldID);
 

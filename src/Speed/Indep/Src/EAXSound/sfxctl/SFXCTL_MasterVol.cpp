@@ -1,6 +1,7 @@
 #include "Speed/Indep/Src/EAXSound/sfxctl/sfxctl_mastervol.hpp"
 #include "Speed/Indep/Libs/Support/Miscellaneous/StringHash.h"
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
+#include "Speed/Indep/Src/EAXSound/EAXSndUtil.h"
 #include "Speed/Indep/Src/Frontend/MoviePlayer/MoviePlayer.hpp"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Generated/Messages/MPursuitBreaker.h"

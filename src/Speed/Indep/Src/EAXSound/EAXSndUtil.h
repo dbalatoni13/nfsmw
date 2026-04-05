@@ -14,6 +14,25 @@ enum eCURVETYPE {
     EQ_PWR_SQ = 5
 };
 
+class NFSMixShape {
+  public:
+    enum eMIXTABLEID {
+        SHAPE_DWN_EQPWR = 0,
+        SHAPE_UP_EQPWR = 1,
+        SHAPE_DWN_EQPWR_SQ = 2,
+        SHAPE_UP_EQPWR_SQ = 3,
+        SHAPE_DWN_ONE_MIN_EQPWR = 4,
+        SHAPE_UP_ONE_MIN_EQPWR = 5,
+        SHAPE_DWN_ONE_MIN_EQPWR_SQ = 6,
+        SHAPE_UP_ONE_MIN_EQPWR_SQ = 7,
+        SHAPE_DWN_LINEAR = 8,
+        SHAPE_UP_LINEAR = 9,
+        MAX_SHAPE_TYPES = 10,
+    };
+
+    static int GetCurveOutput(eMIXTABLEID id, int nQ15Ratio, bool invert);
+};
+
 struct cInterpLine {
     float ElapsedTime;  // offset 0x0, size 0x4
     float Length;        // offset 0x4, size 0x4
