@@ -17,20 +17,20 @@ SndBase *CARSFX_BottomOut::CreateObject(unsigned int allocator) {
 }
 
 CARSFX_BottomOut::CARSFX_BottomOut()
-    : CARSFX(),
-      m_pBottomOut(nullptr), //
-      m_pJumpCamCrash(nullptr), //
-      FrontWheelsTouched(false), //
-      FrontHangTime(0.0f), //
-      RearWheelsTouched(false), //
-      RearHangTime(0.0f), //
-      RightWheelsTouched(false), //
-      RightHangTime(0.0f), //
-      LeftWheelsTouched(false), //
-      LeftHangTime(0.0f), //
-      IsCarLeaningHeavily(false) {
+    : CARSFX() {
     int n;
 
+    IsCarLeaningHeavily = false;
+    m_pBottomOut = nullptr;
+    m_pJumpCamCrash = nullptr;
+    FrontWheelsTouched = false;
+    FrontHangTime = 0.0f;
+    RearWheelsTouched = false;
+    RearHangTime = 0.0f;
+    RightWheelsTouched = false;
+    RightHangTime = 0.0f;
+    LeftWheelsTouched = false;
+    LeftHangTime = 0.0f;
     for (n = 0; n < 3; n++) {
         m_pStichLandJump[n] = nullptr;
         m_Intesity[n] = 0.0f;
@@ -79,6 +79,47 @@ void CARSFX_BottomOut::BottomOutPlay(unsigned int Intensity) {
         m_pBottomOut = new cStichWrapper(StichData);
         m_pBottomOut->Play(0, 0, 0);
         SetDMIX_Input(2, 0x7FFF);
+    }
+}
+
+void CARSFX_BottomOut::LandJumpPlay(float Intensity, bool HardLanding) {
+    int Index;
+    int n;
+
+    Index = -1;
+    for (n = 0; n < 3; n++) {
+        if (!m_pStichLandJump[n]) {
+            Index = n;
+        }
+    }
+
+    if (Index != -1) {
+        static int LastRandomHard = 0;
+        static int LastRandomSoft = 0;
+
+        float fIntensity;
+        int sampleOffset;
+
+        fIntensity = bClamp(Intensity, 0.0f, 127.0f);
+        if (HardLanding) {
+            fIntensity *= 0.0078125f;
+            sampleOffset = LastRandomHard % 4;
+            LastRandomHard = sampleOffset + 1;
+            sampleOffset += 0x5D;
+        } else {
+            fIntensity *= 0.015625f;
+            sampleOffset = LastRandomSoft % 4;
+            LastRandomSoft = sampleOffset + 1;
+            sampleOffset += 0x51;
+        }
+
+        SND_Stich &StichData = g_pEAXSound->GetStichPlayer()->GetStich(
+            STICH_TYPE_COLLISION, static_cast<int>(fIntensity) * 4 + sampleOffset);
+        m_pStichLandJump[Index] = new cStichWrapper(StichData);
+        m_pStichLandJump[Index]->Play(0, 0, 0);
+        m_Intesity[Index] = Intensity;
+        SetDMIX_Input(1, 0x7FFF);
+        SetDMIX_Input(3, static_cast<int>(Intensity) << 8);
     }
 }
 
