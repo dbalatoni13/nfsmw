@@ -72,6 +72,13 @@ class eModel : public bTNode<eModel> {
     }
 };
 
+// total size: 0x200
+struct eDamageInfo {
+    // Members
+    float CurrentCells[64];  // offset 0x0, size 0x100
+    float PreviousCells[64]; // offset 0x100, size 0x100
+};
+
 class eSolidPlatInterface {
     // total size: 0x4
     eSolidPlatInfo *PlatInfo; // offset 0x0, size 0x4
@@ -80,11 +87,14 @@ class eSolidPlatInterface {
     int UnloaderPlatChunks(bChunk *chunk);
     int FixPlatInfo();
     int UnFixPlatInfo();
-    void SetSmoothVertex(unsigned int vertex_offset, float nx, float ny, float nz);
 
     eSolidPlatInfo *GetPlatInfo() {
         return this->PlatInfo;
     }
+
+  protected:
+    void SetSmoothVertex(uint32 vertex_offset, float nx, float ny, float nz);
+    void ApplyDamagePlat(eDamageInfo *damage_info);
 };
 
 class eSolid : public eSolidPlatInterface, public bTNode<eSolid> {
@@ -119,7 +129,11 @@ class eSolid : public eSolidPlatInterface, public bTNode<eSolid> {
     float Density;                              // offset 0x9C, size 0x4
     char Name[64];                              // offset 0xA0, size 0x40
 
+    const char *GetName();
+    void ChangeName(const char *new_name);
+    void EndianSwap() {}
     void GetBoundingBox(bVector3 *min, bVector3 *max);
+    void GetBoundingBox(bVector4 *min, bVector4 *max);
     void FixTextureTable();
     void FixLightMaterialTable();
     bool NotifyTextureLoading(TexturePack *texture_pack);
@@ -130,6 +144,9 @@ class eSolid : public eSolidPlatInterface, public bTNode<eSolid> {
     void ReplaceLightMaterial(uint32 old_name_hash, eLightMaterial *new_light_material);
     ePositionMarker *GetPostionMarker(ePositionMarker *prev_marker);
     ePositionMarker *GetPostionMarker(unsigned int namehash);
+    int GetMemoryImageSize();
+    void ApplyDamage(struct eDamageInfo *damage_info);
+    void SmoothNormals(struct eSmoothVertex **smooth_vertex_table, int num_smooth_verts);
 };
 
 // total size: 0x68

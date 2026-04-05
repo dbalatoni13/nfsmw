@@ -25,6 +25,8 @@ class LoadedSolidPack : public bTNode<LoadedSolidPack> {
     ResourceFile *pResourceFile;    // offset 0x10, size 0x4
     int16 NumInstances;             // offset 0x14, size 0x2
     int8 LoadState;                 // offset 0x16, size 0x1
+
+    const char *GetName();
 };
 
 // total size: 0x18
@@ -36,6 +38,8 @@ class LoadedTexturePack : public bTNode<LoadedTexturePack> {
     char Pad0;                      // offset 0xF, size 0x1
     int32 MaxHeaderSize;            // offset 0x10, size 0x4
     eStreamingPack *pStreamingPack; // offset 0x14, size 0x4
+
+    const char *GetName();
 };
 
 // total size: 0x10
@@ -64,6 +68,15 @@ class LoadedWheel : public bTNode<LoadedWheel> {
   private:
     CARPART_LOD mMinLodLevel; // offset 0x74, size 0x4
     CARPART_LOD mMaxLodLevel; // offset 0x78, size 0x4
+
+  public:
+    CARPART_LOD GetMinLodLevel() {
+        return mMinLodLevel;
+    };
+    CARPART_LOD GetMaxLodLevel() {
+        return mMaxLodLevel;
+    };
+    void SetLodLevel(CARPART_LOD min, enum CARPART_LOD max);
 };
 
 // total size: 0x2E0
@@ -81,6 +94,11 @@ class LoadedSkin : public bTNode<LoadedSkin> {
     LoadedSkinLayer *LoadedSkinLayersPerm[87]; // offset 0x24, size 0x15C
     int NumLoadedSkinLayersTemp;               // offset 0x180, size 0x4
     LoadedSkinLayer *LoadedSkinLayersTemp[87]; // offset 0x184, size 0x15C
+
+    LoadedSkin(RideInfo *ride_info, int in_front_end, int is_player_skin);
+    const char *GetName();
+    int IsLoaded();
+    int GetTextureHashes(uint32 *texture_hashes, int max_texture_hashes, int perm);
 };
 
 // total size: 0x20
@@ -92,6 +110,10 @@ class LoadedCar : public bTNode<LoadedCar> {
     int IsTwoPlayer;                   // offset 0x14, size 0x4
     CarLoadState LoadState;            // offset 0x18, size 0x4
     LoadedSolidPack *pLoadedSolidPack; // offset 0x1C, size 0x4
+
+    LoadedCar(RideInfo *ride_info, int in_front_end, int is_two_player);
+    int ShouldWeStream();
+    int GetModelHashes(uint32 *model_hashes, int max_model_hashes);
 };
 
 // total size: 0x6D4
@@ -112,8 +134,16 @@ class LoadedRideInfo : public bTNode<LoadedRideInfo> {
     LoadedWheel TheLoadedWheel; // offset 0x374, size 0x7C
     LoadedSkin TheLoadedSkin;   // offset 0x3F0, size 0x2E0
     int ID;                     // offset 0x6D0, size 0x4
-    
+
     static int sNextID;
+
+    LoadedRideInfo(RideInfo *ride_info, int in_front_end, int is_two_player, int is_player_car);
+    RideInfo *GetRideInfo() {
+        return &TheRideInfo;
+    };
+    char *GetName() {
+        return Name;
+    };
 };
 
 // total size: 0x8B0
@@ -124,6 +154,8 @@ class CarLoader {
         MODE_LOADING_GAME = 1,
         MODE_IN_GAME = 2,
     };
+
+    CarLoader();
 
     void SetLoadingMode(eLoadingMode mode, int two_player_flag);
 
