@@ -19,7 +19,7 @@ CSTATE_Base::StateInfo EAXAITunerCar::s_StateInfo = {
     0x00030000,
     "EAXAITunerCar",
     &EAXCar::s_StateInfo,
-    reinterpret_cast<CSTATE_Base *(*)(unsigned int)>(&EAXAITunerCar::CreateState),
+    &EAXAITunerCar::CreateState,
 };
 
 CSTATE_Base::StateInfo *EAXAITunerCar::GetStateInfo(void) const {
@@ -118,7 +118,7 @@ CSTATE_Base::StateInfo EAXCopCar::s_StateInfo = {
     0x00040000,
     "EAXCopCar",
     &EAXAITunerCar::s_StateInfo,
-    reinterpret_cast<CSTATE_Base *(*)(unsigned int)>(&EAXCopCar::CreateState),
+    &EAXCopCar::CreateState,
 };
 
 CSTATE_Base::StateInfo *EAXCopCar::GetStateInfo(void) const {
@@ -147,7 +147,7 @@ CSTATE_Base::StateInfo EAXTruck::s_StateInfo = {
     0x000C0000,
     "EAXTruck",
     &EAXAITunerCar::s_StateInfo,
-    reinterpret_cast<CSTATE_Base *(*)(unsigned int)>(&EAXTruck::CreateState),
+    &EAXTruck::CreateState,
 };
 
 const char *EAXTruck::GetStateName(void) const {

@@ -7,7 +7,7 @@ CSTATE_Base::StateInfo EAXTunerCar::s_StateInfo = {
     0x00020000,
     "EAXTunerCar",
     &EAXCar::s_StateInfo,
-    reinterpret_cast<CSTATE_Base *(*)(unsigned int)>(&EAXTunerCar::CreateState),
+    &EAXTunerCar::CreateState,
 };
 
 CSTATE_Base::StateInfo *EAXTunerCar::GetStateInfo(void) const {

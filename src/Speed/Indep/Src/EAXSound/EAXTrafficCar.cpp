@@ -4,7 +4,7 @@ CSTATE_Base::StateInfo EAXTrafficCar::s_StateInfo = {
     0x00050000,
     "EAXTrafficCar",
     &CSTATE_Base::s_StateInfo,
-    reinterpret_cast<CSTATE_Base *(*)(unsigned int)>(&EAXTrafficCar::CreateState),
+    &EAXTrafficCar::CreateState,
 };
 
 CSTATE_Base::StateInfo *EAXTrafficCar::GetStateInfo(void) const {

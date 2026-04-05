@@ -112,6 +112,15 @@ inline void WriteChunkWord(int *field, int value) {
     bytes[3] = static_cast<unsigned char>(static_cast<unsigned int>(value) >> 24);
 }
 
+inline unsigned int ReadChunkTapTag(const int *field) {
+    return static_cast<unsigned int>(ReadChunkWord(field)) & 0xFF000000U;
+}
+
+inline void OrChunkTapTag(int *field, int tapIndex) {
+    unsigned int chunkWord = static_cast<unsigned int>(ReadChunkWord(field));
+    WriteChunkWord(field, static_cast<int>(chunkWord | (static_cast<unsigned int>(tapIndex) << 24)));
+}
+
 class FILEOPERATION;
 
 static STREAMHEADERtag *g_StreamTable[64];
@@ -313,7 +322,7 @@ int parsechunks(STREAMHEADERtag *stream) {
 
     while (bytesAvailable > 7) {
         int chunkSize = ReadChunkWord(&chunk->size);
-        if (reinterpret_cast<unsigned char *>(&chunk->size)[3] != 0) {
+        if (ReadChunkTapTag(&chunk->size) != 0) {
             chunkSize = 8;
             WriteChunkWord(&chunk->type, req->endchunkid);
             WriteChunkWord(&chunk->size, chunkSize);
@@ -341,7 +350,7 @@ int parsechunks(STREAMHEADERtag *stream) {
             MUTEX_unlock(&strm->mutex);
         } else {
             WriteChunkWord(&chunk->size, chunkSize);
-            reinterpret_cast<unsigned char *>(&chunk->size)[3] |= static_cast<unsigned char>(tapIndex);
+            OrChunkTapTag(&chunk->size, tapIndex);
 
             MUTEX_lock(&strm->mutex);
             requestCanceled = req->state == STREAMREQUEST_CANCELED;
@@ -372,7 +381,7 @@ int parsechunks(STREAMHEADERtag *stream) {
             unsigned int alignmentOffset = static_cast<unsigned int>(reinterpret_cast<unsigned int>(strm->datatail) & 0x1F);
             int alignedSize = ((chunkSize + alignmentOffset + 0x1F) & ~0x1F) - alignmentOffset;
             WriteChunkWord(&chunk->size, alignedSize);
-            reinterpret_cast<unsigned char *>(&chunk->size)[3] |= static_cast<unsigned char>(tapIndex);
+            OrChunkTapTag(&chunk->size, tapIndex);
             return 0;
         }
 
