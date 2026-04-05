@@ -71,7 +71,7 @@ struct SndBase : public AudioMemBase {
     void SetDMIX_Input(int index, int value) { m_pOutPutBlock[index] = value; }
     void SetInputsPtr(int *ptr) {
         m_pInputBlock = ptr;
-        if (ptr != nullptr) {
+        if (ptr) {
             int *pctl = ptr;
             pctl[15] = 1;
         }

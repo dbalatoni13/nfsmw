@@ -105,11 +105,11 @@ int EAXFrontEnd::Play(eMenuSoundTriggers etrigger) {
 
 int EAXFrontEnd::Play(void *peventst) {
     if (IsSoundEnabled != 0 && m_pSFXOBJ_FEHUD) {
-        if (m_pSFXOBJ_FEHUD->GetOutputBlockPtr() == nullptr) {
+        if (!m_pSFXOBJ_FEHUD->GetOutputBlockPtr()) {
             return 0;
         }
 
-        if (peventst != nullptr) {
+        if (peventst) {
             PlayFrontEndSampleSt *pst = static_cast<PlayFrontEndSampleSt *>(peventst);
             int Vol = pst->volume;
             int nvol = Vol * m_pSFXOBJ_FEHUD->GetDMixOutput(2, DMX_VOL) >> 15;
@@ -148,7 +148,7 @@ EAXCommon::EAXCommon() {
 }
 
 EAXCommon::~EAXCommon() {
-    if (mMsgMiscSound != nullptr) {
+    if (mMsgMiscSound) {
         Hermes::Handler::Destroy(mMsgMiscSound);
     }
 }
@@ -210,11 +210,11 @@ int EAXCommon::Play(eMenuSoundTriggers etrigger) {
 
 int EAXCommon::Play(void *peventst) {
     if (IsSoundEnabled != 0 && m_pSFXOBJ_FEHUD) {
-        if (m_pSFXOBJ_FEHUD->GetOutputBlockPtr() == nullptr) {
+        if (!m_pSFXOBJ_FEHUD->GetOutputBlockPtr()) {
             return 0;
         }
 
-        if (peventst != nullptr) {
+        if (peventst) {
             PlayCommonSampleSt *pst = static_cast<PlayCommonSampleSt *>(peventst);
             int Vol = pst->volume;
             int nvol = Vol * m_pSFXOBJ_FEHUD->GetDMixOutput(1, DMX_VOL) >> 15;

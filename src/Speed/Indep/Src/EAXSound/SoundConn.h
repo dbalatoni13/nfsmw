@@ -29,7 +29,7 @@ class CarSoundConn : public Sim::Connection, public UTL::Collections::Listable<C
     void UpdateState(float dT);
     static Sim::Connection *Construct(const Sim::ConnectionData &data);
     static void SetAssetsLoaded(CarSoundConn *conn) {
-        if (conn->mConnected && conn->mState != nullptr) {
+        if (conn->mConnected && conn->mState) {
             conn->mState->mAssetsLoaded = true;
         }
     }

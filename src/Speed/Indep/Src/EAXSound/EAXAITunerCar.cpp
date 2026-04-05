@@ -62,7 +62,7 @@ void EAXAITunerCar::UpdateCarPhysics() {
 }
 
 void EAXAITunerCar::UpdateParams(float t) {
-    if (m_pCar != nullptr) {
+    if (m_pCar) {
         EAXCar::UpdateParams(t);
         mPhysicsChangedGear = false;
     }
@@ -78,7 +78,7 @@ void EAXAITunerCar::UpdatAIDriveBy(float t) {
 
     (void)t;
 
-    if (GetPhysCar() == nullptr) {
+    if (!GetPhysCar()) {
         return;
     }
 
@@ -109,7 +109,7 @@ void EAXAITunerCar::UpdatAIDriveBy(float t) {
 
     CSTATE_Base *ReturnedObj;
     ReturnedObj = EAXSound::GetStateMgr(eMM_DRIVEBY)->GetFreeState(&TmpDriveByPackage);
-    if (ReturnedObj != nullptr) {
+    if (ReturnedObj) {
         ReturnedObj->Attach(&TmpDriveByPackage);
     }
 }

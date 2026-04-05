@@ -43,7 +43,7 @@ void SFXCTL_MasterVol::InitSFX() {
 
 void SFXCTL_MasterVol::UpdateParams(float t) {
     (void)t;
-    if (g_pEAXSound->GetCurrentAudioSettings() != nullptr) {
+    if (g_pEAXSound->GetCurrentAudioSettings()) {
         int nvolindex = static_cast<int>(g_pEAXSound->GetCurrentAudioSettings()->MasterVol * 32767.0f);
         int nmastervol = NFSMixShape::GetCurveOutput(static_cast<NFSMixShape::eMIXTABLEID>(1), nvolindex, false);
         float fvol = static_cast<float>(nmastervol) * 3.051851e-05f;
@@ -85,7 +85,7 @@ void SFXCTL_MasterVol::UpdateParams(float t) {
         }
     }
 
-    if (gMoviePlayer != nullptr && gMoviePlayer->GetStatus() == 5) {
+    if (gMoviePlayer && gMoviePlayer->GetStatus() == 5) {
         SetDMIX_Input(7, 0x7fff);
     } else {
         SetDMIX_Input(7, 0);

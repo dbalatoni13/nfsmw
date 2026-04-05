@@ -219,7 +219,7 @@ bool SFXCTL_AccelTrans::ShouldBeginAccelTrans_Idle() {
 
         if ((!m_pShiftCtl || !m_pShiftCtl->IsActive()) &&
             m_pEAXCar->GetCurGear() == Sound::FIRST_GEAR && m_pEAXCar->GetPhysRPM() <= 1500.0f) {
-            if (INIS::Get() != nullptr && INIS::Get()->IsPlaying()) {
+            if (INIS::Get() && INIS::Get()->IsPlaying()) {
                 return false;
             }
 

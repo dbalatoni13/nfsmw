@@ -83,12 +83,12 @@ int EAXTunerCar::UpdateRotation() {
 void EAXTunerCar::UpdatePov() {
     CameraMover *cm = eGetView(1, false)->GetCameraMover();
 
-    if (cm != nullptr) {
+    if (cm) {
         CameraAnchor *anchor = cm->GetAnchor();
 
         m_IsDriveCamera = cm->IsDriveCamera();
 
-        if (anchor != nullptr) {
+        if (anchor) {
             m_PovType = static_cast<int>(anchor->GetPOVType());
         } else {
             m_PovType = 7;

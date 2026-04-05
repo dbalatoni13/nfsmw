@@ -212,7 +212,7 @@ void SndStrmWrapper::Resume() {
 SndStrmWrapper::~SndStrmWrapper() {
     if (m_handle >= 0) {
         DestroyStream();
-        if (m_buffer != nullptr) {
+        if (m_buffer) {
             gAudioMemoryManager.FreeMemory(m_buffer);
         }
     }

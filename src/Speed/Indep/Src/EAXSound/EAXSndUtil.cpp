@@ -229,7 +229,7 @@ EAX_CarState *GetClosestPlayerCar(const bVector3 *vPosition) {
 }
 
 bool IsCarInRadius(EAX_CarState *pCar, const bVector3 *vPos, float fRadius) {
-    if (pCar == nullptr) {
+    if (!pCar) {
         return false;
     }
     bVector3 *CarPos = pCar->GetPosition();

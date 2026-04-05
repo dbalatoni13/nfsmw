@@ -58,7 +58,7 @@ void CSTATE_Base::SortSFXCtl() {}
 
 SFXCTL *CSTATE_Base::HasCtrlBeenAdded(int esfxctrl) {
     SndBase *obj = m_pHeadSFXCTL;
-    while (obj != nullptr) {
+    while (obj) {
     }
     return nullptr;
 }

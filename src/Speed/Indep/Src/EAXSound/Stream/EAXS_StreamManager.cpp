@@ -57,7 +57,7 @@ EAXS_StreamManager::EAXS_StreamManager() {
 
 EAXS_StreamManager::~EAXS_StreamManager() {
     for (int n = 0; n < 4; n++) {
-        if (m_pStrmCh[n] != nullptr) {
+        if (m_pStrmCh[n]) {
             delete m_pStrmCh[n];
             m_pStrmCh[n] = nullptr;
         }
@@ -103,7 +103,7 @@ EAXS_StreamChannel *EAXS_StreamManager::GetStreamChannel(int nchannel) {
 }
 
 void EAXS_StreamManager::AddStreamChannel(EAXS_StreamChannel *pstrmchannel, eSTRMTYPE strmtype) {
-    if (m_pStrmCh[strmtype] != nullptr) {
+    if (m_pStrmCh[strmtype]) {
         return;
     }
     m_pStrmCh[strmtype] = pstrmchannel;

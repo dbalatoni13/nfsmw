@@ -434,7 +434,7 @@ void NIS_RevManager::CloseNIS() {
 }
 
 void NIS_RevManager::Update(float t) {
-    if (INIS::Get() != nullptr && INIS::Get()->IsPlaying()) {
+    if (INIS::Get() && INIS::Get()->IsPlaying()) {
         {
             for (int n = 0; n < EAX_CarState::Count(); ++n) {
                 EAX_CarState *pcar = EAX_CarState::GetList()[n];

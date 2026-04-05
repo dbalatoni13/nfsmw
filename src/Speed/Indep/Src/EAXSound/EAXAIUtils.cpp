@@ -169,7 +169,7 @@ void SndAIStateManager::Initialize(SFXCTL_Physics *_m_pPhysicsCTL) {
 }
 
 void SndAIStateManager::Update(float t) {
-    if (m_pPhysicsCTL == nullptr) {
+    if (!m_pPhysicsCTL) {
         return;
     }
 

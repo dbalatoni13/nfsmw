@@ -64,7 +64,7 @@ void SFXCTL_Helicopter::UpdateParams(float t) {
 
     (void)t;
 
-    if (m_pHeliState != nullptr && m_pHeliState->IsSimUpdating()) {
+    if (m_pHeliState && m_pHeliState->IsSimUpdating()) {
         EAX_CarState *pcar;
 
         vHeliPos = *m_pHeliState->GetPosition();
@@ -72,7 +72,7 @@ void SFXCTL_Helicopter::UpdateParams(float t) {
         vHeliVel = *m_pHeliState->GetVelocity();
 
         pcar = GetClosestPlayerCar(&vHeliPos);
-        if (pcar == nullptr) {
+        if (!pcar) {
             return;
         }
 

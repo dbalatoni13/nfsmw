@@ -86,7 +86,7 @@ SFXCTL_Engine::~SFXCTL_Engine() {
 void SFXCTL_Engine::MessageVehicleDestroyed(const MNotifyVehicleDestroyed &message) {
     UMath::Vector4 vpos;
 
-    if (GetPhysCar() != nullptr && GetPhysCar()->mHandle == message.GetRacer() && GetPhysCar()->IsLocalPlayerCar()) {
+    if (GetPhysCar() && GetPhysCar()->mHandle == message.GetRacer() && GetPhysCar()->IsLocalPlayerCar()) {
         vpos.z = GetPhysCar()->GetPosition()->x;
         vpos.x = -GetPhysCar()->GetPosition()->y;
         vpos.y = GetPhysCar()->GetPosition()->z;
@@ -342,7 +342,7 @@ void SFXCTL_Engine::UpdateRPM(float t) {
     float NormalRPM;
     float PhysicsNewAudioRPM;
 
-    if (m_pShiftCtl != nullptr) {
+    if (m_pShiftCtl) {
         int shiftActive = 1;
         if (m_pShiftCtl->eShiftState == SHFT_NONE) {
             shiftActive = 0;
@@ -353,7 +353,7 @@ void SFXCTL_Engine::UpdateRPM(float t) {
         }
     }
 
-    if (m_pAccelTransitionCtl != nullptr) {
+    if (m_pAccelTransitionCtl) {
         int accelActive = 1;
         if (m_pAccelTransitionCtl->eAccelTransFxState == 0) {
             accelActive = 0;
@@ -433,7 +433,7 @@ have_cur_rpm:
 
 void SFXCTL_Engine::UpdateTorque(float t) {
     (void)t;
-    if (m_pShiftCtl != nullptr && m_pShiftCtl->IsActive()) {
+    if (m_pShiftCtl && m_pShiftCtl->IsActive()) {
         Trq.Flush(m_pShiftCtl->GetShiftingTRQ());
     } else if (m_pAccelTransitionCtl->IsActive()) {
         Trq.Flush(m_pAccelTransitionCtl->m_InterpEngTorque.GetValue());
@@ -454,7 +454,7 @@ void SFXCTL_Engine::UpdateEngineLFO_FX(float t) {
     int tmp_RPM_LFO_AMP = 0;
     int tmp_RPM_LFO_FRQ = 0;
 
-    if (m_pShiftCtl != nullptr && m_pShiftCtl->IsActive()) {
+    if (m_pShiftCtl && m_pShiftCtl->IsActive()) {
         tmp_VOL_LFO_AMP = m_pShiftCtl->m_VOL_LFO_AMP;
         tmp_VOL_LFO_FRQ = m_pShiftCtl->m_VOL_LFO_FRQ;
         tmp_TRQ_LFO_AMP = m_pShiftCtl->m_TRQ_LFO_AMP;

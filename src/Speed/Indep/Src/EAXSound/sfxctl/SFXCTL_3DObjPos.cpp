@@ -77,7 +77,7 @@ void SFXCTL_3DObjPos::SetCameraAngle() {
 }
 
 void SFXCTL_3DObjPos::GenerateSinglePlayerMix() {
-    if (SndCamera::GetCam(m_PlayerRef) == nullptr || m_pV3ObjPos == nullptr) {
+    if (!SndCamera::GetCam(m_PlayerRef) || !m_pV3ObjPos) {
         SetDMIX_Input(3, 0);
         SetDMIX_Input(1, -1);
         SetDMIX_Input(2, 0);
@@ -196,7 +196,7 @@ store_mix:
     SetDMIX_Input(0, static_cast<int>(outVol));
 
 done_mix:
-    if (m_pV3ObjDir == nullptr) {
+    if (!m_pV3ObjDir) {
         SetDMIX_Input(5, 0);
         SetDMIX_Input(6, 0);
         SetDMIX_Input(10, 0);
@@ -204,7 +204,7 @@ done_mix:
 }
 
 void SFXCTL_3DObjPos::Generate3DParams(int nplayer) {
-    if (m_pV3ObjPos != nullptr) {
+    if (m_pV3ObjPos) {
         m_PlayerRef = nplayer;
         if (g_pEAXSound->GetPlayerMixMode() == EAXS3D_SINGLE_PLAYER_MIX) {
             POSMIXTYPE = SINGLE_PLAYER;
@@ -247,7 +247,7 @@ void SFXCTL_3DObjPos::Detach() {
 }
 
 void SFXCTL_3DObjPos::UpdateParams(float t) {
-    if (m_pV3ObjPos == nullptr) {
+    if (!m_pV3ObjPos) {
         SetDMIX_Input(DMX_AZIM, 0);
         SetDMIX_Input(DMX_PITCH, -1);
         SetDMIX_Input(DMX_FREQ, 0);
@@ -266,7 +266,7 @@ void SFXCTL_3DObjPos::UpdateParams(float t) {
 }
 
 void SFXCTL_3DObjPos::UpdateDoppler(int PlayerNum, float t) {
-    if (g_EAXIsPaused() || m_pV3ObjVel == nullptr) {
+    if (g_EAXIsPaused() || !m_pV3ObjVel) {
         return;
     }
 

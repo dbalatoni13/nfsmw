@@ -52,7 +52,7 @@ SFXCTL_Pathfinder::SFXCTL_Pathfinder()
     : m_projrefcnt(0) {
     g_pSFXCTL_Pathfinder = nullptr;
     for (int i = 0; i <= 3; i++) {
-        if (m_PFStrmImp[i] != nullptr) {
+        if (m_PFStrmImp[i]) {
             m_PFStrmImp[i] = nullptr;
         }
     }
@@ -139,7 +139,7 @@ void SFXCTL_Pathfinder::SongProgressCallback(int projID, int nodeparm) {
     }
 
     for (int n = 0; n < 4; ++n) {
-        if (m_pPFParms[n] != nullptr && projID == static_cast<int>(m_pPFParms[n]->PATH_VOICE) &&
+        if (m_pPFParms[n] && projID == static_cast<int>(m_pPFParms[n]->PATH_VOICE) &&
             (m_pPFParms[n]->procflags & 4) != 0) {
             m_pPFParms[n]->curnodeparm = nodeparm;
         }
@@ -245,7 +245,7 @@ void SFXCTL_Pathfinder::AttachStreamInstance(stPFParms *pstPFParms) {
     PathTrackSndStream *streamimp;
     int mystreamhandle = gpEAXS_StrmMgr->GetStreamChannel(1)->GetStrmHandle();
     char *pbuff = gpEAXS_StrmMgr->GetStreamChannel(1)->GetBuffer();
-    if (trackimp != nullptr) {
+    if (trackimp) {
         int nresult;
         nresult = trackimp->AttachSndStream(mystreamhandle, pbuff);
     }
