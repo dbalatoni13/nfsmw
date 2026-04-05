@@ -213,6 +213,7 @@ int SFXObj_NISStream::m_mstimeelapsed;
 int SFXObj_NISStream::m_mslengthofstream;
 unsigned int g_laststartanimid;
 bool g_bWasLastNISaStart;
+SndBase::TypeInfo SFXObj_NISStream::s_TypeInfo = { 0, "SFXObj_NISStream", nullptr, SFXObj_NISStream::CreateObject };
 
 NISStringHashMapEntry uNIS_STRINGHASHMAP[68];
 
@@ -290,6 +291,22 @@ void GenerateNISAnimHashMap() {
     INIT_NIS_ENTRY(0x41, 0x40000, "EndingNis02");
     INIT_NIS_ENTRY(0x42, 0x80000, "EndingNis03");
     INIT_NIS_ENTRY(0x43, 0x100000, "EndingNis04");
+}
+
+SndBase::TypeInfo *SFXObj_NISStream::GetTypeInfo() const {
+    return &s_TypeInfo;
+}
+
+const char *SFXObj_NISStream::GetTypeName() const {
+    return s_TypeInfo.typeName;
+}
+
+SndBase *SFXObj_NISStream::CreateObject(unsigned int allocator) {
+    if (!allocator) {
+        return new (SFXObj_NISStream::GetStaticTypeInfo()->typeName, false) SFXObj_NISStream();
+    }
+
+    return new (SFXObj_NISStream::GetStaticTypeInfo()->typeName, true) SFXObj_NISStream();
 }
 
 SFXObj_NISStream::SFXObj_NISStream()

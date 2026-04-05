@@ -8,9 +8,15 @@
 #include "Speed/Indep/Src/EAXSound/CARSFX/CARSFX.hpp"
 
 struct SFXObj_NISStream : CARSFX {
+    static TypeInfo s_TypeInfo;
+    static TypeInfo *GetStaticTypeInfo() { return &s_TypeInfo; }
+
     SFXObj_NISStream();
     ~SFXObj_NISStream() override;
     void InitSFX() override;
+    TypeInfo *GetTypeInfo() const override;
+    const char *GetTypeName() const override;
+    static SndBase *CreateObject(unsigned int allocator);
     void StartNIS();
     bool QueueNISStream(unsigned int anim_id, int camera_track_number, void (*setmstimecb)(unsigned int, int), bool bButtonThrough);
     bool QueueNISStream(unsigned int anim_id, int camera_track_number, bool bButtonThrough, bool param4);
