@@ -82,11 +82,159 @@ bool CSTATEMGR_Base::IsDataLoaded() {
     return true;
 }
 
-SFX_Base *CSTATEMGR_Base::CreateSFX(int Instance, int SFXObjID) {}
+SFX_Base *CSTATEMGR_Base::CreateSFX(int Instance, int SFXObjID) {
+    SndBase::TypeInfo *FoundTypeInfo = nullptr;
+    for (bPNode *CurNode = m_SFXClassList.GetHead(); CurNode != m_SFXClassList.EndOfList(); CurNode = CurNode->GetNext()) {
+        SndBase::TypeInfo *CurTypeInfo = reinterpret_cast<SndBase::TypeInfo *>(CurNode->GetObject());
+        int CurObjectID = CurTypeInfo->ObjectID;
+        if (((CurObjectID >> 4) & 0xFFF) == SFXObjID) {
+            eMAINMAPSTATES CurStateType = m_eStateType;
+            int CurMatchID = CurObjectID;
+            if ((((CurStateType == eMM_AIRACECAR) || (CurStateType == eMM_TRAFFIC) || (CurStateType == eMM_TRUCK) ||
+                  (CurStateType == eMM_COPCAR)) &&
+                 (static_cast<unsigned char>(CurObjectID >> 16) == eMM_PLAYERCAR)) ||
+                (static_cast<unsigned char>(CurMatchID >> 16) == CurStateType)) {
+                if (!FoundTypeInfo) {
+                    FoundTypeInfo = CurTypeInfo;
+                }
 
-SFXCTL *CSTATEMGR_Base::CreateSFXCTL(int Instance, int SFXCtrlID) {}
+                if (static_cast<unsigned char>(CurMatchID >> 16) == CurStateType) {
+                    if (!FoundTypeInfo) {
+                        FoundTypeInfo = CurTypeInfo;
+                    }
 
-CSTATE_Base *CSTATEMGR_Base::CreateState(int StateInstType, int _SFXFlags) {}
+                    if (static_cast<unsigned char>(FoundTypeInfo->ObjectID >> 16) == static_cast<unsigned char>(CurMatchID >> 16)) {
+                        SndBase::TypeInfo *BaseClassInfo = CurTypeInfo->baseTypeInfo;
+                        while (BaseClassInfo) {
+                            if (BaseClassInfo == FoundTypeInfo) {
+                                break;
+                            }
+                            BaseClassInfo = BaseClassInfo->baseTypeInfo;
+                        }
+
+                        if (BaseClassInfo != FoundTypeInfo) {
+                            FoundTypeInfo = CurTypeInfo;
+                        }
+                    } else {
+                        FoundTypeInfo = CurTypeInfo;
+                    }
+                }
+            }
+        }
+    }
+
+    if (!FoundTypeInfo) {
+        return nullptr;
+    }
+
+    SFX_Base *theObject = static_cast<SFX_Base *>(FoundTypeInfo->CreateObject((FoundTypeInfo->ObjectID >> 28) & 0xF));
+    theObject->SetObjectID((m_eStateType << 16) | (Instance << 11) | (SFXObjID << 4));
+    return theObject;
+}
+
+SFXCTL *CSTATEMGR_Base::CreateSFXCTL(int Instance, int SFXCtrlID) {
+    SndBase::TypeInfo *FoundTypeInfo = nullptr;
+    for (bPNode *CurNode = m_SFXCTRLClassList.GetHead(); CurNode != m_SFXCTRLClassList.EndOfList(); CurNode = CurNode->GetNext()) {
+        SndBase::TypeInfo *CurTypeInfo = reinterpret_cast<SndBase::TypeInfo *>(CurNode->GetObject());
+        int CurObjectID = CurTypeInfo->ObjectID;
+        if (((CurObjectID >> 4) & 0xFFF) == SFXCtrlID) {
+            eMAINMAPSTATES CurStateType = m_eStateType;
+            int CurMatchID = CurObjectID;
+            if ((((CurStateType == eMM_AIRACECAR) || (CurStateType == eMM_TRAFFIC) || (CurStateType == eMM_TRUCK) ||
+                  (CurStateType == eMM_COPCAR)) &&
+                 (static_cast<unsigned char>(CurObjectID >> 16) == eMM_PLAYERCAR)) ||
+                (static_cast<unsigned char>(CurMatchID >> 16) == CurStateType)) {
+                if (!FoundTypeInfo) {
+                    FoundTypeInfo = CurTypeInfo;
+                }
+
+                if (static_cast<unsigned char>(CurMatchID >> 16) == CurStateType) {
+                    if (!FoundTypeInfo) {
+                        FoundTypeInfo = CurTypeInfo;
+                    }
+
+                    if (static_cast<unsigned char>(FoundTypeInfo->ObjectID >> 16) == static_cast<unsigned char>(CurMatchID >> 16)) {
+                        SndBase::TypeInfo *BaseClassInfo = CurTypeInfo->baseTypeInfo;
+                        while (BaseClassInfo) {
+                            if (BaseClassInfo == FoundTypeInfo) {
+                                break;
+                            }
+                            BaseClassInfo = BaseClassInfo->baseTypeInfo;
+                        }
+
+                        if (BaseClassInfo != FoundTypeInfo) {
+                            FoundTypeInfo = CurTypeInfo;
+                        }
+                    } else {
+                        FoundTypeInfo = CurTypeInfo;
+                    }
+                }
+            }
+        }
+    }
+
+    if (!FoundTypeInfo) {
+        return nullptr;
+    }
+
+    SFXCTL *theObject = static_cast<SFXCTL *>(FoundTypeInfo->CreateObject((FoundTypeInfo->ObjectID >> 28) & 0xF));
+    theObject->SetObjectID((m_eStateType << 16) | (Instance << 11) | (SFXCtrlID << 4));
+    return theObject;
+}
+
+CSTATE_Base *CSTATEMGR_Base::CreateState(int StateInstType, int _SFXFlags) {
+    CSTATE_Base::StateInfo *FoundStateInfo = nullptr;
+    for (bPNode *CurNode = m_STATEClassList.GetHead(); CurNode != m_STATEClassList.EndOfList(); CurNode = CurNode->GetNext()) {
+        CSTATE_Base::StateInfo *CurStateInfo = reinterpret_cast<CSTATE_Base::StateInfo *>(CurNode->GetObject());
+        if (((CurStateInfo->StateID >> 16) & 0xFF) == m_eStateType) {
+            if (!FoundStateInfo) {
+                FoundStateInfo = CurStateInfo;
+            }
+
+            if ((CurStateInfo->StateID & 0xFFFF) == StateInstType) {
+                if (static_cast<unsigned short>(FoundStateInfo->StateID) == StateInstType) {
+                    CSTATE_Base::StateInfo *BaseStateInfo = CurStateInfo->baseStateInfo;
+                    while (BaseStateInfo) {
+                        if (BaseStateInfo == FoundStateInfo) {
+                            break;
+                        }
+                        BaseStateInfo = BaseStateInfo->baseStateInfo;
+                    }
+
+                    if (BaseStateInfo != FoundStateInfo) {
+                        FoundStateInfo = CurStateInfo;
+                    }
+                } else {
+                    FoundStateInfo = CurStateInfo;
+                }
+            }
+        }
+    }
+
+    if (!FoundStateInfo) {
+        return nullptr;
+    }
+
+    CSTATE_Base *NewStateObj = FoundStateInfo->CreateState((FoundStateInfo->StateID >> 28) & 0xF);
+    NewStateObj->m_pStateMgr = this;
+    NewStateObj->m_InstNum = m_CurNumStates;
+    NewStateObj->m_StateInstType = StateInstType;
+    NewStateObj->m_eStateType = m_eStateType;
+    if (!m_pHeadStateObj) {
+        m_pHeadStateObj = NewStateObj;
+    } else {
+        CSTATE_Base *CurStateObj = m_pHeadStateObj;
+        while (CurStateObj->m_pNextState) {
+            CurStateObj = CurStateObj->m_pNextState;
+        }
+
+        NewStateObj->m_pPreviousState = CurStateObj;
+        CurStateObj->m_pNextState = NewStateObj;
+    }
+
+    m_CurNumStates++;
+    return NewStateObj;
+}
 
 void CSTATEMGR_Base::EnterWorld(eSndGameMode esgm) {
     bIsInitialized = true;

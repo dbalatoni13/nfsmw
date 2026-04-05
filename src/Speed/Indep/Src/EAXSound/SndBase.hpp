@@ -29,9 +29,14 @@ struct SndBase : public AudioMemBase {
         int ObjectID;               // offset 0x0, size 0x4
         char *typeName;             // offset 0x4, size 0x4
         TypeInfo *baseTypeInfo;     // offset 0x8, size 0x4
-        SndBase *(*createObject)(); // offset 0xC, size 0x4
+        SndBase *(*createObject)(unsigned int); // offset 0xC, size 0x4
 
-        SndBase *CreateObject(unsigned int allocator);
+        SndBase *CreateObject(unsigned int allocator) {
+            if (!createObject) {
+                return nullptr;
+            }
+            return createObject(allocator);
+        }
     };
 
     static float m_fRunningTime;
@@ -81,6 +86,7 @@ struct SndBase : public AudioMemBase {
     EAX_CarState *GetPhysCar();
     int GetSFX_ID() { return (objectID >> 4) & 0x7F; }
     int GetUniqueID() { return objectID; }
+    void SetObjectID(int id) { objectID = id; }
 
   protected:
     static TypeInfo s_TypeInfo; // for some ungodly reason these are all defined in zEAXSound.cpp

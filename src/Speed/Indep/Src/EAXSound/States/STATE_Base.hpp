@@ -36,6 +36,13 @@ struct CSTATE_Base : public AudioMemBase {
         const char *stateName;                   // offset 0x4, size 0x4
         StateInfo *baseStateInfo;          // offset 0x8, size 0x4
         CSTATE_Base *(*createState)(unsigned int); // offset 0xC, size 0x4
+
+        CSTATE_Base *CreateState(unsigned int allocator) {
+            if (!createState) {
+                return nullptr;
+            }
+            return createState(allocator);
+        }
     };
 
     CSTATE_Base();
