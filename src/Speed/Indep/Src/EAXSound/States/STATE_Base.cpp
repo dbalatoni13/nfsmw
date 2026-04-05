@@ -50,16 +50,22 @@ void CSTATE_Base::DisconnectMixMap() {
         {
             int *pIn = CurSFXOBj->GetInputBlockPtr();
             if (pIn) {
-                for (int n = 0; n < 16; n++) {
-                    pIn[n] = 0;
-                }
+                int n = 0;
+                do {
+                    *pIn = 0;
+                    n++;
+                    pIn++;
+                } while (n <= 15);
             }
 
             int *pout = CurSFXOBj->GetOutputBlockPtr();
             if (pout) {
-                for (int n = 0; n < 16; n++) {
-                    pout[n] = 0;
-                }
+                int n = 0;
+                do {
+                    *pout = 0;
+                    n++;
+                    pout++;
+                } while (n <= 15);
             }
 
             CurSFXOBj->SetOutputsPtr(nullptr);
@@ -74,16 +80,22 @@ void CSTATE_Base::DisconnectMixMap() {
         {
             int *pIn = CurSFXCtl->GetInputBlockPtr();
             if (pIn) {
-                for (int n = 0; n < 16; n++) {
-                    pIn[n] = 0;
-                }
+                int n = 0;
+                do {
+                    *pIn = 0;
+                    n++;
+                    pIn++;
+                } while (n <= 15);
             }
 
             int *pout = CurSFXCtl->GetOutputBlockPtr();
             if (pout) {
-                for (int n = 0; n < 16; n++) {
-                    pout[n] = 0;
-                }
+                int n = 0;
+                do {
+                    *pout = 0;
+                    n++;
+                    pout++;
+                } while (n <= 15);
             }
 
             CurSFXCtl->SetInputsPtr(nullptr);

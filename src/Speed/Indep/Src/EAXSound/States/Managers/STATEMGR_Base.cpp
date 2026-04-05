@@ -92,26 +92,25 @@ bool CSTATEMGR_Base::IsDataLoaded() {
 
 SFX_Base *CSTATEMGR_Base::CreateSFX(int Instance, int SFXObjID) {
     SndBase::TypeInfo *FoundTypeInfo = nullptr;
-    for (bPNode *CurNode = m_SFXClassList.GetHead(); CurNode != m_SFXClassList.EndOfList(); CurNode = CurNode->GetNext()) {
+    bPNode *CurNode = m_SFXClassList.GetHead();
+    while (CurNode != m_SFXClassList.EndOfList()) {
         SndBase::TypeInfo *CurTypeInfo = reinterpret_cast<SndBase::TypeInfo *>(CurNode->GetObject());
-        int CurObjectID = CurTypeInfo->ObjectID;
-        if (((CurObjectID >> 4) & 0xFFF) == SFXObjID) {
-            eMAINMAPSTATES CurStateType = m_eStateType;
-            int CurMatchID = CurObjectID;
-            if ((((CurStateType == eMM_AIRACECAR) || (CurStateType == eMM_TRAFFIC) || (CurStateType == eMM_TRUCK) ||
-                  (CurStateType == eMM_COPCAR)) &&
-                 (static_cast<unsigned char>(CurObjectID >> 16) == eMM_PLAYERCAR)) ||
-                (static_cast<unsigned char>(CurMatchID >> 16) == CurStateType)) {
+        CurNode = CurNode->GetNext();
+        if (((CurTypeInfo->ObjectID >> 4) & 0xFFF) == SFXObjID) {
+            if ((((m_eStateType == eMM_AIRACECAR) || (m_eStateType == eMM_TRAFFIC) || (m_eStateType == eMM_TRUCK) ||
+                  (m_eStateType == eMM_COPCAR)) &&
+                 (static_cast<unsigned char>(CurTypeInfo->ObjectID >> 16) == eMM_PLAYERCAR)) ||
+                (static_cast<unsigned char>(CurTypeInfo->ObjectID >> 16) == m_eStateType)) {
                 if (!FoundTypeInfo) {
                     FoundTypeInfo = CurTypeInfo;
                 }
 
-                if (static_cast<unsigned char>(CurMatchID >> 16) == CurStateType) {
+                if (static_cast<unsigned char>(CurTypeInfo->ObjectID >> 16) == m_eStateType) {
                     if (!FoundTypeInfo) {
                         FoundTypeInfo = CurTypeInfo;
                     }
 
-                    if (static_cast<unsigned char>(FoundTypeInfo->ObjectID >> 16) == static_cast<unsigned char>(CurMatchID >> 16)) {
+                    if (static_cast<unsigned char>(FoundTypeInfo->ObjectID >> 16) == m_eStateType) {
                         SndBase::TypeInfo *BaseClassInfo = CurTypeInfo->baseTypeInfo;
                         while (BaseClassInfo) {
                             if (BaseClassInfo == FoundTypeInfo) {
@@ -135,33 +134,34 @@ SFX_Base *CSTATEMGR_Base::CreateSFX(int Instance, int SFXObjID) {
         return nullptr;
     }
 
-    SFX_Base *theObject = static_cast<SFX_Base *>(FoundTypeInfo->CreateObject((FoundTypeInfo->ObjectID >> 28) & 0xF));
-    theObject->SetObjectID((m_eStateType << 16) | (Instance << 11) | (SFXObjID << 4));
-    return theObject;
+    {
+        SFX_Base *theObject = static_cast<SFX_Base *>(FoundTypeInfo->CreateObject((FoundTypeInfo->ObjectID >> 28) & 0xF));
+        theObject->SetObjectID((m_eStateType << 16) | (Instance << 11) | (SFXObjID << 4));
+        return theObject;
+    }
 }
 
 SFXCTL *CSTATEMGR_Base::CreateSFXCTL(int Instance, int SFXCtrlID) {
     SndBase::TypeInfo *FoundTypeInfo = nullptr;
-    for (bPNode *CurNode = m_SFXCTRLClassList.GetHead(); CurNode != m_SFXCTRLClassList.EndOfList(); CurNode = CurNode->GetNext()) {
+    bPNode *CurNode = m_SFXCTRLClassList.GetHead();
+    while (CurNode != m_SFXCTRLClassList.EndOfList()) {
         SndBase::TypeInfo *CurTypeInfo = reinterpret_cast<SndBase::TypeInfo *>(CurNode->GetObject());
-        int CurObjectID = CurTypeInfo->ObjectID;
-        if (((CurObjectID >> 4) & 0xFFF) == SFXCtrlID) {
-            eMAINMAPSTATES CurStateType = m_eStateType;
-            int CurMatchID = CurObjectID;
-            if ((((CurStateType == eMM_AIRACECAR) || (CurStateType == eMM_TRAFFIC) || (CurStateType == eMM_TRUCK) ||
-                  (CurStateType == eMM_COPCAR)) &&
-                 (static_cast<unsigned char>(CurObjectID >> 16) == eMM_PLAYERCAR)) ||
-                (static_cast<unsigned char>(CurMatchID >> 16) == CurStateType)) {
+        CurNode = CurNode->GetNext();
+        if (((CurTypeInfo->ObjectID >> 4) & 0xFFF) == SFXCtrlID) {
+            if ((((m_eStateType == eMM_AIRACECAR) || (m_eStateType == eMM_TRAFFIC) || (m_eStateType == eMM_TRUCK) ||
+                  (m_eStateType == eMM_COPCAR)) &&
+                 (static_cast<unsigned char>(CurTypeInfo->ObjectID >> 16) == eMM_PLAYERCAR)) ||
+                (static_cast<unsigned char>(CurTypeInfo->ObjectID >> 16) == m_eStateType)) {
                 if (!FoundTypeInfo) {
                     FoundTypeInfo = CurTypeInfo;
                 }
 
-                if (static_cast<unsigned char>(CurMatchID >> 16) == CurStateType) {
+                if (static_cast<unsigned char>(CurTypeInfo->ObjectID >> 16) == m_eStateType) {
                     if (!FoundTypeInfo) {
                         FoundTypeInfo = CurTypeInfo;
                     }
 
-                    if (static_cast<unsigned char>(FoundTypeInfo->ObjectID >> 16) == static_cast<unsigned char>(CurMatchID >> 16)) {
+                    if (static_cast<unsigned char>(FoundTypeInfo->ObjectID >> 16) == m_eStateType) {
                         SndBase::TypeInfo *BaseClassInfo = CurTypeInfo->baseTypeInfo;
                         while (BaseClassInfo) {
                             if (BaseClassInfo == FoundTypeInfo) {
@@ -185,9 +185,11 @@ SFXCTL *CSTATEMGR_Base::CreateSFXCTL(int Instance, int SFXCtrlID) {
         return nullptr;
     }
 
-    SFXCTL *theObject = static_cast<SFXCTL *>(FoundTypeInfo->CreateObject((FoundTypeInfo->ObjectID >> 28) & 0xF));
-    theObject->SetObjectID((m_eStateType << 16) | (Instance << 11) | (SFXCtrlID << 4));
-    return theObject;
+    {
+        SFXCTL *theObject = static_cast<SFXCTL *>(FoundTypeInfo->CreateObject((FoundTypeInfo->ObjectID >> 28) & 0xF));
+        theObject->SetObjectID((m_eStateType << 16) | (Instance << 11) | (SFXCtrlID << 4));
+        return theObject;
+    }
 }
 
 CSTATE_Base *CSTATEMGR_Base::CreateState(int StateInstType, int _SFXFlags) {
