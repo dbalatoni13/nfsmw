@@ -45,10 +45,10 @@ cStitchLoop::cStitchLoop(unsigned int attrib)
 }
 
 cStitchLoop::~cStitchLoop() {
-    if (m_Stitch[0] != nullptr) {
+    if (m_Stitch[0]) {
         delete m_Stitch[0];
     }
-    if (m_Stitch[1] != nullptr) {
+    if (m_Stitch[1]) {
         delete m_Stitch[1];
     }
 }
@@ -56,7 +56,7 @@ cStitchLoop::~cStitchLoop() {
 void cStitchLoop::Update(const SND_Params *Params, float dt) {
     {
         for (int n = 0; n < 2; n++) {
-            if (m_Stitch[n] != nullptr) {
+            if (m_Stitch[n]) {
                 m_Stitch[n]->Update(Params);
                 if (!m_Stitch[n]->IsPlaying()) {
                     delete m_Stitch[n];
@@ -72,7 +72,7 @@ void cStitchLoop::Update(const SND_Params *Params, float dt) {
         int index = -1;
         {
             for (int n = 0; n < 2; n++) {
-                if (m_Stitch[n] == nullptr) {
+                if (!m_Stitch[n]) {
                     index = n;
                 }
             }
@@ -103,9 +103,9 @@ int LoaderSoundStichs(bChunk *chunk) {
         bEndianSwap16(chunk->GetData() + 0xA);
         bEndianSwap16(chunk->GetData() + 0xC);
 
-        if (g_pEAXSound != nullptr) {
+        if (g_pEAXSound) {
             cSTICH_PlayBack *playback = g_pEAXSound->GetSTICHPlayback();
-            if (playback != nullptr) {
+            if (playback) {
                 playback->AddStich(static_cast<STICH_TYPE>(NewStich->eStichType), *NewStich);
             }
         }

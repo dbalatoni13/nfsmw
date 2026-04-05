@@ -142,7 +142,7 @@ L_Pattern12:
 
 L_PatternDone:
             NumDataPoints = patternLength;
-            if (pRevData != nullptr) {
+            if (pRevData) {
                 eCurNisRevingState = NIS_PATTERN_ON;
                 Slope RPMSlope(static_cast<float>(pRevData->RPM), static_cast<float>(pRevData[1].RPM), pRevData->time, pRevData[1].time);
                 Slope TRQSlope(static_cast<float>(pRevData->Trq), static_cast<float>(pRevData[1].Trq), pRevData->time, pRevData[1].time);
@@ -199,9 +199,9 @@ L_PatternDone:
 
         timeLeft = -1.0f;
         player = IPlayer::First(PLAYER_LOCAL);
-        if (player != nullptr) {
+        if (player) {
             hud = player->GetHud();
-            if (hud != nullptr) {
+            if (hud) {
                 icountdown = nullptr;
                 if (hud->QueryInterface(&icountdown)) {
                     timeLeft = icountdown->GetSecondsBeforeRaceStart();
@@ -346,11 +346,11 @@ void SFXCTL_Physics::UpdateParams(float t) {
         const Attrib::Gen::engineaudio *engineInfo = &m_pEAXCar->mEngineInfo;
         const bMatrix4 *curve = static_cast<const bMatrix4 *>(
             static_cast<const void *>(engineInfo->GetAttributePointer(0x07E3C833, 0)));
-        if (curve == nullptr) {
+        if (!curve) {
             curve = static_cast<const bMatrix4 *>(static_cast<const void *>(Attrib::DefaultDataArea(sizeof(bMatrix4))));
         }
         mRPMCurve = const_cast<bMatrix4 *>(curve);
-        if (curve != nullptr) {
+        if (curve) {
             rpm = GetValueFromSpline(rpm, mRPMCurve);
         }
     }
@@ -358,8 +358,8 @@ void SFXCTL_Physics::UpdateParams(float t) {
     PhysicsRPM = rpm * 9000.0f + 1000.0f;
 
     INIS *nis = INIS::Get();
-    if (nis != nullptr && nis->IsPlaying()) {
-        if (nis->GetAnimScene() != nullptr) {
+    if (nis && nis->IsPlaying()) {
+        if (nis->GetAnimScene()) {
             float sceneTime = nis->GetAnimScene()->GetTimeElapsed();
             UpdateNIS(sceneTime, 0.0f);
             return;
@@ -499,8 +499,8 @@ void SFXCTL_AIPhysics::UpdateParams(float t) {
     m_LastGear = m_CurGear;
     UpdateGear();
 
-    if (INIS::Get() != nullptr && INIS::Get()->IsPlaying()) {
-        if (INIS::Get()->GetAnimScene() != nullptr) {
+    if (INIS::Get() && INIS::Get()->IsPlaying()) {
+        if (INIS::Get()->GetAnimScene()) {
             UpdateNIS(INIS::Get()->GetAnimScene()->GetTimeElapsed(), 0.0f);
             return;
         }

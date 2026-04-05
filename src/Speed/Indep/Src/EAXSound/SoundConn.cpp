@@ -27,12 +27,12 @@ CarSoundConn::CarSoundConn(const Sim::ConnectionData &data)
     mTarget.Set(oc->mWorldID);
 
     const void *modelData = att.GetAttributePointer(0x9047C9E0, 0);
-    if (modelData == nullptr) {
+    if (!modelData) {
         modelData = Attrib::DefaultDataArea(sizeof(Attrib::StringKey));
     }
 
     const char *modelName = static_cast<const Attrib::StringKey *>(modelData)->GetString();
-    if (modelName == nullptr) {
+    if (!modelName) {
         modelName = "";
     }
     CarPartDB.GetCarType(bStringHash(modelName));
@@ -126,10 +126,10 @@ UTL::COM::Factory<Sim::ConnectionData const &, Sim::Connection, UCrc32>::Prototy
 
 CarSoundConn::~CarSoundConn() {
     mTarget.Set(0);
-    if (g_pEAXSound != nullptr) {
+    if (g_pEAXSound) {
         g_pEAXSound->DestroyEAXCar(mState);
     }
-    if (mState != nullptr) {
+    if (mState) {
         mState->~EAX_CarState();
         ::operator delete(mState);
     }
@@ -137,14 +137,14 @@ CarSoundConn::~CarSoundConn() {
 }
 
 Sim::ConnStatus CarSoundConn::OnStatusCheck() {
-    if (mConnected && mState != nullptr && mState->mAssetsLoaded) {
+    if (mConnected && mState && mState->mAssetsLoaded) {
         return Sim::CONNSTATUS_READY;
     }
     return Sim::CONNSTATUS_CONNECTING;
 }
 
 void CarSoundConn::UpdateState(float dT) {
-    if (g_pEAXSound == nullptr) {
+    if (!g_pEAXSound) {
         return;
     }
     if (!mTarget.IsValid()) {
@@ -153,7 +153,7 @@ void CarSoundConn::UpdateState(float dT) {
     if (!mConnected) {
         return;
     }
-    if (mState == nullptr) {
+    if (!mState) {
         return;
     }
     if (!mState->mAssetsLoaded) {
@@ -238,12 +238,12 @@ HeliSoundConn::HeliSoundConn(const Sim::ConnectionData &data)
     mTarget.Set(oc->mWorldID);
 
     const void *modelData = att.GetAttributePointer(0x9047C9E0, 0);
-    if (modelData == nullptr) {
+    if (!modelData) {
         modelData = Attrib::DefaultDataArea(sizeof(Attrib::StringKey));
     }
 
     const char *modelName = static_cast<const Attrib::StringKey *>(modelData)->GetString();
-    if (modelName == nullptr) {
+    if (!modelName) {
         modelName = "";
     }
     bStringHash(modelName);
@@ -256,17 +256,17 @@ HeliSoundConn::HeliSoundConn(const Sim::ConnectionData &data)
 
 HeliSoundConn::~HeliSoundConn() {
     mTarget.Set(0);
-    if (g_pEAXSound != nullptr) {
+    if (g_pEAXSound) {
         g_pEAXSound->DestroyEAXHeli(mState);
     }
-    if (mState != nullptr) {
+    if (mState) {
         delete mState;
         mState = nullptr;
     }
 }
 
 void HeliSoundConn::UpdateState(float dT) {
-    if (g_pEAXSound == nullptr) {
+    if (!g_pEAXSound) {
         if (!btestprint) {
             btestprint = 1;
         }
