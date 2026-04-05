@@ -7,6 +7,10 @@
 
 #include "Speed/Indep/Src/Misc/Hermes.h"
 
+namespace Speech {
+struct ScheduledSpeechEvent;
+}
+
 // total size: 0x14
 class MNotifySpeechStatus : public Hermes::Message {
   public:
@@ -20,20 +24,20 @@ class MNotifySpeechStatus : public Hermes::Message {
         return k;
     }
 
-    MNotifySpeechStatus(ScheduledSpeechEvent *_Event) : Hermes::Message(_GetKind(), _GetSize(), 0), fEvent(_Event) {}
+    MNotifySpeechStatus(Speech::ScheduledSpeechEvent *_Event) : Hermes::Message(_GetKind(), _GetSize(), 0), fEvent(_Event) {}
 
     ~MNotifySpeechStatus() {}
 
-    ScheduledSpeechEvent *GetEvent() const {
+    Speech::ScheduledSpeechEvent *GetEvent() const {
         return fEvent;
     }
 
-    void SetEvent(ScheduledSpeechEvent *_Event) {
+    void SetEvent(Speech::ScheduledSpeechEvent *_Event) {
         fEvent = _Event;
     }
 
   private:
-    ScheduledSpeechEvent *fEvent; // offset 0x10, size 0x4
+    Speech::ScheduledSpeechEvent *fEvent; // offset 0x10, size 0x4
 };
 
 #endif

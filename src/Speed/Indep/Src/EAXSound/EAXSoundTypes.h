@@ -15,10 +15,12 @@ namespace Speech {
 
 // total size: 0x8
 struct copPair {
-    inline bool operator<(const copPair &from) const {}
+    bool operator<(const copPair &rhs) const {
+        return hsimable < rhs.hsimable;
+    }
 
-    HSIMABLE hsimable;  // offset 0x0, size 0x4
-    EAXCop *cop; // offset 0x4, size 0x4
+    HSIMABLE hsimable; // offset 0x0, size 0x4
+    EAXCop *cop;       // offset 0x4, size 0x4
 };
 
 DECLARE_CONTAINER_TYPE(copMap);
@@ -26,6 +28,10 @@ DECLARE_CONTAINER_TYPE(copMap);
 class copMap : public UTL::Std::vector<copPair, _type_copMap> {
   public:
     copMap(int size) {}
+    void Add(HSIMABLE__ *hsimable, EAXCop *cop);
+    EAXCop *Remove(HSIMABLE__ *hsimable);
+    void ModifyHandle(HSIMABLE__ *hsimable, HSIMABLE__ *newhandle);
+    EAXCop *Find(HSIMABLE__ *hsimable) const;
 };
 
 DECLARE_CONTAINER_TYPE(copList);

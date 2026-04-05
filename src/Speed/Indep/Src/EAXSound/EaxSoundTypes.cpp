@@ -3,49 +3,18 @@
 #include <algorithm>
 #include <new>
 
+#include "Speed/Indep/Src/EAXSound/EAXSoundTypes.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ISimable.h"
 #include "Speed/Indep/Src/EAXSound/Stream/SpeechManager.hpp"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
 #include "Speed/Indep/Src/Speech/EAXCop.h"
 
-struct EventSpec {
-    unsigned short eventID;    // offset 0x0, size 0x2
-    unsigned char eventDatID;  // offset 0x2, size 0x1
-    unsigned char projectID;   // offset 0x3, size 0x1
-};
-
-struct SPCHType_SampleRequestData {
-    int bankNum;           // offset 0x0, size 0x4
-    int sampleOffset;      // offset 0x4, size 0x4
-    int numBytes;          // offset 0x8, size 0x4
-    EventSpec eventSpec;   // offset 0xC, size 0x4
-    int channel;           // offset 0x10, size 0x4
-    int subID;             // offset 0x14, size 0x4
-    int datID;             // offset 0x18, size 0x4
-    int interruptFlag;     // offset 0x1C, size 0x4
-};
-
 extern void *NullPointer;
-
 struct ISndAttachable;
-struct InterfaceId;
-struct FunctionHandle;
-class EAXCharacter;
 
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/speech.h"
 
 namespace Speech {
-
-struct ScheduledSpeechEvent;
-
-struct SPCHSampleRequest {
-    SPCHType_SampleRequestData data; // offset 0x0, size 0x20
-    ScheduledSpeechEvent *owner;     // offset 0x20, size 0x4
-    unsigned int offset;             // offset 0x24, size 0x4
-    unsigned char sample_index;      // offset 0x28, size 0x1
-
-    bool operator<(const SPCHSampleRequest &from) const;
-};
 
 struct History {
     Timer time;            // offset 0x0, size 0x4
@@ -71,26 +40,6 @@ struct SpeechEventPair {
     }
 };
 
-struct copPair {
-    HSIMABLE hsimable; // offset 0x0, size 0x4
-    EAXCop *cop;       // offset 0x4, size 0x4
-
-    bool operator<(const copPair &rhs) const {
-        return hsimable < rhs.hsimable;
-    }
-};
-
-DECLARE_CONTAINER_TYPE(copMap);
-
-class copMap : public UTL::Std::vector<copPair, _type_copMap> {
-  public:
-    copMap(int size) {}
-    void Add(HSIMABLE__ *hsimable, EAXCop *cop);
-    EAXCop *Remove(HSIMABLE__ *hsimable);
-    void ModifyHandle(HSIMABLE__ *hsimable, HSIMABLE__ *newhandle);
-    EAXCop *Find(HSIMABLE__ *hsimable) const;
-};
-
 struct SpeechHashIDMap : public UTL::FixedVector<SpeechEventPair, 264, 16>, public AudioMemBase {
   public:
     SpeechHashIDMap() {}
@@ -108,62 +57,6 @@ struct EventHistory : public UTL::FixedVector<HistoryPair, 264, 16>, public Audi
     Timer GetTime(SPCHType_1_EventID id);
     History *Touch(SPCHType_1_EventID id, unsigned short speaker);
     void Reset();
-};
-
-struct SpeechSampleData {
-    unsigned int size;              // offset 0x0, size 0x4
-    bool ready;                     // offset 0x4, size 0x1
-    int age;                        // offset 0x8, size 0x4
-    int speakerID;                  // offset 0xC, size 0x4
-    SPCHType_1_EventID eventID;     // offset 0x10, size 0x4
-    int HSTRM;                      // offset 0x14, size 0x4
-    bool lock;                      // offset 0x18, size 0x1
-    bool cached;                    // offset 0x1C, size 0x1
-    Timer t_req;                    // offset 0x20, size 0x4
-    Timer t_load;                   // offset 0x24, size 0x4
-    Timer t_play;                   // offset 0x28, size 0x4
-    unsigned int dataoffset;        // offset 0x2C, size 0x4
-
-    ~SpeechSampleData() {}
-    void Lock() { lock = true; }
-    void Unlock() { lock = false; }
-
-    static void Destruct(SpeechSampleData *ptr);
-    static SpeechSampleData *Construct(SPCHType_SampleRequestData *data, unsigned int key, bool is_cached);
-};
-
-DECLARE_CONTAINER_TYPE(SampleReqList);
-
-class SampleReqList : public UTL::Std::vector<SPCHSampleRequest, _type_SampleReqList>, public AudioMemBase {
-  public:
-};
-
-struct ScheduledSpeechEvent {
-    InterfaceId *iid;                       // offset 0x0, size 0x4
-    FunctionHandle *fh;                     // offset 0x4, size 0x4
-    SPCHType_1_EventID ID;                  // offset 0x8, size 0x4
-    EAXCharacter *actor;                    // offset 0xC, size 0x4
-    Timer entry_time;                       // offset 0x10, size 0x4
-    Timer playback_time;                    // offset 0x14, size 0x4
-    Timer finish_time;                      // offset 0x18, size 0x4
-    SpeechSampleData *assoc_samples[7];     // offset 0x1C, size 0x1C
-    unsigned char assoc_samples_count;      // offset 0x38, size 0x1
-    unsigned char assoc_samples_prep;       // offset 0x39, size 0x1
-    unsigned char curndx;                   // offset 0x3A, size 0x1
-    unsigned char priority;                 // offset 0x3B, size 0x1
-    short frameindex;                       // offset 0x3C, size 0x2
-    short flags;                            // offset 0x3E, size 0x2
-
-    ScheduledSpeechEvent();
-    ~ScheduledSpeechEvent();
-
-    static void *operator new(unsigned int base_size, unsigned int xtra);
-    static void operator delete(void *ptr);
-
-    static bool sort_nested_priority(const ScheduledSpeechEvent *lhs, const ScheduledSpeechEvent *rhs);
-    void AddSample(SpeechSampleData *sample, unsigned char specific_index);
-    void *GetData(unsigned int *datasize);
-    unsigned char ReserveSample();
 };
 
 short Manager::m_frameindex = 0;

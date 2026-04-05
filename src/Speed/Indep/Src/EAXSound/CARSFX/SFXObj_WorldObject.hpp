@@ -8,6 +8,7 @@
 struct WorldObject;
 
 // TODO: Fill this header with the full WorldObject and SFXObj_WorldObject declarations once
-// ISndAttachable is moved into its owner header from EaxSoundTypes.cpp.
+// ISndAttachable ownership is resolved; the current line-lookup evidence only points at the
+// STATEMGR_Enviro include site, not at a recovered canonical owner header.
 
 #endif

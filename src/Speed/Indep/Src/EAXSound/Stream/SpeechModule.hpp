@@ -12,7 +12,23 @@
 struct SPEECH_BANK;
 struct EAXS_StreamChannel;
 struct SFX_Base;
-struct SPCHType_SampleRequestData;
+
+struct EventSpec {
+    unsigned short eventID;   // offset 0x0, size 0x2
+    unsigned char eventDatID; // offset 0x2, size 0x1
+    unsigned char projectID;  // offset 0x3, size 0x1
+};
+
+struct SPCHType_SampleRequestData {
+    int bankNum;          // offset 0x0, size 0x4
+    int sampleOffset;     // offset 0x4, size 0x4
+    int numBytes;         // offset 0x8, size 0x4
+    EventSpec eventSpec;  // offset 0xC, size 0x4
+    int channel;          // offset 0x10, size 0x4
+    int subID;            // offset 0x14, size 0x4
+    int datID;            // offset 0x18, size 0x4
+    int interruptFlag;    // offset 0x1C, size 0x4
+};
 
 // TODO move
 enum eMasterMixChannel {
