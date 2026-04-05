@@ -93,7 +93,7 @@ struct Wheel {
         Reset();
     }
 
-    inline void Reset() {
+    void Reset() {
         mWheelOnGround = 1;
         mWheelForceZ = 0.0f;
         mWheelSlip = bVector2(0.0f, 0.0f);
@@ -118,7 +118,7 @@ struct Engine {
         Reset();
     }
 
-    inline void Reset() {
+    void Reset() {
         mBoostFlag = 0;
         mNOSFlag = 0;
         mNOS = 0.0f;

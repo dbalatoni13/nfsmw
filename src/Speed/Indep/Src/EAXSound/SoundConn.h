@@ -23,12 +23,12 @@ class CarSoundConn : public Sim::Connection, public UTL::Collections::Listable<C
 
     CarSoundConn(const Sim::ConnectionData &data);
     ~CarSoundConn() override;
-    inline virtual void OnReceive(Sim::Packet *pkt) override {}
-    inline void OnClose() override { delete this; }
+    virtual void OnReceive(Sim::Packet *pkt) override {}
+    void OnClose() override { delete this; }
     Sim::ConnStatus OnStatusCheck() override;
     void UpdateState(float dT);
     static Sim::Connection *Construct(const Sim::ConnectionData &data);
-    static inline void SetAssetsLoaded(CarSoundConn *conn) {
+    static void SetAssetsLoaded(CarSoundConn *conn) {
         if (conn->mConnected && conn->mState != nullptr) {
             conn->mState->mAssetsLoaded = true;
         }
@@ -42,9 +42,9 @@ class HeliSoundConn : public Sim::Connection, public UTL::Collections::Listable<
 
     HeliSoundConn(const Sim::ConnectionData &data);
     ~HeliSoundConn() override;
-    inline virtual void OnReceive(Sim::Packet *pkt) override {}
-    inline void OnClose() override { delete this; }
-    inline Sim::ConnStatus OnStatusCheck() override { return Sim::CONNSTATUS_READY; }
+    virtual void OnReceive(Sim::Packet *pkt) override {}
+    void OnClose() override { delete this; }
+    Sim::ConnStatus OnStatusCheck() override { return Sim::CONNSTATUS_READY; }
     void UpdateState(float dT);
     static Sim::Connection *Construct(const Sim::ConnectionData &data);
 };

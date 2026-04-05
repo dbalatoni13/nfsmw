@@ -163,7 +163,7 @@ class cSTICH_PlayBack : public AudioMemBase {
     void Update(float t);
     void DestroyAllStichs(void);
 
-    inline bPList<SND_Stich> &GetStichList(STICH_TYPE StichType) {
+    bPList<SND_Stich> &GetStichList(STICH_TYPE StichType) {
         return StichList[StichType];
     }
 
