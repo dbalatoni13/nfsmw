@@ -117,6 +117,21 @@ struct st3DMixCtlProc {
     st3DMixCtlUniqueData *p3DMixCtlData_U;  // offset 0x04, size 0x4
 };
 
+enum eDMIXENVELOPS {
+    DMENV_AR = 0,
+    DMENV_ASR = 1,
+    DMENV_ATR = 2,
+    DMENV_LFO = 3,
+};
+
+struct stMixEventHdr {
+    // total size: 0x10
+    int NumEvents;    // offset 0x00, size 0x4
+    int Reserved_01;  // offset 0x04, size 0x4
+    int Reserved_02;  // offset 0x08, size 0x4
+    int Reserved_03;  // offset 0x0C, size 0x4
+};
+
 struct stMixEvtParams {
     // total size: 0x18
     int nEVTCTLID;       // offset 0x00, size 0x4
