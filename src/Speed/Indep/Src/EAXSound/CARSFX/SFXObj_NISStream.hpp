@@ -22,6 +22,10 @@ struct SFXObj_NISStream : CARSFX {
     void StartNISButtonThrough();
     void AnimationEnded(bool bunloaded);
     bool IsNISStreamReady() { return m_bNISAudioStreamReady; }
+    int GetController(int Index) override { return -1; }
+    void AttachController(SFXCTL *psfxctl) override {}
+    void Destroy() override {}
+    void ProcessUpdate() override {}
 
     static bool m_bNISButtonThroughAnimationReady;
     static bool m_bNISAudioStreamReady;

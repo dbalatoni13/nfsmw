@@ -324,6 +324,10 @@ bool SFXObj_NISStream::QueueNISStream(unsigned int anim_id, int camera_track_num
     return QueueNISStream(anim_id, camera_track_number, bbuttonthrough, true);
 }
 
+void SFXObj_NISStream::StopStream() {
+    Speech::Manager::GetSpeechModule(0)->PurgeSpeech();
+}
+
 bool SFXObj_NISStream::QueueNISStream(unsigned int anim_id, int camera_track_number, bool bbuttonthrough,
                                       bool btracktime) {
     Speech::Module *nismgr = Speech::Manager::GetSpeechModule(0);
