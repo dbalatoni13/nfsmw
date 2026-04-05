@@ -935,16 +935,18 @@ int bMemoryGetAllocations(int pool_num, void **allocations, int max_allocations)
 
 static char bMemoryDebugStringNoName[8] = "NO_NAME";
 
-// UNSOLVED
-void *bMemoryAllocator::Alloc(unsigned int size, const EA::TagValuePair &flags) {
+void *bMemoryAllocator::Alloc(size_t size, const EA::TagValuePair &flags) {
     // TODO magic numbers (flags)
     int allocation_params = 0x40;
     const EA::TagValuePair *p = &flags;
+    char *name = bMemoryDebugStringNoName;
 
     for (; p; p = p->mNext) {
         switch (p->mTag) {
-            case 0:
             case 1:
+                if (p->mValue.mPointer) {
+                    name = static_cast<char *>(p->mValue.mPointer);
+                }
                 break;
             case 2:
                 allocation_params |= (p->mValue.mSize & 0x1ffc) << 6;
@@ -957,7 +959,7 @@ void *bMemoryAllocator::Alloc(unsigned int size, const EA::TagValuePair &flags) 
                 break;
         }
     }
-    return bMalloc(size, bMemoryDebugStringNoName, 0, allocation_params);
+    return bMalloc(size, name, 0, allocation_params);
 }
 
 void bMemoryAllocator::Free(void *pBlock, unsigned int size) {

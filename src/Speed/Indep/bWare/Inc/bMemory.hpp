@@ -121,8 +121,8 @@ class bMemoryAllocator : public EA::Allocator::IAllocator {
           ,
           PoolNumber(0) {}
 
-    virtual void *Alloc(unsigned int size, const EA::TagValuePair &flags);
-    virtual void Free(void *pBlock, unsigned int size);
+    virtual void *Alloc(size_t size, const EA::TagValuePair &flags);
+    virtual void Free(void *pBlock, size_t size);
     virtual int AddRef();
     virtual int Release();
 
