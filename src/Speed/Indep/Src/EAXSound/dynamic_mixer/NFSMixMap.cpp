@@ -1025,4 +1025,209 @@ void NFSMixMap::InitMainMapStates() {
     ConnectMixMap();
 }
 
+stCurveDataProc *NFSMixMap::GetCurveDataPtr(stMixCtlParams *pparams) {
+    int n;
+    int ncurve;
+    int noffset;
+    stCurveDataProc *pcdp;
+
+    if (!m_pCurveDataArray) {
+        return nullptr;
+    }
+
+    ncurve = (pparams->nINPUTID >> 24) & 0xF;
+    noffset = 0;
+    for (n = 0; n < ncurve; n++) {
+        noffset += m_CurveProcsTotal[n][0];
+    }
+
+    pcdp = m_pCurveDataArray + noffset;
+    for (n = 0; n < m_CurveProcsTotal[ncurve][1]; n++) {
+        if (pcdp->nINPUTID == pparams->nINPUTID) {
+            return pcdp;
+        }
+        pcdp++;
+    }
+
+    m_CurveProcsTotal[ncurve][1] = m_CurveProcsTotal[ncurve][1] + 1;
+    pcdp->dBOutput = 0;
+    pcdp->nINPUTID = pparams->nINPUTID;
+    pcdp->Q15Output = 0x7FFF;
+    pcdp->pInputParam = nullptr;
+    return pcdp;
+}
+
+int **NFSMixMap::AddScaleIDs(stMixCtlParams *pmixctl, int instance) {
+    int numscale;
+    int ntotaladded;
+    int n;
+    int **paddr;
+    int *pIDs;
+
+    numscale = (pmixctl->nUScaleCntSwing >> 16) & 0x1F;
+    if (numscale == 0) {
+        return nullptr;
+    }
+
+    ntotaladded = 0;
+    pIDs = &pmixctl[1].nINPUTID;
+    paddr = m_pScalePtrArray + m_ScaleParamsIDCount;
+    for (n = 0; n < numscale; n++) {
+        unsigned int ID;
+
+        ID = *pIDs++;
+        if ((ID & 0xFF0000) == (pmixctl->nINPUTID & 0xFF0000U)) {
+            m_pScalePtrArray[m_ScaleParamsIDCount + n] = reinterpret_cast<int *>(ID | (instance << 11));
+            ntotaladded++;
+        } else {
+            int m;
+            int state;
+
+            state = (ID >> 16) & 0xFF;
+            for (m = 0; m < m_StateRefCount[state]; m++) {
+                m_pScalePtrArray[m_ScaleParamsIDCount + n + m] = reinterpret_cast<int *>(ID | (m << 11));
+                ntotaladded++;
+            }
+        }
+    }
+
+    pmixctl->nUScaleCntSwing = (pmixctl->nUScaleCntSwing & 0x00FFFFFF) | (ntotaladded << 24);
+    m_ScaleParamsIDCount = m_ScaleParamsIDCount + ntotaladded;
+    return paddr;
+}
+
+int **NFSMixMap::AddScaleIDs(stMixEvtParams *pevtmixctl, int instance) {
+    int numscale;
+    int ntotaladded;
+    int n;
+    int **paddr;
+    int *pIDs;
+
+    if (m_ScaleParamsIDCount == m_ScaleParamsAdded) {
+        return nullptr;
+    }
+
+    numscale = (pevtmixctl->nUScaleCntSwing >> 16) & 0x1F;
+    if (numscale == 0) {
+        return nullptr;
+    }
+
+    ntotaladded = 0;
+    pIDs = &pevtmixctl[1].nEVTCTLID;
+    paddr = m_pScalePtrArray + m_ScaleParamsIDCount;
+    for (n = 0; n < numscale; n++) {
+        unsigned int ID;
+
+        ID = *pIDs++;
+        if ((ID & 0xFF0000) == (pevtmixctl->nEVTCTLID & 0xFF0000U)) {
+            m_pScalePtrArray[m_ScaleParamsIDCount + n] = reinterpret_cast<int *>(ID | (instance << 11));
+            ntotaladded++;
+        } else {
+            int m;
+            int state;
+
+            state = (ID >> 16) & 0xFF;
+            for (m = 0; m < m_StateRefCount[state]; m++) {
+                m_pScalePtrArray[m_ScaleParamsIDCount + n + m] = reinterpret_cast<int *>(ID | (m << 11));
+                ntotaladded++;
+            }
+        }
+    }
+
+    pevtmixctl->nUScaleCntSwing = (pevtmixctl->nUScaleCntSwing & 0x00FFFFFF) | (ntotaladded << 24);
+    m_ScaleParamsIDCount = m_ScaleParamsIDCount + ntotaladded;
+    return paddr;
+}
+
+void NFSMixMap::AssignMixCtlDataPtrs(stMixCtlProc *pmixctl, stMixCtlParams *pparms, int nstateindex, int ctlcount) {
+    int nunique;
+
+    if (nstateindex == 0) {
+        int nshared;
+
+        nshared = m_AssignedMixCtlsShared;
+        nunique = m_AssignedMixCtlsUnique;
+        m_AssignedMixCtlsShared = nshared + 1;
+        pmixctl->psdata = m_pMixCtlData_S + nshared;
+    } else {
+        int n;
+        int mapType;
+        int nshared;
+        stMixCtlSharedData *ps;
+
+        mapType = m_MapType;
+        nshared = m_AssignedMixCtlsShared;
+        nunique = m_AssignedMixCtlsUnique;
+        ps = m_pMixCtlData_S;
+        for (n = 0; n < nshared; n++) {
+            if (ps[n].MIXCTLOBJID ==
+                ((pparms->nINPUTID & 0x0F000000U) | (mapType << 8) | ((pparms->nINPUTID >> 16) & 0xE000U) |
+                 (pparms->nINPUTID & 0x00FF0000) | ctlcount)) {
+                pmixctl->psdata = ps + n;
+            }
+        }
+    }
+
+    pmixctl->pudata = m_pMixCtlData_U + nunique;
+    m_AssignedMixCtlsUnique = nunique + 1;
+}
+
+void NFSMixMap::UpdateEvtMixCtls() {
+    int n;
+    stEvtMixCtlProc *pevtproc;
+
+    n = 0;
+    pevtproc = m_pEvtMixCtlProc;
+    while (n < m_EventCtlsAdded) {
+        stEvtMixCtlUniqueData *pevt_U;
+
+        pevt_U = pevtproc->pData_U;
+        if ((pevt_U->msTimeElapsed == 0.0f) && (*pevt_U->pTriggerPtr == 0)) {
+            pevt_U->reset = 0;
+            pevt_U->reset_level = -10000;
+            pevt_U->output = 0;
+            pevt_U->qoutput = 0x7FFF;
+        } else {
+            pevt_U->msTimeElapsed = pevt_U->msTimeElapsed + m_msDeltaTime;
+
+            switch ((pevtproc->pData_S->pMapParms->nEVTCTLID >> 24) & 0xF) {
+                case DMENV_ASR:
+                    UpdateASREvent(pevtproc);
+                    pevt_U = pevtproc->pData_U;
+                    break;
+                case DMENV_AR:
+                    UpdateAREvent(pevtproc);
+                    pevt_U = pevtproc->pData_U;
+                    break;
+                case DMENV_ATR:
+                    UpdateATREvent(pevtproc);
+                    pevt_U = pevtproc->pData_U;
+                    break;
+                case DMENV_LFO:
+                    UpdateLFOEvent(pevtproc);
+                    pevt_U = pevtproc->pData_U;
+                    break;
+            }
+
+            if (pevt_U->ppScaleRatios) {
+                int nout;
+                int ns;
+                unsigned int numscale;
+
+                nout = pevt_U->output;
+                ns = 0;
+                numscale = (pevtproc->pData_S->pMapParms->nUScaleCntSwing >> 24) & 0xFF;
+                while (ns < static_cast<int>(numscale)) {
+                    nout = (nout * *pevt_U->ppScaleRatios[ns]) >> 15;
+                    ns++;
+                }
+                pevt_U->output = nout;
+            }
+        }
+
+        n++;
+        pevtproc++;
+    }
+}
+
 void NFSMixMap::UpdateLFOEvent(stEvtMixCtlProc *pProc) {}
