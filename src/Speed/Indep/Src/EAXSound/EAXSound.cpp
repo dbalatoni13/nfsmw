@@ -312,47 +312,47 @@ EAXSound::EAXSound() {
 EAXSound::~EAXSound() {
     gSpeechCache.Dump();
 
-    if (mAttributes != nullptr) {
+    if (mAttributes) {
         delete mAttributes;
         mAttributes = nullptr;
     }
 
-    if (mLocalAttr != nullptr) {
+    if (mLocalAttr) {
         delete mLocalAttr;
         mLocalAttr = nullptr;
     }
 
-    if (m_pCmnSnd != nullptr) {
+    if (m_pCmnSnd) {
         delete m_pCmnSnd;
         m_pCmnSnd = nullptr;
     }
 
-    if (m_pFESnd != nullptr) {
+    if (m_pFESnd) {
         delete m_pFESnd;
         m_pFESnd = nullptr;
     }
 
-    if (m_pEAXSND8Wrapper != nullptr) {
+    if (m_pEAXSND8Wrapper) {
         delete m_pEAXSND8Wrapper;
         m_pEAXSND8Wrapper = nullptr;
     }
 
-    if (g_pNISRevMgr != nullptr) {
+    if (g_pNISRevMgr) {
         delete g_pNISRevMgr;
     }
 }
 
 int *EAXSound::GetPointerCallback(int nid) {
     SndBase *pbs = GetSndBase_Object(nid);
-    if (pbs != nullptr) {
-        return pbs->GetOutputBlockPtr() != nullptr ? pbs->GetOutputBlockPtr() : nullptr;
+    if (pbs) {
+        return pbs->GetOutputBlockPtr() ? pbs->GetOutputBlockPtr() : nullptr;
     }
     return g_DMIX_DummyInputBlock;
 }
 
 void EAXSound::SetSFXOutCallback(int nid, int *ptr) {
     SndBase *pbs = GetSndBase_Object(nid);
-    if (pbs != nullptr) {
+    if (pbs) {
         pbs->SetOutputsPtr(ptr);
     }
     int *pclear = ptr;
@@ -364,9 +364,9 @@ void EAXSound::SetSFXOutCallback(int nid, int *ptr) {
 
 bool EAXSound::SetSFXInputCallback(int nid, int *ptr) {
     SndBase *pbs = GetSndBase_Object(nid);
-    if (pbs != nullptr) {
+    if (pbs) {
         pbs->SetInputsPtr(ptr);
-        if (pbs->GetStateBase() != nullptr) {
+        if (pbs->GetStateBase()) {
             return pbs->GetStateBase()->IsAttached();
         }
     }
@@ -374,7 +374,7 @@ bool EAXSound::SetSFXInputCallback(int nid, int *ptr) {
 }
 
 int EAXSound::GetStateRefCount(int nstate) {
-    if (m_pStateMgr[nstate] == nullptr) {
+    if (!m_pStateMgr[nstate]) {
         return 0;
     }
     return m_pStateMgr[nstate]->GetStateObjCount();
@@ -397,10 +397,10 @@ void EAXSound::SetSFXBaseObject(SFX_Base *psb, eMAINMAPSTATES estate, int ntype,
             Speech::Manager::AttachSFXOBJ(NISSFX_MODULE, psb, static_cast<eSFXOBJ_MAIN_TYPES>(ntype));
             return;
         case SFXOBJ_FEHUD:
-            if (m_pFESnd != nullptr) {
+            if (m_pFESnd) {
                 m_pFESnd->AttachSFXOBJ(psb, SFXOBJ_FEHUD);
             }
-            if (m_pCmnSnd != nullptr) {
+            if (m_pCmnSnd) {
                 m_pCmnSnd->AttachSFXOBJ(psb, SFXOBJ_FEHUD);
             }
             return;
@@ -424,10 +424,10 @@ void EAXSound::SetSFXBaseObject(SFX_Base *psb, eMAINMAPSTATES estate, int ntype,
 SFX_Base *EAXSound::GetSFXBase_Object(int nID) {
     SFX_Base *ReturnObj = nullptr;
     int nState = (static_cast<unsigned int>(nID) >> 16) & 0xFF;
-    if (m_pStateMgr[nState] != nullptr) {
+    if (m_pStateMgr[nState]) {
         int nInstanceID = (static_cast<unsigned int>(nID) >> 11) & 0x1F;
         int SFXID_Number = (static_cast<unsigned int>(nID) >> 4) & 0x7F;
-        if (m_pStateMgr[nState]->GetStateObj(nInstanceID) == nullptr) {
+        if (!m_pStateMgr[nState]->GetStateObj(nInstanceID)) {
             return nullptr;
         }
         if ((nID & 0xE0000000) == 0x40000000) {
@@ -440,10 +440,10 @@ SFX_Base *EAXSound::GetSFXBase_Object(int nID) {
 SndBase *EAXSound::GetSndBase_Object(int nID) {
     SndBase *ReturnObj = nullptr;
     int nState = (static_cast<unsigned int>(nID) >> 16) & 0xFF;
-    if (m_pStateMgr[nState] != nullptr) {
+    if (m_pStateMgr[nState]) {
         int nInstanceID = (static_cast<unsigned int>(nID) >> 11) & 0x1F;
         int SFXID_Number = (static_cast<unsigned int>(nID) >> 4) & 0x7F;
-        if (m_pStateMgr[nState]->GetStateObj(nInstanceID) == nullptr) {
+        if (!m_pStateMgr[nState]->GetStateObj(nInstanceID)) {
             return nullptr;
         }
         if ((nID & 0xE0000000) == 0x40000000) {
@@ -453,7 +453,7 @@ SndBase *EAXSound::GetSndBase_Object(int nID) {
             ReturnObj = m_pStateMgr[nState]->GetStateObj(nInstanceID)->GetSFXCTLObject(SFXID_Number);
         }
     }
-    if (ReturnObj == nullptr) {
+    if (!ReturnObj) {
         return nullptr;
     }
     return ReturnObj;
@@ -622,15 +622,15 @@ void EAXSound::StartNewGamePlay() {
     SetSoundControlState(true, SNDSTATE_STOP_MUSIC, "RestartRace");
 
     if (bHasStartNewGameOccured) {
-        if (m_pCmnSnd != nullptr) {
+        if (m_pCmnSnd) {
             delete m_pCmnSnd;
             m_pCmnSnd = nullptr;
         }
 
-        if (m_pStreamManager != nullptr) {
+        if (m_pStreamManager) {
             for (int i = 0; i < 4; i++) {
                 EAXS_StreamChannel *channel = m_pStreamManager->GetStreamChannel(i);
-                if (channel != nullptr && i != 1) {
+                if (channel && i != 1) {
                     m_pStreamManager->GetStreamChannel(i)->Stop();
                     m_pStreamManager->GetStreamChannel(i)->PurgeStream();
                 }
@@ -640,10 +640,10 @@ void EAXSound::StartNewGamePlay() {
         for (int i = 0; i < 13; i++) {
             if (i != 1) {
                 CSTATEMGR_Base *mgr = m_pStateMgr[i];
-                if (mgr != nullptr) {
+                if (mgr) {
                     mgr->ExitWorld();
                 }
-            } else if (m_pStateMgr[i] != nullptr) {
+            } else if (m_pStateMgr[i]) {
                 m_pStateMgr[i]->DisconnectMixMap();
             }
         }
@@ -676,7 +676,7 @@ void EAXSound::StartNewGamePlay() {
             race = startupRace;
         }
 
-        if (race != nullptr) {
+        if (race) {
             GRace::Type raceType = race->GetRaceType();
             if (raceType == GRace::kRaceType_Drag) {
                 eSndGameMode oldMode = m_eSndGameMode;
@@ -689,7 +689,7 @@ void EAXSound::StartNewGamePlay() {
                 }
             } else {
                 SFXObj_PFEATrax *track = static_cast<SFXObj_PFEATrax *>(GetSFXBase_Object(0x40010010));
-                if (track != nullptr) {
+                if (track) {
                     track->RestartRace();
                 }
                 eSndGameMode oldMode = m_eSndGameMode;
@@ -723,14 +723,14 @@ void EAXSound::StartNewGamePlay() {
     m_pNFSMixMaster->InitMixMap(0);
 
     SFXObj_Pathfinder *ppf = static_cast<SFXObj_Pathfinder *>(GetSFXBase_Object(0x40010010));
-    if (ppf != nullptr) {
+    if (ppf) {
         if (m_ePlayerMixMode == EAXS3D_TWO_PLAYER_MIX) {
             ppf->m_Flags |= 2;
         } else {
             ppf->m_Flags &= ~2u;
         }
 
-        if (GRaceStatus::Exists() && GRaceStatus::Get().GetRaceParameters() != nullptr &&
+        if (GRaceStatus::Exists() && GRaceStatus::Get().GetRaceParameters() &&
             GRaceStatus::Get().GetRaceParameters()->GetRaceType() != GRace::kRaceType_Drag) {
             ppf->m_Flags |= 1;
         }
@@ -755,7 +755,7 @@ void EAXSound::InitializeInGame() {
     bIsAnFEToIngameTransition = false;
 
     for (int n = 0; n < 13; n++) {
-        if (n != nstate && m_pStateMgr[n] != nullptr) {
+        if (n != nstate && m_pStateMgr[n]) {
             m_pStateMgr[n]->EnterWorld(m_eSndGameMode);
         }
     }
