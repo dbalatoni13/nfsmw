@@ -1,0 +1,127 @@
+zEAXSound Exhaustive Cleanup Pass — Progress Tracker
+====================================================
+Status legend:
+- DONE  = reviewed / cleaned / verified for current scope
+- PEND  = still has targeted cleanup left
+- SKIP  = intentionally left in current form because the known rewrite is match-sensitive
+- BLOCK = structurally blocked until include / ownership / codegen issue is solved
+
+FILE                                  STATUS  NOTES
+----                                  ------  -----
+AudioMemoryManager.cpp                DONE    Prior cast cleanup verified
+EAXSound.cpp                          DONE    Local Speech::Manager::GetSampleRequests folded in-class
+EAXAemsManager.cpp                    PEND    stAssetDescription / stSndDataLoadParams inline bodies still out-of-class
+EAXFrontEnd.cpp                       DONE    Reviewed clean
+EAXAITunerCar.cpp                     DONE    mPhysicsChangedGear bool cleanup verified
+EAXTrafficCar.cpp                     DONE    Reviewed clean
+EAXTunerCar.cpp                       PEND    UpdatePov raw vtable math investigated; typed rewrite still pending
+SoundCollision.cpp                    DONE    Struct/layout audit done
+EAXSndUtil.cpp                        DONE    IsLinked bool cleanup verified
+EAXSND8Wrapper.cpp                    DONE    PF_Allocator inline bodies collapsed into the class declaration
+EAXVolumes.cpp                        SKIP    Current goto/source shape is a matching artifact
+STICH_PlayBack.cpp                    DONE    __builtin cleanup + struct/layout audit verified
+STICH_Loader.cpp                      DONE    Prior cleanup verified
+EAXAIUtils.cpp                        DONE    bTransition bool cleanup verified
+SoundConn.cpp                         DONE    Struct/layout audit verified
+EaxSoundTypes.cpp                     DONE    SpeechSampleData::Lock/Unlock + local Manager inline folded in-class
+Stream/EAXS_StreamManager.cpp         DONE    Reviewed; no safe cleanup beyond matching artifacts
+Stream/EAXS_StreamChannel.cpp         DONE    Reviewed clean
+Stream/SndStrmWrapper.cpp             SKIP    `bramp == true` is known match-sensitive here
+realstream/src/stream.cpp             DONE    Struct/layout audit verified
+sfxctl/SFXCTL.cpp                     DONE    Reviewed clean
+sfxctl/SFXCTL_Wheel.cpp               DONE    Reviewed; current nullptr cast sites are constructor-overload driven
+sfxctl/SFXCTL_Shifting.cpp            SKIP    bool-through-void* sites are known match-sensitive
+sfxctl/SFXCTL_Engine.cpp              BLOCK   Out-of-class inline helpers depend on incomplete / cpp-local state
+sfxctl/SFXCTL_NISReving.cpp           DONE    Reviewed clean
+sfxctl/SFXCTL_AccelTrans.cpp          DONE    Generated acceltrans accessors moved to their owner header
+sfxctl/SFXCTL_HybridMotor.cpp         DONE    Reviewed clean
+sfxctl/SFXCTL_Physics.cpp             DONE    Duplicate local ControlSource enum removed; warning cleared
+sfxctl/SFXCTL_Tunnel.cpp              DONE    Bool + struct/layout cleanup verified
+sfxctl/SFXCTL_MasterVol.cpp           DONE    MoviePlayer size comment added
+sfxctl/SFXCTL_Collision.cpp           DONE    Reviewed clean
+sfxctl/SFXCTL_3DCarPos.cpp            DONE    Reviewed clean
+sfxctl/SFXCTL_3DObjPos.cpp            DONE    EAXSound::GetPlayerMixMode moved into class declaration
+sfxctl/SFXCTL_Pathfinder5.cpp         DONE    nullptr cleanup verified
+sfxctl/SFXCTL_Helicopter.cpp          DONE    Reviewed clean
+
+HEADER / TYPE FILE                     STATUS  NOTES
+------------------                     ------  -----
+AudioMemBase.hpp                       DONE    total-size comment added; redundant `public:` removed
+AudioMemoryManager.hpp                 DONE    Rechecked against DWARF layout
+EAXSOund.hpp                           DONE    GetPlayerMixMode folded in-class
+EAXCar.hpp                             DONE    Prior DWARF/member audit stands
+EAXCarState.hpp                        DONE    Prior DWARF/member audit stands
+EAXSndUtil.h                           DONE    Prior DWARF/member audit stands
+EAXSoundTypes.h                        DONE    Prior forward-decl / layout cleanup stands
+SndBase.hpp                            BLOCK   GetPhysCar inline body still requires post-include placement
+SndCamera.hpp                          DONE    All static getter inline bodies folded into struct
+SpeechModule.hpp                       DONE    Reviewed; no new cleanup needed
+Stream/SpeechManager.hpp               PEND    Needs audit against DWARF/static-member ownership; do not guess
+STATE_Base.hpp                         DONE    Prior DWARF/member audit stands
+STATEMGR_Base.hpp                      DONE    Prior cleanup stands
+STICH_Playback.h                       DONE    Prior cleanup stands
+EAXFrontEnd.hpp                        DONE    Reviewed clean
+SimStates/EAX_HeliState.hpp            PEND    Getter/destructor inlines folded in-class; constructor still out-of-class in TU
+EAXTunerCar.hpp                        DONE    Reviewed clean
+EAXTrafficCar.hpp                      DONE    Reviewed clean
+EAXAITunerCar.hpp                      DONE    Reviewed clean
+EAXAIUtils.hpp                         DONE    Prior DWARF/member audit stands
+SoundCollision.hpp                     DONE    Reviewed clean
+SoundConn.h                            DONE    Prior DWARF/member audit stands
+EAXS_StreamChannel.h                   DONE    Reviewed clean
+EAXS_StreamManager.h                   DONE    Reviewed clean
+SndStrmWrapper.hpp                     DONE    Reviewed clean
+SFXCTL.hpp                             BLOCK   GetPhysRPM/GetPhysTRQ still depend on incomplete EAXCar here
+SFX_base.hpp                           DONE    Reviewed clean
+CARSFX.hpp                             DONE    Reviewed clean
+sfxctl/SFXCTL_Wheel.hpp                DONE    Reviewed clean
+sfxctl/SFXCTL_Shifting.hpp             DONE    Reviewed clean
+sfxctl/SFXCTL_Engine.hpp               BLOCK   SetEngTorque inline body depends on cpp-local constants
+sfxctl/SFXCTL_AccelTrans.hpp           DONE    Local header is fine; generated acceltrans header still pending
+sfxctl/SFXCTL_HybridMotor.hpp          DONE    Reviewed clean
+sfxctl/SFXCTL_Physics.hpp              DONE    Prior DWARF/member audit stands
+sfxctl/SFXCTL_Tunnel.hpp               DONE    Prior struct/layout cleanup stands
+sfxctl/SFXCTL_3DObjPos.hpp             DONE    Reviewed clean
+sfxctl/SFXCTL_Pathfinder5.hpp          DONE    Reviewed clean
+sfxctl/sfxctl_helicopter.hpp           DONE    Reviewed clean
+sfxctl/sfxctl_mastervol.hpp            DONE    Reviewed clean
+sfxctl/SFXCTL_Collision.hpp            DONE    Reviewed clean
+sfxctl/SFXCTL_NISReving.hpp            DONE    Reviewed clean
+Generated/AttribSys/Classes/acceltrans.h DONE  Inline accessors folded into the generated owner declaration
+dynamic_mixer/NFSMixMaster.hpp         DONE    Empty stub; nothing to audit
+snd_gen/*.h                            DONE    Searched; no inline/member/layout cleanup targets found
+Ginsu/*.h                              DONE    Searched; no inline/member/layout cleanup targets found
+PF_iallocatorimpl.h                    DONE    Removed after folding the methods into PF_Allocator
+
+INLINE MIGRATION TRACKER
+------------------------
+DONE:
+- SndCamera getters
+- EAX_HeliState destructor/getters
+- EAXSound::GetPlayerMixMode
+- Speech::Manager::GetSampleRequests (local TU declaration)
+- SpeechSampleData::Lock / Unlock
+- PF_Allocator::Free / AddRef / Release
+- Attrib::Gen::acceltrans::AccelFromIdle_INTERUPT_T / AccelFromIdle_RESUME_T
+
+PEND:
+- stAssetDescription::Clear / operator=
+- stSndDataLoadParams::Clear / operator=
+- EAX_HeliState constructor
+
+BLOCK:
+- SndBase::GetPhysCar
+- SFXCTL::GetPhysRPM / GetPhysTRQ
+- SFXCTL_Engine::SetEngTorque
+
+VTABLE / RAW POINTER MATH TRACKER
+---------------------------------
+PEND:
+- EAXTunerCar::UpdatePov
+  Evidence gathered:
+  - eViews[1].CameraMoverList / eView::GetCameraMover()
+  - CameraMover::GetAnchor() via ICollisionHandler secondary vtable
+  - CameraMover::GetType() / CM_DRIVE_CUBIC at offset 0xC
+  - CameraAnchor::mPOV.Type at offset 0xD8
+  Next step:
+  - Try the cleanest typed rewrite that still preserves match, then verify immediately

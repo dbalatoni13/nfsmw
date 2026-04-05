@@ -199,7 +199,7 @@ class EAXSound : public AudioMemBase {
     eSndGameMode GetSndGameMode() { return m_eSndGameMode; }
     eSndGameMode GetSndGameMode() const { return m_eSndGameMode; }
     eSndGameMode GetPrevSndGameMode() const { return m_prevSndGameMode; }
-    e3DPlayerMix GetPlayerMixMode();
+    e3DPlayerMix GetPlayerMixMode() { return m_ePlayerMixMode; }
     eSndGameMode GetSoundGameMode() const { return m_eSndGameMode; }
     bool IsPauseMainFNG() const { return m_bPause_MainFNG; }
     void SetPauseMainFNG(bool pauseMainFNG) { m_bPause_MainFNG = pauseMainFNG; }

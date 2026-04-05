@@ -66,13 +66,21 @@ struct acceltrans : Instance {
         return 0xff77f451;
     }
 
-    const unsigned int &AccelFromIdle_INTERUPT_T() const;
+    const unsigned int &AccelFromIdle_INTERUPT_T() const {
+        const unsigned int *resultptr = reinterpret_cast<const unsigned int *>(GetAttributePointer(0x49fb8ce5, 0));
+        if (!resultptr) {
+            resultptr = reinterpret_cast<const unsigned int *>(DefaultDataArea(sizeof(unsigned int)));
+        }
+        return *resultptr;
+    }
 
     const unsigned int &AccelFromIdle_PEAK_T() const {
         return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->AccelFromIdle_PEAK_T;
     }
 
-    const unsigned int &AccelFromIdle_RESUME_T() const;
+    const unsigned int &AccelFromIdle_RESUME_T() const {
+        return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->AccelFromIdle_RESUME_T;
+    }
 
     const unsigned int &AccelFromIdle_PEAK_RPM() const {
         return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->AccelFromIdle_PEAK_RPM;

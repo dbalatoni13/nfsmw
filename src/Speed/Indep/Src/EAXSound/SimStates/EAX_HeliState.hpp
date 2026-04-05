@@ -22,35 +22,23 @@ struct EAX_HeliState : public UTL::Collections::Listable<EAX_HeliState, 10> {
     unsigned int mWorldID;        // offset 0x9C, size 0x4
 
     EAX_HeliState(const Attrib::Collection *atr, unsigned int wuid);
-    ~EAX_HeliState();
+    ~EAX_HeliState() {}
 
-    bool IsSimUpdating();
-    bVector3 *GetPosition();
-    const bVector3 *GetForwardVector();
-    const bVector3 *GetVelocity();
-    float GetForwardSpeed();
+    bool IsSimUpdating() {
+        return mSimUpdating == true;
+    }
+    bVector3 *GetPosition() {
+        return static_cast<bVector3 *>(static_cast<void *>(&mMatrix.v3));
+    }
+    const bVector3 *GetForwardVector() {
+        return static_cast<const bVector3 *>(static_cast<const void *>(&mMatrix.v0));
+    }
+    const bVector3 *GetVelocity() {
+        return &mVel0;
+    }
+    float GetForwardSpeed() {
+        return mFWSpeed;
+    }
 };
-
-inline EAX_HeliState::~EAX_HeliState() {}
-
-inline bool EAX_HeliState::IsSimUpdating() {
-    return mSimUpdating == true;
-}
-
-inline bVector3 *EAX_HeliState::GetPosition() {
-    return static_cast<bVector3 *>(static_cast<void *>(&mMatrix.v3));
-}
-
-inline const bVector3 *EAX_HeliState::GetForwardVector() {
-    return static_cast<const bVector3 *>(static_cast<const void *>(&mMatrix.v0));
-}
-
-inline const bVector3 *EAX_HeliState::GetVelocity() {
-    return &mVel0;
-}
-
-inline float EAX_HeliState::GetForwardSpeed() {
-    return mFWSpeed;
-}
 
 #endif

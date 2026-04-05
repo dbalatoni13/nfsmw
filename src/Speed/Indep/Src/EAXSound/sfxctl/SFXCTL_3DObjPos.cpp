@@ -14,10 +14,6 @@ enum ePOSMIXTYPE {
 
 extern int POSMIXTYPE;
 
-inline e3DPlayerMix EAXSound::GetPlayerMixMode() {
-    return m_ePlayerMixMode;
-}
-
 inline float bDistBetween(const bVector2 *v1, const bVector2 *v2) {
     float y;
     float x;

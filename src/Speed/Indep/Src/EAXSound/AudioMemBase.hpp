@@ -7,8 +7,8 @@
 
 #include "Speed/Indep/Src/EAXSound/AudioMemoryManager.hpp"
 
+// total size: 0x4
 struct AudioMemBase {
-  public:
     virtual ~AudioMemBase() {}
 
     static void *operator new(unsigned int size) {

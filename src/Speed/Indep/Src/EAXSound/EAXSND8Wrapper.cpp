@@ -9,14 +9,24 @@ class PF_Allocator : public EA::Allocator::IAllocator {
   public:
     virtual ~PF_Allocator() {}
     virtual void *Alloc(unsigned int size, const EA::TagValuePair &flags);
-    virtual void Free(void *pBlock, unsigned int size);
-    virtual int AddRef();
-    virtual int Release();
+    virtual void Free(void *pBlock, unsigned int size) {
+        gAudioMemoryManager.FreeMemory(pBlock);
+    }
+    virtual int AddRef() {
+        return ++mRefcount;
+    }
+    virtual int Release() {
+        if (--mRefcount < 1) {
+            if (this) {
+                delete this;
+            }
+            return 0;
+        }
+        return mRefcount;
+    }
 
     int mRefcount; // offset 0x4, size 0x4
 };
-
-#include "Speed/Indep/Src/EAXSound/PF_iallocatorimpl.h"
 
 namespace EA {
 namespace Allocator {

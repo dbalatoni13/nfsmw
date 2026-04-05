@@ -59,66 +59,26 @@ struct SndCamera {
     static void UpdateCameras();
     static Camera *GetCam(int nPlayer);
 
-    static bVector3 *GetCamPos(int nPlayer);
-    static bVector3 *GetCamDir(int nPlayer);
-    static bVector3 *GetCamTarget(int nPlayer);
-    static bVector2 *GetNormCamDir(int nPlayer);
-    static bVector2 *GetNormCarDir(int nPlayer);
-    static bVector2 *GetWorldCamPos(int nPlayer);
-    static bVector2 *GetAvgCamDir(int nPlayer);
-    static bVector2 *GetWorldCarPos(int nPlayer);
-    static bVector2 *GetAveragedCamPos(int nPlayer);
-    static bVector2 *GetCenteredCarPos(int nPlayer);
-    static bVector3 *GetV3WorldCarPos(int nPlayer);
-    static bVector3 *GetV3WorldCarVel(int nPlayer);
-    static bVector3 *GetWorldCamVel(int nPlayer);
-    static eCamStates GetCurCamState(int nPlayer);
-    static eCamStates GetPrevCamState(int nPlayer);
-    static bVector3 *GetNormCarDir3(int nPlayer);
-    static bVector3 *GetWorldCarPos3(int nPlayer);
-    static float GetWorldCarVel(int nPlayer);
-    static EAXCar *GetPlayerCar(int nPlayer);
-    static bVector3 *GetCamPos3(int nPlayer);
+    static bVector3 *GetCamPos(int nPlayer) { return m_CurCamPos + nPlayer; }
+    static bVector3 *GetCamDir(int nPlayer) { return m_CurCamDir + nPlayer; }
+    static bVector3 *GetCamTarget(int nPlayer) { return m_CurCamTarget + nPlayer; }
+    static bVector2 *GetNormCamDir(int nPlayer) { return m_NormCamDir + nPlayer; }
+    static bVector2 *GetNormCarDir(int nPlayer) { return m_NormCarDir + nPlayer; }
+    static bVector2 *GetWorldCamPos(int nPlayer) { return m_WorldCamPos + nPlayer; }
+    static bVector2 *GetAvgCamDir(int nPlayer) { return m_AvergeCamDir + nPlayer; }
+    static bVector2 *GetWorldCarPos(int nPlayer) { return m_WorldCarPos + nPlayer; }
+    static bVector2 *GetAveragedCamPos(int nPlayer) { return m_AveragedCamPos + nPlayer; }
+    static bVector2 *GetCenteredCarPos(int nPlayer) { return m_CenteredCarPos + nPlayer; }
+    static bVector3 *GetV3WorldCarPos(int nPlayer) { return m_v3WorldCarPos + nPlayer; }
+    static bVector3 *GetV3WorldCarVel(int nPlayer) { return m_v3WorldCarVel + nPlayer; }
+    static bVector3 *GetWorldCamVel(int nPlayer) { return m_v3WorldCamVel + nPlayer; }
+    static eCamStates GetCurCamState(int nPlayer) { return m_CurCamState[nPlayer]; }
+    static eCamStates GetPrevCamState(int nPlayer) { return m_PrevCamState[nPlayer]; }
+    static bVector3 *GetNormCarDir3(int nPlayer) { return m_v3WorldCarDir + nPlayer; }
+    static bVector3 *GetWorldCarPos3(int nPlayer) { return m_v3WorldCarPos + nPlayer; }
+    static float GetWorldCarVel(int nPlayer) { return m_WorldCarVel[nPlayer]; }
+    static EAXCar *GetPlayerCar(int nPlayer) { return m_PLayerCars[nPlayer]; }
+    static bVector3 *GetCamPos3(int nPlayer) { return m_CurCamPos + nPlayer; }
 };
-
-inline bVector3 *SndCamera::GetCamPos(int nPlayer) { return m_CurCamPos + nPlayer; }
-
-inline bVector3 *SndCamera::GetCamDir(int nPlayer) { return m_CurCamDir + nPlayer; }
-
-inline bVector3 *SndCamera::GetCamTarget(int nPlayer) { return m_CurCamTarget + nPlayer; }
-
-inline bVector2 *SndCamera::GetNormCamDir(int nPlayer) { return m_NormCamDir + nPlayer; }
-
-inline bVector2 *SndCamera::GetNormCarDir(int nPlayer) { return m_NormCarDir + nPlayer; }
-
-inline bVector2 *SndCamera::GetWorldCamPos(int nPlayer) { return m_WorldCamPos + nPlayer; }
-
-inline bVector2 *SndCamera::GetAvgCamDir(int nPlayer) { return m_AvergeCamDir + nPlayer; }
-
-inline bVector2 *SndCamera::GetWorldCarPos(int nPlayer) { return m_WorldCarPos + nPlayer; }
-
-inline bVector2 *SndCamera::GetAveragedCamPos(int nPlayer) { return m_AveragedCamPos + nPlayer; }
-
-inline bVector2 *SndCamera::GetCenteredCarPos(int nPlayer) { return m_CenteredCarPos + nPlayer; }
-
-inline bVector3 *SndCamera::GetV3WorldCarPos(int nPlayer) { return m_v3WorldCarPos + nPlayer; }
-
-inline bVector3 *SndCamera::GetV3WorldCarVel(int nPlayer) { return m_v3WorldCarVel + nPlayer; }
-
-inline bVector3 *SndCamera::GetWorldCamVel(int nPlayer) { return m_v3WorldCamVel + nPlayer; }
-
-inline eCamStates SndCamera::GetCurCamState(int nPlayer) { return m_CurCamState[nPlayer]; }
-
-inline eCamStates SndCamera::GetPrevCamState(int nPlayer) { return m_PrevCamState[nPlayer]; }
-
-inline bVector3 *SndCamera::GetNormCarDir3(int nPlayer) { return m_v3WorldCarDir + nPlayer; }
-
-inline bVector3 *SndCamera::GetWorldCarPos3(int nPlayer) { return m_v3WorldCarPos + nPlayer; }
-
-inline float SndCamera::GetWorldCarVel(int nPlayer) { return m_WorldCarVel[nPlayer]; }
-
-inline EAXCar *SndCamera::GetPlayerCar(int nPlayer) { return m_PLayerCars[nPlayer]; }
-
-inline bVector3 *SndCamera::GetCamPos3(int nPlayer) { return m_CurCamPos + nPlayer; }
 
 #endif

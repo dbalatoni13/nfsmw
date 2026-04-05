@@ -62,14 +62,6 @@ static const float SND_AI_DRIFT_RPM_Lengths_FINE[] = {
     1.0f,
 };
 
-enum ControlSource {
-    CONTROL_NONE = 0,
-    CONTROL_HUMAN = 1,
-    CONTROL_AI = 2,
-    CONTROL_NIS = 3,
-    CONTROL_ONLINE = 4,
-};
-
 inline EAX_CarState *ReadStateCar(EAXCar *carOwner) {
     return carOwner->GetPhysCar();
 }
@@ -351,7 +343,7 @@ void SFXCTL_Physics::UpdateParams(float t) {
     m_CurGear = static_cast<Gear>(static_cast<int>(car->mDriveline.mGear));
     m_OldThrottle = m_fThrottle;
 
-    if (car->mControlSource == CONTROL_AI) {
+    if (car->mControlSource == Sound::CONTROL_AI) {
         m_fDeltaDesiredSpeed.Record(car->mDesiredSpeed - m_OldDesiredSpeed);
         m_OldDesiredSpeed = car->mDesiredSpeed;
         m_fDeltaDesiredSpeed.Recalculate();

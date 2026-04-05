@@ -128,8 +128,8 @@ struct SpeechSampleData {
     unsigned int dataoffset;        // offset 0x2C, size 0x4
 
     ~SpeechSampleData() {}
-    void Lock();
-    void Unlock();
+    void Lock() { lock = true; }
+    void Unlock() { lock = false; }
 
     static void Destruct(SpeechSampleData *ptr);
     static SpeechSampleData *Construct(SPCHType_SampleRequestData *data, unsigned int key, bool is_cached);
@@ -332,12 +332,6 @@ void SpeechSampleData::Destruct(SpeechSampleData *ptr) {
     ptr->~SpeechSampleData();
     gSpeechCache.Free(ptr);
 }
-
-inline void SpeechSampleData::Lock() { lock = true; }
-
-inline void SpeechSampleData::Unlock() { lock = false; }
-
-inline SampleReqList &Manager::GetSampleRequests() { return mSampleRequests; }
 
 SpeechSampleData *SpeechSampleData::Construct(SPCHType_SampleRequestData *data, unsigned int key, bool is_cached) {
     (void)key;

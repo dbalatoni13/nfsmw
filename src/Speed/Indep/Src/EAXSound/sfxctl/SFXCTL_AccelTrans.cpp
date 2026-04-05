@@ -4,18 +4,6 @@
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Shifting.hpp"
 #include "Speed/Indep/Src/Interfaces/SimActivities/INIS.h"
 
-inline const unsigned int &Attrib::Gen::acceltrans::AccelFromIdle_INTERUPT_T() const {
-    const unsigned int *resultptr = reinterpret_cast<const unsigned int *>(GetAttributePointer(0x49fb8ce5, 0));
-    if (!resultptr) {
-        resultptr = reinterpret_cast<const unsigned int *>(DefaultDataArea(sizeof(unsigned int)));
-    }
-    return *resultptr;
-}
-
-inline const unsigned int &Attrib::Gen::acceltrans::AccelFromIdle_RESUME_T() const {
-    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->AccelFromIdle_RESUME_T;
-}
-
 SndBase::TypeInfo *SFXCTL_AccelTrans::GetTypeInfo() const { return &s_TypeInfo; }
 
 const char *SFXCTL_AccelTrans::GetTypeName() const { return s_TypeInfo.typeName; }
