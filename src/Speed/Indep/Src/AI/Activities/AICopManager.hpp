@@ -98,10 +98,13 @@ class AICopManager : public Sim::Activity, public AISpawnManager, public ICopMgr
     // IUnknown
     ~AICopManager() override;
 
+#ifndef EA_BUILD_A124
     // IVehicleCache
     const char *GetCacheName() const override {
         return "AICopManager";
     }
+#endif
+
     eVehicleCacheResult OnQueryVehicleCache(const IVehicle *removethis, const IVehicleCache *whosasking) const override;
     void OnRemovedVehicleCache(IVehicle *ivehicle) override;
 

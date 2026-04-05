@@ -148,10 +148,12 @@ class NISActivity : public Sim::Activity, public INIS, public EventSequencer::IC
     // IContext
     bool SetDynamicData(const EventSequencer::System *system, EventDynamicData *data) override;
 
+#ifndef EA_BUILD_A124
     // IVehicleCache
     const char *GetCacheName() const override {
         return "NISActivity";
     }
+#endif
 
     eVehicleCacheResult OnQueryVehicleCache(const IVehicle *removethis, const IVehicleCache *whosasking) const override;
     void OnRemovedVehicleCache(IVehicle *ivehicle) override;

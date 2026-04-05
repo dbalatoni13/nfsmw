@@ -18,8 +18,11 @@ struct DebugVehicleSelection : public UTL::COM::Object, public IVehicleCache {
     DebugVehicleSelection();
     ~DebugVehicleSelection();
     void Service();
-    void InitSelectionList();
-    bool SwitchPlayerVehicle(const char *attribname);
+#ifndef EA_BUILD_A124
+    const char *GetCacheName() const override {
+        return "DebugVehicleSelection";
+    };
+#endif
 
     static DebugVehicleSelection &Get() {
         return *mThis;
