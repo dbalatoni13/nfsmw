@@ -1,33 +1,9 @@
 #include "Speed/Indep/Src/EAXSound/sfxctl/sfxctl_mastervol.hpp"
 #include "Speed/Indep/Libs/Support/Miscellaneous/StringHash.h"
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
+#include "Speed/Indep/Src/Frontend/MoviePlayer/MoviePlayer.hpp"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Generated/Messages/MPursuitBreaker.h"
-
-class AV_PLAYER;
-class FRAME;
-
-// total size: 0x158
-class MoviePlayer {
-  public:
-    int GetStatus() { return fStatus; }
-
-  private:
-    char mSettings[0x124];        // offset 0x0, size 0x124 (Dwarf: MoviePlayer::Settings)
-    unsigned int fCurFrameNum;    // offset 0x124, size 0x4
-    int fStatus;                  // offset 0x128, size 0x4
-    int fLiveStatus;              // offset 0x12C, size 0x4
-    unsigned int mTicker;         // offset 0x130, size 0x4
-    bool mTickerFirstTime;        // offset 0x134, size 0x1
-    bool mMoviePaused;            // offset 0x138, size 0x1
-    int mili_seconds;             // offset 0x13C, size 0x4
-    int seconds;                  // offset 0x140, size 0x4
-    int minutes;                  // offset 0x144, size 0x4
-    float milliseconds;           // offset 0x148, size 0x4
-    float prevMilliseconds;       // offset 0x14C, size 0x4
-    AV_PLAYER *fPlayer;           // offset 0x150, size 0x4
-    FRAME *CurFrame;              // offset 0x154, size 0x4
-};
 
 extern MoviePlayer *gMoviePlayer;
 extern unsigned int g_ActiveSFXStates;

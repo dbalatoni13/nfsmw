@@ -62,40 +62,8 @@ static const float SND_AI_DRIFT_RPM_Lengths_FINE[] = {
     1.0f,
 };
 
-inline EAX_CarState *ReadStateCar(EAXCar *carOwner) {
-    return carOwner->GetPhysCar();
-}
-
 inline float &ReadStateCurTime(EAXCar *carOwner) {
     return *reinterpret_cast<float *>(reinterpret_cast<char *>(carOwner) + 0x3C);
-}
-
-inline float &ReadCarPhysTRQRef(EAXCar *carOwner) {
-    return carOwner->PhysTRQ;
-}
-
-inline float &ReadCarPhysRPMRef(EAXCar *carOwner) {
-    return carOwner->PhysRPM;
-}
-
-inline Sound::Gear &ReadCarCurGearRef(EAXCar *carOwner) {
-    return carOwner->CurGear;
-}
-
-inline float &ReadCarTrottleRef(EAXCar *carOwner) {
-    return carOwner->fTrottle;
-}
-
-inline int &ReadCarPovTypeRef(EAXCar *carOwner) {
-    return carOwner->m_PovType;
-}
-
-inline char *ReadCarEngineInfo(EAXCar *carOwner) {
-    return reinterpret_cast<char *>(&carOwner->mEngineInfo);
-}
-
-inline Sound::Wheel *ReadCarWheels(EAX_CarState *car) {
-    return static_cast<Sound::Wheel *>(static_cast<void *>(car->mWheel));
 }
 } // namespace
 

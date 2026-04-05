@@ -3,6 +3,7 @@
 #include "Speed/Indep/Libs/Support/Utility/UVectorMath.h"
 #include "Speed/Indep/Src/EAXSound/OldSoundTemplates.hpp"
 #include "Speed/Indep/Src/EAXSound/States/Managers/STATEMGR_Base.hpp"
+#include "Speed/Indep/Src/World/ParameterMaps.hpp"
 #include "Speed/Indep/Src/Generated/Messages/MMiscSound.h"
 #include "Speed/Indep/Src/World/WCollisionMgr.h"
 
@@ -10,16 +11,6 @@ void VU0_v4sub(const UMath::Vector4 &a, const UMath::Vector4 &b, UMath::Vector4 
 
 extern Slope g_WooshVol_vs_Vel;
 extern float GetFloatFromHundredthsdB__11NFSMixShapei(int ndB);
-
-class ParameterAccessor {
-  public:
-    void *mNext;
-    void *mPrev;
-    void *Layer;
-
-    void CaptureData(float x, float y);
-    int GetDataInt(int field_index);
-};
 
 extern ParameterAccessor ReverbAccessor;
 extern int ReverbZoneCrossMap[];
@@ -58,23 +49,6 @@ struct stDriveByInfo {
     unsigned int UniqueID;       // offset 0x1C, size 0x4
 };
 
-static inline float Distancexyz(const UMath::Vector4 &a, const UMath::Vector4 &b) {
-    UMath::Vector4 temp;
-    VU0_v4subxyz(a, b, temp);
-    return VU0_sqrt(VU0_v4lengthsquarexyz(temp));
-}
-
-static void DispatchDriveByEvent(stDriveByInfo &info) {
-    CSTATEMGR_Base *driveByMgr = EAXSound::m_pStateMgr[eMM_DRIVEBY];
-    if (driveByMgr == nullptr) {
-        return;
-    }
-
-    CSTATE_Base *state = driveByMgr->GetFreeState(&info);
-    if (state != nullptr) {
-        state->Attach(&info);
-    }
-}
 } // namespace
 
 eTrackPathZoneType SFXCTL_Tunnel::m_PlayerZoneType = TRACK_PATH_ZONE_RESET;
