@@ -68,6 +68,7 @@ struct CSTATE_Base : public AudioMemBase {
     void SafeConnectOrphanObjects();
     SndBase *GetSFXObject(int sfxid);
     SndBase *GetSFXCTLObject(int sfxid);
+    void ForceCreateSFXCtrls(int iSFXCtrls);
 
     bool IsAttached() { return bIsAttached; }
     EAX_CarState *GetPhysCar() { return m_pCar; }

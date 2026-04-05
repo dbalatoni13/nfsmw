@@ -12,6 +12,7 @@
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL.hpp"
 
 struct CSTATEMGR_Base : public AudioMemBase {
+    friend struct CSTATE_Base;
   protected:
     // total size: 0x1C
     float m_CurTime;                  // offset 0x4, size 0x4

@@ -1,5 +1,6 @@
 #include "./STATE_Base.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXAemsManager.h"
+#include "Speed/Indep/Src/EAXSound/States/Managers/STATEMGR_Base.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 
 extern int g_DMIX_DummyOutputBlock[];
@@ -129,8 +130,92 @@ void CSTATE_Base::CreateSFXObjs() {
     }
 }
 
+void CSTATE_Base::NewSFXObj(int ecarsfx) {
+    int groupID = m_InstNum;
+    SndBase *NewlyCreatedSFXObj = m_pStateMgr->CreateSFX(groupID, ecarsfx);
+    if (NewlyCreatedSFXObj) {
+        NewlyCreatedSFXObj->SetupSFX(this);
+        SndBase *LastSFXObj = m_pHeadSFXObj;
+        m_NumLoadedSFXObj++;
+        if (!LastSFXObj) {
+            m_pHeadSFXObj = NewlyCreatedSFXObj;
+        } else {
+            while (LastSFXObj->m_pNextSFX) {
+                LastSFXObj = LastSFXObj->m_pNextSFX;
+            }
+
+            LastSFXObj->m_pNextSFX = NewlyCreatedSFXObj;
+        }
+    }
+}
+
+SFXCTL *CSTATE_Base::NewSFXCtrl(int esfxctrl) {
+    int groupID = m_InstNum;
+    SndBase *NewSFXCTL = HasCtrlBeenAdded(esfxctrl);
+    if (!NewSFXCTL) {
+        if (esfxctrl == -1) {
+            NewSFXCTL = nullptr;
+        } else {
+            NewSFXCTL = m_pStateMgr->CreateSFXCTL(groupID, esfxctrl);
+            NewSFXCTL->SetupSFX(this);
+            SndBase *LastSFX = m_pHeadSFXCTL;
+            if (!LastSFX) {
+                m_pHeadSFXCTL = NewSFXCTL;
+            } else {
+                while (LastSFX->m_pNextSFX) {
+                    LastSFX = LastSFX->m_pNextSFX;
+                }
+
+                LastSFX->m_pNextSFX = NewSFXCTL;
+            }
+
+            m_NumLoadedSFXCTL++;
+        }
+    }
+    return static_cast<SFXCTL *>(NewSFXCTL);
+}
+
+void CSTATE_Base::ForceCreateSFXCtrls(int iSFXCtrls) {
+    for (int n = 0; n < 32; n++) {
+        if ((iSFXCtrls >> n) & 1) {
+            NewSFXCtrl(n);
+        }
+    }
+}
+
 void CSTATE_Base::CreateSFXCtrls() {
+    SndBase *CurSFXOBj = m_pHeadSFXObj;
     m_NumLoadedSFXCTL = 0;
+    if (CurSFXOBj) {
+        int Index = 0;
+        do {
+            while (CurSFXOBj->GetController(Index) != -1) {
+                SFXCTL *NewSFXCTL = NewSFXCtrl(CurSFXOBj->GetController(Index));
+                CurSFXOBj->AttachController(NewSFXCTL);
+                Index++;
+            }
+
+            CurSFXOBj = CurSFXOBj->m_pNextSFX;
+            Index = 0;
+        } while (CurSFXOBj);
+    }
+
+    SndBase *CurSFXCtl = m_pHeadSFXCTL;
+    if (CurSFXCtl) {
+        int Index = 0;
+        do {
+            while (CurSFXCtl->GetController(Index) != -1) {
+                SFXCTL *NewSFXCTL = NewSFXCtrl(CurSFXCtl->GetController(Index));
+                CurSFXCtl->AttachController(NewSFXCTL);
+                Index++;
+            }
+
+            CurSFXCtl = CurSFXCtl->m_pNextSFX;
+            Index = 0;
+        } while (CurSFXCtl);
+    }
+
+    SortSFXCtl();
 }
 
 void CSTATE_Base::SortSFXCtl() {
