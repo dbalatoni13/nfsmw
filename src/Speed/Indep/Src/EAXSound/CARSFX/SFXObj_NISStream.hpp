@@ -16,6 +16,7 @@ struct SFXObj_NISStream : CARSFX {
     bool QueueNISStream(unsigned int anim_id, int camera_track_number, bool bButtonThrough, bool param4);
     void NISActivityDone();
     void StopStream();
+    void UpdateParams(float t) override;
     static void PlayNISStream();
     static void PlayNISButtonThroughStream();
     void StartNISButtonThrough();

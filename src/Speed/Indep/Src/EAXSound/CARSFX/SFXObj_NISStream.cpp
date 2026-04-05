@@ -513,4 +513,44 @@ void SFXObj_NISStream::PlayNISStream() {
     }
 }
 
+void SFXObj_NISStream::UpdateParams(float t) {
+    if (!m_bNISAnimationReady || !m_bNISAudioStreamReady) {
+        if (!m_bNISButtonThroughAnimationReady || !m_bNISButtonThroughReady) {
+            if (m_mselapsedtimecb) {
+                Speech::Module *nismgr = Speech::Manager::GetSpeechModule(0);
+                EAXS_StreamChannel *pch = nismgr->GetStreamChannel();
+
+                if (m_mslengthofstream == 0) {
+                    m_mslengthofstream = pch->GetTimeRemaining();
+                }
+
+                m_mstimeelapsed = pch->GetCurrentTime();
+                m_mselapsedtimecb(m_animid, m_mstimeelapsed);
+            }
+        } else {
+            bool bresult = Speech::Manager::GetSpeechModule(0)->PlayStream(7);
+
+            if (bresult) {
+                m_bNISButtonThroughReady = false;
+                m_bNISButtonThroughAnimationReady = false;
+            }
+        }
+    } else {
+        bool bresult = Speech::Manager::GetSpeechModule(0)->PlayStream(2);
+        Speech::Module *nismgr = Speech::Manager::GetSpeechModule(0);
+        EAXS_StreamChannel *pch = nismgr->GetStreamChannel();
+
+        if (m_mslengthofstream == 0) {
+            SNDSYS_service();
+            m_mslengthofstream = pch->GetTimeRemaining();
+        }
+
+        if (bresult) {
+            m_bNISAnimationReady = false;
+            m_bNISAudioStreamReady = false;
+            m_bBackupStreamCleared = false;
+        }
+    }
+}
+
 #undef INIT_NIS_ENTRY
