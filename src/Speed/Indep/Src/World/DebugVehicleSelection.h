@@ -10,7 +10,7 @@
 #include "Speed/Indep/Src/Interfaces/SimActivities/IVehicleCache.h"
 
 // total size: 0x38
-struct DebugVehicleSelection : public UTL::COM::Object, public IVehicleCache {
+class DebugVehicleSelection : public UTL::COM::Object, public IVehicleCache {
   public:
     static void Init();
     static void DeInit();
@@ -26,10 +26,6 @@ struct DebugVehicleSelection : public UTL::COM::Object, public IVehicleCache {
 
     static DebugVehicleSelection &Get() {
         return *mThis;
-    }
-
-    static bool Exists() {
-        return mThis != nullptr;
     }
 
   private:

@@ -5,6 +5,8 @@
 #pragma once
 #endif
 
+#include "types.h"
+
 namespace DamageZone {
 
 enum ID {
@@ -44,7 +46,7 @@ struct Info {
         Value = 0;
     }
 
-    unsigned int Value; // offset 0x0, size 0x4
+    uint32 Value; // offset 0x0, size 0x4
 };
 
 }; // namespace DamageZone

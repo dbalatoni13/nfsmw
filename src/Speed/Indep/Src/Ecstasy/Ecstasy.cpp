@@ -36,7 +36,7 @@ unsigned int OtherEcstacyTextures_name_hash[30];
 
 unsigned int numOtherTex = 0;
 
-void eAllocateFrameMallocBuffers(unsigned int total_size /* r3 */);
+void eAllocateFrameMallocBuffers(uint32 total_size /* r3 */);
 
 int eInitEngine() {
     eAllocateFrameMallocBuffers(0xE1000);

@@ -16,13 +16,14 @@
 extern SlotPool *eModelSlotPool;
 
 // total size: 0x18
-struct eModel : public bTNode<eModel> {
-    unsigned int NameHash;                                     // offset 0x8, size 0x4
+class eModel : public bTNode<eModel> {
+    uint32 NameHash;                                           // offset 0x8, size 0x4
     eSolid *Solid;                                             // offset 0xC, size 0x4
     struct eReplacementTextureTable *pReplacementTextureTable; // offset 0x10, size 0x4
     int NumReplacementTextures;                                // offset 0x14, size 0x4
 
-    void Init(unsigned int name_hash);
+  public:
+    void Init(uint32 name_hash);
     void UnInit();
     void ReconnectSolid(eSolidListHeader *solid_list_header);
     void ConnectSolid(eSolid *new_solid);
@@ -32,9 +33,9 @@ struct eModel : public bTNode<eModel> {
     int GetBoundingBox(bVector3 *min, bVector3 *max);
     bVector4 *GetPivotPosition();
     bMatrix4 *GetPivotMatrix();
-    void ReplaceLightMaterial(unsigned int old_name_hash, eLightMaterial *new_light_material);
+    void ReplaceLightMaterial(uint32 old_name_hash, eLightMaterial *new_light_material);
     ePositionMarker *GetPostionMarker(ePositionMarker *prev_marker);
-    ePositionMarker *GetPostionMarker(unsigned int namehash);
+    ePositionMarker *GetPostionMarker(uint32 namehash);
 
     void *operator new(size_t size) {
         return bOMalloc(eModelSlotPool);
@@ -46,7 +47,7 @@ struct eModel : public bTNode<eModel> {
 
     eModel() {}
 
-    eModel(unsigned int name_hash) {
+    eModel(uint32 name_hash) {
         NameHash = 0;
         Solid = nullptr;
         Init(name_hash);
@@ -56,7 +57,7 @@ struct eModel : public bTNode<eModel> {
         UnInit();
     }
 
-    unsigned int GetNameHash() {
+    uint32 GetNameHash() {
         return NameHash;
     }
 
@@ -86,19 +87,20 @@ class eSolidPlatInterface {
     }
 };
 
-struct eSolid : public eSolidPlatInterface, public bTNode<eSolid> {
+class eSolid : public eSolidPlatInterface, public bTNode<eSolid> {
+  public:
     // total size: 0xE0
-    unsigned char Version;                      // offset 0xC, size 0x1
-    unsigned char EndianSwapped;                // offset 0xD, size 0x1
-    unsigned short Flags;                       // offset 0xE, size 0x2
-    unsigned int NameHash;                      // offset 0x10, size 0x4
-    short NumPolys;                             // offset 0x14, size 0x2
-    short NumVerts;                             // offset 0x16, size 0x2
-    char NumBones;                              // offset 0x18, size 0x1
-    char NumTextureTableEntries;                // offset 0x19, size 0x1
-    char NumLightMaterials;                     // offset 0x1A, size 0x1
-    char NumPositionMarkerTableEntries;         // offset 0x1B, size 0x1
-    int ReferencedFrameCounter;                 // offset 0x1C, size 0x4
+    uint8 Version;                              // offset 0xC, size 0x1
+    uint8 EndianSwapped;                        // offset 0xD, size 0x1
+    uint16 Flags;                               // offset 0xE, size 0x2
+    uint32 NameHash;                            // offset 0x10, size 0x4
+    int16 NumPolys;                             // offset 0x14, size 0x2
+    int16 NumVerts;                             // offset 0x16, size 0x2
+    int8 NumBones;                              // offset 0x18, size 0x1
+    int8 NumTextureTableEntries;                // offset 0x19, size 0x1
+    int8 NumLightMaterials;                     // offset 0x1A, size 0x1
+    int8 NumPositionMarkerTableEntries;         // offset 0x1B, size 0x1
+    int32 ReferencedFrameCounter;               // offset 0x1C, size 0x4
     float AABBMinX;                             // offset 0x20, size 0x4
     float AABBMinY;                             // offset 0x24, size 0x4
     float AABBMinZ;                             // offset 0x28, size 0x4
@@ -124,31 +126,35 @@ struct eSolid : public eSolidPlatInterface, public bTNode<eSolid> {
     bool NotifyTextureUnloading(TexturePack *texture_pack);
     void NotifyTextureMoving(TexturePack *texture_pack);
     void NotifyTextureMoving(TexturePack *texture_pack, TextureInfo *texture_info);
-    void ReplaceLightMaterial(unsigned int old_name_hash, eLightMaterial *new_light_material);
+    void ReplaceLightMaterial(uint32 old_name_hash, uint32 new_name_hash);
+    void ReplaceLightMaterial(uint32 old_name_hash, eLightMaterial *new_light_material);
     ePositionMarker *GetPostionMarker(ePositionMarker *prev_marker);
     ePositionMarker *GetPostionMarker(unsigned int namehash);
 };
 
 // total size: 0x68
-struct eView : public eViewPlatInterface {
-    EVIEW_ID ID;                                    // offset 0x4, size 0x4
-    char Active;                                    // offset 0x8, size 0x1
-    char LetterBox;                                 // offset 0x9, size 0x1
-    char pad0;                                      // offset 0xA, size 0x1
-    char pad1;                                      // offset 0xB, size 0x1
-    float H;                                        // offset 0xC, size 0x4
-    float NearZ;                                    // offset 0x10, size 0x4
-    float FarZ;                                     // offset 0x14, size 0x4
-    float FovBias;                                  // offset 0x18, size 0x4
-    float FovDegrees;                               // offset 0x1C, size 0x4
-    int BlackAndWhiteMode;                          // offset 0x20, size 0x4
-    int PixelMinSize;                               // offset 0x24, size 0x4
-    bVector3 ViewDirection;                         // offset 0x28, size 0x10
-    class Camera *pCamera;                          // offset 0x38, size 0x4
-    bTList<class CameraMover> CameraMoverList;      // offset 0x3C, size 0x8
-    unsigned int NumCopsInView;                     // offset 0x44, size 0x4
-    unsigned int NumCopsTotal;                      // offset 0x48, size 0x4
-    unsigned int NumCopsCherry;                     // offset 0x4C, size 0x4
+class eView : public eViewPlatInterface {
+  public:
+    EVIEW_ID ID;                               // offset 0x4, size 0x4
+    int8 Active;                               // offset 0x8, size 0x1
+    int8 LetterBox;                            // offset 0x9, size 0x1
+    int8 pad0;                                 // offset 0xA, size 0x1
+    int8 pad1;                                 // offset 0xB, size 0x1
+    float H;                                   // offset 0xC, size 0x4
+    float NearZ;                               // offset 0x10, size 0x4
+    float FarZ;                                // offset 0x14, size 0x4
+    float FovBias;                             // offset 0x18, size 0x4
+    float FovDegrees;                          // offset 0x1C, size 0x4
+    int BlackAndWhiteMode;                     // offset 0x20, size 0x4
+    int PixelMinSize;                          // offset 0x24, size 0x4
+    bVector3 ViewDirection;                    // offset 0x28, size 0x10
+    class Camera *pCamera;                     // offset 0x38, size 0x4
+    bTList<class CameraMover> CameraMoverList; // offset 0x3C, size 0x8
+    uint32 NumCopsInView;                      // offset 0x44, size 0x4
+#ifndef EA_BUILD_A124
+    uint32 NumCopsTotal;  // offset 0x48, size 0x4
+    uint32 NumCopsCherry; // offset 0x4C, size 0x4
+#endif
     TextureInfo *pBlendMask;                        // offset 0x50, size 0x4
     struct eDynamicLightContext *WorldLightContext; // offset 0x54, size 0x4
     eRenderTarget *RenderTargetTable[1];            // offset 0x58, size 0x4
@@ -168,11 +174,11 @@ struct eView : public eViewPlatInterface {
     void AttachCameraMover(CameraMover *camera_mover);
     void UnattachCameraMover(CameraMover *camera_mover);
 
-    int GetID() {
+    int32 GetID() {
         return this->ID;
     }
 
-    void SetID(int id) {
+    void SetID(int32 id) {
         ID = static_cast<EVIEW_ID>(id);
     }
 
@@ -192,14 +198,19 @@ struct eView : public eViewPlatInterface {
         this->pCamera = camera;
     }
 
-    void SetActive(int state) {
+    int32 SetActive(int32 state) {
         int prev_state = this->Active;
         this->Active = state;
+
+        return prev_state;
     }
 
-    int IsActive() const {
+    int32 IsActive() const {
         return Active;
     }
+
+    int32 IsLetterBoxed();
+    int32 SetLetterBox();
 
     CameraMover *GetCameraMover() {
         if (!this->CameraMoverList.IsEmpty()) {

@@ -86,7 +86,7 @@ void CarPartCuller::InitPart(eCullableCarParts type, const bVector3 *position) {
     part_info->Position = *position;
 }
 
-void CarPartCuller::CullParts(bVector3 *camera_eye, unsigned short stang) {
+void CarPartCuller::CullParts(bVector3 *camera_eye, bAngle stang) {
     ProfileNode profile_node;
     bVector3 Modcamera_eye = *camera_eye;
     bVector3 *unModcamera_eyeP = &Modcamera_eye;
@@ -527,7 +527,7 @@ void CarRenderInfo::SetCarDamageState(bool on, unsigned int startID, unsigned in
     }
 }
 
-void CarRenderInfo::SetCarGlassDamageState(bool on, CarReplacementTexID replacementId, unsigned int undamageHash, unsigned int damageHash) {
+void CarRenderInfo::SetCarGlassDamageState(bool on, CarReplacementTexID replacementId, uint32 undamageHash, uint32 damageHash) {
     if (on) {
         this->MasterReplacementTextureTable[replacementId].SetNewNameHash(damageHash);
     } else {
@@ -551,8 +551,8 @@ void CarRenderInfo::SetDamageInfo(const DamageZone::Info &damageInfo) {
     }
 }
 
-unsigned int CarRenderInfo::FindCarPart(int slotId) {
-    unsigned int model_namehash = 0;
+uint32 CarRenderInfo::FindCarPart(int slotId) {
+    uint32 model_namehash = 0;
 
     if (slotId <= 0x4C) {
         eModel *model = this->mCarPartModels[slotId][0][this->mMinLodLevel].GetModel();
@@ -564,8 +564,8 @@ unsigned int CarRenderInfo::FindCarPart(int slotId) {
     return model_namehash;
 }
 
-unsigned int CarRenderInfo::HideCarPart(int slotId, bool hide) {
-    unsigned int model_namehash = 0;
+uint32 CarRenderInfo::HideCarPart(int slotId, bool hide) {
+    uint32 model_namehash = 0;
 
     if (slotId <= 0x4C) {
         for (int lodId = this->mMinLodLevel; lodId <= this->mMaxLodLevel; lodId++) {
