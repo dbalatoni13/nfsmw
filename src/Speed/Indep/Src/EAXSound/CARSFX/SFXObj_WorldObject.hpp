@@ -5,6 +5,9 @@
 #pragma once
 #endif
 
+struct WorldObject;
 
+// TODO: Fill this header with the full WorldObject and SFXObj_WorldObject declarations once
+// ISndAttachable is moved into its owner header from EaxSoundTypes.cpp.
 
 #endif

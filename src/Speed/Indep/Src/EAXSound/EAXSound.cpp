@@ -13,12 +13,19 @@
 #include "Speed/Indep/Src/EAXSound/SoundConn.h"
 #include "Speed/Indep/Src/EAXSound/Stream/EAXS_StreamManager.h"
 #include "Speed/Indep/Src/EAXSound/Stream/SpeechManager.hpp"
+#include "Speed/Indep/Src/EAXSound/States/Managers/STATEMGR_AICar.hpp"
 #include "Speed/Indep/Src/EAXSound/States/Managers/STATEMGR_CarState.hpp"
 #include "Speed/Indep/Src/EAXSound/States/Managers/STATEMGR_Base.hpp"
+#include "Speed/Indep/Src/EAXSound/States/Managers/STATEMGR_Collision.hpp"
 #include "Speed/Indep/Src/EAXSound/States/Managers/STATEMGR_CopCar.hpp"
 #include "Speed/Indep/Src/EAXSound/States/Managers/STATEMGR_DriveBy.hpp"
 #include "Speed/Indep/Src/EAXSound/States/Managers/STATEMGR_Enviro.hpp"
+#include "Speed/Indep/Src/EAXSound/States/Managers/STATEMGR_Helicopter.hpp"
+#include "Speed/Indep/Src/EAXSound/States/Managers/STATEMGR_Main.hpp"
+#include "Speed/Indep/Src/EAXSound/States/Managers/STATEMGR_Music.hpp"
 #include "Speed/Indep/Src/EAXSound/States/Managers/STATEMGR_PlayerCar.hpp"
+#include "Speed/Indep/Src/EAXSound/States/Managers/STATEMGR_TrafficCar.hpp"
+#include "Speed/Indep/Src/EAXSound/States/Managers/STATEMGR_Truck.hpp"
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_NISReving.hpp"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
@@ -44,37 +51,6 @@ extern Attrib::Gen::turbosfx *g_TurboInfo;
 
 #include "Speed/Indep/Src/EAXSound/EAXCommon.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXFrontEnd.hpp"
-
-struct CSTATEMGR_Main : public CSTATEMGR_Base {
-    CSTATEMGR_Main();
-};
-
-struct CSTATEMGR_Music : public CSTATEMGR_Base {
-    CSTATEMGR_Music();
-};
-
-class CSTATEMGR_AICar : public CSTATEMGR_CarState {
-  public:
-    CSTATEMGR_AICar();
-    static void QueueSlots();
-};
-
-class CSTATEMGR_TrafficCar : public CSTATEMGR_CarState {
-  public:
-    CSTATEMGR_TrafficCar();
-};
-
-struct CSTATEMGR_Collision : public CSTATEMGR_Base {
-    CSTATEMGR_Collision();
-};
-
-struct CSTATEMGR_Helicopter : public CSTATEMGR_Base {
-    CSTATEMGR_Helicopter();
-};
-
-struct CSTATEMGR_Truck : public CSTATEMGR_CarState {
-    CSTATEMGR_Truck();
-};
 
 Attrib::StringKey crcEngineAudio("EngineAudio");
 Attrib::StringKey crcAudioSystem("AudioSystem");
