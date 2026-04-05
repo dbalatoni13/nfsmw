@@ -6,6 +6,8 @@
 #endif
 
 #include "Speed/Indep/Src/EAXSound/AudioMemBase.hpp"
+#include "Speed/Indep/Tools/AttribSys/Runtime/AttribHash.h"
+#include "Speed/Indep/Src/EAXSound/EAXAemsManager.h"
 
 struct EAXCar;
 struct EAX_CarState;
@@ -65,6 +67,8 @@ struct SndBase : public AudioMemBase {
     virtual void UpdateMixerOutputs() {}
 
     int GetDMixOutput(int idx, DMX_PRESET_TYPE etype);
+    void LoadAsset(Attrib::StringKey filename, eSNDDATAPATH path, eSNDDATATYPE datatype, eBANK_SLOT_TYPE SlotType, bool bLoadToTop);
+    void LoadAsset(stSndAssetQueue &queueitem, eBANK_SLOT_TYPE SlotType);
 
     int GetObjectIndex() {
         return (GetTypeInfo()->ObjectID >> 4) & 0xFFF;
@@ -73,6 +77,7 @@ struct SndBase : public AudioMemBase {
     int *GetOutputBlockPtr() { return m_pOutPutBlock; }
     int *GetInputBlockPtr() { return m_pInputBlock; }
     int GetDMIX_InputValue(int index) { return m_pOutPutBlock[index]; }
+    void Disable() { m_bIsEnabled = false; }
     bool IsEnabled() const { return m_bIsEnabled; }
     void SetOutputsPtr(int *ptr) { m_pOutPutBlock = ptr; }
     void SetDMIX_Input(int index, int value) { m_pOutPutBlock[index] = value; }
