@@ -6,6 +6,7 @@ void (*NFSMixMap::mSetSFXOutCB)(int, int *) = nullptr;
 bool (*NFSMixMap::mSetSFXInCB)(int, int *) = nullptr;
 int (*NFSMixMap::mGetStateRefCnt)(int) = nullptr;
 void (*NFSMixMap::mMapReadyCB)() = nullptr;
+int DUMMYINPUT = 0;
 
 NFSMixMap::NFSMixMap()
     : AudioMemBase() {}
@@ -895,6 +896,109 @@ void NFSMixMap::AllocateInputArrays() {
         "DMIX SFXOBJ, SFXCTL Input Block", false));
 }
 
+int *NFSMixMap::GetObjectPtr(int sfxid, bool busedB, bool bHACKINIT) {
+    unsigned int rawId;
+    int type;
+    int stateIndex;
+    int instance;
+    int objIndex;
+
+    rawId = static_cast<unsigned int>(sfxid);
+    type = rawId & 0xE0000000;
+    stateIndex = (rawId >> 16) & 0xFF;
+    instance = (rawId >> 11) & 0x1F;
+    objIndex = rawId & 0xFF;
+
+    if (type == 0) {
+        stMixCtlProc *pmixctl;
+
+        pmixctl = m_pStateProcs[stateIndex]->GetMixCtlProc(objIndex, instance);
+        if (!busedB) {
+            return &pmixctl->pudata->pstCurveData->Q15Output;
+        }
+
+        return &pmixctl->pudata->CmpdBOut;
+    }
+
+    if (type == static_cast<int>(0x80000000U)) {
+        st3DMixCtlProc *p3d;
+
+        p3d = m_pStateProcs[stateIndex]->Get3DMixCtlProc(objIndex, instance);
+        if (bHACKINIT) {
+            return reinterpret_cast<int *>(p3d);
+        }
+        if (busedB) {
+            return &p3d->p3DMixCtlData_U->dBRolloff;
+        }
+        return &p3d->p3DMixCtlData_U->q15Rolloff;
+    }
+
+    if (type == static_cast<int>(0xA0000000U)) {
+        stEvtMixCtlProc *pevtproc;
+
+        pevtproc = m_pStateProcs[stateIndex]->GetEvtMixCtlProc(objIndex, instance);
+        if (busedB) {
+            return &pevtproc->pData_U->output;
+        }
+        return &pevtproc->pData_U->qoutput;
+    }
+
+    if (type == 0x20000000) {
+        if ((rawId & 0x10000000) != 0) {
+            stSubMixChProc *psubmix;
+
+            psubmix = m_pStateProcs[stateIndex]->GetSubMixChProc(objIndex, instance);
+            return &psubmix->pMixChData_U->Output;
+        }
+
+        return &m_pStateProcs[stateIndex]->GetMasterMixChProc(objIndex, instance)->pMixChData_U->Output;
+    }
+
+    if ((type == 0x40000000) || (type == 0x60000000)) {
+        int *pinput;
+
+        pinput = (*mGetOutPtrCB)(sfxid);
+        if (!pinput) {
+            pinput = GetNextInputBlock(true);
+            (*mSetSFXOutCB)(sfxid, pinput);
+        }
+
+        return pinput + (rawId & 0xF);
+    }
+
+    return &DUMMYINPUT;
+}
+
+void NFSMixMap::ConnectMixMap() {
+    int n;
+
+    for (n = 0; n < m_CurveProcsAdded; n++) {
+        m_pCurveDataArray[n].pInputParam = GetObjectPtr(m_pCurveDataArray[n].nINPUTID, false, false);
+    }
+
+    for (n = 0; n < m_ScaleParamsAdded; n++) {
+        m_pScalePtrArray[n] = GetObjectPtr(reinterpret_cast<int>(m_pScalePtrArray[n]), false, false);
+    }
+
+    for (n = 0; n < m_3DMixCtlsAdded; n++) {
+        m_p3DMixCtlProc[n].p3DMixCtlData_U->pInputs = GetObjectPtr(
+            reinterpret_cast<int>(m_p3DMixCtlProc[n].p3DMixCtlData_U->pInputs), false, false);
+    }
+
+    for (n = 0; n < m_EventCtlsAdded; n++) {
+        m_pEvtMixCtlProc[n].pData_U->pTriggerPtr =
+            GetObjectPtr(reinterpret_cast<int>(m_pEvtMixCtlProc[n].pData_U->pTriggerPtr), false, false);
+    }
+
+    for (n = 0; n < m_nTotalSubChannelInputs; n++) {
+        m_pSubChannelInputs[n] = reinterpret_cast<int>(GetObjectPtr(m_pSubChannelInputs[n], true, false));
+    }
+
+    for (n = 0; n < m_nTotalMasterChannelInputs; n++) {
+        m_pMasterChannelInputs[n] = reinterpret_cast<int>(GetObjectPtr(m_pMasterChannelInputs[n], true, true));
+    }
+}
+
 void NFSMixMap::SetupStateProcArrays() {
     int stateIndex;
 
@@ -920,3 +1024,5 @@ void NFSMixMap::InitMainMapStates() {
     SetupStateProcArrays();
     ConnectMixMap();
 }
+
+void NFSMixMap::UpdateLFOEvent(stEvtMixCtlProc *pProc) {}
