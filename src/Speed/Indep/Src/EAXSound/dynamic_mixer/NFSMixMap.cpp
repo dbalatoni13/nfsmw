@@ -198,3 +198,69 @@ void NFSMixMap::SetupStateRefCount() {
         } while (ntotalstateprocs < m_pMMHdr->NumStates);
     }
 }
+
+int *NFSMixMap::GetNextInputBlock(bool bincrement) {
+    int blockIndex;
+    int n;
+    int *pclear;
+
+    blockIndex = m_nAssignedInputBlocks;
+    if (bincrement) {
+        m_nAssignedInputBlocks = blockIndex + 1;
+    }
+
+    pclear = reinterpret_cast<int *>(m_pDynMixInputBlocks) + (blockIndex * 0x10);
+    for (n = 0; n < 0x10; n++) {
+        *pclear++ = 0;
+    }
+
+    return reinterpret_cast<int *>(m_pDynMixInputBlocks) + (blockIndex * 0x10);
+}
+
+NFSMixMapState *NFSMixMap::GetNextMapState(bool bincrement) {
+    int offset;
+
+    offset = m_CurrentStateProcBlockOffset;
+    if (bincrement) {
+        m_CurrentStateProcBlockOffset = offset + 0x60;
+    }
+
+    return reinterpret_cast<NFSMixMapState *>(reinterpret_cast<char *>(m_pStateProcMemBlock) + offset);
+}
+
+int *NFSMixMap::GetMasterChannelOutputArrayPtr(int nNumChannels) {
+    int offset;
+
+    offset = m_CurrentMasterOutputBlockOffset;
+    m_CurrentMasterOutputBlockOffset = offset + (nNumChannels * 0x10);
+    return m_pMasterChannelOutputArrayBlock + offset;
+}
+
+int *NFSMixMap::GetMasterChannelInputPtr(int nsize) {
+    int offset;
+
+    offset = m_CurrentMasterInputBlockOffset;
+    m_CurrentMasterInputBlockOffset = offset + nsize;
+    return m_pMasterChannelInputs + offset;
+}
+
+int *NFSMixMap::GetSubChannelInputPtr(int nsize) {
+    int offset;
+
+    offset = m_CurrentSubInputBlockOffset;
+    m_CurrentSubInputBlockOffset = offset + nsize;
+    return m_pSubChannelInputs + offset;
+}
+
+int NFSMixMap::GetMapStateCopies(int nstate) {
+    if (nstate < m_pMMHdr->NumStates) {
+        return m_StateRefCount[nstate];
+    }
+
+    return 0;
+}
+
+void NFSMixMap::InitMainMapStates() {
+    SetupStateProcArrays();
+    ConnectMixMap();
+}
