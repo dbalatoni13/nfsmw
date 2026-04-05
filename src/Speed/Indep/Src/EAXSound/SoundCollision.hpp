@@ -9,6 +9,22 @@
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
+struct CollisionStream {
+    Attrib::RefSpec StreamMoment; // offset 0x0, size 0xC
+    unsigned char Threshold;      // offset 0xC, size 0x1
+};
+
+struct StitchCollisionVol {
+    short Vol1; // offset 0x0, size 0x2
+    short Vol2; // offset 0x2, size 0x2
+    short Vol3; // offset 0x4, size 0x2
+    short Vol4; // offset 0x6, size 0x2
+};
+
+enum STICH_COLLISION_TYPE {
+    CRSH_CAR_2_CAR_FRNT_VLIT1 = 0,
+};
+
 namespace Sound {
 
 struct AudioEventParams {
@@ -49,7 +65,4 @@ struct AudioEvent : public UTL::COM::Factory<const AudioEventParams &, AudioEven
 };
 
 } // namespace Sound
-
-
-
 #endif

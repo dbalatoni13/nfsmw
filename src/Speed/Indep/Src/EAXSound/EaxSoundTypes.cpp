@@ -8,10 +8,6 @@
 #include "Speed/Indep/Src/Misc/Timer.hpp"
 #include "Speed/Indep/Src/Speech/EAXCop.h"
 
-enum SPCHType_1_EventID {
-    kSPCH1_EventID_MaxEventID = 0x108,
-};
-
 struct EventSpec {
     unsigned short eventID;    // offset 0x0, size 0x2
     unsigned char eventDatID;  // offset 0x2, size 0x1

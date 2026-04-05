@@ -12,6 +12,10 @@
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/Common/AttribPrivate.h"
 
+enum SPCHType_1_EventID {
+    kSPCH1_EventID_MaxEventID = 0x108,
+};
+
 namespace Attrib {
 namespace Gen {
 
