@@ -1,11 +1,217 @@
 #include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_NISStream.hpp"
+#include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_Pathfinder.hpp"
+#include "Speed/Indep/Src/EAXSound/Csis.hpp"
+#include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
+#include "Speed/Indep/Src/EAXSound/Stream/EAXS_StreamChannel.h"
+#include "Speed/Indep/Src/EAXSound/Stream/SpeechManager.hpp"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
+
+namespace Csis {
+extern FunctionHandle gNIS_Select_StartHandle;
+extern FunctionHandle gNIS_Select_BlacklistHandle;
+extern FunctionHandle gNIS_Select_EndHandle;
+extern InterfaceId NIS_Select_StartId;
+extern InterfaceId NIS_Select_BlacklistId;
+extern InterfaceId NIS_Select_EndId;
+} // namespace Csis
+
+namespace {
+
+enum Type_NIS_Track {
+    Type_NIS_Track_Track01 = 1,
+    Type_NIS_Track_Track02 = 2,
+    Type_NIS_Track_Track03 = 4,
+    Type_NIS_Track_Track04 = 8,
+    Type_NIS_Track_Track05 = 16,
+    Type_NIS_Track_Track06 = 32,
+    Type_NIS_Track_Track07 = 64,
+    Type_NIS_Track_Track08 = 128,
+    Type_NIS_Track_Track09 = 256,
+    Type_NIS_Track_Track10 = 512,
+    Type_NIS_Track_Track11 = 1024,
+    Type_NIS_Track_Track12 = 2048,
+    Type_NIS_Track_Track13 = 4096,
+    Type_NIS_Track_Track00 = 8192,
+};
+
+enum Type_NIS_Scene_Start {
+    Type_NIS_Scene_Start_IntroNis01 = 1,
+    Type_NIS_Scene_Start_IntroNis02 = 2,
+    Type_NIS_Scene_Start_IntroNis03 = 4,
+    Type_NIS_Scene_Start_IntroNis04 = 8,
+    Type_NIS_Scene_Start_IntroNis05 = 16,
+    Type_NIS_Scene_Start_IntroNis06 = 32,
+    Type_NIS_Scene_Start_IntroNis07 = 64,
+    Type_NIS_Scene_Start_IntroNis08 = 128,
+    Type_NIS_Scene_Start_IntroNis09 = 256,
+    Type_NIS_Scene_Start_IntroNis10 = 512,
+    Type_NIS_Scene_Start_IntroNis11 = 1024,
+    Type_NIS_Scene_Start_dummy = 2048,
+    Type_NIS_Scene_Start_flythrough = 4096,
+    Type_NIS_Scene_Start_safehouse = 8192,
+    Type_NIS_Scene_Start_dday = 16384,
+    Type_NIS_Scene_Start_e3 = 32768,
+    Type_NIS_Scene_Start_opm = 65536,
+    Type_NIS_Scene_Start_toll = 131072,
+    Type_NIS_Scene_Start_generic = 262144,
+    Type_NIS_Scene_Start_ddayend = 524288,
+};
+
+enum Type_NIS_Blacklist {
+    Type_NIS_Blacklist_Black01 = 1,
+    Type_NIS_Blacklist_Black02 = 2,
+    Type_NIS_Blacklist_Black03 = 4,
+    Type_NIS_Blacklist_Black04 = 8,
+    Type_NIS_Blacklist_Black05 = 16,
+    Type_NIS_Blacklist_Black06 = 32,
+    Type_NIS_Blacklist_Black07 = 64,
+    Type_NIS_Blacklist_Black08 = 128,
+    Type_NIS_Blacklist_Black09 = 256,
+    Type_NIS_Blacklist_Black10 = 512,
+    Type_NIS_Blacklist_Black11 = 1024,
+    Type_NIS_Blacklist_Black12 = 2048,
+    Type_NIS_Blacklist_Black13 = 4096,
+    Type_NIS_Blacklist_Black14 = 8192,
+    Type_NIS_Blacklist_Black15 = 16384,
+    Type_NIS_Blacklist_Black16 = 32768,
+    Type_NIS_Blacklist_Black06end = 65536,
+    Type_NIS_Blacklist_Black07end = 131072,
+    Type_NIS_Blacklist_generic = 262144,
+};
+
+enum Type_NIS_Scene_End {
+    Type_NIS_Scene_End_Arrest_M01 = 1,
+    Type_NIS_Scene_End_Arrest_M04 = 2,
+    Type_NIS_Scene_End_Arrest_M06 = 4,
+    Type_NIS_Scene_End_Arrest_M14 = 8,
+    Type_NIS_Scene_End_Arrest_M16 = 16,
+    Type_NIS_Scene_End_Arrest_M19 = 32,
+    Type_NIS_Scene_End_Arrest_M23 = 64,
+    Type_NIS_Scene_End_Arrest_F02 = 128,
+    Type_NIS_Scene_End_Arrest_F06 = 256,
+    Type_NIS_Scene_End_Arrest_F07 = 512,
+    Type_NIS_Scene_End_Arrest_F14 = 1024,
+    Type_NIS_Scene_End_Arrest_F23 = 2048,
+    Type_NIS_Scene_End_E3 = 4096,
+    Type_NIS_Scene_End_opm = 8192,
+    Type_NIS_Scene_End_Arrest_F18 = 16384,
+    Type_NIS_Scene_End_Arrest_M07 = 32768,
+    Type_NIS_Scene_End_generic = 65536,
+    Type_NIS_Scene_End_end01 = 131072,
+    Type_NIS_Scene_End_end02 = 262144,
+    Type_NIS_Scene_End_end03 = 524288,
+    Type_NIS_Scene_End_end04 = 1048576,
+};
+
+enum Type_NIS_Section {
+    Type_NIS_Section_Complete = 1,
+    Type_NIS_Section_Start = 2,
+    Type_NIS_Section_End = 4,
+};
+
+struct NIS_Select_StartStruct {
+    Type_NIS_Scene_Start NIS_Scene_Start;
+    Type_NIS_Track NIS_Track;
+    Type_NIS_Section NIS_Section;
+};
+
+struct NIS_Select_BlacklistStruct {
+    Type_NIS_Track NIS_Track;
+    Type_NIS_Section NIS_Section;
+    Type_NIS_Blacklist NIS_Blacklist;
+};
+
+struct NIS_Select_EndStruct {
+    Type_NIS_Scene_End NIS_Scene_End;
+    Type_NIS_Track NIS_Track;
+    Type_NIS_Section NIS_Section;
+};
+
+static Csis::System::Result NIS_Select_Start(Type_NIS_Scene_Start NIS_Scene_Start, Type_NIS_Track NIS_Track,
+                                             Type_NIS_Section NIS_Section) {
+    NIS_Select_StartStruct data;
+    data.NIS_Scene_Start = NIS_Scene_Start;
+    data.NIS_Track = NIS_Track;
+    data.NIS_Section = NIS_Section;
+    return Csis::Function::Call(&Csis::gNIS_Select_StartHandle, &data);
+}
+
+static Csis::System::Result NIS_Select_Blacklist(Type_NIS_Track NIS_Track, Type_NIS_Section NIS_Section,
+                                                 Type_NIS_Blacklist NIS_Blacklist) {
+    NIS_Select_BlacklistStruct data;
+    data.NIS_Track = NIS_Track;
+    data.NIS_Section = NIS_Section;
+    data.NIS_Blacklist = NIS_Blacklist;
+    return Csis::Function::Call(&Csis::gNIS_Select_BlacklistHandle, &data);
+}
+
+static Csis::System::Result NIS_Select_End(Type_NIS_Scene_End NIS_Scene_End, Type_NIS_Track NIS_Track,
+                                           Type_NIS_Section NIS_Section) {
+    NIS_Select_EndStruct data;
+    data.NIS_Scene_End = NIS_Scene_End;
+    data.NIS_Track = NIS_Track;
+    data.NIS_Section = NIS_Section;
+    return Csis::Function::Call(&Csis::gNIS_Select_EndHandle, &data);
+}
+
+static Type_NIS_Track GetCSISTrack(int camera_track_number) {
+    Type_NIS_Track csiscamtrack = Type_NIS_Track_Track00;
+
+    if (camera_track_number == 6) {
+        csiscamtrack = Type_NIS_Track_Track06;
+    } else if (camera_track_number < 7) {
+        if (camera_track_number == 2) {
+            csiscamtrack = Type_NIS_Track_Track02;
+        } else if (camera_track_number < 3) {
+            if (camera_track_number != 0 && camera_track_number == 1) {
+                csiscamtrack = Type_NIS_Track_Track01;
+            }
+        } else if (camera_track_number == 4) {
+            csiscamtrack = Type_NIS_Track_Track04;
+        } else if (camera_track_number < 5) {
+            csiscamtrack = Type_NIS_Track_Track03;
+        } else {
+            csiscamtrack = Type_NIS_Track_Track05;
+        }
+    } else if (camera_track_number == 10) {
+        csiscamtrack = Type_NIS_Track_Track10;
+    } else if (camera_track_number < 11) {
+        if (camera_track_number == 8) {
+            csiscamtrack = Type_NIS_Track_Track08;
+        } else if (camera_track_number < 9) {
+            csiscamtrack = Type_NIS_Track_Track07;
+        } else {
+            csiscamtrack = Type_NIS_Track_Track09;
+        }
+    } else if (camera_track_number == 12) {
+        csiscamtrack = Type_NIS_Track_Track12;
+    } else if (camera_track_number < 12) {
+        csiscamtrack = Type_NIS_Track_Track11;
+    } else if (camera_track_number == 13) {
+        csiscamtrack = Type_NIS_Track_Track13;
+    }
+
+    return csiscamtrack;
+}
+
+} // namespace
 
 struct NISStringHashMapEntry {
     unsigned int Hash;
     unsigned int Flags;
     const char *Name;
 };
+
+extern int GetCsisEventIndex(unsigned int anim_id);
+
+bool SFXObj_NISStream::m_bNISButtonThroughAnimationReady;
+bool SFXObj_NISStream::m_bNISAudioStreamReady;
+bool SFXObj_NISStream::m_bNISButtonThroughReady;
+bool SFXObj_NISStream::m_bIsButtonThrough;
+int SFXObj_NISStream::m_mstimeelapsed;
+int SFXObj_NISStream::m_mslengthofstream;
+unsigned int g_laststartanimid;
+bool g_bWasLastNISaStart;
 
 NISStringHashMapEntry uNIS_STRINGHASHMAP[68];
 
@@ -83,6 +289,151 @@ void GenerateNISAnimHashMap() {
     INIT_NIS_ENTRY(0x41, 0x40000, "EndingNis02");
     INIT_NIS_ENTRY(0x42, 0x80000, "EndingNis03");
     INIT_NIS_ENTRY(0x43, 0x100000, "EndingNis04");
+}
+
+bool SFXObj_NISStream::QueueNISStream(unsigned int anim_id, int camera_track_number, bool bbuttonthrough,
+                                      bool btracktime) {
+    Speech::Module *nismgr = Speech::Manager::GetSpeechModule(0);
+    Type_NIS_Track csiscamtrack = GetCSISTrack(camera_track_number);
+    bool breturn = false;
+    int CSISindex = 0;
+    int id = 0;
+    SFXObj_Pathfinder *ppf = nullptr;
+
+    m_bNISAnimationReady = false;
+    m_animid = anim_id;
+
+    if (!btracktime) {
+        m_mselapsedtimecb = 0;
+    }
+
+    m_bIsButtonThrough = bbuttonthrough;
+    if (bbuttonthrough || nismgr->GetStreamChannel()->IsPlaying()) {
+        nismgr = Speech::Manager::GetSpeechModule(0);
+        nismgr->PurgeSpeech();
+    }
+
+    CSISindex = GetCsisEventIndex(anim_id);
+    if (CSISindex == -1) {
+        m_bNISAudioStreamReady = true;
+        SetSoundControlState(false, SNDSTATE_NIS_STORY, "Clear NIS");
+        SetSoundControlState(false, SNDSTATE_NIS_INTRO, "Clear NIS");
+        SetSoundControlState(false, SNDSTATE_NIS_321, "Clear NIS");
+        SetSoundControlState(false, SNDSTATE_NIS_BLK, "Clear NIS");
+        SetSoundControlState(false, SNDSTATE_NIS_ARREST, "Clear NIS");
+        return false;
+    }
+
+    if (CSISindex != 0) {
+        csiscamtrack = Type_NIS_Track_Track00;
+    }
+
+    ppf = static_cast<SFXObj_Pathfinder *>(g_pEAXSound->GetSFXBase_Object(0x40010010));
+    if (CSISindex < 0x12) {
+        g_bWasLastNISaStart = true;
+        if (bbuttonthrough) {
+            g_laststartanimid = anim_id;
+            SetSoundControlState(false, SNDSTATE_NIS_321, "NIS 321");
+
+            if (NIS_Select_Start(static_cast<Type_NIS_Scene_Start>(uNIS_STRINGHASHMAP[CSISindex].Flags), csiscamtrack,
+                                 Type_NIS_Section_End) < Csis::System::kResult_Ok) {
+                Csis::gNIS_Select_StartHandle.Set(&Csis::NIS_Select_StartId);
+                NIS_Select_Start(static_cast<Type_NIS_Scene_Start>(uNIS_STRINGHASHMAP[CSISindex].Flags), csiscamtrack,
+                                 Type_NIS_Section_End);
+            }
+
+            nismgr = Speech::Manager::GetSpeechModule(0);
+            id = nismgr->QueStream(STRM_NIS_RACE_START, &SFXObj_NISStream::PlayNISStream, false);
+            SetDMIX_Input(6, 0);
+            if (ppf) {
+                ppf->SetNISPlaying(false);
+            }
+        } else {
+            g_laststartanimid = anim_id;
+
+            if (NIS_Select_Start(static_cast<Type_NIS_Scene_Start>(uNIS_STRINGHASHMAP[CSISindex].Flags), csiscamtrack,
+                                 Type_NIS_Section_Complete) < Csis::System::kResult_Ok) {
+                Csis::gNIS_Select_StartHandle.Set(&Csis::NIS_Select_StartId);
+                NIS_Select_Start(static_cast<Type_NIS_Scene_Start>(uNIS_STRINGHASHMAP[CSISindex].Flags), csiscamtrack,
+                                 Type_NIS_Section_Complete);
+            }
+
+            nismgr = Speech::Manager::GetSpeechModule(0);
+            id = nismgr->QueStream(STRM_NIS_RACE_START, &SFXObj_NISStream::PlayNISStream, false);
+            SetDMIX_Input(6, 0x7FFF);
+            if (ppf) {
+                ppf->SetNISPlaying(true);
+            }
+        }
+    } else if (CSISindex < 0x24) {
+        if (CSISindex == 0x18) {
+            bbuttonthrough = true;
+            CSISindex = 0x17;
+        } else if (CSISindex == 0x1A) {
+            bbuttonthrough = true;
+            CSISindex = 0x19;
+        }
+
+        g_bWasLastNISaStart = true;
+        if (bbuttonthrough) {
+            g_laststartanimid = anim_id;
+            SetSoundControlState(false, SNDSTATE_NIS_321, "NIS 321");
+
+            if (NIS_Select_Blacklist(csiscamtrack, Type_NIS_Section_End,
+                                     static_cast<Type_NIS_Blacklist>(uNIS_STRINGHASHMAP[CSISindex].Flags)) <
+                Csis::System::kResult_Ok) {
+                Csis::gNIS_Select_BlacklistHandle.Set(&Csis::NIS_Select_BlacklistId);
+                NIS_Select_Blacklist(csiscamtrack, Type_NIS_Section_End,
+                                     static_cast<Type_NIS_Blacklist>(uNIS_STRINGHASHMAP[CSISindex].Flags));
+            }
+
+            nismgr = Speech::Manager::GetSpeechModule(0);
+            id = nismgr->QueStream(STRM_NIS_RACE_START, &SFXObj_NISStream::PlayNISStream, false);
+            SetDMIX_Input(6, 0);
+            if (ppf) {
+                ppf->SetNISPlaying(false);
+            }
+        } else {
+            g_laststartanimid = anim_id;
+
+            if (NIS_Select_Blacklist(csiscamtrack, Type_NIS_Section_Complete,
+                                     static_cast<Type_NIS_Blacklist>(uNIS_STRINGHASHMAP[CSISindex].Flags)) <
+                Csis::System::kResult_Ok) {
+                Csis::gNIS_Select_BlacklistHandle.Set(&Csis::NIS_Select_BlacklistId);
+                NIS_Select_Blacklist(csiscamtrack, Type_NIS_Section_Complete,
+                                     static_cast<Type_NIS_Blacklist>(uNIS_STRINGHASHMAP[CSISindex].Flags));
+            }
+
+            nismgr = Speech::Manager::GetSpeechModule(0);
+            id = nismgr->QueStream(STRM_NIS_RACE_START, &SFXObj_NISStream::PlayNISStream, false);
+            SetDMIX_Input(6, 0x7FFF);
+            if (ppf) {
+                ppf->SetNISPlaying(true);
+            }
+        }
+    } else {
+        g_bWasLastNISaStart = false;
+
+        if (NIS_Select_End(static_cast<Type_NIS_Scene_End>(uNIS_STRINGHASHMAP[CSISindex].Flags),
+                           Type_NIS_Track_Track00, Type_NIS_Section_Complete) < Csis::System::kResult_Ok) {
+            Csis::gNIS_Select_EndHandle.Set(&Csis::NIS_Select_EndId);
+            NIS_Select_End(static_cast<Type_NIS_Scene_End>(uNIS_STRINGHASHMAP[CSISindex].Flags),
+                           Type_NIS_Track_Track00, Type_NIS_Section_Complete);
+        }
+
+        nismgr = Speech::Manager::GetSpeechModule(0);
+        id = nismgr->QueStream(STRM_NIS_BUSTED, &SFXObj_NISStream::PlayNISStream, false);
+        SetDMIX_Input(7, 0x7FFF);
+        if (ppf) {
+            ppf->SetNISPlaying(true);
+        }
+    }
+
+    breturn = id != 0;
+    if (!breturn) {
+        m_bNISAudioStreamReady = true;
+    }
+    return breturn;
 }
 
 #undef INIT_NIS_ENTRY

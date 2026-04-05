@@ -32,6 +32,10 @@ Result Subscribe(void *desc);
 void *Alloc(int bytes);
 void Free(void *memory);
 } // namespace System
+
+struct Function {
+    static System::Result Call(FunctionHandle *pFunctionHandle, void *pParameters);
+};
 } // namespace Csis
 
 #endif

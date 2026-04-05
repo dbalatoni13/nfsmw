@@ -19,6 +19,14 @@ struct SFXObj_Pathfinder : CARSFX {
     void Set321(bool bon) {
         m_Flags |= bon;
     }
+
+    void SetNISPlaying(bool bon) {
+        if (bon) {
+            m_Flags |= 0x200;
+        } else {
+            m_Flags &= ~0x200u;
+        }
+    }
 };
 
 #endif
