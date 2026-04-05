@@ -31,7 +31,7 @@ realstream/src/stream.cpp             DONE    Struct/layout audit verified
 sfxctl/SFXCTL.cpp                     DONE    Reviewed clean
 sfxctl/SFXCTL_Wheel.cpp               DONE    Reviewed; current nullptr cast sites are constructor-overload driven
 sfxctl/SFXCTL_Shifting.cpp            SKIP    bool-through-void* sites are known match-sensitive
-sfxctl/SFXCTL_Engine.cpp              BLOCK   Out-of-class inline helpers depend on incomplete / cpp-local state
+sfxctl/SFXCTL_Engine.cpp              DONE    SetEngTorque moved into the class declaration with literal smoothing constants
 sfxctl/SFXCTL_NISReving.cpp           DONE    Reviewed clean
 sfxctl/SFXCTL_AccelTrans.cpp          DONE    Generated acceltrans accessors moved to their owner header
 sfxctl/SFXCTL_HybridMotor.cpp         DONE    Reviewed clean
@@ -76,7 +76,7 @@ SFX_base.hpp                           DONE    eSFXOBJ_MAIN_TYPES moved here fro
 CARSFX.hpp                             DONE    Reviewed clean
 sfxctl/SFXCTL_Wheel.hpp                DONE    Reviewed clean
 sfxctl/SFXCTL_Shifting.hpp             DONE    Reviewed clean
-sfxctl/SFXCTL_Engine.hpp               BLOCK   SetEngTorque inline body depends on cpp-local constants
+sfxctl/SFXCTL_Engine.hpp               DONE    SetEngTorque folded in-class; header no longer depends on lbl_803D72FC/lbl_803D7300
 sfxctl/SFXCTL_AccelTrans.hpp           DONE    Local header is fine; generated acceltrans header still pending
 sfxctl/SFXCTL_HybridMotor.hpp          DONE    Reviewed clean
 sfxctl/SFXCTL_Physics.hpp              DONE    Prior DWARF/member audit stands
@@ -118,8 +118,11 @@ DONE:
 
 BLOCK:
 - SndBase::GetPhysCar
+  Reason:
+  - re-tested moving `STATE_Base.hpp` ahead of `SndBase` and it made `SFXCTL` see an incomplete `SndBase` base
 - SFXCTL::GetPhysRPM / GetPhysTRQ
-- SFXCTL_Engine::SetEngTorque
+  Reason:
+  - re-tested including `EAXCar.hpp` from `SFXCTL.hpp` and it made `EAXCar` see incomplete `CSTATE_Base` when entered via `STATE_Base.hpp`
 
 VTABLE / RAW POINTER MATH TRACKER
 ---------------------------------

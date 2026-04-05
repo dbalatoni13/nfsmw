@@ -28,8 +28,6 @@ extern float lbl_803D72EC;
 extern float lbl_803D72F0;
 extern float lbl_803D72F4;
 extern float lbl_803D72F8;
-extern float lbl_803D72FC;
-extern float lbl_803D7300;
 extern Slope RedLineDelayPerGear;
 extern "C" int GetQ15FromHundredthsdB__11NFSMixShapei(int ndB);
 
@@ -105,12 +103,6 @@ void SFXCTL_Engine::MsgCountdownDone(const MCountdownDone &message) {
 void SFXCTL_Engine::SetupSFX(CSTATE_Base *_StateBase) {
     SndBase::SetupSFX(_StateBase);
     m_UGL = static_cast<eAemsUpgradeLevel>(m_pEAXCar->GetEngineUpgradeLevel());
-}
-
-inline void SFXCTL_Engine::SetEngTorque(float _torque) {
-    _torque += m_TRQ_LFO;
-    m_fEng_Trq = _torque;
-    m_fSmoothedEng_Trq = m_fSmoothedEng_Trq * lbl_803D72FC + _torque * lbl_803D7300;
 }
 
 void SFXCTL_Engine::InitSFX() {

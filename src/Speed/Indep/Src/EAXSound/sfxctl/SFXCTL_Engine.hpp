@@ -79,7 +79,11 @@ struct SFXCTL_Engine : public SFXCTL {
     virtual float GetEngTorque() { return m_fEng_Trq; }
     virtual float GetSmoothedEngTorque() { return m_fSmoothedEng_Trq; }
     virtual void UpdateEngineLFO_FX(float t);
-    void SetEngTorque(float _torque);
+    void SetEngTorque(float _torque) {
+        _torque += m_TRQ_LFO;
+        m_fEng_Trq = _torque;
+        m_fSmoothedEng_Trq = m_fSmoothedEng_Trq * 0.95f + _torque * 0.05f;
+    }
     void SetEngRPM(float _RPM) { m_fEng_RPM = _RPM; }
 
     void MsgCountdownDone(const MCountdownDone &message);
