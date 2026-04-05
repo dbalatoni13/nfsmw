@@ -58,7 +58,9 @@ class Camera {
         return &this->CurrentKey.Direction;
     }
 
-    // bVector3 *GetTarget() {}
+    bVector3 *GetTarget() {
+        return &this->CurrentKey.Target;
+    }
 
     // unsigned short GetFov() {}
 
@@ -77,7 +79,9 @@ class Camera {
 
     // unsigned short GetPreviousFov() {}
 
-    // bVector3 *GetVelocityPosition() {}
+    bVector3 *GetVelocityPosition() {
+        return &this->VelocityKey.Position;
+    }
 
     // bVector3 *GetVelocityDirection() {}
 
