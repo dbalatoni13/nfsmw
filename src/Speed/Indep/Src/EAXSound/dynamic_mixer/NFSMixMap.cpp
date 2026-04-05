@@ -580,6 +580,48 @@ int NFSMixMap::GetMapStateCopies(int nstate) {
     return 0;
 }
 
+void NFSMixMap::CreateMainMapState(eMAINMAPSTATES estate, int numstates, int objnum) {
+    NFSMixMapState *pstate;
+    int smoffset;
+    int *pStateOffsets;
+
+    if (!m_pStateProcs[estate]) {
+        pstate = GetNextMapState(true);
+        m_pStateProcs[estate] = pstate;
+        m_pStateProcs[estate]->Initialize(this, estate, numstates, objnum);
+    }
+
+    m_pStateProcs[estate]->AddMixState(objnum, m_pStateProcs[estate]);
+    pStateOffsets = reinterpret_cast<int *>(reinterpret_cast<char *>(m_pMMHdr) + m_pMMHdr->StateTableOffset);
+    smoffset = pStateOffsets[estate];
+    pstate = m_pStateProcs[estate]->GetMixMapProc(objnum);
+    pstate->m_pMMStateHdr = reinterpret_cast<stMixMapStateHdr *>(reinterpret_cast<char *>(m_pMMHdr) + smoffset);
+    pstate->CreateMixCtls();
+    pstate->Create3DMixCtls();
+    pstate->CreateEvtMixCtls();
+}
+
+void NFSMixMap::SetupStateProcArrays() {
+    int stateIndex;
+
+    if (m_pMMHdr->NumStates > 0) {
+        for (stateIndex = 0; stateIndex < m_pMMHdr->NumStates; stateIndex++) {
+            if (m_pStateProcs[stateIndex] && m_pStateProcs[stateIndex]->m_ThisStateRefCnt > 0) {
+                int refcnt;
+
+                for (refcnt = 0; refcnt < m_pStateProcs[stateIndex]->m_ThisStateRefCnt; refcnt++) {
+                    NFSMixMapState *pstate;
+
+                    pstate = m_pStateProcs[stateIndex]->GetMixMapProc(refcnt);
+                    pstate->InitializeSubChannels();
+                    pstate = m_pStateProcs[stateIndex]->GetMixMapProc(refcnt);
+                    pstate->InitializeMasterChannels();
+                }
+            }
+        }
+    }
+}
+
 void NFSMixMap::InitMainMapStates() {
     SetupStateProcArrays();
     ConnectMixMap();
