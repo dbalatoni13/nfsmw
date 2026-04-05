@@ -15,7 +15,6 @@ struct SFXCTL_3DRightWheelPos;
 struct CARSFX_Skids : public CARSFX {
   protected:
     static TypeInfo s_TypeInfo;
-    static TypeInfo *GetStaticTypeInfo() { return &s_TypeInfo; }
 
   public:
     CARSFX_Skids();

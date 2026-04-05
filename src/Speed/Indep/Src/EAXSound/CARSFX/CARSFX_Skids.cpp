@@ -6,6 +6,7 @@
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_3DObjPos.hpp"
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Wheel.hpp"
 #include "Speed/Indep/Src/EAXSound/snd_gen/MAIN_AEMS.h"
+#include "Speed/Indep/Src/World/RaceParameters.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
 struct SFXCTL_3DLeftWheelPos : public SFXCTL_3DObjPos {};
@@ -59,6 +60,25 @@ int CARSFX_Skids::GetController(int Index) {
 
 void CARSFX_Skids::SetupSFX(CSTATE_Base *_StateBase) {
     SndBase::SetupSFX(_StateBase);
+}
+
+void CARSFX_Skids::InitSFX() {
+    int numskids;
+
+    if (!GetPhysCar()) {
+        return;
+    }
+
+    SndBase::InitSFX();
+    SkidType = TheRaceParameters.IsDriftRace();
+    if (m_pSkidControl) {
+        delete m_pSkidControl;
+    }
+
+    g_pEAXSound->SetCsisName(this);
+    m_pSkidControl = new FX_SKID(0, 0, 0, 0, bClamp(SkidType, 0, 3), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 25000, 0, 0x7FFF, 0);
+    numskids = m_pSkidControl->GetRefCount();
+    Enable();
 }
 
 void CARSFX_Skids::AttachController(SFXCTL *psfxctl) {
@@ -152,10 +172,17 @@ void CARSFX_Skids::ProcessUpdate() {
 }
 
 void CARSFX_Skids::SetupLoadData() {
-    int nlvl;
     Attrib::StringKey bank;
+    int nlvl;
 
-    nlvl = bClamp(static_cast<int>(m_UGL), 0, 1);
+    nlvl = 0;
+    if (nlvl < static_cast<int>(m_UGL)) {
+        nlvl = m_UGL;
+    }
+    if (nlvl > 1) {
+        nlvl = 1;
+    }
+
     bank = g_pEAXSound->GetAttributes()->AEMS_SkidBanks(nlvl);
     LoadAsset(bank, SNDPATH_SKIDS, EAXSND_DT_AEMS_ASYNCSPUMEM, eBANK_SLOT_NONE, true);
 }
