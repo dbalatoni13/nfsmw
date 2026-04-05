@@ -10,6 +10,7 @@
 #include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_Reverb.hpp"
 #include "Speed/Indep/Src/EAXSound/SndCamera.hpp"
 #include "Speed/Indep/Src/EAXSound/Stream/EAXS_StreamManager.h"
+#include "Speed/Indep/Src/EAXSound/Stream/SpeechManager.hpp"
 #include "Speed/Indep/Src/EAXSound/States/Managers/STATEMGR_Base.hpp"
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_NISReving.hpp"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
@@ -31,74 +32,6 @@
 #include "Speed/Indep/bWare/Inc/bDebug.hpp"
 #include <new>
 
-enum SpeechModuleIndex {
-    NISSFX_MODULE = 0,
-    COPSPEECH_MODULE = 1,
-    NUM_SPEECH_MODULES = 2,
-};
-
-enum eSFXOBJ_MAIN_TYPES {
-    SFXOBJ_MUSIC = 0,
-    SFXOBJ_SPEECH = 1,
-    SFXOBJ_AMBIENCE = 2,
-    SFXOBJ_MOVIES = 3,
-    SFXOBJ_COMMON = 4,
-    SFXOBJ_NISPROJ_STRMS = 5,
-    SFXOBJ_MOMENT_STRMS = 6,
-    SFXOBJ_FEHUD = 7,
-};
-
-namespace Speech {
-class SampleReqList;
-
-class Cache {
-  public:
-    SlotPool *GetEventPool();
-    void Free(void *ptr);
-    void Dump();
-    void Init(int size);
-    void Validate();
-};
-class Module {
-  public:
-    virtual void Init(int channel);
-    virtual void LoadBanks();
-    virtual int TestSentenceRuleCallback(int eventID, int ruleID, int parmValue);
-    virtual int SetSentenceRuleCallback(int eventID, int ruleID, int parmValue);
-    virtual int EventRuleCallback(int eventID);
-    virtual int GetNumBanks();
-    virtual unsigned int GetBankOffset(int bnum);
-    virtual void Update();
-    virtual const char *GetFilename();
-    virtual bool QueStream(int stream_type, void (*callback)(), bool trigger_play_after_callback);
-    virtual unsigned int SampleRequestCallback(void *data);
-    virtual bool IsStreamQueued();
-    virtual char *GetCSIptr();
-    virtual int GetChannel();
-    virtual char *GetEventDat();
-    virtual bool IsDataLoaded();
-    virtual bool PlayStream(int stream_id);
-    virtual void UnknownVirtual();
-    virtual void ReleaseResource();
-    void PurgeSpeech();
-};
-class Manager {
-  public:
-    static void ClearPlayback();
-    static void Init(int mode);
-    static void Destroy();
-    static void Deduce();
-    static void Update(float dt);
-    static Module *GetSpeechModule(int id);
-    static void AttachSFXOBJ(SpeechModuleIndex module, SFX_Base *psb, eSFXOBJ_MAIN_TYPES type);
-    static SampleReqList &GetSampleRequests() { return mSampleRequests; }
-
-    static short m_frameindex;
-    static SampleReqList mSampleRequests;
-};
-} // namespace Speech
-
-extern Speech::Cache gSpeechCache;
 extern Attrib::Gen::shiftpattern *g_ShiftInfo;
 extern Attrib::Gen::turbosfx *g_TurboInfo;
 

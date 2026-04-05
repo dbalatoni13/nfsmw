@@ -70,6 +70,7 @@ class Module : public AudioMemBase {
     virtual bool IsDataLoaded();
     virtual bool PlayStream(int stream_id);
     virtual void ReleaseResource();
+    void PurgeSpeech();
 
   protected:
     bool m_enable;                        // offset 0x4, size 0x1

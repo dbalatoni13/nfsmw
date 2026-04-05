@@ -9,7 +9,7 @@ Status legend:
 FILE                                  STATUS  NOTES
 ----                                  ------  -----
 AudioMemoryManager.cpp                DONE    Prior cast cleanup verified
-EAXSound.cpp                          DONE    Local Speech::Manager::GetSampleRequests folded in-class
+EAXSound.cpp                          DONE    Speech owner declarations moved to headers; local jumbo stubs removed
 EAXAemsManager.cpp                    SKIP    Folding its inline bodies into the header regressed the TU to 93.31052
 EAXFrontEnd.cpp                       DONE    Reviewed clean
 EAXAITunerCar.cpp                     DONE    mPhysicsChangedGear bool cleanup verified
@@ -23,7 +23,7 @@ STICH_PlayBack.cpp                    DONE    __builtin cleanup + struct/layout 
 STICH_Loader.cpp                      DONE    Prior cleanup verified
 EAXAIUtils.cpp                        DONE    bTransition bool cleanup verified
 SoundConn.cpp                         DONE    Struct/layout audit verified
-EaxSoundTypes.cpp                     DONE    SpeechSampleData::Lock/Unlock + local Manager inline folded in-class
+EaxSoundTypes.cpp                     DONE    SpeechSampleData::Lock/Unlock folded in-class; explicit SpeechManager include added
 Stream/EAXS_StreamManager.cpp         DONE    Reviewed; no safe cleanup beyond matching artifacts
 Stream/EAXS_StreamChannel.cpp         DONE    Reviewed clean
 Stream/SndStrmWrapper.cpp             SKIP    `bramp == true` is known match-sensitive here
@@ -55,8 +55,8 @@ EAXSndUtil.h                           DONE    Prior DWARF/member audit stands
 EAXSoundTypes.h                        DONE    Prior forward-decl / layout cleanup stands
 SndBase.hpp                            BLOCK   GetPhysCar inline body still requires post-include placement
 SndCamera.hpp                          DONE    All static getter inline bodies folded into struct
-SpeechModule.hpp                       DONE    Reviewed; no new cleanup needed
-Stream/SpeechManager.hpp               PEND    Needs audit against DWARF/static-member ownership; do not guess
+SpeechModule.hpp                       DONE    Owner header now carries the PurgeSpeech declaration used by EAXSound.cpp
+Stream/SpeechManager.hpp               DONE    Cache/Manager ownership moved here from EAXSound.cpp; SpeechModuleIndex declared here
 STATE_Base.hpp                         DONE    Prior DWARF/member audit stands
 STATEMGR_Base.hpp                      DONE    Prior cleanup stands
 STICH_Playback.h                       DONE    Prior cleanup stands
@@ -72,7 +72,7 @@ EAXS_StreamChannel.h                   DONE    Reviewed clean
 EAXS_StreamManager.h                   DONE    Reviewed clean
 SndStrmWrapper.hpp                     DONE    Reviewed clean
 SFXCTL.hpp                             BLOCK   GetPhysRPM/GetPhysTRQ still depend on incomplete EAXCar here
-SFX_base.hpp                           DONE    Reviewed clean
+SFX_base.hpp                           DONE    eSFXOBJ_MAIN_TYPES moved here from EAXSound.cpp for shared header ownership
 CARSFX.hpp                             DONE    Reviewed clean
 sfxctl/SFXCTL_Wheel.hpp                DONE    Reviewed clean
 sfxctl/SFXCTL_Shifting.hpp             DONE    Reviewed clean
