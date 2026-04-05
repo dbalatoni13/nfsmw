@@ -519,6 +519,149 @@ void NFSMixMap::AllocateMixerMemory() {
         gAudioMemoryManager.AllocateMemory(m_EventCtlsAdded << 3, "EvtMixCtl Proc Data Block", false));
 }
 
+stEvtMixCtlProc *NFSMixMap::GetNextEvtMixCtlProc(bool bincrement) {
+    int index;
+
+    index = m_nAssignedEvtMixCtlProc;
+    if (bincrement) {
+        m_nAssignedEvtMixCtlProc = index + 1;
+    }
+
+    return m_pEvtMixCtlProc + index;
+}
+
+stEvtMixCtlSharedData *NFSMixMap::GetNextEvtMixCtlShared(bool bincrement) {
+    int index;
+
+    index = m_nAssignedEvtMixCtlShared;
+    if (bincrement) {
+        m_nAssignedEvtMixCtlShared = index + 1;
+    }
+
+    return m_pEvtMixCtlData_S + index;
+}
+
+stEvtMixCtlUniqueData *NFSMixMap::GetNextEvtMixCtlUnique(bool bincrement) {
+    int index;
+
+    index = m_nAssignedEvtMixCtlUnique;
+    if (bincrement) {
+        m_nAssignedEvtMixCtlUnique = index + 1;
+    }
+
+    return m_pEvtMixCtlData_U + index;
+}
+
+st3DMixCtlProc *NFSMixMap::GetNext3DMixCtlProc(bool bincrement) {
+    int index;
+
+    index = m_nAssigned3DMixCtlProc;
+    if (bincrement) {
+        m_nAssigned3DMixCtlProc = index + 1;
+    }
+
+    return m_p3DMixCtlProc + index;
+}
+
+st3DMixCtlSharedData *NFSMixMap::GetNext3DMixCtlShared(bool bincrement) {
+    int index;
+
+    index = m_nAssigned3DMixCtlShared;
+    if (bincrement) {
+        m_nAssigned3DMixCtlShared = index + 1;
+    }
+
+    return m_p3DMixCtlData_S + index;
+}
+
+st3DMixCtlUniqueData *NFSMixMap::GetNext3DMixCtlUnique(bool bincrement) {
+    int index;
+
+    index = m_nAssigned3DMixCtlUnique;
+    if (bincrement) {
+        m_nAssigned3DMixCtlUnique = index + 1;
+    }
+
+    return m_p3DMixCtlData_U + index;
+}
+
+stMasterMixChProc *NFSMixMap::GetNextMasterMixProc(bool bincrement) {
+    int index;
+
+    index = m_nAssignedMasterMixProc;
+    if (bincrement) {
+        m_nAssignedMasterMixProc = index + 1;
+    }
+
+    return m_pMasterChProc + index;
+}
+
+stMasterMixChSharedData *NFSMixMap::GetNextMasterMixShared(bool bincrement) {
+    int index;
+
+    index = m_nAssignedMasterMixShared;
+    if (bincrement) {
+        m_nAssignedMasterMixShared = index + 1;
+    }
+
+    return m_pMasterChData_S + index;
+}
+
+stMasterMixChUniqueData *NFSMixMap::GetNextMasterMixUnique(bool bincrement) {
+    int index;
+
+    index = m_nAssignedMasterMixUnique;
+    if (bincrement) {
+        m_nAssignedMasterMixUnique = index + 1;
+    }
+
+    return m_pMasterChData_U + index;
+}
+
+stSubMixChProc *NFSMixMap::GetNextSubMixProc(bool bincrement) {
+    int index;
+
+    index = m_nAssignedSubMixProc;
+    if (bincrement) {
+        m_nAssignedSubMixProc = index + 1;
+    }
+
+    return m_pSubChProc + index;
+}
+
+stMixChUniqueData *NFSMixMap::GetNextSubMixUnique(bool bincrement) {
+    int index;
+
+    index = m_nAssignedSubMixUnique;
+    if (bincrement) {
+        m_nAssignedSubMixUnique = index + 1;
+    }
+
+    return m_pSubChData_U + index;
+}
+
+stMixChSharedData *NFSMixMap::GetNextSubMixShared(bool bincrement) {
+    int index;
+
+    index = m_nAssignedSubMixShared;
+    if (bincrement) {
+        m_nAssignedSubMixShared = index + 1;
+    }
+
+    return m_pSubChData_S + index;
+}
+
+stMixCtlProc *NFSMixMap::GetProcessMixCtlPtr(bool bincrement) {
+    int index;
+
+    index = m_nAssignedMixCtlProc;
+    if (bincrement) {
+        m_nAssignedMixCtlProc = index + 1;
+    }
+
+    return m_pMixCtlProc + index;
+}
+
 int *NFSMixMap::GetNextInputBlock(bool bincrement) {
     int blockIndex;
     int n;

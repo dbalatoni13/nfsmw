@@ -20,17 +20,11 @@ struct stMixMapHeader {
 };
 
 struct stMixCtlParams;
-struct stMixCtlProc;
-struct stMixCtlSharedData;
-struct stMixCtlUniqueData;
+struct stSubMixChParams;
+struct stMasterMixChParams;
+struct st3DMixCtlParams;
+struct st3DStateParams;
 struct stEvtMixCtlUniqueData;
-struct st3DMixCtlSharedData;
-struct stMixChSharedData;
-struct stMixChUniqueData;
-struct stSubMixChProc;
-struct stMasterMixChSharedData;
-struct stMasterMixChUniqueData;
-struct stMasterMixChProc;
 
 struct stCurveDataProc {
     // total size: 0x10
@@ -50,6 +44,15 @@ struct st3DMixCtlUniqueData {
     int DopplerCents;    // offset 0x14, size 0x4
     float fPrevDist;     // offset 0x18, size 0x4
     float fPrevDeltaDist; // offset 0x1C, size 0x4
+};
+
+struct st3DMixCtlSharedData {
+    // total size: 0x14
+    st3DMixCtlParams *pMapParams;  // offset 0x00, size 0x4
+    st3DStateParams *pCurStateParams; // offset 0x04, size 0x4
+    int CurCamState;               // offset 0x08, size 0x4
+    int PrevCamState;              // offset 0x0C, size 0x4
+    int msSinceCamTrans;           // offset 0x10, size 0x4
 };
 
 struct st3DMixCtlProc {
@@ -73,10 +76,85 @@ struct stEvtMixCtlSharedData {
     stMixEvtParams *pMapParms;  // offset 0x00, size 0x4
 };
 
+struct stEvtMixCtlUniqueData {
+    // total size: 0x20
+    float msTimeElapsed;   // offset 0x00, size 0x4
+    float msResetTime;     // offset 0x04, size 0x4
+    int reset;             // offset 0x08, size 0x4
+    int reset_level;       // offset 0x0C, size 0x4
+    int *pTriggerPtr;      // offset 0x10, size 0x4
+    int **ppScaleRatios;   // offset 0x14, size 0x4
+    int output;            // offset 0x18, size 0x4
+    int qoutput;           // offset 0x1C, size 0x4
+};
+
 struct stEvtMixCtlProc {
     // total size: 0x8
     stEvtMixCtlSharedData *pData_S;  // offset 0x00, size 0x4
     stEvtMixCtlUniqueData *pData_U;  // offset 0x04, size 0x4
+};
+
+struct stMixCtlSharedData {
+    // total size: 0x10
+    stMixCtlParams *pstMixCtlParms;  // offset 0x00, size 0x4
+    int MIXCTLOBJID;                 // offset 0x04, size 0x4
+    int nOffset;                     // offset 0x08, size 0x4
+    int nRatio;                      // offset 0x0C, size 0x4
+};
+
+struct stMixCtlUniqueData {
+    // total size: 0xC
+    stCurveDataProc *pstCurveData;  // offset 0x00, size 0x4
+    int **ppScaleRatios;            // offset 0x04, size 0x4
+    int CmpdBOut;                   // offset 0x08, size 0x4
+};
+
+struct stMixCtlProc {
+    // total size: 0x8
+    stMixCtlSharedData *psdata;  // offset 0x00, size 0x4
+    stMixCtlUniqueData *pudata;  // offset 0x04, size 0x4
+};
+
+struct stMixChSharedData {
+    // total size: 0xC
+    stSubMixChParams *pMapParams;  // offset 0x00, size 0x4
+    int MIXCHINID;                 // offset 0x04, size 0x4
+    int NumInputs;                 // offset 0x08, size 0x4
+};
+
+struct stMixChUniqueData {
+    // total size: 0x8
+    int *pInputs;  // offset 0x00, size 0x4
+    int Output;    // offset 0x04, size 0x4
+};
+
+struct stSubMixChProc {
+    // total size: 0x8
+    stMixChSharedData *pMixChData_S;  // offset 0x00, size 0x4
+    stMixChUniqueData *pMixChData_U;  // offset 0x04, size 0x4
+};
+
+struct stMasterMixChSharedData {
+    // total size: 0x10
+    stMasterMixChParams *pMapParams;  // offset 0x00, size 0x4
+    int MIXCHINID;                    // offset 0x04, size 0x4
+    int NumInputs;                    // offset 0x08, size 0x4
+    int *pPRESETS;                    // offset 0x0C, size 0x4
+};
+
+struct stMasterMixChUniqueData {
+    // total size: 0x14
+    int outputID;                // offset 0x00, size 0x4
+    int *pInputs;                // offset 0x04, size 0x4
+    int Output;                  // offset 0x08, size 0x4
+    st3DMixCtlProc **p3DData;    // offset 0x0C, size 0x4
+    int *pOutputs;               // offset 0x10, size 0x4
+};
+
+struct stMasterMixChProc {
+    // total size: 0x8
+    stMasterMixChSharedData *pMixChData_S;  // offset 0x00, size 0x4
+    stMasterMixChUniqueData *pMixChData_U;  // offset 0x04, size 0x4
 };
 
 struct NFSMixMap : AudioMemBase {
