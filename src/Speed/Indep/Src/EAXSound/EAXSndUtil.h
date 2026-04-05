@@ -14,24 +14,39 @@ enum eCURVETYPE {
     EQ_PWR_SQ = 5
 };
 
+enum eMIXTABLEID {
+    SHAPE_DWN_EQPWR = 0,
+    SHAPE_UP_EQPWR = 1,
+    SHAPE_DWN_EQPWR_SQ = 2,
+    SHAPE_UP_EQPWR_SQ = 3,
+    SHAPE_DWN_ONE_MIN_EQPWR = 4,
+    SHAPE_UP_ONE_MIN_EQPWR = 5,
+    SHAPE_DWN_ONE_MIN_EQPWR_SQ = 6,
+    SHAPE_UP_ONE_MIN_EQPWR_SQ = 7,
+    SHAPE_DWN_LINEAR = 8,
+    SHAPE_UP_LINEAR = 9,
+    MAX_SHAPE_TYPES = 10,
+};
+
 class NFSMixShape {
   public:
-    enum eMIXTABLEID {
-        SHAPE_DWN_EQPWR = 0,
-        SHAPE_UP_EQPWR = 1,
-        SHAPE_DWN_EQPWR_SQ = 2,
-        SHAPE_UP_EQPWR_SQ = 3,
-        SHAPE_DWN_ONE_MIN_EQPWR = 4,
-        SHAPE_UP_ONE_MIN_EQPWR = 5,
-        SHAPE_DWN_ONE_MIN_EQPWR_SQ = 6,
-        SHAPE_UP_ONE_MIN_EQPWR_SQ = 7,
-        SHAPE_DWN_LINEAR = 8,
-        SHAPE_UP_LINEAR = 9,
-        MAX_SHAPE_TYPES = 10,
+    typedef ::eMIXTABLEID eMIXTABLEID;
+    enum {
+        SHAPE_DWN_EQPWR = ::SHAPE_DWN_EQPWR,
+        SHAPE_UP_EQPWR = ::SHAPE_UP_EQPWR,
+        SHAPE_DWN_EQPWR_SQ = ::SHAPE_DWN_EQPWR_SQ,
+        SHAPE_UP_EQPWR_SQ = ::SHAPE_UP_EQPWR_SQ,
+        SHAPE_DWN_ONE_MIN_EQPWR = ::SHAPE_DWN_ONE_MIN_EQPWR,
+        SHAPE_UP_ONE_MIN_EQPWR = ::SHAPE_UP_ONE_MIN_EQPWR,
+        SHAPE_DWN_ONE_MIN_EQPWR_SQ = ::SHAPE_DWN_ONE_MIN_EQPWR_SQ,
+        SHAPE_UP_ONE_MIN_EQPWR_SQ = ::SHAPE_UP_ONE_MIN_EQPWR_SQ,
+        SHAPE_DWN_LINEAR = ::SHAPE_DWN_LINEAR,
+        SHAPE_UP_LINEAR = ::SHAPE_UP_LINEAR,
+        MAX_SHAPE_TYPES = ::MAX_SHAPE_TYPES,
     };
 
-    static int GetCurveOutput(eMIXTABLEID id, int nQ15Ratio, bool invert);
-    static int GetAzimShapeOutput(eMIXTABLEID etable1, eMIXTABLEID etable2, int *pdistances, int nmixratio);
+    static int GetCurveOutput(::eMIXTABLEID id, int nQ15Ratio, bool invert);
+    static int GetAzimShapeOutput(::eMIXTABLEID etable1, ::eMIXTABLEID etable2, int *pdistances, int nmixratio);
     static int GetQ15FromHundredthsdB(int ndB);
     static int GetdBFromQ15(int nQ15);
     static float GetFloatFromHundredthsdB(int ndB);
