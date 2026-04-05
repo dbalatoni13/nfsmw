@@ -131,14 +131,6 @@ class bMemoryAllocator : public EA::Allocator::IAllocator {
     }
 };
 
-struct AllocDesc {
-    // total size: 0x10
-    unsigned int mIndex; // offset 0x0, size 0x4
-    const char *mName;   // offset 0x4, size 0x4
-    unsigned int mCount; // offset 0x8, size 0x4
-    unsigned int mHigh;  // offset 0xC, size 0x4
-};
-
 void bMemoryInit();
 unsigned int GetVirtualMemoryAllocParams();
 void bInitMemoryPool(int pool_num, void *mem, int mem_size, const char *debug_name);
