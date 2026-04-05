@@ -44,6 +44,10 @@ class CameraAnchor {
         return mWorldID;
     }
 
+    short GetPOVType() {
+        return mPOV.Type;
+    }
+
   private:
     bVector3 mVelocity;                            // offset 0x0, size 0x10
     float mVelMag;                                 // offset 0x10, size 0x4
@@ -80,6 +84,10 @@ class CameraMover : public bTNode<CameraMover>, public WCollisionMgr::ICollision
 
     CameraMoverTypes GetType() {
         return Type;
+    }
+
+    bool IsDriveCamera() {
+        return Type == CM_DRIVE_CUBIC;
     }
 
     bVector3 *GetPosition() {

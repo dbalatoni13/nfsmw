@@ -1,8 +1,7 @@
 #include "Speed/Indep/Src/EAXSound/EAXTunerCar.hpp"
+#include "Speed/Indep/Src/Camera/CameraMover.hpp"
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
-
-extern eView eViews[];
 
 CSTATE_Base::StateInfo EAXTunerCar::s_StateInfo = {
     0x00020000,
@@ -82,23 +81,15 @@ int EAXTunerCar::UpdateRotation() {
 }
 
 void EAXTunerCar::UpdatePov() {
-    char *views = (char *)eViews;
-    void **pNext = (void **)(views + 0xA4);
-    void *sentinel = (void *)(views + 0xA4);
-    char *cm = nullptr;
-    if (*pNext != sentinel) {
-        cm = (char *)*pNext;
-    }
-    if (cm != nullptr) {
-        int *vtable2 = *(int **)(cm + 0x8);
-        short vthis_off = *(short *)((char *)vtable2 + 0x28);
-        int (*vfunc)(char *) = (int (*)(char *))(*(int *)((char *)vtable2 + 0x2C));
-        char *anchor = (char *)vfunc(cm + vthis_off);
+    CameraMover *cm = eGetView(1, false)->GetCameraMover();
 
-        m_IsDriveCamera = (*(int *)(cm + 0xC) == 1);
+    if (cm != nullptr) {
+        CameraAnchor *anchor = cm->GetAnchor();
+
+        m_IsDriveCamera = cm->IsDriveCamera();
 
         if (anchor != nullptr) {
-            m_PovType = static_cast<int>(*(short *)(anchor + 0xD8));
+            m_PovType = static_cast<int>(anchor->GetPOVType());
         } else {
             m_PovType = 7;
         }

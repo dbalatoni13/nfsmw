@@ -14,7 +14,7 @@ EAXAemsManager.cpp                    PEND    stAssetDescription / stSndDataLoad
 EAXFrontEnd.cpp                       DONE    Reviewed clean
 EAXAITunerCar.cpp                     DONE    mPhysicsChangedGear bool cleanup verified
 EAXTrafficCar.cpp                     DONE    Reviewed clean
-EAXTunerCar.cpp                       PEND    UpdatePov raw vtable math investigated; typed rewrite still pending
+EAXTunerCar.cpp                       DONE    UpdatePov now uses typed eView / CameraMover / CameraAnchor accessors
 SoundCollision.cpp                    DONE    Struct/layout audit done
 EAXSndUtil.cpp                        DONE    IsLinked bool cleanup verified
 EAXSND8Wrapper.cpp                    DONE    PF_Allocator inline bodies collapsed into the class declaration
@@ -92,6 +92,7 @@ dynamic_mixer/NFSMixMaster.hpp         DONE    Empty stub; nothing to audit
 snd_gen/*.h                            DONE    Searched; no inline/member/layout cleanup targets found
 Ginsu/*.h                              DONE    Searched; no inline/member/layout cleanup targets found
 PF_iallocatorimpl.h                    DONE    Removed after folding the methods into PF_Allocator
+Camera/CameraMover.hpp                 DONE    Added DWARF-backed GetPOVType / IsDriveCamera accessors
 
 INLINE MIGRATION TRACKER
 ------------------------
@@ -116,12 +117,10 @@ BLOCK:
 
 VTABLE / RAW POINTER MATH TRACKER
 ---------------------------------
-PEND:
+DONE:
 - EAXTunerCar::UpdatePov
-  Evidence gathered:
-  - eViews[1].CameraMoverList / eView::GetCameraMover()
-  - CameraMover::GetAnchor() via ICollisionHandler secondary vtable
-  - CameraMover::GetType() / CM_DRIVE_CUBIC at offset 0xC
-  - CameraAnchor::mPOV.Type at offset 0xD8
-  Next step:
-  - Try the cleanest typed rewrite that still preserves match, then verify immediately
+  Verified rewrite:
+  - `eGetView(1, false)->GetCameraMover()`
+  - `cm->GetAnchor()`
+  - `cm->IsDriveCamera()`
+  - `anchor->GetPOVType()`
