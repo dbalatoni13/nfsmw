@@ -3,6 +3,8 @@
 #include "Speed/Indep/Src/EAXSound/EAXSndUtil.h"
 
 extern "C" int GetdBFromQ15__11NFSMixShapei(int nQ15);
+extern "C" int GetQ15FromHundredthsdB__11NFSMixShapei(int ndB);
+extern "C" float GetPitchMultFromCents__11NFSMixShapei(int cents);
 extern float F_DT_FRAME_LOCK;
 
 int *(*NFSMixMap::mGetOutPtrCB)(int) = nullptr;
@@ -1351,6 +1353,164 @@ void NFSMixMap::UpdateMasterChannels() {
                 for (mix = 0; mix < numin; mix++) {
                     pMChD_U->Output = pMChD_U->Output + *reinterpret_cast<int *>(pMChD_U->pInputs[mix]);
                 }
+            }
+        }
+    }
+}
+
+void NFSMixMap::MixMasterChannels() {
+    int nmst;
+
+    for (nmst = 0; nmst < m_MasterChannelsAdded; nmst++) {
+        int *pPresets;
+        int numPresets;
+        int type;
+        stMasterMixChProc *pMChP;
+        stMasterMixChSharedData *pMChD_S;
+        stMasterMixChUniqueData *pMChD_U;
+        unsigned int presetInfo;
+
+        pMChP = m_pMasterChProc + nmst;
+        pMChD_S = pMChP->pMixChData_S;
+        pMChD_U = pMChP->pMixChData_U;
+        presetInfo = static_cast<unsigned int>(*pMChD_S->pPRESETS);
+        pPresets = pMChD_S->pPRESETS + 1;
+        numPresets = presetInfo & 0xF;
+        type = (presetInfo >> 24) & 0xF;
+
+        if ((pMChD_U->pOutputs[0xF] & 1U) == 0) {
+            int out;
+            int *pSlot;
+            unsigned int slot;
+
+            if (type == 1) {
+                out = 0;
+            } else if (type == 2) {
+                out = 25000;
+            } else {
+                out = -10000;
+            }
+
+            slot = (static_cast<unsigned int>(*pPresets) >> 26) & 0x1F;
+            pSlot = pMChD_U->pOutputs + (slot >> 1);
+            *pSlot = (*pSlot & (0xFFFF << (((slot + 1) & 1) << 4))) | ((out & 0xFFFF) << ((slot & 1) << 4));
+        } else {
+            int np;
+
+            for (np = 0; np < numPresets; np++, pPresets++) {
+                int maskshift;
+                int out;
+                int shift;
+                int *pSlot;
+                int tmpvol;
+                st3DMixCtlProc *p3d;
+                unsigned int n3DIndex;
+                unsigned int num3d;
+                unsigned int preset;
+                unsigned int slot;
+
+                preset = static_cast<unsigned int>(*pPresets);
+                slot = (preset >> 26) & 0x1F;
+                pSlot = pMChD_U->pOutputs + (slot >> 1);
+                shift = (slot & 1) << 4;
+                maskshift = ((slot + 1) & 1) << 4;
+                num3d = (pMChD_S->NumInputs >> 16) & 0x1F;
+                n3DIndex = (preset >> 21) & 0x1F;
+                tmpvol = static_cast<short>(*pPresets);
+
+                if ((num3d == 0) || (num3d <= n3DIndex)) {
+                    out = pMChD_U->Output + tmpvol;
+                    if (type == 1) {
+                        if (out > 0x960) {
+                            out = 0x960;
+                        }
+                        if (out < -0x12C0) {
+                            out = -0x12C0;
+                        }
+                    } else if (type < 2) {
+                        if (type == 0) {
+                            if (out < -10000) {
+                                out = -10000;
+                            }
+                            if (out > 0) {
+                                out = 0;
+                            }
+                            out = GetQ15FromHundredthsdB__11NFSMixShapei(out);
+                        }
+                    } else {
+                        if (type == 2) {
+                            if (out < -10000) {
+                                out = -10000;
+                            }
+                            if (out > 0) {
+                                out = 0;
+                            }
+                            out = static_cast<int>(GetPitchMultFromCents__11NFSMixShapei(out) * 25000.0f);
+                        } else if (type == 4) {
+                            if (out < -10000) {
+                                out = -10000;
+                            }
+                            if (out > 0) {
+                                out = 0;
+                            }
+                            out = GetQ15FromHundredthsdB__11NFSMixShapei(out);
+                        } else {
+                            if (out < 0) {
+                                out = 0;
+                            }
+                            if (out > 25000) {
+                                out = 25000;
+                            }
+                        }
+                    }
+                } else {
+                    p3d = pMChD_U->p3DData[n3DIndex];
+                    if (*pPresets < 0) {
+                        out = static_cast<unsigned short>(p3d->p3DMixCtlData_U->azimuth);
+                    } else if (type == 1) {
+                        out = p3d->p3DMixCtlData_U->DopplerCents + pMChD_U->Output + tmpvol;
+                        if (out > 0x960) {
+                            out = 0x960;
+                        }
+                        if (out < -0x12C0) {
+                            out = 0;
+                        }
+                    } else if (type < 2) {
+                        if (type == 0) {
+                            out = p3d->p3DMixCtlData_U->dBRolloff + pMChD_U->Output + tmpvol;
+                            if (out < -10000) {
+                                out = -10000;
+                            }
+                            if (out > 0) {
+                                out = 0;
+                            }
+                            out = GetQ15FromHundredthsdB__11NFSMixShapei(out);
+                        } else {
+                            out = pMChD_U->Output;
+                        }
+                    } else if (type == 2) {
+                        out = pMChD_U->Output + tmpvol;
+                        if (out < -10000) {
+                            out = -10000;
+                        }
+                        if (out > 0) {
+                            out = 0;
+                        }
+                    } else if (type == 4) {
+                        out = p3d->p3DMixCtlData_U->dBRolloff + pMChD_U->Output + tmpvol;
+                        if (out < -10000) {
+                            out = -10000;
+                        }
+                        if (out > 0) {
+                            out = 0;
+                        }
+                        out = GetQ15FromHundredthsdB__11NFSMixShapei(out);
+                    } else {
+                        out = pMChD_U->Output;
+                    }
+                }
+
+                *pSlot = (*pSlot & (0xFFFF << maskshift)) | ((out & 0xFFFF) << shift);
             }
         }
     }
