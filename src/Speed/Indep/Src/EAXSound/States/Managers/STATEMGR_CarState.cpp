@@ -1,6 +1,14 @@
 #include "Speed/Indep/Src/EAXSound/States/Managers/STATEMGR_CarState.hpp"
 
+#include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
+#include "Speed/Indep/Src/Gameplay/GRaceDatabase.h"
+
 #include <algorithm>
+
+static const unsigned int V8CopEngines[4] = {0xF6A7F776, 0x6F1563C2, 0xEFF995DD, 0x7A947AB6};
+
+int DEBUG_CAR_BANK_TEST_CASE = -1;
+bool ForcePrintResolveInfo = false;
 
 bool sort_engine_priority(unsigned int firstkey, unsigned int secondkey) {
     Attrib::Gen::engineaudio First(firstkey, 0, nullptr);
@@ -13,7 +21,21 @@ UTL::FixedVector<EngineMappingPair, 24, 16> CSTATEMGR_CarState::FinalMapping;
 UTL::FixedVector<unsigned int, 8, 16> CSTATEMGR_CarState::FinalEngines;
 UTL::FixedVector<unsigned int, 8, 16> CSTATEMGR_CarState::FinalCopV8Engines;
 UTL::FixedVector<CSTATEMGR_CarState::EngToCarStruct, 24, 16> CSTATEMGR_CarState::EngineToCarMapping;
-bool CSTATEMGR_CarState::CopsCanBeInGame;
+bool CSTATEMGR_CarState::CopsCanBeInGame = true;
+
+void CSTATEMGR_CarState::AddMapping(unsigned int key1, unsigned int key2) {
+    EngineMappingPair mapping;
+    EngineMappingPair *finditer;
+
+    mapping.Start = key1;
+    mapping.Finish = key2;
+    finditer = std::find(FinalMapping.begin(), FinalMapping.end(), mapping);
+    if (finditer == FinalMapping.end()) {
+        FinalMapping.push_back(mapping);
+    } else {
+        int break_here;
+    }
+}
 
 void CSTATEMGR_CarState::ResetCarBanks() {
     FinalMapping.clear();
@@ -23,7 +45,7 @@ void CSTATEMGR_CarState::ResetCarBanks() {
 }
 
 void CSTATEMGR_CarState::DestroyCar(EAX_CarState *eax_car) {
-    if (eax_car->GetContext() == Sound::CONTEXT_ONLINE || eax_car->GetContext() == Sound::kRaceContext_Career) {
+    if (eax_car->GetContext() == kRaceContext_Online || eax_car->GetContext() == kRaceContext_Career) {
         unsigned int engkey = eax_car->GetEngineInfo()->GetCollection();
         bool IsStillRefed = false;
 

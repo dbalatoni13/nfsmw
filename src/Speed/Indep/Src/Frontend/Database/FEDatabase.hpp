@@ -283,6 +283,10 @@ class cFrontendDatabase {
         return FEGameMode & 4;
     }
 
+    bool IsQuickRaceMode() {
+        return !(FEGameMode & 4);
+    }
+
     bool IsCareerMode() {
         return FEGameMode & 1;
     }

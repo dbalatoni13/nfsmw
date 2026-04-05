@@ -33,6 +33,7 @@ struct CSTATEMGR_CarState : public CSTATEMGR_Base {
     static UTL::FixedVector<unsigned int, 8, 16> FinalCopV8Engines;
     static UTL::FixedVector<EngToCarStruct, 24, 16> EngineToCarMapping;
 
+    static void AddMapping(unsigned int key1, unsigned int key2);
     static void ResolveCarBanks();
     static void ResetCarBanks();
     static void DestroyCar(EAX_CarState *pCar);
