@@ -217,7 +217,7 @@ REQUESTSTRUCTtag *getfreerequest(STREAMHEADERtag *stream) {
 
     MUTEX_lock(&header->mutex);
     request = header->freereq;
-    if (request != nullptr) {
+    if (request) {
         requestidcounter += 0x100;
         header->freereq = request->next;
         if (requestidcounter == 0) {
@@ -236,7 +236,7 @@ static void queuerequest(STREAMHEADERtag *strm, REQUESTSTRUCTtag *req) {
     req->state = STREAMREQUEST_PENDING;
     req->next = nullptr;
     MUTEX_lock(&strm->mutex);
-    if (strm->lastreq == nullptr) {
+    if (!strm->lastreq) {
         req->prev = nullptr;
         strm->firstreq = req;
         strm->curreq = req;
@@ -280,7 +280,7 @@ static void freerequest(STREAMHEADERtag *strm, REQUESTSTRUCTtag *req) {
     }
 
     if (req == strm->curreq) {
-        if (req->next == nullptr) {
+        if (!req->next) {
             strm->curreq = req->prev;
         } else {
             strm->curreq = req->next;
@@ -465,11 +465,11 @@ void startnextrequest(STREAMHEADERtag *stream, int priority) {
 
     MUTEX_lock(&header->mutex);
     request = header->curreq;
-    if (request == nullptr) {
+    if (!request) {
         noPendingRequest = 1;
     } else {
         if (request->state != STREAMREQUEST_PENDING) {
-            if (request->next == nullptr) {
+            if (!request->next) {
                 noPendingRequest = 1;
             } else {
                 header->curreq = request->next;
@@ -500,7 +500,7 @@ void startnextrequest(STREAMHEADERtag *stream, int priority) {
                 if (header->fhandle == 0) {
                     FILEOPERATION *fop = FILESYS_open(header->fname, 1, priority, stream);
                     header->fop = reinterpret_cast<int>(fop);
-                    if (fop == nullptr) {
+                    if (!fop) {
                         return;
                     }
                     FILESYS_callbackop(fop, reinterpret_cast<int (*)(int, int, void *)>(opencallback));
@@ -508,7 +508,7 @@ void startnextrequest(STREAMHEADERtag *stream, int priority) {
                 }
                 FILEOPERATION *fop = FILESYS_close(header->fhandle, priority, stream);
                 header->fop = reinterpret_cast<int>(fop);
-                if (fop == nullptr) {
+                if (!fop) {
                     return;
                 }
                 FILESYS_callbackop(fop, reinterpret_cast<int (*)(int, int, void *)>(closecallback));
@@ -545,7 +545,7 @@ void restartstream(STREAMHEADERtag *stream, int priority) {
     MUTEX_lock(&strm->mutex);
     while (true) {
         req = strm->firstreq;
-        if (req->next == nullptr || req->next->state == STREAMREQUEST_PENDING ||
+        if (!req->next || req->next->state == STREAMREQUEST_PENDING ||
             inbetween(strm->datastart, strm->dataend, req->next->datastart - 1)) {
             break;
         }
@@ -635,7 +635,7 @@ void restartstream(STREAMHEADERtag *stream, int priority) {
     bReadCallbackToggle = false;
     op = FILESYS_read(strm->fhandle, strm->foffset, strm->dataend, strm->readsize, priority, stream);
     strm->fop = reinterpret_cast<int>(op);
-    if (op == nullptr) {
+    if (!op) {
         return;
     }
 
@@ -864,7 +864,7 @@ int STREAM_queuefile(int sndstreamhandle, const char *filename, int offset, int 
     }
 
     REQUESTSTRUCTtag *requestRaw = getfreerequest(streamRaw);
-    if (requestRaw == nullptr) {
+    if (!requestRaw) {
         return 0;
     }
 
@@ -900,7 +900,7 @@ int STREAM_queuemem(int sndstreamhandle, void *address, int length, int holdtime
     int requestId = 0;
     if (status == 0) {
         REQUESTSTRUCTtag *requestRaw = getfreerequest(streamRaw);
-        if (requestRaw != nullptr) {
+        if (requestRaw) {
             if (length == 0) {
                 int totalLength = 0;
                 STREAMCHUNKHDR *chunk = static_cast<STREAMCHUNKHDR *>(address);
@@ -953,7 +953,7 @@ void STREAM_cancelrequest(int sndstreamhandle, int requesthandle) {
     if (lockstate == 0) {
         MUTEX_lock(&strm->mutex);
         req = locaterequest(strm, requesthandle);
-        if (req == nullptr || req->state == STREAMREQUEST_CANCELED) {
+        if (!req || req->state == STREAMREQUEST_CANCELED) {
             finished = true;
         } else if (req->state == STREAMREQUEST_PENDING) {
             finished = true;
@@ -966,7 +966,7 @@ void STREAM_cancelrequest(int sndstreamhandle, int requesthandle) {
                 requestStart = req->datastart;
             }
             req = req->next;
-            if (req == nullptr || req->state == STREAMREQUEST_PENDING) {
+            if (!req || req->state == STREAMREQUEST_PENDING) {
                 requestEnd = strm->datatail;
             } else {
                 requestEnd = req->datastart;
@@ -1030,7 +1030,7 @@ void STREAM_kill(int sndstreamhandle) {
     int chunkSize = 0;
     if (status == 0) {
         REQUESTSTRUCT *request = streamRaw->lastreq;
-        if (request != nullptr) {
+        if (request) {
             while (request->state - STREAMREQUEST_PENDING < 2) {
                 STREAM_cancelrequest(sndstreamhandle, request->id);
                 request = streamRaw->lastreq;

@@ -164,13 +164,13 @@ void SFXCTL_Tunnel::UpdateDriveBySnds(float t) {
 
     FutureZoneType = TRACK_PATH_ZONE_TUNNEL;
     zone = GetTunnelType(FutureCarPos, TRACK_PATH_ZONE_TUNNEL);
-    if (zone == nullptr) {
+    if (!zone) {
         FutureZoneType = TRACK_PATH_ZONE_OVERPASS;
         zone = GetTunnelType(FutureCarPos, TRACK_PATH_ZONE_OVERPASS);
-        if (zone == nullptr) {
+        if (!zone) {
             FutureZoneType = TRACK_PATH_ZONE_OVERPASS_SMALL;
             zone = GetTunnelType(FutureCarPos, TRACK_PATH_ZONE_OVERPASS_SMALL);
-            if (zone == nullptr) {
+            if (!zone) {
                 FutureZoneType = TRACK_PATH_ZONE_RESET;
             }
         }
@@ -196,7 +196,7 @@ void SFXCTL_Tunnel::UpdateDriveBySnds(float t) {
                 tmpdrivebypackage.vLocation = vDriveByLoc;
                 tmpdrivebypackage.UniqueID = 0;
                 ReturnedObj = EAXSound::GetStateMgr(eMM_DRIVEBY)->GetFreeState(&tmpdrivebypackage);
-                if (ReturnedObj != nullptr) {
+                if (ReturnedObj) {
                     ReturnedObj->Attach(&tmpdrivebypackage);
                 }
             }
@@ -226,7 +226,7 @@ void SFXCTL_Tunnel::UpdateDriveBySnds(float t) {
             tmpdrivebypackage.vLocation = vDriveByLoc;
             tmpdrivebypackage.UniqueID = 0;
             ReturnedObj = EAXSound::GetStateMgr(eMM_DRIVEBY)->GetFreeState(&tmpdrivebypackage);
-            if (ReturnedObj != nullptr) {
+            if (ReturnedObj) {
                 ReturnedObj->Attach(&tmpdrivebypackage);
             }
         }
@@ -235,7 +235,7 @@ void SFXCTL_Tunnel::UpdateDriveBySnds(float t) {
 
 TrackPathZone *SFXCTL_Tunnel::GetTunnelType(bVector3 &pos, eTrackPathZoneType zonetype) {
     TrackPathZone *zone = nullptr;
-    while ((zone = TheTrackPathManager.FindZone(static_cast<bVector2 *>(static_cast<void *>(&pos)), zonetype, zone)) != nullptr) {
+    while ((zone = TheTrackPathManager.FindZone(static_cast<bVector2 *>(static_cast<void *>(&pos)), zonetype, zone))) {
         if (zone->GetElevation() == 0.0f) {
             return zone;
         }
@@ -271,27 +271,27 @@ void SFXCTL_Tunnel::UpdateIsInTunnel(float t) {
     CurZoneType = TRACK_PATH_ZONE_TUNNEL;
     zone = GetTunnelType(*static_cast<bVector3 *>(static_cast<void *>(&m_pStateBase->GetPhysCar()->mMatrix.v3)),
                          TRACK_PATH_ZONE_TUNNEL);
-    if (zone == nullptr) {
+    if (!zone) {
         CurZoneType = TRACK_PATH_ZONE_OVERPASS;
         zone = GetTunnelType(*static_cast<bVector3 *>(static_cast<void *>(&m_pStateBase->GetPhysCar()->mMatrix.v3)),
                              TRACK_PATH_ZONE_OVERPASS);
-        if (zone == nullptr) {
+        if (!zone) {
             CurZoneType = TRACK_PATH_ZONE_OVERPASS_SMALL;
             zone = GetTunnelType(*static_cast<bVector3 *>(static_cast<void *>(&m_pStateBase->GetPhysCar()->mMatrix.v3)),
                                  TRACK_PATH_ZONE_OVERPASS_SMALL);
-            if (zone == nullptr) {
+            if (!zone) {
                 CurZoneType = TRACK_PATH_ZONE_GARAGE;
                 zone = GetTunnelType(*static_cast<bVector3 *>(static_cast<void *>(&m_pStateBase->GetPhysCar()->mMatrix.v3)),
                                      TRACK_PATH_ZONE_GARAGE);
-                if (zone == nullptr) {
+                if (!zone) {
                     CurZoneType = TRACK_PATH_ZONE_DYNAMIC;
                     zone = GetTunnelType(*static_cast<bVector3 *>(static_cast<void *>(&m_pStateBase->GetPhysCar()->mMatrix.v3)),
                                          TRACK_PATH_ZONE_DYNAMIC);
-                    if (zone != nullptr) {
+                    if (zone) {
                         if (zone->VisitInfo == 1) {
                             zone = nullptr;
                         }
-                        if (zone != nullptr) {
+                        if (zone) {
                             goto LAB_IN_TUNNEL;
                         }
                     }
@@ -438,15 +438,15 @@ void SFXCTL_Tunnel::UpdateCityVerb(float t) {
     int isValid = 1;
     m_PrevReverbZone = m_CurReverbZone;
 
-    if (ReverbAccessor.Layer == nullptr) {
+    if (!ReverbAccessor.Layer) {
         isValid = 0;
     }
 
     if ((isValid != 0) &&
-        (m_pEAXCar != nullptr) &&
+        (m_pEAXCar) &&
         (((GetUniqueID() >> 16) & 0xFF) == 2)) {
         EAX_CarState *pcar = m_pStateBase->GetPhysCar();
-        if (pcar != nullptr) {
+        if (pcar) {
             ReverbAccessor.CaptureData(pcar->mMatrix.v3.x, pcar->mMatrix.v3.y);
             m_CurReverbZone = ReverbAccessor.GetDataInt(0);
             ncurrentoffset = ReverbAccessor.GetDataInt(2);

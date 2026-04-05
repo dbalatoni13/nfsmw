@@ -539,7 +539,7 @@ void *cStichWrapper::operator new(unsigned int obj_size) {
 }
 
 void cStichWrapper::operator delete(void *ptr) {
-    if (cSTICH_PlayBack::mStitchSlotPool != nullptr && ptr != nullptr) {
+    if (cSTICH_PlayBack::mStitchSlotPool && ptr) {
         cSTICH_PlayBack::mStitchSlotPool->Free(ptr);
     }
 }
@@ -554,7 +554,7 @@ void cStichWrapper::Play(int Vol, int Pitch, int Azimuth) {
 void cStichWrapper::Play(const SND_Params *Params) {
     STICH_TYPE stitch_type = static_cast<STICH_TYPE>(GetData().eStichType);
 
-    if (Params != nullptr) {
+    if (Params) {
         SndParams = *Params;
         SndParams.Vol = SndParams.Vol * 0x7FFF >> 0xF;
     }
@@ -563,7 +563,7 @@ void cStichWrapper::Play(const SND_Params *Params) {
         cSampleWarpper *sample = new cSampleWarpper(GetData().pSampleRefList[i]);
         ActiveSamplesRefs[i] = sample;
 
-        if (sample != nullptr) {
+        if (sample) {
             sample->Initialize();
 
             SampleQueueItem samplereq;
@@ -596,14 +596,14 @@ void cStichWrapper::Update(const SND_Params *Params) {
         return;
     }
 
-    if (Params != nullptr) {
+    if (Params) {
         SndParams = *Params;
     }
 
     bIsPlaying = false;
     for (int i = 0; ; i++) {
         if (i >= static_cast<int>(GetData().Num_SampleRefs)) break;
-        if (ActiveSamplesRefs[i] != nullptr) {
+        if (ActiveSamplesRefs[i]) {
             bool playing = true;
             ActiveSamplesRefs[i]->Update(&SndParams);
             playing = ActiveSamplesRefs[i]->IsPlaying();
@@ -619,7 +619,7 @@ void cStichWrapper::Update(const SND_Params *Params) {
 
 void cStichWrapper::Destroy() {
     for (int i = 0; i < 18; i++) {
-        if (ActiveSamplesRefs[i] != nullptr) {
+        if (ActiveSamplesRefs[i]) {
             if (ActiveSamplesRefs[i]->m_eIsPlaying == eSTITCH_PLAY_STATUS_QUEUED) {
                 SampleQueueItem sampleitem;
                 sampleitem.pSample = ActiveSamplesRefs[i];
@@ -627,7 +627,7 @@ void cStichWrapper::Destroy() {
                 cSTICH_PlayBack::RemoveFromList(sampleitem);
             }
 
-            if (ActiveSamplesRefs[i] != nullptr) {
+            if (ActiveSamplesRefs[i]) {
                 delete ActiveSamplesRefs[i];
             }
             ActiveSamplesRefs[i] = nullptr;
@@ -650,30 +650,30 @@ cSampleWarpper::~cSampleWarpper() {
 }
 
 void *cSampleWarpper::operator new(unsigned int obj_size) {
-    if (cSTICH_PlayBack::mSampleRefSlotPool == nullptr || cSTICH_PlayBack::mSampleRefSlotPool->IsFull()) {
+    if (!cSTICH_PlayBack::mSampleRefSlotPool || cSTICH_PlayBack::mSampleRefSlotPool->IsFull()) {
         return nullptr;
     }
     return cSTICH_PlayBack::mSampleRefSlotPool->Malloc(1, nullptr);
 }
 
 void cSampleWarpper::operator delete(void *ptr) {
-    if (cSTICH_PlayBack::mSampleRefSlotPool != nullptr && ptr != nullptr) {
+    if (cSTICH_PlayBack::mSampleRefSlotPool && ptr) {
         cSTICH_PlayBack::mSampleRefSlotPool->Free(ptr);
     }
 }
 
 void cSampleWarpper::Destroy() {
-    if (AEMS_ActiveSampleWsh != nullptr) {
+    if (AEMS_ActiveSampleWsh) {
         delete AEMS_ActiveSampleWsh;
     }
     AEMS_ActiveSampleWsh = nullptr;
 
-    if (AEMS_ActiveSampleCol != nullptr) {
+    if (AEMS_ActiveSampleCol) {
         delete AEMS_ActiveSampleCol;
     }
     AEMS_ActiveSampleCol = nullptr;
 
-    if (AEMS_ActiveSampleStatic != nullptr) {
+    if (AEMS_ActiveSampleStatic) {
         delete AEMS_ActiveSampleStatic;
     }
     AEMS_ActiveSampleStatic = nullptr;
@@ -696,7 +696,7 @@ void cSampleWarpper::Update(const SND_Params *Params) {
     int refCountCol;
     int refCountStatic;
 
-    if (AEMS_ActiveSampleWsh != nullptr) {
+    if (AEMS_ActiveSampleWsh) {
         int az = static_cast<unsigned short>(SampleRefData->Az) + 0x10000 + Params->Az;
         int azWrap = az;
         if (az < 0) {
@@ -719,7 +719,7 @@ void cSampleWarpper::Update(const SND_Params *Params) {
         }
     }
 
-    if (AEMS_ActiveSampleCol != nullptr) {
+    if (AEMS_ActiveSampleCol) {
         int az = static_cast<unsigned short>(SampleRefData->Az) + 0x10000 + Params->Az;
         int azWrap = az;
         if (az < 0) {
@@ -742,7 +742,7 @@ void cSampleWarpper::Update(const SND_Params *Params) {
         }
     }
 
-    if (AEMS_ActiveSampleStatic != nullptr) {
+    if (AEMS_ActiveSampleStatic) {
         int az = static_cast<unsigned short>(SampleRefData->Az) + 0x10000 + Params->Az;
         int azWrap = az;
         if (az < 0) {
@@ -767,7 +767,7 @@ void cSampleWarpper::Update(const SND_Params *Params) {
 }
 
 void cSampleWarpper::Play(const SND_Params *Params) {
-    if (AEMS_ActiveSampleCol != nullptr || AEMS_ActiveSampleWsh != nullptr || AEMS_ActiveSampleStatic != nullptr) {
+    if (AEMS_ActiveSampleCol || AEMS_ActiveSampleWsh || AEMS_ActiveSampleStatic) {
         return;
     }
 
@@ -867,10 +867,10 @@ void cSampleWarpper::Play(const SND_Params *Params) {
         }
 
         *activeSample = sample;
-        if (*activeSample != nullptr) {
+        if (*activeSample) {
             int refCount = 0;
             Csis::Class *cls = (*activeSample)->mpClass;
-            if (cls != nullptr) {
+            if (cls) {
                 cls->GetRefCount(&refCount);
             }
             if (refCount < 3) {
@@ -956,10 +956,10 @@ void cSampleWarpper::Play(const SND_Params *Params) {
         }
 
         *activeSample = sample;
-        if (*activeSample != nullptr) {
+        if (*activeSample) {
             int refCount = 0;
             Csis::Class *cls = (*activeSample)->mpClass;
-            if (cls != nullptr) {
+            if (cls) {
                 cls->GetRefCount(&refCount);
             }
             if (refCount < 3) {
@@ -1045,10 +1045,10 @@ void cSampleWarpper::Play(const SND_Params *Params) {
         }
 
         *activeSample = sample;
-        if (*activeSample != nullptr) {
+        if (*activeSample) {
             int refCount = 0;
             Csis::Class *cls = (*activeSample)->mpClass;
-            if (cls != nullptr) {
+            if (cls) {
                 cls->GetRefCount(&refCount);
             }
             if (refCount < 3) {

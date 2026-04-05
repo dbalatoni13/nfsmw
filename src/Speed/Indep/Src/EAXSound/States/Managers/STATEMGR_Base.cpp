@@ -30,7 +30,7 @@ void CSTATEMGR_Base::DisconnectMixMap() { // thanks chippy
     CSTATE_Base *obj = m_pHeadStateObj;
     obj->DisconnectMixMap();
 
-    while (obj->m_pNextState != nullptr) {
+    while (obj->m_pNextState) {
         obj = obj->m_pNextState;
         obj->DisconnectMixMap();
     }
@@ -44,7 +44,7 @@ void CSTATEMGR_Base::SafeConnectOrphanObjects() { // thanks chippy
     CSTATE_Base *obj = m_pHeadStateObj;
     obj->SafeConnectOrphanObjects();
 
-    while (obj->m_pNextState != nullptr) {
+    while (obj->m_pNextState) {
         obj = obj->m_pNextState;
         obj->SafeConnectOrphanObjects();
     }
@@ -74,7 +74,7 @@ void CSTATEMGR_Base::ClearClassLists() {
 
 bool CSTATEMGR_Base::IsDataLoaded() {
     CSTATE_Base *obj = m_pHeadStateObj;
-    while (obj != nullptr) {
+    while (obj) {
         if (!obj->IsDataLoaded())
             return false;
         obj = obj->m_pNextState;
@@ -94,7 +94,7 @@ void CSTATEMGR_Base::EnterWorld(eSndGameMode esgm) {
 
 CSTATE_Base *CSTATEMGR_Base::GetFreeState(void *ObjectPtr) {
     CSTATE_Base *obj = m_pHeadStateObj;
-    while (obj != nullptr) {
+    while (obj) {
         if (!obj->bIsAttached)
             return obj;
         obj = obj->m_pNextState;
@@ -111,7 +111,7 @@ void CSTATEMGR_Base::UpdateParams(float t) {
             m_DeltaTime = 0.0f;
         }
         CSTATE_Base *obj = m_pHeadStateObj;
-        while (obj != nullptr) {
+        while (obj) {
             obj->UpdateParams(t);
             obj = obj->m_pNextState;
         }
@@ -121,7 +121,7 @@ void CSTATEMGR_Base::UpdateParams(float t) {
 void CSTATEMGR_Base::ProcessUpdate() {
     if (bIsInitialized) {
         CSTATE_Base *obj = m_pHeadStateObj;
-        while (obj != nullptr) {
+        while (obj) {
             obj->ProcessUpdate();
             obj = obj->m_pNextState;
         }
@@ -130,7 +130,7 @@ void CSTATEMGR_Base::ProcessUpdate() {
 
 CSTATE_Base *CSTATEMGR_Base::GetStateObj(int nInstance) {
     CSTATE_Base *obj = m_pHeadStateObj;
-    while (obj != nullptr) {
+    while (obj) {
         if (obj->m_InstNum == nInstance)
             return obj;
         obj = obj->m_pNextState;
@@ -140,7 +140,7 @@ CSTATE_Base *CSTATEMGR_Base::GetStateObj(int nInstance) {
 
 CSTATE_Base *CSTATEMGR_Base::GetStateObj(void *testattachment) {
     CSTATE_Base *obj = m_pHeadStateObj;
-    while (obj != nullptr) {
+    while (obj) {
         if (testattachment == obj->m_pAttachment)
             return obj;
         obj = obj->m_pNextState;
@@ -152,7 +152,7 @@ void CSTATEMGR_Base::ExitWorld() {
     bIsInitialized = false;
     m_CurNumStates = 0;
     CSTATE_Base *obj = m_pHeadStateObj;
-    while (obj != nullptr) {
+    while (obj) {
         CSTATE_Base *del = obj;
         obj = obj->m_pNextState;
         del->Detach();
@@ -165,7 +165,7 @@ void CSTATEMGR_Base::ExitWorld() {
 int CSTATEMGR_Base::GetAttachedStateCount() {
     int i = 0;
     CSTATE_Base *obj = m_pHeadStateObj;
-    while (obj != nullptr) {
+    while (obj) {
         if (obj->bIsAttached)
             i++;
         obj = obj->m_pNextState;
