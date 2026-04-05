@@ -1,4 +1,5 @@
 #include "Speed/Indep/Src/EAXSound/dynamic_mixer/NFSMixMap.hpp"
+#include "Speed/Indep/Src/EAXSound/dynamic_mixer/NFSMixMapState.hpp"
 
 int *(*NFSMixMap::mGetOutPtrCB)(int) = nullptr;
 void (*NFSMixMap::mSetSFXOutCB)(int, int *) = nullptr;
@@ -455,6 +456,67 @@ void NFSMixMap::PreProcessMixMap() {
     for (int curveType = 0; curveType < 10; curveType++) {
         m_CurveProcsAdded += m_CurveProcsTotal[curveType][0];
     }
+}
+
+void NFSMixMap::AllocateMixerMemory() {
+    int n;
+
+    if (!m_pStateProcs) {
+        m_pStateProcs = static_cast<NFSMixMapState **>(
+            gAudioMemoryManager.AllocateMemory(m_pMMHdr->NumStates << 2, "Dyn Mix Proc Array", false));
+    }
+
+    for (n = 0; n < m_pMMHdr->NumStates; n++) {
+        m_pStateProcs[n] = nullptr;
+    }
+
+    m_pMasterChannelInputs = static_cast<int *>(gAudioMemoryManager.AllocateMemory(
+        m_nTotalMasterChannelInputs << 2, "Master Channel Input Array Block", false));
+    m_pSubChannelInputs = static_cast<int *>(gAudioMemoryManager.AllocateMemory(
+        m_nTotalSubChannelInputs << 2, "Sub Channel Input Array Block", false));
+    m_pMasterChannelOutputArrayBlock = static_cast<int *>(gAudioMemoryManager.AllocateMemory(
+        m_nTotalUniqueMasterChannels << 6, "Master Channel Output Array Block", false));
+
+    m_pStateProcMemBlock = static_cast<NFSMixMapState **>(
+        gAudioMemoryManager.AllocateMemory(m_nStateMapCount * sizeof(NFSMixMapState), "NFSMixMapState Object Memory", false));
+    for (n = 0; n < m_nStateMapCount; n++) {
+        new (reinterpret_cast<char *>(m_pStateProcMemBlock) + (n * sizeof(NFSMixMapState))) NFSMixMapState();
+    }
+
+    m_pScalePtrArray = static_cast<int **>(
+        gAudioMemoryManager.AllocateMemory(m_ScaleParamsAdded << 2, "Scale Input Ptr Array Block", false));
+    m_pCurveDataArray = static_cast<stCurveDataProc *>(
+        gAudioMemoryManager.AllocateMemory(m_CurveProcsAdded << 4, "Curve Proc Data Array", false));
+    m_pMixCtlData_S = static_cast<stMixCtlSharedData *>(
+        gAudioMemoryManager.AllocateMemory(m_SharedMixCtlCount << 4, "NFSMixCtl Shared Data Array", false));
+    m_pMixCtlData_U = static_cast<stMixCtlUniqueData *>(
+        gAudioMemoryManager.AllocateMemory(m_MixCtlsAdded * 0xC, "NFSMixCtl Unique Data Array", false));
+    m_pMixCtlProc = static_cast<stMixCtlProc *>(
+        gAudioMemoryManager.AllocateMemory(m_MixCtlsAdded << 3, "NFSMixCtl Process Data Array", false));
+    m_pSubChData_S = static_cast<stMixChSharedData *>(
+        gAudioMemoryManager.AllocateMemory(m_SharedSubMixCount * 0xC, "SubMix Shared Data Block", false));
+    m_pSubChData_U = static_cast<stMixChUniqueData *>(
+        gAudioMemoryManager.AllocateMemory(m_SubMixChannelsAdded << 3, "SubMix Unique Data Block", false));
+    m_pSubChProc = static_cast<stSubMixChProc *>(
+        gAudioMemoryManager.AllocateMemory(m_SubMixChannelsAdded << 3, "SubMix Proc Data Block", false));
+    m_pMasterChData_S = static_cast<stMasterMixChSharedData *>(
+        gAudioMemoryManager.AllocateMemory(m_SharedMasterMixCount << 4, "MasterMix Shared Data Block", false));
+    m_pMasterChData_U = static_cast<stMasterMixChUniqueData *>(
+        gAudioMemoryManager.AllocateMemory(m_MasterChannelsAdded * 0x14, "MasterMix Unique Data Block", false));
+    m_pMasterChProc = static_cast<stMasterMixChProc *>(
+        gAudioMemoryManager.AllocateMemory(m_MasterChannelsAdded << 3, "MasterMix Proc Data Block", false));
+    m_p3DMixCtlData_S = static_cast<st3DMixCtlSharedData *>(
+        gAudioMemoryManager.AllocateMemory(m_Shared3DMixCtlCount * 0x14, "3DMixCtl Shared Data Block", false));
+    m_p3DMixCtlData_U = static_cast<st3DMixCtlUniqueData *>(
+        gAudioMemoryManager.AllocateMemory(m_3DMixCtlsAdded << 5, "3DMixCtl Unique Data Block", false));
+    m_p3DMixCtlProc = static_cast<st3DMixCtlProc *>(
+        gAudioMemoryManager.AllocateMemory(m_3DMixCtlsAdded << 3, "3DMixCtl Proc Data Block", false));
+    m_pEvtMixCtlData_S = static_cast<stEvtMixCtlSharedData *>(
+        gAudioMemoryManager.AllocateMemory(m_SharedEvtMixCtlCount << 2, "EvtMixCtl Shared Data Block", false));
+    m_pEvtMixCtlData_U = static_cast<stEvtMixCtlUniqueData *>(
+        gAudioMemoryManager.AllocateMemory(m_EventCtlsAdded << 5, "EvtMixCtl Unique Data Block", false));
+    m_pEvtMixCtlProc = static_cast<stEvtMixCtlProc *>(
+        gAudioMemoryManager.AllocateMemory(m_EventCtlsAdded << 3, "EvtMixCtl Proc Data Block", false));
 }
 
 int *NFSMixMap::GetNextInputBlock(bool bincrement) {
