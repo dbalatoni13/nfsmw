@@ -199,6 +199,264 @@ void NFSMixMap::SetupStateRefCount() {
     }
 }
 
+void NFSMixMap::PreProcessMixMap() {
+    unsigned int stateIndex;
+    int *pMixMap;
+    char *pMixMapBase;
+    int *pStateOffsetTable;
+
+    stateIndex = 0;
+    pMixMap = m_pMixMap;
+    pMixMapBase = reinterpret_cast<char *>(pMixMap);
+    pStateOffsetTable = reinterpret_cast<int *>(pMixMapBase + pMixMap[2]);
+
+    ResetMapData();
+    SetupStateRefCount();
+    m_nStateMapCount = 0;
+
+    if (pMixMap[1] > 0) {
+        unsigned int nextState;
+
+        do {
+            int stateOffset;
+
+            stateOffset = *pStateOffsetTable++;
+            nextState = stateIndex + 1;
+
+            if (stateOffset != -1) {
+                int stateRefCount;
+                int mixCtlOffset;
+                int threeDMixCtlOffset;
+                int eventCtlOffset;
+                int subMixOffset;
+                int masterMixOffset;
+
+                stateRefCount = m_StateRefCount[stateIndex];
+                m_nStateMapCount += stateRefCount;
+
+                mixCtlOffset = *reinterpret_cast<int *>(pMixMapBase + stateOffset + 4);
+                if (mixCtlOffset != -1) {
+                    int *pMixCtlHeader;
+                    unsigned int *pCurveWord;
+                    unsigned int *pCurveIds;
+                    int ctlCount;
+                    int ctlIndex;
+
+                    pMixCtlHeader = reinterpret_cast<int *>(pMixMapBase + mixCtlOffset + stateOffset);
+                    ctlCount = pMixCtlHeader[0];
+                    pCurveWord = reinterpret_cast<unsigned int *>(pMixCtlHeader + 4);
+                    pCurveIds = static_cast<unsigned int *>(
+                        gAudioMemoryManager.AllocateMemory(ctlCount << 2, "Temp MIXMAP ALLOC", false));
+
+                    m_MixCtlsAdded += stateRefCount * ctlCount;
+                    m_SharedMixCtlCount += ctlCount;
+                    m_DataProcsAdded += stateRefCount * pMixCtlHeader[1];
+
+                    for (ctlIndex = 0; ctlIndex < ctlCount; ctlIndex++) {
+                        bool uniqueCurve;
+                        int scaleParamsAdded;
+                        int existingCurveIndex;
+                        int scaleIndex;
+                        int scaleCount;
+                        unsigned int curveType;
+                        unsigned int curveId;
+                        unsigned int *pScaleWord;
+
+                        curveId = *pCurveWord;
+                        curveType = (curveId >> 24) & 0xF;
+                        scaleCount = static_cast<int>(*reinterpret_cast<short *>(pCurveWord + 1)) & 0xF;
+                        pCurveIds[ctlIndex] = curveId;
+
+                        uniqueCurve = true;
+                        for (existingCurveIndex = 0; existingCurveIndex < ctlIndex; existingCurveIndex++) {
+                            if (pCurveIds[existingCurveIndex] == curveId) {
+                                uniqueCurve = false;
+                            }
+                        }
+
+                        if (uniqueCurve) {
+                            m_CurveProcsTotal[curveType][0] += stateRefCount;
+                        }
+
+                        scaleParamsAdded = 0;
+                        pScaleWord = pCurveWord + 2;
+                        for (scaleIndex = 0; scaleIndex < scaleCount; scaleIndex++) {
+                            unsigned char inputState;
+
+                            inputState = *(reinterpret_cast<unsigned char *>(pScaleWord) + 1);
+                            if (inputState == stateIndex) {
+                                scaleParamsAdded++;
+                            } else {
+                                scaleParamsAdded += m_StateRefCount[inputState];
+                            }
+
+                            pScaleWord++;
+                        }
+
+                        pCurveWord += scaleCount + 2;
+                        m_ScaleParamsAdded += scaleParamsAdded * stateRefCount;
+                    }
+
+                    gAudioMemoryManager.FreeMemory(pCurveIds);
+                }
+
+                threeDMixCtlOffset = *reinterpret_cast<int *>(pMixMapBase + stateOffset + 8);
+                if (threeDMixCtlOffset != -1) {
+                    int ctlCount;
+                    int totalCamStates;
+                    int ctlIndex;
+                    unsigned int *p3DMixCtlWord;
+
+                    ctlCount = *reinterpret_cast<int *>(pMixMapBase + threeDMixCtlOffset + stateOffset);
+                    p3DMixCtlWord =
+                        reinterpret_cast<unsigned int *>(pMixMapBase + threeDMixCtlOffset + stateOffset + 0x10);
+                    totalCamStates = 0;
+
+                    m_Shared3DMixCtlCount += ctlCount & 0xFF;
+                    m_3DMixCtlsAdded += stateRefCount * (ctlCount & 0xFF);
+
+                    for (ctlIndex = 0; ctlIndex < ctlCount; ctlIndex++) {
+                        int camStatesAdded;
+
+                        camStatesAdded = (*p3DMixCtlWord >> 24) & 0xF;
+                        totalCamStates += camStatesAdded;
+                        p3DMixCtlWord += camStatesAdded * 6;
+                    }
+
+                    m_n3DCamStatesAdded += totalCamStates;
+                }
+
+                eventCtlOffset = *reinterpret_cast<int *>(pMixMapBase + stateOffset + 0x18);
+                if (eventCtlOffset != -1) {
+                    int ctlCount;
+                    int ctlIndex;
+                    int scaleParamsAdded;
+                    char *pEventCtlData;
+
+                    ctlCount = *reinterpret_cast<int *>(pMixMapBase + eventCtlOffset + stateOffset);
+                    pEventCtlData = pMixMapBase + eventCtlOffset + stateOffset + 0x10;
+                    scaleParamsAdded = 0;
+
+                    m_EventCtlsAdded += stateRefCount * ctlCount;
+                    m_SharedEvtMixCtlCount += ctlCount;
+
+                    for (ctlIndex = 0; ctlIndex < ctlCount; ctlIndex++) {
+                        int scaleCount;
+                        int scaleIndex;
+                        char *pScaleData;
+
+                        pScaleData = pEventCtlData + 0x18;
+                        scaleCount = static_cast<int>(*reinterpret_cast<short *>(pEventCtlData + 4)) & 0xF;
+                        for (scaleIndex = 0; scaleIndex < scaleCount; scaleIndex++) {
+                            unsigned char inputState;
+
+                            inputState = *(reinterpret_cast<unsigned char *>(pScaleData) + 1);
+                            if (inputState == stateIndex) {
+                                scaleParamsAdded++;
+                            } else {
+                                scaleParamsAdded += m_StateRefCount[inputState];
+                            }
+
+                            pScaleData += 4;
+                        }
+
+                        pEventCtlData += (scaleCount * 4) + 0x18;
+                    }
+
+                    m_ScaleParamsAdded += scaleParamsAdded * stateRefCount;
+                }
+
+                subMixOffset = *reinterpret_cast<int *>(pMixMapBase + stateOffset + 0xC);
+                if (subMixOffset != -1) {
+                    int *pSubMixHeader;
+                    int subMixCount;
+                    int subMixIndex;
+                    int *pInputData;
+
+                    pSubMixHeader = reinterpret_cast<int *>(pMixMapBase + subMixOffset + stateOffset);
+                    subMixCount = pSubMixHeader[0];
+                    pInputData = pSubMixHeader + 4;
+
+                    m_SharedSubMixCount += subMixCount;
+                    m_SubMixChannelsAdded += stateRefCount * subMixCount;
+
+                    for (subMixIndex = 0; subMixIndex < subMixCount; subMixIndex++) {
+                        int inputIndex;
+                        int totalInputs;
+                        unsigned char inputCount;
+
+                        inputCount = *(reinterpret_cast<unsigned char *>(pInputData) + 1);
+                        pInputData += 2;
+                        totalInputs = 0;
+
+                        for (inputIndex = 0; inputIndex < inputCount; inputIndex++) {
+                            unsigned char inputState;
+
+                            inputState = *(reinterpret_cast<unsigned char *>(pInputData) + 1);
+                            if (inputState == stateIndex) {
+                                totalInputs++;
+                            } else {
+                                totalInputs += m_StateRefCount[inputState];
+                            }
+
+                            pInputData++;
+                        }
+
+                        m_nTotalSubChannelInputs += totalInputs * stateRefCount;
+                    }
+                }
+
+                masterMixOffset = *reinterpret_cast<int *>(pMixMapBase + stateOffset + 0x10);
+                if (masterMixOffset != -1) {
+                    int *pMasterMixHeader;
+                    int masterMixCount;
+                    int masterMixIndex;
+                    int *pInputData;
+
+                    pMasterMixHeader = reinterpret_cast<int *>(pMixMapBase + masterMixOffset + stateOffset);
+                    masterMixCount = pMasterMixHeader[0];
+                    pInputData = pMasterMixHeader + 4;
+
+                    m_nTotalUniqueMasterChannels += pMasterMixHeader[1] + (stateRefCount * pMasterMixHeader[1]);
+                    m_SharedMasterMixCount += masterMixCount;
+                    m_MasterChannelsAdded += stateRefCount * masterMixCount;
+
+                    for (masterMixIndex = 0; masterMixIndex < masterMixCount; masterMixIndex++) {
+                        int inputIndex;
+                        int totalInputs;
+                        unsigned char inputCount;
+
+                        inputCount = *(reinterpret_cast<unsigned char *>(pInputData) + 1);
+                        pInputData += 3;
+                        totalInputs = 0;
+
+                        for (inputIndex = 0; inputIndex < inputCount; inputIndex++) {
+                            unsigned char inputState;
+
+                            inputState = *(reinterpret_cast<unsigned char *>(pInputData) + 1);
+                            if (inputState == stateIndex) {
+                                totalInputs++;
+                            } else {
+                                totalInputs += m_StateRefCount[inputState];
+                            }
+
+                            pInputData++;
+                        }
+
+                        m_nTotalMasterChannelInputs += totalInputs * stateRefCount;
+                    }
+                }
+            }
+
+            stateIndex = nextState;
+        } while (static_cast<int>(nextState) < pMixMap[1]);
+    }
+
+    for (int curveType = 0; curveType < 10; curveType++) {
+        m_CurveProcsAdded += m_CurveProcsTotal[curveType][0];
+    }
+}
+
 int *NFSMixMap::GetNextInputBlock(bool bincrement) {
     int blockIndex;
     int n;
