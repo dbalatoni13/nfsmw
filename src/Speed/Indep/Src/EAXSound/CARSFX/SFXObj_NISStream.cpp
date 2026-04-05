@@ -203,6 +203,7 @@ struct NISStringHashMapEntry {
 };
 
 extern int GetCsisEventIndex(unsigned int anim_id);
+extern void SNDSYS_service();
 
 bool SFXObj_NISStream::m_bNISButtonThroughAnimationReady;
 bool SFXObj_NISStream::m_bNISAudioStreamReady;
@@ -289,6 +290,38 @@ void GenerateNISAnimHashMap() {
     INIT_NIS_ENTRY(0x41, 0x40000, "EndingNis02");
     INIT_NIS_ENTRY(0x42, 0x80000, "EndingNis03");
     INIT_NIS_ENTRY(0x43, 0x100000, "EndingNis04");
+}
+
+SFXObj_NISStream::SFXObj_NISStream()
+    : CARSFX() {
+    m_bNISAnimationReady = false;
+    m_bNISButtonThroughAnimationReady = false;
+    m_bNISAudioStreamReady = false;
+    m_bNISButtonThroughReady = false;
+    m_bBackupStreamCleared = true;
+    m_mselapsedtimecb = 0;
+}
+
+SFXObj_NISStream::~SFXObj_NISStream() {
+    g_pEAXSound->SetSFXBaseObject(0, eMM_MAIN, 5, 0);
+}
+
+void SFXObj_NISStream::InitSFX() {
+    SndBase::InitSFX();
+    GenerateNISAnimHashMap();
+    m_bNISAnimationReady = false;
+    m_bNISButtonThroughReady = false;
+    m_bNISButtonThroughAnimationReady = false;
+    m_bNISAudioStreamReady = false;
+    m_bBackupStreamCleared = true;
+    g_pEAXSound->SetSFXBaseObject(this, eMM_MAIN, 5, 0);
+}
+
+bool SFXObj_NISStream::QueueNISStream(unsigned int anim_id, int camera_track_number,
+                                      void (*setmstimecb)(unsigned int, int), bool bbuttonthrough) {
+    m_mselapsedtimecb = setmstimecb;
+    m_mstimeelapsed = 0;
+    return QueueNISStream(anim_id, camera_track_number, bbuttonthrough, true);
 }
 
 bool SFXObj_NISStream::QueueNISStream(unsigned int anim_id, int camera_track_number, bool bbuttonthrough,
@@ -434,6 +467,50 @@ bool SFXObj_NISStream::QueueNISStream(unsigned int anim_id, int camera_track_num
         m_bNISAudioStreamReady = true;
     }
     return breturn;
+}
+
+void SFXObj_NISStream::NISActivityDone() {
+    SFXObj_Pathfinder *ppf;
+
+    SetDMIX_Input(6, 0);
+    SetDMIX_Input(7, 0);
+    m_mselapsedtimecb = 0;
+    m_mstimeelapsed = -1;
+    m_mslengthofstream = -1;
+
+    ppf = static_cast<SFXObj_Pathfinder *>(g_pEAXSound->GetSFXBase_Object(0x40010010));
+    if (ppf) {
+        ppf->SetNISPlaying(false);
+    }
+}
+
+void SFXObj_NISStream::StartNIS() {
+    bool bresult = m_bNISAudioStreamReady;
+
+    m_bNISAnimationReady = true;
+    if (bresult) {
+        Speech::Manager::GetSpeechModule(0)->PlayStream(2);
+        SNDSYS_service();
+        m_bNISAudioStreamReady = false;
+    }
+}
+
+void SFXObj_NISStream::PlayNISStream() {
+    Speech::Module *nismgr;
+    EAXS_StreamChannel *pch;
+
+    m_bNISAudioStreamReady = true;
+    m_bNISButtonThroughReady = false;
+    m_mstimeelapsed = 0;
+    m_mslengthofstream = 0;
+    nismgr = Speech::Manager::GetSpeechModule(0);
+    pch = nismgr->GetStreamChannel();
+    m_mslengthofstream = pch->GetTimeRemaining();
+
+    if (m_bIsButtonThrough) {
+        nismgr = Speech::Manager::GetSpeechModule(0);
+        nismgr->PlayStream(2);
+    }
 }
 
 #undef INIT_NIS_ENTRY
