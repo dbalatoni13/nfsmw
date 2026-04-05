@@ -67,9 +67,17 @@ void CSTATEMGR_Base::RegisterSFX(SndBase::TypeInfo *typeinfo) {
 }
 
 void CSTATEMGR_Base::ClearClassLists() {
-    m_SFXClassList.DeleteAllElements();
-    m_SFXCTRLClassList.DeleteAllElements();
-    m_STATEClassList.DeleteAllElements();
+    while (!m_SFXClassList.IsEmpty()) {
+        m_SFXClassList.RemoveHead();
+    }
+
+    while (!m_SFXCTRLClassList.IsEmpty()) {
+        m_SFXCTRLClassList.RemoveHead();
+    }
+
+    while (!m_STATEClassList.IsEmpty()) {
+        m_STATEClassList.RemoveHead();
+    }
 }
 
 bool CSTATEMGR_Base::IsDataLoaded() {
