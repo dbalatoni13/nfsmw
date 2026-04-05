@@ -211,3 +211,141 @@ void NFSMixMapState::Create3DMixCtls() {
         }
     }
 }
+
+void NFSMixMapState::CreateSubMixChannels() {
+    int offset;
+
+    offset = m_pMMStateHdr->OffsetSubMixData;
+    m_SubMixChannelsAdded = 0;
+
+    if (offset > -1) {
+        stMixChHdr *pHdr;
+
+        pHdr = reinterpret_cast<stMixChHdr *>(reinterpret_cast<char *>(&m_pMMStateHdr->StateIndex) + offset);
+        m_pSubChHdr = pHdr;
+        if (pHdr->NumMixChannels > 0) {
+            unsigned int n;
+            stSubMixChParams *pSubMixParms;
+
+            n = 0;
+            m_MixStateParams.pSubMixChProcs = m_pNFSMixMap->GetNextSubMixProc(false);
+            pSubMixParms = reinterpret_cast<stSubMixChParams *>(pHdr + 1);
+            while (static_cast<int>(n) < m_pSubChHdr->NumMixChannels) {
+                stSubMixChProc *pSMCP;
+                stMixChSharedData *pSMSD;
+                stMixChUniqueData *pSMUD;
+                unsigned int mixChId;
+
+                if (m_ObjectIndex == 0) {
+                    pSMSD = m_pNFSMixMap->GetNextSubMixShared(true);
+                    pSMCP = m_pNFSMixMap->GetNextSubMixProc(true);
+                    pSMUD = m_pNFSMixMap->GetNextSubMixUnique(true);
+                    mixChId = pSubMixParms->MIXCHID;
+                    pSMSD->pMapParams = pSubMixParms;
+                    pSMSD->MIXCHINID = (mixChId & 0x10000000U) | ((mixChId & 0xFF00U) << 8) | 0x20000000 | n;
+                    pSMSD->NumInputs = (mixChId & 0xFF0000U) >> 16;
+                } else {
+                    pSMSD = m_pFirstInstance->m_MixStateParams.pSubMixChProcs[n].pMixChData_S;
+                    pSMCP = m_pNFSMixMap->GetNextSubMixProc(true);
+                    pSMUD = m_pNFSMixMap->GetNextSubMixUnique(true);
+                    mixChId = pSubMixParms->MIXCHID;
+                }
+
+                pSMUD->Output = 0;
+                n++;
+                pSMCP->pMixChData_U = pSMUD;
+                m_SubMixChannelsAdded++;
+                pSMCP->pMixChData_S = pSMSD;
+                pSubMixParms = reinterpret_cast<stSubMixChParams *>(
+                    reinterpret_cast<char *>(pSubMixParms) + sizeof(stSubMixChParams) + ((mixChId & 0xFF0000U) >> 14));
+                pSMUD->pInputs = nullptr;
+            }
+        }
+    }
+}
+
+void NFSMixMapState::CreateMasterMixChannels() {
+    int offset;
+
+    offset = m_pMMStateHdr->OffsetMasterMixData;
+    m_MasterChannelsAdded = 0;
+
+    if (offset > -1) {
+        stMixChHdr *pHdr;
+
+        pHdr = reinterpret_cast<stMixChHdr *>(reinterpret_cast<char *>(&m_pMMStateHdr->StateIndex) + offset);
+        m_pMixChHdr = pHdr;
+        m_pChOutArrays = m_pNFSMixMap->GetMasterChannelOutputArrayPtr(pHdr->NumUniqueSFXOBJs);
+        m_MasterChannelsAdded = 0;
+        if (m_pMixChHdr->NumMixChannels > 0) {
+            int lastSfxObjId;
+            int uniqueOutputsUsed;
+            unsigned int n;
+            stMasterMixChParams *pMasterParms;
+
+            lastSfxObjId = 0;
+            uniqueOutputsUsed = 0;
+            n = 0;
+            m_MixStateParams.pMasterMixChProcs = m_pNFSMixMap->GetNextMasterMixProc(false);
+            pMasterParms = reinterpret_cast<stMasterMixChParams *>(pHdr + 1);
+            while (static_cast<int>(n) < m_pMixChHdr->NumMixChannels) {
+                bool attached;
+                int *pOutputs;
+                stMasterMixChProc *pMMCP;
+                stMasterMixChSharedData *pMMSD;
+                stMasterMixChUniqueData *pMMUD;
+                unsigned int mixChId;
+
+                if (m_ObjectIndex == 0) {
+                    pMMSD = m_pNFSMixMap->GetNextMasterMixShared(true);
+                    pMMCP = m_pNFSMixMap->GetNextMasterMixProc(true);
+                    pMMUD = m_pNFSMixMap->GetNextMasterMixUnique(true);
+                    mixChId = pMasterParms->MIXCHID;
+                    pMMSD->pMapParams = pMasterParms;
+                    pMMSD->pPRESETS = nullptr;
+                    pMMSD->MIXCHINID = (mixChId & 0x10000000U) | ((mixChId & 0xFF00U) << 8) | 0x20000000 | n;
+                    pMMSD->NumInputs = (mixChId & 0xFF0000U) >> 16;
+                } else {
+                    pMMSD = m_pFirstInstance->m_MixStateParams.pMasterMixChProcs[n].pMixChData_S;
+                    pMMCP = m_pNFSMixMap->GetNextMasterMixProc(true);
+                    pMMUD = m_pNFSMixMap->GetNextMasterMixUnique(true);
+                    mixChId = pMasterParms->MIXCHID;
+                }
+
+                pMMUD->Output = -10000;
+                pMMCP->pMixChData_S = pMMSD;
+                pMMUD->p3DData = nullptr;
+                pMMUD->pInputs = nullptr;
+                pMMUD->outputID = pMMSD->pMapParams->SFXOBJID | (m_ObjectIndex << 11);
+
+                if (lastSfxObjId == pMMSD->pMapParams->SFXOBJID) {
+                    pOutputs = m_pChOutArrays + ((uniqueOutputsUsed - 1) * 0x10);
+                    attached = m_pNFSMixMap->SETSFXID(pMMUD->outputID, pOutputs);
+                } else {
+                    pOutputs = m_pChOutArrays + (uniqueOutputsUsed * 0x10);
+                    uniqueOutputsUsed++;
+                    attached = m_pNFSMixMap->SETSFXID(pMMUD->outputID, pOutputs);
+                }
+
+                pMMUD->pOutputs = pOutputs;
+                n++;
+
+                for (int out = 0; out < 0xF; out++) {
+                    *pOutputs++ = 0;
+                }
+
+                if (!attached) {
+                    *pOutputs = 0;
+                } else {
+                    *pOutputs = 1;
+                }
+
+                lastSfxObjId = pMMSD->pMapParams->SFXOBJID;
+                m_MasterChannelsAdded++;
+                pMMCP->pMixChData_U = pMMUD;
+                pMasterParms = reinterpret_cast<stMasterMixChParams *>(
+                    reinterpret_cast<char *>(pMasterParms) + sizeof(stMasterMixChParams) + ((mixChId & 0xFF0000U) >> 14));
+            }
+        }
+    }
+}

@@ -39,10 +39,31 @@ struct stMixCtlHdr {
     int NumMainMixCtlOut;    // offset 0x0C, size 0x4
 };
 
+struct stMixChHdr {
+    // total size: 0x10
+    int NumMixChannels;   // offset 0x00, size 0x4
+    int NumUniqueSFXOBJs; // offset 0x04, size 0x4
+    int NumMainIn;        // offset 0x08, size 0x4
+    int NumSecIn;         // offset 0x0C, size 0x4
+};
+
 struct stMixCtlParams {
     // total size: 0x8
     int nINPUTID;        // offset 0x00, size 0x4
     int nUScaleCntSwing; // offset 0x04, size 0x4
+};
+
+struct stSubMixChParams {
+    // total size: 0x8
+    int MIXCHID;         // offset 0x00, size 0x4
+    int UpperLowerSwing; // offset 0x04, size 0x4
+};
+
+struct stMasterMixChParams {
+    // total size: 0xC
+    int MIXCHID;  // offset 0x00, size 0x4
+    int MixData;  // offset 0x04, size 0x4
+    int SFXOBJID; // offset 0x08, size 0x4
 };
 
 struct st3DMixCtlHdr {
