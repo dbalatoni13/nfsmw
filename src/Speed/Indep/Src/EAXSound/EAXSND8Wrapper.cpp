@@ -1,7 +1,7 @@
+#include "Speed/Indep/Src/EAXSound/EAXSND8Wrapper.hpp"
 #include <types.h>
 #include "Speed/Indep/Src/Misc/Config.h"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
-#include "Speed/Indep/Src/EAXSound/AudioMemoryManager.hpp"
 #include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
 #include "Speed/Indep/bWare/Inc/bMemory.hpp"
 
@@ -68,11 +68,9 @@ extern SlotPool *bNewSlotPool(int slot_size, int reserve_count, const char *name
 extern int AudioMemoryPool;
 extern int MAIN_SAMPLERATE;
 extern CSISCoreAllocator g_CSISCoreAllocator;
-extern AudioMemoryManager gAudioMemoryManager;
 extern bool IsAudioStreamingEnabled;
 extern bool IsNISAudioEnabled;
 extern bool IsSpeechEnabled;
-extern EAXSound *g_pEAXSound;
 extern void SNDSYS_service();
 
 CSISCoreAllocator g_CSISCoreAllocator;

@@ -7,11 +7,47 @@
 
 #include "Speed/Indep/Src/Sim/SimConn.h"
 #include "Speed/Indep/Src/Sim/SimSurface.h"
+#include "Speed/Indep/Src/EAXSound/EAXCarState.hpp"
+#include "Speed/Indep/Libs/Support/Utility/UListable.h"
 #include "Speed/Indep/Src/World/WorldTypes.h"
+#include "Speed/Indep/Src/World/WorldConn.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/Common/AttribPrivate.h"
 
-class CarSoundConn;
-class HeliSoundConn;
+struct EAX_HeliState;
+
+class CarSoundConn : public Sim::Connection, public UTL::Collections::Listable<CarSoundConn, 10> {
+  public:
+    bool mConnected;                // offset 0x14, size 0x1
+    EAX_CarState *mState;           // offset 0x18, size 0x4
+    WorldConn::Reference mTarget;   // offset 0x1C, size 0x10
+
+    CarSoundConn(const Sim::ConnectionData &data);
+    ~CarSoundConn() override;
+    inline virtual void OnReceive(Sim::Packet *pkt) override {}
+    inline void OnClose() override { delete this; }
+    Sim::ConnStatus OnStatusCheck() override;
+    void UpdateState(float dT);
+    static Sim::Connection *Construct(const Sim::ConnectionData &data);
+    static inline void SetAssetsLoaded(CarSoundConn *conn) {
+        if (conn->mConnected && conn->mState != nullptr) {
+            conn->mState->mAssetsLoaded = true;
+        }
+    }
+};
+
+class HeliSoundConn : public Sim::Connection, public UTL::Collections::Listable<HeliSoundConn, 10> {
+  public:
+    EAX_HeliState *mState;          // offset 0x14, size 0x4
+    WorldConn::Reference mTarget;   // offset 0x18, size 0x10
+
+    HeliSoundConn(const Sim::ConnectionData &data);
+    ~HeliSoundConn() override;
+    inline virtual void OnReceive(Sim::Packet *pkt) override {}
+    inline void OnClose() override { delete this; }
+    inline Sim::ConnStatus OnStatusCheck() override { return Sim::CONNSTATUS_READY; }
+    void UpdateState(float dT);
+    static Sim::Connection *Construct(const Sim::ConnectionData &data);
+};
 
 namespace SoundConn {
 

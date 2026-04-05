@@ -2,6 +2,7 @@
 #include "Speed/Indep/Src/EAXSound/EAXAemsManager.h"
 #include "Speed/Indep/Src/EAXSound/EAXCar.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXCarState.hpp"
+#include "Speed/Indep/Src/EAXSound/EAXSND8Wrapper.hpp"
 #include "Speed/Indep/Src/EAXSound/NFSMixMaster.hpp"
 #include "Speed/Indep/Src/EAXSound/SimStates/EAX_HeliState.hpp"
 #include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_NISStream.hpp"
@@ -9,9 +10,15 @@
 #include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_Pathfinder.hpp"
 #include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_Reverb.hpp"
 #include "Speed/Indep/Src/EAXSound/SndCamera.hpp"
+#include "Speed/Indep/Src/EAXSound/SoundConn.h"
 #include "Speed/Indep/Src/EAXSound/Stream/EAXS_StreamManager.h"
 #include "Speed/Indep/Src/EAXSound/Stream/SpeechManager.hpp"
+#include "Speed/Indep/Src/EAXSound/States/Managers/STATEMGR_CarState.hpp"
 #include "Speed/Indep/Src/EAXSound/States/Managers/STATEMGR_Base.hpp"
+#include "Speed/Indep/Src/EAXSound/States/Managers/STATEMGR_CopCar.hpp"
+#include "Speed/Indep/Src/EAXSound/States/Managers/STATEMGR_DriveBy.hpp"
+#include "Speed/Indep/Src/EAXSound/States/Managers/STATEMGR_Enviro.hpp"
+#include "Speed/Indep/Src/EAXSound/States/Managers/STATEMGR_PlayerCar.hpp"
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_NISReving.hpp"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
@@ -38,77 +45,6 @@ extern Attrib::Gen::turbosfx *g_TurboInfo;
 #include "Speed/Indep/Src/EAXSound/EAXCommon.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXFrontEnd.hpp"
 
-struct EAXSND8Wrapper : public AudioMemBase {
-    char *m_pSoundHeap;            // offset 0x4, size 0x4
-    char *m_pStreamBuff;           // offset 0x8, size 0x4
-    int m_nHeapSize;               // offset 0xC, size 0x4
-    int m_nStreamSize;             // offset 0x10, size 0x4
-    eSndAudioMode m_eCurrentAudioMode; // offset 0x14, size 0x4
-    eSndAudioMode m_eLastAudioMode;    // offset 0x18, size 0x4
-
-    void *operator new(unsigned int size, const char *debug_name) {
-        return gAudioMemoryManager.AllocateMemory(size, debug_name, false);
-    }
-
-    void *operator new(size_t, void *p) { return p; }
-
-    EAXSND8Wrapper();
-    virtual ~EAXSND8Wrapper();
-    bool Initialize();
-    eSndAudioMode GetDefaultPlatformAudioMode();
-    eSndAudioMode SetAudioModeFromMemoryCard(eSndAudioMode mode);
-    eSndAudioMode SetAudioRenderMode(eSndAudioMode mode);
-    void ReInit();
-    eSndAudioMode SetSnd8RenderMode(eSndAudioMode mode);
-    void Update();
-    void STUPID();
-};
-
-class CarSoundConn : public Sim::Connection, public UTL::Collections::Listable<CarSoundConn, 10> {
-  public:
-    bool mConnected; // offset 0x14, size 0x1
-    EAX_CarState *mState; // offset 0x18, size 0x4
-    WorldConn::Reference mTarget; // offset 0x1C, size 0x10
-
-    CarSoundConn(const Sim::ConnectionData &data);
-    ~CarSoundConn() override;
-    inline virtual void OnReceive(Sim::Packet *pkt) override {}
-    inline void OnClose() override { delete this; }
-    Sim::ConnStatus OnStatusCheck() override;
-    void UpdateState(float dT);
-    static Sim::Connection *Construct(const Sim::ConnectionData &data);
-    static inline void SetAssetsLoaded(CarSoundConn *conn) {
-        if (conn->mConnected && conn->mState != nullptr) {
-            conn->mState->mAssetsLoaded = true;
-        }
-    }
-};
-
-class HeliSoundConn : public Sim::Connection, public UTL::Collections::Listable<HeliSoundConn, 10> {
-  public:
-    EAX_HeliState *mState; // offset 0x14, size 0x4
-    WorldConn::Reference mTarget; // offset 0x18, size 0x10
-
-    HeliSoundConn(const Sim::ConnectionData &data);
-    ~HeliSoundConn() override;
-    inline virtual void OnReceive(Sim::Packet *pkt) override {}
-    inline void OnClose() override { delete this; }
-    inline Sim::ConnStatus OnStatusCheck() override { return Sim::CONNSTATUS_READY; }
-    void UpdateState(float dT);
-    static Sim::Connection *Construct(const Sim::ConnectionData &data);
-};
-
-struct CSTATEMGR_CarState : public CSTATEMGR_Base {
-    static UTL::FixedVector<unsigned int, 8, 16> FinalCopV8Engines;
-
-    static void ResolveCarBanks();
-    static void ResetCarBanks();
-    static void DestroyCar(EAX_CarState *pCar);
-
-    Sound::Context m_CarContext; // offset 0x1C, size 0x4
-    float m_fConnectDistance;    // offset 0x20, size 0x4
-};
-
 struct CSTATEMGR_Main : public CSTATEMGR_Base {
     CSTATEMGR_Main();
 };
@@ -117,23 +53,10 @@ struct CSTATEMGR_Music : public CSTATEMGR_Base {
     CSTATEMGR_Music();
 };
 
-struct CSTATEMGR_PlayerCar : public CSTATEMGR_Base {
-    CSTATEMGR_PlayerCar();
-};
-
 class CSTATEMGR_AICar : public CSTATEMGR_CarState {
   public:
     CSTATEMGR_AICar();
     static void QueueSlots();
-};
-
-struct WorldObject;
-
-class CSTATEMGR_CopCar : public CSTATEMGR_CarState {
-  public:
-    int mNumCopsInProximity; // offset 0x24, size 0x4
-
-    CSTATEMGR_CopCar();
 };
 
 class CSTATEMGR_TrafficCar : public CSTATEMGR_CarState {
@@ -141,20 +64,8 @@ class CSTATEMGR_TrafficCar : public CSTATEMGR_CarState {
     CSTATEMGR_TrafficCar();
 };
 
-struct CSTATEMGR_Enviro : public CSTATEMGR_Base {
-    UTL::Std::list<WorldObject *, _type_list> m_WorldObjects; // offset 0x1C, size 0x8
-
-    CSTATEMGR_Enviro();
-};
-
 struct CSTATEMGR_Collision : public CSTATEMGR_Base {
     CSTATEMGR_Collision();
-};
-
-struct CSTATEMGR_DriveBy : public CSTATEMGR_Base {
-    int WooshCheckFrameCntr; // offset 0x1C, size 0x4
-
-    CSTATEMGR_DriveBy();
 };
 
 struct CSTATEMGR_Helicopter : public CSTATEMGR_Base {
