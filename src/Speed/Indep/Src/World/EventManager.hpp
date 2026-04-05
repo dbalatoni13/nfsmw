@@ -34,15 +34,15 @@ enum EVENT_ID {
 // total size: 0x20
 class EventTrigger {
   public:
-    unsigned int GetNameHash() {
+    uint32 GetNameHash() {
         return NameHash;
     }
 
-    unsigned int GetEventID() {
+    uint32 GetEventID() {
         return EventID;
     }
 
-    unsigned int GetParameter() {
+    uint32 GetParameter() {
         return Parameter;
     }
 
@@ -56,15 +56,15 @@ class EventTrigger {
 
     // void SetName(const char *name) {}
 
-    void SetNameHash(unsigned int name_hash) {
+    void SetNameHash(uint32 name_hash) {
         NameHash = name_hash;
     }
 
-    void SetEventID(unsigned int event_id) {
+    void SetEventID(uint32 event_id) {
         EventID = event_id;
     }
 
-    void SetParameter(unsigned int parameter) {
+    void SetParameter(uint32 parameter) {
         parameter = parameter;
     }
 

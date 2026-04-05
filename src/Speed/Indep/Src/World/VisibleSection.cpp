@@ -697,7 +697,7 @@ VisibleGroupInfo *VisibleSectionManager::GetGroupInfo(const char *selection_set_
     return nullptr;
 }
 
-void VisibleSectionManager::EnableGroup(unsigned int group_name_hash) {
+void VisibleSectionManager::EnableGroup(uint32 group_name_hash) {
     for (int n = 0; n < 256; n++) {
         if (EnabledGroups[n] == 0) {
             EnabledGroups[n] = group_name_hash;

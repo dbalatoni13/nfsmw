@@ -32,8 +32,8 @@ enum ScreenEffectPalette {
 // total size: 0xC
 struct ScreenEffectInf {
     ScreenEffectControl Controller; // offset 0x0, size 0x4
-    unsigned int frameNum;          // offset 0x4, size 0x4
-    unsigned int active;            // offset 0x8, size 0x4
+    uint32 frameNum;                // offset 0x4, size 0x4
+    uint32 active;                  // offset 0x8, size 0x4
 };
 
 // total size: 0x50
@@ -50,7 +50,7 @@ struct ScreenEffectDef {
 
 // total size: 0x10C
 struct ScreenEffectPaletteDef {
-    int NumEffects;                       // offset 0x0, size 0x4
+    int32 NumEffects;                     // offset 0x0, size 0x4
     ScreenEffectType SE_type[3];          // offset 0x4, size 0xC
     ScreenEffectDef SE_Def[3];            // offset 0x10, size 0xF0
     ScreenEffectControl SE_Controller[3]; // offset 0x100, size 0xC
@@ -66,7 +66,7 @@ class ScreenEffectDB {
     void AddPaletteEffect(ScreenEffectPalette palette);
     void AddPaletteEffect(ScreenEffectPaletteDef *palette);
 
-    unsigned int IsActive(ScreenEffectType type) {
+    uint32 IsActive(ScreenEffectType type) {
         return SE_inf[type].active;
     }
 

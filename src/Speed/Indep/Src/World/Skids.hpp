@@ -22,11 +22,11 @@ class SkidSegment {
         return reinterpret_cast<bVector3 *>(Position);
     }
 
-    void SetIntensity(unsigned char intensity) {
+    void SetIntensity(uint8 intensity) {
         Intensity = intensity;
     }
 
-    unsigned char GetIntensity() {
+    uint8 GetIntensity() {
         return Intensity;
     }
 
@@ -37,7 +37,7 @@ class SkidSegment {
   private:
     float Position[3];            // offset 0x0, size 0xC
     signed char DeltaPosition[3]; // offset 0xC, size 0x3
-    unsigned char Intensity;      // offset 0xF, size 0x1
+    uint8 Intensity;              // offset 0xF, size 0x1
 };
 
 class SkidSet;
@@ -69,7 +69,7 @@ class SkidSet : public bTNode<SkidSet> {
     ~SkidSet();
 
     void FinishedAddingSkids();
-    void Render(eView *view, unsigned char alpha);
+    void Render(eView *view, uint8 alpha);
 
     bVector3 *GetBBoxMax() {
         return &BBoxMax;

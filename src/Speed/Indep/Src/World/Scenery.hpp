@@ -22,8 +22,13 @@ enum SceneryDetailLevel {
 
 // total size: 0x18
 struct SceneryBoundingBox {
+#ifdef EA_BUILD_A124
+    short int BBoxMin[3]; // offset 0x0, size 0x6
+    short int BBoxMax[3]; // offset 0x6, size 0x6
+#else
     float BBoxMin[3]; // offset 0x0, size 0xC
     float BBoxMax[3]; // offset 0xC, size 0xC
+#endif
 
     void GetBBox(bVector3 *bbox_min, bVector3 *bbox_max) {
         bFill(bbox_min, BBoxMin[0], BBoxMin[1], BBoxMin[2]);
@@ -86,12 +91,19 @@ class SceneryInstance : public SceneryBoundingBox {
         Position[2] = matrix->v3.z;
     }
 
-    unsigned int ExcludeFlags;   // offset 0x18, size 0x4
-    short PrecullerInfoIndex;    // offset 0x1C, size 0x2
-    short LightingContextNumber; // offset 0x1E, size 0x2
-    float Position[3];           // offset 0x20, size 0xC
-    short Rotation[9];           // offset 0x2C, size 0x12
-    short SceneryInfoNumber;     // offset 0x3E, size 0x2
+    uint32 ExcludeFlags; // offset 0x18, size 0x4
+#ifdef EA_BUILD_A124
+    int32 PrecullerInfoIndex;
+    int16 LightingContextNumber;
+    int16 Pad1;
+    int Pad[2];
+#else
+    int16 PrecullerInfoIndex;    // offset 0x1C, size 0x2
+    int16 LightingContextNumber; // offset 0x1E, size 0x2
+#endif
+    float Position[3];       // offset 0x20, size 0xC
+    short int Rotation[9];   // offset 0x2C, size 0x12
+    int16 SceneryInfoNumber; // offset 0x3E, size 0x2
 };
 
 // total size: 0xC
@@ -150,13 +162,13 @@ struct ModelHeirarchy {
 
 // total size: 0x48
 struct SceneryInfo {
-    char DebugName[24];              // offset 0x0, size 0x18
-    unsigned int NameHash[4];        // offset 0x18, size 0x10
-    eModel *pModel[4];               // offset 0x28, size 0x10
-    float Radius;                    // offset 0x38, size 0x4
-    unsigned int MeshChecksum;       // offset 0x3C, size 0x4
-    unsigned int mHeirarchyNameHash; // offset 0x40, size 0x4
-    ModelHeirarchy *mHeirarchy;      // offset 0x44, size 0x4
+    char DebugName[24];         // offset 0x0, size 0x18
+    uint32 NameHash[4];         // offset 0x18, size 0x10
+    eModel *pModel[4];          // offset 0x28, size 0x10
+    float Radius;               // offset 0x38, size 0x4
+    uint32 MeshChecksum;        // offset 0x3C, size 0x4
+    uint32 mHeirarchyNameHash;  // offset 0x40, size 0x4
+    ModelHeirarchy *mHeirarchy; // offset 0x44, size 0x4
 };
 
 class tPrecullerInfo {
@@ -169,14 +181,14 @@ class tPrecullerInfo {
         return !IsNotVisible(preculler_section_number);
     }
 
-    unsigned char *GetBits() {
+    uint8 *GetBits() {
         return VisibilityBits;
     }
 
     void EndianSwap() {}
 
   private:
-    unsigned char VisibilityBits[0x80];
+    uint8 VisibilityBits[0x80];
 };
 
 inline int GetPrecullerSectionNumber(float x, float y) {
