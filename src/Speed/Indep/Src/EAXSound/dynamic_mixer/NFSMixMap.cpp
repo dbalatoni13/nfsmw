@@ -5,6 +5,7 @@
 extern "C" int GetdBFromQ15__11NFSMixShapei(int nQ15);
 extern "C" int GetQ15FromHundredthsdB__11NFSMixShapei(int ndB);
 extern "C" float GetPitchMultFromCents__11NFSMixShapei(int cents);
+extern float DOPPLER_SMOOTHING_FACTOR;
 extern float F_DT_FRAME_LOCK;
 
 int *(*NFSMixMap::mGetOutPtrCB)(int) = nullptr;
@@ -1511,6 +1512,239 @@ void NFSMixMap::MixMasterChannels() {
                 }
 
                 *pSlot = (*pSlot & (0xFFFF << maskshift)) | ((out & 0xFFFF) << shift);
+            }
+        }
+    }
+}
+
+void NFSMixMap::Update3DMixCtls() {
+    int n;
+
+    if ((m_CurCamState != m_PrevCamState) && (m_nAssigned3DMixCtlShared > 0)) {
+        int i;
+
+        for (i = 0; i < m_nAssigned3DMixCtlShared; i++) {
+            bool found;
+            eCamStates camstate;
+            st3DMixCtlParams *pMapParams;
+            st3DMixCtlSharedData *p3Ds;
+
+            p3Ds = m_p3DMixCtlData_S + i;
+            pMapParams = p3Ds->pMapParams;
+            camstate = m_CurCamState;
+            found = false;
+            while (true) {
+                int ns;
+                int numstates;
+
+                numstates = (pMapParams->nINPUTID >> 24) & 0xF;
+                for (ns = 0; ns < numstates; ns++) {
+                    st3DStateParams *pstateparams;
+
+                    pstateparams = (&pMapParams->StateParams) + ns;
+                    if (((pstateparams->n3DSTATEINFOID >> 24) & 0xF) == camstate) {
+                        p3Ds->pCurStateParams = pstateparams;
+                        p3Ds->PrevCamState = m_PrevCamState;
+                        p3Ds->CurCamState = m_CurCamState;
+                        p3Ds->msSinceCamTrans = 0;
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (found || (camstate == DMIX_DEFAULT_CAM)) {
+                    break;
+                }
+                camstate = DMIX_DEFAULT_CAM;
+            }
+        }
+    }
+
+    for (n = 0; n < m_3DMixCtlsAdded; n++) {
+        st3DMixCtlProc *p3Dproc;
+        st3DMixCtlUniqueData *p3Du;
+
+        p3Dproc = m_p3DMixCtlProc + n;
+        p3Du = p3Dproc->p3DMixCtlData_U;
+        if ((p3Du->pInputs[0xF] & 1U) == 0) {
+            p3Du->dBRolloff = -10000;
+            p3Du->q15Rolloff = 0;
+            p3Du->azimuth = 0;
+            p3Du->DopplerCents = 0;
+        } else {
+            eMIXTABLEID nqOne;
+            eMIXTABLEID nqTwo;
+            float fdist;
+            float fmindist[2];
+            float fmaxdist[2];
+            int azim;
+            int nAzimType;
+            int nDistType;
+            int nMixRatio;
+            int nQuad;
+            int qDist[2];
+            st3DStateParams *psparams;
+            unsigned int curveInfo;
+
+            nqOne = SHAPE_DWN_LINEAR;
+            nqTwo = SHAPE_DWN_LINEAR;
+            psparams = p3Dproc->p3DMixCtlData_S->pCurStateParams;
+            curveInfo = static_cast<unsigned int>(psparams->nCURVEID_DOPPLER);
+            nAzimType = (psparams->n3DSTATEINFOID >> 8) & 0xF;
+            nDistType = (psparams->n3DSTATEINFOID >> 12) & 0xF;
+            if (nDistType == 0) {
+                fdist = static_cast<float>(p3Du->pInputs[1]) * 0.01f;
+            } else if (nDistType == 1) {
+                fdist = static_cast<float>(p3Du->pInputs[0]) * 0.01f;
+            } else {
+                fdist = -1.0f;
+            }
+
+            if (nAzimType == 0) {
+                azim = p3Du->pInputs[3];
+            } else if (nAzimType == 1) {
+                azim = p3Du->pInputs[2];
+            } else {
+                azim = 0;
+            }
+
+            p3Du->azimuth = azim;
+            nQuad = (static_cast<unsigned int>(azim) >> 14) & 3;
+            nMixRatio = azim;
+
+            switch (nQuad) {
+            case 1:
+                nqTwo = static_cast<eMIXTABLEID>((curveInfo >> 24) & 0xF);
+                nqOne = static_cast<eMIXTABLEID>((curveInfo >> 16) & 0xF);
+                fmindist[0] = static_cast<float>(psparams->nQ1MinMax & 0x7FFF);
+                fmaxdist[0] = static_cast<float>((static_cast<unsigned int>(psparams->nQ1MinMax) >> 16) & 0x7FFF);
+                fmindist[1] = static_cast<float>(psparams->nQ2MinMax & 0x7FFF);
+                fmaxdist[1] = static_cast<float>((static_cast<unsigned int>(psparams->nQ2MinMax) >> 16) & 0x7FFF);
+                nMixRatio = azim - 0x4000;
+                break;
+
+            case 2:
+                nqTwo = static_cast<eMIXTABLEID>((curveInfo >> 20) & 0xF);
+                nqOne = static_cast<eMIXTABLEID>((curveInfo >> 24) & 0xF);
+                fmindist[0] = static_cast<float>(psparams->nQ2MinMax & 0x7FFF);
+                fmaxdist[0] = static_cast<float>((static_cast<unsigned int>(psparams->nQ2MinMax) >> 16) & 0x7FFF);
+                fmindist[1] = static_cast<float>(psparams->nQ3MinMax & 0x7FFF);
+                fmaxdist[1] = static_cast<float>((static_cast<unsigned int>(psparams->nQ3MinMax) >> 16) & 0x7FFF);
+                nMixRatio = azim - 0x8000;
+                break;
+
+            case 3:
+                nqTwo = static_cast<eMIXTABLEID>((curveInfo >> 28) & 0xF);
+                nqOne = static_cast<eMIXTABLEID>((curveInfo >> 20) & 0xF);
+                fmindist[0] = static_cast<float>(psparams->nQ3MinMax & 0x7FFF);
+                fmaxdist[0] = static_cast<float>((static_cast<unsigned int>(psparams->nQ3MinMax) >> 16) & 0x7FFF);
+                fmindist[1] = static_cast<float>(psparams->nQ0MinMax & 0x7FFF);
+                fmaxdist[1] = static_cast<float>((static_cast<unsigned int>(psparams->nQ0MinMax) >> 16) & 0x7FFF);
+                nMixRatio = azim - 0xC000;
+                break;
+
+            default:
+                nqTwo = static_cast<eMIXTABLEID>((curveInfo >> 16) & 0xF);
+                nqOne = static_cast<eMIXTABLEID>((curveInfo >> 28) & 0xF);
+                fmindist[0] = static_cast<float>(psparams->nQ0MinMax & 0x7FFF);
+                fmaxdist[0] = static_cast<float>((static_cast<unsigned int>(psparams->nQ0MinMax) >> 16) & 0x7FFF);
+                fmindist[1] = static_cast<float>(psparams->nQ1MinMax & 0x7FFF);
+                fmaxdist[1] = static_cast<float>((static_cast<unsigned int>(psparams->nQ1MinMax) >> 16) & 0x7FFF);
+                break;
+            }
+
+            if ((fdist <= fmaxdist[0]) || (fdist <= fmaxdist[1])) {
+                float fdistratio;
+                float fotherdistratio;
+                float fwork0;
+                float fwork1;
+                unsigned int dopplerCurve;
+
+                fwork0 = fdist;
+                if (fdist < fmindist[0]) {
+                    fwork0 = fmindist[0];
+                }
+                if (fmaxdist[0] < fwork0) {
+                    fwork0 = fmaxdist[0];
+                }
+
+                fwork1 = fdist;
+                if (fdist < fmindist[1]) {
+                    fwork1 = fmindist[1];
+                }
+                if (fmaxdist[1] < fwork1) {
+                    fwork1 = fmaxdist[1];
+                }
+
+                fdistratio = (fwork0 - fmindist[0]) / (fmaxdist[0] - fmindist[0]);
+                fotherdistratio = (fwork1 - fmindist[1]) / (fmaxdist[1] - fmindist[1]);
+                qDist[0] = static_cast<int>(fdistratio * 32767.0f);
+                qDist[1] = static_cast<int>(fotherdistratio * 32767.0f);
+                p3Du->q15Rolloff = NFSMixShape::GetAzimShapeOutput(nqOne, nqTwo, qDist, nMixRatio);
+                p3Du->dBRolloff = NFSMixShape::GetdBFromQ15(p3Du->q15Rolloff);
+
+                dopplerCurve = curveInfo & 0xFFFF;
+                if (dopplerCurve != 0) {
+                    float fcents;
+                    float fcurdist;
+                    float fdeltanewdist;
+                    float ftratio;
+                    float fvel;
+                    float fvelsound;
+                    unsigned int velocity;
+
+                    fvelsound = static_cast<float>(dopplerCurve);
+                    fcents = 0.0f;
+
+                    if ((m_CurCamState < 3) || (m_CurCamState == DMIX_NFS_NIS_CAM)) {
+                        velocity = static_cast<unsigned int>(p3Du->pInputs[0xD]);
+                        fcurdist = static_cast<float>(p3Du->pInputs[0]) * 0.01f;
+                        if (p3Du->pInputs[0xF] < 0) {
+                            velocity = static_cast<unsigned int>(p3Du->pInputs[0xF] & 0x7FFFFFFF);
+                            p3Du->pInputs[0xF] = velocity;
+                        } else {
+                            fvel = fvelsound + (static_cast<float>(velocity) * 0.01f);
+                            if (fvel <= 0.01f) {
+                                fvel = fvelsound;
+                            }
+                            ftratio = fvelsound / fvel;
+                            fcents = static_cast<float>(NFSMixShape::GetCentsFromPitchMult(ftratio));
+                        }
+                    } else {
+                        velocity = static_cast<unsigned int>(p3Du->pInputs[0xE]);
+                        fcurdist = static_cast<float>(p3Du->pInputs[1]) * 0.01f;
+                        if ((p3Du->pInputs[0xF] & 0x40000000) != 0) {
+                            velocity = static_cast<unsigned int>(p3Du->pInputs[0xF] & 0xBFFFFFFF);
+                            p3Du->pInputs[0xF] = velocity;
+                        } else {
+                            fvel = fvelsound + (static_cast<float>(velocity) * 0.01f);
+                            if (fvel <= 0.01f) {
+                                fvel = fvelsound;
+                            }
+                            ftratio = fvelsound / fvel;
+                            fcents = static_cast<float>(NFSMixShape::GetCentsFromPitchMult(ftratio));
+                        }
+                    }
+
+                    if (p3Du->fPrevDeltaDist == 0.01f) {
+                        p3Du->fPrevDeltaDist = 1.0f;
+                    }
+
+                    fdeltanewdist = fcurdist - p3Du->fPrevDist;
+                    if (fdeltanewdist < 0.0f) {
+                        fdeltanewdist = -fdeltanewdist;
+                    }
+
+                    p3Du->fPrevDeltaDist = fdeltanewdist;
+                    p3Du->fPrevDist = fcurdist;
+                    p3Du->DopplerCents =
+                        p3Du->DopplerCents +
+                        static_cast<int>((fcents - static_cast<float>(p3Du->DopplerCents)) * DOPPLER_SMOOTHING_FACTOR);
+                }
+            } else {
+                p3Du->dBRolloff = -10000;
+                p3Du->q15Rolloff = 0;
+                p3Du->DopplerCents = 0;
             }
         }
     }
