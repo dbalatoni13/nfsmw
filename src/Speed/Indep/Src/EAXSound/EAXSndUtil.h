@@ -31,6 +31,12 @@ class NFSMixShape {
     };
 
     static int GetCurveOutput(eMIXTABLEID id, int nQ15Ratio, bool invert);
+    static int GetAzimShapeOutput(eMIXTABLEID etable1, eMIXTABLEID etable2, int *pdistances, int nmixratio);
+    static int GetQ15FromHundredthsdB(int ndB);
+    static int GetdBFromQ15(int nQ15);
+    static float GetFloatFromHundredthsdB(int ndB);
+    static int GetCentsFromPitchMult(float ratio);
+    static float GetPitchMultFromCents(int cents);
     static int GetIntPitchMultFromCents(int cents);
 };
 

@@ -10,6 +10,8 @@
 
 #include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_NISStream.cpp"
 
+#include "Speed/Indep/Src/EAXSound/dynamic_mixer/NFSMixShape.cpp"
+
 #include "Speed/Indep/Src/EAXSound/dynamic_mixer/NFSMixMap.cpp"
 
 #include "Speed/Indep/Src/EAXSound/dynamic_mixer/NFSMixMapState.cpp"
