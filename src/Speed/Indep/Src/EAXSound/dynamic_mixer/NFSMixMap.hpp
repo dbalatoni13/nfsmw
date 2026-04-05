@@ -19,11 +19,8 @@ struct stMixMapHeader {
     int DynamicMapOffset;  // offset 0x0C, size 0x4
 };
 
-struct stMixCtlParams;
 struct stSubMixChParams;
 struct stMasterMixChParams;
-struct st3DMixCtlParams;
-struct st3DStateParams;
 struct stEvtMixCtlUniqueData;
 
 struct stCurveDataProc {
@@ -32,6 +29,44 @@ struct stCurveDataProc {
     int *pInputParam;  // offset 0x04, size 0x4
     int dBOutput;      // offset 0x08, size 0x4
     int Q15Output;     // offset 0x0C, size 0x4
+};
+
+struct stMixCtlHdr {
+    // total size: 0x10
+    int NumMixCtls;          // offset 0x00, size 0x4
+    int NumNewMixDataProcs;  // offset 0x04, size 0x4
+    int NumMainMixDataProcs; // offset 0x08, size 0x4
+    int NumMainMixCtlOut;    // offset 0x0C, size 0x4
+};
+
+struct stMixCtlParams {
+    // total size: 0x8
+    int nINPUTID;        // offset 0x00, size 0x4
+    int nUScaleCntSwing; // offset 0x04, size 0x4
+};
+
+struct st3DMixCtlHdr {
+    // total size: 0x10
+    int Num3DMixCtls;        // offset 0x00, size 0x4
+    int NumMainMap3DMixCtls; // offset 0x04, size 0x4
+    int Reserved_02;         // offset 0x08, size 0x4
+    int Reserved_03;         // offset 0x0C, size 0x4
+};
+
+struct st3DStateParams {
+    // total size: 0x18
+    int n3DSTATEINFOID;  // offset 0x00, size 0x4
+    int nCURVEID_DOPPLER; // offset 0x04, size 0x4
+    int nQ0MinMax;       // offset 0x08, size 0x4
+    int nQ1MinMax;       // offset 0x0C, size 0x4
+    int nQ2MinMax;       // offset 0x10, size 0x4
+    int nQ3MinMax;       // offset 0x14, size 0x4
+};
+
+struct st3DMixCtlParams {
+    // total size: 0x1C
+    int nINPUTID;             // offset 0x00, size 0x4
+    st3DStateParams StateParams; // offset 0x04, size 0x18
 };
 
 struct st3DMixCtlUniqueData {
@@ -194,8 +229,8 @@ struct NFSMixMap : AudioMemBase {
     stMixChSharedData *GetNextSubMixShared(bool bincrement);
     NFSMixMapState *GetNextMapState(bool bincrement);
     stCurveDataProc *GetCurveDataPtr(stMixCtlParams *pparams);
-    int *AddScaleIDs(stMixCtlParams *pmixctl, int instance);
-    int *AddScaleIDs(stMixEvtParams *pevtmixctl, int instance);
+    int **AddScaleIDs(stMixCtlParams *pmixctl, int instance);
+    int **AddScaleIDs(stMixEvtParams *pevtmixctl, int instance);
     stMixCtlProc *GetProcessMixCtlPtr(bool bincrement);
     void AssignMixCtlDataPtrs(stMixCtlProc *pmixctl, stMixCtlParams *pparms, int nstateindex, int ctlcount);
     int *GetMasterChannelOutputArrayPtr(int nNumChannels);
