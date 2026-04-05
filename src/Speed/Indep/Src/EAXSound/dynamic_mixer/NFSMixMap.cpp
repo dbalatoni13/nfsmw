@@ -1,5 +1,9 @@
 #include "Speed/Indep/Src/EAXSound/dynamic_mixer/NFSMixMap.hpp"
 #include "Speed/Indep/Src/EAXSound/dynamic_mixer/NFSMixMapState.hpp"
+#include "Speed/Indep/Src/EAXSound/EAXSndUtil.h"
+
+extern "C" int GetdBFromQ15__11NFSMixShapei(int nQ15);
+extern float F_DT_FRAME_LOCK;
 
 int *(*NFSMixMap::mGetOutPtrCB)(int) = nullptr;
 void (*NFSMixMap::mSetSFXOutCB)(int, int *) = nullptr;
@@ -1228,6 +1232,220 @@ void NFSMixMap::UpdateEvtMixCtls() {
         n++;
         pevtproc++;
     }
+}
+
+void NFSMixMap::ProcessMixMap(float dt, eCamStates camstate) {
+    int n;
+
+    m_msDeltaTime = dt * 1000.0f;
+    m_fDeltaTimeRatio[1] = m_fDeltaTimeRatio[0];
+    m_PrevCamState = m_CurCamState;
+    m_CurCamState = camstate;
+    m_fDeltaTimeRatio[0] = dt / F_DT_FRAME_LOCK;
+    m_fDeltaTime = dt;
+
+    for (n = 0; n < m_CurveProcsAdded; n++) {
+        stCurveDataProc *pcvdp;
+        int q15;
+
+        pcvdp = m_pCurveDataArray + n;
+        q15 = NFSMixShape::GetCurveOutput(static_cast<NFSMixShape::eMIXTABLEID>((pcvdp->nINPUTID >> 24) & 0xF),
+                                         *pcvdp->pInputParam, false);
+        pcvdp->Q15Output = q15;
+        pcvdp->dBOutput = GetdBFromQ15__11NFSMixShapei(q15);
+    }
+
+    for (n = 0; n < m_MixCtlsAdded; n++) {
+        int numscale;
+        int nout;
+        int ns;
+        int scaleby;
+        stMixCtlProc *pmxdp;
+        stMixCtlUniqueData *pudata;
+
+        pmxdp = m_pMixCtlProc + n;
+        nout = GetdBFromQ15__11NFSMixShapei(
+            0x7FFF - (((0x7FFF - pmxdp->pudata->pstCurveData->Q15Output) * pmxdp->psdata->nRatio) >> 15));
+        nout = nout + pmxdp->psdata->nOffset;
+        scaleby = 0x7FFF;
+        pudata = pmxdp->pudata;
+        if (!pudata->ppScaleRatios) {
+            scaleby = nout * 0x7FFF;
+        } else {
+            numscale = (pmxdp->psdata->pstMixCtlParms->nUScaleCntSwing >> 24) & 0xFF;
+            if (numscale == 0) {
+                scaleby = nout * 0x7FFF;
+            } else {
+                for (ns = 0; ns < numscale; ns++) {
+                    scaleby = (*pudata->ppScaleRatios[ns] * scaleby) >> 15;
+                }
+                scaleby = scaleby * nout;
+            }
+        }
+        pudata->CmpdBOut = scaleby >> 15;
+    }
+
+    Update3DMixCtls();
+    UpdateEvtMixCtls();
+    UpdateSubChannels();
+    UpdateMasterChannels();
+    MixMasterChannels();
+}
+
+void NFSMixMap::UpdateSubChannels() {
+    int nsub;
+
+    for (nsub = 0; nsub < m_SubMixChannelsAdded; nsub++) {
+        stSubMixChProc *pSChP;
+        stMixChSharedData *pSChD_S;
+        stMixChUniqueData *pSChD_U;
+
+        pSChP = m_pSubChProc + nsub;
+        pSChD_S = pSChP->pMixChData_S;
+        pSChD_U = pSChP->pMixChData_U;
+        if (pSChD_U->pInputs) {
+            int mix;
+            int numin;
+            int nUp;
+            int nDwn;
+            unsigned int swing;
+
+            numin = pSChD_S->NumInputs & 0xFF;
+            pSChD_U->Output = 0;
+            for (mix = 0; mix < numin; mix++) {
+                pSChD_U->Output = pSChD_U->Output + *reinterpret_cast<int *>(pSChD_U->pInputs[mix]);
+            }
+
+            swing = pSChD_S->pMapParams->UpperLowerSwing;
+            nUp = (swing >> 16) & 0x7FFF;
+            nDwn = static_cast<short>(swing & 0xFFFF);
+            if (nUp < pSChD_U->Output) {
+                pSChD_U->Output = nUp;
+            }
+            if (pSChD_U->Output < nDwn) {
+                pSChD_U->Output = nDwn;
+            }
+        }
+    }
+}
+
+void NFSMixMap::UpdateMasterChannels() {
+    int nmst;
+
+    for (nmst = 0; nmst < m_MasterChannelsAdded; nmst++) {
+        int mix;
+        int numin;
+        stMasterMixChProc *pMChP;
+        stMasterMixChSharedData *pMChD_S;
+        stMasterMixChUniqueData *pMChD_U;
+
+        pMChP = m_pMasterChProc + nmst;
+        pMChD_S = pMChP->pMixChData_S;
+        pMChD_U = pMChP->pMixChData_U;
+        if ((pMChD_U->pOutputs[0xF] & 1U) == 0) {
+            pMChD_U->Output = -10000;
+        } else {
+            pMChD_U->Output = static_cast<short>(pMChD_S->pMapParams->MixData & 0xFFFF);
+            if (pMChD_U->pInputs) {
+                numin = pMChD_S->NumInputs & 0xFF;
+                for (mix = 0; mix < numin; mix++) {
+                    pMChD_U->Output = pMChD_U->Output + *reinterpret_cast<int *>(pMChD_U->pInputs[mix]);
+                }
+            }
+        }
+    }
+}
+
+void NFSMixMap::UpdateASREvent(stEvtMixCtlProc *pProc) {
+    float ftstage_0;
+    float ftstage_1;
+    float ftstage_2;
+    float nratio;
+    int nSwing;
+    stEvtMixCtlUniqueData *pData_U;
+    stMixEvtParams *pMapParms;
+    unsigned int stageInfo;
+
+    pMapParms = pProc->pData_S->pMapParms;
+    stageInfo = pMapParms->nParam_02;
+    ftstage_0 = static_cast<float>(pMapParms->nParam_00 & 0xFFF) * 16.66667f;
+    ftstage_2 = static_cast<float>(stageInfo & 0xFFF) * 16.66667f;
+    ftstage_1 = static_cast<float>(pMapParms->nParam_01 & 0xFFF) * 16.66667f;
+    nSwing = static_cast<short>(pMapParms->nUScaleCntSwing & 0xFFFF);
+    pData_U = pProc->pData_U;
+    nratio = pData_U->msTimeElapsed;
+
+    if (nratio < ftstage_0) {
+        nratio = (nratio * 32767.0f) / ftstage_0;
+        stageInfo = pMapParms->nParam_00;
+    } else {
+        if ((nratio - ftstage_0) <= ftstage_1) {
+            pData_U->qoutput = 0;
+            goto set_output;
+        }
+        nratio = nratio - (ftstage_0 + ftstage_1);
+        if (ftstage_2 <= nratio) {
+            pData_U->msTimeElapsed = 0.0f;
+            pData_U->qoutput = 0x7FFF;
+            goto set_output;
+        }
+        nratio = 32767.0f - ((nratio * 32767.0f) / ftstage_2);
+    }
+
+    if (nSwing < 0) {
+        pData_U->qoutput = NFSMixShape::GetCurveOutput(
+            static_cast<NFSMixShape::eMIXTABLEID>((stageInfo >> 12) & 0xF), static_cast<int>(nratio), false);
+    } else {
+        pData_U->qoutput =
+            0x7FFF - NFSMixShape::GetCurveOutput(
+                         static_cast<NFSMixShape::eMIXTABLEID>((stageInfo >> 12) & 0xF), static_cast<int>(nratio), false);
+    }
+
+set_output:
+    pData_U->output = static_cast<int>((32767.0f - static_cast<float>(pData_U->qoutput)) * 3.051851e-05f *
+                                       static_cast<float>(nSwing));
+}
+
+void NFSMixMap::UpdateAREvent(stEvtMixCtlProc *pProc) {
+    float ftstage_0;
+    float ftstage_2;
+    float nratio;
+    int nSwing;
+    stEvtMixCtlUniqueData *pData_U;
+    stMixEvtParams *pMapParms;
+    unsigned int stageInfo;
+
+    pMapParms = pProc->pData_S->pMapParms;
+    ftstage_0 = static_cast<float>(pMapParms->nParam_00 & 0xFFF) * 16.66667f;
+    stageInfo = pMapParms->nParam_02;
+    ftstage_2 = static_cast<float>(stageInfo & 0xFFF) * 16.66667f;
+    nSwing = static_cast<short>(pMapParms->nUScaleCntSwing & 0xFFFF);
+    pData_U = pProc->pData_U;
+    nratio = pData_U->msTimeElapsed;
+
+    if (nratio < ftstage_0) {
+        nratio = (nratio * 32767.0f) / ftstage_0;
+        stageInfo = pMapParms->nParam_00;
+    } else {
+        if ((nratio - ftstage_0) >= ftstage_2) {
+            pData_U->msTimeElapsed = 0.0f;
+            goto set_output;
+        }
+        nratio = 32767.0f - (((nratio - ftstage_0) * 32767.0f) / ftstage_2);
+    }
+
+    if (nSwing < 0) {
+        pData_U->qoutput = NFSMixShape::GetCurveOutput(
+            static_cast<NFSMixShape::eMIXTABLEID>((stageInfo >> 12) & 0xF), static_cast<int>(nratio), false);
+    } else {
+        pData_U->qoutput =
+            0x7FFF - NFSMixShape::GetCurveOutput(
+                         static_cast<NFSMixShape::eMIXTABLEID>((stageInfo >> 12) & 0xF), static_cast<int>(nratio), false);
+    }
+
+set_output:
+    pData_U->output = static_cast<int>((32767.0f - static_cast<float>(pData_U->qoutput)) * 3.051851e-05f *
+                                       static_cast<float>(nSwing));
 }
 
 void NFSMixMap::UpdateLFOEvent(stEvtMixCtlProc *pProc) {}
