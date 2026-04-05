@@ -47,6 +47,9 @@ class SkidMaker {
   public:
     void MakeSkid(Car *pCar, bVector3 *position, bVector3 *delta_position, int terrain_type, float intensity);
     void MakeNoSkid();
+#if 0
+    void CleanupExtraneousEmitters();
+#endif
 
     friend class SkidSet;
 

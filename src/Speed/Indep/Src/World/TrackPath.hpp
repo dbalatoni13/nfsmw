@@ -31,15 +31,23 @@ enum eTrackPathZoneType {
 // total size: 0x18
 class TrackPathBarrier {
   public:
+    TrackPathBarrier();
+
     void EndianSwap() {
         bPlatEndianSwap(&Points[0]);
         bPlatEndianSwap(&Points[1]);
         bPlatEndianSwap(&GroupHash);
     }
 
+    bool IsEnabled();
+    bool IsPlayerBarrier();
+    void SetGroup(uint32 group_hash);
+
     bool HasGroup(uint32 group_hash) {
         return GroupHash == group_hash;
     }
+
+    bool Intersects(const bVector2 *pointa, const bVector2 *pointb);
 
     bVector2 Points[2]; // offset 0x0, size 0x10
     int8 Enabled;       // offset 0x10, size 0x1
