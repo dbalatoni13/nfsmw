@@ -62,6 +62,15 @@ struct SND_Params {
         , Mag(0) //
         , RVerb(0)
     {}
+
+    SND_Params(int _ID, int _Vol, int _Pitch, int _Az, int _Mag, int _RVerb)
+        : ID(_ID) //
+        , Vol(_Vol) //
+        , Pitch(_Pitch) //
+        , Az(_Az) //
+        , Mag(_Mag) //
+        , RVerb(_RVerb)
+    {}
 };
 
 struct AEMS_StichCollision;

@@ -260,8 +260,20 @@ struct EAX_CarState : public UTL::Collections::Listable<EAX_CarState, 10> {
         return mWheel[w].mTerrainType;
     }
 
+    SimSurface GetPrevWheelTerrain(int w) {
+        return mWheel[w].mPrevTerrainType;
+    }
+
     eTireDamage TireState(int w) {
         return static_cast<eTireDamage>(mWheel[w].mBlownState);
+    }
+
+    bool DidTireJustPucture(int w) {
+        return mWheel[w].mBlownState == 1 && mWheel[w].mPrevBlownState != 1;
+    }
+
+    bool DidTireJustBlow(int w) {
+        return mWheel[w].mBlownState == 2 && mWheel[w].mPrevBlownState != 2;
     }
 
     bool IsWheelTouchingGround(int w) {
