@@ -1,9 +1,13 @@
 #include "Speed/Indep/Src/EAXSound/CARSFX/CARSFX_BottomOut.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
+#include "Speed/Indep/Src/EAXSound/EAXSndUtil.h"
+#include "Speed/Indep/Src/EAXSound/EAXTunerCar.hpp"
 #include "Speed/Indep/Src/EAXSound/STICH_Playback.h"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
+extern float DOT_PROD_FOR_HEAVY_LEAN;
 extern int JumpLandingVolumes[4];
+extern Slope JumpLandingIntensity;
 
 SndBase::TypeInfo CARSFX_BottomOut::s_TypeInfo = { 0, "CARSFX_BottomOut", nullptr, CARSFX_BottomOut::CreateObject };
 
@@ -194,5 +198,135 @@ void CARSFX_BottomOut::ProcessUpdate() {
                 m_pStichLandJump[n] = nullptr;
             }
         }
+    }
+}
+
+void CARSFX_BottomOut::UpdateParams(float t) {
+    EAX_CarState *pcar;
+
+    pcar = GetPhysCar();
+    if (!pcar) {
+        return;
+    }
+
+    bool BackTouching;
+    bool FrontTouching;
+    bool PlayJumpLanding;
+    bool RightTouching;
+    bool TmpFrontTouched;
+    bool TmpLeftTouched;
+    bool TmpRightTouched;
+    EAXTunerCar *pTunerCar;
+    float LandingIntensity;
+    int i;
+    int wheelsOnGround;
+    bool IsHardLanding;
+
+    TmpFrontTouched = false;
+    BackTouching = false;
+    RightTouching = false;
+    TmpLeftTouched = false;
+    if (m_pEAXCar && (m_pEAXCar->GetPOV() != 0)) {
+        pTunerCar = static_cast<EAXTunerCar *>(m_pEAXCar);
+        TmpLeftTouched = pTunerCar->mTurboInfo.IsDynamic();
+    }
+
+    FrontTouching = pcar->mWheel[0].mWheelOnGround != 0 && pcar->mWheel[1].mWheelOnGround != 0;
+    BackTouching = pcar->mWheel[2].mWheelOnGround != 0 && pcar->mWheel[3].mWheelOnGround != 0;
+    RightTouching = pcar->mWheel[1].mWheelOnGround != 0 && pcar->mWheel[2].mWheelOnGround != 0;
+    TmpFrontTouched = pcar->mWheel[3].mWheelOnGround != 0 && pcar->mWheel[0].mWheelOnGround != 0;
+
+    if ((pcar->GetContext() == Sound::kRaceContext_QuickRace) && m_pEAXCar) {
+        pTunerCar = static_cast<EAXTunerCar *>(m_pEAXCar);
+        if (pTunerCar->BottomOutPlay) {
+            pTunerCar->BottomOutPlay = false;
+            BottomOutPlay(pTunerCar->BottomOutIntensity);
+        }
+    }
+
+    if (!IsCarLeaningHeavily) {
+        if ((pcar->mMatrix.v2.z < DOT_PROD_FOR_HEAVY_LEAN) && (static_cast<float>(pcar->GetWheelsOnGround()) < 1.0f)) {
+            IsCarLeaningHeavily = true;
+        }
+    }
+
+    PlayJumpLanding = false;
+    IsHardLanding = false;
+    TmpRightTouched = FrontTouching && (FrontHangTime > 0.05f) && !FrontWheelsTouched;
+    TmpLeftTouched = BackTouching && (RearHangTime > 0.05f) && !RearWheelsTouched;
+
+    if (TmpRightTouched || TmpLeftTouched) {
+        if (!IsCarLeaningHeavily || !TmpRightTouched || TmpLeftTouched) {
+            PlayJumpLanding = true;
+        }
+        if ((TmpRightTouched && (FrontHangTime > 0.1f)) || (TmpLeftTouched && (RearHangTime > 0.1f))) {
+            IsHardLanding = true;
+        }
+    }
+
+    if (IsCarLeaningHeavily) {
+        if ((TmpLeftTouched && !FrontWheelsTouched) || (BackTouching && !RearWheelsTouched) ||
+            (RightTouching && !RightWheelsTouched) || (TmpFrontTouched && !LeftWheelsTouched)) {
+            PlayJumpLanding = true;
+            IsHardLanding = true;
+        }
+    }
+
+    if (PlayJumpLanding) {
+        if (pcar->GetContext() == Sound::kRaceContext_QuickRace) {
+            LandingIntensity = 0.0f;
+            for (i = 0; i < 4; i++) {
+                LandingIntensity += JumpLandingIntensity.GetValue(pcar->mWheel[i].mWheelForceZ);
+            }
+            LandingIntensity *= 31.75f;
+        } else {
+            LandingIntensity = 127.0f;
+        }
+        LandJumpPlay(LandingIntensity, IsHardLanding);
+    }
+
+    wheelsOnGround = pcar->GetWheelsOnGround();
+    if ((static_cast<float>(wheelsOnGround) == 1.0f) && IsCarLeaningHeavily) {
+        IsCarLeaningHeavily = false;
+    }
+
+    if (!FrontTouching) {
+        if (FrontWheelsTouched) {
+            FrontWheelsTouched = false;
+            FrontHangTime = m_pStateBase->GetCurTime();
+        }
+        FrontHangTime += t;
+    } else {
+        FrontWheelsTouched = true;
+    }
+
+    if (!BackTouching) {
+        if (RearWheelsTouched) {
+            RearWheelsTouched = false;
+            RearHangTime = m_pStateBase->GetCurTime();
+        }
+        RearHangTime += t;
+    } else {
+        RearWheelsTouched = true;
+    }
+
+    if (!RightTouching) {
+        if (RightWheelsTouched) {
+            RightWheelsTouched = false;
+            RightHangTime = m_pStateBase->GetCurTime();
+        }
+        RightHangTime += t;
+    } else {
+        RightWheelsTouched = true;
+    }
+
+    if (!TmpFrontTouched) {
+        if (LeftWheelsTouched) {
+            LeftWheelsTouched = false;
+            LeftHangTime = m_pStateBase->GetCurTime();
+        }
+        LeftHangTime += t;
+    } else {
+        LeftWheelsTouched = true;
     }
 }
