@@ -3,6 +3,8 @@
 #include "Speed/Indep/Src/EAXSound/STICH_Playback.h"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
+extern int JumpLandingVolumes[4];
+
 SndBase::TypeInfo CARSFX_BottomOut::s_TypeInfo = { 0, "CARSFX_BottomOut", nullptr, CARSFX_BottomOut::CreateObject };
 
 SndBase::TypeInfo *CARSFX_BottomOut::GetTypeInfo() const { return &s_TypeInfo; }
@@ -142,4 +144,55 @@ void CARSFX_BottomOut::Detach() {
         delete m_pJumpCamCrash;
     }
     m_pJumpCamCrash = nullptr;
+}
+
+void CARSFX_BottomOut::ProcessUpdate() {
+    int n;
+
+    SetDMIX_Input(2, 0);
+    SetDMIX_Input(1, 0);
+    if (m_pBottomOut) {
+        SND_Params TmpParams;
+
+        TmpParams.Az = GetDMixOutput(1, DMX_AZIM);
+        TmpParams.Vol = GetDMixOutput(1, DMX_VOL);
+        TmpParams.Pitch = 0x1000;
+        m_pBottomOut->Update(&TmpParams);
+        if (!m_pBottomOut->IsPlaying()) {
+            delete m_pBottomOut;
+            m_pBottomOut = nullptr;
+        }
+    }
+
+    if (m_pJumpCamCrash) {
+        SND_Params TmpParams;
+
+        TmpParams.Az = GetDMixOutput(0, DMX_AZIM);
+        TmpParams.Vol = GetDMixOutput(3, DMX_VOL);
+        TmpParams.Pitch = 0x1000;
+        m_pJumpCamCrash->Update(&TmpParams);
+        if (!m_pJumpCamCrash->IsPlaying()) {
+            delete m_pJumpCamCrash;
+            m_pJumpCamCrash = nullptr;
+        }
+    }
+
+    for (n = 0; n < 3; n++) {
+        if (m_pStichLandJump[n]) {
+            SND_Params TmpParams;
+            int VolToUse;
+            int volume;
+
+            TmpParams.Az = GetDMixOutput(0, DMX_AZIM);
+            volume = GetDMixOutput(1, DMX_VOL);
+            VolToUse = bClamp(static_cast<int>(m_Intesity[n]) >> 5, 0, 3);
+            TmpParams.Pitch = 0x1000;
+            TmpParams.Vol = (JumpLandingVolumes[VolToUse] * volume) >> 15;
+            m_pStichLandJump[n]->Update(&TmpParams);
+            if (!m_pStichLandJump[n]->IsPlaying() || g_EAXIsPaused()) {
+                delete m_pStichLandJump[n];
+                m_pStichLandJump[n] = nullptr;
+            }
+        }
+    }
 }
