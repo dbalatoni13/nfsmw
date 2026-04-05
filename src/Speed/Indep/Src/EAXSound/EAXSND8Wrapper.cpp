@@ -281,7 +281,7 @@ eSndAudioMode EAXSND8Wrapper::GetDefaultPlatformAudioMode() {
     }
     eSndAudioMode mode = AUDIO_MODE_STEREO;
     if (OSGetSoundMode() == 0) {
-        mode = static_cast<eSndAudioMode>(0);
+        mode = AUDIO_MODE_MIN;
     }
     return mode;
 }

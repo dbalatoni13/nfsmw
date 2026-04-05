@@ -33,9 +33,6 @@ enum STICH_COLLISION_TYPE {
 
 extern EAXSound *g_pEAXSound;
 
-namespace Attrib {
-}
-
 namespace Sound {
 
 void AudioEvent::Update(const bVector3 &p, const bVector3 &n, const bVector3 &v, float mag) {
