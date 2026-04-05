@@ -5,7 +5,6 @@
 #include "Speed/Indep/Src/World/WorldConn.h"
 
 struct CarPartDatabase {
-public:
     int GetCarType(unsigned int hash);
 };
 

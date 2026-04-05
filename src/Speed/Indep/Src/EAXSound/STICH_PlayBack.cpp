@@ -413,26 +413,6 @@ struct AEMS_StichStatic {
     }
 };
 
-static int ClampStichValue(int value, int low, int high) {
-    if (value < low) {
-        return low;
-    }
-    if (value > high) {
-        return high;
-    }
-    return value;
-}
-
-static int NormalizeStichAzimuth(int az) {
-    int normalized = az % 0x10000;
-    if (normalized < 0) {
-        normalized = 0;
-    } else if (normalized > 0x10000) {
-        normalized = 0x10000;
-    }
-    return normalized;
-}
-
 static inline void AddToSampleList(cSampleWarpper *sample, STICH_TYPE to) {
     sample->AddToList(to);
 }
