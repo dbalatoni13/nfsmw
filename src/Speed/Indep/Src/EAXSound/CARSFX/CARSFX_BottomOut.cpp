@@ -26,21 +26,17 @@ CARSFX_BottomOut::CARSFX_BottomOut()
     : CARSFX() {
     int n;
 
-    IsCarLeaningHeavily = false;
     m_pBottomOut = nullptr;
-    m_pJumpCamCrash = nullptr;
-    FrontWheelsTouched = false;
-    FrontHangTime = 0.0f;
-    RearWheelsTouched = false;
-    RearHangTime = 0.0f;
-    RightWheelsTouched = false;
-    RightHangTime = 0.0f;
-    LeftWheelsTouched = false;
-    LeftHangTime = 0.0f;
     for (n = 0; n < 3; n++) {
         m_pStichLandJump[n] = nullptr;
         m_Intesity[n] = 0.0f;
     }
+    RearWheelsTouched = true;
+    FrontHangTime = 0.0f;
+    IsCarLeaningHeavily = false;
+    m_pJumpCamCrash = nullptr;
+    FrontWheelsTouched = true;
+    RearHangTime = 0.0f;
 }
 
 CARSFX_BottomOut::~CARSFX_BottomOut() {}
@@ -80,8 +76,10 @@ void CARSFX_BottomOut::BottomOutPlay(unsigned int Intensity) {
         fIntensity = bClamp(static_cast<float>(Intensity), 0.0f, 127.0f);
         sampleOffset = LastRandom % 4;
         LastRandom = sampleOffset + 1;
+        sampleOffset += 0x51;
+        fIntensity *= 0.03125f;
         SND_Stich &StichData = g_pEAXSound->GetStichPlayer()->GetStich(
-            STICH_TYPE_COLLISION, static_cast<int>(fIntensity * 0.03125f) * 4 + sampleOffset + 0x51);
+            STICH_TYPE_COLLISION, static_cast<int>(fIntensity) * 4 + sampleOffset);
         m_pBottomOut = new cStichWrapper(StichData);
         m_pBottomOut->Play(0, 0, 0);
         SetDMIX_Input(2, 0x7FFF);
@@ -202,42 +200,49 @@ void CARSFX_BottomOut::ProcessUpdate() {
 }
 
 void CARSFX_BottomOut::UpdateParams(float t) {
-    EAX_CarState *pcar;
-
-    pcar = GetPhysCar();
+    EAX_CarState *pcar = GetPhysCar();
     if (!pcar) {
         return;
     }
 
-    bool BackTouching;
-    bool FrontTouching;
-    bool PlayJumpLanding;
-    bool RightTouching;
     bool TmpFrontTouched;
-    bool TmpLeftTouched;
+    bool TmpBackTouched;
     bool TmpRightTouched;
-    EAXTunerCar *pTunerCar;
-    float LandingIntensity;
-    int i;
-    int wheelsOnGround;
+    bool TmpLeftTouched;
+    bool PlayJumpLanding;
     bool IsHardLanding;
+    bool FrontTouching;
+    bool BackTouching;
+    int wheelsOnGround;
+    int i;
 
     TmpFrontTouched = false;
-    BackTouching = false;
-    RightTouching = false;
+    TmpBackTouched = false;
+    TmpRightTouched = false;
     TmpLeftTouched = false;
-    if (m_pEAXCar && (m_pEAXCar->GetPOV() != 0)) {
-        pTunerCar = static_cast<EAXTunerCar *>(m_pEAXCar);
-        TmpLeftTouched = pTunerCar->mTurboInfo.IsDynamic();
+    if (pcar->mWheel[0].mWheelOnGround != 0) {
+        if (pcar->mWheel[1].mWheelOnGround != 0) {
+            TmpFrontTouched = true;
+        }
+    }
+    if (pcar->mWheel[1].mWheelOnGround != 0) {
+        if (pcar->mWheel[2].mWheelOnGround != 0) {
+            TmpRightTouched = true;
+        }
+    }
+    if (pcar->mWheel[2].mWheelOnGround != 0) {
+        if (pcar->mWheel[3].mWheelOnGround != 0) {
+            TmpBackTouched = true;
+        }
+    }
+    if (pcar->mWheel[3].mWheelOnGround != 0) {
+        if (pcar->mWheel[0].mWheelOnGround != 0) {
+            TmpLeftTouched = true;
+        }
     }
 
-    FrontTouching = pcar->mWheel[0].mWheelOnGround != 0 && pcar->mWheel[1].mWheelOnGround != 0;
-    BackTouching = pcar->mWheel[2].mWheelOnGround != 0 && pcar->mWheel[3].mWheelOnGround != 0;
-    RightTouching = pcar->mWheel[1].mWheelOnGround != 0 && pcar->mWheel[2].mWheelOnGround != 0;
-    TmpFrontTouched = pcar->mWheel[3].mWheelOnGround != 0 && pcar->mWheel[0].mWheelOnGround != 0;
-
-    if ((pcar->GetContext() == Sound::kRaceContext_QuickRace) && m_pEAXCar) {
-        pTunerCar = static_cast<EAXTunerCar *>(m_pEAXCar);
+    if (pcar->mContext == Sound::CONTEXT_PLAYER) {
+        EAXTunerCar *pTunerCar = static_cast<EAXTunerCar *>(m_pEAXCar);
         if (pTunerCar->BottomOutPlay) {
             pTunerCar->BottomOutPlay = false;
             BottomOutPlay(pTunerCar->BottomOutIntensity);
@@ -245,38 +250,64 @@ void CARSFX_BottomOut::UpdateParams(float t) {
     }
 
     if (!IsCarLeaningHeavily) {
-        if ((pcar->mMatrix.v2.z < DOT_PROD_FOR_HEAVY_LEAN) && (static_cast<float>(pcar->GetWheelsOnGround()) < 1.0f)) {
-            IsCarLeaningHeavily = true;
+        if (pcar->mMatrix.v2.z < DOT_PROD_FOR_HEAVY_LEAN) {
+            wheelsOnGround = 0;
+            for (i = 0; i < 4; i++) {
+                if (pcar->mWheel[i].mWheelOnGround != 0) {
+                    wheelsOnGround++;
+                }
+            }
+            if (static_cast<float>(wheelsOnGround) < 1.0f) {
+                IsCarLeaningHeavily = true;
+            }
         }
     }
 
     PlayJumpLanding = false;
     IsHardLanding = false;
-    TmpRightTouched = FrontTouching && (FrontHangTime > 0.05f) && !FrontWheelsTouched;
-    TmpLeftTouched = BackTouching && (RearHangTime > 0.05f) && !RearWheelsTouched;
+    FrontTouching = false;
+    if (TmpFrontTouched && (FrontHangTime > 0.05f) && !FrontWheelsTouched) {
+        FrontTouching = true;
+    }
+    BackTouching = false;
+    if (TmpBackTouched && (RearHangTime > 0.05f) && !RearWheelsTouched) {
+        BackTouching = true;
+    }
 
-    if (TmpRightTouched || TmpLeftTouched) {
-        if (!IsCarLeaningHeavily || !TmpRightTouched || TmpLeftTouched) {
+    if (!FrontTouching) {
+        if (BackTouching && !IsCarLeaningHeavily) {
             PlayJumpLanding = true;
+            if (RearHangTime > 0.1f) {
+                IsHardLanding = true;
+            }
         }
-        if ((TmpRightTouched && (FrontHangTime > 0.1f)) || (TmpLeftTouched && (RearHangTime > 0.1f))) {
+    } else {
+        PlayJumpLanding = true;
+        if ((FrontHangTime > 0.1f) || (BackTouching && (RearHangTime > 0.1f))) {
             IsHardLanding = true;
         }
     }
 
-    if (IsCarLeaningHeavily) {
-        if ((TmpLeftTouched && !FrontWheelsTouched) || (BackTouching && !RearWheelsTouched) ||
-            (RightTouching && !RightWheelsTouched) || (TmpFrontTouched && !LeftWheelsTouched)) {
+    if (IsCarLeaningHeavily && ((TmpFrontTouched && !FrontWheelsTouched) || (TmpBackTouched && !RearWheelsTouched) ||
+                                (TmpRightTouched && !RightWheelsTouched) || (TmpLeftTouched && !LeftWheelsTouched))) {
             PlayJumpLanding = true;
             IsHardLanding = true;
-        }
     }
 
     if (PlayJumpLanding) {
-        if (pcar->GetContext() == Sound::kRaceContext_QuickRace) {
+        float LandingIntensity;
+
+        if (pcar->mContext == Sound::CONTEXT_PLAYER) {
             LandingIntensity = 0.0f;
             for (i = 0; i < 4; i++) {
-                LandingIntensity += JumpLandingIntensity.GetValue(pcar->mWheel[i].mWheelForceZ);
+                float ZForce;
+
+                if (!FrontTouching) {
+                    ZForce = pcar->mWheel[2].mWheelForceZ + pcar->mWheel[3].mWheelForceZ;
+                } else {
+                    ZForce = pcar->mWheel[0].mWheelForceZ + pcar->mWheel[1].mWheelForceZ;
+                }
+                LandingIntensity += JumpLandingIntensity.GetValue(ZForce);
             }
             LandingIntensity *= 31.75f;
         } else {
@@ -285,12 +316,17 @@ void CARSFX_BottomOut::UpdateParams(float t) {
         LandJumpPlay(LandingIntensity, IsHardLanding);
     }
 
-    wheelsOnGround = pcar->GetWheelsOnGround();
+    wheelsOnGround = 0;
+    for (i = 0; i < 4; i++) {
+        if (pcar->mWheel[i].mWheelOnGround != 0) {
+            wheelsOnGround++;
+        }
+    }
     if ((static_cast<float>(wheelsOnGround) == 1.0f) && IsCarLeaningHeavily) {
         IsCarLeaningHeavily = false;
     }
 
-    if (!FrontTouching) {
+    if (!TmpFrontTouched) {
         if (FrontWheelsTouched) {
             FrontWheelsTouched = false;
             FrontHangTime = m_pStateBase->GetCurTime();
@@ -310,7 +346,7 @@ void CARSFX_BottomOut::UpdateParams(float t) {
         RearWheelsTouched = true;
     }
 
-    if (!RightTouching) {
+    if (!TmpRightTouched) {
         if (RightWheelsTouched) {
             RightWheelsTouched = false;
             RightHangTime = m_pStateBase->GetCurTime();
