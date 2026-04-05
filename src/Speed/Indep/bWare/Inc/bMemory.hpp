@@ -24,11 +24,13 @@ class FreeBlock : public bTNode<FreeBlock> {
 };
 
 struct MemoryPoolOverrideInfo {
-    // total size: 0x20
-    const char *Name;                                     // offset 0x0, size 0x4
+// total size: 0x20
+#ifndef EA_BUILD_A124
+    const char *Name; // offset 0x0, size 0x4
+#endif
     void *Pool;                                           // offset 0x4, size 0x4
-    int Address;                                          // offset 0x8, size 0x4
-    int Size;                                             // offset 0xC, size 0x4
+    int32 Address;                                        // offset 0x8, size 0x4
+    int32 Size;                                           // offset 0xC, size 0x4
     void *(*Malloc)(void *, int, const char *, int, int); // offset 0x10, size 0x4
     void (*Free)(void *, void *);                         // offset 0x14, size 0x4
     int (*GetAmountFree)(void *);                         // offset 0x18, size 0x4
@@ -92,7 +94,7 @@ struct TagValuePair {
     unsigned int mTag; // offset 0x0, size 0x4
     union {
         int mInt;              // offset 0x0, size 0x4
-        unsigned int mSize;    // offset 0x0, size 0x4
+        size_t mSize;          // offset 0x0, size 0x4
         float mFloat;          // offset 0x0, size 0x4
         const void *mPointer;  // offset 0x0, size 0x4
     } mValue;                  // offset 0x4, size 0x4
@@ -100,11 +102,14 @@ struct TagValuePair {
 };
 
 namespace Allocator {
-struct IAllocator {
-    virtual void *Alloc(unsigned int size, const TagValuePair &flags) = 0;
-    virtual void Free(void *pBlock, unsigned int size) = 0;
+class IAllocator {
+  public:
+    virtual void *Alloc(size_t size, const TagValuePair &flags) = 0;
+    virtual void Free(void *pBlock, size_t size) = 0;
     virtual int AddRef() = 0;
     virtual int Release() = 0;
+
+  protected:
     virtual ~IAllocator() {}
 };
 } // namespace Allocator

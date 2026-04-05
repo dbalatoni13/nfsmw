@@ -85,11 +85,10 @@ class bChunkLoader {
     unsigned int ID;                       // offset 0x4, size 0x4
     bChunkLoaderFunction LoaderFunction;   // offset 0x8, size 0x4
     bChunkLoaderFunction UnloaderFunction; // offset 0xC, size 0x4
-
-  public:
     static bChunkLoader *sLoaderTable[64];
     static unsigned char sNumLoaders[64];
 
+  public:
     static bChunkLoader *FindLoader(unsigned int id);
 
     static unsigned int GetHash(unsigned int id) {
@@ -106,6 +105,8 @@ class bChunkLoader {
         return this->UnloaderFunction;
     }
 };
+
+typedef enum { kResolved = 1 } kCarpHeaderFlags;
 
 class bChunkCarpHeader {
     // total size: 0x10

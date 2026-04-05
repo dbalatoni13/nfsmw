@@ -20,6 +20,11 @@
 #error Choose a platform
 #endif
 
+// TODO: should these be in this file?
+typedef int32 bFix;
+typedef short unsigned int bAngle;
+typedef short int bSignedAngle;
+
 extern unsigned int bDefaultSeed;
 
 unsigned int bRandom(int range, unsigned int *seed);
