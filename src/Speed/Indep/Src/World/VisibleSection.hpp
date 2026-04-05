@@ -241,16 +241,17 @@ struct UsedInSectionInfo : public bTNode<UsedInSectionInfo> {
     const char *PlacementReason;           // offset 0x634, size 0x4
 };
 
+// total size: 0x6034
+class VisibleSectionOverlay : public bTNode<VisibleSectionOverlay> {
+  public:
 // total size: 0x6
 struct OverlayEntry {
-    char AddRemove;              // offset 0x0, size 0x1
-    char Pad;                    // offset 0x1, size 0x1
-    short DrivableSectionNumber; // offset 0x2, size 0x2
-    short SectionNumber;         // offset 0x4, size 0x2
+        int8 AddRemove;              // offset 0x0, size 0x1
+        int8 Pad;                    // offset 0x1, size 0x1
+        int16 DrivableSectionNumber; // offset 0x2, size 0x2
+        int16 SectionNumber;         // offset 0x4, size 0x2
 };
 
-// total size: 0x6034
-struct VisibleSectionOverlay : public bTNode<VisibleSectionOverlay> {
     VisibleSectionOverlay(const char *name) {
         NumEntries = 0;
         bMemSet(Name, 0, sizeof(Name));

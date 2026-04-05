@@ -466,7 +466,7 @@ void VisibleSectionManager::ActivateOverlay(const char *name) {
 
 void VisibleSectionManager::ActivateOverlay(VisibleSectionOverlay *overlay, VisibleSectionOverlay *undo_overlay) {
     for (int n = 0; n < overlay->NumEntries; n++) {
-        OverlayEntry *entry = &overlay->EntryTable[n];
+        VisibleSectionOverlay::OverlayEntry *entry = &overlay->EntryTable[n];
         DrivableScenerySection *section = FindDrivableSection(entry->DrivableSectionNumber);
         if (section) {
             bool did_something = false;
@@ -483,7 +483,7 @@ void VisibleSectionManager::ActivateOverlay(VisibleSectionOverlay *overlay, Visi
             if (did_something) {
                 section->SortVisibleSections();
                 if (undo_overlay) {
-                    OverlayEntry *undo_entry = &undo_overlay->EntryTable[undo_overlay->NumEntries++];
+                    VisibleSectionOverlay::OverlayEntry *undo_entry = &undo_overlay->EntryTable[undo_overlay->NumEntries++];
                     *undo_entry = *entry;
                     undo_entry->AddRemove = !entry->AddRemove;
                 }
