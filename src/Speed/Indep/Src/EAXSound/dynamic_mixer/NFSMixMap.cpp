@@ -601,6 +601,157 @@ void NFSMixMap::CreateMainMapState(eMAINMAPSTATES estate, int numstates, int obj
     pstate->CreateEvtMixCtls();
 }
 
+void NFSMixMap::AllocateInputArrays() {
+    int nTotalUniqueCurveIDs;
+    int ntotaluniqueScaleID;
+    int ntotalunique3DID;
+    int ntotaluniqueEvents;
+    int n;
+
+    nTotalUniqueCurveIDs = 0;
+    ntotaluniqueScaleID = 0;
+    ntotalunique3DID = 0;
+    ntotaluniqueEvents = 0;
+
+    for (n = 0; n < m_CurveProcsAdded; n++) {
+        unsigned int ntype;
+        bool bUniqueCurveID;
+
+        ntype = m_pCurveDataArray[n].nINPUTID & 0xE0000000;
+        bUniqueCurveID = true;
+
+        if ((ntype == 0x40000000) || (ntype == 0x60000000) || (ntype == 0x80000000)) {
+            int k;
+
+            for (k = 0; k < n; k++) {
+                if ((m_pCurveDataArray[k].nINPUTID & 0xE0FFFFF0U) ==
+                    (m_pCurveDataArray[n].nINPUTID & 0xE0FFFFF0U)) {
+                    bUniqueCurveID = false;
+                }
+            }
+        } else {
+            bUniqueCurveID = false;
+        }
+
+        if (bUniqueCurveID) {
+            nTotalUniqueCurveIDs++;
+        }
+    }
+
+    for (n = 0; n < m_ScaleParamsAdded; n++) {
+        unsigned int ntype;
+        bool buniquescale;
+        int *psc;
+
+        psc = m_pScalePtrArray[n];
+        ntype = reinterpret_cast<unsigned int>(psc) & 0xE0000000;
+        buniquescale = true;
+
+        if ((ntype == 0x40000000) || (ntype == 0x60000000) || (ntype == 0x80000000)) {
+            int m;
+
+            for (m = 0; m < n; m++) {
+                if ((reinterpret_cast<unsigned int>(psc) & 0xE0FFFFF0) ==
+                    (reinterpret_cast<unsigned int>(m_pScalePtrArray[m]) & 0xE0FFFFF0)) {
+                    buniquescale = false;
+                }
+            }
+        } else {
+            buniquescale = false;
+        }
+
+        if (buniquescale) {
+            ntotaluniqueScaleID++;
+        }
+    }
+
+    for (n = 0; n < m_3DMixCtlsAdded; n++) {
+        bool bunique3d;
+        unsigned int nID;
+        int k;
+
+        nID = m_p3DMixCtlProc[n].p3DMixCtlData_U->nINPUTID & 0xE0FFFFF0;
+        bunique3d = true;
+
+        for (k = 0; k < n; k++) {
+            if (nID == (m_p3DMixCtlProc[k].p3DMixCtlData_U->nINPUTID & 0xE0FFFFF0U)) {
+                bunique3d = false;
+            }
+        }
+
+        if (bunique3d) {
+            int s;
+
+            for (s = 0; s < m_ScaleParamsAdded; s++) {
+                if ((reinterpret_cast<unsigned int>(m_pScalePtrArray[s]) & 0xE0FFFFF0) == nID) {
+                    bunique3d = false;
+                }
+            }
+
+            if (bunique3d) {
+                ntotalunique3DID++;
+            }
+        }
+    }
+
+    for (n = 0; n < m_pMMHdr->NumStates; n++) {
+        if (m_pStateProcs[n]) {
+            int e;
+            int numevtctls;
+
+            numevtctls = m_pStateProcs[n]->m_EvtMixCtlsAdded;
+            for (e = 0; e < numevtctls; e++) {
+                bool buniqueevent;
+                unsigned int nID;
+                stEvtMixCtlProc *pevtproc;
+
+                pevtproc = m_pStateProcs[n]->GetEvtMixCtlProc(e, 0);
+                nID = pevtproc->pData_S->pMapParms->nTriggerID & 0xE0FFFFF0;
+                buniqueevent = true;
+
+                if (e > 0) {
+                    int es;
+
+                    for (es = 0; es < e; es++) {
+                        pevtproc = m_pStateProcs[n]->GetEvtMixCtlProc(es, 0);
+                        if ((pevtproc->pData_S->pMapParms->nTriggerID & 0xE0FFFFF0U) == nID) {
+                            buniqueevent = false;
+                        }
+                    }
+                }
+
+                if (buniqueevent) {
+                    int s;
+
+                    for (s = 0; s < m_ScaleParamsAdded; s++) {
+                        if ((reinterpret_cast<unsigned int>(m_pScalePtrArray[s]) & 0xE0FFFFF0) == nID) {
+                            buniqueevent = false;
+                        }
+                    }
+
+                    if (buniqueevent) {
+                        int nt3d;
+
+                        for (nt3d = 0; nt3d < m_3DMixCtlsAdded; nt3d++) {
+                            if (m_p3DMixCtlProc[nt3d].p3DMixCtlData_U->nINPUTID == static_cast<int>(nID)) {
+                                buniqueevent = false;
+                            }
+                        }
+
+                        if (buniqueevent) {
+                            ntotaluniqueEvents += m_pStateProcs[n]->GetStateRefCount();
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    m_pDynMixInputBlocks = static_cast<int **>(gAudioMemoryManager.AllocateMemory(
+        (nTotalUniqueCurveIDs + ntotaluniqueScaleID + ntotalunique3DID + ntotaluniqueEvents) * 0x40,
+        "DMIX SFXOBJ, SFXCTL Input Block", false));
+}
+
 void NFSMixMap::SetupStateProcArrays() {
     int stateIndex;
 

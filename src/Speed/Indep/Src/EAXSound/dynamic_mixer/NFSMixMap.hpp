@@ -19,24 +19,65 @@ struct stMixMapHeader {
     int DynamicMapOffset;  // offset 0x0C, size 0x4
 };
 
-struct stCurveDataProc;
 struct stMixCtlParams;
-struct stMixEvtParams;
 struct stMixCtlProc;
 struct stMixCtlSharedData;
 struct stMixCtlUniqueData;
-struct stEvtMixCtlProc;
-struct stEvtMixCtlSharedData;
 struct stEvtMixCtlUniqueData;
-struct st3DMixCtlProc;
 struct st3DMixCtlSharedData;
-struct st3DMixCtlUniqueData;
 struct stMixChSharedData;
 struct stMixChUniqueData;
 struct stSubMixChProc;
 struct stMasterMixChSharedData;
 struct stMasterMixChUniqueData;
 struct stMasterMixChProc;
+
+struct stCurveDataProc {
+    // total size: 0x10
+    int nINPUTID;      // offset 0x00, size 0x4
+    int *pInputParam;  // offset 0x04, size 0x4
+    int dBOutput;      // offset 0x08, size 0x4
+    int Q15Output;     // offset 0x0C, size 0x4
+};
+
+struct st3DMixCtlUniqueData {
+    // total size: 0x20
+    int nINPUTID;        // offset 0x00, size 0x4
+    int *pInputs;        // offset 0x04, size 0x4
+    int azimuth;         // offset 0x08, size 0x4
+    int dBRolloff;       // offset 0x0C, size 0x4
+    int q15Rolloff;      // offset 0x10, size 0x4
+    int DopplerCents;    // offset 0x14, size 0x4
+    float fPrevDist;     // offset 0x18, size 0x4
+    float fPrevDeltaDist; // offset 0x1C, size 0x4
+};
+
+struct st3DMixCtlProc {
+    // total size: 0x8
+    st3DMixCtlSharedData *p3DMixCtlData_S;  // offset 0x00, size 0x4
+    st3DMixCtlUniqueData *p3DMixCtlData_U;  // offset 0x04, size 0x4
+};
+
+struct stMixEvtParams {
+    // total size: 0x18
+    int nEVTCTLID;       // offset 0x00, size 0x4
+    int nUScaleCntSwing; // offset 0x04, size 0x4
+    int nTriggerID;      // offset 0x08, size 0x4
+    int nParam_00;       // offset 0x0C, size 0x4
+    int nParam_01;       // offset 0x10, size 0x4
+    int nParam_02;       // offset 0x14, size 0x4
+};
+
+struct stEvtMixCtlSharedData {
+    // total size: 0x4
+    stMixEvtParams *pMapParms;  // offset 0x00, size 0x4
+};
+
+struct stEvtMixCtlProc {
+    // total size: 0x8
+    stEvtMixCtlSharedData *pData_S;  // offset 0x00, size 0x4
+    stEvtMixCtlUniqueData *pData_U;  // offset 0x04, size 0x4
+};
 
 struct NFSMixMap : AudioMemBase {
     // total size: 0x1E0
