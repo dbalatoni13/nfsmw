@@ -19,7 +19,8 @@ extern Slope RoadNoiseSpeedToPitch;
 extern Slope RoadNoiseTransitionPitchSlope;
 extern int GetRoadNoiseTransitionVol(FXROADNOISE_TRANSITION ID);
 
-SndBase::TypeInfo CARSFX_RoadNoise::s_TypeInfo = { 0, "CARSFX_RoadNoise", nullptr, CARSFX_RoadNoise::CreateObject };
+SndBase::TypeInfo CARSFX_RoadNoise::s_TypeInfo = {
+    0x00020080, "CARSFX_RoadNoise", &SndBase::s_TypeInfo, CARSFX_RoadNoise::CreateObject};
 
 SndBase::TypeInfo *CARSFX_RoadNoise::GetTypeInfo() const { return &s_TypeInfo; }
 
@@ -83,6 +84,19 @@ void CARSFX_RoadNoise::SetupSFX(CSTATE_Base *_StateBase) {
 
 void CARSFX_RoadNoise::InitSFX() {
     SndBase::InitSFX();
+    if (GetInputBlockPtr()) {
+        GetInputBlockPtr()[eVRB_ROADNOISE_VERB] = 1;
+    }
+
+    if (!m_pWheelCtl) {
+        Disable();
+    } else {
+        for (int n = 0; n < 2; n++) {
+            g_pEAXSound->SetCsisName(this);
+            m_pWetRoad[n] =
+                new FX_ROADNOISE(FXROADNOISE_LOOP_WETROAD, 0, 0, 0, FXROADNOISETYPETYPE_LOOP, 0, 0, 25000, 0, 0x7FFF, 0);
+        }
+    }
 }
 
 void CARSFX_RoadNoise::UpdateParams(float t) {
