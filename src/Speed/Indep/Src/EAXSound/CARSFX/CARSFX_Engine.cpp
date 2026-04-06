@@ -1,6 +1,10 @@
 #include "./CARSFX_Engine.hpp"
 
+#include "Speed/Indep/Src/EAXSound/EAXCar.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXCarState.hpp"
+#include "Speed/Indep/Src/EAXSound/Stream/SndStrmWrapper.hpp"
+
+extern "C" int SNDvol(int sndHandle, int vol);
 
 void CARSFX_EngineBase::UpdateParams(float) {}
 
@@ -13,6 +17,17 @@ void CARSFX_EngineBase::InitSFX() {
 }
 
 void CARSFX_EngineBase::Destroy() {}
+
+void CARSFX_EngineBase::Detach() {
+    if (m_pcsisCarCtrl) {
+        delete m_pcsisCarCtrl;
+        m_pcsisCarCtrl = nullptr;
+    }
+    if (m_pTranny) {
+        delete m_pTranny;
+        m_pTranny = nullptr;
+    }
+}
 
 void CARSFX_EngineBase::ProcessUpdate() {
     SetEngineParams();
@@ -70,6 +85,24 @@ void CARSFX_GinsuEngine::InitSFX() {
     CARSFX_EngineBase::InitSFX();
     InitializeEngine();
     Enable();
+}
+
+void CARSFX_GinsuEngine::Detach() {
+    int Index;
+
+    for (Index = 0;
+         (m_pEAXCar->m_EngineType == eGINSU_ENG_SINGLE && Index < 1) ||
+             (m_pEAXCar->m_EngineType == eGINSU_ENG_DUAL && Index < 2);
+         Index++) {
+        stGinsuData *pData = &m_GinsuData[Index];
+
+        if (pData->mSynth) {
+            SNDSYS_entercritical();
+            SNDvol(m_GinsuData[Index].mSNDhandle, 0);
+            SNDSYS_leavecritical();
+        }
+    }
+    CARSFX_EngineBase::Detach();
 }
 
 void CARSFX_GinsuEngine::SetEngineParams() {

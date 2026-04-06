@@ -45,6 +45,20 @@ struct CARStruct {
 
 class CAR {
   public:
+    static void *operator new(unsigned int size) {
+        return Csis::System::Alloc(size);
+    }
+
+    static void operator delete(void *ptr) {
+        Csis::System::Free(ptr);
+    }
+
+    ~CAR() {
+        if (mpClass) {
+            mpClass->Release();
+        }
+    }
+
     void SetVOL_ENG(int x) {
         if (x < -0x7FFF) {
             x = -0x7FFF;
@@ -142,6 +156,20 @@ struct CAR_TRANNYStruct {
 
 class CAR_TRANNY {
   public:
+    static void *operator new(unsigned int size) {
+        return Csis::System::Alloc(size);
+    }
+
+    static void operator delete(void *ptr) {
+        Csis::System::Free(ptr);
+    }
+
+    ~CAR_TRANNY() {
+        if (mpClass) {
+            mpClass->Release();
+        }
+    }
+
     void SetMagnitude(int x) {
         if (x < 0) {
             x = 0;
