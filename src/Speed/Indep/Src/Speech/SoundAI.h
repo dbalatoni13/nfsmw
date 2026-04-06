@@ -123,6 +123,9 @@ class SoundAI : public Sim::Activity, public Sim::Collision::IListener, public U
     Sim::IActivity *Construct(Sim::Param params);
     IRoadBlock *GetRoadblock();
     bool IsMusicActive();
+    PursuitState GetPursuitState() {
+        return mPursuitState;
+    }
     void DealWithDeadAir();
     void UpdateStateMachines();
     void AttemptReattachPursuit();

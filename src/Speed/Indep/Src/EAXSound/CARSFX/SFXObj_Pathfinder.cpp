@@ -4,11 +4,15 @@
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
+#include "Speed/Indep/Src/Misc/Config.h"
+#include "Speed/Indep/Src/Speech/SoundAI.h"
 
 extern int PATH_stop(int tracks);
+extern int PATH_control(int tracks, unsigned int controller);
 extern void PATH_clearallevents(int mask);
 extern int PURSUIT_TO_LIC_DELAY;
 extern int PFXMAP[4][21][2];
+extern void InitializeEATrax(bool breset);
 
 SndBase::TypeInfo SFXObj_Pathfinder::s_TypeInfo = { 0, "SFXObj_Pathfinder", nullptr, SFXObj_Pathfinder::CreateObject };
 SndBase::TypeInfo SFXObj_PFEATrax::s_TypeInfo = { 0, "SFXObj_PFEATrax", nullptr, SFXObj_PFEATrax::CreateObject };
@@ -276,4 +280,91 @@ void SFXObj_PFEATrax::MessageSwapInteractive(const MControlPathfinder &message) 
     m_CurPathEvent = PFXMAP[m_InteractiveProj][18][0];
     m_PrevPathEvent = 0;
     m_PFParms[m_ActiveProject].queue_next = 1;
+}
+
+void SFXObj_PFEATrax::MessageInitSongsList(const MControlPathfinder &message) {
+    unsigned int utype;
+
+    utype = message.GetPathEvent();
+    if (utype == static_cast<unsigned int>(-1)) {
+        PATH_stop(m_PFParms[m_ActiveProject].PATH_TRACK);
+        InitializeEATrax(true);
+    } else {
+        InitializeEATrax(false);
+    }
+}
+
+eMUSIC_TYPE SFXObj_PFEATrax::GenMusicType() {
+    if (m_EATraxState == EATRAX_IG) {
+        if (FEDatabase->GetAudioSettings()->IGMusicVol > 0.0f) {
+            if ((m_Flags & 0x800) == 0) {
+                {
+                    bool pursuitisactive;
+                    SoundAI *ai;
+
+                    pursuitisactive = false;
+                    ai = SoundAI::Get();
+                    if (ai &&
+                        (ai->GetPursuitState() == SoundAI::kActive || ai->GetPursuitState() == SoundAI::kSearching)) {
+                        pursuitisactive = true;
+                    }
+
+                    if (pursuitisactive) {
+                        return eMUSIC_TYPE_INTERACTIVE;
+                    }
+                }
+                return eMUSIC_TYPE_LICENCED;
+            }
+
+            return eMUSIC_TYPE_LICENCED;
+        }
+    } else if (m_EATraxState == EATRAX_FE) {
+        if (FEDatabase->GetAudioSettings()->FEMusicVol > 0.0f) {
+            return eMUSIC_TYPE_LICENCED;
+        }
+    } else if (m_EATraxState != EATRAX_OFF) {
+        return eMUSIC_TYPE_AMBIENCE;
+    }
+
+    return static_cast<eMUSIC_TYPE>(static_cast<unsigned char>(((m_Flags & 0x800) == 0) << 1));
+}
+
+bool SFXObj_PFEATrax::TestToPursuit() {
+    bool pursuit_exists;
+    bool pursuit_active;
+    SoundAI *ai;
+
+    if (g_pEAXSound->GetCurAudioSettings()->InteractiveMusicMode != 0 && g_pEAXSound->GetCurMusicVolume() != 0.0f &&
+        (m_Flags & 0x802) == 0) {
+        pursuit_active = false;
+        pursuit_exists = false;
+        ai = SoundAI::Get();
+        if (ai) {
+            pursuit_exists = true;
+        }
+
+        if (pursuit_exists &&
+            (ai->GetPursuitState() == SoundAI::kActive || ai->GetPursuitState() == SoundAI::kSearching)) {
+            pursuit_active = true;
+        }
+
+        if (!pursuit_active) {
+            return false;
+        }
+
+        m_CurPathEvent = 0;
+        StartInteractiveMusic(0x026E7282);
+        return true;
+    }
+
+    return false;
+}
+
+void SFXObj_PFEATrax::MessageSendPathControl(const MControlPathfinder &message) {
+    if (IsAudioStreamingEnabled != 0 && m_MusicType == eMUSIC_TYPE_INTERACTIVE &&
+        message.GetPathControl() != static_cast<unsigned int>(m_CurIntensity)) {
+        m_PrevIntensity = m_CurIntensity;
+        m_CurIntensity = static_cast<char>(message.GetPathControl());
+        PATH_control(m_PFParms[m_ActiveProject].PATH_TRACKID, static_cast<int>(m_CurIntensity));
+    }
 }
