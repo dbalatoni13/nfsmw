@@ -2,6 +2,46 @@
 
 #include "Speed/Indep/Src/EAXSound/EAXCarState.hpp"
 
+int CARSFX_GinsuEngine::GetController(int Index) {
+    switch (Index) {
+    case 0:
+        return 4;
+    case 1:
+        return 5;
+    case 2:
+        return 6;
+    case 3:
+        return 7;
+    case 4:
+        return 2;
+    default:
+        return -1;
+    }
+}
+
+void CARSFX_GinsuEngine::AttachController(SFXCTL *psfxctl) {
+    int nindex;
+
+    nindex = psfxctl->GetObjectIndex();
+    switch (nindex) {
+    case 4:
+        m_pEngineCtl = static_cast<SFXCTL_Engine *>(psfxctl);
+        break;
+    case 5:
+        m_pHybridEngCtl = static_cast<SFXCTL_HybridMotor *>(psfxctl);
+        break;
+    case 6:
+        m_pTunnelCtl = static_cast<SFXCTL_Tunnel *>(psfxctl);
+        break;
+    case 7:
+        m_p3DCarPosCtl = static_cast<SFXCTL_3DCarPos *>(psfxctl);
+        break;
+    case 2:
+        m_pShiftingCtl = static_cast<SFXCTL_Shifting *>(psfxctl);
+        break;
+    }
+}
+
 void CARSFX_GinsuEngine::SetEngineParams() {
     int nDMixOut;
     int TmpVol;
@@ -19,11 +59,12 @@ void CARSFX_GinsuEngine::SetEngineParams() {
     SetGinsuParams();
 
     if (m_pcsisCarCtrl) {
-        TmpVol = GetDMixOutput(1, DMX_VOL);
-        TmpRpmVol = (m_pHybridEngCtl->m_EngVolAEMS * TmpVol >> 15) * 0x7FFF >> 15;
-        m_pcsisCarCtrl->SetVOL_ENG(TmpRpmVol - 0x7FFF);
-        m_pcsisCarCtrl->SetVOL_EXH(TmpRpmVol - 0x7FFF);
-        m_pcsisCarCtrl->SetMAX_RPM(m_pHybridEngCtl->m_EngVolRedLine * TmpVol >> 15);
+        nDMixOut = GetDMixOutput(1, DMX_VOL);
+        TmpVol = (m_pHybridEngCtl->m_EngVolAEMS * nDMixOut >> 15) * 0x7FFF >> 15;
+        m_pcsisCarCtrl->SetVOL_ENG(TmpVol - 0x7FFF);
+        m_pcsisCarCtrl->SetVOL_EXH(TmpVol - 0x7FFF);
+        TmpRpmVol = m_pHybridEngCtl->m_EngVolRedLine * nDMixOut >> 15;
+        m_pcsisCarCtrl->SetMAX_RPM(TmpRpmVol);
         m_pcsisCarCtrl->SetRPM(static_cast<int>(m_GinsuRPM));
         m_pcsisCarCtrl->SetCOMMON_PARAMETERS_PITCH_OFFSET(static_cast<int>(PitchMultipli * 16383.0f) - 0x3FFF);
         m_pcsisCarCtrl->SetTORQUE(static_cast<int>(m_pEngineCtl->GetEngTorque() * 10.24f));
@@ -42,14 +83,13 @@ void CARSFX_GinsuEngine::SetEngineParams() {
     m_pTranny->SetPITCH_OFFSET(GetDMixOutput(4, DMX_PITCH));
     m_pTranny->SetREVERB_AND_FILTERS_LoPass(GetDMixOutput(5, DMX_FREQ));
     nFXWetVol = m_pTunnelCtl->m_AEMSWetVol;
-    nFXDryVol = m_pTunnelCtl->m_AEMSDryVol;
     m_pTranny->SetREVERB_AND_FILTERS_Wet(nFXWetVol);
+    nFXDryVol = m_pTunnelCtl->m_AEMSDryVol;
     m_pTranny->SetREVERB_AND_FILTERS_Dry(nFXDryVol);
     if (m_pShiftingCtl && m_pShiftingCtl->IsActive()) {
-        nDMixOut = 1;
+        m_pTranny->SetSingle_Shot(1);
     } else {
-        nDMixOut = 0;
+        m_pTranny->SetSingle_Shot(0);
     }
-    m_pTranny->SetSingle_Shot(nDMixOut);
     m_pTranny->CommitMemberData();
 }
