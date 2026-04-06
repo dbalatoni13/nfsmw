@@ -92,6 +92,8 @@ struct cPathLine {
     int AddStage(float len, float finish, int numstages, eCURVETYPE curve);
     int AddLinkedStage(float _Finish, int _Length, eCURVETYPE _Curve);
     void Update(float dt);
+    int iGetValue() { return static_cast<int>(CurValue); }
+    bool IsFinished() { return bComplete; }
 };
 
 struct Slope {

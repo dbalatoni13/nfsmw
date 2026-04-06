@@ -30,6 +30,7 @@ extern int PFXMAP[4][21][2];
 extern unsigned int AmbientCrossMap[14];
 extern void InitializeEATrax(bool breset);
 extern int g_MaxSongs;
+extern unsigned int g_ActiveSFXStates;
 extern stSndDataLoadParams g_SndAssetList[];
 extern SongInfoList Songs;
 extern void SummonChyron(char *title, char *artist, char *album);
@@ -798,6 +799,165 @@ bool SFXObj_PFEATrax::TestToAmbience() {
     UpdateAmbience(0.1f);
     StartAmbience(AmbientCrossMap[m_nAmbientZone]);
     return true;
+}
+
+void SFXObj_PFEATrax::UpdateInGame(float t) {
+    int status;
+
+    if (m_bPathFAILED) {
+        return;
+    }
+    if ((g_ActiveSFXStates & 1) != 0) {
+        return;
+    }
+    if ((m_Flags & 0x800) == 0) {
+        if ((m_Flags & 0x404) != 4) {
+            return;
+        }
+        if (m_PFParms[m_ActiveProject].track_status == 3) {
+            return;
+        }
+        if (m_bSkipUpdate) {
+            return;
+        }
+    }
+    status = 1;
+    if (SFXCTL_Pathfinder::m_pPFParms[m_ActiveProject]) {
+        status = SFXCTL_Pathfinder::m_pPFParms[m_ActiveProject]->track_status;
+    }
+    if (m_MusicType == eMUSIC_TYPE_INTERACTIVE) {
+        if (FEDatabase->GetAudioSettings()->InteractiveMusicMode != 0 && g_pEAXSound->GetCurMusicVolume() != 0.0f) {
+            if (TestToAmbience()) {
+                return;
+            }
+            if (status != 1) {
+                return;
+            }
+            {
+                SoundAI *ai;
+
+                m_CurPathEvent = 0;
+                ai = SoundAI::Get();
+                if (!ai) {
+                    return;
+                }
+                if (ai->IsMusicActive()) {
+                    return;
+                }
+            }
+            StartInteractiveMusic(0x026E7282);
+            return;
+        }
+        PATH_stop(m_PFParms[m_ActiveProject].PATH_TRACK);
+        if (TestToLicensed(true)) {
+            return;
+        }
+        if (TestToAmbience()) {
+            return;
+        }
+        if (status != 1) {
+            return;
+        }
+        {
+            SoundAI *ai;
+
+            m_CurPathEvent = 0;
+            ai = SoundAI::Get();
+            if (!ai) {
+                return;
+            }
+            if (ai->IsMusicActive()) {
+                return;
+            }
+        }
+        StartInteractiveMusic(0x026E7282);
+    } else if (m_MusicType == eMUSIC_TYPE_LICENCED) {
+        if (TestToPursuit()) {
+            return;
+        }
+        if (TestToAmbience()) {
+            return;
+        }
+        if (!TestToLicensed(false)) {
+            if ((m_Flags & 0x800) != 0) {
+                return;
+            }
+            UpdateAmbience(t);
+            StartAmbience(AmbientCrossMap[m_nAmbientZone]);
+            return;
+        }
+        if ((m_Flags & 0x800) != 0) {
+            return;
+        }
+        if (status != 1) {
+            return;
+        }
+        StartLicensedMusic(0);
+    } else if (m_MusicType == eMUSIC_TYPE_AMBIENCE) {
+        if (TestToPursuit()) {
+            return;
+        }
+        if (TestToLicensed(true)) {
+            return;
+        }
+        if ((m_Flags & 0x800) != 0) {
+            return;
+        }
+        if (status == 1) {
+            if (m_CurPathEvent == m_PrevPathEvent) {
+                m_CurPathEvent = 0;
+            }
+            UpdateAmbience(t);
+            StartAmbience(AmbientCrossMap[m_nAmbientZone]);
+            return;
+        }
+        UpdateAmbience(t);
+        if (AmbientCrossMap[m_nAmbientZone] == m_CurPathEvent) {
+            return;
+        }
+        StartAmbience(AmbientCrossMap[m_nAmbientZone]);
+    }
+}
+
+void SFXObj_PFEATrax::UpdatePursuitBreaker(float t) {
+    if (g_pEAXSound->GetSndGameMode() == SND_PURSUITBREAKER &&
+        g_pEAXSound->GetPrevSndGameMode() != SND_PURSUITBREAKER) {
+        if (!m_FilterFade) {
+            m_FilterFade = new ("PATH5: Pursuit breaker sound filter fader", 0) cPathLine();
+            m_FilterFade->AddStage(65535.0f, 630.0f, 1000, EQ_PWR_SQ);
+            m_FilterFade->AddLinkedStage(1800.0f, 1000, EQ_PWR_SQ);
+        }
+    } else if (g_pEAXSound->GetSndGameMode() != SND_PURSUITBREAKER &&
+               g_pEAXSound->GetPrevSndGameMode() == SND_PURSUITBREAKER) {
+        {
+            int curr_freq;
+
+            if (!m_FilterFade) {
+                curr_freq = 0x708;
+                m_FilterFade = new ("PATH5: Pursuit breaker sound filter fader", 0) cPathLine();
+                if (!m_FilterFade) {
+                    m_FilterFreq = 0xFFFF;
+                    return;
+                }
+            } else {
+                curr_freq = m_FilterFade->iGetValue();
+            }
+            m_FilterFade->ClearStages();
+            m_FilterFade->AddStage(static_cast<float>(curr_freq), 65535.0f, 1000, EQ_PWR_SQ);
+        }
+    }
+    if (m_FilterFade && m_FilterFade->IsFinished() && g_pEAXSound->GetSndGameMode() != SND_PURSUITBREAKER) {
+        delete m_FilterFade;
+        m_FilterFade = nullptr;
+    }
+    if (m_FilterFade) {
+        m_FilterFade->Update(t);
+    }
+    if (m_FilterFade) {
+        m_FilterFreq = m_FilterFade->iGetValue();
+    } else {
+        m_FilterFreq = 0xFFFF;
+    }
 }
 
 void SFXObj_PFEATrax::Destroy() {
