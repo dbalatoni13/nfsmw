@@ -21,6 +21,8 @@ struct TrackPositionMarker : public bTNode<TrackPositionMarker> {
 };
 
 int GetNumTrackPositionMarkers(int track_number, unsigned int name_hash);
+TrackPositionMarker *GetTrackPositionMarker(int track_number, unsigned int name_hash, int index);
+TrackPositionMarker *GetTrackPositionMarker(unsigned int name_hash, int index);
 
 extern bTList<TrackPositionMarker> TrackPositionMarkerList;
 

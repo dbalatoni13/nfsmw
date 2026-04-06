@@ -1,14 +1,18 @@
 #include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_MomentStrm.hpp"
 
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
+#include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_PFEATrax.hpp"
 #include "Speed/Indep/Src/EAXSound/SndCamera.hpp"
 #include "Speed/Indep/Src/EAXSound/Stream/NISSFXModule.hpp"
 #include "Speed/Indep/Src/Generated/Messages/MGamePlayMoment.h"
+#include "Speed/Indep/Src/Generated/Messages/MMiscSound.h"
 #include "Speed/Indep/Src/Generated/Messages/MPursuitBreaker.h"
 #include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
 #include "Speed/Indep/Src/Misc/Config.h"
+#include "Speed/Indep/Src/Animation/AnimCandidates.hpp"
 #include "Speed/Indep/Src/EAXSound/snd_gen/NISAudio.hpp"
 #include "Speed/Indep/Src/EAXSound/Stream/SpeechManager.hpp"
+#include "Speed/Indep/Src/World/TrackPositionMarker.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
 SFXObj_MomentStrm::TypeInfo SFXObj_MomentStrm::s_TypeInfo = {0x60, "SFXObj_MomentStrm", nullptr, SFXObj_MomentStrm::CreateObject};
@@ -17,6 +21,14 @@ bool SFXObj_MomentStrm::bHoldStream = false;
 SFXObj_MomentStrm *g_MomentStream = nullptr;
 
 SFXCTL_3DMomentPos::TypeInfo SFXCTL_3DMomentPos::s_TypeInfo = {0x20, "SFXCTL_3DMomentPos", nullptr, SFXCTL_3DMomentPos::CreateObject};
+
+struct MomentMapping {
+    int markerType;
+    unsigned int key;
+};
+
+extern MomentMapping g_MomentMappings[15];
+extern bool IsWorldDataStreaming(unsigned int strmhandle);
 
 SFXObj_MomentStrm::TypeInfo *SFXObj_MomentStrm::GetTypeInfo() const {
     return &s_TypeInfo;
@@ -240,6 +252,75 @@ void SFXObj_MomentStrm::CommitStreamReq(UMath::Vector4 pos4, unsigned int collec
         bool breturn;
 
         breturn = nismgr->QueStream(STRM_SFX_MOMENT, CBPlayMomentStream, false);
+    }
+}
+
+void SFXObj_MomentStrm::InitSFX() {
+    SndBase::InitSFX();
+    m_p3DPos->AssignPositionVector(&fPosition);
+    m_p3DPos->AssignDirectionVector(&fVector);
+    m_p3DPos->AssignVelocityVector(&fVelocity);
+    g_pEAXSound->SetSFXBaseObject(this, eMM_MAIN, 6, 0);
+    m_TimeBeforeRetrigger = 0.0f;
+    mMomentPositonsList.clear();
+
+    for (int n = 0; n <= 14; n++) {
+        const char *markerName = CAnimCandidateData::GetMomentMarkerName(g_MomentMappings[n].markerType);
+
+        if (markerName[0] != '\0') {
+            unsigned int markerHash = bStringHash(markerName);
+            int numTrackMarkers = GetNumTrackPositionMarkers(0, markerHash);
+            float closestMarkerDist;
+
+            for (int index = 0; index < numTrackMarkers; index++) {
+                TrackPositionMarker *marker = GetTrackPositionMarker(markerHash, index);
+
+                if (marker) {
+                    stMomentDecription newmoment;
+
+                    newmoment.vPos = UMath::Vector4::kZero;
+                    newmoment.key = 0;
+                    newmoment.vPos.z = marker->Position.x;
+                    newmoment.vPos.x = -marker->Position.y;
+                    newmoment.key = g_MomentMappings[n].key;
+                    newmoment.vPos.y = marker->Position.z;
+                    newmoment.vPos.w = 0.0f;
+                    mMomentPositonsList.push_back(newmoment);
+                }
+            }
+        }
+    }
+}
+
+void SFXObj_MomentStrm::ReceivePursuitBreaker(const MPursuitBreaker &message) {
+    int id = 0x40010010;
+    SFXObj_PFEATrax *peatrax = static_cast<SFXObj_PFEATrax *>(g_pEAXSound->GetSFXBase_Object(id));
+    eMUSIC_TYPE etype = peatrax->GenMusicType();
+
+    if (message.GetStartBreaker()) {
+        if (!IsWorldDataStreaming(0)) {
+            if (etype == eMUSIC_TYPE_INTERACTIVE) {
+                MGamePlayMoment moment(UMath::Vector4::kZero, UMath::Vector4::kZero, UMath::Vector4::kZero, 0, 0x2DF96F7D);
+
+                moment.Send(UCrc32("MomentStrm"));
+            } else {
+                MGamePlayMoment moment(UMath::Vector4::kZero, UMath::Vector4::kZero, UMath::Vector4::kZero, 0, 0x14D32C41);
+
+                moment.Send(UCrc32("MomentStrm"));
+            }
+        }
+
+        MMiscSound sound(3);
+
+        sound.Send(UCrc32("Snd"));
+    } else {
+        if (m_CurMoment == 0x14D32C41 || m_CurMoment == 0x2DF96F7D) {
+            Speech::Manager::GetSpeechModule(0)->GetStreamChannel()->Stop();
+        }
+
+        MMiscSound sound(4);
+
+        sound.Send(UCrc32("Snd"));
     }
 }
 
