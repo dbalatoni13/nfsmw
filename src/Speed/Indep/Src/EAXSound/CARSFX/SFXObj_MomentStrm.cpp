@@ -2,7 +2,9 @@
 
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
 #include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_PFEATrax.hpp"
+#include "Speed/Indep/Src/EAXSound/EAXCarState.hpp"
 #include "Speed/Indep/Src/EAXSound/SndCamera.hpp"
+#include "Speed/Indep/Src/EAXSound/EAXSndUtil.h"
 #include "Speed/Indep/Src/EAXSound/Stream/NISSFXModule.hpp"
 #include "Speed/Indep/Src/Generated/Messages/MGamePlayMoment.h"
 #include "Speed/Indep/Src/Generated/Messages/MMiscSound.h"
@@ -94,6 +96,92 @@ void SFXObj_MomentStrm::AttachController(SFXCTL *psfxctl) {
 }
 
 void SFXObj_MomentStrm::Destroy() {}
+
+void SFXObj_MomentStrm::UpdateParams(float t) {
+    Speech::SED_NISSFX *nismgr;
+
+    SndBase::UpdateParams(t);
+    m_TimeBeforeRetrigger -= t;
+    if (m_TimeBeforeRetrigger < 0.0f) {
+        m_TimeBeforeRetrigger = 0.0f;
+    }
+
+    if (UseUserPos != 0) {
+        fPosition = *SndCamera::GetWorldCarPos3(0);
+    }
+
+    if (mCarsID != 0) {
+        {
+            EAX_CarState *pcar = EAX_CarState::Find(mCarsID);
+
+            if (pcar) {
+                fPosition = *pcar->GetPosition();
+            }
+        }
+    }
+
+    nismgr = static_cast<Speech::SED_NISSFX *>(Speech::Manager::GetSpeechModule(0));
+    if (m_CurMoment != 0) {
+        if (bHoldStream != 0 && mHeldMoment) {
+            bHoldStream = false;
+
+            for (int num_play = 0; num_play < SndCamera::NumPlayers; num_play++) {
+                float xdist = bAbs(SndCamera::GetWorldCarPos(num_play)->x - mHeldMoment->vPos.z);
+                float ydist = bAbs(SndCamera::GetWorldCarPos(num_play)->y + mHeldMoment->vPos.x);
+
+                if (xdist < 20.0f || ydist < 20.0f) {
+                    bHoldStream = true;
+                    break;
+                }
+            }
+
+            if (bHoldStream == 0) {
+                nismgr->GetStreamChannel()->PurgeStream();
+                mCarsID = 0;
+                m_CurMoment = 0;
+                mHeldMoment = nullptr;
+            }
+        }
+
+        if (nismgr->GetStreamType() == STRM_SFX_MOMENT) {
+            if (!nismgr->GetStreamChannel()->IsPlaying()) {
+                mCarsID = 0;
+                m_CurMoment = 0;
+            }
+        } else {
+            mCarsID = 0;
+            m_CurMoment = 0;
+        }
+
+        if (UseUserPos == 0) {
+            {
+                EAX_CarState *pcar;
+
+                pcar = GetClosestPlayerCar(&fPosition);
+                if (bDistBetween(&fPosition, pcar->GetPosition()) > 120.0f) {
+                    m_CurMoment = 0;
+                    nismgr->GetStreamChannel()->PurgeStream();
+                }
+            }
+        }
+    }
+
+    for (int num_play = 0; num_play < SndCamera::NumPlayers; num_play++) {
+        for (int n = 0; n < static_cast<int>(mMomentPositonsList.size()); n++) {
+            if (mMomentPositonsList[n].key != m_CurMoment) {
+                float xdist = bAbs(SndCamera::GetWorldCarPos(num_play)->x - mMomentPositonsList[n].vPos.z);
+                float ydist = bAbs(SndCamera::GetWorldCarPos(num_play)->y + mMomentPositonsList[n].vPos.x);
+
+                if (xdist <= 20.0f && ydist <= 20.0f &&
+                    ShouldStreamPlay(mMomentPositonsList[n].key, true, xdist * xdist + ydist * ydist)) {
+                    CommitStreamReq(mMomentPositonsList[n].vPos, mMomentPositonsList[n].key);
+                    bHoldStream = true;
+                    mHeldMoment = &mMomentPositonsList[n];
+                }
+            }
+        }
+    }
+}
 
 void SFXObj_MomentStrm::ProcessUpdate() {
     SetDMIX_Input(5, 0);
