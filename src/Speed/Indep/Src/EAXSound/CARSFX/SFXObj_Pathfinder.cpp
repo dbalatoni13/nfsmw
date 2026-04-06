@@ -368,3 +368,47 @@ void SFXObj_PFEATrax::MessageSendPathControl(const MControlPathfinder &message) 
         PATH_control(m_PFParms[m_ActiveProject].PATH_TRACKID, static_cast<int>(m_CurIntensity));
     }
 }
+
+void SFXObj_PFEATrax::SetupSFX(CSTATE_Base *_StateBase) {
+    SndBase::SetupSFX(_StateBase);
+    m_PFParms[1].pmapfile = nullptr;
+    m_PFParms[0].bAttached = false;
+    m_PFParms[0].bdataloaded = false;
+    m_PFParms[0].ramfile = nullptr;
+    m_PFParms[0].pmapfile = nullptr;
+    m_PFParms[1].bAttached = false;
+    m_PFParms[1].bdataloaded = false;
+    m_PFParms[1].ramfile = nullptr;
+    m_PFParms[0].mapfile = "MW_Music.mpf";
+    m_PFParms[0].musfile = "MW_Music.mus";
+    m_PFParms[0].PATH_TRACK = 0x11000001;
+    m_PFParms[1].procflags = 2;
+    m_PFParms[1].mapfile = "MW_Mus_1.mpf";
+    m_PFParms[1].musfile = "MW_Mus_1.mus";
+    m_PFParms[1].PATH_TRACK = 0x12000001;
+    m_PFParms[1].PATH_TRACKID = -1;
+    m_PFParms[1].PATH_TRACK_BYTESPERSEC = 0x8D78;
+    m_PFParms[0].procflags = 2;
+    m_PFParms[0].projnum = -1;
+    m_PFParms[0].curnodeparm = -1;
+    m_PFParms[0].PATH_VOICE = -1;
+    m_PFParms[0].PATH_TRACKID = -1;
+    m_PFParms[0].PATH_TRACK_BYTESPERSEC = 0x8D78;
+    m_PFParms[1].projnum = -1;
+    m_PFParms[1].curnodeparm = -1;
+    m_PFParms[1].PATH_VOICE = -1;
+    m_EATraxState = GenEATraxState();
+    m_Flags &= ~0x8u;
+}
+
+void SFXObj_PFEATrax::SetupLoadData() {
+    if (IsAudioStreamingEnabled != 0) {
+        LoadAsset(Attrib::StringKey(m_PFParms[0].mapfile), SNDPATH_PATHFINDER, EAXSND_DT_GENERIC_DATA, eBANK_SLOT_NONE, true);
+        if (g_pEAXSound->GetPlayerMixMode() == EAXS3D_TWO_PLAYER_MIX) {
+            m_Flags |= 2;
+        } else {
+            LoadAsset(Attrib::StringKey(m_PFParms[1].mapfile), SNDPATH_PATHFINDER, EAXSND_DT_GENERIC_DATA, eBANK_SLOT_PATHFINDER, true);
+            m_Flags &= ~2u;
+        }
+    }
+}
