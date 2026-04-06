@@ -26,6 +26,7 @@ extern int PATH_volume(int tracks, signed char volume);
 extern int PATH_setnamedvalue(int tracks, char *name, int value);
 extern int PATH_control(int tracks, unsigned int controller);
 extern void PATH_clearallevents(int mask);
+extern int GameFlowSndState[];
 extern int PURSUIT_TO_LIC_DELAY;
 extern int PFXMAP[4][21][2];
 extern unsigned int AmbientCrossMap[14];
@@ -1144,6 +1145,103 @@ CHECK_SKIP_UPDATE:
         if (pch) {
             pch->SetVol(0, false);
         }
+    }
+}
+
+void SFXObj_PFEATrax::UpdateParams(float t) {
+    int status;
+    bool path_playing;
+    bool user_playing;
+
+    if ((m_Flags & 0x800) == 0) {
+        status = m_PFParms[m_ActiveProject].track_status;
+    } else {
+        status = -1;
+    }
+    path_playing = false;
+    if (status - 5U < 2 || status == 2) {
+        path_playing = true;
+    }
+    if (m_PFParms[m_ActiveProject].track_status == 3 && (m_Flags & 0x800) == 0) {
+        return;
+    }
+    user_playing = false;
+    if ((m_Flags & 0x10) != 0 && g_pEAXSound->GetSndGameMode() != SND_FRONTEND && (m_Flags & 0x802) == 0) {
+        user_playing = true;
+    }
+    if (user_playing) {
+        m_InteractiveProj = static_cast<eINTERACTIVE_PROJ_ID>((m_InteractiveProj + PF_INTERACTIVE_01) & PF_INTERACTIVE_03);
+        SFXCTL_Pathfinder::SetCurInteractive(m_InteractiveProj);
+        if (!g_pEAXSound->AreResourceLoadsPending()) {
+            m_Flags &= ~0x10u;
+            m_pSFXCTL_Pathfinder->DestroyTrack(m_PFParms + 1);
+            {
+                int index;
+
+                index = gAEMSMgr.IsAssetInList(Attrib::StringKey(m_PFParms[1].mapfile));
+                gAEMSMgr.UnloadSndData(index);
+            }
+            switch (m_InteractiveProj) {
+            case PF_INTERACTIVE_01:
+                m_PFParms[1].mapfile = "MW_Mus_2.mpf";
+                m_PFParms[1].musfile = "MW_Mus_2.mus";
+                break;
+            case PF_INTERACTIVE_02:
+                m_PFParms[1].mapfile = "MW_Mus_3.mpf";
+                m_PFParms[1].musfile = "MW_Mus_3.mus";
+                break;
+            case PF_INTERACTIVE_03:
+                m_PFParms[1].mapfile = "MW_Mus_4.mpf";
+                m_PFParms[1].musfile = "MW_Mus_4.mus";
+                break;
+            case PF_INTERACTIVE_00:
+            default:
+                m_PFParms[1].mapfile = "MW_Mus_1.mpf";
+                m_PFParms[1].musfile = "MW_Mus_1.mus";
+                break;
+            }
+            LoadAsset(
+                Attrib::StringKey(m_PFParms[1].mapfile), SNDPATH_PATHFINDER, EAXSND_DT_GENERIC_DATA, eBANK_SLOT_PATHFINDER, true);
+        }
+    } else {
+        m_Flags &= ~0x10u;
+    }
+    if (!path_playing) {
+        SetDMIX_Input(6, 0);
+        SetDMIX_Input(7, 0);
+        SetDMIX_Input(8, 0);
+    } else {
+        switch ((m_Flags & 0x100) != 0 ? m_PrevMusicType : m_MusicType) {
+        case eMUSIC_TYPE_LICENCED:
+            SetDMIX_Input(6, 0x7FFF);
+            SetDMIX_Input(7, 0);
+            SetDMIX_Input(8, 0);
+            break;
+        case eMUSIC_TYPE_INTERACTIVE:
+        case eMUSIC_TYPE_SPLASH:
+            SetDMIX_Input(6, 0);
+            SetDMIX_Input(7, 0x7FFF);
+            SetDMIX_Input(8, 0);
+            break;
+        case eMUSIC_TYPE_AMBIENCE:
+            SetDMIX_Input(6, 0);
+            SetDMIX_Input(7, 0);
+            SetDMIX_Input(8, 0x7FFF);
+            break;
+        }
+    }
+    if (IsAudioStreamingEnabled != 0 && (m_Flags & 0x2000) == 0) {
+        if (m_EATraxState == EATRAX_OFF) {
+            if (GameFlowSndState[4] == 0 && GameFlowSndState[5] == 0 && GameFlowSndState[7] == 0 && GameFlowSndState[6] == 0 &&
+                GameFlowSndState[11] == 0) {
+                m_EATraxState = GenEATraxState();
+            } else {
+                UpdateInGame(t);
+            }
+        } else {
+            UpdateInGame(t);
+        }
+        UpdatePursuitBreaker(t);
     }
 }
 
