@@ -10,27 +10,27 @@ TrackPathManager TheTrackPathManager;
 bChunkLoader bChunkLoaderTrackPath(BCHUNK_TRACK_PATH_MANAGER, LoaderTrackPath, UnloaderTrackPath);
 bChunkLoader bChunkLoaderTrackPathBarriers(BCHUNK_TTRACK_PATH_BARRIERS, LoaderTrackPath, UnloaderTrackPath);
 
-// UNSOLVED
-bool DoLinesIntersect(const bVector2 &line1_start, const bVector2 &line1_end, const bVector2 &line2_start, const bVector2 &line2_end) {
-    float dy1 = line1_end.y - line1_start.y;
-    float dx2 = line2_end.x - line2_start.x;
-    float dx1 = line1_end.x - line1_start.x;
-    float dy2 = line2_end.y - line2_start.y;
-    float den = dx1 * dy2 - dy1 * dx2;
+bool DoLinesIntersect(const bVector2 &a, const bVector2 &b, const bVector2 &c, const bVector2 &d) {
 
-    if (den != 0.0f) {
-        float dx3 = line1_start.x - line2_start.x;
-        float dy3 = line1_start.y - line2_start.y;
-        float r = (dy3 * dx2 - dx3 * dy2) / den;
-        if (0.0f <= r && r <= 1.0f) {
-            float s = (dy3 * dx1 - dx3 * dy1) / den;
-            if (0.0f <= s && s <= 1.0f) {
-                return true;
-            }
-        }
+    float den = (b.x - a.x) * (d.y - c.y) - (b.y - a.y) * (d.x - c.x);
+
+    if (den == 0.0f) {
+        return false;
     }
 
-    return false;
+    float r = ((a.y - c.y) * (d.x - c.x) - (a.x - c.x) * (d.y - c.y)) / den;
+
+    if (!(0.0f <= r && r <= 1.0f)) {
+        return false;
+    }
+
+    float s = ((a.y - c.y) * (b.x - a.x) - (a.x - c.x) * (b.y - a.y)) / den;
+
+    if (!(0.0f <= s && s <= 1.0f)) {
+        return false;
+    }
+
+    return true;
 }
 
 void TrackPathManager::Clear() {
