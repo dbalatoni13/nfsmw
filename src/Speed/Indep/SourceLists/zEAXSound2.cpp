@@ -16,6 +16,8 @@
 
 #include "Speed/Indep/Src/EAXSound/CARSFX/CARSFX_Engine.cpp"
 
+#include "Speed/Indep/Src/EAXSound/Ginsu/ginsudata.cpp"
+
 #include "Speed/Indep/Src/EAXSound/Ginsu/ginsusynth.cpp"
 
 #include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_Collision.cpp"
