@@ -14,6 +14,8 @@
 
 #include "Speed/Indep/Src/EAXSound/CARSFX/CARSFX_BottomOut.cpp"
 
+#include "Speed/Indep/Src/EAXSound/CARSFX/CARSFX_Roadnoise.cpp"
+
 #include "Speed/Indep/Src/EAXSound/CARSFX/CARSFX_WindNoise.cpp"
 
 #include "Speed/Indep/Src/EAXSound/CARSFX/CARSFX_Skids.cpp"
