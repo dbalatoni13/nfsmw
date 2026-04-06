@@ -2,6 +2,26 @@
 
 #include "Speed/Indep/Src/EAXSound/EAXCarState.hpp"
 
+void CARSFX_EngineBase::UpdateParams(float) {}
+
+void CARSFX_EngineBase::SetupSFX(CSTATE_Base *_StateBase) {
+    SndBase::SetupSFX(_StateBase);
+}
+
+void CARSFX_EngineBase::InitSFX() {
+    SndBase::InitSFX();
+}
+
+void CARSFX_EngineBase::Destroy() {}
+
+void CARSFX_EngineBase::ProcessUpdate() {
+    SetEngineParams();
+}
+
+void CARSFX_EngineBase::InitializeEngine() {}
+
+void CARSFX_EngineBase::SetEngineParams() {}
+
 int CARSFX_GinsuEngine::GetController(int Index) {
     switch (Index) {
     case 0:
@@ -40,6 +60,16 @@ void CARSFX_GinsuEngine::AttachController(SFXCTL *psfxctl) {
         m_pShiftingCtl = static_cast<SFXCTL_Shifting *>(psfxctl);
         break;
     }
+}
+
+void CARSFX_GinsuEngine::SetupSFX(CSTATE_Base *_StateBase) {
+    CARSFX_EngineBase::SetupSFX(_StateBase);
+}
+
+void CARSFX_GinsuEngine::InitSFX() {
+    CARSFX_EngineBase::InitSFX();
+    InitializeEngine();
+    Enable();
 }
 
 void CARSFX_GinsuEngine::SetEngineParams() {
