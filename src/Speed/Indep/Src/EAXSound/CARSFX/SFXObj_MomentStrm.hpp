@@ -69,9 +69,9 @@ class SFXObj_MomentStrm : public CARSFX {
 
     void ReceiveMoment(const MGamePlayMoment &message);
     void ReceivePursuitBreaker(const MPursuitBreaker &message);
-    bool ShouldStreamPlay();
-    void CommitStreamReq();
-    void CBPlayMomentStream();
+    bool ShouldStreamPlay(unsigned int collectionkey, bool holdstream, float timebeforetrigger);
+    void CommitStreamReq(UMath::Vector4 pos4, unsigned int collectionkey);
+    static void CBPlayMomentStream();
 };
 
 class SFXCTL_3DMomentPos : public SFXCTL_3DObjPos {

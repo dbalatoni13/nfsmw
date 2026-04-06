@@ -3,6 +3,8 @@
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
 #include "Speed/Indep/Src/Generated/Messages/MGamePlayMoment.h"
 #include "Speed/Indep/Src/Generated/Messages/MPursuitBreaker.h"
+#include "Speed/Indep/Src/Misc/Config.h"
+#include "Speed/Indep/bWare/Inc/bMath.hpp"
 
 SFXObj_MomentStrm::TypeInfo SFXObj_MomentStrm::s_TypeInfo = {0x60, "SFXObj_MomentStrm", nullptr, SFXObj_MomentStrm::CreateObject};
 float SFXObj_MomentStrm::m_TimeBeforeRetrigger = 0.0f;
@@ -78,6 +80,54 @@ void SFXObj_MomentStrm::Destroy() {}
 
 void SFXObj_MomentStrm::ProcessUpdate() {
     SetDMIX_Input(5, 0);
+}
+
+void SFXObj_MomentStrm::ReceiveMoment(const MGamePlayMoment &message) {
+    unsigned int collectionkey;
+    unsigned int unpause;
+
+    if (IsAudioStreamingEnabled == 0) {
+        return;
+    }
+
+    if (IsNISAudioEnabled == 0) {
+        return;
+    }
+
+    collectionkey = message.GetAttribKey();
+    unpause = Attrib::StringToKey("unpause");
+
+    if (collectionkey == unpause) {
+        UMath::Vector4 pos4 = message.GetPosition();
+
+        for (int n = 0; n < static_cast<int>(mMomentPositonsList.size()); n++) {
+            if (bAbs(pos4.x - mMomentPositonsList[n].vPos.x) < 25.0f &&
+                bAbs(pos4.z - mMomentPositonsList[n].vPos.z) < 25.0f) {
+                collectionkey = mMomentPositonsList[n].key;
+            }
+        }
+
+        if (collectionkey == unpause) {
+            return;
+        }
+    }
+
+    if (bHoldStream != 0 && m_CurMoment != 0 && collectionkey == m_CurMoment) {
+        bHoldStream = false;
+        mHeldMoment = nullptr;
+        CBPlayMomentStream();
+    } else if (ShouldStreamPlay(collectionkey, false, 0.0f)) {
+        CommitStreamReq(message.GetPosition(), collectionkey);
+
+        if (collectionkey == 0x0D6D4198 || collectionkey == 0xA6E3EF3E) {
+            mCarsID = message.GethSimable();
+        } else {
+            mCarsID = 0;
+        }
+
+        bHoldStream = false;
+        mHeldMoment = nullptr;
+    }
 }
 
 SFXCTL_3DMomentPos::TypeInfo *SFXCTL_3DMomentPos::GetTypeInfo() const {
