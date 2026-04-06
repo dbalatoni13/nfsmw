@@ -7,6 +7,7 @@
 #include "Speed/Indep/Src/Generated/Messages/MPursuitBreaker.h"
 #include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
 #include "Speed/Indep/Src/Misc/Config.h"
+#include "Speed/Indep/Src/EAXSound/snd_gen/NISAudio.hpp"
 #include "Speed/Indep/Src/EAXSound/Stream/SpeechManager.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
@@ -202,6 +203,44 @@ bool SFXObj_MomentStrm::ShouldStreamPlay(unsigned int key, bool IsQueueing, floa
     }
 
     return true;
+}
+
+void SFXObj_MomentStrm::CommitStreamReq(UMath::Vector4 pos4, unsigned int collectionkey) {
+    Attrib::Gen::aud_moment_strm momentstrm(collectionkey, 0, nullptr);
+    Speech::SED_NISSFX *nismgr;
+
+    nismgr = static_cast<Speech::SED_NISSFX *>(Speech::Manager::GetSpeechModule(0));
+    m_CurMoment = collectionkey;
+    mCarsID = 0;
+    fPosition.x = pos4.z;
+    fPosition.y = -pos4.x;
+    fPosition.z = pos4.y;
+    fVector = bVector3(0.0f, 0.0f, 0.0f);
+    fVelocity = fVector;
+
+    {
+        UMath::Vector3 pos3;
+
+        pos3 = UMath::Vector4To3(pos4);
+        if (UMath::Distance(pos3, UMath::Vector3::kZero) < 1.0f) {
+            UseUserPos = true;
+        } else {
+            UseUserPos = false;
+        }
+    }
+
+    Csis::SoundFX_Select(momentstrm.stream(), momentstrm.param());
+    nismgr->ClearStream();
+    nismgr->GetStreamChannel()->Stop();
+    VolSlot = momentstrm.VolSlot();
+    m_IsPositioned = momentstrm.IsPositioned();
+    bHoldStream = false;
+    mHeldMoment = nullptr;
+    {
+        bool breturn;
+
+        breturn = nismgr->QueStream(STRM_SFX_MOMENT, CBPlayMomentStream, false);
+    }
 }
 
 SFXCTL_3DMomentPos::TypeInfo *SFXCTL_3DMomentPos::GetTypeInfo() const {

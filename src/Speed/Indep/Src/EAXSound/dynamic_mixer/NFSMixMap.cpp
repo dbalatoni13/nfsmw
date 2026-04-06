@@ -2,9 +2,6 @@
 #include "Speed/Indep/Src/EAXSound/dynamic_mixer/NFSMixMapState.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXSndUtil.h"
 
-extern "C" int GetdBFromQ15__11NFSMixShapei(int nQ15);
-extern "C" int GetQ15FromHundredthsdB__11NFSMixShapei(int ndB);
-extern "C" float GetPitchMultFromCents__11NFSMixShapei(int cents);
 extern float DOPPLER_SMOOTHING_FACTOR;
 extern float F_DT_FRAME_LOCK;
 
@@ -532,7 +529,7 @@ stEvtMixCtlProc *NFSMixMap::GetNextEvtMixCtlProc(bool bincrement) {
 
     pAddr = m_pEvtMixCtlProc + m_nAssignedEvtMixCtlProc;
     if (bincrement) {
-        m_nAssignedEvtMixCtlProc += 1;
+        ++m_nAssignedEvtMixCtlProc;
     }
 
     return pAddr;
@@ -543,7 +540,7 @@ stEvtMixCtlSharedData *NFSMixMap::GetNextEvtMixCtlShared(bool bincrement) {
 
     pAddr = m_pEvtMixCtlData_S + m_nAssignedEvtMixCtlShared;
     if (bincrement) {
-        m_nAssignedEvtMixCtlShared += 1;
+        ++m_nAssignedEvtMixCtlShared;
     }
 
     return pAddr;
@@ -554,7 +551,7 @@ stEvtMixCtlUniqueData *NFSMixMap::GetNextEvtMixCtlUnique(bool bincrement) {
 
     pAddr = m_pEvtMixCtlData_U + m_nAssignedEvtMixCtlUnique;
     if (bincrement) {
-        m_nAssignedEvtMixCtlUnique += 1;
+        ++m_nAssignedEvtMixCtlUnique;
     }
 
     return pAddr;
@@ -565,7 +562,7 @@ st3DMixCtlProc *NFSMixMap::GetNext3DMixCtlProc(bool bincrement) {
 
     pAddr = m_p3DMixCtlProc + m_nAssigned3DMixCtlProc;
     if (bincrement) {
-        m_nAssigned3DMixCtlProc += 1;
+        ++m_nAssigned3DMixCtlProc;
     }
 
     return pAddr;
@@ -576,7 +573,7 @@ st3DMixCtlSharedData *NFSMixMap::GetNext3DMixCtlShared(bool bincrement) {
 
     pAddr = m_p3DMixCtlData_S + m_nAssigned3DMixCtlShared;
     if (bincrement) {
-        m_nAssigned3DMixCtlShared += 1;
+        ++m_nAssigned3DMixCtlShared;
     }
 
     return pAddr;
@@ -587,7 +584,7 @@ st3DMixCtlUniqueData *NFSMixMap::GetNext3DMixCtlUnique(bool bincrement) {
 
     pAddr = m_p3DMixCtlData_U + m_nAssigned3DMixCtlUnique;
     if (bincrement) {
-        m_nAssigned3DMixCtlUnique += 1;
+        ++m_nAssigned3DMixCtlUnique;
     }
 
     return pAddr;
@@ -598,7 +595,7 @@ stMasterMixChProc *NFSMixMap::GetNextMasterMixProc(bool bincrement) {
 
     pAddr = m_pMasterChProc + m_nAssignedMasterMixProc;
     if (bincrement) {
-        m_nAssignedMasterMixProc += 1;
+        ++m_nAssignedMasterMixProc;
     }
 
     return pAddr;
@@ -609,7 +606,7 @@ stMasterMixChSharedData *NFSMixMap::GetNextMasterMixShared(bool bincrement) {
 
     pAddr = m_pMasterChData_S + m_nAssignedMasterMixShared;
     if (bincrement) {
-        m_nAssignedMasterMixShared += 1;
+        ++m_nAssignedMasterMixShared;
     }
 
     return pAddr;
@@ -620,7 +617,7 @@ stMasterMixChUniqueData *NFSMixMap::GetNextMasterMixUnique(bool bincrement) {
 
     pAddr = m_pMasterChData_U + m_nAssignedMasterMixUnique;
     if (bincrement) {
-        m_nAssignedMasterMixUnique += 1;
+        ++m_nAssignedMasterMixUnique;
     }
 
     return pAddr;
@@ -631,7 +628,7 @@ stSubMixChProc *NFSMixMap::GetNextSubMixProc(bool bincrement) {
 
     pAddr = m_pSubChProc + m_nAssignedSubMixProc;
     if (bincrement) {
-        m_nAssignedSubMixProc += 1;
+        ++m_nAssignedSubMixProc;
     }
 
     return pAddr;
@@ -642,7 +639,7 @@ stMixChUniqueData *NFSMixMap::GetNextSubMixUnique(bool bincrement) {
 
     pAddr = m_pSubChData_U + m_nAssignedSubMixUnique;
     if (bincrement) {
-        m_nAssignedSubMixUnique += 1;
+        ++m_nAssignedSubMixUnique;
     }
 
     return pAddr;
@@ -653,7 +650,7 @@ stMixChSharedData *NFSMixMap::GetNextSubMixShared(bool bincrement) {
 
     pAddr = m_pSubChData_S + m_nAssignedSubMixShared;
     if (bincrement) {
-        m_nAssignedSubMixShared += 1;
+        ++m_nAssignedSubMixShared;
     }
 
     return pAddr;
@@ -664,7 +661,7 @@ stMixCtlProc *NFSMixMap::GetProcessMixCtlPtr(bool bincrement) {
 
     pAddr = m_pMixCtlProc + m_nAssignedMixCtlProc;
     if (bincrement) {
-        m_nAssignedMixCtlProc += 1;
+        ++m_nAssignedMixCtlProc;
     }
 
     return pAddr;
@@ -1255,7 +1252,7 @@ void NFSMixMap::ProcessMixMap(float dt, eCamStates camstate) {
         q15 = NFSMixShape::GetCurveOutput(static_cast<NFSMixShape::eMIXTABLEID>((pcvdp->nINPUTID >> 24) & 0xF),
                                          *pcvdp->pInputParam, false);
         pcvdp->Q15Output = q15;
-        pcvdp->dBOutput = GetdBFromQ15__11NFSMixShapei(q15);
+        pcvdp->dBOutput = NFSMixShape::GetdBFromQ15(q15);
     }
 
     for (n = 0; n < m_MixCtlsAdded; n++) {
@@ -1267,7 +1264,7 @@ void NFSMixMap::ProcessMixMap(float dt, eCamStates camstate) {
         stMixCtlUniqueData *pudata;
 
         pmxdp = m_pMixCtlProc + n;
-        nout = GetdBFromQ15__11NFSMixShapei(
+        nout = NFSMixShape::GetdBFromQ15(
             0x7FFF - (((0x7FFF - pmxdp->pudata->pstCurveData->Q15Output) * pmxdp->psdata->nRatio) >> 15));
         nout = nout + pmxdp->psdata->nOffset;
         scaleby = 0x7FFF;
@@ -1436,7 +1433,7 @@ void NFSMixMap::MixMasterChannels() {
                             if (out > 0) {
                                 out = 0;
                             }
-                            out = GetQ15FromHundredthsdB__11NFSMixShapei(out);
+                            out = NFSMixShape::GetQ15FromHundredthsdB(out);
                         }
                     } else {
                         if (type == 2) {
@@ -1446,7 +1443,7 @@ void NFSMixMap::MixMasterChannels() {
                             if (out > 0) {
                                 out = 0;
                             }
-                            out = static_cast<int>(GetPitchMultFromCents__11NFSMixShapei(out) * 25000.0f);
+                            out = static_cast<int>(NFSMixShape::GetPitchMultFromCents(out) * 25000.0f);
                         } else if (type == 4) {
                             if (out < -10000) {
                                 out = -10000;
@@ -1454,7 +1451,7 @@ void NFSMixMap::MixMasterChannels() {
                             if (out > 0) {
                                 out = 0;
                             }
-                            out = GetQ15FromHundredthsdB__11NFSMixShapei(out);
+                            out = NFSMixShape::GetQ15FromHundredthsdB(out);
                         } else {
                             if (out < 0) {
                                 out = 0;
@@ -1485,7 +1482,7 @@ void NFSMixMap::MixMasterChannels() {
                             if (out > 0) {
                                 out = 0;
                             }
-                            out = GetQ15FromHundredthsdB__11NFSMixShapei(out);
+                            out = NFSMixShape::GetQ15FromHundredthsdB(out);
                         } else {
                             out = pMChD_U->Output;
                         }
@@ -1505,7 +1502,7 @@ void NFSMixMap::MixMasterChannels() {
                         if (out > 0) {
                             out = 0;
                         }
-                        out = GetQ15FromHundredthsdB__11NFSMixShapei(out);
+                        out = NFSMixShape::GetQ15FromHundredthsdB(out);
                     } else {
                         out = pMChD_U->Output;
                     }

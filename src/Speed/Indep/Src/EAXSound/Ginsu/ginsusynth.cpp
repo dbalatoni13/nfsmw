@@ -34,16 +34,14 @@ struct SNDSAMPLEATTR {
     int userdatasize[4];
 };
 
-extern "C" {
-int SNDPKTPLAY_create(void (*packetreleasecallback)(void *, void *), void *unknown, void *clientdata, void *pmem, int memsize);
-int SNDPKTPLAY_destroy(int packetinstancehandle);
-int SNDPKTPLAY_overhead(int packetcount);
-int SNDPKTPLAY_start(int packetinstancehandle, SNDSAMPLEFORMAT *pssf, SNDSAMPLEATTR *pssa, SNDPLAYOPTS *pspo);
-int SNDPKTPLAY_stop(int packetinstancehandle);
-int SNDPKTPLAY_submit(int packetinstancehandle, SNDPACKET *psp);
-void SND_attrsetdef(SNDSAMPLEATTR *pssa);
-void SNDplaysetdef(SNDPLAYOPTS *pspo);
-}
+extern "C" int SNDPKTPLAY_create(void (*packetreleasecallback)(void *, void *), void *unknown, void *clientdata, void *pmem, int memsize);
+extern "C" int SNDPKTPLAY_destroy(int packetinstancehandle);
+extern "C" int SNDPKTPLAY_overhead(int packetcount);
+extern "C" int SNDPKTPLAY_start(int packetinstancehandle, SNDSAMPLEFORMAT *pssf, SNDSAMPLEATTR *pssa, SNDPLAYOPTS *pspo);
+extern "C" int SNDPKTPLAY_stop(int packetinstancehandle);
+extern "C" int SNDPKTPLAY_submit(int packetinstancehandle, SNDPACKET *psp);
+extern "C" void SND_attrsetdef(SNDSAMPLEATTR *pssa);
+extern "C" void SNDplaysetdef(SNDPLAYOPTS *pspo);
 
 void GinsuSynthesis::PacketReleaseCallback(void *samples, void *clientdata) {
     GinsuSynthesis *object = static_cast<GinsuSynthesis *>(clientdata);

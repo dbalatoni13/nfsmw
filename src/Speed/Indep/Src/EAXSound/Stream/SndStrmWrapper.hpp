@@ -38,26 +38,24 @@ struct SNDREQUESTSTATUS {
     int timebuffered;             // offset 0xC, size 0x4
 };
 
-extern "C" {
-int SNDSTRM_create(SNDPLAYOPTS *pspo, int maxrequests, int maxchunks, void *pmem, int memsize);
-int SNDSTRM_destroy(int sndstreamhandle);
-int SNDSTRM_queuefile(int sndstreamhandle, int holdtime, const char *filename, int offset);
-int SNDSTRM_queuemem(int sndstreamhandle, int holdtime, void *paddr, int offset);
-int SNDSTRM_purge(int sndStrmHandle);
-int SNDSTRM_status(int sndstreamhandle, SNDSTREAMSTATUS *psss);
-int SNDSTRM_requeststatus(int sndrequesthandle, SNDREQUESTSTATUS *psrs);
-int SNDSTRM_modifyhold(int sndrequesthandle, int holdtime);
-int SNDSTRM_overhead(int maxrequests, int maxchunks);
-int SNDSTRM_lowpass(int sndstreamhandle, int lowpasscutoff);
-int SNDSTRM_pitchmult(int sndstreamhandle, int pitchmult);
-int SNDSTRM_setgreedylevel(int sndstreamhandle, int greedylevel);
-int SNDSTRM_setvol(int sndStrmHandle, int sourceChannel, float volume);
-int SNDSTRM_setazimuth(int sndStrmHandle, int sourceChannel, float azimuth);
-int SNDSTRM_autovol(int sndStrmHandle, int time, int targetVol);
-void SNDplaysetdef(SNDPLAYOPTS *pspo);
-void SNDSYS_entercritical();
-void SNDSYS_leavecritical();
-}
+extern "C" int SNDSTRM_create(SNDPLAYOPTS *pspo, int maxrequests, int maxchunks, void *pmem, int memsize);
+extern "C" int SNDSTRM_destroy(int sndstreamhandle);
+extern "C" int SNDSTRM_queuefile(int sndstreamhandle, int holdtime, const char *filename, int offset);
+extern "C" int SNDSTRM_queuemem(int sndstreamhandle, int holdtime, void *paddr, int offset);
+extern "C" int SNDSTRM_purge(int sndStrmHandle);
+extern "C" int SNDSTRM_status(int sndstreamhandle, SNDSTREAMSTATUS *psss);
+extern "C" int SNDSTRM_requeststatus(int sndrequesthandle, SNDREQUESTSTATUS *psrs);
+extern "C" int SNDSTRM_modifyhold(int sndrequesthandle, int holdtime);
+extern "C" int SNDSTRM_overhead(int maxrequests, int maxchunks);
+extern "C" int SNDSTRM_lowpass(int sndstreamhandle, int lowpasscutoff);
+extern "C" int SNDSTRM_pitchmult(int sndstreamhandle, int pitchmult);
+extern "C" int SNDSTRM_setgreedylevel(int sndstreamhandle, int greedylevel);
+extern "C" int SNDSTRM_setvol(int sndStrmHandle, int sourceChannel, float volume);
+extern "C" int SNDSTRM_setazimuth(int sndStrmHandle, int sourceChannel, float azimuth);
+extern "C" int SNDSTRM_autovol(int sndStrmHandle, int time, int targetVol);
+extern "C" void SNDplaysetdef(SNDPLAYOPTS *pspo);
+extern "C" void SNDSYS_entercritical();
+extern "C" void SNDSYS_leavecritical();
 
 char *bStrCpy(char *dst, const char *src);
 unsigned int bGetTicker();

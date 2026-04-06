@@ -1,7 +1,6 @@
 #include "Speed/Indep/Src/EAXSound/dynamic_mixer/NFSMixMapState.hpp"
 #include "Speed/Indep/Src/EAXSound/dynamic_mixer/NFSMixMap.hpp"
 
-extern "C" int GetQ15FromHundredthsdB__11NFSMixShapei(int ndB);
 
 NFSMixMapState::NFSMixMapState() {}
 
@@ -142,7 +141,7 @@ void NFSMixMapState::CreateMixCtls() {
                     scaleInfo = (scaleInfo & 0xFFFF) | 0xFFFF0000;
                 }
 
-                q15ratio = GetQ15FromHundredthsdB__11NFSMixShapei(scaleInfo);
+                q15ratio = NFSMixShape::GetQ15FromHundredthsdB(scaleInfo);
                 pmcp->psdata->nRatio = 0x7FFF - q15ratio;
                 pmcp->pudata->CmpdBOut = 0;
                 pmcp->pudata->ppScaleRatios = pscaleaddr;
