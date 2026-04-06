@@ -14,6 +14,10 @@ extern ClassHandle gFX_SKIDHandle;
 extern InterfaceId FX_SKIDId;
 extern ClassHandle gFX_ScrapeHandle;
 extern InterfaceId FX_ScrapeId;
+extern ClassHandle gFX_CameraHandle;
+extern InterfaceId FX_CameraId;
+extern ClassHandle gFX_UVESHandle;
+extern InterfaceId FX_UVESId;
 } // namespace Csis
 
 struct FX_RadarStruct {
@@ -557,6 +561,265 @@ struct FX_Scrape {
             mpClass->SetMemberData(&mData);
         }
     }
+};
+
+struct FX_UVESStruct {
+    int iD;           // offset 0x0, size 0x4
+    int volume;       // offset 0x4, size 0x4
+    int width;        // offset 0x8, size 0x4
+    int pitch_Offset; // offset 0xC, size 0x4
+    int intensity;    // offset 0x10, size 0x4
+    int stop;         // offset 0x14, size 0x4
+};
+
+class FX_UVES {
+  public:
+    void SetID(int x) {
+        mData.iD = x;
+    }
+
+    int GetID() {
+        return mData.iD;
+    }
+
+    void SetVolume(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0x7FFF) {
+            x = 0x7FFF;
+        }
+        mData.volume = x;
+    }
+
+    int GetVolume() {
+        return mData.volume;
+    }
+
+    void SetWidth(int x) {
+        mData.width = x;
+    }
+
+    int GetWidth() {
+        return mData.width;
+    }
+
+    void SetPitch_Offset(int x) {
+        mData.pitch_Offset = x;
+    }
+
+    int GetPitch_Offset() {
+        return mData.pitch_Offset;
+    }
+
+    void SetIntensity(int x) {
+        mData.intensity = x;
+    }
+
+    int GetIntensity() {
+        return mData.intensity;
+    }
+
+    void SetStop(int x) {
+        mData.stop = x;
+    }
+
+    int GetStop() {
+        return mData.stop;
+    }
+
+    int GetRefCount() {
+        int refCount = 0;
+
+        if (mpClass) {
+            mpClass->GetRefCount(&refCount);
+        }
+
+        return refCount;
+    }
+
+    static void *operator new(unsigned int size) {
+        return Csis::System::Alloc(size);
+    }
+
+    static void operator delete(void *ptr) {
+        Csis::System::Free(ptr);
+    }
+
+    FX_UVES(int iD, int volume, int width, int pitch_Offset, int intensity, int stop) {
+        SetID(iD);
+        SetVolume(volume);
+        SetWidth(width);
+        SetPitch_Offset(pitch_Offset);
+        SetIntensity(intensity);
+        SetStop(stop);
+
+        int result = Csis::Class::CreateInstance(&Csis::gFX_UVESHandle, &mData, &mpClass);
+        if (result < 0) {
+            Csis::gFX_UVESHandle.Set(&Csis::FX_UVESId);
+            Csis::Class::CreateInstance(&Csis::gFX_UVESHandle, &mData, &mpClass);
+        }
+    }
+
+    ~FX_UVES() {
+        if (mpClass) {
+            mpClass->Release();
+        }
+    }
+
+    void CommitMemberData() {
+        if (mpClass) {
+            mpClass->SetMemberData(&mData);
+        }
+    }
+
+  private:
+    Csis::Class *mpClass; // offset 0x0, size 0x4
+    FX_UVESStruct mData;  // offset 0x4, size 0x18
+};
+
+struct FX_CameraStruct {
+    int iD;                // offset 0x0, size 0x4
+    int volume;            // offset 0x4, size 0x4
+    int width;             // offset 0x8, size 0x4
+    int pitch_Offset;      // offset 0xC, size 0x4
+    int cam_beep;          // offset 0x10, size 0x4
+    int cam_beep_Volume;   // offset 0x14, size 0x4
+    int cam_whine;         // offset 0x18, size 0x4
+    int cam_whine_Volume;  // offset 0x1C, size 0x4
+};
+
+class FX_Camera {
+  public:
+    void SetID(int x) {
+        mData.iD = x;
+    }
+
+    int GetID() {
+        return mData.iD;
+    }
+
+    void SetVolume(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0x7FFF) {
+            x = 0x7FFF;
+        }
+        mData.volume = x;
+    }
+
+    int GetVolume() {
+        return mData.volume;
+    }
+
+    void SetWidth(int x) {
+        mData.width = x;
+    }
+
+    int GetWidth() {
+        return mData.width;
+    }
+
+    void SetPitch_Offset(int x) {
+        mData.pitch_Offset = x;
+    }
+
+    int GetPitch_Offset() {
+        return mData.pitch_Offset;
+    }
+
+    void SetCam_beep(int x) {
+        mData.cam_beep = x;
+    }
+
+    int GetCam_beep() {
+        return mData.cam_beep;
+    }
+
+    void SetCam_beep_Volume(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0x7FFF) {
+            x = 0x7FFF;
+        }
+        mData.cam_beep_Volume = x;
+    }
+
+    int GetCam_beep_Volume() {
+        return mData.cam_beep_Volume;
+    }
+
+    void SetCam_whine(int x) {
+        mData.cam_whine = x;
+    }
+
+    int GetCam_whine() {
+        return mData.cam_whine;
+    }
+
+    void SetCam_whine_Volume(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0x7FFF) {
+            x = 0x7FFF;
+        }
+        mData.cam_whine_Volume = x;
+    }
+
+    int GetCam_whine_Volume() {
+        return mData.cam_whine_Volume;
+    }
+
+    int GetRefCount() {
+        int refCount = 0;
+
+        if (mpClass) {
+            mpClass->GetRefCount(&refCount);
+        }
+
+        return refCount;
+    }
+
+    static void *operator new(unsigned int size) {
+        return Csis::System::Alloc(size);
+    }
+
+    static void operator delete(void *ptr) {
+        Csis::System::Free(ptr);
+    }
+
+    FX_Camera(int iD, int volume, int width, int pitch_Offset, int cam_beep, int cam_beep_Volume, int cam_whine,
+              int cam_whine_Volume) {
+        SetID(iD);
+        SetVolume(volume);
+        SetWidth(width);
+        SetPitch_Offset(pitch_Offset);
+        SetCam_beep(cam_beep);
+        SetCam_beep_Volume(cam_beep_Volume);
+        SetCam_whine(cam_whine);
+        SetCam_whine_Volume(cam_whine_Volume);
+
+        int result = Csis::Class::CreateInstance(&Csis::gFX_CameraHandle, &mData, &mpClass);
+        if (result < 0) {
+            Csis::gFX_CameraHandle.Set(&Csis::FX_CameraId);
+            Csis::Class::CreateInstance(&Csis::gFX_CameraHandle, &mData, &mpClass);
+        }
+    }
+
+    ~FX_Camera() {
+        if (mpClass) {
+            mpClass->Release();
+        }
+    }
+
+    void CommitMemberData() {
+        if (mpClass) {
+            mpClass->SetMemberData(&mData);
+        }
+    }
+
+  private:
+    Csis::Class *mpClass;   // offset 0x0, size 0x4
+    FX_CameraStruct mData;  // offset 0x4, size 0x20
 };
 
 

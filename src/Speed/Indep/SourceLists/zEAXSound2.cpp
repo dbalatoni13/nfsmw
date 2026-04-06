@@ -36,6 +36,8 @@
 
 #include "Speed/Indep/Src/EAXSound/EAXCar.cpp"
 
+#include "Speed/Indep/Src/EAXSound/SFX_Common.cpp"
+
 #include "Speed/Indep/Src/EAXSound/SndCamera.cpp"
 
 #include "Speed/Indep/Src/EAXSound/dynamic_mixer/NFSMixShape.cpp"

@@ -70,45 +70,26 @@ int UpgradeIntervals(int phys_cur_upgrade, int phys_num_upgrades, int aud_num_up
     int aud_engine_upgrade;
     int NumEngine;
 
-    base_upgrade = 4 - phys_num_upgrades;
-    if (base_upgrade < 0) {
-        base_upgrade = 0;
-    }
-    if (base_upgrade > 4) {
-        base_upgrade = 4;
-    }
-
-    curupgade_offset = 0;
-    if (phys_cur_upgrade > 0) {
-        curupgade_offset = phys_cur_upgrade;
-    }
-    if (curupgade_offset > 4) {
-        curupgade_offset = 4;
-    }
-
+    base_upgrade = bClamp(4 - phys_num_upgrades, 0, 4);
+    curupgade_offset = bClamp(phys_cur_upgrade, 0, 4);
     aud_engine_upgrade = 0;
 
     if (base_upgrade < 3) {
         if (base_upgrade < 1) {
             NumEngine = base_upgrade + curupgade_offset;
-            if (NumEngine > 2) {
+            if (NumEngine < 3) {
+                if (NumEngine > 0) {
+                    aud_engine_upgrade = 1;
+                }
+            } else {
                 aud_engine_upgrade = 2;
-            } else if (NumEngine > 0) {
-                aud_engine_upgrade = 1;
             }
         } else {
             aud_engine_upgrade = base_upgrade + curupgade_offset > 2;
         }
     }
 
-    curupgade_offset = 0;
-    if (aud_engine_upgrade != 0) {
-        curupgade_offset = aud_engine_upgrade;
-    }
-    if (curupgade_offset <= aud_num_upgrades - 1) {
-        return curupgade_offset;
-    }
-    return aud_num_upgrades - 1;
+    return bClamp(aud_engine_upgrade, 0, aud_num_upgrades - 1);
 }
 
 void EAXCar::Attach(void *pAttachment) {
