@@ -64,6 +64,14 @@ void Change(const RefSpec &refspec) {
     Instance::Change(refspec);
 }
 
+void ChangeWithDefault(Key collectionkey) {
+    Change(FindCollectionWithDefault(ClassKey(), collectionkey));
+}
+
+void ChangeWithDefault(const RefSpec &refspec) {
+    Instance::ChangeWithDefault(refspec);
+}
+
 static Key ClassKey() {
     return 0x55624a85;
 }

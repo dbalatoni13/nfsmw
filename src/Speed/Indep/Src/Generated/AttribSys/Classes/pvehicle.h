@@ -55,6 +55,11 @@ typedef enum Type_car_type {
 namespace Attrib {
 namespace Gen {
 
+struct UpgradeSpecs {
+    RefSpec Item;          // offset 0x0, size 0xC
+    unsigned char Level;   // offset 0xC, size 0x1
+};
+
 struct pvehicle : Instance {
     struct _LayoutStruct {
         UMath::Vector4 TENSOR_SCALE;    // offset 0x0, size 0x10
@@ -125,13 +130,13 @@ struct pvehicle : Instance {
         return Get(0x07a7a3e5).GetLength();
     }
 
-    // const UpgradeSpecs &TurboSND(unsigned int index) const {
-    //     const UpgradeSpecs *resultptr = reinterpret_cast<const UpgradeSpecs *>(GetAttributePointer(0x0e9bfb66, index));
-    //     if (!resultptr) {
-    //         resultptr = reinterpret_cast<const UpgradeSpecs *>(DefaultDataArea(sizeof(UpgradeSpecs)));
-    //     }
-    //     return *resultptr;
-    // }
+    const UpgradeSpecs &TurboSND(unsigned int index) const {
+        const UpgradeSpecs *resultptr = reinterpret_cast<const UpgradeSpecs *>(GetAttributePointer(0x0e9bfb66, index));
+        if (!resultptr) {
+            resultptr = reinterpret_cast<const UpgradeSpecs *>(DefaultDataArea(sizeof(UpgradeSpecs)));
+        }
+        return *resultptr;
+    }
 
     unsigned int Num_TurboSND() const {
         return Get(0x0e9bfb66).GetLength();
@@ -357,13 +362,13 @@ struct pvehicle : Instance {
         return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->TENSOR_SCALE;
     }
 
-    // const UpgradeSpecs &ShiftSND(unsigned int index) const {
-    //     const UpgradeSpecs *resultptr = reinterpret_cast<const UpgradeSpecs *>(GetAttributePointer(0x8ae8bee0, index));
-    //     if (!resultptr) {
-    //         resultptr = reinterpret_cast<const UpgradeSpecs *>(DefaultDataArea(sizeof(UpgradeSpecs)));
-    //     }
-    //     return *resultptr;
-    // }
+    const UpgradeSpecs &ShiftSND(unsigned int index) const {
+        const UpgradeSpecs *resultptr = reinterpret_cast<const UpgradeSpecs *>(GetAttributePointer(0x8ae8bee0, index));
+        if (!resultptr) {
+            resultptr = reinterpret_cast<const UpgradeSpecs *>(DefaultDataArea(sizeof(UpgradeSpecs)));
+        }
+        return *resultptr;
+    }
 
     unsigned int Num_ShiftSND() const {
         return Get(0x8ae8bee0).GetLength();

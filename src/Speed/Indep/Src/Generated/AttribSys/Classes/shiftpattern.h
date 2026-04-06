@@ -78,6 +78,14 @@ struct shiftpattern : Instance {
         Instance::Change(refspec);
     }
 
+    void ChangeWithDefault(Key collectionkey) {
+        Change(FindCollectionWithDefault(ClassKey(), collectionkey));
+    }
+
+    void ChangeWithDefault(const RefSpec &refspec) {
+        Instance::ChangeWithDefault(refspec);
+    }
+
     static Key ClassKey() {
         return 0xdb01b754;
     }

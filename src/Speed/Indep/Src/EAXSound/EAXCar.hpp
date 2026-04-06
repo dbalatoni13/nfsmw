@@ -59,6 +59,7 @@ struct EAXCar : public CSTATE_Base {
     virtual void UpdatePov();
     virtual int UpdateRotation();
 
+    Attrib::Gen::engineaudio &GetEngineAttributes();
     Attrib::Gen::engineaudio &GetAttributes() { return mEngineInfo; }
     Attrib::Gen::shiftpattern &GetShiftInfo() { return mShiftInfo; }
     Attrib::Gen::turbosfx &GetTurboInfo() { return mTurboInfo; }
@@ -78,6 +79,8 @@ struct EAXCar : public CSTATE_Base {
     void SetCurGear(Sound::Gear _CurGear) { CurGear = _CurGear; }
     void SetThrottle(float _fTrottle) { fTrottle = _fTrottle; }
     float GetFinalAudioRPM() { return m_fAudioRPM; }
+    bool IsHoodCameraOn();
+    bool IsBumperCameraOn();
 
     static StateInfo *GetStaticStateInfo(void) {
         return &s_StateInfo;
@@ -99,6 +102,8 @@ struct EAXCar : public CSTATE_Base {
     void *operator new(size_t, void *p) { return p; }
 
     static StateInfo s_StateInfo;
+    static Attrib::Gen::shiftpattern *g_ShiftInfo;
+    static Attrib::Gen::turbosfx *g_TurboInfo;
 
     int m_nHornState;                         // offset 0x44, size 0x4
     Attrib::Gen::engineaudio m_FEEngineAttribs; // offset 0x48, size 0x14
