@@ -31,6 +31,7 @@ extern unsigned int AmbientCrossMap[14];
 extern void InitializeEATrax(bool breset);
 extern int g_MaxSongs;
 extern unsigned int g_ActiveSFXStates;
+extern unsigned int SoundRandomSeed;
 extern stSndDataLoadParams g_SndAssetList[];
 extern SongInfoList Songs;
 extern void SummonChyron(char *title, char *artist, char *album);
@@ -375,6 +376,95 @@ void SFXObj_PFEATrax::MessageInitSongsList(const MControlPathfinder &message) {
         InitializeEATrax(true);
     } else {
         InitializeEATrax(false);
+    }
+}
+
+void SFXObj_PFEATrax::GenNextMusicTrackID() {
+    UserProfile *puser;
+
+    m_EATrax[m_EATraxState].PlayTrackIndex = -1;
+    m_EATrax[m_EATraxState].TraxMask &= 0x0FFFFFFF;
+    if (m_EATraxState != EATRAX_OFF && m_EATrax[m_EATraxState].TraxMask != 0) {
+        puser = FEDatabase->GetUserProfile(0);
+        if (m_EATrax[m_EATraxState].PlayBits == 0 && m_EATrax[m_EATraxState].NumEnabledSongs != 0) {
+            m_EATrax[m_EATraxState].PlayBits = m_EATrax[m_EATraxState].TraxMask & 0x0FFFFFFF;
+            m_EATrax[m_EATraxState].LastPlaylistSong = -1;
+        }
+        if (m_EATrax[m_EATraxState].PBMode == 0) {
+            {
+                int n;
+
+                n = m_EATrax[m_EATraxState].LastPlaylistSong;
+                do {
+                    ++n;
+                    if (g_MaxSongs <= n) {
+                        if (m_EATrax[m_EATraxState].NumEnabledSongs == 0) {
+                            return;
+                        }
+                        m_EATrax[m_EATraxState].PlayBits = m_EATrax[m_EATraxState].TraxMask & 0x0FFFFFFF;
+                        m_EATrax[m_EATraxState].LastPlaylistSong = -1;
+                        GenNextMusicTrackID();
+                        return;
+                    }
+                    {
+                        int nSongindex;
+
+                        nSongindex = puser->Playlist[n].SongIndex;
+                        if ((m_EATrax[m_EATraxState].PlayBits & 1 << (nSongindex & 0x1F)) != 0) {
+                            m_EATrax[m_EATraxState].PlayTrackIndex = nSongindex;
+                            m_EATrax[m_EATraxState].PlayBits ^= 1 << (nSongindex & 0x1F);
+                            if (m_EATrax[m_EATraxState].PlayBits == 0) {
+                                m_EATrax[m_EATraxState].PlayBits = m_EATrax[m_EATraxState].TraxMask & 0x0FFFFFFF;
+                                m_EATrax[m_EATraxState].PlayBits ^= 1 << (n & 0x1F);
+                            }
+                            return;
+                        }
+                    }
+                } while (true);
+            }
+        } else {
+            {
+                int nrandcount;
+                int nSongNumber;
+                int ncount;
+
+                {
+                    int npb;
+
+                    nrandcount = 0;
+                    npb = 0;
+                    while (npb < g_MaxSongs) {
+                        if ((m_EATrax[m_EATraxState].PlayBits & 1 << (npb & 0x1F)) != 0) {
+                            ++nrandcount;
+                        }
+                        ++npb;
+                    }
+                }
+                SoundRandomSeed = bGetTicker();
+                nSongNumber = g_pEAXSound->Random(nrandcount);
+                ncount = 0;
+                {
+                    int n;
+
+                    n = 0;
+                    while (n < g_MaxSongs) {
+                        if ((m_EATrax[m_EATraxState].PlayBits & 1 << (n & 0x1F)) != 0) {
+                            if (nSongNumber == ncount) {
+                                m_EATrax[m_EATraxState].PlayTrackIndex = n;
+                                m_EATrax[m_EATraxState].PlayBits ^= 1 << (n & 0x1F);
+                                if (m_EATrax[m_EATraxState].PlayBits == 0) {
+                                    m_EATrax[m_EATraxState].PlayBits = m_EATrax[m_EATraxState].TraxMask & 0x0FFFFFFF;
+                                    m_EATrax[m_EATraxState].PlayBits ^= 1 << (n & 0x1F);
+                                }
+                                return;
+                            }
+                            ++ncount;
+                        }
+                        ++n;
+                    }
+                }
+            }
+        }
     }
 }
 
