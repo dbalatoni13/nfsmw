@@ -9,6 +9,8 @@ extern ClassHandle gFX_TRUCK_FXHandle;
 extern InterfaceId FX_TRUCK_FXId;
 } // namespace Csis
 
+extern int IsSoundEnabled;
+
 struct FX_TRUCK_FXStruct {
     int id;           // offset 0x0, size 0x4
     int volume;       // offset 0x4, size 0x4
@@ -224,7 +226,9 @@ int SFXObj_TruckFX::GetController(int Index) {
 void SFXObj_TruckFX::AttachController(SFXCTL *psfxctl) {}
 
 void SFXObj_TruckFX::InitSFX() {
-    SndBase::InitSFX();
+    if (IsSoundEnabled != 0 && GetInputBlockPtr()) {
+        GetInputBlockPtr()[15] = 1;
+    }
 }
 
 void SFXObj_TruckFX::Detach() {
