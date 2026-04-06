@@ -1,6 +1,12 @@
 #include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_PFEATrax.hpp"
 
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
+#include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
+#include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
+#include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
+
+extern int PATH_stop(int tracks);
+extern int PURSUIT_TO_LIC_DELAY;
 
 SndBase::TypeInfo SFXObj_Pathfinder::s_TypeInfo = { 0, "SFXObj_Pathfinder", nullptr, SFXObj_Pathfinder::CreateObject };
 SndBase::TypeInfo SFXObj_PFEATrax::s_TypeInfo = { 0, "SFXObj_PFEATrax", nullptr, SFXObj_PFEATrax::CreateObject };
@@ -120,4 +126,90 @@ SFXObj_PFEATrax::~SFXObj_PFEATrax() {
     }
 
     Destroy();
+}
+
+bool SFXObj_PFEATrax::TestToLicensed(bool bstart) {
+    const GRaceParameters *raceparms;
+    float t_playing_ambience;
+
+    if (m_bSkipUpdate || (m_Flags & 0x800)) {
+        return false;
+    }
+
+    if (g_pEAXSound->GetCurMusicVolume() > 0.0f && g_pEAXSound->GetCurAudioSettings()->EATraxMode == 1 &&
+        m_EATrax[m_EATraxState].TraxMask != 0) {
+        if (g_pEAXSound->GetSndGameMode() == SND_FRONTEND) {
+            if (FEDatabase->IsRapSheetMode()) {
+                return false;
+            }
+
+            if (bstart) {
+                PATH_stop(m_PFParms[m_ActiveProject].PATH_TRACK);
+                StartLicensedMusic(0);
+                return true;
+            }
+
+            return true;
+        } else {
+            if (GRaceStatus::Exists()) {
+                raceparms = GRaceStatus::Get().GetRaceParameters();
+                if (raceparms && raceparms->GetIsLoaded() == true) {
+                    if (raceparms->GetIsDDayRace()) {
+                        return false;
+                    }
+
+                    if (GRaceStatus::IsDragRace()) {
+                        return false;
+                    }
+                }
+            }
+
+            if (m_MusicType == eMUSIC_TYPE_AMBIENCE) {
+                if (mT_ambienceStart > Timer(0)) {
+                    t_playing_ambience = (WorldTimer - mT_ambienceStart).GetSeconds();
+                } else {
+                    t_playing_ambience = 0.0f;
+                }
+
+                if (t_playing_ambience <= static_cast<float>(PURSUIT_TO_LIC_DELAY)) {
+                    return false;
+                }
+
+                if (bstart) {
+                    StartLicensedMusic(0);
+                }
+
+                mT_ambienceStart = Timer(0);
+
+                return true;
+            }
+
+            if (bstart) {
+                StartLicensedMusic(0);
+            }
+        }
+
+        return true;
+    }
+
+    if (m_MusicType == eMUSIC_TYPE_INTERACTIVE) {
+        if (g_pEAXSound->GetCurMusicVolume() > 0.0f && g_pEAXSound->GetCurAudioSettings()->InteractiveMusicMode == 0) {
+            PATH_stop(m_PFParms[m_ActiveProject].PATH_TRACK);
+            if (g_pEAXSound->GetCurAudioSettings()->EATraxMode != 0) {
+                m_CurPathEvent = 0;
+                StartLicensedMusic(0);
+                return true;
+            }
+        }
+    } else if (g_pEAXSound->GetSndGameMode() == SND_FRONTEND) {
+        if (FEDatabase->IsRapSheetMode()) {
+            return false;
+        }
+
+        if (g_pEAXSound->GetCurMusicVolume() > 0.0f && g_pEAXSound->GetCurAudioSettings()->EATraxMode == 0) {
+            return false;
+        }
+    }
+
+    return false;
 }

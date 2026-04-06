@@ -291,6 +291,15 @@ class cFrontendDatabase {
         return FEGameMode & 1;
     }
 
+    unsigned int GetGameMode() {
+        return FEGameMode;
+    }
+
+    bool IsRapSheetMode() {
+        unsigned int fegm = GetGameMode();
+        return fegm & 0x200;
+    }
+
     unsigned char iNumPlayers; // offset 0x0, size 0x1
     bool bComingFromBoot;      // offset 0x4, size 0x1
     bool bSavedProfileForMP;   // offset 0x8, size 0x1
