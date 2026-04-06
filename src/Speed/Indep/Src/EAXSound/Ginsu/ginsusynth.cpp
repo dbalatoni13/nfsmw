@@ -1,5 +1,6 @@
 #include "Speed/Indep/Src/EAXSound/Ginsu/ginsu.h"
 #include "Speed/Indep/Src/EAXSound/Ginsu/ginsuhelper.h"
+#include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include "Speed/Indep/Src/EAXSound/Stream/SndStrmWrapper.hpp"
 
 struct SNDSAMPLEFORMAT {
@@ -16,9 +17,32 @@ struct SNDPACKET {
     void *psamples[6];
 };
 
+struct SNDSAMPLEATTR {
+    short detune;
+    signed char priority;
+    signed char vol;
+    signed char pan;
+    signed char fxlevel0;
+    signed char bendrange;
+    unsigned char platformver;
+    unsigned short rendermode;
+    char padchar[2];
+    unsigned short azimuth[6];
+    void *ptsdata[6];
+    int tsdatasize[6];
+    void *puserdata[4];
+    int userdatasize[4];
+};
+
 extern "C" {
+int SNDPKTPLAY_create(void (*packetreleasecallback)(void *, void *), void *unknown, void *clientdata, void *pmem, int memsize);
+int SNDPKTPLAY_destroy(int packetinstancehandle);
 int SNDPKTPLAY_overhead(int packetcount);
+int SNDPKTPLAY_start(int packetinstancehandle, SNDSAMPLEFORMAT *pssf, SNDSAMPLEATTR *pssa, SNDPLAYOPTS *pspo);
+int SNDPKTPLAY_stop(int packetinstancehandle);
 int SNDPKTPLAY_submit(int packetinstancehandle, SNDPACKET *psp);
+void SND_attrsetdef(SNDSAMPLEATTR *pssa);
+void SNDplaysetdef(SNDPLAYOPTS *pspo);
 }
 
 void GinsuSynthesis::PacketReleaseCallback(void *samples, void *clientdata) {
@@ -151,4 +175,136 @@ int GinsuSynthesis::GetMemblockSize() {
     int packetSize = IntCeil(2212.0f);
 
     return overhead + packetSize;
+}
+
+GinsuSynthesis::GinsuSynthesis(void *memblock, int size) {
+    int overhead;
+    char *overheadMem;
+
+    mPacketHandle = -1;
+    mSynthData = 0;
+    mSampleRate = 0;
+
+    overhead = SNDPKTPLAY_overhead(8);
+    mMaxPacketSize = (static_cast<unsigned int>(size - overhead) >> 2) & 0x3FFFFFFE;
+    if (mMaxPacketSize > 0x4F) {
+        mPacketData[0] = static_cast<short *>(memblock);
+        mPacketData[1] = static_cast<short *>(memblock) + mMaxPacketSize;
+        overheadMem = static_cast<char *>(memblock) + mMaxPacketSize * 4;
+        mPacketHandle = SNDPKTPLAY_create(PacketReleaseCallback, 0, this, overheadMem, overhead);
+    }
+}
+
+GinsuSynthesis::~GinsuSynthesis() {
+    StopSynthesis();
+    SNDPKTPLAY_destroy(mPacketHandle);
+}
+
+bool GinsuSynthesis::SetSynthData(GinsuSynthData &data) {
+    int samprate;
+    int nojumpsize;
+    int packetsize;
+    int overlapsize;
+
+    samprate = data.GetSampleRate();
+    if (samprate != 0) {
+        if (mSampleRate > 0 && samprate != mSampleRate) {
+            return false;
+        }
+
+        nojumpsize = IntRound(static_cast<float>(samprate) * 0.011f);
+        packetsize = IntRound(static_cast<float>(samprate) * 0.011f);
+        overlapsize = IntRound(static_cast<float>(samprate) * 0.0005f);
+        if (packetsize + overlapsize <= mMaxPacketSize) {
+            SNDSYS_entercritical();
+            mSynthData = &data;
+            mNoJumpSize = nojumpsize;
+            mPacketSize = packetsize;
+            mOverlapSize = overlapsize;
+            SNDSYS_leavecritical();
+            return true;
+        }
+    }
+
+    return false;
+}
+
+int GinsuSynthesis::StartSynthesis(float startFreq) {
+    SNDSAMPLEFORMAT ssf;
+    SNDSAMPLEATTR ssa;
+    SNDPLAYOPTS spo;
+
+    if (mPacketHandle < 0 || !mSynthData) {
+        return -1;
+    }
+
+    StopSynthesis();
+    mPacketCountdown = 1;
+    mNoJumpRemaining = mNoJumpSize;
+    mPlaybackPos = mSynthData->FrequencyToSample(startFreq);
+    mCurrentPos = mPlaybackPos;
+    mTargetPos = mPlaybackPos;
+    mCurrentCycle = mSynthData->SampleToCycle(mPlaybackPos);
+
+    ssf.samplerate = static_cast<unsigned short>(mSynthData->GetSampleRate());
+    ssf.samplerep = 7;
+    ssf.channels = 1;
+
+    SND_attrsetdef(&ssa);
+    ssa.rendermode = 4;
+    SNDplaysetdef(&spo);
+    spo.vol = 0;
+
+    SNDSYS_entercritical();
+    mSndHandle = SNDPKTPLAY_start(mPacketHandle, &ssf, &ssa, &spo);
+    if (mSndHandle > -1) {
+        bMemSet(mPacketData[0], 0, mPacketSize * 2);
+        bMemSet(mPacketData[1], 0, mPacketSize * 2);
+
+        {
+            SNDPACKET sp;
+
+            sp.numframes = mPacketSize;
+            sp.psamples[0] = mPacketData[0];
+            mSampleRate = mSynthData->GetSampleRate();
+            SNDPKTPLAY_submit(mPacketHandle, &sp);
+            sp.psamples[0] = mPacketData[1];
+            SNDPKTPLAY_submit(mPacketHandle, &sp);
+        }
+    }
+    SNDSYS_leavecritical();
+
+    return mSndHandle;
+}
+
+bool GinsuSynthesis::UpdateFrequency(float targetFreq, float latency) {
+    int sample;
+
+    sample = 0;
+    if (mSynthData) {
+        sample = mSynthData->FrequencyToSample(targetFreq);
+    }
+
+    SNDSYS_entercritical();
+    mTargetPos = sample;
+    mPacketCountdown = IntFloor(latency * 0.09090909f) + 1;
+    SNDSYS_leavecritical();
+    return true;
+}
+
+float GinsuSynthesis::GetCurrentPitch() {
+    if (mSampleRate == 0 || !mSynthData) {
+        return 0.0f;
+    }
+
+    return static_cast<float>(mSampleRate) / mSynthData->CyclePeriod(mCurrentCycle + 0.5f);
+}
+
+void GinsuSynthesis::StopSynthesis() {
+    if (mSampleRate != 0) {
+        SNDSYS_entercritical();
+        SNDPKTPLAY_stop(mPacketHandle);
+        SNDSYS_leavecritical();
+        mSampleRate = 0;
+    }
 }
