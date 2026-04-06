@@ -73,6 +73,7 @@ struct CSTATE_Base : public AudioMemBase {
     bool IsAttached() { return bIsAttached; }
     EAX_CarState *GetPhysCar() { return m_pCar; }
     float GetCurTime() { return t_CurTime; }
+    float GetDeltaTime() { return t_DeltaTime; }
 
     void *operator new(size_t s) {
         return gAudioMemoryManager.AllocateMemory(s, GetStaticStateInfo()->stateName, 0);

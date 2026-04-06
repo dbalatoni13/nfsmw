@@ -421,6 +421,11 @@ struct FX_Scrape {
     }
 
     void SetPitch(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 9000) {
+            x = 9000;
+        }
         mData.pitch = x;
     }
 
@@ -450,6 +455,11 @@ struct FX_Scrape {
     }
 
     void SetImpulse_magnitude(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0x7F) {
+            x = 0x7F;
+        }
         mData.impulse_magnitude = x;
     }
 

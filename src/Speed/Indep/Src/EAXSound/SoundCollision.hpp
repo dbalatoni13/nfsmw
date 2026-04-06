@@ -113,7 +113,9 @@ class CollisionEvent : public AudioEvent {
     bVector3 *GetCurrentContactPoint() { return &CurrentContactPoint; }
     bVector3 *GetCurrentVelocity() { return &CurrentVelocity; }
     bool IsDescribed(unsigned int desc) { return (Description & desc) == desc; }
+    int GetVolume() { return mVolume; }
     int GetIntensity() { return Intensity; }
+    int IsStillActive() { return mActive; }
     unsigned int GetAudioFX() { return mAudioFX; }
     unsigned int GetActor() { return mActor; }
     unsigned int GetActee() { return mActee; }

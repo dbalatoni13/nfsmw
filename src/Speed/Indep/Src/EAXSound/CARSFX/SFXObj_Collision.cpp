@@ -11,6 +11,48 @@
 
 extern bool IsWorldDataStreaming(unsigned int strmhandle);
 
+SndBase::TypeInfo SFXObj_Collision::s_TypeInfo = { 0, "SFXObj_Collision", nullptr, SFXObj_Collision::CreateObject };
+
+SndBase::TypeInfo *SFXObj_Collision::GetTypeInfo() const {
+    return &s_TypeInfo;
+}
+
+const char *SFXObj_Collision::GetTypeName() const {
+    return s_TypeInfo.typeName;
+}
+
+SndBase *SFXObj_Collision::CreateObject(unsigned int allocator) {
+    if (!allocator) {
+        return new (SFXObj_Collision::GetStaticTypeInfo()->typeName, false) SFXObj_Collision();
+    }
+
+    return new (SFXObj_Collision::GetStaticTypeInfo()->typeName, true) SFXObj_Collision();
+}
+
+SFXObj_Collision::SFXObj_Collision()
+    : CARSFX() {
+    vCollisionPos = bVector3(0.0f, 0.0f, 0.0f);
+    vScrapePos = bVector3(0.0f, 0.0f, 0.0f);
+    vVelocity = bVector3(0.0f, 0.0f, 0.0f);
+    VolSlot = eVOL_COLLISION_WORLD_WALL_FRONT;
+    PitchSlot = ePCH_COLLISION_COL_PITCH;
+    ReverbSlot = eVRB_COLLISION_RVRB_COL;
+    FirstUpdate = false;
+    AzimSlot = eAZI_COLLISION_COLLISION_AZI;
+    m_pCollisionStich = nullptr;
+    m_pcsisScrape = nullptr;
+    m_pCollisionEvent = nullptr;
+}
+
+SFXObj_Collision::~SFXObj_Collision() {
+    Destroy();
+}
+
+void SFXObj_Collision::SetupSFX(CSTATE_Base *_StateBase) {
+    SndBase::SetupSFX(_StateBase);
+    m_pCollisionState = static_cast<CSTATE_Collision *>(m_pStateBase);
+}
+
 void SFXObj_Collision::InitSFX() {
     SndBase::InitSFX();
 
@@ -109,4 +151,87 @@ void SFXObj_Collision::InitSFX() {
         m_pCollisionStich = new cStichWrapper(*m_pCollisionEvent->GetImpactStich());
         m_pCollisionStich->Play(0, 0, 0);
     }
+}
+
+void SFXObj_Collision::Detach() {
+    Destroy();
+}
+
+void SFXObj_Collision::ProcessUpdate() {
+    SndBase::ProcessUpdate();
+
+    SND_Params impactParams;
+
+    if (FirstUpdate) {
+        InitialAz = GetDMixOutput(AzimSlot, DMX_AZIM);
+        FirstUpdate = false;
+    }
+
+    if (!m_pCollisionEvent) {
+        impactParams.Vol = GetDMixOutput(VolSlot, DMX_VOL);
+    } else {
+        impactParams.Vol = GetDMixOutput(VolSlot, DMX_VOL) * m_pCollisionEvent->GetVolume() >> 15;
+    }
+
+    impactParams.Pitch = GetDMixOutput(PitchSlot, DMX_PITCH);
+    impactParams.RVerb = GetDMixOutput(ReverbSlot, DMX_VOL);
+    impactParams.Az = InitialAz;
+
+    if (m_pCollisionStich) {
+        m_pCollisionStich->Update(&impactParams);
+    }
+
+    if (m_pcsisScrape) {
+        if (!m_pCollisionEvent->IsStillActive()) {
+            m_fScrapeFade -= m_pStateBase->GetDeltaTime() * 4.0f;
+            if (m_fScrapeFade < 0.0f) {
+                m_pStateBase->Detach();
+                return;
+            }
+        }
+
+        m_pcsisScrape->SetVolume(GetDMixOutput(eVOL_COLLISION_SCRAPE, DMX_VOL));
+        m_pcsisScrape->SetPitch(GetDMixOutput(ePCH_COLLISION_SCRAPE_PITCH, DMX_PITCH));
+        m_pcsisScrape->SetAzimuth(GetDMixOutput(eAZI_COLLISION_SCRAPE_AZI, DMX_AZIM));
+        m_pcsisScrape->SetFilter_Effects_Dry_FX(0x7FFF);
+        m_pcsisScrape->SetFilter_Effects_Wet_FX(GetDMixOutput(eVRB_COLLISION_RVRB_SCRP, DMX_VOL));
+        m_pcsisScrape->SetFilter_Effects_LoPass(25000);
+        m_pcsisScrape->SetImpulse_magnitude(m_pCollisionEvent->GetIntensity());
+        m_pcsisScrape->CommitMemberData();
+    }
+}
+
+int SFXObj_Collision::GetController(int Index) {
+    if (Index == 0) {
+        return 0;
+    }
+    if (Index != 1) {
+        return -1;
+    }
+    return 1;
+}
+
+void SFXObj_Collision::AttachController(SFXCTL *psfxctl) {
+    switch (psfxctl->GetObjectIndex()) {
+    case 0:
+        m_p3DColPos = static_cast<SFXCTL_3DObjPos *>(psfxctl);
+        break;
+    case 1:
+        m_p3DScrapePos = static_cast<SFXCTL_3DObjPos *>(psfxctl);
+        break;
+    }
+}
+
+void SFXObj_Collision::Destroy() {
+    if (m_pCollisionStich) {
+        delete m_pCollisionStich;
+        m_pCollisionStich = nullptr;
+    }
+
+    if (m_pcsisScrape) {
+        delete m_pcsisScrape;
+        m_pcsisScrape = nullptr;
+    }
+
+    m_pCollisionEvent = nullptr;
 }
