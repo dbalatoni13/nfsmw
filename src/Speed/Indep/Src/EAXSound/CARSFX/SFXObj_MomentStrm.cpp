@@ -4,6 +4,7 @@
 #include "Speed/Indep/Src/Generated/Messages/MGamePlayMoment.h"
 #include "Speed/Indep/Src/Generated/Messages/MPursuitBreaker.h"
 #include "Speed/Indep/Src/Misc/Config.h"
+#include "Speed/Indep/Src/EAXSound/Stream/SpeechManager.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
 SFXObj_MomentStrm::TypeInfo SFXObj_MomentStrm::s_TypeInfo = {0x60, "SFXObj_MomentStrm", nullptr, SFXObj_MomentStrm::CreateObject};
@@ -80,6 +81,24 @@ void SFXObj_MomentStrm::Destroy() {}
 
 void SFXObj_MomentStrm::ProcessUpdate() {
     SetDMIX_Input(5, 0);
+}
+
+void SFXObj_MomentStrm::CBPlayMomentStream() {
+    if (bHoldStream == 0) {
+        bool bresult;
+
+        if (g_MomentStream) {
+            Attrib::Gen::aud_moment_strm momentstrm(g_MomentStream->m_CurMoment, 0, nullptr);
+
+            if (momentstrm.GetParent() == 0x5A3E90B0) {
+                g_MomentStream->SetDMIX_Input(5, 0x7FFF);
+            }
+        }
+
+        bresult = Speech::Manager::GetSpeechModule(0)->PlayStream(2);
+        Speech::Manager::GetSpeechModule(0)->UnPause();
+        m_TimeBeforeRetrigger = 2.0f;
+    }
 }
 
 void SFXObj_MomentStrm::ReceiveMoment(const MGamePlayMoment &message) {

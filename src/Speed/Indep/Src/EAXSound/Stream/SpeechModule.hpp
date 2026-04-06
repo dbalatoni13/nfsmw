@@ -88,6 +88,8 @@ class Module : public AudioMemBase {
     virtual void ReleaseResource();
     EAXS_StreamChannel *GetStreamChannel() { return m_strm; }
     void PurgeSpeech();
+    void Pause();
+    void UnPause();
 
   protected:
     bool m_enable;                        // offset 0x4, size 0x1
