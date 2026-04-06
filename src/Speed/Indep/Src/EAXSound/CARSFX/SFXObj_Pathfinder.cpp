@@ -17,6 +17,8 @@ struct SongInfoList : public std::vector<Sound::stSongInfo *> {};
 
 extern int PATH_stop(int tracks);
 extern int PATH_pause(int tracks, unsigned char pause);
+extern int PATH_event(int tracks, unsigned int event);
+extern int PATH_volume(int tracks, signed char volume);
 extern int PATH_control(int tracks, unsigned int controller);
 extern void PATH_clearallevents(int mask);
 extern int PURSUIT_TO_LIC_DELAY;
@@ -267,6 +269,36 @@ eEATRAXSTATES SFXObj_PFEATrax::GenEATraxState() {
     return EATRAX_IG;
 }
 
+void SFXObj_PFEATrax::SendPathEvent() {
+    if (m_EATraxState != EATRAX_UNINIT && (m_Flags & 4) != 0) {
+        if (m_CurPathEvent != m_PrevPathEvent && (m_Flags & 0x800) == 0) {
+            {
+                int status;
+
+                m_bPathFAILED = false;
+                m_PrevPathEvent = m_CurPathEvent;
+                status = PATH_event(m_PFParms[m_ActiveProject].PATH_TRACK, m_CurPathEvent);
+                if (status != 0) {
+                    m_bPathFAILED = true;
+                    m_PrevPathEvent = 0;
+                } else {
+                    PATH_volume(m_PFParms[m_ActiveProject].PATH_TRACK, '\0');
+                    if (m_pSFXCTL_Pathfinder) {
+                        SNDSYS_entercritical();
+                        SNDSTRM_lowpass(m_pSFXCTL_Pathfinder->GetHandle(m_ActiveProject), GetDMixOutput(9, DMX_FREQ));
+                        SNDSYS_leavecritical();
+                    }
+                    m_PFParms[m_ActiveProject].queue_next = 0;
+                    if (m_CurPathEvent == 0x01C53FC7) {
+                        m_PrevMusicType = m_MusicType;
+                        m_MusicType = eMUSIC_TYPE_SPLASH;
+                    }
+                }
+            }
+        }
+    }
+}
+
 void SFXObj_PFEATrax::MessagePartUpdate(const MControlPathfinder &message) {
     m_CurPart = message.GetPartID();
     m_bClearSkipUpdate = true;
@@ -287,6 +319,37 @@ void SFXObj_PFEATrax::MessagePerpBusted(const MPerpBusted &message) {}
 
 void SFXObj_PFEATrax::MessageInteractiveDone(const MControlPathfinder &message) {
     mT_ambienceStart = WorldTimer;
+}
+
+void SFXObj_PFEATrax::MessageStartPathfinder(const MControlPathfinder &message) {
+    unsigned int event;
+
+    if (m_EATraxState == EATRAX_OFF) {
+        Stop();
+    } else if (IsAudioStreamingEnabled != 0 &&
+               ((event = message.GetPathEvent()), m_MusicType != eMUSIC_TYPE_SPLASH || event != static_cast<unsigned int>(-1))) {
+        if (event == 0) {
+            m_MusicType = GenMusicType();
+        } else if (event == static_cast<unsigned int>(-1)) {
+            if (0.0f < g_pEAXSound->GetCurMusicVolume() && (m_Flags & 0x800) == 0 &&
+                g_pEAXSound->GetCurAudioSettings()->EATraxMode != 0 && m_EATrax[m_EATraxState].TraxMask != 0 &&
+                m_MusicType == eMUSIC_TYPE_LICENCED && !m_bSkipUpdate) {
+                PATH_clearallevents(0x0F000000);
+                PATH_stop(m_PFParms[m_ActiveProject].PATH_TRACK);
+            }
+        } else {
+            if (m_EATrax[0].TraxMask == 0) {
+                m_EATrax[0].TraxMask = 0x80000000;
+            }
+            PATH_clearallevents(0x0F000000);
+            m_MusicType = GenMusicType();
+            m_CurPathEvent = event;
+            m_PrevPathEvent = event;
+            StartLicensedMusic(event);
+            m_bSkipUpdate = true;
+            m_bClearSkipUpdate = false;
+        }
+    }
 }
 
 void SFXObj_PFEATrax::MessageSwapInteractive(const MControlPathfinder &message) {
@@ -551,5 +614,41 @@ void SFXObj_PFEATrax::NotifyChyron() {
         currSong = Songs[m_EATrax[m_EATraxState].PlayTrackIndex];
         SummonChyron(currSong->SongName, currSong->Artist, currSong->Album);
         m_Flags |= 0x40;
+    }
+}
+
+void SFXObj_PFEATrax::MessageSendPathEvent(const MControlPathfinder &message) {
+    unsigned int curr_event;
+    int ntmp;
+
+    if (IsAudioStreamingEnabled != 0) {
+        curr_event = m_CurPathEvent;
+        ntmp = static_cast<int>(message.GetPathEvent());
+        if (m_MusicType == eMUSIC_TYPE_LICENCED || m_MusicType == eMUSIC_TYPE_AMBIENCE || m_MusicType == eMUSIC_TYPE_SPLASH) {
+            if (ntmp == 9) {
+                m_CurPathEvent = 0x01C3FA91;
+            } else if (ntmp == 0x10) {
+                m_CurPathEvent = 0x01C53FC7;
+            } else if (ntmp > 9) {
+                return;
+            }
+        } else {
+            m_CurPathEvent = PFXMAP[m_InteractiveProj][ntmp][0];
+        }
+        if (m_CurPathEvent != curr_event) {
+            m_PrevPathEvent = curr_event;
+            m_PFParms[m_ActiveProject].queue_next = 1;
+            if (m_MusicType == eMUSIC_TYPE_AMBIENCE) {
+                PATH_pause(m_PFParms[m_ActiveProject].PATH_TRACK, '\0');
+            }
+            SendPathEvent();
+            {
+                int nproj;
+
+                if (static_cast<unsigned int>(ntmp) - 0x13 < 2) {
+                    SwapInteractiveProjects();
+                }
+            }
+        }
     }
 }
