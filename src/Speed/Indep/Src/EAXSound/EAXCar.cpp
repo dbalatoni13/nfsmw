@@ -54,6 +54,7 @@ EAXCar::EAXCar()
 }
 
 EAXCar::~EAXCar() {
+    CSTATE_Base::Destroy();
 }
 
 Attrib::Gen::engineaudio &EAXCar::GetEngineAttributes() {
@@ -69,26 +70,45 @@ int UpgradeIntervals(int phys_cur_upgrade, int phys_num_upgrades, int aud_num_up
     int aud_engine_upgrade;
     int NumEngine;
 
-    base_upgrade = bClamp(4 - phys_num_upgrades, 0, 4);
-    curupgade_offset = bClamp(phys_cur_upgrade, 0, 4);
+    base_upgrade = 4 - phys_num_upgrades;
+    if (base_upgrade < 0) {
+        base_upgrade = 0;
+    }
+    if (base_upgrade > 4) {
+        base_upgrade = 4;
+    }
+
+    curupgade_offset = 0;
+    if (phys_cur_upgrade > 0) {
+        curupgade_offset = phys_cur_upgrade;
+    }
+    if (curupgade_offset > 4) {
+        curupgade_offset = 4;
+    }
+
     aud_engine_upgrade = 0;
 
     if (base_upgrade < 3) {
         if (base_upgrade < 1) {
             NumEngine = base_upgrade + curupgade_offset;
-            if (NumEngine < 3) {
-                if (NumEngine > 0) {
-                    aud_engine_upgrade = 1;
-                }
-            } else {
+            if (NumEngine > 2) {
                 aud_engine_upgrade = 2;
+            } else if (NumEngine > 0) {
+                aud_engine_upgrade = 1;
             }
         } else {
             aud_engine_upgrade = base_upgrade + curupgade_offset > 2;
         }
     }
 
-    return bClamp(aud_engine_upgrade, 0, aud_num_upgrades - 1);
+    curupgade_offset = 0;
+    if (aud_engine_upgrade != 0) {
+        curupgade_offset = aud_engine_upgrade;
+    }
+    if (curupgade_offset <= aud_num_upgrades - 1) {
+        return curupgade_offset;
+    }
+    return aud_num_upgrades - 1;
 }
 
 void EAXCar::Attach(void *pAttachment) {
@@ -105,7 +125,7 @@ void EAXCar::Attach(void *pAttachment) {
         m_EngineType = eGINSU_ENG_AEMS;
     }
 
-    mEngineInfo.ChangeWithDefault(pCar->GetEngineInfo()->GetCollection());
+    mEngineInfo.ChangeWithDefault(m_pCar->GetEngineInfo()->GetCollection());
     if (mEngineInfo.IsValid()) {
         mAccelInfo.ChangeWithDefault(mEngineInfo.acceltrans());
     }
@@ -114,23 +134,21 @@ void EAXCar::Attach(void *pAttachment) {
         int cur_upgrade;
         int aud_shift_upgrade;
 
-        cur_upgrade = pCar->GetAttributes()->transmission_current();
-        aud_shift_upgrade = cur_upgrade + 4 - pCar->GetAttributes()->transmission_upgrades();
+        cur_upgrade = m_pCar->GetAttributes()->transmission_current() + 4 -
+                      m_pCar->GetAttributes()->transmission_upgrades();
+        aud_shift_upgrade = 0;
 
         {
             int n;
 
-            for (n = 0; n < static_cast<int>(pCar->GetAttributes()->Num_ShiftSND()); n++) {
-                if (aud_shift_upgrade < pCar->GetAttributes()->ShiftSND(n).Level) {
+            for (n = 0; n < static_cast<int>(m_pCar->GetAttributes()->Num_ShiftSND()); n++) {
+                if (m_pCar->GetAttributes()->ShiftSND(n).Level > cur_upgrade) {
                     break;
                 }
+                aud_shift_upgrade = n;
             }
 
-            if (n != 0) {
-                n--;
-            }
-
-            mShiftInfo.ChangeWithDefault(pCar->GetAttributes()->ShiftSND(n).Item);
+            mShiftInfo.ChangeWithDefault(m_pCar->GetAttributes()->ShiftSND(aud_shift_upgrade).Item);
         }
     }
 
@@ -142,23 +160,21 @@ void EAXCar::Attach(void *pAttachment) {
         int cur_upgrade;
         int aud_turbo_upgrade;
 
-        cur_upgrade = pCar->GetAttributes()->induction_current();
-        aud_turbo_upgrade = cur_upgrade + 4 - pCar->GetAttributes()->induction_upgrades();
+        cur_upgrade = m_pCar->GetAttributes()->induction_current() + 4 -
+                      m_pCar->GetAttributes()->induction_upgrades();
+        aud_turbo_upgrade = 0;
 
         {
             int n;
 
-            for (n = 0; n < static_cast<int>(pCar->GetAttributes()->Num_TurboSND()); n++) {
-                if (aud_turbo_upgrade < pCar->GetAttributes()->TurboSND(n).Level) {
+            for (n = 0; n < static_cast<int>(m_pCar->GetAttributes()->Num_TurboSND()); n++) {
+                if (m_pCar->GetAttributes()->TurboSND(n).Level > cur_upgrade) {
                     break;
                 }
+                aud_turbo_upgrade = n;
             }
 
-            if (n != 0) {
-                n--;
-            }
-
-            mTurboInfo.ChangeWithDefault(pCar->GetAttributes()->TurboSND(n).Item);
+            mTurboInfo.ChangeWithDefault(m_pCar->GetAttributes()->TurboSND(aud_turbo_upgrade).Item);
         }
 
         if (!g_TurboInfo) {
@@ -180,10 +196,16 @@ unsigned int GenerateUpgradedEngine(EAX_CarState *pCar, int playerUpgrade) {
     phys_num_upgrades = curpvehicle.engine_upgrades();
     curupgade_offset = curpvehicle.engine_current();
 
-    if (pCar->GetContext() == Sound::CONTEXT_ONLINE) {
+    if (pCar->GetContext() == Sound::CONTEXT_AIRACER) {
         int base_upgrade;
 
-        base_upgrade = bClamp(4 - phys_num_upgrades, 0, 4);
+        base_upgrade = 4 - phys_num_upgrades;
+        if (base_upgrade < 0) {
+            base_upgrade = 0;
+        }
+        if (base_upgrade > 4) {
+            base_upgrade = 4;
+        }
         curupgade_offset = playerUpgrade - base_upgrade;
         if (curupgade_offset < 0) {
             curupgade_offset = 0;
@@ -224,18 +246,34 @@ float EAXCar::GetVelocityMagnitudeMPH() {
 }
 
 bool EAXCar::IsHoodCameraOn() {
-    return m_IsDriveCamera != 0 && m_PovType == 1;
+    if (m_IsDriveCamera != 0) {
+        if (m_PovType == 1) {
+            return true;
+        }
+    }
+    return false;
 }
 
 bool EAXCar::IsBumperCameraOn() {
-    return m_IsDriveCamera != 0 && m_PovType == 0;
+    if (m_IsDriveCamera != 0) {
+        if (m_PovType == 0) {
+            return true;
+        }
+    }
+    return false;
 }
 
 void EAXCar::UpdatePov() {
     m_IsDriveCamera = 0;
 }
 
-int EAXCar::SFXMessage(eSFXMessageType, unsigned int, unsigned int) {
+int EAXCar::SFXMessage(eSFXMessageType SFXMessageType, unsigned int, unsigned int) {
+    switch (SFXMessageType) {
+    case SFX_CHANGEGEAR:
+        return 0;
+    default:
+        break;
+    }
     return 0;
 }
 
