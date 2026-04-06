@@ -8,6 +8,8 @@
 
 #include "Speed/Indep/Src/EAXSound/States/STATE_Base.cpp"
 
+#include "Speed/Indep/Src/EAXSound/States/STATE_DriveBy.cpp"
+
 #include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_NISStream.cpp"
 
 #include "Speed/Indep/Src/EAXSound/CARSFX/CARSFX_BottomOut.cpp"

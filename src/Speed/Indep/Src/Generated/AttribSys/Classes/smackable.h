@@ -43,6 +43,10 @@ struct smackable : Instance {
         SetDefaultLayout(sizeof(_LayoutStruct));
     }
 
+    smackable(const Instance &src) : Instance(src) {
+        SetDefaultLayout(sizeof(_LayoutStruct));
+    }
+
     smackable(const smackable &src) : Instance(src) {
         SetDefaultLayout(sizeof(_LayoutStruct));
     }
@@ -318,7 +322,7 @@ struct smackable : Instance {
     }
 
     const bool &IsWooshable() const {
-        return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->IsWooshable;
+        return *reinterpret_cast<const bool *>(reinterpret_cast<const char *>(GetLayoutPointer()) + 0x20);
     }
 };
 
