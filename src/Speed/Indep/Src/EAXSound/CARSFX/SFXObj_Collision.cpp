@@ -7,6 +7,7 @@
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Collision.hpp"
 #include "Speed/Indep/Src/EAXSound/snd_gen/MAIN_AEMS.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/audioimpact.h"
+#include "Speed/Indep/Src/Generated/Messages/MAudioReflection.h"
 #include "Speed/Indep/Src/Generated/Events/EMomentStrm.hpp"
 
 extern bool IsWorldDataStreaming(unsigned int strmhandle);
@@ -157,6 +158,43 @@ void SFXObj_Collision::Detach() {
     Destroy();
 }
 
+void SFXObj_Collision::UpdateParams(float t) {
+    SndBase::UpdateParams(t);
+
+    SetDMIX_Input(0, 0);
+    SetDMIX_Input(1, 0);
+    SetDMIX_Input(2, 0);
+
+    if (m_pCollisionState->IsAttached()) {
+        if (m_pCollisionStich) {
+            if (!m_pCollisionStich->IsPlaying()) {
+                m_pCollisionState->Detach();
+                return;
+            }
+        }
+
+        if (FirstUpdate && !m_pcsisScrape) {
+            if (m_pCollisionEvent->IsDescribed(8)) {
+                SetDMIX_Input(0, 0x7FFF);
+            } else if (m_pCollisionEvent->IsDescribed(2)) {
+                SetDMIX_Input(2, 0x7FFF);
+            } else if (m_pCollisionEvent->IsDescribed(0x10)) {
+                SetDMIX_Input(1, 0x7FFF);
+                MAudioReflection(m_pCollisionEvent->GetParameters().object, 0.0f, false).Send(UCrc32("FRONT_BARRIER_HIT"));
+            }
+
+            SetDMIX_Input(4, m_pCollisionEvent->GetIntensity() * 0xFF);
+        }
+
+        if (m_pCollisionEvent->IsDescribed(1) && m_pCollisionEvent->IsDescribed(0x10) &&
+            m_pCollisionEvent->IsDescribed(4) && m_pcsisScrape) {
+            MAudioReflection(m_pCollisionEvent->GetParameters().object, 0.0f, false).Send(UCrc32("FRONT_BARRIER_HIT"));
+        }
+
+        vScrapePos = *m_pCollisionEvent->GetCurrentContactPoint();
+    }
+}
+
 void SFXObj_Collision::ProcessUpdate() {
     SndBase::ProcessUpdate();
 
@@ -167,10 +205,10 @@ void SFXObj_Collision::ProcessUpdate() {
         FirstUpdate = false;
     }
 
-    if (!m_pCollisionEvent) {
-        impactParams.Vol = GetDMixOutput(VolSlot, DMX_VOL);
-    } else {
+    if (m_pCollisionEvent) {
         impactParams.Vol = GetDMixOutput(VolSlot, DMX_VOL) * m_pCollisionEvent->GetVolume() >> 15;
+    } else {
+        impactParams.Vol = GetDMixOutput(VolSlot, DMX_VOL);
     }
 
     impactParams.Pitch = GetDMixOutput(PitchSlot, DMX_PITCH);
@@ -205,10 +243,10 @@ int SFXObj_Collision::GetController(int Index) {
     if (Index == 0) {
         return 0;
     }
-    if (Index != 1) {
-        return -1;
+    if (Index == 1) {
+        return 1;
     }
-    return 1;
+    return -1;
 }
 
 void SFXObj_Collision::AttachController(SFXCTL *psfxctl) {
