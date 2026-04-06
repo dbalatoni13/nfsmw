@@ -96,40 +96,6 @@ unsigned int GetCollisionDescription(const Attrib::StringKey &hash) {
     }
 }
 
-class CollisionEvent : public AudioEvent {
-  public:
-    Timer CollisionTime;               // offset 0x64, size 0x4
-    bVector3 InitialContactPoint;      // offset 0x68, size 0x10
-    bVector3 CurrentContactPoint;      // offset 0x78, size 0x10
-    bVector3 CurrentVelocity;          // offset 0x88, size 0x10
-    bVector3 ImpulseNormal;            // offset 0x98, size 0x10
-    int mVolume;                       // offset 0xA8, size 0x4
-    int Intensity;                     // offset 0xAC, size 0x4
-    SND_Stich *ImpactStich;            // offset 0xB0, size 0x4
-    WorldConn::Reference mTarget;      // offset 0xB4, size 0x10
-    unsigned int Description;          // offset 0xC4, size 0x4
-    CSTATE_Base *Owner;                // offset 0xC8, size 0x4
-    int mRefCount;                     // offset 0xCC, size 0x4
-    const char *mCSISEffect;           // offset 0xD0, size 0x4
-    bool mActive;                      // offset 0xD4, size 0x1
-    unsigned int mAudioFX;             // offset 0xD8, size 0x4
-    unsigned int mActor;               // offset 0xDC, size 0x4
-    unsigned int mActee;               // offset 0xE0, size 0x4
-
-    CollisionEvent(const AudioEventParams &params, bool isScrape);
-    virtual ~CollisionEvent();
-    void SetOwner(CSTATE_Base *owner);
-    virtual void Pause(bool pause);
-    static AudioEvent *PlayScrape(const AudioEventParams &params);
-    static AudioEvent *Play(const AudioEventParams &params);
-    virtual void Update(const bVector3 &position, const bVector3 &normal, const bVector3 &velocity, float dt);
-    void InitAsScrape(const Attrib::Gen::audioscrape &);
-    void InitAsImpact(const Attrib::Gen::audioimpact &);
-    virtual void Release();
-    const char *GetCSISEffect() const { return mCSISEffect; }
-    SND_Stich *GetImpactStich() const { return ImpactStich; }
-};
-
 CollisionEvent::CollisionEvent(const AudioEventParams &aep, bool impact)
     : AudioEvent(aep) //
     , CollisionTime(WorldTimer.GetPackedTime()) //

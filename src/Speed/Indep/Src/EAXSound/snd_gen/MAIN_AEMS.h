@@ -12,6 +12,8 @@ extern ClassHandle gFX_RadarHandle;
 extern InterfaceId FX_RadarId;
 extern ClassHandle gFX_SKIDHandle;
 extern InterfaceId FX_SKIDId;
+extern ClassHandle gFX_ScrapeHandle;
+extern InterfaceId FX_ScrapeId;
 } // namespace Csis
 
 struct FX_RadarStruct {
@@ -377,6 +379,164 @@ struct FX_SKID {
     }
 
     ~FX_SKID() {
+        if (mpClass) {
+            mpClass->Release();
+        }
+    }
+
+    void CommitMemberData() {
+        if (mpClass) {
+            mpClass->SetMemberData(&mData);
+        }
+    }
+};
+
+struct FX_ScrapeStruct {
+    int volume;                // offset 0x0, size 0x4
+    int pitch;                 // offset 0x4, size 0x4
+    int azimuth;               // offset 0x8, size 0x4
+    int terrain_type;          // offset 0xC, size 0x4
+    int impulse_magnitude;     // offset 0x10, size 0x4
+    int filter_Effects_LoPass; // offset 0x14, size 0x4
+    int filter_Effects_HiPass; // offset 0x18, size 0x4
+    int filter_Effects_Dry_FX; // offset 0x1C, size 0x4
+    int filter_Effects_Wet_FX; // offset 0x20, size 0x4
+};
+
+struct FX_Scrape {
+    Csis::Class *mpClass; // offset 0x0, size 0x4
+    FX_ScrapeStruct mData; // offset 0x4, size 0x24
+
+    void SetVolume(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0x7FFF) {
+            x = 0x7FFF;
+        }
+        mData.volume = x;
+    }
+
+    int GetVolume() {
+        return mData.volume;
+    }
+
+    void SetPitch(int x) {
+        mData.pitch = x;
+    }
+
+    int GetPitch() {
+        return mData.pitch;
+    }
+
+    void SetAzimuth(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0xFFFF) {
+            x = 0xFFFF;
+        }
+        mData.azimuth = x;
+    }
+
+    int GetAzimuth() {
+        return mData.azimuth;
+    }
+
+    void SetTerrain_type(int x) {
+        mData.terrain_type = x;
+    }
+
+    int GetTerrain_type() {
+        return mData.terrain_type;
+    }
+
+    void SetImpulse_magnitude(int x) {
+        mData.impulse_magnitude = x;
+    }
+
+    int GetImpulse_magnitude() {
+        return mData.impulse_magnitude;
+    }
+
+    void SetFilter_Effects_LoPass(int x) {
+        mData.filter_Effects_LoPass = x;
+    }
+
+    int GetFilter_Effects_LoPass() {
+        return mData.filter_Effects_LoPass;
+    }
+
+    void SetFilter_Effects_HiPass(int x) {
+        mData.filter_Effects_HiPass = x;
+    }
+
+    int GetFilter_Effects_HiPass() {
+        return mData.filter_Effects_HiPass;
+    }
+
+    void SetFilter_Effects_Dry_FX(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0x7FFF) {
+            x = 0x7FFF;
+        }
+        mData.filter_Effects_Dry_FX = x;
+    }
+
+    int GetFilter_Effects_Dry_FX() {
+        return mData.filter_Effects_Dry_FX;
+    }
+
+    void SetFilter_Effects_Wet_FX(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0x7FFF) {
+            x = 0x7FFF;
+        }
+        mData.filter_Effects_Wet_FX = x;
+    }
+
+    int GetFilter_Effects_Wet_FX() {
+        return mData.filter_Effects_Wet_FX;
+    }
+
+    int GetRefCount() {
+        int refCount = 0;
+
+        if (mpClass) {
+            mpClass->GetRefCount(&refCount);
+        }
+
+        return refCount;
+    }
+
+    static void *operator new(unsigned int size) {
+        return Csis::System::Alloc(size);
+    }
+
+    static void operator delete(void *ptr) {
+        Csis::System::Free(ptr);
+    }
+
+    FX_Scrape(int volume, int pitch, int azimuth, int terrain_type, int impulse_magnitude, int filter_Effects_LoPass,
+              int filter_Effects_HiPass, int filter_Effects_Dry_FX, int filter_Effects_Wet_FX) {
+        SetVolume(volume);
+        SetPitch(pitch);
+        SetAzimuth(azimuth);
+        SetTerrain_type(terrain_type);
+        SetImpulse_magnitude(impulse_magnitude);
+        SetFilter_Effects_LoPass(filter_Effects_LoPass);
+        SetFilter_Effects_HiPass(filter_Effects_HiPass);
+        SetFilter_Effects_Dry_FX(filter_Effects_Dry_FX);
+        SetFilter_Effects_Wet_FX(filter_Effects_Wet_FX);
+
+        int result = Csis::Class::CreateInstance(&Csis::gFX_ScrapeHandle, &mData, &mpClass);
+        if (result < 0) {
+            Csis::gFX_ScrapeHandle.Set(&Csis::FX_ScrapeId);
+            Csis::Class::CreateInstance(&Csis::gFX_ScrapeHandle, &mData, &mpClass);
+        }
+    }
+
+    ~FX_Scrape() {
         if (mpClass) {
             mpClass->Release();
         }
