@@ -57,8 +57,11 @@ struct SndBase : public AudioMemBase {
         InitSFX();
     }
     virtual void InitSFX() {
-        if (m_pInputBlock)
-            m_pInputBlock[15] = 1;
+        if (m_pInputBlock) {
+            int *pctl = m_pInputBlock;
+
+            pctl[15] = 1;
+        }
     }
     virtual void Destroy() {}
     virtual void UpdateParams(float t) {}

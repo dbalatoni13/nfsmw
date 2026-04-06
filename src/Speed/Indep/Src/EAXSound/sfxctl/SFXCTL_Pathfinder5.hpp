@@ -115,7 +115,12 @@ struct SFXCTL_Pathfinder : public SFXCTL {
   protected:
     static TypeInfo s_TypeInfo;
     static TypeInfo *GetStaticTypeInfo() { return &s_TypeInfo; }
+
+  public:
     static stPFParms *m_pPFParms[4];
+    static void SetCurInteractive(int nproj) { m_curinteractive = nproj; }
+
+  private:
     static int m_curinteractive;
 
   public:
