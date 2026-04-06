@@ -33,35 +33,49 @@ SndBase *CARSFX_RoadNoise::CreateObject(unsigned int allocator) {
 }
 
 CARSFX_RoadNoise::CARSFX_RoadNoise() {
+    for (int n = 0; n < 2; n++) {
+        m_pWetRoad[n] = nullptr;
+        m_pRoadNoiseControl[n] = nullptr;
+        m_pStitchLoopControl[n] = nullptr;
+        m_pTransition[n] = nullptr;
+        m_pStitchTransition[n] = nullptr;
+        LoopID[n] = FXROADNOISE_LOOP_NONE;
+    }
     m_pWheelCtl = nullptr;
-    m_pLeftWheelPos = nullptr;
-    m_pRightWheelPos = nullptr;
-    m_eDriverType = DRIVER_TYPE_NONE;
-    m_pWetRoad[0] = nullptr;
-    m_pWetRoad[1] = nullptr;
-    m_pRoadNoiseControl[0] = nullptr;
-    m_pRoadNoiseControl[1] = nullptr;
-    m_pStitchLoopControl[0] = nullptr;
-    m_pStitchLoopControl[1] = nullptr;
-    m_pTransition[0] = nullptr;
-    m_pTransition[1] = nullptr;
-    m_pStitchTransition[0] = nullptr;
-    m_pStitchTransition[1] = nullptr;
-    TransitionVol[0] = 0;
-    TransitionVol[1] = 0;
-    LoopID[0] = FXROADNOISE_LOOP_NONE;
-    LoopID[1] = FXROADNOISE_LOOP_NONE;
-    m_nRTRoadNoiseVol = 0;
-    m_nLTRoadNoiseVol = 0;
-    m_nRTRoadNoisePitch = 0x1000;
-    m_nLTRoadNoisePitch = 0x1000;
 }
 
-CARSFX_RoadNoise::~CARSFX_RoadNoise() {}
+CARSFX_RoadNoise::~CARSFX_RoadNoise() {
+    Destroy();
+}
 
-int CARSFX_RoadNoise::GetController(int Index) { return -1; }
+int CARSFX_RoadNoise::GetController(int Index) {
+    switch (Index) {
+    case 0:
+        return 1;
+    case 1:
+        return 0xB;
+    case 2:
+        return 0xC;
+    default:
+        return -1;
+    }
+}
 
-void CARSFX_RoadNoise::AttachController(SFXCTL *psfxctl) {}
+void CARSFX_RoadNoise::AttachController(SFXCTL *psfxctl) {
+    switch (psfxctl->GetObjectIndex()) {
+    case 1:
+        m_pWheelCtl = static_cast<SFXCTL_Wheel *>(psfxctl);
+        break;
+    case 0xB:
+        m_pRightWheelPos = (SFXCTL_3DRightWheelPos *)psfxctl;
+        break;
+    case 0xC:
+        m_pLeftWheelPos = (SFXCTL_3DLeftWheelPos *)psfxctl;
+        break;
+    default:
+        break;
+    }
+}
 
 void CARSFX_RoadNoise::SetupSFX(CSTATE_Base *_StateBase) {
     SndBase::SetupSFX(_StateBase);
@@ -75,9 +89,24 @@ void CARSFX_RoadNoise::UpdateParams(float t) {
     GenerateRoadNoise();
 }
 
-void CARSFX_RoadNoise::Destroy() {}
+void CARSFX_RoadNoise::Destroy() {
+    for (int n = 0; n < 2; n++) {
+        delete m_pWetRoad[n];
+        m_pWetRoad[n] = nullptr;
+        delete m_pRoadNoiseControl[n];
+        m_pRoadNoiseControl[n] = nullptr;
+        delete m_pStitchLoopControl[n];
+        m_pStitchLoopControl[n] = nullptr;
+        delete m_pTransition[n];
+        m_pTransition[n] = nullptr;
+        delete m_pStitchTransition[n];
+        m_pStitchTransition[n] = nullptr;
+    }
+}
 
-void CARSFX_RoadNoise::Detach() {}
+void CARSFX_RoadNoise::Detach() {
+    Destroy();
+}
 
 eVOL_ROADNOISE CARSFX_RoadNoise::MapLoopToVolume(FXROADNOISE_LOOP ID) {
     switch (ID) {
@@ -196,7 +225,9 @@ void CARSFX_RoadNoise::Play(FXROADNOISE_LOOP ID, int side) {
     int refcnt;
 
     delete m_pRoadNoiseControl[side];
-    delete m_pStitchLoopControl[side];
+    if (m_pStitchLoopControl[side]) {
+        delete m_pStitchLoopControl[side];
+    }
 
     if (ID < FXROADNOISE_LOOP_STITCH_LOOP) {
         g_pEAXSound->SetCsisName(this);
