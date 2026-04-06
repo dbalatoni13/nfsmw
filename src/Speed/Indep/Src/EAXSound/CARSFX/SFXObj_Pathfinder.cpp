@@ -24,6 +24,7 @@ extern void PATH_clearallevents(int mask);
 extern int PURSUIT_TO_LIC_DELAY;
 extern int PFXMAP[4][21][2];
 extern void InitializeEATrax(bool breset);
+extern int g_MaxSongs;
 extern stSndDataLoadParams g_SndAssetList[];
 extern SongInfoList Songs;
 extern void SummonChyron(char *title, char *artist, char *album);
@@ -585,6 +586,109 @@ void SFXObj_PFEATrax::StartInteractiveMusic(unsigned int PathEvent) {
         m_CurPathEvent = PathEvent;
         MNotifyMusicFlow(PathEvent).Send(UCrc32("Init"));
         m_Flags |= 0x100;
+    }
+}
+
+void SFXObj_PFEATrax::StartLicensedMusic(unsigned int PathEvent) {
+    eSndGameMode esgm;
+
+    if ((m_Flags & 0x800) == 0) {
+        if (m_ActiveProject != PF_LICENSED_MUSIC) {
+            PATH_stop(m_PFParms[m_ActiveProject].PATH_TRACK);
+            m_ActiveProject = PF_LICENSED_MUSIC;
+            return;
+        }
+        m_ActiveProject = PF_LICENSED_MUSIC;
+        if (m_PrevActiveProject != PF_LICENSED_MUSIC) {
+            if (m_PrevActiveProject != PF_PROJECTRESET && SFXCTL_Pathfinder::m_pPFParms[m_PrevActiveProject] &&
+                SFXCTL_Pathfinder::m_pPFParms[m_PrevActiveProject]->bAttached) {
+                PATH_stop(m_PFParms[m_PrevActiveProject].PATH_TRACK);
+                m_pSFXCTL_Pathfinder->DetachStreamInstance(SFXCTL_Pathfinder::m_pPFParms[m_PrevActiveProject]);
+            }
+            m_pSFXCTL_Pathfinder->AttachStreamInstance(SFXCTL_Pathfinder::m_pPFParms[m_ActiveProject]);
+            m_PrevActiveProject = m_ActiveProject;
+            if ((m_Flags & 2) == 0) {
+                SwapInteractiveProjects();
+            }
+        }
+    }
+    esgm = g_pEAXSound->GetSndGameMode();
+    if (esgm != SND_FRONTEND && esgm != SND_FREEROAM) {
+        if (esgm == SND_CHALLENGERACE) {
+            if (g_pEAXSound->GetCurAudioSettings()->InteractiveMusicMode != 0) {
+                return;
+            }
+        } else if ((m_Flags & 1) == 0 || (m_Flags & 0x200) != 0) {
+            return;
+        }
+    }
+    m_PrevMusicType = m_MusicType;
+    m_MusicType = eMUSIC_TYPE_LICENCED;
+    if ((m_Flags & 0x800) == 0) {
+        {
+            int PathEventToUse;
+            int status;
+
+            PATH_clearallevents(0x0F000000);
+            m_PrevPathEvent = m_CurPathEvent;
+            if (m_EATrax[m_EATraxState].PlayTrackIndex != -1) {
+                m_EATrax[m_EATraxState].LastPlaylistSong = m_EATrax[m_EATraxState].PlayTrackIndex;
+            }
+            PathEventToUse = 0;
+            if (PathEvent == 0) {
+                {
+                    stSongInfo *CurSong;
+
+                    GenNextMusicTrackID();
+                    if (m_EATrax[m_EATraxState].PlayTrackIndex == -1) {
+                        return;
+                    }
+                    CurSong = Songs[m_EATrax[m_EATraxState].PlayTrackIndex];
+                    PathEventToUse = CurSong->PathEvent;
+                    m_Flags &= ~0x40u;
+                    m_PrevPathEvent = 0;
+                }
+            } else {
+                bool foundevent;
+                int n;
+
+                foundevent = false;
+                n = 0;
+                while (n < g_MaxSongs) {
+                    {
+                        stSongInfo *CurSong;
+
+                        CurSong = Songs[n];
+                        if (CurSong->PathEvent == static_cast<int>(PathEvent)) {
+                            foundevent = true;
+                            m_EATrax[m_EATraxState].PlayTrackIndex = n;
+                            PathEventToUse = CurSong->PathEvent;
+                            m_Flags &= ~0x40u;
+                            m_PrevPathEvent = 0;
+                        }
+                    }
+                    ++n;
+                }
+                if (!foundevent) {
+                    m_EATrax[m_EATraxState].PlayTrackIndex = 0;
+                    m_EATrax[m_EATraxState].PlayBits ^= 1;
+                    PathEventToUse = static_cast<int>(PathEvent);
+                }
+            }
+            m_CurPathEvent = static_cast<unsigned int>(PathEventToUse);
+            m_PFParms[0].queue_next = 1;
+            status = 1;
+            if (SFXCTL_Pathfinder::m_pPFParms[m_ActiveProject]) {
+                status = SFXCTL_Pathfinder::m_pPFParms[m_ActiveProject]->track_status;
+            }
+            if (status == 3) {
+                PATH_pause(m_PFParms[m_ActiveProject].PATH_TRACK, '\0');
+            }
+            if (m_CurPathEvent != m_PrevPathEvent) {
+                m_bSkipUpdate = true;
+                m_bClearSkipUpdate = false;
+            }
+        }
     }
 }
 
