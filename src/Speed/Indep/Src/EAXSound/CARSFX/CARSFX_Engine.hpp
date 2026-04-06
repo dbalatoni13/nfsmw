@@ -6,6 +6,7 @@
 #endif
 
 #include "Speed/Indep/Src/EAXSound/CARSFX/CARSFX.hpp"
+#include "Speed/Indep/Src/EAXSound/Ginsu/ginsu.h"
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_3DCarPos.hpp"
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Physics.hpp"
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Engine.hpp"
@@ -13,9 +14,6 @@
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Shifting.hpp"
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Tunnel.hpp"
 #include "Speed/Indep/Src/EAXSound/snd_gen/ENGINES_AEMS2.h"
-
-struct GinsuSynthData;
-struct GinsuSynthesis;
 
 struct CARSFX_EngineBase : public CARSFX {
     CARSFX_EngineBase();

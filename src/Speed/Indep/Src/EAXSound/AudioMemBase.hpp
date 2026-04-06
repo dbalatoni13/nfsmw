@@ -19,6 +19,10 @@ struct AudioMemBase {
         return ptr;
     }
 
+    static void *operator new(unsigned int size, const char *debug_name) {
+        return gAudioMemoryManager.AllocateMemory(size, debug_name, false);
+    }
+
     static void *operator new(unsigned int size, const char *debug_name, bool bfromtop) {
         return gAudioMemoryManager.AllocateMemory(size, debug_name, bfromtop);
     }

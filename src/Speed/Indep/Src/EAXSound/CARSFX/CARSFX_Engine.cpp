@@ -5,6 +5,8 @@
 #include "Speed/Indep/Src/EAXSound/Stream/SndStrmWrapper.hpp"
 
 extern "C" int SNDvol(int sndHandle, int vol);
+extern stSndDataLoadParams g_SndAssetList[];
+char *GetGinsuData(const char *filename);
 
 void CARSFX_EngineBase::UpdateParams(float) {}
 
@@ -119,6 +121,76 @@ void CARSFX_GinsuEngine::InitializeEngine() {
         m_pTranny = new CAR_TRANNY(m_pEAXCar->GetAttributes().CarID(), 0, 0, 0, 0, 25000, 0, 0x7FFF, 0);
         ref = m_pTranny->GetRefCount();
     }
+}
+
+void CARSFX_GinsuEngine::StartupGinsu() {
+    int Index;
+
+    for (Index = 0;; Index++) {
+        if (((m_pEAXCar->m_EngineType != eGINSU_ENG_SINGLE) || (Index > 0)) &&
+            (m_pEAXCar->m_EngineType != eGINSU_ENG_DUAL || (Index > 1))) {
+            GinsuInitialized = true;
+            return;
+        }
+
+        {
+            const char *filename;
+            char *filedata;
+            stGinsuData *pData;
+            int blocksize;
+            bool bindOK;
+
+            filename = nullptr;
+            if (Index == 0) {
+                filename = m_pEAXCar->mEngineInfo.Filename_GinsuAccel().GetString();
+                if (!filename) {
+                    filename = "";
+                }
+            } else if (Index == 1) {
+                filename = m_pEAXCar->mEngineInfo.Filename_GinsuDecel().GetString();
+                if (!filename) {
+                    filename = "";
+                }
+            }
+            filedata = GetGinsuData(filename);
+            if (!filedata) {
+                return;
+            }
+            pData = &m_GinsuData[Index];
+            if (!pData->mSynthData) {
+                pData->mSynthData = new ("AUD: Ginsu synth data") GinsuSynthData();
+            }
+            blocksize = GinsuSynthesis::GetMemblockSize();
+            if (!pData->mSynthBlock) {
+                pData->mSynthBlock = gAudioMemoryManager.AllocateMemory(blocksize, "AUD: Ginsu synth workspace", false);
+            }
+            if (!pData->mSynth) {
+                pData->mSynth = new ("AUD: Ginsu synth object") GinsuSynthesis(pData->mSynthBlock, blocksize);
+            }
+            bindOK = pData->mSynthData->BindToData(filedata);
+            if (bindOK) {
+                pData->mSynth->SetSynthData(*pData->mSynthData);
+                pData->mMaxFrequency = pData->mSynthData->GetMaxFrequency();
+                pData->mMinFrequency = pData->mSynthData->GetMinFrequency();
+                if (pData->mSNDhandle < 0) {
+                    pData->mSNDhandle = pData->mSynth->StartSynthesis(pData->mMinFrequency);
+                }
+            }
+        }
+    }
+}
+
+char *GetGinsuData(const char *filename) {
+    int index;
+
+    index = gAEMSMgr.IsAssetInList(Attrib::StringKey(filename));
+    if (index == -1) {
+        return nullptr;
+    }
+    if (g_SndAssetList[index].mBankSlot) {
+        return g_SndAssetList[index].mBankSlot->MAINmemLocation;
+    }
+    return static_cast<char *>(g_SndAssetList[index].pmem);
 }
 
 void CARSFX_GinsuEngine::SetEngineParams() {
