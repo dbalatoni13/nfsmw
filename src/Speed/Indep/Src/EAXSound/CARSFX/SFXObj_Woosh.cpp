@@ -1,11 +1,14 @@
 #include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_Woosh.hpp"
 
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
+#include "Speed/Indep/Src/EAXSound/EAXSndUtil.h"
 #include "Speed/Indep/Src/EAXSound/States/STATE_DriveBy.hpp"
 
 SFXObj_Woosh::TypeInfo SFXObj_Woosh::s_TypeInfo = {0x00080000, "SFXObj_Woosh", &SndBase::s_TypeInfo, SFXObj_Woosh::CreateObject};
 SFXCTL_3DWooshPos::TypeInfo SFXCTL_3DWooshPos::s_TypeInfo = {
     0x00080000, "SFXCTL_3DWooshPos", &SFXCTL_3DObjPos::s_TypeInfo, SFXCTL_3DWooshPos::CreateObject};
+
+extern Slope g_WooshVol_vs_Vel;
 
 void GetWooshBlockSizeParams(eDRIVE_BY_TYPE type, STICH_WHOOSH_TYPE &base, int &numblocks, int &sizeperblock) {
     switch (type) {
@@ -102,6 +105,94 @@ void SFXObj_Woosh::Detach() {
 void SFXObj_Woosh::SetupSFX(CSTATE_Base *_StateBase) {
     SndBase::SetupSFX(_StateBase);
     m_pDriveByState = static_cast<CSTATE_DriveBy *>(m_pStateBase);
+}
+
+void SFXObj_Woosh::InitSFX() {
+    float fVelRatio;
+    float fVelInensity;
+    int StitchID;
+    int numblocks;
+    int sizeperblock;
+    STICH_WHOOSH_TYPE base;
+
+    SndBase::InitSFX();
+    m_p3DPos->AssignPositionVector(&m_pDriveByState->m_DriveByInfo.vLocation);
+    m_p3DPos->AssignVelocityVector(0);
+    fVelInensity = bClamp(g_WooshVol_vs_Vel.GetValue(m_pDriveByState->m_DriveByInfo.ClosingVelocity), 0.0f, 0.99f);
+    fVelInensity = bClamp(fVelInensity * 127.0f, 0.0f, 127.0f);
+    if (g_pEAXSound->GetSndGameMode() == SND_PURSUITBREAKER) {
+        fVelInensity = 0.0f;
+    }
+
+    GetWooshBlockSizeParams(m_pDriveByState->m_DriveByInfo.eDriveByType, base, numblocks, sizeperblock);
+    switch (m_pDriveByState->m_DriveByInfo.eDriveByType) {
+    case DRIVE_BY_TUNNEL_IN:
+    case DRIVE_BY_OVERPASS_IN:
+        {
+            static int LastRandom;
+
+            LastRandom = (LastRandom - (LastRandom / sizeperblock) * sizeperblock) + 1;
+        }
+    case DRIVE_BY_TUNNEL_OUT:
+    case DRIVE_BY_OVERPASS_OUT:
+        {
+            static int LastRandom;
+
+            LastRandom = (LastRandom - (LastRandom / sizeperblock) * sizeperblock) + 1;
+        }
+    case DRIVE_BY_LAMPPOST:
+        {
+            static int LastRandom;
+
+            LastRandom = (LastRandom - (LastRandom / sizeperblock) * sizeperblock) + 1;
+        }
+    case DRIVE_BY_AI_CAR:
+        {
+            static int LastRandom;
+
+            LastRandom = (LastRandom - (LastRandom / sizeperblock) * sizeperblock) + 1;
+        }
+    case DRIVE_BY_SMOKABLE:
+        {
+            static int LastRandom;
+
+            LastRandom = (LastRandom - (LastRandom / sizeperblock) * sizeperblock) + 1;
+        }
+    case DRIVE_BY_TRAFFIC:
+        {
+            static int LastRandom;
+
+            LastRandom = (LastRandom - (LastRandom / sizeperblock) * sizeperblock) + 1;
+        }
+        break;
+    case DRIVE_BY_CAMERA_BY:
+        SetDMIX_Input(13, 0x7FFF);
+        {
+            static int LastRandom;
+
+            LastRandom = (LastRandom - (LastRandom / sizeperblock) * sizeperblock) + 1;
+        }
+    default:
+        break;
+    }
+
+    fVelRatio = static_cast<float>(numblocks) * 0.0078125f;
+    StitchID = static_cast<int>(fVelInensity * fVelRatio);
+    {
+        static int LastRandom;
+
+        StitchID = base + StitchID * sizeperblock + (LastRandom - (LastRandom / sizeperblock) * sizeperblock);
+        LastRandom = (LastRandom - (LastRandom / sizeperblock) * sizeperblock) + 1;
+    }
+
+    m_pStitchData = &g_pEAXSound->GetStichPlayer()->GetStich(STICH_TYPE_WOOSH, StitchID);
+    m_SndParams.Vol = 0;
+    m_SndParams.Az = 0;
+    m_SndParams.Pitch = 0;
+    m_pWooshStich = new cStichWrapper(*m_pStitchData);
+    m_pWooshStich->Play(&m_SndParams);
+    SetDMIX_Input(11, 0x7FFF);
+    SetDMIX_Input(12, bClamp(static_cast<int>(fVelInensity) << 8, 0, 0x7FFF) >> 15);
 }
 
 void SFXObj_Woosh::UpdateParams(float t) {
