@@ -126,13 +126,9 @@ void CARSFX_GinsuEngine::InitializeEngine() {
 void CARSFX_GinsuEngine::StartupGinsu() {
     int Index;
 
-    for (Index = 0;; Index++) {
-        if (((m_pEAXCar->m_EngineType != eGINSU_ENG_SINGLE) || (Index > 0)) &&
-            (m_pEAXCar->m_EngineType != eGINSU_ENG_DUAL || (Index > 1))) {
-            GinsuInitialized = true;
-            return;
-        }
-
+    Index = 0;
+    while ((m_pEAXCar->m_EngineType == eGINSU_ENG_SINGLE && Index <= 0) ||
+           (m_pEAXCar->m_EngineType == eGINSU_ENG_DUAL && Index <= 1)) {
         {
             const char *filename;
             char *filedata;
@@ -177,7 +173,9 @@ void CARSFX_GinsuEngine::StartupGinsu() {
                 }
             }
         }
+        Index++;
     }
+    GinsuInitialized = true;
 }
 
 char *GetGinsuData(const char *filename) {
