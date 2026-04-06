@@ -8,8 +8,11 @@
 #include "Speed/Indep/Src/Misc/Config.h"
 #include "Speed/Indep/Src/Speech/SoundAI.h"
 #include "Speed/Indep/Src/EAXSound/EAXAemsManager.h"
+#include "Speed/Indep/Src/EAXSound/EAXCar.hpp"
+#include "Speed/Indep/Src/EAXSound/EAXCarState.hpp"
 #include "Speed/Indep/Src/EAXSound/Stream/EAXS_StreamManager.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribHash.h"
+#include "Speed/Indep/Src/World/ParameterMaps.hpp"
 
 #include <vector>
 
@@ -19,16 +22,19 @@ extern int PATH_stop(int tracks);
 extern int PATH_pause(int tracks, unsigned char pause);
 extern int PATH_event(int tracks, unsigned int event);
 extern int PATH_volume(int tracks, signed char volume);
+extern int PATH_setnamedvalue(int tracks, char *name, int value);
 extern int PATH_control(int tracks, unsigned int controller);
 extern void PATH_clearallevents(int mask);
 extern int PURSUIT_TO_LIC_DELAY;
 extern int PFXMAP[4][21][2];
+extern unsigned int AmbientCrossMap[14];
 extern void InitializeEATrax(bool breset);
 extern int g_MaxSongs;
 extern stSndDataLoadParams g_SndAssetList[];
 extern SongInfoList Songs;
 extern void SummonChyron(char *title, char *artist, char *album);
 extern void SNDSYS_service();
+extern ParameterAccessor AmbientAccessor;
 
 SndBase::TypeInfo SFXObj_Pathfinder::s_TypeInfo = { 0, "SFXObj_Pathfinder", nullptr, SFXObj_Pathfinder::CreateObject };
 SndBase::TypeInfo SFXObj_PFEATrax::s_TypeInfo = { 0, "SFXObj_PFEATrax", nullptr, SFXObj_PFEATrax::CreateObject };
@@ -690,6 +696,108 @@ void SFXObj_PFEATrax::StartLicensedMusic(unsigned int PathEvent) {
             }
         }
     }
+}
+
+void SFXObj_PFEATrax::UpdateAmbience(float t) {
+    if (m_EATraxState == EATRAX_IG) {
+        int newzone;
+        EAXCar *peaxcar_0;
+
+        newzone = 0;
+        peaxcar_0 = g_pEAXSound->GetPlayerTunerCar(0);
+        if (peaxcar_0) {
+            EAX_CarState *pcar;
+
+            pcar = peaxcar_0->GetPhysCar();
+            if (pcar && AmbientAccessor.IsValid()) {
+                const bVector2 *ppos;
+
+                ppos = pcar->GetPosition2D();
+                AmbientAccessor.CaptureData(ppos->x, ppos->y);
+                newzone = AmbientAccessor.GetDataInt(0);
+            }
+        }
+        if ((m_nAmbientZone == newzone) && SFXCTL_Pathfinder::m_pPFParms[m_ActiveProject]->track_status != 1) {
+            return;
+        }
+        if (static_cast<unsigned int>(newzone) > 0xD) {
+            return;
+        }
+        m_nAmbientZone = newzone;
+    } else {
+        int oldzone;
+
+        oldzone = 0xD;
+        if ((FEDatabase->GetGameMode() & 0x200) == 0) {
+            oldzone = 0xC;
+            if (!FEDatabase->IsRapSheetMode()) {
+                oldzone = 9;
+                if ((FEDatabase->GetGameMode() & 0x10000) == 0) {
+                    oldzone = 0xB;
+                }
+            }
+        }
+        m_nAmbientZone = oldzone;
+    }
+}
+
+bool SFXObj_PFEATrax::TestToAmbience() {
+    if ((m_Flags & 0x800) != 0) {
+        return false;
+    }
+    UpdateAmbience(0.1f);
+    if (m_MusicType == eMUSIC_TYPE_INTERACTIVE) {
+        {
+            bool interactive_on;
+            SoundAI *ai;
+
+            interactive_on = false;
+            ai = SoundAI::Get();
+            if (ai && ai->IsMusicActive() && g_pEAXSound->GetCurMusicVolume() > 0.0f &&
+                g_pEAXSound->GetCurAudioSettings()->InteractiveMusicMode != 0) {
+                interactive_on = true;
+            }
+            if (interactive_on) {
+                return false;
+            }
+        }
+    } else if (m_MusicType == eMUSIC_TYPE_LICENCED) {
+        if (g_pEAXSound->GetSndGameMode() == SND_FRONTEND) {
+            if (g_pEAXSound->GetCurMusicVolume() == 0.0f || g_pEAXSound->GetCurAudioSettings()->EATraxMode == 0 ||
+                m_EATrax[m_EATraxState].TraxMask == 0) {
+                PATH_stop(m_PFParms[m_ActiveProject].PATH_TRACK);
+            } else {
+                {
+                    unsigned int fegm;
+
+                    fegm = FEDatabase->GetGameMode();
+                    if ((fegm & 0x200) == 0 && !FEDatabase->IsRapSheetMode()) {
+                        return false;
+                    }
+                }
+                {
+                    int ntmp;
+
+                    ntmp = (m_InteractiveProj + PF_INTERACTIVE_01) & PF_INTERACTIVE_03;
+                    if (ntmp == 3) {
+                        ntmp = 2;
+                    }
+                    PATH_setnamedvalue(m_PFParms[0].PATH_TRACK, "rapsheet", ntmp + 1);
+                }
+            }
+        } else {
+            if (g_pEAXSound->GetCurMusicVolume() != 0.0f && g_pEAXSound->GetCurAudioSettings()->EATraxMode != 0 &&
+                m_EATrax[m_EATraxState].TraxMask != 0) {
+                return false;
+            }
+            PATH_stop(m_PFParms[m_ActiveProject].PATH_TRACK);
+        }
+    } else {
+        return false;
+    }
+    UpdateAmbience(0.1f);
+    StartAmbience(AmbientCrossMap[m_nAmbientZone]);
+    return true;
 }
 
 void SFXObj_PFEATrax::Destroy() {
