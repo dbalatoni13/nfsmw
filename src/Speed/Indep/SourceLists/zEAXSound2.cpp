@@ -28,6 +28,8 @@
 
 #include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_MomentStrm.cpp"
 
+#include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_Woosh.cpp"
+
 #include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_TruckFX.cpp"
 
 #include "Speed/Indep/Src/EAXSound/SndCamera.cpp"
