@@ -52,8 +52,10 @@ int CARSFX_Skids::GetController(int Index) {
         if (Index == 2) {
             return 0xC;
         }
-    } else if (Index == 0) {
-        return 1;
+    } else {
+        if (Index == 0) {
+            return 1;
+        }
     }
     return -1;
 }
@@ -64,19 +66,58 @@ void CARSFX_Skids::SetupSFX(CSTATE_Base *_StateBase) {
 
 void CARSFX_Skids::InitSFX() {
     int numskids;
+    FX_SKID *skidControl;
 
     if (!GetPhysCar()) {
         return;
     }
 
     SndBase::InitSFX();
-    SkidType = TheRaceParameters.IsDriftRace();
+    if (TheRaceParameters.IsDriftRace()) {
+        SkidType = 1;
+    } else {
+        SkidType = 0;
+    }
     if (m_pSkidControl) {
         delete m_pSkidControl;
     }
 
     g_pEAXSound->SetCsisName(this);
-    m_pSkidControl = new FX_SKID(0, 0, 0, 0, bClamp(SkidType, 0, 3), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 25000, 0, 0x7FFF, 0);
+    skidControl = static_cast<FX_SKID *>(Csis::System::Alloc(sizeof(FX_SKID)));
+    skidControl->mData.azimuth = 0;
+    skidControl->mData.vOL_Fwd = 0;
+    skidControl->mData.vOL_Side = 0;
+    skidControl->mData.vOL_Back = 0;
+    numskids = SkidType;
+    if (numskids < 0) {
+        numskids = 0;
+    } else if (numskids > 3) {
+        numskids = 3;
+    }
+    skidControl->mData.pITCH_OFFSET = 0;
+    skidControl->mData.hOP = 0;
+    skidControl->mData.sPEED = 0;
+    skidControl->mData.oPPOS_Side = 0;
+    skidControl->mData.uNDERSTEER = 0;
+    skidControl->mData.oVERSTEER = 0;
+    skidControl->mData.surface = 0;
+    skidControl->mData.front_FB = 0;
+    skidControl->mData.front_LR = 0;
+    skidControl->mData.front_Load = 0;
+    skidControl->mData.back_FB = 0;
+    skidControl->mData.back_LR = 0;
+    skidControl->mData.back_Load = 0;
+    skidControl->mData.filter_Effects_HiPass = 0;
+    skidControl->mData.filter_Effects_Wet_FX = 0;
+    skidControl->mData.tYPE = numskids;
+    skidControl->mData.filter_Effects_LoPass = 25000;
+    skidControl->mData.filter_Effects_Dry_FX = 0x7FFF;
+    numskids = Csis::Class::CreateInstance(&Csis::gFX_SKIDHandle, &skidControl->mData, &skidControl->mpClass);
+    if (numskids < 0) {
+        Csis::gFX_SKIDHandle.Set(&Csis::FX_SKIDId);
+        Csis::Class::CreateInstance(&Csis::gFX_SKIDHandle, &skidControl->mData, &skidControl->mpClass);
+    }
+    m_pSkidControl = skidControl;
     numskids = m_pSkidControl->GetRefCount();
     Enable();
 }
@@ -108,21 +149,51 @@ void CARSFX_Skids::Detach() {
 }
 
 void CARSFX_Skids::UpdateMixerOutputs() {
+    int frontBackOutput;
+    int leftRightOutput;
     int output;
 
     if (!m_pSkidControl) {
         return;
     }
 
-    output = bClamp(bMax(bAbs(m_pSkidControl->mData.front_FB), bAbs(m_pSkidControl->mData.back_FB)) << 5, 0, 0x7FFF);
-    SetDMIX_Input(0, output);
-    SetDMIX_Input(2, output);
+    output = bAbs(m_pSkidControl->mData.front_FB);
+    frontBackOutput = bAbs(m_pSkidControl->mData.back_FB);
+    if (frontBackOutput > output) {
+        output = frontBackOutput;
+    }
+    output <<= 5;
+    frontBackOutput = 0;
+    if (output > 0) {
+        frontBackOutput = output;
+    }
+    if (frontBackOutput > 0x7FFF) {
+        frontBackOutput = 0x7FFF;
+    }
+    SetDMIX_Input(0, frontBackOutput);
+    SetDMIX_Input(2, frontBackOutput);
 
-    output = bClamp(bMax(bAbs(m_pSkidControl->mData.front_LR), bAbs(m_pSkidControl->mData.back_LR)) << 5, 0, 0x7FFF);
-    output = smooth(GetDMIX_InputValue(1), output, 500);
-    SetDMIX_Input(1, output);
+    output = bAbs(m_pSkidControl->mData.front_LR);
+    leftRightOutput = bAbs(m_pSkidControl->mData.back_LR);
+    if (leftRightOutput > output) {
+        output = leftRightOutput;
+    }
+    output <<= 5;
+    leftRightOutput = 0;
+    if (output > 0) {
+        leftRightOutput = output;
+    }
+    if (leftRightOutput > 0x7FFF) {
+        leftRightOutput = 0x7FFF;
+    }
+    leftRightOutput = smooth(GetDMIX_InputValue(1), leftRightOutput, 500);
+    SetDMIX_Input(1, leftRightOutput);
 
-    output = smooth(GetDMIX_InputValue(3), bMax(GetDMIX_InputValue(1), GetDMIX_InputValue(0)), 3000);
+    output = leftRightOutput;
+    if (frontBackOutput > leftRightOutput) {
+        output = frontBackOutput;
+    }
+    output = smooth(GetDMIX_InputValue(3), output, 3000);
     SetDMIX_Input(3, output);
 }
 
@@ -172,17 +243,17 @@ void CARSFX_Skids::ProcessUpdate() {
 }
 
 void CARSFX_Skids::SetupLoadData() {
-    Attrib::StringKey bank;
+    int maxLevel;
     int nlvl;
 
     nlvl = 0;
-    if (nlvl < static_cast<int>(m_UGL)) {
+    if (m_UGL > 0) {
         nlvl = m_UGL;
     }
-    if (nlvl > 1) {
-        nlvl = 1;
+    maxLevel = 1;
+    if (maxLevel < nlvl) {
+        nlvl = maxLevel;
     }
 
-    bank = g_pEAXSound->GetAttributes()->AEMS_SkidBanks(nlvl);
-    LoadAsset(bank, SNDPATH_SKIDS, EAXSND_DT_AEMS_ASYNCSPUMEM, eBANK_SLOT_NONE, true);
+    LoadAsset(g_pEAXSound->GetAttributes()->AEMS_SkidBanks(nlvl), SNDPATH_SKIDS, EAXSND_DT_AEMS_ASYNCSPUMEM, eBANK_SLOT_NONE, true);
 }
