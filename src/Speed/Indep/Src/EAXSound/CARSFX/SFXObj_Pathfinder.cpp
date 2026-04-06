@@ -6,6 +6,12 @@
 #include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
 #include "Speed/Indep/Src/Misc/Config.h"
 #include "Speed/Indep/Src/Speech/SoundAI.h"
+#include "Speed/Indep/Src/EAXSound/EAXAemsManager.h"
+#include "Speed/Indep/Tools/AttribSys/Runtime/AttribHash.h"
+
+#include <vector>
+
+struct SongInfoList : public std::vector<Sound::stSongInfo *> {};
 
 extern int PATH_stop(int tracks);
 extern int PATH_control(int tracks, unsigned int controller);
@@ -13,6 +19,9 @@ extern void PATH_clearallevents(int mask);
 extern int PURSUIT_TO_LIC_DELAY;
 extern int PFXMAP[4][21][2];
 extern void InitializeEATrax(bool breset);
+extern SongInfoList Songs;
+extern void SummonChyron(char *title, char *artist, char *album);
+extern void SNDSYS_service();
 
 SndBase::TypeInfo SFXObj_Pathfinder::s_TypeInfo = { 0, "SFXObj_Pathfinder", nullptr, SFXObj_Pathfinder::CreateObject };
 SndBase::TypeInfo SFXObj_PFEATrax::s_TypeInfo = { 0, "SFXObj_PFEATrax", nullptr, SFXObj_PFEATrax::CreateObject };
@@ -410,5 +419,34 @@ void SFXObj_PFEATrax::SetupLoadData() {
             LoadAsset(Attrib::StringKey(m_PFParms[1].mapfile), SNDPATH_PATHFINDER, EAXSND_DT_GENERIC_DATA, eBANK_SLOT_PATHFINDER, true);
             m_Flags &= ~2u;
         }
+    }
+}
+
+void SFXObj_PFEATrax::Destroy() {
+    PATH_stop(m_PFParms[m_ActiveProject].PATH_TRACK);
+    m_PFParms[m_ActiveProject].queue_next = 0;
+    m_EATraxState = EATRAX_UNINIT;
+    if ((m_Flags & 2) == 0 && g_pEAXSound->GetSndGameMode() != SND_FRONTEND) {
+        int np;
+        int index;
+
+        index = gAEMSMgr.IsAssetInList(Attrib::StringKey(m_PFParms[1].mapfile));
+        gAEMSMgr.UnloadSndData(index);
+    }
+    if (m_FilterFade) {
+        delete m_FilterFade;
+    }
+    m_FilterFade = nullptr;
+    SNDSYS_service();
+}
+
+void SFXObj_PFEATrax::NotifyChyron() {
+    stSongInfo *currSong;
+
+    if (m_EATrax[m_EATraxState].PlayTrackIndex >= 0 &&
+        m_EATrax[m_EATraxState].PlayTrackIndex <= static_cast<int>(Songs.size())) {
+        currSong = Songs[m_EATrax[m_EATraxState].PlayTrackIndex];
+        SummonChyron(currSong->SongName, currSong->Artist, currSong->Album);
+        m_Flags |= 0x40;
     }
 }

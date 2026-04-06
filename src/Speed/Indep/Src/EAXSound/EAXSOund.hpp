@@ -33,7 +33,16 @@ struct EAXCommon;
 struct SFXCTL_MasterVol;
 struct SndBase;
 struct AudioSettings;
-struct stSongInfo;
+namespace Sound {
+struct stSongInfo {
+    char *SongName; // offset 0x0, size 0x4
+    char *Artist;   // offset 0x4, size 0x4
+    char *Album;    // offset 0x8, size 0x4
+    char *DefPlay;  // offset 0xC, size 0x4
+    int PathEvent;  // offset 0x10, size 0x4
+};
+} // namespace Sound
+typedef Sound::stSongInfo stSongInfo;
 struct EAXSND8Wrapper;
 struct EAXS_StreamManager;
 struct NFSMixMaster;
