@@ -24,6 +24,8 @@
 
 #include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_Collision.cpp"
 
+#include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_TruckFX.cpp"
+
 #include "Speed/Indep/Src/EAXSound/SndCamera.cpp"
 
 #include "Speed/Indep/Src/EAXSound/dynamic_mixer/NFSMixShape.cpp"
