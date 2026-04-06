@@ -19,8 +19,8 @@ enum eTrackStreamingFileType {
 
 struct DiscBundleSectionMember {
     // total size: 0x8
-    short SectionNumber;                    // offset 0x0, size 0x2
-    short FileOffset;                       // offset 0x2, size 0x2
+    int16 SectionNumber;                    // offset 0x0, size 0x2
+    int16 FileOffset;                       // offset 0x2, size 0x2
     struct TrackStreamingSection *pSection; // offset 0x4, size 0x4
 };
 
@@ -50,42 +50,46 @@ struct TrackStreamingSection {
         LOADED = 3,
         ACTIVATED = 4,
     };
-    char SectionName[8];                      // offset 0x0, size 0x8
-    short SectionNumber;                      // offset 0x8, size 0x2
-    char WasRendered;                         // offset 0xA, size 0x1
-    char CurrentlyVisible;                    // offset 0xB, size 0x1
-    eStatus Status;                           // offset 0xC, size 0x4
-    eTrackStreamingFileType FileType;         // offset 0x10, size 0x4
-    int FileOffset;                           // offset 0x14, size 0x4
-    int Size;                                 // offset 0x18, size 0x4
-    int CompressedSize;                       // offset 0x1C, size 0x4
-    int PermSize;                             // offset 0x20, size 0x4
-    int SectionPriority;                      // offset 0x24, size 0x4
-    bVector2 Centre;                          // offset 0x28, size 0x8
-    float Radius;                             // offset 0x30, size 0x4
-    unsigned int Checksum;                    // offset 0x34, size 0x4
-    int LastNeededTimestamp;                  // offset 0x38, size 0x4
-    unsigned int UnactivatedFrameCount;       // offset 0x3C, size 0x4
-    int LoadedTime;                           // offset 0x40, size 0x4
-    int BaseLoadingPriority;                  // offset 0x44, size 0x4
-    int LoadingPriority;                      // offset 0x48, size 0x4
-    void *pMemory;                            // offset 0x4C, size 0x4
-    DiscBundleSection *pDiscBundle;           // offset 0x50, size 0x4
-    int LoadedSize;                           // offset 0x54, size 0x4
+    char SectionName[8];              // offset 0x0, size 0x8
+    int16 SectionNumber;              // offset 0x8, size 0x2
+    int8 WasRendered;                 // offset 0xA, size 0x1
+    int8 CurrentlyVisible;            // offset 0xB, size 0x1
+    eStatus Status;                   // offset 0xC, size 0x4
+    eTrackStreamingFileType FileType; // offset 0x10, size 0x4
+    int32 FileOffset;                 // offset 0x14, size 0x4
+    int32 Size;                       // offset 0x18, size 0x4
+    int32 CompressedSize;             // offset 0x1C, size 0x4
+    int32 PermSize;                   // offset 0x20, size 0x4
+    int32 SectionPriority;            // offset 0x24, size 0x4
+    bVector2 Centre;                  // offset 0x28, size 0x8
+    float Radius;                     // offset 0x30, size 0x4
+    uint32 Checksum;                  // offset 0x34, size 0x4
+    int32 LastNeededTimestamp;        // offset 0x38, size 0x4
+    uint32 UnactivatedFrameCount;     // offset 0x3C, size 0x4
+    int32 LoadedTime;                 // offset 0x40, size 0x4
+    int32 BaseLoadingPriority;        // offset 0x44, size 0x4
+    int32 LoadingPriority;            // offset 0x48, size 0x4
+    void *pMemory;                    // offset 0x4C, size 0x4
+    DiscBundleSection *pDiscBundle;   // offset 0x50, size 0x4
+    int32 LoadedSize;                 // offset 0x54, size 0x4
+#ifndef EA_BUILD_A124
     struct VisibleSectionBoundary *pBoundary; // offset 0x58, size 0x4
+#endif
 };
 
 // total size: 0x68
 struct StreamingPositionEntry {
-    bVector2 Position;              // offset 0x0, size 0x8
-    float Elevation;                // offset 0x8, size 0x4
-    bVector2 Velocity;              // offset 0xC, size 0x8
-    bVector2 Direction;             // offset 0x14, size 0x8
-    bool PositionSet;               // offset 0x1C, size 0x1
-    bool FollowingCar;              // offset 0x20, size 0x1
-    short CurrentZone;              // offset 0x24, size 0x2
-    short PredictedZone;            // offset 0x26, size 0x2
-    int PredictedZoneValidTime;     // offset 0x28, size 0x4
+    bVector2 Position;  // offset 0x0, size 0x8
+    float Elevation;    // offset 0x8, size 0x4
+    bVector2 Velocity;  // offset 0xC, size 0x8
+    bVector2 Direction; // offset 0x14, size 0x8
+    bool PositionSet;   // offset 0x1C, size 0x1
+#ifndef EA_BUILD_A124
+    bool FollowingCar; // offset 0x20, size 0x1
+#endif
+    int16 CurrentZone;              // offset 0x24, size 0x2
+    int16 PredictedZone;            // offset 0x26, size 0x2
+    int32 PredictedZoneValidTime;   // offset 0x28, size 0x4
     bVector2 BeginLoadingPosition;  // offset 0x2C, size 0x8
     float BeginLoadingTime;         // offset 0x34, size 0x4
     int NumSectionsToLoad;          // offset 0x38, size 0x4
@@ -104,7 +108,7 @@ struct StreamingPositionEntry {
 class TSMemoryNode : public bTNode<TSMemoryNode> {
   public:
     intptr_t Address;   // offset 0x8, size 0x4
-    int Size;           // offset 0xC, size 0x4
+    int32 Size;         // offset 0xC, size 0x4
     bool Allocated;     // offset 0x10, size 0x1
     char DebugName[32]; // offset 0x14, size 0x20
 
@@ -231,10 +235,10 @@ struct TrackStreamingBarrier {
 
 // total size: 0x10
 struct HoleMovement {
-    intptr_t Address;      // offset 0x0, size 0x4
-    intptr_t NewAddress;   // offset 0x4, size 0x4
-    int Size;              // offset 0x8, size 0x4
-    unsigned int Checksum; // offset 0xC, size 0x4
+    intptr_t Address;    // offset 0x0, size 0x4
+    intptr_t NewAddress; // offset 0x4, size 0x4
+    int32 Size;          // offset 0x8, size 0x4
+    uint32 Checksum;     // offset 0xC, size 0x4
 };
 
 enum HoleFillerMethod {
@@ -473,8 +477,8 @@ class TrackStreamer {
     TrackStreamingSection *JettisonedSections[64];        // offset 0x1C8, size 0x100
     bool CurrentZoneNeedsRefreshing;                      // offset 0x2C8, size 0x1
     bool ZoneSwitchingDisabled;                           // offset 0x2CC, size 0x1
-    unsigned int LastWaitUntilRenderingDoneFrameCount;    // offset 0x2D0, size 0x4
-    unsigned int LastPrintedFrameCount;                   // offset 0x2D4, size 0x4
+    uint32 LastWaitUntilRenderingDoneFrameCount;          // offset 0x2D0, size 0x4
+    uint32 LastPrintedFrameCount;                         // offset 0x2D4, size 0x4
     bool SkipNextHandleLoad;                              // offset 0x2D8, size 0x1
     int NumCurrentStreamingSections;                      // offset 0x2DC, size 0x4
     TrackStreamingSection *CurrentStreamingSections[256]; // offset 0x2E0, size 0x400
@@ -490,7 +494,7 @@ class TrackStreamer {
     intptr_t CallbackParam;                               // offset 0x878, size 0x4
     void (*MakeSpaceInPoolCallback)(intptr_t);            // offset 0x87C, size 0x4
     intptr_t MakeSpaceInPoolCallbackParam;                // offset 0x880, size 0x4
-    int MakeSpaceInPoolSize;                              // offset 0x884, size 0x4
+    int32 MakeSpaceInPoolSize;                            // offset 0x884, size 0x4
 };
 
 extern TrackStreamer TheTrackStreamer;

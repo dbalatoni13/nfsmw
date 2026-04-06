@@ -12,14 +12,14 @@
 // total size: 0x30
 class TrackPositionMarker : public bTNode<TrackPositionMarker> {
   public:
-    uint32 NameHash;      // offset 0x8, size 0x4
-    int32 Param;          // offset 0xC, size 0x4
-    bVector3 Position;    // offset 0x10, size 0x10
-    unsigned short Angle; // offset 0x20, size 0x2
-    int16 Padding0;       // offset 0x22, size 0x2
-    int32 TrackNumber;    // offset 0x24, size 0x4
-    int32 Padding2;       // offset 0x28, size 0x4
-    int32 Padding3;       // offset 0x2C, size 0x4
+    uint32 NameHash;   // offset 0x8, size 0x4
+    int32 Param;       // offset 0xC, size 0x4
+    bVector3 Position; // offset 0x10, size 0x10
+    bAngle Angle;      // offset 0x20, size 0x2
+    int16 Padding0;    // offset 0x22, size 0x2
+    int32 TrackNumber; // offset 0x24, size 0x4
+    int32 Padding2;    // offset 0x28, size 0x4
+    int32 Padding3;    // offset 0x2C, size 0x4
 };
 
 typedef bool (*TrackPositionMarkerCallback)(TrackPositionMarker *, unsigned int);

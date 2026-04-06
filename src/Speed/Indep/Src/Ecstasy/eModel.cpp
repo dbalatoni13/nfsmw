@@ -86,7 +86,7 @@ void eFixupReplacementTexturesAfterUnloading(TextureInfo *texture_info) {
     }
 }
 
-void eModel::Init(unsigned int name_hash) {
+void eModel::Init(uint32 name_hash) {
     this->NameHash = name_hash;
     this->pReplacementTextureTable = nullptr;
     this->NumReplacementTextures = 0;
@@ -110,7 +110,7 @@ void eModel::UnInit() {
 }
 
 void eModel::ReconnectSolid(eSolidListHeader *solid_list_header) {
-    unsigned int name_hash = this->NameHash;
+    uint32 name_hash = this->NameHash;
     if (name_hash != 0) {
         eSolid *new_solid = eFindSolid(name_hash, solid_list_header);
         this->ConnectSolid(new_solid);
@@ -118,7 +118,7 @@ void eModel::ReconnectSolid(eSolidListHeader *solid_list_header) {
 }
 
 void eModel::ConnectSolid(eSolid *new_solid) {
-    unsigned int name_hash = this->NameHash;
+    uint32 name_hash = this->NameHash;
     if (name_hash == 0) {
         return;
     }
@@ -187,7 +187,7 @@ void eModel::ApplyReplacementTextureTable(TextureInfo ***replaced_textures) {
         replacement_texture_entry++;
     }
     for (int index = 0; index < num_solid_textures; index++) {
-        unsigned int solid_tex_namehash = solid->pTextureTable[index].NameHash;
+        uint32 solid_tex_namehash = solid->pTextureTable[index].NameHash;
         replacement_texture_entry = replacement_texture_table;
         for (int n = 0; n < num_replacement_textures; n++) {
             if ((replacement_texture_entry->hNewNameHash != 0) && (replacement_texture_entry->hOldNameHash == solid_tex_namehash)) {
@@ -233,7 +233,7 @@ bMatrix4 *eModel::GetPivotMatrix() {
     return nullptr;
 }
 
-void eModel::ReplaceLightMaterial(unsigned int old_name_hash, eLightMaterial *new_light_material) {
+void eModel::ReplaceLightMaterial(uint32 old_name_hash, eLightMaterial *new_light_material) {
     if (this->Solid) {
         this->Solid->ReplaceLightMaterial(old_name_hash, new_light_material);
     }
@@ -246,7 +246,7 @@ ePositionMarker *eModel::GetPostionMarker(ePositionMarker *prev_marker) {
     return nullptr;
 }
 
-ePositionMarker *eModel::GetPostionMarker(unsigned int namehash) {
+ePositionMarker *eModel::GetPostionMarker(uint32 namehash) {
     if (this->Solid) {
         return this->Solid->GetPostionMarker(namehash);
     }
@@ -265,7 +265,7 @@ void NotifySolidLoader(eSolidListHeader *solid_list_header /* r31 */) {
             MovedModelList.AddTail(model);
         }
     } else {
-        unsigned int start_time = bGetTicker();
+        uint32 start_time = bGetTicker();
         for (eModel *model = UnattachedModelList.GetHead(); model != UnattachedModelList.EndOfList(); model = model->GetNext()) {
             model->ReconnectSolid(solid_list_header);
         }
@@ -289,8 +289,8 @@ int eSmoothNormals(eModel **model_table, int num_models) {
         num_solids = 0;
         for (int i = 0; i < num_models; i++) {
             if (model_table[i]) {
-                if (model_table[i]->Solid && model_table[i]->Solid->NormalSmoother) {
-                    solid_table[num_solids] = model_table[i]->Solid;
+                if (model_table[i]->GetSolid() && model_table[i]->GetSolid()->NormalSmoother) {
+                    solid_table[num_solids] = model_table[i]->GetSolid();
                     num_solids++;
                 }
             }

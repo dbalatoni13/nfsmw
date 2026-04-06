@@ -31,22 +31,30 @@ enum eTrackPathZoneType {
 // total size: 0x18
 class TrackPathBarrier {
   public:
+    TrackPathBarrier();
+
     void EndianSwap() {
         bPlatEndianSwap(&Points[0]);
         bPlatEndianSwap(&Points[1]);
         bPlatEndianSwap(&GroupHash);
     }
 
-    bool HasGroup(unsigned int group_hash) {
+    bool IsEnabled();
+    bool IsPlayerBarrier();
+    void SetGroup(uint32 group_hash);
+
+    bool HasGroup(uint32 group_hash) {
         return GroupHash == group_hash;
     }
 
-    bVector2 Points[2];     // offset 0x0, size 0x10
-    char Enabled;           // offset 0x10, size 0x1
-    char Pad;               // offset 0x11, size 0x1
-    char PlayerBarrier;     // offset 0x12, size 0x1
-    char LeftHanded;        // offset 0x13, size 0x1
-    unsigned int GroupHash; // offset 0x14, size 0x4
+    bool Intersects(const bVector2 *pointa, const bVector2 *pointb);
+
+    bVector2 Points[2]; // offset 0x0, size 0x10
+    int8 Enabled;       // offset 0x10, size 0x1
+    int8 Pad;           // offset 0x11, size 0x1
+    int8 PlayerBarrier; // offset 0x12, size 0x1
+    int8 LeftHanded;    // offset 0x13, size 0x1
+    uint32 GroupHash;   // offset 0x14, size 0x4
 };
 
 // total size: 0x244
@@ -56,15 +64,15 @@ class TrackPathZone {
     bVector2 Position;       // offset 0x4, size 0x8
     bVector2 Direction;      // offset 0xC, size 0x8
     float Elevation;         // offset 0x14, size 0x4
-    char ZoneSource;         // offset 0x18, size 0x1
-    char CachedIndex;        // offset 0x19, size 0x1
-    short VisitInfo;         // offset 0x1A, size 0x2
+    int8 ZoneSource;         // offset 0x18, size 0x1
+    int8 CachedIndex;        // offset 0x19, size 0x1
+    int16 VisitInfo;         // offset 0x1A, size 0x2
     void *pUserData;         // offset 0x1C, size 0x4
     bVector2 BBoxMin;        // offset 0x20, size 0x8
     bVector2 BBoxMax;        // offset 0x28, size 0x8
-    int Data[4];             // offset 0x30, size 0x10
-    short NumPoints;         // offset 0x40, size 0x2
-    short MemoryImageSize;   // offset 0x42, size 0x2
+    int32 Data[4];           // offset 0x30, size 0x10
+    int16 NumPoints;         // offset 0x40, size 0x2
+    int16 MemoryImageSize;   // offset 0x42, size 0x2
     bVector2 Points[64];     // offset 0x44, size 0x200
 
     bool IsPointOnBoundary(const bVector2 *point);
@@ -93,7 +101,7 @@ class TrackPathZone {
         return reinterpret_cast<TrackPathZone *>(reinterpret_cast<char *>(this) + GetMemoryImageSize());
     }
 
-    int GetData(int index) {
+    int32 GetData(int index) {
         return Data[index];
     }
 };

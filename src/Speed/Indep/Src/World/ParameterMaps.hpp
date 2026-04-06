@@ -156,7 +156,7 @@ class ParameterMapLayer : public bTNode<ParameterMapLayer> {
 
     int GetDataInt(int field_index, void *parameter_data);
 
-    // unsigned int GetNameHash() {}
+    // uint32 GetNameHash() {}
 
     // int GetSizeOfParameterSet() {}
 

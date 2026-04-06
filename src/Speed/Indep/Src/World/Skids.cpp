@@ -218,7 +218,7 @@ void SkidSet::FinishedAddingSkids() {
     }
 }
 
-void SkidSet::Render(eView *view, unsigned char intensityReduction) {
+void SkidSet::Render(eView *view, uint8 intensityReduction) {
     if (!SkidTextureInfo[TheTerrainType]) {
         return;
     }
@@ -238,8 +238,8 @@ void SkidSet::Render(eView *view, unsigned char intensityReduction) {
         poly.Vertices[2].z += extra_height;
         poly.Vertices[3].z += extra_height;
 
-        unsigned char alpha0 = skid_segment->GetIntensity();
-        unsigned char alpha1 = next_skid_segment->GetIntensity();
+        uint8 alpha0 = skid_segment->GetIntensity();
+        uint8 alpha1 = next_skid_segment->GetIntensity();
         if (intensityReduction > alpha0) {
             alpha0 = 0;
         } else {

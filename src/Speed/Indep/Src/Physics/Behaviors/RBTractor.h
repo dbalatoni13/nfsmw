@@ -56,10 +56,12 @@ class RBTractor : public RBVehicle, public IArticulatedVehicle, public IVehicleC
         return mHitched;
     }
 
+#ifndef EA_BUILD_A124
     // IVehicleCache
     const char *GetCacheName() const override {
         return "RBTractor";
     }
+#endif
 
   private:
     IVehicle *mTrailer;                       // offset 0x1B8, size 0x4

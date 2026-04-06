@@ -466,7 +466,7 @@ void VisibleSectionManager::ActivateOverlay(const char *name) {
 
 void VisibleSectionManager::ActivateOverlay(VisibleSectionOverlay *overlay, VisibleSectionOverlay *undo_overlay) {
     for (int n = 0; n < overlay->NumEntries; n++) {
-        OverlayEntry *entry = &overlay->EntryTable[n];
+        VisibleSectionOverlay::OverlayEntry *entry = &overlay->EntryTable[n];
         DrivableScenerySection *section = FindDrivableSection(entry->DrivableSectionNumber);
         if (section) {
             bool did_something = false;
@@ -483,7 +483,7 @@ void VisibleSectionManager::ActivateOverlay(VisibleSectionOverlay *overlay, Visi
             if (did_something) {
                 section->SortVisibleSections();
                 if (undo_overlay) {
-                    OverlayEntry *undo_entry = &undo_overlay->EntryTable[undo_overlay->NumEntries++];
+                    VisibleSectionOverlay::OverlayEntry *undo_entry = &undo_overlay->EntryTable[undo_overlay->NumEntries++];
                     *undo_entry = *entry;
                     undo_entry->AddRemove = !entry->AddRemove;
                 }
@@ -697,7 +697,7 @@ VisibleGroupInfo *VisibleSectionManager::GetGroupInfo(const char *selection_set_
     return nullptr;
 }
 
-void VisibleSectionManager::EnableGroup(unsigned int group_name_hash) {
+void VisibleSectionManager::EnableGroup(uint32 group_name_hash) {
     for (int n = 0; n < 256; n++) {
         if (EnabledGroups[n] == 0) {
             EnabledGroups[n] = group_name_hash;

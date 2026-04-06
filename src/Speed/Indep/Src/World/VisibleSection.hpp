@@ -71,7 +71,8 @@ inline bool HasSection(short *section_table, int num_sections, short section_num
 }
 
 // total size: 0xA4
-struct VisibleSectionBoundary : public bTNode<VisibleSectionBoundary> {
+class VisibleSectionBoundary : public bTNode<VisibleSectionBoundary> {
+  public:
     int16 SectionNumber;   // offset 0x8, size 0x2
     int8 NumPoints;        // offset 0xA, size 0x1
     int8 PanoramaBoundary; // offset 0xB, size 0x1
@@ -82,6 +83,7 @@ struct VisibleSectionBoundary : public bTNode<VisibleSectionBoundary> {
 
     bool IsPointInside(const bVector2 *point);
     float GetDistanceOutside(const bVector2 *point, float max_distance);
+    float GetDistanceInside(const bVector2 *point);
 
     int GetNumPoints() {
         return NumPoints;
@@ -108,24 +110,44 @@ struct VisibleSectionBoundary : public bTNode<VisibleSectionBoundary> {
     int GetMemoryImageSize() {
         return sizeof(*this) - (16 - NumPoints) * sizeof(bVector2);
     }
+
+    void GetCentre(bVector2 *centre);
+    int IsPanoramaBoundary();
+
+    static int SortFunction(VisibleSectionBoundary *before, VisibleSectionBoundary *after);
 };
 
-struct VisibleSectionCoordinate {
+class VisibleSectionManager;
+
+class VisibleSectionCoordinate {
     // total size: 0x10
     bVector2 Position;                 // offset 0x0, size 0x8
     VisibleSectionBoundary *pBoundary; // offset 0x8, size 0x4
     float TestDistance;                // offset 0xC, size 0x4
+
+  public:
+    VisibleSectionCoordinate();
+    void Clear();
+    bool Update(const bVector2 &, VisibleSectionManager &, float);
+    VisibleSectionBoundary *GetBoundary();
+    int GetSectionNumber();
+
+  private:
+    bool FullUpdate(bVector2 &position, VisibleSectionManager &visible_section_manager, float overlap_distance);
 };
 
 // total size: 0xA4
-struct DrivableScenerySection : public bTNode<DrivableScenerySection> {
+class DrivableScenerySection : public bTNode<DrivableScenerySection> {
+  public:
     VisibleSectionBoundary *pBoundary; // offset 0x8, size 0x4
     int16 SectionNumber;               // offset 0xC, size 0x2
     int8 MostVisibleSections;          // offset 0xE, size 0x1
     int8 MaxVisibleSections;           // offset 0xF, size 0x1
     int16 NumVisibleSections;          // offset 0x10, size 0x2
     short int VisibleSections[72];     // offset 0x12, size 0x90
-    short Padding;                     // offset 0xA2, size 0x2
+#ifndef EA_BUILD_A124
+    short Padding; // offset 0xA2, size 0x2
+#endif
 
     void AddVisibleSection(int section_number);
     bool IsSectionVisible(int section_number);
@@ -164,10 +186,14 @@ struct DrivableScenerySection : public bTNode<DrivableScenerySection> {
 };
 
 // total size: 0x324
-struct DrivableSectionsInRegion {
-    int NumSections;     // offset 0x0, size 0x4
-    short Sections[400]; // offset 0x4, size 0x320
+class DrivableSectionsInRegion {
+  public:
+    int32 NumSections;   // offset 0x0, size 0x4
+    int16 Sections[400]; // offset 0x4, size 0x320
 
+    bool IsSectionDrivable(int16 section_number);
+    void AddSection(int16 section_number);
+    void RemoveSection(int16 section_number);
     void EndianSwap() {
         bPlatEndianSwap(&NumSections);
         for (int i = 0; i < NumSections; i++) {
@@ -177,22 +203,52 @@ struct DrivableSectionsInRegion {
 };
 
 // total size: 0x150
-struct VisibleTextureSection : public bTNode<VisibleTextureSection> {
-    short SectionNumber;            // offset 0x8, size 0x2
-    short NumVisibleFromSections;   // offset 0xA, size 0x2
-    short VisibleFromSections[128]; // offset 0xC, size 0x100
-    short NumSuperSections;         // offset 0x10C, size 0x2
-    short SuperSections[32];        // offset 0x10E, size 0x40
+class VisibleTextureSection : public bTNode<VisibleTextureSection> {
+  public:
+    int16 SectionNumber;            // offset 0x8, size 0x2
+    int16 NumVisibleFromSections;   // offset 0xA, size 0x2
+    int16 VisibleFromSections[128]; // offset 0xC, size 0x100
+    int16 NumSuperSections;         // offset 0x10C, size 0x2
+    int16 SuperSections[32];        // offset 0x10E, size 0x40
+
+    ~VisibleTextureSection();
+    bool IsVisibleFromSection(int16 section_number);
+    bool IsSuperSection();
+    void AddVisibleTextureSection(int16 section_number);
+    void AddSuperTextureSection(int16 section_number);
+    void RemoveVisibleTextureSection(int16 section_number);
+    void RemoveSuperTextureSection(int16 section_number);
+    static int SortFunction(VisibleTextureSection *before, VisibleTextureSection *after);
 };
 
 // total size: 0x4C
-struct LoadingSection : public bTNode<LoadingSection> {
+class LoadingSection : public bTNode<LoadingSection> {
+  public:
     char Name[15];              // offset 0x8, size 0xF
-    char DefaultFlag;           // offset 0x17, size 0x1
-    short NumDrivableSections;  // offset 0x18, size 0x2
-    short DrivableSections[16]; // offset 0x1A, size 0x20
-    short NumExtraSections;     // offset 0x3A, size 0x2
-    short ExtraSections[8];     // offset 0x3C, size 0x10
+    int8 DefaultFlag;           // offset 0x17, size 0x1
+    int16 NumDrivableSections;  // offset 0x18, size 0x2
+    int16 DrivableSections[16]; // offset 0x1A, size 0x20
+    int16 NumExtraSections;     // offset 0x3A, size 0x2
+    int16 ExtraSections[8];     // offset 0x3C, size 0x10
+
+    LoadingSection();
+    ~LoadingSection();
+    void SetName(const char *name);
+    char *GetName() {
+        return Name;
+    };
+    void AddDrivableSection(int section_number);
+    void AddExtraSection(int section_number);
+    void RemoveDrivableSection(int section_number);
+    void RemoveExtraSection(int section_number);
+
+    bool HasDrivableSection(int section_number) {
+        return HasSection(DrivableSections, NumDrivableSections, section_number);
+    }
+
+    bool HasExtraSection(int);
+    bool IsDefaultSection();
+    char *GetDrivableSectionNames(char *text, int max_len);
 
     void EndianSwap() {
         bPlatEndianSwap(&NumDrivableSections);
@@ -205,21 +261,39 @@ struct LoadingSection : public bTNode<LoadingSection> {
         }
     }
 
-    bool HasDrivableSection(int section_number) {
-        return HasSection(DrivableSections, NumDrivableSections, section_number);
-    }
+    static int SortFunction(LoadingSection *before, LoadingSection *after);
 };
 
 // total size: 0x30
-struct SuperScenerySection : public bTNode<SuperScenerySection> {
+class SuperScenerySection : public bTNode<SuperScenerySection> {
+  public:
     int SectionNumber;  // offset 0x8, size 0x4
-    short NumSections;  // offset 0xC, size 0x2
-    short Sections[16]; // offset 0xE, size 0x20
+    int16 NumSections;  // offset 0xC, size 0x2
+    int16 Sections[16]; // offset 0xE, size 0x20
+
+    SuperScenerySection(int section_number);
+    ~SuperScenerySection();
+    int GetSectionNumber();
+    void AddSection(int section_number);
+    void RemoveSection(int section_number);
+    bool HasSection(int section_number);
+#if 0
+    char *GetSectionNames(char *, int);
+#endif
+    static int SortFunction(SuperScenerySection *before, SuperScenerySection *after);
 };
 
 // total size: 0x15E
-struct VisibleSectionBitTable {
-    unsigned char Bits[350]; // offset 0x0, size 0x15E
+class VisibleSectionBitTable {
+    uint8 Bits[350]; // offset 0x0, size 0x15E
+
+  public:
+    VisibleSectionBitTable();
+    void Clear();
+    void AddSection(int section_number);
+    void RemoveSection(int section_number);
+    bool HasSection(int section_number);
+    int BuildTable(int16 *table, int table_size);
 };
 
 // total size: 0x638
@@ -228,29 +302,40 @@ struct UsedInSectionInfo : public bTNode<UsedInSectionInfo> {
     bool IsTexture;                        // offset 0x48, size 0x1
     bool AlwaysVisible;                    // offset 0x4C, size 0x1
     int NumUsedInSections;                 // offset 0x50, size 0x4
-    short UsedInSections[128];             // offset 0x54, size 0x100
+    int16 UsedInSections[128];             // offset 0x54, size 0x100
     int NumVisibleFromSections;            // offset 0x154, size 0x4
-    short VisibleFromSections[256];        // offset 0x158, size 0x200
+    int16 VisibleFromSections[256];        // offset 0x158, size 0x200
     int NumVisibleFromTextureSections;     // offset 0x358, size 0x4
-    short VisibleFromTextureSections[100]; // offset 0x35C, size 0xC8
+    int16 VisibleFromTextureSections[100]; // offset 0x35C, size 0xC8
     int NumPlacedInSections;               // offset 0x424, size 0x4
-    short PlacedInSections[256];           // offset 0x428, size 0x200
+    int16 PlacedInSections[256];           // offset 0x428, size 0x200
     float PlacementScore;                  // offset 0x628, size 0x4
     float MemoryScore;                     // offset 0x62C, size 0x4
     float BandwidthScore;                  // offset 0x630, size 0x4
     const char *PlacementReason;           // offset 0x634, size 0x4
-};
 
-// total size: 0x6
-struct OverlayEntry {
-    char AddRemove;              // offset 0x0, size 0x1
-    char Pad;                    // offset 0x1, size 0x1
-    short DrivableSectionNumber; // offset 0x2, size 0x2
-    short SectionNumber;         // offset 0x4, size 0x2
+    ~UsedInSectionInfo();
+    char *GetName();
+    void AddUsedInSection(int16 section_number);
+    bool IsUsedInSection(int16 section_number);
+    void AddVisibleFromSection(int16 section_number);
+    bool IsVisibleFromSection(int16 section_number);
+    void AddVisibleFromTextureSection(int16 section_number);
+    bool IsVisibleFromTextureSection(int16 section_number);
+    bool IsFull();
 };
 
 // total size: 0x6034
-struct VisibleSectionOverlay : public bTNode<VisibleSectionOverlay> {
+class VisibleSectionOverlay : public bTNode<VisibleSectionOverlay> {
+  public:
+    // total size: 0x6
+    struct OverlayEntry {
+        int8 AddRemove;              // offset 0x0, size 0x1
+        int8 Pad;                    // offset 0x1, size 0x1
+        int16 DrivableSectionNumber; // offset 0x2, size 0x2
+        int16 SectionNumber;         // offset 0x4, size 0x2
+    };
+
     VisibleSectionOverlay(const char *name) {
         NumEntries = 0;
         bMemSet(Name, 0, sizeof(Name));
@@ -266,6 +351,8 @@ struct VisibleSectionOverlay : public bTNode<VisibleSectionOverlay> {
         }
     }
 
+    int GetMemoryImageSize();
+
     char Name[40];                 // offset 0x8, size 0x28
     int NumEntries;                // offset 0x30, size 0x4
     OverlayEntry EntryTable[4096]; // offset 0x34, size 0x6000
@@ -273,7 +360,7 @@ struct VisibleSectionOverlay : public bTNode<VisibleSectionOverlay> {
 
 // total size: 0x328
 struct VisibleSectionManagerInfo {
-    int LODOffset;                                        // offset 0x0, size 0x4
+    int32 LODOffset;                                      // offset 0x0, size 0x4
     DrivableSectionsInRegion TheDrivableSectionsInRegion; // offset 0x4, size 0x324
 
     void EndianSwap() {
@@ -287,6 +374,9 @@ struct OverrideSectionObject : public bTNode<OverrideSectionObject> {
     short SectionNumber; // offset 0x8, size 0x2
     short Touched;       // offset 0xA, size 0x2
     char ObjectName[64]; // offset 0xC, size 0x40
+
+    ~OverrideSectionObject();
+    static int SortFunction(OverrideSectionObject *before, OverrideSectionObject *after);
 };
 
 // total size: 0x1C
@@ -318,7 +408,7 @@ class VisibleSectionManager {
 
     LoadingSection *FindLoadingSection(const char *name);
 
-    int GetSectionsToLoad(LoadingSection *loading_section, short *section_numbers, int max_sections);
+    int GetSectionsToLoad(LoadingSection *loading_section, int16 *section_numbers, int max_sections);
 
     OverrideSectionObject *FindOverrideSectionObject(const char *name, OverrideSectionObject *prev_object, bool partial_compare);
 
@@ -352,13 +442,13 @@ class VisibleSectionManager {
 
     DrivableScenerySection *FindDrivableSection(int section_number);
 
-    unsigned int GetVisibleSectionChecksum(int section_number);
+    uint32 GetVisibleSectionChecksum(int section_number);
 
-    bool IsGroupEnabled(unsigned int group_name_hash);
+    bool IsGroupEnabled(uint32 group_name_hash);
 
-    void EnableGroup(unsigned int group_name_hash);
+    void EnableGroup(uint32 group_name_hash);
 
-    void DisableGroup(unsigned int group_name_hash);
+    void DisableGroup(uint32 group_name_hash);
 
     void DisableAllGroups() {
         bMemSet(EnabledGroups, 0, 0x400);
@@ -392,7 +482,7 @@ class VisibleSectionManager {
     VisibleSectionUserInfo UserInfoStorageTable[512];                  // offset 0x2C24, size 0x3800
     bTList<UnallocatedVisibleSectionUserInfo> UnallocatedUserInfoList; // offset 0x6424, size 0x8
     VisibleSectionBitTable *VisibleBitTables;                          // offset 0x642C, size 0x4
-    unsigned int EnabledGroups[256];                                   // offset 0x6430, size 0x40
+    uint32 EnabledGroups[256];                                         // offset 0x6430, size 0x40
 };
 
 extern VisibleSectionManager TheVisibleSectionManager; // size: 0x6830

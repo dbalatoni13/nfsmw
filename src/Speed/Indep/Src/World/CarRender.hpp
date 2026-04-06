@@ -27,18 +27,18 @@ class ePointSprite3D {
     ~ePointSprite3D() {}
 
     // Members
-    float X;             // offset 0x0, size 0x4
-    float Y;             // offset 0x4, size 0x4
-    float Z;             // offset 0x8, size 0x4
-    float Radius;        // offset 0xC, size 0x4
-    float S1;            // offset 0x10, size 0x4
-    float T1;            // offset 0x14, size 0x4
-    float S0;            // offset 0x18, size 0x4
-    float T0;            // offset 0x1C, size 0x4
-    unsigned int Colour; // offset 0x20, size 0x4
-    unsigned int pad0;   // offset 0x24, size 0x4
-    float Cos;           // offset 0x28, size 0x4
-    float Sin;           // offset 0x2C, size 0x4
+    float X;       // offset 0x0, size 0x4
+    float Y;       // offset 0x4, size 0x4
+    float Z;       // offset 0x8, size 0x4
+    float Radius;  // offset 0xC, size 0x4
+    float S1;      // offset 0x10, size 0x4
+    float T1;      // offset 0x14, size 0x4
+    float S0;      // offset 0x18, size 0x4
+    float T0;      // offset 0x1C, size 0x4
+    uint32 Colour; // offset 0x20, size 0x4
+    uint32 pad0;   // offset 0x24, size 0x4
+    float Cos;     // offset 0x28, size 0x4
+    float Sin;     // offset 0x2C, size 0x4
 };
 ////////////////////////////////
 
@@ -97,7 +97,7 @@ struct CarFXPosInfo {
     unsigned char marker_count;             // offset 0x10, size 0x1
 };
 
-class CarPartCullingPlaneInfo {
+struct CarPartCullingPlaneInfo {
   public:
     CarPartCullingPlaneInfo(eCullableCarParts type, char *name, eCullingPolarity polarity, int numPlanes, const bVector3 &normal0,
                             const bVector3 &normal1, const bVector3 &normal2, float nd0, float nd1, float nd2) {
@@ -128,8 +128,6 @@ class CarPartCullingPlaneInfo {
 
 class CarPartInfo {
   public:
-    CarPartInfo() {}
-
     bVector3 Position;       // offset 0x0, size 0x10
     int NumCulledNotVisible; // offset 0x10, size 0x4
     int NumCulledVisible;    // offset 0x14, size 0x4
@@ -139,9 +137,10 @@ class CarPartInfo {
 class CarPartCuller {
   public:
     void InitPart(eCullableCarParts type, const bVector3 *position);
-    void CullParts(bVector3 *camera_eye, unsigned short stang);
+    void CullParts(bVector3 *camera_eye, bAngle stang);
 
     CarPartCuller() {}
+    void RenderPart(eCullableCarParts type, eView *view, bMatrix4 *local_world, bAngle stang);
     bool IsPartVisible(eCullableCarParts type) {
         return CarPartInfoTable[type].IsVisible;
     }
@@ -151,7 +150,7 @@ class CarPartCuller {
 
 typedef struct tagCarEffectParam {
     const char *Name;
-    unsigned int NameHash;
+    uint32 NameHash;
 } CarEffectParam;
 
 class CarEmitterPosition : public bSNode<CarEmitterPosition> {
@@ -172,40 +171,40 @@ class CarEmitterPosition : public bSNode<CarEmitterPosition> {
     ePositionMarker *PositionMarker; // offset 0x10, size 0x4
 };
 
-class UsedCarTextureInfo {
+struct UsedCarTextureInfo {
     // Members
-    unsigned int TexturesToLoadPerm[87];        // offset 0x0, size 0x15C
-    unsigned int TexturesToLoadTemp[87];        // offset 0x15C, size 0x15C
-    int NumTexturesToLoadPerm;                  // offset 0x2B8, size 0x4
-    int NumTexturesToLoadTemp;                  // offset 0x2BC, size 0x4
-    unsigned int MappedSkinHash;                // offset 0x2C0, size 0x4
-    unsigned int MappedSkinBHash;               // offset 0x2C4, size 0x4
-    unsigned int MappedGlobalHash;              // offset 0x2C8, size 0x4
-    unsigned int MappedWheelHash;               // offset 0x2CC, size 0x4
-    unsigned int MappedSpinnerHash;             // offset 0x2D0, size 0x4
-    unsigned int MappedBadging;                 // offset 0x2D4, size 0x4
-    unsigned int MappedSpoilerHash;             // offset 0x2D8, size 0x4
-    unsigned int MappedRoofScoopHash;           // offset 0x2DC, size 0x4
-    unsigned int MappedDashSkinHash;            // offset 0x2E0, size 0x4
-    unsigned int MappedLightHash[11];           // offset 0x2E4, size 0x2C
-    unsigned int MappedTireHash;                // offset 0x310, size 0x4
-    unsigned int MappedRimHash;                 // offset 0x314, size 0x4
-    unsigned int MappedRimBlurHash;             // offset 0x318, size 0x4
-    unsigned int MappedLicensePlateHash;        // offset 0x31C, size 0x4
-    unsigned int ReplaceSkinHash;               // offset 0x320, size 0x4
-    unsigned int ReplaceSkinBHash;              // offset 0x324, size 0x4
-    unsigned int ReplaceGlobalHash;             // offset 0x328, size 0x4
-    unsigned int ReplaceWheelHash;              // offset 0x32C, size 0x4
-    unsigned int ReplaceSpinnerHash;            // offset 0x330, size 0x4
-    unsigned int ReplaceSpoilerHash;            // offset 0x334, size 0x4
-    unsigned int ReplaceRoofScoopHash;          // offset 0x338, size 0x4
-    unsigned int ReplaceDashSkinHash;           // offset 0x33C, size 0x4
-    unsigned int ReplaceHeadlightHash[3];       // offset 0x340, size 0xC
-    unsigned int ReplaceHeadlightGlassHash[3];  // offset 0x34C, size 0xC
-    unsigned int ReplaceBrakelightHash[3];      // offset 0x358, size 0xC
-    unsigned int ReplaceBrakelightGlassHash[3]; // offset 0x364, size 0xC
-    unsigned int ReplaceReverselightHash[3];    // offset 0x370, size 0xC
-    unsigned int ShadowHash;                    // offset 0x37C, size 0x4
+    uint32 TexturesToLoadPerm[87];        // offset 0x0, size 0x15C
+    uint32 TexturesToLoadTemp[87];        // offset 0x15C, size 0x15C
+    int NumTexturesToLoadPerm;            // offset 0x2B8, size 0x4
+    int NumTexturesToLoadTemp;            // offset 0x2BC, size 0x4
+    uint32 MappedSkinHash;                // offset 0x2C0, size 0x4
+    uint32 MappedSkinBHash;               // offset 0x2C4, size 0x4
+    uint32 MappedGlobalHash;              // offset 0x2C8, size 0x4
+    uint32 MappedWheelHash;               // offset 0x2CC, size 0x4
+    uint32 MappedSpinnerHash;             // offset 0x2D0, size 0x4
+    uint32 MappedBadging;                 // offset 0x2D4, size 0x4
+    uint32 MappedSpoilerHash;             // offset 0x2D8, size 0x4
+    uint32 MappedRoofScoopHash;           // offset 0x2DC, size 0x4
+    uint32 MappedDashSkinHash;            // offset 0x2E0, size 0x4
+    uint32 MappedLightHash[11];           // offset 0x2E4, size 0x2C
+    uint32 MappedTireHash;                // offset 0x310, size 0x4
+    uint32 MappedRimHash;                 // offset 0x314, size 0x4
+    uint32 MappedRimBlurHash;             // offset 0x318, size 0x4
+    uint32 MappedLicensePlateHash;        // offset 0x31C, size 0x4
+    uint32 ReplaceSkinHash;               // offset 0x320, size 0x4
+    uint32 ReplaceSkinBHash;              // offset 0x324, size 0x4
+    uint32 ReplaceGlobalHash;             // offset 0x328, size 0x4
+    uint32 ReplaceWheelHash;              // offset 0x32C, size 0x4
+    uint32 ReplaceSpinnerHash;            // offset 0x330, size 0x4
+    uint32 ReplaceSpoilerHash;            // offset 0x334, size 0x4
+    uint32 ReplaceRoofScoopHash;          // offset 0x338, size 0x4
+    uint32 ReplaceDashSkinHash;           // offset 0x33C, size 0x4
+    uint32 ReplaceHeadlightHash[3];       // offset 0x340, size 0xC
+    uint32 ReplaceHeadlightGlassHash[3];  // offset 0x34C, size 0xC
+    uint32 ReplaceBrakelightHash[3];      // offset 0x358, size 0xC
+    uint32 ReplaceBrakelightGlassHash[3]; // offset 0x364, size 0xC
+    uint32 ReplaceReverselightHash[3];    // offset 0x370, size 0xC
+    uint32 ShadowHash;                    // offset 0x37C, size 0x4
 };
 
 inline int IsNISCopCar(int type) {
@@ -232,13 +231,13 @@ class CarPartModel {
     }
 
     void SetModel(struct eModel *model) {
-        this->mModel = reinterpret_cast<unsigned int>(model);
+        this->mModel = reinterpret_cast<uint32>(model);
     }
 
     bool IsLodMissing() const {}
 
   private:
-    unsigned int mModel; // offset 0x0, size 0x4
+    uint32 mModel; // offset 0x0, size 0x4
 };
 
 class CarRenderInfo {
@@ -385,13 +384,13 @@ class CarRenderInfo {
 
     void SetCarDamageState(bool on, unsigned int startID, unsigned int endID);
 
-    void SetCarGlassDamageState(bool on, CarReplacementTexID replacementId, unsigned int undamageHash, unsigned int damageHash);
+    void SetCarGlassDamageState(bool on, CarReplacementTexID replacementId, uint32 undamageHash, uint32 damageHash);
 
     void SetDamageInfo(const DamageZone::Info &damageInfo);
 
-    unsigned int FindCarPart(int slotId);
+    uint32 FindCarPart(int slotId);
 
-    unsigned int HideCarPart(int slotId, bool hide);
+    uint32 HideCarPart(int slotId, bool hide);
 
     void UpdateCarParts();
 
@@ -411,13 +410,13 @@ class CarRenderInfo {
 
     void RenderTireBlur(eView *view, TextureInfo *texture_info, bMatrix4 *local_world, float alpha, eDynamicLightContext *light_context);
 
-    void RenderTextureHeadlights(eView *view, bMatrix4 *l_w, unsigned int Accurate);
+    void RenderTextureHeadlights(eView *view, bMatrix4 *l_w, uint32 Accurate);
 
     void RenderFlaresOnCar(eView *view, const bVector3 *position, const bMatrix4 *body_matrix, int force_light_state, int reflexion,
                            int renderFlareFlags);
 
     bool Render(eView *view, const bVector3 *world_position, const bMatrix4 *body_matrix, bMatrix4 *tire_matrices, bMatrix4 *brake_matrices,
-                bMatrix4 *spinner_matrices, unsigned int extra_render_flags, int force_light_state, int reflexion, float shadow_scale,
+                bMatrix4 *spinner_matrices, uint32 extra_render_flags, int force_light_state, int reflexion, float shadow_scale,
                 enum CARPART_LOD tireLOD, enum CARPART_LOD carLOD);
 
     void convex_hull(bVector3 *p, const WCollider *wcoll, int &n, float Z, float zBias, int fast);
@@ -428,13 +427,13 @@ class CarRenderInfo {
     void DrawAmbientShadow(eView *view, const bVector3 *position, float shadow_scale, bMatrix4 *localWorld, bMatrix4 *worldLocal,
                            bMatrix4 *biasedIdentity);
 
-    void RenderPart(eView *view, CarPartModel *carPart, bMatrix4 *local_to_world, eDynamicLightContext *light_context, unsigned int flags);
+    void RenderPart(eView *view, CarPartModel *carPart, bMatrix4 *local_to_world, eDynamicLightContext *light_context, uint32 flags);
 
     void InitEmitterPositions(bVector4 *tire_positions);
 
     int GetEmitterPositions(bSList<CarEmitterPosition> &markers_out, const unsigned int *position_name_hashes, int num_pos_name_hashes);
 
-    void GetLightPositions(bSList<CarEmitterPosition> &pos, unsigned int position);
+    void GetLightPositions(bSList<CarEmitterPosition> &pos, uint32 position);
 
     // Static members
     static bool mAlphaWritesEnabled; // size: 0x1, address: 0xFFFFFFFF
@@ -449,7 +448,7 @@ class CarRenderInfo {
     WWorldPos mWorldPos;                                           // offset 0x3C, size 0x3C
     RideInfo *pRideInfo;                                           // offset 0x78, size 0x4
     CarTypeInfo *pCarTypeInfo;                                     // offset 0x7C, size 0x4
-    short LastCarPartChanged;                                      // offset 0x80, size 0x2
+    int16 LastCarPartChanged;                                      // offset 0x80, size 0x2
     bVector3 AABBMin;                                              // offset 0x84, size 0x10
     bVector3 AABBMax;                                              // offset 0x94, size 0x10
     bVector3 ModelOffset;                                          // offset 0xA4, size 0x10
@@ -466,7 +465,7 @@ class CarRenderInfo {
     eLightMaterial *LightMaterial_Spinner;                         // offset 0xE8, size 0x4
     int CarbonHood;                                                // offset 0xEC, size 0x4
     eDynamicLightContext *Car_light_context;                       // offset 0xF0, size 0x4
-    unsigned int CarFrame;                                         // offset 0xF4, size 0x4
+    uint32 CarFrame;                                               // offset 0xF4, size 0x4
     bTList<eLightFlare> LightFlareList;                            // offset 0xF8, size 0x8
     float CarTimebaseStart;                                        // offset 0x100, size 0x4
     float WheelYRenderOffset[4];                                   // offset 0x104, size 0x10
@@ -486,34 +485,35 @@ class CarRenderInfo {
     int SpecialFX;                                                 // offset 0x1168, size 0x4
     float mCar_elevation;                                          // offset 0x116C, size 0x4
     int NOSstate;                                                  // offset 0x1170, size 0x4
-    unsigned short mSteeringR;                                     // offset 0x1174, size 0x2
-    unsigned short mSteeringL;                                     // offset 0x1176, size 0x2
+    bAngle mSteeringR;                                             // offset 0x1174, size 0x2
+    bAngle mSteeringL;                                             // offset 0x1176, size 0x2
     bMatrix4 LastFewMatrices[3];                                   // offset 0x1178, size 0xC0
     bVector3 LastFewPositions[3];                                  // offset 0x1238, size 0x30
     int matrixIndex;                                               // offset 0x1268, size 0x4
     ePositionMarker *SpoilerPositionMarker;                        // offset 0x126C, size 0x4
     ePositionMarker *SpoilerPositionMarker2;                       // offset 0x1270, size 0x4
     ePositionMarker *RoofScoopPositionMarker;                      // offset 0x1274, size 0x4
-    unsigned int AAflags;                                          // offset 0x1278, size 0x4
+    uint32 AAflags;                                                // offset 0x1278, size 0x4
     int AAdraw_solid;                                              // offset 0x127C, size 0x4
     int AAdraw_alpha;                                              // offset 0x1280, size 0x4
     int AAdraw_shadows;                                            // offset 0x1284, size 0x4
-    UsedCarTextureInfo mUsedTextureInfos;                          // offset 0x1288, size 0x380
-    unsigned int mOnLights;                                        // offset 0x1608, size 0x4
-    unsigned int mBrokenLights;                                    // offset 0x160C, size 0x4
-    CARPART_LOD mMinLodLevel;                                      // offset 0x1610, size 0x4
-    CARPART_LOD mMaxLodLevel;                                      // offset 0x1614, size 0x4
-    CARPART_LOD mMinReflectionLodLevel;                            // offset 0x1618, size 0x4
-    CarPartCuller TheCarPartCuller;                                // offset 0x161C, size 0x134
-    DamageZone::Info mDamageZoneInfo;                              // offset 0x1750, size 0x4
-    float mDeltaTime;                                              // offset 0x1754, size 0x4
-    float mRadius;                                                 // offset 0x1758, size 0x4
-    Attrib::Gen::ecar mAttributes;                                 // offset 0x175C, size 0x14
-    bool mFlashing;                                                // offset 0x1770, size 0x1
-    float mFlashInterval;                                          // offset 0x1774, size 0x4
-    DamageZone::Info mDamageInfoCache;                             // offset 0x1778, size 0x4
-    bool mWheelWobbleEnabled[4];                                   // offset 0x177C, size 0x4
-    bool mMirrorLeftWheels;                                        // offset 0x178C, size 0x1
+  private:
+    UsedCarTextureInfo mUsedTextureInfos; // offset 0x1288, size 0x380
+    unsigned int mOnLights;               // offset 0x1608, size 0x4
+    unsigned int mBrokenLights;           // offset 0x160C, size 0x4
+    CARPART_LOD mMinLodLevel;             // offset 0x1610, size 0x4
+    CARPART_LOD mMaxLodLevel;             // offset 0x1614, size 0x4
+    CARPART_LOD mMinReflectionLodLevel;   // offset 0x1618, size 0x4
+    CarPartCuller TheCarPartCuller;       // offset 0x161C, size 0x134
+    DamageZone::Info mDamageZoneInfo;     // offset 0x1750, size 0x4
+    float mDeltaTime;                     // offset 0x1754, size 0x4
+    float mRadius;                        // offset 0x1758, size 0x4
+    Attrib::Gen::ecar mAttributes;        // offset 0x175C, size 0x14
+    bool mFlashing;                       // offset 0x1770, size 0x1
+    float mFlashInterval;                 // offset 0x1774, size 0x4
+    DamageZone::Info mDamageInfoCache;    // offset 0x1778, size 0x4
+    bool mWheelWobbleEnabled[4];          // offset 0x177C, size 0x4
+    bool mMirrorLeftWheels;               // offset 0x178C, size 0x1
 };
 
 class FrontEndRenderingCar : public bTNode<FrontEndRenderingCar> {

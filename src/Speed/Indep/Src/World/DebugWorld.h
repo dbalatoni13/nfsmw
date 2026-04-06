@@ -22,10 +22,6 @@ class DebugWorld {
         return *mThis;
     }
 
-    static bool Exists() {
-        return mThis != nullptr;
-    }
-
   private:
     static DebugWorld *mThis;
     static bool mOnOff;
@@ -33,9 +29,9 @@ class DebugWorld {
 
 struct SavedHotPosition {
     // total size: 0x18
-    bVector3 Position;    // offset 0x0, size 0x10
-    unsigned short Angle; // offset 0x10, size 0x2
-    float Speed;          // offset 0x14, size 0x4
+    bVector3 Position; // offset 0x0, size 0x10
+    bAngle Angle;      // offset 0x10, size 0x2
+    float Speed;       // offset 0x14, size 0x4
 
     SavedHotPosition() {}
 };

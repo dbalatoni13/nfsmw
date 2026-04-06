@@ -17,12 +17,12 @@ struct SpeedScriptFile {
 
 struct SpeedScriptEntry {
     // total size: 0xC
-    unsigned char FileNumber;         // offset 0x0, size 0x1
-    unsigned char IsCommand;          // offset 0x1, size 0x1
-    unsigned short NextCommandOffset; // offset 0x2, size 0x2
-    unsigned int ArgBufPos;           // offset 0x4, size 0x4
-    unsigned short LineNumber;        // offset 0x8, size 0x2
-    unsigned short Pad;               // offset 0xA, size 0x2
+    uint8 FileNumber;         // offset 0x0, size 0x1
+    uint8 IsCommand;          // offset 0x1, size 0x1
+    uint16 NextCommandOffset; // offset 0x2, size 0x2
+    uint32 ArgBufPos;         // offset 0x4, size 0x4
+    uint16 LineNumber;        // offset 0x8, size 0x2
+    uint16 Pad;               // offset 0xA, size 0x2
 };
 
 // total size: 0x268

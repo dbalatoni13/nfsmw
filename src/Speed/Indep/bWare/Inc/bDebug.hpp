@@ -9,10 +9,12 @@
 
 #include "Speed/Indep/Libs/realcore/6.24.00/include/common/realcore/system.h"
 
-struct bMutex {
+class bMutex {
     // total size: 0x20
+  private:
     unsigned int MutexMemory[8]; // offset 0x0, size 0x20
 
+  public:
     void Create();
     void Destroy();
     void Lock();
