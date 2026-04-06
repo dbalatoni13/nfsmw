@@ -3,6 +3,7 @@
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
+#include "Speed/Indep/Src/Frontend/MoviePlayer/MoviePlayer.hpp"
 #include "Speed/Indep/Src/Generated/Messages/MNotifyMusicFlow.h"
 #include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
 #include "Speed/Indep/Src/Misc/Config.h"
@@ -37,6 +38,7 @@ extern SongInfoList Songs;
 extern void SummonChyron(char *title, char *artist, char *album);
 extern void SNDSYS_service();
 extern ParameterAccessor AmbientAccessor;
+extern MoviePlayer *gMoviePlayer;
 
 SndBase::TypeInfo SFXObj_Pathfinder::s_TypeInfo = { 0, "SFXObj_Pathfinder", nullptr, SFXObj_Pathfinder::CreateObject };
 SndBase::TypeInfo SFXObj_PFEATrax::s_TypeInfo = { 0, "SFXObj_PFEATrax", nullptr, SFXObj_PFEATrax::CreateObject };
@@ -1047,6 +1049,101 @@ void SFXObj_PFEATrax::UpdatePursuitBreaker(float t) {
         m_FilterFreq = m_FilterFade->iGetValue();
     } else {
         m_FilterFreq = 0xFFFF;
+    }
+}
+
+void SFXObj_PFEATrax::ProcessUpdate() {
+    bool path_playing;
+    bool user_playing;
+
+    if (IsAudioStreamingEnabled == 0) {
+        return;
+    }
+    if (m_bClearSkipUpdate) {
+        m_bSkipUpdate = false;
+        m_bClearSkipUpdate = false;
+    }
+    if ((m_Flags & 0x800) == 0) {
+        if ((m_Flags & 0x404) != 4) {
+            return;
+        }
+        if (m_PFParms[m_ActiveProject].queue_next == 1 && (m_Flags & 4) != 0) {
+            SendPathEvent();
+            SNDSYS_service();
+            goto CHECK_SKIP_UPDATE;
+        }
+        if (m_MusicType == eMUSIC_TYPE_LICENCED && (m_Flags & 0x40) == 0) {
+            if (m_bSkipUpdate) {
+                goto CHECK_SKIP_UPDATE;
+            }
+            if (m_CurPathEvent != 0x01C53FC7 && m_CurPathEvent != 0x01C3FA91) {
+                user_playing = false;
+                if (gMoviePlayer && gMoviePlayer->IsMoviePlaying()) {
+                    user_playing = true;
+                }
+                if (!user_playing) {
+                    NotifyChyron();
+                }
+            }
+        }
+    }
+    if (!m_bSkipUpdate) {
+        if ((m_Flags & 0x800) == 0) {
+            path_playing = false;
+            if (m_PFParms[m_ActiveProject].track_status == 5 || m_PFParms[m_ActiveProject].track_status == 2) {
+                path_playing = true;
+            }
+        } else {
+            path_playing = false;
+        }
+        if (!path_playing) {
+            return;
+        }
+        {
+            int nvol;
+
+            nvol = 0;
+            if (m_EATraxState == EATRAX_IG) {
+                if (m_MusicType == eMUSIC_TYPE_INTERACTIVE) {
+                    nvol = 3;
+                } else if (m_MusicType == eMUSIC_TYPE_LICENCED || m_MusicType == eMUSIC_TYPE_SPLASH) {
+                    nvol = 1;
+                } else if (m_MusicType == eMUSIC_TYPE_AMBIENCE) {
+                    nvol = 5;
+                }
+                if (nvol != 0 || m_MusicType == eMUSIC_TYPE_INTERACTIVE) {
+                    nvol = GetDMixOutput(nvol, DMX_VOL);
+                    nvol = nvol * 100 >> 0xF;
+                }
+            } else if (m_EATraxState == EATRAX_FE) {
+                if (m_MusicType == eMUSIC_TYPE_AMBIENCE) {
+                    nvol = 4;
+                    nvol = GetDMixOutput(nvol, DMX_VOL);
+                    nvol = nvol * 100 >> 0xF;
+                } else if (m_MusicType != eMUSIC_TYPE_LICENCED && m_MusicType != eMUSIC_TYPE_SPLASH) {
+                    nvol = 0;
+                }
+            }
+            m_Volume = nvol;
+            if ((m_Flags & 0x800) != 0) {
+                return;
+            }
+            PATH_volume(m_PFParms[m_ActiveProject].PATH_TRACK, static_cast<signed char>(nvol));
+            SNDSYS_entercritical();
+            SNDSTRM_lowpass(m_pSFXCTL_Pathfinder->GetHandle(m_ActiveProject), GetDMixOutput(9, DMX_FREQ));
+            SNDSYS_leavecritical();
+            return;
+        }
+    }
+
+CHECK_SKIP_UPDATE:
+    {
+        EAXS_StreamChannel *pch;
+
+        pch = g_pEAXSound->GetStreamManager()->GetStreamChannel(1);
+        if (pch) {
+            pch->SetVol(0, false);
+        }
     }
 }
 

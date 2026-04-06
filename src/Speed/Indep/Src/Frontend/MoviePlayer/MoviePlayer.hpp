@@ -56,6 +56,10 @@ class MoviePlayer {
         return fStatus;
     }
 
+    bool IsMoviePlaying() {
+        return static_cast<unsigned int>(fStatus - 3) < 3;
+    }
+
   private:
     Settings mSettings;         // offset 0x0, size 0x124
     unsigned int fCurFrameNum;  // offset 0x124, size 0x4
