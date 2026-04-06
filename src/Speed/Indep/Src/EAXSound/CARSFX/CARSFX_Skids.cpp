@@ -45,19 +45,16 @@ void CARSFX_Skids::Destroy() {
 }
 
 int CARSFX_Skids::GetController(int Index) {
-    if (Index == 1) {
+    switch (Index) {
+    case 0:
+        return 1;
+    case 1:
         return 0xB;
+    case 2:
+        return 0xC;
+    default:
+        return -1;
     }
-    if (Index > 1) {
-        if (Index == 2) {
-            return 0xC;
-        }
-    } else {
-        if (Index == 0) {
-            return 1;
-        }
-    }
-    return -1;
 }
 
 void CARSFX_Skids::SetupSFX(CSTATE_Base *_StateBase) {
@@ -66,58 +63,29 @@ void CARSFX_Skids::SetupSFX(CSTATE_Base *_StateBase) {
 
 void CARSFX_Skids::InitSFX() {
     int numskids;
-    FX_SKID *skidControl;
 
     if (!GetPhysCar()) {
         return;
     }
 
     SndBase::InitSFX();
+    numskids = 0;
     if (TheRaceParameters.IsDriftRace()) {
-        SkidType = 1;
-    } else {
-        SkidType = 0;
+        numskids = 1;
     }
+    SkidType = numskids;
     if (m_pSkidControl) {
         delete m_pSkidControl;
     }
 
     g_pEAXSound->SetCsisName(this);
-    skidControl = static_cast<FX_SKID *>(Csis::System::Alloc(sizeof(FX_SKID)));
-    skidControl->mData.azimuth = 0;
-    skidControl->mData.vOL_Fwd = 0;
-    skidControl->mData.vOL_Side = 0;
-    skidControl->mData.vOL_Back = 0;
     numskids = SkidType;
     if (numskids < 0) {
         numskids = 0;
     } else if (numskids > 3) {
         numskids = 3;
     }
-    skidControl->mData.pITCH_OFFSET = 0;
-    skidControl->mData.hOP = 0;
-    skidControl->mData.sPEED = 0;
-    skidControl->mData.oPPOS_Side = 0;
-    skidControl->mData.uNDERSTEER = 0;
-    skidControl->mData.oVERSTEER = 0;
-    skidControl->mData.surface = 0;
-    skidControl->mData.front_FB = 0;
-    skidControl->mData.front_LR = 0;
-    skidControl->mData.front_Load = 0;
-    skidControl->mData.back_FB = 0;
-    skidControl->mData.back_LR = 0;
-    skidControl->mData.back_Load = 0;
-    skidControl->mData.filter_Effects_HiPass = 0;
-    skidControl->mData.filter_Effects_Wet_FX = 0;
-    skidControl->mData.tYPE = numskids;
-    skidControl->mData.filter_Effects_LoPass = 25000;
-    skidControl->mData.filter_Effects_Dry_FX = 0x7FFF;
-    numskids = Csis::Class::CreateInstance(&Csis::gFX_SKIDHandle, &skidControl->mData, &skidControl->mpClass);
-    if (numskids < 0) {
-        Csis::gFX_SKIDHandle.Set(&Csis::FX_SKIDId);
-        Csis::Class::CreateInstance(&Csis::gFX_SKIDHandle, &skidControl->mData, &skidControl->mpClass);
-    }
-    m_pSkidControl = skidControl;
+    m_pSkidControl = new FX_SKID(0, 0, 0, 0, numskids, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 25000, 0, 0x7FFF, 0);
     numskids = m_pSkidControl->GetRefCount();
     Enable();
 }
@@ -126,18 +94,22 @@ void CARSFX_Skids::AttachController(SFXCTL *psfxctl) {
     unsigned int objIndex;
 
     objIndex = psfxctl->GetObjectIndex();
-    if (objIndex == 0xB) {
+    switch (objIndex) {
+    case 1:
+        m_pWheelCtl = static_cast<SFXCTL_Wheel *>(psfxctl);
+        break;
+    case 0xB:
         m_pRightWheelPos = static_cast<SFXCTL_3DRightWheelPos *>(psfxctl);
         m_pRightWheelPos->AssignPositionVector(m_pWheelCtl->GetWheelPos(1, 2));
         m_pRightWheelPos->AssignVelocityVector(nullptr);
-    } else if (objIndex < 0xC) {
-        if (objIndex == 1) {
-            m_pWheelCtl = static_cast<SFXCTL_Wheel *>(psfxctl);
-        }
-    } else if (objIndex == 0xC) {
+        break;
+    case 0xC:
         m_pLeftWheelPos = static_cast<SFXCTL_3DLeftWheelPos *>(psfxctl);
         m_pLeftWheelPos->AssignPositionVector(m_pWheelCtl->GetWheelPos(0, 2));
         m_pLeftWheelPos->AssignVelocityVector(nullptr);
+        break;
+    default:
+        break;
     }
 }
 
@@ -243,16 +215,14 @@ void CARSFX_Skids::ProcessUpdate() {
 }
 
 void CARSFX_Skids::SetupLoadData() {
-    int maxLevel;
     int nlvl;
 
     nlvl = 0;
     if (m_UGL > 0) {
         nlvl = m_UGL;
     }
-    maxLevel = 1;
-    if (maxLevel < nlvl) {
-        nlvl = maxLevel;
+    if (nlvl > 1) {
+        nlvl = 1;
     }
 
     LoadAsset(g_pEAXSound->GetAttributes()->AEMS_SkidBanks(nlvl), SNDPATH_SKIDS, EAXSND_DT_AEMS_ASYNCSPUMEM, eBANK_SLOT_NONE, true);
