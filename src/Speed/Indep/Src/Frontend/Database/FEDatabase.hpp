@@ -279,6 +279,10 @@ class cFrontendDatabase {
         return CurrentUserProfiles[0]->GetCareer();
     }
 
+    AudioSettings *GetAudioSettings() {
+        return &CurrentUserProfiles[0]->GetOptions()->TheAudioSettings;
+    }
+
     bool IsSplitScreenMode() {
         return FEGameMode & 4;
     }

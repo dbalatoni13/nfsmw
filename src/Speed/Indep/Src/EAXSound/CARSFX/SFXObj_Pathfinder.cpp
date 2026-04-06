@@ -6,7 +6,9 @@
 #include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
 
 extern int PATH_stop(int tracks);
+extern void PATH_clearallevents(int mask);
 extern int PURSUIT_TO_LIC_DELAY;
+extern int PFXMAP[4][21][2];
 
 SndBase::TypeInfo SFXObj_Pathfinder::s_TypeInfo = { 0, "SFXObj_Pathfinder", nullptr, SFXObj_Pathfinder::CreateObject };
 SndBase::TypeInfo SFXObj_PFEATrax::s_TypeInfo = { 0, "SFXObj_PFEATrax", nullptr, SFXObj_PFEATrax::CreateObject };
@@ -212,4 +214,66 @@ bool SFXObj_PFEATrax::TestToLicensed(bool bstart) {
     }
 
     return false;
+}
+
+void SFXObj_PFEATrax::RestartRace() {
+    if (static_cast<unsigned int>(m_MusicType) < eMUSIC_TYPE_AMBIENCE) {
+        PATH_stop(m_PFParms[m_ActiveProject].PATH_TRACK);
+        PATH_clearallevents(0x0F000000);
+        m_MusicType = eMUSIC_TYPE_LICENCED;
+        m_bPathFAILED = false;
+    }
+
+    mT_ambienceStart = Timer(0);
+}
+
+void SFXObj_PFEATrax::SwapInteractiveProjects() {
+    m_Flags |= 0x18;
+}
+
+void SFXObj_PFEATrax::Stop() {
+    m_EATraxState = EATRAX_OFF;
+    PATH_clearallevents(0x0F000000);
+    PATH_stop(m_PFParms[m_ActiveProject].PATH_TRACK);
+    m_PFParms[m_ActiveProject].queue_next = 0;
+}
+
+eEATRAXSTATES SFXObj_PFEATrax::GenEATraxState() {
+    if (FEDatabase->GetAudioSettings()->MasterVol <= 0.0f) {
+        return EATRAX_OFF;
+    }
+
+    if (g_pEAXSound->GetSndGameMode() == SND_FRONTEND) {
+        return EATRAX_FE;
+    }
+
+    return EATRAX_IG;
+}
+
+void SFXObj_PFEATrax::MessagePartUpdate(const MControlPathfinder &message) {
+    m_CurPart = message.GetPartID();
+    m_bClearSkipUpdate = true;
+    if (m_CurPart > 8) {
+        return;
+    }
+
+    if (m_CurPart < -1) {
+        return;
+    }
+
+    if (m_Flags & 0x100) {
+        m_Flags &= ~0x100u;
+    }
+}
+
+void SFXObj_PFEATrax::MessagePerpBusted(const MPerpBusted &message) {}
+
+void SFXObj_PFEATrax::MessageInteractiveDone(const MControlPathfinder &message) {
+    mT_ambienceStart = WorldTimer;
+}
+
+void SFXObj_PFEATrax::MessageSwapInteractive(const MControlPathfinder &message) {
+    m_CurPathEvent = PFXMAP[m_InteractiveProj][18][0];
+    m_PrevPathEvent = 0;
+    m_PFParms[m_ActiveProject].queue_next = 1;
 }
