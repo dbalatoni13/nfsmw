@@ -1,8 +1,11 @@
 #include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_MomentStrm.hpp"
 
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
+#include "Speed/Indep/Src/EAXSound/SndCamera.hpp"
+#include "Speed/Indep/Src/EAXSound/Stream/NISSFXModule.hpp"
 #include "Speed/Indep/Src/Generated/Messages/MGamePlayMoment.h"
 #include "Speed/Indep/Src/Generated/Messages/MPursuitBreaker.h"
+#include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
 #include "Speed/Indep/Src/Misc/Config.h"
 #include "Speed/Indep/Src/EAXSound/Stream/SpeechManager.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
@@ -147,6 +150,58 @@ void SFXObj_MomentStrm::ReceiveMoment(const MGamePlayMoment &message) {
         bHoldStream = false;
         mHeldMoment = nullptr;
     }
+}
+
+bool SFXObj_MomentStrm::ShouldStreamPlay(unsigned int key, bool IsQueueing, float dist_sqrd) {
+    Speech::SED_NISSFX *nismgr;
+
+    if (m_CurMoment == key && m_TimeBeforeRetrigger > 0.0f && key != 0x5AEFC6A8 && key != 0xA80F0E08) {
+        return false;
+    }
+
+    if (m_CurMoment != 0 && bHoldStream != 0 && mHeldMoment && IsQueueing) {
+        for (int num_play = 0; num_play < SndCamera::NumPlayers; num_play++) {
+            float xdist = bAbs(SndCamera::GetWorldCarPos(num_play)->x - mHeldMoment->vPos.z);
+            float ydist = bAbs(SndCamera::GetWorldCarPos(num_play)->y + mHeldMoment->vPos.x);
+
+            if (xdist * xdist + ydist * ydist < dist_sqrd) {
+                return false;
+            }
+        }
+    }
+
+    if (!GRaceStatus::Exists()) {
+        return false;
+    }
+
+    if (GRaceStatus::Get().GetRaceParameters()) {
+        if (!GRaceStatus::Get().GetActivelyRacing()) {
+            return false;
+        }
+    }
+
+    if ((nismgr = static_cast<Speech::SED_NISSFX *>(Speech::Manager::GetSpeechModule(0)))->GetStreamType() != STRM_SFX_MOMENT) {
+        if (nismgr->GetStreamChannel()->IsPlaying()) {
+            return false;
+        }
+    }
+
+    Attrib::Gen::aud_moment_strm momentstrm(key, 0, nullptr);
+    char streampriority = momentstrm.strmpriority();
+
+    if (m_CurMoment != 0) {
+        if (IsQueueing && !momentstrm.CanInterupt()) {
+            return false;
+        }
+
+        Attrib::Gen::aud_moment_strm curmoment(m_CurMoment, 0, nullptr);
+
+        if (curmoment.strmpriority() > streampriority) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 SFXCTL_3DMomentPos::TypeInfo *SFXCTL_3DMomentPos::GetTypeInfo() const {

@@ -84,7 +84,7 @@ struct aud_moment_strm : Instance {
         Csis::Type_SoundFX_Type stream; // offset 0x0, size 0x4
         Csis::Type_SoundFX_Param param; // offset 0x4, size 0x4
         eVOL_MOMENT VolSlot;            // offset 0x8, size 0x4
-        char strmpriority;              // offset 0xc, size 0x1
+        signed char strmpriority;       // offset 0xc, size 0x1
     };
 
     void *operator new(size_t bytes) {
@@ -158,7 +158,7 @@ struct aud_moment_strm : Instance {
         return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->VolSlot;
     }
 
-    const char &strmpriority() const {
+    const signed char &strmpriority() const {
         return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->strmpriority;
     }
 };
