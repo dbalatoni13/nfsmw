@@ -105,6 +105,22 @@ void CARSFX_GinsuEngine::Detach() {
     CARSFX_EngineBase::Detach();
 }
 
+void CARSFX_GinsuEngine::InitializeEngine() {
+    int UseEE;
+
+    StartupGinsu();
+    UseEE = SPU_or_EE;
+    m_pcsisCarCtrl = new CAR(m_pEAXCar->GetAttributes().CarID(), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, UseEE, 0, 0, 0, 0,
+                             0, 0, 0, 0, 0, 0, 0, 0, 0);
+    m_refCount = static_cast<unsigned short>(m_pcsisCarCtrl->GetRefCount());
+    if (GetPhysCar()->GetContext() == Sound::kRaceContext_QuickRace && m_pEAXCar->GetAttributes().Tranny()) {
+        int ref;
+
+        m_pTranny = new CAR_TRANNY(m_pEAXCar->GetAttributes().CarID(), 0, 0, 0, 0, 25000, 0, 0x7FFF, 0);
+        ref = m_pTranny->GetRefCount();
+    }
+}
+
 void CARSFX_GinsuEngine::SetEngineParams() {
     int nDMixOut;
     int TmpVol;
