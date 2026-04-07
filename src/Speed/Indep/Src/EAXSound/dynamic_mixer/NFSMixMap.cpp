@@ -1571,7 +1571,7 @@ void NFSMixMap::Update3DMixCtls() {
         } else {
             eMIXTABLEID nqOne;
             eMIXTABLEID nqTwo;
-            float fdist;
+            float fdist[2];
             float fmindist[2];
             float fmaxdist[2];
             int azim;
@@ -1589,20 +1589,24 @@ void NFSMixMap::Update3DMixCtls() {
             curveInfo = static_cast<unsigned int>(psparams->nCURVEID_DOPPLER);
             nAzimType = (psparams->n3DSTATEINFOID >> 8) & 0xF;
             nDistType = (psparams->n3DSTATEINFOID >> 12) & 0xF;
-            if (nDistType == 0) {
-                fdist = static_cast<float>(p3Du->pInputs[1]) * 0.01f;
-            } else if (nDistType == 1) {
-                fdist = static_cast<float>(p3Du->pInputs[0]) * 0.01f;
+            if (nDistType != 0) {
+                fdist[0] = -1.0f;
+                if (nDistType == 1) {
+                    fdist[0] = static_cast<float>(p3Du->pInputs[0]) * 0.01f;
+                }
             } else {
-                fdist = -1.0f;
+                fdist[0] = static_cast<float>(p3Du->pInputs[1]) * 0.01f;
             }
+            fdist[1] = fdist[0];
 
-            if (nAzimType == 0) {
-                azim = p3Du->pInputs[3];
-            } else if (nAzimType == 1) {
-                azim = p3Du->pInputs[2];
+            if (nAzimType != 0) {
+                if (nAzimType == 1) {
+                    azim = p3Du->pInputs[2];
+                } else {
+                    azim = 0;
+                }
             } else {
-                azim = 0;
+                azim = p3Du->pInputs[3];
             }
 
             p3Du->azimuth = azim;
@@ -1650,38 +1654,31 @@ void NFSMixMap::Update3DMixCtls() {
                 break;
             }
 
-            if ((fdist <= fmaxdist[0]) || (fdist <= fmaxdist[1])) {
+            if ((fdist[0] <= fmaxdist[0]) || (fdist[0] <= fmaxdist[1])) {
                 float fdistratio;
-                float fotherdistratio;
-                float fwork0;
-                float fwork1;
-                unsigned int dopplerCurve;
 
-                fwork0 = fdist;
-                if (fdist < fmindist[0]) {
-                    fwork0 = fmindist[0];
+                if (fdist[0] < fmindist[0]) {
+                    fdist[0] = fmindist[0];
                 }
-                if (fmaxdist[0] < fwork0) {
-                    fwork0 = fmaxdist[0];
+                if (fmaxdist[0] < fdist[0]) {
+                    fdist[0] = fmaxdist[0];
                 }
 
-                fwork1 = fdist;
-                if (fdist < fmindist[1]) {
-                    fwork1 = fmindist[1];
+                if (fdist[1] < fmindist[1]) {
+                    fdist[1] = fmindist[1];
                 }
-                if (fmaxdist[1] < fwork1) {
-                    fwork1 = fmaxdist[1];
+                if (fmaxdist[1] < fdist[1]) {
+                    fdist[1] = fmaxdist[1];
                 }
 
-                fdistratio = (fwork0 - fmindist[0]) / (fmaxdist[0] - fmindist[0]);
-                fotherdistratio = (fwork1 - fmindist[1]) / (fmaxdist[1] - fmindist[1]);
+                fdistratio = (fdist[0] - fmindist[0]) / (fmaxdist[0] - fmindist[0]);
+                fdist[1] = (fdist[1] - fmindist[1]) / (fmaxdist[1] - fmindist[1]);
                 qDist[0] = static_cast<int>(fdistratio * 32767.0f);
-                qDist[1] = static_cast<int>(fotherdistratio * 32767.0f);
+                qDist[1] = static_cast<int>(fdist[1] * 32767.0f);
                 p3Du->q15Rolloff = NFSMixShape::GetAzimShapeOutput(nqOne, nqTwo, qDist, nMixRatio);
                 p3Du->dBRolloff = NFSMixShape::GetdBFromQ15(p3Du->q15Rolloff);
 
-                dopplerCurve = curveInfo & 0xFFFF;
-                if (dopplerCurve != 0) {
+                if ((curveInfo & 0xFFFF) != 0) {
                     float fcents;
                     float fcurdist;
                     float fdeltanewdist;
@@ -1690,7 +1687,7 @@ void NFSMixMap::Update3DMixCtls() {
                     float fvelsound;
                     unsigned int velocity;
 
-                    fvelsound = static_cast<float>(dopplerCurve);
+                    fvelsound = static_cast<float>(curveInfo & 0xFFFF);
                     fcents = 0.0f;
 
                     if ((m_CurCamState < 3) || (m_CurCamState == DMIX_NFS_NIS_CAM)) {
