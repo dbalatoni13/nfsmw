@@ -274,7 +274,9 @@ struct Rain {
     Rain(eView *view, RainType StartType);
     void Init(RainType type, float percent);
 
-    float GetRainIntensity() {}
+    float GetRainIntensity() {
+        return this->intensity;
+    }
 
     float GetCloudIntensity() {
         return this->CloudIntensity;

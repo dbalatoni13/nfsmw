@@ -24,6 +24,8 @@ extern ClassHandle gFX_UVESHandle;
 extern InterfaceId FX_UVESId;
 extern ClassHandle gFX_SHIFTING_01Handle;
 extern InterfaceId FX_SHIFTING_01Id;
+extern ClassHandle gFX_WeatherHandle;
+extern InterfaceId FX_WeatherId;
 } // namespace Csis
 
 enum FXSHIFTING01TypeType {
@@ -1147,6 +1149,181 @@ class FX_Camera {
   private:
     Csis::Class *mpClass;   // offset 0x0, size 0x4
     FX_CameraStruct mData;  // offset 0x4, size 0x20
+};
+
+struct FX_WeatherStruct {
+    int hood_Rain;               // offset 0x0, size 0x4
+    int hood_Rain_Vol_Substract; // offset 0x4, size 0x4
+    int volume;                  // offset 0x8, size 0x4
+    int width;                   // offset 0xC, size 0x4
+    int pitch_Offset;            // offset 0x10, size 0x4
+    int rain_on_off;             // offset 0x14, size 0x4
+    int filter_Effects_LoPass;   // offset 0x18, size 0x4
+    int filter_Effects_HiPass;   // offset 0x1C, size 0x4
+    int filter_Effects_Dry_FX;   // offset 0x20, size 0x4
+    int filter_Effects_Wet_FX;   // offset 0x24, size 0x4
+};
+
+struct FX_Weather {
+  public:
+    void SetHood_Rain(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 3) {
+            x = 3;
+        }
+        mData.hood_Rain = x;
+    }
+
+    int GetHood_Rain() {
+        return mData.hood_Rain;
+    }
+
+    void SetHood_Rain_Vol_Substract(int x) {
+        mData.hood_Rain_Vol_Substract = x;
+    }
+
+    int GetHood_Rain_Vol_Substract() {
+        return mData.hood_Rain_Vol_Substract;
+    }
+
+    void SetVolume(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0x7FFF) {
+            x = 0x7FFF;
+        }
+        mData.volume = x;
+    }
+
+    int GetVolume() {
+        return mData.volume;
+    }
+
+    void SetWidth(int x) {
+        mData.width = x;
+    }
+
+    int GetWidth() {
+        return mData.width;
+    }
+
+    void SetPitch_Offset(int x) {
+        mData.pitch_Offset = x;
+    }
+
+    int GetPitch_Offset() {
+        return mData.pitch_Offset;
+    }
+
+    void SetRain_on_off(int x) {
+        mData.rain_on_off = x;
+    }
+
+    int GetRain_on_off() {
+        return mData.rain_on_off;
+    }
+
+    void SetFilter_Effects_LoPass(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 25000) {
+            x = 25000;
+        }
+        mData.filter_Effects_LoPass = x;
+    }
+
+    int GetFilter_Effects_LoPass() {
+        return mData.filter_Effects_LoPass;
+    }
+
+    void SetFilter_Effects_HiPass(int x) {
+        mData.filter_Effects_HiPass = x;
+    }
+
+    int GetFilter_Effects_HiPass() {
+        return mData.filter_Effects_HiPass;
+    }
+
+    void SetFilter_Effects_Dry_FX(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0x7FFF) {
+            x = 0x7FFF;
+        }
+        mData.filter_Effects_Dry_FX = x;
+    }
+
+    int GetFilter_Effects_Dry_FX() {
+        return mData.filter_Effects_Dry_FX;
+    }
+
+    void SetFilter_Effects_Wet_FX(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0x7FFF) {
+            x = 0x7FFF;
+        }
+        mData.filter_Effects_Wet_FX = x;
+    }
+
+    int GetFilter_Effects_Wet_FX() {
+        return mData.filter_Effects_Wet_FX;
+    }
+
+    int GetRefCount() {
+        int refCount = 0;
+
+        if (mpClass) {
+            mpClass->GetRefCount(&refCount);
+        }
+
+        return refCount;
+    }
+
+    static void *operator new(unsigned int size) {
+        return Csis::System::Alloc(size);
+    }
+
+    static void operator delete(void *ptr) {
+        Csis::System::Free(ptr);
+    }
+
+    FX_Weather(int hood_Rain, int hood_Rain_Vol_Substract, int volume, int width, int pitch_Offset, int rain_on_off,
+               int filter_Effects_LoPass, int filter_Effects_HiPass, int filter_Effects_Dry_FX, int filter_Effects_Wet_FX) {
+        SetHood_Rain(hood_Rain);
+        SetHood_Rain_Vol_Substract(hood_Rain_Vol_Substract);
+        SetVolume(volume);
+        SetWidth(width);
+        SetPitch_Offset(pitch_Offset);
+        SetRain_on_off(rain_on_off);
+        SetFilter_Effects_LoPass(filter_Effects_LoPass);
+        SetFilter_Effects_HiPass(filter_Effects_HiPass);
+        SetFilter_Effects_Dry_FX(filter_Effects_Dry_FX);
+        SetFilter_Effects_Wet_FX(filter_Effects_Wet_FX);
+
+        int result = Csis::Class::CreateInstance(&Csis::gFX_WeatherHandle, &mData, &mpClass);
+        if (result < 0) {
+            Csis::gFX_WeatherHandle.Set(&Csis::FX_WeatherId);
+            Csis::Class::CreateInstance(&Csis::gFX_WeatherHandle, &mData, &mpClass);
+        }
+    }
+
+    ~FX_Weather() {
+        if (mpClass) {
+            mpClass->Release();
+        }
+    }
+
+    void CommitMemberData() {
+        if (mpClass) {
+            mpClass->SetMemberData(&mData);
+        }
+    }
+
+  private:
+    Csis::Class *mpClass;    // offset 0x0, size 0x4
+    FX_WeatherStruct mData;  // offset 0x4, size 0x28
 };
 
 struct FX_SHIFTING_01Struct {

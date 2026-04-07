@@ -85,6 +85,7 @@ class Module : public AudioMemBase {
     virtual char *GetEventDat();
     virtual bool IsDataLoaded();
     virtual bool PlayStream(int stream_id);
+    bool DonePlaying();
     virtual void ReleaseResource();
     EAXS_StreamChannel *GetStreamChannel() { return m_strm; }
     void PurgeSpeech();
