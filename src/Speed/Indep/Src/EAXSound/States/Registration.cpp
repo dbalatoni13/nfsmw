@@ -45,11 +45,6 @@
 #include "Speed/Indep/Src/EAXSound/sfxctl/sfxctl_helicopter.hpp"
 #include "Speed/Indep/Src/EAXSound/sfxctl/sfxctl_mastervol.hpp"
 
-struct CARSFX_SingleGinsuEng : public CARSFX_GinsuEngine {
-  protected:
-    static TypeInfo s_TypeInfo;
-};
-
 struct CARSFX_TruckWoosh : public CARSFX_TrafficWoosh {
   protected:
     static TypeInfo s_TypeInfo;

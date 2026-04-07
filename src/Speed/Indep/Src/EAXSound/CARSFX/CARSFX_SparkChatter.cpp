@@ -86,7 +86,7 @@ void CARSFX_SparkChatter::InitSFX() {
     SndBase::InitSFX();
     g_pEAXSound->SetCsisName(this);
     m_pSparkChatterControl =
-        new Csis::CAR_Sputter(static_cast<int>(m_pSweetnersData->CarID()), reinterpret_cast<int>(this), 0, 0, 0, 0, 0, 0, 0, 0, 0);
+        new Csis::CAR_Sputter(static_cast<int>(m_pEAXCar->mEngineInfo.CarID()), reinterpret_cast<int>(this), 0, 0, 0, 0, 0, 0, 0, 0, 0);
     static int tmp_refCnt = m_pSparkChatterControl->GetRefCount();
 }
 
@@ -110,19 +110,17 @@ void CARSFX_SparkChatter::SparkChatUpdateCallBack(Csis::Parameter *pParameters, 
 void CARSFX_SparkChatter::SparkChatDestroyCallBack(Csis::Class *pSparkChatClass, void *pClientData) {
     SparkChatOutputInstance *pSparkChatOutput = static_cast<SparkChatOutputInstance *>(pClientData);
 
-    static_cast<SndBase *>(pSparkChatOutput->m_pThis)->Destroy();
+    pSparkChatOutput->m_pThis->Destroy();
     pSparkChatClass->UnsubscribeMemberData(&pSparkChatOutput->UpdateClient);
     pSparkChatClass->UnsubscribeDestructor(&pSparkChatOutput->DestroyClient);
 }
 
 void CARSFX_SparkChatter::UpdateMixerOutputs() {
-    int *piVar1 = GetOutputBlockPtr();
-
     if (BlipVol != 0) {
-        piVar1[2] = 0x7FFF;
-        *piVar1 = BlipVol;
+        SetDMIX_Input(2, 0x7FFF);
+        SetDMIX_Input(0, BlipVol);
     } else {
-        piVar1[2] = 0;
+        SetDMIX_Input(2, 0);
     }
 }
 
@@ -166,8 +164,8 @@ void CARSFX_SparkChatter::ProcessUpdate() {
         m_pSparkChatterControl->SetCOMMON_PARAMETERS_PITCH_OFFSET(0);
         m_pSparkChatterControl->SetCOMMON_PARAMETERS_ROTATION(0);
         m_pSparkChatterControl->SetForce_Trigger(0);
-        m_pSparkChatterControl->SetRPM(static_cast<int>(GetPhysRPM()));
-        m_pSparkChatterControl->SetTORQUE(static_cast<int>(GetPhysTRQ() * 10.24f));
+        m_pSparkChatterControl->SetRPM(static_cast<int>(m_pEAXCar->PhysRPM));
+        m_pSparkChatterControl->SetTORQUE(static_cast<int>(m_pEAXCar->PhysTRQ * 10.24f));
         m_pSparkChatterControl->SetVOL(TmpVol);
         m_pSparkChatterControl->SetAccel_true(m_pEAXCar->IsAccelerating());
         m_pSparkChatterControl->SetShifting_true(m_pShiftingCTL->IsActive());
