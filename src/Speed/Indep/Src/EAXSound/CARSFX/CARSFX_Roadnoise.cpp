@@ -293,8 +293,8 @@ void CARSFX_RoadNoise::ProcessUpdate() {
             }
 
             for (int tire_num = 1; tire_num <= 2; tire_num++) {
-                if (GetPhysCar()->GetWheelTerrain(tire_num).GetCollection() !=
-                    GetPhysCar()->GetPrevWheelTerrain(tire_num).GetCollection()) {
+                if (GetPhysCar()->GetWheelTerrain(tire_num).Aud_Roadnoise_LOOP() !=
+                    GetPhysCar()->GetPrevWheelTerrain(tire_num).Aud_Roadnoise_LOOP()) {
                     TireTransition = tire_num;
                 }
             }
@@ -317,8 +317,8 @@ void CARSFX_RoadNoise::ProcessUpdate() {
             }
 
             for (int tire_num = 0; tire_num <= 3; tire_num += 3) {
-                if (GetPhysCar()->GetWheelTerrain(tire_num).GetCollection() !=
-                    GetPhysCar()->GetPrevWheelTerrain(tire_num).GetCollection()) {
+                if (GetPhysCar()->GetWheelTerrain(tire_num).Aud_Roadnoise_LOOP() !=
+                    GetPhysCar()->GetPrevWheelTerrain(tire_num).Aud_Roadnoise_LOOP()) {
                     TireTransition = tire_num;
                 }
             }
