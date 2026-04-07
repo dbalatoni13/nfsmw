@@ -28,6 +28,8 @@
 
 #include "Speed/Indep/Src/EAXSound/CARSFX/CARSFX_Siren.cpp"
 
+#include "Speed/Indep/Src/EAXSound/CARSFX/CARSFX_Turbo.cpp"
+
 #include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_Pathfinder.cpp"
 
 #include "Speed/Indep/Src/EAXSound/Ginsu/ginsudata.cpp"

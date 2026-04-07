@@ -1,0 +1,141 @@
+#include "./CARSFX_Turbo.hpp"
+
+#include "Speed/Indep/Src/EAXSound/EAXCar.hpp"
+
+namespace Csis {
+InterfaceId FX_TURBO_01Id = {"FX_TURBO_01", 0x5EF2, 0x5EF2};
+ClassHandle gFX_TURBO_01Handle;
+} // namespace Csis
+
+int gnMemLeakTurboBLOWOFFCountTest = 0;
+int gnMemLeakTurboSPOOLCountTest = 0;
+float MIN_TORQUE_FOR_BLOWOFF = 20.0f;
+
+CARSFX_Turbo::TypeInfo CARSFX_Turbo::s_TypeInfo = {
+    0x00020040,
+    "CARSFX_Turbo",
+    &SndBase::s_TypeInfo,
+    CARSFX_Turbo::CreateObject,
+};
+
+CARSFX_Turbo::TypeInfo *CARSFX_Turbo::GetTypeInfo() const {
+    return &s_TypeInfo;
+}
+
+const char *CARSFX_Turbo::GetTypeName() const {
+    return s_TypeInfo.typeName;
+}
+
+SndBase *CARSFX_Turbo::CreateObject(unsigned int allocator) {
+    if (allocator == 0) {
+        return new (s_TypeInfo.typeName, false) CARSFX_Turbo();
+    }
+    return new (s_TypeInfo.typeName, true) CARSFX_Turbo();
+}
+
+CARSFX_Turbo::CARSFX_Turbo()
+    : CARSFX()
+    , m_BlowoffRampDown() //
+    , m_SpoolDuck() //
+    , m_fDeltaTurbo(3) {
+    m_pTurboData = nullptr;
+    tLastBlowoffTime = 0.0f;
+    m_pTurboBlowoffControl = nullptr;
+    m_pTurboSplControl = nullptr;
+    *reinterpret_cast<int *>(&bStopBlowoff) = 0;
+    *reinterpret_cast<int *>(&bReachedPeak) = 0;
+    m_pShiftingCtl = nullptr;
+    m_pEngineCtl = nullptr;
+    eTurboState = SFXTURBO_NONE;
+}
+
+CARSFX_Turbo::~CARSFX_Turbo() {
+    Destroy();
+}
+
+int CARSFX_Turbo::GetController(int Index) {
+    switch (Index) {
+    case 0:
+        return 2;
+    case 1:
+        return 7;
+    case 2:
+        return 4;
+    default:
+        return -1;
+    }
+}
+
+void CARSFX_Turbo::AttachController(SFXCTL *psfxctl) {
+    int nindex;
+
+    nindex = psfxctl->GetObjectIndex();
+    switch (nindex) {
+    case 2:
+        m_pShiftingCtl = static_cast<SFXCTL_Shifting *>(psfxctl);
+        break;
+    case 4:
+        m_pEngineCtl = static_cast<SFXCTL_Engine *>(psfxctl);
+        break;
+    case 7:
+        m_p3DCarPosCtl = static_cast<SFXCTL_3DCarPos *>(psfxctl);
+        break;
+    }
+}
+
+void CARSFX_Turbo::SetupSFX(CSTATE_Base *_StateBase) {
+    SndBase::SetupSFX(_StateBase);
+    eTurboState = SFXTURBO_NONE;
+    m_pTurboData = &m_pEAXCar->mTurboInfo;
+}
+
+void CARSFX_Turbo::InitSFX() {
+    SndBase::InitSFX();
+    m_fTurbo = 0.0f;
+    m_MaxTurbo = 1.0f;
+    if (m_pTurboData->GetCollection() == 0xEEC2271A) {
+        Disable();
+    } else {
+        Enable();
+        m_fDeltaTurbo.Flush(0.0f);
+        eTurboState = SFXTURBO_NONE;
+        if (!m_pTurboSplControl) {
+            PlaySpl(0, 0, 0, 0, 0);
+        }
+        m_fTurbo = 0.0f;
+        *reinterpret_cast<int *>(&bReachedPeak) = 0;
+        *reinterpret_cast<int *>(&bStopBlowoff) = 0;
+        tLastBlowoffTime = 0.0f;
+    }
+}
+
+void CARSFX_Turbo::Detach() {
+    Destroy();
+    Disable();
+}
+
+void CARSFX_Turbo::Destroy() {
+    if (m_pTurboBlowoffControl) {
+        delete m_pTurboBlowoffControl;
+        m_pTurboBlowoffControl = nullptr;
+        gnMemLeakTurboBLOWOFFCountTest--;
+    }
+
+    if (m_pTurboSplControl) {
+        delete m_pTurboSplControl;
+        m_pTurboSplControl = nullptr;
+        gnMemLeakTurboSPOOLCountTest--;
+    }
+}
+
+void CARSFX_Turbo::SetupLoadData() {
+    if (EAXCar::g_TurboInfo) {
+        LoadAsset(EAXCar::g_TurboInfo->BankName(), SNDPATH_TURBO, EAXSND_DT_AEMS_ASYNCSPUMEM, eBANK_SLOT_NONE, true);
+    } else {
+        LoadAsset(m_pEAXCar->mTurboInfo.BankName(), SNDPATH_TURBO, EAXSND_DT_AEMS_ASYNCSPUMEM, eBANK_SLOT_NONE, true);
+    }
+}
+
+void CARSFX_Turbo::ResetSpool() {
+    SpoolCharge = 0.0f;
+}

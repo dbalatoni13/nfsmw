@@ -5,6 +5,96 @@
 #pragma once
 #endif
 
+#include "Speed/Indep/Src/EAXSound/Csis.hpp"
 
+namespace Csis {
+extern ClassHandle gFX_TURBO_01Handle;
+extern InterfaceId FX_TURBO_01Id;
+} // namespace Csis
+
+// total size: 0x18
+struct FX_TURBO_01Struct {
+    int id;       // offset 0x0, size 0x4
+    int volume;   // offset 0x4, size 0x4
+    int pSI;      // offset 0x8, size 0x4
+    int azimuth;  // offset 0xC, size 0x4
+    int rotation; // offset 0x10, size 0x4
+    int rPM;      // offset 0x14, size 0x4
+};
+
+// total size: 0x1C
+struct FX_TURBO_01 {
+    Csis::Class *mpClass;      // offset 0x0, size 0x4
+    FX_TURBO_01Struct mData;   // offset 0x4, size 0x18
+
+    void SetId(int x) {
+        mData.id = x;
+    }
+
+    void SetVolume(int x) {
+        mData.volume = x;
+    }
+
+    void SetPSI(int x) {
+        mData.pSI = x;
+    }
+
+    void SetAzimuth(int x) {
+        mData.azimuth = x;
+    }
+
+    void SetRotation(int x) {
+        mData.rotation = x;
+    }
+
+    void SetRPM(int x) {
+        mData.rPM = x;
+    }
+
+    int GetRefCount() {
+        int refCount = 0;
+
+        if (mpClass) {
+            mpClass->GetRefCount(&refCount);
+        }
+
+        return refCount;
+    }
+
+    static void *operator new(unsigned int size) {
+        return Csis::System::Alloc(size);
+    }
+
+    static void operator delete(void *ptr) {
+        Csis::System::Free(ptr);
+    }
+
+    FX_TURBO_01(int id, int volume, int pSI, int azimuth, int rotation, int rPM) {
+        SetId(id);
+        SetVolume(volume);
+        SetPSI(pSI);
+        SetAzimuth(azimuth);
+        SetRotation(rotation);
+        SetRPM(rPM);
+
+        int result = Csis::Class::CreateInstance(&Csis::gFX_TURBO_01Handle, &mData, &mpClass);
+        if (result < 0) {
+            Csis::gFX_TURBO_01Handle.Set(&Csis::FX_TURBO_01Id);
+            Csis::Class::CreateInstance(&Csis::gFX_TURBO_01Handle, &mData, &mpClass);
+        }
+    }
+
+    ~FX_TURBO_01() {
+        if (mpClass) {
+            mpClass->Release();
+        }
+    }
+
+    void CommitMemberData() {
+        if (mpClass) {
+            mpClass->SetMemberData(&mData);
+        }
+    }
+};
 
 #endif
