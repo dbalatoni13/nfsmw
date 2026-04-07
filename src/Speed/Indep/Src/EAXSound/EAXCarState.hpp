@@ -324,6 +324,10 @@ struct EAX_CarState : public UTL::Collections::Listable<EAX_CarState, 10> {
         return &mVel0;
     }
 
+    const bVector2 *GetVelocity2D() {
+        return static_cast<const bVector2 *>(static_cast<const void *>(GetVelocity()));
+    }
+
     const bVector3 *GetOldVel() {
         return &mVel1;
     }

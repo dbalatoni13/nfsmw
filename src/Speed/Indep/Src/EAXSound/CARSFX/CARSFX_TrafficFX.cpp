@@ -2,10 +2,12 @@
 
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
 #include "Speed/Indep/Src/EAXSound/SndCamera.hpp"
+#include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_Woosh.hpp"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/pvehicle.h"
 #include "Speed/Indep/Src/World/RaceParameters.hpp"
 
 extern bool IsPlayerGoingFastEnough(float, int);
+extern void GetWooshBlockSizeParams(eDRIVE_BY_TYPE type, STICH_WHOOSH_TYPE &base, int &numblocks, int &sizeperblock);
 
 namespace {
 int HonkingCarCnt = 0;
@@ -128,6 +130,28 @@ void CARSFX_TrafficEngine::ProcessUpdate() {
             m_pcsisTranfficEng->CommitMemberData();
         }
     }
+}
+
+SFXCTL_3DTrafficPos::TypeInfo SFXCTL_3DTrafficPos::s_TypeInfo = {
+    0x00050000,
+    "SFXCTL_3DTrafficPos",
+    &SFXCTL_3DCarPos::s_TypeInfo,
+    SFXCTL_3DTrafficPos::CreateObject,
+};
+
+SFXCTL_3DTrafficPos::TypeInfo *SFXCTL_3DTrafficPos::GetTypeInfo() const {
+    return &s_TypeInfo;
+}
+
+const char *SFXCTL_3DTrafficPos::GetTypeName() const {
+    return s_TypeInfo.typeName;
+}
+
+SndBase *SFXCTL_3DTrafficPos::CreateObject(unsigned int allocator) {
+    if (allocator == 0) {
+        return new (s_TypeInfo.typeName, false) SFXCTL_3DTrafficPos();
+    }
+    return new (s_TypeInfo.typeName, true) SFXCTL_3DTrafficPos();
 }
 
 CARSFX_TrafficHorn::TypeInfo CARSFX_TrafficHorn::s_TypeInfo = {
@@ -340,4 +364,141 @@ bool CARSFX_TrafficHorn::IsPlayerCarInRange(int nplayer) {
     }
 
     return bCos(40.0f) < DotProd || (DotProd < -bCos(40.0f) && m_fObjectToPlayerDistance < 10.0f);
+}
+
+CARSFX_TrafficWoosh::TypeInfo CARSFX_TrafficWoosh::s_TypeInfo = {
+    0x00050010,
+    "CARSFX_TrafficWoosh",
+    &SndBase::s_TypeInfo,
+    CARSFX_TrafficWoosh::CreateObject,
+};
+
+CARSFX_TrafficWoosh::TypeInfo *CARSFX_TrafficWoosh::GetTypeInfo() const {
+    return &s_TypeInfo;
+}
+
+const char *CARSFX_TrafficWoosh::GetTypeName() const {
+    return s_TypeInfo.typeName;
+}
+
+SndBase *CARSFX_TrafficWoosh::CreateObject(unsigned int allocator) {
+    if (allocator == 0) {
+        return new (s_TypeInfo.typeName, false) CARSFX_TrafficWoosh();
+    }
+    return new (s_TypeInfo.typeName, true) CARSFX_TrafficWoosh();
+}
+
+CARSFX_TrafficWoosh::CARSFX_TrafficWoosh()
+    : CARSFX()
+    , m_DriveByWoosh(nullptr) //
+    , tSinceLastWoosh(0.0f)
+{}
+
+CARSFX_TrafficWoosh::~CARSFX_TrafficWoosh() {
+    Destroy();
+}
+
+void CARSFX_TrafficWoosh::Destroy() {
+    SndBase::Destroy();
+    if (m_DriveByWoosh) {
+        delete m_DriveByWoosh;
+    }
+    m_DriveByWoosh = nullptr;
+}
+
+void CARSFX_TrafficWoosh::UpdateParams(float t) {
+    if (m_pStateBase->IsAttached()) {
+        float SpeedDiff;
+        bool FastEnough;
+        float fSpeedScale;
+        float fVelInensity;
+        int StitchID;
+        int numblocks;
+        int sizeperblock;
+        STICH_WHOOSH_TYPE base;
+        eDRIVE_BY_TYPE wooshtype;
+        SND_Params TempParams;
+
+        if (!m_DriveByWoosh && GetPhysCar()->IsSimUpdating()) {
+            FastEnough = IsPlayerCarInRadius();
+            SpeedDiff = GetPlayerSpeedRelativeToUs();
+            if (FastEnough && SpeedDiff > 10.0f && tSinceLastWoosh + 3.0f <= m_pStateBase->GetCurTime()) {
+                static int LastRandom;
+
+                fSpeedScale = bClamp((SpeedDiff - 10.0f) * 0.02f, 0.0f, 1.0f);
+                fVelInensity = bClamp(fSpeedScale, 0.0f, 0.99f);
+                fVelInensity = bClamp(fVelInensity * 127.0f, 0.0f, 127.0f);
+                wooshtype = GetWooshSample();
+                GetWooshBlockSizeParams(wooshtype, base, numblocks, sizeperblock);
+                StitchID = base + static_cast<int>(fVelInensity * static_cast<float>(numblocks) * 0.0078125f) * sizeperblock +
+                           LastRandom % sizeperblock;
+                LastRandom = LastRandom % sizeperblock + 1;
+                SND_Stich &StichData = g_pEAXSound->GetStichPlayer()->GetStich(STICH_TYPE_WOOSH, StitchID);
+                m_DriveByWoosh = new cStichWrapper(StichData);
+                TempParams.ID = StitchID;
+                TempParams.Vol = 0;
+                TempParams.Pitch = 0;
+                TempParams.Az = 0;
+                TempParams.Mag = 0;
+                TempParams.RVerb = 0;
+                m_DriveByWoosh->Play(&TempParams);
+                tSinceLastWoosh = m_pStateBase->GetCurTime();
+                SetDMIX_Input(3, 0x7FFF);
+            }
+        }
+    }
+}
+
+eDRIVE_BY_TYPE CARSFX_TrafficWoosh::GetWooshSample() {
+    Attrib::Gen::pvehicle *attributes = GetPhysCar()->GetAttributes();
+    const eDRIVE_BY_TYPE *resultptr = reinterpret_cast<const eDRIVE_BY_TYPE *>(attributes->GetAttributePointer(0x7e744600, 0));
+    if (!resultptr) {
+        resultptr = reinterpret_cast<const eDRIVE_BY_TYPE *>(Attrib::DefaultDataArea(sizeof(eDRIVE_BY_TYPE)));
+    }
+    return *resultptr;
+}
+
+bool CARSFX_TrafficWoosh::IsPlayerCarInRadius() {
+    return GetClosestPlayerCar(GetPhysCar()->GetPosition()) != nullptr;
+}
+
+void CARSFX_TrafficWoosh::ProcessUpdate() {
+    SetDMIX_Input(3, 0);
+    if (m_DriveByWoosh) {
+        SND_Params TmpParams;
+        bool FastEnough;
+
+        TmpParams.Az = GetDMixOutput(0, DMX_AZIM);
+        TmpParams.Vol = GetDMixOutput(3, DMX_VOL);
+        TmpParams.Pitch = GetDMixOutput(4, DMX_VOL);
+        m_DriveByWoosh->Update(&TmpParams);
+        FastEnough = GetPlayerSpeedRelativeToUs() > 10.0f;
+        if (!FastEnough || !m_DriveByWoosh->IsPlaying() || g_EAXIsPaused()) {
+            delete m_DriveByWoosh;
+            m_DriveByWoosh = nullptr;
+        }
+    }
+}
+
+float CARSFX_TrafficWoosh::GetPlayerSpeedRelativeToUs() {
+    EAX_CarState *pPlayerCar = GetClosestPlayerCar(GetPhysCar()->GetPosition());
+    bVector2 PlayerVel;
+    bVector2 ObjVel;
+    bVector2 VelDif;
+
+    if (!pPlayerCar) {
+        return 0.0f;
+    }
+
+    PlayerVel = *pPlayerCar->GetVelocity2D();
+    ObjVel = *GetPhysCar()->GetVelocity2D();
+    VelDif = bSub(PlayerVel, ObjVel);
+    return bLength(&VelDif);
+}
+
+void CARSFX_TrafficWoosh::Detach() {
+    if (m_DriveByWoosh) {
+        delete m_DriveByWoosh;
+    }
+    m_DriveByWoosh = nullptr;
 }

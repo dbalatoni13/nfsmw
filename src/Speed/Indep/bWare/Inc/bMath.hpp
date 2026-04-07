@@ -290,6 +290,16 @@ inline bVector2 *bAdd(bVector2 *dest, const bVector2 *v1, const bVector2 *v2) {
     return dest;
 }
 
+inline bVector2 *bSub(bVector2 *dest, const bVector2 *v1, const bVector2 *v2) {
+    float x1 = v1->x;
+    float y1 = v1->y;
+    float x2 = v2->x;
+    float y2 = v2->y;
+
+    bFill(dest, x1 - x2, y1 - y2);
+    return dest;
+}
+
 inline bVector2 *bScale(bVector2 *dest, const bVector2 *v, float scale) {
     float x = v->x;
     float y = v->y;
@@ -313,6 +323,12 @@ inline bVector2 bNormalize(const bVector2 &v) {
 inline bVector2 bAdd(const bVector2 &v1, const bVector2 &v2) {
     bVector2 dest;
     bAdd(&dest, &v1, &v2);
+    return dest;
+}
+
+inline bVector2 bSub(const bVector2 &v1, const bVector2 &v2) {
+    bVector2 dest;
+    bSub(&dest, &v1, &v2);
     return dest;
 }
 

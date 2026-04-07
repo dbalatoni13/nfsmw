@@ -8,6 +8,7 @@
 #include "Speed/Indep/Src/EAXSound/CARSFX/CARSFX.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXCarState.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXSndUtil.h"
+#include "Speed/Indep/Src/EAXSound/STICH_Playback.h"
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_3DCarPos.hpp"
 #include "Speed/Indep/Src/EAXSound/snd_gen/ENVIRO_AEMS.h"
 
@@ -80,6 +81,45 @@ class CARSFX_TrafficEngine : public CARSFX {
     SFXCTL_3DCarPos *m_p3DCarPosCtl; // offset 0x2C, size 0x4
     int refCnt;                      // offset 0x30, size 0x4
     unsigned char EngTypeID;         // offset 0x34, size 0x1
+};
+
+struct CARSFX_TrafficWoosh : public CARSFX {
+  protected:
+    static TypeInfo s_TypeInfo;
+
+  public:
+    CARSFX_TrafficWoosh();
+    ~CARSFX_TrafficWoosh() override;
+
+    static SndBase *CreateObject(unsigned int allocator);
+
+    TypeInfo *GetTypeInfo() const override;
+    const char *GetTypeName() const override;
+    void Destroy() override;
+    void UpdateParams(float t) override;
+    void ProcessUpdate() override;
+    void Detach() override;
+    float GetPlayerSpeedRelativeToUs();
+    virtual bool IsPlayerCarInRadius();
+    virtual eDRIVE_BY_TYPE GetWooshSample();
+
+  private:
+    cStichWrapper *m_DriveByWoosh; // offset 0x28, size 0x4
+    float tSinceLastWoosh;         // offset 0x2C, size 0x4
+};
+
+struct SFXCTL_3DTrafficPos : public SFXCTL_3DCarPos {
+  protected:
+    static TypeInfo s_TypeInfo;
+
+  public:
+    SFXCTL_3DTrafficPos() {}
+    ~SFXCTL_3DTrafficPos() override {}
+
+    TypeInfo *GetTypeInfo() const override;
+    const char *GetTypeName() const override;
+
+    static SndBase *CreateObject(unsigned int allocator);
 };
 
 #endif
