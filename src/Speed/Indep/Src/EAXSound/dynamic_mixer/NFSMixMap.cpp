@@ -207,6 +207,8 @@ void NFSMixMap::SetupStateRefCount() {
 
 void NFSMixMap::PreProcessMixMap() {
     int n;
+    int ntotalcurveprocs;
+    int ns;
     char *pMixMapBase;
     stMixMapHeader *pmmhdr;
     int *pStateOffsetTable;
@@ -224,18 +226,16 @@ void NFSMixMap::PreProcessMixMap() {
         do {
             stMixMapStateHdr *pmmsthdr;
 
-            pStateOffsetTable++;
-            if (pStateOffsetTable[-1] != -1) {
-                int stateRefCount;
+            ns = n + 1;
+            if (*pStateOffsetTable != -1) {
                 int mixCtlOffset;
                 int threeDMixCtlOffset;
                 int eventCtlOffset;
                 int subMixOffset;
                 int masterMixOffset;
 
-                pmmsthdr = reinterpret_cast<stMixMapStateHdr *>(pMixMapBase + pStateOffsetTable[-1]);
-                stateRefCount = m_StateRefCount[n];
-                m_nStateMapCount += stateRefCount;
+                pmmsthdr = reinterpret_cast<stMixMapStateHdr *>(pMixMapBase + *pStateOffsetTable);
+                m_nStateMapCount += m_StateRefCount[n];
 
                 mixCtlOffset = pmmsthdr->OffsetMixCtlData;
                 if (mixCtlOffset != -1) {
@@ -251,9 +251,9 @@ void NFSMixMap::PreProcessMixMap() {
                     pCurveIds = static_cast<unsigned int *>(
                         gAudioMemoryManager.AllocateMemory(ctlCount << 2, "Temp MIXMAP ALLOC", false));
 
-                    m_MixCtlsAdded += stateRefCount * ctlCount;
+                    m_MixCtlsAdded += m_StateRefCount[n] * ctlCount;
                     m_SharedMixCtlCount += ctlCount;
-                    m_DataProcsAdded += stateRefCount * pmctlhdr->NumNewMixDataProcs;
+                    m_DataProcsAdded += m_StateRefCount[n] * pmctlhdr->NumNewMixDataProcs;
 
                     for (ctlIndex = 0; ctlIndex < ctlCount; ctlIndex++) {
                         bool uniqueCurve;
@@ -278,7 +278,7 @@ void NFSMixMap::PreProcessMixMap() {
                         }
 
                         if (uniqueCurve) {
-                            m_CurveProcsTotal[curveType][0] += stateRefCount;
+                            m_CurveProcsTotal[curveType][0] += m_StateRefCount[n];
                         }
 
                         scaleParamsAdded = 0;
@@ -297,7 +297,7 @@ void NFSMixMap::PreProcessMixMap() {
                         }
 
                         pCurveWord += scaleCount + 2;
-                        m_ScaleParamsAdded += scaleParamsAdded * stateRefCount;
+                        m_ScaleParamsAdded += scaleParamsAdded * m_StateRefCount[n];
                     }
 
                     gAudioMemoryManager.FreeMemory(pCurveIds);
@@ -317,7 +317,7 @@ void NFSMixMap::PreProcessMixMap() {
                     totalCamStates = 0;
 
                     m_Shared3DMixCtlCount += p3Dmctlhdr->Num3DMixCtls & 0xFF;
-                    m_3DMixCtlsAdded += stateRefCount * (p3Dmctlhdr->Num3DMixCtls & 0xFF);
+                    m_3DMixCtlsAdded += m_StateRefCount[n] * (p3Dmctlhdr->Num3DMixCtls & 0xFF);
 
                     for (ctlIndex = 0; ctlIndex < ctlCount; ctlIndex++) {
                         int camStatesAdded;
@@ -343,7 +343,7 @@ void NFSMixMap::PreProcessMixMap() {
                     pEventCtlData = reinterpret_cast<char *>(pevtctlhdr + 1);
                     scaleParamsAdded = 0;
 
-                    m_EventCtlsAdded += stateRefCount * ctlCount;
+                    m_EventCtlsAdded += m_StateRefCount[n] * ctlCount;
                     m_SharedEvtMixCtlCount += ctlCount;
 
                     for (ctlIndex = 0; ctlIndex < ctlCount; ctlIndex++) {
@@ -369,7 +369,7 @@ void NFSMixMap::PreProcessMixMap() {
                         pEventCtlData += (scaleCount * 4) + 0x18;
                     }
 
-                    m_ScaleParamsAdded += scaleParamsAdded * stateRefCount;
+                    m_ScaleParamsAdded += scaleParamsAdded * m_StateRefCount[n];
                 }
 
                 subMixOffset = pmmsthdr->OffsetSubMixData;
@@ -384,7 +384,7 @@ void NFSMixMap::PreProcessMixMap() {
                     pInputData = reinterpret_cast<int *>(pmsubchhdr + 1);
 
                     m_SharedSubMixCount += subMixCount;
-                    m_SubMixChannelsAdded += stateRefCount * subMixCount;
+                    m_SubMixChannelsAdded += m_StateRefCount[n] * subMixCount;
 
                     for (subMixIndex = 0; subMixIndex < subMixCount; subMixIndex++) {
                         int inputIndex;
@@ -408,7 +408,7 @@ void NFSMixMap::PreProcessMixMap() {
                             pInputData++;
                         }
 
-                        m_nTotalSubChannelInputs += totalInputs * stateRefCount;
+                        m_nTotalSubChannelInputs += totalInputs * m_StateRefCount[n];
                     }
                 }
 
@@ -423,9 +423,9 @@ void NFSMixMap::PreProcessMixMap() {
                     masterMixCount = pmasterchhdr->NumMixChannels;
                     pInputData = reinterpret_cast<int *>(pmasterchhdr + 1);
 
-                    m_nTotalUniqueMasterChannels += pmasterchhdr->NumUniqueSFXOBJs + (stateRefCount * pmasterchhdr->NumUniqueSFXOBJs);
+                    m_nTotalUniqueMasterChannels += pmasterchhdr->NumUniqueSFXOBJs + (m_StateRefCount[n] * pmasterchhdr->NumUniqueSFXOBJs);
                     m_SharedMasterMixCount += masterMixCount;
-                    m_MasterChannelsAdded += stateRefCount * masterMixCount;
+                    m_MasterChannelsAdded += m_StateRefCount[n] * masterMixCount;
 
                     for (masterMixIndex = 0; masterMixIndex < masterMixCount; masterMixIndex++) {
                         int inputIndex;
@@ -449,18 +449,21 @@ void NFSMixMap::PreProcessMixMap() {
                             pInputData++;
                         }
 
-                        m_nTotalMasterChannelInputs += totalInputs * stateRefCount;
+                        m_nTotalMasterChannelInputs += totalInputs * m_StateRefCount[n];
                     }
                 }
             }
 
-            n++;
-        } while (n < pmmhdr->NumStates);
+            pStateOffsetTable++;
+            n = ns;
+        } while (ns < pmmhdr->NumStates);
     }
 
-    for (int curveType = 0; curveType < 10; curveType++) {
-        m_CurveProcsAdded += m_CurveProcsTotal[curveType][0];
-    }
+    ntotalcurveprocs = 0;
+    do {
+        m_CurveProcsAdded += m_CurveProcsTotal[ntotalcurveprocs][0];
+        ntotalcurveprocs++;
+    } while (ntotalcurveprocs < 10);
 }
 
 void NFSMixMap::AllocateMixerMemory() {
