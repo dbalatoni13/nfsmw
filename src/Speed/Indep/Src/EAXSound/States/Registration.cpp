@@ -16,11 +16,14 @@
 #include "Speed/Indep/Src/EAXSound/EAXTrafficCar.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXTunerCar.hpp"
 #include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_Collision.hpp"
+#include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_Ambience.hpp"
+#include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_FEHUD.hpp"
 #include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_Helicopter.hpp"
 #include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_MomentStrm.hpp"
 #include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_NISStream.hpp"
 #include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_PFEATrax.hpp"
 #include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_Reverb.hpp"
+#include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_Speech.hpp"
 #include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_TruckFX.hpp"
 #include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_Woosh.hpp"
 #include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_WorldObject.hpp"
@@ -50,26 +53,6 @@ struct CARSFX_TruckWoosh : public CARSFX_TrafficWoosh {
     static TypeInfo s_TypeInfo;
 };
 
-struct CARSFX_WindWeather : public CARSFX {
-  protected:
-    static TypeInfo s_TypeInfo;
-};
-
-struct SFXObj_Ambience : public CARSFX {
-  protected:
-    static TypeInfo s_TypeInfo;
-};
-
-struct SFXObj_Speech : public CARSFX {
-  protected:
-    static TypeInfo s_TypeInfo;
-};
-
-struct SFXObj_FEHUD : public CARSFX {
-  protected:
-    static TypeInfo s_TypeInfo;
-};
-
 struct CARSFX_TrafficSkids : public CARSFX_Skids {
   protected:
     static TypeInfo s_TypeInfo;
@@ -86,11 +69,6 @@ struct SFXCTL_3DFountainPos : public SFXCTL_3DObjPos {
 };
 
 struct SFXCTL_3DTrailerPos : private SFXCTL_3DCarPos {
-  protected:
-    static TypeInfo s_TypeInfo;
-};
-
-struct SFXCTL_3DVoiceActorPos : private SFXCTL_3DObjPos {
   protected:
     static TypeInfo s_TypeInfo;
 };

@@ -5,6 +5,25 @@
 #pragma once
 #endif
 
+#include "Speed/Indep/Src/EAXSound/CARSFX/CARSFX.hpp"
 
+struct SFXObj_Ambience : public CARSFX {
+  protected:
+    static TypeInfo s_TypeInfo;
+    static TypeInfo *GetStaticTypeInfo();
+
+  public:
+    TypeInfo *GetTypeInfo() const override;
+    const char *GetTypeName() const override;
+    static SndBase *CreateObject(unsigned int allocator);
+    SFXObj_Ambience();
+    ~SFXObj_Ambience() override;
+    void InitSFX() override;
+    void Destroy() override;
+    void UpdateParams(float t) override;
+    int GetController(int Index) override { return -1; }
+    void AttachController(SFXCTL *psfxctl) override {}
+    void ProcessUpdate() override {}
+};
 
 #endif

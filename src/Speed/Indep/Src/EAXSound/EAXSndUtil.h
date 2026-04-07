@@ -117,5 +117,6 @@ struct bVector3;
 
 EAX_CarState *GetClosestPlayerCar(const bVector3 *vPosition);
 EAX_CarState *GetClosestPlayerCar(const bVector3 *vPosition, bool CameraRelative, int &CarID);
+bool IsCarInRadius(EAX_CarState *pCar, const bVector3 *vPos, float fRadius);
 
 #endif

@@ -109,6 +109,8 @@ class Manager {
     static void Update(float dt);
     static Module *GetSpeechModule(int id);
     static void AttachSFXOBJ(SpeechModuleIndex module, SFX_Base *psb, eSFXOBJ_MAIN_TYPES type);
+    static bool IsPlaying(SpeechModuleIndex module);
+    static bool IsCopSpeechPlaying(SPCHType_1_EventID event);
     static SampleReqList &GetSampleRequests() { return mSampleRequests; }
 
     static short m_frameindex;

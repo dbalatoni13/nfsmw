@@ -35,7 +35,10 @@ struct audioscrape;
 } // namespace Attrib
 
 struct CSTATE_Base;
+struct EAX_CarState;
 struct SND_Stich;
+
+EAX_CarState *GetClosestCopCarToCamera();
 
 namespace Sound {
 

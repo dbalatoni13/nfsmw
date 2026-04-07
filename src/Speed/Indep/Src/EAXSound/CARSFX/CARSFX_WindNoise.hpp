@@ -9,6 +9,7 @@
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
 struct FX_WIND;
+struct FX_WIND_Weather;
 
 // total size: 0x8
 struct stEAX_WindParams {
@@ -115,5 +116,36 @@ struct CARSFX_WindNoise : public CARSFX {
     virtual int UpdateMasterVolume();
 
     void UpdateCSISParams();
+};
+
+// total size: 0x38
+struct CARSFX_WindWeather : public CARSFX {
+  protected:
+    static TypeInfo s_TypeInfo;
+
+    static TypeInfo *GetStaticTypeInfo() {
+        return &s_TypeInfo;
+    }
+
+  public:
+    float WeatherIntensity;       // offset 0x28, size 0x4
+    float WeatherSpeedScale;      // offset 0x2C, size 0x4
+    FX_WIND_Weather *m_pcsisWind; // offset 0x30, size 0x4
+    int refCnt;                   // offset 0x34, size 0x4
+
+    CARSFX_WindWeather();
+    ~CARSFX_WindWeather() override;
+
+    TypeInfo *GetTypeInfo() const override;
+    const char *GetTypeName() const override;
+
+    static SndBase *CreateObject(unsigned int allocator);
+
+    void SetupSFX(CSTATE_Base *_StateBase) override;
+    void InitSFX() override;
+    void Destroy() override;
+    void UpdateParams(float t) override;
+    virtual void Play();
+    void ProcessUpdate() override;
 };
 #endif

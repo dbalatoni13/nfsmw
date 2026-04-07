@@ -5,6 +5,7 @@
 #include "Speed/Indep/Src/EAXSound/States/Managers/STATEMGR_CarState.cpp"
 
 #include "Speed/Indep/Src/EAXSound/States/Managers/STATEMGR_Collision.cpp"
+#include "Speed/Indep/Src/EAXSound/States/Managers/STATEMGR_Enviro.cpp"
 #include "Speed/Indep/Src/EAXSound/States/Managers/STATEMGR_DriveBy.cpp"
 #include "Speed/Indep/Src/EAXSound/States/Managers/STATEMGR_PlayerCar.cpp"
 #include "Speed/Indep/Src/EAXSound/States/Managers/STATEMGR_TrafficCar.cpp"
@@ -25,6 +26,7 @@
 #include "Speed/Indep/Src/EAXSound/States/STATE_Music.cpp"
 #include "Speed/Indep/Src/EAXSound/States/STATE_Helicopter.cpp"
 
+#include "Speed/Indep/Src/EAXSound/CARSFX/CARSFX.cpp"
 #include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_NISStream.cpp"
 
 #include "Speed/Indep/Src/EAXSound/CARSFX/CARSFX_BottomOut.cpp"
@@ -32,6 +34,7 @@
 #include "Speed/Indep/Src/EAXSound/CARSFX/CARSFX_Roadnoise.cpp"
 
 #include "Speed/Indep/Src/EAXSound/CARSFX/CARSFX_WindNoise.cpp"
+#include "Speed/Indep/Src/EAXSound/CARSFX/CARSFX_WindWeather.cpp"
 
 #include "Speed/Indep/Src/EAXSound/CARSFX/CARSFX_Skids.cpp"
 
@@ -67,6 +70,9 @@
 #include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_WorldObject.cpp"
 
 #include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_Woosh.cpp"
+#include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_Ambience.cpp"
+#include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_Speech.cpp"
+#include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_FEHUD.cpp"
 
 #include "Speed/Indep/Src/EAXSound/CARSFX/CARSFX_PreColWoosh.cpp"
 
