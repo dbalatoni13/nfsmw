@@ -61,7 +61,9 @@ class eModel : public bTNode<eModel> {
         return NameHash;
     }
 
-    eSolid *GetMovedSolid() {} // TODO
+    eSolid *GetMovedSolid() {
+        return Solid;
+    }
 
     eSolid *GetSolid() {
         return Solid;
