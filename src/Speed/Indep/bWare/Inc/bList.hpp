@@ -54,7 +54,8 @@ class bNode {
     }
 };
 
-template <typename T> struct bTNode : public bNode {
+template <typename T> class bTNode : public bNode {
+  public:
     bTNode() {}
 
     ~bTNode() {}
@@ -76,12 +77,12 @@ template <typename T> struct bTNode : public bNode {
     }
 };
 
-struct bList {
+class bList {
     bNode HeadNode; // offset 0x0, size 0x8
 
+  public:
     typedef int (*SortFunc)(bNode *, bNode *);
 
-  public:
     bList() {
         this->HeadNode.Next = &this->HeadNode;
         this->HeadNode.Prev = &this->HeadNode;
@@ -89,9 +90,7 @@ struct bList {
     ~bList() {}
 
     bNode *GetNode(int ordinal_number);
-    int TraversebList(bNode *match_node);
     void Sort(SortFunc check_flip);
-    void MergeSort(SortFunc cmp);
 
     void InitList() {
         this->HeadNode.Next = &this->HeadNode;
@@ -156,6 +155,10 @@ struct bList {
     }
 
     bNode *AddSorted(SortFunc check_flip); // TODO
+
+  private:
+    void MergeSort(SortFunc cmp);
+    int TraversebList(bNode *match_node);
 };
 
 template <typename T> class bTList : public bList {
