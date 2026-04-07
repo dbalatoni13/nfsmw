@@ -325,13 +325,15 @@ void CARSFX_RoadNoise::ProcessUpdate() {
         }
 
         if (currentterrain.GetCollection() != prevterrain.GetCollection()) {
-            LoopID[n] = currentterrain.Aud_Roadnoise_LOOP();
-            SetDMIX_Input(0, 0x7FFF);
-            if (LoopID[n] == FXROADNOISE_LOOP_NONE) {
-                delete m_pRoadNoiseControl[n];
-                m_pRoadNoiseControl[n] = nullptr;
-            } else {
-                Play(LoopID[n], n);
+            if (LoopID[n] != currentterrain.Aud_Roadnoise_LOOP()) {
+                LoopID[n] = currentterrain.Aud_Roadnoise_LOOP();
+                SetDMIX_Input(0, 0x7FFF);
+                if (LoopID[n] != FXROADNOISE_LOOP_NONE) {
+                    Play(LoopID[n], n);
+                } else {
+                    delete m_pRoadNoiseControl[n];
+                    m_pRoadNoiseControl[n] = nullptr;
+                }
             }
         }
 
