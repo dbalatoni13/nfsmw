@@ -262,41 +262,63 @@ void CARSFX_RoadNoise::ProcessUpdate() {
 
     for (int n = 0; n < 2; n++) {
         bool wheelstouchingground;
-        const Attrib::Gen::simsurface &currentterrain = n == 0 ? m_pWheelCtl->LeftSideTerrain : m_pWheelCtl->RightSideTerrain;
-        const Attrib::Gen::simsurface &prevterrain = n == 0 ? m_pWheelCtl->PrevLeftSideTerrain : m_pWheelCtl->PrevRightSideTerrain;
+        const Attrib::Gen::simsurface &currentterrain = n != 0 ? m_pWheelCtl->RightSideTerrain : m_pWheelCtl->LeftSideTerrain;
+        const Attrib::Gen::simsurface &prevterrain =
+            n != 0 ? m_pWheelCtl->PrevRightSideTerrain : m_pWheelCtl->PrevLeftSideTerrain;
         eVOL_ROADNOISE AzSlot;
-        int GeneratedVolume;
-        int GeneratedPitch;
-        bool bPuncturedTire;
-        bool bBlownTire;
-        int TireTransition;
+        int GeneratedVolume = 0;
+        int GeneratedPitch = 0;
+        bool bPuncturedTire = false;
+        bool bBlownTire = false;
+        int TireTransition = -1;
         int tempVol;
         int tempPitch;
 
-        TireTransition = -1;
-        if (n == 0) {
-            wheelstouchingground = m_pWheelCtl->LeftSideTouchingGround;
-            AzSlot = eAZI_ROADNOISE_LEFT_AZ;
-            GeneratedVolume = m_nLTRoadNoiseVol;
-            GeneratedPitch = m_nLTRoadNoisePitch;
-            bPuncturedTire = GetPhysCar()->DidTireJustPucture(0) || GetPhysCar()->DidTireJustPucture(3);
-            bBlownTire = GetPhysCar()->DidTireJustBlow(0) || GetPhysCar()->DidTireJustBlow(3);
-
-            for (int tire_num = 0; tire_num <= 3; tire_num += 3) {
-                if (GetPhysCar()->GetWheelTerrain(tire_num) != GetPhysCar()->GetPrevWheelTerrain(tire_num)) {
-                    TireTransition = tire_num;
-                }
-            }
-        } else {
+        if (n != 0) {
             wheelstouchingground = m_pWheelCtl->RightSideTouchingGround;
             AzSlot = eAZI_ROADNOISE_RIGHT_AZ;
             GeneratedVolume = m_nRTRoadNoiseVol;
             GeneratedPitch = m_nRTRoadNoisePitch;
-            bPuncturedTire = GetPhysCar()->DidTireJustPucture(1) || GetPhysCar()->DidTireJustPucture(2);
-            bBlownTire = GetPhysCar()->DidTireJustBlow(1) || GetPhysCar()->DidTireJustBlow(2);
+
+            if (GetPhysCar()->DidTireJustPucture(1)) {
+                bPuncturedTire = true;
+            } else if (GetPhysCar()->DidTireJustPucture(2)) {
+                bPuncturedTire = true;
+            }
+
+            if (GetPhysCar()->DidTireJustBlow(1)) {
+                bBlownTire = true;
+            } else if (GetPhysCar()->DidTireJustBlow(2)) {
+                bBlownTire = true;
+            }
 
             for (int tire_num = 1; tire_num <= 2; tire_num++) {
-                if (GetPhysCar()->GetWheelTerrain(tire_num) != GetPhysCar()->GetPrevWheelTerrain(tire_num)) {
+                if (GetPhysCar()->GetWheelTerrain(tire_num).GetCollection() !=
+                    GetPhysCar()->GetPrevWheelTerrain(tire_num).GetCollection()) {
+                    TireTransition = tire_num;
+                }
+            }
+        } else {
+            wheelstouchingground = m_pWheelCtl->LeftSideTouchingGround;
+            AzSlot = eAZI_ROADNOISE_LEFT_AZ;
+            GeneratedVolume = m_nLTRoadNoiseVol;
+            GeneratedPitch = m_nLTRoadNoisePitch;
+
+            if (GetPhysCar()->DidTireJustPucture(0)) {
+                bPuncturedTire = true;
+            } else if (GetPhysCar()->DidTireJustPucture(3)) {
+                bPuncturedTire = true;
+            }
+
+            if (GetPhysCar()->DidTireJustBlow(0)) {
+                bBlownTire = true;
+            } else if (GetPhysCar()->DidTireJustBlow(3)) {
+                bBlownTire = true;
+            }
+
+            for (int tire_num = 0; tire_num <= 3; tire_num += 3) {
+                if (GetPhysCar()->GetWheelTerrain(tire_num).GetCollection() !=
+                    GetPhysCar()->GetPrevWheelTerrain(tire_num).GetCollection()) {
                     TireTransition = tire_num;
                 }
             }
@@ -318,12 +340,10 @@ void CARSFX_RoadNoise::ProcessUpdate() {
             FXROADNOISE_TRANSITION OffTransitionID = GetPhysCar()->GetWheelTerrain(TireTransition).Aud_RoadNoise_TransOFF();
 
             if (OffTransitionID != FXROADNOISE_TRANSITION_DONTPLAY && OntoTransitionID != FXROADNOISE_TRANSITION_DONTPLAY) {
-                if (OntoTransitionID == FXROADNOISE_TRANSITION_NONE) {
-                    if (OffTransitionID != FXROADNOISE_TRANSITION_NONE) {
-                        PlayTransition(OffTransitionID, n);
-                    }
-                } else {
+                if (OntoTransitionID != FXROADNOISE_TRANSITION_NONE) {
                     PlayTransition(OntoTransitionID, n);
+                } else if (OffTransitionID != FXROADNOISE_TRANSITION_NONE) {
+                    PlayTransition(OffTransitionID, n);
                 }
             }
         }
@@ -369,10 +389,7 @@ void CARSFX_RoadNoise::ProcessUpdate() {
         }
 
         if (m_pTransition[n]) {
-            tempPitch = 0;
-            if (m_pTransition[n]->mpClass) {
-                m_pTransition[n]->mpClass->GetRefCount(&tempPitch);
-            }
+            tempPitch = m_pTransition[n]->GetRefCount();
             if (tempPitch > 1 && g_EAXIsPaused()) {
                 m_pTransition[n]->SetVolume(0);
                 m_pTransition[n]->SetPitch(0x1000);

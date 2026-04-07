@@ -78,17 +78,9 @@ void CSTATEMGR_CarState::ResolveCarBanks() {
         return;
     }
 
-    int NumEnginesWeWantToLoad = AIEnginesWeWantToLoad.size() + FinalEngines.size();
-    bool NeedSpecialHandling = DEBUG_CAR_BANK_TEST_CASE != -1;
-    if (!NeedSpecialHandling) {
-        if (!CopsCanBeInGame) {
-            NeedSpecialHandling = NumEnginesWeWantToLoad > 4;
-        } else {
-            NeedSpecialHandling = NumEnginesWeWantToLoad > 3;
-        }
-    }
-
-    if (NeedSpecialHandling) {
+    if (DEBUG_CAR_BANK_TEST_CASE != -1 ||
+        (!CopsCanBeInGame ? AIEnginesWeWantToLoad.size() + FinalEngines.size() > 4
+                          : AIEnginesWeWantToLoad.size() + FinalEngines.size() > 3)) {
         std::sort(AIEnginesWeWantToLoad.begin(), AIEnginesWeWantToLoad.end(), sort_engine_priority);
 
         for (const unsigned int *iter = AIEnginesWeWantToLoad.begin(); iter != AIEnginesWeWantToLoad.end(); ++iter) {
@@ -105,6 +97,8 @@ void CSTATEMGR_CarState::ResolveCarBanks() {
         }
 
         if (CopsCanBeInGame && FinalCopV8Engines.size() == 0) {
+            int V8ToLoad;
+
             if (EnginesThatAreV8.size() == 0) {
                 unsigned int copengkey = V8CopEngines[g_pEAXSound->Random(4)];
                 EnginesThatAreV8.push_back(copengkey);
@@ -112,14 +106,14 @@ void CSTATEMGR_CarState::ResolveCarBanks() {
                 FinalCopV8Engines.push_back(copengkey);
                 AddMapping(copengkey, copengkey);
             } else {
-                LastV8Used %= EnginesThatAreV8.size();
-                FinalEngines.push_back(EnginesThatAreV8[LastV8Used]);
-                FinalCopV8Engines.push_back(EnginesThatAreV8[LastV8Used]);
-                AddMapping(EnginesThatAreV8[LastV8Used], EnginesThatAreV8[LastV8Used]);
+                V8ToLoad = LastV8Used % EnginesThatAreV8.size();
+                FinalEngines.push_back(EnginesThatAreV8[V8ToLoad]);
+                FinalCopV8Engines.push_back(EnginesThatAreV8[V8ToLoad]);
+                AddMapping(EnginesThatAreV8[V8ToLoad], EnginesThatAreV8[V8ToLoad]);
 
                 unsigned int *found = std::find(AIEnginesWeWantToLoad.begin(),
                                                 AIEnginesWeWantToLoad.end(),
-                                                EnginesThatAreV8[LastV8Used]);
+                                                EnginesThatAreV8[V8ToLoad]);
                 if (found != AIEnginesWeWantToLoad.end()) {
                     AIEnginesWeWantToLoad.erase(found);
                 }
@@ -147,9 +141,9 @@ void CSTATEMGR_CarState::ResolveCarBanks() {
 
         while (AIEnginesWeWantToLoad.size() > 0) {
             int n = static_cast<int>(AIEnginesWeWantToLoad.size()) - 1;
-            bool foundPair = false;
+            int m;
 
-            for (int m = n - 1; m >= 0; --m) {
+            for (m = n - 1; m >= 0; --m) {
                 Attrib::Gen::engineaudio HighPriority(AIEnginesWeWantToLoad[m], 0, nullptr);
                 Attrib::Gen::engineaudio LowerPriority(AIEnginesWeWantToLoad[n], 0, nullptr);
 
@@ -170,17 +164,15 @@ void CSTATEMGR_CarState::ResolveCarBanks() {
                     if (second != AIEnginesWeWantToLoad.end()) {
                         AIEnginesWeWantToLoad.erase(second);
                     }
-
-                    foundPair = true;
                     break;
                 }
             }
 
-            if (FinalEngines.size() + AIEnginesWeWantToLoad.size() < 5) {
+            if (m < 0) {
                 break;
             }
 
-            if (!foundPair) {
+            if (FinalEngines.size() + AIEnginesWeWantToLoad.size() < 5) {
                 break;
             }
         }
@@ -188,35 +180,34 @@ void CSTATEMGR_CarState::ResolveCarBanks() {
         while (AIEnginesWeWantToLoad.size() > 0) {
             int n = static_cast<int>(AIEnginesWeWantToLoad.size()) - 1;
             Attrib::Gen::engineaudio wantstoload(AIEnginesWeWantToLoad[n], 0, nullptr);
-            bool foundMatch = false;
+            int m;
 
-            for (int m = 0; m < static_cast<int>(FinalEngines.size()); ++m) {
+            for (m = 0; m < static_cast<int>(FinalEngines.size()); ++m) {
                 Attrib::Gen::engineaudio LowerPriority(FinalEngines[m], 0, nullptr);
 
                 if (wantstoload.EngType() == LowerPriority.EngType()) {
                     AddMapping(AIEnginesWeWantToLoad[n], FinalEngines[m]);
 
-                    unsigned int *found =
+                    unsigned int *first =
                         std::find(AIEnginesWeWantToLoad.begin(),
                                   AIEnginesWeWantToLoad.end(),
                                   AIEnginesWeWantToLoad[n]);
-                    if (found != AIEnginesWeWantToLoad.end()) {
-                        AIEnginesWeWantToLoad.erase(found);
+                    if (first != AIEnginesWeWantToLoad.end()) {
+                        AIEnginesWeWantToLoad.erase(first);
                     }
-                    foundMatch = true;
                     break;
                 }
             }
 
-            if (!foundMatch) {
+            if (m >= static_cast<int>(FinalEngines.size())) {
                 AddMapping(AIEnginesWeWantToLoad[n],
                            FinalEngines[g_pEAXSound->Random(static_cast<int>(FinalEngines.size()))]);
 
-                unsigned int *found = std::find(AIEnginesWeWantToLoad.begin(),
+                unsigned int *first = std::find(AIEnginesWeWantToLoad.begin(),
                                                 AIEnginesWeWantToLoad.end(),
                                                 AIEnginesWeWantToLoad[n]);
-                if (found != AIEnginesWeWantToLoad.end()) {
-                    AIEnginesWeWantToLoad.erase(found);
+                if (first != AIEnginesWeWantToLoad.end()) {
+                    AIEnginesWeWantToLoad.erase(first);
                 }
             }
 
