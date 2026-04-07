@@ -351,29 +351,31 @@ void CARSFX_WindNoise::UpdateParams(float t) {
         pv3CarDir = pcar->GetForwardVector();
         pv3CarPos = pcar->GetPosition();
         nAngleSep = static_cast<short>(static_cast<int>(fratio * 12288.0f)) + 0x500;
+        v3NewPosLeft.x = m_fcurwindradius *
+                             (bCos(static_cast<bAngle>(nAngleSep)) * pv3CarDir->x -
+                              bSin(static_cast<bAngle>(nAngleSep)) * pv3CarDir->y) +
+                         pv3CarPos->x;
+        v3NewPosLeft.y = m_fcurwindradius *
+                             (bSin(static_cast<bAngle>(nAngleSep)) * pv3CarDir->x +
+                              bCos(static_cast<bAngle>(nAngleSep)) * pv3CarDir->y) +
+                         pv3CarPos->y;
+        v3NewPosLeft.z = pv3CarPos->z;
+
+        nAngleSep = ~nAngleSep;
+        v3NewPosRight.x = pv3CarPos->x +
+                          m_fcurwindradius *
+                              (bCos(static_cast<bAngle>(nAngleSep)) * pv3CarDir->x -
+                               bSin(static_cast<bAngle>(nAngleSep)) * pv3CarDir->y);
+        v3NewPosRight.y = pv3CarPos->y +
+                          m_fcurwindradius *
+                              (bSin(static_cast<bAngle>(nAngleSep)) * pv3CarDir->x +
+                               bCos(static_cast<bAngle>(nAngleSep)) * pv3CarDir->y);
+        v3NewPosRight.z = pv3CarPos->z;
+
         for (i = 0; i < 2; i++) {
             if (m_stWindParams[i].nCurrentChannel == 0) {
-                v3NewPosLeft.x = m_fcurwindradius *
-                                     (bCos(static_cast<bAngle>(nAngleSep)) * pv3CarDir->x -
-                                      bSin(static_cast<bAngle>(nAngleSep)) * pv3CarDir->y) +
-                                 pv3CarPos->x;
-                v3NewPosLeft.y = m_fcurwindradius *
-                                     (bSin(static_cast<bAngle>(nAngleSep)) * pv3CarDir->x +
-                                      bCos(static_cast<bAngle>(nAngleSep)) * pv3CarDir->y) +
-                                 pv3CarPos->y;
-                v3NewPosLeft.z = pv3CarPos->z;
                 m_v3CarBaseLeftPos = v3NewPosLeft;
             } else {
-                nAngleSep = ~nAngleSep;
-                v3NewPosRight.x = pv3CarPos->x +
-                                  m_fcurwindradius *
-                                      (bCos(static_cast<bAngle>(nAngleSep)) * pv3CarDir->x -
-                                       bSin(static_cast<bAngle>(nAngleSep)) * pv3CarDir->y);
-                v3NewPosRight.y = pv3CarPos->y +
-                                  m_fcurwindradius *
-                                      (bSin(static_cast<bAngle>(nAngleSep)) * pv3CarDir->x +
-                                       bCos(static_cast<bAngle>(nAngleSep)) * pv3CarDir->y);
-                v3NewPosRight.z = pv3CarPos->z;
                 m_v3CarBaseRightPos = v3NewPosRight;
             }
         }
