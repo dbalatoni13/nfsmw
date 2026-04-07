@@ -83,10 +83,10 @@ void GinsuSynthesis::HandlePacketRelease(short *samples) {
                 jumpDist = static_cast<int>(nojumpDist);
             }
         } else {
-            if (nojumpDist < packetDist) {
-                jumpDist = IntCeil(nojumpDist);
-            } else {
+            if (packetDist <= nojumpDist) {
                 jumpDist = IntFloor(nojumpDist);
+            } else {
+                jumpDist = IntCeil(nojumpDist);
             }
             jumpTime = (static_cast<float>(jumpDist) - posDiff) / rateDiff;
         }
