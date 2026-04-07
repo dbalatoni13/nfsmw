@@ -28,6 +28,8 @@
 
 #include "Speed/Indep/Src/EAXSound/CARSFX/CARSFX_Rain.cpp"
 
+#include "Speed/Indep/Src/EAXSound/CARSFX/CARSFX_TrafficFX.cpp"
+
 #include "Speed/Indep/Src/EAXSound/CARSFX/CARSFX_Siren.cpp"
 
 #include "Speed/Indep/Src/EAXSound/CARSFX/CARSFX_Turbo.cpp"

@@ -12,6 +12,8 @@ extern ClassHandle gFX_ROADNOISEHandle;
 extern InterfaceId FX_ROADNOISEId;
 extern ClassHandle gFX_ROADNOISE_TRANSHandle;
 extern InterfaceId FX_ROADNOISE_TRANSId;
+extern ClassHandle gENV_STATICHandle;
+extern InterfaceId ENV_STATICId;
 } // namespace Csis
 
 enum FXROADNOISETypeType {
@@ -298,6 +300,183 @@ struct FX_ROADNOISE_TRANS {
     }
 
     ~FX_ROADNOISE_TRANS() {
+        if (mpClass) {
+            mpClass->Release();
+        }
+    }
+
+    void CommitMemberData() {
+        if (mpClass) {
+            mpClass->SetMemberData(&mData);
+        }
+    }
+};
+
+enum ENVSTATICTYPEType {
+    ENVSTATICTYPETYPE_ENV_COMMON = 0,
+    ENVSTATICTYPETYPE_ENV_LVLSPECIFIC_ = 1,
+};
+
+struct ENV_STATICStruct {
+    int iD;                 // offset 0x0, size 0x4
+    int vOLUME;             // offset 0x4, size 0x4
+    int pITCH;              // offset 0x8, size 0x4
+    int aZIMUTH;            // offset 0xC, size 0x4
+    ENVSTATICTYPEType tYPE; // offset 0x10, size 0x4
+    int loPass;             // offset 0x14, size 0x4
+    int hiPass;             // offset 0x18, size 0x4
+    int fX_Dry;             // offset 0x1C, size 0x4
+    int fX_Wet;             // offset 0x20, size 0x4
+};
+
+struct ENV_STATIC {
+    Csis::Class *mpClass;      // offset 0x0, size 0x4
+    ENV_STATICStruct mData;    // offset 0x4, size 0x24
+
+    void SetID(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0x32) {
+            x = 0x32;
+        }
+        mData.iD = x;
+    }
+
+    int GetID() {
+        return mData.iD;
+    }
+
+    void SetVOLUME(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0x7FFF) {
+            x = 0x7FFF;
+        }
+        mData.vOLUME = x;
+    }
+
+    int GetVOLUME() {
+        return mData.vOLUME;
+    }
+
+    void SetPITCH(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0x4000) {
+            x = 0x4000;
+        }
+        mData.pITCH = x;
+    }
+
+    int GetPITCH() {
+        return mData.pITCH;
+    }
+
+    void SetAZIMUTH(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0xFFFF) {
+            x = 0xFFFF;
+        }
+        mData.aZIMUTH = x;
+    }
+
+    int GetAZIMUTH() {
+        return mData.aZIMUTH;
+    }
+
+    void SetTYPE(ENVSTATICTYPEType x) {
+        mData.tYPE = x;
+    }
+
+    ENVSTATICTYPEType GetTYPE() {
+        return mData.tYPE;
+    }
+
+    void SetLoPass(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 25000) {
+            x = 25000;
+        }
+        mData.loPass = x;
+    }
+
+    int GetLoPass() {
+        return mData.loPass;
+    }
+
+    void SetHiPass(int x) {
+        mData.hiPass = x;
+    }
+
+    int GetHiPass() {
+        return mData.hiPass;
+    }
+
+    void SetFX_Dry(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0x7FFF) {
+            x = 0x7FFF;
+        }
+        mData.fX_Dry = x;
+    }
+
+    int GetFX_Dry() {
+        return mData.fX_Dry;
+    }
+
+    void SetFX_Wet(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0x7FFF) {
+            x = 0x7FFF;
+        }
+        mData.fX_Wet = x;
+    }
+
+    int GetFX_Wet() {
+        return mData.fX_Wet;
+    }
+
+    int GetRefCount() {
+        int refCount = 0;
+
+        if (mpClass) {
+            mpClass->GetRefCount(&refCount);
+        }
+
+        return refCount;
+    }
+
+    static void *operator new(unsigned int size) {
+        return Csis::System::Alloc(size);
+    }
+
+    static void operator delete(void *ptr) {
+        Csis::System::Free(ptr);
+    }
+
+    ENV_STATIC(int iD, int vOLUME, int pITCH, int aZIMUTH, ENVSTATICTYPEType tYPE, int loPass, int hiPass, int fX_Dry, int fX_Wet) {
+        SetID(iD);
+        SetVOLUME(vOLUME);
+        SetPITCH(pITCH);
+        SetAZIMUTH(aZIMUTH);
+        SetTYPE(tYPE);
+        SetLoPass(loPass);
+        SetHiPass(hiPass);
+        SetFX_Dry(fX_Dry);
+        SetFX_Wet(fX_Wet);
+
+        int result = Csis::Class::CreateInstance(&Csis::gENV_STATICHandle, &mData, &mpClass);
+        if (result < 0) {
+            Csis::gENV_STATICHandle.Set(&Csis::ENV_STATICId);
+            Csis::Class::CreateInstance(&Csis::gENV_STATICHandle, &mData, &mpClass);
+        }
+    }
+
+    ~ENV_STATIC() {
         if (mpClass) {
             mpClass->Release();
         }
