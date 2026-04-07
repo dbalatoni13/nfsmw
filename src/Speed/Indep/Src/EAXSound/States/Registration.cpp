@@ -11,6 +11,9 @@
 #include "Speed/Indep/Src/EAXSound/CARSFX/CARSFX_TrafficFX.hpp"
 #include "Speed/Indep/Src/EAXSound/CARSFX/CARSFX_Turbo.hpp"
 #include "Speed/Indep/Src/EAXSound/CARSFX/CARSFX_WindNoise.hpp"
+#include "Speed/Indep/Src/EAXSound/EAXAITunerCar.hpp"
+#include "Speed/Indep/Src/EAXSound/EAXTrafficCar.hpp"
+#include "Speed/Indep/Src/EAXSound/EAXTunerCar.hpp"
 #include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_Collision.hpp"
 #include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_Helicopter.hpp"
 #include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_MomentStrm.hpp"
@@ -21,6 +24,12 @@
 #include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_Woosh.hpp"
 #include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_WorldObject.hpp"
 #include "Speed/Indep/Src/EAXSound/SFX_Common.hpp"
+#include "Speed/Indep/Src/EAXSound/States/Managers/STATEMGR_Enviro.hpp"
+#include "Speed/Indep/Src/EAXSound/States/STATE_Collision.hpp"
+#include "Speed/Indep/Src/EAXSound/States/STATE_DriveBy.hpp"
+#include "Speed/Indep/Src/EAXSound/States/STATE_Helicopter.hpp"
+#include "Speed/Indep/Src/EAXSound/States/STATE_Main.hpp"
+#include "Speed/Indep/Src/EAXSound/States/STATE_Music.hpp"
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_3DCarPos.hpp"
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_3DObjPos.hpp"
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_AccelTrans.hpp"
@@ -177,4 +186,16 @@ void RegisterSFX() {
 
 #undef REGISTER_TYPEINFO
 
-void RegisterStates() {}
+void RegisterStates() {
+    CSTATEMGR_Base::RegisterSTATE(EAXAITunerCar::GetStaticStateInfo());
+    CSTATEMGR_Base::RegisterSTATE(EAXTrafficCar::GetStaticStateInfo());
+    CSTATEMGR_Base::RegisterSTATE(EAXTunerCar::GetStaticStateInfo());
+    CSTATEMGR_Base::RegisterSTATE(EAXTruck::GetStaticStateInfo());
+    CSTATEMGR_Base::RegisterSTATE(EAXCopCar::GetStaticStateInfo());
+    CSTATEMGR_Base::RegisterSTATE(CSTATE_Collision::GetStaticStateInfo());
+    CSTATEMGR_Base::RegisterSTATE(CSTATE_Main::GetStaticStateInfo());
+    CSTATEMGR_Base::RegisterSTATE(CSTATE_DriveBy::GetStaticStateInfo());
+    CSTATEMGR_Base::RegisterSTATE(CSTATE_Music::GetStaticStateInfo());
+    CSTATEMGR_Base::RegisterSTATE(CSTATE_Helicopter::GetStaticStateInfo());
+    CSTATEMGR_Base::RegisterSTATE(CSTATE_WorldObject::GetStaticStateInfo());
+}

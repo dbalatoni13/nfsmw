@@ -7,7 +7,16 @@
 
 #include "Speed/Indep/Libs/Support/Utility/UStandard.h"
 #include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_WorldObject.hpp"
+#include "Speed/Indep/Src/EAXSound/States/STATE_Base.hpp"
 #include "Speed/Indep/Src/EAXSound/States/Managers/STATEMGR_Base.hpp"
+
+struct CSTATE_WorldObject : public CSTATE_Base {
+    static StateInfo *GetStaticStateInfo() {
+        return &s_StateInfo;
+    }
+
+    static StateInfo s_StateInfo;
+};
 
 // total size: 0x24
 struct CSTATEMGR_Enviro : public CSTATEMGR_Base {
