@@ -49,7 +49,7 @@ class CARSFX_Turbo : public CARSFX {
     void StopBlowOff();
     int PlaySpl(int id, int volume, int pSI, int azimuth, int rotation);
     void ResetSpool();
-    void UpdateSpool(float t);
+    int UpdateSpool(float t);
 
   private:
     bool bStopBlowoff;                          // offset 0x28, size 0x1

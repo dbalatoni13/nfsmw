@@ -12,6 +12,7 @@ int gnMemLeakTurboBLOWOFFCountTest = 0;
 int gnMemLeakTurboSPOOLCountTest = 0;
 float MIN_TORQUE_FOR_BLOWOFF = 20.0f;
 extern int IsSoundEnabled;
+extern int g_nArrayCosTable[0x201];
 
 CARSFX_Turbo::TypeInfo CARSFX_Turbo::s_TypeInfo = {
     0x00020040,
@@ -130,6 +131,33 @@ void CARSFX_Turbo::Destroy() {
     }
 }
 
+void CARSFX_Turbo::UpdateParams(float t) {
+    if (IsEnabled()) {
+        if (m_pEngineCtl->GetEngTorque() > MIN_TORQUE_FOR_BLOWOFF) {
+            m_fTurbo = m_pEngineCtl->GetEngTorque() * 0.01f;
+        } else {
+            m_fTurbo = 0.0f;
+        }
+
+        UpdateBlowOff(t);
+        UpdateSpool(t);
+        if (eTurboState == SFXTURBO_SPOOLING) {
+            if (m_pEngineCtl->GetEngTorque() < MIN_TORQUE_FOR_BLOWOFF) {
+                eTurboState = SFXTURBO_BLOWOFF;
+                PlayBlowoff(0, 0, 0, 0, m_pEAXCar->m_Rotation);
+                ResetSpool();
+                UpdateSpool(t);
+            }
+        } else if (eTurboState < SFXTURBO_BLOWOFF) {
+            if (eTurboState == SFXTURBO_NONE && m_pEngineCtl->GetEngTorque() > MIN_TORQUE_FOR_BLOWOFF) {
+                eTurboState = SFXTURBO_SPOOLING;
+            }
+        } else if (eTurboState == SFXTURBO_BLOWOFF && IsBlowOffDone()) {
+            eTurboState = SFXTURBO_NONE;
+        }
+    }
+}
+
 bool CARSFX_Turbo::IsBlowOffDone() {
     if (!m_pTurboBlowoffControl) {
         return true;
@@ -200,6 +228,84 @@ int CARSFX_Turbo::PlaySpl(int _ID, int Vol, int PSI, int, int rotation) {
         gnMemLeakTurboSPOOLCountTest++;
     }
     return 0;
+}
+
+int CARSFX_Turbo::UpdateSpool(float t) {
+    int RPM;
+    float SpoolChargeRPMScale;
+    float SpoolChargeScale;
+
+    if (!m_pTurboSplControl) {
+        PlaySpl(0, 0, 0, 0, 0);
+        return 0;
+    }
+
+    if (!g_EAXIsPaused()) {
+        if (m_fTurbo > 0.01f) {
+            SpoolCharge += m_fTurbo;
+        } else {
+            SpoolCharge -= m_pTurboData->Leak_Rate();
+        }
+    }
+
+    SpoolCharge = bClamp(SpoolCharge, 0.0f, m_pTurboData->ChargeTime());
+    RPM = static_cast<int>(GetPhysRPM()) - 1000;
+    SpoolChargeRPMScale = bClamp(static_cast<float>(RPM) * 0.01f, 0.0f, 1.0f) * 0.6f + 0.4f;
+    SpoolChargeScale = m_pTurboData->ChargeTime() * SpoolChargeRPMScale;
+    SpoolCharge = bClamp(SpoolCharge, 0.0f, SpoolChargeScale);
+    if (SpoolCharge == m_pTurboData->ChargeTime() * SpoolChargeRPMScale && !bReachedPeak) {
+        bReachedPeak = true;
+        m_SpoolDuck.ClearStages();
+        m_SpoolDuck.AddStage(0.0f, 0.0f, 1000, LINEAR);
+        m_SpoolDuck.AddStage(0.0f, 307.2f, 2000, LINEAR);
+    } else if (SpoolCharge != m_pTurboData->ChargeTime() && bReachedPeak) {
+        bReachedPeak = false;
+    }
+
+    SpoolPercent = SpoolCharge / m_pTurboData->ChargeTime();
+    vol_Spool = m_pTurboData->Vol_Spool();
+    if (bReachedPeak) {
+        m_SpoolDuck.Update(t);
+        vol_Spool = vol_Spool * g_nArrayCosTable[m_SpoolDuck.iGetValue()] >> 15;
+    }
+    return 0;
+}
+
+void CARSFX_Turbo::ProcessUpdate() {
+    if (m_pTurboBlowoffControl) {
+        int nDMixOut;
+        int Az;
+        int TmpBlowoffVol;
+
+        if (BlowoffID == 1) {
+            TmpBlowoffVol = GetDMixOutput(2, DMX_VOL);
+            Az = GetDMixOutput(0, DMX_AZIM);
+        } else {
+            TmpBlowoffVol = GetDMixOutput(3, DMX_VOL);
+            Az = GetDMixOutput(0, DMX_AZIM);
+        }
+
+        nDMixOut = static_cast<int>(static_cast<float>((BlowoffVol * TmpBlowoffVol) >> 15) * m_BlowoffRampDown.GetValue());
+        m_pTurboBlowoffControl->SetAzimuth(Az);
+        m_pTurboBlowoffControl->SetVolume(nDMixOut);
+        m_pTurboBlowoffControl->CommitMemberData();
+    }
+
+    if (m_pTurboSplControl) {
+        int Az;
+        int nDMixOut;
+        int Tmpvol_Spool;
+
+        Az = GetDMixOutput(0, DMX_AZIM);
+        nDMixOut = GetDMixOutput(1, DMX_VOL);
+        Tmpvol_Spool = vol_Spool * nDMixOut >> 15;
+        m_pTurboSplControl->SetVolume(Tmpvol_Spool);
+        m_pTurboSplControl->SetPSI(static_cast<int>(SpoolPercent * 1024.0f));
+        m_pTurboSplControl->SetAzimuth(Az);
+        m_pTurboSplControl->SetRotation(static_cast<int>(GetPhysTRQ() * 10.24f));
+        m_pTurboSplControl->SetRPM(static_cast<int>(GetPhysRPM()));
+        m_pTurboSplControl->CommitMemberData();
+    }
 }
 
 void CARSFX_Turbo::SetupLoadData() {
