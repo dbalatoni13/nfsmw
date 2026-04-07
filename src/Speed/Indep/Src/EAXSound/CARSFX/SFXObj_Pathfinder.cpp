@@ -951,7 +951,15 @@ void SFXObj_PFEATrax::UpdateInGame(float t) {
             if (TestToAmbience()) {
                 return;
             }
-            if (!TestToLicensed(false)) {
+            if (TestToLicensed(false)) {
+                if ((m_Flags & 0x800) != 0) {
+                    return;
+                }
+                if (status != 1) {
+                    return;
+                }
+                StartLicensedMusic(0);
+            } else {
                 if ((m_Flags & 0x800) != 0) {
                     return;
                 }
@@ -959,16 +967,33 @@ void SFXObj_PFEATrax::UpdateInGame(float t) {
                 StartAmbience(AmbientCrossMap[m_nAmbientZone]);
                 return;
             }
-            if ((m_Flags & 0x800) != 0) {
+        }
+    } else {
+        if (FEDatabase->GetAudioSettings()->InteractiveMusicMode == 0 || g_pEAXSound->GetCurMusicVolume() == 0.0f) {
+            PATH_stop(m_PFParms[m_ActiveProject].PATH_TRACK);
+            if (TestToLicensed(true)) {
+                return;
+            }
+            if (TestToAmbience()) {
                 return;
             }
             if (status != 1) {
                 return;
             }
-            StartLicensedMusic(0);
-        }
-    } else {
-        if (FEDatabase->GetAudioSettings()->InteractiveMusicMode != 0 && g_pEAXSound->GetCurMusicVolume() != 0.0f) {
+            {
+                SoundAI *ai;
+
+                m_CurPathEvent = 0;
+                ai = SoundAI::Get();
+                if (!ai) {
+                    return;
+                }
+                if (ai->IsMusicActive()) {
+                    return;
+                }
+            }
+            StartInteractiveMusic(0x026E7282);
+        } else {
             if (TestToAmbience()) {
                 return;
             }
@@ -990,29 +1015,6 @@ void SFXObj_PFEATrax::UpdateInGame(float t) {
             StartInteractiveMusic(0x026E7282);
             return;
         }
-        PATH_stop(m_PFParms[m_ActiveProject].PATH_TRACK);
-        if (TestToLicensed(true)) {
-            return;
-        }
-        if (TestToAmbience()) {
-            return;
-        }
-        if (status != 1) {
-            return;
-        }
-        {
-            SoundAI *ai;
-
-            m_CurPathEvent = 0;
-            ai = SoundAI::Get();
-            if (!ai) {
-                return;
-            }
-            if (ai->IsMusicActive()) {
-                return;
-            }
-        }
-        StartInteractiveMusic(0x026E7282);
     }
 }
 
