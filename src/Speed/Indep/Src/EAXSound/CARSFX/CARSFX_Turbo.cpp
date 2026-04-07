@@ -1,6 +1,7 @@
 #include "./CARSFX_Turbo.hpp"
 
 #include "Speed/Indep/Src/EAXSound/EAXCar.hpp"
+#include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
 
 namespace Csis {
 InterfaceId FX_TURBO_01Id = {"FX_TURBO_01", 0x5EF2, 0x5EF2};
@@ -10,6 +11,7 @@ ClassHandle gFX_TURBO_01Handle;
 int gnMemLeakTurboBLOWOFFCountTest = 0;
 int gnMemLeakTurboSPOOLCountTest = 0;
 float MIN_TORQUE_FOR_BLOWOFF = 20.0f;
+extern int IsSoundEnabled;
 
 CARSFX_Turbo::TypeInfo CARSFX_Turbo::s_TypeInfo = {
     0x00020040,
@@ -126,6 +128,78 @@ void CARSFX_Turbo::Destroy() {
         m_pTurboSplControl = nullptr;
         gnMemLeakTurboSPOOLCountTest--;
     }
+}
+
+bool CARSFX_Turbo::IsBlowOffDone() {
+    if (!m_pTurboBlowoffControl) {
+        return true;
+    }
+
+    if (m_pTurboBlowoffControl->GetRefCount() == 1 || m_BlowoffRampDown.GetValue() == 0.0f) {
+        return true;
+    }
+
+    return false;
+}
+
+void CARSFX_Turbo::UpdateBlowOff(float t) {
+    if (m_pTurboBlowoffControl) {
+        m_BlowoffRampDown.Update(t);
+        if (m_pEAXCar->fTrottle > MIN_TORQUE_FOR_BLOWOFF && m_BlowoffRampDown.GetValue() == 1.0f && !m_pShiftingCtl->IsActive()) {
+            m_BlowoffRampDown.Initialize(1.0f, 0.0f, 0x96, LINEAR);
+        }
+
+        if (IsBlowOffDone()) {
+            StopBlowOff();
+        }
+    }
+}
+
+void CARSFX_Turbo::StopBlowOff() {
+    if (m_pTurboBlowoffControl) {
+        delete m_pTurboBlowoffControl;
+        m_pTurboBlowoffControl = nullptr;
+        gnMemLeakTurboBLOWOFFCountTest--;
+    }
+}
+
+int CARSFX_Turbo::PlayBlowoff(int, int, int, int, int rotation) {
+    if (IsEnabled() && IsSoundEnabled == 1 && !m_pTurboBlowoffControl) {
+        BlowoffID = 1;
+        if (SpoolPercent > 0.75f) {
+            BlowoffID = g_pEAXSound->Random(2) + 2;
+        }
+
+        if (BlowoffID == 1) {
+            BlowoffVol = static_cast<int>(m_pTurboData->Vol_Blowoff1() * SpoolPercent);
+        } else {
+            BlowoffVol = static_cast<int>(m_pTurboData->Vol_Blowoff2() * SpoolPercent);
+        }
+
+        g_pEAXSound->SetCsisName("SND: Turbo");
+        m_pTurboBlowoffControl =
+            new FX_TURBO_01(BlowoffID, 0, static_cast<int>(SpoolPercent * 1024.0f), 0, rotation, static_cast<int>(GetPhysRPM()));
+        gnMemLeakTurboBLOWOFFCountTest++;
+        m_refCount = static_cast<unsigned short>(m_pTurboBlowoffControl ? m_pTurboBlowoffControl->GetRefCount() : 0);
+        tLastBlowoffTime = m_pStateBase->GetCurTime();
+        m_BlowoffRampDown.Initialize(1.0f, 1.0f, 1, LINEAR);
+    }
+
+    return 0;
+}
+
+int CARSFX_Turbo::PlaySpl(int _ID, int Vol, int PSI, int, int rotation) {
+    int nDMixOut;
+
+    if (IsSoundEnabled == 1) {
+        nDMixOut = GetDMixOutput(1, DMX_VOL);
+        nDMixOut = Vol * nDMixOut >> 15;
+        g_pEAXSound->SetCsisName("SND:Turbo Spool");
+        m_pTurboSplControl =
+            new FX_TURBO_01(_ID, nDMixOut, PSI, GetDMixOutput(0, DMX_AZIM), rotation, static_cast<int>(GetPhysRPM()));
+        gnMemLeakTurboSPOOLCountTest++;
+    }
+    return 0;
 }
 
 void CARSFX_Turbo::SetupLoadData() {

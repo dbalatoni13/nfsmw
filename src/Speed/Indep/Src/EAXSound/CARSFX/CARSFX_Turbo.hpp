@@ -43,11 +43,11 @@ class CARSFX_Turbo : public CARSFX {
     void ProcessUpdate() override;
     void SetupLoadData() override;
 
-    void PlayBlowoff(int id, int volume, int pSI, int azimuth, int rotation);
+    int PlayBlowoff(int id, int volume, int pSI, int azimuth, int rotation);
     bool IsBlowOffDone();
     void UpdateBlowOff(float t);
     void StopBlowOff();
-    void PlaySpl(int id, int volume, int pSI, int azimuth, int rotation);
+    int PlaySpl(int id, int volume, int pSI, int azimuth, int rotation);
     void ResetSpool();
     void UpdateSpool(float t);
 

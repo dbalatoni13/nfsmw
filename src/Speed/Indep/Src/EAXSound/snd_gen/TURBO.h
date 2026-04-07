@@ -28,26 +28,56 @@ struct FX_TURBO_01 {
     FX_TURBO_01Struct mData;   // offset 0x4, size 0x18
 
     void SetId(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 5) {
+            x = 5;
+        }
         mData.id = x;
     }
 
     void SetVolume(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0x7FFF) {
+            x = 0x7FFF;
+        }
         mData.volume = x;
     }
 
     void SetPSI(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0x400) {
+            x = 0x400;
+        }
         mData.pSI = x;
     }
 
     void SetAzimuth(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0xFFFF) {
+            x = 0xFFFF;
+        }
         mData.azimuth = x;
     }
 
     void SetRotation(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0x400) {
+            x = 0x400;
+        }
         mData.rotation = x;
     }
 
     void SetRPM(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 10000) {
+            x = 10000;
+        }
         mData.rPM = x;
     }
 
