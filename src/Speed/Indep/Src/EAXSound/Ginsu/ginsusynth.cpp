@@ -54,14 +54,13 @@ void GinsuSynthesis::HandlePacketRelease(short *samples) {
     int jumpDist;
     int sampleCount;
 
-    jumpTime = 0.0f;
-    jumpDist = 0;
-
     if (mSynthData) {
         mCurrentCycle = mSynthData->SampleToCycle(mCurrentPos);
     }
 
     change = static_cast<float>(mTargetPos - mCurrentPos) / static_cast<float>(mPacketCountdown);
+    jumpTime = 0.0f;
+    jumpDist = 0;
 
     if (mNoJumpRemaining < mPacketSize && mSynthData) {
         float playbackCycle = mSynthData->SampleToCycle(mPlaybackPos);
@@ -74,11 +73,9 @@ void GinsuSynthesis::HandlePacketRelease(short *samples) {
         float packetDist = posDiff + rateDiff;
 
         if (IntFloor(nojumpDist) == IntFloor(packetDist)) {
-            float maxDist = rateDiff * 0.99999994f;
-            if (maxDist < 0.0f) {
-                maxDist = -maxDist;
-            }
-            if (static_cast<float>(IntCeil(maxDist)) < (nojumpDist < 0.0f ? -nojumpDist : nojumpDist)) {
+            float maxDist = bAbs(rateDiff * 0.99999994f);
+
+            if (static_cast<float>(IntCeil(maxDist)) < bAbs(nojumpDist)) {
                 jumpTime = nojumpTime;
                 jumpDist = static_cast<int>(nojumpDist);
             }

@@ -45,6 +45,49 @@ SndBase::TypeInfo SFXObj_Pathfinder::s_TypeInfo = { 0, "SFXObj_Pathfinder", null
 SndBase::TypeInfo SFXObj_PFEATrax::s_TypeInfo = { 0, "SFXObj_PFEATrax", nullptr, SFXObj_PFEATrax::CreateObject };
 stEATraxParms SFXObj_PFEATrax::m_EATrax[2];
 
+void InitializeEATrax(bool breset) {
+    int songindex;
+    int playability;
+    JukeboxEntry *playlist;
+    int n;
+
+    n = 0;
+    SFXObj_PFEATrax::m_EATrax[0].PBMode = FEDatabase->GetAudioSettings()->PlayState;
+    SFXObj_PFEATrax::m_EATrax[0].TraxMask = 0;
+    SFXObj_PFEATrax::m_EATrax[1].PBMode = FEDatabase->GetAudioSettings()->PlayState;
+    SFXObj_PFEATrax::m_EATrax[1].NumEnabledSongs = 0;
+    SFXObj_PFEATrax::m_EATrax[1].TraxMask = 0;
+    SFXObj_PFEATrax::m_EATrax[0].NumEnabledSongs = 0;
+    if (g_MaxSongs > 0) {
+        playlist = FEDatabase->GetUserProfile(0)->Playlist;
+        do {
+            songindex = playlist[n].SongIndex;
+            playability = playlist[n].PlayabilityField;
+            if (playability == 1) {
+                SFXObj_PFEATrax::m_EATrax[0].TraxMask |= 1 << (songindex & 0x1F);
+                SFXObj_PFEATrax::m_EATrax[0].NumEnabledSongs++;
+            } else if (playability > 1) {
+                if (playability == 2) {
+                    SFXObj_PFEATrax::m_EATrax[1].TraxMask |= 1 << (songindex & 0x1F);
+                    SFXObj_PFEATrax::m_EATrax[1].NumEnabledSongs++;
+                } else if (playability == 3) {
+                    SFXObj_PFEATrax::m_EATrax[0].TraxMask |= 1 << (songindex & 0x1F);
+                    SFXObj_PFEATrax::m_EATrax[0].NumEnabledSongs++;
+                    SFXObj_PFEATrax::m_EATrax[1].TraxMask |= 1 << (songindex & 0x1F);
+                    SFXObj_PFEATrax::m_EATrax[1].NumEnabledSongs++;
+                }
+            }
+            n++;
+        } while (n < g_MaxSongs);
+    }
+    SFXObj_PFEATrax::m_EATrax[0].PlayBits = SFXObj_PFEATrax::m_EATrax[0].TraxMask;
+    SFXObj_PFEATrax::m_EATrax[1].PlayBits = SFXObj_PFEATrax::m_EATrax[1].TraxMask;
+    if (breset) {
+        SFXObj_PFEATrax::m_EATrax[1].LastPlaylistSong = -1;
+        SFXObj_PFEATrax::m_EATrax[0].LastPlaylistSong = -1;
+    }
+}
+
 SndBase::TypeInfo *SFXObj_Pathfinder::GetTypeInfo() const {
     return &s_TypeInfo;
 }
