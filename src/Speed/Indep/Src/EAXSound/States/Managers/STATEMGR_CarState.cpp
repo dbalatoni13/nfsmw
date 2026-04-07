@@ -289,8 +289,10 @@ void CSTATEMGR_CarState::ResolveCarBanks() {
     }
 
     while (AIEnginesWeWantToLoad.size() != 0) {
-        FinalEngines.push_back(AIEnginesWeWantToLoad[0]);
-        AddMapping(AIEnginesWeWantToLoad[0], AIEnginesWeWantToLoad[0]);
+        unsigned int eng = AIEnginesWeWantToLoad[0];
+
+        FinalEngines.push_back(eng);
+        AddMapping(eng, eng);
         AIEnginesWeWantToLoad.erase(AIEnginesWeWantToLoad.begin());
     }
 
