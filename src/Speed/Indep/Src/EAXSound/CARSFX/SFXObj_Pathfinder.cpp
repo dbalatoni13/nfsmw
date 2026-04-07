@@ -918,7 +918,56 @@ void SFXObj_PFEATrax::UpdateInGame(float t) {
     if (SFXCTL_Pathfinder::m_pPFParms[m_ActiveProject]) {
         status = SFXCTL_Pathfinder::m_pPFParms[m_ActiveProject]->track_status;
     }
-    if (m_MusicType == eMUSIC_TYPE_INTERACTIVE) {
+    if (m_MusicType != eMUSIC_TYPE_INTERACTIVE) {
+        if (m_MusicType > eMUSIC_TYPE_INTERACTIVE) {
+            if (m_MusicType == eMUSIC_TYPE_AMBIENCE) {
+                if (TestToPursuit()) {
+                    return;
+                }
+                if (TestToLicensed(true)) {
+                    return;
+                }
+                if ((m_Flags & 0x800) != 0) {
+                    return;
+                }
+                if (status == 1) {
+                    if (m_CurPathEvent == m_PrevPathEvent) {
+                        m_CurPathEvent = 0;
+                    }
+                    UpdateAmbience(t);
+                    StartAmbience(AmbientCrossMap[m_nAmbientZone]);
+                    return;
+                }
+                UpdateAmbience(t);
+                if (AmbientCrossMap[m_nAmbientZone] == m_CurPathEvent) {
+                    return;
+                }
+                StartAmbience(AmbientCrossMap[m_nAmbientZone]);
+            }
+        } else if (m_MusicType == eMUSIC_TYPE_LICENCED) {
+            if (TestToPursuit()) {
+                return;
+            }
+            if (TestToAmbience()) {
+                return;
+            }
+            if (!TestToLicensed(false)) {
+                if ((m_Flags & 0x800) != 0) {
+                    return;
+                }
+                UpdateAmbience(t);
+                StartAmbience(AmbientCrossMap[m_nAmbientZone]);
+                return;
+            }
+            if ((m_Flags & 0x800) != 0) {
+                return;
+            }
+            if (status != 1) {
+                return;
+            }
+            StartLicensedMusic(0);
+        }
+    } else {
         if (FEDatabase->GetAudioSettings()->InteractiveMusicMode != 0 && g_pEAXSound->GetCurMusicVolume() != 0.0f) {
             if (TestToAmbience()) {
                 return;
@@ -964,51 +1013,6 @@ void SFXObj_PFEATrax::UpdateInGame(float t) {
             }
         }
         StartInteractiveMusic(0x026E7282);
-    } else if (m_MusicType == eMUSIC_TYPE_LICENCED) {
-        if (TestToPursuit()) {
-            return;
-        }
-        if (TestToAmbience()) {
-            return;
-        }
-        if (!TestToLicensed(false)) {
-            if ((m_Flags & 0x800) != 0) {
-                return;
-            }
-            UpdateAmbience(t);
-            StartAmbience(AmbientCrossMap[m_nAmbientZone]);
-            return;
-        }
-        if ((m_Flags & 0x800) != 0) {
-            return;
-        }
-        if (status != 1) {
-            return;
-        }
-        StartLicensedMusic(0);
-    } else if (m_MusicType == eMUSIC_TYPE_AMBIENCE) {
-        if (TestToPursuit()) {
-            return;
-        }
-        if (TestToLicensed(true)) {
-            return;
-        }
-        if ((m_Flags & 0x800) != 0) {
-            return;
-        }
-        if (status == 1) {
-            if (m_CurPathEvent == m_PrevPathEvent) {
-                m_CurPathEvent = 0;
-            }
-            UpdateAmbience(t);
-            StartAmbience(AmbientCrossMap[m_nAmbientZone]);
-            return;
-        }
-        UpdateAmbience(t);
-        if (AmbientCrossMap[m_nAmbientZone] == m_CurPathEvent) {
-            return;
-        }
-        StartAmbience(AmbientCrossMap[m_nAmbientZone]);
     }
 }
 
