@@ -1161,6 +1161,11 @@ struct FX_SHIFTING_01Struct {
 struct FX_SHIFTING_01 {
   public:
     void SetId(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 2) {
+            x = 2;
+        }
         mData.id = x;
     }
 
@@ -1169,6 +1174,11 @@ struct FX_SHIFTING_01 {
     }
 
     void SetVolume(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0x7FFF) {
+            x = 0x7FFF;
+        }
         mData.volume = x;
     }
 
@@ -1185,6 +1195,11 @@ struct FX_SHIFTING_01 {
     }
 
     void SetAzimuth(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0xFFFF) {
+            x = 0xFFFF;
+        }
         mData.azimuth = x;
     }
 
@@ -1201,6 +1216,11 @@ struct FX_SHIFTING_01 {
     }
 
     void SetCAM(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 1) {
+            x = 1;
+        }
         mData.cAM = x;
     }
 

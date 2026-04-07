@@ -443,6 +443,11 @@ struct CAR_SWTN {
     }
 
     void SetCar_class(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 100) {
+            x = 100;
+        }
         mData.car_class = x;
     }
 
@@ -451,6 +456,11 @@ struct CAR_SWTN {
     }
 
     void SetRPM(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 10000) {
+            x = 10000;
+        }
         mData.rPM = x;
     }
 
@@ -459,6 +469,11 @@ struct CAR_SWTN {
     }
 
     void SetVOL(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0x8013) {
+            x = 0x8013;
+        }
         mData.vOL = x;
     }
 
@@ -467,6 +482,11 @@ struct CAR_SWTN {
     }
 
     void SetCOMMON_PARAMETERS_AZIMUTH(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0x10000) {
+            x = 0x10000;
+        }
         mData.cOMMON_PARAMETERS_AZIMUTH = x;
     }
 
@@ -557,6 +577,11 @@ struct CAR_WHINEStruct {
 struct CAR_WHINE {
   public:
     void SetCar_class(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 100) {
+            x = 100;
+        }
         mData.car_class = x;
     }
 
@@ -565,6 +590,11 @@ struct CAR_WHINE {
     }
 
     void SetRPM(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 10000) {
+            x = 10000;
+        }
         mData.rPM = x;
     }
 
@@ -573,6 +603,11 @@ struct CAR_WHINE {
     }
 
     void SetVOL(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0x8013) {
+            x = 0x8013;
+        }
         mData.vOL = x;
     }
 
@@ -581,6 +616,11 @@ struct CAR_WHINE {
     }
 
     void SetCOMMON_PARAMETERS_AZIMUTH(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0x10000) {
+            x = 0x10000;
+        }
         mData.cOMMON_PARAMETERS_AZIMUTH = x;
     }
 
