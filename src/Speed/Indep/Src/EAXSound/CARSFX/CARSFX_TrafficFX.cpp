@@ -1,6 +1,9 @@
 #include "./CARSFX_TrafficFX.hpp"
 
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
+#include "Speed/Indep/Src/EAXSound/SndCamera.hpp"
+
+extern bool IsPlayerGoingFastEnough(float, int);
 
 namespace {
 int HonkingCarCnt = 0;
@@ -62,6 +65,49 @@ void CARSFX_TrafficHorn::Detach() {
     CSIS_EndHonk();
 }
 
+void CARSFX_TrafficHorn::UpdateParams(float t) {
+    if (!m_pStateBase->IsAttached()) {
+        return;
+    }
+
+    HonkFadeOut.Update(t);
+
+    if (!m_HornSound) {
+        if (GetPhysCar()->IsSimUpdating() &&
+            tSinceLastHorn + 3.0f < m_pStateBase->GetCurTime() &&
+            tSinceLastAttemptedToHonk + 3.0f < m_pStateBase->GetCurTime() &&
+            *reinterpret_cast<int *>(&ShouldHonk) != 0 && SndCamera::NumPlayers > 0) {
+            int n;
+
+            for (n = 0; n < SndCamera::NumPlayers; n++) {
+                if (IsPlayerGoingFastEnough(10.0f, n) && IsPlayerCarInRange(n)) {
+                    if (g_pEAXSound->Random(1.0f) < 0.3f ||
+                        g_LastTrafficHonkTime + 5.0f < m_pStateBase->GetCurTime()) {
+                        int ID;
+
+                        ID = GetPhysCar()->GetAttributes()->HornType();
+                        *reinterpret_cast<int *>(&SND_PlayingHonk) = 1;
+                        HornDuration = g_pEAXSound->Random(2.8f) + 1.2f;
+                        CSIS_BeginHonk(ID);
+                    } else {
+                        tSinceLastAttemptedToHonk = m_pStateBase->GetCurTime();
+                    }
+                }
+            }
+        }
+    } else if ((HornDuration + tHornBegin <= m_pStateBase->GetCurTime() ||
+                *reinterpret_cast<int *>(&SND_PlayingHonk) == 0) &&
+               *reinterpret_cast<int *>(&AIPlayingHonk) == 0) {
+        if (*reinterpret_cast<int *>(&IsEndingHonk) == 0) {
+            EndCarHonk();
+        }
+    }
+
+    if (*reinterpret_cast<int *>(&IsEndingHonk) != 0 && HonkFadeOut.IsFinished()) {
+        CSIS_EndHonk();
+    }
+}
+
 void CARSFX_TrafficHorn::ProcessUpdate() {
     CSIS_UpdateHOnk();
 }
@@ -103,6 +149,21 @@ void CARSFX_TrafficHorn::UpdateMixerOutputs() {
     }
 }
 
+void CARSFX_TrafficHorn::CSIS_BeginHonk(int ID) {
+    if (m_HornSound) {
+        delete m_HornSound;
+    }
+
+    m_HornSound = nullptr;
+    g_pEAXSound->SetCsisName("AUD: Traffic Horn");
+    m_HornSound = new ENV_STATIC(ID, 0, 0, 0, ENVSTATICTYPETYPE_ENV_COMMON, 25000, 0, 0x7FFF, 0);
+
+    g_LastTrafficHonkTime = m_pStateBase->GetCurTime();
+    tHornBegin = g_LastTrafficHonkTime;
+    HonkFadeOut.Initialize(1.0f, 1.0f, 1, LINEAR);
+    *reinterpret_cast<int *>(&IsEndingHonk) = 0;
+}
+
 void CARSFX_TrafficHorn::CSIS_EndHonk() {
     if (m_HornSound) {
         delete m_HornSound;
@@ -112,6 +173,18 @@ void CARSFX_TrafficHorn::CSIS_EndHonk() {
     tSinceLastHorn = m_pStateBase->GetCurTime();
     *reinterpret_cast<int *>(&AIPlayingHonk) = 0;
     *reinterpret_cast<int *>(&SND_PlayingHonk) = 0;
+}
+
+void CARSFX_TrafficHorn::CSIS_UpdateHOnk() {
+    int TempVol;
+
+    if (m_HornSound) {
+        m_HornSound->SetPITCH(GetDMixOutput(4, DMX_PITCH));
+        TempVol = static_cast<int>(static_cast<float>(GetDMixOutput(2, DMX_VOL)) * HonkFadeOut.CurValue);
+        m_HornSound->SetVOLUME(TempVol);
+        m_HornSound->SetAZIMUTH(GetDMixOutput(0, DMX_AZIM));
+        m_HornSound->CommitMemberData();
+    }
 }
 
 bool CARSFX_TrafficHorn::IsHonking() {

@@ -235,6 +235,10 @@ struct EAX_CarState : public UTL::Collections::Listable<EAX_CarState, 10> {
         return mContext;
     }
 
+    bool IsSimUpdating() {
+        return mSimUpdating;
+    }
+
     Attrib::Gen::pvehicle *GetAttributes() {
         return &mAttributes;
     }
