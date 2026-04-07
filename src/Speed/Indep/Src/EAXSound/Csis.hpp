@@ -6,10 +6,24 @@
 #endif
 
 namespace Csis {
-struct InterfaceId;
+// total size: 0x8
+struct InterfaceId {
+    const char *pString; // offset 0x0, size 0x4
+    short systemCrc;     // offset 0x4, size 0x2
+    short interfaceCrc;  // offset 0x6, size 0x2
+};
 
+// total size: 0x8
 struct ClassHandle {
+    ClassHandle();
     int Set(const InterfaceId *pInterfaceId);
+    int SetFast(const InterfaceId *pInterfaceId);
+    int Valid();
+    static void *operator new(unsigned int size);
+    static void operator delete(void *ptr);
+
+    void *mpPrivate; // offset 0x0, size 0x4
+    int mKey;        // offset 0x4, size 0x4
 };
 
 struct FunctionHandle {
