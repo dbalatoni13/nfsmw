@@ -110,11 +110,11 @@ void CSTATEMGR_CarState::ResolveCarBanks() {
     UTL::FixedVector<unsigned int, 8, 16> AIEnginesWeWantToLoad;
     UTL::FixedVector<unsigned int, 8, 16> EnginesThatCanUpgradeToV8;
     UTL::FixedVector<unsigned int, 8, 16> EnginesThatAreV8;
-    bool CopsCanBeInGame = !FEDatabase->IsQuickRaceMode();
 
     AIEnginesWeWantToLoad.clear();
     EnginesThatCanUpgradeToV8.clear();
     EnginesThatAreV8.clear();
+    bool CopsCanBeInGame = !FEDatabase->IsQuickRaceMode();
     ForcePrintResolveInfo = false;
     CSTATEMGR_CarState::CopsCanBeInGame = CopsCanBeInGame;
 
