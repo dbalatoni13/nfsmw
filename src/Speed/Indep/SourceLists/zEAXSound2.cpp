@@ -22,6 +22,8 @@
 
 #include "Speed/Indep/Src/EAXSound/CARSFX/CARSFX_Engine.cpp"
 
+#include "Speed/Indep/Src/EAXSound/CARSFX/CARSFX_Nitrous.cpp"
+
 #include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_Pathfinder.cpp"
 
 #include "Speed/Indep/Src/EAXSound/Ginsu/ginsudata.cpp"

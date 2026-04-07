@@ -12,6 +12,10 @@ extern ClassHandle gFX_RadarHandle;
 extern InterfaceId FX_RadarId;
 extern ClassHandle gFX_SKIDHandle;
 extern InterfaceId FX_SKIDId;
+extern ClassHandle gFX_NITROUSHandle;
+extern InterfaceId FX_NITROUSId;
+extern ClassHandle gFX_PURGEHandle;
+extern InterfaceId FX_PURGEId;
 extern ClassHandle gFX_ScrapeHandle;
 extern InterfaceId FX_ScrapeId;
 extern ClassHandle gFX_CameraHandle;
@@ -38,6 +42,317 @@ struct FX_Hydraulic {
     ~FX_Hydraulic() {
         if (mpClass) {
             mpClass->Release();
+        }
+    }
+};
+
+struct FX_NITROUSStruct {
+    int nIT_ID;                 // offset 0x0, size 0x4
+    int nIT_volume;             // offset 0x4, size 0x4
+    int nIT_azimuth;            // offset 0x8, size 0x4
+    int nIT_STOP;               // offset 0xC, size 0x4
+    int pitch;                  // offset 0x10, size 0x4
+    int filter_Effects_LoPass;  // offset 0x14, size 0x4
+    int filter_Effects_HiPass;  // offset 0x18, size 0x4
+    int filter_Effects_Dry_FX;  // offset 0x1C, size 0x4
+    int filter_Effects_Wet_FX;  // offset 0x20, size 0x4
+};
+
+struct FX_NITROUS {
+    Csis::Class *mpClass;         // offset 0x0, size 0x4
+    FX_NITROUSStruct mData;       // offset 0x4, size 0x24
+
+    void SetNIT_ID(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 2) {
+            x = 2;
+        }
+        mData.nIT_ID = x;
+    }
+
+    int GetNIT_ID() {
+        return mData.nIT_ID;
+    }
+
+    void SetNIT_volume(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0x7FFF) {
+            x = 0x7FFF;
+        }
+        mData.nIT_volume = x;
+    }
+
+    int GetNIT_volume() {
+        return mData.nIT_volume;
+    }
+
+    void SetNIT_azimuth(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0xFFFF) {
+            x = 0xFFFF;
+        }
+        mData.nIT_azimuth = x;
+    }
+
+    int GetNIT_azimuth() {
+        return mData.nIT_azimuth;
+    }
+
+    void SetNIT_STOP(int x) {
+        mData.nIT_STOP = x;
+    }
+
+    int GetNIT_STOP() {
+        return mData.nIT_STOP;
+    }
+
+    void SetPitch(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0x4000) {
+            x = 0x4000;
+        }
+        mData.pitch = x;
+    }
+
+    int GetPitch() {
+        return mData.pitch;
+    }
+
+    void SetFilter_Effects_LoPass(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 25000) {
+            x = 25000;
+        }
+        mData.filter_Effects_LoPass = x;
+    }
+
+    int GetFilter_Effects_LoPass() {
+        return mData.filter_Effects_LoPass;
+    }
+
+    void SetFilter_Effects_HiPass(int x) {
+        mData.filter_Effects_HiPass = x;
+    }
+
+    int GetFilter_Effects_HiPass() {
+        return mData.filter_Effects_HiPass;
+    }
+
+    void SetFilter_Effects_Dry_FX(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0x7FFF) {
+            x = 0x7FFF;
+        }
+        mData.filter_Effects_Dry_FX = x;
+    }
+
+    int GetFilter_Effects_Dry_FX() {
+        return mData.filter_Effects_Dry_FX;
+    }
+
+    void SetFilter_Effects_Wet_FX(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0x7FFF) {
+            x = 0x7FFF;
+        }
+        mData.filter_Effects_Wet_FX = x;
+    }
+
+    int GetFilter_Effects_Wet_FX() {
+        return mData.filter_Effects_Wet_FX;
+    }
+
+    int GetRefCount() {
+        int refCount = 0;
+
+        if (mpClass) {
+            mpClass->GetRefCount(&refCount);
+        }
+
+        return refCount;
+    }
+
+    static void *operator new(unsigned int size) {
+        return Csis::System::Alloc(size);
+    }
+
+    static void operator delete(void *ptr) {
+        Csis::System::Free(ptr);
+    }
+
+    FX_NITROUS(int nIT_ID, int nIT_volume, int nIT_azimuth, int nIT_STOP, int pitch, int filter_Effects_LoPass,
+               int filter_Effects_HiPass, int filter_Effects_Dry_FX, int filter_Effects_Wet_FX) {
+        SetNIT_ID(nIT_ID);
+        SetNIT_volume(nIT_volume);
+        SetNIT_azimuth(nIT_azimuth);
+        SetNIT_STOP(nIT_STOP);
+        SetPitch(pitch);
+        SetFilter_Effects_LoPass(filter_Effects_LoPass);
+        SetFilter_Effects_HiPass(filter_Effects_HiPass);
+        SetFilter_Effects_Dry_FX(filter_Effects_Dry_FX);
+        SetFilter_Effects_Wet_FX(filter_Effects_Wet_FX);
+
+        int result = Csis::Class::CreateInstance(&Csis::gFX_NITROUSHandle, &mData, &mpClass);
+        if (result < 0) {
+            Csis::gFX_NITROUSHandle.Set(&Csis::FX_NITROUSId);
+            Csis::Class::CreateInstance(&Csis::gFX_NITROUSHandle, &mData, &mpClass);
+        }
+    }
+
+    ~FX_NITROUS() {
+        if (mpClass) {
+            mpClass->Release();
+        }
+    }
+
+    void CommitMemberData() {
+        if (mpClass) {
+            mpClass->SetMemberData(&mData);
+        }
+    }
+};
+
+struct FX_PURGEStruct {
+    int pURGE_volume;            // offset 0x0, size 0x4
+    int pURGE_azimuth;           // offset 0x4, size 0x4
+    int pURGE_STOP;              // offset 0x8, size 0x4
+    int pURGE_pitch;             // offset 0xC, size 0x4
+    int filter_Effects_LoPass;   // offset 0x10, size 0x4
+    int filter_Effects_HiPass;   // offset 0x14, size 0x4
+    int filter_Effects_Dry_FX;   // offset 0x18, size 0x4
+    int filter_Effects_Wet_FX;   // offset 0x1C, size 0x4
+};
+
+struct FX_PURGE {
+    Csis::Class *mpClass;       // offset 0x0, size 0x4
+    FX_PURGEStruct mData;       // offset 0x4, size 0x20
+
+    void SetPURGE_volume(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0x7FFF) {
+            x = 0x7FFF;
+        }
+        mData.pURGE_volume = x;
+    }
+
+    int GetPURGE_volume() {
+        return mData.pURGE_volume;
+    }
+
+    void SetPURGE_azimuth(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0xFFFF) {
+            x = 0xFFFF;
+        }
+        mData.pURGE_azimuth = x;
+    }
+
+    int GetPURGE_azimuth() {
+        return mData.pURGE_azimuth;
+    }
+
+    void SetPURGE_STOP(int x) {
+        mData.pURGE_STOP = x;
+    }
+
+    int GetPURGE_STOP() {
+        return mData.pURGE_STOP;
+    }
+
+    void SetPURGE_pitch(int x) {
+        mData.pURGE_pitch = x;
+    }
+
+    int GetPURGE_pitch() {
+        return mData.pURGE_pitch;
+    }
+
+    void SetFilter_Effects_LoPass(int x) {
+        mData.filter_Effects_LoPass = x;
+    }
+
+    int GetFilter_Effects_LoPass() {
+        return mData.filter_Effects_LoPass;
+    }
+
+    void SetFilter_Effects_HiPass(int x) {
+        mData.filter_Effects_HiPass = x;
+    }
+
+    int GetFilter_Effects_HiPass() {
+        return mData.filter_Effects_HiPass;
+    }
+
+    void SetFilter_Effects_Dry_FX(int x) {
+        mData.filter_Effects_Dry_FX = x;
+    }
+
+    int GetFilter_Effects_Dry_FX() {
+        return mData.filter_Effects_Dry_FX;
+    }
+
+    void SetFilter_Effects_Wet_FX(int x) {
+        mData.filter_Effects_Wet_FX = x;
+    }
+
+    int GetFilter_Effects_Wet_FX() {
+        return mData.filter_Effects_Wet_FX;
+    }
+
+    int GetRefCount() {
+        int refCount = 0;
+
+        if (mpClass) {
+            mpClass->GetRefCount(&refCount);
+        }
+
+        return refCount;
+    }
+
+    static void *operator new(unsigned int size) {
+        return Csis::System::Alloc(size);
+    }
+
+    static void operator delete(void *ptr) {
+        Csis::System::Free(ptr);
+    }
+
+    FX_PURGE(int pURGE_volume, int pURGE_azimuth, int pURGE_STOP, int pURGE_pitch, int filter_Effects_LoPass,
+             int filter_Effects_HiPass, int filter_Effects_Dry_FX, int filter_Effects_Wet_FX) {
+        SetPURGE_volume(pURGE_volume);
+        SetPURGE_azimuth(pURGE_azimuth);
+        SetPURGE_STOP(pURGE_STOP);
+        SetPURGE_pitch(pURGE_pitch);
+        SetFilter_Effects_LoPass(filter_Effects_LoPass);
+        SetFilter_Effects_HiPass(filter_Effects_HiPass);
+        SetFilter_Effects_Dry_FX(filter_Effects_Dry_FX);
+        SetFilter_Effects_Wet_FX(filter_Effects_Wet_FX);
+
+        int result = Csis::Class::CreateInstance(&Csis::gFX_PURGEHandle, &mData, &mpClass);
+        if (result < 0) {
+            Csis::gFX_PURGEHandle.Set(&Csis::FX_PURGEId);
+            Csis::Class::CreateInstance(&Csis::gFX_PURGEHandle, &mData, &mpClass);
+        }
+    }
+
+    ~FX_PURGE() {
+        if (mpClass) {
+            mpClass->Release();
+        }
+    }
+
+    void CommitMemberData() {
+        if (mpClass) {
+            mpClass->SetMemberData(&mData);
         }
     }
 };
