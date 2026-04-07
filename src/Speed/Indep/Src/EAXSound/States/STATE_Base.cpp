@@ -40,6 +40,58 @@ void CSTATE_Base::Setup(int _m_SFXFlags) {
     CreateSFXCtrls();
 }
 
+bool CSTATE_Base::Detach() {
+    SndBase *CurSFXObj;
+    SndBase *CurSFXCtl;
+
+    bIsAttached = false;
+    m_pAttachment = nullptr;
+
+    CurSFXObj = m_pHeadSFXObj;
+    while (CurSFXObj) {
+        int iVar7 = 0;
+        int iVar9 = 0;
+        SndAssetQueue::iterator ptr = gAEMSMgr.mWaitForResolve.begin();
+
+        CurSFXObj->Detach();
+        CurSFXObj->GetInputBlockPtr()[15] = 0;
+
+        while (ptr != gAEMSMgr.mWaitForResolve.end()) {
+            if ((*ptr).pThis == CurSFXObj) {
+                iVar7 = (*ptr).Asset.FileName.GetHash32();
+                iVar9 = reinterpret_cast<int>((*ptr).Asset.FileName.GetString());
+                break;
+            }
+            ++ptr;
+        }
+
+        if (iVar7 != 0 || iVar9 != 0) {
+ReprocessQueue:
+            ptr = gAEMSMgr.mWaitForResolve.begin();
+            while (ptr != gAEMSMgr.mWaitForResolve.end()) {
+                if ((*ptr).Asset.FileName.GetHash32() == iVar7 &&
+                    reinterpret_cast<int>((*ptr).Asset.FileName.GetString()) == iVar9) {
+                    gAEMSMgr.mWaitForResolve.remove(*ptr);
+                    goto ReprocessQueue;
+                }
+                ++ptr;
+            }
+        }
+
+        bMemSet(CurSFXObj->GetOutputBlockPtr(), 0, 0x40);
+        CurSFXObj = CurSFXObj->m_pNextSFX;
+    }
+
+    CurSFXCtl = m_pHeadSFXCTL;
+    while (CurSFXCtl) {
+        CurSFXCtl->Detach();
+        bMemSet(CurSFXCtl->GetOutputBlockPtr(), 0, 0x40);
+        CurSFXCtl = CurSFXCtl->m_pNextSFX;
+    }
+
+    return true;
+}
+
 CSTATE_Base::~CSTATE_Base() {
     Destroy();
 }
