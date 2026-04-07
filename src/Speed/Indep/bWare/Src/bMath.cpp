@@ -55,7 +55,7 @@ void bPlatEndianSwap(bMatrix4 *value) {
     bPlatEndianSwap(&value->v3);
 }
 
-int bDiv(int a, int b) {
+bFix bDiv(bFix a, bFix b) {
     if (b == 0) {
         if (a == 0) {
             return 0;
@@ -65,7 +65,7 @@ int bDiv(int a, int b) {
         }
         return -0x80000000;
     } else {
-        int half_inverse_b = 0x7fffffff / b;
+        bFix half_inverse_b = 0x7fffffff / b;
         return bMult(a, half_inverse_b) * 2;
     }
 }
@@ -105,7 +105,7 @@ float bFMod(float a, float b) {
     return (c - bFloor(c)) * d;
 }
 
-float bSin(unsigned short angle) {
+float bSin(bAngle angle) {
     float a = bAngToRad(angle);
     float flip_sign = 1.0f;
     const float pi = 3.1415927f;
@@ -139,11 +139,11 @@ float bSin(float angle) {
     return bSin(bRadToAng(angle));
 }
 
-float bCos(unsigned short angle) {
-    return bSin(static_cast<unsigned short>(angle + bDegToAng(90.0f)));
+float bCos(bAngle angle) {
+    return bSin(static_cast<bAngle>(angle + bDegToAng(90.0f)));
 }
 
-void bSinCos(float *presult_sin, float *presult_cos, unsigned short angle) {
+void bSinCos(float *presult_sin, float *presult_cos, bAngle angle) {
     float a = bAngToRad(angle);
     float flip_sign = 1.0f;
     const float pi = 3.1415927f;
@@ -182,8 +182,8 @@ void bSinCos(float *presult_sin, float *presult_cos, unsigned short angle) {
 
 struct ASinTableEntry {
     // total size: 0x8
-    unsigned short Angle; // offset 0x0, size 0x2
-    float Slope;          // offset 0x4, size 0x4
+    bAngle Angle; // offset 0x0, size 0x2
+    float Slope;  // offset 0x4, size 0x4
 };
 
 ASinTableEntry bASinTable[209] = {
@@ -256,7 +256,7 @@ unsigned short bFixATanTableHigh[129] = {
 };
 
 // UNSOLVED, matches in ProStreet
-unsigned short bASin(float x) {
+bAngle bASin(float x) {
     int negative = 0;
     if (x < 0.0f) {
         x = -x;
@@ -270,10 +270,10 @@ unsigned short bASin(float x) {
         }
     }
 
-    int fix_x = static_cast<int>(x * 65536.0f);
-    int table_number = 0;   // r7
-    int table_size = 32768; // r8
-    int table_top = 32768;  // r0
+    bFix fix_x = static_cast<int>(x * 65536.0f);
+    int table_number = 0;    // r7
+    bFix table_size = 32768; // r8
+    bFix table_top = 32768;  // r0
 
     while (fix_x >= table_top && table_number < 11) {
         table_size >>= 1;
@@ -281,14 +281,14 @@ unsigned short bASin(float x) {
         table_top += table_size;
     }
 
-    int table_bottom = table_top - table_size;                                   // r0
+    bFix table_bottom = table_top - table_size;                                  // r0
     int table_index = (fix_x - table_bottom) >> (11 - table_number);             // r10
-    int table_spacing = table_number * 16 + table_index;                         // r8
+    bFix table_spacing = table_number * 16 + table_index;                        // r8
     float table_x = (table_bottom + table_index * (table_size >> 4)) / 65536.0f; // f0
     float remainder_x = x - table_x;                                             // f0
-    unsigned short table_a = bASinTable[table_spacing].Angle;
+    bAngle table_a = bASinTable[table_spacing].Angle;
     float slope = bASinTable[table_spacing].Slope; // f11
-    unsigned short a = table_a + static_cast<int>(remainder_x * slope * 65536.0f);
+    bAngle a = table_a + static_cast<int>(remainder_x * slope * 65536.0f);
 
     if (negative) {
         return 0x10000 - a;
@@ -298,7 +298,7 @@ unsigned short bASin(float x) {
 }
 
 // Credit: Brawltendo
-unsigned short bATan(float x, float y) {
+bAngle bATan(float x, float y) {
     int quad = 0;
     if (x < 0.0f) {
         quad = 1;
@@ -310,17 +310,17 @@ unsigned short bATan(float x, float y) {
         y = -y;
     }
 
-    unsigned short a;
+    bAngle a;
     if (x > y) {
         float r = y;
         int i = static_cast<int>((r / x) * 65536.0f);
-        const unsigned short *table = &bFastATanTable[i >> 8];
+        const bAngle *table = &bFastATanTable[i >> 8];
         a = (table[0] + (((table[1] - table[0]) * (i & 0xFF)) >> 8));
     } else {
         if (y > x) {
             float r = y;
             int i = static_cast<int>((x / r) * 65536.0f);
-            const unsigned short *table = &bFastATanTable[i >> 8];
+            const bAngle *table = &bFastATanTable[i >> 8];
             a = bDegToAng(90.0f) - (table[0] + (((table[1] - table[0]) * (i & 0xFF)) >> 8));
         } else if (y == 0.0f) {
             a = 0;
@@ -340,19 +340,19 @@ unsigned short bATan(float x, float y) {
 }
 
 // TODO where to use bDegToAng?
-unsigned short bFixATan(int x) {
+bAngle bFixATan(bFix x) {
     int quad = 0;
     if (x < 0) {
         quad = 1;
         x = -x;
     }
 
-    unsigned short a;
-    unsigned short b;
-    int interpolation_ratio;
+    bAngle a;
+    bAngle b;
+    bFix interpolation_ratio;
 
     if (x < 2097152) {
-        unsigned short *table_entry;
+        bAngle *table_entry;
 
         if (x < 262144) {
             table_entry = bFixATanTableLow + (x >> 0xb);
@@ -374,15 +374,15 @@ unsigned short bFixATan(int x) {
         interpolation_ratio = 0;
     }
 
-    int accurate_answer = a + (((b - a) * interpolation_ratio) >> 16);
+    bFix accurate_answer = a + (((b - a) * interpolation_ratio) >> 16);
     if (quad) {
-        return static_cast<unsigned short>(-accurate_answer);
+        return static_cast<bAngle>(-accurate_answer);
     } else {
-        return static_cast<unsigned short>(accurate_answer);
+        return static_cast<bAngle>(accurate_answer);
     }
 }
 
-unsigned short bFixATan(int x, int y) {
+bAngle bFixATan(bFix x, bFix y) {
     int quad = 0;
     if (x < 0) {
         quad = 1;
@@ -394,11 +394,11 @@ unsigned short bFixATan(int x, int y) {
         y = -y;
     }
 
-    int a;
+    bFix a;
     if (x <= (y >> 14)) {
         a = 0x4000;
     } else {
-        int r = bFixATan(bDiv(y, x));
+        bFix r = bFixATan(bDiv(y, x));
         a = r;
     }
 
@@ -416,7 +416,7 @@ unsigned short bFixATan(int x, int y) {
             break;
     }
 
-    return static_cast<unsigned short>(a);
+    return static_cast<bAngle>(a);
 }
 
 void bConvertToBond(bMatrix4 &dest, const bMatrix4 &m) {

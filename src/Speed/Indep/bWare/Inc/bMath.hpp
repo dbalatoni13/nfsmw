@@ -36,17 +36,17 @@ float bFMod(float a, float b);
 float bSin(unsigned short angle);
 float bSin(float angle);
 float bCos(unsigned short angle);
-void bSinCos(float *presult_sin, float *presult_cos, unsigned short angle);
-unsigned short bASin(float x);
-unsigned short bATan(float x, float y);
+void bSinCos(float *presult_sin, float *presult_cos, bAngle angle);
+bAngle bASin(float x);
+bAngle bATan(float x, float y);
 
 void bMathTimingTest();
 
-inline unsigned short bACos(float x) {
+inline bAngle bACos(float x) {
     return 16384 - bASin(x);
 }
 
-inline float bTan(unsigned short angle) {
+inline float bTan(bAngle angle) {
     return bSin(angle) / bCos(angle);
 }
 
@@ -189,15 +189,15 @@ inline float bClamp(float a, float MINIMUM, float MAXIMUM) {
     return bMin(MAXIMUM, bMax(a, MINIMUM));
 }
 
-inline unsigned short bDegToAng(float degrees) {
+inline bAngle bDegToAng(float degrees) {
     return static_cast<int>(degrees * 65536.0f) / 360;
 }
 
-inline unsigned short bRadToAng(float radians) {
+inline bAngle bRadToAng(float radians) {
     return static_cast<int>(radians * (65536.0f / (2 * static_cast<float>(M_PI))));
 }
 
-inline float bAngToRad(unsigned short angle) {
+inline float bAngToRad(bAngle angle) {
     return ((float)angle) * 0.0000958738f;
 }
 
@@ -205,7 +205,7 @@ inline float bDegToRad(float degrees) {
     return degrees * 0.017453292f;
 }
 
-inline float bAngToDeg(unsigned short angle) {
+inline float bAngToDeg(bAngle angle) {
     return static_cast<unsigned int>(angle) * (65536.0f / 360.0f);
 }
 
