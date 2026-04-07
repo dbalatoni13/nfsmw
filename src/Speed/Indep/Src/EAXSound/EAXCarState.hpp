@@ -264,6 +264,10 @@ struct EAX_CarState : public UTL::Collections::Listable<EAX_CarState, 10> {
         return mWheel[wheel_ndx].mLoad;
     }
 
+    float GetWheelZForce(int w) {
+        return mWheel[w].mWheelForceZ;
+    }
+
     SimSurface GetWheelTerrain(int w) {
         return mWheel[w].mTerrainType;
     }
@@ -294,6 +298,10 @@ struct EAX_CarState : public UTL::Collections::Listable<EAX_CarState, 10> {
 
     const bVector3 *GetLeftVector() {
         return static_cast<const bVector3 *>(static_cast<const void *>(&mMatrix.v1));
+    }
+
+    const bVector3 *GetUpVector() {
+        return static_cast<const bVector3 *>(static_cast<const void *>(&mMatrix.v2));
     }
 
     bVector3 *GetPosition() {
