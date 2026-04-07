@@ -1574,10 +1574,11 @@ void NFSMixMap::Update3DMixCtls() {
             float fdist[2];
             float fmindist[2];
             float fmaxdist[2];
-            int azim;
+            int AzimOut;
             int nAzimType;
             int nDistType;
             int nMixRatio;
+            int nazim;
             int nQuad;
             int qDist[2];
             st3DStateParams *psparams;
@@ -1589,29 +1590,27 @@ void NFSMixMap::Update3DMixCtls() {
             curveInfo = static_cast<unsigned int>(psparams->nCURVEID_DOPPLER);
             nAzimType = (psparams->n3DSTATEINFOID >> 8) & 0xF;
             nDistType = (psparams->n3DSTATEINFOID >> 12) & 0xF;
-            if (nDistType != 0) {
-                fdist[0] = -1.0f;
-                if (nDistType == 1) {
-                    fdist[0] = static_cast<float>(p3Du->pInputs[0]) * 0.01f;
-                }
-            } else {
+            if (nDistType == 0) {
                 fdist[0] = static_cast<float>(p3Du->pInputs[1]) * 0.01f;
+            } else if (nDistType == 1) {
+                fdist[0] = static_cast<float>(p3Du->pInputs[0]) * 0.01f;
+            } else {
+                fdist[0] = -1.0f;
             }
             fdist[1] = fdist[0];
 
-            if (nAzimType != 0) {
-                if (nAzimType == 1) {
-                    azim = p3Du->pInputs[2];
-                } else {
-                    azim = 0;
-                }
+            if (nAzimType == 0) {
+                nazim = p3Du->pInputs[3];
+            } else if (nAzimType == 1) {
+                nazim = p3Du->pInputs[2];
             } else {
-                azim = p3Du->pInputs[3];
+                nazim = 0;
             }
 
-            p3Du->azimuth = azim;
-            nQuad = (static_cast<unsigned int>(azim) >> 14) & 3;
-            nMixRatio = azim;
+            AzimOut = nazim;
+            p3Du->azimuth = AzimOut;
+            nQuad = (static_cast<unsigned int>(AzimOut) >> 14) & 3;
+            nMixRatio = AzimOut;
 
             switch (nQuad) {
             case 1:
@@ -1621,7 +1620,7 @@ void NFSMixMap::Update3DMixCtls() {
                 fmaxdist[0] = static_cast<float>((static_cast<unsigned int>(psparams->nQ1MinMax) >> 16) & 0x7FFF);
                 fmindist[1] = static_cast<float>(psparams->nQ2MinMax & 0x7FFF);
                 fmaxdist[1] = static_cast<float>((static_cast<unsigned int>(psparams->nQ2MinMax) >> 16) & 0x7FFF);
-                nMixRatio = azim - 0x4000;
+                nMixRatio = AzimOut - 0x4000;
                 break;
 
             case 2:
@@ -1631,7 +1630,7 @@ void NFSMixMap::Update3DMixCtls() {
                 fmaxdist[0] = static_cast<float>((static_cast<unsigned int>(psparams->nQ2MinMax) >> 16) & 0x7FFF);
                 fmindist[1] = static_cast<float>(psparams->nQ3MinMax & 0x7FFF);
                 fmaxdist[1] = static_cast<float>((static_cast<unsigned int>(psparams->nQ3MinMax) >> 16) & 0x7FFF);
-                nMixRatio = azim - 0x8000;
+                nMixRatio = AzimOut - 0x8000;
                 break;
 
             case 3:
@@ -1641,7 +1640,7 @@ void NFSMixMap::Update3DMixCtls() {
                 fmaxdist[0] = static_cast<float>((static_cast<unsigned int>(psparams->nQ3MinMax) >> 16) & 0x7FFF);
                 fmindist[1] = static_cast<float>(psparams->nQ0MinMax & 0x7FFF);
                 fmaxdist[1] = static_cast<float>((static_cast<unsigned int>(psparams->nQ0MinMax) >> 16) & 0x7FFF);
-                nMixRatio = azim - 0xC000;
+                nMixRatio = AzimOut - 0xC000;
                 break;
 
             default:
