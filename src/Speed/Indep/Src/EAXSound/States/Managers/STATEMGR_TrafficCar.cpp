@@ -8,7 +8,10 @@ void ScreenPrintf(int x, int y, float scale, unsigned int color, const char *fmt
 
 int DEBUG_TRAFFIC_CAR_CONNECTIONS = 0;
 
-CSTATEMGR_TrafficCar::CSTATEMGR_TrafficCar() {}
+CSTATEMGR_TrafficCar::CSTATEMGR_TrafficCar() {
+    m_CarContext = Sound::CONTEXT_TRAFFIC;
+    m_fConnectDistance = 65.0f;
+}
 
 CSTATEMGR_TrafficCar::~CSTATEMGR_TrafficCar() {}
 

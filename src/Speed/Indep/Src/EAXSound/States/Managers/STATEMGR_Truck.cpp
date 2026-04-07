@@ -1,6 +1,8 @@
 #include "Speed/Indep/Src/EAXSound/States/Managers/STATEMGR_Truck.hpp"
 
-CSTATEMGR_Truck::CSTATEMGR_Truck() {}
+CSTATEMGR_Truck::CSTATEMGR_Truck() {
+    m_CarContext = Sound::CONTEXT_TRACTOR;
+}
 
 CSTATEMGR_Truck::~CSTATEMGR_Truck() {}
 

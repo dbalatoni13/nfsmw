@@ -10,7 +10,10 @@
 int DEBUG_AI_CAR_CONNECTIONS = 0;
 bool CSTATEMGR_AICar::bUsingGinsu = false;
 
-CSTATEMGR_AICar::CSTATEMGR_AICar() {}
+CSTATEMGR_AICar::CSTATEMGR_AICar() {
+    m_CarContext = Sound::CONTEXT_AIRACER;
+    m_fConnectDistance = 135.0f;
+}
 
 CSTATEMGR_AICar::~CSTATEMGR_AICar() {}
 

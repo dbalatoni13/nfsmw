@@ -1,8 +1,10 @@
 #include "Speed/Indep/Src/EAXSound/States/Managers/STATEMGR_CopCar.hpp"
 
-CSTATEMGR_CopCar::CSTATEMGR_CopCar()
-    : mNumCopsInProximity(0)
-{}
+CSTATEMGR_CopCar::CSTATEMGR_CopCar() {
+    mNumCopsInProximity = 0;
+    m_CarContext = Sound::CONTEXT_COP;
+    m_fConnectDistance = 135.0f;
+}
 
 CSTATEMGR_CopCar::~CSTATEMGR_CopCar() {}
 

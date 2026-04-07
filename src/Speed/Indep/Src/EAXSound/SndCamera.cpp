@@ -99,7 +99,7 @@ void SndCamera::UpdateCameras() {
             m_v3WorldCarDir[k] = *pcar->GetForwardVector();
             m_v3WorldCarPos[k] = *pcar->GetPosition();
             m_v3WorldCarVel[k] = *pcar->GetVelocity();
-            m_WorldCarVel[k] = pcar->GetVelocityMagnitude();
+            m_WorldCarVel[k] = bLength(m_v3WorldCarVel + k);
             v2Temp.x = pcar->GetForwardVector()->x;
             v2Temp.y = pcar->GetForwardVector()->y;
             bNormalize(m_NormCarDir + k, &v2Temp);
