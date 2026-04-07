@@ -55,4 +55,31 @@ struct CARSFX_TrafficHorn : public CARSFX {
     EAX_CarState *pClosestCar;       // offset 0x70, size 0x4
 };
 
+class CARSFX_TrafficEngine : public CARSFX {
+  protected:
+    static TypeInfo s_TypeInfo;
+
+  public:
+    CARSFX_TrafficEngine();
+    ~CARSFX_TrafficEngine() override;
+
+    static SndBase *CreateObject(unsigned int allocator);
+
+    TypeInfo *GetTypeInfo() const override;
+    const char *GetTypeName() const override;
+    int GetController(int Index) override;
+    void AttachController(SFXCTL *psfxctl) override;
+    void InitSFX() override;
+    void InitEngine();
+    void Detach() override;
+    void Destroy() override;
+    void ProcessUpdate() override;
+
+  private:
+    FX_TRAFFIC *m_pcsisTranfficEng;  // offset 0x28, size 0x4
+    SFXCTL_3DCarPos *m_p3DCarPosCtl; // offset 0x2C, size 0x4
+    int refCnt;                      // offset 0x30, size 0x4
+    unsigned char EngTypeID;         // offset 0x34, size 0x1
+};
+
 #endif

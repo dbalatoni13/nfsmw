@@ -51,7 +51,7 @@ void SFXObj_Helicopter::InitSFX() {
 }
 
 void SFXObj_Helicopter::Detach() {
-    SndBase::Detach();
+    Destroy();
 }
 
 int SFXObj_Helicopter::GetController(int Index) {

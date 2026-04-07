@@ -12,6 +12,8 @@ extern ClassHandle gFX_ROADNOISEHandle;
 extern InterfaceId FX_ROADNOISEId;
 extern ClassHandle gFX_ROADNOISE_TRANSHandle;
 extern InterfaceId FX_ROADNOISE_TRANSId;
+extern ClassHandle gFX_TRAFFICHandle;
+extern InterfaceId FX_TRAFFICId;
 extern ClassHandle gENV_STATICHandle;
 extern InterfaceId ENV_STATICId;
 } // namespace Csis
@@ -300,6 +302,179 @@ struct FX_ROADNOISE_TRANS {
     }
 
     ~FX_ROADNOISE_TRANS() {
+        if (mpClass) {
+            mpClass->Release();
+        }
+    }
+
+    void CommitMemberData() {
+        if (mpClass) {
+            mpClass->SetMemberData(&mData);
+        }
+    }
+};
+
+struct FX_TRAFFICStruct {
+    int id;                       // offset 0x0, size 0x4
+    int volume;                   // offset 0x4, size 0x4
+    int pitch_OFFSET;             // offset 0x8, size 0x4
+    int azimuth;                  // offset 0xC, size 0x4
+    int range;                    // offset 0x10, size 0x4
+    int filter_Effects_LoPass;    // offset 0x14, size 0x4
+    int filter_Effects_HiPass;    // offset 0x18, size 0x4
+    int filter_Effects_Dry_FX;    // offset 0x1C, size 0x4
+    int filter_Effects_Wet_FX;    // offset 0x20, size 0x4
+};
+
+struct FX_TRAFFIC {
+    Csis::Class *mpClass;
+    FX_TRAFFICStruct mData;
+
+    void SetId(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0xF) {
+            x = 0xF;
+        }
+        mData.id = x;
+    }
+
+    int GetId() {
+        return mData.id;
+    }
+
+    void SetVolume(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0x7FFF) {
+            x = 0x7FFF;
+        }
+        mData.volume = x;
+    }
+
+    int GetVolume() {
+        return mData.volume;
+    }
+
+    void SetPitch_OFFSET(int x) {
+        if (x < -0x3FFF) {
+            x = -0x3FFF;
+        } else if (x > 0x3FFF) {
+            x = 0x3FFF;
+        }
+        mData.pitch_OFFSET = x;
+    }
+
+    int GetPitch_OFFSET() {
+        return mData.pitch_OFFSET;
+    }
+
+    void SetAzimuth(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0xFFFF) {
+            x = 0xFFFF;
+        }
+        mData.azimuth = x;
+    }
+
+    int GetAzimuth() {
+        return mData.azimuth;
+    }
+
+    void SetRange(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0x3FF) {
+            x = 0x3FF;
+        }
+        mData.range = x;
+    }
+
+    int GetRange() {
+        return mData.range;
+    }
+
+    void SetFilter_Effects_LoPass(int x) {
+        mData.filter_Effects_LoPass = x;
+    }
+
+    int GetFilter_Effects_LoPass() {
+        return mData.filter_Effects_LoPass;
+    }
+
+    void SetFilter_Effects_HiPass(int x) {
+        mData.filter_Effects_HiPass = x;
+    }
+
+    int GetFilter_Effects_HiPass() {
+        return mData.filter_Effects_HiPass;
+    }
+
+    void SetFilter_Effects_Dry_FX(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0x7FFF) {
+            x = 0x7FFF;
+        }
+        mData.filter_Effects_Dry_FX = x;
+    }
+
+    int GetFilter_Effects_Dry_FX() {
+        return mData.filter_Effects_Dry_FX;
+    }
+
+    void SetFilter_Effects_Wet_FX(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0x7FFF) {
+            x = 0x7FFF;
+        }
+        mData.filter_Effects_Wet_FX = x;
+    }
+
+    int GetFilter_Effects_Wet_FX() {
+        return mData.filter_Effects_Wet_FX;
+    }
+
+    int GetRefCount() {
+        int refCount = 0;
+
+        if (mpClass) {
+            mpClass->GetRefCount(&refCount);
+        }
+
+        return refCount;
+    }
+
+    static void *operator new(unsigned int size) {
+        return Csis::System::Alloc(size);
+    }
+
+    static void operator delete(void *ptr) {
+        Csis::System::Free(ptr);
+    }
+
+    FX_TRAFFIC(int id, int volume, int pitch_OFFSET, int azimuth, int range, int filter_Effects_LoPass, int filter_Effects_HiPass,
+               int filter_Effects_Dry_FX, int filter_Effects_Wet_FX) {
+        SetId(id);
+        SetVolume(volume);
+        SetPitch_OFFSET(pitch_OFFSET);
+        SetAzimuth(azimuth);
+        SetRange(range);
+        SetFilter_Effects_LoPass(filter_Effects_LoPass);
+        SetFilter_Effects_HiPass(filter_Effects_HiPass);
+        SetFilter_Effects_Dry_FX(filter_Effects_Dry_FX);
+        SetFilter_Effects_Wet_FX(filter_Effects_Wet_FX);
+
+        int result = Csis::Class::CreateInstance(&Csis::gFX_TRAFFICHandle, &mData, &mpClass);
+        if (result < 0) {
+            Csis::gFX_TRAFFICHandle.Set(&Csis::FX_TRAFFICId);
+            Csis::Class::CreateInstance(&Csis::gFX_TRAFFICHandle, &mData, &mpClass);
+        }
+    }
+
+    ~FX_TRAFFIC() {
         if (mpClass) {
             mpClass->Release();
         }

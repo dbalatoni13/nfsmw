@@ -2,6 +2,7 @@
 
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
 #include "Speed/Indep/Src/EAXSound/SndCamera.hpp"
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/pvehicle.h"
 #include "Speed/Indep/Src/World/RaceParameters.hpp"
 
 extern bool IsPlayerGoingFastEnough(float, int);
@@ -13,9 +14,121 @@ int HonkingCarCnt = 0;
 namespace Csis {
 InterfaceId ENV_STATICId = {"ENV_STATIC", 0x1981, 0x0002};
 ClassHandle gENV_STATICHandle;
+InterfaceId FX_TRAFFICId = {"FX_TRAFFIC", 0x1981, 0x5BE3};
+ClassHandle gFX_TRAFFICHandle;
 } // namespace Csis
 
 float g_LastTrafficHonkTime = 0.0f;
+
+CARSFX_TrafficEngine::TypeInfo CARSFX_TrafficEngine::s_TypeInfo = {
+    0x00000500,
+    "CARSFX_TrafficEngine",
+    &SndBase::s_TypeInfo,
+    CARSFX_TrafficEngine::CreateObject,
+};
+
+CARSFX_TrafficEngine::TypeInfo *CARSFX_TrafficEngine::GetTypeInfo() const {
+    return &s_TypeInfo;
+}
+
+const char *CARSFX_TrafficEngine::GetTypeName() const {
+    return s_TypeInfo.typeName;
+}
+
+SndBase *CARSFX_TrafficEngine::CreateObject(unsigned int allocator) {
+    if (allocator == 0) {
+        return new (s_TypeInfo.typeName, false) CARSFX_TrafficEngine();
+    }
+    return new (s_TypeInfo.typeName, true) CARSFX_TrafficEngine();
+}
+
+CARSFX_TrafficEngine::CARSFX_TrafficEngine()
+    : CARSFX() {
+    refCnt = 0;
+    m_pcsisTranfficEng = nullptr;
+    m_p3DCarPosCtl = nullptr;
+}
+
+CARSFX_TrafficEngine::~CARSFX_TrafficEngine() {
+    Destroy();
+}
+
+int CARSFX_TrafficEngine::GetController(int Index) {
+    if (Index == 0) {
+        return 0;
+    }
+    return -1;
+}
+
+void CARSFX_TrafficEngine::AttachController(SFXCTL *psfxctl) {
+    if (psfxctl->GetObjectIndex() == 0) {
+        m_p3DCarPosCtl = static_cast<SFXCTL_3DCarPos *>(psfxctl);
+    }
+}
+
+void CARSFX_TrafficEngine::InitSFX() {
+    SndBase::InitSFX();
+    m_pcsisTranfficEng = nullptr;
+    EngTypeID = GetPhysCar()->GetAttributes()->TrafficEngType();
+    InitEngine();
+}
+
+void CARSFX_TrafficEngine::InitEngine() {
+    if (!m_pcsisTranfficEng) {
+        g_pEAXSound->SetCsisName(this);
+        m_pcsisTranfficEng = new FX_TRAFFIC(EngTypeID, 0, 0, 0, 0, 25000, 0, 0x7FFF, 0);
+        refCnt = m_pcsisTranfficEng->GetRefCount();
+        m_p3DCarPosCtl->AssignPositionVector(GetPhysCar()->GetPosition());
+        m_p3DCarPosCtl->AssignDirectionVector(GetPhysCar()->GetForwardVector());
+        m_p3DCarPosCtl->AssignVelocityVector(GetPhysCar()->GetVelocity());
+    }
+}
+
+void CARSFX_TrafficEngine::Detach() {
+    if (m_pcsisTranfficEng) {
+        delete m_pcsisTranfficEng;
+    }
+    m_pcsisTranfficEng = nullptr;
+    m_p3DCarPosCtl->AssignPositionVector(nullptr);
+    m_p3DCarPosCtl->AssignDirectionVector(nullptr);
+    m_p3DCarPosCtl->AssignVelocityVector(nullptr);
+}
+
+void CARSFX_TrafficEngine::Destroy() {
+    SndBase::Destroy();
+    if (m_pcsisTranfficEng) {
+        delete m_pcsisTranfficEng;
+    }
+    refCnt = 0;
+    m_pcsisTranfficEng = nullptr;
+}
+
+void CARSFX_TrafficEngine::ProcessUpdate() {
+    int VelocityFactor;
+    int PitchFactor;
+    float fDMIXDoppler;
+
+    SndBase::ProcessUpdate();
+    if (m_pStateBase->IsAttached()) {
+        if (!GetPhysCar() || GetPhysCar()->IsSimUpdating()) {
+            if (m_pcsisTranfficEng) {
+                fDMIXDoppler = bClamp(GetPhysCar()->GetVelocityMagnitudeMPH() * 7.3142858f, 0.0f, 1024.0f);
+                VelocityFactor = static_cast<int>(fDMIXDoppler);
+                PitchFactor = GetDMixOutput(4, DMX_PITCH) - 0x1000;
+                m_pcsisTranfficEng->SetVolume(GetDMixOutput(1, DMX_VOL));
+                m_pcsisTranfficEng->SetAzimuth(GetDMixOutput(0, DMX_AZIM));
+                m_pcsisTranfficEng->SetRange(VelocityFactor);
+                m_pcsisTranfficEng->SetPitch_OFFSET(PitchFactor);
+                m_pcsisTranfficEng->CommitMemberData();
+                refCnt = m_pcsisTranfficEng->GetRefCount();
+            }
+        } else if (m_pcsisTranfficEng) {
+            m_pcsisTranfficEng->SetVolume(0);
+            m_pcsisTranfficEng->SetAzimuth(0);
+            m_pcsisTranfficEng->CommitMemberData();
+        }
+    }
+}
 
 CARSFX_TrafficHorn::TypeInfo CARSFX_TrafficHorn::s_TypeInfo = {
     0x00050020,
