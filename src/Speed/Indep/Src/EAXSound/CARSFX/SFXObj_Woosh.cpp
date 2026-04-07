@@ -74,7 +74,11 @@ const char *SFXObj_Woosh::GetTypeName() const {
 }
 
 SndBase *SFXObj_Woosh::CreateObject(unsigned int allocator) {
-    return new (GetStaticTypeInfo()->typeName, allocator != 0) SFXObj_Woosh();
+    if (!allocator) {
+        return new (SFXObj_Woosh::GetStaticTypeInfo()->typeName, false) SFXObj_Woosh();
+    }
+
+    return new (SFXObj_Woosh::GetStaticTypeInfo()->typeName, true) SFXObj_Woosh();
 }
 
 SFXObj_Woosh::SFXObj_Woosh()
@@ -279,5 +283,9 @@ const char *SFXCTL_3DWooshPos::GetTypeName() const {
 }
 
 SndBase *SFXCTL_3DWooshPos::CreateObject(unsigned int allocator) {
-    return new (GetStaticTypeInfo()->typeName, allocator != 0) SFXCTL_3DWooshPos();
+    if (!allocator) {
+        return new (SFXCTL_3DWooshPos::GetStaticTypeInfo()->typeName, false) SFXCTL_3DWooshPos();
+    }
+
+    return new (SFXCTL_3DWooshPos::GetStaticTypeInfo()->typeName, true) SFXCTL_3DWooshPos();
 }

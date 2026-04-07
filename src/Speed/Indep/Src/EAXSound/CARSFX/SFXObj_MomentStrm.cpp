@@ -41,7 +41,11 @@ const char *SFXObj_MomentStrm::GetTypeName() const {
 }
 
 SndBase *SFXObj_MomentStrm::CreateObject(unsigned int allocator) {
-    return new (GetStaticTypeInfo()->typeName, false) SFXObj_MomentStrm();
+    if (!allocator) {
+        return new (SFXObj_MomentStrm::GetStaticTypeInfo()->typeName, false) SFXObj_MomentStrm();
+    }
+
+    return new (SFXObj_MomentStrm::GetStaticTypeInfo()->typeName, true) SFXObj_MomentStrm();
 }
 
 SFXObj_MomentStrm::SFXObj_MomentStrm()
@@ -421,5 +425,9 @@ const char *SFXCTL_3DMomentPos::GetTypeName() const {
 }
 
 SndBase *SFXCTL_3DMomentPos::CreateObject(unsigned int allocator) {
-    return new (GetStaticTypeInfo()->typeName, false) SFXCTL_3DMomentPos();
+    if (!allocator) {
+        return new (SFXCTL_3DMomentPos::GetStaticTypeInfo()->typeName, false) SFXCTL_3DMomentPos();
+    }
+
+    return new (SFXCTL_3DMomentPos::GetStaticTypeInfo()->typeName, true) SFXCTL_3DMomentPos();
 }
