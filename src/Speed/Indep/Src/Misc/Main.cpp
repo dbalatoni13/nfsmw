@@ -420,7 +420,9 @@ void MainLoop(float hardware_ms) {
     MainLoopCheckForFatalDiscError();
     RenderConn::UpdateLoading();
     TheTrackStreamer.ServiceNonGameState();
+#ifndef EA_BUILD_A124
     HandleTrackStreamerLoadingBar();
+#endif
     TickOverTimeOfday();
     if (!Tweak_FullSpeedMode) {
         profile_node_entire_mainloop.Begin("Main_DisplayFrame()", 0);

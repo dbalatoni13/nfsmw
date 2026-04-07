@@ -1097,7 +1097,7 @@ void BeginGameFlowUnloadingFrontEnd() {
 }
 
 int TrackStreamerLoadingBarUp = false;
-
+#ifndef EA_BUILD_A124
 void HandleTrackStreamerLoadingBar() {
     if (!TrackStreamerLoadingBarUp) {
         if (Sim::GetState() == Sim::STATE_ACTIVE && TheTrackStreamer.CheckLoadingBar()) {
@@ -1114,6 +1114,7 @@ void HandleTrackStreamerLoadingBar() {
         }
     }
 }
+#endif
 
 void BootLoadingScreen() {
     if (!cFEng::Get()->IsPackagePushed(LoadingBootName)) {

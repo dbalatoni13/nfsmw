@@ -15,9 +15,13 @@
 
 // EAXSound2
 float renderModifier = 1.0f;
+#ifdef EA_BUILD_A124
+uint32 numCopsActive;
+#else
 uint32 numCopsActiveCherry;
 uint32 numCopsActiveTotal;
 uint32 numCopsActiveView;
+#endif
 uint8 *FrameMemoryBuffer[2];
 uint32 FrameMemoryBufferSize = 0;
 int FrameMemoryBufferAmountUsed[2];
@@ -62,10 +66,21 @@ void ePreDisplay() {
     SimpleModelAnim::Update();
     DoTunnelBloom(eGetView(1, false));
     DoTunnelBloom(eGetView(2, false));
+#ifdef EA_BUILD_A124
+    DoTinting(eGetView(1, false));
+    DoTinting(eGetView(2, false));
+#else
     if (!IsRainDisabled()) {
         DoTinting(eGetView(1, false));
     }
+#endif
     UpdateLightFlareParameters();
+#ifdef EA_BUILD_A124
+    numCopsActive = eGetView(1, false)->NumCopsInView + eGetView(2, false)->NumCopsInView;
+    eGetView(1, false)->NumCopsInView = 0;
+    eGetView(2, false)->NumCopsInView = 0;
+
+#else
     numCopsActiveView = eGetView(1, false)->NumCopsInView;
     numCopsActiveTotal = eGetView(1, false)->NumCopsTotal;
     numCopsActiveCherry = eGetView(1, false)->NumCopsCherry;
@@ -76,6 +91,7 @@ void ePreDisplay() {
     if (renderModifier < 0.25f) {
         renderModifier = 0.25f;
     }
+#endif
 }
 
 void ePostDisplay() {

@@ -904,10 +904,12 @@ int bGetMemoryPoolNum(const char *memory_pool_name) {
                 return pool_num;
             }
         }
+#ifndef EA_BUILD_A124
         MemoryPoolOverrideInfo *override_info = MemoryPoolInfoTable[pool_num].OverrideInfo;
         if (override_info && bStrICmp(override_info->Name, memory_pool_name) == 0) {
             return pool_num;
         }
+#endif
     }
     return -1;
 }

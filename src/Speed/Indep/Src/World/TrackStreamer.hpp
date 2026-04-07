@@ -400,7 +400,11 @@ class TrackStreamer {
 
     void PlotLoadingMarker(StreamingPositionEntry *position_entry);
 
+#ifdef EA_BUILD_A124
+    void CheckLoadingBar();
+#else
     bool CheckLoadingBar();
+#endif
 
     int GetSectionToActivate(int activation_delay);
 
