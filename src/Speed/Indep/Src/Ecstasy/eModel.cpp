@@ -257,23 +257,28 @@ void eInitModels(void) {
     eModelSlotPool = bNewSlotPool(0x18, 0xa28, "Ecstacy:ModelSlotPool", 0);
 }
 
-// UNSOLVED
-void NotifySolidLoader(eSolidListHeader *solid_list_header /* r31 */) {
+void NotifySolidLoader(eSolidListHeader *solid_list_header) {
     if (GetChunkMovementOffset() != 0) {
-        for (eModel *model = MovedModelList.GetHead(); !MovedModelList.IsEmpty(); model = model->GetNext()) {
-            MovedModelList.RemoveHead();
-            MovedModelList.AddTail(model);
+        while (!MovedModelList.IsEmpty()) {
+            eModel *model = MovedModelList.RemoveHead();
+            eSolid *solid = model->GetMovedSolid();
+            solid->ModelList.AddTail(model);
         }
     } else {
         uint32 start_time = bGetTicker();
-        for (eModel *model = UnattachedModelList.GetHead(); model != UnattachedModelList.EndOfList(); model = model->GetNext()) {
+        eModel *model = UnattachedModelList.GetHead();
+
+        while (model != UnattachedModelList.EndOfList()) {
+            eModel *next_model = model->GetNext();
             model->ReconnectSolid(solid_list_header);
+            model = next_model;
         }
+
         float time = bGetTickerDifference(start_time, bGetTicker());
-        TotalNotifyTimeLoad += time;
         MaxNotifyTimeLoad = bMax(MaxNotifyTimeLoad, time);
-        NumNotifyLoads++;
+        TotalNotifyTimeLoad += time;
         TotalNotifyTime = TotalNotifyTimeLoad + TotalNotifyTimeUnload;
+        NumNotifyLoads++;
     }
 }
 
