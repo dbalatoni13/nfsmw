@@ -34,7 +34,6 @@ SFXObj_Ambience::SFXObj_Ambience()
 SFXObj_Ambience::~SFXObj_Ambience() {}
 
 void SFXObj_Ambience::InitSFX() {
-    SndBase::InitSFX();
     int *inputBlock = GetInputBlockPtr();
     if (inputBlock) {
         inputBlock[15] = 1;
