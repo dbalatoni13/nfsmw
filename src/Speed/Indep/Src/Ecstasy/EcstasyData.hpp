@@ -102,28 +102,30 @@ enum EVIEWMODE {
     EVIEWMODE_NONE = 0,
 };
 
-struct eTextureEntry {
+class eTextureEntry {
     // total size: 0x8
-    unsigned int NameHash;            // offset 0x0, size 0x4
+  public:
+    uint32 NameHash;                  // offset 0x0, size 0x4
     struct TextureInfo *pTextureInfo; // offset 0x4, size 0x4
 
     void EndianSwap() {}
 };
 
-struct eSolidListHeader : public bTNode<eSolidListHeader> {
+class eSolidListHeader : public bTNode<eSolidListHeader> {
     // total size: 0x90
-    int Version;                                   // offset 0x8, size 0x4
-    int NumSolids;                                 // offset 0xC, size 0x4
+  public:
+    int32 Version;                                 // offset 0x8, size 0x4
+    int32 NumSolids;                               // offset 0xC, size 0x4
     char Filename[56];                             // offset 0x10, size 0x38
     char GroupName[32];                            // offset 0x48, size 0x20
-    unsigned int PermChunkByteOffset;              // offset 0x68, size 0x4
-    unsigned int PermChunkByteSize;                // offset 0x6C, size 0x4
-    short MaxSolidChunkByteAlignment;              // offset 0x70, size 0x2
-    short EndianSwapped;                           // offset 0x72, size 0x2
+    uint32 PermChunkByteOffset;                    // offset 0x68, size 0x4
+    uint32 PermChunkByteSize;                      // offset 0x6C, size 0x4
+    int16 MaxSolidChunkByteAlignment;              // offset 0x70, size 0x2
+    int16 EndianSwapped;                           // offset 0x72, size 0x2
     struct eSolidIndexEntry *SolidIndexEntryTable; // offset 0x74, size 0x4
     struct eStreamingEntry *SolidStreamEntryTable; // offset 0x78, size 0x4
-    short NumTexturePacks;                         // offset 0x7C, size 0x2
-    short NumDefaultTextures;                      // offset 0x7E, size 0x2
+    int16 NumTexturePacks;                         // offset 0x7C, size 0x2
+    int16 NumDefaultTextures;                      // offset 0x7E, size 0x2
     bPList<struct TexturePack> TexturePackList;    // offset 0x80, size 0x8
     bPList<eTextureEntry> DefaultTextureList;      // offset 0x88, size 0x8
 
@@ -136,68 +138,74 @@ struct eSolidListHeader : public bTNode<eSolidListHeader> {
     }
 };
 
-struct eSolidIndexEntry {
+class eSolidIndexEntry {
     // total size: 0x8
-    unsigned int NameHash; // offset 0x0, size 0x4
-    struct eSolid *Solid;  // offset 0x4, size 0x4
+  public:
+    uint32 NameHash;      // offset 0x0, size 0x4
+    struct eSolid *Solid; // offset 0x4, size 0x4
 
     void EndianSwap() {
         bPlatEndianSwap(&this->NameHash);
     }
 };
 
-struct eLightMaterialEntry {
+class eLightMaterialEntry {
     // total size: 0x8
-    unsigned int NameHash;                // offset 0x0, size 0x4
+  public:
+    uint32 NameHash;                      // offset 0x0, size 0x4
     struct eLightMaterial *LightMaterial; // offset 0x4, size 0x4
 
     void EndianSwap() {}
 };
 
-struct eSmoothVertex {
+class eSmoothVertex {
     // total size: 0x8
-    unsigned int VertexHash;            // offset 0x0, size 0x4
-    unsigned char SmoothingGroupNumber; // offset 0x4, size 0x1
-    char NX;                            // offset 0x5, size 0x1
-    char NY;                            // offset 0x6, size 0x1
-    char NZ;                            // offset 0x7, size 0x1
+  public:
+    uint32 VertexHash;          // offset 0x0, size 0x4
+    uint8 SmoothingGroupNumber; // offset 0x4, size 0x1
+    int8 NX;                    // offset 0x5, size 0x1
+    int8 NY;                    // offset 0x6, size 0x1
+    int8 NZ;                    // offset 0x7, size 0x1
 
     void EndianSwap() {}
 };
 
-struct eSmoothVertexPlat {
+class eSmoothVertexPlat {
     // total size: 0xC
-    unsigned int VertexHash;     // offset 0x0, size 0x4
-    unsigned int SmoothingGroup; // offset 0x4, size 0x4
-    unsigned int VertexOffset;   // offset 0x8, size 0x4
+  public:
+    uint32 VertexHash;     // offset 0x0, size 0x4
+    uint32 SmoothingGroup; // offset 0x4, size 0x4
+    uint32 VertexOffset;   // offset 0x8, size 0x4
 
     void EndianSwap() {}
 };
 
-struct eNormalSmoother {
+class eNormalSmoother {
     // total size: 0xC
+  public:
     eSmoothVertex *SmoothVertexTable;         // offset 0x0, size 0x4
     eSmoothVertexPlat *SmoothVertexPlatTable; // offset 0x4, size 0x4
-    short NumSmoothVertex;                    // offset 0x8, size 0x2
-    short NumSmoothVertexPlat;                // offset 0xA, size 0x2
+    int16 NumSmoothVertex;                    // offset 0x8, size 0x2
+    int16 NumSmoothVertexPlat;                // offset 0xA, size 0x2
 
     void EndianSwap() {}
 };
 
-struct ePositionMarker {
+class ePositionMarker {
     // total size: 0x50
-    unsigned int NameHash; // offset 0x0, size 0x4
-    int iParam0;           // offset 0x4, size 0x4
-    float fParam0;         // offset 0x8, size 0x4
-    float fParam1;         // offset 0xC, size 0x4
-    bMatrix4 Matrix;       // offset 0x10, size 0x40
+  public:
+    uint32 NameHash; // offset 0x0, size 0x4
+    int32 iParam0;   // offset 0x4, size 0x4
+    float fParam0;   // offset 0x8, size 0x4
+    float fParam1;   // offset 0xC, size 0x4
+    bMatrix4 Matrix; // offset 0x10, size 0x40
 
     void EndianSwap() {}
 };
 
-struct eModel;
-struct ePoly;
-struct eLightContext;
+class eModel;
+class ePoly;
+class eLightContext;
 
 class eViewPlatInfo;
 
@@ -217,7 +225,7 @@ class eViewPlatInterface {
     eVisibleState GetVisibleStateGB(const bVector3 *aabb_min, const bVector3 *aabb_max, bMatrix4 *local_world);
     eVisibleState GetVisibleStateSB(const bVector3 *aabb_min, const bVector3 *aabb_max, bMatrix4 *local_world);
 
-    void Render(eModel *model, bMatrix4 *local_to_world, eLightContext *light_context, unsigned int flags, bMatrix4 *blending_matricies);
+    void Render(eModel *model, bMatrix4 *local_to_world, eLightContext *light_context, uint32 flags, bMatrix4 *blending_matricies);
     void FERender(ePoly *poly, TextureInfo *texture_info, bMatrix4 *local_to_world, int use_previous_data, float bbRad);
     void Render(ePoly *poly, TextureInfo *texture_info, bMatrix4 *local_to_world, int use_previous_data, float bbRad);
     void FERender(ePoly *poly, TextureInfo *texture_info, TextureInfo *texture_info_mask, int use_previous_data);
@@ -227,28 +235,36 @@ class eViewPlatInterface {
     void Render(struct ePointSprite3D *sprite, TextureInfo *texture_info, bMatrix4 *local_world, int num_sprites);
 };
 
-struct eLoadedSolidStats {
+class eLoadedSolidStats {
     // total size: 0x14
-    unsigned int NumLoadedLists;           // offset 0x0, size 0x4
-    unsigned int NumLoadedSolids;          // offset 0x4, size 0x4
-    unsigned int TotalSolidsByteSize;      // offset 0x8, size 0x4
-    unsigned int TotalNormalSmootherBytes; // offset 0xC, size 0x4
-    unsigned int TotalDamageBytes;         // offset 0x10, size 0x4
+  public:
+    uint32 NumLoadedLists;           // offset 0x0, size 0x4
+    uint32 NumLoadedSolids;          // offset 0x4, size 0x4
+    uint32 TotalSolidsByteSize;      // offset 0x8, size 0x4
+    uint32 TotalNormalSmootherBytes; // offset 0xC, size 0x4
+    uint32 TotalDamageBytes;         // offset 0x10, size 0x4
 };
 
-struct eSolidPlatInfo {
+class eSolidPlatInfo {
     // total size: 0x24
-    unsigned short Version;              // offset 0x0, size 0x2
-    unsigned short StripFlags;           // offset 0x2, size 0x2
-    unsigned short NumStrips;            // offset 0x4, size 0x2
-    unsigned short NumIdxClrTable;       // offset 0x6, size 0x2
-    unsigned int SizeofStripData;        // offset 0x8, size 0x4
-    unsigned int DataOffset0;            // offset 0xC, size 0x4
-    unsigned int DataOffset1;            // offset 0x10, size 0x4
-    unsigned int DataOffset2;            // offset 0x14, size 0x4
-    unsigned int DataOffset3;            // offset 0x18, size 0x4
+  public:
+    uint16 Version;    // offset 0x0, size 0x2
+    uint16 StripFlags; // offset 0x2, size 0x2
+    uint16 NumStrips;  // offset 0x4, size 0x2
+#ifndef EA_BUILD_A124
+    uint16 NumIdxClrTable; // offset 0x6, size 0x2
+#else
+    uint16 pad0;
+#endif
+    uint32 SizeofStripData; // offset 0x8, size 0x4
+#ifndef EA_BUILD_A124
+    uint32 DataOffset0; // offset 0xC, size 0x4
+    uint32 DataOffset1; // offset 0x10, size 0x4
+    uint32 DataOffset2; // offset 0x14, size 0x4
+    uint32 DataOffset3; // offset 0x18, size 0x4
+#endif
     struct eStripEntry *StripEntryTable; // offset 0x1C, size 0x4
-    unsigned char *StripDataStart;       // offset 0x20, size 0x4
+    uint8 *StripDataStart;               // offset 0x20, size 0x4
 };
 
 #endif

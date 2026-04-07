@@ -22,11 +22,11 @@ struct bChunk {
         return this->ID;
     }
 
-    BOOL GetSize() {
+    int GetSize() {
         return this->Size;
     }
 
-    BOOL IsNestedChunk() {
+    int IsNestedChunk() {
         return this->GetID() & BCHUNK_NESTED_FLAG;
     }
 

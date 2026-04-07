@@ -20,7 +20,7 @@ class eModel : public bTNode<eModel> {
     uint32 NameHash;                                           // offset 0x8, size 0x4
     eSolid *Solid;                                             // offset 0xC, size 0x4
     struct eReplacementTextureTable *pReplacementTextureTable; // offset 0x10, size 0x4
-    int NumReplacementTextures;                                // offset 0x14, size 0x4
+    int32 NumReplacementTextures;                              // offset 0x14, size 0x4
 
   public:
     void Init(uint32 name_hash);
@@ -75,7 +75,8 @@ class eModel : public bTNode<eModel> {
 };
 
 // total size: 0x200
-struct eDamageInfo {
+class eDamageInfo {
+  public:
     // Members
     float CurrentCells[64];  // offset 0x0, size 0x100
     float PreviousCells[64]; // offset 0x100, size 0x100
@@ -145,7 +146,7 @@ class eSolid : public eSolidPlatInterface, public bTNode<eSolid> {
     void ReplaceLightMaterial(uint32 old_name_hash, uint32 new_name_hash);
     void ReplaceLightMaterial(uint32 old_name_hash, eLightMaterial *new_light_material);
     ePositionMarker *GetPostionMarker(ePositionMarker *prev_marker);
-    ePositionMarker *GetPostionMarker(unsigned int namehash);
+    ePositionMarker *GetPostionMarker(uint32 namehash);
     int GetMemoryImageSize();
     void ApplyDamage(struct eDamageInfo *damage_info);
     void SmoothNormals(struct eSmoothVertex **smooth_vertex_table, int num_smooth_verts);
@@ -241,9 +242,9 @@ class eView : public eViewPlatInterface {
 
 extern eView eViews[22];
 
-eView *eGetView(int view_id);
+eView *eGetView(int32 view_id);
 
-inline eView *eGetView(int view_id, bool doAssert) {
+inline eView *eGetView(int32 view_id, bool doAssert) {
     // if (doAssert) {
     //     // ?
     // }
@@ -258,17 +259,24 @@ inline void eUnSwizzleWorldVector(const bVector3 &inVec, bVector3 &outVec) {
     bConvertToBond(outVec, inVec);
 }
 
-eRenderTarget *eGetRenderTarget(int render_target);
+eRenderTarget *eGetRenderTarget(int32 render_target);
 void eUpdateViewMode(void);
 
-struct ePoly {
+class ePoly {
     // total size: 0x94
-    bVector3 Vertices[4];        // offset 0x0, size 0x40
-    float UVs[2][4];             // offset 0x40, size 0x20
-    float UVsMask[2][4];         // offset 0x60, size 0x20
-    unsigned char Colours[4][4]; // offset 0x80, size 0x10
-    unsigned char flags;         // offset 0x90, size 0x1
-    unsigned char Flailer;       // offset 0x91, size 0x1
+  public:
+    bVector3 Vertices[4]; // offset 0x0, size 0x40
+    float UVs[2][4];      // offset 0x40, size 0x20
+#ifdef EA_BUILD_A124
+    uint16 UVsMask[2][4];
+#else
+    float UVsMask[2][4]; // offset 0x60, size 0x20
+#endif
+    uint8 Colours[4][4]; // offset 0x80, size 0x10
+#ifndef EA_BUILD_A124
+    uint8 flags;   // offset 0x90, size 0x1
+    uint8 Flailer; // offset 0x91, size 0x1
+#endif
 
     ePoly();
 
@@ -276,13 +284,13 @@ struct ePoly {
 
     void operator delete(void *ptr) {}
 
-    void SetFlags(unsigned char i) {}
+    void SetFlags(uint8 i) {}
 
-    void SetFlailer(unsigned char i) {}
+    void SetFlailer(uint8 i) {}
 
-    unsigned char GetFlags() {}
+    uint8 GetFlags() {}
 
-    unsigned char GetFlailer() {}
+    uint8 GetFlailer() {}
 };
 
 enum CurtainStatus {
@@ -292,12 +300,18 @@ enum CurtainStatus {
     CT_INACTIVE = 0,
 };
 
-struct FacePixelation {
+class FacePixelation {
     // total size: 0xC
-    struct eView *MyView; // offset 0x0, size 0x4
-    float mScreenX;       // offset 0x4, size 0x4
-    float mScreenY;       // offset 0x8, size 0x4
+    eView *MyView;  // offset 0x0, size 0x4
+    float mScreenX; // offset 0x4, size 0x4
+    float mScreenY; // offset 0x8, size 0x4
 
+    static bool mPixelationOn; // size: 0x1, address: 0x80438AB0
+    static float mWidth;       // size: 0x4, address: 0x80438AB4
+    static float mHeight;      // size: 0x4, address: 0x80438AB8
+    static bVector3 mWorldPos; // size: 0x10, address: 0x804A7E04
+
+  public:
     FacePixelation(eView *view);
     ~FacePixelation();
     static void SetLocation(bVector3 &worldPos);
@@ -315,40 +329,42 @@ struct FacePixelation {
     static void Disable() {}
 };
 
-struct LoadedTable {
+class LoadedTable {
     // total size: 0x2004
-    int NumLoaded;              // offset 0x0, size 0x4
-    unsigned char Counts[8192]; // offset 0x4, size 0x2000
+    int NumLoaded;      // offset 0x0, size 0x4
+    uint8 Counts[8192]; // offset 0x4, size 0x2000
 
+  public:
     LoadedTable() {}
 
-    int IsLoaded(unsigned int hash) {
+    int IsLoaded(uint32 hash) {
         return *this->GetPtr(hash) == 0;
     }
 
-    void SetLoaded(unsigned int hash) {
+    void SetLoaded(uint32 hash) {
         this->NumLoaded++;
-        unsigned char *p = this->GetPtr(hash);
+        uint8 *p = this->GetPtr(hash);
         *p = *p + 1;
     }
 
-    void SetUnloaded(unsigned int hash) {
+    void SetUnloaded(uint32 hash) {
         this->NumLoaded--;
-        unsigned char *p = this->GetPtr(hash);
+        uint8 *p = this->GetPtr(hash);
         *p = *p - 1;
     }
 
-    unsigned char *GetPtr(unsigned int hash) {
+    uint8 *GetPtr(uint32 hash) {
         return &this->Counts[hash & 0x1FFF];
     }
 };
 
-struct eReplacementTextureTable {
+class eReplacementTextureTable {
     // total size: 0xC
-    unsigned int hOldNameHash; // offset 0x0, size 0x4
-    unsigned int hNewNameHash; // offset 0x4, size 0x4
+    uint32 hOldNameHash;       // offset 0x0, size 0x4
+    uint32 hNewNameHash;       // offset 0x4, size 0x4
     TextureInfo *pTextureInfo; // offset 0x8, size 0x4
 
+  public:
     eReplacementTextureTable()
         : hOldNameHash(0), //
           hNewNameHash(0), //
@@ -358,19 +374,19 @@ struct eReplacementTextureTable {
         this->pTextureInfo = reinterpret_cast<TextureInfo *>(-1);
     }
 
-    unsigned int GetNewNameHash() {
+    uint32 GetNewNameHash() {
         return hNewNameHash;
     }
 
-    unsigned int GetOldNameHash() {
+    uint32 GetOldNameHash() {
         return hOldNameHash;
     }
 
-    void SetOldNameHash(unsigned int name_hash) {
+    void SetOldNameHash(uint32 name_hash) {
         hOldNameHash = name_hash;
     }
 
-    void SetNewNameHash(unsigned int name_hash) {
+    void SetNewNameHash(uint32 name_hash) {
         if (name_hash == this->hNewNameHash)
             return;
 
@@ -378,7 +394,7 @@ struct eReplacementTextureTable {
         pTextureInfo = (TextureInfo *)-1;
     }
 
-    void SetExplicit(unsigned int name_hash, TextureInfo *pRepTextureInfo) {}
+    void SetExplicit(uint32 name_hash, TextureInfo *pRepTextureInfo) {}
 
     TextureInfo *GetCurrentTexture() {
         return pTextureInfo;
@@ -395,8 +411,8 @@ void NotifySolidUnloader(eSolid *solid);
 
 void eFixupReplacementTexturesAfterUnloading(TextureInfo *texture_info);
 void eNotifyTextureLoading(TexturePack *texture_pack, TextureInfo *texture_info, bool loading);
-TextureInfo *eGetRenderTargetTextureInfo(int name_hash);
-TextureInfo *eGetOtherEcstacyTexture(unsigned int name_hash);
+TextureInfo *eGetRenderTargetTextureInfo(int32 name_hash);
+TextureInfo *eGetOtherEcstacyTexture(uint32 name_hash);
 int eLoadSolidListPlatChunks(bChunk *chunk);
 float GetSunIntensity(eView *view);
 int eInitEngine();
@@ -407,16 +423,16 @@ void eWaitForStreamingSolidPackLoading(const char *filename);
 
 void eInitSolids();
 void eSolidNotifyTextureLoading(TexturePack *texture_pack, TextureInfo *texture_info, bool loading);
-eSolid *eFindSolid(unsigned int name_hash, eSolidListHeader *solid_list_header);
+eSolid *eFindSolid(uint32 name_hash, eSolidListHeader *solid_list_header);
 int eSmoothNormals(eSolid **solid_table, int num_solids);
 
-void SetDuplicateTextureWarning(BOOL enabled);
+void SetDuplicateTextureWarning(int enabled);
 
 extern eLoadedSolidStats LoadedSolidStats;
-extern unsigned int eFrameCounter;
-extern int WaitUntilRenderingDoneDisabled;
+extern uint32 eFrameCounter;
+extern bool WaitUntilRenderingDoneDisabled;
 
-inline unsigned int eGetFrameCounter() {
+inline uint32 eGetFrameCounter() {
     return eFrameCounter;
 }
 
@@ -425,19 +441,19 @@ inline int eLoadStreamingSolidPack(const char *filename) {
 }
 
 inline void DisableWaitUntilRenderingDone() {
-    WaitUntilRenderingDoneDisabled = 1;
+    WaitUntilRenderingDoneDisabled = true;
 }
 
 inline void EnableWaitUntilRenderingDone() {
-    WaitUntilRenderingDoneDisabled = 0;
+    WaitUntilRenderingDoneDisabled = false;
 }
 
-extern unsigned int FrameMallocFailed;
-extern unsigned int FrameMallocFailAmount;
+extern uint32 FrameMallocFailed;
+extern uint32 FrameMallocFailAmount;
 
 static inline bMatrix4 *eFrameMallocMatrix(int num_matrices) {
-    unsigned int size = num_matrices * sizeof(bMatrix4);
-    unsigned char *address = CurrentBufferPos;
+    uint32 size = num_matrices * sizeof(bMatrix4);
+    uint8 *address = CurrentBufferPos;
     if (address + size < CurrentBufferEnd) {
         CurrentBufferPos += size;
     } else {

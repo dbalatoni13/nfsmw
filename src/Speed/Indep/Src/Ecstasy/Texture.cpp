@@ -24,14 +24,14 @@
 
 TextureInfo *DefaultTextureInfo;
 SlotPool *TexturePackSlotPool;
-BOOL DuplicateTextureWarningEnabled;
+int DuplicateTextureWarningEnabled;
 bTList<TextureVRAMDataHeader> TextureVRAMDataHeaderList;
 bTList<TextureAnimPack> TextureAnimPackList;
 bTList<TexturePack> TexturePackList;
 TextureInfo *TextureInfoCache[256];
 unsigned int TextureInfoCacheSafety[256];
 TexturePack *PrevLoadedTexturePack;
-int eDirtyTextures;
+int32 eDirtyTextures;
 LoadedTable TextureLoadedTable;
 
 void eInitTextures(void) {
@@ -39,11 +39,11 @@ void eInitTextures(void) {
     TexturePackSlotPool = bNewSlotPool(bMax(size, 32), 128, "TexturePackSlotPool", 0);
 }
 
-void SetDuplicateTextureWarning(BOOL enabled) {
+void SetDuplicateTextureWarning(int enabled) {
     DuplicateTextureWarningEnabled = enabled;
 }
 
-TextureVRAMDataHeader *FindVRAMData(unsigned int filename_hash) {
+TextureVRAMDataHeader *FindVRAMData(uint32 filename_hash) {
     for (TextureVRAMDataHeader *vram_header = TextureVRAMDataHeaderList.GetHead(); vram_header != TextureVRAMDataHeaderList.EndOfList();
          vram_header = vram_header->GetNext()) {
         if (vram_header->FilenameHash == filename_hash) {
@@ -319,12 +319,12 @@ void TexturePack::AssignTextureData(char *texture_data, int begin_pos, int num_b
     eDirtyTextures = 1;
 }
 
-inline void ClearTextureInfoCache(unsigned int name_hash) {
+inline void ClearTextureInfoCache(uint32 name_hash) {
     int cache_index = name_hash & 0xFF;
     TextureInfoCache[cache_index] = nullptr;
 }
 
-inline TextureInfo *GetTextureInfoCache(unsigned int name_hash) {
+inline TextureInfo *GetTextureInfoCache(uint32 name_hash) {
     int cache_index = name_hash & 0xFF;
     TextureInfo *t = TextureInfoCache[cache_index];
     if (t && (t->NameHash == name_hash)) {
@@ -358,7 +358,7 @@ void TexturePack::UnAssignTextureData(int begin_pos, int num_bytes) {
         }
         if (!t->ImageData && unassigned_something) {
             t->Close();
-            unsigned int texture_name_hash = t->NameHash;
+            uint32 texture_name_hash = t->NameHash;
             ClearTextureInfoCache(texture_name_hash);
             if (t->NameHash + 0xacf47d50 < 4) {
                 FlushFromSkinCompositeCache(t->NameHash);
@@ -374,7 +374,7 @@ void TexturePack::UnAssignTextureData(int begin_pos, int num_bytes) {
     eDirtyTextures = 1;
 }
 
-TextureIndexEntry *TexturePack::GetTextureIndexEntry(unsigned int name_hash) {
+TextureIndexEntry *TexturePack::GetTextureIndexEntry(uint32 name_hash) {
 
     if (this->pPackHeader && this->pPackHeader->TextureIndexEntryTable) {
         return reinterpret_cast<TextureIndexEntry *>(
@@ -383,7 +383,7 @@ TextureIndexEntry *TexturePack::GetTextureIndexEntry(unsigned int name_hash) {
     return nullptr;
 }
 
-TextureInfo *TexturePack::GetLoadedTexture(unsigned int name_hash) {
+TextureInfo *TexturePack::GetLoadedTexture(uint32 name_hash) {
     bool bVar1;
 
     if (TextureLoadedTable.IsLoaded(name_hash)) {
@@ -403,7 +403,7 @@ TextureInfo *TexturePack::GetLoadedTexture(unsigned int name_hash) {
     return nullptr;
 }
 
-TextureInfo *TexturePack::GetTexture(unsigned int name_hash) {
+TextureInfo *TexturePack::GetTexture(uint32 name_hash) {
     TextureIndexEntry *index_entry = this->GetTextureIndexEntry(name_hash);
     if (index_entry) {
         return index_entry->pTextureInfo;
@@ -586,11 +586,11 @@ void TextureUnLoadedStreamingEntryCallback(bChunk *chunk, eStreamingEntry *strea
     texture_info->EndianSwap();
 }
 
-void eLoadStreamingTexture(unsigned int *name_hash_table, int num_hashes, void (*callback)(void *), void *param0, int memory_pool_num) {
+void eLoadStreamingTexture(uint32 *name_hash_table, int num_hashes, void (*callback)(void *), void *param0, int memory_pool_num) {
     StreamingTexturePackLoader.LoadStreamingEntry(name_hash_table, num_hashes, callback, param0, memory_pool_num);
 }
 
-void eUnloadStreamingTexture(unsigned int *name_hash_table, int num_hashes) {
+void eUnloadStreamingTexture(uint32 *name_hash_table, int num_hashes) {
     StreamingTexturePackLoader.UnloadStreamingEntry(name_hash_table, num_hashes);
 }
 
@@ -667,8 +667,7 @@ float TextureInfo::GetScroll(float time, float speed, int scroll_type, float tim
 
 void MaybePrintUnusedTextures() {}
 
-TextureInfo *GetTextureInfo(unsigned int name_hash /* r30 */, int return_default_texture_if_not_found /* r27 */,
-                            int include_unloaded_textures /* r5 */) {
+TextureInfo *GetTextureInfo(uint32 name_hash /* r30 */, int return_default_texture_if_not_found /* r27 */, int include_unloaded_textures /* r5 */) {
     if (name_hash != 0) {
         TextureInfo *texture_info = GetTextureInfoCache(name_hash);
         if (texture_info) {
@@ -714,7 +713,7 @@ TextureInfo *GetTextureInfo(unsigned int name_hash /* r30 */, int return_default
     return nullptr;
 }
 
-TextureInfo *FixupTextureInfo(TextureInfo *texture_info, unsigned int name_hash, TexturePack *texture_pack, bool loading) {
+TextureInfo *FixupTextureInfo(TextureInfo *texture_info, uint32 name_hash, TexturePack *texture_pack, bool loading) {
     if (loading) {
         if (texture_info == DefaultTextureInfo) {
             TextureInfo *info = texture_pack->GetLoadedTexture(name_hash);
@@ -740,7 +739,7 @@ TextureInfo *FixupTextureInfo(TextureInfo *texture_info, unsigned int name_hash,
     return texture_info;
 }
 
-TextureInfo *FixupTextureInfoNull(TextureInfo *texture_info, unsigned int name_hash, TexturePack *texture_pack, bool loading) {
+TextureInfo *FixupTextureInfoNull(TextureInfo *texture_info, uint32 name_hash, TexturePack *texture_pack, bool loading) {
     if (loading) {
         if (!texture_info) {
             TextureInfo *info = texture_pack->GetLoadedTexture(name_hash);

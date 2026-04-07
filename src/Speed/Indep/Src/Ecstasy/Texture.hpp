@@ -69,21 +69,23 @@ enum TextureAlphaBlendType {
     TEXBLEND_SRCCOPY = 0,
 };
 
-struct TextureIndexEntry {
+class TextureIndexEntry {
     // total size: 0x8
-    unsigned int NameHash;            // offset 0x0, size 0x4
+  public:
+    uint32 NameHash;                  // offset 0x0, size 0x4
     struct TextureInfo *pTextureInfo; // offset 0x4, size 0x4
 };
 
-struct TexturePackHeader {
+class TexturePackHeader {
     // total size: 0x7C
-    int Version;                                     // offset 0x0, size 0x4
+  public:
+    uint32 Version;                                  // offset 0x0, size 0x4
     char Name[28];                                   // offset 0x4, size 0x1C
     char Filename[64];                               // offset 0x20, size 0x40
-    unsigned int FilenameHash;                       // offset 0x60, size 0x4
-    unsigned int PermChunkByteOffset;                // offset 0x64, size 0x4
-    unsigned int PermChunkByteSize;                  // offset 0x68, size 0x4
-    BOOL EndianSwapped;                              // offset 0x6C, size 0x4
+    uint32 FilenameHash;                             // offset 0x60, size 0x4
+    uint32 PermChunkByteOffset;                      // offset 0x64, size 0x4
+    uint32 PermChunkByteSize;                        // offset 0x68, size 0x4
+    int32 EndianSwapped;                             // offset 0x6C, size 0x4
     struct TexturePack *pTexturePack;                // offset 0x70, size 0x4
     TextureIndexEntry *TextureIndexEntryTable;       // offset 0x74, size 0x4
     struct eStreamingEntry *TextureStreamEntryTable; // offset 0x78, size 0x4
@@ -95,7 +97,7 @@ class TexturePack : public bTNode<TexturePack> {
     // total size: 0x20
     const char *Name;               // offset 0x8, size 0x4
     const char *Filename;           // offset 0xC, size 0x4
-    unsigned int NameHash;          // offset 0x10, size 0x4
+    uint32 NameHash;                // offset 0x10, size 0x4
     TexturePackHeader *pPackHeader; // offset 0x14, size 0x4
     int NumTextures;                // offset 0x18, size 0x4
     int TextureDataSize;            // offset 0x1C, size 0x4
@@ -109,9 +111,9 @@ class TexturePack : public bTNode<TexturePack> {
     void UnattachTextureInfo(TextureInfo *texture_info, struct TextureInfoPlatInfo *plat_info, TextureIndexEntry *index_entry);
     void AssignTextureData(char *texture_data, int begin_pos, int num_bytes);
     void UnAssignTextureData(int begin_pos, int num_bytes);
-    TextureIndexEntry *GetTextureIndexEntry(unsigned int name_hash);
-    TextureInfo *GetLoadedTexture(unsigned int name_hash);
-    TextureInfo *GetTexture(unsigned int name_hash);
+    TextureIndexEntry *GetTextureIndexEntry(uint32 name_hash);
+    TextureInfo *GetLoadedTexture(uint32 name_hash);
+    TextureInfo *GetTexture(uint32 name_hash);
 
     void *operator new(size_t size) {}
 
@@ -127,7 +129,7 @@ class TexturePack : public bTNode<TexturePack> {
         return this->Filename;
     }
 
-    unsigned int GetNameHash() {
+    uint32 GetNameHash() {
         return this->NameHash;
     }
 
@@ -148,46 +150,49 @@ class TexturePack : public bTNode<TexturePack> {
     }
 };
 
-struct TextureInfo : public TextureInfoPlatInterface, public bTNode<TextureInfo> {
+class TextureInfo : public TextureInfoPlatInterface, public bTNode<TextureInfo> {
     // total size: 0x7C
-    char DebugName[24];                   // offset 0xC, size 0x18
-    unsigned int NameHash;                // offset 0x24, size 0x4
-    unsigned int ClassNameHash;           // offset 0x28, size 0x4
-    unsigned int ImageParentHash;         // offset 0x2C, size 0x4
-    int ImagePlacement;                   // offset 0x30, size 0x4
-    int PalettePlacement;                 // offset 0x34, size 0x4
-    int ImageSize;                        // offset 0x38, size 0x4
-    int PaletteSize;                      // offset 0x3C, size 0x4
-    int BaseImageSize;                    // offset 0x40, size 0x4
-    short Width;                          // offset 0x44, size 0x2
-    short Height;                         // offset 0x46, size 0x2
-    char ShiftWidth;                      // offset 0x48, size 0x1
-    char ShiftHeight;                     // offset 0x49, size 0x1
-    unsigned char ImageCompressionType;   // offset 0x4A, size 0x1
-    unsigned char PaletteCompressionType; // offset 0x4B, size 0x1
-    short NumPaletteEntries;              // offset 0x4C, size 0x2
-    char NumMipMapLevels;                 // offset 0x4E, size 0x1
-    char TilableUV;                       // offset 0x4F, size 0x1
-    char BiasLevel;                       // offset 0x50, size 0x1
-    char RenderingOrder;                  // offset 0x51, size 0x1
-    char ScrollType;                      // offset 0x52, size 0x1
-    char UsedFlag;                        // offset 0x53, size 0x1
-    char ApplyAlphaSorting;               // offset 0x54, size 0x1
-    char AlphaUsageType;                  // offset 0x55, size 0x1
-    char AlphaBlendType;                  // offset 0x56, size 0x1
-    char Flags;                           // offset 0x57, size 0x1
-    short ScrollTimeStep;                 // offset 0x58, size 0x2
-    short ScrollSpeedS;                   // offset 0x5A, size 0x2
-    short ScrollSpeedT;                   // offset 0x5C, size 0x2
-    short OffsetS;                        // offset 0x5E, size 0x2
-    short OffsetT;                        // offset 0x60, size 0x2
-    short ScaleS;                         // offset 0x62, size 0x2
-    short ScaleT;                         // offset 0x64, size 0x2
-    TexturePack *pTexturePack;            // offset 0x68, size 0x4
-    TextureInfo *pImageParent;            // offset 0x6C, size 0x4
-    void *ImageData;                      // offset 0x70, size 0x4
-    void *PaletteData;                    // offset 0x74, size 0x4
-    int ReferenceCount;                   // offset 0x78, size 0x4
+  public:
+    char DebugName[24];           // offset 0xC, size 0x18
+    uint32 NameHash;              // offset 0x24, size 0x4
+    uint32 ClassNameHash;         // offset 0x28, size 0x4
+    uint32 ImageParentHash;       // offset 0x2C, size 0x4
+    int32 ImagePlacement;         // offset 0x30, size 0x4
+    int32 PalettePlacement;       // offset 0x34, size 0x4
+    int32 ImageSize;              // offset 0x38, size 0x4
+    int32 PaletteSize;            // offset 0x3C, size 0x4
+    int32 BaseImageSize;          // offset 0x40, size 0x4
+    int16 Width;                  // offset 0x44, size 0x2
+    int16 Height;                 // offset 0x46, size 0x2
+    int8 ShiftWidth;              // offset 0x48, size 0x1
+    int8 ShiftHeight;             // offset 0x49, size 0x1
+    uint8 ImageCompressionType;   // offset 0x4A, size 0x1
+    uint8 PaletteCompressionType; // offset 0x4B, size 0x1
+    int16 NumPaletteEntries;      // offset 0x4C, size 0x2
+    int8 NumMipMapLevels;         // offset 0x4E, size 0x1
+    int8 TilableUV;               // offset 0x4F, size 0x1
+    int8 BiasLevel;               // offset 0x50, size 0x1
+    int8 RenderingOrder;          // offset 0x51, size 0x1
+    int8 ScrollType;              // offset 0x52, size 0x1
+    int8 UsedFlag;                // offset 0x53, size 0x1
+    int8 ApplyAlphaSorting;       // offset 0x54, size 0x1
+    int8 AlphaUsageType;          // offset 0x55, size 0x1
+    int8 AlphaBlendType;          // offset 0x56, size 0x1
+    int8 Flags;                   // offset 0x57, size 0x1
+  private:
+    int16 ScrollTimeStep; // offset 0x58, size 0x2
+    int16 ScrollSpeedS;   // offset 0x5A, size 0x2
+    int16 ScrollSpeedT;   // offset 0x5C, size 0x2
+    int16 OffsetS;        // offset 0x5E, size 0x2
+    int16 OffsetT;        // offset 0x60, size 0x2
+    int16 ScaleS;         // offset 0x62, size 0x2
+    int16 ScaleT;         // offset 0x64, size 0x2
+  public:
+    TexturePack *pTexturePack; // offset 0x68, size 0x4
+    TextureInfo *pImageParent; // offset 0x6C, size 0x4
+    void *ImageData;           // offset 0x70, size 0x4
+    void *PaletteData;         // offset 0x74, size 0x4
+    int32 ReferenceCount;      // offset 0x78, size 0x4
 
   public:
     float GetScroll(float time, float speed, int scroll_type, float time_step);
@@ -265,14 +270,18 @@ struct TextureInfo : public TextureInfoPlatInterface, public bTNode<TextureInfo>
         bEndianSwap16(&this->ScaleS);
         bEndianSwap16(&this->ScaleT);
     }
+
+    void Setup(char *name, void *image_data, int image_width, int image_height, int comp_type, void *palette_data, int num_palette_entries,
+               int alpha_usage, int alpha_blend, int alpha_sort);
 };
 
-struct TextureVRAMDataHeader : public bTNode<TextureVRAMDataHeader> {
+class TextureVRAMDataHeader : public bTNode<TextureVRAMDataHeader> {
     // total size: 0x18
-    int Version;               // offset 0x8, size 0x4
-    unsigned int FilenameHash; // offset 0xC, size 0x4
-    BOOL EndianSwapped;        // offset 0x10, size 0x4
-    bChunk *VRAMDataChunk;     // offset 0x14, size 0x4
+  public:
+    int32 Version;         // offset 0x8, size 0x4
+    uint32 FilenameHash;   // offset 0xC, size 0x4
+    int32 EndianSwapped;   // offset 0x10, size 0x4
+    bChunk *VRAMDataChunk; // offset 0x14, size 0x4
 
     void EndianSwap() {
         bPlatEndianSwap(&this->Version);
@@ -280,28 +289,30 @@ struct TextureVRAMDataHeader : public bTNode<TextureVRAMDataHeader> {
     }
 };
 
-struct TextureAnimEntry {
+class TextureAnimEntry {
     // total size: 0x10
-    unsigned int NameHash;     // offset 0x0, size 0x4
+  public:
+    uint32 NameHash;           // offset 0x0, size 0x4
     TextureInfo *pTextureInfo; // offset 0x4, size 0x4
     void *pPlatAnimData;       // offset 0x8, size 0x4
-    unsigned int pad;          // offset 0xC, size 0x4
+    uint32 pad;                // offset 0xC, size 0x4
 
     void EndianSwap() {
         bPlatEndianSwap(&this->NameHash);
     }
 };
 
-struct TextureAnim {
+class TextureAnim {
     // total size: 0x34
+  public:
     char Name[24];                      // offset 0x0, size 0x18
-    unsigned int NameHash;              // offset 0x18, size 0x4
-    int NumFrames;                      // offset 0x1C, size 0x4
-    int FramesPerSecond;                // offset 0x20, size 0x4
-    int TimeBase;                       // offset 0x24, size 0x4
+    uint32 NameHash;                    // offset 0x18, size 0x4
+    int32 NumFrames;                    // offset 0x1C, size 0x4
+    int32 FramesPerSecond;              // offset 0x20, size 0x4
+    int32 TimeBase;                     // offset 0x24, size 0x4
     TextureAnimEntry *TextureAnimTable; // offset 0x28, size 0x4
-    BOOL Valid;                         // offset 0x2C, size 0x4
-    int CurrentFrame;                   // offset 0x30, size 0x4
+    int32 Valid;                        // offset 0x2C, size 0x4
+    int32 CurrentFrame;                 // offset 0x30, size 0x4
 
     void EndianSwap() {
         bPlatEndianSwap(&this->NameHash);
@@ -313,16 +324,17 @@ struct TextureAnim {
     }
 };
 
-struct TextureAnimPack : public bTNode<TextureAnimPack> {
+class TextureAnimPack : public bTNode<TextureAnimPack> {
     // total size: 0x1C
+  public:
     TexturePack *ParentTexturePack;          // offset 0x8, size 0x4
     TextureAnim *TextureAnimTable;           // offset 0xC, size 0x4
     TextureAnimEntry *TextureAnimEntryTable; // offset 0x10, size 0x4
-    int NumTextureAnims;                     // offset 0x14, size 0x4
-    int NumTextureAnimEntries;               // offset 0x18, size 0x4
+    int32 NumTextureAnims;                   // offset 0x14, size 0x4
+    int32 NumTextureAnimEntries;             // offset 0x18, size 0x4
 
-    TextureAnimPack(TexturePack *parent_texture_pack, TextureAnim *texture_anim_table, TextureAnimEntry *texture_anim_entry_table, int num_anims,
-                    int num_anim_entries);
+    TextureAnimPack(TexturePack *parent_texture_pack, TextureAnim *texture_anim_table, TextureAnimEntry *texture_anim_entry_table, int32 num_anims,
+                    int32 num_anim_entries);
     ~TextureAnimPack();
     void InitAnims();
 
@@ -337,12 +349,13 @@ struct TextureAnimPack : public bTNode<TextureAnimPack> {
     void EndianSwap() {}
 };
 
-struct TextureAnimPackHeader {
+class TextureAnimPackHeader {
     // total size: 0x10
-    int Version;                       // offset 0x0, size 0x4
+  public:
+    int32 Version;                     // offset 0x0, size 0x4
     TextureAnimPack *pTextureAnimPack; // offset 0x4, size 0x4
-    BOOL EndianSwapped;                // offset 0x8, size 0x4
-    int pad;                           // offset 0xC, size 0x4
+    int32 EndianSwapped;               // offset 0x8, size 0x4
+    int32 pad;                         // offset 0xC, size 0x4
 
     TextureAnimPackHeader() {}
 
@@ -355,22 +368,22 @@ extern TextureInfo *DefaultTextureInfo;
 
 void eInitTextures();
 void UpdateTextureAnimations();
-TextureInfo *GetTextureInfo(unsigned int name_hash, BOOL return_default_texture_if_not_found, BOOL include_unloaded_textures);
-TextureInfo *FixupTextureInfo(TextureInfo *texture_info, unsigned int name_hash, TexturePack *texture_pack, bool loading);
+TextureInfo *GetTextureInfo(uint32 name_hash, int return_default_texture_if_not_found, int include_unloaded_textures);
+TextureInfo *FixupTextureInfo(TextureInfo *texture_info, uint32 name_hash, TexturePack *texture_pack, bool loading);
 void MaybePrintUnusedTextures();
 int eLoadStreamingTexturePack(const char *filename, void (*callback_function)(void *), void *callback_param, int memory_pool_num);
-void eLoadStreamingTexture(unsigned int *name_hash_table, int num_hashes, void (*callback)(void *), void *param0, int memory_pool_num);
+void eLoadStreamingTexture(uint32 *name_hash_table, int num_hashes, void (*callback)(void *), void *param0, int memory_pool_num);
 void eWaitForStreamingTexturePackLoading(const char *filename);
 void eUnloadAllStreamingTextures(const char *filename);
 
 TextureInfo *eCreateTextureInfo();
 void eDestroyTextureInfo(TextureInfo *texture_info);
 
-inline TextureInfo *FixupTextureInfoLoading(TextureInfo *texture_info, unsigned int name_hash, TexturePack *texture_pack) {
+inline TextureInfo *FixupTextureInfoLoading(TextureInfo *texture_info, uint32 name_hash, TexturePack *texture_pack) {
     return FixupTextureInfo(texture_info, name_hash, texture_pack, true);
 }
 
-inline TextureInfo *FixupTextureInfoUnloading(TextureInfo *texture_info, unsigned int name_hash, TexturePack *texture_pack) {
+inline TextureInfo *FixupTextureInfoUnloading(TextureInfo *texture_info, uint32 name_hash, TexturePack *texture_pack) {
     return FixupTextureInfo(texture_info, name_hash, texture_pack, false);
 }
 
@@ -378,11 +391,11 @@ inline int eLoadStreamingTexturePack(const char *filename) {
     return eLoadStreamingTexturePack(filename, nullptr, nullptr, 0);
 }
 
-inline void eLoadStreamingTexture(unsigned int *name_hash_table, int num_hashes) {
+inline void eLoadStreamingTexture(uint32 *name_hash_table, int num_hashes) {
     return eLoadStreamingTexture(name_hash_table, num_hashes, nullptr, nullptr, 0);
 }
 
-inline void eLoadStreamingTexture(unsigned int name_hash) {
+inline void eLoadStreamingTexture(uint32 name_hash) {
     return eLoadStreamingTexture(&name_hash, 1);
 }
 

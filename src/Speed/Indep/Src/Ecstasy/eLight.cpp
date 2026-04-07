@@ -15,7 +15,7 @@
 bTList<eLightMaterial> LightMaterialList;    // size: 0x8, address: 0x80460DDC
 eLightMaterial DefaultLightMaterialData;     // size: 0xA8, address: 0x80460DE4
 static eLightMaterial *DefaultLightMaterial; // size: 0x4, address: 0x8041A63C
-int DrawLightFlares;
+int32 DrawLightFlares;
 
 int LoaderLights(bChunk *bchunk /* r30 */) {}
 
@@ -220,11 +220,11 @@ float indep_fpow(float n, float p) {
     return ePowf(n, p);
 }
 
-eLightFlare PoolLightFlareList[50];      // size: 0x960, address: 0x804615F4
-unsigned int PoolOfFlaresXcludeView[50]; // size: 0xC8, address: 0x8046B140
-int ActivePoolIndex;                     // size: 0x4, address: 0x8041AB30
+eLightFlare PoolLightFlareList[50]; // size: 0x960, address: 0x804615F4
+uint32 PoolOfFlaresXcludeView[50];  // size: 0xC8, address: 0x8046B140
+int ActivePoolIndex;                // size: 0x4, address: 0x8041AB30
 
-eLightFlare *eGetNextLightFlareInPool(unsigned int XcludeViewIDs /* r7 */) {
+eLightFlare *eGetNextLightFlareInPool(uint32 XcludeViewIDs /* r7 */) {
     if (ActivePoolIndex == 50) {
         return nullptr;
     }
@@ -233,7 +233,7 @@ eLightFlare *eGetNextLightFlareInPool(unsigned int XcludeViewIDs /* r7 */) {
 }
 
 void eInitLightFlarePool() {
-    static BOOL done = false;
+    static int done = false;
     int PoolIndex;
 
     if (done) {
@@ -278,7 +278,7 @@ void eResestLightFlarePool() {
 // UNSOLVED
 void eRenderLightFlarePool(eView *view /* r30 */) {
     bMatrix4 *local_world = eGetIdentityMatrix();
-    unsigned int vid = 1 << view->GetID();
+    uint32 vid = 1 << view->GetID();
     for (int i = 0; i < ActivePoolIndex; i++) {
         float intensity_scale = 1.0f;
         eLightFlare *light_flare = &PoolLightFlareList[i];
@@ -303,11 +303,11 @@ void eRenderLightFlarePool(eView *view /* r30 */) {
     }
 }
 
-unsigned int eLightFlareTextureNameHashes[3]; // size: 0xC, address: 0x8041A69C
-TextureInfo *eLightFlareTextureInfos[3];      // size: 0xC, address: 0x8046B134
+uint32 eLightFlareTextureNameHashes[3];  // size: 0xC, address: 0x8041A69C
+TextureInfo *eLightFlareTextureInfos[3]; // size: 0xC, address: 0x8046B134
 
 void eLightUpdateTextures() {
-    for (unsigned int i = 0; i < 3; i++) {
+    for (uint32 i = 0; i < 3; i++) {
         eLightFlareTextureInfos[i] = GetTextureInfo(eLightFlareTextureNameHashes[i], 0, 0);
     }
 }
@@ -342,7 +342,7 @@ void eRenderWorldLightFlares(eView *view /* r26 */, flareType type /* r24 */) {
     }
 }
 
-void RestoreShaperRig(eShaperLightRig *ShaperRigP, unsigned int slot, eShaperLightRig *ShaperRigBP) {
+void RestoreShaperRig(eShaperLightRig *ShaperRigP, uint32 slot, eShaperLightRig *ShaperRigBP) {
     ShaperRigP->Lights[slot].CameraSpace = ShaperRigBP->Lights[slot].CameraSpace;
     ShaperRigP->Lights[slot].Red = ShaperRigBP->Lights[slot].Red;
     ShaperRigP->Lights[slot].Green = ShaperRigBP->Lights[slot].Green;
@@ -352,8 +352,8 @@ void RestoreShaperRig(eShaperLightRig *ShaperRigP, unsigned int slot, eShaperLig
     ShaperRigP->Lights[slot].Phi = ShaperRigBP->Lights[slot].Phi;
 }
 
-void AddQuickDynamicLight(eShaperLightRig *ShaperRigP, unsigned int slot, float r, float g, float b, float intensity, bVector3 *position) {
-    unsigned int mask = 1 << (slot - 2);
+void AddQuickDynamicLight(eShaperLightRig *ShaperRigP, uint32 slot, float r, float g, float b, float intensity, bVector3 *position) {
+    uint32 mask = 1 << (slot - 2);
 
     ShaperRigP->NumOverideSlots |= mask;
     ShaperRigP->position = *position;
@@ -367,8 +367,8 @@ void AddQuickDynamicLight(eShaperLightRig *ShaperRigP, unsigned int slot, float 
 
 void AdjustQuickDynamicLight(eShaperLightRig *ShaperRigP, bVector3 *MyPosition) {
     for (int i = 0; i < 0; i++) {
-        unsigned int slot;
-        unsigned int mask;
+        uint32 slot;
+        uint32 mask;
         if (0 == 0) {
             bVector3 direction = ShaperRigP->position - *MyPosition;
             bVector3 spherical_direction;
@@ -381,7 +381,7 @@ void eLightMaterial::BuildData() {
     this->UpdatePlatInfo();
 }
 
-eLightMaterial *elGetLightMaterial(unsigned int name_hash /* r10 */) {
+eLightMaterial *elGetLightMaterial(uint32 name_hash /* r10 */) {
     for (eLightMaterial *elm = LightMaterialList.GetHead(); elm != LightMaterialList.EndOfList(); elm = elm->GetNext()) {
         if (elm->NameHash == name_hash) {
             return elm;

@@ -15,8 +15,9 @@
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Texture.hpp"
 
-struct smVector3 {
+class smVector3 {
     // total size: 0x8
+  public:
     char x;            // offset 0x0, size 0x1
     char y;            // offset 0x1, size 0x1
     char z;            // offset 0x2, size 0x1
@@ -42,11 +43,12 @@ enum EmitterControlState {
     ECS_ERROR = 0,
 };
 
-struct EmitterControl {
+class EmitterControl {
     // total size: 0x8
     EmitterControlState mState; // offset 0x0, size 0x4
     float mTime;                // offset 0x4, size 0x4
 
+  public:
     bool Update(float dt, struct Emitter *em, float &rollover_time);
 
     EmitterControl() {
@@ -57,12 +59,17 @@ struct EmitterControl {
     EmitterControlState GetState() {
         return this->mState;
     }
+
+    float GetTime();
+    void ForceOff();
+    void ForceOn();
 };
 
 extern SlotPool *ParticleSlotPool;
 
-struct EmitterParticle : public bTNode<EmitterParticle> {
+class EmitterParticle : public bTNode<EmitterParticle> {
     // total size: 0x40
+  public:
     uint32 mColour;      // offset 0x8, size 0x4
     float mSize;         // offset 0xC, size 0x4
     smVector3 mVel;      // offset 0x10, size 0x8
@@ -185,7 +192,7 @@ enum EmitterGroupFlags {
     AUTO_UPDATE = 1,
 };
 
-struct Emitter : public bTNode<Emitter> {
+class Emitter : public bTNode<Emitter> {
     // total size: 0x90
     EmitterControl mControl;                // offset 0x8, size 0x8
     float mParticleAccumulation;            // offset 0x10, size 0x4
@@ -435,7 +442,8 @@ struct EmitterLibrary {
 
 // TODO right place?
 // total size: 0x30
-struct WorldFXTrigger : public bTNode<WorldFXTrigger> {
+class WorldFXTrigger : public bTNode<WorldFXTrigger> {
+  public:
     EmitterLibrary *mLib; // offset 0x8, size 0x4
     float mTriggerRadius; // offset 0xC, size 0x4
     bVector3 mWorldPos;   // offset 0x10, size 0x10
@@ -469,7 +477,8 @@ struct EmitterLibraryHeader {
 };
 
 // total size: 0x10
-struct EmitterPackHeader {
+class EmitterPackHeader {
+  public:
     int32 SectionNumber;    // offset 0x0, size 0x4
     int32 EndianSwapped;    // offset 0x4, size 0x4
     int32 Version;          // offset 0x8, size 0x4
@@ -508,8 +517,6 @@ class EmitterSystem {
     EmitterGroup *CreateEmitterGroup(const Attrib::Collection *group_spec, uint32 creation_context_flags);
     void AddEmitterGroup(EmitterGroup *group);
     void RemoveEmitterGroup(EmitterGroup *group);
-    void UpdateInterestPoints();
-    void UpdateParticles(float dt);
     EmitterLibrary *FindLibrary(Attrib::Key key);
     void AddLibrary(EmitterLibrary *lib);
     void RemoveLibrary(EmitterLibrary *lib);
@@ -553,6 +560,10 @@ class EmitterSystem {
     typedef struct UTL::Std::vector<EmitterSystem::LibEntry, _type_vector> LibList;
 
   private:
+    int32 GetNumParticlesInList();
+    void UpdateInterestPoints();
+    void UpdateParticles(float dt);
+
     static TexturePageRange *mTextureRanges;
     static int32 mNumTextureRanges;
 
