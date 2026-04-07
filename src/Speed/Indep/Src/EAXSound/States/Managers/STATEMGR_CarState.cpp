@@ -1,9 +1,14 @@
 #include "Speed/Indep/Src/EAXSound/States/Managers/STATEMGR_CarState.hpp"
 
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
+#include "Speed/Indep/Src/EAXSound/EAXSndUtil.h"
+#include "Speed/Indep/Src/EAXSound/SndCamera.hpp"
 #include "Speed/Indep/Src/EAXSound/SoundConn.h"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Gameplay/GRaceDatabase.h"
+#include "Speed/Indep/Src/Interfaces/SimActivities/INIS.h"
+#include "Speed/Indep/Src/Misc/Profiler.hpp"
+#include "Speed/Indep/Src/Sim/Simulation.h"
 
 #include <algorithm>
 
@@ -37,6 +42,53 @@ void CSTATEMGR_CarState::AddMapping(unsigned int key1, unsigned int key2) {
     } else {
         int break_here;
     }
+}
+
+void CSTATEMGR_CarState::UpdateParams(float t) {
+    ProfileNode profile_node("TODO", 0);
+    typedef UTL::Collections::Listable<CarSoundConn, 10> CarList;
+
+    for (CarSoundConn *const *iter = CarList::GetList().begin(); iter != CarList::GetList().end(); ++iter) {
+        CarSoundConn *pconn = *iter;
+        EAX_CarState *eax_car;
+        CSTATE_Base *attached;
+
+        if (!pconn->mConnected || !(eax_car = pconn->GetState()) || eax_car->GetContext() != m_CarContext) {
+            continue;
+        }
+
+        attached = m_pHeadStateObj;
+        while (attached && (!attached->IsAttached() || attached->GetPhysCar() != eax_car)) {
+            attached = attached->m_pNextState;
+        }
+
+        if (!eax_car->IsSimUpdating() &&
+            (static_cast<unsigned int>(m_CarContext - kRaceContext_Online) > 1 || !INIS::Get() ||
+             !INIS::Get()->IsPlaying())) {
+            if (attached) {
+                attached->Detach();
+            }
+        } else {
+            bool IsInRadius;
+            int CarID = 0;
+
+            GetClosestPlayerCar(eax_car->GetPosition(), true, CarID);
+            IsInRadius = bDistBetween(eax_car->GetPosition(), SndCamera::GetCamPos3(CarID)) < m_fConnectDistance;
+            if (attached) {
+                if (!IsInRadius) {
+                    attached->Detach();
+                }
+            } else if (IsInRadius) {
+                attached = GetFreeState(eax_car);
+                if (attached &&
+                    (m_CarContext != kRaceContext_Career || Sim::GetUserMode() != Sim::USER_SPLIT_SCREEN)) {
+                    attached->Attach(eax_car);
+                }
+            }
+        }
+    }
+
+    CSTATEMGR_Base::UpdateParams(t);
 }
 
 void CSTATEMGR_CarState::ResolveCarBanks() {

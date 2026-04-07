@@ -38,6 +38,8 @@ struct CSTATEMGR_CarState : public CSTATEMGR_Base {
     static void ResetCarBanks();
     static void DestroyCar(EAX_CarState *pCar);
 
+    void UpdateParams(float t) override;
+
     Sound::Context m_CarContext; // offset 0x1C, size 0x4
     float m_fConnectDistance;    // offset 0x20, size 0x4
 };
