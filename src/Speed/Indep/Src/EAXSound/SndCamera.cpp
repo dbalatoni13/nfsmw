@@ -143,9 +143,15 @@ void SndCamera::UpdateCameras() {
 }
 
 Camera *SndCamera::GetCam(int nPlayer) {
-    if (m_pCams[nPlayer]) {
-        return m_pCams[nPlayer];
+    Camera *pcam = m_pCams[nPlayer];
+    if (pcam) {
+        return pcam;
     }
 
-    return m_pCams[0];
+    pcam = m_pCams[0];
+    if (pcam) {
+        return pcam;
+    }
+
+    return nullptr;
 }
