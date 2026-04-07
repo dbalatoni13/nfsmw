@@ -66,7 +66,11 @@ void CSTATEMGR_CarState::UpdateParams(float t) {
         }
 
         attached = m_pHeadStateObj;
-        while (attached && (!attached->IsAttached() || attached->GetPhysCar() != eax_car)) {
+        while (attached) {
+            if (attached->IsAttached() && attached->GetPhysCar() == eax_car) {
+                break;
+            }
+
             attached = attached->m_pNextState;
         }
 
@@ -78,8 +82,9 @@ void CSTATEMGR_CarState::UpdateParams(float t) {
             }
         } else {
             bool IsInRadius;
-            int CarID = 0;
+            int CarID;
 
+            CarID = 0;
             GetClosestPlayerCar(eax_car->GetPosition(), true, CarID);
             IsInRadius = bDistBetween(eax_car->GetPosition(), SndCamera::GetCamPos3(CarID)) < m_fConnectDistance;
             if (attached) {
