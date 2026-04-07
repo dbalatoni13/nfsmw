@@ -8,7 +8,13 @@
 #include "Speed/Indep/Src/Misc/Table.hpp"
 
 struct cStitchLoop {
-    cStitchLoop(unsigned int nameHash);
+    unsigned int m_StitchAttribKey;  // offset 0x0, size 0x4
+    const SND_Stich *m_StichData;    // offset 0x4, size 0x4
+    cStichWrapper *m_Stitch[2];      // offset 0x8, size 0x8
+    short m_tOverlap;                // offset 0x10, size 0x2
+    short m_tTimeBeforeRepeat;       // offset 0x12, size 0x2
+
+    cStitchLoop(unsigned int attrib);
     ~cStitchLoop();
     void Update(const SND_Params *Params, float dt);
 };
@@ -254,16 +260,16 @@ void CARSFX_RoadNoise::Play(FXROADNOISE_LOOP ID, int side) {
         delete m_pStitchLoopControl[side];
     }
 
-    if (ID < FXROADNOISE_LOOP_STITCH_LOOP) {
+    if (ID > FXROADNOISE_LOOP_METAL) {
+        m_pStitchLoopControl[side] = new ("Stitch Loop", 0) cStitchLoop(0x4B41DEC8);
+    } else {
         g_pEAXSound->SetCsisName(this);
         m_pRoadNoiseControl[side] =
             new FX_ROADNOISE(ID, 0, 0x1000, 0, FXROADNOISETYPETYPE_LOOP, 0, 0, 25000, 0, 0x7FFF, 0);
         refcnt = 0;
-        if (m_pRoadNoiseControl[side]) {
-            refcnt = m_pRoadNoiseControl[side]->GetRefCount();
+        if (m_pRoadNoiseControl[side]->mpClass) {
+            m_pRoadNoiseControl[side]->mpClass->GetRefCount(&refcnt);
         }
-    } else {
-        m_pStitchLoopControl[side] = new ("Stitch Loop", 0) cStitchLoop(0x4B41DEC8);
     }
 }
 
