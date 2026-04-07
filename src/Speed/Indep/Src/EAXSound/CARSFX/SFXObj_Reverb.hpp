@@ -8,6 +8,10 @@
 #include "Speed/Indep/Src/EAXSound/CARSFX/CARSFX.hpp"
 
 struct SFXObj_Reverb : public CARSFX {
+  protected:
+    static TypeInfo s_TypeInfo;
+
+  public:
     static char *m_pFXEditPatch[12];
 };
 

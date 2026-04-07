@@ -6,11 +6,20 @@
 #endif
 
 #include "Speed/Indep/Src/EAXSound/CARSFX/CARSFX.hpp"
+#include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_3DObjPos.hpp"
 
 struct FX_SKID;
 struct SFXCTL_Wheel;
-struct SFXCTL_3DLeftWheelPos;
-struct SFXCTL_3DRightWheelPos;
+
+struct SFXCTL_3DLeftWheelPos : public SFXCTL_3DObjPos {
+  protected:
+    static TypeInfo s_TypeInfo;
+};
+
+struct SFXCTL_3DRightWheelPos : public SFXCTL_3DObjPos {
+  protected:
+    static TypeInfo s_TypeInfo;
+};
 
 struct CARSFX_Skids : public CARSFX {
   protected:

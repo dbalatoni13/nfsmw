@@ -9,9 +9,6 @@
 #include "Speed/Indep/Src/World/RaceParameters.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
-struct SFXCTL_3DLeftWheelPos : public SFXCTL_3DObjPos {};
-struct SFXCTL_3DRightWheelPos : public SFXCTL_3DObjPos {};
-
 SndBase::TypeInfo CARSFX_Skids::s_TypeInfo = { 0, "CARSFX_Skids", nullptr, CARSFX_Skids::CreateObject };
 
 SndBase::TypeInfo *CARSFX_Skids::GetTypeInfo() const { return &s_TypeInfo; }
