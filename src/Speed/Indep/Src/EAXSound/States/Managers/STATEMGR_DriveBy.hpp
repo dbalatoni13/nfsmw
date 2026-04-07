@@ -12,6 +12,11 @@ struct CSTATEMGR_DriveBy : public CSTATEMGR_Base {
     int WooshCheckFrameCntr; // offset 0x1C, size 0x4
 
     CSTATEMGR_DriveBy();
+    ~CSTATEMGR_DriveBy() override;
+
+    void UpdateParams(float t) override;
+    void EnterWorld(eSndGameMode esgm) override;
+    CSTATE_Base *GetFreeState(void *ObjectPtr) override;
 };
 
 #endif

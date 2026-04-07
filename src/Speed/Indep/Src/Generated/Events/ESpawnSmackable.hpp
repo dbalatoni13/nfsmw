@@ -8,6 +8,8 @@
 #include "Speed/Indep/Libs/Support/Utility/UTypes.h"
 #include "Speed/Indep/Src/Main/Event.h"
 
+class WTrigger;
+
 // total size: 0x34
 class ESpawnSmackable : public Event {
   public:

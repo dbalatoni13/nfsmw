@@ -5,7 +5,15 @@
 #pragma once
 #endif
 
+#include "Speed/Indep/Libs/Support/Utility/UStandard.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ISimable.h"
+#include "Speed/Indep/Src/Main/Event.h"
+#include "Speed/Indep/Src/World/WTriggerList.h"
+
+class WTrigger {
+  public:
+    bool HasEvent(unsigned int eventID, const EventStaticData **foundEvent) const;
+};
 
 // total size: 0x8
 struct FireOnExitRec {
@@ -20,6 +28,7 @@ class FireOnExitList : public std::set<FireOnExitRec> {};
 class WTriggerManager {
   public:
     void Update(float dT);
+    void GetIntersectingTriggers(const UMath::Vector3 &pt, float radius, WTriggerList *triggerList) const;
 
     static WTriggerManager &Get() {
         return *fgTriggerManager;

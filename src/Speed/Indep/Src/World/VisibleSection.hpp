@@ -40,6 +40,10 @@ struct DrivableScenerySection : public bTNode<DrivableScenerySection> {
     int GetVisibleSection(int i) {
         return this->VisibleSections[i];
     }
+
+    int GetSectionNumber() {
+        return this->SectionNumber;
+    }
 };
 
 struct DrivableSectionsInRegion {
@@ -166,6 +170,10 @@ class VisibleSectionManager {
     void UnallocateUserInfo(int section_number);
     DrivableScenerySection *FindDrivableSection(const bVector2 *point);
     DrivableScenerySection *FindDrivableSection(int section_number /* r4 */);
+
+    int GetLODOffset() {
+        return this->pInfo->LODOffset;
+    }
 
     VisibleSectionUserInfo *GetUserInfo(int section_number) {
         return this->UserInfoTable[section_number];

@@ -4,6 +4,8 @@
 
 #include "Speed/Indep/Src/EAXSound/States/Managers/STATEMGR_CarState.cpp"
 
+#include "Speed/Indep/Src/EAXSound/States/Managers/STATEMGR_DriveBy.cpp"
+
 #include "Speed/Indep/Src/EAXSound/States/Registration.cpp"
 
 #include "Speed/Indep/Src/EAXSound/States/STATE_Base.cpp"

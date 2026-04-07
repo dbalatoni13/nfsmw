@@ -31,6 +31,22 @@ class Event {
     std::size_t fEventSize;
 };
 
+// total size: 0x10
+struct EventStaticData {
+    unsigned int fEventID;   // offset 0x0, size 0x4
+    unsigned int fEventSize; // offset 0x4, size 0x4
+    unsigned int fDataOffset; // offset 0x8, size 0x4
+    unsigned int fPad;       // offset 0xC, size 0x4
+
+    char *StaticData() {
+        return reinterpret_cast<char *>(this) + fDataOffset;
+    }
+
+    const char *StaticData() const {
+        return reinterpret_cast<const char *>(this) + fDataOffset;
+    }
+};
+
 // total size: 0x1
 class EventManager {
   public:
