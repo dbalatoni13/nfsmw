@@ -41,6 +41,8 @@
 
 #include "Speed/Indep/Src/EAXSound/CARSFX/CARSFX_Rain.cpp"
 
+#include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_Reverb.cpp"
+
 #include "Speed/Indep/Src/EAXSound/CARSFX/CARSFX_TrafficFX.cpp"
 #include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_Helicopter.cpp"
 
