@@ -19,6 +19,7 @@ struct CSTATE_WorldObject : public CSTATE_Base {
     StateInfo *GetStateInfo() const override;
     const char *GetStateName() const override;
     static CSTATE_Base *CreateState(unsigned int allocator);
+    void *operator new(size_t, void *p) { return p; }
     CSTATE_WorldObject();
     ~CSTATE_WorldObject() override;
     void Attach(void *pAttachment) override;

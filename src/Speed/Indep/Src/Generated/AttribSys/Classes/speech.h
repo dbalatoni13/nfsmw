@@ -13,6 +13,7 @@
 #include "Speed/Indep/Tools/AttribSys/Runtime/Common/AttribPrivate.h"
 
 enum SPCHType_1_EventID {
+    kSPCH1_EventID_CellCall = 0xcc,
     kSPCH1_EventID_MaxEventID = 0x108,
 };
 
