@@ -30,6 +30,14 @@ UTL::FixedVector<unsigned int, 8, 16> CSTATEMGR_CarState::FinalCopV8Engines;
 UTL::FixedVector<CSTATEMGR_CarState::EngToCarStruct, 24, 16> CSTATEMGR_CarState::EngineToCarMapping;
 bool CSTATEMGR_CarState::CopsCanBeInGame = true;
 
+CSTATEMGR_CarState::CSTATEMGR_CarState() {
+    m_fConnectDistance = 135.0f;
+    m_CarContext = Sound::CONTEXT_AIRACER;
+    CopsCanBeInGame = true;
+}
+
+CSTATEMGR_CarState::~CSTATEMGR_CarState() {}
+
 void CSTATEMGR_CarState::AddMapping(unsigned int key1, unsigned int key2) {
     EngineMappingPair mapping;
     EngineMappingPair *finditer;
