@@ -7,6 +7,8 @@
 extern "C" int SNDvol(int sndHandle, int vol);
 extern stSndDataLoadParams g_SndAssetList[];
 char *GetGinsuData(const char *filename);
+int ntestrefcount;
+static int AI_ENGINE_PITCH_OFFSET;
 
 void CARSFX_EngineBase::UpdateParams(float) {}
 
@@ -241,4 +243,117 @@ void CARSFX_GinsuEngine::SetEngineParams() {
         m_pTranny->SetSingle_Shot(0);
     }
     m_pTranny->CommitMemberData();
+}
+
+SndBase::TypeInfo CARSFX_AEMSEngine::s_TypeInfo = { 0x00020000, "CARSFX_AEMSEngine", &SndBase::s_TypeInfo, CARSFX_AEMSEngine::CreateObject };
+
+SndBase::TypeInfo *CARSFX_AEMSEngine::GetTypeInfo() const { return &s_TypeInfo; }
+
+const char *CARSFX_AEMSEngine::GetTypeName() const { return s_TypeInfo.typeName; }
+
+SndBase *CARSFX_AEMSEngine::CreateObject(unsigned int allocator) {
+    if (allocator == 0) {
+        return new (s_TypeInfo.typeName, false) CARSFX_AEMSEngine();
+    }
+    return new (s_TypeInfo.typeName, true) CARSFX_AEMSEngine();
+}
+
+CARSFX_AEMSEngine::CARSFX_AEMSEngine()
+    : CARSFX_EngineBase() {
+    AI_ENGINE_PITCH_OFFSET = (AI_ENGINE_PITCH_OFFSET + 500) % 3000;
+    m_iAIPitchOffset = AI_ENGINE_PITCH_OFFSET - 1500;
+}
+
+CARSFX_AEMSEngine::~CARSFX_AEMSEngine() {}
+
+void CARSFX_AEMSEngine::UpdateParams(float t) {
+    CARSFX_EngineBase::UpdateParams(t);
+}
+
+void CARSFX_AEMSEngine::SetupSFX(CSTATE_Base *_StateBase) {
+    CARSFX_EngineBase::SetupSFX(_StateBase);
+}
+
+void CARSFX_AEMSEngine::InitSFX() {
+    int refCount;
+
+    CARSFX_EngineBase::InitSFX();
+    g_pEAXSound->SetCsisName(this);
+    m_pcsisCarCtrl = new CAR(m_pEAXCar->GetAttributes().CarID(), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, SPU_or_EE, 0, 0, 0, 0, 0,
+                             0, 0, 0, 0, 0, 0, 0, 0);
+    refCount = 0;
+    if (m_pcsisCarCtrl) {
+        refCount = m_pcsisCarCtrl->GetRefCount();
+    }
+    ntestrefcount = refCount;
+}
+
+int CARSFX_AEMSEngine::GetController(int Index) {
+    switch (Index) {
+    case 0:
+        return 4;
+    case 1:
+        return 7;
+    default:
+        return -1;
+    }
+}
+
+void CARSFX_AEMSEngine::AttachController(SFXCTL *psfxctl) {
+    switch (psfxctl->GetObjectIndex()) {
+    case 4:
+        m_pEngineCtl = static_cast<SFXCTL_Engine *>(psfxctl);
+        break;
+    case 7:
+        m_p3DCarPosCtl = static_cast<SFXCTL_3DCarPos *>(psfxctl);
+        break;
+    }
+}
+
+void CARSFX_AEMSEngine::SetEngineParams() {
+    float ScaledRPM;
+    int nDMixOut;
+    int TmpVol;
+    int CurPitch;
+
+    ScaledRPM = (m_pEngineCtl->GetEngRPM() - 1000.0f) *
+                    ((m_pEAXCar->GetAttributes().MaxRPM() - m_pEAXCar->GetAttributes().MinRPM()) * 0.00011111111f) +
+                m_pEAXCar->GetAttributes().MinRPM();
+    if (m_pcsisCarCtrl) {
+        CurPitch = m_iAIPitchOffset + 16000;
+        nDMixOut = GetDMixOutput(4, DMX_PITCH);
+        PitchMultipli = static_cast<float>(nDMixOut) * 0.000244140625f;
+        CurPitch = static_cast<int>(static_cast<float>(CurPitch) * PitchMultipli - 16000.0f);
+        nDMixOut = GetDMixOutput(1, DMX_VOL);
+        SetDMIX_Input(1, nDMixOut);
+        TmpVol = (m_pEngineCtl->m_iEngineVol * nDMixOut >> 15) * 0x7FFF >> 15;
+        m_pcsisCarCtrl->SetVOL_ENG(TmpVol - 0x7FFF);
+        m_pcsisCarCtrl->SetVOL_EXH(TmpVol - 0x7FFF);
+        m_pcsisCarCtrl->SetRPM(static_cast<int>(ScaledRPM));
+        m_pcsisCarCtrl->SetCOMMON_PARAMETERS_PITCH_OFFSET(CurPitch);
+        m_pcsisCarCtrl->SetTORQUE(static_cast<int>(m_pEngineCtl->GetEngTorque() * 10.24f));
+        m_pcsisCarCtrl->SetCOMMON_PARAMETERS_ROTATION(m_pEngineCtl->m_Rotation);
+        m_pcsisCarCtrl->SetCOMMON_PARAMETERS_AZIMUTH(GetDMixOutput(0, DMX_AZIM));
+        m_pcsisCarCtrl->CommitMemberData();
+    }
+    CARSFX_EngineBase::SetEngineParams();
+}
+
+void CARSFX_AEMSEngine::SetupLoadData() {
+    const char *auxBankName;
+    eBANK_SLOT_TYPE type;
+
+    auxBankName = m_pEAXCar->GetEngineAttributes().BankName_auxRAM(0).GetString();
+    if (!auxBankName) {
+        auxBankName = "";
+    }
+    if (auxBankName != "") {
+        SPU_or_EE = 0;
+        type = eBANK_SLOT_NONE;
+        if (GetPhysCar()->GetContext() == Sound::CONTEXT_AIRACER || GetPhysCar()->GetContext() == Sound::CONTEXT_COP) {
+            type = eBANK_SLOT_AI_AEMS_ENGINE;
+        }
+        SPU_or_EE = 1;
+        LoadAsset(m_pEAXCar->GetEngineAttributes().BankName_mainRAM(), SNDPATH_ENGINE, EAXSND_DT_AEMS_ASYNCSPUMEM, type, true);
+    }
 }

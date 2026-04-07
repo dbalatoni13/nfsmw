@@ -72,4 +72,39 @@ struct CARSFX_GinsuEngine : public CARSFX_EngineBase {
     int m_GinsuDecelVol;                   // offset 0x8C, size 0x4
 };
 
+struct CARSFX_AEMSEngine : public CARSFX_EngineBase {
+  protected:
+    static TypeInfo s_TypeInfo;
+
+  public:
+    CARSFX_AEMSEngine();
+    ~CARSFX_AEMSEngine() override;
+    TypeInfo *GetTypeInfo() const override;
+    const char *GetTypeName() const override;
+    static SndBase *CreateObject(unsigned int allocator);
+    void UpdateParams(float t) override;
+    void SetupSFX(CSTATE_Base *_StateBase) override;
+    void InitSFX() override;
+    int GetController(int Index) override;
+    void AttachController(SFXCTL *psfxctl) override;
+    void SetEngineParams() override;
+    void SetupLoadData() override;
+
+    int m_iAIPitchOffset;                  // offset 0x40, size 0x4
+};
+
+struct CARSFX_DualGinsuEng : public CARSFX_GinsuEngine {
+  protected:
+    static TypeInfo s_TypeInfo;
+
+  public:
+    CARSFX_DualGinsuEng();
+    ~CARSFX_DualGinsuEng() override;
+    TypeInfo *GetTypeInfo() const override;
+    const char *GetTypeName() const override;
+    static SndBase *CreateObject(unsigned int allocator);
+    void SetGinsuParams() override;
+    void SetupLoadData() override;
+};
+
 #endif
