@@ -1517,42 +1517,44 @@ void NFSMixMap::MixMasterChannels() {
 void NFSMixMap::Update3DMixCtls() {
     int n;
 
-    if ((m_CurCamState != m_PrevCamState) && (m_nAssigned3DMixCtlShared > 0)) {
-        int i;
+    if (m_CurCamState != m_PrevCamState) {
+        if (m_nAssigned3DMixCtlShared > 0) {
+            int i;
 
-        for (i = 0; i < m_nAssigned3DMixCtlShared; i++) {
-            bool found;
-            eCamStates camstate;
-            st3DMixCtlParams *pMapParams;
-            st3DMixCtlSharedData *p3Ds;
+            for (i = 0; i < m_nAssigned3DMixCtlShared; i++) {
+                bool found;
+                eCamStates camstate;
+                st3DMixCtlParams *pMapParams;
+                st3DMixCtlSharedData *p3Ds;
 
-            p3Ds = m_p3DMixCtlData_S + i;
-            pMapParams = p3Ds->pMapParams;
-            camstate = m_CurCamState;
-            found = false;
-            while (true) {
-                int ns;
-                int numstates;
+                p3Ds = m_p3DMixCtlData_S + i;
+                pMapParams = p3Ds->pMapParams;
+                camstate = m_CurCamState;
+                found = false;
+                while (true) {
+                    int ns;
+                    int numstates;
 
-                numstates = (pMapParams->nINPUTID >> 24) & 0xF;
-                for (ns = 0; ns < numstates; ns++) {
-                    st3DStateParams *pstateparams;
+                    numstates = (pMapParams->nINPUTID >> 24) & 0xF;
+                    for (ns = 0; ns < numstates; ns++) {
+                        st3DStateParams *pstateparams;
 
-                    pstateparams = (&pMapParams->StateParams) + ns;
-                    if (((pstateparams->n3DSTATEINFOID >> 24) & 0xF) == camstate) {
-                        p3Ds->pCurStateParams = pstateparams;
-                        p3Ds->PrevCamState = m_PrevCamState;
-                        p3Ds->CurCamState = m_CurCamState;
-                        p3Ds->msSinceCamTrans = 0;
-                        found = true;
+                        pstateparams = (&pMapParams->StateParams) + ns;
+                        if (((pstateparams->n3DSTATEINFOID >> 24) & 0xF) == camstate) {
+                            p3Ds->pCurStateParams = pstateparams;
+                            p3Ds->PrevCamState = m_PrevCamState;
+                            p3Ds->CurCamState = m_CurCamState;
+                            p3Ds->msSinceCamTrans = 0;
+                            found = true;
+                            break;
+                        }
+                    }
+
+                    if (found || (camstate == DMIX_DEFAULT_CAM)) {
                         break;
                     }
+                    camstate = DMIX_DEFAULT_CAM;
                 }
-
-                if (found || (camstate == DMIX_DEFAULT_CAM)) {
-                    break;
-                }
-                camstate = DMIX_DEFAULT_CAM;
             }
         }
     }
@@ -1569,27 +1571,29 @@ void NFSMixMap::Update3DMixCtls() {
             p3Du->azimuth = 0;
             p3Du->DopplerCents = 0;
         } else {
-            eMIXTABLEID nqOne;
-            eMIXTABLEID nqTwo;
+            st3DStateParams *psparams;
+            int nid;
+            int nDistType;
+            int nAzimType;
+            int ntables;
+            int nazim;
             float fdist[2];
             float fmindist[2];
             float fmaxdist[2];
+            int uAverage;
+            eMIXTABLEID nqOne;
+            eMIXTABLEID nqTwo;
             int AzimOut;
-            int nAzimType;
-            int nDistType;
-            int nMixRatio;
-            int nazim;
             int nQuad;
             int qDist[2];
-            st3DStateParams *psparams;
-            unsigned int curveInfo;
 
             nqOne = SHAPE_DWN_LINEAR;
             nqTwo = SHAPE_DWN_LINEAR;
             psparams = p3Dproc->p3DMixCtlData_S->pCurStateParams;
-            curveInfo = static_cast<unsigned int>(psparams->nCURVEID_DOPPLER);
-            nAzimType = (psparams->n3DSTATEINFOID >> 8) & 0xF;
-            nDistType = (psparams->n3DSTATEINFOID >> 12) & 0xF;
+            nid = psparams->n3DSTATEINFOID;
+            nDistType = (nid >> 12) & 0xF;
+            nAzimType = (nid >> 8) & 0xF;
+            ntables = psparams->nCURVEID_DOPPLER;
             if (nDistType == 0) {
                 fdist[0] = static_cast<float>(p3Du->pInputs[1]) * 0.01f;
             } else if (nDistType == 1) {
@@ -1610,42 +1614,42 @@ void NFSMixMap::Update3DMixCtls() {
             AzimOut = nazim;
             p3Du->azimuth = AzimOut;
             nQuad = (static_cast<unsigned int>(AzimOut) >> 14) & 3;
-            nMixRatio = AzimOut;
+            uAverage = AzimOut;
 
             switch (nQuad) {
             case 1:
-                nqTwo = static_cast<eMIXTABLEID>((curveInfo >> 24) & 0xF);
-                nqOne = static_cast<eMIXTABLEID>((curveInfo >> 16) & 0xF);
+                nqTwo = static_cast<eMIXTABLEID>((ntables >> 24) & 0xF);
+                nqOne = static_cast<eMIXTABLEID>((ntables >> 16) & 0xF);
                 fmindist[0] = static_cast<float>(psparams->nQ1MinMax & 0x7FFF);
                 fmaxdist[0] = static_cast<float>((static_cast<unsigned int>(psparams->nQ1MinMax) >> 16) & 0x7FFF);
                 fmindist[1] = static_cast<float>(psparams->nQ2MinMax & 0x7FFF);
                 fmaxdist[1] = static_cast<float>((static_cast<unsigned int>(psparams->nQ2MinMax) >> 16) & 0x7FFF);
-                nMixRatio = AzimOut - 0x4000;
+                uAverage = AzimOut - 0x4000;
                 break;
 
             case 2:
-                nqTwo = static_cast<eMIXTABLEID>((curveInfo >> 20) & 0xF);
-                nqOne = static_cast<eMIXTABLEID>((curveInfo >> 24) & 0xF);
+                nqTwo = static_cast<eMIXTABLEID>((ntables >> 20) & 0xF);
+                nqOne = static_cast<eMIXTABLEID>((ntables >> 24) & 0xF);
                 fmindist[0] = static_cast<float>(psparams->nQ2MinMax & 0x7FFF);
                 fmaxdist[0] = static_cast<float>((static_cast<unsigned int>(psparams->nQ2MinMax) >> 16) & 0x7FFF);
                 fmindist[1] = static_cast<float>(psparams->nQ3MinMax & 0x7FFF);
                 fmaxdist[1] = static_cast<float>((static_cast<unsigned int>(psparams->nQ3MinMax) >> 16) & 0x7FFF);
-                nMixRatio = AzimOut - 0x8000;
+                uAverage = AzimOut - 0x8000;
                 break;
 
             case 3:
-                nqTwo = static_cast<eMIXTABLEID>((curveInfo >> 28) & 0xF);
-                nqOne = static_cast<eMIXTABLEID>((curveInfo >> 20) & 0xF);
+                nqTwo = static_cast<eMIXTABLEID>((ntables >> 28) & 0xF);
+                nqOne = static_cast<eMIXTABLEID>((ntables >> 20) & 0xF);
                 fmindist[0] = static_cast<float>(psparams->nQ3MinMax & 0x7FFF);
                 fmaxdist[0] = static_cast<float>((static_cast<unsigned int>(psparams->nQ3MinMax) >> 16) & 0x7FFF);
                 fmindist[1] = static_cast<float>(psparams->nQ0MinMax & 0x7FFF);
                 fmaxdist[1] = static_cast<float>((static_cast<unsigned int>(psparams->nQ0MinMax) >> 16) & 0x7FFF);
-                nMixRatio = AzimOut - 0xC000;
+                uAverage = AzimOut - 0xC000;
                 break;
 
             default:
-                nqTwo = static_cast<eMIXTABLEID>((curveInfo >> 16) & 0xF);
-                nqOne = static_cast<eMIXTABLEID>((curveInfo >> 28) & 0xF);
+                nqTwo = static_cast<eMIXTABLEID>((ntables >> 16) & 0xF);
+                nqOne = static_cast<eMIXTABLEID>((ntables >> 28) & 0xF);
                 fmindist[0] = static_cast<float>(psparams->nQ0MinMax & 0x7FFF);
                 fmaxdist[0] = static_cast<float>((static_cast<unsigned int>(psparams->nQ0MinMax) >> 16) & 0x7FFF);
                 fmindist[1] = static_cast<float>(psparams->nQ1MinMax & 0x7FFF);
@@ -1674,10 +1678,10 @@ void NFSMixMap::Update3DMixCtls() {
                 fdist[1] = (fdist[1] - fmindist[1]) / (fmaxdist[1] - fmindist[1]);
                 qDist[0] = static_cast<int>(fdistratio * 32767.0f);
                 qDist[1] = static_cast<int>(fdist[1] * 32767.0f);
-                p3Du->q15Rolloff = NFSMixShape::GetAzimShapeOutput(nqOne, nqTwo, qDist, nMixRatio);
+                p3Du->q15Rolloff = NFSMixShape::GetAzimShapeOutput(nqOne, nqTwo, qDist, uAverage);
                 p3Du->dBRolloff = NFSMixShape::GetdBFromQ15(p3Du->q15Rolloff);
 
-                if ((curveInfo & 0xFFFF) != 0) {
+                if ((ntables & 0xFFFF) != 0) {
                     float fcents;
                     float fcurdist;
                     float fdeltanewdist;
@@ -1686,7 +1690,7 @@ void NFSMixMap::Update3DMixCtls() {
                     float fvelsound;
                     unsigned int velocity;
 
-                    fvelsound = static_cast<float>(curveInfo & 0xFFFF);
+                    fvelsound = static_cast<float>(ntables & 0xFFFF);
                     fcents = 0.0f;
 
                     if ((m_CurCamState < 3) || (m_CurCamState == DMIX_NFS_NIS_CAM)) {
