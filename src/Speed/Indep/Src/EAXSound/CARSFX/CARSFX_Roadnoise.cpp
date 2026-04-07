@@ -148,12 +148,13 @@ void CARSFX_RoadNoise::PlayTransition(FXROADNOISE_TRANSITION ID, int side) {
     int Vol = GetRoadNoiseTransitionVol(ID);
     int Pitch;
 
+    Vol = Vol * 0x7FFF >> 15;
     if (ID == FXROADNOISE_TRANSITION_SPIKESTRIP) {
-        Vol = (Vol * 0x7FFF >> 15) * GetDMixOutput(eVOL_ROADNOISE_SPIKE, DMX_VOL) >> 15;
+        Vol = Vol * GetDMixOutput(eVOL_ROADNOISE_SPIKE, DMX_VOL) >> 15;
     } else if (ID == FXROADNOISE_TRANSITION_BLOWN) {
-        Vol = (Vol * 0x7FFF >> 15) * GetDMixOutput(eVOL_ROADNOISE_BLOWN, DMX_VOL) >> 15;
+        Vol = Vol * GetDMixOutput(eVOL_ROADNOISE_BLOWN, DMX_VOL) >> 15;
     } else {
-        Vol = (Vol * 0x7FFF >> 15) * GetDMixOutput(eVOL_ROADNOISE_TRANSITION, DMX_VOL) >> 15;
+        Vol = Vol * GetDMixOutput(eVOL_ROADNOISE_TRANSITION, DMX_VOL) >> 15;
     }
 
     TransitionVol[side] = Vol;
