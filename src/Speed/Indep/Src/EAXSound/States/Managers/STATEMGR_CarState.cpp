@@ -127,28 +127,31 @@ void CSTATEMGR_CarState::ResolveCarBanks() {
             if ((static_cast<int>(eax_car->GetContext()) == kRaceContext_Online ||
                  static_cast<int>(eax_car->GetContext()) == kRaceContext_Career) &&
                 !pconn->mConnected) {
-                unsigned int *found = std::find(
-                    FinalEngines.begin(), FinalEngines.end(), eax_car->GetEngineInfo()->GetCollection());
+                Attrib::Gen::engineaudio *AIEngine = eax_car->GetEngineInfo();
+                unsigned int *found =
+                    std::find(FinalEngines.begin(), FinalEngines.end(), AIEngine->GetCollection());
 
                 if (found == FinalEngines.end()) {
                     found = std::find(AIEnginesWeWantToLoad.begin(),
                                       AIEnginesWeWantToLoad.end(),
-                                      eax_car->GetEngineInfo()->GetCollection());
+                                      AIEngine->GetCollection());
                     if (found == AIEnginesWeWantToLoad.end()) {
-                        AIEnginesWeWantToLoad.push_back(eax_car->GetEngineInfo()->GetCollection());
+                        AIEnginesWeWantToLoad.push_back(AIEngine->GetCollection());
                     }
                 }
             }
         }
     }
 
-    if (AIEnginesWeWantToLoad.size() == 0) {
+    int NumEnginesWeWantToLoad = static_cast<int>(AIEnginesWeWantToLoad.size());
+
+    if (NumEnginesWeWantToLoad == 0) {
         return;
     }
 
     if (DEBUG_CAR_BANK_TEST_CASE != -1 ||
-        (!CopsCanBeInGame ? AIEnginesWeWantToLoad.size() + FinalEngines.size() > 4
-                          : AIEnginesWeWantToLoad.size() + FinalEngines.size() > 3)) {
+        (!CopsCanBeInGame ? NumEnginesWeWantToLoad + static_cast<int>(FinalEngines.size()) > 4
+                          : NumEnginesWeWantToLoad + static_cast<int>(FinalEngines.size()) > 3)) {
         std::sort(AIEnginesWeWantToLoad.begin(), AIEnginesWeWantToLoad.end(), sort_engine_priority);
 
         for (const unsigned int *iter = AIEnginesWeWantToLoad.begin(); iter != AIEnginesWeWantToLoad.end(); ++iter) {
