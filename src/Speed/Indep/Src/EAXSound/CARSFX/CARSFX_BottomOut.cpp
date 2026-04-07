@@ -213,10 +213,10 @@ void CARSFX_BottomOut::UpdateParams(float t) {
     bool FrontTouching;
     bool BackTouching;
 
-    TmpFrontTouched = false;
-    TmpBackTouched = false;
-    TmpRightTouched = false;
     TmpLeftTouched = false;
+    TmpRightTouched = false;
+    TmpBackTouched = false;
+    TmpFrontTouched = false;
     if (GetPhysCar()->IsWheelTouchingGround(0)) {
         if (GetPhysCar()->IsWheelTouchingGround(1)) {
             TmpFrontTouched = true;
@@ -255,8 +255,8 @@ void CARSFX_BottomOut::UpdateParams(float t) {
         }
     }
 
-    PlayJumpLanding = false;
     IsHardLanding = false;
+    PlayJumpLanding = false;
     FrontTouching = false;
     if (TmpFrontTouched && (FrontHangTime > 0.05f) && !FrontWheelsTouched) {
         FrontTouching = true;
