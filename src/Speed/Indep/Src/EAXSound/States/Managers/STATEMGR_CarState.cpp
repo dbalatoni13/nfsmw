@@ -112,8 +112,11 @@ void CSTATEMGR_CarState::ResolveCarBanks() {
     UTL::FixedVector<unsigned int, 8, 16> EnginesThatAreV8;
     bool CopsCanBeInGame = !FEDatabase->IsQuickRaceMode();
 
-    CSTATEMGR_CarState::CopsCanBeInGame = CopsCanBeInGame;
+    AIEnginesWeWantToLoad.clear();
+    EnginesThatCanUpgradeToV8.clear();
+    EnginesThatAreV8.clear();
     ForcePrintResolveInfo = false;
+    CSTATEMGR_CarState::CopsCanBeInGame = CopsCanBeInGame;
 
     typedef UTL::Collections::Listable<CarSoundConn, 10> CarList;
     if (DEBUG_CAR_BANK_TEST_CASE == -1) {
