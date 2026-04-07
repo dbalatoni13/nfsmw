@@ -246,50 +246,56 @@ float GinsuSynthData::SampleToCycle(int sample) const {
     int guess;
     float s1;
     float s2;
-    float cycle = 0.0f;
+    float cycle;
 
     high = mCycleCount;
-    if (high > 0 && mCyclePos[0] < sample) {
-        if (sample < mCyclePos[high]) {
-            low = 0;
-            while (true) {
-                while (true) {
-                    cycle = (static_cast<float>(sample - mCyclePos[low]) / static_cast<float>(mCyclePos[high] - mCyclePos[low])) * static_cast<float>(high - low);
-                    guess = low + IntFloor(cycle);
-                    if (mCyclePos[guess] <= sample) {
-                        break;
-                    }
-                    {
-                        int newlow = guess - IntCeil(static_cast<float>(mCyclePos[guess] - sample) / mMinPeriod);
-                        high = guess;
-                        if (low < newlow) {
-                            low = newlow;
-                        }
-                    }
-                }
+    if (high <= 0) {
+        return 0.0f;
+    }
 
-                if (sample < mCyclePos[guess + 1]) {
-                    break;
-                }
+    if (!(mCyclePos[0] < sample)) {
+        return 0.0f;
+    }
 
-                {
-                    int newhigh = guess + IntCeil(static_cast<float>(sample - mCyclePos[guess]) / mMinPeriod) + 1;
-                    low = guess + 1;
-                    if (newhigh < high) {
-                        high = newhigh;
-                    }
-                }
+    if (!(sample < mCyclePos[high])) {
+        return static_cast<float>(high);
+    }
+
+    low = 0;
+    while (true) {
+        while (true) {
+            cycle = (static_cast<float>(sample - mCyclePos[low]) / static_cast<float>(mCyclePos[high] - mCyclePos[low])) *
+                    static_cast<float>(high - low);
+            guess = low + IntFloor(cycle);
+            if (mCyclePos[guess] <= sample) {
+                break;
             }
 
-            s1 = static_cast<float>(mCyclePos[guess]);
-            s2 = static_cast<float>(mCyclePos[guess + 1]);
-            cycle = static_cast<float>(guess) + (static_cast<float>(sample) - s1) / (s2 - s1);
-        } else {
-            cycle = static_cast<float>(high);
+            {
+                int newlow = guess - IntCeil(static_cast<float>(mCyclePos[guess] - sample) / mMinPeriod);
+                high = guess;
+                if (low < newlow) {
+                    low = newlow;
+                }
+            }
+        }
+
+        if (sample < mCyclePos[guess + 1]) {
+            break;
+        }
+
+        {
+            int newhigh = guess + IntCeil(static_cast<float>(sample - mCyclePos[guess]) / mMinPeriod) + 1;
+            low = guess + 1;
+            if (newhigh < high) {
+                high = newhigh;
+            }
         }
     }
 
-    return cycle;
+    s1 = static_cast<float>(mCyclePos[guess]);
+    s2 = static_cast<float>(mCyclePos[guess + 1]);
+    return static_cast<float>(guess) + (static_cast<float>(sample) - s1) / (s2 - s1);
 }
 
 bool GinsuSynthData::GetSamples(int startSample, int numSamples, short *dest) {

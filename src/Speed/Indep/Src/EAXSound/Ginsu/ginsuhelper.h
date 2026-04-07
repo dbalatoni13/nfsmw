@@ -6,18 +6,28 @@
 #endif
 
 static inline int IntFloor(float x) {
+    if (0.0f <= x) {
+        return static_cast<int>(x);
+    }
+
     int i = static_cast<int>(x);
-    if (x < 0.0f && static_cast<float>(i) != x) {
+    if (static_cast<float>(i) != x) {
         i--;
     }
+
     return i;
 }
 
 static inline int IntCeil(float x) {
+    if (x <= 0.0f) {
+        return static_cast<int>(x);
+    }
+
     int i = static_cast<int>(x);
-    if (0.0f < x && static_cast<float>(i) != x) {
+    if (static_cast<float>(i) != x) {
         i++;
     }
+
     return i;
 }
 
