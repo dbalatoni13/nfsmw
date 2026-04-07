@@ -347,8 +347,8 @@ void SFXObj_NISStream::StopStream() {
 
 bool SFXObj_NISStream::QueueNISStream(unsigned int anim_id, int camera_track_number, bool bbuttonthrough,
                                       bool btracktime) {
-    Speech::Module *nismgr = Speech::Manager::GetSpeechModule(0);
-    Type_NIS_Track csiscamtrack = GetCSISTrack(camera_track_number);
+    Speech::Module *nismgr;
+    Type_NIS_Track csiscamtrack;
     bool breturn = false;
     int CSISindex = 0;
     int id = 0;
@@ -361,10 +361,56 @@ bool SFXObj_NISStream::QueueNISStream(unsigned int anim_id, int camera_track_num
         m_mselapsedtimecb = 0;
     }
 
+    nismgr = Speech::Manager::GetSpeechModule(0);
     m_bIsButtonThrough = bbuttonthrough;
     if (bbuttonthrough || nismgr->GetStreamChannel()->IsPlaying()) {
         nismgr = Speech::Manager::GetSpeechModule(0);
         nismgr->PurgeSpeech();
+    }
+
+    csiscamtrack = Type_NIS_Track_Track00;
+    switch (camera_track_number) {
+    case 1:
+        csiscamtrack = Type_NIS_Track_Track01;
+        break;
+    case 2:
+        csiscamtrack = Type_NIS_Track_Track02;
+        break;
+    case 3:
+        csiscamtrack = Type_NIS_Track_Track03;
+        break;
+    case 4:
+        csiscamtrack = Type_NIS_Track_Track04;
+        break;
+    case 5:
+        csiscamtrack = Type_NIS_Track_Track05;
+        break;
+    case 6:
+        csiscamtrack = Type_NIS_Track_Track06;
+        break;
+    case 7:
+        csiscamtrack = Type_NIS_Track_Track07;
+        break;
+    case 8:
+        csiscamtrack = Type_NIS_Track_Track08;
+        break;
+    case 9:
+        csiscamtrack = Type_NIS_Track_Track09;
+        break;
+    case 10:
+        csiscamtrack = Type_NIS_Track_Track10;
+        break;
+    case 11:
+        csiscamtrack = Type_NIS_Track_Track11;
+        break;
+    case 12:
+        csiscamtrack = Type_NIS_Track_Track12;
+        break;
+    case 13:
+        csiscamtrack = Type_NIS_Track_Track13;
+        break;
+    default:
+        break;
     }
 
     CSISindex = GetCsisEventIndex(anim_id);
