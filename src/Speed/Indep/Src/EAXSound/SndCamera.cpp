@@ -105,27 +105,37 @@ void SndCamera::UpdateCameras() {
             bNormalize(m_NormCarDir + k, &v2Temp);
 
             m_PrevCamState[k] = m_CurCamState[k];
-            if (!(m_CamAction[k] == m_NewCamAction[k])) {
+            if (m_CamAction[k] != m_NewCamAction[k]) {
                 m_CamAction[k] = m_NewCamAction[k];
-                if (m_CamAction[k] == Attrib::StringKey("CDActionDrive")) {
-                    int pov;
+                {
+                    Attrib::StringKey drive("CDActionDrive");
+                    if (m_CamAction[k] == drive) {
+                        int pov;
 
-                    pov = pEaxCar->GetPOV();
-                    if (pov == 0) {
-                        m_CurCamState[k] = DMIX_NFS_BUMPER_CAM;
-                    } else if (pov == 1) {
-                        m_CurCamState[k] = DMIX_NFS_INCAR_CAM;
+                        pEaxCar = g_pEAXSound->GetPlayerTunerCar(k);
+                        pov = pEaxCar->GetPOV();
+                        if (pov == 0) {
+                            m_CurCamState[k] = DMIX_NFS_BUMPER_CAM;
+                        } else if (pov == 1) {
+                            m_CurCamState[k] = DMIX_NFS_INCAR_CAM;
+                        } else {
+                            m_CurCamState[k] = DMIX_DEFAULT_CAM;
+                        }
                     } else {
-                        m_CurCamState[k] = DMIX_DEFAULT_CAM;
+                        Attrib::StringKey track("CDActionTrackCar");
+                        if (m_CamAction[k] == track) {
+                            if (pcar->mHealth == 0.0f) {
+                                m_CurCamState[k] = DMIX_NFS_COLLISION_CAM;
+                            } else {
+                                m_CurCamState[k] = DMIX_NFS_JUMP_CAM;
+                            }
+                        } else {
+                            Attrib::StringKey ice("CDActionIce");
+                            if (m_CamAction[k] == ice) {
+                                m_CurCamState[k] = DMIX_NFS_NIS_CAM;
+                            }
+                        }
                     }
-                } else if (m_CamAction[k] == Attrib::StringKey("CDActionTrackCar")) {
-                    if (pcar->mHealth == 0.0f) {
-                        m_CurCamState[k] = DMIX_NFS_COLLISION_CAM;
-                    } else {
-                        m_CurCamState[k] = DMIX_NFS_JUMP_CAM;
-                    }
-                } else if (m_CamAction[k] == Attrib::StringKey("CDActionIce")) {
-                    m_CurCamState[k] = DMIX_NFS_NIS_CAM;
                 }
             }
         }

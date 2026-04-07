@@ -36,6 +36,10 @@ class StringKey {
         return mHash64 == rhs.mHash64;
     }
 
+    bool operator!=(const StringKey &rhs) const {
+        return mHash64 != rhs.mHash64;
+    }
+
     operator long long() const {
         return this->mHash64;
     }
