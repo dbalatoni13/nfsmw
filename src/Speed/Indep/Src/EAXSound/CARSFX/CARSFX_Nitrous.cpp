@@ -29,10 +29,10 @@ SndBase *CARSFX_Nitrous::CreateObject(unsigned int allocator) {
 
 CARSFX_Nitrous::CARSFX_Nitrous()
     : CARSFX() {
-    m_pShiftCtl = nullptr;
     m_NitrousControl = nullptr;
     eNitrousState = SFX_NITROUS_NONE;
     m_NitrousPurge = nullptr;
+    m_pShiftCtl = nullptr;
 }
 
 CARSFX_Nitrous::~CARSFX_Nitrous() {
@@ -70,14 +70,15 @@ void CARSFX_Nitrous::SetupSFX(CSTATE_Base *_StateBase) {
 void CARSFX_Nitrous::SetupLoadData() {
     eNFSSndNOSClass nbankindex;
 
-    switch (m_UGL) {
-    case AEMS_LEVEL2:
-    case AEMS_LEVEL3:
-        nbankindex = AEMS_NOS_01;
-        break;
-    default:
-        nbankindex = AEMS_NOS_00;
-        break;
+    nbankindex = AEMS_NOS_00;
+    if (m_UGL != AEMS_LEVEL1) {
+        if (m_UGL > AEMS_LEVEL1) {
+            if (m_UGL == AEMS_LEVEL2) {
+                nbankindex = AEMS_NOS_01;
+            } else if (m_UGL == AEMS_LEVEL3) {
+                nbankindex = AEMS_NOS_01;
+            }
+        }
     }
 
     LoadAsset(
@@ -108,7 +109,7 @@ int CARSFX_Nitrous::Play(int type, int, int) {
             m_NitrousControl_ref = m_NitrousControl->GetRefCount();
         }
 
-        if (INIS::Get()) {
+        if (INIS::Exists()) {
             SetDMIX_Input(1, 0);
         } else {
             SetDMIX_Input(1, 0x7FFF);
@@ -138,7 +139,7 @@ void CARSFX_Nitrous::PlayPurge() {
     g_pEAXSound->SetCsisName(this);
     m_NitrousPurge = new FX_PURGE(0, 0, 0, 0, 0x61A8, 0, 0x7FFF, 0);
 
-    if (INIS::Get()) {
+    if (INIS::Exists()) {
         SetDMIX_Input(2, 0);
     } else {
         SetDMIX_Input(2, 0x7FFF);
@@ -169,14 +170,14 @@ void CARSFX_Nitrous::UpdateParams(float) {
     nSTATE = eNitrousState;
     switch (nSTATE) {
     case SFX_NITROUS_NONE:
-        if (GetPhysCar()->GetNitroFlag()) {
+        if (m_pEAXCar->GetPhysCar()->GetNitroFlag()) {
             eNitrousState = SFX_NITROUS_ON;
             Play(0, 0, m_pEAXCar->m_Rotation);
             m_NitrousPitchBoost.Initialize(0.0f, 1.0f, 400, LINEAR);
         }
         break;
     case SFX_NITROUS_ON:
-        if (!GetPhysCar()->GetNitroFlag()) {
+        if (!m_pEAXCar->GetPhysCar()->GetNitroFlag()) {
             if (m_NitrousControl) {
                 Stop();
             }
@@ -193,7 +194,7 @@ void CARSFX_Nitrous::UpdateParams(float) {
 
 void CARSFX_Nitrous::ProcessUpdate() {
     if (m_NitrousControl) {
-        if (INIS::Get()) {
+        if (INIS::Exists()) {
             SetDMIX_Input(1, 0);
             SetDMIX_Input(2, 0);
         }
