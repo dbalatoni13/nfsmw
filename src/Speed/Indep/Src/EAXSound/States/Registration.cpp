@@ -8,6 +8,7 @@
 #include "Speed/Indep/Src/EAXSound/CARSFX/CARSFX_Shifting.hpp"
 #include "Speed/Indep/Src/EAXSound/CARSFX/CARSFX_Skids.hpp"
 #include "Speed/Indep/Src/EAXSound/CARSFX/CARSFX_Siren.hpp"
+#include "Speed/Indep/Src/EAXSound/CARSFX/CARSFX_SparkChatter.hpp"
 #include "Speed/Indep/Src/EAXSound/CARSFX/CARSFX_TrafficFX.hpp"
 #include "Speed/Indep/Src/EAXSound/CARSFX/CARSFX_Turbo.hpp"
 #include "Speed/Indep/Src/EAXSound/CARSFX/CARSFX_WindNoise.hpp"
@@ -50,11 +51,6 @@ struct CARSFX_SingleGinsuEng : public CARSFX_GinsuEngine {
 };
 
 struct CARSFX_TruckWoosh : public CARSFX_TrafficWoosh {
-  protected:
-    static TypeInfo s_TypeInfo;
-};
-
-struct CARSFX_SparkChatter : public CARSFX {
   protected:
     static TypeInfo s_TypeInfo;
 };

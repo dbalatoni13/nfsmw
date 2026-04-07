@@ -16,6 +16,10 @@ extern ClassHandle gCAR_SWTNHandle;
 extern InterfaceId CAR_SWTNId;
 extern ClassHandle gCAR_WHINEHandle;
 extern InterfaceId CAR_WHINEId;
+extern ClassHandle gCAR_SputterHandle;
+extern InterfaceId CAR_SputterId;
+extern ClassHandle gCAR_SputOutputHandle;
+extern InterfaceId CAR_SputOutputId;
 } // namespace Csis
 
 struct CARStruct {
@@ -722,5 +726,212 @@ struct CAR_WHINE {
     Csis::Class *mpClass;         // offset 0x0, size 0x4
     CAR_WHINEStruct mData;        // offset 0x4, size 0x24
 };
+
+namespace Csis {
+
+struct CAR_SputOutputStruct {
+    int volume;      // offset 0x0, size 0x4
+    int car_class;   // offset 0x4, size 0x4
+    int car_id;      // offset 0x8, size 0x4
+};
+
+struct CAR_SputterStruct {
+    int car_class;                       // offset 0x0, size 0x4
+    int car_id;                          // offset 0x4, size 0x4
+    int rPM;                             // offset 0x8, size 0x4
+    int vOL;                             // offset 0xC, size 0x4
+    int cOMMON_PARAMETERS_AZIMUTH;       // offset 0x10, size 0x4
+    int cOMMON_PARAMETERS_PITCH_OFFSET;  // offset 0x14, size 0x4
+    int cOMMON_PARAMETERS_ROTATION;      // offset 0x18, size 0x4
+    int tORQUE;                          // offset 0x1C, size 0x4
+    int force_Trigger;                   // offset 0x20, size 0x4
+    int accel_true;                      // offset 0x24, size 0x4
+    int shifting_true;                   // offset 0x28, size 0x4
+};
+
+struct CAR_SputOutput;
+
+struct CAR_Sputter {
+  public:
+    void SetCar_class(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 100) {
+            x = 100;
+        }
+        mData.car_class = x;
+    }
+
+    int GetCar_class() {
+        return mData.car_class;
+    }
+
+    void SetCar_id(int x) {
+        mData.car_id = x;
+    }
+
+    int GetCar_id() {
+        return mData.car_id;
+    }
+
+    void SetRPM(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 10000) {
+            x = 10000;
+        }
+        mData.rPM = x;
+    }
+
+    int GetRPM() {
+        return mData.rPM;
+    }
+
+    void SetVOL(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0x8013) {
+            x = 0x8013;
+        }
+        mData.vOL = x;
+    }
+
+    int GetVOL() {
+        return mData.vOL;
+    }
+
+    void SetCOMMON_PARAMETERS_AZIMUTH(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0x10000) {
+            x = 0x10000;
+        }
+        mData.cOMMON_PARAMETERS_AZIMUTH = x;
+    }
+
+    int GetCOMMON_PARAMETERS_AZIMUTH() {
+        return mData.cOMMON_PARAMETERS_AZIMUTH;
+    }
+
+    void SetCOMMON_PARAMETERS_PITCH_OFFSET(int x) {
+        mData.cOMMON_PARAMETERS_PITCH_OFFSET = x;
+    }
+
+    int GetCOMMON_PARAMETERS_PITCH_OFFSET() {
+        return mData.cOMMON_PARAMETERS_PITCH_OFFSET;
+    }
+
+    void SetCOMMON_PARAMETERS_ROTATION(int x) {
+        mData.cOMMON_PARAMETERS_ROTATION = x;
+    }
+
+    int GetCOMMON_PARAMETERS_ROTATION() {
+        return mData.cOMMON_PARAMETERS_ROTATION;
+    }
+
+    void SetTORQUE(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0x400) {
+            x = 0x400;
+        }
+        mData.tORQUE = x;
+    }
+
+    int GetTORQUE() {
+        return mData.tORQUE;
+    }
+
+    void SetForce_Trigger(int x) {
+        mData.force_Trigger = x;
+    }
+
+    int GetForce_Trigger() {
+        return mData.force_Trigger;
+    }
+
+    void SetAccel_true(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 1) {
+            x = 1;
+        }
+        mData.accel_true = x;
+    }
+
+    int GetAccel_true() {
+        return mData.accel_true;
+    }
+
+    void SetShifting_true(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 1) {
+            x = 1;
+        }
+        mData.shifting_true = x;
+    }
+
+    int GetShifting_true() {
+        return mData.shifting_true;
+    }
+
+    int GetRefCount() {
+        int refCount = 0;
+
+        if (mpClass) {
+            mpClass->GetRefCount(&refCount);
+        }
+
+        return refCount;
+    }
+
+    static void *operator new(unsigned int size) {
+        return System::Alloc(size);
+    }
+
+    static void operator delete(void *ptr) {
+        System::Free(ptr);
+    }
+
+    CAR_Sputter(int car_class, int car_id, int rPM, int vOL, int cOMMON_PARAMETERS_AZIMUTH, int cOMMON_PARAMETERS_PITCH_OFFSET,
+                int cOMMON_PARAMETERS_ROTATION, int tORQUE, int force_Trigger, int accel_true, int shifting_true) {
+        SetCar_class(car_class);
+        SetCar_id(car_id);
+        SetRPM(rPM);
+        SetVOL(vOL);
+        SetCOMMON_PARAMETERS_AZIMUTH(cOMMON_PARAMETERS_AZIMUTH);
+        SetCOMMON_PARAMETERS_PITCH_OFFSET(cOMMON_PARAMETERS_PITCH_OFFSET);
+        SetCOMMON_PARAMETERS_ROTATION(cOMMON_PARAMETERS_ROTATION);
+        SetTORQUE(tORQUE);
+        SetForce_Trigger(force_Trigger);
+        SetAccel_true(accel_true);
+        SetShifting_true(shifting_true);
+
+        int result = Class::CreateInstance(&gCAR_SputterHandle, &mData, &mpClass);
+        if (result < 0) {
+            gCAR_SputterHandle.Set(&CAR_SputterId);
+            Class::CreateInstance(&gCAR_SputterHandle, &mData, &mpClass);
+        }
+    }
+
+    ~CAR_Sputter() {
+        if (mpClass) {
+            mpClass->Release();
+        }
+    }
+
+    void CommitMemberData() {
+        if (mpClass) {
+            mpClass->SetMemberData(&mData);
+        }
+    }
+
+  private:
+    Class *mpClass;          // offset 0x0, size 0x4
+    CAR_SputterStruct mData; // offset 0x4, size 0x2C
+};
+
+} // namespace Csis
 
 #endif

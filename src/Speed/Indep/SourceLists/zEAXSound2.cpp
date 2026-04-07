@@ -48,6 +48,8 @@
 
 #include "Speed/Indep/Src/EAXSound/CARSFX/CARSFX_Turbo.cpp"
 
+#include "Speed/Indep/Src/EAXSound/CARSFX/CARSFX_SparkChatter.cpp"
+
 #include "Speed/Indep/Src/EAXSound/CARSFX/CARSFX_Shifting.cpp"
 
 #include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_Pathfinder.cpp"
