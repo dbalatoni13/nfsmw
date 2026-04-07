@@ -13,10 +13,20 @@ struct cStitchLoop {
     void Update(const SND_Params *Params, float dt);
 };
 
-extern int RoadNoiseVolumes[9];
-extern Graph RoadNoiseVolGraph;
-extern Slope RoadNoiseSpeedToPitch;
-extern Slope RoadNoiseTransitionPitchSlope;
+int RoadNoiseVolumes[9] = {15000, 24000, 32000, 24000, 24000, 12000, 19000, 32500, 32500};
+
+Slope RoadNoiseTransitionVolSlope(20000.0f, 32767.0f, 12.0f, 60.0f);
+Slope RoadNoiseTransitionPitchSlope(3600.0f, 4400.0f, 12.0f, 60.0f);
+bVector2 RoadNoiseVolumeCurve[5] = {
+    bVector2(0.0f, 0.0f),
+    bVector2(60.0f, 28000.0f),
+    bVector2(100.0f, 32500.0f),
+    bVector2(150.0f, 24500.0f),
+    bVector2(175.0f, 18000.0f),
+};
+Graph RoadNoiseVolGraph(RoadNoiseVolumeCurve, 5);
+Slope RoadNoiseSpeedToPitch(1500.0f, 4500.0f, 0.0f, 100.0f);
+
 extern int GetRoadNoiseTransitionVol(FXROADNOISE_TRANSITION ID);
 
 SndBase::TypeInfo CARSFX_RoadNoise::s_TypeInfo = {
