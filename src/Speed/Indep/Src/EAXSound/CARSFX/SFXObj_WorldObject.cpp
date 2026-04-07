@@ -5,6 +5,11 @@
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_3DObjPos.hpp"
 #include "Speed/Indep/Src/EAXSound/snd_gen/ENVIRO_AEMS.h"
 
+#line 20 "src/eaxsound/States/Managers/STATEMGR_Enviro.hpp"
+ISndAttachable::ISndAttachable()
+    : UTL::Collections::Listable<ISndAttachable, 15>() {}
+#line 8 "/home/kabiskac/Documents/clankers/eaxsound/nfsmw/src/Speed/Indep/Src/EAXSound/CARSFX/SFXObj_WorldObject.cpp"
+
 SndBase::TypeInfo SFXObj_WorldObject::s_TypeInfo = {
     0x00060000,
     "SFXObj_WorldObject",

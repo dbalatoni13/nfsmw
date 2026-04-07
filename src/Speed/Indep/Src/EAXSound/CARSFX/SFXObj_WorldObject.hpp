@@ -14,7 +14,7 @@ enum WORLDOBJECT_TYPES {
 };
 
 struct ISndAttachable : public UTL::Collections::Listable<ISndAttachable, 15> {
-    ISndAttachable() {}
+    ISndAttachable();
     virtual ~ISndAttachable() {}
     virtual const bVector3 *GetPosition() = 0;
     virtual int GetType() = 0;
