@@ -2,6 +2,7 @@
 
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
 #include "Speed/Indep/Src/EAXSound/SndCamera.hpp"
+#include "Speed/Indep/Src/World/RaceParameters.hpp"
 
 extern bool IsPlayerGoingFastEnough(float, int);
 
@@ -189,4 +190,41 @@ void CARSFX_TrafficHorn::CSIS_UpdateHOnk() {
 
 bool CARSFX_TrafficHorn::IsHonking() {
     return m_HornSound != nullptr;
+}
+
+bool CARSFX_TrafficHorn::IsPlayerCarInRange(int nplayer) {
+    EAX_CarState *pPlayerCar;
+    bVector3 m_pPlayerPosition;
+    bVector3 m_pObjectPosition;
+    bVector3 vPlayerDirection;
+    float m_fObjectToPlayerDistance;
+    bVector3 ObjFwdDirection;
+    float DotProd;
+
+    pPlayerCar = SndCamera::GetPlayerCar(nplayer)->GetPhysCar();
+    m_pPlayerPosition = *pPlayerCar->GetPosition();
+    m_pObjectPosition = *GetPhysCar()->GetPosition();
+    bSub(&vPlayerDirection, &m_pPlayerPosition, &m_pObjectPosition);
+    m_fObjectToPlayerDistance = bLength(&vPlayerDirection);
+
+    if (m_fObjectToPlayerDistance > 20.0f) {
+        return false;
+    }
+
+    if (m_fObjectToPlayerDistance < 3.0f) {
+        return true;
+    }
+
+    vPlayerDirection.z = 0.0f;
+    vPlayerDirection = bNormalize(vPlayerDirection);
+    ObjFwdDirection = *GetPhysCar()->GetForwardVector();
+    ObjFwdDirection.z = 0.0f;
+    ObjFwdDirection = bNormalize(ObjFwdDirection);
+    DotProd = bDot(vPlayerDirection, ObjFwdDirection);
+
+    if (TheRaceParameters.IsDragRace()) {
+        return bCos(115.0f) <= DotProd;
+    }
+
+    return bCos(40.0f) < DotProd || (DotProd < -bCos(40.0f) && m_fObjectToPlayerDistance < 10.0f);
 }

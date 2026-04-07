@@ -57,6 +57,7 @@ enum eTimeOfDay {
 };
 
 extern int g_tweakIsDriftRace;
+extern int g_tweakIsDragRace;
 extern int g_tweakIsShortTrackRace;
 
 void ServiceSpaceNodes();

@@ -76,6 +76,10 @@ struct RaceParameters {
         return ((this->bDriftRaceFlag) || (g_tweakIsDriftRace));
     }
 
+    inline bool IsDragRace() {
+        return ((this->bDragRaceFlag) || (g_tweakIsDragRace));
+    }
+
     inline bool IsShortTrackRace() {
         return ((this->bShortRaceFlag) || (g_tweakIsShortTrackRace));
     }
