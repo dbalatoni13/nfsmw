@@ -92,7 +92,9 @@ void LoadGlobalChunks();
 void BootLoadingScreen();
 void UnloadFrontEndVault();
 void MaybeDoMemoryProfile();
+#ifndef EA_BUILD_A124
 void HandleTrackStreamerLoadingBar();
+#endif
 void CheckLeakDetector(const char *debug_name);
 
 // total size: 0x20

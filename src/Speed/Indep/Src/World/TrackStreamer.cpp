@@ -80,7 +80,9 @@ TSMemoryPool::TSMemoryPool(intptr_t address, int size, const char *debug_name, i
 
     MemoryPoolOverrideInfo *override_info = &OverrideInfo;
     bMemSet(&OverrideInfo, 0, sizeof(OverrideInfo));
+#ifndef EA_BUILD_A124
     OverrideInfo.Name = DebugName;
+#endif
     OverrideInfo.Pool = this;
     OverrideInfo.Address = address;
     OverrideInfo.Size = size;
@@ -618,8 +620,9 @@ void TrackStreamer::InitRegion(const char *region_stream_filename, bool split_sc
         TrackStreamingSection *section = &pTrackStreamingSections[n];
         int boundary_section_number = GetBoundarySectionNumber(section->SectionNumber, bGetPlatformName());
         VisibleSectionBoundary *boundary = TheVisibleSectionManager.FindBoundary(boundary_section_number);
-
+#ifndef EA_BUILD_A124
         section->pBoundary = boundary;
+#endif
     }
 
     EmptyCaffeineLayers();
@@ -1298,7 +1301,9 @@ void TrackStreamer::SetStreamingPosition(int position_number, const bVector3 *po
     position_entry->Direction.y = 0.0f;
     position_entry->PredictedZoneValidTime = -1;
     position_entry->PositionSet = true;
+#ifndef EA_BUILD_A124
     position_entry->FollowingCar = false;
+#endif
     position_entry->PredictedZone = 0;
     CurrentZoneNeedsRefreshing = true;
 
@@ -1319,7 +1324,9 @@ void TrackStreamer::PredictStreamingPosition(int position_number, const bVector3
     position_entry->Direction.x = direction->x;
     position_entry->Direction.y = direction->y;
     position_entry->PositionSet = true;
+#ifndef EA_BUILD_A124
     position_entry->FollowingCar = following_car;
+#endif
 
     {
         // TODO
@@ -1420,7 +1427,9 @@ void TrackStreamer::ClearStreamingPositions() {
     for (int position_number = 0; position_number < 2; position_number++) {
         StreamingPositionEntry *position_entry = &StreamingPositionEntries[position_number];
         position_entry->PositionSet = false;
+#ifndef EA_BUILD_A124
         position_entry->FollowingCar = false;
+#endif
     }
 }
 
@@ -2012,6 +2021,9 @@ void TrackStreamer::HandleLoading() {
 
 // UNSOLVED because of debug stuff
 int TrackStreamer::GetLoadingPriority(TrackStreamingSection *section, StreamingPositionEntry *position_entry, bool calculating_jettison) {
+#ifdef EA_BUILD_A124
+    return 0; // this entire function is different in A124
+#else
     if (!section->pBoundary) {
         return 0;
     }
@@ -2107,6 +2119,7 @@ int TrackStreamer::GetLoadingPriority(TrackStreamingSection *section, StreamingP
     }
 
     return priority;
+#endif
 }
 
 // TODO move?
@@ -2242,6 +2255,9 @@ void TrackStreamer::PlotLoadingMarker(StreamingPositionEntry *streaming_position
     }
 }
 
+#ifdef EA_BUILD_A124
+void TrackStreamer::CheckLoadingBar() {}
+#else
 // UNSOLVED regswap
 bool TrackStreamer::CheckLoadingBar() {
     ProfileNode profile_node("TODO", 0);
@@ -2306,6 +2322,7 @@ bool TrackStreamer::CheckLoadingBar() {
     prev_need_loading_bar = need_loading_bar;
     return need_loading_bar;
 }
+#endif
 
 int TrackStreamer::GetSectionToActivate(int activation_delay) {
     if (NumSectionsActivated < NumCurrentStreamingSections) {
