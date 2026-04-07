@@ -435,11 +435,18 @@ bool SFXObj_NISStream::QueueNISStream(unsigned int anim_id, int camera_track_num
             g_laststartanimid = anim_id;
             SetSoundControlState(false, SNDSTATE_NIS_321, "NIS 321");
 
-            if (NIS_Select_Start(static_cast<Type_NIS_Scene_Start>(uNIS_STRINGHASHMAP[CSISindex].Flags), csiscamtrack,
-                                 Type_NIS_Section_End) < Csis::System::kResult_Ok) {
-                Csis::gNIS_Select_StartHandle.Set(&Csis::NIS_Select_StartId);
-                NIS_Select_Start(static_cast<Type_NIS_Scene_Start>(uNIS_STRINGHASHMAP[CSISindex].Flags), csiscamtrack,
-                                 Type_NIS_Section_End);
+            {
+                Csis::System::Result result;
+                NIS_Select_StartStruct data;
+
+                data.NIS_Scene_Start = static_cast<Type_NIS_Scene_Start>(uNIS_STRINGHASHMAP[CSISindex].Flags);
+                data.NIS_Track = csiscamtrack;
+                data.NIS_Section = Type_NIS_Section_End;
+                result = Csis::Function::Call(&Csis::gNIS_Select_StartHandle, &data);
+                if (result < Csis::System::kResult_Ok) {
+                    Csis::gNIS_Select_StartHandle.Set(&Csis::NIS_Select_StartId);
+                    Csis::Function::Call(&Csis::gNIS_Select_StartHandle, &data);
+                }
             }
 
             nismgr = Speech::Manager::GetSpeechModule(0);
@@ -451,11 +458,18 @@ bool SFXObj_NISStream::QueueNISStream(unsigned int anim_id, int camera_track_num
         } else {
             g_laststartanimid = anim_id;
 
-            if (NIS_Select_Start(static_cast<Type_NIS_Scene_Start>(uNIS_STRINGHASHMAP[CSISindex].Flags), csiscamtrack,
-                                 Type_NIS_Section_Complete) < Csis::System::kResult_Ok) {
-                Csis::gNIS_Select_StartHandle.Set(&Csis::NIS_Select_StartId);
-                NIS_Select_Start(static_cast<Type_NIS_Scene_Start>(uNIS_STRINGHASHMAP[CSISindex].Flags), csiscamtrack,
-                                 Type_NIS_Section_Complete);
+            {
+                Csis::System::Result result;
+                NIS_Select_StartStruct data;
+
+                data.NIS_Scene_Start = static_cast<Type_NIS_Scene_Start>(uNIS_STRINGHASHMAP[CSISindex].Flags);
+                data.NIS_Track = csiscamtrack;
+                data.NIS_Section = Type_NIS_Section_Complete;
+                result = Csis::Function::Call(&Csis::gNIS_Select_StartHandle, &data);
+                if (result < Csis::System::kResult_Ok) {
+                    Csis::gNIS_Select_StartHandle.Set(&Csis::NIS_Select_StartId);
+                    Csis::Function::Call(&Csis::gNIS_Select_StartHandle, &data);
+                }
             }
 
             nismgr = Speech::Manager::GetSpeechModule(0);
@@ -479,12 +493,18 @@ bool SFXObj_NISStream::QueueNISStream(unsigned int anim_id, int camera_track_num
             g_laststartanimid = anim_id;
             SetSoundControlState(false, SNDSTATE_NIS_321, "NIS 321");
 
-            if (NIS_Select_Blacklist(csiscamtrack, Type_NIS_Section_End,
-                                     static_cast<Type_NIS_Blacklist>(uNIS_STRINGHASHMAP[CSISindex].Flags)) <
-                Csis::System::kResult_Ok) {
-                Csis::gNIS_Select_BlacklistHandle.Set(&Csis::NIS_Select_BlacklistId);
-                NIS_Select_Blacklist(csiscamtrack, Type_NIS_Section_End,
-                                     static_cast<Type_NIS_Blacklist>(uNIS_STRINGHASHMAP[CSISindex].Flags));
+            {
+                Csis::System::Result result;
+                NIS_Select_BlacklistStruct data;
+
+                data.NIS_Track = csiscamtrack;
+                data.NIS_Section = Type_NIS_Section_End;
+                data.NIS_Blacklist = static_cast<Type_NIS_Blacklist>(uNIS_STRINGHASHMAP[CSISindex].Flags);
+                result = Csis::Function::Call(&Csis::gNIS_Select_BlacklistHandle, &data);
+                if (result < Csis::System::kResult_Ok) {
+                    Csis::gNIS_Select_BlacklistHandle.Set(&Csis::NIS_Select_BlacklistId);
+                    Csis::Function::Call(&Csis::gNIS_Select_BlacklistHandle, &data);
+                }
             }
 
             nismgr = Speech::Manager::GetSpeechModule(0);
@@ -496,12 +516,18 @@ bool SFXObj_NISStream::QueueNISStream(unsigned int anim_id, int camera_track_num
         } else {
             g_laststartanimid = anim_id;
 
-            if (NIS_Select_Blacklist(csiscamtrack, Type_NIS_Section_Complete,
-                                     static_cast<Type_NIS_Blacklist>(uNIS_STRINGHASHMAP[CSISindex].Flags)) <
-                Csis::System::kResult_Ok) {
-                Csis::gNIS_Select_BlacklistHandle.Set(&Csis::NIS_Select_BlacklistId);
-                NIS_Select_Blacklist(csiscamtrack, Type_NIS_Section_Complete,
-                                     static_cast<Type_NIS_Blacklist>(uNIS_STRINGHASHMAP[CSISindex].Flags));
+            {
+                Csis::System::Result result;
+                NIS_Select_BlacklistStruct data;
+
+                data.NIS_Track = csiscamtrack;
+                data.NIS_Section = Type_NIS_Section_Complete;
+                data.NIS_Blacklist = static_cast<Type_NIS_Blacklist>(uNIS_STRINGHASHMAP[CSISindex].Flags);
+                result = Csis::Function::Call(&Csis::gNIS_Select_BlacklistHandle, &data);
+                if (result < Csis::System::kResult_Ok) {
+                    Csis::gNIS_Select_BlacklistHandle.Set(&Csis::NIS_Select_BlacklistId);
+                    Csis::Function::Call(&Csis::gNIS_Select_BlacklistHandle, &data);
+                }
             }
 
             nismgr = Speech::Manager::GetSpeechModule(0);
@@ -514,11 +540,18 @@ bool SFXObj_NISStream::QueueNISStream(unsigned int anim_id, int camera_track_num
     } else {
         g_bWasLastNISaStart = false;
 
-        if (NIS_Select_End(static_cast<Type_NIS_Scene_End>(uNIS_STRINGHASHMAP[CSISindex].Flags),
-                           Type_NIS_Track_Track00, Type_NIS_Section_Complete) < Csis::System::kResult_Ok) {
-            Csis::gNIS_Select_EndHandle.Set(&Csis::NIS_Select_EndId);
-            NIS_Select_End(static_cast<Type_NIS_Scene_End>(uNIS_STRINGHASHMAP[CSISindex].Flags),
-                           Type_NIS_Track_Track00, Type_NIS_Section_Complete);
+        {
+            Csis::System::Result result;
+            NIS_Select_EndStruct data;
+
+            data.NIS_Scene_End = static_cast<Type_NIS_Scene_End>(uNIS_STRINGHASHMAP[CSISindex].Flags);
+            data.NIS_Track = Type_NIS_Track_Track00;
+            data.NIS_Section = Type_NIS_Section_Complete;
+            result = Csis::Function::Call(&Csis::gNIS_Select_EndHandle, &data);
+            if (result < Csis::System::kResult_Ok) {
+                Csis::gNIS_Select_EndHandle.Set(&Csis::NIS_Select_EndId);
+                Csis::Function::Call(&Csis::gNIS_Select_EndHandle, &data);
+            }
         }
 
         nismgr = Speech::Manager::GetSpeechModule(0);
