@@ -18,7 +18,12 @@ const char *CSTATE_Helicopter::GetStateName() const {
 }
 
 CSTATE_Base *CSTATE_Helicopter::CreateState(unsigned int allocator) {
-    return new CSTATE_Helicopter;
+    if (allocator == 0) {
+        return new (AudioMemBase::operator new(sizeof(CSTATE_Helicopter), GetStaticStateInfo()->stateName, false))
+            CSTATE_Helicopter;
+    }
+    return new (AudioMemBase::operator new(sizeof(CSTATE_Helicopter), GetStaticStateInfo()->stateName, true))
+        CSTATE_Helicopter;
 }
 
 CSTATE_Helicopter::CSTATE_Helicopter()

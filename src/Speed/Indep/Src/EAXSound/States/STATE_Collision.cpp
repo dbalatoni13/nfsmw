@@ -16,7 +16,12 @@ const char *CSTATE_Collision::GetStateName() const {
 }
 
 CSTATE_Base *CSTATE_Collision::CreateState(unsigned int allocator) {
-    return new CSTATE_Collision;
+    if (allocator == 0) {
+        return new (AudioMemBase::operator new(sizeof(CSTATE_Collision), GetStaticStateInfo()->stateName, false))
+            CSTATE_Collision;
+    }
+    return new (AudioMemBase::operator new(sizeof(CSTATE_Collision), GetStaticStateInfo()->stateName, true))
+        CSTATE_Collision;
 }
 
 CSTATE_Collision::CSTATE_Collision()

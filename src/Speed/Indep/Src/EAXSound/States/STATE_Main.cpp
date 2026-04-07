@@ -16,7 +16,10 @@ const char *CSTATE_Main::GetStateName() const {
 }
 
 CSTATE_Base *CSTATE_Main::CreateState(unsigned int allocator) {
-    return new CSTATE_Main;
+    if (allocator == 0) {
+        return new (AudioMemBase::operator new(sizeof(CSTATE_Main), GetStaticStateInfo()->stateName, false)) CSTATE_Main;
+    }
+    return new (AudioMemBase::operator new(sizeof(CSTATE_Main), GetStaticStateInfo()->stateName, true)) CSTATE_Main;
 }
 
 CSTATE_Main::CSTATE_Main()

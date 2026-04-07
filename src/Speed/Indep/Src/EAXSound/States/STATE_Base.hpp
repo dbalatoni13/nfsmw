@@ -79,6 +79,8 @@ struct CSTATE_Base : public AudioMemBase {
         return gAudioMemoryManager.AllocateMemory(s, GetStaticStateInfo()->stateName, 0);
     }
 
+    void *operator new(size_t, void *p) { return p; }
+
   public:
     // total size: 0x44
     CSTATE_Base *m_pNextState;          // offset 0x4, size 0x4
